@@ -107,3 +107,13 @@ These tests should exist before production ingestion is enabled.
 68. Date-only event labels render consistently regardless of viewer/browser timezone.
 69. Completed or canceled events do not show an active Registration action.
 70. Protected launch-readiness data requires an authenticated active Local Roots admin and is not directly public-readable.
+
+## Access, strong identity and freshness regressions
+
+71. Anonymous and authenticated clients may use the public event surface/public-safe `lr_events` columns, but cannot read internal event fields or directly query private Local Roots operational tables.
+72. RSS cursor/discovery bookkeeping tables explicitly revoke anon/authenticated table privileges in addition to having deny-by-default RLS; the service-role RSS worker still functions afterward.
+73. Every non-null `(source_id, external_id)` pair is unique in `lr_event_sources`; a duplicate strong source identity is rejected by the database.
+74. HBNF remains idempotent under the source-external-ID uniqueness invariant: a repeat run matches all existing records and creates zero duplicates.
+75. A published current/future event older than 14 days since `last_verified_at` increments `stale_future_events` and blocks launch readiness; refreshing verification clears the gate.
+76. The scheduled future-event freshness watch creates at most one open review per stale event and auto-resolves that review after re-verification, unpublication, or the event becoming past.
+77. Current production has zero stale future-event alerts before launch soak begins; disposable freshness-watch QA leaves no test review rows behind.
