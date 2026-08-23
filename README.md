@@ -15,6 +15,7 @@ Completed and verified:
 - Cloudflare Pages staging deployment: `https://local-roots.pages.dev/`
 - initial Local Roots admin authentication/authorization on staging
 - first permitted automated production source: user-controlled HB Night Flyers
+- first regional manual source: SoCal Disc Golf Club calendar, manual verification only
 
 The Local Roots event backend is live in the existing Local Roots/D&U Supabase project under isolated `lr_` objects. HBNF remains on a separate backend and is read through a dedicated first-party adapter; no HBNF credential values or full raw league-state payloads are stored in Git.
 
@@ -23,9 +24,19 @@ Active Edge Functions:
 - `lr-admin`
 - `lr-sync-hbnf`
 
-The HBNF adapter is scheduled from 05:00 Pacific with bounded automatic retry at 06:00/07:00 after an unhealthy attempt. Its corrected v2 live run processed 31/31 valid records with zero rejections, and an immediate repeat created zero duplicates (31/31 matched). Current canonical data contains 31 published HBNF events, including 10 upcoming events, plus 9 verified Glow result rows.
+The HBNF adapter is scheduled from 05:00 Pacific with bounded automatic retry at 06:00/07:00 after an unhealthy attempt. Its corrected v2 live run processed 31/31 valid records with zero rejections, and an immediate repeat created zero duplicates (31/31 matched). HBNF currently contributes 31 published events and 9 verified Glow result rows.
 
 The first v1 HBNF run failed closed on a provenance timestamp-order constraint. Nothing was published without provenance; the failure remains in source-run history and the corrected v2 implementation passed subsequent live and idempotency verification.
+
+The SoCal Disc Golf Club calendar is registered as a manual regional cross-check only. No crawler is enabled. Six manually verified regional events have been published with provenance; three unresolved source conflicts are intentionally in the review queue instead of being silently promoted.
+
+Current public event count: **37**.
+
+Publication/access checks currently pass:
+- 0 published events without provenance;
+- 0 published sanctioned events without sanction-basis provenance;
+- direct `anon`/`authenticated` SELECT is denied on the private Local Roots event-domain tables;
+- the public browser uses only the restricted `lr_public_events()` RPC.
 
 The deployable React/TypeScript/Vite application lives in `app/`. GitHub CI runs the domain test suite and production web build. Live browser requests to `lr_public_events` and authenticated requests to the protected admin function have returned HTTP 200 from staging.
 
@@ -48,5 +59,6 @@ Read first:
 - `docs/ACCEPTANCE_TESTS.md`
 - `docs/CODEX_BUILD_PLAN.md`
 - `docs/STAGING_DEPLOYMENT.md`
+- `docs/SOURCE_REGISTRY_SEED.md`
 
-Do not implement another live external source adapter until its permission/access path is documented. PDGA is optional to the core product and remains disabled pending licensing/data-use clarification.
+Do not implement another automated external source adapter until its permission/access path is documented. PDGA is optional to the core product and remains disabled pending licensing/data-use clarification.
