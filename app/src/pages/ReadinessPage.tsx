@@ -30,9 +30,11 @@ type LaunchReadiness = {
   scheduled_sources: ScheduledSourceReadiness[];
   public_event_count: number;
   required_soak_days: number;
+  future_event_freshness_days: number;
   scheduled_source_count: number;
   sanctioned_without_basis: number;
   published_without_provenance: number;
+  stale_future_events: number;
   blocking_high_or_critical_reviews: number;
   county_coverage: CountyCoverage[];
 };
@@ -91,6 +93,7 @@ export function ReadinessPage() {
         <article className="source-card"><div><h3>Published events</h3><span>Production corpus</span></div><strong>{data.public_event_count}</strong></article>
         <article className="source-card"><div><h3>Provenance</h3><span>Published without source basis</span></div><Health ok={data.published_without_provenance === 0}>{data.published_without_provenance === 0 ? 'Pass' : `${data.published_without_provenance} blocking`}</Health></article>
         <article className="source-card"><div><h3>Sanction basis</h3><span>Sanctioned without evidence</span></div><Health ok={data.sanctioned_without_basis === 0}>{data.sanctioned_without_basis === 0 ? 'Pass' : `${data.sanctioned_without_basis} blocking`}</Health></article>
+        <article className="source-card"><div><h3>Future-event freshness</h3><span>Not verified within {data.future_event_freshness_days} days</span></div><Health ok={data.stale_future_events === 0}>{data.stale_future_events === 0 ? 'Pass' : `${data.stale_future_events} stale`}</Health></article>
         <article className="source-card"><div><h3>High-priority reviews</h3><span>High or critical open exceptions</span></div><Health ok={data.blocking_high_or_critical_reviews === 0}>{data.blocking_high_or_critical_reviews === 0 ? 'Pass' : `${data.blocking_high_or_critical_reviews} blocking`}</Health></article>
       </section>
       <section className="table-card"><table><thead><tr><th>Scheduled source</th><th>Healthy streak</th><th>Required</th><th>First expected</th><th>Last production run</th><th>Status</th></tr></thead><tbody>{data.scheduled_sources.map(src => <tr key={src.source_id}><td>{src.source_key}</td><td>{src.consecutive_healthy_days}</td><td>{src.required_days}</td><td>{src.first_expected_date ?? '—'}</td><td>{src.last_production_run_at ? new Date(src.last_production_run_at).toLocaleString() : 'Not yet'}</td><td><Health ok={src.soak_complete}>{src.soak_complete ? 'Soak complete' : src.first_gap_or_unhealthy_date ? `Broken ${src.first_gap_or_unhealthy_date}` : 'In progress'}</Health></td></tr>)}</tbody></table></section>
