@@ -30,16 +30,17 @@ function pacificToday() {
 
 function EventCard({event}:{event:PublicEvent}) {
   const stale = Boolean(event.last_verified_at && Date.now()-new Date(event.last_verified_at).getTime()>14*86400000);
+  const canShowRegistration = Boolean(event.registration_url && !['canceled','completed'].includes(event.status));
   return <article className={`event-card ${event.status==='canceled'?'is-canceled':''}`}>
     <div className="event-date-block"><strong>{dateRange(event.start_date,event.end_date)}</strong><span>{event.county?`${event.county} County`:'Southern California'}</span></div>
     <div className="event-main">
       <div className="event-heading-row"><div><h3>{event.name}</h3><p className="event-location">{[event.city,event.course_name||event.venue_name].filter(Boolean).join(' · ')||'Location TBA'}</p></div><span className={`status-pill status-${event.status}`}>{title(event.status)}</span></div>
       <div className="event-tags"><span>{title(event.event_type)}</span><span>{event.sanctioned===true?(event.tier?`Sanctioned · ${event.tier}`:'Sanctioned'):event.sanctioned===false?'Unsanctioned':'Sanction unknown'}</span>{event.rounds_text?<span>{event.rounds_text}</span>:null}{event.format?<span>{event.format}</span>:null}</div>
       {event.club_host||event.td_names?.length?<p className="event-organizer">Hosted by {[event.club_host,...(event.td_names??[])].filter(Boolean).join(' · ')}</p>:null}
-      {stale?<p className="stale-note">Verification is older than 14 days; check the source before traveling.</p>:null}
-      {event.top_results?.length?<div className="results-block"><div className="results-title">Results · {event.top_results[0]?.division_code}</div><ol>{event.top_results.map((r)=><li key={`${r.division_code}-${r.place}-${r.player_name}`}><span>{r.place}. {r.player_name}</span><strong>{r.to_par==null?(r.total_score??'—'):`${r.to_par>0?'+':''}${r.to_par}`}</strong></li>)}</ol></div>:null}
+      {stale?<p className="stale-note">Verification is older than 14 days; confirm details before traveling.</p>:null}
+      {event.top_results?.length?<div className="results-block"><div className="results-title">Results · {title(event.top_results[0]?.division_code??'')}</div><ol>{event.top_results.map((r)=><li key={`${r.division_code}-${r.place}-${r.player_name}`}><span>{r.place}. {r.player_name}</span><strong>{r.to_par==null?(r.total_score??'—'):`${r.to_par>0?'+':''}${r.to_par}`}</strong></li>)}</ol></div>:null}
     </div>
-    <div className="event-actions">{event.registration_url&&event.status!=='canceled'?<a className="button primary" href={event.registration_url} target="_blank" rel="noreferrer">Registration</a>:null}{event.results_url?<a className="button ghost" href={event.results_url} target="_blank" rel="noreferrer">Results</a>:null}</div>
+    <div className="event-actions">{canShowRegistration?<a className="button primary" href={event.registration_url!} target="_blank" rel="noreferrer">Registration</a>:null}{event.results_url?<a className="button ghost" href={event.results_url} target="_blank" rel="noreferrer">Results</a>:null}</div>
   </article>;
 }
 
