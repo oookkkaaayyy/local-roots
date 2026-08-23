@@ -17,7 +17,7 @@ Title:
 
 ## Current infrastructure
 - HBNF has its own Supabase backend; leave separate.
-- The existing Dyed & Unattached Supabase project is now also the Local Roots umbrella backend. Existing D&U application tables remain untouched; Local Roots event-domain objects are isolated with the `lr_` prefix.
+- The existing Dyed & Unattached Supabase project is also the Local Roots umbrella backend. Local Roots event-domain objects are isolated with the `lr_` prefix.
 - Private GitHub repository `oookkkaaayyy/local-roots` on `main` is the current software/source-control authority for this build.
 
 ## Confirmed old-Sheet failures
@@ -43,13 +43,8 @@ Title:
 - daily refresh;
 - Local Roots styling later.
 
-## Important compliance finding
-Do not recreate automated website scraping:
-- PDGA terms prohibit automated scraping; authorized API route requires applicable permission/license.
-- UDisc terms prohibit scraping.
-- Disc Golf Scene automated/commercial reuse should not be assumed permitted.
-
-Use permissioned APIs/feeds, organizer submissions, permitted club sources, and manual/admin review. PDGA is an optional future enrichment/discovery adapter rather than a dependency of the core product.
+## Source/compliance rule
+Do not recreate prohibited scraping. Use permissioned APIs/feeds, organizer submissions, permitted club sources, and manual/admin review. PDGA is an optional future enrichment/discovery adapter rather than a dependency of the core product.
 
 ## Geographic scope — DECIDED 2026-08-23
 Production counties:
@@ -69,47 +64,38 @@ Excluded by default:
 Scope remains configuration-driven so explicit exceptions or future expansion do not require adapter rewrites.
 
 ## Milestone 1 — COMPLETE 2026-08-23
-Live Local Roots/D&U Supabase now contains:
-- `lr_sources`
-- `lr_source_runs`
-- `lr_source_candidates`
-- `lr_events`
-- `lr_event_sources`
-- `lr_results`
-- `lr_manual_overrides`
-- `lr_review_queue`
-- `lr_scope_profiles`
+Implemented the isolated Local Roots event-domain database, provenance, review queue, manual overrides, six-county scope, publication safeguards, restricted public access, and regression protections. Transactional acceptance tests passed and production event tables remained clean after rollback fixtures.
 
-Implemented safeguards include:
-- named-object candidate validation to prevent positional spreadsheet-schema drift;
-- date, URL, event-name, and course-field validation;
-- publication requires current verification, in-scope geography, and provenance;
-- sanctioned published events require an explicit sanction-basis provenance source;
-- deterministic manual-override precedence and release behavior;
-- restricted public `lr_public_events()` RPC with RLS and column-level grants;
-- internal confidence/notes/source payloads/review/admin data unavailable to anonymous readers;
-- foreign-key indexes identified by Supabase performance review;
-- six-county scope seeded as the one active scope profile.
+GitHub Issue #1 is closed as completed.
+
+## Milestone 2 — COMPLETE 2026-08-23
+Implemented and verified the source-neutral ingestion decision layer:
+- named-field adapter boundary; positional rows are rejected;
+- deterministic normalization and structural validation;
+- configuration-driven geography evaluation and explicit exceptions;
+- stable external IDs and canonical registration URLs outrank fuzzy similarity;
+- same-name events on different dates remain distinct;
+- ambiguous/similar conflicting matches route to review;
+- source-authority-aware material-change handling;
+- event change audit history;
+- scheduler, fetch, parse, validation, and data-health states are independent;
+- HTTP success/zero-record and severe-collapse anomalies cannot silently clear canonical data;
+- repeated disappearance routes to review;
+- last-known-good canonical data is preserved through unhealthy source runs;
+- exact old-Sheet corruption (`Event Name = 2`, month-like Event ID, `Course = Yes - C-Tier`) is rejected.
 
 Verification:
-- full transactional Milestone 1 regression suite passed after final security hardening;
-- test fixtures rolled back cleanly;
-- production Local Roots event/source/result/review/override tables remain empty pending real ingestion;
-- Supabase security advisor has no Local Roots WARN findings;
-- performance advisor has no remaining Local Roots unindexed-foreign-key findings; unused-index INFO notices are expected while tables are empty.
+- TypeScript fixture suite: 29/29 passing;
+- live Supabase rollback regression: passed;
+- database rollback acceptance suite: passed after catching and repairing pg_trgm schema qualification, county canonicalization, and UUID-ranking defects;
+- no live external source adapter, PDGA integration, UDisc/DGS scraping, or frontend work was added;
+- Supabase advisor cleanup fixed the safe pre-existing D&U RLS/index warnings plus Milestone 2 change-log FK indexing;
+- remaining advisor notices are INFO-level: intentionally private RLS tables with no allow policy and indexes not yet used because the relevant tables have little/no production traffic.
 
-GitHub Issue #1 (`Milestone 1 — Database and domain model`) is closed as completed. Migrations, tests, and typed domain models are committed to `main`.
+GitHub Issue #2 (`Milestone 2 — Normalization, matching, validation engine`) is complete and should remain the stopping point until the next milestone is explicitly initiated.
 
 ## PDGA status
 No PDGA agreement or communication is required for the core build. Do not implement a PDGA production adapter until licensing/data-use questions are resolved. Specifically clarify commercial-context use, persistent storage/caching, and results access before enabling PDGA ingestion.
 
-## Next implementation step — Milestone 2
-Build the source-neutral normalization/matching/validation engine using fixtures only:
-- adapter interface without live third-party fetching;
-- normalized candidate validation;
-- deterministic identity/deduplication logic;
-- source-run health/anomaly states;
-- review-queue generation for ambiguity;
-- regression fixtures reproducing old Sheet corruption and duplicate/event-change cases.
-
-Do not build live PDGA/UDisc/DGS scraping or the public event UI in Milestone 2.
+## Next implementation step — Milestone 3
+The next bounded step is the first **permitted** production source adapter. Do not start it automatically. Choose a source whose access/reuse basis is documented, then connect it through the Milestone 2 adapter/health/review pipeline without weakening the validation gates.
