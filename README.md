@@ -12,18 +12,19 @@ Completed and verified:
 - Milestone 2 normalization, validation, matching/deduplication, review, and source-health engine
 - Milestone 4 organizer submissions and authenticated admin operations
 - Milestone 5 public `/events` web application and `/admin/events` operations UI
+- Cloudflare Pages staging deployment: `https://local-roots.pages.dev/`
 
 The Local Roots event backend is live in the existing Local Roots/D&U Supabase project under isolated `lr_` objects. Two Edge Functions are active: public event submissions and JWT-protected event administration.
 
-The deployable React/TypeScript/Vite application lives in `app/`. GitHub CI runs both the domain test suite and production web build; the final deployable-state verification passed.
+The deployable React/TypeScript/Vite application lives in `app/`. GitHub CI runs both the domain test suite and production web build; the final deployable-state verification passed. After staging deployment, live browser requests to the public `lr_public_events` RPC returned HTTP 200, verifying frontend-to-backend public-read connectivity.
 
 Production event/submission/review/result tables remain intentionally empty until real source data is approved or entered. The six-county scope profile and Local Roots submission source are the only seeded event-system records.
 
-### Next external step
+### Current next step
 
-Create the staging Cloudflare Pages deployment from this repository using `docs/STAGING_DEPLOYMENT.md`. No Cloudflare environment variables are currently required.
+Staging is live. Bootstrap the first authorized admin via Supabase magic-link authentication, then perform end-to-end staging QA, permitted real-data population/backfill, source integration, and launch-soak validation.
 
-After staging exists, bootstrap the first authorized admin via Supabase magic-link authentication, then perform end-to-end staging QA and real-data population.
+The staging URL is a QA surface, not evidence of final visual/functional acceptance.
 
 Production scope:
 - Ventura County
