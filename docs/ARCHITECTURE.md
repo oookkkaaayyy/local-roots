@@ -1,47 +1,59 @@
-# Local Roots — Recommended Technical Architecture
+# Local Roots — Technical Architecture
 
 Updated: 2026-08-23
 
-## Decision
-
-Use the simplest durable stack that matches infrastructure already in use:
-
-### Public/admin web application
+## Public/admin web application
 - React
 - TypeScript
 - Vite
 - Cloudflare Pages
-- one repository: `local-roots`
+- private repository: `oookkkaaayyy/local-roots`
+- staging: `https://local-roots.pages.dev/`
 
-Rationale:
-- Cloudflare documents React + Pages as a first-class deployment path;
-- Git-backed automatic deploys and pull-request previews are built in;
-- the MVP `/events` page does not require a dedicated application server;
-- keeping the frontend as a small client application reduces Codex surface area;
-- future server-side needs can be added with Pages Functions or migrated to Workers without replacing the database.
+The MVP `/events` page is a client application; no dedicated application server is required.
 
-### Data/backend
-Use the existing Supabase project currently named `Dyed & Unattached` as the Local Roots umbrella backend.
+## Data/backend
+The existing Supabase project currently named `Dyed & Unattached` is also the Local Roots umbrella backend. Local Roots event-domain objects are isolated with the `lr_` prefix.
 
-Do not touch the separate HB Night Flyers Supabase project.
+The HB Night Flyers Supabase project remains a separate operational backend. Do not merge or mutate HBNF operational state from Local Roots. The permitted HBNF adapter reads the existing first-party/public HBNF application state and writes only normalized Local Roots event/provenance/results records into the Local Roots backend.
 
-The existing D&U application tables are currently empty, so adding Local Roots event-domain tables does not require a third active Supabase project.
+## Source acquisition / scheduled processing
+- Supabase Edge Functions for approved/first-party source acquisition and normalization
+- Supabase Cron/`pg_cron` for scheduled jobs
+- `pg_net` for scheduler-to-Edge invocation
+- Supabase Vault for scheduler/source credentials
+- Postgres for canonical data, provenance, review queue, source-run health, results and manual overrides
 
-### Source acquisition / scheduled processing
-- Supabase Edge Functions for approved API/feed acquisition and normalization
-- Supabase Cron for daily scheduled source jobs
-- Postgres for canonical data, provenance, review queue, source-run health, and manual overrides
+Current automated source:
+- `hbnf_internal_schedule` — first-party/user-controlled HBNF data
+- worker: `lr-sync-hbnf`
+- start: 05:00 `America/Los_Angeles`
+- retry: 06:00/07:00 only if the day's earlier attempt is unhealthy
+- stable external IDs make repeated runs idempotent
 
-### Public access pattern
-Browser -> restricted Supabase public read view -> canonical published events
+No credential values belong in Git, AKS or client code.
+
+## Public access pattern
+Browser -> restricted Supabase public RPC -> canonical published events
 
 Never:
-Browser -> raw source payloads
-Browser -> service-role key
-Browser -> review/admin tables
+- browser -> raw source payloads
+- browser -> service-role key
+- browser -> review/admin tables
 
-### Admin access pattern
-Authenticated administrator -> Supabase Auth -> RLS-protected admin operations
+The public page reads only validated canonical records with publication provenance. Source acquisition occurs off the public request path, so an adapter failure cannot erase the current list.
+
+## Admin access pattern
+Browser -> Supabase magic-link Auth -> JWT-protected `lr-admin` Edge Function -> service-role admin operations
+
+Admin identities are also checked against `lr_admin_users`; being an authenticated Supabase user alone does not grant Local Roots admin access.
+
+The shared D&U/Local Roots Supabase Site URL should not be changed just for Local Roots. Staging auth uses an additional allowed redirect URL for `https://local-roots.pages.dev/admin/events`.
+
+## Submission pattern
+Public browser -> `lr-submit-event` Edge Function -> structural/scope validation -> candidate/review queue -> explicit admin approve/merge/reject -> provenance -> publication
+
+Public submissions never auto-publish merely because the HTTP request succeeds.
 
 ## Repository layout
 
@@ -49,97 +61,46 @@ Authenticated administrator -> Supabase Auth -> RLS-protected admin operations
 /
   README.md
   AGENTS.md
-  package.json
-  .env.example
-  .gitignore
   docs/
-  src/
-    app/
-    components/
-    features/
-      events/
-      admin/
-    lib/
-      supabase/
-  public/
+  app/
+    src/
   supabase/
     migrations/
     functions/
-      ingest-source/
-      process-candidates/
+      lr-submit-event/
+      lr-admin/
+      lr-sync-hbnf/
   tests/
-    fixtures/
-    unit/
-    integration/
 ```
 
-Exact generated structure may differ slightly from the current Cloudflare C3 React starter. Prefer the current official scaffold over hand-building obsolete config.
-
-## Environment variables
-
-Public/client-safe:
-- Supabase project URL
-- Supabase publishable key
-
-Server-only:
-- service role / secret key when truly required
-- third-party source/API credentials
-- scheduled-function secrets
-
-No credentials in Git.
-
 ## Deployment model
-
-### Branches
-- `main`: production
-- short-lived feature branches / Codex branches
-- no long-running giant development branch
-
-### Cloudflare
-- production deploy from `main`
-- PR preview deployments for visual QA before merge
-
-### Database
-- migrations committed in Git are source of truth
-- do not make production DDL changes that are absent from migrations
-- after schema changes, run security/performance advisors
+- `main` is the deployable source branch.
+- Cloudflare Pages deploys the `app/` Vite build from Git.
+- database DDL belongs in committed Supabase migrations;
+- Edge Function source belongs under `supabase/functions/`;
+- run database advisors after DDL changes.
 
 ## Reliability model
+Scheduler status, fetch status, parse status, validation status and source health are independent signals.
 
-The public page reads only last-known-good canonical records.
+If fetch/parse fails, validation is `skipped`; the run is unhealthy. Canonical data is not deleted because a source fails or omits records. Source disappearance becomes a review item.
 
-Source acquisition occurs off the public request path.
+The first HBNF live adapter demonstrated fail-closed behavior: a provenance timestamp constraint rejected the v1 run before publication. The v2 repair passed a 31-record live run and a second idempotency run with zero duplicate creations.
 
-A failed PDGA/club/API job cannot make `/events` unavailable and cannot erase the current event list.
+## Source boundaries
+- HBNF: active first-party adapter; separate operational backend preserved.
+- Organizer submissions: active.
+- PDGA: disabled pending written licensing/data-use clarification.
+- Disc Golf Scene/UDisc: no unapproved automated scraping.
+- Other club/community sources: require a documented permission/access basis before automation.
 
 ## Cost-control model
-
-Avoid:
+Avoid at MVP:
 - a third Supabase project
-- a separate CMS
-- a separate search service
-- a separate scheduler
-- a separate monitoring vendor at MVP
-- a server-rendered framework unless a real requirement appears
+- separate CMS/search/scheduler/monitoring vendors
+- server-rendered framework without a real requirement
 
-Use:
-- existing Supabase
-- Cloudflare Pages
-- Postgres queries/indexes
-- built-in source-run health table
-- GitHub/Codex only for bounded implementation passes
+Use existing Supabase, Cloudflare Pages, Postgres health/audit tables and bounded GitHub/Codex work.
 
 ## Future expansion
-
-This architecture can later support:
-- Local Roots home/hub
-- D&U storefront links/content
-- HBNF links and selective cross-site data
-- club profiles
-- course profiles
-- organizer accounts/submissions
-- maps
-- newsletters
-- documentary/content pages
-
-Do not prematurely combine the HBNF operational backend into Local Roots.
+The architecture can later support Local Roots hub pages, D&U links/storefront, selective HBNF cross-site data, club/course profiles, organizer accounts, maps, newsletters and documentary/content pages without combining the HBNF operational backend into Local Roots.
