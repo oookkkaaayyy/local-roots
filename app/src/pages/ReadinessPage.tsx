@@ -16,6 +16,14 @@ type ScheduledSourceReadiness = {
   first_gap_or_unhealthy_date: string | null;
 };
 
+type CountyCoverage = {
+  county: string;
+  published_total: number;
+  current_future: number;
+  next_event: string | null;
+  latest_future: string | null;
+};
+
 type LaunchReadiness = {
   ready: boolean;
   checked_at: string;
@@ -26,10 +34,16 @@ type LaunchReadiness = {
   sanctioned_without_basis: number;
   published_without_provenance: number;
   blocking_high_or_critical_reviews: number;
+  county_coverage: CountyCoverage[];
 };
 
 function Health({ ok, children }: { ok: boolean; children: string }) {
   return <span className={`health ${ok ? 'health-healthy' : 'health-warning'}`}>{children}</span>;
+}
+
+function dateLabel(value: string | null) {
+  if (!value) return '—';
+  return new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}).format(new Date(`${value}T12:00:00Z`));
 }
 
 export function ReadinessPage() {
@@ -80,6 +94,7 @@ export function ReadinessPage() {
         <article className="source-card"><div><h3>High-priority reviews</h3><span>High or critical open exceptions</span></div><Health ok={data.blocking_high_or_critical_reviews === 0}>{data.blocking_high_or_critical_reviews === 0 ? 'Pass' : `${data.blocking_high_or_critical_reviews} blocking`}</Health></article>
       </section>
       <section className="table-card"><table><thead><tr><th>Scheduled source</th><th>Healthy streak</th><th>Required</th><th>First expected</th><th>Last production run</th><th>Status</th></tr></thead><tbody>{data.scheduled_sources.map(src => <tr key={src.source_id}><td>{src.source_key}</td><td>{src.consecutive_healthy_days}</td><td>{src.required_days}</td><td>{src.first_expected_date ?? '—'}</td><td>{src.last_production_run_at ? new Date(src.last_production_run_at).toLocaleString() : 'Not yet'}</td><td><Health ok={src.soak_complete}>{src.soak_complete ? 'Soak complete' : src.first_gap_or_unhealthy_date ? `Broken ${src.first_gap_or_unhealthy_date}` : 'In progress'}</Health></td></tr>)}</tbody></table></section>
+      <section className="table-card"><table><thead><tr><th>County</th><th>Published total</th><th>Current / future</th><th>Next event</th><th>Latest future event</th><th>Coverage</th></tr></thead><tbody>{data.county_coverage.map(row => <tr key={row.county}><td>{row.county}</td><td>{row.published_total}</td><td>{row.current_future}</td><td>{dateLabel(row.next_event)}</td><td>{dateLabel(row.latest_future)}</td><td><Health ok={row.current_future > 0}>{row.current_future > 0 ? 'Covered' : 'Gap'}</Health></td></tr>)}</tbody></table></section>
       <div className="button-row"><button className="button ghost" onClick={() => void load(session)}>Refresh</button><a className="button ghost" href="/admin/events">Back to event operations</a></div>
     </> : null}
   </main></Shell>;
