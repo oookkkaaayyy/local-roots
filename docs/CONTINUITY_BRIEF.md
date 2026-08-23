@@ -18,7 +18,7 @@ Title: `!CURRENT All SoCal`
 - The existing Dyed & Unattached Supabase project is also the Local Roots umbrella backend. Local Roots event-domain objects are isolated with the `lr_` prefix.
 - Private GitHub repository `oookkkaaayyy/local-roots` on `main` is the current software/source-control authority for this build.
 - Local Roots browser app: React + TypeScript + Vite under `app/`.
-- Target hosting: Cloudflare Pages with Git-backed deployments.
+- Cloudflare Pages staging: `https://local-roots.pages.dev/`.
 
 ## Confirmed old-Sheet failures
 - public month tabs empty;
@@ -121,16 +121,22 @@ Implemented the deployable Local Roots website application:
 - source-health and exception views;
 - manual override/release controls.
 
-The browser uses a Supabase `sb_publishable_...` key only. Supabase explicitly classifies publishable keys as safe for browser/public-source use. Secret/service-role credentials remain exclusively in Supabase Edge Function environments.
+The browser uses a Supabase publishable key only. Secret/service-role credentials remain exclusively in Supabase Edge Function environments.
 
 GitHub CI:
 - root domain tests pass;
 - web dependencies install cleanly;
 - TypeScript/Vite production build passes;
-- final deployable-state verification PR passed and was closed without merging its trigger file.
+- final deployable-state verification passed.
+
+## Cloudflare staging — DEPLOYED 2026-08-23
+Staging URL: `https://local-roots.pages.dev/`.
+
+The user supplied the live URL after completing the Git-backed Pages setup. Subsequent Supabase API logs recorded live browser requests to `lr_public_events` returning HTTP 200, verifying that the deployed public frontend can reach the public backend read path.
+
+Deployment/connectivity is established. This does not by itself establish final visual/functional acceptance.
 
 ## Current data state
-After all rollback fixtures:
 - canonical events: 0
 - public submissions: 0
 - open review items: 0
@@ -151,20 +157,18 @@ The earlier D&U performance/RLS warnings were cleaned up where actionable. Curre
 No PDGA agreement or communication is required for the core build. Do not implement a PDGA production adapter until licensing/data-use questions are resolved, especially commercial-context use, persistent storage/caching, and results access.
 
 ## CURRENT BLOCK / REQUIRED USER STEP
-The next useful work requires a live staging origin. There is no connected Cloudflare management tool/plugin available in this environment.
+The staging deployment blocker is closed. The next step requires creating the first Supabase Auth user through the normal magic-link flow so that the user can be added to `lr_admin_users` without manually manufacturing an Auth identity.
 
-Create the first Cloudflare Pages staging deployment using `docs/STAGING_DEPLOYMENT.md`:
-- repository `oookkkaaayyy/local-roots`
-- branch `main`
-- root directory `app`
-- build command `npm run build`
-- output directory `dist`
-- no environment variables required
+User action:
+1. Open `https://local-roots.pages.dev/admin/events`.
+2. Enter an email the user controls and request the magic link.
+3. Open the received magic link and complete sign-in.
+4. Report only that sign-in is complete; do not send the email, link, code, password, or any authentication material in chat.
 
-Once the generated `*.pages.dev` URL exists, provide that URL. Then continue autonomously with:
-1. Supabase Auth redirect configuration guidance;
-2. first admin magic-link bootstrap;
-3. end-to-end staging QA;
-4. permitted real-data population;
-5. Milestone 6 regression/backfill work;
-6. launch-soak preparation.
+After that, continue autonomously with:
+1. identify the newly created Auth user and add it to `lr_admin_users` as the initial active admin;
+2. verify the protected admin dashboard path;
+3. run end-to-end staging QA;
+4. test the public submission path;
+5. populate/backfill permitted real event data;
+6. proceed into source integration and launch-soak/acceptance gates.
