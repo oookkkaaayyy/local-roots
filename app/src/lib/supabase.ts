@@ -1,24 +1,25 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
+// Supabase publishable keys are intentionally safe for browser/source-code use.
+// Environment variables can override these defaults for forks or future migration.
+const defaultUrl = 'https://wtymjxscneufjlkkywyg.supabase.co';
+const defaultPublishableKey = 'sb_publishable_rimiZU1rSfq1nCEOUBw3ew_1j_GuZUx';
+const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string | undefined) ?? defaultUrl;
+const publishableKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) ?? defaultPublishableKey;
 
 export const configReady = Boolean(supabaseUrl && publishableKey);
-export const functionsBase = supabaseUrl ? `${supabaseUrl}/functions/v1` : '';
-export const publicKey = publishableKey ?? '';
+export const functionsBase = `${supabaseUrl}/functions/v1`;
+export const publicKey = publishableKey;
 
-export const supabase: SupabaseClient | null = configReady
-  ? createClient(supabaseUrl!, publishableKey!, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
-    })
-  : null;
+export const supabase: SupabaseClient = createClient(supabaseUrl, publishableKey, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+});
 
 export async function callFunction<T>(
   slug: string,
   body: Record<string, unknown>,
   accessToken?: string,
 ): Promise<T> {
-  if (!functionsBase) throw new Error('Supabase configuration is missing.');
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     apikey: publicKey,
