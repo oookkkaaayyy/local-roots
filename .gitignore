@@ -1,0 +1,34 @@
+# dependencies
+node_modules/
+
+# builds
+build/
+dist/
+.wrangler/
+
+# environment / secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Supabase local/runtime state
+.supabase/
+supabase/.temp/
+
+# tests / coverage
+coverage/
+playwright-report/
+test-results/
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
