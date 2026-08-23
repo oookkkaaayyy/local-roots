@@ -125,6 +125,34 @@ Deno.serve(async (req) => {
     return json({ ok: true, released: data });
   }
 
+  if (action === "resolve_review") {
+    const reviewId = String(body.review_id ?? "");
+    const outcome = String(body.outcome ?? "");
+    const resolution = String(body.resolution ?? "").trim().slice(0, 2000);
+    if (!reviewId || !["resolved","rejected"].includes(outcome) || !resolution) {
+      return json({ error: "invalid_review_resolution" }, 400);
+    }
+    const { data: review, error: readError } = await service
+      .from("lr_review_queue")
+      .select("id,issue_type,status")
+      .eq("id", reviewId)
+      .maybeSingle();
+    if (readError || !review) return json({ error: "review_not_found" }, 404);
+    if (review.issue_type === "organizer_submission") {
+      return json({ error: "use_submission_decision" }, 400);
+    }
+    if (!["open","in_review"].includes(review.status)) {
+      return json({ error: "review_already_closed" }, 400);
+    }
+    const { error } = await service
+      .from("lr_review_queue")
+      .update({ status: outcome, resolved_at: new Date().toISOString(), resolution })
+      .eq("id", reviewId)
+      .in("status", ["open","in_review"]);
+    if (error) return json({ error: "review_resolution_failed", detail: error.message }, 400);
+    return json({ ok: true });
+  }
+
   if (action === "event_detail") {
     const eventId = String(body.event_id ?? "");
     if (!eventId) return json({ error: "event_id_required" }, 400);
