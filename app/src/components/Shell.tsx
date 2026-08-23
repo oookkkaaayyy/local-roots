@@ -12,6 +12,7 @@ export function Shell({ children, admin = false }: { children: ReactNode; admin?
           <a href="/events">Events</a>
           <a href="/events#submit">Submit an event</a>
           {admin ? <a href="/admin/events">Admin</a> : null}
+          {admin ? <a href="/admin/readiness">Launch status</a> : null}
         </nav>
       </header>
       {children}
