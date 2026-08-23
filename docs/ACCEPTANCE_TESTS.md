@@ -89,3 +89,21 @@ These tests should exist before production ingestion is enabled.
 53. No silent public-data wipe.
 54. Review queue remains bounded and understandable.
 55. Manual sample of current events agrees with source truth.
+
+## Structured-feed discovery and launch-readiness regressions
+
+56. A newly enabled discovery-only RSS source establishes its current latest item as a baseline and creates no historical review flood.
+57. Re-reading the same RSS feed creates no duplicate discovery items or review alerts.
+58. An unauthorized RSS sync request is rejected and creates no source-run/event mutation.
+59. A genuinely newer relevant RSS item creates one review alert and does not publish or modify an event.
+60. If the prior RSS cursor disappears from the current feed, create one bounded cursor-gap review and do not infer event changes.
+61. Discovery-only RSS sources have no authoritative event fields and cannot count as sanction basis merely by existing.
+62. Launch readiness is false before every required scheduled source completes its configured healthy-run soak.
+63. Fourteen consecutive healthy final daily production runs satisfy the HBNF soak gate.
+64. A later unhealthy/missing final required run breaks the healthy streak and returns launch readiness to false.
+65. Launch readiness is false if any published event lacks provenance, any sanctioned published event lacks sanction basis, or a high/critical review blocker exists.
+66. Manual/test source runs do not count toward the production launch-soak streak.
+67. Public current/past filtering uses the `America/Los_Angeles` calendar date rather than UTC, so a Southern California event is not hidden early in the local evening.
+68. Date-only event labels render consistently regardless of viewer/browser timezone.
+69. Completed or canceled events do not show an active Registration action.
+70. Protected launch-readiness data requires an authenticated active Local Roots admin and is not directly public-readable.
