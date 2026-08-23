@@ -6,37 +6,52 @@ No source adapter is allowed to bypass licensing/terms/permission requirements m
 
 Each source must have an explicit `access_method` and `permission_basis` in the source registry.
 
-## PDGA
+## HB Night Flyers — ACTIVE FIRST-PARTY SOURCE
 
-### Allowed production path
-Preferred:
-- authorized PDGA REST API integration under an applicable license/permission.
+HBNF is the first permitted automated production adapter because the system is user-controlled/first-party.
 
-Requirements before production:
-- confirm the operator is eligible for API access;
-- sign/accept applicable PDGA API terms;
-- obtain required review/permission;
-- confirm whether the Local Roots use case is permitted if the broader site is commercial;
-- implement required PDGA attribution and canonical links.
+Production rules:
+- HBNF remains on its separate Supabase backend;
+- Local Roots reads the HBNF application state through the existing public application API using a key held only in Supabase Vault/runtime configuration;
+- store only normalized Local Roots event/provenance/results fields, not the full raw HBNF league state;
+- use stable external IDs (`hbnf:<mode>:<date>`) for idempotent matching;
+- HBNF organizer-confirmed dates/format/course/club fields may act as authoritative fields for HBNF events;
+- source disappearance routes to review instead of deleting canonical events;
+- finalized Glow results may be imported from the first-party score state, using dense ranking and all entries tied at the third-place cutoff;
+- the daily run starts at 05:00 America/Los_Angeles and may retry at 06:00/07:00 only after an unhealthy attempt.
 
-### Forbidden
-- production HTML scraping/crawling of PDGA pages.
+Do not store Vault secret values, Auth tokens or HBNF credential values in Git, AKS or user-facing documentation.
 
-### Authority
-When authorized, PDGA is authoritative for:
-- sanctioning;
-- tier;
-- official event identity;
-- official divisions/results;
-- PDGA player numbers.
+## PDGA — DISABLED PENDING CLARIFICATION
+
+Do not implement or enable a PDGA production adapter yet.
+
+The stock/public API agreement appears incompatible with the planned persistent Local Roots canonical database in important respects, including restrictions on caching/storage and using PDGA Data to create/update another business-listing database. The Developer Program also describes no-cost access in non-commercial terms, while Local Roots may operate within a commercial umbrella.
+
+Before production PDGA use, obtain written clarification or an alternate/applicable agreement covering at least:
+- Local Roots event-discovery use;
+- commercial-context use;
+- which PDGA event fields, if any, may be persisted/cached and for how long;
+- results/standings access and persistence;
+- attribution and canonical-link requirements;
+- rate limits/polling expectations;
+- appropriate Authorized Developer vs Technology Partner treatment.
+
+Do not rush to accept the stock agreement merely to unblock development. The source-neutral product can operate without PDGA.
+
+Forbidden:
+- production HTML scraping/crawling of PDGA pages;
+- assuming PDGA membership alone authorizes Local Roots storage/commercial use.
+
+If/when authorized, PDGA can be authoritative only for the fields expressly allowed by the applicable permission/terms.
 
 ## Disc Golf Scene
 
 Use for:
-- registration URLs;
-- event registration status;
-- organizer information;
-- unsanctioned event discovery when permitted.
+- registration URLs supplied by organizers or other permitted sources;
+- event registration status when an approved access path exists;
+- organizer information when directly supplied/permitted;
+- unsanctioned discovery only when permitted.
 
 Production rule:
 - do not build an unapproved automated scraper;
@@ -48,10 +63,10 @@ Production rule:
 Use for:
 - course/event links supplied by organizers;
 - permitted exports/integrations;
-- manual verification.
+- manual verification where allowed.
 
 Forbidden:
-- automated scraping of UDisc pages.
+- automated scraping/data extraction without permission.
 
 ## SoCal Disc Golf Club and other club/community websites
 
@@ -66,20 +81,20 @@ Before automation, record:
 Prefer:
 - RSS/structured feeds;
 - direct organizer data;
-- public calendar feeds;
+- public calendar feeds with reuse permission;
 - explicit permission.
 
 Only factual metadata needed for the calendar should be stored. Do not copy article prose/descriptions.
 
 ## Organizer submissions
 
-A submission form is a first-class ingestion source, not a fallback.
+The public submission form is a first-class ingestion source.
 
-Suggested required fields:
+Typical fields:
 - event name
 - dates
 - course/venue
-- city
+- city/county
 - event type
 - sanction/tier if applicable
 - registration URL
@@ -87,15 +102,14 @@ Suggested required fields:
 - contact email (private/admin only)
 - source/verification URL
 
-Submission states:
+Submission flow:
 - received
-- auto-validated
-- needs review
-- approved
-- rejected
-- superseded
+- auto-validated/scope checked
+- review required
+- approved/merged/rejected
+- superseded where appropriate
 
-Known/verified organizers can receive higher default confidence.
+Known/verified organizers can later receive higher default confidence, but must not bypass core validation/publication safeguards.
 
 ## Manual administrative entry
 
@@ -105,13 +119,11 @@ Allowed and necessary for:
 - corrections;
 - source outages.
 
-Manual entries require:
-- provenance URL or note;
-- verification timestamp.
+Manual entries require provenance/verification evidence and a verification timestamp before publication.
 
 ## Source health
 
-Every adapter must define an expected baseline:
+Every automated adapter must define an expected baseline:
 - typical record count;
 - minimum plausible count;
 - maximum plausible count;
@@ -124,18 +136,18 @@ Examples of automatic warnings:
 - >20% candidates fail schema validation;
 - all event dates parse into the past unexpectedly;
 - geography distribution changes sharply;
-- known sentinel event disappears before its date.
+- known event disappears before its date.
 
-Never delete canonical events solely because a source omitted them once.
+Scheduler, fetch, parse, validation and health are separate signals. If fetch/parse fails, validation is `skipped`, not `ok`. Never delete canonical events solely because a source omitted them once.
 
 ## Conflict precedence
 
 Field-level authority, not source-level winner-take-all.
 
-Example:
-- sanctioned/tier/results: authorized PDGA source
-- registration URL/status: permitted registration source or organizer
-- date/course: organizer-confirmed source may supersede stale third-party listing
-- manual override: always wins while active
+Examples:
+- authorized sanctioning/results source: only fields authorized by its terms;
+- registration URL/status: permitted registration source or organizer;
+- date/course: organizer-confirmed source may supersede a stale lower-authority listing;
+- active manual override: always wins until explicitly released.
 
 Conflicts above confidence threshold enter review rather than being silently overwritten.
