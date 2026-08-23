@@ -1,0 +1,54 @@
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import type { Session } from '@supabase/supabase-js';
+import { callFunction, supabase } from '../lib/supabase';
+import { Shell } from '../components/Shell';
+import type { AdminDashboard, AdminEvent, Submission } from '../types';
+
+const title=(v:string)=>v.replaceAll('_',' ').replace(/\b\w/g,m=>m.toUpperCase());
+function Health({value}:{value:string}){return <span className={`health health-${value}`}>{title(value)}</span>;}
+
+function Login(){
+  const [email,setEmail]=useState(''),[message,setMessage]=useState(''),[sending,setSending]=useState(false);
+  async function submit(e:FormEvent){e.preventDefault();setSending(true);const {error}=await supabase!.auth.signInWithOtp({email,options:{emailRedirectTo:`${window.location.origin}/admin/events`}});setMessage(error?error.message:'Check your email for the secure sign-in link.');setSending(false);}
+  return <div className="admin-login"><span className="eyebrow">Local Roots operations</span><h1>Events admin</h1><p>Authorized reviewers only. Sign in with a magic link.</p><form onSubmit={submit}><label>Email<input type="email" required value={email} onChange={e=>setEmail(e.target.value)}/></label><button className="button primary" disabled={sending}>{sending?'Sending…':'Send sign-in link'}</button></form>{message?<div className="notice">{message}</div>:null}</div>;
+}
+
+function SubmissionCard({s,events,refresh}:{s:Submission;events:AdminEvent[];refresh:()=>void}){
+  const [target,setTarget]=useState(s.matched_event_id??''),[note,setNote]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
+  async function decide(decision:'approve_new'|'merge'|'reject'){
+    const {data}=await supabase!.auth.getSession();if(!data.session)return;setBusy(true);setError('');
+    try{await callFunction('lr-admin',{action:'decide_submission',submission_id:s.id,decision,target_event_id:decision==='merge'?target||undefined:undefined,resolution_note:note||undefined},data.session.access_token);refresh();}
+    catch(e){setError(e instanceof Error?e.message:'Decision failed');}finally{setBusy(false);}
+  }
+  return <article className="admin-card"><div className="admin-card-head"><div><h3>{s.name}</h3><p>{s.start_date??'No valid date'} · {[s.city,s.county].filter(Boolean).join(', ')}</p></div><div className="pill-row"><Health value={s.validation_status}/><Health value={s.scope_status}/></div></div>
+    <dl className="detail-grid"><div><dt>Course</dt><dd>{s.course_name??'—'}</dd></div><div><dt>Type</dt><dd>{title(s.event_type)}</dd></div><div><dt>Sanction</dt><dd>{s.sanctioned==null?'Unknown':s.sanctioned?`Yes${s.tier?` · ${s.tier}`:''}`:'No'}</dd></div><div><dt>Host</dt><dd>{s.club_host??'—'}</dd></div><div><dt>Submitted by</dt><dd>{[s.submitter_name,s.submitter_email].filter(Boolean).join(' · ')||'Anonymous'}</dd></div><div><dt>Submitted</dt><dd>{new Date(s.created_at).toLocaleString()}</dd></div></dl>
+    {s.registration_url?<a href={s.registration_url} target="_blank" rel="noreferrer">Registration source ↗</a>:null} {s.source_url?<a href={s.source_url} target="_blank" rel="noreferrer">Source page ↗</a>:null}
+    {s.validation_errors?.length?<div className="notice error">{s.validation_errors.join(', ')}</div>:null}{s.notes?<p className="admin-notes">{s.notes}</p>:null}
+    <label>Resolution note<input value={note} onChange={e=>setNote(e.target.value)} placeholder="Optional audit note"/></label>
+    <div className="merge-row"><select value={target} onChange={e=>setTarget(e.target.value)}><option value="">Select event to merge into…</option>{events.map(e=><option key={e.id} value={e.id}>{e.start_date} · {e.name}</option>)}</select><button className="button ghost" disabled={busy||!target} onClick={()=>decide('merge')}>Merge</button></div>
+    <div className="button-row"><button className="button primary" disabled={busy||s.validation_status==='invalid'||s.scope_status==='out_of_scope'} onClick={()=>decide('approve_new')}>Approve as new</button><button className="button danger" disabled={busy} onClick={()=>decide('reject')}>Reject</button></div>{error?<div className="form-error">{error}</div>:null}
+  </article>;
+}
+
+function Dashboard({data,refresh}:{data:AdminDashboard;refresh:()=>void}){
+  const [tab,setTab]=useState<'submissions'|'reviews'|'health'|'events'>('submissions');
+  const [eventId,setEventId]=useState(''),[field,setField]=useState('registration_url'),[value,setValue]=useState(''),[reason,setReason]=useState(''),[message,setMessage]=useState('');
+  const latest=useMemo(()=>{const m=new Map<string,(typeof data.runs)[number]>();for(const r of data.runs)if(!m.has(r.source_id))m.set(r.source_id,r);return m;},[data.runs]);
+  async function override(e:FormEvent){e.preventDefault();const {data:s}=await supabase!.auth.getSession();if(!s.session)return;let parsed:unknown=value;if(field==='sanctioned')parsed=value==='true';if(field==='td_names')parsed=value.split(',').map(v=>v.trim()).filter(Boolean);try{await callFunction('lr-admin',{action:'set_override',event_id:eventId,field_name:field,value:parsed,reason},s.session.access_token);setMessage('Override applied and locked against automation.');setValue('');setReason('');refresh();}catch(err){setMessage(err instanceof Error?err.message:'Override failed');}}
+  return <div className="admin-dashboard"><div className="admin-topbar"><div><span className="eyebrow">Signed in</span><h1>Event operations</h1><p>{data.admin.display_name??data.admin.role}</p></div><div className="admin-metrics"><div><strong>{data.submissions.length}</strong><span>pending submissions</span></div><div><strong>{data.reviews.length}</strong><span>open exceptions</span></div><div><strong>{data.sources.filter(s=>s.enabled).length}</strong><span>enabled sources</span></div></div></div>
+    <div className="admin-tabs">{(['submissions','reviews','health','events'] as const).map(t=><button key={t} className={tab===t?'active':''} onClick={()=>setTab(t)}>{title(t)}</button>)}<button className="refresh" onClick={refresh}>Refresh</button></div>
+    {tab==='submissions'?<section className="admin-grid">{data.submissions.length?data.submissions.map(s=><SubmissionCard key={s.id} s={s} events={data.events} refresh={refresh}/>):<div className="empty-state"><strong>Submission queue is clear.</strong><span>No manual work required.</span></div>}</section>:null}
+    {tab==='reviews'?<section className="table-card"><table><thead><tr><th>Severity</th><th>Issue</th><th>Summary</th><th>Created</th></tr></thead><tbody>{data.reviews.map(r=><tr key={r.id}><td><Health value={r.severity}/></td><td>{title(r.issue_type)}</td><td>{r.summary}</td><td>{new Date(r.created_at).toLocaleString()}</td></tr>)}</tbody></table>{!data.reviews.length?<div className="empty-state">No open exceptions.</div>:null}</section>:null}
+    {tab==='health'?<section className="source-grid">{data.sources.map(src=>{const run=latest.get(src.id);return <article className="source-card" key={src.id}><div><h3>{src.name}</h3><span>{title(src.source_type)}</span></div><Health value={run?.health_status??(src.enabled?'unknown':'disabled')}/><dl><div><dt>Last run</dt><dd>{run?new Date(run.started_at).toLocaleString():'Never'}</dd></div><div><dt>Seen / valid</dt><dd>{run?`${run.records_seen} / ${run.records_valid}`:'—'}</dd></div><div><dt>Fetch / parse</dt><dd>{run?`${run.fetch_status} / ${run.parse_status}`:'—'}</dd></div></dl>{run?.error_message?<p className="form-error">{run.error_message}</p>:null}</article>;})}</section>:null}
+    {tab==='events'?<section className="admin-events-layout"><div className="table-card"><table><thead><tr><th>Date</th><th>Event</th><th>County</th><th>Status</th><th>Published</th></tr></thead><tbody>{data.events.map(e=><tr key={e.id}><td>{e.start_date}</td><td>{e.name}</td><td>{e.county??'—'}</td><td>{title(e.status)}</td><td>{e.published?'Yes':'No'}</td></tr>)}</tbody></table></div>
+      <form className="override-panel" onSubmit={override}><span className="eyebrow">Manual correction</span><h3>Lock an event field</h3><p>This outranks future source updates until released.</p><label>Event<select required value={eventId} onChange={e=>setEventId(e.target.value)}><option value="">Select…</option>{data.events.map(e=><option key={e.id} value={e.id}>{e.start_date} · {e.name}</option>)}</select></label><label>Field<select value={field} onChange={e=>setField(e.target.value)}>{['name','start_date','end_date','county','city','venue_name','course_name','rounds_text','event_type','format','sanctioned','tier','status','registration_status','registration_url','results_url','club_host','td_names'].map(f=><option key={f} value={f}>{title(f)}</option>)}</select></label><label>Value<input required value={value} onChange={e=>setValue(e.target.value)}/></label><label>Reason<textarea required rows={3} value={reason} onChange={e=>setReason(e.target.value)}/></label><button className="button primary">Apply override</button>{message?<p className="small-note">{message}</p>:null}</form></section>:null}
+  </div>;
+}
+
+export function AdminPage(){
+  const [session,setSession]=useState<Session|null>(null),[dashboard,setDashboard]=useState<AdminDashboard|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState('');
+  const load=useCallback(async(s?:Session|null)=>{const active=s??session;if(!active){setDashboard(null);setLoading(false);return;}setLoading(true);setError('');try{setDashboard(await callFunction<AdminDashboard>('lr-admin',{action:'dashboard'},active.access_token));}catch(e){setDashboard(null);setError(e instanceof Error?e.message:'Admin access failed');}finally{setLoading(false);}},[session]);
+  useEffect(()=>{supabase!.auth.getSession().then(({data})=>{setSession(data.session);void load(data.session);});const {data:sub}=supabase!.auth.onAuthStateChange((_e,next)=>{setSession(next);void load(next);});return()=>sub.subscription.unsubscribe();},[]); // intentional one-time auth bootstrap
+  if(!session)return <Shell admin><main className="content narrow"><Login/></main></Shell>;
+  return <Shell admin><main className="content">{loading?<div className="empty-state">Loading operations dashboard…</div>:error?<div className="admin-login"><div className="notice error"><strong>Signed in, but not authorized for Local Roots admin.</strong><span>{error}</span></div><button className="button ghost" onClick={()=>supabase!.auth.signOut()}>Sign out</button></div>:dashboard?<Dashboard data={dashboard} refresh={()=>void load(session)}/>:null}</main></Shell>;
+}
