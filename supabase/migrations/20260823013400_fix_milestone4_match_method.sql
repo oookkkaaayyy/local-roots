@@ -1,0 +1,5 @@
+-- Live-lineage record: rollback acceptance testing caught an invalid temporary
+-- match_method value (`admin_approved_new`) in lr_decide_event_submission.
+-- The canonical Milestone 4 migration in this repository already contains the
+-- repaired implementation using the existing Milestone 2 value `new`.
+-- This file is intentionally a no-op on fresh rebuilds.
