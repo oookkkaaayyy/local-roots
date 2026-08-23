@@ -6,182 +6,164 @@ Updated: 2026-08-23
 Replace the unreliable Google Sheet event tracker with a production-quality `/events` page on the Local Roots website, with minimal ongoing labor and carefully controlled source permissions.
 
 ## Current production foundation
-- The old Google Sheet is requirements/history/regression evidence only.
-- Current software authority: private GitHub repository `oookkkaaayyy/local-roots` on `main`.
+- Old Google Sheet: requirements/history/regression evidence only; never production source authority.
+- Current software authority: private GitHub repo `oookkkaaayyy/local-roots` on `main`.
 - Browser app: React + TypeScript + Vite under `app/`.
 - Staging: `https://local-roots.pages.dev/`.
 - Local Roots/D&U backend: Supabase project with isolated `lr_` event-domain objects.
-- HBNF remains on its separate Supabase backend and is consumed only through the first-party adapter described below.
+- HBNF remains on a separate Supabase backend and is consumed only through the permitted first-party adapter.
 
 ## Geographic scope
-Production counties:
-- Ventura
-- Los Angeles
-- Orange
-- Riverside
-- San Bernardino
-- San Diego
+Production counties: Ventura, Los Angeles, Orange, Riverside, San Bernardino, San Diego.
 
-Excluded by default:
-- Santa Barbara
-- Imperial
-- Kern
-- San Luis Obispo
+Default exclusions: Santa Barbara, Imperial, Kern, San Luis Obispo. Scope remains configuration-driven.
 
-Scope remains configuration-driven.
+## Completed implementation milestones
+- **Milestone 1:** canonical database/domain model, provenance, results, manual overrides, review queue, scope, RLS/public surface, publication safeguards, old-Sheet corruption regressions.
+- **Milestone 2:** normalization, validation, strong-ID-first matching, fuzzy ambiguity routing, authority-aware changes, source-run health/anomaly handling and last-known-good behavior.
+- **Milestone 4:** public submissions, authenticated admin registry, approve/merge/reject, overrides/release, exception resolution, source-health/admin operations.
+- **Milestone 5:** public `/events`, protected `/admin/events`, Cloudflare staging deployment and CI/build verification.
 
-## Completed milestones
-### Milestone 1 — database/domain model
-Complete and regression-tested: canonical events, provenance, results, manual overrides, review queue, scope profiles, RLS/public surface, publication safeguards and old-Sheet corruption regressions.
+Active operational functions include `lr-submit-event`, `lr-admin`, `lr-sync-hbnf`, `lr-launch-readiness`, and `lr-sync-socal-rss`.
 
-### Milestone 2 — normalization/matching/health
-Complete and regression-tested: named-field normalization, deterministic validation, geography evaluation, strong-ID-first matching, fuzzy ambiguity routing, authority-aware change application, source-run health/anomaly logic and last-known-good behavior.
+## Staging/auth — VERIFIED
+- Public staging is live at `https://local-roots.pages.dev/`.
+- Public `lr_public_events()` connectivity is verified.
+- First Local Roots admin is active.
+- Magic-link auth returns through the live staging redirect.
+- Protected admin requests have returned HTTP 200.
+- `/admin/readiness` is now a protected launch-status page backed by `lr-launch-readiness`.
 
-### Milestone 4 — submissions/admin operations
-Complete: public submissions, authenticated admin authorization registry, approve/merge/reject workflow, overrides/release, exception resolution, source health, event detail and manual creation paths.
+Do not store admin emails, magic links, tokens, Vault values or other authentication material in Git/AKS/docs.
 
-Active functions:
-- `lr-submit-event`
-- `lr-admin`
-- `lr-sync-hbnf`
+## HBNF first-party production adapter — LIVE
+Source key: `hbnf_internal_schedule`.
 
-### Milestone 5 — public/admin web application
-Code complete, CI/build verified and deployed to Cloudflare Pages staging. Public `/events` and protected `/admin/events` are live.
+Why permitted: HBNF is user-controlled/first-party. This does not authorize PDGA, DGS or UDisc harvesting.
 
-## Staging/auth status — VERIFIED
-Staging URL: `https://local-roots.pages.dev/`.
+Behavior:
+- reads only the HBNF application state needed for Local Roots;
+- normalizes Skins and Glow Doubles into canonical events;
+- stores normalized event/provenance/results data, not full raw league state;
+- uses `hbnf:<mode>:<date>` stable source IDs;
+- provenance precedes publication;
+- disappearance routes to review instead of deletion;
+- finalized Glow results use dense ranking and preserve ties crossing third place;
+- scheduler/fetch/parse/validation/health are distinct states.
 
-Verified evidence:
-- live browser requests to `lr_public_events` return HTTP 200;
-- Supabase magic-link redirect allowlist includes the staging admin path without changing the shared project's global Site URL;
-- first Local Roots Auth user is confirmed and registered as an active Local Roots admin;
-- protected `lr-admin` returned HTTP 200 from the authenticated live staging session.
+Schedule: 05:00 America/Los_Angeles; automatic retry at 06:00/07:00 only after unhealthy attempts. A post-retry health watch evaluates the required production day and creates one bounded high-severity exception if the day is missing/unhealthy.
 
-Do not store or reproduce admin email, magic links, user tokens or other authentication material in project docs/AKS.
+First live v1 run failed closed on provenance timestamp ordering. Publication safeguards prevented publication without provenance. v2 fixed the ordering, preserved the failed run as audit evidence, and corrected fetch/parse failure semantics so validation is `skipped` rather than `ok`.
 
-## First permitted automated production adapter — HBNF LIVE
-HB Night Flyers is the first real automated production source. It is allowed because it is first-party/user-controlled; this does not authorize scraping or reuse from PDGA, Disc Golf Scene or UDisc.
+Verified v2 state:
+- 31/31 valid, 0 rejected;
+- 31 HBNF canonical events/provenance rows;
+- 9 Glow result rows;
+- immediate repeat created 0 duplicates and matched all 31.
 
-Source registry key: `hbnf_internal_schedule`.
+## Regional SoCal source state
+### Manual SoCal DGC calendar
+Source key: `socal_dgc_calendar_manual` / current registry equivalent.
 
-The adapter:
-- reads HBNF's user-controlled `league_state` through the HBNF application's public Supabase API;
-- normalizes Skins and Glow Doubles weeks into the Local Roots canonical model;
-- keeps HBNF's backend separate;
-- stores only normalized event/provenance/results data needed by Local Roots, not the full HBNF state payload;
-- uses source external IDs for idempotent matching;
-- creates provenance before publication;
-- routes source disappearance to review rather than deleting canonical events;
-- imports finalized Glow top results with dense ranking and all entries tied at the third-place cutoff;
-- records scheduler/fetch/parse/validation/health independently.
+The SoCal DGC calendar states its event information is provided by tournament directors and compiled/updated by volunteers. It is used as a **manual factual cross-check**, not a blind HTML crawler.
 
-### Schedule
-`pg_cron` job `local-roots-hbnf-hourly-gate` runs hourly, but the database gate starts a sync at 05:00 Pacific. If that attempt is unhealthy, it may retry automatically at 06:00 and 07:00 Pacific. A healthy/warning or currently-running attempt suppresses retries. Time-zone evaluation uses `America/Los_Angeles`, so DST is handled without hard-coded UTC offsets.
+Current manual regional additions total seven, including:
+- Sky High Showdown;
+- Fling XXIX at Chavez Ridge;
+- Nixon Open;
+- NADGT Martha McLean;
+- OG Mamas charity event;
+- SoCal Championships — Amateurs;
+- Billy Goat ~ Fallen Disc Golfers Memorial (2026-11-28, Yucaipa).
 
-An off-window manual scheduler invocation at approximately 14:02 Pacific returned without dispatching a new HTTP request, verifying the time gate.
+A registration URL supplied by this source may be retained as a link without authorizing crawling of the linked service.
 
-Scheduler credentials and the HBNF application key are stored in Supabase Vault only. No credential values belong in Git, AKS or user-facing documentation.
+### SoCal DGC RSS review-only sentinel — LIVE
+Source key: `socal_dgc_rss`.
 
-### First-run failure and repair
-The first `hbnf-direct-v1` live run failed closed when provenance insertion hit `lr_event_sources_seen_order_check`: the client-supplied `last_seen_at` could precede Postgres' generated `first_seen_at` by milliseconds. Publication safeguards prevented any event from becoming public without provenance.
+`https://socaldiscgolfclub.com/feed/` is an intentionally published WordPress syndication feed. It is used only as a low-impact **change detector**:
+- runs every six hours;
+- has no authoritative event fields;
+- cannot publish, unpublish or alter canonical events;
+- baseline run establishes the latest-item cursor and does not flood historical posts;
+- stores only discovery metadata needed for review;
+- relevant new items create review alerts only;
+- cursor gaps create one bounded review rather than guessed changes;
+- scheduler secret is Vault-backed.
 
-`hbnf-direct-v2` explicitly uses one timestamp for new provenance `first_seen_at`/`last_seen_at`. The failed v1 run is retained as audit evidence; its unpromoted candidate is marked superseded. Source-run finalization was also corrected so fetch/parse failures report validation as `skipped`, not `ok`.
+Verified QA:
+- baseline: 10/10 valid, healthy, 0 historical alerts;
+- immediate repeat: healthy, 0 duplicate/new alerts;
+- unauthorized invocation: HTTP 401;
+- controlled rewind test: exactly one relevant discovery/review alert, cursor returned to the real latest item;
+- disposable discovery/review rows removed afterward, leaving zero QA discovery items/open RSS alerts.
 
-### Verification results
-First corrected v2 run:
-- records seen: 31
-- valid: 31
-- rejected: 0
-- review required: 0
-- canonical HBNF events reconciled: 31
-- results rows: 9
-- health: healthy
+San Diego Aces also exposes a valid WordPress RSS endpoint, but its current feed is stale (last build March 2023), so no scheduler was installed. Direct-source outreach remains the appropriate path.
 
-Immediate repeat/idempotency run:
-- records seen: 31
-- valid: 31
-- created: 0
-- matched: 31
-- rejected: 0
-- review required: 0
-- missing: 0
-- results rows: 9
-- health: healthy
+## Current event-domain state
+- **38 published events**.
+- At the most recent coverage snapshot, **17 were current/future**.
+- 0 published events without provenance.
+- 0 sanctioned published events without sanction-basis provenance.
+- 3 deliberate medium source-conflict reviews remain open.
+- Result rows: 9 HBNF Glow rows.
+- Active Local Roots admins: 1.
 
-## First regional manual source — SoCal DGC LIVE / NO CRAWLER
-Source registry key: `socal_dgc_manual_calendar`.
+Current future coverage is strongest in Orange County. Ventura currently has no published event in the canonical corpus; Riverside and San Diego are also sparse. Do not fill those gaps by prohibited scraping.
 
-The SoCal Disc Golf Club 2026 calendar states that its information is provided by tournament directors and compiled/updated by club volunteers. It is now registered as a manual regional cross-check source only.
-
-Rules:
-- no automated crawling without separate permission or an approved structured feed;
-- store limited factual metadata and links only;
-- do not copy article prose;
-- manually cross-check material facts before publication;
-- route unresolved conflicts to review.
-
-Initial manual backfill published six additional events:
-1. 2026 Sky High Showdown Presented by Innova Champion — San Bernardino County
-2. The Fling XXIX at Chavez Ridge — Los Angeles County
-3. 3rd Annual Nixon Open 2026 — Los Angeles County
-4. 2026 NADGT C Tier 2 Rounder @ Martha McLean — Riverside County
-5. The OG Mamas 12th Annual Breast Cancer, Beat Cancer Charity 2026 — Los Angeles County
-6. 2026 SoCal Championships — Amateur weekend — San Diego County
-
-Publication safeguards remain intact:
-- every published event has provenance;
-- every published sanctioned event has a sanction-basis provenance row;
-- no direct anon/authenticated SELECT privilege exists on private `lr_` event-domain tables;
-- public users execute only the restricted `lr_public_events()` surface.
-
-### Open source-conflict reviews
-Three medium review items are intentionally open:
-- Fling XXIX tier: SoCal calendar says C-Tier; current registration page says B-tier. Event is public but canonical `tier` is intentionally null.
-- Sapwi Trails 2026 dates: SoCal says Sep 26–27; current registration listing says Sep 26 only. Event is not published.
-- Castaic 2026 lineage: current source/search evidence and older cached registration evidence disagree on date/name history. Event is not published pending one clean current verification.
+## Open source conflicts — DO NOT GUESS
+1. **Fling XXIX tier:** SoCal says C-Tier; separate registration/sanction observations conflict. Event is public with tier intentionally null.
+2. **Sapwi Trails dates:** SoCal says Sep 26–27; another current listing observed Sep 26 only. Not published pending clean permitted verification.
+3. **Castaic lineage:** current/older evidence conflicts on name/date history. Not published pending a clean organizer/permitted current source.
 
 ## Public submission workflow — VERIFIED
-Disposable live QA passed:
-- public submission endpoint returned HTTP 201;
-- candidate validated `valid` / `in_scope`;
-- submission routed to organizer review;
-- admin rejection completed correctly;
-- exact cleanup verified no QA submission/candidate/review/event remained.
+Disposable live QA passed: HTTP 201 submission, valid/in-scope candidate, review routing, admin rejection, then exact cleanup with no QA event/candidate/review rows remaining.
 
-## Current production event-domain state
-After the SoCal manual backfill:
-- public/canonical events: 37
-- HBNF provenance rows: 31
-- SoCal manual provenance rows: 6
-- result rows: 9
-- open review items: 3, all deliberate source conflicts
-- active Local Roots admins: 1
-- enabled sources: 3 (Local Roots submissions, HBNF, SoCal manual calendar)
+## Launch readiness / production soak
+`lr_launch_readiness()` is the controlling launch gate. Direct execution is restricted; staging admins consume it through protected `lr-launch-readiness`.
 
-The HBNF 2026-08-22 Glow result correctly includes all third-place-cutoff entries.
+Launch requires, at minimum:
+- configured scheduled production sources completing their required soak;
+- no published event without provenance;
+- no sanctioned published event without sanction basis;
+- no blocking high/critical review item.
 
-## Public/private access verification
-Direct SELECT privilege is denied to both `anon` and `authenticated` roles for the core private tables, including events, results, provenance, source runs/candidates, submissions, review queue, overrides and admin users.
+HBNF requires **14 consecutive healthy final daily production runs**. Manual/test runs do not count. A missing/unhealthy final required day breaks the streak. Current real soak began with the first expected HBNF production day on 2026-08-24; do not claim completion until the real gate reports it.
 
-`lr_public_events()` remains executable for the public client and returns only the approved event fields/top-results surface. It currently returns 37 published events.
+## Public/frontend QA — CURRENT
+Recent staging hardening:
+- current/past filtering uses `America/Los_Angeles`, not UTC;
+- date-only labels are viewer-timezone-stable;
+- completed/canceled events do not show active Registration buttons;
+- stale verification copy says to confirm details before traveling;
+- result division labels are normalized for display;
+- mobile admin navigation retains Admin and Launch Status links;
+- stale predeployment configuration copy was removed.
 
-## Source/compliance rule
-Do not recreate prohibited scraping. Use permissioned APIs/feeds, organizer submissions, user-controlled club systems and manual/admin review.
+Full GitHub CI has passed against the current staging UI state (domain tests, TypeScript, production Vite build). Temporary verification PRs were closed unmerged.
 
-PDGA remains optional. Do not implement a PDGA production adapter until commercial-context use, persistent storage/caching and results rights are clarified in writing under an acceptable agreement/path.
+## Security/advisor state
+- Private Local Roots tables intentionally have RLS enabled with no public allow policy; Supabase reports these as informational `rls_enabled_no_policy` notices.
+- Performance notices are currently unused-index INFO findings. Do not remove supporting/new foreign-key indexes merely because traffic is still low.
+- Supabase reports project-level `Leaked Password Protection Disabled`. Local Roots admin uses passwordless magic links, so this does not block Local Roots. Because the project is shared with D&U, do not change this global auth setting without confirming the effect on any password-based D&U flow.
 
-## Advisor state
-Current Local Roots database security notices for private `lr_` tables are informational `RLS enabled/no allow policy` findings and are intentional deny-by-default behavior.
+## Source/compliance rules
+- No PDGA production adapter until commercial-context use, storage/caching, results rights and applicable agreement are clarified.
+- No automated DGS/UDisc scraping.
+- Prefer user-controlled systems, organizer submissions, intentional structured feeds, manual factual verification and explicit permission.
+- A technically valid but stale feed is not worth scheduling.
 
-Performance notices are currently unused-index INFO findings; do not remove new/foreign-key indexes merely because traffic is still low.
+## Pending outreach artifacts
+Gmail contains unsent draft-only outreach for SoCal DGC, San Diego Aces, Lake Casitas/VDGC contact routing, and DiscGolfVR360/source-feed routing. **Do not send without explicit user approval.** Draft existence is not permission.
 
-Supabase also reports the project-level Auth warning `Leaked Password Protection Disabled`. Local Roots admin authentication is passwordless magic-link based, so this does not block the Local Roots admin path; review it separately if password-based accounts are used.
+## Autonomous continuation
+The user explicitly authorized continued safe progress without needing to remain at the computer. An hourly Local Roots continuation condition-watch is enabled. It may perform safe QA, source-independent implementation, permitted feed/source work, cleanup, documentation and AKS writeback. It must not send external email, make paid commitments, or use prohibited/permission-gated sources without the required approval.
 
 ## Next work
-No user action is currently required for the backend/source layer. Continue with:
-1. broader permitted/direct organizer coverage across all six counties;
-2. resolve the three current source-conflict review items when stronger current evidence is available;
-3. staging visual/functional QA against the expanded real event list;
-4. backfill/regression checks and 14-day healthy-run launch-soak tracking;
-5. draft permission/feed outreach to high-value regional organizer sources;
-6. only later, custom-domain/public-launch decisions and optional PDGA communication/integration.
+No user action is currently required. Continue with:
+1. real 14-day HBNF production-soak observation and source-health monitoring;
+2. broader permitted/direct organizer coverage, especially Ventura, Riverside and San Diego;
+3. resolve the three conflicts only when stronger permitted evidence exists;
+4. ongoing staging/mobile/accessibility/functional QA;
+5. keep source/permission and launch-readiness behavior regression-tested;
+6. later custom-domain/public-launch decision and optional PDGA outreach/integration.
