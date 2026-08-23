@@ -5,6 +5,13 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
   headers: { "Content-Type": "application/json; charset=utf-8" },
 });
 
+const STAGING_URL = "https://local-roots.pages.dev/";
+const REQUIRED_FRONTEND_MARKERS = [
+  "Future-event freshness",
+  "Latest future event",
+  "Launch gate",
+];
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
@@ -27,21 +34,40 @@ Deno.serve(async (req) => {
   }
 
   let stagingStatus: number | null = null;
-  let stagingOk = false;
+  let shellOk = false;
+  let frontendBundleOk = false;
+  let frontendBundleUrl: string | null = null;
+  let missingFrontendMarkers = [...REQUIRED_FRONTEND_MARKERS];
+
   try {
-    const response = await fetch("https://local-roots.pages.dev/", {
-      headers: { "User-Agent": "LocalRootsIntegrityWatch/1.0" },
+    const response = await fetch(STAGING_URL, {
+      headers: { "User-Agent": "LocalRootsIntegrityWatch/2.0" },
       redirect: "follow",
     });
     stagingStatus = response.status;
     const body = await response.text();
-    stagingOk = response.status === 200
+    shellOk = response.status === 200
       && body.includes('<div id="root"></div>')
       && body.includes('<title>Local Roots Disc Golf Events</title>');
+
+    const scriptMatch = body.match(/<script[^>]+src=["']([^"']+\.js)["']/i);
+    if (shellOk && scriptMatch?.[1]) {
+      frontendBundleUrl = new URL(scriptMatch[1], STAGING_URL).toString();
+      const bundleResponse = await fetch(frontendBundleUrl, {
+        headers: { "User-Agent": "LocalRootsIntegrityWatch/2.0" },
+        redirect: "follow",
+      });
+      if (bundleResponse.ok) {
+        const bundle = await bundleResponse.text();
+        missingFrontendMarkers = REQUIRED_FRONTEND_MARKERS.filter((marker) => !bundle.includes(marker));
+        frontendBundleOk = missingFrontendMarkers.length === 0;
+      }
+    }
   } catch (error) {
     console.error("lr-integrity-watch staging", error instanceof Error ? error.message : String(error));
   }
 
+  const stagingOk = shellOk && frontendBundleOk;
   const state = readiness.data as Record<string, unknown>;
   const recorded = await service.rpc("lr_record_integrity_snapshot", {
     p_public_events: Number(state.public_event_count ?? 0),
@@ -55,5 +81,14 @@ Deno.serve(async (req) => {
     return json({ error: "record_failed" }, 500);
   }
 
-  return json({ ok: true, staging_http_status: stagingStatus, staging_ok: stagingOk, integrity: recorded.data });
+  return json({
+    ok: true,
+    staging_http_status: stagingStatus,
+    shell_ok: shellOk,
+    frontend_bundle_ok: frontendBundleOk,
+    frontend_bundle_url: frontendBundleUrl,
+    missing_frontend_markers: missingFrontendMarkers,
+    staging_ok: stagingOk,
+    integrity: recorded.data,
+  });
 });
