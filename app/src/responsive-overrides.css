@@ -1,0 +1,7 @@
+@media(max-width:620px){
+  .admin-shell .site-header .nav-events{display:none}
+  .admin-shell .site-header nav a.nav-admin,
+  .admin-shell .site-header nav a.nav-readiness{display:inline}
+  .admin-shell .site-header nav{gap:10px}
+  .admin-shell .site-header nav a{font-size:.78rem}
+}
