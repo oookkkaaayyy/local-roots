@@ -86,6 +86,30 @@ Prefer:
 
 Only factual metadata needed for the calendar should be stored. Do not copy article prose/descriptions.
 
+### Manual factual calendar source
+
+The current SoCal DGC upcoming-events page states that its event information is provided by tournament directors and compiled/updated by club volunteers. It may be used for limited manual factual ingestion/cross-checking, subject to normal provenance/conflict review. A registration URL supplied by that permitted source may be retained as a link; that does not authorize crawling the linked registration service.
+
+Do not blindly crawl the HTML calendar. Conflicting or ambiguous fields stay in review until a stronger permitted/current source resolves them.
+
+### Review-only RSS sentinels
+
+An intentionally published RSS/Atom feed may be used as a low-impact change detector when its normal purpose is syndication. This is distinct from scraping a website or treating the feed as an authoritative event database.
+
+Rules for a review-only feed:
+- registry `authoritative_fields` must remain empty unless separate authority is established;
+- first successful run establishes a latest-item watermark and must not flood the queue with historical posts;
+- repeated runs must be idempotent;
+- only limited feed metadata needed for detection may be stored (stable item ID, title, URL, publication timestamp, seen/review state);
+- article prose/content is not copied into the Local Roots database;
+- a relevant new item creates a review/discovery alert only;
+- the feed worker may not publish, unpublish, merge, alter sanction status, or otherwise mutate canonical events;
+- cursor loss/gaps route to one bounded review rather than guessing at changes;
+- secret-protected schedulers must fail closed;
+- stale feeds should not be scheduled merely because the endpoint technically returns HTTP 200.
+
+Current example: `socal_dgc_rss` uses SoCal DGC's public WordPress feed as a six-hour review-only sentinel. San Diego Aces also exposes a WordPress feed, but it was not scheduled because its current feed is stale (last build March 2023).
+
 ## Organizer submissions
 
 The public submission form is a first-class ingestion source.
