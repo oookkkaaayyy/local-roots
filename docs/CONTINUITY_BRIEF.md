@@ -3,50 +3,17 @@
 Updated: 2026-08-23
 
 ## Current goal
-Replace the unreliable Google Sheet event tracker with a production-quality `/events` page on the future Local Roots website, with minimal ongoing labor and carefully controlled implementation scope.
+Replace the unreliable Google Sheet event tracker with a production-quality `/events` page on the Local Roots website, with minimal ongoing labor and carefully controlled source permissions.
 
-## Current decision
-The existing Sheet is not the production foundation. It is a requirements/history/regression-test source.
+## Current production foundation
+- The old Google Sheet is requirements/history/regression evidence only.
+- Current software authority: private GitHub repository `oookkkaaayyy/local-roots` on `main`.
+- Browser app: React + TypeScript + Vite under `app/`.
+- Staging: `https://local-roots.pages.dev/`.
+- Local Roots/D&U backend: Supabase project with isolated `lr_` event-domain objects.
+- HBNF remains on its separate Supabase backend and is consumed only through the first-party adapter described below.
 
-## Existing live Sheet
-ID: `1cyhmc_Q_XIwcXz1Eu0ITQ-XU9D0GgTXqvPqiQsKfZHs`
-
-Title: `!CURRENT All SoCal`
-
-## Current infrastructure
-- HBNF has its own Supabase backend; leave separate.
-- The existing Dyed & Unattached Supabase project is also the Local Roots umbrella backend. Local Roots event-domain objects are isolated with the `lr_` prefix.
-- Private GitHub repository `oookkkaaayyy/local-roots` on `main` is the current software/source-control authority for this build.
-- Local Roots browser app: React + TypeScript + Vite under `app/`.
-- Cloudflare Pages staging: `https://local-roots.pages.dev/`.
-
-## Confirmed old-Sheet failures
-- public month tabs empty;
-- scheduler reports success despite no new listings;
-- Event_Database column/schema drift;
-- results parser accepted wrong-column values as valid;
-- renderer expects older schema;
-- no semantic validation;
-- unsafe direct promotion replaced the earlier review gate.
-
-## Product requirements preserved
-- chronological events;
-- month/date behavior;
-- registration link;
-- course;
-- rounds/format;
-- TD/club;
-- sanctioned/tier;
-- top-three results;
-- manual overrides;
-- audit/provenance;
-- daily refresh;
-- Local Roots public presentation.
-
-## Source/compliance rule
-Do not recreate prohibited scraping. Use permissioned APIs/feeds, organizer submissions, permitted club sources, and manual/admin review. PDGA is an optional future enrichment/discovery adapter rather than a dependency of the core product.
-
-## Geographic scope — DECIDED 2026-08-23
+## Geographic scope
 Production counties:
 - Ventura
 - Los Angeles
@@ -61,114 +28,115 @@ Excluded by default:
 - Kern
 - San Luis Obispo
 
-Scope remains configuration-driven so explicit exceptions or future expansion do not require adapter rewrites.
+Scope remains configuration-driven.
 
-## Milestone 1 — COMPLETE 2026-08-23
-Implemented the isolated Local Roots event-domain database, provenance, review queue, manual overrides, six-county scope, publication safeguards, restricted public access, and regression protections. Transactional acceptance tests passed and production event tables remained clean after rollback fixtures.
+## Completed milestones
+### Milestone 1 — database/domain model
+Complete and regression-tested: canonical events, provenance, results, manual overrides, review queue, scope profiles, RLS/public surface, publication safeguards and old-Sheet corruption regressions.
 
-## Milestone 2 — COMPLETE 2026-08-23
-Implemented and verified the source-neutral ingestion decision layer:
-- named-field adapter boundary; positional rows are rejected;
-- deterministic normalization and structural validation;
-- configuration-driven geography evaluation and explicit exceptions;
-- stable external IDs and canonical registration URLs outrank fuzzy similarity;
-- same-name events on different dates remain distinct;
-- ambiguous/similar conflicting matches route to review;
-- source-authority-aware material-change handling;
-- event change audit history;
-- scheduler, fetch, parse, validation, and data-health states are independent;
-- zero-record/severe-collapse anomalies cannot silently clear canonical data;
-- repeated disappearance routes to review;
-- last-known-good canonical data is preserved;
-- exact old-Sheet corruption regressions are rejected.
+### Milestone 2 — normalization/matching/health
+Complete and regression-tested: named-field normalization, deterministic validation, geography evaluation, strong-ID-first matching, fuzzy ambiguity routing, authority-aware change application, source-run health/anomaly logic and last-known-good behavior.
 
-Verification caught and repaired pg_trgm schema qualification, county canonicalization, and UUID-ranking defects before production ingestion.
+### Milestone 4 — submissions/admin operations
+Complete: public submissions, authenticated admin authorization registry, approve/merge/reject workflow, overrides/release, exception resolution, source health, event detail and manual creation paths.
 
-## Milestone 3 — DEFERRED
-The first third-party production adapter is intentionally deferred until a source with a documented permission/reuse basis is selected. PDGA is not required for the core product.
+Active functions:
+- `lr-submit-event`
+- `lr-admin`
 
-## Milestone 4 — COMPLETE 2026-08-23
-Implemented the operational/review layer without any third-party ingestion dependency:
-- `lr_admin_users` authorization registry;
-- `lr_event_submissions` with private submitter contact fields;
-- public submission -> validation/scope/matching -> review pipeline;
-- explicit approve-new / merge / reject workflow;
-- canonical provenance on approved/merged submissions;
-- manual field overrides and explicit release;
-- generic non-submission exception resolution;
-- source-health dashboard data;
-- admin event-detail API;
-- manual event creation backend path.
+### Milestone 5 — public/admin web application
+Code complete, CI/build verified and deployed to Cloudflare Pages staging. Public `/events` and protected `/admin/events` are live.
 
-Active Edge Functions:
-- `lr-submit-event`: public submission endpoint; no JWT required; service-role access remains backend-only.
-- `lr-admin`: JWT-protected admin endpoint; verifies user and active Local Roots admin/reviewer before privileged actions.
-
-Rollback-only Milestone 4 database acceptance suite passed. It caught and repaired a temporary match-method contract mismatch before any real data was stored.
-
-## Milestone 5 — CODE COMPLETE / BUILD VERIFIED 2026-08-23
-Implemented the deployable Local Roots website application:
-- public `/events` page;
-- chronological event cards;
-- month, county, sanction and event-type filtering;
-- registration/results links;
-- status and stale-verification indicators;
-- public organizer/community submission form;
-- Local Roots mobile-responsive visual system;
-- `/admin/events` magic-link authentication screen;
-- pending submission queue;
-- approve / merge / reject controls;
-- source-health and exception views;
-- manual override/release controls.
-
-The browser uses a Supabase publishable key only. Secret/service-role credentials remain exclusively in Supabase Edge Function environments.
-
-GitHub CI:
-- root domain tests pass;
-- web dependencies install cleanly;
-- TypeScript/Vite production build passes;
-- final deployable-state verification passed.
-
-## Cloudflare staging — DEPLOYED 2026-08-23
+## Staging/auth status — VERIFIED
 Staging URL: `https://local-roots.pages.dev/`.
 
-The user supplied the live URL after completing the Git-backed Pages setup. Subsequent Supabase API logs recorded live browser requests to `lr_public_events` returning HTTP 200, verifying that the deployed public frontend can reach the public backend read path.
+Verified evidence:
+- live browser requests to `lr_public_events` return HTTP 200;
+- Supabase magic-link redirect allowlist now includes `https://local-roots.pages.dev/admin/events` without changing the shared project's global Site URL;
+- first Local Roots Auth user is confirmed and registered as an active Local Roots admin;
+- the protected `lr-admin` Edge Function returned HTTP 200 from the authenticated live staging session.
 
-Deployment/connectivity is established. This does not by itself establish final visual/functional acceptance.
+Do not store or reproduce the admin email, magic links, user tokens or other authentication material in project docs/AKS.
 
-## Current data state
-- canonical events: 0
-- public submissions: 0
+## First permitted production adapter — HBNF LIVE
+HB Night Flyers is the first real automated production source. It is allowed because it is first-party/user-controlled; this does not authorize scraping or reuse from PDGA, Disc Golf Scene or UDisc.
+
+Source registry key: `hbnf_internal_schedule`.
+
+The adapter:
+- reads HBNF's user-controlled `league_state` through the HBNF application's public Supabase API;
+- normalizes Skins and Glow Doubles weeks into the Local Roots canonical model;
+- keeps HBNF's backend separate;
+- stores only normalized event/provenance/results data needed by Local Roots, not the full HBNF state payload;
+- uses source external IDs for idempotent matching;
+- creates provenance before publication;
+- routes source disappearance to review rather than deleting canonical events;
+- imports finalized Glow top results with dense ranking and all entries tied at the third-place cutoff;
+- records scheduler/fetch/parse/validation/health independently.
+
+### Schedule
+`pg_cron` job `local-roots-hbnf-hourly-gate` runs hourly, but the database gate only starts a sync at 05:00 Pacific. If that attempt is unhealthy, it may retry automatically at 06:00 and 07:00 Pacific. A healthy/warning or currently-running attempt suppresses retries. Time-zone evaluation uses `America/Los_Angeles`, so DST is handled without hard-coded UTC offsets.
+
+Scheduler credentials and the HBNF application key are stored in Supabase Vault only. No credential values belong in Git, AKS or user-facing documentation.
+
+### First-run failure and repair
+The first `hbnf-direct-v1` live run failed closed when provenance insertion hit `lr_event_sources_seen_order_check`: the client-supplied `last_seen_at` could precede Postgres' generated `first_seen_at` by milliseconds. Publication safeguards prevented any event from becoming public without provenance.
+
+`hbnf-direct-v2` explicitly uses one timestamp for new provenance `first_seen_at`/`last_seen_at`. The failed v1 run is retained as audit evidence; its unpromoted candidate is marked superseded. Source-run finalization was also corrected so fetch/parse failures report validation as `skipped`, not `ok`.
+
+### Verification results
+First corrected v2 run:
+- records seen: 31
+- valid: 31
+- rejected: 0
+- review required: 0
+- canonical HBNF events reconciled: 31
+- results rows: 9
+- health: healthy
+
+Immediate repeat/idempotency run:
+- records seen: 31
+- valid: 31
+- created: 0
+- matched: 31
+- rejected: 0
+- review required: 0
+- missing: 0
+- results rows: 9
+- health: healthy
+
+Current production event-domain state after the repeat verification:
+- canonical/published events: 31
+- upcoming events: 10
+- completed events: 21
+- provenance rows: 31
+- result rows: 9
+- source runs: 3 (one retained failed v1 plus two healthy v2 verification runs)
+- source candidates: 63 (failed-run candidate retained as superseded)
 - open review items: 0
-- source runs/candidates: 0
-- event provenance/results: 0
-- Local Roots admins: 0
-- seeded source registry contains the Local Roots submission source;
-- one active six-county scope profile remains.
+- submissions: 0
+- active Local Roots admins: 1
+- enabled sources: 2 (Local Roots submissions + HBNF)
 
-No fake test event data was left in production.
+The 2026-08-22 Glow result correctly includes all third-place-cutoff entries: first place, both second-place ties, and third place.
+
+## Source/compliance rule
+Do not recreate prohibited scraping. Use permissioned APIs/feeds, organizer submissions, user-controlled club systems and manual/admin review.
+
+PDGA remains optional. Do not implement a PDGA production adapter until commercial-context use, persistent storage/caching and results rights are clarified in writing under an acceptable agreement/path.
 
 ## Advisor state
-The earlier D&U performance/RLS warnings were cleaned up where actionable. Current remaining notices are informational only:
-- intentionally private RLS tables have no allow policy;
-- indexes on new/empty tables are reported unused because production traffic has not begun.
+Current Local Roots database security notices for private `lr_` tables are informational `RLS enabled/no allow policy` findings and are intentional deny-by-default behavior.
 
-## PDGA status
-No PDGA agreement or communication is required for the core build. Do not implement a PDGA production adapter until licensing/data-use questions are resolved, especially commercial-context use, persistent storage/caching, and results access.
+Performance notices are currently unused-index INFO findings; do not remove new/foreign-key indexes merely because traffic is still low.
 
-## CURRENT BLOCK / REQUIRED USER STEP
-The staging deployment blocker is closed. The next step requires creating the first Supabase Auth user through the normal magic-link flow so that the user can be added to `lr_admin_users` without manually manufacturing an Auth identity.
+Supabase also reports the project-level Auth warning `Leaked Password Protection Disabled`. Local Roots admin authentication is passwordless magic-link based, so this does not block the Local Roots admin path; review it separately if password-based D&U accounts are used.
 
-User action:
-1. Open `https://local-roots.pages.dev/admin/events`.
-2. Enter an email the user controls and request the magic link.
-3. Open the received magic link and complete sign-in.
-4. Report only that sign-in is complete; do not send the email, link, code, password, or any authentication material in chat.
-
-After that, continue autonomously with:
-1. identify the newly created Auth user and add it to `lr_admin_users` as the initial active admin;
-2. verify the protected admin dashboard path;
-3. run end-to-end staging QA;
-4. test the public submission path;
-5. populate/backfill permitted real event data;
-6. proceed into source integration and launch-soak/acceptance gates.
+## Next work
+No user action is currently required for the backend/source layer. Continue with:
+1. public staging QA against real HBNF data;
+2. public submission end-to-end QA using disposable test data with exact cleanup;
+3. protected admin workflow QA;
+4. identify additional permitted organizer/club data sources across the six counties;
+5. backfill/regression checks and launch-soak preparation;
+6. only later, custom-domain/public-launch decisions and optional PDGA communication/integration.
