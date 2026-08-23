@@ -6,7 +6,7 @@ import { AdminPage } from './pages/AdminPage';
 import { ReadinessPage } from './pages/ReadinessPage';
 
 function ConfigMissing() {
-  return <Shell><main className="content narrow"><div className="notice error"><strong>Staging configuration is not connected yet.</strong><span>The deployment still needs its Supabase public environment variables.</span></div></main></Shell>;
+  return <Shell><main className="content narrow"><div className="notice error"><strong>Local Roots configuration could not initialize.</strong><span>The public Supabase connection is unavailable. No private credentials should be entered here.</span></div></main></Shell>;
 }
 
 function HomeRedirect() {
