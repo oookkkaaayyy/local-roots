@@ -13,6 +13,19 @@ function json(body: unknown, status = 200) {
   });
 }
 
+const COUNTIES = ["Ventura", "Los Angeles", "Orange", "Riverside", "San Bernardino", "San Diego"];
+
+function pacificToday() {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Los_Angeles",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+  return `${get("year")}-${get("month")}-${get("day")}`;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
@@ -43,10 +56,28 @@ Deno.serve(async (req) => {
     .maybeSingle();
   if (adminError || !admin) return json({ error: "forbidden" }, 403);
 
-  const { data, error } = await service.rpc("lr_launch_readiness");
-  if (error) {
-    console.error("lr-launch-readiness", error.code, error.message);
+  const [{ data: readiness, error: readinessError }, { data: events, error: eventsError }] = await Promise.all([
+    service.rpc("lr_launch_readiness"),
+    service.from("lr_events").select("county,start_date,end_date").eq("published", true),
+  ]);
+  if (readinessError || eventsError) {
+    console.error("lr-launch-readiness", readinessError?.code ?? eventsError?.code, readinessError?.message ?? eventsError?.message);
     return json({ error: "readiness_failed" }, 500);
   }
-  return json(data);
+
+  const today = pacificToday();
+  const countyCoverage = COUNTIES.map((county) => {
+    const countyEvents = (events ?? []).filter((event) => event.county === county);
+    const future = countyEvents.filter((event) => String(event.end_date) >= today);
+    const dates = future.map((event) => String(event.start_date)).sort();
+    return {
+      county,
+      published_total: countyEvents.length,
+      current_future: future.length,
+      next_event: dates[0] ?? null,
+      latest_future: dates.at(-1) ?? null,
+    };
+  });
+
+  return json({ ...readiness, county_coverage: countyCoverage });
 });
