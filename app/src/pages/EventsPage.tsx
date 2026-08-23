@@ -13,14 +13,19 @@ const EVENT_TYPES = [
 const title = (v: string) => v.replaceAll('_',' ').replace(/\b\w/g,(m)=>m.toUpperCase());
 const monthKey = (v: string) => v.slice(0,7);
 function dateRange(start: string, end: string) {
-  const a = new Date(`${start}T12:00:00`), b = new Date(`${end}T12:00:00`);
-  const short = new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric'});
-  const full = new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const a = new Date(`${start}T12:00:00Z`), b = new Date(`${end}T12:00:00Z`);
+  const short = new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',timeZone:'UTC'});
+  const full = new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
   return start===end ? full.format(a) : `${short.format(a)}–${full.format(b)}`;
 }
 function monthLabel(key: string) {
   const [y,m] = key.split('-').map(Number);
-  return new Intl.DateTimeFormat('en-US',{month:'long',year:'numeric'}).format(new Date(y,m-1,1));
+  return new Intl.DateTimeFormat('en-US',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(Date.UTC(y,m-1,1,12)));
+}
+function pacificToday() {
+  const parts = new Intl.DateTimeFormat('en-US',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+  const get=(type:string)=>parts.find(p=>p.type===type)?.value??'';
+  return `${get('year')}-${get('month')}-${get('day')}`;
 }
 
 function EventCard({event}:{event:PublicEvent}) {
@@ -72,7 +77,7 @@ export function EventsPage(){
   const [county,setCounty]=useState('all'),[sanction,setSanction]=useState('all'),[eventType,setEventType]=useState('all'),[month,setMonth]=useState('all'),[showPast,setShowPast]=useState(false);
   useEffect(()=>{supabase!.rpc('lr_public_events').then(({data,error})=>{if(error)setError(error.message);else setEvents((data??[]) as PublicEvent[]);setLoading(false);});},[]);
   const months=useMemo(()=>Array.from(new Set(events.map(e=>monthKey(e.start_date))).values()).sort(),[events]);
-  const today=new Date().toISOString().slice(0,10);
+  const today=pacificToday();
   const filtered=useMemo(()=>events.filter(e=>{
     if(!showPast&&e.end_date<today&&e.status==='completed')return false;if(county!=='all'&&e.county!==county)return false;if(sanction==='yes'&&e.sanctioned!==true)return false;if(sanction==='no'&&e.sanctioned!==false)return false;if(eventType!=='all'&&e.event_type!==eventType)return false;if(month!=='all'&&monthKey(e.start_date)!==month)return false;return true;
   }),[events,showPast,today,county,sanction,eventType,month]);
