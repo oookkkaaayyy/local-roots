@@ -1,0 +1,51 @@
+{
+  "good": [
+    {
+      "externalId": "evt-101",
+      "name": "SoCal Summer Classic",
+      "startDate": "2026-09-12",
+      "endDate": "2026-09-13",
+      "county": "Orange County",
+      "city": "Huntington Beach",
+      "venueName": "HB Disc Golf Course",
+      "courseName": "Huntington Beach Disc Golf Course",
+      "eventType": "Tournament",
+      "sanctioned": true,
+      "sanctionBasis": "authorized official source",
+      "tier": "C-Tier",
+      "status": "upcoming",
+      "registrationUrl": "https://example.com/register/101",
+      "sourceUrl": "https://example.com/events/101",
+      "clubHost": "Example Club",
+      "sourceRole": "official",
+      "confidence": 0.98
+    }
+  ],
+  "sheetCorruption": [
+    {
+      "externalId": "August",
+      "name": "2",
+      "startDate": "2026-08-10",
+      "endDate": "2026-08-10",
+      "county": "Orange",
+      "courseName": "Yes - C-Tier",
+      "eventType": "tournament",
+      "sourceUrl": "https://example.com/bad",
+      "confidence": 0.99
+    }
+  ],
+  "outsideScope": [
+    {
+      "externalId": "evt-sb",
+      "name": "Santa Barbara Open",
+      "startDate": "2026-10-01",
+      "endDate": "2026-10-01",
+      "county": "Santa Barbara",
+      "courseId": "sb-special",
+      "courseName": "Santa Barbara Course",
+      "eventType": "tournament",
+      "sourceUrl": "https://example.com/sb",
+      "confidence": 0.95
+    }
+  ]
+}
