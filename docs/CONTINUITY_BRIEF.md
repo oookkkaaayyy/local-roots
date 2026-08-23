@@ -3,167 +3,192 @@
 Updated: 2026-08-23
 
 ## Current goal
-Replace the unreliable Google Sheet event tracker with a production-quality `/events` page on the Local Roots website, with minimal ongoing labor and carefully controlled source permissions.
+Replace the unreliable Google Sheet event tracker with a production-quality Local Roots `/events` product: broad six-county coverage, low ongoing labor, explicit provenance and source permissions, and failure modes that are visible instead of silently corrupting the public calendar.
 
 ## Current production foundation
 - Old Google Sheet: requirements/history/regression evidence only; never production source authority.
-- Current software authority: private GitHub repo `oookkkaaayyy/local-roots` on `main`.
+- Software authority: private GitHub repo `oookkkaaayyy/local-roots` on `main`.
 - Browser app: React + TypeScript + Vite under `app/`.
 - Staging: `https://local-roots.pages.dev/`.
-- Local Roots/D&U backend: Supabase project with isolated `lr_` event-domain objects.
-- HBNF remains on a separate Supabase backend and is consumed only through the permitted first-party adapter.
+- Local Roots/D&U backend: Supabase `wtymjxscneufjlkkywyg`, isolated `lr_` event-domain objects.
+- HBNF remains on separate Supabase backend `phcpbvuqibyarpfrftgx` and is consumed only through the permitted first-party adapter.
 
-## Geographic scope
-Production counties: Ventura, Los Angeles, Orange, Riverside, San Bernardino, San Diego.
+Production counties: Ventura, Los Angeles, Orange, Riverside, San Bernardino, San Diego. Default exclusions: Santa Barbara, Imperial, Kern, San Luis Obispo. Scope is configuration-driven.
 
-Default exclusions: Santa Barbara, Imperial, Kern, San Luis Obispo. Scope remains configuration-driven.
+## Completed milestones
+- **Milestone 1:** canonical event domain, provenance, results, overrides, review queue, scope, RLS/public surface, publication safeguards and old-Sheet corruption regressions.
+- **Milestone 2:** normalization, validation, strong-ID matching, fuzzy ambiguity review, field authority, source health/anomalies and last-known-good behavior.
+- **Milestone 4:** public submissions, authenticated admins, approve/merge/reject, overrides/release, exception resolution and source-health operations.
+- **Milestone 5:** public `/events`, protected `/admin/events`, protected `/admin/readiness`, Cloudflare staging and CI/build verification.
 
-## Completed implementation milestones
-- **Milestone 1:** canonical database/domain model, provenance, results, manual overrides, review queue, scope, RLS/public surface, publication safeguards, old-Sheet corruption regressions.
-- **Milestone 2:** normalization, validation, strong-ID-first matching, fuzzy ambiguity routing, authority-aware changes, source-run health/anomaly handling and last-known-good behavior.
-- **Milestone 4:** public submissions, authenticated admin registry, approve/merge/reject, overrides/release, exception resolution, source-health/admin operations.
-- **Milestone 5:** public `/events`, protected `/admin/events`, Cloudflare staging deployment and CI/build verification.
+Active Local Roots Edge Functions include `lr-submit-event`, `lr-admin`, `lr-sync-hbnf`, `lr-launch-readiness`, `lr-sync-socal-rss`, and `lr-integrity-watch`.
 
-Active operational functions include `lr-submit-event`, `lr-admin`, `lr-sync-hbnf`, `lr-launch-readiness`, and `lr-sync-socal-rss`.
+## Current canonical event state — VERIFIED
+- **64 published real events**.
+- **17 current/future events** at latest Pacific-time snapshot.
+- **0 unpublished canonical events**.
+- **0 published events without provenance**.
+- **0 sanctioned published events without sanction-basis provenance**.
+- **0 stale current/future events** under the 14-day freshness gate.
+- 9 HBNF Glow result rows.
+- 3 deliberate medium source-conflict reviews remain open.
+- 1 active Local Roots admin.
+
+Current future county coverage:
+- Ventura 0
+- Los Angeles 3
+- Orange 10
+- Riverside 1
+- San Bernardino 2
+- San Diego 1
+
+Historical county coverage is broader after the 26-event SoCal backfill. The remaining coverage problem is current/future first-party depth, not total historical representation.
 
 ## Staging/auth — VERIFIED
 - Public staging is live at `https://local-roots.pages.dev/`.
-- Public `lr_public_events()` connectivity is verified.
+- Public data is exposed only through the restricted `lr_public_events()` surface; anon/authenticated roles have no direct SELECT on `lr_events`, provenance or review tables.
 - First Local Roots admin is active.
-- Magic-link auth returns through the live staging redirect.
-- Protected admin requests have returned HTTP 200.
-- `/admin/readiness` is now a protected launch-status page backed by `lr-launch-readiness`.
+- Magic-link auth redirects through live staging.
+- Protected admin requests returned HTTP 200.
+- `/admin/readiness` exposes launch gates, future-event freshness and county coverage.
 
-Do not store admin emails, magic links, tokens, Vault values or other authentication material in Git/AKS/docs.
+Never store admin emails, magic links, tokens, Vault values or credentials in Git/AKS/docs.
 
 ## HBNF first-party production adapter — LIVE
 Source key: `hbnf_internal_schedule`.
 
-Why permitted: HBNF is user-controlled/first-party. This does not authorize PDGA, DGS or UDisc harvesting.
-
-Behavior:
-- reads only the HBNF application state needed for Local Roots;
-- normalizes Skins and Glow Doubles into canonical events;
-- stores normalized event/provenance/results data, not full raw league state;
-- uses `hbnf:<mode>:<date>` stable source IDs;
+- user-controlled/first-party;
+- reads only application state required for Local Roots;
+- normalizes Skins and Glow Doubles;
+- stable IDs `hbnf:<mode>:<date>`;
 - provenance precedes publication;
-- disappearance routes to review instead of deletion;
-- finalized Glow results use dense ranking and preserve ties crossing third place;
-- scheduler/fetch/parse/validation/health are distinct states.
+- disappearance routes to review, not deletion;
+- finalized Glow results preserve third-place ties;
+- scheduler/fetch/parse/validation/health remain distinct.
 
-Schedule: 05:00 America/Los_Angeles; automatic retry at 06:00/07:00 only after unhealthy attempts. A post-retry health watch evaluates the required production day and creates one bounded high-severity exception if the day is missing/unhealthy.
-
-First live v1 run failed closed on provenance timestamp ordering. Publication safeguards prevented publication without provenance. v2 fixed the ordering, preserved the failed run as audit evidence, and corrected fetch/parse failure semantics so validation is `skipped` rather than `ok`.
+Schedule: 05:00 America/Los_Angeles; bounded 06:00/07:00 retry after unhealthy attempts. Post-retry health watch creates one bounded high-severity exception for a missing/unhealthy required production day.
 
 Verified v2 state:
-- 31/31 valid, 0 rejected;
-- 31 HBNF canonical events/provenance rows;
+- 31/31 valid;
+- 31 HBNF events/provenance rows;
 - 9 Glow result rows;
-- immediate repeat created 0 duplicates and matched all 31.
+- repeat after strong-ID hardening: 31 matched, 0 created, 0 rejected.
 
-## Regional SoCal source state
-### Manual SoCal DGC calendar
-Source key: `socal_dgc_calendar_manual` / current registry equivalent.
+The real **14-day production soak** starts with first expected day 2026-08-24. Manual/test runs do not count.
 
-The SoCal DGC calendar states its event information is provided by tournament directors and compiled/updated by volunteers. It is used as a **manual factual cross-check**, not a blind HTML crawler.
+## SoCal DGC manual factual source — LIVE
+Source key: `socal_dgc_manual_calendar`  
+URL: `https://socaldiscgolfclub.com/upcoming-events/`
 
-Current manual regional additions total seven, including:
-- Sky High Showdown;
-- Fling XXIX at Chavez Ridge;
-- Nixon Open;
-- NADGT Martha McLean;
-- OG Mamas charity event;
-- SoCal Championships — Amateurs;
-- Billy Goat ~ Fallen Disc Golfers Memorial (2026-11-28, Yucaipa).
+The source states event facts are supplied by tournament directors and compiled/updated by SoCal DGC volunteers. Local Roots uses limited manually verified factual metadata only; it does not crawl linked PDGA/DGS/UDisc pages.
 
-A registration URL supplied by this source may be retained as a link without authorizing crawling of the linked service.
+Current state:
+- 33 canonical events have SoCal manual provenance.
+- 26 missing Feb–Aug in-scope 2026 tournaments were backfilled across all six counties.
+- Public corpus expanded from 38 to 64.
+- migration: `20260823233959_register_socal_manual_source_and_backfill_2026_history`.
 
-### SoCal DGC RSS review-only sentinel — LIVE
+### Backfill failure/recovery lineage
+The first 26-event bulk insertion reused one source URL for all events. The database's unique source-URL invariant accepted only the first provenance row. The publication trigger then correctly kept the other **25 events unpublished**. No unproven event leaked publicly.
+
+Repair:
+- unique per-event SoCal provenance anchors;
+- missing 25 provenance rows inserted;
+- publication only after provenance existed;
+- final state 64/64 published, 0 provenance gaps, 0 sanction-basis gaps.
+
+Rollback regression `supabase/tests/socal_backfill_provenance_acceptance.sql` now proves:
+- publication fails closed without provenance;
+- duplicate same-source URLs cannot silently map to two canonical events;
+- unique per-event provenance permits publication.
+
+## SoCal RSS sentinel — LIVE REVIEW ONLY
 Source key: `socal_dgc_rss`.
 
-`https://socaldiscgolfclub.com/feed/` is an intentionally published WordPress syndication feed. It is used only as a low-impact **change detector**:
-- runs every six hours;
-- has no authoritative event fields;
-- cannot publish, unpublish or alter canonical events;
-- baseline run establishes the latest-item cursor and does not flood historical posts;
-- stores only discovery metadata needed for review;
-- relevant new items create review alerts only;
-- cursor gaps create one bounded review rather than guessed changes;
-- scheduler secret is Vault-backed.
+- official WordPress RSS endpoint;
+- every six hours;
+- zero authoritative fields;
+- cannot publish/modify events;
+- excluded from production launch soak and authoritative health gates;
+- baseline/repeat/401/idempotency QA passed.
 
-Verified QA:
-- baseline: 10/10 valid, healthy, 0 historical alerts;
-- immediate repeat: healthy, 0 duplicate/new alerts;
-- unauthorized invocation: HTTP 401;
-- controlled rewind test: exactly one relevant discovery/review alert, cursor returned to the real latest item;
-- disposable discovery/review rows removed afterward, leaving zero QA discovery items/open RSS alerts.
+A San Diego Aces RSS endpoint exists but is stale; no scheduler was installed.
 
-San Diego Aces also exposes a valid WordPress RSS endpoint, but its current feed is stale (last build March 2023), so no scheduler was installed. Direct-source outreach remains the appropriate path.
+## Direct organizer provenance / pending regional sources
+### DiscGolfVR360 — live manual provenance
+Source key `discgolfvr360_manual`. Current verified use: 2026 Sky High Showdown organizer page confirms Aug. 22–23, Pro B / Am C and Inland Flight Club host.
 
-## Current event-domain state
-- **38 published events**.
-- At the most recent coverage snapshot, **17 were current/future**.
-- 0 published events without provenance.
-- 0 sanctioned published events without sanction-basis provenance.
-- 3 deliberate medium source-conflict reviews remain open.
-- Result rows: 9 HBNF Glow rows.
-- Active Local Roots admins: 1.
-
-Current future coverage is strongest in Orange County. Ventura currently has no published event in the canonical corpus; Riverside and San Diego are also sparse. Do not fill those gaps by prohibited scraping.
+### Disabled pending direct sources
+These registry entries intentionally have `enabled=false`, no authoritative fields and no scheduler:
+- `ventura_disc_golf_club_direct` — official Lake Casitas confirms VDGC manages disc-golf events there; current event dates still require a direct club source.
+- `conejo_disc_golf_club_direct` — official CRPD confirms CDGC partnership at Rabbit Flats/Sapwi; needed especially for Sapwi conflict resolution.
+- `san_diego_aces_direct` — official club identity/contact path, but displayed schedule is stale; direct current source needed.
+- `dog_haus_disc_golf_direct` — Mast Park organizer/concession source candidate; storefront lacks reliable current calendar.
 
 ## Open source conflicts — DO NOT GUESS
 1. **Fling XXIX tier:** SoCal says C-Tier; separate registration/sanction observations conflict. Event is public with tier intentionally null.
-2. **Sapwi Trails dates:** SoCal says Sep 26–27; another current listing observed Sep 26 only. Not published pending clean permitted verification.
-3. **Castaic lineage:** current/older evidence conflicts on name/date history. Not published pending a clean organizer/permitted current source.
+2. **Sapwi Trails dates:** SoCal says Sep. 26–27; another current listing observed Sep. 26 only. Not published pending direct/permitted verification.
+3. **Castaic lineage:** current/older evidence conflicts on name/date history. Not published pending clean organizer/permitted verification.
 
-## Public submission workflow — VERIFIED
-Disposable live QA passed: HTTP 201 submission, valid/in-scope candidate, review routing, admin rejection, then exact cleanup with no QA event/candidate/review rows remaining.
+## Integrity/watch system — VERIFIED
+`lr_integrity_watch` is a Vault-secret-gated Edge worker invoked by the database schedule. Version 2 does not merely check for HTTP 200:
+1. fetches Cloudflare staging HTML;
+2. verifies Local Roots shell/title;
+3. extracts the deployed JS bundle;
+4. fetches that bundle;
+5. requires markers for current readiness features (`Future-event freshness`, `Latest future event`, `Launch gate`);
+6. checks public event/provenance/sanction counts;
+7. records a daily integrity snapshot and creates bounded anomaly reviews.
 
-## Launch readiness / production soak
-`lr_launch_readiness()` is the controlling launch gate. Direct execution is restricted; staging admins consume it through protected `lr-launch-readiness`.
+Latest forced check after the backfill:
+- HTTP 200;
+- shell OK;
+- deployed JS bundle OK;
+- no required markers missing;
+- 64 public events;
+- 0 provenance gaps;
+- 0 sanction-basis gaps;
+- 0 integrity anomalies.
 
-Launch requires, at minimum:
-- configured scheduled production sources completing their required soak;
+The separate future-event freshness watch creates a review if a current/future event exceeds the 14-day verification window and closes the exception after reverification. Current stale future events: 0.
+
+## Launch readiness
+`lr_launch_readiness()` controls launch readiness; staging admins consume it through protected `lr-launch-readiness`.
+
+Required gates include:
+- HBNF 14 consecutive healthy final daily production runs;
+- no high/critical blocking review;
 - no published event without provenance;
-- no sanctioned published event without sanction basis;
-- no blocking high/critical review item.
+- no sanctioned event without sanction-basis provenance;
+- no stale current/future event under the 14-day gate;
+- final mobile/desktop staging smoke check.
 
-HBNF requires **14 consecutive healthy final daily production runs**. Manual/test runs do not count. A missing/unhealthy final required day breaks the streak. Current real soak began with the first expected HBNF production day on 2026-08-24; do not claim completion until the real gate reports it.
-
-## Public/frontend QA — CURRENT
-Recent staging hardening:
-- current/past filtering uses `America/Los_Angeles`, not UTC;
-- date-only labels are viewer-timezone-stable;
-- completed/canceled events do not show active Registration buttons;
-- stale verification copy says to confirm details before traveling;
-- result division labels are normalized for display;
-- mobile admin navigation retains Admin and Launch Status links;
-- stale predeployment configuration copy was removed.
-
-Full GitHub CI has passed against the current staging UI state (domain tests, TypeScript, production Vite build). Temporary verification PRs were closed unmerged.
+Current database/content gates pass except the real HBNF soak, which cannot be accelerated honestly.
 
 ## Security/advisor state
-- Private Local Roots tables intentionally have RLS enabled with no public allow policy; Supabase reports these as informational `rls_enabled_no_policy` notices.
-- Performance notices are currently unused-index INFO findings. Do not remove supporting/new foreign-key indexes merely because traffic is still low.
-- Supabase reports project-level `Leaked Password Protection Disabled`. Local Roots admin uses passwordless magic links, so this does not block Local Roots. Because the project is shared with D&U, do not change this global auth setting without confirming the effect on any password-based D&U flow.
+- Direct public/authenticated table access to private Local Roots data is denied.
+- RLS-with-no-policy INFO findings on private tables are deliberate deny-by-default behavior.
+- Duplicate event-source unique-index WARN was removed by migration `20260823234405_remove_duplicate_event_source_external_id_index`; the original uniqueness constraint remains.
+- Remaining performance notices are unused-index INFO findings on young/low-traffic structures; do not remove needed FK/support indexes merely due low current traffic.
+- Supabase leaked-password protection WARN is a project/auth-plan feature. Do not incur cost or change shared D&U auth behavior without explicit approval.
 
 ## Source/compliance rules
 - No PDGA production adapter until commercial-context use, storage/caching, results rights and applicable agreement are clarified.
-- No automated DGS/UDisc scraping.
-- Prefer user-controlled systems, organizer submissions, intentional structured feeds, manual factual verification and explicit permission.
-- A technically valid but stale feed is not worth scheduling.
+- No automated Disc Golf Scene or UDisc scraping.
+- Registration/results URLs supplied by permitted sources may be retained as outbound links without fetching the linked platform.
+- Prefer first-party/user-controlled sources, direct organizer submissions, intentional structured feeds, limited factual manual verification and explicit permission.
+- A technically valid but stale feed is not a production source.
 
-## Pending outreach artifacts
-Gmail contains unsent draft-only outreach for SoCal DGC, San Diego Aces, Lake Casitas/VDGC contact routing, and DiscGolfVR360/source-feed routing. **Do not send without explicit user approval.** Draft existence is not permission.
+## Pending outreach — UNSENT
+Gmail contains draft-only outreach for SoCal DGC, San Diego Aces, Lake Casitas/VDGC, DiscGolfVR360, Conejo/CRPD, Dog Haus/Mast Park and City of Riverside/Martha routing. **Do not send without explicit user approval.**
 
 ## Autonomous continuation
-The user explicitly authorized continued safe progress without needing to remain at the computer. An hourly Local Roots continuation condition-watch is enabled. It may perform safe QA, source-independent implementation, permitted feed/source work, cleanup, documentation and AKS writeback. It must not send external email, make paid commitments, or use prohibited/permission-gated sources without the required approval.
+User explicitly authorized continued safe progress without staying at the computer. Native ChatGPT tasks cannot recur more than hourly. An hourly Local Roots continuation task has executed at least once; it may continue safe QA, source-independent implementation, permitted source work, cleanup, documentation and AKS writeback. It must not send external email, make paid commitments or use permission-gated sources without approval.
 
 ## Next work
-No user action is currently required. Continue with:
-1. real 14-day HBNF production-soak observation and source-health monitoring;
-2. broader permitted/direct organizer coverage, especially Ventura, Riverside and San Diego;
-3. resolve the three conflicts only when stronger permitted evidence exists;
-4. ongoing staging/mobile/accessibility/functional QA;
-5. keep source/permission and launch-readiness behavior regression-tested;
-6. later custom-domain/public-launch decision and optional PDGA outreach/integration.
+1. Observe the real HBNF 14-day production soak beginning Aug. 24.
+2. Strengthen current/future first-party coverage, especially Ventura, Riverside and San Diego.
+3. Resolve Fling/Sapwi/Castaic only with stronger permitted/direct evidence.
+4. Continue staging/mobile/accessibility/functional QA.
+5. Keep source, publication, freshness and integrity behavior regression-tested.
+6. Later decide custom-domain/public launch and optional PDGA outreach/integration.
