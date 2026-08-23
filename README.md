@@ -13,18 +13,23 @@ Completed and verified:
 - Milestone 4 organizer submissions and authenticated admin operations
 - Milestone 5 public `/events` web application and `/admin/events` operations UI
 - Cloudflare Pages staging deployment: `https://local-roots.pages.dev/`
+- initial Local Roots admin authentication/authorization on staging
+- first permitted automated production source: user-controlled HB Night Flyers
 
-The Local Roots event backend is live in the existing Local Roots/D&U Supabase project under isolated `lr_` objects. Two Edge Functions are active: public event submissions and JWT-protected event administration.
+The Local Roots event backend is live in the existing Local Roots/D&U Supabase project under isolated `lr_` objects. HBNF remains on a separate backend and is read through a dedicated first-party adapter; no HBNF credential values or full raw league-state payloads are stored in Git.
 
-The deployable React/TypeScript/Vite application lives in `app/`. GitHub CI runs both the domain test suite and production web build; the final deployable-state verification passed. After staging deployment, live browser requests to the public `lr_public_events` RPC returned HTTP 200, verifying frontend-to-backend public-read connectivity.
+Active Edge Functions:
+- `lr-submit-event`
+- `lr-admin`
+- `lr-sync-hbnf`
 
-Production event/submission/review/result tables remain intentionally empty until real source data is approved or entered. The six-county scope profile and Local Roots submission source are the only seeded event-system records.
+The HBNF adapter is scheduled from 05:00 Pacific with bounded automatic retry at 06:00/07:00 after an unhealthy attempt. Its corrected v2 live run processed 31/31 valid records with zero rejections, and an immediate repeat created zero duplicates (31/31 matched). Current canonical data contains 31 published HBNF events, including 10 upcoming events, plus 9 verified Glow result rows.
 
-### Current next step
+The first v1 HBNF run failed closed on a provenance timestamp-order constraint. Nothing was published without provenance; the failure remains in source-run history and the corrected v2 implementation passed subsequent live and idempotency verification.
 
-Staging is live. Bootstrap the first authorized admin via Supabase magic-link authentication, then perform end-to-end staging QA, permitted real-data population/backfill, source integration, and launch-soak validation.
+The deployable React/TypeScript/Vite application lives in `app/`. GitHub CI runs the domain test suite and production web build. Live browser requests to `lr_public_events` and authenticated requests to the protected admin function have returned HTTP 200 from staging.
 
-The staging URL is a QA surface, not evidence of final visual/functional acceptance.
+The staging URL remains a QA surface, not final product acceptance.
 
 Production scope:
 - Ventura County
@@ -44,4 +49,4 @@ Read first:
 - `docs/CODEX_BUILD_PLAN.md`
 - `docs/STAGING_DEPLOYMENT.md`
 
-Do not implement a live third-party source adapter until its permission/access path is documented. PDGA is optional to the core product and remains disabled pending licensing/data-use clarification.
+Do not implement another live external source adapter until its permission/access path is documented. PDGA is optional to the core product and remains disabled pending licensing/data-use clarification.
