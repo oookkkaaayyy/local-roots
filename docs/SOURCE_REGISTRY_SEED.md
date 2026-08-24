@@ -51,7 +51,8 @@ Policy:
 - no article prose copying;
 - linked PDGA/DGS/UDisc pages are not fetched as part of this source;
 - source conflicts route to review;
-- publication requires provenance first.
+- publication requires provenance first;
+- the page is organized by **series year**, not necessarily calendar year. Opening November/December entries may belong to the prior calendar year. Never infer the calendar year from the page title alone; validate chronology before promotion. The Dec. 20 Cowtown Christmas Classic shown before January on the 2026 Series page had already occurred by the club's Jan. 21, 2026 update and must not be created as a Dec. 2026 future event.
 
 Current verified state:
 - **33 canonical events have SoCal manual provenance**;
@@ -110,6 +111,12 @@ URL: https://doghausdg.com/
 
 Dog Haus is the Mast Park concessionaire and a recurring local event organizer, but its storefront does not expose a reliable current calendar. Use a direct organizer source/submission; do not substitute DGS scraping.
 
+### City of Riverside Parks / Martha McLean
+Source key: `riverside_parks_martha_direct`  
+URL: https://www.riversideca.gov/park_rec/
+
+City of Riverside Parks, Recreation and Community Services operates Martha McLean Memorial Park and its published fee schedule includes a Martha McLean Disc Golf Tournament category. This establishes a first-party routing/venue-authority path only. The source is disabled until a direct organizer feed/submission or explicit permission exists; it does not establish current tournament dates.
+
 ## County coverage priorities
 
 Current **future** public coverage:
@@ -123,7 +130,7 @@ Current **future** public coverage:
 Historical coverage is materially broader after the SoCal backfill. The remaining problem is not whether those counties have ever been represented; it is establishing reliable **current/future first-party coverage**, especially Ventura, Riverside and San Diego.
 
 ### Riverside
-Current future public event: Oct. 4 NADGT at Martha McLean, represented through the SoCal manual source. Priority is a direct Martha McLean/local organizer source. An unsent routing draft exists for City of Riverside Parks.
+Current future public event: Oct. 4 NADGT at Martha McLean, represented through the SoCal manual source. The disabled `riverside_parks_martha_direct` record now preserves the first-party City Parks route to the current Martha McLean organizer/club. An unsent routing draft exists; no direct feed is active.
 
 ### Los Angeles
 Los Angeles Disc Golf Club / California Disc Golf Series remains an important repeat-organizer candidate. Its official series page is reachable, but current tooling does not reliably expose rendered event data. Do not reconstruct the series from registration-platform copies.
@@ -135,7 +142,7 @@ Current future coverage includes Sky High and Billy Goat. Yucaipa/Inland organiz
 
 1. **Fling XXIX tier:** SoCal says C-Tier; separate registration/sanction observations conflict. Event remains public with tier intentionally null.
 2. **Sapwi Trails dates:** SoCal says Sep. 26–27; another current listing observed Sep. 26 only. Not published pending clean direct/permitted verification.
-3. **Castaic lineage:** current/older evidence conflicts on event name/date history. Not published pending clean organizer/permitted verification.
+3. **Castaic lineage:** SoCal's July 27 post listed Oct. 3–4, while the maintained schedule now lists Oct. 17; registration/search snapshots have also disagreed on name/date. This is retained as an explicit schedule-change/conflict history and remains unpublished pending the clean current organizer verification already required by the review item.
 
 ## PDGA / Disc Golf Scene / UDisc
 
@@ -155,7 +162,7 @@ Do not send without explicit user approval.
 - Lake Casitas — route to current Ventura Disc Golf Club source
 - DiscGolfVR360 — preferred first-party event source/feed request
 - Conejo Recreation & Park District — route to current Conejo Disc Golf Club source
-- Dog Haus Disc Shop — Mast Park event-source request
+- Dog Haus Disc Golf Shop — Mast Park event-source request
 - City of Riverside Parks — route to current Martha McLean club/organizer source
 
 ## Reliability rules
@@ -167,6 +174,7 @@ Do not send without explicit user approval.
 - Source omission does not silently delete canonical events.
 - Discovery-only sources cannot satisfy production soak or authoritative health gates.
 - A technically valid but stale feed is not worth scheduling.
+- Series-year pages must not be interpreted as calendar-year pages without event-level date validation.
 - Missing organizers are explicit coverage gaps, not invisible parser failures.
 
 ## Source onboarding order
