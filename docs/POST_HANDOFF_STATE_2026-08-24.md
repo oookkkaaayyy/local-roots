@@ -14,6 +14,7 @@ This file records live changes after `docs/CONTINUITY_BRIEF.md` and the frozen `
 - HBNF Glow result rows remain 9.
 - The repeat manual HBNF sync is healthy/idempotent: 32/32 valid, 0 new, 0 changed, 0 rejected, 0 missing.
 - Three existing medium source conflicts remain open: Fling XXIX tier, Sapwi Trails dates, and Castaic name/date lineage.
+- A forced integrity check after the scheduler repair again verified Cloudflare staging HTTP 200, `staging_ok=true`, 65 public events, zero provenance/sanction-basis gaps, and no anomalies.
 
 ## HBNF provenance correction
 HBNF is a first-party aggregate source. Stable identity remains `(source_id, external_id)` using IDs such as `hbnf:<mode>:<date>`. `source_url` is provenance/location and now uses the real public HBNF URL `https://hbnightflyers.com/` rather than fabricated Local Roots-only URL fragments.
@@ -27,8 +28,18 @@ The live `lr-sync-hbnf` Edge Function is parser version `hbnf-direct-v3`; GitHub
 
 Do not claim public-launch readiness until the real soak and remaining final launch gates pass.
 
+## Ventura direct-source evidence
+The disabled `ventura_disc_golf_club_direct` routing source remains non-authoritative for event fields and has no automated retrieval enabled. Its official source identity is now strengthened by two permitted first-party/government sources:
+
+- Lake Casitas / Casitas Municipal Water states that disc-golf events at Coyote Point are managed by Ventura Disc Golf Club and directs event questions to the club.
+- A City of Ventura Parks & Recreation supplemental packet for the June 25, 2025 meeting contains a Ventura Disc Golf Club board-member statement that the club signed an MOU with Casitas Municipal Water District in 2006 to operate and maintain Coyote Point, hosts two tournaments there each year, and identifies the Coyote Classic as its fall tournament.
+
+This evidence establishes organizer/source identity and recurring-event lineage only. It does **not** establish any 2026 date, tier, registration state, or permission for automated retrieval. Disc Golf Scene, PDGA, and UDisc remain prohibited as production fallback evidence.
+
 ## Source-control note
-The migration was already live when post-handoff verification detected that GitHub main had briefly lagged the deployed state. Main was repaired to include the exact applied migration and corrected HBNF adapter source, then the adapter was redeployed from the aligned source.
+The HBNF migration was already live when post-handoff verification detected that GitHub main had briefly lagged the deployed state. Main was repaired to include the exact applied migration and corrected HBNF adapter source, then the adapter was redeployed from the aligned source.
 
 ## Automation reliability
-The exact-hourly `Continue Local Roots` task remains the authorized continuation task, but scheduling reliability is not assumed from configuration state alone. It must be judged from observed post-handoff executions. The no-scraping/no-send/no-paid/no-destructive guardrails remain unchanged.
+The exact-hourly `Continue Local Roots` task is the controlling continuation automation. Its scheduled 00:05 Pacific occurrence on August 24 recorded an actual run at 00:08:35 Pacific. The several-minute difference is therefore treated as task-service delivery latency, not evidence that the scheduler is inert. A temporary condition-watch diagnostic duplicate was disabled to avoid duplicate continuation runs. Future reliability remains evidence-based, but the immediate paused/inert concern is resolved.
+
+The no-scraping/no-send/no-paid/no-destructive guardrails remain unchanged.
