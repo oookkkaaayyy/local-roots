@@ -106,21 +106,28 @@ Current state:
 - 33 canonical events have SoCal manual provenance.
 - 26 missing Feb–Aug in-scope 2026 tournaments were backfilled across all six counties.
 - Public corpus expanded from 38 to 64.
-- migration: `20260823233959_register_socal_manual_source_and_backfill_2026_history`.
+- all 33 SoCal provenance rows now use the one real aggregate calendar URL;
+- all 33 retain distinct source-scoped external IDs;
+- historical backfill migration: `20260823233959_register_socal_manual_source_and_backfill_2026_history`;
+- aggregate provenance correction: `20260824010103_allow_shared_provenance_urls_for_aggregate_sources`.
 
 ### Important series-year rule
 The SoCal page is a **series-year** calendar, not necessarily a calendar-year list. November/December entries can precede January while belonging to the prior calendar year. Never infer the event year from the page title alone. This rule prevented the Dec. 20 Cowtown Christmas Classic listed at the top of the 2026 Series page from being falsely created as a Dec. 2026 future event; a January 2026 SoCal update already described that event as having been played.
 
-### Backfill failure/recovery lineage
-The first 26-event bulk insertion reused one source URL for all events. The database's unique source-URL invariant accepted only the first provenance row. The publication trigger then correctly kept the other **25 events unpublished**. No unproven event leaked publicly.
+### Backfill failure / provenance-model correction
+The first 26-event bulk insertion reused the one real SoCal source page while the original schema incorrectly treated `(source_id, source_url)` as unique. Only the first provenance row was accepted, and the publication trigger correctly left the other 25 events unpublished. No unproven event leaked publicly.
 
-Repair:
-- unique per-event SoCal provenance anchors;
-- missing 25 provenance rows inserted;
-- publication only after provenance existed;
-- final state 64/64 published, 0 provenance gaps, 0 sanction-basis gaps.
+A provisional repair used Local Roots-only `#lr-...` URL fragments to satisfy the mistaken uniqueness rule. A later provenance audit correctly identified those fragments as synthetic rather than genuine source anchors. The model was then corrected instead of preserving fake deep links:
+- `(source_id, external_id)` remains the unique source-scoped identity key;
+- `source_url` is provenance/location, not identity;
+- aggregate/calendar sources may legitimately reuse the same actual page URL for many events;
+- the source-URL unique index was replaced with a non-unique lookup index;
+- all synthetic SoCal fragments were replaced with the actual shared calendar URL.
 
-Rollback regression `supabase/tests/socal_backfill_provenance_acceptance.sql` now proves publication fails closed without provenance and duplicate same-source URLs cannot silently map to two canonical events.
+Rollback regression `supabase/tests/socal_backfill_provenance_acceptance.sql` now proves:
+- publication fails closed without provenance;
+- distinct source external IDs can share one real aggregate provenance URL;
+- a duplicate source-scoped external ID is still rejected.
 
 A later completeness pass filled the SoCal Amateur Championships course field from the permitted source as `Brengle Terrace, Kit Carson, and TBD 3rd Course` and recorded the source-backed change in `lr_event_change_log`.
 
@@ -191,7 +198,8 @@ Current database/content gates pass except the real HBNF soak, which cannot be a
 ## Security/advisor state
 - Direct public/authenticated table access to private Local Roots data is denied.
 - RLS-with-no-policy INFO findings on private tables are deliberate deny-by-default behavior.
-- Duplicate event-source unique-index WARN was removed by migration `20260823234405_remove_duplicate_event_source_external_id_index`; the original uniqueness constraint remains.
+- Duplicate event-source external-ID unique-index WARN was removed by migration `20260823234405_remove_duplicate_event_source_external_id_index`; one source-scoped external-ID uniqueness rule remains.
+- Aggregate provenance URLs are intentionally non-unique after migration `20260824010103_allow_shared_provenance_urls_for_aggregate_sources`.
 - Remaining performance notices are unused-index INFO findings on young/low-traffic structures; do not remove needed FK/support indexes merely due low current traffic.
 - Supabase leaked-password protection WARN is a project/auth-plan feature. Do not incur cost or change shared D&U auth behavior without explicit approval.
 
