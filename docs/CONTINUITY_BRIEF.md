@@ -34,6 +34,16 @@ Active Local Roots Edge Functions include `lr-submit-event`, `lr-admin`, `lr-syn
 - 3 deliberate medium source-conflict reviews remain open.
 - 1 active Local Roots admin.
 
+A Pacific-time structural audit of the 64 published rows currently reports:
+- 0 missing counties;
+- 0 missing cities;
+- 0 missing course/venue fields;
+- 0 unknown sanction statuses;
+- 0 past/future status-date mismatches;
+- 0 future rows without verification timestamps;
+- 0 duplicate normalized name+date groups;
+- 1 sanctioned row without a tier: **Fling XXIX**, intentionally null because its tier is under explicit source-conflict review.
+
 Current future county coverage:
 - Ventura 0
 - Los Angeles 3
@@ -51,6 +61,14 @@ Historical county coverage is broader after the 26-event SoCal backfill. The rem
 - Magic-link auth redirects through live staging.
 - Protected admin requests returned HTTP 200.
 - `/admin/readiness` exposes launch gates, future-event freshness and county coverage.
+
+Latest public `/events` behavior on `main`:
+- default upcoming mode hides every event whose end date is before the current **Pacific** date, independent of stale canonical status labels;
+- month choices show only current/future months unless `Show past events` is enabled;
+- a selected historical month resets safely when past mode is turned off;
+- host and TD labels are distinct (`Hosted by … · TD: …` vs `TD: …`).
+
+Exact-state CI verification passed in workflow run `32678204818`; temporary PR #12 was closed unmerged. Cloudflare then deployed a bundle containing all of those current markers, verified independently by `lr-integrity-watch` v3.
 
 Never store admin emails, magic links, tokens, Vault values or credentials in Git/AKS/docs.
 
@@ -74,7 +92,9 @@ Verified v2 state:
 - 9 Glow result rows;
 - repeat after strong-ID hardening: 31 matched, 0 created, 0 rejected.
 
-The real **14-day production soak** starts with first expected day 2026-08-24. Manual/test runs do not count.
+The real **14-day production soak** starts with first expected day 2026-08-24. At the latest Aug. 23 Pacific check, `daily_run_due=false`, 0/14 days had accrued, and no missed/unhealthy day existed. Do not infer soak progress from manual/test runs.
+
+All production-support cron jobs were verified active, including the HBNF gate, post-retry source-health watch, public-integrity watch, future-event freshness watch and SoCal RSS discovery sentinel.
 
 ## SoCal DGC manual factual source — LIVE
 Source key: `socal_dgc_manual_calendar`  
@@ -88,6 +108,9 @@ Current state:
 - Public corpus expanded from 38 to 64.
 - migration: `20260823233959_register_socal_manual_source_and_backfill_2026_history`.
 
+### Important series-year rule
+The SoCal page is a **series-year** calendar, not necessarily a calendar-year list. November/December entries can precede January while belonging to the prior calendar year. Never infer the event year from the page title alone. This rule prevented the Dec. 20 Cowtown Christmas Classic listed at the top of the 2026 Series page from being falsely created as a Dec. 2026 future event; a January 2026 SoCal update already described that event as having been played.
+
 ### Backfill failure/recovery lineage
 The first 26-event bulk insertion reused one source URL for all events. The database's unique source-URL invariant accepted only the first provenance row. The publication trigger then correctly kept the other **25 events unpublished**. No unproven event leaked publicly.
 
@@ -97,10 +120,9 @@ Repair:
 - publication only after provenance existed;
 - final state 64/64 published, 0 provenance gaps, 0 sanction-basis gaps.
 
-Rollback regression `supabase/tests/socal_backfill_provenance_acceptance.sql` now proves:
-- publication fails closed without provenance;
-- duplicate same-source URLs cannot silently map to two canonical events;
-- unique per-event provenance permits publication.
+Rollback regression `supabase/tests/socal_backfill_provenance_acceptance.sql` now proves publication fails closed without provenance and duplicate same-source URLs cannot silently map to two canonical events.
+
+A later completeness pass filled the SoCal Amateur Championships course field from the permitted source as `Brengle Terrace, Kit Carson, and TBD 3rd Course` and recorded the source-backed change in `lr_event_change_log`.
 
 ## SoCal RSS sentinel — LIVE REVIEW ONLY
 Source key: `socal_dgc_rss`.
@@ -110,7 +132,8 @@ Source key: `socal_dgc_rss`.
 - zero authoritative fields;
 - cannot publish/modify events;
 - excluded from production launch soak and authoritative health gates;
-- baseline/repeat/401/idempotency QA passed.
+- baseline/repeat/401/idempotency QA passed;
+- latest scheduled run remained healthy at 10/10 valid, with 0 new items and 0 alerts.
 
 A San Diego Aces RSS endpoint exists but is stale; no scheduler was installed.
 
@@ -124,27 +147,27 @@ These registry entries intentionally have `enabled=false`, no authoritative fiel
 - `conejo_disc_golf_club_direct` — official CRPD confirms CDGC partnership at Rabbit Flats/Sapwi; needed especially for Sapwi conflict resolution.
 - `san_diego_aces_direct` — official club identity/contact path, but displayed schedule is stale; direct current source needed.
 - `dog_haus_disc_golf_direct` — Mast Park organizer/concession source candidate; storefront lacks reliable current calendar.
+- `riverside_parks_martha_direct` — City of Riverside Parks operates Martha McLean and documents a disc-golf-tournament use category; this is a first-party routing path only and does not establish current dates or automation permission.
 
 ## Open source conflicts — DO NOT GUESS
 1. **Fling XXIX tier:** SoCal says C-Tier; separate registration/sanction observations conflict. Event is public with tier intentionally null.
 2. **Sapwi Trails dates:** SoCal says Sep. 26–27; another current listing observed Sep. 26 only. Not published pending direct/permitted verification.
-3. **Castaic lineage:** current/older evidence conflicts on name/date history. Not published pending clean organizer/permitted verification.
+3. **Castaic lineage:** SoCal's July 27 post listed Oct. 3–4 while its maintained current schedule now lists Oct. 17; other registration/search snapshots also disagree on name/date. Retain this schedule-change/conflict history and keep the event unpublished until the clean current organizer verification required by the review item exists.
 
 ## Integrity/watch system — VERIFIED
-`lr_integrity_watch` is a Vault-secret-gated Edge worker invoked by the database schedule. Version 2 does not merely check for HTTP 200:
-1. fetches Cloudflare staging HTML;
-2. verifies Local Roots shell/title;
-3. extracts the deployed JS bundle;
-4. fetches that bundle;
-5. requires markers for current readiness features (`Future-event freshness`, `Latest future event`, `Launch gate`);
-6. checks public event/provenance/sanction counts;
-7. records a daily integrity snapshot and creates bounded anomaly reviews.
+`lr_integrity_watch` is a Vault-secret-gated Edge worker invoked by the database schedule. Version 3 checks the actual Cloudflare deployment rather than treating HTTP 200 as sufficient:
+1. fetch Cloudflare staging HTML;
+2. verify Local Roots shell/title;
+3. extract and fetch the deployed JS bundle;
+4. require current readiness markers plus `/events` markers (`Show past events`, `All visible months`, `Hosted by`, `TD:`);
+5. check public event/provenance/sanction counts;
+6. record a daily integrity snapshot and create bounded anomaly reviews.
 
-Latest forced check after the backfill:
+Latest forced v3 check after the public-events UI update:
 - HTTP 200;
 - shell OK;
-- deployed JS bundle OK;
-- no required markers missing;
+- bundle `https://local-roots.pages.dev/assets/index-BmliYL6y.js` fetched successfully;
+- all required frontend markers present;
 - 64 public events;
 - 0 provenance gaps;
 - 0 sanction-basis gaps;
@@ -183,7 +206,7 @@ Current database/content gates pass except the real HBNF soak, which cannot be a
 Gmail contains draft-only outreach for SoCal DGC, San Diego Aces, Lake Casitas/VDGC, DiscGolfVR360, Conejo/CRPD, Dog Haus/Mast Park and City of Riverside/Martha routing. **Do not send without explicit user approval.**
 
 ## Autonomous continuation
-User explicitly authorized continued safe progress without staying at the computer. Native ChatGPT tasks cannot recur more than hourly. An hourly Local Roots continuation task has executed at least once; it may continue safe QA, source-independent implementation, permitted source work, cleanup, documentation and AKS writeback. It must not send external email, make paid commitments or use permission-gated sources without approval.
+User explicitly authorized continued safe progress without staying at the computer. The exact-hourly `Continue Local Roots` automation is enabled. Its guardrails prohibit PDGA/DGS/UDisc scraping, external email sends and paid commitments without approval; it may continue safe QA, source-independent implementation, permitted source work, cleanup, documentation and AKS writeback. The tool response after re-enabling it did not provide a concrete next-run timestamp, so no specific future execution time is claimed.
 
 ## Next work
 1. Observe the real HBNF 14-day production soak beginning Aug. 24.
