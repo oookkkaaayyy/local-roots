@@ -58,9 +58,22 @@ Current verified state:
 - **33 canonical events have SoCal manual provenance**;
 - a 26-event Feb–Aug 2026 historical backfill expanded the public corpus from 38 to 64;
 - historical additions span all six production counties: LA 9, Orange 1, Riverside 2, San Bernardino 6, San Diego 6, Ventura 2;
-- migration: `20260823233959_register_socal_manual_source_and_backfill_2026_history`.
+- all 33 SoCal provenance rows now point to the real shared calendar URL;
+- all 33 have distinct source-scoped external IDs;
+- historical backfill migration: `20260823233959_register_socal_manual_source_and_backfill_2026_history`;
+- aggregate-provenance correction: `20260824010103_allow_shared_provenance_urls_for_aggregate_sources`.
 
-Backfill QA caught a provenance bug: the first implementation reused one `source_url` for every event, so the database accepted only one provenance row. The publication safeguard correctly kept the other 25 events unpublished. The repair assigned unique per-event SoCal anchors, inserted the missing provenance, and only then published the events. A rollback regression now proves publication fails without provenance and duplicate same-source URLs cannot silently identify multiple events.
+### Backfill failure / provenance-model correction
+The first backfill attempt reused the one real SoCal calendar URL for all 26 events while the schema incorrectly required `(source_id, source_url)` to be unique. Only one provenance row was therefore accepted, and the publication safeguard correctly kept the other 25 events unpublished. No unproven event leaked publicly.
+
+The first repair restored publication by assigning Local Roots-only `#lr-...` fragments, but a later provenance audit correctly identified those fragments as synthetic rather than genuine page anchors. The **model** was then fixed instead of preserving fake deep links:
+- `(source_id, external_id)` remains the unique source-scoped identity key;
+- `source_url` is provenance/location, not identity;
+- aggregate/calendar sources may legitimately reuse the same real page URL across many events;
+- the unique source-URL index was replaced with a normal lookup index;
+- all synthetic SoCal fragments were replaced by `https://socaldiscgolfclub.com/upcoming-events/`.
+
+The rollback regression now proves both sides of the rule: publication fails closed without provenance; two distinct source external IDs may share one aggregate provenance URL; a duplicate source-scoped external ID still fails.
 
 ### SoCal Disc Golf Club RSS — LIVE REVIEW-ONLY SENTINEL
 URL: https://socaldiscgolfclub.com/feed/  
@@ -168,7 +181,8 @@ Do not send without explicit user approval.
 ## Reliability rules
 
 - A non-null external ID is a strong identity key within one source. `(source_id, external_id)` is unique.
-- One `(source_id, source_url)` cannot silently identify multiple events.
+- `source_url` is provenance/location, not identity; a real aggregate/calendar URL may support multiple canonical events.
+- Never fabricate URL fragments merely to satisfy a database uniqueness rule.
 - Provenance must exist before publication.
 - Sanctioned publication requires sanction-basis provenance.
 - Source omission does not silently delete canonical events.
