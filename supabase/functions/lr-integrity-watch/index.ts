@@ -10,6 +10,10 @@ const REQUIRED_FRONTEND_MARKERS = [
   "Future-event freshness",
   "Latest future event",
   "Launch gate",
+  "Show past events",
+  "All visible months",
+  "Hosted by",
+  "TD:",
 ];
 
 Deno.serve(async (req) => {
@@ -41,7 +45,7 @@ Deno.serve(async (req) => {
 
   try {
     const response = await fetch(STAGING_URL, {
-      headers: { "User-Agent": "LocalRootsIntegrityWatch/2.0" },
+      headers: { "User-Agent": "LocalRootsIntegrityWatch/3.0" },
       redirect: "follow",
     });
     stagingStatus = response.status;
@@ -54,7 +58,7 @@ Deno.serve(async (req) => {
     if (shellOk && scriptMatch?.[1]) {
       frontendBundleUrl = new URL(scriptMatch[1], STAGING_URL).toString();
       const bundleResponse = await fetch(frontendBundleUrl, {
-        headers: { "User-Agent": "LocalRootsIntegrityWatch/2.0" },
+        headers: { "User-Agent": "LocalRootsIntegrityWatch/3.0" },
         redirect: "follow",
       });
       if (bundleResponse.ok) {
