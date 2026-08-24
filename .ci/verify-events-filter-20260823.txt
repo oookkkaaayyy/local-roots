@@ -1,0 +1,1 @@
+Temporary CI trigger for the 2026-08-23 public events filter/organizer-label verification. Do not merge.
