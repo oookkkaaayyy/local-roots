@@ -1,0 +1,24 @@
+/* Accessibility hardening kept separate from visual design styles. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid #7c3327;
+  outline-offset: 3px;
+}
+
+:where(button, input, select, textarea):focus-visible {
+  border-color: #7c3327;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
