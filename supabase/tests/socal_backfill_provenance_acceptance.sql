@@ -1,6 +1,6 @@
 -- Rollback-only regression for bulk/manual regional backfills.
--- Proves publication fails closed without provenance and that one source URL
--- cannot silently identify multiple canonical events.
+-- Publication must fail without provenance. A real aggregate source page may
+-- support multiple events, while source-scoped external IDs stay unique.
 begin;
 
 insert into public.lr_sources(key,name,source_type,access_method,permission_basis,authoritative_fields)
@@ -24,25 +24,25 @@ DO $$ begin
 end $$;
 
 insert into public.lr_event_sources(event_id,source_id,external_id,source_url,source_role,is_sanction_basis,confidence)
-select e.id,s.id,'qa:one','https://example.test/calendar/#one','manual_verification',true,1
+select e.id,s.id,'qa:one','https://example.test/calendar/','manual_verification',true,1
 from public.lr_events e cross join public.lr_sources s
 where e.slug='qa-backfill-one' and s.key='qa_backfill_source';
+
+insert into public.lr_event_sources(event_id,source_id,external_id,source_url,source_role,is_sanction_basis,confidence)
+select e.id,s.id,'qa:two','https://example.test/calendar/','manual_verification',true,1
+from public.lr_events e cross join public.lr_sources s
+where e.slug='qa-backfill-two' and s.key='qa_backfill_source';
 
 DO $$ begin
   begin
     insert into public.lr_event_sources(event_id,source_id,external_id,source_url,source_role,is_sanction_basis,confidence)
-    select e.id,s.id,'qa:two','https://example.test/calendar/#one','manual_verification',true,1
+    select e.id,s.id,'qa:one','https://example.test/calendar/','manual_verification',true,1
     from public.lr_events e cross join public.lr_sources s
     where e.slug='qa-backfill-two' and s.key='qa_backfill_source';
-    raise exception 'duplicate source URL unexpectedly succeeded';
+    raise exception 'duplicate source external ID unexpectedly succeeded';
   exception when unique_violation then null;
   end;
 end $$;
-
-insert into public.lr_event_sources(event_id,source_id,external_id,source_url,source_role,is_sanction_basis,confidence)
-select e.id,s.id,'qa:two','https://example.test/calendar/#two','manual_verification',true,1
-from public.lr_events e cross join public.lr_sources s
-where e.slug='qa-backfill-two' and s.key='qa_backfill_source';
 
 update public.lr_events e set published=true
 where e.slug in ('qa-backfill-one','qa-backfill-two')
@@ -51,8 +51,16 @@ where e.slug in ('qa-backfill-one','qa-backfill-two')
 DO $$ declare n int; begin
   select count(*) into n from public.lr_events where slug in ('qa-backfill-one','qa-backfill-two') and published;
   if n<>2 then raise exception 'provenance-backed publication failed: %',n; end if;
-  select count(*) into n from public.lr_event_sources es join public.lr_sources s on s.id=es.source_id where s.key='qa_backfill_source';
-  if n<>2 then raise exception 'expected two provenance rows, got %',n; end if;
+
+  select count(*) into n
+  from public.lr_event_sources es join public.lr_sources s on s.id=es.source_id
+  where s.key='qa_backfill_source' and es.source_url='https://example.test/calendar/';
+  if n<>2 then raise exception 'shared aggregate provenance URL did not persist twice: %',n; end if;
+
+  select count(distinct external_id) into n
+  from public.lr_event_sources es join public.lr_sources s on s.id=es.source_id
+  where s.key='qa_backfill_source';
+  if n<>2 then raise exception 'expected two distinct source-scoped external IDs, got %',n; end if;
 end $$;
 
 select 'socal_backfill_provenance_acceptance_passed' as result;
