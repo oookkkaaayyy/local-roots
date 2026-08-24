@@ -15,6 +15,11 @@ const REQUIRED_FRONTEND_MARKERS = [
   "Hosted by",
   "TD:",
 ];
+const REQUIRED_CSS_MARKERS = [
+  ".site-header.nav-events{display:none}",
+  ".admin-shell.nav-submit{display:none}",
+  ".admin-shell.nav-admin,.admin-shell.nav-readiness{display:block}",
+];
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
@@ -42,10 +47,13 @@ Deno.serve(async (req) => {
   let frontendBundleOk = false;
   let frontendBundleUrl: string | null = null;
   let missingFrontendMarkers = [...REQUIRED_FRONTEND_MARKERS];
+  let cssBundleOk = false;
+  let cssBundleUrl: string | null = null;
+  let missingCssMarkers = [...REQUIRED_CSS_MARKERS];
 
   try {
     const response = await fetch(STAGING_URL, {
-      headers: { "User-Agent": "LocalRootsIntegrityWatch/3.0" },
+      headers: { "User-Agent": "LocalRootsIntegrityWatch/4.0" },
       redirect: "follow",
     });
     stagingStatus = response.status;
@@ -58,7 +66,7 @@ Deno.serve(async (req) => {
     if (shellOk && scriptMatch?.[1]) {
       frontendBundleUrl = new URL(scriptMatch[1], STAGING_URL).toString();
       const bundleResponse = await fetch(frontendBundleUrl, {
-        headers: { "User-Agent": "LocalRootsIntegrityWatch/3.0" },
+        headers: { "User-Agent": "LocalRootsIntegrityWatch/4.0" },
         redirect: "follow",
       });
       if (bundleResponse.ok) {
@@ -67,11 +75,25 @@ Deno.serve(async (req) => {
         frontendBundleOk = missingFrontendMarkers.length === 0;
       }
     }
+
+    const cssMatch = body.match(/<link[^>]+href=["']([^"']+\.css)["'][^>]*>/i);
+    if (shellOk && cssMatch?.[1]) {
+      cssBundleUrl = new URL(cssMatch[1], STAGING_URL).toString();
+      const cssResponse = await fetch(cssBundleUrl, {
+        headers: { "User-Agent": "LocalRootsIntegrityWatch/4.0" },
+        redirect: "follow",
+      });
+      if (cssResponse.ok) {
+        const normalizedCss = (await cssResponse.text()).replace(/\s+/g, "");
+        missingCssMarkers = REQUIRED_CSS_MARKERS.filter((marker) => !normalizedCss.includes(marker));
+        cssBundleOk = missingCssMarkers.length === 0;
+      }
+    }
   } catch (error) {
     console.error("lr-integrity-watch staging", error instanceof Error ? error.message : String(error));
   }
 
-  const stagingOk = shellOk && frontendBundleOk;
+  const stagingOk = shellOk && frontendBundleOk && cssBundleOk;
   const state = readiness.data as Record<string, unknown>;
   const recorded = await service.rpc("lr_record_integrity_snapshot", {
     p_public_events: Number(state.public_event_count ?? 0),
@@ -92,6 +114,9 @@ Deno.serve(async (req) => {
     frontend_bundle_ok: frontendBundleOk,
     frontend_bundle_url: frontendBundleUrl,
     missing_frontend_markers: missingFrontendMarkers,
+    css_bundle_ok: cssBundleOk,
+    css_bundle_url: cssBundleUrl,
+    missing_css_markers: missingCssMarkers,
     staging_ok: stagingOk,
     integrity: recorded.data,
   });
