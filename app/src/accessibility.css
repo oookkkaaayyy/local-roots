@@ -1,4 +1,34 @@
 /* Accessibility hardening kept separate from visual design styles. */
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 1000;
+  transform: translateY(-160%);
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fff8ee;
+  color: #3a2618;
+  font-weight: 900;
+  box-shadow: 0 4px 16px rgba(58,38,24,.2);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
   outline: 3px solid #7c3327;
   outline-offset: 3px;
