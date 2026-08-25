@@ -1,6 +1,6 @@
 # Local Roots — Post-Handoff Verified State
 
-Verified: 2026-08-23 Pacific / 2026-08-24 UTC
+Verified: 2026-08-24 Pacific / 2026-08-25 UTC
 
 This file records live changes after `docs/CONTINUITY_BRIEF.md` and the frozen `Local_Roots_Handoff_2026-08-23.zip`. Where counts below differ from the frozen handoff/brief, this newer verified live state controls.
 
@@ -10,36 +10,55 @@ This file records live changes after `docs/CONTINUITY_BRIEF.md` and the frozen `
 - 0 published events without provenance.
 - 0 sanctioned published events without sanction-basis provenance.
 - 0 stale current/future events under the 14-day freshness gate.
-- HBNF now contributes 32 event/provenance rows, up from 31 after the first-party source added the 2026-08-23 Glow week.
-- HBNF Glow result rows remain 9.
-- The repeat manual HBNF sync is healthy/idempotent: 32/32 valid, 0 new, 0 changed, 0 rejected, 0 missing.
+- 0 high/critical blocking reviews.
+- HBNF contributes 32 event/provenance rows and 9 Glow result rows.
 - Three existing medium source conflicts remain open: Fling XXIX tier, Sapwi Trails dates, and Castaic name/date lineage.
-- A forced integrity check after the scheduler repair again verified Cloudflare staging HTTP 200, `staging_ok=true`, 65 public events, zero provenance/sanction-basis gaps, and no anomalies.
+- Latest forced staging integrity verification returned Cloudflare HTTP 200, `staging_ok=true`, 65 public events, zero provenance/sanction-basis gaps, and no anomalies.
 
-## HBNF provenance correction
-HBNF is a first-party aggregate source. Stable identity remains `(source_id, external_id)` using IDs such as `hbnf:<mode>:<date>`. `source_url` is provenance/location and now uses the real public HBNF URL `https://hbnightflyers.com/` rather than fabricated Local Roots-only URL fragments.
+## HBNF provenance and first real production day
+HBNF is a first-party aggregate source. Stable identity remains `(source_id, external_id)` using IDs such as `hbnf:<mode>:<date>`. `source_url` is provenance/location and uses the real public HBNF URL `https://hbnightflyers.com/` rather than fabricated Local Roots-only URL fragments.
 
 Applied migration: `20260824041608_replace_hbnf_synthetic_provenance_fragments`.
 
-The live `lr-sync-hbnf` Edge Function is parser version `hbnf-direct-v3`; GitHub main and the deployed function are aligned on this provenance behavior. Verification after deployment produced a healthy 32/32 manual run. Manual/test runs do not count toward the launch soak.
+The live `lr-sync-hbnf` Edge Function is parser version `hbnf-direct-v3`; GitHub main and the deployed function are aligned on this provenance behavior.
+
+The first qualifying scheduled production run completed at the 05:00 Pacific production window with `scheduler_status=ok`, fetch/parse/validation all `ok`, health `healthy`, 32/32 valid records, and 0 new/changed/rejected/missing records. This is real production evidence and advances the launch soak to **1/14**. Manual/test runs remain excluded from the soak.
 
 ## Launch readiness
-`lr_launch_readiness()` remains `ready=false` solely because the required real HBNF production soak has not accrued. First expected production date is 2026-08-24; at this verification point `daily_run_due=false`, `consecutive_healthy_days=0`, and no production run has yet counted.
+`lr_launch_readiness()` remains `ready=false`, but the first required HBNF production day has now accrued successfully. Current HBNF consecutive healthy production days: **1 of 14**.
 
-Do not claim public-launch readiness until the real soak and remaining final launch gates pass.
+All other currently implemented readiness gates remain clean: publication provenance, sanction-basis provenance, current/future freshness, and high/critical review blocking.
+
+Do not claim public-launch readiness until the remaining 13 consecutive healthy production days and remaining final launch gates pass.
 
 ## Ventura direct-source evidence
-The disabled `ventura_disc_golf_club_direct` routing source remains non-authoritative for event fields and has no automated retrieval enabled. Its official source identity is now strengthened by two permitted first-party/government sources:
+The disabled `ventura_disc_golf_club_direct` routing source remains non-authoritative for event fields and has no automated retrieval enabled. Its official source identity is strengthened by permitted first-party/government sources:
 
 - Lake Casitas / Casitas Municipal Water states that disc-golf events at Coyote Point are managed by Ventura Disc Golf Club and directs event questions to the club.
-- A City of Ventura Parks & Recreation supplemental packet for the June 25, 2025 meeting contains a Ventura Disc Golf Club board-member statement that the club signed an MOU with Casitas Municipal Water District in 2006 to operate and maintain Coyote Point, hosts two tournaments there each year, and identifies the Coyote Classic as its fall tournament.
+- A City of Ventura Parks & Recreation supplemental packet contains a Ventura Disc Golf Club board-member statement that the club signed an MOU with Casitas Municipal Water District in 2006 to operate and maintain Coyote Point, hosts two tournaments there each year, and identifies the Coyote Classic as its fall tournament.
 
-This evidence establishes organizer/source identity and recurring-event lineage only. It does **not** establish any 2026 date, tier, registration state, or permission for automated retrieval. Disc Golf Scene, PDGA, and UDisc remain prohibited as production fallback evidence.
+This evidence establishes organizer/source identity and recurring-event lineage only. It does **not** establish a current date, tier, registration state, or permission for automated retrieval. Disc Golf Scene, PDGA, and UDisc remain prohibited as production fallback evidence.
+
+Fresh no-contact research of official Ventura/Casitas, Conejo/CRPD, Riverside and Santee/Mast Park sources did not produce stronger current/future event facts sufficient to add records or resolve Fling/Sapwi/Castaic without falling back to restricted evidence. No restricted-source facts were promoted.
+
+## Accessibility / foundation hardening
+Accessibility work on GitHub `main` now includes:
+
+- explicit keyboard `:focus-visible` treatment and reduced-motion handling;
+- skip-to-main navigation and primary-navigation labeling;
+- accessible live announcements for event loading, filtered-result counts, submission results, errors and empty states;
+- protected launch-readiness loading/error semantics, launch-gate labeling, table captions/column scopes, and an explicit non-submit Refresh button.
+
+Relevant commits include `ed1ff577685f79dc547a0b5d19613040ca32ee8f`, `a08d6a565defc07e2fa93a36e5f4f584588f7a65`, `fdc5e664f2b7123e33dc0cd71f63d5d9e25adbb2`, `a87f47bc6ad84fc733949bcd6daf2ea1f704c345`, `8263da8f6eecc610f183c5fff8afcf7cfcb16722`, and `4a26435f22df64c4f88ab457ca0758d70b4cf46b`.
+
+A forced staging-integrity run after the public accessibility hardening was clean. The latest protected-readiness semantics are source-controlled; exact deployment/readback of that newest commit and final human mobile/desktop visual smoke remain open.
 
 ## Source-control note
 The HBNF migration was already live when post-handoff verification detected that GitHub main had briefly lagged the deployed state. Main was repaired to include the exact applied migration and corrected HBNF adapter source, then the adapter was redeployed from the aligned source.
 
 ## Automation reliability
-The exact-hourly `Continue Local Roots` task is the controlling continuation automation. Its scheduled 00:05 Pacific occurrence on August 24 recorded an actual run at 00:08:35 Pacific. The several-minute difference is therefore treated as task-service delivery latency, not evidence that the scheduler is inert. A temporary condition-watch diagnostic duplicate was disabled to avoid duplicate continuation runs. Future reliability remains evidence-based, but the immediate paused/inert concern is resolved.
+The exact-hourly `Continue Local Roots` task remains the main continuation automation. It has demonstrated real scheduled execution, but it subsequently self-disabled again after a later run. Direct inspection detected the stall and the task was re-enabled.
 
-The no-scraping/no-send/no-paid/no-destructive guardrails remain unchanged.
+Because this disable behavior has recurred, a separate hourly condition-watch `Local Roots Watchdog` is now enabled. It stays silent when the main continuation is healthy/recent; if the main continuation disables or stalls, it is instructed to re-enable it and continue the highest-value safe Local Roots work under the same project guardrails.
+
+The no-scraping/no-outreach-send/no-paid/no-destructive guardrails remain unchanged.
