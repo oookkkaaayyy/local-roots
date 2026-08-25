@@ -5,22 +5,24 @@ Verified: 2026-08-25 Pacific
 This file records live changes after `docs/CONTINUITY_BRIEF.md` and the frozen `Local_Roots_Handoff_2026-08-23.zip`. Where counts below differ from the frozen handoff/brief, this newer verified live state controls.
 
 ## Current live event state
-- 66 published real canonical events.
-- 17 current/future events at the verified 2026-08-25 Pacific-time snapshot; the reduction from the earlier 18-event Aug. 24 snapshot is calendar passage plus one newly verified future event, not deletion.
+- 67 published real canonical events.
+- 18 current/future events at the verified 2026-08-25 Pacific-time snapshot.
 - 0 published events without provenance.
 - 0 sanctioned published events without sanction-basis provenance.
 - 0 stale current/future events under the 14-day freshness gate.
 - 0 high/critical blocking reviews.
 - HBNF contributes 32 event/provenance rows and 9 Glow result rows.
 - Three existing medium source conflicts remain open: Fling XXIX tier, Sapwi Trails dates, and Castaic name/date lineage.
-- Latest forced staging integrity verification returned Cloudflare HTTP 200, `staging_ok=true`, 66 public events, zero provenance/sanction-basis gaps, and no anomalies.
+- Latest forced staging integrity verification returned Cloudflare HTTP 200, `staging_ok=true`, 67 public events, zero provenance/sanction-basis gaps, and no anomalies.
 
 ## Population-first operating priority
 The user explicitly approved an expedited path on 2026-08-25: make the public site safely as fully populated as possible ASAP while HBNF reliability evidence accrues separately. Event coverage must not wait for completion of the HBNF soak.
 
 Restricted aggregators (PDGA, Disc Golf Scene and UDisc) remain prohibited as fallback production sources. They may be used only as discovery leads; facts discovered there must be independently corroborated by permitted first-party/organizer/venue/club/public evidence before publication. Provenance, sanction-basis, freshness, conflict and high/critical-review safeguards must not be weakened merely to increase event count.
 
-The first new event added under this population-first pass is `The Helix Open`, Nov. 14–15, 2026, La Quinta / Palm Royal Country Club, from the permitted SoCal DGC 2026 calendar. It was inserted unpublished, assigned source-scoped provenance `socal:2026:the-helix-open`, and only then published, preserving the database publication guard. SoCal advertises C-Tier, but canonical `tier` remains null because tier is not currently an authoritative field for the SoCal manual-calendar source. The second advertised course is also omitted until specifically identified.
+The first new event added under this population-first pass was `The Helix Open`, Nov. 14–15, 2026, La Quinta / Palm Royal Country Club, from the permitted SoCal DGC 2026 calendar. It was inserted unpublished, assigned source-scoped provenance `socal:2026:the-helix-open`, and only then published, preserving the database publication guard. SoCal advertises C-Tier, but canonical `tier` remains null because tier is not currently an authoritative field for the SoCal manual-calendar source. The second advertised course is also omitted until specifically identified.
+
+A second safe expansion resolved the previously conflicting `CALI FLWR Disc Fest` date without using a restricted aggregator as authority. A current organizer-managed Eventbrite listing for event ID `1992784825056` lists Sunday, Sept. 20, 2026 at Pico Rivera Golf Club, organized by Sammy Elliott; Nick Andrade's current public Linktree independently links that same Sept. 20 Eventbrite event. This stronger current evidence supersedes an older cached representation of the same Eventbrite ID that showed Oct. 17 / location TBD. The canonical event is therefore Sept. 20 at Pico Rivera Golf Club, registration open; `sanctioned` and `tier` remain null because the permitted sources do not establish them. Two manual-source identities preserve the evidence separately: `califlwr_eventbrite_manual` / `eventbrite:1992784825056` and `nick_andrade_linktree_manual` / `linktree:nickandradefitness:califlwr-2026`.
 
 ## HBNF provenance and first real production day
 HBNF is a first-party aggregate source. Stable identity remains `(source_id, external_id)` using IDs such as `hbnf:<mode>:<date>`. `source_url` is provenance/location and uses the real public HBNF URL `https://hbnightflyers.com/` rather than fabricated Local Roots-only URL fragments.
@@ -64,7 +66,7 @@ Accessibility work on GitHub `main` now includes:
 
 Public event status/action rendering is now also date-aware. For events whose stored source status has not yet rolled forward, the public page derives `Completed` after the event end date in America/Los_Angeles while preserving explicit `canceled`/`completed` states. Registration links are suppressed once the event end date has passed even if source status metadata lags. This fixes the verified Sky High Showdown case, whose stored status remained `upcoming` after its 2026-08-23 end date while registration was already closed.
 
-Source commits for this policy: `7c47c6d11c2fe665c2c4e0fb88400d88b7edb1ce` and deployment marker commit `d6132e2d62c75b827e672e9e6333f2dd99c9339b`. The integrity worker was upgraded to v5 in GitHub commit `0a0b8b301ef53542bcec7e71d8ffdf5252c7815f` and now requires the deployed `date-aware-v1` frontend marker. CI passed for all three commits, and a forced v5 integrity run verified the marker on staging with HTTP 200, `staging_ok=true`, 65 public events, zero provenance/sanction-basis gaps and no anomalies. A later forced integrity run after adding The Helix Open verified HTTP 200, `staging_ok=true`, 66 public events, zero provenance/sanction-basis gaps and no anomalies.
+Source commits for this policy: `7c47c6d11c2fe665c2c4e0fb88400d88b7edb1ce` and deployment marker commit `d6132e2d62c75b827e672e9e6333f2dd99c9339b`. The integrity worker was upgraded to v5 in GitHub commit `0a0b8b301ef53542bcec7e71d8ffdf5252c7815f` and now requires the deployed `date-aware-v1` frontend marker. CI passed for all three commits, and a forced v5 integrity run verified the marker on staging with HTTP 200, `staging_ok=true`, 65 public events, zero provenance/sanction-basis gaps and no anomalies. Later forced integrity runs after adding The Helix Open and CALI FLWR verified HTTP 200, `staging_ok=true`, 67 public events, zero provenance/sanction-basis gaps and no anomalies.
 
 Final human mobile/desktop visual smoke remains open.
 
