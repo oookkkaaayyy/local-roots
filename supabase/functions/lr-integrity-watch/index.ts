@@ -14,6 +14,7 @@ const REQUIRED_FRONTEND_MARKERS = [
   "All visible months",
   "Hosted by",
   "TD:",
+  "date-aware-v1",
 ];
 const REQUIRED_CSS_MARKERS = [
   ".site-header.nav-events{display:none}",
@@ -53,7 +54,7 @@ Deno.serve(async (req) => {
 
   try {
     const response = await fetch(STAGING_URL, {
-      headers: { "User-Agent": "LocalRootsIntegrityWatch/4.0" },
+      headers: { "User-Agent": "LocalRootsIntegrityWatch/5.0" },
       redirect: "follow",
     });
     stagingStatus = response.status;
@@ -66,7 +67,7 @@ Deno.serve(async (req) => {
     if (shellOk && scriptMatch?.[1]) {
       frontendBundleUrl = new URL(scriptMatch[1], STAGING_URL).toString();
       const bundleResponse = await fetch(frontendBundleUrl, {
-        headers: { "User-Agent": "LocalRootsIntegrityWatch/4.0" },
+        headers: { "User-Agent": "LocalRootsIntegrityWatch/5.0" },
         redirect: "follow",
       });
       if (bundleResponse.ok) {
@@ -80,7 +81,7 @@ Deno.serve(async (req) => {
     if (shellOk && cssMatch?.[1]) {
       cssBundleUrl = new URL(cssMatch[1], STAGING_URL).toString();
       const cssResponse = await fetch(cssBundleUrl, {
-        headers: { "User-Agent": "LocalRootsIntegrityWatch/4.0" },
+        headers: { "User-Agent": "LocalRootsIntegrityWatch/5.0" },
         redirect: "follow",
       });
       if (cssResponse.ok) {
