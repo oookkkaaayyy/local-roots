@@ -28,14 +28,15 @@ function pacificToday() {
   return `${get('year')}-${get('month')}-${get('day')}`;
 }
 
-function EventCard({event}:{event:PublicEvent}) {
+function EventCard({event,today}:{event:PublicEvent;today:string}) {
   const stale = Boolean(event.last_verified_at && Date.now()-new Date(event.last_verified_at).getTime()>14*86400000);
-  const canShowRegistration = Boolean(event.registration_url && event.registration_status !== 'closed' && !['canceled','completed'].includes(event.status));
+  const effectiveStatus = ['canceled','completed'].includes(event.status) ? event.status : event.end_date<today ? 'completed' : event.status;
+  const canShowRegistration = Boolean(event.registration_url && event.end_date>=today && event.registration_status !== 'closed' && !['canceled','completed'].includes(effectiveStatus));
   const tdNames = event.td_names??[];
-  return <article className={`event-card ${event.status==='canceled'?'is-canceled':''}`}>
+  return <article className={`event-card ${effectiveStatus==='canceled'?'is-canceled':''}`}>
     <div className="event-date-block"><strong>{dateRange(event.start_date,event.end_date)}</strong><span>{event.county?`${event.county} County`:'Southern California'}</span></div>
     <div className="event-main">
-      <div className="event-heading-row"><div><h3>{event.name}</h3><p className="event-location">{[event.city,event.course_name||event.venue_name].filter(Boolean).join(' · ')||'Location TBA'}</p></div><span className={`status-pill status-${event.status}`}>{title(event.status)}</span></div>
+      <div className="event-heading-row"><div><h3>{event.name}</h3><p className="event-location">{[event.city,event.course_name||event.venue_name].filter(Boolean).join(' · ')||'Location TBA'}</p></div><span className={`status-pill status-${effectiveStatus}`}>{title(effectiveStatus)}</span></div>
       <div className="event-tags"><span>{title(event.event_type)}</span><span>{event.sanctioned===true?(event.tier?`Sanctioned · ${event.tier}`:'Sanctioned'):event.sanctioned===false?'Unsanctioned':'Sanction unknown'}</span>{event.rounds_text?<span>{event.rounds_text}</span>:null}{event.format?<span>{event.format}</span>:null}</div>
       {event.club_host?<p className="event-organizer">Hosted by {event.club_host}{tdNames.length?` · TD: ${tdNames.join(', ')}`:''}</p>:tdNames.length?<p className="event-organizer">TD: {tdNames.join(', ')}</p>:null}
       {stale?<p className="stale-note">Verification is older than 14 days; confirm details before traveling.</p>:null}
@@ -86,6 +87,6 @@ export function EventsPage(){
   }),[events,showPast,today,county,sanction,eventType,month]);
   return <Shell><main><section className="hero"><div><span className="eyebrow">Ventura → San Diego</span><h1>Southern California disc golf, in one place.</h1><p>Upcoming tournaments, leagues, doubles, putting events and community rounds across six counties.</p></div><div className="hero-stat"><strong>{events.length}</strong><span>published events</span></div></section>
     <section className="events-layout content"><div className="filters" role="group" aria-label="Event filters"><label>Month<select value={month} onChange={e=>setMonth(e.target.value)}><option value="all">All visible months</option>{months.map(m=><option key={m} value={m}>{monthLabel(m)}</option>)}</select></label><label>County<select value={county} onChange={e=>setCounty(e.target.value)}><option value="all">All six counties</option>{COUNTIES.map(c=><option key={c}>{c}</option>)}</select></label><label>Sanction<select value={sanction} onChange={e=>setSanction(e.target.value)}><option value="all">All</option><option value="yes">Sanctioned</option><option value="no">Unsanctioned</option></select></label><label>Type<select value={eventType} onChange={e=>setEventType(e.target.value)}><option value="all">All types</option>{EVENT_TYPES.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label><label className="checkbox"><input type="checkbox" checked={showPast} onChange={e=>setShowPast(e.target.checked)}/> Show past events</label></div>
-    <div className="event-list" aria-busy={loading}><div className="list-header"><h2>Events</h2><span aria-live="polite" aria-atomic="true">{filtered.length} shown</span></div>{loading?<div className="empty-state" role="status" aria-live="polite">Loading events…</div>:null}{error?<div className="notice error" role="alert">Could not load events: {error}</div>:null}{!loading&&!error&&!filtered.length?<div className="empty-state" role="status"><strong>No matching events yet.</strong><span>Try broader filters or submit one below.</span></div>:null}{filtered.map(e=><EventCard key={e.id} event={e}/>)}</div></section>
+    <div className="event-list" aria-busy={loading}><div className="list-header"><h2>Events</h2><span aria-live="polite" aria-atomic="true">{filtered.length} shown</span></div>{loading?<div className="empty-state" role="status" aria-live="polite">Loading events…</div>:null}{error?<div className="notice error" role="alert">Could not load events: {error}</div>:null}{!loading&&!error&&!filtered.length?<div className="empty-state" role="status"><strong>No matching events yet.</strong><span>Try broader filters or submit one below.</span></div>:null}{filtered.map(e=><EventCard key={e.id} event={e} today={today}/>)}</div></section>
     <div className="content"><SubmissionForm/></div></main></Shell>;
 }
