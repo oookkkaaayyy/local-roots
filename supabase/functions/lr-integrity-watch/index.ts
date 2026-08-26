@@ -15,10 +15,12 @@ const REQUIRED_FRONTEND_MARKERS = [
   "Hosted by",
   "TD:",
   "date-aware-v1",
+  "/hb-night-flyers",
+  "/dyed-and-unattached",
 ];
 const REQUIRED_CSS_MARKERS = [
-  ".site-header.nav-events{display:none}",
-  ".admin-shell.nav-submit{display:none}",
+  ".site-header.nav-submit{display:none}",
+  ".site-header.nav-home,.site-header.nav-hbnf,.site-header.nav-du{display:none}",
   ".admin-shell.nav-admin,.admin-shell.nav-readiness{display:block}",
 ];
 
@@ -54,20 +56,20 @@ Deno.serve(async (req) => {
 
   try {
     const response = await fetch(STAGING_URL, {
-      headers: { "User-Agent": "LocalRootsIntegrityWatch/5.0" },
+      headers: { "User-Agent": "LocalRootsIntegrityWatch/6.0" },
       redirect: "follow",
     });
     stagingStatus = response.status;
     const body = await response.text();
     shellOk = response.status === 200
       && body.includes('<div id="root"></div>')
-      && body.includes('<title>Local Roots Disc Golf Events</title>');
+      && body.includes('<title>Local Roots · Southern California Disc Golf</title>');
 
     const scriptMatch = body.match(/<script[^>]+src=["']([^"']+\.js)["']/i);
     if (shellOk && scriptMatch?.[1]) {
       frontendBundleUrl = new URL(scriptMatch[1], STAGING_URL).toString();
       const bundleResponse = await fetch(frontendBundleUrl, {
-        headers: { "User-Agent": "LocalRootsIntegrityWatch/5.0" },
+        headers: { "User-Agent": "LocalRootsIntegrityWatch/6.0" },
         redirect: "follow",
       });
       if (bundleResponse.ok) {
@@ -81,7 +83,7 @@ Deno.serve(async (req) => {
     if (shellOk && cssMatch?.[1]) {
       cssBundleUrl = new URL(cssMatch[1], STAGING_URL).toString();
       const cssResponse = await fetch(cssBundleUrl, {
-        headers: { "User-Agent": "LocalRootsIntegrityWatch/5.0" },
+        headers: { "User-Agent": "LocalRootsIntegrityWatch/6.0" },
         redirect: "follow",
       });
       if (cssResponse.ok) {
