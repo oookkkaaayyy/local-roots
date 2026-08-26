@@ -17,6 +17,7 @@ const REQUIRED_FRONTEND_MARKERS = [
   "date-aware-v1",
   "/hb-night-flyers",
   "/dyed-and-unattached",
+  "https://localrootsdg.com",
 ];
 const REQUIRED_CSS_MARKERS = [
   ".site-header.nav-submit{display:none}",
@@ -47,6 +48,11 @@ Deno.serve(async (req) => {
 
   let stagingStatus: number | null = null;
   let shellOk = false;
+  let stagingNoindexOk = false;
+  let stagingSecurityHeadersOk = false;
+  let stagingRobotsTag: string | null = null;
+  let stagingFrameOptions: string | null = null;
+  let stagingHsts: string | null = null;
   let frontendBundleOk = false;
   let frontendBundleUrl: string | null = null;
   let missingFrontendMarkers = [...REQUIRED_FRONTEND_MARKERS];
@@ -56,10 +62,19 @@ Deno.serve(async (req) => {
 
   try {
     const response = await fetch(STAGING_URL, {
-      headers: { "User-Agent": "LocalRootsIntegrityWatch/6.0" },
+      headers: { "User-Agent": "LocalRootsIntegrityWatch/7.0" },
       redirect: "follow",
     });
     stagingStatus = response.status;
+    stagingRobotsTag = response.headers.get("x-robots-tag");
+    stagingFrameOptions = response.headers.get("x-frame-options");
+    stagingHsts = response.headers.get("strict-transport-security");
+    stagingNoindexOk = (stagingRobotsTag ?? "").toLowerCase().includes("noindex");
+    stagingSecurityHeadersOk = stagingFrameOptions?.toUpperCase() === "DENY"
+      && response.headers.get("x-content-type-options")?.toLowerCase() === "nosniff"
+      && (response.headers.get("referrer-policy") ?? "").toLowerCase() === "strict-origin-when-cross-origin"
+      && (stagingHsts ?? "").toLowerCase().includes("max-age=31536000");
+
     const body = await response.text();
     shellOk = response.status === 200
       && body.includes('<div id="root"></div>')
@@ -69,7 +84,7 @@ Deno.serve(async (req) => {
     if (shellOk && scriptMatch?.[1]) {
       frontendBundleUrl = new URL(scriptMatch[1], STAGING_URL).toString();
       const bundleResponse = await fetch(frontendBundleUrl, {
-        headers: { "User-Agent": "LocalRootsIntegrityWatch/6.0" },
+        headers: { "User-Agent": "LocalRootsIntegrityWatch/7.0" },
         redirect: "follow",
       });
       if (bundleResponse.ok) {
@@ -83,11 +98,11 @@ Deno.serve(async (req) => {
     if (shellOk && cssMatch?.[1]) {
       cssBundleUrl = new URL(cssMatch[1], STAGING_URL).toString();
       const cssResponse = await fetch(cssBundleUrl, {
-        headers: { "User-Agent": "LocalRootsIntegrityWatch/6.0" },
+        headers: { "User-Agent": "LocalRootsIntegrityWatch/7.0" },
         redirect: "follow",
       });
-      if (cssResponse.ok) {
-        const normalizedCss = (await cssResponse.text()).replace(/\s+/g, "");
+      if (cssBundleResponse.ok) {
+        const normalizedCss = (await cssBundleResponse.text()).replace(/\s+/g, "");
         missingCssMarkers = REQUIRED_CSS_MARKERS.filter((marker) => !normalizedCss.includes(marker));
         cssBundleOk = missingCssMarkers.length === 0;
       }
@@ -96,7 +111,7 @@ Deno.serve(async (req) => {
     console.error("lr-integrity-watch staging", error instanceof Error ? error.message : String(error));
   }
 
-  const stagingOk = shellOk && frontendBundleOk && cssBundleOk;
+  const stagingOk = shellOk && stagingNoindexOk && stagingSecurityHeadersOk && frontendBundleOk && cssBundleOk;
   const state = readiness.data as Record<string, unknown>;
   const recorded = await service.rpc("lr_record_integrity_snapshot", {
     p_public_events: Number(state.public_event_count ?? 0),
@@ -114,6 +129,11 @@ Deno.serve(async (req) => {
     ok: true,
     staging_http_status: stagingStatus,
     shell_ok: shellOk,
+    staging_noindex_ok: stagingNoindexOk,
+    staging_security_headers_ok: stagingSecurityHeadersOk,
+    staging_robots_tag: stagingRobotsTag,
+    staging_frame_options: stagingFrameOptions,
+    staging_hsts: stagingHsts,
     frontend_bundle_ok: frontendBundleOk,
     frontend_bundle_url: frontendBundleUrl,
     missing_frontend_markers: missingFrontendMarkers,
