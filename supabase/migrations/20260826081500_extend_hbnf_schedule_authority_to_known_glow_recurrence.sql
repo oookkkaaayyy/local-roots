@@ -1,0 +1,6 @@
+update public.lr_sources
+set access_method = 'Automated read of the user-controlled HBNF Supabase league_state through its public application API, plus a bounded user-established 2026 Glow Doubles recurrence encoded in the Local Roots HBNF adapter when the league_state has not yet materialized that date.',
+    permission_basis = 'First-party/user-controlled HB Night Flyers system explicitly authorized for Local Roots integration. The user-established 2026 Glow Doubles schedule rule (second-to-last Saturday monthly through October 2026, 6:30 PM local start) may be materialized as schedule-derived organizer data until an observed HBNF league_state row for the same date supersedes it.',
+    notes = concat_ws(E'\n', notes, '2026-08-26: Future Sep/Oct 2026 Glow schedule completeness may be derived inside the established HBNF adapter boundary from the user-established club recurrence rule. Derived provenance must be explicitly labeled schedule-derived, use lower confidence than an observed league_state row, and reuse the same hbnf:glow:YYYY-MM-DD external identity so later observed state updates rather than duplicates the event.'),
+    updated_at = now()
+where key = 'hbnf_internal_schedule';
