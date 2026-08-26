@@ -101,8 +101,8 @@ Deno.serve(async (req) => {
         headers: { "User-Agent": "LocalRootsIntegrityWatch/7.0" },
         redirect: "follow",
       });
-      if (cssBundleResponse.ok) {
-        const normalizedCss = (await cssBundleResponse.text()).replace(/\s+/g, "");
+      if (cssResponse.ok) {
+        const normalizedCss = (await cssResponse.text()).replace(/\s+/g, "");
         missingCssMarkers = REQUIRED_CSS_MARKERS.filter((marker) => !normalizedCss.includes(marker));
         cssBundleOk = missingCssMarkers.length === 0;
       }
