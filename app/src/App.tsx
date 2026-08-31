@@ -5,12 +5,15 @@ import { HomePage } from './pages/HomePage';
 import { EventsPage } from './pages/EventsPage';
 import { HbnfPage } from './pages/HbnfPage';
 import { DyedUnattachedPage } from './pages/DyedUnattachedPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { AdminPage } from './pages/AdminPage';
 import { ReadinessPage } from './pages/ReadinessPage';
 
 const PUBLIC_ORIGIN = 'https://localrootsdg.com';
 
-const routeMetadata: Record<string, { title: string; description: string; canonical: string; noindex?: boolean }> = {
+type RouteMetadata = { title: string; description: string; canonical?: string; noindex?: boolean };
+
+const routeMetadata: Record<string, RouteMetadata> = {
   '/': {
     title: 'Local Roots · Southern California Disc Golf',
     description: 'Local Roots connects Southern California disc golf events, HB Night Flyers and Dyed & Unattached.',
@@ -51,10 +54,16 @@ const routeMetadata: Record<string, { title: string; description: string; canoni
   },
 };
 
+const notFoundMetadata: RouteMetadata = {
+  title: 'Page not found · Local Roots',
+  description: 'The requested Local Roots page could not be found.',
+  noindex: true,
+};
+
 function useRouteMetadata(path: string) {
   useEffect(() => {
     const normalizedPath = path === '/hbnf' ? '/hb-night-flyers' : path === '/du' ? '/dyed-and-unattached' : path;
-    const metadata = routeMetadata[normalizedPath] ?? routeMetadata['/'];
+    const metadata = routeMetadata[normalizedPath] ?? notFoundMetadata;
     document.title = metadata.title;
 
     let description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
@@ -66,12 +75,16 @@ function useRouteMetadata(path: string) {
     description.content = metadata.description;
 
     let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
-    if (!canonical) {
-      canonical = document.createElement('link');
-      canonical.rel = 'canonical';
-      document.head.appendChild(canonical);
+    if (metadata.canonical) {
+      if (!canonical) {
+        canonical = document.createElement('link');
+        canonical.rel = 'canonical';
+        document.head.appendChild(canonical);
+      }
+      canonical.href = `${PUBLIC_ORIGIN}${metadata.canonical}`;
+    } else if (canonical) {
+      canonical.remove();
     }
-    canonical.href = `${PUBLIC_ORIGIN}${metadata.canonical}`;
 
     let robots = document.querySelector<HTMLMetaElement>('meta[name="robots"]');
     if (metadata.noindex) {
@@ -101,5 +114,6 @@ export default function App() {
   if (path === '/events') return <EventsPage />;
   if (path === '/hb-night-flyers' || path === '/hbnf') return <HbnfPage />;
   if (path === '/dyed-and-unattached' || path === '/du') return <DyedUnattachedPage />;
-  return <HomePage />;
+  if (path === '/') return <HomePage />;
+  return <NotFoundPage />;
 }
