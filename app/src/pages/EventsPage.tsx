@@ -51,14 +51,15 @@ function SubmissionForm() {
   const [message,setMessage]=useState('');
   async function submit(e:FormEvent<HTMLFormElement>){
     e.preventDefault(); setState('sending'); setMessage('');
-    const fd=new FormData(e.currentTarget), s=fd.get('sanctioned');
+    const form=e.currentTarget;
+    const fd=new FormData(form), s=fd.get('sanctioned');
     try {
       await callFunction('lr-submit-event',{
         name:fd.get('name'),start_date:fd.get('start_date'),end_date:fd.get('end_date'),county:fd.get('county'),city:fd.get('city'),course_name:fd.get('course_name'),event_type:fd.get('event_type'),
         sanctioned:s==='yes'?true:s==='no'?false:undefined,tier:fd.get('tier'),registration_url:fd.get('registration_url'),source_url:fd.get('source_url'),club_host:fd.get('club_host'),
         td_names:String(fd.get('td_names')??'').split(',').map(v=>v.trim()).filter(Boolean),submitter_name:fd.get('submitter_name'),submitter_email:fd.get('submitter_email'),notes:fd.get('notes'),website:fd.get('website'),
       });
-      setState('sent'); setMessage('Submitted. Local Roots will review it before publication.'); e.currentTarget.reset();
+      setState('sent'); setMessage('Submitted. Local Roots will review it before publication.'); form.reset();
     } catch(err){setState('error');setMessage(err instanceof Error?err.message:'Submission failed.');}
   }
   return <section id="submit" className="submit-section"><div className="section-intro"><span className="eyebrow">Community coverage</span><h2>Missing an event?</h2><p>Send the basics. Every submission is validated and reviewed before publication.</p></div>
