@@ -2,6 +2,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 type Json = Record<string, any>;
 type RecordOrigin = "league_state" | "club_schedule_rule";
+type GlowResult = { place: number; name: string; total: number };
+type GlowResultAdmission = "finalized" | "complete_legacy" | null;
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status,
@@ -54,24 +56,40 @@ function summaryPayload(mode: string, date: string, week: Json, origin: RecordOr
   return base;
 }
 
-function glowTopResults(week: Json) {
+function glowTopResults(week: Json, allowCompleteLegacy = false): { rows: GlowResult[]; admission: GlowResultAdmission } {
   const cards = week && typeof week.cards === "object" && week.cards ? Object.values(week.cards) : [];
   const finalized = week?.finalized === true || cards.some((card: any) => card?.finalized === true);
-  if (!finalized || !Array.isArray(week?.players)) return [] as { place: number; name: string; total: number }[];
-  const rows = week.players.flatMap((player: any) => {
-    if (player?.removed === true || typeof player?.name !== "string" || !Array.isArray(player?.scores)) return [];
+  if (!Array.isArray(week?.players)) return { rows: [], admission: null };
+
+  const activePlayers = week.players.filter((player: any) => player?.removed !== true);
+  const legacyComplete = allowCompleteLegacy && activePlayers.length > 0 && activePlayers.every((player: any) => {
+    if (typeof player?.name !== "string" || !player.name.trim() || !Array.isArray(player?.scores) || player.scores.length < 18) return false;
+    return player.scores.every((score: any) => {
+      if (score === null || score === undefined) return false;
+      if (typeof score === "string" && score.trim() === "") return false;
+      return Number.isFinite(Number(score));
+    });
+  });
+
+  if (!finalized && !legacyComplete) return { rows: [], admission: null };
+
+  const rows = activePlayers.flatMap((player: any) => {
+    if (typeof player?.name !== "string" || !Array.isArray(player?.scores)) return [];
     const scores = player.scores.map((score: any) => Number(score));
     if (scores.length < 18 || scores.some((score: number) => !Number.isFinite(score))) return [];
     return [{ name: player.name.trim(), total: scores.reduce((sum: number, score: number) => sum + score, 0) }];
   }).filter((row: any) => row.name);
+
   rows.sort((a: any, b: any) => a.total - b.total || a.name.localeCompare(b.name));
   let rank = 0;
   let last: number | null = null;
-  return rows.map((row: any) => {
+  const top = rows.map((row: any) => {
     if (last === null || row.total !== last) rank += 1;
     last = row.total;
     return { place: rank, name: row.name, total: row.total };
   }).filter((row: any) => row.place <= 3);
+
+  return { rows: top, admission: finalized ? "finalized" : "complete_legacy" };
 }
 
 Deno.serve(async (req) => {
@@ -103,7 +121,7 @@ Deno.serve(async (req) => {
     validation_status: "pending",
     health_status: "running",
     scheduler_status: trigger === "cron" ? "ok" : "skipped",
-    parser_version: "hbnf-direct-v4",
+    parser_version: "hbnf-direct-v5",
     metrics: { trigger, first_party: true },
   }).select("id").single();
   if (runInsert.error || !runInsert.data) return json({ error: "run_create_failed", detail: runInsert.error?.message }, 500);
@@ -260,6 +278,7 @@ Deno.serve(async (req) => {
     let matched = 0;
     let reviewRequired = 0;
     let resultsRows = 0;
+    let legacyCompleteResultWeeks = 0;
     const now = new Date().toISOString();
 
     for (const record of records) {
@@ -345,8 +364,13 @@ Deno.serve(async (req) => {
       }).eq("id", candidateId);
 
       if (record.mode === "glow") {
-        const top = glowTopResults(record.week);
+        const resultSet = glowTopResults(
+          record.week,
+          record.origin === "league_state" && record.date < today,
+        );
+        const top = resultSet.rows;
         if (top.length) {
+          if (resultSet.admission === "complete_legacy") legacyCompleteResultWeeks += 1;
           const cleared = await service.from("lr_results").delete().eq("event_id", eventId).eq("source_id", sourceId).eq("division_code", "OPEN");
           if (cleared.error) throw new Error(`result cleanup failed: ${cleared.error.message}`);
           const resultRows = top.map((result) => ({
@@ -396,6 +420,7 @@ Deno.serve(async (req) => {
         skins_weeks: Object.keys(skinsWeeks).length,
         glow_weeks: Object.keys(glowWeeks).length,
         derived_glow_schedule_records: derivedGlowScheduleRecords,
+        legacy_complete_result_weeks: legacyCompleteResultWeeks,
         matched,
         review_required: reviewRequired,
         results_rows: resultsRows,
@@ -417,6 +442,7 @@ Deno.serve(async (req) => {
       review_required: reviewRequired,
       missing: missing.length,
       results_rows: resultsRows,
+      legacy_complete_result_weeks: legacyCompleteResultWeeks,
       derived_glow_schedule_records: derivedGlowScheduleRecords,
       health: finalized.data?.health_status ?? null,
     });
