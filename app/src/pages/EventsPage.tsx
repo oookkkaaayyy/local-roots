@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { callFunction, supabase } from '../lib/supabase';
 import { Shell } from '../components/Shell';
-import type { PublicEvent } from '../types';
+import type { PublicEvent, PublicResult } from '../types';
 
 const COUNTIES = ['Ventura', 'Los Angeles', 'Orange', 'Riverside', 'San Bernardino', 'San Diego'];
 const EVENT_TYPES = [
@@ -27,6 +27,15 @@ function pacificToday() {
   const get=(type:string)=>parts.find(p=>p.type===type)?.value??'';
   return `${get('year')}-${get('month')}-${get('day')}`;
 }
+function resultValue(result: PublicResult) {
+  if(result.to_par!=null)return `${result.to_par>0?'+':''}${result.to_par}`;
+  if(result.total_score!=null)return String(result.total_score);
+  if(result.points!=null){
+    if(result.division_code==='SKINS')return `${result.points} skin${result.points===1?'':'s'}`;
+    return String(result.points);
+  }
+  return '—';
+}
 
 function EventCard({event,today}:{event:PublicEvent;today:string}) {
   const stale = Boolean(event.last_verified_at && Date.now()-new Date(event.last_verified_at).getTime()>14*86400000);
@@ -40,7 +49,7 @@ function EventCard({event,today}:{event:PublicEvent;today:string}) {
       <div className="event-tags"><span>{title(event.event_type)}</span><span>{event.sanctioned===true?(event.tier?`Sanctioned · ${event.tier}`:'Sanctioned'):event.sanctioned===false?'Unsanctioned':'Sanction unknown'}</span>{event.rounds_text?<span>{event.rounds_text}</span>:null}{event.format?<span>{event.format}</span>:null}</div>
       {event.club_host?<p className="event-organizer">Hosted by {event.club_host}{tdNames.length?` · TD: ${tdNames.join(', ')}`:''}</p>:tdNames.length?<p className="event-organizer">TD: {tdNames.join(', ')}</p>:null}
       {stale?<p className="stale-note">Verification is older than 14 days; confirm details before traveling.</p>:null}
-      {event.top_results?.length?<div className="results-block"><div className="results-title">Results · {title(event.top_results[0]?.division_code??'')}</div><ol>{event.top_results.map((r)=><li key={`${r.division_code}-${r.place}-${r.player_name}`}><span>{r.place}. {r.player_name}</span><strong>{r.to_par==null?(r.total_score??'—'):`${r.to_par>0?'+':''}${r.to_par}`}</strong></li>)}</ol></div>:effectiveStatus==='completed'?<p className="event-organizer">Results not yet verified from an approved source.</p>:null}
+      {event.top_results?.length?<div className="results-block"><div className="results-title">Results · {title(event.top_results[0]?.division_code??'')}</div><ol>{event.top_results.map((r)=><li key={`${r.division_code}-${r.place}-${r.player_name}`}><span>{r.place}. {r.player_name}</span><strong>{resultValue(r)}</strong></li>)}</ol></div>:effectiveStatus==='completed'?<p className="event-organizer">Results not yet verified from an approved source.</p>:null}
     </div>
     <div className="event-actions">{canShowRegistration?<a className="button primary" href={event.registration_url!} target="_blank" rel="noreferrer">Registration</a>:null}{event.results_url?<a className="button ghost" href={event.results_url} target="_blank" rel="noreferrer">Results</a>:null}</div>
   </article>;
