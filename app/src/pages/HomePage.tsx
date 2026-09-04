@@ -28,7 +28,7 @@ export function HomePage() {
   return <Shell><main>
     <section className="hub-hero content">
       <div><span className="eyebrow">Southern California disc golf</span><h1>Local roots. Connected.</h1><p>Events, community and disc art built around the people and places that make Southern California disc golf what it is.</p></div>
-      <div className="hub-seal" aria-hidden="true"><strong>LR</strong><span>SoCal</span></div>
+      <img className="hub-logo" src="/brand/local-roots-full.svg" alt="Local Roots" />
     </section>
     <section className="hub-intro content" aria-labelledby="explore-local-roots"><div><span className="eyebrow">Explore Local Roots</span><h2 id="explore-local-roots">One hub. Three ways in.</h2></div><p>Start with the regional event calendar, connect with HB Night Flyers, or request a custom Dyed &amp; Unattached stencil.</p></section>
     <section className="branch-grid content" aria-label="Local Roots projects">
