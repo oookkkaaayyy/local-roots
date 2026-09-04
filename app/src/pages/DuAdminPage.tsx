@@ -34,11 +34,37 @@ function JobCard({job,session,refresh}:{job:JobSummary;session:Session;refresh:(
   const load=useCallback(async()=>{setBusy(true);setMessage('');try{setDetail(await callFunction<JobDetail>('du-admin',{action:'job',job_id:job.id},session.access_token));}catch(error){setMessage(error instanceof Error?error.message:'Could not load job.');}finally{setBusy(false);}},[job.id,session.access_token]);
   async function setWorkflow(workflow_status:WorkflowStatus){setBusy(true);setMessage('');try{await callFunction('du-admin',{action:'set_workflow',job_id:job.id,workflow_status,clear_handoff_error:true},session.access_token);setMessage(`Moved to ${labels[workflow_status]}.`);refresh();}catch(error){setMessage(error instanceof Error?error.message:'Update failed.');}finally{setBusy(false);}}
   async function copyPrompt(){if(!detail)await load();const current=detail??await callFunction<JobDetail>('du-admin',{action:'job',job_id:job.id},session.access_token);await navigator.clipboard.writeText(stagePrompt(current));setDetail(current);setMessage('ChatGPT prompt copied. Download the source photos below, attach them together, and paste.');}
+  async function prepareForChatGPT(){
+    setBusy(true);setMessage('');
+    try{
+      const current=detail??await callFunction<JobDetail>('du-admin',{action:'job',job_id:job.id},session.access_token);
+      setDetail(current);
+      const files=await Promise.all(current.photos.map(async(photo,index)=>{
+        if(!photo.signed_url)throw new Error(`Source ${index+1} is unavailable.`);
+        const response=await fetch(photo.signed_url);
+        if(!response.ok)throw new Error(`Source ${index+1} could not be retrieved.`);
+        const blob=await response.blob();
+        const fallback=`${job.job_number}-source-${String(index+1).padStart(2,'0')}.jpg`;
+        return new File([blob],photo.original_filename||fallback,{type:blob.type||'image/jpeg'});
+      }));
+      const prompt=stagePrompt(current);
+      await navigator.clipboard.writeText(prompt);
+      const shareData={title:`${job.job_number} · ${job.subject_name||'D&U stencil'}`,text:prompt,files};
+      if(navigator.share&&navigator.canShare?.({files})){
+        await navigator.share(shareData);
+        setMessage('Sources shared and prompt copied. Choose ChatGPT from the share sheet; if the text is omitted, paste the copied prompt.');
+        return;
+      }
+      for(const file of files){const href=URL.createObjectURL(file);const anchor=document.createElement('a');anchor.href=href;anchor.download=file.name;document.body.appendChild(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(href),30000);}
+      setMessage('Source downloads started and prompt copied. In ChatGPT, attach all downloaded images together and paste.');
+    }catch(error){if(error instanceof DOMException&&error.name==='AbortError')setMessage('Share cancelled; nothing was changed.');else setMessage(error instanceof Error?error.message:'Could not prepare the ChatGPT handoff.');}
+    finally{setBusy(false);}
+  }
   return <article className="admin-card du-job-card" id={job.job_number}>
     <div className="admin-card-head"><div><h3>{job.job_number} · {job.subject_name||'Unnamed pet'}</h3><p>{job.client_name||'Unknown client'} · {new Date(job.created_at).toLocaleString()}</p></div><div className="pill-row"><span className={`health health-${job.workflow_status==='handoff_failed'?'critical':job.workflow_status==='complete'?'healthy':'warning'}`}>{labels[job.workflow_status]}</span><span className="status-pill">{job.source_photo_count} photo{job.source_photo_count===1?'':'s'}</span></div></div>
     {job.notes?<p className="admin-notes">{job.notes}</p>:null}
     {job.handoff_last_error?<div className="notice error"><strong>Handoff error</strong><span>{job.handoff_last_error}</span></div>:null}
-    <div className="button-row"><button className="button ghost" disabled={busy} onClick={()=>detail?setDetail(null):void load()}>{busy?'Loading…':detail?'Hide details':'Open job'}</button><button className="button primary" disabled={busy} onClick={()=>void copyPrompt()}>Copy ChatGPT prompt</button></div>
+    <div className="button-row"><button className="button ghost" disabled={busy} onClick={()=>detail?setDetail(null):void load()}>{busy?'Preparing…':detail?'Hide details':'Open job'}</button><button className="button primary" disabled={busy} onClick={()=>void prepareForChatGPT()}>Prepare for ChatGPT</button><button className="button ghost" disabled={busy} onClick={()=>void copyPrompt()}>Copy prompt only</button></div>
     {detail?<div className="du-job-detail"><dl className="detail-grid"><div><dt>Client</dt><dd>{job.client_name||'—'}</dd></div><div><dt>Phone</dt><dd>{job.phone||'—'}</dd></div><div><dt>Submitted</dt><dd>{new Date(job.created_at).toLocaleString()}</dd></div></dl>
       <div className="du-source-grid">{detail.photos.map((photo,index)=><a className="button ghost" key={photo.id} href={photo.signed_url||undefined} download={photo.original_filename||`source-${index+1}.jpg`} target="_blank" rel="noreferrer">Download source {index+1}</a>)}</div>
       <label>Workflow stage<select value={job.workflow_status} disabled={busy} onChange={event=>void setWorkflow(event.target.value as WorkflowStatus)}>{Object.entries(labels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
