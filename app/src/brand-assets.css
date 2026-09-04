@@ -1,0 +1,1 @@
+.brand-logo-mark{width:42px;height:42px;object-fit:contain;display:block;flex:0 0 auto}.hub-logo{width:clamp(170px,22vw,260px);height:auto;display:block;filter:drop-shadow(0 10px 22px rgba(58,38,24,.08))}@media(max-width:900px){.hub-logo{width:150px}}@media(max-width:620px){.brand-logo-mark{width:36px;height:36px}.hub-logo{width:132px}}
