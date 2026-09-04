@@ -1,5 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { skinsTopResults } from "../lr-sync-hbnf/skins-results.ts";
+import { skinsTopResults } from "./skins-results.ts";
 
 type Json = Record<string, any>;
 
