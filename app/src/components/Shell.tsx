@@ -10,7 +10,7 @@ export function Shell({children,admin=false}:{children:ReactNode;admin?:boolean}
     <header className="site-header">
       <a className="brand" href="/" aria-label="Local Roots home" aria-current={current('/')}>
         <img className="brand-logo-mark" src="/brand/local-roots-lr.svg" alt="" aria-hidden="true" />
-        <span><strong>Local Roots</strong><small>SoCal Disc Golf</small></span>
+        <strong>Local Roots</strong>
       </a>
       <nav aria-label="Primary">
         <a className="nav-home" href="/" aria-current={current('/')}>Home</a>
@@ -24,6 +24,5 @@ export function Shell({children,admin=false}:{children:ReactNode;admin?:boolean}
       </nav>
     </header>
     <div id="main-content" tabIndex={-1}>{children}</div>
-    <footer className="site-footer"><span>Local Roots</span><div className="footer-nav"><a href="/events">Events</a><a href="/hb-night-flyers">HBNF</a><a href="/dyed-and-unattached">D&amp;U</a></div></footer>
   </div>;
 }
