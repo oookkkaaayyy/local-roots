@@ -24,6 +24,6 @@ export function Shell({children,admin=false}:{children:ReactNode;admin?:boolean}
       </nav>
     </header>
     <div id="main-content" tabIndex={-1}>{children}</div>
-    <footer className="site-footer"><span>Local Roots · Grown Local. Thrown Local.</span><div className="footer-nav"><a href="/events">Events</a><a href="/hb-night-flyers">HBNF</a><a href="/dyed-and-unattached">D&amp;U</a></div></footer>
+    <footer className="site-footer"><span>Local Roots</span><div className="footer-nav"><a href="/events">Events</a><a href="/hb-night-flyers">HBNF</a><a href="/dyed-and-unattached">D&amp;U</a></div></footer>
   </div>;
 }
