@@ -9,7 +9,7 @@ const publicSources = [
   source("pages/HomePage.tsx"),
   source("pages/EventsPage.tsx"),
   source("pages/HbnfPage.tsx"),
-  source("pages/DyedAndUnattachedPage.tsx"),
+  source("pages/DyedUnattachedPage.tsx"),
   source("pages/NotFoundPage.tsx"),
   source("components/Shell.tsx"),
 ].join("\n");
