@@ -17,7 +17,6 @@ export function Shell({children,admin=false}:{children:ReactNode;admin?:boolean}
         <a className="nav-events" href="/events" aria-current={current('/events')}>Events</a>
         <a className="nav-hbnf" href="/hb-night-flyers" aria-current={current('/hb-night-flyers')}>HB Night Flyers</a>
         <a className="nav-du" href="/dyed-and-unattached" aria-current={current('/dyed-and-unattached')}>Dyed &amp; Unattached</a>
-        <a className="nav-submit" href="/events#submit">Submit an event</a>
         {admin?<a className="nav-admin" href="/admin/events" aria-current={path==='/admin'||path==='/admin/events'?'page':undefined}>Events admin</a>:null}
         {admin?<a className="nav-du-admin" href="/admin/dyed-and-unattached" aria-current={current('/admin/dyed-and-unattached')}>D&amp;U queue</a>:null}
         {admin?<a className="nav-readiness" href="/admin/readiness" aria-current={current('/admin/readiness')}>Launch status</a>:null}
