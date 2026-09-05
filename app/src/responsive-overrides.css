@@ -1,7 +1,20 @@
+.hub-hero{display:block;padding:48px 0 20px}
+.hub-logo-primary{margin:0}
+.branch-grid{padding:20px 0 56px}
+.branch-card{min-height:0;padding:24px;gap:20px}
+.branch-card h2{margin:0}
+.branch-card .button{margin-top:0}
+.hero{display:block;padding:48px 0 24px}
+.hero h1{margin:0;max-width:none}
+.branch-hero{display:block;padding:48px 0 28px}
+.branch-hero h1{margin:0;font-size:clamp(2.6rem,7vw,5.4rem)}
+.du-request{margin-top:0}
+
 @media(max-width:620px){
   .admin-shell .site-header .nav-events{display:none}
   .admin-shell .site-header nav a.nav-admin,
   .admin-shell .site-header nav a.nav-readiness{display:inline}
   .admin-shell .site-header nav{gap:10px}
   .admin-shell .site-header nav a{font-size:.78rem}
+  .hub-hero,.hero,.branch-hero{padding-top:32px}
 }
