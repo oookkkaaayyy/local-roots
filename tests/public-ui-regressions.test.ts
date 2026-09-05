@@ -39,8 +39,8 @@ test("event submission form remains available on Events page", () => {
   assert.ok(events.includes('SubmissionForm'));
 });
 
-test("repeated event action links have event-specific accessible names", () => {
+test("repeated event action links have event-specific accessible names and disclose new-tab behavior", () => {
   const events = source("pages/EventsPage.tsx");
-  assert.ok(events.includes('aria-label={`Registration for ${event.name}`}'));
-  assert.ok(events.includes('aria-label={`Results for ${event.name}`}'));
+  assert.ok(events.includes('aria-label={`Registration for ${event.name} (opens in new tab)`}'));
+  assert.ok(events.includes('aria-label={`Results for ${event.name} (opens in new tab)`}'));
 });
