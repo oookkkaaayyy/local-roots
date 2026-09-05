@@ -82,21 +82,16 @@ export function DyedUnattachedPage() {
 
   const busy = state === 'preparing' || state === 'sending';
   return <Shell><main>
-    <section className="branch-hero content du-hero"><div><span className="eyebrow">Custom disc art</span><h1>Dyed &amp; Unattached</h1><p>Submit reference photos for a custom pet portrait stencil used for disc dyeing.</p><div className="branch-actions"><a className="button primary" href="#request-stencil">Request a stencil</a><a className="button ghost" href="/">Back to Local Roots</a></div></div><div className="branch-monogram" aria-hidden="true">D&amp;U</div></section>
-    <section className="branch-feature-grid content" aria-label="Stencil request process">
-      <article><h2>1. Submit photos</h2><p>Upload 1–6 clear reference images and identify the pet.</p></article>
-      <article><h2>2. Review artwork</h2><p>A portrait stencil is prepared from the submitted photos for review.</p></article>
-      <article><h2>3. Produce the stencil</h2><p>Approved artwork is prepared for cutting and disc dyeing.</p></article>
-    </section>
+    <section className="branch-hero content"><h1>Dyed &amp; Unattached</h1></section>
     <section id="request-stencil" className="du-request content" aria-labelledby="du-request-title">
-      <div className="section-intro"><h2 id="du-request-title">Stencil request</h2><p>Contact details and source photos are used for the private production workflow and are not published by this form.</p></div>
+      <div className="section-intro"><h2 id="du-request-title">Stencil request</h2><p>Contact details and source photos are private and are not published by this form.</p></div>
       <form className="du-form" onSubmit={submit}>
         <div className="du-form-grid">
           <label>Name<input name="clientName" autoComplete="name" required maxLength={160} /></label>
           <label>Phone<input name="phone" type="tel" inputMode="tel" autoComplete="tel" required /></label>
           <label className="span-2">Pet name<input name="petName" required maxLength={160} /></label>
           <label className="span-2">Reference photos <span className="optional">1–6 images</span><input name="referencePhotos" type="file" accept="image/*" multiple required /></label>
-          <label className="span-2">Notes <span className="optional">optional</span><textarea name="notes" rows={4} maxLength={4000} placeholder="Markings, expression, or anything important to preserve or avoid." /></label>
+          <label className="span-2">Notes <span className="optional">optional</span><textarea name="notes" rows={4} maxLength={4000} /></label>
         </div>
         <div className="form-footer"><button className="button primary" type="submit" disabled={busy}>{busy ? 'Working…' : 'Submit request'}</button>{message ? <span className={state === 'error' ? 'form-error' : 'form-success'} role={state === 'error' ? 'alert' : 'status'} aria-live="polite">{message}</span> : null}</div>
       </form>
