@@ -38,3 +38,9 @@ test("event submission form remains available on Events page", () => {
   assert.ok(events.includes('id="submit"'));
   assert.ok(events.includes('SubmissionForm'));
 });
+
+test("repeated event action links have event-specific accessible names", () => {
+  const events = source("pages/EventsPage.tsx");
+  assert.ok(events.includes('aria-label={`Registration for ${event.name}`}'));
+  assert.ok(events.includes('aria-label={`Results for ${event.name}`}'));
+});
