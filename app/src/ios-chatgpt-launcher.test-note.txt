@@ -1,1 +1,0 @@
-iOS D&U ChatGPT launcher shim is injected from app/index.html before the React bundle. It preserves the synchronously opened du-chatgpt child window, but redirects the later ChatGPT web navigation to the installed chatgpt:// app scheme. This file exists only to make the behavior explicit in source review and can be removed in a later refactor.
