@@ -17,6 +17,7 @@ const workflowStates = new Set([
   "art_approved", "production_ready", "complete", "handoff_failed",
 ]);
 const vapidSubject = "https://localrootsdg.com/dyed-and-unattached";
+const pairAlphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
 type ServiceClient = ReturnType<typeof createClient>;
 type PushConfig = { public_key: string; private_key: string };
 type PushRow = {
@@ -26,6 +27,20 @@ type PushRow = {
   auth: string;
   failure_count: number;
 };
+
+async function sha256Hex(value: string) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function newPairCode() {
+  const bytes = crypto.getRandomValues(new Uint8Array(10));
+  return Array.from(bytes, (byte) => pairAlphabet[byte & 31]).join("");
+}
+
+function displayPairCode(code: string) {
+  return `${code.slice(0, 5)}-${code.slice(5)}`;
+}
 
 async function ensurePushConfig(service: ServiceClient): Promise<PushConfig> {
   const { data: existing, error: readError } = await service.from("du_push_config")
@@ -162,6 +177,23 @@ Deno.serve(async (req: Request) => {
       .select("id,job_number,workflow_status,updated_at").single();
     if (error) return json({ error: "workflow_update_failed", detail: error.message }, 400);
     return json({ ok: true, job: data });
+  }
+
+  if (action === "pair_create") {
+    const email = String(userData.user.email || "").trim().toLowerCase();
+    if (!email) return json({ error: "pair_email_missing" }, 400);
+    const code = newPairCode();
+    const codeHash = await sha256Hex(code);
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+    await service.from("du_device_pair_codes").delete().eq("user_id", userData.user.id);
+    const { error } = await service.from("du_device_pair_codes").insert({
+      code_hash: codeHash,
+      user_id: userData.user.id,
+      email,
+      expires_at: expiresAt,
+    });
+    if (error) return json({ error: "pair_create_failed", detail: error.message }, 400);
+    return json({ code: displayPairCode(code), expires_at: expiresAt });
   }
 
   if (action === "push_config") {
