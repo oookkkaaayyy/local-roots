@@ -50,3 +50,9 @@ test("repeated event action links have event-specific accessible names and discl
   assert.ok(events.includes('aria-label={`Registration for ${event.name} (opens in new tab)`}'));
   assert.ok(events.includes('aria-label={`Results for ${event.name} (opens in new tab)`}'));
 });
+
+test("HBNF external action discloses new-tab behavior without changing visible label", () => {
+  const hbnf = source("pages/HbnfPage.tsx");
+  assert.ok(hbnf.includes('aria-label="Open hbnightflyers.com (opens in new tab)"'));
+  assert.ok(hbnf.includes('>Open hbnightflyers.com</a>'));
+});
