@@ -50,9 +50,8 @@ function Login({targetJob}:{targetJob:string|null}){
   const [email,setEmail]=useState(''),[message,setMessage]=useState(''),[sending,setSending]=useState(false);
   async function submit(event:FormEvent){
     event.preventDefault();setSending(true);
-    const redirect=new URL('/admin/dyed-and-unattached',window.location.origin);
-    if(targetJob)redirect.searchParams.set('job',targetJob);
-    const {error}=await supabase.auth.signInWithOtp({email,options:{emailRedirectTo:redirect.toString()}});
+    if(targetJob)sessionStorage.setItem('du-target-job',targetJob);
+    const {error}=await supabase.auth.signInWithOtp({email,options:{emailRedirectTo:`${window.location.origin}/admin/dyed-and-unattached`}});
     setMessage(error?error.message:'Check your email for the secure sign-in link.');setSending(false);
   }
   return <div className="admin-login"><span className="eyebrow">Dyed &amp; Unattached operations</span><h1>Production queue</h1><p>Authorized reviewers only. Sign in with a magic link.</p><form onSubmit={submit}><label>Email<input type="email" required value={email} onChange={e=>setEmail(e.target.value)}/></label><button className="button primary" disabled={sending}>{sending?'Sending…':'Send sign-in link'}</button></form>{message?<div className="notice">{message}</div>:null}</div>;
@@ -113,7 +112,11 @@ function JobCard({job,session,refresh,autoOpen}:{job:JobSummary;session:Session;
 export function DuAdminPage(){
   const [session,setSession]=useState<Session|null>(null),[dashboard,setDashboard]=useState<Dashboard|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState('');
   const [pushBusy,setPushBusy]=useState(false),[pushEnabled,setPushEnabled]=useState(false),[pushMessage,setPushMessage]=useState('');
-  const targetJob=useMemo(()=>new URLSearchParams(window.location.search).get('job')?.trim().toUpperCase()||null,[]);
+  const targetJob=useMemo(()=>{
+    const queryJob=new URLSearchParams(window.location.search).get('job')?.trim().toUpperCase()||null;
+    if(queryJob){sessionStorage.setItem('du-target-job',queryJob);return queryJob;}
+    return sessionStorage.getItem('du-target-job')?.trim().toUpperCase()||null;
+  },[]);
   const pushSupported=useMemo(()=>typeof window!=='undefined'&&'serviceWorker'in navigator&&'PushManager'in window&&'Notification'in window,[]);
   const load=useCallback(async(active:Session|null)=>{if(!active){setDashboard(null);setLoading(false);return;}setLoading(true);setError('');try{setDashboard(await callFunction<Dashboard>('du-admin',{action:'dashboard'},active.access_token));}catch(reason){setError(reason instanceof Error?reason.message:'Admin access failed.');}finally{setLoading(false);}},[]);
   useEffect(()=>ensureDuPwaMetadata(),[]);
@@ -127,6 +130,7 @@ export function DuAdminPage(){
     }).catch(()=>undefined);
   },[pushSupported]);
   useEffect(()=>{supabase.auth.getSession().then(({data})=>{setSession(data.session);void load(data.session);});const {data}=supabase.auth.onAuthStateChange((_event,next)=>{setSession(next);void load(next);});return()=>data.subscription.unsubscribe();},[load]);
+  useEffect(()=>{if(!session||!targetJob)return;const timer=window.setTimeout(()=>sessionStorage.removeItem('du-target-job'),2000);return()=>window.clearTimeout(timer);},[session,targetJob]);
   const jobs=useMemo(()=>dashboard?.jobs.filter(job=>activeStates.includes(job.workflow_status))||[],[dashboard]);
 
   async function enablePush(){
