@@ -16,6 +16,8 @@ type JobDetail = {job:JobSummary;photos:Photo[];options:Array<{option_code:strin
 type Dashboard = {admin:{display_name:string|null;role:string};jobs:JobSummary[]};
 type PushConfig = {public_key:string;subscription_count:number};
 type PushTest = {ok:boolean;sent:number};
+type PairCode = {code:string;expires_at:string};
+type PairRedeem = {token_hash:string;verification_type:'magiclink'};
 type BadgeNavigator = Navigator & {
   standalone?: boolean;
   setAppBadge?: (contents?:number)=>Promise<void>;
@@ -47,14 +49,29 @@ function ensureDuPwaMetadata(){
 }
 
 function Login({targetJob}:{targetJob:string|null}){
-  const [email,setEmail]=useState(''),[message,setMessage]=useState(''),[sending,setSending]=useState(false);
+  const [email,setEmail]=useState(''),[pairCode,setPairCode]=useState(''),[message,setMessage]=useState(''),[sending,setSending]=useState(false),[pairing,setPairing]=useState(false);
+  const standalone=isStandalone();
   async function submit(event:FormEvent){
-    event.preventDefault();setSending(true);
+    event.preventDefault();setSending(true);setMessage('');
     if(targetJob)sessionStorage.setItem('du-target-job',targetJob);
     const {error}=await supabase.auth.signInWithOtp({email,options:{emailRedirectTo:`${window.location.origin}/admin/dyed-and-unattached`}});
     setMessage(error?error.message:'Check your email for the secure sign-in link.');setSending(false);
   }
-  return <div className="admin-login"><span className="eyebrow">Dyed &amp; Unattached operations</span><h1>Production queue</h1><p>Authorized reviewers only. Sign in with a magic link.</p><form onSubmit={submit}><label>Email<input type="email" required value={email} onChange={e=>setEmail(e.target.value)}/></label><button className="button primary" disabled={sending}>{sending?'Sending…':'Send sign-in link'}</button></form>{message?<div className="notice">{message}</div>:null}</div>;
+  async function redeemPair(event:FormEvent){
+    event.preventDefault();setPairing(true);setMessage('');
+    try{
+      if(targetJob)sessionStorage.setItem('du-target-job',targetJob);
+      const redeemed=await callFunction<PairRedeem>('du-pair',{code:pairCode});
+      const {error}=await supabase.auth.verifyOtp({token_hash:redeemed.token_hash,type:'magiclink'});
+      if(error)throw error;
+      setMessage('Paired. Loading the production queue…');
+      window.location.replace('/admin/dyed-and-unattached');
+    }catch(reason){setMessage(reason instanceof Error?reason.message:'Could not pair this app.');}
+    finally{setPairing(false);}
+  }
+  return <div className="admin-login"><span className="eyebrow">Dyed &amp; Unattached operations</span><h1>Production queue</h1>
+    {standalone?<><p>This Home Screen app uses its own secure session. Pair it once from Safari without sending another email.</p><form onSubmit={redeemPair}><label>Pairing code<input type="text" required autoCapitalize="characters" autoCorrect="off" spellCheck={false} inputMode="text" placeholder="XXXXX-XXXXX" value={pairCode} onChange={e=>setPairCode(e.target.value.toUpperCase())}/></label><button className="button primary" disabled={pairing}>{pairing?'Pairing…':'Pair this D&U app'}</button></form><div className="notice"><strong>Get the code in Safari</strong><span>Open this same D&amp;U queue in Safari while signed in → tap Pair Home Screen → return here and paste the copied code. Codes expire after 5 minutes.</span></div><p><strong>Email fallback</strong></p></>:<p>Authorized reviewers only. Sign in with a magic link.</p>}
+    <form onSubmit={submit}><label>Email<input type="email" required value={email} onChange={e=>setEmail(e.target.value)}/></label><button className="button ghost" disabled={sending}>{sending?'Sending…':'Send sign-in link'}</button></form>{message?<div className="notice">{message}</div>:null}</div>;
 }
 
 function stagePrompt(detail:JobDetail){
@@ -112,6 +129,7 @@ function JobCard({job,session,refresh,autoOpen}:{job:JobSummary;session:Session;
 export function DuAdminPage(){
   const [session,setSession]=useState<Session|null>(null),[dashboard,setDashboard]=useState<Dashboard|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState('');
   const [pushBusy,setPushBusy]=useState(false),[pushEnabled,setPushEnabled]=useState(false),[pushMessage,setPushMessage]=useState('');
+  const [pairBusy,setPairBusy]=useState(false),[pairCode,setPairCode]=useState(''),[pairMessage,setPairMessage]=useState('');
   const targetJob=useMemo(()=>{
     const queryJob=new URLSearchParams(window.location.search).get('job')?.trim().toUpperCase()||null;
     if(queryJob){sessionStorage.setItem('du-target-job',queryJob);return queryJob;}
@@ -132,6 +150,18 @@ export function DuAdminPage(){
   useEffect(()=>{supabase.auth.getSession().then(({data})=>{setSession(data.session);void load(data.session);});const {data}=supabase.auth.onAuthStateChange((_event,next)=>{setSession(next);void load(next);});return()=>data.subscription.unsubscribe();},[load]);
   useEffect(()=>{if(!session||!targetJob)return;const timer=window.setTimeout(()=>sessionStorage.removeItem('du-target-job'),2000);return()=>window.clearTimeout(timer);},[session,targetJob]);
   const jobs=useMemo(()=>dashboard?.jobs.filter(job=>activeStates.includes(job.workflow_status))||[],[dashboard]);
+
+  async function createPair(){
+    if(!session)return;
+    setPairBusy(true);setPairMessage('');
+    try{
+      const result=await callFunction<PairCode>('du-admin',{action:'pair_create'},session.access_token);
+      setPairCode(result.code);
+      await navigator.clipboard.writeText(result.code).catch(()=>undefined);
+      setPairMessage('Pairing code copied. Open the D&U Home Screen app and paste it there within 5 minutes.');
+    }catch(reason){setPairMessage(reason instanceof Error?reason.message:'Could not create pairing code.');}
+    finally{setPairBusy(false);}
+  }
 
   async function enablePush(){
     if(!session)return;
@@ -166,8 +196,9 @@ export function DuAdminPage(){
 
   if(!session)return <Shell admin><main className="content narrow"><Login targetJob={targetJob}/></main></Shell>;
   return <Shell admin><main className="content"><div className="admin-dashboard"><div className="admin-topbar"><div><span className="eyebrow">Dyed &amp; Unattached</span><h1>Production queue</h1><p>{dashboard?.admin.display_name||dashboard?.admin.role||'Authorized admin'}</p></div><div className="admin-metrics"><div><strong>{jobs.length}</strong><span>active jobs</span></div><div><strong>{jobs.reduce((sum,job)=>sum+job.source_photo_count,0)}</strong><span>source photos</span></div></div></div>
-    <div className="button-row"><button className={pushEnabled?'button ghost':'button primary'} disabled={pushBusy||!pushSupported} onClick={()=>void enablePush()}>{pushBusy?'Working…':pushEnabled?'Notifications on':'Enable notifications'}</button>{pushEnabled?<button className="button ghost" disabled={pushBusy} onClick={()=>void testPush()}>Send test push</button>:null}</div>
-    {isIos()&&!isStandalone()&&!pushEnabled?<div className="notice"><strong>iPhone push setup</strong><span>Safari Share → Add to Home Screen → open D&amp;U from the new icon → Enable notifications.</span></div>:null}
+    <div className="button-row">{!isStandalone()?<button className="button ghost" disabled={pairBusy} onClick={()=>void createPair()}>{pairBusy?'Creating…':'Pair Home Screen'}</button>:null}<button className={pushEnabled?'button ghost':'button primary'} disabled={pushBusy||!pushSupported} onClick={()=>void enablePush()}>{pushBusy?'Working…':pushEnabled?'Notifications on':'Enable notifications'}</button>{pushEnabled?<button className="button ghost" disabled={pushBusy} onClick={()=>void testPush()}>Send test push</button>:null}</div>
+    {pairCode?<div className="notice"><strong>{pairCode}</strong><span>{pairMessage||'Paste this single-use code into the D&U Home Screen app. It expires after 5 minutes.'}</span></div>:pairMessage?<div className="notice">{pairMessage}</div>:null}
+    {isIos()&&!isStandalone()&&!pushEnabled?<div className="notice"><strong>iPhone push setup</strong><span>Safari Share → Add to Home Screen → open D&amp;U from the new icon. If the Home Screen app asks you to sign in, use Pair Home Screen here instead of requesting another email.</span></div>:null}
     {pushMessage?<div className="notice">{pushMessage}</div>:null}
     {loading?<div className="empty-state">Loading production queue…</div>:error?<div className="notice error"><strong>Could not load queue.</strong><span>{error}</span></div>:jobs.length?<section className="admin-grid">{jobs.map(job=><JobCard key={job.id} job={job} session={session} refresh={()=>void load(session)} autoOpen={targetJob===job.job_number}/>)}</section>:<div className="empty-state"><strong>Production queue is clear.</strong><span>No stencil jobs currently require action.</span></div>}</div></main></Shell>;
 }
