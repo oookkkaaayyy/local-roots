@@ -39,6 +39,12 @@ test("event submission form remains available on Events page", () => {
   assert.ok(events.includes('SubmissionForm'));
 });
 
+test("event submitter identity fields expose standard autocomplete purposes", () => {
+  const events = source("pages/EventsPage.tsx");
+  assert.ok(events.includes('name="submitter_name" maxLength={160} autoComplete="name"'));
+  assert.ok(events.includes('name="submitter_email" maxLength={320} autoComplete="email"'));
+});
+
 test("repeated event action links have event-specific accessible names and disclose new-tab behavior", () => {
   const events = source("pages/EventsPage.tsx");
   assert.ok(events.includes('aria-label={`Registration for ${event.name} (opens in new tab)`}'));
