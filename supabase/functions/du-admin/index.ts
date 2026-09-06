@@ -1,4 +1,6 @@
-import { createClient } from "jsr:@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.57.0";
+// @deno-types="npm:@types/web-push@3.6.4"
+import webpush from "npm:web-push@3.6.7";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -14,6 +16,73 @@ const workflowStates = new Set([
   "notification_sent", "stage_a_started", "awaiting_art_approval",
   "art_approved", "production_ready", "complete", "handoff_failed",
 ]);
+const vapidSubject = "https://localrootsdg.com/dyed-and-unattached";
+type ServiceClient = ReturnType<typeof createClient>;
+type PushConfig = { public_key: string; private_key: string };
+type PushRow = {
+  id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  failure_count: number;
+};
+
+async function ensurePushConfig(service: ServiceClient): Promise<PushConfig> {
+  const { data: existing, error: readError } = await service.from("du_push_config")
+    .select("public_key,private_key").eq("id", 1).maybeSingle();
+  if (readError) throw readError;
+  if (existing) return existing as PushConfig;
+
+  const generated = webpush.generateVAPIDKeys();
+  const { data: created, error: createError } = await service.from("du_push_config").insert({
+    id: 1,
+    public_key: generated.publicKey,
+    private_key: generated.privateKey,
+  }).select("public_key,private_key").single();
+  if (!createError && created) return created as PushConfig;
+
+  // A concurrent first-time setup may have inserted the singleton first.
+  const { data: raced, error: raceError } = await service.from("du_push_config")
+    .select("public_key,private_key").eq("id", 1).single();
+  if (raceError || !raced) throw createError || raceError || new Error("push_config_failed");
+  return raced as PushConfig;
+}
+
+async function sendPushes(
+  service: ServiceClient,
+  config: PushConfig,
+  subscriptions: PushRow[],
+  payload: Record<string, unknown>,
+) {
+  webpush.setVapidDetails(vapidSubject, config.public_key, config.private_key);
+  let sent = 0;
+  const now = new Date().toISOString();
+
+  for (const subscription of subscriptions) {
+    try {
+      await webpush.sendNotification({
+        endpoint: subscription.endpoint,
+        keys: { p256dh: subscription.p256dh, auth: subscription.auth },
+      }, JSON.stringify(payload), { TTL: 86400, urgency: "high" });
+      sent += 1;
+      await service.from("du_push_subscriptions").update({
+        last_success_at: now,
+        failure_count: 0,
+        updated_at: now,
+      }).eq("id", subscription.id);
+    } catch (error) {
+      const statusCode = Number((error as { statusCode?: number })?.statusCode || 0);
+      const patch: Record<string, unknown> = {
+        failure_count: Number(subscription.failure_count || 0) + 1,
+        updated_at: now,
+      };
+      if (statusCode === 404 || statusCode === 410) patch.disabled_at = now;
+      console.error("D&U push delivery failed", { subscription_id: subscription.id, statusCode });
+      await service.from("du_push_subscriptions").update(patch).eq("id", subscription.id);
+    }
+  }
+  return sent;
+}
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
@@ -93,6 +162,76 @@ Deno.serve(async (req: Request) => {
       .select("id,job_number,workflow_status,updated_at").single();
     if (error) return json({ error: "workflow_update_failed", detail: error.message }, 400);
     return json({ ok: true, job: data });
+  }
+
+  if (action === "push_config") {
+    try {
+      const config = await ensurePushConfig(service);
+      const { count, error: countError } = await service.from("du_push_subscriptions")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userData.user.id).is("disabled_at", null);
+      if (countError) throw countError;
+      return json({ public_key: config.public_key, subscription_count: count || 0 });
+    } catch (error) {
+      console.error("push_config_failed", error);
+      return json({ error: "push_config_failed" }, 500);
+    }
+  }
+
+  if (action === "push_subscribe") {
+    const subscription = body.subscription || {};
+    const endpoint = String(subscription.endpoint || "").trim();
+    const p256dh = String(subscription.keys?.p256dh || "").trim();
+    const auth = String(subscription.keys?.auth || "").trim();
+    if (!endpoint.startsWith("https://") || p256dh.length < 20 || auth.length < 8) {
+      return json({ error: "invalid_push_subscription" }, 400);
+    }
+    const now = new Date().toISOString();
+    const { error } = await service.from("du_push_subscriptions").upsert({
+      user_id: userData.user.id,
+      endpoint,
+      p256dh,
+      auth,
+      user_agent: String(body.user_agent || req.headers.get("user-agent") || "").slice(0, 1000) || null,
+      updated_at: now,
+      disabled_at: null,
+      failure_count: 0,
+    }, { onConflict: "endpoint" });
+    if (error) return json({ error: "push_subscribe_failed", detail: error.message }, 400);
+    return json({ ok: true });
+  }
+
+  if (action === "push_unsubscribe") {
+    const endpoint = String(body.endpoint || "").trim();
+    if (!endpoint) return json({ error: "invalid_push_subscription" }, 400);
+    const { error } = await service.from("du_push_subscriptions").update({
+      disabled_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }).eq("user_id", userData.user.id).eq("endpoint", endpoint);
+    if (error) return json({ error: "push_unsubscribe_failed", detail: error.message }, 400);
+    return json({ ok: true });
+  }
+
+  if (action === "push_test") {
+    try {
+      const config = await ensurePushConfig(service);
+      const { data: subscriptions, error } = await service.from("du_push_subscriptions")
+        .select("id,endpoint,p256dh,auth,failure_count")
+        .eq("user_id", userData.user.id).is("disabled_at", null);
+      if (error) throw error;
+      if (!subscriptions?.length) return json({ error: "no_push_subscription" }, 400);
+      const sent = await sendPushes(service, config, subscriptions as PushRow[], {
+        title: "D&U notifications are live",
+        body: "Tap to open the production queue. New requests will arrive here automatically.",
+        url: "/admin/dyed-and-unattached",
+        tag: "du-push-test",
+        badge: 1,
+      });
+      return json({ ok: sent > 0, sent });
+    } catch (error) {
+      console.error("push_test_failed", error);
+      return json({ error: "push_test_failed" }, 500);
+    }
   }
 
   return json({ error: "unknown_action" }, 400);
