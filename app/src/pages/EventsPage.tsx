@@ -80,7 +80,7 @@ function SubmissionForm() {
       <label>Sanctioned?<select name="sanctioned" defaultValue="unknown"><option value="unknown">Unknown</option><option value="yes">Yes</option><option value="no">No</option></select></label><label>Tier<input name="tier" maxLength={80} placeholder="C-Tier, B-Tier…"/></label>
       <label>Host / club<input name="club_host" maxLength={200}/></label><label className="span-2">TD name(s)<input name="td_names" placeholder="Separate names with commas"/></label>
       <label className="span-2">Registration link<input type="url" name="registration_url" placeholder="https://…"/></label><label className="span-2">Official/source link<input type="url" name="source_url" placeholder="https://…"/></label>
-      <label>Your name<input name="submitter_name" maxLength={160}/></label><label>Your email<input type="email" name="submitter_email" maxLength={320}/></label><label className="span-2">Notes<textarea name="notes" rows={3} maxLength={4000}/></label>
+      <label>Your name<input name="submitter_name" maxLength={160} autoComplete="name"/></label><label>Your email<input type="email" name="submitter_email" maxLength={320} autoComplete="email"/></label><label className="span-2">Notes<textarea name="notes" rows={3} maxLength={4000}/></label>
       <div className="form-footer span-2"><button type="submit" className="button primary" disabled={state==='sending'}>{state==='sending'?'Submitting…':'Submit event'}</button>{message?<span role={state==='error'?'alert':'status'} aria-live={state==='error'?'assertive':'polite'} aria-atomic="true" className={state==='error'?'form-error':'form-success'}>{message}</span>:null}</div>
     </form></section>;
 }
