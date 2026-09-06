@@ -7,6 +7,43 @@
     <meta name="description" content="Local Roots connects Southern California disc golf events, HB Night Flyers and Dyed & Unattached." />
     <link rel="icon" href="/brand/local-roots-lr.svg" type="image/svg+xml" />
     <title>Local Roots · Southern California Disc Golf</title>
+    <script>
+      (() => {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent || '');
+        if (!isIOS) return;
+        const realOpen = window.open.bind(window);
+        const isChatGptWeb = (value) => /^https:\/\/(?:www\.)?(?:chatgpt\.com|chat\.openai\.com)(?:\/|$)/i.test(String(value || ''));
+        const nativeChatGptUrl = 'chatgpt://';
+
+        window.open = function(url, target, features) {
+          const value = String(url || '');
+          if (isChatGptWeb(value)) {
+            window.location.href = nativeChatGptUrl;
+            return null;
+          }
+
+          if (value === 'about:blank' && target === 'du-chatgpt') {
+            const child = realOpen(url, target, features);
+            if (!child) return child;
+            let href = 'about:blank';
+            const locationProxy = {};
+            Object.defineProperty(locationProxy, 'href', {
+              get() { return href; },
+              set(next) {
+                href = String(next || '');
+                child.location.href = isChatGptWeb(href) ? nativeChatGptUrl : href;
+              },
+            });
+            return {
+              location: locationProxy,
+              close() { try { child.close(); } catch {} },
+            };
+          }
+
+          return realOpen(url, target, features);
+        };
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
