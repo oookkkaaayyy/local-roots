@@ -70,7 +70,7 @@ function Login({targetJob}:{targetJob:string|null}){
     finally{setPairing(false);}
   }
   return <div className="admin-login"><span className="eyebrow">Dyed &amp; Unattached operations</span><h1>Production queue</h1>
-    {standalone?<><p>This Home Screen app uses its own secure session. Pair it once from Safari without sending another email.</p><form onSubmit={redeemPair}><label>Pairing code<input type="text" required autoCapitalize="characters" autoCorrect="off" spellCheck={false} inputMode="text" placeholder="XXXXX-XXXXX" value={pairCode} onChange={e=>setPairCode(e.target.value.toUpperCase())}/></label><button className="button primary" disabled={pairing}>{pairing?'Pairing…':'Pair this D&U app'}</button></form><div className="notice"><strong>Get the code in Safari</strong><span>Open this same D&amp;U queue in Safari while signed in → tap Pair Home Screen → return here and paste the copied code. Codes expire after 5 minutes.</span></div><p><strong>Email fallback</strong></p></>:<p>Authorized reviewers only. Sign in with a magic link.</p>}
+    {standalone?<><p>This Home Screen app uses its own secure session. Pair it once from Safari without sending another email.</p><form onSubmit={redeemPair}><label>Pairing code<input type="text" required autoCapitalize="characters" autoCorrect="off" spellCheck={false} inputMode="text" placeholder="XXXXX-XXXXX" value={pairCode} onChange={e=>setPairCode(e.target.value.toUpperCase())}/></label><button className="button primary" disabled={pairing}>{pairing?'Pairing…':'Pair this D&U app'}</button></form><div className="notice"><strong>Get the code in Safari</strong><span>Open this same D&amp;U queue in Safari while signed in → tap Pair Home Screen → return here and paste or type the visible code. Codes expire after 5 minutes.</span></div><p><strong>Email fallback</strong></p></>:<p>Authorized reviewers only. Sign in with a magic link.</p>}
     <form onSubmit={submit}><label>Email<input type="email" required value={email} onChange={e=>setEmail(e.target.value)}/></label><button className="button ghost" disabled={sending}>{sending?'Sending…':'Send sign-in link'}</button></form>{message?<div className="notice">{message}</div>:null}</div>;
 }
 
@@ -157,10 +157,24 @@ export function DuAdminPage(){
     try{
       const result=await callFunction<PairCode>('du-admin',{action:'pair_create'},session.access_token);
       setPairCode(result.code);
-      await navigator.clipboard.writeText(result.code).catch(()=>undefined);
-      setPairMessage('Pairing code copied. Open the D&U Home Screen app and paste it there within 5 minutes.');
+      try{
+        await navigator.clipboard.writeText(result.code);
+        setPairMessage('Pairing code copied. Open the D&U Home Screen app and paste it there within 5 minutes.');
+      }catch{
+        setPairMessage('Pairing code created. Copy it with the button below, or type the visible code into the D&U Home Screen app within 5 minutes.');
+      }
     }catch(reason){setPairMessage(reason instanceof Error?reason.message:'Could not create pairing code.');}
     finally{setPairBusy(false);}
+  }
+
+  async function copyPairCode(){
+    if(!pairCode)return;
+    try{
+      await navigator.clipboard.writeText(pairCode);
+      setPairMessage('Pairing code copied. Open the D&U Home Screen app and paste it there within 5 minutes.');
+    }catch{
+      setPairMessage('iPhone blocked clipboard access. Press and hold the visible code, tap Copy, then paste it into the D&U Home Screen app.');
+    }
   }
 
   async function enablePush(){
@@ -197,7 +211,7 @@ export function DuAdminPage(){
   if(!session)return <Shell admin><main className="content narrow"><Login targetJob={targetJob}/></main></Shell>;
   return <Shell admin><main className="content"><div className="admin-dashboard"><div className="admin-topbar"><div><span className="eyebrow">Dyed &amp; Unattached</span><h1>Production queue</h1><p>{dashboard?.admin.display_name||dashboard?.admin.role||'Authorized admin'}</p></div><div className="admin-metrics"><div><strong>{jobs.length}</strong><span>active jobs</span></div><div><strong>{jobs.reduce((sum,job)=>sum+job.source_photo_count,0)}</strong><span>source photos</span></div></div></div>
     <div className="button-row">{!isStandalone()?<button className="button ghost" disabled={pairBusy} onClick={()=>void createPair()}>{pairBusy?'Creating…':'Pair Home Screen'}</button>:null}<button className={pushEnabled?'button ghost':'button primary'} disabled={pushBusy||!pushSupported} onClick={()=>void enablePush()}>{pushBusy?'Working…':pushEnabled?'Notifications on':'Enable notifications'}</button>{pushEnabled?<button className="button ghost" disabled={pushBusy} onClick={()=>void testPush()}>Send test push</button>:null}</div>
-    {pairCode?<div className="notice"><strong>{pairCode}</strong><span>{pairMessage||'Paste this single-use code into the D&U Home Screen app. It expires after 5 minutes.'}</span></div>:pairMessage?<div className="notice">{pairMessage}</div>:null}
+    {pairCode?<div className="notice"><strong>{pairCode}</strong><span>{pairMessage||'Paste this single-use code into the D&U Home Screen app. It expires after 5 minutes.'}</span><button className="button ghost" type="button" onClick={()=>void copyPairCode()}>Copy code</button></div>:pairMessage?<div className="notice">{pairMessage}</div>:null}
     {isIos()&&!isStandalone()&&!pushEnabled?<div className="notice"><strong>iPhone push setup</strong><span>Safari Share → Add to Home Screen → open D&amp;U from the new icon. If the Home Screen app asks you to sign in, use Pair Home Screen here instead of requesting another email.</span></div>:null}
     {pushMessage?<div className="notice">{pushMessage}</div>:null}
     {loading?<div className="empty-state">Loading production queue…</div>:error?<div className="notice error"><strong>Could not load queue.</strong><span>{error}</span></div>:jobs.length?<section className="admin-grid">{jobs.map(job=><JobCard key={job.id} job={job} session={session} refresh={()=>void load(session)} autoOpen={targetJob===job.job_number}/>)}</section>:<div className="empty-state"><strong>Production queue is clear.</strong><span>No stencil jobs currently require action.</span></div>}</div></main></Shell>;
