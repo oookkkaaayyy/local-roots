@@ -6,7 +6,7 @@ export function HbnfPage() {
       <div>
         <h1>HB Night Flyers</h1>
         <div className="branch-actions">
-          <a className="button primary" href="https://hbnightflyers.com/" target="_blank" rel="noreferrer">Open hbnightflyers.com</a>
+          <a className="button primary" href="https://hbnightflyers.com/" target="_blank" rel="noreferrer" aria-label="Open hbnightflyers.com (opens in new tab)">Open hbnightflyers.com</a>
           <a className="button ghost" href="/events">SoCal events</a>
         </div>
       </div>
