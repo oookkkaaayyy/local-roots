@@ -18,6 +18,7 @@ type PushConfig = {public_key:string;subscription_count:number};
 type PushTest = {ok:boolean;sent:number};
 type PairCode = {code:string;expires_at:string};
 type PairRedeem = {token_hash:string;verification_type:'magiclink'};
+type HandoffCreate = {job_number:string;handoff_url:string;expires_at:string;source_photo_count:number};
 type BadgeNavigator = Navigator & {
   standalone?: boolean;
   setAppBadge?: (contents?:number)=>Promise<void>;
@@ -82,36 +83,40 @@ function stagePrompt(detail:JobDetail){
 
 function JobCard({job,session,refresh,autoOpen}:{job:JobSummary;session:Session;refresh:()=>void;autoOpen:boolean}){
   const [detail,setDetail]=useState<JobDetail|null>(null),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
+  const [handoffText,setHandoffText]=useState(''),[handoffExpires,setHandoffExpires]=useState('');
   const load=useCallback(async()=>{setBusy(true);setMessage('');try{setDetail(await callFunction<JobDetail>('du-admin',{action:'job',job_id:job.id},session.access_token));}catch(error){setMessage(error instanceof Error?error.message:'Could not load job.');}finally{setBusy(false);}},[job.id,session.access_token]);
   useEffect(()=>{if(!autoOpen)return;void load();const timer=window.setTimeout(()=>document.getElementById(job.job_number)?.scrollIntoView({behavior:'smooth',block:'start'}),100);return()=>window.clearTimeout(timer);},[autoOpen,job.job_number,load]);
   async function setWorkflow(workflow_status:WorkflowStatus){setBusy(true);setMessage('');try{await callFunction('du-admin',{action:'set_workflow',job_id:job.id,workflow_status,clear_handoff_error:true},session.access_token);setMessage(`Moved to ${labels[workflow_status]}.`);refresh();}catch(error){setMessage(error instanceof Error?error.message:'Update failed.');}finally{setBusy(false);}}
   async function copyPrompt(){if(!detail)await load();const current=detail??await callFunction<JobDetail>('du-admin',{action:'job',job_id:job.id},session.access_token);await navigator.clipboard.writeText(stagePrompt(current));setDetail(current);setMessage('ChatGPT prompt copied. Download the source photos below, attach them together, and paste.');}
+  async function copyHandoff(){
+    if(!handoffText)return;
+    try{await navigator.clipboard.writeText(handoffText);setMessage('Secure handoff copied. Open ChatGPT, paste, and send.');}
+    catch{setMessage('Clipboard access was blocked. Press and hold inside the handoff text below, copy it manually, then open ChatGPT.');}
+  }
+  function openChatGPT(){
+    const opened=window.open('https://chatgpt.com/','_blank');
+    if(!opened)window.location.assign('https://chatgpt.com/');
+  }
   async function prepareForChatGPT(){
-    setBusy(true);setMessage('');
+    setBusy(true);setMessage('');setHandoffText('');setHandoffExpires('');
+    let chatWindow:Window|null=null;
     try{
-      const current=detail??await callFunction<JobDetail>('du-admin',{action:'job',job_id:job.id},session.access_token);
-      setDetail(current);
-      const files=await Promise.all(current.photos.map(async(photo,index)=>{
-        if(!photo.signed_url)throw new Error(`Source ${index+1} is unavailable.`);
-        const response=await fetch(photo.signed_url);
-        if(!response.ok)throw new Error(`Source ${index+1} could not be retrieved.`);
-        const blob=await response.blob();
-        const fallback=`${job.job_number}-source-${String(index+1).padStart(2,'0')}.jpg`;
-        return new File([blob],photo.original_filename||fallback,{type:blob.type||'image/jpeg'});
-      }));
-      const prompt=stagePrompt(current);
-      await navigator.clipboard.writeText(prompt);
-      const shareData={title:`${job.job_number} · ${job.subject_name||'D&U stencil'}`,text:prompt,files};
-      if(navigator.share&&navigator.canShare?.({files})){
-        await navigator.share(shareData);
-        await callFunction('du-admin',{action:'set_workflow',job_id:job.id,workflow_status:'stage_a_started',clear_handoff_error:true},session.access_token);
-        setMessage('Handoff shared. ChatGPT received the sources; the stencil prompt is also on your clipboard.');
-        refresh();
-        return;
+      chatWindow=window.open('about:blank','du-chatgpt');
+      const handoff=await callFunction<HandoffCreate>('du-handoff-create',{job_id:job.id},session.access_token);
+      const instruction=`START D&U STENCIL — ${handoff.job_number}\n\nSecure handoff ZIP (${handoff.source_photo_count} source photo${handoff.source_photo_count===1?'':'s'}; expires in 30 minutes):\n${handoff.handoff_url}\n\nDownload the ZIP yourself; do not ask me to upload the photos. Unpack it, read START_HERE.txt, inspect every source photo, use current Dyed & Unattached standards/AKS context if available, and begin stencil development.`;
+      setHandoffText(instruction);setHandoffExpires(handoff.expires_at);
+      let copied=false;
+      try{await navigator.clipboard.writeText(instruction);copied=true;}catch{copied=false;}
+      refresh();
+      if(copied){
+        setMessage('Secure handoff copied. Opening ChatGPT now — paste the instruction and send it.');
+        if(chatWindow)chatWindow.location.href='https://chatgpt.com/';
+        else openChatGPT();
+      }else{
+        chatWindow?.close();
+        setMessage('Secure handoff is ready, but iPhone blocked automatic clipboard copy. Use Copy handoff below, then Open ChatGPT.');
       }
-      for(const file of files){const href=URL.createObjectURL(file);const anchor=document.createElement('a');anchor.href=href;anchor.download=file.name;document.body.appendChild(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(href),30000);}
-      setMessage('Source downloads started and prompt copied. In ChatGPT, attach all downloaded images together and paste.');
-    }catch(error){if(error instanceof DOMException&&error.name==='AbortError')setMessage('Share cancelled; nothing was changed.');else setMessage(error instanceof Error?error.message:'Could not prepare the ChatGPT handoff.');}
+    }catch(error){chatWindow?.close();setMessage(error instanceof Error?error.message:'Could not prepare the secure ChatGPT handoff.');}
     finally{setBusy(false);}
   }
   return <article className="admin-card du-job-card" id={job.job_number}>
@@ -119,6 +124,7 @@ function JobCard({job,session,refresh,autoOpen}:{job:JobSummary;session:Session;
     {job.notes?<p className="admin-notes">{job.notes}</p>:null}
     {job.handoff_last_error?<div className="notice error"><strong>Handoff error</strong><span>{job.handoff_last_error}</span></div>:null}
     <div className="button-row"><button className="button ghost" disabled={busy} onClick={()=>detail?setDetail(null):void load()}>{busy?'Preparing…':detail?'Hide details':'Open job'}</button><button className="button primary" disabled={busy} onClick={()=>void prepareForChatGPT()}>Start Stencil</button><button className="button ghost" disabled={busy} onClick={()=>void copyPrompt()}>Copy prompt only</button></div>
+    {handoffText?<div className="notice"><strong>Secure ChatGPT handoff ready</strong><span>{handoffExpires?`Expires ${new Date(handoffExpires).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}.`:''} ChatGPT can retrieve the source package directly; you do not need to attach the photos.</span><textarea readOnly value={handoffText} rows={7} style={{width:'100%',minHeight:'10rem'}} onFocus={event=>event.currentTarget.select()}/><div className="button-row"><button className="button primary" type="button" onClick={()=>void copyHandoff()}>Copy handoff</button><button className="button ghost" type="button" onClick={openChatGPT}>Open ChatGPT</button></div></div>:null}
     {detail?<div className="du-job-detail"><dl className="detail-grid"><div><dt>Client</dt><dd>{job.client_name||'—'}</dd></div><div><dt>Phone</dt><dd>{job.phone||'—'}</dd></div><div><dt>Submitted</dt><dd>{new Date(job.created_at).toLocaleString()}</dd></div></dl>
       <div className="du-source-grid">{detail.photos.map((photo,index)=><a className="button ghost" key={photo.id} href={photo.signed_url||undefined} download={photo.original_filename||`source-${index+1}.jpg`} target="_blank" rel="noreferrer">Download source {index+1}</a>)}</div>
       <label>Workflow stage<select value={job.workflow_status} disabled={busy} onChange={event=>void setWorkflow(event.target.value as WorkflowStatus)}>{Object.entries(labels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
