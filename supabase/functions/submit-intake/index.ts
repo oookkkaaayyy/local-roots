@@ -10,6 +10,11 @@ const corsHeaders = {
 const vapidSubject = "https://localrootsdg.com/dyed-and-unattached";
 const MAX_REQUEST_BYTES = 50 * 1024 * 1024;
 const MAX_PHOTO_DATA_URL_CHARS = 12 * 1024 * 1024;
+const PHOTO_EXTENSIONS: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -27,6 +32,22 @@ function safeSlug(input: unknown, fallback = "unnamed") {
     .toLowerCase() || fallback;
 }
 
+function hasExpectedImageSignature(contentType: string, bytes: Uint8Array) {
+  if (contentType === "image/jpeg") {
+    return bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  }
+  if (contentType === "image/png") {
+    const signature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+    return bytes.length >= signature.length && signature.every((value, index) => bytes[index] === value);
+  }
+  if (contentType === "image/webp") {
+    return bytes.length >= 12
+      && String.fromCharCode(...bytes.slice(0, 4)) === "RIFF"
+      && String.fromCharCode(...bytes.slice(8, 12)) === "WEBP";
+  }
+  return false;
+}
+
 function dataUrlToBytes(dataUrl: string) {
   if (dataUrl.length > MAX_PHOTO_DATA_URL_CHARS) throw new Error("photo_too_large");
   const match = dataUrl.match(/^data:([^;]+);base64,(.*)$/);
@@ -34,7 +55,7 @@ function dataUrlToBytes(dataUrl: string) {
   const binary = atob(match[2]);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return { bytes, contentType: match[1], size: bytes.byteLength };
+  return { bytes, contentType: match[1].trim().toLowerCase(), size: bytes.byteLength };
 }
 
 function lockedRules() {
@@ -183,10 +204,11 @@ Deno.serve(async (req: Request) => {
       if (!photo?.dataUrl) continue;
       try {
         const { bytes, contentType, size } = dataUrlToBytes(String(photo.dataUrl));
-        if (!contentType.startsWith("image/")) return json({ error: `Photo ${index + 1} is not an image` }, 400);
+        const extension = PHOTO_EXTENSIONS[contentType];
+        if (!extension) return json({ error: `Photo ${index + 1} must be JPEG, PNG, or WebP` }, 400);
+        if (!hasExpectedImageSignature(contentType, bytes)) return json({ error: `Photo ${index + 1} could not be read` }, 400);
         if (size > 8 * 1024 * 1024) return json({ error: `Photo ${index + 1} exceeds 8 MB after compression` }, 400);
         const original = String(photo.name || `reference-${index + 1}.jpg`).slice(0, 240);
-        const extension = contentType.includes("png") ? "png" : contentType.includes("webp") ? "webp" : "jpg";
         validatedPhotos.push({ bytes, contentType, size, original, extension });
       } catch {
         return json({ error: `Photo ${index + 1} could not be read` }, 400);
