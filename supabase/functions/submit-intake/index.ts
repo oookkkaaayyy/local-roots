@@ -8,6 +8,8 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 const vapidSubject = "https://localrootsdg.com/dyed-and-unattached";
+const MAX_REQUEST_BYTES = 50 * 1024 * 1024;
+const MAX_PHOTO_DATA_URL_CHARS = 12 * 1024 * 1024;
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -26,6 +28,7 @@ function safeSlug(input: unknown, fallback = "unnamed") {
 }
 
 function dataUrlToBytes(dataUrl: string) {
+  if (dataUrl.length > MAX_PHOTO_DATA_URL_CHARS) throw new Error("Photo payload is too large");
   const match = dataUrl.match(/^data:([^;]+);base64,(.*)$/);
   if (!match) throw new Error("Invalid image data URL");
   const binary = atob(match[2]);
@@ -147,6 +150,11 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
+  const contentLength = Number(req.headers.get("content-length") || 0);
+  if (Number.isFinite(contentLength) && contentLength > MAX_REQUEST_BYTES) {
+    return json({ error: "Request is too large" }, 413);
+  }
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -161,8 +169,11 @@ Deno.serve(async (req: Request) => {
     const rawPhotos = Array.isArray(payload.photos) ? payload.photos : [];
 
     if (!clientName) return json({ error: "Name is required" }, 400);
-    if (phone.replace(/\D/g, "").length < 7) return json({ error: "A valid phone number is required" }, 400);
+    if (clientName.length > 160) return json({ error: "Name is too long" }, 400);
+    if (phone.length > 80 || phone.replace(/\D/g, "").length < 7) return json({ error: "A valid phone number is required" }, 400);
     if (!petName) return json({ error: "Pet name is required" }, 400);
+    if (petName.length > 160) return json({ error: "Pet name is too long" }, 400);
+    if (notes && notes.length > 4000) return json({ error: "Notes are too long" }, 400);
     if (!rawPhotos.length) return json({ error: "At least one reference image is required" }, 400);
     if (rawPhotos.length > 6) return json({ error: "No more than six reference images are allowed" }, 400);
 
@@ -174,8 +185,8 @@ Deno.serve(async (req: Request) => {
       subject_type: "Pet portrait",
       notes,
       gallery_permission: "none",
-      submitted_user_agent: req.headers.get("user-agent"),
-      submitted_origin: req.headers.get("origin"),
+      submitted_user_agent: req.headers.get("user-agent")?.slice(0, 1000) || null,
+      submitted_origin: req.headers.get("origin")?.slice(0, 1000) || null,
       locked_spec_version: "Stencil Spec v4 — 7.5in face-first binary preflight",
     }).select("*").single();
     if (jobError) throw jobError;
@@ -186,10 +197,10 @@ Deno.serve(async (req: Request) => {
     for (let index = 0; index < rawPhotos.length; index++) {
       const photo = rawPhotos[index];
       if (!photo?.dataUrl) continue;
-      const { bytes, contentType, size } = dataUrlToBytes(photo.dataUrl);
+      const { bytes, contentType, size } = dataUrlToBytes(String(photo.dataUrl));
       if (!contentType.startsWith("image/")) continue;
       if (size > 8 * 1024 * 1024) throw new Error(`Photo ${index + 1} exceeds 8 MB after compression`);
-      const original = String(photo.name || `reference-${index + 1}.jpg`);
+      const original = String(photo.name || `reference-${index + 1}.jpg`).slice(0, 240);
       const extension = contentType.includes("png") ? "png" : contentType.includes("webp") ? "webp" : "jpg";
       const path = `${root}/01_Source_Photos/${String(index + 1).padStart(2, "0")}_candidate_${safeSlug(original, `reference-${index + 1}`)}.${extension}`;
       const { error: uploadError } = await supabase.storage.from("du-intake").upload(path, bytes, { contentType, upsert: false });
@@ -241,7 +252,7 @@ Deno.serve(async (req: Request) => {
       push_sent: pushSent,
     });
   } catch (error) {
-    console.error(error);
-    return json({ error: error instanceof Error ? error.message : String(error) }, 500);
+    console.error("D&U intake failed", error);
+    return json({ error: "The request could not be submitted." }, 500);
   }
 });
