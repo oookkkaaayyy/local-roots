@@ -39,6 +39,11 @@ Deno.serve(async (req: Request) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ job_number: "HEALTH-CHECK" }),
     });
+    const legacyBundleV2 = await fetch(`${SUPABASE_URL}/functions/v1/chatgpt-bundle-v2`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job_number: "HEALTH-CHECK" }),
+    });
 
     const checks = {
       database: !jobs.error,
@@ -48,6 +53,7 @@ Deno.serve(async (req: Request) => {
       current_handoff_auth_guard: handoffCreateUnauthorized.status === 401,
       legacy_admin_retired: legacyAdmin.status === 410,
       legacy_bundle_retired: legacyBundle.status === 410,
+      legacy_bundle_v2_retired: legacyBundleV2.status === 410,
     };
     const ok = Object.values(checks).every(Boolean);
     return json({ ok, checks, checked_at: new Date().toISOString() }, ok ? 200 : 503);
