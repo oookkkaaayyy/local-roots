@@ -28,9 +28,9 @@ function safeSlug(input: unknown, fallback = "unnamed") {
 }
 
 function dataUrlToBytes(dataUrl: string) {
-  if (dataUrl.length > MAX_PHOTO_DATA_URL_CHARS) throw new Error("Photo payload is too large");
+  if (dataUrl.length > MAX_PHOTO_DATA_URL_CHARS) throw new Error("photo_too_large");
   const match = dataUrl.match(/^data:([^;]+);base64,(.*)$/);
-  if (!match) throw new Error("Invalid image data URL");
+  if (!match) throw new Error("invalid_image_data_url");
   const binary = atob(match[2]);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
@@ -158,7 +158,7 @@ Deno.serve(async (req: Request) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    if (!supabaseUrl || !serviceKey) return json({ error: "Server configuration missing" }, 500);
+    if (!supabaseUrl || !serviceKey) return json({ error: "Service unavailable" }, 503);
     const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
     const payload = await req.json();
@@ -177,6 +177,23 @@ Deno.serve(async (req: Request) => {
     if (!rawPhotos.length) return json({ error: "At least one reference image is required" }, 400);
     if (rawPhotos.length > 6) return json({ error: "No more than six reference images are allowed" }, 400);
 
+    const validatedPhotos: Array<{ bytes: Uint8Array; contentType: string; size: number; original: string; extension: string }> = [];
+    for (let index = 0; index < rawPhotos.length; index++) {
+      const photo = rawPhotos[index];
+      if (!photo?.dataUrl) continue;
+      try {
+        const { bytes, contentType, size } = dataUrlToBytes(String(photo.dataUrl));
+        if (!contentType.startsWith("image/")) return json({ error: `Photo ${index + 1} is not an image` }, 400);
+        if (size > 8 * 1024 * 1024) return json({ error: `Photo ${index + 1} exceeds 8 MB after compression` }, 400);
+        const original = String(photo.name || `reference-${index + 1}.jpg`).slice(0, 240);
+        const extension = contentType.includes("png") ? "png" : contentType.includes("webp") ? "webp" : "jpg";
+        validatedPhotos.push({ bytes, contentType, size, original, extension });
+      } catch {
+        return json({ error: `Photo ${index + 1} could not be read` }, 400);
+      }
+    }
+    if (!validatedPhotos.length) return json({ error: "No valid reference images were uploaded" }, 400);
+
     const { data: job, error: jobError } = await supabase.from("jobs").insert({
       client_name: clientName,
       phone,
@@ -194,31 +211,23 @@ Deno.serve(async (req: Request) => {
     const root = `jobs/${job.job_number}_${safeSlug(petName, "pet")}`;
     const uploadedPhotos: any[] = [];
 
-    for (let index = 0; index < rawPhotos.length; index++) {
-      const photo = rawPhotos[index];
-      if (!photo?.dataUrl) continue;
-      const { bytes, contentType, size } = dataUrlToBytes(String(photo.dataUrl));
-      if (!contentType.startsWith("image/")) continue;
-      if (size > 8 * 1024 * 1024) throw new Error(`Photo ${index + 1} exceeds 8 MB after compression`);
-      const original = String(photo.name || `reference-${index + 1}.jpg`).slice(0, 240);
-      const extension = contentType.includes("png") ? "png" : contentType.includes("webp") ? "webp" : "jpg";
-      const path = `${root}/01_Source_Photos/${String(index + 1).padStart(2, "0")}_candidate_${safeSlug(original, `reference-${index + 1}`)}.${extension}`;
-      const { error: uploadError } = await supabase.storage.from("du-intake").upload(path, bytes, { contentType, upsert: false });
+    for (let index = 0; index < validatedPhotos.length; index++) {
+      const photo = validatedPhotos[index];
+      const path = `${root}/01_Source_Photos/${String(index + 1).padStart(2, "0")}_candidate_${safeSlug(photo.original, `reference-${index + 1}`)}.${photo.extension}`;
+      const { error: uploadError } = await supabase.storage.from("du-intake").upload(path, photo.bytes, { contentType: photo.contentType, upsert: false });
       if (uploadError) throw uploadError;
       const { data: row, error: rowError } = await supabase.from("job_photos").insert({
         job_id: job.id,
         photo_role: "candidate",
         storage_path: path,
-        original_filename: original,
-        content_type: contentType,
-        size_bytes: size,
+        original_filename: photo.original,
+        content_type: photo.contentType,
+        size_bytes: photo.size,
         sort_order: index,
       }).select("*").single();
       if (rowError) throw rowError;
       uploadedPhotos.push(row);
     }
-
-    if (!uploadedPhotos.length) throw new Error("No valid reference images were uploaded");
 
     const options = draftOptions(job, uploadedPhotos);
     const { error: draftError } = await supabase.from("draft_options").insert(options.map(option => ({ ...option, job_id: job.id })));
