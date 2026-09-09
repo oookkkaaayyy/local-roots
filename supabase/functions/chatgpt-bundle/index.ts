@@ -1,0 +1,15 @@
+const headers = {
+  "Content-Type": "application/json; charset=utf-8",
+  "Cache-Control": "no-store",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+Deno.serve((request: Request) => {
+  if (request.method === "OPTIONS") return new Response("ok", { headers });
+  return new Response(
+    JSON.stringify({ ok: false, error: "legacy_endpoint_retired" }),
+    { status: 410, headers },
+  );
+});
