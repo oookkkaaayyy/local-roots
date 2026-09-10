@@ -6,6 +6,8 @@ const cors = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+const MAX_REQUEST_BYTES = 64 * 1024;
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -19,6 +21,45 @@ function text(value: unknown, max: number) {
   return s ? s.slice(0, max) : undefined;
 }
 
+async function readBoundedJson(req: Request): Promise<Record<string, unknown>> {
+  const contentLength = Number(req.headers.get("content-length"));
+  if (Number.isFinite(contentLength) && contentLength > MAX_REQUEST_BYTES) {
+    throw new Error("request_too_large");
+  }
+
+  if (!req.body) return {};
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > MAX_REQUEST_BYTES) {
+        await reader.cancel();
+        throw new Error("request_too_large");
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  const parsed = JSON.parse(new TextDecoder().decode(bytes));
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error("invalid_json");
+  }
+  return parsed as Record<string, unknown>;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
@@ -29,8 +70,11 @@ Deno.serve(async (req) => {
 
   let input: Record<string, unknown>;
   try {
-    input = await req.json();
-  } catch {
+    input = await readBoundedJson(req);
+  } catch (error) {
+    if (error instanceof Error && error.message === "request_too_large") {
+      return json({ error: "request_too_large" }, 413);
+    }
     return json({ error: "invalid_json" }, 400);
   }
 
