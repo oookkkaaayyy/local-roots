@@ -23,6 +23,45 @@ function json(body: unknown, status = 200) {
   });
 }
 
+async function readBoundedJson(req: Request): Promise<Record<string, unknown>> {
+  const contentLength = Number(req.headers.get("content-length"));
+  if (Number.isFinite(contentLength) && contentLength > MAX_REQUEST_BYTES) {
+    throw new Error("request_too_large");
+  }
+
+  if (!req.body) return {};
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > MAX_REQUEST_BYTES) {
+        await reader.cancel();
+        throw new Error("request_too_large");
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  const parsed = JSON.parse(new TextDecoder().decode(bytes));
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error("invalid_json");
+  }
+  return parsed as Record<string, unknown>;
+}
+
 function safeSlug(input: unknown, fallback = "unnamed") {
   return String(input || fallback)
     .normalize("NFKD")
@@ -171,18 +210,22 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
-  const contentLength = Number(req.headers.get("content-length") || 0);
-  if (Number.isFinite(contentLength) && contentLength > MAX_REQUEST_BYTES) {
-    return json({ error: "Request is too large" }, 413);
-  }
-
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!supabaseUrl || !serviceKey) return json({ error: "Service unavailable" }, 503);
     const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
-    const payload = await req.json();
+    let payload: Record<string, unknown>;
+    try {
+      payload = await readBoundedJson(req);
+    } catch (error) {
+      if (error instanceof Error && error.message === "request_too_large") {
+        return json({ error: "Request is too large" }, 413);
+      }
+      return json({ error: "The request could not be read." }, 400);
+    }
+
     const clientName = String(payload.clientName || "").trim();
     const phone = String(payload.phone || "").trim();
     const petName = String(payload.petName || payload.subjectName || "").trim();
@@ -200,7 +243,7 @@ Deno.serve(async (req: Request) => {
 
     const validatedPhotos: Array<{ bytes: Uint8Array; contentType: string; size: number; original: string; extension: string }> = [];
     for (let index = 0; index < rawPhotos.length; index++) {
-      const photo = rawPhotos[index];
+      const photo = rawPhotos[index] as Record<string, unknown> | null | undefined;
       if (!photo?.dataUrl) continue;
       try {
         const { bytes, contentType, size } = dataUrlToBytes(String(photo.dataUrl));
