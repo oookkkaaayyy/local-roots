@@ -49,7 +49,7 @@ test("public intake keeps server-side request, field, count, and decoded-photo s
 });
 
 test("unexpected intake failures do not return raw backend errors", () => {
-  assert.ok(intake.includes('return json({ error: "Unable to submit request" }, 500);'));
+  assert.ok(intake.includes('return json({ error: "The request could not be submitted." }, 500);'));
   assert.equal(intake.includes("error: String(error"), false);
   assert.equal(intake.includes("error.message"), false);
 });
