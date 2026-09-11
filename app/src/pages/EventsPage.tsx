@@ -10,6 +10,18 @@ const EVENT_TYPES = [
   ['clinic','Clinic'],['charity','Charity'],['community','Community'],['other','Other'],
 ] as const;
 
+type EventView = 'upcoming' | 'results';
+type ResultsFilter = 'all' | 'available';
+type EventFilters = {
+  view: EventView;
+  query: string;
+  county: string;
+  sanction: string;
+  eventType: string;
+  month: string;
+  results: ResultsFilter;
+};
+
 const title = (v: string) => v.replaceAll('_',' ').replace(/\b\w/g,(m)=>m.toUpperCase());
 const monthKey = (v: string) => v.slice(0,7);
 function dateRange(start: string, end: string) {
@@ -36,12 +48,46 @@ function resultValue(result: PublicResult) {
   }
   return '—';
 }
+function hasResults(event: PublicEvent) {
+  return Boolean(event.top_results?.length || event.results_url);
+}
+function resultsLinkLabel(url: string) {
+  try {
+    const host = new URL(url).hostname.replace(/^www\./,'').toLowerCase();
+    if(host==='pdga.com'||host.endsWith('.pdga.com'))return 'View PDGA results';
+    if(host==='discgolfscene.com'||host.endsWith('.discgolfscene.com'))return 'View Disc Golf Scene results';
+    if(host==='udisc.com'||host.endsWith('.udisc.com'))return 'View UDisc results';
+    if(host==='hbnightflyers.com'||host.endsWith('.hbnightflyers.com'))return 'View HBNF results';
+  } catch {
+    // Keep the safe generic label for malformed legacy URLs.
+  }
+  return 'View official results';
+}
+function readEventFilters(): EventFilters {
+  const defaults: EventFilters = {view:'upcoming',query:'',county:'all',sanction:'all',eventType:'all',month:'all',results:'all'};
+  if(typeof window==='undefined')return defaults;
+  const params = new URLSearchParams(window.location.search);
+  const county = params.get('county');
+  const sanction = params.get('sanction');
+  const eventType = params.get('type');
+  const month = params.get('month');
+  return {
+    view: params.get('view')==='results'?'results':'upcoming',
+    query: params.get('q')??'',
+    county: county && COUNTIES.includes(county)?county:'all',
+    sanction: sanction==='yes'||sanction==='no'?sanction:'all',
+    eventType: eventType && EVENT_TYPES.some(([value])=>value===eventType)?eventType:'all',
+    month: month && /^\d{4}-\d{2}$/.test(month)?month:'all',
+    results: params.get('results')==='available'?'available':'all',
+  };
+}
 
 function EventCard({event,today}:{event:PublicEvent;today:string}) {
   const stale = Boolean(event.last_verified_at && Date.now()-new Date(event.last_verified_at).getTime()>14*86400000);
   const effectiveStatus = ['canceled','completed'].includes(event.status) ? event.status : event.end_date<today ? 'completed' : event.status;
   const canShowRegistration = Boolean(event.registration_url && event.end_date>=today && event.registration_status !== 'closed' && !['canceled','completed'].includes(effectiveStatus));
   const tdNames = event.td_names??[];
+  const resultLabel = event.results_url ? resultsLinkLabel(event.results_url) : '';
   return <article className={`event-card ${effectiveStatus==='canceled'?'is-canceled':''}`}>
     <div className="event-date-block"><strong>{dateRange(event.start_date,event.end_date)}</strong><span>{event.county?`${event.county} County`:'Southern California'}</span></div>
     <div className="event-main">
@@ -51,7 +97,7 @@ function EventCard({event,today}:{event:PublicEvent;today:string}) {
       {stale?<p className="stale-note">Verification is older than 14 days; confirm details before traveling.</p>:null}
       {event.top_results?.length?<div className="results-block"><div className="results-title">Results · {title(event.top_results[0]?.division_code??'')}</div><ol>{event.top_results.map((r)=><li key={`${r.division_code}-${r.place}-${r.player_name}`}><span>{r.place}. {r.player_name}</span><strong>{resultValue(r)}</strong></li>)}</ol></div>:null}
     </div>
-    <div className="event-actions">{canShowRegistration?<a className="button primary" href={event.registration_url!} target="_blank" rel="noreferrer" aria-label={`Registration for ${event.name} (opens in new tab)`}>Registration</a>:null}{event.results_url?<a className="button ghost" href={event.results_url} target="_blank" rel="noreferrer" aria-label={`Results for ${event.name} (opens in new tab)`}>Results</a>:null}</div>
+    <div className="event-actions">{canShowRegistration?<a className="button primary" href={event.registration_url!} target="_blank" rel="noreferrer" aria-label={`Registration for ${event.name} (opens in new tab)`}>Registration</a>:null}{event.results_url?<a className="button ghost" href={event.results_url} target="_blank" rel="noreferrer" aria-label={`${resultLabel} for ${event.name} (opens in new tab)`}>{resultLabel}</a>:null}</div>
   </article>;
 }
 
@@ -86,17 +132,39 @@ function SubmissionForm() {
 }
 
 export function EventsPage(){
+  const initialFilters=useMemo(()=>readEventFilters(),[]);
   const [events,setEvents]=useState<PublicEvent[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState('');
-  const [county,setCounty]=useState('all'),[sanction,setSanction]=useState('all'),[eventType,setEventType]=useState('all'),[month,setMonth]=useState('all'),[showPast,setShowPast]=useState(false);
+  const [view,setView]=useState<EventView>(initialFilters.view),[query,setQuery]=useState(initialFilters.query),[county,setCounty]=useState(initialFilters.county),[sanction,setSanction]=useState(initialFilters.sanction),[eventType,setEventType]=useState(initialFilters.eventType),[month,setMonth]=useState(initialFilters.month),[resultsFilter,setResultsFilter]=useState<ResultsFilter>(initialFilters.results);
   useEffect(()=>{supabase!.rpc('lr_public_events').then(({data,error})=>{if(error)setError(error.message);else setEvents((data??[]) as PublicEvent[]);setLoading(false);});},[]);
   const today=pacificToday();
-  const months=useMemo(()=>Array.from(new Set(events.filter(e=>showPast||e.end_date>=today).map(e=>monthKey(e.start_date))).values()).sort(),[events,showPast,today]);
+  const viewEvents=useMemo(()=>events.filter(e=>view==='upcoming'?e.end_date>=today:e.end_date<today),[events,view,today]);
+  const months=useMemo(()=>Array.from(new Set(viewEvents.map(e=>monthKey(e.start_date))).values()).sort((a,b)=>view==='results'?b.localeCompare(a):a.localeCompare(b)),[viewEvents,view]);
   useEffect(()=>{if(month!=='all'&&!months.includes(month))setMonth('all');},[month,months]);
-  const filtered=useMemo(()=>events.filter(e=>{
-    if(!showPast&&e.end_date<today)return false;if(county!=='all'&&e.county!==county)return false;if(sanction==='yes'&&e.sanctioned!==true)return false;if(sanction==='no'&&e.sanctioned!==false)return false;if(eventType!=='all'&&e.event_type!==eventType)return false;if(month!=='all'&&monthKey(e.start_date)!==month)return false;return true;
-  }),[events,showPast,today,county,sanction,eventType,month]);
+  useEffect(()=>{
+    if(typeof window==='undefined')return;
+    const params=new URLSearchParams();
+    if(view!=='upcoming')params.set('view',view);
+    if(query.trim())params.set('q',query.trim());
+    if(county!=='all')params.set('county',county);
+    if(sanction!=='all')params.set('sanction',sanction);
+    if(eventType!=='all')params.set('type',eventType);
+    if(month!=='all')params.set('month',month);
+    if(resultsFilter!=='all')params.set('results',resultsFilter);
+    const search=params.toString();
+    const next=`${window.location.pathname}${search?`?${search}`:''}${window.location.hash}`;
+    window.history.replaceState(null,'',next);
+  },[view,query,county,sanction,eventType,month,resultsFilter]);
+  const filtered=useMemo(()=>{
+    const needle=query.trim().toLowerCase();
+    return viewEvents.filter(e=>{
+      if(county!=='all'&&e.county!==county)return false;if(sanction==='yes'&&e.sanctioned!==true)return false;if(sanction==='no'&&e.sanctioned!==false)return false;if(eventType!=='all'&&e.event_type!==eventType)return false;if(month!=='all'&&monthKey(e.start_date)!==month)return false;if(resultsFilter==='available'&&!hasResults(e))return false;
+      if(needle){const haystack=[e.name,e.city,e.course_name,e.venue_name,e.club_host,...(e.td_names??[])].filter(Boolean).join(' ').toLowerCase();if(!haystack.includes(needle))return false;}
+      return true;
+    }).sort((a,b)=>view==='results'?(b.end_date.localeCompare(a.end_date)||a.name.localeCompare(b.name)):(a.start_date.localeCompare(b.start_date)||a.name.localeCompare(b.name)));
+  },[viewEvents,view,query,county,sanction,eventType,month,resultsFilter]);
+  const viewTitle=view==='results'?'Past events & results':'Upcoming events';
   return <Shell><main><section className="hero"><h1>Southern California Disc Golf Events</h1></section>
-    <section className="events-layout content"><div className="filters" role="group" aria-label="Event filters"><label>Month<select value={month} onChange={e=>setMonth(e.target.value)}><option value="all">All visible months</option>{months.map(m=><option key={m} value={m}>{monthLabel(m)}</option>)}</select></label><label>County<select value={county} onChange={e=>setCounty(e.target.value)}><option value="all">All six counties</option>{COUNTIES.map(c=><option key={c}>{c}</option>)}</select></label><label>Sanction<select value={sanction} onChange={e=>setSanction(e.target.value)}><option value="all">All</option><option value="yes">Sanctioned</option><option value="no">Unsanctioned</option></select></label><label>Type<select value={eventType} onChange={e=>setEventType(e.target.value)}><option value="all">All types</option>{EVENT_TYPES.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label><label className="checkbox"><input type="checkbox" checked={showPast} onChange={e=>setShowPast(e.target.checked)}/> Show past events</label></div>
-    <div className="event-list" data-status-policy="date-aware-v1" aria-busy={loading}><div className="list-header"><h2>Events</h2><span aria-live="polite" aria-atomic="true">{filtered.length} shown</span></div>{loading?<div className="empty-state" role="status" aria-live="polite">Loading events…</div>:null}{error?<div className="notice error" role="alert">Could not load events: {error}</div>:null}{!loading&&!error&&!filtered.length?<div className="empty-state" role="status"><strong>No matching events.</strong><span>Change the filters or submit an event below.</span></div>:null}{filtered.map(e=><EventCard key={e.id} event={e} today={today}/>)}</div></section>
+    <section className="events-layout content"><div className="filters" role="group" aria-label="Event filters"><div className="event-view-switch" role="group" aria-label="Event view"><button type="button" className={`button ${view==='upcoming'?'primary':'ghost'}`} aria-pressed={view==='upcoming'} onClick={()=>setView('upcoming')}>Upcoming</button><button type="button" className={`button ${view==='results'?'primary':'ghost'}`} aria-pressed={view==='results'} onClick={()=>setView('results')}>Results</button></div><label className="filter-search">Search<input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Event, course, city, host…"/></label><label>Month<select value={month} onChange={e=>setMonth(e.target.value)}><option value="all">All visible months</option>{months.map(m=><option key={m} value={m}>{monthLabel(m)}</option>)}</select></label><label>County<select value={county} onChange={e=>setCounty(e.target.value)}><option value="all">All six counties</option>{COUNTIES.map(c=><option key={c}>{c}</option>)}</select></label><label>Sanction<select value={sanction} onChange={e=>setSanction(e.target.value)}><option value="all">All</option><option value="yes">Sanctioned</option><option value="no">Unsanctioned</option></select></label><label>Type<select value={eventType} onChange={e=>setEventType(e.target.value)}><option value="all">All types</option>{EVENT_TYPES.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label><label className="checkbox"><input type="checkbox" checked={resultsFilter==='available'} onChange={e=>setResultsFilter(e.target.checked?'available':'all')}/> Results available</label></div>
+    <div className="event-list" data-status-policy="date-aware-v1" aria-busy={loading}><div className="list-header"><h2>{viewTitle}</h2><span aria-live="polite" aria-atomic="true">{filtered.length} shown</span></div>{loading?<div className="empty-state" role="status" aria-live="polite">Loading events…</div>:null}{error?<div className="notice error" role="alert">Could not load events: {error}</div>:null}{!loading&&!error&&!filtered.length?<div className="empty-state" role="status"><strong>No matching events.</strong><span>{view==='results'?'Change the filters to see other past events.':'Change the filters or submit an event below.'}</span></div>:null}{filtered.map(e=><EventCard key={e.id} event={e} today={today}/>)}</div></section>
     <div className="content"><SubmissionForm/></div></main></Shell>;
 }

@@ -117,3 +117,12 @@ These tests should exist before production ingestion is enabled.
 75. A published current/future event older than 14 days since `last_verified_at` increments `stale_future_events` and blocks launch readiness; refreshing verification clears the gate.
 76. The scheduled future-event freshness watch creates at most one open review per stale event and auto-resolves that review after re-verification, unpublication, or the event becoming past.
 77. Current production has zero stale future-event alerts before launch soak begins; disposable freshness-watch QA leaves no test review rows behind.
+
+## Public event discovery and result-navigation regressions
+
+78. `Upcoming` view includes only events whose end date is today or later in the Southern California calendar; `Results` view exposes historical events without changing source authority.
+79. `Results available` recognizes an event with authorized inline `top_results` or an approved outbound `results_url` and does not manufacture result data.
+80. Public event search matches event name, city, course/venue, host/club, and tournament-director names without querying non-public fields.
+81. Event view/search/filter state round-trips through URL query parameters so a filtered view can be bookmarked or shared.
+82. Known outbound results destinations are labeled accurately (PDGA, Disc Golf Scene, UDisc, HBNF); unknown destinations use a generic official-results label.
+83. Destination-aware link labels do not authorize scraping, proxying, caching, framing, screenshots, or transcription of PDGA, Disc Golf Scene, or UDisc result pages.

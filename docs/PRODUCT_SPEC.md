@@ -68,6 +68,22 @@ MVP:
 - sanctioned vs unsanctioned
 - event type
 
+Phase 1 discovery controls selected 2026-09-10:
+- explicit `Upcoming` and `Results` views;
+- text search across event name, city, course/venue, host/club, and tournament director;
+- a `Results available` filter that recognizes either authorized inline results or an approved outbound results URL;
+- filter/view/search state persisted in the URL so a filtered calendar can be bookmarked or shared;
+- destination-specific labels for outbound results links (for example PDGA, Disc Golf Scene, UDisc, HBNF, or generic official results).
+
+External-results boundary:
+- PDGA, Disc Golf Scene, and UDisc results remain outbound links unless separate permission/access explicitly authorizes another use;
+- do not scrape, proxy, cache, snapshot, transcribe, iframe, or otherwise republish those external result pages merely to avoid the linkout;
+- inline results are limited to first-party Local Roots/HBNF data or other results supplied through an authorized source with retained provenance.
+
+Remaining Phase 1 navigation work:
+- permanent event-detail URLs;
+- Add to Calendar actions.
+
 Later:
 - course
 - club/organizer
