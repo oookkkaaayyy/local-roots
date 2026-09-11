@@ -31,6 +31,9 @@ An administrator should be able to:
 Route:
 `/events`
 
+Permanent event route:
+`/events/:slug`
+
 ### Default presentation
 - mobile-first;
 - upcoming events first;
@@ -61,28 +64,26 @@ For completed events:
 - total score and relative-to-par when available
 - results source link
 
-### Filters
+### Filters and navigation
 MVP:
 - month/date
 - county
 - sanctioned vs unsanctioned
 - event type
 
-Phase 1 discovery controls selected 2026-09-10:
+Phase 1 discovery/navigation controls selected 2026-09-10 and implemented 2026-09-11:
 - explicit `Upcoming` and `Results` views;
 - text search across event name, city, course/venue, host/club, and tournament director;
 - a `Results available` filter that recognizes either authorized inline results or an approved outbound results URL;
 - filter/view/search state persisted in the URL so a filtered calendar can be bookmarked or shared;
-- destination-specific labels for outbound results links (for example PDGA, Disc Golf Scene, UDisc, HBNF, or generic official results).
+- destination-specific labels for outbound results links (for example PDGA, Disc Golf Scene, UDisc, HBNF, or generic official results);
+- a permanent canonical `/events/:slug` detail URL for every published event;
+- an `Add to Calendar` action for current/future non-canceled events using a standards-based all-day `.ics` download whose end date is exclusive per iCalendar semantics.
 
 External-results boundary:
 - PDGA, Disc Golf Scene, and UDisc results remain outbound links unless separate permission/access explicitly authorizes another use;
 - do not scrape, proxy, cache, snapshot, transcribe, iframe, or otherwise republish those external result pages merely to avoid the linkout;
 - inline results are limited to first-party Local Roots/HBNF data or other results supplied through an authorized source with retained provenance.
-
-Remaining Phase 1 navigation work:
-- permanent event-detail URLs;
-- Add to Calendar actions.
 
 Later:
 - course
