@@ -1,7 +1,8 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { callFunction, supabase } from '../lib/supabase';
+import { downloadEventCalendar, eventDateRange, eventDetailPath, eventTitle, hasResults, pacificToday, resultValue, resultsLinkLabel } from '../lib/eventPresentation';
 import { Shell } from '../components/Shell';
-import type { PublicEvent, PublicResult } from '../types';
+import type { PublicEvent } from '../types';
 
 const COUNTIES = ['Ventura', 'Los Angeles', 'Orange', 'Riverside', 'San Bernardino', 'San Diego'];
 const EVENT_TYPES = [
@@ -22,46 +23,10 @@ type EventFilters = {
   results: ResultsFilter;
 };
 
-const title = (v: string) => v.replaceAll('_',' ').replace(/\b\w/g,(m)=>m.toUpperCase());
 const monthKey = (v: string) => v.slice(0,7);
-function dateRange(start: string, end: string) {
-  const a = new Date(`${start}T12:00:00Z`), b = new Date(`${end}T12:00:00Z`);
-  const short = new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',timeZone:'UTC'});
-  const full = new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
-  return start===end ? full.format(a) : `${short.format(a)}–${full.format(b)}`;
-}
 function monthLabel(key: string) {
   const [y,m] = key.split('-').map(Number);
   return new Intl.DateTimeFormat('en-US',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(Date.UTC(y,m-1,1,12)));
-}
-function pacificToday() {
-  const parts = new Intl.DateTimeFormat('en-US',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
-  const get=(type:string)=>parts.find(p=>p.type===type)?.value??'';
-  return `${get('year')}-${get('month')}-${get('day')}`;
-}
-function resultValue(result: PublicResult) {
-  if(result.to_par!=null)return `${result.to_par>0?'+':''}${result.to_par}`;
-  if(result.total_score!=null)return String(result.total_score);
-  if(result.points!=null){
-    if(result.division_code==='SKINS')return `${result.points} skin${result.points===1?'':'s'}`;
-    return String(result.points);
-  }
-  return '—';
-}
-function hasResults(event: PublicEvent) {
-  return Boolean(event.top_results?.length || event.results_url);
-}
-function resultsLinkLabel(url: string) {
-  try {
-    const host = new URL(url).hostname.replace(/^www\./,'').toLowerCase();
-    if(host==='pdga.com'||host.endsWith('.pdga.com'))return 'View PDGA results';
-    if(host==='discgolfscene.com'||host.endsWith('.discgolfscene.com'))return 'View Disc Golf Scene results';
-    if(host==='udisc.com'||host.endsWith('.udisc.com'))return 'View UDisc results';
-    if(host==='hbnightflyers.com'||host.endsWith('.hbnightflyers.com'))return 'View HBNF results';
-  } catch {
-    // Keep the safe generic label for malformed legacy URLs.
-  }
-  return 'View official results';
 }
 function readEventFilters(): EventFilters {
   const defaults: EventFilters = {view:'upcoming',query:'',county:'all',sanction:'all',eventType:'all',month:'all',results:'all'};
@@ -86,18 +51,19 @@ function EventCard({event,today}:{event:PublicEvent;today:string}) {
   const stale = Boolean(event.last_verified_at && Date.now()-new Date(event.last_verified_at).getTime()>14*86400000);
   const effectiveStatus = ['canceled','completed'].includes(event.status) ? event.status : event.end_date<today ? 'completed' : event.status;
   const canShowRegistration = Boolean(event.registration_url && event.end_date>=today && event.registration_status !== 'closed' && !['canceled','completed'].includes(effectiveStatus));
+  const canAddCalendar = event.end_date>=today && !['canceled','completed'].includes(effectiveStatus);
   const tdNames = event.td_names??[];
   const resultLabel = event.results_url ? resultsLinkLabel(event.results_url) : '';
   return <article className={`event-card ${effectiveStatus==='canceled'?'is-canceled':''}`}>
-    <div className="event-date-block"><strong>{dateRange(event.start_date,event.end_date)}</strong><span>{event.county?`${event.county} County`:'Southern California'}</span></div>
+    <div className="event-date-block"><strong>{eventDateRange(event.start_date,event.end_date)}</strong><span>{event.county?`${event.county} County`:'Southern California'}</span></div>
     <div className="event-main">
-      <div className="event-heading-row"><div><h3>{event.name}</h3><p className="event-location">{[event.city,event.course_name||event.venue_name].filter(Boolean).join(' · ')||'Location TBA'}</p></div><span className={`status-pill status-${effectiveStatus}`}>{title(effectiveStatus)}</span></div>
-      <div className="event-tags"><span>{title(event.event_type)}</span><span>{event.sanctioned===true?(event.tier?`Sanctioned · ${event.tier}`:'Sanctioned'):event.sanctioned===false?'Unsanctioned':'Sanction unknown'}</span>{event.rounds_text?<span>{event.rounds_text}</span>:null}{event.format?<span>{event.format}</span>:null}</div>
+      <div className="event-heading-row"><div><h3><a className="event-title-link" href={eventDetailPath(event)}>{event.name}</a></h3><p className="event-location">{[event.city,event.course_name||event.venue_name].filter(Boolean).join(' · ')||'Location TBA'}</p></div><span className={`status-pill status-${effectiveStatus}`}>{eventTitle(effectiveStatus)}</span></div>
+      <div className="event-tags"><span>{eventTitle(event.event_type)}</span><span>{event.sanctioned===true?(event.tier?`Sanctioned · ${event.tier}`:'Sanctioned'):event.sanctioned===false?'Unsanctioned':'Sanction unknown'}</span>{event.rounds_text?<span>{event.rounds_text}</span>:null}{event.format?<span>{event.format}</span>:null}</div>
       {event.club_host?<p className="event-organizer">Hosted by {event.club_host}{tdNames.length?` · TD: ${tdNames.join(', ')}`:''}</p>:tdNames.length?<p className="event-organizer">TD: {tdNames.join(', ')}</p>:null}
       {stale?<p className="stale-note">Verification is older than 14 days; confirm details before traveling.</p>:null}
-      {event.top_results?.length?<div className="results-block"><div className="results-title">Results · {title(event.top_results[0]?.division_code??'')}</div><ol>{event.top_results.map((r)=><li key={`${r.division_code}-${r.place}-${r.player_name}`}><span>{r.place}. {r.player_name}</span><strong>{resultValue(r)}</strong></li>)}</ol></div>:null}
+      {event.top_results?.length?<div className="results-block"><div className="results-title">Results · {eventTitle(event.top_results[0]?.division_code??'')}</div><ol>{event.top_results.map((r)=><li key={`${r.division_code}-${r.place}-${r.player_name}`}><span>{r.place}. {r.player_name}</span><strong>{resultValue(r)}</strong></li>)}</ol></div>:null}
     </div>
-    <div className="event-actions">{canShowRegistration?<a className="button primary" href={event.registration_url!} target="_blank" rel="noreferrer" aria-label={`Registration for ${event.name} (opens in new tab)`}>Registration</a>:null}{event.results_url?<a className="button ghost" href={event.results_url} target="_blank" rel="noreferrer" aria-label={`${resultLabel} for ${event.name} (opens in new tab)`}>{resultLabel}</a>:null}</div>
+    <div className="event-actions">{canShowRegistration?<a className="button primary" href={event.registration_url!} target="_blank" rel="noreferrer" aria-label={`Registration for ${event.name} (opens in new tab)`}>Registration</a>:null}{canAddCalendar?<button type="button" className="button ghost" onClick={()=>downloadEventCalendar(event)}>Add to Calendar</button>:null}{event.results_url?<a className="button ghost" href={event.results_url} target="_blank" rel="noreferrer" aria-label={`${resultLabel} for ${event.name} (opens in new tab)`}>{resultLabel}</a>:null}</div>
   </article>;
 }
 
