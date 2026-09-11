@@ -8,6 +8,7 @@ const source = (path: string) => readFileSync(new URL(`../../app/src/${path}`, i
 const publicSources = [
   source("pages/HomePage.tsx"),
   source("pages/EventsPage.tsx"),
+  source("pages/EventDetailPage.tsx"),
   source("pages/HbnfPage.tsx"),
   source("pages/DyedUnattachedPage.tsx"),
   source("pages/NotFoundPage.tsx"),
@@ -77,12 +78,40 @@ test("event search covers event, location, host, and TD fields", () => {
 });
 
 test("results link labels identify known destinations without importing their content", () => {
+  const presentation = source("lib/eventPresentation.ts");
+  assert.ok(presentation.includes("return 'View PDGA results'"));
+  assert.ok(presentation.includes("return 'View Disc Golf Scene results'"));
+  assert.ok(presentation.includes("return 'View UDisc results'"));
+  assert.ok(presentation.includes("return 'View HBNF results'"));
+  assert.ok(presentation.includes("return 'View official results'"));
+});
+
+test("event cards expose permanent detail URLs and calendar actions", () => {
   const events = source("pages/EventsPage.tsx");
-  assert.ok(events.includes("return 'View PDGA results'"));
-  assert.ok(events.includes("return 'View Disc Golf Scene results'"));
-  assert.ok(events.includes("return 'View UDisc results'"));
-  assert.ok(events.includes("return 'View HBNF results'"));
-  assert.ok(events.includes("return 'View official results'"));
+  assert.ok(events.includes('href={eventDetailPath(event)}'));
+  assert.ok(events.includes('className="event-title-link"'));
+  assert.ok(events.includes('onClick={()=>downloadEventCalendar(event)}'));
+  assert.ok(events.includes('>Add to Calendar</button>'));
+});
+
+test("event detail route is permanent, canonical, and uses only the public events RPC", () => {
+  const app = source("App.tsx");
+  const detail = source("pages/EventDetailPage.tsx");
+  assert.ok(app.includes("path.startsWith('/events/')"));
+  assert.ok(app.includes("canonical:normalized"));
+  assert.ok(app.includes('<EventDetailPage slug={detailSlug}/>'));
+  assert.ok(detail.includes("supabase!.rpc('lr_public_events')"));
+  assert.ok(detail.includes("find(item=>item.slug===slug)"));
+});
+
+test("calendar downloads are all-day ICS files with exclusive end dates and canonical event URLs", () => {
+  const presentation = source("lib/eventPresentation.ts");
+  assert.ok(presentation.includes("'BEGIN:VCALENDAR'"));
+  assert.ok(presentation.includes('`DTSTART;VALUE=DATE:${calendarDate(event.start_date)}`'));
+  assert.ok(presentation.includes('`DTEND;VALUE=DATE:${calendarDate(addDays(event.end_date,1))}`'));
+  assert.ok(presentation.includes('`UID:${event.id}@localrootsdg.com`'));
+  assert.ok(presentation.includes("`${PUBLIC_ORIGIN}${eventDetailPath(event)}`"));
+  assert.ok(presentation.includes("anchor.download=`${event.slug||'local-roots-event'}.ics`"));
 });
 
 test("HBNF external action discloses new-tab behavior without changing visible label", () => {
