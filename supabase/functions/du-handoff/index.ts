@@ -67,6 +67,24 @@ Deno.serve(async (req: Request) => {
   if (photoError) return json({ error: "source_lookup_failed" }, 500);
   if (!photos?.length) return json({ error: "no_source_photos" }, 404);
 
+  // Atomically claim one of the handoff's five access slots before any private photo bytes are downloaded.
+  // The access_count compare-and-swap prevents concurrent requests that observed the same count from all succeeding.
+  const expectedAccessCount = Number(handoff.access_count || 0);
+  const { data: claimedHandoff, error: claimError } = await service.from("du_chatgpt_handoffs")
+    .update({
+      first_access_at: handoff.first_access_at || now,
+      access_count: expectedAccessCount + 1,
+    })
+    .eq("id", handoff.id)
+    .eq("access_count", expectedAccessCount)
+    .is("disabled_at", null)
+    .gt("expires_at", now)
+    .lt("access_count", 5)
+    .select("id")
+    .maybeSingle();
+  if (claimError) return json({ error: "handoff_claim_failed" }, 500);
+  if (!claimedHandoff) return json({ error: "handoff_expired_or_invalid" }, 410);
+
   const zip = new JSZip();
   const manifest = {
     version: 1,
@@ -108,11 +126,6 @@ Deno.serve(async (req: Request) => {
     compression: "DEFLATE",
     compressionOptions: { level: 6 },
   });
-
-  await service.from("du_chatgpt_handoffs").update({
-    first_access_at: handoff.first_access_at || now,
-    access_count: Number(handoff.access_count || 0) + 1,
-  }).eq("id", handoff.id);
 
   const earlyStates = ["intake_complete", "handoff_preparing", "chatgpt_ready", "notification_sent"];
   if (earlyStates.includes(String(job.workflow_status || ""))) {
