@@ -1,6 +1,14 @@
+import { useEffect } from 'react';
 import { Shell } from '../components/Shell';
 
 export function NotFoundPage() {
+  useEffect(()=>{
+    document.title='Page not found · Local Roots';
+    let robots=document.querySelector<HTMLMetaElement>('meta[name="robots"]');
+    if(!robots){robots=document.createElement('meta');robots.name='robots';document.head.appendChild(robots);}
+    robots.content='noindex,nofollow,noarchive';
+  },[]);
+
   return <Shell><main className="content narrow">
     <section className="branch-hero">
       <div>
