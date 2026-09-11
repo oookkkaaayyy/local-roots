@@ -12,6 +12,18 @@
 .event-view-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .event-view-switch .button{padding:9px 8px}
 .filter-search{grid-column:1/-1}
+.event-title-link{color:var(--root);text-decoration-color:rgba(167,98,58,.45);text-decoration-thickness:1px;text-underline-offset:3px}
+.event-title-link:hover{text-decoration-color:var(--clay)}
+.event-detail-page{padding:38px 0 72px}
+.event-back-link{display:inline-block;margin-bottom:18px;font-size:.9rem;font-weight:800;text-decoration:none}
+.event-detail-card{padding:clamp(22px,5vw,38px);border:1px solid var(--line);border-radius:24px;background:rgba(255,248,238,.94);box-shadow:var(--shadow)}
+.event-detail-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:24px}
+.event-detail-heading h1{margin:5px 0 9px;color:var(--root);font:clamp(2rem,6vw,3.6rem)/1 Georgia,"Times New Roman",serif;letter-spacing:-.035em}
+.event-detail-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px}
+.event-detail-results{margin-top:28px;padding:18px;border-radius:16px;background:#f2e9dc}
+.event-detail-results h2{margin:0 0 12px;color:var(--soil);font:1.3rem Georgia,serif}
+.event-detail-results ol{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+.event-detail-results li{display:flex;justify-content:space-between;gap:18px}
 
 @media(max-width:900px){
   .event-view-switch{grid-column:1/-1}
@@ -24,4 +36,8 @@
   .admin-shell .site-header nav{gap:10px}
   .admin-shell .site-header nav a{font-size:.78rem}
   .hub-hero,.hero,.branch-hero{padding-top:32px}
+  .event-detail-page{padding-top:24px}
+  .event-detail-heading{display:grid;gap:12px}
+  .event-detail-heading .status-pill{justify-self:start}
+  .event-detail-actions{display:grid}
 }
