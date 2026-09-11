@@ -10,11 +10,15 @@ const REQUIRED_FRONTEND_MARKERS = [
   "Future-event freshness",
   "Latest future event",
   "Launch gate",
-  "Show past events",
+  "Results available",
+  "Past events & results",
+  "Add to Calendar",
+  "View official results",
   "All visible months",
   "Hosted by",
   "TD:",
   "date-aware-v1",
+  "/events/",
   "/hb-night-flyers",
   "/dyed-and-unattached",
   "https://localrootsdg.com",
@@ -23,6 +27,8 @@ const REQUIRED_CSS_MARKERS = [
   ".site-header.nav-submit{display:none}",
   ".site-header.nav-home,.site-header.nav-hbnf,.site-header.nav-du{display:none}",
   ".admin-shell.nav-admin,.admin-shell.nav-readiness{display:block}",
+  ".event-title-link{",
+  ".event-detail-card{",
 ];
 
 Deno.serve(async (req) => {
@@ -62,7 +68,7 @@ Deno.serve(async (req) => {
 
   try {
     const response = await fetch(STAGING_URL, {
-      headers: { "User-Agent": "LocalRootsIntegrityWatch/7.0" },
+      headers: { "User-Agent": "LocalRootsIntegrityWatch/8.0" },
       redirect: "follow",
     });
     stagingStatus = response.status;
@@ -84,7 +90,7 @@ Deno.serve(async (req) => {
     if (shellOk && scriptMatch?.[1]) {
       frontendBundleUrl = new URL(scriptMatch[1], STAGING_URL).toString();
       const bundleResponse = await fetch(frontendBundleUrl, {
-        headers: { "User-Agent": "LocalRootsIntegrityWatch/7.0" },
+        headers: { "User-Agent": "LocalRootsIntegrityWatch/8.0" },
         redirect: "follow",
       });
       if (bundleResponse.ok) {
@@ -98,7 +104,7 @@ Deno.serve(async (req) => {
     if (shellOk && cssMatch?.[1]) {
       cssBundleUrl = new URL(cssMatch[1], STAGING_URL).toString();
       const cssResponse = await fetch(cssBundleUrl, {
-        headers: { "User-Agent": "LocalRootsIntegrityWatch/7.0" },
+        headers: { "User-Agent": "LocalRootsIntegrityWatch/8.0" },
         redirect: "follow",
       });
       if (cssResponse.ok) {
