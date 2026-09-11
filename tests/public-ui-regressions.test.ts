@@ -104,6 +104,15 @@ test("event detail route is permanent, canonical, and uses only the public event
   assert.ok(detail.includes("find(item=>item.slug===slug)"));
 });
 
+test("event detail failures do not expose backend errors and invalid slugs are noindexed", () => {
+  const detail = source("pages/EventDetailPage.tsx");
+  assert.equal(detail.includes('setError(error.message)'), false);
+  assert.equal(detail.includes('<span>{error}</span>'), false);
+  assert.ok(detail.includes("if(error)setError(true)"));
+  assert.ok(detail.includes("robots.content='noindex,nofollow,noarchive'"));
+  assert.ok(detail.includes('if(loading||event)return;'));
+});
+
 test("calendar downloads are all-day ICS files with exclusive end dates and canonical event URLs", () => {
   const presentation = source("lib/eventPresentation.ts");
   assert.ok(presentation.includes("'BEGIN:VCALENDAR'"));
