@@ -7,11 +7,11 @@ import type { PublicEvent } from '../types';
 export function EventDetailPage({slug}:{slug:string}) {
   const [event,setEvent]=useState<PublicEvent|null>(null);
   const [loading,setLoading]=useState(true);
-  const [error,setError]=useState('');
+  const [error,setError]=useState(false);
 
   useEffect(()=>{
     supabase!.rpc('lr_public_events').then(({data,error})=>{
-      if(error)setError(error.message);
+      if(error)setError(true);
       else setEvent(((data??[]) as PublicEvent[]).find(item=>item.slug===slug)??null);
       setLoading(false);
     });
@@ -24,8 +24,15 @@ export function EventDetailPage({slug}:{slug:string}) {
     if(description)description.content=`${eventDateRange(event.start_date,event.end_date)} · ${[event.city,event.course_name||event.venue_name].filter(Boolean).join(' · ')||'Southern California disc golf event'}`;
   },[event]);
 
+  useEffect(()=>{
+    if(loading||event)return;
+    let robots=document.querySelector<HTMLMetaElement>('meta[name="robots"]');
+    if(!robots){robots=document.createElement('meta');robots.name='robots';document.head.appendChild(robots);}
+    robots.content='noindex,nofollow,noarchive';
+  },[loading,event,error]);
+
   if(loading)return <Shell><main className="content narrow event-detail-page"><div className="empty-state" role="status" aria-live="polite">Loading event…</div></main></Shell>;
-  if(error)return <Shell><main className="content narrow event-detail-page"><div className="notice error" role="alert"><strong>Could not load this event.</strong><span>{error}</span></div><a href="/events">Return to events</a></main></Shell>;
+  if(error)return <Shell><main className="content narrow event-detail-page"><div className="notice error" role="alert"><strong>Could not load this event.</strong></div><a href="/events">Return to events</a></main></Shell>;
   if(!event)return <Shell><main className="content narrow event-detail-page"><div className="empty-state"><strong>Event not found.</strong><span>It may have been unpublished, renamed, or removed.</span></div><a href="/events">Return to events</a></main></Shell>;
 
   const today=pacificToday();
