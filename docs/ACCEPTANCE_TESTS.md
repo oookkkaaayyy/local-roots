@@ -126,3 +126,8 @@ These tests should exist before production ingestion is enabled.
 81. Event view/search/filter state round-trips through URL query parameters so a filtered view can be bookmarked or shared.
 82. Known outbound results destinations are labeled accurately (PDGA, Disc Golf Scene, UDisc, HBNF); unknown destinations use a generic official-results label.
 83. Destination-aware link labels do not authorize scraping, proxying, caching, framing, screenshots, or transcription of PDGA, Disc Golf Scene, or UDisc result pages.
+84. Every published event card links to a stable canonical `/events/:slug` route, and that detail route resolves the event only from the public event RPC.
+85. Direct navigation to a valid event detail URL renders the event without requiring prior navigation through `/events`; an unknown slug fails closed as not found rather than exposing private data.
+86. Current/future non-canceled events offer `Add to Calendar`; completed or canceled events do not.
+87. Calendar downloads use all-day iCalendar dates, with `DTEND` set to the day after the event end date because iCalendar all-day end dates are exclusive.
+88. Calendar files include a stable event UID and canonical Local Roots event URL and do not embed or copy third-party results content.
