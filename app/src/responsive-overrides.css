@@ -9,6 +9,13 @@
 .branch-hero{display:block;padding:48px 0 28px}
 .branch-hero h1{margin:0;font-size:clamp(2.6rem,7vw,5.4rem)}
 .du-request{margin-top:0}
+.event-view-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.event-view-switch .button{padding:9px 8px}
+.filter-search{grid-column:1/-1}
+
+@media(max-width:900px){
+  .event-view-switch{grid-column:1/-1}
+}
 
 @media(max-width:620px){
   .admin-shell .site-header .nav-events{display:none}
