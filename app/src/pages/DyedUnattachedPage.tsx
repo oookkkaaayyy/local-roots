@@ -63,7 +63,11 @@ export function DyedUnattachedPage() {
         name: file.name || `reference-${index + 1}.jpg`,
         dataUrl: await compressImageFile(file),
       })))).filter((photo): photo is { name: string; dataUrl: string } => Boolean(photo.dataUrl));
-      if (!photos.length) throw new Error('The selected photos could not be read.');
+      if (!photos.length) {
+        setState('error');
+        setMessage('The selected photos could not be read.');
+        return;
+      }
 
       setState('sending'); setMessage('Sending request…');
       const response = await fetch(SUBMIT_INTAKE_URL, {
@@ -72,11 +76,11 @@ export function DyedUnattachedPage() {
         body: JSON.stringify({ clientName, phone, petName, notes, photos }),
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok || !result.ok) throw new Error(result.error || `Submission failed (${response.status}).`);
+      if (!response.ok || !result.ok) throw new Error('submission failed');
       form.reset();
       setState('sent'); setMessage(`Request received — ${result.job.job_number}.`);
-    } catch (error) {
-      setState('error'); setMessage(error instanceof Error ? error.message : 'The request could not be submitted.');
+    } catch {
+      setState('error'); setMessage('The request could not be submitted.');
     }
   }
 
