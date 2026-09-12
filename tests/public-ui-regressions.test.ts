@@ -46,6 +46,13 @@ test("event submitter identity fields expose standard autocomplete purposes", ()
   assert.ok(events.includes('name="submitter_email" maxLength={320} autoComplete="email"'));
 });
 
+test("event submission failures do not expose backend errors", () => {
+  const events = source("pages/EventsPage.tsx");
+  assert.equal(events.includes("err instanceof Error?err.message"), false);
+  assert.equal(events.includes("setMessage(err"), false);
+  assert.ok(events.includes("catch {setState('error');setMessage('The event could not be submitted.');}"));
+});
+
 test("repeated event action links have event-specific accessible names and disclose new-tab behavior", () => {
   const events = source("pages/EventsPage.tsx");
   assert.ok(events.includes('aria-label={`Registration for ${event.name} (opens in new tab)`}'));
