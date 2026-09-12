@@ -22,6 +22,6 @@ export function Shell({children,admin=false}:{children:ReactNode;admin?:boolean}
         {admin?<a className="nav-readiness" href="/admin/readiness" aria-current={current('/admin/readiness')}>Launch status</a>:null}
       </nav>
     </header>
-    <main id="main-content" tabIndex={-1}>{children}</main>
+    <div id="main-content" tabIndex={-1}>{children}</div>
   </div>;
 }
