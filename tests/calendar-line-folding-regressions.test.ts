@@ -12,3 +12,9 @@ test("calendar output folds long UTF-8 content lines", () => {
   assert.ok(presentation.includes("index?` ${segment}`:segment"));
   assert.ok(presentation.includes(".map(line=>foldCalendarLine(line)).join('\\r\\n')"));
 });
+
+test("calendar events include the required UTC DTSTAMP property", () => {
+  assert.ok(presentation.includes("function calendarTimestamp(value = new Date())"));
+  assert.ok(presentation.includes("replace(/[-:]/g,'').replace(/\\.\\d{3}Z$/,'Z')"));
+  assert.ok(presentation.includes("`DTSTAMP:${calendarTimestamp()}`"));
+});
