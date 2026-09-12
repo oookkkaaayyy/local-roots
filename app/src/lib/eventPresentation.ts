@@ -1,6 +1,7 @@
 import type { PublicEvent, PublicResult } from '../types';
 
 const PUBLIC_ORIGIN = 'https://localrootsdg.com';
+const CALENDAR_ENCODER = new TextEncoder();
 
 export const eventTitle = (value: string) => value.replaceAll('_',' ').replace(/\b\w/g,(match)=>match.toUpperCase());
 
@@ -62,6 +63,19 @@ function escapeCalendarText(value: string) {
   return value.replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
 }
 
+function foldCalendarLine(line: string) {
+  const segments:string[]=[];
+  let current='', bytes=0;
+  for(const char of line){
+    const charBytes=CALENDAR_ENCODER.encode(char).length;
+    const limit=segments.length?74:75;
+    if(current&&bytes+charBytes>limit){segments.push(current);current=char;bytes=charBytes;}
+    else {current+=char;bytes+=charBytes;}
+  }
+  if(current||!segments.length)segments.push(current);
+  return segments.map((segment,index)=>index?` ${segment}`:segment).join('\r\n');
+}
+
 export function buildCalendarFile(event: PublicEvent) {
   const detailUrl=`${PUBLIC_ORIGIN}${eventDetailPath(event)}`;
   const location=[event.course_name||event.venue_name,event.city,event.county?`${event.county} County`:null].filter(Boolean).join(', ');
@@ -83,7 +97,7 @@ export function buildCalendarFile(event: PublicEvent) {
     'END:VEVENT',
     'END:VCALENDAR',
     '',
-  ].filter(line=>line!=null).join('\r\n');
+  ].filter(line=>line!=null).map(line=>foldCalendarLine(line)).join('\r\n');
 }
 
 export function downloadEventCalendar(event: PublicEvent) {
