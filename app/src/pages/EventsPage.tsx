@@ -81,7 +81,7 @@ function SubmissionForm() {
         td_names:String(fd.get('td_names')??'').split(',').map(v=>v.trim()).filter(Boolean),submitter_name:fd.get('submitter_name'),submitter_email:fd.get('submitter_email'),notes:fd.get('notes'),website:fd.get('website'),
       });
       setState('sent'); setMessage('Submitted for review.'); form.reset();
-    } catch(err){setState('error');setMessage(err instanceof Error?err.message:'Submission failed.');}
+    } catch {setState('error');setMessage('The event could not be submitted.');}
   }
   return <section id="submit" className="submit-section"><div className="section-intro"><h2>Submit an event</h2></div>
     <form className="submission-form" onSubmit={submit}>
