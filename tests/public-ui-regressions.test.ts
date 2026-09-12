@@ -53,9 +53,10 @@ test("event submission failures do not expose backend errors", () => {
   assert.ok(events.includes("catch {setState('error');setMessage('The event could not be submitted.');}"));
 });
 
-test("repeated event action links have event-specific accessible names and disclose new-tab behavior", () => {
+test("repeated event actions have event-specific accessible names and disclose new-tab behavior", () => {
   const events = source("pages/EventsPage.tsx");
   assert.ok(events.includes('aria-label={`Registration for ${event.name} (opens in new tab)`}'));
+  assert.ok(events.includes('aria-label={`Add ${event.name} to calendar`}'));
   assert.ok(events.includes('aria-label={`${resultLabel} for ${event.name} (opens in new tab)`}'));
 });
 
