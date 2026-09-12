@@ -104,6 +104,14 @@ test("event detail route is permanent, canonical, and uses only the public event
   assert.ok(detail.includes("find(item=>item.slug===slug)"));
 });
 
+test("events feed failures do not expose backend errors", () => {
+  const events = source("pages/EventsPage.tsx");
+  assert.equal(events.includes('setError(error.message)'), false);
+  assert.equal(events.includes('Could not load events: {error}'), false);
+  assert.ok(events.includes('if(error)setError(true)'));
+  assert.ok(events.includes('>Could not load events.</div>'));
+});
+
 test("event detail failures do not expose backend errors and invalid slugs are noindexed", () => {
   const detail = source("pages/EventDetailPage.tsx");
   assert.equal(detail.includes('setError(error.message)'), false);
