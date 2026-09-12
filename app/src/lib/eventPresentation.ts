@@ -53,6 +53,10 @@ function calendarDate(value: string) {
   return value.replaceAll('-','');
 }
 
+function calendarTimestamp(value = new Date()) {
+  return value.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z$/,'Z');
+}
+
 function addDays(value: string, days: number) {
   const date = new Date(`${value}T12:00:00Z`);
   date.setUTCDate(date.getUTCDate()+days);
@@ -88,6 +92,7 @@ export function buildCalendarFile(event: PublicEvent) {
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
     `UID:${event.id}@localrootsdg.com`,
+    `DTSTAMP:${calendarTimestamp()}`,
     `DTSTART;VALUE=DATE:${calendarDate(event.start_date)}`,
     `DTEND;VALUE=DATE:${calendarDate(addDays(event.end_date,1))}`,
     `SUMMARY:${escapeCalendarText(event.name)}`,
