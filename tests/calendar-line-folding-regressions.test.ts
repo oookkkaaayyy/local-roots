@@ -18,3 +18,9 @@ test("calendar events include the required UTC DTSTAMP property", () => {
   assert.ok(presentation.includes("replace(/[-:]/g,'').replace(/\\.\\d{3}Z$/,'Z')"));
   assert.ok(presentation.includes("`DTSTAMP:${calendarTimestamp()}`"));
 });
+
+test("calendar descriptions encode logical line breaks without embedding raw newlines", () => {
+  assert.ok(presentation.includes(".replace(/\\r?\\n/g,'\\\\n')"));
+  assert.ok(presentation.includes(".filter(Boolean).join('\\n')"));
+  assert.ok(presentation.includes("`DESCRIPTION:${escapeCalendarText(description)}`"));
+});
