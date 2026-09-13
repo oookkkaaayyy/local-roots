@@ -1,3 +1,13 @@
+function notificationTarget(rawUrl) {
+  const fallback = new URL('/admin/dyed-and-unattached', self.location.origin);
+  try {
+    const target = new URL(rawUrl || fallback.pathname, self.location.origin);
+    return target.origin === self.location.origin ? target.href : fallback.href;
+  } catch {
+    return fallback.href;
+  }
+}
+
 self.addEventListener('push', (event) => {
   let payload = {};
   try {
@@ -14,7 +24,7 @@ self.addEventListener('push', (event) => {
     icon: '/brand/local-roots-lr.svg',
     badge: '/brand/local-roots-lr.svg',
     data: {
-      url: payload.url || '/admin/dyed-and-unattached',
+      url: notificationTarget(payload.url),
     },
   };
 
@@ -32,10 +42,7 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const targetUrl = new URL(
-    event.notification.data?.url || '/admin/dyed-and-unattached',
-    self.location.origin,
-  ).href;
+  const targetUrl = notificationTarget(event.notification.data?.url);
 
   event.waitUntil((async () => {
     const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
