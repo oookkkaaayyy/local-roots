@@ -53,14 +53,15 @@ Deno.serve(async (req) => {
   const action = String(body.action ?? "dashboard");
 
   if (action === "dashboard") {
-    const [submissions, reviews, sources, runs, events] = await Promise.all([
+    const [submissions, resultSubmissions, reviews, sources, runs, events] = await Promise.all([
       service.from("lr_event_submissions").select("id,name,start_date,end_date,county,city,course_name,event_type,sanctioned,tier,registration_url,source_url,club_host,td_names,submitter_name,submitter_email,notes,validation_status,validation_errors,scope_status,status,candidate_id,matched_event_id,created_at").eq("status","pending").order("created_at",{ascending:true}).limit(100),
+      service.from("lr_result_submissions").select("id,event_id,score_type,featured_division,results,submitter_name,submitter_email,submitter_role,organization,source_notes,attestation_version,attested,status,created_at").eq("status","pending").order("created_at",{ascending:true}).limit(100),
       service.from("lr_review_queue").select("id,issue_type,severity,event_id,source_candidate_id,summary,details,status,created_at").in("status",["open","in_review"]).order("severity",{ascending:false}).order("created_at",{ascending:true}).limit(150),
       service.from("lr_sources").select("id,key,name,source_type,enabled,refresh_schedule,expected_min_records,expected_max_records,updated_at").order("name"),
       service.from("lr_source_runs").select("id,source_id,started_at,finished_at,fetch_status,parse_status,validation_status,health_status,records_seen,records_valid,records_new,records_changed,records_rejected,records_missing,error_code,error_message,metrics,parser_version").order("started_at",{ascending:false}).limit(100),
       service.from("lr_events").select("id,slug,name,start_date,end_date,county,city,course_name,event_type,sanctioned,tier,status,published,last_verified_at,last_changed_at").order("start_date",{ascending:true}).limit(300),
     ]);
-    const firstError = submissions.error ?? reviews.error ?? sources.error ?? runs.error ?? events.error;
+    const firstError = submissions.error ?? resultSubmissions.error ?? reviews.error ?? sources.error ?? runs.error ?? events.error;
     if (firstError) {
       console.error("lr-admin dashboard", firstError.message);
       return json({ error: "dashboard_failed" }, 500);
@@ -68,6 +69,7 @@ Deno.serve(async (req) => {
     return json({
       admin,
       submissions: submissions.data ?? [],
+      result_submissions: resultSubmissions.data ?? [],
       reviews: reviews.data ?? [],
       sources: sources.data ?? [],
       runs: runs.data ?? [],
@@ -93,6 +95,26 @@ Deno.serve(async (req) => {
     if (error) {
       console.error("lr-admin decide_submission", error.code, error.message);
       return json({ error: "decision_failed", detail: error.message }, 400);
+    }
+    return json({ ok: true, event_id: data });
+  }
+
+  if (action === "decide_result_submission") {
+    const submissionId = String(body.submission_id ?? "");
+    const decision = String(body.decision ?? "");
+    const resolutionNote = body.resolution_note ? String(body.resolution_note).slice(0, 2000) : null;
+    if (!submissionId || !["approve","reject"].includes(decision)) {
+      return json({ error: "invalid_result_decision" }, 400);
+    }
+    const { data, error } = await service.rpc("lr_decide_result_submission", {
+      p_submission_id: submissionId,
+      p_action: decision,
+      p_admin_user_id: userData.user.id,
+      p_resolution_note: resolutionNote,
+    });
+    if (error) {
+      console.error("lr-admin decide_result_submission", error.code, error.message);
+      return json({ error: "result_decision_failed", detail: error.message }, 400);
     }
     return json({ ok: true, event_id: data });
   }
@@ -140,6 +162,9 @@ Deno.serve(async (req) => {
     if (readError || !review) return json({ error: "review_not_found" }, 404);
     if (review.issue_type === "organizer_submission") {
       return json({ error: "use_submission_decision" }, 400);
+    }
+    if (review.issue_type === "organizer_results_submission") {
+      return json({ error: "use_result_submission_decision" }, 400);
     }
     if (!["open","in_review"].includes(review.status)) {
       return json({ error: "review_already_closed" }, 400);

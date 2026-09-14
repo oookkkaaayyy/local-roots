@@ -38,6 +38,10 @@ export type PublicEvent = {
   top_results: PublicResult[];
 };
 
+export type PublicEventDetail = PublicEvent & {
+  all_results: PublicResult[];
+};
+
 export type Submission = {
   id: string;
   name: string;
@@ -62,6 +66,30 @@ export type Submission = {
   status: string;
   candidate_id: string | null;
   matched_event_id: string | null;
+  created_at: string;
+};
+
+export type ResultSubmissionRow = {
+  division_code: string;
+  place: number;
+  player_name: string;
+  value: number;
+};
+
+export type ResultSubmission = {
+  id: string;
+  event_id: string;
+  score_type: 'to_par' | 'total_score' | 'points';
+  featured_division: string;
+  results: ResultSubmissionRow[];
+  submitter_name: string;
+  submitter_email: string;
+  submitter_role: string;
+  organization: string;
+  source_notes: string | null;
+  attestation_version: string;
+  attested: boolean;
+  status: string;
   created_at: string;
 };
 
@@ -131,6 +159,7 @@ export type AdminEvent = {
 export type AdminDashboard = {
   admin: { user_id: string; display_name: string | null; role: string; active: boolean };
   submissions: Submission[];
+  result_submissions: ResultSubmission[];
   reviews: ReviewItem[];
   sources: SourceInfo[];
   runs: SourceRun[];
