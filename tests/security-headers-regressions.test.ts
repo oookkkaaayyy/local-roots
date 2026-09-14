@@ -13,6 +13,7 @@ test("public responses preserve the security header baseline", () => {
   assert.ok(headers.includes("Permissions-Policy: geolocation=(), microphone=(), payment=()"));
   assert.ok(headers.includes("Content-Security-Policy:"));
   assert.ok(headers.includes("default-src 'self'"));
+  assert.ok(headers.includes("base-uri 'none'"));
   assert.ok(headers.includes("object-src 'none'"));
   assert.ok(headers.includes("frame-ancestors 'none'"));
   assert.ok(headers.includes("form-action 'self'"));
