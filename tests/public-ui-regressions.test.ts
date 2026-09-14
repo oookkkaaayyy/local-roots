@@ -38,6 +38,7 @@ test("event submission form remains available on Events page", () => {
   const events = source("pages/EventsPage.tsx");
   assert.ok(events.includes('id="submit"'));
   assert.ok(events.includes('SubmissionForm'));
+  assert.ok(events.includes('className="submit-disclosure"'));
 });
 
 test("event submitter identity fields expose standard autocomplete purposes", () => {
@@ -60,14 +61,17 @@ test("repeated event actions have event-specific accessible names and disclose n
   assert.ok(events.includes('aria-label={`${resultLabel} for ${event.name} (opens in new tab)`}'));
 });
 
-test("event discovery controls expose upcoming/results views, search, and results availability", () => {
+test("event discovery controls expose upcoming/results views, search, and result-source filtering", () => {
   const events = source("pages/EventsPage.tsx");
   assert.ok(events.includes('aria-label="Event view"'));
   assert.ok(events.includes("aria-pressed={view==='upcoming'}"));
   assert.ok(events.includes("aria-pressed={view==='results'}"));
   assert.ok(events.includes('type="search"'));
-  assert.ok(events.includes('Results available'));
-  assert.ok(events.includes("resultsFilter==='available'&&!hasResults(e)"));
+  assert.ok(events.includes('<label>Results<select value={resultsFilter}'));
+  assert.ok(events.includes('<option value="local">On Local Roots</option>'));
+  assert.ok(events.includes('<option value="official">Official link</option>'));
+  assert.ok(events.includes("resultsFilter==='local'&&!e.top_results?.length"));
+  assert.ok(events.includes("resultsFilter==='official'&&!e.results_url"));
 });
 
 test("event discovery filters persist in the URL for bookmarkable views", () => {
@@ -87,29 +91,32 @@ test("event search covers event, location, host, and TD fields", () => {
 
 test("results link labels identify known destinations without importing their content", () => {
   const presentation = source("lib/eventPresentation.ts");
-  assert.ok(presentation.includes("return 'View PDGA results'"));
-  assert.ok(presentation.includes("return 'View Disc Golf Scene results'"));
-  assert.ok(presentation.includes("return 'View UDisc results'"));
-  assert.ok(presentation.includes("return 'View HBNF results'"));
-  assert.ok(presentation.includes("return 'View official results'"));
+  assert.ok(presentation.includes("return 'PDGA Results ↗'"));
+  assert.ok(presentation.includes("return 'Disc Golf Scene Results ↗'"));
+  assert.ok(presentation.includes("return 'UDisc Results ↗'"));
+  assert.ok(presentation.includes("return 'HBNF Results ↗'"));
+  assert.ok(presentation.includes("return 'Official Results ↗'"));
 });
 
-test("event cards expose permanent detail URLs and calendar actions", () => {
+test("event cards expose permanent detail URLs, filtered return state, and calendar actions", () => {
   const events = source("pages/EventsPage.tsx");
-  assert.ok(events.includes('href={eventDetailPath(event)}'));
+  assert.ok(events.includes('const detailHref=`${eventDetailPath(event)}?return=${encodeURIComponent(currentEventsPath())}`'));
+  assert.ok(events.includes('href={detailHref}'));
   assert.ok(events.includes('className="event-title-link"'));
   assert.ok(events.includes('onClick={()=>downloadEventCalendar(event)}'));
   assert.ok(events.includes('>Add to Calendar</button>'));
+  assert.ok(events.includes('>Full Results</a>'));
 });
 
-test("event detail route is permanent, canonical, and uses only the public events RPC", () => {
+test("event detail route is permanent, canonical, and uses the detail RPC", () => {
   const app = source("App.tsx");
   const detail = source("pages/EventDetailPage.tsx");
   assert.ok(app.includes("path.startsWith('/events/')"));
   assert.ok(app.includes("canonical:normalized"));
   assert.ok(app.includes('<EventDetailPage slug={detailSlug}/>'));
-  assert.ok(detail.includes("supabase!.rpc('lr_public_events')"));
-  assert.ok(detail.includes("find(item=>item.slug===slug)"));
+  assert.ok(detail.includes("supabase!.rpc('lr_public_event_detail',{p_slug:slug})"));
+  assert.ok(detail.includes('all_results'));
+  assert.ok(detail.includes('groupResults(event.all_results??[])'));
 });
 
 test("events feed failures do not expose backend errors", () => {
