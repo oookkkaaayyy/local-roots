@@ -15,6 +15,7 @@ test("public responses preserve the security header baseline", () => {
   assert.ok(headers.includes("default-src 'self'"));
   assert.ok(headers.includes("object-src 'none'"));
   assert.ok(headers.includes("frame-ancestors 'none'"));
+  assert.ok(headers.includes("form-action 'self'"));
   assert.ok(headers.includes("connect-src 'self' https://wtymjxscneufjlkkywyg.supabase.co wss://wtymjxscneufjlkkywyg.supabase.co"));
 });
 
