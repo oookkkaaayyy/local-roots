@@ -1,0 +1,1 @@
+create index lr_result_submissions_reviewed_by_idx on public.lr_result_submissions(reviewed_by);
