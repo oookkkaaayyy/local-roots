@@ -3,6 +3,7 @@ import { Shell } from '../components/Shell';
 
 const SUBMIT_INTAKE_URL = 'https://wtymjxscneufjlkkywyg.supabase.co/functions/v1/submit-intake';
 const GALLERY_SPRITE = '/du-gallery/du-gallery-sprite.jpg';
+const GALLERY_SLIDE_FIVE = '/du-gallery/slide-05.avif';
 const GALLERY_SLIDE_COUNT = 8;
 
 type SubmitState = 'idle' | 'preparing' | 'sending' | 'sent' | 'error';
@@ -109,7 +110,7 @@ export function DyedUnattachedPage() {
         <span className="du-gallery-hint">Each slide shows two reference-photo and finished-stencil comparisons.</span>
         <div className="du-gallery-frame" onTouchStart={event => { touchStartX.current = event.touches[0]?.clientX ?? null; setGalleryPaused(true); }} onTouchEnd={event => { const start = touchStartX.current; const end = event.changedTouches[0]?.clientX; touchStartX.current = null; setGalleryPaused(false); if (start == null || end == null) return; const delta = end - start; if (Math.abs(delta) > 45) delta < 0 ? nextSlide() : previousSlide(); }}>
           <div className="du-gallery-track" style={{ transform: `translateX(-${galleryIndex * 100}%)` }}>
-            {Array.from({ length: GALLERY_SLIDE_COUNT }, (_, index) => <div key={index} className="du-gallery-slide" role="img" aria-label={`Stencil examples ${index * 2 + 1} and ${index * 2 + 2}`} aria-hidden={index !== galleryIndex} style={{ backgroundImage: `url(${GALLERY_SPRITE})`, backgroundPositionY: `${index * (100 / (GALLERY_SLIDE_COUNT - 1))}%` }} />)}
+            {Array.from({ length: GALLERY_SLIDE_COUNT }, (_, index) => <div key={index} className="du-gallery-slide" role="img" aria-label={`Stencil examples ${index * 2 + 1} and ${index * 2 + 2}`} aria-hidden={index !== galleryIndex} style={index === 4 ? { backgroundImage: `url(${GALLERY_SLIDE_FIVE})`, backgroundPosition: 'center', backgroundSize: '100% 100%' } : { backgroundImage: `url(${GALLERY_SPRITE})`, backgroundPositionY: `${index * (100 / (GALLERY_SLIDE_COUNT - 1))}%` }} />)}
           </div>
         </div>
         <div className="du-gallery-controls" aria-label="Gallery controls">
