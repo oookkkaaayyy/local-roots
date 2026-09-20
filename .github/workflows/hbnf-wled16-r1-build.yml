@@ -134,7 +134,7 @@ jobs:
           mkdir -p /tmp/artifacts
           cp "$BIN" /tmp/artifacts/HBNF_FLOW_1.0.2_macos13_node${{ matrix.node }}.bin
           cp /tmp/build.log /tmp/size.log /tmp/node-version.txt /tmp/npm-version.txt /tmp/python-version.txt /tmp/pio-version.txt /tmp/artifacts/
-          grep 'WEB_BUILD_TIME' wled00/html_ui.h > /tmp/artifacts/web-build-time.txt
+          (grep 'WEB_BUILD_TIME' wled00/html_ui.h || true) > /tmp/artifacts/web-build-time.txt
           MATRIX_NODE="${{ matrix.node }}" python - <<'PY'
           import hashlib, pathlib, os
           b=pathlib.Path('.pio/build/hbnf_matrix_esp32/firmware.bin').read_bytes()
