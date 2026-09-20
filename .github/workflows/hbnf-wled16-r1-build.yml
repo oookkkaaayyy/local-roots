@@ -1,4 +1,4 @@
-name: HBNF Flow1.0.2 exact rollback reproduction
+name: HBNF Flow1.0.2 reproducibility matrix
 
 on:
   push:
@@ -10,8 +10,24 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            label: ubuntu-node20
+            node: '20'
+          - os: ubuntu-latest
+            label: ubuntu-node24
+            node: '24'
+          - os: macos-14
+            label: macos-node20
+            node: '20'
+          - os: macos-14
+            label: macos-node24
+            node: '24'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
     steps:
       - name: Checkout isolated lab branch
         uses: actions/checkout@v4
@@ -19,9 +35,14 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.11'
 
-      - name: Decode verified source bundle
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Decode verified Flow1.0.2 source
         shell: bash
         run: |
           set -euo pipefail
@@ -33,7 +54,7 @@ jobs:
           sha256sum /tmp/hbnf-r1/hbnf_flow/hbnf_flow/hbnf_flow_core.h | grep -q '^a4496b8c4beb8b32837ce3ee174d2ecdf6059ddd08d1de4358f39178581880c2 '
           sha256sum /tmp/hbnf-r1/hbnf_flow/hbnf_flow/library.json | grep -q '^f35e1e9087cfaa3728805b51c94b4fefb87536d6012ebe7f1dd93267c7894364 '
 
-      - name: Fetch exact WLED 16.0.1 base
+      - name: Fetch exact WLED base
         shell: bash
         run: |
           set -euo pipefail
@@ -42,15 +63,14 @@ jobs:
           git checkout 29b389df1c1aaec6ff53aea742d17063b985906c
           test "$(git rev-parse HEAD)" = "29b389df1c1aaec6ff53aea742d17063b985906c"
 
-      - name: Install pinned WLED build dependencies
+      - name: Install exact Python build requirements
         shell: bash
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install -r /tmp/wled/requirements.txt
-          pio --version
 
-      - name: Reconstruct exact installed Flow1.0.2 build
+      - name: Apply exact legacy build recipe
         shell: bash
         run: |
           set -euo pipefail
@@ -64,47 +84,92 @@ jobs:
           [env:hbnf_matrix_esp32]
           extends = env:esp32dev
           custom_usermods = audioreactive hbnf_flow
+          ; Deliberately inherit the official WLED v16.0.1 esp32dev environment unchanged.
+          ; That preserves its ESP32 release identity, ESP32/V4 toolchain, partition layout,
+          ; flash mode, AudioReactive base, and USB flags. Existing cfg.json/NVS remains
+          ; authoritative for GL-MC-001WL LED/microphone pins and runtime hardware config.
           EOF
-          pio project config --json-output > /tmp/rollback-pio-config.json
-          grep -q '"env:hbnf_matrix_esp32"' /tmp/rollback-pio-config.json
-          ! grep -q 'WLED_DISABLE_MQTT' platformio_override.ini
-          pio run -e hbnf_matrix_esp32 2>&1 | tee /tmp/rollback-build.log
+          echo "2c3ef679e797f0a1c240f149802375cea68b9feee87b1dc661e1fa42b6e0596a  platformio_override.ini" | sha256sum -c -
 
-      - name: Require exact installed firmware identity
+      - name: Prove web UI generator is timestamp-dependent
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/wled
+          cp tools/cdata.js /tmp/cdata.original.js
+          npm ci
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('tools/cdata.js')
+          s=p.read_text()
+          s=s.replace('return Math.floor(Date.now() / 1000);','return 1790000000;')
+          p.write_text(s)
+          PY
+          rm -f wled00/html_ui.h wled00/html_pixart.h wled00/html_cpal.h wled00/html_edit.h wled00/html_pxmagic.h wled00/html_pixelforge.h wled00/html_settings.h wled00/html_other.h wled00/js_iro.h wled00/js_omggif.h
+          npm run build >/tmp/ui-a.log 2>&1
+          cat wled00/html_ui.h wled00/html_pixart.h wled00/html_cpal.h wled00/html_edit.h wled00/html_pxmagic.h wled00/html_pixelforge.h wled00/html_settings.h wled00/html_other.h wled00/js_iro.h wled00/js_omggif.h | sha256sum | awk '{print $1}' > /tmp/ui-a.sha
+          wc -c wled00/html_ui.h wled00/html_pixart.h wled00/html_cpal.h wled00/html_edit.h wled00/html_pxmagic.h wled00/html_pixelforge.h wled00/html_settings.h wled00/html_other.h wled00/js_iro.h wled00/js_omggif.h > /tmp/ui-a.sizes
+
+          cp /tmp/cdata.original.js tools/cdata.js
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('tools/cdata.js')
+          s=p.read_text()
+          s=s.replace('return Math.floor(Date.now() / 1000);','return 1790003600;')
+          p.write_text(s)
+          PY
+          rm -f wled00/html_ui.h wled00/html_pixart.h wled00/html_cpal.h wled00/html_edit.h wled00/html_pxmagic.h wled00/html_pixelforge.h wled00/html_settings.h wled00/html_other.h wled00/js_iro.h wled00/js_omggif.h
+          npm run build >/tmp/ui-b.log 2>&1
+          cat wled00/html_ui.h wled00/html_pixart.h wled00/html_cpal.h wled00/html_edit.h wled00/html_pxmagic.h wled00/html_pixelforge.h wled00/html_settings.h wled00/html_other.h wled00/js_iro.h wled00/js_omggif.h | sha256sum | awk '{print $1}' > /tmp/ui-b.sha
+          wc -c wled00/html_ui.h wled00/html_pixart.h wled00/html_cpal.h wled00/html_edit.h wled00/html_pxmagic.h wled00/html_pixelforge.h wled00/html_settings.h wled00/html_other.h wled00/js_iro.h wled00/js_omggif.h > /tmp/ui-b.sizes
+          test "$(cat /tmp/ui-a.sha)" != "$(cat /tmp/ui-b.sha)"
+          cp /tmp/cdata.original.js tools/cdata.js
+          rm -f wled00/html_ui.h wled00/html_pixart.h wled00/html_cpal.h wled00/html_edit.h wled00/html_pxmagic.h wled00/html_pixelforge.h wled00/html_settings.h wled00/html_other.h wled00/js_iro.h wled00/js_omggif.h
+
+      - name: Build firmware
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/wled
+          node --version | tee /tmp/node-version.txt
+          npm --version | tee /tmp/npm-version.txt
+          python --version | tee /tmp/python-version.txt
+          pio --version | tee /tmp/pio-version.txt
+          pio run -e hbnf_matrix_esp32 2>&1 | tee /tmp/build.log
+          pio run -e hbnf_matrix_esp32 -t size 2>&1 | tee /tmp/size.log
+
+      - name: Capture metrics
         shell: bash
         run: |
           set -euo pipefail
           cd /tmp/wled
           BIN=.pio/build/hbnf_matrix_esp32/firmware.bin
-          ELF=.pio/build/hbnf_matrix_esp32/firmware.elf
-          test -f "$BIN" && test -f "$ELF"
-          ACTUAL_SHA=$(sha256sum "$BIN" | awk '{print $1}')
-          ACTUAL_SIZE=$(wc -c < "$BIN")
-          EXPECTED_SHA=58e0c0350d812caccb5847072b28859479fbbe806ba79352bcca5482b42bc47b
-          EXPECTED_SIZE=1309088
-          echo "actual_sha=$ACTUAL_SHA"
-          echo "actual_size=$ACTUAL_SIZE"
-          test "$ACTUAL_SHA" = "$EXPECTED_SHA"
-          test "$ACTUAL_SIZE" -eq "$EXPECTED_SIZE"
+          test -f "$BIN"
           mkdir -p /tmp/artifacts
-          cp "$BIN" /tmp/artifacts/HBNF_FLOW_1.0.2_ESP32_ROLLBACK.bin
-          cp "$ELF" /tmp/artifacts/HBNF_FLOW_1.0.2_ESP32_ROLLBACK.elf
-          cp /tmp/rollback-build.log /tmp/artifacts/build.log
-          cp /tmp/rollback-pio-config.json /tmp/artifacts/platformio-config.json
-          pio run -e hbnf_matrix_esp32 -t size 2>&1 | tee /tmp/artifacts/platformio-size.txt
+          cp "$BIN" /tmp/artifacts/HBNF_FLOW_1.0.2_${{ matrix.label }}.bin
+          cp /tmp/build.log /tmp/artifacts/build.log
+          cp /tmp/size.log /tmp/artifacts/platformio-size.txt
+          cp /tmp/ui-a.sha /tmp/ui-b.sha /tmp/ui-a.sizes /tmp/ui-b.sizes /tmp/artifacts/
+          cp /tmp/node-version.txt /tmp/npm-version.txt /tmp/python-version.txt /tmp/pio-version.txt /tmp/artifacts/
+          grep 'WEB_BUILD_TIME' wled00/html_ui.h > /tmp/artifacts/web-build-time.txt
+          sha256sum "$BIN" > /tmp/artifacts/firmware-sha256.txt
+          wc -c "$BIN" > /tmp/artifacts/firmware-size.txt
           {
-            echo "wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c"
-            echo "firmware_sha256=$ACTUAL_SHA"
-            echo "firmware_bytes=$ACTUAL_SIZE"
-            echo "expected_installed_sha256=$EXPECTED_SHA"
-            echo "expected_installed_bytes=$EXPECTED_SIZE"
-            echo "EXACT_INSTALLED_IDENTITY_GATE=PASS"
-          } > /tmp/artifacts/ROLLBACK_METRICS.txt
+            echo "label=${{ matrix.label }}"
+            echo "runner_os=${{ runner.os }}"
+            echo "expected_installed_sha=58e0c0350d812caccb5847072b28859479fbbe806ba79352bcca5482b42bc47b"
+            echo "expected_installed_size=1309088"
+            echo "actual_sha=$(sha256sum "$BIN" | awk '{print $1}')"
+            echo "actual_size=$(wc -c < "$BIN")"
+            echo "ui_timestamp_a_sha=$(cat /tmp/ui-a.sha)"
+            echo "ui_timestamp_b_sha=$(cat /tmp/ui-b.sha)"
+            echo "timestamp_changes_generated_ui=true"
+          } > /tmp/artifacts/METRICS.txt
 
-      - name: Archive exact rollback evidence
+      - name: Archive evidence
         uses: actions/upload-artifact@v4
         with:
-          name: HBNF-Flow1.0.2-exact-rollback
+          name: HBNF-Flow102-repro-${{ matrix.label }}
           path: /tmp/artifacts
           if-no-files-found: error
           retention-days: 7
