@@ -90,10 +90,10 @@ jobs:
           set -euo pipefail
           cd /tmp/wled
           pio run -e hbnf_matrix_wled16_max 2>&1 | tee /tmp/build-first.log
-          pio run -e hbnf_matrix_wled16_max -t size 2>&1 | tee /tmp/size-first.log
           mkdir -p /tmp/artifacts
           cp .pio/build/hbnf_matrix_wled16_max/firmware.bin /tmp/artifacts/HBNF_WLED16_MAX_R1.bin
           cp .pio/build/hbnf_matrix_wled16_max/firmware.elf /tmp/artifacts/HBNF_WLED16_MAX_R1.elf
+          pio run -e hbnf_matrix_wled16_max -t size 2>&1 | tee /tmp/size-first.log
           python - <<'PY'
           import hashlib,pathlib
           b=pathlib.Path('/tmp/artifacts/HBNF_WLED16_MAX_R1.bin').read_bytes()
