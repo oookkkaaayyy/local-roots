@@ -26,7 +26,7 @@ jobs:
         run: |
           set -euo pipefail
           base64 -d .hbnf-build-r1/bundle.b64 > /tmp/hbnf_ci_bundle.tar.gz
-          echo "a22fd4d01be8f67f40eec4019cdfb602cd3144e582b27985d5134485c709a9cb  /tmp/hbnf_ci_bundle.tar.gz" | sha256sum -c -
+          echo "f69efb8a636a4b2a94631de3b8ed7deb88db29e7f46aa11e34f5a34e40db4166  /tmp/hbnf_ci_bundle.tar.gz" | sha256sum -c -
           mkdir -p /tmp/hbnf-r1
           tar -xzf /tmp/hbnf_ci_bundle.tar.gz -C /tmp/hbnf-r1
 
