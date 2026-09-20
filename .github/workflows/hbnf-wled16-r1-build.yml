@@ -152,8 +152,8 @@ jobs:
           test "$R2" -le "$SLOT"
           SHA=$(sha256sum "$BIN" | awk '{print $1}')
           cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-r2-source.patch /tmp/r2-pio-config.json /tmp/r2-vibe-host-test.log /tmp/r2-bridge-host-test.log /tmp/artifacts/
-          cp .hbnf-build-r2/hbnf_vibe16.h /tmp/artifacts/HBNF_R2_hbnf_vibe16.h
-          VIBE_SHA=$(sha256sum .hbnf-build-r2/hbnf_vibe16.h | awk '{print $1}')
+          cp "$GITHUB_WORKSPACE/.hbnf-build-r2/hbnf_vibe16.h" /tmp/artifacts/HBNF_R2_hbnf_vibe16.h
+          VIBE_SHA=$(sha256sum "$GITHUB_WORKSPACE/.hbnf-build-r2/hbnf_vibe16.h" | awk '{print $1}')
           {
             echo "wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c"
             echo "bridge_sha256=95aa069ac0375812dd20d3dcdda4a1978eae3dc41193637fc15cdd4695dbea7a"
