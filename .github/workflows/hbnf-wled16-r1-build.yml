@@ -1,0 +1,141 @@
+name: HBNF WLED16 R1 isolated compile
+
+on:
+  push:
+    branches:
+      - hbnf-wled16-r1-build-20260920
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout isolated lab branch
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Decode and verify R1 source bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 -d .hbnf-build-r1/bundle.b64 > /tmp/hbnf_ci_bundle.tar.gz
+          echo "a22fd4d01be8f67f40eec4019cdfb602cd3144e582b27985d5134485c709a9cb  /tmp/hbnf_ci_bundle.tar.gz" | sha256sum -c -
+          mkdir -p /tmp/hbnf-r1
+          tar -xzf /tmp/hbnf_ci_bundle.tar.gz -C /tmp/hbnf-r1
+
+      - name: Fetch exact WLED 16.0.1 base
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/wled/WLED.git /tmp/wled
+          cd /tmp/wled
+          git checkout 29b389df1c1aaec6ff53aea742d17063b985906c
+          test "$(git rev-parse HEAD)" = "29b389df1c1aaec6ff53aea742d17063b985906c"
+
+      - name: Install pinned WLED build dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install -r /tmp/wled/requirements.txt
+          pio --version
+
+      - name: Compile stock esp32dev baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/wled
+          pio run -e esp32dev 2>&1 | tee /tmp/baseline-build.log
+          BASE_BIN=.pio/build/esp32dev/firmware.bin
+          BASE_ELF=.pio/build/esp32dev/firmware.elf
+          test -f "$BASE_BIN"
+          test -f "$BASE_ELF"
+          mkdir -p /tmp/artifacts/baseline
+          cp "$BASE_BIN" /tmp/artifacts/baseline/firmware.bin
+          cp "$BASE_ELF" /tmp/artifacts/baseline/firmware.elf
+          wc -c "$BASE_BIN" | tee /tmp/artifacts/baseline/firmware-size.txt
+          sha256sum "$BASE_BIN" | tee /tmp/artifacts/baseline/firmware-sha256.txt
+          pio run -e esp32dev -t size 2>&1 | tee /tmp/artifacts/baseline/platformio-size.txt
+          cp /tmp/baseline-build.log /tmp/artifacts/baseline/build.log
+
+      - name: Apply HBNF WLED16 MAX R1 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/wled
+          git reset --hard 29b389df1c1aaec6ff53aea742d17063b985906c
+          git clean -ffdX
+          cp /tmp/hbnf-r1/firmware_patch/platformio_override.ini platformio_override.ini
+          mkdir -p usermods/hbnf_flow
+          cp -R /tmp/hbnf-r1/hbnf_flow/hbnf_flow/. usermods/hbnf_flow/
+          python /tmp/hbnf-r1/firmware_patch/apply_hbnf_animartrix_patch.py /tmp/wled --patch-dir /tmp/hbnf-r1/firmware_patch
+          test "$(git rev-parse HEAD)" = "29b389df1c1aaec6ff53aea742d17063b985906c"
+          git diff --check
+          git diff > /tmp/r1-source.patch
+
+      - name: Validate R1 PlatformIO contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/wled
+          pio project config --json-output > /tmp/r1-pio-config.json
+          grep -q "hbnf_matrix_wled16_max" /tmp/r1-pio-config.json
+          grep -q "audioreactive" platformio_override.ini
+          grep -q "animartrix" platformio_override.ini
+          grep -q "hbnf_flow" platformio_override.ini
+          ! grep -q "WLED_DISABLE_MQTT" platformio_override.ini
+
+      - name: Compile R1 target
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/wled
+          pio run -e hbnf_matrix_wled16_max 2>&1 | tee /tmp/r1-build.log
+          R1_BIN=.pio/build/hbnf_matrix_wled16_max/firmware.bin
+          R1_ELF=.pio/build/hbnf_matrix_wled16_max/firmware.elf
+          test -f "$R1_BIN"
+          test -f "$R1_ELF"
+          mkdir -p /tmp/artifacts/r1
+          cp "$R1_BIN" /tmp/artifacts/r1/firmware.bin
+          cp "$R1_ELF" /tmp/artifacts/r1/firmware.elf
+          cp /tmp/r1-source.patch /tmp/artifacts/r1/source.patch
+          cp /tmp/r1-pio-config.json /tmp/artifacts/r1/platformio-config.json
+          cp /tmp/r1-build.log /tmp/artifacts/r1/build.log
+          wc -c "$R1_BIN" | tee /tmp/artifacts/r1/firmware-size.txt
+          sha256sum "$R1_BIN" | tee /tmp/artifacts/r1/firmware-sha256.txt
+          pio run -e hbnf_matrix_wled16_max -t size 2>&1 | tee /tmp/artifacts/r1/platformio-size.txt
+
+      - name: Enforce rollback-safe 4 MB OTA slot and compute deltas
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=$(wc -c < /tmp/artifacts/baseline/firmware.bin)
+          R1=$(wc -c < /tmp/artifacts/r1/firmware.bin)
+          SLOT=$((0x180000))
+          HEADROOM=$((SLOT-R1))
+          DELTA=$((R1-BASE))
+          {
+            echo "wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c"
+            echo "slot_bytes=$SLOT"
+            echo "baseline_firmware_bytes=$BASE"
+            echo "r1_firmware_bytes=$R1"
+            echo "r1_minus_baseline_bytes=$DELTA"
+            echo "r1_headroom_bytes=$HEADROOM"
+          } | tee /tmp/artifacts/R1_METRICS.txt
+          test "$R1" -le "$SLOT"
+          echo "OTA_SLOT_GATE=PASS" | tee -a /tmp/artifacts/R1_METRICS.txt
+
+      - name: Archive compile evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: HBNF-WLED16-MAX-R1-compile-evidence
+          path: /tmp/artifacts
+          if-no-files-found: error
+          retention-days: 7
