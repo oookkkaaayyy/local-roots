@@ -1,0 +1,133 @@
+name: HBNF Flow1.0.2 rollback reproduction
+
+on:
+  push:
+    branches:
+      - hbnf-flow102-rollback-repro-20260920
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            label: linux-node20
+            node: '20'
+          - os: macos-15-intel
+            label: intelmac-node20
+            node: '20'
+          - os: macos-15-intel
+            label: intelmac-node22
+            node: '22'
+          - os: macos-15-intel
+            label: intelmac-node24
+            node: '24'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Decode and normalize exact Flow1.0.2 inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import base64,hashlib,pathlib,tarfile
+          raw=base64.b64decode(pathlib.Path('.hbnf-build-r1/bundle.b64').read_bytes())
+          assert hashlib.sha256(raw).hexdigest()=='a22fd4d01be8f67f40eec4019cdfb602cd3144e582b27985d5134485c709a9cb'
+          tgz=pathlib.Path('/tmp/flow102.tgz'); tgz.write_bytes(raw)
+          pathlib.Path('/tmp/hbnf-r1').mkdir(exist_ok=True)
+          with tarfile.open(tgz,'r:gz') as tf: tf.extractall('/tmp/hbnf-r1')
+          root=pathlib.Path('/tmp/hbnf-r1/hbnf_flow/hbnf_flow')
+          assert hashlib.sha256((root/'hbnf_flow.cpp').read_bytes()).hexdigest()=='94e260dc67d545ed09327b669d449687d12bc12bbb3174a7ee2403717bc5d406'
+          assert hashlib.sha256((root/'hbnf_flow_core.h').read_bytes()).hexdigest()=='a4496b8c4beb8b32837ce3ee174d2ecdf6059ddd08d1de4358f39178581880c2'
+          lib=root/'library.json'
+          assert hashlib.sha256(lib.read_bytes()).hexdigest()=='f35e1e9087cfaa3728805b51c94b4fefb87536d6012ebe7f1dd93267c7894364'
+          lib.write_text(lib.read_text().replace('"version": "1.0.1"','"version": "1.0.2"'))
+          assert hashlib.sha256(lib.read_bytes()).hexdigest()=='4cf5f57a45f171c7d28f4c928fadca342023c7094e549cb0915a01bc179f9070'
+          PY
+
+      - name: Fetch exact WLED and install pinned toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/wled/WLED.git /tmp/wled
+          cd /tmp/wled
+          git checkout 29b389df1c1aaec6ff53aea742d17063b985906c
+          test "$(git rev-parse HEAD)" = "29b389df1c1aaec6ff53aea742d17063b985906c"
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          node --version
+          npm --version
+          python --version
+          pio --version
+
+      - name: Apply exact historical build recipe
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/wled
+          mkdir -p usermods/hbnf_flow
+          cp -R /tmp/hbnf-r1/hbnf_flow/hbnf_flow/. usermods/hbnf_flow/
+          cat > platformio_override.ini <<'EOF'
+          [platformio]
+          default_envs = hbnf_matrix_esp32
+
+          [env:hbnf_matrix_esp32]
+          extends = env:esp32dev
+          custom_usermods = audioreactive hbnf_flow
+          ; Deliberately inherit the official WLED v16.0.1 esp32dev environment unchanged.
+          ; That preserves its ESP32 release identity, ESP32/V4 toolchain, partition layout,
+          ; flash mode, AudioReactive base, and USB flags. Existing cfg.json/NVS remains
+          ; authoritative for GL-MC-001WL LED/microphone pins and runtime hardware config.
+          EOF
+          python - <<'PY'
+          import hashlib,pathlib
+          p=pathlib.Path('platformio_override.ini')
+          assert hashlib.sha256(p.read_bytes()).hexdigest()=='2c3ef679e797f0a1c240f149802375cea68b9feee87b1dc661e1fa42b6e0596a'
+          PY
+
+      - name: Compile and capture binary before size-only target
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/wled
+          pio run -e hbnf_matrix_esp32 2>&1 | tee /tmp/build.log
+          BIN=.pio/build/hbnf_matrix_esp32/firmware.bin
+          ELF=.pio/build/hbnf_matrix_esp32/firmware.elf
+          test -f "$BIN" && test -f "$ELF"
+          mkdir -p /tmp/artifacts
+          cp "$BIN" "/tmp/artifacts/HBNF_FLOW_1.0.2_${{ matrix.label }}.bin"
+          cp "$ELF" "/tmp/artifacts/HBNF_FLOW_1.0.2_${{ matrix.label }}.elf"
+          SHA=$(shasum -a 256 "$BIN" | awk '{print $1}')
+          SIZE=$(wc -c < "$BIN" | tr -d ' ')
+          echo "RESULT label=${{ matrix.label }} sha=$SHA size=$SIZE delta=$((SIZE-1309088))"
+          {
+            echo "label=${{ matrix.label }}"
+            echo "runner_os=${{ runner.os }}"
+            echo "node=${{ matrix.node }}"
+            echo "actual_sha=$SHA"
+            echo "actual_size=$SIZE"
+            echo "expected_installed_sha=58e0c0350d812caccb5847072b28859479fbbe806ba79352bcca5482b42bc47b"
+            echo "expected_installed_size=1309088"
+            echo "size_delta=$((SIZE-1309088))"
+          } > /tmp/artifacts/METRICS.txt
+          pio run -e hbnf_matrix_esp32 -t size 2>&1 | tee /tmp/artifacts/platformio-size.txt
+          cp /tmp/build.log /tmp/artifacts/build.log
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HBNF-Flow102-rollback-${{ matrix.label }}
+          path: /tmp/artifacts
+          if-no-files-found: error
+          retention-days: 14
