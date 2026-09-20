@@ -58,6 +58,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p /tmp/hbnf-r1/tests
           cp .hbnf-build-r2/test_hbnf_vibe16.cpp /tmp/hbnf-r1/tests/test_hbnf_vibe16.cpp
           cp .hbnf-build-r2/test_wled_bridge_stub.cpp /tmp/hbnf-r1/tests/test_wled_bridge_stub.cpp
           cd /tmp/hbnf-r1/tests
