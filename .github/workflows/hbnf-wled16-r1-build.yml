@@ -1,4 +1,4 @@
-name: HBNF Flow1.0.2 corrected historical rebuild
+name: HBNF Flow1.0.2 corrected Linux control
 
 on:
   push:
@@ -10,86 +10,40 @@ permissions:
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        node: ['20','22','24']
-    runs-on: macos-15-intel
-    timeout-minutes: 45
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
     steps:
-      - name: Checkout isolated lab branch
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
-
-      - name: Decode verified source bundle portably
+          node-version: '20'
+      - name: Decode and normalize exact Flow1.0.2 input
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
-          import base64, hashlib, pathlib, tarfile
-          src=pathlib.Path('.hbnf-build-r1/bundle.b64').read_bytes()
-          raw=base64.b64decode(src)
-          got=hashlib.sha256(raw).hexdigest()
-          exp='a22fd4d01be8f67f40eec4019cdfb602cd3144e582b27985d5134485c709a9cb'
-          assert got==exp,(got,exp)
-          p=pathlib.Path('/tmp/hbnf_ci_bundle.tar.gz'); p.write_bytes(raw)
+          import base64,hashlib,pathlib,tarfile
+          raw=base64.b64decode(pathlib.Path('.hbnf-build-r1/bundle.b64').read_bytes())
+          assert hashlib.sha256(raw).hexdigest()=='a22fd4d01be8f67f40eec4019cdfb602cd3144e582b27985d5134485c709a9cb'
+          p=pathlib.Path('/tmp/b.tgz');p.write_bytes(raw)
           pathlib.Path('/tmp/hbnf-r1').mkdir(exist_ok=True)
           with tarfile.open(p,'r:gz') as tf: tf.extractall('/tmp/hbnf-r1')
+          lib=pathlib.Path('/tmp/hbnf-r1/hbnf_flow/hbnf_flow/library.json')
+          assert hashlib.sha256(lib.read_bytes()).hexdigest()=='f35e1e9087cfaa3728805b51c94b4fefb87536d6012ebe7f1dd93267c7894364'
+          lib.write_text(lib.read_text().replace('"version": "1.0.1"','"version": "1.0.2"'))
+          assert hashlib.sha256(lib.read_bytes()).hexdigest()=='4cf5f57a45f171c7d28f4c928fadca342023c7094e549cb0915a01bc179f9070'
           PY
-
-      - name: Restore actual cleaned Flow1.0.2 manifest
-        shell: bash
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          import hashlib, pathlib
-          root=pathlib.Path('/tmp/hbnf-r1/hbnf_flow/hbnf_flow')
-          expected={
-            'hbnf_flow.cpp':'94e260dc67d545ed09327b669d449687d12bc12bbb3174a7ee2403717bc5d406',
-            'hbnf_flow_core.h':'a4496b8c4beb8b32837ce3ee174d2ecdf6059ddd08d1de4358f39178581880c2',
-            'library.json':'f35e1e9087cfaa3728805b51c94b4fefb87536d6012ebe7f1dd93267c7894364',
-          }
-          for fn,exp in expected.items():
-            got=hashlib.sha256((root/fn).read_bytes()).hexdigest()
-            assert got==exp,(fn,got,exp)
-          p=root/'library.json'
-          s=p.read_text().replace('"version": "1.0.1"','"version": "1.0.2"')
-          p.write_text(s)
-          got=hashlib.sha256(p.read_bytes()).hexdigest()
-          exp='4cf5f57a45f171c7d28f4c928fadca342023c7094e549cb0915a01bc179f9070'
-          assert got==exp,(got,exp)
-          PY
-
-      - name: Fetch exact WLED 16.0.1 base
+      - name: Exact WLED and build
         shell: bash
         run: |
           set -euo pipefail
           git clone --filter=blob:none https://github.com/wled/WLED.git /tmp/wled
           cd /tmp/wled
           git checkout 29b389df1c1aaec6ff53aea742d17063b985906c
-          test "$(git rev-parse HEAD)" = "29b389df1c1aaec6ff53aea742d17063b985906c"
-
-      - name: Install pinned WLED build dependencies
-        shell: bash
-        run: |
-          set -euo pipefail
-          python -m pip install --upgrade pip
-          python -m pip install -r /tmp/wled/requirements.txt
-
-      - name: Apply exact historical Flow build recipe
-        shell: bash
-        run: |
-          set -euo pipefail
-          cd /tmp/wled
+          python -m pip install -r requirements.txt
           mkdir -p usermods/hbnf_flow
           cp -R /tmp/hbnf-r1/hbnf_flow/hbnf_flow/. usermods/hbnf_flow/
           cat > platformio_override.ini <<'EOF'
@@ -104,59 +58,32 @@ jobs:
           ; flash mode, AudioReactive base, and USB flags. Existing cfg.json/NVS remains
           ; authoritative for GL-MC-001WL LED/microphone pins and runtime hardware config.
           EOF
-          python - <<'PY'
-          import hashlib, pathlib
-          p=pathlib.Path('platformio_override.ini')
-          got=hashlib.sha256(p.read_bytes()).hexdigest()
-          exp='2c3ef679e797f0a1c240f149802375cea68b9feee87b1dc661e1fa42b6e0596a'
-          assert got==exp,(got,exp)
-          PY
-
-      - name: Compile historical target
-        shell: bash
-        run: |
-          set -euo pipefail
-          cd /tmp/wled
-          node --version | tee /tmp/node-version.txt
-          npm --version | tee /tmp/npm-version.txt
-          python --version | tee /tmp/python-version.txt
-          pio --version | tee /tmp/pio-version.txt
           pio run -e hbnf_matrix_esp32 2>&1 | tee /tmp/build.log
           pio run -e hbnf_matrix_esp32 -t size 2>&1 | tee /tmp/size.log
-
-      - name: Capture evidence
+      - name: Capture
         shell: bash
         run: |
           set -euo pipefail
           cd /tmp/wled
-          BIN=.pio/build/hbnf_matrix_esp32/firmware.bin
-          test -f "$BIN"
           mkdir -p /tmp/artifacts
-          cp "$BIN" /tmp/artifacts/HBNF_FLOW_1.0.2_macos13_node${{ matrix.node }}.bin
-          cp /tmp/build.log /tmp/size.log /tmp/node-version.txt /tmp/npm-version.txt /tmp/python-version.txt /tmp/pio-version.txt /tmp/artifacts/
-          (grep 'WEB_BUILD_TIME' wled00/html_ui.h || true) > /tmp/artifacts/web-build-time.txt
-          MATRIX_NODE="${{ matrix.node }}" python - <<'PY'
-          import hashlib, pathlib, os
+          BIN=.pio/build/hbnf_matrix_esp32/firmware.bin
+          cp "$BIN" /tmp/artifacts/HBNF_FLOW_1.0.2_corrected_linux.bin
+          cp /tmp/build.log /tmp/size.log /tmp/artifacts/
+          python - <<'PY'
+          import hashlib,pathlib
           b=pathlib.Path('.pio/build/hbnf_matrix_esp32/firmware.bin').read_bytes()
-          sha=hashlib.sha256(b).hexdigest()
-          size=len(b)
-          exp_sha='58e0c0350d812caccb5847072b28859479fbbe806ba79352bcca5482b42bc47b'
-          exp_size=1309088
-          node=os.environ['MATRIX_NODE']
+          sha=hashlib.sha256(b).hexdigest(); size=len(b)
           pathlib.Path('/tmp/artifacts/METRICS.txt').write_text(
-              f'node={node}\nrunner=macos-15-intel\n'
-              f'actual_sha={sha}\nactual_size={size}\n'
-              f'expected_installed_sha={exp_sha}\nexpected_installed_size={exp_size}\n'
-              f'size_delta={size-exp_size}\nsha_exact_match={str(sha==exp_sha).lower()}\n'
+            f'actual_sha={sha}\nactual_size={size}\n'
+            'expected_installed_sha=58e0c0350d812caccb5847072b28859479fbbe806ba79352bcca5482b42bc47b\n'
+            'expected_installed_size=1309088\n'
+            f'size_delta={size-1309088}\n'
           )
-          pathlib.Path('/tmp/artifacts/firmware-sha256.txt').write_text(sha+'\n')
-          pathlib.Path('/tmp/artifacts/firmware-size.txt').write_text(str(size)+'\n')
+          print(sha,size,size-1309088)
           PY
-
-      - name: Archive evidence
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: HBNF-Flow102-historical-macos13-node${{ matrix.node }}
+          name: HBNF-Flow102-corrected-linux-control
           path: /tmp/artifacts
           if-no-files-found: error
           retention-days: 7
