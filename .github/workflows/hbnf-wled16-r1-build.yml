@@ -26,9 +26,14 @@ jobs:
         run: |
           set -euo pipefail
           base64 -d .hbnf-build-r1/bundle.b64 > /tmp/hbnf_ci_bundle.tar.gz
-          echo "f69efb8a636a4b2a94631de3b8ed7deb88db29e7f46aa11e34f5a34e40db4166  /tmp/hbnf_ci_bundle.tar.gz" | sha256sum -c -
+          echo "a22fd4d01be8f67f40eec4019cdfb602cd3144e582b27985d5134485c709a9cb  /tmp/hbnf_ci_bundle.tar.gz" | sha256sum -c -
           mkdir -p /tmp/hbnf-r1
           tar -xzf /tmp/hbnf_ci_bundle.tar.gz -C /tmp/hbnf-r1
+          BRIDGE=/tmp/hbnf-r1/firmware_patch/hbnf_animartrix_audio_bridge.h
+          grep -q 'usermods.getUMData' "$BRIDGE"
+          sed -i 's/usermods\.getUMData/UsermodManager::getUMData/' "$BRIDGE"
+          grep -q 'UsermodManager::getUMData' "$BRIDGE"
+          echo "95aa069ac0375812dd20d3dcdda4a1978eae3dc41193637fc15cdd4695dbea7a  $BRIDGE" | sha256sum -c -
 
       - name: Fetch exact WLED 16.0.1 base
         shell: bash
