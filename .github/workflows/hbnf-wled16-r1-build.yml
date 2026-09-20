@@ -3,7 +3,7 @@ name: HBNF WLED16 MAX R1 normalized final compile
 on:
   push:
     branches:
-      - hbnf-wled16-r1-build-20260920
+      - hbnf-wled16-r2-audio-legibility-20260920
 
 permissions:
   contents: read
@@ -45,6 +45,15 @@ jobs:
           lib.write_text(lib.read_text().replace('"version": "1.0.1"','"version": "1.0.2"'))
           assert hashlib.sha256(lib.read_bytes()).hexdigest()=='4cf5f57a45f171c7d28f4c928fadca342023c7094e549cb0915a01bc179f9070'
           PY
+
+      - name: Dump exact R1 audio bridge source for R2 tuning
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '===== hbnf_vibe16.h ====='
+          cat /tmp/hbnf-r1/firmware_patch/hbnf_vibe16.h
+          echo '===== hbnf_animartrix_audio_bridge.h ====='
+          cat /tmp/hbnf-r1/firmware_patch/hbnf_animartrix_audio_bridge.h
 
       - name: Fetch exact WLED 16.0.1 base
         shell: bash
