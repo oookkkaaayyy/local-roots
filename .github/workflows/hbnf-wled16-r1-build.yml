@@ -1,4 +1,4 @@
-name: HBNF WLED16 MAX R1 normalized final compile
+name: HBNF WLED16 MAX R2 audio-legibility compile
 
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Decode and normalize R1 source
+      - name: Decode R1 baseline and apply R2 audio envelope
         shell: bash
         run: |
           set -euo pipefail
@@ -44,16 +44,27 @@ jobs:
           assert hashlib.sha256(lib.read_bytes()).hexdigest()=='f35e1e9087cfaa3728805b51c94b4fefb87536d6012ebe7f1dd93267c7894364'
           lib.write_text(lib.read_text().replace('"version": "1.0.1"','"version": "1.0.2"'))
           assert hashlib.sha256(lib.read_bytes()).hexdigest()=='4cf5f57a45f171c7d28f4c928fadca342023c7094e549cb0915a01bc179f9070'
+
+          # R2 change is intentionally narrow: replace only the Vibe timewarp
+          # envelope with the physically-informed legibility candidate.
+          r2=pathlib.Path('.hbnf-build-r2/hbnf_vibe16.h')
+          assert r2.exists()
+          vibe=pathlib.Path('/tmp/hbnf-r1/firmware_patch/hbnf_vibe16.h')
+          vibe.write_bytes(r2.read_bytes())
+          print('R2 vibe sha256',hashlib.sha256(vibe.read_bytes()).hexdigest())
           PY
 
-      - name: Dump exact R1 audio bridge source for R2 tuning
+      - name: R2 host-side audio legibility gates
         shell: bash
         run: |
           set -euo pipefail
-          echo '===== hbnf_vibe16.h ====='
-          cat /tmp/hbnf-r1/firmware_patch/hbnf_vibe16.h
-          echo '===== hbnf_animartrix_audio_bridge.h ====='
-          cat /tmp/hbnf-r1/firmware_patch/hbnf_animartrix_audio_bridge.h
+          cp .hbnf-build-r2/test_hbnf_vibe16.cpp /tmp/hbnf-r1/tests/test_hbnf_vibe16.cpp
+          cp .hbnf-build-r2/test_wled_bridge_stub.cpp /tmp/hbnf-r1/tests/test_wled_bridge_stub.cpp
+          cd /tmp/hbnf-r1/tests
+          g++ -std=c++17 -O2 test_hbnf_vibe16.cpp -o /tmp/test_hbnf_vibe16_r2
+          /tmp/test_hbnf_vibe16_r2 | tee /tmp/r2-vibe-host-test.log
+          g++ -std=c++17 -O2 test_wled_bridge_stub.cpp -o /tmp/test_wled_bridge_r2
+          /tmp/test_wled_bridge_r2 | tee /tmp/r2-bridge-host-test.log
 
       - name: Fetch exact WLED 16.0.1 base
         shell: bash
@@ -74,7 +85,7 @@ jobs:
           npm --version
           pio --version
 
-      - name: Apply normalized R1
+      - name: Apply normalized R2
         shell: bash
         run: |
           set -euo pipefail
@@ -89,9 +100,9 @@ jobs:
           grep -q '"version": "1.0.2"' usermods/hbnf_flow/library.json
           grep -q 'audioreactive animartrix hbnf_flow' platformio_override.ini
           ! grep -q 'WLED_DISABLE_MQTT' platformio_override.ini
-          git diff > /tmp/normalized-r1-source.patch
-          pio project config --json-output > /tmp/r1-pio-config.json
-          grep -q 'hbnf_matrix_wled16_max' /tmp/r1-pio-config.json
+          git diff > /tmp/normalized-r2-source.patch
+          pio project config --json-output > /tmp/r2-pio-config.json
+          grep -q 'hbnf_matrix_wled16_max' /tmp/r2-pio-config.json
 
       - name: First normalized target compile
         shell: bash
@@ -100,12 +111,12 @@ jobs:
           cd /tmp/wled
           pio run -e hbnf_matrix_wled16_max 2>&1 | tee /tmp/build-first.log
           mkdir -p /tmp/artifacts
-          cp .pio/build/hbnf_matrix_wled16_max/firmware.bin /tmp/artifacts/HBNF_WLED16_MAX_R1.bin
-          cp .pio/build/hbnf_matrix_wled16_max/firmware.elf /tmp/artifacts/HBNF_WLED16_MAX_R1.elf
+          cp .pio/build/hbnf_matrix_wled16_max/firmware.bin /tmp/artifacts/HBNF_WLED16_MAX_R2.bin
+          cp .pio/build/hbnf_matrix_wled16_max/firmware.elf /tmp/artifacts/HBNF_WLED16_MAX_R2.elf
           pio run -e hbnf_matrix_wled16_max -t size 2>&1 | tee /tmp/size-first.log
           python - <<'PY'
           import hashlib,pathlib
-          b=pathlib.Path('/tmp/artifacts/HBNF_WLED16_MAX_R1.bin').read_bytes()
+          b=pathlib.Path('/tmp/artifacts/HBNF_WLED16_MAX_R2.bin').read_bytes()
           pathlib.Path('/tmp/first.sha').write_text(hashlib.sha256(b).hexdigest())
           pathlib.Path('/tmp/first.size').write_text(str(len(b)))
           print('first',hashlib.sha256(b).hexdigest(),len(b))
@@ -118,11 +129,11 @@ jobs:
           cd /tmp/wled
           pio run -e hbnf_matrix_wled16_max -t clean
           pio run -e hbnf_matrix_wled16_max 2>&1 | tee /tmp/build-second.log
-          cp .pio/build/hbnf_matrix_wled16_max/firmware.bin /tmp/artifacts/HBNF_WLED16_MAX_R1_second.bin
+          cp .pio/build/hbnf_matrix_wled16_max/firmware.bin /tmp/artifacts/HBNF_WLED16_MAX_R2_second.bin
           python - <<'PY'
           import hashlib,pathlib
-          first=pathlib.Path('/tmp/artifacts/HBNF_WLED16_MAX_R1.bin').read_bytes()
-          second=pathlib.Path('/tmp/artifacts/HBNF_WLED16_MAX_R1_second.bin').read_bytes()
+          first=pathlib.Path('/tmp/artifacts/HBNF_WLED16_MAX_R2.bin').read_bytes()
+          second=pathlib.Path('/tmp/artifacts/HBNF_WLED16_MAX_R2_second.bin').read_bytes()
           a=hashlib.sha256(first).hexdigest(); b=hashlib.sha256(second).hexdigest()
           print('first',a,len(first)); print('second',b,len(second))
           assert first==second,(a,b,len(first),len(second))
@@ -133,30 +144,35 @@ jobs:
         run: |
           set -euo pipefail
           cd /tmp/wled
-          BIN=/tmp/artifacts/HBNF_WLED16_MAX_R1.bin
-          R1=$(wc -c < "$BIN")
+          BIN=/tmp/artifacts/HBNF_WLED16_MAX_R2.bin
+          R2=$(wc -c < "$BIN")
           SLOT=$((0x180000))
-          HEADROOM=$((SLOT-R1))
-          test "$R1" -le "$SLOT"
+          HEADROOM=$((SLOT-R2))
+          test "$R2" -le "$SLOT"
           SHA=$(sha256sum "$BIN" | awk '{print $1}')
-          cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-r1-source.patch /tmp/r1-pio-config.json /tmp/artifacts/
+          cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-r2-source.patch /tmp/r2-pio-config.json /tmp/r2-vibe-host-test.log /tmp/r2-bridge-host-test.log /tmp/artifacts/
+          cp .hbnf-build-r2/hbnf_vibe16.h /tmp/artifacts/HBNF_R2_hbnf_vibe16.h
+          VIBE_SHA=$(sha256sum .hbnf-build-r2/hbnf_vibe16.h | awk '{print $1}')
           {
             echo "wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c"
             echo "bridge_sha256=95aa069ac0375812dd20d3dcdda4a1978eae3dc41193637fc15cdd4695dbea7a"
+            echo "r2_vibe_sha256=$VIBE_SHA"
+            echo "R1_PHYSICAL_FINDING=audio_path_reactive_but_not_perceptually_music_led"
+            echo "R2_LEGIBILITY_GATE=PASS"
             echo "hbnf_flow_manifest_sha256=4cf5f57a45f171c7d28f4c928fadca342023c7094e549cb0915a01bc179f9070"
             echo "firmware_sha256=$SHA"
-            echo "firmware_bytes=$R1"
+            echo "firmware_bytes=$R2"
             echo "ota_slot_bytes=$SLOT"
             echo "ota_headroom_bytes=$HEADROOM"
             echo "SECOND_CLEAN_BUILD_BYTE_IDENTICAL=PASS"
             echo "OTA_SLOT_GATE=PASS"
             echo "MQTT_PRESERVED=PASS"
           } > /tmp/artifacts/FINAL_METRICS.txt
-          sha256sum /tmp/artifacts/HBNF_WLED16_MAX_R1.bin > /tmp/artifacts/firmware-sha256.txt
+          sha256sum /tmp/artifacts/HBNF_WLED16_MAX_R2.bin > /tmp/artifacts/firmware-sha256.txt
 
       - uses: actions/upload-artifact@v4
         with:
-          name: HBNF-WLED16-MAX-R1-normalized-final
+          name: HBNF-WLED16-MAX-R2-audio-legibility
           path: /tmp/artifacts
           if-no-files-found: error
           retention-days: 14
