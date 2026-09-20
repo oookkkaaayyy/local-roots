@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         node: ['20','22','24']
-    runs-on: macos-13
+    runs-on: macos-15-intel
     timeout-minutes: 45
     steps:
       - name: Checkout isolated lab branch
@@ -144,7 +144,7 @@ jobs:
           exp_size=1309088
           node=os.environ['MATRIX_NODE']
           pathlib.Path('/tmp/artifacts/METRICS.txt').write_text(
-              f'node={node}\nrunner=macos-13-x64\n'
+              f'node={node}\nrunner=macos-15-intel\n'
               f'actual_sha={sha}\nactual_size={size}\n'
               f'expected_installed_sha={exp_sha}\nexpected_installed_size={exp_size}\n'
               f'size_delta={size-exp_size}\nsha_exact_match={str(sha==exp_sha).lower()}\n'
