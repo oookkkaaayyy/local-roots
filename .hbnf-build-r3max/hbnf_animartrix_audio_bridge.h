@@ -6,7 +6,7 @@
 namespace hbnf {
 
 enum WowStyle : uint8_t { STYLE_CLEAN=0, STYLE_PUNCH=1, STYLE_RING=2, STYLE_SPARK=3, STYLE_CHROMA=4, STYLE_HYBRID=5 };
-struct Rgb8 { uint8_t r=0,g=0,b=0; };
+struct Rgb8 { uint8_t r,g,b; Rgb8(uint8_t rr=0,uint8_t gg=0,uint8_t bb=0):r(rr),g(gg),b(bb){} };
 
 class AnimartrixAudioBridge {
  public:
