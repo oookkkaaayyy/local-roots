@@ -5,7 +5,7 @@ Field status: NOT INSTALLED — current Matrix remains under R2 ownership.
 
 ## Firmware
 - WLED base: 16.0.1 / 29b389df1c1aaec6ff53aea742d17063b985906c
-- WOW MAX firmware SHA256: bbc9b3b15a024d291d355cc4c3d70c153821f3874884d0946a1b7687150a248a
+- WOW MAX firmware SHA256: 281377f0b0e65b811f7b0bf5bb217535d502cfe7bc6abf8c072b63459aa10000
 - Firmware bytes: 1,356,704
 - OTA headroom: 216,160 bytes
 - Target compile: PASS
@@ -50,8 +50,8 @@ Automatic cinematic dispatcher routes ACE/compound-ACE and skin-win events to se
 ## Final atomic package
 - Drive ID: 1TgXwOVb2jCId7mUxspaJYkL95Wm_FYq_
 - File: HBNF_WOW_MAX_BUNDLE_2026-09-21.zip
-- SHA256: 6143f52150346c8f98a52ec94dc2b5f4471c4669fecbd2ee9e0eaf2c84d2ecc0
-- Size: 2,053,610 bytes
+- SHA256: 281377f0b0e65b811f7b0bf5bb217535d502cfe7bc6abf8c072b63459aa10000
+- Size: 2,054,753 bytes
 - Drive re-fetch hash: VERIFIED
 - ZIP integrity: PASS
 
@@ -59,7 +59,7 @@ Superseded package:
 - Older R3 v1 Drive ID 1LeFSGbiJPGiBUtiTlQQTGqQvU_EeDZZy
 - MUST NOT be installed.
 
-## Rollback
+## Transaction safety\n- Rollback pointer is written before any controller mutation.\n- Pre-flash staging failure restores exact pre-install presets + prior boot defaults without flashing.\n- Post-flash validation/adoption failure automatically restores exact pre-install presets/boot defaults and reflashes exact proven R2 when the controller remains reachable.\n- Automatic R2 recovery path unit test: PASS\n\n## Rollback
 - Exact proven R2 firmware SHA256:
   e81adb8523cf3a875d3ce05962d538b7c6cf3f178bfeaf42833678b9c4cd5d10
 - Installer creates exact pre-install filesystem/config/state backup.
