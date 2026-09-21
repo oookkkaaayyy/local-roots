@@ -5,7 +5,7 @@ const BASE=(Deno.env.get("SUPABASE_URL")||"").replace(/\/$/,"")+"/functions/v1";
 const EXPECTED={
   release:"hbnf-wow-r3-max-2026-09-21-v3",
   sceneCount:28,
-  matrixUiMarker:"hbnf-fallback-wow-max-v3",
+  matrixUiMarker:"hbnf-fallback-wow-max-v3.1",
   watchControlVersion:"wow-max-v3-audio-aux-ready",
   watchScoreVersion:"wow-max-v3-compatible-score",
   dispatcherVersion:"wow-max-v1"
@@ -40,6 +40,7 @@ Deno.serve(async(req)=>{
   watchScore:watchScore.ok&&watchScore.json?.service==="hbnf-watch-score"&&watchScore.json?.version===EXPECTED.watchScoreVersion&&hasAll(watchScore.json?.actions,["state","score","set","undo","clear"]),
   cinematicDispatcher:dispatcher.ok&&dispatcher.json?.service==="hbnf-cinematic-dispatcher"&&dispatcher.json?.version===EXPECTED.dispatcherVersion&&Array.isArray(dispatcher.json?.revisions)&&dispatcher.json.revisions.includes(EXPECTED.release),
   fallbackUi:ui.ok&&ui.text.includes(EXPECTED.matrixUiMarker),
+  fallbackUiSelectors:ui.ok&&ui.text.includes("$$\u0028\u0027[data-bri]\u0027\u0029.forEach")&&ui.text.includes("$$\u0028\u0027[data-cart]\u0027\u0029.forEach")&&ui.text.includes("$$\u0028\u0027[data-uv]\u0027\u0029.forEach")&&ui.text.includes("busy=true;$$\u0028\u0027button\u0027\u0029.forEach")&&ui.text.includes("data-cart=\\\"showcase\\\""),
   auxStaging:aux.ok&&aux.json?.service==="hbnf-aux-control"&&aux.json?.enabled===false&&aux.json?.policy?.mixedLoadAccepted===false&&aux.json?.selfTest?.ok===true&&Number(aux.json?.selfTest?.globalOffPreset)===223&&Number(aux.json?.selfTest?.uvOffReturnsToPreset)===200,
   cartStaging:cart.ok&&cart.json?.service==="hbnf-cart-orchestrator"&&cart.json?.auxEnabled===false&&cart.json?.mixedLoadAccepted===false&&cart.json?.safety?.globalOffAvailableWhenAuxDisabled===true&&cart.json?.safety?.startOrder==="matrix-then-aux"
  };
@@ -52,7 +53,7 @@ Deno.serve(async(req)=>{
  return json({
   ok:cloudReady,
   service:"hbnf-release-doctor",
-  version:"wow-v3-doctor-2",
+  version:"wow-v3-doctor-3",
   expected:EXPECTED,
   cloudReady,
   matrixOnline,
