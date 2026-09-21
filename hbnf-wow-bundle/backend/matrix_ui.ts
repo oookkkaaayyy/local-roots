@@ -42,13 +42,13 @@ button.active{border-color:#6ca95a;background:#1b3b21;box-shadow:inset 0 0 0 1px
 
 <div class="card"><h2>BRIGHTNESS</h2><div class="grid4"><button data-bri="8">8</button><button data-bri="16">16</button><button data-bri="24">24</button><button data-bri="40">40</button></div></div>
 <div id="auxCard" class="card" hidden><h2>CART LIGHTING</h2><div class="grid3">
-<button data-cart="music">MUSIC</button><button data-cart="skins_live">SKINS LIVE</button><button data-cart="glow_live">GLOW LIVE</button>
+<button data-cart="music">MUSIC</button><button data-cart="showcase">SHOWCASE</button><button data-cart="skins_live">SKINS LIVE</button><button data-cart="glow_live">GLOW LIVE</button>
 <button data-uv="full">UV FULL</button><button data-uv="main">UV MAIN</button><button data-uv="short">UV SHORT</button>
 <button data-uv="off">UV OFF</button><button class="danger" data-cart="all_off">ALL OFF</button>
 </div><div class="note">Only appears after the SP803E passes hardware acceptance. Mixed GLOW LIVE remains locked until the mixed-load test passes.</div></div>
 
 <div id="feedback">Ready.</div>
-<div class="note">Status refreshes every 4 seconds. Controls lock while an overlay is active. Build: hbnf-fallback-wow-max-v3.</div>
+<div class="note">Status refreshes every 4 seconds. Controls lock while an overlay is active. Build: hbnf-fallback-wow-max-v3.1.</div>
 </div><script>
 (()=>{'use strict';
 const API='https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-matrix-control';
@@ -69,7 +69,7 @@ function render(r){
  $('#audio').textContent=wr?'E '+(wr.energy??0)+' · P '+(wr.pulse??0):'AUDIO —';
  $('#liveBtn').classList.toggle('active',!off&&c.auto_live===true);
  $('#pureBtn').classList.toggle('active',!off&&c.auto_live===false);
- const bri=Number(t.brightness);$$('[data-bri]').forEach(b=>b.classList.toggle('active',Number(b.dataset.bri)===Math.round(bri)));
+ const bri=Number(t.brightness);$$$('[data-bri]').forEach(b=>b.classList.toggle('active',Number(b.dataset.bri)===Math.round(bri)));
  const overlay=!!(c.overlay_until&&Date.parse(c.overlay_until)>Date.now());
  $$('button').forEach(b=>{if(!b.classList.contains('danger'))b.disabled=busy||overlay});
  if(overlay)fb('OVERLAY ACTIVE · controls resume automatically');
@@ -98,18 +98,18 @@ async function status(){
  catch(e){$('#online').textContent='● UNAVAILABLE';$('#online').className='status off'}
 }
 async function service(url,payload){
- if(busy)return null;busy=true;$('button').forEach(b=>b.disabled=true);fb('SENDING…');
+ if(busy)return null;busy=true;$$('button').forEach(b=>b.disabled=true);fb('SENDING…');
  try{const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),cache:'no-store'});const d=await res.json();if(!res.ok||d.ok===false)throw new Error(d.error||('HTTP '+res.status));fb('✓ ACCEPTED','good');setTimeout(status,250);return d}
  catch(e){fb('ERROR: '+e.message,'bad');return null}
- finally{busy=false;setTimeout(()=>{$('button').forEach(b=>b.disabled=false);auxStatus()},350)}
+ finally{busy=false;setTimeout(()=>{$$('button').forEach(b=>b.disabled=false);auxStatus()},350)}
 }
 $('#pureBtn').onclick=()=>request('play_show',{family:'r2',live:false,brightness:8});
 $('#liveBtn').onclick=()=>request('play_show',{family:'r2',live:true,brightness:8});
 $$('[data-event]').forEach(b=>b.onclick=()=>request('quick_event',{event:b.dataset.event}));
 $$('[data-action]').forEach(b=>b.onclick=()=>request(b.dataset.action));
-$('[data-bri]').forEach(b=>b.onclick=()=>request('brightness',{brightness:Number(b.dataset.bri)}));
-$('[data-cart]').forEach(b=>b.onclick=()=>service(CART,{scene:b.dataset.cart}));
-$('[data-uv]').forEach(b=>b.onclick=()=>service(AUX,{action:'uv',mode:b.dataset.uv}));
+$$('[data-bri]').forEach(b=>b.onclick=()=>request('brightness',{brightness:Number(b.dataset.bri)}));
+$$('[data-cart]').forEach(b=>b.onclick=()=>service(CART,{scene:b.dataset.cart}));
+$$('[data-uv]').forEach(b=>b.onclick=()=>service(AUX,{action:'uv',mode:b.dataset.uv}));
 $('#sendText').onclick=()=>{const v=$('#text').value.trim();if(!v){fb('Enter a message.','bad');return}request('text',{text:v,color:'#FFFFFF'}).then(x=>{if(x)$('#text').value=''})};
 $('#text').addEventListener('keydown',e=>{if(e.key==='Enter')$('#sendText').click()});
 status();setInterval(status,4000);
