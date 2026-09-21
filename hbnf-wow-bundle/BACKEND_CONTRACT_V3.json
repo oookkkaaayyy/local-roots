@@ -1,0 +1,52 @@
+{
+  "release": "hbnf-wow-r3-max-2026-09-21-v3",
+  "requiredScenes": 28,
+  "services": {
+    "matrixControl": {
+      "slug": "hbnf-matrix-control",
+      "version": 141,
+      "sha256": "8ff8398db14b1a0a2a1f4519705023adbe0cfd9b6d2de18ad07669688d272bb7"
+    },
+    "watchControl": {
+      "slug": "hbnf-watch-control",
+      "version": 12,
+      "sha256": "48a3362919407f44b134bd268afc80f2fc0342d8caa25411c2ee1023f99bba68"
+    },
+    "watchScore": {
+      "slug": "hbnf-watch-score",
+      "version": 10,
+      "sha256": "d59fe423f07232cd3b5e1af7716aebd854de63c470b3816dce3beed5d78e4073"
+    },
+    "cinematicDispatcher": {
+      "slug": "hbnf-cinematic-dispatcher",
+      "version": 29,
+      "sha256": "32a0237d13c7eba76689868e3a55557d176207c484a38aa31460330378a3c43b"
+    },
+    "matrixUi": {
+      "slug": "hbnf-matrix-ui",
+      "version": 10,
+      "sha256": "e5976f77d23707a9a07202fca7b43d80bb63438210fc8c75743e7dcb99019e96"
+    },
+    "releaseDoctor": {
+      "slug": "hbnf-release-doctor",
+      "version": 4,
+      "sha256": "e0f87230aff8ecc260608b682779b001f2e5401562de90da06a544517471659a"
+    },
+    "auxControl": {
+      "slug": "hbnf-aux-control",
+      "version": 1,
+      "sha256": "c77472c66bb2cf246952e077b4a7b6fee7e86ab6f33960e68622c151481432c9"
+    },
+    "cartOrchestrator": {
+      "slug": "hbnf-cart-orchestrator",
+      "version": 1,
+      "sha256": "9353bef7697e7bae9046f0f0eb7ef62a548701d23c8d3ed2bff2df37f69bb35d"
+    }
+  },
+  "invariants": {
+    "auxEnabled": false,
+    "mixedLoadAccepted": false,
+    "obsoleteInstallerRejected": true,
+    "matrixVisibleMutationDuringCloudQa": false
+  }
+}
