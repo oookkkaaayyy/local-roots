@@ -53,10 +53,10 @@ function validateMutationAnchor(w:any,p:any,body:any,action:string){
  const suppliedChoice=String(body?.choice||"");
  const current=teamSummary(w,p);
  if(suppliedChoice && current.choice!==suppliedChoice) throw new Error("That Watch selection is stale. Refresh the team list before changing a score.");
+ const expectedNext=Number(body?.expected_next_hole)||0;
+ if(expectedNext && Number(current.next_hole||0)!==expectedNext) throw new Error("That Watch score screen is stale. Refresh before changing a score.");
  const explicitHole=Number(body?.hole)||0;
  if(action==="clear"&&!explicitHole) throw new Error("Clear requires an explicit hole.");
- if((action==="score"||action==="set")&&!explicitHole&&!suppliedChoice) throw new Error("A current Watch team choice is required when scoring the next hole.");
- if(action==="undo"&&!suppliedChoice&&!explicitHole) throw new Error("A current Watch team choice or explicit hole is required for undo.");
  if(explicitHole&&(explicitHole<1||explicitHole>18)) throw new Error("Hole must be 1-18.");
  return current;
 }
@@ -78,7 +78,7 @@ async function saveWithRetry(sb:any,mutate:(root:any)=>any){
 declare const EdgeRuntime:{waitUntil(p:Promise<unknown>):void};
 
 Deno.serve(async(req)=>{
- if(req.method==="GET") return json({ok:true,service:"hbnf-watch-score",version:"wow-max-v3-safe-score",actions:["state","score","set","undo","clear"]});
+ if(req.method==="GET") return json({ok:true,service:"hbnf-watch-score",version:"wow-max-v3-compatible-score",actions:["state","score","set","undo","clear"]});
  if(req.method==="OPTIONS") return new Response(null,{status:204,headers:cors});
  if(req.method!=="POST") return json({ok:false,error:"POST required"},405);
  const body=await req.json().catch(()=>({}));
