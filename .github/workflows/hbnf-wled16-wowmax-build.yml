@@ -1,0 +1,182 @@
+name: HBNF WLED16 WOW MAX compile
+
+on:
+  push:
+    branches: [hbnf-matrix-wow-bundle-r3-20260921]
+    paths:
+      - '.hbnf-build-r3max/**'
+      - '.github/workflows/hbnf-wled16-wowmax-build.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Decode proven source bundle and apply WOW MAX engine
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import base64,hashlib,pathlib,tarfile
+          raw=base64.b64decode(pathlib.Path('.hbnf-build-r1/bundle.b64').read_bytes())
+          assert hashlib.sha256(raw).hexdigest()=='a22fd4d01be8f67f40eec4019cdfb602cd3144e582b27985d5134485c709a9cb'
+          tgz=pathlib.Path('/tmp/r1.tgz');tgz.write_bytes(raw);pathlib.Path('/tmp/hbnf-r1').mkdir(exist_ok=True)
+          with tarfile.open(tgz,'r:gz') as tf: tf.extractall('/tmp/hbnf-r1')
+          lib=pathlib.Path('/tmp/hbnf-r1/hbnf_flow/hbnf_flow/library.json')
+          lib.write_text(lib.read_text().replace('"version": "1.0.1"','"version": "1.0.2"'))
+          p=pathlib.Path('/tmp/hbnf-r1/firmware_patch')
+          (p/'hbnf_vibe16.h').write_bytes(pathlib.Path('.hbnf-build-r3max/hbnf_vibe16.h').read_bytes())
+          (p/'hbnf_animartrix_audio_bridge.h').write_bytes(pathlib.Path('.hbnf-build-r3max/hbnf_animartrix_audio_bridge.h').read_bytes())
+          print('vibe',hashlib.sha256((p/'hbnf_vibe16.h').read_bytes()).hexdigest())
+          print('bridge',hashlib.sha256((p/'hbnf_animartrix_audio_bridge.h').read_bytes()).hexdigest())
+          PY
+
+      - name: WOW MAX host gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_vibe.cpp -o /tmp/wowmax-vibe
+          /tmp/wowmax-vibe | tee /tmp/wowmax-vibe.log
+          g++ -std=c++17 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_bridge.cpp -o /tmp/wowmax-bridge
+          /tmp/wowmax-bridge | tee /tmp/wowmax-bridge.log
+
+      - name: Fetch exact WLED 16.0.1 base
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/wled/WLED.git /tmp/wled
+          cd /tmp/wled
+          git checkout 29b389df1c1aaec6ff53aea742d17063b985906c
+          test "$(git rev-parse HEAD)" = "29b389df1c1aaec6ff53aea742d17063b985906c"
+
+      - name: Install pinned dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install -r /tmp/wled/requirements.txt
+
+      - name: Apply normalized WOW MAX
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/wled
+          cp /tmp/hbnf-r1/firmware_patch/platformio_override.ini platformio_override.ini
+          mkdir -p usermods/hbnf_flow
+          cp -R /tmp/hbnf-r1/hbnf_flow/hbnf_flow/. usermods/hbnf_flow/
+          python /tmp/hbnf-r1/firmware_patch/apply_hbnf_animartrix_patch.py /tmp/wled --patch-dir /tmp/hbnf-r1/firmware_patch
+          python - <<'PY'
+          import pathlib
+          p=pathlib.Path('usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp')
+          s=p.read_text()
+          assert '#include <ANIMartRIX.h>' in s
+          s=s.replace('#include <ANIMartRIX.h>','#define ANIMartRIX_NO_SERPENTINE\n#include <ANIMartRIX.h>',1)
+          old='if (SEGENV.call == 0) {'
+          assert old in s
+          s=s.replace(old,'if ((SEGENV.call == 0) || (SEGMENT.virtualWidth() != num_x) || (SEGMENT.virtualHeight() != num_y)) {',1)
+          old='hbnfAudio.apply(speedFactor, millis())'
+          assert old in s
+          s=s.replace(old,'hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, SEGMENT.custom1, SEGMENT.custom2, SEGMENT.virtualWidth(), SEGMENT.virtualHeight())',1)
+          old='''\tvoid setPixelColor(int x, int y, rgb pixel) {
+          \tSEGMENT.setPixelColorXY(x, y, CRGB(pixel.red, pixel.green, pixel.blue));
+          \t}
+          \tvoid setPixelColor(int index, rgb pixel) {
+          \tSEGMENT.setPixelColor(index, CRGB(pixel.red, pixel.green, pixel.blue));
+            \t}'''
+          new='''\tvoid setPixelColor(int x, int y, rgb pixel) {
+          \t\tuint8_t r=pixel.red,g=pixel.green,b=pixel.blue;
+          \t\thbnfAudio.modulate(x,y,r,g,b);
+          \t\tif (SEGMENT.check2) { r=gamma8(r); g=gamma8(g); b=gamma8(b); }
+          \t\tSEGMENT.setPixelColorXY(x, y, CRGB(r,g,b));
+          \t}
+          \tvoid setPixelColor(int index, rgb pixel) {
+          \t\tuint8_t r=pixel.red,g=pixel.green,b=pixel.blue;
+          \t\tconst int w=SEGMENT.virtualWidth();
+          \t\tconst int x=w?(index%w):0, y=w?(index/w):0;
+          \t\thbnfAudio.modulate(x,y,r,g,b);
+          \t\tif (SEGMENT.check2) { r=gamma8(r); g=gamma8(g); b=gamma8(b); }
+          \t\tSEGMENT.setPixelColor(index, CRGB(r,g,b));
+            \t}'''
+          assert old in s
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+          grep -q 'ANIMartRIX_NO_SERPENTINE' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'SEGMENT.virtualWidth() != num_x' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'hbnfAudio.beginFrame' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'hbnfAudio.modulate' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'PROFILE_IMPACT' usermods/usermod_v2_animartrix/hbnf_vibe16.h
+          grep -q 'STYLE_HYBRID' usermods/usermod_v2_animartrix/hbnf_animartrix_audio_bridge.h
+          grep -q 'dropRefractory_' usermods/usermod_v2_animartrix/hbnf_vibe16.h
+          ! grep -q '#define fmodf' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          git diff --check
+          git diff > /tmp/normalized-wowmax-source.patch
+
+      - name: Compile WOW MAX
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/wled
+          pio run -e hbnf_matrix_wled16_max 2>&1 | tee /tmp/build-first.log
+          mkdir -p /tmp/artifacts
+          cp .pio/build/hbnf_matrix_wled16_max/firmware.bin /tmp/artifacts/HBNF_WLED16_MAX_WOWMAX.bin
+          cp .pio/build/hbnf_matrix_wled16_max/firmware.elf /tmp/artifacts/HBNF_WLED16_MAX_WOWMAX.elf
+          pio run -e hbnf_matrix_wled16_max -t size 2>&1 | tee /tmp/size-first.log
+
+      - name: Reproducibility gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/wled
+          cp /tmp/artifacts/HBNF_WLED16_MAX_WOWMAX.bin /tmp/first.bin
+          pio run -e hbnf_matrix_wled16_max -t clean
+          pio run -e hbnf_matrix_wled16_max 2>&1 | tee /tmp/build-second.log
+          cmp /tmp/first.bin .pio/build/hbnf_matrix_wled16_max/firmware.bin
+
+      - name: Final metrics
+        shell: bash
+        run: |
+          set -euo pipefail
+          BIN=/tmp/artifacts/HBNF_WLED16_MAX_WOWMAX.bin
+          BYTES=$(wc -c < "$BIN"); SLOT=$((0x180000)); HEADROOM=$((SLOT-BYTES)); test "$BYTES" -le "$SLOT"
+          SHA=$(sha256sum "$BIN" | awk '{print $1}')
+          VIBE=$(sha256sum .hbnf-build-r3max/hbnf_vibe16.h | awk '{print $1}')
+          BRIDGE=$(sha256sum .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h | awk '{print $1}')
+          cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-wowmax-source.patch /tmp/wowmax-vibe.log /tmp/wowmax-bridge.log /tmp/artifacts/
+          cp .hbnf-build-r3max/hbnf_vibe16.h .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h /tmp/artifacts/
+          {
+            echo wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
+            echo release=hbnf-wow-r3-max-2026-09-21-v2
+            echo firmware_sha256=$SHA
+            echo firmware_bytes=$BYTES
+            echo ota_slot_bytes=$SLOT
+            echo ota_headroom_bytes=$HEADROOM
+            echo r3max_vibe_sha256=$VIBE
+            echo r3max_bridge_sha256=$BRIDGE
+            echo SECOND_CLEAN_BUILD_BYTE_IDENTICAL=PASS
+            echo OTA_SLOT_GATE=PASS
+            echo AUDIO_PATH=existing_WLED_AudioReactive_16bin_no_second_fft
+            echo MUSIC_FEATURES=band_profiles_energy_build_impact_drop
+            echo RENDER_FEATURES=punch_ring_spark_chroma_hybrid
+            echo MM_SAFE_FEATURES=no_serpentine_dimension_reinit_optional_gamma
+            echo MM_UNSAFE_FMOD_APPROX=NOT_INCLUDED
+          } > /tmp/artifacts/FINAL_METRICS.txt
+          sha256sum "$BIN" > /tmp/artifacts/firmware-sha256.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HBNF-WLED16-WOW-MAX
+          path: /tmp/artifacts
+          if-no-files-found: error
+          retention-days: 14
