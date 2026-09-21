@@ -110,9 +110,9 @@ Full PWA production identity:
 New full-PWA source authority:
 - Build marker: `hbnf-build-9.21.26-wow-max-v3-full`
 - Canonical branch path: `hbnf-wow-bundle/web/`
-- Exact tested source bundle ZIP SHA256: `90b29bc0c6a51515c552431c580b6753c0811b2503387b86faedeb18d513c017`
-- Source bundle is preserved as five verified Base64 parts under `hbnf-wow-bundle/web/source-bundle/`, with reconstruction instructions and content-addressed readback evidence.
-- Local JavaScript syntax PASS and full-PWA regression 25/25 PASS.
+- Exact tested source bundle ZIP SHA256: `ad32a0e6e24c130c9b4ed831b2b4d1af9c009472fcdf57e74f8ff884eaf9bdcc`
+- Source bundle is preserved as six verified Base64 parts under `hbnf-wow-bundle/web/source-bundle/`; Base64 SHA256 `2399ce9c06377c10afdabe256365fe6ebc7013a2519ea565fe7af61b2586bd70`, with reconstruction instructions and content-addressed verification.
+- Local JavaScript syntax PASS and full-PWA regression 30/30 PASS, including mobile navigation/open-state/active-section checks.
 - PWA manifest id/start_url remain `/matrix.html`, so the existing iPhone Home Screen installation is expected to update in place; reinstall/re-add is not the normal upgrade path.
 
 WOW v3 full-PWA hardening includes:
@@ -128,11 +128,21 @@ WOW v3 full-PWA hardening includes:
 - read-only release-doctor health check
 - current cache-busting and no Matrix-specific service-worker registration
 
+## Mobile console ergonomics — 2026-09-21
+- Phone-width UI is now explicitly host-first and one-hand optimized while preserving the full console.
+- Fixed bottom navigation: HOST / TEXT / SHOWS / LOOKS / TUNE / MORE.
+- HOST immediate show-family choices are COURSE / FIELD MIX / SHOWCASE; lower-frequency legacy families remain under SHOWS.
+- Engine/audio diagnostics are collapsed by default on phone widths.
+- Bottom-nav taps open collapsed SHOWS / LOOKS / TUNE / MORE sections automatically and active-section highlighting follows scroll position.
+- Primary action touch targets remain approximately 44–46 px or larger; full Fine Tune, System/Recovery, semantic events, brightness, Watch-compatible controls, and feature-gated cart controls remain available.
+- Existing backend actions, R2 fallback behavior, WOW runtime detection, safety limits, and PWA identity are unchanged.
+- Mobile pass marker: `hbnf-mobile-ui-pass-2`.
+
 Publication state:
 - NOT YET DEPLOYED to production Cloudflare from this chat.
 - No Cloudflare connector, Wrangler session, Cloudflare credentials, or authenticated `hbnf-static-worker` project is available in this runtime.
 - Existing authenticated deployment authority remains the user's Mac-side `hbnf-static-worker` project.
-- `hbnf-wow-bundle/web/DEPLOY_HBNF_MATRIX_FULL_PWA.command` is now the canonical one-file publication path. It embeds the exact verified Base64 source stream, verifies Base64 SHA256 `739cec5fecdb5290b4853c292f94b4700ba9c5f8ef2bff72a37c584001eca880`, reconstructs and verifies source ZIP SHA256 `90b29bc0c6a51515c552431c580b6753c0811b2503387b86faedeb18d513c017`, reruns JavaScript syntax + 25/25 full-PWA regression tests, then invokes the guarded Wrangler deployer with pre-deploy backup, dry-run, production parity verification, and automatic prior-web rollback on failure. Launcher Git blob SHA: `78e632d163cec48cb1d5cb9982ef0742e527200b`; launcher-introduction commit: `9549a22d8337086de7222c096e322183a45de031`.
+- `hbnf-wow-bundle/web/DEPLOY_HBNF_MATRIX_FULL_PWA.command` is the canonical one-click package entry point. It delegates to `DEPLOY_FULL_PWA.command`, which reconstructs and verifies Base64 SHA256 `2399ce9c06377c10afdabe256365fe6ebc7013a2519ea565fe7af61b2586bd70` / source ZIP SHA256 `ad32a0e6e24c130c9b4ed831b2b4d1af9c009472fcdf57e74f8ff884eaf9bdcc`, reruns JavaScript syntax + 30/30 full-PWA regression tests, then invokes the guarded Wrangler deployer with pre-deploy backup, dry-run, production parity verification, and automatic prior-web rollback on failure.
 - This web deployment path does not flash firmware, change presets, or issue a Matrix-visible command.
 
 CI:

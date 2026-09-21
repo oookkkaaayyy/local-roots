@@ -25,5 +25,11 @@ ok('high brightness hold retained',()=>{assert(js.includes('1200'));assert(js.in
 ok('night safe retained',()=>{assert(html.includes('RESTORE NIGHT SAFE'));assert(js.includes("'night_safe'"))});
 ok('semantic endpoint only',()=>{assert(js.includes('functions/v1/hbnf-matrix-control'));assert(!/mqtt:\/\//.test(js))});
 ok('hardware-critical config not exposed',()=>{for(const x of ['id="gpio','id="currentLimiter','HBNF_MQTT','wled1234'])assert(!html.includes(x)&&!js.includes(x),x)});
+
+ok('mobile one-hand nav',()=>{for(const x of ['class="mobileNav"','href="#host">HOST<','href="#message">TEXT<','href="#shows">SHOWS<','href="#looks">LOOKS<','href="#tune">TUNE<','href="#system">MORE<'])assert(html.includes(x),x)});
+ok('mobile host core families',()=>{assert(js.includes('SHOWS.slice(0,3).map'));for(const x of ["['r2','COURSE'","['field','FIELD MIX'","['showcase','SHOWCASE'"])assert(js.includes(x),x)});
+ok('mobile diagnostics collapsed',()=>{assert(html.includes('class="runtimePeek"'));assert(html.includes('LIVE ENGINE / AUDIO'));assert(html.includes('hbnf-mobile-ui-pass-2'))});
+ok('mobile nav opens collapsed sections',()=>{assert(js.includes('function openMobileTarget'));assert(js.includes("if(el.tagName==='DETAILS')el.open=true"));assert(js.includes("scrollIntoView({behavior:'smooth',block:'start'})"))});
+ok('mobile nav tracks active section',()=>{assert(js.includes('function setMobileNavActive'));assert(js.includes("setAttribute('aria-current','page')"));assert(js.includes("addEventListener('scroll'"));assert(html.includes('class="active" aria-current="page" href="#host"'))});
 ok('confirmed mode button truth retained',()=>{assert(js.includes("classList.toggle('primary',liveActive)"));assert(js.includes("classList.toggle('primary',pureActive)"));assert(js.includes('aria-pressed'))});
 if(process.exitCode)process.exit(process.exitCode);console.log('RESULT '+n+'/'+n+' passed');

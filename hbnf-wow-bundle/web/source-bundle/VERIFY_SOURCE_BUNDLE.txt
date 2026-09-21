@@ -1,23 +1,26 @@
-HBNF Matrix WOW MAX v3 full-PWA exact source bundle
+HBNF Matrix WOW MAX v3 full-PWA exact source bundle — mobile pass 2
 
 Expected ZIP:
 HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.zip
-SHA-256: 90b29bc0c6a51515c552431c580b6753c0811b2503387b86faedeb18d513c017
-Bytes: 18997
-Base64 characters: 25332
-Parts: 5
+SHA-256: ad32a0e6e24c130c9b4ed831b2b4d1af9c009472fcdf57e74f8ff884eaf9bdcc
+Bytes: 20316
+Base64 SHA-256: 2399ce9c06377c10afdabe256365fe6ebc7013a2519ea565fe7af61b2586bd70
+Base64 characters: 27088
+Parts: 6
+Regression: 30/30 PASS
 
-GitHub blob verification:
-part01 5200 bytes 75eced8f1dabee7deb0891ee9c5cff5341703606
-part02 5200 bytes 941c34dd2b03a1edc74b5d2ee77edf0d6c55b7ee
-part03 5200 bytes 3413f39379944985fb7bd873054230d4fa0eb8ec
-part04 5200 bytes 94bf8fd52d4e912e341e8eea8c98946b524c38f1
-part05 4532 bytes b0b24f40122f5187afe99672668764195587d8ff
+Git blob verification:
+part01 5200 bytes aba20eed3d67cf885baef95dea50c2188113aa4a
+part02 5200 bytes 061a71df2049e567ab416ad2fda94fc5af1fb815
+part03 5200 bytes 9a3b720c5b45b43619233ae960221340000c815c
+part04 5200 bytes f93cdb3df264200f81a5273730d0e9f1905c575d
+part05 5200 bytes 063d93a5537e960bdd19adac05daa848d532b37c
+part06 1088 bytes 6df83fdb639e17eba0c14f0ec285619d9f338c47
 
-Each GitHub blob SHA exactly matches git hash-object of the corresponding local source chunk from the tested ZIP.
-
-Reconstruct on macOS/Linux:
-cat HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.b64.part01 HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.b64.part02 HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.b64.part03 HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.b64.part04 HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.b64.part05 | base64 --decode > HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.zip
-
-Then verify:
-shasum -a 256 HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.zip
+Exact asset SHA-256:
+matrix.html a8ab12b0043532903b844716ea23a92354e6b336113f50d9386c611cc68a3897
+matrix-control.js 6e3fa4dc46438945a0eeb9a07df765da5bf0f6513d214d267b6ac0e3718d6ff9
+matrix-manifest.webmanifest af4f8321ec8a64d8d2b40eb16514aaa04c2caade2de748e095bd088de55dd971
+MATRIX_UI_TEST.js 76148a3347671fd926d6e2864cf174c9c55e990f6a4da043e2859ffa27b114ef
+WEB_DEPLOY.command 771bcbe02472133e6ff22bdba905b1ce5c4c82b5ad5181930e0b4fbad9ddf5e5
+README.md acd0e7c585f170380f1b6b45b8a04daaa38f8cedb19ba591453865d0a1230a93

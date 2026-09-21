@@ -24,8 +24,10 @@ jobs:
         run: |
           set -euo pipefail
           PARTS="hbnf-wow-bundle/web/source-bundle/HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.b64.part*"
-          cat $PARTS | tr -d '\n' | base64 --decode > /tmp/HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.zip
-          echo "90b29bc0c6a51515c552431c580b6753c0811b2503387b86faedeb18d513c017  /tmp/HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.zip" | sha256sum -c -
+          cat $PARTS > /tmp/HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.b64
+          echo "2399ce9c06377c10afdabe256365fe6ebc7013a2519ea565fe7af61b2586bd70  /tmp/HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.b64" | sha256sum -c -
+          tr -d '\n' < /tmp/HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.b64 | base64 --decode > /tmp/HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.zip
+          echo "ad32a0e6e24c130c9b4ed831b2b4d1af9c009472fcdf57e74f8ff884eaf9bdcc  /tmp/HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.zip" | sha256sum -c -
           unzip -q /tmp/HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.zip -d /tmp/hbnf-pwa
           test -d /tmp/hbnf-pwa/HBNF_MATRIX_WOW_FULL_PWA_V3
 
@@ -35,12 +37,12 @@ jobs:
         run: |
           set -euo pipefail
           cat <<'EOF' | sha256sum -c -
-          d65265a0f524da985f2a09ea868747345a9e4f2d356c48eedff18821c7723fd9  matrix.html
-          4fe75d0ceeae6ae1710af4989c4fd0641ccb8d9396b23261312900d490291761  matrix-control.js
+          a8ab12b0043532903b844716ea23a92354e6b336113f50d9386c611cc68a3897  matrix.html
+          6e3fa4dc46438945a0eeb9a07df765da5bf0f6513d214d267b6ac0e3718d6ff9  matrix-control.js
           af4f8321ec8a64d8d2b40eb16514aaa04c2caade2de748e095bd088de55dd971  matrix-manifest.webmanifest
-          eb068a9fa8fdeee8902b35fdf9290d3b151ac0ca69256f40aeda06eba91032ca  MATRIX_UI_TEST.js
+          76148a3347671fd926d6e2864cf174c9c55e990f6a4da043e2859ffa27b114ef  MATRIX_UI_TEST.js
           771bcbe02472133e6ff22bdba905b1ce5c4c82b5ad5181930e0b4fbad9ddf5e5  WEB_DEPLOY.command
-          dc9285590e7e87d3fe980e583426ad356bd7f23a5f51d9b1492f295ec4421b94  README.md
+          acd0e7c585f170380f1b6b45b8a04daaa38f8cedb19ba591453865d0a1230a93  README.md
           EOF
 
       - name: JavaScript syntax
@@ -53,6 +55,14 @@ jobs:
         working-directory: /tmp/hbnf-pwa/HBNF_MATRIX_WOW_FULL_PWA_V3
         run: node MATRIX_UI_TEST.js matrix.html matrix-control.js matrix-manifest.webmanifest
 
+      - name: Validate deployment launchers
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n hbnf-wow-bundle/web/DEPLOY_HBNF_MATRIX_FULL_PWA.command
+          bash -n hbnf-wow-bundle/web/DEPLOY_FULL_PWA.command
+          bash -n hbnf-wow-bundle/web/WEB_DEPLOY.command
+
       - name: Build one-click Mac web-deploy package
         shell: bash
         run: |
@@ -61,13 +71,9 @@ jobs:
           rm -rf "$PKG"
           mkdir -p "$PKG"
           cp -R hbnf-wow-bundle/web/. "$PKG/"
-          cp "$PKG/DEPLOY_FULL_PWA.command" "$PKG/DEPLOY_HBNF_MATRIX_FULL_PWA.command"
           chmod +x "$PKG/DEPLOY_HBNF_MATRIX_FULL_PWA.command" "$PKG/DEPLOY_FULL_PWA.command" "$PKG/WEB_DEPLOY.command"
-          bash -n "$PKG/DEPLOY_HBNF_MATRIX_FULL_PWA.command"
-          bash -n "$PKG/DEPLOY_FULL_PWA.command"
-          bash -n "$PKG/WEB_DEPLOY.command"
           printf '%s\n' \
-            'HBNF Matrix WOW MAX v3 full-PWA web-only deploy package.' \
+            'HBNF Matrix WOW MAX v3 mobile-first full-PWA web-only deploy package.' \
             'Double-click DEPLOY_HBNF_MATRIX_FULL_PWA.command on the authenticated HBNF Mac.' \
             'This updates web assets only; it does not flash, reboot, or command the Matrix.' \
             > "$PKG/START-HERE.txt"
