@@ -71,6 +71,16 @@ jobs:
           cd /tmp/wled
           git checkout 29b389df1c1aaec6ff53aea742d17063b985906c
           test "$(git rev-parse HEAD)" = "29b389df1c1aaec6ff53aea742d17063b985906c"
+          python - <<'PY'
+          import pathlib
+          p=pathlib.Path('tools/cdata.js')
+          s=p.read_text()
+          old='function generateBuildTime() {\n  return Math.floor(Date.now() / 1000);\n}'
+          new='function generateBuildTime() {\n  const reproducible = Number(process.env.SOURCE_DATE_EPOCH || 0);\n  return reproducible > 0 ? reproducible : Math.floor(Date.now() / 1000);\n}'
+          assert old in s
+          p.write_text(s.replace(old,new,1))
+          PY
+          grep -q 'SOURCE_DATE_EPOCH' tools/cdata.js
 
       - name: Install pinned dependencies
         shell: bash
@@ -147,6 +157,8 @@ jobs:
 
       - name: Compile WOW MAX
         shell: bash
+        env:
+          SOURCE_DATE_EPOCH: '1789948800'
         run: |
           set -euo pipefail
           cd /tmp/wled
@@ -158,6 +170,8 @@ jobs:
 
       - name: Reproducibility gate
         shell: bash
+        env:
+          SOURCE_DATE_EPOCH: '1789948800'
         run: |
           set -euo pipefail
           cd /tmp/wled
@@ -199,6 +213,8 @@ jobs:
             echo FIRMWARE_RELEASE_TELEMETRY=PASS
             echo AUDIO_INPUTLEVEL_RUNTIME_TELEMETRY=PASS
             echo ASAN_UBSAN_FUZZ_GATE=PASS
+            echo SOURCE_DATE_EPOCH=1789948800
+            echo WEB_BUILD_TIME_REPRODUCIBLE=PASS
           } > /tmp/artifacts/FINAL_METRICS.txt
           sha256sum "$BIN" > /tmp/artifacts/firmware-sha256.txt
 
