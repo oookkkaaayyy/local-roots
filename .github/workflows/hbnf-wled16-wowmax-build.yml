@@ -46,10 +46,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          g++ -std=c++17 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_vibe.cpp -o /tmp/wowmax-vibe
+          g++ -std=c++11 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_vibe.cpp -o /tmp/wowmax-vibe
           /tmp/wowmax-vibe | tee /tmp/wowmax-vibe.log
-          g++ -std=c++17 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_bridge.cpp -o /tmp/wowmax-bridge
+          g++ -std=c++11 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_bridge.cpp -o /tmp/wowmax-bridge
           /tmp/wowmax-bridge | tee /tmp/wowmax-bridge.log
+          g++ -std=c++11 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_soak.cpp -o /tmp/wowmax-soak
+          /tmp/wowmax-soak | tee /tmp/wowmax-soak.log
 
       - name: Fetch exact WLED 16.0.1 base
         shell: bash
@@ -149,7 +151,7 @@ jobs:
           SHA=$(sha256sum "$BIN" | awk '{print $1}')
           VIBE=$(sha256sum .hbnf-build-r3max/hbnf_vibe16.h | awk '{print $1}')
           BRIDGE=$(sha256sum .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h | awk '{print $1}')
-          cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-wowmax-source.patch /tmp/wowmax-vibe.log /tmp/wowmax-bridge.log /tmp/artifacts/
+          cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-wowmax-source.patch /tmp/wowmax-vibe.log /tmp/wowmax-bridge.log /tmp/wowmax-soak.log /tmp/artifacts/
           cp .hbnf-build-r3max/hbnf_vibe16.h .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h /tmp/artifacts/
           {
             echo wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
@@ -166,7 +168,7 @@ jobs:
             echo MUSIC_FEATURES=band_profiles_energy_build_impact_drop
             echo RENDER_FEATURES=punch_ring_spark_chroma_hybrid
             echo MM_SAFE_FEATURES=no_serpentine_dimension_reinit_optional_gamma
-            echo MM_UNSAFE_FMOD_APPROX=NOT_INCLUDED
+            echo MM_UNSAFE_FMOD_APPROX=NOT_INCLUDED\n            echo SIX_HOUR_DETERMINISTIC_SOAK=PASS
           } > /tmp/artifacts/FINAL_METRICS.txt
           sha256sum "$BIN" > /tmp/artifacts/firmware-sha256.txt
 
