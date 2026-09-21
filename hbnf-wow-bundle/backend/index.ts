@@ -263,7 +263,7 @@ if(action==="r2_repair_playlist60"){
  return json(req,{ok:false,error:"Deprecated: playlist60 is now release-managed from the atomic R2/R3 filesystem bundle; remote preset saves are intentionally disabled.",control,action},409);
 }
 if(action==="release_preflight"){
- const rt=await mqttRoundTrip(undefined,null,2200),t=rt?.telemetry??{},deviceOnline=String(t?.status??"").toLowerCase()==="online"||!!t?.rawXml;
+ const rt=await mqttRoundTrip(undefined,null,2200),t=rt?.telemetry??{},statusText=String(t?.status??"").toLowerCase(),deviceOnline=statusText==="online"||(!statusText&&!!t?.rawXml);
  const currentRevision=String(control?.library_revision??"");
  const revisionRecognized=[R2_COURSE_LIBRARY_REVISION,R3_WOW_LIBRARY_REVISION].includes(currentRevision);
  return json(req,{ok:true,action,mutationIssued:false,targetRelease:R3_WOW_LIBRARY_REVISION,targetSceneCount:R3_WOW_SCENES.length,supportedRevisions:[R2_COURSE_LIBRARY_REVISION,R3_WOW_LIBRARY_REVISION],currentRevision,revisionRecognized,canAdoptR3:true,deviceOnline,broker:MQTT_HOST,control,telemetryReadOnly:{status:t?.status??null,brightness:t?.brightness??null,playlistActive:t?.playlistActive??null,preset:t?.preset??null,intensity:t?.intensity??null,pixels:t?.flow?.pixels??null,matrixOk:t?.flow?.matrixOk??null}});
