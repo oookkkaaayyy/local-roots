@@ -26,7 +26,7 @@ Deno.serve(async(req)=>{
  try{
   if(action==="status"){
    const r=await matrix("status");
-   return json({ok:true,online:r?.online===true,mode:r?.control?.auto_live?"LIVE":"PURE",show:r?.control?.show_family||null,preset:r?.telemetry?.preset??null,playlistActive:r?.telemetry?.playlistActive??null,brightness:r?.telemetry?.brightness??null,engine:r?.renderEngine||null,wow:r?.r3Wow||null,actions:["status","live","pure","next","scoreboard","ace_pot","ace","nice_shot","ctp","skins","text","blackout","brightness"]});
+   return json({ok:true,online:r?.online===true,mode:r?.control?.auto_live?"LIVE":"PURE",show:r?.control?.show_family||null,preset:r?.telemetry?.preset??null,playlistActive:r?.telemetry?.playlistActive??null,brightness:r?.telemetry?.brightness??null,engine:r?.renderEngine||null,wow:r?.r3Wow||null,actions:["status","live","pure","next","scoreboard","ace_pot","ace","nice_shot","nice_putt","ctp","skins","glow","text","blackout","brightness"]});
   }
   if(action==="r2"||action==="pure") return json(await matrix("play_show",{family:"r2",live:false}));
   if(action==="live") return json(await matrix("play_show",{family:"r2",live:true}));
@@ -35,6 +35,8 @@ Deno.serve(async(req)=>{
   if(action==="ace_pot"||action==="acepot") return json(await matrix("ace_pot"));
   if(action==="ace") return json(await matrix("quick_event",{event:"ace"}));
   if(action==="nice_shot"||action==="niceshot") return json(await matrix("quick_event",{event:"nice_shot"}));
+  if(action==="nice_putt"||action==="niceputt") return json(await matrix("quick_event",{event:"nice_putt"}));
+  if(action==="glow") return json(await matrix("quick_event",{event:"glow"}));
   if(action==="ctp") return json(await matrix("quick_event",{event:"ctp"}));
   if(action==="skins"||action==="skin") return json(await matrix("quick_event",{event:"skins"}));
   if(action==="text"){
