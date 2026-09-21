@@ -27,7 +27,7 @@ async function auxMeta(){try{const r=await fetch(AUX_URL,{signal:AbortSignal.tim
 
 
 Deno.serve(async(req)=>{
- if(req.method==="GET") return json({ok:true,service:"hbnf-watch-control",version:"wow-max-v3-aux-ready",actions:["status","live","pure","next","scoreboard","ace_pot","ace","nice_shot","nice_putt","ctp","skins","glow","text","blackout","brightness","aux_status","uv_full","uv_main","uv_short","uv_off","cart_music","cart_skins_live","cart_glow_live","cart_all_off"]});
+ if(req.method==="GET") return json({ok:true,service:"hbnf-watch-control",version:"wow-max-v3-audio-aux-ready",actions:["status","live","pure","next","scoreboard","ace_pot","ace","nice_shot","nice_putt","ctp","skins","glow","text","blackout","brightness","aux_status","uv_full","uv_main","uv_short","uv_off","cart_music","cart_skins_live","cart_glow_live","cart_all_off"]});
  if(req.method==="OPTIONS") return new Response(null,{status:204,headers:cors});
  if(req.method!=="POST") return json({ok:false,error:"POST required"},405);
  const body=await req.json().catch(()=>({}));
@@ -37,7 +37,7 @@ Deno.serve(async(req)=>{
  try{
   if(action==="status"){
    const [r,a]=await Promise.all([matrix("status"),auxMeta()]);
-   return json({ok:true,online:r?.online===true,mode:r?.control?.auto_live?"LIVE":"PURE",show:r?.control?.show_family||null,preset:r?.telemetry?.preset??null,playlistActive:r?.telemetry?.playlistActive??null,brightness:r?.telemetry?.brightness??null,engine:r?.renderEngine||null,wow:r?.r3Wow||null,auxPrepared:a?.ok===true,auxEnabled:a?.enabled===true,actions:["status","live","pure","next","scoreboard","ace_pot","ace","nice_shot","nice_putt","ctp","skins","glow","text","blackout","brightness","aux_status","uv_full","uv_main","uv_short","uv_off","cart_music","cart_skins_live","cart_glow_live","cart_all_off"]});
+   return json({ok:true,online:r?.online===true,mode:r?.control?.auto_live?"LIVE":"PURE",show:r?.control?.show_family||null,preset:r?.telemetry?.preset??null,playlistActive:r?.telemetry?.playlistActive??null,brightness:r?.telemetry?.brightness??null,engine:r?.renderEngine||null,wow:r?.r3Wow||null,audio:r?.r3Wow?.diagnosticsTrusted===true?r?.r3Wow?.diagnostics:null,auxPrepared:a?.ok===true,auxEnabled:a?.enabled===true,actions:["status","live","pure","next","scoreboard","ace_pot","ace","nice_shot","nice_putt","ctp","skins","glow","text","blackout","brightness","aux_status","uv_full","uv_main","uv_short","uv_off","cart_music","cart_skins_live","cart_glow_live","cart_all_off"]});
   }
   if(action==="r2"||action==="pure") return json(await matrix("play_show",{family:"r2",live:false}));
   if(action==="live") return json(await matrix("play_show",{family:"r2",live:true}));
