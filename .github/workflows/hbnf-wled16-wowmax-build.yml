@@ -116,9 +116,23 @@ jobs:
           pat=r'\tvoid setPixelColor\(int x, int y, rgb pixel\) \{.*?\n\s*\}\n\s*void setPixelColor\(int index, rgb pixel\) \{.*?\n\s*\}'
           s,n=re.subn(pat,new,s,count=1,flags=re.S)
           assert n==1, "setPixelColor method pair not found exactly once"
+          marker='    void addToJsonInfo(JsonObject& root)'
+          assert marker in s
+          telemetry='    void addToJsonState(JsonObject& root) override {\n      JsonObject wow = root[\"HBNFWOW\"];\n      if (wow.isNull()) wow = root.createNestedObject(\"HBNFWOW\");\n      wow[\"release\"] = \"hbnf-wow-r3-max-2026-09-21-v3\";\n      wow[\"engine\"] = \"r3-wow-max\";\n    }\n\n'
+          s=s.replace(marker,telemetry+marker,1)
           p.write_text(s)
+
+          ar=pathlib.Path('usermods/audioreactive/audio_reactive.cpp')
+          a=ar.read_text()
+          old='      usermod[\"on\"] = enabled;'
+          assert old in a
+          a=a.replace(old,old+'\n#ifdef ARDUINO_ARCH_ESP32\n      usermod[FPSTR(_inputLvl)] = inputLevel;\n#endif',1)
+          ar.write_text(a)
           PY
           grep -q 'ANIMartRIX_NO_SERPENTINE' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'HBNFWOW' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'hbnf-wow-r3-max-2026-09-21-v3' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'usermod\[FPSTR(_inputLvl)\] = inputLevel' usermods/audioreactive/audio_reactive.cpp
           grep -q 'SEGMENT.virtualWidth() != num_x' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'hbnfAudio.beginFrame' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'hbnfAudio.modulate' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
@@ -164,7 +178,7 @@ jobs:
           cp .hbnf-build-r3max/hbnf_vibe16.h .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h /tmp/artifacts/
           {
             echo wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
-            echo release=hbnf-wow-r3-max-2026-09-21-v2
+            echo release=hbnf-wow-r3-max-2026-09-21-v3
             echo firmware_sha256=$SHA
             echo firmware_bytes=$BYTES
             echo ota_slot_bytes=$SLOT
@@ -178,7 +192,10 @@ jobs:
             echo RENDER_FEATURES=punch_ring_spark_chroma_hybrid
             echo MM_SAFE_FEATURES=no_serpentine_dimension_reinit_optional_gamma
             echo MM_UNSAFE_FMOD_APPROX=NOT_INCLUDED
-            echo SIX_HOUR_DETERMINISTIC_SOAK=PASS\n            echo RANDOMIZED_BRIDGE_FUZZ_350K=PASS
+            echo SIX_HOUR_DETERMINISTIC_SOAK=PASS
+            echo RANDOMIZED_BRIDGE_FUZZ_350K=PASS
+            echo FIRMWARE_RELEASE_TELEMETRY=PASS
+            echo AUDIO_INPUTLEVEL_RUNTIME_TELEMETRY=PASS
           } > /tmp/artifacts/FINAL_METRICS.txt
           sha256sum "$BIN" > /tmp/artifacts/firmware-sha256.txt
 
