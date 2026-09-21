@@ -9,8 +9,8 @@
     },
     "watchControl": {
       "slug": "hbnf-watch-control",
-      "version": 12,
-      "sha256": "48a3362919407f44b134bd268afc80f2fc0342d8caa25411c2ee1023f99bba68"
+      "version": 13,
+      "sha256": "3f8b60162db4f005eb24d85efaf777e9c1ee247d6d964d5012469d746b8326e6"
     },
     "watchScore": {
       "slug": "hbnf-watch-score",
