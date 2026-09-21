@@ -31,7 +31,7 @@ Verified build gates:
 - second clean build byte-identical PASS
 - host profile/render tests PASS
 - six-hour deterministic music/render soak PASS
-- package preflight/mock-installer/UI tests PASS
+- package preflight/mock-installer/UI tests PASS\n- transaction-safe invisible staging restore + automatic R2 recovery path PASS
 - ZIP integrity + Drive re-fetch SHA verification PASS
 
 Production compatibility already staged:
@@ -44,8 +44,8 @@ These remain backward-compatible with the current R2 controller state. False WOW
 Final package:
 - Drive ID: 1TgXwOVb2jCId7mUxspaJYkL95Wm_FYq_
 - File: HBNF_WOW_MAX_BUNDLE_2026-09-21.zip
-- ZIP SHA256: 6143f52150346c8f98a52ec94dc2b5f4471c4669fecbd2ee9e0eaf2c84d2ecc0
-- Size: 2,053,610 bytes
+- ZIP SHA256: 281377f0b0e65b811f7b0bf5bb217535d502cfe7bc6abf8c072b63459aa10000
+- Size: 2,054,753 bytes
 
 DO NOT INSTALL the older R3 v1 package (Drive ID 1LeFSGbiJPGiBUtiTlQQTGqQvU_EeDZZy).
 
