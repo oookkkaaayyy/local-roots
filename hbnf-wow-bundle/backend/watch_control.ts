@@ -6,8 +6,9 @@ const PROJECT="phcpbvuqibyarpfrftgx";
 const MATRIX_URL="https://"+PROJECT+".supabase.co/functions/v1/hbnf-matrix-control";
 const AUX_URL="https://"+PROJECT+".supabase.co/functions/v1/hbnf-aux-control";
 const CART_URL="https://"+PROJECT+".supabase.co/functions/v1/hbnf-cart-orchestrator";
-const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"content-type,x-hbnf-watch-token","Access-Control-Allow-Methods":"POST,OPTIONS","Content-Type":"application/json"};
+const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"content-type,x-hbnf-watch-token","Access-Control-Allow-Methods":"GET,POST,OPTIONS","Content-Type":"application/json"};
 const json=(x:any,s=200)=>new Response(JSON.stringify(x),{status:s,headers:cors});
+const ACTIONS=["status","live","pure","next","scoreboard","ace_pot","ace","nice_shot","nice_putt","ctp","skins","glow","text","blackout","brightness","aux_status","uv_full","uv_main","uv_short","uv_off","cart_music","cart_skins_live","cart_glow_live","cart_showcase","cart_all_off"];
 const sha=async(s:string)=>Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s)))).map(b=>b.toString(16).padStart(2,"0")).join("");
 
 async function matrix(action:string,payload:any={}){
@@ -27,7 +28,7 @@ async function auxMeta(){try{const r=await fetch(AUX_URL,{signal:AbortSignal.tim
 
 
 Deno.serve(async(req)=>{
- if(req.method==="GET") return json({ok:true,service:"hbnf-watch-control",version:"wow-max-v3-audio-aux-ready",actions:["status","live","pure","next","scoreboard","ace_pot","ace","nice_shot","nice_putt","ctp","skins","glow","text","blackout","brightness","aux_status","uv_full","uv_main","uv_short","uv_off","cart_music","cart_skins_live","cart_glow_live","cart_all_off"]});
+ if(req.method==="GET") return json({ok:true,service:"hbnf-watch-control",version:"wow-max-v3-audio-aux-ready",actions:ACTIONS});
  if(req.method==="OPTIONS") return new Response(null,{status:204,headers:cors});
  if(req.method!=="POST") return json({ok:false,error:"POST required"},405);
  const body=await req.json().catch(()=>({}));
@@ -37,7 +38,7 @@ Deno.serve(async(req)=>{
  try{
   if(action==="status"){
    const [r,a]=await Promise.all([matrix("status"),auxMeta()]);
-   return json({ok:true,online:r?.online===true,mode:r?.control?.auto_live?"LIVE":"PURE",show:r?.control?.show_family||null,preset:r?.telemetry?.preset??null,playlistActive:r?.telemetry?.playlistActive??null,brightness:r?.telemetry?.brightness??null,engine:r?.renderEngine||null,wow:r?.r3Wow||null,wowRuntime:r?.wowRuntime||null,audio:r?.wowRuntime||null,auxPrepared:a?.ok===true,auxEnabled:a?.enabled===true,actions:["status","live","pure","next","scoreboard","ace_pot","ace","nice_shot","nice_putt","ctp","skins","glow","text","blackout","brightness","aux_status","uv_full","uv_main","uv_short","uv_off","cart_music","cart_skins_live","cart_glow_live","cart_all_off"]});
+   return json({ok:true,online:r?.online===true,mode:r?.control?.auto_live?"LIVE":"PURE",show:r?.control?.show_family||null,preset:r?.telemetry?.preset??null,playlistActive:r?.telemetry?.playlistActive??null,brightness:r?.telemetry?.brightness??null,engine:r?.renderEngine||null,wow:r?.r3Wow||null,wowRuntime:r?.wowRuntime||null,audio:r?.wowRuntime||null,auxPrepared:a?.ok===true,auxEnabled:a?.enabled===true,actions:ACTIONS});
   }
   if(action==="r2"||action==="pure") return json(await matrix("play_show",{family:"r2",live:false}));
   if(action==="live") return json(await matrix("play_show",{family:"r2",live:true}));
@@ -64,6 +65,7 @@ Deno.serve(async(req)=>{
   if(action==="cart_music") return json(await service(CART_URL,{scene:"music"}));
   if(action==="cart_skins_live") return json(await service(CART_URL,{scene:"skins_live"}));
   if(action==="cart_glow_live") return json(await service(CART_URL,{scene:"glow_live"}));
+  if(action==="cart_showcase") return json(await service(CART_URL,{scene:"showcase"}));
   if(action==="cart_all_off") return json(await service(CART_URL,{scene:"all_off"}));
   if(action==="blackout") return json(await matrix("blackout"));
   if(action==="brightness"){
