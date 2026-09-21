@@ -111,6 +111,10 @@ jobs:
           old='hbnfAudio.apply(speedFactor, millis())'
           assert old in s
           s=s.replace(old,'hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, SEGMENT.custom1, SEGMENT.custom2, SEGMENT.virtualWidth(), SEGMENT.virtualHeight())',1)
+          public_anchor='\tpublic:\n\tvoid initEffect() {'
+          assert public_anchor in s
+          accessors='\tpublic:\n\tbool hbnfActive() const { return hbnfAudio.active(); }\n\tuint8_t hbnfProfile() const { return (uint8_t)hbnfAudio.profile(); }\n\tuint8_t hbnfStyle() const { return (uint8_t)hbnfAudio.style(); }\n\tuint8_t hbnfAmount() const { return hbnfAudio.amount(); }\n\tuint8_t hbnfBass() const { return hbnfAudio.bassPulse(); }\n\tuint8_t hbnfMid() const { return hbnfAudio.midPulse(); }\n\tuint8_t hbnfTreble() const { return hbnfAudio.treblePulse(); }\n\tuint8_t hbnfPulse() const { return hbnfAudio.pulse(); }\n\tuint8_t hbnfEnergy() const { return hbnfAudio.energy(); }\n\tuint8_t hbnfImpact() const { return hbnfAudio.impact(); }\n\tuint8_t hbnfDrop() const { return hbnfAudio.drop(); }\n\tvoid initEffect() {'
+          s=s.replace(public_anchor,accessors,1)
           import re
           new='''\tvoid setPixelColor(int x, int y, rgb pixel) {
           \t\tuint8_t r=pixel.red,g=pixel.green,b=pixel.blue;
@@ -132,6 +136,19 @@ jobs:
           marker='    void addToJsonInfo(JsonObject& root)'
           assert marker in s
           telemetry='    void addToJsonState(JsonObject& root) override {\n      JsonObject wow = root[\"HBNFWOW\"];\n      if (wow.isNull()) wow = root.createNestedObject(\"HBNFWOW\");\n      wow[\"release\"] = \"hbnf-wow-r3-max-2026-09-21-v3\";\n      wow[\"engine\"] = \"r3-wow-max\";\n    }\n\n'
+          telemetry=telemetry.replace('      wow["engine"] = "r3-wow-max";\n',
+            '      wow["engine"] = "r3-wow-max";\n'
+            '      wow["audioActive"] = anim.hbnfActive();\n'
+            '      wow["profile"] = anim.hbnfProfile();\n'
+            '      wow["style"] = anim.hbnfStyle();\n'
+            '      wow["amount"] = anim.hbnfAmount();\n'
+            '      wow["bass"] = anim.hbnfBass();\n'
+            '      wow["mid"] = anim.hbnfMid();\n'
+            '      wow["treble"] = anim.hbnfTreble();\n'
+            '      wow["pulse"] = anim.hbnfPulse();\n'
+            '      wow["energy"] = anim.hbnfEnergy();\n'
+            '      wow["impact"] = anim.hbnfImpact();\n'
+            '      wow["drop"] = anim.hbnfDrop();\n')
           s=s.replace(marker,telemetry+marker,1)
           p.write_text(s)
 
@@ -145,6 +162,9 @@ jobs:
           grep -q 'ANIMartRIX_NO_SERPENTINE' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'HBNFWOW' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'hbnf-wow-r3-max-2026-09-21-v3' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'hbnfEnergy() const' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'wow\["audioActive"\]' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'wow\["drop"\]' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'usermod\[FPSTR(_inputLvl)\] = inputLevel' usermods/audioreactive/audio_reactive.cpp
           grep -q 'SEGMENT.virtualWidth() != num_x' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'hbnfAudio.beginFrame' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
@@ -213,6 +233,7 @@ jobs:
             echo RANDOMIZED_BRIDGE_FUZZ_350K=PASS
             echo FIRMWARE_RELEASE_TELEMETRY=PASS
             echo AUDIO_INPUTLEVEL_RUNTIME_TELEMETRY=PASS
+            echo WOW_AUDIO_DIAGNOSTIC_TELEMETRY=PASS
             echo ASAN_UBSAN_FUZZ_GATE=PASS
             echo SOURCE_DATE_EPOCH=1789948800
             echo WEB_BUILD_TIME_REPRODUCIBLE=PASS
