@@ -59,7 +59,8 @@ Superseded package:
 - Older R3 v1 Drive ID 1LeFSGbiJPGiBUtiTlQQTGqQvU_EeDZZy
 - MUST NOT be installed.
 
-## Transaction safety\n- Full package SHA256SUMS is verified before any controller mutation.
+## Transaction safety
+- Full package SHA256SUMS is verified before any controller mutation.
 - Rollback pointer is written before any controller mutation.
 - Pre-flash staging failure restores exact pre-install presets + prior boot defaults without flashing.
 - Post-flash validation/adoption failure automatically restores exact pre-install presets/boot defaults and reflashes exact proven R2 when the controller remains reachable.
