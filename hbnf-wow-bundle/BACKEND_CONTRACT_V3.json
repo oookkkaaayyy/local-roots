@@ -29,8 +29,8 @@
     },
     "releaseDoctor": {
       "slug": "hbnf-release-doctor",
-      "version": 6,
-      "sha256": "6519993a19359aea139b5c238de381cb6b3d189605910c12215c08b5eee76558"
+      "version": 7,
+      "sha256": "362100358cd63cfa8ff576d316612e2123a7ccc2cae2ebba05e13a268a89302a"
     },
     "auxControl": {
       "slug": "hbnf-aux-control",
@@ -51,6 +51,7 @@
     "watchActionListCentralized": true,
     "cartGlobalOffAvailableWithAuxDisabled": true,
     "fallbackSelectorHealthGated": true,
-    "auxCommissioningSelfTest": true
+    "auxCommissioningSelfTest": true,
+    "fullPwaGate": true
   }
 }
