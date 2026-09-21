@@ -1,4 +1,5 @@
 name: HBNF WLED16 WOW MAX compile
+# Cross-run reproducibility witness: workflow-only comment; firmware inputs unchanged.
 
 on:
   push:
