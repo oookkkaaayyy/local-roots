@@ -1,0 +1,131 @@
+name: HBNF WLED16 WOW R3 compile
+on:
+  push:
+    branches: [hbnf-matrix-wow-bundle-r3-20260921]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '20'}
+      - name: Decode proven R1 source bundle and apply R3 engine
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import base64,hashlib,pathlib,tarfile
+          raw=base64.b64decode(pathlib.Path('.hbnf-build-r1/bundle.b64').read_bytes())
+          assert hashlib.sha256(raw).hexdigest()=='a22fd4d01be8f67f40eec4019cdfb602cd3144e582b27985d5134485c709a9cb'
+          tgz=pathlib.Path('/tmp/r1.tgz');tgz.write_bytes(raw);pathlib.Path('/tmp/hbnf-r1').mkdir(exist_ok=True)
+          with tarfile.open(tgz,'r:gz') as tf:tf.extractall('/tmp/hbnf-r1')
+          lib=pathlib.Path('/tmp/hbnf-r1/hbnf_flow/hbnf_flow/library.json')
+          s=lib.read_text().replace('"version": "1.0.1"','"version": "1.0.2"');lib.write_text(s)
+          p=pathlib.Path('/tmp/hbnf-r1/firmware_patch')
+          (p/'hbnf_vibe16.h').write_bytes(pathlib.Path('.hbnf-build-r3/hbnf_vibe16.h').read_bytes())
+          (p/'hbnf_animartrix_audio_bridge.h').write_bytes(pathlib.Path('.hbnf-build-r3/hbnf_animartrix_audio_bridge.h').read_bytes())
+          print('vibe',hashlib.sha256((p/'hbnf_vibe16.h').read_bytes()).hexdigest())
+          print('bridge',hashlib.sha256((p/'hbnf_animartrix_audio_bridge.h').read_bytes()).hexdigest())
+          PY
+      - name: R3 host gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -I.hbnf-build-r3 .hbnf-build-r3/test_vibe.cpp -o /tmp/r3-vibe
+          /tmp/r3-vibe | tee /tmp/r3-vibe.log
+          g++ -std=c++17 -O2 -I.hbnf-build-r3 .hbnf-build-r3/test_bridge.cpp -o /tmp/r3-bridge
+          /tmp/r3-bridge | tee /tmp/r3-bridge.log
+      - name: Fetch exact WLED 16.0.1 base
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/wled/WLED.git /tmp/wled
+          cd /tmp/wled && git checkout 29b389df1c1aaec6ff53aea742d17063b985906c
+          test "$(git rev-parse HEAD)" = "29b389df1c1aaec6ff53aea742d17063b985906c"
+      - name: Install pinned dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install -r /tmp/wled/requirements.txt
+      - name: Apply normalized R3
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/wled
+          cp /tmp/hbnf-r1/firmware_patch/platformio_override.ini platformio_override.ini
+          mkdir -p usermods/hbnf_flow
+          cp -R /tmp/hbnf-r1/hbnf_flow/hbnf_flow/. usermods/hbnf_flow/
+          python /tmp/hbnf-r1/firmware_patch/apply_hbnf_animartrix_patch.py /tmp/wled --patch-dir /tmp/hbnf-r1/firmware_patch
+          python - <<'PY'
+          import pathlib
+          p=pathlib.Path('usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp')
+          s=p.read_text()
+          old='hbnfAudio.apply(speedFactor, millis())'
+          assert old in s
+          s=s.replace(old,'hbnfAudio.apply(speedFactor, millis(), SEGMENT.intensity)')
+          p.write_text(s)
+          PY
+          grep -q 'hbnfAudio.apply(speedFactor, millis(), SEGMENT.intensity)' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'profileFromIntensity' usermods/usermod_v2_animartrix/hbnf_vibe16.h
+          grep -q 'PROFILE_IMPACT' usermods/usermod_v2_animartrix/hbnf_vibe16.h
+          grep -q 'USERMOD_ID_AUDIOREACTIVE' usermods/usermod_v2_animartrix/hbnf_animartrix_audio_bridge.h
+          grep -q '"version": "1.0.2"' usermods/hbnf_flow/library.json
+          git diff --check
+          git diff > /tmp/normalized-r3-source.patch
+      - name: Compile R3
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/wled
+          pio run -e hbnf_matrix_wled16_max 2>&1 | tee /tmp/build-first.log
+          mkdir -p /tmp/artifacts
+          cp .pio/build/hbnf_matrix_wled16_max/firmware.bin /tmp/artifacts/HBNF_WLED16_MAX_R3_WOW.bin
+          cp .pio/build/hbnf_matrix_wled16_max/firmware.elf /tmp/artifacts/HBNF_WLED16_MAX_R3_WOW.elf
+          pio run -e hbnf_matrix_wled16_max -t size 2>&1 | tee /tmp/size-first.log
+      - name: Reproducibility gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/wled
+          cp .pio/build/hbnf_matrix_wled16_max/firmware.bin /tmp/first.bin
+          pio run -e hbnf_matrix_wled16_max -t clean
+          pio run -e hbnf_matrix_wled16_max 2>&1 | tee /tmp/build-second.log
+          cmp /tmp/first.bin .pio/build/hbnf_matrix_wled16_max/firmware.bin
+      - name: Final metrics
+        shell: bash
+        run: |
+          set -euo pipefail
+          BIN=/tmp/artifacts/HBNF_WLED16_MAX_R3_WOW.bin
+          BYTES=$(wc -c < "$BIN"); SLOT=$((0x180000)); HEADROOM=$((SLOT-BYTES)); test "$BYTES" -le "$SLOT"
+          SHA=$(sha256sum "$BIN" | awk '{print $1}')
+          VIBE=$(sha256sum .hbnf-build-r3/hbnf_vibe16.h | awk '{print $1}')
+          BRIDGE=$(sha256sum .hbnf-build-r3/hbnf_animartrix_audio_bridge.h | awk '{print $1}')
+          cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-r3-source.patch /tmp/r3-vibe.log /tmp/r3-bridge.log /tmp/artifacts/
+          cp .hbnf-build-r3/hbnf_vibe16.h .hbnf-build-r3/hbnf_animartrix_audio_bridge.h /tmp/artifacts/
+          {
+            echo wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
+            echo release=hbnf-wow-r3-2026-09-21-v1
+            echo firmware_sha256=$SHA
+            echo firmware_bytes=$BYTES
+            echo ota_slot_bytes=$SLOT
+            echo ota_headroom_bytes=$HEADROOM
+            echo r3_vibe_sha256=$VIBE
+            echo r3_bridge_sha256=$BRIDGE
+            echo SECOND_CLEAN_BUILD_BYTE_IDENTICAL=PASS
+            echo OTA_SLOT_GATE=PASS
+            echo AUDIO_PATH=existing_WLED_AudioReactive_16bin_no_second_fft
+            echo PROFILE_SELECTOR=SEGMENT.intensity
+          } > /tmp/artifacts/FINAL_METRICS.txt
+          sha256sum "$BIN" > /tmp/artifacts/firmware-sha256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HBNF-WLED16-WOW-R3
+          path: /tmp/artifacts
+          if-no-files-found: error
+          retention-days: 14
