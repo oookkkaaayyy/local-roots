@@ -226,8 +226,25 @@ async function installLibrary(sb:any,flow=false){
  return{control,verify,installed:visualIds.length+playlistIds.length,preserved:{brightness:wasOff?0:installB,wasOff,family,playlist:show.playlist,mode:before?.mode,auto_live:before?.auto_live}};
 }
 Deno.serve(async(req:Request)=>{if(req.method==="OPTIONS")return new Response(null,{status:204,headers:cors(req)});if(req.method!=="POST")return json(req,{ok:false,error:"POST required"},405);try{const body=await req.json().catch(()=>({})),action=cleanText(body?.action,40).toLowerCase();let sb:any;try{sb=await getSb();}catch(e){return json(req,{ok:false,error:"Supabase client initialization failed",diagnostic:"The application could not initialize its bounded Supabase REST client.",service:"supabase-client",serverTime:new Date().toISOString()},503);}let control:any=null;
-if(action==="status"){try{control=await getControlState(sb);}catch(e){return json(req,{ok:false,error:"control-state database read timed out or failed",diagnostic:"Supabase REST read for hbnf_matrix_control_state did not complete within the bounded application timeout.",service:"supabase-rest",serverTime:new Date().toISOString()},503);}const rt=await mqttRoundTrip(undefined,null,3000),lwt=String(rt.telemetry?.status??"").toLowerCase(),online=lwt==="online"||(lwt===""&&!!rt.telemetry?.rawXml),flow=flowReady(rt.telemetry),expected=expectedLibraryRevision(rt.telemetry);return json(req,{...rt,control,online,onlineSignal:lwt?`lwt_${lwt}`:(online?"telemetry":"none"),freshVerified:false,broker:MQTT_HOST,flowReady:flow,renderEngine:flow?"local-flow":"legacy",setupRequired:setupRequired(control,rt.telemetry),expectedLibraryRevision:expected,nightSafeMax:NIGHT_MAX,serverTime:new Date().toISOString()});}
+if(action==="status"){try{control=await getControlState(sb);}catch(e){return json(req,{ok:false,error:"control-state database read timed out or failed",diagnostic:"Supabase REST read for hbnf_matrix_control_state did not complete within the bounded application timeout.",service:"supabase-rest",serverTime:new Date().toISOString()},503);}const rt=await mqttRoundTrip(undefined,null,3000),lwt=String(rt.telemetry?.status??"").toLowerCase(),online=lwt==="online"||(lwt===""&&!!rt.telemetry?.rawXml),flow=flowReady(rt.telemetry),r2=control?.library_revision===R2_COURSE_LIBRARY_REVISION,expected=r2?R2_COURSE_LIBRARY_REVISION:expectedLibraryRevision(rt.telemetry);return json(req,{...rt,control,online,onlineSignal:lwt?`lwt_${lwt}`:(online?"telemetry":"none"),freshVerified:false,broker:MQTT_HOST,flowReady:flow,renderEngine:r2?"r2-animartrix-vibe":(flow?"local-flow":"legacy"),setupRequired:setupRequired(control,rt.telemetry),expectedLibraryRevision:expected,nightSafeMax:NIGHT_MAX,serverTime:new Date().toISOString()});}
 try{control=await getControlState(sb);}catch(e){return json(req,{ok:false,error:"control-state database read timed out or failed",diagnostic:"Supabase REST read for hbnf_matrix_control_state did not complete within the bounded application timeout.",service:"supabase-rest",serverTime:new Date().toISOString()},503);}
+if(action==="r2_persist_audio255"){
+ const before=await mqttRoundTrip(undefined,null,2200),t=before?.telemetry??{},online=String(t?.status??"").toLowerCase()==="online"||!!t?.rawXml,f=t?.flow??{};
+ const deviceSafe=online&&Number(f?.pixels)===512&&f?.matrixOk===true&&String(f?.version??"")==="1.0.2";
+ if(!deviceSafe)return json(req,{ok:false,error:"R2 audio-default persist refused: controller identity/health preflight failed.",deviceSafe,telemetry:t,action},409);
+ const payload={on:true,o:true,n:"R2 COURSE",ql:"R2",bri:8,psave:R2_COURSE_PLAYLIST,playlist:{ps:R2_COURSE_SCENES,dur:[220,200,240,210,230,190,220,200],transition:[12,12,12,12,12,12,12,12],repeat:0},"AudioReactive":{"inputLevel":255},"HBNFFlow":{"enabled":false}};
+ await mqttPublish(payload,2,100);
+ return json(req,{ok:true,published:true,persistedPreset:R2_COURSE_PLAYLIST,inputLevel:255,control,action});
+}
+if(action==="r2_repair_playlist60"){
+ const before=await mqttRoundTrip(undefined,null,2200),t=before?.telemetry??{},online=String(t?.status??"").toLowerCase()==="online"||!!t?.rawXml;
+ const f=t?.flow??{},deviceSafe=online&&Number(f?.pixels)===512&&f?.matrixOk===true&&String(f?.version??"")==="1.0.2";
+ if(!deviceSafe)return json(req,{ok:false,error:"R2 remote playlist repair refused: controller identity/health preflight failed.",deviceSafe,telemetry:t,action},409);
+ const payload={on:true,o:true,n:"R2 COURSE",ql:"R2",bri:8,psave:R2_COURSE_PLAYLIST,playlist:{ps:R2_COURSE_SCENES,dur:[220,200,240,210,230,190,220,200],transition:[12,12,12,12,12,12,12,12],repeat:0},"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL},"HBNFFlow":{"enabled":false}};
+ const rt=await mqttRoundTripRetry(payload,{playlistActive:1,presetIn:R2_COURSE_SCENES,brightness:8},5200,4);
+ if(!rt.confirmed)return json(req,{...rt,ok:false,error:"R2 playlist60 repair/start was not freshly confirmed. Backend ownership was NOT changed.",control,action},503);
+ return json(req,{...rt,ok:true,confirmed:true,repairedPlaylist:R2_COURSE_PLAYLIST,sceneIds:R2_COURSE_SCENES,control,action});
+}
 if(action==="r2_adopt"){
  const rt=await mqttRoundTrip(undefined,null,3000),t=rt?.telemetry??{},online=String(t?.status??"").toLowerCase()==="online"||!!t?.rawXml;
  const preset=Number(t?.preset),playlistActive=Number(t?.playlistActive),brightness=Number(t?.brightness);
@@ -445,7 +462,7 @@ if(action==="brightness"){
  if(!rt.confirmed){const failSafe=await forceSafeDark(sb,"brightness_unconfirmed");control=failSafe.control??control;return json(req,{...rt,ok:false,error:"Brightness change was not freshly confirmed; fail-safe dark was issued.",failSafe,control,action,requested:{brightness:bri,advanced},restoredShow},503);}
  return json(req,{...rt,ok:true,control,action,requested:{brightness:bri,advanced},restoredShow});
 }
-if(action==="audio_profile"){const name=cleanText(body?.profile,20).toLowerCase(),profiles:any={quiet:255,course:220,loud:170};if(!(name in profiles))return json(req,{ok:false,error:"Unknown audio profile."},400);const level=profiles[name];await mqttPublish({"AudioReactive":{"inputLevel":level}},2,100);return json(req,{ok:true,control,action,profile:name,inputLevel:level,published:true});}
+if(action==="audio_profile"){const name=cleanText(body?.profile,20).toLowerCase(),profiles:any={quiet:255,course:255,loud:170};if(!(name in profiles))return json(req,{ok:false,error:"Unknown audio profile."},400);const level=profiles[name];await mqttPublish({"AudioReactive":{"inputLevel":level}},2,100);return json(req,{ok:true,control,action,profile:name,inputLevel:level,published:true});}
 if(action==="audio_sensitivity"){const level=clamp(body?.level,64,255,AUDIO_INPUT_LEVEL);await mqttPublish({"AudioReactive":{"inputLevel":level}},2,100);return json(req,{ok:true,control,action,requested:{inputLevel:level},published:true});}
 if(action==="preset"){
  if(control?.mode==="off")return json(req,{ok:false,error:"Matrix is OFF. Start an HBNF show before selecting a look.",control,action},409);
