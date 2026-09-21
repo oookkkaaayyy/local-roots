@@ -96,7 +96,7 @@ jobs:
         run: |
           set -euo pipefail
           cd /tmp/wled
-          cp .pio/build/hbnf_matrix_wled16_max/firmware.bin /tmp/first.bin
+          cp /tmp/artifacts/HBNF_WLED16_MAX_R3_WOW.bin /tmp/first.bin
           pio run -e hbnf_matrix_wled16_max -t clean
           pio run -e hbnf_matrix_wled16_max 2>&1 | tee /tmp/build-second.log
           cmp /tmp/first.bin .pio/build/hbnf_matrix_wled16_max/firmware.bin
