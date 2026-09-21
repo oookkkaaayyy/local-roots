@@ -28,8 +28,8 @@ Deno.serve(async(req)=>{
   get("hbnf-watch-score"),
   get("hbnf-cinematic-dispatcher"),
   get("hbnf-matrix-ui"),
-  get("hbnf-aux-control-staging"),
-  get("hbnf-cart-orchestrator-staging")
+  get("hbnf-aux-control"),
+  get("hbnf-cart-orchestrator")
  ]);
 
  const checks:any={
@@ -40,8 +40,8 @@ Deno.serve(async(req)=>{
   watchScore:watchScore.ok&&watchScore.json?.service==="hbnf-watch-score"&&watchScore.json?.version===EXPECTED.watchScoreVersion&&hasAll(watchScore.json?.actions,["state","score","set","undo","clear"]),
   cinematicDispatcher:dispatcher.ok&&dispatcher.json?.service==="hbnf-cinematic-dispatcher"&&dispatcher.json?.version===EXPECTED.dispatcherVersion&&Array.isArray(dispatcher.json?.revisions)&&dispatcher.json.revisions.includes(EXPECTED.release),
   fallbackUi:ui.ok&&ui.text.includes(EXPECTED.matrixUiMarker),
-  auxStaging:aux.ok&&aux.json?.service==="hbnf-aux-control-staging"&&aux.json?.enabled===false&&aux.json?.policy?.mixedLoadAccepted===false,
-  cartStaging:cart.ok&&cart.json?.service==="hbnf-cart-orchestrator-staging"&&cart.json?.auxEnabled===false&&cart.json?.mixedLoadAccepted===false
+  auxStaging:aux.ok&&aux.json?.service==="hbnf-aux-control"&&aux.json?.enabled===false&&aux.json?.policy?.mixedLoadAccepted===false,
+  cartStaging:cart.ok&&cart.json?.service==="hbnf-cart-orchestrator"&&cart.json?.auxEnabled===false&&cart.json?.mixedLoadAccepted===false
  };
  const cloudReady=Object.values(checks).every(Boolean);
  const blockers=Array.isArray(pre.json?.blockers)?pre.json.blockers:[];
