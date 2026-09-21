@@ -44,6 +44,22 @@ export function getWowEvent(kind:string){
  return null;
 }
 export function wowEventSelfTest(){
- const names=["ace","ctp","nice_shot","nice_putt","skins","glow"];for(const n of names){const e=getWowEvent(n);if(!e||e.frames.length<4)throw new Error("missing "+n);for(const f of e.frames){if(f.length!==512)throw new Error(n+" frame length");for(const p of f)if(!/^[0-9A-F]{6}$/.test(p))throw new Error(n+" pixel");}}
- return{ok:true,events:names,frames:names.map(n=>getWowEvent(n)!.frames.length)};
+ const names=["ace","ctp","nice_shot","nice_putt","skins","glow"],stats:any[]=[];let maxFramePayloadBytes=0;
+ for(const n of names){
+  const e=getWowEvent(n);if(!e||e.frames.length<4)throw new Error("missing "+n);
+  const fingerprints=new Set<string>();let minLit=512,maxLit=0;
+  for(const f of e.frames){
+   if(f.length!==512)throw new Error(n+" frame length");
+   for(const p of f)if(!/^[0-9A-F]{6}$/.test(p))throw new Error(n+" pixel");
+   const lit=f.reduce((a,p)=>a+(p!==BLACK?1:0),0);if(lit<5)throw new Error(n+" frame too sparse");
+   minLit=Math.min(minLit,lit);maxLit=Math.max(maxLit,lit);
+   const fingerprint=f.join("");fingerprints.add(fingerprint);
+   const bytes=new TextEncoder().encode(JSON.stringify({seg:{id:3,i:[0,...f]}})).length;
+   maxFramePayloadBytes=Math.max(maxFramePayloadBytes,bytes);
+   if(bytes>=12000)throw new Error(n+" frame payload unexpectedly large");
+  }
+  if(fingerprints.size!==e.frames.length)throw new Error(n+" duplicate animation frame");
+  stats.push({event:n,frames:e.frames.length,minLit,maxLit});
+ }
+ return{ok:true,events:names,frames:names.map(n=>getWowEvent(n)!.frames.length),maxFramePayloadBytes,stats};
 }
