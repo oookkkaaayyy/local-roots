@@ -286,7 +286,7 @@ if(action==="r3_adopt"){
  if(String(body?.release??"")!==R3_WOW_LIBRARY_REVISION)return json(req,{ok:false,error:"WOW release mismatch or obsolete installer. Adoption refused.",requiredRelease:R3_WOW_LIBRARY_REVISION,providedRelease:body?.release??null,action},409);
  const rt=await mqttRoundTrip(undefined,null,3400),t=rt?.telemetry??{},online=String(t?.status??"").toLowerCase()==="online";
  const preset=Number(t?.preset),playlistActive=Number(t?.playlistActive),brightness=Number(t?.brightness);
- const intensity=Number(t?.intensity),deviceReady=online&&playlistActive===1&&R3_WOW_SCENES.includes(preset)&&R3_WOW_PROFILE_IX[preset]===intensity&&Number.isFinite(brightness)&&brightness>=1&&brightness<=NIGHT_MAX;
+ const intensity=Number(t?.intensity),wow=t?.wow??null,wowRelease=String(wow?.release??""),wowEngine=String(wow?.engine??""),deviceReady=online&&wowRelease===R3_WOW_LIBRARY_REVISION&&wowEngine==="r3-wow-max"&&playlistActive===1&&R3_WOW_SCENES.includes(preset)&&R3_WOW_PROFILE_IX[preset]===intensity&&Number.isFinite(brightness)&&brightness>=1&&brightness<=NIGHT_MAX;
  if(!deviceReady)return json(req,{ok:false,error:"Controller is not presently running the verified WOW R3 playlist state; adoption refused.",deviceReady,telemetry:t,action},409);
  control=await setControlState(sb,{mode:bool(body?.live,false)?"event":"showcase",auto_live:bool(body?.live,false),resume_preset:R2_COURSE_PLAYLIST,show_family:"r2",show_preset:R2_COURSE_PLAYLIST,library_revision:R3_WOW_LIBRARY_REVISION,overlay_until:null,last_auto_takeover_at:null,live_score_cursor:0,last_live_overlay_kind:"ace"});
  return json(req,{ok:true,confirmed:true,adopted:true,deviceReady,control,telemetry:t,action,renderEngine:"r3-wow-max",sceneCount:R3_WOW_SCENES.length});
