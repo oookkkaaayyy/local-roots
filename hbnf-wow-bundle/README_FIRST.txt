@@ -39,15 +39,15 @@ Verified build gates:
 Production compatibility already staged:
 - hbnf-matrix-control v132
 - hbnf-cinematic-dispatcher v27
-- hbnf-watch-control v7
-- hbnf-watch-score v7
+- hbnf-watch-control v8
+- hbnf-watch-score v8\n- adaptive fallback console v9 (hbnf-fallback-wow-max-v2)
 These remain backward-compatible with the current R2 controller state. False WOW adoption is refused until the device is actually running the verified WOW scene state.
 
 Final package:
 - Drive ID: 1TgXwOVb2jCId7mUxspaJYkL95Wm_FYq_
 - File: HBNF_WOW_MAX_BUNDLE_2026-09-21_FINAL.zip
-- ZIP SHA256: 9bbd119de98ec1e74abb38870c470c9b4b840a58cd66199e55b8aded76f0ad54
-- Size: 2,055,211 bytes
+- ZIP SHA256: 3ac3a63d627205e7f21443fa2456c8183e50ec9b76847ccaf4c697a5d4cfc2b4
+- Size: 2,088,177 bytes
 
 DO NOT INSTALL the older R3 v1 package (Drive ID 1LeFSGbiJPGiBUtiTlQQTGqQvU_EeDZZy).
 
