@@ -279,6 +279,7 @@ if(action==="release_preflight"){
  return json(req,{ok:true,ready,blockers,action,mutationIssued:false,targetRelease:R3_WOW_LIBRARY_REVISION,targetSceneCount:R3_WOW_SCENES.length,supportedRevisions:[R2_COURSE_LIBRARY_REVISION,R3_WOW_LIBRARY_REVISION],currentRevision,revisionRecognized,canAdoptR3:true,deviceOnline,broker:MQTT_HOST,control,telemetryReadOnly:{status:t?.status??null,brightness:Number.isFinite(brightness)?brightness:null,playlistActive:Number.isFinite(playlistActive)?playlistActive:null,preset:Number.isFinite(preset)?preset:null,intensity:t?.intensity??null,pixels:Number.isFinite(pixels)?pixels:null,matrixOk:t?.flow?.matrixOk??null}});
 }
 if(action==="r3_adopt"){
+ if(String(body?.release??"")!==R3_WOW_LIBRARY_REVISION)return json(req,{ok:false,error:"WOW release mismatch or obsolete installer. Adoption refused.",requiredRelease:R3_WOW_LIBRARY_REVISION,providedRelease:body?.release??null,action},409);
  const rt=await mqttRoundTrip(undefined,null,3400),t=rt?.telemetry??{},online=String(t?.status??"").toLowerCase()==="online";
  const preset=Number(t?.preset),playlistActive=Number(t?.playlistActive),brightness=Number(t?.brightness);
  const intensity=Number(t?.intensity),deviceReady=online&&playlistActive===1&&R3_WOW_SCENES.includes(preset)&&R3_WOW_PROFILE_IX[preset]===intensity&&Number.isFinite(brightness)&&brightness>=1&&brightness<=NIGHT_MAX;
