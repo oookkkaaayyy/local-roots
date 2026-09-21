@@ -178,6 +178,8 @@ jobs:
           grep -q 'hbnfEnergy() const' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'wow\["audioActive"\]' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'wow\["drop"\]' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'mqtt->publish(topic, 0, false, payload)' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'lastWowMqtt' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'PSTR("%s/wow")' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'mqtt->publish(topic, 0, true, payload)' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'usermod\[FPSTR(_inputLvl)\] = inputLevel' usermods/audioreactive/audio_reactive.cpp
@@ -249,6 +251,7 @@ jobs:
             echo FIRMWARE_RELEASE_TELEMETRY=PASS
             echo AUDIO_INPUTLEVEL_RUNTIME_TELEMETRY=PASS
             echo WOW_AUDIO_DIAGNOSTIC_TELEMETRY=PASS
+            echo WOW_MQTT_RUNTIME_TELEMETRY=PASS
             echo WOW_MQTT_DIAGNOSTIC_TELEMETRY=PASS
             echo ASAN_UBSAN_FUZZ_GATE=PASS
             echo SOURCE_DATE_EPOCH=1789948800
