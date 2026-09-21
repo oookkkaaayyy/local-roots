@@ -1,80 +1,73 @@
-# HBNF Matrix WOW MAX V2 — final candidate checkpoint
+# HBNF Matrix WOW MAX v3 — verified install package checkpoint
 
-Release: hbnf-wow-r3-max-2026-09-21-v2
-Field status: NOT INSTALLED — current Matrix remains under R2 ownership.
+Release: hbnf-wow-r3-max-2026-09-21-v3
+Field status: NOT INSTALLED — current physical Matrix remains on the proven R2 fallback.
 
-## Firmware
+## Firmware authority
+- Witness run: 35636799273
+- Witness artifact: 10656563438
+- Branch at witness: fb5df9816da754c9b90aaf93cfcdd012b42110c8
 - WLED base: 16.0.1 / 29b389df1c1aaec6ff53aea742d17063b985906c
-- WOW MAX firmware SHA256: bbc9b3b15a024d291d355cc4c3d70c153821f3874884d0946a1b7687150a248a
-- Firmware bytes: 1,356,704
-- OTA headroom: 216,160 bytes
-- Target compile: PASS
-- Second clean compile byte-identical: PASS
-- Six-hour deterministic 1,080,000-frame soak: PASS
-- Existing AudioReactive FFT only; no second FFT/audio pipeline
+- WOW MAX firmware SHA256: 4d95c66341620077d311035877a20e133714075f87d65a77da0f49e2020ed3b2
+- Firmware bytes: 1,357,904
+- OTA headroom: 214,960 bytes
+- Target compile / byte-identical rebuild / six-hour deterministic soak / randomized fuzz / ASan+UBSan / release telemetry: PASS
 
-## Visual/music engine
-- 28 ANIMartRIX scenes, presets 61–88, playlist60
-- 18 s holds / 1.2 s transitions / brightness8
+## Show contract
+- 28 ANIMartRIX scenes: presets 61–88 under playlist 60
+- 18-second holds / 1.2-second transitions / brightness 8
+- AudioReactive inputLevel 255
+- HBNFFlow disabled
 - Profiles: bass, mid, balanced, treble, full, impact
-- Derived features: band pulses, transient, energy, build, impact, drop
 - Styles: clean, punch, ring, spark, chroma, hybrid
-- Durable inputLevel255 + HBNFFlow disabled in every scene
-- Safe MoonModules-derived mapping/dimension/gamma improvements included
-- Unsafe documented fmod approximation excluded
+- Semantic overlays: ACE, CTP, NICE SHOT, NICE PUTT, SKINS, GLOW
+- Exact v3 scene release marker is committed on this branch.
 
-## Semantic overlays
-Pixel-event animations:
-- ACE
-- CTP
-- NICE SHOT
-- NICE PUTT
-- SKINS
-- GLOW
+## Production compatibility authority
+- hbnf-matrix-control v141 · SHA256 8ff8398db14b1a0a2a1f4519705023adbe0cfd9b6d2de18ad07669688d272bb7
+- hbnf-watch-control v13 · SHA256 3f8b60162db4f005eb24d85efaf777e9c1ee247d6d964d5012469d746b8326e6
+- hbnf-watch-score v10 · SHA256 d59fe423f07232cd3b5e1af7716aebd854de63c470b3816dce3beed5d78e4073
+- hbnf-cinematic-dispatcher v29 · SHA256 32a0237d13c7eba76689868e3a55557d176207c484a38aa31460330378a3c43b
+- hbnf-matrix-ui v10 · SHA256 e5976f77d23707a9a07202fca7b43d80bb63438210fc8c75743e7dcb99019e96
+- hbnf-release-doctor v4 · SHA256 e0f87230aff8ecc260608b682779b001f2e5401562de90da06a544517471659a
+- hbnf-aux-control v1 · SHA256 c77472c66bb2cf246952e077b4a7b6fee7e86ab6f33960e68622c151481432c9
+- hbnf-cart-orchestrator v1 · SHA256 9353bef7697e7bae9046f0f0eb7ef62a548701d23c8d3ed2bff2df37f69bb35d
 
-Automatic cinematic dispatcher routes ACE/compound-ACE and skin-win events to semantic pixel animations on R2/WOW revisions while retaining safe text handling for other event classes.
+Aux remains prepared but FEATURE-GATED OFF. mixedLoadAccepted=false pending physical SP803E/wiring acceptance.
 
-## Production compatibility
-- hbnf-matrix-control v132
-  SHA256 82193fbc8751dfaf8463b4008b4804eb1f759aacb1220e474b71cdd5be5b41d1
-- hbnf-cinematic-dispatcher v27
-  SHA256 98e73db93b4afab6d63aa917c3fd3a7c0e4ff4b30bdb2e4abb55d250003021dc
-- hbnf-watch-control v8
-  SHA256 777c43561d433c5c345ff3666b645c37df363e40ac61f8b96cad056e34232fb4
-- hbnf-watch-score v8
-- hbnf-matrix-ui v9 · hbnf-fallback-wow-max-v2 · SHA256 8076a0efd18792d444bd26fa1b555f846c1d83175403000fb0be3a24e5aa063c\n- Phone/PWA candidate marker: hbnf-build-9.21.26-wow-max-v2
-- Phone/PWA regression: 29/29 PASS
-- Six semantic event selftest: PASS\n- Watch control/score read-only self-tests: PASS\n- Adaptive fallback console GET/marker smoke test: PASS
-- False WOW adoption on current R2: correctly REFUSED
+## Final install artifact
+- Drive ID: 1IjphyhNefuCCPO9fEHQQlX67Sh_xxuvz
+- File: HBNF_WOW_MAX_V3_2026-09-21_FINAL.zip
+- ZIP SHA256: bd5aaadfe4c765f4a9638c372c518a0b121ddaf555444a801db894c025457e30
+- Size: 2,080,092 bytes
+- Drive upload + raw re-fetch: byte-identical PASS
+- unzip integrity: PASS
+- embedded PACKAGE_PREFLIGHT after unzip: PASS
+- 44-file internal SHA256SUMS gate: PASS
+- UI regression: 29/29 PASS
+- Runtime pointer/cache files excluded: PASS
 
-## Final atomic package
-- Drive ID: 1TgXwOVb2jCId7mUxspaJYkL95Wm_FYq_
-- File: HBNF_WOW_MAX_BUNDLE_2026-09-21_FINAL.zip
-- SHA256: 3ac3a63d627205e7f21443fa2456c8183e50ec9b76847ccaf4c697a5d4cfc2b4
-- Size: 2,088,177 bytes
-- Drive re-fetch hash: VERIFIED
-- ZIP integrity: PASS
+The package itself contains the installer source, QA tests, current backend contract snapshot, exact witness firmware, exact R2 rollback firmware, and checksum inventory.
 
-Superseded package:
-- Older R3 v1 Drive ID 1LeFSGbiJPGiBUtiTlQQTGqQvU_EeDZZy
-- MUST NOT be installed.
+## One-pass transaction safety
+- Single supported entry point: GO_LIVE_WOW_MAX.command
+- Legacy INSTALL_WOW_MAX.command and VERIFY_AFTER_COLD_BOOT.command intentionally refuse, avoiding a second workflow path.
+- Package checksums run before controller mutation.
+- Independent hbnf-release-doctor go-live preflight and Matrix-control release_preflight both run before controller mutation.
+- Process lock + caffeinate protect the one-pass run.
+- Exact controller backup and rollback pointer are written before mutation.
+- Presets 61–88 are staged file-only while unrelated presets (including 55) are preserved.
+- Staging failure restores exact pre-install presets + prior boot defaults without flashing.
+- One intended R3 OTA reboot occurs only after all pre-flash gates pass.
+- Post-flash runtime verifies exact release/engine/inputLevel255/HBNFFlow disabled/playlist60/brightness8/effect/profile/style/amount and re-proves unrelated presets unchanged before backend adoption.
+- Post-flash failure automatically restores exact presets/boot defaults and reflashes exact proven R2 when reachable.
+- GO_LIVE then guides exactly one >=5-second cold-power cycle and automatically verifies cold boot.
 
-## Transaction safety
-- Full package SHA256SUMS is verified before any controller mutation.
-- Rollback pointer is written before any controller mutation.
-- Pre-flash staging failure restores exact pre-install presets + prior boot defaults without flashing.
-- Post-flash validation/adoption failure automatically restores exact pre-install presets/boot defaults and reflashes exact proven R2 when the controller remains reachable.
-- Automatic R2 recovery path unit test: PASS
+## Remaining unavoidable physical/human gates
+1. Run GO_LIVE_WOW_MAX.command while the Matrix is powered and on the same network.
+2. Complete the one guided >=5-second cold power cycle.
+3. Complete one consolidated music/visual/event/overlay/network acceptance review.
+4. Complete real-device Apple Watch acceptance.
+5. Separately complete SP803E/aux physical wiring/current validation before enabling aux or accepting mixed loads.
 
-## Rollback
-- Exact proven R2 firmware SHA256:
-  e81adb8523cf3a875d3ce05962d538b7c6cf3f178bfeaf42833678b9c4cd5d10
-- Installer creates exact pre-install filesystem/config/state backup.
-- ROLLBACK_TO_R2.command restores pre-install presets plus exact R2 firmware and R2 backend adoption.
-
-## Remaining unavoidable gates
-1. One bundled install/OTA reboot.
-2. One true >=5-second cold boot.
-3. One consolidated visual/music/event/overlay/network review.
-
-Until those pass, WOW MAX is a final candidate, not an accepted production release.
+Until those gates pass, WOW MAX is install-ready but not an accepted production Matrix release. R2 remains the exact rollback.
