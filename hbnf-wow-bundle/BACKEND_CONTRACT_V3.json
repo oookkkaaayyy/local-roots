@@ -9,8 +9,8 @@
     },
     "watchControl": {
       "slug": "hbnf-watch-control",
-      "version": 13,
-      "sha256": "3f8b60162db4f005eb24d85efaf777e9c1ee247d6d964d5012469d746b8326e6"
+      "version": 14,
+      "sha256": "b5461ddc8d8e4f69991f1f701c140bdf8a8f04a89b43f7c10049bc13de56b3c7"
     },
     "watchScore": {
       "slug": "hbnf-watch-score",
@@ -24,29 +24,33 @@
     },
     "matrixUi": {
       "slug": "hbnf-matrix-ui",
-      "version": 10,
-      "sha256": "e5976f77d23707a9a07202fca7b43d80bb63438210fc8c75743e7dcb99019e96"
+      "version": 11,
+      "sha256": "6bf41a7cb58234787b727cf81c3b118eec937eeab8951b6b70472f7830faaa15"
     },
     "releaseDoctor": {
       "slug": "hbnf-release-doctor",
-      "version": 4,
-      "sha256": "e0f87230aff8ecc260608b682779b001f2e5401562de90da06a544517471659a"
+      "version": 6,
+      "sha256": "6519993a19359aea139b5c238de381cb6b3d189605910c12215c08b5eee76558"
     },
     "auxControl": {
       "slug": "hbnf-aux-control",
-      "version": 1,
-      "sha256": "c77472c66bb2cf246952e077b4a7b6fee7e86ab6f33960e68622c151481432c9"
+      "version": 2,
+      "sha256": "3ef69a7ddd193d31c534572c102a613b7ca6f38e757de4b5100c3eee81da753e"
     },
     "cartOrchestrator": {
       "slug": "hbnf-cart-orchestrator",
-      "version": 1,
-      "sha256": "9353bef7697e7bae9046f0f0eb7ef62a548701d23c8d3ed2bff2df37f69bb35d"
+      "version": 2,
+      "sha256": "ce868bf4bd1524a24b2887dd2e090d59264a16e27c96606ea488d72fb6926f49"
     }
   },
   "invariants": {
     "auxEnabled": false,
     "mixedLoadAccepted": false,
     "obsoleteInstallerRejected": true,
-    "matrixVisibleMutationDuringCloudQa": false
+    "matrixVisibleMutationDuringCloudQa": false,
+    "watchActionListCentralized": true,
+    "cartGlobalOffAvailableWithAuxDisabled": true,
+    "fallbackSelectorHealthGated": true,
+    "auxCommissioningSelfTest": true
   }
 }
