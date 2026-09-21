@@ -132,12 +132,20 @@ Publication state:
 - NOT YET DEPLOYED to production Cloudflare from this chat.
 - No Cloudflare connector, Wrangler session, Cloudflare credentials, or authenticated `hbnf-static-worker` project is available in this runtime.
 - Existing authenticated deployment authority remains the user's Mac-side `hbnf-static-worker` project.
-- `hbnf-wow-bundle/web/DEPLOY_FULL_PWA.command` is the prepared one-command publication path. It reconstructs and verifies the exact source bundle, reruns syntax + 25/25 tests, then invokes the guarded Wrangler deploy path with pre-deploy backup, dry-run, production parity verification, and automatic prior-web rollback on failure.
+- `hbnf-wow-bundle/web/DEPLOY_HBNF_MATRIX_FULL_PWA.command` is now the canonical one-file publication path. It embeds the exact verified Base64 source stream, verifies Base64 SHA256 `739cec5fecdb5290b4853c292f94b4700ba9c5f8ef2bff72a37c584001eca880`, reconstructs and verifies source ZIP SHA256 `90b29bc0c6a51515c552431c580b6753c0811b2503387b86faedeb18d513c017`, reruns JavaScript syntax + 25/25 full-PWA regression tests, then invokes the guarded Wrangler deployer with pre-deploy backup, dry-run, production parity verification, and automatic prior-web rollback on failure. Launcher Git blob SHA: `78e632d163cec48cb1d5cb9982ef0742e527200b`; launcher-introduction commit: `9549a22d8337086de7222c096e322183a45de031`.
 - This web deployment path does not flash firmware, change presets, or issue a Matrix-visible command.
 
 CI:
 - `.github/workflows/hbnf-matrix-full-pwa.yml` was added to reconstruct/hash-check/test the source bundle.
 - At the first bounded post-commit check, no workflow run was yet returned. Do not claim a CI witness PASS unless a later run is actually observed.
+
+
+## Current cloud gate authority — 2026-09-21
+- Live hbnf-release-doctor is v7 · SHA256 `362100358cd63cfa8ff576d316612e2123a7ccc2cae2ebba05e13a268a89302a`.
+- v7 hard-gates cloud readiness on the actual production full PWA at `https://hbnightflyers.com/matrix.html`, `/matrix-control.js`, and `/matrix-manifest.webmanifest`.
+- Required production marker: `hbnf-build-9.21.26-wow-max-v3-full`.
+- Until the authenticated Mac-side web deployment succeeds and those production assets pass the v7 gate, physical WOW MAX go-live must remain blocked.
+- This v7 cloud gate is backward-compatible with the byte-frozen final WOW MAX installer; the installer remains unchanged.
 
 Physical/install state remains unchanged:
 - Physical Matrix remains on proven R2.
