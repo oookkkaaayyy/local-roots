@@ -96,3 +96,49 @@ The verified install ZIP remains byte-frozen and unchanged. Backward-compatible 
   - now gates Watch Showcase, aux commissioning self-test, cart global-off safety, and fallback-console selector health
 
 These changes do not alter firmware, presets, Matrix ownership, or the final ZIP. The installer’s live release-doctor gate will validate the newer compatible cloud contract at go-live.
+
+
+## Full installed PWA source hardening — 2026-09-21
+The full Home Screen/Cloudflare Matrix console is now separately identified from the Supabase fallback console.
+
+Full PWA production identity:
+- URL: https://hbnightflyers.com/matrix.html
+- Last verified live build before this hardening: `hbnf-build-9.20.26-r2-course-v1`
+- Last verified Cloudflare deployment before this hardening: `5496f99a-fa5f-442b-80c3-1482c26648b6`
+- The full console remains production-R2 until the authenticated Cloudflare deploy described below succeeds.
+
+New full-PWA source authority:
+- Build marker: `hbnf-build-9.21.26-wow-max-v3-full`
+- Canonical branch path: `hbnf-wow-bundle/web/`
+- Exact tested source bundle ZIP SHA256: `90b29bc0c6a51515c552431c580b6753c0811b2503387b86faedeb18d513c017`
+- Source bundle is preserved as five verified Base64 parts under `hbnf-wow-bundle/web/source-bundle/`, with reconstruction instructions and content-addressed readback evidence.
+- Local JavaScript syntax PASS and full-PWA regression 25/25 PASS.
+- PWA manifest id/start_url remain `/matrix.html`, so the existing iPhone Home Screen installation is expected to update in place; reinstall/re-add is not the normal upgrade path.
+
+WOW v3 full-PWA hardening includes:
+- runtime-aware R2 fallback / WOW MAX engine identification
+- semantic ACE / NICE SHOT / NICE PUTT / CTP / SKINS / GLOW controls
+- WOW scenes 61–88 surfaced only after WOW runtime detection
+- WOW energy/pulse/profile/style diagnostics
+- expert FX range through 255
+- AudioReactive sensitivity default 255
+- feature-gated Cart Lighting including Showcase
+- mixed-load GLOW LIVE remains locked until physical aux acceptance
+- stale browser-side library installation removed
+- read-only release-doctor health check
+- current cache-busting and no Matrix-specific service-worker registration
+
+Publication state:
+- NOT YET DEPLOYED to production Cloudflare from this chat.
+- No Cloudflare connector, Wrangler session, Cloudflare credentials, or authenticated `hbnf-static-worker` project is available in this runtime.
+- Existing authenticated deployment authority remains the user's Mac-side `hbnf-static-worker` project.
+- `hbnf-wow-bundle/web/DEPLOY_FULL_PWA.command` is the prepared one-command publication path. It reconstructs and verifies the exact source bundle, reruns syntax + 25/25 tests, then invokes the guarded Wrangler deploy path with pre-deploy backup, dry-run, production parity verification, and automatic prior-web rollback on failure.
+- This web deployment path does not flash firmware, change presets, or issue a Matrix-visible command.
+
+CI:
+- `.github/workflows/hbnf-matrix-full-pwa.yml` was added to reconstruct/hash-check/test the source bundle.
+- At the first bounded post-commit check, no workflow run was yet returned. Do not claim a CI witness PASS unless a later run is actually observed.
+
+Physical/install state remains unchanged:
+- Physical Matrix remains on proven R2.
+- Frozen WOW MAX v3 installer remains unchanged and valid.
