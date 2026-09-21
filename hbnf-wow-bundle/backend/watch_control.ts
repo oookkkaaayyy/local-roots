@@ -17,6 +17,7 @@ async function matrix(action:string,payload:any={}){
 }
 
 Deno.serve(async(req)=>{
+ if(req.method==="GET") return json({ok:true,service:"hbnf-watch-control",version:"wow-max-v2",actions:["status","live","pure","next","scoreboard","ace_pot","ace","nice_shot","nice_putt","ctp","skins","glow","text","blackout","brightness"]});
  if(req.method==="OPTIONS") return new Response(null,{status:204,headers:cors});
  if(req.method!=="POST") return json({ok:false,error:"POST required"},405);
  const body=await req.json().catch(()=>({}));
