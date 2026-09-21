@@ -415,9 +415,9 @@ if(action==="night_safe"){
 if(action==="round_ready"){
  if(control?.mode!=="off"&&overlayBusy(control))return json(req,{ok:false,error:"Another Matrix overlay is active; Round Ready is locked until it finishes or BLACKOUT is used.",overlayUntil:control.overlay_until},409);
  if(String(control?.show_family??"")==="r2"){
-  const live=await liveInfo(sb),status=await mqttRoundTrip(undefined,null,1800),b=safeEventBrightness(status?.telemetry?.brightness);
+  const wasOff=control?.mode==="off",live=await liveInfo(sb),status=await mqttRoundTrip(undefined,null,1800),b=safeEventBrightness(status?.telemetry?.brightness);
   const rt=await mqttRoundTripRetry({on:true,bri:b,tt:0,bs:0,ps:R2_COURSE_PLAYLIST,"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL},"HBNFFlow":{"enabled":false}},{playlistActive:1,presetIn:courseScenes(control),brightness:b},4200,3);
-  if(!rt.confirmed){const failSafe=await forceSafeDark(sb,"r2_course_round_ready_unconfirmed");control=failSafe.control??control;return json(req,{...rt,ok:false,ready:false,error:"R2 Course Round Ready was not freshly confirmed; fail-safe dark was issued.",failSafe,control,action},503);}
+  if(!rt.confirmed){if(!wasOff)return json(req,{...rt,ok:false,ready:false,error:"Course Round Ready was not freshly confirmed; existing local Course playback was preserved.",control,action,localPlaybackPreserved:true},503);const failSafe=await forceSafeDark(sb,"r2_course_round_ready_unconfirmed");control=failSafe.control??control;return json(req,{...rt,ok:false,ready:false,error:"Course Round Ready startup was not freshly confirmed; safe-dark was issued.",failSafe,control,action},503);}
   const committed=await commitVisibleControl(sb,{mode:"event",auto_live:true,resume_preset:R2_COURSE_PLAYLIST,show_family:"r2",show_preset:R2_COURSE_PLAYLIST,library_revision:courseRevision(control),last_auto_takeover_at:null,overlay_until:null,live_score_cursor:0,last_live_overlay_kind:"ace",min_live_interval_seconds:240},"r2_course_round_ready_commit_failed");
   if(!committed.ok){control=committed.control??control;return json(req,{...rt,ok:false,ready:false,error:"R2 Course Round Ready confirmed but backend ownership commit failed; fail-safe dark was issued.",failSafe:committed.failSafe,control,action},503);}
   control=committed.control;const intro=live.active?("HBNF LIVE | "+live.label):"HBNF LIVE | READY";let introOverlay=null;if(body?.intro!==false)introOverlay=await coordinatedOverlay(sb,intro,R2_COURSE_PLAYLIST);
@@ -442,10 +442,10 @@ if(action==="round_ready"){
 }
 if(action==="play_show"&&cleanText(body?.family,20).toLowerCase()==="r2"){
  if(control?.mode!=="off"&&overlayBusy(control))return json(req,{ok:false,error:"Another Matrix overlay is active; R2 show change is locked until it finishes or BLACKOUT is used.",overlayUntil:control.overlay_until},409);
- const live=bool(body?.live,false),b=body?.brightness==null?8:clamp(body?.brightness,1,NIGHT_MAX,8),before=control;
+ const live=bool(body?.live,false),b=body?.brightness==null?8:clamp(body?.brightness,1,NIGHT_MAX,8),before=control,wasOff=control?.mode==="off";
  if(control?.mode==="off"){try{control=await setControlState(sb,{mode:"manual",auto_live:false,overlay_until:null});}catch(e){return json(req,{ok:false,error:"Could not claim Matrix startup ownership.",action,family:"r2"},503);}}
  const rt=await mqttRoundTripRetry({on:true,bri:b,tt:0,bs:0,ps:R2_COURSE_PLAYLIST,"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL},"HBNFFlow":{"enabled":false}},{playlistActive:1,presetIn:courseScenes(control),brightness:b},4200,3);
- if(!rt.confirmed){const failSafe=await forceSafeDark(sb,"r2_course_start_unconfirmed");control=failSafe.control??control;return json(req,{...rt,ok:false,error:"R2 Course playlist was not freshly confirmed; fail-safe dark was issued.",failSafe,control,action,family:"r2"},503);}
+ if(!rt.confirmed){if(!wasOff&&before?.show_family==="r2")return json(req,{...rt,ok:false,error:"Course command was not freshly confirmed; existing local Course playback was preserved.",control:before,action,family:"r2",localPlaybackPreserved:true},503);const failSafe=await forceSafeDark(sb,"r2_course_start_unconfirmed");control=failSafe.control??control;return json(req,{...rt,ok:false,error:"Course startup was not freshly confirmed; safe-dark was issued.",failSafe,control,action,family:"r2"},503);}
  const committed=await commitVisibleControl(sb,{mode:live?"event":"showcase",auto_live:live,resume_preset:R2_COURSE_PLAYLIST,show_family:"r2",show_preset:R2_COURSE_PLAYLIST,library_revision:courseRevision(control),last_auto_takeover_at:null,overlay_until:null,live_score_cursor:0,last_live_overlay_kind:"ace",...(live?{min_live_interval_seconds:240}:{})},"r2_course_control_commit_failed");
  if(!committed.ok){control=committed.control??before;return json(req,{...rt,ok:false,error:"R2 Course confirmed but backend ownership commit failed; fail-safe dark was issued.",failSafe:committed.failSafe,control,action,family:"r2"},503);}
  control=committed.control;return json(req,{...rt,ok:true,confirmed:true,control,action,family:"r2",show:control?.library_revision===R3_WOW_LIBRARY_REVISION?"WOW MAX":"R2 COURSE",live,requested:{preset:R2_COURSE_PLAYLIST,brightness:b},renderEngine:courseEngine(control)});
@@ -468,7 +468,7 @@ if(action==="next_look"){
  const family=String(control?.show_family??"field"),b=await currentBrightness(true);
  if(family==="r2"){
   const rt=await mqttRoundTripRetry({np:true,bri:b,"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL},"HBNFFlow":{"enabled":false}},{playlistActive:1,presetIn:courseScenes(control),brightness:b},3800,3);
-  if(!rt.confirmed){const failSafe=await forceSafeDark(sb,"r2_course_next_unconfirmed");control=failSafe.control??control;return json(req,{...rt,ok:false,error:"R2 Next Look was not freshly confirmed; fail-safe dark was issued.",failSafe,control,action},503);}
+  if(!rt.confirmed)return json(req,{...rt,ok:false,error:"Next Look was not freshly confirmed; existing local Course playback was preserved.",control,action,localPlaybackPreserved:true},503);
   return json(req,{...rt,ok:true,confirmed:true,control,action,advancedPlaylist:true,renderEngine:courseEngine(control)});
  }
  if(SHOWS[family]){
@@ -500,7 +500,7 @@ if(action==="brightness"){
  if(family==="r2"&&control?.mode!=="off"){const curPs=Number(status?.telemetry?.preset),curPlaylist=Number(status?.telemetry?.playlistActive),lost=curPlaylist!==1||!courseScenes(control).includes(curPs);if(lost){payload={on:true,bri,tt:0,bs:0,ps:R2_COURSE_PLAYLIST,"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL},"HBNFFlow":{"enabled":false}};expected={playlistActive:1,presetIn:courseScenes(control),brightness:bri};restoredShow=true;}}
  if(s&&control?.mode!=="off"){const curPs=Number(status?.telemetry?.preset),curPlaylist=Number(status?.telemetry?.playlistActive),lost=curPlaylist!==1||!s.looks.includes(curPs);if(lost){payload={on:true,bri,tt:TRANSITION_TENTHS,bs:TRANSITION_STYLE,...flowArm(500),ps:s.playlist,"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL}};expected={playlistActive:1,presetIn:s.looks,brightness:bri};restoredShow=true;}}
  const rt=await mqttRoundTripRetry(payload,expected,3000,3);
- if(!rt.confirmed){const failSafe=await forceSafeDark(sb,"brightness_unconfirmed");control=failSafe.control??control;return json(req,{...rt,ok:false,error:"Brightness change was not freshly confirmed; fail-safe dark was issued.",failSafe,control,action,requested:{brightness:bri,advanced},restoredShow},503);}
+ if(!rt.confirmed){if(family==="r2")return json(req,{...rt,ok:false,error:"Brightness change was not freshly confirmed; existing local Course playback was preserved.",control,action,requested:{brightness:bri,advanced},restoredShow,localPlaybackPreserved:true},503);const failSafe=await forceSafeDark(sb,"brightness_unconfirmed");control=failSafe.control??control;return json(req,{...rt,ok:false,error:"Brightness change was not freshly confirmed; fail-safe dark was issued.",failSafe,control,action,requested:{brightness:bri,advanced},restoredShow},503);}
  return json(req,{...rt,ok:true,control,action,requested:{brightness:bri,advanced},restoredShow});
 }
 if(action==="audio_profile"){const name=cleanText(body?.profile,20).toLowerCase(),profiles:any={quiet:255,course:255,loud:170};if(!(name in profiles))return json(req,{ok:false,error:"Unknown audio profile."},400);const level=profiles[name];await mqttPublish({"AudioReactive":{"inputLevel":level}},2,100);return json(req,{ok:true,control,action,profile:name,inputLevel:level,published:true});}
