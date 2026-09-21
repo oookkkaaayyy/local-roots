@@ -50,8 +50,8 @@ Automatic cinematic dispatcher routes ACE/compound-ACE and skin-win events to se
 ## Final atomic package
 - Drive ID: 1TgXwOVb2jCId7mUxspaJYkL95Wm_FYq_
 - File: HBNF_WOW_MAX_BUNDLE_2026-09-21_FINAL.zip
-- SHA256: 281377f0b0e65b811f7b0bf5bb217535d502cfe7bc6abf8c072b63459aa10000
-- Size: 2,054,753 bytes
+- SHA256: 9bbd119de98ec1e74abb38870c470c9b4b840a58cd66199e55b8aded76f0ad54
+- Size: 2,055,211 bytes
 - Drive re-fetch hash: VERIFIED
 - ZIP integrity: PASS
 
@@ -59,7 +59,7 @@ Superseded package:
 - Older R3 v1 Drive ID 1LeFSGbiJPGiBUtiTlQQTGqQvU_EeDZZy
 - MUST NOT be installed.
 
-## Transaction safety
+## Transaction safety\n- Full package SHA256SUMS is verified before any controller mutation.
 - Rollback pointer is written before any controller mutation.
 - Pre-flash staging failure restores exact pre-install presets + prior boot defaults without flashing.
 - Post-flash validation/adoption failure automatically restores exact pre-install presets/boot defaults and reflashes exact proven R2 when the controller remains reachable.
