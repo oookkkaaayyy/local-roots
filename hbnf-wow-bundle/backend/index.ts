@@ -8,7 +8,7 @@ import { getTeaserOption } from "./teaser.ts";
 import { getWowEvent,wowEventSelfTest } from "./wow_events.ts";
 declare const EdgeRuntime:{waitUntil(p:Promise<unknown>):void};
 const DB_READ_TIMEOUT_MS=7000;
-const R2_COURSE_LIBRARY_REVISION="hbnf-r2-course-2026-09-20-v1",R3_WOW_LIBRARY_REVISION="hbnf-wow-r3-max-2026-09-21-v2",R2_COURSE_PLAYLIST=60,R2_COURSE_SCENES=[61,62,63,64,65,66,67,68],R3_WOW_SCENES=[61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88];
+const R2_COURSE_LIBRARY_REVISION="hbnf-r2-course-2026-09-20-v1",R3_WOW_LIBRARY_REVISION="hbnf-wow-r3-max-2026-09-21-v3",R2_COURSE_PLAYLIST=60,R2_COURSE_SCENES=[61,62,63,64,65,66,67,68],R3_WOW_SCENES=[61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88];
 const R3_WOW_PROFILE_IX:Record<number,number>={61:96,62:216,63:56,64:16,65:176,66:216,67:136,68:176,69:56,70:16,71:136,72:176,73:16,74:216,75:56,76:176,77:16,78:136,79:216,80:16,81:176,82:136,83:56,84:176,85:216,86:16,87:136,88:176};
 function courseScenes(control:any){return control?.library_revision===R3_WOW_LIBRARY_REVISION?R3_WOW_SCENES:R2_COURSE_SCENES;}
 function courseRevision(control:any){return control?.library_revision===R3_WOW_LIBRARY_REVISION?R3_WOW_LIBRARY_REVISION:R2_COURSE_LIBRARY_REVISION;}
