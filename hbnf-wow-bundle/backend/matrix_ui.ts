@@ -24,7 +24,7 @@ button.active{border-color:#6ca95a;background:#1b3b21;box-shadow:inset 0 0 0 1px
 .engine{color:var(--a)}@media(max-width:430px){.meta{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:1fr 1fr}.grid4{grid-template-columns:repeat(2,1fr)}}
 </style></head><body><div class="wrap">
 <div class="head"><div><div class="title">Matrix Course Console</div><div class="sub">HB NIGHT FLYERS · WOW MAX READY</div></div><div id="online" class="status">CHECKING</div></div>
-<div class="meta"><div id="mode" class="pill">MODE —</div><div id="engine" class="pill engine">ENGINE —</div><div id="bri" class="pill">BRI —</div><div id="preset" class="pill">P —</div></div>
+<div class="meta"><div id="mode" class="pill">MODE —</div><div id="engine" class="pill engine">ENGINE —</div><div id="bri" class="pill">BRI —</div><div id="preset" class="pill">P —</div><div id="audio" class="pill">AUDIO —</div><div id="aux" class="pill">AUX PREP</div></div>
 
 <div class="card"><h2>COURSE MODE</h2><div class="grid2"><button id="pureBtn">VISUALS ONLY</button><button id="liveBtn">LIVE DATA</button></div><div class="note">Uses the installed Course engine automatically: proven R2 now, WOW MAX after adoption. It never selects the old legacy show families.</div></div>
 
@@ -41,12 +41,19 @@ button.active{border-color:#6ca95a;background:#1b3b21;box-shadow:inset 0 0 0 1px
 <div class="card"><h2>TEXT</h2><div class="textrow"><input id="text" maxlength="63" autocomplete="off" placeholder="Message"><button id="sendText">SEND</button></div></div>
 
 <div class="card"><h2>BRIGHTNESS</h2><div class="grid4"><button data-bri="8">8</button><button data-bri="16">16</button><button data-bri="24">24</button><button data-bri="40">40</button></div></div>
+<div id="auxCard" class="card" hidden><h2>CART LIGHTING</h2><div class="grid3">
+<button data-cart="music">MUSIC</button><button data-cart="skins_live">SKINS LIVE</button><button data-cart="glow_live">GLOW LIVE</button>
+<button data-uv="full">UV FULL</button><button data-uv="main">UV MAIN</button><button data-uv="short">UV SHORT</button>
+<button data-uv="off">UV OFF</button><button class="danger" data-cart="all_off">ALL OFF</button>
+</div><div class="note">Only appears after the SP803E passes hardware acceptance. Mixed GLOW LIVE remains locked until the mixed-load test passes.</div></div>
 
 <div id="feedback">Ready.</div>
-<div class="note">Status refreshes every 4 seconds. Controls lock while an overlay is active. Build: hbnf-fallback-wow-max-v2.</div>
+<div class="note">Status refreshes every 4 seconds. Controls lock while an overlay is active. Build: hbnf-fallback-wow-max-v3.</div>
 </div><script>
 (()=>{'use strict';
 const API='https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-matrix-control';
+const AUX='https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-aux-control';
+const CART='https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-orchestrator';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 let busy=false,last=null;
 function fb(t,k=''){const e=$('#feedback');e.textContent=t;e.className=k}
@@ -58,6 +65,8 @@ function render(r){
  $('#engine').textContent='ENGINE '+eng;
  $('#bri').textContent='BRI '+(t.brightness??'—');
  $('#preset').textContent='P '+(t.preset??'—')+(Number(t.playlistActive)===1?' · PLAY':'');
+ const wr=r?.wowRuntime||t?.wow||null;
+ $('#audio').textContent=wr?'E '+(wr.energy??0)+' · P '+(wr.pulse??0):'AUDIO —';
  $('#liveBtn').classList.toggle('active',!off&&c.auto_live===true);
  $('#pureBtn').classList.toggle('active',!off&&c.auto_live===false);
  const bri=Number(t.brightness);$$('[data-bri]').forEach(b=>b.classList.toggle('active',Number(b.dataset.bri)===Math.round(bri)));
@@ -74,16 +83,33 @@ async function request(action,payload={}){
  }catch(e){fb('ERROR: '+e.message,'bad');return null}
  finally{busy=false;setTimeout(()=>{$$('button').forEach(b=>b.disabled=false)},350)}
 }
+async function auxStatus(){
+ try{
+  const res=await fetch(AUX,{cache:'no-store'}),d=await res.json();
+  const enabled=d?.enabled===true,mixed=d?.policy?.mixedLoadAccepted===true;
+  $('#aux').textContent=enabled?(mixed?'AUX LIVE':'AUX SAFE'):'AUX PREP';
+  $('#auxCard').hidden=!enabled;
+  const glow=$('[data-cart="glow_live"]');if(glow)glow.disabled=!enabled||!mixed||busy;
+ }catch{$('#aux').textContent='AUX —';$('#auxCard').hidden=true}
+}
 async function status(){
  if(busy)return;
- try{const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:'{"action":"status"}',cache:'no-store'});const d=await res.json();render(d)}
+ try{const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:'{"action":"status"}',cache:'no-store'});const d=await res.json();render(d);auxStatus()}
  catch(e){$('#online').textContent='● UNAVAILABLE';$('#online').className='status off'}
+}
+async function service(url,payload){
+ if(busy)return null;busy=true;$('button').forEach(b=>b.disabled=true);fb('SENDING…');
+ try{const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),cache:'no-store'});const d=await res.json();if(!res.ok||d.ok===false)throw new Error(d.error||('HTTP '+res.status));fb('✓ ACCEPTED','good');setTimeout(status,250);return d}
+ catch(e){fb('ERROR: '+e.message,'bad');return null}
+ finally{busy=false;setTimeout(()=>{$('button').forEach(b=>b.disabled=false);auxStatus()},350)}
 }
 $('#pureBtn').onclick=()=>request('play_show',{family:'r2',live:false,brightness:8});
 $('#liveBtn').onclick=()=>request('play_show',{family:'r2',live:true,brightness:8});
 $$('[data-event]').forEach(b=>b.onclick=()=>request('quick_event',{event:b.dataset.event}));
 $$('[data-action]').forEach(b=>b.onclick=()=>request(b.dataset.action));
-$$('[data-bri]').forEach(b=>b.onclick=()=>request('brightness',{brightness:Number(b.dataset.bri)}));
+$('[data-bri]').forEach(b=>b.onclick=()=>request('brightness',{brightness:Number(b.dataset.bri)}));
+$('[data-cart]').forEach(b=>b.onclick=()=>service(CART,{scene:b.dataset.cart}));
+$('[data-uv]').forEach(b=>b.onclick=()=>service(AUX,{action:'uv',mode:b.dataset.uv}));
 $('#sendText').onclick=()=>{const v=$('#text').value.trim();if(!v){fb('Enter a message.','bad');return}request('text',{text:v,color:'#FFFFFF'}).then(x=>{if(x)$('#text').value=''})};
 $('#text').addEventListener('keydown',e=>{if(e.key==='Enter')$('#sendText').click()});
 status();setInterval(status,4000);
