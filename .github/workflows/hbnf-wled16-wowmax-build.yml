@@ -88,12 +88,7 @@ jobs:
           old='hbnfAudio.apply(speedFactor, millis())'
           assert old in s
           s=s.replace(old,'hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, SEGMENT.custom1, SEGMENT.custom2, SEGMENT.virtualWidth(), SEGMENT.virtualHeight())',1)
-          old='''\tvoid setPixelColor(int x, int y, rgb pixel) {
-          \tSEGMENT.setPixelColorXY(x, y, CRGB(pixel.red, pixel.green, pixel.blue));
-          \t}
-          \tvoid setPixelColor(int index, rgb pixel) {
-          \tSEGMENT.setPixelColor(index, CRGB(pixel.red, pixel.green, pixel.blue));
-            \t}'''
+          import re
           new='''\tvoid setPixelColor(int x, int y, rgb pixel) {
           \t\tuint8_t r=pixel.red,g=pixel.green,b=pixel.blue;
           \t\thbnfAudio.modulate(x,y,r,g,b);
@@ -108,8 +103,9 @@ jobs:
           \t\tif (SEGMENT.check2) { r=gamma8(r); g=gamma8(g); b=gamma8(b); }
           \t\tSEGMENT.setPixelColor(index, CRGB(r,g,b));
             \t}'''
-          assert old in s
-          s=s.replace(old,new,1)
+          pat=r'\tvoid setPixelColor\(int x, int y, rgb pixel\) \{.*?\n\s*\}\n\s*void setPixelColor\(int index, rgb pixel\) \{.*?\n\s*\}'
+          s,n=re.subn(pat,new,s,count=1,flags=re.S)
+          assert n==1, "setPixelColor method pair not found exactly once"
           p.write_text(s)
           PY
           grep -q 'ANIMartRIX_NO_SERPENTINE' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
