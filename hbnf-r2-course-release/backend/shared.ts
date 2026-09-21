@@ -9,7 +9,7 @@ export const API_TOPIC=`${DEVICE_TOPIC}/api`,STATUS_TOPIC=`${DEVICE_TOPIC}/statu
 export const SOURCE_LIBRARY_REVISION="hbnf-wow-2026-09-13-v2";
 export const LIBRARY_REVISION="hbnf-native-organic-2026-09-19-v11";
 export const FLOW_LIBRARY_REVISION="hbnf-flow-2026-09-19-v10";
-export const AUDIO_INPUT_LEVEL=220;
+export const AUDIO_INPUT_LEVEL=255;
 export const TRANSITION_TENTHS=12,TRANSITION_STYLE=0;
 export const LIBRARY_URL="https://hbnightflyers.com/matrix-show-library.json";
 export const NIGHT_DEFAULT=24,NIGHT_MAX=72;
