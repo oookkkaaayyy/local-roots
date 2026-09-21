@@ -39,19 +39,19 @@ Automatic cinematic dispatcher routes ACE/compound-ACE and skin-win events to se
   SHA256 82193fbc8751dfaf8463b4008b4804eb1f759aacb1220e474b71cdd5be5b41d1
 - hbnf-cinematic-dispatcher v27
   SHA256 98e73db93b4afab6d63aa917c3fd3a7c0e4ff4b30bdb2e4abb55d250003021dc
-- hbnf-watch-control v7
-  SHA256 30697ac5a4449cf8a4fb535a2ef6948922f593ca42ad3ca8c8d556d5c2d5a061
-- hbnf-watch-score v7
-- Phone/PWA candidate marker: hbnf-build-9.21.26-wow-max-v2
+- hbnf-watch-control v8
+  SHA256 777c43561d433c5c345ff3666b645c37df363e40ac61f8b96cad056e34232fb4
+- hbnf-watch-score v8
+- hbnf-matrix-ui v9 · hbnf-fallback-wow-max-v2 · SHA256 8076a0efd18792d444bd26fa1b555f846c1d83175403000fb0be3a24e5aa063c\n- Phone/PWA candidate marker: hbnf-build-9.21.26-wow-max-v2
 - Phone/PWA regression: 29/29 PASS
-- Six semantic event selftest: PASS
+- Six semantic event selftest: PASS\n- Watch control/score read-only self-tests: PASS\n- Adaptive fallback console GET/marker smoke test: PASS
 - False WOW adoption on current R2: correctly REFUSED
 
 ## Final atomic package
 - Drive ID: 1TgXwOVb2jCId7mUxspaJYkL95Wm_FYq_
 - File: HBNF_WOW_MAX_BUNDLE_2026-09-21_FINAL.zip
-- SHA256: 9bbd119de98ec1e74abb38870c470c9b4b840a58cd66199e55b8aded76f0ad54
-- Size: 2,055,211 bytes
+- SHA256: 3ac3a63d627205e7f21443fa2456c8183e50ec9b76847ccaf4c697a5d4cfc2b4
+- Size: 2,088,177 bytes
 - Drive re-fetch hash: VERIFIED
 - ZIP integrity: PASS
 
