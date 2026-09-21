@@ -1,0 +1,23 @@
+HBNF Matrix WOW MAX v3 full-PWA exact source bundle
+
+Expected ZIP:
+HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.zip
+SHA-256: 90b29bc0c6a51515c552431c580b6753c0811b2503387b86faedeb18d513c017
+Bytes: 18997
+Base64 characters: 25332
+Parts: 5
+
+GitHub blob verification:
+part01 5200 bytes 75eced8f1dabee7deb0891ee9c5cff5341703606
+part02 5200 bytes 941c34dd2b03a1edc74b5d2ee77edf0d6c55b7ee
+part03 5200 bytes 3413f39379944985fb7bd873054230d4fa0eb8ec
+part04 5200 bytes 94bf8fd52d4e912e341e8eea8c98946b524c38f1
+part05 4532 bytes b0b24f40122f5187afe99672668764195587d8ff
+
+Each GitHub blob SHA exactly matches git hash-object of the corresponding local source chunk from the tested ZIP.
+
+Reconstruct on macOS/Linux:
+cat HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.b64.part01 HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.b64.part02 HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.b64.part03 HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.b64.part04 HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.b64.part05 | base64 --decode > HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.zip
+
+Then verify:
+shasum -a 256 HBNF_MATRIX_WOW_FULL_PWA_V3_SOURCE.zip
