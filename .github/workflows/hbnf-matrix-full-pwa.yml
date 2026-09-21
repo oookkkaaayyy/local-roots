@@ -52,3 +52,30 @@ jobs:
         shell: bash
         working-directory: /tmp/hbnf-pwa/HBNF_MATRIX_WOW_FULL_PWA_V3
         run: node MATRIX_UI_TEST.js matrix.html matrix-control.js matrix-manifest.webmanifest
+
+      - name: Build one-click Mac web-deploy package
+        shell: bash
+        run: |
+          set -euo pipefail
+          PKG="/tmp/HBNF_MATRIX_FULL_PWA_WOW_MAX_V3_WEB_DEPLOY"
+          rm -rf "$PKG"
+          mkdir -p "$PKG"
+          cp -R hbnf-wow-bundle/web/. "$PKG/"
+          cp "$PKG/DEPLOY_FULL_PWA.command" "$PKG/DEPLOY_HBNF_MATRIX_FULL_PWA.command"
+          chmod +x "$PKG/DEPLOY_HBNF_MATRIX_FULL_PWA.command" "$PKG/DEPLOY_FULL_PWA.command" "$PKG/WEB_DEPLOY.command"
+          bash -n "$PKG/DEPLOY_HBNF_MATRIX_FULL_PWA.command"
+          bash -n "$PKG/DEPLOY_FULL_PWA.command"
+          bash -n "$PKG/WEB_DEPLOY.command"
+          printf '%s\n' \
+            'HBNF Matrix WOW MAX v3 full-PWA web-only deploy package.' \
+            'Double-click DEPLOY_HBNF_MATRIX_FULL_PWA.command on the authenticated HBNF Mac.' \
+            'This updates web assets only; it does not flash, reboot, or command the Matrix.' \
+            > "$PKG/START-HERE.txt"
+
+      - name: Upload verified Mac web-deploy package
+        uses: actions/upload-artifact@v4
+        with:
+          name: HBNF_MATRIX_FULL_PWA_WOW_MAX_V3_WEB_DEPLOY
+          path: /tmp/HBNF_MATRIX_FULL_PWA_WOW_MAX_V3_WEB_DEPLOY
+          if-no-files-found: error
+          retention-days: 30
