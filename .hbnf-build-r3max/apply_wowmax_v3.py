@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Independent deterministic witness trigger: comment-only; generated firmware source must remain byte-identical.
 from __future__ import annotations
 import pathlib,re,sys
 
