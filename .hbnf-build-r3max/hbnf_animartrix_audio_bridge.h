@@ -91,6 +91,22 @@ class AnimartrixAudioBridge {
 
     mix=(uint8_t)(((uint16_t)mix*amount_)>>8);
     if(mix){ r=blend8(r,accent.r,mix); g=blend8(g,accent.g,mix); b=blend8(b,accent.b,mix); }
+
+    // Static chromatic diversity guard: several ANIMartRIX looks can naturally settle into
+    // blue-dominant frames. Preserve the source animation, but prevent a full-screen blue monopoly
+    // with sparse warm complements. The spatial mask is static (not a generic extra animation);
+    // music only increases the accent strength.
+    if((int)b>(int)r+48 && (int)b>(int)g+36){
+      const uint8_t gate=(uint8_t)((x*17+y*31)&7);
+      if(gate<=1){
+        const bool alt=((x+y)&1)!=0;
+        const Rgb8 warm=alt?Rgb8(255,70,165):Rgb8(255,135,45);
+        const uint8_t base=(style_==STYLE_CHROMA||style_==STYLE_HYBRID)?40:(style_==STYLE_CLEAN?18:28);
+        const uint8_t audio=scaledMix(max8(pulse8_,energy8_),48);
+        const uint8_t anti=(uint8_t)(((uint16_t)base+audio)>96?96:((uint16_t)base+audio));
+        r=blend8(r,warm.r,anti); g=blend8(g,warm.g,anti); b=blend8(b,warm.b,anti);
+      }
+    }
   }
 
   bool active() const { return active_; }
