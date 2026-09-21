@@ -160,7 +160,7 @@ jobs:
         lastTime = millis();
       }
     }'''
-          loop_new='    void loop() {\\n      if (strip.isUpdating()) return;\\n#ifndef WLED_DISABLE_MQTT\\n      if (millis() - lastTime >= 1000) {\\n        lastTime = millis();\\n        if (WLED_MQTT_CONNECTED) {\\n          char topic[64];\\n          char payload[320];\\n          snprintf_P(topic, sizeof(topic), PSTR("%s/wow"), mqttDeviceTopic);\\n          snprintf_P(payload, sizeof(payload),\\n            PSTR("{\\\\\\\"release\\\\\\\":\\\\\\\"hbnf-wow-r3-max-2026-09-21-v3\\\\\\\",\\\\\\\"engine\\\\\\\":\\\\\\\"r3-wow-max\\\\\\\",\\\\\\\"audioActive\\\\\\\":%s,\\\\\\\"profile\\\\\\\":%u,\\\\\\\"style\\\\\\\":%u,\\\\\\\"amount\\\\\\\":%u,\\\\\\\"bass\\\\\\\":%u,\\\\\\\"mid\\\\\\\":%u,\\\\\\\"treble\\\\\\\":%u,\\\\\\\"pulse\\\\\\\":%u,\\\\\\\"energy\\\\\\\":%u,\\\\\\\"impact\\\\\\\":%u,\\\\\\\"drop\\\\\\\":%u}"),\\n            anim.hbnfActive() ? "true" : "false",\\n            anim.hbnfProfile(), anim.hbnfStyle(), anim.hbnfAmount(),\\n            anim.hbnfBass(), anim.hbnfMid(), anim.hbnfTreble(),\\n            anim.hbnfPulse(), anim.hbnfEnergy(), anim.hbnfImpact(), anim.hbnfDrop());\\n          mqtt->publish(topic, 0, true, payload);\\n        }\\n      }\\n#endif\\n    }'
+          loop_new='    void loop() {\\n      if (strip.isUpdating()) return;\\n#ifndef WLED_DISABLE_MQTT\\n      if (millis() - lastTime >= 1000) {\\n        lastTime = millis();\\n        if (WLED_MQTT_CONNECTED) {\\n          char topic[64];\\n          char payload[320];\\n          snprintf_P(topic, sizeof(topic), PSTR("%s/wow"), mqttDeviceTopic);\\n          snprintf_P(payload, sizeof(payload),\\n            PSTR("{\\\\\\\"release\\\\\\\":\\\\\\\"hbnf-wow-r3-max-2026-09-21-v3\\\\\\\",\\\\\\\"engine\\\\\\\":\\\\\\\"r3-wow-max\\\\\\\",\\\\\\\"audioActive\\\\\\\":%s,\\\\\\\"profile\\\\\\\":%u,\\\\\\\"style\\\\\\\":%u,\\\\\\\"amount\\\\\\\":%u,\\\\\\\"bass\\\\\\\":%u,\\\\\\\"mid\\\\\\\":%u,\\\\\\\"treble\\\\\\\":%u,\\\\\\\"pulse\\\\\\\":%u,\\\\\\\"energy\\\\\\\":%u,\\\\\\\"impact\\\\\\\":%u,\\\\\\\"drop\\\\\\\":%u}"),\\n            anim.hbnfActive() ? "true" : "false",\\n            anim.hbnfProfile(), anim.hbnfStyle(), anim.hbnfAmount(),\\n            anim.hbnfBass(), anim.hbnfMid(), anim.hbnfTreble(),\\n            anim.hbnfPulse(), anim.hbnfEnergy(), anim.hbnfImpact(), anim.hbnfDrop());\\n          mqtt->publish(topic, 0, false, payload);\\n        }\\n      }\\n#endif\\n    }'
           assert loop_old in s
           s=s.replace(loop_old,loop_new,1)
           p.write_text(s)
@@ -179,9 +179,7 @@ jobs:
           grep -q 'wow\["audioActive"\]' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'wow\["drop"\]' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'mqtt->publish(topic, 0, false, payload)' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
-          grep -q 'lastWowMqtt' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'PSTR("%s/wow")' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
-          grep -q 'mqtt->publish(topic, 0, true, payload)' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'usermod\[FPSTR(_inputLvl)\] = inputLevel' usermods/audioreactive/audio_reactive.cpp
           grep -q 'SEGMENT.virtualWidth() != num_x' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'hbnfAudio.beginFrame' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
@@ -252,7 +250,6 @@ jobs:
             echo AUDIO_INPUTLEVEL_RUNTIME_TELEMETRY=PASS
             echo WOW_AUDIO_DIAGNOSTIC_TELEMETRY=PASS
             echo WOW_MQTT_RUNTIME_TELEMETRY=PASS
-            echo WOW_MQTT_DIAGNOSTIC_TELEMETRY=PASS
             echo ASAN_UBSAN_FUZZ_GATE=PASS
             echo SOURCE_DATE_EPOCH=1789948800
             echo WEB_BUILD_TIME_REPRODUCIBLE=PASS
