@@ -168,7 +168,8 @@ jobs:
             echo MUSIC_FEATURES=band_profiles_energy_build_impact_drop
             echo RENDER_FEATURES=punch_ring_spark_chroma_hybrid
             echo MM_SAFE_FEATURES=no_serpentine_dimension_reinit_optional_gamma
-            echo MM_UNSAFE_FMOD_APPROX=NOT_INCLUDED\n            echo SIX_HOUR_DETERMINISTIC_SOAK=PASS
+            echo MM_UNSAFE_FMOD_APPROX=NOT_INCLUDED
+            echo SIX_HOUR_DETERMINISTIC_SOAK=PASS
           } > /tmp/artifacts/FINAL_METRICS.txt
           sha256sum "$BIN" > /tmp/artifacts/firmware-sha256.txt
 
