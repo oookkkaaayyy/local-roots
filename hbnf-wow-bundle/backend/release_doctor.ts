@@ -36,12 +36,12 @@ Deno.serve(async(req)=>{
   matrixControlReachable:pre.ok&&status.ok,
   releaseContract:pre.json?.targetRelease===EXPECTED.release&&Number(pre.json?.targetSceneCount)===EXPECTED.sceneCount,
   semanticEvents:eventTest.ok&&eventTest.json?.ok===true&&Array.isArray(eventTest.json?.events)&&eventTest.json.events.length>=6,
-  watchControl:watchCtl.ok&&watchCtl.json?.service==="hbnf-watch-control"&&watchCtl.json?.version===EXPECTED.watchControlVersion&&hasAll(watchCtl.json?.actions,["status","next","scoreboard","ace_pot","ace","nice_shot","nice_putt","ctp","skins","glow","text","blackout","brightness","aux_status","uv_full","uv_off","cart_all_off"]),
+  watchControl:watchCtl.ok&&watchCtl.json?.service==="hbnf-watch-control"&&watchCtl.json?.version===EXPECTED.watchControlVersion&&hasAll(watchCtl.json?.actions,["status","next","scoreboard","ace_pot","ace","nice_shot","nice_putt","ctp","skins","glow","text","blackout","brightness","aux_status","uv_full","uv_off","cart_showcase","cart_all_off"]),
   watchScore:watchScore.ok&&watchScore.json?.service==="hbnf-watch-score"&&watchScore.json?.version===EXPECTED.watchScoreVersion&&hasAll(watchScore.json?.actions,["state","score","set","undo","clear"]),
   cinematicDispatcher:dispatcher.ok&&dispatcher.json?.service==="hbnf-cinematic-dispatcher"&&dispatcher.json?.version===EXPECTED.dispatcherVersion&&Array.isArray(dispatcher.json?.revisions)&&dispatcher.json.revisions.includes(EXPECTED.release),
   fallbackUi:ui.ok&&ui.text.includes(EXPECTED.matrixUiMarker),
-  auxStaging:aux.ok&&aux.json?.service==="hbnf-aux-control"&&aux.json?.enabled===false&&aux.json?.policy?.mixedLoadAccepted===false,
-  cartStaging:cart.ok&&cart.json?.service==="hbnf-cart-orchestrator"&&cart.json?.auxEnabled===false&&cart.json?.mixedLoadAccepted===false
+  auxStaging:aux.ok&&aux.json?.service==="hbnf-aux-control"&&aux.json?.enabled===false&&aux.json?.policy?.mixedLoadAccepted===false&&aux.json?.selfTest?.ok===true&&Number(aux.json?.selfTest?.globalOffPreset)===223&&Number(aux.json?.selfTest?.uvOffReturnsToPreset)===200,
+  cartStaging:cart.ok&&cart.json?.service==="hbnf-cart-orchestrator"&&cart.json?.auxEnabled===false&&cart.json?.mixedLoadAccepted===false&&cart.json?.safety?.globalOffAvailableWhenAuxDisabled===true&&cart.json?.safety?.startOrder==="matrix-then-aux"
  };
  const cloudReady=Object.values(checks).every(Boolean);
  const blockers=Array.isArray(pre.json?.blockers)?pre.json.blockers:[];
@@ -52,7 +52,7 @@ Deno.serve(async(req)=>{
  return json({
   ok:cloudReady,
   service:"hbnf-release-doctor",
-  version:"wow-v3-doctor-1",
+  version:"wow-v3-doctor-2",
   expected:EXPECTED,
   cloudReady,
   matrixOnline,
