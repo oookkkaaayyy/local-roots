@@ -7,7 +7,7 @@ const HOST=(Deno.env.get("HBNF_MQTT_HOST")||"broker.emqx.io").trim();
 const PORT=Math.max(1,Number(Deno.env.get("HBNF_MQTT_PORT")||"1883")||1883);
 const USER=Deno.env.get("HBNF_MQTT_USER")||"", PASS=Deno.env.get("HBNF_MQTT_PASS")||"";
 const DEV=(Deno.env.get("HBNF_MQTT_TOPIC")||"hbnf/cart/wled1").trim();
-const API=`${DEV}/api`, G=`${DEV}/g`, FLOW=`${DEV}/flow`, URL=`mqtt://${HOST}:${PORT}`, FLOW_LIBRARY_REVISION="hbnf-flow-2026-09-19-v10", R2_REV="hbnf-r2-course-2026-09-20-v1", WOW_REV="hbnf-wow-r3-max-2026-09-21-v2";
+const API=`${DEV}/api`, G=`${DEV}/g`, FLOW=`${DEV}/flow`, URL=`mqtt://${HOST}:${PORT}`, FLOW_LIBRARY_REVISION="hbnf-flow-2026-09-19-v10", R2_REV="hbnf-r2-course-2026-09-20-v1", WOW_REV="hbnf-wow-r3-max-2026-09-21-v3";
 const CONTROL_URL=(Deno.env.get("SUPABASE_URL")||"").replace(/\/$/,"")+"/functions/v1/hbnf-matrix-control";
 const opts=(id:string)=>({connectTimeout:6500,reconnectPeriod:0,clean:true,clientId:id,username:USER||undefined,password:PASS||undefined});
 const sleep=(ms:number)=>new Promise(r=>setTimeout(r,ms));
