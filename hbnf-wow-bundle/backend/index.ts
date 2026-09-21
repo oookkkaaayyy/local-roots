@@ -263,13 +263,21 @@ if(action==="r2_repair_playlist60"){
  return json(req,{ok:false,error:"Deprecated: playlist60 is now release-managed from the atomic R2/R3 filesystem bundle; remote preset saves are intentionally disabled.",control,action},409);
 }
 if(action==="release_preflight"){
- const rt=await mqttRoundTrip(undefined,null,2200),t=rt?.telemetry??{},statusText=String(t?.status??"").toLowerCase(),deviceOnline=statusText==="online"||(!statusText&&!!t?.rawXml);
+ const rt=await mqttRoundTrip(undefined,null,2600),t=rt?.telemetry??{},statusText=String(t?.status??"").toLowerCase(),deviceOnline=statusText==="online";
  const currentRevision=String(control?.library_revision??"");
  const revisionRecognized=[R2_COURSE_LIBRARY_REVISION,R3_WOW_LIBRARY_REVISION].includes(currentRevision);
- return json(req,{ok:true,action,mutationIssued:false,targetRelease:R3_WOW_LIBRARY_REVISION,targetSceneCount:R3_WOW_SCENES.length,supportedRevisions:[R2_COURSE_LIBRARY_REVISION,R3_WOW_LIBRARY_REVISION],currentRevision,revisionRecognized,canAdoptR3:true,deviceOnline,broker:MQTT_HOST,control,telemetryReadOnly:{status:t?.status??null,brightness:t?.brightness??null,playlistActive:t?.playlistActive??null,preset:t?.preset??null,intensity:t?.intensity??null,pixels:t?.flow?.pixels??null,matrixOk:t?.flow?.matrixOk??null}});
+ const pixels=Number(t?.flow?.pixels),matrixOk=t?.flow?.matrixOk===true,brightness=Number(t?.brightness),playlistActive=Number(t?.playlistActive),preset=Number(t?.preset);
+ const blockers:string[]=[];
+ if(!revisionRecognized)blockers.push("backend_revision_unrecognized");
+ if(!deviceOnline)blockers.push("mqtt_lwt_not_online");
+ if(Number.isFinite(pixels)&&pixels!==512)blockers.push("telemetry_pixel_count_not_512");
+ if(t?.flow&&t.flow.matrixOk===false)blockers.push("telemetry_matrix_not_ok");
+ if(Number.isFinite(brightness)&&brightness>NIGHT_MAX)blockers.push("telemetry_brightness_above_night_cap");
+ const ready=revisionRecognized&&deviceOnline&&blockers.length===0;
+ return json(req,{ok:true,ready,blockers,action,mutationIssued:false,targetRelease:R3_WOW_LIBRARY_REVISION,targetSceneCount:R3_WOW_SCENES.length,supportedRevisions:[R2_COURSE_LIBRARY_REVISION,R3_WOW_LIBRARY_REVISION],currentRevision,revisionRecognized,canAdoptR3:true,deviceOnline,broker:MQTT_HOST,control,telemetryReadOnly:{status:t?.status??null,brightness:Number.isFinite(brightness)?brightness:null,playlistActive:Number.isFinite(playlistActive)?playlistActive:null,preset:Number.isFinite(preset)?preset:null,intensity:t?.intensity??null,pixels:Number.isFinite(pixels)?pixels:null,matrixOk:t?.flow?.matrixOk??null}});
 }
 if(action==="r3_adopt"){
- const rt=await mqttRoundTrip(undefined,null,3000),t=rt?.telemetry??{},online=String(t?.status??"").toLowerCase()==="online"||!!t?.rawXml;
+ const rt=await mqttRoundTrip(undefined,null,3400),t=rt?.telemetry??{},online=String(t?.status??"").toLowerCase()==="online";
  const preset=Number(t?.preset),playlistActive=Number(t?.playlistActive),brightness=Number(t?.brightness);
  const intensity=Number(t?.intensity),deviceReady=online&&playlistActive===1&&R3_WOW_SCENES.includes(preset)&&R3_WOW_PROFILE_IX[preset]===intensity&&Number.isFinite(brightness)&&brightness>=1&&brightness<=NIGHT_MAX;
  if(!deviceReady)return json(req,{ok:false,error:"Controller is not presently running the verified WOW R3 playlist state; adoption refused.",deviceReady,telemetry:t,action},409);
@@ -277,7 +285,7 @@ if(action==="r3_adopt"){
  return json(req,{ok:true,confirmed:true,adopted:true,deviceReady,control,telemetry:t,action,renderEngine:"r3-wow-max",sceneCount:R3_WOW_SCENES.length});
 }
 if(action==="r2_adopt"){
- const rt=await mqttRoundTrip(undefined,null,3000),t=rt?.telemetry??{},online=String(t?.status??"").toLowerCase()==="online"||!!t?.rawXml;
+ const rt=await mqttRoundTrip(undefined,null,3400),t=rt?.telemetry??{},online=String(t?.status??"").toLowerCase()==="online";
  const preset=Number(t?.preset),playlistActive=Number(t?.playlistActive),brightness=Number(t?.brightness);
  const deviceReady=online&&playlistActive===1&&R2_COURSE_SCENES.includes(preset)&&Number.isFinite(brightness)&&brightness>=1&&brightness<=NIGHT_MAX;
  if(!deviceReady)return json(req,{ok:false,error:"Controller is not presently running the verified R2 Course playlist state; adoption refused.",deviceReady,telemetry:t,action},409);
