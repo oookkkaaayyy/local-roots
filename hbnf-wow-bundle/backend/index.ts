@@ -7,7 +7,7 @@ import { scoreboardPages,scoreboardHoldMs,blendFrames } from "./scoreboard.ts";
 import { getTeaserOption } from "./teaser.ts";
 declare const EdgeRuntime:{waitUntil(p:Promise<unknown>):void};
 const DB_READ_TIMEOUT_MS=7000;
-const R2_COURSE_LIBRARY_REVISION="hbnf-r2-course-2026-09-20-v1",R3_WOW_LIBRARY_REVISION="hbnf-wow-r3-2026-09-21-v1",R2_COURSE_PLAYLIST=60,R2_COURSE_SCENES=[61,62,63,64,65,66,67,68],R3_WOW_SCENES=[61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88];
+const R2_COURSE_LIBRARY_REVISION="hbnf-r2-course-2026-09-20-v1",R3_WOW_LIBRARY_REVISION="hbnf-wow-r3-2026-09-21-v1",R2_COURSE_PLAYLIST=60,R2_COURSE_SCENES=[61,62,63,64,65,66,67,68],R3_WOW_SCENES=[61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88];\nconst R3_WOW_PROFILE_IX:Record<number,number>={61:96,62:216,63:56,64:16,65:176,66:216,67:136,68:176,69:56,70:16,71:136,72:176,73:16,74:216,75:56,76:176,77:16,78:136,79:216,80:16,81:176,82:136,83:56,84:176,85:216,86:16,87:136,88:176};
 function courseScenes(control:any){return control?.library_revision===R3_WOW_LIBRARY_REVISION?R3_WOW_SCENES:R2_COURSE_SCENES;}
 function courseRevision(control:any){return control?.library_revision===R3_WOW_LIBRARY_REVISION?R3_WOW_LIBRARY_REVISION:R2_COURSE_LIBRARY_REVISION;}
 const boundedFetch=async(input:any,init:any={})=>{const ac=new AbortController();const timer=setTimeout(()=>ac.abort(),DB_READ_TIMEOUT_MS);try{return await fetch(input,{...init,signal:ac.signal});}finally{clearTimeout(timer);}};
@@ -239,7 +239,7 @@ if(action==="r2_repair_playlist60"){
 if(action==="r3_adopt"){
  const rt=await mqttRoundTrip(undefined,null,3000),t=rt?.telemetry??{},online=String(t?.status??"").toLowerCase()==="online"||!!t?.rawXml;
  const preset=Number(t?.preset),playlistActive=Number(t?.playlistActive),brightness=Number(t?.brightness);
- const deviceReady=online&&playlistActive===1&&R3_WOW_SCENES.includes(preset)&&Number.isFinite(brightness)&&brightness>=1&&brightness<=NIGHT_MAX;
+ const intensity=Number(t?.intensity),deviceReady=online&&playlistActive===1&&R3_WOW_SCENES.includes(preset)&&R3_WOW_PROFILE_IX[preset]===intensity&&Number.isFinite(brightness)&&brightness>=1&&brightness<=NIGHT_MAX;
  if(!deviceReady)return json(req,{ok:false,error:"Controller is not presently running the verified WOW R3 playlist state; adoption refused.",deviceReady,telemetry:t,action},409);
  control=await setControlState(sb,{mode:bool(body?.live,false)?"event":"showcase",auto_live:bool(body?.live,false),resume_preset:R2_COURSE_PLAYLIST,show_family:"r2",show_preset:R2_COURSE_PLAYLIST,library_revision:R3_WOW_LIBRARY_REVISION,overlay_until:null,last_auto_takeover_at:null,live_score_cursor:0,last_live_overlay_kind:"ace"});
  return json(req,{ok:true,confirmed:true,adopted:true,deviceReady,control,telemetry:t,action,renderEngine:"r3-wow-3band",sceneCount:R3_WOW_SCENES.length});
