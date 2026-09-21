@@ -1,0 +1,19 @@
+{
+  "name": "HBNF Matrix WOW MAX Course Console",
+  "short_name": "HBNF Matrix",
+  "start_url": "/matrix.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#030705",
+  "theme_color": "#050807",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "id": "/matrix.html",
+  "description": "HB Night Flyers Matrix Course controller: WOW MAX v3 ready with R2 fallback, live scoring overlays, semantic events, diagnostics, and feature-gated cart lighting."
+}
