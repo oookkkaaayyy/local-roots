@@ -1,22 +1,73 @@
-# HBNF Matrix WOW R3 — bundled release checkpoint
+# HBNF Matrix WOW MAX V2 — final candidate checkpoint
 
-Release: hbnf-wow-r3-2026-09-21-v1
+Release: hbnf-wow-r3-max-2026-09-21-v2
+Field status: NOT INSTALLED — current Matrix remains under R2 ownership.
 
-- Production backend: hbnf-matrix-control v130
-- Backend SHA256: 52f60aac7902d2a74409574aac3a021501333918fd85f10ef97dab9f5c9ed4d8
-- Firmware SHA256: f2e78c4a1e879e3e6a22596cd71ada2312688b1f2a7b07c38db762432a09d89c
-- Firmware bytes: 1354560
-- OTA headroom: 218304 bytes
+## Firmware
+- WLED base: 16.0.1 / 29b389df1c1aaec6ff53aea742d17063b985906c
+- WOW MAX firmware SHA256: bbc9b3b15a024d291d355cc4c3d70c153821f3874884d0946a1b7687150a248a
+- Firmware bytes: 1,356,704
+- OTA headroom: 216,160 bytes
+- Target compile: PASS
 - Second clean compile byte-identical: PASS
-- Host 3-band/profile tests: PASS
-- Scene pack: 28 ANIMartRIX scenes, presets 61–88, playlist60, 18 s holds, 1.2 s transitions
-- Profiles: bass, mid, balanced, treble, full, impact
-- AudioReactive inputLevel=255 durable in every scene
-- HBNFFlow disabled in every scene
-- R2 rollback firmware retained exactly
-- Current R2 production state remained unchanged after backend v130 deployment
-- False R3 adoption on current R2 correctly refused
-- Final atomic package Drive ID: 1LeFSGbiJPGiBUtiTlQQTGqQvU_EeDZZy
-- Final atomic package SHA256: 72dc07489f1ea80ee6c76b3aa482004bc33c207a154d04cd7d196ac1b7f9c546
+- Six-hour deterministic 1,080,000-frame soak: PASS
+- Existing AudioReactive FFT only; no second FFT/audio pipeline
 
-Remaining physical gates only: one bundled install/reboot, one true 5-second cold boot, one consolidated music/visual review.
+## Visual/music engine
+- 28 ANIMartRIX scenes, presets 61–88, playlist60
+- 18 s holds / 1.2 s transitions / brightness8
+- Profiles: bass, mid, balanced, treble, full, impact
+- Derived features: band pulses, transient, energy, build, impact, drop
+- Styles: clean, punch, ring, spark, chroma, hybrid
+- Durable inputLevel255 + HBNFFlow disabled in every scene
+- Safe MoonModules-derived mapping/dimension/gamma improvements included
+- Unsafe documented fmod approximation excluded
+
+## Semantic overlays
+Pixel-event animations:
+- ACE
+- CTP
+- NICE SHOT
+- NICE PUTT
+- SKINS
+- GLOW
+
+Automatic cinematic dispatcher routes ACE/compound-ACE and skin-win events to semantic pixel animations on R2/WOW revisions while retaining safe text handling for other event classes.
+
+## Production compatibility
+- hbnf-matrix-control v132
+  SHA256 82193fbc8751dfaf8463b4008b4804eb1f759aacb1220e474b71cdd5be5b41d1
+- hbnf-cinematic-dispatcher v27
+  SHA256 98e73db93b4afab6d63aa917c3fd3a7c0e4ff4b30bdb2e4abb55d250003021dc
+- hbnf-watch-control v7
+  SHA256 30697ac5a4449cf8a4fb535a2ef6948922f593ca42ad3ca8c8d556d5c2d5a061
+- hbnf-watch-score v7
+- Phone/PWA candidate marker: hbnf-build-9.21.26-wow-max-v2
+- Phone/PWA regression: 29/29 PASS
+- Six semantic event selftest: PASS
+- False WOW adoption on current R2: correctly REFUSED
+
+## Final atomic package
+- Drive ID: 1TgXwOVb2jCId7mUxspaJYkL95Wm_FYq_
+- File: HBNF_WOW_MAX_BUNDLE_2026-09-21.zip
+- SHA256: 6143f52150346c8f98a52ec94dc2b5f4471c4669fecbd2ee9e0eaf2c84d2ecc0
+- Size: 2,053,610 bytes
+- Drive re-fetch hash: VERIFIED
+- ZIP integrity: PASS
+
+Superseded package:
+- Older R3 v1 Drive ID 1LeFSGbiJPGiBUtiTlQQTGqQvU_EeDZZy
+- MUST NOT be installed.
+
+## Rollback
+- Exact proven R2 firmware SHA256:
+  e81adb8523cf3a875d3ce05962d538b7c6cf3f178bfeaf42833678b9c4cd5d10
+- Installer creates exact pre-install filesystem/config/state backup.
+- ROLLBACK_TO_R2.command restores pre-install presets plus exact R2 firmware and R2 backend adoption.
+
+## Remaining unavoidable gates
+1. One bundled install/OTA reboot.
+2. One true >=5-second cold boot.
+3. One consolidated visual/music/event/overlay/network review.
+
+Until those pass, WOW MAX is a final candidate, not an accepted production release.
