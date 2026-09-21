@@ -49,6 +49,18 @@ function teamSummary(w:any,p:any){
  let last=-1; for(let i=17;i>=0;i--) if(s[i].trim()!==""){last=i;break;}
  const next=nextIdx<0?null:nextIdx+1,locked=cardLocked(w,p),name=teamName(p);return {id:String(p.id),name,card:String(p.cardId||""),next_hole:next,completed:s.filter(v=>v.trim()!=="").length,last_hole:last<0?null:last+1,last_score:last<0?null:Number(s[last]),locked,choice:locked?`LOCKED · ${name}`:next===null?`DONE · ${name}`:`H${next} · ${name}`};
 }
+function validateMutationAnchor(w:any,p:any,body:any,action:string){
+ const suppliedChoice=String(body?.choice||"");
+ const current=teamSummary(w,p);
+ if(suppliedChoice && current.choice!==suppliedChoice) throw new Error("That Watch selection is stale. Refresh the team list before changing a score.");
+ const explicitHole=Number(body?.hole)||0;
+ if(action==="clear"&&!explicitHole) throw new Error("Clear requires an explicit hole.");
+ if((action==="score"||action==="set")&&!explicitHole&&!suppliedChoice) throw new Error("A current Watch team choice is required when scoring the next hole.");
+ if(action==="undo"&&!suppliedChoice&&!explicitHole) throw new Error("A current Watch team choice or explicit hole is required for undo.");
+ if(explicitHole&&(explicitHole<1||explicitHole>18)) throw new Error("Hole must be 1-18.");
+ return current;
+}
+
 async function saveWithRetry(sb:any,mutate:(root:any)=>any){
  for(let attempt=0;attempt<4;attempt++){
   const {data,error}=await sb.from("league_state").select("state_json,updated_at").eq("id",1).single();
@@ -66,7 +78,7 @@ async function saveWithRetry(sb:any,mutate:(root:any)=>any){
 declare const EdgeRuntime:{waitUntil(p:Promise<unknown>):void};
 
 Deno.serve(async(req)=>{
- if(req.method==="GET") return json({ok:true,service:"hbnf-watch-score",version:"wow-max-v2",actions:["state","score","set","undo","clear"]});
+ if(req.method==="GET") return json({ok:true,service:"hbnf-watch-score",version:"wow-max-v3-safe-score",actions:["state","score","set","undo","clear"]});
  if(req.method==="OPTIONS") return new Response(null,{status:204,headers:cors});
  if(req.method!=="POST") return json({ok:false,error:"POST required"},405);
  const body=await req.json().catch(()=>({}));
@@ -94,18 +106,27 @@ Deno.serve(async(req)=>{
     if(!p&&body?.team_name){const n=clean(body.team_name);const matches=w.players.filter((x:any)=>teamName(x)===n);if(matches.length===1)p=matches[0];}
     if(!p) throw new Error("Team not found.");
     if(cardLocked(w,p)) throw new Error("That team/card is finalized.");
+    const anchored=validateMutationAnchor(w,p,body,action);
     p.scores=Array.from({length:18},(_,i)=>String((p.scores||[])[i]??""));
     let hole:number;
     if(action==="undo"){
-      let i=-1; for(let j=17;j>=0;j--) if(String(p.scores[j]).trim()!==""){i=j;break;}
-      if(i<0) throw new Error("No score to undo.");
-      hole=i+1; p.scores[i]="";
+      const explicit=Number(body?.hole)||0;
+      if(explicit){
+        hole=explicit;
+        if(String(p.scores[hole-1]).trim()==="") throw new Error("That hole has no score to undo.");
+      }else{
+        let i=-1; for(let j=17;j>=0;j--) if(String(p.scores[j]).trim()!==""){i=j;break;}
+        if(i<0) throw new Error("No score to undo.");
+        hole=i+1;
+      }
+      p.scores[hole-1]="";
     }else{
       hole=Number(body?.hole)||0;
       if(!hole){
-        const i=p.scores.findIndex((v:any)=>String(v).trim()===""); if(i<0) throw new Error("Round already complete for this team."); hole=i+1;
+        const anchoredHole=Number(anchored?.next_hole)||0;
+        if(!anchoredHole) throw new Error("Round already complete for this team.");
+        hole=anchoredHole;
       }
-      if(hole<1||hole>18) throw new Error("Hole must be 1-18.");
       if(action==="clear"){p.scores[hole-1]="";}
       else{
         const n=Number(body?.score);
