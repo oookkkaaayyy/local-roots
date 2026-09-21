@@ -31,7 +31,8 @@ Verified build gates:
 - second clean build byte-identical PASS
 - host profile/render tests PASS
 - six-hour deterministic music/render soak PASS
-- package preflight/mock-installer/UI tests PASS\n- full SHA256SUMS verification before controller mutation PASS
+- package preflight/mock-installer/UI tests PASS
+- full SHA256SUMS verification before controller mutation PASS
 - transaction-safe invisible staging restore + automatic R2 recovery path PASS
 - ZIP integrity + Drive re-fetch SHA verification PASS
 
