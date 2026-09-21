@@ -6,7 +6,7 @@ const EXPECTED={
   release:"hbnf-wow-r3-max-2026-09-21-v3",
   sceneCount:28,
   matrixUiMarker:"hbnf-fallback-wow-max-v2",
-  watchControlVersion:"wow-max-v3-aux-ready",
+  watchControlVersion:"wow-max-v3-audio-aux-ready",
   watchScoreVersion:"wow-max-v3-compatible-score",
   dispatcherVersion:"wow-max-v1"
 };
