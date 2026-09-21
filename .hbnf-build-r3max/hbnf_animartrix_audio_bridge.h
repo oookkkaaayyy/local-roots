@@ -112,6 +112,14 @@ class AnimartrixAudioBridge {
   bool active() const { return active_; }
   WowStyle style() const { return style_; }
   VibeProfile profile() const { return profile_; }
+  uint8_t amount() const { return amount_; }
+  uint8_t bassPulse() const { return bass8_; }
+  uint8_t midPulse() const { return mid8_; }
+  uint8_t treblePulse() const { return treble8_; }
+  uint8_t pulse() const { return pulse8_; }
+  uint8_t energy() const { return energy8_; }
+  uint8_t impact() const { return impact8_; }
+  uint8_t drop() const { return drop8_; }
 
  private:
   struct Spark { int16_t x16=0,y16=0,vx16=0,vy16=0; uint8_t life=0; };
