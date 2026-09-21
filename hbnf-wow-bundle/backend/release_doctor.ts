@@ -2,10 +2,14 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const BASE=(Deno.env.get("SUPABASE_URL")||"").replace(/\/$/,"")+"/functions/v1";
+const PWA_BASE="https://hbnightflyers.com";
 const EXPECTED={
   release:"hbnf-wow-r3-max-2026-09-21-v3",
   sceneCount:28,
   matrixUiMarker:"hbnf-fallback-wow-max-v3.1",
+  fullPwaMarker:"hbnf-build-9.21.26-wow-max-v3-full",
+  fullPwaAssetVersion:"9.21.26-wow-max-v3-full",
+  fullPwaManifestName:"HBNF Matrix WOW MAX Course Console",
   watchControlVersion:"wow-max-v3-audio-aux-ready",
   watchScoreVersion:"wow-max-v3-compatible-score",
   dispatcherVersion:"wow-max-v1"
@@ -13,6 +17,7 @@ const EXPECTED={
 const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"content-type","Access-Control-Allow-Methods":"GET,POST,OPTIONS","Content-Type":"application/json"};
 const json=(x:any,s=200)=>new Response(JSON.stringify(x),{status:s,headers:cors});
 async function get(path:string){const r=await fetch(BASE+"/"+path,{signal:AbortSignal.timeout(9000),cache:"no-store"});const t=await r.text();return{ok:r.ok,status:r.status,text:t,json:(()=>{try{return JSON.parse(t)}catch{return null}})()};}
+async function getExternal(path:string){const sep=path.includes("?")?"&":"?";const r=await fetch(PWA_BASE+path+sep+"release_doctor="+Date.now(),{signal:AbortSignal.timeout(9000),cache:"no-store",headers:{"Cache-Control":"no-cache"}});const t=await r.text();return{ok:r.ok,status:r.status,text:t,json:(()=>{try{return JSON.parse(t)}catch{return null}})()};}
 async function post(path:string,body:any){const r=await fetch(BASE+"/"+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),signal:AbortSignal.timeout(12000),cache:"no-store"});const t=await r.text();return{ok:r.ok,status:r.status,text:t,json:(()=>{try{return JSON.parse(t)}catch{return null}})()};}
 function hasAll(have:any,need:string[]){const s=new Set(Array.isArray(have)?have:[]);return need.every(x=>s.has(x));}
 
@@ -20,7 +25,7 @@ Deno.serve(async(req)=>{
  if(req.method==="OPTIONS")return new Response(null,{status:204,headers:cors});
  if(req.method!=="GET"&&req.method!=="POST")return json({ok:false,error:"GET or POST required"},405);
 
- const [pre,status,eventTest,watchCtl,watchScore,dispatcher,ui,aux,cart]=await Promise.all([
+ const [pre,status,eventTest,watchCtl,watchScore,dispatcher,ui,aux,cart,pwaHtml,pwaJs,pwaManifest]=await Promise.all([
   post("hbnf-matrix-control",{action:"release_preflight"}),
   post("hbnf-matrix-control",{action:"status"}),
   post("hbnf-matrix-control",{action:"wow_event_selftest"}),
@@ -29,9 +34,13 @@ Deno.serve(async(req)=>{
   get("hbnf-cinematic-dispatcher"),
   get("hbnf-matrix-ui"),
   get("hbnf-aux-control"),
-  get("hbnf-cart-orchestrator")
+  get("hbnf-cart-orchestrator"),
+  getExternal("/matrix.html"),
+  getExternal("/matrix-control.js"),
+  getExternal("/matrix-manifest.webmanifest")
  ]);
 
+ const pwaVersion=EXPECTED.fullPwaAssetVersion;
  const checks:any={
   matrixControlReachable:pre.ok&&status.ok,
   releaseContract:pre.json?.targetRelease===EXPECTED.release&&Number(pre.json?.targetSceneCount)===EXPECTED.sceneCount,
@@ -41,6 +50,9 @@ Deno.serve(async(req)=>{
   cinematicDispatcher:dispatcher.ok&&dispatcher.json?.service==="hbnf-cinematic-dispatcher"&&dispatcher.json?.version===EXPECTED.dispatcherVersion&&Array.isArray(dispatcher.json?.revisions)&&dispatcher.json.revisions.includes(EXPECTED.release),
   fallbackUi:ui.ok&&ui.text.includes(EXPECTED.matrixUiMarker),
   fallbackUiSelectors:ui.ok&&ui.text.includes("$$\u0028\u0027[data-bri]\u0027\u0029.forEach")&&ui.text.includes("$$\u0028\u0027[data-cart]\u0027\u0029.forEach")&&ui.text.includes("$$\u0028\u0027[data-uv]\u0027\u0029.forEach")&&ui.text.includes("busy=true;$$\u0028\u0027button\u0027\u0029.forEach")&&ui.text.includes("data-cart=\\\"showcase\\\""),
+  fullPwaHtml:pwaHtml.ok&&pwaHtml.text.includes(EXPECTED.fullPwaMarker)&&pwaHtml.text.includes("matrix-control.js?v="+pwaVersion)&&pwaHtml.text.includes("matrix-manifest.webmanifest?v="+pwaVersion)&&!pwaHtml.text.includes("v=9.17.26_3"),
+  fullPwaJs:pwaJs.ok&&pwaJs.text.includes(EXPECTED.fullPwaMarker)&&pwaJs.text.includes("WOW_RELEASE='"+EXPECTED.release+"'")&&pwaJs.text.includes("act('quick_event',{event})")&&pwaJs.text.includes("Math.min(255"),
+  fullPwaManifest:pwaManifest.ok&&pwaManifest.json?.name===EXPECTED.fullPwaManifestName&&pwaManifest.json?.id==="/matrix.html"&&pwaManifest.json?.start_url==="/matrix.html"&&pwaManifest.json?.display==="standalone",
   auxStaging:aux.ok&&aux.json?.service==="hbnf-aux-control"&&aux.json?.enabled===false&&aux.json?.policy?.mixedLoadAccepted===false&&aux.json?.selfTest?.ok===true&&Number(aux.json?.selfTest?.globalOffPreset)===223&&Number(aux.json?.selfTest?.uvOffReturnsToPreset)===200,
   cartStaging:cart.ok&&cart.json?.service==="hbnf-cart-orchestrator"&&cart.json?.auxEnabled===false&&cart.json?.mixedLoadAccepted===false&&cart.json?.safety?.globalOffAvailableWhenAuxDisabled===true&&cart.json?.safety?.startOrder==="matrix-then-aux"
  };
@@ -53,7 +65,7 @@ Deno.serve(async(req)=>{
  return json({
   ok:cloudReady,
   service:"hbnf-release-doctor",
-  version:"wow-v3-doctor-3",
+  version:"wow-v3-doctor-4-full-pwa-gate",
   expected:EXPECTED,
   cloudReady,
   matrixOnline,
@@ -61,6 +73,7 @@ Deno.serve(async(req)=>{
   awaitingPhysicalOnly,
   blockers,
   checks,
+  fullPwa:{htmlStatus:pwaHtml.status,jsStatus:pwaJs.status,manifestStatus:pwaManifest.status},
   matrix:{preflight:pre.json,status:status.json},
   aux:{prepared:aux.json?.ok===true,enabled:aux.json?.enabled===true,mixedLoadAccepted:aux.json?.policy?.mixedLoadAccepted===true},
   next:goLiveReady?"run-go-live":(awaitingPhysicalOnly?"power-matrix-and-run-go-live":"repair-cloud-contract")
