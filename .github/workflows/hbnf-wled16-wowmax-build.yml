@@ -151,6 +151,37 @@ jobs:
             '      wow["impact"] = anim.hbnfImpact();\n'
             '      wow["drop"] = anim.hbnfDrop();\n')
           s=s.replace(marker,telemetry+marker,1)
+          loop_old='''    void loop() {
+      if (!enabled || strip.isUpdating()) return;
+
+      // do your magic here
+      if (millis() - lastTime > 1000) {
+        //USER_PRINTLN("I'm alive!");
+        lastTime = millis();
+      }
+    }'''
+          loop_new='''    void loop() {
+      if (strip.isUpdating()) return;
+#ifndef WLED_DISABLE_MQTT
+      if (millis() - lastTime >= 1000) {
+        lastTime = millis();
+        if (WLED_MQTT_CONNECTED) {
+          char topic[64];
+          char payload[320];
+          snprintf_P(topic, sizeof(topic), PSTR("%s/wow"), mqttDeviceTopic);
+          snprintf_P(payload, sizeof(payload),
+            PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"audioActive\\\":%s,\\\"profile\\\":%u,\\\"style\\\":%u,\\\"amount\\\":%u,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u,\\\"pulse\\\":%u,\\\"energy\\\":%u,\\\"impact\\\":%u,\\\"drop\\\":%u}"),
+            anim.hbnfActive() ? "true" : "false",
+            anim.hbnfProfile(), anim.hbnfStyle(), anim.hbnfAmount(),
+            anim.hbnfBass(), anim.hbnfMid(), anim.hbnfTreble(),
+            anim.hbnfPulse(), anim.hbnfEnergy(), anim.hbnfImpact(), anim.hbnfDrop());
+          mqtt->publish(topic, 0, true, payload);
+        }
+      }
+#endif
+    }'''
+          assert loop_old in s
+          s=s.replace(loop_old,loop_new,1)
           p.write_text(s)
 
           ar=pathlib.Path('usermods/audioreactive/audio_reactive.cpp')
@@ -166,6 +197,8 @@ jobs:
           grep -q 'hbnfEnergy() const' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'wow\["audioActive"\]' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'wow\["drop"\]' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'PSTR("%s/wow")' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'mqtt->publish(topic, 0, true, payload)' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'usermod\[FPSTR(_inputLvl)\] = inputLevel' usermods/audioreactive/audio_reactive.cpp
           grep -q 'SEGMENT.virtualWidth() != num_x' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'hbnfAudio.beginFrame' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
@@ -235,6 +268,7 @@ jobs:
             echo FIRMWARE_RELEASE_TELEMETRY=PASS
             echo AUDIO_INPUTLEVEL_RUNTIME_TELEMETRY=PASS
             echo WOW_AUDIO_DIAGNOSTIC_TELEMETRY=PASS
+            echo WOW_MQTT_DIAGNOSTIC_TELEMETRY=PASS
             echo ASAN_UBSAN_FUZZ_GATE=PASS
             echo SOURCE_DATE_EPOCH=1789948800
             echo WEB_BUILD_TIME_REPRODUCIBLE=PASS
