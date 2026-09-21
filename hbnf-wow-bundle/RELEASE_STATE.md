@@ -71,3 +71,28 @@ The package itself contains the installer source, QA tests, current backend cont
 5. Separately complete SP803E/aux physical wiring/current validation before enabling aux or accepting mixed loads.
 
 Until those gates pass, WOW MAX is install-ready but not an accepted production Matrix release. R2 remains the exact rollback.
+
+
+## Post-freeze cloud hardening — 2026-09-21
+The verified install ZIP remains byte-frozen and unchanged. Backward-compatible cloud services advanced after freeze:
+- hbnf-watch-control v14 · b5461ddc8d8e4f69991f1f701c140bdf8a8f04a89b43f7c10049bc13de56b3c7
+  - one centralized action list
+  - Cart Showcase action added
+  - GET CORS method declaration corrected
+- hbnf-aux-control v2 · 3ef69a7ddd193d31c534572c102a613b7ca6f38e757de4b5100c3eee81da753e
+  - UV OFF semantics explicitly documented as return-to-music preset 200
+  - global ALL OFF remains distinct
+  - read-only commissioning/self-test contract added
+  - aux remains feature-gated OFF
+- hbnf-cart-orchestrator v2 · ce868bf4bd1524a24b2887dd2e090d59264a16e27c96606ea488d72fb6926f49
+  - global ALL OFF remains available even when aux is disabled
+  - normal combined scenes now start Matrix first, then aux
+  - if aux start fails after Matrix succeeds, partial state is explicit and Matrix is not unnecessarily rolled back
+- hbnf-matrix-ui v11 · 6bf41a7cb58234787b727cf81c3b118eec937eeab8951b6b70472f7830faaa15
+  - repaired fallback-console selector bugs that could stop initialization
+  - added Cart Showcase control
+  - build marker hbnf-fallback-wow-max-v3.1
+- hbnf-release-doctor v6 · 6519993a19359aea139b5c238de381cb6b3d189605910c12215c08b5eee76558
+  - now gates Watch Showcase, aux commissioning self-test, cart global-off safety, and fallback-console selector health
+
+These changes do not alter firmware, presets, Matrix ownership, or the final ZIP. The installer’s live release-doctor gate will validate the newer compatible cloud contract at go-live.
