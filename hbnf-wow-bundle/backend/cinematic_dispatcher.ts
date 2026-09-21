@@ -7,7 +7,8 @@ const HOST=(Deno.env.get("HBNF_MQTT_HOST")||"broker.emqx.io").trim();
 const PORT=Math.max(1,Number(Deno.env.get("HBNF_MQTT_PORT")||"1883")||1883);
 const USER=Deno.env.get("HBNF_MQTT_USER")||"", PASS=Deno.env.get("HBNF_MQTT_PASS")||"";
 const DEV=(Deno.env.get("HBNF_MQTT_TOPIC")||"hbnf/cart/wled1").trim();
-const API=`${DEV}/api`, G=`${DEV}/g`, FLOW=`${DEV}/flow`, URL=`mqtt://${HOST}:${PORT}`, FLOW_LIBRARY_REVISION="hbnf-flow-2026-09-19-v10", R2_REV="hbnf-r2-course-2026-09-20-v1", WOW_REV="hbnf-wow-r3-max-2026-09-21-v2";\nconst CONTROL_URL=(Deno.env.get("SUPABASE_URL")||"").replace(/\\/$/,"")+"/functions/v1/hbnf-matrix-control";
+const API=`${DEV}/api`, G=`${DEV}/g`, FLOW=`${DEV}/flow`, URL=`mqtt://${HOST}:${PORT}`, FLOW_LIBRARY_REVISION="hbnf-flow-2026-09-19-v10", R2_REV="hbnf-r2-course-2026-09-20-v1", WOW_REV="hbnf-wow-r3-max-2026-09-21-v2";
+const CONTROL_URL=(Deno.env.get("SUPABASE_URL")||"").replace(/\/$/,"")+"/functions/v1/hbnf-matrix-control";
 const opts=(id:string)=>({connectTimeout:6500,reconnectPeriod:0,clean:true,clientId:id,username:USER||undefined,password:PASS||undefined});
 const sleep=(ms:number)=>new Promise(r=>setTimeout(r,ms));
 const clean=(v:any)=>String(v??"").replace(/[\r\n\t]+/g," ").replace(/\s+/g," ").trim().slice(0,63);
@@ -24,7 +25,9 @@ function eventText(e:any){const p=e.payload??{},type=e.event_type,skins=Math.max
 function holdMs(text:string){const n=[...clean(text)].length;return Math.max(3800,Math.min(7500,3200+n*115));}
 function textSeg(text:string,bri=1){return {id:3,start:0,stop:32,startY:0,stopY:16,on:true,bri,fx:122,sx:230,ix:128,c1:0,c2:0,c3:16,o1:false,o2:true,o3:false,bm:2,pal:0,col:[[255,255,255],[0,0,0],[0,0,0]],sel:false,n:clean(text)};}
 const TRANSITION_TENTHS=12,TRANSITION_STYLE=0,CARD_TT=3;
-function resumeTargetBri(ps:number){return ps===52?68:ps===53?64:ps===54?50:ps===55?66:64;}\nfunction quickKind(e:any){const t=String(e?.event_type??"").toLowerCase();if(t==="ace"||t==="compound_ace_skin")return "ace";if(t==="skin_win")return "skins";return null;}\nasync function controlQuick(kind:string){const r=await fetch(CONTROL_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"quick_event",event:kind})});const j=await r.json().catch(()=>({}));if(!r.ok||j?.ok===false)throw new Error(`semantic quick event failed ${r.status}: ${j?.error??"unknown"}`);return j;}
+function resumeTargetBri(ps:number){return ps===52?68:ps===53?64:ps===54?50:ps===55?66:64;}
+function quickKind(e:any){const t=String(e?.event_type??"").toLowerCase();if(t==="ace"||t==="compound_ace_skin")return "ace";if(t==="skin_win")return "skins";return null;}
+async function controlQuick(kind:string){const r=await fetch(CONTROL_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"quick_event",event:kind})});const j=await r.json().catch(()=>({}));if(!r.ok||j?.ok===false)throw new Error(`semantic quick event failed ${r.status}: ${j?.error??"unknown"}`);return j;}
 async function currentControl(sb:any){const{data,error}=await sb.from("hbnf_matrix_control_state").select("mode,auto_live,auto_cinematics,show_family,show_preset,resume_preset,library_revision").eq("id",1).single();if(error)throw error;return data;}
 async function playSafe(sb:any,e:any,resumePreset:number|null,brightness:number,text=eventText(e),native=false){
   const b=Math.max(1,Math.min(72,Math.round(brightness||8)));
