@@ -1,59 +1,56 @@
-HBNF MATRIX — WOW MAX V2 BUNDLE
+HBNF MATRIX — WOW MAX V3 INSTALL-READY BUNDLE
 
-Release: hbnf-wow-r3-max-2026-09-21-v2
-Status: FINAL CANDIDATE — NOT FIELD-INSTALLED YET
+Release: hbnf-wow-r3-max-2026-09-21-v3
+Physical status: NOT INSTALLED. The Matrix remains on the proven R2 fallback until go-live.
 
-Purpose: one bundled upgrade after R2 is frozen as the known-good rollback.
+NORMAL USER PATH
+1. Use only GO_LIVE_WOW_MAX.command.
+2. Keep the Mac on the same network as the Matrix and leave WLED/phone/Watch controls alone until the terminal reports PASS.
+3. When prompted, unplug Matrix power and keep it off until the terminal says RESTORE POWER NOW.
+4. The command automatically verifies the cold boot and prints one HBNF_GO_LIVE_PASS line.
 
-WOW MAX uses the existing WLED AudioReactive 16-bin FFT/microphone pipeline only. It does not add a second FFT or a second audio capture path. The local HBNF music engine derives bass, mid, treble, transient, pulse, energy, build, impact, and drop features from that existing stream.
+GO_LIVE_WOW_MAX.command performs, in order:
+- complete package checksum/preflight QA
+- independent cloud release-doctor check
+- Matrix-control release preflight
+- exact Matrix discovery + safety checks
+- exact backup + rollback pointer before mutation
+- invisible preset staging with unrelated-preset preservation proof
+- one R3 OTA reboot
+- exact v3 runtime verification
+- backend adoption only after live proofs
+- guided >=5-second cold-power gate
+- automatic cold-boot verification
 
-The Course candidate contains 28 ANIMartRIX scenes (presets 61–88) under playlist 60:
-- uniform 18-second holds
-- 1.2-second transitions
-- brightness 8 default
-- durable AudioReactive inputLevel=255
-- durable HBNFFlow disabled
-- six music-response profiles: bass, mid, balanced, treble, full, impact
-- six render styles: clean, punch, ring, spark, chroma, hybrid
-- per-scene render amount
-- semantic pixel-event animations: ACE, CTP, NICE SHOT, NICE PUTT, SKINS, GLOW
+Failure behavior:
+- before firmware flash: exact pre-install presets + boot defaults are restored with no flash
+- after R3 flash: reachable controller automatically recovers to exact proven R2 + pre-install presets/boot defaults
+- manual ROLLBACK_TO_R2.command remains available
 
-MoonModules-derived changes included only when bounded and source-audited:
-- no-serpentine ANIMartRIX mapping option
-- dimension-change reinitialization
-- optional gamma post-processing hook
-The documented unsafe long-runtime fmod approximation was explicitly NOT included.
+Firmware authority:
+- witness run 35636799273 / artifact 10656563438
+- SHA256 4d95c66341620077d311035877a20e133714075f87d65a77da0f49e2020ed3b2
+- 1,357,904 bytes / 214,960-byte OTA headroom
+- compile, byte-identical rebuild, six-hour soak, fuzz, ASan+UBSan, and runtime telemetry gates PASS
 
-Verified build gates:
-- exact WLED 16.0.1 base commit 29b389df1c1aaec6ff53aea742d17063b985906c
-- target ESP32 compile PASS
-- OTA slot/headroom PASS
-- second clean build byte-identical PASS
-- host profile/render tests PASS
-- six-hour deterministic music/render soak PASS
-- package preflight/mock-installer/UI tests PASS
-- full SHA256SUMS verification before controller mutation PASS
-- transaction-safe invisible staging restore + automatic R2 recovery path PASS
-- ZIP integrity + Drive re-fetch SHA verification PASS
+Final install artifact:
+- Drive ID 1IjphyhNefuCCPO9fEHQQlX67Sh_xxuvz
+- HBNF_WOW_MAX_V3_2026-09-21_FINAL.zip
+- SHA256 bd5aaadfe4c765f4a9638c372c518a0b121ddaf555444a801db894c025457e30
+- Drive raw re-fetch byte-identical PASS
+- unzip + embedded package preflight PASS
+- UI regression 29/29 PASS
 
-Production compatibility already staged:
-- hbnf-matrix-control v132
-- hbnf-cinematic-dispatcher v27
-- hbnf-watch-control v8
-- hbnf-watch-score v8\n- adaptive fallback console v9 (hbnf-fallback-wow-max-v2)
-These remain backward-compatible with the current R2 controller state. False WOW adoption is refused until the device is actually running the verified WOW scene state.
+Watch:
+- backend controls are prepared on hbnf-watch-control v13 / hbnf-watch-score v10
+- no plaintext credential is packaged
+- final Apple Watch acceptance must be done on the real Watch after Matrix go-live
 
-Final package:
-- Drive ID: 1TgXwOVb2jCId7mUxspaJYkL95Wm_FYq_
-- File: HBNF_WOW_MAX_BUNDLE_2026-09-21_FINAL.zip
-- ZIP SHA256: 3ac3a63d627205e7f21443fa2456c8183e50ec9b76847ccaf4c697a5d4cfc2b4
-- Size: 2,088,177 bytes
+Aux/SP803E:
+- hbnf-aux-control v1 and hbnf-cart-orchestrator v1 are prepared
+- aux remains FEATURE-GATED OFF
+- mixed loads remain rejected until physical wiring/current validation
 
-DO NOT INSTALL the older R3 v1 package (Drive ID 1LeFSGbiJPGiBUtiTlQQTGqQvU_EeDZZy).
+Do not install any older R3/v1/v2 package. The file above is the sole current v3 install artifact.
 
-Remaining physical acceptance gates only:
-1. Run INSTALL_WOW_MAX.command once with explicit visible-reboot warning.
-2. Perform one true >=5-second cold power cycle.
-3. Complete one consolidated music/visual/event/overlay/network review.
-
-R2 remains the exact rollback until all three gates pass.
+WOW MAX is install-ready, not yet production-accepted. R2 remains the rollback until physical/visual/Watch acceptance passes.
