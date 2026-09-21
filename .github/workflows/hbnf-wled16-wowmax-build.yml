@@ -41,6 +41,12 @@ jobs:
           print('vibe',hashlib.sha256((p/'hbnf_vibe16.h').read_bytes()).hexdigest())
           print('bridge',hashlib.sha256((p/'hbnf_animartrix_audio_bridge.h').read_bytes()).hexdigest())
           PY
+          {
+            echo "=== HBNF FLOW SOURCE AUDIT ==="
+            find /tmp/hbnf-r1/hbnf_flow -maxdepth 4 -type f -print
+            echo "=== VERSION / TELEMETRY REFERENCES ==="
+            grep -R -n -E 'HBNFFlow|1\.0\.[0-9]+|version' /tmp/hbnf-r1/hbnf_flow || true
+          } > /tmp/hbnf-flow-source-audit.txt
 
       - name: WOW MAX host gates
         shell: bash
@@ -153,7 +159,8 @@ jobs:
           SHA=$(sha256sum "$BIN" | awk '{print $1}')
           VIBE=$(sha256sum .hbnf-build-r3max/hbnf_vibe16.h | awk '{print $1}')
           BRIDGE=$(sha256sum .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h | awk '{print $1}')
-          cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-wowmax-source.patch /tmp/wowmax-vibe.log /tmp/wowmax-bridge.log /tmp/wowmax-soak.log /tmp/wowmax-fuzz.log /tmp/artifacts/
+          cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-wowmax-source.patch /tmp/wowmax-vibe.log /tmp/wowmax-bridge.log /tmp/wowmax-soak.log /tmp/wowmax-fuzz.log /tmp/hbnf-flow-source-audit.txt /tmp/artifacts/
+          cp -R /tmp/hbnf-r1/hbnf_flow/hbnf_flow /tmp/artifacts/hbnf_flow_source
           cp .hbnf-build-r3max/hbnf_vibe16.h .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h /tmp/artifacts/
           {
             echo wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
