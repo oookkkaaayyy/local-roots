@@ -78,10 +78,33 @@ jobs:
             'This updates web assets only; it does not flash, reboot, or command the Matrix.' \
             > "$PKG/START-HERE.txt"
 
+      - name: Build permission-safe web-deploy ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY2'
+          import pathlib,zipfile,hashlib
+          src=pathlib.Path('/tmp/HBNF_MATRIX_FULL_PWA_WOW_MAX_V3_WEB_DEPLOY')
+          out=pathlib.Path('/tmp/HBNF_MATRIX_FULL_PWA_WOW_MAX_V3_WEB_DEPLOY.zip')
+          if out.exists(): out.unlink()
+          with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for p in sorted(x for x in src.rglob('*') if x.is_file()):
+                  rel=p.relative_to(src).as_posix()
+                  zi=zipfile.ZipInfo(rel,(2026,9,22,0,0,0));zi.create_system=3
+                  zi.external_attr=(0o100755 if rel.endswith('.command') else 0o100644)<<16
+                  zi.compress_type=zipfile.ZIP_DEFLATED
+                  z.writestr(zi,p.read_bytes())
+          with zipfile.ZipFile(out) as z:
+              for n in ['DEPLOY_HBNF_MATRIX_FULL_PWA.command','DEPLOY_FULL_PWA.command','WEB_DEPLOY.command']:
+                  assert ((z.getinfo(n).external_attr>>16)&0o777)==0o755
+          h=hashlib.sha256(out.read_bytes()).hexdigest()
+          print(f'HBNF_PWA_DISTRIBUTION_PASS sha256={h} bytes={out.stat().st_size}')
+          PY2
+
       - name: Upload verified Mac web-deploy package
         uses: actions/upload-artifact@v4
         with:
           name: HBNF_MATRIX_FULL_PWA_WOW_MAX_V3_WEB_DEPLOY
-          path: /tmp/HBNF_MATRIX_FULL_PWA_WOW_MAX_V3_WEB_DEPLOY
+          path: /tmp/HBNF_MATRIX_FULL_PWA_WOW_MAX_V3_WEB_DEPLOY.zip
           if-no-files-found: error
           retention-days: 30
