@@ -52,6 +52,8 @@ assert contract["aux"]["uv_short"]["gpio"]==26
 assert contract["sync"]["group_bitfield"]==1
 assert contract["sync"]["receive_segment_options"] is False
 assert contract["sync"]["receive_segment_bounds"] is False
+assert contract["sync"]["receive_brightness"] is False
+assert contract["sync"]["brightness_independent"] is True
 
 p=subprocess.run([sys.executable,str(ROOT/"hbnf-aux-lighting/commissioning/local_commission.py"),"--selftest"],capture_output=True,text=True,check=True)
 assert "HBNF_AUX_LOCAL_COMMISSION_SELFTEST_PASS" in p.stdout
