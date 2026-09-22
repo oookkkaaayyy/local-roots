@@ -19,4 +19,10 @@ assert "registry28-fixed-1d-v1" in src
 print("HBNF_AUX_R3_PATCH_CONTRACT_PASS")
 
 assert 'mqtt_old' in src
-assert 'projection\\\\\\":\\\\\\"1d-row' in src
+assert 'projection\\\\\\":\\\\\\"fold2-1d-v1' in src
+
+assert 'hbnfCanvasH = 2' in src
+assert 'hbnfCanvasW' in src
+assert 'SEGMENT.virtualLength()' in src
+assert 'fold2-1d-v1' in src
+assert contract["aux"]["projection"]=="fold2-1d-v1"
