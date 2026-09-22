@@ -18,7 +18,7 @@
     "firmware_release": "hbnf-wow-aux-r3-2026-09-22-v1",
     "engine": "aux-r3-wow-1d",
     "buildWitness": "registry28-fixed-1d-v1",
-    "projection": "1d-row",
+    "projection": "fold2-1d-v1",
     "effect_ids": [220, 247],
     "scene_count": 28,
     "mqtt_topic": "hbnf/cart/aux1",
