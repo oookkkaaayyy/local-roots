@@ -23,9 +23,9 @@ Primary references:
 
 ## Safe workflow
 
-1. **Read-only discovery first.** Run:
-   `python3 local_commission.py --matrix 192.168.68.89`
-   Do not mutate either controller from this first pass.
+1. **Read-only discovery first.** Double-click `COMMISSION_HBNF_AUX.command` (preferred) or run:
+   `python3 commission_operator.py --matrix 192.168.68.89 --backup`
+   This verifies the frozen package, discovers WLED nodes, creates a timestamped aux backup when the target is unambiguous, and emits the exact next action. It does not mutate either controller.
 
 2. Identify the SP803E unambiguously. If multiple non-Matrix WLED nodes appear, inspect IP/MAC/device info and do not guess.
 

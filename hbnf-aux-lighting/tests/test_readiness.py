@@ -59,6 +59,16 @@ p=subprocess.run([sys.executable,str(ROOT/"hbnf-aux-lighting/commissioning/local
 assert "HBNF_AUX_LOCAL_COMMISSION_SELFTEST_PASS" in p.stdout
 print("HBNF_AUX_LOCAL_HELPER_PASS")
 
+op=ROOT/"hbnf-aux-lighting/commissioning/commission_operator.py"
+p=subprocess.run([sys.executable,str(op),"--selftest"],capture_output=True,text=True,check=True)
+assert "HBNF_AUX_COMMISSION_OPERATOR_SELFTEST_PASS" in p.stdout
+launcher=(ROOT/"hbnf-aux-lighting/commissioning/COMMISSION_HBNF_AUX.command").read_text()
+assert 'commission_operator.py' in launcher
+assert '--backup' in launcher
+assert '--prepare-sync' not in launcher
+assert 'READ-ONLY' in launcher
+print("HBNF_AUX_COMMISSION_OPERATOR_GATE_PASS")
+
 assert 'auxRelease:"hbnf-wow-aux-r3-2026-09-22-v1"' in aux
 assert 'auxEngine:"aux-r3-wow-1d"' in aux
 assert 'auxBuildWitness:"registry28-fixed-1d-v1"' in aux
@@ -67,9 +77,7 @@ assert 'AUXWOW' in aux
 assert 'runtimeTrusted' in aux
 assert 'auxRuntimeReady' in orch
 assert 'exact custom R3 runtime' in orch
-
 assert 'receiveBrightness:false' in aux
 assert 'brightnessIndependent:true' in aux
-
 assert 'projection:"fold2-1d-v1"' in aux
 assert 'runtime?.projection==="fold2-1d-v1"' in aux

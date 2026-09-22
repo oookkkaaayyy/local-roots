@@ -9,6 +9,7 @@ on:
       - '.hbnf-build-r3max/**'
       - '.github/workflows/hbnf-sp803e-aux-r3-build.yml'
       - 'hbnf-wow-bundle/config/WOW_SCENES_V2.json'
+      - 'hbnf-aux-lighting/commissioning/**'
   workflow_dispatch:
 
 permissions:
@@ -42,7 +43,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python - <<'PY'
+          python - <<'PY2'
           import base64, hashlib, pathlib, tarfile
           src=pathlib.Path('.hbnf-build-r1/bundle.b64')
           raw=base64.b64decode(src.read_bytes())
@@ -53,7 +54,7 @@ jobs:
           patch=pathlib.Path('/tmp/hbnf-r1/firmware_patch')
           (patch/'hbnf_vibe16.h').write_bytes(pathlib.Path('.hbnf-build-r3max/hbnf_vibe16.h').read_bytes())
           (patch/'hbnf_animartrix_audio_bridge.h').write_bytes(pathlib.Path('.hbnf-build-r3max/hbnf_animartrix_audio_bridge.h').read_bytes())
-          PY
+          PY2
 
       - name: Fetch exact WLED 16.0.1 base
         shell: bash
@@ -63,7 +64,7 @@ jobs:
           cd /tmp/wled
           git checkout 29b389df1c1aaec6ff53aea742d17063b985906c
           test "$(git rev-parse HEAD)" = "29b389df1c1aaec6ff53aea742d17063b985906c"
-          python - <<'PY'
+          python - <<'PY2'
           import pathlib
           p=pathlib.Path('tools/cdata.js')
           s=p.read_text()
@@ -71,7 +72,7 @@ jobs:
           new='function generateBuildTime() {\n  const reproducible = Number(process.env.SOURCE_DATE_EPOCH || 0);\n  return reproducible > 0 ? reproducible : Math.floor(Date.now() / 1000);\n}'
           assert old in s
           p.write_text(s.replace(old,new,1))
-          PY
+          PY2
 
       - name: Install pinned dependencies
         shell: bash
@@ -159,6 +160,9 @@ jobs:
           cp .hbnf-build-aux-r3/apply_aux_r3.py .hbnf-build-aux-r3/test_aux_contract.py .hbnf-build-aux-r3/audit_animartrix_projection.py /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/contract.json /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/local_commission.py /tmp/artifacts/
+          cp hbnf-aux-lighting/commissioning/commission_operator.py /tmp/artifacts/
+          cp hbnf-aux-lighting/commissioning/COMMISSION_HBNF_AUX.command /tmp/artifacts/
+          chmod +x /tmp/artifacts/COMMISSION_HBNF_AUX.command
           cp hbnf-aux-lighting/commissioning/README.md /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/CODEX_RUNBOOK.md /tmp/artifacts/
           cp hbnf-wow-bundle/config/WOW_SCENES_V2.json /tmp/artifacts/
@@ -182,11 +186,30 @@ jobs:
             echo FOLD2_PROJECTION_SOURCE_AUDIT=PASS
             echo SECOND_CLEAN_BUILD_BYTE_IDENTICAL=PASS
             echo OTA_SLOT_GATE=PASS
+            echo COMMISSION_OPERATOR_INCLUDED=YES
             echo SOURCE_DATE_EPOCH=1790035200
             echo github_run_id=$GITHUB_RUN_ID
             echo github_sha=$GITHUB_SHA
           } > /tmp/artifacts/FINAL_METRICS.txt
           sha256sum "$BIN" > /tmp/artifacts/firmware-sha256.txt
+
+      - name: Commission operator selftest
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/artifacts/HBNF_SP803E_AUX_R3.bin hbnf-aux-lighting/commissioning/HBNF_SP803E_AUX_R3.bin
+          cp /tmp/artifacts/FINAL_METRICS.txt hbnf-aux-lighting/commissioning/FINAL_METRICS.txt
+          python hbnf-aux-lighting/commissioning/commission_operator.py --selftest
+          python - <<'PY2'
+          import pathlib,sys
+          p=pathlib.Path('hbnf-aux-lighting/commissioning').resolve()
+          sys.path.insert(0,str(p))
+          import commission_operator as c
+          r=c.verify_package(p)
+          assert r['ok'],r
+          print('HBNF_AUX_COMMISSION_PACKAGE_VERIFY_PASS')
+          PY2
+          rm -f hbnf-aux-lighting/commissioning/HBNF_SP803E_AUX_R3.bin hbnf-aux-lighting/commissioning/FINAL_METRICS.txt
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

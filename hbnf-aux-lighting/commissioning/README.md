@@ -2,6 +2,12 @@
 
 This directory is the guarded final commissioning path for the SP803E underglow/UV controller after physical wiring exists.
 
+## Fast entry point
+
+Use `COMMISSION_HBNF_AUX.command` on the Mac first. It is intentionally **read-only**: it verifies the frozen package, discovers WLED nodes, identifies an unambiguous aux candidate when possible, takes a timestamped backup to the Desktop, and writes `HBNF_AUX_PREFLIGHT_LATEST.json`. It will not flash firmware, change Matrix settings, change LED buses, or open the database gate.
+
+`commission_operator.py` is the underlying read-only operator. The older `local_commission.py` remains the separately guarded low-level helper; its only mutation mode is `--prepare-sync`, and it refuses unless exact Matrix R3 + Aux R3 identities are already proven.
+
 ## Frozen architecture
 
 - Matrix R3 is the sole **visual and audio master**.
@@ -32,10 +38,6 @@ Current verified fold2 firmware content:
 
 The final package records its own GitHub run ID and source commit in `FINAL_METRICS.txt`.
 
-## local_commission.py
+## Physical boundary
 
-Default behavior is **read-only**. It discovers/inspects WLED nodes and verifies exact Matrix/Aux runtime identity.
-
-The only mutation flag is `--prepare-sync`. It is guarded by exact Matrix R3 and exact Aux custom-R3 identity checks, then configures only synchronization plumbing and selected-segment state. It does not guess or change LED bus lengths, physical GPIO output definitions, current limits, Wi-Fi credentials, firmware, or presets.
-
-Physical bus lengths/output wiring must be inspected on the real SP803E before that separate hardware-configuration step is accepted.
+The software package deliberately does **not** guess the final WS2811 logical pixel count or color order. Those depend on the actual installed/cut strip and must be established from the real hardware before output-bus configuration is accepted. WLED firmware OTA and `/json/cfg` are supported mechanisms, but physical output configuration remains a later guarded step rather than an unattended action.
