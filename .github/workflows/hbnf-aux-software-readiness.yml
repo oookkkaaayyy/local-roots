@@ -1,0 +1,21 @@
+name: HBNF Aux Software Readiness
+on:
+  push:
+    branches:
+      - hbnf-matrix-wow-bundle-r3-20260921
+    paths:
+      - 'hbnf-aux-lighting/**'
+      - 'hbnf-wow-bundle/backend/watch_control.ts'
+      - 'supabase/migrations/20260922061932_create_hbnf_aux_commissioning_state.sql'
+      - 'supabase/migrations/20260922062015_harden_hbnf_aux_commissioning_gate.sql'
+      - '.github/workflows/hbnf-aux-software-readiness.yml'
+  workflow_dispatch:
+jobs:
+  readiness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python hbnf-aux-lighting/tests/test_readiness.py
