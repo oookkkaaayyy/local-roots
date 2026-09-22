@@ -1,0 +1,15 @@
+HB NIGHT FLYERS — SP803E / AUX COMMISSIONING
+
+1. Extract this ZIP completely.
+2. Put the Mac on the same Wi-Fi/hotspot as the Matrix and SP803E.
+3. Power the Matrix and SP803E.
+4. Double-click COMMISSION_HBNF_AUX.command.
+
+The launcher is read-only until it shows exact targets and asks you to type YES.
+Before any mutation it verifies the frozen firmware package and writes fresh device backups to the Desktop.
+It stops rather than guesses if it cannot uniquely identify Matrix vs AUX.
+
+Two physical facts are intentionally not guessed: installed WS2811 logical pixel/group count and verified strip color order. The launcher asks for them only when the hardware-config phase is actually reached.
+
+Local Matrix→AUX visual/audio sync does not configure the public broker.emqx.io MQTT broker.
+Supabase AUX enablement is not automatic. Physical current/heat/UV/sync acceptance remains a later evidence gate.
