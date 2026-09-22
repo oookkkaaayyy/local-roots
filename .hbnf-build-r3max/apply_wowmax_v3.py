@@ -65,7 +65,7 @@ telemetry="""    void addToJsonState(JsonObject& root) override {
       if (wow.isNull()) wow = root.createNestedObject("HBNFWOW");
       wow["release"] = "hbnf-wow-r3-max-2026-09-21-v3";
       wow["engine"] = "r3-wow-max";
-      wow["buildWitness"] = "registry28-v2";
+      wow["buildWitness"] = "registry28-fixed-v3";
       wow["fxRegistered"] = hbnfFxRegistered;
       wow["fxFailed"] = hbnfFxFailed;
       wow["modeCount"] = strip.getModeCount();
@@ -106,7 +106,7 @@ loop_new="""    void loop() {
           char payload[480];
           snprintf_P(topic, sizeof(topic), PSTR("%s/wow"), mqttDeviceTopic);
           snprintf_P(payload, sizeof(payload),
-            PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"buildWitness\\\":\\\"registry28-v2\\\",\\\"fxRegistered\\\":%u,\\\"fxFailed\\\":%u,\\\"modeCount\\\":%u,\\\"fxFirst\\\":%u,\\\"fxLast\\\":%u,\\\"audioActive\\\":%s,\\\"profile\\\":%u,\\\"style\\\":%u,\\\"amount\\\":%u,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u,\\\"pulse\\\":%u,\\\"energy\\\":%u,\\\"impact\\\":%u,\\\"drop\\\":%u}"),
+            PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"buildWitness\\\":\\\"registry28-fixed-v3\\\",\\\"fxRegistered\\\":%u,\\\"fxFailed\\\":%u,\\\"modeCount\\\":%u,\\\"fxFirst\\\":%u,\\\"fxLast\\\":%u,\\\"audioActive\\\":%s,\\\"profile\\\":%u,\\\"style\\\":%u,\\\"amount\\\":%u,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u,\\\"pulse\\\":%u,\\\"energy\\\":%u,\\\"impact\\\":%u,\\\"drop\\\":%u}"),
             hbnfFxRegistered, hbnfFxFailed, strip.getModeCount(), hbnfFxFirst, hbnfFxLast,
             anim.hbnfActive() ? "true" : "false",
             anim.hbnfProfile(), anim.hbnfStyle(), anim.hbnfAmount(),
@@ -121,12 +121,10 @@ s,n=re.subn(loop_pat,loop_new,s,count=1)
 if n!=1:
     raise RuntimeError(f"mqtt-loop: expected 1 replacement, got {n}")
 
-# WLED 16.0.1 has MODE_COUNT=220 and dynamic effect IDs stop before 255.
-# The upstream ANIMartRIX usermod tries to register 51 effects; only 35 fit
-# after the 220 core modes, so its tail silently fails. Keep only the 28 effects
-# used by the HBNF WOW
-# scene contract so every required effect has a real runtime slot while all
-# stock WLED effects remain intact.
+# WLED 16.0.1 has MODE_COUNT=220 and effect id 255 is the addEffect()
+# failure sentinel. Register the 28 HBNF WOW effects at deterministic IDs
+# 220..247 in scene order. This avoids dynamic-slot ambiguity and makes the
+# live effect map independently auditable after OTA.
 required_effects = [
     "Complex_Kaleido_3","Big_Caleido","Parametric_Water","RGB_Blobs5",
     "Polar_Waves","Zoom2","Complex_Kaleido_4","Complex_Kaleido_6","Water",
@@ -135,37 +133,44 @@ required_effects = [
     "Distance_Experiment","Lava1","Caleido2","Yves","Scaledemo1","Zoom",
     "Complex_Kaleido","RGB_Blobs3","SM5","Module_Experiment10",
 ]
+
+fx_h = (root/"wled00/FX.h").read_text()
+mc = re.search(r"#define\s+MODE_COUNT\s+(\d+)", fx_h)
+if not mc:
+    raise RuntimeError("MODE_COUNT not found")
+base_mode_count = int(mc.group(1))
+if base_mode_count + len(required_effects) >= 255:
+    raise RuntimeError(f"effect registry overflow: base={base_mode_count} required={len(required_effects)}")
+
 setup_start = s.index("    void setup() {")
 setup_end = s.index("      initDone = true;", setup_start)
 setup = s[setup_start:setup_end]
 reg_re = re.compile(r"^\s*strip\.addEffect\(255, &mode_([A-Za-z0-9_]+), _data_FX_mode_[A-Za-z0-9_]+\);\s*$", re.M)
 registered = reg_re.findall(setup)
-if len(registered) < len(required_effects):
-    raise RuntimeError(f"unexpected ANIMartRIX registration count: {len(registered)}")
 missing_symbols = [name for name in required_effects if name not in registered]
 if missing_symbols:
-    raise RuntimeError(f"required ANIMartRIX symbols missing before prune: {missing_symbols}")
-required_set = set(required_effects)
-def rewrite_registration(m):
-    name=m.group(1)
-    if name not in required_set:
-        return ""
-    return (
-        f'      {{ const uint8_t id = strip.addEffect(255, &mode_{name}, _data_FX_mode_{name}); '
-        'if (id == 255) { hbnfFxFailed++; } else { '
+    raise RuntimeError(f"required ANIMartRIX symbols missing before rewrite: {missing_symbols}")
+
+# Remove all upstream dynamic registrations, then add only the required 28 in
+# exact scene order at exact IDs 220..247.
+setup = reg_re.sub("", setup)
+lines = [
+    "      hbnfFxRegistered = 0; hbnfFxFailed = 0; hbnfFxFirst = 255; hbnfFxLast = 255;"
+]
+for offset,name in enumerate(required_effects):
+    effect_id = base_mode_count + offset
+    lines.append(
+        f'      {{ const uint8_t id = strip.addEffect({effect_id}, &mode_{name}, _data_FX_mode_{name}); '
+        f'if (id != {effect_id}) {{ hbnfFxFailed++; }} else {{ '
         'if (hbnfFxRegistered == 0) hbnfFxFirst = id; '
         'hbnfFxLast = id; hbnfFxRegistered++; } }'
     )
-setup_pruned = reg_re.sub(rewrite_registration, setup)
-after = re.findall(r'const uint8_t id = strip\.addEffect\(255, &mode_([A-Za-z0-9_]+)', setup_pruned)
-if len(after) != len(required_effects) or set(after) != required_set:
-    raise RuntimeError(f"ANIMartRIX prune mismatch: count={len(after)} missing={sorted(required_set-set(after))} extra={sorted(set(after)-required_set)}")
-setup_pruned = setup_pruned.replace(
-    "    void setup() {",
-    "    void setup() {\n      hbnfFxRegistered = 0; hbnfFxFailed = 0; hbnfFxFirst = 255; hbnfFxLast = 255;",
-    1,
-)
-s = s[:setup_start] + setup_pruned + s[setup_end:]
+setup = setup.replace("    void setup() {", "    void setup() {\n" + "\n".join(lines), 1)
+after = re.findall(r"strip\.addEffect\((\d+), &mode_([A-Za-z0-9_]+)", setup)
+expected = [(str(base_mode_count+i), name) for i,name in enumerate(required_effects)]
+if after != expected:
+    raise RuntimeError(f"ANIMartRIX fixed-id rewrite mismatch: got={after!r} expected={expected!r}")
+s = s[:setup_start] + setup + s[setup_end:]
 
 diag_anchor="class AnimartrixUsermod : public Usermod {"
 if s.count(diag_anchor)!=1:
@@ -178,15 +183,8 @@ static uint8_t hbnfFxLast = 255;
 """
 s=s.replace(diag_anchor,diag_helpers+diag_anchor,1)
 
-fx_h = (root/"wled00/FX.h").read_text()
-mc = re.search(r"#define\s+MODE_COUNT\s+(\d+)", fx_h)
-if not mc:
-    raise RuntimeError("MODE_COUNT not found")
-base_mode_count = int(mc.group(1))
-# addEffect refuses to grow once vector size reaches 255; 255 is the failure sentinel.
-if base_mode_count + len(required_effects) >= 255:
-    raise RuntimeError(f"effect registry overflow: base={base_mode_count} required={len(required_effects)}")
 print(f"WOWMAX_EFFECT_CAPACITY_PASS base={base_mode_count} required={len(required_effects)} final={base_mode_count+len(required_effects)}")
+print(f"WOWMAX_FIXED_ID_MAP_PASS first={base_mode_count} last={base_mode_count+len(required_effects)-1}")
 
 p.write_text(s)
 
@@ -205,7 +203,7 @@ checks=[
     (p,"hbnfAudio.modulate"),
     (p,'wow["buildWitness"]'),
     (p,'wow["fxRegistered"]'),
-    (p,'strip.addEffect(255, &mode_Caleido3'),
+    (p,'strip.addEffect(233, &mode_Caleido3'),
     (p,'wow["audioActive"]'),
     (p,'wow["drop"]'),
     (p,'PSTR("%s/wow")'),
