@@ -351,16 +351,47 @@ def hw_rollback(d):
     cfg=d.get("cfg") or {};state=d.get("state") or {}
     return {"cfg":{"def":cfg.get("def") or {},"hw":{"led":((cfg.get("hw") or {}).get("led") or {})}},"state":{"mainseg":state.get("mainseg",0),"seg":state.get("seg") or []}}
 
+def install_safe_boot_preset(ip,plan):
+    pid=choose_safe_boot_preset(ip);pixels=int((plan.get("inputs") or {}).get("underglowLogicalPixels") or 0)
+    safe_state={"on":False,"bri":64,"mainseg":0,"seg":plan["statePatch"]["seg"]}
+    try:
+        state_post(ip,safe_state)
+        state_post(ip,{"psave":pid,"n":SAFE_BOOT_NAME,"ib":True,"sb":True})
+        saved=None
+        for _ in range(24):
+            time.sleep(.25)
+            saved=read_presets(ip).get(str(pid))
+            if safe_boot_preset_valid(saved,pixels): break
+        if not safe_boot_preset_valid(saved,pixels):
+            raise RuntimeError(f"Preset {pid} did not persist the fail-dark three-segment state.")
+        cfg_post(ip,{"def":{"ps":pid,"on":False,"bri":64}});time.sleep(.5)
+        after=lc.inspect(ip);boot=(hardware_summary(after).get("bootDefault") or {})
+        if boot.get("on") is not False or int(boot.get("ps") if boot.get("ps") is not None else -1)!=pid:
+            raise RuntimeError("Fail-dark boot preset/defaults did not persist in WLED config.")
+        return pid
+    except Exception:
+        try: state_post(ip,{"pdel":pid})
+        except Exception: pass
+        raise
+
 def apply_hardware(ip,plan):
     before=lc.inspect(ip)
     if not all_true(lc.check_aux(before),AUX_IDENTITY_KEYS): raise RuntimeError("Exact AUX R3 identity not proven.")
-    rb=hw_rollback(before)
+    rb=hw_rollback(before);created_preset=None
     try:
         cfg_post(ip,plan["cfgPatch"]);wait_wled(ip,60,True);state_post(ip,plan["statePatch"]);time.sleep(1)
+        mid=lc.inspect(ip)
+        if not hardware_topology_matches_plan(mid,plan):
+            raise RuntimeError("Hardware config did not match the reviewed pixel/order/reverse/current plan exactly.")
+        created_preset=install_safe_boot_preset(ip,plan)
         after=lc.inspect(ip)
-        if not hardware_matches_plan(after,plan): raise RuntimeError("Hardware config post-write verification failed or did not match the reviewed pixel/order/reverse/current plan exactly.")
-        return {"ok":True,"summary":hardware_summary(after),"rollbackUsed":False}
+        if not hardware_matches_plan(after,plan) or not safe_boot_runtime_ok(ip,after):
+            raise RuntimeError("Final hardware or persistent fail-dark boot verification failed.")
+        return {"ok":True,"summary":hardware_summary(after),"safeBootPreset":created_preset,"rollbackUsed":False}
     except Exception as first:
+        if created_preset is not None:
+            try: state_post(ip,{"pdel":created_preset})
+            except Exception: pass
         try:
             cfg_post(ip,rb["cfg"]);wait_wled(ip,60,True);state_post(ip,rb["state"])
         except Exception as e: raise RuntimeError(f"Hardware config failed ({first}); rollback also failed ({e}).") from first
@@ -375,13 +406,15 @@ def _observed_color(label):
 
 def calibrate_color_order(ip,pixels,reverse=False):
     print("\nCOLOR-ORDER CALIBRATION — low-current underglow only; both UV segments remain OFF.")
-    print("I will configure a temporary RGB bus at 300 mA and show red, green, then blue.")
+    print("I will temporarily configure only the LED buses at 300 mA, show red/green/blue, then restore the exact prior config before the final plan is applied.")
     before=lc.inspect(ip);rb=hw_rollback(before)
-    temp=hp.build(pixels,"RGB",reverse,300,55)
-    applied=apply_hardware(ip,temp)
-    observed=[];restore_error=None
+    temp=hp.build(pixels,"RGB",reverse,300,55);observed=[];restore_error=None;applied=None
     colors=[("RED",[255,0,0]),("GREEN",[0,255,0]),("BLUE",[0,0,255])]
     try:
+        cfg_post(ip,{"hw":temp["cfgPatch"]["hw"]});wait_wled(ip,60,True);state_post(ip,temp["statePatch"]);time.sleep(1)
+        mid=lc.inspect(ip)
+        if not hardware_topology_matches_plan(mid,temp): raise RuntimeError("Temporary 300 mA RGB calibration topology did not verify.")
+        applied={"ok":True,"summary":hardware_summary(mid)}
         for name,rgb in colors:
             state_post(ip,{"on":True,"mainseg":0,"seg":[{"id":0,"on":True,"sel":True,"bri":32,"fx":0,"pal":0,"col":[rgb,[0,0,0],[0,0,0]]},{"id":1,"on":False,"sel":False},{"id":2,"on":False,"sel":False}]})
             time.sleep(.8)
@@ -639,13 +672,16 @@ def interactive(args):
 def selftest():
     body,ctype=multipart_firmware(pathlib.Path(__file__))
     assert b'name="skipValidation"' in body and b'name="update"' in body and "multipart/form-data" in ctype
-    fake={"cfg":{"def":{"ps":0,"on":False,"bri":64},"hw":{"led":{"total":39,"maxpwr":900,"ins":[{"pin":[16],"start":0,"len":37,"type":22,"order":1,"rev":False,"maxpwr":900},{"pin":[25],"start":37,"len":1,"type":41,"order":0,"rev":False,"maxpwr":0},{"pin":[26],"start":38,"len":1,"type":41,"order":0,"rev":False,"maxpwr":0}]}}},"state":{"mainseg":0,"seg":[{"id":0,"start":0,"stop":37,"sel":True,"on":True},{"id":1,"start":37,"stop":38,"sel":False,"on":False},{"id":2,"start":38,"stop":39,"sel":False,"on":False}]}}
+    fake={"cfg":{"def":{"ps":199,"on":False,"bri":64},"hw":{"led":{"total":39,"maxpwr":900,"ins":[{"pin":[16],"start":0,"len":37,"type":22,"order":1,"rev":False,"maxpwr":900},{"pin":[25],"start":37,"len":1,"type":41,"order":0,"rev":False,"maxpwr":0},{"pin":[26],"start":38,"len":1,"type":41,"order":0,"rev":False,"maxpwr":0}]}}},"state":{"mainseg":0,"seg":[{"id":0,"start":0,"stop":37,"sel":True,"on":True},{"id":1,"start":37,"stop":38,"sel":False,"on":False},{"id":2,"start":38,"stop":39,"sel":False,"on":False}]}}
     assert hardware_ok(fake);bad=json.loads(json.dumps(fake));bad["state"]["seg"][1]["sel"]=True;assert not hardware_ok(bad)
     low=json.loads(json.dumps(fake));low["cfg"]["hw"]["led"]["ins"][0]["maxpwr"]=300;assert not hardware_ok(low)
     drift=json.loads(json.dumps(fake));drift["state"]["seg"][2]["start"]=37;assert not hardware_ok(drift)
     p=hp.build(37,"RGB",False,900,55);assert hardware_matches_plan(fake,p)
     wrong=json.loads(json.dumps(fake));wrong["cfg"]["hw"]["led"]["ins"][0]["order"]=0;assert not hardware_matches_plan(wrong,p)
     unsafe=json.loads(json.dumps(fake));unsafe["cfg"]["def"]["on"]=True;assert not hardware_ok(unsafe)
+    safe_preset={"n":SAFE_BOOT_NAME,"on":False,"seg":[{"id":0,"start":0,"stop":37,"on":True},{"id":1,"start":37,"stop":38,"on":False},{"id":2,"start":38,"stop":39,"on":False}]}
+    assert safe_boot_preset_valid(safe_preset,37)
+    bad_preset=json.loads(json.dumps(safe_preset));bad_preset["seg"][2]["on"]=True;assert not safe_boot_preset_valid(bad_preset,37)
     assert candidate_subnets("192.168.1.0/24",None)==["192.168.1.0/24"]
     sample="en0: flags=8863<UP>\n\tinet 192.168.68.77 netmask 0xfffffc00 broadcast 192.168.71.255\nlo0: flags=8049<UP>\n\tinet 127.0.0.1 netmask 0xff000000\n"
     assert parse_ifconfig_networks(sample)==["192.168.68.0/22"]
