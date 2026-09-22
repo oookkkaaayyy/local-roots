@@ -205,7 +205,7 @@ checks=[
     (p,"hbnfAudio.modulate"),
     (p,'wow["buildWitness"]'),
     (p,'wow["fxRegistered"]'),
-    (p,'hbnfRegisterEffect("Caleido3"'),
+    (p,'strip.addEffect(255, &mode_Caleido3'),
     (p,'wow["audioActive"]'),
     (p,'wow["drop"]'),
     (p,'PSTR("%s/wow")'),
