@@ -103,7 +103,7 @@ assert "commission_guard.py --phase interactive" in launcher
 assert "set -e" not in launcher
 assert "explicit YES" in launcher
 guard_text=guard.read_text()
-for marker in ("parse_ifconfig_networks","infer_color_order","HBNF_AUX_ACCEPTANCE_EVIDENCE.json","physicalGateReady","hotspot_verified","final_cloud_verification","configure_aux_mqtt_from_matrix"):
+for marker in ("parse_ifconfig_networks","infer_color_order","HBNF_AUX_ACCEPTANCE_EVIDENCE.json","physicalGateReady","underglowPhysicalReady","uvArchitecturePending","final_cloud_verification","configure_aux_mqtt_from_matrix"):
     assert marker in guard_text, marker
 sys.path.insert(0,str((ROOT/"hbnf-aux-lighting/commissioning").resolve()))
 import local_commission as _lc
