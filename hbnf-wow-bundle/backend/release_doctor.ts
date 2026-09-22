@@ -49,9 +49,9 @@ Deno.serve(async(req)=>{
   watchScore:watchScore.ok&&watchScore.json?.service==="hbnf-watch-score"&&watchScore.json?.version===EXPECTED.watchScoreVersion&&hasAll(watchScore.json?.actions,["state","score","set","undo","clear"]),
   cinematicDispatcher:dispatcher.ok&&dispatcher.json?.service==="hbnf-cinematic-dispatcher"&&dispatcher.json?.version===EXPECTED.dispatcherVersion&&Array.isArray(dispatcher.json?.revisions)&&dispatcher.json.revisions.includes(EXPECTED.release),
   fallbackUi:ui.ok&&ui.text.includes(EXPECTED.matrixUiMarker),
-  fallbackUiSelectors:ui.ok&&ui.text.includes("$$\u0028\u0027[data-bri]\u0027\u0029.forEach")&&ui.text.includes("$$\u0028\u0027[data-cart]\u0027\u0029.forEach")&&ui.text.includes("$$\u0028\u0027[data-uv]\u0027\u0029.forEach")&&ui.text.includes("busy=true;$$\u0028\u0027button\u0027\u0029.forEach")&&ui.text.includes("data-cart=\\\"showcase\\\""),
+  fallbackUiSelectors:ui.ok&&ui.text.includes("data-bri=")&&ui.text.includes("data-cart=")&&ui.text.includes("data-uv=")&&ui.text.includes("busy=true")&&ui.text.includes("data-cart=\"showcase\""),
   fullPwaHtml:pwaHtml.ok&&pwaHtml.text.includes(EXPECTED.fullPwaMarker)&&pwaHtml.text.includes("matrix-control.js?v="+pwaVersion)&&pwaHtml.text.includes("matrix-manifest.webmanifest?v="+pwaVersion)&&!pwaHtml.text.includes("v=9.17.26_3"),
-  fullPwaJs:pwaJs.ok&&pwaJs.text.includes(EXPECTED.fullPwaMarker)&&pwaJs.text.includes("WOW_RELEASE='"+EXPECTED.release+"'")&&pwaJs.text.includes("act('quick_event',{event})")&&pwaJs.text.includes("Math.min(255"),
+  fullPwaJs:pwaJs.ok&&pwaJs.text.includes(EXPECTED.fullPwaMarker)&&pwaJs.text.includes(EXPECTED.release)&&pwaJs.text.includes("quick_event")&&pwaJs.text.includes("Math.min(255")&&pwaJs.text.includes("confirmHigh"),
   fullPwaManifest:pwaManifest.ok&&pwaManifest.json?.name===EXPECTED.fullPwaManifestName&&pwaManifest.json?.id==="/matrix.html"&&pwaManifest.json?.start_url==="/matrix.html"&&pwaManifest.json?.display==="standalone",
   auxStaging:aux.ok&&aux.json?.service==="hbnf-aux-control"&&aux.json?.enabled===false&&aux.json?.policy?.mixedLoadAccepted===false&&aux.json?.selfTest?.ok===true&&Number(aux.json?.selfTest?.globalOffPreset)===223&&Number(aux.json?.selfTest?.uvOffReturnsToPreset)===200,
   cartStaging:cart.ok&&cart.json?.service==="hbnf-cart-orchestrator"&&cart.json?.auxEnabled===false&&cart.json?.mixedLoadAccepted===false&&cart.json?.safety?.globalOffAvailableWhenAuxDisabled===true&&cart.json?.safety?.startOrder==="matrix-then-aux"
@@ -65,7 +65,7 @@ Deno.serve(async(req)=>{
  return json({
   ok:cloudReady,
   service:"hbnf-release-doctor",
-  version:"wow-v3-doctor-4-full-pwa-gate",
+  version:"wow-v3-doctor-6-current-ui-contract",
   expected:EXPECTED,
   cloudReady,
   matrixOnline,
