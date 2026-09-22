@@ -7,7 +7,7 @@ This directory is the guarded final commissioning path for the SP803E underglow/
 - Matrix R3 is the sole **visual and audio master**.
 - Aux custom R3 firmware release: `hbnf-wow-aux-r3-2026-09-22-v1`.
 - Aux renderer uses the same fixed effect IDs 220–247 as Matrix R3, projected to a 1D strip.
-- Visual synchronization: WLED UDP Sync group 1.
+- Visual synchronization: WLED UDP Sync group 1; effect/speed/intensity/palette/colors/timebase follow Matrix, while underglow brightness remains independently capped for the cart power budget.
 - Music synchronization: AudioReactive UDP Sound Sync, Matrix SEND → Aux RECEIVE, port 11988.
 - Addressable 12V WS2811 underglow: GPIO16, Segment 0, selected.
 - UV main: GPIO25, Segment 1, unselected.
