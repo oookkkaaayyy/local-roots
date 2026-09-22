@@ -208,7 +208,7 @@ def hardware_summary(d):
     segs=[]
     for n,s in enumerate(state.get("seg") or []):
         if isinstance(s,dict): segs.append({"id":int(s.get("id",n)),"start":s.get("start"),"stop":s.get("stop"),"sel":s.get("sel"),"on":s.get("on")})
-    return {"total":hw.get("total"),"maxpwr":hw.get("maxpwr"),"buses":buses,"segments":segs,"mainseg":state.get("mainseg")}
+    return {"total":hw.get("total"),"maxpwr":hw.get("maxpwr"),"buses":buses,"segments":segs,"mainseg":state.get("mainseg"),"bootDefault":cfg.get("def") or {}}
 
 def hardware_ok(d):
     s=hardware_summary(d);by_pin={tuple(x.get("pin") or []):x for x in s["buses"]}
@@ -217,7 +217,7 @@ def hardware_ok(d):
     if int(u.get("type") or -1)!=hp.TYPE_DIGITAL_RGB or int(m.get("type") or -1)!=hp.TYPE_ANALOG_1CH or int(sh.get("type") or -1)!=hp.TYPE_ANALOG_1CH: return False
     pixels=int(u.get("len") or 0)
     if pixels<1 or int(u.get("start",-1))!=0: return False
-    if int(u.get("maxpwr") or 0)!=900 or int(s.get("maxpwr") or 0)!=900: return False
+    if int(u.get("maxpwr") or 0)!=900 or int(s.get("maxpwr") or 0)!=900: return False\n    boot=s.get("bootDefault") or {}\n    if boot.get("on") is not False or int(boot.get("ps") if boot.get("ps") is not None else -1)!=0: return False
     if int(m.get("start") or -1)!=pixels or int(m.get("len") or 0)!=1: return False
     if int(sh.get("start") or -1)!=pixels+1 or int(sh.get("len") or 0)!=1: return False
     if int(s.get("total") or 0)!=pixels+2: return False
@@ -304,7 +304,7 @@ def state_post(ip,patch): return lc.request_json(ip,"/json/state","POST",patch,t
 
 def hw_rollback(d):
     cfg=d.get("cfg") or {};state=d.get("state") or {}
-    return {"cfg":{"hw":{"led":((cfg.get("hw") or {}).get("led") or {})}},"state":{"mainseg":state.get("mainseg",0),"seg":state.get("seg") or []}}
+    return {"cfg":{"def":cfg.get("def") or {},"hw":{"led":((cfg.get("hw") or {}).get("led") or {})}},"state":{"mainseg":state.get("mainseg",0),"seg":state.get("seg") or []}}
 
 def apply_hardware(ip,plan):
     before=lc.inspect(ip)
@@ -594,12 +594,13 @@ def interactive(args):
 def selftest():
     body,ctype=multipart_firmware(pathlib.Path(__file__))
     assert b'name="skipValidation"' in body and b'name="update"' in body and "multipart/form-data" in ctype
-    fake={"cfg":{"hw":{"led":{"total":39,"maxpwr":900,"ins":[{"pin":[16],"start":0,"len":37,"type":22,"order":1,"rev":False,"maxpwr":900},{"pin":[25],"start":37,"len":1,"type":41,"order":0,"rev":False,"maxpwr":0},{"pin":[26],"start":38,"len":1,"type":41,"order":0,"rev":False,"maxpwr":0}]}}},"state":{"mainseg":0,"seg":[{"id":0,"start":0,"stop":37,"sel":True,"on":True},{"id":1,"start":37,"stop":38,"sel":False,"on":False},{"id":2,"start":38,"stop":39,"sel":False,"on":False}]}}
+    fake={"cfg":{"def":{"ps":0,"on":False,"bri":64},"hw":{"led":{"total":39,"maxpwr":900,"ins":[{"pin":[16],"start":0,"len":37,"type":22,"order":1,"rev":False,"maxpwr":900},{"pin":[25],"start":37,"len":1,"type":41,"order":0,"rev":False,"maxpwr":0},{"pin":[26],"start":38,"len":1,"type":41,"order":0,"rev":False,"maxpwr":0}]}}},"state":{"mainseg":0,"seg":[{"id":0,"start":0,"stop":37,"sel":True,"on":True},{"id":1,"start":37,"stop":38,"sel":False,"on":False},{"id":2,"start":38,"stop":39,"sel":False,"on":False}]}}
     assert hardware_ok(fake);bad=json.loads(json.dumps(fake));bad["state"]["seg"][1]["sel"]=True;assert not hardware_ok(bad)
     low=json.loads(json.dumps(fake));low["cfg"]["hw"]["led"]["ins"][0]["maxpwr"]=300;assert not hardware_ok(low)
     drift=json.loads(json.dumps(fake));drift["state"]["seg"][2]["start"]=37;assert not hardware_ok(drift)
     p=hp.build(37,"RGB",False,900,55);assert hardware_matches_plan(fake,p)
     wrong=json.loads(json.dumps(fake));wrong["cfg"]["hw"]["led"]["ins"][0]["order"]=0;assert not hardware_matches_plan(wrong,p)
+    unsafe=json.loads(json.dumps(fake));unsafe["cfg"]["def"]["on"]=True;assert not hardware_ok(unsafe)
     assert candidate_subnets("192.168.1.0/24",None)==["192.168.1.0/24"]
     sample="en0: flags=8863<UP>\n\tinet 192.168.68.77 netmask 0xfffffc00 broadcast 192.168.71.255\nlo0: flags=8049<UP>\n\tinet 127.0.0.1 netmask 0xff000000\n"
     assert parse_ifconfig_networks(sample)==["192.168.68.0/22"]
