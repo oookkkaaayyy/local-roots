@@ -213,11 +213,18 @@ def hardware_summary(d):
 def hardware_ok(d):
     s=hardware_summary(d);by_pin={tuple(x.get("pin") or []):x for x in s["buses"]}
     u,m,sh=by_pin.get((16,)),by_pin.get((25,)),by_pin.get((26,))
-    if not (u and m and sh): return False
+    if not (u and m and sh) or len(s["buses"])!=3: return False
     if int(u.get("type") or -1)!=hp.TYPE_DIGITAL_RGB or int(m.get("type") or -1)!=hp.TYPE_ANALOG_1CH or int(sh.get("type") or -1)!=hp.TYPE_ANALOG_1CH: return False
-    if int(u.get("maxpwr") or 0)!=900 or int(u.get("len") or 0)<1: return False
+    pixels=int(u.get("len") or 0)
+    if pixels<1 or int(u.get("start") or -1)!=0: return False
+    if int(u.get("maxpwr") or 0)!=900 or int(s.get("maxpwr") or 0)!=900: return False
+    if int(m.get("start") or -1)!=pixels or int(m.get("len") or 0)!=1: return False
+    if int(sh.get("start") or -1)!=pixels+1 or int(sh.get("len") or 0)!=1: return False
+    if int(s.get("total") or 0)!=pixels+2: return False
     seg={int(x["id"]):x for x in s["segments"]}
-    return s.get("mainseg")==0 and (seg.get(0) or {}).get("sel") is True and (seg.get(1) or {}).get("sel") is False and (seg.get(2) or {}).get("sel") is False and (seg.get(1) or {}).get("on") is False and (seg.get(2) or {}).get("on") is False
+    s0,s1,s2=seg.get(0) or {},seg.get(1) or {},seg.get(2) or {}
+    bounds=(int(s0.get("start") or 0)==0 and int(s0.get("stop") or -1)==pixels and int(s1.get("start") or -1)==pixels and int(s1.get("stop") or -1)==pixels+1 and int(s2.get("start") or -1)==pixels+1 and int(s2.get("stop") or -1)==pixels+2)
+    return bounds and s.get("mainseg")==0 and s0.get("sel") is True and s1.get("sel") is False and s2.get("sel") is False and s1.get("on") is False and s2.get("on") is False
 
 def preflight(args):
     package=op.verify_package(pathlib.Path(args.package_dir).resolve())
@@ -584,6 +591,7 @@ def selftest():
     fake={"cfg":{"hw":{"led":{"total":39,"maxpwr":900,"ins":[{"pin":[16],"start":0,"len":37,"type":22,"order":1,"rev":False,"maxpwr":900},{"pin":[25],"start":37,"len":1,"type":41,"order":0,"rev":False,"maxpwr":0},{"pin":[26],"start":38,"len":1,"type":41,"order":0,"rev":False,"maxpwr":0}]}}},"state":{"mainseg":0,"seg":[{"id":0,"start":0,"stop":37,"sel":True,"on":True},{"id":1,"start":37,"stop":38,"sel":False,"on":False},{"id":2,"start":38,"stop":39,"sel":False,"on":False}]}}
     assert hardware_ok(fake);bad=json.loads(json.dumps(fake));bad["state"]["seg"][1]["sel"]=True;assert not hardware_ok(bad)
     low=json.loads(json.dumps(fake));low["cfg"]["hw"]["led"]["ins"][0]["maxpwr"]=300;assert not hardware_ok(low)
+    drift=json.loads(json.dumps(fake));drift["state"]["seg"][2]["start"]=37;assert not hardware_ok(drift)
     assert candidate_subnets("192.168.1.0/24",None)==["192.168.1.0/24"]
     sample="en0: flags=8863<UP>\n\tinet 192.168.68.77 netmask 0xfffffc00 broadcast 192.168.71.255\nlo0: flags=8049<UP>\n\tinet 127.0.0.1 netmask 0xff000000\n"
     assert parse_ifconfig_networks(sample)==["192.168.68.0/22"]
