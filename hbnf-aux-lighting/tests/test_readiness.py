@@ -1,4 +1,5 @@
 from pathlib import Path
+import json, subprocess, sys
 
 ROOT=Path(__file__).resolve().parents[2]
 aux=(ROOT/"hbnf-aux-lighting/backend/aux_control.ts").read_text()
@@ -41,3 +42,17 @@ assert 'mixed_load_verified boolean not null default false' in m1
 assert 'hbnf_aux_enable_requires_acceptance' in m2
 assert 'hbnf_aux_mixed_requires_base_acceptance' in m2
 print("HBNF_AUX_SOFTWARE_READINESS_PASS")
+
+contract=json.loads((ROOT/"hbnf-aux-lighting/commissioning/contract.json").read_text())
+assert contract["matrix"]["release"]=="hbnf-wow-r3-max-2026-09-21-v3"
+assert contract["matrix"]["effect_ids"]==[220,247]
+assert contract["aux"]["underglow"]["gpio"]==16
+assert contract["aux"]["uv_main"]["gpio"]==25
+assert contract["aux"]["uv_short"]["gpio"]==26
+assert contract["sync"]["group_bitfield"]==1
+assert contract["sync"]["receive_segment_options"] is False
+assert contract["sync"]["receive_segment_bounds"] is False
+
+p=subprocess.run([sys.executable,str(ROOT/"hbnf-aux-lighting/commissioning/local_commission.py"),"--selftest"],capture_output=True,text=True,check=True)
+assert "HBNF_AUX_LOCAL_COMMISSION_SELFTEST_PASS" in p.stdout
+print("HBNF_AUX_LOCAL_HELPER_PASS")
