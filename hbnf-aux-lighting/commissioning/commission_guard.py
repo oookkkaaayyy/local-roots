@@ -21,6 +21,9 @@ import generate_aux_hardware_plan as hp
 
 REPORT_NAME = "HBNF_AUX_COMMISSION_LATEST.json"
 EVIDENCE_NAME = "HBNF_AUX_ACCEPTANCE_EVIDENCE.json"
+SAFE_BOOT_NAME = "HBNF AUX SAFE BOOT"
+SAFE_BOOT_MIN = 180
+SAFE_BOOT_MAX = 199
 CLOUD_BASE = "https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1"
 MATRIX_IDENTITY_KEYS = ("reachable","pixels","release","engine","buildWitness","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","effectMap")
 AUX_IDENTITY_KEYS = ("reachable","release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","effectMap")
@@ -210,29 +213,69 @@ def hardware_summary(d):
         if isinstance(s,dict): segs.append({"id":int(s.get("id",n)),"start":s.get("start"),"stop":s.get("stop"),"sel":s.get("sel"),"on":s.get("on")})
     return {"total":hw.get("total"),"maxpwr":hw.get("maxpwr"),"buses":buses,"segments":segs,"mainseg":state.get("mainseg"),"bootDefault":cfg.get("def") or {}}
 
-def hardware_ok(d):
+def _topology_common(d):
     s=hardware_summary(d);by_pin={tuple(x.get("pin") or []):x for x in s["buses"]}
     u,m,sh=by_pin.get((16,)),by_pin.get((25,)),by_pin.get((26,))
-    if not (u and m and sh) or len(s["buses"])!=3: return False
-    if int(u.get("type") or -1)!=hp.TYPE_DIGITAL_RGB or int(m.get("type") or -1)!=hp.TYPE_ANALOG_1CH or int(sh.get("type") or -1)!=hp.TYPE_ANALOG_1CH: return False
+    if not (u and m and sh) or len(s["buses"])!=3: return None
+    if int(u.get("type") or -1)!=hp.TYPE_DIGITAL_RGB or int(m.get("type") or -1)!=hp.TYPE_ANALOG_1CH or int(sh.get("type") or -1)!=hp.TYPE_ANALOG_1CH: return None
     pixels=int(u.get("len") or 0)
-    if pixels<1 or int(u.get("start",-1))!=0: return False
-    if int(u.get("maxpwr") or 0)!=900 or int(s.get("maxpwr") or 0)!=900: return False
-    boot=s.get("bootDefault") or {}
-    if boot.get("on") is not False or int(boot.get("ps") if boot.get("ps") is not None else -1)!=0: return False
-    if int(m.get("start") or -1)!=pixels or int(m.get("len") or 0)!=1: return False
-    if int(sh.get("start") or -1)!=pixels+1 or int(sh.get("len") or 0)!=1: return False
-    if int(s.get("total") or 0)!=pixels+2: return False
+    if pixels<1 or int(u.get("start",-1))!=0: return None
+    if int(m.get("start") or -1)!=pixels or int(m.get("len") or 0)!=1: return None
+    if int(sh.get("start") or -1)!=pixels+1 or int(sh.get("len") or 0)!=1: return None
+    if int(s.get("total") or 0)!=pixels+2: return None
     seg={int(x["id"]):x for x in s["segments"]}
     s0,s1,s2=seg.get(0) or {},seg.get(1) or {},seg.get(2) or {}
-    bounds=(int(s0.get("start") or 0)==0 and int(s0.get("stop") or -1)==pixels and int(s1.get("start") or -1)==pixels and int(s1.get("stop") or -1)==pixels+1 and int(s2.get("start") or -1)==pixels+1 and int(s2.get("stop") or -1)==pixels+2)
-    return bounds and s.get("mainseg")==0 and s0.get("sel") is True and s1.get("sel") is False and s2.get("sel") is False and s1.get("on") is False and s2.get("on") is False
+    bounds=(int(s0.get("start",-1))==0 and int(s0.get("stop") or -1)==pixels and int(s1.get("start") or -1)==pixels and int(s1.get("stop") or -1)==pixels+1 and int(s2.get("start") or -1)==pixels+1 and int(s2.get("stop") or -1)==pixels+2)
+    if not (bounds and s.get("mainseg")==0 and s0.get("sel") is True and s1.get("sel") is False and s2.get("sel") is False and s1.get("on") is False and s2.get("on") is False): return None
+    return s,u,m,sh,pixels
+
+def hardware_topology_matches_plan(d,plan):
+    common=_topology_common(d)
+    if not common: return False
+    s,u,_,_,pixels=common;inputs=plan.get("inputs") or {};src=plan.get("sourceAuthority") or {}
+    return int(s.get("maxpwr") or 0)==int(inputs.get("underglowMaxMilliamps") or -1) and int(u.get("maxpwr") or 0)==int(inputs.get("underglowMaxMilliamps") or -1) and pixels==int(inputs.get("underglowLogicalPixels") or -1) and int(u.get("order") if u.get("order") is not None else -1)==int(src.get("colorOrderCode") if src.get("colorOrderCode") is not None else -2) and bool(u.get("rev")) is bool(inputs.get("reverse"))
+
+def hardware_ok(d):
+    common=_topology_common(d)
+    if not common: return False
+    s,u,_,_,_=common
+    if int(u.get("maxpwr") or 0)!=900 or int(s.get("maxpwr") or 0)!=900: return False
+    boot=s.get("bootDefault") or {};ps=int(boot.get("ps") if boot.get("ps") is not None else -1)
+    return boot.get("on") is False and SAFE_BOOT_MIN<=ps<=SAFE_BOOT_MAX
 
 def hardware_matches_plan(d,plan):
-    if not hardware_ok(d): return False
-    s=hardware_summary(d);by_pin={tuple(x.get("pin") or []):x for x in s["buses"]}
-    u=by_pin.get((16,)) or {};inputs=plan.get("inputs") or {};src=plan.get("sourceAuthority") or {}
-    return int(u.get("len") or 0)==int(inputs.get("underglowLogicalPixels") or -1) and int(u.get("order") if u.get("order") is not None else -1)==int(src.get("colorOrderCode") if src.get("colorOrderCode") is not None else -2) and bool(u.get("rev")) is bool(inputs.get("reverse")) and int(u.get("maxpwr") or 0)==int(inputs.get("underglowMaxMilliamps") or -1)
+    return hardware_ok(d) and hardware_topology_matches_plan(d,plan)
+
+def read_presets(ip):
+    try:
+        raw=op.raw_get(ip,"/presets.json",timeout=5.0).decode("utf-8","replace")
+        data=json.loads(raw)
+        return data if isinstance(data,dict) else {}
+    except Exception as e:
+        raise RuntimeError(f"Could not read AUX presets for boot-safety verification: {e}")
+
+def _preset_segments(preset):
+    return {int(x.get("id",n)):x for n,x in enumerate(preset.get("seg") or []) if isinstance(x,dict)}
+
+def safe_boot_preset_valid(preset,pixels):
+    if not isinstance(preset,dict) or preset.get("n")!=SAFE_BOOT_NAME or preset.get("on") is not False: return False
+    seg=_preset_segments(preset);s0,s1,s2=seg.get(0) or {},seg.get(1) or {},seg.get(2) or {}
+    return int(s0.get("start",-1))==0 and int(s0.get("stop") or -1)==pixels and s0.get("on") is True and int(s1.get("start") or -1)==pixels and int(s1.get("stop") or -1)==pixels+1 and s1.get("on") is False and int(s2.get("start") or -1)==pixels+1 and int(s2.get("stop") or -1)==pixels+2 and s2.get("on") is False
+
+def safe_boot_runtime_ok(ip,d):
+    common=_topology_common(d)
+    if not common: return False
+    s,_,_,_,pixels=common;boot=s.get("bootDefault") or {};pid=int(boot.get("ps") if boot.get("ps") is not None else -1)
+    if boot.get("on") is not False or not (SAFE_BOOT_MIN<=pid<=SAFE_BOOT_MAX): return False
+    return safe_boot_preset_valid(read_presets(ip).get(str(pid)),pixels)
+
+def choose_safe_boot_preset(ip):
+    presets=read_presets(ip)
+    for pid in range(SAFE_BOOT_MAX,SAFE_BOOT_MIN-1,-1):
+        v=presets.get(str(pid))
+        if v is None or v=={}: return pid
+        if isinstance(v,dict) and v.get("n")==SAFE_BOOT_NAME: return pid
+    raise RuntimeError(f"No free HBNF safe-boot preset slot exists in {SAFE_BOOT_MIN}..{SAFE_BOOT_MAX}.")
 
 def preflight(args):
     package=op.verify_package(pathlib.Path(args.package_dir).resolve())
@@ -250,7 +293,7 @@ def preflight(args):
     elif not m: nxt="POWER_OR_IDENTIFY_MATRIX"
     elif not a: nxt="POWER_OR_IDENTIFY_AUX" if ids["auxReason"]=="none" else "DISAMBIGUATE_AUX"
     elif not all_true(ac,AUX_IDENTITY_KEYS): nxt="INSTALL_EXACT_AUX_FIRMWARE"
-    elif not hardware_ok(ids["inspected"][a]): nxt="APPLY_HARDWARE_PLAN"
+    elif not hardware_ok(ids["inspected"][a]) or not safe_boot_runtime_ok(a,ids["inspected"][a]): nxt="APPLY_HARDWARE_PLAN"
     elif not all_true(ac,AUX_SYNC_KEYS): nxt="RUN_GUARDED_PREPARE_SYNC"
     else: nxt="BEGIN_PHYSICAL_ACCEPTANCE"
     return {"mutationIssued":False,"package":package,"subnets":subnets,"wledNodes":nodes,"matrix":{"ip":m,"candidates":ids["matrixCandidates"],"checks":mc},"aux":{"ip":a,"selectionReason":ids["auxReason"],"checks":ac},"backups":backups,"nextAction":nxt}
