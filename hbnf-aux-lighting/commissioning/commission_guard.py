@@ -172,8 +172,11 @@ def ota_install(ip,fw,timeout=120):
     before=lc.inspect(ip)
     if not lc.looks_like_wled(before): raise RuntimeError("Aux target is not a reachable WLED node.")
     if all_true(lc.check_matrix(before),MATRIX_IDENTITY_KEYS): raise RuntimeError("Target is exact Matrix R3; refusing AUX firmware install.")
-    arch=str((before.get("info") or {}).get("arch") or "").lower()
+    info=before.get("info") or {}
+    arch=str(info.get("arch") or "").lower()
+    flash_mb=int(info.get("flash") or 0)
     if "esp32" not in arch: raise RuntimeError(f"Aux target architecture is {arch!r}, not ESP32.")
+    if flash_mb!=4: raise RuntimeError(f"Aux target reports {flash_mb} MB flash; expected the verified SP803E 4 MB target.")
     if sha256(fw)!=op.EXPECTED_FW_SHA or fw.stat().st_size!=op.EXPECTED_FW_BYTES: raise RuntimeError("Frozen firmware hash/size mismatch.")
     body,ctype=multipart_firmware(fw)
     req=urllib.request.Request(f"http://{ip}/update",data=body,method="POST",headers={"Content-Type":ctype,"Content-Length":str(len(body))})
