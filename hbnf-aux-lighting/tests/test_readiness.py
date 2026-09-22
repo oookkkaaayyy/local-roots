@@ -81,6 +81,21 @@ assert sp["cfgPatch"]["hw"]["led"]["ins"][2]["pin"]==[26]
 assert sp["statePatch"]["seg"][1]["sel"] is False and sp["statePatch"]["seg"][2]["sel"] is False
 print("HBNF_AUX_HARDWARE_PLAN_GATE_PASS")
 
+guard=ROOT/"hbnf-aux-lighting/commissioning/commission_guard.py"
+p=subprocess.run([sys.executable,str(guard),"--selftest"],capture_output=True,text=True,check=True)
+assert "HBNF_AUX_COMMISSION_GUARD_SELFTEST_PASS" in p.stdout
+builder=ROOT/"hbnf-aux-lighting/commissioning/build_commissioning_distribution.py"
+p=subprocess.run([sys.executable,str(builder),"--selftest"],capture_output=True,text=True,check=True)
+assert "HBNF_AUX_DISTRIBUTION_SELFTEST_PASS" in p.stdout
+launcher=(ROOT/"hbnf-aux-lighting/commissioning/COMMISSION_HBNF_AUX.command").read_text()
+assert "commission_guard.py --phase interactive" in launcher
+assert "set -e" not in launcher
+assert "explicit YES" in launcher
+sys.path.insert(0,str((ROOT/"hbnf-aux-lighting/commissioning").resolve()))
+import local_commission as _lc
+assert "mqtt" not in _lc.AUX_CFG_PATCH["if"]
+print("HBNF_AUX_TURNKEY_COMMISSIONING_GATE_PASS")
+
 assert 'auxRelease:"hbnf-wow-aux-r3-2026-09-22-v1"' in aux
 assert 'auxEngine:"aux-r3-wow-1d"' in aux
 assert 'auxBuildWitness:"registry28-fixed-1d-v1"' in aux
