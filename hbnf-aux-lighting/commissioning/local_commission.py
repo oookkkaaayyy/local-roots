@@ -199,7 +199,7 @@ def selftest():
       "state":{"HBNFAUX":{"release":AUX_RELEASE,"engine":AUX_ENGINE,"buildWitness":AUX_WITNESS,"projection":"1d-row","fxRegistered":28,"fxFailed":0,"modeCount":248,"fxFirst":220,"fxLast":247},
                "mainseg":0,"seg":[{"id":0,"sel":True},{"id":1,"sel":False},{"id":2,"sel":False}]},
       "info":{"ver":"0.16.1","arch":"esp32","leds":{"count":100,"maxpwr":900}},"effects":fx,"pins":{},
-      "cfg":{"if":{"sync":{"recv":{"bri":True,"col":True,"fx":True,"pal":True,"grp":1,"seg":False,"sb":False},"send":{"en":False}},
+      "cfg":{"if":{"sync":{"recv":{"bri":False,"col":True,"fx":True,"pal":True,"grp":1,"seg":False,"sb":False},"send":{"en":False}},
                          "mqtt":{"en":True,"broker":"broker.emqx.io","port":1883,"topics":{"device":"hbnf/cart/aux1","group":""}}},
              "um":{"AudioReactive":{"sync":{"mode":2,"port":11988}}}}
     }
