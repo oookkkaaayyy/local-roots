@@ -216,7 +216,7 @@ def hardware_ok(d):
     if not (u and m and sh) or len(s["buses"])!=3: return False
     if int(u.get("type") or -1)!=hp.TYPE_DIGITAL_RGB or int(m.get("type") or -1)!=hp.TYPE_ANALOG_1CH or int(sh.get("type") or -1)!=hp.TYPE_ANALOG_1CH: return False
     pixels=int(u.get("len") or 0)
-    if pixels<1 or int(u.get("start") or -1)!=0: return False
+    if pixels<1 or int(u.get("start",-1))!=0: return False
     if int(u.get("maxpwr") or 0)!=900 or int(s.get("maxpwr") or 0)!=900: return False
     if int(m.get("start") or -1)!=pixels or int(m.get("len") or 0)!=1: return False
     if int(sh.get("start") or -1)!=pixels+1 or int(sh.get("len") or 0)!=1: return False
