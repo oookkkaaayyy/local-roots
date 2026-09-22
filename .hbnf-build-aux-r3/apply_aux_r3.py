@@ -25,7 +25,7 @@ for old,new in [
     s=s.replace(old,new)
 
 mqtt_old='\\\"buildWitness\\\":\\\"registry28-fixed-1d-v1\\\",\\\"fxRegistered\\\"'
-mqtt_new='\\\"buildWitness\\\":\\\"registry28-fixed-1d-v1\\\",\\\"projection\\\":\\\"1d-row\\\",\\\"fxRegistered\\\"'
+mqtt_new='\\\"buildWitness\\\":\\\"registry28-fixed-1d-v1\\\",\\\"projection\\\":\\\"fold2-1d-v1\\\",\\\"fxRegistered\\\"'
 if s.count(mqtt_old)!=1:
     raise RuntimeError(f"MQTT witness anchor mismatch: {s.count(mqtt_old)}")
 s=s.replace(mqtt_old,mqtt_new,1)
@@ -50,8 +50,56 @@ static uint8_t hbnfAuxAmountForMode(uint8_t mode, uint8_t fallback) {
 """
 s=s.replace(anchor,helpers+anchor,1)
 
+# ANIMartRIX has selected effects that divide by (num_y-1). A native 1D
+# WLED segment reports virtualHeight()==1, which would produce NaN/Inf in
+# Hot_Blob and Lava1. Render on a two-row virtual canvas and fold the
+# row-major pixels onto the physical 1D underglow instead.
+init_pat=re.compile(r'''if \(\(SEGENV\.call == 0\) \|\| \(SEGMENT\.virtualWidth\(\) != num_x\) \|\| \(SEGMENT\.virtualHeight\(\) != num_y\)\) \{\s*init\(SEGMENT\.virtualWidth\(\), SEGMENT\.virtualHeight\(\), false\);\s*\}''')
+init_new='''const int hbnfPhysicalLength = SEGMENT.virtualLength();
+	  const int hbnfCanvasW = hbnfPhysicalLength > 0 ? (hbnfPhysicalLength + 1) / 2 : 1;
+	  const int hbnfCanvasH = 2;
+	  if ((SEGENV.call == 0) || (hbnfCanvasW != num_x) || (hbnfCanvasH != num_y)) {
+		init(hbnfCanvasW, hbnfCanvasH, false);
+	  }'''
+s,n=init_pat.subn(init_new,s,count=1)
+if n!=1:
+    raise RuntimeError(f"fold2 init rewrite mismatch: {n}")
+
+pixel_old='''\tvoid setPixelColor(int x, int y, rgb pixel) {
+\t\tuint8_t r=pixel.red,g=pixel.green,b=pixel.blue;
+\t\thbnfAudio.modulate(x,y,r,g,b);
+\t\tif (SEGMENT.check2) { r=gamma8(r); g=gamma8(g); b=gamma8(b); }
+\t\tSEGMENT.setPixelColorXY(x, y, CRGB(r,g,b));
+\t}
+\tvoid setPixelColor(int index, rgb pixel) {
+\t\tuint8_t r=pixel.red,g=pixel.green,b=pixel.blue;
+\t\tconst int w=SEGMENT.virtualWidth();
+\t\tconst int x=w?(index%w):0, y=w?(index/w):0;
+\t\thbnfAudio.modulate(x,y,r,g,b);
+\t\tif (SEGMENT.check2) { r=gamma8(r); g=gamma8(g); b=gamma8(b); }
+\t\tSEGMENT.setPixelColor(index, CRGB(r,g,b));
+\t}'''
+pixel_new='''\tvoid setPixelColor(int x, int y, rgb pixel) {
+\t\tuint8_t r=pixel.red,g=pixel.green,b=pixel.blue;
+\t\thbnfAudio.modulate(x,y,r,g,b);
+\t\tif (SEGMENT.check2) { r=gamma8(r); g=gamma8(g); b=gamma8(b); }
+\t\tconst int index = y * num_x + x;
+\t\tif (index >= 0 && index < SEGMENT.virtualLength()) SEGMENT.setPixelColor(index, CRGB(r,g,b));
+\t}
+\tvoid setPixelColor(int index, rgb pixel) {
+\t\tuint8_t r=pixel.red,g=pixel.green,b=pixel.blue;
+\t\tconst int x=num_x?(index%num_x):0, y=num_x?(index/num_x):0;
+\t\thbnfAudio.modulate(x,y,r,g,b);
+\t\tif (SEGMENT.check2) { r=gamma8(r); g=gamma8(g); b=gamma8(b); }
+\t\tif (index >= 0 && index < SEGMENT.virtualLength()) SEGMENT.setPixelColor(index, CRGB(r,g,b));
+\t}'''
+if s.count(pixel_old)!=1:
+    raise RuntimeError(f"fold2 pixel hook anchor mismatch: {s.count(pixel_old)}")
+s=s.replace(pixel_old,pixel_new,1)
+
+
 old="hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, SEGMENT.custom1, SEGMENT.custom2, SEGMENT.virtualWidth(), SEGMENT.virtualHeight())"
-new="hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, hbnfAuxStyleForMode(SEGMENT.mode, SEGMENT.custom1), hbnfAuxAmountForMode(SEGMENT.mode, SEGMENT.custom2), SEGMENT.virtualWidth(), SEGMENT.virtualHeight())"
+new="hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, hbnfAuxStyleForMode(SEGMENT.mode, SEGMENT.custom1), hbnfAuxAmountForMode(SEGMENT.mode, SEGMENT.custom2), num_x, num_y)"
 if s.count(old)!=1:
     raise RuntimeError(f"audio mapping anchor mismatch: {s.count(old)}")
 s=s.replace(old,new,1)
@@ -60,7 +108,7 @@ s=s.replace(old,new,1)
 # therefore renders the same effect as a one-row projection while sharing the
 # same WLED timebase as the Matrix sender.
 needle='      wow["fxLast"] = hbnfFxLast;'
-replacement=needle+'\n      wow["projection"] = "1d-row";\n      wow["syncEffectContract"] = "ids220-247";\n      wow["sceneParams"] = "profile-via-ix-style-amount-by-effect-id";'
+replacement=needle+'\n      wow["projection"] = "fold2-1d-v1";\n      wow["syncEffectContract"] = "ids220-247";\n      wow["sceneParams"] = "profile-via-ix-style-amount-by-effect-id";'
 if s.count(needle)!=1:
     raise RuntimeError("telemetry extension anchor mismatch")
 s=s.replace(needle,replacement,1)
@@ -83,8 +131,8 @@ ar.write_text(a)
 checks={
  p:[
   "hbnf-wow-aux-r3-2026-09-22-v1","aux-r3-wow-1d","registry28-fixed-1d-v1",
-  "hbnfAuxStyleForMode","hbnfAuxAmountForMode",'root["HBNFAUX"]',
-  'PSTR("%s/auxwow")','\\\"projection\\\":\\\"1d-row\\\"','wow["projection"] = "1d-row"',
+  "hbnfAuxStyleForMode","hbnfAuxAmountForMode","hbnfCanvasH = 2","SEGMENT.virtualLength()",'root["HBNFAUX"]',
+  'PSTR("%s/auxwow")','\\\"projection\\\":\\\"fold2-1d-v1\\\"','wow["projection"] = "fold2-1d-v1"',
   'strip.addEffect(220, &mode_Complex_Kaleido_3','strip.addEffect(247, &mode_Module_Experiment10'
  ],
  ar:["static uint8_t audioSyncEnabled = 2;",'usermod["syncMode"] = audioSyncEnabled','usermod["syncPort"] = audioSyncPort']
