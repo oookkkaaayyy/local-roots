@@ -112,6 +112,8 @@ def check_aux(d):
     send=(sync.get("send") or {})
     ar=((cfg.get("um") or {}).get("AudioReactive") or {})
     arsync=(ar.get("sync") or {})
+    mqtt=((cfg.get("if") or {}).get("mqtt") or {})
+    topics=(mqtt.get("topics") or {})
     return {
         "reachable":looks_like_wled(d),
         "wledVersion":i.get("ver"),
@@ -136,6 +138,7 @@ def check_aux(d):
         "segmentOptionsIsolated":recv.get("seg") is False and recv.get("sb") is False,
         "visualSyncSendDisabled":send.get("en") is False,
         "audioSyncReceive":int(arsync.get("mode") or 0)==2 and int(arsync.get("port") or 0)==AUDIO_PORT,
+        "mqttConfigured":mqtt.get("en") is True and str(mqtt.get("broker") or "")=="broker.emqx.io" and int(mqtt.get("port") or 0)==1883 and topics.get("device")=="hbnf/cart/aux1",
         "pins":d.get("pins"),
     }
 
@@ -152,10 +155,16 @@ MATRIX_CFG_PATCH={
   "um":{"AudioReactive":{"sync":{"port":AUDIO_PORT,"mode":1}}}
 }
 AUX_CFG_PATCH={
-  "if":{"sync":{
-    "recv":{"bri":True,"col":True,"fx":True,"pal":True,"grp":1,"seg":False,"sb":False},
-    "send":{"en":False,"grp":0}
-  }},
+  "if":{
+    "sync":{
+      "recv":{"bri":True,"col":True,"fx":True,"pal":True,"grp":1,"seg":False,"sb":False},
+      "send":{"en":False,"grp":0}
+    },
+    "mqtt":{
+      "en":True,"broker":"broker.emqx.io","port":1883,
+      "topics":{"device":"hbnf/cart/aux1","group":""}
+    }
+  },
   "um":{"AudioReactive":{"sync":{"port":AUDIO_PORT,"mode":2}}}
 }
 
@@ -190,11 +199,12 @@ def selftest():
       "state":{"HBNFAUX":{"release":AUX_RELEASE,"engine":AUX_ENGINE,"buildWitness":AUX_WITNESS,"projection":"1d-row","fxRegistered":28,"fxFailed":0,"modeCount":248,"fxFirst":220,"fxLast":247},
                "mainseg":0,"seg":[{"id":0,"sel":True},{"id":1,"sel":False},{"id":2,"sel":False}]},
       "info":{"ver":"0.16.1","arch":"esp32","leds":{"count":100,"maxpwr":900}},"effects":fx,"pins":{},
-      "cfg":{"if":{"sync":{"recv":{"bri":True,"col":True,"fx":True,"pal":True,"grp":1,"seg":False,"sb":False},"send":{"en":False}}},
+      "cfg":{"if":{"sync":{"recv":{"bri":True,"col":True,"fx":True,"pal":True,"grp":1,"seg":False,"sb":False},"send":{"en":False}},
+                         "mqtt":{"en":True,"broker":"broker.emqx.io","port":1883,"topics":{"device":"hbnf/cart/aux1","group":""}}},
              "um":{"AudioReactive":{"sync":{"mode":2,"port":11988}}}}
     }
     c=check_aux(aux)
-    required=("reachable","release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","effectMap","visualSyncReceive","segmentOptionsIsolated","visualSyncSendDisabled","audioSyncReceive")
+    required=("reachable","release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","effectMap","visualSyncReceive","segmentOptionsIsolated","visualSyncSendDisabled","audioSyncReceive","mqttConfigured")
     assert all(c[k] for k in required),c
     assert MATRIX_CFG_PATCH["um"]["AudioReactive"]["sync"]["mode"]==1
     assert AUX_CFG_PATCH["um"]["AudioReactive"]["sync"]["mode"]==2
