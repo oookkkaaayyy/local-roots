@@ -40,4 +40,20 @@ The final package records its own GitHub run ID and source commit in `FINAL_METR
 
 ## Physical boundary
 
-The software package deliberately does **not** guess the final WS2811 logical pixel count or color order. Those depend on the actual installed/cut strip and must be established from the real hardware before output-bus configuration is accepted. WLED firmware OTA and `/json/cfg` are supported mechanisms, but physical output configuration remains a later guarded step rather than an unattended action.
+The software package deliberately does **not** guess the final WS2811 logical pixel count or color order. Those depend on the actual installed/cut strip and must be established from the real hardware before output-bus configuration is accepted. WLED firmware OTA and `/json/cfg` are supported mechanisms, but physical output configuration remains a later guarded step rather than an unattended action.\n
+## One-pass guarded commissioning
+
+The preferred entry point is now `COMMISSION_HBNF_AUX.command`. It runs `commission_guard.py` as a state machine:
+
+1. verifies the frozen package,
+2. discovers WLED nodes and identifies Matrix R3 by runtime signature rather than trusting a fixed IP,
+3. backs up Matrix and AUX before any mutation,
+4. installs the exact AUX firmware only after an explicit `YES`,
+5. asks only for the two physical facts software cannot infer (logical WS2811 group count and verified color order),
+6. applies and post-verifies the hardware/segment plan with automatic config rollback on failure,
+7. applies and post-verifies Matrix→AUX visual/audio sync with automatic sync-config rollback on failure, and
+8. stops at physical acceptance.
+
+The local sync step no longer configures the public `broker.emqx.io` MQTT broker. Local visual/audio commissioning does not need MQTT. Cloud/Watch AUX actuation remains disabled until a production broker path and physical acceptance are both satisfied.
+
+The distribution build creates a nested `HBNF_SP803E_AUX_R3_COMMISSIONING.zip` whose launcher carries Unix mode `0755`; this avoids GitHub Actions artifact permission loss on `.command` files.
