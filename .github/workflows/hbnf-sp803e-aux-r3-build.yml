@@ -1,0 +1,182 @@
+name: HBNF SP803E AUX R3 compile
+
+on:
+  push:
+    branches:
+      - hbnf-matrix-wow-bundle-r3-20260921
+    paths:
+      - '.hbnf-build-aux-r3/**'
+      - '.hbnf-build-r3max/**'
+      - '.github/workflows/hbnf-sp803e-aux-r3-build.yml'
+      - 'hbnf-wow-bundle/config/WOW_SCENES_V2.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Aux host contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python .hbnf-build-aux-r3/test_aux_contract.py
+
+      - name: Decode proven HBNF source bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import base64, hashlib, pathlib, tarfile
+          src=pathlib.Path('.hbnf-build-r1/bundle.b64')
+          raw=base64.b64decode(src.read_bytes())
+          assert hashlib.sha256(raw).hexdigest() == 'a22fd4d01be8f67f40eec4019cdfb602cd3144e582b27985d5134485c709a9cb'
+          tgz=pathlib.Path('/tmp/r1.tgz'); tgz.write_bytes(raw)
+          pathlib.Path('/tmp/hbnf-r1').mkdir(exist_ok=True)
+          with tarfile.open(tgz,'r:gz') as tf: tf.extractall('/tmp/hbnf-r1')
+          patch=pathlib.Path('/tmp/hbnf-r1/firmware_patch')
+          (patch/'hbnf_vibe16.h').write_bytes(pathlib.Path('.hbnf-build-r3max/hbnf_vibe16.h').read_bytes())
+          (patch/'hbnf_animartrix_audio_bridge.h').write_bytes(pathlib.Path('.hbnf-build-r3max/hbnf_animartrix_audio_bridge.h').read_bytes())
+          PY
+
+      - name: Fetch exact WLED 16.0.1 base
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/wled/WLED.git /tmp/wled
+          cd /tmp/wled
+          git checkout 29b389df1c1aaec6ff53aea742d17063b985906c
+          test "$(git rev-parse HEAD)" = "29b389df1c1aaec6ff53aea742d17063b985906c"
+          python - <<'PY'
+          import pathlib
+          p=pathlib.Path('tools/cdata.js')
+          s=p.read_text()
+          old='function generateBuildTime() {\n  return Math.floor(Date.now() / 1000);\n}'
+          new='function generateBuildTime() {\n  const reproducible = Number(process.env.SOURCE_DATE_EPOCH || 0);\n  return reproducible > 0 ? reproducible : Math.floor(Date.now() / 1000);\n}'
+          assert old in s
+          p.write_text(s.replace(old,new,1))
+          PY
+
+      - name: Install pinned dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install -r /tmp/wled/requirements.txt
+
+      - name: Apply AUX R3 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/wled
+          cat > platformio_override.ini <<'EOF'
+          [platformio]
+          default_envs = hbnf_aux_sp803e_r3
+
+          [env:hbnf_aux_sp803e_r3]
+          extends = env:esp32dev
+          custom_usermods = audioreactive animartrix
+          build_flags = ${env:esp32dev.build_flags}
+            -D HBNF_VIBE_ANIMARTRIX=1
+            -D UM_AUDIOREACTIVE_ENABLE=1
+            -D SR_DMTYPE=254
+          EOF
+          python /tmp/hbnf-r1/firmware_patch/apply_hbnf_animartrix_patch.py /tmp/wled --patch-dir /tmp/hbnf-r1/firmware_patch
+          python "$GITHUB_WORKSPACE/.hbnf-build-r3max/apply_wowmax_v3.py" /tmp/wled
+          python "$GITHUB_WORKSPACE/.hbnf-build-aux-r3/apply_aux_r3.py" /tmp/wled
+          grep -q 'hbnf-wow-aux-r3-2026-09-22-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'registry28-fixed-1d-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'static uint8_t audioSyncEnabled = 2;' usermods/audioreactive/audio_reactive.cpp
+          ! grep -q 'hbnf-wow-r3-max-2026-09-21-v3' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          ! grep -q 'hbnf_flow' platformio_override.ini
+          git diff --check
+          git diff > /tmp/normalized-aux-r3-source.patch
+
+      - name: Compile AUX R3
+        shell: bash
+        env:
+          SOURCE_DATE_EPOCH: '1790035200'
+        run: |
+          set -euo pipefail
+          cd /tmp/wled
+          pio run -e hbnf_aux_sp803e_r3 2>&1 | tee /tmp/build-first.log
+          mkdir -p /tmp/artifacts
+          cp .pio/build/hbnf_aux_sp803e_r3/firmware.bin /tmp/artifacts/HBNF_SP803E_AUX_R3.bin
+          cp .pio/build/hbnf_aux_sp803e_r3/firmware.elf /tmp/artifacts/HBNF_SP803E_AUX_R3.elf
+          pio run -e hbnf_aux_sp803e_r3 -t size 2>&1 | tee /tmp/size-first.log
+
+      - name: Reproducibility gate
+        shell: bash
+        env:
+          SOURCE_DATE_EPOCH: '1790035200'
+        run: |
+          set -euo pipefail
+          cd /tmp/wled
+          cp /tmp/artifacts/HBNF_SP803E_AUX_R3.bin /tmp/first.bin
+          pio run -e hbnf_aux_sp803e_r3 -t clean
+          pio run -e hbnf_aux_sp803e_r3 2>&1 | tee /tmp/build-second.log
+          cmp /tmp/first.bin .pio/build/hbnf_aux_sp803e_r3/firmware.bin
+
+      - name: Final metrics
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          BIN=/tmp/artifacts/HBNF_SP803E_AUX_R3.bin
+          BYTES=$(wc -c < "$BIN")
+          SLOT=$((0x180000))
+          HEADROOM=$((SLOT-BYTES))
+          test "$BYTES" -le "$SLOT"
+          SHA=$(sha256sum "$BIN" | awk '{print $1}')
+          VIBE=$(sha256sum .hbnf-build-r3max/hbnf_vibe16.h | awk '{print $1}')
+          BRIDGE=$(sha256sum .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h | awk '{print $1}')
+          AUXPATCH=$(sha256sum .hbnf-build-aux-r3/apply_aux_r3.py | awk '{print $1}')
+          cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-aux-r3-source.patch /tmp/artifacts/
+          cp .hbnf-build-aux-r3/apply_aux_r3.py .hbnf-build-aux-r3/test_aux_contract.py /tmp/artifacts/
+          cp hbnf-aux-lighting/commissioning/contract.json /tmp/artifacts/
+          {
+            echo wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
+            echo release=hbnf-wow-aux-r3-2026-09-22-v1
+            echo engine=aux-r3-wow-1d
+            echo build_witness=registry28-fixed-1d-v1
+            echo firmware_sha256=$SHA
+            echo firmware_bytes=$BYTES
+            echo ota_slot_bytes=$SLOT
+            echo ota_headroom_bytes=$HEADROOM
+            echo vibe_sha256=$VIBE
+            echo bridge_sha256=$BRIDGE
+            echo aux_patch_sha256=$AUXPATCH
+            echo EFFECT_ID_RANGE=220-247
+            echo EFFECT_COUNT=28
+            echo AUDIO_SYNC_DEFAULT=RECEIVE
+            echo AUDIO_SYNC_PORT=11988
+            echo PROJECTION=1D_ROW
+            echo SECOND_CLEAN_BUILD_BYTE_IDENTICAL=PASS
+            echo OTA_SLOT_GATE=PASS
+            echo SOURCE_DATE_EPOCH=1790035200
+          } > /tmp/artifacts/FINAL_METRICS.txt
+          sha256sum "$BIN" > /tmp/artifacts/firmware-sha256.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HBNF-SP803E-AUX-R3
+          path: /tmp/artifacts
+          if-no-files-found: error
+          retention-days: 30
