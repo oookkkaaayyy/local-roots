@@ -63,15 +63,24 @@ Deno.serve(async(req)=>{
  const physicalOnlyBlockers=blockers.every((x:string)=>x==="mqtt_lwt_not_online");
  const awaitingPhysicalOnly=cloudReady&&!matrixOnline&&physicalOnlyBlockers;
  const productionCurrent=cloudReady&&matrixOnline&&status.json?.control?.library_revision===EXPECTED.release;
+ const broker=String(pre.json?.broker??"");
+ const transportProductionGrade=!!broker&&broker!=="broker.emqx.io";
+ const productionHardened=productionCurrent&&transportProductionGrade;
+ const risks:string[]=[];
+ if(!transportProductionGrade)risks.push("mqtt_public_test_broker");
  const goLiveReady=cloudReady&&pre.json?.ready===true&&!productionCurrent;
  return json({
   ok:cloudReady,
   service:"hbnf-release-doctor",
-  version:"wow-v3-doctor-9-production-current-semantics",
+  version:"wow-v3-doctor-10-transport-risk-surface",
   expected:EXPECTED,
   cloudReady,
   matrixOnline,
   productionCurrent,
+  productionHardened,
+  transportProductionGrade,
+  broker,
+  risks,
   goLiveReady,
   awaitingPhysicalOnly,
   blockers,
@@ -79,6 +88,6 @@ Deno.serve(async(req)=>{
   fullPwa:{htmlStatus:pwaHtml.status,jsStatus:pwaJs.status,manifestStatus:pwaManifest.status},
   matrix:{preflight:pre.json,status:status.json},
   aux:{prepared:aux.json?.ok===true,enabled:aux.json?.enabled===true,mixedLoadAccepted:aux.json?.policy?.mixedLoadAccepted===true},
-  next:productionCurrent?"production-current":(goLiveReady?"run-go-live":(awaitingPhysicalOnly?"power-matrix-and-run-go-live":"repair-cloud-contract"))
+  next:productionCurrent?(productionHardened?"production-current":"migrate-mqtt-transport"):(goLiveReady?"run-go-live":(awaitingPhysicalOnly?"power-matrix-and-run-go-live":"repair-cloud-contract"))
  },cloudReady?200:503);
 });
