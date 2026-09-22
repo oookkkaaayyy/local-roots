@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import json,pathlib,re
-root=pathlib.Path(__file__).resolve().parents[1]
-src=(root/"apply_aux_r3.py").read_text()
-contract=json.loads((root.parent/"hbnf-aux-lighting/commissioning/contract.json").read_text())
-scenes=json.loads((root.parent/"hbnf-wow-bundle/config/WOW_SCENES_V2.json").read_text())
+repo=pathlib.Path(__file__).resolve().parents[1]
+auxbuild=pathlib.Path(__file__).resolve().parent
+src=(auxbuild/"apply_aux_r3.py").read_text()
+contract=json.loads((repo/"hbnf-aux-lighting/commissioning/contract.json").read_text())
+scenes=json.loads((repo/"hbnf-wow-bundle/config/WOW_SCENES_V2.json").read_text())
 assert contract["matrix"]["effect_ids"]==[220,247]
 assert len(scenes["scenes"])==28
 style=[scenes["styleCodes"][x["style"]] for x in scenes["scenes"]]
