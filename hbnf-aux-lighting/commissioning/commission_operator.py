@@ -55,7 +55,7 @@ def verify_package(root:pathlib.Path)->dict:
 
 
 def raw_get(ip:str,path:str,timeout=4.0)->bytes:
-    with urllib.request.urlopen(f"http://{ip}{path}",timeout=timeout) as r:
+    with lc.DIRECT_OPENER.open(f"http://{ip}{path}",timeout=timeout) as r:
         return r.read()
 
 

@@ -52,8 +52,10 @@ contract=json.loads((ROOT/"hbnf-aux-lighting/commissioning/contract.json").read_
 assert contract["matrix"]["release"]=="hbnf-wow-r3-max-2026-09-21-v3"
 assert contract["matrix"]["effect_ids"]==[220,247]
 assert contract["aux"]["underglow"]["gpio"]==16
-assert contract["aux"]["uv_main"]["gpio"]==25
-assert contract["aux"]["uv_short"]["gpio"]==26
+assert contract["aux"]["uv"]["status"]=="external-5v-usb-pending"
+assert contract["aux"]["uv"]["sp803e_pwm_direct_control"] is False
+assert contract["aux"]["spare_pwm_gpios"]==[25,26,27]
+assert contract["safety"]["uv_direct_from_12v_vcc_forbidden"] is True
 assert contract["sync"]["group_bitfield"]==1
 assert contract["sync"]["receive_segment_options"] is False
 assert contract["sync"]["receive_segment_bounds"] is False
@@ -79,10 +81,11 @@ assert "HBNF_AUX_HARDWARE_PLAN_SELFTEST_PASS" in p.stdout
 sample=subprocess.run([sys.executable,str(plan),"--pixels","37","--order","RGB"],capture_output=True,text=True,check=True)
 sp=json.loads(sample.stdout)
 assert sp["mutationIssued"] is False and sp["reviewRequired"] is True
+assert len(sp["cfgPatch"]["hw"]["led"]["ins"])==1
 assert sp["cfgPatch"]["hw"]["led"]["ins"][0]["pin"]==[16]
-assert sp["cfgPatch"]["hw"]["led"]["ins"][1]["pin"]==[25]
-assert sp["cfgPatch"]["hw"]["led"]["ins"][2]["pin"]==[26]
-assert sp["statePatch"]["seg"][1]["sel"] is False and sp["statePatch"]["seg"][2]["sel"] is False
+assert sp["cfgPatch"]["hw"]["led"]["total"]==37
+assert len(sp["statePatch"]["seg"])==1 and sp["statePatch"]["seg"][0]["sel"] is True
+assert sp["postApplyChecks"]["uv"]["sp803ePwmConfigured"] is False
 print("HBNF_AUX_HARDWARE_PLAN_GATE_PASS")
 
 guard=ROOT/"hbnf-aux-lighting/commissioning/commission_guard.py"

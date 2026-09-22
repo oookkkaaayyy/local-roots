@@ -15,6 +15,9 @@ Wi-Fi credentials, firmware, or presets.
 from __future__ import annotations
 import argparse, concurrent.futures, ipaddress, json, urllib.request
 
+# Local controller traffic must never be sent through an environment/system HTTP proxy.
+DIRECT_OPENER=urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
 R3_RELEASE="hbnf-wow-r3-max-2026-09-21-v3"
 R3_ENGINE="r3-wow-max"
 R3_WITNESS="registry28-fixed-v3"
@@ -38,7 +41,7 @@ def request_json(ip:str,path:str,method="GET",body=None,timeout=2.0):
         data=json.dumps(body,separators=(",",":")).encode()
         headers["Content-Type"]="application/json"
     req=urllib.request.Request(f"http://{ip}{path}",data=data,headers=headers,method=method)
-    with urllib.request.urlopen(req,timeout=timeout) as r:
+    with DIRECT_OPENER.open(req,timeout=timeout) as r:
         raw=r.read().decode("utf-8","replace")
         return json.loads(raw) if raw.strip() else {}
 

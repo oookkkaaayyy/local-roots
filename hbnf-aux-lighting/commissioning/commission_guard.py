@@ -215,30 +215,29 @@ def hardware_summary(d):
 
 def _topology_common(d):
     s=hardware_summary(d);by_pin={tuple(x.get("pin") or []):x for x in s["buses"]}
-    u,m,sh=by_pin.get((16,)),by_pin.get((25,)),by_pin.get((26,))
-    if not (u and m and sh) or len(s["buses"])!=3: return None
-    if int(u.get("type") or -1)!=hp.TYPE_DIGITAL_RGB or int(m.get("type") or -1)!=hp.TYPE_ANALOG_1CH or int(sh.get("type") or -1)!=hp.TYPE_ANALOG_1CH: return None
+    u=by_pin.get((16,))
+    if not u or len(s["buses"])!=1: return None
+    if int(u.get("type") or -1)!=hp.TYPE_DIGITAL_RGB: return None
     pixels=int(u.get("len") or 0)
     if pixels<1 or int(u.get("start",-1))!=0: return None
-    if int(m.get("start") or -1)!=pixels or int(m.get("len") or 0)!=1: return None
-    if int(sh.get("start") or -1)!=pixels+1 or int(sh.get("len") or 0)!=1: return None
-    if int(s.get("total") or 0)!=pixels+2: return None
+    if int(s.get("total") or 0)!=pixels: return None
     seg={int(x["id"]):x for x in s["segments"]}
-    s0,s1,s2=seg.get(0) or {},seg.get(1) or {},seg.get(2) or {}
-    bounds=(int(s0.get("start",-1))==0 and int(s0.get("stop") or -1)==pixels and int(s1.get("start") or -1)==pixels and int(s1.get("stop") or -1)==pixels+1 and int(s2.get("start") or -1)==pixels+1 and int(s2.get("stop") or -1)==pixels+2)
-    if not (bounds and s.get("mainseg")==0 and s0.get("sel") is True and s1.get("sel") is False and s2.get("sel") is False and s1.get("on") is False and s2.get("on") is False): return None
-    return s,u,m,sh,pixels
+    s0=seg.get(0) or {}
+    if len(seg)!=1: return None
+    bounds=(int(s0.get("start",-1))==0 and int(s0.get("stop") or -1)==pixels)
+    if not (bounds and s.get("mainseg")==0 and s0.get("sel") is True): return None
+    return s,u,pixels
 
 def hardware_topology_matches_plan(d,plan):
     common=_topology_common(d)
     if not common: return False
-    s,u,_,_,pixels=common;inputs=plan.get("inputs") or {};src=plan.get("sourceAuthority") or {}
+    s,u,pixels=common;inputs=plan.get("inputs") or {};src=plan.get("sourceAuthority") or {}
     return int(s.get("maxpwr") or 0)==int(inputs.get("underglowMaxMilliamps") or -1) and int(u.get("maxpwr") or 0)==int(inputs.get("underglowMaxMilliamps") or -1) and pixels==int(inputs.get("underglowLogicalPixels") or -1) and int(u.get("order") if u.get("order") is not None else -1)==int(src.get("colorOrderCode") if src.get("colorOrderCode") is not None else -2) and bool(u.get("rev")) is bool(inputs.get("reverse"))
 
 def hardware_ok(d):
     common=_topology_common(d)
     if not common: return False
-    s,u,_,_,_=common
+    s,u,_=common
     if int(u.get("maxpwr") or 0)!=900 or int(s.get("maxpwr") or 0)!=900: return False
     boot=s.get("bootDefault") or {};ps=int(boot.get("ps") if boot.get("ps") is not None else -1)
     return boot.get("on") is False and SAFE_BOOT_MIN<=ps<=SAFE_BOOT_MAX
@@ -259,13 +258,13 @@ def _preset_segments(preset):
 
 def safe_boot_preset_valid(preset,pixels):
     if not isinstance(preset,dict) or preset.get("n")!=SAFE_BOOT_NAME or preset.get("on") is not False: return False
-    seg=_preset_segments(preset);s0,s1,s2=seg.get(0) or {},seg.get(1) or {},seg.get(2) or {}
-    return int(s0.get("start",-1))==0 and int(s0.get("stop") or -1)==pixels and s0.get("on") is True and int(s1.get("start") or -1)==pixels and int(s1.get("stop") or -1)==pixels+1 and s1.get("on") is False and int(s2.get("start") or -1)==pixels+1 and int(s2.get("stop") or -1)==pixels+2 and s2.get("on") is False
+    seg=_preset_segments(preset);s0=seg.get(0) or {}
+    return len(seg)==1 and int(s0.get("start",-1))==0 and int(s0.get("stop") or -1)==pixels and s0.get("on") is True
 
 def safe_boot_runtime_ok(ip,d):
     common=_topology_common(d)
     if not common: return False
-    s,_,_,_,pixels=common;boot=s.get("bootDefault") or {};pid=int(boot.get("ps") if boot.get("ps") is not None else -1)
+    s,_,pixels=common;boot=s.get("bootDefault") or {};pid=int(boot.get("ps") if boot.get("ps") is not None else -1)
     if boot.get("on") is not False or not (SAFE_BOOT_MIN<=pid<=SAFE_BOOT_MAX): return False
     return safe_boot_preset_valid(read_presets(ip).get(str(pid)),pixels)
 
@@ -289,22 +288,23 @@ def preflight(args):
         if m: backups["matrix"]=str(backup_node(m,root,"matrix"))
         if a: backups["aux"]=str(backup_node(a,root,"aux"))
     if not package.get("ok"): nxt="PACKAGE_INVALID"
-    elif not m: nxt="POWER_OR_IDENTIFY_MATRIX"
     elif not a: nxt="POWER_OR_IDENTIFY_AUX" if ids["auxReason"]=="none" else "DISAMBIGUATE_AUX"
     elif not all_true(ac,AUX_IDENTITY_KEYS): nxt="INSTALL_EXACT_AUX_FIRMWARE"
     elif not hardware_ok(ids["inspected"][a]) or not safe_boot_runtime_ok(a,ids["inspected"][a]): nxt="APPLY_HARDWARE_PLAN"
+    elif not m: nxt="POWER_OR_IDENTIFY_MATRIX"
     elif not all_true(ac,AUX_SYNC_KEYS): nxt="RUN_GUARDED_PREPARE_SYNC"
-    else: nxt="BEGIN_PHYSICAL_ACCEPTANCE"
+    else: nxt="BEGIN_UNDERGLOW_ACCEPTANCE"
     return {"mutationIssued":False,"package":package,"subnets":subnets,"wledNodes":nodes,"matrix":{"ip":m,"candidates":ids["matrixCandidates"],"checks":mc},"aux":{"ip":a,"selectionReason":ids["auxReason"],"checks":ac},"backups":backups,"nextAction":nxt}
 
 def multipart_firmware(fw):
     boundary="----HBNF"+uuid.uuid4().hex
     data=fw.read_bytes()
+    crlf="\r\n"
     chunks=[
-      f'--{boundary}\\r\\nContent-Disposition: form-data; name="skipValidation"\\r\\n\\r\\n1\\r\\n'.encode(),
-      f'--{boundary}\\r\\nContent-Disposition: form-data; name="update"; filename="{fw.name}"\\r\\nContent-Type: application/octet-stream\\r\\n\\r\\n'.encode(),
+      f'--{boundary}{crlf}Content-Disposition: form-data; name="skipValidation"{crlf}{crlf}1{crlf}'.encode(),
+      f'--{boundary}{crlf}Content-Disposition: form-data; name="update"; filename="{fw.name}"{crlf}Content-Type: application/octet-stream{crlf}{crlf}'.encode(),
       data,
-      f'\\r\\n--{boundary}--\\r\\n'.encode()
+      f'{crlf}--{boundary}--{crlf}'.encode()
     ]
     return b"".join(chunks),f"multipart/form-data; boundary={boundary}"
 
@@ -331,7 +331,7 @@ def ota_install(ip,fw,timeout=120):
     body,ctype=multipart_firmware(fw)
     req=urllib.request.Request(f"http://{ip}/update",data=body,method="POST",headers={"Content-Type":ctype,"Content-Length":str(len(body))})
     try:
-        with urllib.request.urlopen(req,timeout=45) as r:
+        with lc.DIRECT_OPENER.open(req,timeout=45) as r:
             response=r.read().decode("utf-8","replace");status=int(getattr(r,"status",200))
     except urllib.error.HTTPError as e:
         detail=e.read().decode("utf-8","replace")
@@ -362,7 +362,7 @@ def install_safe_boot_preset(ip,plan):
             saved=read_presets(ip).get(str(pid))
             if safe_boot_preset_valid(saved,pixels): break
         if not safe_boot_preset_valid(saved,pixels):
-            raise RuntimeError(f"Preset {pid} did not persist the fail-dark three-segment state.")
+            raise RuntimeError(f"Preset {pid} did not persist the fail-dark underglow-only state.")
         cfg_post(ip,{"def":{"ps":pid,"on":False,"bri":64}});time.sleep(.5)
         after=lc.inspect(ip);boot=(hardware_summary(after).get("bootDefault") or {})
         if boot.get("on") is not False or int(boot.get("ps") if boot.get("ps") is not None else -1)!=pid:
@@ -415,12 +415,12 @@ def calibrate_color_order(ip,pixels,reverse=False):
         if not hardware_topology_matches_plan(mid,temp): raise RuntimeError("Temporary 300 mA RGB calibration topology did not verify.")
         applied={"ok":True,"summary":hardware_summary(mid)}
         for name,rgb in colors:
-            state_post(ip,{"on":True,"mainseg":0,"seg":[{"id":0,"on":True,"sel":True,"bri":32,"fx":0,"pal":0,"col":[rgb,[0,0,0],[0,0,0]]},{"id":1,"on":False,"sel":False},{"id":2,"on":False,"sel":False}]})
+            state_post(ip,{"on":True,"mainseg":0,"seg":[{"id":0,"on":True,"sel":True,"bri":32,"fx":0,"pal":0,"col":[rgb,[0,0,0],[0,0,0]]}]})
             time.sleep(.8)
             observed.append(_observed_color(name))
     finally:
         try:
-            state_post(ip,{"seg":[{"id":0,"on":False},{"id":1,"on":False},{"id":2,"on":False}]})
+            state_post(ip,{"seg":[{"id":0,"on":False}]})
             cfg_post(ip,rb["cfg"]);wait_wled(ip,60,True);state_post(ip,rb["state"])
         except Exception as e:
             restore_error=f"{type(e).__name__}: {e}"
@@ -485,12 +485,10 @@ def ensure_field_wifi_profile(matrix_ip,aux_ip,explicit_ssid=None):
     return {"changed":True,"prepared":True,"ssid":candidate,"matrixSsids":matrix_ssids,"auxSsids":after_ssids}
 
 def _local_uv(ip,mode):
-    main=mode in ("main","full");short=mode in ("short","full")
-    return state_post(ip,{"on":True,"mainseg":0,"seg":[{"id":0,"sel":True},{"id":1,"on":main,"bri":255,"sel":False,"col":[[255,255,255]]},{"id":2,"on":short,"bri":255,"sel":False,"col":[[255,255,255]]}]})
+    raise RuntimeError("UV control is intentionally unavailable: the installed UV strip is 5V USB and no verified external switching interface is commissioned.")
 
 def _uv_off(ip):
-    try: return state_post(ip,{"seg":[{"id":1,"on":False,"sel":False},{"id":2,"on":False,"sel":False}]})
-    except Exception: return None
+    return None
 
 def final_cloud_verification():
     release=cloud_json("hbnf-release-doctor")
@@ -525,89 +523,60 @@ def physical_acceptance(args,matrix_ip,aux_ip,history):
     ep=evidence_path(args.evidence);ev=load_evidence(ep)
     ev["matrixIp"]=matrix_ip;ev["auxIp"]=aux_ip
     ev["firmwareSha256"]=op.EXPECTED_FW_SHA;ev["packageDir"]=str(pathlib.Path(args.package_dir).resolve())
+    ev["commissioningMode"]="underglow-only-v1";ev["uvArchitecturePending"]=True
     save_evidence(ev,ep)
-    print(f"\nPHYSICAL ACCEPTANCE — resumable evidence file: {ep}")
-    if not _accept_prompt(ev,ep,"hardware_wired","Confirm physical SP803E + underglow + both UV branches are fully mounted/wired, insulated and strain-relieved."): return ev
-    if not _accept_prompt(ev,ep,"power_verified","Confirm 12V polarity/common-ground path is correct and nothing is abnormally hot at idle."): return ev
+    print(f"\nUNDERGLOW ACCEPTANCE — resumable evidence file: {ep}")
+    print("UV is explicitly excluded from this acceptance and must remain disconnected.")
+    if not _accept_prompt(ev,ep,"hardware_wired","Confirm the SP803E + WS2811 underglow are mounted/wired, insulated and strain-relieved, with ALL UV wiring disconnected."): return ev
+    if not _accept_prompt(ev,ep,"power_verified","Confirm the 12V underglow polarity/common-ground path is correct and nothing is abnormally hot at idle."): return ev
     cur=lc.inspect(aux_ip)
-    if not hardware_ok(cur): raise RuntimeError("Hardware configuration no longer matches the accepted GPIO/current/segment plan.")
+    if not hardware_ok(cur): raise RuntimeError("Underglow hardware configuration no longer matches the accepted GPIO/current/segment plan.")
     summary=hardware_summary(cur)
-    accept_evidence(ev,"gpio_verified",summary);accept_evidence(ev,"current_limit_verified",{"underglowMaxMilliamps":next((x.get("maxpwr") for x in summary["buses"] if x.get("pin")==[16]),None)});accept_evidence(ev,"segments_verified",summary["segments"]);save_evidence(ev,ep)
+    accept_evidence(ev,"gpio_verified",summary)
+    accept_evidence(ev,"current_limit_verified",{"underglowMaxMilliamps":next((x.get("maxpwr") for x in summary["buses"] if x.get("pin")==[16]),None)})
+    accept_evidence(ev,"segments_verified",summary["segments"]);save_evidence(ev,ep)
     ac=lc.check_aux(cur);mc=lc.check_matrix(lc.inspect(matrix_ip))
     if not all_true(ac,AUX_SYNC_KEYS) or not all_true(mc,("visualSyncSend","audioSyncSend")):
         raise RuntimeError("Local Matrix→AUX visual/audio sync config is not proven; rerun software commissioning first.")
     if not ev.get("accepted",{}).get("underglow_sync_verified"):
-        print("\nPlay normal music through the cart speakers. Matrix is the audio/visual master; UV should remain off.")
+        print("\nPlay normal music through the cart speakers. Matrix is the audio/visual master.")
         if not prompt_yes("Confirm the underglow visibly follows the Matrix/music response rather than running an unrelated generic animation."): return ev
-        for k in ("audio_input_verified","udp_sync_verified","underglow_sync_verified"): accept_evidence(ev,k,{"userConfirmed":True,"matrixMaster":True,"audioPort":11988})
+        for k in ("audio_input_verified","udp_sync_verified","underglow_sync_verified"):
+            accept_evidence(ev,k,{"userConfirmed":True,"matrixMaster":True,"audioPort":11988})
         save_evidence(ev,ep)
-    for key,mode,label in (("uv_main_verified","main","MAIN UV only"),("uv_short_verified","short","SHORT UV only"),("uv_full_verified","full","BOTH UV strips at full power")):
-        if ev.get("accepted",{}).get(key) is True: continue
-        print(f"\nTesting {label}. Underglow may continue following Matrix; only the requested UV branch(es) should energize.")
-        _local_uv(aux_ip,mode);time.sleep(.8)
-        ok=prompt_yes(f"Confirm {label} is correct and no wrong UV branch energizes.")
-        _uv_off(aux_ip)
-        if not ok: return ev
-        accept_evidence(ev,key,{"userConfirmed":True,"mode":mode,"uvBrightness":255});save_evidence(ev,ep)
-    if not ev.get("accepted",{}).get("thermal_verified") or not ev.get("accepted",{}).get("mixed_load_verified"):
-        print("\nMIXED-LOAD / THERMAL TEST")
-        print("I will turn BOTH UV strips fully on while the underglow continues its normal Matrix-synced operation.")
-        print("Run representative music for at least 10 minutes. Check the power bank, PD cable/plug, SP803E, connectors and wiring.")
-        if not prompt_yes("Start the mixed-load test now?"): return ev
-        _local_uv(aux_ip,"full")
-        try:
-            input("After >=10 minutes, press Return. If anything becomes VERY hot, resets, flickers or smells wrong, disconnect power first. ")
-            if not prompt_yes("Confirm there were NO resets/interference and all power/control parts stayed within normal safe warmth."): return ev
-        finally: _uv_off(aux_ip)
-        accept_evidence(ev,"thermal_verified",{"userConfirmed":True,"representativeMinutes":10})
-        accept_evidence(ev,"mixed_load_verified",{"userConfirmed":True,"uv":"full","underglow":"matrix-synced"});save_evidence(ev,ep)
+    if not ev.get("accepted",{}).get("underglow_thermal_verified"):
+        print("\nUNDERGLOW THERMAL TEST")
+        print("Run representative music/looks for at least 10 minutes with UV still disconnected. Check the power bank, PD cable/plug, SP803E, connectors and wiring.")
+        if not prompt_yes("Start/continue the underglow-only thermal test now?"): return ev
+        input("After >=10 minutes, press Return. If anything becomes VERY hot, resets, flickers or smells wrong, disconnect power first. ")
+        if not prompt_yes("Confirm there were NO resets/interference and all power/control parts stayed within normal safe warmth."): return ev
+        accept_evidence(ev,"underglow_thermal_verified",{"userConfirmed":True,"representativeMinutes":10,"uvDisconnected":True});save_evidence(ev,ep)
     if not ev.get("accepted",{}).get("mqtt_cloud_path_prepared"):
-        print("\nUNIFIED CLOUD CONTROL")
+        print("\nUNIFIED CLOUD CONTROL PREPARATION")
         r=configure_aux_mqtt_from_matrix(matrix_ip,aux_ip)
         accept_evidence(ev,"mqtt_cloud_path_prepared",r);save_evidence(ev,ep)
-        if r.get("publicTestBroker"):
-            print("Current Matrix broker is broker.emqx.io. AUX was matched to it for functional parity; release-doctor will keep flagging this transport as a hardening risk until both nodes migrate together.")
     if not ev.get("accepted",{}).get("field_wifi_prepared"):
-        print("\nFIELD/HOTSPOT PROFILE")
         r=ensure_field_wifi_profile(matrix_ip,aux_ip,args.field_ssid)
-        if r.get("prepared"):
-            accept_evidence(ev,"field_wifi_prepared",r);save_evidence(ev,ep)
-        else:
-            ev.setdefault("observations",{})["field_wifi_prepared"]=r;save_evidence(ev,ep)
-            print("A course/hotspot Wi-Fi profile could not be proven automatically. This can be completed on a later rerun without repeating accepted steps.")
+        if r.get("prepared"): accept_evidence(ev,"field_wifi_prepared",r)
+        else: ev.setdefault("observations",{})["field_wifi_prepared"]=r
+        save_evidence(ev,ep)
     if not ev.get("accepted",{}).get("cold_boot_verified"):
         print("\nCOLD-BOOT PERSISTENCE")
         if prompt_yes("Ready to power BOTH controllers fully off for at least 10 seconds, then power them back on?"):
             input("Power both off >=10 seconds, power them back on, wait for normal startup, then press Return. ")
             post=preflight(args)
-            if post.get("nextAction")!="BEGIN_PHYSICAL_ACCEPTANCE": raise RuntimeError("Cold-boot recheck did not return to fully prepared local state: "+str(post.get("nextAction")))
+            if post.get("nextAction")!="BEGIN_UNDERGLOW_ACCEPTANCE": raise RuntimeError("Cold-boot recheck did not return to prepared underglow state: "+str(post.get("nextAction")))
             accept_evidence(ev,"cold_boot_verified",{"matrixIp":post["matrix"]["ip"],"auxIp":post["aux"]["ip"],"nextAction":post["nextAction"]});save_evidence(ev,ep)
-    if ev.get("accepted",{}).get("field_wifi_prepared") and not ev.get("accepted",{}).get("hotspot_verified"):
-        print("\nOPTIONAL NOW / REQUIRED BEFORE COURSE-READY: actual iPhone-hotspot failover test.")
-        print("Both controllers must REALLY be on the iPhone hotspot; if home Wi-Fi remains available they may stay on home instead.")
-        if prompt_yes("Run the real hotspot test now?"):
-            input("Enable the iPhone hotspot, ensure both controllers migrate to it, join this Mac to that hotspot, then press Return. ")
-            hpflight=preflight(args)
-            if hpflight.get("nextAction")!="BEGIN_PHYSICAL_ACCEPTANCE": raise RuntimeError("Hotspot rediscovery did not prove both prepared controllers: "+str(hpflight.get("nextAction")))
-            hm,ha=hpflight["matrix"]["ip"],hpflight["aux"]["ip"]
-            if not prompt_yes("Confirm underglow still follows Matrix/music on the hotspot and neither controller reset/reverted."): return ev
-            cloud={"releaseDoctor":cloud_json("hbnf-release-doctor"),"matrixStatus":cloud_json("hbnf-matrix-control","POST",{"action":"status"})}
-            if not cloud["matrixStatus"].get("ok"): raise RuntimeError("Cloud Matrix status failed during hotspot test.")
-            accept_evidence(ev,"hotspot_verified",{"matrixIp":hm,"auxIp":ha,"cloud":cloud});save_evidence(ev,ep)
-    gate_keys=("hardware_wired","power_verified","gpio_verified","current_limit_verified","segments_verified","audio_input_verified","udp_sync_verified","underglow_sync_verified","uv_main_verified","uv_short_verified","uv_full_verified","thermal_verified","mixed_load_verified")
-    ev["physicalGateReady"]=all(ev.get("accepted",{}).get(k) is True for k in gate_keys)
-    ev["readyForGateImport"]=ev["physicalGateReady"]
-    ev["courseFieldReady"]=bool(ev["physicalGateReady"] and ev.get("accepted",{}).get("cold_boot_verified") and ev.get("accepted",{}).get("field_wifi_prepared") and ev.get("accepted",{}).get("hotspot_verified"))
+    underglow_keys=("hardware_wired","power_verified","gpio_verified","current_limit_verified","segments_verified","audio_input_verified","udp_sync_verified","underglow_sync_verified","underglow_thermal_verified")
+    ev["underglowPhysicalReady"]=all(ev.get("accepted",{}).get(k) is True for k in underglow_keys)
+    # Full AUX gate intentionally stays closed until a separately verified 5V UV switching architecture exists and its real tests pass.
+    ev["physicalGateReady"]=False
+    ev["readyForGateImport"]=False
+    ev["courseFieldReady"]=False
+    ev["fullyReady"]=False
     ev["cloudSnapshot"]={"releaseDoctor":cloud_json("hbnf-release-doctor"),"aux":cloud_json("hbnf-aux-control"),"cart":cloud_json("hbnf-cart-orchestrator")}
-    finalCloud=final_cloud_verification();ev["finalCloudVerification"]=finalCloud
-    if finalCloud.get("ok"): accept_evidence(ev,"final_cloud_verified",{"checks":finalCloud.get("checks"),"releaseRisks":finalCloud.get("releaseRisks")})
-    ev["fullyReady"]=bool(ev["courseFieldReady"] and ev.get("accepted",{}).get("final_cloud_verified"))
     save_evidence(ev,ep)
-    print(json.dumps({"physicalGateReady":ev["physicalGateReady"],"courseFieldReady":ev["courseFieldReady"],"finalCloudVerified":ev.get("accepted",{}).get("final_cloud_verified",False),"fullyReady":ev["fullyReady"],"evidence":str(ep)},indent=2))
-    if ev["readyForGateImport"] and not ev.get("accepted",{}).get("final_cloud_verified"):
-        print("Physical acceptance evidence is complete. Backend AUX gates remain intentionally closed until ChatGPT imports this evidence into Supabase. Send this single evidence JSON; do not repeat the tests. Then rerun this same launcher once for final cloud verification.")
-    if ev.get("fullyReady"):
-        print("LOCAL + FIELD + CLOUD acceptance are all complete. Release-doctor may still report the known MQTT public-broker hardening risk until a future broker migration.")
+    print(json.dumps({"underglowPhysicalReady":ev["underglowPhysicalReady"],"uvArchitecturePending":True,"physicalGateReady":False,"evidence":str(ep)},indent=2))
     return ev
 
 def sync_snapshot(d):
@@ -633,54 +602,63 @@ def prompt_yes(msg):
     try: return input(msg+" Type YES to continue: ").strip()=="YES"
     except EOFError: return False
 
-def require_ready(pf):
+def require_aux_ready(pf):
     if not pf.get("package",{}).get("ok"): raise RuntimeError("Package verification failed.")
     m,a=pf.get("matrix",{}).get("ip"),pf.get("aux",{}).get("ip")
-    if not m: raise RuntimeError("Exact Matrix R3 node not uniquely identified.")
     if not a: raise RuntimeError("Aux WLED node not uniquely identified.")
-    if m==a: raise RuntimeError("Matrix and Aux resolved to same IP.")
+    if m and m==a: raise RuntimeError("Matrix and Aux resolved to same IP.")
+    return a
+
+def require_ready(pf):
+    a=require_aux_ready(pf);m=pf.get("matrix",{}).get("ip")
+    if not m: raise RuntimeError("Exact Matrix R3 node not uniquely identified.")
     return m,a
 
 def interactive(args):
     history=[];pf=preflight(args);history.append({"phase":"preflight","result":pf});write_report({"history":history,"current":pf},report_path(args.report));print(json.dumps(pf,indent=2,sort_keys=True))
-    if pf["nextAction"] in ("PACKAGE_INVALID","POWER_OR_IDENTIFY_MATRIX","POWER_OR_IDENTIFY_AUX","DISAMBIGUATE_AUX"): return {"history":history,"current":pf}
-    m,a=require_ready(pf)
+    if pf["nextAction"] in ("PACKAGE_INVALID","POWER_OR_IDENTIFY_AUX","DISAMBIGUATE_AUX"): return {"history":history,"current":pf}
+    a=require_aux_ready(pf)
     if pf["nextAction"]=="INSTALL_EXACT_AUX_FIRMWARE":
-        print(f"\nTarget AUX: {a}. Matrix: {m}. Fresh backups were created.")
+        print(f"\nTarget AUX: {a}. Fresh backups were created. Matrix is not required for this phase.")
         print("This uploads the exact proven AUX firmware and reboots ONLY the identified AUX node.")
         if not prompt_yes("Install exact AUX firmware now?"): return {"history":history,"current":pf}
         r=ota_install(a,pathlib.Path(args.package_dir).resolve()/"HBNF_SP803E_AUX_R3.bin");history.append({"phase":"install-firmware","result":r});pf=preflight(args);history.append({"phase":"post-firmware-preflight","result":pf});write_report({"history":history,"current":pf},report_path(args.report))
     if pf["nextAction"]=="APPLY_HARDWARE_PLAN":
-        print("\nHardware config needs the ACTUAL installed WS2811 logical group count. Color order will be calibrated for you.")
+        print("\nUnderglow config needs the ACTUAL installed WS2811 logical group count. UV stays excluded/disconnected.")
         pixels=int(input("Actual installed WS2811 logical pixel/group count: ").strip())
         reverse=input("Is the strip data direction intentionally reversed from controller→far end? [y/N]: ").strip().lower()=="y"
         if not prompt_yes("Run a low-current three-color calibration to determine strip color order?"): return {"history":history,"current":pf}
         cal=calibrate_color_order(a,pixels,reverse);history.append({"phase":"color-order-calibration","result":{"order":cal["order"],"observed":cal["observed"]}})
         order=cal["order"]
         plan=hp.build(pixels,order,reverse,900,55);print(json.dumps({"inputs":plan["inputs"],"postApplyChecks":plan["postApplyChecks"]},indent=2))
-        if not prompt_yes("Apply this final hardware/segment plan to AUX only?"): return {"history":history,"current":pf,"pendingPlan":plan}
+        if not prompt_yes("Apply this final underglow-only hardware/segment plan to AUX?"): return {"history":history,"current":pf,"pendingPlan":plan}
         r=apply_hardware(a,plan);history.append({"phase":"apply-hardware","result":r});pf=preflight(args);history.append({"phase":"post-hardware-preflight","result":pf});write_report({"history":history,"current":pf},report_path(args.report))
+    if pf["nextAction"]=="POWER_OR_IDENTIFY_MATRIX":
+        return {"history":history,"current":pf}
     if pf["nextAction"]=="RUN_GUARDED_PREPARE_SYNC":
+        m,a=require_ready(pf)
         print("\nNext change configures Matrix SEND + AUX RECEIVE local sync only; it does not open cloud/Supabase AUX actuation.")
         if not prompt_yes("Apply guarded sync configuration now?"): return {"history":history,"current":pf}
         r=prepare_sync_with_rollback(m,a);history.append({"phase":"prepare-sync","result":r});pf=preflight(args);history.append({"phase":"post-sync-preflight","result":pf});write_report({"history":history,"current":pf},report_path(args.report))
-    if pf["nextAction"]=="BEGIN_PHYSICAL_ACCEPTANCE":
-        ev=physical_acceptance(args,m,a,history);history.append({"phase":"physical-acceptance","result":{"evidence":str(evidence_path(args.evidence)),"physicalGateReady":ev.get("physicalGateReady"),"courseFieldReady":ev.get("courseFieldReady")}})
+    if pf["nextAction"]=="BEGIN_UNDERGLOW_ACCEPTANCE":
+        m,a=require_ready(pf)
+        ev=physical_acceptance(args,m,a,history);history.append({"phase":"underglow-acceptance","result":{"evidence":str(evidence_path(args.evidence)),"underglowPhysicalReady":ev.get("underglowPhysicalReady"),"uvArchitecturePending":True}})
     return {"history":history,"current":pf,"evidence":str(evidence_path(args.evidence))}
 
 def selftest():
     body,ctype=multipart_firmware(pathlib.Path(__file__))
     assert b'name="skipValidation"' in body and b'name="update"' in body and "multipart/form-data" in ctype
-    fake={"cfg":{"def":{"ps":199,"on":False,"bri":64},"hw":{"led":{"total":39,"maxpwr":900,"ins":[{"pin":[16],"start":0,"len":37,"type":22,"order":1,"rev":False,"maxpwr":900},{"pin":[25],"start":37,"len":1,"type":41,"order":0,"rev":False,"maxpwr":0},{"pin":[26],"start":38,"len":1,"type":41,"order":0,"rev":False,"maxpwr":0}]}}},"state":{"mainseg":0,"seg":[{"id":0,"start":0,"stop":37,"sel":True,"on":True},{"id":1,"start":37,"stop":38,"sel":False,"on":False},{"id":2,"start":38,"stop":39,"sel":False,"on":False}]}}
-    assert hardware_ok(fake);bad=json.loads(json.dumps(fake));bad["state"]["seg"][1]["sel"]=True;assert not hardware_ok(bad)
+    assert b"\r\nContent-Disposition" in body and b"\\r\\nContent-Disposition" not in body
+    fake={"cfg":{"def":{"ps":199,"on":False,"bri":64},"hw":{"led":{"total":37,"maxpwr":900,"ins":[{"pin":[16],"start":0,"len":37,"type":22,"order":1,"rev":False,"maxpwr":900}]}}},"state":{"mainseg":0,"seg":[{"id":0,"start":0,"stop":37,"sel":True,"on":True}]}}
+    assert hardware_ok(fake)
+    extra=json.loads(json.dumps(fake));extra["cfg"]["hw"]["led"]["ins"].append({"pin":[25],"start":37,"len":1,"type":41});assert not hardware_ok(extra)
     low=json.loads(json.dumps(fake));low["cfg"]["hw"]["led"]["ins"][0]["maxpwr"]=300;assert not hardware_ok(low)
-    drift=json.loads(json.dumps(fake));drift["state"]["seg"][2]["start"]=37;assert not hardware_ok(drift)
     p=hp.build(37,"RGB",False,900,55);assert hardware_matches_plan(fake,p)
     wrong=json.loads(json.dumps(fake));wrong["cfg"]["hw"]["led"]["ins"][0]["order"]=0;assert not hardware_matches_plan(wrong,p)
     unsafe=json.loads(json.dumps(fake));unsafe["cfg"]["def"]["on"]=True;assert not hardware_ok(unsafe)
-    safe_preset={"n":SAFE_BOOT_NAME,"on":False,"seg":[{"id":0,"start":0,"stop":37,"on":True},{"id":1,"start":37,"stop":38,"on":False},{"id":2,"start":38,"stop":39,"on":False}]}
+    safe_preset={"n":SAFE_BOOT_NAME,"on":False,"seg":[{"id":0,"start":0,"stop":37,"on":True}]}
     assert safe_boot_preset_valid(safe_preset,37)
-    bad_preset=json.loads(json.dumps(safe_preset));bad_preset["seg"][2]["on"]=True;assert not safe_boot_preset_valid(bad_preset,37)
+    bad_preset=json.loads(json.dumps(safe_preset));bad_preset["seg"].append({"id":1,"start":37,"stop":38,"on":False});assert not safe_boot_preset_valid(bad_preset,37)
     assert candidate_subnets("192.168.1.0/24",None)==["192.168.1.0/24"]
     sample="en0: flags=8863<UP>\n\tinet 192.168.68.77 netmask 0xfffffc00 broadcast 192.168.71.255\nlo0: flags=8049<UP>\n\tinet 127.0.0.1 netmask 0xff000000\n"
     assert parse_ifconfig_networks(sample)==["192.168.68.0/22"]
@@ -689,6 +667,11 @@ def selftest():
     try:
         infer_color_order(["R","R","B"]);raise AssertionError("duplicate observed color accepted")
     except ValueError: pass
+    pf={"package":{"ok":True},"matrix":{"ip":None},"aux":{"ip":"192.168.1.9"}}
+    assert require_aux_ready(pf)=="192.168.1.9"
+    try:
+        require_ready(pf);raise AssertionError("Matrix-dependent phase accepted without Matrix")
+    except RuntimeError: pass
     print("HBNF_AUX_COMMISSION_GUARD_SELFTEST_PASS")
 
 def main():
@@ -706,12 +689,14 @@ def main():
     pf=preflight(a)
     if a.phase in ("preflight","verify"): write_report(pf,rp);print(json.dumps(pf,indent=2,sort_keys=True));return 0 if pf.get("package",{}).get("ok") else 2
     if not a.yes: raise SystemExit("Mutation phase requires --yes, or use --phase interactive.")
-    m,aip=require_ready(pf)
-    if a.phase=="install-firmware": result=ota_install(aip,pathlib.Path(a.package_dir).resolve()/"HBNF_SP803E_AUX_R3.bin")
+    if a.phase=="install-firmware":
+        aip=require_aux_ready(pf);result=ota_install(aip,pathlib.Path(a.package_dir).resolve()/"HBNF_SP803E_AUX_R3.bin")
     elif a.phase=="apply-hardware":
+        aip=require_aux_ready(pf)
         if a.pixels is None or a.order is None: raise SystemExit("apply-hardware requires --pixels and --order")
         result=apply_hardware(aip,hp.build(a.pixels,a.order,a.reverse,900,55))
-    elif a.phase=="prepare-sync": result=prepare_sync_with_rollback(m,aip)
+    elif a.phase=="prepare-sync":
+        m,aip=require_ready(pf);result=prepare_sync_with_rollback(m,aip)
     final=preflight(a);out={"mutationIssued":True,"phase":a.phase,"result":result,"current":final};write_report(out,rp);print(json.dumps(out,indent=2,sort_keys=True));return 0
 
 if __name__=="__main__": raise SystemExit(main())

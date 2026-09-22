@@ -1,33 +1,30 @@
 HB NIGHT FLYERS — SP803E / AUX COMMISSIONING
 
-ONE-TIME BEFORE THE LAUNCHER
-- Finish the physical underglow + UV wiring/mounting.
-- If the brand-new SP803E is not yet on the same network as the Mac/Matrix, use its normal WLED-AP setup once to join the home Wi-Fi. Do not configure LED buses/effects manually.
+CURRENT SAFE SCOPE
+- Addressable underglow: 12V WS2811 on DATA / IO16.
+- Installed UV strip: 5V USB. It is NOT a 12V load and must remain disconnected from SP803E VCC/PWM until a separate verified 5V switching interface is installed.
+- Matrix is required only when the workflow reaches Matrix→AUX sync. It is NOT required for AUX firmware or underglow-local configuration.
+
+BEFORE THE LAUNCHER
+- Put the SP803E on the same current LAN as the Mac.
+- Keep UV disconnected.
+- For underglow color calibration, connect only the correctly wired WS2811 underglow when the launcher explicitly asks for the physical test.
 
 THEN
-1. Extract this ZIP completely.
-2. Put the Mac, Matrix and SP803E on the same current network.
-3. Power both controllers.
-4. Double-click COMMISSION_HBNF_AUX.command.
+1. Extract the ZIP completely.
+2. Double-click COMMISSION_HBNF_AUX.command.
+3. The launcher verifies package/target identity, backs up the AUX, and resumes from the first genuinely unfinished stage.
 
-The launcher is resumable. It rediscovers the controllers from their exact runtime signatures and the Mac's REAL interface subnet (including the 192.168.68.0/22 home LAN), so an IP change does not make you restart.
+THE LAUNCHER WILL
+- discover the Mac's real subnet and use direct LAN HTTP (no proxy);
+- positively identify the AUX and refuse Matrix targets;
+- install the exact verified firmware without requiring Matrix presence;
+- use a standards-compliant WLED multipart OTA upload;
+- calibrate real underglow color order at low current;
+- configure ONLY the GPIO16 WS2811 underglow bus, with fail-dark boot and <=900 mA commissioning limit;
+- keep GPIO25/26/27 unused while 5V USB UV control is unresolved;
+- later require exact Matrix identity before changing Matrix/AUX sync;
+- preserve physical observations in HBNF_AUX_ACCEPTANCE_EVIDENCE.json.
 
-It will:
-- verify the frozen package and exact firmware;
-- back up Matrix + AUX before mutation;
-- install only the proven AUX firmware, with ESP32/4MB target gates;
-- ask only for the actual installed WS2811 logical group count;
-- determine color order with a low-current red/green/blue calibration;
-- apply and post-verify GPIO/bus/segment/current configuration with rollback on failure;
-- configure Matrix→AUX local visual/audio sync and verify it;
-- guide UV-main, UV-short, full-UV, mixed-load and thermal acceptance;
-- match AUX cloud MQTT to the currently working Matrix broker for functional parity;
-- add/verify the course/hotspot Wi-Fi profile without recording its password;
-- preserve accepted steps in HBNF_AUX_ACCEPTANCE_EVIDENCE.json, so interruptions do not force repeated tests;
-- guide a true cold boot and optional actual iPhone-hotspot acceptance;
-- perform final cloud/PWA/Watch/cart contract checks once the backend physical gates are opened.
-
-When physical acceptance is complete, send the single Desktop file HBNF_AUX_ACCEPTANCE_EVIDENCE.json to ChatGPT. ChatGPT can import the accepted physical gates into Supabase; then rerun the SAME launcher once for final cloud verification. Do not repeat already-accepted physical tests.
-
-KNOWN NON-BLOCKING HARDENING DEBT
-The current Matrix still uses broker.emqx.io. AUX is matched to the Matrix so unified cloud controls work now, while release-doctor continues to flag the public-broker transport until both nodes are migrated together later.
+FULL AUX / UV ACCEPTANCE
+The database AUX gate remains closed until the separate 5V UV control architecture is physically implemented and tested. Underglow can be commissioned independently without pretending UV acceptance exists.

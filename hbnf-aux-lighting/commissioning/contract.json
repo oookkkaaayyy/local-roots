@@ -1,5 +1,5 @@
 {
-  "version": "hbnf-aux-commissioning-v2",
+  "version": "hbnf-aux-commissioning-v3",
   "matrix": {
     "ip_hint": "192.168.68.89",
     "release": "hbnf-wow-r3-max-2026-09-21-v3",
@@ -9,9 +9,16 @@
     "width": 32,
     "height": 16,
     "playlist": 60,
-    "effect_ids": [220, 247],
+    "effect_ids": [
+      220,
+      247
+    ],
     "scene_count": 28,
-    "audio_sync": {"mode": "send", "mode_code": 1, "port": 11988}
+    "audio_sync": {
+      "mode": "send",
+      "mode_code": 1,
+      "port": 11988
+    }
   },
   "aux": {
     "controller": "SP803E",
@@ -19,15 +26,42 @@
     "engine": "aux-r3-wow-1d",
     "buildWitness": "registry28-fixed-1d-v1",
     "projection": "fold2-1d-v1",
-    "effect_ids": [220, 247],
+    "effect_ids": [
+      220,
+      247
+    ],
     "scene_count": 28,
     "mqtt_topic": "hbnf/cart/aux1",
-    "audio_sync": {"mode": "receive", "mode_code": 2, "port": 11988, "source": "matrix"},
-    "underglow": {"gpio": 16, "type": "12V WS2811", "initial_current_limit_ma": 900, "segment": 0, "selected": true},
-    "uv_main": {"gpio": 25, "type": "PWM White", "segment": 1, "selected": false},
-    "uv_short": {"gpio": 26, "type": "PWM White", "segment": 2, "selected": false},
-    "spare_pwm_gpio": 27,
-    "local_mic_fallback": {"gpio": 36, "type": "Analog", "commissioning_default": "unused"}
+    "audio_sync": {
+      "mode": "receive",
+      "mode_code": 2,
+      "port": 11988,
+      "source": "matrix"
+    },
+    "underglow": {
+      "gpio": 16,
+      "type": "12V WS2811",
+      "initial_current_limit_ma": 900,
+      "segment": 0,
+      "selected": true
+    },
+    "local_mic_fallback": {
+      "gpio": 36,
+      "type": "Analog",
+      "commissioning_default": "unused"
+    },
+    "uv": {
+      "status": "external-5v-usb-pending",
+      "nominal_voltage": 5,
+      "current_controller": "not-connected",
+      "sp803e_pwm_direct_control": false,
+      "reason": "SP803E is presently powered from 12V for the WS2811 underglow; manufacturer guidance requires controller/strip voltage matching for direct PWM loads."
+    },
+    "spare_pwm_gpios": [
+      25,
+      26,
+      27
+    ]
   },
   "sync": {
     "visual_transport": "WLED UDP Sync",
@@ -54,6 +88,8 @@
     "global_off_priority": true,
     "base_aux_requires_physical_acceptance": true,
     "mixed_load_requires_separate_acceptance": true,
-    "matrix_firmware_must_not_change": true
+    "matrix_firmware_must_not_change": true,
+    "uv_direct_from_12v_vcc_forbidden": true,
+    "uv_requires_separately_verified_switching_interface": true
   }
 }
