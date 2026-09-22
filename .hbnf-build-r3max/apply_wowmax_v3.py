@@ -114,6 +114,46 @@ s,n=re.subn(loop_pat,loop_new,s,count=1)
 if n!=1:
     raise RuntimeError(f"mqtt-loop: expected 1 replacement, got {n}")
 
+# WLED 16.0.1 has MODE_COUNT=220 and dynamic effect IDs stop before 255.
+# The upstream ANIMartRIX usermod tries to register 44 effects, so the final 9
+# silently fail to register. Keep only the 28 effects used by the HBNF WOW
+# scene contract so every required effect has a real runtime slot while all
+# stock WLED effects remain intact.
+required_effects = [
+    "Complex_Kaleido_3","Big_Caleido","Parametric_Water","RGB_Blobs5",
+    "Polar_Waves","Zoom2","Complex_Kaleido_4","Complex_Kaleido_6","Water",
+    "RGB_Blobs4","Complex_Kaleido_5","Spiralus2","Hot_Blob","Caleido3",
+    "Waves","Chasing_Spirals","Rotating_Blob","Center_Field",
+    "Distance_Experiment","Lava1","Caleido2","Yves","Scaledemo1","Zoom",
+    "Complex_Kaleido","RGB_Blobs3","SM5","Module_Experiment10",
+]
+setup_start = s.index("    void setup() {")
+setup_end = s.index("      initDone = true;", setup_start)
+setup = s[setup_start:setup_end]
+reg_re = re.compile(r"^\s*strip\.addEffect\(255, &mode_([A-Za-z0-9_]+), _data_FX_mode_[A-Za-z0-9_]+\);\s*$", re.M)
+registered = reg_re.findall(setup)
+if len(registered) < len(required_effects):
+    raise RuntimeError(f"unexpected ANIMartRIX registration count: {len(registered)}")
+missing_symbols = [name for name in required_effects if name not in registered]
+if missing_symbols:
+    raise RuntimeError(f"required ANIMartRIX symbols missing before prune: {missing_symbols}")
+required_set = set(required_effects)
+setup_pruned = reg_re.sub(lambda m: m.group(0) if m.group(1) in required_set else "", setup)
+after = reg_re.findall(setup_pruned)
+if len(after) != len(required_effects) or set(after) != required_set:
+    raise RuntimeError(f"ANIMartRIX prune mismatch: count={len(after)} missing={sorted(required_set-set(after))} extra={sorted(set(after)-required_set)}")
+s = s[:setup_start] + setup_pruned + s[setup_end:]
+
+fx_h = (root/"wled00/FX.h").read_text()
+mc = re.search(r"#define\s+MODE_COUNT\s+(\d+)", fx_h)
+if not mc:
+    raise RuntimeError("MODE_COUNT not found")
+base_mode_count = int(mc.group(1))
+# addEffect refuses to grow once vector size reaches 255; 255 is the failure sentinel.
+if base_mode_count + len(required_effects) >= 255:
+    raise RuntimeError(f"effect registry overflow: base={base_mode_count} required={len(required_effects)}")
+print(f"WOWMAX_EFFECT_CAPACITY_PASS base={base_mode_count} required={len(required_effects)} final={base_mode_count+len(required_effects)}")
+
 p.write_text(s)
 
 ar=root/"usermods/audioreactive/audio_reactive.cpp"
