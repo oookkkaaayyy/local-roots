@@ -99,8 +99,7 @@ def report_path(path):
 
 def write_report(report,path):
     path.parent.mkdir(parents=True,exist_ok=True)
-    path.write_text(json.dumps(report,indent=2,sort_keys=True)+"
-")
+    path.write_text(json.dumps(report,indent=2,sort_keys=True)+"\n")
 
 def backup_node(ip,root,label):
     out=op.backup(ip,root)
@@ -257,14 +256,12 @@ def interactive(args):
     if pf["nextAction"] in ("PACKAGE_INVALID","POWER_OR_IDENTIFY_MATRIX","POWER_OR_IDENTIFY_AUX","DISAMBIGUATE_AUX"): return {"history":history,"current":pf}
     m,a=require_ready(pf)
     if pf["nextAction"]=="INSTALL_EXACT_AUX_FIRMWARE":
-        print(f"
-Target AUX: {a}. Matrix: {m}. Fresh backups were created.")
+        print(f"\nTarget AUX: {a}. Matrix: {m}. Fresh backups were created.")
         print("This uploads the exact proven AUX firmware and reboots ONLY the identified AUX node.")
         if not prompt_yes("Install exact AUX firmware now?"): return {"history":history,"current":pf}
         r=ota_install(a,pathlib.Path(args.package_dir).resolve()/"HBNF_SP803E_AUX_R3.bin");history.append({"phase":"install-firmware","result":r});pf=preflight(args);history.append({"phase":"post-firmware-preflight","result":pf});write_report({"history":history,"current":pf},report_path(args.report))
     if pf["nextAction"]=="APPLY_HARDWARE_PLAN":
-        print("
-Hardware config needs two physical facts software must not guess.")
+        print("\nHardware config needs two physical facts software must not guess.")
         pixels=int(input("Actual installed WS2811 logical pixel/group count: ").strip())
         order=input("Verified color order (GRB/RGB/BRG/RBG/BGR/GBR): ").strip().upper()
         reverse=input("Data direction reversed? [y/N]: ").strip().lower()=="y"
@@ -272,8 +269,7 @@ Hardware config needs two physical facts software must not guess.")
         if not prompt_yes("Apply this hardware/segment plan to AUX only?"): return {"history":history,"current":pf,"pendingPlan":plan}
         r=apply_hardware(a,plan);history.append({"phase":"apply-hardware","result":r});pf=preflight(args);history.append({"phase":"post-hardware-preflight","result":pf});write_report({"history":history,"current":pf},report_path(args.report))
     if pf["nextAction"]=="RUN_GUARDED_PREPARE_SYNC":
-        print("
-Next change configures Matrix SEND + AUX RECEIVE local sync only; it does not open cloud/Supabase AUX actuation.")
+        print("\nNext change configures Matrix SEND + AUX RECEIVE local sync only; it does not open cloud/Supabase AUX actuation.")
         if not prompt_yes("Apply guarded sync configuration now?"): return {"history":history,"current":pf}
         r=prepare_sync_with_rollback(m,a);history.append({"phase":"prepare-sync","result":r});pf=preflight(args);history.append({"phase":"post-sync-preflight","result":pf});write_report({"history":history,"current":pf},report_path(args.report))
     return {"history":history,"current":pf}
@@ -296,8 +292,7 @@ def main():
     if a.selftest: selftest();return 0
     rp=report_path(a.report)
     if a.phase=="interactive":
-        result=interactive(a);write_report(result,rp);print(f"
-Report: {rp}");return 0
+        result=interactive(a);write_report(result,rp);print(f"\nReport: {rp}");return 0
     pf=preflight(a)
     if a.phase in ("preflight","verify"): write_report(pf,rp);print(json.dumps(pf,indent=2,sort_keys=True));return 0 if pf.get("package",{}).get("ok") else 2
     if not a.yes: raise SystemExit("Mutation phase requires --yes, or use --phase interactive.")
