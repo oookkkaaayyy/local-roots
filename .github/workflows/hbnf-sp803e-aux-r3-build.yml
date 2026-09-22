@@ -161,6 +161,7 @@ jobs:
           cp hbnf-aux-lighting/commissioning/contract.json /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/local_commission.py /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/commission_operator.py /tmp/artifacts/
+          cp hbnf-aux-lighting/commissioning/generate_aux_hardware_plan.py /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/COMMISSION_HBNF_AUX.command /tmp/artifacts/
           chmod +x /tmp/artifacts/COMMISSION_HBNF_AUX.command
           cp hbnf-aux-lighting/commissioning/README.md /tmp/artifacts/
@@ -187,16 +188,18 @@ jobs:
             echo SECOND_CLEAN_BUILD_BYTE_IDENTICAL=PASS
             echo OTA_SLOT_GATE=PASS
             echo COMMISSION_OPERATOR_INCLUDED=YES
+            echo HARDWARE_PLAN_GENERATOR_INCLUDED=YES
             echo SOURCE_DATE_EPOCH=1790035200
             echo github_run_id=$GITHUB_RUN_ID
             echo github_sha=$GITHUB_SHA
           } > /tmp/artifacts/FINAL_METRICS.txt
           sha256sum "$BIN" > /tmp/artifacts/firmware-sha256.txt
 
-      - name: Commission operator selftest
+      - name: Commission tooling selftest
         shell: bash
         run: |
           set -euo pipefail
+          python hbnf-aux-lighting/commissioning/generate_aux_hardware_plan.py --selftest
           cp /tmp/artifacts/HBNF_SP803E_AUX_R3.bin hbnf-aux-lighting/commissioning/HBNF_SP803E_AUX_R3.bin
           cp /tmp/artifacts/FINAL_METRICS.txt hbnf-aux-lighting/commissioning/FINAL_METRICS.txt
           python hbnf-aux-lighting/commissioning/commission_operator.py --selftest
