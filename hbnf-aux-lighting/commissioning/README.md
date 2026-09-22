@@ -6,7 +6,7 @@ This directory is the guarded final commissioning path for the SP803E underglow/
 
 - Matrix R3 is the sole **visual and audio master**.
 - Aux custom R3 firmware release: `hbnf-wow-aux-r3-2026-09-22-v1`.
-- Aux renderer uses the same fixed effect IDs 220–247 as Matrix R3, projected to a 1D strip.
+- Aux renderer uses the same fixed effect IDs 220–247 as Matrix R3. It renders on a two-row virtual safety canvas and folds that output onto the 1D strip (`fold2-1d-v1`), avoiding ANIMartRIX height=1 divide-by-zero paths.
 - Visual synchronization: WLED UDP Sync group 1; effect/speed/intensity/palette/colors/timebase follow Matrix, while underglow brightness remains independently capped for the cart power budget.
 - Music synchronization: AudioReactive UDP Sound Sync, Matrix SEND → Aux RECEIVE, port 11988.
 - Addressable 12V WS2811 underglow: GPIO16, Segment 0, selected.
@@ -20,14 +20,17 @@ This directory is the guarded final commissioning path for the SP803E underglow/
 
 ## Proven firmware artifact
 
-GitHub Actions run `35695702534`, artifact `HBNF-SP803E-AUX-R3`:
+Current verified fold2 firmware content:
 
-- firmware SHA-256: `ba593724dfc9a30b9bf4de47625396b75dded1b059674fabdd34f5ca1c55fbba`
-- size: 1,342,336 bytes
+- firmware SHA-256: `2a70872fd2373a8ecdcd98c8c73c2e8d871dc902c92599f85081895fe98f744e`
+- size: 1,342,288 bytes
 - OTA slot: 1,572,864 bytes
-- headroom: 230,528 bytes
+- headroom: 230,576 bytes
+- 28-effect fold2 dimension audit: PASS
 - clean rebuild byte-identical: PASS
 - OTA slot gate: PASS
+
+The final package records its own GitHub run ID and source commit in `FINAL_METRICS.txt`.
 
 ## local_commission.py
 
