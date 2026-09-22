@@ -62,14 +62,16 @@ Deno.serve(async(req)=>{
  const matrixOnline=pre.json?.deviceOnline===true;
  const physicalOnlyBlockers=blockers.every((x:string)=>x==="mqtt_lwt_not_online");
  const awaitingPhysicalOnly=cloudReady&&!matrixOnline&&physicalOnlyBlockers;
- const goLiveReady=cloudReady&&pre.json?.ready===true;
+ const productionCurrent=cloudReady&&matrixOnline&&status.json?.control?.library_revision===EXPECTED.release;
+ const goLiveReady=cloudReady&&pre.json?.ready===true&&!productionCurrent;
  return json({
   ok:cloudReady,
   service:"hbnf-release-doctor",
-  version:"wow-v3-doctor-8-current-cart-readiness-contract",
+  version:"wow-v3-doctor-9-production-current-semantics",
   expected:EXPECTED,
   cloudReady,
   matrixOnline,
+  productionCurrent,
   goLiveReady,
   awaitingPhysicalOnly,
   blockers,
@@ -77,6 +79,6 @@ Deno.serve(async(req)=>{
   fullPwa:{htmlStatus:pwaHtml.status,jsStatus:pwaJs.status,manifestStatus:pwaManifest.status},
   matrix:{preflight:pre.json,status:status.json},
   aux:{prepared:aux.json?.ok===true,enabled:aux.json?.enabled===true,mixedLoadAccepted:aux.json?.policy?.mixedLoadAccepted===true},
-  next:goLiveReady?"run-go-live":(awaitingPhysicalOnly?"power-matrix-and-run-go-live":"repair-cloud-contract")
+  next:productionCurrent?"production-current":(goLiveReady?"run-go-live":(awaitingPhysicalOnly?"power-matrix-and-run-go-live":"repair-cloud-contract"))
  },cloudReady?200:503);
 });
