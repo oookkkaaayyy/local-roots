@@ -161,6 +161,7 @@ jobs:
           cp hbnf-aux-lighting/commissioning/local_commission.py /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/README.md /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/CODEX_RUNBOOK.md /tmp/artifacts/
+          cp hbnf-wow-bundle/config/WOW_SCENES_V2.json /tmp/artifacts/
           {
             echo wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
             echo release=hbnf-wow-aux-r3-2026-09-22-v1
