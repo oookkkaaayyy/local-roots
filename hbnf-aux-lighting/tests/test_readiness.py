@@ -5,6 +5,7 @@ ROOT=Path(__file__).resolve().parents[2]
 aux=(ROOT/"hbnf-aux-lighting/backend/aux_control.ts").read_text()
 orch=(ROOT/"hbnf-aux-lighting/backend/cart_orchestrator.ts").read_text()
 watch=(ROOT/"hbnf-wow-bundle/backend/watch_control.ts").read_text()
+doctor=(ROOT/"hbnf-wow-bundle/backend/release_doctor.ts").read_text()
 m1=(ROOT/"supabase/migrations/20260922061932_create_hbnf_aux_commissioning_state.sql").read_text()
 m2=(ROOT/"supabase/migrations/20260922062015_harden_hbnf_aux_commissioning_gate.sql").read_text()
 
@@ -22,6 +23,7 @@ assert 'visualMaster:"matrix"' in aux
 assert 'if(action==="blackout"||action==="off")' in aux
 assert 'if(!enabled)return json' in aux
 assert 'mixed_load_verified' in aux
+assert 'databaseGateAccepted' in aux
 
 assert 'v5-r3-runtime-gate' in orch
 assert 'TARGET_RELEASE="hbnf-wow-r3-max-2026-09-21-v3"' in orch
@@ -34,6 +36,9 @@ assert 'wow-max-v3-audio-aux-ready-v15' in watch
 assert '[1,8,16,24,40]' in watch
 assert 'auxVersion' in watch
 assert 'release:r?.control?.library_revision' in watch
+assert 'wow-v3-doctor-11-commissioned-aux-semantics' in doctor
+assert 'auxRuntimeWhenEnabled' in doctor
+assert 'auxGateConsistency' in doctor
 
 assert 'hbnf_aux_commissioning_state' in m1
 assert 'enable row level security' in m1.lower()
@@ -94,6 +99,9 @@ launcher=(ROOT/"hbnf-aux-lighting/commissioning/COMMISSION_HBNF_AUX.command").re
 assert "commission_guard.py --phase interactive" in launcher
 assert "set -e" not in launcher
 assert "explicit YES" in launcher
+guard_text=guard.read_text()
+for marker in ("parse_ifconfig_networks","infer_color_order","HBNF_AUX_ACCEPTANCE_EVIDENCE.json","physicalGateReady","hotspot_verified","final_cloud_verification","configure_aux_mqtt_from_matrix"):
+    assert marker in guard_text, marker
 sys.path.insert(0,str((ROOT/"hbnf-aux-lighting/commissioning").resolve()))
 import local_commission as _lc
 assert "mqtt" not in _lc.AUX_CFG_PATCH["if"]
