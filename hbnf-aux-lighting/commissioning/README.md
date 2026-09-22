@@ -6,7 +6,7 @@ This directory is the guarded final commissioning path for the SP803E underglow/
 
 Use `COMMISSION_HBNF_AUX.command` on the Mac first. It is intentionally **read-only**: it verifies the frozen package, discovers WLED nodes, identifies an unambiguous aux candidate when possible, takes a timestamped backup to the Desktop, and writes `HBNF_AUX_PREFLIGHT_LATEST.json`. It will not flash firmware, change Matrix settings, change LED buses, or open the database gate.
 
-`commission_operator.py` is the underlying read-only operator. The older `local_commission.py` remains the separately guarded low-level helper; its only mutation mode is `--prepare-sync`, and it refuses unless exact Matrix R3 + Aux R3 identities are already proven.
+`commission_operator.py` is the underlying read-only operator. `generate_aux_hardware_plan.py` is also non-mutating: once the real installed logical pixel count and real strip color order are known, it generates the exact WLED 16.0.1 bus/segment JSON for review (GPIO16 underglow, GPIO25/26 UV, <=900 mA initial addressable limit) without applying it. The older `local_commission.py` remains the separately guarded low-level helper; its only mutation mode is `--prepare-sync`, and it refuses unless exact Matrix R3 + Aux R3 identities are already proven.
 
 ## Frozen architecture
 
