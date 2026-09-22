@@ -121,6 +121,14 @@ jobs:
           cp .pio/build/hbnf_aux_sp803e_r3/firmware.elf /tmp/artifacts/HBNF_SP803E_AUX_R3.elf
           pio run -e hbnf_aux_sp803e_r3 -t size 2>&1 | tee /tmp/size-first.log
 
+      - name: Audit fold2 ANIMartRIX projection
+        shell: bash
+        run: |
+          set -euo pipefail
+          ANIM=$(find /tmp/wled/.pio/libdeps/hbnf_aux_sp803e_r3 -type f -name ANIMartRIX.h -print -quit)
+          test -n "$ANIM"
+          python "$GITHUB_WORKSPACE/.hbnf-build-aux-r3/audit_animartrix_projection.py" "$ANIM" | tee /tmp/fold2-audit.log
+
       - name: Reproducibility gate
         shell: bash
         env:
@@ -147,7 +155,7 @@ jobs:
           VIBE=$(sha256sum .hbnf-build-r3max/hbnf_vibe16.h | awk '{print $1}')
           BRIDGE=$(sha256sum .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h | awk '{print $1}')
           AUXPATCH=$(sha256sum .hbnf-build-aux-r3/apply_aux_r3.py | awk '{print $1}')
-          cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-aux-r3-source.patch /tmp/artifacts/
+          cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-aux-r3-source.patch /tmp/fold2-audit.log /tmp/artifacts/
           cp .hbnf-build-aux-r3/apply_aux_r3.py .hbnf-build-aux-r3/test_aux_contract.py /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/contract.json /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/local_commission.py /tmp/artifacts/
@@ -169,7 +177,7 @@ jobs:
             echo EFFECT_COUNT=28
             echo AUDIO_SYNC_DEFAULT=RECEIVE
             echo AUDIO_SYNC_PORT=11988
-            echo PROJECTION=1D_ROW
+            echo PROJECTION=FOLD2_1D_V1\n            echo FOLD2_PROJECTION_SOURCE_AUDIT=PASS
             echo SECOND_CLEAN_BUILD_BYTE_IDENTICAL=PASS
             echo OTA_SLOT_GATE=PASS
             echo SOURCE_DATE_EPOCH=1790035200
