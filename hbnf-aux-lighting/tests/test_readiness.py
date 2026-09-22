@@ -63,10 +63,9 @@ op=ROOT/"hbnf-aux-lighting/commissioning/commission_operator.py"
 p=subprocess.run([sys.executable,str(op),"--selftest"],capture_output=True,text=True,check=True)
 assert "HBNF_AUX_COMMISSION_OPERATOR_SELFTEST_PASS" in p.stdout
 launcher=(ROOT/"hbnf-aux-lighting/commissioning/COMMISSION_HBNF_AUX.command").read_text()
-assert 'commission_operator.py' in launcher
-assert '--backup' in launcher
+assert 'commission_guard.py --phase interactive' in launcher
 assert '--prepare-sync' not in launcher
-assert 'READ-ONLY' in launcher
+assert 'explicit YES' in launcher
 print("HBNF_AUX_COMMISSION_OPERATOR_GATE_PASS")
 
 plan=ROOT/"hbnf-aux-lighting/commissioning/generate_aux_hardware_plan.py"
