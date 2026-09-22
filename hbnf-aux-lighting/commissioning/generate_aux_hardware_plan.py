@@ -56,7 +56,7 @@ def build(pixels:int, order:str, reverse:bool, max_ma:int, led_ma:int):
             "doNotReceiveSegmentOptionsOrBounds":True,
             "doNotInferColorOrder":True,
             "rebootExpectedAfterHardwareBusChange":True,
-            "safeBoot":{"preset":0,"on":False,"brightness":64,"uvMustRemainOff":True}
+            "safeBoot":{"temporaryPreset":0,"finalReservedPresetRange":[180,199],"on":False,"brightness":64,"uvMustRemainOff":True,"persistSegments":True}
         }
     }
 
