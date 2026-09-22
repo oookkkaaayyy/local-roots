@@ -274,7 +274,6 @@ def choose_safe_boot_preset(ip):
     for pid in range(SAFE_BOOT_MAX,SAFE_BOOT_MIN-1,-1):
         v=presets.get(str(pid))
         if v is None or v=={}: return pid
-        if isinstance(v,dict) and v.get("n")==SAFE_BOOT_NAME: return pid
     raise RuntimeError(f"No free HBNF safe-boot preset slot exists in {SAFE_BOOT_MIN}..{SAFE_BOOT_MAX}.")
 
 def preflight(args):
