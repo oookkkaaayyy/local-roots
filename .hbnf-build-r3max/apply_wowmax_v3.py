@@ -65,6 +65,12 @@ telemetry="""    void addToJsonState(JsonObject& root) override {
       if (wow.isNull()) wow = root.createNestedObject("HBNFWOW");
       wow["release"] = "hbnf-wow-r3-max-2026-09-21-v3";
       wow["engine"] = "r3-wow-max";
+      wow["buildWitness"] = "registry28-v2";
+      wow["fxRegistered"] = hbnfFxRegistered;
+      wow["fxFailed"] = hbnfFxFailed;
+      wow["modeCount"] = strip.getModeCount();
+      wow["fxFirst"] = hbnfFxFirst;
+      wow["fxLast"] = hbnfFxLast;
       wow["audioActive"] = anim.hbnfActive();
       wow["profile"] = anim.hbnfProfile();
       wow["style"] = anim.hbnfStyle();
@@ -97,10 +103,11 @@ loop_new="""    void loop() {
         lastTime = millis();
         if (WLED_MQTT_CONNECTED) {
           char topic[MQTT_MAX_TOPIC_LEN + 16];
-          char payload[360];
+          char payload[480];
           snprintf_P(topic, sizeof(topic), PSTR("%s/wow"), mqttDeviceTopic);
           snprintf_P(payload, sizeof(payload),
-            PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"audioActive\\\":%s,\\\"profile\\\":%u,\\\"style\\\":%u,\\\"amount\\\":%u,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u,\\\"pulse\\\":%u,\\\"energy\\\":%u,\\\"impact\\\":%u,\\\"drop\\\":%u}"),
+            PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"buildWitness\\\":\\\"registry28-v2\\\",\\\"fxRegistered\\\":%u,\\\"fxFailed\\\":%u,\\\"modeCount\\\":%u,\\\"fxFirst\\\":%u,\\\"fxLast\\\":%u,\\\"audioActive\\\":%s,\\\"profile\\\":%u,\\\"style\\\":%u,\\\"amount\\\":%u,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u,\\\"pulse\\\":%u,\\\"energy\\\":%u,\\\"impact\\\":%u,\\\"drop\\\":%u}"),
+            hbnfFxRegistered, hbnfFxFailed, strip.getModeCount(), hbnfFxFirst, hbnfFxLast,
             anim.hbnfActive() ? "true" : "false",
             anim.hbnfProfile(), anim.hbnfStyle(), anim.hbnfAmount(),
             anim.hbnfBass(), anim.hbnfMid(), anim.hbnfTreble(),
@@ -115,8 +122,9 @@ if n!=1:
     raise RuntimeError(f"mqtt-loop: expected 1 replacement, got {n}")
 
 # WLED 16.0.1 has MODE_COUNT=220 and dynamic effect IDs stop before 255.
-# The upstream ANIMartRIX usermod tries to register 44 effects, so the final 9
-# silently fail to register. Keep only the 28 effects used by the HBNF WOW
+# The upstream ANIMartRIX usermod tries to register 51 effects; only 35 fit
+# after the 220 core modes, so its tail silently fails. Keep only the 28 effects
+# used by the HBNF WOW
 # scene contract so every required effect has a real runtime slot while all
 # stock WLED effects remain intact.
 required_effects = [
@@ -138,10 +146,38 @@ missing_symbols = [name for name in required_effects if name not in registered]
 if missing_symbols:
     raise RuntimeError(f"required ANIMartRIX symbols missing before prune: {missing_symbols}")
 required_set = set(required_effects)
-setup_pruned = reg_re.sub(lambda m: m.group(0) if m.group(1) in required_set else "", setup)
-after = reg_re.findall(setup_pruned)
+def rewrite_registration(m):
+    name=m.group(1)
+    if name not in required_set:
+        return ""
+    return f'      hbnfRegisterEffect("{name}", &mode_{name}, _data_FX_mode_{name});'
+setup_pruned = reg_re.sub(rewrite_registration, setup)
+after = re.findall(r'hbnfRegisterEffect\("([A-Za-z0-9_]+)"', setup_pruned)
 if len(after) != len(required_effects) or set(after) != required_set:
     raise RuntimeError(f"ANIMartRIX prune mismatch: count={len(after)} missing={sorted(required_set-set(after))} extra={sorted(set(after)-required_set)}")
+
+diag_anchor="class AnimartrixUsermod : public Usermod {"
+if s.count(diag_anchor)!=1:
+    raise RuntimeError("AnimartrixUsermod anchor mismatch")
+diag_helpers="""static uint8_t hbnfFxRegistered = 0;
+static uint8_t hbnfFxFailed = 0;
+static uint8_t hbnfFxFirst = 255;
+static uint8_t hbnfFxLast = 255;
+static void hbnfRegisterEffect(const char *name, mode_ptr fn, const char *meta) {
+  (void)name;
+  const uint8_t id = strip.addEffect(255, fn, meta);
+  if (id == 255) {
+    hbnfFxFailed++;
+    return;
+  }
+  if (hbnfFxRegistered == 0) hbnfFxFirst = id;
+  hbnfFxLast = id;
+  hbnfFxRegistered++;
+}
+
+"""
+s=s.replace(diag_anchor,diag_helpers+diag_anchor,1)
+setup_pruned=setup_pruned.replace("    void setup() {","    void setup() {\n      hbnfFxRegistered = 0; hbnfFxFailed = 0; hbnfFxFirst = 255; hbnfFxLast = 255;",1)
 s = s[:setup_start] + setup_pruned + s[setup_end:]
 
 fx_h = (root/"wled00/FX.h").read_text()
@@ -169,6 +205,9 @@ checks=[
     (p,"SEGMENT.virtualWidth() != num_x"),
     (p,"hbnfAudio.beginFrame"),
     (p,"hbnfAudio.modulate"),
+    (p,'wow["buildWitness"]'),
+    (p,'wow["fxRegistered"]'),
+    (p,'hbnfRegisterEffect("Caleido3"'),
     (p,'wow["audioActive"]'),
     (p,'wow["drop"]'),
     (p,'PSTR("%s/wow")'),
