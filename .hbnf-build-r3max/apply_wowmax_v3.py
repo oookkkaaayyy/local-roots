@@ -157,7 +157,7 @@ def rewrite_registration(m):
         'hbnfFxLast = id; hbnfFxRegistered++; } }'
     )
 setup_pruned = reg_re.sub(rewrite_registration, setup)
-after = re.findall(r'strip\.addEffect\(255, &mode_([A-Za-z0-9_]+)', setup_pruned)
+after = re.findall(r'const uint8_t id = strip\.addEffect\(255, &mode_([A-Za-z0-9_]+)', setup_pruned)
 if len(after) != len(required_effects) or set(after) != required_set:
     raise RuntimeError(f"ANIMartRIX prune mismatch: count={len(after)} missing={sorted(required_set-set(after))} extra={sorted(set(after)-required_set)}")
 setup_pruned = setup_pruned.replace(
