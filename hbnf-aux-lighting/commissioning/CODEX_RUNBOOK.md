@@ -87,4 +87,9 @@ Primary references:
    - Watch/cart endpoints return success
    - cold boot retest passes.
 
-Do not use the user as a manual QA loop for software-verifiable items. Ask only for unavoidable physical wiring/power/visual/thermal observations.
+Do not use the user as a manual QA loop for software-verifiable items. Ask only for unavoidable physical wiring/power/visual/thermal observations.\n
+## Current preferred operator
+
+Use `COMMISSION_HBNF_AUX.command` / `commission_guard.py` rather than manually chaining the older helper commands. The old helpers remain packaged for audit and rollback support. The guarded operator auto-discovers the exact Matrix R3 runtime, creates fresh backups, and advances only after explicit confirmation. Hardware and sync writes are verified and rolled back to their prior configuration if post-write checks fail.
+
+Local Matrix→AUX UDP visual/audio sync is intentionally separated from MQTT. Do not configure `broker.emqx.io` as part of physical commissioning. Cloud/Watch AUX actuation remains a later integration gate.
