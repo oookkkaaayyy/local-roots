@@ -17,3 +17,6 @@ assert "audioSyncEnabled = 2" in src
 assert "hbnf-wow-aux-r3-2026-09-22-v1" in src
 assert "registry28-fixed-1d-v1" in src
 print("HBNF_AUX_R3_PATCH_CONTRACT_PASS")
+
+assert 'mqtt_old' in src
+assert 'projection\\\\\\":\\\\\\"1d-row' in src
