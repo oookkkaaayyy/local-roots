@@ -166,7 +166,7 @@ for offset,name in enumerate(required_effects):
         'hbnfFxLast = id; hbnfFxRegistered++; } }'
     )
 setup = setup.replace("    void setup() {", "    void setup() {\n" + "\n".join(lines), 1)
-after = re.findall(r"strip\.addEffect\((\d+), &mode_([A-Za-z0-9_]+)", setup)
+after = re.findall(r"^\s*\{ const uint8_t id = strip\.addEffect\((\d+), &mode_([A-Za-z0-9_]+)", setup, re.M)
 expected = [(str(base_mode_count+i), name) for i,name in enumerate(required_effects)]
 if after != expected:
     raise RuntimeError(f"ANIMartRIX fixed-id rewrite mismatch: got={after!r} expected={expected!r}")
