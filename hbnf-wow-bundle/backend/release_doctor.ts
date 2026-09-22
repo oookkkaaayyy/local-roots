@@ -55,7 +55,7 @@ Deno.serve(async(req)=>{
   fullPwaJs:pwaJs.ok&&pwaJs.text.includes(EXPECTED.fullPwaMarker)&&pwaJs.text.includes(EXPECTED.release)&&pwaJs.text.includes("quick_event")&&pwaJs.text.includes("Math.min(255")&&pwaJs.text.includes("confirmHigh"),
   fullPwaManifest:pwaManifest.ok&&pwaManifest.json?.name===EXPECTED.fullPwaManifestName&&pwaManifest.json?.id==="/matrix.html"&&pwaManifest.json?.start_url==="/matrix.html"&&pwaManifest.json?.display==="standalone",
   auxStaging:aux.ok&&aux.json?.service==="hbnf-aux-control"&&aux.json?.enabled===false&&aux.json?.policy?.mixedLoadAccepted===false&&aux.json?.selfTest?.ok===true&&Number(aux.json?.selfTest?.globalOffPreset)===223&&Number(aux.json?.selfTest?.uvOffReturnsToPreset)===200,
-  cartStaging:cart.ok&&cart.json?.service==="hbnf-cart-orchestrator"&&cart.json?.version===EXPECTED.cartOrchestratorVersion&&cart.json?.auxEnabled===false&&cart.json?.mixedLoadAccepted===false&&cart.json?.safety?.globalOffAlwaysAttemptsBoth===true&&cart.json?.safety?.startOrder==="matrix-then-aux"&&cart.json?.safety?.preserveMatrixBrightness===true
+  cartStaging:cart.ok&&cart.json?.service==="hbnf-cart-orchestrator"&&cart.json?.version===EXPECTED.cartOrchestratorVersion&&cart.json?.readiness?.auxEnabled===false&&cart.json?.readiness?.mixedLoadAccepted===false&&cart.json?.readiness?.matrixOk===true&&cart.json?.safety?.globalOffAlwaysAttemptsBoth===true&&cart.json?.safety?.startOrder==="matrix-then-aux"&&cart.json?.safety?.preserveMatrixBrightness===true
  };
  const cloudReady=Object.values(checks).every(Boolean);
  const blockers=Array.isArray(pre.json?.blockers)?pre.json.blockers:[];
@@ -66,7 +66,7 @@ Deno.serve(async(req)=>{
  return json({
   ok:cloudReady,
   service:"hbnf-release-doctor",
-  version:"wow-v3-doctor-7-current-cart-watch-contract",
+  version:"wow-v3-doctor-8-current-cart-readiness-contract",
   expected:EXPECTED,
   cloudReady,
   matrixOnline,
