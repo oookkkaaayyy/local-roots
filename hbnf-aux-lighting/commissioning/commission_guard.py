@@ -215,7 +215,7 @@ def hardware_ok(d):
     u,m,sh=by_pin.get((16,)),by_pin.get((25,)),by_pin.get((26,))
     if not (u and m and sh): return False
     if int(u.get("type") or -1)!=hp.TYPE_DIGITAL_RGB or int(m.get("type") or -1)!=hp.TYPE_ANALOG_1CH or int(sh.get("type") or -1)!=hp.TYPE_ANALOG_1CH: return False
-    if int(u.get("maxpwr") or 0)>900 or int(u.get("len") or 0)<1: return False
+    if int(u.get("maxpwr") or 0)!=900 or int(u.get("len") or 0)<1: return False
     seg={int(x["id"]):x for x in s["segments"]}
     return s.get("mainseg")==0 and (seg.get(0) or {}).get("sel") is True and (seg.get(1) or {}).get("sel") is False and (seg.get(2) or {}).get("sel") is False and (seg.get(1) or {}).get("on") is False and (seg.get(2) or {}).get("on") is False
 
@@ -318,9 +318,10 @@ def _observed_color(label):
 def calibrate_color_order(ip,pixels,reverse=False):
     print("\nCOLOR-ORDER CALIBRATION — low-current underglow only; both UV segments remain OFF.")
     print("I will configure a temporary RGB bus at 300 mA and show red, green, then blue.")
+    before=lc.inspect(ip);rb=hw_rollback(before)
     temp=hp.build(pixels,"RGB",reverse,300,55)
     applied=apply_hardware(ip,temp)
-    observed=[]
+    observed=[];restore_error=None
     colors=[("RED",[255,0,0]),("GREEN",[0,255,0]),("BLUE",[0,0,255])]
     try:
         for name,rgb in colors:
@@ -328,15 +329,20 @@ def calibrate_color_order(ip,pixels,reverse=False):
             time.sleep(.8)
             observed.append(_observed_color(name))
     finally:
-        try: state_post(ip,{"seg":[{"id":0,"on":False},{"id":1,"on":False},{"id":2,"on":False}]})
-        except Exception: pass
+        try:
+            state_post(ip,{"seg":[{"id":0,"on":False},{"id":1,"on":False},{"id":2,"on":False}]})
+            cfg_post(ip,rb["cfg"]);wait_wled(ip,60,True);state_post(ip,rb["state"])
+        except Exception as e:
+            restore_error=f"{type(e).__name__}: {e}"
+    if restore_error: raise RuntimeError("Color calibration finished but prior hardware config could not be restored: "+restore_error)
     order=infer_color_order(observed)
-    print(f"Detected physical strip color order: {order}.")
-    return {"order":order,"observed":observed,"temporary":applied}
+    print(f"Detected physical strip color order: {order}. Temporary calibration config was removed.")
+    return {"order":order,"observed":observed,"temporary":applied,"temporaryRestored":True}
 
 def configure_aux_mqtt_from_matrix(matrix_ip,aux_ip):
     md,ad=lc.inspect(matrix_ip),lc.inspect(aux_ip)
     mm=((md.get("cfg") or {}).get("if") or {}).get("mqtt") or {}
+    before=((ad.get("cfg") or {}).get("if") or {}).get("mqtt") or {}
     broker=str(mm.get("broker") or "").strip();port=int(mm.get("port") or 1883);user=str(mm.get("user") or "").strip()
     if not broker: raise RuntimeError("Matrix MQTT broker is not configured; cannot prepare unified cloud control.")
     mqtt={"en":True,"broker":broker,"port":port,"topics":{"device":"hbnf/cart/aux1","group":""}}
@@ -345,12 +351,17 @@ def configure_aux_mqtt_from_matrix(matrix_ip,aux_ip):
         secret=getpass.getpass(f"Matrix broker uses username {user!r}. Enter its MQTT password for AUX (not saved in reports): ")
         if not secret: raise RuntimeError("MQTT password required for the authenticated Matrix broker.")
         mqtt["psk"]=secret
-    cfg_post(aux_ip,{"if":{"mqtt":mqtt}});time.sleep(1)
-    after=lc.inspect(aux_ip);ac=lc.check_aux(after)
-    got=(((after.get("cfg") or {}).get("if") or {}).get("mqtt") or {})
-    if not (got.get("en") is True and str(got.get("broker") or "")==broker and int(got.get("port") or 0)==port and (((got.get("topics") or {}).get("device"))=="hbnf/cart/aux1")):
-        raise RuntimeError("AUX MQTT configuration did not persist as expected.")
-    return {"broker":broker,"port":port,"userConfigured":bool(user),"publicTestBroker":broker=="broker.emqx.io","mqttConfigured":ac.get("mqttConfigured")}
+    try:
+        cfg_post(aux_ip,{"if":{"mqtt":mqtt}});time.sleep(1)
+        after=lc.inspect(aux_ip);ac=lc.check_aux(after)
+        got=(((after.get("cfg") or {}).get("if") or {}).get("mqtt") or {})
+        if not (got.get("en") is True and str(got.get("broker") or "")==broker and int(got.get("port") or 0)==port and (((got.get("topics") or {}).get("device"))=="hbnf/cart/aux1")):
+            raise RuntimeError("AUX MQTT configuration did not persist as expected.")
+    except Exception as first:
+        try: cfg_post(aux_ip,{"if":{"mqtt":before}})
+        except Exception as rollback: raise RuntimeError(f"AUX MQTT setup failed ({first}); rollback also failed ({rollback}).") from first
+        raise RuntimeError(f"AUX MQTT setup failed and prior config was restored: {first}") from first
+    return {"broker":broker,"port":port,"userConfigured":bool(user),"publicTestBroker":broker=="broker.emqx.io","mqttConfigured":ac.get("mqttConfigured"),"rollbackUsed":False}
 
 def ensure_field_wifi_profile(matrix_ip,aux_ip,explicit_ssid=None):
     md,ad=lc.inspect(matrix_ip),lc.inspect(aux_ip)
@@ -366,7 +377,11 @@ def ensure_field_wifi_profile(matrix_ip,aux_ip,explicit_ssid=None):
             if raw.isdigit() and 1<=int(raw)<=len(missing): candidate=missing[int(raw)-1]
     if not candidate:
         shared=[x for x in matrix_ssids if x in aux_ssids]
-        return {"changed":False,"prepared":len(shared)>=2,"matrixSsids":matrix_ssids,"auxSsids":aux_ssids,"reason":"no-unique-missing-profile"}
+        if len(shared)>=2:
+            return {"changed":False,"prepared":True,"matrixSsids":matrix_ssids,"auxSsids":aux_ssids,"reason":"multiple-shared-profiles"}
+        typed=input("Course/iPhone-hotspot Wi-Fi name (press Return to defer): ").strip()
+        if typed: candidate=typed
+        else: return {"changed":False,"prepared":False,"matrixSsids":matrix_ssids,"auxSsids":aux_ssids,"reason":"field-profile-deferred"}
     if candidate in aux_ssids:
         return {"changed":False,"prepared":True,"ssid":candidate,"matrixSsids":matrix_ssids,"auxSsids":aux_ssids}
     if candidate not in matrix_ssids:
@@ -567,7 +582,7 @@ def selftest():
     body,ctype=multipart_firmware(pathlib.Path(__file__))
     assert b'name="skipValidation"' in body and b'name="update"' in body and "multipart/form-data" in ctype
     fake={"cfg":{"hw":{"led":{"total":39,"maxpwr":900,"ins":[{"pin":[16],"start":0,"len":37,"type":22,"order":1,"rev":False,"maxpwr":900},{"pin":[25],"start":37,"len":1,"type":41,"order":0,"rev":False,"maxpwr":0},{"pin":[26],"start":38,"len":1,"type":41,"order":0,"rev":False,"maxpwr":0}]}}},"state":{"mainseg":0,"seg":[{"id":0,"start":0,"stop":37,"sel":True,"on":True},{"id":1,"start":37,"stop":38,"sel":False,"on":False},{"id":2,"start":38,"stop":39,"sel":False,"on":False}]}}
-    assert hardware_ok(fake);bad=json.loads(json.dumps(fake));bad["state"]["seg"][1]["sel"]=True;assert not hardware_ok(bad)
+    assert hardware_ok(fake);bad=json.loads(json.dumps(fake));bad["state"]["seg"][1]["sel"]=True;assert not hardware_ok(bad)\n    low=json.loads(json.dumps(fake));low["cfg"]["hw"]["led"]["ins"][0]["maxpwr"]=300;assert not hardware_ok(low)
     assert candidate_subnets("192.168.1.0/24",None)==["192.168.1.0/24"]
     sample="en0: flags=8863<UP>\n\tinet 192.168.68.77 netmask 0xfffffc00 broadcast 192.168.71.255\nlo0: flags=8049<UP>\n\tinet 127.0.0.1 netmask 0xff000000\n"
     assert parse_ifconfig_networks(sample)==["192.168.68.0/22"]
