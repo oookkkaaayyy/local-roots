@@ -134,7 +134,7 @@ def check_aux(d):
         "segment0Selected":(segs.get(0) or {}).get("sel"),
         "segment1Selected":(segs.get(1) or {}).get("sel"),
         "segment2Selected":(segs.get(2) or {}).get("sel"),
-        "visualSyncReceive":recv.get("bri") is True and recv.get("col") is True and recv.get("fx") is True and recv.get("pal") is True and int(recv.get("grp") or 0)==1,
+        "visualSyncReceive":recv.get("bri") is False and recv.get("col") is True and recv.get("fx") is True and recv.get("pal") is True and int(recv.get("grp") or 0)==1,
         "segmentOptionsIsolated":recv.get("seg") is False and recv.get("sb") is False,
         "visualSyncSendDisabled":send.get("en") is False,
         "audioSyncReceive":int(arsync.get("mode") or 0)==2 and int(arsync.get("port") or 0)==AUDIO_PORT,
@@ -157,7 +157,7 @@ MATRIX_CFG_PATCH={
 AUX_CFG_PATCH={
   "if":{
     "sync":{
-      "recv":{"bri":True,"col":True,"fx":True,"pal":True,"grp":1,"seg":False,"sb":False},
+      "recv":{"bri":False,"col":True,"fx":True,"pal":True,"grp":1,"seg":False,"sb":False},
       "send":{"en":False,"grp":0}
     },
     "mqtt":{
