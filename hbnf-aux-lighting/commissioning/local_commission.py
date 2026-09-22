@@ -159,10 +159,6 @@ AUX_CFG_PATCH={
     "sync":{
       "recv":{"bri":False,"col":True,"fx":True,"pal":True,"grp":1,"seg":False,"sb":False},
       "send":{"en":False,"grp":0}
-    },
-    "mqtt":{
-      "en":True,"broker":"broker.emqx.io","port":1883,
-      "topics":{"device":"hbnf/cart/aux1","group":""}
     }
   },
   "um":{"AudioReactive":{"sync":{"port":AUDIO_PORT,"mode":2}}}
@@ -200,12 +196,13 @@ def selftest():
                "mainseg":0,"seg":[{"id":0,"sel":True},{"id":1,"sel":False},{"id":2,"sel":False}]},
       "info":{"ver":"0.16.1","arch":"esp32","leds":{"count":100,"maxpwr":900}},"effects":fx,"pins":{},
       "cfg":{"if":{"sync":{"recv":{"bri":False,"col":True,"fx":True,"pal":True,"grp":1,"seg":False,"sb":False},"send":{"en":False}},
-                         "mqtt":{"en":True,"broker":"broker.emqx.io","port":1883,"topics":{"device":"hbnf/cart/aux1","group":""}}},
+                         "mqtt":{"en":False,"broker":"","port":1883,"topics":{"device":"","group":""}}},
              "um":{"AudioReactive":{"sync":{"mode":2,"port":11988}}}}
     }
     c=check_aux(aux)
-    required=("reachable","release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","effectMap","visualSyncReceive","segmentOptionsIsolated","visualSyncSendDisabled","audioSyncReceive","mqttConfigured")
+    required=("reachable","release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","effectMap","visualSyncReceive","segmentOptionsIsolated","visualSyncSendDisabled","audioSyncReceive")
     assert all(c[k] for k in required),c
+    assert c["mqttConfigured"] is False
     assert MATRIX_CFG_PATCH["um"]["AudioReactive"]["sync"]["mode"]==1
     assert AUX_CFG_PATCH["um"]["AudioReactive"]["sync"]["mode"]==2
     assert "recv" not in {"send":True,"sgrp":1}
