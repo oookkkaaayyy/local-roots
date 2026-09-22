@@ -94,7 +94,7 @@ def next_action(aux_ip,aux_checks,selection_reason):
     if not aux_ip: return "POWER_OR_IDENTIFY_AUX" if selection_reason=="none" else "DISAMBIGUATE_AUX"
     exact=all(aux_checks.get(k) for k in ("release","engine","buildWitness","projection","fxRegistered","fxFailed","modeCount","fxFirst","fxLast","effectMap"))
     if not exact: return "INSTALL_EXACT_AUX_FIRMWARE"
-    if not aux_checks.get("visualSyncReceive") or not aux_checks.get("segmentOptionsIsolated") or not aux_checks.get("audioSyncReceive") or not aux_checks.get("mqttConfigured"):
+    if not aux_checks.get("visualSyncReceive") or not aux_checks.get("segmentOptionsIsolated") or not aux_checks.get("audioSyncReceive"):
         return "RUN_GUARDED_PREPARE_SYNC"
     return "BEGIN_PHYSICAL_ACCEPTANCE"
 
