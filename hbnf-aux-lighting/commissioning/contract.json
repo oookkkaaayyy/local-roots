@@ -1,5 +1,5 @@
 {
-  "version": "hbnf-aux-commissioning-v1",
+  "version": "hbnf-aux-commissioning-v2",
   "matrix": {
     "ip_hint": "192.168.68.89",
     "release": "hbnf-wow-r3-max-2026-09-21-v3",
@@ -10,20 +10,27 @@
     "height": 16,
     "playlist": 60,
     "effect_ids": [220, 247],
-    "scene_count": 28
+    "scene_count": 28,
+    "audio_sync": {"mode": "send", "mode_code": 1, "port": 11988}
   },
   "aux": {
     "controller": "SP803E",
-    "firmware": "WLED",
+    "firmware_release": "hbnf-wow-aux-r3-2026-09-22-v1",
+    "engine": "aux-r3-wow-1d",
+    "buildWitness": "registry28-fixed-1d-v1",
+    "projection": "1d-row",
+    "effect_ids": [220, 247],
+    "scene_count": 28,
     "mqtt_topic": "hbnf/cart/aux1",
+    "audio_sync": {"mode": "receive", "mode_code": 2, "port": 11988, "source": "matrix"},
     "underglow": {"gpio": 16, "type": "12V WS2811", "initial_current_limit_ma": 900, "segment": 0, "selected": true},
     "uv_main": {"gpio": 25, "type": "PWM White", "segment": 1, "selected": false},
     "uv_short": {"gpio": 26, "type": "PWM White", "segment": 2, "selected": false},
     "spare_pwm_gpio": 27,
-    "mic": {"gpio": 36, "type": "Analog"}
+    "local_mic_fallback": {"gpio": 36, "type": "Analog", "commissioning_default": "unused"}
   },
   "sync": {
-    "transport": "WLED UDP Sync",
+    "visual_transport": "WLED UDP Sync",
     "group_bitfield": 1,
     "matrix_send": true,
     "aux_receive": true,
@@ -33,7 +40,11 @@
     "receive_palette": true,
     "receive_segment_options": false,
     "receive_segment_bounds": false,
-    "visual_master": "matrix"
+    "timebase_sync": true,
+    "audio_transport": "AudioReactive UDP Sound Sync",
+    "audio_port": 11988,
+    "visual_master": "matrix",
+    "audio_master": "matrix"
   },
   "safety": {
     "aux_default_enabled": false,
@@ -41,6 +52,7 @@
     "uv_priority": true,
     "global_off_priority": true,
     "base_aux_requires_physical_acceptance": true,
-    "mixed_load_requires_separate_acceptance": true
+    "mixed_load_requires_separate_acceptance": true,
+    "matrix_firmware_must_not_change": true
   }
 }
