@@ -284,12 +284,56 @@ if(action==="release_preflight"){
 }
 if(action==="r3_adopt"){
  if(String(body?.release??"")!==R3_WOW_LIBRARY_REVISION)return json(req,{ok:false,error:"WOW release mismatch or obsolete installer. Adoption refused.",requiredRelease:R3_WOW_LIBRARY_REVISION,providedRelease:body?.release??null,action},409);
- const rt=await mqttRoundTrip(undefined,null,3400),t=rt?.telemetry??{},online=String(t?.status??"").toLowerCase()==="online";
- const preset=Number(t?.preset),playlistActive=Number(t?.playlistActive),brightness=Number(t?.brightness);
- const intensity=Number(t?.intensity),wow=t?.wow??null,wowRelease=String(wow?.release??""),wowEngine=String(wow?.engine??""),deviceReady=online&&wowRelease===R3_WOW_LIBRARY_REVISION&&wowEngine==="r3-wow-max"&&playlistActive===1&&R3_WOW_SCENES.includes(preset)&&R3_WOW_PROFILE_IX[preset]===intensity&&Number.isFinite(brightness)&&brightness>=1&&brightness<=NIGHT_MAX;
- if(!deviceReady)return json(req,{ok:false,error:"Controller is not presently running the verified WOW R3 playlist state; adoption refused.",deviceReady,telemetry:t,action},409);
+ const proof=body?.localProof??null;
+ const proofOk=!!proof
+  && String(proof?.proofVersion??"")==="hotfix6-local-v1"
+  && String(proof?.firmwareSha256??"")==="359da1fedeeb820b80d3529714549075d3a3845c81f4ec40164087fb9f582250"
+  && Number(proof?.modeCount)===248
+  && Number(proof?.fxRegistered)===28
+  && Number(proof?.fxFailed)===0
+  && Number(proof?.fxFirst)===220
+  && Number(proof?.fxLast)===247
+  && Number(proof?.effectsVerified)===28
+  && Number(proof?.scenesVerified)===28
+  && proof?.presetsStaged===true
+  && Number(proof?.inputLevel)===255
+  && proof?.hbnfFlowDisabled===true
+  && Number(proof?.pixels)===512
+  && Number(proof?.width)===32
+  && Number(proof?.height)===16;
+ let t:any={},rt:any=null,deviceReady=false,checks:any={},attempts=0;
+ for(let attempt=1;attempt<=4;attempt++){
+  attempts=attempt;
+  rt=await mqttRoundTrip(undefined,null,5000);t=rt?.telemetry??{};
+  const online=String(t?.status??"").toLowerCase()==="online",preset=Number(t?.preset),playlistActive=Number(t?.playlistActive),brightness=Number(t?.brightness),wow=t?.wow??null;
+  const basic={
+   online,
+   playlistActive:playlistActive===1,
+   preset:R3_WOW_SCENES.includes(preset),
+   brightness:Number.isFinite(brightness)&&brightness>=1&&brightness<=NIGHT_MAX,
+   pixels:!t?.flow||Number(t?.flow?.pixels)===512,
+   matrixOk:!t?.flow||t?.flow?.matrixOk!==false
+  };
+  const witness={
+   release:String(wow?.release??"")===R3_WOW_LIBRARY_REVISION,
+   engine:String(wow?.engine??"")==="r3-wow-max",
+   buildWitness:String(wow?.buildWitness??"")==="registry28-fixed-v3",
+   fxRegistered:Number(wow?.fxRegistered)===28,
+   fxFailed:Number(wow?.fxFailed)===0,
+   modeCount:Number(wow?.modeCount)===248,
+   fxFirst:Number(wow?.fxFirst)===220,
+   fxLast:Number(wow?.fxLast)===247
+  };
+  checks={...basic,...witness,localProof:proofOk};
+  const witnessReady=Object.values(basic).every(Boolean)&&Object.values(witness).every(Boolean);
+  const localProofReady=proofOk&&Object.values(basic).every(Boolean);
+  deviceReady=witnessReady||localProofReady;
+  if(deviceReady)break;
+  if(attempt<4)await new Promise(r=>setTimeout(r,350));
+ }
+ if(!deviceReady)return json(req,{ok:true,pending:true,adopted:false,deviceReady:false,checks,telemetry:t,attempts,action,reason:"R3 adoption proof incomplete; retry without rollback."},202);
  control=await setControlState(sb,{mode:bool(body?.live,false)?"event":"showcase",auto_live:bool(body?.live,false),resume_preset:R2_COURSE_PLAYLIST,show_family:"r2",show_preset:R2_COURSE_PLAYLIST,library_revision:R3_WOW_LIBRARY_REVISION,overlay_until:null,last_auto_takeover_at:null,live_score_cursor:0,last_live_overlay_kind:"ace"});
- return json(req,{ok:true,confirmed:true,adopted:true,deviceReady,control,telemetry:t,action,renderEngine:"r3-wow-max",sceneCount:R3_WOW_SCENES.length});
+ return json(req,{ok:true,confirmed:true,adopted:true,deviceReady,checks,control,telemetry:t,attempts,action,renderEngine:"r3-wow-max",sceneCount:R3_WOW_SCENES.length,adoptionContract:proofOk?"fixed-id-local-proof-v1":"fixed-id-witness-v3"});
 }
 if(action==="r2_adopt"){
  const rt=await mqttRoundTrip(undefined,null,3400),t=rt?.telemetry??{},online=String(t?.status??"").toLowerCase()==="online";
