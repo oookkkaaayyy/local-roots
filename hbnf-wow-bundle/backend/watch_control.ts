@@ -28,7 +28,7 @@ async function auxMeta(){try{const r=await fetch(AUX_URL,{signal:AbortSignal.tim
 
 
 Deno.serve(async(req)=>{
- if(req.method==="GET") return json({ok:true,service:"hbnf-watch-control",version:"wow-max-v3-audio-aux-ready",actions:ACTIONS});
+ if(req.method==="GET") return json({ok:true,service:"hbnf-watch-control",version:"wow-max-v3-audio-aux-ready-v15",actions:ACTIONS});
  if(req.method==="OPTIONS") return new Response(null,{status:204,headers:cors});
  if(req.method!=="POST") return json({ok:false,error:"POST required"},405);
  const body=await req.json().catch(()=>({}));
@@ -38,7 +38,7 @@ Deno.serve(async(req)=>{
  try{
   if(action==="status"){
    const [r,a]=await Promise.all([matrix("status"),auxMeta()]);
-   return json({ok:true,online:r?.online===true,mode:r?.control?.auto_live?"LIVE":"PURE",show:r?.control?.show_family||null,preset:r?.telemetry?.preset??null,playlistActive:r?.telemetry?.playlistActive??null,brightness:r?.telemetry?.brightness??null,engine:r?.renderEngine||null,wow:r?.r3Wow||null,wowRuntime:r?.wowRuntime||null,audio:r?.wowRuntime||null,auxPrepared:a?.ok===true,auxEnabled:a?.enabled===true,actions:ACTIONS});
+   return json({ok:true,online:r?.online===true,mode:r?.control?.auto_live?"LIVE":"PURE",show:r?.control?.show_family||null,preset:r?.telemetry?.preset??null,playlistActive:r?.telemetry?.playlistActive??null,brightness:r?.telemetry?.brightness??null,release:r?.control?.library_revision??null,engine:r?.renderEngine||null,wow:r?.r3Wow||null,wowRuntime:r?.wowRuntime||null,audio:r?.wowRuntime||null,auxPrepared:a?.ok===true,auxEnabled:a?.enabled===true,auxVersion:a?.version??null,actions:ACTIONS});
   }
   if(action==="r2"||action==="pure") return json(await matrix("play_show",{family:"r2",live:false}));
   if(action==="live") return json(await matrix("play_show",{family:"r2",live:true}));
@@ -70,7 +70,7 @@ Deno.serve(async(req)=>{
   if(action==="blackout") return json(await matrix("blackout"));
   if(action==="brightness"){
    const b=Number(body?.brightness);
-   if(![8,16,24,40].includes(b)) return json({ok:false,error:"Watch brightness must be 8, 16, 24, or 40."},400);
+   if(![1,8,16,24,40].includes(b)) return json({ok:false,error:"Watch brightness must be 1, 8, 16, 24, or 40."},400);
    return json(await matrix("brightness",{brightness:b}));
   }
   return json({ok:false,error:"Unknown action"},400);
