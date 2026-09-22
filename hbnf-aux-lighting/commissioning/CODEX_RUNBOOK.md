@@ -48,7 +48,11 @@ Primary references:
    - `fxRegistered=28`, `fxFailed=0`, `modeCount=248`, `fxFirst=220`, `fxLast=247`
    - `/json/eff[220:248]` matches the 28 Matrix scene names exactly.
 
-7. Configure physical outputs only after the actual logical pixel count is known:
+7. Once the actual logical pixel count **and real strip color order** are known, generate the review-only hardware plan:
+   `python3 generate_aux_hardware_plan.py --pixels <ACTUAL_LOGICAL_PIXELS> --order <GRB|RGB|BRG|RBG|BGR|GBR> --out HBNF_AUX_HARDWARE_PLAN.json`
+   The generator is pinned to the exact WLED 16.0.1 config schema used by this firmware and sets `mutationIssued=false`. Review it before any `/json/cfg` or `/json/state` write; do not guess the color order.
+
+   Configure physical outputs from the reviewed plan:
    - addressable WS2811 underglow: IO16, Segment 0, selected
    - UV main: single-color PWM IO25, unselected
    - UV short: single-color PWM IO26, unselected
