@@ -226,6 +226,12 @@ def hardware_ok(d):
     bounds=(int(s0.get("start") or 0)==0 and int(s0.get("stop") or -1)==pixels and int(s1.get("start") or -1)==pixels and int(s1.get("stop") or -1)==pixels+1 and int(s2.get("start") or -1)==pixels+1 and int(s2.get("stop") or -1)==pixels+2)
     return bounds and s.get("mainseg")==0 and s0.get("sel") is True and s1.get("sel") is False and s2.get("sel") is False and s1.get("on") is False and s2.get("on") is False
 
+def hardware_matches_plan(d,plan):
+    if not hardware_ok(d): return False
+    s=hardware_summary(d);by_pin={tuple(x.get("pin") or []):x for x in s["buses"]}
+    u=by_pin.get((16,)) or {};inputs=plan.get("inputs") or {};src=plan.get("sourceAuthority") or {}
+    return int(u.get("len") or 0)==int(inputs.get("underglowLogicalPixels") or -1) and int(u.get("order") if u.get("order") is not None else -1)==int(src.get("colorOrderCode") if src.get("colorOrderCode") is not None else -2) and bool(u.get("rev")) is bool(inputs.get("reverse")) and int(u.get("maxpwr") or 0)==int(inputs.get("underglowMaxMilliamps") or -1)
+
 def preflight(args):
     package=op.verify_package(pathlib.Path(args.package_dir).resolve())
     subnets=candidate_subnets(args.subnet,args.matrix_hint)
@@ -307,7 +313,7 @@ def apply_hardware(ip,plan):
     try:
         cfg_post(ip,plan["cfgPatch"]);wait_wled(ip,60,True);state_post(ip,plan["statePatch"]);time.sleep(1)
         after=lc.inspect(ip)
-        if not hardware_ok(after): raise RuntimeError("Hardware config post-write verification failed.")
+        if not hardware_matches_plan(after,plan): raise RuntimeError("Hardware config post-write verification failed or did not match the reviewed pixel/order/reverse/current plan exactly.")
         return {"ok":True,"summary":hardware_summary(after),"rollbackUsed":False}
     except Exception as first:
         try:
@@ -592,6 +598,8 @@ def selftest():
     assert hardware_ok(fake);bad=json.loads(json.dumps(fake));bad["state"]["seg"][1]["sel"]=True;assert not hardware_ok(bad)
     low=json.loads(json.dumps(fake));low["cfg"]["hw"]["led"]["ins"][0]["maxpwr"]=300;assert not hardware_ok(low)
     drift=json.loads(json.dumps(fake));drift["state"]["seg"][2]["start"]=37;assert not hardware_ok(drift)
+    p=hp.build(37,"RGB",False,900,55);assert hardware_matches_plan(fake,p)
+    wrong=json.loads(json.dumps(fake));wrong["cfg"]["hw"]["led"]["ins"][0]["order"]=0;assert not hardware_matches_plan(wrong,p)
     assert candidate_subnets("192.168.1.0/24",None)==["192.168.1.0/24"]
     sample="en0: flags=8863<UP>\n\tinet 192.168.68.77 netmask 0xfffffc00 broadcast 192.168.71.255\nlo0: flags=8049<UP>\n\tinet 127.0.0.1 netmask 0xff000000\n"
     assert parse_ifconfig_networks(sample)==["192.168.68.0/22"]
