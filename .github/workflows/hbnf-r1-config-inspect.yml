@@ -1,0 +1,20 @@
+name: HBNF R1 Build Config Inspect
+on:
+  push:
+    branches: [hbnf-matrix-wow-bundle-r3-20260921]
+    paths: ['.github/workflows/hbnf-r1-config-inspect.yml']
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python - <<'PY'
+          import base64, pathlib, tarfile
+          raw=base64.b64decode(pathlib.Path('.hbnf-build-r1/bundle.b64').read_bytes())
+          pathlib.Path('/tmp/r1.tgz').write_bytes(raw)
+          pathlib.Path('/tmp/hbnf-r1').mkdir(exist_ok=True)
+          with tarfile.open('/tmp/r1.tgz','r:gz') as tf: tf.extractall('/tmp/hbnf-r1')
+          PY
+          echo '=== PLATFORMIO_OVERRIDE ==='
+          cat /tmp/hbnf-r1/firmware_patch/platformio_override.ini
