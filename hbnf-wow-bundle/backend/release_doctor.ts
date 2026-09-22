@@ -10,7 +10,8 @@ const EXPECTED={
   fullPwaMarker:"hbnf-build-9.21.26-wow-max-v3-full",
   fullPwaAssetVersion:"9.21.26-wow-max-v3-full",
   fullPwaManifestName:"HBNF Matrix WOW MAX Course Console",
-  watchControlVersion:"wow-max-v3-audio-aux-ready",
+  watchControlVersion:"wow-max-v3-audio-aux-ready-v15",
+  cartOrchestratorVersion:"v5-r3-runtime-gate",
   watchScoreVersion:"wow-max-v3-compatible-score",
   dispatcherVersion:"wow-max-v1"
 };
@@ -54,7 +55,7 @@ Deno.serve(async(req)=>{
   fullPwaJs:pwaJs.ok&&pwaJs.text.includes(EXPECTED.fullPwaMarker)&&pwaJs.text.includes(EXPECTED.release)&&pwaJs.text.includes("quick_event")&&pwaJs.text.includes("Math.min(255")&&pwaJs.text.includes("confirmHigh"),
   fullPwaManifest:pwaManifest.ok&&pwaManifest.json?.name===EXPECTED.fullPwaManifestName&&pwaManifest.json?.id==="/matrix.html"&&pwaManifest.json?.start_url==="/matrix.html"&&pwaManifest.json?.display==="standalone",
   auxStaging:aux.ok&&aux.json?.service==="hbnf-aux-control"&&aux.json?.enabled===false&&aux.json?.policy?.mixedLoadAccepted===false&&aux.json?.selfTest?.ok===true&&Number(aux.json?.selfTest?.globalOffPreset)===223&&Number(aux.json?.selfTest?.uvOffReturnsToPreset)===200,
-  cartStaging:cart.ok&&cart.json?.service==="hbnf-cart-orchestrator"&&cart.json?.auxEnabled===false&&cart.json?.mixedLoadAccepted===false&&cart.json?.safety?.globalOffAvailableWhenAuxDisabled===true&&cart.json?.safety?.startOrder==="matrix-then-aux"
+  cartStaging:cart.ok&&cart.json?.service==="hbnf-cart-orchestrator"&&cart.json?.version===EXPECTED.cartOrchestratorVersion&&cart.json?.auxEnabled===false&&cart.json?.mixedLoadAccepted===false&&cart.json?.safety?.globalOffAlwaysAttemptsBoth===true&&cart.json?.safety?.startOrder==="matrix-then-aux"&&cart.json?.safety?.preserveMatrixBrightness===true
  };
  const cloudReady=Object.values(checks).every(Boolean);
  const blockers=Array.isArray(pre.json?.blockers)?pre.json.blockers:[];
@@ -65,7 +66,7 @@ Deno.serve(async(req)=>{
  return json({
   ok:cloudReady,
   service:"hbnf-release-doctor",
-  version:"wow-v3-doctor-6-current-ui-contract",
+  version:"wow-v3-doctor-7-current-cart-watch-contract",
   expected:EXPECTED,
   cloudReady,
   matrixOnline,
