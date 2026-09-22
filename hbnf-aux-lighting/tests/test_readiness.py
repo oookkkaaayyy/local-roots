@@ -81,7 +81,11 @@ assert sp["statePatch"]["seg"][1]["sel"] is False and sp["statePatch"]["seg"][2]
 print("HBNF_AUX_HARDWARE_PLAN_GATE_PASS")
 
 guard=ROOT/"hbnf-aux-lighting/commissioning/commission_guard.py"
-p=subprocess.run([sys.executable,str(guard),"--selftest"],capture_output=True,text=True,check=True)
+p=subprocess.run([sys.executable,str(guard),"--selftest"],capture_output=True,text=True)
+if p.returncode:
+    print(p.stdout)
+    print(p.stderr,file=sys.stderr)
+    p.check_returncode()
 assert "HBNF_AUX_COMMISSION_GUARD_SELFTEST_PASS" in p.stdout
 builder=ROOT/"hbnf-aux-lighting/commissioning/build_commissioning_distribution.py"
 p=subprocess.run([sys.executable,str(builder),"--selftest"],capture_output=True,text=True,check=True)
