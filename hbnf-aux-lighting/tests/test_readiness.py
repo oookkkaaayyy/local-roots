@@ -8,7 +8,7 @@ watch=(ROOT/"hbnf-wow-bundle/backend/watch_control.ts").read_text()
 m1=(ROOT/"supabase/migrations/20260922061932_create_hbnf_aux_commissioning_state.sql").read_text()
 m2=(ROOT/"supabase/migrations/20260922062015_harden_hbnf_aux_commissioning_gate.sql").read_text()
 
-assert 'sp803e-v7-commissioning-gate' in aux
+assert 'sp803e-v9-custom-r3-audiosync-gate' in aux
 assert 'safeDefaultClosed' in aux
 assert 'passive_probe' in aux
 assert 'dry_run' in aux
@@ -23,7 +23,7 @@ assert 'if(action==="blackout"||action==="off")' in aux
 assert 'if(!enabled)return json' in aux
 assert 'mixed_load_verified' in aux
 
-assert 'v4-r3-dynamic-gate' in orch
+assert 'v5-r3-runtime-gate' in orch
 assert 'TARGET_RELEASE="hbnf-wow-r3-max-2026-09-21-v3"' in orch
 assert 'preserveCurrentBrightness:true' in orch
 assert 'brightness:8' not in orch
@@ -56,3 +56,12 @@ assert contract["sync"]["receive_segment_bounds"] is False
 p=subprocess.run([sys.executable,str(ROOT/"hbnf-aux-lighting/commissioning/local_commission.py"),"--selftest"],capture_output=True,text=True,check=True)
 assert "HBNF_AUX_LOCAL_COMMISSION_SELFTEST_PASS" in p.stdout
 print("HBNF_AUX_LOCAL_HELPER_PASS")
+
+assert 'auxRelease:"hbnf-wow-aux-r3-2026-09-22-v1"' in aux
+assert 'auxEngine:"aux-r3-wow-1d"' in aux
+assert 'auxBuildWitness:"registry28-fixed-1d-v1"' in aux
+assert 'AudioReactive UDP Sound Sync' in aux
+assert 'AUXWOW' in aux
+assert 'runtimeTrusted' in aux
+assert 'auxRuntimeReady' in orch
+assert 'exact custom R3 runtime' in orch
