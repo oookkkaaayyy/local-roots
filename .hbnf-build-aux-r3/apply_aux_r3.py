@@ -24,6 +24,15 @@ for old,new in [
 ]:
     s=s.replace(old,new)
 
+mqtt_old='\\\"buildWitness\\\":\\\"registry28-fixed-1d-v1\\\",\\\"fxRegistered\\\"'
+mqtt_new='\\\"buildWitness\\\":\\\"registry28-fixed-1d-v1\\\",\\\"projection\\\":\\\"1d-row\\\",\\\"fxRegistered\\\"'
+if s.count(mqtt_old)!=1:
+    raise RuntimeError(f"MQTT witness anchor mismatch: {s.count(mqtt_old)}")
+s=s.replace(mqtt_old,mqtt_new,1)
+if s.count("char payload[480];")!=1:
+    raise RuntimeError("MQTT payload buffer anchor mismatch")
+s=s.replace("char payload[480];","char payload[560];",1)
+
 anchor="class ANIMartRIXMod:public ANIMartRIX {"
 if s.count(anchor)!=1:
     raise RuntimeError("ANIMartRIXMod anchor mismatch")
@@ -75,7 +84,7 @@ checks={
  p:[
   "hbnf-wow-aux-r3-2026-09-22-v1","aux-r3-wow-1d","registry28-fixed-1d-v1",
   "hbnfAuxStyleForMode","hbnfAuxAmountForMode",'root["HBNFAUX"]',
-  'PSTR("%s/auxwow")','wow["projection"] = "1d-row"',
+  'PSTR("%s/auxwow")','\\\"projection\\\":\\\"1d-row\\\"','wow["projection"] = "1d-row"',
   'strip.addEffect(220, &mode_Complex_Kaleido_3','strip.addEffect(247, &mode_Module_Experiment10'
  ],
  ar:["static uint8_t audioSyncEnabled = 2;",'usermod["syncMode"] = audioSyncEnabled','usermod["syncPort"] = audioSyncPort']
