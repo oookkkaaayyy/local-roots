@@ -123,7 +123,7 @@ def check_aux(d):
         "release":aux.get("release")==AUX_RELEASE,
         "engine":aux.get("engine")==AUX_ENGINE,
         "buildWitness":aux.get("buildWitness")==AUX_WITNESS,
-        "projection":aux.get("projection")=="1d-row",
+        "projection":aux.get("projection")=="fold2-1d-v1",
         "fxRegistered":aux.get("fxRegistered")==28,
         "fxFailed":aux.get("fxFailed")==0,
         "modeCount":aux.get("modeCount")==248,
@@ -196,7 +196,7 @@ def selftest():
     }
     assert all(check_matrix(matrix).values())
     aux={
-      "state":{"HBNFAUX":{"release":AUX_RELEASE,"engine":AUX_ENGINE,"buildWitness":AUX_WITNESS,"projection":"1d-row","fxRegistered":28,"fxFailed":0,"modeCount":248,"fxFirst":220,"fxLast":247},
+      "state":{"HBNFAUX":{"release":AUX_RELEASE,"engine":AUX_ENGINE,"buildWitness":AUX_WITNESS,"projection":"fold2-1d-v1","fxRegistered":28,"fxFailed":0,"modeCount":248,"fxFirst":220,"fxLast":247},
                "mainseg":0,"seg":[{"id":0,"sel":True},{"id":1,"sel":False},{"id":2,"sel":False}]},
       "info":{"ver":"0.16.1","arch":"esp32","leds":{"count":100,"maxpwr":900}},"effects":fx,"pins":{},
       "cfg":{"if":{"sync":{"recv":{"bri":False,"col":True,"fx":True,"pal":True,"grp":1,"seg":False,"sb":False},"send":{"en":False}},
