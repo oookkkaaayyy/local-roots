@@ -148,21 +148,13 @@ def preflight(args):
     return {"mutationIssued":False,"package":package,"subnets":subnets,"wledNodes":nodes,"matrix":{"ip":m,"candidates":ids["matrixCandidates"],"checks":mc},"aux":{"ip":a,"selectionReason":ids["auxReason"],"checks":ac},"backups":backups,"nextAction":nxt}
 
 def multipart_firmware(fw):
-    boundary="----HBNF"+uuid.uuid4().hex;data=fw.read_bytes()
+    boundary="----HBNF"+uuid.uuid4().hex
+    data=fw.read_bytes()
     chunks=[
-      f'--{boundary}
-Content-Disposition: form-data; name="skipValidation"
-
-1
-'.encode(),
-      f'--{boundary}
-Content-Disposition: form-data; name="update"; filename="{fw.name}"
-Content-Type: application/octet-stream
-
-'.encode(),
-      data,f'
---{boundary}--
-'.encode()
+      f'--{boundary}\\r\\nContent-Disposition: form-data; name="skipValidation"\\r\\n\\r\\n1\\r\\n'.encode(),
+      f'--{boundary}\\r\\nContent-Disposition: form-data; name="update"; filename="{fw.name}"\\r\\nContent-Type: application/octet-stream\\r\\n\\r\\n'.encode(),
+      data,
+      f'\\r\\n--{boundary}--\\r\\n'.encode()
     ]
     return b"".join(chunks),f"multipart/form-data; boundary={boundary}"
 
