@@ -44,7 +44,7 @@ Primary references:
    - `HBNFAUX.release = hbnf-wow-aux-r3-2026-09-22-v1`
    - `engine = aux-r3-wow-1d`
    - `buildWitness = registry28-fixed-1d-v1`
-   - `projection = 1d-row`
+   - `projection = fold2-1d-v1`
    - `fxRegistered=28`, `fxFailed=0`, `modeCount=248`, `fxFirst=220`, `fxLast=247`
    - `/json/eff[220:248]` matches the 28 Matrix scene names exactly.
 
