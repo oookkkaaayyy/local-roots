@@ -217,7 +217,9 @@ def hardware_ok(d):
     if int(u.get("type") or -1)!=hp.TYPE_DIGITAL_RGB or int(m.get("type") or -1)!=hp.TYPE_ANALOG_1CH or int(sh.get("type") or -1)!=hp.TYPE_ANALOG_1CH: return False
     pixels=int(u.get("len") or 0)
     if pixels<1 or int(u.get("start",-1))!=0: return False
-    if int(u.get("maxpwr") or 0)!=900 or int(s.get("maxpwr") or 0)!=900: return False\n    boot=s.get("bootDefault") or {}\n    if boot.get("on") is not False or int(boot.get("ps") if boot.get("ps") is not None else -1)!=0: return False
+    if int(u.get("maxpwr") or 0)!=900 or int(s.get("maxpwr") or 0)!=900: return False
+    boot=s.get("bootDefault") or {}
+    if boot.get("on") is not False or int(boot.get("ps") if boot.get("ps") is not None else -1)!=0: return False
     if int(m.get("start") or -1)!=pixels or int(m.get("len") or 0)!=1: return False
     if int(sh.get("start") or -1)!=pixels+1 or int(sh.get("len") or 0)!=1: return False
     if int(s.get("total") or 0)!=pixels+2: return False
