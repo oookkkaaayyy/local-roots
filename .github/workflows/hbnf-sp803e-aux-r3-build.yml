@@ -205,10 +205,11 @@ jobs:
           python hbnf-aux-lighting/commissioning/commission_operator.py --selftest
           python - <<'PY2'
           import pathlib,sys
-          p=pathlib.Path('hbnf-aux-lighting/commissioning').resolve()
-          sys.path.insert(0,str(p))
+          source=pathlib.Path('hbnf-aux-lighting/commissioning').resolve()
+          sys.path.insert(0,str(source))
           import commission_operator as c
-          r=c.verify_package(p)
+          package=pathlib.Path('/tmp/artifacts').resolve()
+          r=c.verify_package(package)
           assert r['ok'],r
           print('HBNF_AUX_COMMISSION_PACKAGE_VERIFY_PASS')
           PY2
