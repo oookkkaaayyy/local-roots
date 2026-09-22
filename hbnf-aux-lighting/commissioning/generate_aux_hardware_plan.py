@@ -18,7 +18,7 @@ def build(pixels:int, order:str, reverse:bool, max_ma:int, led_ma:int):
     uv_main_start=pixels
     uv_short_start=pixels+1
     total=pixels+2
-    cfg={"hw":{"led":{"total":total,"maxpwr":max_ma,"ins":[
+    cfg={"def":{"ps":0,"on":False,"bri":64},"hw":{"led":{"total":total,"maxpwr":max_ma,"ins":[
         {"pin":[16],"start":0,"len":pixels,"type":TYPE_DIGITAL_RGB,"order":ORDER_CODES[order],"rev":reverse,"skip":0,"ref":False,"ledma":led_ma,"maxpwr":max_ma,"drv":0},
         {"pin":[25],"start":uv_main_start,"len":1,"type":TYPE_ANALOG_1CH,"order":0,"rev":False,"skip":0,"ref":False,"freq":9765,"ledma":0,"maxpwr":0,"drv":0},
         {"pin":[26],"start":uv_short_start,"len":1,"type":TYPE_ANALOG_1CH,"order":0,"rev":False,"skip":0,"ref":False,"freq":9765,"ledma":0,"maxpwr":0,"drv":0}
@@ -55,7 +55,8 @@ def build(pixels:int, order:str, reverse:bool, max_ma:int, led_ma:int):
             "spareGpio":27,
             "doNotReceiveSegmentOptionsOrBounds":True,
             "doNotInferColorOrder":True,
-            "rebootExpectedAfterHardwareBusChange":True
+            "rebootExpectedAfterHardwareBusChange":True,
+            "safeBoot":{"preset":0,"on":False,"brightness":64,"uvMustRemainOff":True}
         }
     }
 
@@ -64,6 +65,7 @@ def selftest():
     ins=p["cfgPatch"]["hw"]["led"]["ins"]
     assert p["mutationIssued"] is False and p["reviewRequired"] is True
     assert p["cfgPatch"]["hw"]["led"]["total"]==39
+    assert p["cfgPatch"]["def"]=={"ps":0,"on":False,"bri":64}
     assert ins[0]["pin"]==[16] and ins[0]["type"]==22 and ins[0]["len"]==37 and ins[0]["maxpwr"]==900
     assert ins[1]["pin"]==[25] and ins[1]["type"]==41 and ins[1]["start"]==37
     assert ins[2]["pin"]==[26] and ins[2]["type"]==41 and ins[2]["start"]==38
