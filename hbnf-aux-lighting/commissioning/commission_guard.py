@@ -646,9 +646,13 @@ def interactive(args):
     return {"history":history,"current":pf,"evidence":str(evidence_path(args.evidence))}
 
 def selftest():
-    body,ctype=multipart_firmware(pathlib.Path(__file__))
+    import tempfile
+    with tempfile.TemporaryDirectory() as td:
+        probe=pathlib.Path(td)/"probe.bin";probe.write_bytes(b"HBNF")
+        body,ctype=multipart_firmware(probe)
     assert b'name="skipValidation"' in body and b'name="update"' in body and "multipart/form-data" in ctype
-    assert b"\r\nContent-Disposition" in body and b"\\r\\nContent-Disposition" not in body
+    header=body.split(b"HBNF",1)[0]
+    assert b"\r\nContent-Disposition" in header and b"\\r\\nContent-Disposition" not in header
     fake={"cfg":{"def":{"ps":199,"on":False,"bri":64},"hw":{"led":{"total":37,"maxpwr":900,"ins":[{"pin":[16],"start":0,"len":37,"type":22,"order":1,"rev":False,"maxpwr":900}]}}},"state":{"mainseg":0,"seg":[{"id":0,"start":0,"stop":37,"sel":True,"on":True}]}}
     assert hardware_ok(fake)
     extra=json.loads(json.dumps(fake));extra["cfg"]["hw"]["led"]["ins"].append({"pin":[25],"start":37,"len":1,"type":41});assert not hardware_ok(extra)
