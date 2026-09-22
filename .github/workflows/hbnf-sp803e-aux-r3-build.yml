@@ -15,11 +15,22 @@ on:
 permissions:
   contents: read
 
+# Rapid tool-driven development can create many tiny commits while a full
+# firmware build takes several minutes. Keep only the newest build alive so
+# superseded intermediate commits do not waste runners or emit failure noise.
+concurrency:
+  group: hbnf-sp803e-aux-r3-build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
+      - name: Coalesce rapid development pushes
+        if: github.event_name == 'push'
+        run: sleep 60
+
       - name: Checkout
         uses: actions/checkout@v4
 
