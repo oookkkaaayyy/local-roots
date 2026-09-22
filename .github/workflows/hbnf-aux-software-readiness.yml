@@ -10,10 +10,21 @@ on:
       - 'supabase/migrations/20260922062015_harden_hbnf_aux_commissioning_gate.sql'
       - '.github/workflows/hbnf-aux-software-readiness.yml'
   workflow_dispatch:
+
+# Rapid tool-driven development can create many tiny commits in seconds.
+# Keep only the newest readiness run alive so superseded intermediate commits
+# do not generate failure noise.
+concurrency:
+  group: hbnf-aux-software-readiness-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   readiness:
     runs-on: ubuntu-latest
     steps:
+      - name: Coalesce rapid development pushes
+        if: github.event_name == 'push'
+        run: sleep 60
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
