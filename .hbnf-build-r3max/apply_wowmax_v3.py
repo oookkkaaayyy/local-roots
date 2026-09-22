@@ -150,11 +150,22 @@ def rewrite_registration(m):
     name=m.group(1)
     if name not in required_set:
         return ""
-    return f'      hbnfRegisterEffect("{name}", &mode_{name}, _data_FX_mode_{name});'
+    return (
+        f'      {{ const uint8_t id = strip.addEffect(255, &mode_{name}, _data_FX_mode_{name}); '
+        'if (id == 255) { hbnfFxFailed++; } else { '
+        'if (hbnfFxRegistered == 0) hbnfFxFirst = id; '
+        'hbnfFxLast = id; hbnfFxRegistered++; } }'
+    )
 setup_pruned = reg_re.sub(rewrite_registration, setup)
-after = re.findall(r'hbnfRegisterEffect\("([A-Za-z0-9_]+)"', setup_pruned)
+after = re.findall(r'strip\.addEffect\(255, &mode_([A-Za-z0-9_]+)', setup_pruned)
 if len(after) != len(required_effects) or set(after) != required_set:
     raise RuntimeError(f"ANIMartRIX prune mismatch: count={len(after)} missing={sorted(required_set-set(after))} extra={sorted(set(after)-required_set)}")
+setup_pruned = setup_pruned.replace(
+    "    void setup() {",
+    "    void setup() {\n      hbnfFxRegistered = 0; hbnfFxFailed = 0; hbnfFxFirst = 255; hbnfFxLast = 255;",
+    1,
+)
+s = s[:setup_start] + setup_pruned + s[setup_end:]
 
 diag_anchor="class AnimartrixUsermod : public Usermod {"
 if s.count(diag_anchor)!=1:
@@ -163,22 +174,9 @@ diag_helpers="""static uint8_t hbnfFxRegistered = 0;
 static uint8_t hbnfFxFailed = 0;
 static uint8_t hbnfFxFirst = 255;
 static uint8_t hbnfFxLast = 255;
-static void hbnfRegisterEffect(const char *name, mode_ptr fn, const char *meta) {
-  (void)name;
-  const uint8_t id = strip.addEffect(255, fn, meta);
-  if (id == 255) {
-    hbnfFxFailed++;
-    return;
-  }
-  if (hbnfFxRegistered == 0) hbnfFxFirst = id;
-  hbnfFxLast = id;
-  hbnfFxRegistered++;
-}
 
 """
 s=s.replace(diag_anchor,diag_helpers+diag_anchor,1)
-setup_pruned=setup_pruned.replace("    void setup() {","    void setup() {\n      hbnfFxRegistered = 0; hbnfFxFailed = 0; hbnfFxFirst = 255; hbnfFxLast = 255;",1)
-s = s[:setup_start] + setup_pruned + s[setup_end:]
 
 fx_h = (root/"wled00/FX.h").read_text()
 mc = re.search(r"#define\s+MODE_COUNT\s+(\d+)", fx_h)
