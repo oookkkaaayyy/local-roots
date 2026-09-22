@@ -87,9 +87,49 @@ Primary references:
    - Watch/cart endpoints return success
    - cold boot retest passes.
 
-Do not use the user as a manual QA loop for software-verifiable items. Ask only for unavoidable physical wiring/power/visual/thermal observations.\n
+Do not use the user as a manual QA loop for software-verifiable items. Ask only for unavoidable physical wiring/power/visual/thermal observations.
+
 ## Current preferred operator
 
-Use `COMMISSION_HBNF_AUX.command` / `commission_guard.py` rather than manually chaining the older helper commands. The old helpers remain packaged for audit and rollback support. The guarded operator auto-discovers the exact Matrix R3 runtime, creates fresh backups, and advances only after explicit confirmation. Hardware and sync writes are verified and rolled back to their prior configuration if post-write checks fail.
+Use `COMMISSION_HBNF_AUX.command` / `commission_guard.py` rather than manually chaining the older helpers. The old helpers remain packaged for audit and rollback support.
 
-Local Matrix→AUX UDP visual/audio sync is intentionally separated from MQTT. Do not configure `broker.emqx.io` as part of physical commissioning. Cloud/Watch AUX actuation remains a later integration gate.
+The guarded operator now provides the full local commissioning journey:
+
+1. Discover Matrix/AUX using exact runtime signatures across the Mac's actual active IPv4 network(s), including wider masks such as the home `192.168.68.0/22`.
+2. Verify package and create fresh backups.
+3. Install the exact AUX firmware only onto a proven ESP32 / 4 MB non-Matrix target.
+4. Ask for the installed logical WS2811 group count.
+5. Apply a temporary <=300 mA RGB calibration bus and infer the strip color order from the user's three observed colors.
+6. Apply the final <=900 mA underglow + GPIO25/26 UV plan with rollback.
+7. Configure and verify Matrix visual/audio SEND → AUX RECEIVE sync with rollback.
+8. Persist accepted real-world observations in `HBNF_AUX_ACCEPTANCE_EVIDENCE.json`. Reruns skip accepted stages.
+9. Guide UV-main, UV-short, full-UV, representative mixed-load/thermal acceptance, cold boot and actual hotspot acceptance.
+10. Match AUX MQTT to the current Matrix broker only after local acceptance, so PWA/Watch/cart control can use the existing production path.
+11. Prepare the AUX course/hotspot Wi-Fi profile using a password entered with hidden terminal input; the password is never written to the report/evidence file.
+12. When `physicalGateReady=true`, send the one evidence JSON to ChatGPT. ChatGPT reviews it and opens the guarded Supabase acceptance gates; the local package does not contain a service-role secret or a bypass around database safety.
+13. Rerun the same launcher once after gate import. It performs final read-only release-doctor / full-PWA / Watch-contract / AUX-runtime / cart dry-run verification. Already accepted physical tests are not repeated.
+
+### Commissioning state boundary
+
+The physical Supabase columns remain authoritative:
+`hardware_wired`, `power_verified`, `gpio_verified`, `current_limit_verified`, `segments_verified`, `audio_input_verified`, `udp_sync_verified`, `underglow_sync_verified`, `uv_main_verified`, `uv_short_verified`, `uv_full_verified`, `thermal_verified`, `mixed_load_verified`, then `aux_enabled`.
+
+Do not set them from source/CI evidence. Only import them after the corresponding real observation exists in the acceptance evidence file.
+
+### MQTT boundary
+
+Local Matrix→AUX UDP visual/audio sync is independent of MQTT. Unified cloud/PWA/Watch control is not. During this rollout, AUX is deliberately matched to the same broker currently used by Matrix so the two-node product works as one system.
+
+The current Matrix broker is still `broker.emqx.io`; this is retained for functional parity during commissioning, not declared production-grade. Release-doctor must continue surfacing `mqtt_public_test_broker` until Matrix + AUX are migrated together to an authenticated broker.
+
+### Remaining unavoidable human inputs
+
+The optimized workflow should require only:
+- initial one-time WLED-AP join if a brand-new SP803E is not on the LAN yet;
+- installed WS2811 logical group count;
+- the three observed colors during calibration;
+- YES/no visual/electrical/thermal confirmations that software cannot measure;
+- field Wi-Fi password only if AUX does not already contain the Matrix's field profile;
+- physical power cycle and real hotspot switch for those acceptance gates.
+
+Do not ask the user to edit JSON, run GPIO commands, select firmware files manually, or repeat passed tests.
