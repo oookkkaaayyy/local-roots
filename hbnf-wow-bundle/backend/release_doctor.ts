@@ -42,6 +42,10 @@ Deno.serve(async(req)=>{
  ]);
 
  const pwaVersion=EXPECTED.fullPwaAssetVersion;
+ const auxEnabled=aux.json?.enabled===true;
+ const auxMixed=aux.json?.mixedLoadAccepted===true;
+ const auxPhaseValid=(!auxEnabled&&!auxMixed)||(auxEnabled&&auxMixed);
+ const cartReadiness=cart.json?.readiness??{};
  const checks:any={
   matrixControlReachable:pre.ok&&status.ok,
   releaseContract:pre.json?.targetRelease===EXPECTED.release&&Number(pre.json?.targetSceneCount)===EXPECTED.sceneCount,
@@ -54,8 +58,10 @@ Deno.serve(async(req)=>{
   fullPwaHtml:pwaHtml.ok&&pwaHtml.text.includes(EXPECTED.fullPwaMarker)&&pwaHtml.text.includes("matrix-control.js?v="+pwaVersion)&&pwaHtml.text.includes("matrix-manifest.webmanifest?v="+pwaVersion)&&!pwaHtml.text.includes("v=9.17.26_3"),
   fullPwaJs:pwaJs.ok&&pwaJs.text.includes(EXPECTED.fullPwaMarker)&&pwaJs.text.includes(EXPECTED.release)&&pwaJs.text.includes("quick_event")&&pwaJs.text.includes("Math.min(255")&&pwaJs.text.includes("confirmHigh"),
   fullPwaManifest:pwaManifest.ok&&pwaManifest.json?.name===EXPECTED.fullPwaManifestName&&pwaManifest.json?.id==="/matrix.html"&&pwaManifest.json?.start_url==="/matrix.html"&&pwaManifest.json?.display==="standalone",
-  auxStaging:aux.ok&&aux.json?.service==="hbnf-aux-control"&&aux.json?.enabled===false&&aux.json?.policy?.mixedLoadAccepted===false&&aux.json?.selfTest?.ok===true&&Number(aux.json?.selfTest?.globalOffPreset)===223&&Number(aux.json?.selfTest?.uvOffReturnsToPreset)===200,
-  cartStaging:cart.ok&&cart.json?.service==="hbnf-cart-orchestrator"&&cart.json?.version===EXPECTED.cartOrchestratorVersion&&cart.json?.readiness?.auxEnabled===false&&cart.json?.readiness?.mixedLoadAccepted===false&&cart.json?.readiness?.matrixOk===true&&cart.json?.safety?.globalOffAlwaysAttemptsBoth===true&&cart.json?.safety?.startOrder==="matrix-then-aux"&&cart.json?.safety?.preserveMatrixBrightness===true
+  auxContract:aux.ok&&aux.json?.service==="hbnf-aux-control"&&auxPhaseValid&&aux.json?.selfTest?.ok===true&&Number(aux.json?.selfTest?.globalOffPreset)===223&&Number(aux.json?.selfTest?.uvOffReturnsToPreset)===200,
+  cartContract:cart.ok&&cart.json?.service==="hbnf-cart-orchestrator"&&cart.json?.version===EXPECTED.cartOrchestratorVersion&&cartReadiness?.matrixOk===true&&cart.json?.safety?.globalOffAlwaysAttemptsBoth===true&&cart.json?.safety?.startOrder==="matrix-then-aux"&&cart.json?.safety?.preserveMatrixBrightness===true,
+  auxGateConsistency:cartReadiness?.auxEnabled===auxEnabled&&cartReadiness?.mixedLoadAccepted===auxMixed,
+  auxRuntimeWhenEnabled:!auxEnabled||cartReadiness?.auxRuntimeReady===true
  };
  const cloudReady=Object.values(checks).every(Boolean);
  const blockers=Array.isArray(pre.json?.blockers)?pre.json.blockers:[];
@@ -72,7 +78,7 @@ Deno.serve(async(req)=>{
  return json({
   ok:cloudReady,
   service:"hbnf-release-doctor",
-  version:"wow-v3-doctor-10-transport-risk-surface",
+  version:"wow-v3-doctor-11-commissioned-aux-semantics",
   expected:EXPECTED,
   cloudReady,
   matrixOnline,
@@ -87,7 +93,7 @@ Deno.serve(async(req)=>{
   checks,
   fullPwa:{htmlStatus:pwaHtml.status,jsStatus:pwaJs.status,manifestStatus:pwaManifest.status},
   matrix:{preflight:pre.json,status:status.json},
-  aux:{prepared:aux.json?.ok===true,enabled:aux.json?.enabled===true,mixedLoadAccepted:aux.json?.policy?.mixedLoadAccepted===true},
+  aux:{prepared:aux.json?.ok===true,enabled:auxEnabled,mixedLoadAccepted:auxMixed,phase:auxEnabled&&auxMixed?"commissioned":"staging",runtimeReady:cartReadiness?.auxRuntimeReady===true},
   next:productionCurrent?(productionHardened?"production-current":"migrate-mqtt-transport"):(goLiveReady?"run-go-live":(awaitingPhysicalOnly?"power-matrix-and-run-go-live":"repair-cloud-contract"))
  },cloudReady?200:503);
 });
