@@ -69,6 +69,18 @@ assert '--prepare-sync' not in launcher
 assert 'READ-ONLY' in launcher
 print("HBNF_AUX_COMMISSION_OPERATOR_GATE_PASS")
 
+plan=ROOT/"hbnf-aux-lighting/commissioning/generate_aux_hardware_plan.py"
+p=subprocess.run([sys.executable,str(plan),"--selftest"],capture_output=True,text=True,check=True)
+assert "HBNF_AUX_HARDWARE_PLAN_SELFTEST_PASS" in p.stdout
+sample=subprocess.run([sys.executable,str(plan),"--pixels","37","--order","RGB"],capture_output=True,text=True,check=True)
+sp=json.loads(sample.stdout)
+assert sp["mutationIssued"] is False and sp["reviewRequired"] is True
+assert sp["cfgPatch"]["hw"]["led"]["ins"][0]["pin"]==[16]
+assert sp["cfgPatch"]["hw"]["led"]["ins"][1]["pin"]==[25]
+assert sp["cfgPatch"]["hw"]["led"]["ins"][2]["pin"]==[26]
+assert sp["statePatch"]["seg"][1]["sel"] is False and sp["statePatch"]["seg"][2]["sel"] is False
+print("HBNF_AUX_HARDWARE_PLAN_GATE_PASS")
+
 assert 'auxRelease:"hbnf-wow-aux-r3-2026-09-22-v1"' in aux
 assert 'auxEngine:"aux-r3-wow-1d"' in aux
 assert 'auxBuildWitness:"registry28-fixed-1d-v1"' in aux
