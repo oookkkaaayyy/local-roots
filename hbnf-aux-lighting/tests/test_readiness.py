@@ -8,7 +8,7 @@ watch=(ROOT/"hbnf-wow-bundle/backend/watch_control.ts").read_text()
 m1=(ROOT/"supabase/migrations/20260922061932_create_hbnf_aux_commissioning_state.sql").read_text()
 m2=(ROOT/"supabase/migrations/20260922062015_harden_hbnf_aux_commissioning_gate.sql").read_text()
 
-assert 'sp803e-v9-custom-r3-audiosync-gate' in aux
+assert 'sp803e-v10-custom-r3-independent-bri' in aux
 assert 'safeDefaultClosed' in aux
 assert 'passive_probe' in aux
 assert 'dry_run' in aux
@@ -67,3 +67,6 @@ assert 'AUXWOW' in aux
 assert 'runtimeTrusted' in aux
 assert 'auxRuntimeReady' in orch
 assert 'exact custom R3 runtime' in orch
+
+assert 'receiveBrightness:false' in aux
+assert 'brightnessIndependent:true' in aux
