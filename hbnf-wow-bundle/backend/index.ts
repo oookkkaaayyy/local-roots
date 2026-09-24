@@ -10,7 +10,16 @@ declare const EdgeRuntime:{waitUntil(p:Promise<unknown>):void};
 const DB_READ_TIMEOUT_MS=7000;
 const R2_COURSE_LIBRARY_REVISION="hbnf-r2-course-2026-09-20-v1",R3_WOW_LIBRARY_REVISION="hbnf-wow-r3-max-2026-09-21-v3",R2_COURSE_PLAYLIST=60,R2_COURSE_SCENES=[61,62,63,64,65,66,67,68],R3_WOW_SCENES=[61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88];
 const R3_WOW_PROFILE_IX:Record<number,number>={61:96,62:216,63:56,64:16,65:176,66:216,67:136,68:176,69:56,70:16,71:136,72:176,73:16,74:216,75:56,76:176,77:16,78:136,79:216,80:16,81:176,82:136,83:56,84:176,85:216,86:16,87:136,88:176};
+const COURSE_AUTO_DUR_TENTHS=120,COURSE_AUTO_TRANSITION_TENTHS=8;
 function courseScenes(control:any){return control?.library_revision===R3_WOW_LIBRARY_REVISION?R3_WOW_SCENES:R2_COURSE_SCENES;}
+function courseAutoPayload(control:any,bri:number){
+ const base:any={on:true,bri,tt:0,bs:0,"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL},"HBNFFlow":{"enabled":false}};
+ if(control?.library_revision===R3_WOW_LIBRARY_REVISION){
+  return {...base,playlist:{ps:R3_WOW_SCENES,dur:R3_WOW_SCENES.map(()=>COURSE_AUTO_DUR_TENTHS),transition:R3_WOW_SCENES.map(()=>COURSE_AUTO_TRANSITION_TENTHS),repeat:0,r:true}};
+ }
+ return {...base,ps:R2_COURSE_PLAYLIST};
+}
+function courseLocked(control:any){const p=Number(control?.resume_preset??0);return courseScenes(control).includes(p)&&p!==R2_COURSE_PLAYLIST;}
 function courseRevision(control:any){return control?.library_revision===R3_WOW_LIBRARY_REVISION?R3_WOW_LIBRARY_REVISION:R2_COURSE_LIBRARY_REVISION;}
 function courseEngine(control:any){return control?.library_revision===R3_WOW_LIBRARY_REVISION?"r3-wow-max":"r2-animartrix-vibe";}
 function activeEngine(control:any,native=false){if(native)return "local-flow";if(control?.library_revision===R3_WOW_LIBRARY_REVISION)return "r3-wow-max";if(control?.library_revision===R2_COURSE_LIBRARY_REVISION)return "r2-animartrix-vibe";return "legacy";}
@@ -21,7 +30,7 @@ async function getControlState(sb:any){const{data,error}=await sb.from("hbnf_mat
 async function setControlState(sb:any,patch:any){const body={...patch,updated_at:new Date().toISOString()};const{data,error}=await sb.from("hbnf_matrix_control_state").update(body).eq("id",1).select(fields).single();if(error)throw error;return data;}
 async function liveInfo(sb:any){const{data,error}=await sb.from("league_state").select("state_json").eq("id",1).single();if(error)throw error;return chooseLive(data?.state_json??{});}
 function setupRequired(control:any,telemetry:any=null){if([R2_COURSE_LIBRARY_REVISION,R3_WOW_LIBRARY_REVISION].includes(String(control?.library_revision??"")))return false;return control?.library_revision!==expectedLibraryRevision(telemetry);}
-function visualResume(control:any){if(control?.mode==="off")return null;const p=Number(control?.resume_preset??control?.show_preset??0);return((p>=10&&p<=44)||(p>=50&&p<=55)||p===R2_COURSE_PLAYLIST||(p>=220&&p<=254))?p:null;}
+function visualResume(control:any){if(control?.mode==="off")return null;const p=Number(control?.resume_preset??control?.show_preset??0);return((p>=10&&p<=44)||(p>=50&&p<=55)||p===R2_COURSE_PLAYLIST||(p>=61&&p<=88)||(p>=220&&p<=254))?p:null;}
 function overlayBusy(control:any){return !!(control?.overlay_until&&new Date(control.overlay_until).getTime()>Date.now());}
 async function currentBrightness(safe=true){const rt=await mqttRoundTrip(undefined,null,1400);const raw=rt?.telemetry?.brightness;return safe?safeEventBrightness(raw):anyBrightness(raw);}
 function baseLayer(){return{id:1,start:0,stop:32,startY:0,stopY:16,on:true,sel:true,bri:1,fx:0,pal:0,bm:0,col:[[0,0,0],[0,0,0],[0,0,0]],frz:false};}
@@ -33,42 +42,49 @@ async function flowPrimeShow(s:any){
  const first=Number(s?.looks?.[0]);if(!LOOK_META[first])throw new Error("Show has no valid first look.");
  return await mqttRoundTripRetry({on:false,seg:[{id:3,stop:0},{id:2,stop:0},flowLookSeg(first),baseLayer()]},{brightness:0,effect:LOOK_META[first].fx,playlistActive:0,color:LOOK_META[first].color},2600,3);
 }
-function cardPixelSeg(bri=1){return{id:3,start:0,stop:32,startY:0,stopY:16,on:true,sel:false,bri,fx:0,pal:0,bm:2,col:[[0,0,0],[0,0,0],[0,0,0]],frz:false,n:""};}
-function cardTextSeg(text:string,color:number[],bri=1){return{id:3,start:0,stop:32,startY:0,stopY:16,on:true,sel:false,bri,fx:122,sx:230,ix:128,c1:0,c2:0,c3:16,o1:false,o2:true,o3:false,bm:2,pal:0,col:[color,[0,0,0],[0,0,0]],frz:false,n:cleanText(text,63)};}
+function cardPixelSeg(bri=1){return{id:3,start:0,stop:32,startY:0,stopY:16,on:true,sel:false,bri,fx:0,pal:0,bm:0,col:[[0,0,0],[0,0,0],[0,0,0]],frz:false,n:""};}
+function cardTextSeg(text:string,color:number[],bri=1){return{id:3,start:0,stop:32,startY:0,stopY:16,on:true,sel:false,bri,fx:122,sx:230,ix:128,c1:0,c2:0,c3:16,o1:false,o2:true,o3:false,bm:0,pal:0,col:[color,[0,0,0],[0,0,0]],frz:false,n:cleanText(text,63)};}
 const BLANK_FRAME=Array(512).fill("000000"),CARD_TT=3;
 async function resumeVisualDirect(sb:any,fallbackPreset:number|null,brightness:number){
  const latest=await getControlState(sb);if(latest?.mode==="off")return false;const rp=visualResume(latest)??fallbackPreset;if(rp===null)return false;const b=Math.max(1,Math.min(NIGHT_MAX,Math.round(brightness||8)));
- if(rp>=220){await mqttPublishSequence([{payload:{on:true,bri:b,tt:0,bs:0,"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL},seg:[{id:0,on:true,sel:true,bri:64,fx:rp,sx:128,ix:128,pal:0},baseLayer()]},delayAfterMs:140}],5000);return true;} await mqttPublishSequence([{payload:{on:true,bri:b,tt:TRANSITION_TENTHS,bs:TRANSITION_STYLE,ps:rp,"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL}},delayAfterMs:TRANSITION_TENTHS*110}],5000);return true;
+ if(String(latest?.show_family??"")==="r2"&&rp===R2_COURSE_PLAYLIST){
+  const rt=await mqttRoundTripRetry(courseAutoPayload(latest,b),{playlistActive:1,presetIn:courseScenes(latest),brightness:b},4200,3);
+  return !!rt.confirmed;
+ }
+ const rt=await mqttRoundTripRetry({on:true,bri:b,tt:0,bs:0,ps:rp,"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL},"HBNFFlow":{"enabled":false}},{preset:rp,playlistActive:0,brightness:b},3400,3);
+ return !!rt.confirmed;
+}
+async function isolateOverlayBackground(brightness:number){
+ const b=Math.max(1,Math.min(NIGHT_MAX,Math.round(brightness||8))),probe=await mqttRoundTrip(undefined,null,1600),t=probe?.telemetry??{},p=Number(t?.preset);
+ if(Number(t?.playlistActive)===1&&Number.isFinite(p)&&p>=1&&p<=250){
+  const stopped=await mqttRoundTripRetry({on:true,bri:b,tt:0,bs:0,ps:p,"HBNFFlow":{"enabled":false}},{playlistActive:0,preset:p,brightness:b},3000,3);
+  if(!stopped.confirmed)throw new Error("Could not pause the active playlist for a clean overlay.");
+ }
+ // Paint a real opaque black base frame before any text/pixel card. Merely
+ // turning old segments off can leave their last rendered pixels in the
+ // physical framebuffer, which makes scrolling text appear on top of a live
+ // or stale visual. Keep segment 0 as an explicit solid-black canvas and
+ // reserve segment 3 exclusively for the temporary card.
+ await mqttPublishSequence([
+  {payload:{on:true,bri:b,tt:0,bs:0,seg:[
+    {id:0,start:0,stop:32,startY:0,stopY:16,on:true,sel:false,bri:1,fx:0,pal:0,bm:0,col:[[0,0,0],[0,0,0],[0,0,0]],frz:false},
+    {id:1,stop:0},{id:2,stop:0},{id:3,stop:0}
+  ]},delayAfterMs:140},
+  {payload:{seg:{id:0,bri:1,fx:0,pal:0,bm:0,col:[[0,0,0],[0,0,0],[0,0,0]],frz:false}},delayAfterMs:60}
+ ],3000);
 }
 async function resumeUnderCard(sb:any,fallbackPreset:number|null,brightness:number){
- const latest=await getControlState(sb);if(latest?.mode==="off"){await mqttPublish({seg:{id:3,on:false,bri:0,n:"",sel:false}}).catch(()=>{});return false;}
- const rp=visualResume(latest)??fallbackPreset;if(rp===null)return false;const b=Math.max(1,Math.min(NIGHT_MAX,Math.round(brightness||8)));
- if(rp>=220){await mqttPublishSequence([
-  {payload:{seg:{id:3,bm:0,bri:255}},delayAfterMs:40},
-  {payload:{on:true,bri:b,tt:0,bs:0,"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL},seg:[{id:0,on:true,sel:true,bri:64,fx:rp,sx:128,ix:128,pal:0},baseLayer()]},delayAfterMs:120},
-  {payload:{tt:0,bs:0,seg:{id:3,bm:2,bri:255}},delayAfterMs:30},
-  {payload:{tt:CARD_TT,bs:0,seg:[{id:0,on:true,bri:64},{id:3,bri:1,bm:2}]},delayAfterMs:CARD_TT*110},
-  {payload:{seg:{id:3,on:false,bri:0,n:"",sel:false}},delayAfterMs:60}
- ],5000);return true;}
- const fam=String(latest?.show_family??""),look=rp>=50&&rp<=55?Number(SHOWS[fam]?.looks?.[0]??40):rp,target=Math.max(1,Math.min(255,Number(LOOK_META[look]?.bri??64)));
- await mqttPublishSequence([
-  {payload:{seg:{id:3,bm:0,bri:255}},delayAfterMs:40},
-  {payload:{on:true,bri:b,tt:0,bs:0,ps:rp,"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL}},delayAfterMs:120},
-  {payload:{tt:0,bs:0,seg:{id:0,on:true,bri:1}},delayAfterMs:40},
-  {payload:{tt:0,bs:0,seg:{id:3,bm:2,bri:255}},delayAfterMs:30},
-  {payload:{tt:CARD_TT,bs:0,seg:[{id:0,on:true,bri:target},{id:3,bri:1,bm:2}]},delayAfterMs:CARD_TT*110},
-  {payload:{seg:{id:3,on:false,bri:0,n:"",sel:false}},delayAfterMs:60}
- ],5000);return true;
+ await mqttPublish({tt:0,bs:0,seg:[{id:3,stop:0},{id:2,stop:0}]},1,0).catch(()=>{});
+ return await resumeVisualDirect(sb,fallbackPreset,brightness);
 }
 async function coordinatedOverlay(sb:any,text:string,resumePreset:number|null,color:number[]=[255,255,255]){
  const hold=holdMs(text),seconds=Math.ceil((hold+4500)/1000),until=new Date(Date.now()+seconds*1000).toISOString(),b=await currentBrightness(true);
  const{error}=await sb.from("hbnf_matrix_control_state").update({overlay_until:until}).eq("id",1);if(error)throw error;
  EdgeRuntime.waitUntil((async()=>{try{
+  await isolateOverlayBackground(b);
   await mqttPublishSequence([
-   {payload:{on:true,bri:b,tt:0,bs:0,seg:cardTextSeg(text,color,1)},delayAfterMs:100},
-   {payload:{tt:CARD_TT,bs:0,seg:[{id:0,on:false},{id:3,bri:255,bm:2}]},delayAfterMs:CARD_TT*110},
-   {payload:{tt:0,bs:0,seg:{id:0,on:false,bri:0,fx:0}},delayAfterMs:60}
-  ],3500);
+   {payload:{on:true,bri:b,tt:0,bs:0,seg:cardTextSeg(text,color,255)},delayAfterMs:80}
+  ],2500);
   await wait(hold);
   await resumeUnderCard(sb,resumePreset,b);
  }catch(e){console.error("card overlay failed",e);try{await resumeUnderCard(sb,resumePreset,b);}catch{}}
@@ -104,12 +120,11 @@ async function coordinatedScoreboard(sb:any,live:any,resumePreset:number|null,re
  EdgeRuntime.waitUntil((async()=>{try{
   if(!await scoreboardOwned(sb))return;
   const first=pages[0].pixels;
+  await isolateOverlayBackground(b);
   await mqttPublishSequence([
-   {payload:{on:true,bri:b,tt:0,bs:0,seg:cardPixelSeg(1)},delayAfterMs:80},
-   {payload:{seg:{id:3,i:[0,...first]}},delayAfterMs:70},
-   {payload:{tt:CARD_TT,bs:0,seg:[{id:0,on:false},{id:3,bri:255,bm:2}]},delayAfterMs:CARD_TT*110},
-   {payload:{tt:0,bs:0,seg:{id:0,on:false,bri:0,fx:0}},delayAfterMs:50}
-  ],3500);
+   {payload:{on:true,bri:b,tt:0,bs:0,seg:cardPixelSeg(255)},delayAfterMs:70},
+   {payload:{seg:{id:3,bm:0,bri:255,i:[0,...first]}},delayAfterMs:70}
+  ],2500);
   let current=first;await wait(2500);
   for(let cycle=0;cycle<reps;cycle++){
    const startIndex=cycle===0?1:0;
@@ -132,15 +147,14 @@ async function coordinatedWowEvent(sb:any,kind:string,resumePreset:number|null){
  EdgeRuntime.waitUntil((async()=>{try{
   if(!await scoreboardOwned(sb))return;
   const first=event.frames[0];
+  await isolateOverlayBackground(b);
   await mqttPublishSequence([
-   {payload:{on:true,bri:b,tt:0,bs:0,seg:cardPixelSeg(1)},delayAfterMs:70},
-   {payload:{seg:{id:3,i:[0,...first]}},delayAfterMs:event.frameMs},
-   {payload:{tt:CARD_TT,bs:0,seg:[{id:0,on:false},{id:3,bri:255,bm:2}]},delayAfterMs:CARD_TT*110},
-   {payload:{tt:0,bs:0,seg:{id:0,on:false,bri:0,fx:0}},delayAfterMs:35}
-  ],3500);
+   {payload:{on:true,bri:b,tt:0,bs:0,seg:cardPixelSeg(255)},delayAfterMs:60},
+   {payload:{seg:{id:3,bm:0,bri:255,i:[0,...first]}},delayAfterMs:event.frameMs}
+  ],2500);
   for(let i=1;i<event.frames.length;i++){if(!await scoreboardOwned(sb))return;await mqttPublish({seg:{id:3,i:[0,...event.frames[i]]}},1,0);await wait(event.frameMs);}
   if(!await scoreboardOwned(sb))return;
-  await mqttPublish({seg:cardTextSeg(event.text,event.color,255)},1,0);await wait(110+event.holdMs);
+  await mqttPublish({seg:{...cardTextSeg(event.text,event.color,255),bm:0}},1,0);await wait(110+event.holdMs);
   if(!await scoreboardOwned(sb))return;
   await resumeUnderCard(sb,resumePreset,b);
  }catch(e){console.error("WOW event sequence failed",e);try{await resumeUnderCard(sb,resumePreset,b);}catch{}}
@@ -256,7 +270,7 @@ async function installLibrary(sb:any,flow=false){
  return{control,verify,installed:visualIds.length+playlistIds.length,preserved:{brightness:wasOff?0:installB,wasOff,family,playlist:show.playlist,mode:before?.mode,auto_live:before?.auto_live}};
 }
 Deno.serve(async(req:Request)=>{if(req.method==="OPTIONS")return new Response(null,{status:204,headers:cors(req)});if(req.method!=="POST")return json(req,{ok:false,error:"POST required"},405);try{const body=await req.json().catch(()=>({})),action=cleanText(body?.action,40).toLowerCase();let sb:any;try{sb=await getSb();}catch(e){return json(req,{ok:false,error:"Supabase client initialization failed",diagnostic:"The application could not initialize its bounded Supabase REST client.",service:"supabase-client",serverTime:new Date().toISOString()},503);}let control:any=null;
-if(action==="status"){try{control=await getControlState(sb);}catch(e){return json(req,{ok:false,error:"control-state database read timed out or failed",diagnostic:"Supabase REST read for hbnf_matrix_control_state did not complete within the bounded application timeout.",service:"supabase-rest",serverTime:new Date().toISOString()},503);}const rt=await mqttRoundTrip(undefined,null,3000),lwt=String(rt.telemetry?.status??"").toLowerCase(),online=lwt==="online",flow=flowReady(rt.telemetry),r3=control?.library_revision===R3_WOW_LIBRARY_REVISION,r2=control?.library_revision===R2_COURSE_LIBRARY_REVISION,expected=r3?R3_WOW_LIBRARY_REVISION:(r2?R2_COURSE_LIBRARY_REVISION:expectedLibraryRevision(rt.telemetry)),wowRaw=rt.telemetry?.wow,wowTrusted=online&&r3&&wowRaw?.release===R3_WOW_LIBRARY_REVISION&&wowRaw?.engine==="r3-wow-max";return json(req,{...rt,control,online,onlineSignal:lwt?`lwt_${lwt}`:"none",freshVerified:false,broker:MQTT_HOST,flowReady:flow,renderEngine:r3?"r3-wow-max":(r2?"r2-animartrix-vibe":(flow?"local-flow":"legacy")),setupRequired:setupRequired(control,rt.telemetry),expectedLibraryRevision:expected,nightSafeMax:NIGHT_MAX,r2AudioStandard:AUDIO_INPUT_LEVEL,r2ScenePresetHardeningRequired:false,r3Wow:r3?{sceneCount:R3_WOW_SCENES.length,profiles:["bass","mid","balanced","treble","full","impact"],styles:["clean","punch","ring","spark","chroma","hybrid"],eventAnimations:["ace","ctp","nice_shot","nice_putt","skins","glow"],dropAccents:true,diagnostics: wowTrusted?wowRaw:null,diagnosticsTrusted:wowTrusted}:null,serverTime:new Date().toISOString()});}
+if(action==="status"){try{control=await getControlState(sb);}catch(e){return json(req,{ok:false,error:"control-state database read timed out or failed",diagnostic:"Supabase REST read for hbnf_matrix_control_state did not complete within the bounded application timeout.",service:"supabase-rest",serverTime:new Date().toISOString()},503);}const rt=await mqttRoundTrip(undefined,null,3000),lwt=String(rt.telemetry?.status??"").toLowerCase(),online=lwt==="online",flow=flowReady(rt.telemetry),r3=control?.library_revision===R3_WOW_LIBRARY_REVISION,r2=control?.library_revision===R2_COURSE_LIBRARY_REVISION,expected=r3?R3_WOW_LIBRARY_REVISION:(r2?R2_COURSE_LIBRARY_REVISION:expectedLibraryRevision(rt.telemetry)),wowRaw=rt.telemetry?.wow,wowTrusted=online&&r3&&wowRaw?.release===R3_WOW_LIBRARY_REVISION&&wowRaw?.engine==="r3-wow-max";return json(req,{...rt,control,online,onlineSignal:lwt?`lwt_${lwt}`:"none",freshVerified:false,broker:MQTT_HOST,flowReady:flow,renderEngine:r3?"r3-wow-max":(r2?"r2-animartrix-vibe":(flow?"local-flow":"legacy")),setupRequired:setupRequired(control,rt.telemetry),expectedLibraryRevision:expected,nightSafeMax:NIGHT_MAX,r2AudioStandard:AUDIO_INPUT_LEVEL,r2ScenePresetHardeningRequired:false,playbackMode:control?.mode==="off"?"off":(Number(rt.telemetry?.playlistActive)===1?"auto":"locked"),r3Wow:r3?{sceneCount:R3_WOW_SCENES.length,profiles:["bass","mid","balanced","treble","full","impact"],styles:["clean","punch","ring","spark","chroma","hybrid"],eventAnimations:["ace","ctp","nice_shot","nice_putt","skins","glow"],dropAccents:true,diagnostics: wowTrusted?wowRaw:null,diagnosticsTrusted:wowTrusted}:null,serverTime:new Date().toISOString()});}
 try{control=await getControlState(sb);}catch(e){return json(req,{ok:false,error:"control-state database read timed out or failed",diagnostic:"Supabase REST read for hbnf_matrix_control_state did not complete within the bounded application timeout.",service:"supabase-rest",serverTime:new Date().toISOString()},503);}
 if(action==="audio_diagnostics"){
  const rt=await mqttRoundTrip(undefined,null,2600),t=rt?.telemetry??{},online=String(t?.status??"").toLowerCase()==="online",wow=t?.wow,trusted=online&&control?.library_revision===R3_WOW_LIBRARY_REVISION&&wow?.release===R3_WOW_LIBRARY_REVISION&&wow?.engine==="r3-wow-max";
@@ -317,7 +331,7 @@ if(action==="r3_adopt"){
   const witness={
    release:String(wow?.release??"")===R3_WOW_LIBRARY_REVISION,
    engine:String(wow?.engine??"")==="r3-wow-max",
-   buildWitness:String(wow?.buildWitness??"")==="registry28-fixed-v3",
+   buildWitness:["registry28-fixed-v3","registry28-fixed-v4-colorwifi"].includes(String(wow?.buildWitness??"")),
    fxRegistered:Number(wow?.fxRegistered)===28,
    fxFailed:Number(wow?.fxFailed)===0,
    modeCount:Number(wow?.modeCount)===248,
@@ -465,7 +479,7 @@ if(action==="round_ready"){
  if(control?.mode!=="off"&&overlayBusy(control))return json(req,{ok:false,error:"Another Matrix overlay is active; Round Ready is locked until it finishes or BLACKOUT is used.",overlayUntil:control.overlay_until},409);
  if(String(control?.show_family??"")==="r2"){
   const wasOff=control?.mode==="off",live=await liveInfo(sb),status=await mqttRoundTrip(undefined,null,1800),b=safeEventBrightness(status?.telemetry?.brightness);
-  const rt=await mqttRoundTripRetry({on:true,bri:b,tt:0,bs:0,ps:R2_COURSE_PLAYLIST,"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL},"HBNFFlow":{"enabled":false}},{playlistActive:1,presetIn:courseScenes(control),brightness:b},4200,3);
+  const rt=await mqttRoundTripRetry(courseAutoPayload(control,b),{playlistActive:1,presetIn:courseScenes(control),brightness:b},4400,3);
   if(!rt.confirmed){if(!wasOff)return json(req,{...rt,ok:false,ready:false,error:"Course Round Ready was not freshly confirmed; existing local Course playback was preserved.",control,action,localPlaybackPreserved:true},503);const failSafe=await forceSafeDark(sb,"r2_course_round_ready_unconfirmed");control=failSafe.control??control;return json(req,{...rt,ok:false,ready:false,error:"Course Round Ready startup was not freshly confirmed; safe-dark was issued.",failSafe,control,action},503);}
   const committed=await commitVisibleControl(sb,{mode:"event",auto_live:true,resume_preset:R2_COURSE_PLAYLIST,show_family:"r2",show_preset:R2_COURSE_PLAYLIST,library_revision:courseRevision(control),last_auto_takeover_at:null,overlay_until:null,live_score_cursor:0,last_live_overlay_kind:"ace",min_live_interval_seconds:240},"r2_course_round_ready_commit_failed");
   if(!committed.ok){control=committed.control??control;return json(req,{...rt,ok:false,ready:false,error:"R2 Course Round Ready confirmed but backend ownership commit failed; fail-safe dark was issued.",failSafe:committed.failSafe,control,action},503);}
@@ -493,7 +507,7 @@ if(action==="play_show"&&cleanText(body?.family,20).toLowerCase()==="r2"){
  if(control?.mode!=="off"&&overlayBusy(control))return json(req,{ok:false,error:"Another Matrix overlay is active; R2 show change is locked until it finishes or BLACKOUT is used.",overlayUntil:control.overlay_until},409);
  const live=bool(body?.live,false),b=body?.brightness==null?8:clamp(body?.brightness,1,NIGHT_MAX,8),before=control,wasOff=control?.mode==="off";
  if(control?.mode==="off"){try{control=await setControlState(sb,{mode:"manual",auto_live:false,overlay_until:null});}catch(e){return json(req,{ok:false,error:"Could not claim Matrix startup ownership.",action,family:"r2"},503);}}
- const rt=await mqttRoundTripRetry({on:true,bri:b,tt:0,bs:0,ps:R2_COURSE_PLAYLIST,"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL},"HBNFFlow":{"enabled":false}},{playlistActive:1,presetIn:courseScenes(control),brightness:b},4200,3);
+ const rt=await mqttRoundTripRetry(courseAutoPayload(control,b),{playlistActive:1,presetIn:courseScenes(control),brightness:b},4400,3);
  if(!rt.confirmed){if(!wasOff&&before?.show_family==="r2")return json(req,{...rt,ok:false,error:"Course command was not freshly confirmed; existing local Course playback was preserved.",control:before,action,family:"r2",localPlaybackPreserved:true},503);const failSafe=await forceSafeDark(sb,"r2_course_start_unconfirmed");control=failSafe.control??control;return json(req,{...rt,ok:false,error:"Course startup was not freshly confirmed; safe-dark was issued.",failSafe,control,action,family:"r2"},503);}
  const committed=await commitVisibleControl(sb,{mode:live?"event":"showcase",auto_live:live,resume_preset:R2_COURSE_PLAYLIST,show_family:"r2",show_preset:R2_COURSE_PLAYLIST,library_revision:courseRevision(control),last_auto_takeover_at:null,overlay_until:null,live_score_cursor:0,last_live_overlay_kind:"ace",...(live?{min_live_interval_seconds:240}:{})},"r2_course_control_commit_failed");
  if(!committed.ok){control=committed.control??before;return json(req,{...rt,ok:false,error:"R2 Course confirmed but backend ownership commit failed; fail-safe dark was issued.",failSafe:committed.failSafe,control,action,family:"r2"},503);}
@@ -509,6 +523,32 @@ const rt=native?await flowShowCommand({on:true,bri:b,ps,"AudioReactive":{"inputL
  const failSafe=await forceSafeDark(sb,"play_show_start_unconfirmed");control=failSafe.control??control;
  return json(req,{...rt,prime,ok:false,error:"Show command was not freshly confirmed; fail-safe dark was issued and mode was set OFF.",failSafe,control,action,family,show:s.name,live,requested:{preset:ps,brightness:b}},503);
 }const committed=await commitVisibleControl(sb,{mode:live?"event":"showcase",auto_live:live,resume_preset:ps,show_family:family,show_preset:ps,last_auto_takeover_at:null,overlay_until:null,live_score_cursor:0,last_live_overlay_kind:"ace",...(live?{min_live_interval_seconds:240}:{})},"play_show_control_commit_failed");if(!committed.ok){control=committed.control??control;return json(req,{...rt,prime,ok:false,error:"Show confirmed but backend ownership commit failed; fail-safe dark was issued.",failSafe:committed.failSafe,control,action,family,show:s.name,live},503);}control=committed.control;return json(req,{...rt,prime,control,action,family,show:s.name,live,requested:{preset:ps,brightness:b},acceptedAsPlaylist:true,renderEngine:native?"local-flow":"legacy"});}
+if(action==="set_live_overlays"){
+ if(control?.mode==="off")return json(req,{ok:true,action,control,enabled:bool(body?.enabled,true),deferred:true});
+ const enabled=bool(body?.enabled,true);
+ control=await setControlState(sb,{auto_live:enabled,mode:enabled?"event":"showcase"});
+ return json(req,{ok:true,action,control,enabled,playbackUnchanged:true});
+}
+if(action==="lock_look"){
+ if(control?.mode==="off")return json(req,{ok:false,error:"Matrix is OFF. Start Course before locking a look.",control,action},409);
+ if(overlayBusy(control))return json(req,{ok:false,error:"Wait for the current card/event to finish before locking.",overlayUntil:control.overlay_until},409);
+ if(String(control?.show_family??"")!=="r2")return json(req,{ok:false,error:"Lock Look is currently available in Course mode.",control,action},409);
+ const probe=await mqttRoundTrip(undefined,null,1800),t=probe?.telemetry??{},cur=Number(t?.preset),b=safeEventBrightness(t?.brightness);
+ if(!courseScenes(control).includes(cur))return json(req,{ok:false,error:"The current Course scene could not be identified.",telemetry:t,control,action},409);
+ const rt=await mqttRoundTripRetry({on:true,bri:b,tt:0,bs:0,ps:cur,"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL},"HBNFFlow":{"enabled":false}},{playlistActive:0,preset:cur,brightness:b},3400,3);
+ if(!rt.confirmed)return json(req,{...rt,ok:false,error:"Look lock was not freshly confirmed; existing playback was preserved.",control,action},503);
+ control=await setControlState(sb,{resume_preset:cur,show_preset:cur});
+ return json(req,{...rt,ok:true,confirmed:true,control,action,playbackMode:"locked",lockedPreset:cur,renderEngine:courseEngine(control)});
+}
+if(action==="resume_auto"){
+ if(control?.mode==="off")return json(req,{ok:false,error:"Matrix is OFF. Start Course before resuming Auto.",control,action},409);
+ if(overlayBusy(control))return json(req,{ok:false,error:"Wait for the current card/event to finish before resuming Auto.",overlayUntil:control.overlay_until},409);
+ if(String(control?.show_family??"")!=="r2")return json(req,{ok:false,error:"Auto is currently available in Course mode.",control,action},409);
+ const b=await currentBrightness(true),rt=await mqttRoundTripRetry(courseAutoPayload(control,b),{playlistActive:1,presetIn:courseScenes(control),brightness:b},4400,3);
+ if(!rt.confirmed)return json(req,{...rt,ok:false,error:"Auto playback was not freshly confirmed.",control,action},503);
+ control=await setControlState(sb,{resume_preset:R2_COURSE_PLAYLIST,show_preset:R2_COURSE_PLAYLIST});
+ return json(req,{...rt,ok:true,confirmed:true,control,action,playbackMode:"auto",shuffle:control?.library_revision===R3_WOW_LIBRARY_REVISION,dwellSeconds:control?.library_revision===R3_WOW_LIBRARY_REVISION?COURSE_AUTO_DUR_TENTHS/10:null,renderEngine:courseEngine(control)});
+}
 if(action==="next_look"){
  if(control?.mode==="off")return json(req,{ok:false,error:"Matrix is OFF. Start an HBNF show before advancing looks.",control,action},409);
  if(overlayBusy(control))return json(req,{ok:false,error:"Another Matrix overlay is active; Next Look is locked until it finishes or BLACKOUT is used.",overlayUntil:control.overlay_until},409);
@@ -516,9 +556,18 @@ if(action==="next_look"){
  if(control?.library_revision===FLOW_LIBRARY_REVISION&&!runtime.ready){const failSafe=await forceSafeDark(sb,"flow_runtime_not_ready_next_look");control=failSafe.control??control;return json(req,{ok:false,error:"HBNF Flow runtime is not ready; fail-safe dark was issued.",failSafe,control,action},503);}
  const family=String(control?.show_family??"field"),b=await currentBrightness(true);
  if(family==="r2"){
-  const rt=await mqttRoundTripRetry({np:true,bri:b,"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL},"HBNFFlow":{"enabled":false}},{playlistActive:1,presetIn:courseScenes(control),brightness:b},3800,3);
-  if(!rt.confirmed)return json(req,{...rt,ok:false,error:"Next Look was not freshly confirmed; existing local Course playback was preserved.",control,action,localPlaybackPreserved:true},503);
-  return json(req,{...rt,ok:true,confirmed:true,control,action,advancedPlaylist:true,renderEngine:courseEngine(control)});
+  const probe=await mqttRoundTrip(undefined,null,1600),pt=probe?.telemetry??{},scenes=courseScenes(control),cur=Number(pt?.preset),auto=Number(pt?.playlistActive)===1&&scenes.includes(cur),locked=courseLocked(control)&&Number(pt?.playlistActive)!==1&&scenes.includes(cur);
+  if(locked){
+   const i=scenes.indexOf(cur),next=scenes[(i+1)%scenes.length],rt=await mqttRoundTripRetry({on:true,bri:b,tt:COURSE_AUTO_TRANSITION_TENTHS,bs:0,ps:next,"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL},"HBNFFlow":{"enabled":false}},{playlistActive:0,preset:next,brightness:b},3600,3);
+   if(!rt.confirmed)return json(req,{...rt,ok:false,error:"Next locked look was not freshly confirmed; current look was preserved.",control,action,localPlaybackPreserved:true},503);
+   control=await setControlState(sb,{resume_preset:next,show_preset:next});
+   return json(req,{...rt,ok:true,confirmed:true,control,action,playbackMode:"locked",lockedPreset:next,advancedLockedLook:true,renderEngine:courseEngine(control)});
+  }
+  const payload=auto?{np:true,bri:b,"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL},"HBNFFlow":{"enabled":false}}:courseAutoPayload(control,b);
+  const rt=await mqttRoundTripRetry(payload,{playlistActive:1,presetIn:scenes,brightness:b},4400,3);
+  if(!rt.confirmed)return json(req,{...rt,ok:false,error:auto?"Next Look was not freshly confirmed; existing Course playback was preserved.":"Course Auto recovery was not freshly confirmed; existing local playback was preserved.",control,action,localPlaybackPreserved:true,courseDriftDetected:!auto},503);
+  if(!auto)control=await setControlState(sb,{resume_preset:R2_COURSE_PLAYLIST,show_preset:R2_COURSE_PLAYLIST});
+  return json(req,{...rt,ok:true,confirmed:true,control,action,playbackMode:"auto",advancedPlaylist:auto,courseDriftRepaired:!auto,shuffle:control?.library_revision===R3_WOW_LIBRARY_REVISION,renderEngine:courseEngine(control)});
  }
  if(SHOWS[family]){
   const rt=await mqttRoundTripRetry({np:true,bri:b},{playlistActive:1,presetIn:SHOWS[family].looks,brightness:b},3500,3);
@@ -546,7 +595,7 @@ if(action==="brightness"){
  const family=String(control?.show_family??""),s=SHOWS[family],status=await mqttRoundTrip(undefined,null,1500);
  if(control?.library_revision===FLOW_LIBRARY_REVISION&&!flowReady(status?.telemetry)){const failSafe=await forceSafeDark(sb,"flow_runtime_not_ready_brightness");control=failSafe.control??control;return json(req,{ok:false,error:"HBNF Flow runtime is not ready; fail-safe dark was issued.",failSafe,control,action},503);}
  let payload:any={on:true,bri,tt:6,bs:TRANSITION_STYLE},expected:any={brightness:bri},restoredShow=false;
- if(family==="r2"&&control?.mode!=="off"){const curPs=Number(status?.telemetry?.preset),curPlaylist=Number(status?.telemetry?.playlistActive),lost=curPlaylist!==1||!courseScenes(control).includes(curPs);if(lost){payload={on:true,bri,tt:0,bs:0,ps:R2_COURSE_PLAYLIST,"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL},"HBNFFlow":{"enabled":false}};expected={playlistActive:1,presetIn:courseScenes(control),brightness:bri};restoredShow=true;}}
+ if(family==="r2"&&control?.mode!=="off"){const curPs=Number(status?.telemetry?.preset),curPlaylist=Number(status?.telemetry?.playlistActive),locked=courseLocked(control);if(locked){payload={on:true,bri,tt:0,bs:0,ps:Number(control.resume_preset),"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL},"HBNFFlow":{"enabled":false}};expected={playlistActive:0,preset:Number(control.resume_preset),brightness:bri};}else{const lost=curPlaylist!==1||!courseScenes(control).includes(curPs);if(lost){payload=courseAutoPayload(control,bri);expected={playlistActive:1,presetIn:courseScenes(control),brightness:bri};restoredShow=true;}}}
  if(s&&control?.mode!=="off"){const curPs=Number(status?.telemetry?.preset),curPlaylist=Number(status?.telemetry?.playlistActive),lost=curPlaylist!==1||!s.looks.includes(curPs);if(lost){payload={on:true,bri,tt:TRANSITION_TENTHS,bs:TRANSITION_STYLE,...flowArm(500),ps:s.playlist,"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL}};expected={playlistActive:1,presetIn:s.looks,brightness:bri};restoredShow=true;}}
  const rt=await mqttRoundTripRetry(payload,expected,3000,3);
  if(!rt.confirmed){if(family==="r2")return json(req,{...rt,ok:false,error:"Brightness change was not freshly confirmed; existing local Course playback was preserved.",control,action,requested:{brightness:bri,advanced},restoredShow,localPlaybackPreserved:true},503);const failSafe=await forceSafeDark(sb,"brightness_unconfirmed");control=failSafe.control??control;return json(req,{...rt,ok:false,error:"Brightness change was not freshly confirmed; fail-safe dark was issued.",failSafe,control,action,requested:{brightness:bri,advanced},restoredShow},503);}
@@ -557,12 +606,14 @@ if(action==="audio_sensitivity"){const level=clamp(body?.level,64,255,AUDIO_INPU
 if(action==="preset"){
  if(control?.mode==="off")return json(req,{ok:false,error:"Matrix is OFF. Start an HBNF show before selecting a look.",control,action},409);
  if(overlayBusy(control))return json(req,{ok:false,error:"Another Matrix overlay is active; preset changes are locked until it finishes or BLACKOUT is used.",overlayUntil:control.overlay_until},409);
- const ps=clamp(body?.preset,0,250,40);if(!CURATED_PRESETS.has(ps)||ps>=50)return json(req,{ok:false,error:"Preset is not an individual HBNF look."},400);
- const b=await currentBrightness(true),runtime=await flowRuntime(),native=runtime.ready&&control?.library_revision===FLOW_LIBRARY_REVISION;
+ const ps=clamp(body?.preset,0,250,40),courseScene=control?.library_revision===R3_WOW_LIBRARY_REVISION&&R3_WOW_SCENES.includes(ps);
+ if(!courseScene&&(!CURATED_PRESETS.has(ps)||ps>=50))return json(req,{ok:false,error:"Preset is not an individual HBNF look."},400);
+ const b=await currentBrightness(true),runtime=await flowRuntime(),native=!courseScene&&runtime.ready&&control?.library_revision===FLOW_LIBRARY_REVISION;
  if(control?.library_revision===FLOW_LIBRARY_REVISION&&!runtime.ready){const failSafe=await forceSafeDark(sb,"flow_runtime_not_ready_preset");control=failSafe.control??control;return json(req,{ok:false,error:"HBNF Flow runtime is not ready; fail-safe dark was issued.",failSafe,control,action},503);}
- const rt=native?await flowShowCommand({on:true,bri:b,ps},{preset:ps,brightness:b},2800):await mqttRoundTripRetry({on:true,bri:b,tt:TRANSITION_TENTHS,bs:TRANSITION_STYLE,ps},{preset:ps,brightness:b},2800,3);
+ const rt=native?await flowShowCommand({on:true,bri:b,ps},{preset:ps,brightness:b},2800):await mqttRoundTripRetry({on:true,bri:b,tt:courseScene?COURSE_AUTO_TRANSITION_TENTHS:TRANSITION_TENTHS,bs:TRANSITION_STYLE,ps,"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL},"HBNFFlow":{"enabled":false}},{preset:ps,playlistActive:0,brightness:b},3200,3);
  if(!rt.confirmed){const failSafe=await forceSafeDark(sb,"preset_unconfirmed");control=failSafe.control??control;return json(req,{...rt,ok:false,error:"Preset was not freshly confirmed; fail-safe dark was issued.",failSafe,control,action,requested:{preset:ps}},503);}
- const committed=await commitVisibleControl(sb,{mode:"manual",auto_live:false,resume_preset:ps,show_preset:ps,show_family:"manual"},"preset_control_commit_failed");if(!committed.ok){control=committed.control??control;return json(req,{...rt,ok:false,error:"Preset confirmed but backend ownership commit failed; fail-safe dark was issued.",failSafe:committed.failSafe,control,action},503);}control=committed.control;return json(req,{...rt,control,action,requested:{preset:ps}});
+ const patch=courseScene?{resume_preset:ps,show_preset:ps,show_family:"r2"}:{mode:"manual",auto_live:false,resume_preset:ps,show_preset:ps,show_family:"manual"};
+ const committed=await commitVisibleControl(sb,patch,"preset_control_commit_failed");if(!committed.ok){control=committed.control??control;return json(req,{...rt,ok:false,error:"Preset confirmed but backend ownership commit failed; fail-safe dark was issued.",failSafe:committed.failSafe,control,action},503);}control=committed.control;return json(req,{...rt,control,action,requested:{preset:ps},playbackMode:courseScene?"locked":"manual"});
 }
 if(action==="random_showcase"){
  if(control?.mode==="off")return json(req,{ok:false,error:"Matrix is OFF. Start an HBNF show before selecting a random look.",control,action},409);
@@ -576,6 +627,27 @@ if(action==="random_showcase"){
  control=committed.control;return json(req,{...rt,control,action,requested:{preset:next},renderEngine:native?"local-flow":"legacy"});
 }
 if(action==="effect"){if(control?.mode==="off")return json(req,{ok:false,error:"Matrix is OFF. Start an HBNF show before changing effects.",control,action},409);if(overlayBusy(control))return json(req,{ok:false,error:"Another Matrix overlay is active; effect changes are locked until it finishes or BLACKOUT is used.",overlayUntil:control.overlay_until},409);const fx=clamp(body?.effect,0,254,198),sx=clamp(body?.speed,0,255,128),ix=clamp(body?.intensity,0,255,128),pal=clamp(body?.palette,0,255,0),seg:any={id:0,on:true,sel:true,fx,fxdef:bool(body?.loadDefaults,false),sx,ix,pal};for(const key of["c1","c2"]){if(body?.[key]!==undefined)seg[key]=clamp(body[key],0,255,128);}if(body?.c3!==undefined)seg.c3=clamp(body.c3,0,31,16);for(const key of["o1","o2","o3","rev","mi","rY","mY","tp"]){if(body?.[key]!==undefined)seg[key]=bool(body[key],false);}if(body?.m12!==undefined)seg.m12=clamp(body.m12,0,4,0);if(body?.bm!==undefined)seg.bm=clamp(body.bm,0,16,0);if(body?.si!==undefined)seg.si=clamp(body.si,0,3,0);if(body?.primaryColor)seg.col=[hexRgb(cleanHex(body.primaryColor)),hexRgb(cleanHex(body.secondaryColor,"#000000")),hexRgb(cleanHex(body.tertiaryColor,"#000000"))];const b=await currentBrightness(false),runtime=await flowRuntime();if(control?.library_revision===FLOW_LIBRARY_REVISION&&!runtime.ready){const failSafe=await forceSafeDark(sb,"flow_runtime_not_ready_effect");control=failSafe.control??control;return json(req,{ok:false,error:"HBNF Flow runtime is not ready; fail-safe dark was issued.",failSafe,control,action},503);}const native=runtime.ready&&control?.library_revision===FLOW_LIBRARY_REVISION,rt=await mqttRoundTripRetry(native?{on:true,bri:b,tt:0,bs:0,...flowArm(150),seg:[seg,baseLayer()]}:{on:true,bri:b,tt:Math.max(TRANSITION_TENTHS,clamp(body?.transition,0,30,TRANSITION_TENTHS)),bs:TRANSITION_STYLE,seg:[seg,baseLayer()]},{effect:fx,speed:sx,intensity:ix,palette:pal,brightness:b},3600,3);if(!rt.confirmed){const failSafe=await forceSafeDark(sb,"effect_unconfirmed");control=failSafe.control??control;return json(req,{...rt,ok:false,error:"Effect was not freshly confirmed; fail-safe dark was issued.",failSafe,control,action},503);}const committed=await commitVisibleControl(sb,{mode:"manual",auto_live:false,show_family:"manual"},"effect_control_commit_failed");if(!committed.ok){control=committed.control??control;return json(req,{...rt,ok:false,error:"Effect confirmed but backend ownership commit failed; fail-safe dark was issued.",failSafe:committed.failSafe,control,action},503);}control=committed.control;return json(req,{...rt,control,action,requested:{effect:fx,speed:sx,intensity:ix,palette:pal}});}
+if(action==="lock_current"){
+ if(control?.mode==="off")return json(req,{ok:false,error:"Matrix is OFF. Start Course before locking a look.",control,action},409);
+ if(overlayBusy(control))return json(req,{ok:false,error:"An overlay is active; lock after it clears.",overlayUntil:control.overlay_until},409);
+ const probe=await mqttRoundTrip(undefined,null,1800),t=probe?.telemetry??{},p=Number(t?.preset),allowed=courseScenes(control);
+ if(!allowed.includes(p))return json(req,{ok:false,error:"Current look is not a Course scene; start Course first.",currentPreset:p,control,action},409);
+ const b=Math.max(1,Math.min(NIGHT_MAX,Math.round(Number(t?.brightness)||8)));
+ const rt=await mqttRoundTripRetry({on:true,bri:b,tt:0,bs:0,ps:p,"AudioReactive":{"inputLevel":AUDIO_INPUT_LEVEL},"HBNFFlow":{"enabled":false}},{preset:p,playlistActive:0,brightness:b},3400,3);
+ if(!rt.confirmed)return json(req,{...rt,ok:false,error:"Could not freshly confirm the locked look.",control,action},503);
+ const committed=await commitVisibleControl(sb,{mode:"event",auto_live:false,resume_preset:p,show_family:"r2",show_preset:p,overlay_until:null},"lock_current_commit_failed");
+ if(!committed.ok)return json(req,{...rt,ok:false,error:"Look locked on device but backend ownership commit failed.",failSafe:committed.failSafe,control:committed.control,action},503);
+ return json(req,{...rt,ok:true,confirmed:true,locked:true,preset:p,control:committed.control,action});
+}
+if(action==="resume_auto"||action==="unlock"){
+ if(control?.mode==="off")return json(req,{ok:false,error:"Matrix is OFF. Start Course first.",control,action},409);
+ if(overlayBusy(control))return json(req,{ok:false,error:"An overlay is active; resume Auto after it clears.",overlayUntil:control.overlay_until},409);
+ const b=await currentBrightness(true),rt=await mqttRoundTripRetry(courseAutoPayload(control,b),{playlistActive:1,presetIn:courseScenes(control),brightness:b},4200,3);
+ if(!rt.confirmed)return json(req,{...rt,ok:false,error:"Could not freshly confirm Course Auto.",control,action},503);
+ const committed=await commitVisibleControl(sb,{mode:"event",auto_live:false,resume_preset:R2_COURSE_PLAYLIST,show_family:"r2",show_preset:R2_COURSE_PLAYLIST,overlay_until:null},"resume_auto_commit_failed");
+ if(!committed.ok)return json(req,{...rt,ok:false,error:"Course Auto started but backend ownership commit failed.",failSafe:committed.failSafe,control:committed.control,action},503);
+ return json(req,{...rt,ok:true,confirmed:true,locked:false,auto:true,control:committed.control,action:"resume_auto"});
+}
 if(action==="cinematic"){const type=cleanText(body?.eventType,40).toLowerCase(),allowed=new Set(["ace","skin_win","compound_ace_skin","round_phase","skins_results","glow_results","manual_cinematic"]);if(!allowed.has(type))return json(req,{ok:false,error:"Unknown cinematic type."},400);const key=cleanText(body?.idempotencyKey,160)||crypto.randomUUID(),out=await sb.rpc("hbnf_request_cinematic",{p_idempotency_key:key,p_event_type:type,p_payload:body?.payload??{},p_priority:clamp(body?.priority,1,100,40),p_ttl_seconds:clamp(body?.ttlSeconds,1,600,90)});if(out.error)throw out.error;return json(req,{ok:true,control,action,event:out.data});}
 if(action==="wow_event_selftest"){return json(req,{ok:true,action,...wowEventSelfTest()});}
 if(action==="quick_event"||action==="ace"||action==="nice_shot"||action==="nice_putt"||action==="ctp"||action==="skins"||action==="glow"){
