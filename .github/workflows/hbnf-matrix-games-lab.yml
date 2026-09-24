@@ -1,0 +1,40 @@
+name: HBNF Matrix Games Lab host gates
+
+on:
+  push:
+    branches:
+      - hbnf-matrix-games-lab-20260923
+    paths:
+      - 'hbnf-game-lab/**'
+      - '.github/workflows/hbnf-matrix-games-lab.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Strict host compile
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic             hbnf-game-lab/test_game_core.cpp -o /tmp/hbnf-game-tests
+          /tmp/hbnf-game-tests | tee /tmp/hbnf-game-tests.log
+
+      - name: ASan + UBSan
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O1 -g -Wall -Wextra -Werror -pedantic             -fsanitize=address,undefined -fno-omit-frame-pointer             hbnf-game-lab/test_game_core.cpp -o /tmp/hbnf-game-tests-sanitized
+          ASAN_OPTIONS=detect_leaks=1:halt_on_error=1           UBSAN_OPTIONS=halt_on_error=1             /tmp/hbnf-game-tests-sanitized | tee /tmp/hbnf-game-tests-sanitized.log
+
+      - name: Contract marker
+        run: |
+          set -euo pipefail
+          grep -q 'Nothing in this directory is deployed to the Matrix' hbnf-game-lab/README.md
+          grep -q 'START+SELECT' hbnf-game-lab/README.md
+          grep -q 'Wi-Fi/BLE discovery arbitration tests' hbnf-game-lab/README.md
+          echo "HBNF_GAME_LAB_HOST_GATE=PASS"
