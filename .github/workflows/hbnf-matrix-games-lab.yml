@@ -24,12 +24,21 @@ jobs:
           set -euo pipefail
           g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic             hbnf-game-lab/test_game_core.cpp -o /tmp/hbnf-game-tests
           /tmp/hbnf-game-tests | tee /tmp/hbnf-game-tests.log
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            hbnf-game-lab/test_ddp_frame.cpp -o /tmp/hbnf-ddp-tests
+          /tmp/hbnf-ddp-tests | tee /tmp/hbnf-ddp-tests.log
 
       - name: ASan + UBSan
         run: |
           set -euo pipefail
           g++ -std=c++17 -O1 -g -Wall -Wextra -Werror -pedantic             -fsanitize=address,undefined -fno-omit-frame-pointer             hbnf-game-lab/test_game_core.cpp -o /tmp/hbnf-game-tests-sanitized
           ASAN_OPTIONS=detect_leaks=1:halt_on_error=1           UBSAN_OPTIONS=halt_on_error=1             /tmp/hbnf-game-tests-sanitized | tee /tmp/hbnf-game-tests-sanitized.log
+          g++ -std=c++17 -O1 -g -Wall -Wextra -Werror -pedantic \
+            -fsanitize=address,undefined -fno-omit-frame-pointer \
+            hbnf-game-lab/test_ddp_frame.cpp -o /tmp/hbnf-ddp-tests-sanitized
+          ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 \
+          UBSAN_OPTIONS=halt_on_error=1 \
+            /tmp/hbnf-ddp-tests-sanitized | tee /tmp/hbnf-ddp-tests-sanitized.log
 
       - name: Contract marker
         run: |
