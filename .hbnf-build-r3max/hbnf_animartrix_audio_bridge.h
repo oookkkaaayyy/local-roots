@@ -12,7 +12,7 @@ class AnimartrixAudioBridge {
  public:
   AnimartrixAudioBridge(){ reset(); }
   void reset(){
-    lastMs_=0; frame_=0; active_=false; width_=32; height_=16; profile_=PROFILE_BALANCED; style_=STYLE_CLEAN; amount_=0;
+    lastMs_=0; frame_=0; active_=false; width_=32; height_=16; profile_=PROFILE_BALANCED; style_=STYLE_CLEAN; amount_=0; sceneId_=0;
     bass8_=mid8_=treble8_=pulse8_=energy8_=impact8_=drop8_=0; burstLife_=0; burstRadius16_=0; prevImpact8_=0;
     for(auto &s:sparks_){s.life=0;s.x16=s.y16=s.vx16=s.vy16=0;}
     vibe_.reset();
@@ -36,7 +36,7 @@ class AnimartrixAudioBridge {
   }
 
   void modulate(int x,int y,uint8_t &r,uint8_t &g,uint8_t &b) const {
-    if(!active_ || amount_==0) return;
+    if(!active_ || amount_==0){ applySceneTint(r,g,b); return; }
     const uint16_t musical=(uint16_t)energy8_+(uint16_t)pulse8_;
     const uint8_t extra=(uint8_t)(((uint32_t)amount_*musical*46u)/(255u*510u));
     if(extra){ r=satAdd(r,(uint8_t)(((uint16_t)r*extra)>>8)); g=satAdd(g,(uint8_t)(((uint16_t)g*extra)>>8)); b=satAdd(b,(uint8_t)(((uint16_t)b*extra)>>8)); }
@@ -107,8 +107,10 @@ class AnimartrixAudioBridge {
         r=blend8(r,warm.r,anti); g=blend8(g,warm.g,anti); b=blend8(b,warm.b,anti);
       }
     }
+    applySceneTint(r,g,b);
   }
 
+  void setScene(uint8_t id) { sceneId_=id; }
   bool active() const { return active_; }
   WowStyle style() const { return style_; }
   VibeProfile profile() const { return profile_; }
@@ -127,6 +129,7 @@ class AnimartrixAudioBridge {
   uint32_t lastMs_=0,frame_=0;
   bool active_=false;
   uint16_t width_=32,height_=16;
+  uint8_t sceneId_=0;
   VibeProfile profile_=PROFILE_BALANCED;
   WowStyle style_=STYLE_CLEAN;
   uint8_t amount_=0,bass8_=0,mid8_=0,treble8_=0,pulse8_=0,energy8_=0,impact8_=0,drop8_=0;
@@ -139,6 +142,21 @@ class AnimartrixAudioBridge {
   static uint8_t max8(uint8_t a,uint8_t b){return a>b?a:b;}
   static uint8_t satAdd(uint8_t a,uint8_t b){uint16_t x=(uint16_t)a+b;return x>255?255:(uint8_t)x;}
   static uint8_t blend8(uint8_t a,uint8_t b,uint8_t m){return (uint8_t)(((uint16_t)a*(255-m)+(uint16_t)b*m+127)/255);}
+  void applySceneTint(uint8_t &r,uint8_t &g,uint8_t &b) const {
+    if(sceneId_<220 || sceneId_>247) return;
+    static const uint8_t tint[28][3]={
+      {75,255,170},{255,190,40},{45,245,220},{185,255,55},{190,110,255},{255,225,55},{45,245,130},
+      {245,80,210},{255,120,80},{55,240,205},{170,255,55},{205,155,255},{255,145,35},{70,235,160},
+      {255,235,205},{255,95,170},{255,205,45},{65,245,95},{215,110,235},{255,125,25},{100,255,190},
+      {255,245,90},{55,235,235},{245,105,190},{115,245,70},{255,130,110},{55,235,185},{255,220,170}
+    };
+    const uint8_t peak=max8(r,max8(g,b)); if(peak<4) return;
+    const uint8_t i=(uint8_t)(sceneId_-220),mix=104;
+    const uint8_t tr=(uint8_t)(((uint16_t)tint[i][0]*peak+127)/255);
+    const uint8_t tg=(uint8_t)(((uint16_t)tint[i][1]*peak+127)/255);
+    const uint8_t tb=(uint8_t)(((uint16_t)tint[i][2]*peak+127)/255);
+    r=blend8(r,tr,mix); g=blend8(g,tg,mix); b=blend8(b,tb,mix);
+  }
   static uint8_t scaledMix(uint8_t source,uint8_t cap){return (uint8_t)(((uint16_t)source*cap)>>8);}
   static WowStyle styleFromCode(uint8_t v){ if(v<32)return STYLE_CLEAN; if(v<80)return STYLE_PUNCH; if(v<128)return STYLE_RING; if(v<176)return STYLE_SPARK; if(v<224)return STYLE_CHROMA; return STYLE_HYBRID; }
   static Rgb8 accentForProfile(VibeProfile p){

@@ -17,15 +17,15 @@ s=p.read_text()
 for old,new in [
  ("hbnf-wow-r3-max-2026-09-21-v3","hbnf-wow-aux-r3-2026-09-22-v1"),
  ("r3-wow-max","aux-r3-wow-1d"),
- ("registry28-fixed-v3","registry28-fixed-1d-v1"),
+ ("registry28-fixed-v4-colorwifi","registry28-fixed-1d-v2-colorwifi"),
  ('root["HBNFWOW"]','root["HBNFAUX"]'),
  ('root.createNestedObject("HBNFWOW")','root.createNestedObject("HBNFAUX")'),
  ('PSTR("%s/wow")','PSTR("%s/auxwow")'),
 ]:
     s=s.replace(old,new)
 
-mqtt_old='\\\"buildWitness\\\":\\\"registry28-fixed-1d-v1\\\",\\\"fxRegistered\\\"'
-mqtt_new='\\\"buildWitness\\\":\\\"registry28-fixed-1d-v1\\\",\\\"projection\\\":\\\"fold2-1d-v1\\\",\\\"fxRegistered\\\"'
+mqtt_old='\\\"buildWitness\\\":\\\"registry28-fixed-1d-v2-colorwifi\\\",\\\"fxRegistered\\\"'
+mqtt_new='\\\"buildWitness\\\":\\\"registry28-fixed-1d-v2-colorwifi\\\",\\\"projection\\\":\\\"fold2-1d-v1\\\",\\\"fxRegistered\\\"'
 if s.count(mqtt_old)!=1:
     raise RuntimeError(f"MQTT witness anchor mismatch: {s.count(mqtt_old)}")
 s=s.replace(mqtt_old,mqtt_new,1)
@@ -98,8 +98,8 @@ if s.count(pixel_old)!=1:
 s=s.replace(pixel_old,pixel_new,1)
 
 
-old="hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, SEGMENT.custom1, SEGMENT.custom2, SEGMENT.virtualWidth(), SEGMENT.virtualHeight())"
-new="hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, hbnfAuxStyleForMode(SEGMENT.mode, SEGMENT.custom1), hbnfAuxAmountForMode(SEGMENT.mode, SEGMENT.custom2), num_x, num_y)"
+old="(hbnfAudio.setScene(SEGMENT.mode), hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, SEGMENT.custom1, SEGMENT.custom2, SEGMENT.virtualWidth(), SEGMENT.virtualHeight()))"
+new="(hbnfAudio.setScene(SEGMENT.mode), hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, hbnfAuxStyleForMode(SEGMENT.mode, SEGMENT.custom1), hbnfAuxAmountForMode(SEGMENT.mode, SEGMENT.custom2), num_x, num_y))"
 if s.count(old)!=1:
     raise RuntimeError(f"audio mapping anchor mismatch: {s.count(old)}")
 s=s.replace(old,new,1)
@@ -130,7 +130,7 @@ ar.write_text(a)
 
 checks={
  p:[
-  "hbnf-wow-aux-r3-2026-09-22-v1","aux-r3-wow-1d","registry28-fixed-1d-v1",
+  "hbnf-wow-aux-r3-2026-09-22-v1","aux-r3-wow-1d","registry28-fixed-1d-v2-colorwifi",
   "hbnfAuxStyleForMode","hbnfAuxAmountForMode","hbnfCanvasH = 2","SEGMENT.virtualLength()",'root["HBNFAUX"]',
   'PSTR("%s/auxwow")','\\\"projection\\\":\\\"fold2-1d-v1\\\"','wow["projection"] = "fold2-1d-v1"',
   'strip.addEffect(220, &mode_Complex_Kaleido_3','strip.addEffect(247, &mode_Module_Experiment10'

@@ -19,7 +19,7 @@ def once(old:str,new:str,label:str):
 once("#include <ANIMartRIX.h>","#define ANIMartRIX_NO_SERPENTINE\n#include <ANIMartRIX.h>","no-serpentine")
 once("if (SEGENV.call == 0) {","if ((SEGENV.call == 0) || (SEGMENT.virtualWidth() != num_x) || (SEGMENT.virtualHeight() != num_y)) {","dimension-reinit")
 once("hbnfAudio.apply(speedFactor, millis())",
-     "hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, SEGMENT.custom1, SEGMENT.custom2, SEGMENT.virtualWidth(), SEGMENT.virtualHeight())",
+     "(hbnfAudio.setScene(SEGMENT.mode), hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, SEGMENT.custom1, SEGMENT.custom2, SEGMENT.virtualWidth(), SEGMENT.virtualHeight()))",
      "audio-begin-frame")
 
 public_anchor="\tpublic:\n\tvoid initEffect() {"
@@ -65,7 +65,7 @@ telemetry="""    void addToJsonState(JsonObject& root) override {
       if (wow.isNull()) wow = root.createNestedObject("HBNFWOW");
       wow["release"] = "hbnf-wow-r3-max-2026-09-21-v3";
       wow["engine"] = "r3-wow-max";
-      wow["buildWitness"] = "registry28-fixed-v3";
+      wow["buildWitness"] = "registry28-fixed-v4-colorwifi";
       wow["fxRegistered"] = hbnfFxRegistered;
       wow["fxFailed"] = hbnfFxFailed;
       wow["modeCount"] = strip.getModeCount();
@@ -98,6 +98,11 @@ loop_pat=r"""    void loop\(\) \{
     \}"""
 loop_new="""    void loop() {
       if (strip.isUpdating()) return;
+      static unsigned long hbnfWifiAssistAt = 0;
+      if (WiFi.status() != WL_CONNECTED && (hbnfWifiAssistAt == 0 || millis() - hbnfWifiAssistAt >= 15000UL)) {
+        forceReconnect = true;
+        hbnfWifiAssistAt = millis();
+      }
 #ifndef WLED_DISABLE_MQTT
       if (millis() - lastTime >= 1000) {
         lastTime = millis();
@@ -106,7 +111,7 @@ loop_new="""    void loop() {
           char payload[480];
           snprintf_P(topic, sizeof(topic), PSTR("%s/wow"), mqttDeviceTopic);
           snprintf_P(payload, sizeof(payload),
-            PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"buildWitness\\\":\\\"registry28-fixed-v3\\\",\\\"fxRegistered\\\":%u,\\\"fxFailed\\\":%u,\\\"modeCount\\\":%u,\\\"fxFirst\\\":%u,\\\"fxLast\\\":%u,\\\"audioActive\\\":%s,\\\"profile\\\":%u,\\\"style\\\":%u,\\\"amount\\\":%u,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u,\\\"pulse\\\":%u,\\\"energy\\\":%u,\\\"impact\\\":%u,\\\"drop\\\":%u}"),
+            PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"buildWitness\\\":\\\"registry28-fixed-v4-colorwifi\\\",\\\"fxRegistered\\\":%u,\\\"fxFailed\\\":%u,\\\"modeCount\\\":%u,\\\"fxFirst\\\":%u,\\\"fxLast\\\":%u,\\\"audioActive\\\":%s,\\\"profile\\\":%u,\\\"style\\\":%u,\\\"amount\\\":%u,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u,\\\"pulse\\\":%u,\\\"energy\\\":%u,\\\"impact\\\":%u,\\\"drop\\\":%u}"),
             hbnfFxRegistered, hbnfFxFailed, strip.getModeCount(), hbnfFxFirst, hbnfFxLast,
             anim.hbnfActive() ? "true" : "false",
             anim.hbnfProfile(), anim.hbnfStyle(), anim.hbnfAmount(),
@@ -200,6 +205,8 @@ checks=[
     (p,"ANIMartRIX_NO_SERPENTINE"),
     (p,"SEGMENT.virtualWidth() != num_x"),
     (p,"hbnfAudio.beginFrame"),
+    (p,"hbnfAudio.setScene(SEGMENT.mode)"),
+    (p,"forceReconnect = true"),
     (p,"hbnfAudio.modulate"),
     (p,'wow["buildWitness"]'),
     (p,'wow["fxRegistered"]'),
