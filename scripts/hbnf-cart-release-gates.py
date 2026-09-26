@@ -17,6 +17,12 @@ control = require("release/source/hbnf-cart-control/index.ts").read_text()
 require("release/source/hbnf-cart-control/deno.json")
 reconcile = require("release/source/hbnf-cart-reconcile/index.ts").read_text()
 require("release/source/hbnf-cart-reconcile/deno.json")
+matrix_adapter = require("release/source/hbnf-matrix-adapter/index.ts").read_text()
+aux_adapter = require("release/source/hbnf-aux-adapter/index.ts").read_text()
+if "inert" in matrix_adapter.lower() or "inert" in aux_adapter.lower():
+    fail("production adapter source contains inert staging marker")
+if "hbnf-matrix-adapter" not in reconcile or "hbnf-aux-adapter" not in reconcile:
+    fail("production reconciler is not bound to release-matched production adapters")
 production_migration = require("release/source/20260926080000_hbnf_cart_core_production.sql")
 staging_migration = require("release/source/20260926053151_hbnf_cart_shadow_staging.sql")
 require("release/source/20260926070000_hbnf_cart_parity_inert_staging.sql")
@@ -78,18 +84,33 @@ for path in (
 ):
     require(path)
 
+def parse_metrics(path):
+    out = {}
+    for line in require(path).read_text().splitlines():
+        if "=" in line:
+            k, v = line.split("=", 1)
+            out[k.strip()] = v.strip()
+    return out
+
 firmware = (
-    ("release/firmware/matrix", "HBNF_WLED16_MAX_WOWMAX_V3.bin",
-     "761a83f2b34f69eaa6ec3a87bcf8b1201c40c41c9d51220284c984f2d8146b8d"),
-    ("release/firmware/aux", "HBNF_SP803E_AUX_R3.bin",
-     "b2ef3045f00e37cdf6e6e4f9864ef831fae59ab5636cf37780b2dbada3e767d4"),
+    ("release/firmware/matrix", "HBNF_WLED16_MAX_WOWMAX_V3.bin", "registry28-semantic-tempo-v6-colorwifi"),
+    ("release/firmware/aux", "HBNF_SP803E_AUX_R3.bin", "registry28-semantic-tempo-1d-v4-colorwifi"),
 )
-for directory, filename, expected_hash in firmware:
+resolved_firmware = {}
+for directory, filename, expected_witness in firmware:
     binary = require(f"{directory}/{filename}")
     manifest = require(f"{directory}/firmware-sha256.txt").read_text().split()[0]
+    metrics = parse_metrics(f"{directory}/FINAL_METRICS.txt")
     actual = sha(binary)
-    if manifest != expected_hash or actual != expected_hash:
-        fail(f"matched firmware identity mismatch: {filename} expected {expected_hash}, metadata {manifest}, binary {actual}")
+    metric_sha = metrics.get("firmware_sha256")
+    if manifest != actual or metric_sha != actual:
+        fail(f"firmware checksum disagreement: {filename} manifest={manifest} metrics={metric_sha} binary={actual}")
+    metric_bytes = int(metrics.get("firmware_bytes", "-1"))
+    if metric_bytes != binary.stat().st_size:
+        fail(f"firmware size disagreement: {filename}")
+    if directory.endswith("/aux") and metrics.get("build_witness") != expected_witness:
+        fail(f"AUX build witness mismatch: {metrics.get('build_witness')} expected {expected_witness}")
+    resolved_firmware[filename] = actual
 
 for directory, expected_hash, expected_size in (
     ("release/rollback/firmware/matrix-r2", "e81adb8523cf3a875d3ce05962d538b7c6cf3f178bfeaf42833678b9c4cd5d10", 1353296),
@@ -107,5 +128,5 @@ print("RELEASE_GATES=PASS")
 print("production_sources=present")
 print("production_migration=inert-and-distinct")
 print("rollback_sources_and_firmware=verified")
-print("matrix_sha256=761a83f2b34f69eaa6ec3a87bcf8b1201c40c41c9d51220284c984f2d8146b8d")
-print("aux_sha256=b2ef3045f00e37cdf6e6e4f9864ef831fae59ab5636cf37780b2dbada3e767d4")
+print(f"matrix_sha256={resolved_firmware['HBNF_WLED16_MAX_WOWMAX_V3.bin']}")
+print(f"aux_sha256={resolved_firmware['HBNF_SP803E_AUX_R3.bin']}")
