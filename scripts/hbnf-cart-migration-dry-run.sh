@@ -93,6 +93,7 @@ export HBNF_CART_RELEASE_SHA256="$(printf '0%.0s' {1..64})"
 export HBNF_MATRIX_FIRMWARE_SHA256="8065fa2fe3cf919839ebe984c444cefc4ee9fca3cd8302a2dcf3f4216bd8bab3"
 export HBNF_AUX_FIRMWARE_SHA256="b2ef3045f00e37cdf6e6e4f9864ef831fae59ab5636cf37780b2dbada3e767d4"
 export MATRIX_BRIGHTNESS=91 AUX_BRIGHTNESS=37
+node "$root/scripts/hbnf-cart-projection-preflight.mjs" "$INITIAL_CART_STATE_JSON" "$HBNF_CART_RELEASE_ID" 1
 
 # Initialization is repeat-safe for the same input and leaves the actuator fence inactive.
 "$root/scripts/hbnf-cart-cutover-init.sh"
