@@ -1,4 +1,5 @@
 name: HBNF Tempo Lock Field Fix package
+# Triggered only after both exact source firmware artifacts have passed their own build gates.
 
 on:
   push:
