@@ -382,9 +382,17 @@ void connectWifi() {
     Serial.println("HBNF_WIFI=NEEDS_PROVISIONING");
     return;
   }
-  WiFi.mode(WIFI_STA);
+  WiFi.mode(WIFI_AP_STA);
   WiFi.setAutoReconnect(true);
   WiFi.persistent(false);
+  const bool ipOk = WiFi.config(
+    IPAddress(192,168,8,30),
+    IPAddress(192,168,8,1),
+    IPAddress(255,255,255,0),
+    IPAddress(192,168,8,1)
+  );
+  if (!ipOk) Serial.println("HBNF_WIFI_STATIC_IP=FAIL");
+  else Serial.println("HBNF_WIFI_STATIC_IP=192.168.8.30");
   WiFi.begin(ssid.c_str(), pass.c_str());
   Serial.printf("HBNF_WIFI_CONNECTING SSID=%s\n", ssid.c_str());
 }
@@ -423,13 +431,13 @@ void processSerial() {
       Serial.printf("HBNF_WIFI_PASS_STORED=PASS LENGTH=%u\n", (unsigned)value.length());
     }
   } else if (line == "WIFI_CONNECT") {
-    WiFi.disconnect(true, false);
+    WiFi.disconnect(false, false);
     delay(50);
     connectWifi();
   } else if (line == "CLEAR_WIFI") {
     prefs.remove("wifi_ssid");
     prefs.remove("wifi_pass");
-    WiFi.disconnect(true, false);
+    WiFi.disconnect(false, false);
     matrixIdentityVerified = false;
     Serial.println("HBNF_WIFI_CLEARED=PASS");
   } else if (line == "CLEAR_PADS") {

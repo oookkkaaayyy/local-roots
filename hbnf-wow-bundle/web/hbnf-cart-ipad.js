@@ -6,6 +6,7 @@ var CONTROL=SUPABASE_URL+'/functions/v1/hbnf-cart-control';
 var ACCESS_KEY='hbnf_ipad_access';
 var REFRESH_KEY='hbnf_ipad_refresh';
 var EXPIRES_KEY='hbnf_ipad_expires';
+var CANONICAL_SESSION_KEY='sb-phcpbvuqibyarpfrftgx-auth-token';
 var revision=0;
 var commandBusy=false;
 var statusNode=document.getElementById('status');
@@ -35,6 +36,16 @@ function parseHash(){
   history.replaceState(null,'',location.pathname+location.search);
  }
 }
+function importCanonicalSession(){
+ var raw=localStorage.getItem(CANONICAL_SESSION_KEY),s=jsonParse(raw),expires=0;
+ if(!s||!s.access_token)return null;
+ localStorage.setItem(ACCESS_KEY,s.access_token);
+ if(s.refresh_token)localStorage.setItem(REFRESH_KEY,s.refresh_token);
+ if(s.expires_at)expires=parseInt(s.expires_at,10)*1000;
+ else expires=Date.now()+(parseInt(s.expires_in||'3600',10)*1000);
+ localStorage.setItem(EXPIRES_KEY,String(expires));
+ return s.access_token;
+}
 function clearSession(){localStorage.removeItem(ACCESS_KEY);localStorage.removeItem(REFRESH_KEY);localStorage.removeItem(EXPIRES_KEY)}
 function refreshToken(done){
  var r=localStorage.getItem(REFRESH_KEY);
@@ -52,6 +63,9 @@ function refreshToken(done){
 }
 function ensureToken(done){
  var a=localStorage.getItem(ACCESS_KEY),e=parseInt(localStorage.getItem(EXPIRES_KEY)||'0',10);
+ if(a&&e>Date.now()+60000){done(a);return}
+ a=importCanonicalSession();
+ e=parseInt(localStorage.getItem(EXPIRES_KEY)||'0',10);
  if(a&&e>Date.now()+60000){done(a);return}
  refreshToken(done);
 }
@@ -118,10 +132,10 @@ function sendMagicLink(){
  var email=document.getElementById('authEmail').value.replace(/^\s+|\s+$/g,'');
  if(!email){authStatus.textContent='Enter your email.';return}
  authStatus.textContent='Sending sign-in link…';
- var redirect=location.origin+location.pathname;
+ var redirect=location.origin+'/hbnf-cart.html';
  xhr('POST',SUPABASE_URL+'/auth/v1/otp?redirect_to='+encodeURIComponent(redirect),{email:email,create_user:false},{
   'Content-Type':'application/json','apikey':SUPABASE_KEY
- },function(code,data){authStatus.textContent=(code>=200&&code<300)?'Sign-in link sent. Open it on this iPad.':'Sign-in failed: '+(data.msg||data.error||('HTTP '+code))});
+ },function(code,data){authStatus.textContent=(code>=200&&code<300)?'Sign-in link sent. Open it on this iPad. After HBNF Cart signs in, return here; this controller reuses the same session.':'Sign-in failed: '+(data.msg||data.error||('HTTP '+code))});
 }
 function bind(){
  var buttons=document.querySelectorAll('[data-command]'),i,b;
