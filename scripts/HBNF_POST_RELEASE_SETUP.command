@@ -24,9 +24,15 @@ echo "Run this only AFTER the current canonical Matrix+AUX update has been physi
 echo "Accepted canonical release base: 8962d34d908e2bbd6971575f0174ff203e797a27"
 echo "This process adds the iPad controller route, configures the dedicated cart LAN, flashes only the game-bridge ESP32, and performs acceptance."
 echo "It does not modify production Supabase and does not flash Matrix or AUX."
-echo
-read -r -p "Type ACCEPTED to confirm the current Matrix+AUX release is physically accepted: " ACCEPTED
-[[ "$ACCEPTED" == "ACCEPTED" ]] || die "current canonical release not confirmed accepted"
+[[ -f config/accepted-release.json ]] || die "bundled accepted-release record missing"
+python3 - <<'PY' || exit 2
+import json
+p=json.load(open("config/accepted-release.json"))
+assert p["release_id"]=="hbnf-cart-foundation-v1-20260925"
+a=p["post_activation_acceptance"]
+assert a["fence_epoch"]==2 and a["matrix_status"]=="online" and a["aux_status"]=="online"
+print("ACCEPTED_RELEASE_RECORD=PASS")
+PY
 
 [[ "$(uname -s)" == "Darwin" ]] || die "this operator kit is staged for the HBNF Mac (macOS)"
 command -v python3 >/dev/null || die "python3 not found"
@@ -80,10 +86,9 @@ PY
   echo "  2. Add SSID HBNF-Cart and the Opal Wi-Fi password."
   echo "  3. Keep the existing network entry. Do NOT delete it."
   echo "  4. Save/apply."
-  gate "HBNF-Cart was added as a SECOND Wi-Fi profile on BOTH Matrix and AUX"
-  echo "Now connect this Mac to HBNF-Cart, then power-cycle Matrix and AUX."
+  echo "After BOTH profiles are saved: connect this Mac to HBNF-Cart, then power-cycle Matrix and AUX."
   echo "If either device fails to move, reconnect the Mac to the old HBNFHotspot; its profile was preserved."
-  gate "Mac is on HBNF-Cart and Matrix/AUX have been power-cycled"
+  gate "HBNF-Cart is saved as a SECOND profile on both devices; Mac is now on HBNF-Cart; Matrix/AUX were power-cycled"
 elif [[ "$INITIAL_STATE" == "TARGET_READY" ]]; then
   echo "Matrix and AUX are already on HBNF-Cart; profile migration is already complete."
 else
@@ -148,40 +153,34 @@ echo "GAME_BRIDGE_IP=192.168.8.30 PASS"
 echo "Guest QR files are in: $HOME/Desktop/HBNF_PLAY_QR"
 
 echo
-echo "PHASE D1 — iPHONE + iPAD CANONICAL CONTROL ACCEPTANCE"
+echo "PHASE D — ONE CONSOLIDATED CART ACCEPTANCE"
+echo "Keep iPhone on the canonical HBNF cart controller."
 echo "On iPad mini 2 open: https://hbnightflyers.com/hbnf-cart-ipad.html"
 echo "If sign-in is needed, request the link there. It intentionally lands on the already-allowed canonical /hbnf-cart.html route."
-echo "After canonical sign-in succeeds, return to /hbnf-cart-ipad.html; it imports the same local session."
-echo "Then:"
-echo "  1. Change Matrix brightness on iPad."
-echo "  2. Use NEXT on iPhone."
-echo "  3. Refresh/observe both and verify the resulting canonical state is correct."
-echo "  4. Verify OFF from either device turns the cart off."
-gate "iPhone and iPad both controlled the same canonical cart correctly"
-
+echo "After sign-in succeeds, return to /hbnf-cart-ipad.html; it imports the same local session."
 echo
-echo "PHASE D2 — GAME SAFETY ACCEPTANCE"
-echo "1. Start game session."
-echo "2. Confirm Snake responds to the active P1 input."
-echo "3. Confirm Pong responds to both active player slots (Stadia and/or web controllers)."
-echo "4. During game, use canonical cart UI to change Matrix brightness."
-echo "5. Issue canonical OFF. Game visuals must stop and Matrix must stay dark."
-echo "6. Turn canonical ON, start a game, exit from menu. CURRENT canonical show must resume."
-gate "All six game safety checks passed"
-
+echo "Run this sequence once:"
+echo "  1. Change Matrix brightness on iPad; use NEXT on iPhone; verify both converge on the same cart state."
+echo "  2. Start a game; verify Snake responds to active P1."
+echo "  3. Verify Pong responds to both active player slots (Stadia and/or web controllers)."
+echo "  4. During game, change Matrix brightness from a canonical controller."
+echo "  5. Issue canonical OFF; game visuals must stop and Matrix must stay dark."
+echo "  6. Turn canonical ON, start a game, exit; the CURRENT canonical show must resume."
+echo "  7. On iPad game controls, run the latency sample and play Snake for 2-3 minutes."
+echo "     Target: median <= 50 ms, p95 <= 80 ms, no obvious missed/repeated touches."
+echo "  8. Optionally scan HBNF-Play Wi-Fi QR with another phone and verify guest P2."
+echo "  9. With iPhone hotspot/upstream OFF, verify HBNF-Cart local control still works."
+echo " 10. Restore optional upstream and verify Matrix+AUX normal music/show sync."
+echo " 11. Reconnect a game controller, exit game, then issue canonical global OFF."
 echo
-echo "PHASE D3 — TOUCHSCREEN GAME QUALITY"
-echo "On the iPad game page, claim P1 and run the built-in latency sample."
-echo "Acceptance target: median <= 50 ms AND p95 <= 80 ms, with no obvious missed/repeated touches during 2-3 minutes of Snake."
-echo "Optionally scan the generated HBNF-Play Wi-Fi QR with another phone and repeat as guest P2."
-echo
-read -r -p "If touchscreen play genuinely feels good and meets the target, type TOUCH. Otherwise type STADIA: " TOUCH_MODE
+read -r -p "Touchscreen gaming genuinely passed? Type TOUCH; otherwise type STADIA: " TOUCH_MODE
 case "$TOUCH_MODE" in
   TOUCH) TOUCH_RESULT="ACCEPTED" ;;
   STADIA) TOUCH_RESULT="NOT_ACCEPTED_STADIA_PRIMARY" ;;
   *) die "enter TOUCH or STADIA" ;;
 esac
 echo "TOUCHSCREEN_GAME=$TOUCH_RESULT"
+gate "All consolidated cart acceptance checks above passed"
 
 echo
 echo "PHASE E — UV REVIEW ONLY"
@@ -190,12 +189,6 @@ echo "Capture current AUX cfg.json before selecting a spare pin."
 echo "Run: python3 scripts/hbnf-cart-uv-pin-plan.py <AUX_CFG_JSON>"
 echo "Only continue UV if relay, pin/polarity, 5V-bank current, and default-OFF behavior are physically verified."
 echo "UV may remain separate without blocking router/controllers/games."
-
-echo
-echo "PHASE F — FINAL CART ACCEPTANCE"
-echo "Test local HBNF-Cart LAN with iPhone hotspot OFF, then optional internet upstream ON."
-echo "Verify normal Matrix+AUX music/show sync, controller reconnect, game exit, and canonical global OFF."
-gate "Final cart-wide acceptance passed"
 
 cat > "$EVIDENCE/RESULT.txt" <<EOF
 HBNF_POST_RELEASE_SETUP=PASS
