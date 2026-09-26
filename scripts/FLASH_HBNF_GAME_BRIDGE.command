@@ -6,11 +6,10 @@ FACTORY="HBNF_GAME_BRIDGE_FACTORY.bin"
 [[ -f "SHA256SUMS.txt" ]] || { echo "ERROR: SHA256SUMS.txt missing"; exit 3; }
 shasum -a 256 -c SHA256SUMS.txt >/dev/null || { echo "ERROR: artifact hash verification failed"; exit 4; }
 
-mapfile -t PORTS < <(
-  for p in /dev/cu.usbserial* /dev/cu.SLAB_USBtoUART* /dev/cu.wchusbserial* /dev/cu.usbmodem*; do
-    [[ -e "$p" ]] && printf '%s\n' "$p"
-  done | LC_ALL=C sort -u
-)
+PORTS=()
+for p in /dev/cu.usbserial* /dev/cu.SLAB_USBtoUART* /dev/cu.wchusbserial* /dev/cu.usbmodem*; do
+  [[ -e "$p" ]] && PORTS+=("$p")
+done
 if [[ ${#PORTS[@]} -ne 1 ]]; then
   echo "ERROR: connect exactly ONE ESP32 USB board and no other USB-serial device."
   printf 'Detected: %s\n' "${PORTS[*]:-(none)}"
