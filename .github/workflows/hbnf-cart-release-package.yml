@@ -147,7 +147,7 @@ jobs:
           aux_installer_pin_commit=c357391434137bc6458a045b7b617b6aa647f816
           aux_firmware_sha256=b2ef3045f00e37cdf6e6e4f9864ef831fae59ab5636cf37780b2dbada3e767d4
           aux_firmware_bytes=1345216
-          matrix_firmware_sha256=8065fa2fe3cf919839ebe984c444cefc4ee9fca3cd8302a2dcf3f4216bd8bab3
+          matrix_firmware_sha256=761a83f2b34f69eaa6ec3a87bcf8b1201c40c41c9d51220284c984f2d8146b8d
           production_control_source_included=YES
           production_reconcile_source_included=YES
           production_adapter_baselines_included=hbnf-matrix-control_v171,hbnf-aux-control_v14
