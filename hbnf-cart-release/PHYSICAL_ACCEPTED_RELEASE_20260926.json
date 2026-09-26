@@ -1,0 +1,38 @@
+{
+  "release_id": "hbnf-cart-foundation-v1-20260925",
+  "canonical_release_artifact_id": "10916857568",
+  "canonical_release_packaging_commit": "98706490395355352c5e37158439f6ac51dc8c34",
+  "canonical_release_inner_zip_sha256": "3a32a4d4522d547b1529039bd8138ded932a8542290075c89c3a35cdeacad80e",
+  "physical_firmware_override": {
+    "reason": "The newer semantic-tempo OTA images did not persist on the physical controllers during field cutover. The proven tempo-lock pair was installed and verified instead; no cause is asserted here.",
+    "matrix": {
+      "build_run": "36207806022",
+      "artifact_id": "10893879226",
+      "firmware_sha256": "002eb576809138064a176a00fd38a40acff225c769bf214159c82a96f55f4ff8",
+      "build_witness": "registry28-tempo-lock-v5-colorwifi",
+      "brightness": 1,
+      "ip_at_cutover": "192.168.68.88"
+    },
+    "aux": {
+      "build_run": "36208156962",
+      "artifact_id": "10894932658",
+      "firmware_sha256": "a874a22c80e5b1d5c67d08a2568fd80a41adeb97a592fc4da633bf8c14e1632f",
+      "build_witness": "registry28-tempo-lock-1d-v3-colorwifi",
+      "brightness": 255,
+      "ip_at_cutover": "192.168.68.90"
+    }
+  },
+  "backend": {
+    "hbnf-cart-control": {"version": 2, "sha256": "f1c9eedb47f91da14ee9e4fc4b50f1d3ac8df6d5a3d423d008d145f1b10949cb"},
+    "hbnf-cart-reconcile": {"version": 2, "sha256": "4f335a6be36148b40bd4d8206770b536814a440d7a261d66f661b52aa3d146f3"},
+    "hbnf-matrix-adapter": {"version": 2, "sha256": "a4c6b9227ece74c285d0a9b92467178acc64b29fb2a7a198fbaed3d8d391c2f4"},
+    "hbnf-aux-adapter": {"version": 1, "sha256": "04509b70486c98c09b86bc7fcb25fa3ec8b73930c31a19b26bc664499fa23e7b"}
+  },
+  "ui": {
+    "cloudflare_version": "7490b60b-7a46-4c92-9eb7-b111d5e64465",
+    "canonical_path": "/hbnf-cart.html",
+    "authenticated_status_200_verified": true
+  },
+  "pre_activation_backup": "/Users/andrew/Desktop/HBNF_CANONICAL_PREMATCH_BACKUP_20260926-151706",
+  "fence_before_activation": {"epoch": 1, "active": false}
+}
