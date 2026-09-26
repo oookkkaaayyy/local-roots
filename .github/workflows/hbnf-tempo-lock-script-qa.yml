@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   qa:
@@ -81,16 +82,16 @@ jobs:
             sha256sum HBNF_WLED16_MAX_WOWMAX_V3_TEMPO_LOCK.bin HBNF_SP803E_AUX_R3_TEMPO_LOCK.bin rollback/HBNF_WLED16_MAX_WOWMAX_V3_PRE_TEMPO_LOCK.bin rollback/HBNF_SP803E_AUX_R3_PRE_TEMPO_LOCK.bin > SHA256SUMS
             sha256sum -c SHA256SUMS
           )
-          cat > "$OUT/BUILD_INFO.txt" <<EOF
-HBNF TEMPO LOCK FIELD FIX
-Matrix new run: $MATRIX_NEW_RUN
-AUX new run: $AUX_NEW_RUN
-Matrix rollback run: $MATRIX_OLD_RUN
-AUX rollback run: $AUX_OLD_RUN
-Matrix target witness: registry28-tempo-lock-v5-colorwifi
-AUX target witness: registry28-tempo-lock-1d-v3-colorwifi
-Behavioral contract: audio may change visual accents/intensity, but never multiplies animation tempo.
-EOF
+          printf '%s\n' \
+            'HBNF TEMPO LOCK FIELD FIX' \
+            "Matrix new run: $MATRIX_NEW_RUN" \
+            "AUX new run: $AUX_NEW_RUN" \
+            "Matrix rollback run: $MATRIX_OLD_RUN" \
+            "AUX rollback run: $AUX_OLD_RUN" \
+            'Matrix target witness: registry28-tempo-lock-v5-colorwifi' \
+            'AUX target witness: registry28-tempo-lock-1d-v3-colorwifi' \
+            'Behavioral contract: audio may change visual accents/intensity, but never multiplies animation tempo.' \
+            > "$OUT/BUILD_INFO.txt"
           bash -n "$OUT/INSTALL_TEMPO_LOCK.command"
           cd /tmp
           zip -qr HBNF_TEMPO_LOCK_FIELD_FIX_2026-09-25.zip HBNF_TEMPO_LOCK_FIELD_FIX_2026-09-25
