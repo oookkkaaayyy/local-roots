@@ -23,6 +23,7 @@ jobs:
           set -euo pipefail
           python3 -m py_compile hbnf-phone-installer/make_phone_shortcut.py
           bash -n hbnf-phone-installer/PREPARE_HBNF_PHONE_INSTALL.command
+          bash -n hbnf-phone-installer/BUILD_FROM_PROVEN_RUNS.command
           python3 hbnf-phone-installer/make_phone_shortcut.py /tmp/HBNF_Field_Install.shortcut
           python3 - <<'PY'
           import plistlib, pathlib
@@ -57,3 +58,7 @@ jobs:
           PY
           grep -q 'shortcuts sign --mode anyone' hbnf-phone-installer/PREPARE_HBNF_PHONE_INSTALL.command
           grep -q 'No production mutation performed' hbnf-phone-installer/PREPARE_HBNF_PHONE_INSTALL.command
+          grep -q '36233161859' hbnf-phone-installer/BUILD_FROM_PROVEN_RUNS.command
+          grep -q '36233563104' hbnf-phone-installer/BUILD_FROM_PROVEN_RUNS.command
+          grep -q 'bf8abe71b3e35200705e74c93afad6f89119f9c706d12e0914dc95b2fa4e1493' hbnf-phone-installer/BUILD_FROM_PROVEN_RUNS.command
+          grep -q 'b3d6cd706bf1a09f5d78f859e9e1e9092d9a86634047f3359cc5594673bdb2f3' hbnf-phone-installer/BUILD_FROM_PROVEN_RUNS.command
