@@ -31,3 +31,77 @@ jobs:
           grep -q 'Attempting automatic rollback' "$F"
           ! grep -q '192\.168\.68\.' "$F"
           echo HBNF_TEMPO_LOCK_INSTALLER_STATIC_QA_PASS
+
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: oookkkaaayyy/local-roots
+      MATRIX_NEW_RUN: "36207806022"
+      AUX_NEW_RUN: "36208156962"
+      MATRIX_OLD_RUN: "35952919486"
+      AUX_OLD_RUN: "35958014396"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch exact proven firmware artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/new-matrix /tmp/new-aux /tmp/old-matrix /tmp/old-aux
+          gh run download "$MATRIX_NEW_RUN" -R "$REPO" -n HBNF-WLED16-WOW-MAX-V3 -D /tmp/new-matrix
+          gh run download "$AUX_NEW_RUN" -R "$REPO" -n HBNF-SP803E-AUX-R3 -D /tmp/new-aux
+          gh run download "$MATRIX_OLD_RUN" -R "$REPO" -n HBNF-WLED16-WOW-MAX-V3 -D /tmp/old-matrix
+          gh run download "$AUX_OLD_RUN" -R "$REPO" -n HBNF-SP803E-AUX-R3 -D /tmp/old-aux
+      - name: Verify and package
+        shell: bash
+        run: |
+          set -euo pipefail
+          strings /tmp/new-matrix/HBNF_WLED16_MAX_WOWMAX_V3.bin | grep -q 'registry28-tempo-lock-v5-colorwifi'
+          strings /tmp/new-aux/HBNF_SP803E_AUX_R3.bin | grep -q 'registry28-tempo-lock-1d-v3-colorwifi'
+          strings /tmp/old-matrix/HBNF_WLED16_MAX_WOWMAX_V3.bin | grep -q 'registry28-fixed-v4-colorwifi'
+          strings /tmp/old-aux/HBNF_SP803E_AUX_R3.bin | grep -q 'registry28-fixed-1d-v2-colorwifi'
+          grep -q 'return clampSpeed(baseSpeed);' /tmp/new-matrix/hbnf_animartrix_audio_bridge.h
+          ! grep -q 'baseSpeed\*vibe_\.profileFactor' /tmp/new-matrix/hbnf_animartrix_audio_bridge.h
+          grep -q 'PASS WOW MAX bridge/render; speed 1.00' /tmp/new-matrix/wowmax-bridge.log
+          grep -q 'SECOND_CLEAN_BUILD_BYTE_IDENTICAL=PASS' /tmp/new-matrix/FINAL_METRICS.txt
+          grep -q 'SECOND_CLEAN_BUILD_BYTE_IDENTICAL=PASS' /tmp/new-aux/FINAL_METRICS.txt
+          grep -q 'build_witness=registry28-tempo-lock-1d-v3-colorwifi' /tmp/new-aux/FINAL_METRICS.txt
+
+          OUT=/tmp/HBNF_TEMPO_LOCK_FIELD_FIX_2026-09-25
+          mkdir -p "$OUT/rollback"
+          cp hbnf-tempo-lock-field-fix/INSTALL_TEMPO_LOCK.command "$OUT/"
+          chmod 755 "$OUT/INSTALL_TEMPO_LOCK.command"
+          cp /tmp/new-matrix/HBNF_WLED16_MAX_WOWMAX_V3.bin "$OUT/HBNF_WLED16_MAX_WOWMAX_V3_TEMPO_LOCK.bin"
+          cp /tmp/new-aux/HBNF_SP803E_AUX_R3.bin "$OUT/HBNF_SP803E_AUX_R3_TEMPO_LOCK.bin"
+          cp /tmp/old-matrix/HBNF_WLED16_MAX_WOWMAX_V3.bin "$OUT/rollback/HBNF_WLED16_MAX_WOWMAX_V3_PRE_TEMPO_LOCK.bin"
+          cp /tmp/old-aux/HBNF_SP803E_AUX_R3.bin "$OUT/rollback/HBNF_SP803E_AUX_R3_PRE_TEMPO_LOCK.bin"
+          (
+            cd "$OUT"
+            sha256sum HBNF_WLED16_MAX_WOWMAX_V3_TEMPO_LOCK.bin HBNF_SP803E_AUX_R3_TEMPO_LOCK.bin rollback/HBNF_WLED16_MAX_WOWMAX_V3_PRE_TEMPO_LOCK.bin rollback/HBNF_SP803E_AUX_R3_PRE_TEMPO_LOCK.bin > SHA256SUMS
+            sha256sum -c SHA256SUMS
+          )
+          cat > "$OUT/BUILD_INFO.txt" <<EOF
+HBNF TEMPO LOCK FIELD FIX
+Matrix new run: $MATRIX_NEW_RUN
+AUX new run: $AUX_NEW_RUN
+Matrix rollback run: $MATRIX_OLD_RUN
+AUX rollback run: $AUX_OLD_RUN
+Matrix target witness: registry28-tempo-lock-v5-colorwifi
+AUX target witness: registry28-tempo-lock-1d-v3-colorwifi
+Behavioral contract: audio may change visual accents/intensity, but never multiplies animation tempo.
+EOF
+          bash -n "$OUT/INSTALL_TEMPO_LOCK.command"
+          cd /tmp
+          zip -qr HBNF_TEMPO_LOCK_FIELD_FIX_2026-09-25.zip HBNF_TEMPO_LOCK_FIELD_FIX_2026-09-25
+          unzip -t HBNF_TEMPO_LOCK_FIELD_FIX_2026-09-25.zip
+          sha256sum HBNF_TEMPO_LOCK_FIELD_FIX_2026-09-25.zip > HBNF_TEMPO_LOCK_FIELD_FIX_2026-09-25.zip.sha256
+          echo HBNF_TEMPO_LOCK_PACKAGE_QA_PASS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HBNF-TEMPO-LOCK-FIELD-FIX
+          path: |
+            /tmp/HBNF_TEMPO_LOCK_FIELD_FIX_2026-09-25.zip
+            /tmp/HBNF_TEMPO_LOCK_FIELD_FIX_2026-09-25.zip.sha256
+          if-no-files-found: error
+          retention-days: 30
