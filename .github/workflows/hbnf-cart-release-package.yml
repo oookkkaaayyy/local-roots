@@ -53,10 +53,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          deno check supabase/functions/hbnf-cart-control/index.ts
-          deno check supabase/functions/hbnf-cart-reconcile/index.ts
-          deno check supabase/functions/hbnf-matrix-adapter/index.ts
-          deno check supabase/functions/hbnf-aux-adapter/index.ts
+          deno check --node-modules-dir=auto supabase/functions/hbnf-cart-control/index.ts
+          deno check --node-modules-dir=auto supabase/functions/hbnf-cart-reconcile/index.ts
+          deno check --node-modules-dir=auto supabase/functions/hbnf-matrix-adapter/index.ts
+          deno check --node-modules-dir=auto supabase/functions/hbnf-aux-adapter/index.ts
       - name: Resolve newest completed matched firmware runs
         id: matched
         env:
