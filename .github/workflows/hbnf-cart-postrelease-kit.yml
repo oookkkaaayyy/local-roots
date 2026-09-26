@@ -52,6 +52,7 @@ jobs:
           bash -n "$K/START_HBNF_CART_FINISH.command"
           bash -n "$K/scripts/HBNF_POST_RELEASE_SETUP.command"
           bash -n "$K/web/DEPLOY_HBNF_IPAD_UI.command"
+          node "$K/web/HBNF_CART_IPAD_TEST.cjs"
           python3 "$K/scripts/hbnf-cart-network-state.py" --selftest
           python3 "$K/scripts/hbnf-cart-device-preflight.py" --selftest
           python3 "$K/scripts/hbnf-cart-lan-discover.py" --selftest
