@@ -16,31 +16,35 @@ class AnimartrixAudioBridge {
     lastMs_=0; frame_=0; active_=false; width_=32; height_=16; profile_=PROFILE_BALANCED; style_=STYLE_CLEAN; amount_=0; sceneId_=0;
     bass8_=mid8_=treble8_=pulse8_=energy8_=impact8_=drop8_=0; burstLife_=0; burstRadius16_=0; prevImpact8_=0;
     for(auto &s:sparks_){s.life=0;s.x16=s.y16=s.vx16=s.vy16=0;}
-    vibe_.reset(); music_.reset();
+    music_.reset(); tempoScale_=1.0f;
   }
 
-  float beginFrame(float baseSpeed,uint32_t nowMs,uint8_t profileCode,uint8_t styleCode,uint8_t amount,uint16_t width,uint16_t height){
+  float beginFrame(float baseSpeed,uint32_t nowMs,uint8_t profileCode,uint8_t styleCode,uint8_t amount,uint16_t width,uint16_t height,bool autoTempo=false){
     width_=width?width:1; height_=height?height:1; profile_=profileFromIntensity(profileCode); style_=styleFromCode(styleCode); amount_=amount; ++frame_;
+    const float dt=lastMs_?((uint32_t)(nowMs-lastMs_)/1000.0f):0.021f; lastMs_=nowMs;
+    const float frameDt=dt<0.005f?0.005f:(dt>0.100f?0.100f:dt);
     um_data_t *um=nullptr;
     if(!UsermodManager::getUMData(&um,USERMOD_ID_AUDIOREACTIVE) || !um || um->u_size<3 || !um->u_data || !um->u_data[0] || !um->u_data[2]){
-      active_=false; return clampSpeed(baseSpeed);
+      active_=false; updateTempo(frameDt,autoTempo); return clampSpeed(baseSpeed*(autoTempo?tempoScale_:1.0f));
     }
     float volume=*reinterpret_cast<float*>(um->u_data[0]);
     uint8_t *fft=reinterpret_cast<uint8_t*>(um->u_data[2]);
-    float dt=lastMs_?((nowMs-lastMs_)/1000.0f):0.021f; lastMs_=nowMs;
-    if(dt<0.005f)dt=0.005f; if(dt>0.100f)dt=0.100f;
-    const VibeMetrics m=vibe_.update(fft,volume,dt); active_=true;
+    active_=true;
     semantic_=music_.update(fft,(volume<=1.0f?0.0f:(volume>=255.0f?255.0f:volume)),nowMs);
-    bass8_=unit8(m.bassPulse); mid8_=unit8(m.midPulse); treble8_=unit8(m.treblePulse); pulse8_=unit8(m.pulse);
-    energy8_=unit8(m.energy); impact8_=unit8(m.impact); drop8_=unit8(m.drop);
-    updateOverlays((uint16_t)(dt*1000.0f+0.5f));
-    // Audio changes color/intensity/accents only. Animation tempo must remain user-controlled.
-    return clampSpeed(baseSpeed);
+    bass8_=unit8(semantic_.bass*0.65f+semantic_.bassAccent*0.35f);
+    mid8_=unit8(semantic_.mids*0.65f+semantic_.midsAccent*0.35f);
+    treble8_=unit8(semantic_.treble*0.65f+semantic_.trebleAccent*0.35f);
+    pulse8_=unit8(clampUnit(semantic_.bassAccent*0.35f+semantic_.midsAccent*0.25f+semantic_.onset*0.40f));
+    energy8_=unit8(semantic_.energy);
+    impact8_=unit8(semantic_.onset*0.42f); drop8_=0;
+    updateTempo(frameDt,autoTempo);
+    updateOverlays((uint16_t)(frameDt*1000.0f+0.5f));
+    return clampSpeed(baseSpeed*(autoTempo?tempoScale_:1.0f));
   }
 
   void modulate(int x,int y,uint8_t &r,uint8_t &g,uint8_t &b) const {
     if(!active_ || amount_==0){ applySceneTint(r,g,b); return; }
-    const uint16_t musical=(uint16_t)energy8_+(uint16_t)pulse8_;
+    const uint16_t musical=(uint16_t)energy8_+(uint16_t)mid8_;
     const uint8_t extra=(uint8_t)(((uint32_t)amount_*musical*46u)/(255u*510u));
     if(extra){ r=satAdd(r,(uint8_t)(((uint16_t)r*extra)>>8)); g=satAdd(g,(uint8_t)(((uint16_t)g*extra)>>8)); b=satAdd(b,(uint8_t)(((uint16_t)b*extra)>>8)); }
 
@@ -51,9 +55,19 @@ class AnimartrixAudioBridge {
     const int d2=dx2*dx2+dy2*dy2;
     const int maxd2=cx2*cx2+cy2*cy2;
 
+    // Distinct semantic bands: bass gives the center/depth pulse, mids fill the body,
+    // and treble creates sparse detail. All channels are MusicIntelligence outputs.
+    const bool centerBand=d2 < (maxd2*5)/16;
+    if(bass8_){ const uint8_t v=scaledMix(bass8_,centerBand?82:18); if(v>mix){mix=v;accent={255,88,34};} }
+    if(mid8_){ const uint8_t v=scaledMix(mid8_,44); if(v>mix){mix=v;accent={218,255,92};} }
+    if(treble8_>28){
+      const uint8_t gate=(uint8_t)((x*29+y*47+(int)(frame_&255u)*13)&255);
+      if(gate<(uint8_t)(treble8_>>2)){ const uint8_t v=scaledMix(treble8_,86); if(v>mix){mix=v;accent={238,250,255};} }
+    }
+
     if(style_==STYLE_PUNCH || style_==STYLE_HYBRID){
       const bool center=d2 < (maxd2*5)/16;
-      const uint8_t source=(profile_==PROFILE_BASS?bass8_:(profile_==PROFILE_MID?mid8_:pulse8_));
+      const uint8_t source=center?bass8_:mid8_;
       if(center) mix=max8(mix,scaledMix(source,86)); else mix=max8(mix,scaledMix(source,28));
     }
 
@@ -78,15 +92,11 @@ class AnimartrixAudioBridge {
         const int px=(s.x16+8)>>4, py=(s.y16+8)>>4, ax=x-px, ay=y-py;
         if(ax*ax+ay*ay<=1){ mix=max8(mix,scaledMix(s.life,164)); accent={255,235,190}; }
       }
-      if(treble8_>80){
-        const uint8_t h=(uint8_t)((x*29+y*47+(int)(frame_&255u)*13)&255);
-        if(h < (uint8_t)(treble8_>>3)){ mix=max8(mix,scaledMix(treble8_,72)); accent={255,255,235}; }
-      }
     }
 
     if(style_!=STYLE_CLEAN){
       const uint8_t hit=max8(impact8_,drop8_);
-      if(hit>80){
+      if(hit>48){
         const bool cross=(x==(int)(width_/2) || y==(int)(height_/2) || x+y==(int)(width_/2+height_/2));
         if(cross){ mix=max8(mix,scaledMix(hit,118)); accent={255,244,218}; }
       }
@@ -129,7 +139,6 @@ class AnimartrixAudioBridge {
 
  private:
   struct Spark { int16_t x16=0,y16=0,vx16=0,vy16=0; uint8_t life=0; };
-  Vibe16 vibe_;
   MusicIntelligence music_;
   MusicSemantics semantic_{};
   uint32_t lastMs_=0,frame_=0;
@@ -142,6 +151,7 @@ class AnimartrixAudioBridge {
   uint8_t burstLife_=0,prevImpact8_=0;
   uint16_t burstRadius16_=0;
   Spark sparks_[8];
+  float tempoScale_=1.0f;
 
   static float clampSpeed(float x){ if(!isfinite(x))return 1.0f; return x<0.10f?0.10f:(x>10.0f?10.0f:x); }
   static uint8_t unit8(float x){ if(!isfinite(x)||x<=0.0f)return 0; if(x>=1.0f)return 255; return (uint8_t)(x*255.0f+0.5f); }
@@ -176,12 +186,32 @@ class AnimartrixAudioBridge {
     }
   }
 
+  void updateTempo(float dt,bool autoTempo){
+    float target=1.0f;
+    if(autoTempo && semantic_.confidence>=0.48f){
+      const float vibeTarget=vibeTempoBias(semantic_.vibe);
+      if(semantic_.tempoValid && semantic_.tempoConfidence>=0.52f){
+        target=clampTempo(semantic_.stableTempoBias*0.72f+vibeTarget*0.28f);
+      } else if(semantic_.vibe!=MUSIC_MODERATE && semantic_.confidence>=0.55f){
+        target=vibeTarget;
+      }
+    }
+    const float tau=(target==1.0f)?4.0f:3.0f;
+    tempoScale_ += (target-tempoScale_)*(1.0f-expf(-dt/tau));
+    tempoScale_=clampTempo(tempoScale_);
+  }
+  static float clampUnit(float x){return !isfinite(x)?0.0f:(x<0.0f?0.0f:(x>1.0f?1.0f:x));}
+  static float clampTempo(float x){return !isfinite(x)?1.0f:(x<0.72f?0.72f:(x>1.42f?1.42f:x));}
+  static float vibeTempoBias(MusicVibe v){
+    switch(v){case MUSIC_MELLOW:return 0.78f;case MUSIC_ENERGETIC:return 1.18f;case MUSIC_PEAK:return 1.30f;default:return 1.0f;}
+  }
+
   void updateOverlays(uint16_t dtMs){
     uint8_t step=(uint8_t)(dtMs<12?1:(dtMs>80?4:(dtMs+10)/20)); if(step<1)step=1;
     if(burstLife_){ uint16_t dec=(uint16_t)step*16; burstLife_=(dec>=burstLife_)?0:(uint8_t)(burstLife_-dec); burstRadius16_+=(uint16_t)step*11; }
     for(auto &s:sparks_){ if(!s.life)continue; s.x16+=(int16_t)(s.vx16*step); s.y16+=(int16_t)(s.vy16*step); uint16_t dec=(uint16_t)step*17; s.life=(dec>=s.life)?0:(uint8_t)(s.life-dec); }
     const uint8_t trigger=max8(impact8_,drop8_);
-    if(trigger>150 && prevImpact8_<=150) spawnBurst(trigger);
+    if(trigger>64 && prevImpact8_<=64) spawnBurst(trigger);
     prevImpact8_=trigger;
   }
 
