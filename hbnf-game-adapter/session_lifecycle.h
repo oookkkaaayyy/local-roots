@@ -29,6 +29,7 @@ class SessionLifecycle {
     return SessionEvent::None;
   }
 
+  void forceStart(){ active_=true; holdSince_=0; latched_=true; }
   void forceEnd(){ active_=false; holdSince_=0; latched_=true; }
   bool active() const { return active_; }
 

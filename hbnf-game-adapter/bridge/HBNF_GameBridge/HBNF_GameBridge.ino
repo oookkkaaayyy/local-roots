@@ -220,7 +220,7 @@ bool isHostClient(uint8_t num) {
 }
 
 void broadcastGameState() {
-  const String msg = String("STATE,") + (guestPlayEnabled ? "1" : "0") + "," + (sessionActive ? "1" : "0");
+  String msg = String("STATE,") + (guestPlayEnabled ? "1" : "0") + "," + (sessionActive ? "1" : "0");
   gameWs.broadcastTXT(msg);
 }
 
@@ -295,7 +295,7 @@ void onGameWsEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length) 
   if (host && msg == "SESSION,START") {
     if (!sessionActive) {
       const uint32_t now = millis();
-      if (startSession(now)) lifecycle.forceEnd(); // explicit host start owns lifecycle outside combo state
+      if (startSession(now)) lifecycle.forceStart(); // keep host-web and gamepad session lifecycle identical
       else gameWs.sendTXT(num, "ERR,SESSION_START_BLOCKED");
       broadcastGameState();
     }
