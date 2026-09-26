@@ -31,7 +31,9 @@ for token in ("hbnf_cart_commit_command", "cart_desired_state", "cart_device_obs
         fail(f"production migration missing required object: {token}")
 if not re.search(r"insert into hbnf_internal\.cart_actuator_fence[^;]*values\s*\(\s*'hbnf-cart'\s*,\s*1\s*,\s*'hbnf-cart-foundation-v1-20260925'\s*,\s*false\s*\)", code, re.S):
     fail("migration must seed only the expected inactive fence")
-for forbidden in (r"active\s*=\s*true", r"active\s+boolean[^,;]*default\s+true",
+if not re.search(r"cart_actuator_fence\s*\([^;]*?active\s+boolean\s+not\s+null\s+default\s+false", code, re.S):
+    fail("actuator fence must default inactive")
+for forbidden in (r"active\s*=\s*true",
                   r"\bmqtt\b", r"\bhttps?://", r"\bfetch\s*\(", r"pg_net",
                   r"hbnf-matrix-control", r"hbnf-aux-control", r"network\s+request"):
     if re.search(forbidden, code, re.I):
