@@ -7,6 +7,8 @@ on:
       - 'hbnf-uv-control/**'
       - 'docs/HBNF_CART_*'
       - 'scripts/hbnf-cart-parallel-staging-qa.sh'
+      - 'scripts/HBNF_POST_RELEASE_SETUP.command'
+      - 'scripts/hbnf-cart-postrelease-operator-audit.py'
       - '.github/workflows/hbnf-cart-parallel-staging.yml'
   workflow_dispatch:
 permissions:

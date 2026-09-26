@@ -14,6 +14,8 @@ node hbnf-uv-control/test_uv_guard.mjs
 python3 scripts/hbnf-cart-device-preflight.py --selftest
 python3 scripts/hbnf-cart-lan-discover.py --selftest
 python3 scripts/hbnf-cart-uv-pin-plan.py --selftest
+python3 scripts/hbnf-cart-postrelease-operator-audit.py
+bash -n scripts/HBNF_POST_RELEASE_SETUP.command
 bash -n scripts/hbnf-cart-postrelease-overlay.sh
 bash -n scripts/FLASH_HBNF_GAME_BRIDGE.command
 python3 -m py_compile scripts/provision_hbnf_game_bridge.py
