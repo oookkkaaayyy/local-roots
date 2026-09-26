@@ -13,7 +13,8 @@ int main(){
  hbnf::AnimartrixAudioBridge b;g.ok=false;assert(b.beginFrame(4.25f,100,96,216,220,32,16)==4.25f);auto n=sample(b,16,8);assert(n[0]==70&&n[1]==80&&n[2]==90);
  hbnf::AnimartrixAudioBridge hue;hue.setScene(220);assert(hue.beginFrame(1.0f,120,96,176,205,32,16)==1.0f);auto h0=sample(hue,8,8);hue.setScene(221);auto h1=sample(hue,8,8);hue.setScene(226);auto h6=sample(hue,8,8);assert(h0!=h1&&h1!=h6&&h0!=h6);
  uint8_t fft[16];float vol=90;void* ptrs[3]={&vol,nullptr,fft};um_data_t u;u.u_size=3;u.u_data=ptrs;g.ok=true;g.d=&u;
- for(int t=0;t<1000;t+=20){fill(fft,0,false);b.beginFrame(1.0f,t,16,56,220,32,16);}fill(fft,0,true);vol=190;float sp=b.beginFrame(1.0f,1000,16,56,220,32,16);assert(sp==1.0f);for(int t=1020;t<=1300;t+=20){fill(fft,0,true);vol=220;assert(b.beginFrame(1.0f,t,216,240,230,32,16)==1.0f);}\n auto center=sample(b,16,8),edge=sample(b,0,0);assert(center[0]>=edge[0]);assert((center!=std::array<int,3>{70,80,90}));
+ for(int t=0;t<1000;t+=20){fill(fft,0,false);b.beginFrame(1.0f,t,16,56,220,32,16);}fill(fft,0,true);vol=190;float sp=b.beginFrame(1.0f,1000,16,56,220,32,16);assert(sp==1.0f);for(int t=1020;t<=1300;t+=20){fill(fft,0,true);vol=220;assert(b.beginFrame(1.0f,t,216,240,230,32,16)==1.0f);}
+ auto center=sample(b,16,8),edge=sample(b,0,0);assert(center[0]>=edge[0]);assert((center!=std::array<int,3>{70,80,90}));
  hbnf::AnimartrixAudioBridge h;vol=90;for(int t=0;t<1000;t+=20){fill(fft,0,false);h.beginFrame(1.0f,t,216,240,230,32,16);}fill(fft,0,true);vol=200;h.beginFrame(1.0f,1000,216,240,230,32,16);auto c0=sample(h,16,8),c1=sample(h,3,3),c2=sample(h,29,12);assert(c0!=c1||c1!=c2);for(auto q:{c0,c1,c2})for(int v:q)assert(v>=0&&v<=255);
  // Strongly blue source frames must retain source detail but gain sparse warm diversity instead of remaining all-blue.
  hbnf::AnimartrixAudioBridge blue;vol=90;for(int t=0;t<800;t+=20){fill(fft,1,false);blue.beginFrame(1.0f,t,96,176,205,32,16);}
