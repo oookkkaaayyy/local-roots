@@ -4,6 +4,11 @@ on:
     branches: [hbnf-cart-foundation-v1-20260925]
     paths:
       - '.github/workflows/hbnf-cart-release-package.yml'
+      - 'supabase/functions/hbnf-cart-control/**'
+      - 'supabase/functions/hbnf-cart-reconcile/**'
+      - 'supabase/migrations/20260926080000_hbnf_cart_core_production.sql'
+      - 'scripts/hbnf-cart-*'
+      - 'docs/HBNF_CART_PRODUCTION_CUTOVER.md'
   workflow_dispatch:
 permissions:
   actions: read
