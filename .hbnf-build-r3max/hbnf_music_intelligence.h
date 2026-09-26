@@ -21,7 +21,7 @@ class MusicIntelligence {
     bassSlow_=midSlow_=trebleSlow_=centroidSlow_=0; prevEnergy_=onsetPulse_=0; clipFrames_=0; frames_=0;
     for(uint8_t i=0;i<16;i++) prevBins_[i]=0;
     for(uint8_t i=0;i<7;i++) onsetTimes_[i]=0;
-    onsetCount_=onsetPos_=0; vibe_=MUSIC_MODERATE; vibeChangedMs_=0; lastOnsetMs_=0;
+    onsetCount_=onsetPos_=0; vibe_=MUSIC_MODERATE; candidateVibe_=MUSIC_MODERATE; vibeChangedMs_=0; candidateSinceMs_=0; lastOnsetMs_=0;
   }
 
   MusicSemantics update(const uint8_t fft[16], float volume, uint32_t nowMs, bool hardwareClipping=false) {
@@ -52,7 +52,14 @@ class MusicIntelligence {
     const float confidence=clampf(0.25f+fminf(0.35f,energySlow_*0.45f)+fminf(0.25f,(tempoValid?0.8f:0)*0.25f)+dynamics*0.15f-(clipFrames_>4?0.22f:0)-(energySlow_<=floor_*1.35f?0.15f:0),0,1);
     const float bpm=tempoValid?tempoBpm_:0;
     const MusicVibe proposed=classify(energySlow_,tempoValid?bpm:0,onsetCount_/7.0f);
-    if(proposed!=vibe_ && (uint32_t)(nowMs-vibeChangedMs_)>=1800 && confidence>=0.42f) { vibe_=proposed; vibeChangedMs_=nowMs; }
+    if(proposed==vibe_) {
+      candidateVibe_=vibe_; candidateSinceMs_=nowMs;
+    } else {
+      if(proposed!=candidateVibe_) { candidateVibe_=proposed; candidateSinceMs_=nowMs; }
+      else if((uint32_t)(nowMs-candidateSinceMs_)>=1800 && confidence>=0.42f) {
+        vibe_=proposed; vibeChangedMs_=nowMs; candidateVibe_=vibe_; candidateSinceMs_=nowMs;
+      }
+    }
     const float total=bassSlow_+midSlow_+trebleSlow_;
     MusicSemantics out;
     out.bass=ratio(bassSlow_,total); out.mids=ratio(midSlow_,total); out.treble=ratio(trebleSlow_,total);
@@ -83,9 +90,9 @@ class MusicIntelligence {
     float cv=sqrtf(variance/n)/avg; if(cv>0.16f || matching<5)return false;
     tempoBpm_=roundf(60000.0f/avg);tempoConfidence_=clampf((1-cv/0.22f)*(matching/(float)n),0,1);return true;
   }
-  uint32_t lastMs_=0,vibeChangedMs_=0,lastOnsetMs_=0,onsetTimes_[7]{};
+  uint32_t lastMs_=0,vibeChangedMs_=0,candidateSinceMs_=0,lastOnsetMs_=0,onsetTimes_[7]{};
   float floor_=0.035f,energyFast_=0,energySlow_=0,bassFast_=0,midFast_=0,trebleFast_=0,bassSlow_=0,midSlow_=0,trebleSlow_=0,centroidSlow_=0,prevEnergy_=0,onsetPulse_=0,tempoBpm_=0,tempoConfidence_=0;
-  float prevBins_[16]{}; uint8_t clipFrames_=0,frames_=0,onsetCount_=0,onsetPos_=0; MusicVibe vibe_=MUSIC_MODERATE;
+  float prevBins_[16]{}; uint8_t clipFrames_=0,frames_=0,onsetCount_=0,onsetPos_=0; MusicVibe vibe_=MUSIC_MODERATE,candidateVibe_=MUSIC_MODERATE;
 };
 
 } // namespace hbnf
