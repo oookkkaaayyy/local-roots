@@ -49,6 +49,9 @@ for path in (
     "release/source/scripts/hbnf-cart-production-activate.sql",
     "release/source/scripts/hbnf-cart-production-readiness.sql",
     "release/source/scripts/hbnf-cart-cutover-init.sh",
+    "release/source/scripts/hbnf-cart-migration-dry-run.sh",
+    "release/source/scripts/hbnf-cart-projection-preflight.mjs",
+    "release/source/scripts/hbnf-cart-release-gates.py",
     "release/source/docs/HBNF_CART_PRODUCTION_CUTOVER.md",
 ):
     require(path)
