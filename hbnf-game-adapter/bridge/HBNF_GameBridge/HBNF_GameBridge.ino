@@ -3,12 +3,17 @@
 #include <HTTPClient.h>
 #include <Preferences.h>
 #include <WiFi.h>
-#include <WiFiUdp.h>\n#include <WebServer.h>\n#include <WebSocketsServer.h>\n#include <DNSServer.h>
+#include <WiFiUdp.h>
+#include <WebServer.h>
+#include <WebSocketsServer.h>
+#include <DNSServer.h>
 
 #include "game_core.h"
 #include "ddp_frame.h"
 #include "game_lease_guard.h"
-#include "session_lifecycle.h"\n#include "remote_input.h"\n#include "game_controller_page.h"
+#include "session_lifecycle.h"
+#include "remote_input.h"
+#include "game_controller_page.h"
 
 using namespace hbnf_game;
 
@@ -19,21 +24,28 @@ constexpr const char* kMatrixIp = "192.168.8.20";
 constexpr uint16_t kLocalUdpPort = 4050;
 constexpr uint32_t kFrameMs = 33;
 constexpr uint32_t kProbeMs = 250;
-constexpr uint32_t kWifiRetryMs = 5000;\nconstexpr const char* kPlaySsid = "HBNF-Play";
+constexpr uint32_t kWifiRetryMs = 5000;
+constexpr const char* kPlaySsid = "HBNF-Play";
 
 Preferences prefs;
 WiFiUDP udp;
 ControllerPtr pads[2] = {nullptr, nullptr};
 GameManager games;
 LeaseGuard guard;
-SessionLifecycle lifecycle;\nRemoteInputBroker remoteInput;\nWebServer gameWeb(80);\nWebSocketsServer gameWs(81);\nDNSServer captiveDns;
+SessionLifecycle lifecycle;
+RemoteInputBroker remoteInput;
+WebServer gameWeb(80);
+WebSocketsServer gameWs(81);
+DNSServer captiveDns;
 uint8_t ddpSequence = 0;
 uint32_t lastFrameAt = 0;
 uint32_t lastProbeAt = 0;
 uint32_t lastWifiRetryAt = 0;
 uint64_t sampleRevision = 0;
 bool sessionActive = false;
-bool matrixIdentityVerified = false;\nbool guestPlayEnabled = false;\nString playPassword;
+bool matrixIdentityVerified = false;
+bool guestPlayEnabled = false;
+String playPassword;
 
 bool macEmpty(const uint8_t mac[6]) {
   for (int i = 0; i < 6; ++i) if (mac[i] != 0) return false;
@@ -186,7 +198,10 @@ bool sampleMatrix(uint32_t nowMs) {
   return true;
 }
 
-bool startSession(uint32_t nowMs);\nvoid endSession(const char* reason);\n\nvoid sendFrame(const Framebuffer& fb) {
+bool startSession(uint32_t nowMs);
+void endSession(const char* reason);
+
+void sendFrame(const Framebuffer& fb) {
   if (WiFi.status() != WL_CONNECTED) return;
   IPAddress target;
   if (!target.fromString(kMatrixIp)) return;
