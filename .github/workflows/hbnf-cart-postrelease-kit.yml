@@ -1,11 +1,14 @@
-name: HBNF Cart Post-Release Kit
+name: HBNF Cart One-Pass After Acceptance
 on:
   push:
-    branches: [hbnf-cart-parallel-staging-20260926]
+    branches: [hbnf-cart-unified-postrelease-staging-20260926]
     paths:
       - 'hbnf-game-adapter/**'
       - 'hbnf-uv-control/**'
+      - 'hbnf-wow-bundle/web/hbnf-cart-ipad.*'
+      - 'hbnf-wow-bundle/web/HBNF_CART_IPAD_TEST.cjs'
       - 'scripts/HBNF_POST_RELEASE_SETUP.command'
+      - 'scripts/DEPLOY_HBNF_IPAD_UI.command'
       - 'scripts/hbnf-cart-network-state.py'
       - 'scripts/hbnf-cart-lan-discover.py'
       - 'scripts/hbnf-cart-device-preflight.py'
@@ -21,32 +24,43 @@ on:
 permissions:
   contents: read
 jobs:
-  kit:
+  one-pass:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: arduino/setup-arduino-cli@v2
-      - name: Build self-contained post-release kit
-        run: bash scripts/hbnf-cart-postrelease-kit-build.sh "$GITHUB_WORKSPACE/build/hbnf-postrelease-kit"
-      - name: Verify kit
+      - name: Verify iPad + broker contracts
+        run: |
+          node hbnf-wow-bundle/web/HBNF_CART_IPAD_TEST.cjs
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic hbnf-game-adapter/test_remote_input.cpp -o /tmp/hbnf-remote
+          /tmp/hbnf-remote
+          bash -n scripts/DEPLOY_HBNF_IPAD_UI.command
+      - name: Build one-pass package
+        run: bash scripts/hbnf-cart-postrelease-kit-build.sh "$GITHUB_WORKSPACE/build/hbnf-cart-one-pass"
+      - name: Verify exact extracted package
         run: |
           set -euo pipefail
-          tar -tzf build/HBNF_CART_POST_RELEASE_KIT.tar.gz > /tmp/hbnf-kit-list.txt
-          grep -q 'START_HBNF_POST_RELEASE.command' /tmp/hbnf-kit-list.txt
-          grep -q 'game-bridge/HBNF_GAME_BRIDGE_FACTORY.bin' /tmp/hbnf-kit-list.txt
-          (cd build && shasum -a 256 -c HBNF_CART_POST_RELEASE_KIT.tar.gz.sha256)
-          mkdir /tmp/hbnf-kit
-          tar -xzf build/HBNF_CART_POST_RELEASE_KIT.tar.gz -C /tmp/hbnf-kit
-          K=/tmp/hbnf-kit/hbnf-postrelease-kit
-          bash -n "$K/START_HBNF_POST_RELEASE.command"
+          tar -tzf build/HBNF_CART_ONE_PASS_AFTER_ACCEPTANCE.tar.gz > /tmp/hbnf-onepass-list.txt
+          for f in START_HBNF_CART_FINISH.command game-bridge/HBNF_GAME_BRIDGE_FACTORY.bin web/hbnf-cart-ipad.html web/DEPLOY_HBNF_IPAD_UI.command; do
+            grep -q "$f" /tmp/hbnf-onepass-list.txt
+          done
+          (cd build && shasum -a 256 -c HBNF_CART_ONE_PASS_AFTER_ACCEPTANCE.tar.gz.sha256)
+          mkdir /tmp/hbnf-onepass
+          tar -xzf build/HBNF_CART_ONE_PASS_AFTER_ACCEPTANCE.tar.gz -C /tmp/hbnf-onepass
+          K=/tmp/hbnf-onepass/hbnf-cart-one-pass
+          bash -n "$K/START_HBNF_CART_FINISH.command"
           bash -n "$K/scripts/HBNF_POST_RELEASE_SETUP.command"
+          bash -n "$K/web/DEPLOY_HBNF_IPAD_UI.command"
           python3 "$K/scripts/hbnf-cart-network-state.py" --selftest
+          python3 "$K/scripts/hbnf-cart-device-preflight.py" --selftest
+          python3 "$K/scripts/hbnf-cart-lan-discover.py" --selftest
+          python3 "$K/scripts/hbnf-cart-uv-pin-plan.py" --selftest
           (cd "$K" && shasum -a 256 -c SHA256SUMS.txt)
       - uses: actions/upload-artifact@v4
         with:
-          name: HBNF-CART-POST-RELEASE-KIT
+          name: HBNF-CART-ONE-PASS-AFTER-ACCEPTANCE
           path: |
-            build/HBNF_CART_POST_RELEASE_KIT.tar.gz
-            build/HBNF_CART_POST_RELEASE_KIT.tar.gz.sha256
+            build/HBNF_CART_ONE_PASS_AFTER_ACCEPTANCE.tar.gz
+            build/HBNF_CART_ONE_PASS_AFTER_ACCEPTANCE.tar.gz.sha256
           retention-days: 90

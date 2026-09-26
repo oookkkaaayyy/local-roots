@@ -18,16 +18,25 @@ gate(){
   [[ "$ans" == "GO" ]] || die "operator stopped at: $prompt"
 }
 
-echo "HBNF POST-RELEASE CART SETUP"
+echo "HBNF CART — ONE-PASS FINISH"
 echo "Evidence folder: $EVIDENCE"
-echo "This tool does not modify production Supabase and does not flash Matrix or AUX."
+echo "Run this only AFTER the current canonical Matrix+AUX update has been physically accepted."
+echo "This process adds the iPad controller route, configures the dedicated cart LAN, flashes only the game-bridge ESP32, and performs acceptance."
+echo "It does not modify production Supabase and does not flash Matrix or AUX."
+echo
+read -r -p "Type ACCEPTED to confirm the current Matrix+AUX release is physically accepted: " ACCEPTED
+[[ "$ACCEPTED" == "ACCEPTED" ]] || die "current canonical release not confirmed accepted"
 
 [[ "$(uname -s)" == "Darwin" ]] || die "this operator kit is staged for the HBNF Mac (macOS)"
 command -v python3 >/dev/null || die "python3 not found"
 
 echo
-echo "PHASE 0 — AUTOMATIC NETWORK STATE"
+echo "PHASE 0 — iPAD CONTROLLER DEPLOY + AUTOMATIC NETWORK STATE"
+[[ -x web/DEPLOY_HBNF_IPAD_UI.command ]] || chmod +x web/DEPLOY_HBNF_IPAD_UI.command
+bash web/DEPLOY_HBNF_IPAD_UI.command | tee "$EVIDENCE/IPAD_WEB_DEPLOY.log"
+grep -q 'HBNF_IPAD_CONTROLLER_DEPLOY=PASS' "$EVIDENCE/IPAD_WEB_DEPLOY.log" || die "iPad controller web deployment did not report PASS"
 python3 scripts/hbnf-cart-network-state.py | tee "$EVIDENCE/NETWORK_STATE_INITIAL.json" || true
+echo "iPad controller live: https://hbnightflyers.com/hbnf-cart-ipad.html"
 [[ -f config/hbnf-cart-router-manifest.json ]] || die "router manifest missing"
 python3 -m json.tool config/hbnf-cart-router-manifest.json > "$EVIDENCE/ROUTER_MANIFEST.json"
 
@@ -110,24 +119,44 @@ echo "COLD_BOOT_PREFLIGHT=PASS"
 echo
 echo "PHASE C/D — CONTROLLERS + GAME BRIDGE"
 echo "Connect ONLY the ELEGOO ESP32-WROOM-32 game bridge by USB-C."
-echo "Use the CI-produced HBNF-GAME-BRIDGE-ESP32-WROOM32 artifact."
+echo "The verified bridge firmware is bundled inside this same one-pass package."
 echo "Its FLASH_HBNF_GAME_BRIDGE.command will:"
 echo "  - verify hashes"
 echo "  - refuse ambiguous USB serial targets"
 echo "  - flash ONLY the bridge ESP32"
 echo "  - ask once for HBNF-Cart password"
-echo "  - pair P1/P2 using Y + Stadia"
-echo "If either controller cannot pair, stop game setup; normal cart remains unaffected."
+echo "  - create isolated HBNF-Play guest Wi-Fi + QR files"
+echo "  - optionally pair P1/P2 using Y + Stadia"
+echo "If Stadia pairing is unavailable, the rollout continues; touchscreen controls remain available for testing."
 BRIDGE_INSTALLER="$ROOT/game-bridge/FLASH_HBNF_GAME_BRIDGE.command"
 if [[ -f "$BRIDGE_INSTALLER" ]]; then
   gate "ELEGOO game-bridge ESP32 is connected by USB-C"
   chmod +x "$BRIDGE_INSTALLER"
   bash "$BRIDGE_INSTALLER"
 else
-  gate "Game-bridge artifact is downloaded/unzipped and bridge ESP32 is connected"
-  echo "NEXT_ACTION=run FLASH_HBNF_GAME_BRIDGE.command from the game-bridge artifact"
-  gate "HBNF_GAME_BRIDGE_INSTALL=PASS was shown"
+  die "bundled game-bridge installer missing"
 fi
+
+echo "Verifying deterministic game-bridge address 192.168.8.30..."
+for n in 1 2 3 4 5 6 7 8 9 10; do
+  if curl -fsS --max-time 2 http://192.168.8.30/ | grep -q 'HBNF PLAY'; then BRIDGE_OK=1; break; fi
+  sleep 1
+done
+[[ "${BRIDGE_OK:-0}" == "1" ]] || die "game bridge did not answer at 192.168.8.30"
+echo "GAME_BRIDGE_IP=192.168.8.30 PASS"
+echo "Guest QR files are in: $HOME/Desktop/HBNF_PLAY_QR"
+
+echo
+echo "PHASE D1 — iPHONE + iPAD CANONICAL CONTROL ACCEPTANCE"
+echo "On iPad mini 2 open: https://hbnightflyers.com/hbnf-cart-ipad.html"
+echo "If sign-in is needed, request the link there. It intentionally lands on the already-allowed canonical /hbnf-cart.html route."
+echo "After canonical sign-in succeeds, return to /hbnf-cart-ipad.html; it imports the same local session."
+echo "Then:"
+echo "  1. Change Matrix brightness on iPad."
+echo "  2. Use NEXT on iPhone."
+echo "  3. Refresh/observe both and verify the resulting canonical state is correct."
+echo "  4. Verify OFF from either device turns the cart off."
+gate "iPhone and iPad both controlled the same canonical cart correctly"
 
 echo
 echo "PHASE D2 — GAME SAFETY ACCEPTANCE"
@@ -138,6 +167,20 @@ echo "4. During game, use canonical cart UI to change Matrix brightness."
 echo "5. Issue canonical OFF. Game visuals must stop and Matrix must stay dark."
 echo "6. Turn canonical ON, start a game, exit from menu. CURRENT canonical show must resume."
 gate "All six game safety checks passed"
+
+echo
+echo "PHASE D3 — TOUCHSCREEN GAME QUALITY"
+echo "On the iPad game page, claim P1 and run the built-in latency sample."
+echo "Acceptance target: median <= 50 ms AND p95 <= 80 ms, with no obvious missed/repeated touches during 2-3 minutes of Snake."
+echo "Optionally scan the generated HBNF-Play Wi-Fi QR with another phone and repeat as guest P2."
+echo
+read -r -p "If touchscreen play genuinely feels good and meets the target, type TOUCH. Otherwise type STADIA: " TOUCH_MODE
+case "$TOUCH_MODE" in
+  TOUCH) TOUCH_RESULT="ACCEPTED" ;;
+  STADIA) TOUCH_RESULT="NOT_ACCEPTED_STADIA_PRIMARY" ;;
+  *) die "enter TOUCH or STADIA" ;;
+esac
+echo "TOUCHSCREEN_GAME=$TOUCH_RESULT"
 
 echo
 echo "PHASE E — UV REVIEW ONLY"
@@ -160,6 +203,8 @@ MATRIX_AUX_LAN=PASS
 COLD_BOOT=PASS
 GAME_BRIDGE=PASS
 GAME_SAFETY=PASS
+IPAD_CANONICAL_CONTROL=PASS
+TOUCHSCREEN_GAME=$TOUCH_RESULT
 UV=SEPARATE_OR_MANUALLY_ACCEPTED
 FINAL_CART=PASS
 EOF
