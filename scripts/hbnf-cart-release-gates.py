@@ -13,13 +13,13 @@ def require(path):
 def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
-control = require("release/source/supabase/functions/hbnf-cart-control/index.ts").read_text()
-control_cfg = require("release/source/supabase/functions/hbnf-cart-control/deno.json")
-reconcile = require("release/source/supabase/functions/hbnf-cart-reconcile/index.ts").read_text()
-reconcile_cfg = require("release/source/supabase/functions/hbnf-cart-reconcile/deno.json")
+control = require("release/source/hbnf-cart-control/index.ts").read_text()
+require("release/source/hbnf-cart-control/deno.json")
+reconcile = require("release/source/hbnf-cart-reconcile/index.ts").read_text()
+require("release/source/hbnf-cart-reconcile/deno.json")
 production_migration = require("release/source/20260926080000_hbnf_cart_core_production.sql")
 staging_migration = require("release/source/20260926053151_hbnf_cart_shadow_staging.sql")
-parity_migration = require("release/source/20260926070000_hbnf_cart_parity_inert_staging.sql")
+require("release/source/20260926070000_hbnf_cart_parity_inert_staging.sql")
 if production_migration.resolve() == staging_migration.resolve() or production_migration.read_bytes() == staging_migration.read_bytes():
     fail("staging-only migration was substituted for production migration")
 sql = production_migration.read_text()
@@ -41,15 +41,17 @@ if "enable row level security" not in code or "revoke all on all tables" not in 
 if "grant execute" not in code or "to service_role" not in code:
     fail("service-role RPC grant is missing")
 
-require("release/source/supabase/functions/hbnf-cart-control-parity-staging/index.ts")
-require("release/source/supabase/functions/hbnf-cart-reconcile-parity-staging/index.ts")
-require("release/source/supabase/functions/hbnf-matrix-adapter-inert-staging/index.ts")
-require("release/source/supabase/functions/hbnf-aux-adapter-inert-staging/index.ts")
-require("release/source/scripts/hbnf-cart-production-cutover-init.sql")
-require("release/source/scripts/hbnf-cart-production-activate.sql")
-require("release/source/scripts/hbnf-cart-production-readiness.sql")
-require("release/source/scripts/hbnf-cart-cutover-init.sh")
-require("release/source/docs/HBNF_CART_PRODUCTION_CUTOVER.md")
+for slug in ("hbnf-cart-control-parity-staging", "hbnf-cart-reconcile-parity-staging",
+             "hbnf-matrix-adapter-inert-staging", "hbnf-aux-adapter-inert-staging"):
+    require(f"release/source/{slug}/index.ts")
+for path in (
+    "release/source/scripts/hbnf-cart-production-cutover-init.sql",
+    "release/source/scripts/hbnf-cart-production-activate.sql",
+    "release/source/scripts/hbnf-cart-production-readiness.sql",
+    "release/source/scripts/hbnf-cart-cutover-init.sh",
+    "release/source/docs/HBNF_CART_PRODUCTION_CUTOVER.md",
+):
+    require(path)
 
 baseline = json.loads(require("release/rollback/CURRENT_LIVE_CONTROL_BASELINE.json").read_text())
 expected = {
@@ -66,9 +68,6 @@ for path in (
     "release/rollback/supabase-functions/hbnf-matrix-control-v171/shared.ts",
     "release/rollback/supabase-functions/hbnf-aux-control-v14/index.ts",
     "release/rollback/supabase-functions/hbnf-cart-orchestrator-v5/index.ts",
-):
-    require(path)
-for path in (
     "release/source/production-control-baseline/hbnf-matrix-control-v171/index.ts",
     "release/source/production-control-baseline/hbnf-aux-control-v14/index.ts",
 ):
