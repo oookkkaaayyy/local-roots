@@ -37,9 +37,9 @@ Power in this order: Opal, then Matrix/AUX. Confirm the same reserved IPs on two
 For internet, USB tethering is the lowest-disruption path. Repeater/WISP to `HBNFHotspot` is allowed, but loss/reconnect of upstream must not affect the local acceptance criteria.
 
 ## 4. Controllers/game gate
-Validate Stadia controllers individually with `Y + Stadia` and Bluepad32 identity/button events. If either controller was never converted to Stadia Bluetooth firmware, stop the game-controller workstream only; normal cart operation remains accepted.
+Download the exact successful `HBNF-GAME-BRIDGE-ESP32-WROOM32` CI artifact, connect exactly one ELEGOO ESP32-WROOM-32 by USB-C, and double-click `FLASH_HBNF_GAME_BRIDGE.command`. The installer verifies artifact hashes, refuses ambiguous USB-serial targets, flashes only the bridge, prompts once for the `HBNF-Cart` Wi-Fi password, and then waits for P1/P2 pairing. Pair each Stadia controller when prompted with `Y + Stadia`.
 
-No game DDP frames are permitted until controller identity, direct Matrix IP reachability and canonical OFF watchdog tests pass.
+If either controller was never converted to Stadia Bluetooth firmware, stop the game-controller workstream only; normal cart operation remains accepted. No game DDP frames are permitted until controller identity, direct Matrix IP reachability and canonical OFF watchdog tests pass.
 
 ## 5. UV gate
 UV remains electrically separate until all checks pass. Obtain the accepted AUX `cfg.json` backup and run:

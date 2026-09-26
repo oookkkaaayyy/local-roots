@@ -21,8 +21,24 @@ fi
 arduino-cli board details --fqbn "$FQBN" >/dev/null
 rm -rf "$OUT"/*
 arduino-cli compile --warnings all --fqbn "$FQBN" --output-dir "$OUT" "$SK"
+
+PLATFORM="$HOME/.arduino15/packages/esp32-bluepad32/hardware/esp32/4.1.0"
+BOOT_APP0="$(find "$PLATFORM/tools/partitions" -maxdepth 1 -name 'boot_app0.bin' -print -quit)"
+ESPTOOL="$(find "$HOME/.arduino15/packages/esp32/tools/esptool_py" -name esptool.py -print | LC_ALL=C sort | tail -1)"
+[[ -f "$BOOT_APP0" ]] || { echo "ERROR: boot_app0.bin not found" >&2; exit 3; }
+[[ -f "$ESPTOOL" ]] || { echo "ERROR: esptool.py not found" >&2; exit 4; }
+cp "$BOOT_APP0" "$OUT/boot_app0.bin"
+python3 "$ESPTOOL" --chip esp32 merge_bin -o "$OUT/HBNF_GAME_BRIDGE_FACTORY.bin" \
+  0x1000 "$OUT/HBNF_GameBridge.ino.bootloader.bin" \
+  0x8000 "$OUT/HBNF_GameBridge.ino.partitions.bin" \
+  0xe000 "$OUT/boot_app0.bin" \
+  0x10000 "$OUT/HBNF_GameBridge.ino.bin"
+python3 "$ESPTOOL" --chip esp32 image_info "$OUT/HBNF_GameBridge.ino.bootloader.bin" > "$OUT/BOOTLOADER_IMAGE_INFO.txt"
+cp "$ROOT/scripts/FLASH_HBNF_GAME_BRIDGE.command" "$OUT/FLASH_HBNF_GAME_BRIDGE.command"
+cp "$ROOT/scripts/provision_hbnf_game_bridge.py" "$OUT/provision_hbnf_game_bridge.py"
+chmod +x "$OUT/FLASH_HBNF_GAME_BRIDGE.command"
 (
   cd "$OUT"
-  sha256sum *.bin 2>/dev/null || true
+  sha256sum *.bin 2>/dev/null | LC_ALL=C sort
 ) > "$OUT/SHA256SUMS.txt"
 printf 'HBNF_GAME_BRIDGE_BUILD=PASS\nFQBN=%s\nCORE=%s\nOUT=%s\n' "$FQBN" "$CORE" "$OUT"

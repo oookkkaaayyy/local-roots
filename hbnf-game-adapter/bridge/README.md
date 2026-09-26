@@ -30,3 +30,6 @@ First two accepted gamepads become persistent P1/P2 by Bluetooth MAC. Pair Stadi
 - menu: D-pad up/down; A selects game
 - in game: START+SELECT 0.8 s -> back to menu
 - menu while session active: START+SELECT 2.0 s -> end session
+
+## Post-release install artifact
+CI emits a factory binary plus `FLASH_HBNF_GAME_BRIDGE.command`. On the Mac, connect exactly one ELEGOO bridge board by USB-C and double-click the command. It hash-checks all binaries, refuses an ambiguous serial target, flashes only that ESP32, then provisions Wi-Fi and P1/P2 over serial. No cart password is written to disk by the installer.
