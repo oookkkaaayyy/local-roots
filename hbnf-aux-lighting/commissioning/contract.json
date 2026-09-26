@@ -4,7 +4,7 @@
     "ip_hint": "192.168.68.89",
     "release": "hbnf-wow-r3-max-2026-09-21-v3",
     "engine": "r3-wow-max",
-    "buildWitness": "registry28-fixed-v4-colorwifi",
+    "buildWitness": "registry28-tempo-lock-v5-colorwifi",
     "pixels": 512,
     "width": 32,
     "height": 16,
@@ -24,7 +24,7 @@
     "controller": "SP803E",
     "firmware_release": "hbnf-wow-aux-r3-2026-09-22-v1",
     "engine": "aux-r3-wow-1d",
-    "buildWitness": "registry28-fixed-1d-v2-colorwifi",
+    "buildWitness": "registry28-tempo-lock-1d-v3-colorwifi",
     "projection": "fold2-1d-v1",
     "effect_ids": [
       220,
