@@ -82,7 +82,12 @@ jobs:
           cp -R hbnf-cart-core release/source/
           cp -R hbnf-wow-bundle/web release/source/
           cp -R supabase/functions/hbnf-cart-shadow-staging release/source/
+          cp -R supabase/functions/hbnf-cart-control-parity-staging release/source/
+          cp -R supabase/functions/hbnf-cart-reconcile-parity-staging release/source/
+          cp -R supabase/functions/hbnf-matrix-adapter-inert-staging release/source/
+          cp -R supabase/functions/hbnf-aux-adapter-inert-staging release/source/
           cp supabase/migrations/20260926053151_hbnf_cart_shadow_staging.sql release/source/
+          cp supabase/migrations/20260926070000_hbnf_cart_parity_inert_staging.sql release/source/
           cp -R hbnf-cart-release/rollback/. release/rollback/
           cp hbnf-cart-release/CURRENT_LIVE_CONTROL_BASELINE.json release/rollback/ 2>/dev/null || true
           cat > release/RELEASE_MANIFEST.txt <<'EOF'
@@ -101,6 +106,12 @@ jobs:
           production_rollback_cart_orchestrator=hbnf-cart-orchestrator_v5
           production_deployment=NOT_PERFORMED
           shadow_function_actuators_reachable=false
+          parity_control=hbnf-cart-control-parity-staging
+          parity_reconciler=hbnf-cart-reconcile-parity-staging
+          inert_matrix_adapter=hbnf-matrix-adapter-inert-staging
+          inert_aux_adapter=hbnf-aux-adapter-inert-staging
+          parity_staging_actuation=NONE
+          parity_test_credential=REMOVED_AFTER_VALIDATION
           aux_hardware_commissioning=NOT_VERIFIED_BY_THIS_PACKAGE
           EOF
           python3 - <<'PY'
