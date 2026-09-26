@@ -1,0 +1,59 @@
+name: HBNF Phone Field Installer QA
+
+on:
+  push:
+    branches:
+      - hbnf-phone-field-installer-20260926
+    paths:
+      - 'hbnf-phone-installer/**'
+      - '.github/workflows/hbnf-phone-installer-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate and inspect unsigned Shortcut
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile hbnf-phone-installer/make_phone_shortcut.py
+          bash -n hbnf-phone-installer/PREPARE_HBNF_PHONE_INSTALL.command
+          python3 hbnf-phone-installer/make_phone_shortcut.py /tmp/HBNF_Field_Install.shortcut
+          python3 - <<'PY'
+          import plistlib, pathlib
+          p=pathlib.Path('/tmp/HBNF_Field_Install.shortcut')
+          x=plistlib.loads(p.read_bytes())
+          a=x['WFWorkflowActions']
+          ids=[q['WFWorkflowActionIdentifier'] for q in a]
+          assert ids.count('is.workflow.actions.downloadurl') >= 6
+          assert ids.count('is.workflow.actions.documentpicker.open') == 2
+          assert ids.count('is.workflow.actions.conditional') >= 8
+          posts=[q for q in a if q['WFWorkflowActionIdentifier']=='is.workflow.actions.downloadurl'
+                 and q['WFWorkflowActionParameters'].get('WFHTTPMethod')=='POST']
+          assert len(posts)==2
+          for q in posts:
+              p=q['WFWorkflowActionParameters']
+              assert p['WFHTTPBodyType']=='Form'
+              items=p['WFFormValues']['Value']['WFDictionaryFieldValueItems']
+              keys=[i['WFKey']['Value']['string'] for i in items]
+              assert keys==['skipValidation','update']
+              update=items[1]
+              assert update['WFItemType']==5
+              url=p['WFURL']['Value']['string']
+              assert url=='\ufffc/update'
+          gets=[q for q in a if q['WFWorkflowActionIdentifier']=='is.workflow.actions.downloadurl'
+                and q['WFWorkflowActionParameters'].get('WFHTTPMethod')=='GET']
+          urls=[q['WFWorkflowActionParameters']['WFURL'] for q in gets[:2]]
+          assert urls==['http://172.20.10.2/json/info','http://172.20.10.3/json/info']
+          files=[q['WFWorkflowActionParameters']['WFGetFilePath'] for q in a
+                 if q['WFWorkflowActionIdentifier']=='is.workflow.actions.documentpicker.open']
+          assert files==['/HBNF_FIELD_DEPLOY/HBNF_MATRIX.bin','/HBNF_FIELD_DEPLOY/HBNF_AUX.bin']
+          print('HBNF_PHONE_SHORTCUT_QA=PASS actions=%d' % len(a))
+          PY
+          grep -q 'shortcuts sign --mode anyone' hbnf-phone-installer/PREPARE_HBNF_PHONE_INSTALL.command
+          grep -q 'No production mutation performed' hbnf-phone-installer/PREPARE_HBNF_PHONE_INSTALL.command
