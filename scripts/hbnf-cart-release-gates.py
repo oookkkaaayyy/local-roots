@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import hashlib, json, re, sys
+import hashlib, json, re, shutil, sys
 from pathlib import Path
 
 root = Path(".")
@@ -19,6 +19,9 @@ reconcile = require("release/source/hbnf-cart-reconcile/index.ts").read_text()
 require("release/source/hbnf-cart-reconcile/deno.json")
 matrix_adapter = require("release/source/hbnf-matrix-adapter/index.ts").read_text()
 aux_adapter = require("release/source/hbnf-aux-adapter/index.ts").read_text()
+for name, source in (("control", control), ("reconcile", reconcile), ("matrix", matrix_adapter)):
+    if re.search(r"""[.]schema[(]["']hbnf_internal["'][)]""", source):
+        fail(f"{name} production source uses unexposed hbnf_internal through PostgREST")
 if "inert" in matrix_adapter.lower() or "inert" in aux_adapter.lower():
     fail("production adapter source contains inert staging marker")
 if "hbnf-matrix-adapter" not in reconcile or "hbnf-aux-adapter" not in reconcile:
@@ -34,6 +37,19 @@ for name, source in (("matrix", matrix_adapter), ("aux", aux_adapter)):
     if "cartRevision" not in source or "fenceEpoch" not in source or "confirmed" not in source:
         fail(f"{name} production adapter is missing projection acknowledgement contract")
 production_migration = require("release/source/20260926080000_hbnf_cart_core_production.sql")
+bridge_source = require("supabase/migrations/20260926215500_hbnf_cart_private_schema_rpc_bridge.sql")
+bridge_packaged = root / "release/source/20260926215500_hbnf_cart_private_schema_rpc_bridge.sql"
+shutil.copy2(bridge_source, bridge_packaged)
+bridge_migration = require("release/source/20260926215500_hbnf_cart_private_schema_rpc_bridge.sql")
+bridge_code = re.sub(r"/\*.*?\*/|--[^\n]*", "", bridge_migration.read_text(), flags=re.S).lower()
+for token in (
+    "hbnf_cart_operator_is_allowed", "hbnf_cart_get_status", "hbnf_cart_get_context",
+    "hbnf_cart_commit_command_bridge", "hbnf_cart_get_observed", "hbnf_cart_upsert_observed",
+):
+    if token not in bridge_code:
+        fail(f"private-schema bridge migration missing required RPC: {token}")
+if "from public, anon, authenticated" not in bridge_code or "to service_role" not in bridge_code:
+    fail("private-schema bridge is not restricted to service_role")
 staging_migration = require("release/source/20260926053151_hbnf_cart_shadow_staging.sql")
 require("release/source/20260926070000_hbnf_cart_parity_inert_staging.sql")
 if production_migration.resolve() == staging_migration.resolve() or production_migration.read_bytes() == staging_migration.read_bytes():
