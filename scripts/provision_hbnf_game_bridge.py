@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import getpass, os, re, sys, time\nfrom pathlib import Path
+import getpass, os, re, sys, time
+from pathlib import Path
 
 try:
     import serial
