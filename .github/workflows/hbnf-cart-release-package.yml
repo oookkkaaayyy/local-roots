@@ -138,9 +138,12 @@ jobs:
             sudo apt-get install -y postgresql-client
           fi
           bash scripts/hbnf-cart-migration-dry-run.sh
-      - name: Verify images and commissioning package
+      - name: Verify images, canonical UI and commissioning package
         run: |
           set -euo pipefail
+          node --check hbnf-wow-bundle/web/hbnf-cart.js
+          node hbnf-wow-bundle/web/HBNF_CART_UI_TEST.js
+          bash -n hbnf-wow-bundle/web/DEPLOY_HBNF_CART_UI.command
           test -s release/firmware/matrix/HBNF_WLED16_MAX_WOWMAX_V3.bin
           test -s release/firmware/aux/HBNF_SP803E_AUX_R3.bin
           python3 - <<'PY'
@@ -249,6 +252,10 @@ jobs:
           inert_aux_adapter=hbnf-aux-adapter-inert-staging
           parity_staging_actuation=NONE
           parity_test_credential=REMOVED_AFTER_VALIDATION
+          canonical_ui_path=/hbnf-cart.html
+          canonical_ui_deploy=source/web/DEPLOY_HBNF_CART_UI.command
+          canonical_ui_backend=hbnf-cart-control
+          canonical_ui_auth=SUPABASE_SESSION
           aux_hardware_commissioning=NOT_VERIFIED_BY_THIS_PACKAGE
           EOF
           python3 - <<'PY'
