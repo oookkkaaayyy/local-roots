@@ -3,9 +3,10 @@ set -euo pipefail
 : "${DATABASE_URL:?DATABASE_URL must point to the isolated disposable PostgreSQL database}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 migration="$root/supabase/migrations/20260926080000_hbnf_cart_core_production.sql"
+bridge_migration="$root/supabase/migrations/20260926215500_hbnf_cart_private_schema_rpc_bridge.sql"
 init_sql="$root/scripts/hbnf-cart-production-cutover-init.sql"
 activate_sql="$root/scripts/hbnf-cart-production-activate.sql"
-for path in "$migration" "$init_sql" "$activate_sql"; do test -s "$path"; done
+for path in "$migration" "$bridge_migration" "$init_sql" "$activate_sql"; do test -s "$path"; done
 
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
 create role anon nologin;
@@ -17,7 +18,9 @@ SQL
 
 # Applying twice checks migration idempotency in a brand-new, isolated database.
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$migration"
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$bridge_migration"
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$migration"
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$bridge_migration"
 
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
 do $$
