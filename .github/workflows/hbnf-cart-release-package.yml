@@ -75,7 +75,7 @@ jobs:
               run_id=$(jq -r '.workflow_runs[0].id // empty' <<<"$json")
               head_sha=$(jq -r '.workflow_runs[0].head_sha // empty' <<<"$json")
               if [[ "$status" != "completed" ]]; then
-                echo "$label build $run_id is $status; waiting..."
+                echo "$label build $run_id is $status; waiting..." >&2
                 sleep 10
                 continue
               fi
