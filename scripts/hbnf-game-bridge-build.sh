@@ -18,7 +18,7 @@ arduino-cli core update-index --additional-urls "$URLS" >/dev/null
 if ! arduino-cli core list | awk '{print $1"@"$2}' | grep -qx "$CORE"; then
   arduino-cli core install "$CORE" --additional-urls "$URLS"
 fi
-arduino-cli board listall | grep -F "ESP32 Dev Board" >/dev/null
+arduino-cli board details --fqbn "$FQBN" >/dev/null
 rm -rf "$OUT"/*
 arduino-cli compile --warnings all --fqbn "$FQBN" --output-dir "$OUT" "$SK"
 (
