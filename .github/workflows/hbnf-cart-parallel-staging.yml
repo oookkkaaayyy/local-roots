@@ -1,0 +1,34 @@
+name: HBNF Cart Parallel Staging QA
+on:
+  push:
+    branches: [hbnf-cart-parallel-staging-20260926]
+    paths:
+      - 'hbnf-game-adapter/**'
+      - 'hbnf-uv-control/**'
+      - 'docs/HBNF_CART_*'
+      - 'scripts/hbnf-cart-parallel-staging-qa.sh'
+      - '.github/workflows/hbnf-cart-parallel-staging.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  host-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Strict host gates
+        run: bash scripts/hbnf-cart-parallel-staging-qa.sh
+      - name: ASan and UBSan
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O1 -g -Wall -Wextra -Werror -pedantic -fsanitize=address,undefined -fno-omit-frame-pointer hbnf-game-adapter/test_game_core.cpp -o /tmp/core-san
+          ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1 /tmp/core-san
+          g++ -std=c++17 -O1 -g -Wall -Wextra -Werror -pedantic -fsanitize=address,undefined -fno-omit-frame-pointer hbnf-game-adapter/test_game_lease_guard.cpp -o /tmp/lease-san
+          ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1 /tmp/lease-san
+      - name: Isolation contract
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "hbnf-cart-parallel-staging-20260926"
+          grep -q 'Production mutations: none' docs/HBNF_CART_PARALLEL_STAGING_STATUS.md
+          echo HBNF_PARALLEL_ISOLATION=PASS
