@@ -1,0 +1,33 @@
+name: HBNF Tempo Lock installer QA
+
+on:
+  push:
+    branches:
+      - hbnf-matrix-wow-bundle-r3-20260921
+    paths:
+      - 'hbnf-tempo-lock-field-fix/**'
+      - '.github/workflows/hbnf-tempo-lock-script-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qa:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static installer QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          F=hbnf-tempo-lock-field-fix/INSTALL_TEMPO_LOCK.command
+          bash -n "$F"
+          grep -q 'registry28-tempo-lock-v5-colorwifi' "$F"
+          grep -q 'registry28-tempo-lock-1d-v3-colorwifi' "$F"
+          grep -q 'shasum -a 256 -c SHA256SUMS' "$F"
+          grep -q 'HBNF_TEMPO_LOCK_TECHNICAL_PASS' "$F"
+          grep -q 'Attempting automatic rollback' "$F"
+          ! grep -q '192\.168\.68\.' "$F"
+          echo HBNF_TEMPO_LOCK_INSTALLER_STATIC_QA_PASS
