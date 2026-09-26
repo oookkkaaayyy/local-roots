@@ -34,8 +34,18 @@ jobs:
           set -euo pipefail
           test -s release/firmware/matrix/HBNF_WLED16_MAX_WOWMAX_V3.bin
           test -s release/firmware/aux/HBNF_SP803E_AUX_R3.bin
-          (cd release/firmware/matrix && sha256sum -c firmware-sha256.txt)
-          (cd release/firmware/aux && sha256sum -c firmware-sha256.txt)
+          python3 - <<'PY'
+          import hashlib, pathlib
+          checks = [
+              (pathlib.Path("release/firmware/matrix"), "HBNF_WLED16_MAX_WOWMAX_V3.bin"),
+              (pathlib.Path("release/firmware/aux"), "HBNF_SP803E_AUX_R3.bin"),
+          ]
+          for root, filename in checks:
+              expected = (root / "firmware-sha256.txt").read_text().split()[0]
+              actual = hashlib.sha256((root / filename).read_bytes()).hexdigest()
+              assert actual == expected, f"{filename}: checksum mismatch"
+              print(f"{filename} sha256={actual}")
+          PY
           grep -Fx 'firmware_sha256=b2ef3045f00e37cdf6e6e4f9864ef831fae59ab5636cf37780b2dbada3e767d4' release/firmware/aux/FINAL_METRICS.txt
           grep -Fx 'firmware_bytes=1345216' release/firmware/aux/FINAL_METRICS.txt
           ls release/firmware/aux/*COMMISSIONING*.zip
