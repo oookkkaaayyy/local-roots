@@ -44,10 +44,6 @@ class AnimartrixAudioBridge {
 
   void modulate(int x,int y,uint8_t &r,uint8_t &g,uint8_t &b) const {
     if(!active_ || amount_==0){ applySceneTint(r,g,b); return; }
-    const uint16_t musical=(uint16_t)energy8_+(uint16_t)mid8_;
-    const uint8_t extra=(uint8_t)(((uint32_t)amount_*musical*46u)/(255u*510u));
-    if(extra){ r=satAdd(r,(uint8_t)(((uint16_t)r*extra)>>8)); g=satAdd(g,(uint8_t)(((uint16_t)g*extra)>>8)); b=satAdd(b,(uint8_t)(((uint16_t)b*extra)>>8)); }
-
     Rgb8 accent=accentForProfile(profile_);
     uint8_t mix=0;
     const int cx2=(int)width_-1, cy2=(int)height_-1;
@@ -80,7 +76,8 @@ class AnimartrixAudioBridge {
 
     if(style_==STYLE_CHROMA || style_==STYLE_HYBRID){
       const uint8_t strongest=max8(bass8_,max8(mid8_,treble8_));
-      mix=max8(mix,scaledMix(strongest,56));
+      // Keep the chroma wash semantic and perceptible without lifting noise-floor pixels.
+      if(strongest>70) mix=max8(mix,scaledMix(strongest,56));
       if(treble8_>bass8_+24 && treble8_>mid8_+16) accent={160,220,255};
       else if(bass8_>treble8_+20) accent={255,74,28};
       else if(mid8_>bass8_+12) accent={220,255,70};
