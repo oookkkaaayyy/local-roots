@@ -1,0 +1,44 @@
+{
+  "capturedAt": "2026-09-26",
+  "supabaseProjectRef": "phcpbvuqibyarpfrftgx",
+  "note": "Read-only source snapshot of active production control functions. No production functions were changed during capture.",
+  "controls": [
+    {
+      "slug": "hbnf-matrix-control",
+      "activeVersion": 171,
+      "active": true,
+      "ezbrSha256": "0085af32c25a1218913d9e7c80483f542efa5e5e3e64180702f7d50c10f51304",
+      "files": [
+        "index.ts",
+        "shared.ts",
+        "live.ts",
+        "scoreboard.ts",
+        "teaser.ts",
+        "wow_events.ts"
+      ]
+    },
+    {
+      "slug": "hbnf-aux-control",
+      "activeVersion": 14,
+      "active": true,
+      "ezbrSha256": "b9a4bf32cd5b7ec1f69c4b0a1e38e57d7b8f67061548d124778ea4ae318da8b6",
+      "files": [
+        "index.ts"
+      ]
+    },
+    {
+      "slug": "hbnf-cart-orchestrator",
+      "activeVersion": 5,
+      "active": true,
+      "ezbrSha256": "d941c7e9143722d0b55e0079423a81b963bfac620afbb99d4d3f972ca65f488b",
+      "files": [
+        "index.ts"
+      ]
+    }
+  ],
+  "matrixFunctionRequiredBaseline": {
+    "slug": "hbnf-matrix-control",
+    "version": 171,
+    "ezbrSha256": "0085af32c25a1218913d9e7c80483f542efa5e5e3e64180702f7d50c10f51304"
+  }
+}
