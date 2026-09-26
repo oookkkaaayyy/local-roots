@@ -76,8 +76,7 @@ class AnimartrixAudioBridge {
 
     if(style_==STYLE_CHROMA || style_==STYLE_HYBRID){
       const uint8_t strongest=max8(bass8_,max8(mid8_,treble8_));
-      // Keep the chroma wash semantic and perceptible without lifting noise-floor pixels.
-      if(strongest>70) mix=max8(mix,scaledMix(strongest,56));
+      // Chroma changes the accent palette only; band geometry remains spatial and distinct.
       if(treble8_>bass8_+24 && treble8_>mid8_+16) accent={160,220,255};
       else if(bass8_>treble8_+20) accent={255,74,28};
       else if(mid8_>bass8_+12) accent={220,255,70};
