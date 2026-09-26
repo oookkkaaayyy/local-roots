@@ -32,7 +32,7 @@ class AnimartrixAudioBridge {
     bass8_=unit8(m.bassPulse); mid8_=unit8(m.midPulse); treble8_=unit8(m.treblePulse); pulse8_=unit8(m.pulse);
     energy8_=unit8(m.energy); impact8_=unit8(m.impact); drop8_=unit8(m.drop);
     updateOverlays((uint16_t)(dt*1000.0f+0.5f));
-    return clampSpeed(baseSpeed*vibe_.profileFactor(profile_));
+    // Audio changes color/intensity/accents only. Animation tempo must remain user-controlled.\n    return clampSpeed(baseSpeed);
   }
 
   void modulate(int x,int y,uint8_t &r,uint8_t &g,uint8_t &b) const {
