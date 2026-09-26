@@ -1,5 +1,5 @@
 name: HBNF Cart matched release assembly
-# Re-run packaging after isolated migration harness fix.
+# Re-run packaging after isolated migration harness and gate regex fixes.
 on:
   push:
     branches: [hbnf-cart-foundation-v1-20260925]
