@@ -42,6 +42,7 @@ def probe_device(ip, timeout):
         'info':get_json(base+'/json/info', timeout),
         'state':get_json(base+'/json/state', timeout),
         'presets':get_json(base+'/presets.json', timeout),
+        'cfg':get_json(base+'/json/cfg', timeout),
     }
 
 def selftest():
@@ -80,6 +81,7 @@ def main():
     for name,payload in [('MATRIX',m),('AUX',x)]:
         safe={'ip':payload['ip'],'info':payload['info'],'state':payload['state'],'presets':payload['presets']}
         (out/f'{name}_READONLY.json').write_text(json.dumps(safe,indent=2,sort_keys=True)+'\n')
+        (out/f'{name}_CFG_READONLY.json').write_text(json.dumps(payload['cfg'],indent=2,sort_keys=True)+'\n')
     me=validate_matrix(m['info'],m['state']); ae=validate_aux(x['info'],x['state'],a.aux_count)
     report['checks']['matrix']={'ok':not me,'errors':me,'ledCount':led_count(m['info']),'mac':norm_mac(m['info'].get('mac')),'brightness':m['state'].get('bri'),'on':m['state'].get('on')}
     report['checks']['aux']={'ok':not ae,'errors':ae,'ledCount':led_count(x['info']),'mac':norm_mac(x['info'].get('mac')),'brightness':x['state'].get('bri'),'on':x['state'].get('on')}

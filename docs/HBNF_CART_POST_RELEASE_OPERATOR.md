@@ -11,3 +11,6 @@ Automates router-manifest validation, LAN discovery by device identity, exact DH
 It deliberately does not automate GL.iNet credentials, DHCP-reservation clicks, Matrix/AUX firmware flashing, production Supabase changes, physical controller button presses, UV wiring/energizing, or physical acceptance without operator confirmation.
 
 If BLE pairing fails, stop only the game workstream. If UV remains unverified, leave UV separate. Neither failure should disturb the accepted canonical cart.
+
+
+Network migration is rollback-safe: the operator first captures Matrix/AUX read-only state + cfg.json on the legacy LAN, then opens each device's WLED Wi-Fi page and instructs the operator to add HBNF-Cart as a second WLED Wi-Fi profile. The existing profile is retained until the new LAN has passed cold-boot validation.

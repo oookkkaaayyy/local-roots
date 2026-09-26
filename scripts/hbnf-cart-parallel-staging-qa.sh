@@ -29,3 +29,6 @@ grep -q 'never replays a pre-game snapshot' hbnf-game-adapter/ARCHITECTURE.md
 grep -q 'never connect UV to SP803E 12V VCC' hbnf-uv-control/README.md
 grep -q 'local LAN works with no internet' docs/HBNF_CART_ZERO_DRAMA_POST_RELEASE.md
 echo HBNF_PARALLEL_STAGING_QA=PASS
+
+grep -q 'CFG_READONLY' scripts/hbnf-cart-device-preflight.py
+grep -q 'SECOND Wi-Fi profile' scripts/HBNF_POST_RELEASE_SETUP.command

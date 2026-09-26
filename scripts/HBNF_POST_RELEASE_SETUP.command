@@ -45,7 +45,45 @@ open "http://192.168.8.1" >/dev/null 2>&1 || true
 gate "Router configured and HBNF-Cart is visible"
 
 echo
-echo "PHASE B1 — DISCOVER CURRENT DEVICE IDENTITIES"
+echo "PHASE B0 — PRESERVE OLD NETWORK + ADD HBNF-Cart AS SECOND WLED PROFILE"
+python3 scripts/hbnf-cart-network-state.py | tee "$EVIDENCE/NETWORK_STATE_PRE_MIGRATION.json" || true
+INITIAL_STATE="$(python3 - "$EVIDENCE/NETWORK_STATE_PRE_MIGRATION.json" <<'PY'
+import json,sys
+try: print(json.load(open(sys.argv[1])).get("state","UNKNOWN"))
+except Exception: print("UNKNOWN")
+PY
+)"
+if [[ "$INITIAL_STATE" == "LEGACY_READY" ]]; then
+  read -r MATRIX_OLD AUX_OLD < <(python3 - "$EVIDENCE/NETWORK_STATE_PRE_MIGRATION.json" <<'PY'
+import json,sys
+p=json.load(open(sys.argv[1]))
+d={x["role"]:x["ip"] for x in p["devices"]}
+print(d["matrix"],d["aux"])
+PY
+)
+  python3 scripts/hbnf-cart-device-preflight.py --matrix-ip "$MATRIX_OLD" --aux-ip "$AUX_OLD" --out-dir "$EVIDENCE/LEGACY_DEVICE_SNAPSHOT"
+  echo "Opening Matrix and AUX WLED Wi-Fi settings on the CURRENT network."
+  open "http://$MATRIX_OLD/settings/wifi" || true
+  open "http://$AUX_OLD/settings/wifi" || true
+  echo "On EACH page:"
+  echo "  1. Click + to add another Wi-Fi network."
+  echo "  2. Add SSID HBNF-Cart and the Opal Wi-Fi password."
+  echo "  3. Keep the existing network entry. Do NOT delete it."
+  echo "  4. Save/apply."
+  gate "HBNF-Cart was added as a SECOND Wi-Fi profile on BOTH Matrix and AUX"
+  echo "Now connect this Mac to HBNF-Cart, then power-cycle Matrix and AUX."
+  echo "If either device fails to move, reconnect the Mac to the old HBNFHotspot; its profile was preserved."
+  gate "Mac is on HBNF-Cart and Matrix/AUX have been power-cycled"
+elif [[ "$INITIAL_STATE" == "TARGET_READY" ]]; then
+  echo "Matrix and AUX are already on HBNF-Cart; profile migration is already complete."
+else
+  echo "Automatic state was $INITIAL_STATE."
+  echo "No network setting will be changed until both devices are uniquely identifiable."
+  die "network migration precondition is not clean; inspect $EVIDENCE/NETWORK_STATE_PRE_MIGRATION.json"
+fi
+
+echo
+echo "PHASE B1 — DISCOVER TARGET-LAN DEVICE IDENTITIES"
 python3 scripts/hbnf-cart-lan-discover.py --subnet 192.168.8.0/24 | tee "$EVIDENCE/LAN_DISCOVERY.json"
 python3 - "$EVIDENCE/LAN_DISCOVERY.json" <<'PY'
 import json,sys
