@@ -202,7 +202,7 @@ jobs:
           print(f"RELEASE_SHA256={digest}")
           print(f"RELEASE_BYTES={out.stat().st_size}")
           with zipfile.ZipFile(out) as z:
-              assert z.namelist()==sorted(z.namelist())
+              assert z.namelist()==[p.relative_to(root).as_posix() for p in files]
           PY
           unzip -t HBNF_CART_FOUNDATION_MATCHED_RELEASE.zip
           echo "HBNF_BACKEND_PREFLIGHT=PASS"
