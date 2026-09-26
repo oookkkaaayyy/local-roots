@@ -7,6 +7,10 @@ on:
       - '.github/workflows/hbnf-cart-release-package.yml'
       - 'supabase/functions/hbnf-cart-control/**'
       - 'supabase/functions/hbnf-cart-reconcile/**'
+      - 'supabase/functions/hbnf-matrix-adapter/**'
+      - 'supabase/functions/hbnf-aux-adapter/**'
+      - 'hbnf-cart-core/**'
+      - 'hbnf-wow-bundle/web/**'
       - 'supabase/migrations/20260926080000_hbnf_cart_core_production.sql'
       - 'scripts/hbnf-cart-*'
       - 'docs/HBNF_CART_PRODUCTION_CUTOVER.md'
@@ -42,18 +46,59 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+      - name: Resolve newest completed matched firmware runs
+        id: matched
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          resolve_latest() {
+            local workflow="$1"
+            local label="$2"
+            for attempt in $(seq 1 80); do
+              json=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow}/runs?branch=${GITHUB_REF_NAME}&per_page=10")
+              status=$(jq -r '.workflow_runs[0].status // "missing"' <<<"$json")
+              conclusion=$(jq -r '.workflow_runs[0].conclusion // "null"' <<<"$json")
+              run_id=$(jq -r '.workflow_runs[0].id // empty' <<<"$json")
+              head_sha=$(jq -r '.workflow_runs[0].head_sha // empty' <<<"$json")
+              if [[ "$status" != "completed" ]]; then
+                echo "$label build $run_id is $status; waiting..."
+                sleep 10
+                continue
+              fi
+              if [[ "$conclusion" != "success" ]]; then
+                echo "::error::$label newest firmware run $run_id ($head_sha) concluded $conclusion"
+                exit 1
+              fi
+              git merge-base --is-ancestor "$head_sha" "$GITHUB_SHA" || {
+                echo "::error::$label firmware run $run_id is not an ancestor of packaging commit"
+                exit 1
+              }
+              printf '%s|%s\n' "$run_id" "$head_sha"
+              return 0
+            done
+            echo "::error::Timed out waiting for $label firmware build"
+            exit 1
+          }
+          MATRIX=$(resolve_latest hbnf-wled16-wowmax-build.yml MATRIX)
+          AUX=$(resolve_latest hbnf-sp803e-aux-r3-build.yml AUX)
+          echo "matrix_run=${MATRIX%%|*}" >> "$GITHUB_OUTPUT"
+          echo "matrix_sha=${MATRIX##*|}" >> "$GITHUB_OUTPUT"
+          echo "aux_run=${AUX%%|*}" >> "$GITHUB_OUTPUT"
+          echo "aux_sha=${AUX##*|}" >> "$GITHUB_OUTPUT"
       - uses: actions/download-artifact@v4
         with:
           name: HBNF-WLED16-WOW-MAX-V3
           repository: oookkkaaayyy/local-roots
-          run-id: 36221837131
+          run-id: ${{ steps.matched.outputs.matrix_run }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: release/firmware/matrix
       - uses: actions/download-artifact@v4
         with:
           name: HBNF-SP803E-AUX-R3
           repository: oookkkaaayyy/local-roots
-          run-id: 36222459147
+          run-id: ${{ steps.matched.outputs.aux_run }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: release/firmware/aux
       - uses: actions/download-artifact@v4
@@ -97,8 +142,18 @@ jobs:
               assert actual == expected, f"{filename}: checksum mismatch"
               print(f"{filename} sha256={actual}")
           PY
-          grep -Fx 'firmware_sha256=b2ef3045f00e37cdf6e6e4f9864ef831fae59ab5636cf37780b2dbada3e767d4' release/firmware/aux/FINAL_METRICS.txt
-          grep -Fx 'firmware_bytes=1345216' release/firmware/aux/FINAL_METRICS.txt
+          python3 - <<'PY'
+          import hashlib, pathlib
+          for root in (pathlib.Path("release/firmware/matrix"), pathlib.Path("release/firmware/aux")):
+              metrics={}
+              for line in (root/"FINAL_METRICS.txt").read_text().splitlines():
+                  if "=" in line:
+                      k,v=line.split("=",1); metrics[k]=v
+              binary=next(root.glob("*.bin"))
+              actual=hashlib.sha256(binary.read_bytes()).hexdigest()
+              assert metrics.get("firmware_sha256")==actual, (root, metrics.get("firmware_sha256"), actual)
+              assert int(metrics.get("firmware_bytes","-1"))==binary.stat().st_size
+          PY
           python3 - <<'PY'
           import hashlib, pathlib
           baselines = [
@@ -120,6 +175,8 @@ jobs:
           cp -R hbnf-wow-bundle/web release/source/
           cp -R supabase/functions/hbnf-cart-control release/source/
           cp -R supabase/functions/hbnf-cart-reconcile release/source/
+          cp -R supabase/functions/hbnf-matrix-adapter release/source/
+          cp -R supabase/functions/hbnf-aux-adapter release/source/
           cp -R supabase/functions/hbnf-cart-shadow-staging release/source/
           cp -R supabase/functions/hbnf-cart-control-parity-staging release/source/
           cp -R supabase/functions/hbnf-cart-reconcile-parity-staging release/source/
@@ -146,15 +203,17 @@ jobs:
           HBNF CART FOUNDATION — matched release candidate
           implementation_commit=051ee47822eb0df51113f5e14a2945222e48403c
           release_packaging_commit=${GITHUB_SHA}
-          matched_matrix_build_run=36221837131
-          matched_aux_build_run=36222459147
-          firmware_source_commit=86d294523be93cdbacb2f8e502c4c59a05cbfef1
-          aux_installer_pin_commit=c357391434137bc6458a045b7b617b6aa647f816
-          aux_firmware_sha256=b2ef3045f00e37cdf6e6e4f9864ef831fae59ab5636cf37780b2dbada3e767d4
-          aux_firmware_bytes=1345216
-          matrix_firmware_sha256=761a83f2b34f69eaa6ec3a87bcf8b1201c40c41c9d51220284c984f2d8146b8d
+          matched_matrix_build_run=${{ steps.matched.outputs.matrix_run }}
+          matched_aux_build_run=${{ steps.matched.outputs.aux_run }}
+          matrix_firmware_source_commit=${{ steps.matched.outputs.matrix_sha }}
+          aux_firmware_source_commit=${{ steps.matched.outputs.aux_sha }}
+          aux_firmware_sha256=$(awk '{print $1}' release/firmware/aux/firmware-sha256.txt)
+          aux_firmware_bytes=$(wc -c < release/firmware/aux/HBNF_SP803E_AUX_R3.bin)
+          matrix_firmware_sha256=$(awk '{print $1}' release/firmware/matrix/firmware-sha256.txt)
           production_control_source_included=YES
           production_reconcile_source_included=YES
+          production_matrix_adapter_source_included=YES
+          production_aux_adapter_source_included=YES
           production_adapter_baselines_included=hbnf-matrix-control_v171,hbnf-aux-control_v14
           production_migration=20260926080000_hbnf_cart_core_production.sql
           production_migration_validation=isolated-postgresql-idempotency-and-fence-gates
@@ -206,6 +265,7 @@ jobs:
           PY
           unzip -t HBNF_CART_FOUNDATION_MATCHED_RELEASE.zip
           echo "HBNF_BACKEND_PREFLIGHT=PASS"
+          echo "HBNF_FIELD_SESSION_READY=PASS"
           echo "HBNF_FIELD_SESSION_SCOPE=PHYSICAL_ONLY"
       - uses: actions/upload-artifact@v4
         with:
