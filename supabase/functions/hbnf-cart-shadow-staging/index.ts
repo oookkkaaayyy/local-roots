@@ -8,7 +8,7 @@ const cors = {
 };
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json; charset=utf-8" } });
 const DEVICES = ["matrix", "aux"] as const;
-const FIELDS = ["cartRevision", "fenceEpoch", "release", "deviceId", "enabled", "brightness", "brightnessProfileRevision", "programMode", "sceneId", "paletteId", "vibe", "speedBias", "sequenceCursor", "audio", "overlay", "applyCompleteProjection"] as const;
+const FIELDS = ["cartRevision", "fenceEpoch", "release", "deviceId", "enabled", "brightness", "brightnessProfileRevision", "programMode", "sceneId", "paletteId", "vibe", "tempoMode", "speedBias", "sequenceCursor", "audio", "overlay", "applyCompleteProjection"] as const;
 const canonical = (v: unknown): string => {
   if (Array.isArray(v)) return "[" + v.map(canonical).join(",") + "]";
   if (v && typeof v === "object") return "{" + Object.entries(v as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b)).map(([k, x]) => JSON.stringify(k) + ":" + canonical(x)).join(",") + "}";
