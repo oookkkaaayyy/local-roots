@@ -134,6 +134,7 @@ jobs:
           cat > release/RELEASE_MANIFEST.txt <<'EOF'
           HBNF CART FOUNDATION — matched release candidate
           implementation_commit=051ee47822eb0df51113f5e14a2945222e48403c
+          release_packaging_commit=${GITHUB_SHA}
           matched_matrix_build_run=36221837131
           matched_aux_build_run=36222459147
           firmware_source_commit=86d294523be93cdbacb2f8e502c4c59a05cbfef1
@@ -141,13 +142,18 @@ jobs:
           aux_firmware_sha256=b2ef3045f00e37cdf6e6e4f9864ef831fae59ab5636cf37780b2dbada3e767d4
           aux_firmware_bytes=1345216
           matrix_firmware_sha256=8065fa2fe3cf919839ebe984c444cefc4ee9fca3cd8302a2dcf3f4216bd8bab3
+          production_control_source_included=YES
+          production_reconcile_source_included=YES
+          production_adapter_baselines_included=hbnf-matrix-control_v171,hbnf-aux-control_v14
           production_migration=20260926080000_hbnf_cart_core_production.sql
           production_migration_validation=isolated-postgresql-idempotency-and-fence-gates
           production_fence_after_migration=INACTIVE
+          production_state_seed=separate-reviewed-readback-initializer
+          production_fence_activation=separate-readiness-gated-transaction
           production_cutover_init=scripts/hbnf-cart-cutover-init.sh
           production_activation=scripts/hbnf-cart-production-activate.sql
           production_cutover_runbook=docs/HBNF_CART_PRODUCTION_CUTOVER.md
-                   rollback_matrix_firmware_sha256=e81adb8523cf3a875d3ce05962d538b7c6cf3f178bfeaf42833678b9c4cd5d10
+          rollback_matrix_firmware_sha256=e81adb8523cf3a875d3ce05962d538b7c6cf3f178bfeaf42833678b9c4cd5d10
           rollback_aux_firmware_sha256=2a70872fd2373a8ecdcd98c8c73c2e8d871dc902c92599f85081895fe98f744e
           production_rollback_matrix_control=hbnf-matrix-control_v171
           production_rollback_aux_control=hbnf-aux-control_v14
