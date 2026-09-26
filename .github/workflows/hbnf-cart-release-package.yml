@@ -1,4 +1,5 @@
 name: HBNF Cart matched release assembly
+# Overnight self-driving release checkpoint: package waits for newest matched Matrix/AUX artifacts.
 # Re-run packaging after isolated migration harness and gate regex fixes.
 on:
   push:
