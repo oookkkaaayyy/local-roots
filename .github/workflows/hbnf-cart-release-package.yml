@@ -29,6 +29,20 @@ jobs:
           run-id: 36222459147
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: release/firmware/aux
+      - uses: actions/download-artifact@v4
+        with:
+          name: HBNF-WLED16-MAX-R2-audio-legibility
+          repository: oookkkaaayyy/local-roots
+          run-id: 35540040048
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: release/rollback/firmware/matrix-r2
+      - uses: actions/download-artifact@v4
+        with:
+          name: HBNF-SP803E-AUX-R3
+          repository: oookkkaaayyy/local-roots
+          run-id: 35698645926
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: release/rollback/firmware/aux-r3
       - name: Verify images and commissioning package
         run: |
           set -euo pipefail
@@ -48,6 +62,17 @@ jobs:
           PY
           grep -Fx 'firmware_sha256=b2ef3045f00e37cdf6e6e4f9864ef831fae59ab5636cf37780b2dbada3e767d4' release/firmware/aux/FINAL_METRICS.txt
           grep -Fx 'firmware_bytes=1345216' release/firmware/aux/FINAL_METRICS.txt
+          python3 - <<'PY'
+          import hashlib, pathlib
+          baselines = [
+              (pathlib.Path("release/rollback/firmware/matrix-r2"), "e81adb8523cf3a875d3ce05962d538b7c6cf3f178bfeaf42833678b9c4cd5d10", 1353296),
+              (pathlib.Path("release/rollback/firmware/aux-r3"), "2a70872fd2373a8ecdcd98c8c73c2e8d871dc902c92599f85081895fe98f744e", 1342288),
+          ]
+          for root, expected_sha, expected_size in baselines:
+              matches = [p for p in root.rglob("*.bin") if p.stat().st_size == expected_size and hashlib.sha256(p.read_bytes()).hexdigest() == expected_sha]
+              assert len(matches) == 1, f"rollback firmware missing or ambiguous under {root}"
+              print(f"rollback {matches[0]} sha256={expected_sha} bytes={expected_size}")
+          PY
           ls release/firmware/aux/*COMMISSIONING*.zip
           mkdir -p release/source release/rollback
           cp -R hbnf-cart-core release/source/
@@ -65,6 +90,8 @@ jobs:
           aux_installer_pin_commit=c357391434137bc6458a045b7b617b6aa647f816
           aux_firmware_sha256=b2ef3045f00e37cdf6e6e4f9864ef831fae59ab5636cf37780b2dbada3e767d4
           aux_firmware_bytes=1345216
+          rollback_matrix_firmware_sha256=e81adb8523cf3a875d3ce05962d538b7c6cf3f178bfeaf42833678b9c4cd5d10
+          rollback_aux_firmware_sha256=2a70872fd2373a8ecdcd98c8c73c2e8d871dc902c92599f85081895fe98f744e
           production_rollback_matrix_control=hbnf-matrix-control_v171
           production_rollback_aux_control=hbnf-aux-control_v14
           production_rollback_cart_orchestrator=hbnf-cart-orchestrator_v5
