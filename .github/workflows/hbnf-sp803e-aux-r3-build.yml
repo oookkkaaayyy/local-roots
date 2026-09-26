@@ -31,7 +31,7 @@ jobs:
     steps:
       - name: Coalesce rapid development pushes
         if: github.event_name == 'push'
-        run: sleep 60
+        run: sleep 5
 
       - name: Checkout
         uses: actions/checkout@v4
