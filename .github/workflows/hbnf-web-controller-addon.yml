@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: arduino/setup-arduino-cli@v2
       - name: Legacy iPad compatibility contract
-        run: node hbnf-wow-bundle/web/HBNF_CART_IPAD_TEST.js
+        run: node hbnf-wow-bundle/web/HBNF_CART_IPAD_TEST.cjs
       - name: Host input broker tests
         run: |
           g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic hbnf-game-adapter/test_remote_input.cpp -o /tmp/remote
