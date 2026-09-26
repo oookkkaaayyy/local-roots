@@ -62,6 +62,25 @@ if "grant execute" not in code or "to service_role" not in code:
 for slug in ("hbnf-cart-control-parity-staging", "hbnf-cart-reconcile-parity-staging",
              "hbnf-matrix-adapter-inert-staging", "hbnf-aux-adapter-inert-staging"):
     require(f"release/source/{slug}/index.ts")
+ui_html = require("release/source/web/hbnf-cart.html").read_text()
+ui_js = require("release/source/web/hbnf-cart.js").read_text()
+ui_deploy = require("release/source/web/DEPLOY_HBNF_CART_UI.command").read_text()
+ui_manifest = json.loads(require("release/source/web/hbnf-cart-manifest.webmanifest").read_text())
+if "hbnf-cart-canonical-v1" not in ui_html:
+    fail("canonical cart UI build marker missing")
+for token in ("createClient", "phcpbvuqibyarpfrftgx.supabase.co", "sb_publishable_", "auth.getSession()", "functions/v1/hbnf-cart-control"):
+    if token not in ui_js:
+        fail(f"canonical cart UI missing authenticated control requirement: {token}")
+if "hbnf-cart-orchestrator" in ui_js:
+    fail("canonical cart UI still routes through legacy orchestrator")
+for token in ("hbnf-cart.html", "hbnf-cart.js", "CANONICAL_CART_UI_DEPLOY=PASS"):
+    if token not in ui_deploy:
+        fail(f"canonical cart UI deploy script missing: {token}")
+if "matrix-control.js" in ui_deploy:
+    fail("canonical cart UI deploy script must not publish the legacy Matrix controller")
+if ui_manifest.get("start_url") != "/hbnf-cart.html":
+    fail("canonical cart PWA start_url is not /hbnf-cart.html")
+
 for path in (
     "release/source/scripts/hbnf-cart-production-cutover-init.sql",
     "release/source/scripts/hbnf-cart-production-activate.sql",
