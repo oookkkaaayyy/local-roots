@@ -1,0 +1,115 @@
+name: HBNF Tempo Lock field package
+
+on:
+  push:
+    branches:
+      - hbnf-matrix-wow-bundle-r3-20260921
+    paths:
+      - '.github/workflows/hbnf-tempo-lock-package.yml'
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  package:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download tempo-lock Matrix firmware
+        uses: actions/download-artifact@v4
+        with:
+          name: HBNF-WLED16-WOW-MAX-V3
+          path: incoming/matrix-new
+          run-id: 36207806022
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download tempo-lock AUX firmware
+        uses: actions/download-artifact@v4
+        with:
+          name: HBNF-SP803E-AUX-R3
+          path: incoming/aux-new
+          run-id: 36208156962
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download known-good pre-fix Matrix rollback firmware
+        uses: actions/download-artifact@v4
+        with:
+          name: HBNF-WLED16-WOW-MAX-V3
+          path: incoming/matrix-old
+          run-id: 35952919486
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download known-good pre-fix AUX rollback firmware
+        uses: actions/download-artifact@v4
+        with:
+          name: HBNF-SP803E-AUX-R3
+          path: incoming/aux-old
+          run-id: 35958014396
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Assemble guarded installer
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$RUNNER_TEMP/HBNF_TEMPO_LOCK_FIELD_FIX"
+          mkdir -p "$OUT/rollback"
+
+          MNEW="$(find incoming/matrix-new -type f -name 'HBNF_WLED16_MAX_WOWMAX_V3.bin' -print -quit)"
+          ANEW="$(find incoming/aux-new -type f -name 'HBNF_SP803E_AUX_R3.bin' -print -quit)"
+          MOLD="$(find incoming/matrix-old -type f -name 'HBNF_WLED16_MAX_WOWMAX_V3.bin' -print -quit)"
+          AOLD="$(find incoming/aux-old -type f -name 'HBNF_SP803E_AUX_R3.bin' -print -quit)"
+          test -n "$MNEW" -a -f "$MNEW"
+          test -n "$ANEW" -a -f "$ANEW"
+          test -n "$MOLD" -a -f "$MOLD"
+          test -n "$AOLD" -a -f "$AOLD"
+
+          cp "$MNEW" "$OUT/HBNF_WLED16_MAX_WOWMAX_V3_TEMPO_LOCK.bin"
+          cp "$ANEW" "$OUT/HBNF_SP803E_AUX_R3_TEMPO_LOCK.bin"
+          cp "$MOLD" "$OUT/rollback/HBNF_WLED16_MAX_WOWMAX_V3_PRE_TEMPO_LOCK.bin"
+          cp "$AOLD" "$OUT/rollback/HBNF_SP803E_AUX_R3_PRE_TEMPO_LOCK.bin"
+          cp hbnf-tempo-lock-field-fix/INSTALL_TEMPO_LOCK.command "$OUT/INSTALL_TEMPO_LOCK.command"
+          chmod +x "$OUT/INSTALL_TEMPO_LOCK.command"
+
+          cat > "$OUT/README_FIRST.txt" <<'EOF'
+          HBNF TEMPO-LOCK FIELD FIX
+
+          Purpose:
+          Keep user-selected animation speed authoritative while preserving audio-reactive
+          color/intensity/accent behavior. Coughs, claps and music transients must not
+          accelerate the base animation tempo.
+
+          Install:
+          1. Put the Mac on the same local network as the powered Matrix and AUX.
+          2. Double-click INSTALL_TEMPO_LOCK.command.
+          3. The installer verifies identities, backs up both nodes, flashes Matrix then AUX,
+             verifies both new witnesses, and automatically attempts rollback if OTA verification fails.
+          4. Final physical acceptance: play music and confirm selected SPEED remains stable
+             while audio-reactive accents still respond.
+
+          Expected new witnesses:
+          Matrix: registry28-tempo-lock-v5-colorwifi
+          AUX:    registry28-tempo-lock-1d-v3-colorwifi
+          EOF
+          sed -i '' 's/^          //' "$OUT/README_FIRST.txt"
+
+          (
+            cd "$OUT"
+            shasum -a 256               HBNF_WLED16_MAX_WOWMAX_V3_TEMPO_LOCK.bin               HBNF_SP803E_AUX_R3_TEMPO_LOCK.bin               rollback/HBNF_WLED16_MAX_WOWMAX_V3_PRE_TEMPO_LOCK.bin               rollback/HBNF_SP803E_AUX_R3_PRE_TEMPO_LOCK.bin               INSTALL_TEMPO_LOCK.command > SHA256SUMS
+            shasum -a 256 -c SHA256SUMS
+            bash -n INSTALL_TEMPO_LOCK.command
+          )
+
+          ditto -c -k --sequesterRsrc --keepParent "$OUT" "$RUNNER_TEMP/HBNF_TEMPO_LOCK_FIELD_FIX.zip"
+          echo "PACKAGE=$RUNNER_TEMP/HBNF_TEMPO_LOCK_FIELD_FIX.zip" >> "$GITHUB_ENV"
+
+      - name: Upload field package
+        uses: actions/upload-artifact@v4
+        with:
+          name: HBNF-TEMPO-LOCK-FIELD-FIX
+          path: ${{ env.PACKAGE }}
+          if-no-files-found: error
+          retention-days: 30
