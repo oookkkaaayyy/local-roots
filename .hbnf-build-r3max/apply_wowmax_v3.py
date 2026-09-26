@@ -18,8 +18,8 @@ def once(old:str,new:str,label:str):
 
 once("#include <ANIMartRIX.h>","#define ANIMartRIX_NO_SERPENTINE\n#include <ANIMartRIX.h>","no-serpentine")
 once("if (SEGENV.call == 0) {","if ((SEGENV.call == 0) || (SEGMENT.virtualWidth() != num_x) || (SEGMENT.virtualHeight() != num_y)) {","dimension-reinit")
-once("hbnfAudio.apply(speedFactor, millis())",
-     "(hbnfAudio.setScene(SEGMENT.mode), hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, SEGMENT.custom1, SEGMENT.custom2, SEGMENT.virtualWidth(), SEGMENT.virtualHeight(), SEGMENT.custom3 != 0))",
+once("setSpeedFactor(hbnfAudio.apply(speedFactor, millis()))",
+     "setSpeedFactor((hbnfAudio.setScene(SEGMENT.mode), hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, SEGMENT.custom1, SEGMENT.custom2, SEGMENT.virtualWidth(), SEGMENT.virtualHeight(), SEGMENT.custom3 != 0)))",
      "semantic-tempo-speed-apply")
 
 public_anchor="\tpublic:\n\tvoid initEffect() {"
