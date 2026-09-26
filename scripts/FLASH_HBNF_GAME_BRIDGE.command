@@ -22,7 +22,7 @@ echo "This installer does not touch Matrix, AUX, Supabase, or the router."
 VENV="${TMPDIR:-/tmp}/hbnf-game-bridge-venv"
 python3 -m venv "$VENV"
 "$VENV/bin/python" -m pip -q install --upgrade pip
-"$VENV/bin/python" -m pip -q install "esptool==4.5.1" "pyserial==3.5"
+"$VENV/bin/python" -m pip -q install "esptool==4.5.1" "pyserial==3.5" "segno==1.6.6"
 "$VENV/bin/python" -m esptool --chip esp32 --port "$PORT" --baud 460800 write_flash 0x0 "$FACTORY"
 echo "FLASH=PASS"
 sleep 2

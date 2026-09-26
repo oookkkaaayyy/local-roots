@@ -1,0 +1,42 @@
+name: HBNF Optional Web Controller Add-On
+on:
+  push:
+    branches: [hbnf-cart-ipad-controller-staging-20260926]
+    paths:
+      - 'hbnf-game-adapter/**'
+      - 'hbnf-wow-bundle/web/hbnf-cart-ipad.*'
+      - 'scripts/hbnf-game-bridge-build.sh'
+      - 'scripts/FLASH_HBNF_GAME_BRIDGE.command'
+      - 'scripts/provision_hbnf_game_bridge.py'
+      - 'scripts/hbnf-controller-addon-build.sh'
+      - '.github/workflows/hbnf-web-controller-addon.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: arduino/setup-arduino-cli@v2
+      - name: Legacy iPad compatibility contract
+        run: node hbnf-wow-bundle/web/HBNF_CART_IPAD_TEST.js
+      - name: Host input broker tests
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic hbnf-game-adapter/test_remote_input.cpp -o /tmp/remote
+          /tmp/remote
+      - name: Build optional add-on
+        run: bash scripts/hbnf-controller-addon-build.sh "$GITHUB_WORKSPACE/build/hbnf-controller-addon"
+      - name: Verify artifact
+        run: |
+          set -euo pipefail
+          (cd build/hbnf-controller-addon && shasum -a 256 -c SHA256SUMS.txt)
+          test -s build/hbnf-controller-addon/game-bridge/HBNF_GAME_BRIDGE_FACTORY.bin
+          test -s build/hbnf-controller-addon/ipad/hbnf-cart-ipad.html
+          grep -q 'HBNF-Play' build/hbnf-controller-addon/docs/WEB_CONTROLLERS.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HBNF-OPTIONAL-WEB-CONTROLLER-ADDON
+          path: build/hbnf-controller-addon/
+          retention-days: 90
