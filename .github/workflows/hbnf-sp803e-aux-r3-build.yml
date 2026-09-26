@@ -1,5 +1,5 @@
 name: HBNF SP803E AUX R3 compile
-# Cart foundation matched-build witness: both firmware targets must pass from the same source revision.
+# Matched firmware source revision; keep paired Matrix and AUX builds on this exact commit.
 
 on:
   push:

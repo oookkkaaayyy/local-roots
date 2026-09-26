@@ -1,5 +1,5 @@
 name: HBNF WLED16 WOW MAX compile
-# Cart foundation matched-build witness: both firmware targets must pass from the same source revision.
+# Matched firmware source revision; keep paired Matrix and AUX builds on this exact commit.
 
 on:
   push:
@@ -111,7 +111,6 @@ jobs:
           cp /tmp/hbnf-r1/firmware_patch/platformio_override.ini platformio_override.ini
           mkdir -p usermods/hbnf_flow
           cp -R /tmp/hbnf-r1/hbnf_flow/hbnf_flow/. usermods/hbnf_flow/
-          python /tmp/hbnf-r1/firmware_patch/apply_hbnf_animartrix_patch.py /tmp/wled
           python /tmp/hbnf-r1/firmware_patch/apply_hbnf_animartrix_patch.py /tmp/wled --patch-dir /tmp/hbnf-r1/firmware_patch
           cp /tmp/hbnf-r1/firmware_patch/hbnf_music_intelligence.h /tmp/wled/usermods/usermod_v2_animartrix/
           python "$GITHUB_WORKSPACE/.hbnf-build-r3max/apply_wowmax_v3.py" /tmp/wled
