@@ -8,6 +8,8 @@ g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic hbnf-game-adapter/test_ddp_fr
 /tmp/hbnf-ddp
 g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic hbnf-game-adapter/test_game_lease_guard.cpp -o /tmp/hbnf-lease
 /tmp/hbnf-lease
+g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic hbnf-game-adapter/test_session_lifecycle.cpp -o /tmp/hbnf-session
+/tmp/hbnf-session
 node hbnf-uv-control/test_uv_guard.mjs
 grep -q '192.168.8.20' docs/HBNF_CART_ROUTER_STAGING.md
 grep -q '192.168.8.21' docs/HBNF_CART_ROUTER_STAGING.md
