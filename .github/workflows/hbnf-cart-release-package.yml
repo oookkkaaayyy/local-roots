@@ -69,11 +69,13 @@ jobs:
               (pathlib.Path("release/rollback/firmware/aux-r3"), "2a70872fd2373a8ecdcd98c8c73c2e8d871dc902c92599f85081895fe98f744e", 1342288),
           ]
           for root, expected_sha, expected_size in baselines:
-              for candidate in root.rglob("*.bin"):
-                  print(f"rollback_candidate path={candidate} sha256={hashlib.sha256(candidate.read_bytes()).hexdigest()} bytes={candidate.stat().st_size}")
-              matches = [p for p in root.rglob("*.bin") if p.stat().st_size == expected_size and hashlib.sha256(p.read_bytes()).hexdigest() == expected_sha]
-              assert len(matches) == 1, f"rollback firmware missing or ambiguous under {root}"
-              print(f"rollback {matches[0]} sha256={expected_sha} bytes={expected_size}")
+              candidates = list(root.rglob("*.bin"))
+              assert candidates, f"rollback firmware missing under {root}"
+              for candidate in candidates:
+                  actual_sha = hashlib.sha256(candidate.read_bytes()).hexdigest()
+                  actual_size = candidate.stat().st_size
+                  assert actual_sha == expected_sha and actual_size == expected_size, f"rollback firmware identity mismatch: {candidate}"
+                  print(f"rollback {candidate} sha256={actual_sha} bytes={actual_size}")
           PY
           ls release/firmware/aux/*COMMISSIONING*.zip
           mkdir -p release/source release/rollback
