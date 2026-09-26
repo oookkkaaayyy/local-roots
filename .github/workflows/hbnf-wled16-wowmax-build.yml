@@ -1,5 +1,5 @@
 name: HBNF WLED16 WOW MAX compile
-# Matched firmware source revision; keep paired Matrix and AUX builds on this exact commit.
+# Paired firmware build verifies the same committed MusicIntelligence header in each target.
 
 on:
   push:

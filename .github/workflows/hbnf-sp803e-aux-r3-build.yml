@@ -1,5 +1,5 @@
 name: HBNF SP803E AUX R3 compile
-# Matched firmware source revision; keep paired Matrix and AUX builds on this exact commit.
+# Paired firmware build verifies the same committed MusicIntelligence header in each target.
 
 on:
   push:
@@ -112,7 +112,6 @@ jobs:
             -D UM_AUDIOREACTIVE_ENABLE=1
             -D SR_DMTYPE=254
           EOF
-          python /tmp/hbnf-r1/firmware_patch/apply_hbnf_animartrix_patch.py /tmp/wled
           python /tmp/hbnf-r1/firmware_patch/apply_hbnf_animartrix_patch.py /tmp/wled --patch-dir /tmp/hbnf-r1/firmware_patch
           cp /tmp/hbnf-r1/firmware_patch/hbnf_music_intelligence.h /tmp/wled/usermods/usermod_v2_animartrix/
           python "$GITHUB_WORKSPACE/.hbnf-build-r3max/apply_wowmax_v3.py" /tmp/wled
