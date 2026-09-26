@@ -35,7 +35,7 @@ jobs:
           tar -tzf build/HBNF_CART_POST_RELEASE_KIT.tar.gz > /tmp/hbnf-kit-list.txt
           grep -q 'START_HBNF_POST_RELEASE.command' /tmp/hbnf-kit-list.txt
           grep -q 'game-bridge/HBNF_GAME_BRIDGE_FACTORY.bin' /tmp/hbnf-kit-list.txt
-          shasum -a 256 -c build/HBNF_CART_POST_RELEASE_KIT.tar.gz.sha256
+          (cd build && shasum -a 256 -c HBNF_CART_POST_RELEASE_KIT.tar.gz.sha256)
           mkdir /tmp/hbnf-kit
           tar -xzf build/HBNF_CART_POST_RELEASE_KIT.tar.gz -C /tmp/hbnf-kit
           K=/tmp/hbnf-kit/hbnf-postrelease-kit
