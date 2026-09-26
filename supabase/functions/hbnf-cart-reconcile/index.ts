@@ -16,16 +16,17 @@ Deno.serve(async (req: Request) => {
   ]);
   if (cartError || fenceError || !cart || !fence?.active || cart.revision !== body.revision || fence.epoch !== body.fenceEpoch || fence.release_id !== body.releaseId) return reply({ error: "stale_fence_or_state" }, 409);
   const state = cart.state as Record<string, unknown>, profiles = state.devices as Record<string, Record<string, unknown>>;
-  const matrixUrl = Deno.env.get("HBNF_MATRIX_ADAPTER_URL"), auxUrl = Deno.env.get("HBNF_AUX_ADAPTER_URL");
-  const matrixToken = Deno.env.get("HBNF_MATRIX_ADAPTER_TOKEN"), auxToken = Deno.env.get("HBNF_AUX_ADAPTER_TOKEN");
-  if (!matrixUrl || !auxUrl || !matrixToken || !auxToken) return reply({ error: "adapter_configuration_missing" }, 503);
+  const base = url.replace(/\/$/, "");
+  const matrixUrl = base + "/functions/v1/hbnf-matrix-adapter";
+  const auxUrl = base + "/functions/v1/hbnf-aux-adapter";
+  const matrixToken = key, auxToken = key;
   const projections = devices.map((deviceId) => ({
     cartId: body.cartId, deviceId, cartRevision: cart.revision, fenceEpoch: fence.epoch, release: fence.release_id,
     enabled: state.power === "on" && profiles[deviceId].enabled !== false,
     brightness: profiles[deviceId].brightness,
     brightnessProfileRevision: profiles[deviceId].profileRevision,
     programMode: state.programMode, sceneId: state.sceneId, paletteId: state.paletteId,
-    vibe: state.vibe, speedBias: state.effectiveMusicTempoBias ?? state.manualSpeedBias ?? 1,
+    vibe: state.vibe, tempoMode: state.tempoMode ?? "music", speedBias: state.effectiveMusicTempoBias ?? state.manualSpeedBias ?? 1,
     sequenceCursor: state.sequenceCursor, overlay: activeOverlay(state.overlays as Record<string, unknown>[] ?? []),
     applyCompleteProjection: true,
   }));
