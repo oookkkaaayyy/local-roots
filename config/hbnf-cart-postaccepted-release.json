@@ -1,0 +1,9 @@
+{
+  "schema": "hbnf-cart-postaccepted-one-pass-v1",
+  "accepted_release_branch": "hbnf-cart-foundation-v1-20260925",
+  "accepted_release_sha": "8962d34d908e2bbd6971575f0174ff203e797a27",
+  "accepted_release_record": "hbnf-cart-release/PHYSICAL_ACCEPTED_RELEASE_20260926.json",
+  "staged_from_unified_sha": "e0cfd5603407a52f90fc2dd2bdb1077e3af26915",
+  "user_facing_launcher": "START_HBNF_CART_FINISH.command",
+  "created_for": "single post-acceptance deployment process"
+}

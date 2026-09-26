@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#071018">
+<meta name="hbnf-build" content="hbnf-cart-ipad-legacy-v1">
+<title>HBNF Cart · iPad</title>
+<style>
+html,body{margin:0;min-height:100%;background:#071018;color:#eef7fa;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif}
+*{-webkit-box-sizing:border-box;box-sizing:border-box}
+body{padding:14px}
+.wrap{max-width:920px;margin:0 auto}
+h1{font-size:28px;margin:4px 0 2px}.muted{color:#a8c0c8;font-size:14px}
+.panel{background:#0d1d25;border:1px solid #294751;border-radius:14px;padding:13px;margin:10px 0}
+.row{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:8px}
+button,select,input{font:inherit;color:inherit;background:#14303a;border:1px solid #416976;border-radius:10px}
+button{min-height:58px;min-width:108px;padding:8px 15px;font-size:20px;font-weight:600}
+button:active{background:#245565}.danger{border-color:#c75569}.primary{border-color:#58cbb0}
+select,input[type=email]{min-height:52px;padding:8px;font-size:18px}
+select{max-width:260px}
+.device{margin-top:12px}.deviceHead{display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between;font-size:20px;font-weight:600}
+input[type=range]{width:100%;height:46px;margin:5px 0}
+#status{min-height:40px;white-space:pre-wrap;font-size:15px}
+#authPanel[hidden],.hidden{display:none!important}
+.bigGames{width:100%;min-height:68px;font-size:23px}
+@media(min-width:700px){button{min-width:128px}.panel{padding:16px}.row{gap:10px}}
+</style>
+</head>
+<body><div class="wrap">
+<h1>HBNF CART</h1>
+<div class="muted">iPad mini compatibility controller · same canonical cart state as iPhone</div>
+
+<div id="authPanel" class="panel" hidden>
+ <div class="muted">Sign in with the same HBNF operator account.</div>
+ <div class="row"><input id="authEmail" type="email" autocomplete="email" placeholder="Email"><button id="sendMagicLink">SEND LINK</button></div>
+ <div id="authStatus" class="muted"></div>
+</div>
+
+<div class="panel">
+ <div class="row">
+  <button class="danger" data-command="OFF">OFF</button>
+  <button class="primary" data-command="ON">ON</button>
+  <button data-command="NEXT">NEXT</button>
+  <button data-command="AUTO">AUTO</button>
+  <button data-command="LOCK">LOCK</button>
+ </div>
+</div>
+
+<div class="panel">
+ <div class="row">
+  <select id="scene"><option value="course-flow">Course Flow</option><option value="field-mix">Field Mix</option><option value="hbnf-signature">HBNF Signature</option><option value="quiet-cosmos">Quiet Cosmos</option></select><button id="setScene">SCENE</button>
+  <select id="palette"><option value="hbnf-balanced">Balanced</option><option value="copper">Copper</option><option value="ocean">Ocean</option></select><button id="setPalette">PALETTE</button>
+ </div>
+ <div class="row" style="margin-top:8px">
+  <select id="vibe"><option>mellow</option><option>moderate</option><option>energetic</option><option>peak</option></select><button id="setVibe">VIBE</button>
+  <button data-command="VIBE_AUTO">VIBE AUTO</button><button data-command="TEMPO_AUTO">TEMPO AUTO</button>
+ </div>
+</div>
+
+<div class="panel">
+ <div class="device"><div class="deviceHead"><span>Matrix</span><span id="matrixValue">8</span></div><input id="matrixBrightness" type="range" min="0" max="255" value="8"><button data-brightness="matrix">SAVE MATRIX</button></div>
+ <div class="device"><div class="deviceHead"><span>Underglow</span><span id="auxValue">64</span></div><input id="auxBrightness" type="range" min="0" max="255" value="64"><button data-brightness="aux">SAVE AUX</button></div>
+</div>
+
+<div class="panel">
+ <button id="games" class="bigGames primary">GAMES / GUEST PLAY</button>
+ <div class="muted">Opens the local game bridge on HBNF-Cart. Stadia controllers still have priority.</div>
+</div>
+
+<div class="panel"><div id="status">Connecting…</div><div class="row"><button id="refresh">REFRESH</button><button id="signOut">SIGN OUT</button></div></div>
+</div>
+<script src="./hbnf-cart-ipad.js"></script>
+</body></html>
