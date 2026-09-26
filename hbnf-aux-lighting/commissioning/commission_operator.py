@@ -13,8 +13,6 @@ HERE=pathlib.Path(__file__).resolve().parent
 sys.path.insert(0,str(HERE))
 import local_commission as lc
 
-EXPECTED_FW_SHA="b2ef3045f00e37cdf6e6e4f9864ef831fae59ab5636cf37780b2dbada3e767d4"
-EXPECTED_FW_BYTES=1345216
 BACKUP_PATHS=["/json/cfg","/json/state","/json/info","/json/eff","/json/pins","/presets.json"]
 
 
@@ -23,6 +21,22 @@ def sha256(path:pathlib.Path)->str:
     with path.open('rb') as f:
         for chunk in iter(lambda:f.read(1024*1024),b''): h.update(chunk)
     return h.hexdigest()
+
+
+def expected_firmware_identity(root:pathlib.Path|None=None)->tuple[str,int]:
+    root=(root or HERE).resolve()
+    metrics=root/"FINAL_METRICS.txt"
+    if not metrics.is_file():
+        raise RuntimeError(f"FINAL_METRICS.txt missing under {root}")
+    kv={}
+    for line in metrics.read_text().splitlines():
+        if '=' in line:
+            k,v=line.split('=',1);kv[k]=v
+    digest=str(kv.get("firmware_sha256") or "").strip()
+    size=int(kv.get("firmware_bytes") or -1)
+    if len(digest)!=64 or size<=0:
+        raise RuntimeError("FINAL_METRICS.txt is missing a valid firmware identity")
+    return digest,size
 
 
 def verify_package(root:pathlib.Path)->dict:
@@ -39,9 +53,10 @@ def verify_package(root:pathlib.Path)->dict:
         if '=' in line:
             k,v=line.split('=',1); kv[k]=v
     con=json.loads(contract.read_text()); sc=json.loads(scenes.read_text())
+    expected_sha,expected_bytes=expected_firmware_identity(root)
     checks={
-      "firmwareSha":got_sha==EXPECTED_FW_SHA==kv.get("firmware_sha256"),
-      "firmwareBytes":got_bytes==EXPECTED_FW_BYTES==int(kv.get("firmware_bytes","-1")),
+      "firmwareSha":got_sha==expected_sha==kv.get("firmware_sha256"),
+      "firmwareBytes":got_bytes==expected_bytes==int(kv.get("firmware_bytes","-1")),
       "release":kv.get("release")==lc.AUX_RELEASE,
       "engine":kv.get("engine")==lc.AUX_ENGINE,
       "witness":kv.get("build_witness")==lc.AUX_WITNESS,
