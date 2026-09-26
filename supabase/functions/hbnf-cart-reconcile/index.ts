@@ -27,7 +27,18 @@ Deno.serve(async (req: Request) => {
     brightnessProfileRevision: profiles[deviceId].profileRevision,
     programMode: state.programMode, sceneId: state.sceneId, paletteId: state.paletteId,
     vibe: state.vibe, tempoMode: state.tempoMode ?? "music", speedBias: state.effectiveMusicTempoBias ?? state.manualSpeedBias ?? 1,
-    sequenceCursor: state.sequenceCursor, overlay: activeOverlay(state.overlays as Record<string, unknown>[] ?? []),
+    sequenceCursor: state.sequenceCursor,
+    audio: {
+      bass: (state.music as Record<string, unknown> | undefined)?.bass ?? 0,
+      mids: (state.music as Record<string, unknown> | undefined)?.mids ?? 0,
+      treble: (state.music as Record<string, unknown> | undefined)?.treble ?? 0,
+      bassIntensity: (state.music as Record<string, unknown> | undefined)?.bassAccent ?? 0,
+      midsIntensity: (state.music as Record<string, unknown> | undefined)?.midsAccent ?? 0,
+      trebleIntensity: (state.music as Record<string, unknown> | undefined)?.trebleAccent ?? 0,
+      onset: (state.music as Record<string, unknown> | undefined)?.onset ?? 0,
+      accentsOnly: true,
+    },
+    overlay: activeOverlay(state.overlays as Record<string, unknown>[] ?? []),
     applyCompleteProjection: true,
   }));
   const endpoints: Record<string, { url: string; token: string }> = { matrix: { url: matrixUrl, token: matrixToken }, aux: { url: auxUrl, token: auxToken } };
