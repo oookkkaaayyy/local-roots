@@ -20,38 +20,33 @@ Deno.serve(async (req: Request) => {
   const { data: user, error: userError } = await auth.auth.getUser();
   if (userError || !user.user) return response({ error: "unauthorized" }, 401);
   const service = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  const { data: admin, error: adminError } = await service.schema("hbnf_internal").from("cart_operator_allowlist").select("user_id").eq("user_id", user.user.id).eq("active", true).maybeSingle();
-  if (adminError || !admin) return response({ error: "forbidden" }, 403);
+  const { data: allowed, error: adminError } = await service.rpc("hbnf_cart_operator_is_allowed", { p_user_id: user.user.id });
+  if (adminError || allowed !== true) return response({ error: "forbidden" }, 403);
 
   let request: Record<string, unknown>;
   try { request = await req.json(); } catch { return response({ error: "invalid_json" }, 400); }
   const action = String(request.action ?? "");
   if (action === "status") {
-    const [{ data: desired, error: desiredError }, { data: observed, error: observedError }] = await Promise.all([
-      service.schema("hbnf_internal").from("cart_desired_state").select("cart_id,revision,state,updated_at").eq("cart_id", "hbnf-cart").maybeSingle(),
-      service.schema("hbnf_internal").from("cart_device_observed").select("device_id,online,status,desired_revision,fence_epoch,release_id,boot_id,reported,observed_at").eq("cart_id", "hbnf-cart"),
-    ]);
-    if (desiredError || observedError) return response({ error: "state_read_failed" }, 500);
-    return response({ desired, observed: observed ?? [] });
+    const { data: snapshot, error: statusError } = await service.rpc("hbnf_cart_get_status", { p_cart_id: "hbnf-cart" });
+    if (statusError || !snapshot) return response({ error: "state_read_failed" }, 500);
+    return response(snapshot);
   }
   if (action !== "command" || !required(request.commandId, 80) || !required(request.type, 48) || !Number.isSafeInteger(request.expectedRevision) || Number(request.expectedRevision) < 0 || !request.payload || typeof request.payload !== "object") {
     return response({ error: "invalid_command" }, 400);
   }
-  const [{ data: row, error: readError }, { data: fence, error: fenceError }] = await Promise.all([
-    service.schema("hbnf_internal").from("cart_desired_state").select("revision,state").eq("cart_id", "hbnf-cart").maybeSingle(),
-    service.schema("hbnf_internal").from("cart_actuator_fence").select("epoch,release_id,active").eq("cart_id", "hbnf-cart").maybeSingle(),
-  ]);
-  if (readError || fenceError || !row || !fence?.active) return response({ error: "cart_not_ready" }, 503);
+  const { data: context, error: readError } = await service.rpc("hbnf_cart_get_context", { p_cart_id: "hbnf-cart" });
+  const row = context?.desired as { revision: number; state: Record<string, unknown> } | null;
+  const fence = context?.fence as { epoch: number; release_id: string; active: boolean } | null;
+  if (readError || !row || !fence?.active) return response({ error: "cart_not_ready" }, 503);
   if (request.expectedRevision !== row.revision) return response({ error: "stale_revision", currentRevision: row.revision }, 409);
   const next = reduce(row.state, String(request.type), request.payload as Record<string, unknown>, request.commandId as string, row.revision);
   if (!next) return response({ error: "command_rejected" }, 400);
-  const { data: committed, error: commitError } = await service.schema("hbnf_internal").rpc("hbnf_cart_commit_command", {
+  const { data: committed, error: commitError } = await service.rpc("hbnf_cart_commit_command_bridge", {
     p_cart_id: "hbnf-cart", p_command_id: request.commandId, p_command_type: request.type,
     p_expected_revision: row.revision, p_next_state: next,
   }).single();
   if (commitError) return response({ error: commitError.code === "40001" ? "stale_revision" : "command_commit_failed" }, commitError.code === "40001" ? 409 : 500);
   const revision = Number((committed as Record<string, unknown>).result_revision);
-  // Transactional desired-state commit is authoritative. Reconciliation is always full-state and fenced.
   const reconcileResponse = await fetch(`${url}/functions/v1/hbnf-cart-reconcile`, {
     method: "POST", headers: { Authorization: `Bearer ${serviceKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({ cartId: "hbnf-cart", revision, releaseId: fence.release_id, fenceEpoch: fence.epoch }),
