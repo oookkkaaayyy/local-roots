@@ -28,6 +28,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
       - uses: actions/download-artifact@v4
         with:
           name: HBNF-WLED16-WOW-MAX-V3
@@ -120,6 +123,7 @@ jobs:
           cp scripts/hbnf-cart-production-readiness.sql release/source/scripts/
           cp scripts/hbnf-cart-cutover-init.sh release/source/scripts/
           cp scripts/hbnf-cart-migration-dry-run.sh release/source/scripts/
+          cp scripts/hbnf-cart-projection-preflight.mjs release/source/scripts/
           cp scripts/hbnf-cart-release-gates.py release/source/scripts/
           cp docs/HBNF_CART_PRODUCTION_CUTOVER.md release/source/docs/
           cp -R hbnf-cart-release/rollback/supabase-functions/hbnf-matrix-control-v171 release/source/production-control-baseline/
