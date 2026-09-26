@@ -82,10 +82,11 @@ jobs:
                 echo "::error::$label newest firmware run $run_id ($head_sha) concluded $conclusion"
                 exit 1
               fi
-              git merge-base --is-ancestor "$head_sha" "$GITHUB_SHA" || {
-                echo "::error::$label firmware run $run_id is not an ancestor of packaging commit"
+              compare_status=$(gh api "repos/${GITHUB_REPOSITORY}/compare/${head_sha}...${GITHUB_SHA}" --jq '.status')
+              if [[ "$compare_status" != "ahead" && "$compare_status" != "identical" ]]; then
+                echo "::error::$label firmware run $run_id is not an ancestor of packaging commit (compare=$compare_status)"
                 exit 1
-              }
+              fi
               printf '%s|%s\n' "$run_id" "$head_sha"
               return 0
             done
