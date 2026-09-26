@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - hbnf-matrix-wow-bundle-r3-20260921
+      - hbnf-cart-foundation-v1-20260925
     paths:
       - '.hbnf-build-aux-r3/**'
       - '.hbnf-build-r3max/**'
