@@ -1,6 +1,7 @@
 const fs=require('fs');
-const js=fs.readFileSync('hbnf-wow-bundle/web/hbnf-cart-ipad.js','utf8');
-const html=fs.readFileSync('hbnf-wow-bundle/web/hbnf-cart-ipad.html','utf8');
+const path=require('path');
+const js=fs.readFileSync(path.join(__dirname,'hbnf-cart-ipad.js'),'utf8');
+const html=fs.readFileSync(path.join(__dirname,'hbnf-cart-ipad.html'),'utf8');
 const bad=[
   ['arrow function',/=>/],
   ['async function',/\basync\b/],
