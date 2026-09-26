@@ -163,6 +163,7 @@ export function resolveEffectiveState(state, { release, fenceEpoch }) {
       sceneId: state.sceneId,
       paletteId: state.paletteId,
       vibe: state.vibeMode === "manual" ? state.vibe : (music.vibe ?? state.vibe),
+      tempoMode: state.tempoMode,
       speedBias,
       sequenceCursor: state.sequenceCursor,
       audio: {
