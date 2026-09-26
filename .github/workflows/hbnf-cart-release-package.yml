@@ -32,7 +32,7 @@ jobs:
       - name: Verify images and commissioning package
         run: |
           set -euo pipefail
-          test -s release/firmware/matrix/HBNF_WLED16_WOW_MAX_V3.bin
+          test -s release/firmware/matrix/HBNF_WLED16_MAX_WOWMAX_V3.bin
           test -s release/firmware/aux/HBNF_SP803E_AUX_R3.bin
           (cd release/firmware/matrix && sha256sum -c firmware-sha256.txt)
           (cd release/firmware/aux && sha256sum -c firmware-sha256.txt)
