@@ -61,6 +61,8 @@ struct Framebuffer {
 struct Point {
   int8_t x = 0;
   int8_t y = 0;
+  constexpr Point() = default;
+  constexpr Point(int8_t xValue, int8_t yValue) : x(xValue), y(yValue) {}
   bool operator==(const Point& o) const { return x == o.x && y == o.y; }
 };
 
