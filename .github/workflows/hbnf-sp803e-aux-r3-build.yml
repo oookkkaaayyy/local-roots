@@ -111,7 +111,8 @@ jobs:
             -D UM_AUDIOREACTIVE_ENABLE=1
             -D SR_DMTYPE=254
           EOF
-          python /tmp/hbnf-r1/firmware_patch/apply_hbnf_animartrix_patch.py /tmp/wled --patch-dir /tmp/hbnf-r1/firmware_patch
+          python /tmp/hbnf-r1/firmware_patch/apply_hbnf_animartrix_patch.py /tmp/wled
+          cp /tmp/hbnf-r1/firmware_patch/hbnf_music_intelligence.h /tmp/wled/usermods/usermod_v2_animartrix/ --patch-dir /tmp/hbnf-r1/firmware_patch
           python "$GITHUB_WORKSPACE/.hbnf-build-r3max/apply_wowmax_v3.py" /tmp/wled
           python "$GITHUB_WORKSPACE/.hbnf-build-aux-r3/apply_aux_r3.py" /tmp/wled
           grep -q 'hbnf-wow-aux-r3-2026-09-22-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
