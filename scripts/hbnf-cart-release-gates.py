@@ -80,7 +80,7 @@ for path in (
 
 firmware = (
     ("release/firmware/matrix", "HBNF_WLED16_MAX_WOWMAX_V3.bin",
-     "8065fa2fe3cf919839ebe984c444cefc4ee9fca3cd8302a2dcf3f4216bd8bab3"),
+     "761a83f2b34f69eaa6ec3a87bcf8b1201c40c41c9d51220284c984f2d8146b8d"),
     ("release/firmware/aux", "HBNF_SP803E_AUX_R3.bin",
      "b2ef3045f00e37cdf6e6e4f9864ef831fae59ab5636cf37780b2dbada3e767d4"),
 )
@@ -107,5 +107,5 @@ print("RELEASE_GATES=PASS")
 print("production_sources=present")
 print("production_migration=inert-and-distinct")
 print("rollback_sources_and_firmware=verified")
-print("matrix_sha256=8065fa2fe3cf919839ebe984c444cefc4ee9fca3cd8302a2dcf3f4216bd8bab3")
+print("matrix_sha256=761a83f2b34f69eaa6ec3a87bcf8b1201c40c41c9d51220284c984f2d8146b8d")
 print("aux_sha256=b2ef3045f00e37cdf6e6e4f9864ef831fae59ab5636cf37780b2dbada3e767d4")
