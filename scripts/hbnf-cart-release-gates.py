@@ -23,17 +23,17 @@ require("release/source/20260926070000_hbnf_cart_parity_inert_staging.sql")
 if production_migration.resolve() == staging_migration.resolve() or production_migration.read_bytes() == staging_migration.read_bytes():
     fail("staging-only migration was substituted for production migration")
 sql = production_migration.read_text()
-code = re.sub(r"/\\*.*?\\*/|--[^\\n]*", "", sql, flags=re.S).lower()
+code = re.sub(r"/\*.*?\*/|--[^\n]*", "", sql, flags=re.S).lower()
 for token in ("hbnf_cart_commit_command", "cart_desired_state", "cart_device_observed",
               "cart_command_receipts", "cart_actuator_fence", "cart_operator_allowlist",
               "cart_cutover_readiness"):
     if token not in code:
         fail(f"production migration missing required object: {token}")
-if not re.search(r"insert into hbnf_internal\\.cart_actuator_fence[^;]*values\\s*\\(\\s*'hbnf-cart'\\s*,\\s*1\\s*,\\s*'hbnf-cart-foundation-v1-20260925'\\s*,\\s*false\\s*\\)", code, re.S):
+if not re.search(r"insert into hbnf_internal\.cart_actuator_fence[^;]*values\s*\(\s*'hbnf-cart'\s*,\s*1\s*,\s*'hbnf-cart-foundation-v1-20260925'\s*,\s*false\s*\)", code, re.S):
     fail("migration must seed only the expected inactive fence")
-for forbidden in (r"active\\s*=\\s*true", r"active\\s+boolean[^,;]*default\\s+true",
-                  r"\\bmqtt\\b", r"\\bhttps?://", r"\\bfetch\\s*\\(", r"pg_net",
-                  r"hbnf-matrix-control", r"hbnf-aux-control", r"network\\s+request"):
+for forbidden in (r"active\s*=\s*true", r"active\s+boolean[^,;]*default\s+true",
+                  r"\bmqtt\b", r"\bhttps?://", r"\bfetch\s*\(", r"pg_net",
+                  r"hbnf-matrix-control", r"hbnf-aux-control", r"network\s+request"):
     if re.search(forbidden, code, re.I):
         fail(f"production migration contains activation or actuation marker: {forbidden}")
 if "enable row level security" not in code or "revoke all on all tables" not in code:
