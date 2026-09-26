@@ -24,7 +24,7 @@ Add `HBNF-Cart` to Matrix and AUX while preserving their current Wi-Fi profiles.
 - Matrix -> `192.168.8.20`
 - AUX -> `192.168.8.21`
 
-Reconnect both clients so reservations take effect. Never identify AUX solely by IP: AUX must match MAC `8c94df55c34c` and must not report 512 LEDs.
+Before entering reservations, run `python3 scripts/hbnf-cart-lan-discover.py`. It scans the local Opal /24 with read-only `/json/info` GETs, identifies Matrix by 512 LEDs and AUX by MAC `8c94df55c34c`, and prints the exact current DHCP IP/MAC pairs plus reservation targets. Enter those reservations, then reconnect both clients so reservations take effect. Never identify AUX solely by IP.
 
 Run:
 `python3 scripts/hbnf-cart-device-preflight.py`

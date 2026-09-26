@@ -12,6 +12,7 @@ g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic hbnf-game-adapter/test_sessio
 /tmp/hbnf-session
 node hbnf-uv-control/test_uv_guard.mjs
 python3 scripts/hbnf-cart-device-preflight.py --selftest
+python3 scripts/hbnf-cart-lan-discover.py --selftest
 python3 scripts/hbnf-cart-uv-pin-plan.py --selftest
 bash -n scripts/hbnf-cart-postrelease-overlay.sh
 python3 -m json.tool config/hbnf-cart-router-manifest.json >/dev/null
