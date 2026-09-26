@@ -23,6 +23,8 @@ if "inert" in matrix_adapter.lower() or "inert" in aux_adapter.lower():
     fail("production adapter source contains inert staging marker")
 if "hbnf-matrix-adapter" not in reconcile or "hbnf-aux-adapter" not in reconcile:
     fail("production reconciler is not bound to release-matched production adapters")
+if not re.search(r"\baudio\s*:\s*\{", reconcile):
+    fail("production reconciler projection is missing required audio semantics")
 for forbidden in ("HBNF_MATRIX_ADAPTER_URL", "HBNF_AUX_ADAPTER_URL", "HBNF_MATRIX_ADAPTER_TOKEN", "HBNF_AUX_ADAPTER_TOKEN"):
     if forbidden in reconcile:
         fail(f"unresolved production adapter dependency remains: {forbidden}")
