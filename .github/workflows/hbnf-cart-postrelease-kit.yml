@@ -1,0 +1,51 @@
+name: HBNF Cart Post-Release Kit
+on:
+  push:
+    branches: [hbnf-cart-parallel-staging-20260926]
+    paths:
+      - 'hbnf-game-adapter/**'
+      - 'hbnf-uv-control/**'
+      - 'scripts/HBNF_POST_RELEASE_SETUP.command'
+      - 'scripts/hbnf-cart-network-state.py'
+      - 'scripts/hbnf-cart-lan-discover.py'
+      - 'scripts/hbnf-cart-device-preflight.py'
+      - 'scripts/hbnf-cart-uv-pin-plan.py'
+      - 'scripts/hbnf-game-bridge-build.sh'
+      - 'scripts/FLASH_HBNF_GAME_BRIDGE.command'
+      - 'scripts/provision_hbnf_game_bridge.py'
+      - 'scripts/hbnf-cart-postrelease-kit-build.sh'
+      - 'config/hbnf-cart-router-manifest.json'
+      - 'docs/HBNF_CART_*'
+      - '.github/workflows/hbnf-cart-postrelease-kit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  kit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: arduino/setup-arduino-cli@v2
+      - name: Build self-contained post-release kit
+        run: bash scripts/hbnf-cart-postrelease-kit-build.sh "$GITHUB_WORKSPACE/build/hbnf-postrelease-kit"
+      - name: Verify kit
+        run: |
+          set -euo pipefail
+          tar -tzf build/HBNF_CART_POST_RELEASE_KIT.tar.gz | grep -q 'START_HBNF_POST_RELEASE.command'
+          tar -tzf build/HBNF_CART_POST_RELEASE_KIT.tar.gz | grep -q 'game-bridge/HBNF_GAME_BRIDGE_FACTORY.bin'
+          shasum -a 256 -c build/HBNF_CART_POST_RELEASE_KIT.tar.gz.sha256
+          mkdir /tmp/hbnf-kit
+          tar -xzf build/HBNF_CART_POST_RELEASE_KIT.tar.gz -C /tmp/hbnf-kit
+          K=/tmp/hbnf-kit/hbnf-postrelease-kit
+          bash -n "$K/START_HBNF_POST_RELEASE.command"
+          bash -n "$K/scripts/HBNF_POST_RELEASE_SETUP.command"
+          python3 "$K/scripts/hbnf-cart-network-state.py" --selftest
+          (cd "$K" && shasum -a 256 -c SHA256SUMS.txt)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HBNF-CART-POST-RELEASE-KIT
+          path: |
+            build/HBNF_CART_POST_RELEASE_KIT.tar.gz
+            build/HBNF_CART_POST_RELEASE_KIT.tar.gz.sha256
+          retention-days: 90

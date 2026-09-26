@@ -22,7 +22,12 @@ echo "HBNF POST-RELEASE CART SETUP"
 echo "Evidence folder: $EVIDENCE"
 echo "This tool does not modify production Supabase and does not flash Matrix or AUX."
 
+[[ "$(uname -s)" == "Darwin" ]] || die "this operator kit is staged for the HBNF Mac (macOS)"
 command -v python3 >/dev/null || die "python3 not found"
+
+echo
+echo "PHASE 0 — AUTOMATIC NETWORK STATE"
+python3 scripts/hbnf-cart-network-state.py | tee "$EVIDENCE/NETWORK_STATE_INITIAL.json" || true
 [[ -f config/hbnf-cart-router-manifest.json ]] || die "router manifest missing"
 python3 -m json.tool config/hbnf-cart-router-manifest.json > "$EVIDENCE/ROUTER_MANIFEST.json"
 
@@ -75,10 +80,16 @@ echo "  - flash ONLY the bridge ESP32"
 echo "  - ask once for HBNF-Cart password"
 echo "  - pair P1/P2 using Y + Stadia"
 echo "If either controller cannot pair, stop game setup; normal cart remains unaffected."
-gate "Game-bridge artifact is downloaded/unzipped and bridge ESP32 is connected"
-echo "NEXT_ACTION=double-click FLASH_HBNF_GAME_BRIDGE.command in the artifact folder"
-echo "After it reports HBNF_GAME_BRIDGE_INSTALL=PASS, return here."
-gate "HBNF_GAME_BRIDGE_INSTALL=PASS was shown"
+BRIDGE_INSTALLER="$ROOT/game-bridge/FLASH_HBNF_GAME_BRIDGE.command"
+if [[ -f "$BRIDGE_INSTALLER" ]]; then
+  gate "ELEGOO game-bridge ESP32 is connected by USB-C"
+  chmod +x "$BRIDGE_INSTALLER"
+  bash "$BRIDGE_INSTALLER"
+else
+  gate "Game-bridge artifact is downloaded/unzipped and bridge ESP32 is connected"
+  echo "NEXT_ACTION=run FLASH_HBNF_GAME_BRIDGE.command from the game-bridge artifact"
+  gate "HBNF_GAME_BRIDGE_INSTALL=PASS was shown"
+fi
 
 echo
 echo "PHASE D2 — GAME SAFETY ACCEPTANCE"

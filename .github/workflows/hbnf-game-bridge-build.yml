@@ -28,7 +28,7 @@ jobs:
           test -x build-game-bridge/FLASH_HBNF_GAME_BRIDGE.command
           bash -n build-game-bridge/FLASH_HBNF_GAME_BRIDGE.command
           python3 -m py_compile build-game-bridge/provision_hbnf_game_bridge.py
-          shasum -a 256 -c build-game-bridge/SHA256SUMS.txt
+          (cd build-game-bridge && shasum -a 256 -c SHA256SUMS.txt)
           ls -lh build-game-bridge
       - uses: actions/upload-artifact@v4
         with:

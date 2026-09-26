@@ -3,7 +3,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 URLS="https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json,https://raw.githubusercontent.com/ricardoquesada/esp32-arduino-lib-builder/master/bluepad32_files/package_esp32_bluepad32_index.json"
 CORE="esp32-bluepad32:esp32@4.1.0"
-FQBN="esp32-bluepad32:esp32:esp32"
+FQBN="esp32-bluepad32:esp32:esp32:PartitionScheme=huge_app"
 OUT="${1:-$ROOT/build/hbnf-game-bridge}"
 command -v arduino-cli >/dev/null || { echo "ERROR: arduino-cli not found" >&2; exit 2; }
 TMP="$(mktemp -d)"
