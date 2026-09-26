@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071018"><title>HBNF Cart Control</title>
+  <style>
+    :root{color-scheme:dark;font:16px/1.4 system-ui,sans-serif;background:#071018;color:#eaf4f7}*{box-sizing:border-box}body{margin:0;padding:20px;max-width:680px;margin-inline:auto}h1{font-size:1.55rem}main{display:grid;gap:18px}.panel{border:1px solid #24414c;border-radius:14px;padding:16px;background:#0d1d25}.row{display:flex;gap:10px;flex-wrap:wrap}button,select,input{font:inherit;color:inherit;background:#142c36;border:1px solid #35606b;border-radius:9px;padding:10px}button{min-width:74px;cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #57e0c0;outline-offset:2px}.danger{border-color:#c94c61}.device{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;margin-top:12px}input[type=range]{grid-column:1/-1;width:100%;padding:0}.muted{color:#a4bec6}.status{white-space:pre-wrap;min-height:3em}label{display:flex;align-items:center;gap:8px}select{max-width:100%}
+  </style>
+</head>
+<body><main>
+  <header><h1>HBNF Cart</h1><p class="muted">One display · independently tuned Matrix and underglow</p></header>
+  <section class="panel" aria-label="Cart commands"><div class="row"><button class="danger" data-command="OFF">OFF</button><button data-command="ON">ON</button><button data-command="NEXT">NEXT</button><button data-command="AUTO">AUTO</button><button data-command="LOCK">LOCK</button></div>
+    <div class="row" style="margin-top:12px"><label>Scene <select id="scene"><option value="course-flow">Course Flow</option><option value="field-mix">Field Mix</option><option value="hbnf-signature">HBNF Signature</option><option value="quiet-cosmos">Quiet Cosmos</option></select></label><button id="setScene">Set scene</button>
+    <label>Palette <select id="palette"><option value="hbnf-balanced">Balanced</option><option value="copper">Copper</option><option value="ocean">Ocean</option></select></label><button id="setPalette">Set palette</button></div>
+  </section>
+  <section class="panel"><h2>Visual authority</h2><div class="row"><label>Vibe <select id="vibe"><option>mellow</option><option>moderate</option><option>energetic</option><option>peak</option></select></label><button id="setVibe">Manual vibe</button><button data-command="VIBE_AUTO">Vibe Auto</button><button data-command="TEMPO_AUTO">Tempo Auto</button><label>Speed <input id="speed" type="range" min="0.5" max="2" step="0.05" value="1"></label><button id="setSpeed">Lock speed</button></div></section>
+  <section class="panel"><h2>Persistent device brightness</h2><p class="muted">Brightness is stored per device and scenes never change it.</p>
+    <div class="device"><strong>Matrix</strong><output id="matrixValue">8</output><input aria-label="Matrix brightness" id="matrixBrightness" type="range" min="0" max="255" value="8"><button data-brightness="matrix">Save Matrix</button></div>
+    <div class="device"><strong>Underglow (AUX)</strong><output id="auxValue">64</output><input aria-label="Underglow brightness" id="auxBrightness" type="range" min="0" max="255" value="64"><button data-brightness="aux">Save AUX</button></div>
+  </section>
+  <section class="panel"><h2>Cart state</h2><div id="status" class="status" role="status" aria-live="polite">Connecting…</div><button id="refresh">Refresh status</button></section>
+</main><script type="module" src="./hbnf-cart.js"></script></body></html>

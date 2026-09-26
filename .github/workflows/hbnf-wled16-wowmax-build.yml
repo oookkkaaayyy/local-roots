@@ -49,6 +49,7 @@ jobs:
           patch = pathlib.Path('/tmp/hbnf-r1/firmware_patch')
           (patch/'hbnf_vibe16.h').write_bytes(pathlib.Path('.hbnf-build-r3max/hbnf_vibe16.h').read_bytes())
           (patch/'hbnf_animartrix_audio_bridge.h').write_bytes(pathlib.Path('.hbnf-build-r3max/hbnf_animartrix_audio_bridge.h').read_bytes())
+          (patch/'hbnf_music_intelligence.h').write_bytes(pathlib.Path('.hbnf-build-r3max/hbnf_music_intelligence.h').read_bytes())
           PY
           {
             echo '=== HBNF FLOW SOURCE AUDIT ==='
@@ -63,6 +64,8 @@ jobs:
           set -euo pipefail
           g++ -std=c++11 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_vibe.cpp -o /tmp/wowmax-vibe
           /tmp/wowmax-vibe | tee /tmp/wowmax-vibe.log
+          g++ -std=c++11 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_music_intelligence.cpp -o /tmp/wowmax-music
+          /tmp/wowmax-music | tee /tmp/wowmax-music.log
           g++ -std=c++11 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_bridge.cpp -o /tmp/wowmax-bridge
           /tmp/wowmax-bridge | tee /tmp/wowmax-bridge.log
           g++ -std=c++11 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_soak.cpp -o /tmp/wowmax-soak
@@ -151,10 +154,11 @@ jobs:
           test "$BYTES" -le "$SLOT"
           SHA=$(sha256sum "$BIN" | awk '{print $1}')
           VIBE=$(sha256sum .hbnf-build-r3max/hbnf_vibe16.h | awk '{print $1}')
+          MUSIC=$(sha256sum .hbnf-build-r3max/hbnf_music_intelligence.h | awk '{print $1}')
           BRIDGE=$(sha256sum .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h | awk '{print $1}')
-          cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-wowmax-source.patch /tmp/wowmax-vibe.log /tmp/wowmax-bridge.log /tmp/wowmax-soak.log /tmp/wowmax-fuzz.log /tmp/wowmax-sanitize.log /tmp/hbnf-flow-source-audit.txt /tmp/artifacts/
+          cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-wowmax-source.patch /tmp/wowmax-vibe.log /tmp/wowmax-music.log /tmp/wowmax-bridge.log /tmp/wowmax-soak.log /tmp/wowmax-fuzz.log /tmp/wowmax-sanitize.log /tmp/hbnf-flow-source-audit.txt /tmp/artifacts/
           cp -R /tmp/hbnf-r1/hbnf_flow/hbnf_flow /tmp/artifacts/hbnf_flow_source
-          cp .hbnf-build-r3max/hbnf_vibe16.h .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h .hbnf-build-r3max/apply_wowmax_v3.py /tmp/artifacts/
+          cp .hbnf-build-r3max/hbnf_vibe16.h .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h .hbnf-build-r3max/hbnf_music_intelligence.h .hbnf-build-r3max/apply_wowmax_v3.py /tmp/artifacts/
           {
             echo wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
             echo release=hbnf-wow-r3-max-2026-09-21-v3
@@ -164,12 +168,14 @@ jobs:
             echo ota_headroom_bytes=$HEADROOM
             echo r3max_vibe_sha256=$VIBE
             echo r3max_bridge_sha256=$BRIDGE
+            echo r3max_music_intelligence_sha256=$MUSIC
             echo SECOND_CLEAN_BUILD_BYTE_IDENTICAL=PASS
             echo OTA_SLOT_GATE=PASS
             echo SIX_HOUR_DETERMINISTIC_SOAK=PASS
             echo RANDOMIZED_BRIDGE_FUZZ_350K=PASS
             echo ASAN_UBSAN_FUZZ_GATE=PASS
             echo FIRMWARE_RELEASE_TELEMETRY=PASS
+            echo MULTISCALE_MUSIC_SEMANTICS_GATE=PASS
             echo AUDIO_INPUTLEVEL_RUNTIME_TELEMETRY=PASS
             echo WOW_AUDIO_DIAGNOSTIC_TELEMETRY=PASS
             echo WOW_MQTT_RUNTIME_TELEMETRY=PASS

@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdint.h>
 #include "hbnf_vibe16.h"
+#include "hbnf_music_intelligence.h"
 
 namespace hbnf {
 
@@ -15,7 +16,7 @@ class AnimartrixAudioBridge {
     lastMs_=0; frame_=0; active_=false; width_=32; height_=16; profile_=PROFILE_BALANCED; style_=STYLE_CLEAN; amount_=0; sceneId_=0;
     bass8_=mid8_=treble8_=pulse8_=energy8_=impact8_=drop8_=0; burstLife_=0; burstRadius16_=0; prevImpact8_=0;
     for(auto &s:sparks_){s.life=0;s.x16=s.y16=s.vx16=s.vy16=0;}
-    vibe_.reset();
+    vibe_.reset(); music_.reset();
   }
 
   float beginFrame(float baseSpeed,uint32_t nowMs,uint8_t profileCode,uint8_t styleCode,uint8_t amount,uint16_t width,uint16_t height){
@@ -29,6 +30,7 @@ class AnimartrixAudioBridge {
     float dt=lastMs_?((nowMs-lastMs_)/1000.0f):0.021f; lastMs_=nowMs;
     if(dt<0.005f)dt=0.005f; if(dt>0.100f)dt=0.100f;
     const VibeMetrics m=vibe_.update(fft,volume,dt); active_=true;
+    semantic_=music_.update(fft,(volume<=1.0f?0.0f:(volume>=255.0f?255.0f:volume)),nowMs);
     bass8_=unit8(m.bassPulse); mid8_=unit8(m.midPulse); treble8_=unit8(m.treblePulse); pulse8_=unit8(m.pulse);
     energy8_=unit8(m.energy); impact8_=unit8(m.impact); drop8_=unit8(m.drop);
     updateOverlays((uint16_t)(dt*1000.0f+0.5f));
@@ -123,10 +125,13 @@ class AnimartrixAudioBridge {
   uint8_t energy() const { return energy8_; }
   uint8_t impact() const { return impact8_; }
   uint8_t drop() const { return drop8_; }
+  const MusicSemantics &musicSemantics() const { return semantic_; }
 
  private:
   struct Spark { int16_t x16=0,y16=0,vx16=0,vy16=0; uint8_t life=0; };
   Vibe16 vibe_;
+  MusicIntelligence music_;
+  MusicSemantics semantic_{};
   uint32_t lastMs_=0,frame_=0;
   bool active_=false;
   uint16_t width_=32,height_=16;

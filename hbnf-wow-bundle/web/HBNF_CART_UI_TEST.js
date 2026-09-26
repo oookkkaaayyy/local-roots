@@ -1,0 +1,11 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+const html = fs.readFileSync(new URL("./hbnf-cart.html", import.meta.url), "utf8");
+const js = fs.readFileSync(new URL("./hbnf-cart.js", import.meta.url), "utf8");
+for (const command of ["OFF", "ON", "NEXT", "AUTO", "LOCK", "VIBE_AUTO", "TEMPO_AUTO"]) assert.match(html, new RegExp(`data-command="${command}"`));
+assert.match(html, /data-brightness="matrix"/); assert.match(html, /data-brightness="aux"/);
+assert.match(html, /Scene <select/); assert.match(html, /Palette <select/); assert.match(html, /Vibe <select/);
+assert.match(js, /expectedRevision: revision/); assert.match(js, /crypto\.randomUUID\(\)/);
+assert.match(js, /functions\/v1\/hbnf-cart-control/); assert.doesNotMatch(js, /mqtt:\/\//i);
+assert.match(js, /hbnfSupabase/); assert.doesNotMatch(js, /localStorage|sessionStorage/);
+console.log("PASS unified HBNF cart UI structural controls / session auth / revision path");

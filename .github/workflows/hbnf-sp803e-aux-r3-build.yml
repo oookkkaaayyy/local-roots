@@ -65,6 +65,7 @@ jobs:
           patch=pathlib.Path('/tmp/hbnf-r1/firmware_patch')
           (patch/'hbnf_vibe16.h').write_bytes(pathlib.Path('.hbnf-build-r3max/hbnf_vibe16.h').read_bytes())
           (patch/'hbnf_animartrix_audio_bridge.h').write_bytes(pathlib.Path('.hbnf-build-r3max/hbnf_animartrix_audio_bridge.h').read_bytes())
+          (patch/'hbnf_music_intelligence.h').write_bytes(pathlib.Path('.hbnf-build-r3max/hbnf_music_intelligence.h').read_bytes())
           PY2
 
       - name: Fetch exact WLED 16.0.1 base
@@ -166,9 +167,10 @@ jobs:
           SHA=$(sha256sum "$BIN" | awk '{print $1}')
           VIBE=$(sha256sum .hbnf-build-r3max/hbnf_vibe16.h | awk '{print $1}')
           BRIDGE=$(sha256sum .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h | awk '{print $1}')
+          MUSIC=$(sha256sum .hbnf-build-r3max/hbnf_music_intelligence.h | awk '{print $1}')
           AUXPATCH=$(sha256sum .hbnf-build-aux-r3/apply_aux_r3.py | awk '{print $1}')
           cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-aux-r3-source.patch /tmp/fold2-audit.log /tmp/artifacts/
-          cp .hbnf-build-aux-r3/apply_aux_r3.py .hbnf-build-aux-r3/test_aux_contract.py .hbnf-build-aux-r3/audit_animartrix_projection.py /tmp/artifacts/
+          cp .hbnf-build-aux-r3/apply_aux_r3.py .hbnf-build-aux-r3/test_aux_contract.py .hbnf-build-aux-r3/audit_animartrix_projection.py .hbnf-build-r3max/hbnf_music_intelligence.h /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/contract.json /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/local_commission.py /tmp/artifacts/
           cp hbnf-aux-lighting/commissioning/commission_operator.py /tmp/artifacts/
@@ -192,6 +194,7 @@ jobs:
             echo ota_headroom_bytes=$HEADROOM
             echo vibe_sha256=$VIBE
             echo bridge_sha256=$BRIDGE
+            echo music_intelligence_sha256=$MUSIC
             echo aux_patch_sha256=$AUXPATCH
             echo EFFECT_ID_RANGE=220-247
             echo EFFECT_COUNT=28
