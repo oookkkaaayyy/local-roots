@@ -5,6 +5,8 @@ on:
     paths:
       - 'hbnf-game-adapter/**'
       - 'scripts/hbnf-game-bridge-build.sh'
+      - 'scripts/FLASH_HBNF_GAME_BRIDGE.command'
+      - 'scripts/provision_hbnf_game_bridge.py'
       - '.github/workflows/hbnf-game-bridge-build.yml'
   workflow_dispatch:
 permissions:
@@ -22,6 +24,11 @@ jobs:
         run: |
           set -euo pipefail
           test -s build-game-bridge/SHA256SUMS.txt
+          test -s build-game-bridge/HBNF_GAME_BRIDGE_FACTORY.bin
+          test -x build-game-bridge/FLASH_HBNF_GAME_BRIDGE.command
+          bash -n build-game-bridge/FLASH_HBNF_GAME_BRIDGE.command
+          python3 -m py_compile build-game-bridge/provision_hbnf_game_bridge.py
+          shasum -a 256 -c build-game-bridge/SHA256SUMS.txt
           ls -lh build-game-bridge
       - uses: actions/upload-artifact@v4
         with:

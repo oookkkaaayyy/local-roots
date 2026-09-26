@@ -15,6 +15,8 @@ python3 scripts/hbnf-cart-device-preflight.py --selftest
 python3 scripts/hbnf-cart-lan-discover.py --selftest
 python3 scripts/hbnf-cart-uv-pin-plan.py --selftest
 bash -n scripts/hbnf-cart-postrelease-overlay.sh
+bash -n scripts/FLASH_HBNF_GAME_BRIDGE.command
+python3 -m py_compile scripts/provision_hbnf_game_bridge.py
 python3 -m json.tool config/hbnf-cart-router-manifest.json >/dev/null
 grep -q '192.168.8.20' docs/HBNF_CART_ROUTER_STAGING.md
 grep -q '192.168.8.21' docs/HBNF_CART_ROUTER_STAGING.md
