@@ -23,6 +23,14 @@ if "inert" in matrix_adapter.lower() or "inert" in aux_adapter.lower():
     fail("production adapter source contains inert staging marker")
 if "hbnf-matrix-adapter" not in reconcile or "hbnf-aux-adapter" not in reconcile:
     fail("production reconciler is not bound to release-matched production adapters")
+for forbidden in ("HBNF_MATRIX_ADAPTER_URL", "HBNF_AUX_ADAPTER_URL", "HBNF_MATRIX_ADAPTER_TOKEN", "HBNF_AUX_ADAPTER_TOKEN"):
+    if forbidden in reconcile:
+        fail(f"unresolved production adapter dependency remains: {forbidden}")
+for name, source in (("matrix", matrix_adapter), ("aux", aux_adapter)):
+    if "SUPABASE_SERVICE_ROLE_KEY" not in source:
+        fail(f"{name} production adapter is missing protected internal authentication")
+    if "cartRevision" not in source or "fenceEpoch" not in source or "confirmed" not in source:
+        fail(f"{name} production adapter is missing projection acknowledgement contract")
 production_migration = require("release/source/20260926080000_hbnf_cart_core_production.sql")
 staging_migration = require("release/source/20260926053151_hbnf_cart_shadow_staging.sql")
 require("release/source/20260926070000_hbnf_cart_parity_inert_staging.sql")
