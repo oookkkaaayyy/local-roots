@@ -39,7 +39,10 @@ command -v shortcuts >/dev/null || {
   exit 1
 }
 
-shortcuts sign --mode anyone   --input "$FIELD_DIR/HBNF_Field_Install.unsigned.shortcut"   --output "$FIELD_DIR/HBNF_Field_Install.shortcut"
+if ! shortcuts sign --mode people-who-know-me --input "$FIELD_DIR/HBNF_Field_Install.unsigned.shortcut" --output "$FIELD_DIR/HBNF_Field_Install.shortcut"; then
+  echo "Local-device signing failed; retrying Apple anyone signing..."
+  shortcuts sign --mode anyone --input "$FIELD_DIR/HBNF_Field_Install.unsigned.shortcut" --output "$FIELD_DIR/HBNF_Field_Install.shortcut"
+fi
 
 [[ -s "$FIELD_DIR/HBNF_Field_Install.shortcut" ]] || {
   echo "BLOCKER: shortcut signing did not create output"
