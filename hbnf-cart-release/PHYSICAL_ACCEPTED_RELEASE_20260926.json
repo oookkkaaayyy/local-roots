@@ -23,10 +23,22 @@
     }
   },
   "backend": {
-    "hbnf-cart-control": {"version": 2, "sha256": "f1c9eedb47f91da14ee9e4fc4b50f1d3ac8df6d5a3d423d008d145f1b10949cb"},
-    "hbnf-cart-reconcile": {"version": 2, "sha256": "4f335a6be36148b40bd4d8206770b536814a440d7a261d66f661b52aa3d146f3"},
-    "hbnf-matrix-adapter": {"version": 2, "sha256": "a4c6b9227ece74c285d0a9b92467178acc64b29fb2a7a198fbaed3d8d391c2f4"},
-    "hbnf-aux-adapter": {"version": 1, "sha256": "04509b70486c98c09b86bc7fcb25fa3ec8b73930c31a19b26bc664499fa23e7b"}
+    "hbnf-cart-control": {
+      "version": 2,
+      "sha256": "f1c9eedb47f91da14ee9e4fc4b50f1d3ac8df6d5a3d423d008d145f1b10949cb"
+    },
+    "hbnf-cart-reconcile": {
+      "version": 3,
+      "sha256": "99398f24dfbac153f165963fe8bb83968a45e6a56533a9c2e8d304770e281843"
+    },
+    "hbnf-matrix-adapter": {
+      "version": 4,
+      "sha256": "825ca123d4fa416a7fd0ab886c9b42fb64dfd5df9688b6e4c0556fe05834c473"
+    },
+    "hbnf-aux-adapter": {
+      "version": 1,
+      "sha256": "04509b70486c98c09b86bc7fcb25fa3ec8b73930c31a19b26bc664499fa23e7b"
+    }
   },
   "ui": {
     "cloudflare_version": "7490b60b-7a46-4c92-9eb7-b111d5e64465",
@@ -34,5 +46,18 @@
     "authenticated_status_200_verified": true
   },
   "pre_activation_backup": "/Users/andrew/Desktop/HBNF_CANONICAL_PREMATCH_BACKUP_20260926-151706",
-  "fence_before_activation": {"epoch": 1, "active": false}
+  "fence_before_activation": {
+    "epoch": 1,
+    "active": false
+  },
+  "post_activation_acceptance": {
+    "fence_epoch": 2,
+    "off_ack_revision": 2,
+    "clean_on_off_on_revision": 5,
+    "matrix_status": "online",
+    "aux_status": "online",
+    "matrix_brightness": 1,
+    "aux_brightness": 255,
+    "notes": "Matrix adapter v4 removes redundant ON verification and verifies final online/non-off state. Reconciler v3 applies Matrix first, AUX second to avoid follower startup race."
+  }
 }
