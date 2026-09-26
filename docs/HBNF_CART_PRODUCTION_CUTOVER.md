@@ -26,9 +26,9 @@ Set the environment inputs required by `scripts/hbnf-cart-cutover-init.sh` and r
 
 ## 5. Prepare and atomically activate only after all lanes are ready
 
-With the matched firmware installed and post-install checks ready, deploy the unified UI. Verify backend auth/commands, both device firmware hashes, both device acknowledgements from the same cart revision/fence, UI routing, independent brightness, and read-only status. Record evidence in `cart_cutover_readiness` using `scripts/hbnf-cart-production-readiness.sql`, with every readiness flag true only after its corresponding check passes.
+With the matched firmware installed and hash/reconnect readiness independently verified, deploy the unified UI while the new fence remains inactive. Verify backend auth/status while fenced, both device firmware hashes, UI routing, independent brightness values, and the pure canonical Matrix/AUX projection using `scripts/hbnf-cart-projection-preflight.mjs`; this preview does not contact devices. Record evidence in `cart_cutover_readiness` using `scripts/hbnf-cart-production-readiness.sql`, with every readiness flag true only after its corresponding check passes.
 
-Only then execute `scripts/hbnf-cart-production-activate.sql` with the same release/artifact/firmware identity. It locks the fence, checks all five readiness flags and revision-0 seeded state, and atomically increments the fence epoch while activating that one release. If any check fails, the transaction aborts without activation.
+After activation, verify that real Matrix and AUX acknowledgements share the activated cart revision/fence before allowing ordinary control. Only then execute `scripts/hbnf-cart-production-activate.sql` with the same release/artifact/firmware identity. It locks the fence, checks all five readiness flags and revision-0 seeded state, and atomically increments the fence epoch while activating that one release. If any check fails, the transaction aborts without activation.
 
 ## 6. Deterministic rollback
 
