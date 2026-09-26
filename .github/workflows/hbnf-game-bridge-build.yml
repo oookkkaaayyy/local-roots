@@ -1,7 +1,7 @@
 name: HBNF Game Bridge Compile
 on:
   push:
-    branches: [hbnf-cart-parallel-staging-20260926]
+    branches: [hbnf-cart-parallel-staging-20260926, hbnf-cart-ipad-controller-staging-20260926]
     paths:
       - 'hbnf-game-adapter/**'
       - 'scripts/hbnf-game-bridge-build.sh'

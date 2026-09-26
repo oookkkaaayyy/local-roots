@@ -3,12 +3,12 @@
 #include <HTTPClient.h>
 #include <Preferences.h>
 #include <WiFi.h>
-#include <WiFiUdp.h>
+#include <WiFiUdp.h>\n#include <WebServer.h>\n#include <WebSocketsServer.h>\n#include <DNSServer.h>
 
 #include "game_core.h"
 #include "ddp_frame.h"
 #include "game_lease_guard.h"
-#include "session_lifecycle.h"
+#include "session_lifecycle.h"\n#include "remote_input.h"\n#include "game_controller_page.h"
 
 using namespace hbnf_game;
 
@@ -19,21 +19,21 @@ constexpr const char* kMatrixIp = "192.168.8.20";
 constexpr uint16_t kLocalUdpPort = 4050;
 constexpr uint32_t kFrameMs = 33;
 constexpr uint32_t kProbeMs = 250;
-constexpr uint32_t kWifiRetryMs = 5000;
+constexpr uint32_t kWifiRetryMs = 5000;\nconstexpr const char* kPlaySsid = "HBNF-Play";
 
 Preferences prefs;
 WiFiUDP udp;
 ControllerPtr pads[2] = {nullptr, nullptr};
 GameManager games;
 LeaseGuard guard;
-SessionLifecycle lifecycle;
+SessionLifecycle lifecycle;\nRemoteInputBroker remoteInput;\nWebServer gameWeb(80);\nWebSocketsServer gameWs(81);\nDNSServer captiveDns;
 uint8_t ddpSequence = 0;
 uint32_t lastFrameAt = 0;
 uint32_t lastProbeAt = 0;
 uint32_t lastWifiRetryAt = 0;
 uint64_t sampleRevision = 0;
 bool sessionActive = false;
-bool matrixIdentityVerified = false;
+bool matrixIdentityVerified = false;\nbool guestPlayEnabled = false;\nString playPassword;
 
 bool macEmpty(const uint8_t mac[6]) {
   for (int i = 0; i < 6; ++i) if (mac[i] != 0) return false;
@@ -186,7 +186,7 @@ bool sampleMatrix(uint32_t nowMs) {
   return true;
 }
 
-void sendFrame(const Framebuffer& fb) {
+bool startSession(uint32_t nowMs);\nvoid endSession(const char* reason);\n\nvoid sendFrame(const Framebuffer& fb) {
   if (WiFi.status() != WL_CONNECTED) return;
   IPAddress target;
   if (!target.fromString(kMatrixIp)) return;
@@ -198,11 +198,140 @@ void sendFrame(const Framebuffer& fb) {
   }
 }
 
+
+bool isHostClient(uint8_t num) {
+  IPAddress ip = gameWs.remoteIP(num);
+  return ip[0] == 192 && ip[1] == 168 && ip[2] == 8;
+}
+
+void broadcastGameState() {
+  const String msg = String("STATE,") + (guestPlayEnabled ? "1" : "0") + "," + (sessionActive ? "1" : "0");
+  gameWs.broadcastTXT(msg);
+}
+
+void releaseRemoteClient(uint8_t num, const char* reason = "RELEASED") {
+  for (uint8_t s=0;s<2;++s) {
+    if (remoteInput.owner(s, millis()) == int(num)) {
+      remoteInput.preempt(s);
+      gameWs.sendTXT(num, String(reason) + "," + String(s+1));
+    }
+  }
+}
+
+void onGameWsEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length) {
+  if (type == WStype_DISCONNECTED) {
+    remoteInput.releaseClient(num);
+    return;
+  }
+  if (type == WStype_CONNECTED) {
+    const bool host = isHostClient(num);
+    gameWs.sendTXT(num, String("HELLO,") + (host ? "HOST" : "GUEST") + "," +
+                       (guestPlayEnabled ? "1" : "0") + "," + (sessionActive ? "1" : "0"));
+    return;
+  }
+  if (type != WStype_TEXT) return;
+  String msg((char*)payload, length);
+  const bool host = isHostClient(num);
+
+  if (msg.startsWith("PING,")) {
+    gameWs.sendTXT(num, String("PONG,") + msg.substring(5));
+    return;
+  }
+  if (msg == "RELEASE") {
+    releaseRemoteClient(num);
+    return;
+  }
+  if (msg.startsWith("CLAIM,")) {
+    if (!host && !guestPlayEnabled) { gameWs.sendTXT(num, "ERR,GUEST_PLAY_CLOSED"); return; }
+    const int requested = msg.substring(6).toInt();
+    if (requested < 1 || requested > 2) { gameWs.sendTXT(num, "ERR,INVALID_PLAYER"); return; }
+    const uint8_t slot = uint8_t(requested - 1);
+    const bool physical = pads[slot] && pads[slot]->isConnected();
+    const auto result = remoteInput.claim(num, slot, host, millis(), physical);
+    if (result == RemoteInputBroker::Claim::Ok) gameWs.sendTXT(num, String("CLAIMED,") + requested);
+    else gameWs.sendTXT(num, physical ? "ERR,DEDICATED_CONTROLLER_HAS_PRIORITY" : "ERR,PLAYER_SLOT_BUSY");
+    return;
+  }
+  if (msg.startsWith("I,")) {
+    int p1 = msg.indexOf(',',2);
+    if (p1 < 0) return;
+    const int requested = msg.substring(2,p1).toInt();
+    uint16_t mask = uint16_t(msg.substring(p1+1).toInt());
+    if (requested < 1 || requested > 2) return;
+    if (!host && !guestPlayEnabled) { remoteInput.releaseClient(num); return; }
+    if (!host) mask &= 63u; // guests never receive session/menu authority
+    remoteInput.update(num, uint8_t(requested-1), mask, millis());
+    return;
+  }
+  if (host && msg.startsWith("GUEST,")) {
+    guestPlayEnabled = msg.endsWith("1");
+    if (!guestPlayEnabled) {
+      for (uint8_t s=0;s<2;++s) {
+        const int owner = remoteInput.owner(s,millis());
+        if (owner >= 0 && !remoteInput.privileged(s,millis())) {
+          gameWs.sendTXT(uint8_t(owner), String("RELEASED,") + String(s+1));
+          remoteInput.preempt(s);
+        }
+      }
+    }
+    broadcastGameState();
+    return;
+  }
+  if (host && msg == "SESSION,START") {
+    if (!sessionActive) {
+      const uint32_t now = millis();
+      if (startSession(now)) lifecycle.forceEnd(); // explicit host start owns lifecycle outside combo state
+      else gameWs.sendTXT(num, "ERR,SESSION_START_BLOCKED");
+      broadcastGameState();
+    }
+    return;
+  }
+  if (host && msg == "SESSION,END") {
+    if (sessionActive) endSession("HOST_WEB");
+    return;
+  }
+}
+
+String ensurePlayPassword() {
+  String value = prefs.getString("play_pass", "");
+  if (value.length() >= 8) return value;
+  const uint32_t r = esp_random();
+  char buf[13];
+  snprintf(buf, sizeof(buf), "NF%08lx", (unsigned long)r);
+  value = String(buf);
+  prefs.putString("play_pass", value);
+  return value;
+}
+
+void startGameWeb() {
+  playPassword = ensurePlayPassword();
+  WiFi.mode(WIFI_AP_STA);
+  WiFi.softAP(kPlaySsid, playPassword.c_str(), 1, false, 6);
+  const IPAddress ap = WiFi.softAPIP();
+  captiveDns.start(53, "*", ap);
+
+  auto serveController = []() { gameWeb.send_P(200, "text/html", HBNF_GAME_CONTROLLER_PAGE); };
+  gameWeb.on("/", HTTP_GET, serveController);
+  gameWeb.on("/hotspot-detect.html", HTTP_GET, serveController);
+  gameWeb.on("/generate_204", HTTP_GET, serveController);
+  gameWeb.on("/gen_204", HTTP_GET, serveController);
+  gameWeb.on("/connecttest.txt", HTTP_GET, serveController);
+  gameWeb.onNotFound(serveController);
+  gameWeb.begin();
+
+  gameWs.begin();
+  gameWs.onEvent(onGameWsEvent);
+  Serial.printf("HBNF_PLAY_AP=ONLINE SSID=%s IP=%s\n", kPlaySsid, ap.toString().c_str());
+}
+
 void endSession(const char* reason) {
   sessionActive = false;
   lifecycle.forceEnd();
   guard.userExit();
   BP32.enableNewBluetoothConnections(true);
+  guestPlayEnabled = false;
+  remoteInput.clearAll();
+  broadcastGameState();
   Serial.printf("HBNF_GAME_SESSION_END=%s\n", reason);
 }
 
@@ -216,7 +345,7 @@ bool startSession(uint32_t nowMs) {
     return false;
   }
   guard.requestStart(nowMs);
-  if (pads[0] && pads[0]->isConnected()) guard.controllerHeartbeat(nowMs);
+  if ((pads[0] && pads[0]->isConnected()) || remoteInput.pad(0, nowMs).connected) guard.controllerHeartbeat(nowMs);
   if (!sampleMatrix(nowMs) || !guard.mayStream()) {
     Serial.println("HBNF_GAME_START_BLOCKED=MATRIX_STATE");
     guard.userExit();
@@ -249,13 +378,14 @@ void printStatus() {
   uint8_t p1[6], p2[6];
   readMac("p1mac", p1);
   readMac("p2mac", p2);
-  Serial.printf("HBNF_STATUS WIFI=%s IP=%s MATRIX=%s SESSION=%s P1=%s P2=%s\n",
+  Serial.printf("HBNF_STATUS WIFI=%s IP=%s MATRIX=%s SESSION=%s P1=%s P2=%s PLAYSSID=%s PLAYPASS=%s\n",
                 WiFi.status() == WL_CONNECTED ? "ONLINE" : "OFFLINE",
                 WiFi.localIP().toString().c_str(),
                 matrixIdentityVerified ? "VERIFIED" : "UNVERIFIED",
                 sessionActive ? "ACTIVE" : "IDLE",
                 macEmpty(p1) ? "UNSET" : macString(p1).c_str(),
-                macEmpty(p2) ? "UNSET" : macString(p2).c_str());
+                macEmpty(p2) ? "UNSET" : macString(p2).c_str(),
+                kPlaySsid, playPassword.c_str());
 }
 
 void processSerial() {
@@ -294,6 +424,8 @@ void processSerial() {
     BP32.forgetBluetoothKeys();
     BP32.enableNewBluetoothConnections(true);
     Serial.println("HBNF_PADS_CLEARED=PASS");
+  } else if (line == "PLAY_INFO") {
+    Serial.printf("HBNF_PLAY_INFO SSID=%s PASS=%s URL=http://%s/\n", kPlaySsid, playPassword.c_str(), WiFi.softAPIP().toString().c_str());
   } else if (line == "PAIR_OPEN") {
     BP32.enableNewBluetoothConnections(true);
     Serial.println("HBNF_PAIRING=OPEN");
@@ -311,6 +443,7 @@ void setup() {
   Serial.begin(115200);
   Serial.setTimeout(250);
   prefs.begin("hbnfgame", false);
+  startGameWeb();
   udp.begin(kLocalUdpPort);
   BP32.setup(&onConnectedController, &onDisconnectedController);
   BP32.enableNewBluetoothConnections(true);
@@ -321,6 +454,9 @@ void setup() {
 
 void loop() {
   BP32.update();
+  gameWeb.handleClient();
+  gameWs.loop();
+  captiveDns.processNextRequest();
   processSerial();
   const uint32_t now = millis();
 
@@ -337,9 +473,22 @@ void loop() {
     connectWifi();
   }
 
-  const PadState p1 = mapPad(pads[0]);
-  const PadState p2 = mapPad(pads[1]);
-  const bool combo = p1.connected && p1.start && p1.select;
+  const PadState physical1 = mapPad(pads[0]);
+  const PadState physical2 = mapPad(pads[1]);
+  if (physical1.connected && remoteInput.owner(0, now) >= 0) {
+    const int owner = remoteInput.owner(0, now);
+    gameWs.sendTXT(uint8_t(owner), "PREEMPTED,1");
+    remoteInput.preempt(0);
+  }
+  if (physical2.connected && remoteInput.owner(1, now) >= 0) {
+    const int owner = remoteInput.owner(1, now);
+    gameWs.sendTXT(uint8_t(owner), "PREEMPTED,2");
+    remoteInput.preempt(1);
+  }
+  PadState p1 = physical1.connected ? physical1 : remoteInput.pad(0, now);
+  PadState p2 = physical2.connected ? physical2 : remoteInput.pad(1, now);
+  const bool p1HasSessionAuthority = physical1.connected || remoteInput.privileged(0, now);
+  const bool combo = p1HasSessionAuthority && p1.connected && p1.start && p1.select;
   const bool atMenu = games.mode() == GameManager::Mode::Menu;
 
   const SessionEvent event = lifecycle.update(combo, atMenu, now);

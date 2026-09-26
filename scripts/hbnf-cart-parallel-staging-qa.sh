@@ -10,6 +10,8 @@ g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic hbnf-game-adapter/test_game_l
 /tmp/hbnf-lease
 g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic hbnf-game-adapter/test_session_lifecycle.cpp -o /tmp/hbnf-session
 /tmp/hbnf-session
+g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic hbnf-game-adapter/test_remote_input.cpp -o /tmp/hbnf-remote-input
+/tmp/hbnf-remote-input
 node hbnf-uv-control/test_uv_guard.mjs
 python3 scripts/hbnf-cart-device-preflight.py --selftest
 python3 scripts/hbnf-cart-lan-discover.py --selftest
