@@ -23,12 +23,11 @@ async function authorized(req:Request){
  return !!key&&req.headers.get("Authorization")===`Bearer ${key}`;
 }
 async function lower(body:any){
- const url=(Deno.env.get("SUPABASE_URL")||"").replace(/\/$/,"")+"/functions/v1/hbnf-matrix-control";
- const key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
- const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${key}`},body:JSON.stringify(body),signal:AbortSignal.timeout(12000)});
- const j=await r.json().catch(()=>({}));
- if(!r.ok||j?.ok===false)throw new Error(j?.error||`matrix-control HTTP ${r.status}`);
- return j;
+ const url=Deno.env.get("SUPABASE_URL")||"",key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
+ const client=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
+ const {data,error}=await client.functions.invoke("hbnf-matrix-control",{body});
+ if(error||data?.ok===false)throw new Error(data?.error||error?.message||"matrix-control invoke failed");
+ return data;
 }
 async function publish(payload:any){
  return await new Promise<void>((resolve,reject)=>{
@@ -39,7 +38,8 @@ async function publish(payload:any){
  });
 }
 async function previous(db:any){
- const {data}=await db.schema("hbnf_internal").from("cart_device_observed").select("reported").eq("cart_id","hbnf-cart").eq("device_id","matrix").maybeSingle();
+ const {data,error}=await db.rpc("hbnf_cart_get_observed",{p_cart_id:"hbnf-cart",p_device_id:"matrix"});
+ if(error)throw new Error("observed_state_read_failed");
  return data?.reported??null;
 }
 const pause=(ms:number)=>new Promise(r=>setTimeout(r,ms));
@@ -58,21 +58,18 @@ Deno.serve(async(req:Request)=>{
    if(off?.confirmed!==true && off?.failSafe?.safe!==true)throw new Error("matrix blackout not confirmed");
    return json({confirmed:true,deviceId:"matrix",cartRevision:p.cartRevision,fenceEpoch:p.fenceEpoch,brightness:p.brightness,enabled:false,sceneId:p.sceneId,programMode:p.programMode,tempoMode:p.tempoMode,sequenceCursor:p.sequenceCursor,appliedProjection:p,driver:"hbnf-matrix-control"});
   }
-
   let status=await lower({action:"status"}), family=SCENES[p.sceneId], currentFamily=String(status?.control?.show_family??"");
   const sceneChanged=priorScene&&priorScene!==p.sceneId;
   if(status?.control?.mode==="off"||currentFamily!==family||sceneChanged){
    await lower({action:"play_show",family,live:false,brightness:Math.max(1,p.brightness)});
    status=await lower({action:"status"});
   }
-
   const delta=Math.max(0,Math.min(8,p.sequenceCursor-priorCursor));
   for(let i=0;i<delta;i++){
    const n=await lower({action:"next_look",brightness:Math.max(1,p.brightness)});
    if(n?.brokerAccepted!==true&&n?.confirmed!==true&&n?.accepted!==true)throw new Error("NEXT was not accepted");
    await pause(220);
   }
-
   if(p.programMode==="lock"){
    if(family==="r2") await lower({action:"lock_current"});
    else {
@@ -84,16 +81,13 @@ Deno.serve(async(req:Request)=>{
   } else if(family==="r2" && String(status?.playbackMode??status?.control?.mode??"")!=="auto"){
    await lower({action:"resume_auto"}).catch(async()=>{await lower({action:"play_show",family:"r2",live:false,brightness:Math.max(1,p.brightness)});});
   }
-
   if(p.brightness>0) await lower({action:"brightness",brightness:p.brightness,advanced:p.brightness>72,confirmHigh:true});
   else await lower({action:"blackout"});
-
   const tempoAuto=p.tempoMode==="music";
   const seg:any={id:0,c3:tempoAuto?255:0};
   if(!tempoAuto)seg.sx=speedSlider(p.speedBias);
   await publish({on:true,seg});
   await pause(120);
-
   status=await lower({action:"status"});
   if(status?.online!==true)throw new Error("matrix not online after projection");
   return json({confirmed:true,deviceId:"matrix",cartRevision:p.cartRevision,fenceEpoch:p.fenceEpoch,brightness:p.brightness,enabled:true,sceneId:p.sceneId,programMode:p.programMode,tempoMode:p.tempoMode,sequenceCursor:p.sequenceCursor,buildWitness:status?.r3Wow?.diagnostics?.buildWitness??null,appliedProjection:p,driver:"hbnf-matrix-control+direct-tempo"});
