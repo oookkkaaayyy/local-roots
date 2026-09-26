@@ -11,9 +11,14 @@ g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic hbnf-game-adapter/test_game_l
 g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic hbnf-game-adapter/test_session_lifecycle.cpp -o /tmp/hbnf-session
 /tmp/hbnf-session
 node hbnf-uv-control/test_uv_guard.mjs
+python3 scripts/hbnf-cart-device-preflight.py --selftest
+python3 scripts/hbnf-cart-uv-pin-plan.py --selftest
+bash -n scripts/hbnf-cart-postrelease-overlay.sh
+python3 -m json.tool config/hbnf-cart-router-manifest.json >/dev/null
 grep -q '192.168.8.20' docs/HBNF_CART_ROUTER_STAGING.md
 grep -q '192.168.8.21' docs/HBNF_CART_ROUTER_STAGING.md
 grep -q '192.168.8.30' docs/HBNF_CART_ROUTER_STAGING.md
 grep -q 'never replays a pre-game snapshot' hbnf-game-adapter/ARCHITECTURE.md
 grep -q 'never connect UV to SP803E 12V VCC' hbnf-uv-control/README.md
+grep -q 'local LAN works with no internet' docs/HBNF_CART_ZERO_DRAMA_POST_RELEASE.md
 echo HBNF_PARALLEL_STAGING_QA=PASS

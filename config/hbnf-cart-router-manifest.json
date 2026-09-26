@@ -1,0 +1,45 @@
+{
+  "schema": "hbnf-cart-router-manifest-v1",
+  "model": "GL.iNet Opal GL-SFT1200",
+  "adminIp": "192.168.8.1",
+  "netmask": "255.255.255.0",
+  "mainWifi": {
+    "ssid": "HBNF-Cart",
+    "band": "2.4GHz",
+    "security": "WPA2-PSK/AES",
+    "password": "SET_ON_ROUTER_NOT_IN_REPO",
+    "apIsolation": false
+  },
+  "dhcp": {
+    "enabled": true,
+    "start": "192.168.8.100",
+    "end": "192.168.8.199"
+  },
+  "reservations": [
+    {
+      "name": "HBNF-Matrix",
+      "ip": "192.168.8.20",
+      "identity": "512 LEDs; learn real MAC after accepted release"
+    },
+    {
+      "name": "HBNF-AUX",
+      "ip": "192.168.8.21",
+      "identity": "MAC 8c94df55c34c; 22 logical LEDs"
+    },
+    {
+      "name": "HBNF-GameBridge",
+      "ip": "192.168.8.30",
+      "identity": "learn real MAC during bridge commissioning"
+    }
+  ],
+  "upstream": {
+    "requiredForLocalControl": false,
+    "preferredModes": [
+      "iPhone USB tethering",
+      "Repeater/WISP to HBNFHotspot"
+    ],
+    "autoReconnectNotRequiredForLocalControl": true
+  },
+  "mdnsRequired": false,
+  "rollback": "Power Opal off; use preserved HBNFHotspot/current networking profiles. Do not delete old WLED Wi-Fi profiles during migration."
+}
