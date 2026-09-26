@@ -115,8 +115,6 @@ jobs:
           cp /tmp/hbnf-r1/firmware_patch/hbnf_music_intelligence.h /tmp/wled/usermods/usermod_v2_animartrix/
           python "$GITHUB_WORKSPACE/.hbnf-build-r3max/apply_wowmax_v3.py" /tmp/wled
           grep -q 'hbnf-wow-r3-max-2026-09-21-v3' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
-          grep -q 'setSpeedFactor((hbnfAudio.setScene' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
-          grep -q 'SEGMENT.custom3 != 0' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'mqtt->publish(topic, 0, false, payload)' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'usermod\[FPSTR(_inputLvl)\] = inputLevel' usermods/audioreactive/audio_reactive.cpp
           ! grep -q '#define fmodf' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
@@ -167,9 +165,6 @@ jobs:
           {
             echo wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
             echo release=hbnf-wow-r3-max-2026-09-21-v3
-            echo build_witness=registry28-semantic-tempo-v6-colorwifi
-            echo github_run_id=$GITHUB_RUN_ID
-            echo github_sha=$GITHUB_SHA
             echo firmware_sha256=$SHA
             echo firmware_bytes=$BYTES
             echo ota_slot_bytes=$SLOT

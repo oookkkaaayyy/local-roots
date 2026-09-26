@@ -59,7 +59,7 @@ class AnimartrixAudioBridge {
     // and treble creates sparse detail. All channels are MusicIntelligence outputs.
     const bool centerBand=d2 < (maxd2*5)/16;
     if(bass8_){ const uint8_t v=scaledMix(bass8_,centerBand?82:18); if(v>mix){mix=v;accent={255,88,34};} }
-    if(mid8_){ const uint8_t v=scaledMix(mid8_,44); if(v>mix){mix=v;accent={218,255,92};} }
+    if(mid8_ && (((x+(int)(frame_>>2))&3)==0)){ const uint8_t v=scaledMix(mid8_,44); if(v>mix){mix=v;accent={218,255,92};} }
     if(treble8_>28){
       const uint8_t gate=(uint8_t)((x*29+y*47+(int)(frame_&255u)*13)&255);
       if(gate<(uint8_t)(treble8_>>2)){ const uint8_t v=scaledMix(treble8_,86); if(v>mix){mix=v;accent={238,250,255};} }

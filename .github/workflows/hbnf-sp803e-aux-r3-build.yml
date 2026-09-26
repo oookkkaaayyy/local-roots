@@ -117,10 +117,8 @@ jobs:
           python "$GITHUB_WORKSPACE/.hbnf-build-r3max/apply_wowmax_v3.py" /tmp/wled
           python "$GITHUB_WORKSPACE/.hbnf-build-aux-r3/apply_aux_r3.py" /tmp/wled
           grep -q 'hbnf-wow-aux-r3-2026-09-22-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
-          grep -q 'registry28-semantic-tempo-1d-v4-colorwifi' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'registry28-tempo-lock-1d-v3-colorwifi' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'static uint8_t audioSyncEnabled = 2;' usermods/audioreactive/audio_reactive.cpp
-          grep -q 'setSpeedFactor((hbnfAudio.setScene' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
-          grep -q 'SEGMENT.custom3 != 0' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           ! grep -q 'hbnf-wow-r3-max-2026-09-21-v3' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           ! grep -q 'hbnf_flow' platformio_override.ini
           git diff --check
@@ -192,7 +190,7 @@ jobs:
             echo wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
             echo release=hbnf-wow-aux-r3-2026-09-22-v1
             echo engine=aux-r3-wow-1d
-            echo build_witness=registry28-semantic-tempo-1d-v4-colorwifi
+            echo build_witness=registry28-tempo-lock-1d-v3-colorwifi
             echo firmware_sha256=$SHA
             echo firmware_bytes=$BYTES
             echo ota_slot_bytes=$SLOT

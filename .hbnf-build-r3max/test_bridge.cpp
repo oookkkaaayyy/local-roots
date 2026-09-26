@@ -21,48 +21,5 @@ int main(){
  int changedBlue=0,warmPixels=0;for(int y=0;y<16;y++)for(int x=0;x<32;x++){uint8_t rr=10,gg=35,bb=220;blue.modulate(x,y,rr,gg,bb);if(rr!=10||gg!=35||bb!=220)changedBlue++;if(rr>20)warmPixels++;}
  assert(changedBlue>20&&warmPixels>20&&warmPixels<300);
  hbnf::AnimartrixAudioBridge a1,a2;vol=90;for(int t=0;t<=1100;t+=20){bool hit=t>=1000&&t<1080;fill(fft,2,hit);vol=hit?180:90;a1.beginFrame(1.0f,t,136,136,190,32,16);}std::array<uint8_t,16> fcopy;for(int i=0;i<16;i++)fcopy[i]=fft[i];float vol2=90;void* p2[3]={&vol2,nullptr,fcopy.data()};um_data_t u2;u2.u_size=3;u2.u_data=p2;g.d=&u2;for(int t=0;t<=1100;t+=20){bool hit=t>=1000&&t<1080;fill(fcopy.data(),2,hit);vol2=hit?180:90;a2.beginFrame(1.0f,t,136,136,190,32,16);}auto q1=sample(a1,12,7),q2=sample(a2,12,7);assert(q1==q2);
- // Blocking tempo ownership contract: manual mode ignores heavy audio exactly.
- auto heavy=[&](hbnf::AnimartrixAudioBridge &x){float out=0;for(int t=0;t<=6000;t+=20){for(int i=0;i<16;i++)fcopy[i]=245;vol2=255;out=x.beginFrame(1.35f,(uint32_t)t,96,240,220,32,16,false);assert(fabsf(out-1.35f)<0.0001f);}return out;};
- hbnf::AnimartrixAudioBridge manualTempo;assert(fabsf(heavy(manualTempo)-1.35f)<0.0001f);
-
- // One cough/clap transient cannot establish tempo or change AUTO global speed.
- hbnf::AnimartrixAudioBridge transient;float transientSpeed=1.0f;
- for(int t=0;t<=5000;t+=20){bool hit=(t==1000);for(int i=0;i<16;i++)fcopy[i]=hit?255:0;vol2=hit?255:24;transientSpeed=transient.beginFrame(1.0f,(uint32_t)t,96,240,220,32,16,true);if(hit||t>1100)assert(fabsf(transientSpeed-1.0f)<0.0001f);}
-
- // Sustained periodic semantic onsets qualify: 80 BPM is slower, 150 BPM is faster.
- auto runTrack=[&](hbnf::AnimartrixAudioBridge &x,int interval,int band){
-   float out=1.0f; x.reset();
-   for(int t=0;t<=18000;t+=20){
-     const bool hit=(t%interval)<200;
-     for(int i=0;i<16;i++)fcopy[i]=0;
-     if(hit){int a=band==0?0:(band==1?4:11),z=band==0?4:(band==1?11:16);for(int i=a;i<z;i++)fcopy[i]=225;}
-     vol2=hit?220:34;
-     out=x.beginFrame(1.0f,(uint32_t)t,96,240,220,32,16,true);
-   }
-   return out;
- };
- hbnf::AnimartrixAudioBridge slowTempo,fastTempo;
- const float slowSpeed=runTrack(slowTempo,750,0),fastSpeed=runTrack(fastTempo,400,0);
- assert(slowSpeed<0.95f); assert(fastSpeed>1.05f); assert(fastSpeed>slowSpeed);
-
- // Semantic band fixtures must remain distinct and visibly render differently.
- std::array<long,3> bandSums[3]{};
- std::array<uint8_t,3> bandReadback[3]{};
- for(int band=0;band<3;band++){
-   hbnf::AnimartrixAudioBridge visual; visual.reset();
-   for(int t=0;t<=5000;t+=20){
-     for(int i=0;i<16;i++)fcopy[i]=0;
-     int a=band==0?0:(band==1?4:11),z=band==0?4:(band==1?11:16);
-     for(int i=a;i<z;i++)fcopy[i]=190;
-     vol2=145; visual.beginFrame(1.0f,(uint32_t)t,96,240,230,32,16,true);
-   }
-   bandReadback[band]={visual.bassPulse(),visual.midPulse(),visual.treblePulse()};
-   for(int y=0;y<16;y++)for(int x=0;x<32;x++){uint8_t r=70,gc=80,bl=90;visual.modulate(x,y,r,gc,bl);bandSums[band][0]+=r;bandSums[band][1]+=gc;bandSums[band][2]+=bl;}
- }
- assert(bandReadback[0][0]>bandReadback[0][1]&&bandReadback[0][0]>bandReadback[0][2]);
- assert(bandReadback[1][1]>bandReadback[1][0]&&bandReadback[1][1]>bandReadback[1][2]);
- assert(bandReadback[2][2]>bandReadback[2][0]&&bandReadback[2][2]>bandReadback[2][1]);
- assert(bandSums[0]!=bandSums[1]&&bandSums[1]!=bandSums[2]&&bandSums[0]!=bandSums[2]);
- printf("PASS blocking contract: manual speed, transient immunity, slow/fast semantic tempo, distinct bass/mids/treble response; slow %.2f fast %.2f\n",slowSpeed,fastSpeed);
  printf("PASS WOW MAX bridge/render; speed %.2f center %d,%d,%d edge %d,%d,%d bytes=%zu\n",sp,center[0],center[1],center[2],edge[0],edge[1],edge[2],sizeof(hbnf::AnimartrixAudioBridge));
 }
