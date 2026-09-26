@@ -19,6 +19,7 @@ int main(){
  // Strongly blue source frames must retain source detail but gain sparse warm diversity instead of remaining all-blue.
  hbnf::AnimartrixAudioBridge blue;vol=90;for(int t=0;t<800;t+=20){fill(fft,1,false);blue.beginFrame(1.0f,t,96,176,205,32,16);}
  int changedBlue=0,warmPixels=0;for(int y=0;y<16;y++)for(int x=0;x<32;x++){uint8_t rr=10,gg=35,bb=220;blue.modulate(x,y,rr,gg,bb);if(rr!=10||gg!=35||bb!=220)changedBlue++;if(rr>20)warmPixels++;}
+ fprintf(stderr, "blue visual diagnostic changed=%d warm=%d\n",changedBlue,warmPixels);
  assert(changedBlue>20&&warmPixels>20&&warmPixels<300);
  hbnf::AnimartrixAudioBridge a1,a2;vol=90;for(int t=0;t<=1100;t+=20){bool hit=t>=1000&&t<1080;fill(fft,2,hit);vol=hit?180:90;a1.beginFrame(1.0f,t,136,136,190,32,16);}std::array<uint8_t,16> fcopy;for(int i=0;i<16;i++)fcopy[i]=fft[i];float vol2=90;void* p2[3]={&vol2,nullptr,fcopy.data()};um_data_t u2;u2.u_size=3;u2.u_data=p2;g.d=&u2;for(int t=0;t<=1100;t+=20){bool hit=t>=1000&&t<1080;fill(fcopy.data(),2,hit);vol2=hit?180:90;a2.beginFrame(1.0f,t,136,136,190,32,16);}auto q1=sample(a1,12,7),q2=sample(a2,12,7);assert(q1==q2);
  // Blocking tempo ownership contract: manual mode ignores heavy audio exactly.
