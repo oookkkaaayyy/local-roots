@@ -1,0 +1,96 @@
+name: HBNF Cart matched release assembly
+on:
+  push:
+    branches: [hbnf-cart-foundation-v1-20260925]
+    paths:
+      - '.github/workflows/hbnf-cart-release-package.yml'
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: HBNF-WLED16-WOW-MAX-V3
+          repository: oookkkaaayyy/local-roots
+          run-id: 36221837131
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: release/firmware/matrix
+      - uses: actions/download-artifact@v4
+        with:
+          name: HBNF-SP803E-AUX-R3
+          repository: oookkkaaayyy/local-roots
+          run-id: 36222459147
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: release/firmware/aux
+      - name: Verify images and commissioning package
+        run: |
+          set -euo pipefail
+          test -s release/firmware/matrix/HBNF_WLED16_WOW_MAX_V3.bin
+          test -s release/firmware/aux/HBNF_SP803E_AUX_R3.bin
+          (cd release/firmware/matrix && sha256sum -c firmware-sha256.txt)
+          (cd release/firmware/aux && sha256sum -c firmware-sha256.txt)
+          grep -Fx 'firmware_sha256=b2ef3045f00e37cdf6e6e4f9864ef831fae59ab5636cf37780b2dbada3e767d4' release/firmware/aux/FINAL_METRICS.txt
+          grep -Fx 'firmware_bytes=1345216' release/firmware/aux/FINAL_METRICS.txt
+          ls release/firmware/aux/*COMMISSIONING*.zip
+          mkdir -p release/source release/rollback
+          cp -R hbnf-cart-core release/source/
+          cp -R hbnf-wow-bundle/web release/source/
+          cp -R supabase/functions/hbnf-cart-shadow-staging release/source/
+          cp supabase/migrations/20260926053151_hbnf_cart_shadow_staging.sql release/source/
+          cp -R hbnf-cart-release/rollback/. release/rollback/
+          cp hbnf-cart-release/CURRENT_LIVE_CONTROL_BASELINE.json release/rollback/ 2>/dev/null || true
+          cat > release/RELEASE_MANIFEST.txt <<'EOF'
+          HBNF CART FOUNDATION — matched release candidate
+          implementation_commit=051ee47822eb0df51113f5e14a2945222e48403c
+          matched_matrix_build_run=36221837131
+          matched_aux_build_run=36222459147
+          firmware_source_commit=86d294523be93cdbacb2f8e502c4c59a05cbfef1
+          aux_installer_pin_commit=c357391434137bc6458a045b7b617b6aa647f816
+          aux_firmware_sha256=b2ef3045f00e37cdf6e6e4f9864ef831fae59ab5636cf37780b2dbada3e767d4
+          aux_firmware_bytes=1345216
+          production_rollback_matrix_control=hbnf-matrix-control_v171
+          production_rollback_aux_control=hbnf-aux-control_v14
+          production_rollback_cart_orchestrator=hbnf-cart-orchestrator_v5
+          production_deployment=NOT_PERFORMED
+          shadow_function_actuators_reachable=false
+          aux_hardware_commissioning=NOT_VERIFIED_BY_THIS_PACKAGE
+          EOF
+          python3 - <<'PY'
+          import hashlib, pathlib, zipfile
+          root=pathlib.Path("release")
+          out=pathlib.Path("HBNF_CART_FOUNDATION_MATCHED_RELEASE.zip")
+          files=sorted(p for p in root.rglob("*") if p.is_file())
+          sums=[]
+          for p in files:
+              if p == root/"SHA256SUMS.txt": continue
+              sums.append(f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.relative_to(root).as_posix()}")
+          (root/"SHA256SUMS.txt").write_text("\n".join(sums)+"\n")
+          files=sorted(p for p in root.rglob("*") if p.is_file())
+          stamp=(2026,9,26,0,0,0)
+          with zipfile.ZipFile(out,"w",zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for p in files:
+                  info=zipfile.ZipInfo(p.relative_to(root).as_posix(),stamp)
+                  info.create_system=3
+                  info.external_attr=0o100644 << 16
+                  info.compress_type=zipfile.ZIP_DEFLATED
+                  z.writestr(info,p.read_bytes())
+          digest=hashlib.sha256(out.read_bytes()).hexdigest()
+          print(f"RELEASE_SHA256={digest}")
+          print(f"RELEASE_BYTES={out.stat().st_size}")
+          with zipfile.ZipFile(out) as z:
+              assert z.namelist()==sorted(z.namelist())
+          PY
+          unzip -t HBNF_CART_FOUNDATION_MATCHED_RELEASE.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HBNF-CART-FOUNDATION-MATCHED-RELEASE
+          path: HBNF_CART_FOUNDATION_MATCHED_RELEASE.zip
+          if-no-files-found: error
+          retention-days: 90
