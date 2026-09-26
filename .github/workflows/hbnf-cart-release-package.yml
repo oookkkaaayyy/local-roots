@@ -46,6 +46,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Validate production Edge Function sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          deno check supabase/functions/hbnf-cart-control/index.ts
+          deno check supabase/functions/hbnf-cart-reconcile/index.ts
+          deno check supabase/functions/hbnf-matrix-adapter/index.ts
+          deno check supabase/functions/hbnf-aux-adapter/index.ts
       - name: Resolve newest completed matched firmware runs
         id: matched
         env:
