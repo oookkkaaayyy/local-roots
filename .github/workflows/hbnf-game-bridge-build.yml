@@ -1,0 +1,30 @@
+name: HBNF Game Bridge Compile
+on:
+  push:
+    branches: [hbnf-cart-parallel-staging-20260926]
+    paths:
+      - 'hbnf-game-adapter/**'
+      - 'scripts/hbnf-game-bridge-build.sh'
+      - '.github/workflows/hbnf-game-bridge-build.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: arduino/setup-arduino-cli@v2
+      - name: Compile pinned ELEGOO ESP32-WROOM-32 target
+        run: bash scripts/hbnf-game-bridge-build.sh "$GITHUB_WORKSPACE/build-game-bridge"
+      - name: Verify build outputs
+        run: |
+          set -euo pipefail
+          test -s build-game-bridge/SHA256SUMS.txt
+          ls -lh build-game-bridge
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HBNF-GAME-BRIDGE-ESP32-WROOM32
+          path: build-game-bridge/
+          retention-days: 90
