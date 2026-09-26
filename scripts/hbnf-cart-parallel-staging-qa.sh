@@ -34,3 +34,7 @@ echo HBNF_PARALLEL_STAGING_QA=PASS
 
 grep -q 'CFG_READONLY' scripts/hbnf-cart-device-preflight.py
 grep -q 'SECOND Wi-Fi profile' scripts/HBNF_POST_RELEASE_SETUP.command
+
+node hbnf-wow-bundle/web/HBNF_CART_IPAD_TEST.cjs
+bash -n scripts/DEPLOY_HBNF_IPAD_UI.command
+grep -q 'START_HBNF_CART_FINISH.command' scripts/hbnf-cart-postrelease-kit-build.sh

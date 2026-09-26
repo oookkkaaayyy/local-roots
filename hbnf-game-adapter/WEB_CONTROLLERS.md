@@ -3,7 +3,7 @@
 This optional layer does not replace the verified canonical cart controller or dedicated Stadia gamepads.
 
 ## Network boundary
-- Bridge STA: `HBNF-Cart` -> Matrix `192.168.8.20`
+- Bridge STA: `HBNF-Cart` at static `192.168.8.30` -> Matrix `192.168.8.20`
 - Bridge SoftAP: `HBNF-Play` -> controller clients at `192.168.4.1`
 - No NAT/routing is enabled between HBNF-Play and HBNF-Cart.
 - Guest clients receive only the bridge-hosted game controller page.
