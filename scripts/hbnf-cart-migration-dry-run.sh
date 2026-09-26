@@ -96,8 +96,8 @@ export MATRIX_BRIGHTNESS=91 AUX_BRIGHTNESS=37
 node "$root/scripts/hbnf-cart-projection-preflight.mjs" "$INITIAL_CART_STATE_JSON" "$HBNF_CART_RELEASE_ID" 1
 
 # Initialization is repeat-safe for the same input and leaves the actuator fence inactive.
+bash bash "$root/scripts/hbnf-cart-cutover-init.sh"
 bash "$root/scripts/hbnf-cart-cutover-init.sh"
-"$root/scripts/hbnf-cart-cutover-init.sh"
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
 do $$
 begin
