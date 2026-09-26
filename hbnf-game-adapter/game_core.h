@@ -277,7 +277,11 @@ class PongGame {
       fb.set(1, y1 + i, RGB(80, 200, 255));
       fb.set(kWidth - 2, y2 + i, RGB(255, 120, 185));
     }
-    fb.set(int(std::lround(ballX_)), int(std::lround(ballY_)), RGB(255, 255, 255));
+    const int bx = int(std::lround(ballX_));
+    const int by = int(std::lround(ballY_));
+    if (bx >= 0 && bx < kWidth && by >= 0 && by < kHeight) {
+      fb.set(bx, by, RGB(255, 255, 255));
+    }
     for (uint16_t i = 0; i < std::min<uint16_t>(score1_, 7); ++i) fb.set(4 + int(i), 0, RGB(80, 200, 255));
     for (uint16_t i = 0; i < std::min<uint16_t>(score2_, 7); ++i) fb.set(kWidth - 5 - int(i), 0, RGB(255, 120, 185));
   }
