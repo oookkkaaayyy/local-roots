@@ -1,0 +1,33 @@
+name: HBNF Watch Transport QA
+
+on:
+  push:
+    branches:
+      - hbnf-cart-phase2-transition-staging-20260926
+    paths:
+      - 'watch/HBNFWatchTransport/**'
+      - 'config/HBNF_WATCH_API_CONTRACT.json'
+      - '.github/workflows/hbnf-watch-transport-qa.yml'
+  workflow_dispatch:
+
+jobs:
+  typecheck:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Swift transport typecheck
+        run: swiftc -typecheck watch/HBNFWatchTransport/*.swift
+      - name: Contract sanity
+        run: |
+          python3 - <<'PY'
+          import json
+          p=json.load(open('config/HBNF_WATCH_API_CONTRACT.json'))
+          assert p['schema']=='hbnf-watch-api-contract-v1'
+          assert p['api_version']=='hbnf-watch-api-v1'
+          assert p['staging_function']['supabase_version'] >= 2
+          assert p['architecture']['cart']['intent_auto_revision'] is True
+          assert p['architecture']['cart']['intent_stale_retry_max'] == 1
+          assert p['architecture']['game']['enabled'] is False
+          assert p['architecture']['uv']['enabled'] is False
+          print('HBNF_WATCH_CONTRACT_QA=PASS')
+          PY
