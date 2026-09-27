@@ -22,7 +22,7 @@ type PairRedeem = {device_token:string;expires_at:string};
 type DeviceRegister = {ok:boolean;device_token?:string;expires_at?:string;already_paired?:boolean};
 type AdminCredential = {kind:'session'|'device';value:string};
 type HandoffCreate = {job_number:string;handoff_url:string;expires_at:string;source_photo_count:number};
-type GalleryAdminItem = {id:string;is_published:boolean;caption:string|null;source_photo_path:string|null;stencil_path:string|null;finished_disc_path:string|null;sort_order:number;created_at:string;updated_at:string};
+type GalleryAdminItem = {id:string;is_published:boolean;caption:string|null;source_photo_path:string|null;stencil_path:string|null;finished_disc_path:string|null;sort_order:number;legacy_roles_confirmed:boolean;created_at:string;updated_at:string};
 type GalleryList = {items:GalleryAdminItem[]};
 type GalleryUpload = {ok:boolean;item:GalleryAdminItem};
 type BadgeNavigator = Navigator & {
@@ -35,7 +35,6 @@ const labels:Record<WorkflowStatus,string>={draft:'Draft',intake_complete:'Intak
 const activeStates:WorkflowStatus[]=['intake_complete','handoff_preparing','chatgpt_ready','notification_sent','stage_a_started','awaiting_art_approval','art_approved','production_ready','handoff_failed'];
 const DU_DEVICE_TOKEN_KEY='du-admin-device-token-v1';
 const LEGACY_GALLERY_SPRITE='https://wtymjxscneufjlkkywyg.supabase.co/storage/v1/object/public/du-gallery/gallery-v2.avif';
-const LEGACY_GALLERY_SLIDES=9;
 function functionAuth(credential:AdminCredential){return credential.kind==='device'?{deviceToken:credential.value}:credential.value;}
 
 function isIos(){return /iPad|iPhone|iPod/.test(navigator.userAgent);}
@@ -167,9 +166,20 @@ function prepareGalleryImage(file:File,role:'source_photo'|'stencil'|'finished_d
   });
 }
 
-function galleryPublicUrl(path:string|null){
-  if(!path)return null;
-  return supabase.storage.from('du-gallery').getPublicUrl(path).data.publicUrl;
+function parseLegacyGalleryPath(path:string|null){
+  const match=String(path||'').match(/^legacy:(\d+):(left|right)$/);
+  if(!match)return null;
+  const row=Number(match[1]);
+  if(!Number.isInteger(row)||row<0||row>16)return null;
+  return {row,side:match[2] as 'left'|'right'};
+}
+
+function GalleryAdminPreview({path,label}:{path:string|null;label:string}){
+  if(!path)return <span>Empty</span>;
+  const legacy=parseLegacyGalleryPath(path);
+  if(legacy)return <div className="du-gallery-legacy-tile" role="img" aria-label={label} style={{backgroundImage:`url(${LEGACY_GALLERY_SPRITE})`,backgroundSize:'200% 1800%',backgroundPosition:`${legacy.side==='left'?'0%':'100%'} ${legacy.row*(100/17)}%`}}/>;
+  const url=supabase.storage.from('du-gallery').getPublicUrl(path).data.publicUrl;
+  return <img src={url} alt={label}/>;
 }
 
 const galleryRoles=[
@@ -177,11 +187,20 @@ const galleryRoles=[
   {key:'stencil' as const,path:'stencil_path' as const,label:'Stencil artwork'},
   {key:'finished_disc' as const,path:'finished_disc_path' as const,label:'Finished disc'},
 ];
+type GalleryRoleKey=(typeof galleryRoles)[number]['key'];
 
 function GalleryItemEditor({item,index,total,credential,refresh}:{item:GalleryAdminItem;index:number;total:number;credential:AdminCredential;refresh:()=>Promise<void>}){
   const [busy,setBusy]=useState(false),[message,setMessage]=useState('');
+  const [leftRole,setLeftRole]=useState<GalleryRoleKey|''>('');
+  const [rightRole,setRightRole]=useState<GalleryRoleKey|''>('');
+  const legacyPaths=[item.source_photo_path,item.stencil_path,item.finished_disc_path]
+    .filter((path):path is string=>Boolean(path)&&String(path).startsWith('legacy:'));
+  const legacyLeft=legacyPaths.find(path=>parseLegacyGalleryPath(path)?.side==='left')||null;
+  const legacyRight=legacyPaths.find(path=>parseLegacyGalleryPath(path)?.side==='right')||null;
+  const needsLegacyRoles=item.legacy_roles_confirmed===false&&Boolean(legacyLeft&&legacyRight);
+
   async function save(event:FormEvent<HTMLFormElement>){
-    event.preventDefault();setBusy(true);setMessage('Saving changes…');
+    event.preventDefault();setBusy(true);setMessage('Saving…');
     const form=event.currentTarget;
     try{
       const images:Record<string,string>={};
@@ -194,6 +213,15 @@ function GalleryItemEditor({item,index,total,credential,refresh}:{item:GalleryAd
       await callFunction('du-admin',{action:'gallery_update',item_id:item.id,caption,images},functionAuth(credential));
       form.reset();await refresh();setMessage('Saved.');
     }catch(reason){setMessage(reason instanceof Error?reason.message:'Could not save gallery changes.');}
+    finally{setBusy(false);}
+  }
+  async function classifyLegacy(){
+    if(!leftRole||!rightRole||leftRole===rightRole){setMessage('Choose two different roles.');return;}
+    setBusy(true);setMessage('');
+    try{
+      await callFunction('du-admin',{action:'gallery_classify_legacy',item_id:item.id,left_role:leftRole,right_role:rightRole},functionAuth(credential));
+      await refresh();setMessage('Roles saved.');
+    }catch(reason){setMessage(reason instanceof Error?reason.message:'Could not save roles.');}
     finally{setBusy(false);}
   }
   async function removeImage(role:(typeof galleryRoles)[number]){
@@ -209,7 +237,7 @@ function GalleryItemEditor({item,index,total,credential,refresh}:{item:GalleryAd
     setBusy(true);setMessage('');
     try{
       await callFunction('du-admin',{action:'gallery_set_published',item_id:item.id,is_published},functionAuth(credential));
-      await refresh();setMessage(is_published?'Published.':'Hidden from the public gallery.');
+      await refresh();setMessage(is_published?'Published.':'Hidden.');
     }catch(reason){setMessage(reason instanceof Error?reason.message:'Could not update gallery visibility.');}
     finally{setBusy(false);}
   }
@@ -226,6 +254,33 @@ function GalleryItemEditor({item,index,total,credential,refresh}:{item:GalleryAd
     catch(reason){setMessage(reason instanceof Error?reason.message:'Could not delete gallery item.');setBusy(false);}
   }
 
+  if(needsLegacyRoles){
+    return <section className="du-gallery-manage-item">
+      <div className="du-gallery-manage-head">
+        <div><strong>{item.caption||`Gallery item ${index+1}`}</strong><span>{item.is_published?'Published':'Draft'} · position {index+1}</span></div>
+        <span className="health health-warning">Needs roles</span>
+      </div>
+      <div className="du-gallery-role-grid du-gallery-legacy-classify">
+        <section className="du-gallery-role">
+          <div className="du-gallery-role-preview"><GalleryAdminPreview path={legacyLeft} label="Left image"/></div>
+          <label>Left image<select value={leftRole} onChange={event=>setLeftRole(event.target.value as GalleryRoleKey|'')}><option value="">Choose role</option>{galleryRoles.map(role=><option key={role.key} value={role.key}>{role.label}</option>)}</select></label>
+        </section>
+        <section className="du-gallery-role">
+          <div className="du-gallery-role-preview"><GalleryAdminPreview path={legacyRight} label="Right image"/></div>
+          <label>Right image<select value={rightRole} onChange={event=>setRightRole(event.target.value as GalleryRoleKey|'')}><option value="">Choose role</option>{galleryRoles.map(role=><option key={role.key} value={role.key}>{role.label}</option>)}</select></label>
+        </section>
+      </div>
+      <div className="du-gallery-manage-actions">
+        <button className="button primary" type="button" disabled={busy||!leftRole||!rightRole||leftRole===rightRole} onClick={()=>void classifyLegacy()}>{busy?'Working…':'Save roles'}</button>
+        <button className="button ghost" type="button" disabled={busy} onClick={()=>void setPublished(!item.is_published)}>{item.is_published?'Hide':'Publish'}</button>
+        <button className="button ghost" type="button" disabled={busy||index===0} onClick={()=>void move('earlier')}>Move earlier</button>
+        <button className="button ghost" type="button" disabled={busy||index===total-1} onClick={()=>void move('later')}>Move later</button>
+        <button className="button danger" type="button" disabled={busy} onClick={()=>void removeItem()}>Delete item</button>
+      </div>
+      {message?<div className="notice">{message}</div>:null}
+    </section>;
+  }
+
   return <form className="du-gallery-manage-item" onSubmit={save}>
     <div className="du-gallery-manage-head">
       <div><strong>{item.caption||`Gallery item ${index+1}`}</strong><span>{item.is_published?'Published':'Draft'} · position {index+1}</span></div>
@@ -234,15 +289,14 @@ function GalleryItemEditor({item,index,total,credential,refresh}:{item:GalleryAd
     <div className="du-gallery-role-grid">
       {galleryRoles.map(role=>{
         const path=item[role.path];
-        const url=galleryPublicUrl(path);
         return <section className="du-gallery-role" key={role.key}>
-          <div className="du-gallery-role-preview">{url?<img src={url} alt={role.label}/>:<span>Empty</span>}</div>
-          <ImageDropField name={role.key} label={role.label} hint={url?'drop to replace':'drop here'} accept="image/*" />
-          {url?<button className="button ghost du-gallery-remove" type="button" disabled={busy} onClick={()=>void removeImage(role)}>Remove {role.label.toLowerCase()}</button>:null}
+          <div className="du-gallery-role-preview"><GalleryAdminPreview path={path} label={role.label}/></div>
+          <ImageDropField name={role.key} label={role.label} hint={path?'drop to replace':'drop here'} accept="image/*" />
+          {path?<button className="button ghost du-gallery-remove" type="button" disabled={busy} onClick={()=>void removeImage(role)}>Remove {role.label.toLowerCase()}</button>:null}
         </section>;
       })}
     </div>
-    <label>Caption <span className="optional">optional</span><input name="caption" maxLength={300} defaultValue={item.caption||''} placeholder="Pet name or short note"/></label>
+    <label>Caption <span className="optional">optional</span><input name="caption" maxLength={300} defaultValue={item.caption||''} /></label>
     <div className="du-gallery-manage-actions">
       <button className="button primary" type="submit" disabled={busy}>{busy?'Working…':'Save changes'}</button>
       <button className="button ghost" type="button" disabled={busy} onClick={()=>void setPublished(!item.is_published)}>{item.is_published?'Hide':'Publish'}</button>
@@ -287,7 +341,7 @@ function GalleryPanel({credential}:{credential:AdminCredential}){
   }
 
   return <section className="admin-card du-gallery-manager" aria-labelledby="du-gallery-manager-title">
-    <div className="admin-card-head"><div><span className="eyebrow">Portfolio</span><h3 id="du-gallery-manager-title">Gallery manager</h3><p>Manage the gallery as three image roles the system understands: reference photo, stencil artwork, and finished disc. Replace, remove, reorder, publish, or hide everything here.</p></div><span className="status-pill">{items.length} managed</span></div>
+    <div className="admin-card-head"><div><h3 id="du-gallery-manager-title">Gallery manager</h3></div><span className="status-pill">{items.length} managed</span></div>
 
     <details className="du-gallery-add" open={items.length===0}>
       <summary>Add new work</summary>
@@ -306,14 +360,9 @@ function GalleryPanel({credential}:{credential:AdminCredential}){
     {message?<div className="notice">{message}</div>:null}
 
     <div className="du-gallery-managed-list">
-      {items.length?items.map((item,index)=><GalleryItemEditor key={`${item.id}:${item.updated_at}`} item={item} index={index} total={items.length} credential={credential} refresh={load}/>):<div className="empty-state"><strong>No individually managed items yet.</strong><span>Add the next source/result set above. It will appear here immediately.</span></div>}
+      {items.length?items.map((item,index)=><GalleryItemEditor key={`${item.id}:${item.updated_at}`} item={item} index={index} total={items.length} credential={credential} refresh={load}/>):<div className="empty-state"><strong>No gallery items.</strong></div>}
     </div>
 
-    <details className="du-gallery-legacy">
-      <summary>Legacy portfolio · 17 existing examples</summary>
-      <p className="small-note">These examples predate the item-level gallery system, so they are preserved as the existing high-resolution portfolio collection. New and replaced work is managed individually above.</p>
-      <div className="du-gallery-legacy-grid">{Array.from({length:LEGACY_GALLERY_SLIDES},(_,index)=><div key={index} className="du-gallery-legacy-slide" style={{backgroundImage:`url(${LEGACY_GALLERY_SPRITE})`,backgroundPositionY:`${index*(100/(LEGACY_GALLERY_SLIDES-1))}%`}} aria-label={`Legacy gallery slide ${index+1}`}/>)}</div>
-    </details>
   </section>;
 }
 

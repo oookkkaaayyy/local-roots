@@ -7,19 +7,29 @@ const duPublic = readFileSync(new URL("../../app/src/pages/DyedUnattachedPage.ts
 const duAdmin = readFileSync(new URL("../../app/src/pages/DuAdminPage.tsx", import.meta.url), "utf8");
 const duAdminFunction = readFileSync(new URL("../../supabase/functions/du-admin/index.ts", import.meta.url), "utf8");
 const dropField = readFileSync(new URL("../../app/src/components/ImageDropField.tsx", import.meta.url), "utf8");
+const legacyMigration = readFileSync(new URL("../../supabase/migrations/20260927054500_migrate_du_legacy_gallery_to_items.sql", import.meta.url), "utf8");
 
-test("D&U public page is share-ready and keeps intake available", () => {
-  assert.ok(duPublic.includes("Custom disc-golf stencil portraits"));
+test("D&U public page keeps only approved/functional copy and intake", () => {
+  assert.ok(duPublic.includes("<h1>Dyed &amp; Unattached</h1>"));
   assert.ok(duPublic.includes('href="#request-stencil"'));
   assert.ok(duPublic.includes('id="gallery"'));
-  assert.ok(duPublic.includes("See the transformation."));
   assert.ok(duPublic.includes("SUBMIT_INTAKE_URL"));
+  assert.equal(duPublic.includes("Custom disc-golf stencil portraits"), false);
+  assert.equal(duPublic.includes("Turn a favorite pet photo"), false);
+  assert.equal(duPublic.includes("See the transformation."), false);
+  assert.equal(duPublic.includes("Each example pairs"), false);
+  assert.equal(duPublic.includes("From photo to disc"), false);
+  assert.equal(duPublic.includes("Start here"), false);
+  assert.equal(duPublic.includes("No account required."), false);
 });
 
-test("D&U public gallery keeps the accepted legacy portfolio while adding live items", () => {
+test("D&U public gallery renders the portfolio from managed item records", () => {
   assert.ok(duPublic.includes("gallery-v2.avif"));
   assert.ok(duPublic.includes("gallery_items"));
   assert.ok(duPublic.includes(".eq('is_published',true)"));
+  assert.ok(duPublic.includes("gallerySlides"));
+  assert.ok(duPublic.includes("GalleryMediaView"));
+  assert.ok(duPublic.includes("parseLegacyPath"));
   assert.ok(duPublic.includes("source_photo_path"));
   assert.ok(duPublic.includes("finished_disc_path"));
 });
@@ -34,8 +44,13 @@ test("D&U admin manages gallery items directly by system image role", () => {
   assert.ok(duAdmin.includes("gallery_remove_image"));
   assert.ok(duAdmin.includes("gallery_delete"));
   assert.ok(duAdmin.includes("gallery_move"));
+  assert.ok(duAdmin.includes("gallery_classify_legacy"));
+  assert.ok(duAdmin.includes("Needs roles"));
+  assert.ok(duAdmin.includes("Save roles"));
   assert.ok(duAdmin.includes("Publish immediately"));
-  assert.ok(duAdmin.includes("Legacy portfolio · 17 existing examples"));
+  assert.ok(duAdmin.includes("GalleryAdminPreview"));
+  assert.ok(duAdmin.includes("parseLegacyGalleryPath"));
+  assert.equal(duAdmin.includes("Legacy portfolio · 17 existing examples"), false);
 });
 
 test("gallery image fields support drag/drop previews instead of menu-only picking", () => {
@@ -52,6 +67,7 @@ test("gallery writes remain admin-protected and validate image payloads", () => 
   assert.ok(duAdminFunction.includes('action === "gallery_update"'));
   assert.ok(duAdminFunction.includes('action === "gallery_remove_image"'));
   assert.ok(duAdminFunction.includes('action === "gallery_delete"'));
+  assert.ok(duAdminFunction.includes('action === "gallery_classify_legacy"'));
   assert.ok(duAdminFunction.includes("gallery_needs_two_images"));
   assert.ok(duAdminFunction.includes("gallery_image_too_large"));
   assert.ok(duAdminFunction.includes("invalid_gallery_image_signature"));
@@ -61,4 +77,31 @@ test("gallery writes remain admin-protected and validate image payloads", () => 
 test("published gallery items cannot be left with fewer than two understood images", () => {
   assert.ok(duAdminFunction.includes("galleryImageCount(existing) < 2"));
   assert.ok(duAdminFunction.includes("patch.is_published = false"));
+});
+
+
+test("legacy sprite-backed gallery roles remain editable without fake storage deletes", () => {
+  assert.ok(duAdminFunction.includes('!oldPath.startsWith("legacy:")'));
+  assert.ok(duAdminFunction.includes('!String(path).startsWith("legacy:")'));
+});
+
+
+test("legacy D&U portfolio migration creates all 17 managed examples in accepted row order", () => {
+  const inserted = legacyMigration.match(/'legacy:\d+:(?:left|right)'/g) || [];
+  assert.equal(new Set(inserted).size, 34);
+  assert.ok(legacyMigration.includes("'legacy:15:left'"));
+  assert.ok(legacyMigration.includes("'legacy:15:right'"));
+  assert.ok(legacyMigration.includes("update public.gallery_items"));
+});
+
+test("managed carousel autoplay tracks the loaded slide count", () => {
+  assert.ok(duPublic.includes("[galleryPaused,gallerySlideCount]"));
+});
+
+
+test("legacy gallery roles are never silently asserted before owner classification", () => {
+  assert.ok(legacyMigration.includes("legacy_roles_confirmed"));
+  assert.ok(legacyMigration.includes("false"));
+  assert.ok(duAdmin.includes("legacy_roles_confirmed"));
+  assert.ok(duPublic.includes("legacy_roles_confirmed"));
 });
