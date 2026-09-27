@@ -1,10 +1,10 @@
 {
-  "version": "hbnf-aux-commissioning-v6",
+  "version": "hbnf-aux-commissioning-v7",
   "matrix": {
     "ip_hint": "192.168.68.89",
     "release": "hbnf-wow-r3-max-2026-09-21-v3",
     "engine": "r3-wow-max",
-    "buildWitness": "registry28-tempo-lock-v8-unicast-perimeter",
+    "buildWitness": "registry28-tempo-lock-v9-network-no-starve",
     "pixels": 512,
     "width": 32,
     "height": 16,
@@ -29,14 +29,15 @@
       "frame_interval_ms": 33,
       "crc": "CRC16-CCITT",
       "discovery_port": 11990,
-      "geometry": "perimeter-5-6-5-6-v1"
+      "geometry": "perimeter-5-6-5-6-v1",
+      "scheduler": "network-before-bus-guard-v1"
     }
   },
   "aux": {
     "controller": "SP803E",
     "firmware_release": "hbnf-wow-aux-r3-2026-09-22-v1",
     "engine": "aux-r3-wow-1d",
-    "buildWitness": "registry28-tempo-lock-1d-v5-peer-beacon",
+    "buildWitness": "registry28-tempo-lock-1d-v6-network-no-starve",
     "projection": "frame-lock-v1",
     "effect_ids": [
       220,
@@ -86,7 +87,8 @@
       "queue_policy": "newest-frame-v1",
       "max_drain_per_tick": 128,
       "discovery_port": 11990,
-      "geometry": "perimeter-5-6-5-6-v1"
+      "geometry": "perimeter-5-6-5-6-v1",
+      "scheduler": "network-before-bus-guard-v1"
     }
   },
   "sync": {
@@ -109,7 +111,8 @@
     "visual_port": 11989,
     "framebuffer_source_of_truth": "matrix",
     "legacy_wled_udp": "fallback-only",
-    "discovery_port": 11990
+    "discovery_port": 11990,
+    "projection_scheduler": "network-before-bus-guard-v1"
   },
   "safety": {
     "aux_default_enabled": false,
