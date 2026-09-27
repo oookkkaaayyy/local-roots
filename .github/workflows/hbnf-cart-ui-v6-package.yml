@@ -42,7 +42,6 @@ jobs:
           cp hbnf-final-controller/hbnf-cart.js "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-semantic.mjs "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-manifest.webmanifest "$OUT/controller/"
-          cp hbnf-final-controller/hbnf-cart-icon-180.png "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-ui-v6.css "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-ui-v6.mjs "$OUT/controller/"
           cp hbnf-ui-v6-package/install_ui_v6.py "$OUT/"
