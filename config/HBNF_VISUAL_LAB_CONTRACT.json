@@ -1,0 +1,95 @@
+{
+  "schema": "hbnf-visual-lab-contract-v1",
+  "status": "staging",
+  "productionWritesEnabled": false,
+  "phase2Base": {
+    "branch": "hbnf-cart-phase2-readiness-verified-20260926",
+    "sha": "b779fe01d5b26f981270c5b12716e366e3f75720"
+  },
+  "parallelRendererObservation": {
+    "branch": "hbnf-generative-projection-v4-20260927",
+    "sha": "7103f8c2a84e48f5418049780df963213b3e2e33",
+    "mergeAuthority": false
+  },
+  "intent": {
+    "energy": {
+      "min": 0,
+      "max": 100,
+      "default": 65
+    },
+    "audioResponse": {
+      "min": 0,
+      "max": 100,
+      "default": 75
+    },
+    "motion": {
+      "min": 0,
+      "max": 100,
+      "default": 60
+    },
+    "variation": {
+      "min": 0,
+      "max": 100,
+      "default": 85
+    },
+    "couplingMode": {
+      "values": [
+        "locked",
+        "related",
+        "independent"
+      ],
+      "default": "related"
+    },
+    "paletteId": {
+      "type": "string",
+      "default": "hbnf-balanced"
+    }
+  },
+  "canonicalMapping": {
+    "energy": "maps initially to canonical vibe; final renderer may consume continuous value",
+    "motion": "maps initially to canonical speedBias; final renderer may consume continuous value",
+    "paletteId": "canonical PALETTE",
+    "brightness": "canonical BRIGHTNESS per device",
+    "audioResponse": "renderer extension; do not fake confirmation through existing cart state",
+    "variation": "renderer extension; do not fake confirmation through existing cart state",
+    "couplingMode": "renderer/adapter capability; not equivalent to ordinary WLED sync"
+  },
+  "telemetry": {
+    "required": [
+      "rendererRevision",
+      "sceneId",
+      "paletteId",
+      "energy",
+      "audioResponse",
+      "motion",
+      "variation",
+      "bass",
+      "mids",
+      "treble",
+      "onset",
+      "matrix",
+      "aux"
+    ],
+    "deviceState": [
+      "deviceId",
+      "desiredRevision",
+      "confirmedRevision",
+      "confirmedAt",
+      "online",
+      "confirmation"
+    ]
+  },
+  "promotionGates": [
+    "final_renderer_commit_accepted",
+    "phase2_handoff_gate_passed",
+    "paired_private_route_bound",
+    "requested_desired_confirmed_visible",
+    "matrix_ack_visible",
+    "aux_ack_visible",
+    "off_on_next_brightness_regression_pass",
+    "guest_bridge_regression_pass",
+    "game_lease_regression_pass",
+    "physical_phone_pass",
+    "physical_matrix_aux_pass"
+  ]
+}
