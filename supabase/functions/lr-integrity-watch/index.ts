@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
     if (shellOk && scriptMatch?.[1]) {
       frontendBundleUrl = new URL(scriptMatch[1], STAGING_URL).toString();
       const bundleResponse = await fetch(frontendBundleUrl, {
-        headers: { "User-Agent": "LocalRootsIntegrityWatch/9.0" },
+        headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
         redirect: "follow",
       });
       if (bundleResponse.ok) {
@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
     if (shellOk && cssMatch?.[1]) {
       cssBundleUrl = new URL(cssMatch[1], STAGING_URL).toString();
       const cssResponse = await fetch(cssBundleUrl, {
-        headers: { "User-Agent": "LocalRootsIntegrityWatch/9.0" },
+        headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
         redirect: "follow",
       });
       if (cssResponse.ok) {
