@@ -6,6 +6,7 @@ import test from "node:test";
 const duPublic = readFileSync(new URL("../../app/src/pages/DyedUnattachedPage.tsx", import.meta.url), "utf8");
 const duAdmin = readFileSync(new URL("../../app/src/pages/DuAdminPage.tsx", import.meta.url), "utf8");
 const duAdminFunction = readFileSync(new URL("../../supabase/functions/du-admin/index.ts", import.meta.url), "utf8");
+const dropField = readFileSync(new URL("../../app/src/components/ImageDropField.tsx", import.meta.url), "utf8");
 
 test("D&U public page is share-ready and keeps intake available", () => {
   assert.ok(duPublic.includes("Custom disc-golf stencil portraits"));
@@ -23,20 +24,41 @@ test("D&U public gallery keeps the accepted legacy portfolio while adding live i
   assert.ok(duPublic.includes("finished_disc_path"));
 });
 
-test("D&U admin exposes a gallery inbox with explicit publish control", () => {
-  assert.ok(duAdmin.includes("Gallery inbox"));
-  assert.ok(duAdmin.includes("Add to gallery inbox"));
-  assert.ok(duAdmin.includes("gallery_upload"));
-  assert.ok(duAdmin.includes("gallery_set_published"));
+test("D&U admin manages gallery items directly by system image role", () => {
+  assert.ok(duAdmin.includes("Gallery manager"));
+  assert.ok(duAdmin.includes("Reference photo"));
+  assert.ok(duAdmin.includes("Stencil artwork"));
+  assert.ok(duAdmin.includes("Finished disc"));
+  assert.ok(duAdmin.includes("Save changes"));
+  assert.ok(duAdmin.includes("gallery_update"));
+  assert.ok(duAdmin.includes("gallery_remove_image"));
+  assert.ok(duAdmin.includes("gallery_delete"));
+  assert.ok(duAdmin.includes("gallery_move"));
   assert.ok(duAdmin.includes("Publish immediately"));
+  assert.ok(duAdmin.includes("Legacy portfolio · 17 existing examples"));
 });
 
-test("gallery uploads remain admin-protected and validate image payloads", () => {
+test("gallery image fields support drag/drop previews instead of menu-only picking", () => {
+  assert.ok(dropField.includes("onDrop"));
+  assert.ok(dropField.includes("Drag from Photos here"));
+  assert.ok(dropField.includes("URL.createObjectURL"));
+  assert.ok(dropField.includes("image-drop-previews"));
+});
+
+test("gallery writes remain admin-protected and validate image payloads", () => {
   assert.ok(duAdminFunction.includes("resolveAdmin(service, req)"));
   assert.ok(duAdminFunction.includes('if (!auth) return json({ error: "unauthorized" }, 401)'));
   assert.ok(duAdminFunction.includes('action === "gallery_upload"'));
+  assert.ok(duAdminFunction.includes('action === "gallery_update"'));
+  assert.ok(duAdminFunction.includes('action === "gallery_remove_image"'));
+  assert.ok(duAdminFunction.includes('action === "gallery_delete"'));
   assert.ok(duAdminFunction.includes("gallery_needs_two_images"));
   assert.ok(duAdminFunction.includes("gallery_image_too_large"));
   assert.ok(duAdminFunction.includes("invalid_gallery_image_signature"));
   assert.ok(duAdminFunction.includes('service.storage.from("du-gallery").upload'));
+});
+
+test("published gallery items cannot be left with fewer than two understood images", () => {
+  assert.ok(duAdminFunction.includes("galleryImageCount(existing) < 2"));
+  assert.ok(duAdminFunction.includes("patch.is_published = false"));
 });
