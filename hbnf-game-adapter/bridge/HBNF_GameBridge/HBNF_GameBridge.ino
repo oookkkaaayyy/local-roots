@@ -40,6 +40,7 @@ WebServer gameWeb(80);
 WebSocketsServer gameWs(81);
 DNSServer captiveDns;
 uint8_t ddpSequence = 0;
+DdpFixedFrame ddpFrame;
 uint32_t lastFrameAt = 0;
 uint32_t lastWifiRetryAt = 0;
 uint64_t sampleRevision = 0;
@@ -289,10 +290,11 @@ void sendFrame(const Framebuffer& fb) {
   if (WiFi.status() != WL_CONNECTED) return;
   IPAddress target;
   if (!target.fromString(kMatrixIp)) return;
-  auto packets = encodeDdp(fb, ddpSequence);
-  for (const auto& packet : packets) {
+  encodeDdpFixed(fb, ddpSequence, ddpFrame);
+  for (size_t i = 0; i < ddpFrame.count; ++i) {
+    const auto& packet = ddpFrame.packets[i];
     udp.beginPacket(target, kDdpPort);
-    udp.write(packet.bytes.data(), packet.bytes.size());
+    udp.write(packet.bytes.data(), packet.length);
     udp.endPacket();
   }
 }
