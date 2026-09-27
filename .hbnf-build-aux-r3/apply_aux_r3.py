@@ -24,14 +24,13 @@ for old,new in [
 ]:
     s=s.replace(old,new)
 
-mqtt_old='\\\"buildWitness\\\":\\\"registry28-tempo-lock-1d-v3-colorwifi\\\",\\\"audioGeometry\\\":\\\"source-coupled-v3\\\",\\\"fxRegistered\\\"'
-mqtt_new='\\\"buildWitness\\\":\\\"registry28-tempo-lock-1d-v3-colorwifi\\\",\\\"audioGeometry\\\":\\\"source-coupled-v3\\\",\\\"projection\\\":\\\"fold2-1d-v1\\\",\\\"lumaPolicy\\\":\\\"camera-bright-v1\\\",\\\"fxRegistered\\\"'
-if s.count(mqtt_old)!=1:
-    raise RuntimeError(f"MQTT witness anchor mismatch: {s.count(mqtt_old)}")
-s=s.replace(mqtt_old,mqtt_new,1)
-if s.count("char payload[480];")!=1:
-    raise RuntimeError("MQTT payload buffer anchor mismatch")
-s=s.replace("char payload[480];","char payload[640];",1)
+mqtt_anchor='\\\"projectionLink\\\":\\\"frame-lock-v1\\\",'
+mqtt_repl=mqtt_anchor+'\\\"projectionRole\\\":\\\"receiver\\\",\\\"lumaPolicy\\\":\\\"camera-bright-v1\\\",'
+if s.count(mqtt_anchor)!=1:
+    raise RuntimeError(f"MQTT V4 projection anchor mismatch: {s.count(mqtt_anchor)}")
+s=s.replace(mqtt_anchor,mqtt_repl,1)
+if "char payload[900];" not in s:
+    raise RuntimeError("V4 MQTT payload buffer anchor missing")
 
 anchor="class ANIMartRIXMod:public ANIMartRIX {"
 if s.count(anchor)!=1:
@@ -75,24 +74,40 @@ s,n=init_pat.subn(init_new,s,count=1)
 if n!=1:
     raise RuntimeError(f"fold2 init rewrite mismatch: {n}")
 
-pixel_old='''\tvoid setPixelColor(int x, int y, rgb pixel) {
+pixel_old='''\tvoid hbnfVariantXY(int x,int y,int &tx,int &ty) const {
+\t\tconst int w=SEGMENT.virtualWidth()?SEGMENT.virtualWidth():1;
+\t\tconst int h=SEGMENT.virtualHeight()?SEGMENT.virtualHeight():1;
+\t\tconst uint8_t t=(uint8_t)(SEGMENT.custom3&7u);
+\t\tconst int sx=(int)(SEGMENT.offset%w), sy=(int)((SEGMENT.offset>>5)%h);
+\t\ttx=x; ty=y;
+\t\tif(t==1||t==3||t==6) tx=w-1-tx;
+\t\tif(t==2||t==3||t==7) ty=h-1-ty;
+\t\tif(t>=4) tx=(tx+sx)%w;
+\t\tif(t==5||t==6) ty=(ty+sy)%h;
+\t\tif(t==7) tx=(tx+(sx>>1)+1)%w;
+\t}
+\tvoid setPixelColor(int x, int y, rgb pixel) {
 \t\tuint8_t r=pixel.red,g=pixel.green,b=pixel.blue;
 \t\thbnfAudio.modulate(x,y,r,g,b);
 \t\tif (SEGMENT.check2) { r=gamma8(r); g=gamma8(g); b=gamma8(b); }
-\t\tSEGMENT.setPixelColorXY(x, y, CRGB(r,g,b));
+\t\tint tx=x,ty=y; hbnfVariantXY(x,y,tx,ty);
+\t\tSEGMENT.setPixelColorXY(tx, ty, CRGB(r,g,b));
 \t}
 \tvoid setPixelColor(int index, rgb pixel) {
 \t\tuint8_t r=pixel.red,g=pixel.green,b=pixel.blue;
-\t\tconst int w=SEGMENT.virtualWidth();
-\t\tconst int x=w?(index%w):0, y=w?(index/w):0;
+\t\tconst int w=SEGMENT.virtualWidth()?SEGMENT.virtualWidth():1;
+\t\tconst int x=index%w, y=index/w;
 \t\thbnfAudio.modulate(x,y,r,g,b);
 \t\tif (SEGMENT.check2) { r=gamma8(r); g=gamma8(g); b=gamma8(b); }
-\t\tSEGMENT.setPixelColor(index, CRGB(r,g,b));
+\t\tint tx=x,ty=y; hbnfVariantXY(x,y,tx,ty);
+\t\tconst int out=ty*w+tx;
+\t\tif(out>=0 && out<SEGMENT.virtualLength()) SEGMENT.setPixelColor(out, CRGB(r,g,b));
 \t}'''
 pixel_new='''\tvoid setPixelColor(int x, int y, rgb pixel) {
 \t\tuint8_t r=pixel.red,g=pixel.green,b=pixel.blue;
 \t\thbnfAudio.modulate(x,y,r,g,b);
 \t\tif (SEGMENT.check2) { r=gamma8(r); g=gamma8(g); b=gamma8(b); }
+\t\thbnfAuxLiftLuma(r,g,b);
 \t\tconst int index = y * num_x + x;
 \t\tif (index >= 0 && index < SEGMENT.virtualLength()) SEGMENT.setPixelColor(index, CRGB(r,g,b));
 \t}
@@ -101,6 +116,7 @@ pixel_new='''\tvoid setPixelColor(int x, int y, rgb pixel) {
 \t\tconst int x=num_x?(index%num_x):0, y=num_x?(index/num_x):0;
 \t\thbnfAudio.modulate(x,y,r,g,b);
 \t\tif (SEGMENT.check2) { r=gamma8(r); g=gamma8(g); b=gamma8(b); }
+\t\thbnfAuxLiftLuma(r,g,b);
 \t\tif (index >= 0 && index < SEGMENT.virtualLength()) SEGMENT.setPixelColor(index, CRGB(r,g,b));
 \t}'''
 if s.count(pixel_old)!=1:
@@ -108,8 +124,8 @@ if s.count(pixel_old)!=1:
 s=s.replace(pixel_old,pixel_new,1)
 
 
-old="(hbnfAudio.setScene(SEGMENT.mode), hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, SEGMENT.custom1, SEGMENT.custom2, SEGMENT.virtualWidth(), SEGMENT.virtualHeight()))"
-new="(hbnfAudio.setScene(SEGMENT.mode), hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, hbnfAuxStyleForMode(SEGMENT.mode, SEGMENT.custom1), hbnfAuxAmountForMode(SEGMENT.mode, SEGMENT.custom2), num_x, num_y))"
+old="(hbnfAudio.setScene(SEGMENT.mode), hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, SEGMENT.custom1, SEGMENT.custom2, SEGMENT.virtualWidth(), SEGMENT.virtualHeight(), SEGMENT.custom3, (uint8_t)(SEGMENT.offset >> 8)))"
+new="(hbnfAudio.setScene(SEGMENT.mode), hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, hbnfAuxStyleForMode(SEGMENT.mode, SEGMENT.custom1), hbnfAuxAmountForMode(SEGMENT.mode, SEGMENT.custom2), num_x, num_y, SEGMENT.custom3, (uint8_t)(SEGMENT.offset >> 8)))"
 if s.count(old)!=1:
     raise RuntimeError(f"audio mapping anchor mismatch: {s.count(old)}")
 s=s.replace(old,new,1)
