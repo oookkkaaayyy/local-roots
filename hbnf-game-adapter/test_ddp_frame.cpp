@@ -55,5 +55,24 @@ int main() {
     assert(seq<=15);
   }
 
-  std::printf("PASS: HBNF DDP 32x16 encoder; 1536 channels -> 1440+96 on UDP %u\n", kDdpPort);
+  // Allocation-free path used by the ESP32 runtime: soak 100,000 frames and
+  // verify identical packet geometry without constructing std::vector packets.
+  DdpFixedFrame fixed;
+  uint8_t fixedSeq=0;
+  for (int i=0;i<100000;++i) {
+    encodeDdpFixed(fb,fixedSeq,fixed);
+    assert(fixed.count==2);
+    assert(fixed.packets[0].length==1450);
+    assert(fixed.packets[1].length==106);
+    assert((fixed.packets[1].bytes[0]&kDdpPush)!=0);
+    assert(fixedSeq<=15);
+  }
+  assert(fixed.packets[0].bytes[10]==0 &&
+         fixed.packets[0].bytes[11]==0 &&
+         fixed.packets[0].bytes[12]==0);
+  assert(fixed.packets[1].bytes[fixed.packets[1].length-3]==uint8_t((c>>16)&0xFF));
+  assert(fixed.packets[1].bytes[fixed.packets[1].length-2]==uint8_t((c>>8)&0xFF));
+  assert(fixed.packets[1].bytes[fixed.packets[1].length-1]==uint8_t(c&0xFF));
+
+  std::printf("PASS: HBNF DDP 32x16 encoders; allocation-free runtime path soaked 100000 frames on UDP %u\n", kDdpPort);
 }
