@@ -1,0 +1,86 @@
+{
+  "schema": "hbnf-cart-phase1-handoff-v1",
+  "phase1_finalized": false,
+  "phase1_name": "Canonical cart + permanent private phone controller",
+  "purpose": "Placeholder only. Phase 2 MUST refuse to run until this file is replaced by a finalized handoff snapshot.",
+  "canonical_release": {
+    "release_id": "hbnf-cart-foundation-v1-20260925",
+    "source_sha": "8962d34d908e2bbd6971575f0174ff203e797a27"
+  },
+  "current_observed_not_final": {
+    "fence": {
+      "active": true,
+      "epoch": 2
+    },
+    "desired": {
+      "revision": 20,
+      "power": "off"
+    },
+    "observed_devices": [
+      {
+        "device_id": "matrix",
+        "status": "off",
+        "online": true,
+        "desired_revision": 20,
+        "fence_epoch": 2
+      },
+      {
+        "device_id": "aux",
+        "status": "off",
+        "online": true,
+        "desired_revision": 20,
+        "fence_epoch": 2
+      }
+    ],
+    "backend": {
+      "hbnf-cart-control": {
+        "version": 6,
+        "sha256": "1110d039a208f0aecba11ff3f32d13f392db0d16b056ec01fe1daed7b32b66ca"
+      },
+      "hbnf-cart-reconcile": {
+        "version": 3,
+        "sha256": "99398f24dfbac153f165963fe8bb83968a45e6a56533a9c2e8d304770e281843"
+      },
+      "hbnf-matrix-adapter": {
+        "version": 5,
+        "sha256": "ceae6ab2f049517420e7d2bb71aa187100e8d7e90796f0d95c1877666e1797d4"
+      },
+      "hbnf-aux-adapter": {
+        "version": 2,
+        "sha256": "c16549f4f780803457c1e4f570b3230a3bc6c39abcba013114088dbb2ee2368a"
+      }
+    },
+    "phone_functions_present": [
+      "hbnf-cart-pair",
+      "hbnf-cart-field",
+      "hbnf-cart-install",
+      "hbnf-cart-phone-recover",
+      "hbnf-current-icon-proxy"
+    ],
+    "security_blockers": {
+      "cart_device_sessions_rls_enabled": false,
+      "cart_pair_tokens_rls_enabled": false
+    }
+  },
+  "required_exit_criteria": {
+    "core_cart_still_accepted": true,
+    "permanent_https_phone_url": false,
+    "normal_use_requires_no_email_login": false,
+    "one_time_pairing_verified": false,
+    "persistent_access_target_days": 180,
+    "persistent_access_verified": false,
+    "unpaired_device_rejected": false,
+    "no_auth_tokens_left_in_url": false,
+    "home_screen_install_verified": false,
+    "source_frozen_and_matches_production": false,
+    "cart_device_sessions_rls_enabled": false,
+    "cart_pair_tokens_rls_enabled": false,
+    "stale_test_pair_tokens_cleaned_or_expired": false,
+    "ipad_compatibility_decided": false
+  },
+  "phone_controller": {
+    "production_url": null,
+    "ipad_compatible": null
+  },
+  "final_backend": {}
+}
