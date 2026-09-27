@@ -8,7 +8,10 @@
     "band": "2.4GHz",
     "security": "WPA2-PSK/AES",
     "password": "SET_ON_ROUTER_NOT_IN_REPO",
-    "apIsolation": false
+    "apIsolation": false,
+    "channel": "auto",
+    "bandwidth": "20MHz",
+    "ssidVisible": true
   },
   "dhcp": {
     "enabled": true,
@@ -33,7 +36,10 @@
       "iPhone USB tethering",
       "Repeater/WISP to HBNFHotspot"
     ],
-    "autoReconnectNotRequiredForLocalControl": true
+    "autoReconnectNotRequiredForLocalControl": true,
+    "currentSoak": "Repeater/WISP to home Wi-Fi",
+    "coursePreferred": "Repeater/WISP to iPhone hotspot",
+    "behavior": "Optional upstream only. Local Matrix/AUX/GameBridge traffic must remain functional without internet."
   },
   "mdnsRequired": false,
   "rollback": "Power Opal off; use preserved HBNFHotspot/current networking profiles. Do not delete old WLED Wi-Fi profiles during migration.",
@@ -43,5 +49,16 @@
       "ip": "192.168.8.30",
       "identity": "ELEGOO ESP32-WROOM-32; firmware static IPv4 outside DHCP pool"
     }
-  ]
+  ],
+  "commissioning": {
+    "fiveGhzEnabled": false,
+    "note": "Keep 5 GHz off during commissioning; may re-enable after full acceptance if it does not affect stability."
+  },
+  "mountedController": {
+    "device": "iPad mini 2",
+    "role": "client-only control panel",
+    "preferredNetwork": "HBNF-Cart",
+    "fallback": "existing iPhone hotspot when Opal is absent",
+    "runtimeDependency": false
+  }
 }
