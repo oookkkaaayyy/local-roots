@@ -1,0 +1,26 @@
+{
+  "schema": "hbnf-prephase2-final-package-v1",
+  "branch": "hbnf-prephase2-final-integration-20260927",
+  "packaged_from_head": "d2b3d9138b51a69b151b5770cfed7489494235f8",
+  "package": {
+    "filename": "HBNF_PREPHASE2_FINAL_20260927.zip",
+    "sha256": "7cad07ac8836c44b665b1b6d16e139c6fc1f3fbf009d5890cc328e4d95b16e25"
+  },
+  "matrix": {
+    "ci_run": 36311718101,
+    "artifact_id": 10929243585,
+    "artifact_digest": "sha256:8b2691c0d6b014a33a0e12a7e49b8561e2f53e8856207fc42339637af8ac724b",
+    "firmware_sha256": "3fd7d13e170a2758ea958ac483da4470f8c620a6d7f463a9501832ef6368b3c3",
+    "bytes": 1353120
+  },
+  "aux": {
+    "ci_run": 36312236574,
+    "artifact_id": 10929244517,
+    "artifact_digest": "sha256:887061f0248106df55222e6a863f4bd7555f5d4a8bcd0fbc59fd55dcd8566963",
+    "firmware_sha256": "36ea00c6da7d5d262243b1f0a885baaeb48c4a45d59cfc40628b3a39e5561867",
+    "bytes": 1347024
+  },
+  "controller_build": "hbnf-cart-final-v5-semantic-frame-lock",
+  "installer": "INSTALL_FINAL_PREPHASE2.command",
+  "physical_acceptance_required": true
+}
