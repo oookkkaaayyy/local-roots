@@ -29,7 +29,7 @@ mqtt_repl=mqtt_anchor+'\\\"projection\\\":\\\"fold2-1d-v1\\\",\\\"projectionRole
 if s.count(mqtt_anchor)!=1:
     raise RuntimeError(f"MQTT V4 projection anchor mismatch: {s.count(mqtt_anchor)}")
 s=s.replace(mqtt_anchor,mqtt_repl,1)
-if "char payload[900];" not in s:
+if "char payload[" not in s:
     raise RuntimeError("V4 MQTT payload buffer anchor missing")
 
 anchor="class ANIMartRIXMod:public ANIMartRIX {"
