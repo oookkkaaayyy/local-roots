@@ -74,6 +74,8 @@ jobs:
           /tmp/wowmax-audio-lanes-v3 | tee /tmp/wowmax-audio-lanes-v3.log
           g++ -std=c++11 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_generative_v4.cpp -o /tmp/wowmax-generative-v4
           /tmp/wowmax-generative-v4 | tee /tmp/wowmax-generative-v4.log
+          g++ -std=c++11 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_audio_domains_v4.cpp -o /tmp/wowmax-audio-domains-v4
+          /tmp/wowmax-audio-domains-v4 | tee /tmp/wowmax-audio-domains-v4.log
           g++ -std=c++11 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_projection_link_v1.cpp -o /tmp/wowmax-projection-v1
           /tmp/wowmax-projection-v1 | tee /tmp/wowmax-projection-v1.log
           ! grep -q 'const bool cross=' .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h
@@ -175,7 +177,7 @@ jobs:
           SHA=$(sha256sum "$BIN" | awk '{print $1}')
           VIBE=$(sha256sum .hbnf-build-r3max/hbnf_vibe16.h | awk '{print $1}')
           BRIDGE=$(sha256sum .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h | awk '{print $1}')
-          cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-wowmax-source.patch /tmp/wowmax-vibe.log /tmp/wowmax-bridge.log /tmp/wowmax-audio-lanes-v3.log /tmp/wowmax-generative-v4.log /tmp/wowmax-projection-v1.log /tmp/wowmax-soak.log /tmp/wowmax-fuzz.log /tmp/wowmax-sanitize.log /tmp/hbnf-flow-source-audit.txt /tmp/artifacts/
+          cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-wowmax-source.patch /tmp/wowmax-vibe.log /tmp/wowmax-bridge.log /tmp/wowmax-audio-lanes-v3.log /tmp/wowmax-generative-v4.log /tmp/wowmax-audio-domains-v4.log /tmp/wowmax-projection-v1.log /tmp/wowmax-soak.log /tmp/wowmax-fuzz.log /tmp/wowmax-sanitize.log /tmp/hbnf-flow-source-audit.txt /tmp/artifacts/
           cp -R /tmp/hbnf-r1/hbnf_flow/hbnf_flow /tmp/artifacts/hbnf_flow_source
           cp .hbnf-build-r3max/hbnf_vibe16.h .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h .hbnf-build-r3max/hbnf_generative_v4.h .hbnf-build-r3max/hbnf_projection_link_v1.h .hbnf-build-r3max/apply_wowmax_v3.py /tmp/artifacts/
           {
