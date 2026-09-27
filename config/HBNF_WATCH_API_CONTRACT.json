@@ -3,9 +3,9 @@
   "api_version": "hbnf-watch-api-v1",
   "staging_function": {
     "name": "hbnf-watch-api-staging",
-    "supabase_version": 1,
-    "supabase_sha256": "843dcdfa352952079b57fc2a33b1a70e6e43c75e778469581e6d34aed99444e5",
-    "source_commit": "ed2448f28406a22df85be7e76174e37aa27143b0"
+    "supabase_version": 2,
+    "supabase_sha256": "bf4189478754e70145a8c75aaa9ebdf96033dd3f2e54c7df57affa8c43aaf3ad",
+    "source_commit": "1e69b514b083ccdcea98f9880e7db24d50beb2c8"
   },
   "architecture": {
     "rule": "Apple Watch talks only to the versioned Watch API facade; it must not call Matrix, AUX, orchestrator, or game-bridge internals directly.",
@@ -14,6 +14,8 @@
       "provider": "hbnf-cart-control",
       "auth": "paired device session token",
       "status_and_command_proxy": true,
+      "intent_auto_revision": true,
+      "intent_stale_retry_max": 1,
       "revision_and_fence_authority": "upstream canonical cart controller"
     },
     "score": {
@@ -40,8 +42,8 @@
     "Phase 1 finalized and source frozen",
     "physical Watch installation succeeds",
     "Watch receives/stores its own paired device session token",
-    "canonical cart status and at least one non-destructive command pass from Watch",
-    "stale-revision behavior is verified on Watch",
+    "canonical cart status and at least one non-destructive intent pass from Watch",
+    "server-side stale-revision retry behavior is verified or observed unnecessary under physical use",
     "score staging interaction is physically accepted",
     "no direct legacy Matrix/AUX Watch control path remains active"
   ]
