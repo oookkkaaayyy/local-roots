@@ -229,7 +229,7 @@ for old,new in [
 state_proj='      wow["projectionLink"] = "frame-lock-v1";'
 if s.count(state_proj)!=1:
     raise RuntimeError("AUX projectionLink state anchor missing")
-s=s.replace(state_proj,state_proj+'\\n      wow["projectionRole"] = "receiver";',1)
+s=s.replace(state_proj,state_proj+'\n      wow["projectionRole"] = "receiver";',1)
 
 # Add 1D-specific diagnostics. A normal strip is virtualHeight()==1; ANIMartRIX
 # therefore renders the same effect as a one-row projection while sharing the
