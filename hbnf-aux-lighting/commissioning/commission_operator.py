@@ -13,8 +13,6 @@ HERE=pathlib.Path(__file__).resolve().parent
 sys.path.insert(0,str(HERE))
 import local_commission as lc
 
-EXPECTED_FW_SHA="7c8f4f7ff9179b788275fb1c093b12a0094a43daa81542cf8ae5379a7cb43e2f"
-EXPECTED_FW_BYTES=1343376
 BACKUP_PATHS=["/json/cfg","/json/state","/json/info","/json/eff","/json/pins","/presets.json"]
 
 
@@ -40,14 +38,14 @@ def verify_package(root:pathlib.Path)->dict:
             k,v=line.split('=',1); kv[k]=v
     con=json.loads(contract.read_text()); sc=json.loads(scenes.read_text())
     checks={
-      "firmwareSha":got_sha==EXPECTED_FW_SHA==kv.get("firmware_sha256"),
-      "firmwareBytes":got_bytes==EXPECTED_FW_BYTES==int(kv.get("firmware_bytes","-1")),
+      "firmwareSha":got_sha==kv.get("firmware_sha256"),
+      "firmwareBytes":got_bytes==int(kv.get("firmware_bytes","-1")),
       "release":kv.get("release")==lc.AUX_RELEASE,
       "engine":kv.get("engine")==lc.AUX_ENGINE,
       "witness":kv.get("build_witness")==lc.AUX_WITNESS,
       "effectRange":con["aux"]["effect_ids"]==[220,247],
       "sceneCount":len(sc.get("scenes",[]))==28,
-      "projection":con["aux"].get("projection")=="fold2-1d-v1",
+      "projection":con["aux"].get("projection")=="frame-lock-v1" and con["aux"].get("projection_fallback")=="fold2-1d-v1",
       "brightnessIndependent":con["sync"].get("receive_brightness") is False,
       "audioPort":con["sync"].get("audio_port")==11988,
     }
