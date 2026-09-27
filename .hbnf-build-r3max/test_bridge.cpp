@@ -10,6 +10,19 @@ struct UsermodManager{static bool getUMData(um_data_t **o,uint8_t id){assert(id=
 static void fill(uint8_t f[16],int band,bool hit){for(int i=0;i<16;i++)f[i]=(i<4?70:(i<11?52:36));if(hit){int a=band==0?0:(band==1?4:11),z=band==0?4:(band==1?11:16);for(int i=a;i<z;i++)f[i]=230;}}
 static std::array<int,3> sample(hbnf::AnimartrixAudioBridge &b,int x,int y){uint8_t r=70,gc=80,bl=90;b.modulate(x,y,r,gc,bl);return{r,gc,bl};}
 int main(){
+ // Runtime-global tuning overrides must survive per-preset parameter changes.
+ hbnf::setGlobalTuneOverride(true,77,true,216,true,236,true,99,true,201);
+ assert(hbnf::tuneSpeed(128)==77);
+ assert(hbnf::tuneMic(255)==201);
+ hbnf::AnimartrixAudioBridge ov;
+ ov.beginFrame(1.0f,1,16,16,16,32,16);
+ assert(ov.profile()==hbnf::PROFILE_IMPACT);
+ assert(ov.style()==hbnf::STYLE_HYBRID);
+ assert(ov.amount()==99);
+ // Clearing the override restores scene-provided parameters.
+ hbnf::setGlobalTuneOverride(false,128,false,96,false,16,false,170,false,255);
+ assert(hbnf::tuneSpeed(144)==144);
+
  hbnf::AnimartrixAudioBridge b;g.ok=false;assert(b.beginFrame(4.25f,100,96,216,220,32,16)==4.25f);auto n=sample(b,16,8);assert(n[0]==70&&n[1]==80&&n[2]==90);
  hbnf::AnimartrixAudioBridge hue;hue.setScene(220);assert(hue.beginFrame(1.0f,120,96,176,205,32,16)==1.0f);auto h0=sample(hue,8,8);hue.setScene(221);auto h1=sample(hue,8,8);hue.setScene(226);auto h6=sample(hue,8,8);assert(h0!=h1&&h1!=h6&&h0!=h6);
  uint8_t fft[16];float vol=90;void* ptrs[3]={&vol,nullptr,fft};um_data_t u;u.u_size=3;u.u_data=ptrs;g.ok=true;g.d=&u;
