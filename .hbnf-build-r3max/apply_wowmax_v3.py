@@ -169,7 +169,7 @@ loop_new="""    void loop() {
           char payload[900];
           snprintf_P(topic, sizeof(topic), PSTR("%s/wow"), mqttDeviceTopic);
           snprintf_P(payload, sizeof(payload),
-            PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"buildWitness\\\":\\\"registry28-tempo-lock-v5-colorwifi\\\",\\\"audioGeometry\\\":\\\"source-coupled-v4\\\",\\\"generator\\\":\\\"anti-repeat-v4\\\",\\\"projectionLink\\\":\\\"frame-lock-v1\\\",\\\"generatorEnabled\\\":%s,\\\"generatorLocked\\\":%s,\\\"generatorDomain\\\":%u,\\\"variantSequence\\\":%lu,\\\"variantSignature\\\":%lu,\\\"projectionPackets\\\":%lu,\\\"projectionSeq\\\":%u,\\\"fxRegistered\\\":%u,\\\"fxFailed\\\":%u,\\\"modeCount\\\":%u,\\\"fxFirst\\\":%u,\\\"fxLast\\\":%u,\\\"audioActive\\\":%s,\\\"profile\\\":%u,\\\"style\\\":%u,\\\"amount\\\":%u,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u,\\\"pulse\\\":%u,\\\"energy\\\":%u,\\\"impact\\\":%u,\\\"drop\\\":%u}"),
+            PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"buildWitness\\\":\\\"registry28-tempo-lock-v5-colorwifi\\\",\\\"audioGeometry\\\":\\\"source-coupled-v4\\\",\\\"generator\\\":\\\"anti-repeat-v4\\\",\\\"projectionLink\\\":\\\"frame-lock-v1\\\",\\\"generatorEnabled\\\":%s,\\\"generatorLocked\\\":%s,\\\"generatorDomain\\\":%u,\\\"variantSequence\\\":%lu,\\\"variantSignature\\\":%lu,\\\"variantFamily\\\":%u,\\\"variation\\\":%u,\\\"projectionPackets\\\":%lu,\\\"projectionSeq\\\":%u,\\\"fxRegistered\\\":%u,\\\"fxFailed\\\":%u,\\\"modeCount\\\":%u,\\\"fxFirst\\\":%u,\\\"fxLast\\\":%u,\\\"audioActive\\\":%s,\\\"profile\\\":%u,\\\"style\\\":%u,\\\"amount\\\":%u,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u,\\\"pulse\\\":%u,\\\"energy\\\":%u,\\\"impact\\\":%u,\\\"drop\\\":%u}"),
             hbnfGenV4.enabled() ? "true" : "false", hbnfGenV4.locked() ? "true" : "false", hbnfGenV4.domain(),
             (unsigned long)hbnfGenV4.sequence(), (unsigned long)hbnfGenV4.current().signature, hbnfGenV4.current().familyId, hbnfGenV4.variation(),
             (unsigned long)hbnfProjectionTx.packets(), hbnfProjectionTx.seq(),
@@ -363,7 +363,7 @@ class HbnfGenerativeRuntimeV4 {
     seg.intensity=current_.profile;
     seg.custom1=current_.style;
     seg.custom2=current_.amount;
-    seg.custom3=(uint8_t)(current_.variantCode&31u);
+    seg.custom3=current_.variantCode;
     seg.offset=current_.offset;
     seg.markForReset();
     strip.trigger();
@@ -413,6 +413,8 @@ checks=[
     (p,'wow["projectionLink"]'),
     (p,"HbnfGenerativeRuntimeV4"),
     (p,"HbnfProjectionSenderV1"),
+    (p,"seg.custom3=current_.variantCode;"),
+    (p,'\\\"variantFamily\\\":%u,\\\"variation\\\":%u,\\\"projectionPackets\\\":%lu'),
     (p,"hbnfVariantXY"),
     (p,'wow["fxRegistered"]'),
     (p,'strip.addEffect(233, &mode_Caleido3'),
