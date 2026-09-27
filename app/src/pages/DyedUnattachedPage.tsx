@@ -99,7 +99,7 @@ export function DyedUnattachedPage() {
     if (galleryPaused || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const timer = window.setInterval(nextSlide, 4800);
     return () => window.clearInterval(timer);
-  }, [galleryPaused]);
+  }, [galleryPaused,gallerySlideCount]);
 
   useEffect(()=>{
     let alive=true;
