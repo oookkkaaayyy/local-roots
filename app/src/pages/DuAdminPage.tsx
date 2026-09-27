@@ -22,7 +22,7 @@ type PairRedeem = {device_token:string;expires_at:string};
 type DeviceRegister = {ok:boolean;device_token?:string;expires_at?:string;already_paired?:boolean};
 type AdminCredential = {kind:'session'|'device';value:string};
 type HandoffCreate = {job_number:string;handoff_url:string;expires_at:string;source_photo_count:number};
-type GalleryAdminItem = {id:string;is_published:boolean;caption:string|null;source_photo_path:string|null;stencil_path:string|null;finished_disc_path:string|null;sort_order:number;created_at:string;updated_at:string};
+type GalleryAdminItem = {id:string;is_published:boolean;caption:string|null;source_photo_path:string|null;stencil_path:string|null;finished_disc_path:string|null;sort_order:number;legacy_roles_confirmed:boolean;created_at:string;updated_at:string};
 type GalleryList = {items:GalleryAdminItem[]};
 type GalleryUpload = {ok:boolean;item:GalleryAdminItem};
 type BadgeNavigator = Navigator & {
@@ -187,11 +187,20 @@ const galleryRoles=[
   {key:'stencil' as const,path:'stencil_path' as const,label:'Stencil artwork'},
   {key:'finished_disc' as const,path:'finished_disc_path' as const,label:'Finished disc'},
 ];
+type GalleryRoleKey=(typeof galleryRoles)[number]['key'];
 
 function GalleryItemEditor({item,index,total,credential,refresh}:{item:GalleryAdminItem;index:number;total:number;credential:AdminCredential;refresh:()=>Promise<void>}){
   const [busy,setBusy]=useState(false),[message,setMessage]=useState('');
+  const [leftRole,setLeftRole]=useState<GalleryRoleKey|''>('');
+  const [rightRole,setRightRole]=useState<GalleryRoleKey|''>('');
+  const legacyPaths=[item.source_photo_path,item.stencil_path,item.finished_disc_path]
+    .filter((path):path is string=>Boolean(path)&&String(path).startsWith('legacy:'));
+  const legacyLeft=legacyPaths.find(path=>parseLegacyGalleryPath(path)?.side==='left')||null;
+  const legacyRight=legacyPaths.find(path=>parseLegacyGalleryPath(path)?.side==='right')||null;
+  const needsLegacyRoles=item.legacy_roles_confirmed===false&&Boolean(legacyLeft&&legacyRight);
+
   async function save(event:FormEvent<HTMLFormElement>){
-    event.preventDefault();setBusy(true);setMessage('Saving changes…');
+    event.preventDefault();setBusy(true);setMessage('Saving…');
     const form=event.currentTarget;
     try{
       const images:Record<string,string>={};
@@ -204,6 +213,15 @@ function GalleryItemEditor({item,index,total,credential,refresh}:{item:GalleryAd
       await callFunction('du-admin',{action:'gallery_update',item_id:item.id,caption,images},functionAuth(credential));
       form.reset();await refresh();setMessage('Saved.');
     }catch(reason){setMessage(reason instanceof Error?reason.message:'Could not save gallery changes.');}
+    finally{setBusy(false);}
+  }
+  async function classifyLegacy(){
+    if(!leftRole||!rightRole||leftRole===rightRole){setMessage('Choose two different roles.');return;}
+    setBusy(true);setMessage('');
+    try{
+      await callFunction('du-admin',{action:'gallery_classify_legacy',item_id:item.id,left_role:leftRole,right_role:rightRole},functionAuth(credential));
+      await refresh();setMessage('Roles saved.');
+    }catch(reason){setMessage(reason instanceof Error?reason.message:'Could not save roles.');}
     finally{setBusy(false);}
   }
   async function removeImage(role:(typeof galleryRoles)[number]){
@@ -219,7 +237,7 @@ function GalleryItemEditor({item,index,total,credential,refresh}:{item:GalleryAd
     setBusy(true);setMessage('');
     try{
       await callFunction('du-admin',{action:'gallery_set_published',item_id:item.id,is_published},functionAuth(credential));
-      await refresh();setMessage(is_published?'Published.':'Hidden from the public gallery.');
+      await refresh();setMessage(is_published?'Published.':'Hidden.');
     }catch(reason){setMessage(reason instanceof Error?reason.message:'Could not update gallery visibility.');}
     finally{setBusy(false);}
   }
@@ -234,6 +252,33 @@ function GalleryItemEditor({item,index,total,credential,refresh}:{item:GalleryAd
     setBusy(true);setMessage('');
     try{await callFunction('du-admin',{action:'gallery_delete',item_id:item.id},functionAuth(credential));await refresh();}
     catch(reason){setMessage(reason instanceof Error?reason.message:'Could not delete gallery item.');setBusy(false);}
+  }
+
+  if(needsLegacyRoles){
+    return <section className="du-gallery-manage-item">
+      <div className="du-gallery-manage-head">
+        <div><strong>{item.caption||`Gallery item ${index+1}`}</strong><span>{item.is_published?'Published':'Draft'} · position {index+1}</span></div>
+        <span className="health health-warning">Needs roles</span>
+      </div>
+      <div className="du-gallery-role-grid du-gallery-legacy-classify">
+        <section className="du-gallery-role">
+          <div className="du-gallery-role-preview"><GalleryAdminPreview path={legacyLeft} label="Left image"/></div>
+          <label>Left image<select value={leftRole} onChange={event=>setLeftRole(event.target.value as GalleryRoleKey|'')}><option value="">Choose role</option>{galleryRoles.map(role=><option key={role.key} value={role.key}>{role.label}</option>)}</select></label>
+        </section>
+        <section className="du-gallery-role">
+          <div className="du-gallery-role-preview"><GalleryAdminPreview path={legacyRight} label="Right image"/></div>
+          <label>Right image<select value={rightRole} onChange={event=>setRightRole(event.target.value as GalleryRoleKey|'')}><option value="">Choose role</option>{galleryRoles.map(role=><option key={role.key} value={role.key}>{role.label}</option>)}</select></label>
+        </section>
+      </div>
+      <div className="du-gallery-manage-actions">
+        <button className="button primary" type="button" disabled={busy||!leftRole||!rightRole||leftRole===rightRole} onClick={()=>void classifyLegacy()}>{busy?'Working…':'Save roles'}</button>
+        <button className="button ghost" type="button" disabled={busy} onClick={()=>void setPublished(!item.is_published)}>{item.is_published?'Hide':'Publish'}</button>
+        <button className="button ghost" type="button" disabled={busy||index===0} onClick={()=>void move('earlier')}>Move earlier</button>
+        <button className="button ghost" type="button" disabled={busy||index===total-1} onClick={()=>void move('later')}>Move later</button>
+        <button className="button danger" type="button" disabled={busy} onClick={()=>void removeItem()}>Delete item</button>
+      </div>
+      {message?<div className="notice">{message}</div>:null}
+    </section>;
   }
 
   return <form className="du-gallery-manage-item" onSubmit={save}>
@@ -251,7 +296,7 @@ function GalleryItemEditor({item,index,total,credential,refresh}:{item:GalleryAd
         </section>;
       })}
     </div>
-    <label>Caption <span className="optional">optional</span><input name="caption" maxLength={300} defaultValue={item.caption||''} placeholder="Pet name or short note"/></label>
+    <label>Caption <span className="optional">optional</span><input name="caption" maxLength={300} defaultValue={item.caption||''} /></label>
     <div className="du-gallery-manage-actions">
       <button className="button primary" type="submit" disabled={busy}>{busy?'Working…':'Save changes'}</button>
       <button className="button ghost" type="button" disabled={busy} onClick={()=>void setPublished(!item.is_published)}>{item.is_published?'Hide':'Publish'}</button>
