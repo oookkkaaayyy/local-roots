@@ -36,6 +36,7 @@ jobs:
           assert "HBNF_WIFI_FALLBACK_DHCP=PASS" in s
           assert "TARGET=%s" in s
           assert "FALLBACK_SSID " in s and "FALLBACK_PASS " in s
+          assert "HBNF_GAME_TIMING" in s and "MAX_GAP_MS" in s
           print("HBNF_GAME_RENDER_LOOP_NONBLOCKING=PASS")
           print("HBNF_GAME_WIFI_FAILOVER_CONTRACT=PASS")
           PY
