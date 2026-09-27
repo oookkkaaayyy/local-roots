@@ -130,6 +130,107 @@ if s.count(old)!=1:
     raise RuntimeError(f"audio mapping anchor mismatch: {s.count(old)}")
 s=s.replace(old,new,1)
 
+# Install the frame-locked Matrix projection receiver. The Matrix broadcasts a
+# 22-pixel downsample of its already-rendered framebuffer; AUX displays those
+# pixels directly instead of independently re-running the effect/audio engine.
+diag_anchor="class AnimartrixUsermod : public Usermod {"
+if s.count(diag_anchor)!=1:
+    raise RuntimeError("AUX projection receiver anchor mismatch")
+receiver="""class HbnfProjectionReceiverV1 {
+  WiFiUDP udp_;
+  bool begun_=false, haveSeq_=false;
+  uint32_t lastPacketMs_=0, packets_=0;
+  uint16_t seq_=0;
+
+ public:
+  void tick() {
+    if (WiFi.status()!=WL_CONNECTED) {
+      if (begun_) udp_.stop();
+      begun_=false;
+      return;
+    }
+    if (!begun_) {
+      begun_=udp_.begin(hbnf::PROJECTION_PORT);
+      if (!begun_) return;
+    }
+
+    bool got=false;
+    uint16_t bestSeq=seq_;
+    uint8_t best[hbnf::PROJECTION_PIXELS*3];
+
+    for (int guard=0;guard<6;guard++) {
+      const int n=udp_.parsePacket();
+      if (n<=0) break;
+      uint8_t packet[hbnf::PROJECTION_PACKET_BYTES];
+      if ((size_t)n!=sizeof(packet)) {
+        while (udp_.available()) udp_.read();
+        continue;
+      }
+      const int nr=udp_.read(packet,sizeof(packet));
+      if (nr!=(int)sizeof(packet)) continue;
+      uint16_t candidate=0;
+      uint8_t rgb[hbnf::PROJECTION_PIXELS*3];
+      if (!hbnf::decodeProjectionPacket(packet,sizeof(packet),candidate,rgb)) continue;
+      if (haveSeq_) {
+        const uint16_t delta=(uint16_t)(candidate-bestSeq);
+        if (delta==0 || delta>32768u) continue;
+      }
+      memcpy(best,rgb,sizeof(best));
+      bestSeq=candidate;
+      got=true;
+    }
+
+    if (!got) return;
+    realtimeLock(240,REALTIME_MODE_UDP);
+    if (realtimeOverride) return;
+
+    for (uint8_t i=0;i<hbnf::PROJECTION_PIXELS;i++) {
+      uint8_t r=best[i*3],g=best[i*3+1],b=best[i*3+2];
+      hbnf::projectionLiftLuma(r,g,b);
+      strip.setRealtimePixelColor(i,RGBW32(r,g,b,0));
+    }
+    if (useMainSegmentOnly) strip.trigger(); else strip.show();
+
+    seq_=bestSeq;
+    haveSeq_=true;
+    packets_++;
+    lastPacketMs_=millis();
+  }
+
+  bool active() const { return lastPacketMs_ && (millis()-lastPacketMs_<350u); }
+  uint32_t ageMs() const { return lastPacketMs_?millis()-lastPacketMs_:0xffffffffu; }
+  uint32_t packets() const { return packets_; }
+  uint16_t seq() const { return seq_; }
+};
+static HbnfProjectionReceiverV1 hbnfProjectionRx;
+
+"""
+s=s.replace(diag_anchor,receiver+diag_anchor,1)
+
+# AUX must never run the Matrix generator/sender. It only receives projected frames.
+tick_old="""      hbnfGenV4.tick();
+      hbnfProjectionTx.tick();"""
+tick_new="""      hbnfProjectionRx.tick();"""
+if s.count(tick_old)!=1:
+    raise RuntimeError(f"AUX V4 tick anchor mismatch: {s.count(tick_old)}")
+s=s.replace(tick_old,tick_new,1)
+
+# Replace sender telemetry with receiver telemetry.
+for old,new in [
+ ('wow["projectionPackets"] = hbnfProjectionTx.packets();','wow["projectionRxPackets"] = hbnfProjectionRx.packets();\\n      wow["projectionRxSeq"] = hbnfProjectionRx.seq();\\n      wow["projectionRxActive"] = hbnfProjectionRx.active();\\n      wow["projectionRxAgeMs"] = hbnfProjectionRx.ageMs();'),
+ ('\\\\\\"projectionPackets\\\\\\":%lu,\\\\\\"projectionSeq\\\\\\":%u,','\\\\\\"projectionRxPackets\\\\\\":%lu,\\\\\\"projectionRxSeq\\\\\\":%u,'),
+ ('(unsigned long)hbnfProjectionTx.packets(), hbnfProjectionTx.seq(),','(unsigned long)hbnfProjectionRx.packets(), hbnfProjectionRx.seq(),'),
+]:
+    if s.count(old)!=1:
+        raise RuntimeError(f"AUX projection telemetry anchor mismatch for {old}: {s.count(old)}")
+    s=s.replace(old,new,1)
+
+# The generated Matrix state names its role implicitly; make AUX explicit.
+state_proj='      wow["projectionLink"] = "frame-lock-v1";'
+if s.count(state_proj)!=1:
+    raise RuntimeError("AUX projectionLink state anchor missing")
+s=s.replace(state_proj,state_proj+'\\n      wow["projectionRole"] = "receiver";',1)
+
 # Add 1D-specific diagnostics. A normal strip is virtualHeight()==1; ANIMartRIX
 # therefore renders the same effect as a one-row projection while sharing the
 # same WLED timebase as the Matrix sender.
