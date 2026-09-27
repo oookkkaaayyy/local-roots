@@ -11,24 +11,156 @@
 @media(max-width:760px){.du-gallery-role-grid{grid-template-columns:1fr}.du-gallery-legacy-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.du-gallery-manage-head{display:grid}.du-gallery-manage-actions .button{flex:1 1 auto}}
 @media(max-width:620px){.image-drop-zone{min-height:96px;padding:15px}.content,.hero{width:min(100% - 20px,1220px)}.site-header{padding:11px 12px;gap:12px}.brand small{display:none}.site-header nav{gap:12px}.filters{grid-template-columns:1fr 1fr;padding:12px}.checkbox{grid-column:1/-1}.event-card{grid-template-columns:1fr;gap:13px;padding:15px}.event-date-block{padding:0 0 10px;border:0;border-bottom:1px solid rgba(185,154,119,.5)}.event-actions{grid-column:1}.submission-form,.du-form-grid{grid-template-columns:1fr}.span-2{grid-column:1}.submit-section{padding:22px 16px;border-radius:18px}.form-footer,.site-footer,.branch-bottom{align-items:stretch;flex-direction:column}.footer-nav{flex-wrap:wrap}.admin-login{margin:28px 0;padding:22px}.admin-login form{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr 1fr}.source-grid{grid-template-columns:1fr}.admin-card-head{display:grid}.merge-row{grid-template-columns:1fr}.button-row{flex-wrap:wrap}.hub-hero{padding-top:48px}.hub-hero h1,.branch-hero h1{font-size:clamp(3rem,16vw,5rem)}.hub-seal,.branch-monogram{display:none}.hub-callout,.branch-bottom,.du-request{padding:24px 18px;border-radius:20px}}
 
-/* Refined Local Roots header hierarchy. Deliberately excluded from D&U while its parallel work is active. */
-.core-public-shell{--lr-ui:"Avenir Next",Avenir,"Helvetica Neue",Arial,sans-serif}
-.core-public-shell .site-header{min-height:82px;padding-top:12px;padding-bottom:12px}
-.core-public-shell .brand{gap:14px}
-.core-public-shell .brand-logo-mark{display:block;width:58px;height:62px;object-fit:contain;flex:0 0 auto}
-.core-public-shell .brand strong{font-family:var(--lr-ui);font-size:1.42rem;font-weight:700;letter-spacing:.005em;line-height:1;color:var(--root)}
-.core-public-shell .site-header nav{gap:22px}
-.core-public-shell .site-header nav a{padding:9px 1px 7px;border-bottom:2px solid transparent;font-family:var(--lr-ui);font-size:.94rem;font-weight:650;letter-spacing:.005em}
-.core-public-shell .site-header nav a[aria-current="page"]{color:var(--root);border-bottom-color:var(--clay)}
-@media(max-width:1000px){
-  .core-public-shell .site-header nav{gap:15px}
-  .core-public-shell .site-header nav a{font-size:.88rem}
+/* Local Roots public visual system: quiet, warm, weathered, utility-first. */
+.public-brand-shell{
+  --lr-ui:"Avenir Next",Avenir,"Helvetica Neue",Arial,sans-serif;
+  --lr-canvas:#f4ecdf;
+  --lr-paper:#fbf5ea;
+  --lr-paper-deep:#efe2d1;
+  --lr-earth:#3a2618;
+  --lr-soil:#5b3a24;
+  --lr-clay:#9f5c36;
+  --lr-rust:#83482d;
+  --lr-sage:#7f8962;
+  --lr-stone:#b79a79;
+  font-family:var(--lr-ui);
+  color:var(--lr-earth);
+  background:
+    radial-gradient(ellipse at 12% -8%,rgba(159,92,54,.075),transparent 34rem),
+    radial-gradient(ellipse at 92% 2%,rgba(127,137,98,.055),transparent 30rem),
+    repeating-linear-gradient(7deg,rgba(58,38,24,.010) 0 1px,transparent 1px 6px),
+    repeating-linear-gradient(97deg,rgba(255,255,255,.11) 0 1px,transparent 1px 8px),
+    var(--lr-canvas);
 }
-@media(max-width:620px){
-  .core-public-shell .site-header{min-height:68px;padding-top:9px;padding-bottom:9px}
-  .core-public-shell .brand{gap:10px}
-  .core-public-shell .brand-logo-mark{width:45px;height:49px}
-  .core-public-shell .brand strong{font-size:1.1rem}
-  .core-public-shell .site-header nav a{font-size:.84rem}
+.public-brand-shell .site-header{
+  min-height:82px;
+  padding-top:12px;
+  padding-bottom:12px;
+  background:rgba(248,241,230,.965);
+  border-bottom:1px solid rgba(91,58,36,.22);
+  box-shadow:0 1px 0 rgba(127,137,98,.10);
+}
+.public-brand-shell .brand{gap:14px}
+.public-brand-shell .brand-logo-mark{display:block;width:58px;height:62px;object-fit:contain;flex:0 0 auto}
+.public-brand-shell .brand strong{
+  font-family:var(--lr-ui);
+  font-size:1.42rem;
+  font-weight:700;
+  letter-spacing:.005em;
+  line-height:1;
+  color:var(--lr-earth);
+}
+.public-brand-shell .site-header nav{gap:22px}
+.public-brand-shell .site-header nav a{
+  padding:9px 1px 7px;
+  border-bottom:2px solid transparent;
+  font-family:var(--lr-ui);
+  font-size:.94rem;
+  font-weight:650;
+  letter-spacing:.005em;
+  color:var(--lr-soil);
+}
+.public-brand-shell .site-header nav a[aria-current="page"]{color:var(--lr-earth);border-bottom-color:var(--lr-clay)}
+.public-brand-shell button,
+.public-brand-shell input,
+.public-brand-shell select,
+.public-brand-shell textarea,
+.public-brand-shell .button{font-family:var(--lr-ui)}
+.public-brand-shell .button{
+  border-radius:9px;
+  font-weight:700;
+  letter-spacing:0;
+  box-shadow:none;
+}
+.public-brand-shell .button.primary{
+  border:1px solid var(--lr-rust);
+  background:var(--lr-clay);
+  color:#fffaf2;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+}
+.public-brand-shell .button.primary:hover{background:#925230}
+.public-brand-shell .button.ghost{
+  border:1px solid rgba(91,58,36,.19);
+  background:#eee1cf;
+  color:var(--lr-soil);
+}
+.public-brand-shell .button.ghost:hover{background:#e7d6c0}
+.public-brand-shell .branch-hero h1,
+.public-brand-shell .branch-card h2,
+.public-brand-shell .branch-feature-grid h2,
+.public-brand-shell .branch-bottom h2,
+.public-brand-shell .hub-intro h2,
+.public-brand-shell .hub-callout h2{
+  font-family:var(--lr-ui);
+  font-weight:700;
+  letter-spacing:-.018em;
+}
+.public-brand-shell .branch-hero h1{line-height:.96}
+.public-brand-shell .branch-actions .button{font-size:.93rem}
+.public-brand-shell input,
+.public-brand-shell select,
+.public-brand-shell textarea{
+  border-radius:8px;
+  border-color:rgba(91,58,36,.25);
+  background:#fffaf2;
+}
+.public-brand-shell input:focus,
+.public-brand-shell select:focus,
+.public-brand-shell textarea:focus{
+  border-color:var(--lr-clay);
+  box-shadow:0 0 0 3px rgba(159,92,54,.10);
+}
+.public-brand-shell .du-request,
+.public-brand-shell .branch-feature-grid article,
+.public-brand-shell .event-detail-card{
+  border-color:rgba(91,58,36,.24);
+  background:
+    linear-gradient(115deg,rgba(159,92,54,.025),transparent 32%),
+    rgba(251,245,234,.94);
+  box-shadow:0 8px 24px rgba(58,38,24,.065);
+}
+.public-brand-shell .du-gallery-frame{
+  border-color:rgba(91,58,36,.22)!important;
+  box-shadow:0 8px 24px rgba(58,38,24,.07)!important;
+}
+.public-brand-shell .du-gallery-controls button{
+  font-family:var(--lr-ui);
+  border-color:rgba(91,58,36,.22)!important;
+  background:#f7eddf!important;
+  color:var(--lr-soil)!important;
+}
+.public-brand-shell .du-gallery-controls button:hover{background:#eadcc9!important}
+.public-brand-shell .du-gallery-count{font-family:var(--lr-ui);font-weight:700!important;color:var(--muted)!important}
+.public-brand-shell .du-share-hero .branch-actions .button{font-family:var(--lr-ui);font-weight:700}
+.public-brand-shell .du-request .section-intro h2{font-family:var(--lr-ui);font-weight:700;letter-spacing:-.012em}
+.public-brand-shell .du-request .section-intro strong{font-family:var(--lr-ui);font-weight:700}
+.public-brand-shell .du-form label,
+.public-brand-shell .image-drop-label{font-family:var(--lr-ui);font-weight:700}
+.public-brand-shell .image-drop-zone{
+  border-radius:10px;
+  border-color:rgba(91,58,36,.27);
+  background:#fffaf2;
+}
+.public-brand-shell .image-drop-zone:hover,
+.public-brand-shell .image-drop-zone:focus-within{
+  border-color:var(--lr-clay);
+  background:#faf0e3;
+  box-shadow:0 0 0 3px rgba(159,92,54,.08);
+}
+.public-brand-shell .site-footer{
+  border-top:1px solid rgba(215,194,163,.20);
+  background:#352419;
 }
 
+@media(max-width:1000px){
+  .public-brand-shell .site-header nav{gap:15px}
+  .public-brand-shell .site-header nav a{font-size:.88rem}
+}
+@media(max-width:620px){
+  .public-brand-shell .site-header{min-height:68px;padding-top:9px;padding-bottom:9px}
+  .public-brand-shell .brand{gap:10px}
+  .public-brand-shell .brand-logo-mark{width:45px;height:49px}
+  .public-brand-shell .brand strong{font-size:1.1rem}
+  .public-brand-shell .site-header nav a{font-size:.84rem}
+  .public-brand-shell .branch-actions .button{font-size:.9rem}
+}

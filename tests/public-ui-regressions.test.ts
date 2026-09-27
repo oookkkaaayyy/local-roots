@@ -220,8 +220,8 @@ test("public header gives Local Roots stronger brand hierarchy without a redunda
   const styles = source("styles.css");
   assert.equal(shell.includes('className="nav-home"'), false);
   assert.ok(shell.includes("path==='/'||path==='/events'"));
-  assert.ok(styles.includes(".core-public-shell .brand-logo-mark{display:block;width:58px"));
-  assert.ok(styles.includes(".core-public-shell .brand strong{font-family:var(--lr-ui);font-size:1.42rem"));
+  assert.ok(styles.includes(".public-brand-shell .brand-logo-mark{display:block;width:58px"));
+  assert.ok(styles.includes(".public-brand-shell .brand strong{"));
 });
 
 test("Events visible typography is standardized on the site sans family", () => {
@@ -235,11 +235,27 @@ test("refined Local Roots presentation uses one humanist UI family and stronger 
   const shell = source("components/Shell.tsx");
   const styles = source("styles.css");
   const events = source("events-enhancements.css");
-  assert.ok(shell.includes("corePublic=path==='/'||path==='/events'"));
-  assert.ok(styles.includes('.core-public-shell{--lr-ui:"Avenir Next"'));
-  assert.ok(styles.includes('.core-public-shell .brand-logo-mark{display:block;width:58px'));
-  assert.ok(styles.includes('.core-public-shell .brand strong{font-family:var(--lr-ui);font-size:1.42rem'));
-  assert.ok(styles.includes('.core-public-shell .site-header nav a[aria-current="page"]'));
+  assert.ok(shell.includes("admin?'admin-shell':'public-brand-shell'"));
+  assert.ok(styles.includes('.public-brand-shell{'));
+  assert.ok(styles.includes('--lr-ui:"Avenir Next"'));
+  assert.ok(styles.includes('repeating-linear-gradient(7deg'))
+  assert.ok(styles.includes('.public-brand-shell .brand-logo-mark{display:block;width:58px'))
+  assert.ok(styles.includes('.public-brand-shell .brand strong{'));
+  assert.ok(styles.includes('font-size:1.42rem'))
+  assert.ok(styles.includes('.public-brand-shell .site-header nav a[aria-current="page"]'))
   assert.ok(events.includes('.events-page{--events-sans:"Avenir Next"'));
   assert.ok(events.includes('.events-page .event-main h3{font-size:1.03rem;font-weight:700'));
+});
+
+test("public brand audit does not add new marketing copy and includes D&U controls", () => {
+  const shell = source("components/Shell.tsx");
+  const styles = source("styles.css");
+  const du = source("pages/DyedUnattachedPage.tsx");
+  assert.ok(shell.includes("public-brand-shell"));
+  assert.ok(styles.includes(".public-brand-shell .du-share-hero .branch-actions .button"));
+  assert.ok(styles.includes(".public-brand-shell .du-request .section-intro h2"));
+  assert.ok(du.includes(">Request a stencil</a>"));
+  for (const rejected of ["Grown Local. Thrown Local.","Local roots. Connected.","Desert-grown disc goods"]) {
+    assert.equal([shell,du,styles].join("\n").includes(rejected), false);
+  }
 });
