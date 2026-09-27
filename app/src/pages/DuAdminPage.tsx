@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { callFunction, supabase } from '../lib/supabase';
 import { Shell } from '../components/Shell';
+import { ImageDropField } from '../components/ImageDropField';
 
 type WorkflowStatus = 'draft'|'intake_complete'|'handoff_preparing'|'chatgpt_ready'|'notification_sent'|'stage_a_started'|'awaiting_art_approval'|'art_approved'|'production_ready'|'complete'|'handoff_failed';
 type JobSummary = {
@@ -199,9 +200,9 @@ function GalleryPanel({credential}:{credential:AdminCredential}){
     <div className="admin-card-head"><div><span className="eyebrow">Portfolio</span><h3 id="du-gallery-inbox-title">Gallery inbox</h3><p>Add new work from your phone without rebuilding the site. Preferred public pair: reference photo + finished disc.</p></div><span className="status-pill">{items.filter(item=>!item.is_published).length} draft</span></div>
     <form onSubmit={submit} style={{display:'grid',gap:'12px',marginTop:'16px'}}>
       <div className="du-form-grid">
-        <label>Reference photo<input name="gallerySource" type="file" accept="image/jpeg,image/png,image/webp" /></label>
-        <label>Finished disc<input name="galleryFinished" type="file" accept="image/jpeg,image/png,image/webp" /></label>
-        <label className="span-2">Stencil artwork <span className="optional">optional when finished disc is included</span><input name="galleryStencil" type="file" accept="image/jpeg,image/png,image/webp" /></label>
+        <ImageDropField name="gallerySource" label="Reference photo" accept="image/*" />
+        <ImageDropField name="galleryFinished" label="Finished disc" accept="image/*" />
+        <ImageDropField className="span-2" name="galleryStencil" label="Stencil artwork" hint="optional when finished disc is included" accept="image/*" />
         <label className="span-2">Caption <span className="optional">optional</span><input name="galleryCaption" maxLength={300} placeholder="Pet name or a short note" /></label>
       </div>
       <label className="checkbox"><input type="checkbox" checked={publishNow} onChange={event=>setPublishNow(event.target.checked)}/> Publish immediately</label>
