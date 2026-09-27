@@ -23,6 +23,14 @@ test("rejected public marketing copy stays removed", () => {
     "Southern California disc golf, in one place.",
     "Ventura → San Diego",
     "Results not yet verified from an approved source.",
+    "Custom disc-golf stencil portraits",
+    "Turn a favorite pet photo into a bold portrait built for vinyl cutting and hand-dyed discs.",
+    "From photo to disc",
+    "See the transformation.",
+    "Each example pairs the original reference with the finished artwork or dyed disc, so the likeness and final result are easy to compare.",
+    "Start here",
+    "No account required.",
+    "The link may be outdated or the address may be incorrect.",
   ]) {
     assert.equal(publicSources.includes(rejected), false, `rejected copy returned: ${rejected}`);
   }
@@ -156,4 +164,12 @@ test("D&U request errors are assertive and all request status messages are atomi
   const du = source("pages/DyedUnattachedPage.tsx");
   assert.ok(du.includes("aria-live={state === 'error' ? 'assertive' : 'polite'}"));
   assert.ok(du.includes('aria-atomic="true"'));
+});
+
+
+test("owner-controlled copy policy remains explicit in source control", () => {
+  const policy = readFileSync(new URL("../../docs/site-copy-policy.md", import.meta.url), "utf8");
+  assert.ok(policy.includes("Do not invent promotional"));
+  assert.ok(policy.includes("Prefer empty space"));
+  assert.ok(policy.includes("explicitly approved"));
 });
