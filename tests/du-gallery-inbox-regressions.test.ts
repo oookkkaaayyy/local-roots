@@ -44,6 +44,9 @@ test("D&U admin manages gallery items directly by system image role", () => {
   assert.ok(duAdmin.includes("gallery_remove_image"));
   assert.ok(duAdmin.includes("gallery_delete"));
   assert.ok(duAdmin.includes("gallery_move"));
+  assert.ok(duAdmin.includes("gallery_classify_legacy"));
+  assert.ok(duAdmin.includes("Needs roles"));
+  assert.ok(duAdmin.includes("Save roles"));
   assert.ok(duAdmin.includes("Publish immediately"));
   assert.ok(duAdmin.includes("GalleryAdminPreview"));
   assert.ok(duAdmin.includes("parseLegacyGalleryPath"));
@@ -64,6 +67,7 @@ test("gallery writes remain admin-protected and validate image payloads", () => 
   assert.ok(duAdminFunction.includes('action === "gallery_update"'));
   assert.ok(duAdminFunction.includes('action === "gallery_remove_image"'));
   assert.ok(duAdminFunction.includes('action === "gallery_delete"'));
+  assert.ok(duAdminFunction.includes('action === "gallery_classify_legacy"'));
   assert.ok(duAdminFunction.includes("gallery_needs_two_images"));
   assert.ok(duAdminFunction.includes("gallery_image_too_large"));
   assert.ok(duAdminFunction.includes("invalid_gallery_image_signature"));
@@ -83,7 +87,7 @@ test("legacy sprite-backed gallery roles remain editable without fake storage de
 
 
 test("legacy D&U portfolio migration creates all 17 managed examples in accepted row order", () => {
-  const inserted = legacyMigration.match(/'legacy:\\d+:(?:left|right)'/g) || [];
+  const inserted = legacyMigration.match(/'legacy:\d+:(?:left|right)'/g) || [];
   assert.equal(new Set(inserted).size, 34);
   assert.ok(legacyMigration.includes("'legacy:15:left'"));
   assert.ok(legacyMigration.includes("'legacy:15:right'"));
@@ -92,4 +96,12 @@ test("legacy D&U portfolio migration creates all 17 managed examples in accepted
 
 test("managed carousel autoplay tracks the loaded slide count", () => {
   assert.ok(duPublic.includes("[galleryPaused,gallerySlideCount]"));
+});
+
+
+test("legacy gallery roles are never silently asserted before owner classification", () => {
+  assert.ok(legacyMigration.includes("legacy_roles_confirmed"));
+  assert.ok(legacyMigration.includes("false"));
+  assert.ok(duAdmin.includes("legacy_roles_confirmed"));
+  assert.ok(duPublic.includes("legacy_roles_confirmed"));
 });
