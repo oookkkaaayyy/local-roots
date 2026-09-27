@@ -1,26 +1,55 @@
 {
-  "schema": "hbnf-prephase2-final-package-v1",
-  "branch": "hbnf-prephase2-final-integration-20260927",
-  "packaged_from_head": "d2b3d9138b51a69b151b5770cfed7489494235f8",
-  "package": {
-    "filename": "HBNF_PREPHASE2_FINAL_20260927.zip",
-    "sha256": "7cad07ac8836c44b665b1b6d16e139c6fc1f3fbf009d5890cc328e4d95b16e25"
+  "schema": "hbnf-prephase2-final-package-v2",
+  "packageId": "HBNF_PREPHASE2_FINAL_V4_20260927",
+  "filename": "HBNF_PREPHASE2_FINAL_V4_20260927.zip",
+  "status": "SOURCE_READY_PACKAGE_BUILD_PENDING",
+  "physicalAcceptanceRequired": true,
+  "soleIntegrationBranch": "hbnf-prephase2-final-integration-20260927",
+  "firmwareSourceCommit": "ccc554ab745b33f18dbd32c735e1fe26dabe3201",
+  "packageSourceCommit": null,
+  "packageSha256": null,
+  "controllerBuild": "hbnf-cart-final-v5-semantic-frame-lock",
+  "installer": "INSTALL_FINAL_PREPHASE2.command",
+  "backend": {
+    "hbnf-cart-control": {"version":12,"sha256":"200a1c20079ad9db76637fd0b1b4e9354d6cd4b4edc7371a2688cac0cee5bd18","manualTempoOnly":true},
+    "hbnf-cart-reconcile": {"version":8,"sha256":"89a7fceeba9d0ee3930a54516a8355bb0cd45647195556df05e068d44e0532d4","manualTempoOnly":true},
+    "hbnf-matrix-adapter-v4": {"version":2},
+    "hbnf-aux-adapter": {"version":2},
+    "hbnf-cart-visual-status": {"version":1},
+    "hbnf-aux-control": {"version":15,"brightnessMax":255,"currentLimitMa":1210}
   },
   "matrix": {
-    "ci_run": 36311718101,
-    "artifact_id": 10929243585,
-    "artifact_digest": "sha256:8b2691c0d6b014a33a0e12a7e49b8561e2f53e8856207fc42339637af8ac724b",
-    "firmware_sha256": "3fd7d13e170a2758ea958ac483da4470f8c620a6d7f463a9501832ef6368b3c3",
-    "bytes": 1353120
+    "ciRun":36341588440,
+    "artifactId":10938843899,
+    "artifactDigest":"sha256:69aca4c86397b413352fd26f95d9ba321972d493d585cce5037cacff5d51b870",
+    "firmwareSha256":"245b4fae584aeb159e98b8b9f2990434b98811ae2ef9aabd0b59ce53d0c0117b",
+    "firmwareBytes":1353152,
+    "otaSlotBytes":1572864,
+    "otaHeadroomBytes":219712,
+    "rollbackArtifactId":10925563441,
+    "rollbackSha256":"93b2c7d0d5deb6741e475d0ee0ce1f9bf287c571e9e69775ccc3b9aaf9955a23"
   },
   "aux": {
-    "ci_run": 36312236574,
-    "artifact_id": 10929244517,
-    "artifact_digest": "sha256:887061f0248106df55222e6a863f4bd7555f5d4a8bcd0fbc59fd55dcd8566963",
-    "firmware_sha256": "36ea00c6da7d5d262243b1f0a885baaeb48c4a45d59cfc40628b3a39e5561867",
-    "bytes": 1347024
+    "ciRun":36341588365,
+    "artifactId":10939037784,
+    "artifactDigest":"sha256:1a409bd13d8330dd6e79f5fad4e2c5364daac130f7af37606a786274d1d63ba9",
+    "firmwareSha256":"5c005a9c0af932ce31dd806c5799a7f25cd1f76be686d35bf5bf259a34f0b526",
+    "firmwareBytes":1347056,
+    "otaSlotBytes":1572864,
+    "otaHeadroomBytes":225808,
+    "currentRollbackArtifactId":10927966602,
+    "currentRollbackSha256":"7c8f4f7ff9179b788275fb1c093b12a0094a43daa81542cf8ae5379a7cb43e2f",
+    "acceptedSafeRollbackArtifactId":10894932658,
+    "acceptedSafeRollbackSha256":"a874a22c80e5b1d5c67d08a2568fd80a41adeb97a592fc4da633bf8c14e1632f"
   },
-  "controller_build": "hbnf-cart-final-v5-semantic-frame-lock",
-  "installer": "INSTALL_FINAL_PREPHASE2.command",
-  "physical_acceptance_required": true
+  "installPolicy": {
+    "dynamicDiscovery":true,
+    "hardcodedLanIps":false,
+    "verifyAllHashesBeforeMutation":true,
+    "backupBeforeMutation":true,
+    "cloudflareControllerFirst":true,
+    "automaticRollbackOnFirmwareVerificationFailure":true,
+    "frameLockActiveIsPhysicalAcceptanceGate":true,
+    "homeScreenPersistenceIsPhysicalAcceptanceGate":true
+  }
 }
