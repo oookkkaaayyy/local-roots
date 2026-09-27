@@ -110,6 +110,7 @@ telemetry="""    void addToJsonState(JsonObject& root) override {
       wow["variantSequence"] = hbnfGenV4.sequence();
       wow["variantSignature"] = hbnfGenV4.current().signature;
       wow["variantFamily"] = hbnfGenV4.current().familyId;
+      wow["variation"] = hbnfGenV4.variation();
       wow["variantDwellSeconds"] = hbnfGenV4.current().dwellSeconds;
       wow["projectionPackets"] = hbnfProjectionTx.packets();
       wow["projectionSeq"] = hbnfProjectionTx.seq();
@@ -170,7 +171,7 @@ loop_new="""    void loop() {
           snprintf_P(payload, sizeof(payload),
             PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"buildWitness\\\":\\\"registry28-tempo-lock-v5-colorwifi\\\",\\\"audioGeometry\\\":\\\"source-coupled-v4\\\",\\\"generator\\\":\\\"anti-repeat-v4\\\",\\\"projectionLink\\\":\\\"frame-lock-v1\\\",\\\"generatorEnabled\\\":%s,\\\"generatorLocked\\\":%s,\\\"generatorDomain\\\":%u,\\\"variantSequence\\\":%lu,\\\"variantSignature\\\":%lu,\\\"projectionPackets\\\":%lu,\\\"projectionSeq\\\":%u,\\\"fxRegistered\\\":%u,\\\"fxFailed\\\":%u,\\\"modeCount\\\":%u,\\\"fxFirst\\\":%u,\\\"fxLast\\\":%u,\\\"audioActive\\\":%s,\\\"profile\\\":%u,\\\"style\\\":%u,\\\"amount\\\":%u,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u,\\\"pulse\\\":%u,\\\"energy\\\":%u,\\\"impact\\\":%u,\\\"drop\\\":%u}"),
             hbnfGenV4.enabled() ? "true" : "false", hbnfGenV4.locked() ? "true" : "false", hbnfGenV4.domain(),
-            (unsigned long)hbnfGenV4.sequence(), (unsigned long)hbnfGenV4.current().signature, hbnfGenV4.current().familyId,
+            (unsigned long)hbnfGenV4.sequence(), (unsigned long)hbnfGenV4.current().signature, hbnfGenV4.current().familyId, hbnfGenV4.variation(),
             (unsigned long)hbnfProjectionTx.packets(), hbnfProjectionTx.seq(),
             hbnfFxRegistered, hbnfFxFailed, strip.getModeCount(), hbnfFxFirst, hbnfFxLast,
             anim.hbnfActive() ? "true" : "false",
@@ -287,7 +288,7 @@ class HbnfGenerativeRuntimeV4 {
   uint8_t domain_=0;
   uint32_t dueMs_=0, sequence_=0;
   bool speedOverride_=false, profileOverride_=false, styleOverride_=false, amountOverride_=false;
-  uint8_t speedCode_=128, profileCode_=96, styleCode_=176, amountCode_=220;
+  uint8_t speedCode_=128, profileCode_=96, styleCode_=176, amountCode_=220, variationCode_=85;
 
   static uint8_t clamp8(int x,int lo,int hi) { return (uint8_t)(x<lo?lo:(x>hi?hi:x)); }
 
@@ -330,6 +331,7 @@ class HbnfGenerativeRuntimeV4 {
     if (!t["profile"].isNull()) profileCode_=clamp8(t["profile"].as<int>(),0,255);
     if (!t["style"].isNull()) styleCode_=clamp8(t["style"].as<int>(),0,255);
     if (!t["amount"].isNull()) amountCode_=clamp8(t["amount"].as<int>(),1,255);
+    if (!t["variation"].isNull()) variationCode_=clamp8(t["variation"].as<int>(),0,100);
   }
 
   void tick() {
@@ -348,6 +350,12 @@ class HbnfGenerativeRuntimeV4 {
     if (profileOverride_) current_.profile=profileCode_;
     if (styleOverride_) current_.style=styleCode_;
     if (amountOverride_) current_.amount=amountCode_;
+    // Variation controls evolution rate around the anti-repeat generator's
+    // perceptual-novelty floor. It can never disable family/palette/warp memory.
+    const uint16_t dwellScale=(uint16_t)(185u-variationCode_); // 0=>1.85x, 85=>1.0x, 100=>0.85x
+    current_.dwellSeconds=(uint16_t)(((uint32_t)current_.dwellSeconds*dwellScale+50u)/100u);
+    if(current_.dwellSeconds<6u) current_.dwellSeconds=6u;
+    if(current_.dwellSeconds>40u) current_.dwellSeconds=40u;
 
     seg.setMode(current_.effectId,false);
     seg.setPalette(current_.palette);
@@ -371,6 +379,7 @@ class HbnfGenerativeRuntimeV4 {
   uint8_t domain() const { return domain_; }
   uint32_t sequence() const { return sequence_; }
   uint32_t dueMs() const { return dueMs_; }
+  uint8_t variation() const { return variationCode_; }
   const hbnf::GenerativeVariant& current() const { return current_; }
 };
 static HbnfGenerativeRuntimeV4 hbnfGenV4;
