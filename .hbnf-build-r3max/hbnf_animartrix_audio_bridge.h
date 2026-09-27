@@ -8,6 +8,25 @@ namespace hbnf {
 enum WowStyle : uint8_t { STYLE_CLEAN=0, STYLE_PUNCH=1, STYLE_RING=2, STYLE_SPARK=3, STYLE_CHROMA=4, STYLE_HYBRID=5 };
 struct Rgb8 { uint8_t r,g,b; Rgb8(uint8_t rr=0,uint8_t gg=0,uint8_t bb=0):r(rr),g(gg),b(bb){} };
 
+struct GlobalTuneOverride {
+  bool speedEnabled=false, profileEnabled=false, styleEnabled=false, amountEnabled=false, micEnabled=false;
+  uint8_t speed=128, profile=96, style=16, amount=170, mic=255;
+};
+inline GlobalTuneOverride& globalTuneOverride(){ static GlobalTuneOverride t; return t; }
+inline void setGlobalTuneOverride(bool speedEnabled,uint8_t speed,bool profileEnabled,uint8_t profile,bool styleEnabled,uint8_t style,bool amountEnabled,uint8_t amount,bool micEnabled,uint8_t mic){
+  GlobalTuneOverride &t=globalTuneOverride();
+  t.speedEnabled=speedEnabled;t.speed=speed;
+  t.profileEnabled=profileEnabled;t.profile=profile;
+  t.styleEnabled=styleEnabled;t.style=style;
+  t.amountEnabled=amountEnabled;t.amount=amount;
+  t.micEnabled=micEnabled;t.mic=mic;
+}
+inline uint8_t tuneSpeed(uint8_t fallback){const auto&t=globalTuneOverride();return t.speedEnabled?t.speed:fallback;}
+inline uint8_t tuneProfile(uint8_t fallback){const auto&t=globalTuneOverride();return t.profileEnabled?t.profile:fallback;}
+inline uint8_t tuneStyle(uint8_t fallback){const auto&t=globalTuneOverride();return t.styleEnabled?t.style:fallback;}
+inline uint8_t tuneAmount(uint8_t fallback){const auto&t=globalTuneOverride();return t.amountEnabled?t.amount:fallback;}
+inline uint8_t tuneMic(uint8_t fallback){const auto&t=globalTuneOverride();return t.micEnabled?t.mic:fallback;}
+
 class AnimartrixAudioBridge {
  public:
   AnimartrixAudioBridge(){ reset(); }
@@ -19,6 +38,7 @@ class AnimartrixAudioBridge {
   }
 
   float beginFrame(float baseSpeed,uint32_t nowMs,uint8_t profileCode,uint8_t styleCode,uint8_t amount,uint16_t width,uint16_t height){
+    profileCode=tuneProfile(profileCode); styleCode=tuneStyle(styleCode); amount=tuneAmount(amount);
     width_=width?width:1; height_=height?height:1; profile_=profileFromIntensity(profileCode); style_=styleFromCode(styleCode); amount_=amount; ++frame_;
     um_data_t *um=nullptr;
     if(!UsermodManager::getUMData(&um,USERMOD_ID_AUDIOREACTIVE) || !um || um->u_size<3 || !um->u_data || !um->u_data[0] || !um->u_data[2]){
