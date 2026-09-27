@@ -91,7 +91,7 @@ function stagePrompt(detail:JobDetail){
 function JobCard({job,credential,refresh,autoOpen}:{job:JobSummary;credential:AdminCredential;refresh:()=>void;autoOpen:boolean}){
   const [detail,setDetail]=useState<JobDetail|null>(null),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
   const [handoffText,setHandoffText]=useState(''),[handoffExpires,setHandoffExpires]=useState('');
-  const load=useCallback(async()=>{setBusy(true);setMessage('');try{setDetail(await callFunction<JobDetail>('du-admin',{action:'job',job_id:job.id},functionAuth(credential)));}catch(error){setMessage(error instanceof Error?error.message:'Could not load job.');}finally{setBusy(false);}},[job.id,functionAuth(credential)]);
+  const load=useCallback(async()=>{setBusy(true);setMessage('');try{setDetail(await callFunction<JobDetail>('du-admin',{action:'job',job_id:job.id},functionAuth(credential)));}catch(error){setMessage(error instanceof Error?error.message:'Could not load job.');}finally{setBusy(false);}},[job.id,credential.kind,credential.value]);
   useEffect(()=>{if(!autoOpen)return;void load();const timer=window.setTimeout(()=>document.getElementById(job.job_number)?.scrollIntoView({behavior:'smooth',block:'start'}),100);return()=>window.clearTimeout(timer);},[autoOpen,job.job_number,load]);
   async function setWorkflow(workflow_status:WorkflowStatus){setBusy(true);setMessage('');try{await callFunction('du-admin',{action:'set_workflow',job_id:job.id,workflow_status,clear_handoff_error:true},functionAuth(credential));setMessage(`Moved to ${labels[workflow_status]}.`);refresh();}catch(error){setMessage(error instanceof Error?error.message:'Update failed.');}finally{setBusy(false);}}
   async function copyPrompt(){if(!detail)await load();const current=detail??await callFunction<JobDetail>('du-admin',{action:'job',job_id:job.id},functionAuth(credential));await navigator.clipboard.writeText(stagePrompt(current));setDetail(current);setMessage('ChatGPT prompt copied. Download the source photos below, attach them together, and paste.');}
@@ -167,7 +167,7 @@ function prepareGalleryImage(file:File,role:'source_photo'|'stencil'|'finished_d
 function GalleryPanel({credential}:{credential:AdminCredential}){
   const [items,setItems]=useState<GalleryAdminItem[]>([]),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
   const [publishNow,setPublishNow]=useState(false);
-  const load=useCallback(async()=>{try{const result=await callFunction<GalleryList>('du-admin',{action:'gallery_list'},functionAuth(credential));setItems(result.items||[]);}catch{/* queue remains usable if gallery read fails */}},[functionAuth(credential)]);
+  const load=useCallback(async()=>{try{const result=await callFunction<GalleryList>('du-admin',{action:'gallery_list'},functionAuth(credential));setItems(result.items||[]);}catch{/* queue remains usable if gallery read fails */}},[credential.kind,credential.value]);
   useEffect(()=>{void load();},[load]);
   async function submit(event:FormEvent<HTMLFormElement>){
     event.preventDefault();setBusy(true);setMessage('Preparing images…');
