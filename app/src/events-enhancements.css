@@ -81,7 +81,7 @@
 .events-page .hero{padding:34px 0 24px}
 .events-page .hero h1{margin:0;max-width:none;font-family:Georgia,"Times New Roman",serif;font-size:clamp(2rem,3vw,2.75rem);line-height:1.04;letter-spacing:-.035em}
 .events-page .events-layout{grid-template-columns:250px minmax(0,1fr);gap:26px}
-.events-page .filters{width:100%;min-width:0;overflow:hidden;padding:16px;gap:13px}
+.events-page .filters{width:100%;min-width:0;padding:16px;gap:13px}
 .events-page .filters>*,.events-page .filters label{min-width:0;max-width:100%}
 .events-page .filters input,.events-page .filters select{display:block;width:100%;min-width:0;max-width:100%}
 .events-page .list-header h2{font-family:var(--events-sans);font-size:1.45rem;font-weight:800;letter-spacing:-.02em}
@@ -89,9 +89,9 @@
 .events-page .event-date-block strong{font-family:var(--events-sans);font-size:.92rem;font-weight:800;line-height:1.3;letter-spacing:-.01em}
 .events-page .event-main h3{font-family:var(--events-sans);font-size:1.05rem;line-height:1.25;letter-spacing:-.012em}
 .events-page .event-actions .button{min-height:38px;padding:9px 12px}
-.event-resource-links{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
-.event-resource-links a{display:inline-flex;align-items:center;min-height:32px;padding:6px 9px;border:1px solid rgba(185,154,119,.5);border-radius:999px;background:#f5ecdf;color:var(--soil);font-size:.74rem;font-weight:800;line-height:1.15;text-decoration:none}
-.event-resource-links a:hover{border-color:var(--clay);background:#efe3d2;text-decoration:underline;text-underline-offset:3px}
+.events-page .event-resource-links,.event-detail-card .event-resource-links{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.events-page .event-resource-links a,.event-detail-card .event-resource-links a{display:inline-flex;align-items:center;min-height:32px;padding:6px 9px;border:1px solid rgba(185,154,119,.5);border-radius:999px;background:#f5ecdf;color:var(--soil);font-size:.74rem;font-weight:800;line-height:1.15;text-decoration:none}
+.events-page .event-resource-links a:hover,.event-detail-card .event-resource-links a:hover{border-color:var(--clay);background:#efe3d2;text-decoration:underline;text-underline-offset:3px}
 
 @media(max-width:900px){
   .events-page .events-layout{grid-template-columns:220px minmax(0,1fr);gap:20px}
@@ -101,5 +101,4 @@
   .events-page .hero{padding:28px 0 20px}
   .events-page .hero h1{font-size:clamp(1.9rem,9vw,2.55rem)}
   .events-page .events-layout{grid-template-columns:1fr;gap:18px}
-  .events-page .filters{overflow:visible}
 }
