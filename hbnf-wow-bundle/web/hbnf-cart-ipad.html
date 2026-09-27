@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#071018">
-<meta name="hbnf-build" content="hbnf-cart-ipad-legacy-v1">
+<meta name="hbnf-build" content="hbnf-cart-ipad-zero-pair-stable-v2">
 <title>HBNF Cart · iPad</title>
 <style>
 html,body{margin:0;min-height:100%;background:#071018;color:#eef7fa;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif}
@@ -31,13 +31,7 @@ input[type=range]{width:100%;height:46px;margin:5px 0}
 </head>
 <body><div class="wrap">
 <h1>HBNF CART</h1>
-<div class="muted">iPad mini compatibility controller · same canonical cart state as iPhone</div>
-
-<div id="authPanel" class="panel" hidden>
- <div class="muted">Sign in with the same HBNF operator account.</div>
- <div class="row"><input id="authEmail" type="email" autocomplete="email" placeholder="Email"><button id="sendMagicLink">SEND LINK</button></div>
- <div id="authStatus" class="muted"></div>
-</div>
+<div class="muted">Mounted cart controller · same canonical cart state as iPhone</div>
 
 <div class="panel">
  <div class="row">
@@ -70,7 +64,7 @@ input[type=range]{width:100%;height:46px;margin:5px 0}
  <div class="muted">Opens the local game bridge on HBNF-Cart. Stadia controllers still have priority.</div>
 </div>
 
-<div class="panel"><div id="status">Connecting…</div><div class="row"><button id="refresh">REFRESH</button><button id="signOut">SIGN OUT</button></div></div>
+<div class="panel"><div id="status">Connecting…</div><div class="row"><button id="refresh">REFRESH</button></div></div>
 </div>
 <script src="./hbnf-cart-ipad.js"></script>
 </body></html>
