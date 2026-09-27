@@ -6,6 +6,7 @@ on:
       - hbnf-matrix-wow-bundle-r3-20260921
       - hbnf-aux-luminance-v1-source-coupled-20260927
       - hbnf-generative-projection-v4-20260927
+      - hbnf-prephase2-final-integration-20260927
     paths:
       - '.hbnf-build-aux-r3/**'
       - '.hbnf-build-r3max/**'
