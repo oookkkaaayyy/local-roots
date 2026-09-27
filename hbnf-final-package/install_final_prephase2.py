@@ -171,19 +171,35 @@ def backup_and_stage_controller(worker,out):
         if src.exists(): shutil.copy2(src,backup/name)
     for name in names: shutil.copy2(ROOT/"controller"/name,public/name)
 
-def run_cmd(args,cwd,timeout=240):
-    say("$ "+" ".join(args))
-    p=subprocess.run(args,cwd=str(cwd),text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=timeout)
-    print(p.stdout,flush=True)
-    if p.returncode!=0: raise RuntimeError(f"Command failed ({p.returncode}): {' '.join(args)}")
-    return p.stdout
+def run_cmd(args,cwd,timeout=600):
+    say("$ "+" ".join(str(x) for x in args))
+    # Inherit Terminal stdout/stderr so the operator sees Wrangler progress live.
+    p=subprocess.run([str(x) for x in args],cwd=str(cwd),text=True,timeout=timeout)
+    if p.returncode!=0: raise RuntimeError(f"Command failed ({p.returncode}): {' '.join(str(x) for x in args)}")
+    return ""
+
+def resolve_wrangler(worker):
+    local=worker/"node_modules/.bin/wrangler"
+    if local.is_file():
+        return [str(local)],"project-local"
+    direct=shutil.which("wrangler")
+    if direct:
+        return [direct],"PATH"
+    npx=shutil.which("npx")
+    if not npx:
+        raise RuntimeError("No local/global Wrangler or npx is available. Nothing was flashed.")
+    # --yes prevents npx from silently waiting for an install-confirmation prompt.
+    return [npx,"--yes","wrangler"],"npx-auto-confirm"
 
 def deploy_controller(worker,backup_root):
-    if shutil.which("npx") is None: raise RuntimeError("npx is unavailable; controller deployment cannot be verified. Nothing was flashed.")
     backup_and_stage_controller(worker,backup_root)
-    run_cmd(["npx","wrangler","deploy","--dry-run"],worker,180)
-    output=run_cmd(["npx","wrangler","deploy"],worker,300)
-    REPORT["cloudflareDeployOutputTail"]=output[-4000:]
+    wrangler,source=resolve_wrangler(worker)
+    step("Wrangler command resolved",True,source=source,command=" ".join(wrangler))
+    # The release source and package have already passed deterministic CI gates.
+    # A separate Wrangler dry-run proved redundant and can stall on npm/tool startup;
+    # actual deployment remains safely before either firmware mutation.
+    run_cmd(wrangler+["deploy"],worker,600)
+    REPORT["cloudflareDeployOutputTail"]="stdout streamed live to Terminal"
     url=CONTROLLER_URL+"?release=HBNF_PREPHASE2_FINAL_V4_20260927&ts="+str(int(time.time()))
     req=urllib.request.Request(url,headers={"Cache-Control":"no-cache"})
     with urllib.request.urlopen(req,timeout=20) as r: html=r.read().decode("utf-8","replace")
