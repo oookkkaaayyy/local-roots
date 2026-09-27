@@ -16,6 +16,7 @@ for h in game_core.h ddp_frame.h game_lease_guard.h session_lifecycle.h remote_i
   cp "$ROOT/hbnf-game-adapter/$h" "$SK/$h"
 done
 cp "$ROOT/hbnf-game-adapter/bridge/HBNF_GameBridge/game_controller_page.h" "$SK/game_controller_page.h"
+cp "$ROOT/hbnf-game-adapter/bridge/HBNF_GameBridge/visual_lab_page.h" "$SK/visual_lab_page.h"
 arduino-cli core update-index --additional-urls "$URLS" >/dev/null
 if ! arduino-cli core list | awk '{print $1"@"$2}' | grep -qx "$CORE"; then
   arduino-cli core install "$CORE" --additional-urls "$URLS"
