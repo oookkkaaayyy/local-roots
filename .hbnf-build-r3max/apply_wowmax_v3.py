@@ -28,6 +28,9 @@ accessors="""\tpublic:
 \tuint8_t hbnfProfile() const { return (uint8_t)hbnfAudio.profile(); }
 \tuint8_t hbnfStyle() const { return (uint8_t)hbnfAudio.style(); }
 \tuint8_t hbnfAmount() const { return hbnfAudio.amount(); }
+\tuint8_t hbnfDomain() const { return hbnfAudio.domain(); }
+\tuint8_t hbnfVariantCode() const { return hbnfAudio.variantCode(); }
+\tuint8_t hbnfVariantSalt() const { return hbnfAudio.variantSalt(); }
 \tuint8_t hbnfBass() const { return hbnfAudio.bassPulse(); }
 \tuint8_t hbnfMid() const { return hbnfAudio.midPulse(); }
 \tuint8_t hbnfTreble() const { return hbnfAudio.treblePulse(); }
