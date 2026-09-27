@@ -49,6 +49,7 @@ bool matrixIdentityVerified = false;
 bool guestPlayEnabled = true;
 String playPassword;
 String cartDeviceToken;
+int cartRevisionCache = -1;
 SemaphoreHandle_t cartProxyMutex = nullptr;
 bool cartJobPending = false;
 bool cartJobBusy = false;
@@ -262,22 +263,34 @@ bool cartApiPost(const String& body, String& responseBody, int& statusCode) {
 bool currentCartRevision(int& revision) {
   String body; int code=0;
   if (!cartApiPost("{\"action\":\"status\"}",body,code) || code!=200) return false;
-  return parseJsonIntAfter(body,"\"desired\":","revision",revision);
+  if (!parseJsonIntAfter(body,"\"desired\":","revision",revision)) return false;
+  cartRevisionCache=revision;
+  return true;
 }
 
 bool guestCartCommand(const String& type, const String& payload, String& error) {
-  int revision=-1;
-  if (!currentCartRevision(revision)) { error="STATUS_UNAVAILABLE"; return false; }
+  int revision=cartRevisionCache;
+  if (revision<0 && !currentCartRevision(revision)) { error="STATUS_UNAVAILABLE"; return false; }
   String body="{\"action\":\"command\",\"commandId\":\""+commandUuid()+"\",\"type\":\""+type+
               "\",\"payload\":"+payload+",\"expectedRevision\":"+String(revision)+"}";
   String out; int code=0;
   if (!cartApiPost(body,out,code)) { error="NETWORK"; return false; }
-  if (code>=200 && code<300) return true;
+  if (code>=200 && code<300) {
+    int committed=-1;
+    if (parseJsonIntAfter(out,"","revision",committed)) cartRevisionCache=committed;
+    else cartRevisionCache=-1;
+    return true;
+  }
   if (code==409 && out.indexOf("stale_revision")>=0) {
     if (!currentCartRevision(revision)) { error="STALE"; return false; }
     body="{\"action\":\"command\",\"commandId\":\""+commandUuid()+"\",\"type\":\""+type+
          "\",\"payload\":"+payload+",\"expectedRevision\":"+String(revision)+"}";
-    if (cartApiPost(body,out,code) && code>=200 && code<300) return true;
+    if (cartApiPost(body,out,code) && code>=200 && code<300) {
+      int committed=-1;
+      if (parseJsonIntAfter(out,"","revision",committed)) cartRevisionCache=committed;
+      else cartRevisionCache=-1;
+      return true;
+    }
   }
   error=String("HTTP_")+String(code);
   return false;
@@ -549,6 +562,7 @@ bool startSession(uint32_t nowMs) {
 }
 
 void connectWifi() {
+  cartRevisionCache=-1;
   const String ssid = prefs.getString("wifi_ssid", kDefaultSsid);
   const String pass = prefs.getString("wifi_pass", "");
   if (pass.length() == 0) {
