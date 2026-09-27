@@ -49,7 +49,8 @@ class GenerativeV4 {
   }
 
   GenerativeVariant next(GenerativeDomain domain){
-    for(uint8_t attempt=0;attempt<96;attempt++){
+    // Tier 1: maximum perceptual separation.
+    for(uint16_t attempt=0;attempt<192;attempt++){
       GenerativeVariant v=make(domain);
       if(effectRecently(v.effectId)) continue;
       if(familyRecently(v.familyId)) continue;
@@ -59,21 +60,41 @@ class GenerativeV4 {
       remember(v);
       return v;
     }
-    // With 28 kernels and a 22-kernel exclusion window this should be unreachable.
-    // Deterministic fallback relaxes only the effect window, never exact signatures.
-    for(uint8_t attempt=0;attempt<96;attempt++){
+
+    // Tier 2: preserve the hard 22-kernel memory, but relax secondary
+    // dimensions just enough to avoid a dead-end when the six eligible kernels
+    // happen to cluster in recently used perceptual families.
+    for(uint16_t attempt=0;attempt<256;attempt++){
       GenerativeVariant v=make(domain);
-      if(effectRecentlyShort(v.effectId,8)) continue;
-      if(familyRecently(v.familyId)) continue;
-      if(paletteRecently(v.palette)) continue;
-      if(warpRecently((uint8_t)(v.variantCode>>5))) continue;
+      if(effectRecently(v.effectId)) continue;
+      if(familyRecentlyShort(v.familyId,1)) continue;
+      if(paletteRecentlyShort(v.palette,2)) continue;
+      if(warpRecentlyShort((uint8_t)(v.variantCode>>5),1)) continue;
       if(signatureRecently(v.signature)) continue;
       remember(v);
       return v;
     }
-    GenerativeVariant v=make(domain);
-    remember(v);
-    return v;
+
+    // Tier 3: the kernel exclusion window and exact-signature memory are
+    // non-negotiable. Never shorten the 22-kernel window merely to satisfy a
+    // palette/family preference.
+    for(uint16_t attempt=0;attempt<1024;attempt++){
+      GenerativeVariant v=make(domain);
+      if(effectRecently(v.effectId)) continue;
+      if(signatureRecently(v.signature)) continue;
+      remember(v);
+      return v;
+    }
+
+    // Defensive fallback should be mathematically unreachable with 28 kernels
+    // and a 22-kernel exclusion window. Keep searching rather than knowingly
+    // emitting a familiar kernel.
+    for(;;){
+      GenerativeVariant v=make(domain);
+      if(effectRecently(v.effectId) || signatureRecently(v.signature)) continue;
+      remember(v);
+      return v;
+    }
   }
 
  private:
@@ -194,12 +215,36 @@ class GenerativeV4 {
     for(uint8_t i=0;i<familyCount_;i++) if(recentFamilies_[i]==family) return true;
     return false;
   }
+  bool familyRecentlyShort(uint8_t family,uint8_t n) const{
+    const uint8_t count=familyCount_<n?familyCount_:n;
+    for(uint8_t k=0;k<count;k++){
+      const uint8_t pos=(uint8_t)((familyPos_+RECENT_FAMILIES-1u-k)%RECENT_FAMILIES);
+      if(recentFamilies_[pos]==family) return true;
+    }
+    return false;
+  }
   bool paletteRecently(uint8_t pal) const{
     for(uint8_t i=0;i<paletteCount_;i++) if(recentPalettes_[i]==pal) return true;
     return false;
   }
+  bool paletteRecentlyShort(uint8_t pal,uint8_t n) const{
+    const uint8_t count=paletteCount_<n?paletteCount_:n;
+    for(uint8_t k=0;k<count;k++){
+      const uint8_t pos=(uint8_t)((palettePos_+RECENT_PALETTES-1u-k)%RECENT_PALETTES);
+      if(recentPalettes_[pos]==pal) return true;
+    }
+    return false;
+  }
   bool warpRecently(uint8_t warp) const{
     for(uint8_t i=0;i<warpCount_;i++) if(recentWarps_[i]==warp) return true;
+    return false;
+  }
+  bool warpRecentlyShort(uint8_t warp,uint8_t n) const{
+    const uint8_t count=warpCount_<n?warpCount_:n;
+    for(uint8_t k=0;k<count;k++){
+      const uint8_t pos=(uint8_t)((warpPos_+RECENT_WARPS-1u-k)%RECENT_WARPS);
+      if(recentWarps_[pos]==warp) return true;
+    }
     return false;
   }
   bool signatureRecently(uint32_t sig) const{
