@@ -17,7 +17,7 @@ s=p.read_text()
 for old,new in [
  ("hbnf-wow-r3-max-2026-09-21-v3","hbnf-wow-aux-r3-2026-09-22-v1"),
  ("r3-wow-max","aux-r3-wow-1d"),
- ("registry28-tempo-lock-v5-colorwifi","registry28-tempo-lock-1d-v5-peer-beacon"),
+ ("registry28-tempo-lock-v8-unicast-perimeter","registry28-tempo-lock-1d-v5-peer-beacon"),
  ('root["HBNFWOW"]','root["HBNFAUX"]'),
  ('root.createNestedObject("HBNFWOW")','root.createNestedObject("HBNFAUX")'),
  ('PSTR("%s/wow")','PSTR("%s/auxwow")'),
