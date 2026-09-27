@@ -17,7 +17,7 @@ s=p.read_text()
 for old,new in [
  ("hbnf-wow-r3-max-2026-09-21-v3","hbnf-wow-aux-r3-2026-09-22-v1"),
  ("r3-wow-max","aux-r3-wow-1d"),
- ("registry28-tempo-lock-v8-unicast-perimeter","registry28-tempo-lock-1d-v5-peer-beacon"),
+ ("registry28-tempo-lock-v9-network-no-starve","registry28-tempo-lock-1d-v6-network-no-starve"),
  ('root["HBNFWOW"]','root["HBNFAUX"]'),
  ('root.createNestedObject("HBNFWOW")','root.createNestedObject("HBNFAUX")'),
  ('PSTR("%s/wow")','PSTR("%s/auxwow")'),
@@ -212,16 +212,18 @@ static HbnfProjectionReceiverV1 hbnfProjectionRx;
 s=s.replace(diag_anchor,receiver+diag_anchor,1)
 
 # AUX must never run the Matrix generator/sender. It only receives projected frames.
-tick_old="""      hbnfGenV4.tick();
-      hbnfProjectionTx.tick();"""
-tick_new="""      hbnfProjectionRx.tick();"""
+tick_old="""      hbnfProjectionTx.tick();
+      if (strip.isUpdating()) return;
+      hbnfGenV4.tick();"""
+tick_new="""      hbnfProjectionRx.tick();
+      if (strip.isUpdating()) return;"""
 if s.count(tick_old)!=1:
     raise RuntimeError(f"AUX V4 tick anchor mismatch: {s.count(tick_old)}")
 s=s.replace(tick_old,tick_new,1)
 
 # Replace sender telemetry with receiver telemetry.
 for old,new in [
- ('wow["projectionPackets"] = hbnfProjectionTx.packets();','wow["projectionRxPackets"] = hbnfProjectionRx.packets();\n      wow["projectionRxSeq"] = hbnfProjectionRx.seq();\n      wow["projectionRxActive"] = hbnfProjectionRx.active();\n      wow["projectionRxAgeMs"] = hbnfProjectionRx.ageMs();\n      wow["projectionHelloPackets"] = hbnfProjectionRx.helloPackets();\n      wow["projectionTransport"] = "udp-unicast-discovery-v1";\n      wow["projectionGeometry"] = "perimeter-5-6-5-6-v1";'),
+ ('wow["projectionPackets"] = hbnfProjectionTx.packets();','wow["projectionRxPackets"] = hbnfProjectionRx.packets();\n      wow["projectionRxSeq"] = hbnfProjectionRx.seq();\n      wow["projectionRxActive"] = hbnfProjectionRx.active();\n      wow["projectionRxAgeMs"] = hbnfProjectionRx.ageMs();\n      wow["projectionHelloPackets"] = hbnfProjectionRx.helloPackets();\n      wow["projectionTransport"] = "udp-unicast-discovery-v1";\n      wow["projectionGeometry"] = "perimeter-5-6-5-6-v1";\n      wow["projectionScheduler"] = "network-before-bus-guard-v1";'),
  ('\\\"projectionPackets\\\":%lu,\\\"projectionSeq\\\":%u,','\\\"projectionRxPackets\\\":%lu,\\\"projectionRxSeq\\\":%u,'),
  ('(unsigned long)hbnfProjectionTx.packets(), hbnfProjectionTx.seq(),','(unsigned long)hbnfProjectionRx.packets(), hbnfProjectionRx.seq(),'),
 ]:
@@ -261,7 +263,7 @@ ar.write_text(a)
 
 checks={
  p:[
-  "hbnf-wow-aux-r3-2026-09-22-v1","aux-r3-wow-1d","registry28-tempo-lock-1d-v5-peer-beacon",
+  "hbnf-wow-aux-r3-2026-09-22-v1","aux-r3-wow-1d","registry28-tempo-lock-1d-v6-network-no-starve",
   "hbnfAuxStyleForMode","hbnfAuxAmountForMode","hbnfCanvasH = 2","SEGMENT.virtualLength()",'root["HBNFAUX"]',
   'PSTR("%s/auxwow")','\\\"projection\\\":\\\"fold2-1d-v1\\\"','\\\"projectionRole\\\":\\\"receiver\\\"','\\\"lumaPolicy\\\":\\\"camera-bright-v1\\\"',
   'wow["projection"] = "fold2-1d-v1"','wow["projectionRole"] = "receiver"','wow["projectionRxPackets"]','wow["lumaPolicy"] = "camera-bright-v1"',
