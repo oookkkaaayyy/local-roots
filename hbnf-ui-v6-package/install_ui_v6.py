@@ -11,7 +11,6 @@ FILES=[
     "hbnf-cart.js",
     "hbnf-cart-semantic.mjs",
     "hbnf-cart-manifest.webmanifest",
-    "hbnf-cart-icon-180.png",
     "hbnf-cart-ui-v6.css",
     "hbnf-cart-ui-v6.mjs",
 ]
