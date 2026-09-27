@@ -3,7 +3,8 @@
 Non-production staging on `hbnf-cart-parallel-staging-20260926`, based on the current canonical-cart release lineage.
 
 Included:
-- proven 32x16 Snake + two-player Pong core from `hbnf-matrix-games-lab-20260923`
+- six-game 32x16 arcade core: Snake, 2-player Pong, Breakout, 2-player Tron / Light Cycles, Tetris, and Frogger-style lane crossing
+- all game simulation/rendering runs locally on the ESP32; no internet/cloud dependency in the gameplay path
 - proven DDP RGB24 packetizer for 512 pixels
 - fail-closed canonical lease guard
 - strict host + sanitizer QA
