@@ -17,7 +17,7 @@ s=p.read_text()
 for old,new in [
  ("hbnf-wow-r3-max-2026-09-21-v3","hbnf-wow-aux-r3-2026-09-22-v1"),
  ("r3-wow-max","aux-r3-wow-1d"),
- ("registry28-tempo-lock-v5-colorwifi","registry28-tempo-lock-1d-v3-colorwifi"),
+ ("registry28-tempo-lock-v5-colorwifi","registry28-tempo-lock-1d-v4-drainlatest"),
  ('root["HBNFWOW"]','root["HBNFAUX"]'),
  ('root.createNestedObject("HBNFWOW")','root.createNestedObject("HBNFAUX")'),
  ('PSTR("%s/wow")','PSTR("%s/auxwow")'),
@@ -207,7 +207,8 @@ s=s.replace(state_proj,state_proj+'\n      wow["projectionRole"] = "receiver";',
 # therefore renders the same effect as a one-row projection while sharing the
 # same WLED timebase as the Matrix sender.
 needle='      wow["fxLast"] = hbnfFxLast;'
-replacement=needle+'\n      wow["projection"] = "fold2-1d-v1";\n      wow["lumaPolicy"] = "camera-bright-v1";\n      wow["syncEffectContract"] = "ids220-247";\n      wow["sceneParams"] = "profile-via-ix-style-amount-by-effect-id";'
+replacement=needle+'\n      wow["projection"] = "fold2-1d-v1";\n      wow["lumaPolicy"] = "camera-bright-v1";\n      wow["syncEffectContract"] = "ids220-247";\n      wow["sceneParams"] = "profile-via-ix-style-amount-by-effect-id";
+      wow["projectionQueuePolicy"] = "newest-frame-v1";'
 if s.count(needle)!=1:
     raise RuntimeError("telemetry extension anchor mismatch")
 s=s.replace(needle,replacement,1)
@@ -229,7 +230,7 @@ ar.write_text(a)
 
 checks={
  p:[
-  "hbnf-wow-aux-r3-2026-09-22-v1","aux-r3-wow-1d","registry28-tempo-lock-1d-v3-colorwifi",
+  "hbnf-wow-aux-r3-2026-09-22-v1","aux-r3-wow-1d","registry28-tempo-lock-1d-v4-drainlatest",
   "hbnfAuxStyleForMode","hbnfAuxAmountForMode","hbnfCanvasH = 2","SEGMENT.virtualLength()",'root["HBNFAUX"]',
   'PSTR("%s/auxwow")','\\\"projection\\\":\\\"fold2-1d-v1\\\"','\\\"projectionRole\\\":\\\"receiver\\\"','\\\"lumaPolicy\\\":\\\"camera-bright-v1\\\"',
   'wow["projection"] = "fold2-1d-v1"','wow["projectionRole"] = "receiver"','wow["projectionRxPackets"]','wow["lumaPolicy"] = "camera-bright-v1"',
