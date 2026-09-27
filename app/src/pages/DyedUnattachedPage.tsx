@@ -165,26 +165,20 @@ export function DyedUnattachedPage() {
   const busy = state === 'preparing' || state === 'sending';
   return <Shell><main>
     <style>{`
-      .du-share-hero{padding-bottom:34px}.du-share-hero .branch-monogram{background:var(--clay);font-size:2.25rem}.du-work-intro{display:flex;align-items:end;justify-content:space-between;gap:28px;margin-bottom:18px}.du-work-intro h2{margin:6px 0 0;color:var(--root);font:clamp(2rem,4vw,3.2rem)/1 Georgia,serif}.du-work-intro p{max-width:520px;margin:0;color:var(--muted);line-height:1.6}.du-gallery{margin:0 auto 52px}.du-gallery-shell{position:relative;width:min(850px,100%);margin:0 auto}.du-gallery-frame{overflow:hidden;border:1px solid rgba(185,154,119,.65);border-radius:24px;background:#f3eadf;box-shadow:0 12px 34px rgba(58,38,24,.10);touch-action:pan-y}.du-gallery-track{display:flex;transition:transform .48s cubic-bezier(.2,.75,.25,1)}.du-gallery-slide{flex:0 0 100%;aspect-ratio:1;display:grid;grid-template-rows:repeat(2,minmax(0,1fr));background:#efe3d2}.du-gallery-row{display:grid;grid-template-columns:1fr 1fr;min-height:0}.du-gallery-row+.du-gallery-row{border-top:1px solid rgba(185,154,119,.55)}.du-gallery-media{min-width:0;min-height:0;overflow:hidden;background:#efe3d2}.du-gallery-media+.du-gallery-media{border-left:1px solid rgba(185,154,119,.55)}.du-gallery-media img{width:100%;height:100%;display:block;object-fit:cover}.du-gallery-media-legacy{background-repeat:no-repeat}.du-gallery-row-empty{background:#efe3d2}.du-gallery-controls{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px}.du-gallery-controls button{width:38px;height:38px;border:1px solid rgba(112,77,49,.25);border-radius:999px;background:#fff8ee;color:#5b3a24;font-size:1.25rem;line-height:1;cursor:pointer}.du-gallery-controls button:hover{background:#efe3d2}.du-gallery-count{min-width:52px;text-align:center;color:#756050;font-size:.78rem;font-weight:800;letter-spacing:.08em}.du-gallery-hint{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.du-request .section-intro strong{display:block;margin-top:14px;color:var(--soil);font-size:.84rem}@media(max-width:760px){.du-work-intro{display:grid}}@media(max-width:620px){.du-share-hero{padding-top:42px}.du-gallery{margin-bottom:36px}.du-gallery-frame{border-radius:18px}.du-gallery-controls{margin-top:8px}.du-live-card{border-radius:18px}}@media(prefers-reduced-motion:reduce){.du-gallery-track{transition:none}}
+      .du-share-hero{padding-bottom:22px}.du-share-hero .branch-monogram{background:var(--clay);font-size:2.25rem}.du-gallery{margin:0 auto 52px}.du-gallery-shell{position:relative;width:min(850px,100%);margin:0 auto}.du-gallery-frame{overflow:hidden;border:1px solid rgba(185,154,119,.65);border-radius:24px;background:#f3eadf;box-shadow:0 12px 34px rgba(58,38,24,.10);touch-action:pan-y}.du-gallery-track{display:flex;transition:transform .48s cubic-bezier(.2,.75,.25,1)}.du-gallery-slide{flex:0 0 100%;aspect-ratio:1;display:grid;grid-template-rows:repeat(2,minmax(0,1fr));background:#efe3d2}.du-gallery-row{display:grid;grid-template-columns:1fr 1fr;min-height:0}.du-gallery-row+.du-gallery-row{border-top:1px solid rgba(185,154,119,.55)}.du-gallery-media{min-width:0;min-height:0;overflow:hidden;background:#efe3d2}.du-gallery-media+.du-gallery-media{border-left:1px solid rgba(185,154,119,.55)}.du-gallery-media img{width:100%;height:100%;display:block;object-fit:cover}.du-gallery-media-legacy{background-repeat:no-repeat}.du-gallery-row-empty{background:#efe3d2}.du-gallery-controls{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px}.du-gallery-controls button{width:38px;height:38px;border:1px solid rgba(112,77,49,.25);border-radius:999px;background:#fff8ee;color:#5b3a24;font-size:1.25rem;line-height:1;cursor:pointer}.du-gallery-controls button:hover{background:#efe3d2}.du-gallery-count{min-width:52px;text-align:center;color:#756050;font-size:.78rem;font-weight:800;letter-spacing:.08em}.du-gallery-hint{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.du-request .section-intro strong{display:block;margin-top:14px;color:var(--soil);font-size:.84rem}@media(max-width:620px){.du-share-hero{padding-top:42px}.du-gallery{margin-bottom:36px}.du-gallery-frame{border-radius:18px}.du-gallery-controls{margin-top:8px}.du-live-card{border-radius:18px}}@media(prefers-reduced-motion:reduce){.du-gallery-track{transition:none}}
     `}</style>
 
     <section className="branch-hero content du-share-hero">
       <div>
-        <span className="eyebrow">Custom disc-golf stencil portraits</span>
         <h1>Dyed &amp; Unattached</h1>
-        <p>Turn a favorite pet photo into a bold portrait built for vinyl cutting and hand-dyed discs.</p>
         <div className="branch-actions">
           <a className="button primary" href="#request-stencil">Request a stencil</a>
-          <a className="button ghost" href="#gallery">See the work</a>
         </div>
       </div>
       <div className="branch-monogram" aria-hidden="true">D&amp;U</div>
     </section>
 
-    <section id="gallery" className="content du-work-intro" aria-labelledby="du-gallery-title">
-      <div><span className="eyebrow">From photo to disc</span><h2 id="du-gallery-title">See the transformation.</h2></div>
-      <p>Each example pairs the original reference with the finished artwork or dyed disc, so the likeness and final result are easy to compare.</p>
-    </section>
+    <div id="gallery" />
 
     <section className="du-gallery content" aria-label="Dyed & Unattached portfolio examples">
       <div className="du-gallery-shell" onMouseEnter={() => setGalleryPaused(true)} onMouseLeave={() => setGalleryPaused(false)} onFocus={() => setGalleryPaused(true)} onBlur={() => setGalleryPaused(false)}>
@@ -206,7 +200,7 @@ export function DyedUnattachedPage() {
     </section>
 
     <section id="request-stencil" className="du-request content" aria-labelledby="du-request-title">
-      <div className="section-intro"><span className="eyebrow">Start here</span><h2 id="du-request-title">Request a stencil</h2><p>Send 1–6 clear reference photos and any notes that matter to the portrait. Contact details and source photos stay private and are not published by this form.</p><strong>No account required.</strong></div>
+      <div className="section-intro"><h2 id="du-request-title">Request a stencil</h2></div>
       <form className="du-form" onSubmit={submit}>
         <div className="du-form-grid">
           <label>Name<input name="clientName" autoComplete="name" required maxLength={160} /></label>
