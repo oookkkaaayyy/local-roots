@@ -17,21 +17,21 @@ s=p.read_text()
 for old,new in [
  ("hbnf-wow-r3-max-2026-09-21-v3","hbnf-wow-aux-r3-2026-09-22-v1"),
  ("r3-wow-max","aux-r3-wow-1d"),
- ("registry28-fixed-v4-colorwifi","registry28-fixed-1d-v2-colorwifi"),
+ ("registry28-tempo-lock-v5-colorwifi","registry28-tempo-lock-1d-v3-colorwifi"),
  ('root["HBNFWOW"]','root["HBNFAUX"]'),
  ('root.createNestedObject("HBNFWOW")','root.createNestedObject("HBNFAUX")'),
  ('PSTR("%s/wow")','PSTR("%s/auxwow")'),
 ]:
     s=s.replace(old,new)
 
-mqtt_old='\\\"buildWitness\\\":\\\"registry28-fixed-1d-v2-colorwifi\\\",\\\"fxRegistered\\\"'
-mqtt_new='\\\"buildWitness\\\":\\\"registry28-fixed-1d-v2-colorwifi\\\",\\\"projection\\\":\\\"fold2-1d-v1\\\",\\\"fxRegistered\\\"'
+mqtt_old='\\\"buildWitness\\\":\\\"registry28-tempo-lock-1d-v3-colorwifi\\\",\\\"audioGeometry\\\":\\\"source-coupled-v3\\\",\\\"fxRegistered\\\"'
+mqtt_new='\\\"buildWitness\\\":\\\"registry28-tempo-lock-1d-v3-colorwifi\\\",\\\"audioGeometry\\\":\\\"source-coupled-v3\\\",\\\"projection\\\":\\\"fold2-1d-v1\\\",\\\"lumaPolicy\\\":\\\"camera-bright-v1\\\",\\\"fxRegistered\\\"'
 if s.count(mqtt_old)!=1:
     raise RuntimeError(f"MQTT witness anchor mismatch: {s.count(mqtt_old)}")
 s=s.replace(mqtt_old,mqtt_new,1)
 if s.count("char payload[480];")!=1:
     raise RuntimeError("MQTT payload buffer anchor mismatch")
-s=s.replace("char payload[480];","char payload[560];",1)
+s=s.replace("char payload[480];","char payload[640];",1)
 
 anchor="class ANIMartRIXMod:public ANIMartRIX {"
 if s.count(anchor)!=1:
@@ -45,6 +45,16 @@ helpers="""static uint8_t hbnfAuxStyleForMode(uint8_t mode, uint8_t fallback) {
 static uint8_t hbnfAuxAmountForMode(uint8_t mode, uint8_t fallback) {
   static const uint8_t map[28] = {""" + ",".join(map(str,amount)) + """};
   return (mode >= 220 && mode <= 247) ? map[mode-220] : fallback;
+}
+static void hbnfAuxLiftLuma(uint8_t &r, uint8_t &g, uint8_t &b) {
+  const uint8_t peak = r > g ? (r > b ? r : b) : (g > b ? g : b);
+  if (peak < 4) return; // keep intentional black / near-black pixels black
+  uint16_t target = 56u + ((uint16_t)peak * 199u + 127u) / 255u;
+  if (target < peak) target = peak;
+  if (target > 255u) target = 255u;
+  r = (uint8_t)(((uint16_t)r * target + peak/2u) / peak);
+  g = (uint8_t)(((uint16_t)g * target + peak/2u) / peak);
+  b = (uint8_t)(((uint16_t)b * target + peak/2u) / peak);
 }
 
 """
@@ -108,7 +118,7 @@ s=s.replace(old,new,1)
 # therefore renders the same effect as a one-row projection while sharing the
 # same WLED timebase as the Matrix sender.
 needle='      wow["fxLast"] = hbnfFxLast;'
-replacement=needle+'\n      wow["projection"] = "fold2-1d-v1";\n      wow["syncEffectContract"] = "ids220-247";\n      wow["sceneParams"] = "profile-via-ix-style-amount-by-effect-id";'
+replacement=needle+'\n      wow["projection"] = "fold2-1d-v1";\n      wow["lumaPolicy"] = "camera-bright-v1";\n      wow["syncEffectContract"] = "ids220-247";\n      wow["sceneParams"] = "profile-via-ix-style-amount-by-effect-id";'
 if s.count(needle)!=1:
     raise RuntimeError("telemetry extension anchor mismatch")
 s=s.replace(needle,replacement,1)
@@ -130,9 +140,9 @@ ar.write_text(a)
 
 checks={
  p:[
-  "hbnf-wow-aux-r3-2026-09-22-v1","aux-r3-wow-1d","registry28-fixed-1d-v2-colorwifi",
+  "hbnf-wow-aux-r3-2026-09-22-v1","aux-r3-wow-1d","registry28-tempo-lock-1d-v3-colorwifi",
   "hbnfAuxStyleForMode","hbnfAuxAmountForMode","hbnfCanvasH = 2","SEGMENT.virtualLength()",'root["HBNFAUX"]',
-  'PSTR("%s/auxwow")','\\\"projection\\\":\\\"fold2-1d-v1\\\"','wow["projection"] = "fold2-1d-v1"',
+  'PSTR("%s/auxwow")','\\\"projection\\\":\\\"fold2-1d-v1\\\"','\\\"lumaPolicy\\\":\\\"camera-bright-v1\\\"','wow["projection"] = "fold2-1d-v1"','wow["lumaPolicy"] = "camera-bright-v1"',"hbnfAuxLiftLuma",
   'strip.addEffect(220, &mode_Complex_Kaleido_3','strip.addEffect(247, &mode_Module_Experiment10'
  ],
  ar:["static uint8_t audioSyncEnabled = 2;",'usermod["syncMode"] = audioSyncEnabled','usermod["syncPort"] = audioSyncPort']
