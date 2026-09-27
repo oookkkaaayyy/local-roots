@@ -26,6 +26,8 @@ constexpr uint16_t kLocalUdpPort = 4050;
 constexpr uint32_t kFrameMs = 33;
 constexpr uint32_t kProbeMs = 250;
 constexpr uint32_t kWifiRetryMs = 5000;
+constexpr uint32_t kPrimaryWifiAttemptMs = 4500;
+constexpr uint32_t kFallbackWifiAttemptMs = 6500;
 constexpr const char* kPlaySsid = "HBNF-Play";
 constexpr const char* kCartControlUrl = "https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-control";
 
@@ -43,6 +45,9 @@ uint8_t ddpSequence = 0;
 DdpFixedFrame ddpFrame;
 uint32_t lastFrameAt = 0;
 uint32_t lastWifiRetryAt = 0;
+uint32_t wifiAttemptStartedAt = 0;
+enum class WifiTarget : uint8_t { None, Primary, Fallback };
+WifiTarget wifiTarget = WifiTarget::None;
 uint64_t sampleRevision = 0;
 
 struct MatrixProbeSnapshot {
@@ -632,35 +637,95 @@ bool startSession(uint32_t nowMs) {
   return true;
 }
 
-void connectWifi() {
+void connectWifiProfile(const String& ssid, const String& pass, WifiTarget target) {
+  if (ssid.length() == 0 || pass.length() == 0) return;
   cartRevisionCache=-1;
+  WiFi.mode(WIFI_AP_STA);
+  WiFi.setAutoReconnect(false);
+  WiFi.persistent(false);
+  WiFi.disconnect(false, false);
+  delay(25);
+
+  if (target == WifiTarget::Primary) {
+    const bool ipOk = WiFi.config(
+      IPAddress(192,168,8,30),
+      IPAddress(192,168,8,1),
+      IPAddress(255,255,255,0),
+      IPAddress(192,168,8,1)
+    );
+    if (!ipOk) Serial.println("HBNF_WIFI_STATIC_IP=FAIL");
+    else Serial.println("HBNF_WIFI_STATIC_IP=192.168.8.30");
+  } else {
+    // Fallback hotspot addressing is intentionally DHCP. Never carry the
+    // Opal's 192.168.8.30 static address onto an unrelated subnet.
+    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+    Serial.println("HBNF_WIFI_FALLBACK_DHCP=PASS");
+  }
+
+  wifiTarget = target;
+  wifiAttemptStartedAt = millis();
+  WiFi.begin(ssid.c_str(), pass.c_str());
+  Serial.printf("HBNF_WIFI_CONNECTING TARGET=%s SSID=%s\n",
+                target == WifiTarget::Primary ? "PRIMARY" : "FALLBACK",
+                ssid.c_str());
+}
+
+bool connectPrimaryWifi() {
   const String ssid = prefs.getString("wifi_ssid", kDefaultSsid);
   const String pass = prefs.getString("wifi_pass", "");
   if (pass.length() == 0) {
     Serial.println("HBNF_WIFI=NEEDS_PROVISIONING");
+    return false;
+  }
+  connectWifiProfile(ssid, pass, WifiTarget::Primary);
+  return true;
+}
+
+bool connectFallbackWifi() {
+  const String ssid = prefs.getString("fallback_ssid", "");
+  const String pass = prefs.getString("fallback_pass", "");
+  if (ssid.length() == 0 || pass.length() == 0) return false;
+  connectWifiProfile(ssid, pass, WifiTarget::Fallback);
+  return true;
+}
+
+void connectWifi() {
+  if (!connectPrimaryWifi()) connectFallbackWifi();
+}
+
+void serviceWifiFailover(uint32_t nowMs) {
+  if (WiFi.status() == WL_CONNECTED) return;
+  if (wifiTarget == WifiTarget::None) {
+    connectWifi();
     return;
   }
-  WiFi.mode(WIFI_AP_STA);
-  WiFi.setAutoReconnect(true);
-  WiFi.persistent(false);
-  const bool ipOk = WiFi.config(
-    IPAddress(192,168,8,30),
-    IPAddress(192,168,8,1),
-    IPAddress(255,255,255,0),
-    IPAddress(192,168,8,1)
-  );
-  if (!ipOk) Serial.println("HBNF_WIFI_STATIC_IP=FAIL");
-  else Serial.println("HBNF_WIFI_STATIC_IP=192.168.8.30");
-  WiFi.begin(ssid.c_str(), pass.c_str());
-  Serial.printf("HBNF_WIFI_CONNECTING SSID=%s\n", ssid.c_str());
+
+  const uint32_t elapsed = (uint32_t)(nowMs - wifiAttemptStartedAt);
+  if (wifiTarget == WifiTarget::Primary && elapsed >= kPrimaryWifiAttemptMs) {
+    if (!connectFallbackWifi()) {
+      wifiTarget = WifiTarget::None;
+      lastWifiRetryAt = nowMs;
+    }
+    return;
+  }
+
+  if (wifiTarget == WifiTarget::Fallback && elapsed >= kFallbackWifiAttemptMs) {
+    // Stability first: retry the preferred cart LAN only after the fallback
+    // attempt itself failed. Once connected to fallback we do not periodically
+    // tear down a healthy connection merely to hunt for the router.
+    connectPrimaryWifi();
+  }
 }
 
 void printStatus() {
   uint8_t p1[6], p2[6];
   readMac("p1mac", p1);
   readMac("p2mac", p2);
-  Serial.printf("HBNF_STATUS WIFI=%s IP=%s MATRIX=%s SESSION=%s P1=%s P2=%s PLAYSSID=%s PLAYPASS=%s CARTPROXY=%s\n",
+  const char* target = wifiTarget == WifiTarget::Primary ? "PRIMARY" :
+                       (wifiTarget == WifiTarget::Fallback ? "FALLBACK" : "NONE");
+  Serial.printf("HBNF_STATUS WIFI=%s TARGET=%s IP=%s MATRIX=%s SESSION=%s P1=%s P2=%s PLAYSSID=%s PLAYPASS=%s CARTPROXY=%s\n",
                 WiFi.status() == WL_CONNECTED ? "ONLINE" : "OFFLINE",
+                target,
                 WiFi.localIP().toString().c_str(),
                 matrixIdentityVerified ? "VERIFIED" : "UNVERIFIED",
                 sessionActive ? "ACTIVE" : "IDLE",
@@ -689,14 +754,33 @@ void processSerial() {
       prefs.putString("wifi_pass", value);
       Serial.printf("HBNF_WIFI_PASS_STORED=PASS LENGTH=%u\n", (unsigned)value.length());
     }
+  } else if (line.startsWith("FALLBACK_SSID ")) {
+    String value = line.substring(14);
+    value.trim();
+    if (value.length()) {
+      prefs.putString("fallback_ssid", value);
+      Serial.println("HBNF_FALLBACK_SSID_STORED=PASS");
+    }
+  } else if (line.startsWith("FALLBACK_PASS ")) {
+    const String value = line.substring(14);
+    if (value.length()) {
+      prefs.putString("fallback_pass", value);
+      Serial.printf("HBNF_FALLBACK_PASS_STORED=PASS LENGTH=%u\n", (unsigned)value.length());
+    }
+  } else if (line == "CLEAR_FALLBACK") {
+    prefs.remove("fallback_ssid");
+    prefs.remove("fallback_pass");
+    Serial.println("HBNF_FALLBACK_CLEARED=PASS");
   } else if (line == "WIFI_CONNECT") {
     WiFi.disconnect(false, false);
+    wifiTarget = WifiTarget::None;
     delay(50);
     connectWifi();
   } else if (line == "CLEAR_WIFI") {
     prefs.remove("wifi_ssid");
     prefs.remove("wifi_pass");
     WiFi.disconnect(false, false);
+    wifiTarget = WifiTarget::None;
     matrixIdentityVerified = false;
     Serial.println("HBNF_WIFI_CLEARED=PASS");
   } else if (line == "CLEAR_PADS") {
@@ -766,17 +850,27 @@ void loop() {
   processSerial();
   const uint32_t now = millis();
 
+  static bool announced = false;
   if (WiFi.status() == WL_CONNECTED) {
-    static bool announced = false;
     if (!announced) {
       announced = true;
       matrixIdentityVerified = false;
       verifyMatrixIdentity();
-      Serial.printf("HBNF_WIFI=ONLINE IP=%s\n", WiFi.localIP().toString().c_str());
+      Serial.printf("HBNF_WIFI=ONLINE TARGET=%s IP=%s\n",
+                    wifiTarget == WifiTarget::Primary ? "PRIMARY" :
+                    (wifiTarget == WifiTarget::Fallback ? "FALLBACK" : "UNKNOWN"),
+                    WiFi.localIP().toString().c_str());
     }
-  } else if ((uint32_t)(now - lastWifiRetryAt) >= kWifiRetryMs) {
-    lastWifiRetryAt = now;
-    connectWifi();
+  } else {
+    if (announced) {
+      announced = false;
+      matrixIdentityVerified = false;
+      Serial.println("HBNF_WIFI=OFFLINE");
+    }
+    if ((uint32_t)(now - lastWifiRetryAt) >= 250) {
+      lastWifiRetryAt = now;
+      serviceWifiFailover(now);
+    }
   }
 
   const PadState physical1 = mapPad(pads[0]);
