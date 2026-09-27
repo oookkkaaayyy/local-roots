@@ -397,7 +397,7 @@ Deno.serve(async (req: Request) => {
           uploaded.push(nextPath);
           const column = galleryRoleColumn[role];
           const oldPath = String(existing[column] || "");
-          if (oldPath) replacedOld.push(oldPath);
+          if (oldPath && !oldPath.startsWith("legacy:")) replacedOld.push(oldPath);
           patch[column] = nextPath;
         }
       } catch (error) {
@@ -438,7 +438,7 @@ Deno.serve(async (req: Request) => {
     const { data, error } = await service.from("gallery_items").update(patch).eq("id", itemId)
       .select("id,job_id,is_published,caption,source_photo_path,stencil_path,finished_disc_path,sort_order,created_at,updated_at").single();
     if (error) return json({ error: "gallery_remove_failed", detail: error.message }, 400);
-    if (oldPath) await service.storage.from("du-gallery").remove([oldPath]);
+    if (oldPath && !oldPath.startsWith("legacy:")) await service.storage.from("du-gallery").remove([oldPath]);
     return json({ ok: true, item: data });
   }
 
@@ -447,7 +447,7 @@ Deno.serve(async (req: Request) => {
     if (!itemId) return json({ error: "gallery_item_required" }, 400);
     const existing = await getGalleryItem(service, itemId);
     if (!existing) return json({ error: "gallery_item_not_found" }, 404);
-    const paths = [existing.source_photo_path,existing.stencil_path,existing.finished_disc_path].filter(Boolean) as string[];
+    const paths = [existing.source_photo_path,existing.stencil_path,existing.finished_disc_path].filter(path=>Boolean(path)&&!String(path).startsWith("legacy:")) as string[];
     const { error } = await service.from("gallery_items").delete().eq("id", itemId);
     if (error) return json({ error: "gallery_delete_failed", detail: error.message }, 400);
     if (paths.length) await service.storage.from("du-gallery").remove(paths);
