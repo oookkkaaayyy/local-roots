@@ -1,14 +1,12 @@
-name: HBNF Cart One-Pass After Acceptance
+name: HBNF Cart Phase 2 Transition Staging
 on:
   push:
-    branches: [hbnf-cart-postaccepted-one-pass-20260926]
+    branches: [hbnf-cart-phase2-transition-staging-20260926]
     paths:
       - 'hbnf-game-adapter/**'
       - 'hbnf-uv-control/**'
-      - 'hbnf-wow-bundle/web/hbnf-cart-ipad.*'
-      - 'hbnf-wow-bundle/web/HBNF_CART_IPAD_TEST.cjs'
       - 'scripts/HBNF_POST_RELEASE_SETUP.command'
-      - 'scripts/DEPLOY_HBNF_IPAD_UI.command'
+      - 'scripts/hbnf-phase2-handoff-guard.py'
       - 'scripts/hbnf-cart-network-state.py'
       - 'scripts/hbnf-cart-lan-discover.py'
       - 'scripts/hbnf-cart-device-preflight.py'
@@ -17,42 +15,51 @@ on:
       - 'scripts/FLASH_HBNF_GAME_BRIDGE.command'
       - 'scripts/provision_hbnf_game_bridge.py'
       - 'scripts/hbnf-cart-postrelease-kit-build.sh'
+      - 'config/PHASE1_FINAL_HANDOFF.json'
       - 'config/hbnf-cart-router-manifest.json'
-      - 'docs/HBNF_CART_*'
+      - 'docs/HBNF_CART_PHASE2_TRANSITION.md'
       - '.github/workflows/hbnf-cart-postrelease-kit.yml'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  one-pass:
+  stage:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: arduino/setup-arduino-cli@v2
-      - name: Verify iPad + broker contracts
+      - name: Prove unfinished Phase 1 blocks Phase 2
+        run: python3 scripts/hbnf-phase2-handoff-guard.py config/PHASE1_FINAL_HANDOFF.json --expect-reject
+      - name: Prove finalized handoff contract can pass
         run: |
-          node hbnf-wow-bundle/web/HBNF_CART_IPAD_TEST.cjs
-          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic hbnf-game-adapter/test_remote_input.cpp -o /tmp/hbnf-remote
-          /tmp/hbnf-remote
-          bash -n scripts/DEPLOY_HBNF_IPAD_UI.command
-      - name: Build one-pass package
-        run: bash scripts/hbnf-cart-postrelease-kit-build.sh "$GITHUB_WORKSPACE/build/hbnf-cart-one-pass"
+          python3 - <<'PY'
+          import json
+          p=json.load(open('config/PHASE1_FINAL_HANDOFF.json'))
+          p['phase1_finalized']=True
+          for k in p['required_exit_criteria']: 
+              if isinstance(p['required_exit_criteria'][k], bool): p['required_exit_criteria'][k]=True
+          p['phone_controller']={'production_url':'https://hbnightflyers.com/hbnf-cart','ipad_compatible':True}
+          p['final_backend']=p['current_observed_not_final']['backend']
+          json.dump(p,open('/tmp/phase1-final.json','w'))
+          PY
+          python3 scripts/hbnf-phase2-handoff-guard.py /tmp/phase1-final.json
+      - name: Build Phase 2 staging package
+        run: bash scripts/hbnf-cart-postrelease-kit-build.sh "$GITHUB_WORKSPACE/build/hbnf-cart-phase2"
       - name: Verify exact extracted package
         run: |
           set -euo pipefail
-          tar -tzf build/HBNF_CART_ONE_PASS_AFTER_ACCEPTANCE.tar.gz > /tmp/hbnf-onepass-list.txt
-          for f in START_HBNF_CART_FINISH.command game-bridge/HBNF_GAME_BRIDGE_FACTORY.bin web/hbnf-cart-ipad.html web/DEPLOY_HBNF_IPAD_UI.command; do
-            grep -q "$f" /tmp/hbnf-onepass-list.txt
-          done
-          (cd build && shasum -a 256 -c HBNF_CART_ONE_PASS_AFTER_ACCEPTANCE.tar.gz.sha256)
-          mkdir /tmp/hbnf-onepass
-          tar -xzf build/HBNF_CART_ONE_PASS_AFTER_ACCEPTANCE.tar.gz -C /tmp/hbnf-onepass
-          K=/tmp/hbnf-onepass/hbnf-cart-one-pass
-          bash -n "$K/START_HBNF_CART_FINISH.command"
+          tar -tzf build/HBNF_CART_PHASE2.tar.gz > /tmp/phase2-list.txt
+          grep -q 'START_HBNF_PHASE2.command' /tmp/phase2-list.txt
+          grep -q 'game-bridge/HBNF_GAME_BRIDGE_FACTORY.bin' /tmp/phase2-list.txt
+          ! grep -q 'DEPLOY_HBNF_IPAD_UI.command' /tmp/phase2-list.txt
+          (cd build && shasum -a 256 -c HBNF_CART_PHASE2.tar.gz.sha256)
+          mkdir /tmp/hbnf-phase2
+          tar -xzf build/HBNF_CART_PHASE2.tar.gz -C /tmp/hbnf-phase2
+          K=/tmp/hbnf-phase2/hbnf-cart-phase2
+          bash -n "$K/START_HBNF_PHASE2.command"
           bash -n "$K/scripts/HBNF_POST_RELEASE_SETUP.command"
-          bash -n "$K/web/DEPLOY_HBNF_IPAD_UI.command"
-          node "$K/web/HBNF_CART_IPAD_TEST.cjs"
+          python3 "$K/scripts/hbnf-phase2-handoff-guard.py" "$K/config/PHASE1_FINAL_HANDOFF.json" --expect-reject
           python3 "$K/scripts/hbnf-cart-network-state.py" --selftest
           python3 "$K/scripts/hbnf-cart-device-preflight.py" --selftest
           python3 "$K/scripts/hbnf-cart-lan-discover.py" --selftest
@@ -60,8 +67,8 @@ jobs:
           (cd "$K" && shasum -a 256 -c SHA256SUMS.txt)
       - uses: actions/upload-artifact@v4
         with:
-          name: HBNF-CART-ONE-PASS-AFTER-ACCEPTANCE
+          name: HBNF-CART-PHASE2-STAGING-BLOCKED-UNTIL-PHASE1-FINAL
           path: |
-            build/HBNF_CART_ONE_PASS_AFTER_ACCEPTANCE.tar.gz
-            build/HBNF_CART_ONE_PASS_AFTER_ACCEPTANCE.tar.gz.sha256
+            build/HBNF_CART_PHASE2.tar.gz
+            build/HBNF_CART_PHASE2.tar.gz.sha256
           retention-days: 90
