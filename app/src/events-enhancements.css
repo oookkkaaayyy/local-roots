@@ -154,3 +154,60 @@
 .event-detail-heading h1{font-weight:700;letter-spacing:-.018em}
 .event-detail-results>h2{font-weight:700;letter-spacing:-.012em}
 
+/* Brand-system audit refinements. */
+.public-brand-shell .events-page{--events-sans:"Avenir Next",Avenir,"Helvetica Neue",Arial,sans-serif}
+.public-brand-shell .events-page .filters{
+  border-radius:12px;
+  border-color:rgba(91,58,36,.23);
+  background:
+    linear-gradient(145deg,rgba(127,137,98,.045),transparent 44%),
+    rgba(251,245,234,.92);
+  box-shadow:0 5px 16px rgba(58,38,24,.045);
+}
+.public-brand-shell .events-page .event-view-switch{
+  border:1px solid rgba(91,58,36,.10);
+  border-radius:10px;
+  background:#e8dac7;
+}
+.public-brand-shell .events-page .event-card{
+  border-radius:12px;
+  border-color:rgba(91,58,36,.23);
+  background:
+    linear-gradient(105deg,rgba(159,92,54,.028),transparent 28%),
+    rgba(251,245,234,.94);
+  box-shadow:0 4px 14px rgba(58,38,24,.045);
+  transform:none;
+}
+.public-brand-shell .events-page .event-card:hover{
+  border-color:rgba(159,92,54,.58);
+  box-shadow:0 6px 18px rgba(58,38,24,.065);
+  transform:none;
+}
+.public-brand-shell .events-page .event-tags span,
+.public-brand-shell .events-page .status-pill{
+  border:1px solid rgba(91,58,36,.08);
+  background:#eadfce;
+}
+.public-brand-shell .events-page .status-registration_open{background:#dfe5d3;color:#465132}
+.public-brand-shell .events-page .event-resource-links a,
+.public-brand-shell .event-detail-card .event-resource-links a{
+  border-radius:8px;
+  border-color:rgba(91,58,36,.20);
+  background:#f0e4d4;
+}
+.public-brand-shell .events-page .event-resource-links a:hover,
+.public-brand-shell .event-detail-card .event-resource-links a:hover{background:#e8d8c4}
+.public-brand-shell .events-page .submit-disclosure>summary,
+.public-brand-shell .results-submit-disclosure>summary{
+  border-radius:9px;
+  background:#f7eddf;
+  box-shadow:none;
+  font-family:var(--events-sans);
+  font-weight:700;
+}
+.public-brand-shell .event-detail-heading h1,
+.public-brand-shell .event-detail-results>h2,
+.public-brand-shell .event-detail-results h2{
+  font-family:var(--events-sans);
+  font-weight:700;
+}
