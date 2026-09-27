@@ -15,16 +15,20 @@ export const supabase: SupabaseClient = createClient(supabaseUrl, publishableKey
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
 });
 
+export type FunctionAuth = string | { accessToken?: string; deviceToken?: string };
+
 export async function callFunction<T>(
   slug: string,
   body: Record<string, unknown>,
-  accessToken?: string,
+  auth?: FunctionAuth,
 ): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     apikey: publicKey,
   };
-  if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+  if (typeof auth === 'string' && auth) headers.Authorization = `Bearer ${auth}`;
+  if (typeof auth === 'object' && auth?.accessToken) headers.Authorization = `Bearer ${auth.accessToken}`;
+  if (typeof auth === 'object' && auth?.deviceToken) headers['x-du-device-token'] = auth.deviceToken;
   const response = await fetch(`${functionsBase}/${slug}`, {
     method: 'POST',
     headers,
