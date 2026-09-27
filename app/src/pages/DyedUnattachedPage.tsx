@@ -14,6 +14,7 @@ type GalleryItem = {
   stencil_path:string|null;
   finished_disc_path:string|null;
   sort_order:number;
+  legacy_roles_confirmed:boolean;
 };
 
 function compressImageFile(file: File, maxSide = 1600, quality = 0.84): Promise<string | null> {
@@ -50,6 +51,12 @@ function enoughPhoneDigits(value: string) {
 type GalleryMedia={label:string;path:string};
 
 function galleryPair(item:GalleryItem){
+  if(item.legacy_roles_confirmed===false){
+    const paths=[item.source_photo_path,item.stencil_path,item.finished_disc_path]
+      .filter((path):path is string=>Boolean(path)&&Boolean(parseLegacyPath(path!)))
+      .sort((a,b)=>(parseLegacyPath(a)?.side==='left'?-1:1)-(parseLegacyPath(b)?.side==='left'?-1:1));
+    if(paths.length===2)return paths.map((path,index)=>({label:`Gallery image ${index+1}`,path}));
+  }
   const source=item.source_photo_path?{label:'Reference photo',path:item.source_photo_path}:null;
   const stencil=item.stencil_path?{label:'Stencil artwork',path:item.stencil_path}:null;
   const finished=item.finished_disc_path?{label:'Finished disc',path:item.finished_disc_path}:null;
@@ -104,7 +111,7 @@ export function DyedUnattachedPage() {
   useEffect(()=>{
     let alive=true;
     supabase.from('gallery_items')
-      .select('id,caption,source_photo_path,stencil_path,finished_disc_path,sort_order')
+      .select('id,caption,source_photo_path,stencil_path,finished_disc_path,sort_order,legacy_roles_confirmed')
       .eq('is_published',true)
       .order('sort_order',{ascending:true})
       .order('created_at',{ascending:false})
