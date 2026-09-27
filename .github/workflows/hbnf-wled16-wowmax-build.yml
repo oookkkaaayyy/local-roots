@@ -112,7 +112,8 @@ jobs:
           cp -R /tmp/hbnf-r1/hbnf_flow/hbnf_flow/. usermods/hbnf_flow/
           python /tmp/hbnf-r1/firmware_patch/apply_hbnf_animartrix_patch.py /tmp/wled --patch-dir /tmp/hbnf-r1/firmware_patch
           python "$GITHUB_WORKSPACE/.hbnf-build-r3max/apply_wowmax_v3.py" /tmp/wled
-          grep -q 'hbnf-wow-r3-max-audio-geometry-v1-2026-09-27' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'hbnf-wow-r3-max-2026-09-21-v3' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'scene-relative-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'mqtt->publish(topic, 0, false, payload)' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'usermod\[FPSTR(_inputLvl)\] = inputLevel' usermods/audioreactive/audio_reactive.cpp
           ! grep -q '#define fmodf' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
@@ -161,7 +162,7 @@ jobs:
           cp .hbnf-build-r3max/hbnf_vibe16.h .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h .hbnf-build-r3max/apply_wowmax_v3.py /tmp/artifacts/
           {
             echo wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
-            echo release=hbnf-wow-r3-max-audio-geometry-v1-2026-09-27
+            echo release=hbnf-wow-r3-max-2026-09-21-v3
             echo firmware_sha256=$SHA
             echo firmware_bytes=$BYTES
             echo ota_slot_bytes=$SLOT
@@ -175,6 +176,7 @@ jobs:
             echo ASAN_UBSAN_FUZZ_GATE=PASS
             echo SCENE_RELATIVE_AUDIO_GEOMETRY_GATE=PASS
             echo UNIVERSAL_PLUS_SIGN_OVERLAY_ABSENT=PASS
+            echo AUDIO_GEOMETRY_TELEMETRY=scene-relative-v1
             echo FIRMWARE_RELEASE_TELEMETRY=PASS
             echo AUDIO_INPUTLEVEL_RUNTIME_TELEMETRY=PASS
             echo WOW_AUDIO_DIAGNOSTIC_TELEMETRY=PASS
