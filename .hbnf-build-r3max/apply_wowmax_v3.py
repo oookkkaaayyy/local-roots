@@ -100,7 +100,7 @@ telemetry="""    void addToJsonState(JsonObject& root) override {
       if (wow.isNull()) wow = root.createNestedObject("HBNFWOW");
       wow["release"] = "hbnf-wow-r3-max-2026-09-21-v3";
       wow["engine"] = "r3-wow-max";
-      wow["buildWitness"] = "registry28-tempo-lock-v6-udp-resilient";
+      wow["buildWitness"] = "registry28-tempo-lock-v7-perimeter-sync";
       wow["audioGeometry"] = "source-coupled-v4";
       wow["generator"] = "anti-repeat-v4";
       wow["projectionLink"] = "frame-lock-v1";
@@ -113,7 +113,7 @@ telemetry="""    void addToJsonState(JsonObject& root) override {
       wow["variation"] = hbnfGenV4.variation();
       wow["variantDwellSeconds"] = hbnfGenV4.current().dwellSeconds;
       wow["projectionPackets"] = hbnfProjectionTx.packets();
-      wow["projectionSeq"] = hbnfProjectionTx.seq();\n      wow["projectionTxActive"] = hbnfProjectionTx.active();\n      wow["projectionTxAgeMs"] = hbnfProjectionTx.ageMs();\n      wow["projectionTransport"] = "udp-rebind-v1";
+      wow["projectionSeq"] = hbnfProjectionTx.seq();\n      wow["projectionTxActive"] = hbnfProjectionTx.active();\n      wow["projectionTxAgeMs"] = hbnfProjectionTx.ageMs();\n      wow["projectionTransport"] = "udp-rebind-v1";\n      wow["projectionGeometry"] = "perimeter-5-6-5-6-v1";
       wow["fxRegistered"] = hbnfFxRegistered;
       wow["fxFailed"] = hbnfFxFailed;
       wow["modeCount"] = strip.getModeCount();
@@ -169,7 +169,7 @@ loop_new="""    void loop() {
           char payload[900];
           snprintf_P(topic, sizeof(topic), PSTR("%s/wow"), mqttDeviceTopic);
           snprintf_P(payload, sizeof(payload),
-            PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"buildWitness\\\":\\\"registry28-tempo-lock-v6-udp-resilient\\\",\\\"audioGeometry\\\":\\\"source-coupled-v4\\\",\\\"generator\\\":\\\"anti-repeat-v4\\\",\\\"projectionLink\\\":\\\"frame-lock-v1\\\",\\\"generatorEnabled\\\":%s,\\\"generatorLocked\\\":%s,\\\"generatorDomain\\\":%u,\\\"variantSequence\\\":%lu,\\\"variantSignature\\\":%lu,\\\"variantFamily\\\":%u,\\\"variation\\\":%u,\\\"projectionPackets\\\":%lu,\\\"projectionSeq\\\":%u,\\\"projectionTxActive\\\":%s,\\\"projectionTxAgeMs\\\":%lu,\\\"projectionTransport\\\":\\\"udp-rebind-v1\\\",\\\"fxRegistered\\\":%u,\\\"fxFailed\\\":%u,\\\"modeCount\\\":%u,\\\"fxFirst\\\":%u,\\\"fxLast\\\":%u,\\\"audioActive\\\":%s,\\\"profile\\\":%u,\\\"style\\\":%u,\\\"amount\\\":%u,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u,\\\"pulse\\\":%u,\\\"energy\\\":%u,\\\"impact\\\":%u,\\\"drop\\\":%u}"),
+            PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"buildWitness\\\":\\\"registry28-tempo-lock-v7-perimeter-sync\\\",\\\"audioGeometry\\\":\\\"source-coupled-v4\\\",\\\"generator\\\":\\\"anti-repeat-v4\\\",\\\"projectionLink\\\":\\\"frame-lock-v1\\\",\\\"generatorEnabled\\\":%s,\\\"generatorLocked\\\":%s,\\\"generatorDomain\\\":%u,\\\"variantSequence\\\":%lu,\\\"variantSignature\\\":%lu,\\\"variantFamily\\\":%u,\\\"variation\\\":%u,\\\"projectionPackets\\\":%lu,\\\"projectionSeq\\\":%u,\\\"projectionTxActive\\\":%s,\\\"projectionTxAgeMs\\\":%lu,\\\"projectionTransport\\\":\\\"udp-rebind-v1\\\",\\\"projectionGeometry\\\":\\\"perimeter-5-6-5-6-v1\\\",\\\"fxRegistered\\\":%u,\\\"fxFailed\\\":%u,\\\"modeCount\\\":%u,\\\"fxFirst\\\":%u,\\\"fxLast\\\":%u,\\\"audioActive\\\":%s,\\\"profile\\\":%u,\\\"style\\\":%u,\\\"amount\\\":%u,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u,\\\"pulse\\\":%u,\\\"energy\\\":%u,\\\"impact\\\":%u,\\\"drop\\\":%u}"),
             hbnfGenV4.enabled() ? "true" : "false", hbnfGenV4.locked() ? "true" : "false", hbnfGenV4.domain(),
             (unsigned long)hbnfGenV4.sequence(), (unsigned long)hbnfGenV4.current().signature, hbnfGenV4.current().familyId, hbnfGenV4.variation(),
             (unsigned long)hbnfProjectionTx.packets(), hbnfProjectionTx.seq(), hbnfProjectionTx.active() ? "true" : "false", (unsigned long)hbnfProjectionTx.ageMs(),
