@@ -13,13 +13,15 @@ const bad=[
 ];
 for(const [name,re] of bad){if(re.test(js))throw new Error('legacy compatibility violation: '+name)}
 for(const need of [
-  'hbnf-cart-control','expectedRevision','stale_revision','/auth/v1/otp',
-  '/auth/v1/token?grant_type=refresh_token','setInterval','192.168.8.30',
-  'sb-phcpbvuqibyarpfrftgx-auth-token',"location.origin+'/hbnf-cart.html'"
+  'hbnf-cart-control','expectedRevision','stale_revision','setInterval',
+  '5000','192.168.8.30',"'apikey':SUPABASE_KEY"
 ]) if(!js.includes(need))throw new Error('missing contract: '+need);
-for(const forbidden of ['192.168.8.20','192.168.8.21','/json/state','/json/info'])
-  if(js.includes(forbidden))throw new Error('direct device control forbidden: '+forbidden);
-if(!html.includes('hbnf-cart-ipad-legacy-v1'))throw new Error('missing build marker');
+for(const forbidden of [
+  '192.168.8.20','192.168.8.21','/json/state','/json/info',
+  '/auth/v1/otp','/auth/v1/token?grant_type=refresh_token',
+  'sign_in_required','authEmail','sendMagicLink','ACCESS_KEY','REFRESH_KEY'
+]) if(js.includes(forbidden)||html.includes(forbidden))throw new Error('forbidden legacy/direct-control contract: '+forbidden);
+if(!html.includes('hbnf-cart-ipad-zero-pair-stable-v2'))throw new Error('missing build marker');
 if(!html.includes('apple-mobile-web-app-capable'))throw new Error('missing iOS standalone marker');
 new Function(js);
-console.log('HBNF_IPAD_LEGACY_CONTROLLER_TEST=PASS');
+console.log('HBNF_IPAD_ZERO_PAIR_STABLE_TEST=PASS');
