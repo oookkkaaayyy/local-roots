@@ -27,10 +27,10 @@ const pairCreateStatus = $("#pairCreateStatus");
 const pairLinkNode = $("#pairLink");
 const sharePair = $("#sharePair");
 const copyPair = $("#copyPair");
-const matrixHealth = $("#matrixHealth");
-const auxHealth = $("#auxHealth");
-const syncHealth = $("#syncHealth");
-const rendererHealth = $("#rendererHealth");
+const matrixHealth = $("#matrixTruth");
+const auxHealth = $("#auxTruth");
+const syncHealth = null;
+const rendererHealth = null;
 
 function validDeviceToken(value) {
   return typeof value === "string" && /^[a-f0-9]{64}$/i.test(value);
@@ -123,38 +123,26 @@ async function visualStatus() {
 }
 
 function renderVisualHealth(snapshot) {
+  const badge = $("#truthBadge");
   if (!snapshot) {
-    matrixHealth.textContent = "—";
-    auxHealth.textContent = "—";
-    syncHealth.textContent = "—";
-    rendererHealth.textContent = "—";
+    if (badge) { badge.textContent = "STATUS CHECK"; badge.className = "truth-badge warn"; }
     return;
   }
   const matrix = snapshot.devices?.matrix;
   const aux = snapshot.devices?.aux;
-  matrixHealth.textContent = matrix?.confirmed ? `CONFIRMED r${matrix.confirmedRevision}` : "PENDING";
-  matrixHealth.className = matrix?.confirmed ? "ok" : "degraded";
-  auxHealth.textContent = aux?.confirmed ? `CONFIRMED r${aux.confirmedRevision}` : "PENDING";
-  auxHealth.className = aux?.confirmed ? "ok" : "degraded";
-
-  if (snapshot.sync?.healthy) {
-    syncHealth.textContent = `LOCKED · Δ${snapshot.sync.seqDistance ?? 0}`;
-    syncHealth.className = "ok";
-  } else if (snapshot.sync?.capable) {
-    syncHealth.textContent = "DEGRADED";
-    syncHealth.className = "bad";
-  } else {
-    syncHealth.textContent = "PRE-V4";
-    syncHealth.className = "degraded";
+  const matrixOk = matrix?.confirmed === true;
+  const auxOk = aux?.confirmed === true;
+  if (matrixHealth) {
+    matrixHealth.textContent = matrixOk ? `CONNECTED · r${matrix.confirmedRevision}` : "APPLYING";
+    matrixHealth.className = matrixOk ? "ok" : "degraded";
   }
-
-  const r = snapshot.renderer ?? {};
-  if (r.generator === "anti-repeat-v4" && r.audioGeometry === "source-coupled-v4") {
-    rendererHealth.textContent = `V4 · VAR ${r.variation ?? "—"} · #${r.variantSequence ?? "—"}`;
-    rendererHealth.className = "ok";
-  } else {
-    rendererHealth.textContent = "PRE-V4";
-    rendererHealth.className = "degraded";
+  if (auxHealth) {
+    auxHealth.textContent = auxOk ? `CONNECTED · r${aux.confirmedRevision}` : "APPLYING";
+    auxHealth.className = auxOk ? "ok" : "degraded";
+  }
+  if (badge) {
+    if (matrixOk && auxOk) { badge.textContent = "READY"; badge.className = "truth-badge good"; }
+    else { badge.textContent = "APPLYING"; badge.className = "truth-badge warn"; }
   }
 }
 
