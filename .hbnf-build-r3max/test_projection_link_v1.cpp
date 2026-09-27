@@ -7,7 +7,7 @@
 int main(){
   using namespace hbnf;
   ProjectionAccumulator a;
-  // 32x16 synthetic gradient; every horizontal region must map into 22 bins.
+  // 32x16 synthetic gradient; every perimeter group in the 5/6/5/6 cart geometry must map.
   for(uint16_t y=0;y<16;y++) for(uint16_t x=0;x<32;x++)
     a.add(x,y,32,16,(uint8_t)(x*7),(uint8_t)(y*11),(uint8_t)((x+y)*5));
   uint8_t rgb[PROJECTION_PIXELS*3];
@@ -30,5 +30,5 @@ int main(){
   assert(r>=70 && r>g && g>b);
   r=g=b=0; projectionLiftLuma(r,g,b); assert(r==0&&g==0&&b==0);
 
-  puts("PASS projection-link-v1: 22-bin framebuffer projection + CRC + luma");
+  puts("PASS projection-link-v1: 5/6/5/6 perimeter projection + CRC + luma");
 }
