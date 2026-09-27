@@ -10,17 +10,30 @@ int main(){
   for(int d=0;d<4;d++){
     GenerativeV4 g(0xA5A50000u+(uint32_t)d);
     std::vector<uint8_t> recent;
+    std::vector<uint8_t> recentFamilies;
+    std::vector<uint8_t> recentPalettes;
+    std::vector<uint8_t> recentWarps;
     std::set<uint8_t> effects;
+    std::set<uint8_t> families;
     std::set<uint32_t> signatures;
     uint32_t minSig=0xffffffffu;
     for(int i=0;i<5000;i++){
       auto v=g.next((GenerativeDomain)d);
       assert(v.effectId>=220 && v.effectId<=247);
-      assert(v.amount>=188);
-      assert((v.variantCode>>3)==d);
+      assert(v.amount>=218);
+      assert(((v.variantCode>>3)&3u)==d);
+      const uint8_t warp=(uint8_t)(v.variantCode>>5);
+      assert(warp<8);
       for(size_t k=(recent.size()>22?recent.size()-22:0);k<recent.size();k++) assert(recent[k]!=v.effectId);
+      for(size_t k=(recentFamilies.size()>3?recentFamilies.size()-3:0);k<recentFamilies.size();k++) assert(recentFamilies[k]!=v.familyId);
+      for(size_t k=(recentPalettes.size()>5?recentPalettes.size()-5:0);k<recentPalettes.size();k++) assert(recentPalettes[k]!=v.palette);
+      for(size_t k=(recentWarps.size()>2?recentWarps.size()-2:0);k<recentWarps.size();k++) assert(recentWarps[k]!=warp);
       recent.push_back(v.effectId);
+      recentFamilies.push_back(v.familyId);
+      recentPalettes.push_back(v.palette);
+      recentWarps.push_back(warp);
       effects.insert(v.effectId);
+      families.insert(v.familyId);
       assert(signatures.insert(v.signature).second);
       if(v.signature<minSig) minSig=v.signature;
       switch(d){
@@ -31,8 +44,9 @@ int main(){
       }
     }
     assert(effects.size()==28);
+    assert(families.size()>=8);
     assert(signatures.size()==5000);
-    printf("domain=%d variants=5000 effects=28 exact_signature_repeats=0\n",d);
+    printf("domain=%d variants=5000 effects=28 families=%zu exact_signature_repeats=0\n",d,families.size());
   }
-  puts("PASS generative-v4 full-engine anti-repeat contract");
+  puts("PASS generative-v4 perceptual anti-repeat contract: kernel+family+palette+warp memory");
 }
