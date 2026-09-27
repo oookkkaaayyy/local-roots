@@ -16,10 +16,13 @@ test("D&U public page is share-ready and keeps intake available", () => {
   assert.ok(duPublic.includes("SUBMIT_INTAKE_URL"));
 });
 
-test("D&U public gallery keeps the accepted legacy portfolio while adding live items", () => {
+test("D&U public gallery renders the portfolio from managed item records", () => {
   assert.ok(duPublic.includes("gallery-v2.avif"));
   assert.ok(duPublic.includes("gallery_items"));
   assert.ok(duPublic.includes(".eq('is_published',true)"));
+  assert.ok(duPublic.includes("gallerySlides"));
+  assert.ok(duPublic.includes("GalleryMediaView"));
+  assert.ok(duPublic.includes("parseLegacyPath"));
   assert.ok(duPublic.includes("source_photo_path"));
   assert.ok(duPublic.includes("finished_disc_path"));
 });
@@ -35,7 +38,9 @@ test("D&U admin manages gallery items directly by system image role", () => {
   assert.ok(duAdmin.includes("gallery_delete"));
   assert.ok(duAdmin.includes("gallery_move"));
   assert.ok(duAdmin.includes("Publish immediately"));
-  assert.ok(duAdmin.includes("Legacy portfolio · 17 existing examples"));
+  assert.ok(duAdmin.includes("GalleryAdminPreview"));
+  assert.ok(duAdmin.includes("parseLegacyGalleryPath"));
+  assert.equal(duAdmin.includes("Legacy portfolio · 17 existing examples"), false);
 });
 
 test("gallery image fields support drag/drop previews instead of menu-only picking", () => {
@@ -61,4 +66,10 @@ test("gallery writes remain admin-protected and validate image payloads", () => 
 test("published gallery items cannot be left with fewer than two understood images", () => {
   assert.ok(duAdminFunction.includes("galleryImageCount(existing) < 2"));
   assert.ok(duAdminFunction.includes("patch.is_published = false"));
+});
+
+
+test("legacy sprite-backed gallery roles remain editable without fake storage deletes", () => {
+  assert.ok(duAdminFunction.includes('!oldPath.startsWith("legacy:")'));
+  assert.ok(duAdminFunction.includes('!String(path).startsWith("legacy:")'));
 });
