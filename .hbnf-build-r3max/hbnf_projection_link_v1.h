@@ -6,7 +6,9 @@ namespace hbnf {
 
 static const uint8_t PROJECTION_PIXELS=22;
 static const uint16_t PROJECTION_PORT=11989;
+static const uint16_t PROJECTION_DISCOVERY_PORT=11990;
 static const size_t PROJECTION_PACKET_BYTES=77;
+static const size_t PROJECTION_HELLO_BYTES=10;
 
 inline uint16_t projectionCrc16(const uint8_t* data,size_t n){
   uint16_t crc=0xFFFFu;
@@ -80,6 +82,22 @@ class ProjectionAccumulator {
   uint32_t rs_[PROJECTION_PIXELS],gs_[PROJECTION_PIXELS],bs_[PROJECTION_PIXELS];
   uint16_t count_[PROJECTION_PIXELS];
 };
+
+inline size_t encodeProjectionHello(uint32_t nonce,uint8_t out[PROJECTION_HELLO_BYTES]){
+  out[0]='H';out[1]='B';out[2]='N';out[3]='A';
+  out[4]=1;
+  out[5]=(uint8_t)(nonce>>24); out[6]=(uint8_t)(nonce>>16);
+  out[7]=(uint8_t)(nonce>>8); out[8]=(uint8_t)nonce;
+  out[9]=0xA5;
+  return PROJECTION_HELLO_BYTES;
+}
+
+inline bool decodeProjectionHello(const uint8_t* in,size_t n,uint32_t& nonce){
+  if(!in||n!=PROJECTION_HELLO_BYTES) return false;
+  if(in[0]!='H'||in[1]!='B'||in[2]!='N'||in[3]!='A'||in[4]!=1||in[9]!=0xA5) return false;
+  nonce=((uint32_t)in[5]<<24)|((uint32_t)in[6]<<16)|((uint32_t)in[7]<<8)|in[8];
+  return true;
+}
 
 inline size_t encodeProjectionPacket(uint16_t seq,const uint8_t rgb[PROJECTION_PIXELS*3],uint8_t out[PROJECTION_PACKET_BYTES]){
   out[0]='H';out[1]='B';out[2]='N';out[3]='P';
