@@ -130,7 +130,7 @@ receiver="""class HbnfProjectionReceiverV1 {
     uint16_t bestSeq=seq_;
     uint8_t best[hbnf::PROJECTION_PIXELS*3];
 
-    for (int guard=0;guard<6;guard++) {
+    // Drain bursty UDP delivery aggressively and render only the newest valid frame.\n    // This prevents visible replay/catch-up when an AP buffers projection packets.\n    for (int guard=0;guard<128;guard++) {
       const int n=udp_.parsePacket();
       if (n<=0) break;
       uint8_t packet[hbnf::PROJECTION_PACKET_BYTES];
