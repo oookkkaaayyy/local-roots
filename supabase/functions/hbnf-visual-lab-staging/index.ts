@@ -122,8 +122,20 @@ Deno.serve(async(req:Request)=>{
   const [{data:snapshot,error},telemetry]=await Promise.all([db.rpc("hbnf_cart_get_status",{p_cart_id:"hbnf-cart"}),probeMqtt()]);
   if(error||!snapshot) return reply({error:"state_read_failed"},500);
   const matrix=deviceSummary(snapshot,"matrix"),aux=deviceSummary(snapshot,"aux");
+  const sync=assessSync(telemetry.matrix,telemetry.aux);
+  console.log("HBNF_VISUAL_LAB_STATUS", JSON.stringify({
+    desiredRevision:snapshot?.desired?.revision??null,
+    matrixConfirmed:matrix.confirmed,
+    auxConfirmed:aux.confirmed,
+    matrixProjection:telemetry?.matrix?.projectionLink??null,
+    matrixGenerator:telemetry?.matrix?.generator??null,
+    auxProjection:telemetry?.aux?.projectionLink??null,
+    auxRxActive:telemetry?.aux?.projectionRxActive??null,
+    syncHealthy:sync.healthy,
+    seqDistance:sync.seqDistance
+  }));
   return reply({
-    schema:SCHEMA,readOnly:true,desired:snapshot.desired??null,devices:{matrix,aux},telemetry,sync:assessSync(telemetry.matrix,telemetry.aux),
+    schema:SCHEMA,readOnly:true,desired:snapshot.desired??null,devices:{matrix,aux},telemetry,sync,
     capabilities:{semanticPlan:true,hardwareWrites:false,requestedDesiredConfirmed:true,liveFrameLockTelemetry:true,
       matrixPreview:"renderer-telemetry/approximation until local-frame preview bridge is promoted",
       auxPreview:"Matrix 22-pixel projection is the physical source when frame-lock-v1 is active"}
