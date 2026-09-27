@@ -100,7 +100,7 @@ telemetry="""    void addToJsonState(JsonObject& root) override {
       if (wow.isNull()) wow = root.createNestedObject("HBNFWOW");
       wow["release"] = "hbnf-wow-r3-max-2026-09-21-v3";
       wow["engine"] = "r3-wow-max";
-      wow["buildWitness"] = "registry28-tempo-lock-v8-unicast-perimeter";
+      wow["buildWitness"] = "registry28-tempo-lock-v9-network-no-starve";
       wow["audioGeometry"] = "source-coupled-v4";
       wow["generator"] = "anti-repeat-v4";
       wow["projectionLink"] = "frame-lock-v1";
@@ -113,7 +113,8 @@ telemetry="""    void addToJsonState(JsonObject& root) override {
       wow["variation"] = hbnfGenV4.variation();
       wow["variantDwellSeconds"] = hbnfGenV4.current().dwellSeconds;
       wow["projectionPackets"] = hbnfProjectionTx.packets();
-      wow["projectionSeq"] = hbnfProjectionTx.seq();\n      wow["projectionTxActive"] = hbnfProjectionTx.active();\n      wow["projectionTxAgeMs"] = hbnfProjectionTx.ageMs();\n      wow["projectionTransport"] = "udp-unicast-discovery-v1";\n      wow["projectionGeometry"] = "perimeter-5-6-5-6-v1";\n      wow["projectionPeerKnown"] = hbnfProjectionTx.peerKnown();\n      wow["projectionPeerAgeMs"] = hbnfProjectionTx.peerAgeMs();
+      wow["projectionSeq"] = hbnfProjectionTx.seq();\n      wow["projectionTxActive"] = hbnfProjectionTx.active();\n      wow["projectionTxAgeMs"] = hbnfProjectionTx.ageMs();\n      wow["projectionTransport"] = "udp-unicast-discovery-v1";\n      wow["projectionGeometry"] = "perimeter-5-6-5-6-v1";
+      wow["projectionScheduler"] = "network-before-bus-guard-v1";\n      wow["projectionPeerKnown"] = hbnfProjectionTx.peerKnown();\n      wow["projectionPeerAgeMs"] = hbnfProjectionTx.peerAgeMs();
       wow["fxRegistered"] = hbnfFxRegistered;
       wow["fxFailed"] = hbnfFxFailed;
       wow["modeCount"] = strip.getModeCount();
@@ -153,9 +154,9 @@ loop_pat=r"""    void loop\(\) \{
       \}
     \}"""
 loop_new="""    void loop() {
+      hbnfProjectionTx.tick();
       if (strip.isUpdating()) return;
       hbnfGenV4.tick();
-      hbnfProjectionTx.tick();
       static unsigned long hbnfWifiAssistAt = 0;
       if (WiFi.status() != WL_CONNECTED && (hbnfWifiAssistAt == 0 || millis() - hbnfWifiAssistAt >= 15000UL)) {
         forceReconnect = true;
@@ -169,7 +170,7 @@ loop_new="""    void loop() {
           char payload[760];
           snprintf_P(topic, sizeof(topic), PSTR("%s/wow"), mqttDeviceTopic);
           snprintf_P(payload, sizeof(payload),
-            PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"buildWitness\\\":\\\"registry28-tempo-lock-v8-unicast-perimeter\\\",\\\"audioGeometry\\\":\\\"source-coupled-v4\\\",\\\"generator\\\":\\\"anti-repeat-v4\\\",\\\"projectionLink\\\":\\\"frame-lock-v1\\\",\\\"projectionTransport\\\":\\\"udp-unicast-discovery-v1\\\",\\\"projectionGeometry\\\":\\\"perimeter-5-6-5-6-v1\\\",\\\"projectionPeerKnown\\\":%s,\\\"projectionPeerAgeMs\\\":%lu,\\\"projectionPackets\\\":%lu,\\\"projectionSeq\\\":%u,\\\"fxRegistered\\\":%u,\\\"fxFailed\\\":%u,\\\"audioActive\\\":%s,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u}"),
+            PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"buildWitness\\\":\\\"registry28-tempo-lock-v9-network-no-starve\\\",\\\"audioGeometry\\\":\\\"source-coupled-v4\\\",\\\"generator\\\":\\\"anti-repeat-v4\\\",\\\"projectionLink\\\":\\\"frame-lock-v1\\\",\\\"projectionTransport\\\":\\\"udp-unicast-discovery-v1\\\",\\\"projectionGeometry\\\":\\\"perimeter-5-6-5-6-v1\\\",\\\"projectionPeerKnown\\\":%s,\\\"projectionPeerAgeMs\\\":%lu,\\\"projectionPackets\\\":%lu,\\\"projectionSeq\\\":%u,\\\"fxRegistered\\\":%u,\\\"fxFailed\\\":%u,\\\"audioActive\\\":%s,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u}"),
             hbnfProjectionTx.peerKnown() ? "true" : "false", (unsigned long)hbnfProjectionTx.peerAgeMs(),
             (unsigned long)hbnfProjectionTx.packets(), hbnfProjectionTx.seq(),
             hbnfFxRegistered, hbnfFxFailed,
@@ -291,7 +292,7 @@ class HbnfProjectionSenderV1 {
     }
 
     receiveAuxHello(now);
-    if (now-lastMs_<33u || strip.isUpdating()) return;
+    if (now-lastMs_<33u) return;
     lastMs_=now;
 
     hbnf::ProjectionAccumulator a;
