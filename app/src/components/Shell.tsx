@@ -4,17 +4,16 @@ export function Shell({children,admin=false}:{children:ReactNode;admin?:boolean}
   const raw=window.location.pathname.replace(/\/+$/,'')||'/';
   const path=raw==='/hbnf'?'/hb-night-flyers':raw==='/du'?'/dyed-and-unattached':raw;
   const current=(href:string)=>path===href?'page' as const:undefined;
-  const eventsCurrent=path==='/events'||path.startsWith('/events/')?'page' as const:undefined;
+  const eventsCurrent=path==='/'||path==='/events'||path.startsWith('/events/')?'page' as const:undefined;
 
   return <div className={`site-shell ${admin?'admin-shell':''}`}>
     <a className="skip-link" href="#main-content">Skip to main content</a>
     <header className="site-header">
-      <a className="brand" href="/" aria-label="Local Roots home" aria-current={current('/')}>
+      <a className="brand" href="/" aria-label="Local Roots home">
         <img className="brand-logo-mark" src="/brand/local-roots-lr.svg" alt="" aria-hidden="true" />
         <strong>Local Roots</strong>
       </a>
       <nav aria-label="Primary">
-        <a className="nav-home" href="/" aria-current={current('/')}>Home</a>
         <a className="nav-events" href="/events" aria-current={eventsCurrent}>Events</a>
         <a className="nav-hbnf" href="/hb-night-flyers" aria-current={current('/hb-night-flyers')}>HB Night Flyers</a>
         <a className="nav-du" href="/dyed-and-unattached" aria-current={current('/dyed-and-unattached')}>Dyed &amp; Unattached</a>
