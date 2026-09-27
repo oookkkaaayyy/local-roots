@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - hbnf-matrix-wow-bundle-r3-20260921
+      - hbnf-matrix-audio-geometry-v2-accepted-20260927
     paths:
       - '.hbnf-build-r3max/**'
       - '.github/workflows/hbnf-wled16-wowmax-build.yml'
@@ -65,6 +66,9 @@ jobs:
           /tmp/wowmax-vibe | tee /tmp/wowmax-vibe.log
           g++ -std=c++11 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_bridge.cpp -o /tmp/wowmax-bridge
           /tmp/wowmax-bridge | tee /tmp/wowmax-bridge.log
+          g++ -std=c++11 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_audio_geometry_v2.cpp -o /tmp/wowmax-audio-geometry-v2
+          /tmp/wowmax-audio-geometry-v2 | tee /tmp/wowmax-audio-geometry-v2.log
+          ! grep -q 'const bool cross=' .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h
           g++ -std=c++11 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_soak.cpp -o /tmp/wowmax-soak
           /tmp/wowmax-soak | tee /tmp/wowmax-soak.log
           g++ -std=c++11 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_fuzz.cpp -o /tmp/wowmax-fuzz
@@ -109,6 +113,7 @@ jobs:
           python /tmp/hbnf-r1/firmware_patch/apply_hbnf_animartrix_patch.py /tmp/wled --patch-dir /tmp/hbnf-r1/firmware_patch
           python "$GITHUB_WORKSPACE/.hbnf-build-r3max/apply_wowmax_v3.py" /tmp/wled
           grep -q 'hbnf-wow-r3-max-2026-09-21-v3' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'scene-relative-v2' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'mqtt->publish(topic, 0, false, payload)' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'usermod\[FPSTR(_inputLvl)\] = inputLevel' usermods/audioreactive/audio_reactive.cpp
           ! grep -q '#define fmodf' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
@@ -152,7 +157,7 @@ jobs:
           SHA=$(sha256sum "$BIN" | awk '{print $1}')
           VIBE=$(sha256sum .hbnf-build-r3max/hbnf_vibe16.h | awk '{print $1}')
           BRIDGE=$(sha256sum .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h | awk '{print $1}')
-          cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-wowmax-source.patch /tmp/wowmax-vibe.log /tmp/wowmax-bridge.log /tmp/wowmax-soak.log /tmp/wowmax-fuzz.log /tmp/wowmax-sanitize.log /tmp/hbnf-flow-source-audit.txt /tmp/artifacts/
+          cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-wowmax-source.patch /tmp/wowmax-vibe.log /tmp/wowmax-bridge.log /tmp/wowmax-audio-geometry-v2.log /tmp/wowmax-soak.log /tmp/wowmax-fuzz.log /tmp/wowmax-sanitize.log /tmp/hbnf-flow-source-audit.txt /tmp/artifacts/
           cp -R /tmp/hbnf-r1/hbnf_flow/hbnf_flow /tmp/artifacts/hbnf_flow_source
           cp .hbnf-build-r3max/hbnf_vibe16.h .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h .hbnf-build-r3max/apply_wowmax_v3.py /tmp/artifacts/
           {
@@ -169,6 +174,9 @@ jobs:
             echo SIX_HOUR_DETERMINISTIC_SOAK=PASS
             echo RANDOMIZED_BRIDGE_FUZZ_350K=PASS
             echo ASAN_UBSAN_FUZZ_GATE=PASS
+            echo AUDIO_GEOMETRY_V2_SENSITIVITY_GATE=PASS
+            echo UNIVERSAL_PLUS_SIGN_OVERLAY_ABSENT=PASS
+            echo AUDIO_GEOMETRY_TELEMETRY=scene-relative-v2
             echo FIRMWARE_RELEASE_TELEMETRY=PASS
             echo AUDIO_INPUTLEVEL_RUNTIME_TELEMETRY=PASS
             echo WOW_AUDIO_DIAGNOSTIC_TELEMETRY=PASS
