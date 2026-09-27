@@ -19,7 +19,7 @@ assert [int(x) for x in m.group(1).split(",")]==style
 assert [int(x) for x in m2.group(1).split(",")]==amount
 assert "audioSyncEnabled = 2" in src
 assert "hbnf-wow-aux-r3-2026-09-22-v1" in src
-assert "registry28-fixed-1d-v2-colorwifi" in src
+assert "registry28-tempo-lock-1d-v3-colorwifi" in src
 print("HBNF_AUX_R3_PATCH_CONTRACT_PASS")
 
 assert 'mqtt_old' in src
@@ -31,7 +31,7 @@ assert 'SEGMENT.virtualLength()' in src
 assert 'fold2-1d-v1' in src
 assert "hbnfAudio.setScene(SEGMENT.mode)" in src
 assert contract["aux"]["projection"]=="fold2-1d-v1"
-assert contract["matrix"]["buildWitness"]=="registry28-fixed-v4-colorwifi"
-assert contract["aux"]["buildWitness"]=="registry28-fixed-1d-v2-colorwifi"
+assert contract["matrix"]["buildWitness"]=="registry28-tempo-lock-v5-colorwifi"
+assert contract["aux"]["buildWitness"]=="registry28-tempo-lock-1d-v3-colorwifi"
 
 print("HBNF_AUX_R3_STANDALONE_CONTRACT_PASS")
