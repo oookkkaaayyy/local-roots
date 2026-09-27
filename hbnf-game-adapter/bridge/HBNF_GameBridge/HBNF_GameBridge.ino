@@ -41,9 +41,21 @@ WebSocketsServer gameWs(81);
 DNSServer captiveDns;
 uint8_t ddpSequence = 0;
 uint32_t lastFrameAt = 0;
-uint32_t lastProbeAt = 0;
 uint32_t lastWifiRetryAt = 0;
 uint64_t sampleRevision = 0;
+
+struct MatrixProbeSnapshot {
+  bool ready = false;
+  bool ok = false;
+  bool on = false;
+  uint8_t brightness = 0;
+  uint32_t sampledAt = 0;
+  uint32_t durationMs = 0;
+  uint32_t generation = 0;
+};
+SemaphoreHandle_t matrixProbeMutex = nullptr;
+MatrixProbeSnapshot matrixProbeShared;
+uint32_t matrixProbeConsumedGeneration = 0;
 bool sessionActive = false;
 bool matrixIdentityVerified = false;
 bool guestPlayEnabled = true;
@@ -210,6 +222,64 @@ bool sampleMatrix(uint32_t nowMs) {
   sample.observedRevision = sample.revision;
   guard.ingestCanonical(sample, nowMs);
   return true;
+}
+
+void matrixProbeWorker(void*) {
+  uint32_t generation = 0;
+  for (;;) {
+    MatrixProbeSnapshot snap;
+    snap.sampledAt = millis();
+    const uint32_t startedAt = snap.sampledAt;
+
+    if (WiFi.status() == WL_CONNECTED) {
+      String body;
+      bool on = false;
+      int bri = -1;
+      snap.ok = httpGet("/json/state", body) &&
+                parseJsonBool(body, "on", on) &&
+                parseJsonIntAfter(body, "", "bri", bri);
+      if (snap.ok) {
+        snap.on = on;
+        snap.brightness = (uint8_t)constrain(bri, 0, 255);
+      }
+    }
+
+    snap.durationMs = (uint32_t)(millis() - startedAt);
+    snap.ready = true;
+    snap.generation = ++generation;
+
+    if (matrixProbeMutex && xSemaphoreTake(matrixProbeMutex, pdMS_TO_TICKS(20)) == pdTRUE) {
+      matrixProbeShared = snap;
+      xSemaphoreGive(matrixProbeMutex);
+    }
+
+    vTaskDelay(pdMS_TO_TICKS(kProbeMs));
+  }
+}
+
+void pumpMatrixProbe() {
+  if (!matrixProbeMutex) return;
+  MatrixProbeSnapshot snap;
+  bool have = false;
+  if (xSemaphoreTake(matrixProbeMutex, 0) == pdTRUE) {
+    if (matrixProbeShared.ready &&
+        matrixProbeShared.generation != matrixProbeConsumedGeneration) {
+      snap = matrixProbeShared;
+      matrixProbeConsumedGeneration = matrixProbeShared.generation;
+      have = true;
+    }
+    xSemaphoreGive(matrixProbeMutex);
+  }
+  if (!have || !snap.ok) return;
+
+  CanonicalSample sample;
+  sample.reachable = true;
+  sample.powerOn = snap.on && snap.brightness > 0;
+  sample.matrixOnline = true;
+  sample.brightness = snap.brightness;
+  sample.revision = ++sampleRevision;
+  sample.observedRevision = sample.revision;
+  guard.ingestCanonical(sample, snap.sampledAt);
 }
 
 bool startSession(uint32_t nowMs);
@@ -556,7 +626,6 @@ bool startSession(uint32_t nowMs) {
   BP32.enableNewBluetoothConnections(false);
   sessionActive = true;
   lastFrameAt = nowMs;
-  lastProbeAt = nowMs;
   Serial.println("HBNF_GAME_SESSION_START=PASS");
   return true;
 }
@@ -670,6 +739,13 @@ void setup() {
   else if (xTaskCreatePinnedToCore(cartProxyWorker,"hbnf-cart-proxy",12288,nullptr,1,nullptr,0)!=pdPASS)
     Serial.println("HBNF_CART_PROXY_TASK=FAIL");
   else Serial.println("HBNF_CART_PROXY_TASK=PASS");
+
+  matrixProbeMutex=xSemaphoreCreateMutex();
+  if (!matrixProbeMutex) Serial.println("HBNF_MATRIX_PROBE_MUTEX=FAIL");
+  else if (xTaskCreatePinnedToCore(matrixProbeWorker,"hbnf-matrix-probe",8192,nullptr,1,nullptr,0)!=pdPASS)
+    Serial.println("HBNF_MATRIX_PROBE_TASK=FAIL");
+  else Serial.println("HBNF_MATRIX_PROBE_TASK=PASS");
+
   startGameWeb();
   udp.begin(kLocalUdpPort);
   BP32.setup(&onConnectedController, &onDisconnectedController);
@@ -733,10 +809,10 @@ void loop() {
 
   if (p1.connected) guard.controllerHeartbeat(now);
 
-  if ((uint32_t)(now - lastProbeAt) >= kProbeMs) {
-    lastProbeAt = now;
-    sampleMatrix(now);
-  }
+  // Safety polling runs on core 0. The 30 FPS render/input loop never performs
+  // synchronous HTTP, so a slow Matrix status request cannot create gameplay
+  // hitches or catch-up bursts.
+  pumpMatrixProbe();
   guard.tick(now);
   if (!guard.mayStream()) {
     endSession("SAFETY_WATCHDOG");
