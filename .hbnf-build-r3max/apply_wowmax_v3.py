@@ -382,6 +382,11 @@ checks=[
     (p,"hbnfAudio.modulate"),
     (p,'wow["buildWitness"]'),
     (p,'wow["audioGeometry"]'),
+    (p,'wow["generator"]'),
+    (p,'wow["projectionLink"]'),
+    (p,"HbnfGenerativeRuntimeV4"),
+    (p,"HbnfProjectionSenderV1"),
+    (p,"hbnfVariantXY"),
     (p,'wow["fxRegistered"]'),
     (p,'strip.addEffect(233, &mode_Caleido3'),
     (p,'wow["audioActive"]'),
@@ -396,4 +401,4 @@ for path,needle in checks:
 if "#define fmodf" in p.read_text():
     raise RuntimeError("unsafe fmod approximation detected")
 
-print("WOWMAX_V3_SOURCE_PATCH_PASS")
+print("WOWMAX_V4_GENERATIVE_PROJECTION_SOURCE_PATCH_PASS")
