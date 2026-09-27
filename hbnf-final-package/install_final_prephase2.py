@@ -54,7 +54,7 @@ def sha256(path):
 
 def load_manifest():
     data=json.loads(MANIFEST.read_text())
-    if data.get("packageId")!="HBNF_PREPHASE2_FINAL_V4_FIX2_20260927":
+    if data.get("packageId")!="HBNF_PREPHASE2_FINAL_V4_FIX3_20260927":
         raise RuntimeError("Unexpected package identity")
     return data
 
@@ -191,16 +191,8 @@ def resolve_wrangler(worker):
     # --yes prevents npx from silently waiting for an install-confirmation prompt.
     return [npx,"--yes","wrangler"],"npx-auto-confirm"
 
-def deploy_controller(worker,backup_root):
-    backup_and_stage_controller(worker,backup_root)
-    wrangler,source=resolve_wrangler(worker)
-    step("Wrangler command resolved",True,source=source,command=" ".join(wrangler))
-    # The release source and package have already passed deterministic CI gates.
-    # A separate Wrangler dry-run proved redundant and can stall on npm/tool startup;
-    # actual deployment remains safely before either firmware mutation.
-    run_cmd(wrangler+["deploy"],worker,600)
-    REPORT["cloudflareDeployOutputTail"]="stdout streamed live to Terminal"
-    url=CONTROLLER_URL+"?release=HBNF_PREPHASE2_FINAL_V4_FIX2_20260927&ts="+str(int(time.time()))
+def live_controller_marker_status():
+    url=CONTROLLER_URL+"?release=HBNF_PREPHASE2_FINAL_V4_FIX3_20260927&ts="+str(int(time.time()))
     req=urllib.request.Request(url,headers={
         "Cache-Control":"no-cache",
         "User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/136 Safari/537.36",
@@ -210,41 +202,87 @@ def deploy_controller(worker,backup_root):
         with urllib.request.urlopen(req,timeout=20) as r:
             html=r.read().decode("utf-8","replace")
             status=getattr(r,"status",200)
-        if status!=200:
-            raise RuntimeError(f"Unexpected live controller HTTP status {status}. Nothing was flashed.")
-        if BUILD_MARKER not in html:
-            raise RuntimeError("Cloudflare returned the controller page, but the exact build marker did not verify. Nothing was flashed.")
-        step("final controller Cloudflare deploy + live marker",True,worker=str(worker),httpStatus=status)
+        return BUILD_MARKER in html,status
     except urllib.error.HTTPError as e:
-        if e.code not in (401,403):
-            raise
-        # Cloudflare may intentionally block non-browser verification even after a successful
-        # Wrangler asset publish. At this point package bytes, staged controller identity,
-        # Wrangler exit status, and the production deploy itself have all passed.
+        if e.code in (401,403): return None,e.code
+        raise
+
+def deploy_controller(worker,backup_root):
+    already,status=live_controller_marker_status()
+    if already is True:
+        step("final controller already live + exact marker",True,httpStatus=status)
+        return
+    backup_and_stage_controller(worker,backup_root)
+    wrangler,source=resolve_wrangler(worker)
+    step("Wrangler command resolved",True,source=source,command=" ".join(wrangler))
+    run_cmd(wrangler+["deploy"],worker,600)
+    REPORT["cloudflareDeployOutputTail"]="stdout streamed live to Terminal"
+    verified,status=live_controller_marker_status()
+    if verified is True:
+        step("final controller Cloudflare deploy + live marker",True,worker=str(worker),httpStatus=status)
+        return
+    if verified is None and status in (401,403):
         REPORT["liveControllerVerification"]={
             "status":"BLOCKED_BY_CLOUDFLARE",
-            "httpStatus":e.code,
+            "httpStatus":status,
             "deployVerifiedBy":"wrangler-success + exact staged package identity"
         }
-        step("final controller Cloudflare deploy",True,worker=str(worker),liveHttpVerification=f"blocked HTTP {e.code}; non-fatal")
+        step("final controller Cloudflare deploy",True,worker=str(worker),liveHttpVerification=f"blocked HTTP {status}; non-fatal")
+        return
+    raise RuntimeError("Cloudflare returned the controller page, but the exact build marker did not verify. Nothing was flashed.")
+
 
 def curl_ota(ip,firmware):
     curl=shutil.which("curl") or "/usr/bin/curl"
     if not pathlib.Path(curl).exists(): raise RuntimeError("curl not available")
     cmd=[curl,"-f","-sS","--connect-timeout","5","--max-time","180","-F",f"update=@{firmware};type=application/octet-stream",f"http://{ip}/update"]
     p=subprocess.run(cmd,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=200)
-    if p.returncode!=0: raise RuntimeError(f"OTA upload failed for {ip}: {p.stdout[-800:]}")
-    return p.stdout
+    result={"returnCode":p.returncode,"output":p.stdout[-2000:]}
+    if p.returncode==0:
+        result["transport"]="http-complete"
+        return result
+    # WLED commonly reboots immediately after accepting OTA, which can tear down the
+    # HTTP socket before curl receives the final response. Treat only these connection-
+    # termination codes as indeterminate, then decide success exclusively from runtime identity.
+    if p.returncode in (52,55,56):
+        result["transport"]="connection-ended-during-possible-reboot"
+        say(f"OTA connection ended while {ip} may be rebooting; waiting for verified runtime identity…")
+        return result
+    raise RuntimeError(f"OTA upload transport failed for {ip} (curl {p.returncode}): {p.stdout[-800:]}")
 
-def wait_state(ip,timeout=100):
-    deadline=time.time()+timeout; last=None
+def wait_for_final_runtime(role,ip,timeout=160):
+    deadline=time.time()+timeout; last=None; saw_unreachable=False; polls=0
+    time.sleep(3)
+    while time.time()<deadline:
+        polls+=1
+        try:
+            st=http_json(ip,"/json/state",2.0)
+            ok,diag=exact_runtime_ok(role,st)
+            last=diag
+            if ok:
+                return st,{"sawUnreachable":saw_unreachable,"polls":polls,"last":diag}
+        except Exception as e:
+            saw_unreachable=True
+            last={"unreachable":f"{type(e).__name__}: {e}"}
+        time.sleep(2)
+    raise RuntimeError(f"{role} never reached verified V4 identity after OTA; sawUnreachable={saw_unreachable}; last={last}")
+
+def wait_for_baseline_runtime(role,ip,accepted_aux_safe=False,timeout=140):
+    deadline=time.time()+timeout; last=None; saw_unreachable=False
+    time.sleep(3)
     while time.time()<deadline:
         try:
             st=http_json(ip,"/json/state",2.0)
-            if isinstance(st,dict): return st
-        except Exception as e: last=e
+            wow=st.get("HBNFWOW" if role=="matrix" else "HBNFAUX")
+            last=wow if isinstance(wow,dict) else {"missingRuntime":True}
+            if baseline_ok(role,st,accepted_aux_safe=accepted_aux_safe):
+                return st
+        except Exception as e:
+            saw_unreachable=True
+            last={"unreachable":f"{type(e).__name__}: {e}"}
         time.sleep(2)
-    raise RuntimeError(f"Device {ip} did not return after OTA: {last}")
+    raise RuntimeError(f"{role} rollback never reached verified baseline; sawUnreachable={saw_unreachable}; last={last}")
+
 
 def exact_runtime_ok(role,state):
     wow=state.get("HBNFWOW" if role=="matrix" else "HBNFAUX")
@@ -271,23 +309,57 @@ def rollback(role,ip):
     for i,fw in enumerate(candidates):
         try:
             say(f"Attempting guarded {role.upper()} rollback with {fw.name}…")
-            ota_ready(ip); curl_ota(ip,fw); st=wait_state(ip,100)
-            if baseline_ok(role,st,accepted_aux_safe=(role=="aux" and i==1)):
-                step(f"{role} automatic rollback",True,firmware=fw.name); return
-        except Exception as e: say(f"Rollback candidate failed: {e}")
+            ota_ready(ip)
+            transport=curl_ota(ip,fw)
+            REPORT.setdefault("rollbackTransports",{}).setdefault(role,[]).append({"firmware":fw.name,**transport})
+            wait_for_baseline_runtime(role,ip,accepted_aux_safe=(role=="aux" and i==1),timeout=140)
+            step(f"{role} automatic rollback",True,firmware=fw.name)
+            return
+        except Exception as e:
+            say(f"Rollback candidate failed: {e}")
     step(f"{role} automatic rollback",False)
 
 def promote(role,ip,firmware):
+    # A prior attempt may have completed its reboot after the installer exited.
+    try:
+        current=http_json(ip,"/json/state",3.0)
+        already,diag=exact_runtime_ok(role,current)
+        if already:
+            step(f"{role} already V4 — OTA skipped",True,ip=ip,diagnostics=diag)
+            return current
+    except Exception:
+        pass
+
     say(f"Promoting {role.upper()} at {ip}…")
     try:
-        ota_ready(ip); response=curl_ota(ip,firmware)
-        REPORT.setdefault("otaResponses",{})[role]=response[-2000:]
-        st=wait_state(ip,110); ok,diag=exact_runtime_ok(role,st)
-        if not ok: raise RuntimeError(f"{role} returned but V4 runtime identity failed: {diag}")
-        step(f"{role} V4 OTA + runtime verification",True,ip=ip,diagnostics=diag)
+        ota_ready(ip)
+        transport=curl_ota(ip,firmware)
+        REPORT.setdefault("otaTransports",{})[role]=transport
+        st,settle=wait_for_final_runtime(role,ip,160)
+        ok,diag=exact_runtime_ok(role,st)
+        if not ok:
+            raise RuntimeError(f"{role} settled without verified V4 identity: {diag}")
+        step(f"{role} V4 OTA + runtime verification",True,ip=ip,diagnostics=diag,settle=settle)
         return st
-    except Exception:
-        rollback(role,ip); raise
+    except Exception as primary:
+        # Never roll back a device that is either already successfully V4 or still on its
+        # known-good baseline. This prevents a second OTA from colliding with a delayed reboot.
+        try:
+            st=http_json(ip,"/json/state",3.0)
+            ok,diag=exact_runtime_ok(role,st)
+            if ok:
+                step(f"{role} V4 verified during recovery",True,ip=ip,diagnostics=diag)
+                return st
+            if baseline_ok(role,st):
+                step(f"{role} baseline intact — rollback not required",True,ip=ip)
+                raise primary
+        except RuntimeError:
+            raise
+        except Exception:
+            pass
+        rollback(role,ip)
+        raise primary
+
 
 def save_report(backup_root,success,error=None):
     REPORT["finishedAt"]=time.strftime("%Y-%m-%dT%H:%M:%S%z")
