@@ -61,6 +61,7 @@ function EventCard({event,today}:{event:PublicEvent;today:string}) {
   const resultLabel = event.results_url ? resultsLinkLabel(event.results_url) : '';
   const detailHref=`${eventDetailPath(event)}?return=${encodeURIComponent(currentEventsPath())}`;
   const hbnfEvent=isHbnfEvent(event);
+  const canShowOfficialInfo=Boolean(event.official_url&&!hbnfEvent&&event.official_url!==event.registration_url&&event.official_url!==event.results_url);
   return <article className={`event-card ${effectiveStatus==='canceled'?'is-canceled':''}`}>
     <div className="event-date-block"><strong>{eventDateRange(event.start_date,event.end_date)}</strong><span>{event.county?`${event.county} County`:'Southern California'}</span></div>
     <div className="event-main">
@@ -71,7 +72,7 @@ function EventCard({event,today}:{event:PublicEvent;today:string}) {
       {stale?<p className="stale-note">Verification is older than 14 days; confirm details before traveling.</p>:null}
       {event.top_results?.length?<div className="results-block"><div className="results-title">Results · {eventTitle(event.top_results[0]?.division_code??'')}</div><ol>{event.top_results.map((r)=><li key={`${r.division_code}-${r.place}-${r.player_name}`}><span>{r.place}. {r.player_name}</span><strong>{resultValue(r)}</strong></li>)}</ol></div>:null}
     </div>
-    <div className="event-actions">{canShowRegistration?<a className="button primary" href={event.registration_url!} target="_blank" rel="noreferrer" aria-label={`Registration for ${event.name} (opens in new tab)`}>Registration</a>:null}<a className="button ghost" href={detailHref} aria-label={`View details for ${event.name}`}>Details</a>{canAddCalendar?<button type="button" className="button ghost" onClick={()=>downloadEventCalendar(event)} aria-label={`Add ${event.name} to calendar`}>Add to Calendar</button>:null}{event.top_results?.length?<a className="button ghost" href={`${detailHref}#results`}>Full Results</a>:null}{event.results_url?<a className="button ghost" href={event.results_url} target="_blank" rel="noreferrer" aria-label={`${resultLabel} for ${event.name} (opens in new tab)`}>{resultLabel}</a>:null}</div>
+    <div className="event-actions">{canShowRegistration?<a className="button primary" href={event.registration_url!} target="_blank" rel="noreferrer" aria-label={`Registration for ${event.name} (opens in new tab)`}>Registration</a>:null}{canShowOfficialInfo?<a className="button ghost" href={event.official_url!} target="_blank" rel="noreferrer" aria-label={`Official info for ${event.name} (opens in new tab)`}>Official Info ↗</a>:null}<a className="button ghost" href={detailHref} aria-label={`View details for ${event.name}`}>Details</a>{canAddCalendar?<button type="button" className="button ghost" onClick={()=>downloadEventCalendar(event)} aria-label={`Add ${event.name} to calendar`}>Add to Calendar</button>:null}{event.top_results?.length?<a className="button ghost" href={`${detailHref}#results`}>Full Results</a>:null}{event.results_url?<a className="button ghost" href={event.results_url} target="_blank" rel="noreferrer" aria-label={`${resultLabel} for ${event.name} (opens in new tab)`}>{resultLabel}</a>:null}</div>
   </article>;
 }
 
