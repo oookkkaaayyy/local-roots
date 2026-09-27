@@ -54,7 +54,7 @@ def sha256(path):
 
 def load_manifest():
     data=json.loads(MANIFEST.read_text())
-    if data.get("packageId")!="HBNF_PREPHASE2_FINAL_V4_20260927":
+    if data.get("packageId")!="HBNF_PREPHASE2_FINAL_V4_FIX1_20260927":
         raise RuntimeError("Unexpected package identity")
     return data
 
@@ -200,7 +200,7 @@ def deploy_controller(worker,backup_root):
     # actual deployment remains safely before either firmware mutation.
     run_cmd(wrangler+["deploy"],worker,600)
     REPORT["cloudflareDeployOutputTail"]="stdout streamed live to Terminal"
-    url=CONTROLLER_URL+"?release=HBNF_PREPHASE2_FINAL_V4_20260927&ts="+str(int(time.time()))
+    url=CONTROLLER_URL+"?release=HBNF_PREPHASE2_FINAL_V4_FIX1_20260927&ts="+str(int(time.time()))
     req=urllib.request.Request(url,headers={"Cache-Control":"no-cache"})
     with urllib.request.urlopen(req,timeout=20) as r: html=r.read().decode("utf-8","replace")
     if BUILD_MARKER not in html: raise RuntimeError("Cloudflare deployed, but live controller build marker did not verify. Nothing was flashed.")
