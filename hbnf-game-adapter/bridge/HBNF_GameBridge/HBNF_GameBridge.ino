@@ -49,6 +49,16 @@ bool matrixIdentityVerified = false;
 bool guestPlayEnabled = true;
 String playPassword;
 String cartDeviceToken;
+SemaphoreHandle_t cartProxyMutex = nullptr;
+bool cartJobPending = false;
+bool cartJobBusy = false;
+uint8_t cartJobClient = 0;
+String cartJobType;
+String cartJobPayload;
+bool cartResultReady = false;
+uint8_t cartResultClient = 0;
+bool cartResultOk = false;
+String cartResultDetail;
 
 bool macEmpty(const uint8_t mac[6]) {
   for (int i = 0; i < 6; ++i) if (mac[i] != 0) return false;
@@ -273,6 +283,76 @@ bool guestCartCommand(const String& type, const String& payload, String& error) 
   return false;
 }
 
+
+bool queueCartProxy(uint8_t client, const String& type, const String& payload) {
+  if (!cartProxyMutex) return false;
+  if (xSemaphoreTake(cartProxyMutex, pdMS_TO_TICKS(20)) != pdTRUE) return false;
+  if (cartJobPending || cartJobBusy) {
+    xSemaphoreGive(cartProxyMutex);
+    return false;
+  }
+  cartJobClient = client;
+  cartJobType = type;
+  cartJobPayload = payload;
+  cartJobPending = true;
+  xSemaphoreGive(cartProxyMutex);
+  return true;
+}
+
+void cartProxyWorker(void*) {
+  for (;;) {
+    bool have = false;
+    uint8_t client = 0;
+    String type, payload;
+    if (cartProxyMutex && xSemaphoreTake(cartProxyMutex, pdMS_TO_TICKS(20)) == pdTRUE) {
+      if (cartJobPending && !cartJobBusy) {
+        cartJobBusy = true;
+        cartJobPending = false;
+        client = cartJobClient;
+        type = cartJobType;
+        payload = cartJobPayload;
+        have = true;
+      }
+      xSemaphoreGive(cartProxyMutex);
+    }
+    if (!have) {
+      vTaskDelay(pdMS_TO_TICKS(8));
+      continue;
+    }
+
+    String error;
+    const bool ok = guestCartCommand(type, payload, error);
+
+    if (xSemaphoreTake(cartProxyMutex, portMAX_DELAY) == pdTRUE) {
+      cartResultClient = client;
+      cartResultOk = ok;
+      cartResultDetail = ok ? type : error;
+      cartResultReady = true;
+      cartJobBusy = false;
+      xSemaphoreGive(cartProxyMutex);
+    }
+  }
+}
+
+void pumpCartProxyResult() {
+  if (!cartProxyMutex) return;
+  bool ready = false, ok = false;
+  uint8_t client = 0;
+  String detail;
+  if (xSemaphoreTake(cartProxyMutex, 0) == pdTRUE) {
+    if (cartResultReady) {
+      ready = true;
+      ok = cartResultOk;
+      client = cartResultClient;
+      detail = cartResultDetail;
+      cartResultReady = false;
+      cartResultDetail = "";
+    }
+    xSemaphoreGive(cartProxyMutex);
+  }
+  if (ready) gameWs.sendTXT(client, String(ok ? "CARTOK," : "CARTERR,") + detail);
+}
+
 bool isHostClient(uint8_t num) {
   IPAddress ip = gameWs.remoteIP(num);
   return ip[0] == 192 && ip[1] == 168 && ip[2] == 8;
@@ -352,9 +432,8 @@ void onGameWsEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length) 
     } else {
       gameWs.sendTXT(num,"CARTERR,BAD_COMMAND"); return;
     }
-    String error;
-    if (guestCartCommand(type,payload,error)) gameWs.sendTXT(num,String("CARTOK,")+type);
-    else gameWs.sendTXT(num,String("CARTERR,")+error);
+    if (!queueCartProxy(num,type,payload)) gameWs.sendTXT(num,"CARTERR,BUSY");
+    else gameWs.sendTXT(num,"CARTQUEUED");
     return;
   }
   if (msg == "RELEASE") {
@@ -567,6 +646,11 @@ void setup() {
   Serial.setTimeout(250);
   prefs.begin("hbnfgame", false);
   cartDeviceToken=prefs.getString("cart_token","");
+  cartProxyMutex=xSemaphoreCreateMutex();
+  if (!cartProxyMutex) Serial.println("HBNF_CART_PROXY_MUTEX=FAIL");
+  else if (xTaskCreatePinnedToCore(cartProxyWorker,"hbnf-cart-proxy",12288,nullptr,1,nullptr,0)!=pdPASS)
+    Serial.println("HBNF_CART_PROXY_TASK=FAIL");
+  else Serial.println("HBNF_CART_PROXY_TASK=PASS");
   startGameWeb();
   udp.begin(kLocalUdpPort);
   BP32.setup(&onConnectedController, &onDisconnectedController);
@@ -580,6 +664,7 @@ void loop() {
   BP32.update();
   gameWeb.handleClient();
   gameWs.loop();
+  pumpCartProxyResult();
   captiveDns.processNextRequest();
   processSerial();
   const uint32_t now = millis();
