@@ -179,7 +179,7 @@ test("events page polish is scoped and HBNF cards expose first-party resources",
   const detail = source("pages/EventDetailPage.tsx");
   const presentation = source("lib/eventPresentation.ts");
   const styles = source("events-enhancements.css");
-  assert.ok(events.includes('<main className="events-page">'));
+  assert.ok(events.includes('<main className={`events-page ${landing?\'events-landing\':\'\'}`}>'));
   assert.ok(events.includes('>Details</a>'));
   assert.ok(events.includes("{filtered.length} shown · {viewEvents.length} {view==='upcoming'?'upcoming':'past'}"));
   assert.ok(events.includes('className="event-resource-links"'));
