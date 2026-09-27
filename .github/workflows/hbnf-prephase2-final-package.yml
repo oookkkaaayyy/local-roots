@@ -88,7 +88,8 @@ jobs:
           cp hbnf-final-controller/hbnf-cart.js "$ROOT/controller/hbnf-cart.js"
           cp hbnf-final-controller/hbnf-cart-semantic.mjs "$ROOT/controller/hbnf-cart-semantic.mjs"
           cp hbnf-final-controller/hbnf-cart-manifest.webmanifest "$ROOT/controller/hbnf-cart-manifest.webmanifest"
-          chmod +x "$ROOT/INSTALL_FINAL_PREPHASE2.command" "$ROOT/install_final_prephase2.py"\n          python -m py_compile "$ROOT/install_final_prephase2.py"
+          chmod +x "$ROOT/INSTALL_FINAL_PREPHASE2.command" "$ROOT/install_final_prephase2.py"
+          python -m py_compile "$ROOT/install_final_prephase2.py"
 
           grep -q 'hbnf-cart-final-v5-semantic-frame-lock' "$ROOT/controller/hbnf-cart.html"
           grep -q 'HBNF_CART_FINAL_V5_SEMANTIC_FRAME_LOCK' "$ROOT/controller/hbnf-cart.js"
