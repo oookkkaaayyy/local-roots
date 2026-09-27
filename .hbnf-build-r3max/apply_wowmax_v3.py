@@ -16,10 +16,10 @@ def once(old:str,new:str,label:str):
         raise RuntimeError(f"{label}: expected 1 occurrence, got {n}")
     s=s.replace(old,new,1)
 
-once("#include <ANIMartRIX.h>","#define ANIMartRIX_NO_SERPENTINE\n#include <ANIMartRIX.h>","no-serpentine")
+once("#include <ANIMartRIX.h>","#define ANIMartRIX_NO_SERPENTINE\n#include <ANIMartRIX.h>\n#include \"hbnf_generative_v4.h\"\n#include \"hbnf_projection_link_v1.h\"","no-serpentine")
 once("if (SEGENV.call == 0) {","if ((SEGENV.call == 0) || (SEGMENT.virtualWidth() != num_x) || (SEGMENT.virtualHeight() != num_y)) {","dimension-reinit")
 once("hbnfAudio.apply(speedFactor, millis())",
-     "(hbnfAudio.setScene(SEGMENT.mode), hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, SEGMENT.custom1, SEGMENT.custom2, SEGMENT.virtualWidth(), SEGMENT.virtualHeight()))",
+     "(hbnfAudio.setScene(SEGMENT.mode), hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, SEGMENT.custom1, SEGMENT.custom2, SEGMENT.virtualWidth(), SEGMENT.virtualHeight(), SEGMENT.custom3, (uint8_t)(SEGMENT.offset >> 8)))",
      "audio-begin-frame")
 
 public_anchor="\tpublic:\n\tvoid initEffect() {"
@@ -38,19 +38,34 @@ accessors="""\tpublic:
 \tvoid initEffect() {"""
 once(public_anchor,accessors,"diagnostic-accessors")
 
-pixel_new="""\tvoid setPixelColor(int x, int y, rgb pixel) {
+pixel_new="""\tvoid hbnfVariantXY(int x,int y,int &tx,int &ty) const {
+\t\tconst int w=SEGMENT.virtualWidth()?SEGMENT.virtualWidth():1;
+\t\tconst int h=SEGMENT.virtualHeight()?SEGMENT.virtualHeight():1;
+\t\tconst uint8_t t=(uint8_t)(SEGMENT.custom3&7u);
+\t\tconst int sx=(int)(SEGMENT.offset%w), sy=(int)((SEGMENT.offset>>5)%h);
+\t\ttx=x; ty=y;
+\t\tif(t==1||t==3||t==6) tx=w-1-tx;
+\t\tif(t==2||t==3||t==7) ty=h-1-ty;
+\t\tif(t>=4) tx=(tx+sx)%w;
+\t\tif(t==5||t==6) ty=(ty+sy)%h;
+\t\tif(t==7) tx=(tx+(sx>>1)+1)%w;
+\t}
+\tvoid setPixelColor(int x, int y, rgb pixel) {
 \t\tuint8_t r=pixel.red,g=pixel.green,b=pixel.blue;
 \t\thbnfAudio.modulate(x,y,r,g,b);
 \t\tif (SEGMENT.check2) { r=gamma8(r); g=gamma8(g); b=gamma8(b); }
-\t\tSEGMENT.setPixelColorXY(x, y, CRGB(r,g,b));
+\t\tint tx=x,ty=y; hbnfVariantXY(x,y,tx,ty);
+\t\tSEGMENT.setPixelColorXY(tx, ty, CRGB(r,g,b));
 \t}
 \tvoid setPixelColor(int index, rgb pixel) {
 \t\tuint8_t r=pixel.red,g=pixel.green,b=pixel.blue;
-\t\tconst int w=SEGMENT.virtualWidth();
-\t\tconst int x=w?(index%w):0, y=w?(index/w):0;
+\t\tconst int w=SEGMENT.virtualWidth()?SEGMENT.virtualWidth():1;
+\t\tconst int x=index%w, y=index/w;
 \t\thbnfAudio.modulate(x,y,r,g,b);
 \t\tif (SEGMENT.check2) { r=gamma8(r); g=gamma8(g); b=gamma8(b); }
-\t\tSEGMENT.setPixelColor(index, CRGB(r,g,b));
+\t\tint tx=x,ty=y; hbnfVariantXY(x,y,tx,ty);
+\t\tconst int out=ty*w+tx;
+\t\tif(out>=0 && out<SEGMENT.virtualLength()) SEGMENT.setPixelColor(out, CRGB(r,g,b));
 \t}"""
 pat=r"\tvoid setPixelColor\(int x, int y, rgb pixel\) \{.*?\n\s*\}\n\s*void setPixelColor\(int index, rgb pixel\) \{.*?\n\s*\}"
 s,n=re.subn(pat,pixel_new,s,count=1,flags=re.S)
