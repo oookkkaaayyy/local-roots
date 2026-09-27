@@ -71,6 +71,12 @@ def main():
     password=getpass.getpass("Cart Wi-Fi password (stored only in ESP32 NVS): ")
     if not password:
         raise SystemExit("Password cannot be blank.")
+    fallback_ssid=input("Fallback hotspot SSID [leave blank to skip]: ").strip()
+    fallback_password=""
+    if fallback_ssid:
+        fallback_password=getpass.getpass("Fallback hotspot password (stored only in ESP32 NVS): ")
+        if not fallback_password:
+            raise SystemExit("Fallback password cannot be blank when fallback SSID is set.")
     with serial.Serial(port,115200,timeout=.35) as ser:
         ser.dtr=False; ser.rts=False
         time.sleep(2.0)
@@ -80,12 +86,25 @@ def main():
         send(ser,f"WIFI_PASS {password}")
         password=""  # release the Python reference immediately
         time.sleep(.15)
+        if fallback_ssid:
+            send(ser,f"FALLBACK_SSID {fallback_ssid}")
+            time.sleep(.15)
+            send(ser,f"FALLBACK_PASS {fallback_password}")
+            fallback_password=""
+            time.sleep(.15)
+        else:
+            send(ser,"CLEAR_FALLBACK")
+            time.sleep(.15)
         send(ser,"WIFI_CONNECT")
-        hit,_=read_until(ser,["HBNF_WIFI=ONLINE"],15)
+        hit,wifi_lines=read_until(ser,["HBNF_WIFI=ONLINE"],18)
         if not hit:
             send(ser,"STATUS")
             read_until(ser,["HBNF_STATUS"],3)
             raise SystemExit("WIFI_PROVISION=FAIL: bridge did not report online.")
+        if any("TARGET=FALLBACK" in line for line in wifi_lines):
+            print("HBNF_WIFI_PRIMARY=UNAVAILABLE_FALLBACK_ACTIVE")
+        else:
+            print("HBNF_WIFI_PRIMARY=PASS")
 
         if cart_token:
             send(ser,"CART_TOKEN "+cart_token)
