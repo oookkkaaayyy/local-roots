@@ -75,6 +75,78 @@ static void pongGate() {
   assert(lastTotal>0);
 }
 
+
+static void breakoutGate() {
+  BreakoutGame g;
+  Framebuffer f;
+  std::mt19937 r(0xB8EA4u);
+  for (int i=0;i<120000;++i) {
+    PadState p=randomPad(r);
+    g.update(p,1u+(r()%50u));
+    g.render(f);
+    assert(f.rejectedWrites==0);
+    assert(g.lives()<=3);
+    if(g.gameOver()){PadState restart;restart.a=true;g.update(restart,16);}
+  }
+}
+
+static void tronGate() {
+  TronGame g;
+  Framebuffer f;
+  std::mt19937 r(0x7A0A11u);
+  for (int i=0;i<100000;++i) {
+    PadState a=randomPad(r),b=randomPad(r);
+    g.update(a,b,1u+(r()%100u));
+    g.render(f);
+    assert(f.rejectedWrites==0);
+    if(!g.alive1()||!g.alive2()){PadState restart;restart.a=true;g.update(restart,b,16);}
+  }
+}
+
+static void tetrisGate() {
+  TetrisGame g;
+  Framebuffer f;
+  std::mt19937 r(0x7E7715u);
+  for (int i=0;i<160000;++i) {
+    PadState p=randomPad(r);
+    g.update(p,1u+(r()%80u));
+    g.render(f);
+    assert(f.rejectedWrites==0);
+    if(g.gameOver()){PadState restart;restart.a=true;g.update(restart,16);}
+  }
+}
+
+static void froggerGate() {
+  FroggerGame g;
+  Framebuffer f;
+  std::mt19937 r(0xF8066Eu);
+  for (int i=0;i<120000;++i) {
+    PadState p=randomPad(r);
+    g.update(p,1u+(r()%80u));
+    g.render(f);
+    assert(f.rejectedWrites==0);
+    assert(g.lives()<=3);
+    if(g.gameOver()){PadState restart;restart.a=true;g.update(restart,16);}
+  }
+}
+
+static void menuSixGameGate() {
+  GameManager g;
+  PadState p1,p2;
+  p1.connected=p2.connected=true;
+
+  // Select each of the six menu slots through reset + deterministic navigation.
+  for(int target=0;target<6;++target){
+    g.reset();
+    const int row=target/2,col=target%2;
+    for(int r=0;r<row;++r){p1.down=true;g.update(p1,p2,16);p1.down=false;g.update(p1,p2,16);}
+    if(col){p1.right=true;g.update(p1,p2,16);p1.right=false;g.update(p1,p2,16);}
+    assert(g.menuIndex()==target);
+    p1.a=true;g.update(p1,p2,16);p1.a=false;
+    assert(int(g.mode())==target+1);
+  }
+}
+
 static uint64_t scriptedChecksum() {
   GameManager g;
   Framebuffer f;
@@ -108,7 +180,7 @@ static void managerFuzzGate() {
     g.render(f);
     assert(f.rejectedWrites==0);
     assert(int(g.mode())>=int(GameManager::Mode::Menu));
-    assert(int(g.mode())<=int(GameManager::Mode::Pong));
+    assert(int(g.mode())<=int(GameManager::Mode::Frogger));
   }
 }
 
@@ -131,11 +203,16 @@ int main() {
   framebufferGate();
   snakeGate();
   pongGate();
+  breakoutGate();
+  tronGate();
+  tetrisGate();
+  froggerGate();
+  menuSixGameGate();
   exitHoldGate();
   managerFuzzGate();
   const uint64_t a=scriptedChecksum();
   const uint64_t b=scriptedChecksum();
   assert(a==b);
-  std::printf("PASS: HBNF game core host gates; deterministic checksum=%llu\n",
+  std::printf("PASS: HBNF six-game core host gates; deterministic checksum=%llu\n",
               static_cast<unsigned long long>(a));
 }
