@@ -127,7 +127,19 @@ Deno.serve(async(req:Request)=>{
   if(pc!==null)seg.ix=pc;
   if(sc!==null)seg.c1=sc;
   const mic=Math.max(64,Math.min(255,Math.round(Number(tune.micSensitivity??255))));
-  await publish({on:true,AudioReactive:{inputLevel:mic},seg});
+  const speedCode=speedSlider(p.speedBias), amount=vibeAmount(p.vibe);
+  await publish({
+    on:true,
+    AudioReactive:{inputLevel:mic},
+    HBNFWOW:{tuning:{
+      speedEnabled:true,speed:speedCode,
+      profileEnabled:pc!==null,profile:pc??96,
+      styleEnabled:sc!==null,style:sc??16,
+      amountEnabled:true,amount,
+      micEnabled:true,mic
+    }},
+    seg
+  });
   await pause(120);
   status=await lower({action:"status"});
   if(status?.online!==true||status?.control?.mode==="off")throw new Error("matrix not online/visible after projection");
