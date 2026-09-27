@@ -1,0 +1,56 @@
+name: HBNF Phase 2 Game Bridge Hardening
+on:
+  push:
+    branches:
+      - hbnf-phase2-game-router-hardening-20260927
+  workflow_dispatch:
+
+jobs:
+  game-bridge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unit tests
+        run: |
+          set -euo pipefail
+          for src in             hbnf-game-adapter/test_game_core.cpp             hbnf-game-adapter/test_ddp_frame.cpp             hbnf-game-adapter/test_game_lease_guard.cpp             hbnf-game-adapter/test_remote_input.cpp             hbnf-game-adapter/test_session_lifecycle.cpp; do
+            out="/tmp/$(basename "$src" .cpp)"
+            g++ -std=c++17 -Wall -Wextra -Werror -Ihbnf-game-adapter "$src" -o "$out"
+            "$out"
+          done
+
+      - name: Render-loop nonblocking contract
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("hbnf-game-adapter/bridge/HBNF_GameBridge/HBNF_GameBridge.ino")
+          s=p.read_text()
+          loop=s.split("void loop() {",1)[1]
+          assert "sampleMatrix(now)" not in loop, "blocking Matrix HTTP probe still in loop()"
+          assert "pumpMatrixProbe();" in loop
+          assert "matrixProbeWorker" in s
+          assert 'xTaskCreatePinnedToCore(matrixProbeWorker' in s
+          print("HBNF_GAME_RENDER_LOOP_NONBLOCKING=PASS")
+          PY
+
+      - name: Install Arduino CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+          echo "$PWD/bin" >> "$GITHUB_PATH"
+
+      - name: Compile exact ESP32 bridge
+        run: bash scripts/hbnf-game-bridge-build.sh /tmp/hbnf-game-bridge
+
+      - name: Record source identity
+        run: |
+          printf 'source_commit=%s\n' "$GITHUB_SHA" > /tmp/hbnf-game-bridge/HARDENING_BUILD.txt
+          sha256sum /tmp/hbnf-game-bridge/HBNF_GAME_BRIDGE_FACTORY.bin >> /tmp/hbnf-game-bridge/HARDENING_BUILD.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HBNF-GAME-BRIDGE-HARDENED-STAGING
+          path: /tmp/hbnf-game-bridge
+          if-no-files-found: error
+          retention-days: 30
