@@ -84,35 +84,38 @@ class AnimartrixAudioBridge {
 
     // Strong transients use scene-relative geometry instead of one global plus-sign glyph.
     // Existing band analysis, colors, timing, and base ANIMartRIX frame remain authoritative.
-    if(style_!=STYLE_CLEAN && burstLife_){
+    const uint8_t transientHit=max8(impact8_,drop8_);
+    if(style_!=STYLE_CLEAN && transientHit>80){
       const uint8_t dominant=(bass8_>=mid8_&&bass8_>=treble8_)?0:((mid8_>=treble8_)?1:2);
       const uint8_t sceneKey=(sceneId_>=220&&sceneId_<=247)?(uint8_t)(sceneId_-220):sceneId_;
       const uint8_t motif=(uint8_t)((sceneKey + dominant*3u)&3u);
+      const uint8_t life=max8(transientHit,burstLife_);
       uint8_t transientMix=0;
       Rgb8 transientAccent=dominant==0?Rgb8(255,86,34):(dominant==1?Rgb8(222,255,92):Rgb8(220,245,255));
 
       if(motif==0){
-        // Radial shell: reads as a thump/bloom.
-        const int radius2=(burstRadius16_*burstRadius16_)>>6;
+        // Radial shell: reads as a thump/bloom. Strong hits expand; moderate hits stay compact.
+        const uint16_t radius16=burstLife_?burstRadius16_:8;
+        const int radius2=(radius16*radius16)>>6;
         int delta=d2-radius2; if(delta<0)delta=-delta;
-        const int band=8+(int)(burstLife_>>5);
-        if(delta<band) transientMix=scaledMix(burstLife_,96);
+        const int band=8+(int)(life>>5);
+        if(delta<band) transientMix=scaledMix(life,96);
       } else if(motif==1){
         // Oblique ribbon: a short scene-dependent morph/sweep.
         const int line=(sceneKey&1)?(dx2+2*dy2):(2*dx2-dy2);
-        const int ribbon=5+(int)(burstLife_>>6);
-        if(line>-ribbon&&line<ribbon) transientMix=scaledMix(burstLife_,78);
+        const int ribbon=5+(int)(life>>6);
+        if(line>-ribbon&&line<ribbon) transientMix=scaledMix(life,78);
       } else if(motif==2){
         // Edge pressure: the frame breathes instead of flashing a center symbol.
         const int ex=x<(int)width_-1-x?x:(int)width_-1-x;
         const int ey=y<(int)height_-1-y?y:(int)height_-1-y;
         const int edge=ex<ey?ex:ey;
-        const int depth=1+(int)(burstLife_>>6);
-        if(edge<=depth) transientMix=scaledMix(burstLife_,84);
+        const int depth=1+(int)(life>>6);
+        if(edge<=depth) transientMix=scaledMix(life,84);
       } else {
         // Sparse scene-seeded detail: a treble-friendly dance texture.
         const uint8_t gate=(uint8_t)((x*37+y*53+sceneKey*19+(int)(frame_&255u)*7)&255);
-        if(gate<(uint8_t)(burstLife_>>2)) transientMix=scaledMix(burstLife_,90);
+        if(gate<(uint8_t)(life>>2)) transientMix=scaledMix(life,90);
       }
 
       if(transientMix){
