@@ -7,7 +7,7 @@ on:
 jobs:
   visual-lab-qa:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - name: UI syntax
@@ -19,3 +19,15 @@ jobs:
           grep -q 'hardwareWrites:false' supabase/functions/hbnf-visual-lab-staging/index.ts
           ! grep -q 'hbnf_cart_commit_command_bridge' supabase/functions/hbnf-visual-lab-staging/index.ts
           ! grep -q 'hbnf-cart-reconcile' supabase/functions/hbnf-visual-lab-staging/index.ts
+      - name: Install Arduino CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+          echo "$PWD/bin" >> "$GITHUB_PATH"
+      - name: Compile exact Phase 2 game bridge with Visual Lab
+        run: bash scripts/hbnf-game-bridge-build.sh /tmp/hbnf-game-bridge
+      - name: Verify Visual Lab bridge contract
+        run: |
+          grep -q 'VISUAL_SUBSCRIBE' hbnf-game-adapter/bridge/HBNF_GameBridge/HBNF_GameBridge.ino
+          grep -q 'projectionRxActive' hbnf-game-adapter/bridge/HBNF_GameBridge/HBNF_GameBridge.ino
+          grep -q 'matrixPreviewWs' hbnf-game-adapter/bridge/HBNF_GameBridge/HBNF_GameBridge.ino
+          grep -q 'HBNF_VISUAL_LAB_PAGE' hbnf-game-adapter/bridge/HBNF_GameBridge/visual_lab_page.h
