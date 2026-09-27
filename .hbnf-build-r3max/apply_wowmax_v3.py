@@ -16,11 +16,15 @@ def once(old:str,new:str,label:str):
         raise RuntimeError(f"{label}: expected 1 occurrence, got {n}")
     s=s.replace(old,new,1)
 
-once("#include <ANIMartRIX.h>","#define ANIMartRIX_NO_SERPENTINE\n#include <ANIMartRIX.h>","no-serpentine")
+once("#include <ANIMartRIX.h>","#define ANIMartRIX_NO_SERPENTINE\n#include <ANIMartRIX.h>\nextern void hbnfSetAudioInputLevel(uint8_t level);","no-serpentine")
 once("if (SEGENV.call == 0) {","if ((SEGENV.call == 0) || (SEGMENT.virtualWidth() != num_x) || (SEGMENT.virtualHeight() != num_y)) {","dimension-reinit")
 once("hbnfAudio.apply(speedFactor, millis())",
      "(hbnfAudio.setScene(SEGMENT.mode), hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, SEGMENT.custom1, SEGMENT.custom2, SEGMENT.virtualWidth(), SEGMENT.virtualHeight()))",
      "audio-begin-frame")
+
+once("if (SEGMENT.speed < 128) {","const uint8_t hbnfSpeedCode = hbnf::tuneSpeed(SEGMENT.speed);\\n\\t  if (hbnfSpeedCode < 128) {","global-speed-select")
+once("map(SEGMENT.speed,   0, 127, 1, 10)","map(hbnfSpeedCode,   0, 127, 1, 10)","global-speed-low")
+once("map(SEGMENT.speed, 128, 255, 10, 100)","map(hbnfSpeedCode, 128, 255, 10, 100)","global-speed-high")
 
 public_anchor="\tpublic:\n\tvoid initEffect() {"
 accessors="""\tpublic:
@@ -57,7 +61,27 @@ s,n=re.subn(pat,pixel_new,s,count=1,flags=re.S)
 if n!=1:
     raise RuntimeError(f"pixel-hooks: expected 1 replacement, got {n}")
 
-info_marker="    void addToJsonInfo(JsonObject& root)"
+info_marker="    void readFromJsonState(JsonObject& root) override {
+      JsonObject wow = root["HBNFWOW"];
+      if (wow.isNull()) return;
+      JsonObject tune = wow["tuning"];
+      if (tune.isNull()) return;
+      const auto &cur = hbnf::globalTuneOverride();
+      const bool se = tune["speedEnabled"] | cur.speedEnabled;
+      const uint8_t sp = tune["speed"] | cur.speed;
+      const bool pe = tune["profileEnabled"] | cur.profileEnabled;
+      const uint8_t pr = tune["profile"] | cur.profile;
+      const bool ye = tune["styleEnabled"] | cur.styleEnabled;
+      const uint8_t st = tune["style"] | cur.style;
+      const bool ae = tune["amountEnabled"] | cur.amountEnabled;
+      const uint8_t am = tune["amount"] | cur.amount;
+      const bool me = tune["micEnabled"] | cur.micEnabled;
+      const uint8_t mi = tune["mic"] | cur.mic;
+      hbnf::setGlobalTuneOverride(se,sp,pe,pr,ye,st,ae,am,me,mi);
+      if (me) hbnfSetAudioInputLevel(mi);
+    }
+
+    void addToJsonInfo(JsonObject& root)"
 if s.count(info_marker)!=1:
     raise RuntimeError("addToJsonInfo anchor mismatch")
 telemetry="""    void addToJsonState(JsonObject& root) override {
@@ -65,7 +89,7 @@ telemetry="""    void addToJsonState(JsonObject& root) override {
       if (wow.isNull()) wow = root.createNestedObject("HBNFWOW");
       wow["release"] = "hbnf-wow-r3-max-2026-09-21-v3";
       wow["engine"] = "r3-wow-max";
-      wow["buildWitness"] = "registry28-tempo-lock-v5-colorwifi";
+      wow["buildWitness"] = "registry28-global-tune-v6-colorwifi";
       wow["fxRegistered"] = hbnfFxRegistered;
       wow["fxFailed"] = hbnfFxFailed;
       wow["modeCount"] = strip.getModeCount();
@@ -82,6 +106,13 @@ telemetry="""    void addToJsonState(JsonObject& root) override {
       wow["energy"] = anim.hbnfEnergy();
       wow["impact"] = anim.hbnfImpact();
       wow["drop"] = anim.hbnfDrop();
+      JsonObject tune = wow.createNestedObject("tuning");
+      const auto &gt = hbnf::globalTuneOverride();
+      tune["speedEnabled"] = gt.speedEnabled; tune["speed"] = gt.speed;
+      tune["profileEnabled"] = gt.profileEnabled; tune["profile"] = gt.profile;
+      tune["styleEnabled"] = gt.styleEnabled; tune["style"] = gt.style;
+      tune["amountEnabled"] = gt.amountEnabled; tune["amount"] = gt.amount;
+      tune["micEnabled"] = gt.micEnabled; tune["mic"] = gt.mic;
     }
 
 """
@@ -98,6 +129,8 @@ loop_pat=r"""    void loop\(\) \{
     \}"""
 loop_new="""    void loop() {
       if (strip.isUpdating()) return;
+      const auto &gt = hbnf::globalTuneOverride();
+      if (gt.micEnabled) hbnfSetAudioInputLevel(gt.mic);
       static unsigned long hbnfWifiAssistAt = 0;
       if (WiFi.status() != WL_CONNECTED && (hbnfWifiAssistAt == 0 || millis() - hbnfWifiAssistAt >= 15000UL)) {
         forceReconnect = true;
@@ -108,15 +141,20 @@ loop_new="""    void loop() {
         lastTime = millis();
         if (WLED_MQTT_CONNECTED) {
           char topic[MQTT_MAX_TOPIC_LEN + 16];
-          char payload[480];
+          char payload[768];
           snprintf_P(topic, sizeof(topic), PSTR("%s/wow"), mqttDeviceTopic);
           snprintf_P(payload, sizeof(payload),
-            PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"buildWitness\\\":\\\"registry28-tempo-lock-v5-colorwifi\\\",\\\"fxRegistered\\\":%u,\\\"fxFailed\\\":%u,\\\"modeCount\\\":%u,\\\"fxFirst\\\":%u,\\\"fxLast\\\":%u,\\\"audioActive\\\":%s,\\\"profile\\\":%u,\\\"style\\\":%u,\\\"amount\\\":%u,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u,\\\"pulse\\\":%u,\\\"energy\\\":%u,\\\"impact\\\":%u,\\\"drop\\\":%u}"),
+            PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"buildWitness\\\":\\\"registry28-global-tune-v6-colorwifi\\\",\\\"fxRegistered\\\":%u,\\\"fxFailed\\\":%u,\\\"modeCount\\\":%u,\\\"fxFirst\\\":%u,\\\"fxLast\\\":%u,\\\"audioActive\\\":%s,\\\"profile\\\":%u,\\\"style\\\":%u,\\\"amount\\\":%u,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u,\\\"pulse\\\":%u,\\\"energy\\\":%u,\\\"impact\\\":%u,\\\"drop\\\":%u,\\\"tune\\\":{\\\"se\\\":%s,\\\"s\\\":%u,\\\"pe\\\":%s,\\\"p\\\":%u,\\\"ye\\\":%s,\\\"y\\\":%u,\\\"ae\\\":%s,\\\"a\\\":%u,\\\"me\\\":%s,\\\"m\\\":%u}}"),
             hbnfFxRegistered, hbnfFxFailed, strip.getModeCount(), hbnfFxFirst, hbnfFxLast,
             anim.hbnfActive() ? "true" : "false",
             anim.hbnfProfile(), anim.hbnfStyle(), anim.hbnfAmount(),
             anim.hbnfBass(), anim.hbnfMid(), anim.hbnfTreble(),
-            anim.hbnfPulse(), anim.hbnfEnergy(), anim.hbnfImpact(), anim.hbnfDrop());
+            anim.hbnfPulse(), anim.hbnfEnergy(), anim.hbnfImpact(), anim.hbnfDrop(),
+            gt.speedEnabled ? "true" : "false", gt.speed,
+            gt.profileEnabled ? "true" : "false", gt.profile,
+            gt.styleEnabled ? "true" : "false", gt.style,
+            gt.amountEnabled ? "true" : "false", gt.amount,
+            gt.micEnabled ? "true" : "false", gt.mic);
           mqtt->publish(topic, 0, false, payload);
         }
       }
@@ -195,6 +233,11 @@ p.write_text(s)
 
 ar=root/"usermods/audioreactive/audio_reactive.cpp"
 a=ar.read_text()
+input_anchor='static uint8_t inputLevel = 128;              // UI slider value'
+if a.count(input_anchor)!=1:
+    raise RuntimeError(f"AudioReactive inputLevel anchor: expected 1, got {a.count(input_anchor)}")
+a=a.replace(input_anchor,input_anchor+'\nvoid hbnfSetAudioInputLevel(uint8_t level) { inputLevel = level; }\nuint8_t hbnfGetAudioInputLevel() { return inputLevel; }',1)
+
 old='      usermod["on"] = enabled;'
 if a.count(old)!=1:
     raise RuntimeError(f"AudioReactive state anchor: expected 1, got {a.count(old)}")
@@ -215,6 +258,10 @@ checks=[
     (p,'wow["drop"]'),
     (p,'PSTR("%s/wow")'),
     (p,"mqtt->publish(topic, 0, false, payload)"),
+    (p,"hbnf::tuneSpeed(SEGMENT.speed)"),
+    (p,"readFromJsonState(JsonObject& root)"),
+    (p,"hbnfSetAudioInputLevel(gt.mic)"),
+    (ar,"hbnfSetAudioInputLevel(uint8_t level)"),
     (ar,"usermod[FPSTR(_inputLvl)] = inputLevel"),
 ]
 for path,needle in checks:
