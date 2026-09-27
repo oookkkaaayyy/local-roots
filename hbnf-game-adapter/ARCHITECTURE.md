@@ -29,5 +29,11 @@ Game is a visual lease, not a queue. Current canonical overlays/state are never 
 ## Initial games
 - Snake
 - 2-player Pong
+- Breakout
+- 2-player Tron / Light Cycles
+- Tetris
+- Frogger-style lane crossing
+
+The first release intentionally stops at these six low-complexity 32x16-native games. Additional games remain gated on physical latency/soak acceptance rather than being stacked into the initial release.
 
 The prior games-lab pure game core and DDP encoder are reused byte-for-byte. Expansion does not change the safety boundary.
