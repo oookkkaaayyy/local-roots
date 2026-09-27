@@ -4,7 +4,7 @@ import webpush from "npm:web-push@3.6.7";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-du-device-token",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
@@ -40,6 +40,73 @@ function newPairCode() {
 
 function displayPairCode(code: string) {
   return `${code.slice(0, 5)}-${code.slice(5)}`;
+}
+
+function randomDeviceToken() {
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+type AdminAuth = {
+  userId: string;
+  email: string | null;
+  admin: { user_id: string; display_name: string | null; role: string; active: boolean };
+  mode: "jwt" | "device";
+  deviceId?: string;
+  deviceExpiresAt?: string;
+};
+
+async function resolveAdmin(service: ServiceClient, req: Request): Promise<AdminAuth | null> {
+  const now = new Date();
+  const nowIso = now.toISOString();
+  const deviceToken = String(req.headers.get("x-du-device-token") || "").trim();
+  if (deviceToken.length >= 32 && deviceToken.length <= 256) {
+    const tokenHash = await sha256Hex(deviceToken);
+    const { data: device } = await service.from("du_admin_device_tokens")
+      .select("id,user_id,expires_at")
+      .eq("token_hash", tokenHash)
+      .is("revoked_at", null)
+      .gt("expires_at", nowIso)
+      .maybeSingle();
+    if (device) {
+      const { data: admin } = await service.from("lr_admin_users")
+        .select("user_id,display_name,role,active")
+        .eq("user_id", device.user_id).eq("active", true).maybeSingle();
+      if (admin) {
+        const extendedExpiry = new Date(now.getTime() + 180 * 24 * 60 * 60 * 1000).toISOString();
+        await service.from("du_admin_device_tokens").update({
+          last_used_at: nowIso,
+          expires_at: extendedExpiry,
+        }).eq("id", device.id);
+        return {
+          userId: device.user_id,
+          email: null,
+          admin,
+          mode: "device",
+          deviceId: device.id,
+          deviceExpiresAt: extendedExpiry,
+        };
+      }
+    }
+  }
+
+  const authHeader = req.headers.get("Authorization") || "";
+  if (!authHeader.startsWith("Bearer ")) return null;
+  const token = authHeader.slice(7);
+  const { data: userData, error: userError } = await service.auth.getUser(token);
+  if (userError || !userData.user) return null;
+  const { data: admin } = await service.from("lr_admin_users")
+    .select("user_id,display_name,role,active")
+    .eq("user_id", userId).eq("active", true).maybeSingle();
+  if (!admin) return null;
+  return {
+    userId: userId,
+    email: userData.user.email || null,
+    admin,
+    mode: "jwt",
+  };
 }
 
 async function ensurePushConfig(service: ServiceClient): Promise<PushConfig> {
@@ -124,20 +191,36 @@ Deno.serve(async (req: Request) => {
 
   const url = Deno.env.get("SUPABASE_URL");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  const authHeader = req.headers.get("Authorization") || "";
-  if (!url || !serviceKey || !authHeader.startsWith("Bearer ")) return json({ error: "unauthorized" }, 401);
+  if (!url || !serviceKey) return json({ error: "server_config_missing" }, 500);
 
   const service = createClient(url, serviceKey, { auth: { persistSession: false } });
-  const token = authHeader.slice(7);
-  const { data: userData, error: userError } = await service.auth.getUser(token);
-  if (userError || !userData.user) return json({ error: "unauthorized" }, 401);
-  const { data: admin } = await service.from("lr_admin_users")
-    .select("user_id,display_name,role,active")
-    .eq("user_id", userData.user.id).eq("active", true).maybeSingle();
-  if (!admin) return json({ error: "forbidden" }, 403);
+  const auth = await resolveAdmin(service, req);
+  if (!auth) return json({ error: "unauthorized" }, 401);
+  const { admin, userId } = auth;
 
   const body = await req.json().catch(() => ({}));
   const action = String(body.action || "dashboard");
+
+  if (action === "device_register") {
+    if (auth.mode !== "jwt") {
+      return json({ ok: true, already_paired: true, expires_at: auth.deviceExpiresAt || null });
+    }
+    const rawToken = randomDeviceToken();
+    const tokenHash = await sha256Hex(rawToken);
+    const expiresAt = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString();
+    await service.from("du_admin_device_tokens")
+      .delete().eq("user_id", userId).lt("expires_at", new Date().toISOString());
+    const { error } = await service.from("du_admin_device_tokens").insert({
+      token_hash: tokenHash,
+      user_id: userId,
+      label: String(body.label || "D&U admin device").slice(0, 120),
+      user_agent: String(body.user_agent || req.headers.get("user-agent") || "").slice(0, 1000) || null,
+      expires_at: expiresAt,
+      last_used_at: new Date().toISOString(),
+    });
+    if (error) return json({ error: "device_register_failed", detail: error.message }, 400);
+    return json({ ok: true, device_token: rawToken, expires_at: expiresAt });
+  }
 
   if (action === "dashboard") {
     const { data: jobs, error } = await service.from("jobs").select([
@@ -275,15 +358,16 @@ Deno.serve(async (req: Request) => {
   }
 
   if (action === "pair_create") {
-    const email = String(userData.user.email || "").trim().toLowerCase();
-    if (!email) return json({ error: "pair_email_missing" }, 400);
+    const { data: account, error: accountError } = await service.auth.admin.getUserById(userId);
+    const email = String(account?.user?.email || auth.email || "").trim().toLowerCase();
+    if (accountError || !email) return json({ error: "pair_email_missing" }, 400);
     const code = newPairCode();
     const codeHash = await sha256Hex(code);
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
-    await service.from("du_device_pair_codes").delete().eq("user_id", userData.user.id);
+    await service.from("du_device_pair_codes").delete().eq("user_id", userId);
     const { error } = await service.from("du_device_pair_codes").insert({
       code_hash: codeHash,
-      user_id: userData.user.id,
+      user_id: userId,
       email,
       expires_at: expiresAt,
     });
@@ -296,7 +380,7 @@ Deno.serve(async (req: Request) => {
       const config = await ensurePushConfig(service);
       const { count, error: countError } = await service.from("du_push_subscriptions")
         .select("id", { count: "exact", head: true })
-        .eq("user_id", userData.user.id).is("disabled_at", null);
+        .eq("user_id", userId).is("disabled_at", null);
       if (countError) throw countError;
       return json({ public_key: config.public_key, subscription_count: count || 0 });
     } catch (error) {
@@ -315,7 +399,7 @@ Deno.serve(async (req: Request) => {
     }
     const now = new Date().toISOString();
     const { error } = await service.from("du_push_subscriptions").upsert({
-      user_id: userData.user.id,
+      user_id: userId,
       endpoint,
       p256dh,
       auth,
@@ -334,7 +418,7 @@ Deno.serve(async (req: Request) => {
     const { error } = await service.from("du_push_subscriptions").update({
       disabled_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    }).eq("user_id", userData.user.id).eq("endpoint", endpoint);
+    }).eq("user_id", userId).eq("endpoint", endpoint);
     if (error) return json({ error: "push_unsubscribe_failed", detail: error.message }, 400);
     return json({ ok: true });
   }
@@ -344,7 +428,7 @@ Deno.serve(async (req: Request) => {
       const config = await ensurePushConfig(service);
       const { data: subscriptions, error } = await service.from("du_push_subscriptions")
         .select("id,endpoint,p256dh,auth,failure_count")
-        .eq("user_id", userData.user.id).is("disabled_at", null);
+        .eq("user_id", userId).is("disabled_at", null);
       if (error) throw error;
       if (!subscriptions?.length) return json({ error: "no_push_subscription" }, 400);
       const sent = await sendPushes(service, config, subscriptions as PushRow[], {
