@@ -21,7 +21,7 @@ jobs:
             "$out"
           done
 
-      - name: Render-loop nonblocking contract
+      - name: Render-loop and Wi-Fi failover contract
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -32,8 +32,16 @@ jobs:
           assert "pumpMatrixProbe();" in loop
           assert "matrixProbeWorker" in s
           assert 'xTaskCreatePinnedToCore(matrixProbeWorker' in s
+          assert "connectPrimaryWifi" in s and "connectFallbackWifi" in s
+          assert "HBNF_WIFI_FALLBACK_DHCP=PASS" in s
+          assert "TARGET=%s" in s
+          assert "FALLBACK_SSID " in s and "FALLBACK_PASS " in s
           print("HBNF_GAME_RENDER_LOOP_NONBLOCKING=PASS")
+          print("HBNF_GAME_WIFI_FAILOVER_CONTRACT=PASS")
           PY
+
+      - name: iPad mini compatibility + zero-pair contract
+        run: node hbnf-wow-bundle/web/HBNF_CART_IPAD_TEST.cjs
 
       - name: Install Arduino CLI
         run: |
