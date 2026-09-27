@@ -1,4 +1,4 @@
-name: HBNF Cart UI V6 Package
+name: HBNF Cart UI V7 Zero-Pair Package
 on:
   push:
     branches:
@@ -25,8 +25,10 @@ jobs:
           node --check hbnf-final-controller/hbnf-cart.js
           node --check hbnf-final-controller/hbnf-cart-semantic.mjs
           node --check hbnf-final-controller/hbnf-cart-ui-v6.mjs
+          grep -q 'mode: "guest"' hbnf-final-controller/hbnf-cart.js
+          ! grep -q 'createClient' hbnf-final-controller/hbnf-cart.js
           python3 -m py_compile hbnf-ui-v6-package/install_ui_v6.py
-          grep -q 'hbnf-cart-final-v6-observable' hbnf-final-controller/hbnf-cart.html
+          grep -q 'hbnf-cart-final-v7-zero-pair-guest' hbnf-final-controller/hbnf-cart.html
           grep -q 'HBNF_CART_UI_V6_OBSERVABLE' hbnf-final-controller/hbnf-cart-ui-v6.mjs
           grep -q 'matrixTruth' hbnf-final-controller/hbnf-cart.html
           grep -q 'bassFill' hbnf-final-controller/hbnf-cart.html
@@ -36,7 +38,7 @@ jobs:
       - name: Build controller-only package
         run: |
           set -euo pipefail
-          OUT="$RUNNER_TEMP/HBNF_CART_UI_V6_20260927"
+          OUT="$RUNNER_TEMP/HBNF_CART_UI_V7_ZERO_PAIR_20260927"
           mkdir -p "$OUT/controller"
           cp hbnf-final-controller/hbnf-cart.html "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart.js "$OUT/controller/"
@@ -56,8 +58,8 @@ jobs:
               if p.is_file():
                   files[p.name]=hashlib.sha256(p.read_bytes()).hexdigest()
           manifest={
-              "schema":"hbnf-cart-ui-v6-package-v1",
-              "buildMarker":"hbnf-cart-final-v6-observable",
+              "schema":"hbnf-cart-ui-v7-zero-pair-package-v1",
+              "buildMarker":"hbnf-cart-final-v7-zero-pair-guest",
               "sourceCommit":(root/"SOURCE_COMMIT.txt").read_text().strip(),
               "scope":"controller-only-no-firmware-no-phase2-hardware",
               "files":files,
@@ -65,15 +67,15 @@ jobs:
           (root/"MANIFEST.json").write_text(json.dumps(manifest,indent=2)+"\n")
           PY
           cd "$RUNNER_TEMP"
-          zip -yr HBNF_CART_UI_V6_20260927.zip HBNF_CART_UI_V6_20260927
-          sha256sum HBNF_CART_UI_V6_20260927.zip > HBNF_CART_UI_V6_20260927.zip.sha256
+          zip -yr HBNF_CART_UI_V7_ZERO_PAIR_20260927.zip HBNF_CART_UI_V7_ZERO_PAIR_20260927
+          sha256sum HBNF_CART_UI_V7_ZERO_PAIR_20260927.zip > HBNF_CART_UI_V7_ZERO_PAIR_20260927.zip.sha256
 
       - name: Upload exact package
         uses: actions/upload-artifact@v4
         with:
-          name: HBNF-CART-UI-V6-20260927
+          name: HBNF-CART-UI-V7-ZERO-PAIR-20260927
           path: |
-            ${{ runner.temp }}/HBNF_CART_UI_V6_20260927.zip
-            ${{ runner.temp }}/HBNF_CART_UI_V6_20260927.zip.sha256
+            ${{ runner.temp }}/HBNF_CART_UI_V7_ZERO_PAIR_20260927.zip
+            ${{ runner.temp }}/HBNF_CART_UI_V7_ZERO_PAIR_20260927.zip.sha256
           if-no-files-found: error
           retention-days: 30
