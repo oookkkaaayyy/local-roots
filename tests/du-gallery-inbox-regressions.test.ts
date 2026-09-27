@@ -9,6 +9,7 @@ const duAdmin = readFileSync(new URL("../../app/src/pages/DuAdminPage.tsx", impo
 const duAdminFunction = readFileSync(new URL("../../supabase/functions/du-admin/index.ts", import.meta.url), "utf8");
 const dropField = readFileSync(new URL("../../app/src/components/ImageDropField.tsx", import.meta.url), "utf8");
 const legacyMigration = readFileSync(new URL("../../supabase/migrations/20260927054500_migrate_du_legacy_gallery_to_items.sql", import.meta.url), "utf8");
+const galleryAuthFix = readFileSync(new URL("../../supabase/migrations/20260927062200_restore_du_authenticated_is_du_admin_execute.sql", import.meta.url), "utf8");
 const duLogo = readFileSync(new URL("../../app/public/brand/dyed-unattached-logo.png", import.meta.url));
 const duTombstone = readFileSync(new URL("../../app/public/brand/dyed-unattached-tombstone.png", import.meta.url));
 
@@ -116,4 +117,10 @@ test("legacy gallery roles are never silently asserted before owner classificati
   assert.ok(legacyMigration.includes("false"));
   assert.ok(duAdmin.includes("legacy_roles_confirmed"));
   assert.ok(duPublic.includes("legacy_roles_confirmed"));
+});
+
+
+test("authenticated D&U sessions can evaluate the admin predicate used by RLS", () => {
+  assert.ok(galleryAuthFix.includes("grant execute on function public.is_du_admin() to authenticated"));
+  assert.ok(galleryAuthFix.includes("revoke execute on function public.is_du_admin() from anon"));
 });
