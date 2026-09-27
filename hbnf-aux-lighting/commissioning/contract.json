@@ -1,10 +1,10 @@
 {
-  "version": "hbnf-aux-commissioning-v5",
+  "version": "hbnf-aux-commissioning-v6",
   "matrix": {
     "ip_hint": "192.168.68.89",
     "release": "hbnf-wow-r3-max-2026-09-21-v3",
     "engine": "r3-wow-max",
-    "buildWitness": "registry28-tempo-lock-v5-colorwifi",
+    "buildWitness": "registry28-tempo-lock-v8-unicast-perimeter",
     "pixels": 512,
     "width": 32,
     "height": 16,
@@ -23,18 +23,20 @@
     "generator": "anti-repeat-v4",
     "projection_link": {
       "role": "sender",
-      "transport": "HBNP UDP",
+      "transport": "HBNP UDP unicast after AUX beacon",
       "port": 11989,
       "pixels": 22,
       "frame_interval_ms": 33,
-      "crc": "CRC16-CCITT"
+      "crc": "CRC16-CCITT",
+      "discovery_port": 11990,
+      "geometry": "perimeter-5-6-5-6-v1"
     }
   },
   "aux": {
     "controller": "SP803E",
     "firmware_release": "hbnf-wow-aux-r3-2026-09-22-v1",
     "engine": "aux-r3-wow-1d",
-    "buildWitness": "registry28-tempo-lock-1d-v4-drainlatest",
+    "buildWitness": "registry28-tempo-lock-1d-v5-peer-beacon",
     "projection": "frame-lock-v1",
     "effect_ids": [
       220,
@@ -77,16 +79,18 @@
     "luma_policy": "camera-bright-v1",
     "projection_link": {
       "role": "receiver",
-      "transport": "HBNP UDP",
+      "transport": "HBNP UDP unicast receiver + beacon",
       "port": 11989,
       "pixels": 22,
       "timeout_ms": 240,
       "queue_policy": "newest-frame-v1",
-      "max_drain_per_tick": 128
+      "max_drain_per_tick": 128,
+      "discovery_port": 11990,
+      "geometry": "perimeter-5-6-5-6-v1"
     }
   },
   "sync": {
-    "visual_transport": "HBNP rendered-frame projection",
+    "visual_transport": "HBNP local unicast rendered-frame projection with beacon discovery",
     "group_bitfield": 1,
     "matrix_send": true,
     "aux_receive": true,
@@ -104,7 +108,8 @@
     "audio_master": "matrix",
     "visual_port": 11989,
     "framebuffer_source_of_truth": "matrix",
-    "legacy_wled_udp": "fallback-only"
+    "legacy_wled_udp": "fallback-only",
+    "discovery_port": 11990
   },
   "safety": {
     "aux_default_enabled": false,
