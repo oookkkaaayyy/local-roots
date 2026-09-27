@@ -23,7 +23,14 @@ export function ImageDropField({
   const inputRef=useRef<HTMLInputElement|null>(null);
   const id=useId();
   const [dragging,setDragging]=useState(false);
-  const [selected,setSelected]=useState<string[]>([]);
+  const [selected,setSelected]=useState<File[]>([]);
+  const [previews,setPreviews]=useState<string[]>([]);
+
+  useEffect(()=>{
+    const next=selected.map(file=>URL.createObjectURL(file));
+    setPreviews(next);
+    return()=>next.forEach(url=>URL.revokeObjectURL(url));
+  },[selected]);
 
   function sync(files:File[],append=false){
     const existing=append&&multiple?Array.from(inputRef.current?.files||[]):[];
@@ -38,7 +45,7 @@ export function ImageDropField({
     const transfer=new DataTransfer();
     next.forEach(file=>transfer.items.add(file));
     if(inputRef.current)inputRef.current.files=transfer.files;
-    setSelected(next.map(file=>file.name||'Image'));
+    setSelected(next);
     inputRef.current?.dispatchEvent(new Event('change',{bubbles:true}));
   }
 
@@ -54,7 +61,7 @@ export function ImageDropField({
   const status=selected.length
     ? multiple
       ? `${selected.length} image${selected.length===1?'':'s'} ready`
-      : selected[0]
+      : selected[0]?.name||'Image ready'
     : hint||'Drop an image here';
 
   return <div className={`image-drop-field ${className}`.trim()}>
@@ -79,9 +86,9 @@ export function ImageDropField({
         accept={accept}
         multiple={multiple}
         required={required}
-        onChange={event=>setSelected(Array.from(event.currentTarget.files||[]).map(file=>file.name||'Image'))}
+        onChange={event=>setSelected(Array.from(event.currentTarget.files||[]))}
       />
-      <span className="image-drop-icon" aria-hidden="true">＋</span>
+      {previews.length?<span className="image-drop-previews" aria-hidden="true">{previews.slice(0,6).map((url,index)=><img key={url} src={url} alt="" />)}</span>:<span className="image-drop-icon" aria-hidden="true">＋</span>}
       <span className="image-drop-copy">
         <strong>{selected.length?'Ready to upload':'Drag from Photos here'}</strong>
         <small>{status}{selected.length?(multiple?' · drop more to add':' · drop another to replace'):' · or click to choose'}</small>
