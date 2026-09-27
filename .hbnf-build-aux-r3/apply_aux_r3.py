@@ -17,7 +17,7 @@ s=p.read_text()
 for old,new in [
  ("hbnf-wow-r3-max-2026-09-21-v3","hbnf-wow-aux-r3-2026-09-22-v1"),
  ("r3-wow-max","aux-r3-wow-1d"),
- ("registry28-tempo-lock-v5-colorwifi","registry28-tempo-lock-1d-v4-drainlatest"),
+ ("registry28-tempo-lock-v5-colorwifi","registry28-tempo-lock-1d-v5-peer-beacon"),
  ('root["HBNFWOW"]','root["HBNFAUX"]'),
  ('root.createNestedObject("HBNFWOW")','root.createNestedObject("HBNFAUX")'),
  ('PSTR("%s/wow")','PSTR("%s/auxwow")'),
@@ -109,28 +109,59 @@ diag_anchor="class AnimartrixUsermod : public Usermod {"
 if s.count(diag_anchor)!=1:
     raise RuntimeError("AUX projection receiver anchor mismatch")
 receiver="""class HbnfProjectionReceiverV1 {
-  WiFiUDP udp_;
-  bool begun_=false, haveSeq_=false;
-  uint32_t lastPacketMs_=0, packets_=0;
+  WiFiUDP udp_, hello_;
+  bool begun_=false, helloBegun_=false, haveSeq_=false;
+  uint32_t lastPacketMs_=0, packets_=0, lastHelloMs_=0, helloPackets_=0;
   uint16_t seq_=0;
+  IPAddress boundIp_;
+
+  void resetSockets() {
+    if (begun_) udp_.stop();
+    if (helloBegun_) hello_.stop();
+    begun_=false; helloBegun_=false;
+    boundIp_=IPAddress();
+  }
+
+  void sendHello(uint32_t now) {
+    if (!helloBegun_ || (lastHelloMs_ && now-lastHelloMs_<750u)) return;
+    const IPAddress ip=WiFi.localIP(), mask=WiFi.subnetMask();
+    IPAddress bc(
+      (uint8_t)(ip[0]|(uint8_t)~mask[0]),
+      (uint8_t)(ip[1]|(uint8_t)~mask[1]),
+      (uint8_t)(ip[2]|(uint8_t)~mask[2]),
+      (uint8_t)(ip[3]|(uint8_t)~mask[3]));
+    uint8_t hello[hbnf::PROJECTION_HELLO_BYTES];
+    hbnf::encodeProjectionHello((uint32_t)ESP.getEfuseMac(),hello);
+    if (hello_.beginPacket(bc,hbnf::PROJECTION_DISCOVERY_PORT)) {
+      hello_.write(hello,sizeof(hello));
+      if (hello_.endPacket()) helloPackets_++;
+    }
+    lastHelloMs_=now;
+  }
 
  public:
   void tick() {
-    if (WiFi.status()!=WL_CONNECTED) {
-      if (begun_) udp_.stop();
-      begun_=false;
-      return;
-    }
-    if (!begun_) {
+    const uint32_t now=millis();
+    if (WiFi.status()!=WL_CONNECTED) { resetSockets(); return; }
+
+    const IPAddress currentIp=WiFi.localIP();
+    if (!begun_ || !helloBegun_ || currentIp!=boundIp_) {
+      resetSockets();
       begun_=udp_.begin(hbnf::PROJECTION_PORT);
-      if (!begun_) return;
+      helloBegun_=hello_.begin(0);
+      if (!begun_ || !helloBegun_) { resetSockets(); return; }
+      boundIp_=currentIp;
+      lastHelloMs_=0;
     }
+
+    sendHello(now);
 
     bool got=false;
     uint16_t bestSeq=seq_;
     uint8_t best[hbnf::PROJECTION_PIXELS*3];
 
-    // Drain bursty UDP delivery aggressively and render only the newest valid frame.\n    // This prevents visible replay/catch-up when an AP buffers projection packets.\n    for (int guard=0;guard<128;guard++) {
+    // Always drain the receive queue and render only the newest valid frame.
+    for (int guard=0;guard<128;guard++) {
       const int n=udp_.parsePacket();
       if (n<=0) break;
       uint8_t packet[hbnf::PROJECTION_PACKET_BYTES];
@@ -166,13 +197,14 @@ receiver="""class HbnfProjectionReceiverV1 {
     seq_=bestSeq;
     haveSeq_=true;
     packets_++;
-    lastPacketMs_=millis();
+    lastPacketMs_=now;
   }
 
   bool active() const { return lastPacketMs_ && (millis()-lastPacketMs_<350u); }
   uint32_t ageMs() const { return lastPacketMs_?millis()-lastPacketMs_:0xffffffffu; }
   uint32_t packets() const { return packets_; }
   uint16_t seq() const { return seq_; }
+  uint32_t helloPackets() const { return helloPackets_; }
 };
 static HbnfProjectionReceiverV1 hbnfProjectionRx;
 
@@ -189,7 +221,7 @@ s=s.replace(tick_old,tick_new,1)
 
 # Replace sender telemetry with receiver telemetry.
 for old,new in [
- ('wow["projectionPackets"] = hbnfProjectionTx.packets();','wow["projectionRxPackets"] = hbnfProjectionRx.packets();\n      wow["projectionRxSeq"] = hbnfProjectionRx.seq();\n      wow["projectionRxActive"] = hbnfProjectionRx.active();\n      wow["projectionRxAgeMs"] = hbnfProjectionRx.ageMs();'),
+ ('wow["projectionPackets"] = hbnfProjectionTx.packets();','wow["projectionRxPackets"] = hbnfProjectionRx.packets();\n      wow["projectionRxSeq"] = hbnfProjectionRx.seq();\n      wow["projectionRxActive"] = hbnfProjectionRx.active();\n      wow["projectionRxAgeMs"] = hbnfProjectionRx.ageMs();\n      wow["projectionHelloPackets"] = hbnfProjectionRx.helloPackets();\n      wow["projectionTransport"] = "udp-unicast-discovery-v1";\n      wow["projectionGeometry"] = "perimeter-5-6-5-6-v1";'),
  ('\\\"projectionPackets\\\":%lu,\\\"projectionSeq\\\":%u,','\\\"projectionRxPackets\\\":%lu,\\\"projectionRxSeq\\\":%u,'),
  ('(unsigned long)hbnfProjectionTx.packets(), hbnfProjectionTx.seq(),','(unsigned long)hbnfProjectionRx.packets(), hbnfProjectionRx.seq(),'),
 ]:
@@ -229,7 +261,7 @@ ar.write_text(a)
 
 checks={
  p:[
-  "hbnf-wow-aux-r3-2026-09-22-v1","aux-r3-wow-1d","registry28-tempo-lock-1d-v4-drainlatest",
+  "hbnf-wow-aux-r3-2026-09-22-v1","aux-r3-wow-1d","registry28-tempo-lock-1d-v5-peer-beacon",
   "hbnfAuxStyleForMode","hbnfAuxAmountForMode","hbnfCanvasH = 2","SEGMENT.virtualLength()",'root["HBNFAUX"]',
   'PSTR("%s/auxwow")','\\\"projection\\\":\\\"fold2-1d-v1\\\"','\\\"projectionRole\\\":\\\"receiver\\\"','\\\"lumaPolicy\\\":\\\"camera-bright-v1\\\"',
   'wow["projection"] = "fold2-1d-v1"','wow["projectionRole"] = "receiver"','wow["projectionRxPackets"]','wow["lumaPolicy"] = "camera-bright-v1"',
