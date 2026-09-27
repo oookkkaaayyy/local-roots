@@ -63,9 +63,9 @@ if s.count(info_marker)!=1:
 telemetry="""    void addToJsonState(JsonObject& root) override {
       JsonObject wow = root["HBNFWOW"];
       if (wow.isNull()) wow = root.createNestedObject("HBNFWOW");
-      wow["release"] = "hbnf-wow-r3-max-2026-09-21-v3";
+      wow["release"] = "hbnf-wow-r3-max-audio-geometry-v1-2026-09-27";
       wow["engine"] = "r3-wow-max";
-      wow["buildWitness"] = "registry28-tempo-lock-v5-colorwifi";
+      wow["buildWitness"] = "registry28-audio-geometry-v1-colorwifi";
       wow["fxRegistered"] = hbnfFxRegistered;
       wow["fxFailed"] = hbnfFxFailed;
       wow["modeCount"] = strip.getModeCount();
@@ -111,7 +111,7 @@ loop_new="""    void loop() {
           char payload[480];
           snprintf_P(topic, sizeof(topic), PSTR("%s/wow"), mqttDeviceTopic);
           snprintf_P(payload, sizeof(payload),
-            PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"buildWitness\\\":\\\"registry28-tempo-lock-v5-colorwifi\\\",\\\"fxRegistered\\\":%u,\\\"fxFailed\\\":%u,\\\"modeCount\\\":%u,\\\"fxFirst\\\":%u,\\\"fxLast\\\":%u,\\\"audioActive\\\":%s,\\\"profile\\\":%u,\\\"style\\\":%u,\\\"amount\\\":%u,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u,\\\"pulse\\\":%u,\\\"energy\\\":%u,\\\"impact\\\":%u,\\\"drop\\\":%u}"),
+            PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-audio-geometry-v1-2026-09-27\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"buildWitness\\\":\\\"registry28-audio-geometry-v1-colorwifi\\\",\\\"fxRegistered\\\":%u,\\\"fxFailed\\\":%u,\\\"modeCount\\\":%u,\\\"fxFirst\\\":%u,\\\"fxLast\\\":%u,\\\"audioActive\\\":%s,\\\"profile\\\":%u,\\\"style\\\":%u,\\\"amount\\\":%u,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u,\\\"pulse\\\":%u,\\\"energy\\\":%u,\\\"impact\\\":%u,\\\"drop\\\":%u}"),
             hbnfFxRegistered, hbnfFxFailed, strip.getModeCount(), hbnfFxFirst, hbnfFxLast,
             anim.hbnfActive() ? "true" : "false",
             anim.hbnfProfile(), anim.hbnfStyle(), anim.hbnfAmount(),
