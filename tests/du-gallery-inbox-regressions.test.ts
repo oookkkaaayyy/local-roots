@@ -9,12 +9,18 @@ const duAdminFunction = readFileSync(new URL("../../supabase/functions/du-admin/
 const dropField = readFileSync(new URL("../../app/src/components/ImageDropField.tsx", import.meta.url), "utf8");
 const legacyMigration = readFileSync(new URL("../../supabase/migrations/20260927054500_migrate_du_legacy_gallery_to_items.sql", import.meta.url), "utf8");
 
-test("D&U public page is share-ready and keeps intake available", () => {
-  assert.ok(duPublic.includes("Custom disc-golf stencil portraits"));
+test("D&U public page keeps only approved/functional copy and intake", () => {
+  assert.ok(duPublic.includes("<h1>Dyed &amp; Unattached</h1>"));
   assert.ok(duPublic.includes('href="#request-stencil"'));
   assert.ok(duPublic.includes('id="gallery"'));
-  assert.ok(duPublic.includes("See the transformation."));
   assert.ok(duPublic.includes("SUBMIT_INTAKE_URL"));
+  assert.equal(duPublic.includes("Custom disc-golf stencil portraits"), false);
+  assert.equal(duPublic.includes("Turn a favorite pet photo"), false);
+  assert.equal(duPublic.includes("See the transformation."), false);
+  assert.equal(duPublic.includes("Each example pairs"), false);
+  assert.equal(duPublic.includes("From photo to disc"), false);
+  assert.equal(duPublic.includes("Start here"), false);
+  assert.equal(duPublic.includes("No account required."), false);
 });
 
 test("D&U public gallery renders the portfolio from managed item records", () => {
