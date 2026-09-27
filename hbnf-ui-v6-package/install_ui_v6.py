@@ -5,7 +5,7 @@ ROOT=pathlib.Path(__file__).resolve().parent
 CONTROLLER=ROOT/"controller"
 MANIFEST_PATH=ROOT/"MANIFEST.json"
 LIVE_URL="https://hbnightflyers.com/hbnf-cart.html"
-BUILD_MARKER="hbnf-cart-final-v7-1-zero-pair-observable"
+BUILD_MARKER="hbnf-cart-final-v7-2-course-safe"
 FILES=[
     "hbnf-cart.html",
     "hbnf-cart.js",
@@ -31,8 +31,7 @@ def check_package():
         if not path.is_file() or not expected or sha256(path)!=expected:
             raise RuntimeError("Package integrity failed: "+name)
     html=(CONTROLLER/"hbnf-cart.html").read_text(errors="replace")
-    js=(CONTROLLER/"hbnf-cart-ui-v6.mjs").read_text(errors="replace")
-    if BUILD_MARKER not in html or "HBNF_CART_UI_V6_OBSERVABLE" not in js:
+    if BUILD_MARKER not in html:
         raise RuntimeError("Controller identity mismatch")
 
 def worker_candidates():
@@ -72,7 +71,7 @@ def resolve_wrangler(worker):
 
 def live_marker():
     req=urllib.request.Request(
-        LIVE_URL+"?release=HBNF_CART_UI_V7_1_OBSERVABLE_20260927&ts="+str(int(time.time())),
+        LIVE_URL+"?release=HBNF_CART_UI_V7_2_COURSE_SAFE_20260927&ts="+str(int(time.time())),
         headers={
             "User-Agent":"Mozilla/5.0",
             "Accept":"text/html,application/xhtml+xml",
@@ -89,7 +88,7 @@ def live_marker():
         return 0, False
 
 def main():
-    print("HBNF CART UI V7.1 OBSERVABLE — controller-only installer")
+    print("HBNF CART UI V7.2 COURSE-SAFE — controller-only installer")
     print("No Matrix/AUX firmware or Phase 2 game/router changes.")
     check_package()
     worker=find_worker()
@@ -114,8 +113,8 @@ def main():
         if verified: break
         time.sleep(3)
     if not verified and last_status not in (401,403):
-        raise RuntimeError("Deploy finished but exact live V7.1 marker did not verify")
-    print("HBNF_CART_UI_V7_1_INSTALL=PASS")
+        raise RuntimeError("Deploy finished but exact live V7.2 marker did not verify")
+    print("HBNF_CART_UI_V7_2_INSTALL=PASS")
     print("BACKUP="+str(backup))
     if verified: print("LIVE_MARKER=PASS")
     else: print("LIVE_MARKER=BLOCKED_HTTP_"+str(last_status)+" (Wrangler deploy succeeded)")
@@ -125,6 +124,6 @@ if __name__=="__main__":
     try:
         main()
     except Exception as e:
-        print("HBNF_CART_UI_V7_1_INSTALL=FAIL")
+        print("HBNF_CART_UI_V7_2_INSTALL=FAIL")
         print(str(e))
         sys.exit(1)
