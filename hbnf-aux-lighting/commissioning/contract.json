@@ -34,7 +34,7 @@
     "controller": "SP803E",
     "firmware_release": "hbnf-wow-aux-r3-2026-09-22-v1",
     "engine": "aux-r3-wow-1d",
-    "buildWitness": "registry28-tempo-lock-1d-v3-colorwifi",
+    "buildWitness": "registry28-tempo-lock-1d-v4-drainlatest",
     "projection": "frame-lock-v1",
     "effect_ids": [
       220,
@@ -80,7 +80,9 @@
       "transport": "HBNP UDP",
       "port": 11989,
       "pixels": 22,
-      "timeout_ms": 240
+      "timeout_ms": 240,
+      "queue_policy": "newest-frame-v1",
+      "max_drain_per_tick": 128
     }
   },
   "sync": {
