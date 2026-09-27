@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Shell } from '../components/Shell';
 import { callFunction, supabase } from '../lib/supabase';
-import { downloadEventCalendar, eventDateRange, eventTitle, pacificToday, resultValue, resultsLinkLabel } from '../lib/eventPresentation';
+import { downloadEventCalendar, eventDateRange, eventTitle, HBNF_EVENT_LINKS, isHbnfEvent, pacificToday, resultValue, resultsLinkLabel } from '../lib/eventPresentation';
 import { parseOrganizerResultsText, type OrganizerScoreType } from '../lib/resultsSubmission';
 import type { PublicEventDetail, PublicResult } from '../types';
 
@@ -140,6 +140,7 @@ export function EventDetailPage({slug}:{slug:string}) {
   const resultLabel=event.results_url?resultsLinkLabel(event.results_url):'';
   const tdNames=event.td_names??[];
   const resultGroups=groupResults(event.all_results??[]);
+  const hbnfEvent=isHbnfEvent(event);
 
   return <Shell><main className="content narrow event-detail-page">
     <a className="event-back-link" href={returnPath}>← Events</a>
@@ -147,6 +148,7 @@ export function EventDetailPage({slug}:{slug:string}) {
       <div className="event-detail-heading"><div><p className="eyebrow">{eventDateRange(event.start_date,event.end_date)}</p><h1>{event.name}</h1><p className="event-location">{[event.city,event.course_name||event.venue_name].filter(Boolean).join(' · ')||'Location TBA'}</p></div><span className={`status-pill status-${effectiveStatus}`}>{eventTitle(effectiveStatus)}</span></div>
       <div className="event-tags"><span>{eventTitle(event.event_type)}</span><span>{event.sanctioned===true?(event.tier?`Sanctioned · ${event.tier}`:'Sanctioned'):event.sanctioned===false?'Unsanctioned':'Sanction unknown'}</span>{event.rounds_text?<span>{event.rounds_text}</span>:null}{event.format?<span>{event.format}</span>:null}</div>
       {event.club_host?<p className="event-organizer">Hosted by {event.club_host}{tdNames.length?` · TD: ${tdNames.join(', ')}`:''}</p>:tdNames.length?<p className="event-organizer">TD: {tdNames.join(', ')}</p>:null}
+      {hbnfEvent?<nav className="event-resource-links" aria-label={`HB Night Flyers links for ${event.name}`}>{HBNF_EVENT_LINKS.map(link=><a key={link.label} href={link.href} target="_blank" rel="noreferrer" aria-label={`${link.label} for ${event.name} (opens in new tab)`}>{link.label} ↗</a>)}</nav>:null}
       {stale?<p className="stale-note">Verification is older than 14 days; confirm details before traveling.</p>:null}
       <div className="event-detail-actions">{canShowRegistration?<a className="button primary" href={event.registration_url!} target="_blank" rel="noreferrer" aria-label={`Registration for ${event.name} (opens in new tab)`}>Registration</a>:null}{canAddCalendar?<button type="button" className="button ghost" onClick={()=>downloadEventCalendar(event)} aria-label={`Add ${event.name} to calendar`}>Add to Calendar</button>:null}<button type="button" className="button ghost" onClick={share}>Share</button>{event.results_url?<a className="button ghost" href={event.results_url} target="_blank" rel="noreferrer" aria-label={`${resultLabel} for ${event.name} (opens in new tab)`}>{resultLabel}</a>:null}</div>
       {shareState?<div className="results-parse-status" role="status">{shareState}</div>:null}
