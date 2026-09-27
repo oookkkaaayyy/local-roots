@@ -84,7 +84,17 @@ telemetry="""    void addToJsonState(JsonObject& root) override {
       wow["release"] = "hbnf-wow-r3-max-2026-09-21-v3";
       wow["engine"] = "r3-wow-max";
       wow["buildWitness"] = "registry28-tempo-lock-v5-colorwifi";
-      wow["audioGeometry"] = "source-coupled-v3";
+      wow["audioGeometry"] = "source-coupled-v4";
+      wow["generator"] = "anti-repeat-v4";
+      wow["projectionLink"] = "frame-lock-v1";
+      wow["generatorEnabled"] = hbnfGenV4.enabled();
+      wow["generatorLocked"] = hbnfGenV4.locked();
+      wow["generatorDomain"] = hbnfGenV4.domain();
+      wow["variantSequence"] = hbnfGenV4.sequence();
+      wow["variantSignature"] = hbnfGenV4.current().signature;
+      wow["variantDwellSeconds"] = hbnfGenV4.current().dwellSeconds;
+      wow["projectionPackets"] = hbnfProjectionTx.packets();
+      wow["projectionSeq"] = hbnfProjectionTx.seq();
       wow["fxRegistered"] = hbnfFxRegistered;
       wow["fxFailed"] = hbnfFxFailed;
       wow["modeCount"] = strip.getModeCount();
@@ -104,7 +114,15 @@ telemetry="""    void addToJsonState(JsonObject& root) override {
     }
 
 """
-s=s.replace(info_marker,telemetry+info_marker,1)
+state_reader="""    void readFromJsonState(JsonObject& root) override {
+      JsonObject wow = root["HBNFWOW"];
+      if (wow.isNull()) return;
+      hbnfGenV4.command(wow["generator"]);
+      hbnfGenV4.tuning(wow["tuning"]);
+    }
+
+"""
+s=s.replace(info_marker,telemetry+state_reader+info_marker,1)
 
 loop_pat=r"""    void loop\(\) \{
       if \(!enabled \|\| strip\.isUpdating\(\)\) return;
@@ -117,6 +135,8 @@ loop_pat=r"""    void loop\(\) \{
     \}"""
 loop_new="""    void loop() {
       if (strip.isUpdating()) return;
+      hbnfGenV4.tick();
+      hbnfProjectionTx.tick();
       static unsigned long hbnfWifiAssistAt = 0;
       if (WiFi.status() != WL_CONNECTED && (hbnfWifiAssistAt == 0 || millis() - hbnfWifiAssistAt >= 15000UL)) {
         forceReconnect = true;
@@ -127,10 +147,13 @@ loop_new="""    void loop() {
         lastTime = millis();
         if (WLED_MQTT_CONNECTED) {
           char topic[MQTT_MAX_TOPIC_LEN + 16];
-          char payload[480];
+          char payload[900];
           snprintf_P(topic, sizeof(topic), PSTR("%s/wow"), mqttDeviceTopic);
           snprintf_P(payload, sizeof(payload),
-            PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"buildWitness\\\":\\\"registry28-tempo-lock-v5-colorwifi\\\",\\\"audioGeometry\\\":\\\"source-coupled-v3\\\",\\\"fxRegistered\\\":%u,\\\"fxFailed\\\":%u,\\\"modeCount\\\":%u,\\\"fxFirst\\\":%u,\\\"fxLast\\\":%u,\\\"audioActive\\\":%s,\\\"profile\\\":%u,\\\"style\\\":%u,\\\"amount\\\":%u,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u,\\\"pulse\\\":%u,\\\"energy\\\":%u,\\\"impact\\\":%u,\\\"drop\\\":%u}"),
+            PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"buildWitness\\\":\\\"registry28-tempo-lock-v5-colorwifi\\\",\\\"audioGeometry\\\":\\\"source-coupled-v4\\\",\\\"generator\\\":\\\"anti-repeat-v4\\\",\\\"projectionLink\\\":\\\"frame-lock-v1\\\",\\\"generatorEnabled\\\":%s,\\\"generatorLocked\\\":%s,\\\"generatorDomain\\\":%u,\\\"variantSequence\\\":%lu,\\\"variantSignature\\\":%lu,\\\"projectionPackets\\\":%lu,\\\"projectionSeq\\\":%u,\\\"fxRegistered\\\":%u,\\\"fxFailed\\\":%u,\\\"modeCount\\\":%u,\\\"fxFirst\\\":%u,\\\"fxLast\\\":%u,\\\"audioActive\\\":%s,\\\"profile\\\":%u,\\\"style\\\":%u,\\\"amount\\\":%u,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u,\\\"pulse\\\":%u,\\\"energy\\\":%u,\\\"impact\\\":%u,\\\"drop\\\":%u}"),
+            hbnfGenV4.enabled() ? "true" : "false", hbnfGenV4.locked() ? "true" : "false", hbnfGenV4.domain(),
+            (unsigned long)hbnfGenV4.sequence(), (unsigned long)hbnfGenV4.current().signature,
+            (unsigned long)hbnfProjectionTx.packets(), hbnfProjectionTx.seq(),
             hbnfFxRegistered, hbnfFxFailed, strip.getModeCount(), hbnfFxFirst, hbnfFxLast,
             anim.hbnfActive() ? "true" : "false",
             anim.hbnfProfile(), anim.hbnfStyle(), anim.hbnfAmount(),
