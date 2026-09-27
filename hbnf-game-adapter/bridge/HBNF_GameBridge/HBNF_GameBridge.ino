@@ -23,6 +23,9 @@ namespace {
 constexpr const char* kDefaultSsid = "HBNF-Cart";
 constexpr const char* kMatrixIp = "192.168.8.20";
 constexpr uint16_t kLocalUdpPort = 4050;
+constexpr uint16_t kProjectionPort = 11989;
+constexpr size_t kProjectionPacketBytes = 77;
+constexpr uint8_t kProjectionPixels = 22;
 constexpr uint32_t kFrameMs = 33;
 constexpr uint32_t kProbeMs = 250;
 constexpr uint32_t kWifiRetryMs = 5000;
@@ -31,6 +34,11 @@ constexpr const char* kCartControlUrl = "https://phcpbvuqibyarpfrftgx.supabase.c
 
 Preferences prefs;
 WiFiUDP udp;
+WiFiUDP projectionUdp;
+uint8_t projectionRgb[kProjectionPixels * 3] = {0};
+uint16_t projectionSeq = 0;
+uint32_t projectionAt = 0;
+bool projectionSeen = false;
 ControllerPtr pads[2] = {nullptr, nullptr};
 GameManager games;
 LeaseGuard guard;
@@ -227,7 +235,59 @@ void sendFrame(const Framebuffer& fb) {
   }
 }
 
+uint16_t projectionCrc16(const uint8_t* data, size_t n) {
+  uint16_t crc = 0xFFFFu;
+  for (size_t i = 0; i < n; ++i) {
+    crc ^= uint16_t(data[i]) << 8;
+    for (uint8_t bit = 0; bit < 8; ++bit)
+      crc = (crc & 0x8000u) ? uint16_t((crc << 1) ^ 0x1021u) : uint16_t(crc << 1);
+  }
+  return crc;
+}
 
+bool projectionSeqNewer(uint16_t candidate, uint16_t current) {
+  const uint16_t delta = uint16_t(candidate - current);
+  return delta != 0 && delta < 32768u;
+}
+
+void broadcastProjectionFrame() {
+  static const char hex[] = "0123456789abcdef";
+  String msg;
+  msg.reserve(5 + 6 + kProjectionPixels * 6);
+  msg = "PROJ,";
+  msg += String(projectionSeq);
+  msg += ",";
+  for (size_t i = 0; i < sizeof(projectionRgb); ++i) {
+    msg += hex[projectionRgb[i] >> 4];
+    msg += hex[projectionRgb[i] & 15];
+  }
+  gameWs.broadcastTXT(msg);
+}
+
+void processProjectionFrames(uint32_t nowMs) {
+  for (uint8_t guard = 0; guard < 6; ++guard) {
+    const int packetSize = projectionUdp.parsePacket();
+    if (packetSize <= 0) break;
+    uint8_t packet[kProjectionPacketBytes];
+    if (packetSize != int(sizeof(packet))) {
+      while (projectionUdp.available()) projectionUdp.read();
+      continue;
+    }
+    const int count = projectionUdp.read(packet, sizeof(packet));
+    if (count != int(sizeof(packet))) continue;
+    if (packet[0] != 'H' || packet[1] != 'B' || packet[2] != 'N' || packet[3] != 'P' ||
+        packet[4] != 1 || packet[7] != kProjectionPixels) continue;
+    const uint16_t got = uint16_t(packet[kProjectionPacketBytes-2] << 8) | packet[kProjectionPacketBytes-1];
+    if (got != projectionCrc16(packet, kProjectionPacketBytes - 2)) continue;
+    const uint16_t candidate = uint16_t(packet[5] << 8) | packet[6];
+    if (projectionSeen && !projectionSeqNewer(candidate, projectionSeq)) continue;
+    memcpy(projectionRgb, packet + 9, sizeof(projectionRgb));
+    projectionSeq = candidate;
+    projectionAt = nowMs;
+    projectionSeen = true;
+    broadcastProjectionFrame();
+  }
+}
 
 String commandUuid() {
   uint8_t b[16];
@@ -588,7 +648,7 @@ void printStatus() {
   uint8_t p1[6], p2[6];
   readMac("p1mac", p1);
   readMac("p2mac", p2);
-  Serial.printf("HBNF_STATUS WIFI=%s IP=%s MATRIX=%s SESSION=%s P1=%s P2=%s PLAYSSID=%s PLAYPASS=%s CARTPROXY=%s\n",
+  Serial.printf("HBNF_STATUS WIFI=%s IP=%s MATRIX=%s SESSION=%s P1=%s P2=%s PLAYSSID=%s PLAYPASS=%s CARTPROXY=%s PROJECTION=%s PROJSEQ=%u PROJAGE=%lu\n",
                 WiFi.status() == WL_CONNECTED ? "ONLINE" : "OFFLINE",
                 WiFi.localIP().toString().c_str(),
                 matrixIdentityVerified ? "VERIFIED" : "UNVERIFIED",
@@ -596,7 +656,10 @@ void printStatus() {
                 macEmpty(p1) ? "UNSET" : macString(p1).c_str(),
                 macEmpty(p2) ? "UNSET" : macString(p2).c_str(),
                 kPlaySsid, playPassword.c_str(),
-                cartDeviceToken.length() >= 20 ? "READY" : "NOT_READY");
+                cartDeviceToken.length() >= 20 ? "READY" : "NOT_READY",
+                projectionSeen && (millis() - projectionAt) < 350 ? "LIVE" : "STALE",
+                projectionSeq,
+                projectionSeen ? (unsigned long)(millis() - projectionAt) : 0UL);
 }
 
 void processSerial() {
@@ -672,6 +735,7 @@ void setup() {
   else Serial.println("HBNF_CART_PROXY_TASK=PASS");
   startGameWeb();
   udp.begin(kLocalUdpPort);
+  projectionUdp.begin(kProjectionPort);
   BP32.setup(&onConnectedController, &onDisconnectedController);
   BP32.enableNewBluetoothConnections(true);
   connectWifi();
@@ -687,6 +751,7 @@ void loop() {
   captiveDns.processNextRequest();
   processSerial();
   const uint32_t now = millis();
+  processProjectionFrames(now);
 
   if (WiFi.status() == WL_CONNECTED) {
     static bool announced = false;
