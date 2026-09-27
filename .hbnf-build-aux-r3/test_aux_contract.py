@@ -22,16 +22,28 @@ assert "hbnf-wow-aux-r3-2026-09-22-v1" in src
 assert "registry28-tempo-lock-1d-v3-colorwifi" in src
 print("HBNF_AUX_R3_PATCH_CONTRACT_PASS")
 
-assert 'mqtt_old' in src
-assert 'projection\\\\\\":\\\\\\"fold2-1d-v1' in src
+assert 'mqtt_anchor' in src
+assert 'projectionRole' in src
+assert 'frame-lock-v1' in src
+assert 'HbnfProjectionReceiverV1' in src
+assert 'hbnfProjectionRx.tick()' in src
+assert 'hbnfProjectionTx.tick();' not in src
+assert 'hbnfGenV4.tick();' not in src
 
 assert 'hbnfCanvasH = 2' in src
 assert 'hbnfCanvasW' in src
 assert 'SEGMENT.virtualLength()' in src
 assert 'fold2-1d-v1' in src
 assert "hbnfAudio.setScene(SEGMENT.mode)" in src
-assert contract["aux"]["projection"]=="fold2-1d-v1"
+assert contract["aux"]["projection"]=="frame-lock-v1"
+assert contract["aux"]["projection_fallback"]=="fold2-1d-v1"
+assert contract["aux"]["luma_policy"]=="camera-bright-v1"
+assert contract["matrix"]["audio_geometry"]=="source-coupled-v4"
+assert contract["matrix"]["generator"]=="anti-repeat-v4"
+assert contract["matrix"]["projection_link"]["port"]==11989
+assert contract["aux"]["projection_link"]["port"]==11989
+assert contract["sync"]["framebuffer_source_of_truth"]=="matrix"
 assert contract["matrix"]["buildWitness"]=="registry28-tempo-lock-v5-colorwifi"
 assert contract["aux"]["buildWitness"]=="registry28-tempo-lock-1d-v3-colorwifi"
 
-print("HBNF_AUX_R3_STANDALONE_CONTRACT_PASS")
+print("HBNF_AUX_V4_FRAME_LOCK_CONTRACT_PASS")
