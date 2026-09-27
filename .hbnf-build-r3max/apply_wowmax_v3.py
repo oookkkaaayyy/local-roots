@@ -45,6 +45,7 @@ pixel_new="""\tvoid hbnfVariantXY(int x,int y,int &tx,int &ty) const {
 \t\tconst int w=SEGMENT.virtualWidth()?SEGMENT.virtualWidth():1;
 \t\tconst int h=SEGMENT.virtualHeight()?SEGMENT.virtualHeight():1;
 \t\tconst uint8_t t=(uint8_t)(SEGMENT.custom3&7u);
+\t\tconst uint8_t warp=(uint8_t)((SEGMENT.custom3>>5)&7u);
 \t\tconst int sx=(int)(SEGMENT.offset%w), sy=(int)((SEGMENT.offset>>5)%h);
 \t\ttx=x; ty=y;
 \t\tif(t==1||t==3||t==6) tx=w-1-tx;
@@ -52,6 +53,22 @@ pixel_new="""\tvoid hbnfVariantXY(int x,int y,int &tx,int &ty) const {
 \t\tif(t>=4) tx=(tx+sx)%w;
 \t\tif(t==5||t==6) ty=(ty+sy)%h;
 \t\tif(t==7) tx=(tx+(sx>>1)+1)%w;
+\t\t// Secondary procedural warp is independent of the base transform.
+\t\t// This makes a revisited ANIMartRIX kernel structurally unfamiliar rather
+\t\t// than merely recolored, while staying integer-only and deterministic.
+\t\tswitch(warp){
+\t\t  case 1: tx=(tx + ((ty*3 + sx)%w))%w; break;
+\t\t  case 2: ty=(ty + ((tx*2 + sy)%h))%h; break;
+\t\t  case 3: tx=(tx + (((ty&1)?sx:(w-sx)) + ty)%w)%w; break;
+\t\t  case 4: ty=(ty + (((tx&1)?sy:(h-sy)) + tx)%h)%h; break;
+\t\t  case 5: tx=(tx + ((ty*ty + sx)%w))%w; break;
+\t\t  case 6: ty=(ty + ((tx*tx + sy)%h))%h; break;
+\t\t  case 7:
+\t\t    tx=(tx + ((ty*3 + sx)%w))%w;
+\t\t    ty=(ty + ((tx*2 + sy)%h))%h;
+\t\t    break;
+\t\t  default: break;
+\t\t}
 \t}
 \tvoid setPixelColor(int x, int y, rgb pixel) {
 \t\tuint8_t r=pixel.red,g=pixel.green,b=pixel.blue;
@@ -92,6 +109,7 @@ telemetry="""    void addToJsonState(JsonObject& root) override {
       wow["generatorDomain"] = hbnfGenV4.domain();
       wow["variantSequence"] = hbnfGenV4.sequence();
       wow["variantSignature"] = hbnfGenV4.current().signature;
+      wow["variantFamily"] = hbnfGenV4.current().familyId;
       wow["variantDwellSeconds"] = hbnfGenV4.current().dwellSeconds;
       wow["projectionPackets"] = hbnfProjectionTx.packets();
       wow["projectionSeq"] = hbnfProjectionTx.seq();
@@ -152,7 +170,7 @@ loop_new="""    void loop() {
           snprintf_P(payload, sizeof(payload),
             PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"buildWitness\\\":\\\"registry28-tempo-lock-v5-colorwifi\\\",\\\"audioGeometry\\\":\\\"source-coupled-v4\\\",\\\"generator\\\":\\\"anti-repeat-v4\\\",\\\"projectionLink\\\":\\\"frame-lock-v1\\\",\\\"generatorEnabled\\\":%s,\\\"generatorLocked\\\":%s,\\\"generatorDomain\\\":%u,\\\"variantSequence\\\":%lu,\\\"variantSignature\\\":%lu,\\\"projectionPackets\\\":%lu,\\\"projectionSeq\\\":%u,\\\"fxRegistered\\\":%u,\\\"fxFailed\\\":%u,\\\"modeCount\\\":%u,\\\"fxFirst\\\":%u,\\\"fxLast\\\":%u,\\\"audioActive\\\":%s,\\\"profile\\\":%u,\\\"style\\\":%u,\\\"amount\\\":%u,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u,\\\"pulse\\\":%u,\\\"energy\\\":%u,\\\"impact\\\":%u,\\\"drop\\\":%u}"),
             hbnfGenV4.enabled() ? "true" : "false", hbnfGenV4.locked() ? "true" : "false", hbnfGenV4.domain(),
-            (unsigned long)hbnfGenV4.sequence(), (unsigned long)hbnfGenV4.current().signature,
+            (unsigned long)hbnfGenV4.sequence(), (unsigned long)hbnfGenV4.current().signature, hbnfGenV4.current().familyId,
             (unsigned long)hbnfProjectionTx.packets(), hbnfProjectionTx.seq(),
             hbnfFxRegistered, hbnfFxFailed, strip.getModeCount(), hbnfFxFirst, hbnfFxLast,
             anim.hbnfActive() ? "true" : "false",
