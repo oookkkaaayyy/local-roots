@@ -32,7 +32,8 @@ test("D&U admin exposes a gallery inbox with explicit publish control", () => {
 });
 
 test("gallery uploads remain admin-protected and validate image payloads", () => {
-  assert.ok(duAdminFunction.includes('if (!admin) return json({ error: "forbidden" }, 403)'));
+  assert.ok(duAdminFunction.includes("resolveAdmin(service, req)"));
+  assert.ok(duAdminFunction.includes('if (!auth) return json({ error: "unauthorized" }, 401)'));
   assert.ok(duAdminFunction.includes('action === "gallery_upload"'));
   assert.ok(duAdminFunction.includes("gallery_needs_two_images"));
   assert.ok(duAdminFunction.includes("gallery_image_too_large"));
