@@ -5,6 +5,7 @@ on:
     branches:
       - hbnf-matrix-wow-bundle-r3-20260921
       - hbnf-matrix-audio-lanes-v3-accepted-20260927
+      - hbnf-generative-projection-v4-20260927
     paths:
       - '.hbnf-build-r3max/**'
       - '.github/workflows/hbnf-wled16-wowmax-build.yml'
@@ -50,6 +51,8 @@ jobs:
           patch = pathlib.Path('/tmp/hbnf-r1/firmware_patch')
           (patch/'hbnf_vibe16.h').write_bytes(pathlib.Path('.hbnf-build-r3max/hbnf_vibe16.h').read_bytes())
           (patch/'hbnf_animartrix_audio_bridge.h').write_bytes(pathlib.Path('.hbnf-build-r3max/hbnf_animartrix_audio_bridge.h').read_bytes())
+          (patch/'hbnf_generative_v4.h').write_bytes(pathlib.Path('.hbnf-build-r3max/hbnf_generative_v4.h').read_bytes())
+          (patch/'hbnf_projection_link_v1.h').write_bytes(pathlib.Path('.hbnf-build-r3max/hbnf_projection_link_v1.h').read_bytes())
           PY
           {
             echo '=== HBNF FLOW SOURCE AUDIT ==='
@@ -68,6 +71,10 @@ jobs:
           /tmp/wowmax-bridge | tee /tmp/wowmax-bridge.log
           g++ -std=c++11 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_audio_lanes_v3.cpp -o /tmp/wowmax-audio-lanes-v3
           /tmp/wowmax-audio-lanes-v3 | tee /tmp/wowmax-audio-lanes-v3.log
+          g++ -std=c++11 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_generative_v4.cpp -o /tmp/wowmax-generative-v4
+          /tmp/wowmax-generative-v4 | tee /tmp/wowmax-generative-v4.log
+          g++ -std=c++11 -O2 -I.hbnf-build-r3max .hbnf-build-r3max/test_projection_link_v1.cpp -o /tmp/wowmax-projection-v1
+          /tmp/wowmax-projection-v1 | tee /tmp/wowmax-projection-v1.log
           ! grep -q 'const bool cross=' .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h
           ! grep -q 'sparks_' .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h
           ! grep -q 'burstLife_' .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h
@@ -113,9 +120,15 @@ jobs:
           mkdir -p usermods/hbnf_flow
           cp -R /tmp/hbnf-r1/hbnf_flow/hbnf_flow/. usermods/hbnf_flow/
           python /tmp/hbnf-r1/firmware_patch/apply_hbnf_animartrix_patch.py /tmp/wled --patch-dir /tmp/hbnf-r1/firmware_patch
+          cp "$GITHUB_WORKSPACE/.hbnf-build-r3max/hbnf_generative_v4.h" /tmp/wled/usermods/usermod_v2_animartrix/
+          cp "$GITHUB_WORKSPACE/.hbnf-build-r3max/hbnf_projection_link_v1.h" /tmp/wled/usermods/usermod_v2_animartrix/
           python "$GITHUB_WORKSPACE/.hbnf-build-r3max/apply_wowmax_v3.py" /tmp/wled
           grep -q 'hbnf-wow-r3-max-2026-09-21-v3' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
-          grep -q 'source-coupled-v3' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'source-coupled-v4' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'anti-repeat-v4' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'frame-lock-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'HbnfGenerativeRuntimeV4' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'HbnfProjectionSenderV1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'mqtt->publish(topic, 0, false, payload)' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'usermod\[FPSTR(_inputLvl)\] = inputLevel' usermods/audioreactive/audio_reactive.cpp
           ! grep -q '#define fmodf' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
@@ -159,9 +172,9 @@ jobs:
           SHA=$(sha256sum "$BIN" | awk '{print $1}')
           VIBE=$(sha256sum .hbnf-build-r3max/hbnf_vibe16.h | awk '{print $1}')
           BRIDGE=$(sha256sum .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h | awk '{print $1}')
-          cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-wowmax-source.patch /tmp/wowmax-vibe.log /tmp/wowmax-bridge.log /tmp/wowmax-audio-lanes-v3.log /tmp/wowmax-soak.log /tmp/wowmax-fuzz.log /tmp/wowmax-sanitize.log /tmp/hbnf-flow-source-audit.txt /tmp/artifacts/
+          cp /tmp/build-first.log /tmp/build-second.log /tmp/size-first.log /tmp/normalized-wowmax-source.patch /tmp/wowmax-vibe.log /tmp/wowmax-bridge.log /tmp/wowmax-audio-lanes-v3.log /tmp/wowmax-generative-v4.log /tmp/wowmax-projection-v1.log /tmp/wowmax-soak.log /tmp/wowmax-fuzz.log /tmp/wowmax-sanitize.log /tmp/hbnf-flow-source-audit.txt /tmp/artifacts/
           cp -R /tmp/hbnf-r1/hbnf_flow/hbnf_flow /tmp/artifacts/hbnf_flow_source
-          cp .hbnf-build-r3max/hbnf_vibe16.h .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h .hbnf-build-r3max/apply_wowmax_v3.py /tmp/artifacts/
+          cp .hbnf-build-r3max/hbnf_vibe16.h .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h .hbnf-build-r3max/hbnf_generative_v4.h .hbnf-build-r3max/hbnf_projection_link_v1.h .hbnf-build-r3max/apply_wowmax_v3.py /tmp/artifacts/
           {
             echo wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
             echo release=hbnf-wow-r3-max-2026-09-21-v3
@@ -177,9 +190,15 @@ jobs:
             echo RANDOMIZED_BRIDGE_FUZZ_350K=PASS
             echo ASAN_UBSAN_FUZZ_GATE=PASS
             echo SOURCE_COUPLED_AUDIO_LANES_V3_GATE=PASS
+            echo GENERATIVE_V4_5000_VARIANTS_PER_DOMAIN_GATE=PASS
+            echo GENERATIVE_V4_22_EFFECT_ANTI_REPEAT_GATE=PASS
+            echo PROJECTION_LINK_V1_PACKET_CRC_GATE=PASS
+            echo PROJECTION_LINK_V1_22_BIN_FRAME_GATE=PASS
             echo UNIVERSAL_PLUS_SIGN_OVERLAY_ABSENT=PASS
             echo LEGACY_SPARK_BURST_OVERLAYS_ABSENT=PASS
-            echo AUDIO_GEOMETRY_TELEMETRY=source-coupled-v3
+            echo AUDIO_GEOMETRY_TELEMETRY=source-coupled-v4
+            echo GENERATOR_TELEMETRY=anti-repeat-v4
+            echo PROJECTION_TELEMETRY=frame-lock-v1
             echo FIRMWARE_RELEASE_TELEMETRY=PASS
             echo AUDIO_INPUTLEVEL_RUNTIME_TELEMETRY=PASS
             echo WOW_AUDIO_DIAGNOSTIC_TELEMETRY=PASS
