@@ -1,5 +1,6 @@
 // @ts-nocheck
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
@@ -8,9 +9,12 @@ const duAdmin = readFileSync(new URL("../../app/src/pages/DuAdminPage.tsx", impo
 const duAdminFunction = readFileSync(new URL("../../supabase/functions/du-admin/index.ts", import.meta.url), "utf8");
 const dropField = readFileSync(new URL("../../app/src/components/ImageDropField.tsx", import.meta.url), "utf8");
 const legacyMigration = readFileSync(new URL("../../supabase/migrations/20260927054500_migrate_du_legacy_gallery_to_items.sql", import.meta.url), "utf8");
+const duLogo = readFileSync(new URL("../../app/public/brand/dyed-unattached-logo.png", import.meta.url));
+const duTombstone = readFileSync(new URL("../../app/public/brand/dyed-unattached-tombstone.png", import.meta.url));
 
 test("D&U public page keeps only approved/functional copy and intake", () => {
-  assert.ok(duPublic.includes("<h1>Dyed &amp; Unattached</h1>"));
+  assert.ok(duPublic.includes('src="/brand/dyed-unattached-logo.png"'));
+  assert.ok(duPublic.includes('alt="Dyed & Unattached"'));
   assert.ok(duPublic.includes('href="#request-stencil"'));
   assert.ok(duPublic.includes('id="gallery"'));
   assert.ok(duPublic.includes("SUBMIT_INTAKE_URL"));
@@ -21,6 +25,14 @@ test("D&U public page keeps only approved/functional copy and intake", () => {
   assert.equal(duPublic.includes("From photo to disc"), false);
   assert.equal(duPublic.includes("Start here"), false);
   assert.equal(duPublic.includes("No account required."), false);
+});
+
+test("D&U public page uses the preserved canonical brand artwork", () => {
+  assert.ok(duPublic.includes('src="/brand/dyed-unattached-logo.png"'));
+  assert.ok(duPublic.includes('src="/brand/dyed-unattached-tombstone.png"'));
+  assert.equal(duPublic.includes('className="branch-monogram"'), false);
+  assert.equal(createHash("sha256").update(duLogo).digest("hex"), "a9bdcd967c968008e3493f52be96c0cb2066364848e78b9987a4350bfb1f4136");
+  assert.equal(createHash("sha256").update(duTombstone).digest("hex"), "89ce5f6db5fa730182610575a2bc53aa07ac8a1bd3cf7c33b26af75d23ade879");
 });
 
 test("D&U public gallery renders the portfolio from managed item records", () => {
