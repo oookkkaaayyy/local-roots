@@ -30,6 +30,11 @@ Deno.serve(async (req: Request) => {
     programMode: state.programMode, sceneId: state.sceneId, paletteId: state.paletteId,
     vibe: state.vibe, tempoMode: state.tempoMode ?? "music", speedBias: state.effectiveMusicTempoBias ?? state.manualSpeedBias ?? 1,
     sequenceCursor: state.sequenceCursor,
+    tuning: {
+      micSensitivity: state.tuning?.micSensitivity ?? 255,
+      audioProfile: state.tuning?.audioProfile ?? "scene",
+      audioStyle: state.tuning?.audioStyle ?? "scene",
+    },
     audio: {
       bass: state.music?.bass ?? 0, mids: state.music?.mids ?? 0, treble: state.music?.treble ?? 0,
       bassIntensity: state.music?.bassAccent ?? 0, midsIntensity: state.music?.midsAccent ?? 0, trebleIntensity: state.music?.trebleAccent ?? 0,
@@ -39,7 +44,7 @@ Deno.serve(async (req: Request) => {
     applyCompleteProjection: true,
   }));
 
-  const results = await Promise.all(projections.map(async (projection) => {
+  const applyProjection = async (projection: (typeof projections)[number]) => {
     try {
       const functionName = projection.deviceId === "matrix" ? "hbnf-matrix-adapter" : "hbnf-aux-adapter";
       const { data: ack, error: invokeError } = await db.functions.invoke(functionName, { body: projection });
@@ -65,7 +70,14 @@ Deno.serve(async (req: Request) => {
       });
       return { deviceId: projection.deviceId, status: writeError ? "failed_unrecorded" : "failed" };
     }
-  }));
+  };
+
+  // Matrix is the visual/audio authority; AUX follows it. Apply Matrix first so any
+  // startup/dark staging cannot overwrite the follower after AUX has already acknowledged.
+  const results = [];
+  for (const projection of projections) {
+    results.push(await applyProjection(projection));
+  }
 
   return reply({ cartRevision: cart.revision, fenceEpoch: fence.epoch, status: results.every((x) => x.status === "applied" || x.status === "off") ? "applied" : "degraded", results });
 });
