@@ -99,10 +99,10 @@ async function resolveAdmin(service: ServiceClient, req: Request): Promise<Admin
   if (userError || !userData.user) return null;
   const { data: admin } = await service.from("lr_admin_users")
     .select("user_id,display_name,role,active")
-    .eq("user_id", userId).eq("active", true).maybeSingle();
+    .eq("user_id", userData.user.id).eq("active", true).maybeSingle();
   if (!admin) return null;
   return {
-    userId: userId,
+    userId: userData.user.id,
     email: userData.user.email || null,
     admin,
     mode: "jwt",

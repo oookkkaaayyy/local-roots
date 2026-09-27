@@ -45,3 +45,9 @@ test("protected D&U actions accept device auth only after active-admin verificat
   assert.ok(handoffFn.includes('service.from("lr_admin_users")'));
   assert.ok(handoffFn.includes('.eq("active", true)'));
 });
+
+
+test("JWT fallback verifies the actual authenticated user id before device upgrade", () => {
+  assert.ok(adminFn.includes('.eq("user_id", userData.user.id).eq("active", true)'));
+  assert.ok(adminFn.includes('userId: userData.user.id'));
+});
