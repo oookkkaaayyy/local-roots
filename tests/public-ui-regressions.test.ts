@@ -231,3 +231,15 @@ test("Events visible typography is standardized on the site sans family", () => 
   assert.ok(styles.includes(".events-page .section-intro h2{font-size:1.55rem"));
 });
 
+test("refined Local Roots presentation uses one humanist UI family and stronger header lockup", () => {
+  const shell = source("components/Shell.tsx");
+  const styles = source("styles.css");
+  const events = source("events-enhancements.css");
+  assert.ok(shell.includes("corePublic=path==='/'||path==='/events'"));
+  assert.ok(styles.includes('.core-public-shell{--lr-ui:"Avenir Next"'));
+  assert.ok(styles.includes('.core-public-shell .brand-logo-mark{display:block;width:58px'));
+  assert.ok(styles.includes('.core-public-shell .brand strong{font-family:var(--lr-ui);font-size:1.42rem'));
+  assert.ok(styles.includes('.core-public-shell .site-header nav a[aria-current="page"]'));
+  assert.ok(events.includes('.events-page{--events-sans:"Avenir Next"'));
+  assert.ok(events.includes('.events-page .event-main h3{font-size:1.03rem;font-weight:700'));
+});
