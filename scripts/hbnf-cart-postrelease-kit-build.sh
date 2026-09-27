@@ -5,6 +5,7 @@ OUT="${1:-$ROOT/build/hbnf-cart-phase2}"
 HANDOFF_SRC="${PHASE1_HANDOFF_FILE:-$ROOT/config/PHASE1_FINAL_HANDOFF.json}"
 TOKEN_SRC="${BRIDGE_CART_TOKEN_FILE:-}"
 REQUIRE_FINAL="${HBNF_PHASE2_REQUIRE_FINAL:-0}"
+ARCHIVE_NAME="${HBNF_PHASE2_ARCHIVE_NAME:-HBNF_CART_PHASE2.tar.gz}"
 
 rm -rf "$OUT"
 mkdir -p "$OUT/scripts" "$OUT/config" "$OUT/docs" "$OUT/game-bridge"
@@ -72,8 +73,8 @@ EOF
 ) > "$OUT/SHA256SUMS.txt"
 
 PARENT="$(dirname "$OUT")"; NAME="$(basename "$OUT")"
-tar -C "$PARENT" -czf "$PARENT/HBNF_CART_PHASE2.tar.gz" "$NAME"
-(cd "$PARENT" && shasum -a 256 HBNF_CART_PHASE2.tar.gz > HBNF_CART_PHASE2.tar.gz.sha256)
+tar -C "$PARENT" -czf "$PARENT/$ARCHIVE_NAME" "$NAME"
+(cd "$PARENT" && shasum -a 256 "$ARCHIVE_NAME" > "$ARCHIVE_NAME.sha256")
 echo "HBNF_CART_PHASE2_BUILD=PASS"
 echo "FINALIZED=$FINALIZED"
-echo "ARCHIVE=$PARENT/HBNF_CART_PHASE2.tar.gz"
+echo "ARCHIVE=$PARENT/$ARCHIVE_NAME"

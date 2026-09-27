@@ -57,7 +57,7 @@ jobs:
         run: bash scripts/hbnf-cart-postrelease-kit-build.sh "$GITHUB_WORKSPACE/build/hbnf-cart-phase2"
       - name: Build synthetic finalized Phase 2 package
         run: |
-          PHASE1_HANDOFF_FILE=/tmp/phase1-final.json BRIDGE_CART_TOKEN_FILE=/tmp/bridge-token.txt HBNF_PHASE2_REQUIRE_FINAL=1 \
+          PHASE1_HANDOFF_FILE=/tmp/phase1-final.json BRIDGE_CART_TOKEN_FILE=/tmp/bridge-token.txt HBNF_PHASE2_REQUIRE_FINAL=1 HBNF_PHASE2_ARCHIVE_NAME=HBNF_CART_PHASE2_FINAL_TEST.tar.gz \
             bash scripts/hbnf-cart-postrelease-kit-build.sh "$GITHUB_WORKSPACE/build/hbnf-cart-phase2-final"
           test -s build/hbnf-cart-phase2-final/game-bridge/BRIDGE_CART_TOKEN.txt
           python3 build/hbnf-cart-phase2-final/scripts/hbnf-phase2-handoff-guard.py build/hbnf-cart-phase2-final/config/PHASE1_FINAL_HANDOFF.json
