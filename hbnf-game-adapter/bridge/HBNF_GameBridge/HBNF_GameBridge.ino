@@ -7,6 +7,7 @@
 #include <WiFiClientSecure.h>
 #include <WebServer.h>
 #include <WebSocketsServer.h>
+#include <WebSocketsClient.h>
 #include <DNSServer.h>
 
 #include "game_core.h"
@@ -22,12 +23,14 @@ namespace {
 
 constexpr const char* kDefaultSsid = "HBNF-Cart";
 constexpr const char* kMatrixIp = "192.168.8.20";
+constexpr const char* kAuxIp = "192.168.8.21";
 constexpr uint16_t kLocalUdpPort = 4050;
 constexpr uint16_t kProjectionPort = 11989;
 constexpr size_t kProjectionPacketBytes = 77;
 constexpr uint8_t kProjectionPixels = 22;
 constexpr uint32_t kFrameMs = 33;
 constexpr uint32_t kProbeMs = 250;
+constexpr uint32_t kAuxProjectionProbeMs = 500;
 constexpr uint32_t kWifiRetryMs = 5000;
 constexpr const char* kPlaySsid = "HBNF-Play";
 constexpr const char* kCartControlUrl = "https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-control";
@@ -46,7 +49,16 @@ SessionLifecycle lifecycle;
 RemoteInputBroker remoteInput;
 WebServer gameWeb(80);
 WebSocketsServer gameWs(81);
+WebSocketsClient matrixPreviewWs;
 DNSServer captiveDns;
+int visualClient = -1;
+bool matrixPreviewConnected = false;
+uint16_t matrixPreviewSeq = 0;
+uint32_t matrixPreviewAt = 0;
+uint16_t auxProjectionSeq = 0;
+uint32_t auxProjectionAgeMs = 0xffffffffu;
+bool auxProjectionActive = false;
+uint32_t lastAuxProjectionProbeAt = 0;
 uint8_t ddpSequence = 0;
 uint32_t lastFrameAt = 0;
 uint32_t lastProbeAt = 0;
@@ -61,6 +73,7 @@ int cartRevisionCache = -1;
 SemaphoreHandle_t cartProxyMutex = nullptr;
 bool cartJobPending = false;
 bool cartJobBusy = false;
+bool cartJobRequireConvergence = false;
 uint8_t cartJobClient = 0;
 String cartJobType;
 String cartJobPayload;
@@ -177,17 +190,21 @@ bool parseJsonIntAfter(const String& body, const String& anchor, const char* key
   return true;
 }
 
-bool httpGet(const String& path, String& body, uint16_t timeoutMs = 450) {
+bool httpGetHost(const char* host, const String& path, String& body, uint16_t timeoutMs = 450) {
   if (WiFi.status() != WL_CONNECTED) return false;
   HTTPClient http;
   http.setConnectTimeout(timeoutMs);
   http.setTimeout(timeoutMs);
-  const String url = String("http://") + kMatrixIp + path;
+  const String url = String("http://") + host + path;
   if (!http.begin(url)) return false;
   const int code = http.GET();
   if (code == 200) body = http.getString();
   http.end();
   return code == 200;
+}
+
+bool httpGet(const String& path, String& body, uint16_t timeoutMs = 450) {
+  return httpGetHost(kMatrixIp, path, body, timeoutMs);
 }
 
 bool verifyMatrixIdentity() {
@@ -251,9 +268,10 @@ bool projectionSeqNewer(uint16_t candidate, uint16_t current) {
 }
 
 void broadcastProjectionFrame() {
+  if (visualClient < 0) return;
   static const char hex[] = "0123456789abcdef";
   String msg;
-  msg.reserve(5 + 6 + kProjectionPixels * 6);
+  msg.reserve(5 + 6 + kProjectionPixels * 2);
   msg = "PROJ,";
   msg += String(projectionSeq);
   msg += ",";
@@ -261,7 +279,7 @@ void broadcastProjectionFrame() {
     msg += hex[projectionRgb[i] >> 4];
     msg += hex[projectionRgb[i] & 15];
   }
-  gameWs.broadcastTXT(msg);
+  gameWs.sendTXT(uint8_t(visualClient), msg);
 }
 
 void processProjectionFrames(uint32_t nowMs) {
@@ -287,6 +305,64 @@ void processProjectionFrames(uint32_t nowMs) {
     projectionSeen = true;
     broadcastProjectionFrame();
   }
+}
+
+uint16_t projectionSeqDistance(uint16_t a, uint16_t b) {
+  const uint16_t d = a > b ? uint16_t(a - b) : uint16_t(b - a);
+  return d < uint16_t(65536u - d) ? d : uint16_t(65536u - d);
+}
+
+void sendVisualSyncStatus() {
+  if (visualClient < 0) return;
+  const bool sourceLive = projectionSeen && (millis() - projectionAt) < 350u;
+  const bool locked = sourceLive && auxProjectionActive && auxProjectionAgeMs <= 350u &&
+                      projectionSeqDistance(projectionSeq, auxProjectionSeq) <= 4u;
+  String msg = String("SYNC,") + (locked ? "1" : "0") + "," + String(projectionSeq) + "," +
+               String(auxProjectionSeq) + "," + String(auxProjectionAgeMs) + "," +
+               (matrixPreviewConnected ? "1" : "0");
+  gameWs.sendTXT(uint8_t(visualClient), msg);
+}
+
+bool sampleAuxProjection() {
+  String body;
+  if (!httpGetHost(kAuxIp, "/json/state", body, 650)) return false;
+  bool active = false;
+  int seq = -1, age = -1;
+  if (!parseJsonBool(body, "projectionRxActive", active)) return false;
+  if (!parseJsonIntAfter(body, "", "projectionRxSeq", seq)) return false;
+  if (!parseJsonIntAfter(body, "", "projectionRxAgeMs", age)) return false;
+  auxProjectionActive = active;
+  auxProjectionSeq = uint16_t(constrain(seq, 0, 65535));
+  auxProjectionAgeMs = age < 0 ? 0xffffffffu : uint32_t(age);
+  sendVisualSyncStatus();
+  return true;
+}
+
+void matrixPreviewEvent(WStype_t type, uint8_t* payload, size_t length) {
+  if (type == WStype_CONNECTED) {
+    matrixPreviewConnected = true;
+    matrixPreviewWs.sendTXT("{\"lv\":true}");
+    sendVisualSyncStatus();
+    return;
+  }
+  if (type == WStype_DISCONNECTED) {
+    matrixPreviewConnected = false;
+    sendVisualSyncStatus();
+    return;
+  }
+  if (type != WStype_BIN || length < 4 || payload[0] != 'L' || payload[1] != 2) return;
+  const uint8_t width = payload[2], height = payload[3];
+  const size_t pixels = size_t(width) * size_t(height);
+  const size_t bytes = pixels * 3u;
+  if (width != 32 || height != 16 || length < 4u + bytes || visualClient < 0) return;
+  static uint8_t frame[7 + 32 * 16 * 3];
+  frame[0] = 'H'; frame[1] = 'V'; frame[2] = 1;
+  frame[3] = width; frame[4] = height;
+  const uint16_t seq = ++matrixPreviewSeq;
+  frame[5] = uint8_t(seq >> 8); frame[6] = uint8_t(seq & 255u);
+  memcpy(frame + 7, payload + 4, bytes);
+  matrixPreviewAt = millis();
+  gameWs.sendBIN(uint8_t(visualClient), frame, 7u + bytes);
 }
 
 String commandUuid() {
@@ -328,7 +404,7 @@ bool currentCartRevision(int& revision) {
   return true;
 }
 
-bool guestCartCommand(const String& type, const String& payload, String& error) {
+bool guestCartCommand(const String& type, const String& payload, String& error, int* committedOut = nullptr) {
   int revision=cartRevisionCache;
   if (revision<0 && !currentCartRevision(revision)) { error="STATUS_UNAVAILABLE"; return false; }
   String body="{\"action\":\"command\",\"commandId\":\""+commandUuid()+"\",\"type\":\""+type+
@@ -337,8 +413,10 @@ bool guestCartCommand(const String& type, const String& payload, String& error) 
   if (!cartApiPost(body,out,code)) { error="NETWORK"; return false; }
   if (code>=200 && code<300) {
     int committed=-1;
-    if (parseJsonIntAfter(out,"","revision",committed)) cartRevisionCache=committed;
-    else cartRevisionCache=-1;
+    if (parseJsonIntAfter(out,"","revision",committed)) {
+      cartRevisionCache=committed;
+      if (committedOut) *committedOut=committed;
+    } else cartRevisionCache=-1;
     return true;
   }
   if (code==409 && out.indexOf("stale_revision")>=0) {
@@ -347,8 +425,10 @@ bool guestCartCommand(const String& type, const String& payload, String& error) 
          "\",\"payload\":"+payload+",\"expectedRevision\":"+String(revision)+"}";
     if (cartApiPost(body,out,code) && code>=200 && code<300) {
       int committed=-1;
-      if (parseJsonIntAfter(out,"","revision",committed)) cartRevisionCache=committed;
-      else cartRevisionCache=-1;
+      if (parseJsonIntAfter(out,"","revision",committed)) {
+        cartRevisionCache=committed;
+        if (committedOut) *committedOut=committed;
+      } else cartRevisionCache=-1;
       return true;
     }
   }
@@ -357,7 +437,25 @@ bool guestCartCommand(const String& type, const String& payload, String& error) 
 }
 
 
-bool queueCartProxy(uint8_t client, const String& type, const String& payload) {
+bool cartRevisionConverged(int targetRevision) {
+  String body; int code=0;
+  if (!cartApiPost("{\"action\":\"status\"}",body,code) || code!=200) return false;
+  const String needle=String("\"desired_revision\":")+String(targetRevision);
+  int found=0,pos=0;
+  while ((pos=body.indexOf(needle,pos))>=0) { ++found; pos+=needle.length(); }
+  return found>=2;
+}
+
+bool waitCartRevisionConverged(int targetRevision, uint32_t timeoutMs=5000) {
+  const uint32_t start=millis();
+  while ((uint32_t)(millis()-start)<timeoutMs) {
+    if (cartRevisionConverged(targetRevision)) return true;
+    vTaskDelay(pdMS_TO_TICKS(120));
+  }
+  return false;
+}
+
+bool queueCartProxy(uint8_t client, const String& type, const String& payload, bool requireConvergence=false) {
   if (!cartProxyMutex) return false;
   if (xSemaphoreTake(cartProxyMutex, pdMS_TO_TICKS(20)) != pdTRUE) return false;
   if (cartJobPending) {
@@ -367,6 +465,7 @@ bool queueCartProxy(uint8_t client, const String& type, const String& payload) {
   cartJobClient = client;
   cartJobType = type;
   cartJobPayload = payload;
+  cartJobRequireConvergence = requireConvergence;
   cartJobPending = true;
   xSemaphoreGive(cartProxyMutex);
   return true;
@@ -377,6 +476,7 @@ void cartProxyWorker(void*) {
     bool have = false;
     uint8_t client = 0;
     String type, payload;
+    bool requireConvergence = false;
     if (cartProxyMutex && xSemaphoreTake(cartProxyMutex, pdMS_TO_TICKS(20)) == pdTRUE) {
       if (cartJobPending && !cartJobBusy && !cartResultReady) {
         cartJobBusy = true;
@@ -384,6 +484,7 @@ void cartProxyWorker(void*) {
         client = cartJobClient;
         type = cartJobType;
         payload = cartJobPayload;
+        requireConvergence = cartJobRequireConvergence;
         have = true;
       }
       xSemaphoreGive(cartProxyMutex);
@@ -394,12 +495,17 @@ void cartProxyWorker(void*) {
     }
 
     String error;
-    const bool ok = guestCartCommand(type, payload, error);
+    int committedRevision=-1;
+    bool ok = guestCartCommand(type, payload, error, &committedRevision);
+    if (ok && requireConvergence && committedRevision >= 0 && !waitCartRevisionConverged(committedRevision)) {
+      ok=false;
+      error="NOT_CONFIRMED";
+    }
 
     if (xSemaphoreTake(cartProxyMutex, portMAX_DELAY) == pdTRUE) {
       cartResultClient = client;
       cartResultOk = ok;
-      cartResultDetail = ok ? type : error;
+      cartResultDetail = ok ? type + (committedRevision >= 0 ? String(",") + String(committedRevision) : String("")) : error;
       cartResultReady = true;
       cartJobBusy = false;
       xSemaphoreGive(cartProxyMutex);
@@ -448,6 +554,7 @@ void releaseRemoteClient(uint8_t num, const char* reason = "RELEASED") {
 void onGameWsEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length) {
   if (type == WStype_DISCONNECTED) {
     remoteInput.releaseClient(num);
+    if (visualClient == int(num)) visualClient = -1;
     return;
   }
   if (type == WStype_CONNECTED) {
@@ -462,6 +569,30 @@ void onGameWsEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length) 
 
   if (msg.startsWith("PING,")) {
     gameWs.sendTXT(num, String("PONG,") + msg.substring(5));
+    return;
+  }
+  if (msg == "VISUAL_SUBSCRIBE") {
+    if (!host) { gameWs.sendTXT(num,"ERR,OWNER_ONLY"); return; }
+    visualClient=int(num);
+    gameWs.sendTXT(num,"VISUAL_READY");
+    if (projectionSeen) broadcastProjectionFrame();
+    sendVisualSyncStatus();
+    return;
+  }
+  if (msg.startsWith("VISUAL_TUNE,")) {
+    if (!host) { gameWs.sendTXT(num,"CARTERR,OWNER_ONLY"); return; }
+    int p1=msg.indexOf(',',12), p2=p1<0?-1:msg.indexOf(',',p1+1);
+    if (p1<0||p2<0) { gameWs.sendTXT(num,"CARTERR,BAD_TUNE"); return; }
+    const int energy=constrain(msg.substring(12,p1).toInt(),0,100);
+    const int audio=constrain(msg.substring(p1+1,p2).toInt(),0,100);
+    const int motion=constrain(msg.substring(p2+1).toInt(),0,100);
+    const char* vibe=energy<25?"mellow":energy<55?"moderate":energy<82?"energetic":"peak";
+    const float speed=0.5f+float(motion)/100.0f;
+    const float boost=1.0f+float(audio)*0.005f;
+    const String tune=String("{\"vibe\":\"")+vibe+"\",\"speedBias\":"+String(speed,2)+
+                      ",\"responseBoost\":"+String(boost,3)+"}";
+    if (!queueCartProxy(num,"TUNE",tune,true)) gameWs.sendTXT(num,"CARTERR,BUSY");
+    else gameWs.sendTXT(num,"CARTQUEUED,TUNE");
     return;
   }
   if (msg == "CLAIM_AUTO") {
@@ -568,6 +699,14 @@ void startGameWeb() {
 
   auto serveController = []() { gameWeb.send_P(200, "text/html", HBNF_GAME_CONTROLLER_PAGE); };
   gameWeb.on("/", HTTP_GET, serveController);
+  gameWeb.on("/visual", HTTP_GET, []() {
+    IPAddress ip=gameWeb.client().remoteIP();
+    if (!(ip[0]==192 && ip[1]==168 && ip[2]==8)) {
+      gameWeb.send(403,"text/plain","Owner network only");
+      return;
+    }
+    gameWeb.send_P(200,"text/html",HBNF_VISUAL_LAB_PAGE);
+  });
   gameWeb.on("/hotspot-detect.html", HTTP_GET, serveController);
   gameWeb.on("/generate_204", HTTP_GET, serveController);
   gameWeb.on("/gen_204", HTTP_GET, serveController);
@@ -582,6 +721,9 @@ void startGameWeb() {
 
   gameWs.begin();
   gameWs.onEvent(onGameWsEvent);
+  matrixPreviewWs.begin(kMatrixIp,80,"/ws");
+  matrixPreviewWs.onEvent(matrixPreviewEvent);
+  matrixPreviewWs.setReconnectInterval(2000);
   Serial.printf("HBNF_PLAY_AP=ONLINE SSID=%s IP=%s\n", kPlaySsid, ap.toString().c_str());
 }
 
@@ -747,11 +889,16 @@ void loop() {
   BP32.update();
   gameWeb.handleClient();
   gameWs.loop();
+  matrixPreviewWs.loop();
   pumpCartProxyResult();
   captiveDns.processNextRequest();
   processSerial();
   const uint32_t now = millis();
   processProjectionFrames(now);
+  if (WiFi.status() == WL_CONNECTED && (uint32_t)(now-lastAuxProjectionProbeAt)>=kAuxProjectionProbeMs) {
+    lastAuxProjectionProbeAt=now;
+    sampleAuxProjection();
+  }
 
   if (WiFi.status() == WL_CONNECTED) {
     static bool announced = false;
