@@ -1,0 +1,12 @@
+{
+  "name": "HBNF Cart Control",
+  "short_name": "HBNF Cart",
+  "start_url": "/hbnf-cart.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#071018",
+  "theme_color": "#071018",
+  "icons": [
+    {"src": "/hbnf-cart-icon-180.png", "sizes": "180x180", "type": "image/png"}
+  ]
+}
