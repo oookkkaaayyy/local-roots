@@ -34,6 +34,8 @@ type BadgeNavigator = Navigator & {
 const labels:Record<WorkflowStatus,string>={draft:'Draft',intake_complete:'Intake complete',handoff_preparing:'Preparing handoff',chatgpt_ready:'ChatGPT ready',notification_sent:'Notified',stage_a_started:'Stage A started',awaiting_art_approval:'Awaiting art approval',art_approved:'Art approved',production_ready:'Production ready',complete:'Complete',handoff_failed:'Handoff failed'};
 const activeStates:WorkflowStatus[]=['intake_complete','handoff_preparing','chatgpt_ready','notification_sent','stage_a_started','awaiting_art_approval','art_approved','production_ready','handoff_failed'];
 const DU_DEVICE_TOKEN_KEY='du-admin-device-token-v1';
+const LEGACY_GALLERY_SPRITE='https://wtymjxscneufjlkkywyg.supabase.co/storage/v1/object/public/du-gallery/gallery-v2.avif';
+const LEGACY_GALLERY_SLIDES=9;
 function functionAuth(credential:AdminCredential){return credential.kind==='device'?{deviceToken:credential.value}:credential.value;}
 
 function isIos(){return /iPad|iPhone|iPod/.test(navigator.userAgent);}
@@ -165,12 +167,105 @@ function prepareGalleryImage(file:File,role:'source_photo'|'stencil'|'finished_d
   });
 }
 
+function galleryPublicUrl(path:string|null){
+  if(!path)return null;
+  return supabase.storage.from('du-gallery').getPublicUrl(path).data.publicUrl;
+}
+
+const galleryRoles=[
+  {key:'source_photo' as const,path:'source_photo_path' as const,label:'Reference photo'},
+  {key:'stencil' as const,path:'stencil_path' as const,label:'Stencil artwork'},
+  {key:'finished_disc' as const,path:'finished_disc_path' as const,label:'Finished disc'},
+];
+
+function GalleryItemEditor({item,index,total,credential,refresh}:{item:GalleryAdminItem;index:number;total:number;credential:AdminCredential;refresh:()=>Promise<void>}){
+  const [busy,setBusy]=useState(false),[message,setMessage]=useState('');
+  async function save(event:FormEvent<HTMLFormElement>){
+    event.preventDefault();setBusy(true);setMessage('Saving changes…');
+    const form=event.currentTarget;
+    try{
+      const images:Record<string,string>={};
+      for(const role of galleryRoles){
+        const input=form.elements.namedItem(role.key) as HTMLInputElement|null;
+        const file=input?.files?.[0]||null;
+        if(file)images[role.key]=await prepareGalleryImage(file,role.key);
+      }
+      const caption=String(new FormData(form).get('caption')||'').trim();
+      await callFunction('du-admin',{action:'gallery_update',item_id:item.id,caption,images},functionAuth(credential));
+      form.reset();await refresh();setMessage('Saved.');
+    }catch(reason){setMessage(reason instanceof Error?reason.message:'Could not save gallery changes.');}
+    finally{setBusy(false);}
+  }
+  async function removeImage(role:(typeof galleryRoles)[number]){
+    if(!window.confirm(`Remove the ${role.label.toLowerCase()} from this gallery item?`))return;
+    setBusy(true);setMessage('');
+    try{
+      await callFunction('du-admin',{action:'gallery_remove_image',item_id:item.id,role:role.key},functionAuth(credential));
+      await refresh();setMessage('Image removed.');
+    }catch(reason){setMessage(reason instanceof Error?reason.message:'Could not remove image.');}
+    finally{setBusy(false);}
+  }
+  async function setPublished(is_published:boolean){
+    setBusy(true);setMessage('');
+    try{
+      await callFunction('du-admin',{action:'gallery_set_published',item_id:item.id,is_published},functionAuth(credential));
+      await refresh();setMessage(is_published?'Published.':'Hidden from the public gallery.');
+    }catch(reason){setMessage(reason instanceof Error?reason.message:'Could not update gallery visibility.');}
+    finally{setBusy(false);}
+  }
+  async function move(direction:'earlier'|'later'){
+    setBusy(true);setMessage('');
+    try{await callFunction('du-admin',{action:'gallery_move',item_id:item.id,direction},functionAuth(credential));await refresh();}
+    catch(reason){setMessage(reason instanceof Error?reason.message:'Could not reorder gallery item.');}
+    finally{setBusy(false);}
+  }
+  async function removeItem(){
+    if(!window.confirm('Delete this gallery item and its stored images? This cannot be undone.'))return;
+    setBusy(true);setMessage('');
+    try{await callFunction('du-admin',{action:'gallery_delete',item_id:item.id},functionAuth(credential));await refresh();}
+    catch(reason){setMessage(reason instanceof Error?reason.message:'Could not delete gallery item.');setBusy(false);}
+  }
+
+  return <form className="du-gallery-manage-item" onSubmit={save}>
+    <div className="du-gallery-manage-head">
+      <div><strong>{item.caption||`Gallery item ${index+1}`}</strong><span>{item.is_published?'Published':'Draft'} · position {index+1}</span></div>
+      <div className="pill-row"><span className={item.is_published?'health health-healthy':'health health-warning'}>{item.is_published?'Live':'Draft'}</span></div>
+    </div>
+    <div className="du-gallery-role-grid">
+      {galleryRoles.map(role=>{
+        const path=item[role.path];
+        const url=galleryPublicUrl(path);
+        return <section className="du-gallery-role" key={role.key}>
+          <div className="du-gallery-role-preview">{url?<img src={url} alt={role.label}/>:<span>Empty</span>}</div>
+          <ImageDropField name={role.key} label={role.label} hint={url?'drop to replace':'drop here'} accept="image/*" />
+          {url?<button className="button ghost du-gallery-remove" type="button" disabled={busy} onClick={()=>void removeImage(role)}>Remove {role.label.toLowerCase()}</button>:null}
+        </section>;
+      })}
+    </div>
+    <label>Caption <span className="optional">optional</span><input name="caption" maxLength={300} defaultValue={item.caption||''} placeholder="Pet name or short note"/></label>
+    <div className="du-gallery-manage-actions">
+      <button className="button primary" type="submit" disabled={busy}>{busy?'Working…':'Save changes'}</button>
+      <button className="button ghost" type="button" disabled={busy} onClick={()=>void setPublished(!item.is_published)}>{item.is_published?'Hide':'Publish'}</button>
+      <button className="button ghost" type="button" disabled={busy||index===0} onClick={()=>void move('earlier')}>Move earlier</button>
+      <button className="button ghost" type="button" disabled={busy||index===total-1} onClick={()=>void move('later')}>Move later</button>
+      <button className="button danger" type="button" disabled={busy} onClick={()=>void removeItem()}>Delete item</button>
+    </div>
+    {message?<div className="notice">{message}</div>:null}
+  </form>;
+}
+
 function GalleryPanel({credential}:{credential:AdminCredential}){
   const [items,setItems]=useState<GalleryAdminItem[]>([]),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
   const [publishNow,setPublishNow]=useState(false);
-  const load=useCallback(async()=>{try{const result=await callFunction<GalleryList>('du-admin',{action:'gallery_list'},functionAuth(credential));setItems(result.items||[]);}catch{/* queue remains usable if gallery read fails */}},[credential.kind,credential.value]);
+  const load=useCallback(async()=>{
+    try{
+      const result=await callFunction<GalleryList>('du-admin',{action:'gallery_list'},functionAuth(credential));
+      setItems(result.items||[]);
+    }catch(reason){setMessage(reason instanceof Error?reason.message:'Could not load gallery manager.');}
+  },[credential.kind,credential.value]);
   useEffect(()=>{void load();},[load]);
-  async function submit(event:FormEvent<HTMLFormElement>){
+
+  async function addItem(event:FormEvent<HTMLFormElement>){
     event.preventDefault();setBusy(true);setMessage('Preparing images…');
     const form=event.currentTarget;const data=new FormData(form);
     try{
@@ -178,7 +273,7 @@ function GalleryPanel({credential}:{credential:AdminCredential}){
       const stencil=(form.elements.namedItem('galleryStencil') as HTMLInputElement|null)?.files?.[0]||null;
       const finished=(form.elements.namedItem('galleryFinished') as HTMLInputElement|null)?.files?.[0]||null;
       const selected=[source,stencil,finished].filter(Boolean);
-      if(selected.length<2)throw new Error('Choose at least two images. Preferred: reference photo + finished disc.');
+      if(selected.length<2)throw new Error('Add at least two images so the system has a source/result pair.');
       const images:Record<string,string>={};
       if(source)images.source_photo=await prepareGalleryImage(source,'source_photo');
       if(stencil)images.stencil=await prepareGalleryImage(stencil,'stencil');
@@ -186,30 +281,39 @@ function GalleryPanel({credential}:{credential:AdminCredential}){
       setMessage('Uploading…');
       await callFunction<GalleryUpload>('du-admin',{action:'gallery_upload',caption:String(data.get('galleryCaption')||'').trim(),is_published:publishNow,images},functionAuth(credential));
       form.reset();setPublishNow(false);await load();
-      setMessage(publishNow?'Published to the public gallery.':'Saved to the gallery inbox. Tell ChatGPT “publish newest gallery item” when you want me to do the final check and publish it.');
+      setMessage(publishNow?'Added and published.':'Added as a draft. It is already visible below for direct editing.');
     }catch(reason){setMessage(reason instanceof Error?reason.message:'Gallery upload failed.');}
     finally{setBusy(false);}
   }
-  async function setPublished(item:GalleryAdminItem,is_published:boolean){
-    setBusy(true);setMessage('');
-    try{await callFunction('du-admin',{action:'gallery_set_published',item_id:item.id,is_published},functionAuth(credential));await load();setMessage(is_published?'Published.':'Hidden from the public gallery.');}
-    catch(reason){setMessage(reason instanceof Error?reason.message:'Gallery update failed.');}
-    finally{setBusy(false);}
-  }
-  return <section className="admin-card" style={{marginTop:'18px'}} aria-labelledby="du-gallery-inbox-title">
-    <div className="admin-card-head"><div><span className="eyebrow">Portfolio</span><h3 id="du-gallery-inbox-title">Gallery inbox</h3><p>Add new work from your phone without rebuilding the site. Preferred public pair: reference photo + finished disc.</p></div><span className="status-pill">{items.filter(item=>!item.is_published).length} draft</span></div>
-    <form onSubmit={submit} style={{display:'grid',gap:'12px',marginTop:'16px'}}>
-      <div className="du-form-grid">
-        <ImageDropField name="gallerySource" label="Reference photo" accept="image/*" />
-        <ImageDropField name="galleryFinished" label="Finished disc" accept="image/*" />
-        <ImageDropField className="span-2" name="galleryStencil" label="Stencil artwork" hint="optional when finished disc is included" accept="image/*" />
-        <label className="span-2">Caption <span className="optional">optional</span><input name="galleryCaption" maxLength={300} placeholder="Pet name or a short note" /></label>
-      </div>
-      <label className="checkbox"><input type="checkbox" checked={publishNow} onChange={event=>setPublishNow(event.target.checked)}/> Publish immediately</label>
-      <div className="button-row"><button className="button primary" type="submit" disabled={busy}>{busy?'Working…':'Add to gallery inbox'}</button></div>
-    </form>
+
+  return <section className="admin-card du-gallery-manager" aria-labelledby="du-gallery-manager-title">
+    <div className="admin-card-head"><div><span className="eyebrow">Portfolio</span><h3 id="du-gallery-manager-title">Gallery manager</h3><p>Manage the gallery as three image roles the system understands: reference photo, stencil artwork, and finished disc. Replace, remove, reorder, publish, or hide everything here.</p></div><span className="status-pill">{items.length} managed</span></div>
+
+    <details className="du-gallery-add" open={items.length===0}>
+      <summary>Add new work</summary>
+      <form onSubmit={addItem}>
+        <div className="du-gallery-role-grid">
+          <ImageDropField name="gallerySource" label="Reference photo" accept="image/*" />
+          <ImageDropField name="galleryStencil" label="Stencil artwork" hint="optional if finished disc is included" accept="image/*" />
+          <ImageDropField name="galleryFinished" label="Finished disc" accept="image/*" />
+        </div>
+        <label>Caption <span className="optional">optional</span><input name="galleryCaption" maxLength={300} placeholder="Pet name or short note" /></label>
+        <label className="checkbox"><input type="checkbox" checked={publishNow} onChange={event=>setPublishNow(event.target.checked)}/> Publish immediately</label>
+        <div className="button-row"><button className="button primary" type="submit" disabled={busy}>{busy?'Working…':'Add work'}</button></div>
+      </form>
+    </details>
+
     {message?<div className="notice">{message}</div>:null}
-    {items.length?<div style={{display:'grid',gap:'8px',marginTop:'14px'}}>{items.slice(0,8).map(item=><div key={item.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'10px 12px',border:'1px solid var(--line)',borderRadius:'12px'}}><div><strong>{item.caption||'Untitled gallery item'}</strong><div className="small-note">{item.is_published?'Published':'Draft'} · {new Date(item.created_at).toLocaleDateString()}</div></div><button className="button ghost" type="button" disabled={busy} onClick={()=>void setPublished(item,!item.is_published)}>{item.is_published?'Hide':'Publish'}</button></div>)}</div>:null}
+
+    <div className="du-gallery-managed-list">
+      {items.length?items.map((item,index)=><GalleryItemEditor key={`${item.id}:${item.updated_at}`} item={item} index={index} total={items.length} credential={credential} refresh={load}/>):<div className="empty-state"><strong>No individually managed items yet.</strong><span>Add the next source/result set above. It will appear here immediately.</span></div>}
+    </div>
+
+    <details className="du-gallery-legacy">
+      <summary>Legacy portfolio · 17 existing examples</summary>
+      <p className="small-note">These examples predate the item-level gallery system, so they are preserved as the existing high-resolution portfolio collection. New and replaced work is managed individually above.</p>
+      <div className="du-gallery-legacy-grid">{Array.from({length:LEGACY_GALLERY_SLIDES},(_,index)=><div key={index} className="du-gallery-legacy-slide" style={{backgroundImage:`url(${LEGACY_GALLERY_SPRITE})`,backgroundPositionY:`${index*(100/(LEGACY_GALLERY_SLIDES-1))}%`}} aria-label={`Legacy gallery slide ${index+1}`}/>)}</div>
+    </details>
   </section>;
 }
 
