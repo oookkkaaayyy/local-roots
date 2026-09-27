@@ -31,3 +31,13 @@ jobs:
           grep -q 'projectionRxActive' hbnf-game-adapter/bridge/HBNF_GameBridge/HBNF_GameBridge.ino
           grep -q 'matrixPreviewWs' hbnf-game-adapter/bridge/HBNF_GameBridge/HBNF_GameBridge.ino
           grep -q 'HBNF_VISUAL_LAB_PAGE' hbnf-game-adapter/bridge/HBNF_GameBridge/visual_lab_page.h
+      - name: Record staging identity
+        run: |
+          printf 'visual_lab_commit=%s\n' "$GITHUB_SHA" > /tmp/hbnf-game-bridge/VISUAL_LAB_BUILD.txt
+          sha256sum /tmp/hbnf-game-bridge/HBNF_GAME_BRIDGE_FACTORY.bin >> /tmp/hbnf-game-bridge/VISUAL_LAB_BUILD.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HBNF-GAME-BRIDGE-VISUAL-LAB-STAGING
+          path: /tmp/hbnf-game-bridge
+          if-no-files-found: error
+          retention-days: 30
