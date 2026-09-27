@@ -14,7 +14,7 @@ class AnimartrixAudioBridge {
 
   void reset(){
     lastMs_=0; frame_=0; active_=false; width_=32; height_=16;
-    profile_=PROFILE_BALANCED; style_=STYLE_CLEAN; amount_=0; sceneId_=0;
+    profile_=PROFILE_BALANCED; style_=STYLE_CLEAN; amount_=0; sceneId_=0; variantCode_=0; variantSalt_=0; domainCode_=0;
     bass8_=mid8_=treble8_=pulse8_=energy8_=impact8_=drop8_=0;
     bassBody8_=midBody8_=trebleBody8_=0;
     bassLane8_=midLane8_=trebleLane8_=budget8_=0;
@@ -22,11 +22,14 @@ class AnimartrixAudioBridge {
     vibe_.reset();
   }
 
-  float beginFrame(float baseSpeed,uint32_t nowMs,uint8_t profileCode,uint8_t styleCode,uint8_t amount,uint16_t width,uint16_t height){
+  float beginFrame(float baseSpeed,uint32_t nowMs,uint8_t profileCode,uint8_t styleCode,uint8_t amount,uint16_t width,uint16_t height,uint8_t variantCode=0,uint8_t variantSalt=0){
     width_=width?width:1; height_=height?height:1;
     profile_=profileFromIntensity(profileCode);
     style_=styleFromCode(styleCode);
     amount_=amount;
+    variantCode_=variantCode;
+    variantSalt_=variantSalt;
+    domainCode_=(uint8_t)((variantCode_>>3)&3u);
     ++frame_;
 
     um_data_t *um=nullptr;
@@ -73,7 +76,8 @@ class AnimartrixAudioBridge {
     }
 
     const uint8_t srcPeak=max8(r,max8(g,b));
-    const uint8_t sceneKey=(sceneId_>=220&&sceneId_<=247)?(uint8_t)(sceneId_-220):sceneId_;
+    const uint8_t effectKey=(sceneId_>=220&&sceneId_<=247)?(uint8_t)(sceneId_-220):sceneId_;
+    const uint8_t sceneKey=(uint8_t)(effectKey*17u + variantSalt_*13u + domainCode_*29u);
 
     // One bounded response budget is shared by bass/mid/treble. Simultaneous bands
     // interact instead of stacking three independent overlays and overwhelming the frame.
@@ -162,6 +166,9 @@ class AnimartrixAudioBridge {
   WowStyle style() const { return style_; }
   VibeProfile profile() const { return profile_; }
   uint8_t amount() const { return amount_; }
+  uint8_t domain() const { return domainCode_; }
+  uint8_t variantCode() const { return variantCode_; }
+  uint8_t variantSalt() const { return variantSalt_; }
   uint8_t bassPulse() const { return bass8_; }
   uint8_t midPulse() const { return mid8_; }
   uint8_t treblePulse() const { return treble8_; }
@@ -175,7 +182,7 @@ class AnimartrixAudioBridge {
   uint32_t lastMs_=0,frame_=0;
   bool active_=false;
   uint16_t width_=32,height_=16;
-  uint8_t sceneId_=0;
+  uint8_t sceneId_=0,variantCode_=0,variantSalt_=0,domainCode_=0;
   VibeProfile profile_=PROFILE_BALANCED;
   WowStyle style_=STYLE_CLEAN;
   uint8_t amount_=0;
@@ -207,7 +214,9 @@ class AnimartrixAudioBridge {
       {255,245,90},{55,235,235},{245,105,190},{115,245,70},{255,130,110},{55,235,185},{255,220,170}
     };
     const uint8_t peak=max8(r,max8(g,b)); if(peak<4) return;
-    const uint8_t i=(uint8_t)(sceneId_-220),mix=104;
+    const uint8_t base=(uint8_t)(sceneId_-220);
+    const uint8_t i=(uint8_t)((base + (uint8_t)(variantSalt_*5u) + (uint8_t)(domainCode_*7u)) % 28u);
+    const uint8_t mix=domainCode_==2?132:(domainCode_==1?116:(domainCode_==3?104:96));
     const uint8_t tr=(uint8_t)(((uint16_t)tint[i][0]*peak+127)/255);
     const uint8_t tg=(uint8_t)(((uint16_t)tint[i][1]*peak+127)/255);
     const uint8_t tb=(uint8_t)(((uint16_t)tint[i][2]*peak+127)/255);
@@ -246,6 +255,15 @@ class AnimartrixAudioBridge {
       case STYLE_SPARK:  d[0]=scale8(d[0],185); d[1]=scale8(d[1],205); d[2]=scale8(d[2],300); break;
       case STYLE_CHROMA: d[0]=scale8(d[0],205); d[1]=scale8(d[1],270); d[2]=scale8(d[2],270); break;
       default:           d[0]=scale8(d[0],250); d[1]=scale8(d[1],250); d[2]=scale8(d[2],250); break;
+    }
+
+    // Every named scene uses the same source-coupled audio engine. The domain only
+    // biases emphasis, so low/mid/high remain present and semantically distinct.
+    switch(domainCode_){
+      case 1: d[0]=scale8(d[0],286); d[1]=scale8(d[1],264); d[2]=scale8(d[2],222); break; // Field Mix
+      case 2: d[0]=scale8(d[0],224); d[1]=scale8(d[1],278); d[2]=scale8(d[2],286); break; // Signature
+      case 3: d[0]=scale8(d[0],190); d[1]=scale8(d[1],244); d[2]=scale8(d[2],304); break; // Quiet Cosmos
+      default: break; // Course Flow
     }
 
     const uint8_t hit=max8(impact8_,drop8_);
