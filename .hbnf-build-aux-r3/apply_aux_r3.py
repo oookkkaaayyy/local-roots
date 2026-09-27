@@ -207,8 +207,7 @@ s=s.replace(state_proj,state_proj+'\n      wow["projectionRole"] = "receiver";',
 # therefore renders the same effect as a one-row projection while sharing the
 # same WLED timebase as the Matrix sender.
 needle='      wow["fxLast"] = hbnfFxLast;'
-replacement=needle+'\n      wow["projection"] = "fold2-1d-v1";\n      wow["lumaPolicy"] = "camera-bright-v1";\n      wow["syncEffectContract"] = "ids220-247";\n      wow["sceneParams"] = "profile-via-ix-style-amount-by-effect-id";
-      wow["projectionQueuePolicy"] = "newest-frame-v1";'
+replacement=needle+'\n      wow["projection"] = "fold2-1d-v1";\n      wow["lumaPolicy"] = "camera-bright-v1";\n      wow["syncEffectContract"] = "ids220-247";\n      wow["sceneParams"] = "profile-via-ix-style-amount-by-effect-id";\n      wow["projectionQueuePolicy"] = "newest-frame-v1";'
 if s.count(needle)!=1:
     raise RuntimeError("telemetry extension anchor mismatch")
 s=s.replace(needle,replacement,1)
