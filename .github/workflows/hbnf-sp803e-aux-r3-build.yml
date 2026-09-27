@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - hbnf-matrix-wow-bundle-r3-20260921
+      - hbnf-aux-luminance-v1-source-coupled-20260927
     paths:
       - '.hbnf-build-aux-r3/**'
       - '.hbnf-build-r3max/**'
@@ -29,7 +30,7 @@ jobs:
     steps:
       - name: Coalesce rapid development pushes
         if: github.event_name == 'push'
-        run: sleep 60
+        run: sleep 5
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,6 +50,7 @@ jobs:
         run: |
           set -euo pipefail
           python .hbnf-build-aux-r3/test_aux_contract.py
+          python .hbnf-build-aux-r3/test_luma_policy.py
 
       - name: Decode proven HBNF source bundle
         shell: bash
@@ -113,7 +115,10 @@ jobs:
           python "$GITHUB_WORKSPACE/.hbnf-build-r3max/apply_wowmax_v3.py" /tmp/wled
           python "$GITHUB_WORKSPACE/.hbnf-build-aux-r3/apply_aux_r3.py" /tmp/wled
           grep -q 'hbnf-wow-aux-r3-2026-09-22-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
-          grep -q 'registry28-fixed-1d-v2-colorwifi' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'registry28-tempo-lock-1d-v3-colorwifi' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'source-coupled-v3' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'camera-bright-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'hbnfAuxLiftLuma' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'static uint8_t audioSyncEnabled = 2;' usermods/audioreactive/audio_reactive.cpp
           ! grep -q 'hbnf-wow-r3-max-2026-09-21-v3' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           ! grep -q 'hbnf_flow' platformio_override.ini
@@ -185,7 +190,7 @@ jobs:
             echo wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
             echo release=hbnf-wow-aux-r3-2026-09-22-v1
             echo engine=aux-r3-wow-1d
-            echo build_witness=registry28-fixed-1d-v2-colorwifi
+            echo build_witness=registry28-tempo-lock-1d-v3-colorwifi
             echo firmware_sha256=$SHA
             echo firmware_bytes=$BYTES
             echo ota_slot_bytes=$SLOT
@@ -198,6 +203,8 @@ jobs:
             echo AUDIO_SYNC_DEFAULT=RECEIVE
             echo AUDIO_SYNC_PORT=11988
             echo PROJECTION=FOLD2_1D_V1
+            echo AUDIO_GEOMETRY=SOURCE_COUPLED_V3
+            echo LUMA_POLICY=CAMERA_BRIGHT_V1
             echo FOLD2_PROJECTION_SOURCE_AUDIT=PASS
             echo SECOND_CLEAN_BUILD_BYTE_IDENTICAL=PASS
             echo OTA_SLOT_GATE=PASS
