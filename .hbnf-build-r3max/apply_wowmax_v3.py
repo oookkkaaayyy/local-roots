@@ -100,7 +100,7 @@ telemetry="""    void addToJsonState(JsonObject& root) override {
       if (wow.isNull()) wow = root.createNestedObject("HBNFWOW");
       wow["release"] = "hbnf-wow-r3-max-2026-09-21-v3";
       wow["engine"] = "r3-wow-max";
-      wow["buildWitness"] = "registry28-tempo-lock-v5-colorwifi";
+      wow["buildWitness"] = "registry28-tempo-lock-v6-udp-resilient";
       wow["audioGeometry"] = "source-coupled-v4";
       wow["generator"] = "anti-repeat-v4";
       wow["projectionLink"] = "frame-lock-v1";
@@ -113,7 +113,7 @@ telemetry="""    void addToJsonState(JsonObject& root) override {
       wow["variation"] = hbnfGenV4.variation();
       wow["variantDwellSeconds"] = hbnfGenV4.current().dwellSeconds;
       wow["projectionPackets"] = hbnfProjectionTx.packets();
-      wow["projectionSeq"] = hbnfProjectionTx.seq();
+      wow["projectionSeq"] = hbnfProjectionTx.seq();\n      wow["projectionTxActive"] = hbnfProjectionTx.active();\n      wow["projectionTxAgeMs"] = hbnfProjectionTx.ageMs();\n      wow["projectionTransport"] = "udp-rebind-v1";
       wow["fxRegistered"] = hbnfFxRegistered;
       wow["fxFailed"] = hbnfFxFailed;
       wow["modeCount"] = strip.getModeCount();
@@ -169,10 +169,10 @@ loop_new="""    void loop() {
           char payload[900];
           snprintf_P(topic, sizeof(topic), PSTR("%s/wow"), mqttDeviceTopic);
           snprintf_P(payload, sizeof(payload),
-            PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"buildWitness\\\":\\\"registry28-tempo-lock-v5-colorwifi\\\",\\\"audioGeometry\\\":\\\"source-coupled-v4\\\",\\\"generator\\\":\\\"anti-repeat-v4\\\",\\\"projectionLink\\\":\\\"frame-lock-v1\\\",\\\"generatorEnabled\\\":%s,\\\"generatorLocked\\\":%s,\\\"generatorDomain\\\":%u,\\\"variantSequence\\\":%lu,\\\"variantSignature\\\":%lu,\\\"variantFamily\\\":%u,\\\"variation\\\":%u,\\\"projectionPackets\\\":%lu,\\\"projectionSeq\\\":%u,\\\"fxRegistered\\\":%u,\\\"fxFailed\\\":%u,\\\"modeCount\\\":%u,\\\"fxFirst\\\":%u,\\\"fxLast\\\":%u,\\\"audioActive\\\":%s,\\\"profile\\\":%u,\\\"style\\\":%u,\\\"amount\\\":%u,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u,\\\"pulse\\\":%u,\\\"energy\\\":%u,\\\"impact\\\":%u,\\\"drop\\\":%u}"),
+            PSTR("{\\\"release\\\":\\\"hbnf-wow-r3-max-2026-09-21-v3\\\",\\\"engine\\\":\\\"r3-wow-max\\\",\\\"buildWitness\\\":\\\"registry28-tempo-lock-v6-udp-resilient\\\",\\\"audioGeometry\\\":\\\"source-coupled-v4\\\",\\\"generator\\\":\\\"anti-repeat-v4\\\",\\\"projectionLink\\\":\\\"frame-lock-v1\\\",\\\"generatorEnabled\\\":%s,\\\"generatorLocked\\\":%s,\\\"generatorDomain\\\":%u,\\\"variantSequence\\\":%lu,\\\"variantSignature\\\":%lu,\\\"variantFamily\\\":%u,\\\"variation\\\":%u,\\\"projectionPackets\\\":%lu,\\\"projectionSeq\\\":%u,\\\"projectionTxActive\\\":%s,\\\"projectionTxAgeMs\\\":%lu,\\\"projectionTransport\\\":\\\"udp-rebind-v1\\\",\\\"fxRegistered\\\":%u,\\\"fxFailed\\\":%u,\\\"modeCount\\\":%u,\\\"fxFirst\\\":%u,\\\"fxLast\\\":%u,\\\"audioActive\\\":%s,\\\"profile\\\":%u,\\\"style\\\":%u,\\\"amount\\\":%u,\\\"bass\\\":%u,\\\"mid\\\":%u,\\\"treble\\\":%u,\\\"pulse\\\":%u,\\\"energy\\\":%u,\\\"impact\\\":%u,\\\"drop\\\":%u}"),
             hbnfGenV4.enabled() ? "true" : "false", hbnfGenV4.locked() ? "true" : "false", hbnfGenV4.domain(),
             (unsigned long)hbnfGenV4.sequence(), (unsigned long)hbnfGenV4.current().signature, hbnfGenV4.current().familyId, hbnfGenV4.variation(),
-            (unsigned long)hbnfProjectionTx.packets(), hbnfProjectionTx.seq(),
+            (unsigned long)hbnfProjectionTx.packets(), hbnfProjectionTx.seq(), hbnfProjectionTx.active() ? "true" : "false", (unsigned long)hbnfProjectionTx.ageMs(),
             hbnfFxRegistered, hbnfFxFailed, strip.getModeCount(), hbnfFxFirst, hbnfFxLast,
             anim.hbnfActive() ? "true" : "false",
             anim.hbnfProfile(), anim.hbnfStyle(), anim.hbnfAmount(),
@@ -248,12 +248,27 @@ static uint8_t hbnfFxLast = 255;
 
 class HbnfProjectionSenderV1 {
   WiFiUDP udp_;
-  uint32_t lastMs_=0, packets_=0;
+  uint32_t lastMs_=0, packets_=0, lastPacketMs_=0;
   uint16_t seq_=0;
+  bool begun_=false;
+  IPAddress boundIp_;
  public:
   void tick() {
     const uint32_t now=millis();
-    if (now-lastMs_<33u || WiFi.status()!=WL_CONNECTED || strip.isUpdating()) return;
+    if (WiFi.status()!=WL_CONNECTED) {
+      if (begun_) udp_.stop();
+      begun_=false;
+      boundIp_=IPAddress();
+      return;
+    }
+    const IPAddress currentIp=WiFi.localIP();
+    if (!begun_ || currentIp!=boundIp_) {
+      if (begun_) udp_.stop();
+      begun_=udp_.begin(0);
+      if (!begun_) return;
+      boundIp_=currentIp;
+    }
+    if (now-lastMs_<33u || strip.isUpdating()) return;
     lastMs_=now;
     hbnf::ProjectionAccumulator a;
     for (uint16_t y=0;y<16;y++) for (uint16_t x=0;x<32;x++) {
@@ -273,11 +288,13 @@ class HbnfProjectionSenderV1 {
       (uint8_t)(ip[3]|(uint8_t)~mask[3]));
     if (udp_.beginPacket(bc,hbnf::PROJECTION_PORT)) {
       udp_.write(packet,sizeof(packet));
-      if (udp_.endPacket()) packets_++;
+      if (udp_.endPacket()) { packets_++; lastPacketMs_=now; }
     }
   }
   uint32_t packets() const { return packets_; }
   uint16_t seq() const { return seq_; }
+  bool active() const { return lastPacketMs_ && (millis()-lastPacketMs_<350u); }
+  uint32_t ageMs() const { return lastPacketMs_?millis()-lastPacketMs_:0xffffffffu; }
 };
 static HbnfProjectionSenderV1 hbnfProjectionTx;
 
