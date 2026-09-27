@@ -7,6 +7,7 @@ const duPublic = readFileSync(new URL("../../app/src/pages/DyedUnattachedPage.ts
 const duAdmin = readFileSync(new URL("../../app/src/pages/DuAdminPage.tsx", import.meta.url), "utf8");
 const duAdminFunction = readFileSync(new URL("../../supabase/functions/du-admin/index.ts", import.meta.url), "utf8");
 const dropField = readFileSync(new URL("../../app/src/components/ImageDropField.tsx", import.meta.url), "utf8");
+const legacyMigration = readFileSync(new URL("../../supabase/migrations/20260927054500_migrate_du_legacy_gallery_to_items.sql", import.meta.url), "utf8");
 
 test("D&U public page is share-ready and keeps intake available", () => {
   assert.ok(duPublic.includes("Custom disc-golf stencil portraits"));
@@ -72,4 +73,17 @@ test("published gallery items cannot be left with fewer than two understood imag
 test("legacy sprite-backed gallery roles remain editable without fake storage deletes", () => {
   assert.ok(duAdminFunction.includes('!oldPath.startsWith("legacy:")'));
   assert.ok(duAdminFunction.includes('!String(path).startsWith("legacy:")'));
+});
+
+
+test("legacy D&U portfolio migration creates all 17 managed examples in accepted row order", () => {
+  const inserted = legacyMigration.match(/'legacy:\\d+:(?:left|right)'/g) || [];
+  assert.equal(new Set(inserted).size, 34);
+  assert.ok(legacyMigration.includes("'legacy:15:left'"));
+  assert.ok(legacyMigration.includes("'legacy:15:right'"));
+  assert.ok(legacyMigration.includes("update public.gallery_items"));
+});
+
+test("managed carousel autoplay tracks the loaded slide count", () => {
+  assert.ok(duPublic.includes("[galleryPaused,gallerySlideCount]"));
 });
