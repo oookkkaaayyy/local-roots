@@ -19,6 +19,9 @@ type PushTest = {ok:boolean;sent:number};
 type PairCode = {code:string;expires_at:string};
 type PairRedeem = {token_hash:string;verification_type:'magiclink'};
 type HandoffCreate = {job_number:string;handoff_url:string;expires_at:string;source_photo_count:number};
+type GalleryAdminItem = {id:string;is_published:boolean;caption:string|null;source_photo_path:string|null;stencil_path:string|null;finished_disc_path:string|null;sort_order:number;created_at:string;updated_at:string};
+type GalleryList = {items:GalleryAdminItem[]};
+type GalleryUpload = {ok:boolean;item:GalleryAdminItem};
 type BadgeNavigator = Navigator & {
   standalone?: boolean;
   setAppBadge?: (contents?:number)=>Promise<void>;
@@ -132,6 +135,79 @@ function JobCard({job,session,refresh,autoOpen}:{job:JobSummary;session:Session;
   </article>;
 }
 
+function prepareGalleryImage(file:File,role:'source_photo'|'stencil'|'finished_disc',maxSide=1800):Promise<string>{
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onerror=()=>reject(new Error('Could not read that image.'));
+    reader.onload=()=>{
+      if(typeof reader.result!=='string')return reject(new Error('Could not read that image.'));
+      const image=new Image();
+      image.onerror=()=>reject(new Error('Could not decode that image.'));
+      image.onload=()=>{
+        const scale=Math.min(1,maxSide/Math.max(image.naturalWidth,image.naturalHeight));
+        const canvas=document.createElement('canvas');
+        canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
+        canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+        const context=canvas.getContext('2d');
+        if(!context)return reject(new Error('Could not prepare that image.'));
+        if(role!=='stencil'){context.fillStyle='#fff';context.fillRect(0,0,canvas.width,canvas.height);}
+        context.drawImage(image,0,0,canvas.width,canvas.height);
+        resolve(role==='stencil'?canvas.toDataURL('image/png'):canvas.toDataURL('image/jpeg',.88));
+      };
+      image.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function GalleryPanel({session}:{session:Session}){
+  const [items,setItems]=useState<GalleryAdminItem[]>([]),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
+  const [publishNow,setPublishNow]=useState(false);
+  const load=useCallback(async()=>{try{const result=await callFunction<GalleryList>('du-admin',{action:'gallery_list'},session.access_token);setItems(result.items||[]);}catch{/* queue remains usable if gallery read fails */}},[session.access_token]);
+  useEffect(()=>{void load();},[load]);
+  async function submit(event:FormEvent<HTMLFormElement>){
+    event.preventDefault();setBusy(true);setMessage('Preparing images…');
+    const form=event.currentTarget;const data=new FormData(form);
+    try{
+      const source=(form.elements.namedItem('gallerySource') as HTMLInputElement|null)?.files?.[0]||null;
+      const stencil=(form.elements.namedItem('galleryStencil') as HTMLInputElement|null)?.files?.[0]||null;
+      const finished=(form.elements.namedItem('galleryFinished') as HTMLInputElement|null)?.files?.[0]||null;
+      const selected=[source,stencil,finished].filter(Boolean);
+      if(selected.length<2)throw new Error('Choose at least two images. Preferred: reference photo + finished disc.');
+      const images:Record<string,string>={};
+      if(source)images.source_photo=await prepareGalleryImage(source,'source_photo');
+      if(stencil)images.stencil=await prepareGalleryImage(stencil,'stencil');
+      if(finished)images.finished_disc=await prepareGalleryImage(finished,'finished_disc');
+      setMessage('Uploading…');
+      await callFunction<GalleryUpload>('du-admin',{action:'gallery_upload',caption:String(data.get('galleryCaption')||'').trim(),is_published:publishNow,images},session.access_token);
+      form.reset();setPublishNow(false);await load();
+      setMessage(publishNow?'Published to the public gallery.':'Saved to the gallery inbox. Tell ChatGPT “publish newest gallery item” when you want me to do the final check and publish it.');
+    }catch(reason){setMessage(reason instanceof Error?reason.message:'Gallery upload failed.');}
+    finally{setBusy(false);}
+  }
+  async function setPublished(item:GalleryAdminItem,is_published:boolean){
+    setBusy(true);setMessage('');
+    try{await callFunction('du-admin',{action:'gallery_set_published',item_id:item.id,is_published},session.access_token);await load();setMessage(is_published?'Published.':'Hidden from the public gallery.');}
+    catch(reason){setMessage(reason instanceof Error?reason.message:'Gallery update failed.');}
+    finally{setBusy(false);}
+  }
+  return <section className="admin-card" style={{marginTop:'18px'}} aria-labelledby="du-gallery-inbox-title">
+    <div className="admin-card-head"><div><span className="eyebrow">Portfolio</span><h3 id="du-gallery-inbox-title">Gallery inbox</h3><p>Add new work from your phone without rebuilding the site. Preferred public pair: reference photo + finished disc.</p></div><span className="status-pill">{items.filter(item=>!item.is_published).length} draft</span></div>
+    <form onSubmit={submit} style={{display:'grid',gap:'12px',marginTop:'16px'}}>
+      <div className="du-form-grid">
+        <label>Reference photo<input name="gallerySource" type="file" accept="image/jpeg,image/png,image/webp" /></label>
+        <label>Finished disc<input name="galleryFinished" type="file" accept="image/jpeg,image/png,image/webp" /></label>
+        <label className="span-2">Stencil artwork <span className="optional">optional when finished disc is included</span><input name="galleryStencil" type="file" accept="image/jpeg,image/png,image/webp" /></label>
+        <label className="span-2">Caption <span className="optional">optional</span><input name="galleryCaption" maxLength={300} placeholder="Pet name or a short note" /></label>
+      </div>
+      <label className="checkbox"><input type="checkbox" checked={publishNow} onChange={event=>setPublishNow(event.target.checked)}/> Publish immediately</label>
+      <div className="button-row"><button className="button primary" type="submit" disabled={busy}>{busy?'Working…':'Add to gallery inbox'}</button></div>
+    </form>
+    {message?<div className="notice">{message}</div>:null}
+    {items.length?<div style={{display:'grid',gap:'8px',marginTop:'14px'}}>{items.slice(0,8).map(item=><div key={item.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'10px 12px',border:'1px solid var(--line)',borderRadius:'12px'}}><div><strong>{item.caption||'Untitled gallery item'}</strong><div className="small-note">{item.is_published?'Published':'Draft'} · {new Date(item.created_at).toLocaleDateString()}</div></div><button className="button ghost" type="button" disabled={busy} onClick={()=>void setPublished(item,!item.is_published)}>{item.is_published?'Hide':'Publish'}</button></div>)}</div>:null}
+  </section>;
+}
+
 export function DuAdminPage(){
   const [session,setSession]=useState<Session|null>(null),[dashboard,setDashboard]=useState<Dashboard|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState('');
   const [pushBusy,setPushBusy]=useState(false),[pushEnabled,setPushEnabled]=useState(false),[pushMessage,setPushMessage]=useState('');
@@ -220,5 +296,6 @@ export function DuAdminPage(){
     {pairCode?<div className="notice"><strong>{pairCode}</strong><span>{pairMessage||'Paste this single-use code into the D&U Home Screen app. It expires after 5 minutes.'}</span><button className="button ghost" type="button" onClick={()=>void copyPairCode()}>Copy code</button></div>:pairMessage?<div className="notice">{pairMessage}</div>:null}
     {isIos()&&!isStandalone()&&!pushEnabled?<div className="notice"><strong>iPhone push setup</strong><span>Safari Share → Add to Home Screen → open D&amp;U from the new icon. If the Home Screen app asks you to sign in, use Pair Home Screen here instead of requesting another email.</span></div>:null}
     {pushMessage?<div className="notice">{pushMessage}</div>:null}
+    <GalleryPanel session={session}/>
     {loading?<div className="empty-state">Loading production queue…</div>:error?<div className="notice error"><strong>Could not load queue.</strong><span>{error}</span></div>:jobs.length?<section className="admin-grid">{jobs.map(job=><JobCard key={job.id} job={job} session={session} refresh={()=>void load(session)} autoOpen={targetJob===job.job_number}/>)}</section>:<div className="empty-state"><strong>Production queue is clear.</strong><span>No stencil jobs currently require action.</span></div>}</div></main></Shell>;
 }
