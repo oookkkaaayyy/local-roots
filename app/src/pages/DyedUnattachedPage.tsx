@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { Shell } from '../components/Shell';
+import { ImageDropField } from '../components/ImageDropField';
 import { supabase } from '../lib/supabase';
 
 const SUBMIT_INTAKE_URL = 'https://wtymjxscneufjlkkywyg.supabase.co/functions/v1/submit-intake';
@@ -195,7 +196,7 @@ export function DyedUnattachedPage() {
           <label>Name<input name="clientName" autoComplete="name" required maxLength={160} /></label>
           <label>Phone<input name="phone" type="tel" inputMode="tel" autoComplete="tel" required /></label>
           <label className="span-2">Pet name<input name="petName" required maxLength={160} /></label>
-          <label className="span-2">Reference photos <span className="optional">1–6 images</span><input name="referencePhotos" type="file" accept="image/*" multiple required /></label>
+          <ImageDropField className="span-2" name="referencePhotos" label="Reference photos" hint="1–6 images" accept="image/*" multiple maxFiles={6} required />
           <label className="span-2">Notes <span className="optional">optional</span><textarea name="notes" rows={4} maxLength={4000} /></label>
         </div>
         <div className="form-footer"><button className="button primary" type="submit" disabled={busy}>{busy ? 'Working…' : 'Submit request'}</button>{message ? <span className={state === 'error' ? 'form-error' : 'form-success'} role={state === 'error' ? 'alert' : 'status'} aria-live={state === 'error' ? 'assertive' : 'polite'} aria-atomic="true">{message}</span> : null}</div>
