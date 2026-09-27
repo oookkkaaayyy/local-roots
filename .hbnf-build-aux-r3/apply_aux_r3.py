@@ -25,7 +25,7 @@ for old,new in [
     s=s.replace(old,new)
 
 mqtt_anchor='\\\"projectionLink\\\":\\\"frame-lock-v1\\\",'
-mqtt_repl=mqtt_anchor+'\\\"projectionRole\\\":\\\"receiver\\\",\\\"lumaPolicy\\\":\\\"camera-bright-v1\\\",'
+mqtt_repl=mqtt_anchor+'\\\"projection\\\":\\\"fold2-1d-v1\\\",\\\"projectionRole\\\":\\\"receiver\\\",\\\"lumaPolicy\\\":\\\"camera-bright-v1\\\",'
 if s.count(mqtt_anchor)!=1:
     raise RuntimeError(f"MQTT V4 projection anchor mismatch: {s.count(mqtt_anchor)}")
 s=s.replace(mqtt_anchor,mqtt_repl,1)
@@ -259,7 +259,9 @@ checks={
  p:[
   "hbnf-wow-aux-r3-2026-09-22-v1","aux-r3-wow-1d","registry28-tempo-lock-1d-v3-colorwifi",
   "hbnfAuxStyleForMode","hbnfAuxAmountForMode","hbnfCanvasH = 2","SEGMENT.virtualLength()",'root["HBNFAUX"]',
-  'PSTR("%s/auxwow")','\\\"projection\\\":\\\"fold2-1d-v1\\\"','\\\"lumaPolicy\\\":\\\"camera-bright-v1\\\"','wow["projection"] = "fold2-1d-v1"','wow["lumaPolicy"] = "camera-bright-v1"',"hbnfAuxLiftLuma",
+  'PSTR("%s/auxwow")','\\\"projection\\\":\\\"fold2-1d-v1\\\"','\\\"projectionRole\\\":\\\"receiver\\\"','\\\"lumaPolicy\\\":\\\"camera-bright-v1\\\"',
+  'wow["projection"] = "fold2-1d-v1"','wow["projectionRole"] = "receiver"','wow["projectionRxPackets"]','wow["lumaPolicy"] = "camera-bright-v1"',
+  "hbnfAuxLiftLuma","HbnfProjectionReceiverV1","hbnfProjectionRx.tick()","source-coupled-v4","frame-lock-v1",
   'strip.addEffect(220, &mode_Complex_Kaleido_3','strip.addEffect(247, &mode_Module_Experiment10'
  ],
  ar:["static uint8_t audioSyncEnabled = 2;",'usermod["syncMode"] = audioSyncEnabled','usermod["syncPort"] = audioSyncPort']
@@ -270,4 +272,6 @@ for path,needles in checks.items():
         if n not in text: raise RuntimeError(f"missing postcondition {n} in {path}")
 if "hbnf-wow-r3-max-2026-09-21-v3" in p.read_text():
     raise RuntimeError("matrix release identity leaked into aux source")
-print("HBNF_AUX_R3_SOURCE_PATCH_PASS")
+if "hbnfProjectionTx.tick();" in p.read_text() or "hbnfGenV4.tick();" in p.read_text():
+    raise RuntimeError("AUX must not run Matrix projection sender or generative owner")
+print("HBNF_AUX_V4_PROJECTION_RECEIVER_SOURCE_PATCH_PASS")
