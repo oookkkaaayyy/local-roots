@@ -25,8 +25,16 @@ export function ImageDropField({
   const [dragging,setDragging]=useState(false);
   const [selected,setSelected]=useState<string[]>([]);
 
-  function sync(files:File[]){
-    const next=imageFiles(files,multiple,maxFiles);
+  function sync(files:File[],append=false){
+    const existing=append&&multiple?Array.from(inputRef.current?.files||[]):[];
+    const combined=[...existing,...files];
+    const seen=new Set<string>();
+    const unique=combined.filter(file=>{
+      const key=`${file.name}|${file.size}|${file.lastModified}`;
+      if(seen.has(key))return false;
+      seen.add(key);return true;
+    });
+    const next=imageFiles(unique,multiple,maxFiles);
     const transfer=new DataTransfer();
     next.forEach(file=>transfer.items.add(file));
     if(inputRef.current)inputRef.current.files=transfer.files;
@@ -59,7 +67,7 @@ export function ImageDropField({
       onDragLeave={event=>{if(!event.currentTarget.contains(event.relatedTarget as Node|null))setDragging(false);}}
       onDrop={event=>{
         event.preventDefault();setDragging(false);
-        sync(Array.from(event.dataTransfer.files));
+        sync(Array.from(event.dataTransfer.files),true);
       }}
     >
       <input
@@ -76,7 +84,7 @@ export function ImageDropField({
       <span className="image-drop-icon" aria-hidden="true">＋</span>
       <span className="image-drop-copy">
         <strong>{selected.length?'Ready to upload':'Drag from Photos here'}</strong>
-        <small>{status}{selected.length?' · drop another image to replace'+(multiple?' selection':''): ' · or click to choose'}</small>
+        <small>{status}{selected.length?(multiple?' · drop more to add':' · drop another to replace'):' · or click to choose'}</small>
       </span>
     </label>
   </div>;
