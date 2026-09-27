@@ -1,0 +1,21 @@
+name: HBNF Visual Lab QA
+on:
+  push:
+    branches:
+      - hbnf-cart-visual-lab-staging-20260927
+  workflow_dispatch:
+jobs:
+  visual-lab-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: UI syntax
+        run: node --check hbnf-visual-lab/app.js
+      - name: Semantic module syntax
+        run: node --check hbnf-visual-lab/semantic.mjs
+      - name: Staging backend is read-only
+        run: |
+          grep -q 'hardwareWrites:false' supabase/functions/hbnf-visual-lab-staging/index.ts
+          ! grep -q 'hbnf_cart_commit_command_bridge' supabase/functions/hbnf-visual-lab-staging/index.ts
+          ! grep -q 'hbnf-cart-reconcile' supabase/functions/hbnf-visual-lab-staging/index.ts
