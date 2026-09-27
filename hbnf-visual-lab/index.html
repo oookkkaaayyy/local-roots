@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07110d">
+  <title>HBNF Visual Lab</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div><p class="eyebrow">HBNF CART · STAGING</p><h1>Visual Lab</h1></div>
+      <div class="mode-pill">MOCK · NO CART COMMANDS</div>
+    </header>
+
+    <section class="preview-grid" aria-label="Live visual previews">
+      <article class="panel">
+        <div class="panel-title"><span>MATRIX</span><span id="matrixAck" class="ack pending">UNCONFIRMED</span></div>
+        <canvas id="matrix" width="640" height="320" aria-label="32 by 16 matrix preview"></canvas>
+        <div id="matrixMeta" class="meta"></div>
+      </article>
+      <article class="panel">
+        <div class="panel-title"><span>UNDERGLOW</span><span id="auxAck" class="ack pending">UNCONFIRMED</span></div>
+        <canvas id="aux" width="640" height="160" aria-label="Underglow preview"></canvas>
+        <div id="auxMeta" class="meta"></div>
+      </article>
+    </section>
+
+    <section class="panel audio-panel">
+      <div class="panel-title"><span>AUDIO</span><span>semantic input</span></div>
+      <div class="bands">
+        <label>BASS <meter id="bass" min="0" max="1"></meter></label>
+        <label>MIDS <meter id="mids" min="0" max="1"></meter></label>
+        <label>TREBLE <meter id="treble" min="0" max="1"></meter></label>
+        <label>ONSET <meter id="onset" min="0" max="1"></meter></label>
+      </div>
+    </section>
+
+    <section class="controls panel">
+      <div class="control"><label for="energy">ENERGY <output id="energyValue">65</output></label><input id="energy" type="range" min="0" max="100" value="65"></div>
+      <div class="control"><label for="audioResponse">AUDIO RESPONSE <output id="audioResponseValue">75</output></label><input id="audioResponse" type="range" min="0" max="100" value="75"></div>
+      <div class="control"><label for="motion">MOTION <output id="motionValue">60</output></label><input id="motion" type="range" min="0" max="100" value="60"></div>
+      <div class="control"><label for="variation">VARIATION <output id="variationValue">85</output></label><input id="variation" type="range" min="0" max="100" value="85"></div>
+      <div class="row">
+        <label>COUPLING<select id="couplingMode"><option value="locked">LOCKED</option><option value="related" selected>RELATED</option><option value="independent">INDEPENDENT</option></select></label>
+        <label>PALETTE<select id="paletteId"><option value="hbnf-balanced">HBNF BALANCED</option><option value="neon-coast">NEON COAST</option><option value="ultraviolet">ULTRAVIOLET</option><option value="ember">EMBER</option></select></label>
+      </div>
+    </section>
+
+    <section class="state-grid">
+      <article class="panel"><div class="panel-title">REQUESTED</div><pre id="requested"></pre></article>
+      <article class="panel"><div class="panel-title">CONFIRMED</div><pre id="confirmed"></pre></article>
+    </section>
+
+    <footer>Staging surface only. Physical confirmation must come from Matrix/AUX acknowledgements.</footer>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
