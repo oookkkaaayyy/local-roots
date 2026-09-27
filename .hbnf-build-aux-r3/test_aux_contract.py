@@ -19,7 +19,7 @@ assert [int(x) for x in m.group(1).split(",")]==style
 assert [int(x) for x in m2.group(1).split(",")]==amount
 assert "audioSyncEnabled = 2" in src
 assert "hbnf-wow-aux-r3-2026-09-22-v1" in src
-assert "registry28-tempo-lock-1d-v4-drainlatest" in src
+assert "registry28-tempo-lock-1d-v5-peer-beacon" in src
 print("HBNF_AUX_R3_PATCH_CONTRACT_PASS")
 
 assert 'mqtt_anchor' in src
@@ -31,6 +31,10 @@ assert 'tick_old' in src and 'tick_new' in src
 assert 'hbnfProjectionRx.tick();' in src
 assert 'guard<128' in src
 assert 'projectionQueuePolicy' in src
+assert 'projectionHelloPackets' in src
+assert 'PROJECTION_DISCOVERY_PORT' in src
+assert 'encodeProjectionHello' in src
+assert 'hello_.begin' in src
 assert 'AUX must not run Matrix projection sender or generative owner' in src
 
 assert 'hbnfCanvasH = 2' in src
@@ -45,8 +49,11 @@ assert contract["matrix"]["audio_geometry"]=="source-coupled-v4"
 assert contract["matrix"]["generator"]=="anti-repeat-v4"
 assert contract["matrix"]["projection_link"]["port"]==11989
 assert contract["aux"]["projection_link"]["port"]==11989
+assert contract["aux"]["projection_link"]["discovery_port"]==11990
+assert contract["matrix"]["projection_link"]["discovery_port"]==11990
+assert contract["matrix"]["projection_link"]["geometry"]=="perimeter-5-6-5-6-v1"
 assert contract["sync"]["framebuffer_source_of_truth"]=="matrix"
-assert contract["matrix"]["buildWitness"]=="registry28-tempo-lock-v5-colorwifi"
-assert contract["aux"]["buildWitness"]=="registry28-tempo-lock-1d-v4-drainlatest"
+assert contract["matrix"]["buildWitness"]=="registry28-tempo-lock-v8-unicast-perimeter"
+assert contract["aux"]["buildWitness"]=="registry28-tempo-lock-1d-v5-peer-beacon"
 
 print("HBNF_AUX_V4_FRAME_LOCK_CONTRACT_PASS")
