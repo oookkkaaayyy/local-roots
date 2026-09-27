@@ -259,3 +259,9 @@ test("public brand audit does not add new marketing copy and includes D&U contro
     assert.equal([shell,du,styles].join("\n").includes(rejected), false);
   }
 });
+
+test("HB Night Flyers primary nav links directly to the live club site", () => {
+  const shell = source("components/Shell.tsx");
+  assert.ok(shell.includes('<a className="nav-hbnf" href="https://hbnightflyers.com/">HB Night Flyers</a>'));
+  assert.equal(shell.includes('className="nav-hbnf" href="/hb-night-flyers"'), false);
+});
