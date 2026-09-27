@@ -35,10 +35,34 @@ class ProjectionAccumulator {
     for(uint8_t i=0;i<PROJECTION_PIXELS;i++){rs_[i]=gs_[i]=bs_[i]=0;count_[i]=0;}
   }
   void add(uint16_t x,uint16_t y,uint16_t width,uint16_t height,uint8_t r,uint8_t g,uint8_t b){
-    (void)y;(void)height;
-    if(width==0) return;
-    uint8_t bin=(uint8_t)(((uint32_t)x*PROJECTION_PIXELS)/width);
-    if(bin>=PROJECTION_PIXELS) bin=PROJECTION_PIXELS-1;
+    if(width<2 || height<2) return;
+
+    // Map the Matrix perimeter onto the physical cart underglow chain:
+    // short side 5 -> long side 6 -> short side 5 -> long side 6.
+    // Use a 2-pixel perimeter band for visual stability without collapsing
+    // the whole 2-D frame into horizontal averages.
+    const uint16_t bandX = width >= 16 ? 2 : 1;
+    const uint16_t bandY = height >= 8 ? 2 : 1;
+    uint8_t bin=255;
+
+    if(x < bandX) {
+      bin=(uint8_t)(((uint32_t)y*5u)/height);               // 0..4
+      if(bin>4) bin=4;
+    } else if(y < bandY) {
+      bin=(uint8_t)(5u + ((uint32_t)x*6u)/width);          // 5..10
+      if(bin>10) bin=10;
+    } else if(x >= width-bandX) {
+      uint16_t ry=(uint16_t)(height-1u-y);
+      bin=(uint8_t)(11u + ((uint32_t)ry*5u)/height);       // 11..15
+      if(bin>15) bin=15;
+    } else if(y >= height-bandY) {
+      uint16_t rx=(uint16_t)(width-1u-x);
+      bin=(uint8_t)(16u + ((uint32_t)rx*6u)/width);        // 16..21
+      if(bin>21) bin=21;
+    } else {
+      return;
+    }
+
     rs_[bin]+=r; gs_[bin]+=g; bs_[bin]+=b;
     if(count_[bin]<65535u) count_[bin]++;
   }
