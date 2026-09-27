@@ -5,9 +5,8 @@ export function Shell({children,admin=false}:{children:ReactNode;admin?:boolean}
   const path=raw==='/hbnf'?'/hb-night-flyers':raw==='/du'?'/dyed-and-unattached':raw;
   const current=(href:string)=>path===href?'page' as const:undefined;
   const eventsCurrent=path==='/'||path==='/events'||path.startsWith('/events/')?'page' as const:undefined;
-  const corePublic=path==='/'||path==='/events'||path.startsWith('/events/')||path==='/hb-night-flyers';
 
-  return <div className={`site-shell ${admin?'admin-shell':''} ${corePublic?'core-public-shell':''}`}>
+  return <div className={`site-shell ${admin?'admin-shell':'public-brand-shell'}`}>
     <a className="skip-link" href="#main-content">Skip to main content</a>
     <header className="site-header">
       <a className="brand" href="/" aria-label="Local Roots home">
