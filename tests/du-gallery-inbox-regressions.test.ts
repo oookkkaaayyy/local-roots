@@ -81,15 +81,26 @@ test("gallery writes remain admin-protected and validate image payloads", () => 
   assert.ok(duAdminFunction.includes('action === "gallery_remove_image"'));
   assert.ok(duAdminFunction.includes('action === "gallery_delete"'));
   assert.ok(duAdminFunction.includes('action === "gallery_classify_legacy"'));
-  assert.ok(duAdminFunction.includes("gallery_needs_two_images"));
+  assert.ok(duAdminFunction.includes("gallery_needs_image"));
   assert.ok(duAdminFunction.includes("gallery_image_too_large"));
   assert.ok(duAdminFunction.includes("invalid_gallery_image_signature"));
   assert.ok(duAdminFunction.includes('service.storage.from("du-gallery").upload'));
 });
 
-test("published gallery items cannot be left with fewer than two understood images", () => {
-  assert.ok(duAdminFunction.includes("galleryImageCount(existing) < 2"));
+test("D&U gallery allows one, two, or three stored images and unpublishes only at zero", () => {
+  assert.ok(duAdmin.includes("if(selected.length<1)"));
+  assert.ok(duAdminFunction.includes("supplied.length < 1"));
+  assert.ok(duAdminFunction.includes("galleryImageCount(existing) < 1"));
   assert.ok(duAdminFunction.includes("patch.is_published = false"));
+  assert.equal(duAdminFunction.includes("gallery_needs_two_images"), false);
+});
+
+test("public gallery prioritizes reference plus finished disc and otherwise shows available media", () => {
+  assert.ok(duPublic.includes("function galleryDisplayMedia"));
+  assert.ok(duPublic.includes("if(source&&finished)return [source,finished]"));
+  assert.ok(duPublic.includes(".slice(0,2)"));
+  assert.ok(duPublic.includes("length>=1"));
+  assert.ok(duPublic.includes("du-gallery-row-single"));
 });
 
 

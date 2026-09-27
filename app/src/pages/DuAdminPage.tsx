@@ -327,7 +327,7 @@ function GalleryPanel({credential}:{credential:AdminCredential}){
       const stencil=(form.elements.namedItem('galleryStencil') as HTMLInputElement|null)?.files?.[0]||null;
       const finished=(form.elements.namedItem('galleryFinished') as HTMLInputElement|null)?.files?.[0]||null;
       const selected=[source,stencil,finished].filter(Boolean);
-      if(selected.length<2)throw new Error('Add at least two images so the system has a source/result pair.');
+      if(selected.length<1)throw new Error('Add at least one image.');
       const images:Record<string,string>={};
       if(source)images.source_photo=await prepareGalleryImage(source,'source_photo');
       if(stencil)images.stencil=await prepareGalleryImage(stencil,'stencil');
@@ -347,9 +347,9 @@ function GalleryPanel({credential}:{credential:AdminCredential}){
       <summary>Add new work</summary>
       <form onSubmit={addItem}>
         <div className="du-gallery-role-grid">
-          <ImageDropField name="gallerySource" label="Reference photo" accept="image/*" />
-          <ImageDropField name="galleryStencil" label="Stencil artwork" hint="optional if finished disc is included" accept="image/*" />
-          <ImageDropField name="galleryFinished" label="Finished disc" accept="image/*" />
+          <ImageDropField name="gallerySource" label="Reference photo" hint="optional" accept="image/*" />
+          <ImageDropField name="galleryStencil" label="Stencil artwork" hint="optional" accept="image/*" />
+          <ImageDropField name="galleryFinished" label="Finished disc" hint="optional" accept="image/*" />
         </div>
         <label>Caption <span className="optional">optional</span><input name="galleryCaption" maxLength={300} placeholder="Pet name or short note" /></label>
         <label className="checkbox"><input type="checkbox" checked={publishNow} onChange={event=>setPublishNow(event.target.checked)}/> Publish immediately</label>
