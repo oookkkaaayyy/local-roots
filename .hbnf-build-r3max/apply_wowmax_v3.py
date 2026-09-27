@@ -22,7 +22,8 @@ once("hbnfAudio.apply(speedFactor, millis())",
      "(hbnfAudio.setScene(SEGMENT.mode), hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, SEGMENT.custom1, SEGMENT.custom2, SEGMENT.virtualWidth(), SEGMENT.virtualHeight()))",
      "audio-begin-frame")
 
-once("if (SEGMENT.speed < 128) {","const uint8_t hbnfSpeedCode = hbnf::tuneSpeed(SEGMENT.speed);\n\t  if (hbnfSpeedCode < 128) {","global-speed-select")
+once("if (SEGMENT.speed < 128) {","""const uint8_t hbnfSpeedCode = hbnf::tuneSpeed(SEGMENT.speed);
+	  if (hbnfSpeedCode < 128) {""","global-speed-select")
 once("map(SEGMENT.speed,   0, 127, 1, 10)","map(hbnfSpeedCode,   0, 127, 1, 10)","global-speed-low")
 once("map(SEGMENT.speed, 128, 255, 10, 100)","map(hbnfSpeedCode, 128, 255, 10, 100)","global-speed-high")
 
