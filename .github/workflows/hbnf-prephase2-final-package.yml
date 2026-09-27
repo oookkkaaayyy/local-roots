@@ -28,7 +28,7 @@ jobs:
       MATRIX_ROLLBACK_SHA: '93b2c7d0d5deb6741e475d0ee0ce1f9bf287c571e9e69775ccc3b9aaf9955a23'
       AUX_CURRENT_ROLLBACK_SHA: '7c8f4f7ff9179b788275fb1c093b12a0094a43daa81542cf8ae5379a7cb43e2f'
       AUX_ACCEPTED_ROLLBACK_SHA: 'a874a22c80e5b1d5c67d08a2568fd80a41adeb97a592fc4da633bf8c14e1632f'
-      PACKAGE_ID: 'HBNF_PREPHASE2_FINAL_V4_FIX1_20260927'
+      PACKAGE_ID: 'HBNF_PREPHASE2_FINAL_V4_FIX2_20260927'
 
     steps:
       - name: Checkout sole integration branch
@@ -198,9 +198,9 @@ jobs:
       - name: Upload final guarded package
         uses: actions/upload-artifact@v4
         with:
-          name: HBNF-PREPHASE2-FINAL-V4-FIX1-20260927
+          name: HBNF-PREPHASE2-FINAL-V4-FIX2-20260927
           path: |
-            /tmp/hbnf/HBNF_PREPHASE2_FINAL_V4_FIX1_20260927.zip
+            /tmp/hbnf/HBNF_PREPHASE2_FINAL_V4_FIX2_20260927.zip
             /tmp/hbnf/RELEASE_SHA256.txt
             /tmp/hbnf/RELEASE_METADATA.json
           if-no-files-found: error
