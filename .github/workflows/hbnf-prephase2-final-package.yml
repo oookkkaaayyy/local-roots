@@ -1,0 +1,205 @@
+name: HBNF Pre-Phase-2 Final V4 Package
+
+on:
+  push:
+    branches:
+      - hbnf-prephase2-final-integration-20260927
+    paths:
+      - '.github/workflows/hbnf-prephase2-final-package.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      MATRIX_FINAL_ARTIFACT: '10938843899'
+      AUX_FINAL_ARTIFACT: '10939037784'
+      MATRIX_ROLLBACK_ARTIFACT: '10925563441'
+      AUX_CURRENT_ROLLBACK_ARTIFACT: '10927966602'
+      AUX_ACCEPTED_ROLLBACK_ARTIFACT: '10894932658'
+      MATRIX_FINAL_SHA: '245b4fae584aeb159e98b8b9f2990434b98811ae2ef9aabd0b59ce53d0c0117b'
+      AUX_FINAL_SHA: '5c005a9c0af932ce31dd806c5799a7f25cd1f76be686d35bf5bf259a34f0b526'
+      MATRIX_ROLLBACK_SHA: '93b2c7d0d5deb6741e475d0ee0ce1f9bf287c571e9e69775ccc3b9aaf9955a23'
+      AUX_CURRENT_ROLLBACK_SHA: '7c8f4f7ff9179b788275fb1c093b12a0094a43daa81542cf8ae5379a7cb43e2f'
+      AUX_ACCEPTED_ROLLBACK_SHA: 'a874a22c80e5b1d5c67d08a2568fd80a41adeb97a592fc4da633bf8c14e1632f'
+      PACKAGE_ID: 'HBNF_PREPHASE2_FINAL_V4_20260927'
+
+    steps:
+      - name: Checkout sole integration branch
+        uses: actions/checkout@v4
+
+      - name: Download exact CI artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/hbnf/artifacts
+          download() {
+            local id="$1" out="$2"
+            curl -fL --retry 3 \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/$id/zip" \
+              -o "/tmp/hbnf/artifacts/$out"
+          }
+          download "$MATRIX_FINAL_ARTIFACT" matrix-final.zip
+          download "$AUX_FINAL_ARTIFACT" aux-final.zip
+          download "$MATRIX_ROLLBACK_ARTIFACT" matrix-rollback.zip
+          download "$AUX_CURRENT_ROLLBACK_ARTIFACT" aux-current-rollback.zip
+          download "$AUX_ACCEPTED_ROLLBACK_ARTIFACT" aux-accepted-rollback.zip
+          for z in /tmp/hbnf/artifacts/*.zip; do unzip -tq "$z" >/dev/null; done
+
+      - name: Assemble exact payload and verify binary hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/hbnf/{matrix-final,aux-final,matrix-rb,aux-current-rb,aux-accepted-rb}
+          unzip -q /tmp/hbnf/artifacts/matrix-final.zip -d /tmp/hbnf/matrix-final
+          unzip -q /tmp/hbnf/artifacts/aux-final.zip -d /tmp/hbnf/aux-final
+          unzip -q /tmp/hbnf/artifacts/matrix-rollback.zip -d /tmp/hbnf/matrix-rb
+          unzip -q /tmp/hbnf/artifacts/aux-current-rollback.zip -d /tmp/hbnf/aux-current-rb
+          unzip -q /tmp/hbnf/artifacts/aux-accepted-rollback.zip -d /tmp/hbnf/aux-accepted-rb
+
+          ROOT="/tmp/hbnf/$PACKAGE_ID"
+          mkdir -p "$ROOT"/{payload,rollback,controller}
+          cp /tmp/hbnf/matrix-final/HBNF_WLED16_MAX_WOWMAX_V3.bin "$ROOT/payload/MATRIX_V4_245b4fae.bin"
+          cp /tmp/hbnf/aux-final/HBNF_SP803E_AUX_R3.bin "$ROOT/payload/AUX_V4_5c005a9c.bin"
+          cp /tmp/hbnf/matrix-rb/HBNF_WLED16_MAX_WOWMAX_V3.bin "$ROOT/rollback/MATRIX_CURRENT_V3_93b2c7d0.bin"
+          cp /tmp/hbnf/aux-current-rb/HBNF_SP803E_AUX_R3.bin "$ROOT/rollback/AUX_CURRENT_CAMERA_BRIGHT_V3_7c8f4f7f.bin"
+          cp /tmp/hbnf/aux-accepted-rb/HBNF_SP803E_AUX_R3.bin "$ROOT/rollback/AUX_ACCEPTED_SAFE_a874a22c.bin"
+
+          test "$(sha256sum "$ROOT/payload/MATRIX_V4_245b4fae.bin" | cut -d' ' -f1)" = "$MATRIX_FINAL_SHA"
+          test "$(sha256sum "$ROOT/payload/AUX_V4_5c005a9c.bin" | cut -d' ' -f1)" = "$AUX_FINAL_SHA"
+          test "$(sha256sum "$ROOT/rollback/MATRIX_CURRENT_V3_93b2c7d0.bin" | cut -d' ' -f1)" = "$MATRIX_ROLLBACK_SHA"
+          test "$(sha256sum "$ROOT/rollback/AUX_CURRENT_CAMERA_BRIGHT_V3_7c8f4f7f.bin" | cut -d' ' -f1)" = "$AUX_CURRENT_ROLLBACK_SHA"
+          test "$(sha256sum "$ROOT/rollback/AUX_ACCEPTED_SAFE_a874a22c.bin" | cut -d' ' -f1)" = "$AUX_ACCEPTED_ROLLBACK_SHA"
+
+          cp hbnf-final-package/INSTALL_FINAL_PREPHASE2.command "$ROOT/INSTALL_FINAL_PREPHASE2.command"
+          cp hbnf-final-package/install_final_prephase2.py "$ROOT/install_final_prephase2.py"
+          cp hbnf-final-controller/hbnf-cart.html "$ROOT/controller/hbnf-cart.html"
+          cp hbnf-final-controller/hbnf-cart.js "$ROOT/controller/hbnf-cart.js"
+          cp hbnf-final-controller/hbnf-cart-semantic.mjs "$ROOT/controller/hbnf-cart-semantic.mjs"
+          cp hbnf-final-controller/hbnf-cart-manifest.webmanifest "$ROOT/controller/hbnf-cart-manifest.webmanifest"
+          chmod +x "$ROOT/INSTALL_FINAL_PREPHASE2.command" "$ROOT/install_final_prephase2.py"
+
+          grep -q 'hbnf-cart-final-v5-semantic-frame-lock' "$ROOT/controller/hbnf-cart.html"
+          grep -q 'HBNF_CART_FINAL_V5_SEMANTIC_FRAME_LOCK' "$ROOT/controller/hbnf-cart.js"
+          grep -q 'source-coupled-v4' /tmp/hbnf/matrix-final/FINAL_METRICS.txt
+          grep -q 'anti-repeat-v4' /tmp/hbnf/matrix-final/FINAL_METRICS.txt
+          grep -q 'frame-lock-v1' /tmp/hbnf/matrix-final/FINAL_METRICS.txt
+          grep -q 'SOURCE_COUPLED_V4' /tmp/hbnf/aux-final/FINAL_METRICS.txt
+          grep -q 'FRAME_LOCK_V1' /tmp/hbnf/aux-final/FINAL_METRICS.txt
+
+      - name: Generate icon, docs, and manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import binascii,hashlib,json,math,os,pathlib,struct,zlib
+          root=pathlib.Path('/tmp/hbnf')/os.environ['PACKAGE_ID']
+          w=h=180; rows=[]
+          for y in range(h):
+              row=bytearray([0])
+              for x in range(w):
+                  dx=x-89.5; dy=y-89.5; r=(dx*dx+dy*dy)**0.5
+                  rr,gg,bb=7,16,24
+                  if 51<r<58: rr,gg,bb=65,222,210
+                  if 28<r<32 and (x+y)%9<5: rr,gg,bb=230,80,188
+                  if abs(dy-24*math.sin((x-25)/18))<2 and 34<x<146 and y>86: rr,gg,bb=112,215,255
+                  row+=bytes((rr,gg,bb,255))
+              rows.append(bytes(row))
+          def chunk(kind,data):
+              return struct.pack('>I',len(data))+kind+data+struct.pack('>I',binascii.crc32(kind+data)&0xffffffff)
+          raw=b''.join(rows)
+          png=b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',w,h,8,6,0,0,0))+chunk(b'IDAT',zlib.compress(raw,9))+chunk(b'IEND',b'')
+          (root/'controller/hbnf-cart-icon-180.png').write_bytes(png)
+
+          (root/'START_HERE.txt').write_text(
+              'HBNF CART — FINAL PRE-PHASE-2 V4\n\n'
+              'Double-click INSTALL_FINAL_PREPHASE2.command.\n'
+              'It verifies hashes, discovers Matrix/AUX dynamically, backs up current state, deploys the final controller, promotes both firmware images, verifies V4 identities, and attempts exact rollback on a failed firmware verification.\n\n'
+              'It does NOT call the build physically Accepted. The controller opens at the end for one consolidated real-world acceptance check.\n')
+          (root/'ACCEPTANCE_CHECKLIST.txt').write_text(
+              'FINAL PHYSICAL ACCEPTANCE — ONE CONSOLIDATED CHECK\n\n'
+              'Across Course Flow, Field Mix, HBNF Signature, and Quiet Cosmos verify:\n'
+              '- low / mid / high musical content produces visibly different nuanced behavior\n'
+              '- no generic repeated impulse response or stutter/backlog/catch-up\n'
+              '- no recognizable short effect loop during meaningful observation\n'
+              '- Matrix/AUX colors and rhythm remain visibly frame-locked\n'
+              '- AUX stays useful/camera-visible at high brightness\n'
+              '- manual speed stays stable through loud sounds\n'
+              '- scene changes preserve generative novelty\n'
+              '- requested -> desired -> confirmed controller state is truthful\n'
+              '- Home Screen controller remains paired after full close/reopen\n'
+              '- no thermal/reset/flicker issues\n\n'
+              'Do not mark Accepted until these are physically verified.\n')
+
+          files={}
+          for p in sorted(root.rglob('*')):
+              if p.is_file() and p.name!='manifest.json':
+                  b=p.read_bytes(); rel=p.relative_to(root).as_posix()
+                  files[rel]={'sha256':hashlib.sha256(b).hexdigest(),'bytes':len(b)}
+          manifest={
+              'schema':'hbnf-prephase2-install-manifest-v1',
+              'packageId':os.environ['PACKAGE_ID'],
+              'packageSourceCommit':os.environ['GITHUB_SHA'],
+              'firmwareSourceCommit':'ccc554ab745b33f18dbd32c735e1fe26dabe3201',
+              'physicalAcceptanceRequired':True,
+              'controllerBuild':'hbnf-cart-final-v5-semantic-frame-lock',
+              'backend':{
+                  'hbnf-cart-control':{'version':12,'sha256':'200a1c20079ad9db76637fd0b1b4e9354d6cd4b4edc7371a2688cac0cee5bd18'},
+                  'hbnf-cart-reconcile':{'version':8,'sha256':'89a7fceeba9d0ee3930a54516a8355bb0cd45647195556df05e068d44e0532d4'},
+                  'hbnf-matrix-adapter-v4':{'version':2},
+                  'hbnf-aux-adapter':{'version':2},
+                  'hbnf-aux-control':{'version':15,'brightnessMax':255,'currentLimitMa':1210}},
+              'firmware':{
+                  'matrix':{'run':36341588440,'artifact':10938843899,'sha256':os.environ['MATRIX_FINAL_SHA'],'bytes':1353152,'otaHeadroomBytes':219712},
+                  'aux':{'run':36341588365,'artifact':10939037784,'sha256':os.environ['AUX_FINAL_SHA'],'bytes':1347056,'otaHeadroomBytes':225808}},
+              'files':files}
+          (root/'manifest.json').write_text(json.dumps(manifest,indent=2,sort_keys=True)+'\n')
+          PY
+
+      - name: Build deterministic guarded release ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib,os,pathlib,zipfile,json
+          package_id=os.environ['PACKAGE_ID']
+          src=pathlib.Path('/tmp/hbnf')/package_id
+          out=pathlib.Path('/tmp/hbnf')/(package_id+'.zip')
+          epoch=(2026,9,27,12,0,0)
+          with zipfile.ZipFile(out,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for p in sorted(src.rglob('*')):
+                  if not p.is_file(): continue
+                  rel=(pathlib.Path(package_id)/p.relative_to(src)).as_posix()
+                  info=zipfile.ZipInfo(rel,epoch); info.compress_type=zipfile.ZIP_DEFLATED
+                  mode=0o755 if p.name in {'INSTALL_FINAL_PREPHASE2.command','install_final_prephase2.py'} else 0o644
+                  info.external_attr=(mode&0xffff)<<16
+                  z.writestr(info,p.read_bytes())
+          data=out.read_bytes(); sha=hashlib.sha256(data).hexdigest()
+          pathlib.Path('/tmp/hbnf/RELEASE_SHA256.txt').write_text(f'{sha}  {out.name}\n')
+          pathlib.Path('/tmp/hbnf/RELEASE_METADATA.json').write_text(json.dumps({
+              'packageId':package_id,'packageSourceCommit':os.environ['GITHUB_SHA'],'sha256':sha,
+              'bytes':len(data),'physicalAcceptanceRequired':True},indent=2,sort_keys=True)+'\n')
+          print('PACKAGE_SHA256='+sha); print('PACKAGE_BYTES='+str(len(data)))
+          PY
+          unzip -tq "/tmp/hbnf/$PACKAGE_ID.zip"
+          cat /tmp/hbnf/RELEASE_SHA256.txt
+
+      - name: Upload final guarded package
+        uses: actions/upload-artifact@v4
+        with:
+          name: HBNF-PREPHASE2-FINAL-V4-20260927
+          path: |
+            /tmp/hbnf/HBNF_PREPHASE2_FINAL_V4_20260927.zip
+            /tmp/hbnf/RELEASE_SHA256.txt
+            /tmp/hbnf/RELEASE_METADATA.json
+          if-no-files-found: error
+          retention-days: 30
