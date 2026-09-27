@@ -20,10 +20,10 @@ DIRECT_OPENER=urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 R3_RELEASE="hbnf-wow-r3-max-2026-09-21-v3"
 R3_ENGINE="r3-wow-max"
-R3_WITNESS="registry28-tempo-lock-v8-unicast-perimeter"
+R3_WITNESS="registry28-tempo-lock-v9-network-no-starve"
 AUX_RELEASE="hbnf-wow-aux-r3-2026-09-22-v1"
 AUX_ENGINE="aux-r3-wow-1d"
-AUX_WITNESS="registry28-tempo-lock-1d-v5-peer-beacon"
+AUX_WITNESS="registry28-tempo-lock-1d-v6-network-no-starve"
 MATRIX_PIXELS=512
 AUDIO_PORT=11988
 EFFECTS=[
