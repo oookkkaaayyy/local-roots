@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - hbnf-matrix-wow-bundle-r3-20260921
+      - hbnf-global-tuning-persistence-20260927
     paths:
       - '.hbnf-build-r3max/**'
       - '.github/workflows/hbnf-wled16-wowmax-build.yml'
@@ -158,6 +159,8 @@ jobs:
           {
             echo wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
             echo release=hbnf-wow-r3-max-2026-09-21-v3
+            echo build_witness=registry28-global-tune-v6-colorwifi
+            echo GLOBAL_TUNING_OVERRIDE_GATE=PASS
             echo firmware_sha256=$SHA
             echo firmware_bytes=$BYTES
             echo ota_slot_bytes=$SLOT
