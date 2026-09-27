@@ -44,6 +44,10 @@ DNSServer captiveDns;
 uint8_t ddpSequence = 0;
 DdpFixedFrame ddpFrame;
 uint32_t lastFrameAt = 0;
+uint32_t frameStatsStartedAt = 0;
+uint32_t frameCount = 0;
+uint32_t lateFrameCount = 0;
+uint32_t maxFrameGapMs = 0;
 uint32_t lastWifiRetryAt = 0;
 uint32_t wifiAttemptStartedAt = 0;
 enum class WifiTarget : uint8_t { None, Primary, Fallback };
@@ -633,6 +637,10 @@ bool startSession(uint32_t nowMs) {
   BP32.enableNewBluetoothConnections(false);
   sessionActive = true;
   lastFrameAt = nowMs;
+  frameStatsStartedAt = nowMs;
+  frameCount = 0;
+  lateFrameCount = 0;
+  maxFrameGapMs = 0;
   Serial.println("HBNF_GAME_SESSION_START=PASS");
   return true;
 }
@@ -919,6 +927,9 @@ void loop() {
   if ((uint32_t)(now - lastFrameAt) >= kFrameMs) {
     const uint32_t dt = (uint32_t)(now - lastFrameAt);
     lastFrameAt = now;
+    ++frameCount;
+    if (dt > (kFrameMs + 17)) ++lateFrameCount;
+    if (dt > maxFrameGapMs) maxFrameGapMs = dt;
     if (!(games.mode() == GameManager::Mode::Pong && !p2.connected)) {
       games.update(p1, p2, dt);
     }
@@ -930,6 +941,17 @@ void loop() {
       return;
     }
     sendFrame(fb);
+  }
+
+  if ((uint32_t)(now - frameStatsStartedAt) >= 10000) {
+    Serial.printf("HBNF_GAME_TIMING FRAMES=%lu LATE=%lu MAX_GAP_MS=%lu\n",
+                  (unsigned long)frameCount,
+                  (unsigned long)lateFrameCount,
+                  (unsigned long)maxFrameGapMs);
+    frameStatsStartedAt = now;
+    frameCount = 0;
+    lateFrameCount = 0;
+    maxFrameGapMs = 0;
   }
 
   delay(1);
