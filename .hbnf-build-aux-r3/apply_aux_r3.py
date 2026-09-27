@@ -47,6 +47,22 @@ static uint8_t hbnfAuxAmountForMode(uint8_t mode, uint8_t fallback) {
   return (mode >= 220 && mode <= 247) ? map[mode-220] : fallback;
 }
 
+// AUX-only camera-visible output lift. Hue and spatial contrast are preserved;
+// black remains black; non-black colors are scaled 1.8x up to channel saturation.
+static void hbnfAuxVideoLift(uint8_t &r, uint8_t &g, uint8_t &b) {
+  uint8_t peak = r > g ? (r > b ? r : b) : (g > b ? g : b);
+  if (peak < 8) return;
+  uint16_t target = ((uint16_t)peak * 9u) / 5u;
+  if (target > 255u) target = 255u;
+  uint16_t scale = (uint16_t)(((uint32_t)target << 8) / peak);
+  uint16_t rr = ((uint16_t)r * scale + 128u) >> 8;
+  uint16_t gg = ((uint16_t)g * scale + 128u) >> 8;
+  uint16_t bb = ((uint16_t)b * scale + 128u) >> 8;
+  r = rr > 255u ? 255u : (uint8_t)rr;
+  g = gg > 255u ? 255u : (uint8_t)gg;
+  b = bb > 255u ? 255u : (uint8_t)bb;
+}
+
 """
 s=s.replace(anchor,helpers+anchor,1)
 
@@ -82,6 +98,7 @@ pixel_old='''\tvoid setPixelColor(int x, int y, rgb pixel) {
 pixel_new='''\tvoid setPixelColor(int x, int y, rgb pixel) {
 \t\tuint8_t r=pixel.red,g=pixel.green,b=pixel.blue;
 \t\thbnfAudio.modulate(x,y,r,g,b);
+\t\thbnfAuxVideoLift(r,g,b);
 \t\tif (SEGMENT.check2) { r=gamma8(r); g=gamma8(g); b=gamma8(b); }
 \t\tconst int index = y * num_x + x;
 \t\tif (index >= 0 && index < SEGMENT.virtualLength()) SEGMENT.setPixelColor(index, CRGB(r,g,b));
@@ -90,6 +107,7 @@ pixel_new='''\tvoid setPixelColor(int x, int y, rgb pixel) {
 \t\tuint8_t r=pixel.red,g=pixel.green,b=pixel.blue;
 \t\tconst int x=num_x?(index%num_x):0, y=num_x?(index/num_x):0;
 \t\thbnfAudio.modulate(x,y,r,g,b);
+\t\thbnfAuxVideoLift(r,g,b);
 \t\tif (SEGMENT.check2) { r=gamma8(r); g=gamma8(g); b=gamma8(b); }
 \t\tif (index >= 0 && index < SEGMENT.virtualLength()) SEGMENT.setPixelColor(index, CRGB(r,g,b));
 \t}'''
@@ -108,7 +126,7 @@ s=s.replace(old,new,1)
 # therefore renders the same effect as a one-row projection while sharing the
 # same WLED timebase as the Matrix sender.
 needle='      wow["fxLast"] = hbnfFxLast;'
-replacement=needle+'\n      wow["projection"] = "fold2-1d-v1";\n      wow["syncEffectContract"] = "ids220-247";\n      wow["sceneParams"] = "profile-via-ix-style-amount-by-effect-id";'
+replacement=needle+'\n      wow["projection"] = "fold2-1d-v1";\n      wow["syncEffectContract"] = "ids220-247";\n      wow["sceneParams"] = "profile-via-ix-style-amount-by-effect-id";\n      wow["lumaProfile"] = "video-punch-v1";'
 if s.count(needle)!=1:
     raise RuntimeError("telemetry extension anchor mismatch")
 s=s.replace(needle,replacement,1)
@@ -133,6 +151,7 @@ checks={
   "hbnf-wow-aux-r3-2026-09-22-v1","aux-r3-wow-1d","registry28-tempo-lock-1d-v3-colorwifi",
   "hbnfAuxStyleForMode","hbnfAuxAmountForMode","hbnfCanvasH = 2","SEGMENT.virtualLength()",'root["HBNFAUX"]',
   'PSTR("%s/auxwow")','\\\"projection\\\":\\\"fold2-1d-v1\\\"','wow["projection"] = "fold2-1d-v1"',
+  'wow["lumaProfile"] = "video-punch-v1"','hbnfAuxVideoLift',
   'strip.addEffect(220, &mode_Complex_Kaleido_3','strip.addEffect(247, &mode_Module_Experiment10'
  ],
  ar:["static uint8_t audioSyncEnabled = 2;",'usermod["syncMode"] = audioSyncEnabled','usermod["syncPort"] = audioSyncPort']
