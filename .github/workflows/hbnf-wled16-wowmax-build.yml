@@ -6,6 +6,7 @@ on:
       - hbnf-matrix-wow-bundle-r3-20260921
       - hbnf-matrix-audio-lanes-v3-accepted-20260927
       - hbnf-generative-projection-v4-20260927
+      - hbnf-prephase2-final-integration-20260927
     paths:
       - '.hbnf-build-r3max/**'
       - '.github/workflows/hbnf-wled16-wowmax-build.yml'
@@ -126,6 +127,8 @@ jobs:
           grep -q 'hbnf-wow-r3-max-2026-09-21-v3' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'source-coupled-v4' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'anti-repeat-v4' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'familyForEffect' "$GITHUB_WORKSPACE/.hbnf-build-r3max/hbnf_generative_v4.h"
+          grep -q 'Secondary procedural warp' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'frame-lock-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'HbnfGenerativeRuntimeV4' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'HbnfProjectionSenderV1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
