@@ -181,7 +181,7 @@ test("events page polish is scoped and HBNF cards expose first-party resources",
   const styles = source("events-enhancements.css");
   assert.ok(events.includes('<main className="events-page">'));
   assert.ok(events.includes('>Details</a>'));
-  assert.ok(events.includes('{filtered.length} shown · {events.length} total'));
+  assert.ok(events.includes("{filtered.length} shown · {viewEvents.length} {view==='upcoming'?'upcoming':'past'}"));
   assert.ok(events.includes('className="event-resource-links"'));
   assert.ok(detail.includes('className="event-resource-links"'));
   assert.ok(presentation.includes("https://hbnightflyers.com/"));
@@ -203,3 +203,31 @@ test("event cards and detail pages expose permitted first-party official info wi
   assert.ok(detail.includes("event.official_url&&!hbnfEvent"));
   assert.ok(detail.includes(">Official Info ↗</a>"));
 });
+
+test("the Local Roots landing page is the event utility, not the old three-card hub", () => {
+  const app = source("App.tsx");
+  const events = source("pages/EventsPage.tsx");
+  const home = source("pages/HomePage.tsx");
+  assert.ok(app.includes("if(path==='/')return <EventsPage landing/>;"));
+  assert.equal(app.includes("import { HomePage }"), false);
+  assert.ok(events.includes('<h1 className="sr-only">Southern California Disc Golf Events</h1>'));
+  assert.equal(events.includes('<section className="hero"><h1>Southern California Disc Golf Events</h1></section>'), false);
+  assert.ok(home.includes("branch-grid"));
+});
+
+test("public header gives Local Roots stronger brand hierarchy without a redundant Home nav item", () => {
+  const shell = source("components/Shell.tsx");
+  const styles = source("styles.css");
+  assert.equal(shell.includes('className="nav-home"'), false);
+  assert.ok(shell.includes("path==='/'||path==='/events'"));
+  assert.ok(styles.includes(".brand-logo-mark{display:block;width:46px"));
+  assert.ok(styles.includes(".brand strong{font-size:1.12rem"));
+});
+
+test("Events visible typography is standardized on the site sans family", () => {
+  const styles = source("events-enhancements.css");
+  assert.ok(styles.includes(".events-page{font-family:var(--events-sans)}"));
+  assert.ok(styles.includes(".event-detail-heading h1{font-family:var(--events-sans)"));
+  assert.ok(styles.includes(".events-page .section-intro h2{font-size:1.55rem"));
+});
+
