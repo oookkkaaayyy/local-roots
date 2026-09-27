@@ -28,7 +28,7 @@ test("paired-device credentials are hashed server-side and use sliding 180-day e
   assert.ok(adminFn.includes('req.headers.get("x-du-device-token")'));
   assert.ok(adminFn.includes("180 * 24 * 60 * 60 * 1000"));
   assert.ok(adminFn.includes("token_hash"));
-  assert.equal(adminFn.includes("deviceToken)"), false, "raw device token must not be persisted by name");
+  assert.equal(migration.includes("device_token"), false, "raw device token must not be stored in the database schema");
 });
 
 test("pair redemption issues a device token instead of another magic-link session", () => {
