@@ -74,35 +74,6 @@ s,n=init_pat.subn(init_new,s,count=1)
 if n!=1:
     raise RuntimeError(f"fold2 init rewrite mismatch: {n}")
 
-pixel_old='''\tvoid hbnfVariantXY(int x,int y,int &tx,int &ty) const {
-\t\tconst int w=SEGMENT.virtualWidth()?SEGMENT.virtualWidth():1;
-\t\tconst int h=SEGMENT.virtualHeight()?SEGMENT.virtualHeight():1;
-\t\tconst uint8_t t=(uint8_t)(SEGMENT.custom3&7u);
-\t\tconst int sx=(int)(SEGMENT.offset%w), sy=(int)((SEGMENT.offset>>5)%h);
-\t\ttx=x; ty=y;
-\t\tif(t==1||t==3||t==6) tx=w-1-tx;
-\t\tif(t==2||t==3||t==7) ty=h-1-ty;
-\t\tif(t>=4) tx=(tx+sx)%w;
-\t\tif(t==5||t==6) ty=(ty+sy)%h;
-\t\tif(t==7) tx=(tx+(sx>>1)+1)%w;
-\t}
-\tvoid setPixelColor(int x, int y, rgb pixel) {
-\t\tuint8_t r=pixel.red,g=pixel.green,b=pixel.blue;
-\t\thbnfAudio.modulate(x,y,r,g,b);
-\t\tif (SEGMENT.check2) { r=gamma8(r); g=gamma8(g); b=gamma8(b); }
-\t\tint tx=x,ty=y; hbnfVariantXY(x,y,tx,ty);
-\t\tSEGMENT.setPixelColorXY(tx, ty, CRGB(r,g,b));
-\t}
-\tvoid setPixelColor(int index, rgb pixel) {
-\t\tuint8_t r=pixel.red,g=pixel.green,b=pixel.blue;
-\t\tconst int w=SEGMENT.virtualWidth()?SEGMENT.virtualWidth():1;
-\t\tconst int x=index%w, y=index/w;
-\t\thbnfAudio.modulate(x,y,r,g,b);
-\t\tif (SEGMENT.check2) { r=gamma8(r); g=gamma8(g); b=gamma8(b); }
-\t\tint tx=x,ty=y; hbnfVariantXY(x,y,tx,ty);
-\t\tconst int out=ty*w+tx;
-\t\tif(out>=0 && out<SEGMENT.virtualLength()) SEGMENT.setPixelColor(out, CRGB(r,g,b));
-\t}'''
 pixel_new='''\tvoid setPixelColor(int x, int y, rgb pixel) {
 \t\tuint8_t r=pixel.red,g=pixel.green,b=pixel.blue;
 \t\thbnfAudio.modulate(x,y,r,g,b);
@@ -119,9 +90,10 @@ pixel_new='''\tvoid setPixelColor(int x, int y, rgb pixel) {
 \t\thbnfAuxLiftLuma(r,g,b);
 \t\tif (index >= 0 && index < SEGMENT.virtualLength()) SEGMENT.setPixelColor(index, CRGB(r,g,b));
 \t}'''
-if s.count(pixel_old)!=1:
-    raise RuntimeError(f"fold2 pixel hook anchor mismatch: {s.count(pixel_old)}")
-s=s.replace(pixel_old,pixel_new,1)
+pixel_pat=re.compile(r'''\tvoid hbnfVariantXY\(int x,int y,int &tx,int &ty\) const \{.*?\n\t\}\n\tvoid setPixelColor\(int x, int y, rgb pixel\) \{.*?\n\t\}\n\tvoid setPixelColor\(int index, rgb pixel\) \{.*?\n\t\}''',re.S)
+s,n=pixel_pat.subn(pixel_new,s,count=1)
+if n!=1:
+    raise RuntimeError(f"fold2 pixel hook rewrite mismatch: {n}")
 
 
 old="(hbnfAudio.setScene(SEGMENT.mode), hbnfAudio.beginFrame(speedFactor, millis(), SEGMENT.intensity, SEGMENT.custom1, SEGMENT.custom2, SEGMENT.virtualWidth(), SEGMENT.virtualHeight(), SEGMENT.custom3, (uint8_t)(SEGMENT.offset >> 8)))"
