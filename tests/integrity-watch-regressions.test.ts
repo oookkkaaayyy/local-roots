@@ -17,7 +17,10 @@ test("integrity watch follows the upgraded event discovery and results contract"
     '"Official link"',
     '"Full Results"',
     '"Submit organizer results"',
-    '"our own event records"',
+    '"Upcoming events"',
+    '"Submit an event"',
+    '"HB Night Flyers"',
+    '"https://hbnightflyers.com/"',
     '"lr_public_event_detail"',
     '"Clear filters"',
     '"/events/"',
@@ -39,6 +42,6 @@ test("integrity watch verifies upgraded event-page styles", () => {
 });
 
 test("integrity watch version advances with its deployed contract", () => {
-  assert.ok(watch.includes('LocalRootsIntegrityWatch/9.0'));
-  assert.equal(watch.includes('LocalRootsIntegrityWatch/8.0'), false);
+  assert.ok(watch.includes('LocalRootsIntegrityWatch/10.0'));
+  assert.equal(watch.includes('LocalRootsIntegrityWatch/9.0'), false);
 });
