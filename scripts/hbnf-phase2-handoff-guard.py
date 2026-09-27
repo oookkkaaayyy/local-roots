@@ -12,8 +12,7 @@ REQUIRED_CRITERIA = [
     "no_auth_tokens_left_in_url",
     "home_screen_install_verified",
     "source_frozen_and_matches_production",
-    "cart_device_sessions_rls_enabled",
-    "cart_pair_tokens_rls_enabled",
+    "local_bridge_device_session_supported",
     "stale_test_pair_tokens_cleaned_or_expired",
     "ipad_compatibility_decided",
 ]

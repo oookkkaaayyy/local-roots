@@ -24,9 +24,11 @@ Before Phase 2 can start:
 7. No auth/session token remains in the visible URL after pairing.
 8. Home Screen install/icon is verified.
 9. The deployed controller/backend source is frozen in GitHub and exact production Edge Function versions/hashes are recorded.
-10. `hbnf_internal.cart_device_sessions` and `hbnf_internal.cart_pair_tokens` have RLS enabled with the intended access model.
+10. Phase 1 supports minting a dedicated device session for the Phase 2 bridge so local QR guests can use cart controls without individual pairing.
 11. Temporary/test pairing tokens are either consumed, expired, or intentionally revoked.
 12. iPad mini 2 compatibility with the final Phase 1 controller is explicitly decided.
+
+RLS on the two internal pairing tables is not a Phase 2 gate. Live privilege checks showed anon/authenticated roles have neither schema usage nor direct table privileges.
 
 ## Why the iPad design changed
 
@@ -44,3 +46,8 @@ If the final Phase 1 field controller works on the iPad mini 2, Phase 2 will pai
 - UV never blocks the rest of Phase 2 and stays fail-dark/global-OFF dominated.
 
 The current `config/PHASE1_FINAL_HANDOFF.json` is intentionally a **blocking placeholder**, not a declaration that Phase 1 is ready.
+
+
+## Zero-hurdle guest requirement
+
+Phase 2 guest UX is intentionally local and open: scan one QR, join HBNF-Play, use LIGHTS or PLAY. There is no guest account/pairing/approval workflow. The bridge holds one dedicated cart device session and proxies guest light commands through the canonical control API so canonical state remains authoritative. The guest phone itself never receives that token.

@@ -44,20 +44,29 @@ def write_qr_pack(ssid,password,url):
     out.mkdir(parents=True,exist_ok=True)
     wifi_payload=f"WIFI:T:WPA;S:{ssid};P:{password};;"
     segno.make(wifi_payload).save(out/"HBNF_PLAY_WIFI.svg",scale=8,border=2)
-    segno.make(url).save(out/"HBNF_PLAY_CONTROLLER.svg",scale=8,border=2)
-    html=f"""<!doctype html><meta charset="utf-8"><title>HBNF Play QR</title>
-<style>body{{font:20px system-ui;text-align:center}}.q{{display:inline-block;margin:25px}}img{{width:300px}}small{{display:block}}</style>
-<h1>HBNF PLAY</h1>
-<div class="q"><h2>1. JOIN WIFI</h2><img src="HBNF_PLAY_WIFI.svg"><small>{ssid}</small></div>
-<div class="q"><h2>2. OPEN CONTROLLER</h2><img src="HBNF_PLAY_CONTROLLER.svg"><small>{url}</small></div>
-<p>The controller may open automatically after joining Wi-Fi.</p>"""
+    # Keep a URL QR only as a diagnostic fallback; the printable guest sign uses ONE QR.
+    segno.make(url).save(out/"HBNF_PLAY_CONTROLLER_DIAGNOSTIC.svg",scale=8,border=2)
+    html=f"""<!doctype html><meta charset="utf-8"><title>HBNF Cart QR</title>
+<style>body{{font:22px system-ui;text-align:center;background:#071018;color:#fff}}img{{width:360px;background:#fff;padding:12px;border-radius:18px}}small{{display:block;color:#b9ced6;margin-top:12px}}</style>
+<h1>SCAN TO CONTROL THE CART + PLAY</h1>
+<img src="HBNF_PLAY_WIFI.svg">
+<p>Scan with your camera → Join <b>{ssid}</b>.<br>The controller should open automatically.</p>
+<small>If it does not open, visit {url}</small>"""
     (out/"PRINT_HBNF_PLAY.html").write_text(html)
     return out
 
 def main():
-    if len(sys.argv)!=2:
-        raise SystemExit("usage: provision_hbnf_game_bridge.py <serial-port>")
+    if len(sys.argv) not in (2,3):
+        raise SystemExit("usage: provision_hbnf_game_bridge.py <serial-port> [cart-device-token-file]")
     port=sys.argv[1]
+    token_file=Path(sys.argv[2]).expanduser() if len(sys.argv)==3 else None
+    cart_token=""
+    if token_file:
+        if not token_file.is_file():
+            raise SystemExit(f"CART_TOKEN_FILE_MISSING: {token_file}")
+        cart_token=token_file.read_text().strip()
+        if len(cart_token)<20:
+            raise SystemExit("CART_TOKEN_INVALID")
     ssid=input("Cart SSID [HBNF-Cart]: ").strip() or "HBNF-Cart"
     password=getpass.getpass("Cart Wi-Fi password (stored only in ESP32 NVS): ")
     if not password:
@@ -77,6 +86,16 @@ def main():
             send(ser,"STATUS")
             read_until(ser,["HBNF_STATUS"],3)
             raise SystemExit("WIFI_PROVISION=FAIL: bridge did not report online.")
+
+        if cart_token:
+            send(ser,"CART_TOKEN "+cart_token)
+            cart_token=""
+            hit,_=read_until(ser,["HBNF_CART_TOKEN_STORED=PASS"],4)
+            if not hit:
+                raise SystemExit("CART_PROXY_PROVISION=FAIL")
+            print("HBNF_GUEST_CART_CONTROLS=PASS")
+        else:
+            print("HBNF_GUEST_CART_CONTROLS=NOT_PROVISIONED")
 
         send(ser,"PLAY_INFO")
         hit,play_lines=read_until(ser,["HBNF_PLAY_INFO"],4)

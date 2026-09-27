@@ -26,6 +26,13 @@ python3 -m venv "$VENV"
 "$VENV/bin/python" -m esptool --chip esp32 --port "$PORT" --baud 460800 write_flash 0x0 "$FACTORY"
 echo "FLASH=PASS"
 sleep 2
-"$VENV/bin/python" provision_hbnf_game_bridge.py "$PORT"
+TOKEN_FILE="${HBNF_CART_TOKEN_FILE:-$(pwd)/BRIDGE_CART_TOKEN.txt}"
+if [[ -s "$TOKEN_FILE" ]]; then
+  echo "Provisioning local QR cart-control capability..."
+  "$VENV/bin/python" provision_hbnf_game_bridge.py "$PORT" "$TOKEN_FILE"
+else
+  echo "NOTE: no bridge cart token bundled; guest LIGHTS tab will remain unavailable until final Phase 2 packaging."
+  "$VENV/bin/python" provision_hbnf_game_bridge.py "$PORT"
+fi
 echo
 echo "HBNF_GAME_BRIDGE_INSTALL=PASS"

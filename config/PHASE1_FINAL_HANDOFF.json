@@ -60,6 +60,14 @@
     "security_blockers": {
       "cart_device_sessions_rls_enabled": false,
       "cart_pair_tokens_rls_enabled": false
+    },
+    "security_notes": {
+      "rls_disabled_on_internal_pairing_tables": true,
+      "anon_schema_usage": false,
+      "authenticated_schema_usage": false,
+      "anon_direct_table_privileges": false,
+      "authenticated_direct_table_privileges": false,
+      "phase2_blocker": false
     }
   },
   "required_exit_criteria": {
@@ -73,10 +81,9 @@
     "no_auth_tokens_left_in_url": false,
     "home_screen_install_verified": false,
     "source_frozen_and_matches_production": false,
-    "cart_device_sessions_rls_enabled": false,
-    "cart_pair_tokens_rls_enabled": false,
     "stale_test_pair_tokens_cleaned_or_expired": false,
-    "ipad_compatibility_decided": false
+    "ipad_compatibility_decided": false,
+    "local_bridge_device_session_supported": false
   },
   "phone_controller": {
     "production_url": null,
