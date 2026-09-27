@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - hbnf-matrix-wow-bundle-r3-20260921
+      - hbnf-aux-video-punch-v1-20260927
     paths:
       - '.hbnf-build-aux-r3/**'
       - '.hbnf-build-r3max/**'
@@ -49,6 +50,7 @@ jobs:
         run: |
           set -euo pipefail
           python .hbnf-build-aux-r3/test_aux_contract.py
+          python .hbnf-build-aux-r3/test_video_luma.py
 
       - name: Decode proven HBNF source bundle
         shell: bash
@@ -114,6 +116,8 @@ jobs:
           python "$GITHUB_WORKSPACE/.hbnf-build-aux-r3/apply_aux_r3.py" /tmp/wled
           grep -q 'hbnf-wow-aux-r3-2026-09-22-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'registry28-tempo-lock-1d-v3-colorwifi' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'video-punch-v1' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'hbnfAuxVideoLift' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'static uint8_t audioSyncEnabled = 2;' usermods/audioreactive/audio_reactive.cpp
           ! grep -q 'hbnf-wow-r3-max-2026-09-21-v3' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           ! grep -q 'hbnf_flow' platformio_override.ini
@@ -200,6 +204,8 @@ jobs:
             echo PROJECTION=FOLD2_1D_V1
             echo FOLD2_PROJECTION_SOURCE_AUDIT=PASS
             echo SECOND_CLEAN_BUILD_BYTE_IDENTICAL=PASS
+            echo AUX_VIDEO_LUMA_PROFILE=video-punch-v1
+            echo AUX_VIDEO_LUMA_HOST_TEST=PASS
             echo OTA_SLOT_GATE=PASS
             echo COMMISSION_OPERATOR_INCLUDED=YES
             echo COMMISSION_GUARD_INCLUDED=YES
