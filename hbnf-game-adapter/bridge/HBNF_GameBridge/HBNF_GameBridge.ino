@@ -287,7 +287,7 @@ bool guestCartCommand(const String& type, const String& payload, String& error) 
 bool queueCartProxy(uint8_t client, const String& type, const String& payload) {
   if (!cartProxyMutex) return false;
   if (xSemaphoreTake(cartProxyMutex, pdMS_TO_TICKS(20)) != pdTRUE) return false;
-  if (cartJobPending || cartJobBusy) {
+  if (cartJobPending) {
     xSemaphoreGive(cartProxyMutex);
     return false;
   }
@@ -305,7 +305,7 @@ void cartProxyWorker(void*) {
     uint8_t client = 0;
     String type, payload;
     if (cartProxyMutex && xSemaphoreTake(cartProxyMutex, pdMS_TO_TICKS(20)) == pdTRUE) {
-      if (cartJobPending && !cartJobBusy) {
+      if (cartJobPending && !cartJobBusy && !cartResultReady) {
         cartJobBusy = true;
         cartJobPending = false;
         client = cartJobClient;
@@ -499,6 +499,11 @@ void startGameWeb() {
   gameWeb.on("/generate_204", HTTP_GET, serveController);
   gameWeb.on("/gen_204", HTTP_GET, serveController);
   gameWeb.on("/connecttest.txt", HTTP_GET, serveController);
+  gameWeb.on("/ncsi.txt", HTTP_GET, serveController);
+  gameWeb.on("/redirect", HTTP_GET, serveController);
+  gameWeb.on("/fwlink", HTTP_GET, serveController);
+  gameWeb.on("/library/test/success.html", HTTP_GET, serveController);
+  gameWeb.on("/success.txt", HTTP_GET, serveController);
   gameWeb.onNotFound(serveController);
   gameWeb.begin();
 

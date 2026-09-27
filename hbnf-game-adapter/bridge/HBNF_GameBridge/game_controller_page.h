@@ -73,6 +73,7 @@ function connect(){
   if(a[0]==='HELLO'){cartReady=a[4]==='1';cs.textContent=cartReady?'Cart controls ready':'Cart controls are finishing setup';return}
   if(a[0]==='CLAIMED'){slot=parseInt(a[1],10);gs.textContent='Player '+slot+' ready';document.getElementById('claim').textContent='P'+slot+' READY';return}
   if(a[0]==='RELEASED'||a[0]==='PREEMPTED'){slot=0;mask=0;held={};gs.textContent=a[0]==='PREEMPTED'?'A dedicated controller took this slot. Tap PLAY for another.':'Tap PLAY to rejoin.';document.getElementById('claim').textContent='PLAY';return}
+  if(a[0]==='CARTQUEUED'){cs.textContent='Applying…';cs.className='';return}
   if(a[0]==='CARTOK'){cs.textContent='Applied';cs.className='good';return}
   if(a[0]==='CARTERR'){cs.textContent='Could not apply: '+a.slice(1).join(' ').replace(/_/g,' ');cs.className='bad';return}
   if(a[0]==='ERR'){gs.textContent=a.slice(1).join(' ').replace(/_/g,' ');return}
