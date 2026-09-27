@@ -13,8 +13,8 @@ HERE=pathlib.Path(__file__).resolve().parent
 sys.path.insert(0,str(HERE))
 import local_commission as lc
 
-EXPECTED_FW_SHA="dee7261313b00e7c12e1482bc31e5f45311fba40a95e5eaf53d4eb9a9e96e0bf"
-EXPECTED_FW_BYTES=1342736
+EXPECTED_FW_SHA="7c8f4f7ff9179b788275fb1c093b12a0094a43daa81542cf8ae5379a7cb43e2f"
+EXPECTED_FW_BYTES=1343376
 BACKUP_PATHS=["/json/cfg","/json/state","/json/info","/json/eff","/json/pins","/presets.json"]
 
 
