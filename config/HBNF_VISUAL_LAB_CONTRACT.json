@@ -1,95 +1,77 @@
 {
-  "schema": "hbnf-visual-lab-contract-v1",
+  "schema": "hbnf-visual-lab-contract-v2",
   "status": "staging",
   "productionWritesEnabled": false,
   "phase2Base": {
     "branch": "hbnf-cart-phase2-readiness-verified-20260926",
     "sha": "b779fe01d5b26f981270c5b12716e366e3f75720"
   },
-  "parallelRendererObservation": {
+  "parallelRenderer": {
     "branch": "hbnf-generative-projection-v4-20260927",
-    "sha": "7103f8c2a84e48f5418049780df963213b3e2e33",
-    "mergeAuthority": false
+    "finalAcceptedSha": null,
+    "required": [
+      "anti-repeat-v4",
+      "source-coupled-v4",
+      "frame-lock-v1"
+    ],
+    "doNotModify": true
   },
-  "intent": {
-    "energy": {
-      "min": 0,
-      "max": 100,
-      "default": 65
+  "stagingBackend": {
+    "visualStatus": {
+      "slug": "hbnf-visual-lab-staging",
+      "version": 3,
+      "sha256": "39e79d894222dedacf81096e6075e643db5b5c5f1aec8239ab428b18e1071f0e",
+      "readOnly": true
     },
-    "audioResponse": {
-      "min": 0,
-      "max": 100,
-      "default": 75
-    },
-    "motion": {
-      "min": 0,
-      "max": 100,
-      "default": 60
-    },
-    "variation": {
-      "min": 0,
-      "max": 100,
-      "default": 85
-    },
-    "couplingMode": {
-      "values": [
-        "locked",
-        "related",
-        "independent"
-      ],
-      "default": "related"
-    },
-    "paletteId": {
-      "type": "string",
-      "default": "hbnf-balanced"
+    "matrixAdapter": {
+      "slug": "hbnf-matrix-adapter-v4-staging",
+      "version": 2,
+      "sha256": "6f11ee8e550498bee1ec0caebecd3ee04ccac5f0ae5812f1967be8be6bfcb366",
+      "productionInvocations": 0
     }
   },
-  "canonicalMapping": {
-    "energy": "maps initially to canonical vibe; final renderer may consume continuous value",
-    "motion": "maps initially to canonical speedBias; final renderer may consume continuous value",
-    "paletteId": "canonical PALETTE",
-    "brightness": "canonical BRIGHTNESS per device",
-    "audioResponse": "renderer extension; do not fake confirmation through existing cart state",
-    "variation": "renderer extension; do not fake confirmation through existing cart state",
-    "couplingMode": "renderer/adapter capability; not equivalent to ordinary WLED sync"
-  },
-  "telemetry": {
-    "required": [
-      "rendererRevision",
-      "sceneId",
-      "paletteId",
+  "localOwnerSurface": {
+    "route": "http://192.168.8.30/visual",
+    "access": "HBNF-Cart trusted LAN only",
+    "matrixPreview": "exact WLED /ws Peek 32x16 binary stream",
+    "auxPreview": "exact HBNP 22-pixel Matrix projection source",
+    "syncProof": "AUX projectionRxActive + projectionRxSeq/age compared with Matrix HBNP seq",
+    "controls": [
       "energy",
       "audioResponse",
       "motion",
-      "variation",
-      "bass",
-      "mids",
-      "treble",
-      "onset",
-      "matrix",
-      "aux"
+      "matrixBrightness",
+      "auxBrightness",
+      "ON",
+      "OFF",
+      "NEXT",
+      "AUTO"
     ],
-    "deviceState": [
-      "deviceId",
-      "desiredRevision",
-      "confirmedRevision",
-      "confirmedAt",
-      "online",
-      "confirmation"
+    "noFakeControls": [
+      "variation slider",
+      "coupling selector",
+      "palette selector"
     ]
   },
-  "promotionGates": [
-    "final_renderer_commit_accepted",
-    "phase2_handoff_gate_passed",
-    "paired_private_route_bound",
-    "requested_desired_confirmed_visible",
-    "matrix_ack_visible",
-    "aux_ack_visible",
-    "off_on_next_brightness_regression_pass",
-    "guest_bridge_regression_pass",
-    "game_lease_regression_pass",
-    "physical_phone_pass",
-    "physical_matrix_aux_pass"
+  "semantics": {
+    "energy": "0-100 -> canonical vibe buckets",
+    "audioResponse": "0-100 -> responseBoost 1.0-1.5",
+    "motion": "0-100 -> speedBias 0.5-1.5",
+    "variation": "automatic anti-repeat-v4; no independent slider until renderer exposes one",
+    "coupling": "frame-lock-v1 is authoritative; no approximate sync label"
+  },
+  "automatedEvidence": {
+    "currentCanonicalRead": "desired revision 78; Matrix+AUX both online and confirmed",
+    "visualStatusAuth": "unauthorized request rejected; ephemeral paired-device request returned HTTP 200",
+    "v4AdapterDryRun": "HTTP 200; current legacy hardware correctly reports v4=false and route=legacy-adapter",
+    "bridgeQaWorkflowRun": 36310974313,
+    "bridgeCompile": "PASS; 1,378,213 bytes (43%); globals 113,324 bytes (34%)"
+  },
+  "finalCutover": [
+    "parallel renderer finishes and exact accepted SHA is frozen",
+    "dry-run hbnf-matrix-adapter-v4-staging must report v4=true",
+    "change Matrix reconciler target from hbnf-matrix-adapter to hbnf-matrix-adapter-v4-staging",
+    "run automated OFF/ON/NEXT/TUNE + desired/observed convergence checks",
+    "use compiled Phase 2 bridge with owner /visual route and require HBNF_VISUAL_LAB_SELFTEST=PASS"
   ]
 }
