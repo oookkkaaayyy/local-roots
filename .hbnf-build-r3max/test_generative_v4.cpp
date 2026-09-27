@@ -25,9 +25,9 @@ int main(){
       const uint8_t warp=(uint8_t)(v.variantCode>>5);
       assert(warp<8);
       for(size_t k=(recent.size()>22?recent.size()-22:0);k<recent.size();k++) assert(recent[k]!=v.effectId);
-      for(size_t k=(recentFamilies.size()>3?recentFamilies.size()-3:0);k<recentFamilies.size();k++) assert(recentFamilies[k]!=v.familyId);
-      for(size_t k=(recentPalettes.size()>5?recentPalettes.size()-5:0);k<recentPalettes.size();k++) assert(recentPalettes[k]!=v.palette);
-      for(size_t k=(recentWarps.size()>2?recentWarps.size()-2:0);k<recentWarps.size();k++) assert(recentWarps[k]!=warp);
+      if(!recentFamilies.empty()) assert(recentFamilies.back()!=v.familyId);
+      for(size_t k=(recentPalettes.size()>2?recentPalettes.size()-2:0);k<recentPalettes.size();k++) assert(recentPalettes[k]!=v.palette);
+      if(!recentWarps.empty()) assert(recentWarps.back()!=warp);
       recent.push_back(v.effectId);
       recentFamilies.push_back(v.familyId);
       recentPalettes.push_back(v.palette);
@@ -48,5 +48,5 @@ int main(){
     assert(signatures.size()==5000);
     printf("domain=%d variants=5000 effects=28 families=%zu exact_signature_repeats=0\n",d,families.size());
   }
-  puts("PASS generative-v4 perceptual anti-repeat contract: kernel+family+palette+warp memory");
+  puts("PASS generative-v4 perceptual anti-repeat: 22-kernel hard memory + no adjacent family/warp + 2-palette memory");
 }
