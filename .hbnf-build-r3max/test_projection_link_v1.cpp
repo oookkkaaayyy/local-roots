@@ -16,6 +16,12 @@ int main(){
   for(int i=0;i<PROJECTION_PIXELS;i++) if(rgb[i*3]||rgb[i*3+1]||rgb[i*3+2]) nonzero++;
   assert(nonzero==22);
 
+  uint8_t hello[PROJECTION_HELLO_BYTES]; uint32_t nonce=0;
+  assert(encodeProjectionHello(0x12345678u,hello)==PROJECTION_HELLO_BYTES);
+  assert(decodeProjectionHello(hello,sizeof(hello),nonce));
+  assert(nonce==0x12345678u);
+  hello[0]='X'; assert(!decodeProjectionHello(hello,sizeof(hello),nonce));
+
   uint8_t pkt[PROJECTION_PACKET_BYTES];
   assert(encodeProjectionPacket(513,rgb,pkt)==PROJECTION_PACKET_BYTES);
   uint8_t decoded[PROJECTION_PIXELS*3]; uint16_t seq=0;
