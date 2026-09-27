@@ -296,7 +296,7 @@ function GalleryPanel({credential}:{credential:AdminCredential}){
   }
 
   return <section className="admin-card du-gallery-manager" aria-labelledby="du-gallery-manager-title">
-    <div className="admin-card-head"><div><span className="eyebrow">Portfolio</span><h3 id="du-gallery-manager-title">Gallery manager</h3><p>Manage the gallery as three image roles the system understands: reference photo, stencil artwork, and finished disc. Replace, remove, reorder, publish, or hide everything here.</p></div><span className="status-pill">{items.length} managed</span></div>
+    <div className="admin-card-head"><div><h3 id="du-gallery-manager-title">Gallery manager</h3></div><span className="status-pill">{items.length} managed</span></div>
 
     <details className="du-gallery-add" open={items.length===0}>
       <summary>Add new work</summary>
@@ -315,7 +315,7 @@ function GalleryPanel({credential}:{credential:AdminCredential}){
     {message?<div className="notice">{message}</div>:null}
 
     <div className="du-gallery-managed-list">
-      {items.length?items.map((item,index)=><GalleryItemEditor key={`${item.id}:${item.updated_at}`} item={item} index={index} total={items.length} credential={credential} refresh={load}/>):<div className="empty-state"><strong>No individually managed items yet.</strong><span>Add the next source/result set above. It will appear here immediately.</span></div>}
+      {items.length?items.map((item,index)=><GalleryItemEditor key={`${item.id}:${item.updated_at}`} item={item} index={index} total={items.length} credential={credential} refresh={load}/>):<div className="empty-state"><strong>No gallery items.</strong></div>}
     </div>
 
   </section>;
