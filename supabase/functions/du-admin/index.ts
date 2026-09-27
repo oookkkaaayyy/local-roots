@@ -185,6 +185,36 @@ function decodeGalleryImage(value: unknown) {
   return { bytes, mime, extension };
 }
 
+const galleryRoleColumn: Record<GalleryImageRole, "source_photo_path"|"stencil_path"|"finished_disc_path"> = {
+  source_photo: "source_photo_path",
+  stencil: "stencil_path",
+  finished_disc: "finished_disc_path",
+};
+
+function galleryImageCount(item: Record<string, unknown>) {
+  return ["source_photo_path","stencil_path","finished_disc_path"].filter(key=>Boolean(item[key])).length;
+}
+
+async function getGalleryItem(service: ServiceClient, itemId: string) {
+  const { data, error } = await service.from("gallery_items")
+    .select("id,job_id,is_published,caption,source_photo_path,stencil_path,finished_disc_path,sort_order,created_at,updated_at")
+    .eq("id", itemId).maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+async function uploadGalleryReplacement(service: ServiceClient, itemId: string, role: GalleryImageRole, value: unknown) {
+  const image = decodeGalleryImage(value);
+  const path = `items/${itemId}/${role}-${Date.now()}-${crypto.randomUUID().slice(0,8)}.${image.extension}`;
+  const { error } = await service.storage.from("du-gallery").upload(path, image.bytes, {
+    contentType: image.mime,
+    cacheControl: "31536000",
+    upsert: false,
+  });
+  if (error) throw error;
+  return path;
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
@@ -346,11 +376,119 @@ Deno.serve(async (req: Request) => {
     }
   }
 
+  if (action === "gallery_update") {
+    const itemId = String(body.item_id || "").trim();
+    if (!itemId) return json({ error: "gallery_item_required" }, 400);
+    try {
+      const existing = await getGalleryItem(service, itemId);
+      if (!existing) return json({ error: "gallery_item_not_found" }, 404);
+      const patch: Record<string, unknown> = {};
+      if (Object.prototype.hasOwnProperty.call(body, "caption")) {
+        patch.caption = String(body.caption || "").trim().slice(0, 300) || null;
+      }
+
+      const images = body.images && typeof body.images === "object" ? body.images : {};
+      const supplied = galleryImageRoles.filter(role => Boolean(images[role]));
+      const uploaded: string[] = [];
+      const replacedOld: string[] = [];
+      try {
+        for (const role of supplied) {
+          const nextPath = await uploadGalleryReplacement(service, itemId, role, images[role]);
+          uploaded.push(nextPath);
+          const column = galleryRoleColumn[role];
+          const oldPath = String(existing[column] || "");
+          if (oldPath) replacedOld.push(oldPath);
+          patch[column] = nextPath;
+        }
+      } catch (error) {
+        if (uploaded.length) await service.storage.from("du-gallery").remove(uploaded);
+        throw error;
+      }
+
+      if (!Object.keys(patch).length) return json({ ok: true, item: existing });
+      const preview = { ...existing, ...patch };
+      if (existing.is_published && galleryImageCount(preview) < 2) patch.is_published = false;
+
+      const { data, error } = await service.from("gallery_items").update(patch).eq("id", itemId)
+        .select("id,job_id,is_published,caption,source_photo_path,stencil_path,finished_disc_path,sort_order,created_at,updated_at").single();
+      if (error) {
+        if (uploaded.length) await service.storage.from("du-gallery").remove(uploaded);
+        return json({ error: "gallery_update_failed", detail: error.message }, 400);
+      }
+      if (replacedOld.length) await service.storage.from("du-gallery").remove(replacedOld);
+      return json({ ok: true, item: data });
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "gallery_update_failed";
+      const status = code === "gallery_image_too_large" ? 413 : 400;
+      return json({ error: code }, status);
+    }
+  }
+
+  if (action === "gallery_remove_image") {
+    const itemId = String(body.item_id || "").trim();
+    const role = String(body.role || "") as GalleryImageRole;
+    if (!itemId || !galleryImageRoles.includes(role)) return json({ error: "invalid_gallery_image_remove" }, 400);
+    const existing = await getGalleryItem(service, itemId);
+    if (!existing) return json({ error: "gallery_item_not_found" }, 404);
+    const column = galleryRoleColumn[role];
+    const oldPath = String(existing[column] || "");
+    const patch: Record<string, unknown> = { [column]: null };
+    const preview = { ...existing, [column]: null };
+    if (existing.is_published && galleryImageCount(preview) < 2) patch.is_published = false;
+    const { data, error } = await service.from("gallery_items").update(patch).eq("id", itemId)
+      .select("id,job_id,is_published,caption,source_photo_path,stencil_path,finished_disc_path,sort_order,created_at,updated_at").single();
+    if (error) return json({ error: "gallery_remove_failed", detail: error.message }, 400);
+    if (oldPath) await service.storage.from("du-gallery").remove([oldPath]);
+    return json({ ok: true, item: data });
+  }
+
+  if (action === "gallery_delete") {
+    const itemId = String(body.item_id || "").trim();
+    if (!itemId) return json({ error: "gallery_item_required" }, 400);
+    const existing = await getGalleryItem(service, itemId);
+    if (!existing) return json({ error: "gallery_item_not_found" }, 404);
+    const paths = [existing.source_photo_path,existing.stencil_path,existing.finished_disc_path].filter(Boolean) as string[];
+    const { error } = await service.from("gallery_items").delete().eq("id", itemId);
+    if (error) return json({ error: "gallery_delete_failed", detail: error.message }, 400);
+    if (paths.length) await service.storage.from("du-gallery").remove(paths);
+    return json({ ok: true });
+  }
+
+  if (action === "gallery_move") {
+    const itemId = String(body.item_id || "").trim();
+    const direction = String(body.direction || "");
+    if (!itemId || !["earlier","later"].includes(direction)) return json({ error: "invalid_gallery_move" }, 400);
+    const { data: ordered, error } = await service.from("gallery_items")
+      .select("id,sort_order,created_at").order("sort_order", { ascending: true }).order("created_at", { ascending: true });
+    if (error) return json({ error: "gallery_move_failed", detail: error.message }, 400);
+    const index = (ordered || []).findIndex(item=>item.id===itemId);
+    const targetIndex = direction === "earlier" ? index - 1 : index + 1;
+    if (index < 0 || targetIndex < 0 || targetIndex >= (ordered || []).length) return json({ ok: true });
+    const current = ordered![index];
+    const target = ordered![targetIndex];
+    const currentOrder = Number(current.sort_order ?? index);
+    const targetOrder = Number(target.sort_order ?? targetIndex);
+    const { error: firstError } = await service.from("gallery_items").update({ sort_order: targetOrder }).eq("id", current.id);
+    if (firstError) return json({ error: "gallery_move_failed", detail: firstError.message }, 400);
+    const { error: secondError } = await service.from("gallery_items").update({ sort_order: currentOrder }).eq("id", target.id);
+    if (secondError) {
+      await service.from("gallery_items").update({ sort_order: currentOrder }).eq("id", current.id);
+      return json({ error: "gallery_move_failed", detail: secondError.message }, 400);
+    }
+    return json({ ok: true });
+  }
+
   if (action === "gallery_set_published") {
     const itemId = String(body.item_id || "").trim();
     if (!itemId) return json({ error: "gallery_item_required" }, 400);
+    const publish = body.is_published === true;
+    if (publish) {
+      const existing = await getGalleryItem(service, itemId);
+      if (!existing) return json({ error: "gallery_item_not_found" }, 404);
+      if (galleryImageCount(existing) < 2) return json({ error: "gallery_needs_two_images" }, 400);
+    }
     const { data, error } = await service.from("gallery_items")
-      .update({ is_published: body.is_published === true })
+      .update({ is_published: publish })
       .eq("id", itemId)
       .select("id,is_published,updated_at").single();
     if (error) return json({ error: "gallery_publish_failed", detail: error.message }, 400);
