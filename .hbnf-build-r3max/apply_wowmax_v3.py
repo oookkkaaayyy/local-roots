@@ -204,6 +204,136 @@ static uint8_t hbnfFxFailed = 0;
 static uint8_t hbnfFxFirst = 255;
 static uint8_t hbnfFxLast = 255;
 
+class HbnfProjectionSenderV1 {
+  WiFiUDP udp_;
+  uint32_t lastMs_=0, packets_=0;
+  uint16_t seq_=0;
+ public:
+  void tick() {
+    const uint32_t now=millis();
+    if (now-lastMs_<33u || WiFi.status()!=WL_CONNECTED || strip.isUpdating()) return;
+    lastMs_=now;
+    hbnf::ProjectionAccumulator a;
+    for (uint16_t y=0;y<16;y++) for (uint16_t x=0;x<32;x++) {
+      const uint32_t c=strip.getPixelColorXY(x,y);
+      a.add(x,y,32,16,R(c),G(c),B(c));
+    }
+    uint8_t rgb[hbnf::PROJECTION_PIXELS*3];
+    if (!a.finalize(rgb)) return;
+    if (bri==0) for (size_t i=0;i<sizeof(rgb);i++) rgb[i]=0;
+    uint8_t packet[hbnf::PROJECTION_PACKET_BYTES];
+    hbnf::encodeProjectionPacket(++seq_,rgb,packet);
+    const IPAddress ip=WiFi.localIP(), mask=WiFi.subnetMask();
+    IPAddress bc(
+      (uint8_t)(ip[0]|(uint8_t)~mask[0]),
+      (uint8_t)(ip[1]|(uint8_t)~mask[1]),
+      (uint8_t)(ip[2]|(uint8_t)~mask[2]),
+      (uint8_t)(ip[3]|(uint8_t)~mask[3]));
+    if (udp_.beginPacket(bc,hbnf::PROJECTION_PORT)) {
+      udp_.write(packet,sizeof(packet));
+      if (udp_.endPacket()) packets_++;
+    }
+  }
+  uint32_t packets() const { return packets_; }
+  uint16_t seq() const { return seq_; }
+};
+static HbnfProjectionSenderV1 hbnfProjectionTx;
+
+class HbnfGenerativeRuntimeV4 {
+  hbnf::GenerativeV4 gen_;
+  hbnf::GenerativeVariant current_;
+  bool enabled_=false, locked_=false, forceNext_=false, have_=false;
+  uint8_t domain_=0;
+  uint32_t dueMs_=0, sequence_=0;
+  bool speedOverride_=false, profileOverride_=false, styleOverride_=false, amountOverride_=false;
+  uint8_t speedCode_=128, profileCode_=96, styleCode_=176, amountCode_=220;
+
+  static uint8_t clamp8(int x,int lo,int hi) { return (uint8_t)(x<lo?lo:(x>hi?hi:x)); }
+
+ public:
+  void seed(uint32_t s) { gen_.reset(s?s:0x48B4F19Du); forceNext_=true; }
+
+  void command(JsonObject g) {
+    if (g.isNull()) return;
+    if (!g["enabled"].isNull()) {
+      const bool en=g["enabled"].as<bool>();
+      if (en && !enabled_) forceNext_=true;
+      enabled_=en;
+    }
+    if (!g["locked"].isNull()) locked_=g["locked"].as<bool>();
+    if (!g["domain"].isNull()) {
+      uint8_t nd=domain_;
+      if (g["domain"].is<const char*>()) {
+        const char* d=g["domain"];
+        if (!strcmp(d,"course-flow")) nd=0;
+        else if (!strcmp(d,"field-mix")) nd=1;
+        else if (!strcmp(d,"hbnf-signature")) nd=2;
+        else if (!strcmp(d,"quiet-cosmos")) nd=3;
+      } else {
+        const int raw=g["domain"].as<int>();
+        nd=(uint8_t)(raw<0?0:(raw>3?3:raw));
+      }
+      if (nd!=domain_) { domain_=nd; forceNext_=true; }
+    }
+    if (g["next"] | false) forceNext_=true;
+    if (!g["seed"].isNull()) seed(g["seed"].as<uint32_t>());
+  }
+
+  void tuning(JsonObject t) {
+    if (t.isNull()) return;
+    if (!t["speedEnabled"].isNull()) speedOverride_=t["speedEnabled"].as<bool>();
+    if (!t["profileEnabled"].isNull()) profileOverride_=t["profileEnabled"].as<bool>();
+    if (!t["styleEnabled"].isNull()) styleOverride_=t["styleEnabled"].as<bool>();
+    if (!t["amountEnabled"].isNull()) amountOverride_=t["amountEnabled"].as<bool>();
+    if (!t["speed"].isNull()) speedCode_=clamp8(t["speed"].as<int>(),1,255);
+    if (!t["profile"].isNull()) profileCode_=clamp8(t["profile"].as<int>(),0,255);
+    if (!t["style"].isNull()) styleCode_=clamp8(t["style"].as<int>(),0,255);
+    if (!t["amount"].isNull()) amountCode_=clamp8(t["amount"].as<int>(),1,255);
+  }
+
+  void tick() {
+    if (!enabled_ || locked_ || strip.isUpdating()) return;
+    const uint32_t now=millis();
+    Segment& seg=strip.getMainSegment();
+    const bool custom=seg.mode>=220 && seg.mode<=247;
+
+    // Do not stomp temporary text/event effects. Generator resumes when the
+    // custom renderer owns the main segment again, or when an explicit scene/NEXT command forces it.
+    if (!forceNext_ && have_ && !custom) { dueMs_=now+500u; return; }
+    if (!forceNext_ && have_ && (int32_t)(now-dueMs_)<0) return;
+
+    current_=gen_.next((hbnf::GenerativeDomain)domain_);
+    if (speedOverride_) current_.speed=clamp8(((int)current_.speed*(int)speedCode_+64)/128,48,220);
+    if (profileOverride_) current_.profile=profileCode_;
+    if (styleOverride_) current_.style=styleCode_;
+    if (amountOverride_) current_.amount=amountCode_;
+
+    seg.setMode(current_.effectId,false);
+    seg.setPalette(current_.palette);
+    seg.speed=current_.speed;
+    seg.intensity=current_.profile;
+    seg.custom1=current_.style;
+    seg.custom2=current_.amount;
+    seg.custom3=(uint8_t)(current_.variantCode&31u);
+    seg.offset=current_.offset;
+    seg.markForReset();
+    strip.trigger();
+
+    sequence_++;
+    have_=true;
+    forceNext_=false;
+    dueMs_=now+(uint32_t)current_.dwellSeconds*1000u;
+  }
+
+  bool enabled() const { return enabled_; }
+  bool locked() const { return locked_; }
+  uint8_t domain() const { return domain_; }
+  uint32_t sequence() const { return sequence_; }
+  uint32_t dueMs() const { return dueMs_; }
+  const hbnf::GenerativeVariant& current() const { return current_; }
+};
+static HbnfGenerativeRuntimeV4 hbnfGenV4;
+
 """
 s=s.replace(diag_anchor,diag_helpers+diag_anchor,1)
 
