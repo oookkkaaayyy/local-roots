@@ -102,3 +102,38 @@
   .events-page .hero h1{font-size:clamp(1.9rem,9vw,2.55rem)}
   .events-page .events-layout{grid-template-columns:1fr;gap:18px}
 }
+
+/* Landing/share-ready hierarchy: the event utility is the public focal point. */
+.events-page{font-family:var(--events-sans)}
+.events-page .events-layout{padding-top:32px}
+.events-page .list-header{margin-bottom:14px}
+.events-page .list-header h2{font-family:var(--events-sans);font-size:1.35rem;font-weight:850;letter-spacing:-.02em}
+.events-page .event-card,
+.events-page .event-date-block strong,
+.events-page .event-main h3,
+.events-page .event-location,
+.events-page .event-organizer,
+.events-page .stale-note,
+.events-page .event-tags span,
+.events-page .status-pill,
+.events-page .button,
+.events-page .filters,
+.events-page .submit-disclosure,
+.events-page .section-intro h2,
+.event-detail-page,
+.event-detail-page h1,
+.event-detail-page h2,
+.event-detail-page h3,
+.event-detail-page .button{font-family:var(--events-sans)}
+.events-page .section-intro h2{font-size:1.55rem;font-weight:850;letter-spacing:-.02em}
+.event-detail-heading h1{font-family:var(--events-sans);font-size:clamp(1.8rem,4.8vw,3rem);font-weight:850;line-height:1.03;letter-spacing:-.035em}
+.event-detail-results>h2{font-family:var(--events-sans);font-size:1.35rem;font-weight:850;letter-spacing:-.02em}
+.events-page .event-card{box-shadow:0 5px 18px rgba(58,38,24,.055)}
+.events-page .filters{box-shadow:0 5px 18px rgba(58,38,24,.05)}
+.events-page .event-tags{margin-top:10px}
+.events-page .event-resource-links{margin-top:10px}
+.events-page .event-resource-links a{font-family:var(--events-sans)}
+@media(max-width:700px){
+  .events-page .events-layout{padding-top:20px}
+}
+
