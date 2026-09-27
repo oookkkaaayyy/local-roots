@@ -2,7 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.0";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-du-device-token",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 const MAX_REQUEST_BYTES = 4 * 1024;
@@ -14,6 +14,13 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 async function sha256Hex(value: string) {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function randomDeviceToken() {
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
 
 async function readBoundedJson(req: Request): Promise<Record<string, unknown>> {
@@ -106,18 +113,18 @@ Deno.serve(async (req: Request) => {
   if (consumeError) return json({ error: "pair_consume_failed" }, 500);
   if (!consumed) return json({ error: "pair_already_used" }, 409);
 
-  const { data: link, error: linkError } = await service.auth.admin.generateLink({
-    type: "magiclink",
-    email: pair.email,
+  const rawToken = randomDeviceToken();
+  const tokenHash = await sha256Hex(rawToken);
+  const expiresAt = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString();
+  const { error: deviceError } = await service.from("du_admin_device_tokens").insert({
+    token_hash: tokenHash,
+    user_id: pair.user_id,
+    label: "D&U paired device",
+    user_agent: String(req.headers.get("user-agent") || "").slice(0, 1000) || null,
+    expires_at: expiresAt,
+    last_used_at: now,
   });
-  if (linkError || !link) {
-    console.error("D&U pair generateLink failed", linkError);
-    return json({ error: "pair_session_failed" }, 500);
-  }
+  if (deviceError) return json({ error: "pair_device_failed" }, 500);
 
-  const properties = link.properties as { hashed_token?: string } | undefined;
-  const tokenHash = String(properties?.hashed_token || "");
-  if (!tokenHash) return json({ error: "pair_session_failed" }, 500);
-
-  return json({ token_hash: tokenHash, verification_type: "magiclink" });
+  return json({ device_token: rawToken, expires_at: expiresAt });
 });
