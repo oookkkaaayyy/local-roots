@@ -220,8 +220,8 @@ test("public header gives Local Roots stronger brand hierarchy without a redunda
   const styles = source("styles.css");
   assert.equal(shell.includes('className="nav-home"'), false);
   assert.ok(shell.includes("path==='/'||path==='/events'"));
-  assert.ok(styles.includes(".brand-logo-mark{display:block;width:46px"));
-  assert.ok(styles.includes(".brand strong{font-size:1.12rem"));
+  assert.ok(styles.includes(".core-public-shell .brand-logo-mark{display:block;width:58px"));
+  assert.ok(styles.includes(".core-public-shell .brand strong{font-family:var(--lr-ui);font-size:1.42rem"));
 });
 
 test("Events visible typography is standardized on the site sans family", () => {
