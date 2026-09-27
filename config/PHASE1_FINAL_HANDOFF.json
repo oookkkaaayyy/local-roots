@@ -89,5 +89,30 @@
     "production_url": null,
     "ipad_compatible": null
   },
-  "final_backend": {}
+  "final_backend": {},
+  "bridge_api_contract": {
+    "endpoint": "https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-control",
+    "auth_header": "x-hbnf-device",
+    "status_action": "status",
+    "command_action": "command",
+    "stale_revision_http_status": 409,
+    "required_commands": [
+      "OFF",
+      "ON",
+      "NEXT",
+      "AUTO",
+      "BRIGHTNESS",
+      "VIBE",
+      "VIBE_AUTO",
+      "SPEED"
+    ]
+  },
+  "bridge_device_session": {
+    "ready": false,
+    "label": "HBNF Phase 2 bridge",
+    "target_lifetime_days": 1825,
+    "token_sha256": null,
+    "expires_at": null,
+    "issued_at": null
+  }
 }

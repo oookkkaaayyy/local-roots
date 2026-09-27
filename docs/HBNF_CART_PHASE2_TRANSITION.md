@@ -51,3 +51,8 @@ The current `config/PHASE1_FINAL_HANDOFF.json` is intentionally a **blocking pla
 ## Zero-hurdle guest requirement
 
 Phase 2 guest UX is intentionally local and open: scan one QR, join HBNF-Play, use LIGHTS or PLAY. There is no guest account/pairing/approval workflow. The bridge holds one dedicated cart device session and proxies guest light commands through the canonical control API so canonical state remains authoritative. The guest phone itself never receives that token.
+
+
+## Final binding hardening
+
+Final Phase 2 packaging requires an exact finalized Phase 1 handoff plus a dedicated long-lived bridge device-session token whose SHA-256 matches that handoff. The plaintext token never enters GitHub or AKS. Staging artifacts remain deliberately non-runnable. The bridge API contract is checked explicitly so a late Phase 1 backend change cannot silently break guest LIGHTS.

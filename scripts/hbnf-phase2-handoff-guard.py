@@ -22,6 +22,8 @@ REQUIRED_BACKEND = [
     "hbnf-matrix-adapter",
     "hbnf-aux-adapter",
 ]
+REQUIRED_BRIDGE_COMMANDS = {"OFF","ON","NEXT","AUTO","BRIGHTNESS","VIBE","VIBE_AUTO","SPEED"}
+EXPECTED_CONTROL_ENDPOINT = "https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-control"
 
 def validate(p):
     errors=[]
@@ -43,6 +45,35 @@ def validate(p):
     url=phone.get("production_url")
     if not isinstance(url,str) or not url.startswith("https://hbnightflyers.com/"):
         errors.append("permanent phone controller URL is missing or not on hbnightflyers.com HTTPS")
+    api=p.get("bridge_api_contract") or {}
+    if api.get("endpoint") != EXPECTED_CONTROL_ENDPOINT:
+        errors.append("bridge API endpoint changed or missing")
+    if api.get("auth_header") != "x-hbnf-device":
+        errors.append("bridge device auth header changed or missing")
+    if api.get("status_action") != "status" or api.get("command_action") != "command":
+        errors.append("bridge control actions changed or missing")
+    if api.get("stale_revision_http_status") != 409:
+        errors.append("stale-revision contract changed")
+    missing=sorted(REQUIRED_BRIDGE_COMMANDS-set(api.get("required_commands") or []))
+    if missing:
+        errors.append("bridge API missing commands: "+",".join(missing))
+
+    session=p.get("bridge_device_session") or {}
+    if session.get("ready") is not True:
+        errors.append("dedicated Phase 2 bridge device session is not ready")
+    if session.get("label") != "HBNF Phase 2 bridge":
+        errors.append("unexpected bridge device-session label")
+    lifetime=session.get("target_lifetime_days")
+    if not isinstance(lifetime,(int,float)) or lifetime < 365:
+        errors.append("bridge device-session target lifetime is below 365 days")
+    token_sha=session.get("token_sha256")
+    if not isinstance(token_sha,str) or len(token_sha)!=64 or any(c not in "0123456789abcdef" for c in token_sha):
+        errors.append("bridge device-session token hash missing/invalid")
+    if not isinstance(session.get("expires_at"),str) or "T" not in session.get("expires_at",""):
+        errors.append("bridge device-session expiry missing")
+    if not isinstance(session.get("issued_at"),str) or "T" not in session.get("issued_at",""):
+        errors.append("bridge device-session issued_at missing")
+
     backend=p.get("final_backend") or {}
     for name in REQUIRED_BACKEND:
         row=backend.get(name) or {}
