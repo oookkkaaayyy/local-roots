@@ -5,7 +5,7 @@ ROOT=pathlib.Path(__file__).resolve().parent
 CONTROLLER=ROOT/"controller"
 MANIFEST_PATH=ROOT/"MANIFEST.json"
 LIVE_URL="https://hbnightflyers.com/hbnf-cart.html"
-BUILD_MARKER="hbnf-cart-final-v7-zero-pair-guest"
+BUILD_MARKER="hbnf-cart-final-v7-1-zero-pair-observable"
 FILES=[
     "hbnf-cart.html",
     "hbnf-cart.js",
@@ -72,7 +72,7 @@ def resolve_wrangler(worker):
 
 def live_marker():
     req=urllib.request.Request(
-        LIVE_URL+"?release=HBNF_CART_UI_V7_ZERO_PAIR_20260927&ts="+str(int(time.time())),
+        LIVE_URL+"?release=HBNF_CART_UI_V7_1_OBSERVABLE_20260927&ts="+str(int(time.time())),
         headers={
             "User-Agent":"Mozilla/5.0",
             "Accept":"text/html,application/xhtml+xml",
@@ -89,7 +89,7 @@ def live_marker():
         return 0, False
 
 def main():
-    print("HBNF CART UI V7 ZERO-PAIR — controller-only installer")
+    print("HBNF CART UI V7.1 OBSERVABLE — controller-only installer")
     print("No Matrix/AUX firmware or Phase 2 game/router changes.")
     check_package()
     worker=find_worker()
@@ -114,8 +114,8 @@ def main():
         if verified: break
         time.sleep(3)
     if not verified and last_status not in (401,403):
-        raise RuntimeError("Deploy finished but exact live V7 marker did not verify")
-    print("HBNF_CART_UI_V7_INSTALL=PASS")
+        raise RuntimeError("Deploy finished but exact live V7.1 marker did not verify")
+    print("HBNF_CART_UI_V7_1_INSTALL=PASS")
     print("BACKUP="+str(backup))
     if verified: print("LIVE_MARKER=PASS")
     else: print("LIVE_MARKER=BLOCKED_HTTP_"+str(last_status)+" (Wrangler deploy succeeded)")
@@ -125,6 +125,6 @@ if __name__=="__main__":
     try:
         main()
     except Exception as e:
-        print("HBNF_CART_UI_V7_INSTALL=FAIL")
+        print("HBNF_CART_UI_V7_1_INSTALL=FAIL")
         print(str(e))
         sys.exit(1)
