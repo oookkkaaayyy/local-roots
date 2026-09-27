@@ -61,27 +61,7 @@ s,n=re.subn(pat,pixel_new,s,count=1,flags=re.S)
 if n!=1:
     raise RuntimeError(f"pixel-hooks: expected 1 replacement, got {n}")
 
-info_marker="    void readFromJsonState(JsonObject& root) override {
-      JsonObject wow = root["HBNFWOW"];
-      if (wow.isNull()) return;
-      JsonObject tune = wow["tuning"];
-      if (tune.isNull()) return;
-      const auto &cur = hbnf::globalTuneOverride();
-      const bool se = tune["speedEnabled"] | cur.speedEnabled;
-      const uint8_t sp = tune["speed"] | cur.speed;
-      const bool pe = tune["profileEnabled"] | cur.profileEnabled;
-      const uint8_t pr = tune["profile"] | cur.profile;
-      const bool ye = tune["styleEnabled"] | cur.styleEnabled;
-      const uint8_t st = tune["style"] | cur.style;
-      const bool ae = tune["amountEnabled"] | cur.amountEnabled;
-      const uint8_t am = tune["amount"] | cur.amount;
-      const bool me = tune["micEnabled"] | cur.micEnabled;
-      const uint8_t mi = tune["mic"] | cur.mic;
-      hbnf::setGlobalTuneOverride(se,sp,pe,pr,ye,st,ae,am,me,mi);
-      if (me) hbnfSetAudioInputLevel(mi);
-    }
-
-    void addToJsonInfo(JsonObject& root)"
+info_marker="    void addToJsonInfo(JsonObject& root)"
 if s.count(info_marker)!=1:
     raise RuntimeError("addToJsonInfo anchor mismatch")
 telemetry="""    void addToJsonState(JsonObject& root) override {
@@ -113,6 +93,26 @@ telemetry="""    void addToJsonState(JsonObject& root) override {
       tune["styleEnabled"] = gt.styleEnabled; tune["style"] = gt.style;
       tune["amountEnabled"] = gt.amountEnabled; tune["amount"] = gt.amount;
       tune["micEnabled"] = gt.micEnabled; tune["mic"] = gt.mic;
+    }
+
+    void readFromJsonState(JsonObject& root) override {
+      JsonObject wow = root["HBNFWOW"];
+      if (wow.isNull()) return;
+      JsonObject tune = wow["tuning"];
+      if (tune.isNull()) return;
+      const auto &cur = hbnf::globalTuneOverride();
+      const bool se = tune["speedEnabled"] | cur.speedEnabled;
+      const uint8_t sp = tune["speed"] | cur.speed;
+      const bool pe = tune["profileEnabled"] | cur.profileEnabled;
+      const uint8_t pr = tune["profile"] | cur.profile;
+      const bool ye = tune["styleEnabled"] | cur.styleEnabled;
+      const uint8_t st = tune["style"] | cur.style;
+      const bool ae = tune["amountEnabled"] | cur.amountEnabled;
+      const uint8_t am = tune["amount"] | cur.amount;
+      const bool me = tune["micEnabled"] | cur.micEnabled;
+      const uint8_t mi = tune["mic"] | cur.mic;
+      hbnf::setGlobalTuneOverride(se,sp,pe,pr,ye,st,ae,am,me,mi);
+      if (me) hbnfSetAudioInputLevel(mi);
     }
 
 """
