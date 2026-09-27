@@ -191,3 +191,15 @@ test("events page polish is scoped and HBNF cards expose first-party resources",
   assert.ok(styles.includes('.events-page .hero h1'));
   assert.ok(styles.includes('.events-page .filters input,.events-page .filters select'));
 });
+
+test("event cards and detail pages expose permitted first-party official info without duplicating HBNF resources", () => {
+  const events = source("pages/EventsPage.tsx");
+  const detail = source("pages/EventDetailPage.tsx");
+  const types = source("types.ts");
+  assert.ok(types.includes("official_url: string | null"));
+  assert.ok(events.includes("event.official_url&&!hbnfEvent"));
+  assert.ok(events.includes(">Official Info ↗</a>"));
+  assert.ok(events.includes("aria-label={`Official info for ${event.name} (opens in new tab)`}"));
+  assert.ok(detail.includes("event.official_url&&!hbnfEvent"));
+  assert.ok(detail.includes(">Official Info ↗</a>"));
+});

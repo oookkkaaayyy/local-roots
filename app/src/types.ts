@@ -31,6 +31,7 @@ export type PublicEvent = {
   registration_status: string | null;
   registration_url: string | null;
   results_url: string | null;
+  official_url: string | null;
   club_host: string | null;
   td_names: string[];
   last_verified_at: string | null;
