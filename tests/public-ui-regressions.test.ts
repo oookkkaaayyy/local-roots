@@ -260,8 +260,13 @@ test("public brand audit does not add new marketing copy and includes D&U contro
   }
 });
 
-test("HB Night Flyers primary nav links directly to the live club site", () => {
+test("HB Night Flyers is a footer link, not a primary navigation item", () => {
   const shell = source("components/Shell.tsx");
-  assert.ok(shell.includes('<a className="nav-hbnf" href="https://hbnightflyers.com/">HB Night Flyers</a>'));
-  assert.equal(shell.includes('className="nav-hbnf" href="/hb-night-flyers"'), false);
+  assert.equal(shell.includes('className="nav-hbnf"'), false);
+  assert.ok(shell.includes('<footer className="site-footer"><nav className="footer-nav" aria-label="Footer"><a href="https://hbnightflyers.com/">HB Night Flyers</a></nav></footer>'));
+});
+
+test("compact public navigation keeps Events and Dyed & Unattached visible", () => {
+  const styles = source("styles.css");
+  assert.ok(styles.includes(".site-header .nav-events,.site-header .nav-du{display:block}"));
 });
