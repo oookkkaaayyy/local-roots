@@ -7,36 +7,35 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 
 const STAGING_URL = "https://local-roots.pages.dev/";
 const REQUIRED_FRONTEND_MARKERS = [
-  "Future-event freshness",
-  "Latest future event",
-  "Launch gate",
   "Past events & results",
+  "Upcoming events",
   "Add to Calendar",
   "PDGA Results ↗",
   "On Local Roots",
   "Official link",
   "Full Results",
   "Submit organizer results",
-  "our own event records",
   "lr_public_event_detail",
   "Clear filters",
+  "Submit an event",
   "Hosted by",
   "TD:",
   "date-aware-v1",
   "/events/",
-  "/hb-night-flyers",
   "/dyed-and-unattached",
+  "HB Night Flyers",
+  "https://hbnightflyers.com/",
   "https://localrootsdg.com",
 ];
 const REQUIRED_CSS_MARKERS = [
-  ".site-header.nav-submit{display:none}",
-  ".site-header.nav-home,.site-header.nav-hbnf,.site-header.nav-du{display:none}",
-  ".admin-shell.nav-admin,.admin-shell.nav-readiness{display:block}",
   ".event-title-link{",
   ".event-detail-card{",
   ".event-view-switch{",
   ".results-submit-disclosure{",
   ".result-division{",
+  ".public-brand-shell.site-header",
+  ".public-brand-shell.site-headernav",
+  ".public-brand-shell.button.primary",
 ];
 
 Deno.serve(async (req) => {
@@ -76,7 +75,7 @@ Deno.serve(async (req) => {
 
   try {
     const response = await fetch(STAGING_URL, {
-      headers: { "User-Agent": "LocalRootsIntegrityWatch/9.0" },
+      headers: { "User-Agent": "LocalRootsIntegrityWatch/10.0" },
       redirect: "follow",
     });
     stagingStatus = response.status;
