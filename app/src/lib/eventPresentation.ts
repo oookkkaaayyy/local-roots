@@ -3,6 +3,17 @@ import type { PublicEvent, PublicResult } from '../types';
 const PUBLIC_ORIGIN = 'https://localrootsdg.com';
 const CALENDAR_ENCODER = new TextEncoder();
 
+export const HBNF_EVENT_LINKS = [
+  {label:'HBNF site',href:'https://hbnightflyers.com/'},
+  {label:'UDisc',href:'https://udisc.com/leagues/hb-night-flyers-he7y5I/schedule'},
+  {label:'Instagram',href:'https://www.instagram.com/hbnightflyers/'},
+  {label:'Facebook',href:'https://www.facebook.com/HBNightFlyers/'},
+] as const;
+
+export function isHbnfEvent(event:Pick<PublicEvent,'name'|'club_host'>) {
+  return event.club_host==='HB Night Flyers'||event.name.startsWith('HB Night Flyers');
+}
+
 export const eventTitle = (value: string) => value.replaceAll('_',' ').replace(/\b\w/g,(match)=>match.toUpperCase());
 
 export function eventDateRange(start: string, end: string) {

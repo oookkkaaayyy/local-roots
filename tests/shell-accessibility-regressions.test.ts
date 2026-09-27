@@ -11,6 +11,6 @@ test("shared shell keeps the skip-link target without creating a nested main lan
   assert.ok(shell.includes('href="#main-content"'));
   assert.ok(shell.includes('<div id="main-content" tabIndex={-1}>{children}</div>'));
   assert.equal(shell.includes('<main id="main-content"'), false);
-  assert.ok(events.includes('<Shell><main>'));
+  assert.ok(events.includes('<Shell><main'));
   assert.ok(home.includes('<Shell><main>'));
 });

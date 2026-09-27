@@ -173,3 +173,21 @@ test("owner-controlled copy policy remains explicit in source control", () => {
   assert.ok(policy.includes("Prefer empty space"));
   assert.ok(policy.includes("explicitly approved"));
 });
+
+test("events page polish is scoped and HBNF cards expose first-party resources", () => {
+  const events = source("pages/EventsPage.tsx");
+  const detail = source("pages/EventDetailPage.tsx");
+  const presentation = source("lib/eventPresentation.ts");
+  const styles = source("events-enhancements.css");
+  assert.ok(events.includes('<main className="events-page">'));
+  assert.ok(events.includes('>Details</a>'));
+  assert.ok(events.includes('{filtered.length} shown · {events.length} total'));
+  assert.ok(events.includes('className="event-resource-links"'));
+  assert.ok(detail.includes('className="event-resource-links"'));
+  assert.ok(presentation.includes("https://hbnightflyers.com/"));
+  assert.ok(presentation.includes("https://udisc.com/leagues/hb-night-flyers-he7y5I/schedule"));
+  assert.ok(presentation.includes("https://www.instagram.com/hbnightflyers/"));
+  assert.ok(presentation.includes("https://www.facebook.com/HBNightFlyers/"));
+  assert.ok(styles.includes('.events-page .hero h1'));
+  assert.ok(styles.includes('.events-page .filters input,.events-page .filters select'));
+});
