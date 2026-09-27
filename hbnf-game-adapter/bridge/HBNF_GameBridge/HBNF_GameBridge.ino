@@ -16,6 +16,7 @@
 #include "session_lifecycle.h"
 #include "remote_input.h"
 #include "game_controller_page.h"
+#include "visual_lab_page.h"
 
 using namespace hbnf_game;
 
