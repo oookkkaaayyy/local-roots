@@ -60,6 +60,7 @@ uint16_t auxProjectionSeq = 0;
 uint32_t auxProjectionAgeMs = 0xffffffffu;
 bool auxProjectionActive = false;
 uint32_t lastAuxProjectionProbeAt = 0;
+bool visualSelftestAnnounced = false;
 uint8_t ddpSequence = 0;
 uint32_t lastFrameAt = 0;
 uint32_t lastProbeAt = 0;
@@ -313,6 +314,24 @@ uint16_t projectionSeqDistance(uint16_t a, uint16_t b) {
   return d < uint16_t(65536u - d) ? d : uint16_t(65536u - d);
 }
 
+bool visualLabHealthy() {
+  const uint32_t now=millis();
+  const bool peekLive=matrixPreviewConnected && matrixPreviewAt!=0 && (uint32_t)(now-matrixPreviewAt)<1200u;
+  const bool sourceLive=projectionSeen && (uint32_t)(now-projectionAt)<350u;
+  const bool auxLive=auxProjectionActive && auxProjectionAgeMs<=350u;
+  return peekLive && sourceLive && auxLive && projectionSeqDistance(projectionSeq,auxProjectionSeq)<=4u;
+}
+
+void printVisualLabStatus() {
+  const uint16_t dist=projectionSeqDistance(projectionSeq,auxProjectionSeq);
+  Serial.printf("HBNF_VISUAL_LAB_SELFTEST=%s MATRIX_PEEK=%s PROJECTION=%s AUX_RX=%s SEQ_DISTANCE=%u AUX_AGE=%lu\n",
+                visualLabHealthy()?"PASS":"WAIT",
+                matrixPreviewConnected && matrixPreviewAt!=0 && (millis()-matrixPreviewAt)<1200u?"LIVE":"WAIT",
+                projectionSeen && (millis()-projectionAt)<350u?"LIVE":"WAIT",
+                auxProjectionActive && auxProjectionAgeMs<=350u?"LIVE":"WAIT",
+                dist,(unsigned long)auxProjectionAgeMs);
+}
+
 void sendVisualSyncStatus() {
   if (visualClient < 0) return;
   const bool sourceLive = projectionSeen && (millis() - projectionAt) < 350u;
@@ -336,6 +355,11 @@ bool sampleAuxProjection() {
   auxProjectionSeq = uint16_t(constrain(seq, 0, 65535));
   auxProjectionAgeMs = age < 0 ? 0xffffffffu : uint32_t(age);
   sendVisualSyncStatus();
+  if (visualLabHealthy() && !visualSelftestAnnounced) {
+    visualSelftestAnnounced=true;
+    printVisualLabStatus();
+  }
+  if (!visualLabHealthy()) visualSelftestAnnounced=false;
   return true;
 }
 
@@ -853,6 +877,8 @@ void processSerial() {
     Serial.println("HBNF_CART_TOKEN_CLEARED=PASS");
   } else if (line == "PLAY_INFO") {
     Serial.printf("HBNF_PLAY_INFO SSID=%s PASS=%s URL=http://%s/ CART=%s\n", kPlaySsid, playPassword.c_str(), WiFi.softAPIP().toString().c_str(), cartDeviceToken.length()>=20 ? "READY" : "NOT_READY");
+  } else if (line == "VISUAL_STATUS") {
+    printVisualLabStatus();
   } else if (line == "PAIR_OPEN") {
     BP32.enableNewBluetoothConnections(true);
     Serial.println("HBNF_PAIRING=OPEN");
