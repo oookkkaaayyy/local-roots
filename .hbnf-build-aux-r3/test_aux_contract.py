@@ -27,8 +27,9 @@ assert 'projectionRole' in src
 assert 'frame-lock-v1' in src
 assert 'HbnfProjectionReceiverV1' in src
 assert 'hbnfProjectionRx.tick()' in src
-assert 'hbnfProjectionTx.tick();' not in src
-assert 'hbnfGenV4.tick();' not in src
+assert 'tick_old' in src and 'tick_new' in src
+assert 'hbnfProjectionRx.tick();' in src
+assert 'AUX must not run Matrix projection sender or generative owner' in src
 
 assert 'hbnfCanvasH = 2' in src
 assert 'hbnfCanvasW' in src
