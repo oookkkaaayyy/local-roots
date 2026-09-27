@@ -82,11 +82,53 @@ class AnimartrixAudioBridge {
       }
     }
 
+    // Audio Geometry V2: preserve the accepted sensitivity, but stop rendering every
+    // transient as the same plus sign. Low-level band pulses get a subtle scene-relative
+    // response; strong impacts get the same maximum visual authority as the old cross.
     if(style_!=STYLE_CLEAN){
-      const uint8_t hit=max8(impact8_,drop8_);
-      if(hit>80){
-        const bool cross=(x==(int)(width_/2) || y==(int)(height_/2) || x+y==(int)(width_/2+height_/2));
-        if(cross){ mix=max8(mix,scaledMix(hit,118)); accent={255,244,218}; }
+      const uint8_t strongHit=max8(impact8_,drop8_);
+      const uint8_t detailHit=max8(pulse8_,max8(bass8_,max8(mid8_,treble8_)));
+      if(detailHit>18 || strongHit>80){
+        const uint8_t dominant=(bass8_>=mid8_&&bass8_>=treble8_)?0:((mid8_>=treble8_)?1:2);
+        const uint8_t sceneKey=(sceneId_>=220&&sceneId_<=247)?(uint8_t)(sceneId_-220):sceneId_;
+        const uint8_t strength=max8(detailHit,strongHit);
+        const bool hard=strongHit>80;
+        const uint8_t cap=hard?118:(strength>96?88:(strength>48?72:56));
+        uint8_t reactiveMix=0;
+        Rgb8 reactiveAccent=dominant==0?Rgb8(255,88,34):(dominant==1?Rgb8(218,255,92):Rgb8(238,250,255));
+
+        if(dominant==0){
+          // Bass: broad pressure/thump. Alternate center bloom vs edge compression by scene.
+          if((sceneKey&1u)==0){
+            const int radius=(maxd2*(3+(strength>>6)))/16;
+            if(d2<radius) reactiveMix=scaledMix(strength,cap);
+          } else {
+            const int ex=x<(int)width_-1-x?x:(int)width_-1-x;
+            const int ey=y<(int)height_-1-y?y:(int)height_-1-y;
+            const int edge=ex<ey?ex:ey;
+            const int depth=1+(strength>>6);
+            if(edge<=depth) reactiveMix=scaledMix(strength,cap);
+          }
+        } else if(dominant==1){
+          // Mids: moving body/ribbon response. Scene seed changes slope and phase.
+          const int phase=(int)((frame_>>2)+(sceneKey*3u));
+          const int ribbon=4+(strength>>6);
+          const int a=(sceneKey&1u)?(dx2+2*dy2+((phase&7)-3)):(2*dx2-dy2+((phase&7)-3));
+          if(a>-ribbon&&a<ribbon) reactiveMix=scaledMix(strength,cap);
+          else if(((x+y+phase)&7)==0) reactiveMix=scaledMix(strength,(uint8_t)(cap>>1));
+        } else {
+          // Treble: distributed dancing detail rather than a single center glyph.
+          const uint8_t gate=(uint8_t)((x*29+y*47+(int)(frame_&255u)*13+sceneKey*17u)&255);
+          const uint8_t threshold=(uint8_t)(20+(strength>>2));
+          if(gate<threshold) reactiveMix=scaledMix(strength,cap);
+          else if((((x*3+y*5+(int)(frame_>>1)+sceneKey)&15)==0))
+            reactiveMix=scaledMix(strength,(uint8_t)(cap>>1));
+        }
+
+        if(reactiveMix){
+          mix=max8(mix,reactiveMix);
+          accent=reactiveAccent;
+        }
       }
     }
 
