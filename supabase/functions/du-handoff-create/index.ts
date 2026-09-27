@@ -2,7 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.0";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-du-device-token",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
@@ -22,26 +22,50 @@ function randomToken() {
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
 
+async function resolveAdminUserId(service: ReturnType<typeof createClient>, req: Request) {
+  const now = new Date();
+  const deviceToken = String(req.headers.get("x-du-device-token") || "").trim();
+  if (deviceToken.length >= 32 && deviceToken.length <= 256) {
+    const tokenHash = await sha256Hex(deviceToken);
+    const { data: device } = await service.from("du_admin_device_tokens")
+      .select("id,user_id,expires_at")
+      .eq("token_hash", tokenHash)
+      .is("revoked_at", null)
+      .gt("expires_at", now.toISOString())
+      .maybeSingle();
+    if (device) {
+      const { data: admin } = await service.from("lr_admin_users")
+        .select("user_id").eq("user_id", device.user_id).eq("active", true).maybeSingle();
+      if (admin) {
+        await service.from("du_admin_device_tokens").update({
+          last_used_at: now.toISOString(),
+          expires_at: new Date(now.getTime() + 180 * 24 * 60 * 60 * 1000).toISOString(),
+        }).eq("id", device.id);
+        return device.user_id as string;
+      }
+    }
+  }
+
+  const authHeader = req.headers.get("Authorization") || "";
+  if (!authHeader.startsWith("Bearer ")) return null;
+  const { data: userData, error: userError } = await service.auth.getUser(authHeader.slice(7));
+  if (userError || !userData.user) return null;
+  const { data: admin } = await service.from("lr_admin_users")
+    .select("user_id").eq("user_id", userId).eq("active", true).maybeSingle();
+  return admin ? userId : null;
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
   const url = Deno.env.get("SUPABASE_URL");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  const authHeader = req.headers.get("Authorization") || "";
-  if (!url || !serviceKey || !authHeader.startsWith("Bearer ")) return json({ error: "unauthorized" }, 401);
+  if (!url || !serviceKey) return json({ error: "server_config_missing" }, 500);
 
   const service = createClient(url, serviceKey, { auth: { persistSession: false } });
-  const token = authHeader.slice(7);
-  const { data: userData, error: userError } = await service.auth.getUser(token);
-  if (userError || !userData.user) return json({ error: "unauthorized" }, 401);
-
-  const { data: admin } = await service.from("lr_admin_users")
-    .select("user_id")
-    .eq("user_id", userData.user.id)
-    .eq("active", true)
-    .maybeSingle();
-  if (!admin) return json({ error: "forbidden" }, 403);
+  const userId = await resolveAdminUserId(service, req);
+  if (!userId) return json({ error: "unauthorized" }, 401);
 
   const body = await req.json().catch(() => ({}));
   const jobId = String(body.job_id || "").trim();
@@ -67,12 +91,12 @@ Deno.serve(async (req: Request) => {
   await service.from("du_chatgpt_handoffs")
     .delete()
     .eq("job_id", job.id)
-    .eq("created_by", userData.user.id);
+    .eq("created_by", userId);
 
   const { error: insertError } = await service.from("du_chatgpt_handoffs").insert({
     token_hash: tokenHash,
     job_id: job.id,
-    created_by: userData.user.id,
+    created_by: userId,
     expires_at: expiresAt,
   });
   if (insertError) return json({ error: "handoff_create_failed", detail: insertError.message }, 500);
