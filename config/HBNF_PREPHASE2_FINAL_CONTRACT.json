@@ -1,0 +1,61 @@
+{
+  "schema": "hbnf-prephase2-final-contract-v1",
+  "branch": "hbnf-prephase2-final-integration-20260927",
+  "donorBranch": "hbnf-cart-visual-lab-staging-20260927",
+  "donorPolicy": "donor-only; no merge authority",
+  "renderer": {
+    "generator": "anti-repeat-v4",
+    "audioGeometry": "source-coupled-v4",
+    "projectionLink": "frame-lock-v1",
+    "domains": ["course-flow","field-mix","hbnf-signature","quiet-cosmos"],
+    "allDomainsUseSameAudioEngine": true,
+    "kernelCount": 28,
+    "hardKernelExclusionWindow": 22,
+    "perceptualNovelty": ["kernel","family","palette","spatial-transform","secondary-warp","phase-salt","exact-signature"],
+    "exactSignatureMemory": 64,
+    "audioTempoOwnership": "manual-only",
+    "audioSemantics": {
+      "low": "pressure/body scaling of existing frame",
+      "mid": "color/body morph of existing frame",
+      "high": "bright-detail motion of existing frame",
+      "sharedBudget": true,
+      "backgroundOverlayPainting": false
+    }
+  },
+  "aux": {
+    "role": "rendered-frame receiver",
+    "projectionPixels": 22,
+    "projectionTransport": "HBNP UDP",
+    "projectionPort": 11989,
+    "frameIntervalMs": 33,
+    "fallback": "fold2-1d-v1",
+    "lumaPolicy": "camera-bright-v1",
+    "brightnessIndependent": true,
+    "currentLimitMa": 1210
+  },
+  "controller": {
+    "semanticControls": ["energy","audioResponse","motion","variation"],
+    "sceneControl": true,
+    "matrixBrightness": true,
+    "auxBrightness": true,
+    "advancedAudio": ["micSensitivity","audioProfile","audioStyle"],
+    "frameLockHealth": true,
+    "requestedDesiredConfirmed": true,
+    "homeScreenPairingCookieBridge": true,
+    "pairingDurationDays": 180,
+    "fakePreview": false
+  },
+  "backend": {
+    "cartControl": "variation + semantic persistence",
+    "reconciler": "matrix routes through hbnf-matrix-adapter-v4; AUX through hbnf-aux-adapter",
+    "matrixAdapterV4": "auto-detect V4 and fall back to accepted legacy adapter until final firmware is installed",
+    "visualStatus": "read-only paired telemetry"
+  },
+  "phase2Ready": {
+    "opalLanPlanPreserved": true,
+    "guestBridgeIsolationPreserved": true,
+    "gameLeaseRulesPreserved": true,
+    "uvFailDarkPreserved": true,
+    "nextSequence": ["Opal LAN","Matrix/AUX LAN acceptance","game bridge","Stadia","games","touch input","UV"]
+  }
+}
