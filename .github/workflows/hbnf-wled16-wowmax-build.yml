@@ -118,7 +118,7 @@ jobs:
           python /tmp/hbnf-r1/firmware_patch/apply_hbnf_animartrix_patch.py /tmp/wled --patch-dir /tmp/hbnf-r1/firmware_patch
           cp /tmp/hbnf-r1/firmware_patch/hbnf_music_intelligence.h /tmp/wled/usermods/usermod_v2_animartrix/
           python "$GITHUB_WORKSPACE/.hbnf-build-r3max/apply_wowmax_v3.py" /tmp/wled
-          grep -q 'hbnf-wow-r3-max-2026-09-21-v3' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
+          grep -q 'hbnf-wow-r3-max-audio-geometry-v1-2026-09-27' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'setSpeedFactor((hbnfAudio.setScene' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'SEGMENT.custom3 != 0' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
           grep -q 'mqtt->publish(topic, 0, false, payload)' usermods/usermod_v2_animartrix/usermod_v2_animartrix.cpp
@@ -170,8 +170,8 @@ jobs:
           cp .hbnf-build-r3max/hbnf_vibe16.h .hbnf-build-r3max/hbnf_animartrix_audio_bridge.h .hbnf-build-r3max/hbnf_music_intelligence.h .hbnf-build-r3max/apply_wowmax_v3.py /tmp/artifacts/
           {
             echo wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
-            echo release=hbnf-wow-r3-max-2026-09-21-v3
-            echo build_witness=registry28-semantic-tempo-v6-colorwifi
+            echo release=hbnf-wow-r3-max-audio-geometry-v1-2026-09-27
+            echo build_witness=registry28-audio-geometry-v1-colorwifi
             echo github_run_id=$GITHUB_RUN_ID
             echo github_sha=$GITHUB_SHA
             echo firmware_sha256=$SHA
