@@ -172,17 +172,16 @@ export function DyedUnattachedPage() {
   const busy = state === 'preparing' || state === 'sending';
   return <Shell><main>
     <style>{`
-      .du-share-hero{padding-bottom:22px}.du-share-hero .branch-monogram{background:var(--clay);font-size:2.25rem}.du-gallery{margin:0 auto 52px}.du-gallery-shell{position:relative;width:min(850px,100%);margin:0 auto}.du-gallery-frame{overflow:hidden;border:1px solid rgba(185,154,119,.65);border-radius:24px;background:#f3eadf;box-shadow:0 12px 34px rgba(58,38,24,.10);touch-action:pan-y}.du-gallery-track{display:flex;transition:transform .48s cubic-bezier(.2,.75,.25,1)}.du-gallery-slide{flex:0 0 100%;aspect-ratio:1;display:grid;grid-template-rows:repeat(2,minmax(0,1fr));background:#efe3d2}.du-gallery-row{display:grid;grid-template-columns:1fr 1fr;min-height:0}.du-gallery-row+.du-gallery-row{border-top:1px solid rgba(185,154,119,.55)}.du-gallery-media{min-width:0;min-height:0;overflow:hidden;background:#efe3d2}.du-gallery-media+.du-gallery-media{border-left:1px solid rgba(185,154,119,.55)}.du-gallery-media img{width:100%;height:100%;display:block;object-fit:cover}.du-gallery-media-legacy{background-repeat:no-repeat}.du-gallery-row-empty{background:#efe3d2}.du-gallery-controls{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px}.du-gallery-controls button{width:38px;height:38px;border:1px solid rgba(112,77,49,.25);border-radius:999px;background:#fff8ee;color:#5b3a24;font-size:1.25rem;line-height:1;cursor:pointer}.du-gallery-controls button:hover{background:#efe3d2}.du-gallery-count{min-width:52px;text-align:center;color:#756050;font-size:.78rem;font-weight:800;letter-spacing:.08em}.du-gallery-hint{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.du-request .section-intro strong{display:block;margin-top:14px;color:var(--soil);font-size:.84rem}@media(max-width:620px){.du-share-hero{padding-top:42px}.du-gallery{margin-bottom:36px}.du-gallery-frame{border-radius:18px}.du-gallery-controls{margin-top:8px}.du-live-card{border-radius:18px}}@media(prefers-reduced-motion:reduce){.du-gallery-track{transition:none}}
+      .du-share-hero{grid-template-columns:1fr;justify-items:center;text-align:center;padding:clamp(36px,6vw,72px) 0 28px}.du-brand-lockup{display:grid;justify-items:center}.du-brand-heading{margin:0!important;font:inherit!important;letter-spacing:normal!important;line-height:1!important}.du-brand-heading img{display:block;width:min(760px,88vw);height:auto}.du-share-hero .branch-actions{justify-content:center;margin-top:18px}.du-tombstone-mark{display:block;width:54px;height:auto;margin:0 0 12px}.du-gallery{margin:0 auto 52px}.du-gallery-shell{position:relative;width:min(850px,100%);margin:0 auto}.du-gallery-frame{overflow:hidden;border:1px solid rgba(185,154,119,.65);border-radius:24px;background:#f3eadf;box-shadow:0 12px 34px rgba(58,38,24,.10);touch-action:pan-y}.du-gallery-track{display:flex;transition:transform .48s cubic-bezier(.2,.75,.25,1)}.du-gallery-slide{flex:0 0 100%;aspect-ratio:1;display:grid;grid-template-rows:repeat(2,minmax(0,1fr));background:#efe3d2}.du-gallery-row{display:grid;grid-template-columns:1fr 1fr;min-height:0}.du-gallery-row+.du-gallery-row{border-top:1px solid rgba(185,154,119,.55)}.du-gallery-media{min-width:0;min-height:0;overflow:hidden;background:#efe3d2}.du-gallery-media+.du-gallery-media{border-left:1px solid rgba(185,154,119,.55)}.du-gallery-media img{width:100%;height:100%;display:block;object-fit:cover}.du-gallery-media-legacy{background-repeat:no-repeat}.du-gallery-row-empty{background:#efe3d2}.du-gallery-controls{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px}.du-gallery-controls button{width:38px;height:38px;border:1px solid rgba(112,77,49,.25);border-radius:999px;background:#fff8ee;color:#5b3a24;font-size:1.25rem;line-height:1;cursor:pointer}.du-gallery-controls button:hover{background:#efe3d2}.du-gallery-count{min-width:52px;text-align:center;color:#756050;font-size:.78rem;font-weight:800;letter-spacing:.08em}.du-gallery-hint{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.du-request .section-intro strong{display:block;margin-top:14px;color:var(--soil);font-size:.84rem}@media(max-width:620px){.du-share-hero{padding-top:30px;padding-bottom:22px}.du-brand-heading img{width:min(94vw,560px)}.du-tombstone-mark{width:48px;margin:0 auto 10px}.du-gallery{margin-bottom:36px}.du-gallery-frame{border-radius:18px}.du-gallery-controls{margin-top:8px}.du-live-card{border-radius:18px}}@media(prefers-reduced-motion:reduce){.du-gallery-track{transition:none}}
     `}</style>
 
     <section className="branch-hero content du-share-hero">
-      <div>
-        <h1>Dyed &amp; Unattached</h1>
+      <div className="du-brand-lockup">
+        <h1 className="du-brand-heading"><img src="/brand/dyed-unattached-logo.png" alt="Dyed & Unattached" /></h1>
         <div className="branch-actions">
           <a className="button primary" href="#request-stencil">Request a stencil</a>
         </div>
       </div>
-      <div className="branch-monogram" aria-hidden="true">D&amp;U</div>
     </section>
 
     <div id="gallery" />
@@ -207,7 +206,7 @@ export function DyedUnattachedPage() {
     </section>
 
     <section id="request-stencil" className="du-request content" aria-labelledby="du-request-title">
-      <div className="section-intro"><h2 id="du-request-title">Request a stencil</h2></div>
+      <div className="section-intro du-request-intro"><img className="du-tombstone-mark" src="/brand/dyed-unattached-tombstone.png" alt="" aria-hidden="true" /><h2 id="du-request-title">Request a stencil</h2></div>
       <form className="du-form" onSubmit={submit}>
         <div className="du-form-grid">
           <label>Name<input name="clientName" autoComplete="name" required maxLength={160} /></label>
