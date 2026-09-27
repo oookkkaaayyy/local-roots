@@ -217,8 +217,8 @@ s=s.replace(tick_old,tick_new,1)
 
 # Replace sender telemetry with receiver telemetry.
 for old,new in [
- ('wow["projectionPackets"] = hbnfProjectionTx.packets();','wow["projectionRxPackets"] = hbnfProjectionRx.packets();\\n      wow["projectionRxSeq"] = hbnfProjectionRx.seq();\\n      wow["projectionRxActive"] = hbnfProjectionRx.active();\\n      wow["projectionRxAgeMs"] = hbnfProjectionRx.ageMs();'),
- ('\\\\\\"projectionPackets\\\\\\":%lu,\\\\\\"projectionSeq\\\\\\":%u,','\\\\\\"projectionRxPackets\\\\\\":%lu,\\\\\\"projectionRxSeq\\\\\\":%u,'),
+ ('wow["projectionPackets"] = hbnfProjectionTx.packets();','wow["projectionRxPackets"] = hbnfProjectionRx.packets();\n      wow["projectionRxSeq"] = hbnfProjectionRx.seq();\n      wow["projectionRxActive"] = hbnfProjectionRx.active();\n      wow["projectionRxAgeMs"] = hbnfProjectionRx.ageMs();'),
+ ('\\\"projectionPackets\\\":%lu,\\\"projectionSeq\\\":%u,','\\\"projectionRxPackets\\\":%lu,\\\"projectionRxSeq\\\":%u,'),
  ('(unsigned long)hbnfProjectionTx.packets(), hbnfProjectionTx.seq(),','(unsigned long)hbnfProjectionRx.packets(), hbnfProjectionRx.seq(),'),
 ]:
     if s.count(old)!=1:
