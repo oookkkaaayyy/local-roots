@@ -21,9 +21,7 @@ function deviceToken(){
   return /^[a-f0-9]{64}$/i.test(local)?local:cookieToken();
 }
 function authHeaders(){
-  const token=deviceToken();
-  if(!token) return null;
-  return {"Content-Type":"application/json",apikey:PUBLISHABLE_KEY,"x-hbnf-device":token};
+  return {"Content-Type":"application/json",apikey:PUBLISHABLE_KEY};
 }
 function clamp01(v){
   let n=Number(v);
