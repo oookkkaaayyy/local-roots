@@ -99,6 +99,25 @@ async function sendPushes(
   return sent;
 }
 
+const galleryImageRoles = ["source_photo", "stencil", "finished_disc"] as const;
+type GalleryImageRole = typeof galleryImageRoles[number];
+
+function decodeGalleryImage(value: unknown) {
+  const text = String(value || "");
+  const match = text.match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/);
+  if (!match) throw new Error("invalid_gallery_image");
+  const mime = match[1];
+  const raw = atob(match[2]);
+  if (!raw.length || raw.length > 6 * 1024 * 1024) throw new Error("gallery_image_too_large");
+  const bytes = Uint8Array.from(raw, char => char.charCodeAt(0));
+  const jpeg = mime === "image/jpeg" && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  const png = mime === "image/png" && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47;
+  const webp = mime === "image/webp" && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 && bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50;
+  if (!jpeg && !png && !webp) throw new Error("invalid_gallery_image_signature");
+  const extension = mime === "image/jpeg" ? "jpg" : mime === "image/png" ? "png" : "webp";
+  return { bytes, mime, extension };
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
@@ -177,6 +196,82 @@ Deno.serve(async (req: Request) => {
       .select("id,job_number,workflow_status,updated_at").single();
     if (error) return json({ error: "workflow_update_failed", detail: error.message }, 400);
     return json({ ok: true, job: data });
+  }
+
+  if (action === "gallery_list") {
+    const { data, error } = await service.from("gallery_items")
+      .select("id,job_id,is_published,caption,source_photo_path,stencil_path,finished_disc_path,sort_order,created_at,updated_at")
+      .order("sort_order", { ascending: true }).order("created_at", { ascending: false });
+    if (error) return json({ error: "gallery_list_failed", detail: error.message }, 400);
+    return json({ items: data || [] });
+  }
+
+  if (action === "gallery_upload") {
+    try {
+      const caption = String(body.caption || "").trim().slice(0, 300) || null;
+      const publish = body.is_published === true;
+      const images = body.images && typeof body.images === "object" ? body.images : {};
+      const supplied = galleryImageRoles.filter(role => Boolean(images[role]));
+      if (supplied.length < 2) return json({ error: "gallery_needs_two_images" }, 400);
+
+      const decoded = new Map<GalleryImageRole, ReturnType<typeof decodeGalleryImage>>();
+      for (const role of supplied) decoded.set(role, decodeGalleryImage(images[role]));
+
+      const itemId = crypto.randomUUID();
+      const { data: latest, error: orderError } = await service.from("gallery_items")
+        .select("sort_order").order("sort_order", { ascending: false }).limit(1).maybeSingle();
+      if (orderError) return json({ error: "gallery_order_failed", detail: orderError.message }, 400);
+      const sortOrder = Number(latest?.sort_order ?? -1) + 1;
+      const paths: Partial<Record<GalleryImageRole, string>> = {};
+      const uploaded: string[] = [];
+
+      for (const role of supplied) {
+        const image = decoded.get(role)!;
+        const path = `items/${itemId}/${role}.${image.extension}`;
+        const { error } = await service.storage.from("du-gallery").upload(path, image.bytes, {
+          contentType: image.mime,
+          cacheControl: "31536000",
+          upsert: false,
+        });
+        if (error) {
+          if (uploaded.length) await service.storage.from("du-gallery").remove(uploaded);
+          return json({ error: "gallery_upload_failed", detail: error.message }, 400);
+        }
+        uploaded.push(path);
+        paths[role] = path;
+      }
+
+      const { data, error } = await service.from("gallery_items").insert({
+        id: itemId,
+        job_id: null,
+        is_published: publish,
+        caption,
+        source_photo_path: paths.source_photo || null,
+        stencil_path: paths.stencil || null,
+        finished_disc_path: paths.finished_disc || null,
+        sort_order: sortOrder,
+      }).select("id,is_published,caption,source_photo_path,stencil_path,finished_disc_path,sort_order,created_at,updated_at").single();
+      if (error) {
+        if (uploaded.length) await service.storage.from("du-gallery").remove(uploaded);
+        return json({ error: "gallery_insert_failed", detail: error.message }, 400);
+      }
+      return json({ ok: true, item: data });
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "gallery_upload_failed";
+      const status = code === "gallery_image_too_large" ? 413 : 400;
+      return json({ error: code }, status);
+    }
+  }
+
+  if (action === "gallery_set_published") {
+    const itemId = String(body.item_id || "").trim();
+    if (!itemId) return json({ error: "gallery_item_required" }, 400);
+    const { data, error } = await service.from("gallery_items")
+      .update({ is_published: body.is_published === true })
+      .eq("id", itemId)
+      .select("id,is_published,updated_at").single();
+    if (error) return json({ error: "gallery_publish_failed", detail: error.message }, 400);
+    return json({ ok: true, item: data });
   }
 
   if (action === "pair_create") {
