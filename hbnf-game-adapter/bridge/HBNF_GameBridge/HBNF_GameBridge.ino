@@ -4,6 +4,7 @@
 #include <Preferences.h>
 #include <WiFi.h>
 #include <WiFiUdp.h>
+#include <WiFiClientSecure.h>
 #include <WebServer.h>
 #include <WebSocketsServer.h>
 #include <DNSServer.h>
@@ -26,6 +27,7 @@ constexpr uint32_t kFrameMs = 33;
 constexpr uint32_t kProbeMs = 250;
 constexpr uint32_t kWifiRetryMs = 5000;
 constexpr const char* kPlaySsid = "HBNF-Play";
+constexpr const char* kCartControlUrl = "https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-control";
 
 Preferences prefs;
 WiFiUDP udp;
@@ -44,8 +46,9 @@ uint32_t lastWifiRetryAt = 0;
 uint64_t sampleRevision = 0;
 bool sessionActive = false;
 bool matrixIdentityVerified = false;
-bool guestPlayEnabled = false;
+bool guestPlayEnabled = true;
 String playPassword;
+String cartDeviceToken;
 
 bool macEmpty(const uint8_t mac[6]) {
   for (int i = 0; i < 6; ++i) if (mac[i] != 0) return false;
@@ -214,6 +217,62 @@ void sendFrame(const Framebuffer& fb) {
 }
 
 
+
+String commandUuid() {
+  uint8_t b[16];
+  for (uint8_t i=0;i<16;i+=4) {
+    uint32_t r=esp_random();
+    memcpy(b+i,&r,4);
+  }
+  b[6]=(b[6]&0x0f)|0x40;
+  b[8]=(b[8]&0x3f)|0x80;
+  char out[37];
+  snprintf(out,sizeof(out),
+    "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+    b[0],b[1],b[2],b[3],b[4],b[5],b[6],b[7],b[8],b[9],b[10],b[11],b[12],b[13],b[14],b[15]);
+  return String(out);
+}
+
+bool cartApiPost(const String& body, String& responseBody, int& statusCode) {
+  if (WiFi.status()!=WL_CONNECTED || cartDeviceToken.length()<20) return false;
+  WiFiClientSecure client;
+  client.setInsecure();
+  HTTPClient http;
+  http.setConnectTimeout(1800);
+  http.setTimeout(2200);
+  if (!http.begin(client,kCartControlUrl)) return false;
+  http.addHeader("Content-Type","application/json");
+  http.addHeader("x-hbnf-device",cartDeviceToken);
+  statusCode=http.POST(body);
+  responseBody=http.getString();
+  http.end();
+  return statusCode>0;
+}
+
+bool currentCartRevision(int& revision) {
+  String body; int code=0;
+  if (!cartApiPost("{\"action\":\"status\"}",body,code) || code!=200) return false;
+  return parseJsonIntAfter(body,"\"desired\":","revision",revision);
+}
+
+bool guestCartCommand(const String& type, const String& payload, String& error) {
+  int revision=-1;
+  if (!currentCartRevision(revision)) { error="STATUS_UNAVAILABLE"; return false; }
+  String body="{\"action\":\"command\",\"commandId\":\""+commandUuid()+"\",\"type\":\""+type+
+              "\",\"payload\":"+payload+",\"expectedRevision\":"+String(revision)+"}";
+  String out; int code=0;
+  if (!cartApiPost(body,out,code)) { error="NETWORK"; return false; }
+  if (code>=200 && code<300) return true;
+  if (code==409 && out.indexOf("stale_revision")>=0) {
+    if (!currentCartRevision(revision)) { error="STALE"; return false; }
+    body="{\"action\":\"command\",\"commandId\":\""+commandUuid()+"\",\"type\":\""+type+
+         "\",\"payload\":"+payload+",\"expectedRevision\":"+String(revision)+"}";
+    if (cartApiPost(body,out,code) && code>=200 && code<300) return true;
+  }
+  error=String("HTTP_")+String(code);
+  return false;
+}
+
 bool isHostClient(uint8_t num) {
   IPAddress ip = gameWs.remoteIP(num);
   return ip[0] == 192 && ip[1] == 168 && ip[2] == 8;
@@ -240,8 +299,8 @@ void onGameWsEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length) 
   }
   if (type == WStype_CONNECTED) {
     const bool host = isHostClient(num);
-    gameWs.sendTXT(num, String("HELLO,") + (host ? "HOST" : "GUEST") + "," +
-                       (guestPlayEnabled ? "1" : "0") + "," + (sessionActive ? "1" : "0"));
+    gameWs.sendTXT(num, String("HELLO,") + (host ? "HOST" : "GUEST") + ",1," +
+                       (sessionActive ? "1" : "0") + "," + (cartDeviceToken.length() >= 20 ? "1" : "0"));
     return;
   }
   if (type != WStype_TEXT) return;
@@ -252,12 +311,57 @@ void onGameWsEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length) 
     gameWs.sendTXT(num, String("PONG,") + msg.substring(5));
     return;
   }
+  if (msg == "CLAIM_AUTO") {
+    for (uint8_t slot=0;slot<2;++slot) {
+      const bool physical = pads[slot] && pads[slot]->isConnected();
+      const auto result = remoteInput.claim(num, slot, host, millis(), physical);
+      if (result == RemoteInputBroker::Claim::Ok) {
+        gameWs.sendTXT(num, String("CLAIMED,") + String(slot+1));
+        if (!sessionActive) {
+          const uint32_t now=millis();
+          if (startSession(now)) lifecycle.forceStart();
+        }
+        broadcastGameState();
+        return;
+      }
+    }
+    gameWs.sendTXT(num,"ERR,NO_PLAYER_SLOT_FREE");
+    return;
+  }
+  if (msg.startsWith("CART,")) {
+    if (cartDeviceToken.length()<20) { gameWs.sendTXT(num,"CARTERR,NOT_PROVISIONED"); return; }
+    String cmd=msg.substring(5), type, payload="{}";
+    if (cmd=="OFF"||cmd=="ON"||cmd=="NEXT"||cmd=="AUTO"||cmd=="LOCK"||cmd=="VIBE_AUTO"||cmd=="TEMPO_AUTO") {
+      type=cmd;
+    } else if (cmd.startsWith("BRIGHTNESS,")) {
+      int comma=cmd.indexOf(',',11);
+      if (comma<0) { gameWs.sendTXT(num,"CARTERR,BAD_COMMAND"); return; }
+      String device=cmd.substring(11,comma);
+      int value=constrain(cmd.substring(comma+1).toInt(),0,255);
+      if (device!="matrix"&&device!="aux") { gameWs.sendTXT(num,"CARTERR,BAD_DEVICE"); return; }
+      type="BRIGHTNESS";
+      payload=String("{\"deviceId\":\"")+device+"\",\"brightness\":"+String(value)+"}";
+    } else if (cmd.startsWith("VIBE,")) {
+      String vibe=cmd.substring(5);
+      if (vibe!="mellow"&&vibe!="moderate"&&vibe!="energetic"&&vibe!="peak") { gameWs.sendTXT(num,"CARTERR,BAD_VIBE"); return; }
+      type="VIBE"; payload=String("{\"vibe\":\"")+vibe+"\"}";
+    } else if (cmd.startsWith("SPEED,")) {
+      float speed=cmd.substring(6).toFloat();
+      if (speed<0.5f||speed>2.0f) { gameWs.sendTXT(num,"CARTERR,BAD_SPEED"); return; }
+      type="SPEED"; payload=String("{\"speedBias\":")+String(speed,2)+"}";
+    } else {
+      gameWs.sendTXT(num,"CARTERR,BAD_COMMAND"); return;
+    }
+    String error;
+    if (guestCartCommand(type,payload,error)) gameWs.sendTXT(num,String("CARTOK,")+type);
+    else gameWs.sendTXT(num,String("CARTERR,")+error);
+    return;
+  }
   if (msg == "RELEASE") {
     releaseRemoteClient(num);
     return;
   }
   if (msg.startsWith("CLAIM,")) {
-    if (!host && !guestPlayEnabled) { gameWs.sendTXT(num, "ERR,GUEST_PLAY_CLOSED"); return; }
     const int requested = msg.substring(6).toInt();
     if (requested < 1 || requested > 2) { gameWs.sendTXT(num, "ERR,INVALID_PLAYER"); return; }
     const uint8_t slot = uint8_t(requested - 1);
@@ -273,26 +377,11 @@ void onGameWsEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length) 
     const int requested = msg.substring(2,p1).toInt();
     uint16_t mask = uint16_t(msg.substring(p1+1).toInt());
     if (requested < 1 || requested > 2) return;
-    if (!host && !guestPlayEnabled) { remoteInput.releaseClient(num); return; }
-    if (!host) mask &= 63u; // guests never receive session/menu authority
     remoteInput.update(num, uint8_t(requested-1), mask, millis());
     return;
   }
-  if (host && msg.startsWith("GUEST,")) {
-    guestPlayEnabled = msg.endsWith("1");
-    if (!guestPlayEnabled) {
-      for (uint8_t s=0;s<2;++s) {
-        const int owner = remoteInput.owner(s,millis());
-        if (owner >= 0 && !remoteInput.privileged(s,millis())) {
-          gameWs.sendTXT(uint8_t(owner), String("RELEASED,") + String(s+1));
-          remoteInput.preempt(s);
-        }
-      }
-    }
-    broadcastGameState();
-    return;
-  }
-  if (host && msg == "SESSION,START") {
+  if (msg.startsWith("GUEST,")) { guestPlayEnabled=true; broadcastGameState(); return; }
+  if (msg == "SESSION,START") {
     if (!sessionActive) {
       const uint32_t now = millis();
       if (startSession(now)) lifecycle.forceStart(); // keep host-web and gamepad session lifecycle identical
@@ -301,7 +390,7 @@ void onGameWsEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length) 
     }
     return;
   }
-  if (host && msg == "SESSION,END") {
+  if (msg == "SESSION,END") {
     if (sessionActive) endSession("HOST_WEB");
     return;
   }
@@ -344,7 +433,7 @@ void endSession(const char* reason) {
   lifecycle.forceEnd();
   guard.userExit();
   BP32.enableNewBluetoothConnections(true);
-  guestPlayEnabled = false;
+  guestPlayEnabled = true;
   remoteInput.clearAll();
   broadcastGameState();
   Serial.printf("HBNF_GAME_SESSION_END=%s\n", reason);
@@ -401,14 +490,15 @@ void printStatus() {
   uint8_t p1[6], p2[6];
   readMac("p1mac", p1);
   readMac("p2mac", p2);
-  Serial.printf("HBNF_STATUS WIFI=%s IP=%s MATRIX=%s SESSION=%s P1=%s P2=%s PLAYSSID=%s PLAYPASS=%s\n",
+  Serial.printf("HBNF_STATUS WIFI=%s IP=%s MATRIX=%s SESSION=%s P1=%s P2=%s PLAYSSID=%s PLAYPASS=%s CARTPROXY=%s\n",
                 WiFi.status() == WL_CONNECTED ? "ONLINE" : "OFFLINE",
                 WiFi.localIP().toString().c_str(),
                 matrixIdentityVerified ? "VERIFIED" : "UNVERIFIED",
                 sessionActive ? "ACTIVE" : "IDLE",
                 macEmpty(p1) ? "UNSET" : macString(p1).c_str(),
                 macEmpty(p2) ? "UNSET" : macString(p2).c_str(),
-                kPlaySsid, playPassword.c_str());
+                kPlaySsid, playPassword.c_str(),
+                cartDeviceToken.length() >= 20 ? "READY" : "NOT_READY");
 }
 
 void processSerial() {
@@ -447,8 +537,18 @@ void processSerial() {
     BP32.forgetBluetoothKeys();
     BP32.enableNewBluetoothConnections(true);
     Serial.println("HBNF_PADS_CLEARED=PASS");
+  } else if (line.startsWith("CART_TOKEN ")) {
+    String value=line.substring(11); value.trim();
+    if (value.length()>=20) {
+      prefs.putString("cart_token",value);
+      cartDeviceToken=value;
+      Serial.println("HBNF_CART_TOKEN_STORED=PASS");
+    } else Serial.println("HBNF_CART_TOKEN_STORED=FAIL");
+  } else if (line == "CLEAR_CART_TOKEN") {
+    prefs.remove("cart_token"); cartDeviceToken="";
+    Serial.println("HBNF_CART_TOKEN_CLEARED=PASS");
   } else if (line == "PLAY_INFO") {
-    Serial.printf("HBNF_PLAY_INFO SSID=%s PASS=%s URL=http://%s/\n", kPlaySsid, playPassword.c_str(), WiFi.softAPIP().toString().c_str());
+    Serial.printf("HBNF_PLAY_INFO SSID=%s PASS=%s URL=http://%s/ CART=%s\n", kPlaySsid, playPassword.c_str(), WiFi.softAPIP().toString().c_str(), cartDeviceToken.length()>=20 ? "READY" : "NOT_READY");
   } else if (line == "PAIR_OPEN") {
     BP32.enableNewBluetoothConnections(true);
     Serial.println("HBNF_PAIRING=OPEN");
@@ -466,6 +566,7 @@ void setup() {
   Serial.begin(115200);
   Serial.setTimeout(250);
   prefs.begin("hbnfgame", false);
+  cartDeviceToken=prefs.getString("cart_token","");
   startGameWeb();
   udp.begin(kLocalUdpPort);
   BP32.setup(&onConnectedController, &onDisconnectedController);
@@ -510,7 +611,7 @@ void loop() {
   }
   PadState p1 = physical1.connected ? physical1 : remoteInput.pad(0, now);
   PadState p2 = physical2.connected ? physical2 : remoteInput.pad(1, now);
-  const bool p1HasSessionAuthority = physical1.connected || remoteInput.privileged(0, now);
+  const bool p1HasSessionAuthority = p1.connected;
   const bool combo = p1HasSessionAuthority && p1.connected && p1.start && p1.select;
   const bool atMenu = games.mode() == GameManager::Mode::Menu;
 
