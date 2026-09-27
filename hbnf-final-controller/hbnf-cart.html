@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="HBNF Cart">
   <meta name="hbnf-access" content="guest-zero-pair">
-  <meta name="hbnf-build" content="hbnf-cart-final-v7-1-zero-pair-observable">
+  <meta name="hbnf-build" content="hbnf-cart-final-v7-2-course-safe">
   <link rel="manifest" href="./hbnf-cart-manifest.webmanifest">
   <link rel="apple-touch-icon" sizes="180x180" href="./hbnf-cart-icon-180.png">
   <link rel="stylesheet" href="./hbnf-cart-ui-v6.css">
@@ -44,18 +44,6 @@
     <div class="truth-grid">
       <div class="truth-cell"><span>Matrix</span><strong id="matrixTruth">—</strong></div>
       <div class="truth-cell"><span>Underglow</span><strong id="auxTruth">—</strong></div>
-      <div class="truth-cell"><span>Frame lock</span><strong id="syncTruth">—</strong></div>
-      <div class="truth-cell"><span>Renderer</span><strong id="rendererTruth">—</strong></div>
-    </div>
-  </section>
-
-  <section class="panel live-audio" aria-label="Live audio response">
-    <div class="live-audio-head"><strong>LIVE AUDIO RESPONSE</strong><span id="liveAudioMeta">waiting for telemetry</span></div>
-    <div class="audio-bars">
-      <div class="audio-band"><label><span>BASS</span><span id="bassOut">0</span></label><div class="audio-track"><div class="audio-fill" id="bassFill"></div></div></div>
-      <div class="audio-band"><label><span>MID</span><span id="midOut">0</span></label><div class="audio-track"><div class="audio-fill" id="midFill"></div></div></div>
-      <div class="audio-band"><label><span>TREBLE</span><span id="trebleOut">0</span></label><div class="audio-track"><div class="audio-fill" id="trebleFill"></div></div></div>
-      <div class="audio-band"><label><span>IMPACT</span><span id="impactOut">0</span></label><div class="audio-track"><div class="audio-fill" id="impactFill"></div></div></div>
     </div>
   </section>
 
@@ -171,13 +159,6 @@
   <section class="panel">
     <h2>Cart state</h2>
     <div id="status" class="status" role="status" aria-live="polite">Connecting…</div>
-    <div class="health-grid" aria-label="Runtime health">
-      <div><span>Matrix</span><strong id="matrixHealth">—</strong></div>
-      <div><span>AUX</span><strong id="auxHealth">—</strong></div>
-      <div><span>Frame lock</span><strong id="syncHealth">—</strong></div>
-      <div><span>Renderer</span><strong id="rendererHealth">—</strong></div>
-    </div>
-    <div id="hardwareNote" class="hardware-note"></div>
     <button id="refresh">Refresh status</button>
   </section>
 </main><script type="module" src="./hbnf-cart.js"></script><script type="module" src="./hbnf-cart-ui-v6.mjs"></script></body></html>
