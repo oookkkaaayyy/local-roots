@@ -325,7 +325,7 @@ Deno.serve(async (req: Request) => {
       const publish = body.is_published === true;
       const images = body.images && typeof body.images === "object" ? body.images : {};
       const supplied = galleryImageRoles.filter(role => Boolean(images[role]));
-      if (supplied.length < 2) return json({ error: "gallery_needs_two_images" }, 400);
+      if (supplied.length < 1) return json({ error: "gallery_needs_image" }, 400);
 
       const decoded = new Map<GalleryImageRole, ReturnType<typeof decodeGalleryImage>>();
       for (const role of supplied) decoded.set(role, decodeGalleryImage(images[role]));
@@ -439,7 +439,7 @@ Deno.serve(async (req: Request) => {
 
       if (!Object.keys(patch).length) return json({ ok: true, item: existing });
       const preview = { ...existing, ...patch };
-      if (existing.is_published && galleryImageCount(preview) < 2) patch.is_published = false;
+      if (existing.is_published && galleryImageCount(preview) < 1) patch.is_published = false;
 
       const { data, error } = await service.from("gallery_items").update(patch).eq("id", itemId)
         .select("id,job_id,is_published,caption,source_photo_path,stencil_path,finished_disc_path,sort_order,legacy_roles_confirmed,created_at,updated_at").single();
@@ -466,7 +466,7 @@ Deno.serve(async (req: Request) => {
     const oldPath = String(existing[column] || "");
     const patch: Record<string, unknown> = { [column]: null };
     const preview = { ...existing, [column]: null };
-    if (existing.is_published && galleryImageCount(preview) < 2) patch.is_published = false;
+    if (existing.is_published && galleryImageCount(preview) < 1) patch.is_published = false;
     const { data, error } = await service.from("gallery_items").update(patch).eq("id", itemId)
       .select("id,job_id,is_published,caption,source_photo_path,stencil_path,finished_disc_path,sort_order,legacy_roles_confirmed,created_at,updated_at").single();
     if (error) return json({ error: "gallery_remove_failed", detail: error.message }, 400);
@@ -517,7 +517,7 @@ Deno.serve(async (req: Request) => {
     if (publish) {
       const existing = await getGalleryItem(service, itemId);
       if (!existing) return json({ error: "gallery_item_not_found" }, 404);
-      if (galleryImageCount(existing) < 2) return json({ error: "gallery_needs_two_images" }, 400);
+      if (galleryImageCount(existing) < 1) return json({ error: "gallery_needs_image" }, 400);
     }
     const { data, error } = await service.from("gallery_items")
       .update({ is_published: publish })
