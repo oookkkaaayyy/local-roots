@@ -70,3 +70,14 @@ Production remains on the current rollback-safe build until Foundation V1 passes
 3. bench test
 4. side-by-side physical comparison
 5. explicit user acceptance
+
+## Native WLED ownership
+
+Foundation V1 deliberately delegates these concerns to WLED instead of reimplementing them:
+- per-segment brightness
+- LED bus timing/color-order overrides
+- matrix mapping
+- microphone gain/squelch/AGC
+- WebSocket state transport
+
+The custom renderer never enters WLED realtime mode and never bypasses segment brightness.
