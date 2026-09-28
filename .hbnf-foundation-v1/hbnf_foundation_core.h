@@ -17,7 +17,6 @@ struct Controls {
   // Literal semantic controls. No categorical remapping.
   uint8_t audioResponse=50; // 0 = no audio modulation, 50 = 1.0x, 100 = 2.0x
   uint8_t motion=50;        // 0 = 0.5x, 50 = 1.0x, 100 = 1.5x
-  uint16_t evolutionMs=12000;
    Scene scene=COURSE_FLOW;
 };
 
@@ -33,7 +32,6 @@ struct AudioFrame {
 struct CanonicalFrame {
   uint32_t frame=0;
   uint32_t phaseQ16=0;
-  uint32_t structuralEpoch=0;
   Controls controls{};
   AudioFrame audio{};
   Rgb8 palette[4]{};
@@ -91,9 +89,9 @@ inline void defaultPalette(Scene s,Rgb8 out[4]){
   }
 }
 
-inline CanonicalFrame makeFrame(uint32_t frame,uint32_t phaseQ16,uint32_t structuralEpoch,const Controls& c,const AudioFrame& a){
+inline CanonicalFrame makeFrame(uint32_t frame,uint32_t phaseQ16,const Controls& c,const AudioFrame& a){
   CanonicalFrame f;
-  f.frame=frame; f.phaseQ16=phaseQ16; f.structuralEpoch=structuralEpoch;
+  f.frame=frame; f.phaseQ16=phaseQ16;
   f.controls=c; f.audio=a; defaultPalette(c.scene,f.palette);
   return f;
 }
