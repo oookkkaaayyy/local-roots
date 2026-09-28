@@ -50,6 +50,13 @@ inline uint16_t motionQ8(uint8_t motion){
   return (uint16_t)(128u + ((uint32_t)motion * 256u + 50u) / 100u);
 }
 
+inline uint32_t advancePhaseQ16(uint32_t phaseQ16,uint32_t dtMs,uint8_t motion){
+  // At Motion=50, advance 8 Q16 units/ms (~8.19 s per full cycle).
+  // Motion is applied here and nowhere else.
+  const uint16_t rate=motionQ8(motion);
+  return phaseQ16 + (uint32_t)(((uint64_t)dtMs * 8u * rate) >> 8);
+}
+
 inline uint8_t scaleAudio(uint8_t v,uint8_t response){
   const uint32_t x=(uint32_t)v*audioGainQ8(response);
   const uint32_t y=(x+128u)>>8;
@@ -145,10 +152,8 @@ inline void perimeterCoord22(uint8_t index,uint16_t& x,uint16_t& y){
 inline void renderAux22(const CanonicalFrame& f,Rgb8 out[22]){
   // Cart geometry order: 5 + 6 + 5 + 6 around the perimeter.
   // Same phase/palette/audio as Matrix; geometry only changes spatial sampling.
-  const uint16_t motion=motionQ8(f.controls.motion);
-  const uint32_t phase=(uint32_t)(((uint64_t)f.phaseQ16*motion)>>8);
   for(uint8_t i=0;i<22;i++){
-    const uint16_t p=(uint16_t)(phase + (uint32_t)i*(65536u/22u));
+    const uint16_t p=(uint16_t)(f.phaseQ16 + (uint32_t)i*(65536u/22u));
     Rgb8 c=paletteAt(f,p);
     c=applyAudio(f,c,(uint8_t)(i&3u));
     out[i]=c;
