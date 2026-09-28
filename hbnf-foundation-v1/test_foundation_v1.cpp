@@ -33,6 +33,9 @@ int main() {
   auto a=makeAudioFrame(7,1234,88.4f,fft,true);
   assert(a.sequence==7 && a.timestampMs==1234);
   assert(a.volume==88);
+  for(int i=0;i<4;i++) assert(a.bins[i]==200);
+  for(int i=4;i<11;i++) assert(a.bins[i]==100);
+  for(int i=11;i<16;i++) assert(a.bins[i]==50);
   assert(a.low==200);
   assert(a.mid==100);
   assert(a.high==50);
@@ -41,6 +44,7 @@ int main() {
   // Identical inputs must be deterministic.
   auto b=makeAudioFrame(7,1234,88.4f,fft,true);
   assert(a.low==b.low && a.mid==b.mid && a.high==b.high && a.volume==b.volume);
+  for(int i=0;i<16;i++) assert(a.bins[i]==b.bins[i]);
 
   // Audio Response must never reduce modulation for identical audio.
   for(int band=0;band<=255;band+=17){
