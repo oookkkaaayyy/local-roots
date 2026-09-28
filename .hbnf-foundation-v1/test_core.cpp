@@ -22,7 +22,6 @@ int main(){
   assert(motionQ8(100)==384);
 
   Controls c;
-  c.auxBrightness=255;
   AudioFrame quiet{};
   Rgb8 q[22];
   renderAux22(makeFrame(100,12345,0,c,quiet),q);
@@ -48,11 +47,6 @@ int main(){
   renderAux22(makeFrame(100,12345,0,off,bass),a1);
   assert(same(a0,a1,22));
 
-  Controls dark=c; dark.auxBrightness=0;
-  Rgb8 z[22];
-  renderAux22(makeFrame(100,12345,0,dark,bass),z);
-  assert(sum(z,22)==0);
-
   Controls slow=c; slow.motion=0;
   Controls fast=c; fast.motion=100;
   Rgb8 rs[22],rf[22];
@@ -66,5 +60,5 @@ int main(){
   renderAux22(f,d1); renderAux22(f,d2);
   assert(same(d1,d2,22));
 
-  puts("PASS foundation-v1 core: literal controls, deterministic audio response, companion renderer");
+  puts("PASS foundation-v1 core: literal controls, deterministic audio response, companion renderer; brightness delegated to native WLED segments");
 }
