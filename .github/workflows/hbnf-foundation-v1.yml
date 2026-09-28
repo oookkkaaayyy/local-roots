@@ -1,0 +1,21 @@
+name: HBNF Foundation V1 Core
+
+on:
+  push:
+    branches:
+      - hbnf-foundation-rebuild-v1-20260927
+    paths:
+      - "hbnf-foundation-v1/**"
+      - ".github/workflows/hbnf-foundation-v1.yml"
+  workflow_dispatch:
+
+jobs:
+  host-core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile deterministic foundation core
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror             hbnf-foundation-v1/test_foundation_v1.cpp             -Ihbnf-foundation-v1             -o /tmp/hbnf-foundation-v1-test
+      - name: Run deterministic foundation tests
+        run: /tmp/hbnf-foundation-v1-test
