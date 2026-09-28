@@ -77,6 +77,10 @@ Decision:
 - Companion is NOT sampled/averaged from the finished 32x16 framebuffer.
 - Companion renderer deliberately expresses the same palette, phase, direction, energy and low/mid/high events in a topology appropriate for 5/6/5/6 underglow.
 - DDP sends those exact 22 rendered pixels to AUX.
+- AUX brightness is applied on Matrix to the 22 companion pixels BEFORE transport.
+- AUX stays at fixed realtime-receiver brightness. AUX=0 means Matrix sends exact black; no remote AUX brightness command exists in the live control path.
+
+WLED's native DDP sender scales/transmits RGB and the DDP receiver writes realtime pixels directly. Moving independent AUX brightness ownership to the sender avoids WLED realtime briLast/override semantics entirely.
 
 This is an adaptation specific to the cart, not a claim from WLED documentation. It follows the professional output-node pattern: one renderer/channel source, multiple output transports/fixtures.
 
