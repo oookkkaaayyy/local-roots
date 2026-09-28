@@ -22,3 +22,13 @@ jobs:
 
       - name: Verify WLED-native network contract
         run: python hbnf-foundation-v1/test_network_contract.py
+
+      - name: Compile renderer acceptance tests
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror \
+            hbnf-foundation-v1/test_renderer_v1.cpp \
+            -Ihbnf-foundation-v1 \
+            -o /tmp/hbnf-renderer-v1-test
+
+      - name: Run renderer acceptance tests
+        run: /tmp/hbnf-renderer-v1-test
