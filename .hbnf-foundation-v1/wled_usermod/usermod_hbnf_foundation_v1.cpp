@@ -109,29 +109,6 @@ static Rgb8 fieldColor(const CanonicalFrame& f,uint16_t x,uint16_t y,uint16_t wi
   return c;
 }
 
-static void auxCoord(uint16_t index,uint16_t len,uint16_t& x,uint16_t& y) {
-  // Canonical cart perimeter order: 5 short + 6 long + 5 short + 6 long.
-  // If the physical chain begins elsewhere, one rotation/reverse calibration is enough;
-  // the renderer itself remains unchanged.
-  if (len != 22) {
-    x=(uint16_t)(((uint32_t)index*31u)/(len>1?len-1:1));
-    y=15;
-    return;
-  }
-  if(index<5){
-    x=0; y=(uint16_t)(((uint32_t)index*15u)/4u);
-  } else if(index<11){
-    const uint16_t j=(uint16_t)(index-5u);
-    x=(uint16_t)(((uint32_t)j*31u)/5u); y=0;
-  } else if(index<16){
-    const uint16_t j=(uint16_t)(index-11u);
-    x=31; y=(uint16_t)(15u-((uint32_t)j*15u)/4u);
-  } else {
-    const uint16_t j=(uint16_t)(index-16u);
-    x=(uint16_t)(31u-((uint32_t)j*31u)/5u); y=15;
-  }
-}
-
 static uint32_t packed(const Rgb8& c) {
   return RGBW32(c.r,c.g,c.b,0);
 }
@@ -151,7 +128,7 @@ static void mode_hbnf_foundation(void) {
   const uint16_t len=SEGLEN;
   for(uint16_t i=0;i<len;i++){
     uint16_t x=0,y=0;
-    auxCoord(i,len,x,y);
+    if(len==22) perimeterCoord22((uint8_t)i,x,y);\n    else { x=(uint16_t)(((uint32_t)i*31u)/(len>1?len-1:1)); y=15; }
     SEGMENT.setPixelColor(i,packed(fieldColor(f,x,y,32,16)));
   }
 }
