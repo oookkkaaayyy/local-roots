@@ -53,12 +53,6 @@ class FoundationRuntime {
   CanonicalFrame cached_{};
   AudioFrame lastAudio_{};
 
-  static uint8_t avg(const uint8_t* fft, uint8_t a, uint8_t z) {
-    uint16_t total=0;
-    for (uint8_t i=a;i<z;i++) total += fft[i];
-    return (uint8_t)(total / (uint8_t)(z-a));
-  }
-
   static AudioFrame readAudio() {
     AudioFrame a{};
     um_data_t* um=nullptr;
@@ -66,9 +60,12 @@ class FoundationRuntime {
         !um || um->u_size < 4 || !um->u_data || !um->u_data[2]) return a;
 
     const uint8_t* fft = reinterpret_cast<const uint8_t*>(um->u_data[2]);
-    a.bass   = avg(fft,0,4);
-    a.mid    = avg(fft,4,11);
-    a.treble = avg(fft,11,16);
+    // WLED AudioReactive's own three-color Spectrum palette uses
+    // fftResult[0], fftResult[4] and fftResult[10] as low/mid/high representatives.
+    // Use those native post-processed bands directly: no second averaging stage.
+    a.bass   = fft[0];
+    a.mid    = fft[4];
+    a.treble = fft[10];
 
     if (um->u_data[0]) {
       const float v=*reinterpret_cast<const float*>(um->u_data[0]);
