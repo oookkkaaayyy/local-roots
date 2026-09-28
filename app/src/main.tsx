@@ -6,5 +6,6 @@ import './brand-assets.css';
 import './du-admin.css';
 import './responsive-overrides.css';
 import './events-enhancements.css';
+import './share-ready-polish.css';
 import './accessibility.css';
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>);
