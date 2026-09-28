@@ -70,6 +70,7 @@ jobs:
           import pathlib,re
           p=pathlib.Path('/tmp/wled/platformio_override.ini')
           s=p.read_text()
+          s=s.replace('  -D HBNF_VIBE_ANIMARTRIX=1\n','')
           section='[env:hbnf_matrix_wled16_max]'
           assert section in s
           start=s.index(section)
@@ -100,6 +101,7 @@ jobs:
           echo '=== FOUNDATION BUILD ENV ==='
           awk 'BEGIN{p=0} /^\[env:hbnf_matrix_wled16_max\]/{p=1} /^\[/{if(p && $0!="[env:hbnf_matrix_wled16_max]") exit} p{print}' /tmp/wled/platformio_override.ini
           grep -q 'custom_usermods = audioreactive hbnf_foundation_v1' /tmp/wled/platformio_override.ini
+          ! grep -q 'HBNF_VIBE_ANIMARTRIX' /tmp/wled/platformio_override.ini
 
       - name: Compile host core gate
         shell: bash
