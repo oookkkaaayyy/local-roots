@@ -1,0 +1,420 @@
+/* Share-ready polish: presentation-only refinements. No copy or behavior changes. */
+
+.public-brand-shell,
+.public-brand-shell #main-content,
+.public-brand-shell main{min-width:0}
+
+.public-brand-shell .content{
+  width:min(1180px,calc(100% - 28px));
+}
+
+.public-brand-shell .site-header{
+  min-height:76px;
+  padding:9px clamp(14px,3.5vw,48px);
+  gap:18px;
+  backdrop-filter:saturate(125%) blur(16px);
+}
+
+.public-brand-shell .brand,
+.public-brand-shell .site-header nav{min-width:0}
+
+.public-brand-shell .brand{gap:11px}
+
+.public-brand-shell .brand-logo-mark{
+  width:52px;
+  height:54px;
+}
+
+.public-brand-shell .brand strong{
+  font-size:1.28rem;
+  letter-spacing:0;
+}
+
+.public-brand-shell .site-header nav{
+  flex-wrap:nowrap;
+  gap:18px;
+}
+
+.public-brand-shell .site-header nav a{
+  white-space:nowrap;
+  padding:8px 0 6px;
+  transition:color .14s ease,border-color .14s ease;
+}
+
+.public-brand-shell .site-footer{
+  min-height:58px;
+  margin-top:44px;
+  padding:16px clamp(14px,3.5vw,48px);
+}
+
+.public-brand-shell .footer-nav{
+  gap:14px;
+}
+
+.public-brand-shell .footer-nav a{
+  text-decoration-color:rgba(215,194,163,.45);
+}
+
+/* Events: denser scanning, calmer cards, clearer hierarchy. */
+.public-brand-shell .events-page .events-layout{
+  grid-template-columns:238px minmax(0,1fr);
+  gap:22px;
+  padding-top:24px;
+  padding-bottom:16px;
+}
+
+.public-brand-shell .events-page .filters{
+  top:88px;
+  gap:11px;
+  padding:14px;
+}
+
+.public-brand-shell .events-page .filters label{
+  gap:5px;
+  font-size:.78rem;
+}
+
+.public-brand-shell .events-page .filters input,
+.public-brand-shell .events-page .filters select{
+  min-height:40px;
+  padding:8px 10px;
+}
+
+.public-brand-shell .events-page .event-view-switch{
+  gap:4px;
+  padding:3px;
+}
+
+.public-brand-shell .events-page .event-view-switch .button{
+  min-height:36px;
+  padding:7px 8px;
+}
+
+.public-brand-shell .events-page .list-header{
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.public-brand-shell .events-page .list-header h2{
+  font-size:1.2rem;
+}
+
+.public-brand-shell .events-page .list-header span{
+  font-size:.8rem;
+}
+
+.public-brand-shell .events-page .event-card{
+  grid-template-columns:132px minmax(0,1fr) 150px;
+  gap:17px;
+  padding:16px;
+  margin-bottom:10px;
+}
+
+.public-brand-shell .events-page .event-date-block{
+  padding-right:13px;
+}
+
+.public-brand-shell .events-page .event-date-block strong{
+  font-size:.88rem;
+}
+
+.public-brand-shell .events-page .event-date-block span{
+  margin-top:5px;
+  font-size:.76rem;
+}
+
+.public-brand-shell .events-page .event-main h3{
+  margin-bottom:3px;
+  font-size:1rem;
+  line-height:1.22;
+}
+
+.public-brand-shell .events-page .event-location,
+.public-brand-shell .events-page .event-organizer,
+.public-brand-shell .events-page .stale-note{
+  font-size:.81rem;
+  line-height:1.42;
+}
+
+.public-brand-shell .events-page .event-tags{
+  gap:5px;
+  margin:9px 0 8px;
+}
+
+.public-brand-shell .events-page .event-tags span,
+.public-brand-shell .events-page .status-pill{
+  padding:4px 7px;
+  font-size:.66rem;
+}
+
+.public-brand-shell .events-page .event-actions{
+  gap:6px;
+}
+
+.public-brand-shell .events-page .event-actions .button{
+  min-height:35px;
+  padding:8px 9px;
+  font-size:.8rem;
+}
+
+.public-brand-shell .events-page .event-resource-links{
+  gap:5px;
+  margin-top:9px;
+}
+
+.public-brand-shell .events-page .event-resource-links a{
+  min-height:30px;
+  padding:5px 8px;
+  font-size:.7rem;
+}
+
+.public-brand-shell .events-page .submit-disclosure{
+  margin-top:18px;
+}
+
+.public-brand-shell .events-page .submit-disclosure>summary{
+  min-height:40px;
+  padding:9px 12px;
+  font-size:.84rem;
+}
+
+.public-brand-shell .events-page .submit-section{
+  margin-top:12px;
+}
+
+.public-brand-shell .events-page .empty-state{
+  min-height:112px;
+}
+
+/* D&U: keep the artwork dominant and reduce surrounding chrome. */
+.public-brand-shell .du-share-hero{
+  padding-top:32px!important;
+  padding-bottom:20px!important;
+}
+
+.public-brand-shell .du-brand-heading img{
+  width:min(700px,86vw)!important;
+}
+
+.public-brand-shell .du-share-hero .branch-actions{
+  margin-top:14px!important;
+}
+
+.public-brand-shell .du-gallery{
+  margin-bottom:40px!important;
+}
+
+.public-brand-shell .du-gallery-shell{
+  width:min(780px,100%)!important;
+}
+
+.public-brand-shell .du-gallery-frame{
+  border-radius:18px!important;
+}
+
+.public-brand-shell .du-gallery-controls{
+  gap:10px!important;
+  margin-top:8px!important;
+}
+
+.public-brand-shell .du-gallery-controls button{
+  width:36px!important;
+  height:36px!important;
+}
+
+.public-brand-shell .du-request{
+  grid-template-columns:.72fr 1.28fr;
+  gap:30px;
+  margin-bottom:56px;
+  padding:32px;
+  border-radius:18px;
+}
+
+.public-brand-shell .du-form-grid{
+  gap:11px;
+}
+
+.public-brand-shell .du-form input,
+.public-brand-shell .du-form textarea{
+  min-height:42px;
+}
+
+.public-brand-shell .du-form .form-footer{
+  margin-top:14px;
+}
+
+.public-brand-shell .image-drop-zone{
+  min-height:102px;
+}
+
+/* Inputs/buttons: consistent touch targets without making the page feel oversized. */
+.public-brand-shell .button{
+  min-height:40px;
+}
+
+.public-brand-shell input,
+.public-brand-shell select{
+  min-height:40px;
+}
+
+@media (hover:hover){
+  .public-brand-shell .site-header nav a:hover{color:var(--lr-clay)}
+}
+
+@media(max-width:900px){
+  .public-brand-shell .events-page .events-layout{
+    grid-template-columns:210px minmax(0,1fr);
+    gap:18px;
+  }
+
+  .public-brand-shell .events-page .event-card{
+    grid-template-columns:118px minmax(0,1fr);
+    gap:15px;
+  }
+
+  .public-brand-shell .events-page .event-actions{
+    padding-top:10px;
+  }
+
+  .public-brand-shell .du-request{
+    grid-template-columns:1fr;
+    gap:24px;
+  }
+}
+
+@media(max-width:700px){
+  .public-brand-shell .content{
+    width:min(100% - 22px,1180px);
+  }
+
+  .public-brand-shell .events-page .events-layout{
+    grid-template-columns:1fr;
+    gap:15px;
+    padding-top:16px;
+  }
+
+  .public-brand-shell .events-page .filters{
+    grid-template-columns:1fr 1fr;
+    gap:9px;
+    padding:12px;
+  }
+
+  .public-brand-shell .events-page .event-card{
+    padding:15px;
+    margin-bottom:9px;
+  }
+
+  .public-brand-shell .events-page .event-date-block{
+    margin-bottom:12px;
+    padding-bottom:10px;
+  }
+
+  .public-brand-shell .events-page .event-actions{
+    gap:7px;
+  }
+
+  .public-brand-shell .du-request{
+    padding:24px 18px;
+  }
+}
+
+@media(max-width:620px){
+  .public-brand-shell .site-header{
+    min-height:64px;
+    padding:7px 11px;
+    gap:10px;
+  }
+
+  .public-brand-shell .brand{
+    gap:8px;
+  }
+
+  .public-brand-shell .brand-logo-mark{
+    width:40px;
+    height:42px;
+  }
+
+  .public-brand-shell .brand strong{
+    font-size:1rem;
+  }
+
+  .public-brand-shell .site-header nav{
+    gap:10px;
+  }
+
+  .public-brand-shell .site-header nav a{
+    font-size:.78rem;
+    padding:7px 0 5px;
+  }
+
+  .public-brand-shell .site-footer{
+    min-height:52px;
+    margin-top:32px;
+    padding:14px 11px;
+  }
+
+  .public-brand-shell .du-brand-heading img{
+    width:min(92vw,540px)!important;
+  }
+
+  .public-brand-shell .du-gallery{
+    margin-bottom:30px!important;
+  }
+
+  .public-brand-shell .du-gallery-frame{
+    border-radius:14px!important;
+  }
+}
+
+@media(max-width:460px){
+  .public-brand-shell .content{
+    width:min(100% - 18px,1180px);
+  }
+
+  .public-brand-shell .events-page .filters{
+    grid-template-columns:1fr;
+  }
+
+  .public-brand-shell .events-page .filters>*{
+    grid-column:1/-1;
+  }
+
+  .public-brand-shell .events-page .event-card{
+    padding:14px;
+  }
+
+  .public-brand-shell .events-page .event-actions{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .public-brand-shell .events-page .event-actions .button{
+    width:100%;
+  }
+
+  .public-brand-shell .du-request{
+    padding:20px 14px;
+  }
+}
+
+@media(max-width:390px){
+  .public-brand-shell .site-header{
+    gap:8px;
+  }
+
+  .public-brand-shell .brand-logo-mark{
+    width:36px;
+    height:38px;
+  }
+
+  .public-brand-shell .brand strong{
+    font-size:.94rem;
+  }
+
+  .public-brand-shell .site-header nav{
+    gap:8px;
+  }
+
+  .public-brand-shell .site-header nav a{
+    font-size:.74rem;
+  }
+}
