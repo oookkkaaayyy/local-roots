@@ -1,0 +1,58 @@
+{
+  "schema": "hbnf-foundation-v1-network-contract",
+  "wled": {
+    "commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "release": "16.0.1",
+    "base_env": "esp32dev"
+  },
+  "matrix": {
+    "wifi_sleep": false,
+    "physical_bus": {
+      "type": 22,
+      "start": 0,
+      "length": 512,
+      "note": "Preserve proven physical Matrix pin/color-order settings from current device backup."
+    },
+    "companion_ddp_bus": {
+      "type": 80,
+      "start": 512,
+      "length": 22,
+      "target": "PARAMETER:aux_lan_ip_or_hostname",
+      "protocol": "DDP",
+      "transport": "UDP unicast",
+      "port": 4048
+    },
+    "pixel_space": {
+      "matrix_start": 0,
+      "matrix_end_inclusive": 511,
+      "companion_start": 512,
+      "companion_end_inclusive": 533,
+      "total": 534
+    }
+  },
+  "aux": {
+    "wifi_sleep": false,
+    "role": "DDP realtime receiver",
+    "receive_direct": true,
+    "ddp_port": 4048,
+    "physical_groups": 22,
+    "physical_topology": [
+      5,
+      6,
+      5,
+      6
+    ],
+    "hardware_color_order": "BRG",
+    "live_hbnf_audio": false,
+    "live_hbnf_generator": false,
+    "hbnf_mqtt_control": false,
+    "custom_hbnp": false
+  },
+  "authority": {
+    "audio": "matrix only",
+    "visual_state": "matrix only",
+    "matrix_brightness": "matrix output scaling",
+    "aux_brightness": "matrix companion-frame scaling before DDP",
+    "cloud": "asynchronous persistence/status only"
+  }
+}
