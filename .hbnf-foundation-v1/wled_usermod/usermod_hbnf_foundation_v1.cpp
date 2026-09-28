@@ -1,5 +1,6 @@
 #include "wled.h"
 #include "hbnf_foundation_core.h"
+#include "hbnf_local_ui.h"
 
 using namespace hbnf_v1;
 
@@ -150,9 +151,18 @@ static Scene sceneFrom(JsonVariantConst v,Scene fallback) {
 }
 
 class HbnfFoundationV1Usermod : public Usermod {
+  bool routeRegistered_=false;
  public:
   void setup() override {
     foundationEffectId=strip.addEffect(255,&mode_hbnf_foundation,HBNF_FX_DATA);
+  }
+
+  void connected() override {
+    if(routeRegistered_) return;
+    server.on("/hbnf",HTTP_GET,[](AsyncWebServerRequest* request){
+      request->send_P(200,FPSTR(CONTENT_TYPE_HTML),HBNF_LOCAL_UI);
+    });
+    routeRegistered_=true;
   }
 
   void loop() override {}
