@@ -5,7 +5,8 @@ on:
     branches:
       - hbnf-foundation-rebuild-v1-20260927
     paths:
-      - "hbnf-foundation-v1/**"
+      - "hbnf-foundation-v1/hbnf_foundation_v1.h"
+      - "hbnf-foundation-v1/usermod/**"
       - ".github/workflows/hbnf-foundation-v1-wled.yml"
   workflow_dispatch:
 
