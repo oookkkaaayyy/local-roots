@@ -62,6 +62,7 @@ jobs:
           cp /tmp/hbnf-r1/firmware_patch/platformio_override.ini /tmp/wled/platformio_override.ini
           mkdir -p /tmp/wled/usermods/hbnf_foundation_v1
           cp .hbnf-foundation-v1/wled_usermod/usermod_hbnf_foundation_v1.cpp /tmp/wled/usermods/hbnf_foundation_v1/
+          cp .hbnf-foundation-v1/wled_usermod/hbnf_local_ui.h /tmp/wled/usermods/hbnf_foundation_v1/
           cp .hbnf-foundation-v1/wled_usermod/library.json /tmp/wled/usermods/hbnf_foundation_v1/
           cp .hbnf-foundation-v1/hbnf_foundation_core.h /tmp/wled/usermods/hbnf_foundation_v1/
 
