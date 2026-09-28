@@ -20,7 +20,7 @@ struct Controls {
   // Literal semantic controls. No categorical remapping.
   uint8_t audioResponse=50; // 0 = no audio modulation, 50 = 1.0x, 100 = 2.0x
   uint8_t motion=50;        // 0 = 0.5x, 50 = 1.0x, 100 = 1.5x
-   Scene scene=COURSE_FLOW;
+  Scene scene=COURSE_FLOW;
 };
 
 struct AudioFrame {
@@ -40,6 +40,13 @@ struct CanonicalFrame {
   Rgb8 palette[4]{};
 };
 
+struct FieldCoords {
+  uint16_t nx=0;
+  uint16_t ny=0;
+  uint16_t z=0;
+  uint16_t paletteDrift=0;
+};
+
 inline uint16_t audioGainQ8(uint8_t response){
   // exact linear mapping: 0..100 -> 0.0x..2.0x
   return (uint16_t)(((uint32_t)response * 512u + 50u) / 100u);
@@ -51,10 +58,25 @@ inline uint16_t motionQ8(uint8_t motion){
 }
 
 inline uint32_t advancePhaseQ16(uint32_t phaseQ16,uint32_t dtMs,uint8_t motion){
-  // At Motion=50, advance 8 Q16 units/ms (~8.19 s per full cycle).
+  // At Motion=50, advance 8 Q16 units/ms (~8.19 s per low-16-bit traversal).
   // Motion is applied here and nowhere else.
   const uint16_t rate=motionQ8(motion);
   return phaseQ16 + (uint32_t)(((uint64_t)dtMs * 8u * rate) >> 8);
+}
+
+inline FieldCoords fieldCoords(uint16_t x,uint16_t y,uint16_t scale,uint32_t phaseQ16){
+  // The old renderer used only the low 16 bits of phase, which made the base
+  // field repeat exactly after ~8.2 s at Motion=50. Preserve smooth low-word
+  // travel while letting the high-word epoch slowly drift the sampled field.
+  // Both Matrix and AUX consume these exact coordinates, so coherence remains
+  // single-frame/single-brain while the short exact loop is eliminated.
+  const uint16_t epoch=(uint16_t)(phaseQ16>>16);
+  FieldCoords c;
+  c.nx=(uint16_t)((uint32_t)x*scale + 0x1357u + (uint32_t)epoch*17u);
+  c.ny=(uint16_t)((uint32_t)y*scale + 0x2468u + (uint32_t)epoch*29u);
+  c.z=(uint16_t)phaseQ16;
+  c.paletteDrift=(uint16_t)((uint32_t)epoch*73u);
+  return c;
 }
 
 inline uint8_t scaleAudio(uint8_t v,uint8_t response){

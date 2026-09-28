@@ -4,10 +4,15 @@ on:
   push:
     branches:
       - hbnf-foundation-rebuild-v1-20260927
+      - hbnf-foundation-recovery-parallel-20260927
     paths:
       - '.hbnf-foundation-v1/**'
       - '.github/workflows/hbnf-foundation-v1-wled-build.yml'
   workflow_dispatch:
+
+concurrency:
+  group: hbnf-foundation-wled-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -98,17 +103,17 @@ jobs:
           p.write_text(s)
           PY
 
-          echo '=== FOUNDATION BUILD ENV ==='
-          awk 'BEGIN{p=0} /^\[env:hbnf_matrix_wled16_max\]/{p=1} /^\[/{if(p && $0!="[env:hbnf_matrix_wled16_max]") exit} p{print}' /tmp/wled/platformio_override.ini
           grep -q 'custom_usermods = audioreactive hbnf_foundation_v1' /tmp/wled/platformio_override.ini
           ! grep -q 'HBNF_VIBE_ANIMARTRIX' /tmp/wled/platformio_override.ini
 
-      - name: Compile host core gate
+      - name: Compile host and recovery gates
         shell: bash
         run: |
           set -euo pipefail
           g++ -std=c++17 -O2 -Wall -Wextra -Werror .hbnf-foundation-v1/test_core.cpp -o /tmp/foundation-core
           /tmp/foundation-core
+          python -m py_compile .hbnf-foundation-v1/foundation_preflight.py
+          python .hbnf-foundation-v1/foundation_preflight.py --selftest
 
       - name: Compile Foundation V1 firmware
         shell: bash
@@ -146,13 +151,17 @@ jobs:
           test "$BYTES" -le "$SLOT"
           SHA=$(sha256sum "$BIN" | awk '{print $1}')
           cp /tmp/foundation-build-1.log /tmp/foundation-build-2.log /tmp/foundation-artifacts/
-          cp .hbnf-foundation-v1/RESEARCH_DECISIONS.md .hbnf-foundation-v1/ARCHITECTURE.md .hbnf-foundation-v1/hbnf_foundation_core.h /tmp/foundation-artifacts/
+          cp .hbnf-foundation-v1/RESEARCH_DECISIONS.md .hbnf-foundation-v1/ARCHITECTURE.md .hbnf-foundation-v1/hbnf_foundation_core.h .hbnf-foundation-v1/FOUNDATION_PARITY_CONTRACT.json .hbnf-foundation-v1/MIGRATION_GATE.md .hbnf-foundation-v1/foundation_preflight.py /tmp/foundation-artifacts/
           {
             echo wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
             echo architecture=single-brain-mixed-2d-1d-v1
             echo audio_source=wled-audioreactive-native
             echo live_control=wled-local-websocket
             echo matrix_aux_network_transport=none
+            echo short_exact_phase_loop=blocked-by-epoch-drift
+            echo production_mutation=FORBIDDEN_FROM_PARALLEL_BRANCH
+            echo install_ready=FALSE
+            echo physical_acceptance=REQUIRED
             echo firmware_sha256=$SHA
             echo firmware_bytes=$BYTES
             echo ota_slot_bytes=$SLOT

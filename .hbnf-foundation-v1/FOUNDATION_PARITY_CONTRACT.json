@@ -1,0 +1,40 @@
+{
+  "schema": "hbnf-foundation-v1-parity-gates-v1",
+  "purpose": "Prevent a clean rebuild from silently dropping already-established HBNF requirements.",
+  "parallelBranch": "hbnf-foundation-recovery-parallel-20260927",
+  "baselineBranch": "hbnf-foundation-rebuild-v1-20260927",
+  "mustPreserve": {
+    "singleRenderingBrain": true,
+    "matrixPixels": 512,
+    "auxLogicalPixels": 22,
+    "sameCanonicalFrameForMatrixAndAux": true,
+    "allDomainsUseSameAudioEngine": true,
+    "audioSemantics": {
+      "low": "body/luminance",
+      "mid": "palette/body morph",
+      "high": "bright detail",
+      "secondAdaptiveNormalizer": false
+    },
+    "manualMotionAuthority": true,
+    "independentMatrixAuxBrightness": true,
+    "localLiveControl": "WLED WebSocket",
+    "cloudInLiveVisualLoop": false,
+    "shortExactVisualLoopAllowed": false,
+    "physicalAcceptanceRequired": true,
+    "productionMutationAllowedFromParallelBranch": false
+  },
+  "knownUnresolvedBeforeInstall": [
+    "Select and physically validate one-ESP32 wiring topology",
+    "Confirm whether Matrix DOUT -> AUX DIN chaining is mechanically clean on the installed carrier",
+    "If chaining is used, establish common data ground between 5V Matrix and separately powered 12V WS2811 AUX",
+    "Preserve AUX BRG color-order behavior via WLED bus/order override or separate same-MCU output",
+    "Define and verify WLED runtime bus/segment configuration for 512 Matrix + 22 AUX pixels",
+    "Create guarded installer/rollback package only after topology is selected",
+    "Bench and side-by-side physical acceptance"
+  ],
+  "readiness": {
+    "sourceCompiles": "must be proven by CI at current branch head",
+    "installReady": false,
+    "productionAccepted": false
+  }
+}

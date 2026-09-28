@@ -4,10 +4,15 @@ on:
   push:
     branches:
       - hbnf-foundation-rebuild-v1-20260927
+      - hbnf-foundation-recovery-parallel-20260927
     paths:
       - '.hbnf-foundation-v1/**'
       - '.github/workflows/hbnf-foundation-v1-host-tests.yml'
   workflow_dispatch:
+
+concurrency:
+  group: hbnf-foundation-host-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   host-tests:
@@ -16,6 +21,24 @@ jobs:
       - uses: actions/checkout@v4
       - name: Compile foundation core tests
         run: |
-          g++ -std=c++17 -O2 -Wall -Wextra -Werror             .hbnf-foundation-v1/test_core.cpp             -o /tmp/hbnf-foundation-v1-tests
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror .hbnf-foundation-v1/test_core.cpp -o /tmp/hbnf-foundation-v1-tests
       - name: Run foundation core tests
         run: /tmp/hbnf-foundation-v1-tests
+      - name: Verify read-only physical preflight
+        run: |
+          python -m py_compile .hbnf-foundation-v1/foundation_preflight.py
+          python .hbnf-foundation-v1/foundation_preflight.py --selftest
+      - name: Verify parity contract remains non-production
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          p=json.loads(pathlib.Path('.hbnf-foundation-v1/FOUNDATION_PARITY_CONTRACT.json').read_text())
+          assert p['mustPreserve']['singleRenderingBrain'] is True
+          assert p['mustPreserve']['auxLogicalPixels'] == 22
+          assert p['mustPreserve']['shortExactVisualLoopAllowed'] is False
+          assert p['mustPreserve']['physicalAcceptanceRequired'] is True
+          assert p['mustPreserve']['productionMutationAllowedFromParallelBranch'] is False
+          assert p['readiness']['installReady'] is False
+          assert p['readiness']['productionAccepted'] is False
+          print('PASS foundation parity/non-production gates')
+          PY

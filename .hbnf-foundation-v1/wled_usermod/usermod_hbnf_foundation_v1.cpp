@@ -29,8 +29,9 @@ class FoundationRuntime {
     if (dt > 100u) dt = 100u;
     lastNow_ = now;
 
-    // Base field travel is ~8.2 seconds/cycle at Motion=50.
-    // Motion control is the only multiplier applied to the phase clock.
+    // Base field travel is ~8.2 seconds per low-word traversal at Motion=50.
+    // fieldCoords() uses the high-word epoch as slow spatial/palette drift,
+    // preventing an exact short loop while Motion remains the sole time-scale.
     phaseQ16_ = advancePhaseQ16(phaseQ16_,dt,controls_.motion);
 
     lastAudio_ = readAudio();
@@ -59,9 +60,9 @@ class FoundationRuntime {
         !um || um->u_size < 4 || !um->u_data || !um->u_data[2]) return a;
 
     const uint8_t* fft = reinterpret_cast<const uint8_t*>(um->u_data[2]);
-    // WLED AudioReactive's own three-color Spectrum palette uses
-    // fftResult[0], fftResult[4] and fftResult[10] as low/mid/high representatives.
-    // Use those native post-processed bands directly: no second averaging stage.
+    // Exact WLED 16.0.1 AudioReactive exposes fftResult at u_data[2],
+    // volumeSmth at [0], and samplePeak at [3]. Use the same representative
+    // bands as WLED's own three-channel Spectrum palette: 0 / 4 / 10.
     a.bass   = fft[0];
     a.mid    = fft[4];
     a.treble = fft[10];
@@ -90,15 +91,13 @@ static uint16_t fieldScale(Scene scene) {
 
 static Rgb8 fieldColor(const CanonicalFrame& f,uint16_t x,uint16_t y,uint16_t width,uint16_t height) {
   const uint16_t scale=fieldScale(f.controls.scene);
-  const uint16_t nx=(uint16_t)((uint32_t)x*scale + 0x1357u);
-  const uint16_t ny=(uint16_t)((uint32_t)y*scale + 0x2468u);
-  const uint16_t z=(uint16_t)f.phaseQ16;
+  const FieldCoords fc=fieldCoords(x,y,scale,f.phaseQ16);
 
   // Two coherent fields, following the standard noise+palette pattern used by FastLED/WLED.
   // The second field only bends palette position; it does not create a competing renderer.
-  const uint8_t n1=perlin8(nx,ny,z);
-  const uint8_t n2=perlin8((uint16_t)(nx+0x3141u),(uint16_t)(ny+0x2718u),(uint16_t)(z+0x1111u));
-  const uint16_t palettePos=(uint16_t)(((uint16_t)n1<<8) + ((uint16_t)n2<<5) + (uint16_t)(f.phaseQ16>>2));
+  const uint8_t n1=perlin8(fc.nx,fc.ny,fc.z);
+  const uint8_t n2=perlin8((uint16_t)(fc.nx+0x3141u),(uint16_t)(fc.ny+0x2718u),(uint16_t)(fc.z+0x1111u));
+  const uint16_t palettePos=(uint16_t)(((uint16_t)n1<<8) + ((uint16_t)n2<<5) + (uint16_t)(fc.z>>2) + fc.paletteDrift);
 
   Rgb8 c=paletteAt(f,palettePos);
   c=applyAudio(f,c,(uint8_t)(n2>>6));
@@ -123,7 +122,7 @@ static void mode_hbnf_foundation(void) {
   }
 
   const uint16_t len=SEGLEN;
-  for(uint16_t i=0;i<len;i++){
+  for(uint16_t i=0;i<len;i++) {
     uint16_t x=0,y=0;
     if(len==22) perimeterCoord22((uint8_t)i,x,y);
     else { x=(uint16_t)(((uint32_t)i*31u)/(len>1?len-1:1)); y=15; }

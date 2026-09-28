@@ -88,5 +88,14 @@ int main(){
     assert(x==0 || x==31 || y==0 || y==15);
   }
 
-  puts("PASS foundation-v1 core: literal controls, deterministic audio response, companion renderer; brightness delegated to native WLED segments");
+  // Anti-short-loop gate: one low-16-bit phase traversal later, the field
+  // must not sample the exact same coordinates/palette state.
+  const FieldCoords e0=fieldCoords(11,7,38,0x00001234u);
+  const FieldCoords e1=fieldCoords(11,7,38,0x00011234u);
+  assert(e0.z==e1.z);
+  assert(e0.nx!=e1.nx);
+  assert(e0.ny!=e1.ny);
+  assert(e0.paletteDrift!=e1.paletteDrift);
+
+  puts("PASS foundation-v1 core: literal controls, deterministic audio response, companion renderer, long-horizon field drift; brightness delegated to native WLED segments");
 }
