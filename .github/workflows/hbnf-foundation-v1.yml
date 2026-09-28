@@ -19,3 +19,6 @@ jobs:
           g++ -std=c++17 -O2 -Wall -Wextra -Werror             hbnf-foundation-v1/test_foundation_v1.cpp             -Ihbnf-foundation-v1             -o /tmp/hbnf-foundation-v1-test
       - name: Run deterministic foundation tests
         run: /tmp/hbnf-foundation-v1-test
+
+      - name: Verify WLED-native network contract
+        run: python hbnf-foundation-v1/test_network_contract.py
