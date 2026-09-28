@@ -2,6 +2,7 @@
   "name": "hbnf_foundation_v1",
   "version": "1.0.0",
   "build": {
-    "srcFilter": "+<*.cpp>"
+    "srcFilter": "+<*.cpp>",
+    "libArchive": false
   }
 }
