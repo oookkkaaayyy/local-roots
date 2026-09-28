@@ -1,8 +1,8 @@
 name: HBNF Phase 2 Game Bridge Hardening
+# Cost-control policy: expensive compile/test is release-candidate only.
+# Do local/host tests during iteration; manually dispatch this workflow only when a
+# hardware/release artifact is actually needed.
 on:
-  push:
-    branches:
-      - hbnf-phase2-game-router-hardening-20260927
   workflow_dispatch:
 
 jobs:
