@@ -16,6 +16,7 @@ struct AudioFrame {
   uint32_t sequence = 0;
   uint32_t timestampMs = 0;
   uint8_t volume = 0;               // WLED AudioReactive volumeSmth, clamped
+  uint8_t bins[16] = {0};           // WLED AudioReactive fftResult, preserved exactly
   uint8_t low = 0;                  // mean fftResult[0..3]
   uint8_t mid = 0;                  // mean fftResult[4..10]
   uint8_t high = 0;                 // mean fftResult[11..15]
@@ -65,9 +66,10 @@ inline AudioFrame makeAudioFrame(
   if (volumeSmth <= 0.0f) out.volume = 0;
   else if (volumeSmth >= 255.0f) out.volume = 255;
   else out.volume = (uint8_t)(volumeSmth + 0.5f);
-  out.low = meanRange(fftResult, 0, 4);
-  out.mid = meanRange(fftResult, 4, 11);
-  out.high = meanRange(fftResult, 11, 16);
+  for (size_t i=0;i<16;i++) out.bins[i]=fftResult?fftResult[i]:0;
+  out.low = meanRange(out.bins, 0, 4);
+  out.mid = meanRange(out.bins, 4, 11);
+  out.high = meanRange(out.bins, 11, 16);
   out.peak = samplePeak;
   return out;
 }
