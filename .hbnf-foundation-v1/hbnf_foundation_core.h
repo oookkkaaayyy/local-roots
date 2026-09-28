@@ -18,11 +18,7 @@ struct Controls {
   uint8_t audioResponse=50; // 0 = no audio modulation, 50 = 1.0x, 100 = 2.0x
   uint8_t motion=50;        // 0 = 0.5x, 50 = 1.0x, 100 = 1.5x
   uint16_t evolutionMs=12000;
-  uint8_t matrixBrightness=24;
-  uint8_t auxBrightness=180;
-  uint8_t micGain=60;
-  uint8_t squelch=10;
-  Scene scene=COURSE_FLOW;
+   Scene scene=COURSE_FLOW;
 };
 
 struct AudioFrame {
@@ -138,7 +134,7 @@ inline void renderAux22(const CanonicalFrame& f,Rgb8 out[22]){
     const uint16_t p=(uint16_t)(phase + (uint32_t)i*(65536u/22u));
     Rgb8 c=paletteAt(f,p);
     c=applyAudio(f,c,(uint8_t)(i&3u));
-    out[i]=scaleRgb(c,f.controls.auxBrightness);
+    out[i]=c;
   }
 }
 
