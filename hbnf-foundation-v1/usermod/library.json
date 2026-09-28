@@ -1,0 +1,6 @@
+{
+  "name":"hbnf_foundation_v1",
+  "version":"1.0.0",
+  "description":"HBNF evidence-based local-first cart foundation",
+  "build":{"libArchive":false}
+}
