@@ -123,6 +123,22 @@ inline Rgb8 applyAudio(const CanonicalFrame& f,Rgb8 src,uint8_t position){
   return src;
 }
 
+inline void perimeterCoord22(uint8_t index,uint16_t& x,uint16_t& y){
+  const uint8_t i=(uint8_t)(index%22u);
+  if(i<5u){
+    x=0; y=(uint16_t)(((uint32_t)i*15u)/4u);
+  } else if(i<11u){
+    const uint8_t j=(uint8_t)(i-5u);
+    x=(uint16_t)(((uint32_t)j*31u)/5u); y=0;
+  } else if(i<16u){
+    const uint8_t j=(uint8_t)(i-11u);
+    x=31; y=(uint16_t)(15u-((uint32_t)j*15u)/4u);
+  } else {
+    const uint8_t j=(uint8_t)(i-16u);
+    x=(uint16_t)(31u-((uint32_t)j*31u)/5u); y=15;
+  }
+}
+
 inline void renderAux22(const CanonicalFrame& f,Rgb8 out[22]){
   // Cart geometry order: 5 + 6 + 5 + 6 around the perimeter.
   // Same phase/palette/audio as Matrix; geometry only changes spatial sampling.
