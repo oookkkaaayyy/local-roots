@@ -63,6 +63,10 @@ inline uint8_t scale8(uint8_t v,uint8_t gain){
   return (uint8_t)(((uint16_t)v*(uint16_t)gain+127u)/255u);
 }
 
+inline Rgb8 scaleRgb(Rgb8 c,uint8_t gain){
+  return {scale8(c.r,gain),scale8(c.g,gain),scale8(c.b,gain)};
+}
+
 inline uint8_t blend8(uint8_t a,uint8_t b,uint8_t mix){
   return (uint8_t)(((uint16_t)a*(255u-mix)+(uint16_t)b*mix+127u)/255u);
 }
@@ -134,7 +138,7 @@ inline void renderAux22(const CanonicalFrame& f,Rgb8 out[22]){
     const uint16_t p=(uint16_t)(phase + (uint32_t)i*(65536u/22u));
     Rgb8 c=paletteAt(f,p);
     c=applyAudio(f,c,(uint8_t)(i&3u));
-    out[i]=scale8(c,f.controls.auxBrightness);
+    out[i]=scaleRgb(c,f.controls.auxBrightness);
   }
 }
 
