@@ -1,0 +1,166 @@
+name: HBNF Foundation V1 WLED Build
+
+on:
+  push:
+    branches:
+      - hbnf-foundation-rebuild-v1-20260927
+    paths:
+      - '.hbnf-foundation-v1/**'
+      - '.github/workflows/hbnf-foundation-v1-wled-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Decode proven cart hardware build config
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import base64, hashlib, pathlib, tarfile
+          raw=base64.b64decode(pathlib.Path('.hbnf-build-r1/bundle.b64').read_bytes())
+          assert hashlib.sha256(raw).hexdigest() == 'a22fd4d01be8f67f40eec4019cdfb602cd3144e582b27985d5134485c709a9cb'
+          tgz=pathlib.Path('/tmp/hbnf-r1.tgz'); tgz.write_bytes(raw)
+          pathlib.Path('/tmp/hbnf-r1').mkdir(exist_ok=True)
+          with tarfile.open(tgz,'r:gz') as tf: tf.extractall('/tmp/hbnf-r1')
+          cfg=pathlib.Path('/tmp/hbnf-r1/firmware_patch/platformio_override.ini')
+          assert cfg.exists()
+          print(cfg.read_text())
+          PY
+
+      - name: Fetch exact WLED 16.0.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/wled/WLED.git /tmp/wled
+          cd /tmp/wled
+          git checkout 29b389df1c1aaec6ff53aea742d17063b985906c
+          test "$(git rev-parse HEAD)" = "29b389df1c1aaec6ff53aea742d17063b985906c"
+
+      - name: Install pinned WLED dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install -r /tmp/wled/requirements.txt
+
+      - name: Install Foundation V1 usermod into proven hardware environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/hbnf-r1/firmware_patch/platformio_override.ini /tmp/wled/platformio_override.ini
+          mkdir -p /tmp/wled/usermods/hbnf_foundation_v1
+          cp .hbnf-foundation-v1/wled_usermod/usermod_hbnf_foundation_v1.cpp /tmp/wled/usermods/hbnf_foundation_v1/
+          cp .hbnf-foundation-v1/hbnf_foundation_core.h /tmp/wled/usermods/hbnf_foundation_v1/
+
+          python - <<'PY'
+          import pathlib,re
+          p=pathlib.Path('/tmp/wled/platformio_override.ini')
+          s=p.read_text()
+          section='[env:hbnf_matrix_wled16_max]'
+          assert section in s
+          start=s.index(section)
+          next_section=s.find('\n[',start+len(section))
+          if next_section<0: next_section=len(s)
+          block=s[start:next_section]
+          lines=block.splitlines()
+          out=[]; i=0; replaced=False
+          while i<len(lines):
+              line=lines[i]
+              if re.match(r'^\s*custom_usermods\s*=',line):
+                  out.append('custom_usermods = audioreactive hbnf_foundation_v1')
+                  replaced=True
+                  i+=1
+                  while i<len(lines) and (lines[i].startswith(' ') or lines[i].startswith('\t')):
+                      if '=' in lines[i] and not lines[i].lstrip().startswith(('$'+'{',';','#')):
+                          break
+                      i+=1
+                  continue
+              out.append(line); i+=1
+          if not replaced:
+              out.insert(1,'custom_usermods = audioreactive hbnf_foundation_v1')
+          block2='\n'.join(out)
+          s=s[:start]+block2+s[next_section:]
+          p.write_text(s)
+          PY
+
+          echo '=== FOUNDATION BUILD ENV ==='
+          awk 'BEGIN{p=0} /^\[env:hbnf_matrix_wled16_max\]/{p=1} /^\[/{if(p && $0!="[env:hbnf_matrix_wled16_max]") exit} p{print}' /tmp/wled/platformio_override.ini
+          grep -q 'custom_usermods = audioreactive hbnf_foundation_v1' /tmp/wled/platformio_override.ini
+
+      - name: Compile host core gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror .hbnf-foundation-v1/test_core.cpp -o /tmp/foundation-core
+          /tmp/foundation-core
+
+      - name: Compile Foundation V1 firmware
+        shell: bash
+        env:
+          SOURCE_DATE_EPOCH: '1789948800'
+        run: |
+          set -euo pipefail
+          cd /tmp/wled
+          pio run -e hbnf_matrix_wled16_max 2>&1 | tee /tmp/foundation-build-1.log
+          mkdir -p /tmp/foundation-artifacts
+          cp .pio/build/hbnf_matrix_wled16_max/firmware.bin /tmp/foundation-artifacts/HBNF_FOUNDATION_V1.bin
+          cp .pio/build/hbnf_matrix_wled16_max/firmware.elf /tmp/foundation-artifacts/HBNF_FOUNDATION_V1.elf
+          strings /tmp/foundation-artifacts/HBNF_FOUNDATION_V1.bin | grep -q 'foundation-v1'
+          strings /tmp/foundation-artifacts/HBNF_FOUNDATION_V1.bin | grep -q 'HBNF Foundation'
+
+      - name: Reproducibility gate
+        shell: bash
+        env:
+          SOURCE_DATE_EPOCH: '1789948800'
+        run: |
+          set -euo pipefail
+          cd /tmp/wled
+          cp /tmp/foundation-artifacts/HBNF_FOUNDATION_V1.bin /tmp/foundation-first.bin
+          pio run -e hbnf_matrix_wled16_max -t clean
+          pio run -e hbnf_matrix_wled16_max 2>&1 | tee /tmp/foundation-build-2.log
+          cmp /tmp/foundation-first.bin .pio/build/hbnf_matrix_wled16_max/firmware.bin
+
+      - name: Final metrics
+        shell: bash
+        run: |
+          set -euo pipefail
+          BIN=/tmp/foundation-artifacts/HBNF_FOUNDATION_V1.bin
+          BYTES=$(wc -c < "$BIN")
+          SLOT=$((0x180000))
+          test "$BYTES" -le "$SLOT"
+          SHA=$(sha256sum "$BIN" | awk '{print $1}')
+          cp /tmp/foundation-build-1.log /tmp/foundation-build-2.log /tmp/foundation-artifacts/
+          cp .hbnf-foundation-v1/RESEARCH_DECISIONS.md .hbnf-foundation-v1/ARCHITECTURE.md .hbnf-foundation-v1/hbnf_foundation_core.h /tmp/foundation-artifacts/
+          {
+            echo wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
+            echo architecture=single-brain-mixed-2d-1d-v1
+            echo audio_source=wled-audioreactive-native
+            echo live_control=wled-local-websocket
+            echo matrix_aux_network_transport=none
+            echo firmware_sha256=$SHA
+            echo firmware_bytes=$BYTES
+            echo ota_slot_bytes=$SLOT
+            echo ota_headroom_bytes=$((SLOT-BYTES))
+            echo HOST_CORE_GATE=PASS
+            echo BYTE_IDENTICAL_REBUILD=PASS
+          } > /tmp/foundation-artifacts/FINAL_METRICS.txt
+          sha256sum "$BIN" > /tmp/foundation-artifacts/firmware-sha256.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HBNF-FOUNDATION-V1-WLED
+          path: /tmp/foundation-artifacts
+          if-no-files-found: error
+          retention-days: 14
