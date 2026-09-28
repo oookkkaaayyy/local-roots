@@ -129,7 +129,8 @@ static void mode_hbnf_foundation(void) {
   const uint16_t len=SEGLEN;
   for(uint16_t i=0;i<len;i++){
     uint16_t x=0,y=0;
-    if(len==22) perimeterCoord22((uint8_t)i,x,y);\n    else { x=(uint16_t)(((uint32_t)i*31u)/(len>1?len-1:1)); y=15; }
+    if(len==22) perimeterCoord22((uint8_t)i,x,y);
+    else { x=(uint16_t)(((uint32_t)i*31u)/(len>1?len-1:1)); y=15; }
     SEGMENT.setPixelColor(i,packed(fieldColor(f,x,y,32,16)));
   }
 }
