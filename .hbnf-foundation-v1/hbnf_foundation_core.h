@@ -4,7 +4,10 @@
 
 namespace hbnf_v1 {
 
-struct Rgb8 { uint8_t r=0,g=0,b=0; };
+struct Rgb8 {
+  uint8_t r,g,b;
+  Rgb8(uint8_t rr=0,uint8_t gg=0,uint8_t bb=0):r(rr),g(gg),b(bb){}
+};
 
 enum Scene : uint8_t {
   COURSE_FLOW=0,
@@ -79,13 +82,13 @@ inline Rgb8 paletteAt(const CanonicalFrame& f,uint16_t posQ16){
 inline void defaultPalette(Scene s,Rgb8 out[4]){
   switch(s){
     case FIELD_MIX:
-      out[0]={255,54,28}; out[1]={255,190,28}; out[2]={26,230,170}; out[3]={30,120,255}; break;
+      out[0]=Rgb8(255,54,28); out[1]=Rgb8(255,190,28); out[2]=Rgb8(26,230,170); out[3]=Rgb8(30,120,255); break;
     case SIGNATURE:
-      out[0]={255,40,160}; out[1]={130,50,255}; out[2]={35,220,255}; out[3]={255,180,35}; break;
+      out[0]=Rgb8(255,40,160); out[1]=Rgb8(130,50,255); out[2]=Rgb8(35,220,255); out[3]=Rgb8(255,180,35); break;
     case QUIET_COSMOS:
-      out[0]={20,30,90}; out[1]={65,40,150}; out[2]={20,130,170}; out[3]={120,65,180}; break;
+      out[0]=Rgb8(20,30,90); out[1]=Rgb8(65,40,150); out[2]=Rgb8(20,130,170); out[3]=Rgb8(120,65,180); break;
     default:
-      out[0]={20,210,170}; out[1]={40,110,255}; out[2]={180,55,255}; out[3]={255,95,80}; break;
+      out[0]=Rgb8(20,210,170); out[1]=Rgb8(40,110,255); out[2]=Rgb8(180,55,255); out[3]=Rgb8(255,95,80); break;
   }
 }
 
@@ -118,7 +121,7 @@ inline Rgb8 applyAudio(const CanonicalFrame& f,Rgb8 src,uint8_t position){
   // highs: crisp local accent, bounded and deterministic
   if(high && (((uint16_t)position*37u + (uint16_t)(f.frame&255u)*11u)&255u) < (high>>1)){
     const uint8_t lift=(uint8_t)(((uint16_t)high*72u)>>8);
-    src=blend(src,{255,255,255},lift);
+    src=blend(src,Rgb8(255,255,255),lift);
   }
   return src;
 }
