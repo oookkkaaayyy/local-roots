@@ -48,12 +48,12 @@ int main(){
   renderAux22(makeFrame(100,12345,off,bass),a1);
   assert(same(a0,a1,22));
 
-  Controls slow=c; slow.motion=0;
-  Controls fast=c; fast.motion=100;
-  Rgb8 rs[22],rf[22];
-  renderAux22(makeFrame(100,20000,slow,quiet),rs);
-  renderAux22(makeFrame(100,20000,fast,quiet),rf);
-  assert(!same(rs,rf,22));
+  // Motion changes phase rate, not rendering math.
+  const uint32_t pSlow=advancePhaseQ16(20000,1000,0);
+  const uint32_t pMid =advancePhaseQ16(20000,1000,50);
+  const uint32_t pFast=advancePhaseQ16(20000,1000,100);
+  assert(pSlow < pMid && pMid < pFast);
+  assert((pMid-20000)==8000u);
 
   // Same state is deterministic: no hidden history.
   Rgb8 d1[22],d2[22];
