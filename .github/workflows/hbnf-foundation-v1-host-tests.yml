@@ -1,0 +1,21 @@
+name: HBNF Foundation V1 Host Tests
+
+on:
+  push:
+    branches:
+      - hbnf-foundation-rebuild-v1-20260927
+    paths:
+      - '.hbnf-foundation-v1/**'
+      - '.github/workflows/hbnf-foundation-v1-host-tests.yml'
+  workflow_dispatch:
+
+jobs:
+  host-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile foundation core tests
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror             .hbnf-foundation-v1/test_core.cpp             -o /tmp/hbnf-foundation-v1-tests
+      - name: Run foundation core tests
+        run: /tmp/hbnf-foundation-v1-tests
