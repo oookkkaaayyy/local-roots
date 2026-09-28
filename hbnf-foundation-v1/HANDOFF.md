@@ -214,3 +214,19 @@ At the time of this handoff:
 12. Do NOT begin router/games/UV Phase 2 until foundation is explicitly accepted.
 
 Priority: crisp causality, low latency, stable sync, strong musical response, and a coherent impressive visual system.
+
+
+## Critical development-operations constraints
+
+GitHub Actions usage is near the included monthly limit. The user received an alert at approximately 1,802 / 2,000 included Actions minutes with reset on 2026-10-01 and explicitly requires that NO additional GitHub Actions charges ever occur without prior explicit approval.
+
+Development policy:
+- Use local/host tests during iteration.
+- Do not trigger Actions for each small commit.
+- Batch changes.
+- Run cloud Actions only for a deliberately selected release/hardware artifact or when a required check cannot reasonably be reproduced locally.
+- Avoid workflow-failure notification spam.
+- Do not change billing/spending settings on the user's behalf.
+
+Power-scope constraint:
+- Do not introduce new batteries/master-power hardware during this foundation rebuild. A future single physical master-switch architecture remains desired but is intentionally deferred until the lighting/software foundation is stable.
