@@ -116,3 +116,7 @@ Required physical acceptance:
 ### 8. Use native WLED brightness semantics
 
 Foundation V1 does not implement custom brightness scaling. Matrix and AUX are separate WLED segments and use native segment brightness over the local JSON/WebSocket API. The custom renderer does not use realtime mode, so segment brightness cannot be bypassed by realtime pixel writes.
+
+### 9. Three-band audio uses WLED's own representative GEQ bins
+
+WLED AudioReactive's built-in Spectrum audio palette uses fftResult[0], fftResult[4], and fftResult[10] as its three representative frequency signals. Foundation V1 follows that existing convention for low/mid/high rather than averaging broad custom frequency ranges. This keeps the response closer to WLED's native post-processed signal and avoids an additional smoothing layer.
