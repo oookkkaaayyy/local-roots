@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cstdio>
 #include <cstring>
+#include <cstdlib>
 #include "hbnf_foundation_core.h"
 
 using namespace hbnf_v1;
