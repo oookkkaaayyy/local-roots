@@ -31,8 +31,7 @@ class FoundationRuntime {
 
     // Base field travel is ~8.2 seconds/cycle at Motion=50.
     // Motion control is the only multiplier applied to the phase clock.
-    const uint16_t rate = motionQ8(controls_.motion);
-    phaseQ16_ += (uint32_t)(((uint64_t)dt * 8u * rate) >> 8);
+    phaseQ16_ = advancePhaseQ16(phaseQ16_,dt,controls_.motion);
 
     lastAudio_ = readAudio();
     cached_ = makeFrame(++frameNo_, phaseQ16_, controls_, lastAudio_);
