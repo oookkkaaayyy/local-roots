@@ -60,5 +60,32 @@ int main(){
   renderAux22(f,d1); renderAux22(f,d2);
   assert(same(d1,d2,22));
 
+  // Audio-response gain is literal and monotonic for the same source.
+  uint32_t bassDelta[5]={0,0,0,0,0};
+  const uint8_t levels[5]={0,25,50,75,100};
+  for(int k=0;k<5;k++){
+    Controls rc=c; rc.audioResponse=levels[k];
+    Rgb8 base[22],hit[22];
+    renderAux22(makeFrame(200,23456,rc,quiet),base);
+    renderAux22(makeFrame(200,23456,rc,bass),hit);
+    uint32_t d=0;
+    for(int i=0;i<22;i++) d+=
+      (uint32_t)abs((int)hit[i].r-(int)base[i].r)+
+      (uint32_t)abs((int)hit[i].g-(int)base[i].g)+
+      (uint32_t)abs((int)hit[i].b-(int)base[i].b);
+    bassDelta[k]=d;
+  }
+  assert(bassDelta[0]==0);
+  assert(bassDelta[1] < bassDelta[2]);
+  assert(bassDelta[2] <= bassDelta[3]);
+  assert(bassDelta[3] <= bassDelta[4]);
+
+  // The 22 AUX locations are explicitly Matrix-perimeter coordinates.
+  for(uint8_t i=0;i<22;i++){
+    uint16_t x=99,y=99; perimeterCoord22(i,x,y);
+    assert(x<=31 && y<=15);
+    assert(x==0 || x==31 || y==0 || y==15);
+  }
+
   puts("PASS foundation-v1 core: literal controls, deterministic audio response, companion renderer; brightness delegated to native WLED segments");
 }
