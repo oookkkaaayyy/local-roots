@@ -111,14 +111,14 @@ def main():
 def selftest():
     # Guard the recovery lane against accidental mutation creep.
     src = pathlib.Path(__file__).read_text()
+    operational = src.split("def selftest():", 1)[0]
     forbidden = [
         'method="POST"', "urlopen(req, data=", "/update", "wrangler deploy",
-        "mqtt", "supabase", "write_text(json.dumps(report"
+        "mqtt", "supabase"
     ]
-    # The report write itself is local-only and intentionally allowed.
-    for token in forbidden[:-1]:
-        assert token not in src, token
-    assert 'method="GET"' in src
+    for token in forbidden:
+        assert token not in operational, token
+    assert 'method="GET"' in operational
     print("PASS read-only preflight selftest")
 
 if __name__ == "__main__":
