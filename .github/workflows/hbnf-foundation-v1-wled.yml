@@ -1,0 +1,120 @@
+name: HBNF Foundation V1 WLED Build
+
+on:
+  push:
+    branches:
+      - hbnf-foundation-rebuild-v1-20260927
+    paths:
+      - "hbnf-foundation-v1/**"
+      - ".github/workflows/hbnf-foundation-v1-wled.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch exact WLED 16.0.1 base
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/wled/WLED.git /tmp/wled
+          cd /tmp/wled
+          git checkout 29b389df1c1aaec6ff53aea742d17063b985906c
+          test "$(git rev-parse HEAD)" = "29b389df1c1aaec6ff53aea742d17063b985906c"
+
+      - name: Install pinned WLED dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r /tmp/wled/requirements.txt
+
+      - name: Install clean HBNF Foundation usermod
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/wled/usermods/hbnf_foundation_v1
+          cp hbnf-foundation-v1/hbnf_foundation_v1.h /tmp/wled/usermods/hbnf_foundation_v1/
+          cp hbnf-foundation-v1/usermod/hbnf_foundation_v1.cpp /tmp/wled/usermods/hbnf_foundation_v1/
+          cp hbnf-foundation-v1/usermod/library.json /tmp/wled/usermods/hbnf_foundation_v1/
+          cat > /tmp/wled/platformio_override.ini <<'EOF'
+          [platformio]
+          default_envs = hbnf_foundation_v1
+
+          [env:hbnf_foundation_v1]
+          extends = env:esp32dev
+          custom_usermods = audioreactive hbnf_foundation_v1
+          build_flags = ${env:esp32dev.build_flags}
+          EOF
+          cd /tmp/wled
+          grep -q 'custom_usermods = audioreactive hbnf_foundation_v1' platformio_override.ini
+          ! grep -R -q 'anti-repeat-v4' usermods/hbnf_foundation_v1
+          ! grep -R -q 'source-coupled-v4' usermods/hbnf_foundation_v1
+          ! grep -R -q 'HBNP' usermods/hbnf_foundation_v1
+
+      - name: Compile clean foundation firmware
+        env:
+          SOURCE_DATE_EPOCH: "1789948800"
+        run: |
+          set -euo pipefail
+          cd /tmp/wled
+          pio run -e hbnf_foundation_v1 2>&1 | tee /tmp/build.log
+          mkdir -p /tmp/artifacts
+          cp .pio/build/hbnf_foundation_v1/firmware.bin /tmp/artifacts/HBNF_FOUNDATION_V1.bin
+          cp .pio/build/hbnf_foundation_v1/firmware.elf /tmp/artifacts/HBNF_FOUNDATION_V1.elf
+          pio run -e hbnf_foundation_v1 -t size 2>&1 | tee /tmp/size.log
+
+      - name: Reproducibility gate
+        env:
+          SOURCE_DATE_EPOCH: "1789948800"
+        run: |
+          set -euo pipefail
+          cd /tmp/wled
+          cp /tmp/artifacts/HBNF_FOUNDATION_V1.bin /tmp/first.bin
+          pio run -e hbnf_foundation_v1 -t clean
+          pio run -e hbnf_foundation_v1 >/tmp/build-second.log 2>&1
+          cmp /tmp/first.bin .pio/build/hbnf_foundation_v1/firmware.bin
+
+      - name: Firmware gates
+        run: |
+          set -euo pipefail
+          BIN=/tmp/artifacts/HBNF_FOUNDATION_V1.bin
+          BYTES=$(wc -c < "$BIN")
+          SLOT=$((0x180000))
+          test "$BYTES" -le "$SLOT"
+          SHA=$(sha256sum "$BIN" | awk '{print $1}')
+          strings "$BIN" > /tmp/strings.txt
+          grep -q "HBNF Local Control" /tmp/strings.txt
+          grep -q "hbnf-foundation-v1" /tmp/strings.txt
+          ! grep -q "registry28-tempo-lock" /tmp/strings.txt
+          ! grep -q "frame-lock-v1" /tmp/strings.txt
+          ! grep -q "anti-repeat-v4" /tmp/strings.txt
+          {
+            echo wled_commit=29b389df1c1aaec6ff53aea742d17063b985906c
+            echo base_env=esp32dev
+            echo usermods=audioreactive,hbnf_foundation_v1
+            echo firmware_sha256=$SHA
+            echo firmware_bytes=$BYTES
+            echo ota_slot_bytes=$SLOT
+            echo ota_headroom_bytes=$((SLOT-BYTES))
+            echo CLEAN_STACK_GATE=PASS
+            echo LOCAL_CONTROL_ROUTE_GATE=PASS
+            echo LEGACY_HBNP_ABSENT=PASS
+            echo LEGACY_GENERATOR_ABSENT=PASS
+            echo SECOND_CLEAN_BUILD_BYTE_IDENTICAL=PASS
+          } | tee /tmp/artifacts/FINAL_METRICS.txt
+          cp /tmp/build.log /tmp/build-second.log /tmp/size.log /tmp/artifacts/
+          sha256sum "$BIN" > /tmp/artifacts/firmware-sha256.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HBNF-FOUNDATION-V1-WLED
+          path: /tmp/artifacts
+          if-no-files-found: error
+          retention-days: 14
