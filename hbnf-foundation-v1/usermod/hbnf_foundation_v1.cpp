@@ -57,8 +57,7 @@ class HbnfFoundationV1Usermod : public Usermod {
   void sendState(AsyncWebServerRequest* request) {
     char body[512];
     snprintf(body,sizeof(body),
-      "{"schema":"hbnf-foundation-v1","control":{"matrixBrightness":%u,"auxBrightness":%u,"motion":%u,"audioResponse":%u,"variation":%u},"
-      ""audio":{"sequence":%lu,"timestampMs":%lu,"volume":%u,"low":%u,"mid":%u,"high":%u,"peak":%s}}",
+      R"json({"schema":"hbnf-foundation-v1","control":{"matrixBrightness":%u,"auxBrightness":%u,"motion":%u,"audioResponse":%u,"variation":%u},"audio":{"sequence":%lu,"timestampMs":%lu,"volume":%u,"low":%u,"mid":%u,"high":%u,"peak":%s}})json",
       control_.matrixBrightness,control_.auxBrightness,control_.motion,control_.audioResponse,control_.variation,
       (unsigned long)audio_.sequence,(unsigned long)audio_.timestampMs,audio_.volume,audio_.low,audio_.mid,audio_.high,audio_.peak?"true":"false");
     auto* response=request->beginResponse(200,"application/json",body);
