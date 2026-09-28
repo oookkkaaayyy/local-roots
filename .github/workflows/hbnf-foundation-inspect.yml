@@ -1,0 +1,31 @@
+name: HBNF Foundation Inspect Proven Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - hbnf-foundation-rebuild-v1-20260927
+    paths:
+      - ".github/workflows/hbnf-foundation-inspect.yml"
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode proven bundle and print hardware build config
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import base64,pathlib,tarfile
+          raw=base64.b64decode(pathlib.Path('.hbnf-build-r1/bundle.b64').read_bytes())
+          pathlib.Path('/tmp/r1.tgz').write_bytes(raw)
+          pathlib.Path('/tmp/r1').mkdir()
+          with tarfile.open('/tmp/r1.tgz','r:gz') as tf: tf.extractall('/tmp/r1')
+          PY
+          echo '===== PLATFORMIO OVERRIDE ====='
+          cat /tmp/r1/firmware_patch/platformio_override.ini
+          echo '===== PATCH FILES ====='
+          find /tmp/r1/firmware_patch -maxdepth 2 -type f -printf '%P\n' | sort
+          echo '===== HBNF FLOW LIBRARY ====='
+          cat /tmp/r1/hbnf_flow/hbnf_flow/library.json
