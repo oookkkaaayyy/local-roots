@@ -30,7 +30,7 @@ int main(){
   AudioFrame bass{}; bass.bass=220;
   Rgb8 b[22];
   renderAux22(makeFrame(100,12345,0,c,bass),b);
-  assert(sum(b)>sum(q));
+  assert(sum(b,22)>sum(q,22));
 
   AudioFrame mids{}; mids.mid=220;
   Rgb8 m[22];
@@ -51,7 +51,7 @@ int main(){
   Controls dark=c; dark.auxBrightness=0;
   Rgb8 z[22];
   renderAux22(makeFrame(100,12345,0,dark,bass),z);
-  assert(sum(z)==0);
+  assert(sum(z,22)==0);
 
   Controls slow=c; slow.motion=0;
   Controls fast=c; fast.motion=100;
