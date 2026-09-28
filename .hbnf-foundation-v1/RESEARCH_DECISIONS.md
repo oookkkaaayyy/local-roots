@@ -83,10 +83,9 @@ Foundation controls:
 - Audio Response = direct modulation gain
 - Motion = direct animation time-scale
 - Evolution = explicit structural-change interval
-- Matrix Brightness = Matrix hardware/output brightness
-- AUX Brightness = AUX output multiplier
-- Mic Gain = WLED AudioReactive gain
-- Squelch = WLED AudioReactive squelch
+- Matrix Brightness = native WLED Matrix-segment brightness
+- AUX Brightness = native WLED AUX-segment brightness
+- Mic Gain and Squelch remain native WLED AudioReactive settings
 
 Remove the old Energy -> vibe-category mapping.
 
@@ -113,3 +112,7 @@ Required physical acceptance:
 - same slider move produces repeatable result
 - no cloud connection required for live control
 - disconnect/reconnect cannot silently switch renderer modes
+
+### 8. Use native WLED brightness semantics
+
+Foundation V1 does not implement custom brightness scaling. Matrix and AUX are separate WLED segments and use native segment brightness over the local JSON/WebSocket API. The custom renderer does not use realtime mode, so segment brightness cannot be bypassed by realtime pixel writes.
