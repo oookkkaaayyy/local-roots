@@ -41,7 +41,7 @@ jobs:
       - name: Coordinated visible-scope contract
         run: |
           set -euo pipefail
-          for id in featureLook featureColor featureApplyLook featureSaveLook featureApplySaved featureText featureSendText featureLive featureRefreshLive featureScoreboard featureAcePot featureOtaStatus featureOtaCheck featureOtaInstall; do
+          for id in featureLook featureColor featurePalette featureApplyLook featureSaveLook featureApplySaved featureText featureSendText featureLive featureRefreshLive featureScoreboard featureAcePot featureOtaStatus featureOtaCheck featureOtaInstall; do
             grep -q "id=\"$id\"" hbnf-final-controller/hbnf-cart.html
           done
           grep -q 'src="./hbnf-cart-features.mjs"' hbnf-final-controller/hbnf-cart.html
@@ -50,6 +50,7 @@ jobs:
           grep -q 'matrixApi("scoreboard"' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'matrixApi("ace_pot"' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'localStorage.setItem(SAVED_LOOK_KEY' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'fetch("/json/pal"' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'OPAL_CHECK' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'OPAL_INSTALLER' hbnf-final-controller/hbnf-cart-features.mjs
 
