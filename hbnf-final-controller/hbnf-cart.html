@@ -112,6 +112,51 @@
     <p class="apply-note">All scenes use the same source-coupled audio engine. Variation changes evolution rate; anti-repeat remains enforced.</p>
   </section>
 
+  <section class="panel" aria-label="Looks and color">
+    <h2>Looks + color</h2>
+    <div class="fine-grid">
+      <label class="wide">Look
+        <select id="featureLook"></select>
+      </label>
+      <label>Color
+        <input id="featureColor" type="color" value="#ffffff" aria-label="Look color">
+      </label>
+      <div class="row">
+        <button id="featureApplyLook" type="button">Apply look</button>
+        <button id="featureSaveLook" type="button">Save current</button>
+        <button id="featureApplySaved" type="button">Apply saved</button>
+      </div>
+    </div>
+    <p class="apply-note">Look/color changes use the local Matrix API when this dashboard is running at 192.168.77.10.</p>
+  </section>
+
+  <section class="panel" aria-label="Matrix message">
+    <h2>Text</h2>
+    <div class="row">
+      <input id="featureText" type="text" maxlength="63" placeholder="Type Matrix message" style="flex:1;min-width:180px">
+      <button id="featureSendText" type="button">Send</button>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Skins and Glow live data">
+    <h2>Skins + Glow</h2>
+    <div id="featureLive" class="status">Live round not checked yet.</div>
+    <div class="row">
+      <button id="featureRefreshLive" type="button">Refresh live</button>
+      <button id="featureScoreboard" type="button">Show scoreboard</button>
+      <button id="featureAcePot" type="button">Show ace pot</button>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Firmware update">
+    <h2>Firmware</h2>
+    <div id="featureOtaStatus" class="status">Signed update not checked yet.</div>
+    <div class="row">
+      <button id="featureOtaCheck" type="button">Check signed update</button>
+      <button id="featureOtaInstall" type="button" hidden>Open trusted installer</button>
+    </div>
+  </section>
+
   <details class="panel">
     <summary>Advanced audio</summary>
     <div class="fine-grid advanced-body">
@@ -161,4 +206,4 @@
     <div id="status" class="status" role="status" aria-live="polite">Connecting…</div>
     <button id="refresh">Refresh status</button>
   </section>
-</main><script type="module" src="./hbnf-cart.js"></script><script type="module" src="./hbnf-cart-ui-v6.mjs"></script></body></html>
+</main><script type="module" src="./hbnf-cart.js"></script><script type="module" src="./hbnf-cart-ui-v6.mjs"></script><script type="module" src="./hbnf-cart-features.mjs"></script></body></html>
