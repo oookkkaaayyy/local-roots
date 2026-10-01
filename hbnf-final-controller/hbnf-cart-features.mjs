@@ -77,8 +77,8 @@ async function saveLook() {
   const look = {
     preset:Number($("featureLook").value),
     color:$("featureColor").value,
-    motion:Number($("motion")?.value || 60),
-    audioResponse:Number($("audioResponse")?.value || 75)
+    motion:Number(($("motion") && $("motion").value) || 60),
+    audioResponse:Number(($("audioResponse") && $("audioResponse").value) || 75)
   };
   localStorage.setItem(SAVED_LOOK_KEY, JSON.stringify(look));
   setFeatureStatus("Saved look stored on this device.");
