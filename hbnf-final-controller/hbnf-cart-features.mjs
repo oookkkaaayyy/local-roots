@@ -65,11 +65,30 @@ function populateLooks() {
   });
 }
 
+async function loadPalettes() {
+  const select = $("featurePalette");
+  if (!select || !matrixLocal()) return;
+  const r = await fetch("/json/pal",{cache:"no-store"});
+  if (!r.ok) throw new Error("Palette list HTTP " + r.status);
+  const names = await r.json();
+  if (!Array.isArray(names)) throw new Error("Palette list unavailable.");
+  while (select.options.length > 1) select.remove(1);
+  names.forEach((name,index)=>{
+    if (!name || name === "RSVD" || name === "-") return;
+    const o=document.createElement("option");
+    o.value=String(index); o.textContent=String(name);
+    select.appendChild(o);
+  });
+}
+
 async function applyLook() {
   const preset = Number($("featureLook").value);
   const color = hexRgb($("featureColor").value);
+  const paletteValue = $("featurePalette") ? $("featurePalette").value : "";
+  const seg = {id:0,col:[color,[0,0,0],[0,0,0]]};
+  if (paletteValue !== "") seg.pal = Number(paletteValue);
   setFeatureStatus("Applying look…");
-  await wledState({on:true,ps:preset,seg:[{id:0,col:[color,[0,0,0],[0,0,0]]}]});
+  await wledState({on:true,ps:preset,seg:[seg]});
   setFeatureStatus("Look applied.");
 }
 
@@ -77,6 +96,7 @@ async function saveLook() {
   const look = {
     preset:Number($("featureLook").value),
     color:$("featureColor").value,
+    palette:$("featurePalette") ? $("featurePalette").value : "",
     motion:Number(($("motion") && $("motion").value) || 60),
     audioResponse:Number(($("audioResponse") && $("audioResponse").value) || 75)
   };
@@ -90,6 +110,7 @@ async function applySavedLook() {
   const look = JSON.parse(raw);
   $("featureLook").value=String(look.preset);
   $("featureColor").value=look.color || "#ffffff";
+  if ($("featurePalette")) $("featurePalette").value=look.palette || "";
   if ($("motion")) { $("motion").value=String(look.motion); $("motion").dispatchEvent(new Event("change",{bubbles:true})); }
   if ($("audioResponse")) { $("audioResponse").value=String(look.audioResponse); $("audioResponse").dispatchEvent(new Event("change",{bubbles:true})); }
   await applyLook();
@@ -174,6 +195,7 @@ function bind(id,fn) {
 }
 
 populateLooks();
+loadPalettes().catch(e=>setFeatureStatus(e.message || String(e),true));
 bind("featureApplyLook",applyLook);
 bind("featureSaveLook",saveLook);
 bind("featureApplySaved",applySavedLook);
