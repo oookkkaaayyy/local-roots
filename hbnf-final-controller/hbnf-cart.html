@@ -121,13 +121,17 @@
       <label>Color
         <input id="featureColor" type="color" value="#ffffff" aria-label="Look color">
       </label>
+      <label>Palette
+        <select id="featurePalette"><option value="">Current palette</option></select>
+      </label>
       <div class="row">
         <button id="featureApplyLook" type="button">Apply look</button>
         <button id="featureSaveLook" type="button">Save current</button>
         <button id="featureApplySaved" type="button">Apply saved</button>
       </div>
     </div>
-    <p class="apply-note">Look/color changes use the local Matrix API when this dashboard is running at 192.168.77.10.</p>
+    <div id="featureStatus" class="status">Feature controls staged.</div>
+    <p class="apply-note">Look/color/palette changes use the local Matrix API when this dashboard is running at 192.168.77.10.</p>
   </section>
 
   <section class="panel" aria-label="Matrix message">
