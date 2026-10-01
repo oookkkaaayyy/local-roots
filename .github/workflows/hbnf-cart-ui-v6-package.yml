@@ -31,6 +31,7 @@ jobs:
           grep -q 'featureOtaCheck' hbnf-final-controller/hbnf-cart.html
           grep -q 'featureRefreshLive' hbnf-final-controller/hbnf-cart.html
           grep -q 'action==="live_status"' hbnf-wow-bundle/backend/index.ts
+          node tests/hbnf-coordinated-controller-contract.mjs
           grep -q 'mode: "guest"' hbnf-final-controller/hbnf-cart.js
           ! grep -q 'createClient' hbnf-final-controller/hbnf-cart.js
           ! grep -Fq '\\n' hbnf-final-controller/hbnf-cart.html
