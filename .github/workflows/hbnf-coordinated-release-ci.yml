@@ -1,0 +1,92 @@
+name: HBNF Coordinated Release CI
+
+on:
+  push:
+    branches:
+      - hbnf-coordinated-release-20261001
+    paths:
+      - 'hbnf-final-controller/**'
+      - 'hbnf-wow-bundle/backend/**'
+      - 'work/HBNF_COORDINATED_RELEASE_20261001.md'
+      - '.github/workflows/hbnf-coordinated-release-ci.yml'
+  pull_request:
+    branches:
+      - hbnf-prephase2-final-integration-20260927
+    paths:
+      - 'hbnf-final-controller/**'
+      - 'hbnf-wow-bundle/backend/**'
+      - 'work/HBNF_COORDINATED_RELEASE_20261001.md'
+      - '.github/workflows/hbnf-coordinated-release-ci.yml'
+  workflow_dispatch:
+
+jobs:
+  source-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: JavaScript syntax
+        run: |
+          set -euo pipefail
+          node --check hbnf-final-controller/hbnf-cart.js
+          node --check hbnf-final-controller/hbnf-cart-semantic.mjs
+          node --check hbnf-final-controller/hbnf-cart-ui-v6.mjs
+          node --check hbnf-final-controller/hbnf-cart-features.mjs
+
+      - name: Coordinated visible-scope contract
+        run: |
+          set -euo pipefail
+          for id in featureLook featureColor featureApplyLook featureSaveLook featureApplySaved featureText featureSendText featureLive featureRefreshLive featureScoreboard featureAcePot featureOtaStatus featureOtaCheck featureOtaInstall; do
+            grep -q "id=\"$id\"" hbnf-final-controller/hbnf-cart.html
+          done
+          grep -q 'src="./hbnf-cart-features.mjs"' hbnf-final-controller/hbnf-cart.html
+          grep -q 'action==="live_status"' hbnf-wow-bundle/backend/index.ts
+          grep -q 'matrixApi("text"' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'matrixApi("scoreboard"' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'matrixApi("ace_pot"' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'localStorage.setItem(SAVED_LOOK_KEY' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'OPAL_CHECK' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'OPAL_INSTALLER' hbnf-final-controller/hbnf-cart-features.mjs
+
+      - name: Safety gates
+        run: |
+          set -euo pipefail
+          ! grep -R --line-number --exclude-dir=.git --exclude='*.md' 'BEGIN .*PRIVATE KEY' hbnf-final-controller hbnf-wow-bundle work
+          ! grep -R --line-number --exclude-dir=.git 'action=install' hbnf-final-controller/hbnf-cart-features.mjs
+          ! grep -R --line-number --exclude-dir=.git 'fetch(.*hbnf-installer' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'Do not deploy from this branch without explicit go-live approval' work/HBNF_COORDINATED_RELEASE_20261001.md
+          grep -q 'Accepted firmware SHA-256: 0aeb668e58cad3bae5b636fdc79573a263c3d0e911903ed48af0bbc2e5681f61' work/HBNF_COORDINATED_RELEASE_20261001.md
+
+      - name: Build source-only candidate bundle
+        run: |
+          set -euo pipefail
+          OUT="$RUNNER_TEMP/HBNF_COORDINATED_RELEASE_SOURCE_20261001"
+          mkdir -p "$OUT/controller" "$OUT/backend" "$OUT/work"
+          cp hbnf-final-controller/hbnf-cart.html "$OUT/controller/"
+          cp hbnf-final-controller/hbnf-cart.js "$OUT/controller/"
+          cp hbnf-final-controller/hbnf-cart-semantic.mjs "$OUT/controller/"
+          cp hbnf-final-controller/hbnf-cart-ui-v6.css "$OUT/controller/"
+          cp hbnf-final-controller/hbnf-cart-ui-v6.mjs "$OUT/controller/"
+          cp hbnf-final-controller/hbnf-cart-features.mjs "$OUT/controller/"
+          cp hbnf-final-controller/hbnf-cart-manifest.webmanifest "$OUT/controller/"
+          cp hbnf-wow-bundle/backend/index.ts "$OUT/backend/"
+          cp hbnf-wow-bundle/backend/live.ts "$OUT/backend/"
+          cp work/HBNF_COORDINATED_RELEASE_20261001.md "$OUT/work/"
+          printf '%s\n' "$GITHUB_SHA" > "$OUT/SOURCE_COMMIT.txt"
+          (cd "$RUNNER_TEMP" && zip -qr HBNF_COORDINATED_RELEASE_SOURCE_20261001.zip HBNF_COORDINATED_RELEASE_SOURCE_20261001)
+          sha256sum "$RUNNER_TEMP/HBNF_COORDINATED_RELEASE_SOURCE_20261001.zip" > "$RUNNER_TEMP/HBNF_COORDINATED_RELEASE_SOURCE_20261001.zip.sha256"
+
+      - name: Upload source-only candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: HBNF-COORDINATED-RELEASE-SOURCE-20261001
+          path: |
+            ${{ runner.temp }}/HBNF_COORDINATED_RELEASE_SOURCE_20261001.zip
+            ${{ runner.temp }}/HBNF_COORDINATED_RELEASE_SOURCE_20261001.zip.sha256
+          if-no-files-found: error
+          retention-days: 30
