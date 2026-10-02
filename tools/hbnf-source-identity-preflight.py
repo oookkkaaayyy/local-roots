@@ -73,6 +73,17 @@ def git_info(path):
     _,remote,_=run(["git","remote","get-url","origin"],cwd=top)
     return {"root":str(top),"branch":branch,"commit":sha,"dirty":bool(status),"remote":remote or None}
 
+def patch_paths(path):
+    if not path.exists(): return []
+    out=[]
+    for line in path.read_text(errors="replace").splitlines():
+        if line.startswith("+++ ") or line.startswith("--- "):
+            value=line[4:].strip().split("\t",1)[0]
+            if value=="/dev/null": continue
+            if value.startswith("a/") or value.startswith("b/"): value=value[2:]
+            if value not in out: out.append(value)
+    return out
+
 def report_clues(path):
     if not path.exists(): return []
     clues=[]
@@ -122,6 +133,19 @@ def main():
         out["known_paths"]["hbnf_local_ui_present"]=(KNOWN_ROLLBACK_SOURCE/"hbnf_local_ui.h").exists()
     if (KNOWN_V1_OUTPUT/"source.patch").exists():
         out["known_paths"]["v1_source_patch"]=str(KNOWN_V1_OUTPUT/"source.patch")
+        out["known_paths"]["v1_changed_files"]=patch_paths(KNOWN_V1_OUTPUT/"source.patch")
+        out["known_paths"]["v1_touched_local_ui"]=any(x.endswith("hbnf_local_ui.h") for x in out["known_paths"]["v1_changed_files"])
+    v11_patches=[]
+    if KNOWN_V11_OUTPUT.exists():
+        for candidate in sorted(KNOWN_V11_OUTPUT.glob("*.patch"))+sorted(KNOWN_V11_OUTPUT.glob("*.diff")):
+            v11_patches.append({
+                "path":str(candidate),
+                "changed_files":patch_paths(candidate),
+            })
+    out["known_paths"]["v11_patch_candidates"]=v11_patches
+    out["known_paths"]["v11_touched_local_ui"]=any(
+        any(x.endswith("hbnf_local_ui.h") for x in item["changed_files"]) for item in v11_patches
+    )
     for artifact in artifacts:
         od=artifact.parent
         actual=sha256(artifact)
