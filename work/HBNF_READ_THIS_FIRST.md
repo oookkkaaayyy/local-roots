@@ -36,6 +36,8 @@ This file is the standing operating contract for HBNF cart work. It exists so th
 - hbnf-coordinated-release-20261001
 - Draft PR #46
 - Production deployment from this branch is prohibited until explicit go-live authorization and all release gates pass.
+- Do not assume the current staged controller source is the exact live /hbnf source. Exact accepted V1.1 source identity still requires reconciliation.
+- The staged feature module is iOS-12-safe by current static checks, but older controller files in this branch still contain optional chaining/nullish coalescing and crypto.randomUUID; full-controller iOS 12 compatibility is therefore an explicit production blocker, not an assumed pass.
 
 ## User-interaction standard
 When user action is actually required, provide:
