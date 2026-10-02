@@ -32,7 +32,18 @@ Build the next HBNF cart release as ONE coordinated release. Do not create anoth
    - install progress/result
    - no LuCI/admin password for routine operation after trusted-iPad provisioning.
 
-Reuse the existing WLED JSON API and prior HBNF TEXT / LOOKS / SHOWS / LIVE DATA implementations where possible. Do not rebuild capabilities that already exist in source/history.
+Reuse prior HBNF TEXT / LOOKS / SHOWS / LIVE DATA implementations where possible, but preserve one canonical state owner. Browser code may use WLED JSON read-only endpoints such as /json/pal and /json/info; base visual mutations must enter through hbnf-cart-control → reconciler → Foundation adapter. Do not rebuild capabilities that already exist in source/history.
+
+## Current production canonical control plane
+Read-only production capture on 2026-10-01:
+- actuator fence is already ACTIVE at epoch 2
+- control-plane release_id is hbnf-cart-foundation-v1-20260925
+- desired state exists at captured revision 117
+- do not seed canonical state or reactivate the fence during this release
+- exact current backend source is captured under evidence/live-production-20261001/
+- coordinated backend candidates are based on current hbnf-cart-control v16 and hbnf-matrix-adapter-foundation v2, not historical authenticated-only sources
+
+The control-plane release ID above is separate from the accepted Matrix firmware OTA release ID hbnf-matrix-v1-1-current-20260930.
 
 ## Cloud OTA live state already proven
 The Opal updater backend is installed and its signed current-release check now passes end-to-end. The mounted iPad installer reports:
