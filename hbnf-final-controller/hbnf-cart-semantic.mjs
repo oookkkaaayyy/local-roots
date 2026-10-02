@@ -1,13 +1,14 @@
 export const SEMANTIC_SCHEMA = "hbnf-visual-semantic-v3";
 
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, Number(n)));
+const valueOr = (value, fallback) => (value === undefined || value === null) ? fallback : value;
 
 export function normalizeSemantic(input = {}) {
   return {
-    energy: clamp(input.energy ?? 65, 0, 100),
-    audioResponse: clamp(input.audioResponse ?? 75, 0, 100),
-    motion: clamp(input.motion ?? 60, 0, 100),
-    variation: clamp(input.variation ?? 85, 0, 100),
+    energy: clamp(valueOr(input.energy, 65), 0, 100),
+    audioResponse: clamp(valueOr(input.audioResponse, 75), 0, 100),
+    motion: clamp(valueOr(input.motion, 60), 0, 100),
+    variation: clamp(valueOr(input.variation, 85), 0, 100),
   };
 }
 

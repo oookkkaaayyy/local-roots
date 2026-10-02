@@ -1,0 +1,54 @@
+{
+  "captured_at": "2026-10-01",
+  "source": "read-only Supabase query",
+  "cart_id": "hbnf-cart",
+  "fence": {
+    "active": true,
+    "epoch": 2,
+    "release_id": "hbnf-cart-foundation-v1-20260925",
+    "updated_at": "2026-09-26T22:43:22.660067Z"
+  },
+  "desired": {
+    "revision": 117,
+    "updated_at": "2026-09-29T01:34:41.521317Z",
+    "power": "on",
+    "sceneId": "field-mix",
+    "paletteId": "ocean",
+    "programMode": "auto",
+    "vibe": "mellow",
+    "vibeMode": "manual",
+    "tempoMode": "manual",
+    "manualSpeedBias": 1.25,
+    "sequenceCursor": 12,
+    "tuning": {
+      "energy": 24,
+      "motion": 50,
+      "variation": 85,
+      "audioStyle": "scene",
+      "audioProfile": "scene",
+      "audioResponse": 36,
+      "responseBoost": 1.18,
+      "micSensitivity": 255
+    },
+    "devices": {
+      "matrix": {
+        "enabled": true,
+        "brightness": 34,
+        "profileRevision": 8,
+        "brightnessLocked": true
+      },
+      "aux": {
+        "enabled": true,
+        "brightness": 255,
+        "profileRevision": 31,
+        "brightnessLocked": true
+      }
+    }
+  },
+  "observed_note": "Captured observed rows were stale/offline from the prior cart-off state; do not use them to reseed desired state.",
+  "rules": [
+    "Do not seed cart_desired_state",
+    "Do not reactivate the fence",
+    "Preserve current desired state through coordinated release"
+  ]
+}

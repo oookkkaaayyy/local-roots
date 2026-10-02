@@ -16,6 +16,7 @@ let tuneDirty = false;
 let tuneInFlight = false;
 let tuneTimer = null;
 let hydrating = false;
+let canonicalCapabilities = {};
 
 const $ = id => document.getElementById(String(id).replace(/^#/, ""));
 const statusNode = $("#status");
@@ -31,6 +32,55 @@ const matrixHealth = $("#matrixTruth");
 const auxHealth = $("#auxTruth");
 const syncHealth = null;
 const rendererHealth = null;
+
+function valueOr(value, fallback) {
+  return (value === undefined || value === null) ? fallback : value;
+}
+
+function pathValue(obj, path, fallback) {
+  let current = obj;
+  for (let i = 0; i < path.length; i++) {
+    if (current === undefined || current === null) return fallback;
+    current = current[path[i]];
+  }
+  return valueOr(current, fallback);
+}
+
+function newCommandId() {
+  try {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    bytes[6] = (bytes[6] & 15) | 64;
+    bytes[8] = (bytes[8] & 63) | 128;
+    const hex = Array.prototype.map.call(bytes, b => ("0" + b.toString(16)).slice(-2)).join("");
+    return hex.slice(0,8)+"-"+hex.slice(8,12)+"-"+hex.slice(12,16)+"-"+hex.slice(16,20)+"-"+hex.slice(20);
+  } catch (error) {
+    return "hbnf-"+Date.now()+"-"+Math.floor(Math.random()*1000000000);
+  }
+}
+
+function copyTextLegacy(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text);
+  return new Promise((resolve, reject) => {
+    const ta=document.createElement("textarea");
+    ta.value=text;
+    ta.setAttribute("readonly","");
+    ta.style.position="fixed";
+    ta.style.opacity="0";
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    try {
+      const ok=document.execCommand("copy");
+      document.body.removeChild(ta);
+      if (ok) resolve();
+      else reject(new Error("Copy failed"));
+    } catch (error) {
+      document.body.removeChild(ta);
+      reject(error);
+    }
+  });
+}
 
 function validDeviceToken(value) {
   return typeof value === "string" && /^[a-f0-9]{64}$/i.test(value);
@@ -128,10 +178,10 @@ function renderVisualHealth(snapshot) {
     if (badge) { badge.textContent = "STATUS CHECK"; badge.className = "truth-badge warn"; }
     return;
   }
-  const matrix = snapshot.devices?.matrix;
-  const aux = snapshot.devices?.aux;
-  const matrixOk = matrix?.confirmed === true;
-  const auxOk = aux?.confirmed === true;
+  const matrix = snapshot.devices ? snapshot.devices.matrix : null;
+  const aux = snapshot.devices ? snapshot.devices.aux : null;
+  const matrixOk = !!(matrix && matrix.confirmed === true);
+  const auxOk = !!(aux && aux.confirmed === true);
   if (matrixHealth) {
     matrixHealth.textContent = matrixOk ? `CONNECTED · r${matrix.confirmedRevision}` : "APPLYING";
     matrixHealth.className = matrixOk ? "ok" : "degraded";
@@ -157,21 +207,21 @@ function hydrateControls(state) {
   try {
     if (state.sceneId) $("#scene").value = state.sceneId;
 
-    const tuning = state.tuning ?? {};
-    const energy = Number(tuning.energy ?? ({ mellow: 15, moderate: 40, energetic: 68, peak: 90 }[state.vibe] ?? 65));
-    const audioResponse = Number(tuning.audioResponse ?? Math.round(((Number(tuning.responseBoost ?? 1) - 1) / 0.005)));
-    const motion = Number(tuning.motion ?? Math.round((Number(state.manualSpeedBias ?? 1.4) - 0.5) / 0.015));
-    const variation = Number(tuning.variation ?? 85);
+    const tuning = valueOr(state.tuning, {});
+    const energy = Number(valueOr(tuning.energy, valueOr({ mellow: 15, moderate: 40, energetic: 68, peak: 90 }[state.vibe], 65)));
+    const audioResponse = Number(valueOr(tuning.audioResponse, Math.round(((Number(valueOr(tuning.responseBoost, 1)) - 1) / 0.005))));
+    const motion = Number(valueOr(tuning.motion, Math.round((Number(valueOr(state.manualSpeedBias, 1.4)) - 0.5) / 0.015)));
+    const variation = Number(valueOr(tuning.variation, 85));
 
     setRange("energy", "energyValue", Math.max(0, Math.min(100, energy)));
     setRange("audioResponse", "audioResponseValue", Math.max(0, Math.min(100, audioResponse)));
     setRange("motion", "motionValue", Math.max(0, Math.min(100, motion)));
     setRange("variation", "variationValue", Math.max(0, Math.min(100, variation)));
-    setRange("matrixBrightness", "matrixValue", Number(state.devices?.matrix?.brightness ?? 8));
-    setRange("auxBrightness", "auxValue", Number(state.devices?.aux?.brightness ?? 64));
-    setRange("micSensitivity", "micSensitivityValue", Number(tuning.micSensitivity ?? 255));
-    $("#audioProfile").value = tuning.audioProfile ?? "scene";
-    $("#audioStyle").value = tuning.audioStyle ?? "scene";
+    setRange("matrixBrightness", "matrixValue", Number(pathValue(state, ["devices","matrix","brightness"], 8)));
+    setRange("auxBrightness", "auxValue", Number(pathValue(state, ["devices","aux","brightness"], 64)));
+    setRange("micSensitivity", "micSensitivityValue", Number(valueOr(tuning.micSensitivity, 255)));
+    $("#audioProfile").value = valueOr(tuning.audioProfile, "scene");
+    $("#audioStyle").value = valueOr(tuning.audioStyle, "scene");
   } finally {
     hydrating = false;
   }
@@ -179,6 +229,8 @@ function hydrateControls(state) {
 
 async function refresh({ hydrate = true } = {}) {
   const out = await call({ action: "status" });
+  canonicalCapabilities = out && out.capabilities ? out.capabilities : {};
+  try { window.dispatchEvent(new CustomEvent("hbnf-canonical-capabilities",{detail:canonicalCapabilities})); } catch (_) {}
 
   if (out.desired) {
     revision = out.desired.revision;
@@ -190,8 +242,8 @@ async function refresh({ hydrate = true } = {}) {
     const fullyApplied = observed.length >= 2 && observed.every(x => Number(x.desired_revision) === Number(out.desired.revision) && ["online","off"].includes(String(x.status)));
     const matrixObs = observed.find(x => x.device_id === "matrix");
     const auxObs = observed.find(x => x.device_id === "aux");
-    const matrixBri = matrixObs?.reported?.appliedProjection?.brightness ?? matrixObs?.reported?.brightness ?? "—";
-    const auxBri = auxObs?.reported?.appliedProjection?.brightness ?? auxObs?.reported?.brightness ?? "—";
+    const matrixBri = pathValue(matrixObs, ["reported","appliedProjection","brightness"], pathValue(matrixObs, ["reported","brightness"], "—"));
+    const auxBri = pathValue(auxObs, ["reported","appliedProjection","brightness"], pathValue(auxObs, ["reported","brightness"], "—"));
     statusNode.textContent = `Revision ${revision} · ${fullyApplied ? "APPLIED" : "APPLYING…"} · Matrix ${matrixBri} · AUX ${auxBri}`;
   } else {
     statusNode.textContent = "Cart is not initialized; no control was sent.";
@@ -252,7 +304,7 @@ async function flushTune() {
         try {
           const result = await call({
             action: "command",
-            commandId: crypto.randomUUID(),
+            commandId: newCommandId(),
             type: "TUNE",
             payload,
             expectedRevision: revision,
@@ -261,9 +313,9 @@ async function flushTune() {
           statusNode.textContent = `Revision ${revision} · tuning applied`;
           break;
         } catch (error) {
-          if (error.status === 409 && error.data?.error === "stale_revision" && attempt === 0) {
+          if (error.status === 409 && error.data && error.data.error === "stale_revision" && attempt === 0) {
             const latest = await refresh({ hydrate: false });
-            revision = latest.desired?.revision ?? revision;
+            revision = latest.desired ? valueOr(latest.desired.revision, revision) : revision;
             continue;
           }
           throw error;
@@ -287,24 +339,24 @@ async function flushTune() {
   await refresh({ hydrate: true });
 }
 
-async function command(type) {
+async function command(type, payload = {}) {
   await flushTune();
 
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const result = await call({
         action: "command",
-        commandId: crypto.randomUUID(),
+        commandId: newCommandId(),
         type,
-        payload: {},
+        payload: payload,
         expectedRevision: revision,
       });
       revision = result.revision;
-      statusNode.textContent = `Revision ${revision} accepted · reconciliation ${result.reconciliation?.status ?? "pending"}`;
+      statusNode.textContent = `Revision ${revision} accepted · reconciliation ${valueOr(result.reconciliation && result.reconciliation.status, "pending")}`;
       await refresh();
       return;
     } catch (error) {
-      if (error.status === 409 && error.data?.error === "stale_revision" && attempt === 0) {
+      if (error.status === 409 && error.data && error.data.error === "stale_revision" && attempt === 0) {
         await refresh({ hydrate: false });
         continue;
       }
@@ -312,6 +364,27 @@ async function command(type) {
     }
   }
 }
+
+window.HBNFCanonical = {
+  command: command,
+  refresh: refresh,
+  flushTune: flushTune,
+  getRevision: function(){ return revision; },
+  getCapabilities: function(){ return canonicalCapabilities; },
+  read: function(action, payload) {
+    return call(Object.assign({action:action}, payload || {}));
+  },
+  overlay: function(kind, data, ttlMs) {
+    const duration = Number.isFinite(Number(ttlMs)) ? Math.max(1000, Math.min(30000, Math.round(Number(ttlMs)))) : (kind === "scoreboard" ? 22000 : 8000);
+    return command("OVERLAY_START", {
+      overlayId: newCommandId(),
+      kind: kind,
+      priority: 60,
+      ttlMs: duration,
+      data: data || {}
+    });
+  }
+};
 
 function detectPairFragment() {
   pendingPairToken = null;
@@ -362,13 +435,13 @@ sharePair.addEventListener("click", async () => {
       url: currentPairLink,
     });
   } catch (error) {
-    if (error?.name !== "AbortError") pairCreateStatus.textContent = `Share failed: ${error.message}`;
+    if (!error || error.name !== "AbortError") pairCreateStatus.textContent = `Share failed: ${error && error.message ? error.message : "unknown error"}`;
   }
 });
 
 copyPair.addEventListener("click", async () => {
   if (!currentPairLink) return;
-  await navigator.clipboard.writeText(currentPairLink);
+  await copyTextLegacy(currentPairLink);
   pairCreateStatus.textContent = "Pairing link copied.";
 });
 

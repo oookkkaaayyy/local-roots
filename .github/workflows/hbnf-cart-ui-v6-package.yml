@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - hbnf-prephase2-final-integration-20260927
+      - hbnf-coordinated-release-20261001
     paths:
       - 'hbnf-final-controller/**'
       - 'hbnf-ui-v6-package/**'
@@ -25,6 +26,12 @@ jobs:
           node --check hbnf-final-controller/hbnf-cart.js
           node --check hbnf-final-controller/hbnf-cart-semantic.mjs
           node --check hbnf-final-controller/hbnf-cart-ui-v6.mjs
+          node --check hbnf-final-controller/hbnf-cart-features.mjs
+          ! grep -Fq '?.' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'featureOtaCheck' hbnf-final-controller/hbnf-cart.html
+          grep -q 'featureRefreshLive' hbnf-final-controller/hbnf-cart.html
+          grep -q 'action==="live_status"' hbnf-wow-bundle/backend/index.ts
+          node tests/hbnf-coordinated-controller-contract.mjs
           grep -q 'mode: "guest"' hbnf-final-controller/hbnf-cart.js
           ! grep -q 'createClient' hbnf-final-controller/hbnf-cart.js
           ! grep -Fq '\\n' hbnf-final-controller/hbnf-cart.html
@@ -48,6 +55,7 @@ jobs:
           cp hbnf-final-controller/hbnf-cart-manifest.webmanifest "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-ui-v6.css "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-ui-v6.mjs "$OUT/controller/"
+          cp hbnf-final-controller/hbnf-cart-features.mjs "$OUT/controller/"
           cp hbnf-ui-v6-package/install_ui_v6.py "$OUT/"
           cp hbnf-ui-v6-package/INSTALL_UI_V6.command "$OUT/"
           chmod +x "$OUT/INSTALL_UI_V6.command" "$OUT/install_ui_v6.py"

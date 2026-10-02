@@ -1,0 +1,173 @@
+name: HBNF Coordinated Release CI
+
+on:
+  push:
+    branches:
+      - hbnf-coordinated-release-20261001
+    paths:
+      - 'hbnf-final-controller/**'
+      - 'hbnf-wow-bundle/backend/**'
+      - 'work/HBNF_*.md'
+      - 'config/HBNF_COORDINATED_*.json'
+      - 'tests/hbnf-*.mjs'
+      - 'tests/hbnf-*.py'
+      - 'hbnf-ui-v6-package/**'
+      - 'hbnf-cart-core/domain/palette-projection.mjs'
+      - 'evidence/live-production-20261001/**'
+      - 'staging/coordinated-backend/**'
+      - 'tools/hbnf-*.py'
+      - '.github/workflows/hbnf-coordinated-release-ci.yml'
+  pull_request:
+    branches:
+      - hbnf-prephase2-final-integration-20260927
+    paths:
+      - 'hbnf-final-controller/**'
+      - 'hbnf-wow-bundle/backend/**'
+      - 'work/HBNF_*.md'
+      - 'config/HBNF_COORDINATED_*.json'
+      - 'tests/hbnf-*.mjs'
+      - 'tests/hbnf-*.py'
+      - 'hbnf-ui-v6-package/**'
+      - 'staging/coordinated-backend/**'
+      - 'evidence/live-production-20261001/**'
+      - 'hbnf-cart-core/domain/palette-projection.mjs'
+      - 'tools/hbnf-*.py'
+      - '.github/workflows/hbnf-coordinated-release-ci.yml'
+  workflow_dispatch:
+
+jobs:
+  source-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: JavaScript syntax
+        run: |
+          set -euo pipefail
+          node --check hbnf-final-controller/hbnf-cart.js
+          node --check hbnf-final-controller/hbnf-cart-semantic.mjs
+          node --check hbnf-final-controller/hbnf-cart-ui-v6.mjs
+          node --check hbnf-final-controller/hbnf-cart-features.mjs
+
+      - name: Coordinated visible-scope contract
+        run: |
+          set -euo pipefail
+          for id in featureLook featureColor featurePalette featureLookName featureSavedLooks featureApplyLook featureSaveLook featureApplySaved featureDeleteSaved featureText featureSendText featureLive featureRefreshLive featureScoreboard featureAcePot featureOtaStatus featureOtaCheck featureOtaInstall featureOtaResult featurePreflight featurePreflightResult; do
+            grep -q "id=\"$id\"" hbnf-final-controller/hbnf-cart.html
+          done
+          grep -q 'src="./hbnf-cart-features.mjs"' hbnf-final-controller/hbnf-cart.html
+          grep -q 'window.HBNFCanonical' hbnf-final-controller/hbnf-cart.js
+          grep -q 'async function command(type, payload = {})' hbnf-final-controller/hbnf-cart.js
+          grep -q 'bridge.command("SCENE"' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'bridge.command("PALETTE"' hbnf-final-controller/hbnf-cart-features.mjs
+          ! grep -q 'matrixApi("text"' hbnf-final-controller/hbnf-cart-features.mjs
+          ! grep -q 'matrixApi("scoreboard"' hbnf-final-controller/hbnf-cart-features.mjs
+          ! grep -q 'matrixApi("ace_pot"' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'canonicalOverlayBridge' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'syncOverlayAvailability' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'canonicalOverlayIntentV1' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'canonicalPaletteIntentV1' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'canonicalOverlayIntentV1' staging/coordinated-backend/hbnf-cart-control/index.ts
+          grep -q 'canonicalPaletteIntentV1' staging/coordinated-backend/hbnf-cart-control/index.ts
+          grep -q 'action === "live_status"' staging/coordinated-backend/hbnf-cart-control/index.ts
+          grep -q 'chooseLive' staging/coordinated-backend/hbnf-cart-control/index.ts
+          ! grep -q 'hbnf-matrix-control' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'SAVED_LOOKS_KEY' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'fetchJson("/json/pal"' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'rollbackCanonicalLook' hbnf-final-controller/hbnf-cart-features.mjs
+          ! grep -q 'method:"POST".*"/json/state"' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'LIVE_CACHE_KEY' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'SAVED_LOOKS_KEY' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'deleteSavedLook' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'liveRefreshInFlight' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'runPreflight' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'EXPECTED_MATRIX_MAC' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'ACCEPTED_BASE_SHA256' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'artifact_verified' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'based_on_firmware_sha256' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'LIVE_CACHE_MAX_MS' hbnf-final-controller/hbnf-cart-features.mjs
+          node tests/hbnf-coordinated-controller-contract.mjs
+          node tests/hbnf-coordinated-backend-staging.mjs
+          node tests/hbnf-release-readiness.mjs
+          node tests/hbnf-ios12-compat-audit.mjs
+          node tests/hbnf-canonical-palette-projection.mjs
+          python3 -m py_compile tools/hbnf-rebuild-opal-updater.py tools/hbnf-source-identity-preflight.py tools/hbnf-local-release-preflight.py tests/hbnf-opal-updater-rebuilder.test.py
+          python3 tests/hbnf-opal-updater-rebuilder.test.py
+          grep -q 'OPAL_CHECK' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'OPAL_RESULT' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'OPAL_INSTALLER' hbnf-final-controller/hbnf-cart-features.mjs
+
+      - name: Deno check staged backend
+        run: |
+          set -euo pipefail
+          deno check staging/coordinated-backend/hbnf-cart-control/index.ts
+          deno check staging/coordinated-backend/hbnf-matrix-adapter-foundation/index.ts
+
+      - name: Safety gates
+        run: |
+          set -euo pipefail
+          ! grep -R --line-number --exclude-dir=.git --exclude='*.md' 'BEGIN .*PRIVATE KEY' hbnf-final-controller hbnf-wow-bundle work
+          ! grep -R --line-number --exclude-dir=.git 'action=install' hbnf-final-controller/hbnf-cart-features.mjs
+          ! grep -R --line-number --exclude-dir=.git 'fetch(.*hbnf-installer' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'Do not deploy from this branch without explicit go-live approval' work/HBNF_COORDINATED_RELEASE_20261001.md
+          grep -q 'Accepted firmware SHA-256: 0aeb668e58cad3bae5b636fdc79573a263c3d0e911903ed48af0bbc2e5681f61' work/HBNF_COORDINATED_RELEASE_20261001.md
+
+      - name: Build source-only candidate bundle
+        run: |
+          set -euo pipefail
+          OUT="$RUNNER_TEMP/HBNF_COORDINATED_RELEASE_SOURCE_20261001"
+          mkdir -p "$OUT/controller" "$OUT/domain" "$OUT/work" "$OUT/config" "$OUT/tools" "$OUT/tests" "$OUT/installer"
+          cp hbnf-final-controller/hbnf-cart.html "$OUT/controller/"
+          cp hbnf-final-controller/hbnf-cart.js "$OUT/controller/"
+          cp hbnf-final-controller/hbnf-cart-semantic.mjs "$OUT/controller/"
+          cp hbnf-final-controller/hbnf-cart-ui-v6.css "$OUT/controller/"
+          cp hbnf-final-controller/hbnf-cart-ui-v6.mjs "$OUT/controller/"
+          cp hbnf-final-controller/hbnf-cart-features.mjs "$OUT/controller/"
+          cp hbnf-final-controller/hbnf-cart-manifest.webmanifest "$OUT/controller/"
+          cp hbnf-ui-v6-package/install_ui_v6.py "$OUT/installer/"
+          cp hbnf-cart-core/domain/palette-projection.mjs "$OUT/domain/"
+          cp config/HBNF_COORDINATED_RELEASE_GATES.json "$OUT/config/"
+          cp config/HBNF_COORDINATED_CANDIDATE_MANIFEST.json "$OUT/config/"
+          cp tools/hbnf-rebuild-opal-updater.py "$OUT/tools/"
+          cp tools/hbnf-source-identity-preflight.py "$OUT/tools/"
+          cp tools/hbnf-local-release-preflight.py "$OUT/tools/"
+          cp tests/hbnf-coordinated-controller-contract.mjs "$OUT/tests/"
+          cp tests/hbnf-release-readiness.mjs "$OUT/tests/"
+          cp tests/hbnf-ios12-compat-audit.mjs "$OUT/tests/"
+          cp tests/hbnf-canonical-palette-projection.mjs "$OUT/tests/"
+          cp tests/hbnf-opal-updater-rebuilder.test.py "$OUT/tests/"
+          cp tests/hbnf-coordinated-backend-staging.mjs "$OUT/tests/"
+          mkdir -p "$OUT/staging" "$OUT/evidence"
+          cp -R staging/coordinated-backend "$OUT/staging/"
+          cp -R evidence/live-production-20261001 "$OUT/evidence/"
+          cp work/HBNF_COORDINATED_RELEASE_20261001.md "$OUT/work/"
+          cp work/HBNF_READ_THIS_FIRST.md "$OUT/work/"
+          cp work/HBNF_ROLLOUT_RUNBOOK_20261001.md "$OUT/work/"
+          cp work/HBNF_OPAL_UPDATER_NEXT_PACKAGE_REQUIREMENTS.md "$OUT/work/"
+          cp work/HBNF_SOURCE_IDENTITY_RECOVERY.md "$OUT/work/"
+          cp work/HBNF_CANONICAL_CONTROL_RECONCILIATION.md "$OUT/work/"
+          cp work/HBNF_FIRMWARE_COORDINATED_CONTRACT.md "$OUT/work/"
+          cp work/HBNF_CODEX_FIRMWARE_RECONCILIATION_PROMPT.md "$OUT/work/"
+          cp work/HBNF_BACKEND_CUTOVER_20261001.md "$OUT/work/"
+          printf '%s\n' "$GITHUB_SHA" > "$OUT/SOURCE_COMMIT.txt"
+          (cd "$RUNNER_TEMP" && zip -qr HBNF_COORDINATED_RELEASE_SOURCE_20261001.zip HBNF_COORDINATED_RELEASE_SOURCE_20261001)
+          sha256sum "$RUNNER_TEMP/HBNF_COORDINATED_RELEASE_SOURCE_20261001.zip" > "$RUNNER_TEMP/HBNF_COORDINATED_RELEASE_SOURCE_20261001.zip.sha256"
+
+      - name: Upload source-only candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: HBNF-COORDINATED-RELEASE-SOURCE-20261001
+          path: |
+            ${{ runner.temp }}/HBNF_COORDINATED_RELEASE_SOURCE_20261001.zip
+            ${{ runner.temp }}/HBNF_COORDINATED_RELEASE_SOURCE_20261001.zip.sha256
+          if-no-files-found: error
+          retention-days: 30

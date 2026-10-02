@@ -13,6 +13,7 @@ FILES=[
     "hbnf-cart-manifest.webmanifest",
     "hbnf-cart-ui-v6.css",
     "hbnf-cart-ui-v6.mjs",
+    "hbnf-cart-features.mjs",
 ]
 
 def sha256(path):

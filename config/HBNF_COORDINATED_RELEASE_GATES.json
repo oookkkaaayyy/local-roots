@@ -1,0 +1,115 @@
+{
+  "schema": "hbnf-coordinated-release-gates-v1",
+  "acceptedBaseline": {
+    "releaseId": "hbnf-matrix-v1-1-current-20260930",
+    "firmwareSha256": "0aeb668e58cad3bae5b636fdc79573a263c3d0e911903ed48af0bbc2e5681f61",
+    "candidate": "hbnf-integrated-rc-visual-audio-continuity-2026-09-30",
+    "wled": "16.0.1",
+    "matrixMac": "70:4b:ca:5b:34:5c",
+    "auxMac": "8c:94:df:55:c3:4c",
+    "buildOutput": "outputs/HBNF_AUDIO_EXPRESSION_V1_1/HBNF_AUDIO_EXPRESSION_V1_1_candidate.bin",
+    "buildReport": "outputs/HBNF_AUDIO_EXPRESSION_V1_1/REPORT.md",
+    "buildManifest": "outputs/HBNF_AUDIO_EXPRESSION_V1_1/SHA256SUMS",
+    "buildBaseSha256": "32802f354cf2edcc1636698e5f15b6bc61311b0bffc7ecf72960221f3478fb55"
+  },
+  "sourceGates": {
+    "isolatedBranch": true,
+    "visibleControllerScopeStaged": true,
+    "paletteApiDynamic": true,
+    "liveDataSharedPath": true,
+    "liveDataCacheFallback": true,
+    "otaCheckIntegrated": true,
+    "rolloutPreflightIntegrated": true,
+    "ios12FeatureModuleNoOptionalChaining": true,
+    "packageIncludesFeatureModule": true,
+    "fullControllerIos12StaticAuditPassed": true,
+    "opalUpdaterRebuilderStaged": true,
+    "matrixOriginReadOnlyUpdaterResultUiStaged": true,
+    "otaResultReturnPollingStaged": true,
+    "reproducibleSourceBundleConfigured": true,
+    "visualMutationsUseCanonicalCartOwner": true,
+    "canonicalLookReadbackRollback": true,
+    "legacyMatrixMutationBlockedFromFeatureUi": true,
+    "overlayUiFailsClosedUntilCanonicalBridge": true,
+    "currentProductionStateCaptured": true,
+    "exactLiveBackendSourcesCaptured": true,
+    "cartControlV16OverlayIntentStaged": true,
+    "foundationAdapterV2PaletteOverlayContractStaged": true,
+    "backendCapabilityGatingStaged": true,
+    "firmwareCoordinatedContractLocked": true,
+    "opalReadOnlyResultNilOriginCovered": true,
+    "canonicalLiveDataReadPathStaged": true,
+    "legacyMatrixBackendRemovedFromFeatureUi": true
+  },
+  "productionBlockers": {
+    "acceptedLiveSourceIdentityReconciled": false,
+    "immutableOpalUpdaterPackageContainsAllLiveFixes": false,
+    "matrixOriginReadOnlyUpdaterResultPath": false,
+    "candidateBuiltFromAcceptedBaseline": false,
+    "signedCandidatePublished": false,
+    "firstRealOtaPhysicalAcceptance": false,
+    "liveLocalDashboardSourceReconciled": false,
+    "fullControllerIos12CompatibilityVerified": false,
+    "singleCanonicalWriterReconciled": false,
+    "canonicalOverlayBridgeReconciled": false,
+    "canonicalPaletteAdapterReconciled": false,
+    "firmwarePaletteOverlayContractImplemented": false
+  },
+  "policy": {
+    "deployWithoutExplicitApproval": false,
+    "flashIntermediateBuilds": false,
+    "routerMutationInThisRelease": false
+  },
+  "knownCanonicalHistory": {
+    "matchedReleaseCommit": "f9edf096edd7ca0076985af28eace5ee50c67317",
+    "canonicalCartControlGitBlob": "ed2cc3c3645fc631056295d2f470aa9ae894f1f9",
+    "canonicalMatrixAdapterGitBlob": "4fdb299156c2ef09856c8a4348eb42b90a7c5ed1",
+    "deployedHistoricalCartControlEzbrSha": "c75098100a76e4b342ec9c6b95167bba5cc332eb347c55a929a1bc567244d075",
+    "deployedHistoricalMatrixAdapterEzbrSha": "f864e18b93e52ec67f5a7276615eac0c27e71d9467721afa773b6b815e531c8e",
+    "currentGuestBackendFunctionId": "95df7773-e888-48c9-84b3-ceb517c901c7",
+    "localRecoveryWorkspace": "/Users/andrew/Documents/Codex/2026-09-27/hbnf-foundation-v1-consolidate-to-one/local-roots",
+    "localRecoveryBranch": "hbnf-foundation-v1-live-fixes-20260928"
+  },
+  "currentProduction": {
+    "captured": "2026-10-01",
+    "canonicalFence": {
+      "active": true,
+      "epoch": 2,
+      "releaseId": "hbnf-cart-foundation-v1-20260925"
+    },
+    "desired": {
+      "revision": 117,
+      "lastUpdated": "2026-09-29T01:34:41.521317Z",
+      "power": "on",
+      "sceneId": "field-mix",
+      "paletteId": "ocean",
+      "matrixBrightness": 34,
+      "auxBrightness": 255
+    },
+    "liveBackend": {
+      "hbnf-cart-control": {
+        "version": 16,
+        "ezbrSha256": "3e4816988a9ac0b33f5b660ccefedf27e0249c7e7f5e11b1a8622a3c59fbd80d"
+      },
+      "hbnf-cart-reconcile": {
+        "version": 11,
+        "ezbrSha256": "4f400b2ee1d733f07a90baa231c843990802a3a72aedb507e6963a78685a1d93"
+      },
+      "hbnf-matrix-adapter-foundation": {
+        "version": 2,
+        "ezbrSha256": "4925765bdad4726e3eda85d1d781813c783c64d2d425f0aafe572bf918fbcdb1"
+      },
+      "hbnf-aux-adapter": {
+        "version": 8,
+        "ezbrSha256": "85e8b8c18ee0cf4c31d5fd854d8cc0d41cc7e75fccc538c8271a866d78466fd8"
+      },
+      "hbnf-matrix-control": {
+        "version": 172,
+        "ezbrSha256": "f49d087a3a6a77b2167d9892817f3dfcf36960cdb42fbb93e835f3c130c80aa7"
+      }
+    }
+  },
+  "separatePostReleaseGates": {
+    "ssidColdStartReliabilityVerified": false
+  }
+}

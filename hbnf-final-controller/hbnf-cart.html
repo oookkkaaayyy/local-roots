@@ -112,6 +112,65 @@
     <p class="apply-note">All scenes use the same source-coupled audio engine. Variation changes evolution rate; anti-repeat remains enforced.</p>
   </section>
 
+  <section class="panel" aria-label="Looks and color">
+    <h2>Shows + color</h2>
+    <div class="fine-grid">
+      <label class="wide">Show
+        <select id="featureLook"></select>
+      </label>
+      <label>Color
+        <input id="featureColor" type="color" value="#ffffff" aria-label="Look color">
+      </label>
+      <label>Palette
+        <select id="featurePalette"><option value="">Current palette</option></select>
+      </label>
+      <label>Name saved look
+        <input id="featureLookName" type="text" maxlength="24" placeholder="e.g. Green course">
+      </label>
+      <label>Saved looks
+        <select id="featureSavedLooks"><option value="">None saved</option></select>
+      </label>
+      <div class="row">
+        <button id="featureApplyLook" type="button">Apply look</button>
+        <button id="featureSaveLook" type="button">Save</button>
+        <button id="featureApplySaved" type="button">Apply saved</button>
+        <button id="featureDeleteSaved" type="button">Delete saved</button>
+      </div>
+    </div>
+    <div id="featureStatus" class="status">Feature controls staged.</div>
+    <p class="apply-note">Show/palette changes use canonical cart state; palette names are discovered read-only from the local Matrix.</p>
+  </section>
+
+  <section class="panel" aria-label="Matrix message">
+    <h2>Text</h2>
+    <div class="row">
+      <input id="featureText" type="text" maxlength="63" placeholder="Type Matrix message" style="flex:1;min-width:180px">
+      <button id="featureSendText" type="button">Send</button>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Skins and Glow live data">
+    <h2>Skins + Glow</h2>
+    <div id="featureLive" class="status">Live round not checked yet.</div>
+    <div class="row">
+      <button id="featureRefreshLive" type="button">Refresh live</button>
+      <button id="featureScoreboard" type="button">Show scoreboard</button>
+      <button id="featureAcePot" type="button">Show ace pot</button>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Firmware update">
+    <h2>Firmware</h2>
+    <div id="featureOtaStatus" class="status">Signed update not checked yet.</div>
+    <div class="row">
+      <button id="featureOtaCheck" type="button">Check signed update</button>
+      <button id="featureOtaInstall" type="button" hidden>Open trusted installer</button>
+      <button id="featureOtaResult" type="button">Refresh install result</button>
+      <button id="featurePreflight" type="button">Run rollout preflight</button>
+    </div>
+    <div id="featurePreflightResult" class="status">Preflight not run.</div>
+  </section>
+
   <details class="panel">
     <summary>Advanced audio</summary>
     <div class="fine-grid advanced-body">
@@ -161,4 +220,4 @@
     <div id="status" class="status" role="status" aria-live="polite">Connecting…</div>
     <button id="refresh">Refresh status</button>
   </section>
-</main><script type="module" src="./hbnf-cart.js"></script><script type="module" src="./hbnf-cart-ui-v6.mjs"></script></body></html>
+</main><script type="module" src="./hbnf-cart.js"></script><script type="module" src="./hbnf-cart-ui-v6.mjs"></script><script type="module" src="./hbnf-cart-features.mjs"></script></body></html>
