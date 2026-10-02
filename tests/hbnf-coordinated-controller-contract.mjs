@@ -9,7 +9,7 @@ const shared=fs.readFileSync("hbnf-wow-bundle/backend/shared.ts","utf8");
 for (const id of [
   "featureLook","featureColor","featurePalette","featureApplyLook","featureSaveLook","featureApplySaved",
   "featureText","featureSendText","featureLive","featureRefreshLive","featureScoreboard",
-  "featureAcePot","featureOtaStatus","featureOtaCheck","featureOtaInstall","featurePreflight","featurePreflightResult"
+  "featureAcePot","featureOtaStatus","featureOtaCheck","featureOtaInstall","featureOtaResult","featurePreflight","featurePreflightResult"
 ]) assert.ok(html.includes('id="'+id+'"'), "missing UI id "+id);
 
 assert.ok(html.includes("hbnf-cart-features.mjs"),"feature module not loaded");
@@ -24,6 +24,8 @@ assert.ok(features.includes("snapshotRestorePayload"),"look rollback path missin
 assert.ok(features.includes("Palette readback did not match"),"palette readback verification missing");
 assert.ok(features.includes("runPreflight"),"rollout preflight missing");
 assert.ok(features.includes("OPAL_CHECK"),"OTA check path missing");
+assert.ok(features.includes("OPAL_RESULT"),"OTA result path missing");
+assert.ok(features.includes("refreshOtaResult"),"OTA result refresh logic missing");
 assert.ok(features.includes("OPAL_INSTALLER"),"trusted installer handoff missing");
 assert.ok(features.includes('location.hostname === "192.168.77.10"'),"local-only WLED gate missing");
 assert.ok(!features.includes("?."),"optional chaining is not allowed in iOS-12-targeted feature module");
