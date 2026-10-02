@@ -69,6 +69,10 @@ jobs:
           ! grep -q 'matrixApi("ace_pot"' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'canonicalOverlayBridge' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'syncOverlayAvailability' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'canonicalOverlayIntentV1' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'canonicalPaletteIntentV1' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'canonicalOverlayIntentV1' staging/coordinated-backend/hbnf-cart-control/index.ts
+          grep -q 'canonicalPaletteIntentV1' staging/coordinated-backend/hbnf-cart-control/index.ts
           grep -q 'SAVED_LOOKS_KEY' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'fetchJson("/json/pal"' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'rollbackCanonicalLook' hbnf-final-controller/hbnf-cart-features.mjs
@@ -144,6 +148,7 @@ jobs:
           cp work/HBNF_OPAL_UPDATER_NEXT_PACKAGE_REQUIREMENTS.md "$OUT/work/"
           cp work/HBNF_SOURCE_IDENTITY_RECOVERY.md "$OUT/work/"
           cp work/HBNF_CANONICAL_CONTROL_RECONCILIATION.md "$OUT/work/"
+          cp work/HBNF_FIRMWARE_COORDINATED_CONTRACT.md "$OUT/work/"
           printf '%s\n' "$GITHUB_SHA" > "$OUT/SOURCE_COMMIT.txt"
           (cd "$RUNNER_TEMP" && zip -qr HBNF_COORDINATED_RELEASE_SOURCE_20261001.zip HBNF_COORDINATED_RELEASE_SOURCE_20261001)
           sha256sum "$RUNNER_TEMP/HBNF_COORDINATED_RELEASE_SOURCE_20261001.zip" > "$RUNNER_TEMP/HBNF_COORDINATED_RELEASE_SOURCE_20261001.zip.sha256"
