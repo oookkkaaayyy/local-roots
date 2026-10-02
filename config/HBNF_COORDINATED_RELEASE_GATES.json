@@ -23,7 +23,12 @@
     "rolloutPreflightIntegrated": true,
     "ios12FeatureModuleNoOptionalChaining": true,
     "matrixLocalCorsStaged": true,
-    "packageIncludesFeatureModule": true
+    "packageIncludesFeatureModule": true,
+    "fullControllerIos12StaticAuditPassed": true,
+    "opalUpdaterRebuilderStaged": true,
+    "matrixOriginReadOnlyUpdaterResultUiStaged": true,
+    "otaResultReturnPollingStaged": true,
+    "reproducibleSourceBundleConfigured": true
   },
   "productionBlockers": {
     "acceptedLiveSourceIdentityReconciled": false,
