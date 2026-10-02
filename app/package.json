@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "npm run check:du-handoff && tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit --pretty false"
+    "typecheck": "tsc --noEmit --pretty false",
+    "check:du-handoff": "node scripts/check-du-handoff.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",
