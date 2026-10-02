@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.0";
+import { chooseLive } from "./live.ts";
 declare const EdgeRuntime:{waitUntil(p:Promise<unknown>):void};
 
 const cors = {
@@ -90,6 +91,12 @@ Deno.serve(async (req: Request) => {
     });
     if (pairError || created !== true) return response({ error: "pairing_create_failed" }, 500);
     return response({ deviceToken, expiresAt });
+  }
+
+  if (action === "live_status") {
+    const { data: league, error: liveError } = await service.from("league_state").select("state_json").eq("id", 1).single();
+    if (liveError) return response({ error: "live_state_read_failed" }, 500);
+    return response({ live: chooseLive(league?.state_json ?? {}) });
   }
 
   if (action === "status") {
