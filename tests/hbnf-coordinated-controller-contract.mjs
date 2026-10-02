@@ -23,6 +23,9 @@ assert.ok(!features.includes('matrixApi("text"'),"text must not use legacy direc
 assert.ok(!features.includes('matrixApi("scoreboard"'),"scoreboard must not use legacy direct Matrix mutation");
 assert.ok(!features.includes('matrixApi("ace_pot"'),"ace pot must not use legacy direct Matrix mutation");
 assert.ok(features.includes("canonicalOverlayBridge"),"canonical overlay bridge gate missing");
+assert.ok(controller.includes("getCapabilities"),"canonical capability bridge missing");
+assert.ok(features.includes("canonicalOverlayIntentV1"),"overlay capability gate missing");
+assert.ok(features.includes("canonicalPaletteIntentV1"),"palette capability gate missing");
 assert.ok(features.includes("syncOverlayAvailability"),"overlay fail-closed UI gate missing");
 assert.ok(features.includes('action !== "live_status"'),"legacy Matrix endpoint is not restricted to read-only live_status");
 assert.ok(features.includes('fetchJson("/json/pal"'),"dynamic WLED palette list missing");
