@@ -122,6 +122,7 @@ with tempfile.TemporaryDirectory() as td:
     assert 'fs.chmod(dir, "0700")' in controller
     assert 'if action=="challenge" or action=="install" then' in controller
     assert 'elseif action=="result" then' in controller
+    assert 'if origin and origin~=matrix_origin and origin~=opal_origin' in controller
     assert 'Access-Control-Allow-Origin", matrix_origin' in controller
     assert "tr -d ':-.'" not in updater
     assert "tr -d ':' | tr -d '-' | tr -d '.'" in updater
