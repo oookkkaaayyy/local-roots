@@ -1,18 +1,15 @@
 /* HBNF coordinated feature surface — source-only staging. No automatic mutation. */
-const MATRIX_API = "https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-matrix-control";
+const MATRIX_READ_API = "https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-matrix-control";
 const OPAL_CHECK = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=check";
 const OPAL_RESULT = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=result";
 const OPAL_INSTALLER = "https://console.gl-inet.com/cgi-bin/luci/hbnf-installer";
 const EXPECTED_MATRIX_MAC = "704bca5b345c";
 const ACCEPTED_BASE_SHA256 = "0aeb668e58cad3bae5b636fdc79573a263c3d0e911903ed48af0bbc2e5681f61";
-const LOOKS = [
-  [61,"Complex Kaleido"],[62,"Big Kaleido"],[63,"Parametric Water"],[64,"RGB Blobs"],
-  [65,"Polar Waves"],[66,"Zoom 2"],[67,"Kaleido 4"],[68,"Kaleido 6"],
-  [69,"Water"],[70,"RGB Blobs 4"],[71,"Kaleido 5"],[72,"Spiralus 2"],
-  [73,"Hot Blob"],[74,"Kaleido 3"],[75,"Waves"],[76,"Chasing Spirals"],
-  [77,"Rotating Blob"],[78,"Center Field"],[79,"Distance"],[80,"Lava"],
-  [81,"Kaleido 2"],[82,"Yves"],[83,"Scale Demo"],[84,"Zoom"],
-  [85,"Complex Kaleido 2"],[86,"RGB Blobs 3"],[87,"SM5"],[88,"Module Experiment"]
+const SHOWS = [
+  ["course-flow","Course Flow"],
+  ["field-mix","Field Mix"],
+  ["hbnf-signature","HBNF Signature"],
+  ["quiet-cosmos","Quiet Cosmos"]
 ];
 const SAVED_LOOKS_KEY = "hbnf_cart_saved_looks_v1";
 const LEGACY_SAVED_LOOK_KEY = "hbnf_cart_saved_look_v2";
@@ -56,49 +53,45 @@ async function fetchJson(url, options, label, retries=0, timeoutMs=4500) {
   throw lastError || new Error(label+" failed");
 }
 
-async function matrixApi(action, payload, readOnly=false) {
-  return fetchJson(MATRIX_API, {
+async function matrixRead(action, payload) {
+  if (action !== "live_status") throw new Error("Legacy Matrix mutations are blocked from the coordinated controller.");
+  return fetchJson(MATRIX_READ_API, {
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify(Object.assign({action:action}, payload || {})),
     cache:"no-store"
-  }, "Matrix backend", readOnly ? 1 : 0, 6000);
+  }, "Matrix read-only backend", 1, 6000);
 }
 
-async function wledState(payload) {
-  if (!matrixLocal()) throw new Error("Local Matrix controls activate only from 192.168.77.10/hbnf.");
-  return fetchJson("/json/state", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(payload),
-    cache:"no-store"
-  }, "Matrix local API", 1, 3500);
+function canonicalBridge() {
+  const bridge=window.HBNFCanonical;
+  if (!bridge || typeof bridge.command!=="function" || typeof bridge.refresh!=="function") {
+    throw new Error("Canonical cart control is not ready.");
+  }
+  return bridge;
 }
 
-async function readWledState() {
-  if (!matrixLocal()) throw new Error("Matrix local state is available only on HBNF-Cart.");
-  return fetchJson("/json/state",{method:"GET",cache:"no-store"},"Matrix state",1,3500);
+function canonicalOverlayBridge() {
+  const bridge=window.HBNFCanonical;
+  if (!bridge || typeof bridge.overlay!=="function") {
+    throw new Error("Canonical overlay bridge is not yet reconciled; no legacy direct command was sent.");
+  }
+  return bridge;
 }
 
 function normalizedMac(value) {
   return String(value || "").toLowerCase().replace(/:/g,"").replace(/-/g,"").replace(/\./g,"");
 }
 
-function hexRgb(hex) {
-  const s = String(hex || "").replace("#","");
-  if (!/^[0-9a-f]{6}$/i.test(s)) return [255,255,255];
-  return [parseInt(s.slice(0,2),16),parseInt(s.slice(2,4),16),parseInt(s.slice(4,6),16)];
-}
-
-function sameRgb(a,b) {
-  return Array.isArray(a) && Array.isArray(b) &&
-    Number(a[0])===Number(b[0]) && Number(a[1])===Number(b[1]) && Number(a[2])===Number(b[2]);
+function cleanHex(hex) {
+  const s = String(hex || "").replace("#","").toUpperCase();
+  return /^[0-9A-F]{6}$/.test(s) ? s : "FFFFFF";
 }
 
 function populateLooks() {
   const select = $("featureLook");
   if (!select || select.options.length) return;
-  LOOKS.forEach(pair=>{
+  SHOWS.forEach(pair=>{
     const o=document.createElement("option");
     o.value=String(pair[0]); o.textContent=pair[1];
     select.appendChild(o);
@@ -110,56 +103,72 @@ async function loadPalettes() {
   if (!select || !matrixLocal()) return;
   const names = await fetchJson("/json/pal",{method:"GET",cache:"no-store"},"Palette list",1,3500);
   if (!Array.isArray(names)) throw new Error("Palette list unavailable.");
-  while (select.options.length > 1) select.remove(1);
+  while (select.options.length) select.remove(0);
+  const current=document.createElement("option");
+  current.value=""; current.textContent="Keep current";
+  select.appendChild(current);
+  const solid=document.createElement("option");
+  solid.value="solid"; solid.textContent="Solid color";
+  select.appendChild(solid);
   names.forEach((name,index)=>{
     if (!name || name === "RSVD" || name === "-") return;
     const o=document.createElement("option");
-    o.value=String(index); o.textContent=String(name);
+    o.value="wled-"+String(index); o.textContent=String(name);
     select.appendChild(o);
   });
 }
 
-function snapshotRestorePayload(state) {
-  const payload = {};
-  if (!state || typeof state !== "object") return payload;
-  if (typeof state.on === "boolean") payload.on = state.on;
-  if (Number.isFinite(Number(state.bri))) payload.bri = Number(state.bri);
-  if (Number.isFinite(Number(state.ps)) && Number(state.ps) >= 0) payload.ps = Number(state.ps);
-  if (Array.isArray(state.seg) && state.seg[0]) {
-    const s=state.seg[0], restore={id:0};
-    if (Number.isFinite(Number(s.pal))) restore.pal=Number(s.pal);
-    if (Array.isArray(s.col)) restore.col=s.col;
-    payload.seg=[restore];
+function desiredState(snapshot) {
+  return snapshot && snapshot.desired && snapshot.desired.state ? snapshot.desired.state : null;
+}
+
+function paletteIdFromControls() {
+  const mode=$("featurePalette") ? $("featurePalette").value : "";
+  if (!mode) return "";
+  if (mode==="solid") return "solid-"+cleanHex($("featureColor").value);
+  if (/^wled-\d+$/.test(mode)) return mode;
+  throw new Error("Unsupported palette selection.");
+}
+
+function paletteControlFromId(paletteId) {
+  const id=String(paletteId || "");
+  if (/^solid-[0-9A-Fa-f]{6}$/.test(id)) {
+    if ($("featureColor")) $("featureColor").value="#"+id.slice(6);
+    return "solid";
   }
-  return payload;
+  if (/^wled-\d+$/.test(id)) return id;
+  return "";
+}
+
+async function rollbackCanonicalLook(bridge, before) {
+  const state=desiredState(before);
+  if (!state) return;
+  try {
+    if (state.sceneId) await bridge.command("SCENE",{sceneId:String(state.sceneId)});
+    if (state.paletteId) await bridge.command("PALETTE",{paletteId:String(state.paletteId)});
+  } catch (_) {}
 }
 
 async function applyLook() {
-  const preset = Number($("featureLook").value);
-  const color = hexRgb($("featureColor").value);
-  const paletteValue = $("featurePalette") ? $("featurePalette").value : "";
-  const seg = {id:0,col:[color,[0,0,0],[0,0,0]]};
-  if (paletteValue !== "") seg.pal = Number(paletteValue);
+  const bridge=canonicalBridge();
+  const sceneId=String($("featureLook").value || "");
+  const paletteId=paletteIdFromControls();
+  if (!sceneId) throw new Error("Choose a show first.");
 
-  setFeatureStatus("Applying and verifying look…");
-  const before = await readWledState();
+  setFeatureStatus("Applying through canonical cart control…");
+  const before=await bridge.refresh({hydrate:false});
   try {
-    await wledState({on:true,ps:preset,v:true});
-    await wledState({seg:[seg],v:true});
-    await sleep(120);
-    const after = await readWledState();
-    const active = Array.isArray(after.seg) && after.seg[0] ? after.seg[0] : {};
-    if (paletteValue !== "" && Number(active.pal) !== Number(paletteValue)) {
-      throw new Error("Palette readback did not match.");
-    }
-    if (Array.isArray(active.col) && active.col[0] && !sameRgb(active.col[0],color)) {
-      throw new Error("Color readback did not match.");
-    }
-    setFeatureStatus("Look verified on Matrix.");
+    await bridge.command("SCENE",{sceneId:sceneId});
+    if (paletteId) await bridge.command("PALETTE",{paletteId:paletteId});
+    const after=await bridge.refresh({hydrate:false});
+    const state=desiredState(after);
+    if (!state || String(state.sceneId)!==sceneId) throw new Error("Canonical scene readback did not match.");
+    if (paletteId && String(state.paletteId)!==paletteId) throw new Error("Canonical palette readback did not match.");
+    if ($("scene")) $("scene").value=sceneId;
+    setFeatureStatus("Canonical look applied and verified.");
   } catch (error) {
-    const rollback=snapshotRestorePayload(before);
-    try { await wledState(rollback); } catch (_) {}
-    throw new Error("Look was not verified; previous Matrix state was restored. "+(error.message || String(error)));
+    await rollbackCanonicalLook(bridge,before);
+    throw new Error("Look was not fully verified; canonical prior state was restored where possible. "+(error.message || String(error)));
   }
 }
 
@@ -174,6 +183,8 @@ function readSavedLooks() {
     if (legacy) {
       const look=JSON.parse(legacy);
       look.name=look.name || "Saved look";
+      if (!look.sceneId) look.sceneId="course-flow";
+      if (!look.paletteId && look.palette) look.paletteId=/^\d+$/.test(String(look.palette)) ? "wled-"+String(look.palette) : "";
       localStorage.setItem(SAVED_LOOKS_KEY,JSON.stringify([look]));
       localStorage.removeItem(LEGACY_SAVED_LOOK_KEY);
       return [look];
@@ -214,9 +225,9 @@ async function saveLook() {
   const name=String(nameInput && nameInput.value ? nameInput.value : selectedLabel).trim().slice(0,24) || "Saved look";
   const look = {
     name:name,
-    preset:Number($("featureLook").value),
+    sceneId:String($("featureLook").value || ""),
     color:$("featureColor").value,
-    palette:$("featurePalette") ? $("featurePalette").value : "",
+    paletteId:paletteIdFromControls(),
     motion:Number(($("motion") && $("motion").value) || 60),
     audioResponse:Number(($("audioResponse") && $("audioResponse").value) || 75),
     savedAt:new Date().toISOString()
@@ -245,9 +256,9 @@ async function applySavedLook() {
   const selected=selectedSavedLook();
   if (!selected) throw new Error("Choose a saved look first.");
   const look=selected.look;
-  $("featureLook").value=String(look.preset);
+  $("featureLook").value=String(look.sceneId || "course-flow");
   $("featureColor").value=look.color || "#ffffff";
-  if ($("featurePalette")) $("featurePalette").value=look.palette || "";
+  if ($("featurePalette")) $("featurePalette").value=paletteControlFromId(look.paletteId || "");
   if ($("featureLookName")) $("featureLookName").value=look.name || "";
   if ($("motion")) { $("motion").value=String(look.motion); $("motion").dispatchEvent(new Event("change",{bubbles:true})); }
   if ($("audioResponse")) { $("audioResponse").value=String(look.audioResponse); $("audioResponse").dispatchEvent(new Event("change",{bubbles:true})); }
@@ -268,7 +279,8 @@ async function sendText() {
   const text = String($("featureText").value || "").trim();
   if (!text) throw new Error("Type a message first.");
   setFeatureStatus("Sending text…");
-  await matrixApi("text",{text:text,color:$("featureColor").value || "#FFFFFF"},false);
+  const bridge=canonicalOverlayBridge();
+  await bridge.overlay("text",{text:text,color:$("featureColor").value || "#FFFFFF"});
   $("featureText").value="";
   setFeatureStatus("Text command accepted.");
 }
@@ -309,7 +321,7 @@ async function refreshLive(silent) {
   liveRefreshInFlight=true;
   if (!silent) setFeatureStatus("Refreshing live round…");
   try {
-    const out = await matrixApi("live_status",{},true);
+    const out = await matrixRead("live_status",{});
     const now=new Date();
     renderLive(out.live,false,now.toLocaleTimeString());
     saveLiveCache(out.live);
@@ -330,13 +342,15 @@ async function refreshLive(silent) {
 
 async function showScoreboard() {
   setFeatureStatus("Sending scoreboard…");
-  await matrixApi("scoreboard",{},false);
+  const bridge=canonicalOverlayBridge();
+  await bridge.overlay("scoreboard",{});
   setFeatureStatus("Scoreboard command accepted.");
 }
 
 async function showAcePot() {
   setFeatureStatus("Sending ace pot…");
-  await matrixApi("ace_pot",{},false);
+  const bridge=canonicalOverlayBridge();
+  await bridge.overlay("ace_pot",{});
   setFeatureStatus("Ace pot command accepted.");
 }
 
@@ -437,7 +451,7 @@ async function runPreflight() {
   } catch (e) { checks.push("Signed OTA FAIL"); }
 
   try {
-    await matrixApi("live_status",{},true);
+    await matrixRead("live_status",{});
     checks.push("Live-data path PASS");
   } catch (e) {
     checks.push("Live-data path WAN/CHECK");
@@ -468,7 +482,7 @@ bind("featureOtaInstall",()=>{ location.href=OPAL_INSTALLER; });
 bind("featureOtaResult",refreshOtaResult);
 bind("featurePreflight",runPreflight);
 if ($("featureText")) $("featureText").addEventListener("keydown",e=>{ if(e.key==="Enter") $("featureSendText").click(); });
-if (!matrixLocal()) setFeatureStatus("Core cart controls remain active. Local look/color/palette/OTA controls enable when this UI is served from 192.168.77.10.");
+if (!matrixLocal()) setFeatureStatus("Core canonical cart controls remain active. Local palette discovery and OTA controls enable on 192.168.77.10.");
 
 window.addEventListener("pageshow",function(){
   if (matrixLocal()) refreshOtaResult().catch(function(){});
