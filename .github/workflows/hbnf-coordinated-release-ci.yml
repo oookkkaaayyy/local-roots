@@ -51,7 +51,7 @@ jobs:
       - name: Coordinated visible-scope contract
         run: |
           set -euo pipefail
-          for id in featureLook featureColor featurePalette featureApplyLook featureSaveLook featureApplySaved featureText featureSendText featureLive featureRefreshLive featureScoreboard featureAcePot featureOtaStatus featureOtaCheck featureOtaInstall featurePreflight featurePreflightResult; do
+          for id in featureLook featureColor featurePalette featureApplyLook featureSaveLook featureApplySaved featureText featureSendText featureLive featureRefreshLive featureScoreboard featureAcePot featureOtaStatus featureOtaCheck featureOtaInstall featureOtaResult featurePreflight featurePreflightResult; do
             grep -q "id=\"$id\"" hbnf-final-controller/hbnf-cart.html
           done
           grep -q 'src="./hbnf-cart-features.mjs"' hbnf-final-controller/hbnf-cart.html
@@ -70,6 +70,7 @@ jobs:
           node tests/hbnf-ios12-compat-audit.mjs
           python3 tests/hbnf-opal-updater-rebuilder.test.py
           grep -q 'OPAL_CHECK' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'OPAL_RESULT' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'OPAL_INSTALLER' hbnf-final-controller/hbnf-cart-features.mjs
 
       - name: Safety gates
