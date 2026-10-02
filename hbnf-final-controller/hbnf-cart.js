@@ -336,7 +336,7 @@ async function flushTune() {
   await refresh({ hydrate: true });
 }
 
-async function command(type) {
+async function command(type, payload = {}) {
   await flushTune();
 
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -345,7 +345,7 @@ async function command(type) {
         action: "command",
         commandId: newCommandId(),
         type,
-        payload: {},
+        payload: payload,
         expectedRevision: revision,
       });
       revision = result.revision;
@@ -361,6 +361,13 @@ async function command(type) {
     }
   }
 }
+
+window.HBNFCanonical = {
+  command: command,
+  refresh: refresh,
+  flushTune: flushTune,
+  getRevision: function(){ return revision; }
+};
 
 function detectPairFragment() {
   pendingPairToken = null;
