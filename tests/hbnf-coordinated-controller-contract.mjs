@@ -27,7 +27,9 @@ assert.ok(controller.includes("getCapabilities"),"canonical capability bridge mi
 assert.ok(features.includes("canonicalOverlayIntentV1"),"overlay capability gate missing");
 assert.ok(features.includes("canonicalPaletteIntentV1"),"palette capability gate missing");
 assert.ok(features.includes("syncOverlayAvailability"),"overlay fail-closed UI gate missing");
-assert.ok(features.includes('action !== "live_status"'),"legacy Matrix endpoint is not restricted to read-only live_status");
+assert.ok(controller.includes("read: function(action, payload)"),"canonical read bridge missing");
+assert.ok(features.includes('canonicalRead("live_status"'),"live data is not routed through canonical cart backend");
+assert.ok(!features.includes("hbnf-matrix-control"),"feature UI must not call legacy Matrix backend directly");
 assert.ok(features.includes('fetchJson("/json/pal"'),"dynamic WLED palette list missing");
 assert.ok(features.includes("rollbackCanonicalLook"),"canonical look rollback path missing");
 assert.ok(features.includes("Canonical scene readback did not match"),"canonical scene readback verification missing");
