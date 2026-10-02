@@ -1,6 +1,7 @@
 /* HBNF coordinated feature surface — source-only staging. No automatic mutation. */
 const MATRIX_API = "https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-matrix-control";
 const OPAL_CHECK = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=check";
+const OPAL_RESULT = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=result";
 const OPAL_INSTALLER = "https://console.gl-inet.com/cgi-bin/luci/hbnf-installer";
 const LOOKS = [
   [61,"Complex Kaleido"],[62,"Big Kaleido"],[63,"Parametric Water"],[64,"RGB Blobs"],
@@ -278,6 +279,29 @@ async function checkOta() {
   renderOta(j);
 }
 
+function renderOtaResult(job) {
+  const status=$("featureOtaStatus");
+  if (!status) return;
+  const state=String(job && job.state ? job.state : "idle");
+  const release=job && job.release_id ? " · "+job.release_id : "";
+  if (state === "complete") {
+    status.textContent="Install complete"+release+(job.health_result ? " · health recorded" : "");
+  } else if (state === "failed") {
+    status.textContent="Install failed"+release+" · "+String(job.error || "unknown error");
+  } else if (state === "starting" || state === "downloading" || state === "installing" || state === "verifying" || state === "health-check") {
+    status.textContent="Install "+state.replace("-"," ")+release;
+  } else {
+    status.textContent="No active install job"+release;
+  }
+}
+
+async function refreshOtaResult() {
+  if (!matrixLocal()) throw new Error("Install result is available from the local Matrix dashboard on HBNF-Cart.");
+  const job=await fetchJson(OPAL_RESULT,{method:"GET",cache:"no-store",credentials:"omit"},"Install result",1,4500);
+  renderOtaResult(job);
+  return job;
+}
+
 function truthConnected(id) {
   const node=$(id);
   return !!(node && /CONNECTED|READY/i.test(String(node.textContent || "")));
@@ -333,6 +357,14 @@ bind("featureScoreboard",showScoreboard);
 bind("featureAcePot",showAcePot);
 bind("featureOtaCheck",checkOta);
 bind("featureOtaInstall",()=>{ location.href=OPAL_INSTALLER; });
+bind("featureOtaResult",refreshOtaResult);
 bind("featurePreflight",runPreflight);
 if ($("featureText")) $("featureText").addEventListener("keydown",e=>{ if(e.key==="Enter") $("featureSendText").click(); });
 if (!matrixLocal()) setFeatureStatus("Core cart controls remain active. Local look/color/palette/OTA controls enable when this UI is served from 192.168.77.10.");
+
+window.addEventListener("pageshow",function(){
+  if (matrixLocal()) refreshOtaResult().catch(function(){});
+});
+document.addEventListener("visibilitychange",function(){
+  if (!document.hidden && matrixLocal()) refreshOtaResult().catch(function(){});
+});
