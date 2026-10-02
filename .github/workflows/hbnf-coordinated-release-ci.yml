@@ -71,6 +71,7 @@ jobs:
           node tests/hbnf-coordinated-controller-contract.mjs
           node tests/hbnf-release-readiness.mjs
           node tests/hbnf-ios12-compat-audit.mjs
+          python3 -m py_compile tools/hbnf-rebuild-opal-updater.py tools/hbnf-source-identity-preflight.py tests/hbnf-opal-updater-rebuilder.test.py
           python3 tests/hbnf-opal-updater-rebuilder.test.py
           grep -q 'OPAL_CHECK' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'OPAL_RESULT' hbnf-final-controller/hbnf-cart-features.mjs
@@ -103,6 +104,7 @@ jobs:
           cp hbnf-ui-v6-package/install_ui_v6.py "$OUT/installer/"
           cp config/HBNF_COORDINATED_RELEASE_GATES.json "$OUT/config/"
           cp tools/hbnf-rebuild-opal-updater.py "$OUT/tools/"
+          cp tools/hbnf-source-identity-preflight.py "$OUT/tools/"
           cp tests/hbnf-coordinated-controller-contract.mjs "$OUT/tests/"
           cp tests/hbnf-release-readiness.mjs "$OUT/tests/"
           cp tests/hbnf-ios12-compat-audit.mjs "$OUT/tests/"
