@@ -1,0 +1,19 @@
+{
+  "schema": "hbnf-generated-inputs-policy-v1",
+  "release_id": "PENDING",
+  "policy_verified": false,
+  "files": [
+    {
+      "path": "PENDING",
+      "mode": "DETERMINISTIC_GENERATED_OR_CANONICAL_FROZEN_INPUT",
+      "expected_sha256": null,
+      "generator_enabled": null,
+      "generator_tool_version": null,
+      "generator_script_sha256": null,
+      "generator_input_hashes": [],
+      "deterministic_regeneration_verified": null,
+      "frozen_input_archived": null,
+      "drift_action": "FAIL"
+    }
+  ]
+}
