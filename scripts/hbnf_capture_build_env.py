@@ -41,8 +41,17 @@ out = {
         "project_config": run(["pio", "project", "config", "--json-output"]),
         "project_metadata": run(["pio", "project", "metadata", "--json-output"]),
         "packages": run(["pio", "pkg", "list"]),
+        "env_core_dir": os.environ.get("PLATFORMIO_CORE_DIR"),
+        "env_packages_dir": os.environ.get("PLATFORMIO_PACKAGES_DIR"),
+        "env_libdeps_dir": os.environ.get("PLATFORMIO_LIBDEPS_DIR"),
+        "env_build_dir": os.environ.get("PLATFORMIO_BUILD_DIR"),
+        "env_cache_dir": os.environ.get("PLATFORMIO_CACHE_DIR"),
+        "env_workspace_dir": os.environ.get("PLATFORMIO_WORKSPACE_DIR"),
     },
     "files": {},
+    "materialization": {
+        "note": "This helper records build-environment evidence only. A separate materialization preflight must prove all source/dependency inputs are local and not FileProvider placeholders before build."
+    },
 }
 
 for name in ("platformio.ini", "platformio_override.ini", "platformio_override.sample.ini"):
