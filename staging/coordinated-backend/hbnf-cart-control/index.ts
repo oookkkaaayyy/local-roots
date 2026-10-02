@@ -95,7 +95,7 @@ Deno.serve(async (req: Request) => {
   if (action === "status") {
     const { data: snapshot, error: statusError } = await service.rpc("hbnf_cart_get_status", { p_cart_id: "hbnf-cart" });
     if (statusError || !snapshot) return response({ error: "state_read_failed" }, 500);
-    return response(snapshot);
+    return response({ ...snapshot, capabilities: { coordinatedRelease: "2026-10-01", canonicalPaletteIntentV1: true, canonicalOverlayIntentV1: true, pairedDeviceAuth: true, tuneV1: true } });
   }
   if (action !== "command" || !required(request.commandId, 80) || !required(request.type, 48) || !Number.isSafeInteger(request.expectedRevision) || Number(request.expectedRevision) < 0 || !request.payload || typeof request.payload !== "object") {
     return response({ error: "invalid_command" }, 400);
