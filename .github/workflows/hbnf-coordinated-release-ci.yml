@@ -51,7 +51,7 @@ jobs:
       - name: Coordinated visible-scope contract
         run: |
           set -euo pipefail
-          for id in featureLook featureColor featurePalette featureApplyLook featureSaveLook featureApplySaved featureText featureSendText featureLive featureRefreshLive featureScoreboard featureAcePot featureOtaStatus featureOtaCheck featureOtaInstall featureOtaResult featurePreflight featurePreflightResult; do
+          for id in featureLook featureColor featurePalette featureLookName featureSavedLooks featureApplyLook featureSaveLook featureApplySaved featureDeleteSaved featureText featureSendText featureLive featureRefreshLive featureScoreboard featureAcePot featureOtaStatus featureOtaCheck featureOtaInstall featureOtaResult featurePreflight featurePreflightResult; do
             grep -q "id=\"$id\"" hbnf-final-controller/hbnf-cart.html
           done
           grep -q 'src="./hbnf-cart-features.mjs"' hbnf-final-controller/hbnf-cart.html
@@ -63,6 +63,9 @@ jobs:
           grep -q 'fetchJson("/json/pal"' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'snapshotRestorePayload' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'LIVE_CACHE_KEY' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'SAVED_LOOKS_KEY' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'deleteSavedLook' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'liveRefreshInFlight' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'runPreflight' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q '"http://192.168.77.10"' hbnf-wow-bundle/backend/shared.ts
           node tests/hbnf-coordinated-controller-contract.mjs
