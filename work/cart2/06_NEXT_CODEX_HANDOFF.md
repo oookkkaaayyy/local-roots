@@ -11,6 +11,9 @@ FIRST:
 2. Read work/cart2/03_FEASIBILITY_AUDIT_PROMPTS.md.
 3. Read work/cart2/04_READY_TO_IMPLEMENT_GATE.md.
 4. Read config/HBNF_CART2_STAGING_GATES.json.
+5. Read work/release-engineering/00_READ_FIRST.md.
+6. Read work/release-engineering/MATERIALIZATION_GENERATED_INPUTS_GATE.md.
+7. Treat a completed golden baseline, local materialization, dependency closure, generated-input policy, and clean-room rebuild/equivalence as prerequisites rather than optional cleanup.
 5. Identify the final accepted coordinated-release/source baseline from the current project authority before treating any source tree as canonical.
 
 GOAL:
