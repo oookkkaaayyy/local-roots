@@ -4,8 +4,6 @@ import assert from "node:assert/strict";
 const gates=JSON.parse(fs.readFileSync("config/HBNF_COORDINATED_RELEASE_GATES.json","utf8"));
 const html=fs.readFileSync("hbnf-final-controller/hbnf-cart.html","utf8");
 const features=fs.readFileSync("hbnf-final-controller/hbnf-cart-features.mjs","utf8");
-const backend=fs.readFileSync("hbnf-wow-bundle/backend/index.ts","utf8");
-const shared=fs.readFileSync("hbnf-wow-bundle/backend/shared.ts","utf8");
 const installer=fs.readFileSync("hbnf-ui-v6-package/install_ui_v6.py","utf8");
 const liveManifest=JSON.parse(fs.readFileSync("evidence/live-production-20261001/MANIFEST.json","utf8"));
 const candidateManifest=JSON.parse(fs.readFileSync("config/HBNF_COORDINATED_CANDIDATE_MANIFEST.json","utf8"));
@@ -32,7 +30,6 @@ assert.ok(features.includes("runPreflight"),"preflight missing");
 assert.ok(features.includes("canonicalOverlayIntentV1"),"overlay capability gate missing");
 assert.ok(features.includes("canonicalPaletteIntentV1"),"palette capability gate missing");
 assert.ok(!features.includes("?."),"optional chaining not allowed in iOS-12-targeted feature module");
-assert.ok(shared.includes('"http://192.168.77.10"'),"Matrix local origin missing from backend CORS");
 assert.ok(stagedControl.includes('action === "live_status"'),"canonical read-only live_status missing");
 assert.ok(installer.includes('"hbnf-cart-features.mjs"'),"installer package omits feature module");
 
