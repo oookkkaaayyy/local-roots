@@ -14,14 +14,17 @@ Purpose: recover exact build/source provenance once the Mac/local build workspac
 The retained project records do not identify a Git repository branch/commit for the exact 0aeb... build. Do not invent one and do not assume PR #46's current base is the exact firmware source.
 
 ## Recovery procedure when local workspace is available
-1. Read REPORT.md and SHA256SUMS first.
-2. Inventory the V1.1 output directory and immediate build/source siblings without modifying anything.
-3. Identify the exact source tree/build script/PlatformIO environment that produced the candidate.
-4. Record Git remote/branch/commit only if that source tree is actually Git-backed.
-5. Rebuild in isolation with no flash.
-6. Compare rebuilt artifact identity/embedded HBNF marker against the accepted V1.1 lineage.
-7. If deterministic binary equality is not expected, document why and compare the exact source/config/user-module deltas against the accepted build report.
-8. Only after reconciliation, flip:
+1. From this repository, run the read-only collector first:
+   `python3 tools/hbnf-source-identity-preflight.py`
+   It searches only bounded likely user-workspace roots, verifies the accepted candidate SHA, extracts REPORT.md clues, and reports nearby Git/PlatformIO source candidates without modifying anything.
+2. Read REPORT.md and SHA256SUMS first.
+3. Inventory the V1.1 output directory and immediate build/source siblings without modifying anything.
+4. Identify the exact source tree/build script/PlatformIO environment that produced the candidate.
+5. Record Git remote/branch/commit only if that source tree is actually Git-backed.
+6. Rebuild in isolation with no flash.
+7. Compare rebuilt artifact identity/embedded HBNF marker against the accepted V1.1 lineage.
+8. If deterministic binary equality is not expected, document why and compare the exact source/config/user-module deltas against the accepted build report.
+9. Only after reconciliation, flip:
    - acceptedLiveSourceIdentityReconciled
    - liveLocalDashboardSourceReconciled
    as supported by evidence.
