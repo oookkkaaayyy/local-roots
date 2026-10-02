@@ -371,6 +371,9 @@ window.HBNFCanonical = {
   flushTune: flushTune,
   getRevision: function(){ return revision; },
   getCapabilities: function(){ return canonicalCapabilities; },
+  read: function(action, payload) {
+    return call(Object.assign({action:action}, payload || {}));
+  },
   overlay: function(kind, data, ttlMs) {
     const duration = Number.isFinite(Number(ttlMs)) ? Math.max(1000, Math.min(30000, Math.round(Number(ttlMs)))) : (kind === "scoreboard" ? 22000 : 8000);
     return command("OVERLAY_START", {
