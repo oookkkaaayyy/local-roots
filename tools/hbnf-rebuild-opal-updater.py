@@ -65,7 +65,7 @@ ORIGIN_NEW = '''if action=="challenge" or action=="install" then
 	elseif action=="check" then
 		if origin and origin~=matrix_origin and origin~=opal_origin then return json_reply(403,{ok=false,error="origin-not-allowed"}) end
 	elseif action=="result" then
-		if origin~=matrix_origin and origin~=opal_origin then return json_reply(403,{ok=false,error="origin-not-allowed"}) end
+		if origin and origin~=matrix_origin and origin~=opal_origin then return json_reply(403,{ok=false,error="origin-not-allowed"}) end
 	else
 		if origin~=matrix_origin then return json_reply(403,{ok=false,error="origin-not-allowed"}) end
 	end'''
@@ -188,6 +188,7 @@ def verify_patched(data_root: Path, control_root: Path) -> None:
         'nixio.umask("0077")',
         'if action=="challenge" or action=="install" then',
         'elseif action=="result" then',
+        'if origin and origin~=matrix_origin and origin~=opal_origin',
         'Access-Control-Allow-Origin", matrix_origin',
     ]
     for needle in required:
