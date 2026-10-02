@@ -44,6 +44,9 @@ assert.ok(feature.includes('bridge.overlay("text"'),"text/ace-pot not using cano
 assert.ok(!feature.includes('matrixApi("text"'),"legacy direct text mutation still present");
 assert.ok(!feature.includes('matrixApi("scoreboard"'),"legacy direct scoreboard mutation still present");
 assert.ok(!feature.includes('matrixApi("ace_pot"'),"legacy direct ace-pot mutation still present");
-assert.ok(feature.includes('action !== "live_status"'),"legacy Matrix helper is not read-only constrained");
+assert.ok(stagedControl.includes('action === "live_status"'),"canonical read-only live_status missing");
+assert.ok(stagedControl.includes('chooseLive'),"canonical live_status does not reuse current live selector");
+assert.ok(feature.includes('canonicalRead("live_status"'),"feature UI live data bypasses canonical read path");
+assert.ok(!feature.includes("hbnf-matrix-control"),"feature UI still depends on legacy Matrix backend");
 
 console.log("HBNF coordinated backend staging contract: PASS");
