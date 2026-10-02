@@ -17,7 +17,12 @@
   "sourceGates": {
     "acceptedFirmwareLineageReconciled": false,
     "liveControllerSourceReconciled": false,
-    "coordinatedReleaseCheckpointAccepted": false
+    "coordinatedReleaseCheckpointAccepted": false,
+    "goldenReleaseCapsuleComplete": false,
+    "cleanRoomBaselineRebuildProven": false,
+    "sourceDependenciesFullyMaterializedLocal": false,
+    "dependencyClosureVerified": false,
+    "generatedInputsPolicyVerified": false
   },
   "contractGates": {
     "exactDeliverablesApproved": false,
