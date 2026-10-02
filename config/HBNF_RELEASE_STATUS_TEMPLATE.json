@@ -22,11 +22,17 @@
     "package_complete": false,
     "rollback_verified": false,
     "physical_preflight_ready": false,
-    "physical_acceptance_passed": false
+    "physical_acceptance_passed": false,
+    "source_snapshot_fully_local_materialized": false,
+    "dependency_closure_captured": false,
+    "dependency_closure_matches_known_good": false,
+    "unexpected_global_dependencies_absent": false,
+    "generated_inputs_policy_verified": false,
+    "source_snapshot_remains_immutable": false
   },
   "hardware_required_now": false,
   "live_mutation_authorized": false,
   "status": "SOURCE/BUILD WORK REMAINS",
-  "blocker": "Accepted V1.1 source/build lineage is still being reconciled in the active release lane.",
-  "next_action": "Complete current source-reconciliation/rebuild task; then populate the first golden release capsule from verified evidence."
+  "blocker": "Accepted V1.1 source/build lineage and the newly required local-materialization/dependency/generated-input gates are not yet closed.",
+  "next_action": "Complete current source-reconciliation/rebuild task; then capture the exact dependency graph and UI/generated-input policy into the first golden capsule and prove a fully local clean-room rebuild."
 }
