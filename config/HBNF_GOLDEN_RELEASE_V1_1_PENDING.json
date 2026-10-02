@@ -1,0 +1,71 @@
+{
+  "schema": "hbnf-golden-release-capsule-v1",
+  "release_id": "hbnf-matrix-v1-1-current-20260930",
+  "status": "PENDING_SOURCE_BUILD_RECONCILIATION",
+  "accepted_baseline": {
+    "firmware_sha256": "0aeb668e58cad3bae5b636fdc79573a263c3d0e911903ed48af0bbc2e5681f61",
+    "rollback_sha256": "32802f354cf2edcc1636698e5f15b6bc61311b0bffc7ecf72960221f3478fb55",
+    "wled_version": "16.0.1",
+    "matrix": {
+      "ip": "192.168.77.10",
+      "mac": "70:4b:ca:5b:34:5c"
+    },
+    "aux": {
+      "ip": "192.168.77.11",
+      "mac": "8c:94:df:55:c3:4c"
+    },
+    "opal": {
+      "ip": "192.168.77.1",
+      "model": "GL-SFT1200",
+      "firmware": "4.3.28"
+    }
+  },
+  "source": {
+    "repository": null,
+    "branch": null,
+    "commit": null,
+    "tree_clean": null,
+    "lineage_verified": false,
+    "evidence": []
+  },
+  "build_environment": {
+    "captured": false,
+    "platformio_core": null,
+    "platform": null,
+    "framework": null,
+    "toolchain": null,
+    "environment_name": null,
+    "platform_packages": [],
+    "lib_deps": [],
+    "vcs_pins": [],
+    "build_flags": [],
+    "evidence_files": []
+  },
+  "artifact": {
+    "path": "outputs/HBNF_AUDIO_EXPRESSION_V1_1/HBNF_AUDIO_EXPRESSION_V1_1_candidate.bin",
+    "sha256": "0aeb668e58cad3bae5b636fdc79573a263c3d0e911903ed48af0bbc2e5681f61",
+    "size_bytes": 1441264,
+    "reproducible_bit_for_bit": null,
+    "equivalence_evidence": []
+  },
+  "rollback": {
+    "sha256": "32802f354cf2edcc1636698e5f15b6bc61311b0bffc7ecf72960221f3478fb55",
+    "artifact_path": null,
+    "procedure": null,
+    "verified": false
+  },
+  "acceptance": {
+    "audio_v1_1": "accepted/non-blocking",
+    "matrix_aux_ddp": "accepted current path",
+    "controller": "current / exact source reconciliation pending",
+    "ota_bootstrap": "signed baseline check path live-PASS; first real new-firmware OTA still untested",
+    "physical": []
+  },
+  "known_open_items": [
+    "Exact accepted V1.1 source lineage",
+    "Exact build/toolchain/dependency capture",
+    "No-op rebuild or source/build equivalence proof",
+    "Rollback artifact path/procedure verification",
+    "HBNF-Cart SSID cold-start reliability remains separate"
+  ]
+}
