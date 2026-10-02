@@ -38,5 +38,12 @@
     "integrationOrderReady": false,
     "physicalAcceptancePlanReady": false
   },
-  "readyToImplement": false
+  "readyToImplement": false,
+  "planningArtifacts": {
+    "scopeLockPacketPrepared": true,
+    "acceptanceCorpusPrepared": true,
+    "integrationDagPrepared": true,
+    "firstHourAfterBaselinePlanPrepared": true,
+    "laneContractsDraftPrepared": true
+  }
 }
