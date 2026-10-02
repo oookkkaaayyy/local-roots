@@ -353,7 +353,7 @@ async function command(type) {
       await refresh();
       return;
     } catch (error) {
-      if (error.status === 409 && error.data?.error === "stale_revision" && attempt === 0) {
+      if (error.status === 409 && error.data && error.data.error === "stale_revision" && attempt === 0) {
         await refresh({ hydrate: false });
         continue;
       }
