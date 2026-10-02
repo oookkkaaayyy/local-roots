@@ -84,6 +84,7 @@ jobs:
           node tests/hbnf-coordinated-controller-contract.mjs
           node tests/hbnf-release-readiness.mjs
           node tests/hbnf-ios12-compat-audit.mjs
+          node tests/hbnf-canonical-palette-projection.mjs
           python3 -m py_compile tools/hbnf-rebuild-opal-updater.py tools/hbnf-source-identity-preflight.py tests/hbnf-opal-updater-rebuilder.test.py
           python3 tests/hbnf-opal-updater-rebuilder.test.py
           grep -q 'OPAL_CHECK' hbnf-final-controller/hbnf-cart-features.mjs
@@ -127,6 +128,7 @@ jobs:
           cp work/HBNF_ROLLOUT_RUNBOOK_20261001.md "$OUT/work/"
           cp work/HBNF_OPAL_UPDATER_NEXT_PACKAGE_REQUIREMENTS.md "$OUT/work/"
           cp work/HBNF_SOURCE_IDENTITY_RECOVERY.md "$OUT/work/"
+          cp work/HBNF_CANONICAL_CONTROL_RECONCILIATION.md "$OUT/work/"
           printf '%s\n' "$GITHUB_SHA" > "$OUT/SOURCE_COMMIT.txt"
           (cd "$RUNNER_TEMP" && zip -qr HBNF_COORDINATED_RELEASE_SOURCE_20261001.zip HBNF_COORDINATED_RELEASE_SOURCE_20261001)
           sha256sum "$RUNNER_TEMP/HBNF_COORDINATED_RELEASE_SOURCE_20261001.zip" > "$RUNNER_TEMP/HBNF_COORDINATED_RELEASE_SOURCE_20261001.zip.sha256"
