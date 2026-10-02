@@ -7,6 +7,7 @@ required = [
     Path("work/release-engineering/00_READ_FIRST.md"),
     Path("work/release-engineering/GOLDEN_RELEASE_CAPSULE_TEMPLATE.md"),
     Path("work/release-engineering/TARGETED_UPDATE_RUNBOOK.md"),
+    Path("work/release-engineering/MATERIALIZATION_GENERATED_INPUTS_GATE.md"),
     Path("work/release-engineering/AFTER_CURRENT_TASK.md"),
     Path("config/HBNF_RELEASE_STATUS_TEMPLATE.json"),
     Path("config/HBNF_SOLVED_PROBLEMS.json"),
