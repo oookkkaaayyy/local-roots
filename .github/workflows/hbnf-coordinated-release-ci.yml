@@ -67,6 +67,11 @@ jobs:
           grep -q 'deleteSavedLook' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'liveRefreshInFlight' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'runPreflight' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'EXPECTED_MATRIX_MAC' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'ACCEPTED_BASE_SHA256' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'artifact_verified' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'based_on_firmware_sha256' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'LIVE_CACHE_MAX_MS' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q '"http://192.168.77.10"' hbnf-wow-bundle/backend/shared.ts
           node tests/hbnf-coordinated-controller-contract.mjs
           node tests/hbnf-release-readiness.mjs
