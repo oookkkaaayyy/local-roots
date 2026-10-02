@@ -10,7 +10,8 @@ KNOWN_V11_ROOT=pathlib.Path.home()/"Documents/Codex/2026-09-30/files-pasted-by-t
 KNOWN_V11_OUTPUT=KNOWN_V11_ROOT/"outputs/HBNF_AUDIO_EXPRESSION_V1_1"
 KNOWN_V1_OUTPUT=KNOWN_V11_ROOT/"outputs/HBNF_AUDIO_EXPRESSION_V1"
 KNOWN_ROLLBACK_BIN=pathlib.Path.home()/"Documents/Codex/2026-09-30/this-is-the-highest-priority-next/outputs/HBNF_IPAD_MINI_INTEGRATION/HBNF_iPad_Mini2_iOS12_Candidate.bin"
-KNOWN_ROLLBACK_SOURCE=pathlib.Path.home()/"Documents/Codex/2026-09-30/this-is-the-highest-priority-next/work/hbnf-visual-audio-repair/integration-copy/usermods/hbnf_foundation_v1"
+KNOWN_ROLLBACK_TREE=pathlib.Path.home()/"Documents/Codex/2026-09-30/this-is-the-highest-priority-next/work/hbnf-visual-audio-repair/integration-copy"
+KNOWN_ROLLBACK_SOURCE=KNOWN_ROLLBACK_TREE/"usermods/hbnf_foundation_v1"
 KNOWN_ROLLBACK_SHA="32802f354cf2edcc1636698e5f15b6bc61311b0bffc7ecf72960221f3478fb55"
 KNOWN_BASE_SHA="3a9d02aa6bf7529a589d150834d4b9b916bef6bdc1634b13b4202eee5576dedb"
 KNOWN_PIO_ENV="hbnf_matrix_wled16_max"
@@ -101,6 +102,7 @@ def main():
             "v11_output":str(KNOWN_V11_OUTPUT),
             "v1_output":str(KNOWN_V1_OUTPUT),
             "rollback_bin":str(KNOWN_ROLLBACK_BIN),
+            "rollback_tree":str(KNOWN_ROLLBACK_TREE),
             "rollback_source":str(KNOWN_ROLLBACK_SOURCE),
             "rollback_sha256":KNOWN_ROLLBACK_SHA,
             "foundation_base_sha256":KNOWN_BASE_SHA,
