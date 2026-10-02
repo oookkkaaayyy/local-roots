@@ -1,0 +1,32 @@
+{
+  "schema": "hbnf-release-status-v1",
+  "release_id": "PENDING",
+  "accepted_baseline": {
+    "release_id": "hbnf-matrix-v1-1-current-20260930",
+    "firmware_sha256": "0aeb668e58cad3bae5b636fdc79573a263c3d0e911903ed48af0bbc2e5681f61",
+    "rollback_sha256": "32802f354cf2edcc1636698e5f15b6bc61311b0bffc7ecf72960221f3478fb55",
+    "source_commit": null,
+    "source_lineage_verified": false
+  },
+  "candidate": {
+    "source_commit": null,
+    "artifact_path": null,
+    "artifact_sha256": null
+  },
+  "gates": {
+    "baseline_source_proven": false,
+    "baseline_build_environment_captured": false,
+    "baseline_rebuild_or_equivalence_passed": false,
+    "approved_delta_implemented": false,
+    "non_hardware_tests_passed": false,
+    "package_complete": false,
+    "rollback_verified": false,
+    "physical_preflight_ready": false,
+    "physical_acceptance_passed": false
+  },
+  "hardware_required_now": false,
+  "live_mutation_authorized": false,
+  "status": "SOURCE/BUILD WORK REMAINS",
+  "blocker": "Accepted V1.1 source/build lineage is still being reconciled in the active release lane.",
+  "next_action": "Complete current source-reconciliation/rebuild task; then populate the first golden release capsule from verified evidence."
+}
