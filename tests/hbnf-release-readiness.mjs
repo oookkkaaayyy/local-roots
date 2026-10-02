@@ -7,9 +7,14 @@ const features=fs.readFileSync("hbnf-final-controller/hbnf-cart-features.mjs","u
 const backend=fs.readFileSync("hbnf-wow-bundle/backend/index.ts","utf8");
 const shared=fs.readFileSync("hbnf-wow-bundle/backend/shared.ts","utf8");
 const installer=fs.readFileSync("hbnf-ui-v6-package/install_ui_v6.py","utf8");
+const liveManifest=JSON.parse(fs.readFileSync("evidence/live-production-20261001/MANIFEST.json","utf8"));
 
 assert.equal(gates.acceptedBaseline.firmwareSha256,"0aeb668e58cad3bae5b636fdc79573a263c3d0e911903ed48af0bbc2e5681f61");
 assert.equal(gates.acceptedBaseline.matrixMac,"70:4b:ca:5b:34:5c");
+assert.equal(gates.currentProduction.canonicalFence.active,true,"current production fence must not be treated as inactive");
+assert.equal(gates.currentProduction.canonicalFence.epoch,2);
+assert.equal(liveManifest.functions["hbnf-cart-control"].version,16);
+assert.equal(liveManifest.functions["hbnf-matrix-adapter-foundation"].version,2);
 assert.ok(html.includes('id="motion"'),"accepted Motion control missing");
 assert.ok(html.includes('id="audioResponse"'),"accepted Audio Response control missing");
 for (const id of ["featureLook","featureColor","featurePalette","featureText","featureLive","featureOtaCheck","featurePreflight"]) {
