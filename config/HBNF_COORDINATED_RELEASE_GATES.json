@@ -6,7 +6,11 @@
     "candidate": "hbnf-integrated-rc-visual-audio-continuity-2026-09-30",
     "wled": "16.0.1",
     "matrixMac": "70:4b:ca:5b:34:5c",
-    "auxMac": "8c:94:df:55:c3:4c"
+    "auxMac": "8c:94:df:55:c3:4c",
+    "buildOutput": "outputs/HBNF_AUDIO_EXPRESSION_V1_1/HBNF_AUDIO_EXPRESSION_V1_1_candidate.bin",
+    "buildReport": "outputs/HBNF_AUDIO_EXPRESSION_V1_1/REPORT.md",
+    "buildManifest": "outputs/HBNF_AUDIO_EXPRESSION_V1_1/SHA256SUMS",
+    "buildBaseSha256": "32802f354cf2edcc1636698e5f15b6bc61311b0bffc7ecf72960221f3478fb55"
   },
   "sourceGates": {
     "isolatedBranch": true,
@@ -28,7 +32,9 @@
     "candidateBuiltFromAcceptedBaseline": false,
     "signedCandidatePublished": false,
     "firstRealOtaPhysicalAcceptance": false,
-    "ssidColdStartReliabilityVerified": false
+    "ssidColdStartReliabilityVerified": false,
+    "liveLocalDashboardSourceReconciled": false,
+    "fullControllerIos12CompatibilityVerified": false
   },
   "policy": {
     "deployWithoutExplicitApproval": false,
