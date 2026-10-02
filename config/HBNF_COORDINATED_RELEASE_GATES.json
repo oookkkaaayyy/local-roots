@@ -31,7 +31,14 @@
     "visualMutationsUseCanonicalCartOwner": true,
     "canonicalLookReadbackRollback": true,
     "legacyMatrixMutationBlockedFromFeatureUi": true,
-    "overlayUiFailsClosedUntilCanonicalBridge": true
+    "overlayUiFailsClosedUntilCanonicalBridge": true,
+    "currentProductionStateCaptured": true,
+    "exactLiveBackendSourcesCaptured": true,
+    "cartControlV16OverlayIntentStaged": true,
+    "foundationAdapterV2PaletteOverlayContractStaged": true,
+    "backendCapabilityGatingStaged": true,
+    "firmwareCoordinatedContractLocked": true,
+    "opalReadOnlyResultNilOriginCovered": true
   },
   "productionBlockers": {
     "acceptedLiveSourceIdentityReconciled": false,
@@ -45,7 +52,8 @@
     "fullControllerIos12CompatibilityVerified": false,
     "singleCanonicalWriterReconciled": false,
     "canonicalOverlayBridgeReconciled": false,
-    "canonicalPaletteAdapterReconciled": false
+    "canonicalPaletteAdapterReconciled": false,
+    "firmwarePaletteOverlayContractImplemented": false
   },
   "policy": {
     "deployWithoutExplicitApproval": false,
@@ -61,5 +69,44 @@
     "currentGuestBackendFunctionId": "95df7773-e888-48c9-84b3-ceb517c901c7",
     "localRecoveryWorkspace": "/Users/andrew/Documents/Codex/2026-09-27/hbnf-foundation-v1-consolidate-to-one/local-roots",
     "localRecoveryBranch": "hbnf-foundation-v1-live-fixes-20260928"
+  },
+  "currentProduction": {
+    "captured": "2026-10-01",
+    "canonicalFence": {
+      "active": true,
+      "epoch": 2,
+      "releaseId": "hbnf-cart-foundation-v1-20260925"
+    },
+    "desired": {
+      "revision": 117,
+      "lastUpdated": "2026-09-29T01:34:41.521317Z",
+      "power": "on",
+      "sceneId": "field-mix",
+      "paletteId": "ocean",
+      "matrixBrightness": 34,
+      "auxBrightness": 255
+    },
+    "liveBackend": {
+      "hbnf-cart-control": {
+        "version": 16,
+        "ezbrSha256": "3e4816988a9ac0b33f5b660ccefedf27e0249c7e7f5e11b1a8622a3c59fbd80d"
+      },
+      "hbnf-cart-reconcile": {
+        "version": 11,
+        "ezbrSha256": "4f400b2ee1d733f07a90baa231c843990802a3a72aedb507e6963a78685a1d93"
+      },
+      "hbnf-matrix-adapter-foundation": {
+        "version": 2,
+        "ezbrSha256": "4925765bdad4726e3eda85d1d781813c783c64d2d425f0aafe572bf918fbcdb1"
+      },
+      "hbnf-aux-adapter": {
+        "version": 8,
+        "ezbrSha256": "85e8b8c18ee0cf4c31d5fd854d8cc0d41cc7e75fccc538c8271a866d78466fd8"
+      },
+      "hbnf-matrix-control": {
+        "version": 172,
+        "ezbrSha256": "f49d087a3a6a77b2167d9892817f3dfcf36960cdb42fbb93e835f3c130c80aa7"
+      }
+    }
   }
 }
