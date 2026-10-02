@@ -1,0 +1,115 @@
+{
+  "schema": "hbnf-solved-problems-v1",
+  "issues": [
+    {
+      "id": "HBNF-SOLVED-001",
+      "title": "Old OpenWrt IPK container compatibility",
+      "status": "SOLVED",
+      "symptom": "Package accepted by newer tooling but rejected/misread by live OpenWrt/opkg.",
+      "root_cause": "Live GL-SFT1200/OpenWrt 18.06 expects the older tar.gz IPK container form.",
+      "validated_fix": "Build immutable updater IPK in the old OpenWrt-compatible tar.gz container format.",
+      "do_not_rediscover_unless": "Router firmware/opkg generation changes.",
+      "release_notes": "Stage 1.2.3 changed container only; control Version remained 1.2.2-1."
+    },
+    {
+      "id": "HBNF-SOLVED-002",
+      "title": "Updater clean-install parent directories",
+      "status": "SOLVED",
+      "symptom": "opkg install accepted package but failed placing nested files/directories.",
+      "root_cause": "Required parent directories were absent on clean install.",
+      "validated_fix": "Package/create all required parent directories before file install.",
+      "do_not_rediscover_unless": "Package layout changes."
+    },
+    {
+      "id": "HBNF-SOLVED-003",
+      "title": "Old Nixio mkdir/chmod/umask modes",
+      "status": "SOLVED",
+      "symptom": "Updater Lua fails on numeric mkdir/chmod/umask calls.",
+      "root_cause": "Old OpenWrt Nixio build rejects the numeric mode usage used by staged source.",
+      "validated_fix": "Use mkdir without numeric mode followed by chmod strings such as 0700/0600/0644; use string umask 0077.",
+      "do_not_rediscover_unless": "Router Lua/Nixio runtime changes."
+    },
+    {
+      "id": "HBNF-SOLVED-004",
+      "title": "BusyBox stat unavailable",
+      "status": "SOLVED",
+      "symptom": "Updater preflight/runtime fails because stat is missing.",
+      "root_cause": "Live BusyBox image has no stat/coreutils-stat.",
+      "validated_fix": "Use shipped narrow helper/equivalent wc/ls permission checks and remove stat from required tools.",
+      "do_not_rediscover_unless": "Router base image changes."
+    },
+    {
+      "id": "HBNF-SOLVED-005",
+      "title": "BusyBox-safe MAC normalization",
+      "status": "SOLVED",
+      "symptom": "MAC normalization fails in live updater shell.",
+      "root_cause": "Combined tr deletion expression is not portable to the live BusyBox behavior.",
+      "validated_fix": "Strip colon, dash and dot separately and lowercase A-F separately.",
+      "do_not_rediscover_unless": "Normalization implementation/runtime changes."
+    },
+    {
+      "id": "HBNF-SOLVED-006",
+      "title": "Safari same-origin GET may omit Origin",
+      "status": "SOLVED",
+      "symptom": "Trusted iPad updater check fails despite same-origin Opal page.",
+      "root_cause": "Safari same-origin GET can omit Origin.",
+      "validated_fix": "For read-only check GET, allow missing Origin; when Origin exists, enforce accepted Matrix/Opal origins. Keep mutation routes strict.",
+      "do_not_rediscover_unless": "Updater browser/API contract changes."
+    },
+    {
+      "id": "HBNF-SOLVED-007",
+      "title": "iOS 12 controller syntax/API incompatibility",
+      "status": "WATCH",
+      "symptom": "Staged controller code may fail on mounted iPad mini despite desktop/browser syntax checks.",
+      "root_cause": "Optional chaining, nullish coalescing and crypto.randomUUID exist in older staged files.",
+      "validated_fix": "Full-controller iOS 12 audit/transpile/reconciliation required before production claim.",
+      "do_not_rediscover_unless": "Mounted iPad/iOS target changes.",
+      "note": "Not fully closed as of staging snapshot."
+    },
+    {
+      "id": "HBNF-SOLVED-008",
+      "title": "Matrix/AUX starvation/freeze/brightness lag",
+      "status": "SOLVED",
+      "symptom": "AUX freezes/catches up or brightness lags under prior sync approaches.",
+      "root_cause": "Earlier sync/live-state path starved or mismatched follower behavior.",
+      "validated_fix": "Matrix-owned local rendering with AUX as DDP follower plus accepted no-starve/follower fixes.",
+      "do_not_rediscover_unless": "DDP architecture or AUX firmware changes."
+    },
+    {
+      "id": "HBNF-SOLVED-009",
+      "title": "Audio-driven tempo multiplication",
+      "status": "SOLVED",
+      "symptom": "Music/coughs multiply animation tempo and override intended manual speed.",
+      "root_cause": "Audio modulation incorrectly affected core tempo.",
+      "validated_fix": "Keep manual SPEED/Motion authoritative; confine audio to bounded accents/modulation.",
+      "do_not_rediscover_unless": "Audio scheduling/motion authority changes."
+    },
+    {
+      "id": "HBNF-SOLVED-010",
+      "title": "Visual transition discontinuity",
+      "status": "SOLVED",
+      "symptom": "Animations improved internally but scene changes still looked jumpy.",
+      "root_cause": "Phase/clock/dwell transition handling caused discontinuities.",
+      "validated_fix": "Continuous slew-limited clock, fixed dwell, smoothed audio, continuous sparkle, and crossfade behavior from accepted continuity work.",
+      "do_not_rediscover_unless": "Scheduler/transition architecture changes."
+    },
+    {
+      "id": "HBNF-WATCH-011",
+      "title": "HBNF-Cart SSID cold-start reliability",
+      "status": "WATCH",
+      "symptom": "SSID may not appear immediately after startup and sometimes requires refresh/toggle behavior.",
+      "root_cause": "Not yet conclusively established.",
+      "validated_fix": null,
+      "do_not_rediscover_unless": "Resolve with dedicated cold-start/channel test; do not mark solved by unrelated firmware success."
+    },
+    {
+      "id": "HBNF-WATCH-012",
+      "title": "Accepted V1.1 source/build provenance gap",
+      "status": "OPEN",
+      "symptom": "Accepted BIN exists but exact source/toolchain/dependency lineage has required reconstruction.",
+      "root_cause": "Prior accepted release did not preserve a complete golden release capsule.",
+      "validated_fix": null,
+      "do_not_rediscover_unless": "Close by completing the active source-reconciliation/rebuild task and creating the first full capsule."
+    }
+  ]
+}
