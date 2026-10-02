@@ -7,7 +7,7 @@ const backend=fs.readFileSync("hbnf-wow-bundle/backend/index.ts","utf8");
 const shared=fs.readFileSync("hbnf-wow-bundle/backend/shared.ts","utf8");
 
 for (const id of [
-  "featureLook","featureColor","featurePalette","featureApplyLook","featureSaveLook","featureApplySaved",
+  "featureLook","featureColor","featurePalette","featureLookName","featureSavedLooks","featureApplyLook","featureSaveLook","featureApplySaved","featureDeleteSaved",
   "featureText","featureSendText","featureLive","featureRefreshLive","featureScoreboard",
   "featureAcePot","featureOtaStatus","featureOtaCheck","featureOtaInstall","featureOtaResult","featurePreflight","featurePreflightResult"
 ]) assert.ok(html.includes('id="'+id+'"'), "missing UI id "+id);
@@ -20,6 +20,10 @@ assert.ok(features.includes('matrixApi("scoreboard"'),"scoreboard action missing
 assert.ok(features.includes('matrixApi("ace_pot"'),"ace_pot action missing");
 assert.ok(features.includes('fetchJson("/json/pal"'),"dynamic WLED palette list missing");
 assert.ok(features.includes("LIVE_CACHE_KEY"),"live-data cache missing");
+assert.ok(features.includes("SAVED_LOOKS_KEY"),"named saved-look library missing");
+assert.ok(features.includes("MAX_SAVED_LOOKS"),"saved-look bound missing");
+assert.ok(features.includes("deleteSavedLook"),"saved-look delete path missing");
+assert.ok(features.includes("liveRefreshInFlight"),"live refresh overlap guard missing");
 assert.ok(features.includes("snapshotRestorePayload"),"look rollback path missing");
 assert.ok(features.includes("Palette readback did not match"),"palette readback verification missing");
 assert.ok(features.includes("runPreflight"),"rollout preflight missing");
