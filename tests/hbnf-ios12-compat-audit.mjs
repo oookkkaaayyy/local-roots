@@ -14,12 +14,15 @@ for (const path of paths) {
     path,
     optionalChaining:(src.match(/\?\./g)||[]).length,
     nullishCoalescing:(src.match(/\?\?/g)||[]).length,
-    cryptoRandomUUID:(src.match(/crypto\.randomUUID/g)||[]).length
+    cryptoRandomUUID:(src.match(/crypto\.randomUUID/g)||[]).length,
+    replaceAll:(src.match(/\.replaceAll\(/g)||[]).length,
+    objectFromEntries:(src.match(/Object\.fromEntries/g)||[]).length,
+    structuredClone:(src.match(/structuredClone/g)||[]).length
   };
   findings.push(row);
   console.log(path+" "+JSON.stringify(row));
 }
-const incompatible=findings.filter(x=>x.optionalChaining||x.nullishCoalescing||x.cryptoRandomUUID);
+const incompatible=findings.filter(x=>x.optionalChaining||x.nullishCoalescing||x.cryptoRandomUUID||x.replaceAll||x.objectFromEntries||x.structuredClone);
 console.log("HBNF_IOS12_INCOMPATIBLE_SOURCE_FILES="+incompatible.length);
 if (gates.productionBlockers.fullControllerIos12CompatibilityVerified===true && incompatible.length) {
   throw new Error("Gate says full iOS12 compatibility is verified, but unsupported source syntax/API remains.");
