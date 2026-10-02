@@ -1,0 +1,63 @@
+{
+  "schema": "hbnf-coordinated-candidate-v1",
+  "created": "2026-10-01",
+  "matrix": {
+    "acceptedReleaseId": "hbnf-matrix-v1-1-current-20260930",
+    "acceptedFirmwareSha256": "0aeb668e58cad3bae5b636fdc79573a263c3d0e911903ed48af0bbc2e5681f61",
+    "candidateId": null,
+    "candidateFirmwareSha256": null,
+    "requiredFeatures": [
+      "canonical-palette-v1",
+      "canonical-overlay-v1",
+      "coordinated-ui-v1",
+      "hbnf-build-v1"
+    ],
+    "contract": "work/HBNF_FIRMWARE_COORDINATED_CONTRACT.md"
+  },
+  "backend": {
+    "unchanged": {
+      "hbnf-cart-reconcile": {
+        "version": 11,
+        "ezbrSha256": "4f400b2ee1d733f07a90baa231c843990802a3a72aedb507e6963a78685a1d93"
+      },
+      "hbnf-aux-adapter": {
+        "version": 8,
+        "ezbrSha256": "85e8b8c18ee0cf4c31d5fd854d8cc0d41cc7e75fccc538c8271a866d78466fd8"
+      },
+      "hbnf-matrix-control": {
+        "version": 172,
+        "ezbrSha256": "f49d087a3a6a77b2167d9892817f3dfcf36960cdb42fbb93e835f3c130c80aa7"
+      }
+    },
+    "changed": {
+      "hbnf-cart-control": {
+        "baseVersion": 16,
+        "baseEzbrSha256": "3e4816988a9ac0b33f5b660ccefedf27e0249c7e7f5e11b1a8622a3c59fbd80d",
+        "verifyJwt": false,
+        "source": "staging/coordinated-backend/hbnf-cart-control",
+        "rollback": "evidence/live-production-20261001/hbnf-cart-control"
+      },
+      "hbnf-matrix-adapter-foundation": {
+        "baseVersion": 2,
+        "baseEzbrSha256": "4925765bdad4726e3eda85d1d781813c783c64d2d425f0aafe572bf918fbcdb1",
+        "verifyJwt": true,
+        "source": "staging/coordinated-backend/hbnf-matrix-adapter-foundation",
+        "rollback": "evidence/live-production-20261001/hbnf-matrix-adapter-foundation"
+      }
+    }
+  },
+  "opalUpdater": {
+    "basePackageSha256": "090300853504e3e2bc6fe50c64cbb2b87c6688e38af9dc51dfcada2d87fbcdff",
+    "targetPackageVersion": "1.2.4-1",
+    "targetPackageSha256": null,
+    "rebuilder": "tools/hbnf-rebuild-opal-updater.py"
+  },
+  "deploymentRules": [
+    "No canonical state reseed",
+    "Do not reactivate the already-active epoch-2 fence",
+    "Do not deploy backend candidate until Matrix firmware candidate passes signed OTA health",
+    "Deploy only the two changed backend functions",
+    "Rollback backend from exact live source snapshots if post-deploy contract checks fail",
+    "Freeze only after consolidated physical acceptance"
+  ]
+}
