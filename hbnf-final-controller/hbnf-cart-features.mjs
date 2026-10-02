@@ -12,8 +12,11 @@ const LOOKS = [
   [81,"Kaleido 2"],[82,"Yves"],[83,"Scale Demo"],[84,"Zoom"],
   [85,"Complex Kaleido 2"],[86,"RGB Blobs 3"],[87,"SM5"],[88,"Module Experiment"]
 ];
-const SAVED_LOOK_KEY = "hbnf_cart_saved_look_v2";
+const SAVED_LOOKS_KEY = "hbnf_cart_saved_looks_v1";
+const LEGACY_SAVED_LOOK_KEY = "hbnf_cart_saved_look_v2";
 const LIVE_CACHE_KEY = "hbnf_cart_live_cache_v1";
+const MAX_SAVED_LOOKS = 12;
+let liveRefreshInFlight = false;
 const $ = id => document.getElementById(id);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -153,8 +156,57 @@ async function applyLook() {
   }
 }
 
+function readSavedLooks() {
+  try {
+    const raw=localStorage.getItem(SAVED_LOOKS_KEY);
+    const list=raw ? JSON.parse(raw) : [];
+    if (Array.isArray(list)) return list.slice(0,MAX_SAVED_LOOKS);
+  } catch (_) {}
+  try {
+    const legacy=localStorage.getItem(LEGACY_SAVED_LOOK_KEY);
+    if (legacy) {
+      const look=JSON.parse(legacy);
+      look.name=look.name || "Saved look";
+      localStorage.setItem(SAVED_LOOKS_KEY,JSON.stringify([look]));
+      localStorage.removeItem(LEGACY_SAVED_LOOK_KEY);
+      return [look];
+    }
+  } catch (_) {}
+  return [];
+}
+
+function writeSavedLooks(list) {
+  localStorage.setItem(SAVED_LOOKS_KEY,JSON.stringify(list.slice(0,MAX_SAVED_LOOKS)));
+}
+
+function renderSavedLooks(selectedName) {
+  const select=$("featureSavedLooks");
+  if (!select) return;
+  const list=readSavedLooks();
+  while (select.options.length) select.remove(0);
+  if (!list.length) {
+    const empty=document.createElement("option");
+    empty.value=""; empty.textContent="None saved";
+    select.appendChild(empty);
+    return;
+  }
+  list.forEach((look,index)=>{
+    const option=document.createElement("option");
+    option.value=String(index);
+    option.textContent=look.name || ("Saved look "+(index+1));
+    select.appendChild(option);
+    if (selectedName && option.textContent===selectedName) select.value=String(index);
+  });
+}
+
 async function saveLook() {
+  const list=readSavedLooks();
+  const nameInput=$("featureLookName");
+  const selected=$("featureLook");
+  const selectedLabel=selected && selected.options[selected.selectedIndex] ? selected.options[selected.selectedIndex].textContent : "Look";
+  const name=String(nameInput && nameInput.value ? nameInput.value : selectedLabel).trim().slice(0,24) || "Saved look";
   const look = {
+    name:name,
     preset:Number($("featureLook").value),
     color:$("featureColor").value,
     palette:$("featurePalette") ? $("featurePalette").value : "",
@@ -162,21 +214,47 @@ async function saveLook() {
     audioResponse:Number(($("audioResponse") && $("audioResponse").value) || 75),
     savedAt:new Date().toISOString()
   };
-  localStorage.setItem(SAVED_LOOK_KEY, JSON.stringify(look));
+  const existing=list.findIndex(item=>String(item.name || "").toLowerCase()===name.toLowerCase());
+  if (existing>=0) list[existing]=look;
+  else {
+    if (list.length>=MAX_SAVED_LOOKS) throw new Error("Saved-look limit reached ("+MAX_SAVED_LOOKS+"). Delete one first.");
+    list.push(look);
+  }
+  writeSavedLooks(list);
+  renderSavedLooks(name);
+  if (nameInput) nameInput.value=name;
   setFeatureStatus("Saved look stored on this device.");
 }
 
+function selectedSavedLook() {
+  const select=$("featureSavedLooks");
+  const list=readSavedLooks();
+  const index=select ? Number(select.value) : -1;
+  if (!Number.isInteger(index) || index<0 || index>=list.length) return null;
+  return {look:list[index],index:index,list:list};
+}
+
 async function applySavedLook() {
-  const raw = localStorage.getItem(SAVED_LOOK_KEY);
-  if (!raw) throw new Error("No saved look on this device.");
-  const look = JSON.parse(raw);
+  const selected=selectedSavedLook();
+  if (!selected) throw new Error("Choose a saved look first.");
+  const look=selected.look;
   $("featureLook").value=String(look.preset);
   $("featureColor").value=look.color || "#ffffff";
   if ($("featurePalette")) $("featurePalette").value=look.palette || "";
+  if ($("featureLookName")) $("featureLookName").value=look.name || "";
   if ($("motion")) { $("motion").value=String(look.motion); $("motion").dispatchEvent(new Event("change",{bubbles:true})); }
   if ($("audioResponse")) { $("audioResponse").value=String(look.audioResponse); $("audioResponse").dispatchEvent(new Event("change",{bubbles:true})); }
   await applyLook();
   setFeatureStatus("Saved look verified and applied.");
+}
+
+async function deleteSavedLook() {
+  const selected=selectedSavedLook();
+  if (!selected) throw new Error("Choose a saved look first.");
+  const removed=selected.list.splice(selected.index,1)[0];
+  writeSavedLooks(selected.list);
+  renderSavedLooks("");
+  setFeatureStatus("Deleted saved look: "+String(removed.name || "Saved look"));
 }
 
 async function sendText() {
@@ -217,10 +295,13 @@ function readLiveCache() {
 }
 
 async function refreshLive() {
+  if (liveRefreshInFlight) return;
+  liveRefreshInFlight=true;
   setFeatureStatus("Refreshing live round…");
   try {
     const out = await matrixApi("live_status",{},true);
-    renderLive(out.live,false,"");
+    const now=new Date();
+    renderLive(out.live,false,now.toLocaleTimeString());
     saveLiveCache(out.live);
     setFeatureStatus("Live round refreshed.");
   } catch (error) {
@@ -232,6 +313,8 @@ async function refreshLive() {
       return;
     }
     throw error;
+  } finally {
+    liveRefreshInFlight=false;
   }
 }
 
@@ -347,10 +430,12 @@ function bind(id,fn) {
 }
 
 populateLooks();
+renderSavedLooks("");
 loadPalettes().catch(e=>setFeatureStatus(e.message || String(e),true));
 bind("featureApplyLook",applyLook);
 bind("featureSaveLook",saveLook);
 bind("featureApplySaved",applySavedLook);
+bind("featureDeleteSaved",deleteSavedLook);
 bind("featureSendText",sendText);
 bind("featureRefreshLive",refreshLive);
 bind("featureScoreboard",showScoreboard);
@@ -368,3 +453,8 @@ window.addEventListener("pageshow",function(){
 document.addEventListener("visibilitychange",function(){
   if (!document.hidden && matrixLocal()) refreshOtaResult().catch(function(){});
 });
+
+setTimeout(function(){ refreshLive().catch(function(){}); },1200);
+setInterval(function(){
+  if (!document.hidden && !liveRefreshInFlight) refreshLive().catch(function(){});
+},30000);
