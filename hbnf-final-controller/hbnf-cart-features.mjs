@@ -1,5 +1,4 @@
 /* HBNF coordinated feature surface — source-only staging. No automatic mutation. */
-const MATRIX_READ_API = "https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-matrix-control";
 const OPAL_CHECK = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=check";
 const OPAL_RESULT = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=result";
 const OPAL_INSTALLER = "https://console.gl-inet.com/cgi-bin/luci/hbnf-installer";
@@ -53,22 +52,18 @@ async function fetchJson(url, options, label, retries=0, timeoutMs=4500) {
   throw lastError || new Error(label+" failed");
 }
 
-async function matrixRead(action, payload) {
-  if (action !== "live_status") throw new Error("Legacy Matrix mutations are blocked from the coordinated controller.");
-  return fetchJson(MATRIX_READ_API, {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(Object.assign({action:action}, payload || {})),
-    cache:"no-store"
-  }, "Matrix read-only backend", 1, 6000);
-}
-
 function canonicalBridge() {
   const bridge=window.HBNFCanonical;
   if (!bridge || typeof bridge.command!=="function" || typeof bridge.refresh!=="function") {
     throw new Error("Canonical cart control is not ready.");
   }
   return bridge;
+}
+
+function canonicalRead(action, payload) {
+  const bridge=canonicalBridge();
+  if (typeof bridge.read!=="function") throw new Error("Canonical cart read path is not ready.");
+  return bridge.read(action,payload || {});
 }
 
 function canonicalCapabilities() {
@@ -329,7 +324,7 @@ async function refreshLive(silent) {
   liveRefreshInFlight=true;
   if (!silent) setFeatureStatus("Refreshing live round…");
   try {
-    const out = await matrixRead("live_status",{});
+    const out = await canonicalRead("live_status",{});
     const now=new Date();
     renderLive(out.live,false,now.toLocaleTimeString());
     saveLiveCache(out.live);
@@ -350,7 +345,7 @@ async function refreshLive(silent) {
 
 async function showScoreboard() {
   setFeatureStatus("Preparing live scoreboard…");
-  const out=await matrixRead("live_status",{});
+  const out=await canonicalRead("live_status",{});
   const live=out && out.live;
   if (!live || !live.active || !Array.isArray(live.entries) || !live.entries.length) throw new Error("No active Skins or Glow scores are available.");
   const bridge=canonicalOverlayBridge();
@@ -361,7 +356,7 @@ async function showScoreboard() {
 
 async function showAcePot() {
   setFeatureStatus("Preparing ace pot…");
-  const out=await matrixRead("live_status",{});
+  const out=await canonicalRead("live_status",{});
   const live=out && out.live;
   const amount=Number(live && live.acePot || 0);
   const bridge=canonicalOverlayBridge();
@@ -466,7 +461,7 @@ async function runPreflight() {
   } catch (e) { checks.push("Signed OTA FAIL"); }
 
   try {
-    await matrixRead("live_status",{});
+    await canonicalRead("live_status",{});
     checks.push("Live-data path PASS");
   } catch (e) {
     checks.push("Live-data path WAN/CHECK");
