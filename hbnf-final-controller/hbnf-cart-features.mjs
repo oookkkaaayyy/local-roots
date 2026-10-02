@@ -3,6 +3,8 @@ const MATRIX_API = "https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-m
 const OPAL_CHECK = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=check";
 const OPAL_RESULT = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=result";
 const OPAL_INSTALLER = "https://console.gl-inet.com/cgi-bin/luci/hbnf-installer";
+const EXPECTED_MATRIX_MAC = "704bca5b345c";
+const ACCEPTED_BASE_SHA256 = "0aeb668e58cad3bae5b636fdc79573a263c3d0e911903ed48af0bbc2e5681f61";
 const LOOKS = [
   [61,"Complex Kaleido"],[62,"Big Kaleido"],[63,"Parametric Water"],[64,"RGB Blobs"],
   [65,"Polar Waves"],[66,"Zoom 2"],[67,"Kaleido 4"],[68,"Kaleido 6"],
@@ -15,6 +17,7 @@ const LOOKS = [
 const SAVED_LOOKS_KEY = "hbnf_cart_saved_looks_v1";
 const LEGACY_SAVED_LOOK_KEY = "hbnf_cart_saved_look_v2";
 const LIVE_CACHE_KEY = "hbnf_cart_live_cache_v1";
+const LIVE_CACHE_MAX_MS = 12 * 60 * 60 * 1000;
 const MAX_SAVED_LOOKS = 12;
 let liveRefreshInFlight = false;
 const $ = id => document.getElementById(id);
@@ -75,6 +78,10 @@ async function wledState(payload) {
 async function readWledState() {
   if (!matrixLocal()) throw new Error("Matrix local state is available only on HBNF-Cart.");
   return fetchJson("/json/state",{method:"GET",cache:"no-store"},"Matrix state",1,3500);
+}
+
+function normalizedMac(value) {
+  return String(value || "").toLowerCase().replace(/:/g,"").replace(/-/g,"").replace(/\./g,"");
 }
 
 function hexRgb(hex) {
@@ -290,26 +297,29 @@ function readLiveCache() {
   try {
     const raw=localStorage.getItem(LIVE_CACHE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw);
+    const value=JSON.parse(raw);
+    const saved=value && value.savedAt ? new Date(value.savedAt).getTime() : 0;
+    if (!saved || Date.now()-saved>LIVE_CACHE_MAX_MS) return null;
+    return value;
   } catch (_) { return null; }
 }
 
-async function refreshLive() {
+async function refreshLive(silent) {
   if (liveRefreshInFlight) return;
   liveRefreshInFlight=true;
-  setFeatureStatus("Refreshing live round…");
+  if (!silent) setFeatureStatus("Refreshing live round…");
   try {
     const out = await matrixApi("live_status",{},true);
     const now=new Date();
     renderLive(out.live,false,now.toLocaleTimeString());
     saveLiveCache(out.live);
-    setFeatureStatus("Live round refreshed.");
+    if (!silent) setFeatureStatus("Live round refreshed.");
   } catch (error) {
     const cached=readLiveCache();
     if (cached && cached.live) {
       const when=cached.savedAt ? new Date(cached.savedAt).toLocaleString() : "";
       renderLive(cached.live,true,when);
-      setFeatureStatus("WAN live refresh failed; showing last cached round.",true);
+      if (!silent) setFeatureStatus("WAN live refresh failed; showing last cached round.",true);
       return;
     }
     throw error;
@@ -333,20 +343,28 @@ async function showAcePot() {
 function renderOta(j) {
   const status=$("featureOtaStatus"), install=$("featureOtaInstall");
   if (!status || !install) return;
-  if (j && j.ok === true) {
-    if (j.installable === true) {
-      status.textContent = "Update available: "+j.release_id;
-      install.hidden=false;
-    } else if (j.already_accepted === true) {
-      status.textContent = "Current signed release accepted: "+j.release_id;
-      install.hidden=true;
-    } else {
-      status.textContent = "Signed release checked: "+(j.release_id || "unknown");
-      install.hidden=true;
-    }
-  } else {
+  install.hidden=true;
+  if (!j || j.ok !== true) {
     status.textContent = "Signed update check unavailable.";
-    install.hidden=true;
+    return;
+  }
+  const macOk=normalizedMac(j.matrix_mac)===EXPECTED_MATRIX_MAC;
+  const artifactOk=j.artifact_verified===true;
+  if (!macOk || !artifactOk) {
+    status.textContent="BLOCKED · signed release identity verification failed.";
+    return;
+  }
+  if (j.installable === true) {
+    if (String(j.based_on_firmware_sha256 || "").toLowerCase()!==ACCEPTED_BASE_SHA256) {
+      status.textContent="BLOCKED · update is not based on the accepted Audio V1.1 firmware.";
+      return;
+    }
+    status.textContent = "Update available: "+j.release_id+" · verified base";
+    install.hidden=false;
+  } else if (j.already_accepted === true) {
+    status.textContent = "Current signed release accepted: "+j.release_id;
+  } else {
+    status.textContent = "Signed release checked: "+(j.release_id || "unknown");
   }
 }
 
@@ -402,7 +420,9 @@ async function runPreflight() {
 
   try {
     const info=await fetchJson("/json/info",{method:"GET",cache:"no-store"},"Matrix identity",1,3500);
-    checks.push("Matrix API PASS"+(info && info.ver ? " · WLED "+info.ver : ""));
+    const mac=normalizedMac(info && info.mac);
+    if (mac!==EXPECTED_MATRIX_MAC) checks.push("Matrix identity FAIL");
+    else checks.push("Matrix API PASS"+(info && info.ver ? " · WLED "+info.ver : ""));
   } catch (e) { checks.push("Matrix API FAIL"); }
 
   checks.push("Matrix truth "+(truthConnected("matrixTruth") ? "PASS" : "CHECK"));
@@ -410,7 +430,10 @@ async function runPreflight() {
 
   try {
     const ota=await getOtaStatus();
-    checks.push("Signed OTA "+(ota && ota.ok === true ? "PASS" : "FAIL"));
+    const macOk=normalizedMac(ota.matrix_mac)===EXPECTED_MATRIX_MAC;
+    const sigOk=ota.ok===true && ota.artifact_verified===true;
+    const baseOk=ota.installable!==true || String(ota.based_on_firmware_sha256 || "").toLowerCase()===ACCEPTED_BASE_SHA256;
+    checks.push("Signed OTA "+(sigOk && macOk && baseOk ? "PASS" : "FAIL"));
   } catch (e) { checks.push("Signed OTA FAIL"); }
 
   try {
@@ -420,7 +443,7 @@ async function runPreflight() {
     checks.push("Live-data path WAN/CHECK");
   }
 
-  const hardFail=checks.some(x=>/API FAIL|OTA FAIL/.test(x));
+  const hardFail=checks.some(x=>/API FAIL|identity FAIL|OTA FAIL/.test(x));
   out.textContent=(hardFail ? "NOT READY · " : "READY/CHECK · ")+checks.join(" · ");
 }
 
@@ -454,7 +477,7 @@ document.addEventListener("visibilitychange",function(){
   if (!document.hidden && matrixLocal()) refreshOtaResult().catch(function(){});
 });
 
-setTimeout(function(){ refreshLive().catch(function(){}); },1200);
+setTimeout(function(){ refreshLive(true).catch(function(){}); },1200);
 setInterval(function(){
-  if (!document.hidden && !liveRefreshInFlight) refreshLive().catch(function(){});
+  if (!document.hidden && !liveRefreshInFlight) refreshLive(true).catch(function(){});
 },30000);
