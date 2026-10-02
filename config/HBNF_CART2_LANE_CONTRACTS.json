@@ -1,0 +1,64 @@
+{
+  "schema": "hbnf-cart2-lane-contracts-v1",
+  "status": "DRAFT_UNTIL_SCOPE_LOCK",
+  "interfaces": {
+    "AudioFeatures": {
+      "producer": "visual_audio",
+      "consumers": [
+        "visual_audio",
+        "text_moments_optional"
+      ],
+      "frozen": false,
+      "realtime_local_only": true
+    },
+    "VibeSelection": {
+      "producer": "mission_control_guest",
+      "consumers": [
+        "visual_audio",
+        "text_moments"
+      ],
+      "frozen": false
+    },
+    "VisualMoment": {
+      "producer": "events_games_controller",
+      "consumers": [
+        "text_moments"
+      ],
+      "frozen": false
+    },
+    "GameState_GameDirective": {
+      "producer": "games",
+      "consumers": [
+        "games",
+        "mission_control_guest",
+        "text_moments"
+      ],
+      "frozen": false
+    },
+    "HealthState": {
+      "producer": "reliability_integration",
+      "consumers": [
+        "mission_control_guest"
+      ],
+      "frozen": false
+    }
+  },
+  "lanes": {
+    "visual_audio": {
+      "mayChangeSharedInterfaces": false
+    },
+    "text_moments": {
+      "mayChangeSharedInterfaces": false
+    },
+    "games": {
+      "mayChangeSharedInterfaces": false
+    },
+    "mission_control_guest": {
+      "mayChangeSharedInterfaces": false
+    },
+    "reliability_integration": {
+      "mayChangeSharedInterfaces": false
+    }
+  },
+  "rule": "Shared-interface changes require explicit integration review; lane convenience does not authorize scope reduction."
+}
