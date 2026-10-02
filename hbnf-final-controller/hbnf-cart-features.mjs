@@ -461,6 +461,21 @@ async function runPreflight() {
   out.textContent=(hardFail ? "NOT READY · " : "READY/CHECK · ")+checks.join(" · ");
 }
 
+function syncOverlayAvailability() {
+  const ready=!!(window.HBNFCanonical && typeof window.HBNFCanonical.overlay==="function");
+  ["featureSendText","featureScoreboard","featureAcePot"].forEach(function(id){
+    const node=$(id);
+    if (node) node.disabled=!ready;
+  });
+  if (!ready) {
+    const live=$("featureLive");
+    if (live && live.textContent==="Live round not checked yet.") {
+      live.textContent="Live scores are read-only ready. Matrix overlays wait for the canonical overlay bridge.";
+    }
+  }
+  return ready;
+}
+
 function bind(id,fn) {
   const n=$(id); if (!n) return;
   n.addEventListener("click",()=>Promise.resolve(fn()).catch(e=>setFeatureStatus(e.message || String(e),true)));
@@ -468,6 +483,7 @@ function bind(id,fn) {
 
 populateLooks();
 renderSavedLooks("");
+syncOverlayAvailability();
 loadPalettes().catch(e=>setFeatureStatus(e.message || String(e),true));
 bind("featureApplyLook",applyLook);
 bind("featureSaveLook",saveLook);
