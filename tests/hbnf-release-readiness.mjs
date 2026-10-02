@@ -15,10 +15,12 @@ assert.ok(html.includes('id="audioResponse"'),"accepted Audio Response control m
 for (const id of ["featureLook","featureColor","featurePalette","featureText","featureLive","featureOtaCheck","featurePreflight"]) {
   assert.ok(html.includes('id="'+id+'"'),"required visible control missing: "+id);
 }
-assert.ok(features.includes('fetch("/json/pal"'),"dynamic palette API missing");
-assert.ok(features.includes("snapshotRestorePayload"),"look rollback missing");
+assert.ok(features.includes('fetchJson("/json/pal"'),"dynamic palette API missing");
+assert.ok(features.includes("rollbackCanonicalLook"),"canonical look rollback missing");
 assert.ok(features.includes("LIVE_CACHE_KEY"),"live cache missing");
 assert.ok(features.includes("runPreflight"),"preflight missing");
+assert.ok(features.includes("canonicalOverlayIntentV1"),"overlay capability gate missing");
+assert.ok(features.includes("canonicalPaletteIntentV1"),"palette capability gate missing");
 assert.ok(!features.includes("?."),"optional chaining not allowed in iOS-12-targeted feature module");
 assert.ok(shared.includes('"http://192.168.77.10"'),"Matrix local origin missing from backend CORS");
 assert.ok(backend.includes('action==="live_status"'),"read-only live_status missing");
