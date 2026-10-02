@@ -28,6 +28,9 @@ on:
       - 'tests/hbnf-*.mjs'
       - 'tests/hbnf-*.py'
       - 'hbnf-ui-v6-package/**'
+      - 'staging/coordinated-backend/**'
+      - 'evidence/live-production-20261001/**'
+      - 'hbnf-cart-core/domain/palette-projection.mjs'
       - 'tools/hbnf-*.py'
       - '.github/workflows/hbnf-coordinated-release-ci.yml'
   workflow_dispatch:
@@ -122,7 +125,7 @@ jobs:
         run: |
           set -euo pipefail
           OUT="$RUNNER_TEMP/HBNF_COORDINATED_RELEASE_SOURCE_20261001"
-          mkdir -p "$OUT/controller" "$OUT/work" "$OUT/config" "$OUT/tools" "$OUT/tests" "$OUT/installer"
+          mkdir -p "$OUT/controller" "$OUT/domain" "$OUT/work" "$OUT/config" "$OUT/tools" "$OUT/tests" "$OUT/installer"
           cp hbnf-final-controller/hbnf-cart.html "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart.js "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-semantic.mjs "$OUT/controller/"
@@ -131,6 +134,7 @@ jobs:
           cp hbnf-final-controller/hbnf-cart-features.mjs "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-manifest.webmanifest "$OUT/controller/"
           cp hbnf-ui-v6-package/install_ui_v6.py "$OUT/installer/"
+          cp hbnf-cart-core/domain/palette-projection.mjs "$OUT/domain/"
           cp config/HBNF_COORDINATED_RELEASE_GATES.json "$OUT/config/"
           cp config/HBNF_COORDINATED_CANDIDATE_MANIFEST.json "$OUT/config/"
           cp tools/hbnf-rebuild-opal-updater.py "$OUT/tools/"
@@ -139,6 +143,7 @@ jobs:
           cp tests/hbnf-coordinated-controller-contract.mjs "$OUT/tests/"
           cp tests/hbnf-release-readiness.mjs "$OUT/tests/"
           cp tests/hbnf-ios12-compat-audit.mjs "$OUT/tests/"
+          cp tests/hbnf-canonical-palette-projection.mjs "$OUT/tests/"
           cp tests/hbnf-opal-updater-rebuilder.test.py "$OUT/tests/"
           cp tests/hbnf-coordinated-backend-staging.mjs "$OUT/tests/"
           mkdir -p "$OUT/staging" "$OUT/evidence"
