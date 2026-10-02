@@ -56,6 +56,7 @@ jobs:
           grep -q 'runPreflight' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q '"http://192.168.77.10"' hbnf-wow-bundle/backend/shared.ts
           node tests/hbnf-coordinated-controller-contract.mjs
+          node tests/hbnf-release-readiness.mjs
           grep -q 'OPAL_CHECK' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'OPAL_INSTALLER' hbnf-final-controller/hbnf-cart-features.mjs
 
