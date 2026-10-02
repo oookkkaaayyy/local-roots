@@ -71,10 +71,16 @@ function canonicalBridge() {
   return bridge;
 }
 
+function canonicalCapabilities() {
+  const bridge=window.HBNFCanonical;
+  return bridge && typeof bridge.getCapabilities==="function" ? (bridge.getCapabilities() || {}) : {};
+}
+
 function canonicalOverlayBridge() {
   const bridge=window.HBNFCanonical;
-  if (!bridge || typeof bridge.overlay!=="function") {
-    throw new Error("Canonical overlay bridge is not yet reconciled; no legacy direct command was sent.");
+  const caps=canonicalCapabilities();
+  if (!bridge || typeof bridge.overlay!=="function" || caps.canonicalOverlayIntentV1!==true) {
+    throw new Error("Canonical overlay backend is not ready; no legacy direct command was sent.");
   }
   return bridge;
 }
@@ -151,6 +157,8 @@ async function rollbackCanonicalLook(bridge, before) {
 
 async function applyLook() {
   const bridge=canonicalBridge();
+  const caps=canonicalCapabilities();
+  if (caps.canonicalPaletteIntentV1!==true) throw new Error("Coordinated palette backend is not ready; no visual change was sent.");
   const sceneId=String($("featureLook").value || "");
   const paletteId=paletteIdFromControls();
   if (!sceneId) throw new Error("Choose a show first.");
@@ -469,18 +477,22 @@ async function runPreflight() {
 }
 
 function syncOverlayAvailability() {
-  const ready=!!(window.HBNFCanonical && typeof window.HBNFCanonical.overlay==="function");
+  const caps=canonicalCapabilities();
+  const overlayReady=!!(window.HBNFCanonical && typeof window.HBNFCanonical.overlay==="function" && caps.canonicalOverlayIntentV1===true);
+  const paletteReady=caps.canonicalPaletteIntentV1===true;
   ["featureSendText","featureScoreboard","featureAcePot"].forEach(function(id){
     const node=$(id);
-    if (node) node.disabled=!ready;
+    if (node) node.disabled=!overlayReady;
   });
-  if (!ready) {
+  const apply=$("featureApplyLook");
+  if (apply) apply.disabled=!paletteReady;
+  if (!overlayReady) {
     const live=$("featureLive");
     if (live && live.textContent==="Live round not checked yet.") {
-      live.textContent="Live scores are read-only ready. Matrix overlays wait for the canonical overlay bridge.";
+      live.textContent="Live scores are read-only ready. Overlay controls unlock only after the coordinated canonical backend is active.";
     }
   }
-  return ready;
+  return overlayReady && paletteReady;
 }
 
 function bind(id,fn) {
@@ -518,3 +530,5 @@ setTimeout(function(){ refreshLive(true).catch(function(){}); },1200);
 setInterval(function(){
   if (!document.hidden && !liveRefreshInFlight) refreshLive(true).catch(function(){});
 },30000);
+
+window.addEventListener("hbnf-canonical-capabilities",function(){ syncOverlayAvailability(); });
