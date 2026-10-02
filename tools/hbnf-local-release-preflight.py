@@ -42,10 +42,14 @@ def signer_check():
         out["private_mode_ok"]=stat.S_IMODE(private.stat().st_mode)==0o600
     if public.is_file():
         out["public_mode"]=oct(stat.S_IMODE(public.stat().st_mode))
-        p=run(["openssl","pkey","-pubin","-in",str(public),"-outform","DER"],timeout=15)
-        if p["code"]==0:
-            der=subprocess.run(["openssl","pkey","-pubin","-in",str(public),"-outform","DER"],stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=15).stdout
-            out["public_der_sha256"]=hashlib.sha256(der).hexdigest()
+        try:
+            p=subprocess.run(["openssl","pkey","-pubin","-in",str(public),"-outform","DER"],stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=15)
+            if p.returncode==0:
+                out["public_der_sha256"]=hashlib.sha256(p.stdout).hexdigest()
+            else:
+                out["public_key_error"]=p.stderr.decode("utf-8","replace").strip()
+        except Exception as e:
+            out["public_key_error"]=str(e)
     return out
 
 def ensure_base_ipk():
