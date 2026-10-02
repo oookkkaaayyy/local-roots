@@ -40,6 +40,10 @@ jobs:
         with:
           node-version: 22
 
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
       - name: JavaScript syntax
         run: |
           set -euo pipefail
@@ -82,6 +86,7 @@ jobs:
           grep -q 'LIVE_CACHE_MAX_MS' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q '"http://192.168.77.10"' hbnf-wow-bundle/backend/shared.ts
           node tests/hbnf-coordinated-controller-contract.mjs
+          node tests/hbnf-coordinated-backend-staging.mjs
           node tests/hbnf-release-readiness.mjs
           node tests/hbnf-ios12-compat-audit.mjs
           node tests/hbnf-canonical-palette-projection.mjs
@@ -90,6 +95,12 @@ jobs:
           grep -q 'OPAL_CHECK' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'OPAL_RESULT' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'OPAL_INSTALLER' hbnf-final-controller/hbnf-cart-features.mjs
+
+      - name: Deno check staged backend
+        run: |
+          set -euo pipefail
+          deno check staging/coordinated-backend/hbnf-cart-control/index.ts
+          deno check staging/coordinated-backend/hbnf-matrix-adapter-foundation/index.ts
 
       - name: Safety gates
         run: |
@@ -123,6 +134,10 @@ jobs:
           cp tests/hbnf-release-readiness.mjs "$OUT/tests/"
           cp tests/hbnf-ios12-compat-audit.mjs "$OUT/tests/"
           cp tests/hbnf-opal-updater-rebuilder.test.py "$OUT/tests/"
+          cp tests/hbnf-coordinated-backend-staging.mjs "$OUT/tests/"
+          mkdir -p "$OUT/staging" "$OUT/evidence"
+          cp -R staging/coordinated-backend "$OUT/staging/"
+          cp -R evidence/live-production-20261001 "$OUT/evidence/"
           cp work/HBNF_COORDINATED_RELEASE_20261001.md "$OUT/work/"
           cp work/HBNF_READ_THIS_FIRST.md "$OUT/work/"
           cp work/HBNF_ROLLOUT_RUNBOOK_20261001.md "$OUT/work/"
