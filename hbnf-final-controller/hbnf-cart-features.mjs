@@ -11,8 +11,10 @@ const LOOKS = [
   [81,"Kaleido 2"],[82,"Yves"],[83,"Scale Demo"],[84,"Zoom"],
   [85,"Complex Kaleido 2"],[86,"RGB Blobs 3"],[87,"SM5"],[88,"Module Experiment"]
 ];
-const SAVED_LOOK_KEY = "hbnf_cart_saved_look_v1";
+const SAVED_LOOK_KEY = "hbnf_cart_saved_look_v2";
+const LIVE_CACHE_KEY = "hbnf_cart_live_cache_v1";
 const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 function setFeatureStatus(message, bad=false) {
   const node = $("featureStatus");
@@ -25,28 +27,50 @@ function matrixLocal() {
   return location.hostname === "192.168.77.10";
 }
 
-async function matrixApi(action, payload={}) {
-  const r = await fetch(MATRIX_API, {
+async function fetchJson(url, options, label, retries=0, timeoutMs=4500) {
+  let lastError = null;
+  for (let attempt=0; attempt<=retries; attempt++) {
+    let timer = null;
+    try {
+      const timeout = new Promise((resolve,reject)=>{
+        timer = setTimeout(()=>reject(new Error(label+" timed out")), timeoutMs);
+      });
+      const response = await Promise.race([fetch(url, options || {}), timeout]);
+      if (timer) clearTimeout(timer);
+      const json = await response.json().catch(()=>({}));
+      if (!response.ok) throw new Error(json.error || (label+" HTTP "+response.status));
+      return json;
+    } catch (error) {
+      if (timer) clearTimeout(timer);
+      lastError = error;
+      if (attempt < retries) await sleep(180 * (attempt + 1));
+    }
+  }
+  throw lastError || new Error(label+" failed");
+}
+
+async function matrixApi(action, payload, readOnly=false) {
+  return fetchJson(MATRIX_API, {
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({action,...payload}),
+    body:JSON.stringify(Object.assign({action:action}, payload || {})),
     cache:"no-store"
-  });
-  const j = await r.json().catch(()=>({}));
-  if (!r.ok || j.ok === false) throw new Error(j.error || ("HTTP " + r.status));
-  return j;
+  }, "Matrix backend", readOnly ? 1 : 0, 6000);
 }
 
 async function wledState(payload) {
   if (!matrixLocal()) throw new Error("Local Matrix controls activate only from 192.168.77.10/hbnf.");
-  const r = await fetch("/json/state", {
+  return fetchJson("/json/state", {
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify(payload),
     cache:"no-store"
-  });
-  if (!r.ok) throw new Error("Matrix local API HTTP " + r.status);
-  return r.json().catch(()=>({}));
+  }, "Matrix local API", 1, 3500);
+}
+
+async function readWledState() {
+  if (!matrixLocal()) throw new Error("Matrix local state is available only on HBNF-Cart.");
+  return fetchJson("/json/state",{method:"GET",cache:"no-store"},"Matrix state",1,3500);
 }
 
 function hexRgb(hex) {
@@ -55,12 +79,17 @@ function hexRgb(hex) {
   return [parseInt(s.slice(0,2),16),parseInt(s.slice(2,4),16),parseInt(s.slice(4,6),16)];
 }
 
+function sameRgb(a,b) {
+  return Array.isArray(a) && Array.isArray(b) &&
+    Number(a[0])===Number(b[0]) && Number(a[1])===Number(b[1]) && Number(a[2])===Number(b[2]);
+}
+
 function populateLooks() {
   const select = $("featureLook");
   if (!select || select.options.length) return;
-  LOOKS.forEach(([value,label])=>{
+  LOOKS.forEach(pair=>{
     const o=document.createElement("option");
-    o.value=String(value); o.textContent=label;
+    o.value=String(pair[0]); o.textContent=pair[1];
     select.appendChild(o);
   });
 }
@@ -68,9 +97,7 @@ function populateLooks() {
 async function loadPalettes() {
   const select = $("featurePalette");
   if (!select || !matrixLocal()) return;
-  const r = await fetch("/json/pal",{cache:"no-store"});
-  if (!r.ok) throw new Error("Palette list HTTP " + r.status);
-  const names = await r.json();
+  const names = await fetchJson("/json/pal",{method:"GET",cache:"no-store"},"Palette list",1,3500);
   if (!Array.isArray(names)) throw new Error("Palette list unavailable.");
   while (select.options.length > 1) select.remove(1);
   names.forEach((name,index)=>{
@@ -81,15 +108,48 @@ async function loadPalettes() {
   });
 }
 
+function snapshotRestorePayload(state) {
+  const payload = {};
+  if (!state || typeof state !== "object") return payload;
+  if (typeof state.on === "boolean") payload.on = state.on;
+  if (Number.isFinite(Number(state.bri))) payload.bri = Number(state.bri);
+  if (Number.isFinite(Number(state.ps)) && Number(state.ps) >= 0) payload.ps = Number(state.ps);
+  if (Array.isArray(state.seg) && state.seg[0]) {
+    const s=state.seg[0], restore={id:0};
+    if (Number.isFinite(Number(s.pal))) restore.pal=Number(s.pal);
+    if (Array.isArray(s.col)) restore.col=s.col;
+    payload.seg=[restore];
+  }
+  return payload;
+}
+
 async function applyLook() {
   const preset = Number($("featureLook").value);
   const color = hexRgb($("featureColor").value);
   const paletteValue = $("featurePalette") ? $("featurePalette").value : "";
   const seg = {id:0,col:[color,[0,0,0],[0,0,0]]};
   if (paletteValue !== "") seg.pal = Number(paletteValue);
-  setFeatureStatus("Applying look…");
-  await wledState({on:true,ps:preset,seg:[seg]});
-  setFeatureStatus("Look applied.");
+
+  setFeatureStatus("Applying and verifying look…");
+  const before = await readWledState();
+  try {
+    await wledState({on:true,ps:preset,v:true});
+    await wledState({seg:[seg],v:true});
+    await sleep(120);
+    const after = await readWledState();
+    const active = Array.isArray(after.seg) && after.seg[0] ? after.seg[0] : {};
+    if (paletteValue !== "" && Number(active.pal) !== Number(paletteValue)) {
+      throw new Error("Palette readback did not match.");
+    }
+    if (Array.isArray(active.col) && active.col[0] && !sameRgb(active.col[0],color)) {
+      throw new Error("Color readback did not match.");
+    }
+    setFeatureStatus("Look verified on Matrix.");
+  } catch (error) {
+    const rollback=snapshotRestorePayload(before);
+    try { await wledState(rollback); } catch (_) {}
+    throw new Error("Look was not verified; previous Matrix state was restored. "+(error.message || String(error)));
+  }
 }
 
 async function saveLook() {
@@ -98,7 +158,8 @@ async function saveLook() {
     color:$("featureColor").value,
     palette:$("featurePalette") ? $("featurePalette").value : "",
     motion:Number(($("motion") && $("motion").value) || 60),
-    audioResponse:Number(($("audioResponse") && $("audioResponse").value) || 75)
+    audioResponse:Number(($("audioResponse") && $("audioResponse").value) || 75),
+    savedAt:new Date().toISOString()
   };
   localStorage.setItem(SAVED_LOOK_KEY, JSON.stringify(look));
   setFeatureStatus("Saved look stored on this device.");
@@ -114,46 +175,75 @@ async function applySavedLook() {
   if ($("motion")) { $("motion").value=String(look.motion); $("motion").dispatchEvent(new Event("change",{bubbles:true})); }
   if ($("audioResponse")) { $("audioResponse").value=String(look.audioResponse); $("audioResponse").dispatchEvent(new Event("change",{bubbles:true})); }
   await applyLook();
-  setFeatureStatus("Saved look applied.");
+  setFeatureStatus("Saved look verified and applied.");
 }
 
 async function sendText() {
   const text = String($("featureText").value || "").trim();
   if (!text) throw new Error("Type a message first.");
   setFeatureStatus("Sending text…");
-  await matrixApi("text",{text,color:$("featureColor").value || "#FFFFFF"});
+  await matrixApi("text",{text:text,color:$("featureColor").value || "#FFFFFF"},false);
   $("featureText").value="";
-  setFeatureStatus("Text sent.");
+  setFeatureStatus("Text command accepted.");
 }
 
-function renderLive(live) {
+function renderLive(live, cached=false, cachedAt="") {
   const node=$("featureLive");
   if (!node) return;
   if (!live || !live.active) {
-    node.textContent = "No active Skins or Glow round.";
+    node.textContent = (cached ? "Cached: " : "")+"No active Skins or Glow round."+(cachedAt ? " · "+cachedAt : "");
     return;
   }
   const entries = Array.isArray(live.entries) ? live.entries.slice(0,8).join(" · ") : "";
-  node.textContent = live.event.toUpperCase()+" · "+live.label+" · ACE POT $"+Number(live.acePot||0).toFixed(0)+(entries ? " · "+entries : "");
+  node.textContent = (cached ? "CACHED · " : "")+
+    String(live.event || "").toUpperCase()+" · "+String(live.label || "")+
+    " · ACE POT $"+Number(live.acePot||0).toFixed(0)+(entries ? " · "+entries : "")+
+    (cachedAt ? " · "+cachedAt : "");
+}
+
+function saveLiveCache(live) {
+  try {
+    localStorage.setItem(LIVE_CACHE_KEY,JSON.stringify({savedAt:new Date().toISOString(),live:live}));
+  } catch (_) {}
+}
+
+function readLiveCache() {
+  try {
+    const raw=localStorage.getItem(LIVE_CACHE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (_) { return null; }
 }
 
 async function refreshLive() {
   setFeatureStatus("Refreshing live round…");
-  const out = await matrixApi("live_status");
-  renderLive(out.live);
-  setFeatureStatus("Live round refreshed.");
+  try {
+    const out = await matrixApi("live_status",{},true);
+    renderLive(out.live,false,"");
+    saveLiveCache(out.live);
+    setFeatureStatus("Live round refreshed.");
+  } catch (error) {
+    const cached=readLiveCache();
+    if (cached && cached.live) {
+      const when=cached.savedAt ? new Date(cached.savedAt).toLocaleString() : "";
+      renderLive(cached.live,true,when);
+      setFeatureStatus("WAN live refresh failed; showing last cached round.",true);
+      return;
+    }
+    throw error;
+  }
 }
 
 async function showScoreboard() {
   setFeatureStatus("Sending scoreboard…");
-  await matrixApi("scoreboard");
-  setFeatureStatus("Scoreboard sent.");
+  await matrixApi("scoreboard",{},false);
+  setFeatureStatus("Scoreboard command accepted.");
 }
 
 async function showAcePot() {
   setFeatureStatus("Sending ace pot…");
-  await matrixApi("ace_pot");
-  setFeatureStatus("Ace pot sent.");
+  await matrixApi("ace_pot",{},false);
+  setFeatureStatus("Ace pot command accepted.");
 }
 
 function renderOta(j) {
@@ -176,17 +266,55 @@ function renderOta(j) {
   }
 }
 
+async function getOtaStatus() {
+  if (!matrixLocal()) throw new Error("OTA check activates from the local Matrix dashboard on HBNF-Cart.");
+  return fetchJson(OPAL_CHECK,{method:"GET",cache:"no-store",credentials:"omit"},"Signed update check",1,5500);
+}
+
 async function checkOta() {
   const status=$("featureOtaStatus");
+  status.textContent="Checking signed release…";
+  const j=await getOtaStatus();
+  renderOta(j);
+}
+
+function truthConnected(id) {
+  const node=$(id);
+  return !!(node && /CONNECTED|READY/i.test(String(node.textContent || "")));
+}
+
+async function runPreflight() {
+  const out=$("featurePreflightResult");
+  if (!out) return;
+  const checks=[];
+  out.textContent="Running local readiness checks…";
   if (!matrixLocal()) {
-    status.textContent="OTA check activates from the local Matrix dashboard on HBNF-Cart.";
+    out.textContent="BLOCKED · Open this dashboard from 192.168.77.10/hbnf while connected to HBNF-Cart.";
     return;
   }
-  status.textContent="Checking signed release…";
-  const r=await fetch(OPAL_CHECK,{method:"GET",cache:"no-store",credentials:"omit"});
-  const j=await r.json().catch(()=>({}));
-  if (!r.ok) throw new Error(j.error || ("OTA HTTP "+r.status));
-  renderOta(j);
+
+  try {
+    const info=await fetchJson("/json/info",{method:"GET",cache:"no-store"},"Matrix identity",1,3500);
+    checks.push("Matrix API PASS"+(info && info.ver ? " · WLED "+info.ver : ""));
+  } catch (e) { checks.push("Matrix API FAIL"); }
+
+  checks.push("Matrix truth "+(truthConnected("matrixTruth") ? "PASS" : "CHECK"));
+  checks.push("AUX truth "+(truthConnected("auxTruth") ? "PASS" : "CHECK"));
+
+  try {
+    const ota=await getOtaStatus();
+    checks.push("Signed OTA "+(ota && ota.ok === true ? "PASS" : "FAIL"));
+  } catch (e) { checks.push("Signed OTA FAIL"); }
+
+  try {
+    await matrixApi("live_status",{},true);
+    checks.push("Live-data path PASS");
+  } catch (e) {
+    checks.push("Live-data path WAN/CHECK");
+  }
+
+  const hardFail=checks.some(x=>/API FAIL|OTA FAIL/.test(x));
+  out.textContent=(hardFail ? "NOT READY · " : "READY/CHECK · ")+checks.join(" · ");
 }
 
 function bind(id,fn) {
@@ -205,5 +333,6 @@ bind("featureScoreboard",showScoreboard);
 bind("featureAcePot",showAcePot);
 bind("featureOtaCheck",checkOta);
 bind("featureOtaInstall",()=>{ location.href=OPAL_INSTALLER; });
+bind("featurePreflight",runPreflight);
 if ($("featureText")) $("featureText").addEventListener("keydown",e=>{ if(e.key==="Enter") $("featureSendText").click(); });
-if (!matrixLocal()) setFeatureStatus("Core cart controls remain active. Local look/color/OTA controls enable when this UI is served from 192.168.77.10.");
+if (!matrixLocal()) setFeatureStatus("Core cart controls remain active. Local look/color/palette/OTA controls enable when this UI is served from 192.168.77.10.");
