@@ -103,7 +103,9 @@ def safe_extract(tf: tarfile.TarFile, dest: Path) -> None:
         target=(dest/member.name).resolve()
         if target != base and base not in target.parents:
             raise RuntimeError("unsafe tar member: "+member.name)
-    tf.extractall(dest)
+        if not (member.isfile() or member.isdir()):
+            raise RuntimeError("unsupported tar member type: "+member.name)
+    tf.extractall(dest, filter="data")
 
 
 def extract_targz(path: Path, dest: Path) -> None:
@@ -120,6 +122,8 @@ def write_deterministic_targz(root: Path, out: Path) -> None:
                     arc="./"+str(p.relative_to(root))
                     info=tf.gettarinfo(str(p),arcname=arc)
                     info.mtime=0
+                    info.uid=info.gid=0
+                    info.uname=info.gname="root"
                     if p.is_file() and not p.is_symlink():
                         with p.open("rb") as src: tf.addfile(info,src)
                     else:
@@ -140,12 +144,18 @@ def patch_controller(path: Path) -> dict[str,int]:
     sub(r'fs\.chmod\(([^,\n]+),\s*384\)',r'fs.chmod(\1, "0600")',"chmod_0600")
     sub(r'fs\.chmod\(([^,\n]+),\s*420\)',r'fs.chmod(\1, "0644")',"chmod_0644")
     sub(r'nixio\.umask\(63\)',r'nixio.umask("0077")',"umask")
-    if ORIGIN_OLD not in text:
-        raise RuntimeError("controller origin block did not match known 1.2.3 source")
-    text=text.replace(ORIGIN_OLD,ORIGIN_NEW,1); counts["origin_block"]=1
-    if RESULT_OLD not in text:
-        raise RuntimeError("controller result block did not match known 1.2.3 source")
-    text=text.replace(RESULT_OLD,RESULT_NEW,1); counts["result_cors"]=1
+    def replace_block(old,new,name):
+        nonlocal text
+        # Accept indentation differences only; require every source line exactly.
+        lines=[line.strip() for line in old.splitlines()]
+        pattern=r"(?m)^[ \t]*"+r"[ \t]*\r?\n[ \t]*".join(re.escape(line) for line in lines)+r"[ \t]*$"
+        matches=list(re.finditer(pattern,text))
+        if len(matches)!=1:
+            raise RuntimeError("controller block must match exactly once: "+name)
+        text=re.sub(pattern,lambda _:new,text,count=1)
+        counts[name]=1
+    replace_block(ORIGIN_OLD,ORIGIN_NEW,"origin_block")
+    replace_block(RESULT_OLD,RESULT_NEW,"result_cors")
     path.write_text(text)
     return counts
 
@@ -215,6 +225,8 @@ def build_outer(debian: Path, data_tgz: Path, control_tgz: Path, out: Path) -> N
                 for path,name in [(debian,"./debian-binary"),(data_tgz,"./data.tar.gz"),(control_tgz,"./control.tar.gz")]:
                     info=tf.gettarinfo(str(path),arcname=name)
                     info.mtime=0
+                    info.uid=info.gid=0
+                    info.uname=info.gname="root"
                     with path.open("rb") as src: tf.addfile(info,src)
 
 

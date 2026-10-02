@@ -89,7 +89,7 @@ def outer(db,data,control,out):
                     with p.open("rb") as f: tf.addfile(info,f)
 
 def extract(path,dest):
-    with tarfile.open(path,"r:gz") as tf: tf.extractall(dest)
+    with tarfile.open(path,"r:gz") as tf: tf.extractall(dest,filter="data")
 
 with tempfile.TemporaryDirectory() as td:
     t=pathlib.Path(td)
@@ -111,6 +111,47 @@ with tempfile.TemporaryDirectory() as td:
     base=t/"base.ipk"; outer(db,dt,ct,base)
     out=t/"new.ipk"
     subprocess.run(["python3",str(TOOL),str(base),str(out),"--expected-sha",sha(base)],check=True)
+
+    # The same input must produce identical bytes regardless of output name/time.
+    again=t/"again.ipk"
+    subprocess.run(["python3",str(TOOL),str(base),str(again),"--expected-sha",sha(base)],check=True,stdout=subprocess.PIPE)
+    assert out.read_bytes()==again.read_bytes()
+    import importlib.util
+    spec=importlib.util.spec_from_file_location("rebuilder",TOOL)
+    rebuilder=importlib.util.module_from_spec(spec); spec.loader.exec_module(rebuilder)
+    # Real source uses tabs; the fixture above uses spaces. Both must preserve
+    # guards outside the two exact patched blocks. Unknown/duplicate blocks fail.
+    for indent in ("  ","\t"):
+        sample=t/("controller-"+str(len(indent))+".lua")
+        sample.write_text(CONTROLLER.replace("  ",indent))
+        rebuilder.patch_controller(sample)
+        assert 'if http.getenv("HTTP_HOST")~=OPAL_HOST' in sample.read_text()
+        assert 'if method ~= "GET"' in sample.read_text()
+    bad=t/"unknown.lua"; bad.write_text(CONTROLLER.replace('expected_origin=origin','expected_origin="changed"'))
+    try: rebuilder.patch_controller(bad)
+    except RuntimeError: pass
+    else: raise AssertionError("unexpected source must be rejected")
+    untouched=t/"untouched.ipk"; untouched.write_bytes(b"existing artifact")
+    try: rebuilder.rebuild_ipk(base,untouched,"0"*64)
+    except RuntimeError: pass
+    else: raise AssertionError("wrong base hash must be rejected")
+    assert untouched.read_bytes()==b"existing artifact"
+    # Host-account ownership must never leak into root-installed package files.
+    archive=t/"owner.tar.gz"
+    rebuilder.write_deterministic_targz(data,archive)
+    with tarfile.open(archive,"r:gz") as tf:
+        assert all(m.uid==0 and m.gid==0 and m.mtime==0 for m in tf.getmembers())
+    # Fail closed on links and traversal before extracting anything.
+    for name,kind in (("../escape",tarfile.REGTYPE),("link",tarfile.SYMTYPE)):
+        hostile=io.BytesIO()
+        with tarfile.open(fileobj=hostile,mode="w") as tf:
+            member=tarfile.TarInfo(name); member.type=kind; member.linkname="/tmp/escape"
+            tf.addfile(member)
+        hostile.seek(0)
+        with tarfile.open(fileobj=hostile,mode="r") as tf:
+            try: rebuilder.safe_extract(tf,t/"hostile")
+            except RuntimeError: pass
+            else: raise AssertionError("unsafe archive accepted")
 
     outx=t/"out"; outx.mkdir(); extract(out,outx)
     assert [m.name for m in tarfile.open(out,"r:gz").getmembers()] == ["./debian-binary","./data.tar.gz","./control.tar.gz"]

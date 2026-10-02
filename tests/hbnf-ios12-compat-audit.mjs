@@ -24,7 +24,7 @@ for (const path of paths) {
 }
 const incompatible=findings.filter(x=>x.optionalChaining||x.nullishCoalescing||x.cryptoRandomUUID||x.replaceAll||x.objectFromEntries||x.structuredClone);
 console.log("HBNF_IOS12_INCOMPATIBLE_SOURCE_FILES="+incompatible.length);
-if (gates.productionBlockers.fullControllerIos12CompatibilityVerified===true && incompatible.length) {
-  throw new Error("Gate says full iOS12 compatibility is verified, but unsupported source syntax/API remains.");
+if (incompatible.length) {
+  throw new Error("Unsupported iOS12 source syntax/API remains; source audit failed.");
 }
 console.log("HBNF_IOS12_GATE_STATE="+String(gates.productionBlockers.fullControllerIos12CompatibilityVerified));
