@@ -1,5 +1,13 @@
 # HBNF Cart 2.0 — READ FIRST
 
+## Canonical AKS authority
+Before any Cart 2.0 recommendation, scope decision, implementation plan, Codex handoff, or integration change, read:
+- CANONICAL — HBNF CART 2.0 SCOPE, CHANGE CONTROL & IMPLEMENTATION READINESS — READ FIRST — 2026-10-01
+- Drive ID: 105J0xKbNFD26NOGChN9MssOVjbJ9Q2p6LYhz2Ky7EgM
+- Canonical Registry record: AKS-REC-000118
+
+If this repository planning package and that AKS authority diverge, the explicit current user instruction / canonical AKS source controls until reconciled.
+
 ## Purpose
 This branch is a planning/audit staging lane only. It exists to make the next implementation phase start immediately once the current coordinated-release/source-reconciliation work is complete.
 
