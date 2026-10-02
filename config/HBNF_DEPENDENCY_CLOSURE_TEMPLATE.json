@@ -1,0 +1,14 @@
+{
+  "schema": "hbnf-dependency-closure-v1",
+  "release_id": "PENDING",
+  "build_environment": "PENDING",
+  "source_commit": null,
+  "selected_dependencies": [],
+  "duplicate_candidates": [],
+  "global_library_dependencies": [],
+  "unexpected_global_libraries_absent": false,
+  "fully_materialized_local": false,
+  "content_hash_manifest": null,
+  "provenance_evidence": [],
+  "verified": false
+}
