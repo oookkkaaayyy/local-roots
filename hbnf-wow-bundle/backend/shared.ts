@@ -51,7 +51,7 @@ export const SHOWS:any={
 };
 export const CURATED_PRESETS=new Set([...LOOKS,...ORGANIC_PRESETS,50,51,52,53,54,55,90]);
 const COLORS:any=[[180,0,50],[0,90,200],[140,0,200],[220,60,0],[200,0,120],[30,0,160],[0,120,180],[120,0,180],[170,0,100],[0,140,100],[200,30,0],[170,0,60],[210,50,0],[160,0,80],[200,80,0],[0,120,160],[130,0,180],[0,150,100],[190,0,100],[60,80,200]];
-const ALLOWED_ORIGINS=new Set(["https://hbnightflyers.com","https://www.hbnightflyers.com","http://localhost:8787","http://127.0.0.1:8787"]);
+const ALLOWED_ORIGINS=new Set(["https://hbnightflyers.com","https://www.hbnightflyers.com","http://192.168.77.10","http://localhost:8787","http://127.0.0.1:8787"]);
 const mqttOpts=(clientId:string)=>({connectTimeout:6500,reconnectPeriod:0,clean:true,clientId,username:MQTT_USER||undefined,password:MQTT_PASS||undefined});
 export function cors(req:Request){const origin=req.headers.get("origin")||"",allow=ALLOWED_ORIGINS.has(origin)?origin:"https://hbnightflyers.com";return{"Access-Control-Allow-Origin":allow,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};}
 export function json(req:Request,body:unknown,status=200){return new Response(JSON.stringify(body),{status,headers:{"Content-Type":"application/json","Cache-Control":"no-store",...cors(req)}});}
