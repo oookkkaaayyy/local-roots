@@ -341,17 +341,24 @@ async function refreshLive(silent) {
 }
 
 async function showScoreboard() {
-  setFeatureStatus("Sending scoreboard…");
+  setFeatureStatus("Preparing live scoreboard…");
+  const out=await matrixRead("live_status",{});
+  const live=out && out.live;
+  if (!live || !live.active || !Array.isArray(live.entries) || !live.entries.length) throw new Error("No active Skins or Glow scores are available.");
   const bridge=canonicalOverlayBridge();
-  await bridge.overlay("scoreboard",{});
-  setFeatureStatus("Scoreboard command accepted.");
+  const ttl=Math.max(8000,Math.min(30000,6000+Math.ceil(live.entries.length/2)*5000));
+  await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:live.entries.slice(0,12)},ttl);
+  setFeatureStatus("Canonical scoreboard overlay accepted.");
 }
 
 async function showAcePot() {
-  setFeatureStatus("Sending ace pot…");
+  setFeatureStatus("Preparing ace pot…");
+  const out=await matrixRead("live_status",{});
+  const live=out && out.live;
+  const amount=Number(live && live.acePot || 0);
   const bridge=canonicalOverlayBridge();
-  await bridge.overlay("ace_pot",{});
-  setFeatureStatus("Ace pot command accepted.");
+  await bridge.overlay("text",{text:"ACE POT $"+amount.toFixed(0),color:"#FFFFFF"},7000);
+  setFeatureStatus("Canonical ace-pot overlay accepted.");
 }
 
 function renderOta(j) {
