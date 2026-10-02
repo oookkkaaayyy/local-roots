@@ -8,7 +8,7 @@ on:
       - 'hbnf-final-controller/**'
       - 'hbnf-wow-bundle/backend/**'
       - 'work/HBNF_*.md'
-      - 'config/HBNF_COORDINATED_RELEASE_GATES.json'
+      - 'config/HBNF_COORDINATED_*.json'
       - 'tests/hbnf-*.mjs'
       - 'tests/hbnf-*.py'
       - 'hbnf-ui-v6-package/**'
@@ -24,7 +24,7 @@ on:
       - 'hbnf-final-controller/**'
       - 'hbnf-wow-bundle/backend/**'
       - 'work/HBNF_*.md'
-      - 'config/HBNF_COORDINATED_RELEASE_GATES.json'
+      - 'config/HBNF_COORDINATED_*.json'
       - 'tests/hbnf-*.mjs'
       - 'tests/hbnf-*.py'
       - 'hbnf-ui-v6-package/**'
@@ -135,6 +135,7 @@ jobs:
           cp hbnf-wow-bundle/backend/shared.ts "$OUT/backend/"
           cp hbnf-ui-v6-package/install_ui_v6.py "$OUT/installer/"
           cp config/HBNF_COORDINATED_RELEASE_GATES.json "$OUT/config/"
+          cp config/HBNF_COORDINATED_CANDIDATE_MANIFEST.json "$OUT/config/"
           cp tools/hbnf-rebuild-opal-updater.py "$OUT/tools/"
           cp tools/hbnf-source-identity-preflight.py "$OUT/tools/"
           cp tests/hbnf-coordinated-controller-contract.mjs "$OUT/tests/"
