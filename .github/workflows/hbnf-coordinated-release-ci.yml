@@ -50,7 +50,7 @@ jobs:
           grep -q 'matrixApi("scoreboard"' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'matrixApi("ace_pot"' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'localStorage.setItem(SAVED_LOOK_KEY' hbnf-final-controller/hbnf-cart-features.mjs
-          grep -q 'fetch("/json/pal"' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'fetchJson("/json/pal"' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'snapshotRestorePayload' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'LIVE_CACHE_KEY' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'runPreflight' hbnf-final-controller/hbnf-cart-features.mjs
