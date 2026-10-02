@@ -27,6 +27,11 @@ assert.ok(features.includes("liveRefreshInFlight"),"live refresh overlap guard m
 assert.ok(features.includes("snapshotRestorePayload"),"look rollback path missing");
 assert.ok(features.includes("Palette readback did not match"),"palette readback verification missing");
 assert.ok(features.includes("runPreflight"),"rollout preflight missing");
+assert.ok(features.includes("artifact_verified"),"OTA artifact verification missing");
+assert.ok(features.includes("based_on_firmware_sha256"),"OTA base-lineage verification missing");
+assert.ok(features.includes("LIVE_CACHE_MAX_MS"),"live cache expiry missing");
+assert.ok(features.includes("ACCEPTED_BASE_SHA256"),"accepted firmware base gate missing");
+assert.ok(features.includes("EXPECTED_MATRIX_MAC"),"expected Matrix identity gate missing");
 assert.ok(features.includes("OPAL_CHECK"),"OTA check path missing");
 assert.ok(features.includes("OPAL_RESULT"),"OTA result path missing");
 assert.ok(features.includes("refreshOtaResult"),"OTA result refresh logic missing");
