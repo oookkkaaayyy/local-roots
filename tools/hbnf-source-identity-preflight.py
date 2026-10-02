@@ -6,6 +6,14 @@ import argparse,hashlib,json,os,pathlib,re,subprocess,sys
 EXPECTED_SHA="0aeb668e58cad3bae5b636fdc79573a263c3d0e911903ed48af0bbc2e5681f61"
 CANDIDATE="HBNF_AUDIO_EXPRESSION_V1_1_candidate.bin"
 OUTPUT_DIR="HBNF_AUDIO_EXPRESSION_V1_1"
+KNOWN_V11_ROOT=pathlib.Path.home()/"Documents/Codex/2026-09-30/files-pasted-by-the-user-hbnf"
+KNOWN_V11_OUTPUT=KNOWN_V11_ROOT/"outputs/HBNF_AUDIO_EXPRESSION_V1_1"
+KNOWN_V1_OUTPUT=KNOWN_V11_ROOT/"outputs/HBNF_AUDIO_EXPRESSION_V1"
+KNOWN_ROLLBACK_BIN=pathlib.Path.home()/"Documents/Codex/2026-09-30/this-is-the-highest-priority-next/outputs/HBNF_IPAD_MINI_INTEGRATION/HBNF_iPad_Mini2_iOS12_Candidate.bin"
+KNOWN_ROLLBACK_SOURCE=pathlib.Path.home()/"Documents/Codex/2026-09-30/this-is-the-highest-priority-next/work/hbnf-visual-audio-repair/integration-copy/usermods/hbnf_foundation_v1"
+KNOWN_ROLLBACK_SHA="32802f354cf2edcc1636698e5f15b6bc61311b0bffc7ecf72960221f3478fb55"
+KNOWN_BASE_SHA="3a9d02aa6bf7529a589d150834d4b9b916bef6bdc1634b13b4202eee5576dedb"
+KNOWN_PIO_ENV="hbnf_matrix_wled16_max"
 PRUNE={".git","node_modules","Library",".Trash",".cache","Caches","DerivedData"}
 
 def sha256(path:pathlib.Path)->str:
@@ -86,7 +94,32 @@ def main():
         pathlib.Path.home()/"Downloads",
     ]
     artifacts=bounded_find(roots)
-    out={"expected_sha256":EXPECTED_SHA,"roots":[str(x.expanduser()) for x in roots],"artifacts":[]}
+    out={
+        "expected_sha256":EXPECTED_SHA,
+        "roots":[str(x.expanduser()) for x in roots],
+        "known_paths":{
+            "v11_output":str(KNOWN_V11_OUTPUT),
+            "v1_output":str(KNOWN_V1_OUTPUT),
+            "rollback_bin":str(KNOWN_ROLLBACK_BIN),
+            "rollback_source":str(KNOWN_ROLLBACK_SOURCE),
+            "rollback_sha256":KNOWN_ROLLBACK_SHA,
+            "foundation_base_sha256":KNOWN_BASE_SHA,
+            "platformio_environment":KNOWN_PIO_ENV,
+        },
+        "artifacts":[]
+    }
+    exact_candidate=KNOWN_V11_OUTPUT/CANDIDATE
+    if exact_candidate.exists():
+        artifacts=[exact_candidate]+[x for x in artifacts if x.resolve()!=exact_candidate.resolve()]
+    if KNOWN_ROLLBACK_BIN.exists():
+        out["known_paths"]["rollback_actual_sha256"]=sha256(KNOWN_ROLLBACK_BIN)
+        out["known_paths"]["rollback_hash_match"]=out["known_paths"]["rollback_actual_sha256"]==KNOWN_ROLLBACK_SHA
+    if KNOWN_ROLLBACK_SOURCE.exists():
+        out["known_paths"]["rollback_source_present"]=True
+        out["known_paths"]["rollback_source_git"]=git_info(KNOWN_ROLLBACK_SOURCE)
+        out["known_paths"]["hbnf_local_ui_present"]=(KNOWN_ROLLBACK_SOURCE/"hbnf_local_ui.h").exists()
+    if (KNOWN_V1_OUTPUT/"source.patch").exists():
+        out["known_paths"]["v1_source_patch"]=str(KNOWN_V1_OUTPUT/"source.patch")
     for artifact in artifacts:
         od=artifact.parent
         actual=sha256(artifact)
