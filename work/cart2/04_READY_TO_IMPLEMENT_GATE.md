@@ -7,6 +7,11 @@ Implementation may start only when every REQUIRED item is PASS.
 - [ ] Exact live/local controller source reconciled.
 - [ ] Current coordinated-release work has a clean accepted checkpoint.
 - [ ] Rollback artifact and procedure are known.
+- [ ] Accepted baseline has a completed golden release capsule.
+- [ ] Accepted baseline clean-room rebuild/equivalence is proven.
+- [ ] Source/dependency inputs are fully local/materialized before build.
+- [ ] Exact dependency closure is captured and unexpected global-library resolution is absent.
+- [ ] Generated UI/source inputs have an explicit deterministic-generated or canonical-frozen policy with hashes.
 
 ## Evidence
 - [ ] Platform Capacity Audit complete.
