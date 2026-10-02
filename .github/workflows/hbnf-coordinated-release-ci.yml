@@ -12,6 +12,9 @@ on:
       - 'tests/hbnf-*.mjs'
       - 'tests/hbnf-*.py'
       - 'hbnf-ui-v6-package/**'
+      - 'hbnf-cart-core/domain/palette-projection.mjs'
+      - 'evidence/live-production-20261001/**'
+      - 'staging/coordinated-backend/**'
       - 'tools/hbnf-*.py'
       - '.github/workflows/hbnf-coordinated-release-ci.yml'
   pull_request:
