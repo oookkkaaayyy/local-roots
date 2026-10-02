@@ -56,12 +56,20 @@ jobs:
           done
           grep -q 'src="./hbnf-cart-features.mjs"' hbnf-final-controller/hbnf-cart.html
           grep -q 'action==="live_status"' hbnf-wow-bundle/backend/index.ts
-          grep -q 'matrixApi("text"' hbnf-final-controller/hbnf-cart-features.mjs
-          grep -q 'matrixApi("scoreboard"' hbnf-final-controller/hbnf-cart-features.mjs
-          grep -q 'matrixApi("ace_pot"' hbnf-final-controller/hbnf-cart-features.mjs
-          grep -q 'localStorage.setItem(SAVED_LOOK_KEY' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'window.HBNFCanonical' hbnf-final-controller/hbnf-cart.js
+          grep -q 'async function command(type, payload = {})' hbnf-final-controller/hbnf-cart.js
+          grep -q 'bridge.command("SCENE"' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'bridge.command("PALETTE"' hbnf-final-controller/hbnf-cart-features.mjs
+          ! grep -q 'matrixApi("text"' hbnf-final-controller/hbnf-cart-features.mjs
+          ! grep -q 'matrixApi("scoreboard"' hbnf-final-controller/hbnf-cart-features.mjs
+          ! grep -q 'matrixApi("ace_pot"' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'canonicalOverlayBridge' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'syncOverlayAvailability' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'SAVED_LOOKS_KEY' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'fetchJson("/json/pal"' hbnf-final-controller/hbnf-cart-features.mjs
-          grep -q 'snapshotRestorePayload' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'rollbackCanonicalLook' hbnf-final-controller/hbnf-cart-features.mjs
+          grep -q 'Legacy Matrix mutations are blocked' hbnf-final-controller/hbnf-cart-features.mjs
+          ! grep -q 'method:"POST".*"/json/state"' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'LIVE_CACHE_KEY' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'SAVED_LOOKS_KEY' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'deleteSavedLook' hbnf-final-controller/hbnf-cart-features.mjs
