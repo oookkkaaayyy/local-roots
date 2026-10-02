@@ -17,7 +17,11 @@ Must determine:
 - current controller/PWA/guest primitives;
 - OTA/rollback integration points;
 - which values can be data/profile-driven vs require firmware rebuild;
-- hard blockers/unknowns.
+- hard blockers/unknowns;
+- whether all accepted source/dependency inputs can be materialized into a local immutable snapshot before build;
+- exact dependency closure/LDF resolution, duplicate candidates, and any global-library dependency;
+- all generated UI/source inputs and whether each is deterministic-generated or canonical-frozen;
+- clean-room rebuild requirements that prevent FileProvider/on-demand hydration and hidden ~/.platformio state.
 
 Output:
 work/cart2/audits/PLATFORM_CAPACITY_AUDIT.md
