@@ -11,6 +11,8 @@ required = [
     Path("config/HBNF_RELEASE_STATUS_TEMPLATE.json"),
     Path("config/HBNF_SOLVED_PROBLEMS.json"),
     Path("config/HBNF_GOLDEN_RELEASE_V1_1_PENDING.json"),
+    Path("config/HBNF_DEPENDENCY_CLOSURE_TEMPLATE.json"),
+    Path("config/HBNF_GENERATED_INPUTS_POLICY_TEMPLATE.json"),
     Path("scripts/hbnf_capture_build_env.py"),
     Path("scripts/hbnf_validate_release_capsule.py"),
 ]
@@ -31,5 +33,11 @@ capsule=json.loads(Path("config/HBNF_GOLDEN_RELEASE_V1_1_PENDING.json").read_tex
 assert capsule["source"]["lineage_verified"] is False
 assert capsule["build_environment"]["captured"] is False
 assert capsule["artifact"]["sha256"]=="0aeb668e58cad3bae5b636fdc79573a263c3d0e911903ed48af0bbc2e5681f61"
+assert capsule["source_materialization"]["fully_local"] is False
+assert capsule["dependency_closure"]["captured"] is False
+assert capsule["generated_inputs"]["policy_verified"] is False
+assert any(x["id"]=="HBNF-WATCH-013" for x in problems["issues"])
+assert any(x["id"]=="HBNF-WATCH-014" for x in problems["issues"])
+assert any(x["id"]=="HBNF-WATCH-015" for x in problems["issues"])
 
 print("PASS: HBNF release-engineering staging integrity")
