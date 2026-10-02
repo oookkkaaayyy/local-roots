@@ -1,0 +1,37 @@
+{
+  "schema": "hbnf-cart2-staging-gates-v1",
+  "stagingBranch": "hbnf-cart2-ready-to-implement-staging-20261001",
+  "sourceSnapshot": "0c01d0c7f065264e2b9fd8127f1c48cc96a73b56",
+  "mode": "planning-audit-only",
+  "implementationAuthorized": false,
+  "liveMutationAuthorized": false,
+  "githubActionsAuthorized": false,
+  "scopeLocked": false,
+  "audits": {
+    "platformCapacity": false,
+    "visualAudio": false,
+    "textCompositor": false,
+    "gameInteraction": false,
+    "integrationChallenger": false
+  },
+  "sourceGates": {
+    "acceptedFirmwareLineageReconciled": false,
+    "liveControllerSourceReconciled": false,
+    "coordinatedReleaseCheckpointAccepted": false
+  },
+  "contractGates": {
+    "exactDeliverablesApproved": false,
+    "explicitExclusionsApproved": false,
+    "noDowngradeClauseApproved": false,
+    "interfacesFrozen": false,
+    "acceptanceMatrixApproved": false
+  },
+  "executionGates": {
+    "laneWorktreesPrepared": false,
+    "fileOwnershipDefined": false,
+    "hostReplayStrategyReady": false,
+    "integrationOrderReady": false,
+    "physicalAcceptancePlanReady": false
+  },
+  "readyToImplement": false
+}
