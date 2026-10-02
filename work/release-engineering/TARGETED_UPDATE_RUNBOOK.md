@@ -1,5 +1,19 @@
 # HBNF Targeted Update Runbook
 
+## Phase -1 — Local materialization and input closure
+Before any build:
+1. Create an immutable local snapshot from the accepted source commit/tree.
+2. Verify every source/build input is fully materialized locally; no FileProvider/iCloud/on-demand placeholder may remain.
+3. Materialize/install only the accepted dependency closure into isolated PlatformIO locations.
+4. Compare actual LDF/package resolution with the recorded dependency closure.
+5. Fail if an unexpected global library, duplicate candidate, moving VCS branch, or undeclared local dependency is selected.
+6. Verify the generated-input policy:
+   - deterministic outputs regenerate to expected hashes; OR
+   - canonical frozen inputs match expected hashes and their generator is disabled/guarded.
+7. Verify source snapshot remains unmodified by build staging.
+
+STOP before PlatformIO if any materialization/input-closure gate fails.
+
 ## Phase 0 — Baseline proof
 Before coding:
 1. Load the current golden release capsule.
@@ -26,6 +40,10 @@ Run before touching the cart:
 - controller/iOS compatibility;
 - package completeness;
 - dependency/provenance capture;
+- dependency-closure/LDF match;
+- no unexpected global-library resolution;
+- generated-input policy/hash verification;
+- source-snapshot immutability check;
 - flash/RAM/heap/size regression;
 - security/origin/auth checks;
 - rollback-path verification.
@@ -37,12 +55,15 @@ Produce:
 - exact source commit;
 - build log/report;
 - dependency/toolchain capture;
+- local-materialization evidence;
+- dependency-closure manifest;
+- generated-input policy manifest;
 - release-status file;
 - rollback artifact;
 - preflight checklist;
 - acceptance checklist.
 
-At this point the coordinator may say "READY FOR PHYSICAL ROLLOUT" only if every non-hardware gate is PASS.
+At this point the coordinator may say "READY FOR PHYSICAL ROLLOUT" only if every non-hardware gate is PASS, including local materialization, dependency closure, generated-input determinism/frozen-input enforcement, clean-room rebuild/equivalence, package completeness, and rollback readiness.
 
 ## Phase 4 — Physical preflight
 With Opal, Matrix, AUX powered:
