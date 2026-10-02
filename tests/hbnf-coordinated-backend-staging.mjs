@@ -15,6 +15,8 @@ for (const marker of [
   assert.ok(stagedControl.toLowerCase().includes(marker.toLowerCase()),"staged control regressed live marker: "+marker);
 }
 assert.ok(stagedControl.includes('case "OVERLAY_START"'),"canonical overlay start reducer missing");
+assert.ok(stagedControl.includes("canonicalOverlayIntentV1"),"staged overlay capability marker missing");
+assert.ok(stagedControl.includes("canonicalPaletteIntentV1"),"staged palette capability marker missing");
 assert.ok(stagedControl.includes('case "OVERLAY_EXPIRE"'),"canonical overlay expiry reducer missing");
 assert.ok(stagedControl.includes('["text","scoreboard"]'),"overlay kind allowlist missing");
 assert.ok(stagedControl.includes('expiresAt:now + ttlMs'),"overlay TTL persistence missing");
