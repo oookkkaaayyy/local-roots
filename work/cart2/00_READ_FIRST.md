@@ -8,6 +8,13 @@ Before any Cart 2.0 recommendation, scope decision, implementation plan, Codex h
 
 If this repository planning package and that AKS authority diverge, the explicit current user instruction / canonical AKS source controls until reconciled.
 
+Before any firmware/controller/router/software implementation or rollout planning, also read:
+- CANONICAL — HBNF RELEASE ENGINEERING & NO-REDISCOVERY PROTOCOL — 2026-10-02
+- Drive ID: 1bw_VUNt2mEZ4JdKuRsQq7ZS1Bc4KeC8kMVABVK2OdgE
+- Canonical Registry record: AKS-REC-000119
+
+That protocol controls source/build provenance, golden release capsules, solved-problem reuse, readiness claims, and rollout discipline.
+
 ## Purpose
 This branch is a planning/audit staging lane only. It exists to make the next implementation phase start immediately once the current coordinated-release/source-reconciliation work is complete.
 
