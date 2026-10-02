@@ -110,6 +110,35 @@
       "root_cause": "Prior accepted release did not preserve a complete golden release capsule.",
       "validated_fix": null,
       "do_not_rediscover_unless": "Close by completing the active source-reconciliation/rebuild task and creating the first full capsule."
+    },
+    {
+      "id": "HBNF-WATCH-013",
+      "title": "FileProvider/on-demand dependency hydration in build workspace",
+      "status": "WATCH",
+      "symptom": "Workspace copy/build stalls for long periods while macOS materializes dependency files on demand.",
+      "root_cause": "Build inputs/dependency trees reside in Files-On-Demand/FileProvider-backed storage rather than a guaranteed local immutable build snapshot.",
+      "validated_fix": "Future builds must stage source into a local immutable snapshot and fully materialize the accepted dependency closure before PlatformIO/LDF starts.",
+      "do_not_rediscover_unless": "Build workspace storage architecture changes and the materialization preflight still passes.",
+      "note": "Observed directly during 2026-10-02 PR #46 recovery; prevention architecture is defined but not yet operationally validated on the accepted baseline."
+    },
+    {
+      "id": "HBNF-WATCH-014",
+      "title": "Dependency candidate ambiguity / LDF drift",
+      "status": "WATCH",
+      "symptom": "Multiple candidate copies of a library exist (for example pinned vs registry copy), creating risk that LDF selects a different implementation on a future rebuild.",
+      "root_cause": "Accepted dependency closure was not previously captured as a durable release artifact.",
+      "validated_fix": "Capture the known-good dependency graph, materialize only accepted dependencies in isolated libdeps/package locations, and fail closed on unexpected global/duplicate resolution.",
+      "do_not_rediscover_unless": "Dependency graph or PlatformIO/LDF configuration intentionally changes."
+    },
+    {
+      "id": "HBNF-WATCH-015",
+      "title": "Prebuild-generated UI header drift",
+      "status": "WATCH",
+      "symptom": "Firmware compiles but a prebuild hook regenerates four UI headers that differ from the retained accepted source.",
+      "root_cause": "Canonical ownership of generated UI headers versus their generator inputs/tooling was not previously defined.",
+      "validated_fix": "Classify each generated input as deterministic generated output with pinned generator inputs/tool/version and expected hash, or canonical frozen input with generator disabled/guarded and exact hashes preserved.",
+      "do_not_rediscover_unless": "UI generation pipeline is intentionally redesigned.",
+      "note": "Observed during PR #46 recovery. Final classification must come from the accepted build before this issue can be marked SOLVED."
     }
   ]
 }
