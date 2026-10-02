@@ -21,7 +21,6 @@
     "otaCheckIntegrated": true,
     "rolloutPreflightIntegrated": true,
     "ios12FeatureModuleNoOptionalChaining": true,
-    "matrixLocalCorsStaged": true,
     "packageIncludesFeatureModule": true,
     "fullControllerIos12StaticAuditPassed": true,
     "opalUpdaterRebuilderStaged": true,
@@ -38,7 +37,9 @@
     "foundationAdapterV2PaletteOverlayContractStaged": true,
     "backendCapabilityGatingStaged": true,
     "firmwareCoordinatedContractLocked": true,
-    "opalReadOnlyResultNilOriginCovered": true
+    "opalReadOnlyResultNilOriginCovered": true,
+    "canonicalLiveDataReadPathStaged": true,
+    "legacyMatrixBackendRemovedFromFeatureUi": true
   },
   "productionBlockers": {
     "acceptedLiveSourceIdentityReconciled": false,
