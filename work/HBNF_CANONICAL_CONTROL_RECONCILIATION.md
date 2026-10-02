@@ -67,3 +67,35 @@ Until the exact current no-login canonical backend source is recovered and this 
 
 ## Production gate
 Do not mark singleCanonicalWriterReconciled, canonicalPaletteAdapterReconciled, or canonicalOverlayBridgeReconciled true until exact current backend source is recovered, source tests pass, and deployment identity is verified.
+
+
+## 2026-10-01 exact live recovery update
+Current production backend source is no longer inferred from history. It was read directly from Supabase and captured under:
+`evidence/live-production-20261001/`
+
+Current exact production versions:
+- hbnf-cart-control v16 · EZBR 3e4816988a9ac0b33f5b660ccefedf27e0249c7e7f5e11b1a8622a3c59fbd80d
+- hbnf-cart-reconcile v11 · EZBR 4f400b2ee1d733f07a90baa231c843990802a3a72aedb507e6963a78685a1d93
+- hbnf-matrix-adapter-foundation v2 · EZBR 4925765bdad4726e3eda85d1d781813c783c64d2d425f0aafe572bf918fbcdb1
+- hbnf-aux-adapter v8 · EZBR 85e8b8c18ee0cf4c31d5fd854d8cc0d41cc7e75fccc538c8271a866d78466fd8
+- hbnf-matrix-control v172 · EZBR f49d087a3a6a77b2167d9892817f3dfcf36960cdb42fbb93e835f3c130c80aa7
+
+The live reconciler is already on the Foundation architecture:
+- Matrix is the only cloud-actuated visual device.
+- AUX is recorded as Matrix-owned DDP proxy state.
+- hbnf-cart-reconcile invokes hbnf-matrix-adapter-foundation.
+- The Foundation adapter sends fx 142 on Matrix segment 0 and Companion segment 1 (512–533).
+- The live cart-control already supports PALETTE desired state and TUNE; the live Foundation adapter does not yet project paletteId.
+- The live reconciler already passes active overlay intent from canonical state, but live cart-control cannot yet create overlay intents and the live Foundation adapter does not yet project them.
+
+Therefore the smallest coordinated backend delta is now fixed:
+1. hbnf-cart-control v16 base → add canonical OVERLAY_START/OVERLAY_EXPIRE + capability advertisement.
+2. hbnf-matrix-adapter-foundation v2 base → pass normalized palette + overlay contract to firmware.
+3. Keep hbnf-cart-reconcile v11 unchanged.
+4. Keep hbnf-aux-adapter v8 unchanged.
+5. Keep hbnf-matrix-control v172 unchanged as legacy/internal/read-only support only; the new UI does not use it for base-state mutation.
+
+Candidate sources are staged under:
+`staging/coordinated-backend/`
+
+Production deployment remains blocked until the accepted V1.1 firmware source is recovered and implements `work/HBNF_FIRMWARE_COORDINATED_CONTRACT.md`.
