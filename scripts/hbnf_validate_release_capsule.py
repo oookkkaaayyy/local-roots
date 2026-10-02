@@ -13,6 +13,9 @@ REQUIRED = [
     "accepted_baseline",
     "source",
     "build_environment",
+    "source_materialization",
+    "dependency_closure",
+    "generated_inputs",
     "artifact",
     "rollback",
     "acceptance",
@@ -47,5 +50,17 @@ if data.get("source", {}).get("lineage_verified") is not True:
 
 if data.get("build_environment", {}).get("captured") is not True:
     fail("build_environment.captured must be true before a capsule is accepted")
+
+mat = data.get("source_materialization", {})
+if mat.get("fully_local") is not True or mat.get("fileprovider_placeholders_absent") is not True:
+    fail("source_materialization must prove a fully local snapshot with no FileProvider placeholders")
+
+deps = data.get("dependency_closure", {})
+if deps.get("captured") is not True or deps.get("unexpected_global_libraries_absent") is not True:
+    fail("dependency_closure must be captured and free of unexpected global-library resolution")
+
+gen = data.get("generated_inputs", {})
+if gen.get("policy_verified") is not True:
+    fail("generated_inputs.policy_verified must be true before a capsule is accepted")
 
 print("PASS: release capsule satisfies required structural gates")
