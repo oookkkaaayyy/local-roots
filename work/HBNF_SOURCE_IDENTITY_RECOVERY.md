@@ -4,6 +4,17 @@ Purpose: recover exact build/source provenance once the Mac/local build workspac
 
 ## Known accepted artifact lineage
 - Installed candidate SHA-256: 0aeb668e58cad3bae5b636fdc79573a263c3d0e911903ed48af0bbc2e5681f61
+- Exact V1.1 output root: /Users/andrew/Documents/Codex/2026-09-30/files-pasted-by-the-user-hbnf/outputs/HBNF_AUDIO_EXPRESSION_V1_1
+- Exact V1.1 BIN: /Users/andrew/Documents/Codex/2026-09-30/files-pasted-by-the-user-hbnf/outputs/HBNF_AUDIO_EXPRESSION_V1_1/HBNF_AUDIO_EXPRESSION_V1_1_candidate.bin
+- V1 predecessor report: /Users/andrew/Documents/Codex/2026-09-30/files-pasted-by-the-user-hbnf/outputs/HBNF_AUDIO_EXPRESSION_V1/REPORT.md
+- V1 predecessor source patch: /Users/andrew/Documents/Codex/2026-09-30/files-pasted-by-the-user-hbnf/outputs/HBNF_AUDIO_EXPRESSION_V1/source.patch
+- Accepted rollback BIN: /Users/andrew/Documents/Codex/2026-09-30/this-is-the-highest-priority-next/outputs/HBNF_IPAD_MINI_INTEGRATION/HBNF_iPad_Mini2_iOS12_Candidate.bin
+- Accepted rollback SHA-256: 32802f354cf2edcc1636698e5f15b6bc61311b0bffc7ecf72960221f3478fb55
+- Rollback source tree: /Users/andrew/Documents/Codex/2026-09-30/this-is-the-highest-priority-next/work/hbnf-visual-audio-repair/integration-copy
+- HBNF usermod source: .../integration-copy/usermods/hbnf_foundation_v1
+- Local UI header in that source: hbnf_local_ui.h
+- PlatformIO environment: hbnf_matrix_wled16_max
+- Foundation base SHA-256 recorded for that lineage: 3a9d02aa6bf7529a589d150834d4b9b916bef6bdc1634b13b4202eee5576dedb
 - Build base/accepted rollback SHA-256: 32802f354cf2edcc1636698e5f15b6bc61311b0bffc7ecf72960221f3478fb55
 - Output directory: outputs/HBNF_AUDIO_EXPRESSION_V1_1/
 - Candidate BIN: outputs/HBNF_AUDIO_EXPRESSION_V1_1/HBNF_AUDIO_EXPRESSION_V1_1_candidate.bin
