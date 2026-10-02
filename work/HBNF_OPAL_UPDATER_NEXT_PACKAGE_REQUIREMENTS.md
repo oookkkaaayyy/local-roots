@@ -38,6 +38,7 @@ The Matrix-local /hbnf dashboard must be able to show OTA job progress/result wi
 Allow read-only GET action=result from:
 - Matrix origin http://192.168.77.10
 - Opal origin https://console.gl-inet.com
+- same-origin Opal Safari GET when the browser omits Origin
 
 Keep these Opal-only:
 - challenge POST
@@ -57,6 +58,7 @@ Do not relax challenge/install authorization merely to simplify UI integration.
 - updater check returns ok=true against current accepted signed baseline.
 - Matrix-origin check GET works with and without browser Origin behavior as applicable.
 - Matrix-origin result GET works and is CORS-readable.
+- Opal same-origin result GET works when Safari omits Origin.
 - Opal-origin installer can challenge/install exactly as before.
 - invalid origin, wrong host, off-LAN source, wrong MAC, bad proof, replayed nonce, signature mismatch, and artifact mismatch all remain blocked.
 - package reinstall does not erase required persistent config/key/token files unless explicitly intended and backed up.
