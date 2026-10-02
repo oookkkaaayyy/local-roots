@@ -47,7 +47,6 @@
     "candidateBuiltFromAcceptedBaseline": false,
     "signedCandidatePublished": false,
     "firstRealOtaPhysicalAcceptance": false,
-    "ssidColdStartReliabilityVerified": false,
     "liveLocalDashboardSourceReconciled": false,
     "fullControllerIos12CompatibilityVerified": false,
     "singleCanonicalWriterReconciled": false,
@@ -108,5 +107,8 @@
         "ezbrSha256": "f49d087a3a6a77b2167d9892817f3dfcf36960cdb42fbb93e835f3c130c80aa7"
       }
     }
+  },
+  "separatePostReleaseGates": {
+    "ssidColdStartReliabilityVerified": false
   }
 }
