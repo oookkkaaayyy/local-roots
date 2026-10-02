@@ -16,7 +16,6 @@
     "isolatedBranch": true,
     "visibleControllerScopeStaged": true,
     "paletteApiDynamic": true,
-    "lookReadbackRollback": true,
     "liveDataSharedPath": true,
     "liveDataCacheFallback": true,
     "otaCheckIntegrated": true,
@@ -28,7 +27,11 @@
     "opalUpdaterRebuilderStaged": true,
     "matrixOriginReadOnlyUpdaterResultUiStaged": true,
     "otaResultReturnPollingStaged": true,
-    "reproducibleSourceBundleConfigured": true
+    "reproducibleSourceBundleConfigured": true,
+    "visualMutationsUseCanonicalCartOwner": true,
+    "canonicalLookReadbackRollback": true,
+    "legacyMatrixMutationBlockedFromFeatureUi": true,
+    "overlayUiFailsClosedUntilCanonicalBridge": true
   },
   "productionBlockers": {
     "acceptedLiveSourceIdentityReconciled": false,
@@ -39,11 +42,24 @@
     "firstRealOtaPhysicalAcceptance": false,
     "ssidColdStartReliabilityVerified": false,
     "liveLocalDashboardSourceReconciled": false,
-    "fullControllerIos12CompatibilityVerified": false
+    "fullControllerIos12CompatibilityVerified": false,
+    "singleCanonicalWriterReconciled": false,
+    "canonicalOverlayBridgeReconciled": false,
+    "canonicalPaletteAdapterReconciled": false
   },
   "policy": {
     "deployWithoutExplicitApproval": false,
     "flashIntermediateBuilds": false,
     "routerMutationInThisRelease": false
+  },
+  "knownCanonicalHistory": {
+    "matchedReleaseCommit": "f9edf096edd7ca0076985af28eace5ee50c67317",
+    "canonicalCartControlGitBlob": "ed2cc3c3645fc631056295d2f470aa9ae894f1f9",
+    "canonicalMatrixAdapterGitBlob": "4fdb299156c2ef09856c8a4348eb42b90a7c5ed1",
+    "deployedHistoricalCartControlEzbrSha": "c75098100a76e4b342ec9c6b95167bba5cc332eb347c55a929a1bc567244d075",
+    "deployedHistoricalMatrixAdapterEzbrSha": "f864e18b93e52ec67f5a7276615eac0c27e71d9467721afa773b6b815e531c8e",
+    "currentGuestBackendFunctionId": "95df7773-e888-48c9-84b3-ceb517c901c7",
+    "localRecoveryWorkspace": "/Users/andrew/Documents/Codex/2026-09-27/hbnf-foundation-v1-consolidate-to-one/local-roots",
+    "localRecoveryBranch": "hbnf-foundation-v1-live-fixes-20260928"
   }
 }
