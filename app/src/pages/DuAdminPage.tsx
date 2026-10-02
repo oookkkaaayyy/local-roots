@@ -103,29 +103,26 @@ function JobCard({job,credential,refresh,autoOpen}:{job:JobSummary;credential:Ad
     catch{setMessage('Clipboard access was blocked. Press and hold inside the handoff text below, copy it manually, then open ChatGPT.');}
   }
   function openChatGPT(){
-    const opened=window.open('https://chatgpt.com/','_blank');
+    if(isIos()){
+      window.location.href='chatgpt://';
+      return;
+    }
+    const opened=window.open('https://chatgpt.com/','_blank','noopener,noreferrer');
     if(!opened)window.location.assign('https://chatgpt.com/');
   }
   async function prepareForChatGPT(){
     setBusy(true);setMessage('');setHandoffText('');setHandoffExpires('');
-    let chatWindow:Window|null=null;
     try{
-      chatWindow=window.open('about:blank','du-chatgpt');
       const handoff=await callFunction<HandoffCreate>('du-handoff-create',{job_id:job.id},functionAuth(credential));
       const instruction=`START D&U STENCIL — ${handoff.job_number}\n\nSecure handoff ZIP (${handoff.source_photo_count} source photo${handoff.source_photo_count===1?'':'s'}; expires in 30 minutes):\n${handoff.handoff_url}\n\nDownload the ZIP yourself; do not ask me to upload the photos. Unpack it, read START_HERE.txt, inspect every source photo, use current Dyed & Unattached standards/AKS context if available, and begin stencil development.`;
       setHandoffText(instruction);setHandoffExpires(handoff.expires_at);
       let copied=false;
       try{await navigator.clipboard.writeText(instruction);copied=true;}catch{copied=false;}
       refresh();
-      if(copied){
-        setMessage('Secure handoff copied. Opening ChatGPT now — paste the instruction and send it.');
-        if(chatWindow)chatWindow.location.href='https://chatgpt.com/';
-        else openChatGPT();
-      }else{
-        chatWindow?.close();
-        setMessage('Secure handoff is ready, but iPhone blocked automatic clipboard copy. Use Copy handoff below, then Open ChatGPT.');
-      }
-    }catch(error){chatWindow?.close();setMessage(error instanceof Error?error.message:'Could not prepare the secure ChatGPT handoff.');}
+      setMessage(copied
+        ?'Secure handoff copied. Tap Open ChatGPT below, paste, and send.'
+        :'Secure handoff is ready, but iPhone blocked automatic clipboard copy. Use Copy handoff below, then Open ChatGPT.');
+    }catch(error){setMessage(error instanceof Error?error.message:'Could not prepare the secure ChatGPT handoff.');}
     finally{setBusy(false);}
   }
   return <article className="admin-card du-job-card" id={job.job_number}>
@@ -133,7 +130,7 @@ function JobCard({job,credential,refresh,autoOpen}:{job:JobSummary;credential:Ad
     {job.notes?<p className="admin-notes">{job.notes}</p>:null}
     {job.handoff_last_error?<div className="notice error"><strong>Handoff error</strong><span>{job.handoff_last_error}</span></div>:null}
     <div className="button-row"><button className="button ghost" disabled={busy} onClick={()=>detail?setDetail(null):void load()}>{busy?'Preparing…':detail?'Hide details':'Open job'}</button><button className="button primary" disabled={busy} onClick={()=>void prepareForChatGPT()}>Start Stencil</button><button className="button ghost" disabled={busy} onClick={()=>void copyPrompt()}>Copy prompt only</button></div>
-    {handoffText?<div className="notice"><strong>Secure ChatGPT handoff ready</strong><span>{handoffExpires?`Expires ${new Date(handoffExpires).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}.`:''} ChatGPT can retrieve the source package directly; you do not need to attach the photos.</span><textarea readOnly value={handoffText} rows={7} style={{width:'100%',minHeight:'10rem'}} onFocus={event=>event.currentTarget.select()}/><div className="button-row"><button className="button primary" type="button" onClick={()=>void copyHandoff()}>Copy handoff</button><button className="button ghost" type="button" onClick={openChatGPT}>Open ChatGPT</button></div></div>:null}
+    {handoffText?<div className="notice"><strong>Secure ChatGPT handoff ready</strong><span>{handoffExpires?`Expires ${new Date(handoffExpires).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}.`:''} ChatGPT can retrieve the source package directly; you do not need to attach the photos.</span><textarea readOnly value={handoffText} rows={7} style={{width:'100%',minHeight:'10rem'}} onFocus={event=>event.currentTarget.select()}/><div className="button-row"><button className="button primary" type="button" onClick={openChatGPT}>Open ChatGPT</button><button className="button ghost" type="button" onClick={()=>void copyHandoff()}>Copy handoff</button></div></div>:null}
     {detail?<div className="du-job-detail"><dl className="detail-grid"><div><dt>Client</dt><dd>{job.client_name||'—'}</dd></div><div><dt>Phone</dt><dd>{job.phone||'—'}</dd></div><div><dt>Submitted</dt><dd>{new Date(job.created_at).toLocaleString()}</dd></div></dl>
       <div className="du-source-grid">{detail.photos.map((photo,index)=><a className="button ghost" key={photo.id} href={photo.signed_url||undefined} download={photo.original_filename||`source-${index+1}.jpg`} target="_blank" rel="noreferrer">Download source {index+1}</a>)}</div>
       <label>Workflow stage<select value={job.workflow_status} disabled={busy} onChange={event=>void setWorkflow(event.target.value as WorkflowStatus)}>{Object.entries(labels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
