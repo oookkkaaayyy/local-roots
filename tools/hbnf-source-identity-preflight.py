@@ -80,6 +80,7 @@ def main():
     ap.add_argument("roots",nargs="*",type=pathlib.Path)
     args=ap.parse_args()
     roots=args.roots or [
+        pathlib.Path.home()/"Documents/Codex",
         pathlib.Path.home()/"Desktop/01 ACTIVE PROJECTS",
         pathlib.Path.home()/"Desktop",
         pathlib.Path.home()/"Downloads",
