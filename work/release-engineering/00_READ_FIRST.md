@@ -31,3 +31,22 @@ Known accepted artifact identity:
 - Opal: 192.168.77.1
 
 Unknown source/build fields must remain explicitly UNKNOWN/PENDING rather than guessed.
+
+## 2026-10-02 build-recovery findings — now mandatory
+
+The current PR #46 recovery exposed three recurring hidden-state hazards that are now part of the protocol:
+
+1. **No cloud/FileProvider build inputs.**
+   Source and dependency inputs must be fully materialized into a local build snapshot before PlatformIO starts. A build is not ready merely because Finder/rsync can eventually hydrate files on demand.
+
+2. **Dependency closure must be explicit.**
+   Capture the exact dependency graph actually used by the known-good build. Duplicate candidates (for example registry vs pinned copies) must be resolved deliberately. Future clean-room builds must fail closed if unexpected global libraries or undeclared alternatives enter LDF resolution.
+
+3. **Generated UI/source inputs must have one canonical policy.**
+   Every generated build input must be classified as either:
+   - deterministic generator output, with generator tool/version/inputs/config pinned and output hash verified; or
+   - canonical frozen build input, with the generator disabled for that build and exact file hashes preserved.
+   
+   Ambiguous "the prebuild hook rewrites it, then we restore it" behavior is not acceptable as a permanent release process.
+
+These requirements apply to the golden capsule, candidate capsule, clean-room harness, targeted-update runbook, and Cart 2.0 readiness gate.
