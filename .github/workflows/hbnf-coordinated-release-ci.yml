@@ -11,6 +11,7 @@ on:
       - 'config/HBNF_COORDINATED_RELEASE_GATES.json'
       - 'tests/hbnf-*.mjs'
       - 'hbnf-ui-v6-package/**'
+      - 'tools/hbnf-*.py'
       - '.github/workflows/hbnf-coordinated-release-ci.yml'
   pull_request:
     branches:
@@ -22,6 +23,7 @@ on:
       - 'config/HBNF_COORDINATED_RELEASE_GATES.json'
       - 'tests/hbnf-*.mjs'
       - 'hbnf-ui-v6-package/**'
+      - 'tools/hbnf-*.py'
       - '.github/workflows/hbnf-coordinated-release-ci.yml'
   workflow_dispatch:
 
@@ -64,6 +66,7 @@ jobs:
           node tests/hbnf-coordinated-controller-contract.mjs
           node tests/hbnf-release-readiness.mjs
           node tests/hbnf-ios12-compat-audit.mjs
+          python3 tests/hbnf-opal-updater-rebuilder.test.py
           grep -q 'OPAL_CHECK' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'OPAL_INSTALLER' hbnf-final-controller/hbnf-cart-features.mjs
 
