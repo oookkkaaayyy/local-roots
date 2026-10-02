@@ -1,0 +1,38 @@
+{
+  "schema": "hbnf-coordinated-release-gates-v1",
+  "acceptedBaseline": {
+    "releaseId": "hbnf-matrix-v1-1-current-20260930",
+    "firmwareSha256": "0aeb668e58cad3bae5b636fdc79573a263c3d0e911903ed48af0bbc2e5681f61",
+    "candidate": "hbnf-integrated-rc-visual-audio-continuity-2026-09-30",
+    "wled": "16.0.1",
+    "matrixMac": "70:4b:ca:5b:34:5c",
+    "auxMac": "8c:94:df:55:c3:4c"
+  },
+  "sourceGates": {
+    "isolatedBranch": true,
+    "visibleControllerScopeStaged": true,
+    "paletteApiDynamic": true,
+    "lookReadbackRollback": true,
+    "liveDataSharedPath": true,
+    "liveDataCacheFallback": true,
+    "otaCheckIntegrated": true,
+    "rolloutPreflightIntegrated": true,
+    "ios12FeatureModuleNoOptionalChaining": true,
+    "matrixLocalCorsStaged": true,
+    "packageIncludesFeatureModule": true
+  },
+  "productionBlockers": {
+    "acceptedLiveSourceIdentityReconciled": false,
+    "immutableOpalUpdaterPackageContainsAllLiveFixes": false,
+    "matrixOriginReadOnlyUpdaterResultPath": false,
+    "candidateBuiltFromAcceptedBaseline": false,
+    "signedCandidatePublished": false,
+    "firstRealOtaPhysicalAcceptance": false,
+    "ssidColdStartReliabilityVerified": false
+  },
+  "policy": {
+    "deployWithoutExplicitApproval": false,
+    "flashIntermediateBuilds": false,
+    "routerMutationInThisRelease": false
+  }
+}
