@@ -13,12 +13,12 @@ for (const id of [
 ]) assert.ok(html.includes('id="'+id+'"'), "missing UI id "+id);
 
 assert.ok(html.includes("hbnf-cart-features.mjs"),"feature module not loaded");
-assert.ok(features.includes('action,...payload'),"Matrix API helper missing");
+assert.ok(features.includes('Object.assign({action:action}'),"Matrix API helper missing");
 assert.ok(features.includes('matrixApi("text"'),"text action missing");
 assert.ok(features.includes('matrixApi("live_status"'),"live_status action missing");
 assert.ok(features.includes('matrixApi("scoreboard"'),"scoreboard action missing");
 assert.ok(features.includes('matrixApi("ace_pot"'),"ace_pot action missing");
-assert.ok(features.includes('fetch("/json/pal"'),"dynamic WLED palette list missing");
+assert.ok(features.includes('fetchJson("/json/pal"'),"dynamic WLED palette list missing");
 assert.ok(features.includes("LIVE_CACHE_KEY"),"live-data cache missing");
 assert.ok(features.includes("snapshotRestorePayload"),"look rollback path missing");
 assert.ok(features.includes("Palette readback did not match"),"palette readback verification missing");
