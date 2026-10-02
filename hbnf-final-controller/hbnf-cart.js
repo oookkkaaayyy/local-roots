@@ -366,7 +366,17 @@ window.HBNFCanonical = {
   command: command,
   refresh: refresh,
   flushTune: flushTune,
-  getRevision: function(){ return revision; }
+  getRevision: function(){ return revision; },
+  overlay: function(kind, data, ttlMs) {
+    const duration = Number.isFinite(Number(ttlMs)) ? Math.max(1000, Math.min(30000, Math.round(Number(ttlMs)))) : (kind === "scoreboard" ? 22000 : 8000);
+    return command("OVERLAY_START", {
+      overlayId: newCommandId(),
+      kind: kind,
+      priority: 60,
+      ttlMs: duration,
+      data: data || {}
+    });
+  }
 };
 
 function detectPairFragment() {
