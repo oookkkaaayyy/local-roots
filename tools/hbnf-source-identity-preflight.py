@@ -15,6 +15,17 @@ KNOWN_ROLLBACK_SOURCE=KNOWN_ROLLBACK_TREE/"usermods/hbnf_foundation_v1"
 KNOWN_ROLLBACK_SHA="32802f354cf2edcc1636698e5f15b6bc61311b0bffc7ecf72960221f3478fb55"
 KNOWN_BASE_SHA="3a9d02aa6bf7529a589d150834d4b9b916bef6bdc1634b13b4202eee5576dedb"
 KNOWN_PIO_ENV="hbnf_matrix_wled16_max"
+KNOWN_CANONICAL_WORKSPACE=pathlib.Path.home()/"Documents/Codex/2026-09-27/hbnf-foundation-v1-consolidate-to-one/local-roots"
+KNOWN_CANONICAL_BRANCH="hbnf-foundation-v1-live-fixes-20260928"
+KNOWN_CANONICAL_FUNCTION_PATHS=[
+    "supabase/functions/hbnf-cart-control/index.ts",
+    "supabase/functions/hbnf-cart-reconcile/index.ts",
+    "supabase/functions/hbnf-matrix-adapter/index.ts",
+    "supabase/functions/hbnf-aux-adapter/index.ts",
+    "supabase/functions/hbnf-cart-install-claim/index.ts",
+    "supabase/functions/hbnf-cart-pair-create/index.ts",
+    "supabase/functions/hbnf-cart-pair-accept/index.ts",
+]
 PRUNE={".git","node_modules","Library",".Trash",".cache","Caches","DerivedData"}
 
 def sha256(path:pathlib.Path)->str:
@@ -84,6 +95,46 @@ def patch_paths(path):
             if value not in out: out.append(value)
     return out
 
+def canonical_backend_sources(root):
+    out=[]
+    if not root.exists(): return out
+    for rel in KNOWN_CANONICAL_FUNCTION_PATHS:
+        path=root/rel
+        if path.is_file():
+            text=path.read_text(errors="replace")
+            out.append({
+                "path":str(path),
+                "relative_path":rel,
+                "sha256":sha256(path),
+                "size_bytes":path.stat().st_size,
+                "guest_mode":'mode=guest' in text or '"guest"' in text,
+                "device_header":"X-HBNF-Device" in text,
+                "pair_device":"pair_device" in text,
+                "tune_command":'"TUNE"' in text or "'TUNE'" in text,
+                "palette_command":'"PALETTE"' in text or "'PALETTE'" in text,
+                "overlay_command":"OVERLAY" in text,
+            })
+    # Also find HBNF cart function source folders that may have changed names.
+    fnroot=root/"supabase/functions"
+    if fnroot.is_dir():
+        known={item["path"] for item in out}
+        for path in sorted(fnroot.glob("hbnf-cart*/index.ts")):
+            if str(path) in known: continue
+            text=path.read_text(errors="replace")
+            out.append({
+                "path":str(path),
+                "relative_path":str(path.relative_to(root)),
+                "sha256":sha256(path),
+                "size_bytes":path.stat().st_size,
+                "guest_mode":'mode=guest' in text or '"guest"' in text,
+                "device_header":"X-HBNF-Device" in text,
+                "pair_device":"pair_device" in text,
+                "tune_command":'"TUNE"' in text or "'TUNE'" in text,
+                "palette_command":'"PALETTE"' in text or "'PALETTE'" in text,
+                "overlay_command":"OVERLAY" in text,
+            })
+    return out
+
 def report_clues(path):
     if not path.exists(): return []
     clues=[]
@@ -118,6 +169,8 @@ def main():
             "rollback_sha256":KNOWN_ROLLBACK_SHA,
             "foundation_base_sha256":KNOWN_BASE_SHA,
             "platformio_environment":KNOWN_PIO_ENV,
+            "canonical_backend_workspace":str(KNOWN_CANONICAL_WORKSPACE),
+            "canonical_backend_recorded_branch":KNOWN_CANONICAL_BRANCH,
         },
         "artifacts":[]
     }
@@ -131,6 +184,9 @@ def main():
         out["known_paths"]["rollback_source_present"]=True
         out["known_paths"]["rollback_source_git"]=git_info(KNOWN_ROLLBACK_SOURCE)
         out["known_paths"]["hbnf_local_ui_present"]=(KNOWN_ROLLBACK_SOURCE/"hbnf_local_ui.h").exists()
+    if KNOWN_CANONICAL_WORKSPACE.exists():
+        out["known_paths"]["canonical_backend_git"]=git_info(KNOWN_CANONICAL_WORKSPACE)
+        out["known_paths"]["canonical_backend_sources"]=canonical_backend_sources(KNOWN_CANONICAL_WORKSPACE)
     if (KNOWN_V1_OUTPUT/"source.patch").exists():
         out["known_paths"]["v1_source_patch"]=str(KNOWN_V1_OUTPUT/"source.patch")
         out["known_paths"]["v1_changed_files"]=patch_paths(KNOWN_V1_OUTPUT/"source.patch")
