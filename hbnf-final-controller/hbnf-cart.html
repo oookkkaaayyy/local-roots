@@ -124,10 +124,17 @@
       <label>Palette
         <select id="featurePalette"><option value="">Current palette</option></select>
       </label>
+      <label>Name saved look
+        <input id="featureLookName" type="text" maxlength="24" placeholder="e.g. Green course">
+      </label>
+      <label>Saved looks
+        <select id="featureSavedLooks"><option value="">None saved</option></select>
+      </label>
       <div class="row">
         <button id="featureApplyLook" type="button">Apply look</button>
-        <button id="featureSaveLook" type="button">Save current</button>
+        <button id="featureSaveLook" type="button">Save</button>
         <button id="featureApplySaved" type="button">Apply saved</button>
+        <button id="featureDeleteSaved" type="button">Delete saved</button>
       </div>
     </div>
     <div id="featureStatus" class="status">Feature controls staged.</div>
