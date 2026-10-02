@@ -62,7 +62,6 @@ jobs:
             grep -q "id=\"$id\"" hbnf-final-controller/hbnf-cart.html
           done
           grep -q 'src="./hbnf-cart-features.mjs"' hbnf-final-controller/hbnf-cart.html
-          grep -q 'action==="live_status"' hbnf-wow-bundle/backend/index.ts
           grep -q 'window.HBNFCanonical' hbnf-final-controller/hbnf-cart.js
           grep -q 'async function command(type, payload = {})' hbnf-final-controller/hbnf-cart.js
           grep -q 'bridge.command("SCENE"' hbnf-final-controller/hbnf-cart-features.mjs
@@ -76,10 +75,12 @@ jobs:
           grep -q 'canonicalPaletteIntentV1' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'canonicalOverlayIntentV1' staging/coordinated-backend/hbnf-cart-control/index.ts
           grep -q 'canonicalPaletteIntentV1' staging/coordinated-backend/hbnf-cart-control/index.ts
+          grep -q 'action === "live_status"' staging/coordinated-backend/hbnf-cart-control/index.ts
+          grep -q 'chooseLive' staging/coordinated-backend/hbnf-cart-control/index.ts
+          ! grep -q 'hbnf-matrix-control' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'SAVED_LOOKS_KEY' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'fetchJson("/json/pal"' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'rollbackCanonicalLook' hbnf-final-controller/hbnf-cart-features.mjs
-          grep -q 'Legacy Matrix mutations are blocked' hbnf-final-controller/hbnf-cart-features.mjs
           ! grep -q 'method:"POST".*"/json/state"' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'LIVE_CACHE_KEY' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'SAVED_LOOKS_KEY' hbnf-final-controller/hbnf-cart-features.mjs
@@ -91,7 +92,6 @@ jobs:
           grep -q 'artifact_verified' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'based_on_firmware_sha256' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'LIVE_CACHE_MAX_MS' hbnf-final-controller/hbnf-cart-features.mjs
-          grep -q '"http://192.168.77.10"' hbnf-wow-bundle/backend/shared.ts
           node tests/hbnf-coordinated-controller-contract.mjs
           node tests/hbnf-coordinated-backend-staging.mjs
           node tests/hbnf-release-readiness.mjs
@@ -122,7 +122,7 @@ jobs:
         run: |
           set -euo pipefail
           OUT="$RUNNER_TEMP/HBNF_COORDINATED_RELEASE_SOURCE_20261001"
-          mkdir -p "$OUT/controller" "$OUT/backend" "$OUT/work" "$OUT/config" "$OUT/tools" "$OUT/tests" "$OUT/installer"
+          mkdir -p "$OUT/controller" "$OUT/work" "$OUT/config" "$OUT/tools" "$OUT/tests" "$OUT/installer"
           cp hbnf-final-controller/hbnf-cart.html "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart.js "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-semantic.mjs "$OUT/controller/"
@@ -130,9 +130,6 @@ jobs:
           cp hbnf-final-controller/hbnf-cart-ui-v6.mjs "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-features.mjs "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-manifest.webmanifest "$OUT/controller/"
-          cp hbnf-wow-bundle/backend/index.ts "$OUT/backend/"
-          cp hbnf-wow-bundle/backend/live.ts "$OUT/backend/"
-          cp hbnf-wow-bundle/backend/shared.ts "$OUT/backend/"
           cp hbnf-ui-v6-package/install_ui_v6.py "$OUT/installer/"
           cp config/HBNF_COORDINATED_RELEASE_GATES.json "$OUT/config/"
           cp config/HBNF_COORDINATED_CANDIDATE_MANIFEST.json "$OUT/config/"
