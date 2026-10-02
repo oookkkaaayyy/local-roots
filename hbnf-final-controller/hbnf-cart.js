@@ -16,6 +16,7 @@ let tuneDirty = false;
 let tuneInFlight = false;
 let tuneTimer = null;
 let hydrating = false;
+let canonicalCapabilities = {};
 
 const $ = id => document.getElementById(String(id).replace(/^#/, ""));
 const statusNode = $("#status");
@@ -228,6 +229,8 @@ function hydrateControls(state) {
 
 async function refresh({ hydrate = true } = {}) {
   const out = await call({ action: "status" });
+  canonicalCapabilities = out && out.capabilities ? out.capabilities : {};
+  try { window.dispatchEvent(new CustomEvent("hbnf-canonical-capabilities",{detail:canonicalCapabilities})); } catch (_) {}
 
   if (out.desired) {
     revision = out.desired.revision;
@@ -367,6 +370,7 @@ window.HBNFCanonical = {
   refresh: refresh,
   flushTune: flushTune,
   getRevision: function(){ return revision; },
+  getCapabilities: function(){ return canonicalCapabilities; },
   overlay: function(kind, data, ttlMs) {
     const duration = Number.isFinite(Number(ttlMs)) ? Math.max(1000, Math.min(30000, Math.round(Number(ttlMs)))) : (kind === "scoreboard" ? 22000 : 8000);
     return command("OVERLAY_START", {
