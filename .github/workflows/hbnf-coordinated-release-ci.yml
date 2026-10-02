@@ -10,6 +10,7 @@ on:
       - 'work/HBNF_*.md'
       - 'config/HBNF_COORDINATED_RELEASE_GATES.json'
       - 'tests/hbnf-*.mjs'
+      - 'tests/hbnf-*.py'
       - 'hbnf-ui-v6-package/**'
       - 'tools/hbnf-*.py'
       - '.github/workflows/hbnf-coordinated-release-ci.yml'
@@ -22,6 +23,7 @@ on:
       - 'work/HBNF_*.md'
       - 'config/HBNF_COORDINATED_RELEASE_GATES.json'
       - 'tests/hbnf-*.mjs'
+      - 'tests/hbnf-*.py'
       - 'hbnf-ui-v6-package/**'
       - 'tools/hbnf-*.py'
       - '.github/workflows/hbnf-coordinated-release-ci.yml'
@@ -83,7 +85,7 @@ jobs:
         run: |
           set -euo pipefail
           OUT="$RUNNER_TEMP/HBNF_COORDINATED_RELEASE_SOURCE_20261001"
-          mkdir -p "$OUT/controller" "$OUT/backend" "$OUT/work"
+          mkdir -p "$OUT/controller" "$OUT/backend" "$OUT/work" "$OUT/config" "$OUT/tools" "$OUT/tests" "$OUT/installer"
           cp hbnf-final-controller/hbnf-cart.html "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart.js "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-semantic.mjs "$OUT/controller/"
@@ -93,7 +95,19 @@ jobs:
           cp hbnf-final-controller/hbnf-cart-manifest.webmanifest "$OUT/controller/"
           cp hbnf-wow-bundle/backend/index.ts "$OUT/backend/"
           cp hbnf-wow-bundle/backend/live.ts "$OUT/backend/"
+          cp hbnf-wow-bundle/backend/shared.ts "$OUT/backend/"
+          cp hbnf-ui-v6-package/install_ui_v6.py "$OUT/installer/"
+          cp config/HBNF_COORDINATED_RELEASE_GATES.json "$OUT/config/"
+          cp tools/hbnf-rebuild-opal-updater.py "$OUT/tools/"
+          cp tests/hbnf-coordinated-controller-contract.mjs "$OUT/tests/"
+          cp tests/hbnf-release-readiness.mjs "$OUT/tests/"
+          cp tests/hbnf-ios12-compat-audit.mjs "$OUT/tests/"
+          cp tests/hbnf-opal-updater-rebuilder.test.py "$OUT/tests/"
           cp work/HBNF_COORDINATED_RELEASE_20261001.md "$OUT/work/"
+          cp work/HBNF_READ_THIS_FIRST.md "$OUT/work/"
+          cp work/HBNF_ROLLOUT_RUNBOOK_20261001.md "$OUT/work/"
+          cp work/HBNF_OPAL_UPDATER_NEXT_PACKAGE_REQUIREMENTS.md "$OUT/work/"
+          cp work/HBNF_SOURCE_IDENTITY_RECOVERY.md "$OUT/work/"
           printf '%s\n' "$GITHUB_SHA" > "$OUT/SOURCE_COMMIT.txt"
           (cd "$RUNNER_TEMP" && zip -qr HBNF_COORDINATED_RELEASE_SOURCE_20261001.zip HBNF_COORDINATED_RELEASE_SOURCE_20261001)
           sha256sum "$RUNNER_TEMP/HBNF_COORDINATED_RELEASE_SOURCE_20261001.zip" > "$RUNNER_TEMP/HBNF_COORDINATED_RELEASE_SOURCE_20261001.zip.sha256"
