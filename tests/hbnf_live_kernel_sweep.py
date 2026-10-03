@@ -33,6 +33,21 @@ sample={
 }
 m.validate_sample(sample,"diagnostic")
 m.verify_selected(sample,inv["entries"][2])
+release_id,restarts,uptime=m.validate_continuity(sample)
+assert release_id=="r7" and restarts==0 and uptime==10
+m.validate_continuity(sample,"r7",0,9)
+changed_release=dict(sample); changed_release["release_id"]="r8"
+try: m.validate_continuity(changed_release,"r7",0,10); raise AssertionError("release change accepted")
+except RuntimeError: pass
+changed_restart=dict(sample); changed_restart["restart_count"]=1
+try: m.validate_continuity(changed_restart,"r7",0,10); raise AssertionError("restart accepted")
+except RuntimeError: pass
+lower_uptime=dict(sample); lower_uptime["uptime_seconds"]=9
+try: m.validate_continuity(lower_uptime,"r7",0,10); raise AssertionError("uptime regression accepted")
+except RuntimeError: pass
+m.assert_same_snapshot({"effect":220,"bri":90},{"effect":220,"bri":90})
+try: m.assert_same_snapshot({"effect":220},{"effect":221}); raise AssertionError("restore mismatch accepted")
+except RuntimeError: pass
 
 foundation=dict(sample)
 foundation.update({
@@ -47,4 +62,4 @@ wrong=dict(sample); wrong["kernel_name"]="RGB_Blobs5"
 try: m.verify_selected(wrong,inv["entries"][2]); raise AssertionError("wrong kernel accepted")
 except RuntimeError: pass
 
-print("PASS: live sweep runner validates adapter/inventory/telemetry and rejects wrong selected kernel")
+print("PASS: live sweep runner validates adapter/inventory/telemetry, continuity, kernel identity, and exact restore snapshots")
