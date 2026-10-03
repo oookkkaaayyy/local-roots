@@ -255,3 +255,30 @@ Crash/disconnect timeout must fall back to a safe normal visual state, with evid
 ### Candidate soak
 Each committed digital game must survive a repeated start/pause/reconnect/restart/exit cycle plus a 20+ minute play soak where appropriate before release acceptance.
 
+## Existing physical-controller evidence
+
+AKS current HBNF handoff records two Stadia Bluetooth controllers already on hand for future games. Do not buy another controller merely to satisfy the Arcade candidate.
+
+Google's Stadia support documentation states that Bluetooth-mode Stadia controllers can operate as standard wireless Bluetooth controllers, but also states compatibility with other platforms/services was not extensively tested; Google's tested platform list did not include iPadOS. No further Stadia Controller firmware updates are expected.
+
+Browser evidence:
+- Gamepad API is supported by Safari on iOS versions covering the iPad mini 2 era, but controller/platform feature support can still vary.
+- `Gamepad.mapping` must be inspected rather than assuming a standard layout.
+
+Therefore the physical-controller gate is:
+1. pair each existing Stadia Bluetooth controller to the actual target iPad/device;
+2. verify the browser exposes it through `navigator.getGamepads()`;
+3. record `id`, `mapping`, axes and buttons;
+4. establish the semantic action map;
+5. test disconnect/reconnect and index reuse;
+6. measure actual playability/latency on HBNF-Cart;
+7. keep touch controls fully usable regardless.
+
+No haptics, Stadia Assistant/Capture buttons, or controller firmware update may be a first-release dependency.
+
+Evidence:
+- https://support.google.com/stadia/answer/13067284
+- https://developer.mozilla.org/en-US/docs/Web/API/Gamepad
+- https://developer.mozilla.org/en-US/docs/Web/API/Gamepad/mapping
+- https://caniuse.com/gamepad
+
