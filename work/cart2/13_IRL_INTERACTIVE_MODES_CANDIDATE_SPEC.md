@@ -161,3 +161,66 @@ These can share one underlying Directive Engine:
 - session end
 
 No separate plumbing per mode.
+
+## 2026-10-03 challenger refinement
+
+### Strongest mechanics remain low-input
+Current external evidence reinforces Shuffle Call rather than expanding score-entry modes: dgputt's current SHUFFLE drill assigns a random distance on every throw specifically to train resetting between putts. That is evidence for randomized callouts as a useful training mechanic, not evidence that the cart should reproduce dgputt's scoring/logging.
+
+Evidence:
+- https://apps.apple.com/us/app/dgputt-disc-golf-putting/id1536711552
+- https://play.google.com/store/apps/details?id=com.erlendjohnsen.dgputt
+
+### SHUFFLE CALL refinement
+Default randomization candidate:
+- use a shuffle-bag over the selected stations/distances;
+- every location appears once before reshuffle;
+- prevent the final item of one bag from immediately repeating as the first item of the next where the set permits;
+- REPEAT is an explicit owner/player action and does not alter the bag unless specified.
+
+Reason: preserve unpredictability without accidental clusters that feel like a broken randomizer.
+
+### PRESSURE CLOCK refinement
+Candidate flow:
+READY / settle -> active countdown -> expiry cue -> short recovery -> next cycle.
+
+Required controls:
+- pause/resume;
+- restart current clock;
+- skip/next;
+- end.
+
+A group interruption must not force a score/result entry. The timer pauses or restarts cleanly.
+
+### SEQUENCE RUN refinement
+A generated sequence is immutable for that run unless the user explicitly regenerates it.
+- SHOW-ALL: preview entire sequence, then step through;
+- MEMORY: preview then conceal;
+- LIVE: reveal one step at a time.
+
+Completion is a visual/audio moment only by default; no make/miss scoring is implied.
+
+### Manual-input ceiling
+Normal timed operation target: zero touches after START.
+Manual-advance variant: at most one NEXT action per station/throw, and only if the user explicitly selected manual advance.
+
+Any mode that requires repeated result entry must prove that the cart creates enough extra value to justify that burden before scope lock.
+
+### Rapid Fire challenger test
+Keep RAPID FIRE outside the recommended committed set unless physical testing shows the cart's synchronized Matrix/audio cadence is materially better than a normal timer/metronome. If not, reject it rather than shipping redundant functionality.
+
+### Updated acceptance cases
+For each recommended IRL mode:
+- start with smallest valid station set;
+- typical station set;
+- pause/resume after an interruption;
+- iPad lock/wake;
+- controller reconnect;
+- end/restart;
+- no-input normal run;
+- ensure no unintended immediate repeat in Shuffle Call;
+- timer expiry and manual restart in Pressure Clock;
+- exact sequence preservation across pause/resume in Sequence Run.
+
+Tie/elimination and repeated make/miss-entry tests do not apply to these current recommended modes.
+
