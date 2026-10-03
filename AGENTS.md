@@ -28,6 +28,8 @@ For any task touching HBNF release engineering, firmware promotion, Cart 2.0 int
    - `python3 tests/hbnf_control.py`
    - `python3 tests/hbnf_guarded_run.py`
    - `python3 scripts/hbnf_architecture_fitness.py`
+   - `python3 tests/hbnf_runtime_qualify_static.py`
+   - `python3 tests/hbnf_kernel_sweep_report.py`
 
 7. Do not perform live mutation unless the control plane and the task's explicit user authorization both permit it.
 
