@@ -10,9 +10,14 @@ adapter={
  "select_argv":["python3","x.py","select","{effect_id}"],
  "telemetry_argv":["python3","x.py","telemetry"],
  "restore_argv":["python3","x.py","restore","{snapshot_file}"],
- "settle_seconds":1,"sample_seconds":2,"sample_interval_seconds":1
+ "settle_seconds":1,"sample_seconds":2,"sample_interval_seconds":1,
+ "expected_release_id":"r7"
 }
 m.validate_adapter(adapter)
+
+missing_release=dict(adapter); missing_release["expected_release_id"]=""
+try: m.validate_adapter(missing_release); raise AssertionError("empty expected release accepted")
+except ValueError: pass
 
 bad=dict(adapter); bad["select_argv"]=["python3","x.py","select"]
 try: m.validate_adapter(bad); raise AssertionError("missing effect placeholder accepted")
