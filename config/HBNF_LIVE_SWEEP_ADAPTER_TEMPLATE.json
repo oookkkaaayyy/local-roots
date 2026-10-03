@@ -1,0 +1,36 @@
+{
+  "schema": "hbnf-live-sweep-adapter-v1",
+  "snapshot_argv": [
+    "python3",
+    "REPLACE_WITH_RELEASE07_ADAPTER.py",
+    "snapshot"
+  ],
+  "select_argv": [
+    "python3",
+    "REPLACE_WITH_RELEASE07_ADAPTER.py",
+    "select",
+    "--effect-id",
+    "{effect_id}"
+  ],
+  "telemetry_argv": [
+    "python3",
+    "REPLACE_WITH_RELEASE07_ADAPTER.py",
+    "telemetry"
+  ],
+  "restore_argv": [
+    "python3",
+    "REPLACE_WITH_RELEASE07_ADAPTER.py",
+    "restore",
+    "--snapshot",
+    "{snapshot_file}"
+  ],
+  "settle_seconds": 5,
+  "sample_seconds": 30,
+  "sample_interval_seconds": 1,
+  "timeout_seconds": 10,
+  "notes": [
+    "TEMPLATE ONLY. Replace with the exact release07 canonical/local control and telemetry adapter discovered from source/runtime.",
+    "Do not use a guessed direct mutation endpoint.",
+    "Adapter snapshot must emit JSON to stdout. Telemetry must emit one canonical telemetry sample JSON to stdout."
+  ]
+}
