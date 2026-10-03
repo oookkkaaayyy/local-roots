@@ -292,7 +292,13 @@ Deno.serve(async (req: Request) => {
       .eq("job_id", job.id).order("option_code");
     const { data: checklist } = await service.from("production_checklist").select("*")
       .eq("job_id", job.id).maybeSingle();
-    return json({ job, photos: hydrated, options: options || [], checklist });
+    let latestDraftUrl: string | null = null;
+    if (job.latest_draft_path) {
+      const { data: draftSigned } = await service.storage.from("du-intake")
+        .createSignedUrl(job.latest_draft_path, 3600);
+      latestDraftUrl = draftSigned?.signedUrl || null;
+    }
+    return json({ job: { ...job, latest_draft_url: latestDraftUrl }, photos: hydrated, options: options || [], checklist });
   }
 
   if (action === "set_workflow") {
