@@ -58,10 +58,13 @@ Create ONE small local adapter implementing the argv contract in:
 `config/HBNF_LIVE_SWEEP_ADAPTER_TEMPLATE.json`
 
 The adapter must:
+- pin `expected_release_id` to `hbnf-matrix-coordinated-v1-20261002-07`;
 - snapshot current state to JSON;
 - select exactly one requested effect ID;
 - emit one CANONICAL diagnostic telemetry JSON object;
 - restore exact pre-sweep state.
+
+The runner performs a read-only canonical telemetry preflight before the first select command and must abort before visual mutation if release identity is not exactly release07 or required diagnostic fields are absent.
 
 No firmware edits are needed merely to expose p95/p99 if release07 does not already have them.
 
@@ -92,7 +95,9 @@ Requirements:
 - ~5 s settle + ~30 s sample per kernel unless the actual telemetry cadence requires a justified adjustment;
 - collect current available average whole-frame/kernel/stage timing plus FPS, heap, RSSI, AUX and restart state;
 - ALWAYS restore exact pre-sweep visual state, including on failure;
-- abort on release identity change, kernel mismatch, restart, adapter failure or inability to restore.
+- after restore, re-snapshot and require exact equality with the pre-sweep visual snapshot;
+- preserve `PRE_SWEEP_STATE.json`, `POST_RESTORE_STATE.json`, and `RESTORE_RECEIPT.json`;
+- abort on release identity change, kernel mismatch, restart, uptime regression, adapter failure, restore-command failure, or post-restore snapshot mismatch.
 
 This is a diagnostic ranking pass, NOT foundation qualification.
 Do not fail merely because release07 lacks p95/p99 metrics.
