@@ -1,64 +1,49 @@
 {
-  "schema": "hbnf-control-model-v1",
+  "schema": "hbnf-control-model-v2",
   "authority": "PRIMARY_OPERATIONAL_DECISION_MODEL",
-  "purpose": "Single deterministic promotion model for HBNF foundation, Cart 2.0 integration, and release acceptance. Documents may supply evidence; they do not independently decide state.",
+  "design": "linear_stage_receipts",
   "principles": [
     "One current lifecycle state.",
-    "Transitions are explicit and forward-only unless a named rollback transition exists.",
-    "Evidence is typed and referenced; unknown/missing evidence fails closed.",
-    "No implicit rule chaining.",
-    "No operational decision is made by natural-language document precedence.",
-    "Human approval is represented as evidence, not inferred by an agent.",
-    "Historical docs, postmortems, runbooks, and ledgers are evidence/reference inputs, not parallel control planes."
+    "Exactly one declared next transition from every nonterminal state.",
+    "Each transition consumes exactly one self-contained stage receipt.",
+    "Receipts contain direct check results only; receipts may not depend on or cite other receipts, policy documents, runbooks, or postmortems.",
+    "No recursive evaluation, rule chaining, document precedence, or cross-stage boolean graph.",
+    "Unknown or missing checks fail closed.",
+    "Human approvals are explicit fields on the transition receipt."
   ],
   "states": [
     "DIAGNOSTIC_ACTIVE",
-    "ROOT_CAUSE_PROVEN",
     "FIX_CANDIDATE",
-    "FOUNDATION_QUALIFYING",
     "FOUNDATION_QUALIFIED",
     "PHASE2_INTEGRATING",
     "RELEASE_CANDIDATE",
-    "RELEASE_QUALIFYING",
     "ACCEPTED"
   ],
   "transitions": [
     {
-      "id": "T1_DIAGNOSTIC_TO_ROOT_CAUSE",
+      "id": "T1_DIAGNOSTIC_CLOSE",
       "from": "DIAGNOSTIC_ACTIVE",
-      "to": "ROOT_CAUSE_PROVEN",
-      "requires": [
+      "to": "FIX_CANDIDATE",
+      "receipt_type": "diagnostic_close",
+      "required_checks": [
         "diagnostic_artifact_identity",
         "timing_attribution_complete",
-        "root_cause_evidence",
-        "instrumentation_overhead_characterized"
-      ]
-    },
-    {
-      "id": "T2_ROOT_CAUSE_TO_FIX_CANDIDATE",
-      "from": "ROOT_CAUSE_PROVEN",
-      "to": "FIX_CANDIDATE",
-      "requires": [
+        "root_cause_proven",
+        "instrumentation_overhead_characterized",
         "bounded_fix_delta",
         "candidate_artifact_identity",
         "nonhardware_tests_passed"
-      ]
+      ],
+      "human_approval_required": false
     },
     {
-      "id": "T3_FIX_TO_FOUNDATION_QUALIFYING",
+      "id": "T2_FOUNDATION_QUALIFY",
       "from": "FIX_CANDIDATE",
-      "to": "FOUNDATION_QUALIFYING",
-      "requires": [
-        "install_health_passed",
-        "runtime_telemetry_contract_verified",
-        "exact_runtime_identity_verified"
-      ]
-    },
-    {
-      "id": "T4_FOUNDATION_QUALIFY",
-      "from": "FOUNDATION_QUALIFYING",
       "to": "FOUNDATION_QUALIFIED",
-      "requires": [
+      "receipt_type": "foundation_qualification",
+      "required_checks": [
+        "install_health_passed",
+        "runtime_telemetry_verified",
         "runtime_smoke_passed",
         "foundation_soak_passed",
         "feature_acceptance_passed",
@@ -66,177 +51,77 @@
         "golden_capsule_complete",
         "rollback_verified",
         "flight_recorder_ready"
-      ]
+      ],
+      "human_approval_required": true
     },
     {
-      "id": "T5_START_PHASE2",
+      "id": "T3_PHASE2_START",
       "from": "FOUNDATION_QUALIFIED",
       "to": "PHASE2_INTEGRATING",
-      "requires": [
+      "receipt_type": "phase2_scope_lock",
+      "required_checks": [
         "scope_contract_locked",
         "interfaces_frozen",
         "lane_plan_ready",
         "acceptance_matrix_locked"
-      ]
+      ],
+      "human_approval_required": true
     },
     {
-      "id": "T6_PHASE2_TO_RELEASE_CANDIDATE",
+      "id": "T4_PHASE2_INTEGRATION",
       "from": "PHASE2_INTEGRATING",
       "to": "RELEASE_CANDIDATE",
-      "requires": [
+      "receipt_type": "phase2_integration",
+      "required_checks": [
         "committed_features_implemented",
         "integration_runtime_smokes_passed",
         "no_unapproved_scope_change",
-        "guest_platform_integrated"
-      ]
-    },
-    {
-      "id": "T7_RELEASE_PREFLIGHT",
-      "from": "RELEASE_CANDIDATE",
-      "to": "RELEASE_QUALIFYING",
-      "requires": [
+        "guest_platform_integrated",
         "package_complete",
-        "preflight_passed",
         "signed_release_preflight_passed"
-      ]
+      ],
+      "human_approval_required": false
     },
     {
-      "id": "T8_ACCEPT_RELEASE",
-      "from": "RELEASE_QUALIFYING",
+      "id": "T5_RELEASE_ACCEPT",
+      "from": "RELEASE_CANDIDATE",
       "to": "ACCEPTED",
-      "requires": [
+      "receipt_type": "release_acceptance",
+      "required_checks": [
         "final_soak_passed",
         "physical_acceptance_passed",
         "guest_shareability_passed",
         "update_recovery_passed",
         "final_capsule_complete"
-      ]
+      ],
+      "human_approval_required": true
     }
   ],
-  "evidence_catalog": {
-    "diagnostic_artifact_identity": {
-      "type": "boolean"
-    },
-    "timing_attribution_complete": {
-      "type": "boolean"
-    },
-    "root_cause_evidence": {
-      "type": "boolean"
-    },
-    "instrumentation_overhead_characterized": {
-      "type": "boolean"
-    },
-    "bounded_fix_delta": {
-      "type": "boolean"
-    },
-    "candidate_artifact_identity": {
-      "type": "boolean"
-    },
-    "nonhardware_tests_passed": {
-      "type": "boolean"
-    },
-    "install_health_passed": {
-      "type": "boolean"
-    },
-    "runtime_telemetry_contract_verified": {
-      "type": "boolean"
-    },
-    "exact_runtime_identity_verified": {
-      "type": "boolean"
-    },
-    "runtime_smoke_passed": {
-      "type": "boolean"
-    },
-    "foundation_soak_passed": {
-      "type": "boolean"
-    },
-    "feature_acceptance_passed": {
-      "type": "boolean"
-    },
-    "clean_room_rebuild_passed": {
-      "type": "boolean"
-    },
-    "golden_capsule_complete": {
-      "type": "boolean"
-    },
-    "rollback_verified": {
-      "type": "boolean"
-    },
-    "flight_recorder_ready": {
-      "type": "boolean"
-    },
-    "scope_contract_locked": {
-      "type": "boolean",
-      "human_approval_required": true
-    },
-    "interfaces_frozen": {
-      "type": "boolean"
-    },
-    "lane_plan_ready": {
-      "type": "boolean"
-    },
-    "acceptance_matrix_locked": {
-      "type": "boolean",
-      "human_approval_required": true
-    },
-    "committed_features_implemented": {
-      "type": "boolean"
-    },
-    "integration_runtime_smokes_passed": {
-      "type": "boolean"
-    },
-    "no_unapproved_scope_change": {
-      "type": "boolean"
-    },
-    "guest_platform_integrated": {
-      "type": "boolean"
-    },
-    "package_complete": {
-      "type": "boolean"
-    },
-    "preflight_passed": {
-      "type": "boolean"
-    },
-    "signed_release_preflight_passed": {
-      "type": "boolean"
-    },
-    "final_soak_passed": {
-      "type": "boolean"
-    },
-    "physical_acceptance_passed": {
-      "type": "boolean",
-      "human_approval_required": true
-    },
-    "guest_shareability_passed": {
-      "type": "boolean"
-    },
-    "update_recovery_passed": {
-      "type": "boolean"
-    },
-    "final_capsule_complete": {
-      "type": "boolean"
-    }
-  },
-  "invariants": [
-    {
-      "id": "INV_NO_SKIP",
-      "description": "Lifecycle may advance only through a declared transition."
-    },
-    {
-      "id": "INV_EVIDENCE_FAIL_CLOSED",
-      "description": "Missing, false, malformed, or unknown evidence cannot satisfy a transition."
-    },
-    {
-      "id": "INV_HUMAN_APPROVAL_EXPLICIT",
-      "description": "Evidence marked human_approval_required must include approved_by_user=true and a nonempty reference."
-    },
-    {
-      "id": "INV_SCOPE_CHANGE",
-      "description": "After scope_contract_locked, a scope change requires explicit new user approval; agents may not silently reinterpret the contract."
-    },
-    {
-      "id": "INV_ACCEPTANCE_SEPARATION",
-      "description": "Install health, automated runtime qualification, and physical acceptance are separate evidence items."
-    }
-  ]
+  "receipt_contract": {
+    "schema": "hbnf-stage-receipt-v1",
+    "required_top_level": [
+      "schema",
+      "receipt_type",
+      "transition_id",
+      "subject",
+      "checks",
+      "outcome",
+      "evidence_artifacts"
+    ],
+    "subject_required": [
+      "release_id",
+      "source_commit",
+      "artifact_sha256"
+    ],
+    "outcome_required": "PASS",
+    "forbidden_evidence_name_patterns": [
+      "receipt",
+      "control_model",
+      "control_state",
+      "read_first",
+      "postmortem",
+      "runbook",
+      "aks"
+    ]
+  }
 }
