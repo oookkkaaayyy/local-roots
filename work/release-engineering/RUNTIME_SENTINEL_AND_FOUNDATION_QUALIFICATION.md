@@ -83,3 +83,38 @@ Once the current FPS-fix task returns:
 - wire runtime qualification into the release gate.
 
 Do not rebase Cart 2.0 implementation onto the corrected source until this qualification passes.
+
+
+## 7. Complete retained-kernel sweep — mandatory foundation evidence
+The current release-06 evidence isolated RGB_Blobs5 as a dominant kernel cost, but also showed material palette/common-path time. The corrected candidate must therefore be swept across ALL 28 retained kernels before foundation promotion.
+
+Use:
+- config/HBNF_KERNEL_SWEEP_MANIFEST_TEMPLATE.json
+- scripts/hbnf_runtime_qualify.py for each bounded kernel capture
+- scripts/hbnf_kernel_sweep_report.py to enforce complete coverage, rank slow kernels, and summarize shared-stage cost
+
+Foundation fails if:
+- fewer than 28 unique retained kernels are measured;
+- any required kernel/variant identity is missing;
+- any kernel violates the frozen performance envelope;
+- a shared hot path remains materially expensive and unexplained;
+- instrumentation overhead is not characterized.
+
+Do not serially wait for a human to discover the next slow effect. If multiple failures share one primitive/common path, treat that as one optimization class.
+
+## 8. Common-path audit
+The foundation receipt includes a direct common_path_performance_audit_passed check.
+
+Audit at minimum:
+- palette/color work;
+- audio/modulation;
+- scheduler/variant;
+- overlay;
+- AUX preparation/send;
+- unaccounted remainder.
+
+A nonzero stage cost is not itself a defect. Correct it only when measured evidence shows that it materially prevents the qualified performance envelope or exhibits pathological scaling/redundancy.
+
+## 9. Current active repair boundary
+Do not mutate or duplicate the active release-07 repair task from this staging lane.
+Release 07 remains an external current-repair candidate until its exact final identity/evidence is returned and ingested.
