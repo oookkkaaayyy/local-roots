@@ -38,7 +38,9 @@ foundation=dict(sample)
 foundation.update({
  "frame_ms_p50":80,"frame_ms_p95":90,"frame_ms_p99":100,"frame_ms_max":120,
  "minimum_free_heap_bytes":97000,"largest_free_block_bytes":70000,
- "aux_projection_age_ms":10
+ "aux_projection_age_ms":10,
+ "kernel_ms_p95":75,"palette_ms_p95":1,"audio_ms_p95":8,"scheduler_ms_avg":1,"scheduler_ms_p95":2,
+ "overlay_ms_p95":0.1,"aux_prepare_send_ms_p95":6,"unaccounted_ms_p95":4
 })
 m.validate_sample(foundation,"foundation")
 wrong=dict(sample); wrong["kernel_name"]="RGB_Blobs5"
