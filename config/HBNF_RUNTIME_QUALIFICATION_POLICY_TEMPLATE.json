@@ -7,7 +7,8 @@
     "integration_smoke_minutes": 5,
     "major_milestone_soak_minutes": 30,
     "foundation_promotion_soak_minutes": 90,
-    "final_release_soak_minutes": 90
+    "final_release_soak_minutes": 90,
+    "foundation_preferred_extended_soak_minutes": 240
   },
   "comparison": {
     "require_same_or_declared_comparable_kernel_variant": true,
@@ -37,5 +38,19 @@
     "feature_regression_pass",
     "exact_release_identity_match"
   ],
-  "note": "Thresholds are intentionally unset until the corrected foundation baseline is measured and explicitly frozen. The qualification tool must fail closed while required thresholds are null."
+  "note": "Thresholds are intentionally unset until the corrected foundation baseline is measured and explicitly frozen. The qualification tool must fail closed while required thresholds are null.",
+  "all_kernel_sweep": {
+    "expected_kernel_count": 28,
+    "settle_seconds_per_kernel": 5,
+    "sample_seconds_per_kernel": 30,
+    "failure_policy": "FAIL_FOUNDATION_IF_ANY_KERNEL_FAILS_OR_SHARED_PATH_REMAINS_UNEXPLAINED",
+    "common_path_audit_required": true,
+    "same_scene_or_declared_comparable_baseline_required": true,
+    "thresholds": "USE_FROZEN_BASELINE_RELATIVE_POLICY__DO_NOT_INVENT_FROM_DEFECTIVE_RELEASE"
+  },
+  "observer_effect": {
+    "required": true,
+    "compare_instrumented_vs_lightweight_production_telemetry": true,
+    "expensive_diagnostics_allowed_in_golden": false
+  }
 }
