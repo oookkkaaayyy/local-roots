@@ -8,21 +8,28 @@ with tempfile.TemporaryDirectory() as td:
     r=pathlib.Path(td)
     (r/"wled00").mkdir()
     (r/"wled00/a.cpp").write_text("alpha\n")
+    (r/"wled00/embedded.bin").write_bytes(b"source-input")
     (r/"platformio.ini").write_text("[env:test]\n")
     (r/".pio").mkdir()
     (r/".pio/generated.bin").write_bytes(b"ignored")
     rows1=m.inventory(r,set())
     h1=m.canonical_tree_hash(rows1)
-    assert {x["path"] for x in rows1}=={"platformio.ini","wled00/a.cpp"}
+    assert {x["path"] for x in rows1}=={"platformio.ini","wled00/a.cpp","wled00/embedded.bin"}
 
     # Generated output must not affect identity.
     (r/".pio/generated.bin").write_bytes(b"changed")
     rows2=m.inventory(r,set())
     assert m.canonical_tree_hash(rows2)==h1
 
+    # File mode change must affect identity.
+    (r/"wled00/a.cpp").chmod(0o755)
+    rows_mode=m.inventory(r,set())
+    h_mode=m.canonical_tree_hash(rows_mode)
+    assert h_mode!=h1
+
     # Source change must affect identity.
     (r/"wled00/a.cpp").write_text("beta\n")
     rows3=m.inventory(r,set())
-    assert m.canonical_tree_hash(rows3)!=h1
+    assert m.canonical_tree_hash(rows3)!=h_mode
 
 print("PASS: deterministic source-tree identity ignores build outputs and changes on source edits")
