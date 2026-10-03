@@ -114,3 +114,67 @@ Each card shows:
 
 Guest can choose only permitted Vibes.
 Owner retains deeper Motion/Audio/brightness controls.
+
+## 2026-10-03 challenger refinement
+
+### Differentiation must survive palette removal
+Add a palette-normalized challenger pass:
+- compare same-track clips with palette differences neutralized as much as practical (same palette or grayscale capture);
+- ask whether motion, composition, density, topology and audio-response grammar still distinguish the Vibes.
+
+If identity collapses when color is neutralized, the pair is not sufficiently differentiated.
+
+### Cross-track identity
+For each candidate Vibe:
+- run at least three materially different reference tracks;
+- the Vibe should remain recognizably itself across tracks while still visibly reacting differently to each track.
+
+This prevents a Vibe from being a single animation that merely happens to look different when the music changes.
+
+### Pairwise test matrix
+Every committed pair must be challenged, not just adjacent-looking modes:
+- CHILL vs GROOVE
+- CHILL vs HEAVY
+- CHILL vs PSYCHEDELIC
+- CHILL vs COSMIC
+- GROOVE vs HEAVY
+- GROOVE vs PSYCHEDELIC
+- GROOVE vs COSMIC
+- HEAVY vs PSYCHEDELIC
+- HEAVY vs COSMIC
+- PSYCHEDELIC vs COSMIC
+
+AUTO is evaluated differently: whether its chosen/bias behavior changes appropriately and avoids twitchy mode-hopping, not whether AUTO has a unique static visual grammar.
+
+### Audio-causality replay
+Use the same synthetic feature traces for every candidate Vibe:
+- silence -> onset;
+- isolated kick/sub impulse;
+- sustained bass;
+- mid-band swell;
+- high-frequency transient burst;
+- dense broadband passage.
+
+Pass condition is not identical numerical response. The same event should produce a Vibe-specific visual consequence consistent with that Vibe's grammar.
+
+The current WLED AudioReactive stack already derives local sound features from microphone/line input and supports realtime audio-reactive behavior; this supports exhausting the existing local signal path before considering a new realtime architecture.
+
+Evidence:
+- https://kno.wled.ge/advanced/audio-reactive/
+
+### Within-Vibe variety
+Differentiation may not be achieved by making each Vibe one repetitive signature loop.
+Each committed Vibe must retain enough donor/parameter variation that:
+- no obvious short loop dominates normal viewing;
+- the Vibe grammar remains identifiable across variants;
+- different tracks produce visibly different performances.
+
+### AUTO anti-flapping
+AUTO candidate behavior must include:
+- long dwell/hysteresis;
+- confidence/hold behavior around ambiguous transitions;
+- no claim of genre recognition;
+- manual Vibe selection immediately overrides AUTO when the owner/guest has authority to select.
+
+Exact thresholds remain source/replay dependent and are not locked here.
+
