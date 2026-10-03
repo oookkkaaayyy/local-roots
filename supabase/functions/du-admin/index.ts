@@ -311,6 +311,78 @@ Deno.serve(async (req: Request) => {
     return json({ ok: true, job: data });
   }
 
+  if (action === "save_generated_draft") {
+    try {
+      const jobId = String(body.job_id || "").trim();
+      if (!jobId) return json({ error: "invalid_job_id" }, 400);
+      const { data: job, error: jobError } = await service.from("jobs")
+        .select("id,job_number,subject_name").eq("id", jobId).maybeSingle();
+      if (jobError || !job) return json({ error: "job_not_found" }, 404);
+
+      const image = decodeGalleryImage(body.image_data_url);
+      const generation = body.generation && typeof body.generation === "object" ? body.generation : {};
+      const safeStamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const path = `jobs/${job.job_number}/02_Drafts/${safeStamp}-${crypto.randomUUID().slice(0,8)}.${image.extension}`;
+      const { error: uploadError } = await service.storage.from("du-intake").upload(path, image.bytes, {
+        contentType: image.mime,
+        cacheControl: "3600",
+        upsert: false,
+      });
+      if (uploadError) return json({ error: "draft_upload_failed", detail: uploadError.message }, 400);
+
+      const note = JSON.stringify({
+        model: String(generation.model || "").slice(0, 160),
+        recipe_version: String(generation.recipe_version || "").slice(0, 120),
+        seed: Number.isFinite(Number(generation.seed)) ? Number(generation.seed) : null,
+        composition_photo_id: String(generation.composition_photo_id || "").slice(0, 80),
+        source_photo_ids: Array.isArray(generation.source_photo_ids)
+          ? generation.source_photo_ids.map((value: unknown) => String(value).slice(0,80)).slice(0,4)
+          : [],
+        revision_note: String(generation.revision_note || "").slice(0,1200) || null,
+      });
+
+      const { error: fileError } = await service.from("job_files").insert({
+        job_id: job.id,
+        file_role: "draft",
+        option_code: null,
+        storage_bucket: "du-intake",
+        storage_path: path,
+        original_filename: `${job.job_number}-generation-v2.${image.extension}`,
+        content_type: image.mime,
+        size_bytes: image.bytes.length,
+        notes: note,
+      });
+      if (fileError) {
+        await service.storage.from("du-intake").remove([path]);
+        return json({ error: "draft_record_failed", detail: fileError.message }, 400);
+      }
+
+      const generationPlan = {
+        engine: "workers-ai",
+        model: String(generation.model || ""),
+        recipe_version: String(generation.recipe_version || ""),
+        seed: Number.isFinite(Number(generation.seed)) ? Number(generation.seed) : null,
+        composition_photo_id: String(generation.composition_photo_id || ""),
+        source_photo_ids: Array.isArray(generation.source_photo_ids) ? generation.source_photo_ids : [],
+        revision_note: String(generation.revision_note || "") || null,
+        generated_at: new Date().toISOString(),
+      };
+      const { error: updateError } = await service.from("jobs").update({
+        latest_draft_path: path,
+        generation_plan: generationPlan,
+        workflow_status: "awaiting_art_approval",
+        handoff_last_error: null,
+      }).eq("id", job.id);
+      if (updateError) return json({ error: "draft_job_update_failed", detail: updateError.message }, 400);
+
+      const { data: signed } = await service.storage.from("du-intake").createSignedUrl(path, 3600);
+      return json({ ok: true, path, signed_url: signed?.signedUrl || null, generation_plan: generationPlan });
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "draft_save_failed";
+      return json({ error: code }, code === "gallery_image_too_large" ? 413 : 400);
+    }
+  }
+
   if (action === "gallery_list") {
     const { data, error } = await service.from("gallery_items")
       .select("id,job_id,is_published,caption,source_photo_path,stencil_path,finished_disc_path,sort_order,legacy_roles_confirmed,created_at,updated_at")
