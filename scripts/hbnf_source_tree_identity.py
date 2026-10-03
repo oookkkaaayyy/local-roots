@@ -12,7 +12,7 @@ from __future__ import annotations
 import argparse, hashlib, json, os, pathlib, stat, sys
 
 DEFAULT_EXCLUDE_DIRS={
-    ".git",".pio",".pioenvs",".piolibdeps","build","dist","node_modules",
+    ".git",".pio",".pioenvs",".piolibdeps","node_modules",
     "__pycache__",".pytest_cache",".mypy_cache",".cache",".DS_Store"
 }
 DEFAULT_EXCLUDE_SUFFIXES={".pyc",".pyo"}
