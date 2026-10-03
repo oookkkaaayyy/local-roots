@@ -13,6 +13,11 @@ def sample(i,fps=35,p95=31,p99=36,mx=42,free=100000,minfree=95000,largest=70000,
       "kernel_id":220,"variant_id":1,
       "free_heap_bytes":free,"minimum_free_heap_bytes":minfree,"largest_free_block_bytes":largest,
       "websocket_clients":1,"aux_projection_active":aux,"aux_projection_age_ms":auxage,
+      "aux_render_fps":fps,"wifi_rssi_dbm":-40,
+      "kernel_ms_avg":18,"kernel_ms_p95":20,"palette_ms_avg":4,"palette_ms_p95":5,
+      "audio_ms_avg":2,"audio_ms_p95":3,"scheduler_ms_avg":1,"scheduler_ms_p95":2,
+      "overlay_ms_avg":0.5,"overlay_ms_p95":1,"aux_prepare_send_ms_avg":1.5,"aux_prepare_send_ms_p95":2,
+      "unaccounted_ms_avg":2,"unaccounted_ms_p95":3,
       "restart_count":restarts
     }
 
@@ -29,6 +34,9 @@ policy={"comparison":{"candidate_vs_baseline":{
 
 good=m.summarize([sample(i,fps=34,p95=32,p99=38,mx=45,free=99000,minfree=94000,largest=69000) for i in range(1,61)])
 assert m.qualify(good,baseline,policy)==[]
+assert good["stages"]["palette_ms_p95"]["median"]==5
+assert good["aux"]["render_fps_median"]==34
+assert good["wifi"]["rssi_dbm_median"]==-40
 
 tail=m.summarize([sample(i,fps=34,p95=32,p99=55,mx=90) for i in range(1,61)])
 assert any("frame p99" in x or "frame max" in x for x in m.qualify(tail,baseline,policy))
