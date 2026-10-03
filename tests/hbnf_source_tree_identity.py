@@ -10,11 +10,13 @@ with tempfile.TemporaryDirectory() as td:
     (r/"wled00/a.cpp").write_text("alpha\n")
     (r/"wled00/embedded.bin").write_bytes(b"source-input")
     (r/"platformio.ini").write_text("[env:test]\n")
+    (r/"build").mkdir()
+    (r/"build/frozen.h").write_text("#define FROZEN_INPUT 1\n")
     (r/".pio").mkdir()
     (r/".pio/generated.bin").write_bytes(b"ignored")
     rows1=m.inventory(r,set())
     h1=m.canonical_tree_hash(rows1)
-    assert {x["path"] for x in rows1}=={"platformio.ini","wled00/a.cpp","wled00/embedded.bin"}
+    assert {x["path"] for x in rows1}=={"platformio.ini","wled00/a.cpp","wled00/embedded.bin","build/frozen.h"}
 
     # Generated output must not affect identity.
     (r/".pio/generated.bin").write_bytes(b"changed")
