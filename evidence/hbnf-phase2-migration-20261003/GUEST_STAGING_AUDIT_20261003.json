@@ -1,0 +1,70 @@
+{
+  "schema": "hbnf-guest-staging-audit-v1",
+  "generated": "2026-10-03",
+  "status": "BLOCKED_BEFORE_BACKEND_OR_DEPLOYMENT",
+  "implementation_mutation_performed": false,
+  "findings": [
+    {
+      "id": "GUEST_CAPABILITY_UI_FAIL_OPEN",
+      "severity": "HIGH",
+      "evidence": [
+        "hbnf-guest-controller/hbnf-guest.js render() calls controlsEnabled(open), which enables all Vibe/Arcade/IRL buttons whenever session.open is true",
+        "refreshSession() calls applyCapabilities() and then render(), so render() can overwrite the per-capability disabled state",
+        "boot() restores a saved session, calls render(), then refreshSession(), so a previously open saved session can temporarily present all controls enabled before fresh status resolves"
+      ],
+      "consequence": "Current staging client does not meet the capability-scoped guest UX contract and must not be treated as safe evidence of authorization behavior.",
+      "required_resolution": "UI must derive each control's enabled state from fresh granted capabilities and default closed during unresolved/stale session state; server remains authoritative on every mutation."
+    },
+    {
+      "id": "GUEST_MUTATION_PROOF_UNDEFINED",
+      "severity": "HIGH",
+      "evidence": [
+        "Current client reads initial ?s= token only for status resolution",
+        "Mutation POST body contains sessionId and payload but no defined short-lived verifier/cookie/proof",
+        "No production guest backend/authorization endpoint exists in repository search/current status"
+      ],
+      "consequence": "Do not connect current client to a mutation backend until session proof/exchange and server-side capability enforcement are explicitly defined.",
+      "required_resolution": "Initial opaque join reference must resolve into server-recognized short-lived authority; every mutation must be capability-checked server-side. Do not treat a public session identifier alone as authorization."
+    },
+    {
+      "id": "GUEST_SERVICE_WORKER_SCOPE_TOO_BROAD",
+      "severity": "HIGH",
+      "evidence": [
+        "guest manifest declares scope '/'",
+        "guest service worker is registered without an explicit narrower scope",
+        "if deployed at site root, default service-worker scope is root and can control other same-origin routes"
+      ],
+      "consequence": "A separate guest PWA must not be able to intercept owner/cart/admin routes on the same origin.",
+      "required_resolution": "Deploy/register guest service worker under a guest-specific path/scope (or isolated origin) and add a regression proving owner routes are outside its control."
+    },
+    {
+      "id": "GUEST_CACHE_DYNAMIC_DATA_RISK",
+      "severity": "MEDIUM_HIGH",
+      "evidence": [
+        "service worker applies network-first/cache-put behavior to every GET it intercepts",
+        "fallback returns guest HTML when no cached response exists",
+        "no explicit exclusion exists for session/status/dynamic API GET requests"
+      ],
+      "consequence": "Session/revocation state must never be served from a generic app-shell cache, and non-document resources must not silently fall back to HTML.",
+      "required_resolution": "Cache only versioned static app-shell assets; never cache guest authority/session/status responses; navigation fallback must be document-specific."
+    }
+  ],
+  "external_evidence": [
+    {
+      "source": "OWASP Session Management Cheat Sheet",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html",
+      "relevance": "session identifiers are authorization-critical; URL-based exchange risks leakage; server-side access control/session binding required"
+    },
+    {
+      "source": "MDN ServiceWorkerRegistration.scope / Service-Worker-Allowed",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/scope",
+      "relevance": "service worker scope defines the range of URLs it controls"
+    },
+    {
+      "source": "MDN PWA caching",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Caching",
+      "relevance": "caching improves offline behavior but is inappropriate for data that must remain fresh"
+    }
+  ],
+  "gate": "NO guest backend connection, live mutation bridge, or production deployment until these findings are resolved and acceptance tests exist."
+}
