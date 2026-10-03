@@ -82,6 +82,9 @@ Before presenting the final approval packet, read:
 - 14_DIGITAL_ARCADE_CANDIDATE_SPEC.md
 - 15_TEXT_MOMENT_COMPOSITOR_CANDIDATE_SPEC.md
 - 16_VIBE_GUEST_LANGUAGE_CANDIDATE_SPEC.md
+- 17_GUEST_PLATFORM_PRODUCT_CONTRACT.md
+- 18_GUEST_PWA_ACCEPTANCE_AND_SMOKE_TEST.md
+- 24_MISSION_CONTROL_CANDIDATE_SPEC.md
 
 Important refinement:
 - scorekeeping-heavy IRL modes are rejected as current candidates because they add user work;
@@ -90,3 +93,35 @@ Important refinement:
 - digital arcade candidate pack is seven shared-runtime games pending accepted-source capacity audit;
 - text strategy is Vibe-aware compositing using bitmap/mask rendering first, without making a FastLED upgrade a prerequisite;
 - Vibe names/subtitles are guest-intuitive and must pass unlabeled differentiation tests.
+
+
+## 2026-10-03 decision-readiness split
+
+### Can be decided from source-independent product evidence
+These may be presented as explicit user choices once the packet is consolidated:
+- guest-facing Vibe names/language and desired candidate count;
+- whether AUTO is desired in first release, subject to later feasibility/performance validation;
+- preferred IRL candidate set: Shuffle Call / Pressure Clock / Sequence Run; Rapid Fire remains challenger-only;
+- desired Arcade candidate set, with final technical commitment conditional on accepted-foundation capacity;
+- whether guest short text/moments are allowed and under what owner permission;
+- owner Mission Control navigation/priority model;
+- whether physical gamepad support is desired as a committed requirement or an optional enhancement after validation.
+
+### Must remain source/foundation-dependent
+Do not ask the user to guess these before evidence exists:
+- exact firmware memory/headroom budget;
+- final number of simultaneous retained visual donors/variants;
+- exact AudioFeatures implementation and numeric envelopes;
+- exact controller latency threshold;
+- exact renderer/frame-time budgets per new feature;
+- whether all seven Arcade candidates fit simultaneously without compromising foundation performance;
+- whether any dependency/toolchain upgrade is actually needed;
+- final local API bindings and source file ownership.
+
+### Scope-lock presentation rule
+The eventual approval turn should distinguish:
+- PRODUCT CHOICE: user preference/value decision;
+- TECHNICAL CONDITION: commitment permitted only if measured foundation capacity supports it without violating quality/reliability requirements;
+- NOT YET DECIDABLE: evidence still missing.
+
+A technical condition is not permission to silently drop a user-approved product choice. If the condition later fails, return with evidence and alternatives under the existing change-control rule.
