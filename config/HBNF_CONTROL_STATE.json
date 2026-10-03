@@ -4,16 +4,18 @@
   "lifecycle_state": "DIAGNOSTIC_ACTIVE",
   "completed_receipts": [],
   "current_task": {
-    "name": "Release07 foundation qualification preflight",
-    "status": "REPAIR_CLOSEOUT_INGESTED__T1_BLOCKED",
+    "name": "Release07 all-kernel diagnosis and class-level fix preparation",
+    "status": "REPAIR_CLOSEOUT_INGESTED__DIAGNOSTIC_SWEEP_READY",
     "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
     "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "installed_release_role": "DIAGNOSTIC_BASE__PERFORMANCE_REJECTED",
     "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
     "blockers": [
-      "exact artifact source commit unverified",
-      "root cause not yet proven across retained renderer set",
-      "instrumentation observer effect uncharacterized",
-      "all-28-kernel sweep not executed"
+      "content-address exact release07 source/build lineage",
+      "execute complete 28-kernel diagnostic sweep",
+      "derive smallest class-level performance fix from complete sweep",
+      "build and identify a corrected forward fix candidate",
+      "run candidate nonhardware tests"
     ]
   },
   "live_mutation_authorized": false,
