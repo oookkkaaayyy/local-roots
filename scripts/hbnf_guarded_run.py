@@ -20,7 +20,10 @@ def main():
     ap.add_argument("command",nargs=argparse.REMAINDER)
     args=ap.parse_args()
 
-    if not args.command:
+    command=list(args.command)
+    if command and command[0]=="--":
+        command=command[1:]
+    if not command:
         raise SystemExit("no command supplied")
     model=load(MODEL); state=load(STATE)
     states=model.get("states",[])
@@ -31,7 +34,7 @@ def main():
     if args.mutation and state.get("live_mutation_authorized") is not True:
         raise SystemExit("BLOCKED: live mutation is not authorized")
     print(f"CONTROL_PLANE_PASS state={args.require_state} mutation={args.mutation}",flush=True)
-    return subprocess.call(args.command)
+    return subprocess.call(command)
 
 if __name__=="__main__":
     raise SystemExit(main())
