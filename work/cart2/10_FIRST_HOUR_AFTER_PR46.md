@@ -1,45 +1,69 @@
-# HBNF Cart 2.0 — First Hour After PR #46 Acceptance
+# HBNF Cart 2.0 — Foundation-to-Phase2 Transition Sequence
 
-Purpose: eliminate another "what do we do now?" cycle.
+STATUS: SUPERSEDES THE OLD "FIRST HOUR AFTER PR #46" CHRONOLOGY.
 
-## 0–10 min — Freeze accepted baseline evidence
-- capture final accepted repo/branch/commit/tree;
-- capture exact PlatformIO/toolchain/dependency graph;
-- capture generated-input/header policy;
-- capture candidate/rollback hashes;
-- archive accepted reports.
+The old time-boxed PR #46 sequence is obsolete because the project is now on installed release07 with a measured unresolved performance defect.
 
-## 10–20 min — Operationalize no-rediscovery
-- import/reconcile final release-engineering toolkit into durable repo;
-- populate first complete golden capsule;
-- update dependency-closure manifest;
-- update generated-input policy;
-- update solved-problems ledger;
-- run capsule/readiness validators.
+Do not optimize for a nominal clock. Optimize for the exact gates below.
 
-## 20–35 min — Prove clean-room baseline
-- create immutable local source snapshot;
-- materialize only accepted dependency closure;
-- use isolated PlatformIO dirs;
-- run baseline rebuild/equivalence;
-- fail closed on unexpected LDF/global dependencies or generated-input drift.
+## Gate A — release07 diagnostic close
+Use packet 20:
+- exact source/build identity;
+- actual release07 diagnostic/control path;
+- all 28 retained kernels;
+- shared-stage ranking;
+- class/shared-primitive grouping;
+- exact pre/post state restoration.
 
-If this does not PASS, Cart 2.0 implementation does not start.
+STOP before firmware edits.
 
-## 35–50 min — Run source-grounded Cart 2.0 audits
-Launch independent read-only audits:
+## Gate B — class-level forward correction
+Use packet 21 only after Gate A:
+- minimum class-level fix set covering the measured failing families;
+- preserve coordinated features/visual semantics;
+- host/source regression where possible;
+- exact source/build/artifact identity;
+- one controlled forward candidate.
+
+No install without required authorization.
+
+## Gate C — foundation qualification
+Use packet 22 only after candidate install + basic health:
+- full-tail 28-kernel qualification;
+- observer effect;
+- coordinated-feature regressions;
+- state-changing 90min+ soak/resource/fragmentation;
+- reproducibility/equivalence;
+- recovery proof;
+- golden foundation capsule.
+
+Only then:
+PHASE 2 FOUNDATION — QUALIFIED.
+
+## Gate D — source-grounded Cart 2.0 audits
+Against the exact qualified foundation:
 - platform capacity/source map;
-- visual/audio;
+- visual/audio challenger;
 - text/compositor;
-- games/interaction.
+- game/interaction;
+- integration adversary.
 
-No implementation.
+Do not ask the user to guess engineering capacity.
 
-## 50–60 min — Consolidate
-- integration challenger;
-- update exact scope-lock packet;
-- present only genuine user decisions;
-- user explicitly approves final scope.
+## Gate E — explicit scope lock
+Use work/cart2/25_SCOPE_LOCK_DECISION_READY_DRAFT.md to present only genuine product choices.
+User explicitly approves the final scope.
 
-## After approval
-Create isolated lane worktrees and begin parallel implementation from the proven golden baseline.
+## Gate F — interfaces + parallel implementation
+Freeze:
+- AudioFeatures
+- VibeSelection
+- VisualMoment
+- GameState/GameDirective
+- HealthState
+- ControllerInput
+- GuestCapabilityState
+
+Then create isolated lane worktrees/branches from the same qualified integration commit and begin approved parallel implementation.
+
+No serial firmware experimentation replaces these gates.
