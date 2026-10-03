@@ -91,7 +91,7 @@ def main():
                       "rssi_dbm_median","aux_render_fps_median"]
         else:
             required=["fps_median","frame_p95_ms","frame_p99_ms","frame_max_ms",
-                      "kernel_p95_ms","palette_p95_ms","audio_p95_ms",
+                      "kernel_p95_ms","palette_p95_ms","audio_p95_ms","scheduler_p95_ms",
                       "overlay_p95_ms","aux_p95_ms","unaccounted_p95_ms",
                       "free_heap_min","largest_block_end"]
         missing=[x for x in required if row.get(x) is None]
