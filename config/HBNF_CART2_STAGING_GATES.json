@@ -77,5 +77,6 @@
     "comparisonPolicyFrozen": false,
     "foundationSoakPassed": false,
     "fieldFlightRecorderIntegrated": false
-  }
+  },
+  "operational_authority": "REFERENCE_ONLY__USE_HBNF_CONTROL_MODEL_STATE"
 }
