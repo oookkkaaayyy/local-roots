@@ -46,7 +46,13 @@
     "failure_policy": "FAIL_FOUNDATION_IF_ANY_KERNEL_FAILS_OR_SHARED_PATH_REMAINS_UNEXPLAINED",
     "common_path_audit_required": true,
     "same_scene_or_declared_comparable_baseline_required": true,
-    "thresholds": "USE_FROZEN_BASELINE_RELATIVE_POLICY__DO_NOT_INVENT_FROM_DEFECTIVE_RELEASE"
+    "thresholds": "USE_FROZEN_BASELINE_RELATIVE_POLICY__DO_NOT_INVENT_FROM_DEFECTIVE_RELEASE",
+    "envelope": {
+      "min_fps_median": null,
+      "max_frame_p95_ms": null,
+      "max_frame_p99_ms": null,
+      "max_frame_max_ms": null
+    }
   },
   "observer_effect": {
     "required": true,
