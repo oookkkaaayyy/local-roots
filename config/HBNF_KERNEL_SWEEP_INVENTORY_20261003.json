@@ -1,0 +1,294 @@
+{
+  "schema": "hbnf-kernel-sweep-inventory-v1",
+  "source": "hbnf-wow-bundle/config/WOW_SCENES_V2.json on coordinated release branch",
+  "status": "PREPOPULATED_FROM_REPO__VERIFY_AGAINST_RELEASE07_RUNTIME_BEFORE_MUTATION",
+  "effect_id_first": 220,
+  "expected_kernel_count": 28,
+  "entries": [
+    {
+      "ordinal": 0,
+      "effect_id": 220,
+      "preset": 61,
+      "kernel_name": "Complex_Kaleido_3",
+      "runtime_kernel_index_expected": 0,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 1,
+      "effect_id": 221,
+      "preset": 62,
+      "kernel_name": "Big_Caleido",
+      "runtime_kernel_index_expected": 1,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 2,
+      "effect_id": 222,
+      "preset": 63,
+      "kernel_name": "Parametric_Water",
+      "runtime_kernel_index_expected": 2,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 3,
+      "effect_id": 223,
+      "preset": 64,
+      "kernel_name": "RGB_Blobs5",
+      "runtime_kernel_index_expected": 3,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 4,
+      "effect_id": 224,
+      "preset": 65,
+      "kernel_name": "Polar_Waves",
+      "runtime_kernel_index_expected": 4,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 5,
+      "effect_id": 225,
+      "preset": 66,
+      "kernel_name": "Zoom2",
+      "runtime_kernel_index_expected": 5,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 6,
+      "effect_id": 226,
+      "preset": 67,
+      "kernel_name": "Complex_Kaleido_4",
+      "runtime_kernel_index_expected": 6,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 7,
+      "effect_id": 227,
+      "preset": 68,
+      "kernel_name": "Complex_Kaleido_6",
+      "runtime_kernel_index_expected": 7,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 8,
+      "effect_id": 228,
+      "preset": 69,
+      "kernel_name": "Water",
+      "runtime_kernel_index_expected": 8,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 9,
+      "effect_id": 229,
+      "preset": 70,
+      "kernel_name": "RGB_Blobs4",
+      "runtime_kernel_index_expected": 9,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 10,
+      "effect_id": 230,
+      "preset": 71,
+      "kernel_name": "Complex_Kaleido_5",
+      "runtime_kernel_index_expected": 10,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 11,
+      "effect_id": 231,
+      "preset": 72,
+      "kernel_name": "Spiralus2",
+      "runtime_kernel_index_expected": 11,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 12,
+      "effect_id": 232,
+      "preset": 73,
+      "kernel_name": "Hot_Blob",
+      "runtime_kernel_index_expected": 12,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 13,
+      "effect_id": 233,
+      "preset": 74,
+      "kernel_name": "Caleido3",
+      "runtime_kernel_index_expected": 13,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 14,
+      "effect_id": 234,
+      "preset": 75,
+      "kernel_name": "Waves",
+      "runtime_kernel_index_expected": 14,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 15,
+      "effect_id": 235,
+      "preset": 76,
+      "kernel_name": "Chasing_Spirals",
+      "runtime_kernel_index_expected": 15,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 16,
+      "effect_id": 236,
+      "preset": 77,
+      "kernel_name": "Rotating_Blob",
+      "runtime_kernel_index_expected": 16,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 17,
+      "effect_id": 237,
+      "preset": 78,
+      "kernel_name": "Center_Field",
+      "runtime_kernel_index_expected": 17,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 18,
+      "effect_id": 238,
+      "preset": 79,
+      "kernel_name": "Distance_Experiment",
+      "runtime_kernel_index_expected": 18,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 19,
+      "effect_id": 239,
+      "preset": 80,
+      "kernel_name": "Lava1",
+      "runtime_kernel_index_expected": 19,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 20,
+      "effect_id": 240,
+      "preset": 81,
+      "kernel_name": "Caleido2",
+      "runtime_kernel_index_expected": 20,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 21,
+      "effect_id": 241,
+      "preset": 82,
+      "kernel_name": "Yves",
+      "runtime_kernel_index_expected": 21,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 22,
+      "effect_id": 242,
+      "preset": 83,
+      "kernel_name": "Scaledemo1",
+      "runtime_kernel_index_expected": 22,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 23,
+      "effect_id": 243,
+      "preset": 84,
+      "kernel_name": "Zoom",
+      "runtime_kernel_index_expected": 23,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 24,
+      "effect_id": 244,
+      "preset": 85,
+      "kernel_name": "Complex_Kaleido",
+      "runtime_kernel_index_expected": 24,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 25,
+      "effect_id": 245,
+      "preset": 86,
+      "kernel_name": "RGB_Blobs3",
+      "runtime_kernel_index_expected": 25,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 26,
+      "effect_id": 246,
+      "preset": 87,
+      "kernel_name": "SM5",
+      "runtime_kernel_index_expected": 26,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    },
+    {
+      "ordinal": 27,
+      "effect_id": 247,
+      "preset": 88,
+      "kernel_name": "Module_Experiment10",
+      "runtime_kernel_index_expected": 27,
+      "variant_id": "DISCOVER_AND_CAPTURE",
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "profile_path": null
+    }
+  ],
+  "caveats": [
+    "Runtime must verify effect/kernel name mapping before sweep.",
+    "Do not assume direct WLED /json/state mutation is permitted; use the release07 canonical/local control path discovered from source/runtime.",
+    "Observed handoff mapping confirms runtime kernel 2=Parametric_Water and kernel 3=RGB_Blobs5, consistent with this ordered inventory."
+  ]
+}
