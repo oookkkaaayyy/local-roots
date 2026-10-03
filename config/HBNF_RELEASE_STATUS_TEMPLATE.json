@@ -58,5 +58,6 @@
       "aux_ddp": "NOT_VERIFIED",
       "ipad": "NOT_VERIFIED"
     }
-  }
+  },
+  "operational_authority": "REFERENCE_ONLY__USE_HBNF_CONTROL_MODEL_STATE"
 }
