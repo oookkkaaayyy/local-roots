@@ -98,3 +98,41 @@ Guest package must contain no visible or callable path to:
 ## Regression
 The reported 2026-10-02 friend-share failure becomes a permanent regression scenario:
 NEW DEVICE + SHARED URL + OFF-CART NETWORK MUST RENDER A USEFUL GUEST SHELL, NEVER A BLANK WHITE PAGE.
+
+
+## 2026-10-03 capability / isolation gates
+
+### Per-capability fail-closed gate
+Test an OPEN session with only one capability at a time.
+
+For every case:
+- exactly the granted control family enables;
+- every ungranted control remains disabled;
+- reconnecting/stale/unknown state disables all mutations;
+- a saved prior session cannot briefly enable controls before fresh authority resolves;
+- revocation/expiry disables affected controls immediately.
+
+Permanent regression for current staging defect:
+`applyCapabilities()` MUST NOT be overwritten by a later generic "session open = enable all controls" render step.
+
+### Server-authority gate
+Once a backend exists:
+- reject mutation with no guest authority proof;
+- reject bare/guessed/expired/revoked session identifier;
+- reject valid session attempting an ungranted capability;
+- accept only the explicitly granted capability;
+- revocation must take effect without client cache clearing.
+
+### Service-worker isolation gate
+Prove:
+- guest service-worker scope contains guest routes only;
+- owner Mission Control route is outside guest worker control;
+- firmware/recovery/admin pages are outside guest worker control;
+- guest offline navigation fallback cannot replace an owner/admin route.
+
+### Cache-freshness gate
+Prove session/status/capability GET responses are never satisfied from stale app-shell cache.
+Static JS/CSS/icons may be cached.
+A failed non-navigation asset/API request must not return guest HTML as a disguised success.
+
+These gates must pass before production deployment even if the visual guest shell otherwise looks correct.
