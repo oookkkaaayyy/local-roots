@@ -25,7 +25,9 @@
     "tightened digital arcade input abstraction, deterministic invariants, stale-input and restore tests",
     "tightened premium text paging/readability corpus",
     "tightened Vibe pairwise, palette-normalized, cross-track and audio-causality challenger tests",
-    "aligned acceptance corpus and scope-lock packet with current candidates and source-dependent decisions"
+    "aligned acceptance corpus and scope-lock packet with current candidates and source-dependent decisions",
+    "expanded draft lane contracts with normalized ControllerInput and default-closed GuestCapabilityState",
+    "updated integration DAG so games consume semantic input and guest authorization stays separate/fail-closed"
   ],
   "execution_validation": {
     "source_connected_mac_available": false,
@@ -38,5 +40,11 @@
   "next_source_connected_execution": "work/cart2/20_FOUNDATION_PERFORMANCE_SWEEP_EXECUTION.md",
   "live_mutation_performed": false,
   "phase2_feature_implementation_started": false,
-  "scope_locked": false
+  "scope_locked": false,
+  "covered_through_head_before_checkpoint_refresh": "ac93f859746b202881354fad6e917d28acba616d",
+  "next_required_validation": [
+    "run all seven AGENTS.md tests in source-connected repository environment",
+    "run packet20 adapter dry-run before any visual mutation",
+    "execute exactly one complete 28-kernel diagnostic sweep only after release07/source/control identity checks pass"
+  ]
 }
