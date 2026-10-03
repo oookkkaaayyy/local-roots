@@ -58,7 +58,12 @@
     "missionControlCandidateSpecPrepared": true,
     "scopeLockDecisionReadyDraftPrepared": true,
     "guestStagingAuditPrepared": true,
-    "controllerInputGuestCapabilityInterfacesDrafted": true
+    "controllerInputGuestCapabilityInterfacesDrafted": true,
+    "audioFeaturesCandidateContractPrepared": true,
+    "machineReadableAcceptanceCorpusPrepared": true,
+    "decisionReadyScopeLockDraftPrepared": true,
+    "noRediscoveryDocumentReconciliationCompleted": true,
+    "sourceIndependentPrepStatus": "SUBSTANTIALLY_COMPLETE__FOUNDATION_AND_USER_DECISIONS_REMAIN"
   },
   "postmortemGates": {
     "pr46MustActionsImplemented": false,
@@ -94,6 +99,8 @@
   "notes": [
     "REFERENCE_ONLY. Operational lifecycle authority is HBNF_CONTROL_MODEL.json + HBNF_CONTROL_STATE.json via hbnf_control.py.",
     "Release04-era chronology is historical evidence; packets 20/21/22 are the current forward foundation sequence.",
-    "GitHub Actions remain unauthorized from this staging lane unless the user separately authorizes them."
+    "GitHub Actions remain unauthorized from this staging lane unless the user separately authorizes them.",
+    "Source-independent product/spec preparation is substantially complete; remaining substantive audits depend on the exact qualified foundation, explicit user scope approval, or physical validation.",
+    "This reference does not advance lifecycle state or authorize implementation."
   ]
 }
