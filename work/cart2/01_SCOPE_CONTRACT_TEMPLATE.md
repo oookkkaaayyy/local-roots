@@ -48,23 +48,28 @@ Text does not ship if it looks visibly cheaper/jankier than the surrounding anim
 
 ### D. Directive Disc-Golf Game Engine
 Candidate target:
-Only games where the cart materially improves the real-world experience by:
-- remembering state that is genuinely cumbersome to track;
-- issuing directives/challenges/distances/stances/orders;
-- controlling timers/countdowns/sounds;
-- managing elimination/progression/teams;
+Only modes where the cart materially improves the real-world experience by:
+- randomizing/directing the next location/action;
+- enforcing cadence/countdown;
+- presenting and preserving changing sequences;
+- producing synchronized visual/audio cues;
 - reducing, not increasing, manual bookkeeping.
 
-Candidate first modes:
-- Putting Gauntlet
-- Pressure Ladder
-- Around-the-World / station progression
-- Knockout / elimination
-- Team relay / timed mode
+Mature candidate first modes:
+- Shuffle Call
+- Pressure Clock
+- Sequence Run
 
-Explicitly out unless later approved:
-- CTP logging that creates extra manual input with no experiential benefit;
-- trivia/party-game filler.
+Challenger-only:
+- Rapid Fire, only if physical testing proves the cart adds meaningful value beyond a normal timer/metronome.
+
+Current non-candidates unless later explicitly revived:
+- scorekeeping-heavy ladders;
+- Around-the-World tracking;
+- Knockout/elimination tracking;
+- repeated make/miss logging;
+- generic CTP/result logging;
+- generic trick-shot/challenge-generator filler.
 
 ### E. Digital Arcade Runtime
 Candidate target:
@@ -87,11 +92,13 @@ Exact first-release pack requires scope lock after feasibility audit.
 
 ### F. iPad / Guest Experience
 Candidate target:
-- iPad-first Mission Control;
-- phone-friendly guest view;
+- iPad-first owner Mission Control with LIVE / PLAY / GUESTS / HEALTH and separated ADMIN;
+- separate phone-friendly Guest Platform;
 - intuitive Vibe cards with plain-language description;
-- bounded guest permissions;
-- event/game participation without admin/network/firmware privileges;
+- short-lived capability-scoped guest authority that fails closed while stale/unknown/revoked;
+- normalized ControllerInput for games rather than browser/gamepad-specific codes in game logic;
+- event/game participation without admin/network/firmware/recovery privileges;
+- guest PWA/service-worker isolation from owner/admin routes;
 - local-first operation.
 
 ### G. Reliability / Platform
