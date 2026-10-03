@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071018">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="HBNF Guest">
+  <meta name="hbnf-build" content="hbnf-guest-platform-v1-staging">
+  <link rel="manifest" href="./hbnf-guest-manifest.webmanifest">
+  <link rel="apple-touch-icon" sizes="180x180" href="./hbnf-guest-icon-180.png">
+  <link rel="stylesheet" href="./hbnf-guest.css">
+  <title>HBNF Cart Guest</title>
+  <style>
+    html,body{margin:0;min-height:100%;background:#071018;color:#eaf4f7;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom);box-sizing:border-box}
+    .boot-shell{max-width:720px;margin:0 auto;padding:18px 0 36px}
+    .boot-card{background:#0d1d25;border:1px solid #24414c;border-radius:18px;padding:18px;margin-top:14px}
+    .boot-kicker{margin:0;color:#8ce3ad;font-size:.78rem;font-weight:800;letter-spacing:.14em}
+    .boot-title{margin:.3rem 0 0;font-size:1.85rem}
+    .boot-status{margin:.65rem 0 0;color:#a4bec6}
+  </style>
+</head>
+<body>
+  <main id="guestApp" class="boot-shell">
+    <header class="guest-hero">
+      <div>
+        <p class="boot-kicker">HB NIGHT FLYERS</p>
+        <h1 class="boot-title">Cart Guest</h1>
+      </div>
+      <span id="connectionBadge" class="badge">LOADING</span>
+    </header>
+
+    <section class="boot-card status-card" aria-live="polite">
+      <strong id="primaryStatus">Guest controls are loading.</strong>
+      <p id="secondaryStatus" class="boot-status">The page will remain usable even if the cart is offline.</p>
+      <div class="action-row">
+        <button id="retryConnection" type="button">Check again</button>
+        <button id="installApp" type="button" hidden>Install app</button>
+      </div>
+    </section>
+
+    <section id="joinPanel" class="boot-card">
+      <h2>At the cart?</h2>
+      <p>Join the <strong>HBNF-Cart</strong> Wi-Fi, then tap <strong>Check again</strong>. Guest controls only unlock when the cart owner has opened a guest session.</p>
+    </section>
+
+    <section id="guestControls" class="boot-card" aria-label="Guest controls">
+      <div class="section-head">
+        <div><p class="eyebrow">GUEST CONTROLS</p><h2>Vibe</h2></div>
+        <span id="sessionBadge" class="badge closed">CLOSED</span>
+      </div>
+      <p class="muted">Choose the feel of the cart when the owner allows Vibe control.</p>
+      <div id="vibeGrid" class="vibe-grid">
+        <button data-vibe="chill" disabled><strong>Chill</strong><span>Smooth · spacious · low-key</span></button>
+        <button data-vibe="groove" disabled><strong>Groove</strong><span>Rhythmic · flowing · beat-driven</span></button>
+        <button data-vibe="heavy" disabled><strong>Heavy</strong><span>Dark · powerful · bass-forward</span></button>
+        <button data-vibe="psychedelic" disabled><strong>Psychedelic</strong><span>Kaleidoscopic · saturated · warped</span></button>
+        <button data-vibe="cosmic" disabled><strong>Cosmic</strong><span>Deep · atmospheric · spatial</span></button>
+        <button data-vibe="auto" disabled><strong>Auto</strong><span>Let the cart choose</span></button>
+      </div>
+    </section>
+
+    <section class="boot-card">
+      <h2>Play</h2>
+      <div class="feature-grid">
+        <button id="openGames" type="button" disabled><strong>Arcade</strong><span>Join a cart game</span></button>
+        <button id="openShuffle" type="button" disabled><strong>Shuffle Call</strong><span>Random putting callouts</span></button>
+        <button id="openPressure" type="button" disabled><strong>Pressure Clock</strong><span>Timed putting cues</span></button>
+        <button id="openSequence" type="button" disabled><strong>Sequence Run</strong><span>Follow a generated sequence</span></button>
+      </div>
+    </section>
+
+    <section id="sessionInfo" class="boot-card compact">
+      <h2>Session</h2>
+      <p id="sessionText" class="muted">No guest session is active on this device.</p>
+    </section>
+
+    <footer class="guest-footer">
+      <span>HBNF Cart Guest</span>
+      <span id="buildMarker">v1 staging</span>
+    </footer>
+  </main>
+
+  <noscript>
+    <div style="max-width:720px;margin:1rem auto;padding:1rem;background:#0d1d25;color:#eaf4f7;border-radius:12px">
+      HBNF Cart Guest loaded, but JavaScript is disabled. Enable JavaScript to use guest controls.
+    </div>
+  </noscript>
+
+  <script src="./hbnf-guest.js" defer></script>
+</body>
+</html>
