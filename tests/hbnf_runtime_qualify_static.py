@@ -10,7 +10,7 @@ def sample(i,fps=35,p95=31,p99=36,mx=42,free=100000,minfree=95000,largest=70000,
     return {
       "release_id":"golden","uptime_seconds":i*5,"fps":fps,
       "frame_ms_p50":28.5,"frame_ms_p95":p95,"frame_ms_p99":p99,"frame_ms_max":mx,
-      "kernel_id":220,"variant_id":1,
+      "kernel_id":220,"kernel_name":"TestKernel","variant_id":1,
       "free_heap_bytes":free,"minimum_free_heap_bytes":minfree,"largest_free_block_bytes":largest,
       "websocket_clients":1,"aux_projection_active":aux,"aux_projection_age_ms":auxage,
       "aux_render_fps":fps,"wifi_rssi_dbm":-40,
