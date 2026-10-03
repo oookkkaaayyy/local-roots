@@ -128,3 +128,60 @@ Text fails if:
 - it requires a new fragile rendering stack solely for typography.
 
 Human aesthetic acceptance required.
+
+## 2026-10-03 challenger refinement
+
+### No-scroll readability classes
+The following classes should never require marquee scrolling in their normal supported input envelope:
+- HERO WORD;
+- NUMBER / VALUE;
+- DIRECTIVE;
+- the approved maximum NAME length if it can be handled by condensed face or phrase paging.
+
+SHORT ANNOUNCEMENT should page before scrolling.
+LONG FREE TEXT is the only class where scrolling remains an allowed last fallback.
+
+### Stable-reading rule
+During the readable hold:
+- glyph mask geometry is invariant frame-to-frame;
+- audio does not move, shear, pulse or rescale glyph geometry;
+- background/halo treatment may react within bounded contrast limits;
+- text contrast management must not globally erase the Vibe unless needed for an emergency/readability mode explicitly approved later.
+
+### Phrase-page contract
+When a message exceeds the safe line width:
+1. tokenize into semantically coherent phrase pages where possible;
+2. choose the largest readable face that fits each page;
+3. use consistent dwell based on page length;
+4. preserve reading order;
+5. use Vibe-aware page transitions;
+6. scroll only if paging cannot preserve the message.
+
+### Replay corpus corrections
+Current recommended directive corpus should include:
+- 25 FT
+- STATION 4
+- READY
+- GO
+- REST
+- NEXT UP
+- ACE
+- WINNER
+- $187
+- player/team names
+- BACK 9
+- ACE POT
+
+Remove STANCE / CHALLENGE from the required first-release replay corpus unless a later user-approved scope decision reintroduces a mode that needs those semantics.
+
+### Acceptance evidence
+For each committed text class:
+- exact framebuffer replay where practical;
+- quiet audio and contrasting bass/mid/high traces;
+- at least one visually busy Vibe and one sparse Vibe;
+- entry / hold / page transition / exit;
+- return-to-base-state verification;
+- human readability/aesthetic acceptance at actual cart viewing distance.
+
+A text implementation that is technically legible but reads as a generic cheap LED marquee fails the product requirement.
+
