@@ -11,9 +11,10 @@ type JobSummary = {
   subject_name:string|null; subject_type:string; notes:string|null; created_at:string; updated_at:string;
   workflow_status:WorkflowStatus; source_photo_count:number; handoff_ready_at:string|null;
   notification_sent_at:string|null; handoff_last_error:string|null; handoff_retry_count:number;
+  latest_draft_path?:string|null; final_stencil_path?:string|null; finished_disc_path?:string|null;
 };
 type Photo = {id:string; original_filename:string|null; sort_order:number; signed_url:string|null};
-type JobDetail = {job:JobSummary;photos:Photo[];options:Array<{option_code:string;prompt:string}>;checklist:Record<string,unknown>|null};
+type JobDetail = {job:JobSummary&{latest_draft_url?:string|null};photos:Photo[];options:Array<{option_code:string;prompt:string}>;checklist:Record<string,unknown>|null};
 type Dashboard = {admin:{display_name:string|null;role:string};jobs:JobSummary[]};
 type PushConfig = {public_key:string;subscription_count:number};
 type PushTest = {ok:boolean;sent:number};
@@ -21,7 +22,8 @@ type PairCode = {code:string;expires_at:string};
 type PairRedeem = {device_token:string;expires_at:string};
 type DeviceRegister = {ok:boolean;device_token?:string;expires_at?:string;already_paired?:boolean};
 type AdminCredential = {kind:'session'|'device';value:string};
-type HandoffCreate = {job_number:string;handoff_url:string;expires_at:string;source_photo_count:number};
+type GenerationResult = {ok:boolean;image:string;model:string;recipe_version:string;seed:number;prompt:string;job_id:string;job_number:string;composition_photo_id:string;source_photo_ids:string[]};
+type DraftSave = {ok:boolean;path:string;signed_url:string|null;generation_plan:Record<string,unknown>};
 type GalleryAdminItem = {id:string;is_published:boolean;caption:string|null;source_photo_path:string|null;stencil_path:string|null;finished_disc_path:string|null;sort_order:number;legacy_roles_confirmed:boolean;created_at:string;updated_at:string};
 type GalleryList = {items:GalleryAdminItem[]};
 type GalleryUpload = {ok:boolean;item:GalleryAdminItem};
@@ -84,57 +86,128 @@ function Login({targetJob,onPaired}:{targetJob:string|null;onPaired:(token:strin
     {message?<div className="notice">{message}</div>:null}</div>;
 }
 
-function stagePrompt(detail:JobDetail){
-  const job=detail.job;
-  const photoWord=detail.photos.length===1?'photo':'photos';
-  return `MAKE A DISC-GOLF STENCIL — ${job.job_number}\n\nUse the ${detail.photos.length} attached source ${photoWord} as the only identity/anatomy reference for ${job.subject_name||'this subject'}.\n\nCreate one clean black-and-white stencil portrait directly from the source ${photoWord}. Preserve the exact subject's identity, natural proportions, expression, asymmetry, eyes, ears, muzzle/nose, head shape, and distinctive markings. Use a head-dominant composition on a plain white background with bold connected black shapes, medium-scale negative space, and moderate detail. Remove background, body, and collar unless essential to recognition. Avoid cartooning, generic breed-icon simplification, scratchboard texture, stippling, micro-speckle, tiny decorative marks, artificial borders, and geometry from any rejected prior candidate.\n\nSubmission notes: ${job.notes||'None'}\n\nDo not run legacy Stage-A admission, best-of-N, semantic-master, benchmark-conditioning, raw-normalization, or machine semantic-PASS workflows. Compare the result directly with the source before presenting it. If it plainly does not resemble the source, reject it rather than calling it passed. Show one serious artwork candidate only.`;
+
+function generationHeaders(credential:AdminCredential){
+  const headers:Record<string,string>={'Content-Type':'application/json'};
+  if(credential.kind==='device')headers['x-du-device-token']=credential.value;
+  else headers.Authorization='Bearer '+credential.value;
+  return headers;
+}
+
+async function sourceDataUrl(photo:Photo){
+  if(!photo.signed_url)throw new Error('Source photo is unavailable.');
+  const response=await fetch(photo.signed_url);
+  if(!response.ok)throw new Error('Could not load a source photo.');
+  const blob=await response.blob();
+  const objectUrl=URL.createObjectURL(blob);
+  try{
+    const image=new Image();
+    await new Promise<void>((resolve,reject)=>{
+      image.onload=()=>resolve();
+      image.onerror=()=>reject(new Error('Could not decode a source photo.'));
+      image.src=objectUrl;
+    });
+    const scale=Math.min(1,508/Math.max(image.naturalWidth,image.naturalHeight));
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
+    canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+    const context=canvas.getContext('2d');
+    if(!context)throw new Error('Could not prepare a source photo.');
+    context.fillStyle='#fff';
+    context.fillRect(0,0,canvas.width,canvas.height);
+    context.drawImage(image,0,0,canvas.width,canvas.height);
+    return canvas.toDataURL('image/jpeg',.9);
+  }finally{URL.revokeObjectURL(objectUrl);}
 }
 
 function JobCard({job,credential,refresh,autoOpen}:{job:JobSummary;credential:AdminCredential;refresh:()=>void;autoOpen:boolean}){
   const [detail,setDetail]=useState<JobDetail|null>(null),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
-  const [handoffText,setHandoffText]=useState(''),[handoffExpires,setHandoffExpires]=useState('');
-  const load=useCallback(async()=>{setBusy(true);setMessage('');try{setDetail(await callFunction<JobDetail>('du-admin',{action:'job',job_id:job.id},functionAuth(credential)));}catch(error){setMessage(error instanceof Error?error.message:'Could not load job.');}finally{setBusy(false);}},[job.id,credential.kind,credential.value]);
-  useEffect(()=>{if(!autoOpen)return;void load();const timer=window.setTimeout(()=>document.getElementById(job.job_number)?.scrollIntoView({behavior:'smooth',block:'start'}),100);return()=>window.clearTimeout(timer);},[autoOpen,job.job_number,load]);
-  async function setWorkflow(workflow_status:WorkflowStatus){setBusy(true);setMessage('');try{await callFunction('du-admin',{action:'set_workflow',job_id:job.id,workflow_status,clear_handoff_error:true},functionAuth(credential));setMessage(`Moved to ${labels[workflow_status]}.`);refresh();}catch(error){setMessage(error instanceof Error?error.message:'Update failed.');}finally{setBusy(false);}}
-  async function copyPrompt(){if(!detail)await load();const current=detail??await callFunction<JobDetail>('du-admin',{action:'job',job_id:job.id},functionAuth(credential));await navigator.clipboard.writeText(stagePrompt(current));setDetail(current);setMessage('ChatGPT prompt copied. Download the source photos below, attach them together, and paste.');}
-  async function copyHandoff(){
-    if(!handoffText)return;
-    try{await navigator.clipboard.writeText(handoffText);setMessage('Secure handoff copied. Open ChatGPT, paste, and send.');}
-    catch{setMessage('Clipboard access was blocked. Press and hold inside the handoff text below, copy it manually, then open ChatGPT.');}
-  }
-  function openChatGPT(){
-    if(isIos()){
-      window.location.href='chatgpt://';
-      return;
-    }
-    const opened=window.open('https://chatgpt.com/','_blank','noopener,noreferrer');
-    if(!opened)window.location.assign('https://chatgpt.com/');
-  }
-  async function prepareForChatGPT(){
-    setBusy(true);setMessage('');setHandoffText('');setHandoffExpires('');
+  const [compositionPhotoId,setCompositionPhotoId]=useState(''),[revisionNote,setRevisionNote]=useState(''),[draftUrl,setDraftUrl]=useState<string|null>(null);
+
+  const load=useCallback(async()=>{
+    setBusy(true);setMessage('');
     try{
-      const handoff=await callFunction<HandoffCreate>('du-handoff-create',{job_id:job.id},functionAuth(credential));
-      const instruction=`START D&U STENCIL — ${handoff.job_number}\n\nSecure handoff ZIP (${handoff.source_photo_count} source photo${handoff.source_photo_count===1?'':'s'}; expires in 30 minutes):\n${handoff.handoff_url}\n\nDownload the ZIP yourself; do not ask me to upload the photos. Unpack it, read START_HERE.txt, inspect every source photo, use current Dyed & Unattached standards/AKS context if available, and begin stencil development.`;
-      setHandoffText(instruction);setHandoffExpires(handoff.expires_at);
-      let copied=false;
-      try{await navigator.clipboard.writeText(instruction);copied=true;}catch{copied=false;}
+      const current=await callFunction<JobDetail>('du-admin',{action:'job',job_id:job.id},functionAuth(credential));
+      setDetail(current);
+      setCompositionPhotoId(value=>value||current.photos[0]?.id||'');
+      setDraftUrl(current.job.latest_draft_url||null);
+    }catch(error){setMessage(error instanceof Error?error.message:'Could not load job.');}
+    finally{setBusy(false);}
+  },[job.id,credential.kind,credential.value]);
+
+  useEffect(()=>{if(!autoOpen)return;void load();const timer=window.setTimeout(()=>document.getElementById(job.job_number)?.scrollIntoView({behavior:'smooth',block:'start'}),100);return()=>window.clearTimeout(timer);},[autoOpen,job.job_number,load]);
+
+  async function setWorkflow(workflow_status:WorkflowStatus){
+    setBusy(true);setMessage('');
+    try{
+      await callFunction('du-admin',{action:'set_workflow',job_id:job.id,workflow_status,clear_handoff_error:true},functionAuth(credential));
+      setMessage('Moved to '+labels[workflow_status]+'.');
       refresh();
-      setMessage(copied
-        ?'Secure handoff copied. Tap Open ChatGPT below, paste, and send.'
-        :'Secure handoff is ready, but iPhone blocked automatic clipboard copy. Use Copy handoff below, then Open ChatGPT.');
-    }catch(error){setMessage(error instanceof Error?error.message:'Could not prepare the secure ChatGPT handoff.');}
+      if(detail)await load();
+    }catch(error){setMessage(error instanceof Error?error.message:'Update failed.');}
     finally{setBusy(false);}
   }
+
+  async function generate(){
+    setBusy(true);setMessage('Preparing source images…');
+    try{
+      const current=detail??await callFunction<JobDetail>('du-admin',{action:'job',job_id:job.id},functionAuth(credential));
+      setDetail(current);
+      const compositionId=compositionPhotoId||current.photos[0]?.id||'';
+      if(!compositionId)throw new Error('No source photo is available.');
+      setCompositionPhotoId(compositionId);
+      const composition=current.photos.find(photo=>photo.id===compositionId);
+      if(!composition)throw new Error('Choose a composition photo.');
+      const selected=[composition,...current.photos.filter(photo=>photo.id!==compositionId)].slice(0,4);
+      const images=await Promise.all(selected.map(async photo=>({photo_id:photo.id,data_url:await sourceDataUrl(photo)})));
+      const random=new Uint32Array(1);crypto.getRandomValues(random);const seed=random[0]&0x7fffffff;
+      setMessage('Generating stencil…');
+      const response=await fetch('/api/du-generate',{
+        method:'POST',
+        headers:generationHeaders(credential),
+        body:JSON.stringify({job_id:job.id,composition_photo_id:compositionId,images,seed,revision_note:revisionNote.trim()}),
+      });
+      const generated=await response.json().catch(()=>({})) as Partial<GenerationResult>&{error?:string};
+      if(!response.ok||!generated.image)throw new Error(generated.error||'Stencil generation failed.');
+      setMessage('Saving draft…');
+      const saved=await callFunction<DraftSave>('du-admin',{
+        action:'save_generated_draft',
+        job_id:job.id,
+        image_data_url:'data:image/jpeg;base64,'+generated.image,
+        generation:{
+          model:generated.model,recipe_version:generated.recipe_version,seed:generated.seed,
+          composition_photo_id:generated.composition_photo_id,source_photo_ids:generated.source_photo_ids,
+          revision_note:revisionNote.trim(),
+        },
+      },functionAuth(credential));
+      setDraftUrl(saved.signed_url);
+      setRevisionNote('');
+      setMessage('Draft ready for review.');
+      refresh();
+    }catch(error){setMessage(error instanceof Error?error.message:'Stencil generation failed.');}
+    finally{setBusy(false);}
+  }
+
   return <article className="admin-card du-job-card" id={job.job_number}>
-    <div className="admin-card-head"><div><h3>{job.job_number} · {job.subject_name||'Unnamed pet'}</h3><p>{job.client_name||'Unknown client'} · {new Date(job.created_at).toLocaleString()}</p></div><div className="pill-row"><span className={`health health-${job.workflow_status==='handoff_failed'?'critical':job.workflow_status==='complete'?'healthy':'warning'}`}>{labels[job.workflow_status]}</span><span className="status-pill">{job.source_photo_count} photo{job.source_photo_count===1?'':'s'}</span></div></div>
+    <div className="admin-card-head"><div><h3>{job.job_number} · {job.subject_name||'Unnamed pet'}</h3><p>{job.client_name||'Unknown client'} · {new Date(job.created_at).toLocaleString()}</p></div><div className="pill-row"><span className={job.workflow_status==='complete'?'health health-healthy':'health health-warning'}>{labels[job.workflow_status]}</span><span className="status-pill">{job.source_photo_count} photo{job.source_photo_count===1?'':'s'}</span></div></div>
     {job.notes?<p className="admin-notes">{job.notes}</p>:null}
-    {job.handoff_last_error?<div className="notice error"><strong>Handoff error</strong><span>{job.handoff_last_error}</span></div>:null}
-    <div className="button-row"><button className="button ghost" disabled={busy} onClick={()=>detail?setDetail(null):void load()}>{busy?'Preparing…':detail?'Hide details':'Open job'}</button><button className="button primary" disabled={busy} onClick={()=>void prepareForChatGPT()}>Start Stencil</button><button className="button ghost" disabled={busy} onClick={()=>void copyPrompt()}>Copy prompt only</button></div>
-    {handoffText?<div className="notice"><strong>Secure ChatGPT handoff ready</strong><span>{handoffExpires?`Expires ${new Date(handoffExpires).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}.`:''} ChatGPT can retrieve the source package directly; you do not need to attach the photos.</span><textarea readOnly value={handoffText} rows={7} style={{width:'100%',minHeight:'10rem'}} onFocus={event=>event.currentTarget.select()}/><div className="button-row"><button className="button primary" type="button" onClick={openChatGPT}>Open ChatGPT</button><button className="button ghost" type="button" onClick={()=>void copyHandoff()}>Copy handoff</button></div></div>:null}
-    {detail?<div className="du-job-detail"><dl className="detail-grid"><div><dt>Client</dt><dd>{job.client_name||'—'}</dd></div><div><dt>Phone</dt><dd>{job.phone||'—'}</dd></div><div><dt>Submitted</dt><dd>{new Date(job.created_at).toLocaleString()}</dd></div></dl>
-      <div className="du-source-grid">{detail.photos.map((photo,index)=><a className="button ghost" key={photo.id} href={photo.signed_url||undefined} download={photo.original_filename||`source-${index+1}.jpg`} target="_blank" rel="noreferrer">Download source {index+1}</a>)}</div>
+    <div className="button-row">
+      <button className="button ghost" disabled={busy} onClick={()=>detail?setDetail(null):void load()}>{busy?'Working…':detail?'Hide details':'Open job'}</button>
+      <button className="button primary" disabled={busy} onClick={()=>void generate()}>{draftUrl?'Regenerate draft':'Generate draft'}</button>
+    </div>
+    {detail?<div className="du-job-detail">
+      <dl className="detail-grid"><div><dt>Client</dt><dd>{job.client_name||'—'}</dd></div><div><dt>Phone</dt><dd>{job.phone||'—'}</dd></div><div><dt>Submitted</dt><dd>{new Date(job.created_at).toLocaleString()}</dd></div></dl>
+      <p><strong>Composition photo</strong> · choose the pose/crop that must be preserved.</p>
+      <div className="du-source-grid">{detail.photos.map((photo,index)=><button type="button" className={compositionPhotoId===photo.id?'button primary':'button ghost'} key={photo.id} onClick={()=>setCompositionPhotoId(photo.id)} disabled={busy}><img src={photo.signed_url||undefined} alt={'Source '+(index+1)} style={{display:'block',width:'96px',height:'96px',objectFit:'cover',marginBottom:'8px',borderRadius:'10px'}}/>{compositionPhotoId===photo.id?'Composition':'Use source '+(index+1)}</button>)}</div>
+      <label>Revision note <span className="optional">optional</span><textarea value={revisionNote} onChange={event=>setRevisionNote(event.target.value)} rows={3} placeholder="Only describe what should change from the current draft."/></label>
+      {draftUrl?<div className="du-gallery-role-preview" style={{maxWidth:'420px'}}><img src={draftUrl} alt={'Latest stencil draft for '+(job.subject_name||job.job_number)} style={{width:'100%',height:'auto'}}/></div>:null}
+      <div className="button-row">
+        <button className="button primary" type="button" disabled={busy} onClick={()=>void generate()}>{draftUrl?'Regenerate with note':'Generate draft'}</button>
+        {draftUrl?<button className="button ghost" type="button" disabled={busy} onClick={()=>void setWorkflow('art_approved')}>Approve artwork</button>:null}
+      </div>
       <label>Workflow stage<select value={job.workflow_status} disabled={busy} onChange={event=>void setWorkflow(event.target.value as WorkflowStatus)}>{Object.entries(labels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
-    </div>:null}{message?<div className="notice">{message}</div>:null}
+    </div>:null}
+    {message?<div className={message.toLowerCase().includes('failed')?'notice error':'notice'}>{message}</div>:null}
   </article>;
 }
 
