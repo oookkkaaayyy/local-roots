@@ -15,6 +15,7 @@ def foundation_profile(i):
         "kernel_ms_avg":{"median":14+i*.2},"kernel_ms_p95":{"median":15+i*.2},
         "palette_ms_avg":{"median":4},"palette_ms_p95":{"median":5},
         "audio_ms_avg":{"median":1.5},"audio_ms_p95":{"median":2},
+        "scheduler_ms_avg":{"median":0.8},"scheduler_ms_p95":{"median":1.1},
         "overlay_ms_avg":{"median":0.3},"overlay_ms_p95":{"median":0.5},
         "aux_prepare_send_ms_avg":{"median":1.2},"aux_prepare_send_ms_p95":{"median":1.5},
         "unaccounted_ms_avg":{"median":1.5},"unaccounted_ms_p95":{"median":2}
