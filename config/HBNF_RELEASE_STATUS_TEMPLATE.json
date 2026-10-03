@@ -28,11 +28,29 @@
     "dependency_closure_matches_known_good": false,
     "unexpected_global_dependencies_absent": false,
     "generated_inputs_policy_verified": false,
-    "source_snapshot_remains_immutable": false
+    "source_snapshot_remains_immutable": false,
+    "install_health_passed": false,
+    "physical_feature_acceptance_complete": false
   },
   "hardware_required_now": false,
   "live_mutation_authorized": false,
   "status": "SOURCE/BUILD WORK REMAINS",
   "blocker": "Accepted V1.1 source/build lineage and the newly required local-materialization/dependency/generated-input gates are not yet closed.",
-  "next_action": "Complete current source-reconciliation/rebuild task; then capture the exact dependency graph and UI/generated-input policy into the first golden capsule and prove a fully local clean-room rebuild."
+  "next_action": "Complete current source-reconciliation/rebuild task; then capture the exact dependency graph and UI/generated-input policy into the first golden capsule and prove a fully local clean-room rebuild.",
+  "acceptance": {
+    "install_health": {
+      "status": "NOT_VERIFIED",
+      "evidence": []
+    },
+    "physical_features": {
+      "palette": "NOT_VERIFIED",
+      "overlay_lifecycle": "NOT_VERIFIED",
+      "motion": "NOT_VERIFIED",
+      "audio_response": "NOT_VERIFIED",
+      "brightness": "NOT_VERIFIED",
+      "existing_controls": "NOT_VERIFIED",
+      "aux_ddp": "NOT_VERIFIED",
+      "ipad": "NOT_VERIFIED"
+    }
+  }
 }
