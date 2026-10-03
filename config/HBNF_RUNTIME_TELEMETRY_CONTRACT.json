@@ -1,0 +1,46 @@
+{
+  "schema": "hbnf-runtime-telemetry-contract-v1",
+  "purpose": "Detect performance/resource degradation before it becomes a human-observable field defect.",
+  "status": "STAGED_PENDING_FPS_FIXED_BASELINE",
+  "collection": {
+    "production_mode": "cheap rolling counters only; no per-frame JSON/logging/allocation",
+    "diagnostic_mode": "deeper tracing explicitly enabled only for bounded diagnosis",
+    "qualification_poll_seconds": 5,
+    "normal_health_poll_seconds": 30
+  },
+  "required_metrics": [
+    "release_id",
+    "uptime_seconds",
+    "fps",
+    "frame_ms_p50",
+    "frame_ms_p95",
+    "frame_ms_p99",
+    "frame_ms_max",
+    "kernel_id",
+    "variant_id",
+    "free_heap_bytes",
+    "minimum_free_heap_bytes",
+    "largest_free_block_bytes",
+    "websocket_clients",
+    "aux_projection_active",
+    "aux_projection_age_ms",
+    "restart_count"
+  ],
+  "optional_stage_metrics": [
+    "kernel_ms_p95",
+    "audio_ms_p95",
+    "scheduler_ms_p95",
+    "palette_ms_p95",
+    "overlay_ms_p95",
+    "aux_prepare_send_ms_p95",
+    "unaccounted_ms_p95"
+  ],
+  "rules": [
+    "Metrics must be available without serial console access.",
+    "Normal collection must not allocate/log once per rendered frame.",
+    "Every performance sample must identify kernel/variant.",
+    "Frame-time percentiles are authoritative over average FPS for smoothness regressions.",
+    "Heap health includes free heap, minimum free heap, and largest free block; free heap alone is insufficient.",
+    "Install health and runtime qualification remain separate gates."
+  ]
+}
