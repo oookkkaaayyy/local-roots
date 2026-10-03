@@ -1,92 +1,78 @@
-# HBNF Control Plane — One Model, Not a Stack of Rules
+# HBNF Control Plane V2 — Linear Receipts, No Rule Graph
 
-STATUS: IMPLEMENTED IN STAGING / NOT YET INGESTED BY ACTIVE FPS CODEX.
+STATUS: IMPLEMENTED IN STAGING / ACTIVE FPS TASK UNTOUCHED.
 
-## Why this exists
-The prior governance approach accumulated:
-- AKS prose;
-- READ FIRST documents;
-- gate JSON;
-- postmortem action lists;
+## Design correction
+V1 still exposed too many independent evidence booleans. Although explicit, that could grow into a lateral/vertical dependency graph.
+
+V2 removes that graph.
+
+Operational flow is now strictly linear:
+DIAGNOSTIC_ACTIVE
+-> FIX_CANDIDATE
+-> FOUNDATION_QUALIFIED
+-> PHASE2_INTEGRATING
+-> RELEASE_CANDIDATE
+-> ACCEPTED
+
+Each transition consumes exactly ONE self-contained stage receipt.
+
+## Receipt rule
+A receipt contains:
+- exact transition/type;
+- exact subject identity (release/source/artifact);
+- only the direct checks owned by that stage;
+- hashes of direct measurement/test artifacts;
+- explicit user approval only when the transition requires it.
+
+A receipt may NOT cite or depend on:
+- another receipt;
+- the control model/state;
+- READ FIRST docs;
+- postmortems;
 - runbooks;
-- solved-problem entries;
-- acceptance matrices.
+- AKS prose.
 
-Most are useful evidence, but allowing each to independently influence an agent creates implicit rule interaction and document-precedence complexity.
+Those materials can inform implementation, but they are not runtime dependencies of the decision path.
 
-That is now prohibited.
+## Why this matters
+The coordinator never traverses a graph of rules.
 
-## Operational authority
-Only these three artifacts decide promotion state:
+For the current state it asks one question:
+"What is the next transition, and does its one receipt validate?"
 
-1. `config/HBNF_CONTROL_MODEL.json`
-   - finite states;
-   - explicit forward transitions;
-   - evidence required for each transition;
-   - small set of invariants.
+No recursion.
+No lateral rule references.
+No vertical rule inheritance.
+No natural-language precedence.
+No hidden chaining.
 
-2. `config/HBNF_CONTROL_STATE.json`
-   - one current lifecycle state;
-   - evidence booleans;
-   - evidence references;
-   - explicit user approvals.
+## Change discipline
+New information is classified before changing the model:
+1. implementation detail -> code/task only;
+2. direct evidence for an existing stage -> stage verifier/receipt only;
+3. truly new lifecycle boundary -> deliberate model revision.
 
-3. `scripts/hbnf_control.py`
-   - validates the model/state;
-   - reports exactly one next transition;
-   - reports exact blockers;
-   - refuses unknown evidence;
-   - refuses implicit human approval;
-   - refuses skipping lifecycle states.
+Default is NOT to change the lifecycle model.
 
-Everything else is:
-- implementation;
-- evidence;
-- historical record;
-- domain contract;
-- generated output.
+## Complexity budget
+- 6 lifecycle states.
+- 5 forward transitions.
+- exactly 1 outgoing transition per nonterminal state.
+- exactly 1 receipt per transition.
+- no branching.
+- no cycles.
+- no nested receipts.
 
-It does NOT become another independent decision layer.
+If a future design violates those limits, stop and redesign rather than extending the graph.
 
-## Future-agent startup
-A future chat/Codex task handling release/Cart 2.0 state must begin with:
+## Next source-connected action
+When the active FPS Codex finishes:
+1. create the T1 diagnostic-close receipt from its direct timing/root-cause/fix/test outputs;
+2. validate it;
+3. advance to FIX_CANDIDATE only if it passes;
+4. build the T2 foundation-qualification receipt from automated runtime/build/physical evidence;
+5. only then can the state become FOUNDATION_QUALIFIED.
 
-```
+Future agents begin with:
 python3 scripts/hbnf_control.py status
-```
-
-The agent must not infer a more advanced state from prose, recency, optimism, a successful compile, or a successful install.
-
-If a new requirement changes promotion logic:
-- do not append another free-floating rule;
-- challenger-review whether it is:
-  1. implementation detail;
-  2. evidence for an existing transition;
-  3. a genuinely new lifecycle transition/invariant.
-- only category 3 changes the control model.
-
-## Current lifecycle
-Current staged state:
-`DIAGNOSTIC_ACTIVE`
-
-The active FPS task may supply evidence for the next transition, but it cannot directly declare the firmware the Phase 2 foundation.
-
-## Design constraints
-- No generic rules engine.
-- No chaining.
-- No hidden priority/order.
-- No natural-language conflict resolution.
-- No duplicated current-state files.
-- No manual "all green" judgment.
-- No human-approval inference.
-- Unknowns fail closed.
-
-## What remains
-After the active FPS task returns:
-1. import evidence through the control CLI;
-2. run control-plane tests;
-3. advance only when the exact transition requirements are satisfied;
-4. bind runtime qualification outputs to evidence references;
-5. only `FOUNDATION_QUALIFIED` may authorize Phase 2 integration.
-
-This is the replacement for accumulating additional operational rules.
