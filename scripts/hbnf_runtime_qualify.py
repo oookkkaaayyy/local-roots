@@ -1,0 +1,175 @@
+#!/usr/bin/env python3
+"""HBNF unattended runtime qualification / regression detector.
+
+Works from JSONL samples now and can poll a JSON endpoint later.
+Stdlib only. Fails closed when qualification thresholds are not frozen.
+"""
+from __future__ import annotations
+
+import argparse, json, math, pathlib, statistics, sys, time, urllib.request
+
+REQUIRED = [
+    "release_id","uptime_seconds","fps","frame_ms_p50","frame_ms_p95",
+    "frame_ms_p99","frame_ms_max","kernel_id","variant_id",
+    "free_heap_bytes","minimum_free_heap_bytes","largest_free_block_bytes",
+    "websocket_clients","aux_projection_active","aux_projection_age_ms","restart_count",
+]
+
+def pct(values, q):
+    vals=sorted(float(x) for x in values)
+    if not vals: return None
+    if len(vals)==1: return vals[0]
+    pos=(len(vals)-1)*q
+    lo=int(math.floor(pos)); hi=int(math.ceil(pos))
+    if lo==hi: return vals[lo]
+    return vals[lo]+(vals[hi]-vals[lo])*(pos-lo)
+
+def read_json(path):
+    return json.loads(pathlib.Path(path).read_text())
+
+def read_jsonl(path):
+    out=[]
+    for n,line in enumerate(pathlib.Path(path).read_text().splitlines(),1):
+        if not line.strip(): continue
+        try: out.append(json.loads(line))
+        except Exception as e: raise SystemExit(f"invalid JSONL line {n}: {e}")
+    return out
+
+def dotted(obj, path):
+    cur=obj
+    for part in str(path).split("."):
+        if isinstance(cur,dict) and part in cur: cur=cur[part]
+        else: return None
+    return cur
+
+def normalize(raw, mapping):
+    if not mapping: return raw
+    return {key:dotted(raw,path) for key,path in mapping.items()}
+
+def fetch_json(url, timeout=3.5):
+    req=urllib.request.Request(url,headers={"Accept":"application/json","Cache-Control":"no-cache"})
+    with urllib.request.urlopen(req,timeout=timeout) as r:
+        return json.loads(r.read().decode("utf-8","replace"))
+
+def collect(url, mapping, seconds, interval):
+    samples=[]; deadline=time.time()+seconds
+    while time.time()<deadline:
+        try:
+            samples.append(normalize(fetch_json(url),mapping))
+        except Exception as e:
+            samples.append({"collector_error":f"{type(e).__name__}: {e}","sample_time":time.time()})
+        time.sleep(interval)
+    return samples
+
+def validate_samples(samples):
+    errors=[]
+    good=[s for s in samples if not s.get("collector_error")]
+    if not good: return ["no valid telemetry samples"], good
+    for key in REQUIRED:
+        missing=sum(1 for s in good if s.get(key) is None)
+        if missing:
+            errors.append(f"{key}: missing in {missing}/{len(good)} valid samples")
+    releases={str(s.get("release_id")) for s in good if s.get("release_id") is not None}
+    if len(releases)!=1: errors.append("release identity changed or is ambiguous during run")
+    restarts=[int(s["restart_count"]) for s in good if s.get("restart_count") is not None]
+    if restarts and max(restarts)!=min(restarts): errors.append("restart_count increased during run")
+    uptimes=[float(s["uptime_seconds"]) for s in good if s.get("uptime_seconds") is not None]
+    if any(b<a for a,b in zip(uptimes,uptimes[1:])): errors.append("uptime decreased during run")
+    return errors, good
+
+def summarize(samples):
+    errors,good=validate_samples(samples)
+    def vals(k): return [s[k] for s in good if isinstance(s.get(k),(int,float))]
+    fps=vals("fps"); p95=vals("frame_ms_p95"); p99=vals("frame_ms_p99"); mx=vals("frame_ms_max")
+    freeh=vals("free_heap_bytes"); minh=vals("minimum_free_heap_bytes"); largest=vals("largest_free_block_bytes")
+    auxage=vals("aux_projection_age_ms")
+    active=[s.get("aux_projection_active") for s in good if s.get("aux_projection_active") is not None]
+    return {
+      "schema":"hbnf-runtime-profile-v1",
+      "sample_count":len(samples),
+      "valid_sample_count":len(good),
+      "collection_errors":len(samples)-len(good),
+      "validation_errors":errors,
+      "release_id":next((s.get("release_id") for s in good if s.get("release_id") is not None),None),
+      "kernel_variants":sorted({f"{s.get('kernel_id')}::{s.get('variant_id')}" for s in good}),
+      "fps":{"median":pct(fps,.5),"p05":pct(fps,.05),"min":min(fps) if fps else None},
+      "frame_ms":{"p95_median":pct(p95,.5),"p99_median":pct(p99,.5),"max":max(mx) if mx else None},
+      "heap":{
+        "free_start":freeh[0] if freeh else None,"free_end":freeh[-1] if freeh else None,
+        "minimum_free_min":min(minh) if minh else None,
+        "largest_block_start":largest[0] if largest else None,"largest_block_end":largest[-1] if largest else None,
+      },
+      "aux":{
+        "inactive_samples":sum(1 for x in active if x is False),
+        "age_p99_ms":pct(auxage,.99),
+      },
+      "restart_count_start":good[0].get("restart_count") if good else None,
+      "restart_count_end":good[-1].get("restart_count") if good else None,
+    }
+
+def ratio_ok(candidate, baseline, min_ratio=None, max_ratio=None):
+    if candidate is None or baseline in (None,0): return False
+    r=float(candidate)/float(baseline)
+    if min_ratio is not None and r<float(min_ratio): return False
+    if max_ratio is not None and r>float(max_ratio): return False
+    return True
+
+def qualify(profile, baseline, policy):
+    failures=list(profile.get("validation_errors") or [])
+    cfg=((policy or {}).get("comparison") or {}).get("candidate_vs_baseline") or {}
+    required=[
+      "fps_median_min_ratio","frame_p95_max_ratio","frame_p99_max_ratio","frame_max_max_ratio",
+      "minimum_free_heap_min_ratio","largest_free_block_min_ratio","aux_stale_sample_max_fraction",
+    ]
+    unset=[k for k in required if cfg.get(k) is None]
+    if unset:
+        failures.append("qualification policy not frozen: "+", ".join(unset))
+        return failures
+    if not baseline:
+        failures.append("baseline profile missing")
+        return failures
+
+    checks=[
+      ("fps median",profile["fps"]["median"],baseline["fps"]["median"],cfg["fps_median_min_ratio"],None),
+      ("frame p95",profile["frame_ms"]["p95_median"],baseline["frame_ms"]["p95_median"],None,cfg["frame_p95_max_ratio"]),
+      ("frame p99",profile["frame_ms"]["p99_median"],baseline["frame_ms"]["p99_median"],None,cfg["frame_p99_max_ratio"]),
+      ("frame max",profile["frame_ms"]["max"],baseline["frame_ms"]["max"],None,cfg["frame_max_max_ratio"]),
+      ("minimum free heap",profile["heap"]["minimum_free_min"],baseline["heap"]["minimum_free_min"],cfg["minimum_free_heap_min_ratio"],None),
+      ("largest free block end",profile["heap"]["largest_block_end"],baseline["heap"]["largest_block_end"],cfg["largest_free_block_min_ratio"],None),
+    ]
+    for name,c,b,minr,maxr in checks:
+        if not ratio_ok(c,b,minr,maxr): failures.append(name+" regressed vs qualified baseline")
+
+    valid=max(1,int(profile.get("valid_sample_count") or 0))
+    stale=float(profile["aux"]["inactive_samples"])/valid
+    if stale>float(cfg["aux_stale_sample_max_fraction"]): failures.append("AUX projection stale/inactive fraction exceeded policy")
+    return failures
+
+def main():
+    ap=argparse.ArgumentParser()
+    src=ap.add_mutually_exclusive_group(required=True)
+    src.add_argument("--input",help="JSONL telemetry file")
+    src.add_argument("--url",help="JSON telemetry endpoint")
+    ap.add_argument("--map",dest="mapping",help="JSON object mapping canonical metric names to dotted JSON paths")
+    ap.add_argument("--duration-seconds",type=int,default=300)
+    ap.add_argument("--interval-seconds",type=float,default=5)
+    ap.add_argument("--baseline")
+    ap.add_argument("--policy")
+    ap.add_argument("--output")
+    ap.add_argument("--profile-only",action="store_true")
+    args=ap.parse_args()
+
+    mapping=read_json(args.mapping) if args.mapping else None
+    samples=read_jsonl(args.input) if args.input else collect(args.url,mapping,args.duration_seconds,args.interval_seconds)
+    profile=summarize(samples)
+    failures=[]
+    if not args.profile_only:
+        failures=qualify(profile,read_json(args.baseline) if args.baseline else None,read_json(args.policy) if args.policy else None)
+    result={"status":"PASS" if not failures else "FAIL","profile":profile,"failures":failures}
+    rendered=json.dumps(result,indent=2,sort_keys=True)
+    if args.output: pathlib.Path(args.output).write_text(rendered+"\n")
+    print(rendered)
+    return 0 if not failures else 2
+
+if __name__=="__main__":
+    raise SystemExit(main())
