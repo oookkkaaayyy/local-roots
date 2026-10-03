@@ -1,33 +1,52 @@
-# Cart 2.0 — PR #46 Postmortem Ingestion Gate
+# Cart 2.0 — Release-Engineering Ingestion / Foundation Gate
 
-Cart 2.0 implementation may not begin merely because release 04 installed.
+This file preserves the practical lesson from PR #46 without treating release04-era chronology as current state.
 
-Before scope-lock implementation:
-- all PR #46 MUST-before-next-firmware-update controls must be incorporated into the release foundation;
-- the active low/jittery-FPS release-04 defect must be resolved and regression-covered;
-- release 04 (or its corrected successor) must have separate install-health and physical-feature acceptance evidence;
-- a real clean-room local-materialized baseline build/equivalence must pass;
-- the resulting accepted baseline becomes the source for capacity, visual/audio, text, game and integration audits.
+## Current foundation state
+Installed:
+- hbnf-matrix-coordinated-v1-20261002-07
+- BIN SHA-256 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab
+- install/device health PASS
+- performance acceptance FAIL
+- release07 source identity still UNVERIFIED
+- FOUNDATION_UNQUALIFIED — PERFORMANCE_OPEN
 
-## What may proceed while the FPS defect is still being diagnosed
+Measured release07 evidence:
+- ~11.53 FPS / ~85.3 ms average frame;
+- Parametric_Water kernel ~68.9 ms in the acceptance sample;
+- prior RGB_Blobs5-targeted optimization therefore did not close the system-level performance defect.
+
+## What may proceed while foundation is unqualified
 SAFE NOW:
-- external research
-- acceptance-corpus refinement
-- scope-lock decision preparation
-- release-engineering tooling that does not depend on the renderer implementation
-- postmortem action implementation in isolated tooling
-- guest/game/text UX research that does not assume exact frame budget
+- external/challenger research;
+- acceptance/replay corpus refinement;
+- scope-lock decision preparation;
+- release-engineering tooling that does not mutate live hardware;
+- source-independent Mission Control/guest/game/text contract work;
+- static review of existing staging source;
+- evidence/no-rediscovery preservation.
 
-WAIT FOR FIXED BASELINE:
-- final CPU/RAM/frame-budget audit
-- final AudioFeatures source map
-- final donor-kernel inventory
-- visual/audio implementation
-- compositor integration against live renderer
-- clean-room golden promotion
-- physical acceptance
+WAIT FOR QUALIFIED FOUNDATION:
+- final CPU/RAM/frame-budget audit;
+- final AudioFeatures source map;
+- final donor-kernel/source primitive audit;
+- firmware-dependent visual/audio implementation;
+- compositor integration against the live renderer;
+- game runtime integration into firmware;
+- final clean-room golden promotion;
+- physical feature acceptance for the integrated Phase 2 candidate.
 
-## Rationale
-The active defect appears at ~172 seconds after cold boot and may affect core render-loop behavior. Treating current release 04 as the performance baseline before the defect is resolved risks calibrating Cart 2.0 against a known-bad runtime.
+## Required forward sequence
+1. packet 20 — source identity + one complete 28-kernel diagnostic sweep;
+2. packet 21 — measured class/shared-primitive forward fix;
+3. candidate install/basic health under required authorization;
+4. packet 22 — complete foundation qualification;
+5. source-grounded Cart 2.0 audits;
+6. explicit user scope lock;
+7. interface freeze + parallel implementation.
 
-This is a dependency gate, not a scope reduction.
+## Preserved release-engineering lesson
+Install health, physical feature acceptance, and sustained performance acceptance are separate facts.
+A successful OTA or newest release ID does not create a Phase 2 foundation.
+
+This is evidence for the existing control lifecycle, not a new gate system.
