@@ -252,3 +252,14 @@ The remaining path is:
 - begin parallel implementation.
 
 No additional governance framework is required.
+
+## Existing-controller constraint
+
+AKS already records two Stadia Bluetooth controllers on hand. The future scope-lock choice for physical gamepad support is therefore not a procurement choice.
+
+Evidence supports this exact framing:
+- Google says Stadia Bluetooth mode behaves as a standard wireless controller but compatibility varies and its tested list did not include iPadOS.
+- iOS Safari supports the Gamepad API, but browser/controller mappings and features still need target-device validation.
+
+If physical controller support is desired, first test these two existing controllers on the actual iPad/browser/LAN path. Do not purchase replacement gamepads unless that evidence shows the existing controllers are unsuitable and a later user-approved hardware recommendation survives challenger review.
+
