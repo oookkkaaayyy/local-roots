@@ -457,5 +457,61 @@
     "no numeric performance threshold is frozen until qualified-foundation measurements exist",
     "no aesthetic result can be auto-approved by metrics",
     "no item in this corpus commits product scope before explicit user scope lock"
-  ]
+  ],
+  "audio_features": {
+    "candidate_semantic_features": [
+      "energy_short",
+      "energy_medium",
+      "energy_slow",
+      "low_pressure",
+      "low_transient",
+      "mid_body",
+      "mid_change",
+      "high_detail",
+      "high_transient",
+      "spectral_brightness",
+      "spectral_change",
+      "activity",
+      "silence_confidence"
+    ],
+    "reference_audio_categories": [
+      "sparse_sub_bass_kick_heavy",
+      "dense_rock",
+      "vocal_mid_forward",
+      "electronic_build_drop",
+      "quiet_ambient",
+      "rapid_high_frequency_percussion",
+      "acoustic_high_dynamic_range",
+      "compressed_loud_master"
+    ],
+    "synthetic_traces": [
+      "silence_to_onset",
+      "isolated_kick_sub_impulse",
+      "sustained_bass",
+      "low_mid_sweep",
+      "mid_swell",
+      "high_frequency_transient_burst",
+      "steady_broadband",
+      "silence"
+    ],
+    "replay_capture": [
+      "existing_raw_audio_observables",
+      "candidate_AudioFeatures",
+      "normalization_state",
+      "feature_extraction_runtime_cost",
+      "representative_Vibe_consequence"
+    ],
+    "invariants": [
+      "same AudioFeatures interface feeds every committed Vibe",
+      "different Vibes map the same feature event to meaningfully different visual consequences",
+      "feature extraction does not require realtime cloud metadata",
+      "genre recognition is not claimed",
+      "Motion remains owner-authoritative",
+      "silence/noise floor does not generate fake musical activity",
+      "ordinary level changes do not pin every feature at maximum",
+      "candidate features are not materially redundant across the replay corpus",
+      "no duplicate FFT is introduced unless qualified-foundation source evidence proves existing observables insufficient",
+      "numeric formulas/bin mappings/time constants remain unfrozen until source and replay evidence exist"
+    ]
+  }
 }
