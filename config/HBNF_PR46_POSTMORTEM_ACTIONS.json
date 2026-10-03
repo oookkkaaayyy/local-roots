@@ -33,5 +33,6 @@
     "esp_binary_difference_classifier",
     "elapsed_time_budget_report"
   ],
-  "no_live_mutation_authorized": true
+  "no_live_mutation_authorized": true,
+  "operational_authority": "REFERENCE_ONLY__USE_HBNF_CONTROL_MODEL_STATE"
 }
