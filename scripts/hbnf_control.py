@@ -71,6 +71,15 @@ def validate_receipt(model,state,receipt):
             errors.append("subject values must be nonempty strings")
         if not re.fullmatch(r"[0-9a-fA-F]{64}",subject.get("artifact_sha256","")):
             errors.append("subject.artifact_sha256 must be SHA-256 hex")
+        identity_type=subject.get("source_identity_type")
+        allowed=set(c.get("source_identity_types",[]))
+        if identity_type not in allowed:
+            errors.append("subject.source_identity_type is not allowed")
+        identity=str(subject.get("source_identity",""))
+        if identity_type=="git_commit" and not re.fullmatch(r"[0-9a-fA-F]{40}",identity):
+            errors.append("git source_identity must be 40-hex commit SHA")
+        if identity_type in {"source_tree_sha256","source_archive_sha256"} and not re.fullmatch(r"[0-9a-fA-F]{64}",identity):
+            errors.append("content-addressed source_identity must be SHA-256 hex")
     checks=receipt.get("checks")
     expected=set(t["required_checks"])
     if not isinstance(checks,dict) or set(checks)!=expected:
