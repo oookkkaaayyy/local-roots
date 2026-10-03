@@ -54,7 +54,8 @@
     "Every performance sample must identify kernel/variant.",
     "Frame-time percentiles are authoritative over average FPS for smoothness regressions.",
     "Heap health includes free heap, minimum free heap, and largest free block; free heap alone is insufficient.",
-    "Install health and runtime qualification remain separate gates."
+    "Install health and runtime qualification remain separate gates.",
+    "Diagnostic sweep and foundation qualification are distinct modes: missing tail metrics must not force a new build before the current diagnostic firmware has ranked all 28 kernels."
   ],
   "all_kernel_sweep": {
     "expected_kernel_count": 28,
@@ -63,5 +64,57 @@
     "require_variant_identity": true,
     "require_shared_stage_timings": true,
     "require_ranked_report": true
+  },
+  "contract_modes": {
+    "diagnostic_sweep": {
+      "purpose": "Use the already-installed diagnostic firmware to rank all retained kernels without requiring a new firmware solely for tail-metric support.",
+      "required_metrics": [
+        "release_id",
+        "uptime_seconds",
+        "fps",
+        "frame_ms_avg",
+        "kernel_id",
+        "kernel_name",
+        "variant_id",
+        "kernel_ms_avg",
+        "palette_ms_avg",
+        "audio_ms_avg",
+        "overlay_ms_avg",
+        "aux_prepare_send_ms_avg",
+        "unaccounted_ms_avg",
+        "free_heap_bytes",
+        "websocket_clients",
+        "aux_projection_active",
+        "aux_render_fps",
+        "wifi_rssi_dbm",
+        "restart_count"
+      ],
+      "result": "DIAGNOSTIC_RANKING_ONLY__CANNOT_FOUNDATION_QUALIFY"
+    },
+    "foundation": {
+      "purpose": "Full performance/resource qualification of the corrected foundation candidate.",
+      "required_metrics": [
+        "release_id",
+        "uptime_seconds",
+        "fps",
+        "frame_ms_p50",
+        "frame_ms_p95",
+        "frame_ms_p99",
+        "frame_ms_max",
+        "kernel_id",
+        "kernel_name",
+        "variant_id",
+        "free_heap_bytes",
+        "minimum_free_heap_bytes",
+        "largest_free_block_bytes",
+        "websocket_clients",
+        "aux_projection_active",
+        "aux_projection_age_ms",
+        "restart_count",
+        "wifi_rssi_dbm",
+        "aux_render_fps"
+      ],
+      "result": "ELIGIBLE_FOR_BASELINE_RELATIVE_FOUNDATION_QUALIFICATION"
+    }
   }
 }
