@@ -2,7 +2,7 @@
   "schema": "hbnf-cart2-staging-gates-v1",
   "stagingBranch": "hbnf-cart2-ready-to-implement-staging-20261001",
   "sourceSnapshot": "0c01d0c7f065264e2b9fd8127f1c48cc96a73b56",
-  "mode": "planning-audit-only",
+  "mode": "planning-qualification-reference-only",
   "implementationAuthorized": false,
   "liveMutationAuthorized": false,
   "githubActionsAuthorized": false,
@@ -54,18 +54,22 @@
     "guestPlatformProductContractPrepared": true,
     "guestPwaAcceptanceSmokeTestPrepared": true,
     "guestPlatformMachineReadableGatesPrepared": true,
-    "runtimeSentinelFoundationQualificationPrepared": true
+    "runtimeSentinelFoundationQualificationPrepared": true,
+    "missionControlCandidateSpecPrepared": true,
+    "scopeLockDecisionReadyDraftPrepared": true,
+    "guestStagingAuditPrepared": true,
+    "controllerInputGuestCapabilityInterfacesDrafted": true
   },
   "postmortemGates": {
     "pr46MustActionsImplemented": false,
-    "release04AcceptanceLedgerComplete": false,
+    "release04AcceptanceLedgerComplete": "SUPERSEDED_BY_RELEASE07_FOUNDATION_SEQUENCE",
     "signedReleasePreflightValidatorComplete": false,
     "buildJsonRouteIntegrationTestComplete": false,
     "dependencyClosureEnforcementComplete": false,
     "generatedInputsManifestComplete": false,
     "boundedLdfTraceToolComplete": false,
     "solvedProblemsPromoted": false,
-    "lowFpsRelease04DefectResolved": false,
+    "lowFpsRelease04DefectResolved": "SUPERSEDED__CURRENT_RELEASE07_PERFORMANCE_OPEN",
     "lowFpsRegressionCovered": false
   },
   "runtimeQualificationGates": {
@@ -78,5 +82,18 @@
     "foundationSoakPassed": false,
     "fieldFlightRecorderIntegrated": false
   },
-  "operational_authority": "REFERENCE_ONLY__USE_HBNF_CONTROL_MODEL_STATE"
+  "operational_authority": "REFERENCE_ONLY__USE_HBNF_CONTROL_MODEL_STATE",
+  "currentFoundation": {
+    "lifecycle": "DIAGNOSTIC_ACTIVE",
+    "installedRelease": "hbnf-matrix-coordinated-v1-20261002-07",
+    "role": "DIAGNOSTIC_BASE__PERFORMANCE_REJECTED",
+    "foundation": "FOUNDATION_UNQUALIFIED__PERFORMANCE_OPEN",
+    "sourceIdentity": "UNVERIFIED",
+    "nextExecution": "work/cart2/20_FOUNDATION_PERFORMANCE_SWEEP_EXECUTION.md"
+  },
+  "notes": [
+    "REFERENCE_ONLY. Operational lifecycle authority is HBNF_CONTROL_MODEL.json + HBNF_CONTROL_STATE.json via hbnf_control.py.",
+    "Release04-era chronology is historical evidence; packets 20/21/22 are the current forward foundation sequence.",
+    "GitHub Actions remain unauthorized from this staging lane unless the user separately authorizes them."
+  ]
 }
