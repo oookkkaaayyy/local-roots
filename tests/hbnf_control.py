@@ -16,12 +16,21 @@ receipt={
  "schema":"hbnf-stage-receipt-v1",
  "receipt_type":t["receipt_type"],
  "transition_id":t["id"],
- "subject":{"release_id":"test","source_commit":"abc123","artifact_sha256":"a"*64},
+ "subject":{"release_id":"test","source_identity_type":"source_tree_sha256","source_identity":"c"*64,"artifact_sha256":"a"*64},
  "checks":{k:True for k in t["required_checks"]},
  "outcome":"PASS",
  "evidence_artifacts":[{"name":"timing-report.json","sha256":"b"*64}]
 }
 assert m.validate_receipt(model,state,receipt)==[]
+
+git_receipt=copy.deepcopy(receipt)
+git_receipt["subject"]["source_identity_type"]="git_commit"
+git_receipt["subject"]["source_identity"]="d"*40
+assert m.validate_receipt(model,state,git_receipt)==[]
+
+bad_identity=copy.deepcopy(receipt)
+bad_identity["subject"]["source_identity"]="not-a-hash"
+assert any("source_identity" in x for x in m.validate_receipt(model,state,bad_identity))
 
 bad=copy.deepcopy(receipt); bad["checks"]["random_rule"]=True
 assert m.validate_receipt(model,state,bad)
