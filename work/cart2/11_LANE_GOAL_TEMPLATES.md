@@ -63,15 +63,17 @@ Implement all approved IRL directive games and digital arcade games on the share
 COMPLETE ONLY WHEN
 - exact approved game list is present;
 - directive games materially reduce cognitive/bookkeeping load;
-- timers/sounds/progression/elimination behaviors match scope;
+- timers/cues/directive/sequence behaviors match scope without inventing score/elimination tracking;
 - arcade controls work on approved devices;
 - interruption/restart/exit behavior passes corpus;
 - exiting Game Mode restores prior visual state;
 - licensing/assets requirements satisfied.
 
 BOUNDARIES
+- consume frozen ControllerInput semantic actions rather than controller/browser-specific codes;
 - no trivia/filler unless explicitly approved;
 - no new input hardware requirement unless explicitly approved;
+- do not add repeated make/miss bookkeeping to current zero-score IRL modes;
 - do not remove games because one implementation is harder than expected.
 
 ## Lane D — Mission Control / Guest
@@ -80,14 +82,17 @@ OUTCOME
 Implement the approved owner and guest experience.
 
 COMPLETE ONLY WHEN
-- approved owner controls exist;
+- approved owner controls exist in the accepted Mission Control information architecture;
+- routine LIVE actions do not require ADMIN navigation;
 - guest join flow works;
 - Vibe cards are understandable without technical knowledge;
-- guest permissions are enforced;
-- approved game/event participation flows work;
+- guest permissions are enforced from fresh GuestCapabilityState and unknown/stale authority fails closed;
+- guest service-worker/PWA scope cannot control owner/admin routes;
+- guest authority/session state is never served as stale app-shell cache data;
+- approved game/event participation flows work through normalized ControllerInput;
 - iPad target compatibility passes;
 - offline/local-first behavior passes;
-- admin/network/update controls remain protected.
+- admin/network/update/recovery controls remain protected.
 
 BOUNDARIES
 - no realtime-cloud dependency;
