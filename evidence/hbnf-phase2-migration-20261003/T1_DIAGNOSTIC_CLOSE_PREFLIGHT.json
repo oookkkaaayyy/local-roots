@@ -1,51 +1,55 @@
 {
-  "schema": "hbnf-transition-preflight-v1",
+  "schema": "hbnf-transition-preflight-v2",
   "generated": "2026-10-03",
   "lifecycle_state": "DIAGNOSTIC_ACTIVE",
   "next_transition": "T1_DIAGNOSTIC_CLOSE",
-  "candidate": {
+  "installed_diagnostic_base": {
     "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
     "artifact_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-    "installed": true,
     "install_health_passed": true,
-    "performance_acceptance_passed": false
+    "performance_acceptance_passed": false,
+    "role": "DIAGNOSTIC_BASE__NOT_T1_FIX_CANDIDATE"
   },
   "checks": {
     "diagnostic_artifact_identity": {
-      "status": "PASS",
-      "evidence": "release07 ID + BIN SHA + updater sequences known"
+      "status": "PASS_BINARY__SOURCE_PENDING",
+      "evidence": "release07 ID/BIN SHA/sequences known; exact source identity still to content-address"
     },
     "timing_attribution_complete": {
       "status": "PARTIAL",
-      "evidence": "release07 Parametric_Water sample attributed; all retained kernels not yet swept"
+      "evidence": "RGB_Blobs5 and Parametric_Water measured; complete 28-kernel sweep pending"
     },
     "root_cause_proven": {
       "status": "PARTIAL",
-      "evidence": "at least RGB_Blobs5 and Parametric_Water show expensive per-kernel rendering; class-wide cause not yet established"
-    },
-    "instrumentation_overhead_characterized": {
-      "status": "FAIL_OPEN",
-      "evidence": "not yet measured"
+      "evidence": "expensive per-kernel procedural rendering strongly indicated; failure classes/shared primitives not yet mapped across all 28"
     },
     "bounded_fix_delta": {
-      "status": "PASS_FOR_RELEASE07",
-      "evidence": "release07 targeted only RGB_Blobs5 32x16 optimization and preserved fallback"
+      "status": "NOT_YET_APPLICABLE",
+      "evidence": "next corrected class-level fix must be derived from complete sweep"
     },
     "candidate_artifact_identity": {
-      "status": "BLOCKED",
-      "evidence": "binary identity known; exact source identity unverified"
+      "status": "NOT_YET_APPLICABLE",
+      "evidence": "release07 failed performance; next corrected forward candidate does not exist yet"
     },
     "nonhardware_tests_passed": {
-      "status": "PARTIAL_UNVERIFIED",
-      "evidence": "build/package and JSON closeout validation reported; exact complete nonhardware test matrix not independently ingested"
+      "status": "NOT_YET_APPLICABLE",
+      "evidence": "must run against next corrected candidate"
     }
   },
   "transition_ready": false,
   "blockers": [
-    "content-address exact release07 source and prove artifact linkage",
-    "execute complete 28-kernel diagnostic sweep to close timing/root-cause scope",
-    "characterize instrumentation observer effect",
-    "ingest/verify exact nonhardware test evidence"
+    "content-address release07 exact source/build base",
+    "execute complete 28-kernel diagnostic sweep",
+    "group pathological kernels by shared primitive/class",
+    "implement smallest class-level forward correction",
+    "build exact corrected candidate and run nonhardware tests"
+  ],
+  "deliberately_deferred_to_T2": [
+    "instrumentation observer-effect acceptance",
+    "full p50/p95/p99/max foundation telemetry",
+    "foundation soak",
+    "full coordinated-feature physical acceptance",
+    "golden capsule and rollback verification"
   ],
   "next_execution": "work/cart2/20_FOUNDATION_PERFORMANCE_SWEEP_EXECUTION.md"
 }
