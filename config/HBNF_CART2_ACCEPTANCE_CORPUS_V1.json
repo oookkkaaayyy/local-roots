@@ -1,0 +1,461 @@
+{
+  "schema": "hbnf-cart2-acceptance-corpus-v1",
+  "status": "DRAFT_UNTIL_SCOPE_LOCK",
+  "purpose": "Machine-readable source-independent replay/acceptance cases. Contains invariants, not final numeric performance thresholds.",
+  "vibes": {
+    "manual_candidates": [
+      "CHILL",
+      "GROOVE",
+      "HEAVY",
+      "PSYCHEDELIC",
+      "COSMIC"
+    ],
+    "auto_candidate": "AUTO",
+    "reference_audio_categories": [
+      "sparse_sub_bass_kick_heavy",
+      "dense_rock",
+      "vocal_mid_forward",
+      "electronic_build_drop",
+      "quiet_ambient",
+      "rapid_high_frequency_percussion",
+      "acoustic_high_dynamic_range",
+      "compressed_loud_master"
+    ],
+    "synthetic_traces": [
+      "silence_to_onset",
+      "isolated_kick_sub_impulse",
+      "sustained_bass",
+      "low_mid_sweep",
+      "mid_swell",
+      "high_frequency_transient_burst",
+      "steady_broadband",
+      "silence"
+    ],
+    "pairwise_manual_comparisons": [
+      [
+        "CHILL",
+        "GROOVE"
+      ],
+      [
+        "CHILL",
+        "HEAVY"
+      ],
+      [
+        "CHILL",
+        "PSYCHEDELIC"
+      ],
+      [
+        "CHILL",
+        "COSMIC"
+      ],
+      [
+        "GROOVE",
+        "HEAVY"
+      ],
+      [
+        "GROOVE",
+        "PSYCHEDELIC"
+      ],
+      [
+        "GROOVE",
+        "COSMIC"
+      ],
+      [
+        "HEAVY",
+        "PSYCHEDELIC"
+      ],
+      [
+        "HEAVY",
+        "COSMIC"
+      ],
+      [
+        "PSYCHEDELIC",
+        "COSMIC"
+      ]
+    ],
+    "invariants": [
+      "unlabeled differentiation cannot rely on palette/name alone",
+      "palette-normalized challenge preserves distinguishable motion/composition/audio grammar",
+      "each Vibe remains identifiable across materially different tracks",
+      "same synthetic musical event produces Vibe-specific consequence",
+      "quiet passages remain alive",
+      "loud passages do not collapse to maximum brightness/full-field visual soup",
+      "no obvious short loop dominates normal viewing"
+    ]
+  },
+  "text_moments": {
+    "cases": [
+      {
+        "class": "HERO_WORD",
+        "text": "ACE"
+      },
+      {
+        "class": "HERO_WORD",
+        "text": "WINNER"
+      },
+      {
+        "class": "NAME",
+        "text": "ANDREW"
+      },
+      {
+        "class": "NAME",
+        "text": "TEAM 4"
+      },
+      {
+        "class": "NUMBER_VALUE",
+        "text": "$187"
+      },
+      {
+        "class": "NUMBER_VALUE",
+        "text": "25 FT"
+      },
+      {
+        "class": "NUMBER_VALUE",
+        "text": "30 SEC"
+      },
+      {
+        "class": "DIRECTIVE",
+        "text": "STATION 4"
+      },
+      {
+        "class": "DIRECTIVE",
+        "text": "READY"
+      },
+      {
+        "class": "DIRECTIVE",
+        "text": "GO"
+      },
+      {
+        "class": "DIRECTIVE",
+        "text": "REST"
+      },
+      {
+        "class": "SHORT_ANNOUNCEMENT",
+        "text": "BACK 9"
+      },
+      {
+        "class": "SHORT_ANNOUNCEMENT",
+        "text": "ACE POT"
+      },
+      {
+        "class": "SHORT_ANNOUNCEMENT",
+        "text": "NEXT UP"
+      },
+      {
+        "class": "LONG_FREE_TEXT",
+        "text": "SOURCE_DEPENDENT_LONG_MESSAGE_FIXTURE"
+      }
+    ],
+    "invariants": [
+      "glyph geometry stable during readable hold",
+      "audio may affect background/halo but not deform glyph geometry",
+      "phrase paging precedes scrolling",
+      "scrolling only last fallback for long free text",
+      "entry/hold/exit preserve active Vibe language",
+      "return-to-base-state is verified",
+      "human readability and aesthetic acceptance required"
+    ]
+  },
+  "irl": {
+    "shuffle_call": {
+      "cases": [
+        {
+          "id": "minimum_set",
+          "locations": [
+            10,
+            15
+          ],
+          "mode": "timed"
+        },
+        {
+          "id": "typical_set",
+          "locations": [
+            10,
+            15,
+            20,
+            25,
+            30,
+            35
+          ],
+          "mode": "timed"
+        },
+        {
+          "id": "pause_resume",
+          "locations": [
+            10,
+            15,
+            20,
+            25
+          ],
+          "mode": "timed"
+        },
+        {
+          "id": "manual_advance",
+          "locations": [
+            10,
+            15,
+            20
+          ],
+          "mode": "manual"
+        }
+      ],
+      "invariants": [
+        "normal timed run needs zero ongoing taps",
+        "no immediate repeat when set size permits",
+        "shuffle-bag covers each location before reshuffle when that option is selected",
+        "pause/resume does not invent score state",
+        "explicit repeat behavior is deterministic"
+      ]
+    },
+    "pressure_clock": {
+      "cases": [
+        {
+          "id": "normal_cycle",
+          "shot_window_seconds": "USER_CONFIGURED"
+        },
+        {
+          "id": "pause_resume",
+          "shot_window_seconds": "USER_CONFIGURED"
+        },
+        {
+          "id": "expiry_restart",
+          "shot_window_seconds": "USER_CONFIGURED"
+        }
+      ],
+      "invariants": [
+        "READY/active/expiry/recovery lifecycle is deterministic",
+        "pause/resume and restart-current work without make/miss entry",
+        "timer remains instantly readable",
+        "no scorekeeping is implied"
+      ]
+    },
+    "sequence_run": {
+      "cases": [
+        {
+          "id": "show_all",
+          "length": "USER_CONFIGURED",
+          "presentation": "SHOW_ALL"
+        },
+        {
+          "id": "memory",
+          "length": "USER_CONFIGURED",
+          "presentation": "MEMORY"
+        },
+        {
+          "id": "live",
+          "length": "USER_CONFIGURED",
+          "presentation": "LIVE"
+        },
+        {
+          "id": "pause_resume",
+          "length": "USER_CONFIGURED",
+          "presentation": "LIVE"
+        }
+      ],
+      "invariants": [
+        "generated sequence is immutable until explicit regeneration",
+        "pause/resume preserves exact sequence and current position",
+        "completion is a moment, not an implied score"
+      ]
+    }
+  },
+  "arcade": {
+    "games": [
+      "MAZE_CHASE",
+      "SNAKE",
+      "PONG",
+      "BREAKOUT",
+      "FALLING_BLOCKS",
+      "SPACE_DEFENSE",
+      "CROSSING"
+    ],
+    "common_cases": [
+      "cold_start",
+      "pause_resume",
+      "background_return",
+      "restart",
+      "exit_restore",
+      "controller_disconnect_reconnect",
+      "duplicate_input",
+      "stale_input",
+      "twenty_minute_soak"
+    ],
+    "normalized_actions": [
+      "UP",
+      "DOWN",
+      "LEFT",
+      "RIGHT",
+      "PRIMARY",
+      "SECONDARY",
+      "PAUSE",
+      "EXIT"
+    ],
+    "invariants": [
+      "game logic consumes normalized actions only",
+      "duplicate sequence does not replay action",
+      "stale input after reconnect is ignored",
+      "disconnected controller cannot continue influencing state",
+      "normal visual state is restored on clean exit as required",
+      "no game depends on controller-specific haptics or special buttons"
+    ],
+    "deterministic_game_invariants": {
+      "SNAKE": [
+        "one movement decision per tick",
+        "illegal immediate reversal rejected"
+      ],
+      "PONG": [
+        "same state/input trace yields same collision outcome"
+      ],
+      "BREAKOUT": [
+        "single collision cannot remove unrelated bricks"
+      ],
+      "FALLING_BLOCKS": [
+        "bounds/rotation/lock deterministic"
+      ],
+      "MAZE_CHASE": [
+        "player/enemy cannot occupy wall cells"
+      ],
+      "SPACE_DEFENSE": [
+        "projectile ownership and collision deterministic"
+      ],
+      "CROSSING": [
+        "hazard advancement deterministic",
+        "player cannot occupy out-of-bounds lane"
+      ]
+    },
+    "physical_controller_validation": {
+      "existing_hardware": "two Stadia Bluetooth controllers recorded in AKS",
+      "cases": [
+        "pair controller 1 to actual target device",
+        "pair controller 2 to actual target device",
+        "browser navigator.getGamepads visibility",
+        "record id/mapping/buttons/axes",
+        "semantic action mapping",
+        "disconnect/reconnect",
+        "two-controller assignment if multiplayer proposed",
+        "measure actual playability on HBNF-Cart"
+      ],
+      "purchase_before_test": false
+    }
+  },
+  "guest": {
+    "capabilities": [
+      "VIEW_STATUS",
+      "SELECT_VIBE",
+      "CONTROL_ARCADE",
+      "JOIN_IRL_SHUFFLE",
+      "JOIN_IRL_PRESSURE",
+      "JOIN_IRL_SEQUENCE",
+      "SEND_APPROVED_MOMENT",
+      "SEND_SHORT_TEXT"
+    ],
+    "authority_cases": [
+      {
+        "state": "CLOSED",
+        "granted": [],
+        "expected_mutation_controls": []
+      },
+      {
+        "state": "UNKNOWN",
+        "granted": [
+          "SELECT_VIBE"
+        ],
+        "expected_mutation_controls": []
+      },
+      {
+        "state": "STALE",
+        "granted": [
+          "SELECT_VIBE"
+        ],
+        "expected_mutation_controls": []
+      },
+      {
+        "state": "OPEN",
+        "granted": [
+          "SELECT_VIBE"
+        ],
+        "expected_mutation_controls": [
+          "SELECT_VIBE"
+        ]
+      },
+      {
+        "state": "OPEN",
+        "granted": [
+          "CONTROL_ARCADE"
+        ],
+        "expected_mutation_controls": [
+          "CONTROL_ARCADE"
+        ]
+      },
+      {
+        "state": "OPEN",
+        "granted": [
+          "JOIN_IRL_SHUFFLE"
+        ],
+        "expected_mutation_controls": [
+          "JOIN_IRL_SHUFFLE"
+        ]
+      },
+      {
+        "state": "REVOKED",
+        "granted": [
+          "SELECT_VIBE",
+          "CONTROL_ARCADE"
+        ],
+        "expected_mutation_controls": []
+      },
+      {
+        "state": "EXPIRED",
+        "granted": [
+          "SELECT_VIBE"
+        ],
+        "expected_mutation_controls": []
+      }
+    ],
+    "invariants": [
+      "session open never generically enables all controls",
+      "every mutation is server-side capability checked once backend exists",
+      "public session identifier alone is not mutation authority",
+      "guest service worker cannot control owner/admin routes",
+      "session/status/capability responses are not stale app-shell cache data",
+      "non-navigation asset/API failures do not receive HTML fallback",
+      "clean device always renders branded nonblank shell"
+    ]
+  },
+  "mission_control": {
+    "candidate_navigation": [
+      "LIVE",
+      "PLAY",
+      "GUESTS",
+      "HEALTH",
+      "ADMIN"
+    ],
+    "invariants": [
+      "LIVE is default owner route",
+      "routine course controls do not require ADMIN navigation",
+      "ADMIN is separated from high-frequency course use",
+      "GUESTS can open/close/revoke scoped sessions",
+      "HEALTH is human-readable rather than raw debug-first",
+      "temporary LAN loss preserves shell and disables unsafe mutation",
+      "primary frequent controls use large touch targets appropriate to cart use"
+    ]
+  },
+  "reliability": [
+    "cold_boot",
+    "offline_boot",
+    "delayed_opal",
+    "delayed_matrix_aux",
+    "temporary_wan_loss",
+    "temporary_aux_loss",
+    "ipad_lock_wake",
+    "controller_reconnect",
+    "stale_cached_state",
+    "normal_state_restore_after_game",
+    "normal_state_restore_after_moment"
+  ],
+  "exclusions": [
+    "no numeric performance threshold is frozen until qualified-foundation measurements exist",
+    "no aesthetic result can be auto-approved by metrics",
+    "no item in this corpus commits product scope before explicit user scope lock"
+  ]
+}
