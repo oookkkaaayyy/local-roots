@@ -24,6 +24,13 @@ on:
       - 'scripts/hbnf_architecture_fitness.py'
       - 'tests/hbnf_control.py'
       - 'tests/hbnf_guarded_run.py'
+      - 'tests/hbnf_runtime_qualify_static.py'
+      - 'tests/hbnf_kernel_sweep_report.py'
+      - 'scripts/hbnf_runtime_qualify.py'
+      - 'scripts/hbnf_kernel_sweep_report.py'
+      - 'config/HBNF_RUNTIME_TELEMETRY_CONTRACT.json'
+      - 'config/HBNF_RUNTIME_QUALIFICATION_POLICY_TEMPLATE.json'
+      - 'config/HBNF_KERNEL_SWEEP_MANIFEST_TEMPLATE.json'
       - '.github/workflows/hbnf-coordinated-release-ci.yml'
   pull_request:
     branches:
@@ -48,6 +55,13 @@ on:
       - 'scripts/hbnf_architecture_fitness.py'
       - 'tests/hbnf_control.py'
       - 'tests/hbnf_guarded_run.py'
+      - 'tests/hbnf_runtime_qualify_static.py'
+      - 'tests/hbnf_kernel_sweep_report.py'
+      - 'scripts/hbnf_runtime_qualify.py'
+      - 'scripts/hbnf_kernel_sweep_report.py'
+      - 'config/HBNF_RUNTIME_TELEMETRY_CONTRACT.json'
+      - 'config/HBNF_RUNTIME_QUALIFICATION_POLICY_TEMPLATE.json'
+      - 'config/HBNF_KERNEL_SWEEP_MANIFEST_TEMPLATE.json'
       - '.github/workflows/hbnf-coordinated-release-ci.yml'
   workflow_dispatch:
 
@@ -72,6 +86,8 @@ jobs:
           python3 tests/hbnf_control.py
           python3 tests/hbnf_guarded_run.py
           python3 scripts/hbnf_architecture_fitness.py
+          python3 tests/hbnf_runtime_qualify_static.py
+          python3 tests/hbnf_kernel_sweep_report.py
 
       - name: JavaScript syntax
         run: |
