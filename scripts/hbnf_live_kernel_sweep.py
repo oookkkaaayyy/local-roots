@@ -44,6 +44,10 @@ REQUIRED_SAMPLE_DIAGNOSTIC={
     "aux_prepare_send_ms_avg","unaccounted_ms_avg",
     "free_heap_bytes","websocket_clients","aux_projection_active",
     "aux_render_fps","wifi_rssi_dbm","restart_count",
+    "kernel_ms_avg","kernel_ms_p95","palette_ms_avg","palette_ms_p95",
+    "audio_ms_avg","audio_ms_p95","scheduler_ms_avg","scheduler_ms_p95",
+    "overlay_ms_avg","overlay_ms_p95","aux_prepare_send_ms_avg","aux_prepare_send_ms_p95",
+    "unaccounted_ms_avg","unaccounted_ms_p95",
 }
 REQUIRED_SAMPLE_FOUNDATION={
     "release_id","uptime_seconds","fps","frame_ms_p50","frame_ms_p95",
