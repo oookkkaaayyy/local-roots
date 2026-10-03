@@ -86,7 +86,20 @@
           "owner_pairing_admin",
           "advanced_audio_tuning",
           "raw_diagnostics"
-        ]
+        ],
+        "grantable_capabilities": [
+          "VIEW_STATUS",
+          "SELECT_VIBE",
+          "CONTROL_ARCADE",
+          "JOIN_IRL_SHUFFLE",
+          "JOIN_IRL_PRESSURE",
+          "JOIN_IRL_SEQUENCE",
+          "SEND_APPROVED_MOMENT",
+          "SEND_SHORT_TEXT"
+        ],
+        "current_staging_aliases_are_not_frozen": true,
+        "server_checks_every_mutation": true,
+        "unknown_or_stale_authority_fails_closed": true
       }
     }
   },
