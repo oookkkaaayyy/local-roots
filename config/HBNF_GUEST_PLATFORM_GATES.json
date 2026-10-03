@@ -1,6 +1,6 @@
 {
   "schema": "hbnf-guest-platform-gates-v1",
-  "status": "CANDIDATE_NOT_IMPLEMENTED",
+  "status": "SOURCE_IMPLEMENTED_NOT_DEPLOYED",
   "currentFinding": {
     "existingHostedControllerIsCompleteGuestPlatform": false,
     "reportedCleanFriendShareWhiteScreen": true,
@@ -23,5 +23,23 @@
     "chromePwaInstallPassed": false,
     "blankScreenFailureMatrixPassed": false
   },
-  "liveMutationAuthorized": false
+  "liveMutationAuthorized": false,
+  "implementation": {
+    "staticShellSourcePresent": true,
+    "guestCssSourcePresent": true,
+    "es5StyleGuestControllerSourcePresent": true,
+    "dedicatedManifestSourcePresent": true,
+    "serviceWorkerSourcePresent": true,
+    "icon180Present": true,
+    "icon192Present": true,
+    "icon512Present": true,
+    "guestVibeControlsPresent": true,
+    "guestModeEntryControlsPresent": true,
+    "defaultClosedCapabilityGatePresent": true,
+    "staticRegressionTestSourcePresent": true,
+    "liveGuestSessionBackendConnected": false,
+    "liveGuestMutationBridgeConnected": false,
+    "productionDeployed": false,
+    "cleanDeviceAcceptancePassed": false
+  }
 }
