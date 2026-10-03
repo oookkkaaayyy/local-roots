@@ -122,36 +122,7 @@ function duDownloadFiles(files:File[]){
 }
 
 async function duHandleStart(card:HTMLElement,jobNumber:string){
-  const prepared=duPreparedJobs.get(jobNumber);
-  if(!prepared){
-    duSetCardStatus(card,'Preparing isolated source attachments…');
-    try{
-      const auth=await duAdminAuth();
-      const dashboard=await callFunction<DuDashboard>('du-admin',{action:'dashboard'},duFunctionAuth(auth));
-      const job=(dashboard.jobs||[]).find(candidate=>candidate.job_number===jobNumber);
-      if(!job)throw new Error('Job is not in the active D&U queue.');
-      await duPrepareJob(job,auth);
-      duSetCardStatus(card,'Clean-room files are ready. Tap Start Stencil again.');
-    }catch(error){duSetCardStatus(card,error instanceof Error?error.message:'Could not prepare clean-room files.',true);}
-    return;
-  }
-  try{
-    let promptCopied=false;
-    try{await navigator.clipboard.writeText(prepared.prompt);promptCopied=true;}catch{}
-    duDownloadFiles(prepared.files);
-
-    const auth=await duAdminAuth();
-    await callFunction('du-admin',{action:'set_workflow',job_id:prepared.jobId,workflow_status:'stage_a_started',clear_handoff_error:true},duFunctionAuth(auth));
-
-    duSetCardStatus(card,promptCopied
-      ?`Downloaded ${prepared.files.length} isolated source image${prepared.files.length===1?'':'s'} and copied the clean-room prompt. Opening ChatGPT now. In the NEW chat, tap + → Add photos & files → Files, select the newest ${prepared.jobNumber}- files, paste if the prompt is not already filled, then Send.`
-      :`Downloaded ${prepared.files.length} isolated source image${prepared.files.length===1?'':'s'}. Opening ChatGPT now. In the NEW chat, tap + → Add photos & files → Files, select the newest ${prepared.jobNumber}- files, then use Copy prompt only and Send.`);
-
-    const deepLink=`com.openai.chat://chatgpt.com/?prompt=${encodeURIComponent(prepared.prompt)}`;
-    window.setTimeout(()=>{window.location.href=deepLink;},250);
-  }catch(error){
-    duSetCardStatus(card,error instanceof Error?error.message:'Clean-room launch failed.',true);
-  }
+  duSetCardStatus(card,`Stencil Generation v2 is being rebuilt. ${jobNumber} remains safely queued; Start Stencil is intentionally disabled until the replacement pipeline passes validation.`);
 }
 async function duHandleCopyPrompt(card:HTMLElement,jobNumber:string){
   const prepared=duPreparedJobs.get(jobNumber);
