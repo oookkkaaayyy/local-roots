@@ -12,7 +12,8 @@ REQUIRED = [
     "release_id","uptime_seconds","fps","frame_ms_p50","frame_ms_p95",
     "frame_ms_p99","frame_ms_max","kernel_id","variant_id",
     "free_heap_bytes","minimum_free_heap_bytes","largest_free_block_bytes",
-    "websocket_clients","aux_projection_active","aux_projection_age_ms","restart_count",
+    "websocket_clients","aux_projection_active","aux_projection_age_ms","aux_render_fps",
+    "wifi_rssi_dbm","restart_count",
 ]
 
 def pct(values, q):
@@ -82,8 +83,18 @@ def summarize(samples):
     def vals(k): return [s[k] for s in good if isinstance(s.get(k),(int,float))]
     fps=vals("fps"); p95=vals("frame_ms_p95"); p99=vals("frame_ms_p99"); mx=vals("frame_ms_max")
     freeh=vals("free_heap_bytes"); minh=vals("minimum_free_heap_bytes"); largest=vals("largest_free_block_bytes")
-    auxage=vals("aux_projection_age_ms")
+    auxage=vals("aux_projection_age_ms"); auxfps=vals("aux_render_fps"); rssi=vals("wifi_rssi_dbm")
     active=[s.get("aux_projection_active") for s in good if s.get("aux_projection_active") is not None]
+    stage_keys=[
+      "frame_ms_avg","kernel_ms_avg","kernel_ms_p95","palette_ms_avg","palette_ms_p95",
+      "audio_ms_avg","audio_ms_p95","scheduler_ms_avg","scheduler_ms_p95",
+      "overlay_ms_avg","overlay_ms_p95","aux_prepare_send_ms_avg","aux_prepare_send_ms_p95",
+      "unaccounted_ms_avg","unaccounted_ms_p95","frame_over_budget_count","frame_sample_count"
+    ]
+    stage={}
+    for key in stage_keys:
+        vv=vals(key)
+        if vv: stage[key]={"median":pct(vv,.5),"p95":pct(vv,.95),"max":max(vv)}
     return {
       "schema":"hbnf-runtime-profile-v1",
       "sample_count":len(samples),
@@ -102,7 +113,10 @@ def summarize(samples):
       "aux":{
         "inactive_samples":sum(1 for x in active if x is False),
         "age_p99_ms":pct(auxage,.99),
+        "render_fps_median":pct(auxfps,.5),
       },
+      "wifi":{"rssi_dbm_median":pct(rssi,.5),"rssi_dbm_min":min(rssi) if rssi else None},
+      "stages":stage,
       "restart_count_start":good[0].get("restart_count") if good else None,
       "restart_count_end":good[-1].get("restart_count") if good else None,
     }
