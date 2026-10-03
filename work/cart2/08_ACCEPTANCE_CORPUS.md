@@ -39,6 +39,24 @@ For each clip/trace capture:
 - selected Vibe;
 - framebuffer/video output where practical.
 
+## A2. AudioFeatures replay
+For the same reference clips/traces in section A, capture:
+- existing raw WLED/HBNF audio observables available from the qualified source;
+- candidate semantic AudioFeatures;
+- normalization/AGC state;
+- feature-extraction runtime cost;
+- representative Vibe consequences.
+
+Reject the candidate feature set if:
+- features are materially redundant;
+- bass/mid/high structure collapses under ordinary tracks;
+- quiet/noise behavior creates false activity;
+- ordinary level changes pin the feature set;
+- every Vibe responds with effectively the same pulse/brightness behavior;
+- extraction materially harms frame pacing.
+
+Exact formulas, bins, smoothing and numeric thresholds remain qualified-source/replay dependent.
+
 ## B. Vibe differentiation corpus
 For each committed Vibe:
 - same three contrasting songs;
