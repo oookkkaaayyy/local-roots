@@ -152,3 +152,62 @@ Pass only if a new device with no prior cookies/localStorage:
 Treat the reported friend-share white screen as a real product failure.
 
 Do not mark guest platform COMPLETE until reproduced/diagnosed or superseded by a new guest surface that passes the clean-device shareability acceptance above.
+
+
+## 2026-10-03 pre-backend security / isolation refinement
+
+Current staging source is NOT safe to connect to a production guest mutation backend yet. Static audit evidence:
+`evidence/hbnf-phase2-migration-20261003/GUEST_STAGING_AUDIT_20261003.json`.
+
+Required contract additions:
+
+### Capability state is authoritative per control
+A session being OPEN does not enable all guest controls.
+Each control is enabled only if:
+- fresh session state is valid;
+- the specific capability is granted;
+- connection/mutation path is currently safe.
+
+Unknown, stale, reconnecting, expired, or revoked state fails CLOSED.
+
+The current staging client violates this rule because `render()` can re-enable all controls after `applyCapabilities()`. That is a known blocker, not accepted behavior.
+
+### Session proof
+The public/QR join reference is an onboarding reference, not a durable owner credential and not sufficient mutation authority by itself.
+
+Before backend connection, define a server-validated short-lived guest proof/session mechanism. Every mutation is checked server-side for:
+- valid session;
+- expiry/revocation;
+- requested capability;
+- controller/player membership where relevant.
+
+A public session identifier alone must never authorize mutation.
+
+OWASP's current session-management guidance treats session IDs/tokens as authentication-equivalent secrets and warns that URL-carried session identifiers can leak through history, logs, links and referrers. Prefer resolving the initial join reference into a safer short-lived browser session mechanism, then remove/neutralize the join secret from the visible URL where practical.
+
+Evidence:
+- https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html
+
+### Guest PWA isolation
+Guest PWA/service-worker scope must not overlap owner/admin routes.
+
+Current staging manifest uses `scope: "/"`; if deployed with a root-scoped service worker, that can place unrelated same-origin routes under guest-worker control. Final deployment must use a guest-specific path/scope or isolated origin, with an acceptance test proving owner Mission Control routes are outside guest service-worker control.
+
+MDN explicitly defines service-worker scope as the URL range the worker controls and cautions against unnecessarily broad scopes.
+
+Evidence:
+- https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/scope
+- https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Service-Worker-Allowed
+
+### Dynamic authority is never app-shell cache data
+Service-worker caching may cover versioned static shell assets only.
+Do not cache:
+- guest session/status responses;
+- revocation/expiry responses;
+- capability authority;
+- game/control mutation responses.
+
+Navigation fallback may serve the guest shell for guest documents, but missing JS/CSS/icon/API requests must not silently receive HTML fallback.
+
+Evidence:
+- https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Caching
