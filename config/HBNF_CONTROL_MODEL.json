@@ -30,7 +30,6 @@
         "diagnostic_artifact_identity",
         "timing_attribution_complete",
         "root_cause_proven",
-        "instrumentation_overhead_characterized",
         "bounded_fix_delta",
         "candidate_artifact_identity",
         "nonhardware_tests_passed"
