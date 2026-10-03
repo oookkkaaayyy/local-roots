@@ -32,14 +32,26 @@ Before any firmware/controller/router/software implementation or rollout plannin
 That protocol controls source/build provenance, golden release capsules, solved-problem reuse, readiness claims, and rollout discipline.
 
 ## Purpose
-This branch is a planning/audit staging lane only. It exists to make the next implementation phase start immediately once the current coordinated-release/source-reconciliation work is complete.
+This branch is the Cart 2.0 planning/qualification staging lane. It contains planning, acceptance, release-engineering tooling, evidence, and historical source-independent guest prototype work. It does NOT authorize new Phase 2 feature implementation, deployment, flashing, production mutation, or scope lock.
+
+Current foundation status:
+- installed release07 is a DIAGNOSTIC BASE only;
+- install/device health PASS;
+- performance acceptance FAIL;
+- exact artifact source identity still requires proof;
+- lifecycle remains DIAGNOSTIC_ACTIVE;
+- foundation remains FOUNDATION_UNQUALIFIED — PERFORMANCE_OPEN.
+
+Authoritative length-limit migration handoff:
+- Drive ID 1ZXj2LcMp2S_wMCMXgf-uy1EFaDJ70oZwDqaBsiIUjDI
+- GitHub mirror: work/cart2/23_LENGTH_LIMIT_MIGRATION_HANDOFF_20261003.md
 
 ## Nonnegotiable governance
 1. No implementation begins until an explicit scope contract is approved by the user.
 2. No silent scope reduction, substitution, downgrade, deferral, or "fallback" is allowed after scope lock.
 3. If a committed requirement proves infeasible or materially riskier than represented, stop and return to the user with evidence and options. Do not quietly ship less.
 4. Recommendations require challenger analysis plus current authoritative/expert research.
-5. Existing live/release work must not be modified by this staging lane.
+5. Do not modify live hardware/router/network state from this staging lane; release07 foundation work follows packets 20/21/22 and the control plane.
 6. Parallel development is required wherever interfaces can be frozen safely.
 7. One lane may not consume another lane's quality, reliability, or schedule budget.
 8. No production deploy, firmware flash, router mutation, hardware mutation, merge, or GitHub Actions run is authorized by this branch.
