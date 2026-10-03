@@ -227,3 +227,19 @@ No owner credential is embedded in the guest URL.
 - final set of Arcade and IRL modes after source/capacity audit.
 
 No decision above is silently locked by this document.
+
+## Existing Stadia controller path
+
+Current AKS evidence records two Stadia Bluetooth controllers already owned.
+
+Mission Control should therefore expose a future controller-diagnostics/mapping view only if physical gamepad support is approved:
+- connected controller identity;
+- standard/nonstandard mapping;
+- live button/axis test;
+- assigned player;
+- disconnect/reconnect status.
+
+Do not make controller purchase or controller firmware updating part of the first-release plan. Google's Bluetooth conversion/update window has already ended; the recorded controllers are already Bluetooth-mode units, and final viability depends on actual pairing/browser behavior with the target iPad.
+
+Physical gamepad support remains candidate/conditional until that test passes.
+
