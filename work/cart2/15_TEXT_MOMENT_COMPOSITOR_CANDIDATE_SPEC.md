@@ -185,3 +185,22 @@ For each committed text class:
 
 A text implementation that is technically legible but reads as a generic cheap LED marquee fails the product requirement.
 
+
+
+## Prior HBNF physical evidence — reuse before reinvention
+
+AKS HBNF canonical preserves a proven prior text-rendering result on this same 32×16 Matrix lineage:
+- three metric-identical 12px WBF fonts were generated for foreground / 1px inner halo / 2px outer halo;
+- layered custom-font overlays physically passed while the underlying animation remained moving;
+- one-pass marquee timing was previously constrained to avoid partial repeated passes.
+
+This is historical evidence, not proof that the exact release07/qualified-foundation source still contains the same implementation.
+
+Foundation source audit must therefore:
+1. locate or disprove the presence of the proven WBF/font/stencil primitives;
+2. reuse them where compatible;
+3. preserve their known readability/overlay lessons;
+4. avoid adding a new FastLED/TrueType/font dependency merely because historical source location changed;
+5. only replace the proven primitive when measured/aesthetic evidence shows it cannot satisfy the approved premium compositor contract.
+
+This narrows the text audit from "invent a renderer" to "recover/reuse the strongest proven local primitive, then extend it into the Vibe-aware compositor."
