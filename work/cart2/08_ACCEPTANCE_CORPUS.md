@@ -40,10 +40,12 @@ For each committed Vibe:
 - same brightness ceiling;
 - same Motion setting;
 - same start duration;
-- unlabeled A/B viewing.
+- unlabeled A/B viewing;
+- a palette-normalized/grayscale challenger pass where practical;
+- cross-track identity: the same Vibe must remain recognizable across materially different tracks.
 
 Pass condition:
-A committed Vibe must be identifiable through motion/composition/audio-response grammar, not merely palette/name.
+A committed Vibe must be identifiable through motion/composition/audio-response grammar, not merely palette/name. Every committed pair is challenged, not only the most similar-looking pair.
 
 ## C. Text/moment corpus
 Required semantic moments:
@@ -53,7 +55,7 @@ Required semantic moments:
 - ACE POT / dollar amount
 - DISTANCE
 - TIMER
-- STANCE / CHALLENGE
+- READY / GO / REST / NEXT UP
 - TEAM REVEAL
 - BAG TAG
 - short two-word announcement
@@ -68,20 +70,25 @@ Test:
 - readability at expected cart viewing distance.
 
 ## D. IRL directive-game corpus
-For each game:
-- 1 player;
+For each recommended IRL mode:
+- smallest valid station/distance set;
 - typical group;
-- max supported players;
-- interruption/resume;
-- wrong/duplicate input;
-- timer expiry;
-- tie/elimination edge case;
-- end/reset.
+- interruption/pause/resume;
+- iPad lock/wake;
+- controller reconnect;
+- timer expiry/restart where applicable;
+- end/reset;
+- a normal run requiring zero ongoing taps;
+- Shuffle Call no-immediate-repeat behavior;
+- Sequence Run sequence preservation across pause/resume.
 
 Measure:
 - manual taps/data entries required;
 - whether cart reduces cognitive/bookkeeping load;
-- recovery from accidental UI interruption.
+- recovery from accidental UI interruption;
+- whether the cart materially improves the exercise versus a normal phone timer/randomizer.
+
+Tie/elimination and repeated make/miss-entry cases are not required for the current recommended zero-score modes.
 
 ## E. Digital-game corpus
 For each arcade game:
@@ -90,18 +97,31 @@ For each arcade game:
 - pause/background/return;
 - phone control;
 - iPad control;
+- physical gamepad only if that path is included after target-device validation;
+- duplicate/stale input rejection;
+- disconnect/reconnect;
 - two-player if supported;
-- exit -> restore previous visual state;
+- exact exit -> previous visual state restoration where contract requires it;
+- deterministic replay of core collision/movement invariants;
 - 20+ minute soak where appropriate.
 
 ## F. Guest UX corpus
 First-time guest must be able to:
-- join;
+- open a branded shell on a clean device before cart/API success;
+- understand whether the cart/session is available;
+- join an owner-opened session;
 - understand Vibe choices;
-- perform allowed actions;
+- perform only allowed actions;
 - enter game participation flow;
-- recover after lock/sleep;
-- never reach admin/update/network controls.
+- recover after lock/sleep and temporary LAN loss;
+- lose mutation authority immediately on expiry/revocation without cache clearing;
+- never reach admin/update/network/recovery controls.
+
+Owner Mission Control must separately prove:
+- LIVE course controls do not require ADMIN navigation;
+- GUESTS can open/close/revoke capability-scoped sessions;
+- HEALTH communicates Matrix/AUX/LAN state without turning routine use into a debug console;
+- primary cart controls meet the chosen large-target interaction standard.
 
 ## G. Reliability corpus
 - cold boot;
@@ -120,3 +140,26 @@ First-time guest must be able to:
 ## Rule
 Automated tests may reject regressions.
 Only human acceptance may approve aesthetics.
+
+
+## H. Input-controller corpus
+For the normalized action layer:
+- touch D-pad/action buttons on iPad;
+- touch controls on a guest phone;
+- held direction;
+- rapid direction changes;
+- duplicate sequence;
+- stale input after reconnect;
+- controller disconnect while moving;
+- player/controller reassignment;
+- Gamepad API mapping only for controller/browser combinations proposed for commitment.
+
+Do not freeze a numerical latency gate before measuring the accepted local stack. Record end-to-end input-to-game-state behavior on the actual target devices, then freeze the playability envelope before release acceptance.
+
+## Current evidence basis
+- W3C target-size guidance: https://www.w3.org/WAI/WCAG21/Understanding/target-size
+- MDN Gamepad API: https://developer.mozilla.org/en-US/docs/Web/API/Gamepad_API
+- MDN PWA installability: https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable
+- WLED AudioReactive: https://kno.wled.ge/advanced/audio-reactive/
+- dgputt randomized SHUFFLE drill: https://apps.apple.com/us/app/dgputt-disc-golf-putting/id1536711552
+- tiny-matrix arcade feasibility example: https://github.com/zero7608/matrixgame
