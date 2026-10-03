@@ -224,3 +224,26 @@ For each recommended IRL mode:
 
 Tie/elimination and repeated make/miss-entry tests do not apply to these current recommended modes.
 
+
+
+## Evidence boundary — do not overclaim training efficacy
+
+Current motor-learning evidence does NOT justify marketing or designing Shuffle Call around a claim that randomized-distance practice is categorically superior.
+
+Evidence is mixed:
+- a 2024 systematic review/meta-analysis found high contextual interference/random practice benefited retention overall, but the benefit in applied settings was almost negligible;
+- a companion 2024 transfer meta-analysis favored random practice overall, while the applied-setting effect was small and statistically non-significant;
+- golf-putting studies are inconsistent: some report retention benefits from random/variable practice, while others found no random-over-blocked advantage for varying putting distances/parameters.
+
+Therefore:
+- treat randomized callouts as a legitimate practice format, not a proven best method;
+- do not present the cart as improving putting skill because of contextual-interference science;
+- the product case for Shuffle Call is concrete UX value: automatic unpredictable location calls, optional no-repeat bag randomization, timing/cues, and zero ongoing bookkeeping;
+- allow the owner to choose cadence/locations rather than forcing a scientifically branded "optimal" schedule.
+
+Evidence:
+- https://pubmed.ncbi.nlm.nih.gov/38987617/
+- https://pubmed.ncbi.nlm.nih.gov/39205981/
+- https://pubmed.ncbi.nlm.nih.gov/28449601/
+- https://pubmed.ncbi.nlm.nih.gov/8961310/
+- https://pubmed.ncbi.nlm.nih.gov/34078209/
