@@ -57,27 +57,39 @@ For each Vibe:
 
 ## IRL game acceptance
 A mode ships only if the cart:
-- issues useful directives/timers/sounds/progression;
-- remembers genuinely cumbersome state;
+- issues useful directives/timers/cues or changing sequences that the cart materially improves;
 - reduces or does not materially increase manual bookkeeping;
+- targets zero ongoing taps during normal timed operation for the current recommended modes;
 - can recover/resume from accidental UI interruption;
-- has a clear end condition and score/progression state.
+- preserves generated sequence/timer/randomization state as required;
+- has a clear lifecycle and end condition without requiring score/make-miss tracking unless a later approved mode genuinely needs it.
 
 ## Digital game acceptance
 - recognizable core mechanic;
 - stable frame pacing;
-- deterministic restart;
-- phone/iPad controls are usable at expected LAN latency;
+- deterministic restart and deterministic core movement/collision behavior for replayable input traces;
+- phone/iPad controls consume normalized semantic actions rather than browser/gamepad button numbers;
+- stale/duplicate input is rejected and controller disconnect cannot continue driving game state;
+- any physical-gamepad path passes actual controller/browser mapping and playability validation before commitment;
 - game mode does not corrupt normal visual/controller state;
-- exiting game restores the prior visual state cleanly;
+- exiting game restores the required prior visual state exactly where the feature contract requires it;
 - commercial names/assets are not copied unless licensing permits.
 
 ## Guest UX acceptance
 A first-time card mate must be able to:
+- see a branded nonblank shell before cart/API success;
 - understand what each Vibe means without prior explanation;
-- join through the intended local flow;
+- join through the intended owner-opened guest-session flow;
 - make only explicitly permitted selections/actions;
-- never reach firmware/network/admin controls.
+- fail closed while session authority is stale/unknown/revoked;
+- lose mutation authority immediately on expiry/revocation;
+- remain outside firmware/network/recovery/admin controls.
+
+Guest platform additionally fails if:
+- an OPEN session generically enables ungranted controls;
+- guest service-worker scope can control owner/admin routes;
+- guest authority/status is served from stale app-shell cache;
+- a failed non-document asset/API request is disguised by an HTML navigation fallback.
 
 ## Reliability acceptance
 - cold boot;
