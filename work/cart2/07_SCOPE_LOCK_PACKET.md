@@ -85,6 +85,7 @@ Before presenting the final approval packet, read:
 - 17_GUEST_PLATFORM_PRODUCT_CONTRACT.md
 - 18_GUEST_PWA_ACCEPTANCE_AND_SMOKE_TEST.md
 - 24_MISSION_CONTROL_CANDIDATE_SPEC.md
+- 26_AUDIO_FEATURES_CANDIDATE_CONTRACT.md
 
 Important refinement:
 - scorekeeping-heavy IRL modes are rejected as current candidates because they add user work;
