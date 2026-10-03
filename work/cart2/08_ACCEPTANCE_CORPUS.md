@@ -2,6 +2,11 @@
 
 STATUS: DRAFT / PRE-IMPLEMENTATION TEST DESIGN.
 
+Machine-readable companion:
+- `config/HBNF_CART2_ACCEPTANCE_CORPUS_V1.json`
+- DRAFT_UNTIL_SCOPE_LOCK
+- contains deterministic source-independent cases/invariants only; numerical performance thresholds remain foundation-dependent.
+
 Purpose: prevent subjective, inconsistent "looks better" acceptance and reduce physical-cart iteration.
 
 ## A. Visual / audio reference corpus
