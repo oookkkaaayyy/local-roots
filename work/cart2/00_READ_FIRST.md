@@ -56,16 +56,17 @@ Authoritative length-limit migration handoff:
 7. One lane may not consume another lane's quality, reliability, or schedule budget.
 8. No production deploy, firmware flash, router mutation, hardware mutation, merge, or GitHub Actions run is authorized by this branch.
 
-## Branch relationship
-Created from PR #46 head snapshot:
+## Branch provenance
+This staging branch was originally created from a historical PR #46 snapshot:
 - source branch: hbnf-coordinated-release-20261001
-- source snapshot: 0c01d0c7f065264e2b9fd8127f1c48cc96a73b56
+- historical snapshot: 0c01d0c7f065264e2b9fd8127f1c48cc96a73b56
 
-This is intentionally a snapshot. The current PR #46 lane may continue changing independently.
+That provenance is historical only. PR #46 is no longer the active continuation path and its branch HEAD must not be treated as release07 artifact source identity.
 
-Before implementation:
-- reconcile/rebase/port this planning package onto the final accepted coordinated-release baseline;
-- do not assume this snapshot is the accepted firmware source lineage.
+Before Phase 2 implementation:
+- use the exact PHASE 2 FOUNDATION — QUALIFIED source/artifact identity produced by packets 20/21/22;
+- port/reconcile approved Cart 2.0 planning onto that qualified foundation;
+- never infer the foundation from this branch's original snapshot.
 
 ## "Fully ready for instant implementation" means
 All of the following are complete:
