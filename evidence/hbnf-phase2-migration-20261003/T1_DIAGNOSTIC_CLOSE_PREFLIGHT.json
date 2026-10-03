@@ -1,0 +1,51 @@
+{
+  "schema": "hbnf-transition-preflight-v1",
+  "generated": "2026-10-03",
+  "lifecycle_state": "DIAGNOSTIC_ACTIVE",
+  "next_transition": "T1_DIAGNOSTIC_CLOSE",
+  "candidate": {
+    "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
+    "artifact_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "installed": true,
+    "install_health_passed": true,
+    "performance_acceptance_passed": false
+  },
+  "checks": {
+    "diagnostic_artifact_identity": {
+      "status": "PASS",
+      "evidence": "release07 ID + BIN SHA + updater sequences known"
+    },
+    "timing_attribution_complete": {
+      "status": "PARTIAL",
+      "evidence": "release07 Parametric_Water sample attributed; all retained kernels not yet swept"
+    },
+    "root_cause_proven": {
+      "status": "PARTIAL",
+      "evidence": "at least RGB_Blobs5 and Parametric_Water show expensive per-kernel rendering; class-wide cause not yet established"
+    },
+    "instrumentation_overhead_characterized": {
+      "status": "FAIL_OPEN",
+      "evidence": "not yet measured"
+    },
+    "bounded_fix_delta": {
+      "status": "PASS_FOR_RELEASE07",
+      "evidence": "release07 targeted only RGB_Blobs5 32x16 optimization and preserved fallback"
+    },
+    "candidate_artifact_identity": {
+      "status": "BLOCKED",
+      "evidence": "binary identity known; exact source identity unverified"
+    },
+    "nonhardware_tests_passed": {
+      "status": "PARTIAL_UNVERIFIED",
+      "evidence": "build/package and JSON closeout validation reported; exact complete nonhardware test matrix not independently ingested"
+    }
+  },
+  "transition_ready": false,
+  "blockers": [
+    "content-address exact release07 source and prove artifact linkage",
+    "execute complete 28-kernel diagnostic sweep to close timing/root-cause scope",
+    "characterize instrumentation observer effect",
+    "ingest/verify exact nonhardware test evidence"
+  ],
+  "next_execution": "work/cart2/20_FOUNDATION_PERFORMANCE_SWEEP_EXECUTION.md"
+}
