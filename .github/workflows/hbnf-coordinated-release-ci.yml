@@ -31,6 +31,12 @@ on:
       - 'config/HBNF_RUNTIME_TELEMETRY_CONTRACT.json'
       - 'config/HBNF_RUNTIME_QUALIFICATION_POLICY_TEMPLATE.json'
       - 'config/HBNF_KERNEL_SWEEP_MANIFEST_TEMPLATE.json'
+      - 'config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json'
+      - 'config/HBNF_LIVE_SWEEP_ADAPTER_TEMPLATE.json'
+      - 'scripts/hbnf_live_kernel_sweep.py'
+      - 'scripts/hbnf_source_tree_identity.py'
+      - 'tests/hbnf_live_kernel_sweep.py'
+      - 'tests/hbnf_source_tree_identity.py'
       - '.github/workflows/hbnf-coordinated-release-ci.yml'
   pull_request:
     branches:
@@ -62,6 +68,12 @@ on:
       - 'config/HBNF_RUNTIME_TELEMETRY_CONTRACT.json'
       - 'config/HBNF_RUNTIME_QUALIFICATION_POLICY_TEMPLATE.json'
       - 'config/HBNF_KERNEL_SWEEP_MANIFEST_TEMPLATE.json'
+      - 'config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json'
+      - 'config/HBNF_LIVE_SWEEP_ADAPTER_TEMPLATE.json'
+      - 'scripts/hbnf_live_kernel_sweep.py'
+      - 'scripts/hbnf_source_tree_identity.py'
+      - 'tests/hbnf_live_kernel_sweep.py'
+      - 'tests/hbnf_source_tree_identity.py'
       - '.github/workflows/hbnf-coordinated-release-ci.yml'
   workflow_dispatch:
 
@@ -88,6 +100,8 @@ jobs:
           python3 scripts/hbnf_architecture_fitness.py
           python3 tests/hbnf_runtime_qualify_static.py
           python3 tests/hbnf_kernel_sweep_report.py
+          python3 tests/hbnf_live_kernel_sweep.py
+          python3 tests/hbnf_source_tree_identity.py
 
       - name: JavaScript syntax
         run: |
