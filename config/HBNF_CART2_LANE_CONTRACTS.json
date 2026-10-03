@@ -9,7 +9,36 @@
         "text_moments_optional"
       ],
       "frozen": false,
-      "realtime_local_only": true
+      "realtime_local_only": true,
+      "candidate_contract": {
+        "source_direction": "reuse_existing_WLED_AudioReactive_observables_before_new_FFT",
+        "realtime_local_only": true,
+        "semantic_features": [
+          "energy_short",
+          "energy_medium",
+          "energy_slow",
+          "low_pressure",
+          "low_transient",
+          "mid_body",
+          "mid_change",
+          "high_detail",
+          "high_transient",
+          "spectral_brightness",
+          "spectral_change",
+          "activity",
+          "silence_confidence"
+        ],
+        "same_interface_for_all_vibes": true,
+        "vibe_specific_mapping_required": true,
+        "motion_owner_authority_preserved": true,
+        "genre_recognition_forbidden": true,
+        "realtime_cloud_dependency_forbidden": true,
+        "independent_aux_fft_forbidden_by_default": true,
+        "numeric_ranges_and_formulas": "SOURCE_AND_REPLAY_DEPENDENT__NOT_FROZEN",
+        "exact_fft_geq_bin_mapping": "SOURCE_DEPENDENT__NOT_FROZEN",
+        "smoothing_attack_release": "REPLAY_DEPENDENT__NOT_FROZEN",
+        "performance_budget": "QUALIFIED_FOUNDATION_DEPENDENT__NOT_FROZEN"
+      }
     },
     "VibeSelection": {
       "producer": "mission_control_guest",
