@@ -44,7 +44,11 @@
     "acceptanceCorpusPrepared": true,
     "integrationDagPrepared": true,
     "firstHourAfterBaselinePlanPrepared": true,
-    "laneContractsDraftPrepared": true
+    "laneContractsDraftPrepared": true,
+    "irlInteractiveModesCandidateSpecPrepared": true,
+    "digitalArcadeCandidateSpecPrepared": true,
+    "textMomentCompositorCandidateSpecPrepared": true,
+    "vibeGuestLanguageCandidateSpecPrepared": true
   },
   "postmortemGates": {
     "pr46MustActionsImplemented": false,
