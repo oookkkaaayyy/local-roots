@@ -1,0 +1,27 @@
+{
+  "schema": "hbnf-guest-platform-gates-v1",
+  "status": "CANDIDATE_NOT_IMPLEMENTED",
+  "currentFinding": {
+    "existingHostedControllerIsCompleteGuestPlatform": false,
+    "reportedCleanFriendShareWhiteScreen": true,
+    "currentManifestReferencesMissingIconAsset": true,
+    "currentControllerPackageIncludesRequiredPwaIcons": false
+  },
+  "requiredBeforeRelease": {
+    "separateGuestSurfaceImplemented": false,
+    "initialStaticShellAlwaysVisible": false,
+    "dedicatedGuestManifest": false,
+    "icon192Present": false,
+    "icon512Present": false,
+    "appleTouchIconPresent": false,
+    "referencedAssetClosureVerified": false,
+    "cleanDeviceShareSmokeTestPassed": false,
+    "offLanUsefulShellPassed": false,
+    "guestSessionAuthorityPassed": false,
+    "ownerSurfaceIsolationPassed": false,
+    "iosAddToHomeScreenPassed": false,
+    "chromePwaInstallPassed": false,
+    "blankScreenFailureMatrixPassed": false
+  },
+  "liveMutationAuthorized": false
+}
