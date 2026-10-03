@@ -37,7 +37,15 @@ REQUIRED_ADAPTER={
     "sample_seconds",
     "sample_interval_seconds",
 }
-REQUIRED_SAMPLE={
+REQUIRED_SAMPLE_DIAGNOSTIC={
+    "release_id","uptime_seconds","fps","frame_ms_avg",
+    "kernel_id","kernel_name","variant_id","kernel_ms_avg",
+    "palette_ms_avg","audio_ms_avg","overlay_ms_avg",
+    "aux_prepare_send_ms_avg","unaccounted_ms_avg",
+    "free_heap_bytes","websocket_clients","aux_projection_active",
+    "aux_render_fps","wifi_rssi_dbm","restart_count",
+}
+REQUIRED_SAMPLE_FOUNDATION={
     "release_id","uptime_seconds","fps","frame_ms_p50","frame_ms_p95",
     "frame_ms_p99","frame_ms_max","kernel_id","kernel_name","variant_id",
     "free_heap_bytes","minimum_free_heap_bytes","largest_free_block_bytes",
@@ -108,8 +116,9 @@ def validate_inventory(inv):
     if ids!=list(range(220,248)):
         raise ValueError("inventory effect IDs must be exact contiguous 220..247")
 
-def validate_sample(sample):
-    missing=sorted(k for k in REQUIRED_SAMPLE if sample.get(k) is None)
+def validate_sample(sample, contract):
+    required=REQUIRED_SAMPLE_DIAGNOSTIC if contract=="diagnostic" else REQUIRED_SAMPLE_FOUNDATION
+    missing=sorted(k for k in required if sample.get(k) is None)
     if missing: raise ValueError("telemetry missing: "+", ".join(missing))
 
 def verify_selected(sample, entry):
@@ -124,7 +133,7 @@ def verify_selected(sample, entry):
             f"selected kernel id mismatch for {entry['kernel_name']}: expected {expected}, got {sample.get('kernel_id')}"
         )
 
-def collect_kernel(adapter, entry, outdir, timeout):
+def collect_kernel(adapter, entry, outdir, timeout, contract):
     vals={
         "effect_id":entry["effect_id"],
         "kernel_name":entry["kernel_name"],
@@ -135,7 +144,7 @@ def collect_kernel(adapter, entry, outdir, timeout):
     time.sleep(float(adapter["settle_seconds"]))
 
     first=run_json(subst(adapter["telemetry_argv"],vals),timeout=timeout)
-    validate_sample(first)
+    validate_sample(first,contract)
     verify_selected(first,entry)
 
     lines=[first]
@@ -144,7 +153,7 @@ def collect_kernel(adapter, entry, outdir, timeout):
     while time.monotonic()<deadline:
         time.sleep(interval)
         sample=run_json(subst(adapter["telemetry_argv"],vals),timeout=timeout)
-        validate_sample(sample)
+        validate_sample(sample,contract)
         verify_selected(sample,entry)
         lines.append(sample)
 
@@ -153,7 +162,7 @@ def collect_kernel(adapter, entry, outdir, timeout):
     jsonl.write_text("\n".join(json.dumps(x,separators=(",",":")) for x in lines)+"\n")
     profile=outdir/(slug+".profile.json")
     p=subprocess.run(
-        [sys.executable,str(QUAL),"--input",str(jsonl),"--profile-only","--output",str(profile)],
+        [sys.executable,str(QUAL),"--input",str(jsonl),"--contract",contract,"--profile-only","--output",str(profile)],
         text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE
     )
     if p.returncode:
@@ -166,12 +175,15 @@ def main():
     ap.add_argument("--inventory",default=str(ROOT/"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"))
     ap.add_argument("--outdir",required=True)
     ap.add_argument("--policy")
+    ap.add_argument("--contract",choices=["diagnostic","foundation"],default="diagnostic")
     ap.add_argument("--qualify",action="store_true")
     ap.add_argument("--dry-run",action="store_true")
     args=ap.parse_args()
 
     adapter=load(args.adapter); validate_adapter(adapter)
     inventory=load(args.inventory); validate_inventory(inventory)
+    if args.qualify and args.contract!="foundation":
+        raise SystemExit("--qualify requires --contract foundation")
     outdir=pathlib.Path(args.outdir).resolve(); outdir.mkdir(parents=True,exist_ok=True)
     timeout=int(adapter.get("timeout_seconds",10))
 
@@ -193,7 +205,7 @@ def main():
     run_error=None; restore_error=None
     try:
         for entry in inventory["entries"]:
-            profile,release_id,variant_id=collect_kernel(adapter,entry,outdir,timeout)
+            profile,release_id,variant_id=collect_kernel(adapter,entry,outdir,timeout,args.contract)
             release_ids.add(str(release_id))
             profiles.append({
               "kernel_id":entry["runtime_kernel_index_expected"],
@@ -230,6 +242,7 @@ def main():
     manifest={
       "schema":"hbnf-kernel-sweep-input-v1",
       "release_id":next(iter(release_ids)),
+      "contract":args.contract,
       "expected_kernel_count":28,
       "kernels":profiles
     }
