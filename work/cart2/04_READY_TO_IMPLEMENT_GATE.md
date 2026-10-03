@@ -38,6 +38,8 @@ Implementation may start only when every REQUIRED item is PASS.
 - [ ] VibeSelection frozen.
 - [ ] GameState/GameDirective frozen.
 - [ ] HealthState frozen.
+- [ ] ControllerInput frozen.
+- [ ] GuestCapabilityState frozen.
 
 ## Quality / regression
 - [ ] Frame-time/FPS baseline recorded.
@@ -50,6 +52,8 @@ Implementation may start only when every REQUIRED item is PASS.
 - [ ] Visual-differentiation acceptance method defined.
 - [ ] Text-quality/readability acceptance method defined.
 - [ ] Game stability/input acceptance method defined.
+- [ ] Guest per-capability fail-closed acceptance method defined.
+- [ ] Guest service-worker/PWA isolation and cache-freshness acceptance method defined.
 
 ## Execution
 - [ ] Worktree/branch per lane defined.
