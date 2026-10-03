@@ -22,14 +22,16 @@
     "cleanRoomBaselineRebuildProven": false,
     "sourceDependenciesFullyMaterializedLocal": false,
     "dependencyClosureVerified": false,
-    "generatedInputsPolicyVerified": false
+    "generatedInputsPolicyVerified": false,
+    "guestShareabilityWhiteScreenDiagnosedOrSuperseded": false
   },
   "contractGates": {
     "exactDeliverablesApproved": false,
     "explicitExclusionsApproved": false,
     "noDowngradeClauseApproved": false,
     "interfacesFrozen": false,
-    "acceptanceMatrixApproved": false
+    "acceptanceMatrixApproved": false,
+    "guestPlatformScopeApproved": false
   },
   "executionGates": {
     "laneWorktreesPrepared": false,
@@ -48,7 +50,10 @@
     "irlInteractiveModesCandidateSpecPrepared": true,
     "digitalArcadeCandidateSpecPrepared": true,
     "textMomentCompositorCandidateSpecPrepared": true,
-    "vibeGuestLanguageCandidateSpecPrepared": true
+    "vibeGuestLanguageCandidateSpecPrepared": true,
+    "guestPlatformProductContractPrepared": true,
+    "guestPwaAcceptanceSmokeTestPrepared": true,
+    "guestPlatformMachineReadableGatesPrepared": true
   },
   "postmortemGates": {
     "pr46MustActionsImplemented": false,
