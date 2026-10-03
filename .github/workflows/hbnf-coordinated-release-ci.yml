@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - hbnf-coordinated-release-20261001
-      - hbnf-cart2-ready-to-implement-staging-20261001
     paths:
       - 'hbnf-final-controller/**'
       - 'hbnf-wow-bundle/backend/**'
