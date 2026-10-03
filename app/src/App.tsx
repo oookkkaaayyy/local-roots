@@ -84,7 +84,7 @@ async function duPrepareJob(job:DuJobSummary,auth:DuAdminAuth):Promise<DuPrepare
       const blob=await response.blob();
       const fallback=`${job.job_number}-source-${String(index+1).padStart(2,'0')}.jpg`;
       const rawName=(photo.original_filename||fallback).replace(/[^A-Za-z0-9._ -]+/g,'_');
-      return new File([blob],`${String(index+1).padStart(2,'0')}-${rawName}`,{type:blob.type||'image/jpeg'});
+      return new File([blob],`${job.job_number}-${String(index+1).padStart(2,'0')}-${rawName}`,{type:blob.type||'image/jpeg'});
     }));
     const prepared={jobId:job.id,jobNumber:job.job_number,prompt:duCleanRoomPrompt(detail),files};
     duPreparedJobs.set(job.job_number,prepared);
@@ -136,22 +136,23 @@ async function duHandleStart(card:HTMLElement,jobNumber:string){
     return;
   }
   try{
-    if(navigator.share&&navigator.canShare?.({files:prepared.files})){
-      await navigator.share({title:`${prepared.jobNumber} · D&U clean-room stencil`,text:prepared.prompt,files:prepared.files});
-      const auth=await duAdminAuth();
-      await callFunction('du-admin',{action:'set_workflow',job_id:prepared.jobId,workflow_status:'stage_a_started',clear_handoff_error:true},duFunctionAuth(auth));
-      duSetCardStatus(card,'Shared as native image attachments. In ChatGPT, send this into a NEW chat.');
-      return;
-    }
-    try{await navigator.clipboard.writeText(prepared.prompt);}catch{}
+    let promptCopied=false;
+    try{await navigator.clipboard.writeText(prepared.prompt);promptCopied=true;}catch{}
     duDownloadFiles(prepared.files);
-    duSetCardStatus(card,'Native image sharing is unavailable here. Source images were downloaded and the clean-room prompt was copied when permitted. Open a NEW ChatGPT chat, attach only those images, paste, and send.');
+
+    const auth=await duAdminAuth();
+    await callFunction('du-admin',{action:'set_workflow',job_id:prepared.jobId,workflow_status:'stage_a_started',clear_handoff_error:true},duFunctionAuth(auth));
+
+    duSetCardStatus(card,promptCopied
+      ?`Downloaded ${prepared.files.length} isolated source image${prepared.files.length===1?'':'s'} and copied the clean-room prompt. Opening ChatGPT now. In the NEW chat, tap + → Add photos & files → Files, select the newest ${prepared.jobNumber}- files, paste if the prompt is not already filled, then Send.`
+      :`Downloaded ${prepared.files.length} isolated source image${prepared.files.length===1?'':'s'}. Opening ChatGPT now. In the NEW chat, tap + → Add photos & files → Files, select the newest ${prepared.jobNumber}- files, then use Copy prompt only and Send.`);
+
+    const deepLink=`com.openai.chat://chatgpt.com/?prompt=${encodeURIComponent(prepared.prompt)}`;
+    window.setTimeout(()=>{window.location.href=deepLink;},250);
   }catch(error){
-    if(error instanceof DOMException&&error.name==='AbortError'){duSetCardStatus(card,'Share canceled; nothing changed.');return;}
-    duSetCardStatus(card,error instanceof Error?error.message:'Clean-room share failed.',true);
+    duSetCardStatus(card,error instanceof Error?error.message:'Clean-room launch failed.',true);
   }
 }
-
 async function duHandleCopyPrompt(card:HTMLElement,jobNumber:string){
   const prepared=duPreparedJobs.get(jobNumber);
   if(!prepared){duSetCardStatus(card,'Clean-room files are still preparing. Tap again in a moment.');return;}
