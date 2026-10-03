@@ -1,0 +1,43 @@
+{
+  "schema": "hbnf-length-limit-backup-receipt-v1",
+  "created": "2026-10-03",
+  "status": "COMPLETE",
+  "chat_state": "SITE_LENGTH_LIMIT_REPORTED_BY_USER",
+  "authoritative_handoff": {
+    "drive_document_id": "1ZXj2LcMp2S_wMCMXgf-uy1EFaDJ70oZwDqaBsiIUjDI",
+    "title": "HANDOFF — HBNF Cart 2.0 / Release07 Foundation — 2026-10-03 — LENGTH LIMIT MIGRATION",
+    "github_path": "work/cart2/23_LENGTH_LIMIT_MIGRATION_HANDOFF_20261003.md",
+    "github_creation_commit": "b446665137c95fe4ed3a3fbcd6fda907e185cb01"
+  },
+  "routing_updates": [
+    {
+      "name": "AKS Master Router",
+      "drive_id": "1CvCKk04BDMUEbxtqatUP_bU7KbFYYJo1Hu32bh_zgzM"
+    },
+    {
+      "name": "HBNF Release Engineering No-Rediscovery",
+      "drive_id": "1bw_VUNt2mEZ4JdKuRsQq7ZS1Bc4KeC8kMVABVK2OdgE"
+    },
+    {
+      "name": "HBNF Cart 2.0 Canonical",
+      "drive_id": "105J0xKbNFD26NOGChN9MssOVjbJ9Q2p6LYhz2Ky7EgM"
+    }
+  ],
+  "delta_inbox": {
+    "spreadsheet_id": "1tJIcKRfWFdHVYVo4G6mgySB46p6xwsseGON3JdnEnzY",
+    "sheet": "Delta Inbox",
+    "row": 1194,
+    "status": "PENDING"
+  },
+  "staging": {
+    "branch": "hbnf-cart2-ready-to-implement-staging-20261001",
+    "no_live_mutation": true,
+    "no_phase2_feature_implementation": true,
+    "current_foundation_state": "FOUNDATION_UNQUALIFIED — PERFORMANCE_OPEN"
+  },
+  "next_source_connected_execution": "work/cart2/20_FOUNDATION_PERFORMANCE_SWEEP_EXECUTION.md",
+  "subsequent_templates": [
+    "work/cart2/21_CLASS_LEVEL_PERFORMANCE_FIX_EXECUTION_TEMPLATE.md",
+    "work/cart2/22_FOUNDATION_QUALIFICATION_EXECUTION_TEMPLATE.md"
+  ]
+}
