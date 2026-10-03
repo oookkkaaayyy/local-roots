@@ -16,6 +16,14 @@ on:
       - 'evidence/live-production-20261001/**'
       - 'staging/coordinated-backend/**'
       - 'tools/hbnf-*.py'
+      - 'AGENTS.md'
+      - 'config/HBNF_CONTROL_MODEL.json'
+      - 'config/HBNF_CONTROL_STATE.json'
+      - 'scripts/hbnf_control.py'
+      - 'scripts/hbnf_guarded_run.py'
+      - 'scripts/hbnf_architecture_fitness.py'
+      - 'tests/hbnf_control.py'
+      - 'tests/hbnf_guarded_run.py'
       - '.github/workflows/hbnf-coordinated-release-ci.yml'
   pull_request:
     branches:
@@ -32,6 +40,14 @@ on:
       - 'evidence/live-production-20261001/**'
       - 'hbnf-cart-core/domain/palette-projection.mjs'
       - 'tools/hbnf-*.py'
+      - 'AGENTS.md'
+      - 'config/HBNF_CONTROL_MODEL.json'
+      - 'config/HBNF_CONTROL_STATE.json'
+      - 'scripts/hbnf_control.py'
+      - 'scripts/hbnf_guarded_run.py'
+      - 'scripts/hbnf_architecture_fitness.py'
+      - 'tests/hbnf_control.py'
+      - 'tests/hbnf_guarded_run.py'
       - '.github/workflows/hbnf-coordinated-release-ci.yml'
   workflow_dispatch:
 
@@ -49,6 +65,13 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
+
+      - name: HBNF architecture fitness
+        run: |
+          set -euo pipefail
+          python3 tests/hbnf_control.py
+          python3 tests/hbnf_guarded_run.py
+          python3 scripts/hbnf_architecture_fitness.py
 
       - name: JavaScript syntax
         run: |
