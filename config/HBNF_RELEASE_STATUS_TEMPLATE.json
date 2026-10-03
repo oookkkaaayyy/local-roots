@@ -30,7 +30,13 @@
     "generated_inputs_policy_verified": false,
     "source_snapshot_remains_immutable": false,
     "install_health_passed": false,
-    "physical_feature_acceptance_complete": false
+    "physical_feature_acceptance_complete": false,
+    "runtime_telemetry_contract_verified": false,
+    "qualified_runtime_baseline_frozen": false,
+    "automated_runtime_smoke_passed": false,
+    "unattended_runtime_soak_passed": false,
+    "runtime_regression_vs_baseline_passed": false,
+    "lightweight_flight_recorder_ready": false
   },
   "hardware_required_now": false,
   "live_mutation_authorized": false,
