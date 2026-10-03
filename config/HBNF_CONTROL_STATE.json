@@ -4,8 +4,17 @@
   "lifecycle_state": "DIAGNOSTIC_ACTIVE",
   "completed_receipts": [],
   "current_task": {
-    "name": "FPS diagnostic/instrumentation repair cycle",
-    "status": "ACTIVE_EXTERNAL_CODEX"
+    "name": "Release07 foundation qualification preflight",
+    "status": "REPAIR_CLOSEOUT_INGESTED__T1_BLOCKED",
+    "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
+    "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
+    "blockers": [
+      "exact artifact source commit unverified",
+      "root cause not yet proven across retained renderer set",
+      "instrumentation observer effect uncharacterized",
+      "all-28-kernel sweep not executed"
+    ]
   },
   "live_mutation_authorized": false,
   "phase2_implementation_authorized": false
