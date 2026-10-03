@@ -1,0 +1,16 @@
+{
+  "schema": "hbnf-kernel-sweep-input-v1",
+  "release_id": null,
+  "source_commit": null,
+  "artifact_sha256": null,
+  "expected_kernel_count": 28,
+  "kernels": [
+    {
+      "kernel_id": null,
+      "kernel_name": null,
+      "variant_id": null,
+      "profile_path": null
+    }
+  ],
+  "note": "Populate from the corrected candidate's actual retained-kernel inventory. Provide exactly 28 unique entries. Do not infer names/IDs from older builds."
+}
