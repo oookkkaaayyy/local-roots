@@ -1,0 +1,42 @@
+{
+  "schema": "hbnf-cart2-continuation-checkpoint-v1",
+  "generated": "2026-10-03",
+  "migration_base_head": "9ddd443d5a97f01182c9f8a446a882c021e3c2f0",
+  "lifecycle": "DIAGNOSTIC_ACTIVE",
+  "foundation": "FOUNDATION_UNQUALIFIED__PERFORMANCE_OPEN",
+  "installed_release07": {
+    "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
+    "artifact_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "install_health": "PASS",
+    "performance_acceptance": "FAIL",
+    "exact_source_identity": "UNVERIFIED"
+  },
+  "prepared_tooling_hardening": [
+    "live sweep now requires expected_release_id and runs canonical read-only telemetry identity preflight before first select/mutation",
+    "sweep aborts on release identity change, restart_count change, or uptime regression",
+    "restore is followed by a fresh snapshot and exact pre/post visual-state equality check",
+    "RESTORE_RECEIPT.json records verified restore state",
+    "foundation sweep-report fixture includes required scheduler timing fields",
+    "execution packet 20 now explicitly requires pre-mutation release verification and post-restore equality proof"
+  ],
+  "source_independent_product_progress": [
+    "added work/cart2/24_MISSION_CONTROL_CANDIDATE_SPEC.md",
+    "tightened IRL low-input mode contract and replay cases",
+    "tightened digital arcade input abstraction, deterministic invariants, stale-input and restore tests",
+    "tightened premium text paging/readability corpus",
+    "tightened Vibe pairwise, palette-normalized, cross-track and audio-causality challenger tests",
+    "aligned acceptance corpus and scope-lock packet with current candidates and source-dependent decisions"
+  ],
+  "execution_validation": {
+    "source_connected_mac_available": false,
+    "repository_checkout_available_in_current_runtime": false,
+    "staging_branch_ci_triggered": false,
+    "tests_executed_in_this_continuation": false,
+    "static_review_completed": true,
+    "note": "Do not claim AGENTS.md tests passed. Run all seven AGENTS.md tests in the next source-connected environment before live sweep mutation."
+  },
+  "next_source_connected_execution": "work/cart2/20_FOUNDATION_PERFORMANCE_SWEEP_EXECUTION.md",
+  "live_mutation_performed": false,
+  "phase2_feature_implementation_started": false,
+  "scope_locked": false
+}
