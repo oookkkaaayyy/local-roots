@@ -74,3 +74,19 @@ The approved scope contract must state:
 - INTEGRATION ORDER
 
 No other status is allowed.
+
+
+## Detailed candidate specifications now prepared
+Before presenting the final approval packet, read:
+- 13_IRL_INTERACTIVE_MODES_CANDIDATE_SPEC.md
+- 14_DIGITAL_ARCADE_CANDIDATE_SPEC.md
+- 15_TEXT_MOMENT_COMPOSITOR_CANDIDATE_SPEC.md
+- 16_VIBE_GUEST_LANGUAGE_CANDIDATE_SPEC.md
+
+Important refinement:
+- scorekeeping-heavy IRL modes are rejected as current candidates because they add user work;
+- strongest IRL candidates are Shuffle Call, Pressure Clock, and Sequence Run, all designed for zero or near-zero ongoing input;
+- Rapid Fire remains challenger-only, not recommended for commitment yet;
+- digital arcade candidate pack is seven shared-runtime games pending accepted-source capacity audit;
+- text strategy is Vibe-aware compositing using bitmap/mask rendering first, without making a FastLED upgrade a prerequisite;
+- Vibe names/subtitles are guest-intuitive and must pass unlabeled differentiation tests.
