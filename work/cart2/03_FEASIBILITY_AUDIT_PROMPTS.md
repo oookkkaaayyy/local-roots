@@ -70,9 +70,12 @@ Must:
 - evaluate CPU/RAM/render/input needs;
 - separate game logic from display/runtime;
 - assess phone/iPad control latency and old-iOS constraints;
+- validate normalized ControllerInput boundaries and stale/duplicate/disconnect behavior;
+- if physical gamepad support is proposed, test the actual target controller/browser mapping and playability rather than assuming standard mappings;
 - identify reusable open-source mechanics but flag licensing/assets;
 - shortlist only games that are stable and worthwhile;
-- reject IRL modes that create more bookkeeping than value.
+- reject IRL modes that create more bookkeeping than value;
+- preserve the current zero-score direction for Shuffle Call / Pressure Clock / Sequence Run unless evidence justifies reopening it.
 
 Output:
 work/cart2/audits/GAME_INTERACTION_AUDIT.md
@@ -86,6 +89,15 @@ Challenge the combined proposed scope for hidden coupling, duplicated plumbing, 
 
 Output:
 work/cart2/audits/INTEGRATION_CHALLENGER.md
+
+Must explicitly challenge:
+- duplicate/shared realtime plumbing across lanes;
+- guest session/capability enforcement and fail-closed stale state;
+- guest service-worker scope isolation from owner/admin routes;
+- stale authority/session caching;
+- game/controller disconnect and input replay;
+- exact normal-state restoration after games/moments;
+- whether candidate scope fits measured foundation capacity without reducing visual/audio quality.
 
 Must end with:
 - GO / BLOCKED for scope-lock readiness;
