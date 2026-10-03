@@ -1,3 +1,19 @@
+# OPERATIONAL AUTHORITY — READ THIS FIRST
+
+For release/Cart 2.0 promotion state, DO NOT infer status by combining this document with other prose/gate files.
+
+The only operational promotion authority is:
+- `config/HBNF_CONTROL_MODEL.json`
+- `config/HBNF_CONTROL_STATE.json`
+- `scripts/hbnf_control.py`
+
+Required startup command in any future coordinating/Codex task:
+`python3 scripts/hbnf_control.py status`
+
+All other AKS docs, postmortems, runbooks, gate JSON, acceptance matrices, and solved-problem records are evidence/reference/domain inputs. They may not independently advance lifecycle state.
+
+If a new instruction appears to require "another rule", first classify it as implementation detail, evidence for an existing transition, or a genuinely new transition/invariant. Do not create another parallel control plane.
+
 # HBNF Cart 2.0 — READ FIRST
 
 ## Canonical AKS authority
