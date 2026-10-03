@@ -5,7 +5,7 @@ import { EventsPage } from './pages/EventsPage';
 import { EventDetailPage } from './pages/EventDetailPage';
 import { HbnfPage } from './pages/HbnfPage';
 import { DyedUnattachedPage } from './pages/DyedUnattachedPage';
-import { DuAdminPage } from './pages/DuAdminPage';
+import { DuAdminPage } from './pages/DuAdminPageCleanRoom';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { AdminPage } from './pages/AdminPage';
 import { ReadinessPage } from './pages/ReadinessPage';
