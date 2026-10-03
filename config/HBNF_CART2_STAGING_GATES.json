@@ -53,7 +53,8 @@
     "vibeGuestLanguageCandidateSpecPrepared": true,
     "guestPlatformProductContractPrepared": true,
     "guestPwaAcceptanceSmokeTestPrepared": true,
-    "guestPlatformMachineReadableGatesPrepared": true
+    "guestPlatformMachineReadableGatesPrepared": true,
+    "runtimeSentinelFoundationQualificationPrepared": true
   },
   "postmortemGates": {
     "pr46MustActionsImplemented": false,
@@ -66,5 +67,15 @@
     "solvedProblemsPromoted": false,
     "lowFpsRelease04DefectResolved": false,
     "lowFpsRegressionCovered": false
+  },
+  "runtimeQualificationGates": {
+    "telemetryContractImplemented": true,
+    "unattendedQualificationToolImplemented": true,
+    "syntheticRegressionTestsPrepared": true,
+    "fpsFixedTelemetryMapped": false,
+    "qualifiedBaselineProfileFrozen": false,
+    "comparisonPolicyFrozen": false,
+    "foundationSoakPassed": false,
+    "fieldFlightRecorderIntegrated": false
   }
 }
