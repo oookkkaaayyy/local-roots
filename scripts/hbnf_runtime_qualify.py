@@ -10,7 +10,7 @@ import argparse, json, math, pathlib, statistics, sys, time, urllib.request
 
 REQUIRED = [
     "release_id","uptime_seconds","fps","frame_ms_p50","frame_ms_p95",
-    "frame_ms_p99","frame_ms_max","kernel_id","variant_id",
+    "frame_ms_p99","frame_ms_max","kernel_id","kernel_name","variant_id",
     "free_heap_bytes","minimum_free_heap_bytes","largest_free_block_bytes",
     "websocket_clients","aux_projection_active","aux_projection_age_ms","aux_render_fps",
     "wifi_rssi_dbm","restart_count",
@@ -102,7 +102,7 @@ def summarize(samples):
       "collection_errors":len(samples)-len(good),
       "validation_errors":errors,
       "release_id":next((s.get("release_id") for s in good if s.get("release_id") is not None),None),
-      "kernel_variants":sorted({f"{s.get('kernel_id')}::{s.get('variant_id')}" for s in good}),
+      "kernel_variants":sorted({f"{s.get('kernel_id')}::{s.get('kernel_name')}::{s.get('variant_id')}" for s in good}),
       "fps":{"median":pct(fps,.5),"p05":pct(fps,.05),"min":min(fps) if fps else None},
       "frame_ms":{"p95_median":pct(p95,.5),"p99_median":pct(p99,.5),"max":max(mx) if mx else None},
       "heap":{
