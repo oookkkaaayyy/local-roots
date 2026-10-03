@@ -1,60 +1,65 @@
 # HBNF Cart 2.0 — Next Codex Handoff
 
-## When current PR #46/source-reconciliation work reaches a clean checkpoint
-Use this prompt in a NEW Codex thread/worktree. It is read-only.
+STATUS: CURRENT SOURCE-CONNECTED HANDOFF POINTER.
 
----
-Continue HBNF Cart 2.0 readiness work in repo oookkkaaayyy/local-roots.
+Do not use the older PR #46/release04 audit sequence as the next execution path.
 
-FIRST:
-1. Read work/cart2/00_READ_FIRST.md.
-2. Read work/cart2/03_FEASIBILITY_AUDIT_PROMPTS.md.
-3. Read work/cart2/04_READY_TO_IMPLEMENT_GATE.md.
-4. Read config/HBNF_CART2_STAGING_GATES.json.
-5. Read work/release-engineering/00_READ_FIRST.md.
-6. Read work/release-engineering/MATERIALIZATION_GENERATED_INPUTS_GATE.md.
-7. Treat a completed golden baseline, local materialization, dependency closure, generated-input policy, and clean-room rebuild/equivalence as prerequisites rather than optional cleanup.
-5. Identify the final accepted coordinated-release/source baseline from the current project authority before treating any source tree as canonical.
+## Current state
+- lifecycle: DIAGNOSTIC_ACTIVE
+- installed firmware: hbnf-matrix-coordinated-v1-20261002-07
+- release07 role: DIAGNOSTIC_BASE / PERFORMANCE_REJECTED
+- foundation: FOUNDATION_UNQUALIFIED — PERFORMANCE_OPEN
+- exact release07 source identity: UNVERIFIED
+- Phase 2 firmware-dependent implementation: NOT AUTHORIZED
+- source-independent planning/acceptance refinement: permitted
 
-GOAL:
-Make the Cart 2.0 planning package fully ready for user scope lock and immediate implementation. Complete every safe READ-ONLY audit in 03_FEASIBILITY_AUDIT_PROMPTS.md that the available evidence permits. Do not stop merely because one audit completes; continue until all audits are complete or a blocker genuinely requires missing evidence/hardware/user scope approval.
+## Required read-first
+1. root AGENTS.md
+2. work/cart2/23_LENGTH_LIMIT_MIGRATION_HANDOFF_20261003.md
+3. config/HBNF_CONTROL_MODEL.json
+4. config/HBNF_CONTROL_STATE.json
+5. evidence/hbnf-phase2-migration-20261003/CONTINUATION_COORDINATOR_CHECKPOINT.json
+6. work/cart2/20_FOUNDATION_PERFORMANCE_SWEEP_EXECUTION.md
+7. work/cart2/21_CLASS_LEVEL_PERFORMANCE_FIX_EXECUTION_TEMPLATE.md
+8. work/cart2/22_FOUNDATION_QUALIFICATION_EXECUTION_TEMPLATE.md
 
-BOUNDARIES:
-- no source implementation;
-- no deployment;
-- no firmware flash;
-- no router/network/hardware mutation;
-- no merge;
-- no GitHub Actions;
-- no scope reduction;
-- no guessed source lineage;
-- no recommendation without challenger analysis and current authoritative/expert research.
+## Exact next source-connected execution
+Run work/cart2/20_FOUNDATION_PERFORMANCE_SWEEP_EXECUTION.md.
 
-OUTPUTS:
-Populate work/cart2/audits/ with the named audit reports. Update config/HBNF_CART2_STAGING_GATES.json only for gates proven by evidence. End with one concise status:
-READY FOR SCOPE LOCK / BLOCKED
-and list only genuine blockers.
----
+That task must:
+- run every applicable AGENTS.md static/unit/architecture check locally;
+- prove exact release07 source/build identity;
+- discover the ACTUAL release07 diagnostic endpoint and safe snapshot/select/restore path from source/runtime;
+- construct the tiny argv adapter;
+- dry-run it;
+- verify expected release07 through read-only telemetry before first visual mutation;
+- execute exactly one complete 28-kernel DIAGNOSTIC sweep;
+- rank/group pathological kernels by shared primitive/class;
+- verify exact pre/post visual-state restoration;
+- stop before firmware edits.
 
-## After user explicitly approves the scope contract
-Use this prompt in the implementation coordinator thread.
+Do not use GitHub Actions merely to substitute for the required source-connected execution unless the user separately authorizes that expenditure.
 
----
-Read the approved HBNF Cart 2.0 scope contract, 00_READ_FIRST.md, 02_PARALLEL_EXECUTION_PLAN.md, 04_READY_TO_IMPLEMENT_GATE.md, 05_ACCEPTANCE_MATRIX.md, all completed audits, and the final accepted coordinated-release baseline.
+## After packet 20
+Only if complete sweep evidence exists:
+- instantiate packet 21;
+- fix measured performance classes/shared primitives, not serial kernels;
+- build/package one corrected forward candidate;
+- do not install without the required live authorization.
 
-Do not alter the approved scope. Do not silently reduce, substitute, defer, or simplify any committed requirement.
+## After corrected candidate install + basic health
+Instantiate packet 22.
 
-Before code changes:
-1. prove READY_TO_IMPLEMENT gates;
-2. create isolated worktrees/branches for each approved independent lane;
-3. freeze the shared interfaces;
-4. assign file ownership to prevent contention;
-5. define lane-local tests;
-6. confirm integration/rollback order.
+Only an exact artifact passing packet 22 becomes:
+PHASE 2 FOUNDATION — QUALIFIED.
 
-Then implement lanes in parallel where independent. Keep the realtime visual/audio path local. Avoid new architecture unless the approved scope/evidence explicitly requires it. Prefer reuse of proven WLED/FastLED/ANIMartRIX/project primitives.
+## After foundation qualification
+Use:
+- work/cart2/25_SCOPE_LOCK_DECISION_READY_DRAFT.md
+- completed source/capacity/visual/text/game audits
+- current acceptance corpus
+to present only genuine user product decisions for explicit scope lock.
 
-A lane is complete only when its own tests and the shared acceptance criteria pass. If any committed requirement is blocked, stop that requirement and report the blocker; do not downgrade it.
+Then freeze the approved interfaces and begin parallel implementation.
 
-Do not deploy/flash until the integrated candidate has passed all non-hardware gates and the user explicitly authorizes the physical rollout.
----
+No prose handoff, successful build, successful OTA, or newest branch HEAD may bypass this sequence.
