@@ -28,6 +28,16 @@ Consumers: Matrix renderer, iPad/guest UI, sound cues.
 Producer: platform/reliability
 Consumer: Mission Control/service UI.
 
+### ControllerInput
+Producer: iPad/guest/gamepad adapter
+Consumer: game runtime
+Contains semantic actions (UP/DOWN/LEFT/RIGHT/PRIMARY/SECONDARY/PAUSE/EXIT), controller/session identity, monotonic sequence, and stale-input protection. Game logic does not consume browser/gamepad-specific button numbers.
+
+### GuestCapabilityState
+Producer: guest-session authority / Mission Control
+Consumers: guest UI, games, text/moments as applicable
+Default closed; short-lived; revocable; capability-scoped; unknown/stale authority fails closed.
+
 ## Parallel lanes
 
 ### Lane A — Visual + Audio
@@ -60,7 +70,7 @@ May not change:
 Owns:
 - directive-game state machines;
 - arcade runtime;
-- controls abstraction;
+- semantic ControllerInput consumption;
 - sound cues;
 - game-specific rendering adapters.
 
@@ -73,6 +83,8 @@ Owns:
 - Mission Control experience;
 - Vibe selection;
 - guest join/permission UI;
+- ControllerInput mapping/adapters;
+- GuestCapabilityState presentation/flows;
 - game controllers/views;
 - service-status presentation.
 
