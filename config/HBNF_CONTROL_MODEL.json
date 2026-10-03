@@ -9,7 +9,8 @@
     "Receipts contain direct check results only; receipts may not depend on or cite other receipts, policy documents, runbooks, or postmortems.",
     "No recursive evaluation, rule chaining, document precedence, or cross-stage boolean graph.",
     "Unknown or missing checks fail closed.",
-    "Human approvals are explicit fields on the transition receipt."
+    "Human approvals are explicit fields on the transition receipt.",
+    "Exact source identity may be a Git commit or a content-addressed source tree/archive; Git metadata is not mandatory if stronger content identity is proven."
   ],
   "states": [
     "DIAGNOSTIC_ACTIVE",
@@ -113,7 +114,8 @@
     ],
     "subject_required": [
       "release_id",
-      "source_commit",
+      "source_identity_type",
+      "source_identity",
       "artifact_sha256"
     ],
     "outcome_required": "PASS",
@@ -125,6 +127,11 @@
       "postmortem",
       "runbook",
       "aks"
+    ],
+    "source_identity_types": [
+      "git_commit",
+      "source_tree_sha256",
+      "source_archive_sha256"
     ]
   }
 }
