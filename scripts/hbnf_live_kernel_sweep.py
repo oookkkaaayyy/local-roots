@@ -36,6 +36,7 @@ REQUIRED_ADAPTER={
     "settle_seconds",
     "sample_seconds",
     "sample_interval_seconds",
+    "expected_release_id",
 }
 REQUIRED_SAMPLE_DIAGNOSTIC={
     "release_id","uptime_seconds","fps","frame_ms_avg",
@@ -95,6 +96,8 @@ def validate_adapter(adapter):
     if extra: raise ValueError("adapter unknown fields: "+", ".join(extra))
     if adapter.get("schema")!="hbnf-live-sweep-adapter-v1":
         raise ValueError("adapter schema mismatch")
+    if not isinstance(adapter.get("expected_release_id"),str) or not adapter["expected_release_id"].strip():
+        raise ValueError("expected_release_id must be a nonempty string")
     for k in ["snapshot_argv","select_argv","telemetry_argv","restore_argv"]:
         validate_argv(k,adapter[k])
     if "{effect_id}" not in " ".join(adapter["select_argv"]):
@@ -219,24 +222,32 @@ def main():
           "kernel_count":len(inventory["entries"]),
           "first":inventory["entries"][0],
           "last":inventory["entries"][-1],
-          "adapter_schema":adapter["schema"]
+          "adapter_schema":adapter["schema"],
+          "expected_release_id":adapter["expected_release_id"]
         },indent=2))
         return 0
+
+    # Read-only identity/continuity preflight MUST pass before the first select/mutation.
+    preflight=run_json(adapter["telemetry_argv"],timeout=timeout)
+    validate_sample(preflight,args.contract)
+    expected_release_id,expected_restart_count,_=validate_continuity(
+        preflight,adapter["expected_release_id"],None,None
+    )
+    (outdir/"PRE_SWEEP_TELEMETRY.json").write_text(
+        json.dumps(preflight,indent=2,sort_keys=True)+"\n"
+    )
 
     snapshot=run_json(adapter["snapshot_argv"],timeout=timeout)
     snapfile=outdir/"PRE_SWEEP_STATE.json"
     snapfile.write_text(json.dumps(snapshot,indent=2,sort_keys=True)+"\n")
 
     profiles=[]; release_ids=set()
-    expected_release_id=None; expected_restart_count=None
     run_error=None; restore_error=None; post_restore_state=None
     try:
         for entry in inventory["entries"]:
             profile,release_id,variant_id,restart_count=collect_kernel(
                 adapter,entry,outdir,timeout,args.contract,expected_release_id,expected_restart_count
             )
-            if expected_release_id is None: expected_release_id=release_id
-            if expected_restart_count is None: expected_restart_count=restart_count
             release_ids.add(str(release_id))
             profiles.append({
               "kernel_id":entry["runtime_kernel_index_expected"],
