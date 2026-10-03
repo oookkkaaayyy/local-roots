@@ -24,7 +24,9 @@
     "websocket_clients",
     "aux_projection_active",
     "aux_projection_age_ms",
-    "restart_count"
+    "restart_count",
+    "wifi_rssi_dbm",
+    "aux_render_fps"
   ],
   "optional_stage_metrics": [
     "kernel_ms_p95",
@@ -33,7 +35,17 @@
     "palette_ms_p95",
     "overlay_ms_p95",
     "aux_prepare_send_ms_p95",
-    "unaccounted_ms_p95"
+    "unaccounted_ms_p95",
+    "frame_ms_avg",
+    "kernel_ms_avg",
+    "palette_ms_avg",
+    "audio_ms_avg",
+    "scheduler_ms_avg",
+    "overlay_ms_avg",
+    "aux_prepare_send_ms_avg",
+    "unaccounted_ms_avg",
+    "frame_over_budget_count",
+    "frame_sample_count"
   ],
   "rules": [
     "Metrics must be available without serial console access.",
@@ -42,5 +54,13 @@
     "Frame-time percentiles are authoritative over average FPS for smoothness regressions.",
     "Heap health includes free heap, minimum free heap, and largest free block; free heap alone is insufficient.",
     "Install health and runtime qualification remain separate gates."
-  ]
+  ],
+  "all_kernel_sweep": {
+    "expected_kernel_count": 28,
+    "require_unique_kernel_identity": true,
+    "require_kernel_name": true,
+    "require_variant_identity": true,
+    "require_shared_stage_timings": true,
+    "require_ranked_report": true
+  }
 }
