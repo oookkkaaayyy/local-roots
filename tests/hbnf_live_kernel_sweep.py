@@ -24,15 +24,23 @@ assert inv["entries"][2]["kernel_name"]=="Parametric_Water"
 assert inv["entries"][3]["kernel_name"]=="RGB_Blobs5"
 
 sample={
- "release_id":"r7","uptime_seconds":10,"fps":35,
- "frame_ms_p50":28,"frame_ms_p95":31,"frame_ms_p99":35,"frame_ms_max":40,
+ "release_id":"r7","uptime_seconds":10,"fps":11.5,"frame_ms_avg":85.3,
  "kernel_id":2,"kernel_name":"Parametric_Water","variant_id":1,
- "free_heap_bytes":99000,"minimum_free_heap_bytes":98000,"largest_free_block_bytes":70000,
- "websocket_clients":0,"aux_projection_active":True,"aux_projection_age_ms":10,
- "aux_render_fps":35,"wifi_rssi_dbm":-40,"restart_count":0
+ "kernel_ms_avg":68.9,"palette_ms_avg":0.47,"audio_ms_avg":6.7,
+ "overlay_ms_avg":0.04,"aux_prepare_send_ms_avg":4.8,"unaccounted_ms_avg":3.0,
+ "free_heap_bytes":98700,"websocket_clients":0,"aux_projection_active":True,
+ "aux_render_fps":11.5,"wifi_rssi_dbm":-45,"restart_count":0
 }
-m.validate_sample(sample)
+m.validate_sample(sample,"diagnostic")
 m.verify_selected(sample,inv["entries"][2])
+
+foundation=dict(sample)
+foundation.update({
+ "frame_ms_p50":80,"frame_ms_p95":90,"frame_ms_p99":100,"frame_ms_max":120,
+ "minimum_free_heap_bytes":97000,"largest_free_block_bytes":70000,
+ "aux_projection_age_ms":10
+})
+m.validate_sample(foundation,"foundation")
 wrong=dict(sample); wrong["kernel_name"]="RGB_Blobs5"
 try: m.verify_selected(wrong,inv["entries"][2]); raise AssertionError("wrong kernel accepted")
 except RuntimeError: pass
