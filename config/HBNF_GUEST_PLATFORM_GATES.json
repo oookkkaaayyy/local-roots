@@ -1,11 +1,16 @@
 {
   "schema": "hbnf-guest-platform-gates-v1",
-  "status": "SOURCE_IMPLEMENTED_NOT_DEPLOYED",
+  "status": "SOURCE_IMPLEMENTED_NOT_DEPLOYED__CAPABILITY_AND_PWA_ISOLATION_BLOCKERS_OPEN",
   "currentFinding": {
     "existingHostedControllerIsCompleteGuestPlatform": false,
     "reportedCleanFriendShareWhiteScreen": true,
     "currentManifestReferencesMissingIconAsset": true,
-    "currentControllerPackageIncludesRequiredPwaIcons": false
+    "currentControllerPackageIncludesRequiredPwaIcons": false,
+    "capabilityUiFailOpenInStaging": true,
+    "savedOpenSessionCanRenderBeforeFreshAuthority": true,
+    "guestMutationProofUndefined": true,
+    "guestServiceWorkerScopeTooBroad": true,
+    "dynamicSessionAuthorityCacheExclusionMissing": true
   },
   "requiredBeforeRelease": {
     "separateGuestSurfaceImplemented": false,
@@ -21,7 +26,11 @@
     "ownerSurfaceIsolationPassed": false,
     "iosAddToHomeScreenPassed": false,
     "chromePwaInstallPassed": false,
-    "blankScreenFailureMatrixPassed": false
+    "blankScreenFailureMatrixPassed": false,
+    "perCapabilityFailClosedPassed": false,
+    "sessionMutationProofPassed": false,
+    "guestServiceWorkerIsolationPassed": false,
+    "dynamicAuthorityCacheFreshnessPassed": false
   },
   "liveMutationAuthorized": false,
   "implementation": {
@@ -35,11 +44,17 @@
     "icon512Present": true,
     "guestVibeControlsPresent": true,
     "guestModeEntryControlsPresent": true,
-    "defaultClosedCapabilityGatePresent": true,
+    "defaultClosedCapabilityGatePresent": false,
     "staticRegressionTestSourcePresent": true,
     "liveGuestSessionBackendConnected": false,
     "liveGuestMutationBridgeConnected": false,
     "productionDeployed": false,
-    "cleanDeviceAcceptancePassed": false
-  }
+    "cleanDeviceAcceptancePassed": false,
+    "capabilitySpecificUiGateCorrect": false,
+    "serverSideMutationAuthorityDefined": false,
+    "guestServiceWorkerIsolatedFromOwnerRoutes": false,
+    "sessionAuthorityExcludedFromAppShellCache": false
+  },
+  "operational_authority": "REFERENCE_ONLY__USE_HBNF_CONTROL_MODEL_STATE",
+  "audit_evidence": "evidence/hbnf-phase2-migration-20261003/GUEST_STAGING_AUDIT_20261003.json"
 }
