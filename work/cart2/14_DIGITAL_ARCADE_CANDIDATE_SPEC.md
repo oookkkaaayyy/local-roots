@@ -187,3 +187,71 @@ Recommended for capacity audit:
 No reduction is implied. This is a candidate set before source-grounded capacity audit and user scope approval.
 
 If all seven fit the accepted baseline without violating performance/reliability budgets, all seven should be committed together if the user approves them.
+
+## 2026-10-03 challenger refinement
+
+### Feasibility evidence — bounded conclusion
+Public ESP32 projects demonstrate that tiny-matrix implementations of Snake, Tetris/Falling Blocks, Breakout, Pong, fixed shooters, Frogger-style crossing and related games are technically feasible on constrained displays. One current example runs ten games on a 16×16 LED grid with an ESP32 and a Stadia controller.
+
+Evidence:
+- https://github.com/zero7608/matrixgame
+
+This is evidence for mechanic feasibility only. It does NOT prove that all seven candidates fit the HBNF firmware's final memory/frame-time budget alongside audio-reactive visuals, DDP, text, networking and recovery. Final commitment still waits for the accepted-foundation capacity audit.
+
+### Normalized input contract
+Every game consumes actions, not browser/controller-specific button numbers:
+- UP
+- DOWN
+- LEFT
+- RIGHT
+- PRIMARY
+- SECONDARY
+- PAUSE
+- EXIT
+
+Touch controls are the baseline. Browser Gamepad support is optional behind the same adapter.
+
+MDN documents the Gamepad API as broadly available but explicitly notes that feature support varies across platform/controller combinations. Therefore no candidate game may depend on a special controller mapping, haptics, or nonstandard button until the actual target devices pass mapping and playability tests.
+
+Evidence:
+- https://developer.mozilla.org/en-US/docs/Web/API/Gamepad_API
+- https://developer.mozilla.org/en-US/docs/Web/API/Gamepad
+
+### Input safety
+Transport should carry:
+- session/controller identity;
+- monotonically increasing input sequence;
+- input age/timestamp or equivalent stale-input guard.
+
+Acceptance must reject:
+- duplicate sequence replay;
+- stale movement after reconnect;
+- a disconnected controller continuing to influence state;
+- one controller taking another player's role without an explicit reassignment path.
+
+Do not freeze a numerical latency threshold before measuring the accepted local stack. Measure end-to-end input-to-game-state latency on the actual iPad/phone/gamepad paths, then freeze a threshold that preserves responsive play.
+
+### Deterministic game invariants
+Minimum replay assertions where applicable:
+- Snake: one movement decision per game tick; illegal immediate reversal cannot self-kill through input ordering.
+- Pong: ball/paddle collision outcome deterministic for the same state/input trace.
+- Breakout: one collision cannot delete multiple unrelated bricks due to a single-tick bug.
+- Falling Blocks: piece movement/rotation is deterministic; board bounds and lock state are invariant.
+- Maze Chase: maze/objective layout is native 32×16 and remains readable; enemy state cannot occupy invalid wall cells.
+- Space Defense: projectile/enemy ownership and collision resolution are deterministic.
+- Crossing: hazards advance deterministically and player cannot occupy out-of-bounds lanes.
+
+### Snapshot/restore contract
+Entering PLAY snapshots every normal-state field required to reproduce what the user was seeing, including at minimum the final accepted representation of:
+- Vibe/scene;
+- brightness;
+- Motion/audio controls;
+- active look/palette state;
+- normal overlay/moment return state.
+
+Clean EXIT must restore that snapshot exactly.
+Crash/disconnect timeout must fall back to a safe normal visual state, with evidence indicating whether exact restoration was possible.
+
+### Candidate soak
+Each committed digital game must survive a repeated start/pause/reconnect/restart/exit cycle plus a 20+ minute play soak where appropriate before release acceptance.
+
