@@ -1,14 +1,6 @@
 #!/usr/bin/env python3
-"""HBNF deterministic control plane.
-
-One model + one current-state file decide promotion status.
-Natural-language docs are evidence/reference only.
-
-Stdlib only.
-"""
 from __future__ import annotations
-
-import argparse, json, pathlib, sys
+import argparse, hashlib, json, pathlib, re
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_MODEL=ROOT/"config/HBNF_CONTROL_MODEL.json"
@@ -18,93 +10,120 @@ def load(path):
     return json.loads(pathlib.Path(path).read_text())
 
 def save(path,obj):
-    pathlib.Path(path).write_text(json.dumps(obj,indent=2,sort_keys=True)+"\n")
+    pathlib.Path(path).write_text(json.dumps(obj,indent=2,sort_keys=True)+"\\n")
 
-def transition_map(model):
-    return {(t["from"],t["to"]):t for t in model["transitions"]}
-
-def validate(model,state):
-    errors=[]
-    states=set(model.get("states",[]))
-    if state.get("model_schema")!=model.get("schema"):
-        errors.append("state/model schema mismatch")
-    if state.get("lifecycle_state") not in states:
-        errors.append("unknown lifecycle_state")
-    catalog=model.get("evidence_catalog",{})
-    evidence=state.get("evidence",{})
-    unknown=sorted(set(evidence)-set(catalog))
-    missing=sorted(set(catalog)-set(evidence))
-    if unknown: errors.append("unknown evidence keys: "+", ".join(unknown))
-    if missing: errors.append("missing evidence keys: "+", ".join(missing))
-    for k,v in evidence.items():
-        if k in catalog and catalog[k].get("type")=="boolean" and not isinstance(v,bool):
-            errors.append(f"{k}: expected boolean")
-    for k,spec in catalog.items():
-        if spec.get("human_approval_required") and evidence.get(k):
-            ap=(state.get("approvals") or {}).get(k) or {}
-            if ap.get("approved_by_user") is not True or not str(ap.get("reference") or "").strip():
-                errors.append(f"{k}: human approval evidence lacks explicit approval/reference")
-    return errors
+def sha256_file(path):
+    h=hashlib.sha256()
+    with open(path,"rb") as f:
+        for chunk in iter(lambda:f.read(1024*1024),b""): h.update(chunk)
+    return h.hexdigest()
 
 def next_transition(model,state):
-    cur=state["lifecycle_state"]
-    matches=[t for t in model["transitions"] if t["from"]==cur]
-    if len(matches)>1:
-        raise ValueError("model has ambiguous outgoing transitions from "+cur)
-    return matches[0] if matches else None
+    out=[t for t in model["transitions"] if t["from"]==state["lifecycle_state"]]
+    if len(out)>1: raise ValueError("ambiguous control model: multiple outgoing transitions")
+    return out[0] if out else None
 
-def blockers(model,state,transition):
-    if not transition: return []
-    return [k for k in transition.get("requires",[]) if state.get("evidence",{}).get(k) is not True]
+def validate_model(model):
+    errors=[]
+    states=model.get("states",[])
+    if len(states)!=len(set(states)): errors.append("duplicate states")
+    ids=[t["id"] for t in model.get("transitions",[])]
+    if len(ids)!=len(set(ids)): errors.append("duplicate transition ids")
+    for s in states:
+        out=[t for t in model.get("transitions",[]) if t["from"]==s]
+        if s!="ACCEPTED" and len(out)!=1: errors.append(f"{s}: expected exactly one outgoing transition, got {len(out)}")
+        if s=="ACCEPTED" and out: errors.append("ACCEPTED must be terminal")
+    for t in model.get("transitions",[]):
+        if t["from"] not in states or t["to"] not in states: errors.append(t["id"]+": unknown state")
+        req=t.get("required_checks",[])
+        if not req or len(req)!=len(set(req)): errors.append(t["id"]+": required_checks empty or duplicate")
+    return errors
+
+def validate_state(model,state):
+    errors=validate_model(model)
+    if state.get("model_schema")!=model.get("schema"): errors.append("state/model schema mismatch")
+    if state.get("lifecycle_state") not in model.get("states",[]): errors.append("unknown lifecycle state")
+    for item in state.get("completed_receipts",[]):
+        if set(item)!={"transition_id","receipt_sha256","subject"}: errors.append("completed receipt has unexpected fields")
+    return errors
+
+def forbidden_evidence_name(model,name):
+    low=name.lower()
+    return any(p in low for p in model["receipt_contract"]["forbidden_evidence_name_patterns"])
+
+def validate_receipt(model,state,receipt):
+    t=next_transition(model,state)
+    if not t: return ["no next transition"]
+    c=model["receipt_contract"]
+    required=set(c["required_top_level"])
+    if t.get("human_approval_required"): required.add("approval")
+    errors=[]
+    if set(receipt)!=required: errors.append("receipt top-level fields must exactly match transition contract")
+    if receipt.get("schema")!=c["schema"]: errors.append("receipt schema mismatch")
+    if receipt.get("receipt_type")!=t["receipt_type"]: errors.append("receipt_type does not match next transition")
+    if receipt.get("transition_id")!=t["id"]: errors.append("transition_id does not match next transition")
+    if receipt.get("outcome")!=c["outcome_required"]: errors.append("receipt outcome must be PASS")
+    subject=receipt.get("subject")
+    if not isinstance(subject,dict) or set(subject)!=set(c["subject_required"]):
+        errors.append("subject fields must exactly match contract")
+    else:
+        if not all(isinstance(subject[k],str) and subject[k].strip() for k in c["subject_required"]):
+            errors.append("subject values must be nonempty strings")
+        if not re.fullmatch(r"[0-9a-fA-F]{64}",subject.get("artifact_sha256","")):
+            errors.append("subject.artifact_sha256 must be SHA-256 hex")
+    checks=receipt.get("checks")
+    expected=set(t["required_checks"])
+    if not isinstance(checks,dict) or set(checks)!=expected:
+        errors.append("receipt checks must exactly match transition requirements")
+    else:
+        errors += [k+" must be true" for k,v in checks.items() if v is not True]
+    artifacts=receipt.get("evidence_artifacts")
+    if not isinstance(artifacts,list) or not artifacts:
+        errors.append("evidence_artifacts must be a nonempty list")
+    else:
+        for item in artifacts:
+            if not isinstance(item,dict) or set(item)!={"name","sha256"}:
+                errors.append("evidence artifact must contain exactly name + sha256"); continue
+            name=str(item["name"])
+            if forbidden_evidence_name(model,name):
+                errors.append("forbidden recursive/policy evidence reference: "+name)
+            if not re.fullmatch(r"[0-9a-fA-F]{64}",str(item["sha256"])):
+                errors.append("invalid evidence artifact sha256: "+name)
+    if t.get("human_approval_required"):
+        ap=receipt.get("approval")
+        if not isinstance(ap,dict) or set(ap)!={"approved_by_user","reference"}:
+            errors.append("approval must contain exactly approved_by_user + reference")
+        elif ap.get("approved_by_user") is not True or not str(ap.get("reference") or "").strip():
+            errors.append("explicit user approval required")
+    return errors
 
 def status(model,state):
-    errs=validate(model,state)
+    errs=validate_state(model,state)
     t=next_transition(model,state) if not errs else None
-    b=blockers(model,state,t) if t else []
     return {
-      "schema":"hbnf-control-status-v1",
+      "schema":"hbnf-control-status-v2",
       "model_valid":not errs,
       "validation_errors":errs,
       "current_state":state.get("lifecycle_state"),
       "next_transition":t["id"] if t else None,
       "next_state":t["to"] if t else None,
-      "blockers":b,
-      "transition_ready":bool(t) and not b and not errs,
+      "required_receipt_type":t["receipt_type"] if t else None,
       "live_mutation_authorized":state.get("live_mutation_authorized") is True,
       "phase2_implementation_authorized":state.get("phase2_implementation_authorized") is True
     }
 
-def record(model,state,key,value,reference=None,approved_by_user=False):
-    catalog=model["evidence_catalog"]
-    if key not in catalog:
-        raise ValueError("unknown evidence key: "+key)
-    if value not in ("true","false"):
-        raise ValueError("value must be true or false")
-    val=(value=="true")
-    if val and not reference:
-        raise ValueError("true evidence requires a reference")
-    state["evidence"][key]=val
-    if reference:
-        state.setdefault("evidence_refs",{})[key]=reference
-    if catalog[key].get("human_approval_required") and val:
-        if not approved_by_user:
-            raise ValueError(key+" requires --approved-by-user")
-        state.setdefault("approvals",{})[key]={"approved_by_user":True,"reference":reference}
-    return state
-
-def advance(model,state):
-    s=status(model,state)
-    if not s["model_valid"]:
-        raise ValueError("invalid control state: "+"; ".join(s["validation_errors"]))
-    if not s["next_transition"]:
-        raise ValueError("no forward transition from current state")
-    if s["blockers"]:
-        raise ValueError("blocked by: "+", ".join(s["blockers"]))
+def advance(model,state,receipt_path):
+    receipt=load(receipt_path)
+    errors=validate_receipt(model,state,receipt)
+    if errors: raise ValueError("receipt rejected: "+"; ".join(errors))
     t=next_transition(model,state)
-    state["last_transition"]={"id":t["id"],"from":t["from"],"to":t["to"]}
+    state["completed_receipts"].append({
+      "transition_id":t["id"],
+      "receipt_sha256":sha256_file(receipt_path),
+      "subject":receipt["subject"]
+    })
     state["lifecycle_state"]=t["to"]
-    if t["to"]=="PHASE2_INTEGRATING":
-        state["phase2_implementation_authorized"]=True
+    state["phase2_implementation_authorized"]=(t["to"]=="PHASE2_INTEGRATING")
     return state
 
 def main():
@@ -113,33 +132,19 @@ def main():
     ap.add_argument("--state",default=str(DEFAULT_STATE))
     sub=ap.add_subparsers(dest="cmd",required=True)
     sub.add_parser("status")
-    r=sub.add_parser("record")
-    r.add_argument("key")
-    r.add_argument("value",choices=["true","false"])
-    r.add_argument("--reference")
-    r.add_argument("--approved-by-user",action="store_true")
-    sub.add_parser("advance")
+    a=sub.add_parser("advance"); a.add_argument("--receipt",required=True)
     args=ap.parse_args()
-
     model=load(args.model); state=load(args.state)
-
     if args.cmd=="status":
         print(json.dumps(status(model,state),indent=2,sort_keys=True))
-        return 0 if not validate(model,state) else 2
-    if args.cmd=="record":
-        record(model,state,args.key,args.value,args.reference,args.approved_by_user)
-        if validate(model,state):
-            raise SystemExit("refusing to save invalid state: "+"; ".join(validate(model,state)))
-        save(args.state,state)
-        print(json.dumps(status(model,state),indent=2,sort_keys=True))
-        return 0
+        return 0 if not validate_state(model,state) else 2
     if args.cmd=="advance":
-        advance(model,state)
-        if validate(model,state):
-            raise SystemExit("refusing to save invalid state: "+"; ".join(validate(model,state)))
+        advance(model,state,args.receipt)
+        if validate_state(model,state): raise SystemExit("refusing to save invalid state")
         save(args.state,state)
         print(json.dumps(status(model,state),indent=2,sort_keys=True))
         return 0
+    return 2
 
 if __name__=="__main__":
     raise SystemExit(main())
