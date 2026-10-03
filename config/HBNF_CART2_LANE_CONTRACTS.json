@@ -41,6 +41,53 @@
         "mission_control_guest"
       ],
       "frozen": false
+    },
+    "ControllerInput": {
+      "producer": "mission_control_guest",
+      "consumers": [
+        "games"
+      ],
+      "frozen": false,
+      "candidate_contract": {
+        "actions": [
+          "UP",
+          "DOWN",
+          "LEFT",
+          "RIGHT",
+          "PRIMARY",
+          "SECONDARY",
+          "PAUSE",
+          "EXIT"
+        ],
+        "requires_controller_or_session_identity": true,
+        "requires_monotonic_sequence": true,
+        "stale_input_rejection_required": true,
+        "browser_or_gamepad_specific_codes_forbidden_at_game_logic_boundary": true
+      }
+    },
+    "GuestCapabilityState": {
+      "producer": "mission_control_guest",
+      "consumers": [
+        "mission_control_guest",
+        "games",
+        "text_moments"
+      ],
+      "frozen": false,
+      "candidate_contract": {
+        "default_closed": true,
+        "short_lived": true,
+        "revocable": true,
+        "capability_scoped": true,
+        "no_owner_credential_in_guest_reference": true,
+        "owner_only_capabilities": [
+          "firmware_update",
+          "recovery",
+          "router_admin",
+          "owner_pairing_admin",
+          "advanced_audio_tuning",
+          "raw_diagnostics"
+        ]
+      }
     }
   },
   "lanes": {
