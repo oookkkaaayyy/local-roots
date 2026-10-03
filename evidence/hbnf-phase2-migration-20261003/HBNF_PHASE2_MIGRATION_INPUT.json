@@ -1,0 +1,112 @@
+{
+  "schema": "hbnf-phase2-migration-input-v1",
+  "created": "2026-10-03",
+  "authority": "EVIDENCE_ONLY",
+  "current_installed": {
+    "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
+    "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "update_sequence": 13,
+    "recovery_sequence": 14,
+    "recovery_target": "release06",
+    "source_commit": "UNVERIFIED",
+    "install_health": "PASS",
+    "performance_acceptance": "FAIL",
+    "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN"
+  },
+  "release_history": [
+    {
+      "release_id": "hbnf-matrix-coordinated-v1-20261002-05",
+      "firmware_sha256": "cc06c3b4df7bd1ebf696773650b710adb068de56940832cec1a0f2d33c8d4f60",
+      "update_sequence": 9,
+      "recovery_sequence": 10,
+      "result": "PERFORMANCE_REJECTED",
+      "observed_fps_approx": 6,
+      "notes": "OverlayState-copy hot-path optimization; insufficient."
+    },
+    {
+      "release_id": "hbnf-matrix-coordinated-v1-20261002-06",
+      "firmware_sha256": "UNVERIFIED_IN_HANDOFF",
+      "update_sequence": 11,
+      "recovery_sequence": 12,
+      "result": "DIAGNOSTIC_ONLY",
+      "observed_fps_avg": 11.1,
+      "observed_frame_ms_avg": 91.305,
+      "active_kernel_index": 3,
+      "active_kernel_name": "RGB_Blobs5",
+      "kernel_ms_avg": 59.955
+    },
+    {
+      "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
+      "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+      "update_sequence": 13,
+      "recovery_sequence": 14,
+      "result": "FIX_CANDIDATE_PERFORMANCE_REJECTED",
+      "observed_fps_avg": 11.53,
+      "observed_frame_ms_avg": 85.3,
+      "active_kernel_index": 2,
+      "active_kernel_name": "Parametric_Water",
+      "kernel_ms_avg": 68.9,
+      "audio_modulation_ms_avg": 6.7,
+      "palette_color_ms_avg": 0.47,
+      "overlay_ms_avg": 0.04,
+      "companion_ddp_ms_avg": 4.8,
+      "unaccounted_ms_avg": 3,
+      "free_heap_bytes_approx": 98700,
+      "rssi_dbm_avg": -44.8
+    }
+  ],
+  "important_conclusions": [
+    "Release07 does not resolve the overall low-FPS defect.",
+    "RGB_Blobs5 optimization cannot be judged from the release07 acceptance sample because release07 sampled Parametric_Water.",
+    "Parametric_Water is independently pathological in the sampled release07 workload.",
+    "Latest evidence does not support palette/color as the universal dominant bottleneck; release07 measured palette/color at 0.47 ms while kernel work dominated.",
+    "Do not return to one-kernel-at-a-time human discovery; execute the all-28-kernel sweep and group failures by shared expensive primitive/class.",
+    "Cold-boot evidence rules out long-uptime memory decay as the primary cause of the current FPS defect.",
+    "Matrix/AUX/DDP/network health does not currently explain the primary bottleneck."
+  ],
+  "current_blockers": [
+    "artifact source commit remains unverified because local worktree git metadata timed out",
+    "all-28-kernel live sweep not yet executed",
+    "common-path performance audit not yet completed",
+    "instrumentation observer-effect not characterized",
+    "frame-time tail distribution not qualified",
+    "foundation soak not completed",
+    "heap fragmentation/low-watermark not qualified",
+    "coordinated-feature physical regression after release07 not completed"
+  ],
+  "known_environment": {
+    "repo": "oookkkaaayyy/local-roots",
+    "pr": 46,
+    "repair_branch": "hbnf-coordinated-release-20261001",
+    "repair_branch_head_observed_via_github": "0c01d0c7f065264e2b9fd8127f1c48cc96a73b56",
+    "repair_branch_head_is_artifact_source_commit": false,
+    "platformio_core": "6.1.17",
+    "python": "3.11.16",
+    "platformio_env": "hbnf_matrix_wled16_max",
+    "recovered_platformio_path": "/Users/andrew/Library/Caches/HBNF-Matrix-Flow/9.17.26_3/venv/bin/platformio",
+    "successful_build_workspace": "/Users/andrew/Library/Caches/HBNF-Matrix-Build/post-adapter-20261002-ditto",
+    "updater_version": "1.2.4-1",
+    "updater_ipk_sha256": "8cd8ded020bf192b323c9a6f8664c34e1f2ddcd760d974d8d152e13b9403bc20"
+  },
+  "network": {
+    "opal_ip": "192.168.77.1",
+    "matrix_ip": "192.168.77.10",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "aux_ip": "192.168.77.11",
+    "aux_mac": "8c:94:df:55:c3:4c",
+    "ssid_cold_start_issue": "OPEN_SEPARATE_NOT_PROVEN_CAUSAL_TO_FPS"
+  },
+  "local_evidence_paths": {
+    "repair_worktree": "/Users/andrew/Documents/Codex/2026-10-01/continue-pr-46-in-oookkkaaayyy/local/work/local-roots-pr46",
+    "release07_package": "/Users/andrew/Documents/Codex/2026-10-01/continue-pr-46-in-oookkkaaayyy/local/work/local-roots-pr46/work/artifacts/hbnf-coordinated-release-20261001/OTA_PREP_RELEASE07_RGB_BLOBS5_PERF_FIX",
+    "release07_fallback": "/Users/andrew/Documents/Codex/2026-10-01/continue-pr-46-in-oookkkaaayyy/local/work/local-roots-pr46/work/HBNF_RELEASE07_POSTINSTALL_AKS_WRITEBACK_PENDING_20261003.md",
+    "final_postmortem": "/Users/andrew/Documents/Codex/2026-10-01/continue-pr-46-in-oookkkaaayyy/local/work/local-roots-pr46/work/release-engineering/HBNF_FPS_REPAIR_FINAL_POSTMORTEM_20261003.md",
+    "final_closeout_json": "/Users/andrew/Documents/Codex/2026-10-01/continue-pr-46-in-oookkkaaayyy/local/work/local-roots-pr46/evidence/hbnf-fps-repair-final-20261003/HBNF_FPS_REPAIR_CLOSEOUT.json"
+  },
+  "aks": {
+    "release07_build_publication_row": 1186,
+    "release07_postinstall_performance_row": 1191,
+    "release_engineering_doc_id": "1bw_VUNt2mEZ4JdKuRsQq7ZS1Bc4KeC8kMVABVK2OdgE",
+    "local_fallback_filename_is_stale_for_delta_writeback": true
+  }
+}
