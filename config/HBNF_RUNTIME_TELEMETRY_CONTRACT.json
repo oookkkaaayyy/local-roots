@@ -17,6 +17,7 @@
     "frame_ms_p99",
     "frame_ms_max",
     "kernel_id",
+    "kernel_name",
     "variant_id",
     "free_heap_bytes",
     "minimum_free_heap_bytes",
