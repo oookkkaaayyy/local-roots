@@ -1,5 +1,5 @@
 {
-  "schema": "hbnf-cart2-continuation-checkpoint-v1",
+  "schema": "hbnf-cart2-continuation-checkpoint-v2",
   "generated": "2026-10-03",
   "migration_base_head": "9ddd443d5a97f01182c9f8a446a882c021e3c2f0",
   "lifecycle": "DIAGNOSTIC_ACTIVE",
@@ -17,7 +17,9 @@
     "restore is followed by a fresh snapshot and exact pre/post visual-state equality check",
     "RESTORE_RECEIPT.json records verified restore state",
     "foundation sweep-report fixture includes required scheduler timing fields",
-    "execution packet 20 now explicitly requires pre-mutation release verification and post-restore equality proof"
+    "execution packet 20 now explicitly requires pre-mutation release verification and post-restore equality proof",
+    "packet20 now explicitly requires expected-release telemetry preflight before mutation and exact post-restore snapshot equality",
+    "GitHub Actions staging trigger experiment was reverted before any workflow run occurred; Actions remain unauthorized from this staging lane"
   ],
   "source_independent_product_progress": [
     "added work/cart2/24_MISSION_CONTROL_CANDIDATE_SPEC.md",
@@ -27,7 +29,15 @@
     "tightened Vibe pairwise, palette-normalized, cross-track and audio-causality challenger tests",
     "aligned acceptance corpus and scope-lock packet with current candidates and source-dependent decisions",
     "expanded draft lane contracts with normalized ControllerInput and default-closed GuestCapabilityState",
-    "updated integration DAG so games consume semantic input and guest authorization stays separate/fail-closed"
+    "updated integration DAG so games consume semantic input and guest authorization stays separate/fail-closed",
+    "recorded high-severity guest staging capability/PWA isolation blockers without implementing feature code",
+    "created decision-ready scope-lock draft without locking any scope",
+    "created machine-readable acceptance/replay corpus for Vibes, AudioFeatures, text, IRL, Arcade, guest authority, Mission Control and reliability",
+    "formalized draft AudioFeatures semantic interface using existing WLED AudioReactive information first; exact formulas/bins/time constants remain source/replay dependent",
+    "grounded physical-gamepad path in the two already-owned Stadia Bluetooth controllers; no procurement before actual iPad/browser validation",
+    "bounded Shuffle Call claims to mixed contextual-interference/golf-putting evidence rather than claiming superior training efficacy",
+    "preserved historical physically successful HBNF WBF text-overlay primitives as reuse-first evidence for the qualified-source text audit",
+    "reconciled stale PR46/release04 Cart2 documents to the current release07 packet20 -> packet21 -> packet22 sequence"
   ],
   "execution_validation": {
     "source_connected_mac_available": false,
@@ -41,10 +51,40 @@
   "live_mutation_performed": false,
   "phase2_feature_implementation_started": false,
   "scope_locked": false,
-  "covered_through_head_before_checkpoint_refresh": "ac93f859746b202881354fad6e917d28acba616d",
+  "covered_through_head_before_checkpoint_refresh": "42b3519c97366c7eb59cf4f41853d93d88796420",
   "next_required_validation": [
-    "run all seven AGENTS.md tests in source-connected repository environment",
-    "run packet20 adapter dry-run before any visual mutation",
-    "execute exactly one complete 28-kernel diagnostic sweep only after release07/source/control identity checks pass"
-  ]
+    "in source-connected environment run python3 scripts/hbnf_control.py status",
+    "run all seven AGENTS.md static/unit/architecture checks",
+    "execute work/cart2/20_FOUNDATION_PERFORMANCE_SWEEP_EXECUTION.md exactly",
+    "do not begin packet21 until complete 28-kernel sweep evidence exists"
+  ],
+  "refreshed": "2026-10-03",
+  "source_independent_preparation_status": "SUBSTANTIALLY_COMPLETE__NO_SCOPE_LOCK__FOUNDATION_DEPENDENT_AUDITS_REMAIN",
+  "guest_staging_audit": {
+    "evidence": "evidence/hbnf-phase2-migration-20261003/GUEST_STAGING_AUDIT_20261003.json",
+    "status": "BLOCKED_BEFORE_BACKEND_OR_DEPLOYMENT",
+    "findings": [
+      "capability UI can fail open in current staging render flow",
+      "saved open session can render before fresh authority resolves",
+      "mutation proof/session exchange undefined",
+      "guest service-worker scope too broad",
+      "dynamic guest authority/status caching exclusions missing"
+    ],
+    "product_code_fixed": false
+  },
+  "audio_features_candidate": {
+    "spec": "work/cart2/26_AUDIO_FEATURES_CANDIDATE_CONTRACT.md",
+    "interface": "config/HBNF_CART2_LANE_CONTRACTS.json#AudioFeatures",
+    "exact_formulas_frozen": false,
+    "exact_source_mapping_frozen": false,
+    "reason": "requires exact qualified-foundation source and replay evidence"
+  },
+  "acceptance_corpus": "config/HBNF_CART2_ACCEPTANCE_CORPUS_V1.json",
+  "decision_ready_scope_draft": "work/cart2/25_SCOPE_LOCK_DECISION_READY_DRAFT.md",
+  "tests": {
+    "agnets_md_seven_tests_executed": false,
+    "status": "NOT_EXECUTED_IN_THIS_RUNTIME",
+    "reason": "No source-connected checkout/Mac execution environment; GitHub Actions remain unauthorized and no Actions run occurred.",
+    "required_before_live_sweep_mutation": true
+  }
 }
