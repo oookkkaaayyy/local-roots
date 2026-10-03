@@ -31,6 +31,8 @@
   "notes": [
     "TEMPLATE ONLY. Replace with the exact release07 canonical/local control and telemetry adapter discovered from source/runtime.",
     "Do not use a guessed direct mutation endpoint.",
-    "Adapter snapshot must emit JSON to stdout. Telemetry must emit one canonical telemetry sample JSON to stdout."
+    "Adapter snapshot must emit JSON to stdout. Telemetry must emit one canonical telemetry sample JSON to stdout.",
+    "First run scripts/hbnf_live_kernel_sweep.py with --contract diagnostic against current release07; do not require new firmware solely for p95/p99 support.",
+    "Only a corrected candidate exposing the full foundation telemetry contract may run with --contract foundation --qualify."
   ]
 }
