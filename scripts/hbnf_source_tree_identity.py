@@ -15,7 +15,7 @@ DEFAULT_EXCLUDE_DIRS={
     ".git",".pio",".pioenvs",".piolibdeps","build","dist","node_modules",
     "__pycache__",".pytest_cache",".mypy_cache",".cache",".DS_Store"
 }
-DEFAULT_EXCLUDE_SUFFIXES={".pyc",".pyo",".o",".a",".elf",".bin",".map"}
+DEFAULT_EXCLUDE_SUFFIXES={".pyc",".pyo"}
 
 def sha256_file(path):
     h=hashlib.sha256()
@@ -46,7 +46,7 @@ def inventory(root,extra_excludes):
                 continue
             if p.is_symlink():
                 target=os.readlink(p)
-                rows.append({"path":rel.as_posix(),"type":"symlink","target":target})
+                rows.append({"path":rel.as_posix(),"type":"symlink","target":target,"mode":oct(p.lstat().st_mode & 0o777)})
                 continue
             if not p.is_file():
                 continue
@@ -54,6 +54,7 @@ def inventory(root,extra_excludes):
                 "path":rel.as_posix(),
                 "type":"file",
                 "size":p.stat().st_size,
+                "mode":oct(p.stat().st_mode & 0o777),
                 "sha256":sha256_file(p),
             })
     return rows
