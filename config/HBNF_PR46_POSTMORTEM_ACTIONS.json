@@ -1,0 +1,37 @@
+{
+  "schema": "hbnf-pr46-postmortem-actions-v1",
+  "source": "PR46_BUILD_POSTMORTEM_20261002.md / PR46_FOLLOWUP_ACTIONS_20261002.json",
+  "active_defect": {
+    "id": "HBNF-OPEN-LOW-FPS-RELEASE04",
+    "status": "OPEN",
+    "release_id": "hbnf-matrix-coordinated-v1-20261002-04",
+    "observed_fps": 7,
+    "observed_uptime_seconds": 172,
+    "free_heap": 97220,
+    "requirement": "Root cause + validated fix + frame-pacing regression + renewed physical visual/audio acceptance before golden promotion."
+  },
+  "must_before_next_firmware_update": [
+    "populated_release04_golden_capsule",
+    "evidence_enforced_physical_acceptance_ledger",
+    "signed_release_transaction_preflight_validator",
+    "build_json_route_and_identity_integration_test",
+    "dependency_closure_materializer_and_validator",
+    "generated_inputs_per_file_manifest_and_binary_diff_mapping",
+    "bounded_ldf_trace_and_stop_rule",
+    "validated_solved_problem_entries_and_one_shot_diagnostics"
+  ],
+  "should_before_cart2": [
+    "network_disabled_clean_room_build_after_materialization",
+    "separate_layer_identity_manifests_and_compatibility_edges",
+    "representative_old_openwrt_real_ipk_validation",
+    "ssid_cold_start_separate_gate",
+    "single_authoritative_release_state_generator"
+  ],
+  "nice_to_have": [
+    "generated_release_dashboard",
+    "opal_log_health_parsers",
+    "esp_binary_difference_classifier",
+    "elapsed_time_budget_report"
+  ],
+  "no_live_mutation_authorized": true
+}
