@@ -116,3 +116,17 @@ Use only one:
 - SOURCE/BUILD WORK REMAINS: <specific work>
 
 Do not use vague "almost done" language.
+
+
+## Runtime qualification amendment — mandatory before golden promotion
+
+After install/health and before promotion:
+1. Verify the runtime telemetry contract.
+2. Run the automated 5-minute performance smoke against the frozen qualified baseline.
+3. For a new foundation or final release, run the unattended 90-minute soak.
+4. Compare frame-time tails, FPS, heap low-watermark/fragmentation, AUX projection health, restart count, and exact release identity.
+5. Fail promotion on unexplained regression.
+6. Preserve the generated runtime profile in the candidate/golden capsule.
+7. Keep lightweight field telemetry/flight recording active so future regressions have pre-symptom evidence.
+
+Human observation is a final acceptance layer, not the primary defect detector.
