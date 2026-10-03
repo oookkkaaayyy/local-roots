@@ -137,7 +137,25 @@ def verify_selected(sample, entry):
             f"selected kernel id mismatch for {entry['kernel_name']}: expected {expected}, got {sample.get('kernel_id')}"
         )
 
-def collect_kernel(adapter, entry, outdir, timeout, contract):
+def validate_continuity(sample, expected_release_id=None, expected_restart_count=None, previous_uptime=None):
+    release_id=str(sample.get("release_id"))
+    restart_count=int(sample.get("restart_count"))
+    uptime=float(sample.get("uptime_seconds"))
+    if expected_release_id is not None and release_id!=str(expected_release_id):
+        raise RuntimeError(f"release identity changed during sweep: expected {expected_release_id}, got {release_id}")
+    if expected_restart_count is not None and restart_count!=int(expected_restart_count):
+        raise RuntimeError(
+            f"restart_count changed during sweep: expected {expected_restart_count}, got {restart_count}"
+        )
+    if previous_uptime is not None and uptime<float(previous_uptime):
+        raise RuntimeError(f"uptime decreased during sweep: previous {previous_uptime}, got {uptime}")
+    return release_id,restart_count,uptime
+
+def assert_same_snapshot(before, after):
+    if before!=after:
+        raise RuntimeError("post-restore visual-state snapshot does not match pre-sweep snapshot")
+
+def collect_kernel(adapter, entry, outdir, timeout, contract, expected_release_id=None, expected_restart_count=None):
     vals={
         "effect_id":entry["effect_id"],
         "kernel_name":entry["kernel_name"],
@@ -150,6 +168,9 @@ def collect_kernel(adapter, entry, outdir, timeout, contract):
     first=run_json(subst(adapter["telemetry_argv"],vals),timeout=timeout)
     validate_sample(first,contract)
     verify_selected(first,entry)
+    release_id,restart_count,previous_uptime=validate_continuity(
+        first,expected_release_id,expected_restart_count,None
+    )
 
     lines=[first]
     deadline=time.monotonic()+float(adapter["sample_seconds"])
@@ -159,6 +180,7 @@ def collect_kernel(adapter, entry, outdir, timeout, contract):
         sample=run_json(subst(adapter["telemetry_argv"],vals),timeout=timeout)
         validate_sample(sample,contract)
         verify_selected(sample,entry)
+        _,_,previous_uptime=validate_continuity(sample,release_id,restart_count,previous_uptime)
         lines.append(sample)
 
     slug=f"{int(entry['runtime_kernel_index_expected']):02d}_{entry['kernel_name']}"
@@ -171,7 +193,7 @@ def collect_kernel(adapter, entry, outdir, timeout, contract):
     )
     if p.returncode:
         raise RuntimeError(f"runtime profile failed for {entry['kernel_name']}:\n{p.stdout}\n{p.stderr}")
-    return profile, first.get("release_id"), first.get("variant_id")
+    return profile, release_id, first.get("variant_id"), restart_count
 
 def main():
     ap=argparse.ArgumentParser()
@@ -206,10 +228,15 @@ def main():
     snapfile.write_text(json.dumps(snapshot,indent=2,sort_keys=True)+"\n")
 
     profiles=[]; release_ids=set()
-    run_error=None; restore_error=None
+    expected_release_id=None; expected_restart_count=None
+    run_error=None; restore_error=None; post_restore_state=None
     try:
         for entry in inventory["entries"]:
-            profile,release_id,variant_id=collect_kernel(adapter,entry,outdir,timeout,args.contract)
+            profile,release_id,variant_id,restart_count=collect_kernel(
+                adapter,entry,outdir,timeout,args.contract,expected_release_id,expected_restart_count
+            )
+            if expected_release_id is None: expected_release_id=release_id
+            if expected_restart_count is None: expected_restart_count=restart_count
             release_ids.add(str(release_id))
             profiles.append({
               "kernel_id":entry["runtime_kernel_index_expected"],
@@ -224,6 +251,11 @@ def main():
     finally:
         try:
             run_ok(subst(adapter["restore_argv"],{"snapshot_file":str(snapfile)}),timeout=max(timeout,20))
+            post_restore_state=run_json(adapter["snapshot_argv"],timeout=timeout)
+            (outdir/"POST_RESTORE_STATE.json").write_text(
+                json.dumps(post_restore_state,indent=2,sort_keys=True)+"\n"
+            )
+            assert_same_snapshot(snapshot,post_restore_state)
         except Exception as e:
             restore_error=str(e)
 
@@ -233,7 +265,8 @@ def main():
           "run_error":run_error,
           "restore_error":restore_error,
           "profiles_completed":len(profiles),
-          "pre_sweep_state":str(snapfile)
+          "pre_sweep_state":str(snapfile),
+          "post_restore_state":str(outdir/"POST_RESTORE_STATE.json") if post_restore_state is not None else None
         }
         (outdir/"SWEEP_ABORT.json").write_text(json.dumps(failure,indent=2)+"\n")
         print(json.dumps(failure,indent=2))
@@ -243,11 +276,20 @@ def main():
         print(json.dumps({"status":"FAIL","error":"release identity changed during sweep","release_ids":sorted(release_ids)},indent=2))
         return 2
 
+    restore_receipt={
+      "status":"PASS",
+      "snapshot_equal":True,
+      "pre_sweep_state":str(snapfile),
+      "post_restore_state":str(outdir/"POST_RESTORE_STATE.json")
+    }
+    (outdir/"RESTORE_RECEIPT.json").write_text(json.dumps(restore_receipt,indent=2)+"\n")
     manifest={
       "schema":"hbnf-kernel-sweep-input-v1",
       "release_id":next(iter(release_ids)),
       "contract":args.contract,
       "expected_kernel_count":28,
+      "restore_verified":True,
+      "restore_receipt":"RESTORE_RECEIPT.json",
       "kernels":profiles
     }
     mf=outdir/"SWEEP_MANIFEST.json"; mf.write_text(json.dumps(manifest,indent=2)+"\n")
