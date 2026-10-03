@@ -28,3 +28,21 @@ NOT implemented yet:
 No claim of completion is permitted until those gates pass.
 
 The existing owner controller remains separate and unchanged.
+
+
+## 2026-10-03 static audit — material blockers found
+
+Evidence:
+`evidence/hbnf-phase2-migration-20261003/GUEST_STAGING_AUDIT_20261003.json`
+
+Current source has four pre-backend/deployment blockers:
+1. capability UI can fail open: `render()` enables all controls for any open session and can overwrite `applyCapabilities()`;
+2. boot can render a saved open session before fresh authority resolves;
+3. mutation proof/session exchange is not yet defined beyond client-side `sessionId` use;
+4. root PWA/service-worker scope plus generic GET caching/fallback is too broad for a separate guest product.
+
+These findings DO NOT authorize product-code implementation before scope lock.
+They DO mean the current staged guest source must not be connected to a live mutation backend or deployed as the final guest PWA as-is.
+
+Status remains:
+REAL SOURCE EXISTS / NOT DEPLOYED / SESSION BACKEND NOT CONNECTED / CAPABILITY+PWA ISOLATION BLOCKERS OPEN.
