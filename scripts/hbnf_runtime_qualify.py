@@ -1,19 +1,38 @@
 #!/usr/bin/env python3
-"""HBNF unattended runtime qualification / regression detector.
+"""HBNF unattended runtime profiler / regression detector.
 
-Works from JSONL samples now and can poll a JSON endpoint later.
-Stdlib only. Fails closed when qualification thresholds are not frozen.
+Two explicit contracts:
+- diagnostic: rank current kernels using already-available average timing.
+- foundation: require frame tails/resource metrics and permit baseline qualification.
+
+Stdlib only. Foundation qualification fails closed until thresholds are frozen.
 """
 from __future__ import annotations
 
-import argparse, json, math, pathlib, statistics, sys, time, urllib.request
+import argparse, json, math, pathlib, sys, time, urllib.request
 
-REQUIRED = [
+REQUIRED_DIAGNOSTIC = [
+    "release_id","uptime_seconds","fps","frame_ms_avg",
+    "kernel_id","kernel_name","variant_id","kernel_ms_avg",
+    "palette_ms_avg","audio_ms_avg","overlay_ms_avg",
+    "aux_prepare_send_ms_avg","unaccounted_ms_avg",
+    "free_heap_bytes","websocket_clients","aux_projection_active",
+    "aux_render_fps","wifi_rssi_dbm","restart_count",
+]
+
+REQUIRED_FOUNDATION = [
     "release_id","uptime_seconds","fps","frame_ms_p50","frame_ms_p95",
     "frame_ms_p99","frame_ms_max","kernel_id","kernel_name","variant_id",
     "free_heap_bytes","minimum_free_heap_bytes","largest_free_block_bytes",
     "websocket_clients","aux_projection_active","aux_projection_age_ms","aux_render_fps",
     "wifi_rssi_dbm","restart_count",
+]
+
+STAGE_KEYS = [
+    "frame_ms_avg","kernel_ms_avg","kernel_ms_p95","palette_ms_avg","palette_ms_p95",
+    "audio_ms_avg","audio_ms_p95","scheduler_ms_avg","scheduler_ms_p95",
+    "overlay_ms_avg","overlay_ms_p95","aux_prepare_send_ms_avg","aux_prepare_send_ms_p95",
+    "unaccounted_ms_avg","unaccounted_ms_p95","frame_over_budget_count","frame_sample_count",
 ]
 
 def pct(values, q):
@@ -62,49 +81,65 @@ def collect(url, mapping, seconds, interval):
         time.sleep(interval)
     return samples
 
-def validate_samples(samples):
+def required_for(contract):
+    if contract=="diagnostic": return REQUIRED_DIAGNOSTIC
+    if contract=="foundation": return REQUIRED_FOUNDATION
+    raise ValueError("unknown telemetry contract")
+
+def validate_samples(samples, contract="foundation"):
     errors=[]
     good=[s for s in samples if not s.get("collector_error")]
     if not good: return ["no valid telemetry samples"], good
-    for key in REQUIRED:
+    for key in required_for(contract):
         missing=sum(1 for s in good if s.get(key) is None)
         if missing:
             errors.append(f"{key}: missing in {missing}/{len(good)} valid samples")
     releases={str(s.get("release_id")) for s in good if s.get("release_id") is not None}
     if len(releases)!=1: errors.append("release identity changed or is ambiguous during run")
+    kernels={(str(s.get("kernel_id")),str(s.get("kernel_name")),str(s.get("variant_id"))) for s in good}
+    if len(kernels)!=1: errors.append("kernel/variant identity changed during one profile run")
     restarts=[int(s["restart_count"]) for s in good if s.get("restart_count") is not None]
     if restarts and max(restarts)!=min(restarts): errors.append("restart_count increased during run")
     uptimes=[float(s["uptime_seconds"]) for s in good if s.get("uptime_seconds") is not None]
     if any(b<a for a,b in zip(uptimes,uptimes[1:])): errors.append("uptime decreased during run")
     return errors, good
 
-def summarize(samples):
-    errors,good=validate_samples(samples)
+def summarize(samples, contract="foundation"):
+    errors,good=validate_samples(samples,contract)
     def vals(k): return [s[k] for s in good if isinstance(s.get(k),(int,float))]
-    fps=vals("fps"); p95=vals("frame_ms_p95"); p99=vals("frame_ms_p99"); mx=vals("frame_ms_max")
+    fps=vals("fps")
+    p50=vals("frame_ms_p50"); p95=vals("frame_ms_p95"); p99=vals("frame_ms_p99"); mx=vals("frame_ms_max")
+    favg=vals("frame_ms_avg")
     freeh=vals("free_heap_bytes"); minh=vals("minimum_free_heap_bytes"); largest=vals("largest_free_block_bytes")
     auxage=vals("aux_projection_age_ms"); auxfps=vals("aux_render_fps"); rssi=vals("wifi_rssi_dbm")
     active=[s.get("aux_projection_active") for s in good if s.get("aux_projection_active") is not None]
-    stage_keys=[
-      "frame_ms_avg","kernel_ms_avg","kernel_ms_p95","palette_ms_avg","palette_ms_p95",
-      "audio_ms_avg","audio_ms_p95","scheduler_ms_avg","scheduler_ms_p95",
-      "overlay_ms_avg","overlay_ms_p95","aux_prepare_send_ms_avg","aux_prepare_send_ms_p95",
-      "unaccounted_ms_avg","unaccounted_ms_p95","frame_over_budget_count","frame_sample_count"
-    ]
     stage={}
-    for key in stage_keys:
+    for key in STAGE_KEYS:
         vv=vals(key)
         if vv: stage[key]={"median":pct(vv,.5),"p95":pct(vv,.95),"max":max(vv)}
+    first=good[0] if good else {}
     return {
-      "schema":"hbnf-runtime-profile-v1",
+      "schema":"hbnf-runtime-profile-v2",
+      "contract":contract,
+      "qualification_eligible":contract=="foundation",
       "sample_count":len(samples),
       "valid_sample_count":len(good),
       "collection_errors":len(samples)-len(good),
       "validation_errors":errors,
-      "release_id":next((s.get("release_id") for s in good if s.get("release_id") is not None),None),
-      "kernel_variants":sorted({f"{s.get('kernel_id')}::{s.get('kernel_name')}::{s.get('variant_id')}" for s in good}),
+      "release_id":first.get("release_id"),
+      "kernel":{
+        "id":first.get("kernel_id"),
+        "name":first.get("kernel_name"),
+        "variant_id":first.get("variant_id")
+      },
       "fps":{"median":pct(fps,.5),"p05":pct(fps,.05),"min":min(fps) if fps else None},
-      "frame_ms":{"p95_median":pct(p95,.5),"p99_median":pct(p99,.5),"max":max(mx) if mx else None},
+      "frame_ms":{
+        "avg_median":pct(favg,.5),
+        "p50_median":pct(p50,.5),
+        "p95_median":pct(p95,.5),
+        "p99_median":pct(p99,.5),
+        "max":max(mx) if mx else None
+      },
       "heap":{
         "free_start":freeh[0] if freeh else None,"free_end":freeh[-1] if freeh else None,
         "minimum_free_min":min(minh) if minh else None,
@@ -130,6 +165,12 @@ def ratio_ok(candidate, baseline, min_ratio=None, max_ratio=None):
 
 def qualify(profile, baseline, policy):
     failures=list(profile.get("validation_errors") or [])
+    if profile.get("contract")!="foundation":
+        failures.append("diagnostic profile cannot satisfy foundation qualification")
+        return failures
+    if not baseline or baseline.get("contract")!="foundation":
+        failures.append("qualified foundation baseline profile missing or wrong contract")
+        return failures
     cfg=((policy or {}).get("comparison") or {}).get("candidate_vs_baseline") or {}
     required=[
       "fps_median_min_ratio","frame_p95_max_ratio","frame_p99_max_ratio","frame_max_max_ratio",
@@ -139,10 +180,6 @@ def qualify(profile, baseline, policy):
     if unset:
         failures.append("qualification policy not frozen: "+", ".join(unset))
         return failures
-    if not baseline:
-        failures.append("baseline profile missing")
-        return failures
-
     checks=[
       ("fps median",profile["fps"]["median"],baseline["fps"]["median"],cfg["fps_median_min_ratio"],None),
       ("frame p95",profile["frame_ms"]["p95_median"],baseline["frame_ms"]["p95_median"],None,cfg["frame_p95_max_ratio"]),
@@ -153,7 +190,6 @@ def qualify(profile, baseline, policy):
     ]
     for name,c,b,minr,maxr in checks:
         if not ratio_ok(c,b,minr,maxr): failures.append(name+" regressed vs qualified baseline")
-
     valid=max(1,int(profile.get("valid_sample_count") or 0))
     stale=float(profile["aux"]["inactive_samples"])/valid
     if stale>float(cfg["aux_stale_sample_max_fraction"]): failures.append("AUX projection stale/inactive fraction exceeded policy")
@@ -167,6 +203,7 @@ def main():
     ap.add_argument("--map",dest="mapping",help="JSON object mapping canonical metric names to dotted JSON paths")
     ap.add_argument("--duration-seconds",type=int,default=300)
     ap.add_argument("--interval-seconds",type=float,default=5)
+    ap.add_argument("--contract",choices=["diagnostic","foundation"],default="foundation")
     ap.add_argument("--baseline")
     ap.add_argument("--policy")
     ap.add_argument("--output")
@@ -175,7 +212,7 @@ def main():
 
     mapping=read_json(args.mapping) if args.mapping else None
     samples=read_jsonl(args.input) if args.input else collect(args.url,mapping,args.duration_seconds,args.interval_seconds)
-    profile=summarize(samples)
+    profile=summarize(samples,args.contract)
     failures=[]
     if not args.profile_only:
         failures=qualify(profile,read_json(args.baseline) if args.baseline else None,read_json(args.policy) if args.policy else None)
