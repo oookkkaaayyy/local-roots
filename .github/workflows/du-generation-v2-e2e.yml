@@ -16,7 +16,7 @@ jobs:
   e2e:
     name: Authenticated Generation V2 workflow
     runs-on: ubuntu-latest
-    timeout-minutes: 11
+    timeout-minutes: 9
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -62,6 +62,13 @@ jobs:
 
       - name: Exercise authenticated Generation V2 workflow
         run: node tests/du-generation-e2e/run.mjs
+
+      - name: Capture Edge Function diagnostics on failure
+        if: failure()
+        run: |
+          if [ -f "$RUNNER_TEMP/du-admin-e2e.log" ]; then
+            tail -n 120 "$RUNNER_TEMP/du-admin-e2e.log"
+          fi
 
       - name: Reset fresh database and repeat the workflow
         working-directory: tests/du-generation-e2e
