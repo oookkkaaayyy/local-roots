@@ -164,3 +164,18 @@ A no-run correction is already committed on the Packet20 temp branch at `ae157aa
 This workflow edit does NOT match the trigger path and therefore did not create another Actions run. No retry is authorized yet.
 
 Durable failure receipt: `evidence/hbnf-phase2-migration-20261003/packet20-cloud-run1-failure-20261004.json` at staging commit `e20cf5661cb40b09668ae915b2b765b8f171f780`.
+
+## Corrected cloud run 2 result — 2026-10-04
+Explicitly authorized corrected run `37230743394` / trigger commit `4ec22d4b8195c9865a97025d892ab59724e4b555` also FAILED during compile, but it proved the first dependency-closure repair worked: the effective dependency graph now contained AsyncTCP 3.4.7, ESPAsyncWebServerWLED, AsyncMqttClient, QuickEspNow, AnimatedGIF, GifDecoder, esp_dmx, and the other normal WLED ESP32 dependencies.
+
+The new exact failure is:
+`usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp:10:10: fatal error: ANIMartRIX.h: No such file or directory`
+
+Diagnosis: Release07 source directly includes/subclasses `ANIMartRIX`, but the Packet20 target env never declared the Animartrix library. A clean cloud runner therefore exposed another hidden local/cache dependency. WLED 16.0.1 itself pins the required library in `usermods/usermod_v2_animartrix/library.json` to:
+`https://github.com/netmindz/animartrix.git#81eb09b91c8c9c8c01f8ea442787f8127d56c72f`
+
+A no-run correction is staged on the Packet20 temp branch at `19f72a9339d0ed8501337c6141513bdf11dd84cc`: the exact WLED-pinned Animartrix library is added directly to only `env:hbnf_matrix_wled16_packet20_diag`; the separate WLED Animartrix usermod/effect registry is NOT enabled; effective-config preflight now requires the exact URL + commit before compile.
+
+This workflow-only change does not match the sentinel trigger path and created no third run. **No third Actions run is authorized.** Explicit user approval is now the genuine remaining gate.
+
+Durable failure receipt: `evidence/hbnf-phase2-migration-20261003/packet20-cloud-run2-failure-20261004.json` at staging commit `e2acfbc60e25e0b8ffa8b00648676d2ca91deec7`.
