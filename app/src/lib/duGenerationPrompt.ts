@@ -1,4 +1,4 @@
-export const DU_GENERATION_PROMPT_VERSION='clean-room-v2.1';
+export const DU_GENERATION_PROMPT_VERSION='clean-room-v2.2';
 export const DU_ARTWORK_WIDTH_MM=190.5;
 export const DU_MIN_FLOATING_WHITE_MM=2.0;
 export const DU_MIN_CONNECTED_WHITE_WIDTH_MM=1.0;
@@ -12,7 +12,7 @@ type PromptInput={
 
 export function buildDuGenerationPrompt({jobNumber,sourceCount,notes}:PromptInput){
   const imageWord=sourceCount===1?'image':'images';
-  return `START D&U STENCIL — ${jobNumber} — CLEAN ROOM v2.1
+  return `START D&U STENCIL — ${jobNumber} — CLEAN ROOM v2.2
 
 ISOLATION GATE
 The ${sourceCount} source ${imageWord} attached to THIS USER MESSAGE are the only visual inputs allowed for this generation. Do not retrieve, inspect, or use images from earlier messages, other chats, memory, AKS, Drive, Library, prior candidates, or prior generated outputs as visual references. If these source images are not present as native image attachments in this message, STOP and reply exactly: CLEAN ROOM INPUT FAILURE. Do not generate.
@@ -20,8 +20,11 @@ The ${sourceCount} source ${imageWord} attached to THIS USER MESSAGE are the onl
 SOURCE ROLES
 Use 01-APPROVED-COMPOSITION as the sole authority for pose, crop, head angle, eye direction, expression, ear geometry, silhouette, and framing. Use every 02-IDENTITY-REFERENCE image only to clarify the same pet's identity, markings, coat, and anatomy. Never average, merge, or substitute poses.
 
+COMPOSITION — HEAD DOMINANT
+Keep the portrait compact and head-dominant: the head, ears, muzzle, and upper neck should fill the composition. Crop out the chest, shoulders, forelegs, and torso. Do not include decorative body fur below the upper neck. Preserve enough upper-neck silhouette to make the portrait feel naturally finished. This crop target does not change the locked composition source, pose, head angle, expression, or identity.
+
 OUTPUT
-Create ONE black-on-white stencil artwork only. Do not include the source photo, a comparison board, labels, options, mockups, a disc, background scenery, or a second candidate.
+Create ONE pure-black-on-pure-white stencil artwork only. Do not include the source photo, a comparison board, labels, options, mockups, a disc, background scenery, or a second candidate.
 
 VISUAL TARGET
 Preserve the specific pet's recognizable identity and meaningful asymmetry. Use clean decisive black masses, deliberate medium-scale white openings, natural cheeks/jaw/chin, and selective coat-direction detail rather than repetitive spikes. Preserve the eyes, muzzle/nose, head shape, ears, expression, and distinctive markings. Avoid generic breed-icon simplification, scratchboard texture, stippling or micro-speckle, tiny decorative slivers, artificial eye rings/catchlights, arbitrary black blobs, and detail that weakens likeness.

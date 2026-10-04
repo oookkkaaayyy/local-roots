@@ -16,7 +16,7 @@ const workflowStates = new Set([
   "notification_sent", "stage_a_started", "awaiting_art_approval",
   "art_approved", "production_ready", "complete", "handoff_failed",
 ]);
-const generationPromptVersion = "clean-room-v2.1";
+const generationPromptVersion = "clean-room-v2.2";
 const generationRoleInstructions = [
   "Use the attachment named 01-APPROVED-COMPOSITION as the sole authority for pose, framing, and composition.",
   "Use attachments named 02-IDENTITY-REFERENCE-NN only as same-subject identity references; they must not replace the composition source.",

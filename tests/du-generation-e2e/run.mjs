@@ -98,7 +98,7 @@ const detail = await expectAction(adminToken, { action: 'job', job_id: jobId });
 assert.equal(detail.photos.length, 2);
 assert.ok(detail.photos.every((photo) => photo.signed_url), 'private source photos get signed URLs');
 
-const promptVersion = 'clean-room-v2.1';
+const promptVersion = 'clean-room-v2.2';
 const prompt = 'START D&U STENCIL — ' + jobNumber + ' — CLEAN ROOM v2.1\n\nUse 01-APPROVED-COMPOSITION as the only authority for pose and framing. Use identity references only for the same subject. Return one black-on-white stencil, preserving recognizable identity and avoiding tiny floating white details. Generation targets are not production certification.';
 assert.equal((await action(adminToken, { action: 'generation_lock_package', job_id: jobId, composition_photo_id: photoA, locked_prompt: prompt })).response.status, 409, 'prompt version is required');
 const locked = await expectAction(adminToken, { action: 'generation_lock_package', job_id: jobId, composition_photo_id: photoA, locked_prompt: prompt, prompt_version: promptVersion });
