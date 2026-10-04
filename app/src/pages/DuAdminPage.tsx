@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import JSZip from 'jszip';
 import { callFunction, supabase } from '../lib/supabase';
-import { buildDuInterimCleanRoomPrompt } from '../lib/duInterimPrompt';
 import { Shell } from '../components/Shell';
 import { ImageDropField } from '../components/ImageDropField';
+import { DuGenerationWorkflow } from '../components/DuGenerationWorkflow';
 
 type WorkflowStatus = 'draft'|'intake_complete'|'handoff_preparing'|'chatgpt_ready'|'notification_sent'|'stage_a_started'|'awaiting_art_approval'|'art_approved'|'production_ready'|'complete'|'handoff_failed';
 type JobSummary = {
@@ -13,9 +12,10 @@ type JobSummary = {
   subject_name:string|null; subject_type:string; notes:string|null; created_at:string; updated_at:string;
   workflow_status:WorkflowStatus; source_photo_count:number; handoff_ready_at:string|null;
   notification_sent_at:string|null; handoff_last_error:string|null; handoff_retry_count:number;
+  latest_draft_path?:string|null; final_stencil_path?:string|null; finished_disc_path?:string|null;
 };
 type Photo = {id:string; original_filename:string|null; sort_order:number; signed_url:string|null};
-type JobDetail = {job:JobSummary;photos:Photo[];options:Array<{option_code:string;prompt:string}>;checklist:Record<string,unknown>|null};
+type JobDetail = {job:JobSummary&{latest_draft_url?:string|null};photos:Photo[];options:Array<{option_code:string;prompt:string}>;checklist:Record<string,unknown>|null};
 type Dashboard = {admin:{display_name:string|null;role:string};jobs:JobSummary[]};
 type PushConfig = {public_key:string;subscription_count:number};
 type PushTest = {ok:boolean;sent:number};
@@ -23,7 +23,6 @@ type PairCode = {code:string;expires_at:string};
 type PairRedeem = {device_token:string;expires_at:string};
 type DeviceRegister = {ok:boolean;device_token?:string;expires_at?:string;already_paired?:boolean};
 type AdminCredential = {kind:'session'|'device';value:string};
-type HandoffCreate = {job_number:string;handoff_url:string;expires_at:string;source_photo_count:number};
 type GalleryAdminItem = {id:string;is_published:boolean;caption:string|null;source_photo_path:string|null;stencil_path:string|null;finished_disc_path:string|null;sort_order:number;legacy_roles_confirmed:boolean;created_at:string;updated_at:string};
 type GalleryList = {items:GalleryAdminItem[]};
 type GalleryUpload = {ok:boolean;item:GalleryAdminItem};
@@ -86,91 +85,46 @@ function Login({targetJob,onPaired}:{targetJob:string|null;onPaired:(token:strin
     {message?<div className="notice">{message}</div>:null}</div>;
 }
 
-function stagePrompt(detail:JobDetail){return buildDuInterimCleanRoomPrompt(detail);}
-
-function safeZipName(value:string|null|undefined,fallback:string){
-  const cleaned=String(value||'').trim().replace(/[^A-Za-z0-9._ -]+/g,'_').replace(/\s+/g,' ').slice(0,120);
-  return cleaned||fallback;
-}
-
-async function downloadSourceZip(detail:JobDetail){
-  const zip=new JSZip();
-  for(let index=0;index<detail.photos.length;index+=1){
-    const photo=detail.photos[index];
-    if(!photo.signed_url)throw new Error(`Source ${index+1} is unavailable.`);
-    const response=await fetch(photo.signed_url);
-    if(!response.ok)throw new Error(`Source ${index+1} could not be retrieved.`);
-    const blob=await response.blob();
-    const fallback=`source-${String(index+1).padStart(2,'0')}.jpg`;
-    const name=`${String(index+1).padStart(2,'0')}-${safeZipName(photo.original_filename,fallback)}`;
-    zip.file(name,blob);
-  }
-  const output=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
-  const href=URL.createObjectURL(output);
-  const anchor=document.createElement('a');
-  anchor.href=href;
-  anchor.download=`${safeZipName(detail.job.job_number,'DU-JOB')}-source-photos.zip`;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  window.setTimeout(()=>URL.revokeObjectURL(href),30000);
-}
 
 function JobCard({job,credential,refresh,autoOpen}:{job:JobSummary;credential:AdminCredential;refresh:()=>void;autoOpen:boolean}){
   const [detail,setDetail]=useState<JobDetail|null>(null),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
-  const [handoffText,setHandoffText]=useState(''),[handoffExpires,setHandoffExpires]=useState('');
-  const load=useCallback(async()=>{setBusy(true);setMessage('');try{setDetail(await callFunction<JobDetail>('du-admin',{action:'job',job_id:job.id},functionAuth(credential)));}catch(error){setMessage(error instanceof Error?error.message:'Could not load job.');}finally{setBusy(false);}},[job.id,credential.kind,credential.value]);
-  useEffect(()=>{if(!autoOpen)return;void load();const timer=window.setTimeout(()=>document.getElementById(job.job_number)?.scrollIntoView({behavior:'smooth',block:'start'}),100);return()=>window.clearTimeout(timer);},[autoOpen,job.job_number,load]);
-  async function setWorkflow(workflow_status:WorkflowStatus){setBusy(true);setMessage('');try{await callFunction('du-admin',{action:'set_workflow',job_id:job.id,workflow_status,clear_handoff_error:true},functionAuth(credential));setMessage(`Moved to ${labels[workflow_status]}.`);refresh();}catch(error){setMessage(error instanceof Error?error.message:'Update failed.');}finally{setBusy(false);}}
-  async function downloadSourcesZip(){
+
+  const load=useCallback(async()=>{
     setBusy(true);setMessage('');
     try{
-      const current=detail??await callFunction<JobDetail>('du-admin',{action:'job',job_id:job.id},functionAuth(credential));
+      const current=await callFunction<JobDetail>('du-admin',{action:'job',job_id:job.id},functionAuth(credential));
       setDetail(current);
-      await downloadSourceZip(current);
-      setMessage(`Downloaded ${current.photos.length} source photo${current.photos.length===1?'':'s'} as one ZIP.`);
-    }catch(error){setMessage(error instanceof Error?error.message:'Could not create source ZIP.');}
+    }catch(error){setMessage(error instanceof Error?error.message:'Could not load job.');}
     finally{setBusy(false);}
-  }
-  async function copyPrompt(){if(!detail)await load();const current=detail??await callFunction<JobDetail>('du-admin',{action:'job',job_id:job.id},functionAuth(credential));await navigator.clipboard.writeText(stagePrompt(current));setDetail(current);setMessage('Clean-room prompt copied. Use Download source ZIP, unzip it, attach every source image in a NEW chat, then paste.');}
-  async function copyHandoff(){
-    if(!handoffText)return;
-    try{await navigator.clipboard.writeText(handoffText);setMessage('Secure handoff copied. Open ChatGPT, paste, and send.');}
-    catch{setMessage('Clipboard access was blocked. Press and hold inside the handoff text below, copy it manually, then open ChatGPT.');}
-  }
-  function openChatGPT(){
-    if(isIos()){
-      window.location.href='chatgpt://';
-      return;
-    }
-    const opened=window.open('https://chatgpt.com/','_blank','noopener,noreferrer');
-    if(!opened)window.location.assign('https://chatgpt.com/');
-  }
-  async function prepareForChatGPT(){
-    setBusy(true);setMessage('');setHandoffText('');setHandoffExpires('');
+  },[job.id,credential.kind,credential.value]);
+
+  useEffect(()=>{if(!autoOpen)return;void load();const timer=window.setTimeout(()=>document.getElementById(job.job_number)?.scrollIntoView({behavior:'smooth',block:'start'}),100);return()=>window.clearTimeout(timer);},[autoOpen,job.job_number,load]);
+
+  async function setWorkflow(workflow_status:WorkflowStatus){
+    setBusy(true);setMessage('');
     try{
-      const handoff=await callFunction<HandoffCreate>('du-handoff-create',{job_id:job.id},functionAuth(credential));
-      const instruction=`START D&U STENCIL — ${handoff.job_number}\n\nSecure handoff ZIP (${handoff.source_photo_count} source photo${handoff.source_photo_count===1?'':'s'}; expires in 30 minutes):\n${handoff.handoff_url}\n\nDownload the ZIP yourself; do not ask me to upload the photos. Unpack it, read START_HERE.txt, inspect every source photo, use current Dyed & Unattached standards/AKS context if available, and begin stencil development.`;
-      setHandoffText(instruction);setHandoffExpires(handoff.expires_at);
-      let copied=false;
-      try{await navigator.clipboard.writeText(instruction);copied=true;}catch{copied=false;}
+      await callFunction('du-admin',{action:'set_workflow',job_id:job.id,workflow_status,clear_handoff_error:true},functionAuth(credential));
+      setMessage('Moved to '+labels[workflow_status]+'.');
       refresh();
-      setMessage(copied
-        ?'Secure handoff copied. Tap Open ChatGPT below, paste, and send.'
-        :'Secure handoff is ready, but iPhone blocked automatic clipboard copy. Use Copy handoff below, then Open ChatGPT.');
-    }catch(error){setMessage(error instanceof Error?error.message:'Could not prepare the secure ChatGPT handoff.');}
+      if(detail)await load();
+    }catch(error){setMessage(error instanceof Error?error.message:'Update failed.');}
     finally{setBusy(false);}
   }
+
   return <article className="admin-card du-job-card" id={job.job_number}>
-    <div className="admin-card-head"><div><h3>{job.job_number} · {job.subject_name||'Unnamed pet'}</h3><p>{job.client_name||'Unknown client'} · {new Date(job.created_at).toLocaleString()}</p></div><div className="pill-row"><span className={`health health-${job.workflow_status==='handoff_failed'?'critical':job.workflow_status==='complete'?'healthy':'warning'}`}>{labels[job.workflow_status]}</span><span className="status-pill">{job.source_photo_count} photo{job.source_photo_count===1?'':'s'}</span></div></div>
+    <div className="admin-card-head"><div><h3>{job.job_number} · {job.subject_name||'Unnamed pet'}</h3><p>{job.client_name||'Unknown client'} · {new Date(job.created_at).toLocaleString()}</p></div><div className="pill-row"><span className={job.workflow_status==='complete'?'health health-healthy':'health health-warning'}>{labels[job.workflow_status]}</span><span className="status-pill">{job.source_photo_count} photo{job.source_photo_count===1?'':'s'}</span></div></div>
     {job.notes?<p className="admin-notes">{job.notes}</p>:null}
-    {job.handoff_last_error?<div className="notice error"><strong>Handoff error</strong><span>{job.handoff_last_error}</span></div>:null}
-    <div className="button-row"><button className="button ghost" disabled={busy} onClick={()=>detail?setDetail(null):void load()}>{busy?'Preparing…':detail?'Hide details':'Open job'}</button><button className="button primary" disabled={busy} onClick={()=>void prepareForChatGPT()}>Start Stencil</button><button className="button ghost" disabled={busy} onClick={()=>void copyPrompt()}>Copy prompt only</button><button className="button ghost" disabled={busy} onClick={()=>void downloadSourcesZip()}>Download source ZIP</button></div>
-    {handoffText?<div className="notice"><strong>Secure ChatGPT handoff ready</strong><span>{handoffExpires?`Expires ${new Date(handoffExpires).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}.`:''} ChatGPT can retrieve the source package directly; you do not need to attach the photos.</span><textarea readOnly value={handoffText} rows={7} style={{width:'100%',minHeight:'10rem'}} onFocus={event=>event.currentTarget.select()}/><div className="button-row"><button className="button primary" type="button" onClick={openChatGPT}>Open ChatGPT</button><button className="button ghost" type="button" onClick={()=>void copyHandoff()}>Copy handoff</button></div></div>:null}
-    {detail?<div className="du-job-detail"><dl className="detail-grid"><div><dt>Client</dt><dd>{job.client_name||'—'}</dd></div><div><dt>Phone</dt><dd>{job.phone||'—'}</dd></div><div><dt>Submitted</dt><dd>{new Date(job.created_at).toLocaleString()}</dd></div></dl>
-      <div className="du-source-grid">{detail.photos.map((photo,index)=><a className="button ghost" key={photo.id} href={photo.signed_url||undefined} download={photo.original_filename||`source-${index+1}.jpg`} target="_blank" rel="noreferrer">Download source {index+1}</a>)}</div>
+    <div className="button-row">
+      <button className="button ghost" disabled={busy} onClick={()=>detail?setDetail(null):void load()}>{busy?'Working…':detail?'Hide details':'Open job'}</button>
+    </div>
+    {detail?<div className="du-job-detail">
+      <dl className="detail-grid"><div><dt>Client</dt><dd>{job.client_name||'—'}</dd></div><div><dt>Phone</dt><dd>{job.phone||'—'}</dd></div><div><dt>Submitted</dt><dd>{new Date(job.created_at).toLocaleString()}</dd></div></dl>
+      <p><strong>Original source photos</strong> · originals remain private and unchanged.</p>
+      <div className="du-source-grid">{detail.photos.map((photo,index)=><div className="du-source-item" key={photo.id}><img src={photo.signed_url||undefined} alt={'Source '+(index+1)} style={{display:'block',width:'96px',height:'96px',objectFit:'cover',marginBottom:'8px',borderRadius:'10px'}}/><span>Source {index+1}</span></div>)}</div>
+      <DuGenerationWorkflow jobId={job.id} jobNumber={job.job_number} notes={job.notes} photos={detail.photos} credential={credential}/>
       <label>Workflow stage<select value={job.workflow_status} disabled={busy} onChange={event=>void setWorkflow(event.target.value as WorkflowStatus)}>{Object.entries(labels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
-    </div>:null}{message?<div className="notice">{message}</div>:null}
+    </div>:null}
+    {message?<div className={message.toLowerCase().includes('failed')?'notice error':'notice'}>{message}</div>:null}
   </article>;
 }
 

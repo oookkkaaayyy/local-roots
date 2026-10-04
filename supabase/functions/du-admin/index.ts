@@ -16,6 +16,11 @@ const workflowStates = new Set([
   "notification_sent", "stage_a_started", "awaiting_art_approval",
   "art_approved", "production_ready", "complete", "handoff_failed",
 ]);
+const generationPromptVersion = "clean-room-v2.2";
+const generationRoleInstructions = [
+  "Use the attachment named 01-APPROVED-COMPOSITION as the sole authority for pose, framing, and composition.",
+  "Use attachments named 02-IDENTITY-REFERENCE-NN only as same-subject identity references; they must not replace the composition source.",
+].join("\n");
 const vapidSubject = "https://localrootsdg.com/dyed-and-unattached";
 const pairAlphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
 type ServiceClient = ReturnType<typeof createClient>;
@@ -31,6 +36,55 @@ type PushRow = {
 async function sha256Hex(value: string) {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function sha256Bytes(value: Uint8Array) {
+  const digest = await crypto.subtle.digest("SHA-256", value);
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function signedGenerationState(service: ServiceClient, jobId: string) {
+  const { data: packageRow } = await service.from("du_generation_packages").select("*").eq("job_id", jobId).maybeSingle();
+  if (!packageRow) return { package: null, attempts: [], selection: null, correction: null, final_master: null, production_run: null };
+  const { data: attempts } = await service.from("du_generation_attempts").select("*").eq("job_id", jobId).order("attempt_number");
+  const { data: selection } = await service.from("du_generation_selections").select("*").eq("job_id", jobId).maybeSingle();
+  const { data: correction } = await service.from("du_generation_corrections").select("*").eq("job_id", jobId).maybeSingle();
+  const { data: finalMaster } = await service.from("du_generation_final_masters").select("*").eq("job_id", jobId).maybeSingle();
+  const { data: productionRun } = await service.from("du_generation_production_runs").select("*").eq("job_id", jobId).maybeSingle();
+  const sources = Array.isArray(packageRow.source_manifest?.sources) ? packageRow.source_manifest.sources : [];
+  const signedSources = await Promise.all(sources.map(async (source: Record<string, unknown>) => {
+    const { data } = await service.storage.from("du-intake").createSignedUrl(String(source.storage_path), 3600);
+    return { ...source, signed_url: data?.signedUrl || null };
+  }));
+  const withCandidateUrls = await Promise.all((attempts || []).map(async (attempt) => {
+    const { data } = attempt.candidate_path
+      ? await service.storage.from("du-intake").createSignedUrl(attempt.candidate_path, 3600)
+      : { data: null };
+    return { ...attempt, candidate_url: data?.signedUrl || null };
+  }));
+  let correctionUrl: string | null = null;
+  if (correction?.corrected_path) {
+    const { data } = await service.storage.from("du-intake").createSignedUrl(correction.corrected_path, 3600);
+    correctionUrl = data?.signedUrl || null;
+  }
+  let finalMasterUrl: string | null = null;
+  if (finalMaster?.master_path) {
+    const { data } = await service.storage.from("du-intake").createSignedUrl(finalMaster.master_path, 3600);
+    finalMasterUrl = data?.signedUrl || null;
+  }
+  let productionOutputUrl: string | null = null;
+  if (productionRun?.output_path) {
+    const { data } = await service.storage.from("du-intake").createSignedUrl(productionRun.output_path, 3600);
+    productionOutputUrl = data?.signedUrl || null;
+  }
+  return {
+    package: { ...packageRow, source_manifest: { ...packageRow.source_manifest, sources: signedSources } },
+    attempts: withCandidateUrls,
+    selection,
+    correction: correction ? { ...correction, corrected_url: correctionUrl } : null,
+    final_master: finalMaster ? { ...finalMaster, signed_url: finalMasterUrl } : null,
+    production_run: productionRun ? { ...productionRun, output_url: productionOutputUrl } : null,
+  };
 }
 
 function newPairCode() {
@@ -292,13 +346,252 @@ Deno.serve(async (req: Request) => {
       .eq("job_id", job.id).order("option_code");
     const { data: checklist } = await service.from("production_checklist").select("*")
       .eq("job_id", job.id).maybeSingle();
-    return json({ job, photos: hydrated, options: options || [], checklist });
+    let latestDraftUrl: string | null = null;
+    if (job.latest_draft_path) {
+      const { data: draftSigned } = await service.storage.from("du-intake")
+        .createSignedUrl(job.latest_draft_path, 3600);
+      latestDraftUrl = draftSigned?.signedUrl || null;
+    }
+    return json({ job: { ...job, latest_draft_url: latestDraftUrl }, photos: hydrated, options: options || [], checklist });
+  }
+
+  if (action === "generation_state") {
+    const jobId = String(body.job_id || "").trim();
+    if (!jobId) return json({ error: "invalid_job_id" }, 400);
+    const state = await signedGenerationState(service, jobId);
+    return json(state);
+  }
+
+  if (action === "generation_lock_package") {
+    try {
+      const jobId = String(body.job_id || "").trim();
+      const compositionPhotoId = String(body.composition_photo_id || "").trim();
+      const basePrompt = String(body.locked_prompt || "").trim();
+      const promptVersion = String(body.prompt_version || "").trim();
+      if (!jobId || !compositionPhotoId || basePrompt.length < 20 || basePrompt.length > 11800) {
+        return json({ error: "package_fields_invalid" }, 400);
+      }
+      if (promptVersion !== generationPromptVersion) {
+        return json({ error: "generation_prompt_version_mismatch", expected: generationPromptVersion }, 409);
+      }
+      const lockedPrompt = `${generationRoleInstructions}\n\n${basePrompt}`;
+      const { data: existing } = await service.from("du_generation_packages").select("id").eq("job_id", jobId).maybeSingle();
+      if (existing) return json({ error: "source_package_already_locked" }, 409);
+      const { data: job } = await service.from("jobs").select("id,job_number").eq("id", jobId).maybeSingle();
+      if (!job) return json({ error: "job_not_found" }, 404);
+      const { data: photos, error: photoError } = await service.from("job_photos").select("*")
+        .eq("job_id", jobId).order("sort_order");
+      if (photoError || !photos?.length) return json({ error: "source_photos_unavailable" }, 400);
+      if (!photos.some((photo) => photo.id === compositionPhotoId)) return json({ error: "composition_photo_not_in_job" }, 400);
+      const packageId = crypto.randomUUID();
+      const sources = [];
+      for (const photo of photos) {
+        const role = photo.id === compositionPhotoId ? "composition" : "identity_reference";
+        const bucket = String(photo.storage_bucket || "du-intake");
+        const { data: download, error: downloadError } = await service.storage.from(bucket).download(photo.storage_path);
+        if (downloadError || !download) return json({ error: "source_photo_download_failed", photo_id: photo.id }, 400);
+        const bytes = new Uint8Array(await download.arrayBuffer());
+        const sha = await sha256Bytes(bytes);
+        const sourceMime = download.type || photo.content_type || "";
+        const extension = ({ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/heic": "heic", "image/heif": "heif", "image/avif": "avif" } as Record<string, string>)[sourceMime.toLowerCase()] || "img";
+        const name = role === "composition"
+          ? `01-APPROVED-COMPOSITION.${extension}`
+          : `02-IDENTITY-REFERENCE-${String(sources.filter((item) => item.role === "identity_reference").length + 1).padStart(2, "0")}.${extension}`;
+        const path = `jobs/${job.job_number}/generation-v2/source-packages/${packageId}/${name}`;
+        const { error: uploadError } = await service.storage.from("du-intake").upload(path, bytes, {
+          contentType: sourceMime || "application/octet-stream", cacheControl: "31536000", upsert: false,
+        });
+        if (uploadError) return json({ error: "source_package_copy_failed", photo_id: photo.id }, 400);
+        sources.push({ source_photo_id: photo.id, role, filename: name, storage_path: path, sha256: sha, size_bytes: bytes.length, sort_order: photo.sort_order });
+      }
+      const sourceManifest = { version: 1, prompt_version: promptVersion, job_id: jobId, composition_photo_id: compositionPhotoId, sources };
+      const sourceManifestSha256 = await sha256Hex(JSON.stringify(sourceManifest));
+      const promptSha256 = await sha256Hex(lockedPrompt);
+      const { data: packageRow, error: packageError } = await service.from("du_generation_packages").insert({
+        id: packageId, job_id: jobId, composition_photo_id: compositionPhotoId,
+        locked_prompt: lockedPrompt, prompt_sha256: promptSha256,
+        source_manifest: sourceManifest, source_manifest_sha256: sourceManifestSha256, created_by: userId,
+      }).select("id").single();
+      if (packageError || !packageRow) return json({ error: "source_package_lock_failed", detail: packageError?.message }, 400);
+      const { error: attemptError } = await service.from("du_generation_attempts").insert({
+        package_id: packageId, job_id: jobId, attempt_number: 1, status: "ready", created_by: userId,
+      });
+      if (attemptError) return json({ error: "attempt_a_create_failed", detail: attemptError.message }, 400);
+      return json(await signedGenerationState(service, jobId));
+    } catch (error) {
+      return json({ error: error instanceof Error ? error.message : "source_package_failed" }, 400);
+    }
+  }
+
+  if (action === "generation_next_attempt") {
+    const jobId = String(body.job_id || "").trim();
+    const { data: selected } = await service.from("du_generation_selections").select("job_id").eq("job_id", jobId).maybeSingle();
+    if (selected) return json({ error: "visual_master_already_selected" }, 409);
+    const { data: attempts } = await service.from("du_generation_attempts").select("attempt_number,status").eq("job_id", jobId).order("attempt_number");
+    const previous = attempts?.at(-1);
+    if (!previous || !["failed", "rejected"].includes(previous.status) || attempts!.length >= 3) {
+      return json({ error: "next_attempt_not_available" }, 409);
+    }
+    const { data: packageRow } = await service.from("du_generation_packages").select("id").eq("job_id", jobId).maybeSingle();
+    if (!packageRow) return json({ error: "source_package_missing" }, 409);
+    const { error } = await service.from("du_generation_attempts").insert({
+      package_id: packageRow.id, job_id: jobId, attempt_number: attempts!.length + 1, status: "ready", created_by: userId,
+    });
+    if (error) return json({ error: "next_attempt_create_failed", detail: error.message }, 400);
+    return json(await signedGenerationState(service, jobId));
+  }
+
+  if (action === "generation_mark_attempt") {
+    const jobId = String(body.job_id || "").trim();
+    const attemptId = String(body.attempt_id || "").trim();
+    const status = String(body.status || "");
+    if (!["failed", "rejected"].includes(status)) return json({ error: "invalid_attempt_status" }, 400);
+    const failureNote = String(body.failure_note || "").trim().slice(0, 1000);
+    if (failureNote.length < 5) return json({ error: "attempt_outcome_note_required" }, 400);
+    const { data, error } = await service.from("du_generation_attempts").update({ status, failure_note: failureNote, updated_at: new Date().toISOString() })
+      .eq("id", attemptId).eq("job_id", jobId).eq("status", status === "failed" ? "ready" : "candidate").select("id").maybeSingle();
+    if (error || !data) return json({ error: "attempt_status_update_failed", detail: error?.message }, 400);
+    return json(await signedGenerationState(service, jobId));
+  }
+
+  if (action === "generation_upload_candidate") {
+    try {
+      const jobId = String(body.job_id || "").trim();
+      const attemptId = String(body.attempt_id || "").trim();
+      const image = decodeGalleryImage(body.image_data_url);
+      const { data: attempt } = await service.from("du_generation_attempts").select("id,package_id,attempt_number,status")
+        .eq("id", attemptId).eq("job_id", jobId).maybeSingle();
+      if (!attempt || attempt.status !== "ready") return json({ error: "attempt_not_uploadable" }, 409);
+      const { data: job } = await service.from("jobs").select("job_number").eq("id", jobId).maybeSingle();
+      const path = `jobs/${job!.job_number}/generation-v2/candidates/${String.fromCharCode(64 + attempt.attempt_number)}-${crypto.randomUUID()}.${image.extension}`;
+      const { error: uploadError } = await service.storage.from("du-intake").upload(path, image.bytes, { contentType: image.mime, cacheControl: "31536000", upsert: false });
+      if (uploadError) return json({ error: "candidate_upload_failed", detail: uploadError.message }, 400);
+      const candidateSha = await sha256Bytes(image.bytes);
+      const metadata = { filename: `attempt-${String.fromCharCode(64 + attempt.attempt_number)}.${image.extension}`, mime: image.mime, size_bytes: image.bytes.length, uploaded_by: userId, uploaded_at: new Date().toISOString() };
+      const { error } = await service.from("du_generation_attempts").update({ status: "candidate", candidate_path: path, candidate_sha256: candidateSha, candidate_metadata: metadata, updated_at: new Date().toISOString() }).eq("id", attemptId).eq("status", "ready");
+      if (error) return json({ error: "candidate_record_failed", detail: error.message }, 400);
+      return json(await signedGenerationState(service, jobId));
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "candidate_upload_failed";
+      return json({ error: code }, code === "gallery_image_too_large" ? 413 : 400);
+    }
+  }
+
+  if (action === "generation_select_attempt") {
+    const jobId = String(body.job_id || "").trim();
+    const attemptId = String(body.attempt_id || "").trim();
+    const { data: attempt } = await service.from("du_generation_attempts").select("id,candidate_path,candidate_sha256,status").eq("id", attemptId).eq("job_id", jobId).maybeSingle();
+    if (!attempt || attempt.status !== "candidate" || !attempt.candidate_path) return json({ error: "candidate_not_selectable" }, 409);
+    const { error: selectError } = await service.from("du_generation_selections").insert({ job_id: jobId, attempt_id: attemptId, candidate_path: attempt.candidate_path, candidate_sha256: attempt.candidate_sha256, selected_by: userId });
+    if (selectError) return json({ error: "visual_master_already_selected", detail: selectError.message }, 409);
+    const { error } = await service.from("du_generation_attempts").update({ status: "selected", updated_at: new Date().toISOString() }).eq("id", attemptId).eq("status", "candidate");
+    if (error) return json({ error: "candidate_selection_state_failed", detail: error.message }, 400);
+    return json(await signedGenerationState(service, jobId));
+  }
+
+  if (action === "generation_start_correction") {
+    const jobId = String(body.job_id || "").trim();
+    const requestedCorrection = String(body.correction_prompt || "").trim();
+    if (requestedCorrection.length < 10 || requestedCorrection.length > 1000) return json({ error: "localized_correction_prompt_invalid" }, 400);
+    const { data: finalMaster } = await service.from("du_generation_final_masters").select("job_id").eq("job_id", jobId).maybeSingle();
+    if (finalMaster) return json({ error: "final_master_already_locked" }, 409);
+    const { data: selection } = await service.from("du_generation_selections").select("attempt_id,candidate_path,candidate_sha256").eq("job_id", jobId).maybeSingle();
+    if (!selection) return json({ error: "visual_master_not_selected" }, 409);
+    const prompt = `Apply only this one localized change to the attached selected visual master: ${requestedCorrection}\nPreserve every other part of the artwork, including the subject identity, anatomy, composition, expression, and style.`;
+    const { error } = await service.from("du_generation_corrections").insert({
+      job_id: jobId, base_attempt_id: selection.attempt_id, base_candidate_path: selection.candidate_path,
+      base_candidate_sha256: selection.candidate_sha256, correction_prompt: prompt,
+      correction_prompt_sha256: await sha256Hex(prompt), created_by: userId,
+    });
+    if (error) return json({ error: "correction_branch_already_used", detail: error.message }, 409);
+    return json(await signedGenerationState(service, jobId));
+  }
+
+  if (action === "generation_upload_correction") {
+    try {
+      const jobId = String(body.job_id || "").trim();
+      const image = decodeGalleryImage(body.image_data_url);
+      const { data: correction } = await service.from("du_generation_corrections").select("created_at,corrected_path").eq("job_id", jobId).maybeSingle();
+      if (!correction || correction.corrected_path) return json({ error: "correction_upload_unavailable" }, 409);
+      const { data: job } = await service.from("jobs").select("job_number").eq("id", jobId).maybeSingle();
+      const path = `jobs/${job!.job_number}/generation-v2/correction/${crypto.randomUUID()}.${image.extension}`;
+      const { error: uploadError } = await service.storage.from("du-intake").upload(path, image.bytes, { contentType: image.mime, cacheControl: "31536000", upsert: false });
+      if (uploadError) return json({ error: "correction_upload_failed", detail: uploadError.message }, 400);
+      const sha = await sha256Bytes(image.bytes);
+      const { error } = await service.from("du_generation_corrections").update({
+        corrected_path: path, corrected_sha256: sha,
+        corrected_metadata: { filename: `localized-correction.${image.extension}`, mime: image.mime, size_bytes: image.bytes.length, uploaded_by: userId, uploaded_at: new Date().toISOString() },
+      }).eq("job_id", jobId).is("corrected_path", null);
+      if (error) return json({ error: "correction_record_failed", detail: error.message }, 400);
+      return json(await signedGenerationState(service, jobId));
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "correction_upload_failed";
+      return json({ error: code }, code === "gallery_image_too_large" ? 413 : 400);
+    }
+  }
+
+  if (action === "generation_finalize_master") {
+    const jobId = String(body.job_id || "").trim();
+    const kind = String(body.master_kind || "");
+    let path = "", sha = "", attemptId: string | null = null;
+    if (kind === "attempt") {
+      const { data: selection } = await service.from("du_generation_selections").select("attempt_id,candidate_path,candidate_sha256").eq("job_id", jobId).maybeSingle();
+      if (!selection) return json({ error: "visual_master_not_selected" }, 409);
+      path = selection.candidate_path; sha = selection.candidate_sha256; attemptId = selection.attempt_id;
+    } else if (kind === "correction") {
+      const { data: correction } = await service.from("du_generation_corrections").select("corrected_path,corrected_sha256").eq("job_id", jobId).maybeSingle();
+      if (!correction?.corrected_path || !correction.corrected_sha256) return json({ error: "correction_candidate_missing" }, 409);
+      path = correction.corrected_path; sha = correction.corrected_sha256;
+    } else return json({ error: "invalid_master_kind" }, 400);
+    const { error } = await service.from("du_generation_final_masters").insert({ job_id: jobId, master_kind: kind, attempt_id: attemptId, master_path: path, master_sha256: sha, selected_by: userId });
+    if (error) return json({ error: "final_master_already_locked", detail: error.message }, 409);
+    return json(await signedGenerationState(service, jobId));
+  }
+
+  if (action === "generation_upload_production") {
+    try {
+      const jobId = String(body.job_id || "").trim();
+      const report = body.validator_report;
+      if (!report || typeof report !== "object") return json({ error: "passing_validator_report_required" }, 400);
+      const { data: master } = await service.from("du_generation_final_masters").select("master_path,master_sha256").eq("job_id", jobId).maybeSingle();
+      if (!master) return json({ error: "final_master_not_locked" }, 409);
+      const image = decodeGalleryImage(body.image_data_url);
+      const outputSha = await sha256Bytes(image.bytes);
+      const cases = Array.isArray(report.cases) ? report.cases : [];
+      if (report.artwork_width_mm !== 190.5 || !cases.length ||
+          cases.some((item: Record<string, unknown>) => item.physical_verdict !== "PASS" || item.source_sha256 !== outputSha)) {
+        return json({ error: "validator_report_must_pass_at_190_5mm_for_exact_uploaded_file" }, 400);
+      }
+      const { data: job } = await service.from("jobs").select("job_number").eq("id", jobId).maybeSingle();
+      const path = `jobs/${job!.job_number}/generation-v2/productionized/${crypto.randomUUID()}.${image.extension}`;
+      const { error: uploadError } = await service.storage.from("du-intake").upload(path, image.bytes, { contentType: image.mime, cacheControl: "31536000", upsert: false });
+      if (uploadError) return json({ error: "production_output_upload_failed", detail: uploadError.message }, 400);
+      const { error } = await service.from("du_generation_production_runs").insert({
+        job_id: jobId, input_master_path: master.master_path, input_master_sha256: master.master_sha256,
+        output_path: path, output_sha256: outputSha, artwork_width_mm: 190.5,
+        validator_report: report, created_by: userId,
+      });
+      if (error) return json({ error: "production_run_already_recorded", detail: error.message }, 409);
+      return json(await signedGenerationState(service, jobId));
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "production_output_upload_failed";
+      return json({ error: code }, code === "gallery_image_too_large" ? 413 : 400);
+    }
   }
 
   if (action === "set_workflow") {
     const jobId = String(body.job_id || "").trim();
     const workflowStatus = String(body.workflow_status || "").trim();
     if (!jobId || !workflowStates.has(workflowStatus)) return json({ error: "invalid_workflow_update" }, 400);
+    const { data: generationPackage } = await service.from("du_generation_packages").select("job_id").eq("job_id", jobId).maybeSingle();
+    if (generationPackage && ["awaiting_art_approval", "art_approved"].includes(workflowStatus)) {
+      const { data: master } = await service.from("du_generation_final_masters").select("job_id").eq("job_id", jobId).maybeSingle();
+      if (!master) return json({ error: "final_visual_master_required_before_art_approval" }, 409);
+    }
+    if (generationPackage && ["production_ready", "complete"].includes(workflowStatus)) {
+      const { data: production } = await service.from("du_generation_production_runs").select("job_id").eq("job_id", jobId).maybeSingle();
+      if (!production) return json({ error: "passing_production_validation_required_before_production" }, 409);
+    }
     const patch: Record<string, unknown> = { workflow_status: workflowStatus };
     if (workflowStatus === "handoff_failed") {
       patch.handoff_last_error = String(body.handoff_last_error || "Handoff failed").slice(0, 2000);
