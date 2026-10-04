@@ -1,10 +1,12 @@
-HBNF Packet20 corrected one-shot build trigger — third authorized run
+HBNF Packet20 reconciled clean-room build trigger
 branch=hbnf-packet20-safe-point-cloud-20261004
-pre_trigger_head=19f72a9339d0ed8501337c6141513bdf11dd84cc
+pre_trigger_head=71e49b85de75031edf1081d7a60fd49acff5c3b6
 source_sha256=529e1bf718c3770b7d4ba6408178e9d3e7a4ed1d223b9bbf9071b68e75eed74b
 overlay_tar_sha256=1f2d5d020a6dba814fbc3d65ae1daa0c8973872ab7100b858022cd5110ef1970
-workflow_git_blob_sha=7ee15312d5d3f020108f364f86e21a9cead2c011
-authorized_correction=declare_exact_wled_pinned_animartrix_dependency
+source_patch_sha256=aca7b2fa6fe45ce992e162d91447351487e854279de373e691cf02615c149b04
+animartrix_clock_patch_sha256=f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4
+workflow_git_blob_sha=2a64c4c0190173e5b11ec909f4984891e56e87a0
+authorized_correction=reconcile_complete_clean_room_build_closure_and_apply_exact_vendor_clock_patch
 authorized_run_scope=one_job_one_compile_20m
-authorization=Approve one more corrected Packet20 cloud build. No further retries without asking me.
-No further retry or fourth run is authorized.
+authorization=User approved up to $5 total external cost for genuinely necessary continuation work; minimize spend and pause before any single action materially above historical estimates.
+challenger_rule=No blind retry loop. If another missing build input appears, preserve evidence and audit closure before any later run.
