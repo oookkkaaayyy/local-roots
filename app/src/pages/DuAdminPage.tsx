@@ -121,7 +121,7 @@ function JobCard({job,credential,refresh,autoOpen}:{job:JobSummary;credential:Ad
       <dl className="detail-grid"><div><dt>Client</dt><dd>{job.client_name||'—'}</dd></div><div><dt>Phone</dt><dd>{job.phone||'—'}</dd></div><div><dt>Submitted</dt><dd>{new Date(job.created_at).toLocaleString()}</dd></div></dl>
       <p><strong>Original source photos</strong> · originals remain private and unchanged.</p>
       <div className="du-source-grid">{detail.photos.map((photo,index)=><div className="du-source-item" key={photo.id}><img src={photo.signed_url||undefined} alt={'Source '+(index+1)} style={{display:'block',width:'96px',height:'96px',objectFit:'cover',marginBottom:'8px',borderRadius:'10px'}}/><span>Source {index+1}</span></div>)}</div>
-      <DuGenerationWorkflow jobId={job.id} photos={detail.photos} credential={credential}/>
+      <DuGenerationWorkflow jobId={job.id} jobNumber={job.job_number} notes={job.notes} photos={detail.photos} credential={credential}/>
       <label>Workflow stage<select value={job.workflow_status} disabled={busy} onChange={event=>void setWorkflow(event.target.value as WorkflowStatus)}>{Object.entries(labels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
     </div>:null}
     {message?<div className={message.toLowerCase().includes('failed')?'notice error':'notice'}>{message}</div>:null}

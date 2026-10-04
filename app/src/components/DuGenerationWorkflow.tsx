@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import JSZip from 'jszip';
 import { callFunction } from '../lib/supabase';
+import { buildDuGenerationPrompt, DU_GENERATION_PROMPT_VERSION } from '../lib/duGenerationPrompt';
 
 type Credential = {kind:'session'|'device';value:string};
 type SourcePhoto = {id:string;original_filename:string|null;sort_order:number;signed_url:string|null};
@@ -34,18 +36,46 @@ async function copyText(text:string){
   catch{return 'Clipboard is unavailable. Select and copy the prompt shown below.';}
 }
 
+async function sha256Hex(buffer:ArrayBuffer){
+  const digest=await crypto.subtle.digest('SHA-256',buffer);
+  return Array.from(new Uint8Array(digest),byte=>byte.toString(16).padStart(2,'0')).join('');
+}
+
+async function downloadSourcePackageZip(sources:any[],jobNumber:string){
+  if(!sources.length)throw new Error('Source package is empty.');
+  const zip=new JSZip();
+  for(const source of sources){
+    if(!source?.signed_url||!source?.filename)throw new Error('A package source is unavailable. Refresh and try again.');
+    const response=await fetch(source.signed_url);
+    if(!response.ok)throw new Error('A package source could not be downloaded. Refresh and try again.');
+    const bytes=await response.arrayBuffer();
+    if(source.sha256&&await sha256Hex(bytes)!==source.sha256)throw new Error('Source package integrity check failed. Refresh and try again.');
+    zip.file(source.filename,bytes);
+  }
+  const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
+  const href=URL.createObjectURL(blob);
+  const anchor=document.createElement('a');
+  anchor.href=href;
+  anchor.download=`${jobNumber}-ChatGPT-Sources.zip`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(()=>URL.revokeObjectURL(href),30000);
+}
+
 function isPassingValidatorReport(report:any){
   return report?.artwork_width_mm===190.5&&Array.isArray(report?.cases)&&report.cases.length>0&&
     report.cases.every((item:any)=>item?.physical_verdict==='PASS');
 }
 
-export function DuGenerationWorkflow({jobId,photos,credential}:{jobId:string;photos:SourcePhoto[];credential:Credential}){
+export function DuGenerationWorkflow({jobId,jobNumber,notes,photos,credential}:{jobId:string;jobNumber:string;notes:string|null;photos:SourcePhoto[];credential:Credential}){
   const [state,setState]=useState<WorkflowState>(emptyState),[compositionId,setCompositionId]=useState('');
-  const [prompt,setPrompt]=useState(''),[correctionPrompt,setCorrectionPrompt]=useState(''),[outcomeNote,setOutcomeNote]=useState(''),[message,setMessage]=useState(''),[busy,setBusy]=useState(false);
+  const [correctionPrompt,setCorrectionPrompt]=useState(''),[outcomeNote,setOutcomeNote]=useState(''),[message,setMessage]=useState(''),[busy,setBusy]=useState(false);
   const [candidateFile,setCandidateFile]=useState<File|null>(null),[correctionFile,setCorrectionFile]=useState<File|null>(null);
   const [productionFile,setProductionFile]=useState<File|null>(null),[validatorFile,setValidatorFile]=useState<File|null>(null);
   const [validatorPassed,setValidatorPassed]=useState(false),[validatorReport,setValidatorReport]=useState<any>(null);
   const invoke=async(action:string,data:Record<string,unknown>={})=>callFunction<WorkflowState>('du-admin',{action,job_id:jobId,...data},authFor(credential));
+  const canonicalPrompt=buildDuGenerationPrompt({jobNumber,sourceCount:photos.length,notes});
   const refresh=async()=>setState(await invoke('generation_state'));
   useEffect(()=>{setCompositionId(current=>current||photos[0]?.id||'');void refresh().catch(error=>setMessage(error instanceof Error?error.message:'Could not load generation state.'));},[jobId,photos.length]);
 
@@ -53,6 +83,18 @@ export function DuGenerationWorkflow({jobId,photos,credential}:{jobId:string;pho
     setBusy(true);setMessage('Working…');
     try{await task();await refresh();setMessage(success);}
     catch(error){setMessage(error instanceof Error?error.message:'Generation workflow action failed.');}
+    finally{setBusy(false);}
+  }
+
+  async function downloadAllSources(){
+    setBusy(true);setMessage('Preparing source ZIP…');
+    try{
+      const fresh=await invoke('generation_state');
+      setState(fresh);
+      const sources=fresh.package?.source_manifest?.sources||[];
+      await downloadSourcePackageZip(sources,jobNumber);
+      setMessage(`Downloaded ${sources.length} immutable source photo${sources.length===1?'':'s'} in one ZIP.`);
+    }catch(error){setMessage(error instanceof Error?error.message:'Could not create the source ZIP.');}
     finally{setBusy(false);}
   }
 
@@ -83,16 +125,17 @@ export function DuGenerationWorkflow({jobId,photos,credential}:{jobId:string;pho
   return <section className="du-generation-workflow" aria-label="Generation attempts and review">
     <h4>Generation workflow</h4>
     {!state.package?<div className="du-generation-lock">
-      <p>Choose the composition source, paste the established D&amp;U prompt, then lock the package. D&amp;U snapshots each original source image privately and reuses those exact files for every fresh attempt.</p>
+      <p>Choose the composition source, then lock the package. D&amp;U supplies the current canonical generation prompt and snapshots each original source image privately for every fresh attempt.</p>
       <label>Composition image<select value={compositionId} disabled={busy} onChange={event=>setCompositionId(event.target.value)}>{photos.map((photo,index)=><option key={photo.id} value={photo.id}>Source {index+1} · {photo.original_filename||'uploaded image'}</option>)}</select></label>
-      <label>Generation prompt to lock<textarea value={prompt} onChange={event=>setPrompt(event.target.value)} rows={6} maxLength={11800} placeholder="Paste the established D&U generation prompt here. Source-role instructions will be added and the exact final prompt is locked across Attempts A, B, and C."/></label>
-      <button className="button primary" type="button" disabled={busy||photos.length===0||prompt.trim().length<20} onClick={()=>void run(()=>invoke('generation_lock_package',{composition_photo_id:compositionId,locked_prompt:prompt}),'Immutable source package locked; Attempt A is ready.')}>Lock source package and prepare Attempt A</button>
+      <label>Canonical generation prompt<textarea readOnly value={canonicalPrompt} rows={8} aria-label="Canonical D&U generation prompt"/></label>
+      <small>Prompt version {DU_GENERATION_PROMPT_VERSION}. Manufacturing targets are generation bias only; deterministic validation still controls cut readiness.</small>
+      <button className="button primary" type="button" disabled={busy||photos.length===0} onClick={()=>void run(()=>invoke('generation_lock_package',{composition_photo_id:compositionId,locked_prompt:canonicalPrompt,prompt_version:DU_GENERATION_PROMPT_VERSION}),'Immutable source package and canonical prompt locked; Attempt A is ready.')}>Lock source package and prepare Attempt A</button>
     </div>:<>
       <div className="du-generation-package"><strong>Locked clean-room package</strong><span>Prompt SHA-256: {state.package.prompt_sha256}</span><span>Source manifest SHA-256: {state.package.source_manifest_sha256}</span>
-        <p>For each attempt, start a brand-new ChatGPT conversation. Attach only these package images individually, then paste the locked prompt. Never attach a previous candidate.</p>
-        <div className="du-generation-source-list">{state.package.source_manifest.sources.map((source:any)=><button className="button ghost" type="button" key={source.source_photo_id} disabled={busy||!source.signed_url} onClick={()=>void downloadPrivate(source.signed_url,source.filename).catch(error=>setMessage(error.message))}>{source.filename} · {source.role==='composition'?'composition':'identity reference'}</button>)}</div>
+        <p>For each attempt, start a brand-new ChatGPT conversation. Download the ZIP, unzip it, attach every source image as a native image attachment, then paste the exact locked prompt. Never attach a previous candidate.</p>
+        <div className="button-row"><button className="button primary" type="button" disabled={busy} onClick={()=>void downloadAllSources()}>Download all source photos (.zip)</button><button className="button ghost" type="button" onClick={()=>void copyText(promptText).then(setMessage)}>Copy locked prompt</button></div>
+        <details><summary>Individual source downloads</summary><div className="du-generation-source-list">{state.package.source_manifest.sources.map((source:any)=><button className="button ghost" type="button" key={source.source_photo_id} disabled={busy||!source.signed_url} onClick={()=>void downloadPrivate(source.signed_url,source.filename).catch(error=>setMessage(error.message))}>{source.filename} · {source.role==='composition'?'composition':'identity reference'}</button>)}</div></details>
         <textarea readOnly value={promptText} rows={5} aria-label="Locked generation prompt"/>
-        <button className="button ghost" type="button" onClick={()=>void copyText(promptText).then(setMessage)}>Copy locked prompt</button>
       </div>
       <div className="du-generation-attempts"><h5>Independent attempts</h5><div className="du-generation-candidates">
         {state.attempts.map((attempt:any)=><article className="du-generation-candidate" key={attempt.id}>

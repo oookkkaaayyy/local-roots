@@ -16,6 +16,7 @@ const workflowStates = new Set([
   "notification_sent", "stage_a_started", "awaiting_art_approval",
   "art_approved", "production_ready", "complete", "handoff_failed",
 ]);
+const generationPromptVersion = "clean-room-v2.1";
 const generationRoleInstructions = [
   "Use the attachment named 01-APPROVED-COMPOSITION as the sole authority for pose, framing, and composition.",
   "Use attachments named 02-IDENTITY-REFERENCE-NN only as same-subject identity references; they must not replace the composition source.",
@@ -366,8 +367,12 @@ Deno.serve(async (req: Request) => {
       const jobId = String(body.job_id || "").trim();
       const compositionPhotoId = String(body.composition_photo_id || "").trim();
       const basePrompt = String(body.locked_prompt || "").trim();
+      const promptVersion = String(body.prompt_version || "").trim();
       if (!jobId || !compositionPhotoId || basePrompt.length < 20 || basePrompt.length > 11800) {
         return json({ error: "package_fields_invalid" }, 400);
+      }
+      if (promptVersion !== generationPromptVersion) {
+        return json({ error: "generation_prompt_version_mismatch", expected: generationPromptVersion }, 409);
       }
       const lockedPrompt = `${generationRoleInstructions}\n\n${basePrompt}`;
       const { data: existing } = await service.from("du_generation_packages").select("id").eq("job_id", jobId).maybeSingle();
@@ -399,7 +404,7 @@ Deno.serve(async (req: Request) => {
         if (uploadError) return json({ error: "source_package_copy_failed", photo_id: photo.id }, 400);
         sources.push({ source_photo_id: photo.id, role, filename: name, storage_path: path, sha256: sha, size_bytes: bytes.length, sort_order: photo.sort_order });
       }
-      const sourceManifest = { version: 1, job_id: jobId, composition_photo_id: compositionPhotoId, sources };
+      const sourceManifest = { version: 1, prompt_version: promptVersion, job_id: jobId, composition_photo_id: compositionPhotoId, sources };
       const sourceManifestSha256 = await sha256Hex(JSON.stringify(sourceManifest));
       const promptSha256 = await sha256Hex(lockedPrompt);
       const { data: packageRow, error: packageError } = await service.from("du_generation_packages").insert({
