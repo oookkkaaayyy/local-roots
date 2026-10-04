@@ -1,0 +1,76 @@
+name: D&U Generation V2 isolated E2E
+
+on:
+  push:
+    branches: [du-generation-v2-free]
+    paths:
+      - '.github/workflows/du-generation-v2-e2e.yml'
+      - 'tests/du-generation-e2e/**'
+      - 'supabase/functions/du-admin/**'
+      - 'supabase/migrations/20261004090000_add_du_generation_attempt_orchestration.sql'
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: Authenticated Generation V2 workflow
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Set up isolated Supabase CLI
+        uses: supabase/setup-cli@v3
+        with:
+          version: 2.119.0
+
+      - name: Prepare isolated Generation V2 database and function
+        run: |
+          cd tests/du-generation-e2e
+          supabase init
+          mkdir -p supabase/migrations supabase/functions
+          cp prerequisite-fixture.sql supabase/migrations/20261004000000_du_e2e_prerequisites.sql
+          cp ../../supabase/migrations/20261004090000_add_du_generation_attempt_orchestration.sql supabase/migrations/
+          cp -R ../../supabase/functions/du-admin supabase/functions/
+
+      - name: Start ephemeral Supabase stack and apply migrations from empty database
+        working-directory: tests/du-generation-e2e
+        run: |
+          supabase start -x studio,imgproxy,inbucket,logflare,vector,supavisor,analytics,realtime
+          supabase db reset --local --yes
+          node export-env.mjs
+
+      - name: Serve the actual authenticated D&U admin function
+        working-directory: tests/du-generation-e2e
+        run: |
+          supabase functions serve du-admin --no-verify-jwt --env-file "$RUNNER_TEMP/du-generation-e2e.env" > "$RUNNER_TEMP/du-admin-e2e.log" 2>&1 &
+          for attempt in {1..45}; do
+            status="$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:54321/functions/v1/du-admin || true)"
+            if [ "$status" != "000" ]; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat "$RUNNER_TEMP/du-admin-e2e.log"
+          exit 1
+
+      - name: Exercise authenticated Generation V2 workflow
+        run: node tests/du-generation-e2e/run.mjs
+
+      - name: Reset fresh database and repeat the workflow
+        working-directory: tests/du-generation-e2e
+        run: |
+          supabase db reset --local --yes
+          node run.mjs
+
+      - name: Stop and remove ephemeral Supabase stack
+        if: always()
+        working-directory: tests/du-generation-e2e
+        run: supabase stop --no-backup
