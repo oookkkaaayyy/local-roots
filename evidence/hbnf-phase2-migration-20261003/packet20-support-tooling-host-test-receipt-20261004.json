@@ -1,0 +1,45 @@
+{
+  "schema": "hbnf-packet20-support-tooling-host-test-receipt-v1",
+  "date": "2026-10-04",
+  "status": "PASS",
+  "scope": "pure non-network host tests only; no GitHub Actions, no hardware mutation, no live Packet20 execution",
+  "branch": "hbnf-cart2-ready-to-implement-staging-20261001",
+  "byte_identity_method": "Git blob SHA-1 was recomputed from the tested local reconstruction and matched the GitHub blob SHA for each code/test/config input listed below.",
+  "inputs": {
+    "tools/hbnf_packet20_http_adapter.py": "d798ad1e36191204c7a371aa6c7168e7469d9f1a",
+    "scripts/hbnf_live_kernel_sweep.py": "0f9543f9e1dfa0b69dcb0e5b664cf1f8e127ecaa",
+    "scripts/hbnf_packet20_build_validate.py": "63b9d00b8aaba666e88e469e44680381a1d694cf",
+    "tests/hbnf_packet20_http_adapter.py": "122d81c6d8dbfbab251fc9c8278762ea97588836",
+    "tests/hbnf_live_kernel_sweep.py": "b7e22f6a738e07eb00b0692eee319dca072658b3",
+    "tests/hbnf_packet20_build_validate.py": "7f45192d5396f8dc91633ff845a363745e7e8c86",
+    "config/HBNF_PACKET20_LIVE_SWEEP_ADAPTER_20261004.json": "11f6ee5df991506e845118c89a858ebcd23f2f79",
+    "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json": "e385054f45114441c11314ff27468ae492e26a10"
+  },
+  "checks": [
+    {
+      "command": "python -m py_compile scripts/hbnf_live_kernel_sweep.py tests/hbnf_live_kernel_sweep.py tools/hbnf_packet20_http_adapter.py tests/hbnf_packet20_http_adapter.py scripts/hbnf_packet20_build_validate.py tests/hbnf_packet20_build_validate.py",
+      "status": "PASS"
+    },
+    {
+      "command": "python tests/hbnf_live_kernel_sweep.py",
+      "status": "PASS",
+      "result": "adapter/inventory/telemetry validation, cross-kernel uptime continuity, failure-evidence persistence, kernel identity, and exact restore-receipt semantics"
+    },
+    {
+      "command": "python tests/hbnf_packet20_http_adapter.py",
+      "status": "PASS",
+      "result": "220..247 -> 0..27 mapping, diagnostic telemetry normalization, one-snapshot post-restore behavior, exact adapter config, and exact 28-kernel inventory"
+    },
+    {
+      "command": "python tests/hbnf_packet20_build_validate.py",
+      "status": "PASS",
+      "result": "exact provenance fixture accepted and wrong Packet20 source SHA fails closed"
+    }
+  ],
+  "limitations": [
+    "No live Matrix/AUX HTTP requests were made.",
+    "No firmware build was run.",
+    "No GitHub Actions workflow was enabled or triggered.",
+    "No updater/signing/publish/install step was performed."
+  ]
+}
