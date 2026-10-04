@@ -26,10 +26,9 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Set up isolated Supabase CLI
-        uses: supabase/setup-cli@v3
-        with:
-          version: 2.119.0
+      - name: Install isolated Supabase CLI from npm
+        run: |
+          npm install --global supabase@2.119.0
 
       - name: Prepare isolated Generation V2 database and function
         run: |
