@@ -66,4 +66,7 @@ For any task touching HBNF release engineering, firmware promotion, Cart 2.0 int
 
 15. Before ending a task that created or materially changed a meaningful artifact, update the artifact authority/registry so the next task never has to rediscover it.
 
+
+16. GitHub Actions is an explicitly authorized execution/cost boundary. Repository Actions was intentionally shut down on 2026-09-29 when included usage was near its limit. Never enable, trigger, dispatch, or rerun GitHub Actions without explicit current user authorization for that exact bounded run. One approved run never implies approval for a retry or unrelated workflow.
+
 These instructions exist to prevent governance drift, artifact loss, repeated rediscovery, and storage bloat across Codex tasks and chats.
