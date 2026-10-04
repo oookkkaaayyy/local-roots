@@ -20,6 +20,10 @@ EXPECTED_WLED_BASE = "29b389df1c1aaec6ff53aea742d17063b985906c"
 EXPECTED_PLATFORMIO = "6.1.18"
 EXPECTED_ENVIRONMENT = "hbnf_matrix_wled16_packet20_diag"
 EXPECTED_SOURCE_SHA256 = "529e1bf718c3770b7d4ba6408178e9d3e7a4ed1d223b9bbf9071b68e75eed74b"
+EXPECTED_SOURCE_PATCH_SHA256 = "aca7b2fa6fe45ce992e162d91447351487e854279de373e691cf02615c149b04"
+EXPECTED_ANIMARTRIX_COMMIT = "81eb09b91c8c9c8c01f8ea442787f8127d56c72f"
+EXPECTED_ANIMARTRIX_UPSTREAM_BLOB = "db640748175cfdd70dc103fc23c830e646fa5ab6"
+EXPECTED_ANIMARTRIX_CLOCK_PATCH_SHA256 = "f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4"
 EXPECTED_OTA_SLOT_BYTES = 0x180000
 
 REQUIRED_FILES = [
@@ -32,6 +36,9 @@ REQUIRED_FILES = [
     "resolved-packages.txt",
     "size-and-headroom.txt",
     "provenance.json",
+    "animartrix-clock.patch",
+    "ANIMartRIX.upstream.h",
+    "ANIMartRIX.patched.h",
 ]
 
 
@@ -44,6 +51,14 @@ def sha256_file(path: pathlib.Path) -> str:
     with path.open("rb") as f:
         for chunk in iter(lambda: f.read(1024 * 1024), b""):
             h.update(chunk)
+    return h.hexdigest()
+
+
+def git_blob_sha1(path: pathlib.Path) -> str:
+    data = path.read_bytes()
+    h = hashlib.sha1()
+    h.update(f"blob {len(data)}\0".encode("ascii"))
+    h.update(data)
     return h.hexdigest()
 
 
@@ -109,6 +124,59 @@ def validate_artifact_dir(
         EXPECTED_SOURCE_SHA256,
         "provenance.diagnostic_source_sha256",
     )
+    require_equal(
+        provenance.get("source_patch_sha256"),
+        EXPECTED_SOURCE_PATCH_SHA256,
+        "provenance.source_patch_sha256",
+    )
+    require_equal(
+        provenance.get("animartrix_upstream_commit"),
+        EXPECTED_ANIMARTRIX_COMMIT,
+        "provenance.animartrix_upstream_commit",
+    )
+    require_equal(
+        provenance.get("animartrix_upstream_header_git_blob"),
+        EXPECTED_ANIMARTRIX_UPSTREAM_BLOB,
+        "provenance.animartrix_upstream_header_git_blob",
+    )
+
+    vendor_patch = root / "animartrix-clock.patch"
+    upstream_header = root / "ANIMartRIX.upstream.h"
+    patched_header = root / "ANIMartRIX.patched.h"
+    require_equal(
+        sha256_file(vendor_patch),
+        EXPECTED_ANIMARTRIX_CLOCK_PATCH_SHA256,
+        "animartrix-clock.patch SHA-256",
+    )
+    require_equal(
+        provenance.get("animartrix_clock_patch_sha256"),
+        EXPECTED_ANIMARTRIX_CLOCK_PATCH_SHA256,
+        "provenance.animartrix_clock_patch_sha256",
+    )
+    require_equal(
+        git_blob_sha1(upstream_header),
+        EXPECTED_ANIMARTRIX_UPSTREAM_BLOB,
+        "ANIMartRIX.upstream.h Git blob",
+    )
+    patched_text = patched_header.read_text(errors="replace")
+    for required in (
+        "double animation_clock_ms_ = 0.0;",
+        "double animation_clock_speed_ = 1.0;",
+        "uint32_t animation_clock_last_ms_ = 0;",
+        "bool animation_clock_started_ = false;",
+        "void calculate_oscillators(const oscillators &timings) {",
+        "void run_default_oscillators() {",
+    ):
+        if required not in patched_text:
+            raise ValidationError(f"patched ANIMartRIX header missing required marker: {required}")
+    if patched_header.read_bytes() == upstream_header.read_bytes():
+        raise ValidationError("patched ANIMartRIX header is identical to pristine upstream header")
+    patched_sha = sha256_file(patched_header)
+    require_equal(
+        provenance.get("animartrix_patched_header_sha256"),
+        patched_sha,
+        "provenance.animartrix_patched_header_sha256",
+    )
 
     firmware = root / "firmware.bin"
     firmware_sha = sha256_file(firmware)
@@ -142,6 +210,8 @@ def validate_artifact_dir(
         raise ValidationError("source-input-sha256.txt does not name Packet20 source file")
     if "platformio_override.ini" not in source_hashes:
         raise ValidationError("source-input-sha256.txt does not include platformio_override.ini")
+    if EXPECTED_ANIMARTRIX_CLOCK_PATCH_SHA256 not in source_hashes:
+        raise ValidationError("source-input-sha256.txt does not include exact Animartrix clock patch SHA")
 
     # Require parseable structured PlatformIO evidence. Exact dependency
     # versions are preserved separately in resolved-packages.txt.
@@ -172,6 +242,11 @@ def validate_artifact_dir(
         "platformio_core": EXPECTED_PLATFORMIO,
         "environment": EXPECTED_ENVIRONMENT,
         "diagnostic_source_sha256": EXPECTED_SOURCE_SHA256,
+        "source_patch_sha256": EXPECTED_SOURCE_PATCH_SHA256,
+        "animartrix_upstream_commit": EXPECTED_ANIMARTRIX_COMMIT,
+        "animartrix_upstream_header_git_blob": EXPECTED_ANIMARTRIX_UPSTREAM_BLOB,
+        "animartrix_clock_patch_sha256": EXPECTED_ANIMARTRIX_CLOCK_PATCH_SHA256,
+        "animartrix_patched_header_sha256": patched_sha,
         "firmware_sha256": firmware_sha,
         "firmware_bytes": firmware_bytes,
         "ota_slot_bytes": EXPECTED_OTA_SLOT_BYTES,
