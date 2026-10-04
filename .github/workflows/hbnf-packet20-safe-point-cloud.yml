@@ -186,6 +186,7 @@ jobs:
           grep -q 'void calculate_oscillators(const oscillators &timings) {' "$ANIM_HEADER"
           grep -q 'void run_default_oscillators() {' "$ANIM_HEADER"
           sha256sum "$PATCH" "$ANIM_HEADER" >> /tmp/hbnf-p20-artifacts/source-input-sha256.txt
+          cp "$PATCH" /tmp/hbnf-p20-artifacts/animartrix-clock.patch
           cp "$ANIM_HEADER" /tmp/hbnf-p20-artifacts/ANIMartRIX.patched.h
 
       - name: Compile once
