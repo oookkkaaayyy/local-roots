@@ -251,3 +251,31 @@ No walls of text in ordinary status updates.
 8. physical Matrix/AUX/iPad/Wi-Fi/power acceptance.
 9. final icon/soak/update-recovery/guest-shareability/acceptance corpus.
 10. lifecycle ACCEPTED.
+
+
+## Recovery gate narrowed further — 2026-10-04
+A preserved live Opal read-only capture already established the release-state high-water at **13** with Release07 installed, SHA `8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab`. No live firmware install has occurred since that capture; all subsequent work through run5 and recovery discovery was backend-only.
+
+Previously proven updater rules therefore yield the legal pair:
+- Packet20 diagnostic sequence **14**
+- exact Release07 recovery sequence **15**
+
+The old historical sequence-14 recovery points to Release06 and MUST NOT be used as the Release07 rollback.
+
+Two bounded hosted-runner attempts tried to recover the already-published Release07 artifact from `https://hbnightflyers.com/firmware/matrix/stable/latest.json`:
+- run `37237394770`
+- run `37237537312`
+
+Both were blocked before reading the manifest by Cloudflare managed challenge (HTTP 403 / `cf-mitigated: challenge`). Browser-like UA and DNS/origin fallback did not bypass it. **Do not spend more Actions runs retrying this transport.**
+
+Exact remaining pre-mutation blocker:
+- acquire the exact Release07 BIN bytes from the known preserved local package:
+  `/Users/andrew/Documents/Codex/2026-10-01/continue-pr-46-in-oookkkaaayyy-local/work/local-roots-pr46/work/artifacts/hbnf-coordinated-release-20261001/OTA_PREP_RELEASE07_RGB_BLOBS5_PERF_FIX`
+- verify SHA-256 exactly `8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab`
+- promote/register it in Drive
+- then sign/publish diagnostic seq14 + exact Release07 recovery seq15 and continue live Packet20.
+
+Durable gate receipt:
+`evidence/hbnf-phase2-migration-20261003/packet20-recovery-preflight-gate-20261004.json` at commit `085425d3cf2e9f25d46db035520807e433a5b32f`.
+
+User action, only when requested: upload the `.bin` file(s) from that known Release07 package folder (or the package archive). No Terminal is required; the coordinator will identify the exact hash target.
