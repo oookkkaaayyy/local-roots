@@ -6,7 +6,7 @@ STATUS: PREPARED / DO NOT RUN UNTIL THE COMPLETE 28-KERNEL DIAGNOSTIC SWEEP EXIS
 - SWEEP_REPORT: <ABSOLUTE_PATH_TO_ALL_KERNEL_SWEEP_REPORT.json>
 - SOURCE_MANIFEST: <ABSOLUTE_PATH_TO_SOURCE_TREE_MANIFEST.json>
 - SWEEP_EVIDENCE_DIR: <ABSOLUTE_PATH>
-- RELEASE07_SOURCE_ROOT: <ABSOLUTE_PATH>
+- CANDIDATE_SOURCE_AUTHORITY: exact canonical GitHub/Drive source identity from the completed Packet20 build/sweep
 - FAILURE_CLUSTERS: derive from SWEEP_REPORT; do not invent here.
 
 ## Goal
@@ -16,9 +16,9 @@ This is NOT a one-kernel-at-a-time task.
 
 ## Hard rules
 - Read root AGENTS.md and run `python3 scripts/hbnf_control.py status`.
-- Work from the exact content-addressed release07 source/build base proven by SOURCE_MANIFEST.
-- Reuse PlatformIO Core 6.1.17 / Python 3.11.16 / env hbnf_matrix_wled16_max and the recovered working toolchain path.
-- No PlatformIO upgrade/reinstall unless the recovered environment is actually unusable and the exact reason is documented.
+- Work from the exact content-addressed source/build base proven by the successful Packet20 cloud build and SOURCE_MANIFEST.
+- Reuse the exact successful Packet20 build provenance (WLED base, PlatformIO/Python/toolchain, overlay/dependency inputs, environment and generated-input policy). Do not silently revert to the obsolete local 6.1.17/Python 3.11 recovery environment.
+- The local PlatformIO/LDF repair path is CLOSED. Do not upgrade/reinstall/debug the user's local PlatformIO environment. If the proven cloud build environment cannot build the class-level candidate, stop with that exact blocker rather than reopening local-toolchain archaeology.
 - No rollback-as-fix.
 - No disabling/removing committed features, kernels, audio response, Motion, palette/color, overlays/text, event paths, saved looks, DDP, /hbnf, hosted controls, OTA, or recovery behavior.
 - Do not optimize a stage just because it is nonzero. Optimize only measured failing paths/classes.
