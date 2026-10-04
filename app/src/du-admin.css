@@ -1,1 +1,19 @@
 .du-job-card{scroll-margin-top:90px}.du-job-detail{display:grid;gap:14px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}.du-source-grid{display:flex;flex-wrap:wrap;gap:8px}.du-source-grid .button{flex:1 1 180px}.du-job-detail>label{max-width:360px}@media(max-width:620px){.du-source-grid{display:grid}.du-source-grid .button{width:100%}.du-job-detail>label{max-width:none}}
+
+.du-generation-workflow{display:grid;gap:16px;margin-top:22px;padding:18px;border:1px solid var(--line,#d8d3cb);border-radius:16px;background:rgba(255,255,255,.72)}
+.du-generation-workflow h4,.du-generation-workflow h5,.du-generation-workflow h6{margin:0}
+.du-generation-workflow p{margin:4px 0;line-height:1.5}
+.du-generation-lock,.du-generation-package,.du-generation-attempts,.du-generation-correction,.du-generation-production{display:grid;gap:12px}
+.du-generation-package,.du-generation-correction,.du-generation-production{padding:14px;border-radius:12px;background:rgba(242,239,233,.72)}
+.du-generation-package span,.du-generation-candidate small{overflow-wrap:anywhere;font-size:.78rem;color:#5e625d}
+.du-generation-source-list{display:flex;flex-wrap:wrap;gap:8px}
+.du-generation-workflow textarea,.du-generation-workflow select{width:100%;margin-top:6px}
+.du-generation-attempts>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.du-generation-candidate{display:grid;align-content:start;gap:10px;min-width:0;padding:12px;border:1px solid var(--line,#d8d3cb);border-radius:12px;background:#fff}
+.du-generation-candidate img,.du-generation-correction-preview{display:block;width:100%;height:auto;max-height:360px;object-fit:contain;border-radius:8px;background:#f3f2ef}
+.du-generation-candidate .button-row{display:flex;flex-wrap:wrap;gap:8px}
+.du-generation-workflow input[type=file]{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0,0,0,0)}
+.du-generation-workflow label.button{position:relative}
+.du-generation-workflow pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}
+.du-source-item{display:grid;justify-items:center;font-size:.82rem;color:#5e625d}
+@media(max-width:850px){.du-generation-attempts>div{grid-template-columns:1fr}.du-generation-candidate img{max-height:320px}}
