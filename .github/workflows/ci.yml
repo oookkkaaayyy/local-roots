@@ -2,7 +2,9 @@ name: Local Roots CI
 
 on:
   push:
-    branches: [main, du-generation-v2-free]
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: read
