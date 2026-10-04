@@ -16,7 +16,7 @@ jobs:
   e2e:
     name: Authenticated Generation V2 workflow
     runs-on: ubuntu-latest
-    timeout-minutes: 9
+    timeout-minutes: 6
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -52,7 +52,7 @@ jobs:
           supabase functions serve du-admin --no-verify-jwt --env-file "$RUNNER_TEMP/du-generation-e2e.env" > "$RUNNER_TEMP/du-admin-e2e.log" 2>&1 &
           for attempt in {1..45}; do
             status="$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:54321/functions/v1/du-admin || true)"
-            if [ "$status" != "000" ]; then
+            if [ "$status" = "405" ]; then
               exit 0
             fi
             sleep 2
