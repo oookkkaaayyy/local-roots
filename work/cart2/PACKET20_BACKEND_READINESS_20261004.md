@@ -35,8 +35,21 @@ Conclusion: GitHub Actions execution is presently suppressed/disabled/suspended 
 
 Do NOT rewrite Packet20 source, workflow, paths filter, build inputs, or use a human-vs-connector trigger experiment to solve this blocker. Do NOT retry local PlatformIO.
 
+## Historical cause recovered — blocker is no longer mysterious
+A preserved project handoff from 2026-09-29 explicitly states that **GitHub Actions were shut down repository-wide because usage was near the included limit**, together with the rule **NO GITHUB ACTIONS RUNS OR CHARGES WITHOUT MY EXPLICIT APPROVAL**. This matches the current repository-wide absence of Actions runs exactly.
+
+Therefore:
+- do not investigate Packet20 YAML/auth as the primary cause;
+- do not run a human-vs-connector trigger experiment;
+- the repository-wide shutdown is the known cause unless current GitHub UI reports a separate account-level disabled state;
+- the user's current authorization covers exactly the bounded Packet20 one-shot build already specified; it does not authorize retries or unrelated workflows.
+
+Current GitHub documentation says repository Actions are managed at **Repository → Settings → Actions → General → Actions permissions**. When Actions are disabled, no workflows run. If GitHub instead reports Actions disabled for the account itself, changing repository permissions will not restore access and GitHub Support is required.
+
+Current GitHub billing documentation says included Actions minutes reset at the start of each month. The original near-limit shutdown was recorded on 2026-09-29; today's date is 2026-10-04. Current account usage is not exposed by the connected tools, so do not invent the remaining-minute count.
+
 ## Smallest gate before a new trigger
-First verify/restore GitHub Actions availability for the repository/account. Only after Actions is confirmed available, create exactly one new trigger event for the existing Packet20 workflow. The connector may create that trigger; a user-authenticated Git push is not required. A failed prior push created zero runner work, so this is not a build retry from a firmware perspective.
+Restore repository GitHub Actions only for the already-authorized bounded Packet20 run. The expected user-side location is Repository → Settings → Actions → General → Actions permissions. Once Actions is enabled, create exactly one new trigger event for the existing Packet20 workflow. The connector may create that trigger; a user-authenticated Git push is not required. A failed prior push created zero runner work, so this is not a build retry from a firmware perspective.
 
 ## Once the one-shot build starts
 Require exactly one job and one PlatformIO compile. On success preserve:
