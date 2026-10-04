@@ -35,7 +35,7 @@
     "animation_clock_started_ was not declared in this scope"
   ],
   "affected_source_area": "FoundationAnimartrix::diagnosticCapture / diagnosticRestore",
-  "diagnosis": "The exact Packet20 source assumes four ANIMartRIX animation_clock_* members that do not exist in upstream ANIMartRIX pinned by WLED 16.0.1. This exposes an uncaptured historical dependency/source modification or an invalid diagnostic-state assumption. The clean cloud build environment is now sufficiently complete to reach this real source/API mismatch.",
+  "diagnosis": "The clean runner has the WLED dependency closure and exact WLED-pinned Animartrix library. The Release07 Packet20 diagnostic snapshot references four animation-clock members that are absent only from pristine upstream Animartrix. The user-supplied source.patch now proves those members plus the required non-const oscillator methods were an original vendor patch omitted from the reconstructed cloud-build inputs. This is missing build-input provenance, not a newly introduced Packet20 algorithm defect.",
   "upstream_animartrix_evidence": {
     "repository": "netmindz/animartrix",
     "commit": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f",
@@ -49,6 +49,36 @@
     "sha256": "78a7b6f18dfbfe7bf83fe59412b535dffc8d67e7a2889b8dcd43180a25fc32c7",
     "expires_at": "2026-10-05T20:18:02Z"
   },
-  "next_gate": "Recover/prove the exact historical ANIMartRIX clock modification or make an evidence-backed Packet20 compatibility correction offline. No fourth Actions run until the correction is specific and user explicitly authorizes it.",
-  "authorization": "No fourth GitHub Actions run is authorized."
+  "next_gate": "Use the reconciled build inputs; never apply the full older source.patch over current Release07. Next cloud build should use temp-branch head 1484daf32f7765b70ec662e7b4d42453cffba359 or a verified descendant with no unrelated changes.",
+  "authorization": "No fourth GitHub Actions run is authorized.",
+  "user_supplied_source_patch": {
+    "drive_file_id": "1uzBe-bVdQhmw2KaOO6eSQfGIelDXNda5",
+    "file_name": "source.patch",
+    "size_bytes": 17244,
+    "sha256": "aca7b2fa6fe45ce992e162d91447351487e854279de373e691cf02615c149b04",
+    "note": "Exact raw file is preserved in Cart2 Drive folder 10 — SOURCE & BUILD INPUTS."
+  },
+  "derived_vendor_patch": {
+    "drive_file_id": "184_dgUkzJ1raV2K0qC9YdcuP1JOzSeoQ",
+    "file_name": "HBNF-Packet20-animartrix-clock.patch",
+    "size_bytes": 2648,
+    "sha256": "f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4",
+    "github_path": ".hbnf-packet20-cloud/source/animartrix-clock.patch",
+    "github_blob_sha": "1f4b1833b23845595b423e2b07cb6caa502abad8",
+    "github_commit": "affb6a4956336c4b2926d1f6c99f015fad5682be"
+  },
+  "source_patch_reconciliation": {
+    "vendor_animartrix": "MISSING from the prior cloud build and directly explains run3; exact vendor hunk is required.",
+    "hbnf_animartrix_audio_bridge": "Patch semantics are already present in the current overlay; dry-run identifies this as previously applied/reversed.",
+    "hbnf_vibe16": "Patch semantics are already present in the current overlay; dry-run identifies this as previously applied/reversed.",
+    "hbnf_foundation_core": "Most patch semantics are present, but audioGainQ8 was intentionally changed later from the older quadratic patch behavior to the current linear 0..2x mapping. Do not overwrite with the older full patch.",
+    "usermod_hbnf_foundation_v1": "Relevant patch semantics are already present, while candidate identity and later Release07 performance/diagnostic code are newer. Do not apply the full older patch wholesale."
+  },
+  "staged_no_run_correction": {
+    "temp_branch_head": "1484daf32f7765b70ec662e7b4d42453cffba359",
+    "workflow_blob_sha": "a91c33bf0c349aa6cece591a441df5d84e34e2d4",
+    "action": "Before compile: materialize exact dependencies; require exactly one ANIMartRIX.h; verify pristine upstream Git blob db640748175cfdd70dc103fc23c830e646fa5ab6; verify vendor patch SHA f38d260d...; apply exact vendor hunk fail-closed; verify all four clock members and non-const oscillator signatures; record upstream and patched header hashes in artifact evidence.",
+    "triggers_actions": false
+  },
+  "authorization_note": "Latest user instruction approves up to $5 total external cost for genuinely necessary work in this chat, with a pause if any one action would cost substantially more than historical estimates. Avoid redundant runs."
 }
