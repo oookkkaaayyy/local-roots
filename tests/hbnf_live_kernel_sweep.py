@@ -67,4 +67,21 @@ wrong=dict(sample); wrong["kernel_name"]="RGB_Blobs5"
 try: m.verify_selected(wrong,inv["entries"][2]); raise AssertionError("wrong kernel accepted")
 except RuntimeError: pass
 
-print("PASS: live sweep runner validates adapter/inventory/telemetry, continuity, kernel identity, and exact restore snapshots")
+# Cross-kernel continuity must carry forward the previous kernel's last uptime.
+next_kernel=dict(sample); next_kernel["kernel_id"]=3; next_kernel["kernel_name"]="RGB_Blobs5"; next_kernel["uptime_seconds"]=11
+m.validate_continuity(next_kernel,"r7",0,10)
+regressed_next=dict(next_kernel); regressed_next["uptime_seconds"]=9
+try: m.validate_continuity(regressed_next,"r7",0,10); raise AssertionError("cross-kernel uptime regression accepted")
+except RuntimeError: pass
+
+# A continuity/identity failure sample must survive as decisive evidence.
+with tempfile.TemporaryDirectory() as td:
+    out=pathlib.Path(td)
+    p=m.persist_failure_sample(out,inv["entries"][2],"sample",sample,RuntimeError("synthetic failure"))
+    payload=json.loads(p.read_text())
+    assert payload["status"]=="FAIL"
+    assert payload["phase"]=="sample"
+    assert payload["sample"]["kernel_name"]=="Parametric_Water"
+    assert payload["requested"]["effect_id"]==222
+
+print("PASS: live sweep runner validates adapter/inventory/telemetry, cross-kernel continuity, failure evidence, kernel identity, and exact restore snapshots")
