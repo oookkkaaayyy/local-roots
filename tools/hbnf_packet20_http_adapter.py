@@ -192,12 +192,32 @@ def snapshot_receipt(state: Dict[str, Any]) -> Dict[str, int]:
     return {"snapshotId": sid, "snapshotHash": shash}
 
 
+def _state_uptime(state: Dict[str, Any]) -> float:
+    timing = _hbnf(state).get("timing")
+    if not isinstance(timing, dict):
+        raise AdapterError("HBNF.timing object is missing")
+    return _as_float(timing.get("uptimeSec"), "timing.uptimeSec")
+
+
+def _reset_evidence(state: Dict[str, Any]) -> str:
+    try:
+        p20 = _p20(state)
+    except AdapterError:
+        return "packet20Diagnostic unavailable"
+    return (
+        f"core0={p20.get('resetReasonCore0')!r} "
+        f"core1={p20.get('resetReasonCore1')!r} "
+        f"esp={p20.get('espResetReason')!r}"
+    )
+
+
 def _wait_state(
     matrix_url: str,
     timeout_http: float,
     wait_seconds: float,
     predicate,
     description: str,
+    minimum_uptime: Optional[float] = None,
 ) -> Dict[str, Any]:
     deadline = time.monotonic() + wait_seconds
     last: Optional[Dict[str, Any]] = None
@@ -205,6 +225,15 @@ def _wait_state(
         state = _get_state(matrix_url, timeout_http)
         _require_release(state)
         last = state
+        if minimum_uptime is not None:
+            current_uptime = _state_uptime(state)
+            if current_uptime < minimum_uptime:
+                raise AdapterError(
+                    f"Matrix reboot detected while waiting for {description}; "
+                    f"pre_uptime={minimum_uptime} current_uptime={current_uptime}; "
+                    f"reset evidence: {_reset_evidence(state)}. "
+                    "STOP: do not retry this Packet20 session"
+                )
         if predicate(state):
             return state
         time.sleep(0.12)
@@ -224,6 +253,7 @@ def command_snapshot(args: argparse.Namespace) -> Dict[str, int]:
     state = _get_state(args.matrix_url, args.http_timeout)
     _require_release(state)
     p20 = _p20(state)
+    session_uptime = _state_uptime(state)
 
     # The generic runner calls snapshot again after restore. Packet20 itself
     # permits only one saved snapshot per boot, so return the immutable receipt
@@ -253,8 +283,10 @@ def command_snapshot(args: argparse.Namespace) -> Dict[str, int]:
             and _p20(s).get("lastCommand") == "begin"
             and bool(_p20(s).get("lastCommandAccepted")),
             "Packet20 diagnostic begin",
+            minimum_uptime=session_uptime,
         )
         p20 = _p20(state)
+        session_uptime = _state_uptime(state)
 
     if bool(p20.get("snapshotValid")):
         raise AdapterError("snapshot became valid unexpectedly before snapshot command")
@@ -266,6 +298,7 @@ def command_snapshot(args: argparse.Namespace) -> Dict[str, int]:
         args.wait_seconds,
         lambda s: str(_p20(s).get("snapshotState") or "") in {"READY", "FAILED"},
         "renderer-safe Packet20 snapshot",
+        minimum_uptime=session_uptime,
     )
     p20 = _p20(state)
     if str(p20.get("snapshotState")) == "FAILED":
@@ -285,6 +318,7 @@ def command_select(args: argparse.Namespace) -> Dict[str, Any]:
         raise AdapterError("Packet20 diagnostic mode is not active")
     if str(p20.get("snapshotState") or "") != "READY" or not bool(p20.get("snapshotValid")):
         raise AdapterError("Packet20 snapshot is not READY; selection is refused")
+    session_uptime = _state_uptime(state)
 
     _post_packet20(args.matrix_url, "select", args.http_timeout, kernel=kernel)
     state = _wait_state(
@@ -299,6 +333,7 @@ def command_select(args: argparse.Namespace) -> Dict[str, Any]:
             and _as_int(_hbnf(s).get("kernel"), "HBNF.kernel") == kernel
         ),
         f"kernel selection {kernel}",
+        minimum_uptime=session_uptime,
     )
     return {
         "ok": True,
@@ -427,6 +462,7 @@ def command_restore(args: argparse.Namespace) -> Dict[str, int]:
         )
     if not bool(p20.get("enabled")):
         raise AdapterError("Packet20 diagnostic mode ended before restore")
+    session_uptime = _state_uptime(state)
 
     _post_packet20(
         args.matrix_url,
@@ -443,6 +479,7 @@ def command_restore(args: argparse.Namespace) -> Dict[str, int]:
             or bool(_p20(s).get("restoreVerified"))
         ),
         "Packet20 exact state restore verification",
+        minimum_uptime=session_uptime,
     )
     p20 = _p20(state)
     if str(p20.get("snapshotState")) == "FAILED":
