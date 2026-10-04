@@ -32,6 +32,8 @@ For any task touching HBNF release engineering, firmware promotion, Cart 2.0 int
    - `python3 tests/hbnf_kernel_sweep_report.py`
    - `python3 tests/hbnf_source_tree_identity.py`
    - `python3 tests/hbnf_live_kernel_sweep.py`
+   - `python3 tests/hbnf_packet20_http_adapter.py`
+   - `python3 tests/hbnf_packet20_build_validate.py`
 
 7. Do not perform live mutation unless the control plane and the task's explicit user authorization both permit it.
 
