@@ -2,12 +2,13 @@ name: D&U Generation V2 isolated E2E
 
 on:
   push:
-    branches: [du-generation-v2-free]
+    branches: [du-visual-generation-backend]
     paths:
       - '.github/workflows/du-generation-v2-e2e.yml'
       - 'tests/du-generation-e2e/**'
       - 'supabase/functions/du-admin/**'
       - 'supabase/migrations/20261004214908_add_du_generation_attempt_orchestration.sql'
+      - 'supabase/migrations/20261004230000_add_du_generation_style_reference_library.sql'
 
 permissions:
   contents: read
@@ -16,7 +17,7 @@ jobs:
   e2e:
     name: Authenticated Generation V2 workflow
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,6 +38,7 @@ jobs:
           mkdir -p supabase/migrations supabase/functions
           cp prerequisite-fixture.sql supabase/migrations/20261004000000_du_e2e_prerequisites.sql
           cp ../../supabase/migrations/20261004214908_add_du_generation_attempt_orchestration.sql supabase/migrations/
+          cp ../../supabase/migrations/20261004230000_add_du_generation_style_reference_library.sql supabase/migrations/
           cp -R ../../supabase/functions/du-admin supabase/functions/
 
       - name: Start ephemeral Supabase stack and apply migrations from empty database

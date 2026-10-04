@@ -7,6 +7,10 @@
 .du-generation-package,.du-generation-correction,.du-generation-production{padding:14px;border-radius:12px;background:rgba(242,239,233,.72)}
 .du-generation-package span,.du-generation-candidate small{overflow-wrap:anywhere;font-size:.78rem;color:#5e625d}
 .du-generation-source-list{display:flex;flex-wrap:wrap;gap:8px}
+.du-generation-reference-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px}
+.du-generation-reference-grid figure{margin:0;min-width:0}
+.du-generation-reference-grid img{display:block;width:100%;aspect-ratio:1;object-fit:contain;border-radius:8px;background:#fff}
+.du-generation-reference-grid figcaption{margin-top:4px;overflow-wrap:anywhere;font-size:.72rem;color:#5e625d}
 .du-generation-workflow textarea,.du-generation-workflow select{width:100%;margin-top:6px}
 .du-generation-attempts>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .du-generation-candidate{display:grid;align-content:start;gap:10px;min-width:0;padding:12px;border:1px solid var(--line,#d8d3cb);border-radius:12px;background:#fff}

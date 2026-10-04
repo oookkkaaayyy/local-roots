@@ -16,10 +16,11 @@ const workflowStates = new Set([
   "notification_sent", "stage_a_started", "awaiting_art_approval",
   "art_approved", "production_ready", "complete", "handoff_failed",
 ]);
-const generationPromptVersion = "clean-room-v2.2";
+const generationPromptVersion = "reference-anchored-v3.0";
 const generationRoleInstructions = [
   "Use the attachment named 01-APPROVED-COMPOSITION as the sole authority for pose, framing, and composition.",
   "Use attachments named 02-IDENTITY-REFERENCE-NN only as same-subject identity references; they must not replace the composition source.",
+  "Use attachments named 03-STYLE-REFERENCE-NN only as visual-language references for D&U stencil abstraction, edge quality, black/white balance, and detail scale. Never copy their pet identity, pose, expression, or anatomy.",
 ].join("\n");
 const vapidSubject = "https://localrootsdg.com/dyed-and-unattached";
 const pairAlphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
@@ -44,8 +45,13 @@ async function sha256Bytes(value: Uint8Array) {
 }
 
 async function signedGenerationState(service: ServiceClient, jobId: string) {
+  const { data: styleRows } = await service.from("du_generation_style_references").select("*").order("created_at").order("id");
+  const styleReferences = await Promise.all((styleRows || []).map(async (reference) => {
+    const { data } = await service.storage.from("du-intake").createSignedUrl(reference.storage_path, 3600);
+    return { ...reference, signed_url: data?.signedUrl || null };
+  }));
   const { data: packageRow } = await service.from("du_generation_packages").select("*").eq("job_id", jobId).maybeSingle();
-  if (!packageRow) return { package: null, attempts: [], selection: null, correction: null, final_master: null, production_run: null };
+  if (!packageRow) return { package: null, style_references: styleReferences, attempts: [], selection: null, correction: null, final_master: null, production_run: null };
   const { data: attempts } = await service.from("du_generation_attempts").select("*").eq("job_id", jobId).order("attempt_number");
   const { data: selection } = await service.from("du_generation_selections").select("*").eq("job_id", jobId).maybeSingle();
   const { data: correction } = await service.from("du_generation_corrections").select("*").eq("job_id", jobId).maybeSingle();
@@ -78,6 +84,7 @@ async function signedGenerationState(service: ServiceClient, jobId: string) {
     productionOutputUrl = data?.signedUrl || null;
   }
   return {
+    style_references: styleReferences,
     package: { ...packageRow, source_manifest: { ...packageRow.source_manifest, sources: signedSources } },
     attempts: withCandidateUrls,
     selection,
@@ -362,6 +369,32 @@ Deno.serve(async (req: Request) => {
     return json(state);
   }
 
+  if (action === "generation_import_style_reference") {
+    try {
+      const image = decodeGalleryImage(body.image_data_url);
+      const { data: existing } = await service.from("du_generation_style_references").select("id,sha256").eq("sha256", await sha256Bytes(image.bytes)).maybeSingle();
+      if (existing) return json({ error: "style_reference_already_imported", reference_id: existing.id }, 409);
+      const { count } = await service.from("du_generation_style_references").select("id", { count: "exact", head: true });
+      if ((count || 0) >= 12) return json({ error: "style_reference_library_full" }, 409);
+      const id = crypto.randomUUID();
+      const filename = String(body.original_filename || `style-reference-${id}.${image.extension}`).replace(/[^A-Za-z0-9._-]/g, "_").slice(-160);
+      const storagePath = `generation-v2/style-references/${id}/${filename}`;
+      const { error: uploadError } = await service.storage.from("du-intake").upload(storagePath, image.bytes, {
+        contentType: image.mime, cacheControl: "31536000", upsert: false,
+      });
+      if (uploadError) return json({ error: "style_reference_upload_failed", detail: uploadError.message }, 400);
+      const { error } = await service.from("du_generation_style_references").insert({
+        id, storage_path: storagePath, filename, mime_type: image.mime,
+        sha256: await sha256Bytes(image.bytes), size_bytes: image.bytes.length, created_by: userId,
+      });
+      if (error) return json({ error: "style_reference_record_failed", detail: error.message }, 400);
+      return json(await signedGenerationState(service, String(body.job_id || "")));
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "style_reference_import_failed";
+      return json({ error: code }, code === "gallery_image_too_large" ? 413 : 400);
+    }
+  }
+
   if (action === "generation_lock_package") {
     try {
       const jobId = String(body.job_id || "").trim();
@@ -374,6 +407,8 @@ Deno.serve(async (req: Request) => {
       if (promptVersion !== generationPromptVersion) {
         return json({ error: "generation_prompt_version_mismatch", expected: generationPromptVersion }, 409);
       }
+      const { data: styleRows } = await service.from("du_generation_style_references").select("*").order("created_at").order("id");
+      if (!styleRows || styleRows.length < 3) return json({ error: "at_least_three_approved_style_references_required" }, 409);
       const lockedPrompt = `${generationRoleInstructions}\n\n${basePrompt}`;
       const { data: existing } = await service.from("du_generation_packages").select("id").eq("job_id", jobId).maybeSingle();
       if (existing) return json({ error: "source_package_already_locked" }, 409);
@@ -404,7 +439,22 @@ Deno.serve(async (req: Request) => {
         if (uploadError) return json({ error: "source_package_copy_failed", photo_id: photo.id }, 400);
         sources.push({ source_photo_id: photo.id, role, filename: name, storage_path: path, sha256: sha, size_bytes: bytes.length, sort_order: photo.sort_order });
       }
-      const sourceManifest = { version: 1, prompt_version: promptVersion, job_id: jobId, composition_photo_id: compositionPhotoId, sources };
+      const styleReferences = [];
+      for (const reference of styleRows) {
+        const { data: download, error: downloadError } = await service.storage.from("du-intake").download(reference.storage_path);
+        if (downloadError || !download) return json({ error: "style_reference_download_failed", reference_id: reference.id }, 400);
+        const bytes = new Uint8Array(await download.arrayBuffer());
+        const sha = await sha256Bytes(bytes);
+        if (sha !== reference.sha256) return json({ error: "style_reference_integrity_mismatch", reference_id: reference.id }, 409);
+        const name = `03-STYLE-REFERENCE-${String(styleReferences.length + 1).padStart(2, "0")}.${reference.mime_type === "image/jpeg" ? "jpg" : reference.mime_type === "image/png" ? "png" : "webp"}`;
+        const path = `jobs/${job.job_number}/generation-v2/source-packages/${packageId}/${name}`;
+        const { error: uploadError } = await service.storage.from("du-intake").upload(path, bytes, {
+          contentType: reference.mime_type, cacheControl: "31536000", upsert: false,
+        });
+        if (uploadError) return json({ error: "style_reference_package_copy_failed", reference_id: reference.id }, 400);
+        styleReferences.push({ style_reference_id: reference.id, role: "style_reference", filename: name, storage_path: path, sha256: sha, size_bytes: bytes.length, source_filename: reference.filename });
+      }
+      const sourceManifest = { version: 2, prompt_version: promptVersion, job_id: jobId, composition_photo_id: compositionPhotoId, sources: [...sources, ...styleReferences] };
       const sourceManifestSha256 = await sha256Hex(JSON.stringify(sourceManifest));
       const promptSha256 = await sha256Hex(lockedPrompt);
       const { data: packageRow, error: packageError } = await service.from("du_generation_packages").insert({
