@@ -118,7 +118,38 @@ jobs:
           end2 = s2.find("\n[", start2 + len(target))
           if end2 < 0:
               end2 = len(s2)
-          assert inherited in s2[start2:end2]
+          block2 = s2[start2:end2]
+          assert inherited in block2
+
+          # Release07 source directly subclasses ANIMartRIX. Prior local builds
+          # could satisfy that header from cache, but the clean cloud runner
+          # proved the dependency was never declared in the Packet20 env.
+          # Use the exact upstream revision pinned by WLED 16.0.1's own
+          # usermod_v2_animartrix/library.json, without enabling that separate
+          # WLED usermod or changing the Packet20 runtime/effect registry.
+          anim = "https://github.com/netmindz/animartrix.git#81eb09b91c8c9c8c01f8ea442787f8127d56c72f"
+          if anim not in block2:
+              lines = block2.splitlines()
+              dep_idx = next((i for i,line in enumerate(lines) if line.strip().startswith("lib_deps") and "=" in line), None)
+              if dep_idx is None:
+                  lines.append("lib_deps =")
+                  dep_idx = len(lines)-1
+              insert_at = dep_idx + 1
+              while insert_at < len(lines) and (lines[insert_at].startswith(" ") or not lines[insert_at].strip()):
+                  insert_at += 1
+              lines.insert(insert_at, "  " + anim)
+              block2 = "\n".join(lines)
+              s2 = s2[:start2] + block2 + s2[end2:]
+              p.write_text(s2)
+
+          s3 = p.read_text()
+          start3 = s3.index(target)
+          end3 = s3.find("\n[", start3 + len(target))
+          if end3 < 0:
+              end3 = len(s3)
+          final_block = s3[start3:end3]
+          assert inherited in final_block
+          assert anim in final_block
           PY
 
           sha256sum platformio_override.ini usermods/hbnf_foundation_v1/* > /tmp/hbnf-p20-artifacts/source-input-sha256.txt
@@ -131,6 +162,8 @@ jobs:
           grep -q 'ESPAsyncWebServer' /tmp/hbnf-p20-artifacts/project-config.json
           grep -q 'AsyncMqttClient' /tmp/hbnf-p20-artifacts/project-config.json
           grep -q 'QuickESPNow' /tmp/hbnf-p20-artifacts/project-config.json
+          grep -q 'netmindz/animartrix' /tmp/hbnf-p20-artifacts/project-config.json
+          grep -q '81eb09b91c8c9c8c01f8ea442787f8127d56c72f' /tmp/hbnf-p20-artifacts/project-config.json
 
       - name: Compile once
         shell: bash
