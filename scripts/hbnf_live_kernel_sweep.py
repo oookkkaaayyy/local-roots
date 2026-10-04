@@ -158,7 +158,7 @@ def assert_same_snapshot(before, after):
     if before!=after:
         raise RuntimeError("post-restore visual-state snapshot does not match pre-sweep snapshot")
 
-def collect_kernel(adapter, entry, outdir, timeout, contract, expected_release_id=None, expected_restart_count=None):
+def collect_kernel(adapter, entry, outdir, timeout, contract, expected_release_id=None, expected_restart_count=None, previous_uptime=None):
     vals={
         "effect_id":entry["effect_id"],
         "kernel_name":entry["kernel_name"],
@@ -172,7 +172,7 @@ def collect_kernel(adapter, entry, outdir, timeout, contract, expected_release_i
     validate_sample(first,contract)
     verify_selected(first,entry)
     release_id,restart_count,previous_uptime=validate_continuity(
-        first,expected_release_id,expected_restart_count,None
+        first,expected_release_id,expected_restart_count,previous_uptime
     )
 
     lines=[first]
@@ -196,7 +196,7 @@ def collect_kernel(adapter, entry, outdir, timeout, contract, expected_release_i
     )
     if p.returncode:
         raise RuntimeError(f"runtime profile failed for {entry['kernel_name']}:\n{p.stdout}\n{p.stderr}")
-    return profile, release_id, first.get("variant_id"), restart_count
+    return profile, release_id, first.get("variant_id"), restart_count, previous_uptime
 
 def main():
     ap=argparse.ArgumentParser()
@@ -230,7 +230,7 @@ def main():
     # Read-only identity/continuity preflight MUST pass before the first select/mutation.
     preflight=run_json(adapter["telemetry_argv"],timeout=timeout)
     validate_sample(preflight,args.contract)
-    expected_release_id,expected_restart_count,_=validate_continuity(
+    expected_release_id,expected_restart_count,previous_uptime=validate_continuity(
         preflight,adapter["expected_release_id"],None,None
     )
     (outdir/"PRE_SWEEP_TELEMETRY.json").write_text(
@@ -245,8 +245,8 @@ def main():
     run_error=None; restore_error=None; post_restore_state=None
     try:
         for entry in inventory["entries"]:
-            profile,release_id,variant_id,restart_count=collect_kernel(
-                adapter,entry,outdir,timeout,args.contract,expected_release_id,expected_restart_count
+            profile,release_id,variant_id,restart_count,previous_uptime=collect_kernel(
+                adapter,entry,outdir,timeout,args.contract,expected_release_id,expected_restart_count,previous_uptime
             )
             release_ids.add(str(release_id))
             profiles.append({
