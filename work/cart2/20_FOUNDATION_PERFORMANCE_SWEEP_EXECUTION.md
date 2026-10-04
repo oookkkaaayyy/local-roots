@@ -1,6 +1,6 @@
-# NEXT CODEX EXECUTION — FOUNDATION PERFORMANCE SWEEP / SOURCE IDENTITY
+# SUPERSEDED — DO NOT EXECUTE — FOUNDATION PERFORMANCE SWEEP / SOURCE IDENTITY
 
-Use this only after the FPS-repair closeout has been ingested. It is the next bounded source-connected task.
+SUPERSEDED 2026-10-04 by `work/cart2/PACKET20_BACKEND_READINESS_20261004.md` and the exact Packet20 safe-point source/build artifacts registered in AKS. This file is retained only as historical planning context. It predates the installed Packet20 diagnostic sequence, the snapshot-panic evidence, renderer-safe snapshot correction, closure of the local PlatformIO path, and the current cloud-build/Actions blocker. Do not use its no-flash/local-source instructions as current execution authority.
 
 ## Goal
 Move the current release07 state from human-discovered kernel failures to one complete machine-generated 28-kernel diagnostic ranking, while also closing source identity enough to support the next forward fix.
