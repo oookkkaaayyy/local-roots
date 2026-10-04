@@ -1,0 +1,62 @@
+{
+  "schema": "hbnf-packet20-source-patch-reconciliation-v1",
+  "date": "2026-10-04",
+  "status": "PASS_WITH_ONE_REQUIRED_VENDOR_HUNK",
+  "user_patch": {
+    "drive_id": "1uzBe-bVdQhmw2KaOO6eSQfGIelDXNda5",
+    "size_bytes": 17244,
+    "sha256": "aca7b2fa6fe45ce992e162d91447351487e854279de373e691cf02615c149b04"
+  },
+  "cloud_overlay": {
+    "drive_id": "1Gc8-fSwRKvIvxafD1NqHrFT-JkdLh0el",
+    "size_bytes": 143033,
+    "sha256": "1f2d5d020a6dba814fbc3d65ae1daa0c8973872ab7100b858022cd5110ef1970"
+  },
+  "current_packet20_cpp": {
+    "sha256": "529e1bf718c3770b7d4ba6408178e9d3e7a4ed1d223b9bbf9071b68e75eed74b"
+  },
+  "inspected_overlay_hashes": {
+    "usermods/hbnf_foundation_v1/hbnf_animartrix_audio_bridge.h": "8748231ccf7733bd34c16dc0417933a46d3a5bdccfc47c2bd54ce2e3fa104535",
+    "usermods/hbnf_foundation_v1/hbnf_foundation_core.h": "9f4a63546bc42cef6ce71edfc6bb055fca40f1b28b8e7595fd09b6da9b5acf5c",
+    "usermods/hbnf_foundation_v1/hbnf_vibe16.h": "f076acf0e5710bf5a9acffe63b31a95f2252230b5470bd362301caa73a743b0",
+    "usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp": "529e1bf718c3770b7d4ba6408178e9d3e7a4ed1d223b9bbf9071b68e75eed74b"
+  },
+  "reconciliation": [
+    {
+      "path": "vendor/hbnf-animartrix/ANIMartRIX.h",
+      "result": "REQUIRED_MISSING_BUILD_INPUT",
+      "evidence": "Run3 compiler errors are exactly the four animation_clock_* fields added by this vendor hunk. Pinned upstream commit 81eb09b... has pristine ANIMartRIX.h blob db640748... with direct millis()*speed runtime and const oscillator methods. The patch context matches that upstream source."
+    },
+    {
+      "path": "usermods/hbnf_foundation_v1/hbnf_animartrix_audio_bridge.h",
+      "result": "ALREADY_IN_CURRENT_OVERLAY",
+      "evidence": "Dry-run identifies patch as previously applied/reversed; current file contains responseQ8_, scaleResponse(), continuous source-coupled treble texture, and min16()."
+    },
+    {
+      "path": "usermods/hbnf_foundation_v1/hbnf_vibe16.h",
+      "result": "ALREADY_IN_CURRENT_OVERLAY",
+      "evidence": "Dry-run identifies patch as previously applied/reversed; current file contains continuous pulseTarget/pulseTau envelope and no bandHold_/bandRefractory_ fields."
+    },
+    {
+      "path": "usermods/hbnf_foundation_v1/hbnf_foundation_core.h",
+      "result": "PATCH_PARTLY_SUPERSEDED_BY_NEWER_RELEASE07_SOURCE",
+      "evidence": "Audio body/energy changes from the patch are present. audioGainQ8 intentionally diverged later to the current linear 0..2x mapping. Full old patch must not overwrite current source."
+    },
+    {
+      "path": "usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp",
+      "result": "PATCH_SUPERSEDED_BY_NEWER_RELEASE07_SOURCE",
+      "evidence": "Fixed-dwell/responseQ8/motion-scale semantics are present, while candidate identity is now hbnf-matrix-coordinated-v1-20261002-07 and extensive later diagnostics/performance code exists. Full old patch must not be applied."
+    }
+  ],
+  "derived_vendor_patch": {
+    "drive_id": "184_dgUkzJ1raV2K0qC9YdcuP1JOzSeoQ",
+    "sha256": "f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4",
+    "github_path": ".hbnf-packet20-cloud/source/animartrix-clock.patch",
+    "github_blob_sha": "1f4b1833b23845595b423e2b07cb6caa502abad8"
+  },
+  "staged_workflow": {
+    "temp_branch_head": "1484daf32f7765b70ec662e7b4d42453cffba359",
+    "behavior": "Materialize exact dependency closure, verify exactly one pristine ANIMartRIX.h with upstream Git blob db640748..., verify derived patch SHA, apply only vendor clock hunk fail-closed, verify four clock members + non-const signatures, hash patched header, then compile."
+  },
+  "conclusion": "Do not use GitHub Actions as an iterative source archaeologist. Build closure is now explicitly reconciled: the missing vendor patch is the only source.patch hunk that should be newly applied to the clean cloud build."
+}
