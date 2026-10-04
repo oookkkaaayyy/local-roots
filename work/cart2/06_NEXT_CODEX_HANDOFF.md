@@ -1,3 +1,6 @@
+## Current migration pointer — 2026-10-04 PM
+Read `work/cart2/24_LENGTH_LIMIT_MIGRATION_HANDOFF_20261004_PM.md` and Drive handoff `1XmyqVCwQIcaEmfdbx4ZaF6S-BuoVfUVgBGpWA2UShfU` before using older continuation text. The user-supplied `source.patch` has been preserved and reconciled; only its vendor Animartrix clock hunk is newly required. Do not apply the old full patch wholesale.
+
 # HBNF Cart 2.0 — Next Codex Handoff
 
 STATUS: CURRENT SOURCE-CONNECTED HANDOFF POINTER — 2026-10-04.
