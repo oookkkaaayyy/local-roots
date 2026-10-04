@@ -152,7 +152,7 @@ const selected = await expectAction(adminToken, { action: 'generation_select_att
 assert.equal(selected.selection.attempt_id, attemptC.id);
 assert.deepEqual(selected.selection.visual_review, visualReview);
 assert.equal(selected.attempts[2].status, 'selected');
-assert.equal((await action(adminToken, { action: 'generation_select_attempt', job_id: jobId, attempt_id: attemptC.id })).response.status, 409);
+assert.equal((await action(adminToken, { action: 'generation_select_attempt', job_id: jobId, attempt_id: attemptC.id, visual_review: visualReview })).response.status, 409);
 
 const correction = await expectAction(adminToken, { action: 'generation_start_correction', job_id: jobId, correction_prompt: 'Widen only the left ear connection.' });
 assert.equal(correction.correction.base_attempt_id, attemptC.id);
