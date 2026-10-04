@@ -119,7 +119,14 @@ The adapter normalizes current firmware timing into the existing diagnostic tele
 
 The cloud-build validator fails closed on branch/commit/source/WLED base/PlatformIO environment, firmware SHA/size/headroom, required artifact files, source-input hashes, PlatformIO structured metadata, package evidence, and build-log success before any release/publish/install step.
 
-Status: SOURCE-STAGED / NOT LIVE-EXECUTED. Pure non-network tests are authored; do not claim live validation until they are executed in a source-connected runtime.
+Status: SOURCE-STAGED / NOT LIVE-EXECUTED. Pure non-network host verification is now PASS on byte-identical GitHub inputs. This does NOT establish a firmware build or live Matrix/AUX validation.
+
+Host verification receipt: `evidence/hbnf-phase2-migration-20261003/packet20-support-tooling-host-test-receipt-20261004.json`.
+Verified PASS:
+- Python compile for adapter, sweep runner, build validator, and their tests;
+- `tests/hbnf_live_kernel_sweep.py`, including cross-kernel uptime continuity and failure-sample preservation;
+- `tests/hbnf_packet20_http_adapter.py` against the exact adapter config and exact 28-kernel inventory;
+- `tests/hbnf_packet20_build_validate.py`, including fail-closed source-SHA drift rejection.
 
 ## Actions re-enable collision audit — 2026-10-04
 Read-only audit of every workflow currently present on the Packet20 temporary branch found no competing workflow that would match the planned sentinel push:
