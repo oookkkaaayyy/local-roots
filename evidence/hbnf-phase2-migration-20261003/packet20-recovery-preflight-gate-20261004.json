@@ -1,0 +1,50 @@
+{
+  "schema": "hbnf-packet20-recovery-preflight-gate-v1",
+  "date": "2026-10-04",
+  "status": "BLOCKED_ONLY_ON_EXACT_RELEASE07_BIN_BYTES",
+  "live_release_state": {
+    "captured_at": "2026-10-04T01:58:54-07:00",
+    "source": "prior live Opal read-only capture",
+    "sequence_high_water": 13,
+    "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
+    "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "updater_version": "1.2.4-1",
+    "no_live_install_after_capture": true,
+    "note": "Subsequent work through run5 and recovery-artifact discovery was GitHub/Drive/backend only; no device firmware install occurred."
+  },
+  "proven_sequence_plan": {
+    "diagnostic_sequence": 14,
+    "exact_release07_recovery_sequence": 15,
+    "rationale": "Updater rules/source were previously proven against high-water 13: diagnostic must exceed 13 and recovery must be strictly higher than diagnostic. Existing historical sequence-14 recovery targets Release06 and is not a valid Release07 recovery target; it must not be reused as the recovery artifact.",
+    "warning": "Do not infer any later high-water unless a live mutation occurs; if any firmware install occurs outside this recorded flow, re-read release-state before publication/install."
+  },
+  "diagnostic_candidate": {
+    "run_id": 37234856834,
+    "firmware_sha256": "40b68f0c09573540b57ed517d262a0f41d3739c42139a3d96f9bf659567cf317",
+    "firmware_bytes": 1462240,
+    "ota_headroom_bytes": 110624,
+    "drive_capsule_id": "1VhqoXzlNwBzHCPVrqLDQG1T7Z0Cp9yVF",
+    "status": "VALIDATED_CLEAN_ROOM_BUILD"
+  },
+  "recovery_target": {
+    "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
+    "required_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "historical_local_package_dir": "/Users/andrew/Documents/Codex/2026-10-01/continue-pr-46-in-oookkkaaayyy-local/work/local-roots-pr46/work/artifacts/hbnf-coordinated-release-20261001/OTA_PREP_RELEASE07_RGB_BLOBS5_PERF_FIX",
+    "durable_drive_id": null,
+    "status": "BYTES_NOT_YET_IMPORTED_TO_DURABLE_AUTHORITY"
+  },
+  "public_fetch_attempts": [
+    {
+      "run_id": 37237394770,
+      "result": "FAILED_BEFORE_MANIFEST_READ",
+      "reason": "hbnightflyers.com stable latest.json returned Cloudflare HTTP 403 managed challenge"
+    },
+    {
+      "run_id": 37237537312,
+      "result": "FAILED_BEFORE_MANIFEST_READ",
+      "reason": "Browser-UA + DNS/origin fallback still received Cloudflare managed challenge; www had no DNS CNAME. Hosted-runner public fetch route is closed."
+    }
+  ],
+  "process_decision": "Do not spend additional Actions runs trying to bypass Cloudflare bot challenges. Challenger analysis says stop retrying the same blocked transport. Acquire the exact Release07 BIN from the known preserved local package (or another already-authenticated local source), verify SHA once, promote to Drive, then continue signing/publication.",
+  "next_user_action": "Upload the .bin file(s) from the known OTA_PREP_RELEASE07_RGB_BLOBS5_PERF_FIX folder to ChatGPT. No Terminal is required; assistant will hash them and select the exact 8e8db177... target. If easier, upload the package ZIP/folder archive."
+}
