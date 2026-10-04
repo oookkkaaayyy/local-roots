@@ -22,6 +22,36 @@ with tempfile.TemporaryDirectory() as td:
     (root / "firmware.elf").write_bytes(b"ELF-fixture")
     firmware_sha = hashlib.sha256(firmware).hexdigest()
     size = len(firmware)
+
+    upstream = root / "ANIMartRIX.upstream.h"
+    upstream.write_text(
+        "class ANIMartRIX {\n"
+        " public:\n"
+        "  void calculate_oscillators(const oscillators &timings) const {}\n"
+        "  void run_default_oscillators() const {}\n"
+        "};\n"
+    )
+    patched = root / "ANIMartRIX.patched.h"
+    patched.write_text(
+        "class ANIMartRIX {\n"
+        " public:\n"
+        "  double animation_clock_ms_ = 0.0;\n"
+        "  double animation_clock_speed_ = 1.0;\n"
+        "  uint32_t animation_clock_last_ms_ = 0;\n"
+        "  bool animation_clock_started_ = false;\n"
+        "  void calculate_oscillators(const oscillators &timings) {}\n"
+        "  void run_default_oscillators() {}\n"
+        "};\n"
+    )
+    patch_bytes = b"fixture animartrix clock patch\n"
+    (root / "animartrix-clock.patch").write_bytes(patch_bytes)
+
+    # Fixture-specific identities exercise the same fail-closed logic without
+    # embedding the full 130 KiB upstream header in the unit test.
+    m.EXPECTED_ANIMARTRIX_UPSTREAM_BLOB = m.git_blob_sha1(upstream)
+    m.EXPECTED_ANIMARTRIX_CLOCK_PATCH_SHA256 = hashlib.sha256(patch_bytes).hexdigest()
+    patched_sha = hashlib.sha256(patched.read_bytes()).hexdigest()
+
     provenance = {
         "status": "BUILD_SUCCEEDED",
         "github_repository": m.EXPECTED_REPOSITORY,
@@ -32,6 +62,11 @@ with tempfile.TemporaryDirectory() as td:
         "platformio_core": m.EXPECTED_PLATFORMIO,
         "environment": m.EXPECTED_ENVIRONMENT,
         "diagnostic_source_sha256": m.EXPECTED_SOURCE_SHA256,
+        "source_patch_sha256": m.EXPECTED_SOURCE_PATCH_SHA256,
+        "animartrix_upstream_commit": m.EXPECTED_ANIMARTRIX_COMMIT,
+        "animartrix_upstream_header_git_blob": m.EXPECTED_ANIMARTRIX_UPSTREAM_BLOB,
+        "animartrix_clock_patch_sha256": m.EXPECTED_ANIMARTRIX_CLOCK_PATCH_SHA256,
+        "animartrix_patched_header_sha256": patched_sha,
         "firmware_sha256": firmware_sha,
         "firmware_bytes": size,
         "ota_slot_bytes": m.EXPECTED_OTA_SLOT_BYTES,
@@ -46,6 +81,7 @@ with tempfile.TemporaryDirectory() as td:
     (root / "source-input-sha256.txt").write_text(
         f"{m.EXPECTED_SOURCE_SHA256}  usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp\n"
         + "0" * 64 + "  platformio_override.ini\n"
+        + f"{m.EXPECTED_ANIMARTRIX_CLOCK_PATCH_SHA256}  animartrix-clock.patch\n"
     )
     (root / "project-config.json").write_text("{}")
     (root / "project-metadata.json").write_text("{}")
@@ -57,6 +93,7 @@ with tempfile.TemporaryDirectory() as td:
     assert receipt["firmware_sha256"] == firmware_sha
     assert receipt["firmware_bytes"] == size
     assert receipt["ota_headroom_bytes"] == m.EXPECTED_OTA_SLOT_BYTES - size
+    assert receipt["animartrix_patched_header_sha256"] == patched_sha
 
     bad = json.loads((root / "provenance.json").read_text())
     bad["diagnostic_source_sha256"] = "0" * 64
@@ -67,4 +104,7 @@ with tempfile.TemporaryDirectory() as td:
     except m.ValidationError:
         pass
 
-print("PASS: Packet20 cloud build validator accepts exact provenance and fails closed on source drift")
+print(
+    "PASS: Packet20 cloud build validator accepts exact provenance, "
+    "vendor-patch evidence, and fails closed on source drift"
+)
