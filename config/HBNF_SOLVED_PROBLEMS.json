@@ -134,11 +134,11 @@
       "id": "HBNF-WATCH-015",
       "title": "Prebuild-generated UI header drift",
       "status": "WATCH",
-      "symptom": "Firmware compiles but a prebuild hook regenerates four UI headers that differ from the retained accepted source.",
-      "root_cause": "Canonical ownership of generated UI headers versus their generator inputs/tooling was not previously defined.",
-      "validated_fix": "Classify each generated input as deterministic generated output with pinned generator inputs/tool/version and expected hash, or canonical frozen input with generator disabled/guarded and exact hashes preserved.",
-      "do_not_rediscover_unless": "UI generation pipeline is intentionally redesigned.",
-      "note": "Observed during PR #46 recovery. Final classification must come from the accepted build before this issue can be marked SOLVED."
+      "symptom": "Clean Packet20 cloud run 37234233203 compiled through the recovered dependency/vendor patch closure, then failed at wled_server.cpp because generated html_ui.h was absent.",
+      "root_cause": "The HBNF platformio_override.ini explicitly replaced WLED's default extra_scripts and omitted only pre:pio-scripts/build_ui.py. Historical local/older cloud builds could rely on pre-existing generated UI headers, so clean-room source was incomplete.",
+      "validated_fix": "Source-staged correction: pin observed Python 3.12.14 + Node 20.20.2; under fixed SOURCE_DATE_EPOCH=1789948800 run npm ci + forced WLED cdata UI generation before PlatformIO; require all 10 canonical generated headers/assets and exact WEB_BUILD_TIME; hash package-lock/cdata/build_ui/generated outputs; assert no other WLED default build script is omitted. Prior successful HBNF WLED16 run 36207806022 independently proves canonical WLED builds generate these UI headers. Requires one clean build to promote WATCH→SOLVED.",
+      "do_not_rediscover_unless": "The generated-input policy, WLED base, Node/package-lock, cdata generator, or HBNF extra_scripts intentionally changes, or a clean build disproves the staged closure.",
+      "note": "Run4 provided direct clean-room failure evidence. No immediate retry was made; a full WLED default-script comparison found build_ui.py is the only omitted default script. Correction staged at temp-branch commit d04771b63ed2c7a704b17a268203e973c9176d68."
     },
     {
       "id": "HBNF-WATCH-016",
