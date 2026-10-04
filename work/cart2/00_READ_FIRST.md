@@ -1,5 +1,5 @@
-## Current migration pointer — 2026-10-04 PM
-Read `work/cart2/24_LENGTH_LIMIT_MIGRATION_HANDOFF_20261004_PM.md` and Drive handoff `1XmyqVCwQIcaEmfdbx4ZaF6S-BuoVfUVgBGpWA2UShfU` before using older continuation text. The user-supplied `source.patch` has been preserved and reconciled; only its vendor Animartrix clock hunk is newly required. Do not apply the old full patch wholesale.
+## Current migration pointer — 2026-10-04 PM2
+Read `work/cart2/25_LENGTH_LIMIT_MIGRATION_HANDOFF_20261004_PM2.md` and Drive handoff `1hsrKsToWY-xMtAh8wnW2aMW_EqqKiuMQpqpU_mecuG0` FIRST. Packet20 clean-room run 37234856834 succeeded; artifact is validated and preserved in Drive release capsules. The immediate gate is updater high-water + exact Release07 rollback verification, not another build or source archaeology.
 
 # OPERATIONAL AUTHORITY — READ THIS FIRST
 
