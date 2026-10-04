@@ -1,10 +1,10 @@
-HBNF Packet20 corrected one-shot build trigger
+HBNF Packet20 corrected one-shot build trigger — third authorized run
 branch=hbnf-packet20-safe-point-cloud-20261004
-pre_trigger_head=ae157aa5326cff247ed1ecb9c81a7dae32a68432
+pre_trigger_head=19f72a9339d0ed8501337c6141513bdf11dd84cc
 source_sha256=529e1bf718c3770b7d4ba6408178e9d3e7a4ed1d223b9bbf9071b68e75eed74b
 overlay_tar_sha256=1f2d5d020a6dba814fbc3d65ae1daa0c8973872ab7100b858022cd5110ef1970
-workflow_git_blob_sha=ac6895101163f578cabff70455769eac5e1e72bf
-authorized_correction=restore_exact_wled_esp32_dependency_closure
+workflow_git_blob_sha=7ee15312d5d3f020108f364f86e21a9cead2c011
+authorized_correction=declare_exact_wled_pinned_animartrix_dependency
 authorized_run_scope=one_job_one_compile_20m
-authorization=Approve one corrected Packet20 cloud build. No further retries without asking me.
-No further retry or second corrected run is authorized.
+authorization=Approve one more corrected Packet20 cloud build. No further retries without asking me.
+No further retry or fourth run is authorized.
