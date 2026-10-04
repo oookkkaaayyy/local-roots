@@ -148,3 +148,19 @@ Required order:
 6. only then read the live updater high-water and decide the legal diagnostic/recovery sequence pair.
 
 Do not allow the 1-day GitHub artifact retention window to become a manual-download dependency.
+
+## First authorized cloud run result — 2026-10-04
+Run `37229698261` / trigger commit `c09eb8871a9848f85429545d58e16fea9629eac2` started normally after Actions was re-enabled, proving the Actions blocker is resolved. The run FAILED during the first compile, before any Packet20 C++-specific diagnostic could be established.
+
+Exact compiler failure:
+`wled00/wled.h:102:12: fatal error: AsyncTCP.h: No such file or directory`
+
+Evidence shows this is a build-environment dependency-closure defect:
+- failed Packet20 run found 31 compatible libraries and omitted AsyncTCP / ESPAsyncWebServer / AsyncMqttClient / QuickESPNow from the dependency graph;
+- prior successful HBNF WLED16 run `36207806022` on the same WLED 16.0.1 base/toolchain found 42 compatible libraries and installed `esp32async/AsyncTCP @ 3.4.7`, ESPAsyncWebServerWLED, AsyncMqttClient, QuickESPNow, and the rest of WLED's normal ESP32 closure.
+
+A no-run correction is already committed on the Packet20 temp branch at `ae157aa5326cff247ed1ecb9c81a7dae32a68432`: only the target Packet20 env is augmented with the exact WLED `${esp32_idf_V4.lib_deps}` closure; existing custom deps are preserved; source-input hashes are recomputed; and the workflow now fails before compile unless AsyncTCP, ESPAsyncWebServer, AsyncMqttClient, and QuickESPNow are present in the effective config.
+
+This workflow edit does NOT match the trigger path and therefore did not create another Actions run. No retry is authorized yet.
+
+Durable failure receipt: `evidence/hbnf-phase2-migration-20261003/packet20-cloud-run1-failure-20261004.json` at staging commit `e20cf5661cb40b09668ae915b2b765b8f171f780`.
