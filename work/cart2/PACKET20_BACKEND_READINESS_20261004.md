@@ -120,3 +120,11 @@ The adapter normalizes current firmware timing into the existing diagnostic tele
 The cloud-build validator fails closed on branch/commit/source/WLED base/PlatformIO environment, firmware SHA/size/headroom, required artifact files, source-input hashes, PlatformIO structured metadata, package evidence, and build-log success before any release/publish/install step.
 
 Status: SOURCE-STAGED / NOT LIVE-EXECUTED. Pure non-network tests are authored; do not claim live validation until they are executed in a source-connected runtime.
+
+## Actions re-enable collision audit — 2026-10-04
+Read-only audit of every workflow currently present on the Packet20 temporary branch found no competing workflow that would match the planned sentinel push:
+- `ci.yml` runs only on push to `main` / PR to `main`;
+- all legacy HBNF workflows are pinned to their historical named branches and/or unrelated paths;
+- `hbnf-packet20-safe-point-cloud.yml` is the only workflow whose push branch is `hbnf-packet20-safe-point-cloud-20261004`, and its only matching path is `.hbnf-packet20-cloud/TRIGGER`.
+
+The current Packet20 workflow itself remains bounded to one Ubuntu job, one `pio run -e hbnf_matrix_wled16_packet20_diag`, a 20-minute job timeout, cancel-in-progress concurrency, read-only repository permissions, and 1-day artifact retention. Its artifact step preserves logs/provenance even on failure. Therefore the planned new sentinel update, after repository Actions is deliberately re-enabled, is scoped to the single authorized Packet20 build workflow rather than waking the repository's other workflows.
