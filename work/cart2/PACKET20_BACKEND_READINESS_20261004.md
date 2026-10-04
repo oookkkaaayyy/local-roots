@@ -135,3 +135,16 @@ Read-only audit of every workflow currently present on the Packet20 temporary br
 - `hbnf-packet20-safe-point-cloud.yml` is the only workflow whose push branch is `hbnf-packet20-safe-point-cloud-20261004`, and its only matching path is `.hbnf-packet20-cloud/TRIGGER`.
 
 The current Packet20 workflow itself remains bounded to one Ubuntu job, one `pio run -e hbnf_matrix_wled16_packet20_diag`, a 20-minute job timeout, cancel-in-progress concurrency, read-only repository permissions, and 1-day artifact retention. Its artifact step preserves logs/provenance even on failure. Therefore the planned new sentinel update, after repository Actions is deliberately re-enabled, is scoped to the single authorized Packet20 build workflow rather than waking the repository's other workflows.
+
+## Cloud-first artifact handoff — prepared 2026-10-04
+After the authorized Actions run succeeds, no laptop download/relay is required. The connected GitHub tool can enumerate the run artifact and download its ZIP as a connector file reference; the connected Google Drive tool accepts that connector file reference directly for upload into Cart 2.0 folder `20 — RELEASE CAPSULES` (Drive folder `17B-XkjyK92FS7dT8TWDRqcTxozZRjTFV`).
+
+Required order:
+1. identify the exact successful Packet20 run and its one artifact;
+2. download that exact artifact through the GitHub connector;
+3. validate its extracted contents/provenance against the actual trigger commit with `scripts/hbnf_packet20_build_validate.py` before treating it as a release candidate;
+4. upload the exact artifact ZIP to Drive folder 20 using the connector file reference, not a local filesystem path;
+5. register Drive ID + firmware SHA + provenance in the global artifact registry;
+6. only then read the live updater high-water and decide the legal diagnostic/recovery sequence pair.
+
+Do not allow the 1-day GitHub artifact retention window to become a manual-download dependency.
