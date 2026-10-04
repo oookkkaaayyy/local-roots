@@ -131,24 +131,24 @@
       "do_not_rediscover_unless": "Dependency graph or PlatformIO/LDF configuration intentionally changes."
     },
     {
-      "id": "HBNF-WATCH-015",
+      "id": "HBNF-SOLVED-015",
       "title": "Prebuild-generated UI header drift",
-      "status": "WATCH",
+      "status": "SOLVED",
       "symptom": "Clean Packet20 cloud run 37234233203 compiled through the recovered dependency/vendor patch closure, then failed at wled_server.cpp because generated html_ui.h was absent.",
       "root_cause": "The HBNF platformio_override.ini explicitly replaced WLED's default extra_scripts and omitted only pre:pio-scripts/build_ui.py. Historical local/older cloud builds could rely on pre-existing generated UI headers, so clean-room source was incomplete.",
-      "validated_fix": "Source-staged correction: pin observed Python 3.12.14 + Node 20.20.2; under fixed SOURCE_DATE_EPOCH=1789948800 run npm ci + forced WLED cdata UI generation before PlatformIO; require all 10 canonical generated headers/assets and exact WEB_BUILD_TIME; hash package-lock/cdata/build_ui/generated outputs; assert no other WLED default build script is omitted. Prior successful HBNF WLED16 run 36207806022 independently proves canonical WLED builds generate these UI headers. Requires one clean build to promote WATCH→SOLVED.",
-      "do_not_rediscover_unless": "The generated-input policy, WLED base, Node/package-lock, cdata generator, or HBNF extra_scripts intentionally changes, or a clean build disproves the staged closure.",
-      "note": "Run4 provided direct clean-room failure evidence. No immediate retry was made; a full WLED default-script comparison found build_ui.py is the only omitted default script. Correction staged at temp-branch commit d04771b63ed2c7a704b17a268203e973c9176d68."
+      "validated_fix": "Validated by clean Packet20 cloud run 37234856834 / trigger 7928a256f31ce46775717731cf1338944a2b5709. Build pinned Python 3.12.14 + Node 20.20.2, ran npm ci + forced deterministic WLED UI generation under SOURCE_DATE_EPOCH=1789948800, produced all 10 canonical generated headers/assets, cross-recorded exact hashes, and completed the firmware build successfully.",
+      "do_not_rediscover_unless": "WLED base, Node/package-lock, cdata/build_ui generator inputs, SOURCE_DATE_EPOCH policy, or HBNF extra_scripts intentionally changes.",
+      "note": "Run4 exposed the omission; Run5 clean-room success closed it. Exact generated-input hashes are preserved in run5 artifact and evidence/hbnf-phase2-migration-20261003/packet20-cloud-run5-success-20261004.json."
     },
     {
-      "id": "HBNF-WATCH-016",
+      "id": "HBNF-SOLVED-016",
       "title": "Patched third-party dependency omitted from clean-room closure",
-      "status": "WATCH",
+      "status": "SOLVED",
       "symptom": "Clean Packet20 cloud builds reached pristine upstream ANIMartRIX but failed because Release07 source expected animation_clock_* members and non-const oscillator methods that existed only in the historical vendor patch.",
       "root_cause": "The reconstructed cloud build captured the Packet20 usermod and dependency version but not the source patch applied to the third-party Animartrix dependency. Local historical builds could hide this because their dependency/cache tree already contained the patched vendor source.",
-      "validated_fix": "Preserve the exact source.patch (SHA-256 aca7b2fa6fe45ce992e162d91447351487e854279de373e691cf02615c149b04); extract only the Animartrix clock hunk (SHA-256 f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4); verify pristine upstream ANIMartRIX.h Git blob db640748175cfdd70dc103fc23c830e646fa5ab6 at WLED-pinned commit 81eb09b91c8c9c8c01f8ea442787f8127d56c72f; apply the exact hunk fail-closed before compile; record upstream and patched hashes.",
-      "do_not_rediscover_unless": "A verified descendant changes the Animartrix revision, the vendor patch, or a successful clean-room build disproves the staged closure.",
-      "note": "Run 3 exposed the missing patch. Exact correction is staged but not yet validated by a subsequent successful cloud build; therefore WATCH, not SOLVED."
+      "validated_fix": "Validated by clean Packet20 cloud run 37234856834 / trigger 7928a256f31ce46775717731cf1338944a2b5709. Exact source.patch SHA aca7b2fa..., vendor-only Animartrix clock patch SHA f38d260d..., pristine upstream commit 81eb09b... / header Git blob db640748..., and patched header SHA bd9d146e... were all preserved; compile succeeded.",
+      "do_not_rediscover_unless": "Animartrix revision, vendor patch, Release07 timing semantics, or build closure intentionally changes.",
+      "note": "Run3 exposed the missing vendor patch; Run5 clean-room success closed the issue. Full reconciliation remains evidence/hbnf-phase2-migration-20261003/packet20-source-patch-reconciliation-20261004.json."
     }
   ]
 }
