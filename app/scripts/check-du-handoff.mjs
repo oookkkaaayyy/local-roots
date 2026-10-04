@@ -5,7 +5,7 @@ const workflow=readFileSync(new URL('../src/components/DuGenerationWorkflow.tsx'
 const wrangler=readFileSync(new URL('../wrangler.jsonc',import.meta.url),'utf8');
 const serviceWorker=readFileSync(new URL('../public/sw.js',import.meta.url),'utf8');
 const backend=readFileSync(new URL('../../supabase/functions/du-admin/index.ts',import.meta.url),'utf8');
-const migration=readFileSync(new URL('../../supabase/migrations/20261004090000_add_du_generation_attempt_orchestration.sql',import.meta.url),'utf8');
+const migration=readFileSync(new URL('../../supabase/migrations/20261004214908_add_du_generation_attempt_orchestration.sql',import.meta.url),'utf8');
 const failures=[];
 const requireText=(source,text,label)=>{if(!source.includes(text))failures.push('Missing '+label);};
 const forbidText=(source,text,label)=>{if(source.includes(text))failures.push('Forbidden '+label);};
