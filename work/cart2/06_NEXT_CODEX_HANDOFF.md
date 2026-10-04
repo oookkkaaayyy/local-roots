@@ -9,7 +9,7 @@ Do not use the older PR #46/release04 audit sequence or the superseded Packet20 
 - release07 role: DIAGNOSTIC_BASE / PERFORMANCE_REJECTED
 - foundation: FOUNDATION_UNQUALIFIED — PERFORMANCE_OPEN
 - Packet20: zero valid live kernel samples
-- First authorized cloud compile run 37229698261 FAILED before Packet20 C++ diagnosis on missing WLED base dependency AsyncTCP.h; exact dependency-closure correction is staged, but no second run is authorized yet
+- First cloud compile run 37229698261 failed on missing WLED base dependency closure; corrected run 37230743394 proved that repair worked but then exposed a second undeclared dependency, ANIMartRIX.h. Exact no-run fix is staged at temp commit 19f72a9339d0ed8501337c6141513bdf11dd84cc. No third run is authorized.
 - Packet20 support tooling: byte-identical pure host tests PASS; live validation still pending
 - exact Packet20 renderer-safe source: SHA-256 `529e1bf718c3770b7d4ba6408178e9d3e7a4ed1d223b9bbf9071b68e75eed74b`
 - exact source/build/workflow inputs are durable in GitHub + Drive
@@ -54,7 +54,7 @@ The user has explicitly authorized exactly one bounded Packet20 cloud build:
 Repository Actions must first be re-enabled/available. Current GitHub UI path:
 **Repository → Settings → Actions → General → Actions permissions.**
 
-Actions is now available. First authorized run 37229698261 failed on missing WLED ESP32 dependency closure. Do not trigger again until explicit retry authorization. The no-run correction is staged at temp-branch commit ae157aa5326cff247ed1ecb9c81a7dae32a68432. The trigger file currently has blob SHA `a1ff66bf1d5054a7a874cb7b4146a9674ab20fa2`; update that exact file rather than creating a parallel trigger path. The prior event started zero runner work, so the next event is the first actual authorized build execution, not an authorized retry.
+Actions is available. Run 37229698261 exposed missing WLED ESP32 dependencies; corrected run 37230743394 proved that repair and then exposed missing ANIMartRIX.h. The exact WLED-pinned Animartrix dependency is staged at temp-branch commit 19f72a9339d0ed8501337c6141513bdf11dd84cc. Do not trigger a third run without explicit user approval. The trigger file currently has blob SHA `a1ff66bf1d5054a7a874cb7b4146a9674ab20fa2`; update that exact file rather than creating a parallel trigger path. The prior event started zero runner work, so the next event is the first actual authorized build execution, not an authorized retry.
 
 ## After successful Packet20 build
 1. Verify exact branch/commit/source SHA/WLED base/environment.
