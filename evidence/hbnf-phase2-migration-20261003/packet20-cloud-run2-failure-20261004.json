@@ -1,0 +1,52 @@
+{
+  "schema": "hbnf-packet20-cloud-run-failure-v1",
+  "date": "2026-10-04",
+  "status": "BUILD_FAILED",
+  "workflow_run_id": 37230743394,
+  "workflow_run_url": "https://github.com/oookkkaaayyy/local-roots/actions/runs/37230743394",
+  "trigger_commit": "4ec22d4b8195c9865a97025d892ab59724e4b555",
+  "pre_trigger_fix_commit": "ae157aa5326cff247ed1ecb9c81a7dae32a68432",
+  "branch": "hbnf-packet20-safe-point-cloud-20261004",
+  "packet20_source_sha256": "529e1bf718c3770b7d4ba6408178e9d3e7a4ed1d223b9bbf9071b68e75eed74b",
+  "wled_base_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+  "platformio_core": "6.1.18",
+  "build_environment": "hbnf_matrix_wled16_packet20_diag",
+  "first_failure_fixed": true,
+  "dependency_closure_observed": {
+    "compatible_libraries": 40,
+    "present": [
+      "AsyncTCP 3.4.7",
+      "AnimatedGIF 1.4.7",
+      "GifDecoder",
+      "esp_dmx",
+      "IRremoteESP8266 2.8.2",
+      "NeoPixelBus",
+      "ESPAsyncWebServerWLED 2.4.2",
+      "AsyncMqttClient 0.9.0",
+      "QuickEspNow",
+      "audioreactive",
+      "hbnf_foundation_v1"
+    ]
+  },
+  "failure_phase": "compile",
+  "compiler_error": "usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp:10:10: fatal error: ANIMartRIX.h: No such file or directory",
+  "diagnosis": "Clean cloud runner exposed a second undeclared dependency: Release07 Packet20 source directly includes/subclasses ANIMartRIX, but target env did not declare the Animartrix library. Prior local builds could have resolved it from cache/previous usermod dependency state.",
+  "exact_upstream_dependency": {
+    "source": "WLED 16.0.1 usermods/usermod_v2_animartrix/library.json",
+    "url": "https://github.com/netmindz/animartrix.git#81eb09b91c8c9c8c01f8ea442787f8127d56c72f"
+  },
+  "staged_no_run_correction": {
+    "temp_branch_commit": "19f72a9339d0ed8501337c6141513bdf11dd84cc",
+    "action": "Declare the exact WLED-pinned Animartrix library directly in only env:hbnf_matrix_wled16_packet20_diag, without enabling WLED's separate Animartrix usermod/effect registry. Add effective-config preflight for exact URL and commit.",
+    "triggers_actions": false
+  },
+  "failed_run_artifact": {
+    "artifact_id": 11313736300,
+    "name": "HBNF-Packet20-Safe-Point-37230743394",
+    "size_bytes": 9715,
+    "sha256": "cf81adcaf90c8bc7d903d259b6890ae333c600b8ddc9541074d6249592265955",
+    "expires_at": "2026-10-05T20:06:15Z",
+    "note": "Raw failure artifact is short-lived; decisive evidence is preserved in this receipt and workflow logs."
+  },
+  "authorization": "No third GitHub Actions run is authorized. Explicit user approval is required before any further cloud build."
+}
