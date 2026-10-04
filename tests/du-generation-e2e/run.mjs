@@ -71,8 +71,8 @@ const jobSeed = await request('/rest/v1/jobs', 'POST', [{
 }]);
 assert.ok(jobSeed.response.ok, 'seed job: ' + JSON.stringify(jobSeed.data));
 
-const createBucket = await request('/storage/v1/bucket', 'POST', { id: 'du-intake', name: 'du-intake', public: false });
-assert.ok(createBucket.response.ok || createBucket.response.status === 409, 'private bucket available');
+const intakeBucket = await request('/storage/v1/bucket/du-intake', 'GET');
+assert.ok(intakeBucket.response.ok && intakeBucket.data.public === false, 'private intake bucket available: ' + JSON.stringify(intakeBucket.data));
 async function uploadObject(path, bytes) {
   const response = await fetch(base + '/storage/v1/object/du-intake/' + path, {
     method: 'POST', headers: { apikey: service, Authorization: 'Bearer ' + service, 'Content-Type': 'image/png', 'x-upsert': 'false' }, body: bytes,
