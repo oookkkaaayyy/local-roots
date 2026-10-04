@@ -1,6 +1,6 @@
 # HBNF Cart 2.0 — Packet20 Backend Readiness — 2026-10-04
 
-STATUS: BLOCKED ON REPOSITORY GITHUB ACTIONS AVAILABILITY. NO HARDWARE ACTION REQUIRED.
+STATUS: CLEAN-ROOM BUILD SUCCEEDED / ARTIFACT VALIDATED / NEXT GATE IS UPDATER+RECOVERY PRE-MUTATION.
 
 ## Exact candidate inputs
 - Temp build branch: `hbnf-packet20-safe-point-cloud-20261004`
@@ -202,3 +202,16 @@ Run-3 artifact: ID `11313681641`, digest `sha256:78a7b6f18dfbfe7bf83fe59412b535d
 Durable receipt: `evidence/hbnf-phase2-migration-20261003/packet20-cloud-run3-failure-20261004.json`.
 
 **Current gate:** recover/prove the exact Sep-30 animation-clock source modification offline. No fourth Actions run is authorized. A fourth cloud build must not be requested or triggered until the exact compatibility correction is source-backed and staged.
+
+
+## Run5 clean-room build success — 2026-10-04
+Run `37234856834` / trigger `7928a256f31ce46775717731cf1338944a2b5709` succeeded after the complete dependency/vendor/generated-input closure was reconciled. Firmware SHA-256 `40b68f0c09573540b57ed517d262a0f41d3739c42139a3d96f9bf659567cf317`; firmware.bin 1,462,240 bytes; OTA headroom 110,624 bytes. Artifact `11314674860` ZIP digest `dca762bce1d934a04c18b9cc6e0b0f9880d0a4779f3945c7943ca6b84c8ef8ed` is preserved in Drive release capsules as file `1VhqoXzlNwBzHCPVrqLDQG1T7Z0Cp9yVF`.
+
+Exact success/validation receipt:
+`evidence/hbnf-phase2-migration-20261003/packet20-cloud-run5-success-20261004.json`
+
+Do not perform another build merely to reconfirm closure. The next gate is to read live updater high-water exactly once, verify/register the exact Release07 rollback BIN SHA `8e8db177...`, derive legal diagnostic/recovery sequence numbers, sign/publish both, then execute one live snapshot preflight and one 28-kernel sweep if stable.
+
+Current migration authority superseding older continuation text:
+`work/cart2/25_LENGTH_LIMIT_MIGRATION_HANDOFF_20261004_PM2.md`
+Drive handoff: `1hsrKsToWY-xMtAh8wnW2aMW_EqqKiuMQpqpU_mecuG0`.
