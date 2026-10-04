@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { callFunction, configReady, supabase } from './lib/supabase';
+import { buildDuInterimCleanRoomPrompt } from './lib/duInterimPrompt';
 import { Shell } from './components/Shell';
 import { EventsPage } from './pages/EventsPage';
 import { EventDetailPage } from './pages/EventDetailPage';
@@ -47,28 +48,7 @@ async function duAdminAuth():Promise<DuAdminAuth>{
 }
 function duFunctionAuth(auth:DuAdminAuth){return typeof auth==='string'?auth:{deviceToken:auth.deviceToken};}
 
-function duCleanRoomPrompt(detail:DuJobDetail){
-  const job=detail.job;
-  const imageWord=detail.photos.length===1?'image':'images';
-  return `START D&U STENCIL — ${job.job_number} — CLEAN ROOM v1
-
-ISOLATION GATE
-The ${detail.photos.length} source ${imageWord} attached to THIS USER MESSAGE are the only visual inputs allowed for this generation. Do not retrieve, inspect, or use images from earlier messages, other chats, memory, AKS, Drive, Library, prior candidates, or prior generated outputs as visual references. If these source images are not present as native image attachments in this message, STOP and reply exactly: CLEAN ROOM INPUT FAILURE. Do not generate.
-
-SOURCE ROLES
-Inspect every attached source image first. Choose exactly ONE source image as the composition authority for pose, crop, head angle, eye direction, expression, ear geometry, silhouette, and framing. If the submission notes explicitly designate a photo or composition, that instruction controls. Use every other source only to clarify the same pet's identity, markings, coat, and anatomy. Never average, merge, or substitute poses.
-
-OUTPUT
-Create ONE black-on-white stencil artwork only. Do not include the source photo, a comparison board, labels, options, mockups, a disc, background scenery, or a second candidate.
-
-SUCCESS-DERIVED VISUAL TARGET
-Preserve the specific pet's recognizable identity and meaningful asymmetry. Use clean decisive black masses, deliberate medium-scale white openings, natural cheeks/jaw/chin, and selective coat-direction detail rather than repetitive spikes. Preserve the eyes, muzzle/nose, head shape, ears, expression, and distinctive markings. Avoid generic breed-icon simplification, scratchboard texture, stippling or micro-speckle, tiny slivers, artificial eye rings/catchlights, arbitrary black blobs, and decorative detail that weakens likeness.
-
-PRE-SHOW CHECK
-Compare the rendered pixels directly against the chosen composition source before presenting it. Internally reject any result that materially changes the subject, pose, expression, key anatomy, or identity. Show only one serious artwork candidate. This step is artwork evaluation, not production-file certification.
-
-Submission notes: ${job.notes||'None'}`;
-}
+function duCleanRoomPrompt(detail:DuJobDetail){return buildDuInterimCleanRoomPrompt(detail);}
 
 async function duPrepareJob(job:DuJobSummary,auth:DuAdminAuth):Promise<DuPreparedJob>{
   const cached=duPreparedJobs.get(job.job_number);
