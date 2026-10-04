@@ -40,23 +40,14 @@ jobs:
           SOURCE=.hbnf-packet20-cloud/source/usermod_hbnf_foundation_v1.cpp
           test "$(sha256sum "$SOURCE" | awk '{print $1}')" = "529e1bf718c3770b7d4ba6408178e9d3e7a4ed1d223b9bbf9071b68e75eed74b"
           python - <<'PY'
-          import base64, hashlib, pathlib, tarfile
+          import base64, hashlib, pathlib
           root = pathlib.Path(".hbnf-packet20-cloud/source")
-          encoded = (root / "hbnf-p20-build-overlay-20261004.tar.gz.b64").read_bytes()
-          raw = base64.b64decode(encoded)
-          expected = "1f2d5d020a6dba814fbc3d65ae1daa0c8973872ab7100b858022cd5110ef1970"
-          assert hashlib.sha256(raw).hexdigest() == expected
-          archive = pathlib.Path("/tmp/hbnf-p20-overlay.tar.gz")
-          archive.write_bytes(raw)
-          target = pathlib.Path("/tmp/hbnf-p20-overlay")
-          target.mkdir()
-          with tarfile.open(archive, "r:gz") as tf:
-              tf.extractall(target)
-          source = target / "usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp"
-          assert hashlib.sha256(source.read_bytes()).hexdigest() == "529e1bf718c3770b7d4ba6408178e9d3e7a4ed1d223b9bbf9071b68e75eed74b"
+          raw = base64.b64decode((root / "hbnf-p20-build-overlay-20261004.tar.gz.b64").read_bytes())
+          assert hashlib.sha256(raw).hexdigest() == "1f2d5d020a6dba814fbc3d65ae1daa0c8973872ab7100b858022cd5110ef1970"
+          pathlib.Path("/tmp/hbnf-p20-overlay.tar.gz").write_bytes(raw)
           PY
 
-      - name: Fetch exact WLED 16.0.1 base
+      - name: Fetch exact WLED 16.0.1 base and apply overlay
         shell: bash
         run: |
           set -euo pipefail
@@ -74,23 +65,14 @@ jobs:
           p.write_text(s.replace(old, new, 1))
           assert 'SOURCE_DATE_EPOCH' in p.read_text()
           PY
-          cp "$GITHUB_WORKSPACE/.hbnf-packet20-cloud/source/hbnf-p20-build-overlay-20261004.tar.gz.b64" /tmp/overlay.b64
-          python - <<'PY'
-          import base64, pathlib, tarfile
-          raw = base64.b64decode(pathlib.Path('/tmp/overlay.b64').read_bytes())
-          with tarfile.open('/tmp/hbnf-p20-overlay.tar.gz', 'r:gz') as tf:
-              tf.extractall('/tmp/wled')
-          PY
-          cp /tmp/wled/platformio_override.ini /tmp/wled/platformio_override.ini
-          mkdir -p /tmp/wled/usermods/hbnf_foundation_v1
-          cp -R /tmp/wled/usermods/hbnf_foundation_v1/. /tmp/wled/usermods/hbnf_foundation_v1/
+          tar -xzf /tmp/hbnf-p20-overlay.tar.gz -C /tmp/wled
           cp "$GITHUB_WORKSPACE/.hbnf-packet20-cloud/source/usermod_hbnf_foundation_v1.cpp" /tmp/wled/usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp
+          test -f /tmp/wled/usermods/hbnf_foundation_v1/hbnf_foundation_core.h
+          test -f /tmp/wled/pio-scripts/load_usermods.py
           test "$(sha256sum /tmp/wled/usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp | awk '{print $1}')" = "529e1bf718c3770b7d4ba6408178e9d3e7a4ed1d223b9bbf9071b68e75eed74b"
-          cd /tmp/wled
           grep -q 'hbnf_matrix_wled16_packet20_diag' platformio_override.ini
-          git diff --check
-          git diff > /tmp/hbnf-p20-source.patch
           mkdir -p /tmp/hbnf-p20-artifacts
+          sha256sum platformio_override.ini usermods/hbnf_foundation_v1/* > /tmp/hbnf-p20-artifacts/source-input-sha256.txt
 
       - name: Install pinned build tools
         shell: bash
@@ -99,23 +81,30 @@ jobs:
           python -m pip install --no-cache-dir -r /tmp/wled/requirements.txt
           python -m pip install --no-cache-dir platformio==6.1.18
           pio --version
+          cd /tmp/wled
           pio project config --json-output > /tmp/hbnf-p20-artifacts/project-config.json
 
       - name: Compile once
         shell: bash
         env:
           SOURCE_DATE_EPOCH: '1789948800'
+          GH_SHA: ${{ github.sha }}
+          GH_RUN_ID: ${{ github.run_id }}
         run: |
-          set -euo pipefail
+          set -uo pipefail
           cd /tmp/wled
           pio run -e hbnf_matrix_wled16_packet20_diag 2>&1 | tee /tmp/hbnf-p20-artifacts/build.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            printf 'BUILD_FAILED exit_code=%s\n' "$status" > /tmp/hbnf-p20-artifacts/build-result.txt
+            exit "$status"
+          fi
           cp .pio/build/hbnf_matrix_wled16_packet20_diag/firmware.bin /tmp/hbnf-p20-artifacts/firmware.bin
           cp .pio/build/hbnf_matrix_wled16_packet20_diag/firmware.elf /tmp/hbnf-p20-artifacts/firmware.elf
           pio project metadata --json-output > /tmp/hbnf-p20-artifacts/project-metadata.json
           pio pkg list -e hbnf_matrix_wled16_packet20_diag > /tmp/hbnf-p20-artifacts/resolved-packages.txt
-          cp /tmp/hbnf-p20-source.patch /tmp/hbnf-p20-artifacts/source.patch
           python - <<'PY'
-          import hashlib, json, pathlib
+          import hashlib, json, os, pathlib
           root = pathlib.Path('/tmp/hbnf-p20-artifacts')
           binary = root / 'firmware.bin'
           size = binary.stat().st_size
@@ -125,8 +114,8 @@ jobs:
               "status": "BUILD_SUCCEEDED",
               "github_repository": "oookkkaaayyy/local-roots",
               "github_branch": "hbnf-packet20-safe-point-cloud-20261004",
-              "github_commit": "${{ github.sha }}",
-              "github_run_id": "${{ github.run_id }}",
+              "github_commit": os.environ["GH_SHA"],
+              "github_run_id": os.environ["GH_RUN_ID"],
               "wled_base_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
               "platformio_core": "6.1.18",
               "environment": "hbnf_matrix_wled16_packet20_diag",
@@ -137,15 +126,14 @@ jobs:
               "ota_headroom_bytes": slot - size
           }
           (root / 'provenance.json').write_text(json.dumps(manifest, indent=2) + '\n')
-          (root / 'size-and-headroom.txt').write_text(
-              f"firmware_bytes={size}\nota_slot_bytes={slot}\nota_headroom_bytes={slot-size}\n"
-          )
+          (root / 'size-and-headroom.txt').write_text(f"firmware_bytes={size}\nota_slot_bytes={slot}\nota_headroom_bytes={slot-size}\n")
           PY
 
       - name: Upload build artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: HBNF-Packet20-Safe-Point-${{ github.run_id }}
           path: /tmp/hbnf-p20-artifacts
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 1
