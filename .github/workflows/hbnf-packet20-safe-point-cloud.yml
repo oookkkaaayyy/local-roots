@@ -82,7 +82,55 @@ jobs:
           python -m pip install --no-cache-dir platformio==6.1.18
           pio --version
           cd /tmp/wled
+
+          # The first authorized run proved the Packet20 overlay omitted WLED's
+          # base ESP32 dependency closure: AsyncTCP.h was missing before any
+          # Packet20 source error. Preserve the overlay, then deterministically
+          # augment only the target env's lib_deps with the exact WLED 16.0.1
+          # ESP32-IDF-v4 dependency closure.
+          python - <<'PY'
+          import pathlib
+          p = pathlib.Path("platformio_override.ini")
+          s = p.read_text()
+          target = "[env:hbnf_matrix_wled16_packet20_diag]"
+          start = s.index(target)
+          end = s.find("\n[", start + len(target))
+          if end < 0:
+              end = len(s)
+          block = s[start:end]
+          inherited = "${esp32_idf_V4.lib_deps}"
+          if inherited not in block:
+              lines = block.splitlines()
+              inserted = False
+              for i, line in enumerate(lines):
+                  if line.strip().startswith("lib_deps") and "=" in line:
+                      lines.insert(i + 1, "  " + inherited)
+                      inserted = True
+                      break
+              if not inserted:
+                  lines.append("lib_deps =")
+                  lines.append("  " + inherited)
+              block = "\n".join(lines)
+              s = s[:start] + block + s[end:]
+              p.write_text(s)
+          s2 = p.read_text()
+          start2 = s2.index(target)
+          end2 = s2.find("\n[", start2 + len(target))
+          if end2 < 0:
+              end2 = len(s2)
+          assert inherited in s2[start2:end2]
+          PY
+
+          sha256sum platformio_override.ini usermods/hbnf_foundation_v1/* > /tmp/hbnf-p20-artifacts/source-input-sha256.txt
           pio project config --json-output > /tmp/hbnf-p20-artifacts/project-config.json
+
+          # Fail before compile if the known-good WLED ESP32 closure is still
+          # absent. These exact packages were present in prior successful HBNF
+          # WLED16 builds on the same WLED base/toolchain.
+          grep -q 'AsyncTCP' /tmp/hbnf-p20-artifacts/project-config.json
+          grep -q 'ESPAsyncWebServer' /tmp/hbnf-p20-artifacts/project-config.json
+          grep -q 'AsyncMqttClient' /tmp/hbnf-p20-artifacts/project-config.json
+          grep -q 'QuickESPNow' /tmp/hbnf-p20-artifacts/project-config.json
 
       - name: Compile once
         shell: bash
