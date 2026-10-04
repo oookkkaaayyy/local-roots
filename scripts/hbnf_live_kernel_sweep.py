@@ -158,6 +158,22 @@ def assert_same_snapshot(before, after):
     if before!=after:
         raise RuntimeError("post-restore visual-state snapshot does not match pre-sweep snapshot")
 
+def persist_failure_sample(outdir, entry, phase, sample, error):
+    slug=f"{int(entry['runtime_kernel_index_expected']):02d}_{entry['kernel_name']}"
+    path=outdir/(slug+f".{phase}.failure.json")
+    path.write_text(json.dumps({
+      "status":"FAIL",
+      "phase":phase,
+      "error":str(error),
+      "requested":{
+        "effect_id":entry.get("effect_id"),
+        "kernel_name":entry.get("kernel_name"),
+        "runtime_kernel_index_expected":entry.get("runtime_kernel_index_expected"),
+      },
+      "sample":sample,
+    },indent=2,sort_keys=True)+"\n")
+    return path
+
 def collect_kernel(adapter, entry, outdir, timeout, contract, expected_release_id=None, expected_restart_count=None, previous_uptime=None):
     vals={
         "effect_id":entry["effect_id"],
@@ -169,11 +185,15 @@ def collect_kernel(adapter, entry, outdir, timeout, contract, expected_release_i
     time.sleep(float(adapter["settle_seconds"]))
 
     first=run_json(subst(adapter["telemetry_argv"],vals),timeout=timeout)
-    validate_sample(first,contract)
-    verify_selected(first,entry)
-    release_id,restart_count,previous_uptime=validate_continuity(
-        first,expected_release_id,expected_restart_count,previous_uptime
-    )
+    try:
+        validate_sample(first,contract)
+        verify_selected(first,entry)
+        release_id,restart_count,previous_uptime=validate_continuity(
+            first,expected_release_id,expected_restart_count,previous_uptime
+        )
+    except Exception as e:
+        persist_failure_sample(outdir,entry,"first_sample",first,e)
+        raise
 
     lines=[first]
     deadline=time.monotonic()+float(adapter["sample_seconds"])
@@ -181,9 +201,13 @@ def collect_kernel(adapter, entry, outdir, timeout, contract, expected_release_i
     while time.monotonic()<deadline:
         time.sleep(interval)
         sample=run_json(subst(adapter["telemetry_argv"],vals),timeout=timeout)
-        validate_sample(sample,contract)
-        verify_selected(sample,entry)
-        _,_,previous_uptime=validate_continuity(sample,release_id,restart_count,previous_uptime)
+        try:
+            validate_sample(sample,contract)
+            verify_selected(sample,entry)
+            _,_,previous_uptime=validate_continuity(sample,release_id,restart_count,previous_uptime)
+        except Exception as e:
+            persist_failure_sample(outdir,entry,"sample",sample,e)
+            raise
         lines.append(sample)
 
     slug=f"{int(entry['runtime_kernel_index_expected']):02d}_{entry['kernel_name']}"
@@ -229,15 +253,32 @@ def main():
 
     # Read-only identity/continuity preflight MUST pass before the first select/mutation.
     preflight=run_json(adapter["telemetry_argv"],timeout=timeout)
-    validate_sample(preflight,args.contract)
-    expected_release_id,expected_restart_count,previous_uptime=validate_continuity(
-        preflight,adapter["expected_release_id"],None,None
-    )
     (outdir/"PRE_SWEEP_TELEMETRY.json").write_text(
         json.dumps(preflight,indent=2,sort_keys=True)+"\n"
     )
+    try:
+        validate_sample(preflight,args.contract)
+        expected_release_id,expected_restart_count,previous_uptime=validate_continuity(
+            preflight,adapter["expected_release_id"],None,None
+        )
+    except Exception as e:
+        preflight_failure={"status":"FAIL","error":str(e),"sample":preflight}
+        (outdir/"PRE_SWEEP_ABORT.json").write_text(json.dumps(preflight_failure,indent=2,sort_keys=True)+"\n")
+        print(json.dumps(preflight_failure,indent=2))
+        return 2
 
-    snapshot=run_json(adapter["snapshot_argv"],timeout=timeout)
+    try:
+        snapshot=run_json(adapter["snapshot_argv"],timeout=timeout)
+    except Exception as e:
+        snapshot_failure={
+          "status":"FAIL",
+          "error":str(e),
+          "pre_sweep_telemetry":"PRE_SWEEP_TELEMETRY.json",
+          "instruction":"STOP. Do not automatically retry Packet20. Preserve reset/snapshot evidence and require an intentional next decision."
+        }
+        (outdir/"SNAPSHOT_ABORT.json").write_text(json.dumps(snapshot_failure,indent=2,sort_keys=True)+"\n")
+        print(json.dumps(snapshot_failure,indent=2))
+        return 2
     snapfile=outdir/"PRE_SWEEP_STATE.json"
     snapfile.write_text(json.dumps(snapshot,indent=2,sort_keys=True)+"\n")
 
