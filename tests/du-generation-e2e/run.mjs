@@ -93,16 +93,19 @@ const detail = await expectAction(adminToken, { action: 'job', job_id: jobId });
 assert.equal(detail.photos.length, 2);
 assert.ok(detail.photos.every((photo) => photo.signed_url), 'private source photos get signed URLs');
 
-const prompt = 'Create a bold, faithful, two-tone stencil from the approved composition image.';
-const locked = await expectAction(adminToken, { action: 'generation_lock_package', job_id: jobId, composition_photo_id: photoA, locked_prompt: prompt });
+const promptVersion = 'clean-room-v2.1';
+const prompt = 'START D&U STENCIL — ' + jobNumber + ' — CLEAN ROOM v2.1\n\nUse 01-APPROVED-COMPOSITION as the only authority for pose and framing. Use identity references only for the same subject. Return one black-on-white stencil, preserving recognizable identity and avoiding tiny floating white details. Generation targets are not production certification.';
+assert.equal((await action(adminToken, { action: 'generation_lock_package', job_id: jobId, composition_photo_id: photoA, locked_prompt: prompt })).response.status, 409, 'prompt version is required');
+const locked = await expectAction(adminToken, { action: 'generation_lock_package', job_id: jobId, composition_photo_id: photoA, locked_prompt: prompt, prompt_version: promptVersion });
 assert.ok(locked.package.id);
 assert.equal(locked.package.source_manifest.sources.length, 2);
+assert.equal(locked.package.source_manifest.prompt_version, promptVersion);
 assert.deepEqual(locked.package.source_manifest.sources.map((source) => source.role), ['composition', 'identity_reference']);
 assert.equal(locked.package.source_manifest.sources[0].sha256, hash(pngA));
 assert.equal(locked.package.source_manifest.sources[1].sha256, hash(pngB));
 assert.equal(Object.hasOwn(locked.package, 'client_name'), false);
 assert.equal(locked.attempts.length, 1);
-assert.equal((await action(adminToken, { action: 'generation_lock_package', job_id: jobId, composition_photo_id: photoA, locked_prompt: prompt })).response.status, 409);
+assert.equal((await action(adminToken, { action: 'generation_lock_package', job_id: jobId, composition_photo_id: photoA, locked_prompt: prompt, prompt_version: promptVersion })).response.status, 409);
 
 const attemptA = locked.attempts[0];
 await expectAction(adminToken, { action: 'generation_mark_attempt', job_id: jobId, attempt_id: attemptA.id, status: 'failed' }, 400);
