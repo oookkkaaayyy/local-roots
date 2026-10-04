@@ -31,6 +31,14 @@ Before any firmware/controller/router/software implementation or rollout plannin
 
 That protocol controls source/build provenance, golden release capsules, solved-problem reuse, readiness claims, and rollout discipline.
 
+## Current continuation pointer — 2026-10-04
+Before using older Cart 2.0 planning packets, read:
+- `work/cart2/PACKET20_BACKEND_READINESS_20261004.md`
+- Drive `AKS — HBNF CART 2.0 — CURRENT FILE AUTHORITY` — `1GwvPv_nihqoIj83WsO6VcvyujRkt8HnnULvLv717OHc`
+- Drive `AKS — ARTIFACT & SOURCE REGISTRY — CURRENT` — `18VsUYIYr62fYVaEqynM1kbMmfQpei-3H3rBgrw8S96k`
+
+Packet20 exact renderer-safe source/build inputs are now durably preserved. The immediate blocker is not source discovery: GitHub Actions was intentionally shut down repository-wide on 2026-09-29 because usage was near the included limit. Repository Actions availability must be restored before the single currently authorized bounded cloud build can run. Do not reopen local PlatformIO/LDF repair or the superseded Packet20 plan.
+
 ## Purpose
 This branch is the Cart 2.0 planning/qualification staging lane. It contains planning, acceptance, release-engineering tooling, evidence, and historical source-independent guest prototype work. It does NOT authorize new Phase 2 feature implementation, deployment, flashing, production mutation, or scope lock.
 
