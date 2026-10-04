@@ -1,0 +1,76 @@
+{
+  "schema": "hbnf-packet20-cloud-run-failure-v1",
+  "date": "2026-10-04",
+  "status": "BUILD_FAILED",
+  "workflow_run_id": 37234233203,
+  "workflow_run_url": "https://github.com/oookkkaaayyy/local-roots/actions/runs/37234233203",
+  "trigger_commit": "99a6b7fc822b08856953e8baf227e31e81d62fbb",
+  "branch": "hbnf-packet20-safe-point-cloud-20261004",
+  "packet20_source_sha256": "529e1bf718c3770b7d4ba6408178e9d3e7a4ed1d223b9bbf9071b68e75eed74b",
+  "source_patch_sha256": "aca7b2fa6fe45ce992e162d91447351487e854279de373e691cf02615c149b04",
+  "animartrix_clock_patch_sha256": "f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4",
+  "wled_base_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+  "platformio_core": "6.1.18",
+  "build_environment": "hbnf_matrix_wled16_packet20_diag",
+  "prior_closure_repairs_verified": true,
+  "progress": "Compilation passed Packet20 usermod, patched Animartrix, AudioReactive, NeoPixelBus and most WLED translation units before failing at wled_server.cpp.",
+  "compiler_error": "wled00/wled_server.cpp:6:10: fatal error: html_ui.h: No such file or directory",
+  "diagnosis": "The HBNF platformio_override.ini explicitly overrides WLED extra_scripts and preserves every WLED default script except pre:pio-scripts/build_ui.py. Historical local/older cloud builds could compile because generated UI headers already existed in the workspace. Clean-room WLED has no generated html_ui.h. Prior successful HBNF WLED16 cloud run 36207806022 proves the canonical WLED build generated the UI headers: log shows 'Installing node packages', 'npm run build', missing html_ui.h -> rebuild, then writes html_ui.h/pixart/pxmagic/pixelforge. This is the generated-input ownership gap already anticipated by release-engineering HBNF-WATCH-015.",
+  "closure_audit": {
+    "wled_default_extra_scripts": [
+      "pre:pio-scripts/set_metadata.py",
+      "post:pio-scripts/output_bins.py",
+      "post:pio-scripts/strip-floats.py",
+      "post:pio-scripts/dynarray.py",
+      "pre:pio-scripts/user_config_copy.py",
+      "pre:pio-scripts/load_usermods.py",
+      "pre:pio-scripts/build_ui.py",
+      "post:pio-scripts/validate_modules.py"
+    ],
+    "hbnf_override_missing_only": "pre:pio-scripts/build_ui.py",
+    "generated_outputs": [
+      "wled00/html_ui.h",
+      "wled00/html_pixart.h",
+      "wled00/html_cpal.h",
+      "wled00/html_edit.h",
+      "wled00/html_pxmagic.h",
+      "wled00/html_pixelforge.h",
+      "wled00/html_settings.h",
+      "wled00/html_other.h",
+      "wled00/js_iro.h",
+      "wled00/js_omggif.h"
+    ],
+    "package_lock_git_blob": "9181e1f5c6b57714281b64c8712c0069b5df3ec2",
+    "build_ui_git_blob": "eb7a01b3666115e69ededbd87c8daefa766106b3"
+  },
+  "staged_no_run_correction": {
+    "temp_branch_commit": "d04771b63ed2c7a704b17a268203e973c9176d68",
+    "action": "Pin Python 3.12.14 and Node 20.20.2 as actually observed; before PlatformIO, run npm ci and force WLED cdata generation under fixed SOURCE_DATE_EPOCH=1789948800; require all 10 generated outputs; require WEB_BUILD_TIME exact value; hash package-lock/cdata/build_ui/all outputs; assert the HBNF override omits no other WLED default build script; then compile once.",
+    "triggers_actions": false
+  },
+  "failure_artifact": {
+    "github_artifact_id": 11313834776,
+    "github_sha256": "930a9f33dcf7a3966bef98705b389ba1b57d5e8a49d0465547a4ae2ccfffee4a",
+    "size_bytes": 39717,
+    "drive_file_id": "1oglzQ_nVT37W2lCTgxb6UleTuOHO1pNx"
+  },
+  "archived_prior_failure_artifacts": [
+    {
+      "run_id": 37229698261,
+      "drive_file_id": "1DAigvbjWiqxD0aVUi9nyYiPE6AsOH7kT",
+      "sha256": "0236cdecf6706961b9fac23f40f9a85a8f13e6fbf38e896cc228795e814f1e7c"
+    },
+    {
+      "run_id": 37230743394,
+      "drive_file_id": "1zlU-Q6EaLhQy79VbH-KJcVUlkXbUKoen",
+      "sha256": "cf81adcaf90c8bc7d903d259b6890ae333c600b8ddc9541074d6249592265955"
+    },
+    {
+      "run_id": 37231477686,
+      "drive_file_id": "136vuz25zQxQ-tE4zUBjtCu4RvpG5fXwl",
+      "sha256": "78a7b6f18dfbfe7bf83fe59412b535dffc8d67e7a2889b8dcd43180a25fc32c7"
+    }
+  ],
+  "challenger_rule": "This run exposed another missing build input, so no immediate retry was made. A full default-script/generated-input closure audit was completed first. The audit found exactly one omitted WLED default build script: build_ui.py. The next run is justified only after this correction is reviewed as a verified descendant with no unrelated changes.",
+  "next_gate": "Verify temp branch d04771b... or descendant, unchanged trigger, and generated-input closure. Then one bounded clean build is a genuine validation run rather than iterative source archaeology."
+}
