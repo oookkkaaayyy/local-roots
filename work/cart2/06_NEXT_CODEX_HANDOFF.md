@@ -9,7 +9,7 @@ Do not use the older PR #46/release04 audit sequence or the superseded Packet20 
 - release07 role: DIAGNOSTIC_BASE / PERFORMANCE_REJECTED
 - foundation: FOUNDATION_UNQUALIFIED — PERFORMANCE_OPEN
 - Packet20: zero valid live kernel samples
-- First cloud compile run 37229698261 failed on missing WLED base dependency closure; corrected run 37230743394 proved that repair worked but then exposed a second undeclared dependency, ANIMartRIX.h. Exact no-run fix is staged at temp commit 19f72a9339d0ed8501337c6141513bdf11dd84cc. No third run is authorized.
+- Cloud run 1 (37229698261) exposed missing WLED base dependency closure; run 2 (37230743394) verified that repair and exposed missing ANIMartRIX dependency; run 3 (37231477686) verified both dependency repairs and exposed the real source/API mismatch: Packet20 expects four historical `animation_clock_*` ANIMartRIX members that do not exist in upstream WLED-pinned Animartrix. No fourth run is authorized.
 - Packet20 support tooling: byte-identical pure host tests PASS; live validation still pending
 - exact Packet20 renderer-safe source: SHA-256 `529e1bf718c3770b7d4ba6408178e9d3e7a4ed1d223b9bbf9071b68e75eed74b`
 - exact source/build/workflow inputs are durable in GitHub + Drive
@@ -34,27 +34,18 @@ Do not use the older PR #46/release04 audit sequence or the superseded Packet20 
 `work/cart2/20_FOUNDATION_PERFORMANCE_SWEEP_EXECUTION.md` is retained as historical planning only and is explicitly SUPERSEDED.
 
 ## Exact next gate
-GitHub Actions was intentionally shut down repository-wide on 2026-09-29 because usage was near the included limit. This is the known explanation for the current absence of GitHub Actions runs.
+GitHub Actions is available and the authorized cloud-build attempts have completed. Do not spend another run discovering source lineage.
 
-Do NOT:
-- debug Packet20 YAML/auth as the primary blocker;
-- rewrite the trigger path;
-- reopen local PlatformIO;
-- ask for a human-vs-connector trigger experiment;
-- trigger unrelated workflows;
-- create a second Packet20 build attempt.
+Run 3 reached the first genuine source/API mismatch:
+- Packet20 source expects `animation_clock_ms_`, `animation_clock_speed_`, `animation_clock_last_ms_`, and `animation_clock_started_`;
+- exact WLED 16.0.1 upstream Animartrix commit `81eb09b91c8c9c8c01f8ea442787f8127d56c72f` contains none of them and computes oscillator runtime from absolute `millis()`;
+- Delta Inbox row 1014 proves a 2026-09-30 accepted continuity repair replaced that jump-prone behavior with a continuous integrated/slew-limited animation clock;
+- the preserved local source patch is named at `/Users/andrew/Documents/Codex/2026-09-29/files-pasted-by-the-user-hbnf-2/outputs/hbnf-visual-audio-repair/source.patch`.
 
-The user has explicitly authorized exactly one bounded Packet20 cloud build:
-- one job;
-- one compile;
-- 20-minute timeout;
-- no matrix/retry;
-- no second run without explicit approval.
+Required next work is bounded provenance recovery of that exact Sep-30 clock modification. Do not remove the clock fields, invent a new clock, or silently fall back to stock upstream timing. Do not trigger a fourth GitHub Actions run without explicit user approval after the exact source-backed correction is staged.
 
-Repository Actions must first be re-enabled/available. Current GitHub UI path:
-**Repository → Settings → Actions → General → Actions permissions.**
-
-Actions is available. Run 37229698261 exposed missing WLED ESP32 dependencies; corrected run 37230743394 proved that repair and then exposed missing ANIMartRIX.h. The exact WLED-pinned Animartrix dependency is staged at temp-branch commit 19f72a9339d0ed8501337c6141513bdf11dd84cc. Do not trigger a third run without explicit user approval. The trigger file currently has blob SHA `a1ff66bf1d5054a7a874cb7b4146a9674ab20fa2`; update that exact file rather than creating a parallel trigger path. The prior event started zero runner work, so the next event is the first actual authorized build execution, not an authorized retry.
+Run-3 receipt:
+`evidence/hbnf-phase2-migration-20261003/packet20-cloud-run3-failure-20261004.json`.
 
 ## After successful Packet20 build
 1. Verify exact branch/commit/source SHA/WLED base/environment.
