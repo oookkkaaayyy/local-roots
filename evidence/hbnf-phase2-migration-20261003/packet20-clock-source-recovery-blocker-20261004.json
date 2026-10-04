@@ -1,0 +1,42 @@
+{
+  "schema": "hbnf-packet20-source-recovery-blocker-v1",
+  "date": "2026-10-04",
+  "status": "BLOCKED_ON_EXACT_HISTORICAL_SOURCE",
+  "latest_cloud_run": 37231477686,
+  "latest_trigger_commit": "5095e38f5712b0689584e6e139a6333864a0cbcc",
+  "packet20_source_sha256": "529e1bf718c3770b7d4ba6408178e9d3e7a4ed1d223b9bbf9071b68e75eed74b",
+  "exact_compile_mismatch": [
+    "animation_clock_ms_",
+    "animation_clock_speed_",
+    "animation_clock_last_ms_",
+    "animation_clock_started_"
+  ],
+  "upstream_animartrix": {
+    "repository": "netmindz/animartrix",
+    "commit": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f",
+    "evidence": "No animation_clock_* members. Stock calculate_oscillators derives runtime from millis() * timings.master_speed * speed_factor."
+  },
+  "historical_proof": {
+    "delta_inbox_row": 1014,
+    "date": "2026-09-30",
+    "baseline_firmware_sha256": "0881607292d75e61b3b75dd36d609a6e52507b2a38cd20044e7ae40ab0e82421",
+    "repaired_donor_firmware_sha256": "21c94653ca3ac7e569eaa52e4428c2ea9854705a235eaf2333fc5899ef9aed7a",
+    "frozen_source_archive_sha256": "862ced58779201b0c380fc91aa8552b90f95ab16417ea3e387061fac0461ed04",
+    "repair_summary": "Replaced jump-prone changing speed_factor * absolute millis timing with continuous integrated/slew-limited animation clock. Host replay reduced Motion=0 worst p99 delta 62.9121 to 1.5664 and isolated spikes 249 to 0."
+  },
+  "bounded_remote_search": {
+    "github": "No animation_clock_* implementation found in current repo branches/default code search or global GitHub code search.",
+    "drive": "No exact Sep-30 source patch/archive recovered by targeted Drive searches.",
+    "library": "No exact source.patch bytes recovered by targeted Library search or Sep-29/Sep-30 Library inventory.",
+    "personal_context": "Recovered provenance/local paths but not exact code/constants."
+  },
+  "exact_local_source_requested_if_needed": "/Users/andrew/Documents/Codex/2026-09-29/files-pasted-by-the-user-hbnf-2/outputs/hbnf-visual-audio-repair/source.patch",
+  "later_source_tree_reference": "/Users/andrew/Documents/Codex/2026-09-30/this-is-the-highest-priority-next/work/hbnf-visual-audio-repair/integration-copy",
+  "prohibited_shortcuts": [
+    "Do not delete Packet20 animation_clock_* snapshot fields merely to compile.",
+    "Do not invent a replacement clock or constants.",
+    "Do not fall back to stock upstream absolute-millis timing.",
+    "Do not trigger a fourth GitHub Actions run without explicit user authorization after an exact source-backed fix is staged."
+  ],
+  "next_gate": "Obtain exact Sep-30 source patch (preferred single-file upload), apply only the historical clock modification to the exact WLED-pinned Animartrix dependency in the cloud build, verify source-level compatibility offline, then request separate authorization for any fourth cloud compile."
+}
