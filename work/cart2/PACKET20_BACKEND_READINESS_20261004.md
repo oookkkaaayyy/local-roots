@@ -29,13 +29,14 @@ The Packet20 trigger itself is no longer the leading suspect.
 5. Current `main` contains `.github/workflows/ci.yml`, configured for every push to `main`.
 6. Multiple recent `main` commits on 2026-10-02 through 2026-10-04 have Cloudflare check suites but NO GitHub Actions suite/run.
 7. The latest visible repository GitHub Actions runs predate those main pushes.
+8. This is NOT a connector-authentication artifact: PR #52 head commit `1b26040a3c19962c0d6ebe26110c2aa8b6f90903` was created by the user's local Mac identity (`Andrew <andrew@Andrews-MacBook-Air.local>`) and opened against `main`; despite `ci.yml` being configured for `pull_request: [main]`, that commit also received only a Cloudflare check suite and no GitHub Actions suite/run.
 
-Conclusion: GitHub Actions execution is presently suppressed/disabled/suspended at repository/account/policy/billing level. The exact administrative reason is not exposed by available read-only connector endpoints and must remain UNKNOWN until account/repository Actions availability is checked.
+Conclusion: GitHub Actions execution is presently suppressed/disabled/suspended at repository/account/policy/billing level. Connector-origin suppression is ruled out. The exact administrative reason is not exposed by available read-only connector endpoints and must remain UNKNOWN until account/repository Actions availability is checked.
 
-Do NOT rewrite Packet20 source, workflow, paths filter, or build inputs to solve this blocker. Do NOT retry local PlatformIO.
+Do NOT rewrite Packet20 source, workflow, paths filter, build inputs, or use a human-vs-connector trigger experiment to solve this blocker. Do NOT retry local PlatformIO.
 
 ## Smallest gate before a new trigger
-First verify/restore GitHub Actions availability for the repository/account. Only after Actions is confirmed available, create exactly one new trigger event for the existing Packet20 workflow. A failed prior push created zero runner work, so this is not a build retry from a firmware perspective.
+First verify/restore GitHub Actions availability for the repository/account. Only after Actions is confirmed available, create exactly one new trigger event for the existing Packet20 workflow. The connector may create that trigger; a user-authenticated Git push is not required. A failed prior push created zero runner work, so this is not a build retry from a firmware perspective.
 
 ## Once the one-shot build starts
 Require exactly one job and one PlatformIO compile. On success preserve:
