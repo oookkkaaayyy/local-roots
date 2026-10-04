@@ -146,8 +146,11 @@ assert.equal((await action(adminToken, { action: 'generation_upload_candidate', 
 assert.equal((await action(adminToken, { action: 'generation_next_attempt', job_id: jobId })).response.status, 409, 'three-attempt cap');
 assert.ok(candidateC.attempts.every((attempt) => attempt.package_id === locked.package.id), 'A/B/C share only the immutable original package');
 
-const selected = await expectAction(adminToken, { action: 'generation_select_attempt', job_id: jobId, attempt_id: attemptC.id });
+const visualReview = { composition_fidelity: true, pet_identity: true, style_match: true, detail_and_crop: true };
+assert.equal((await action(adminToken, { action: 'generation_select_attempt', job_id: jobId, attempt_id: attemptC.id })).response.status, 400, 'a visual review is mandatory before selection');
+const selected = await expectAction(adminToken, { action: 'generation_select_attempt', job_id: jobId, attempt_id: attemptC.id, visual_review: visualReview });
 assert.equal(selected.selection.attempt_id, attemptC.id);
+assert.deepEqual(selected.selection.visual_review, visualReview);
 assert.equal(selected.attempts[2].status, 'selected');
 assert.equal((await action(adminToken, { action: 'generation_select_attempt', job_id: jobId, attempt_id: attemptC.id })).response.status, 409);
 
@@ -180,6 +183,7 @@ const readback = await expectAction(adminToken, { action: 'generation_state', jo
 assert.equal(readback.package.id, locked.package.id);
 assert.deepEqual(readback.attempts.map((attempt) => attempt.status), ['failed', 'rejected', 'selected']);
 assert.equal(readback.selection.attempt_id, attemptC.id);
+assert.deepEqual(readback.selection.visual_review, visualReview);
 assert.equal(readback.correction.base_candidate_sha256, candidateC.attempts[2].candidate_sha256);
 assert.equal(readback.final_master.master_sha256, finalMaster.final_master.master_sha256);
 assert.equal(readback.production_run.output_sha256, productionHash);

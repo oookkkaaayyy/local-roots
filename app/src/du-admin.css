@@ -11,6 +11,10 @@
 .du-generation-reference-grid figure{margin:0;min-width:0}
 .du-generation-reference-grid img{display:block;width:100%;aspect-ratio:1;object-fit:contain;border-radius:8px;background:#fff}
 .du-generation-reference-grid figcaption{margin-top:4px;overflow-wrap:anywhere;font-size:.72rem;color:#5e625d}
+.du-generation-review{display:grid;gap:8px;margin:0;padding:10px;border:1px solid var(--line,#d8d3cb);border-radius:8px}
+.du-generation-review legend{padding:0 4px;font-size:.82rem;font-weight:650}
+.du-generation-review label{display:flex;align-items:flex-start;gap:8px;font-size:.78rem}
+.du-generation-review input{margin-top:3px}
 .du-generation-workflow textarea,.du-generation-workflow select{width:100%;margin-top:6px}
 .du-generation-attempts>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .du-generation-candidate{display:grid;align-content:start;gap:10px;min-width:0;padding:12px;border:1px solid var(--line,#d8d3cb);border-radius:12px;background:#fff}

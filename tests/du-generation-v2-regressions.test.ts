@@ -26,10 +26,12 @@ test("Generation V2 uses immutable same-pet roles and controlled accepted-style 
   assert.ok(prompt.includes("FEWER, LARGER"));
   assert.ok(workflow.includes("buildDuGenerationPrompt"));
   assert.ok(workflow.includes("generation_import_style_reference"));
+  assert.ok(workflow.includes("visual_review:visualReview"));
   assert.ok(prompt.includes("mandatory controls"));
   assert.ok(workflow.includes("prompt_version:DU_GENERATION_PROMPT_VERSION"));
   assert.ok(backend.includes('const generationPromptVersion = "reference-anchored-v3.0"'));
   assert.ok(backend.includes('"at_least_three_approved_style_references_required"'));
+  assert.ok(backend.includes('"visual_review_incomplete"'));
   assert.ok(backend.includes('"generation_prompt_version_mismatch"'));
   assert.ok(backend.includes("prompt_version: promptVersion"));
 });
@@ -55,6 +57,7 @@ test("style reference records are private, append-only, and copied into immutabl
   assert.ok(migration.includes("du_generation_style_references"));
   assert.ok(migration.includes("enable row level security"));
   assert.ok(migration.includes("append-only"));
+  assert.ok(migration.includes("du_generation_selections_visual_review_required"));
   assert.ok(backend.includes("style_reference_integrity_mismatch"));
   assert.ok(backend.includes('role: "style_reference"'));
   assert.ok(backend.includes("sourceManifest = { version: 2"));

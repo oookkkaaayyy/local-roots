@@ -530,9 +530,14 @@ Deno.serve(async (req: Request) => {
   if (action === "generation_select_attempt") {
     const jobId = String(body.job_id || "").trim();
     const attemptId = String(body.attempt_id || "").trim();
+    const visualReview = body.visual_review;
+    const requiredReview = ["composition_fidelity", "pet_identity", "style_match", "detail_and_crop"];
+    if (!visualReview || typeof visualReview !== "object" || requiredReview.some((key) => visualReview[key] !== true)) {
+      return json({ error: "visual_review_incomplete" }, 400);
+    }
     const { data: attempt } = await service.from("du_generation_attempts").select("id,candidate_path,candidate_sha256,status").eq("id", attemptId).eq("job_id", jobId).maybeSingle();
     if (!attempt || attempt.status !== "candidate" || !attempt.candidate_path) return json({ error: "candidate_not_selectable" }, 409);
-    const { error: selectError } = await service.from("du_generation_selections").insert({ job_id: jobId, attempt_id: attemptId, candidate_path: attempt.candidate_path, candidate_sha256: attempt.candidate_sha256, selected_by: userId });
+    const { error: selectError } = await service.from("du_generation_selections").insert({ job_id: jobId, attempt_id: attemptId, candidate_path: attempt.candidate_path, candidate_sha256: attempt.candidate_sha256, selected_by: userId, visual_review: Object.fromEntries(requiredReview.map((key) => [key, true])), reviewed_at: new Date().toISOString() });
     if (selectError) return json({ error: "visual_master_already_selected", detail: selectError.message }, 409);
     const { error } = await service.from("du_generation_attempts").update({ status: "selected", updated_at: new Date().toISOString() }).eq("id", attemptId).eq("status", "candidate");
     if (error) return json({ error: "candidate_selection_state_failed", detail: error.message }, 400);

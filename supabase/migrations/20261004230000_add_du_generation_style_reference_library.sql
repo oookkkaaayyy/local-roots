@@ -25,3 +25,20 @@ end $$;
 create trigger du_generation_style_references_immutable
 before update or delete on public.du_generation_style_references
 for each row execute function public.du_generation_style_references_immutable();
+
+-- Persist the human visual-quality gate with every newly selected master.
+alter table public.du_generation_selections
+  add column if not exists visual_review jsonb,
+  add column if not exists reviewed_at timestamptz;
+
+alter table public.du_generation_selections
+  add constraint du_generation_selections_visual_review_required
+  check (
+    visual_review is null or (
+      jsonb_typeof(visual_review) = 'object'
+      and visual_review->>'composition_fidelity' = 'true'
+      and visual_review->>'pet_identity' = 'true'
+      and visual_review->>'style_match' = 'true'
+      and visual_review->>'detail_and_crop' = 'true'
+    )
+  ) not valid;
