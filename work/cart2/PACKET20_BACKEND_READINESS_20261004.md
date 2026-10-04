@@ -92,3 +92,31 @@ Do not reopen:
 - repeated cloud runs.
 
 Read Drive `AKS — HBNF CART 2.0 — CURRENT FILE AUTHORITY` and the artifact registry before any continuation.
+
+
+## Host-side Packet20 execution adapter — prepared 2026-10-04
+Candidate support tooling is now staged so the live sweep does not need to rediscover the firmware control surface after the build.
+
+Files:
+- `tools/hbnf_packet20_http_adapter.py`
+- `config/HBNF_PACKET20_LIVE_SWEEP_ADAPTER_20261004.json`
+- `tests/hbnf_packet20_http_adapter.py`
+- `scripts/hbnf_packet20_build_validate.py`
+- `tests/hbnf_packet20_build_validate.py`
+
+Key semantics captured:
+- retained effect IDs 220..247 map exactly to Packet20 runtime kernel indices 0..27;
+- Packet20 commands use the existing WLED JSON-state usermod path, not a guessed private endpoint;
+- snapshot capture is queued by the HTTP handler but the large state copy occurs only at the renderer safe point;
+- Packet20 supports one volatile saved snapshot per boot;
+- after exact restore, firmware's `packet20Same()` result (`restoreVerified=true`) is authoritative;
+- the generic sweep runner's post-restore second snapshot call is satisfied by returning the original immutable snapshot receipt only after `restoreVerified=true` and diagnostics have ended, rather than attempting an illegal second firmware snapshot;
+- mid-session uptime regression is treated as a reboot, returns raw Packet20 reset-reason evidence, and fails closed with no retry;
+- the prior intentional Matrix power cycle happened before this session and is therefore excluded from diagnostic interpretation;
+- physical AUX LEDs may remain disconnected for Packet20, but the AUX controller should remain reachable for projection telemetry.
+
+The adapter normalizes current firmware timing into the existing diagnostic telemetry contract and preserves raw reset evidence in JSONL. No hardware command has been executed with this tooling.
+
+The cloud-build validator fails closed on branch/commit/source/WLED base/PlatformIO environment, firmware SHA/size/headroom, required artifact files, source-input hashes, PlatformIO structured metadata, package evidence, and build-log success before any release/publish/install step.
+
+Status: SOURCE-STAGED / NOT LIVE-EXECUTED. Pure non-network tests are authored; do not claim live validation until they are executed in a source-connected runtime.
