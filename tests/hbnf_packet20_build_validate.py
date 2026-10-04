@@ -78,10 +78,20 @@ with tempfile.TemporaryDirectory() as td:
         f"ota_slot_bytes={m.EXPECTED_OTA_SLOT_BYTES}\n"
         f"ota_headroom_bytes={m.EXPECTED_OTA_SLOT_BYTES-size}\n"
     )
+    generated_lines = "\n".join(
+        f"{sha}  {path}" for path, sha in m.EXPECTED_GENERATED_UI_SHA256.items()
+    ) + "\n"
+    (root / "generated-ui-sha256.txt").write_text(generated_lines)
+    generated_output_lines = "".join(
+        f"{sha}  {path}\n"
+        for path, sha in m.EXPECTED_GENERATED_UI_SHA256.items()
+        if path.startswith("wled00/")
+    )
     (root / "source-input-sha256.txt").write_text(
         f"{m.EXPECTED_SOURCE_SHA256}  usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp\n"
         + "0" * 64 + "  platformio_override.ini\n"
         + f"{m.EXPECTED_ANIMARTRIX_CLOCK_PATCH_SHA256}  animartrix-clock.patch\n"
+        + generated_output_lines
     )
     (root / "project-config.json").write_text("{}")
     (root / "project-metadata.json").write_text("{}")
@@ -94,6 +104,20 @@ with tempfile.TemporaryDirectory() as td:
     assert receipt["firmware_bytes"] == size
     assert receipt["ota_headroom_bytes"] == m.EXPECTED_OTA_SLOT_BYTES - size
     assert receipt["animartrix_patched_header_sha256"] == patched_sha
+    assert receipt["generated_ui_sha256"] == m.EXPECTED_GENERATED_UI_SHA256
+
+    bad_generated = (root / "generated-ui-sha256.txt").read_text().replace(
+        m.EXPECTED_GENERATED_UI_SHA256["wled00/html_ui.h"],
+        "0" * 64,
+        1,
+    )
+    (root / "generated-ui-sha256.txt").write_text(bad_generated)
+    try:
+        m.validate_artifact_dir(root, commit)
+        raise AssertionError("generated UI hash drift was accepted")
+    except m.ValidationError:
+        pass
+    (root / "generated-ui-sha256.txt").write_text(generated_lines)
 
     bad = json.loads((root / "provenance.json").read_text())
     bad["diagnostic_source_sha256"] = "0" * 64
@@ -106,5 +130,5 @@ with tempfile.TemporaryDirectory() as td:
 
 print(
     "PASS: Packet20 cloud build validator accepts exact provenance, "
-    "vendor-patch evidence, and fails closed on source drift"
+    "vendor-patch/generated-UI evidence, and fails closed on source drift"
 )
