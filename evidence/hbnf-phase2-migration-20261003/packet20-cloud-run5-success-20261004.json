@@ -1,0 +1,83 @@
+{
+  "schema": "hbnf-packet20-cloud-run-success-v1",
+  "date": "2026-10-04",
+  "status": "BUILD_SUCCEEDED_AND_ARTIFACT_VALIDATED",
+  "workflow_run_id": 37234856834,
+  "workflow_run_url": "https://github.com/oookkkaaayyy/local-roots/actions/runs/37234856834",
+  "trigger_commit": "7928a256f31ce46775717731cf1338944a2b5709",
+  "pre_trigger_head": "d04771b63ed2c7a704b17a268203e973c9176d68",
+  "workflow_git_blob_sha": "7998c2e112db57ac0febc67f20c0cbd14893303d",
+  "branch": "hbnf-packet20-safe-point-cloud-20261004",
+  "packet20_source_sha256": "529e1bf718c3770b7d4ba6408178e9d3e7a4ed1d223b9bbf9071b68e75eed74b",
+  "source_patch_sha256": "aca7b2fa6fe45ce992e162d91447351487e854279de373e691cf02615c149b04",
+  "animartrix_upstream_commit": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f",
+  "animartrix_upstream_header_git_blob": "db640748175cfdd70dc103fc23c830e646fa5ab6",
+  "animartrix_clock_patch_sha256": "f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4",
+  "animartrix_patched_header_sha256": "bd9d146e2ce5fde991a895ccc2ad2773df1cc77cb815381679c17c6425d7bbe8",
+  "wled_base_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+  "platformio_core": "6.1.18",
+  "python": "3.12.14",
+  "node": "20.20.2",
+  "build_environment": "hbnf_matrix_wled16_packet20_diag",
+  "generated_ui": {
+    "package_lock_sha256": "8a4a7dd525cbf4ddbeeec104c0eec089c9998e1c02f6df2ee2c4ccd1499916c0",
+    "cdata_sha256": "59d90a85abfdd013f4fb8cd71d002f7aa5eb29c44a7e5c91cc05ba09e30b0b5d",
+    "build_ui_sha256": "3ead020869e422dbbd890a598b5f3f6efc951f6688e1190c797c81d284a004d0",
+    "output_hashes": {
+      "wled00/html_ui.h": "5bc90be907cd9018dbd800d96de688157b62eb3bc21d340b758813f79463fbf6",
+      "wled00/html_pixart.h": "57151332f15be8a78b5b2b3d32873a124fd29ed4bef7b71d127a0247c36b51ad",
+      "wled00/html_cpal.h": "ba009955a122c3181deb65765271e61e351043df2c7708fe57e46a494b1f8209",
+      "wled00/html_edit.h": "d973aa73e7dbd511dfc55bf3bb18756ced8bba5827f55069621703849877b860",
+      "wled00/html_pxmagic.h": "c277440c3d67620fd8dbf853f4c9676f3afc53b088e5ee0f705e695972c4a3e3",
+      "wled00/html_pixelforge.h": "2285c8bdc29ded50a8dcc1837f8472ba15fc3797f4bf3abcb974187586276a7b",
+      "wled00/html_settings.h": "0aff89708dfe2266606f7e4af2633e7826080ffed9e9d6c7885726c51d126a9e",
+      "wled00/html_other.h": "df93f03e32317e50c6dc16e341e03c396e9f5d94cf66bd56c4f1add44d2d1917",
+      "wled00/js_iro.h": "c2744cf237588c5652a8b56fb14287e004c1edc0c6a7f927319a7250ef50b52d",
+      "wled00/js_omggif.h": "de74636a8e56ec28317636f7a819a229318d9af3b89d5ba769833fac16b9c650"
+    }
+  },
+  "firmware": {
+    "sha256": "40b68f0c09573540b57ed517d262a0f41d3739c42139a3d96f9bf659567cf317",
+    "bytes": 1462240,
+    "ota_slot_bytes": 1572864,
+    "ota_headroom_bytes": 110624,
+    "build_log_ram_used_bytes": 102888,
+    "build_log_ram_total_bytes": 327680,
+    "build_log_flash_linked_bytes": 1455557,
+    "build_log_flash_total_bytes": 1572864
+  },
+  "artifact": {
+    "github_artifact_id": 11314674860,
+    "github_name": "HBNF-Packet20-Safe-Point-37234856834",
+    "github_zip_size_bytes": 16516420,
+    "github_zip_sha256": "dca762bce1d934a04c18b9cc6e0b0f9880d0a4779f3945c7943ca6b84c8ef8ed",
+    "github_expires_at": "2026-10-05T21:18:59Z",
+    "drive_file_id": "1VhqoXzlNwBzHCPVrqLDQG1T7Z0Cp9yVF",
+    "drive_folder_id": "17B-XkjyK92FS7dT8TWDRqcTxozZRjTFV",
+    "drive_name": "HBNF-Packet20-Safe-Point-37234856834.zip"
+  },
+  "validation": {
+    "method": "Artifact downloaded and extracted in isolated assistant container; exact file hashes/provenance/size/headroom/upstream Git-blob identity/vendor patch markers/effective dependency configuration/generated-output hash consistency checked independently.",
+    "required_files_present": 13,
+    "firmware_sha_matches_provenance": true,
+    "firmware_size_matches_provenance": true,
+    "ota_headroom_matches": true,
+    "animartrix_patch_sha_matches": true,
+    "animartrix_upstream_git_blob_matches": true,
+    "animartrix_patched_header_sha_matches": true,
+    "required_clock_markers_present": true,
+    "generated_ui_hashes_match_source_input_receipt": true,
+    "effective_config_contains_exact_animartrix_pin_and_wled_esp32_closure": true,
+    "build_log_success": true,
+    "build_log_platformio_duration_seconds": 148.05
+  },
+  "process_result": "Run5 validates the complete clean-room closure repairs from Runs1-4. The project must stop build-source archaeology here and proceed to release/updater/live Packet20 gates.",
+  "next_gate": [
+    "Update registry/current authority and mark WATCH-015/WATCH-016 solved by clean build success.",
+    "Read live Opal /etc/hbnf-updater/release-state exactly once; do not guess sequence numbers.",
+    "Locate/verify exact Release07 recovery binary with SHA-256 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab before mutation.",
+    "Create legal diagnostic + exact recovery release pair, sign/publish, then one diagnostic install and one snapshot preflight.",
+    "If snapshot survives, execute exactly one 28-kernel Packet20 sweep and exact restore."
+  ],
+  "user_cost_instruction": "Up to $5 total external cost for genuinely necessary work; minimize actual spend and pause before any single action materially above historical estimates."
+}
