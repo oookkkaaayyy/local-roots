@@ -9,6 +9,7 @@ Do not use the older PR #46/release04 audit sequence or the superseded Packet20 
 - release07 role: DIAGNOSTIC_BASE / PERFORMANCE_REJECTED
 - foundation: FOUNDATION_UNQUALIFIED — PERFORMANCE_OPEN
 - Packet20: zero valid live kernel samples
+- Packet20 support tooling: byte-identical pure host tests PASS; live validation still pending
 - exact Packet20 renderer-safe source: SHA-256 `529e1bf718c3770b7d4ba6408178e9d3e7a4ed1d223b9bbf9071b68e75eed74b`
 - exact source/build/workflow inputs are durable in GitHub + Drive
 - local PlatformIO/LDF recovery path: CLOSED
@@ -27,6 +28,7 @@ Do not use the older PR #46/release04 audit sequence or the superseded Packet20 
 9. `tools/hbnf_packet20_http_adapter.py`
 10. `config/HBNF_PACKET20_LIVE_SWEEP_ADAPTER_20261004.json`
 11. `scripts/hbnf_packet20_build_validate.py`
+12. `evidence/hbnf-phase2-migration-20261003/packet20-support-tooling-host-test-receipt-20261004.json`
 
 `work/cart2/20_FOUNDATION_PERFORMANCE_SWEEP_EXECUTION.md` is retained as historical planning only and is explicitly SUPERSEDED.
 
