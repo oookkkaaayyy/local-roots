@@ -24,6 +24,9 @@ Do not use the older PR #46/release04 audit sequence or the superseded Packet20 
 6. Drive `AKS — ARTIFACT & SOURCE REGISTRY — CURRENT` — ID `18VsUYIYr62fYVaEqynM1kbMmfQpei-3H3rBgrw8S96k`
 7. `work/cart2/21_CLASS_LEVEL_PERFORMANCE_FIX_EXECUTION_TEMPLATE.md`
 8. `work/cart2/22_FOUNDATION_QUALIFICATION_EXECUTION_TEMPLATE.md`
+9. `tools/hbnf_packet20_http_adapter.py`
+10. `config/HBNF_PACKET20_LIVE_SWEEP_ADAPTER_20261004.json`
+11. `scripts/hbnf_packet20_build_validate.py`
 
 `work/cart2/20_FOUNDATION_PERFORMANCE_SWEEP_EXECUTION.md` is retained as historical planning only and is explicitly SUPERSEDED.
 
@@ -48,19 +51,20 @@ The user has explicitly authorized exactly one bounded Packet20 cloud build:
 Repository Actions must first be re-enabled/available. Current GitHub UI path:
 **Repository → Settings → Actions → General → Actions permissions.**
 
-Once Actions is available, create exactly one new trigger event for the existing one-shot Packet20 workflow and monitor that run.
+Once Actions is available, create exactly one new trigger event for the existing one-shot Packet20 workflow and monitor that run. The trigger file currently has blob SHA `a1ff66bf1d5054a7a874cb7b4146a9674ab20fa2`; update that exact file rather than creating a parallel trigger path. The prior event started zero runner work, so the next event is the first actual authorized build execution, not an authorized retry.
 
 ## After successful Packet20 build
 1. Verify exact branch/commit/source SHA/WLED base/environment.
 2. Verify firmware SHA, size and OTA headroom.
-3. Immediately promote firmware + provenance to Drive folder `20 — RELEASE CAPSULES` and update the artifact registry.
-4. Read live updater `/etc/hbnf-updater/release-state` once; derive the legal diagnostic/recovery sequence pair from live high-water. Never guess sequence numbers.
-5. Verify exact Release07 recovery artifact before install.
-6. Install one diagnostic candidate.
-7. Run one snapshot preflight.
-8. STOP on restart, panic/reset evidence, uptime regression, snapshot failure, identity mismatch, or restore mismatch. No automatic retry.
-9. If stable, run exactly one complete 28-kernel Packet20 sweep and exact restore.
-10. Rank/group pathological kernels by shared primitive/class and instantiate Packet21.
+3. Run `scripts/hbnf_packet20_build_validate.py` against the extracted Actions artifact and the actual trigger commit. It must PASS exact source/build provenance, firmware SHA/size/headroom, required files and package/build evidence.
+4. Immediately promote the validated build artifact/provenance to Drive folder `20 — RELEASE CAPSULES` and update the artifact registry before the 1-day GitHub artifact expires.
+5. Read live updater `/etc/hbnf-updater/release-state` once; derive the legal diagnostic/recovery sequence pair from live high-water. Never guess sequence numbers.
+6. Verify exact Release07 recovery artifact before install.
+7. Install one diagnostic candidate.
+8. Use `tools/hbnf_packet20_http_adapter.py` through `config/HBNF_PACKET20_LIVE_SWEEP_ADAPTER_20261004.json`. One renderer-safe snapshot is the preflight and seeds the entire sweep; Packet20 permits only one saved snapshot per boot.
+9. STOP on restart, panic/reset evidence, uptime regression, snapshot failure, identity mismatch, or restore mismatch. No automatic retry.
+10. If stable, run exactly one complete 28-kernel Packet20 sweep and require firmware `restoreVerified=true` / exact `packet20Same()` restoration.
+11. Rank/group pathological kernels by shared primitive/class and instantiate Packet21.
 
 ## Device evidence exclusion
 The Matrix was intentionally power-cycled once during backend/cloud-build preparation while no firmware install, Packet20 sweep, snapshot capture, or live telemetry collection was active. Any corresponding uptime reset or normal power-on reset reason is expected and MUST NOT be treated as diagnostic evidence.
