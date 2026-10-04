@@ -179,3 +179,26 @@ A no-run correction is staged on the Packet20 temp branch at `19f72a9339d0ed8501
 This workflow-only change does not match the sentinel trigger path and created no third run. **No third Actions run is authorized.** Explicit user approval is now the genuine remaining gate.
 
 Durable failure receipt: `evidence/hbnf-phase2-migration-20261003/packet20-cloud-run2-failure-20261004.json` at staging commit `e2acfbc60e25e0b8ffa8b00648676d2ca91deec7`.
+
+## Corrected cloud run 3 result — 2026-10-04
+Explicitly authorized run `37231477686` / trigger commit `5095e38f5712b0689584e6e139a6333864a0cbcc` FAILED during compile. It verified both prior dependency repairs: the effective graph contained the normal WLED ESP32 closure and the exact WLED-pinned Animartrix dependency (`netmindz/animartrix` commit `81eb09b91c8c9c8c01f8ea442787f8127d56c72f`). The clean build then reached a genuine source/API mismatch in `FoundationAnimartrix::diagnosticCapture()` / `diagnosticRestore()`:
+- `animation_clock_ms_` not declared;
+- `animation_clock_speed_` not declared;
+- `animation_clock_last_ms_` not declared;
+- `animation_clock_started_` not declared.
+
+The exact upstream Animartrix header at the WLED 16.0.1 pin has no such members; its stock oscillator clock is derived directly from `millis() * timings.master_speed * speed_factor`. The Packet20 source separately snapshots the global upstream `animation`, `timings`, `move`, and `pixel` state, so these four missing members are specifically evidence of an uncaptured historical ANIMartRIX timing modification rather than ordinary upstream state.
+
+Historical project evidence independently explains that modification: Delta Inbox row 1014 (2026-09-30) records the Integrated RC visual/audio repair that replaced the jump-prone stock absolute-`millis()`/changing-`speed_factor` behavior with a **continuous integrated/slew-limited animation clock**. That donor passed deterministic 28-kernel continuity tests and produced candidate BIN SHA-256 `21c94653ca3ac7e569eaa52e4428c2ea9854705a235eaf2333fc5899ef9aed7a`. The following checkpoint records a frozen source-only integration archive SHA-256 `862ced58779201b0c380fc91aa8552b90f95ab16417ea3e387061fac0461ed04` and a preserved source patch in the local task workspace.
+
+Known exact local patch path from preserved handoff:
+`/Users/andrew/Documents/Codex/2026-09-29/files-pasted-by-the-user-hbnf-2/outputs/hbnf-visual-audio-repair/source.patch`
+Later frozen integration-copy path:
+`/Users/andrew/Documents/Codex/2026-09-30/this-is-the-highest-priority-next/work/hbnf-visual-audio-repair/integration-copy`
+
+Do **not** delete the four clock fields from Packet20 merely to make upstream compile. Do **not** invent a replacement animation clock. Current evidence says the installed coordinated lineage depended on the Sep-30 clock repair; exact source must be recovered/proven first so Packet20 preserves installed timing semantics and exact restore fidelity.
+
+Run-3 artifact: ID `11313681641`, digest `sha256:78a7b6f18dfbfe7bf83fe59412b535dffc8d67e7a2889b8dcd43180a25fc32c7`, expires `2026-10-05T20:18:02Z`.
+Durable receipt: `evidence/hbnf-phase2-migration-20261003/packet20-cloud-run3-failure-20261004.json`.
+
+**Current gate:** recover/prove the exact Sep-30 animation-clock source modification offline. No fourth Actions run is authorized. A fourth cloud build must not be requested or triggered until the exact compatibility correction is source-backed and staged.
