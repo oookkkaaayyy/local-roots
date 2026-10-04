@@ -1,0 +1,6 @@
+HBNF Release07 recovery fetch
+expected_release=hbnf-matrix-coordinated-v1-20261002-07
+expected_sha256=8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab
+workflow_commit=8591c319e2b6bc26cff6c7af2e00e0e58c1de07a
+authorization=user approved up to $5 total external cost for genuinely necessary continuation work; minimize actual spend
+scope=one hosted ubuntu job max 5 minutes; public stable read only; no device mutation
