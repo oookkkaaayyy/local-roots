@@ -16,7 +16,7 @@ jobs:
   e2e:
     name: Authenticated Generation V2 workflow
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4

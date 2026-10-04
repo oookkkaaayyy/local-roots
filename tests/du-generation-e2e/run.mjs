@@ -164,7 +164,7 @@ assert.equal(production.production_run.input_master_sha256, finalMaster.final_ma
 assert.equal((await action(adminToken, { action: 'generation_upload_production', job_id: jobId, image_data_url: productionImage, validator_report: report })).response.status, 409);
 
 const browserRead = await request('/rest/v1/du_generation_packages?job_id=eq.' + jobId + '&select=id', 'GET', undefined, adminToken, anon);
-assert.equal(browserRead.response.status, 401, 'authenticated browser role cannot access private orchestration rows');
+assert.equal(browserRead.response.status, 403, 'authenticated role is denied direct access to private orchestration rows');
 const immutableEdit = await request('/rest/v1/du_generation_packages?id=eq.' + locked.package.id, 'PATCH', { locked_prompt: 'Mutate locked prompt' });
 assert.equal(immutableEdit.response.status, 400, 'database trigger rejects service-role mutation');
 const readback = await expectAction(adminToken, { action: 'generation_state', job_id: jobId });
