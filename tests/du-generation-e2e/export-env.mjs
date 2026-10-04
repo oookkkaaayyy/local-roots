@@ -15,6 +15,7 @@ const values = {
 };
 writeFileSync(process.env.GITHUB_ENV, Object.entries(values).map(([key, value]) => key + '=' + value).join('\n') + '\n');
 writeFileSync(process.env.RUNNER_TEMP + '/du-generation-e2e.env', [
-  'SUPABASE_URL=' + values.SUPABASE_URL,
+  // Edge Runtime runs in a container on the Supabase network; 127.0.0.1 is the runner, not Kong.
+  'SUPABASE_URL=http://kong:8000',
   'SUPABASE_SERVICE_ROLE_KEY=' + values.SUPABASE_SERVICE_ROLE_KEY,
 ].join('\n') + '\n', { mode: 0o600 });

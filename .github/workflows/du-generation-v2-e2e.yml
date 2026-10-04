@@ -16,7 +16,7 @@ jobs:
   e2e:
     name: Authenticated Generation V2 workflow
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 11
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,7 +42,7 @@ jobs:
       - name: Start ephemeral Supabase stack and apply migrations from empty database
         working-directory: tests/du-generation-e2e
         run: |
-          supabase start -x studio,imgproxy,inbucket,logflare,vector,supavisor,analytics,realtime
+          supabase start -x studio,imgproxy,mailpit,logflare,vector,supavisor,realtime
           supabase db reset --local --yes
           node export-env.mjs
 

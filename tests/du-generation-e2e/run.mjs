@@ -54,7 +54,8 @@ const nonAdmin = await request('/auth/v1/admin/users', 'POST', { email: nonAdmin
 assert.equal(nonAdmin.response.status, 200);
 const nonAdminLogin = await request('/auth/v1/token?grant_type=password', 'POST', { email: nonAdminEmail, password: nonAdminPassword }, anon, anon);
 assert.equal(nonAdminLogin.response.status, 200);
-assert.equal((await action(nonAdminLogin.data.access_token, { action: 'dashboard' })).response.status, 401, 'valid non-admin JWT denied');
+const nonAdminResult = await action(nonAdminLogin.data.access_token, { action: 'dashboard' });
+assert.equal(nonAdminResult.response.status, 401, 'valid non-admin JWT denied: ' + JSON.stringify(nonAdminResult.data));
 const noAuth = await fetch(fn, { method: 'POST', headers: { apikey: anon, 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'dashboard' }) });
 assert.equal(noAuth.status, 401, 'missing JWT denied');
 
