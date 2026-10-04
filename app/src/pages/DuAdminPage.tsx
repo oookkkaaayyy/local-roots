@@ -33,7 +33,7 @@ type BadgeNavigator = Navigator & {
 };
 
 const labels:Record<WorkflowStatus,string>={draft:'Draft',intake_complete:'Intake complete',handoff_preparing:'Preparing handoff',chatgpt_ready:'ChatGPT ready',notification_sent:'Notified',stage_a_started:'Stage A started',awaiting_art_approval:'Awaiting art approval',art_approved:'Art approved',production_ready:'Production ready',complete:'Complete',handoff_failed:'Handoff failed'};
-const activeStates:WorkflowStatus[]=['intake_complete','handoff_preparing','chatgpt_ready','notification_sent','stage_a_started','awaiting_art_approval','art_approved','production_ready','handoff_failed'];
+const activeStates:WorkflowStatus[]=['draft','intake_complete','handoff_preparing','chatgpt_ready','notification_sent','stage_a_started','awaiting_art_approval','art_approved','production_ready','handoff_failed'];
 const DU_DEVICE_TOKEN_KEY='du-admin-device-token-v1';
 const LEGACY_GALLERY_SPRITE='https://wtymjxscneufjlkkywyg.supabase.co/storage/v1/object/public/du-gallery/gallery-v2.avif';
 function functionAuth(credential:AdminCredential){return credential.kind==='device'?{deviceToken:credential.value}:credential.value;}
@@ -358,6 +358,7 @@ export function DuAdminPage(){
   const [dashboard,setDashboard]=useState<Dashboard|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState('');
   const [pushBusy,setPushBusy]=useState(false),[pushEnabled,setPushEnabled]=useState(false),[pushMessage,setPushMessage]=useState('');
   const [pairBusy,setPairBusy]=useState(false),[pairCode,setPairCode]=useState(''),[pairMessage,setPairMessage]=useState('');
+  const [adminView,setAdminView]=useState<'submissions'|'gallery'>('submissions');
   const targetJob=useMemo(()=>{
     const queryJob=new URLSearchParams(window.location.search).get('job')?.trim().toUpperCase()||null;
     if(queryJob){sessionStorage.setItem('du-target-job',queryJob);return queryJob;}
@@ -401,7 +402,8 @@ export function DuAdminPage(){
     return()=>{cancelled=true;};
   },[session,deviceToken]);
   useEffect(()=>{if(!credential||!targetJob)return;const timer=window.setTimeout(()=>sessionStorage.removeItem('du-target-job'),2000);return()=>window.clearTimeout(timer);},[credential,targetJob]);
-  const jobs=useMemo(()=>dashboard?.jobs.filter(job=>activeStates.includes(job.workflow_status))||[],[dashboard]);
+  const jobs=useMemo(()=>[...(dashboard?.jobs.filter(job=>activeStates.includes(job.workflow_status))||[])].sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at)),[dashboard]);
+  const completedJobs=useMemo(()=>[...(dashboard?.jobs.filter(job=>job.workflow_status==='complete')||[])].sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at)),[dashboard]);
 
   async function createPair(){
     if(!credential)return;
@@ -453,11 +455,14 @@ export function DuAdminPage(){
   }
 
   if(!credential)return <Shell admin><main className="content narrow"><Login targetJob={targetJob} onPaired={token=>setDeviceToken(token)}/></main></Shell>;
-  return <Shell admin><main className="content"><div className="admin-dashboard"><div className="admin-topbar"><div><span className="eyebrow">Dyed &amp; Unattached</span><h1>Production queue</h1><p>{dashboard?.admin.display_name||dashboard?.admin.role||'Authorized admin'}</p></div><div className="admin-metrics"><div><strong>{jobs.length}</strong><span>active jobs</span></div><div><strong>{jobs.reduce((sum,job)=>sum+job.source_photo_count,0)}</strong><span>source photos</span></div></div></div>
+  return <Shell admin><main className="content"><div className="admin-dashboard du-admin-dashboard"><div className="admin-topbar"><div><span className="eyebrow">Dyed &amp; Unattached</span><h1>Submissions</h1><p>{dashboard?.admin.display_name||dashboard?.admin.role||'Authorized admin'}</p></div><div className="admin-metrics"><div><strong>{jobs.length}</strong><span>active jobs</span></div><div><strong>{jobs.reduce((sum,job)=>sum+job.source_photo_count,0)}</strong><span>source photos</span></div></div></div>
     <div className="button-row"><button className="button ghost" disabled={pairBusy} onClick={()=>void createPair()}>{pairBusy?'Creating…':'Pair another device'}</button><button className={pushEnabled?'button ghost':'button primary'} disabled={pushBusy||!pushSupported} onClick={()=>void enablePush()}>{pushBusy?'Working…':pushEnabled?'Notifications on':'Enable notifications'}</button>{pushEnabled?<button className="button ghost" disabled={pushBusy} onClick={()=>void testPush()}>Send test push</button>:null}</div>
     {pairCode?<div className="notice"><strong>{pairCode}</strong><span>{pairMessage||'Paste this single-use code into D&U on the new device. It expires after 5 minutes.'}</span><button className="button ghost" type="button" onClick={()=>void copyPairCode()}>Copy code</button></div>:pairMessage?<div className="notice">{pairMessage}</div>:null}
     {deviceToken?<div className="notice"><strong>This device is paired.</strong><span>D&amp;U will remember it across normal site builds. Its authorization renews automatically while you keep using it.</span></div>:null}
     {pushMessage?<div className="notice">{pushMessage}</div>:null}
-    <GalleryPanel credential={credential}/>
-    {loading?<div className="empty-state">Loading production queue…</div>:error?<div className="notice error"><strong>Could not load queue.</strong><span>{error}</span></div>:jobs.length?<section className="admin-grid">{jobs.map(job=><JobCard key={job.id} job={job} credential={credential} refresh={()=>void load(credential)} autoOpen={targetJob===job.job_number}/>)}</section>:<div className="empty-state"><strong>Production queue is clear.</strong><span>No stencil jobs currently require action.</span></div>}</div></main></Shell>;
+    <nav className="du-admin-tabs" aria-label="Admin sections"><button type="button" className={adminView==='submissions'?'active':''} aria-current={adminView==='submissions'?'page':undefined} onClick={()=>setAdminView('submissions')}>Submissions <span>{jobs.length}</span></button><button type="button" className={adminView==='gallery'?'active':''} aria-current={adminView==='gallery'?'page':undefined} onClick={()=>setAdminView('gallery')}>Gallery</button></nav>
+    {adminView==='gallery'?<GalleryPanel credential={credential}/>:<section className="du-submissions" aria-label="Stencil submissions">
+    {loading?<div className="empty-state">Loading production queue…</div>:error?<div className="notice error"><strong>Could not load queue.</strong><span>{error}</span></div>:jobs.length?<section className="admin-grid">{jobs.map(job=><JobCard key={job.id} job={job} credential={credential} refresh={()=>void load(credential)} autoOpen={targetJob===job.job_number}/>)}</section>:<div className="empty-state"><strong>Production queue is clear.</strong><span>No stencil jobs currently require action.</span></div>}
+      {completedJobs.length?<details className="du-completed-jobs"><summary>Completed <span>{completedJobs.length}</span></summary><section className="admin-grid">{completedJobs.map(job=><JobCard key={job.id} job={job} credential={credential} refresh={()=>void load(credential)} autoOpen={targetJob===job.job_number}/>)}</section></details>:null}
+    </section>}</div></main></Shell>;
 }
