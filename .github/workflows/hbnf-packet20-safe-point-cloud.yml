@@ -25,12 +25,12 @@ jobs:
       - name: Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.12.14'
 
       - name: Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '20.20.2'
 
       - name: Verify source and decode exact overlay
         shell: bash
@@ -196,10 +196,63 @@ jobs:
           GH_SHA: ${{ github.sha }}
           GH_RUN_ID: ${{ github.run_id }}
         run: |
-          set -uo pipefail
+          set -euo pipefail
           cd /tmp/wled
+
+          # Complete generated-input closure before PlatformIO. The historical
+          # HBNF override intentionally omitted WLED's build_ui.py pre-script
+          # and relied on already-generated local headers. A clean runner has
+          # none. Generate the full canonical WLED 16.0.1 UI header set from
+          # the exact package-lock + deterministic cdata.js timestamp policy.
+          npm ci
+          npm run build -- --force
+          generated=(
+            wled00/html_ui.h
+            wled00/html_pixart.h
+            wled00/html_cpal.h
+            wled00/html_edit.h
+            wled00/html_pxmagic.h
+            wled00/html_pixelforge.h
+            wled00/html_settings.h
+            wled00/html_other.h
+            wled00/js_iro.h
+            wled00/js_omggif.h
+          )
+          for file in "${generated[@]}"; do test -s "$file"; done
+          grep -q '#define WEB_BUILD_TIME 1789948800' wled00/html_ui.h
+          sha256sum package-lock.json tools/cdata.js pio-scripts/build_ui.py "${generated[@]}"             > /tmp/hbnf-p20-artifacts/generated-ui-sha256.txt
+          sha256sum "${generated[@]}" >> /tmp/hbnf-p20-artifacts/source-input-sha256.txt
+
+          # The custom HBNF env contains every WLED default extra script except
+          # build_ui.py. Assert that this is the only omitted default script so
+          # a future clean-room build cannot silently depend on another
+          # pre-generated input.
+          python - <<'PY'
+          import configparser, pathlib
+          base = pathlib.Path("platformio.ini").read_text()
+          override = pathlib.Path("platformio_override.ini").read_text()
+          required = [
+              "pre:pio-scripts/set_metadata.py",
+              "post:pio-scripts/output_bins.py",
+              "post:pio-scripts/strip-floats.py",
+              "post:pio-scripts/dynarray.py",
+              "pre:pio-scripts/user_config_copy.py",
+              "pre:pio-scripts/load_usermods.py",
+              "pre:pio-scripts/build_ui.py",
+              "post:pio-scripts/validate_modules.py",
+          ]
+          # Generated UI is handled explicitly above. Every other WLED default
+          # script must remain represented in the HBNF override.
+          missing = [x for x in required if x != "pre:pio-scripts/build_ui.py" and x not in override]
+          assert not missing, f"unexpected omitted WLED build scripts: {missing}"
+          assert "pre:pio-scripts/build_ui.py" in base
+          assert "pre:pio-scripts/build_ui.py" not in override
+          PY
+
+          set +e
           pio run -e hbnf_matrix_wled16_packet20_diag 2>&1 | tee /tmp/hbnf-p20-artifacts/build.log
           status=${PIPESTATUS[0]}
+          set -e
           if [ "$status" -ne 0 ]; then
             printf 'BUILD_FAILED exit_code=%s\n' "$status" > /tmp/hbnf-p20-artifacts/build-result.txt
             exit "$status"
