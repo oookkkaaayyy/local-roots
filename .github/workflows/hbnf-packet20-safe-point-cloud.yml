@@ -165,6 +165,29 @@ jobs:
           grep -q 'netmindz/animartrix' /tmp/hbnf-p20-artifacts/project-config.json
           grep -q '81eb09b91c8c9c8c01f8ea442787f8127d56c72f' /tmp/hbnf-p20-artifacts/project-config.json
 
+          # Run 3 proved the dependency itself is present, then compiled far
+          # enough to expose four Release07 animation-clock members that exist
+          # only in the original source.patch vendor hunk. Materialize the
+          # exact dependency closure now, verify the pristine upstream header,
+          # and apply that exact vendor patch before the one compile.
+          PATCH="$GITHUB_WORKSPACE/.hbnf-packet20-cloud/source/animartrix-clock.patch"
+          test "$(sha256sum "$PATCH" | awk '{print $1}')" = "f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4"
+          pio pkg install -e hbnf_matrix_wled16_packet20_diag
+          mapfile -t anim_headers < <(find .pio/libdeps/hbnf_matrix_wled16_packet20_diag -type f -name ANIMartRIX.h -print)
+          test "${#anim_headers[@]}" -eq 1
+          ANIM_HEADER="${anim_headers[0]}"
+          test "$(git hash-object "$ANIM_HEADER")" = "db640748175cfdd70dc103fc23c830e646fa5ab6"
+          cp "$ANIM_HEADER" /tmp/hbnf-p20-artifacts/ANIMartRIX.upstream.h
+          patch --batch --forward -p3 -d "$(dirname "$ANIM_HEADER")" < "$PATCH"
+          grep -q 'double animation_clock_ms_ = 0.0;' "$ANIM_HEADER"
+          grep -q 'double animation_clock_speed_ = 1.0;' "$ANIM_HEADER"
+          grep -q 'uint32_t animation_clock_last_ms_ = 0;' "$ANIM_HEADER"
+          grep -q 'bool animation_clock_started_ = false;' "$ANIM_HEADER"
+          grep -q 'void calculate_oscillators(const oscillators &timings) {' "$ANIM_HEADER"
+          grep -q 'void run_default_oscillators() {' "$ANIM_HEADER"
+          sha256sum "$PATCH" "$ANIM_HEADER" >> /tmp/hbnf-p20-artifacts/source-input-sha256.txt
+          cp "$ANIM_HEADER" /tmp/hbnf-p20-artifacts/ANIMartRIX.patched.h
+
       - name: Compile once
         shell: bash
         env:
