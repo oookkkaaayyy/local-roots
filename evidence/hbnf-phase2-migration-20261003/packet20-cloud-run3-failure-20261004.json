@@ -1,0 +1,54 @@
+{
+  "schema": "hbnf-packet20-cloud-run-failure-v1",
+  "date": "2026-10-04",
+  "status": "BUILD_FAILED",
+  "workflow_run_id": 37231477686,
+  "workflow_run_url": "https://github.com/oookkkaaayyy/local-roots/actions/runs/37231477686",
+  "trigger_commit": "5095e38f5712b0689584e6e139a6333864a0cbcc",
+  "pre_trigger_fix_commit": "19f72a9339d0ed8501337c6141513bdf11dd84cc",
+  "branch": "hbnf-packet20-safe-point-cloud-20261004",
+  "packet20_source_sha256": "529e1bf718c3770b7d4ba6408178e9d3e7a4ed1d223b9bbf9071b68e75eed74b",
+  "wled_base_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+  "platformio_core": "6.1.18",
+  "build_environment": "hbnf_matrix_wled16_packet20_diag",
+  "dependency_repairs_verified": [
+    "WLED ESP32 base dependency closure restored",
+    "Animartrix exact WLED 16.0.1 pin installed: 81eb09b91c8c9c8c01f8ea442787f8127d56c72f"
+  ],
+  "dependency_graph_observed": {
+    "compatible_libraries": 41,
+    "present": [
+      "AsyncTCP 3.4.7",
+      "ESPAsyncWebServerWLED 2.4.2",
+      "AsyncMqttClient 0.9.0",
+      "QuickEspNow 0.8.1",
+      "animartrix 81eb09b",
+      "audioreactive",
+      "hbnf_foundation_v1"
+    ]
+  },
+  "failure_phase": "compile",
+  "compiler_errors": [
+    "animation_clock_ms_ was not declared in this scope",
+    "animation_clock_speed_ was not declared in this scope",
+    "animation_clock_last_ms_ was not declared in this scope",
+    "animation_clock_started_ was not declared in this scope"
+  ],
+  "affected_source_area": "FoundationAnimartrix::diagnosticCapture / diagnosticRestore",
+  "diagnosis": "The exact Packet20 source assumes four ANIMartRIX animation_clock_* members that do not exist in upstream ANIMartRIX pinned by WLED 16.0.1. This exposes an uncaptured historical dependency/source modification or an invalid diagnostic-state assumption. The clean cloud build environment is now sufficiently complete to reach this real source/API mismatch.",
+  "upstream_animartrix_evidence": {
+    "repository": "netmindz/animartrix",
+    "commit": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f",
+    "header": "ANIMartRIX.h",
+    "timing_behavior": "calculate_oscillators derives runtime directly from millis() * timings.master_speed * speed_factor; no animation_clock_* members exist"
+  },
+  "failed_run_artifact": {
+    "artifact_id": 11313681641,
+    "name": "HBNF-Packet20-Safe-Point-37231477686",
+    "size_bytes": 10039,
+    "sha256": "78a7b6f18dfbfe7bf83fe59412b535dffc8d67e7a2889b8dcd43180a25fc32c7",
+    "expires_at": "2026-10-05T20:18:02Z"
+  },
+  "next_gate": "Recover/prove the exact historical ANIMartRIX clock modification or make an evidence-backed Packet20 compatibility correction offline. No fourth Actions run until the correction is specific and user explicitly authorizes it.",
+  "authorization": "No fourth GitHub Actions run is authorized."
+}
