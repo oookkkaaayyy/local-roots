@@ -11,8 +11,10 @@
 #include <string.h>
 #if defined(HBNF_PACKET20_DIAGNOSTICS)
 #include <esp_system.h>
+#include <esp_heap_caps.h>
 #include <rom/rtc.h>
 #include <new>
+#include <stdlib.h>
 #include <type_traits>
 #endif
 
@@ -21,8 +23,8 @@ using namespace hbnf_v1;
 namespace {
 
 static const char HBNF_FX_DATA[] PROGMEM = "HBNF Foundation@;;;2";
-static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4";
-static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4\",\"basedOnReleaseId\":\"hbnf-matrix-coordinated-v1-20261002-06\",\"basedOnFirmwareSha256\":\"b9bb60dca1a9be8f7241670a7540810c604465c9adf7084b6efc90d5b4622886\",\"wled\":\"16.0.1\",\"features\":[\"canonical-palette-v1\",\"canonical-overlay-v1\",\"coordinated-ui-v1\"]}";
+static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1";
+static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1\",\"basedOnReleaseId\":\"hbnf-matrix-coordinated-v1-20261002-06\",\"basedOnFirmwareSha256\":\"b9bb60dca1a9be8f7241670a7540810c604465c9adf7084b6efc90d5b4622886\",\"wled\":\"16.0.1\",\"features\":[\"canonical-palette-v1\",\"canonical-overlay-v1\",\"coordinated-ui-v1\"]}";
 static PaletteSelection hbnfPalette{};
 static OverlayState hbnfCommandOverlay{};
 static portMUX_TYPE hbnfOverlayMux=portMUX_INITIALIZER_UNLOCKED;
@@ -39,6 +41,34 @@ struct HbnfPerfFrame {
   uint32_t companionPrep=0; uint32_t ddpStart=0; uint32_t ddpSend=0; bool inKernel=false;
   uint8_t kernel=255; uint32_t variant=0; uint32_t whole=0; uint32_t unaccounted=0;
 };
+#if defined(HBNF_PACKET20_DIAGNOSTICS)
+// Optional bounded instrumentation buffer. It is allocated only for a measured
+// window and freed in lightweight mode; no per-frame allocation or logging.
+static constexpr uint16_t HBNF_TAIL_CAPACITY=1536;
+struct HbnfTailFrame { uint32_t v[8]; };
+static HbnfTailFrame* hbnfTailFrames=nullptr;
+static uint32_t* hbnfTailScratch=nullptr;
+static uint16_t hbnfTailCount=0, hbnfTailNext=0;
+static uint8_t hbnfTailKernel=255;
+static bool hbnfTailEnabled=false,hbnfTailReporting=false;
+static uint8_t hbnfTailReaders=0;
+static portMUX_TYPE hbnfTailMux=portMUX_INITIALIZER_UNLOCKED;
+static bool hbnfTailSetEnabled(bool enabled) {
+  portENTER_CRITICAL(&hbnfTailMux);
+  if(enabled==hbnfTailEnabled) { portEXIT_CRITICAL(&hbnfTailMux); return true; }
+  if(enabled) {
+    portEXIT_CRITICAL(&hbnfTailMux);
+    HbnfTailFrame* frames=(HbnfTailFrame*)heap_caps_calloc(HBNF_TAIL_CAPACITY,sizeof(HbnfTailFrame),MALLOC_CAP_8BIT);
+    uint32_t* scratch=(uint32_t*)heap_caps_malloc(HBNF_TAIL_CAPACITY*sizeof(uint32_t),MALLOC_CAP_8BIT);
+    if(!frames||!scratch) { if(frames)heap_caps_free(frames); if(scratch)heap_caps_free(scratch); return false; }
+    portENTER_CRITICAL(&hbnfTailMux); hbnfTailFrames=frames;hbnfTailScratch=scratch;hbnfTailCount=0;hbnfTailNext=0;hbnfTailKernel=255;hbnfTailEnabled=true;portEXIT_CRITICAL(&hbnfTailMux); return true;
+  }
+  if(hbnfTailReaders){portEXIT_CRITICAL(&hbnfTailMux);return false;}
+  HbnfTailFrame* frames=hbnfTailFrames;uint32_t* scratch=hbnfTailScratch;
+  hbnfTailFrames=nullptr;hbnfTailScratch=nullptr;hbnfTailCount=0;hbnfTailNext=0;hbnfTailEnabled=false;
+  portEXIT_CRITICAL(&hbnfTailMux);if(frames)heap_caps_free(frames);if(scratch)heap_caps_free(scratch);return true;
+}
+#endif
 static HbnfPerfFrame hbnfPerfWorking{};
 static HbnfPerfFrame hbnfPerfLatest{};
 static portMUX_TYPE hbnfPerfMux=portMUX_INITIALIZER_UNLOCKED;
@@ -1084,6 +1114,33 @@ class HbnfFoundationV1Usermod : public Usermod {
     timing["unaccountedUs"]=hbnfCycleUs(perf.unaccounted);
     timing["fps"]=strip.getFps(); timing["companionRenderCount"]=(uint32_t)companionRenderCount;
     timing["freeHeap"]=ESP.getFreeHeap(); timing["rssi"]=WiFi.RSSI(); timing["uptimeSec"]=millis()/1000u;
+#if defined(HBNF_PACKET20_DIAGNOSTICS)
+    JsonObject foundationTelemetry=h.createNestedObject("foundationTelemetry");
+    bool tailsEnabled,reportReady;uint16_t tailCount;uint8_t tailKernel;HbnfTailFrame* tailFrames;uint32_t* tailScratch;
+    portENTER_CRITICAL(&hbnfTailMux);tailsEnabled=hbnfTailEnabled;tailCount=hbnfTailCount;tailKernel=hbnfTailKernel;tailFrames=hbnfTailFrames;tailScratch=hbnfTailScratch;
+    reportReady=tailsEnabled&&tailFrames&&tailScratch&&!hbnfTailReporting;
+    if(reportReady){hbnfTailReporting=true;hbnfTailReaders++;for(uint16_t i=0;i<tailCount;i++)tailScratch[i]=tailFrames[i].v[0];}
+    else{tailFrames=nullptr;tailScratch=nullptr;}
+    portEXIT_CRITICAL(&hbnfTailMux);
+    foundationTelemetry["enabled"]=tailsEnabled;foundationTelemetry["sampleCount"]=tailCount;foundationTelemetry["kernelId"]=tailKernel;
+    foundationTelemetry["minimumFreeHeapBytes"]=esp_get_minimum_free_heap_size();
+    foundationTelemetry["largestFreeBlockBytes"]=heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
+    if(tailCount&&tailScratch){
+      uint64_t frameSum=0;for(uint16_t i=0;i<tailCount;i++)frameSum+=tailScratch[i];
+      qsort(tailScratch,tailCount,sizeof(uint32_t),[](const void*a,const void*b){uint32_t x=*(const uint32_t*)a,y=*(const uint32_t*)b;return x<y?-1:(x>y?1:0);});
+      auto percentile=[&](double p)->uint32_t{uint16_t ix=(uint16_t)((p*tailCount+0.999999)-1.0);if(ix>=tailCount)ix=tailCount-1;return tailScratch[ix];};
+      foundationTelemetry["frameMsAvg"]=(double)frameSum/(1000.0*tailCount);
+      foundationTelemetry["frameMsP50"]=percentile(0.50)/1000.0;foundationTelemetry["frameMsP95"]=percentile(0.95)/1000.0;foundationTelemetry["frameMsP99"]=percentile(0.99)/1000.0;foundationTelemetry["frameMsMax"]=tailScratch[tailCount-1]/1000.0;
+      const char* stageP95[7]={"kernelMsP95","paletteMsP95","audioMsP95","schedulerMsP95","overlayMsP95","auxPrepareSendMsP95","unaccountedMsP95"};
+      const char* stageAvg[7]={"kernelMsAvg","paletteMsAvg","audioMsAvg","schedulerMsAvg","overlayMsAvg","auxPrepareSendMsAvg","unaccountedMsAvg"};
+      for(uint8_t stage=0;stage<7;stage++){
+        uint64_t sum=0;portENTER_CRITICAL(&hbnfTailMux);for(uint16_t i=0;i<tailCount;i++){tailScratch[i]=tailFrames[i].v[stage+1];sum+=tailScratch[i];}portEXIT_CRITICAL(&hbnfTailMux);
+        qsort(tailScratch,tailCount,sizeof(uint32_t),[](const void*a,const void*b){uint32_t x=*(const uint32_t*)a,y=*(const uint32_t*)b;return x<y?-1:(x>y?1:0);});
+        foundationTelemetry[stageP95[stage]]=percentile(0.95)/1000.0;foundationTelemetry[stageAvg[stage]]=(double)sum/(1000.0*tailCount);
+      }
+    }else{foundationTelemetry["frameMsAvg"]=nullptr;foundationTelemetry["frameMsP50"]=nullptr;foundationTelemetry["frameMsP95"]=nullptr;foundationTelemetry["frameMsP99"]=nullptr;foundationTelemetry["frameMsMax"]=nullptr;}
+    if(reportReady){portENTER_CRITICAL(&hbnfTailMux);hbnfTailReporting=false;if(hbnfTailReaders)hbnfTailReaders--;portEXIT_CRITICAL(&hbnfTailMux);}
+#endif
     HbnfLiveSnapshot live;
     portENTER_CRITICAL(&hbnfLiveMux);live=hbnfLive;portEXIT_CRITICAL(&hbnfLiveMux);
     h["liveActive"]=live.active&&(uint32_t)(millis()-live.lastSeenMs)<120000u;
@@ -1106,6 +1163,9 @@ class HbnfFoundationV1Usermod : public Usermod {
     JsonObject h=root["HBNF"];
     if(h.isNull()) return;
 #if defined(HBNF_PACKET20_DIAGNOSTICS)
+    if(!h["foundationTelemetry"]["enabled"].isNull()) {
+      if(!hbnfTailSetEnabled(h["foundationTelemetry"]["enabled"].as<bool>()))return;
+    }
     if(h.containsKey("packet20Diagnostic")) {
       JsonObjectConst command=h["packet20Diagnostic"].as<JsonObjectConst>();
       strlcpy(packet20LastCommand,command["op"]|"invalid",sizeof(packet20LastCommand));
@@ -1145,6 +1205,16 @@ extern "C" void hbnfPerfFrameEnd() {
   const uint32_t end=hbnfCycles(); hbnfPerfWorking.whole=end-hbnfPerfWorking.start;
   const uint64_t accounted=(uint64_t)hbnfPerfWorking.scheduler+(hbnfPerfWorking.kernelGross>hbnfPerfWorking.audioInKernel+hbnfPerfWorking.colorInKernel?hbnfPerfWorking.kernelGross-hbnfPerfWorking.audioInKernel-hbnfPerfWorking.colorInKernel:0)+hbnfPerfWorking.audio+hbnfPerfWorking.color+hbnfPerfWorking.overlay+hbnfPerfWorking.companionPrep+hbnfPerfWorking.ddpSend;
   hbnfPerfWorking.unaccounted=accounted<hbnfPerfWorking.whole?(uint32_t)(hbnfPerfWorking.whole-accounted):0;
+#if defined(HBNF_PACKET20_DIAGNOSTICS)
+  portENTER_CRITICAL(&hbnfTailMux);
+  if(hbnfTailEnabled&&hbnfTailFrames){
+    if(hbnfTailKernel!=hbnfPerfWorking.kernel){hbnfTailKernel=hbnfPerfWorking.kernel;hbnfTailCount=0;hbnfTailNext=0;}
+    HbnfTailFrame& t=hbnfTailFrames[hbnfTailNext];
+    t.v[0]=hbnfCycleUs(hbnfPerfWorking.whole);t.v[1]=hbnfCycleUs(hbnfPerfWorking.kernelGross>hbnfPerfWorking.audioInKernel+hbnfPerfWorking.colorInKernel?hbnfPerfWorking.kernelGross-hbnfPerfWorking.audioInKernel-hbnfPerfWorking.colorInKernel:0);t.v[2]=hbnfCycleUs(hbnfPerfWorking.color);t.v[3]=hbnfCycleUs(hbnfPerfWorking.audio);t.v[4]=hbnfCycleUs(hbnfPerfWorking.scheduler);t.v[5]=hbnfCycleUs(hbnfPerfWorking.overlay);t.v[6]=hbnfCycleUs(hbnfPerfWorking.companionPrep+hbnfPerfWorking.ddpSend);t.v[7]=hbnfCycleUs(hbnfPerfWorking.unaccounted);
+    hbnfTailNext=(uint16_t)((hbnfTailNext+1)%HBNF_TAIL_CAPACITY);if(hbnfTailCount<HBNF_TAIL_CAPACITY)hbnfTailCount++;
+  }
+  portEXIT_CRITICAL(&hbnfTailMux);
+#endif
   portENTER_CRITICAL(&hbnfPerfMux); hbnfPerfLatest=hbnfPerfWorking; portEXIT_CRITICAL(&hbnfPerfMux);
   hbnfPerfWorking.active=false;
 }

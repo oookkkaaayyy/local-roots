@@ -35,9 +35,9 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/hbnf-p20-artifacts
-          test "$GITHUB_REF" = "refs/heads/hbnf-packet20-fastled-r4-20261005"
+          test "$GITHUB_REF" = "refs/heads/hbnf-packet20-foundation-metrics-20261005"
           SOURCE=.hbnf-packet20-cloud/source/usermod_hbnf_foundation_v1.cpp
-          test "$(sha256sum "$SOURCE" | awk '{print $1}')" = "daab85f2fa2d2271e69a414416a6918e58da2d90f1f8af79aa858dd1daaea310"
+          test "$(sha256sum "$SOURCE" | awk '{print $1}')" = "592f3b8a40f981af08aa0ff04b731e7b5c1c55c155cca5be70e64f34d4065256"
           python - <<'PY'
           import base64, hashlib, pathlib
           root = pathlib.Path(".hbnf-packet20-cloud/source")
@@ -93,7 +93,7 @@ jobs:
           PY
           test -f /tmp/wled/usermods/hbnf_foundation_v1/hbnf_foundation_core.h
           test -f /tmp/wled/pio-scripts/load_usermods.py
-          test "$(sha256sum /tmp/wled/usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp | awk '{print $1}')" = "daab85f2fa2d2271e69a414416a6918e58da2d90f1f8af79aa858dd1daaea310"
+          test "$(sha256sum /tmp/wled/usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp | awk '{print $1}')" = "592f3b8a40f981af08aa0ff04b731e7b5c1c55c155cca5be70e64f34d4065256"
           grep -q 'hbnf_matrix_wled16_packet20_diag' platformio_override.ini
           mkdir -p /tmp/hbnf-p20-artifacts
           sha256sum platformio_override.ini usermods/hbnf_foundation_v1/* packet20-frame-timing.patch wled00/bus_manager.cpp > /tmp/hbnf-p20-artifacts/source-input-sha256.txt
@@ -309,14 +309,14 @@ jobs:
           manifest = {
               "status": "BUILD_SUCCEEDED",
               "github_repository": "oookkkaaayyy/local-roots",
-              "github_branch": "hbnf-packet20-fastled-r4-20261005",
+              "github_branch": "hbnf-packet20-foundation-metrics-20261005",
               "github_commit": os.environ["GH_SHA"],
               "github_run_id": os.environ["GH_RUN_ID"],
               "wled_base_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
               "platformio_core": "6.1.18",
               "environment": "hbnf_matrix_wled16_packet20_diag",
-              "diagnostic_source_sha256": "daab85f2fa2d2271e69a414416a6918e58da2d90f1f8af79aa858dd1daaea310",
-              "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4",
+              "diagnostic_source_sha256": "592f3b8a40f981af08aa0ff04b731e7b5c1c55c155cca5be70e64f34d4065256",
+              "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
               "fastled_release": "3.10.4",
               "fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
               "fastled_license_sha256": hashlib.sha256((pathlib.Path("/tmp/fastled/LICENSE")).read_bytes()).hexdigest(),
@@ -344,7 +344,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          transfer_branch="hbnf-packet20-r4-artifact-${GITHUB_RUN_ID}"
+          transfer_branch="hbnf-packet20-foundation-metrics-artifact-${GITHUB_RUN_ID}"
           mkdir -p "$GITHUB_WORKSPACE/.hbnf-r4-build-output"
           cp -R /tmp/hbnf-p20-artifacts/. "$GITHUB_WORKSPACE/.hbnf-r4-build-output/"
           git config user.name "github-actions[bot]"
@@ -359,7 +359,7 @@ jobs:
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: HBNF-Packet20-FastLED-R4-${{ github.run_id }}
+          name: HBNF-Packet20-Foundation-Metrics-${{ github.run_id }}
           path: /tmp/hbnf-p20-artifacts
           if-no-files-found: warn
           retention-days: 1
