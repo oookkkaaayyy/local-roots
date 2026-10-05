@@ -175,7 +175,7 @@
       "exact diagnostic manifest available at the URL/role the updater will actually consume",
       "exact recovery manifest available at the URL/role the updater will actually consume",
       "diagnostic -> recovery pointer/role transition proven without reconstructing or dropping unrelated production assets",
-      "exact prior cloud deployment/version restoration proven",
+      "exact prior cloud VERSION restoration to 100% proven; historical deployment ID reuse is not required because provider rollback creates a new deployment object",
       "actual updater readback confirms each expected role/identity before device mutation"
     ],
     "forbidden": [
@@ -189,8 +189,8 @@
     "id": "PACKET20-PUBLICATION-RECOVERY-CONTRACT-001",
     "symptom": "seq20 Release07 recovery rejected with confirmed-release-role-changed",
     "root_cause": "Updater is pinned to latest.json. latest.json remained seq19 role=update while exact signed seq20 role=recovery was separately published as recovery.json. The recovery artifact itself is valid, but the consumer/publication contract was never proven end-to-end before seq19 install.",
-    "current_cloud_blocker": "RESOLUTION PATH IDENTIFIED BUT NOT YET REHEARSED: Cloudflare official Direct Uploads documentation supports metadata keep_assets=true when uploading a new version of an existing Worker, explicitly reusing its current static asset set without an asset completion token. Current script content/settings/version resources can be read through Cloudflare APIs; version upload can remain undeployed for verification.",
-    "required_resolution_standard": "Create an undeployed version from the exact current Worker script/settings, use keep_assets=true, inherit bindings from the exact current version with strict failure behavior, change only latest.json recovery-pointer handling, verify the new version through Version URL or 0%-traffic version override, then and only then re-enable the exact seq20 recovery transaction. Restore the exact prior version after device recovery.",
+    "current_cloud_blocker": "Version URL for candidate e4d31b2b-a9c1-4797-b5df-b8ad0121df6d returned HTTP 403 / Cloudflare 1010. This is not irreducible: Cloudflare officially supports smoke-testing a candidate in a split deployment at 0% traffic with the exact current stable version at 100%, then targeting only verification requests with Cloudflare-Workers-Version-Overrides.",
+    "required_resolution_standard": "Run one zero-normal-traffic rehearsal: stable version 29bdcc12-17ce-4feb-bb9e-e83cec5e1567 at 100%, candidate e4d31b2b-a9c1-4797-b5df-b8ad0121df6d at 0%, verify candidate through Cloudflare-Workers-Version-Overrides on the production route, then rollback exact stable VERSION to 100%. Only after this passes may the bounded seq20 recovery transaction proceed.",
     "provider_pattern": "platform/providers/cloudflare-workers.json"
   }
 }
