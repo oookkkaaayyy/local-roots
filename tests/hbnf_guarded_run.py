@@ -2,6 +2,10 @@
 import json, pathlib, subprocess, sys, tempfile
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 guard=ROOT/"scripts/hbnf_guarded_run.py"
+guard_source=guard.read_text()
+assert "--capsule" in guard_source
+assert "--prelive-proof" in guard_source
+assert '"prelive-check"' in guard_source
 
 p=subprocess.run([sys.executable,str(guard),"--require-state","FOUNDATION_QUALIFIED","--",sys.executable,"-c","print('SHOULD_NOT_RUN')"],capture_output=True,text=True)
 assert p.returncode!=0
@@ -17,4 +21,4 @@ assert p.returncode!=0
 assert "live mutation" in (p.stdout+p.stderr)
 assert "MUTATION" not in p.stdout
 
-print("PASS: guarded execution blocks wrong-state and unauthorized mutation commands")
+print("PASS: guarded execution blocks wrong-state/unauthorized mutation and requires platform prelive enforcement")
