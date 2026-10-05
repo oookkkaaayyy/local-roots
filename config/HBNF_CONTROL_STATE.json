@@ -5,18 +5,12 @@
   "completed_receipts": [],
   "current_task": {
     "name": "Release07 all-kernel diagnosis and class-level fix preparation",
-    "status": "SEQ20_RECOVERY_BLOCKED__TEMP_ROUTE_OVERLAY_REHEARSAL_NOT_YET_RUN",
+    "status": "SEQ20_RECOVERY__AUTONOMOUS_COMPLETION_AUTHORIZED",
     "installed_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
     "installed_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "installed_release_role": "DIAGNOSTIC_TIMING_HOOK__PARTIAL_SWEEP_STOPPED__RECOVERY_REQUIRED",
     "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
-    "blockers": [
-      "stop trying to modify/reconstruct the original static-asset Worker; preserve it untouched",
-      "create temporary no-assets Worker hbnf-seq20-recovery-pointer-temp with a more-specific route hbnightflyers.com/firmware/matrix/stable/latest.json*; Cloudflare route precedence makes it override only the updater pointer paths while the existing broad stable/* route remains intact",
-      "create stable-proxy version from exact live seq19 latest.json/latest.json.sig bytes captured immediately before route creation and recovery version from exact signed seq20 bytes; stable-proxy 100%, recovery 0% during rehearsal",
-      "verify ordinary production-route requests hit stable-proxy and return exact seq19 bytes; verify Cloudflare-Workers-Version-Overrides targets recovery version and returns exact seq20 bytes; delete temporary route and verify original broad route resumes exact seq19 bytes",
-      "only after PRELIVE_PROOF PASS: recreate the proven overlay, promote exact recovery version to 100% for the bounded seq20 install, verify Opal sees recovery seq20, install exact Release07, verify SHA 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab, delete overlay route, verify original stable route resumes, close mutation"
-    ],
+    "blockers": [],
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
     "publication_contract": {
       "updater_consumer": "latest.json",
@@ -45,6 +39,42 @@
       "zero_traffic_rehearsal_file_id": "1ZJOseh2J4ls9dGlF_SOH5DHAH9djd4xp",
       "prelive_proof_file_id": "1BLZuPicWwL8_eNlPeJPhKXqEsFzyGoc2",
       "prelive_check_file_id": "1V-7mHZQT_XVYPGuDBE2VKVXY1BwFvjFv"
+    },
+    "autonomous_completion_authorization": {
+      "scope": "complete recovery and continue Cart 2.0 lifecycle autonomously as far as safely possible overnight",
+      "user_permission": "preapproved; do not stop to ask for routine permissions",
+      "allowed": [
+        "read/write GitHub project state and evidence",
+        "read/write Drive/AKS project authority",
+        "temporary Cloudflare Workers/routes/versions/deployments with verified rollback",
+        "SSH to Opal using ~/.ssh/hbnf_opal_rsa",
+        "read-only Matrix/AUX state",
+        "exact verified Matrix OTA install/recovery over LAN using the existing updater upload mechanics or standard WLED /update endpoint when cryptographic/cloud discovery is the only blocker",
+        "temporary local helper scripts and services",
+        "restart/reload project services when reversible",
+        "bounded firmware build only after complete offline closure; prefer existing artifacts and local build, use GitHub Actions only when genuinely necessary"
+      ],
+      "forbidden": [
+        "erase flash",
+        "change bootloader/partition table",
+        "factory reset Matrix/AUX/Opal",
+        "physical power/cable actions requiring Andrew",
+        "weaken or permanently remove production updater signature/hash protections",
+        "resume the old partial seq19 sweep",
+        "use speculative repeated cloud/build attempts without a changed mechanism or new evidence"
+      ],
+      "reporting": "do not return intermediate blockers; resolve or pivot. Return only when a substantive lifecycle milestone is complete, ideally Cart 2.0 ACCEPTED, or when a genuinely physical/user-only action is mathematically unavoidable."
+    },
+    "recovery_strategy_priority": [
+      "1: stop using Cloudflare publication as a prerequisite for this recovery; inspect the installed Opal updater and use its already-proven device-upload mechanism with the exact verified Release07 BIN as local input if possible",
+      "2: otherwise use WLED's standard authenticated/local-subnet HTTP OTA /update path with the exact verified Release07 BIN; preserve settings; no erase",
+      "3: only if neither local path is technically available, use a temporary cloud mechanism; do not spend more time on static-asset reconstruction",
+      "after successful Release07 recovery, use the same direct-LAN exact-artifact mechanism as the pre-proven rollback path for future diagnostic/fix sessions"
+    ],
+    "target_recovery": {
+      "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
+      "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+      "size_bytes": 1458624
     }
   },
   "live_mutation_authorized": true,
