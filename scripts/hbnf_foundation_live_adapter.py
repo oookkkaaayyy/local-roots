@@ -115,26 +115,25 @@ def telemetry(inventory):
         time.sleep(.1);state,p20=p20_state()
     h=state["HBNF"]; timing=h["timing"]; ft=h.get("foundationTelemetry",{})
     if not ft.get("enabled") or ft.get("frameMsP99") is None:raise RuntimeError("foundation-frame-tail-contract-missing")
+    if ft.get("frameTailOverflow"):raise RuntimeError("foundation-frame-tail-histogram-range-overflow")
     aux=get(AUX+"/json/info"); leds=aux.get("leds",{})
     inv=json.loads(pathlib.Path(inventory).read_text())
     kid=int(timing["kernel"])
     entry=next((x for x in inv["entries"] if int(x["runtime_kernel_index_expected"])==kid),None)
     if entry is None:raise RuntimeError("runtime-kernel-outside-inventory")
-    cache={"companion_count":int(h.get("companionRenderCount",0)),"restart_count":0,"uptime":int(timing["uptimeSec"]),"last_aux_progress_monotonic":time.monotonic()}
+    cache={"restart_count":0,"uptime":int(timing["uptimeSec"])}
     try: old=json.loads(CACHE.read_text())
     except Exception: old={}
     if cache["uptime"]<int(old.get("uptime",0)):cache["restart_count"]=int(old.get("restart_count",0))+1
     else:cache["restart_count"]=int(old.get("restart_count",0))
-    if cache["companion_count"]==int(old.get("companion_count",-1)):
-        cache["last_aux_progress_monotonic"]=float(old.get("last_aux_progress_monotonic",cache["last_aux_progress_monotonic"]))
     CACHE.write_text(json.dumps(cache))
-    age=max(0,int((time.monotonic()-cache["last_aux_progress_monotonic"])*1000))
     sample={
       "release_id":build["release_id"],"uptime_seconds":timing["uptimeSec"],"fps":timing["fps"],
       "frame_ms_avg":ft.get("frameMsAvg"),"frame_ms_p50":ft.get("frameMsP50"),"frame_ms_p95":ft.get("frameMsP95"),"frame_ms_p99":ft.get("frameMsP99"),"frame_ms_max":ft.get("frameMsMax"),
       "kernel_id":kid,"kernel_name":entry["kernel_name"],"variant_id":timing["variantSignature"],
       "free_heap_bytes":timing["freeHeap"],"minimum_free_heap_bytes":ft.get("minimumFreeHeapBytes"),"largest_free_block_bytes":ft.get("largestFreeBlockBytes"),
-      "websocket_clients":info.get("ws"),"aux_projection_active":bool(aux.get("live") and aux.get("lm")=="DDP"),"aux_projection_age_ms":age,"aux_render_fps":leds.get("fps"),
+      "frame_tail_bin_resolution_us":ft.get("frameTailBinResolutionUs"),"frame_tail_overflow":ft.get("frameTailOverflow"),"frame_tail_sample_count":ft.get("sampleCount"),
+      "websocket_clients":info.get("ws"),"aux_projection_active":bool(aux.get("live") and aux.get("lm")=="DDP"),"aux_projection_age_ms":timing.get("auxProjectionAgeMs"),"aux_render_fps":leds.get("fps"),
       "wifi_rssi_dbm":timing["rssi"],"restart_count":cache["restart_count"],
       "kernel_ms_avg":ft.get("kernelMsAvg"),"kernel_ms_p95":ft.get("kernelMsP95"),"palette_ms_avg":ft.get("paletteMsAvg"),"palette_ms_p95":ft.get("paletteMsP95"),
       "audio_ms_avg":ft.get("audioMsAvg"),"audio_ms_p95":ft.get("audioMsP95"),"scheduler_ms_avg":ft.get("schedulerMsAvg"),"scheduler_ms_p95":ft.get("schedulerMsP95"),

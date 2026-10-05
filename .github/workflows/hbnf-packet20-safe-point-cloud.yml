@@ -37,7 +37,7 @@ jobs:
           mkdir -p /tmp/hbnf-p20-artifacts
           test "$GITHUB_REF" = "refs/heads/hbnf-packet20-foundation-metrics-20261005"
           SOURCE=.hbnf-packet20-cloud/source/usermod_hbnf_foundation_v1.cpp
-          test "$(sha256sum "$SOURCE" | awk '{print $1}')" = "592f3b8a40f981af08aa0ff04b731e7b5c1c55c155cca5be70e64f34d4065256"
+          test "$(sha256sum "$SOURCE" | awk '{print $1}')" = "f0350177d671f44577d2bfd40780b498662f57d08e5a4078be738c995da8f67a"
           python - <<'PY'
           import base64, hashlib, pathlib
           root = pathlib.Path(".hbnf-packet20-cloud/source")
@@ -93,7 +93,7 @@ jobs:
           PY
           test -f /tmp/wled/usermods/hbnf_foundation_v1/hbnf_foundation_core.h
           test -f /tmp/wled/pio-scripts/load_usermods.py
-          test "$(sha256sum /tmp/wled/usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp | awk '{print $1}')" = "592f3b8a40f981af08aa0ff04b731e7b5c1c55c155cca5be70e64f34d4065256"
+          test "$(sha256sum /tmp/wled/usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp | awk '{print $1}')" = "f0350177d671f44577d2bfd40780b498662f57d08e5a4078be738c995da8f67a"
           grep -q 'hbnf_matrix_wled16_packet20_diag' platformio_override.ini
           mkdir -p /tmp/hbnf-p20-artifacts
           sha256sum platformio_override.ini usermods/hbnf_foundation_v1/* packet20-frame-timing.patch wled00/bus_manager.cpp > /tmp/hbnf-p20-artifacts/source-input-sha256.txt
@@ -315,7 +315,7 @@ jobs:
               "wled_base_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
               "platformio_core": "6.1.18",
               "environment": "hbnf_matrix_wled16_packet20_diag",
-              "diagnostic_source_sha256": "592f3b8a40f981af08aa0ff04b731e7b5c1c55c155cca5be70e64f34d4065256",
+              "diagnostic_source_sha256": "f0350177d671f44577d2bfd40780b498662f57d08e5a4078be738c995da8f67a",
               "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
               "fastled_release": "3.10.4",
               "fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",

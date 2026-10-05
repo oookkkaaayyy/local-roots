@@ -14,7 +14,6 @@
 #include <esp_heap_caps.h>
 #include <rom/rtc.h>
 #include <new>
-#include <stdlib.h>
 #include <type_traits>
 #endif
 
@@ -35,6 +34,7 @@ static bool canonicalMatrixValid=false;
 static uint32_t packed(const Rgb8& c);
 static uint32_t hbnfCycles() { return ESP.getCycleCount(); }
 static uint32_t hbnfCycleUs(uint32_t cycles) { const uint32_t mhz=ESP.getCpuFreqMHz(); return mhz?cycles/mhz:0; }
+static volatile uint32_t hbnfLastDdpSendMs=0;
 struct HbnfPerfFrame {
   bool active=false; uint32_t start=0; uint32_t scheduler=0; uint32_t audio=0; uint32_t audioInKernel=0;
   uint32_t color=0; uint32_t colorInKernel=0; uint32_t kernelGross=0; uint32_t overlay=0;
@@ -42,31 +42,22 @@ struct HbnfPerfFrame {
   uint8_t kernel=255; uint32_t variant=0; uint32_t whole=0; uint32_t unaccounted=0;
 };
 #if defined(HBNF_PACKET20_DIAGNOSTICS)
-// Optional bounded instrumentation buffer. It is allocated only for a measured
-// window and freed in lightweight mode; no per-frame allocation or logging.
-static constexpr uint16_t HBNF_TAIL_CAPACITY=1536;
-struct HbnfTailFrame { uint32_t v[8]; };
-static HbnfTailFrame* hbnfTailFrames=nullptr;
-static uint32_t* hbnfTailScratch=nullptr;
-static uint16_t hbnfTailCount=0, hbnfTailNext=0;
+// Fixed 50-us bins collect real per-frame samples with bounded memory and no
+// per-frame allocation, sorting, or logging. Maxima remain exact.
+static constexpr uint16_t HBNF_TAIL_BINS=512,HBNF_TAIL_BIN_US=100;
+static uint16_t hbnfTailHist[8][HBNF_TAIL_BINS]{};
+static uint64_t hbnfTailSum[8]{};
+static uint32_t hbnfTailMax[8]{};
+static uint16_t hbnfTailCount=0;
 static uint8_t hbnfTailKernel=255;
-static bool hbnfTailEnabled=false,hbnfTailReporting=false;
-static uint8_t hbnfTailReaders=0;
+static bool hbnfTailEnabled=false;
 static portMUX_TYPE hbnfTailMux=portMUX_INITIALIZER_UNLOCKED;
 static bool hbnfTailSetEnabled(bool enabled) {
   portENTER_CRITICAL(&hbnfTailMux);
   if(enabled==hbnfTailEnabled) { portEXIT_CRITICAL(&hbnfTailMux); return true; }
-  if(enabled) {
-    portEXIT_CRITICAL(&hbnfTailMux);
-    HbnfTailFrame* frames=(HbnfTailFrame*)heap_caps_calloc(HBNF_TAIL_CAPACITY,sizeof(HbnfTailFrame),MALLOC_CAP_8BIT);
-    uint32_t* scratch=(uint32_t*)heap_caps_malloc(HBNF_TAIL_CAPACITY*sizeof(uint32_t),MALLOC_CAP_8BIT);
-    if(!frames||!scratch) { if(frames)heap_caps_free(frames); if(scratch)heap_caps_free(scratch); return false; }
-    portENTER_CRITICAL(&hbnfTailMux); hbnfTailFrames=frames;hbnfTailScratch=scratch;hbnfTailCount=0;hbnfTailNext=0;hbnfTailKernel=255;hbnfTailEnabled=true;portEXIT_CRITICAL(&hbnfTailMux); return true;
-  }
-  if(hbnfTailReaders){portEXIT_CRITICAL(&hbnfTailMux);return false;}
-  HbnfTailFrame* frames=hbnfTailFrames;uint32_t* scratch=hbnfTailScratch;
-  hbnfTailFrames=nullptr;hbnfTailScratch=nullptr;hbnfTailCount=0;hbnfTailNext=0;hbnfTailEnabled=false;
-  portEXIT_CRITICAL(&hbnfTailMux);if(frames)heap_caps_free(frames);if(scratch)heap_caps_free(scratch);return true;
+  hbnfTailEnabled=enabled;hbnfTailCount=0;hbnfTailKernel=255;
+  memset(hbnfTailHist,0,sizeof(hbnfTailHist));memset(hbnfTailSum,0,sizeof(hbnfTailSum));memset(hbnfTailMax,0,sizeof(hbnfTailMax));
+  portEXIT_CRITICAL(&hbnfTailMux);return true;
 }
 #endif
 static HbnfPerfFrame hbnfPerfWorking{};
@@ -677,7 +668,7 @@ struct Packet20Snapshot {
   Rgb8 transitionPixels[32*16];
   uint32_t matrixOutput[32*16];
   uint32_t auxOutput[23];
-  uint32_t matrixFrame=0,companionFrames=0;
+  uint32_t matrixFrame=0,companionFrames=0,lastDdpSendMs=0;
   uint8_t companionNonzero=0,effectId=255,segmentPalette=0;
   bool matrixValid=false;
 };
@@ -722,7 +713,7 @@ static uint32_t packet20Hash(const Packet20Snapshot& s) {
   HBNF_P20_HASH_FIELD(movementState);HBNF_P20_HASH_FIELD(pixelState);add(s.matrixPixels,sizeof(s.matrixPixels));
   add(s.transitionPixels,sizeof(s.transitionPixels));add(s.matrixOutput,sizeof(s.matrixOutput));
   add(s.auxOutput,sizeof(s.auxOutput));
-  HBNF_P20_HASH_FIELD(matrixFrame);HBNF_P20_HASH_FIELD(companionFrames);HBNF_P20_HASH_FIELD(companionNonzero);
+  HBNF_P20_HASH_FIELD(matrixFrame);HBNF_P20_HASH_FIELD(companionFrames);HBNF_P20_HASH_FIELD(lastDdpSendMs);HBNF_P20_HASH_FIELD(companionNonzero);
   HBNF_P20_HASH_FIELD(effectId);HBNF_P20_HASH_FIELD(segmentPalette);HBNF_P20_HASH_FIELD(matrixValid);
 #undef HBNF_P20_HASH_FIELD
   return h?h:1u;
@@ -742,7 +733,7 @@ static void packet20Capture(Packet20Snapshot& s) {
   for(uint8_t y=0;y<16;y++)for(uint8_t x=0;x<32;x++)s.matrixOutput[y*32u+x]=SEGMENT.getPixelColorXY(x,y);
   for(uint8_t i=0;i<23;i++)s.auxOutput[i]=strip.getPixelColor(512u+i);
   s.matrixFrame=canonicalMatrixFrame;s.matrixValid=canonicalMatrixValid;
-  s.companionFrames=companionRenderCount;s.companionNonzero=companionLastNonzero;
+  s.companionFrames=companionRenderCount;s.lastDdpSendMs=hbnfLastDdpSendMs;s.companionNonzero=companionLastNonzero;
   s.effectId=foundationEffectId;s.segmentPalette=SEGMENT.palette;
 }
 
@@ -756,7 +747,7 @@ static bool packet20Same(const Packet20Snapshot& a,const Packet20Snapshot& b) {
     memcmp(a.transitionPixels,b.transitionPixels,sizeof(a.transitionPixels))==0&&
     memcmp(a.matrixOutput,b.matrixOutput,sizeof(a.matrixOutput))==0&&
     memcmp(a.auxOutput,b.auxOutput,sizeof(a.auxOutput))==0&&
-    HBNF_P20_SAME(matrixFrame)&&HBNF_P20_SAME(companionFrames)&&HBNF_P20_SAME(companionNonzero)&&
+    HBNF_P20_SAME(matrixFrame)&&HBNF_P20_SAME(companionFrames)&&HBNF_P20_SAME(lastDdpSendMs)&&HBNF_P20_SAME(companionNonzero)&&
     HBNF_P20_SAME(effectId)&&HBNF_P20_SAME(segmentPalette)&&HBNF_P20_SAME(matrixValid);
 #undef HBNF_P20_SAME
 }
@@ -774,7 +765,7 @@ static void packet20Restore() {
   memcpy(canonicalMatrixPixels,packet20Saved.matrixPixels,sizeof(canonicalMatrixPixels));
   memcpy(transitionFromPixels,packet20Saved.transitionPixels,sizeof(transitionFromPixels));
   canonicalMatrixFrame=packet20Saved.matrixFrame;canonicalMatrixValid=packet20Saved.matrixValid;
-  companionRenderCount=packet20Saved.companionFrames;companionLastNonzero=packet20Saved.companionNonzero;
+  companionRenderCount=packet20Saved.companionFrames;hbnfLastDdpSendMs=packet20Saved.lastDdpSendMs;companionLastNonzero=packet20Saved.companionNonzero;
   foundationEffectId=packet20Saved.effectId;SEGMENT.setPalette(packet20Saved.segmentPalette);
   for(uint8_t y=0;y<16;y++)for(uint8_t x=0;x<32;x++)SEGMENT.setPixelColorXY(x,y,packet20Saved.matrixOutput[y*32u+x]);
   for(uint8_t i=0;i<23;i++)strip.setPixelColor(512u+i,packet20Saved.auxOutput[i]);
@@ -1111,35 +1102,38 @@ class HbnfFoundationV1Usermod : public Usermod {
     timing["overlayUs"]=hbnfCycleUs(perf.overlay);
     timing["companionPrepUs"]=hbnfCycleUs(perf.companionPrep);
     timing["companionDdpSendUs"]=hbnfCycleUs(perf.ddpSend);
+    timing["auxProjectionAgeMs"]=(uint32_t)(millis()-hbnfLastDdpSendMs);
     timing["unaccountedUs"]=hbnfCycleUs(perf.unaccounted);
     timing["fps"]=strip.getFps(); timing["companionRenderCount"]=(uint32_t)companionRenderCount;
     timing["freeHeap"]=ESP.getFreeHeap(); timing["rssi"]=WiFi.RSSI(); timing["uptimeSec"]=millis()/1000u;
 #if defined(HBNF_PACKET20_DIAGNOSTICS)
     JsonObject foundationTelemetry=h.createNestedObject("foundationTelemetry");
-    bool tailsEnabled,reportReady;uint16_t tailCount;uint8_t tailKernel;HbnfTailFrame* tailFrames;uint32_t* tailScratch;
-    portENTER_CRITICAL(&hbnfTailMux);tailsEnabled=hbnfTailEnabled;tailCount=hbnfTailCount;tailKernel=hbnfTailKernel;tailFrames=hbnfTailFrames;tailScratch=hbnfTailScratch;
-    reportReady=tailsEnabled&&tailFrames&&tailScratch&&!hbnfTailReporting;
-    if(reportReady){hbnfTailReporting=true;hbnfTailReaders++;for(uint16_t i=0;i<tailCount;i++)tailScratch[i]=tailFrames[i].v[0];}
-    else{tailFrames=nullptr;tailScratch=nullptr;}
+    bool tailsEnabled,tailOverflow=false;uint16_t tailCount;uint8_t tailKernel;double q[8][3]{};double maxima[8]{};double averages[8]{};
+    portENTER_CRITICAL(&hbnfTailMux);tailsEnabled=hbnfTailEnabled;tailCount=hbnfTailCount;tailKernel=hbnfTailKernel;
+    if(tailsEnabled&&tailCount){
+      for(uint8_t metric=0;metric<8;metric++){
+        tailOverflow|=hbnfTailHist[metric][HBNF_TAIL_BINS-1]!=0;
+        const uint16_t targets[3]={(uint16_t)((tailCount+1)/2),(uint16_t)((95u*tailCount+99u)/100u),(uint16_t)((99u*tailCount+99u)/100u)};
+        uint32_t cumulative=0;uint8_t qFound=0;
+        for(uint16_t bin=0;bin<HBNF_TAIL_BINS;bin++){
+          cumulative+=hbnfTailHist[metric][bin];
+          while(qFound<3&&cumulative>=targets[qFound]){q[metric][qFound]=(bin*HBNF_TAIL_BIN_US+HBNF_TAIL_BIN_US/2)/1000.0;qFound++;}
+        }
+        averages[metric]=(double)hbnfTailSum[metric]/(1000.0*tailCount);maxima[metric]=hbnfTailMax[metric]/1000.0;
+      }
+    }
     portEXIT_CRITICAL(&hbnfTailMux);
     foundationTelemetry["enabled"]=tailsEnabled;foundationTelemetry["sampleCount"]=tailCount;foundationTelemetry["kernelId"]=tailKernel;
     foundationTelemetry["minimumFreeHeapBytes"]=esp_get_minimum_free_heap_size();
     foundationTelemetry["largestFreeBlockBytes"]=heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
-    if(tailCount&&tailScratch){
-      uint64_t frameSum=0;for(uint16_t i=0;i<tailCount;i++)frameSum+=tailScratch[i];
-      qsort(tailScratch,tailCount,sizeof(uint32_t),[](const void*a,const void*b){uint32_t x=*(const uint32_t*)a,y=*(const uint32_t*)b;return x<y?-1:(x>y?1:0);});
-      auto percentile=[&](double p)->uint32_t{uint16_t ix=(uint16_t)((p*tailCount+0.999999)-1.0);if(ix>=tailCount)ix=tailCount-1;return tailScratch[ix];};
-      foundationTelemetry["frameMsAvg"]=(double)frameSum/(1000.0*tailCount);
-      foundationTelemetry["frameMsP50"]=percentile(0.50)/1000.0;foundationTelemetry["frameMsP95"]=percentile(0.95)/1000.0;foundationTelemetry["frameMsP99"]=percentile(0.99)/1000.0;foundationTelemetry["frameMsMax"]=tailScratch[tailCount-1]/1000.0;
+    if(tailsEnabled&&tailCount){
+      foundationTelemetry["frameMsAvg"]=averages[0];foundationTelemetry["frameMsP50"]=q[0][0];foundationTelemetry["frameMsP95"]=q[0][1];foundationTelemetry["frameMsP99"]=q[0][2];foundationTelemetry["frameMsMax"]=maxima[0];
       const char* stageP95[7]={"kernelMsP95","paletteMsP95","audioMsP95","schedulerMsP95","overlayMsP95","auxPrepareSendMsP95","unaccountedMsP95"};
       const char* stageAvg[7]={"kernelMsAvg","paletteMsAvg","audioMsAvg","schedulerMsAvg","overlayMsAvg","auxPrepareSendMsAvg","unaccountedMsAvg"};
-      for(uint8_t stage=0;stage<7;stage++){
-        uint64_t sum=0;portENTER_CRITICAL(&hbnfTailMux);for(uint16_t i=0;i<tailCount;i++){tailScratch[i]=tailFrames[i].v[stage+1];sum+=tailScratch[i];}portEXIT_CRITICAL(&hbnfTailMux);
-        qsort(tailScratch,tailCount,sizeof(uint32_t),[](const void*a,const void*b){uint32_t x=*(const uint32_t*)a,y=*(const uint32_t*)b;return x<y?-1:(x>y?1:0);});
-        foundationTelemetry[stageP95[stage]]=percentile(0.95)/1000.0;foundationTelemetry[stageAvg[stage]]=(double)sum/(1000.0*tailCount);
-      }
+      for(uint8_t stage=0;stage<7;stage++){foundationTelemetry[stageP95[stage]]=q[stage+1][1];foundationTelemetry[stageAvg[stage]]=averages[stage+1];}
+      foundationTelemetry["frameTailBinResolutionUs"]=HBNF_TAIL_BIN_US;
+      foundationTelemetry["frameTailOverflow"]=tailOverflow;
     }else{foundationTelemetry["frameMsAvg"]=nullptr;foundationTelemetry["frameMsP50"]=nullptr;foundationTelemetry["frameMsP95"]=nullptr;foundationTelemetry["frameMsP99"]=nullptr;foundationTelemetry["frameMsMax"]=nullptr;}
-    if(reportReady){portENTER_CRITICAL(&hbnfTailMux);hbnfTailReporting=false;if(hbnfTailReaders)hbnfTailReaders--;portEXIT_CRITICAL(&hbnfTailMux);}
 #endif
     HbnfLiveSnapshot live;
     portENTER_CRITICAL(&hbnfLiveMux);live=hbnfLive;portEXIT_CRITICAL(&hbnfLiveMux);
@@ -1199,7 +1193,7 @@ REGISTER_USERMOD(hbnfFoundationV1);
  } // namespace
 
 extern "C" void hbnfPerfDdpStart() { if(hbnfPerfWorking.active)hbnfPerfWorking.ddpStart=hbnfCycles(); }
-extern "C" void hbnfPerfDdpEnd() { if(hbnfPerfWorking.active&&hbnfPerfWorking.ddpStart)hbnfPerfWorking.ddpSend+=hbnfCycles()-hbnfPerfWorking.ddpStart; }
+extern "C" void hbnfPerfDdpEnd() { if(hbnfPerfWorking.active&&hbnfPerfWorking.ddpStart){hbnfPerfWorking.ddpSend+=hbnfCycles()-hbnfPerfWorking.ddpStart;hbnfLastDdpSendMs=millis();} }
 extern "C" void hbnfPerfFrameEnd() {
   if(!hbnfPerfWorking.active)return;
   const uint32_t end=hbnfCycles(); hbnfPerfWorking.whole=end-hbnfPerfWorking.start;
@@ -1207,11 +1201,12 @@ extern "C" void hbnfPerfFrameEnd() {
   hbnfPerfWorking.unaccounted=accounted<hbnfPerfWorking.whole?(uint32_t)(hbnfPerfWorking.whole-accounted):0;
 #if defined(HBNF_PACKET20_DIAGNOSTICS)
   portENTER_CRITICAL(&hbnfTailMux);
-  if(hbnfTailEnabled&&hbnfTailFrames){
-    if(hbnfTailKernel!=hbnfPerfWorking.kernel){hbnfTailKernel=hbnfPerfWorking.kernel;hbnfTailCount=0;hbnfTailNext=0;}
-    HbnfTailFrame& t=hbnfTailFrames[hbnfTailNext];
-    t.v[0]=hbnfCycleUs(hbnfPerfWorking.whole);t.v[1]=hbnfCycleUs(hbnfPerfWorking.kernelGross>hbnfPerfWorking.audioInKernel+hbnfPerfWorking.colorInKernel?hbnfPerfWorking.kernelGross-hbnfPerfWorking.audioInKernel-hbnfPerfWorking.colorInKernel:0);t.v[2]=hbnfCycleUs(hbnfPerfWorking.color);t.v[3]=hbnfCycleUs(hbnfPerfWorking.audio);t.v[4]=hbnfCycleUs(hbnfPerfWorking.scheduler);t.v[5]=hbnfCycleUs(hbnfPerfWorking.overlay);t.v[6]=hbnfCycleUs(hbnfPerfWorking.companionPrep+hbnfPerfWorking.ddpSend);t.v[7]=hbnfCycleUs(hbnfPerfWorking.unaccounted);
-    hbnfTailNext=(uint16_t)((hbnfTailNext+1)%HBNF_TAIL_CAPACITY);if(hbnfTailCount<HBNF_TAIL_CAPACITY)hbnfTailCount++;
+  if(hbnfTailEnabled){
+    if(hbnfTailKernel!=hbnfPerfWorking.kernel){hbnfTailKernel=hbnfPerfWorking.kernel;hbnfTailCount=0;memset(hbnfTailHist,0,sizeof(hbnfTailHist));memset(hbnfTailSum,0,sizeof(hbnfTailSum));memset(hbnfTailMax,0,sizeof(hbnfTailMax));}
+    if(hbnfTailCount>=60000){for(uint8_t m=0;m<8;m++){for(uint16_t b=0;b<HBNF_TAIL_BINS;b++)hbnfTailHist[m][b]/=2;hbnfTailSum[m]/=2;}hbnfTailCount/=2;}
+    uint32_t values[8]={hbnfCycleUs(hbnfPerfWorking.whole),hbnfCycleUs(hbnfPerfWorking.kernelGross>hbnfPerfWorking.audioInKernel+hbnfPerfWorking.colorInKernel?hbnfPerfWorking.kernelGross-hbnfPerfWorking.audioInKernel-hbnfPerfWorking.colorInKernel:0),hbnfCycleUs(hbnfPerfWorking.color),hbnfCycleUs(hbnfPerfWorking.audio),hbnfCycleUs(hbnfPerfWorking.scheduler),hbnfCycleUs(hbnfPerfWorking.overlay),hbnfCycleUs(hbnfPerfWorking.companionPrep+hbnfPerfWorking.ddpSend),hbnfCycleUs(hbnfPerfWorking.unaccounted)};
+    for(uint8_t metric=0;metric<8;metric++){uint16_t bin=values[metric]/HBNF_TAIL_BIN_US;if(bin>=HBNF_TAIL_BINS)bin=HBNF_TAIL_BINS-1;if(hbnfTailHist[metric][bin]!=UINT16_MAX)hbnfTailHist[metric][bin]++;hbnfTailSum[metric]+=values[metric];if(values[metric]>hbnfTailMax[metric])hbnfTailMax[metric]=values[metric];}
+    if(hbnfTailCount<UINT16_MAX)hbnfTailCount++;
   }
   portEXIT_CRITICAL(&hbnfTailMux);
 #endif
