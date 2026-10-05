@@ -129,6 +129,16 @@ assert policies["process"]["full_transaction_rehearsal_before_mutation"] is True
 assert policies["engineering_standard"]["recovery_path_proven_before_risky_mutation"] is True
 assert policies["engineering_standard"]["worker_directive_policy"].startswith("derive from validated execution capsule")
 assert policies["user_interaction"]["copy_paste_delivery"] == "one_single_fenced_block_per_action"
+assert {
+    "hidden-build-inputs",
+    "timeout-budget-inversion",
+    "restore-evidence-loss",
+    "credential-transport-surprise",
+    "mutable-pointer-role-mismatch",
+    "cloud-asset-reconstruction-risk",
+    "stale-operational-state",
+    "manual-prompt-improvisation",
+}.issubset(set(policies["failure_class_regressions"]))
 
 # Prelive proof must bind exact capsule bytes and every mandatory stage to evidence.
 with tempfile.TemporaryDirectory() as td:
