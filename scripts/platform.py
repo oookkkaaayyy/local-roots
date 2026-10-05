@@ -253,11 +253,16 @@ def validate_hbnf_coherence(
         cfg = load_json(adapter_cfg)
         expected = str(cfg.get("expected_release_id") or "")
         if installed and expected and installed != expected:
-            errors.append(
+            status = str(state.get("current_task", {}).get("status") or "")
+            message = (
                 "HBNF live-tool identity mismatch: control state says "
                 f"installed_release={installed!r} but canonical Packet20 "
                 f"adapter expects {expected!r}"
             )
+            if "RECOVERY" in status:
+                warnings.append(message + " (recovery-only state; diagnostic use remains blocked)")
+            else:
+                errors.append(message)
 
     if state.get("live_mutation_authorized") is True:
         blockers = state.get("current_task", {}).get("blockers", [])
@@ -301,6 +306,47 @@ def doctor() -> int:
         )
 
     validate_hbnf_coherence(errors, warnings)
+
+    proof_template = PLATFORM / "templates/PRELIVE_PROOF.template.json"
+    if not proof_template.is_file():
+        errors.append("platform: missing PRELIVE_PROOF template")
+    else:
+        template = load_json(proof_template)
+        if template.get("schema") != "local-roots-prelive-proof-v1":
+            errors.append("platform: invalid PRELIVE_PROOF template schema")
+
+    guard = ROOT / "scripts/hbnf_guarded_run.py"
+    if guard.is_file():
+        guard_text = guard.read_text()
+        for required in ("--capsule", "--prelive-proof", "prelive-check"):
+            if required not in guard_text:
+                errors.append(f"HBNF guard is missing platform enforcement token {required}")
+
+    critical = PLATFORM / "cart2-critical-path-v1.json"
+    if critical.is_file():
+        cp = load_json(critical)
+        state_path = ROOT / "config/HBNF_CONTROL_STATE.json"
+        if state_path.is_file():
+            state = load_json(state_path)
+            if cp.get("current_lifecycle") != state.get("lifecycle_state"):
+                errors.append("Cart2 critical path lifecycle does not match HBNF control state")
+        if not cp.get("publication_recovery_invariant"):
+            errors.append("Cart2 critical path lacks publication/recovery consumer invariant")
+
+    required_failure_classes = {
+        "hidden-build-inputs",
+        "timeout-budget-inversion",
+        "restore-evidence-loss",
+        "credential-transport-surprise",
+        "mutable-pointer-role-mismatch",
+        "cloud-asset-reconstruction-risk",
+        "stale-operational-state",
+        "manual-prompt-improvisation",
+    }
+    actual_failure_classes = set(policies.get("failure_class_regressions", {}))
+    missing_failure_classes = sorted(required_failure_classes - actual_failure_classes)
+    if missing_failure_classes:
+        errors.append("platform: missing failure-class controls: " + ", ".join(missing_failure_classes))
 
     result = {
         "schema": "local-roots-platform-doctor-v1",
