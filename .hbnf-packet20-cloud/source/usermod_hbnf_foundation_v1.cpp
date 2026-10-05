@@ -21,8 +21,8 @@ using namespace hbnf_v1;
 namespace {
 
 static const char HBNF_FX_DATA[] PROGMEM = "HBNF Foundation@;;;2";
-static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-matrix-packet20-timing-hook-v1-20261005-r2";
-static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-matrix-packet20-timing-hook-v1-20261005-r2\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-matrix-packet20-timing-hook-v1-20261005-r2\",\"basedOnReleaseId\":\"hbnf-matrix-coordinated-v1-20261002-06\",\"basedOnFirmwareSha256\":\"b9bb60dca1a9be8f7241670a7540810c604465c9adf7084b6efc90d5b4622886\",\"wled\":\"16.0.1\",\"features\":[\"canonical-palette-v1\",\"canonical-overlay-v1\",\"coordinated-ui-v1\"]}";
+static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-matrix-packet20-speedmath-v1-20261005-r3";
+static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-matrix-packet20-speedmath-v1-20261005-r3\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-matrix-packet20-speedmath-v1-20261005-r3\",\"basedOnReleaseId\":\"hbnf-matrix-coordinated-v1-20261002-06\",\"basedOnFirmwareSha256\":\"b9bb60dca1a9be8f7241670a7540810c604465c9adf7084b6efc90d5b4622886\",\"wled\":\"16.0.1\",\"features\":[\"canonical-palette-v1\",\"canonical-overlay-v1\",\"coordinated-ui-v1\"]}";
 static PaletteSelection hbnfPalette{};
 static OverlayState hbnfCommandOverlay{};
 static portMUX_TYPE hbnfOverlayMux=portMUX_INITIALIZER_UNLOCKED;
