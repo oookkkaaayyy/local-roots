@@ -4,6 +4,7 @@ import argparse
 import importlib.util
 import json
 import pathlib
+import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
@@ -129,6 +130,37 @@ finally:
     adapter._get_state = original_get_state
     adapter._post_packet20 = original_post
 
+# The exact raw firmware response must survive before adapter validation. This
+# keeps restoreVerified and failure/reset fields available to offline review.
+restored = json.loads(json.dumps(state))
+restored["HBNF"]["packet20Diagnostic"]["enabled"] = False
+restored["HBNF"]["packet20Diagnostic"]["restoreVerified"] = True
+restored["HBNF"]["packet20Diagnostic"]["lastCommand"] = "restore"
+original_get_state = adapter._get_state
+original_post = adapter._post_packet20
+try:
+    responses = iter((state, restored))
+    adapter._get_state = lambda *_args, **_kwargs: next(responses)
+    adapter._post_packet20 = lambda *_args, **_kwargs: None
+    with tempfile.TemporaryDirectory() as td:
+        snapshot_path = pathlib.Path(td) / "snapshot.json"
+        raw_path = pathlib.Path(td) / "POST_RESTORE_RAW_STATE.json"
+        snapshot_path.write_text(json.dumps(receipt))
+        args = argparse.Namespace(
+            matrix_url=adapter.DEFAULT_MATRIX_URL,
+            http_timeout=0.1,
+            wait_seconds=0.1,
+            expected_release_id=adapter.EXPECTED_RELEASE_ID,
+            snapshot=str(snapshot_path),
+            raw_restore_state=str(raw_path),
+        )
+        assert adapter.command_restore(args) == receipt
+        assert json.loads(raw_path.read_text()) == restored
+        assert json.loads(raw_path.read_text())["HBNF"]["packet20Diagnostic"]["restoreVerified"] is True
+finally:
+    adapter._get_state = original_get_state
+    adapter._post_packet20 = original_post
+
 config = json.loads(
     (ROOT / "config/HBNF_PACKET20_LIVE_SWEEP_ADAPTER_20261004.json").read_text()
 )
@@ -148,6 +180,7 @@ assert r2_config["expected_release_id"] == r2_release
 assert r2_config["timeout_seconds"] == 75
 for command_name in ("snapshot_argv", "select_argv", "telemetry_argv", "restore_argv"):
     assert r2_release in r2_config[command_name]
+assert "{restore_raw_state}" in r2_config["restore_argv"]
 inventory = json.loads(
     (ROOT / "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json").read_text()
 )

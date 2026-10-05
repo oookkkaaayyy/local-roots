@@ -1,5 +1,16 @@
 {
-  "completed_receipts": [],
+  "completed_receipts": [
+    {
+      "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
+      "subject": {
+        "artifact_sha256": "42f2ed58c3b89af95926ee0cf5824a575df9dcf75c7fbb8ead9d6eaff427ee07",
+        "release_id": "hbnf-matrix-packet20-timing-hook-v1-20261005-r2",
+        "source_identity": "d98cc5a94a326f0610238314c542e8c59083d414",
+        "source_identity_type": "git_commit"
+      },
+      "transition_id": "T1_DIAGNOSTIC_CLOSE"
+    }
+  ],
   "current_task": {
     "autonomous_completion_authorization": {
       "allowed": [
@@ -27,8 +38,8 @@
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
     "blockers": [
-      "Packet20 timing/performance acceptance gate fails; Foundation remains unqualified",
-      "Packet21 bounded fix candidate requires exact source/build closure and qualification"
+      "Foundation remains unqualified: r2 trial is diagnostic only, frame-tail and heap-fragmentation gates are not yet qualified, and aggregate medians did not improve in the single paired comparison.",
+      "Additional objective runtime qualification, soak, instrumentation observer-effect, audio/control feature acceptance, clean-room capsule, and physical acceptance remain incomplete."
     ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
@@ -58,10 +69,68 @@
       "replacement_candidate_blocker_file_id": "11YAoeq7XRygMAONHUXCPa1GDLF80ur29",
       "zero_traffic_rehearsal_file_id": "1ZJOseh2J4ls9dGlF_SOH5DHAH9djd4xp"
     },
+    "fix_candidate": {
+      "build_validation": "PASS",
+      "candidate": "hbnf-matrix-packet20-timing-hook-v1-20261005-r2",
+      "capsule_drive_file_id": "1zeONNTW3W4bHYkUbxlZK6XOJulknBLVq",
+      "capsule_zip_sha256": "4eb9bf8cf34e4f2383be111f059290301938c645d59adf29df4bdfd42e91b0fc",
+      "firmware_sha256": "42f2ed58c3b89af95926ee0cf5824a575df9dcf75c7fbb8ead9d6eaff427ee07",
+      "firmware_size_bytes": 1463664,
+      "github_commit": "d98cc5a94a326f0610238314c542e8c59083d414",
+      "github_run_id": "37300973483",
+      "offline_tests": "PASS: full suite including raw restore-state persistence regression, fixed control-state JSON newline serialization, and platform doctor.",
+      "release_capsule_drive_id": "1zeONNTW3W4bHYkUbxlZK6XOJulknBLVq",
+      "release_capsule_sha256": "4eb9bf8cf34e4f2383be111f059290301938c645d59adf29df4bdfd42e91b0fc",
+      "render_cache_patch_sha256": "fb2711140484a140cec35eb2dc90b4b7895a7723cf5bc7561c8e2057dea30b75",
+      "source_sha256": "4449619d41a485126633baf15f35ec5507827587f2a38e6a372b8e5e4f2cab0b",
+      "status": "TRIAL_COMPLETE__NOT_FOUNDATION_QUALIFIED",
+      "unverified_standalone_bin_drive_id": "1Rxq2e_7oc-tE-JpDCP4gjKfsRR4xLPzr",
+      "unverified_standalone_bin_status": "QUARANTINED__READBACK_HASH_DID_NOT_MATCH_LOCAL"
+    },
+    "fix_candidate_run": {
+      "aggregate_comparison": {
+        "note": "single paired comparison; not sufficient to qualify aggregate improvement; candidate not promoted",
+        "r1_fps_median": 10.0,
+        "r1_frame_median_ms": 93.01575,
+        "r1_kernel_median_ms": 70.24025,
+        "r2_fps_median": 9.0,
+        "r2_frame_median_ms": 103.0595,
+        "r2_kernel_median_ms": 78.6545
+      },
+      "control_transition": "FIX_CANDIDATE__T1_DIAGNOSTIC_CLOSE_PASS",
+      "drive_evidence_file_id": "1eb41bj7rwzI69fr5gIzgxHRih8pUHsG-",
+      "drive_evidence_sha256": "2c768dd551678cc954c68ba153eb1cc7a218e17ddcf265f63a299d293e8106e1",
+      "host_tool_restore_capture_fix": "Implemented and regression-tested; full raw restore state is persisted before validation.",
+      "hot_kernel_improvements": {
+        "Hot_Blob_percent": -32.6,
+        "Module_Experiment10_percent": -21.5,
+        "Parametric_Water_percent": -28.4
+      },
+      "install_sequence": 23,
+      "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
+      "installed_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+      "kernel_count": 28,
+      "local_evidence_path": "evidence/hbnf-packet20-fix-candidate-20261005",
+      "packet20_same": true,
+      "recovery_sequence": 24,
+      "recovery_status": "PASS",
+      "release_id": "hbnf-matrix-packet20-timing-hook-v1-20261005-r2",
+      "restore_verification_basis": "Packet20 firmware source sets restoreVerified only from packet20Same; adapter returned success only after verifying restoreVerified=true and diagnostic disabled; host snapshot id/hash matched exactly.",
+      "restore_verified": true,
+      "sha256": "42f2ed58c3b89af95926ee0cf5824a575df9dcf75c7fbb8ead9d6eaff427ee07",
+      "size_bytes": 1463664,
+      "snapshot_hash": 603950329,
+      "snapshot_id": 1,
+      "source_identity": "GitHub build branch hbnf-packet20-safe-point-cloud-20261004 commit d98cc5a94a326f0610238314c542e8c59083d414",
+      "source_sha256": "4449619d41a485126633baf15f35ec5507827587f2a38e6a372b8e5e4f2cab0b",
+      "status": "TRIAL_COMPLETE__NOT_FOUNDATION_QUALIFIED",
+      "sweep_attempts": 1,
+      "sweep_status": "PASS"
+    },
     "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
     "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
-    "installed_release_role": "BASELINE_RECOVERY_VERIFIED__SEQ22",
+    "installed_release_role": "BASELINE_RECOVERY_VERIFIED__SEQ24",
     "last_recovery": {
       "attempts": 1,
       "evidence_drive_file_id": "1cKiC-0hmQrDV4n1uxV4HdZPL6nFPzqXy",
@@ -72,7 +141,7 @@
       "signature_sha256": "d197c58e21010f3a1eec09d47e8e5abc452246355a6ad4f36f40c16b93c98be3"
     },
     "name": "Packet20 fresh 28-kernel run complete; prepare bounded class-level fix candidate",
-    "next_work": "One guarded seq23 local-LAN install of exact r2 BIN, one complete 28-kernel sweep with exact renderer-state restore, then one exact Release07 seq24 local-LAN recovery; no cloud publication or release-state reread.",
+    "next_work": "Close T1 diagnostic stage with direct evidence; retain Release07 as baseline. The r2 trig-cache candidate completed one 28-kernel trial but aggregate medians did not improve and Foundation acceptance remains open. Continue offline analysis and required future qualification only under a new bounded transaction.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "performance_findings": {
       "candidate_fix": "shared render_value polar trig reuse keyed by exact angle; semantics-preserving class-level cache, subject to standalone tests/build/device qualification",
@@ -109,41 +178,24 @@
     ],
     "seq19_diagnostic_incident": "CLOSED_RECOVERED_TO_RELEASE07",
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "PACKET20_COMPLETE__SEQ21_DIAGNOSTIC_RESTORED__SEQ22_RELEASE07_VERIFIED",
+    "status": "PACKET20_R2_TRIAL_COMPLETE__SEQ24_RELEASE07_VERIFIED",
     "target_recovery": {
       "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
       "size_bytes": 1458624
-    },
-    "fix_candidate": {
-      "candidate": "hbnf-matrix-packet20-timing-hook-v1-20261005-r2",
-      "source_sha256": "4449619d41a485126633baf15f35ec5507827587f2a38e6a372b8e5e4f2cab0b",
-      "github_commit": "d98cc5a94a326f0610238314c542e8c59083d414",
-      "github_run_id": "37300973483",
-      "firmware_sha256": "42f2ed58c3b89af95926ee0cf5824a575df9dcf75c7fbb8ead9d6eaff427ee07",
-      "firmware_size_bytes": 1463664,
-      "capsule_drive_file_id": "1zeONNTW3W4bHYkUbxlZK6XOJulknBLVq",
-      "capsule_zip_sha256": "4eb9bf8cf34e4f2383be111f059290301938c645d59adf29df4bdfd42e91b0fc",
-      "render_cache_patch_sha256": "fb2711140484a140cec35eb2dc90b4b7895a7723cf5bc7561c8e2057dea30b75",
-      "status": "BUILD_VALIDATED__AWAITING_GUARDED_SEQ23_28_KERNEL_SWEEP_SEQ24_RELEASE07_RECOVERY",
-      "build_validation": "PASS",
-      "offline_tests": "PASS: control, guarded-run, architecture fitness, runtime qualification static, kernel report, source identity, live sweep, Packet20 adapter, Packet20 build validation, trig cache exactness, and r2 transaction static",
-      "release_capsule_drive_id": "1zeONNTW3W4bHYkUbxlZK6XOJulknBLVq",
-      "release_capsule_sha256": "4eb9bf8cf34e4f2383be111f059290301938c645d59adf29df4bdfd42e91b0fc",
-      "unverified_standalone_bin_drive_id": "1Rxq2e_7oc-tE-JpDCP4gjKfsRR4xLPzr",
-      "unverified_standalone_bin_status": "QUARANTINED__READBACK_HASH_DID_NOT_MATCH_LOCAL"
     }
   },
-  "lifecycle_state": "DIAGNOSTIC_ACTIVE",
+  "lifecycle_state": "FIX_CANDIDATE",
   "live_mutation_authorization": {
     "candidate_sha256": "42f2ed58c3b89af95926ee0cf5824a575df9dcf75c7fbb8ead9d6eaff427ee07",
     "diagnostic_release": "hbnf-matrix-packet20-timing-hook-v1-20261005-r2",
+    "expiry": "Closed after exact Release07 identity/health verification at seq24.",
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-    "scope": "One guarded seq23 exact r2 direct-LAN candidate install, one renderer-safe snapshot and complete all-28 Packet20 sweep, exact renderer-state restore, then one exact Release07 direct-LAN recovery seq24. No other device mutation.",
-    "expiry": "Close live mutation immediately after exact Release07 seq24 identity/health verification or on any defined stop condition.",
+    "scope": "CLOSED: seq23 r2 diagnostic and seq24 exact Release07 recovery completed; no live Matrix or AUX mutation remains authorized by this transaction.",
+    "status": "CLOSED",
     "user_authorization": "Explicitly preauthorized by 2026-10-05 HBNF Cart 2.0 Autonomous Overnight Completion Directive."
   },
-  "live_mutation_authorized": true,
+  "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",
   "phase2_implementation_authorized": false,
   "schema": "hbnf-control-state-v2"

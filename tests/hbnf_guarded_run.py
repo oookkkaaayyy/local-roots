@@ -15,6 +15,7 @@ with tempfile.TemporaryDirectory() as td:
     shutil.copy2(guard,copied_guard)
     shutil.copy2(ROOT/"config/HBNF_CONTROL_MODEL.json",tmp/"config/HBNF_CONTROL_MODEL.json")
     state=json.loads((ROOT/"config/HBNF_CONTROL_STATE.json").read_text())
+    state["lifecycle_state"]="DIAGNOSTIC_ACTIVE"
     state["live_mutation_authorized"]=False
     (tmp/"config/HBNF_CONTROL_STATE.json").write_text(json.dumps(state))
 

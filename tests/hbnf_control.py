@@ -5,6 +5,8 @@ spec=importlib.util.spec_from_file_location("ctrl",ROOT/"scripts/hbnf_control.py
 m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
 model=json.loads((ROOT/"config/HBNF_CONTROL_MODEL.json").read_text())
 state=json.loads((ROOT/"config/HBNF_CONTROL_STATE.json").read_text())
+state["lifecycle_state"]="DIAGNOSTIC_ACTIVE"
+state["completed_receipts"]=[]
 
 assert not m.validate_state(model,state)
 s=m.status(model,state)
@@ -43,6 +45,8 @@ with tempfile.TemporaryDirectory() as d:
     p=pathlib.Path(d)/"stage.json"; p.write_text(json.dumps(receipt))
     st=copy.deepcopy(state); m.advance(model,st,p)
     assert st["lifecycle_state"]=="FIX_CANDIDATE"
+    saved=pathlib.Path(d)/"saved.json"; m.save(saved,st)
+    assert json.loads(saved.read_text())["lifecycle_state"]=="FIX_CANDIDATE"
     assert len(st["completed_receipts"])==1
     assert st["phase2_implementation_authorized"] is False
 

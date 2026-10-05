@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import pathlib
 import sys
 import time
 import urllib.error
@@ -222,11 +223,17 @@ def _wait_state(
     description: str,
     minimum_uptime: Optional[float] = None,
     expected_release_id: Optional[str] = None,
+    evidence_path: Optional[str] = None,
 ) -> Dict[str, Any]:
     deadline = time.monotonic() + wait_seconds
     last: Optional[Dict[str, Any]] = None
     while time.monotonic() < deadline:
         state = _get_state(matrix_url, timeout_http)
+        if evidence_path:
+            pathlib.Path(evidence_path).write_text(
+                json.dumps(state, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
         _require_release(state, expected_release_id)
         last = state
         if minimum_uptime is not None:
@@ -306,6 +313,15 @@ def command_snapshot(args: argparse.Namespace) -> Dict[str, int]:
         minimum_uptime=session_uptime,
         expected_release_id=args.expected_release_id,
     )
+    # Persist the complete firmware response before validating restore flags
+    # or comparing the host snapshot receipt. A failed comparison must retain
+    # the raw state that explains it.
+    raw_restore_path = getattr(args, "raw_restore_state", None)
+    if raw_restore_path:
+        pathlib.Path(raw_restore_path).write_text(
+            json.dumps(state, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
     p20 = _p20(state)
     if str(p20.get("snapshotState")) == "FAILED":
         raise AdapterError("Packet20 firmware reported snapshotState=FAILED")
@@ -489,6 +505,7 @@ def command_restore(args: argparse.Namespace) -> Dict[str, int]:
         "Packet20 exact state restore verification",
         minimum_uptime=session_uptime,
         expected_release_id=args.expected_release_id,
+        evidence_path=getattr(args, "raw_restore_state", None),
     )
     p20 = _p20(state)
     if str(p20.get("snapshotState")) == "FAILED":
@@ -521,6 +538,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     restore = sub.add_parser("restore")
     restore.add_argument("--snapshot", required=True)
+    restore.add_argument("--raw-restore-state")
     return parser
 
 

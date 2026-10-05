@@ -302,7 +302,10 @@ def main():
         run_error=str(e)
     finally:
         try:
-            run_ok(subst(adapter["restore_argv"],{"snapshot_file":str(snapfile)}),timeout=max(timeout,20))
+            run_ok(subst(adapter["restore_argv"],{
+                "snapshot_file":str(snapfile),
+                "restore_raw_state":str(outdir/"POST_RESTORE_RAW_STATE.json")
+            }),timeout=max(timeout,20))
             post_restore_state=run_json(adapter["snapshot_argv"],timeout=timeout)
             (outdir/"POST_RESTORE_STATE.json").write_text(
                 json.dumps(post_restore_state,indent=2,sort_keys=True)+"\n"

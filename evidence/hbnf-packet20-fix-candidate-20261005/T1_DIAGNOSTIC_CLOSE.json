@@ -1,0 +1,54 @@
+{
+  "checks": {
+    "bounded_fix_delta": true,
+    "candidate_artifact_identity": true,
+    "diagnostic_artifact_identity": true,
+    "nonhardware_tests_passed": true,
+    "root_cause_proven": true,
+    "timing_attribution_complete": true
+  },
+  "evidence_artifacts": [
+    {
+      "name": "PACKET20_RANKED_REPORT.md",
+      "sha256": "5c6d5076021873b80d2d545e47a96219773953fd86318ecaaced83987db7c614"
+    },
+    {
+      "name": "PACKET20_R2_RANKED_REPORT.md",
+      "sha256": "53969dab6336873464b83a4dbc62c23464b56c3dfe816b5fa1a4acb518bcd908"
+    },
+    {
+      "name": "PACKET20_R2_RANKED_28.json",
+      "sha256": "f69030194d804a14d372688c84fa5ce90bd5aad4be123e321105fe23182f6b94"
+    },
+    {
+      "name": "PACKET20_R2_PAIRED_28.csv",
+      "sha256": "2a98cfe6e9e1f52a8272dd5252549f0d1d0a1d97ecc698855db8dc666da15945"
+    },
+    {
+      "name": "BUILD_VALIDATION.json",
+      "sha256": "659aa8ed074bc38e12965246ccfb851075070d37bfe0c399871d676174bb8aae"
+    },
+    {
+      "name": "NONHARDWARE_TESTS.json",
+      "sha256": "0a0d66d4e6a48f8928410c10ebadb355e2a6873d457883dbf249d49894701403"
+    },
+    {
+      "name": "TRANSACTION_RESULT.json",
+      "sha256": "7cbcae1e3e6450bc8daed40e66596b031874cf8f20b85509db2c8bcb55f1f84c"
+    },
+    {
+      "name": "RESTORE_VERIFICATION.json",
+      "sha256": "f6712865ebe0a6d9f8937f6eda49828f426a492e4249f0812d9dc208689238fb"
+    }
+  ],
+  "outcome": "PASS",
+  "receipt_type": "diagnostic_close",
+  "schema": "hbnf-stage-receipt-v1",
+  "subject": {
+    "artifact_sha256": "42f2ed58c3b89af95926ee0cf5824a575df9dcf75c7fbb8ead9d6eaff427ee07",
+    "release_id": "hbnf-matrix-packet20-timing-hook-v1-20261005-r2",
+    "source_identity": "d98cc5a94a326f0610238314c542e8c59083d414",
+    "source_identity_type": "git_commit"
+  },
+  "transition_id": "T1_DIAGNOSTIC_CLOSE"
+}

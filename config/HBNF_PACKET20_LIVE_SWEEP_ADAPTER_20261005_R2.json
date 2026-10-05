@@ -62,7 +62,9 @@
     "hbnf-matrix-packet20-timing-hook-v1-20261005-r2",
     "restore",
     "--snapshot",
-    "{snapshot_file}"
+    "{snapshot_file}",
+    "--raw-restore-state",
+    "{restore_raw_state}"
   ],
   "settle_seconds": 5,
   "sample_seconds": 30,

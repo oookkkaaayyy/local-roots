@@ -1,0 +1,22 @@
+{
+  "schema": "hbnf-packet20-r2-restore-verification-evidence-v1",
+  "status": "PASS",
+  "runner_status": "PASS",
+  "snapshot_equal": true,
+  "snapshot_id": 1,
+  "snapshot_hash": 603950329,
+  "post_restore_state": {
+    "snapshotHash": 603950329,
+    "snapshotId": 1
+  },
+  "firmware_restoreVerified": true,
+  "firmware_packet20Same": true,
+  "verification_basis": "Exact r2 usermod source computes verified = packet20Same(packet20Saved, packet20Verify), assigns packet20RestoreVerified = verified, and leaves snapshotState FAILED on false. The restore adapter blocks unless restoreVerified is true, diagnostic enabled is false, and snapshotId/hash match. The adapter returned 0 and the runner emitted PASS with identical snapshotId/hash.",
+  "runtime_raw_restore_response_retained": false,
+  "raw_state_gap": "The 2026-10-05 r2 transaction validated restoreVerified in the adapter but did not persist the complete raw post-restore /json/state response before the host snapshot comparison. The offline host adapter/runner regression fix now writes POST_RESTORE_RAW_STATE.json before verification on future sessions; current actual restore remains established by adapter success plus exact saved-state equality.",
+  "source_identity": {
+    "file": "usermod_hbnf_foundation_v1.cpp",
+    "sha256": "4449619d41a485126633baf15f35ec5507827587f2a38e6a372b8e5e4f2cab0b",
+    "build_commit": "d98cc5a94a326f0610238314c542e8c59083d414"
+  }
+}

@@ -10,7 +10,7 @@ def load(path):
     return json.loads(pathlib.Path(path).read_text())
 
 def save(path,obj):
-    pathlib.Path(path).write_text(json.dumps(obj,indent=2,sort_keys=True)+"\\n")
+    pathlib.Path(path).write_text(json.dumps(obj,indent=2,sort_keys=True)+"\n")
 
 def sha256_file(path):
     h=hashlib.sha256()

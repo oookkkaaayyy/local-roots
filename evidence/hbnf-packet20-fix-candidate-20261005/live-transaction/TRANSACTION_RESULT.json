@@ -1,0 +1,71 @@
+{
+  "aux_ddp_live": true,
+  "candidate": {
+    "build_commit": "d98cc5a94a326f0610238314c542e8c59083d414",
+    "release_id": "hbnf-matrix-packet20-timing-hook-v1-20261005-r2",
+    "sha256": "42f2ed58c3b89af95926ee0cf5824a575df9dcf75c7fbb8ead9d6eaff427ee07",
+    "size_bytes": 1463664,
+    "source_sha256": "4449619d41a485126633baf15f35ec5507827587f2a38e6a372b8e5e4f2cab0b"
+  },
+  "candidate_runtime_identity": {
+    "matrix_mac": "704bca5b345c",
+    "release_id": "hbnf-matrix-packet20-timing-hook-v1-20261005-r2",
+    "uptime": 9
+  },
+  "candidate_upload": {
+    "attempts": 1,
+    "curl_exit": 0,
+    "http_status": "200",
+    "response_bytes": 404,
+    "response_contains_update_successful": true,
+    "response_sha256": "e989fc00de0b0d87a74771439a95cb6b231dac0ede16865104c2251612c6a128",
+    "retry_performed": false,
+    "stderr": ""
+  },
+  "candidate_upload_attempts": 1,
+  "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
+  "installed_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+  "matrix_mac": "704bca5b345c",
+  "matrix_uptime": 16,
+  "pre_candidate_identity": {
+    "matrix_mac": "704bca5b345c",
+    "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
+    "uptime": 3072
+  },
+  "recovery": {
+    "firmware_bytes": 1458624,
+    "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "manifest_sha256": "7741978130173a84d3f96aa80dd31a4ab8f6657d4810bdf492bc170f653a61b3",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
+    "role": "recovery",
+    "sequence": 20,
+    "signature_sha256": "d197c58e21010f3a1eec09d47e8e5abc452246355a6ad4f36f40c16b93c98be3",
+    "signature_valid": true
+  },
+  "recovery_status": "PASS",
+  "recovery_upload": {
+    "attempts": 1,
+    "curl_exit": 0,
+    "http_status": "200",
+    "response_bytes": 404,
+    "response_contains_update_successful": true,
+    "response_sha256": "e989fc00de0b0d87a74771439a95cb6b231dac0ede16865104c2251612c6a128",
+    "retry_performed": false,
+    "stderr": ""
+  },
+  "recovery_upload_attempts": 1,
+  "renderer_restore": {
+    "post_restore_state": "/private/tmp/hbnf-cart2-recovery-resume-20261005/evidence/hbnf-packet20-fix-candidate-20261005/live-transaction/live-sweep/POST_RESTORE_STATE.json",
+    "pre_sweep_state": "/private/tmp/hbnf-cart2-recovery-resume-20261005/evidence/hbnf-packet20-fix-candidate-20261005/live-transaction/live-sweep/PRE_SWEEP_STATE.json",
+    "snapshot_equal": true,
+    "status": "PASS"
+  },
+  "schema": "hbnf-packet20-r2-live-transaction-v1",
+  "seq23_ledger_write": "PASS_WITHOUT_READBACK",
+  "seq24_ledger_write": "PASS_WITHOUT_READBACK",
+  "status": "PASS",
+  "sweep_attempts": 1,
+  "sweep_exit_code": 0,
+  "sweep_status": "PASS"
+}
