@@ -1,0 +1,87 @@
+{
+  "schema": "local-roots-golden-path-v1",
+  "id": "artifact-release",
+  "purpose": "Produce one immutable artifact whose source, build inputs, digest, rollback, and deployment are bound together.",
+  "required_repo_inputs": [
+    "AGENTS.md"
+  ],
+  "stages": [
+    {
+      "id": "materialize-inputs",
+      "kind": "preflight",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "declared complete inputs"
+      ]
+    },
+    {
+      "id": "build",
+      "kind": "work",
+      "mutation": false,
+      "retry_policy": "explicit_only",
+      "outputs": [
+        "artifact"
+      ]
+    },
+    {
+      "id": "attest",
+      "kind": "verification",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "artifact digest",
+        "source identity",
+        "workflow/build identity"
+      ]
+    },
+    {
+      "id": "promote",
+      "kind": "evidence",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "durable artifact pointer"
+      ]
+    },
+    {
+      "id": "deploy",
+      "kind": "deployment",
+      "mutation": true,
+      "retry_policy": "explicit_only",
+      "rollback": {
+        "strategy": "restore exact registered recovery artifact"
+      },
+      "outputs": [
+        "installed/deployed identity"
+      ]
+    },
+    {
+      "id": "verify",
+      "kind": "verification",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "runtime smoke/acceptance result"
+      ]
+    },
+    {
+      "id": "record",
+      "kind": "evidence",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "terminal summary and provenance pointer"
+      ]
+    }
+  ],
+  "terminal_recovery": "Any deployment failure restores the exact pre-registered recovery artifact; never rebuild a rollback artifact during the incident.",
+  "expected_terminal_outputs": [
+    "artifact sha256",
+    "source identity",
+    "build/workflow identity",
+    "recovery identity",
+    "runtime result",
+    "durable evidence pointer"
+  ]
+}
