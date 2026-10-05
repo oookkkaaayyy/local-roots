@@ -40,6 +40,16 @@
       "requirement": "candidate version must be included in the current split deployment at 0% before override requests can target it",
       "verification_header": "Cloudflare-Workers-Version-Overrides: hbnf-matrix-firmware-stable=\"<candidate-version-id>\"",
       "rollback_after_smoke": "rollback or deploy the exact prior stable version ID to 100%; Cloudflare creates a NEW deployment object, so success criterion is exact prior VERSION restored at 100%, not reuse of the old deployment ID"
+    },
+    "selective_worker_first": {
+      "official_cloudflare_setting": "assets.run_worker_first",
+      "accepted_forms": "true or an array of route patterns",
+      "hbnf_preferred_scope": [
+        "/firmware/matrix/stable/latest.json",
+        "/firmware/matrix/stable/latest.json.sig"
+      ],
+      "rule": "Prefer exact updater paths; do not set run_worker_first globally unless a narrower selective configuration is impossible.",
+      "preserve_other_assets": "All other paths remain asset-first and reuse the current asset set with keep_assets=true."
     }
   },
   "current_hbnf_application": {
@@ -56,8 +66,11 @@
     ],
     "current_preview_blocker": {
       "candidate_version": "e4d31b2b-a9c1-4797-b5df-b8ad0121df6d",
-      "version_url_result": "HTTP 403 / Cloudflare error 1010",
-      "disposition": "NOT irreducible; use documented 0%-traffic version-override smoke-test fallback"
+      "zero_traffic_rehearsal_result": "BLOCKED",
+      "observed_behavior": "Override request returned the stable seq19 static latest.json/latest.json.sig even when targeting the candidate at 0% because candidate assets are asset-first.",
+      "evidence": "Drive folder 1LwC5lYDwFT_bEJo9cVxDMTcJe-IF6BYr / ZERO_TRAFFIC_REHEARSAL.json",
+      "root_cause": "Candidate asset config has raw_run_worker_first=false and serve_directly=true; exact updater paths match preserved static assets so Worker code is bypassed.",
+      "resolution": "Create a replacement candidate version using the same keep_assets=true preservation path but configure assets.run_worker_first selectively for /firmware/matrix/stable/latest.json and /firmware/matrix/stable/latest.json.sig (or the narrowest wildcard proven necessary). Rehearse the replacement at 0% with version override before any device mutation."
     }
   },
   "official_doc_facts": [
