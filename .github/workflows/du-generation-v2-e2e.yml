@@ -1,14 +1,9 @@
 name: D&U Generation V2 isolated E2E
 
+# Emergency quota lock 2026-10-04: automatic hosted E2E is disabled.
+# Manual dispatch remains available when explicitly authorized.
 on:
-  push:
-    branches: [du-visual-generation-backend]
-    paths:
-      - '.github/workflows/du-generation-v2-e2e.yml'
-      - 'tests/du-generation-e2e/**'
-      - 'supabase/functions/du-admin/**'
-      - 'supabase/migrations/20261004214908_add_du_generation_attempt_orchestration.sql'
-      - 'supabase/migrations/20261004230000_add_du_generation_style_reference_library.sql'
+  workflow_dispatch:
 
 permissions:
   contents: read
