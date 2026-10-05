@@ -1,0 +1,480 @@
+{
+  "aggregate_sampled_frame_avg_ms_p50": 18.688499999999998,
+  "aggregate_sampled_frame_avg_ms_p95": 27.485,
+  "aggregate_sampled_frame_avg_ms_p99": 30.053,
+  "aggregate_sampled_kernel_avg_ms_p95": 16.07,
+  "continuity_failures": [],
+  "data_semantics": "Percentiles below are across once-per-second samples of the latest completed frame-profile average; they are NOT per-frame latency percentiles and do not satisfy the Foundation p95/p99 contract. Heap minimum is the minimum sampled free heap, not ESP minimum-ever watermark or largest-free-block fragmentation.",
+  "kernel_count": 28,
+  "largest_free_block": "NOT_AVAILABLE",
+  "minimum_heap_watermark": "NOT_AVAILABLE",
+  "minimum_observed_free_heap_bytes": 118536,
+  "packet20_restore": {
+    "diagnostic_enabled": false,
+    "restoreVerified": true,
+    "snapshotHash": 1266573212,
+    "snapshotId": 1,
+    "snapshotState": "READY"
+  },
+  "per_kernel": [
+    {
+      "first_uptime_s": 16.0,
+      "frame_sample_avg_ms_p50": 24.237,
+      "frame_sample_avg_ms_p95": 28.465,
+      "frame_sample_avg_ms_p99": 29.155,
+      "kernel": "Complex_Kaleido_3",
+      "kernel_sample_avg_ms_p95": 14.68,
+      "last_uptime_s": 47.0,
+      "maximum_observed_free_heap_bytes": 127372,
+      "minimum_observed_free_heap_bytes": 124876,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 24,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 53.0,
+      "frame_sample_avg_ms_p50": 20.602,
+      "frame_sample_avg_ms_p95": 24.108,
+      "frame_sample_avg_ms_p99": 24.55,
+      "kernel": "Big_Caleido",
+      "kernel_sample_avg_ms_p95": 10.926,
+      "last_uptime_s": 83.0,
+      "maximum_observed_free_heap_bytes": 127372,
+      "minimum_observed_free_heap_bytes": 118536,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 23,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 89.0,
+      "frame_sample_avg_ms_p50": 21.924500000000002,
+      "frame_sample_avg_ms_p95": 23.75,
+      "frame_sample_avg_ms_p99": 25.868,
+      "kernel": "Parametric_Water",
+      "kernel_sample_avg_ms_p95": 13.037,
+      "last_uptime_s": 120.0,
+      "maximum_observed_free_heap_bytes": 127380,
+      "minimum_observed_free_heap_bytes": 120148,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 24,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 126.0,
+      "frame_sample_avg_ms_p50": 18.834,
+      "frame_sample_avg_ms_p95": 22.289,
+      "frame_sample_avg_ms_p99": 22.329,
+      "kernel": "RGB_Blobs5",
+      "kernel_sample_avg_ms_p95": 8.998,
+      "last_uptime_s": 157.0,
+      "maximum_observed_free_heap_bytes": 127368,
+      "minimum_observed_free_heap_bytes": 126440,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 24,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 163.0,
+      "frame_sample_avg_ms_p50": 21.686,
+      "frame_sample_avg_ms_p95": 24.4,
+      "frame_sample_avg_ms_p99": 24.513,
+      "kernel": "Polar_Waves",
+      "kernel_sample_avg_ms_p95": 11.281,
+      "last_uptime_s": 193.0,
+      "maximum_observed_free_heap_bytes": 127380,
+      "minimum_observed_free_heap_bytes": 125324,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 23,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 199.0,
+      "frame_sample_avg_ms_p50": 13.587499999999999,
+      "frame_sample_avg_ms_p95": 17.144,
+      "frame_sample_avg_ms_p99": 18.455,
+      "kernel": "Zoom2",
+      "kernel_sample_avg_ms_p95": 4.246,
+      "last_uptime_s": 231.0,
+      "maximum_observed_free_heap_bytes": 127372,
+      "minimum_observed_free_heap_bytes": 125140,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 24,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 237.0,
+      "frame_sample_avg_ms_p50": 26.1845,
+      "frame_sample_avg_ms_p95": 29.478,
+      "frame_sample_avg_ms_p99": 29.73,
+      "kernel": "Complex_Kaleido_4",
+      "kernel_sample_avg_ms_p95": 16.341,
+      "last_uptime_s": 268.0,
+      "maximum_observed_free_heap_bytes": 127392,
+      "minimum_observed_free_heap_bytes": 125308,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 24,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 274.0,
+      "frame_sample_avg_ms_p50": 15.0815,
+      "frame_sample_avg_ms_p95": 18.625,
+      "frame_sample_avg_ms_p99": 19.894,
+      "kernel": "Complex_Kaleido_6",
+      "kernel_sample_avg_ms_p95": 5.237,
+      "last_uptime_s": 305.0,
+      "maximum_observed_free_heap_bytes": 127372,
+      "minimum_observed_free_heap_bytes": 124876,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 24,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 311.0,
+      "frame_sample_avg_ms_p50": 25.137500000000003,
+      "frame_sample_avg_ms_p95": 28.278,
+      "frame_sample_avg_ms_p99": 28.675,
+      "kernel": "Water",
+      "kernel_sample_avg_ms_p95": 14.664,
+      "last_uptime_s": 342.0,
+      "maximum_observed_free_heap_bytes": 127360,
+      "minimum_observed_free_heap_bytes": 125316,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 24,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 347.0,
+      "frame_sample_avg_ms_p50": 26.927500000000002,
+      "frame_sample_avg_ms_p95": 31.662,
+      "frame_sample_avg_ms_p99": 31.692,
+      "kernel": "RGB_Blobs4",
+      "kernel_sample_avg_ms_p95": 17.743,
+      "last_uptime_s": 378.0,
+      "maximum_observed_free_heap_bytes": 127392,
+      "minimum_observed_free_heap_bytes": 125320,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 24,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 384.0,
+      "frame_sample_avg_ms_p50": 13.922,
+      "frame_sample_avg_ms_p95": 16.522,
+      "frame_sample_avg_ms_p99": 17.622,
+      "kernel": "Complex_Kaleido_5",
+      "kernel_sample_avg_ms_p95": 4.674,
+      "last_uptime_s": 414.0,
+      "maximum_observed_free_heap_bytes": 127372,
+      "minimum_observed_free_heap_bytes": 124060,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 23,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 420.0,
+      "frame_sample_avg_ms_p50": 27.7245,
+      "frame_sample_avg_ms_p95": 30.368,
+      "frame_sample_avg_ms_p99": 31.485,
+      "kernel": "Spiralus2",
+      "kernel_sample_avg_ms_p95": 15.56,
+      "last_uptime_s": 450.0,
+      "maximum_observed_free_heap_bytes": 127372,
+      "minimum_observed_free_heap_bytes": 125036,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 22,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 456.0,
+      "frame_sample_avg_ms_p50": 18.901,
+      "frame_sample_avg_ms_p95": 22.725,
+      "frame_sample_avg_ms_p99": 24.19,
+      "kernel": "Hot_Blob",
+      "kernel_sample_avg_ms_p95": 8.572,
+      "last_uptime_s": 487.0,
+      "maximum_observed_free_heap_bytes": 127372,
+      "minimum_observed_free_heap_bytes": 125308,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 23,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 492.0,
+      "frame_sample_avg_ms_p50": 17.987,
+      "frame_sample_avg_ms_p95": 23.346,
+      "frame_sample_avg_ms_p99": 23.546,
+      "kernel": "Caleido3",
+      "kernel_sample_avg_ms_p95": 8.675,
+      "last_uptime_s": 523.0,
+      "maximum_observed_free_heap_bytes": 127396,
+      "minimum_observed_free_heap_bytes": 124864,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 23,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 529.0,
+      "frame_sample_avg_ms_p50": 14.282,
+      "frame_sample_avg_ms_p95": 17.296,
+      "frame_sample_avg_ms_p99": 21.21,
+      "kernel": "Waves",
+      "kernel_sample_avg_ms_p95": 5.011,
+      "last_uptime_s": 559.0,
+      "maximum_observed_free_heap_bytes": 127376,
+      "minimum_observed_free_heap_bytes": 124828,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 23,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 565.0,
+      "frame_sample_avg_ms_p50": 14.9155,
+      "frame_sample_avg_ms_p95": 17.617,
+      "frame_sample_avg_ms_p99": 19.372,
+      "kernel": "Chasing_Spirals",
+      "kernel_sample_avg_ms_p95": 5.565,
+      "last_uptime_s": 596.0,
+      "maximum_observed_free_heap_bytes": 127372,
+      "minimum_observed_free_heap_bytes": 125144,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 24,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 602.0,
+      "frame_sample_avg_ms_p50": 19.051000000000002,
+      "frame_sample_avg_ms_p95": 23.442,
+      "frame_sample_avg_ms_p99": 23.695,
+      "kernel": "Rotating_Blob",
+      "kernel_sample_avg_ms_p95": 9.106,
+      "last_uptime_s": 633.0,
+      "maximum_observed_free_heap_bytes": 127372,
+      "minimum_observed_free_heap_bytes": 120572,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 24,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 638.0,
+      "frame_sample_avg_ms_p50": 14.206,
+      "frame_sample_avg_ms_p95": 18.073,
+      "frame_sample_avg_ms_p99": 20.03,
+      "kernel": "Center_Field",
+      "kernel_sample_avg_ms_p95": 4.665,
+      "last_uptime_s": 669.0,
+      "maximum_observed_free_heap_bytes": 127396,
+      "minimum_observed_free_heap_bytes": 122404,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 23,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 674.0,
+      "frame_sample_avg_ms_p50": 15.727,
+      "frame_sample_avg_ms_p95": 18.39,
+      "frame_sample_avg_ms_p99": 18.797,
+      "kernel": "Distance_Experiment",
+      "kernel_sample_avg_ms_p95": 6.545,
+      "last_uptime_s": 705.0,
+      "maximum_observed_free_heap_bytes": 127372,
+      "minimum_observed_free_heap_bytes": 121376,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 24,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 711.0,
+      "frame_sample_avg_ms_p50": 17.018,
+      "frame_sample_avg_ms_p95": 19.847,
+      "frame_sample_avg_ms_p99": 20.854,
+      "kernel": "Lava1",
+      "kernel_sample_avg_ms_p95": 7.701,
+      "last_uptime_s": 743.0,
+      "maximum_observed_free_heap_bytes": 127360,
+      "minimum_observed_free_heap_bytes": 123240,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 24,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 749.0,
+      "frame_sample_avg_ms_p50": 18.084,
+      "frame_sample_avg_ms_p95": 22.978,
+      "frame_sample_avg_ms_p99": 25.387,
+      "kernel": "Caleido2",
+      "kernel_sample_avg_ms_p95": 8.383,
+      "last_uptime_s": 780.0,
+      "maximum_observed_free_heap_bytes": 127376,
+      "minimum_observed_free_heap_bytes": 124876,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 24,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 786.0,
+      "frame_sample_avg_ms_p50": 17.667,
+      "frame_sample_avg_ms_p95": 20.302,
+      "frame_sample_avg_ms_p99": 20.468,
+      "kernel": "Yves",
+      "kernel_sample_avg_ms_p95": 7.631,
+      "last_uptime_s": 817.0,
+      "maximum_observed_free_heap_bytes": 127360,
+      "minimum_observed_free_heap_bytes": 118552,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 24,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 823.0,
+      "frame_sample_avg_ms_p50": 15.425,
+      "frame_sample_avg_ms_p95": 19.595,
+      "frame_sample_avg_ms_p99": 23.481,
+      "kernel": "Scaledemo1",
+      "kernel_sample_avg_ms_p95": 6.62,
+      "last_uptime_s": 854.0,
+      "maximum_observed_free_heap_bytes": 127460,
+      "minimum_observed_free_heap_bytes": 124536,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 23,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 860.0,
+      "frame_sample_avg_ms_p50": 12.593,
+      "frame_sample_avg_ms_p95": 16.396,
+      "frame_sample_avg_ms_p99": 18.542,
+      "kernel": "Zoom",
+      "kernel_sample_avg_ms_p95": 3.317,
+      "last_uptime_s": 892.0,
+      "maximum_observed_free_heap_bytes": 127376,
+      "minimum_observed_free_heap_bytes": 123024,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 23,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 897.0,
+      "frame_sample_avg_ms_p50": 18.494,
+      "frame_sample_avg_ms_p95": 20.987,
+      "frame_sample_avg_ms_p99": 23.204,
+      "kernel": "Complex_Kaleido",
+      "kernel_sample_avg_ms_p95": 9.329,
+      "last_uptime_s": 928.0,
+      "maximum_observed_free_heap_bytes": 127372,
+      "minimum_observed_free_heap_bytes": 124844,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 24,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 934.0,
+      "frame_sample_avg_ms_p50": 18.351999999999997,
+      "frame_sample_avg_ms_p95": 21.886,
+      "frame_sample_avg_ms_p99": 22.169,
+      "kernel": "RGB_Blobs3",
+      "kernel_sample_avg_ms_p95": 9.002,
+      "last_uptime_s": 965.0,
+      "maximum_observed_free_heap_bytes": 127376,
+      "minimum_observed_free_heap_bytes": 124284,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 24,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 970.0,
+      "frame_sample_avg_ms_p50": 22.3095,
+      "frame_sample_avg_ms_p95": 26.363,
+      "frame_sample_avg_ms_p99": 28.828,
+      "kernel": "SM5",
+      "kernel_sample_avg_ms_p95": 11.371,
+      "last_uptime_s": 1001.0,
+      "maximum_observed_free_heap_bytes": 127372,
+      "minimum_observed_free_heap_bytes": 124096,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 24,
+      "uptime_monotonic": true
+    },
+    {
+      "first_uptime_s": 1007.0,
+      "frame_sample_avg_ms_p50": 22.939,
+      "frame_sample_avg_ms_p95": 27.43,
+      "frame_sample_avg_ms_p99": 28.654,
+      "kernel": "Module_Experiment10",
+      "kernel_sample_avg_ms_p95": 14.398,
+      "last_uptime_s": 1037.0,
+      "maximum_observed_free_heap_bytes": 127372,
+      "minimum_observed_free_heap_bytes": 124764,
+      "restart_counts": [
+        0
+      ],
+      "sample_count": 23,
+      "uptime_monotonic": true
+    }
+  ],
+  "restart_counts": [
+    0
+  ],
+  "sample_count_total": 660,
+  "schema": "hbnf-r4-sampled-tail-heap-audit-v1",
+  "status": "PASS",
+  "true_frame_tail_metrics": "NOT_AVAILABLE",
+  "uptime_range_s": [
+    16.0,
+    1037.0
+  ]
+}

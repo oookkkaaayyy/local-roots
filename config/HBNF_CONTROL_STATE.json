@@ -168,6 +168,8 @@
       "build_run_id": "37360339891",
       "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4",
       "control_transition": "FIX_CANDIDATE__R4_TRIAL_PASS_FOUNDATION_GATES_OPEN",
+      "drive_live_evidence_id": "1qYBS-FS5Z6mJxdD1y9EKDob5AINgku93",
+      "drive_paired_report_id": "1FIX1pxguG6LGYebDe7tg2rjUU4bUIfwt",
       "evidence_path": "evidence/hbnf-packet20-fix-candidate-20261005/r4-live-transaction",
       "install_sequence": 25,
       "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
@@ -179,6 +181,22 @@
       "recovery_status": "PASS",
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4",
       "restore_verified": true,
+      "sampled_tail_heap_audit": {
+        "aggregate_sampled_frame_average_p50_ms": 18.6885,
+        "aggregate_sampled_frame_average_p95_ms": 27.485,
+        "aggregate_sampled_frame_average_p99_ms": 30.053,
+        "limitation": "These are percentiles across one-second samples of the latest completed frame average, not per-frame tails. ESP minimum-ever free-heap watermark and largest free block are unavailable in this diagnostic contract.",
+        "min_observed_free_heap_bytes": 118536,
+        "restart_counts": [
+          0
+        ],
+        "sample_count": 660,
+        "status": "PASS",
+        "uptime_seconds": [
+          16,
+          1037
+        ]
+      },
       "sha256": "3e11aa102309b5f871ea8ada339c90d0c1c9dfe1451a5c4f76958dba92a1156c",
       "size_bytes": 1486336,
       "snapshot_hash": 1266573212,
@@ -218,7 +236,7 @@
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Packet20 fresh 28-kernel run complete; prepare bounded class-level fix candidate",
-    "next_work": "Continue Foundation qualification against R4: quantify observer effect, obtain true frame-tail and heap-fragmentation evidence, complete bounded soak plus audio/control/feature regression gates, and preserve Release07 exact rollback. Do not advance lifecycle until objective gates pass.",
+    "next_work": "Foundation remains unqualified. Complete the measurement-capability closure for true frame p50/p95/p99/max, minimum-ever heap and largest-free-block fragmentation, and instrumented-versus-lightweight observer effect. Then freeze baseline-relative thresholds and execute the 90-minute soak plus runtime/control acceptance. Preserve exact Release07 rollback.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "performance_findings": {
       "candidate_fix": "FastLED 3.10.4 bounded fixed-point Animartrix backport; R4 achieved a 42 FPS median across 28 kernels, 8.329 ms median kernel time, with 28 improved and 0 regressed. Material gain confirmed; continue Foundation gates.",
@@ -265,6 +283,8 @@
       "r4_trial": {
         "evidence_path": "evidence/hbnf-packet20-fix-candidate-20261005/r4-live-transaction",
         "improved_kernels": 28,
+        "live_evidence_drive_file_id": "1qYBS-FS5Z6mJxdD1y9EKDob5AINgku93",
+        "paired_report_drive_file_id": "1FIX1pxguG6LGYebDe7tg2rjUU4bUIfwt",
         "paired_report_drive_pending": true,
         "r1_median_fps": 10,
         "r1_median_frame_ms": 93.01575,
@@ -273,6 +293,22 @@
         "r4_median_frame_ms": 18.423,
         "r4_median_kernel_ms": 8.329,
         "regressed_kernels": 0,
+        "sampled_tail_heap_audit": {
+          "aggregate_sampled_frame_average_p50_ms": 18.6885,
+          "aggregate_sampled_frame_average_p95_ms": 27.485,
+          "aggregate_sampled_frame_average_p99_ms": 30.053,
+          "limitation": "These are percentiles across one-second samples of the latest completed frame average, not per-frame tails. ESP minimum-ever free-heap watermark and largest free block are unavailable in this diagnostic contract.",
+          "min_observed_free_heap_bytes": 118536,
+          "restart_counts": [
+            0
+          ],
+          "sample_count": 660,
+          "status": "PASS",
+          "uptime_seconds": [
+            16,
+            1037
+          ]
+        },
         "status": "PASS_MATERIAL_IMPROVEMENT"
       },
       "report_drive_file_id": "1QhUQTFX4b3Uc5iLMxT4nKeK4t50a-Mw8",
