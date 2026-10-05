@@ -1,0 +1,3 @@
+firmware_bytes=1488768
+ota_slot_bytes=1572864
+ota_headroom_bytes=84096

@@ -1,0 +1,19 @@
+Resolving hbnf_matrix_wled16_packet20_diag dependencies...
+Platform espressif32 @ 2024.6.0 (required: https://github.com/tasmota/platform-espressif32/releases/download/2024.06.00/platform-espressif32.zip)
+├── framework-arduinoespressif32 @ 2.0.18+sha.8ba0dc0 (required: https://github.com/tasmota/arduino-esp32/releases/download/2.0.18/framework-arduinoespressif32.zip)
+├── tool-esptoolpy @ 4.7.4 (required: https://github.com/tasmota/esptool/releases/download/v4.7.4/esptool.zip)
+├── tool-mklittlefs @ 3.2.0 (required: tasmota/tool-mklittlefs @ ^3.2.0)
+├── toolchain-riscv32-esp @ 8.4.0+2021r2-patch5 (required: espressif/toolchain-riscv32-esp @ 8.4.0+2021r2-patch5)
+└── toolchain-xtensa-esp32 @ 8.4.0+2021r2-patch5 (required: espressif/toolchain-xtensa-esp32 @ 8.4.0+2021r2-patch5)
+
+Libraries
+├── AnimatedGIF @ 1.4.7 (required: bitbank2/AnimatedGIF @ ^1.4.7)
+├── AsyncMqttClient @ 0.9.0 (required: marvinroger/AsyncMqttClient @ 0.9.0)
+│   └── AsyncTCP @ 3.4.7 (required: AsyncTCP @ >=1.1.1)
+├── ESPAsyncWebServerWLED @ 2.4.2+sha.39b830c (required: git+https://github.com/Aircoookie/ESPAsyncWebServer.git#v2.4.2)
+├── GifDecoder @ 1.1.0+sha.bc3af18 (required: git+https://github.com/Aircoookie/GifDecoder.git#bc3af189b6b1e06946569f6b4287f0b79a860f8e)
+├── IRremoteESP8266 @ 2.8.2 (required: IRremoteESP8266 @ 2.8.2)
+├── NeoPixelBus @ 2.8.4+sha.1d7ff38 (required: git+https://github.com/Makuna/NeoPixelBus.git#1d7ff38f14d04a976f9c6e365c83a232bcba04fc)
+├── QuickEspNow @ 0.8.1+sha.2985a4a (required: git+https://github.com/blazoncek/QuickESPNow.git#optional-debug)
+├── animartrix @ 0.0.0+20261005213653.sha.81eb09b (required: git+https://github.com/netmindz/animartrix.git#81eb09b91c8c9c8c01f8ea442787f8127d56c72f)
+└── esp_dmx @ 3.1.1+sha.47db25d8 (required: git+https://github.com/someweisguy/esp_dmx.git#47db25d8c515e76fabcf5fc5ab0b786f98eeade0)

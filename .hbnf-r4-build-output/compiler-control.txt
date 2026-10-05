@@ -1,0 +1,41 @@
+
+  #define FL_FAST_MATH_END   _Pragma("clang diagnostic pop")
+
+#elif defined(FL_IS_GCC)
+  #define FL_FAST_MATH_BEGIN \
+    _Pragma("GCC push_options") \
+    _Pragma("GCC optimize (\"fast-math\")") \
+    _Pragma("GCC optimize (\"tree-vectorize\")") \
+    _Pragma("GCC optimize (\"unroll-loops\")")
+
+  #define FL_FAST_MATH_END   _Pragma("GCC pop_options")
+
+#elif defined(FL_IS_WIN_MSVC)
+  #define FL_FAST_MATH_BEGIN __pragma(float_control(precise, off))
+  #define FL_FAST_MATH_END   __pragma(float_control(precise, on))
+#else
+  #define FL_FAST_MATH_BEGIN /* nothing */
+  #define FL_FAST_MATH_END   /* nothing */
+#endif
+
+// Optimization Level O3
+// GCC: #pragma GCC optimize("O3") forces O3 regardless of command-line level.
+// Clang: Has NO equivalent pragma — #pragma clang optimize on/off only
+//   toggles between disabled and the command-line level (e.g., -O0 in debug).
+//   Instead, we push __attribute__((hot)) onto all functions in the region
+//   as a best-effort hint. For true forced optimization in -O0 builds on
+//   Clang, the build system must set per-file -O2/-O3 flags.
+#if defined(FL_IS_CLANG)
+  #define FL_OPTIMIZATION_LEVEL_O3_BEGIN \
+    _Pragma("clang attribute push(__attribute__((hot)), apply_to = function)")
+  #define FL_OPTIMIZATION_LEVEL_O3_END \
+    _Pragma("clang attribute pop")
+
+#elif defined(FL_IS_GCC)
+  #define FL_OPTIMIZATION_LEVEL_O3_BEGIN \
+    _Pragma("GCC push_options") \
+    _Pragma("GCC optimize (\"O3\")")
+
+  #define FL_OPTIMIZATION_LEVEL_O3_END   _Pragma("GCC pop_options")
+#else
+  #define FL_OPTIMIZATION_LEVEL_O3_BEGIN /* nothing */
