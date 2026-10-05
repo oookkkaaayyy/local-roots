@@ -61,5 +61,39 @@
     "unsupported_eta_prohibited": true,
     "allowed_basis": "measured stage durations from a validated path plus explicitly identified irreducible unknowns",
     "preparation_is_not_completion": true
+  },
+  "failure_class_regressions": {
+    "hidden-build-inputs": {
+      "symptom": "remote build reveals missing dependency/vendor/generated input in successive paid attempts",
+      "prevention": "complete local dependency/vendor/generated-input closure and fail closed before paid build"
+    },
+    "timeout-budget-inversion": {
+      "symptom": "outer process timeout is shorter than worst-case nested calls",
+      "prevention": "machine validator requires outer >= inner_calls * inner_timeout + margin"
+    },
+    "restore-evidence-loss": {
+      "symptom": "host comparison raises before actual post-restore state is preserved",
+      "prevention": "persist raw observed state/evidence before evaluating equality or raising"
+    },
+    "credential-transport-surprise": {
+      "symptom": "live execution stops on SSH/browser/password/host-key interaction",
+      "prevention": "prove noninteractive worker transport and exact identity before live stage; user credential entry cannot be a hidden runtime dependency"
+    },
+    "mutable-pointer-role-mismatch": {
+      "symptom": "valid signed recovery exists but consumer reads a different mutable pointer/role",
+      "prevention": "test the actual consumer URL/role contract and rehearse every required pointer transition before diagnostic install"
+    },
+    "cloud-asset-reconstruction-risk": {
+      "symptom": "recovery publication would require rebuilding an incompletely captured live asset set",
+      "prevention": "capture exact deployable version/artifact or provider-native rollback identity before mutation; never reconstruct production during incident response"
+    },
+    "stale-operational-state": {
+      "symptom": "machine-readable control state still describes a closed blocker and drives wrong next action",
+      "prevention": "update operational state immediately when a blocker is closed or superseded; platform doctor treats stale cross-contract identity as failure"
+    },
+    "manual-prompt-improvisation": {
+      "symptom": "worker prompt changes execution mechanics after mutation begins",
+      "prevention": "generate worker directive from validated capsule; no silent substitutions after execution starts"
+    }
   }
 }
