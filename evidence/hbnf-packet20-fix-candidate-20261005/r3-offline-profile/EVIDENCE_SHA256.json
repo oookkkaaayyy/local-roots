@@ -1,0 +1,38 @@
+{
+  "evidence/hbnf-packet20-fix-candidate-20261005/PACKET20_R3_COMPILER_MATH_RESULT.md": {
+    "sha256": "d8d14197bb978830d496cb64229369a13c88be2ff6d1be1e3e82d8136a442cfd",
+    "bytes": 4281
+  },
+  "evidence/hbnf-packet20-fix-candidate-20261005/r3-build-capsule.json": {
+    "sha256": "f6d725a5809f02c24c24fee724c760845ccd77c80eb8658bb944525cc189af43",
+    "bytes": 6867
+  },
+  "evidence/hbnf-packet20-fix-candidate-20261005/r3-offline-profile/R3_RESULT.json": {
+    "sha256": "0d320c470293c7a9232790c91b447a4854f51b842dee70e80d5089caad7784e2",
+    "bytes": 3004
+  },
+  "evidence/hbnf-packet20-fix-candidate-20261005/r3-offline-profile/PACKET20_R3_STATIC_CALL_COUNTS.json": {
+    "sha256": "30a2d942ef2de8df8c9254d2e844a10bda80a88738bd681629eb53bbf54a8e6a",
+    "bytes": 14372
+  },
+  "evidence/hbnf-packet20-fix-candidate-20261005/r3-offline-profile/HOST_MICROBENCH_RESULTS.json": {
+    "sha256": "717517584771e680d63656df4f765e95c114f687ae9dcd16da8fc6bab5d9e1b4",
+    "bytes": 1014
+  },
+  "evidence/hbnf-packet20-fix-candidate-20261005/r3-offline-profile/profile_calls.py": {
+    "sha256": "b15f6c028d6a91aaf29226fe41e4d68ae7ab03f822f6a7f16d5c4d41f8e5cf8f",
+    "bytes": 3930
+  },
+  "evidence/hbnf-packet20-fix-candidate-20261005/r3-offline-profile/make_host_microbench.py": {
+    "sha256": "ad50775427d463a4038708f512767f2961f9deaadb447430d7d08c65acf258ce",
+    "bytes": 7193
+  },
+  "evidence/hbnf-packet20-fix-candidate-20261005/r3-offline-profile/render_value_zcache_microbench.cpp": {
+    "sha256": "cdf5256c5bf3847a7919d3475dde86fb94b46be5b7a8a70a96b8afa0a1797a45",
+    "bytes": 13528
+  },
+  "evidence/hbnf-packet20-fresh-20261005/source-bound-package/ANIMartRIX.patched.h": {
+    "sha256": "bd9d146e2ce5fde991a895ccc2ad2773df1cc77cb815381679c17c6425d7bbe8",
+    "bytes": 131293
+  }
+}

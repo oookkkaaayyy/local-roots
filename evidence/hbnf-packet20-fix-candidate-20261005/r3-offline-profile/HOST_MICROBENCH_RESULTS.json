@@ -1,0 +1,27 @@
+{
+  "schema": "hbnf-packet20-r3-offline-host-microbench-v1",
+  "compiler": "clang++ -O2 -fno-fast-math",
+  "order": "9 order-balanced batches per executable run; 307200 calls per batch; median reported",
+  "bitwise_equal_inputs": 3072,
+  "runs": [
+    {
+      "run": 1,
+      "pnoise_base_ns": 17.77,
+      "pnoise_zcache_ns": 17.8,
+      "pnoise_integer_plane_ns": 8.76,
+      "render_value_base_ns": 19.09,
+      "render_value_zcache_ns": 19.2,
+      "render_value_integer_plane_ns": 15.72
+    },
+    {
+      "run": 2,
+      "pnoise_base_ns": 17.77,
+      "pnoise_zcache_ns": 18.09,
+      "pnoise_integer_plane_ns": 8.66,
+      "render_value_base_ns": 18.88,
+      "render_value_zcache_ns": 19.39,
+      "render_value_integer_plane_ns": 15.53
+    }
+  ],
+  "interpretation": "Host-only result; not transferable as ESP32 performance evidence. Integer-plane branch was bitwise identical on sampled inputs and materially cheaper in this host microbenchmark; target build and device qualification remain required."
+}

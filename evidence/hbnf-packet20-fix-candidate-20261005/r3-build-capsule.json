@@ -1,0 +1,223 @@
+{
+  "cost_policy": {
+    "paid_or_quota_limited_execution": "explicit_authorization_per_bounded_run",
+    "remote_execution_for_source_archaeology": false,
+    "retry_inherits_authorization": false
+  },
+  "created_at": "2026-10-05T16:56:03.992781+00:00",
+  "expected_terminal_outputs": [
+    "artifact sha256",
+    "source identity",
+    "build/workflow identity",
+    "consumer-contract identity",
+    "recovery identity",
+    "pre/post deployment identities",
+    "runtime result",
+    "durable evidence pointer"
+  ],
+  "external_authorities": {
+    "artifact_registry_drive_id": "18VsUYIYr62fYVaEqynM1kbMmfQpei-3H3rBgrw8S96k",
+    "delta_inbox_sheet_id": "1tJIcKRfWFdHVYVo4G6mgySB46p6xwsseGON3JdnEnzY",
+    "file_authority_drive_id": "1GwvPv_nihqoIj83WsO6VcvyujRkt8HnnULvLv717OHc",
+    "release_engineering_drive_id": "1bw_VUNt2mEZ4JdKuRsQq7ZS1Bc4KeC8kMVABVK2OdgE"
+  },
+  "repo_identity": {
+    "branch": "hbnf-cart2-ready-to-implement-staging-20261001",
+    "dirty": true,
+    "type": "git_commit",
+    "value": "4704f36b8c14be5e7ecbcf0bc0e26fc4c6504c00"
+  },
+  "repo_inputs": [
+    {
+      "bytes": 4084,
+      "path": "config/HBNF_CONTROL_MODEL.json",
+      "sha256": "c5cc3b04bd3b070880f71d071183056f865775d3b65228634376e1af7c4437a5"
+    },
+    {
+      "bytes": 14096,
+      "path": "config/HBNF_CONTROL_STATE.json",
+      "sha256": "e19907d0dcfd3581ef99ecbe9618c505070fdf5641890c80c4cdeb538a203e51"
+    },
+    {
+      "bytes": 7808,
+      "path": "scripts/hbnf_control.py",
+      "sha256": "c979cc0c09e6a1d6c5861e97fd4a155b2ea8846e39e432be3e1701b4866670b7"
+    },
+    {
+      "bytes": 2644,
+      "path": "scripts/hbnf_guarded_run.py",
+      "sha256": "9ddbdd656a817bfd9c6fb3d156289dc090db6e21f5ae4d36c73fe69b9f15c2b8"
+    },
+    {
+      "bytes": 5404,
+      "path": "platform/policies.json",
+      "sha256": "16b80bafcb81002885164ba3799e1401d5007addb38ebb1e9a5336fdfa9bc37a"
+    },
+    {
+      "bytes": 6085,
+      "path": "platform/workflows/live-device-diagnostic.json",
+      "sha256": "ec372bca9ee03a6178e216ea867696fb9b8eab86d2bcacba9f1c676a6953b7d9"
+    },
+    {
+      "bytes": 10962,
+      "path": "platform/cart2-critical-path-v1.json",
+      "sha256": "d372e14f5e95c3bbe377b39dc5e512728860eee775b99081a1c0885122b05fed"
+    },
+    {
+      "bytes": 27029,
+      "path": "scripts/platform.py",
+      "sha256": "67fd6fa96cfbf576224ec24fccc7db1e6ac374e134f59435cdcb62de2e31d251"
+    },
+    {
+      "bytes": 8202,
+      "path": "platform/providers/cloudflare-workers.json",
+      "sha256": "67c0c79c310b780d2934fbf7ef12b06562d014adafac2105822a4c2d79ff74da"
+    },
+    {
+      "bytes": 12789,
+      "path": "AGENTS.md",
+      "sha256": "5dbb1d4715e3a4d2646dff405647971f0f2885409c1d30beb1c70627627f21df"
+    }
+  ],
+  "run_id": "hbnf-packet20-r3-speedmath-build-20261005",
+  "schema": "local-roots-execution-capsule-v1",
+  "stages": [
+    {
+      "id": "materialize-inputs",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "declared complete inputs"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "build",
+      "kind": "work",
+      "mutation": false,
+      "outputs": [
+        "artifact"
+      ],
+      "retry_policy": "explicit_only"
+    },
+    {
+      "id": "attest",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "artifact digest",
+        "source identity",
+        "workflow/build identity"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "promote",
+      "kind": "evidence",
+      "mutation": false,
+      "outputs": [
+        "durable artifact pointer"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "contract-closure",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "actual consumer path/API/role contract",
+        "immutable target identity independent of mutable discovery aliases"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "recovery-proof",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "exact last-known-good artifact/version",
+        "exact rollback command/path",
+        "rollback acceptance checks"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "transaction-rehearsal",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "preview/version/simulation deployment PASS",
+        "consumer readback PASS",
+        "rollback rehearsal PASS"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "capture-current-state",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "exact currently deployed version/identity frozen"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "deploy",
+      "kind": "deployment",
+      "mutation": true,
+      "outputs": [
+        "installed/deployed identity"
+      ],
+      "retry_policy": "explicit_only",
+      "rollback": {
+        "strategy": "restore exact pre-registered recovery artifact/version captured before deploy"
+      }
+    },
+    {
+      "id": "verify",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "runtime smoke/acceptance result",
+        "consumer observes exact deployed identity"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "record",
+      "kind": "evidence",
+      "mutation": false,
+      "outputs": [
+        "terminal summary and provenance pointer"
+      ],
+      "retry_policy": "idempotent"
+    }
+  ],
+  "storage_policy": {
+    "aks": "searchable routing, current-state pointers, acceptance/supersession metadata, and external artifact identities",
+    "github": "canonical/buildable source, scripts, configs, workflow definitions, and small machine-readable provenance",
+    "google_drive": "durable binaries, recovery artifacts, decisive evidence, and large immutable run outputs",
+    "local_workspace": "ephemeral execution only; never sole authority after a result becomes meaningful"
+  },
+  "system_id": "hbnf-cart",
+  "terminal_recovery": "Any deployment failure restores the exact pre-registered last-known-good artifact/version; never rebuild rollback or reconstruct production state during the incident.",
+  "trace_id": "8d7d6585a30a4f81b967cb5ce9493ce0",
+  "user_interaction_policy": {
+    "copy_paste_delivery": "one_single_fenced_block_per_action",
+    "max_user_actions_per_blocker": 1,
+    "required_user_action_fields": [
+      "prerequisite",
+      "action",
+      "expected_result",
+      "stop_condition"
+    ],
+    "resource_instruction_requires_direct_link_or_exact_path": true,
+    "terminal_app": "macOS Terminal",
+    "terminal_relay": false
+  },
+  "workflow_id": "artifact-release",
+  "workflow_source": {
+    "path": "platform/workflows/artifact-release.json",
+    "sha256": "90fd6c5784e5cec2135a8e761c403e146fad110a16e6a61f0d75e905f0ecc0be"
+  }
+}
