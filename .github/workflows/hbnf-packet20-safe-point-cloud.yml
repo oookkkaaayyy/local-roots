@@ -172,9 +172,9 @@ jobs:
             next_key={"CCFLAGS":"CFILESUFFIX","CXXFLAGS":"DSUFFIXES"}[name]
             m=re.search(r"(?ms)^  '"+name+r"': \[(.*?)^  '"+next_key+r"':",s)
             assert m, f"R1 effective envdump omitted {name}"
-            chunks.append(m.group(1))
-          flags="\n".join(chunks)
-          assert re.search(r"(?<!\S)-Os(?!\S)",flags), "R1 effective compiler flags did not contain -Os"
+            chunks.extend(re.findall(r"'([^']*)'",m.group(1)))
+          flags=set(chunks)
+          assert "-Os" in flags, f"R1 effective compiler flags did not contain -Os: {sorted(flags)}"
           assert "-O2" not in flags and "-fsingle-precision-constant" not in flags
           PY
 
@@ -239,11 +239,11 @@ jobs:
             next_key={"CCFLAGS":"CFILESUFFIX","CXXFLAGS":"DSUFFIXES"}[name]
             m=re.search(r"(?ms)^  '"+name+r"': \[(.*?)^  '"+next_key+r"':",s)
             assert m, f"effective envdump omitted {name}"
-            chunks.append(m.group(1))
-          compiler_flags="\n".join(chunks)
+            chunks.extend(re.findall(r"'([^']*)'",m.group(1)))
+          compiler_flags=set(chunks)
           missing=[x for x in required if x not in compiler_flags]
           assert not missing, f"effective compiler env missing required WLED/R3 flags: {missing}"
-          assert not re.search(r"(?<!\S)-Os(?!\S)",compiler_flags), "effective compiler flags still contain -Os"
+          assert "-Os" not in compiler_flags, "effective compiler flags still contain -Os"
           PY
           mapfile -t anim_headers < <(find .pio/libdeps/hbnf_matrix_wled16_packet20_diag -type f -name ANIMartRIX.h -print)
           test "${#anim_headers[@]}" -eq 1
