@@ -1,0 +1,120 @@
+{
+  "schema": "local-roots-golden-path-v1",
+  "id": "live-device-diagnostic",
+  "purpose": "Bounded live diagnostic with explicit identity, timeout budget, snapshot, exact restore, and recovery.",
+  "required_repo_inputs": [
+    "config/HBNF_CONTROL_STATE.json",
+    "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+    "scripts/hbnf_live_kernel_sweep.py"
+  ],
+  "stages": [
+    {
+      "id": "package-doctor",
+      "kind": "preflight",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "all declared files/identities/timeouts coherent"
+      ]
+    },
+    {
+      "id": "read-only-preflight",
+      "kind": "preflight",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "timeout_budget": {
+        "outer_seconds": 30,
+        "inner_calls_max": 4,
+        "inner_timeout_seconds": 4,
+        "margin_seconds": 10
+      },
+      "outputs": [
+        "runtime identity and continuity sample"
+      ]
+    },
+    {
+      "id": "snapshot",
+      "kind": "live",
+      "mutation": true,
+      "retry_policy": "never",
+      "rollback": {
+        "strategy": "firmware-owned exact snapshot restore followed by registered recovery artifact if uncertain"
+      },
+      "timeout_budget": {
+        "outer_seconds": 30,
+        "inner_calls_max": 4,
+        "inner_timeout_seconds": 4,
+        "margin_seconds": 10
+      },
+      "outputs": [
+        "immutable snapshot receipt"
+      ]
+    },
+    {
+      "id": "bounded-diagnostic",
+      "kind": "live",
+      "mutation": true,
+      "retry_policy": "never",
+      "rollback": {
+        "strategy": "always execute exact snapshot restore in finally; if exactness is uncertain, stop and recover baseline"
+      },
+      "timeout_budget": {
+        "outer_seconds": 70,
+        "inner_calls_max": 4,
+        "inner_timeout_seconds": 4,
+        "margin_seconds": 10
+      },
+      "outputs": [
+        "bounded telemetry/evidence"
+      ]
+    },
+    {
+      "id": "restore",
+      "kind": "recovery",
+      "mutation": true,
+      "retry_policy": "never",
+      "rollback": {
+        "strategy": "registered baseline recovery artifact"
+      },
+      "timeout_budget": {
+        "outer_seconds": 30,
+        "inner_calls_max": 4,
+        "inner_timeout_seconds": 4,
+        "margin_seconds": 10
+      },
+      "outputs": [
+        "exact restore proof or explicit uncertainty"
+      ]
+    },
+    {
+      "id": "baseline-recovery",
+      "kind": "recovery",
+      "mutation": true,
+      "retry_policy": "explicit_only",
+      "rollback": {
+        "strategy": "stop and preserve state; no alternate image without coordinator decision"
+      },
+      "outputs": [
+        "known baseline installed identity"
+      ]
+    },
+    {
+      "id": "record",
+      "kind": "evidence",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "terminal run summary",
+        "durable evidence pointer",
+        "toil/process metrics"
+      ]
+    }
+  ],
+  "terminal_recovery": "If restore exactness is not proven, do not continue diagnostics. Install the pre-registered exact baseline recovery artifact, verify identity, preserve evidence, and stop.",
+  "expected_terminal_outputs": [
+    "diagnostic result or exact stop reason",
+    "snapshot/restore result",
+    "baseline recovery result",
+    "durable evidence pointer"
+  ]
+}
