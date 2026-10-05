@@ -1,11 +1,9 @@
 name: HBNF Packet20 safe-point cloud build
 
+# Quota lock 2026-10-04: this build already succeeded and must not retrigger.
+# Manual dispatch remains available only for a separately authorized future run.
 on:
-  push:
-    branches:
-      - hbnf-packet20-safe-point-cloud-20261004
-    paths:
-      - '.hbnf-packet20-cloud/TRIGGER'
+  workflow_dispatch:
 
 permissions:
   contents: read
