@@ -17,6 +17,13 @@ CATALOG = PLATFORM / "catalog.json"
 POLICIES = PLATFORM / "policies.json"
 WORKFLOWS = PLATFORM / "workflows"
 
+MANDATORY_PRELIVE_STAGES = (
+    "contract-closure",
+    "recovery-proof",
+    "transaction-rehearsal",
+    "capture-current-state",
+)
+
 
 class PlatformError(RuntimeError):
     pass
@@ -171,7 +178,34 @@ def validate_workflow(
                 except (KeyError, TypeError, ValueError):
                     errors.append(f"{wid}/{sid}: invalid timeout_budget")
 
-    if any(bool(s.get("mutation")) for s in stages):
+    mutating_indexes = [i for i, s in enumerate(stages) if bool(s.get("mutation"))]
+    if mutating_indexes:
+        first_mutation = min(mutating_indexes)
+        contract = wf.get("prelive_contract")
+        if not isinstance(contract, dict):
+            errors.append(f"{wid}: mutating workflow lacks prelive_contract")
+        else:
+            for key in (
+                "deterministic_prerequisites_closed_offline",
+                "consumer_contract_verified",
+                "recovery_proven_before_first_device_mutation",
+                "end_to_end_rehearsal_required",
+                "exact_pre_mutation_state_capture_required",
+            ):
+                if contract.get(key) is not True:
+                    errors.append(f"{wid}: prelive_contract {key} must be true")
+            required_before = contract.get("required_before_stage_id")
+            if required_before and required_before not in ids:
+                errors.append(f"{wid}: prelive required_before_stage_id is unknown: {required_before}")
+
+        for required_stage in MANDATORY_PRELIVE_STAGES:
+            if required_stage not in ids:
+                errors.append(f"{wid}: missing mandatory prelive stage {required_stage}")
+            elif ids.index(required_stage) >= first_mutation:
+                errors.append(
+                    f"{wid}: mandatory prelive stage {required_stage} must occur before first mutation"
+                )
+
         if not wf.get("terminal_recovery"):
             errors.append(f"{wid}: mutating workflow lacks terminal_recovery")
 
@@ -486,6 +520,58 @@ def summarize_runs(args: argparse.Namespace) -> int:
     return 0
 
 
+def make_directive(args: argparse.Namespace) -> int:
+    cap_path = pathlib.Path(args.capsule).expanduser().resolve()
+    cap = load_json(cap_path)
+    errors = []
+    for item in cap.get("repo_inputs", []):
+        p = ROOT / item.get("path", "")
+        if not p.is_file() or sha256_file(p) != item.get("sha256"):
+            errors.append(item.get("path", "<unknown>"))
+    if errors:
+        raise PlatformError("cannot generate directive from invalid capsule: " + ", ".join(errors))
+
+    stages = cap.get("stages", [])
+    stage_lines = []
+    for stage in stages:
+        stage_lines.append(
+            f"- {stage.get('id')}: {stage.get('kind')} / retry={stage.get('retry_policy')}"
+        )
+    directive = "\n".join([
+        "EXECUTE THIS CAPSULE. DO NOT IMPROVISE THE WORKFLOW.",
+        f"Run ID: {cap.get('run_id')}",
+        f"Trace ID: {cap.get('trace_id')}",
+        f"System: {cap.get('system_id')}",
+        f"Workflow: {cap.get('workflow_id')}",
+        f"Repository identity: {json.dumps(cap.get('repo_identity'), sort_keys=True)}",
+        "",
+        "MANDATORY OPERATING RULES:",
+        "- Validate the capsule before any mutating or paid step.",
+        "- Close every deterministic prerequisite offline before mutation.",
+        "- Do not discover build, publication, consumer-contract, timeout, credential, or rollback prerequisites during live execution.",
+        "- Live execution may discover only irreducible runtime/physical behavior.",
+        "- Do not substitute helpers, configs, artifacts, branches, URLs, or recovery targets.",
+        "- Do not retry the same mechanism without new evidence.",
+        "- If a required recovery path has not already been proven end-to-end, STOP BEFORE MUTATION.",
+        "- Do not use the user as a command/output relay.",
+        "- Return only terminal product evidence or one irreducible blocker.",
+        "",
+        "ORDERED STAGES:",
+        *stage_lines,
+        "",
+        "TERMINAL RECOVERY:",
+        str(cap.get("terminal_recovery") or ""),
+        "",
+        "EXPECTED TERMINAL OUTPUTS:",
+        *[f"- {x}" for x in cap.get("expected_terminal_outputs", [])],
+    ])
+    out = pathlib.Path(args.out).expanduser().resolve()
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(directive + "\n")
+    print(json.dumps({"status":"DIRECTIVE_CREATED","path":str(out),"run_id":cap.get("run_id")}, indent=2))
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(
         description=(
@@ -536,6 +622,13 @@ def main() -> int:
     )
     m.add_argument("--runs-dir", required=True)
 
+    d = sub.add_parser(
+        "directive",
+        help="Compile a validated capsule into one deterministic worker directive",
+    )
+    d.add_argument("--capsule", required=True)
+    d.add_argument("--out", required=True)
+
     args = ap.parse_args()
     try:
         if args.cmd == "doctor":
@@ -548,6 +641,8 @@ def main() -> int:
             return append_event(args)
         if args.cmd == "metrics":
             return summarize_runs(args)
+        if args.cmd == "directive":
+            return make_directive(args)
     except PlatformError as exc:
         print(
             json.dumps(
