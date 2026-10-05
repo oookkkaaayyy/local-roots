@@ -282,6 +282,42 @@
         "do not reopen dependency/build/source archaeology already closed",
         "do not report intermediate implementation blockers that can be resolved or pivoted independently"
       ]
+    },
+    "length_limit_handoff": {
+      "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
+      "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk",
+      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
+      "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions."
+    },
+    "r4_progress": {
+      "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4",
+      "implementation_branch": "hbnf-packet20-fastled-r4-20261005",
+      "implementation_head": "769905c04c921b71a19d3558184f0ed59021b77e",
+      "upstream_fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+      "offline_gates": "PASS",
+      "golden_pixels_total": 57344,
+      "golden_exact_pixels": 57342,
+      "golden_exact_percent": 99.996512,
+      "golden_mean_channel_abs_error": 0.00013929,
+      "golden_p95_channel_abs_error": 0,
+      "golden_max_channel_abs_error": 12,
+      "first_compile_run": 37357829505,
+      "first_compile_result": "FAILED__WLED_R_MACRO_COLLISION__FIXED",
+      "macro_collision_fix_commit": "a11a3d31044343dcd4a591e3be872f4cc159785f",
+      "compile_proven_run": 37358763865,
+      "compile_proven_result": "COMPILE_SUCCESS__ARTIFACT_UPLOAD_QUOTA_FAILURE_ONLY",
+      "firmware_size_bytes": 1479601,
+      "ota_slot_bytes": 1572864,
+      "ota_headroom_bytes": 93263,
+      "ram_used_bytes": 103928,
+      "ram_total_bytes": 327680,
+      "transfer_run": 37360339891,
+      "transfer_run_status": "IN_PROGRESS_AT_LENGTH_LIMIT_HANDOFF",
+      "transfer_strategy": "one-use Git branch hbnf-packet20-r4-artifact-37360339891; upload-artifact is best-effort secondary only",
+      "device_install": "NOT_RUN",
+      "live_performance": "NOT_MEASURED",
+      "current_installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
+      "current_installed_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab"
     }
   },
   "lifecycle_state": "FIX_CANDIDATE",
