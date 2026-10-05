@@ -5,17 +5,17 @@
   "completed_receipts": [],
   "current_task": {
     "name": "Release07 all-kernel diagnosis and class-level fix preparation",
-    "status": "SEQ20_RECOVERY_BLOCKED__PUBLICATION_CONSUMER_PATH_UNPROVEN",
+    "status": "SEQ20_RECOVERY_BLOCKED__KEEP_ASSETS_TRANSACTION_NOT_YET_REHEARSED",
     "installed_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
     "installed_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "installed_release_role": "DIAGNOSTIC_TIMING_HOOK__PARTIAL_SWEEP_STOPPED__RECOVERY_REQUIRED",
     "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
     "blockers": [
-      "prove a safe publication transaction that makes exact signed seq20 recovery visible at the updater-consumed latest.json contract without reconstructing or dropping unrelated live Cloudflare assets",
-      "prove exact restoration of the current Cloudflare deployment/version after the temporary recovery pointer",
-      "execute exact signed Release07 seq20 recovery only after that transaction passes non-production/read-only verification",
-      "verify installed Release07 identity/hash exactly 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-      "preserve/promote decisive recovery evidence; do not resume seq19 diagnostics"
+      "create an UNDEPLOYED Cloudflare Worker version from exact current script/settings using provider-native keep_assets=true and strict binding inheritance from version 29bdcc12-17ce-4feb-bb9e-e83cec5e1567; change only updater-consumed latest.json handling to exact signed seq20 recovery",
+      "verify that undeployed version through Version URL or equivalent isolated version readback: latest.json exact recovery manifest hash/role/sequence/release/BIN plus representative unchanged assets/config/bindings",
+      "prove exact rollback to current Worker version 29bdcc12-17ce-4feb-bb9e-e83cec5e1567 before enabling device mutation",
+      "then temporarily deploy exact verified recovery-pointer version, verify Opal updater sees seq20 recovery, execute exact signed Release07 recovery, and verify installed SHA 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+      "restore exact prior Cloudflare Worker version and preserve/promote decisive recovery evidence; do not resume seq19 diagnostics"
     ],
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
     "publication_contract": {
@@ -27,7 +27,17 @@
       "cloudflare_worker": "hbnf-matrix-firmware-stable",
       "active_deployment_id": "dc7ffae3-62f6-49b8-9506-97eb3998efa4",
       "active_version_id": "29bdcc12-17ce-4feb-bb9e-e83cec5e1567",
-      "exact_asset_reuse_status": "BLOCKED__VERSION_API_DID_NOT_EXPOSE_REUSABLE_ASSET_SET_TOKEN_OR_MANIFEST"
+      "exact_asset_reuse_status": "BLOCKED__VERSION_API_DID_NOT_EXPOSE_REUSABLE_ASSET_SET_TOKEN_OR_MANIFEST",
+      "safe_resolution_candidate": {
+        "mechanism": "Cloudflare Worker version upload with metadata keep_assets=true",
+        "script_content_source": "GET /workers/scripts/{script}/content/v2",
+        "settings_source": "GET /workers/scripts/{script}/settings and exact current version resources",
+        "binding_strategy": "inherit exact current version; fail strict on unresolved inherit binding",
+        "verification": "undeployed Version URL or 0%-traffic version override",
+        "production_rollback": "deploy/rollback exact prior version ID 29bdcc12-17ce-4feb-bb9e-e83cec5e1567",
+        "provider_pattern": "platform/providers/cloudflare-workers.json",
+        "status": "IDENTIFIED__NOT_YET_REHEARSED"
+      }
     }
   },
   "live_mutation_authorized": false,
