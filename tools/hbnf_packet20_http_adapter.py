@@ -153,12 +153,15 @@ def _p20(state: Dict[str, Any]) -> Dict[str, Any]:
     return value
 
 
-def _require_release(state: Dict[str, Any]) -> Dict[str, Any]:
+def _require_release(
+    state: Dict[str, Any], expected_release_id: Optional[str] = None
+) -> Dict[str, Any]:
     h = _hbnf(state)
     actual = str(h.get("candidate") or "")
-    if actual != EXPECTED_RELEASE_ID:
+    expected = expected_release_id or EXPECTED_RELEASE_ID
+    if actual != expected:
         raise AdapterError(
-            f"release identity mismatch: expected {EXPECTED_RELEASE_ID!r}, got {actual!r}"
+            f"release identity mismatch: expected {expected!r}, got {actual!r}"
         )
     return h
 
@@ -218,12 +221,13 @@ def _wait_state(
     predicate,
     description: str,
     minimum_uptime: Optional[float] = None,
+    expected_release_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     deadline = time.monotonic() + wait_seconds
     last: Optional[Dict[str, Any]] = None
     while time.monotonic() < deadline:
         state = _get_state(matrix_url, timeout_http)
-        _require_release(state)
+        _require_release(state, expected_release_id)
         last = state
         if minimum_uptime is not None:
             current_uptime = _state_uptime(state)
@@ -251,7 +255,7 @@ def _wait_state(
 
 def command_snapshot(args: argparse.Namespace) -> Dict[str, int]:
     state = _get_state(args.matrix_url, args.http_timeout)
-    _require_release(state)
+    _require_release(state, args.expected_release_id)
     p20 = _p20(state)
     session_uptime = _state_uptime(state)
 
@@ -284,6 +288,7 @@ def command_snapshot(args: argparse.Namespace) -> Dict[str, int]:
             and bool(_p20(s).get("lastCommandAccepted")),
             "Packet20 diagnostic begin",
             minimum_uptime=session_uptime,
+            expected_release_id=args.expected_release_id,
         )
         p20 = _p20(state)
         session_uptime = _state_uptime(state)
@@ -299,6 +304,7 @@ def command_snapshot(args: argparse.Namespace) -> Dict[str, int]:
         lambda s: str(_p20(s).get("snapshotState") or "") in {"READY", "FAILED"},
         "renderer-safe Packet20 snapshot",
         minimum_uptime=session_uptime,
+        expected_release_id=args.expected_release_id,
     )
     p20 = _p20(state)
     if str(p20.get("snapshotState")) == "FAILED":
@@ -312,7 +318,7 @@ def command_select(args: argparse.Namespace) -> Dict[str, Any]:
     effect_id = int(args.effect_id)
     kernel = effect_to_kernel(effect_id)
     state = _get_state(args.matrix_url, args.http_timeout)
-    _require_release(state)
+    _require_release(state, args.expected_release_id)
     p20 = _p20(state)
     if not bool(p20.get("enabled")):
         raise AdapterError("Packet20 diagnostic mode is not active")
@@ -334,6 +340,7 @@ def command_select(args: argparse.Namespace) -> Dict[str, Any]:
         ),
         f"kernel selection {kernel}",
         minimum_uptime=session_uptime,
+        expected_release_id=args.expected_release_id,
     )
     return {
         "ok": True,
@@ -348,8 +355,9 @@ def normalize_telemetry(
     state: Dict[str, Any],
     matrix_info: Dict[str, Any],
     aux_info: Optional[Dict[str, Any]],
+    expected_release_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    h = _require_release(state)
+    h = _require_release(state, expected_release_id)
     p20 = _p20(state)
     timing = h.get("timing")
     if not isinstance(timing, dict):
@@ -438,7 +446,7 @@ def command_telemetry(args: argparse.Namespace) -> Dict[str, Any]:
         # AUX controller reachability is diagnostic data, not a reason to hide
         # the Matrix sample. The resulting sample reports AUX inactive/0 FPS.
         aux_info = None
-    return normalize_telemetry(state, matrix_info, aux_info)
+    return normalize_telemetry(state, matrix_info, aux_info, args.expected_release_id)
 
 
 def command_restore(args: argparse.Namespace) -> Dict[str, int]:
@@ -452,7 +460,7 @@ def command_restore(args: argparse.Namespace) -> Dict[str, int]:
     expected_hash = _as_int(expected.get("snapshotHash"), "snapshot receipt snapshotHash")
 
     state = _get_state(args.matrix_url, args.http_timeout)
-    _require_release(state)
+    _require_release(state, args.expected_release_id)
     p20 = _p20(state)
     current = snapshot_receipt(state)
     if current != {"snapshotId": expected_id, "snapshotHash": expected_hash}:
@@ -480,6 +488,7 @@ def command_restore(args: argparse.Namespace) -> Dict[str, int]:
         ),
         "Packet20 exact state restore verification",
         minimum_uptime=session_uptime,
+        expected_release_id=args.expected_release_id,
     )
     p20 = _p20(state)
     if str(p20.get("snapshotState")) == "FAILED":
@@ -500,6 +509,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--aux-url", default=DEFAULT_AUX_URL)
     parser.add_argument("--http-timeout", type=float, default=3.0)
     parser.add_argument("--wait-seconds", type=float, default=8.0)
+    parser.add_argument("--expected-release-id", default=EXPECTED_RELEASE_ID)
     sub = parser.add_subparsers(dest="command", required=True)
 
     sub.add_parser("snapshot")

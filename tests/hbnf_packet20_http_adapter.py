@@ -21,6 +21,13 @@ assert adapter.effect_to_kernel(220) == 0
 assert adapter.effect_to_kernel(247) == 27
 assert adapter.kernel_name(2) == "Parametric_Water"
 assert adapter.kernel_name(3) == "RGB_Blobs5"
+diagnostic_release = "hbnf-matrix-packet20-timing-hook-v1-20261004-r1"
+assert adapter._require_release({"HBNF": {"candidate": diagnostic_release}}, diagnostic_release)["candidate"] == diagnostic_release
+try:
+    adapter._require_release({"HBNF": {"candidate": diagnostic_release}}, "wrong-release")
+    raise AssertionError("wrong runtime release identity was accepted")
+except adapter.AdapterError:
+    pass
 for bad in (219, 248):
     try:
         adapter.effect_to_kernel(bad)
@@ -115,6 +122,7 @@ try:
         aux_url=adapter.DEFAULT_AUX_URL,
         http_timeout=0.1,
         wait_seconds=0.1,
+        expected_release_id=adapter.EXPECTED_RELEASE_ID,
     )
     assert adapter.command_snapshot(args) == receipt
 finally:
@@ -125,6 +133,12 @@ config = json.loads(
     (ROOT / "config/HBNF_PACKET20_LIVE_SWEEP_ADAPTER_20261004.json").read_text()
 )
 runner.validate_adapter(config)
+diagnostic_config = json.loads(
+    (ROOT / "config/HBNF_PACKET20_LIVE_SWEEP_ADAPTER_20261005.json").read_text()
+)
+runner.validate_adapter(diagnostic_config)
+assert diagnostic_config["expected_release_id"] == diagnostic_release
+assert diagnostic_config["timeout_seconds"] == 75
 inventory = json.loads(
     (ROOT / "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json").read_text()
 )
@@ -136,11 +150,13 @@ parsed = adapter.build_parser().parse_args(
     [
         "--matrix-url", "http://192.168.77.10",
         "--aux-url", "http://192.168.77.11",
+        "--expected-release-id", diagnostic_release,
         "select", "--effect-id", "222",
     ]
 )
 assert parsed.command == "select"
 assert parsed.effect_id == 222
+assert parsed.expected_release_id == diagnostic_release
 
 print(
     "PASS: Packet20 adapter mapping, diagnostic telemetry normalization, "
