@@ -59,7 +59,8 @@
         "platform/policies.json",
         "platform/workflows/live-device-diagnostic.json",
         "platform/cart2-critical-path-v1.json",
-        "scripts/platform.py"
+        "scripts/platform.py",
+        "platform/providers/cloudflare-workers.json"
       ],
       "external_authorities": {
         "file_authority_drive_id": "1GwvPv_nihqoIj83WsO6VcvyujRkt8HnnULvLv717OHc",
