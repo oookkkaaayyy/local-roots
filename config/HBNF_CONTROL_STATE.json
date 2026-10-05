@@ -137,6 +137,12 @@
       "result": "PASS",
       "signature_sha256": "d197c58e21010f3a1eec09d47e8e5abc452246355a6ad4f36f40c16b93c98be3"
     },
+    "length_limit_handoff": {
+      "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
+      "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
+      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
+      "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
+    },
     "name": "Packet20 fresh 28-kernel run complete; prepare bounded class-level fix candidate",
     "next_work": "Supersede the compiler-only r3 live trial. Build one bounded r4 candidate by backporting the relevant FastLED 3.10.4 stable Animartrix performance architecture into the pinned WLED 16.0.1 lineage: upstream per-file O3/fast-math behavior plus fixed-point render/noise/trig primitives and fixed-point effect variants for the exact retained HBNF effect set. Do not upgrade WLED wholesale. First prove host/golden-frame equivalence, exact retained-effect coverage, licensing/source provenance, and effective compiler flags. Then perform one 28-kernel live trial and exact Release07 recovery. If aggregate performance is materially improved, proceed directly into Foundation qualification.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
@@ -144,34 +150,15 @@
       "candidate_fix": "Bounded FastLED 3.10.4 stable Animartrix performance architecture backport into pinned WLED 16.0.1: relevant per-file speed flags plus fixed-point render/noise/trig primitives and variants for the retained HBNF effect set. Selected for R4; host/source equivalence and exact effect coverage gates pending.",
       "dominant_stage": "ANIMartRIX per-kernel rendering; median kernel_avg_ms 70.24025 vs palette 11.8685, audio 2.8835, aux 0.135; worst Parametric_Water 167.353ms kernel and 205.045ms frame at 4 median FPS",
       "foundation_qualified": false,
-      "report_drive_file_id": "1QhUQTFX4b3Uc5iLMxT4nKeK4t50a-Mw8",
       "next_experiment": {
         "candidate_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4",
-        "supersedes": "hbnf-matrix-packet20-speedmath-v1-20261005-r3",
-        "upstream_authority": {
-          "repository": "FastLED/FastLED",
-          "stable_release": "3.10.4",
-          "release_commit": "adedfc40e7",
-          "relevant_history": [
-            "3.10.2 release: Animartrix ~30% faster via per-file -O3 + fast-math",
-            "2026 fixed-point rewrite issue #2179 closed; case study 172ns float -> 78ns fixed -> 48ns fixed+SIMD on x86",
-            "3.10.4 source defaults Animartrix to fixed-point on non-ESP32-P4 platforms and ships fixed-point render/noise/trig/effect variants"
-          ]
-        },
+        "decision_rule": "Treat the upstream fixed-point backport as the primary full-optimization candidate. Do not spend another live cycle on r3 unless r4 offline integration proves impossible. If r4 still fails aggregate performance, profile only the residual stages after fixed-point conversion.",
         "delta_scope": [
           "backport only the minimum upstream Animartrix fixed-point/performance files/primitives needed by the exact retained HBNF effect set",
           "preserve pinned WLED 16.0.1, HBNF audio/control/runtime contracts, effect IDs/order, timing-hook telemetry, and direct-LAN recovery",
           "apply upstream O3/fast-math semantics to the Animartrix translation unit/hot region",
           "use upstream fixed-point render_value path with sincos32 and fixed-point Perlin; preserve 2D-noise fast path when z==0 where upstream does so",
           "do not carry r2 trig-cache patch or r3 compiler-only experiment as separate live candidates"
-        ],
-        "offline_gates": [
-          "map all 28 retained HBNF kernels to upstream float/fixed-point implementations; no silent substitutions",
-          "golden-frame A/B comparison at multiple timestamps/parameter states with HBNF-specific tolerances stricter than upstream catastrophic-only test",
-          "prove effect IDs/order and visual/control semantics preserved",
-          "prove source/license provenance for every backported upstream file",
-          "effective compile flags show intended O3/fast-math only in scoped hot path; no unrelated whole-firmware fast-math",
-          "full host tests/build/provenance pass before live install"
         ],
         "live_gate": [
           "one direct-LAN install",
@@ -181,21 +168,28 @@
           "exact Release07 recovery",
           "if materially improved and stable, continue Foundation qualification without another exploratory candidate"
         ],
-        "decision_rule": "Treat the upstream fixed-point backport as the primary full-optimization candidate. Do not spend another live cycle on r3 unless r4 offline integration proves impossible. If r4 still fails aggregate performance, profile only the residual stages after fixed-point conversion."
+        "offline_gates": [
+          "map all 28 retained HBNF kernels to upstream float/fixed-point implementations; no silent substitutions",
+          "golden-frame A/B comparison at multiple timestamps/parameter states with HBNF-specific tolerances stricter than upstream catastrophic-only test",
+          "prove effect IDs/order and visual/control semantics preserved",
+          "prove source/license provenance for every backported upstream file",
+          "effective compile flags show intended O3/fast-math only in scoped hot path; no unrelated whole-firmware fast-math",
+          "full host tests/build/provenance pass before live install"
+        ],
+        "supersedes": "hbnf-matrix-packet20-speedmath-v1-20261005-r3",
+        "upstream_authority": {
+          "release_commit": "adedfc40e7",
+          "relevant_history": [
+            "3.10.2 release: Animartrix ~30% faster via per-file -O3 + fast-math",
+            "2026 fixed-point rewrite issue #2179 closed; case study 172ns float -> 78ns fixed -> 48ns fixed+SIMD on x86",
+            "3.10.4 source defaults Animartrix to fixed-point on non-ESP32-P4 platforms and ships fixed-point render/noise/trig/effect variants"
+          ],
+          "repository": "FastLED/FastLED",
+          "stable_release": "3.10.4"
+        }
       },
+      "report_drive_file_id": "1QhUQTFX4b3Uc5iLMxT4nKeK4t50a-Mw8",
       "research_acceleration_20261005": {
-        "status": "ACTIVE",
-        "evidence": [
-          "FastLED 3.10.2 release notes report Animartrix ~30% faster after forcing per-file -O3 plus fast-math.",
-          "FastLED 3.10.4 source ships fixed-point Animartrix implementations across the retained effect families and defaults to fixed-point on all platforms except ESP32-P4.",
-          "FastLED 3.10.4 render_value_fp uses sincos32 plus fixed-point Perlin and selects 2D noise when z==0; source comments describe ~2-3x speedup on MCUs without FPU.",
-          "GCC -Wdouble-promotion is specifically intended to expose accidental float-to-double promotion on CPUs with single-precision hardware and software-emulated double."
-        ],
-        "r3_prebuild_acceleration": [
-          "Add diagnostic-only -Wdouble-promotion for the Animartrix translation unit/build audit and preserve warnings; do not fail unrelated code.",
-          "Inspect r1/r3 ELF symbol/disassembly for software-double helper usage (e.g. *df* libgcc helpers) in the Animartrix hot path before spending a live trial.",
-          "If no meaningful double promotion exists and effective optimization is already equivalent, skip the live r3 trial and move directly to upstream optimization comparison."
-        ],
         "after_r3_if_insufficient": [
           "Do NOT invent a new pnoise optimization from scratch first.",
           "Audit FastLED 3.10.4 stable Animartrix implementation against the exact 28 retained HBNF effects.",
@@ -204,7 +198,19 @@
           "Only one live full-28 trial after host/source equivalence and build gates pass."
         ],
         "decision_rule": "If compiler-only r3 yields only a modest gain, immediately move to the upstream FastLED 3.10.4 optimized Animartrix path as the primary class-level solution. Do not spend cycles on ad-hoc micro-optimizations that upstream has already solved.",
-        "exhaustion_note": "Productive external research has reached diminishing returns for architecture selection. The highest-value path is now implementation/measurement of FastLED's released fixed-point Animartrix architecture, not additional broad web searching. Further research should be targeted only to concrete integration questions discovered during the backport."
+        "evidence": [
+          "FastLED 3.10.2 release notes report Animartrix ~30% faster after forcing per-file -O3 plus fast-math.",
+          "FastLED 3.10.4 source ships fixed-point Animartrix implementations across the retained effect families and defaults to fixed-point on all platforms except ESP32-P4.",
+          "FastLED 3.10.4 render_value_fp uses sincos32 plus fixed-point Perlin and selects 2D noise when z==0; source comments describe ~2-3x speedup on MCUs without FPU.",
+          "GCC -Wdouble-promotion is specifically intended to expose accidental float-to-double promotion on CPUs with single-precision hardware and software-emulated double."
+        ],
+        "exhaustion_note": "Productive external research has reached diminishing returns for architecture selection. The highest-value path is now implementation/measurement of FastLED's released fixed-point Animartrix architecture, not additional broad web searching. Further research should be targeted only to concrete integration questions discovered during the backport.",
+        "r3_prebuild_acceleration": [
+          "Add diagnostic-only -Wdouble-promotion for the Animartrix translation unit/build audit and preserve warnings; do not fail unrelated code.",
+          "Inspect r1/r3 ELF symbol/disassembly for software-double helper usage (e.g. *df* libgcc helpers) in the Animartrix hot path before spending a live trial.",
+          "If no meaningful double promotion exists and effective optimization is already equivalent, skip the live r3 trial and move directly to upstream optimization comparison."
+        ],
+        "status": "ACTIVE"
       }
     },
     "publication_contract": {
@@ -228,6 +234,72 @@
       "signed_recovery_manifest": "recovery.json",
       "updater_consumer": "latest.json"
     },
+    "r3_compiler_math_trial": {
+      "build_run_id": "37347074583",
+      "candidate": "hbnf-matrix-packet20-speedmath-v1-20261005-r3",
+      "candidate_bin_sha256": null,
+      "device_install": "NOT_RUN",
+      "effective_flags_verified": true,
+      "evidence_drive_file_id": "1pBnKwsgichjnoLfSQf00kweG2BNV4NAv",
+      "evidence_path": "evidence/hbnf-packet20-fix-candidate-20261005/PACKET20_R3_COMPILER_MATH_RESULT.md",
+      "evidence_zip_sha256": "1178a3879145ab27bb8a8df532bdea2dabe83ff700500263da364feca84bc8a9",
+      "hypothesis": "NOT_CONFIRMED",
+      "maximum_allowed_bytes": 1572864,
+      "over_limit_bytes": 123505,
+      "paired_metrics": "NOT_MEASURED",
+      "program_size_bytes": 1696369,
+      "r2_trig_cache_absent": true,
+      "report_drive_file_id": "1AW4hjghXvDnFMKN42vibOcUtX2OnQtoh",
+      "report_sha256": "d8d14197bb978830d496cb64229369a13c88be2ff6d1be1e3e82d8136a442cfd",
+      "status": "REJECTED__OTA_APPLICATION_PARTITION_SIZE"
+    },
+    "r4_execution_authority": {
+      "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4",
+      "instruction": "Proceed directly with the selected bounded FastLED 3.10.4 Animartrix fixed-point backport into pinned WLED 16.0.1. Do not stop at source audit. Complete host equivalence, exact 28-effect coverage, build, one 28-kernel live trial, exact Release07 recovery, and then continue Foundation qualification if the candidate materially improves aggregate performance.",
+      "no_repeat": [
+        "do not rerun R3",
+        "do not perform broad online research unless a concrete R4 integration question requires it",
+        "do not reopen dependency/build/source archaeology already closed",
+        "do not report intermediate implementation blockers that can be resolved or pivoted independently"
+      ],
+      "status": "AUTHORIZED_TO_IMPLEMENT_AND_QUALIFY"
+    },
+    "r4_progress": {
+      "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4",
+      "compile_proven_result": "COMPILE_SUCCESS__ARTIFACT_UPLOAD_QUOTA_FAILURE_ONLY",
+      "compile_proven_run": 37358763865,
+      "current_installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
+      "current_installed_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+      "device_install": "NOT_RUN",
+      "firmware_sha256": "3e11aa102309b5f871ea8ada339c90d0c1c9dfe1451a5c4f76958dba92a1156c",
+      "firmware_size_bytes": 1486336,
+      "first_compile_result": "FAILED__WLED_R_MACRO_COLLISION__FIXED",
+      "first_compile_run": 37357829505,
+      "golden_exact_percent": 99.996512,
+      "golden_exact_pixels": 57342,
+      "golden_max_channel_abs_error": 12,
+      "golden_mean_channel_abs_error": 0.00013929,
+      "golden_p95_channel_abs_error": 0,
+      "golden_pixels_total": 57344,
+      "implementation_branch": "hbnf-packet20-fastled-r4-20261005",
+      "implementation_head": "769905c04c921b71a19d3558184f0ed59021b77e",
+      "live_performance": "NOT_MEASURED",
+      "macro_collision_fix_commit": "a11a3d31044343dcd4a591e3be872f4cc159785f",
+      "next_gate": "Validate exact transfer-run package/provenance, reconcile any transaction-relevant size discrepancy versus prior compile-success run, promote durable evidence to Drive, then create a fresh bounded R4 live transaction.",
+      "offline_gates": "PASS",
+      "ota_headroom_bytes": 86528,
+      "ota_slot_bytes": 1572864,
+      "provenance_status": "BUILD_SUCCEEDED",
+      "ram_total_bytes": 327680,
+      "ram_used_bytes": 103928,
+      "transfer_branch": "hbnf-packet20-r4-artifact-37360339891",
+      "transfer_branch_head": "952eae8aec1419cbaf2c928328a5521e1b466d7f",
+      "transfer_run": 37360339891,
+      "transfer_run_status": "SUCCESS",
+      "transfer_strategy": "one-use Git branch hbnf-packet20-r4-artifact-37360339891; upload-artifact is best-effort secondary only",
+      "transferred_package_path": ".hbnf-r4-build-output/",
+      "upstream_fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f"
+    },
     "recovery_strategy_priority": [
       "1: stop using Cloudflare publication as a prerequisite for this recovery; inspect the installed Opal updater and use its already-proven device-upload mechanism with the exact verified Release07 BIN as local input if possible",
       "2: otherwise use WLED's standard authenticated/local-subnet HTTP OTA /update path with the exact verified Release07 BIN; preserve settings; no erase",
@@ -243,100 +315,33 @@
       "size_bytes": 1458624
     },
     "worker_alignment": {
-      "observed_at": "2026-10-05T17:48:54Z",
-      "status": "R3_CLOSED__R4_EXECUTION_REQUIRED",
+      "conclusion": "The stale R3 loop is closed. The next worker action must be R4 implementation and qualification, not another R3 build or another broad profiling pass.",
+      "enforcement": "Build branch 8eaf4b13d816986c371ec885119c05b1170d0c35 remains gated against stale R3 execution. Replace that gate only as part of an R4 implementation that is bound to current control state.",
       "evidence": [
         "Control/evidence commit 722b6c7dc77b67e4ec8158c0e3906d8269075565 recorded the R3 compile-gate result.",
         "R3 produced no admissible BIN and no device install; Matrix remains exact Release07.",
         "The worker explicitly recognized the current control authority selecting the FastLED 3.10.4 fixed-point backport as the next class-level fix."
       ],
-      "conclusion": "The stale R3 loop is closed. The next worker action must be R4 implementation and qualification, not another R3 build or another broad profiling pass.",
-      "enforcement": "Build branch 8eaf4b13d816986c371ec885119c05b1170d0c35 remains gated against stale R3 execution. Replace that gate only as part of an R4 implementation that is bound to current control state."
-    },
-    "r3_compiler_math_trial": {
-      "candidate": "hbnf-matrix-packet20-speedmath-v1-20261005-r3",
-      "status": "REJECTED__OTA_APPLICATION_PARTITION_SIZE",
-      "build_run_id": "37347074583",
-      "program_size_bytes": 1696369,
-      "maximum_allowed_bytes": 1572864,
-      "over_limit_bytes": 123505,
-      "effective_flags_verified": true,
-      "r2_trig_cache_absent": true,
-      "candidate_bin_sha256": null,
-      "device_install": "NOT_RUN",
-      "paired_metrics": "NOT_MEASURED",
-      "hypothesis": "NOT_CONFIRMED",
-      "evidence_path": "evidence/hbnf-packet20-fix-candidate-20261005/PACKET20_R3_COMPILER_MATH_RESULT.md",
-      "evidence_drive_file_id": "1pBnKwsgichjnoLfSQf00kweG2BNV4NAv",
-      "evidence_zip_sha256": "1178a3879145ab27bb8a8df532bdea2dabe83ff700500263da364feca84bc8a9",
-      "report_drive_file_id": "1AW4hjghXvDnFMKN42vibOcUtX2OnQtoh",
-      "report_sha256": "d8d14197bb978830d496cb64229369a13c88be2ff6d1be1e3e82d8136a442cfd"
-    },
-    "r4_execution_authority": {
-      "status": "AUTHORIZED_TO_IMPLEMENT_AND_QUALIFY",
-      "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4",
-      "instruction": "Proceed directly with the selected bounded FastLED 3.10.4 Animartrix fixed-point backport into pinned WLED 16.0.1. Do not stop at source audit. Complete host equivalence, exact 28-effect coverage, build, one 28-kernel live trial, exact Release07 recovery, and then continue Foundation qualification if the candidate materially improves aggregate performance.",
-      "no_repeat": [
-        "do not rerun R3",
-        "do not perform broad online research unless a concrete R4 integration question requires it",
-        "do not reopen dependency/build/source archaeology already closed",
-        "do not report intermediate implementation blockers that can be resolved or pivoted independently"
-      ]
-    },
-    "length_limit_handoff": {
-      "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
-      "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk",
-      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
-      "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions."
-    },
-    "r4_progress": {
-      "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4",
-      "implementation_branch": "hbnf-packet20-fastled-r4-20261005",
-      "implementation_head": "769905c04c921b71a19d3558184f0ed59021b77e",
-      "upstream_fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
-      "offline_gates": "PASS",
-      "golden_pixels_total": 57344,
-      "golden_exact_pixels": 57342,
-      "golden_exact_percent": 99.996512,
-      "golden_mean_channel_abs_error": 0.00013929,
-      "golden_p95_channel_abs_error": 0,
-      "golden_max_channel_abs_error": 12,
-      "first_compile_run": 37357829505,
-      "first_compile_result": "FAILED__WLED_R_MACRO_COLLISION__FIXED",
-      "macro_collision_fix_commit": "a11a3d31044343dcd4a591e3be872f4cc159785f",
-      "compile_proven_run": 37358763865,
-      "compile_proven_result": "COMPILE_SUCCESS__ARTIFACT_UPLOAD_QUOTA_FAILURE_ONLY",
-      "firmware_size_bytes": 1486336,
-      "ota_slot_bytes": 1572864,
-      "ota_headroom_bytes": 86528,
-      "ram_used_bytes": 103928,
-      "ram_total_bytes": 327680,
-      "transfer_run": 37360339891,
-      "transfer_run_status": "SUCCESS",
-      "transfer_strategy": "one-use Git branch hbnf-packet20-r4-artifact-37360339891; upload-artifact is best-effort secondary only",
-      "device_install": "NOT_RUN",
-      "live_performance": "NOT_MEASURED",
-      "current_installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
-      "current_installed_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-      "transfer_branch": "hbnf-packet20-r4-artifact-37360339891",
-      "transfer_branch_head": "952eae8aec1419cbaf2c928328a5521e1b466d7f",
-      "transferred_package_path": ".hbnf-r4-build-output/",
-      "firmware_sha256": "3e11aa102309b5f871ea8ada339c90d0c1c9dfe1451a5c4f76958dba92a1156c",
-      "provenance_status": "BUILD_SUCCEEDED",
-      "next_gate": "Validate exact transfer-run package/provenance, reconcile any transaction-relevant size discrepancy versus prior compile-success run, promote durable evidence to Drive, then create a fresh bounded R4 live transaction."
+      "observed_at": "2026-10-05T17:48:54Z",
+      "status": "R3_CLOSED__R4_EXECUTION_REQUIRED"
     }
   },
   "lifecycle_state": "FIX_CANDIDATE",
   "live_mutation_authorization": {
-    "candidate_sha256": "42f2ed58c3b89af95926ee0cf5824a575df9dcf75c7fbb8ead9d6eaff427ee07",
-    "diagnostic_release": "hbnf-matrix-packet20-timing-hook-v1-20261005-r2",
-    "expiry": "Closed after exact Release07 identity/health verification at seq24.",
+    "candidate_sha256": "3e11aa102309b5f871ea8ada339c90d0c1c9dfe1451a5c4f76958dba92a1156c",
+    "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4",
+    "expiry": "Close immediately after exact Release07 SHA and health verification.",
+    "prelive_proof": "evidence/hbnf-packet20-fix-candidate-20261005/r4-live-transaction/PRELIVE_PROOF.json",
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-    "scope": "CLOSED: seq23 r2 diagnostic and seq24 exact Release07 recovery completed; no live Matrix or AUX mutation remains authorized by this transaction.",
-    "status": "CLOSED",
-    "user_authorization": "Explicitly preauthorized by 2026-10-05 HBNF Cart 2.0 Autonomous Overnight Completion Directive."
+    "scope": "One seq25 R4 candidate install, one exact 28-kernel Packet20 sweep and renderer restore, followed immediately by exact seq26 Release07 recovery. No other device/cloud mutation.",
+    "sequences": {
+      "candidate": 25,
+      "recovery": 26
+    },
+    "status": "AUTHORIZED_BOUNDED_R4_TRIAL",
+    "user_authorization": "Explicit R4 bounded live trial directive dated 2026-10-05."
   },
-  "live_mutation_authorized": false,
+  "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
   "phase2_implementation_authorized": false,
   "schema": "hbnf-control-state-v2"
