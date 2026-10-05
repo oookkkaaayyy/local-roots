@@ -1,0 +1,39 @@
+--- a/vendor/hbnf-animartrix/ANIMartRIX.h
++++ b/vendor/hbnf-animartrix/ANIMartRIX.h
+@@ -25,6 +25,7 @@
+ */
+ 
+ #include <vector>
++#include <string.h>
+ // add this includes to your main sketch #include <FastLED.h>
+ 
+ // Custom allocator for ESP32 (especially with PSRAM) 
+@@ -431,10 +432,26 @@
+ 
+ static float render_value(const render_parameters &animation) {
+ 
++  // Reuse the exact trig pair for adjacent noise layers with identical angle bits.
++  // Effect rendering is serialized by the WLED render loop. The bit key preserves
++  // signed zero and avoids changing the result for any distinct float value.
++  static uint32_t cached_angle_bits = 0;
++  static float cached_cos = 0.0f;
++  static float cached_sin = 0.0f;
++  static bool cached_angle_valid = false;
++  uint32_t angle_bits = 0;
++  memcpy(&angle_bits, &animation.angle, sizeof(angle_bits));
++  if (!cached_angle_valid || angle_bits != cached_angle_bits) {
++    cached_angle_bits = angle_bits;
++    cached_cos = cosf(animation.angle);
++    cached_sin = sinf(animation.angle);
++    cached_angle_valid = true;
++  }
++
+   // convert polar coordinates back to cartesian ones
+ 
+-  float newx = (animation.offset_x + animation.center_x - (cosf(animation.angle) * animation.dist)) * animation.scale_x;
+-  float newy = (animation.offset_y + animation.center_y - (sinf(animation.angle) * animation.dist)) * animation.scale_y;
++  float newx = (animation.offset_x + animation.center_x - (cached_cos * animation.dist)) * animation.scale_x;
++  float newy = (animation.offset_y + animation.center_y - (cached_sin * animation.dist)) * animation.scale_y;
+   float newz = (animation.offset_z + animation.z) * animation.scale_z;
+ 
+   // render noisevalue at this new cartesian point
