@@ -1,0 +1,164 @@
+{
+  "schema": "hbnf-cart2-critical-path-v1",
+  "authority_scope": "execution-planning-only; lifecycle authority remains config/HBNF_CONTROL_MODEL.json + config/HBNF_CONTROL_STATE.json",
+  "objective": "Reach lifecycle ACCEPTED with no live trial-and-error for deterministic backend/tooling prerequisites.",
+  "current_lifecycle": "DIAGNOSTIC_ACTIVE",
+  "operating_rule": "Before any live mutation, every deterministic prerequisite for that live stage must be closed offline in one dependency-closure pass. Live execution may discover only hardware/firmware runtime behavior that cannot be simulated or proven offline.",
+  "no_credit_for": [
+    "documentation-only progress",
+    "rediscovery",
+    "repeated preflights",
+    "same-mechanism retries",
+    "tooling repair discovered during live execution"
+  ],
+  "stages": [
+    {
+      "id": "R0_RECOVER_BASELINE",
+      "outcome": "Exact Release07 restored and verified; seq19 diagnostic incident closed.",
+      "live_action": "one exact seq20 Release07 recovery only",
+      "offline_closure_required": [
+        "prove exact updater guard causing confirmed-release-role-changed",
+        "prove exact seq20 signed recovery artifact and immutable Release07 target",
+        "prove target release ID hbnf-matrix-coordinated-v1-20261002-07",
+        "prove target SHA-256 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+        "prove SSH transport using ~/.ssh/hbnf_opal_rsa",
+        "prepare exact post-install identity/hash verification and evidence capture"
+      ],
+      "stop_if": [
+        "artifact/signature/sequence ambiguity",
+        "security guard would need bypass",
+        "target bytes/hash differ"
+      ],
+      "done_when": [
+        "Release07 installed",
+        "release identity verified",
+        "firmware SHA verified",
+        "recovery evidence preserved"
+      ]
+    },
+    {
+      "id": "R1_DIAGNOSTIC_CLOSE",
+      "lifecycle_transition": "T1_DIAGNOSTIC_CLOSE: DIAGNOSTIC_ACTIVE -> FIX_CANDIDATE",
+      "outcome": "Packet20 is complete, root cause is proven, and one bounded fix candidate is already built/tested offline.",
+      "offline_closure_required": [
+        "bind diagnostic source identity to exact candidate BIN",
+        "freeze 28-kernel inventory and runtime identity mapping",
+        "freeze endpoint/API contract",
+        "freeze one-snapshot/restore semantics",
+        "set timeout hierarchy so outer budgets exceed worst-case inner budgets",
+        "preserve actual post-restore projection on mismatch",
+        "run a full host-side end-to-end rehearsal of snapshot -> 28 kernels -> restore -> report -> recovery using deterministic fixtures/mocks",
+        "freeze report schema and root-cause classification rules",
+        "freeze build dependency/vendor/generated-input closure",
+        "freeze rollback/recovery artifact and SSH transport"
+      ],
+      "live_action": "one diagnostic install + one complete 28-kernel sweep + exact restore + exact Release07 recovery",
+      "stop_if": [
+        "restart/panic/uptime regression",
+        "snapshot failure",
+        "runtime identity mismatch",
+        "restore mismatch",
+        "unexpected tooling/backend failure"
+      ],
+      "done_when": [
+        "complete 28-kernel ranked report exists",
+        "root cause proven",
+        "bounded fix delta defined",
+        "candidate artifact identity proven",
+        "nonhardware tests pass",
+        "T1 receipt passes"
+      ]
+    },
+    {
+      "id": "R2_FOUNDATION_QUALIFY",
+      "lifecycle_transition": "T2_FOUNDATION_QUALIFY: FIX_CANDIDATE -> FOUNDATION_QUALIFIED",
+      "outcome": "Corrected foundation is installed, measured, soaked, accepted, and promoted with rollback.",
+      "offline_closure_required": [
+        "freeze runtime telemetry and smoke thresholds",
+        "freeze instrumentation observer-effect check",
+        "freeze common-path performance audit",
+        "freeze all-kernel acceptance thresholds",
+        "freeze soak protocol",
+        "freeze feature acceptance matrix",
+        "prove clean-room rebuild and golden capsule inputs",
+        "prove rollback artifact and flight recorder"
+      ],
+      "live_action": "one coherent candidate install followed by smoke, all-kernel verification, soak, feature acceptance, rollback proof",
+      "done_when": [
+        "every T2 required check passes",
+        "human approval recorded",
+        "lifecycle FOUNDATION_QUALIFIED"
+      ]
+    },
+    {
+      "id": "R3_PHASE2_SCOPE_LOCK",
+      "lifecycle_transition": "T3_PHASE2_START: FOUNDATION_QUALIFIED -> PHASE2_INTEGRATING",
+      "outcome": "All Cart 2.0 product work has frozen interfaces, lane ownership, and acceptance criteria before implementation begins.",
+      "offline_closure_required": [
+        "lock Mission Control scope",
+        "lock public/local/offline/remote PWA interface contract",
+        "lock Vibes control/data contract",
+        "lock text/moments/typography contract",
+        "lock PLAY/guest contract",
+        "lock updater/recovery integration contract",
+        "lock physical Matrix/AUX/iPad/Wi-Fi/power acceptance matrix",
+        "define parallel implementation lanes and integration order"
+      ],
+      "live_action": "none",
+      "done_when": [
+        "T3 receipt passes",
+        "human approval recorded",
+        "lifecycle PHASE2_INTEGRATING"
+      ]
+    },
+    {
+      "id": "R4_PHASE2_INTEGRATE",
+      "lifecycle_transition": "T4_PHASE2_INTEGRATION: PHASE2_INTEGRATING -> RELEASE_CANDIDATE",
+      "outcome": "Committed Cart 2.0 product features are implemented and integrated into one release candidate.",
+      "implementation_lanes": [
+        "Mission Control",
+        "public/local/offline PWA + remote relay",
+        "CHILL/GROOVE/HEAVY/PSYCHEDELIC/COSMIC/AUTO Vibes",
+        "Vibe-specific text/moments/typography",
+        "PLAY/guest features",
+        "updater/recovery automation"
+      ],
+      "rule": "Run independent lanes in parallel against the frozen interfaces; integrate once per bounded batch rather than serial worker-by-worker discovery.",
+      "done_when": [
+        "all T4 checks pass",
+        "signed release preflight passes",
+        "lifecycle RELEASE_CANDIDATE"
+      ]
+    },
+    {
+      "id": "R5_FINAL_ACCEPT",
+      "lifecycle_transition": "T5_RELEASE_ACCEPT: RELEASE_CANDIDATE -> ACCEPTED",
+      "outcome": "Cart 2.0 is genuinely done.",
+      "live_action": "final soak + physical Matrix/AUX/iPad/Wi-Fi/power acceptance + guest shareability + update/recovery acceptance",
+      "done_when": [
+        "all T5 checks pass",
+        "final capsule complete",
+        "human approval recorded",
+        "lifecycle ACCEPTED"
+      ]
+    }
+  ],
+  "mandatory_frontloaded_backend_package": [
+    "single machine-readable critical path",
+    "per-stage dependency closure manifest",
+    "per-stage prelive rehearsal",
+    "exact artifact/source/hash bindings",
+    "exact rollback/recovery path",
+    "fixed timeout budgets",
+    "fixed acceptance thresholds",
+    "one-click worker directive generated from current stage",
+    "terminal evidence contract",
+    "no live step until its offline rehearsal passes"
+  ],
+  "irreducible_live_unknowns": [
+    "actual Matrix runtime performance under the diagnostic/fix",
+    "actual reboot/panic/uptime behavior",
+    "actual physical AUX/Matrix/iPad/Wi-Fi/power behavior",
+    "actual soak stability"
+  ]
+}
