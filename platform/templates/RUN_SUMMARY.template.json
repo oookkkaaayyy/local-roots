@@ -1,0 +1,24 @@
+{
+  "schema": "local-roots-run-summary-v1",
+  "run_id": "REQUIRED",
+  "trace_id": "REQUIRED",
+  "system_id": "REQUIRED",
+  "workflow_id": "REQUIRED",
+  "started_at": "REQUIRED_ISO8601",
+  "finished_at": "REQUIRED_ISO8601",
+  "outcome": "PASS|FAIL|BLOCKED",
+  "terminal_stage": "REQUIRED",
+  "source_identity": {
+    "type": "git_commit|source_tree_sha256|source_archive_sha256",
+    "value": "REQUIRED"
+  },
+  "artifact_identity": null,
+  "lead_time_seconds": 0,
+  "retry_count": 0,
+  "tooling_blockers": 0,
+  "user_actions": 0,
+  "paid_or_quota_limited_runs": 0,
+  "decisive_evidence": [],
+  "durable_evidence_pointers": [],
+  "next_action": null
+}
