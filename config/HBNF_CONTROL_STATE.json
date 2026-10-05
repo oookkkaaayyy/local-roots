@@ -5,17 +5,17 @@
   "completed_receipts": [],
   "current_task": {
     "name": "Release07 all-kernel diagnosis and class-level fix preparation",
-    "status": "SEQ19_INSTALLED__PRE_SWEEP_HOST_INVENTORY_PATH_FIX",
+    "status": "SEQ19_PARTIAL_SWEEP__RESTORE_CONTRACT_UNRESOLVED",
     "installed_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
     "installed_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
-    "installed_release_role": "DIAGNOSTIC_TIMING_HOOK__AWAITING_SWEEP",
+    "installed_release_role": "DIAGNOSTIC_TIMING_HOOK__PARTIAL_SWEEP_STOPPED",
     "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
     "blockers": [
-      "rerun read-only sweep preflight with explicit repository kernel inventory path",
-      "run one renderer-safe snapshot preflight if read-only telemetry passes",
-      "run one complete 28-kernel timing sweep if snapshot preflight passes",
-      "restore exact Release07 with signed recovery sequence 20 and verify exact restore",
-      "derive Packet21 only from the complete sweep report"
+      "offline reconcile exact adapter/config used versus canonical seq19 tooling",
+      "determine whether firmware restoreVerified=true is equivalent to packet20Same() for this exact seq19 build",
+      "explain kernel6 telemetry timeout source from preserved evidence without new device commands",
+      "establish one tested host-side correction and safe recovery/resume decision",
+      "only then either recover exact Release07 seq20 or run one corrected bounded continuation as explicitly coordinated"
     ]
   },
   "live_mutation_authorized": true,
