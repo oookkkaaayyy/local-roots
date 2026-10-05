@@ -214,7 +214,7 @@ jobs:
           cp "$PATCH" /tmp/hbnf-p20-artifacts/animartrix-clock.patch
           cp "$ANIM_HEADER" /tmp/hbnf-p20-artifacts/ANIMartRIX.patched.h
           python "$GITHUB_WORKSPACE/scripts/hbnf_packet20_r4_fastled_backport.py" --header "$ANIM_HEADER" --fastled-root /tmp/fastled --apply
-          test "$(sha256sum "$ANIM_HEADER" | awk '{print $1}')" = "db7bc1739ffcfee0e7447edaffcb1c2b48d438b66d6aaec10f3a8b1f592ed509"
+          test "$(sha256sum "$ANIM_HEADER" | awk '{print $1}')" = "a2bc03b5196dbaacb39e56885ed9301106b15c4916e0b906f86c02db1601ec1b"
           grep -q 'FL_FAST_MATH_BEGIN' "$ANIM_HEADER"
           grep -q 'FL_OPTIMIZATION_LEVEL_O3_BEGIN' "$ANIM_HEADER"
           grep -q 'perlin_s16x16::pnoise2d_raw' /tmp/fastled/src/fl/fx/2d/animartrix_detail/render_value_fp.h

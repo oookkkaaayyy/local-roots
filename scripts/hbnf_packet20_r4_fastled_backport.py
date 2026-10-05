@@ -13,10 +13,13 @@ FASTLED_COMMIT = "adedfc40e73fb80f8e930318781036d8fe1dbd9f"
 MARKER = "HBNF_FASTLED_3_10_4_R4_BACKPORT"
 
 INCLUDES_AND_HELPER = r'''
+#pragma push_macro("R")
+#undef R
 #include "fl/fx/2d/animartrix_detail/render_value_fp.h"
 #include "fl/fx/2d/animartrix_detail/perlin_float.h"
 #include "fl/math/noise/perlin_s16x16.cpp.hpp"
 #include "fl/math/sin32.cpp.hpp"
+#pragma pop_macro("R")
 
 // HBNF_FASTLED_3_10_4_R4_BACKPORT: fixed-point lookup is initialized once.
 static float hbnf_r4_render_value(const fl::render_parameters &p) {

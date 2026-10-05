@@ -3,7 +3,7 @@
   "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4",
   "baseline": "R1 renderer lineage; exact source-bound ANIMartRIX header",
   "r1_vendor_header_sha256": "bd9d146e2ce5fde991a895ccc2ad2773df1cc77cb815381679c17c6425d7bbe8",
-  "r4_transformed_header_sha256": "db7bc1739ffcfee0e7447edaffcb1c2b48d438b66d6aaec10f3a8b1f592ed509",
+  "r4_transformed_header_sha256": "a2bc03b5196dbaacb39e56885ed9301106b15c4916e0b906f86c02db1601ec1b",
   "hbnf_r1_usermod_source_sha256": "175541d69b1838e8e0ccd0adf623f8b34793c20ad25e0b1b43c13ecb4d5639a9",
   "hbnf_diagnostic_source_identity_commit": "57cc3a7606144c81fb84946945d2bbc51116bd70",
   "vendor_animartrix_upstream_commit": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f",
