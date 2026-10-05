@@ -67,62 +67,136 @@
       "zero_traffic_rehearsal_file_id": "1ZJOseh2J4ls9dGlF_SOH5DHAH9djd4xp"
     },
     "fix_candidate": {
-      "build_validation": "PASS",
-      "candidate": "hbnf-matrix-packet20-timing-hook-v1-20261005-r2",
-      "capsule_drive_file_id": "1zeONNTW3W4bHYkUbxlZK6XOJulknBLVq",
-      "capsule_zip_sha256": "4eb9bf8cf34e4f2383be111f059290301938c645d59adf29df4bdfd42e91b0fc",
-      "firmware_sha256": "42f2ed58c3b89af95926ee0cf5824a575df9dcf75c7fbb8ead9d6eaff427ee07",
-      "firmware_size_bytes": 1463664,
-      "github_commit": "d98cc5a94a326f0610238314c542e8c59083d414",
-      "github_run_id": "37300973483",
-      "offline_tests": "PASS: full suite including raw restore-state persistence regression, fixed control-state JSON newline serialization, and platform doctor.",
-      "release_capsule_drive_id": "1zeONNTW3W4bHYkUbxlZK6XOJulknBLVq",
-      "release_capsule_sha256": "4eb9bf8cf34e4f2383be111f059290301938c645d59adf29df4bdfd42e91b0fc",
-      "render_cache_patch_sha256": "fb2711140484a140cec35eb2dc90b4b7895a7723cf5bc7561c8e2057dea30b75",
-      "source_sha256": "4449619d41a485126633baf15f35ec5507827587f2a38e6a372b8e5e4f2cab0b",
-      "status": "TRIAL_COMPLETE__NOT_FOUNDATION_QUALIFIED",
-      "unverified_standalone_bin_drive_id": "1Rxq2e_7oc-tE-JpDCP4gjKfsRR4xLPzr",
-      "unverified_standalone_bin_status": "QUARANTINED__READBACK_HASH_DID_NOT_MATCH_LOCAL"
+      "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4",
+      "evidence_path": "evidence/hbnf-packet20-fix-candidate-20261005/r4-live-transaction",
+      "firmware_sha256": "3e11aa102309b5f871ea8ada339c90d0c1c9dfe1451a5c4f76958dba92a1156c",
+      "firmware_size_bytes": 1486336,
+      "github_commit": "769905c04c921b71a19d3558184f0ed59021b77e",
+      "github_run_id": "37360339891",
+      "offline_tests": "PASS",
+      "offline_visual_equivalence": "PASS 57,342/57,344 pixels exact (99.996512%); mean abs channel error 0.00013929; p95 0; max 12; two single-channel Parametric_Water deviations",
+      "ota_headroom_bytes": 86528,
+      "ota_slot_bytes": 1572864,
+      "source_sha256": "daab85f2fa2d2271e69a414416a6918e58da2d90f1f8af79aa858dd1daaea310",
+      "trial_status": "TRIAL_COMPLETE__MATERIAL_IMPROVEMENT__FOUNDATION_PENDING"
     },
     "fix_candidate_run": {
       "aggregate_comparison": {
-        "note": "single paired comparison; not sufficient to qualify aggregate improvement; candidate not promoted",
-        "r1_fps_median": 10,
-        "r1_frame_median_ms": 93.01575,
-        "r1_kernel_median_ms": 70.24025,
-        "r2_fps_median": 9,
-        "r2_frame_median_ms": 103.0595,
-        "r2_kernel_median_ms": 78.6545
+        "improved_kernels": 28,
+        "median_fps_change_pct": 320.0,
+        "median_frame_reduction_pct": 80.19367687730303,
+        "median_kernel_reduction_pct": 88.14212648730607,
+        "median_paired_kernel_speedup_pct": 89.28299154613481,
+        "r1_frame_p90_p95_p99_ms": null,
+        "r1_median_fps": 10.0,
+        "r1_median_frame_ms": 93.01575,
+        "r1_median_kernel_ms": 70.24025,
+        "r1_shared_stage_medians": {
+          "audio_avg_ms": {
+            "max_across_kernels": 5.8614999999999995,
+            "median_across_kernels": 2.8834999999999997
+          },
+          "aux_avg_ms": {
+            "max_across_kernels": 0.147,
+            "median_across_kernels": 0.135
+          },
+          "kernel_avg_ms": {
+            "max_across_kernels": 167.353,
+            "median_across_kernels": 70.24025
+          },
+          "overlay_avg_ms": {
+            "max_across_kernels": 0.031,
+            "median_across_kernels": 0.031
+          },
+          "palette_avg_ms": {
+            "max_across_kernels": 26.144,
+            "median_across_kernels": 11.868500000000001
+          },
+          "unaccounted_avg_ms": {
+            "max_across_kernels": 7.223,
+            "median_across_kernels": 6.85675
+          }
+        },
+        "r1_worst5": [
+          "Parametric_Water",
+          "Module_Experiment10",
+          "Rotating_Blob",
+          "SM5",
+          "Water"
+        ],
+        "r4_frame_p90_p95_p99_ms": null,
+        "r4_median_fps": 42.0,
+        "r4_median_frame_ms": 18.423,
+        "r4_median_kernel_ms": 8.329,
+        "r4_shared_stage_medians": {
+          "audio_avg_ms": {
+            "max_across_kernels": 1.312,
+            "median_across_kernels": 1.24025
+          },
+          "aux_avg_ms": {
+            "max_across_kernels": 0.144,
+            "median_across_kernels": 0.122
+          },
+          "kernel_avg_ms": {
+            "max_across_kernels": 16.448999999999998,
+            "median_across_kernels": 8.329
+          },
+          "overlay_avg_ms": {
+            "max_across_kernels": 0.043,
+            "median_across_kernels": 0.034
+          },
+          "palette_avg_ms": {
+            "max_across_kernels": 3.8120000000000003,
+            "median_across_kernels": 0.37375
+          },
+          "unaccounted_avg_ms": {
+            "max_across_kernels": 7.8405000000000005,
+            "median_across_kernels": 6.66475
+          }
+        },
+        "r4_worst5": [
+          "Spiralus2",
+          "RGB_Blobs4",
+          "Complex_Kaleido_4",
+          "Water",
+          "Complex_Kaleido_3"
+        ],
+        "regressed_kernels": 0,
+        "tail_limitation": "Unavailable: diagnostic telemetry reports latest completed frame-profile averages, not a per-frame latency distribution."
       },
-      "control_transition": "FIX_CANDIDATE__T1_DIAGNOSTIC_CLOSE_PASS",
-      "drive_evidence_file_id": "1eb41bj7rwzI69fr5gIzgxHRih8pUHsG-",
-      "drive_evidence_sha256": "2c768dd551678cc954c68ba153eb1cc7a218e17ddcf265f63a299d293e8106e1",
-      "host_tool_restore_capture_fix": "Implemented and regression-tested; full raw restore state is persisted before validation.",
-      "hot_kernel_improvements": {
-        "Hot_Blob_percent": -32.6,
-        "Module_Experiment10_percent": -21.5,
-        "Parametric_Water_percent": -28.4
-      },
-      "install_sequence": 23,
+      "build_commit": "769905c04c921b71a19d3558184f0ed59021b77e",
+      "build_run_id": "37360339891",
+      "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4",
+      "control_transition": "FIX_CANDIDATE__R4_TRIAL_PASS_FOUNDATION_GATES_OPEN",
+      "evidence_path": "evidence/hbnf-packet20-fix-candidate-20261005/r4-live-transaction",
+      "install_sequence": 25,
       "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
       "installed_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "kernel_count": 28,
-      "local_evidence_path": "evidence/hbnf-packet20-fix-candidate-20261005",
       "packet20_same": true,
-      "recovery_sequence": 24,
+      "paired_report": "evidence/hbnf-packet20-fix-candidate-20261005/PACKET20_R1_R4_PAIRED_REPORT.md",
+      "recovery_sequence": 26,
       "recovery_status": "PASS",
-      "release_id": "hbnf-matrix-packet20-timing-hook-v1-20261005-r2",
-      "restore_verification_basis": "Packet20 firmware source sets restoreVerified only from packet20Same; adapter returned success only after verifying restoreVerified=true and diagnostic disabled; host snapshot id/hash matched exactly.",
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4",
       "restore_verified": true,
-      "sha256": "42f2ed58c3b89af95926ee0cf5824a575df9dcf75c7fbb8ead9d6eaff427ee07",
-      "size_bytes": 1463664,
-      "snapshot_hash": 603950329,
+      "sha256": "3e11aa102309b5f871ea8ada339c90d0c1c9dfe1451a5c4f76958dba92a1156c",
+      "size_bytes": 1486336,
+      "snapshot_hash": 1266573212,
       "snapshot_id": 1,
-      "source_identity": "GitHub build branch hbnf-packet20-safe-point-cloud-20261004 commit d98cc5a94a326f0610238314c542e8c59083d414",
-      "source_sha256": "4449619d41a485126633baf15f35ec5507827587f2a38e6a372b8e5e4f2cab0b",
-      "status": "TRIAL_COMPLETE__NOT_FOUNDATION_QUALIFIED",
+      "source_sha256": "daab85f2fa2d2271e69a414416a6918e58da2d90f1f8af79aa858dd1daaea310",
+      "status": "TRIAL_COMPLETE__MATERIAL_IMPROVEMENT__NOT_FOUNDATION_QUALIFIED",
       "sweep_attempts": 1,
-      "sweep_status": "PASS"
+      "sweep_status": "PASS",
+      "visual_equivalence": {
+        "deviations": "Two single red-channel excursions in Parametric_Water, one pixel each, across the 4 replay states.",
+        "exact_percent": 99.996512,
+        "exact_pixels": 57342,
+        "max_channel_error": 12,
+        "mean_channel_absolute_error": 0.00013929,
+        "p95_channel_absolute_error": 0,
+        "pixels_compared": 57344,
+        "source": "evidence/hbnf-packet20-fix-candidate-20261005/r4-offline/R4_OFFLINE_REPORT.md"
+      }
     },
     "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
     "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
@@ -144,10 +218,10 @@
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Packet20 fresh 28-kernel run complete; prepare bounded class-level fix candidate",
-    "next_work": "Supersede the compiler-only r3 live trial. Build one bounded r4 candidate by backporting the relevant FastLED 3.10.4 stable Animartrix performance architecture into the pinned WLED 16.0.1 lineage: upstream per-file O3/fast-math behavior plus fixed-point render/noise/trig primitives and fixed-point effect variants for the exact retained HBNF effect set. Do not upgrade WLED wholesale. First prove host/golden-frame equivalence, exact retained-effect coverage, licensing/source provenance, and effective compiler flags. Then perform one 28-kernel live trial and exact Release07 recovery. If aggregate performance is materially improved, proceed directly into Foundation qualification.",
+    "next_work": "Continue Foundation qualification against R4: quantify observer effect, obtain true frame-tail and heap-fragmentation evidence, complete bounded soak plus audio/control/feature regression gates, and preserve Release07 exact rollback. Do not advance lifecycle until objective gates pass.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "performance_findings": {
-      "candidate_fix": "Bounded FastLED 3.10.4 stable Animartrix performance architecture backport into pinned WLED 16.0.1: relevant per-file speed flags plus fixed-point render/noise/trig primitives and variants for the retained HBNF effect set. Selected for R4; host/source equivalence and exact effect coverage gates pending.",
+      "candidate_fix": "FastLED 3.10.4 bounded fixed-point Animartrix backport; R4 achieved a 42 FPS median across 28 kernels, 8.329 ms median kernel time, with 28 improved and 0 regressed. Material gain confirmed; continue Foundation gates.",
       "dominant_stage": "ANIMartRIX per-kernel rendering; median kernel_avg_ms 70.24025 vs palette 11.8685, audio 2.8835, aux 0.135; worst Parametric_Water 167.353ms kernel and 205.045ms frame at 4 median FPS",
       "foundation_qualified": false,
       "next_experiment": {
@@ -188,6 +262,19 @@
           "stable_release": "3.10.4"
         }
       },
+      "r4_trial": {
+        "evidence_path": "evidence/hbnf-packet20-fix-candidate-20261005/r4-live-transaction",
+        "improved_kernels": 28,
+        "paired_report_drive_pending": true,
+        "r1_median_fps": 10,
+        "r1_median_frame_ms": 93.01575,
+        "r1_median_kernel_ms": 70.24025,
+        "r4_median_fps": 42,
+        "r4_median_frame_ms": 18.423,
+        "r4_median_kernel_ms": 8.329,
+        "regressed_kernels": 0,
+        "status": "PASS_MATERIAL_IMPROVEMENT"
+      },
       "report_drive_file_id": "1QhUQTFX4b3Uc5iLMxT4nKeK4t50a-Mw8",
       "research_acceleration_20261005": {
         "after_r3_if_insufficient": [
@@ -211,6 +298,48 @@
           "If no meaningful double promotion exists and effective optimization is already equivalent, skip the live r3 trial and move directly to upstream optimization comparison."
         ],
         "status": "ACTIVE"
+      }
+    },
+    "prior_candidate_trials": {
+      "r2": {
+        "aggregate_comparison": {
+          "note": "single paired comparison; not sufficient to qualify aggregate improvement; candidate not promoted",
+          "r1_fps_median": 10,
+          "r1_frame_median_ms": 93.01575,
+          "r1_kernel_median_ms": 70.24025,
+          "r2_fps_median": 9,
+          "r2_frame_median_ms": 103.0595,
+          "r2_kernel_median_ms": 78.6545
+        },
+        "control_transition": "FIX_CANDIDATE__T1_DIAGNOSTIC_CLOSE_PASS",
+        "drive_evidence_file_id": "1eb41bj7rwzI69fr5gIzgxHRih8pUHsG-",
+        "drive_evidence_sha256": "2c768dd551678cc954c68ba153eb1cc7a218e17ddcf265f63a299d293e8106e1",
+        "host_tool_restore_capture_fix": "Implemented and regression-tested; full raw restore state is persisted before validation.",
+        "hot_kernel_improvements": {
+          "Hot_Blob_percent": -32.6,
+          "Module_Experiment10_percent": -21.5,
+          "Parametric_Water_percent": -28.4
+        },
+        "install_sequence": 23,
+        "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
+        "installed_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+        "kernel_count": 28,
+        "local_evidence_path": "evidence/hbnf-packet20-fix-candidate-20261005",
+        "packet20_same": true,
+        "recovery_sequence": 24,
+        "recovery_status": "PASS",
+        "release_id": "hbnf-matrix-packet20-timing-hook-v1-20261005-r2",
+        "restore_verification_basis": "Packet20 firmware source sets restoreVerified only from packet20Same; adapter returned success only after verifying restoreVerified=true and diagnostic disabled; host snapshot id/hash matched exactly.",
+        "restore_verified": true,
+        "sha256": "42f2ed58c3b89af95926ee0cf5824a575df9dcf75c7fbb8ead9d6eaff427ee07",
+        "size_bytes": 1463664,
+        "snapshot_hash": 603950329,
+        "snapshot_id": 1,
+        "source_identity": "GitHub build branch hbnf-packet20-safe-point-cloud-20261004 commit d98cc5a94a326f0610238314c542e8c59083d414",
+        "source_sha256": "4449619d41a485126633baf15f35ec5507827587f2a38e6a372b8e5e4f2cab0b",
+        "status": "TRIAL_COMPLETE__NOT_FOUNDATION_QUALIFIED",
+        "sweep_attempts": 1,
+        "sweep_status": "PASS"
       }
     },
     "publication_contract": {
@@ -308,7 +437,7 @@
     ],
     "seq19_diagnostic_incident": "CLOSED_RECOVERED_TO_RELEASE07",
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "PACKET20_R4_UPSTREAM_FASTLED_FIXED_POINT_BACKPORT_SELECTED",
+    "status": "PACKET20_R4_TRIAL_COMPLETE_MATERIAL_IMPROVEMENT_FOUNDATION_QUALIFICATION_OPEN",
     "target_recovery": {
       "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
@@ -326,22 +455,20 @@
       "status": "R3_CLOSED__R4_EXECUTION_REQUIRED"
     }
   },
+  "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+  "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
+  "installed_release_role": "BASELINE_RECOVERY_VERIFIED__SEQ26",
   "lifecycle_state": "FIX_CANDIDATE",
   "live_mutation_authorization": {
     "candidate_sha256": "3e11aa102309b5f871ea8ada339c90d0c1c9dfe1451a5c4f76958dba92a1156c",
     "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4",
-    "expiry": "Close immediately after exact Release07 SHA and health verification.",
-    "prelive_proof": "evidence/hbnf-packet20-fix-candidate-20261005/r4-live-transaction/PRELIVE_PROOF.json",
+    "expiry": "Closed after exact Release07 identity and AUX health verification.",
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-    "scope": "One seq25 R4 candidate install, one exact 28-kernel Packet20 sweep and renderer restore, followed immediately by exact seq26 Release07 recovery. No other device/cloud mutation.",
-    "sequences": {
-      "candidate": 25,
-      "recovery": 26
-    },
-    "status": "AUTHORIZED_BOUNDED_R4_TRIAL",
-    "user_authorization": "Explicit R4 bounded live trial directive dated 2026-10-05."
+    "scope": "CLOSED: seq25 R4 28-kernel trial, exact Packet20 state restore, seq26 Release07 exact recovery completed.",
+    "status": "CLOSED",
+    "user_authorization": "Explicit R4 execution and continue-to-Foundation directive dated 2026-10-05."
   },
-  "live_mutation_authorized": true,
+  "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",
   "phase2_implementation_authorized": false,
   "schema": "hbnf-control-state-v2"
