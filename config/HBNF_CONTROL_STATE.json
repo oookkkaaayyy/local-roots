@@ -5,17 +5,17 @@
   "completed_receipts": [],
   "current_task": {
     "name": "Release07 all-kernel diagnosis and class-level fix preparation",
-    "status": "SEQ20_RECOVERY_BLOCKED__KEEP_ASSETS_TRANSACTION_NOT_YET_REHEARSED",
+    "status": "SEQ20_RECOVERY_AUTHORIZED_ONLY_THROUGH_VALIDATED_PRELIVE_GATE",
     "installed_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
     "installed_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "installed_release_role": "DIAGNOSTIC_TIMING_HOOK__PARTIAL_SWEEP_STOPPED__RECOVERY_REQUIRED",
     "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
     "blockers": [
-      "create an UNDEPLOYED Cloudflare Worker version from exact current script/settings using provider-native keep_assets=true and strict binding inheritance from version 29bdcc12-17ce-4feb-bb9e-e83cec5e1567; change only updater-consumed latest.json handling to exact signed seq20 recovery",
-      "verify that undeployed version through Version URL or equivalent isolated version readback: latest.json exact recovery manifest hash/role/sequence/release/BIN plus representative unchanged assets/config/bindings",
-      "prove exact rollback to current Worker version 29bdcc12-17ce-4feb-bb9e-e83cec5e1567 before enabling device mutation",
-      "then temporarily deploy exact verified recovery-pointer version, verify Opal updater sees seq20 recovery, execute exact signed Release07 recovery, and verify installed SHA 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-      "restore exact prior Cloudflare Worker version and preserve/promote decisive recovery evidence; do not resume seq19 diagnostics"
+      "before any mutation, create/validate the HBNF execution capsule and PRELIVE_PROOF for the provider-native Cloudflare keep_assets transaction; scripts/hbnf_guarded_run.py must pass both platform check-capsule and prelive-check",
+      "create an undeployed recovery-pointer Worker version from exact current content/settings with keep_assets=true and strict binding inheritance; verify exact seq20 recovery through Version URL plus representative unchanged assets/config/bindings",
+      "preserve exact current Cloudflare version 29bdcc12-17ce-4feb-bb9e-e83cec5e1567 as rollback target",
+      "only after the prelive proof passes: deploy exact verified recovery-pointer version, verify Opal sees exact seq20 recovery, execute exact Release07 recovery, verify installed SHA 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab, then restore exact prior Cloudflare version",
+      "set live mutation closed again after recovery; do not resume seq19 diagnostics"
     ],
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
     "publication_contract": {
@@ -40,6 +40,6 @@
       }
     }
   },
-  "live_mutation_authorized": false,
+  "live_mutation_authorized": true,
   "phase2_implementation_authorized": false
 }
