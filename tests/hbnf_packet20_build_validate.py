@@ -122,9 +122,21 @@ with tempfile.TemporaryDirectory() as td:
     provenance["animartrix_patched_header_sha256"] = hashlib.sha256(
         patched.read_bytes()
     ).hexdigest()
+    candidate_source_sha = (
+        "4449619d41a485126633baf15f35ec5507827587f2a38e6a372b8e5e4f2cab0b"
+    )
+    provenance["diagnostic_source_sha256"] = candidate_source_sha
+    provenance["candidate_release_id"] = (
+        "hbnf-matrix-packet20-timing-hook-v1-20261005-r2"
+    )
     (root / "provenance.json").write_text(json.dumps(provenance))
+    source_input_path = root / "source-input-sha256.txt"
+    source_input_path.write_text(
+        source_input_path.read_text().replace(m.EXPECTED_SOURCE_SHA256, candidate_source_sha)
+    )
     candidate_receipt = m.validate_artifact_dir(root, commit)
     assert candidate_receipt["render_value_cache_patch_sha256"] == render_patch_sha
+    assert candidate_receipt["diagnostic_source_sha256"] == candidate_source_sha
 
     (root / "animartrix-render-value-trig-cache.patch").write_bytes(b"wrong patch\n")
     try:

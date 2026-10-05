@@ -20,6 +20,14 @@ EXPECTED_WLED_BASE = "29b389df1c1aaec6ff53aea742d17063b985906c"
 EXPECTED_PLATFORMIO = "6.1.18"
 EXPECTED_ENVIRONMENT = "hbnf_matrix_wled16_packet20_diag"
 EXPECTED_SOURCE_SHA256 = "529e1bf718c3770b7d4ba6408178e9d3e7a4ed1d223b9bbf9071b68e75eed74b"
+PINNED_DIAGNOSTIC_SOURCES = {
+    EXPECTED_SOURCE_SHA256: None,
+    # Exact source identities used by the already-built r1 probe and the
+    # bounded r2 class-level render_value cache candidate.
+    "175541d69b1838e8e0ccd0adf623f8b34793c20ad25e0b1b43c13ecb4d5639a9": None,
+    "4449619d41a485126633baf15f35ec5507827587f2a38e6a372b8e5e4f2cab0b":
+        "hbnf-matrix-packet20-timing-hook-v1-20261005-r2",
+}
 EXPECTED_SOURCE_PATCH_SHA256 = "aca7b2fa6fe45ce992e162d91447351487e854279de373e691cf02615c149b04"
 EXPECTED_ANIMARTRIX_COMMIT = "81eb09b91c8c9c8c01f8ea442787f8127d56c72f"
 EXPECTED_ANIMARTRIX_UPSTREAM_BLOB = "db640748175cfdd70dc103fc23c830e646fa5ab6"
@@ -149,11 +157,18 @@ def validate_artifact_dir(
     require_equal(provenance.get("wled_base_commit"), EXPECTED_WLED_BASE, "provenance.wled_base_commit")
     require_equal(str(provenance.get("platformio_core")), EXPECTED_PLATFORMIO, "provenance.platformio_core")
     require_equal(provenance.get("environment"), EXPECTED_ENVIRONMENT, "provenance.environment")
-    require_equal(
-        provenance.get("diagnostic_source_sha256"),
-        EXPECTED_SOURCE_SHA256,
-        "provenance.diagnostic_source_sha256",
-    )
+    diagnostic_source_sha = provenance.get("diagnostic_source_sha256")
+    if diagnostic_source_sha not in PINNED_DIAGNOSTIC_SOURCES:
+        raise ValidationError(
+            "provenance.diagnostic_source_sha256 is not an exact pinned Packet20 source identity"
+        )
+    expected_candidate = PINNED_DIAGNOSTIC_SOURCES[diagnostic_source_sha]
+    if expected_candidate is not None:
+        require_equal(
+            provenance.get("candidate_release_id"),
+            expected_candidate,
+            "provenance.candidate_release_id",
+        )
     require_equal(
         provenance.get("source_patch_sha256"),
         EXPECTED_SOURCE_PATCH_SHA256,
@@ -262,7 +277,7 @@ def validate_artifact_dir(
     )
 
     source_hashes = (root / "source-input-sha256.txt").read_text()
-    if EXPECTED_SOURCE_SHA256 not in source_hashes:
+    if diagnostic_source_sha not in source_hashes:
         raise ValidationError("source-input-sha256.txt does not contain exact Packet20 source SHA")
     if "usermod_hbnf_foundation_v1.cpp" not in source_hashes:
         raise ValidationError("source-input-sha256.txt does not name Packet20 source file")
@@ -307,7 +322,8 @@ def validate_artifact_dir(
         "wled_base_commit": EXPECTED_WLED_BASE,
         "platformio_core": EXPECTED_PLATFORMIO,
         "environment": EXPECTED_ENVIRONMENT,
-        "diagnostic_source_sha256": EXPECTED_SOURCE_SHA256,
+        "diagnostic_source_sha256": diagnostic_source_sha,
+        "candidate_release_id": provenance.get("candidate_release_id"),
         "source_patch_sha256": EXPECTED_SOURCE_PATCH_SHA256,
         "animartrix_upstream_commit": EXPECTED_ANIMARTRIX_COMMIT,
         "animartrix_upstream_header_git_blob": EXPECTED_ANIMARTRIX_UPSTREAM_BLOB,

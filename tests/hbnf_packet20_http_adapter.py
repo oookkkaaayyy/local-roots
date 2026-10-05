@@ -139,6 +139,15 @@ diagnostic_config = json.loads(
 runner.validate_adapter(diagnostic_config)
 assert diagnostic_config["expected_release_id"] == diagnostic_release
 assert diagnostic_config["timeout_seconds"] == 75
+r2_config = json.loads(
+    (ROOT / "config/HBNF_PACKET20_LIVE_SWEEP_ADAPTER_20261005_R2.json").read_text()
+)
+runner.validate_adapter(r2_config)
+r2_release = "hbnf-matrix-packet20-timing-hook-v1-20261005-r2"
+assert r2_config["expected_release_id"] == r2_release
+assert r2_config["timeout_seconds"] == 75
+for command_name in ("snapshot_argv", "select_argv", "telemetry_argv", "restore_argv"):
+    assert r2_release in r2_config[command_name]
 inventory = json.loads(
     (ROOT / "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json").read_text()
 )
