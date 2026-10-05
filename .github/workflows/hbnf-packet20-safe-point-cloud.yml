@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: hbnf-packet20-safe-point-cloud-${{ github.ref }}
@@ -339,9 +339,25 @@ jobs:
           (root / 'size-and-headroom.txt').write_text(f"firmware_bytes={size}\nota_slot_bytes={slot}\nota_headroom_bytes={slot-size}\n")
           PY
 
-      - name: Upload build artifact
+      - name: Publish build package to one-use transfer branch
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          transfer_branch="hbnf-packet20-r4-artifact-${GITHUB_RUN_ID}"
+          mkdir -p "$GITHUB_WORKSPACE/.hbnf-r4-build-output"
+          cp -R /tmp/hbnf-p20-artifacts/. "$GITHUB_WORKSPACE/.hbnf-r4-build-output/"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch --orphan "$transfer_branch"
+          git add -f -A .hbnf-r4-build-output
+          git commit -m "Transfer exact HBNF R4 build package ${GITHUB_RUN_ID}"
+          git push origin "HEAD:refs/heads/$transfer_branch"
+
+      - name: Upload build artifact (best-effort secondary copy)
         if: always()
         uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: HBNF-Packet20-FastLED-R4-${{ github.run_id }}
           path: /tmp/hbnf-p20-artifacts
