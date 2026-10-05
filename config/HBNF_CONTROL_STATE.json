@@ -5,19 +5,19 @@
   "completed_receipts": [],
   "current_task": {
     "name": "Release07 all-kernel diagnosis and class-level fix preparation",
-    "status": "REPAIR_CLOSEOUT_INGESTED__DIAGNOSTIC_SWEEP_READY",
+    "status": "TIMING_HOOK_SEQ19_PUBLISHED__LIVE_PACKET20_READY",
     "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
     "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "installed_release_role": "DIAGNOSTIC_BASE__PERFORMANCE_REJECTED",
     "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
     "blockers": [
-      "content-address exact release07 source/build lineage",
-      "execute complete 28-kernel diagnostic sweep",
-      "derive smallest class-level performance fix from complete sweep",
-      "build and identify a corrected forward fix candidate",
-      "run candidate nonhardware tests"
+      "install signed diagnostic sequence 19 once",
+      "run one renderer-safe snapshot preflight",
+      "run one complete 28-kernel timing sweep if preflight passes",
+      "restore exact Release07 with signed recovery sequence 20 and verify exact restore",
+      "derive Packet21 only from the complete sweep report"
     ]
   },
-  "live_mutation_authorized": false,
+  "live_mutation_authorized": true,
   "phase2_implementation_authorized": false
 }
