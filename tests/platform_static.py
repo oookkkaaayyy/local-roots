@@ -130,4 +130,35 @@ assert policies["engineering_standard"]["recovery_path_proven_before_risky_mutat
 assert policies["engineering_standard"]["worker_directive_policy"].startswith("derive from validated execution capsule")
 assert policies["user_interaction"]["copy_paste_delivery"] == "one_single_fenced_block_per_action"
 
+# Prelive proof must bind exact capsule bytes and every mandatory stage to evidence.
+with tempfile.TemporaryDirectory() as td:
+    td = pathlib.Path(td)
+    cap = {
+        "schema": "local-roots-execution-capsule-v1",
+        "run_id": "test-run",
+        "repo_inputs": [],
+    }
+    cap_path = td / "CAPSULE.json"
+    cap_path.write_text(json.dumps(cap, sort_keys=True) + "\n")
+    proof = {
+        "schema": "local-roots-prelive-proof-v1",
+        "run_id": "test-run",
+        "capsule_sha256": module.sha256_file(cap_path),
+        "approved_for_mutation": True,
+        "stages": {
+            stage: {"status": "PASS", "evidence": [f"evidence/{stage}.json"]}
+            for stage in module.MANDATORY_PRELIVE_STAGES
+        },
+        "recovery_identity": {"identity": "known-good", "verification": "sha256-verified"},
+        "pre_mutation_state": {"deployment": "exact-version"},
+        "consumer_contract": {"verified": True, "identity": "exact-consumer-path"},
+    }
+    proof_path = td / "PRELIVE_PROOF.json"
+    proof_path.write_text(json.dumps(proof, sort_keys=True) + "\n")
+    assert module.validate_prelive_proof(cap_path, proof_path) == []
+    proof["stages"]["recovery-proof"]["status"] = "BLOCKED"
+    proof_path.write_text(json.dumps(proof, sort_keys=True) + "\n")
+    errs = module.validate_prelive_proof(cap_path, proof_path)
+    assert any("recovery-proof is not PASS" in e for e in errs), errs
+
 print("PASS: platform catalog, golden paths, timeout budgets, rollback rules, and anti-toil policy")
