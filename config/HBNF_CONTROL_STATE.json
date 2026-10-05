@@ -1,48 +1,7 @@
 {
-  "schema": "hbnf-control-state-v2",
-  "model_schema": "hbnf-control-model-v2",
-  "lifecycle_state": "DIAGNOSTIC_ACTIVE",
   "completed_receipts": [],
   "current_task": {
-    "name": "Fresh Packet20 offline preparation after verified Release07 recovery",
-    "status": "RELEASE07_RECOVERED__FRESH_PACKET20_PREPARATION",
-    "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
-    "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-    "installed_release_role": "BASELINE_RECOVERY_VERIFIED__SEQ20",
-    "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
-    "blockers": [],
-    "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "publication_contract": {
-      "updater_consumer": "latest.json",
-      "current_latest_role": "update",
-      "signed_recovery_manifest": "recovery.json",
-      "recovery_sequence": 20,
-      "recovery_manifest_sha256": "7741978130173a84d3f96aa80dd31a4ab8f6657d4810bdf492bc170f653a61b3",
-      "cloudflare_worker": "hbnf-matrix-firmware-stable",
-      "active_deployment_id": "dc7ffae3-62f6-49b8-9506-97eb3998efa4",
-      "active_version_id": "29bdcc12-17ce-4feb-bb9e-e83cec5e1567",
-      "exact_asset_reuse_status": "BLOCKED__VERSION_API_DID_NOT_EXPOSE_REUSABLE_ASSET_SET_TOKEN_OR_MANIFEST",
-      "safe_resolution_candidate": {
-        "mechanism": "temporary more-specific Cloudflare route overlay with no static assets",
-        "existing_route": "hbnightflyers.com/firmware/matrix/stable/*",
-        "temporary_route": "hbnightflyers.com/firmware/matrix/stable/latest.json*",
-        "temporary_worker": "hbnf-seq20-recovery-pointer-temp",
-        "original_worker_modified": false,
-        "original_assets_modified": false,
-        "rejected_candidate": "e4d31b2b-a9c1-4797-b5df-b8ad0121df6d",
-        "status": "SELECTED__REHEARSAL_REQUIRED"
-      }
-    },
-    "durable_recovery_evidence": {
-      "drive_folder_id": "1LwC5lYDwFT_bEJo9cVxDMTcJe-IF6BYr",
-      "replacement_candidate_blocker_file_id": "11YAoeq7XRygMAONHUXCPa1GDLF80ur29",
-      "zero_traffic_rehearsal_file_id": "1ZJOseh2J4ls9dGlF_SOH5DHAH9djd4xp",
-      "prelive_proof_file_id": "1BLZuPicWwL8_eNlPeJPhKXqEsFzyGoc2",
-      "prelive_check_file_id": "1V-7mHZQT_XVYPGuDBE2VKVXY1BwFvjFv"
-    },
     "autonomous_completion_authorization": {
-      "scope": "complete recovery and continue Cart 2.0 lifecycle autonomously as far as safely possible overnight",
-      "user_permission": "preapproved; do not stop to ask for routine permissions",
       "allowed": [
         "read/write GitHub project state and evidence",
         "read/write Drive/AKS project authority",
@@ -63,7 +22,63 @@
         "resume the old partial seq19 sweep",
         "use speculative repeated cloud/build attempts without a changed mechanism or new evidence"
       ],
-      "reporting": "do not return intermediate blockers; resolve or pivot. Return only when a substantive lifecycle milestone is complete, ideally Cart 2.0 ACCEPTED, or when a genuinely physical/user-only action is mathematically unavoidable."
+      "reporting": "do not return intermediate blockers; resolve or pivot. Return only when a substantive lifecycle milestone is complete, ideally Cart 2.0 ACCEPTED, or when a genuinely physical/user-only action is mathematically unavoidable.",
+      "scope": "complete recovery and continue Cart 2.0 lifecycle autonomously as far as safely possible overnight",
+      "user_permission": "preapproved; do not stop to ask for routine permissions"
+    },
+    "blockers": [
+      "fresh Packet20 seq21 live diagnostic transaction not yet completed"
+    ],
+    "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
+    "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
+    "diagnostic_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
+    "diagnostic_size_bytes": 1462480,
+    "diagnostic_source_identity": "Git commit 57cc3a7606144c81fb84946945d2bbc51116bd70; exact overlay usermod source SHA 175541d69b1838e8e0ccd0adf623f8b34793c20ad25e0b1b43c13ecb4d5639a9; source archive stored in commit tree",
+    "durable_recovery_evidence": {
+      "drive_folder_id": "1LwC5lYDwFT_bEJo9cVxDMTcJe-IF6BYr",
+      "prelive_check_file_id": "1V-7mHZQT_XVYPGuDBE2VKVXY1BwFvjFv",
+      "prelive_proof_file_id": "1BLZuPicWwL8_eNlPeJPhKXqEsFzyGoc2",
+      "replacement_candidate_blocker_file_id": "11YAoeq7XRygMAONHUXCPa1GDLF80ur29",
+      "zero_traffic_rehearsal_file_id": "1ZJOseh2J4ls9dGlF_SOH5DHAH9djd4xp"
+    },
+    "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
+    "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
+    "installed_release_role": "BASELINE_RECOVERY_VERIFIED__SEQ20",
+    "last_recovery": {
+      "attempts": 1,
+      "evidence_drive_file_id": "1cKiC-0hmQrDV4n1uxV4HdZPL6nFPzqXy",
+      "evidence_zip_sha256": "98622da04e4716f5e38f6e2ce7c8b072986c0e0a89247fa4964f71e924868d6d",
+      "manifest_sha256": "7741978130173a84d3f96aa80dd31a4ab8f6657d4810bdf492bc170f653a61b3",
+      "method": "one exact local WLED /update multipart upload following installed Opal updater transport contract",
+      "result": "PASS",
+      "signature_sha256": "d197c58e21010f3a1eec09d47e8e5abc452246355a6ad4f36f40c16b93c98be3"
+    },
+    "name": "Fresh bounded Packet20 run: seq21 exact r1 diagnostic then seq22 Release07 recovery",
+    "next_work": "Execute guarded exact source-bound seq21 diagnostic; one snapshot; one complete 28-kernel sweep; exact renderer restore; direct-LAN seq22 Release07 recovery.",
+    "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
+    "planned_diagnostic_sequence": 21,
+    "planned_recovery_sequence": 22,
+    "publication_contract": {
+      "active_deployment_id": "dc7ffae3-62f6-49b8-9506-97eb3998efa4",
+      "active_version_id": "29bdcc12-17ce-4feb-bb9e-e83cec5e1567",
+      "cloudflare_worker": "hbnf-matrix-firmware-stable",
+      "current_latest_role": "update",
+      "exact_asset_reuse_status": "BLOCKED__VERSION_API_DID_NOT_EXPOSE_REUSABLE_ASSET_SET_TOKEN_OR_MANIFEST",
+      "recovery_manifest_sha256": "7741978130173a84d3f96aa80dd31a4ab8f6657d4810bdf492bc170f653a61b3",
+      "recovery_sequence": 20,
+      "safe_resolution_candidate": {
+        "existing_route": "hbnightflyers.com/firmware/matrix/stable/*",
+        "mechanism": "temporary more-specific Cloudflare route overlay with no static assets",
+        "original_assets_modified": false,
+        "original_worker_modified": false,
+        "rejected_candidate": "e4d31b2b-a9c1-4797-b5df-b8ad0121df6d",
+        "status": "SELECTED__REHEARSAL_REQUIRED",
+        "temporary_route": "hbnightflyers.com/firmware/matrix/stable/latest.json*",
+        "temporary_worker": "hbnf-seq20-recovery-pointer-temp"
+      },
+      "signed_recovery_manifest": "recovery.json",
+      "updater_consumer": "latest.json"
     },
     "recovery_strategy_priority": [
       "1: stop using Cloudflare publication as a prerequisite for this recovery; inspect the installed Opal updater and use its already-proven device-upload mechanism with the exact verified Release07 BIN as local input if possible",
@@ -71,25 +86,25 @@
       "3: only if neither local path is technically available, use a temporary cloud mechanism; do not spend more time on static-asset reconstruction",
       "after successful Release07 recovery, use the same direct-LAN exact-artifact mechanism as the pre-proven rollback path for future diagnostic/fix sessions"
     ],
-    "target_recovery": {
-      "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
-      "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-      "size_bytes": 1458624
-    },
     "seq19_diagnostic_incident": "CLOSED_RECOVERED_TO_RELEASE07",
-    "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
-    "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
-    "last_recovery": {
-      "method": "one exact local WLED /update multipart upload following installed Opal updater transport contract",
-      "manifest_sha256": "7741978130173a84d3f96aa80dd31a4ab8f6657d4810bdf492bc170f653a61b3",
-      "signature_sha256": "d197c58e21010f3a1eec09d47e8e5abc452246355a6ad4f36f40c16b93c98be3",
-      "attempts": 1,
-      "result": "PASS",
-      "evidence_drive_file_id": "1cKiC-0hmQrDV4n1uxV4HdZPL6nFPzqXy",
-      "evidence_zip_sha256": "98622da04e4716f5e38f6e2ce7c8b072986c0e0a89247fa4964f71e924868d6d"
-    },
-    "next_work": "Complete all deterministic offline closure for a fresh 28-kernel Packet20 run bound to an exact local diagnostic artifact, renderer-safe one-snapshot-per-boot contract, timeout hierarchy, exact runtime telemetry, preserved raw post-restore state, and the proven direct-LAN Release07 recovery path. Do not resume the old partial sweep or require mutable Cloudflare publication."
+    "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
+    "status": "DIAGNOSTIC_ARTIFACT_SOURCE_BOUND__LIVE_TRANSACTION_READY",
+    "target_recovery": {
+      "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+      "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
+      "size_bytes": 1458624
+    }
   },
-  "live_mutation_authorized": false,
-  "phase2_implementation_authorized": false
+  "lifecycle_state": "DIAGNOSTIC_ACTIVE",
+  "live_mutation_authorization": {
+    "diagnostic_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
+    "expiry": "Close live mutation immediately after Release07 seq22 verification or on any defined stop condition.",
+    "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "scope": "One guarded fresh Packet20 transaction: exact source-bound diagnostic seq21, one renderer-safe snapshot, one all-28 sweep, exact state restore, and exact Release07 local-LAN recovery seq22.",
+    "user_authorization": "Explicitly preauthorized by 2026-10-05 overnight completion directive."
+  },
+  "live_mutation_authorized": true,
+  "model_schema": "hbnf-control-model-v2",
+  "phase2_implementation_authorized": false,
+  "schema": "hbnf-control-state-v2"
 }
