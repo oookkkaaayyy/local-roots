@@ -4,11 +4,11 @@
   "lifecycle_state": "DIAGNOSTIC_ACTIVE",
   "completed_receipts": [],
   "current_task": {
-    "name": "Release07 all-kernel diagnosis and class-level fix preparation",
-    "status": "SEQ20_RECOVERY__AUTONOMOUS_COMPLETION_AUTHORIZED",
-    "installed_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
-    "installed_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
-    "installed_release_role": "DIAGNOSTIC_TIMING_HOOK__PARTIAL_SWEEP_STOPPED__RECOVERY_REQUIRED",
+    "name": "Fresh Packet20 offline preparation after verified Release07 recovery",
+    "status": "RELEASE07_RECOVERED__FRESH_PACKET20_PREPARATION",
+    "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
+    "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "installed_release_role": "BASELINE_RECOVERY_VERIFIED__SEQ20",
     "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
     "blockers": [],
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
@@ -75,8 +75,21 @@
       "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
       "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "size_bytes": 1458624
-    }
+    },
+    "seq19_diagnostic_incident": "CLOSED_RECOVERED_TO_RELEASE07",
+    "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
+    "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
+    "last_recovery": {
+      "method": "one exact local WLED /update multipart upload following installed Opal updater transport contract",
+      "manifest_sha256": "7741978130173a84d3f96aa80dd31a4ab8f6657d4810bdf492bc170f653a61b3",
+      "signature_sha256": "d197c58e21010f3a1eec09d47e8e5abc452246355a6ad4f36f40c16b93c98be3",
+      "attempts": 1,
+      "result": "PASS",
+      "evidence_drive_file_id": "1cKiC-0hmQrDV4n1uxV4HdZPL6nFPzqXy",
+      "evidence_zip_sha256": "98622da04e4716f5e38f6e2ce7c8b072986c0e0a89247fa4964f71e924868d6d"
+    },
+    "next_work": "Complete all deterministic offline closure for a fresh 28-kernel Packet20 run bound to an exact local diagnostic artifact, renderer-safe one-snapshot-per-boot contract, timeout hierarchy, exact runtime telemetry, preserved raw post-restore state, and the proven direct-LAN Release07 recovery path. Do not resume the old partial sweep or require mutable Cloudflare publication."
   },
-  "live_mutation_authorized": true,
+  "live_mutation_authorized": false,
   "phase2_implementation_authorized": false
 }

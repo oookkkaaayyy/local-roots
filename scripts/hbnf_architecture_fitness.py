@@ -75,6 +75,9 @@ for base in [ROOT/"config",ROOT/"work",ROOT/"scripts"]:
     if not base.exists(): continue
     for p in base.rglob("*"):
         if not p.is_file() or p.suffix.lower() not in {".json",".md",".py"}: continue
+        # The validator contains the marker in its own scan predicate; do not
+        # count that implementation detail as a second authority declaration.
+        if p.resolve() == pathlib.Path(__file__).resolve(): continue
         try: txt=p.read_text(errors="replace")
         except Exception: continue
         if '"PRIMARY_OPERATIONAL_DECISION_MODEL"' in txt:

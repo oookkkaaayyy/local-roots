@@ -1,0 +1,29 @@
+{
+  "authority_head_before_update": "5c9840bc9bbc71e10364a9119479f6e1a0af0091",
+  "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
+  "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+  "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
+  "lifecycle_state": "DIAGNOSTIC_ACTIVE",
+  "live_mutation_authorized": false,
+  "next": "Fresh Packet20 offline preparation; do not resume the old partial sweep; exact direct-LAN Release07 recovery is proven and mutation authorization is closed until the next capsule/proof.",
+  "old_partial_packet20_sweep": "INVALID_NON_RESUMABLE",
+  "outcome": "PASS",
+  "recovery_evidence_drive_file_id": "1cKiC-0hmQrDV4n1uxV4HdZPL6nFPzqXy",
+  "recovery_evidence_zip_sha256": "98622da04e4716f5e38f6e2ce7c8b072986c0e0a89247fa4964f71e924868d6d",
+  "release07_recovery_verified": true,
+  "repository_branch": "hbnf-cart2-ready-to-implement-staging-20261001",
+  "required_tests": {
+    "scripts/hbnf_architecture_fitness.py": "PASS",
+    "tests/hbnf_control.py": "PASS",
+    "tests/hbnf_guarded_run.py": "PASS",
+    "tests/hbnf_kernel_sweep_report.py": "PASS",
+    "tests/hbnf_live_kernel_sweep.py": "PASS",
+    "tests/hbnf_packet20_build_validate.py": "PASS",
+    "tests/hbnf_packet20_http_adapter.py": "PASS",
+    "tests/hbnf_runtime_qualify_static.py": "PASS",
+    "tests/hbnf_source_tree_identity.py": "PASS"
+  },
+  "schema": "hbnf-release07-recovery-state-update-v1",
+  "seq19_incident": "CLOSED_RECOVERED",
+  "test_fix": "Architecture fitness self-scan now excludes its own source predicate to avoid false secondary-authority hit."
+}
