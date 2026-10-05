@@ -1,0 +1,10 @@
+# R4 FastLED fixed-point offline gates
+
+- Candidate: `hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4`
+- Baseline renderer source: exact R1 vendor header SHA-256 `bd9d146e2ce5fde991a895ccc2ad2773df1cc77cb815381679c17c6425d7bbe8`; R1 HBNF usermod source SHA-256 `175541d69b1838e8e0ccd0adf623f8b34793c20ad25e0b1b43c13ecb4d5639a9`. The R4 transformer test reconstructs the exact R1 header after removing only the shared `render_value` replacement and scoped compiler wrapper.
+- FastLED authority: 3.10.4 commit `adedfc40e73fb80f8e930318781036d8fe1dbd9f`. License: MIT, SHA-256 `4358d4c37f1305b43a3117a6a12780f666bf285538de0b28991613c0ccacecd8`. Exact primitive hashes are in `source-provenance.json`.
+- Inventory: `28` retained effect IDs/order mapped to upstream float and fixed classes in `effect-map.json`. HBNF keeps its original effect bodies, order, IDs, audio/control/clock and Packet20 telemetry. All 28 call the common upstream fixed-point render/noise/trig path; the map also records each corresponding FastLED fixed class. `SM5` maps to `SpiralMatrix5_FP`; `Chasing_Spirals` maps to the upstream Q31 variant.
+- R4 uses upstream `render_value_fp_from_float`, Q16.16 coordinate conversion, `sincos32`, fixed-point Perlin with the z=0 2D path, and the upstream 257-entry fade lookup table. No R2 trig-cache patch is present.
+- FastLED `FL_FAST_MATH_BEGIN` and `FL_OPTIMIZATION_LEVEL_O3_BEGIN` bracket only the included ANIMartRIX header; matching end macros close the scope. No global PlatformIO optimization flags change.
+- Golden replay: 28 effects × 4 cases × 512 pixels = 57,344 pixels. Exact pixels `57,342/57,344` (99.996512%); mean channel absolute error 0.00013929; p95 0; maximum 12. Two cases have a single one-channel excursion in Parametric_Water; no other sampled pixel differs. All explicit strict host visual thresholds pass.
+- Host tests PASS: `tests/hbnf_packet20_r4_backport.py` and `r4-offline/test_r4_golden.py`. These are source/golden gates only; candidate firmware build, binary size/headroom, and live R4 trial have not occurred yet.

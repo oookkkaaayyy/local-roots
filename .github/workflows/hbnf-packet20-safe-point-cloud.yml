@@ -1,6 +1,7 @@
 name: HBNF Packet20 safe-point cloud build
 
-# One explicitly authorized R3 compiler/math A-B build. Keep manual-only: never retrigger or retry without new authorization.
+# Quota lock 2026-10-04: this build already succeeded and must not retrigger.
+# Manual dispatch remains available only for a separately authorized future run.
 on:
   workflow_dispatch:
 
@@ -19,13 +20,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: R3 supersession gate
-        shell: bash
-        run: |
-          echo "R3 compiler-only live/build lane is superseded by HBNF control-state commit b79e43ff5673f63e15dc593bc1498201cac65034."
-          echo "Read config/HBNF_CONTROL_STATE.json on hbnf-cart2-ready-to-implement-staging-20261001 and implement the selected R4 FastLED fixed-point backport before triggering this workflow again."
-          exit 64
-
       - name: Python
         uses: actions/setup-python@v5
         with:
@@ -40,27 +34,28 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$GITHUB_REF" = "refs/heads/hbnf-packet20-safe-point-cloud-20261004"
+          mkdir -p /tmp/hbnf-p20-artifacts
+          test "$GITHUB_REF" = "refs/heads/hbnf-packet20-fastled-r4-20261005"
           SOURCE=.hbnf-packet20-cloud/source/usermod_hbnf_foundation_v1.cpp
-          test "$(sha256sum "$SOURCE" | awk '{print $1}')" = "e8f2b185a72aa880d6cb3cc07d4d6a774a69449e1184f49b6bd00d2f9cb8e1ee"
-          test ! -e .hbnf-packet20-cloud/source/animartrix-render-value-trig-cache.patch
+          test "$(sha256sum "$SOURCE" | awk '{print $1}')" = "daab85f2fa2d2271e69a414416a6918e58da2d90f1f8af79aa858dd1daaea310"
           python - <<'PY'
           import base64, hashlib, pathlib
           root = pathlib.Path(".hbnf-packet20-cloud/source")
           raw = base64.b64decode((root / "hbnf-p20-build-overlay-20261004.tar.gz.b64").read_bytes())
           assert hashlib.sha256(raw).hexdigest() == "7beac2c97a38257da08d1128f4a01fb39c5f90ec0811b5da6cb5bdf9310192ce"
-          source = (root / "usermod_hbnf_foundation_v1.cpp").read_bytes()
-          old = b"hbnf-matrix-packet20-timing-hook-v1-20261004-r1"
-          new = b"hbnf-matrix-packet20-speedmath-v1-20261005-r3"
-          assert source.count(new) == 3
-          assert hashlib.sha256(source.replace(new, old)).hexdigest() == "175541d69b1838e8e0ccd0adf623f8b34793c20ad25e0b1b43c13ecb4d5639a9"
           pathlib.Path("/tmp/hbnf-p20-overlay.tar.gz").write_bytes(raw)
           PY
+          git clone --filter=blob:none https://github.com/FastLED/FastLED.git /tmp/fastled
+          git -C /tmp/fastled checkout adedfc40e73fb80f8e930318781036d8fe1dbd9f
+          test "$(git -C /tmp/fastled rev-parse HEAD)" = "adedfc40e73fb80f8e930318781036d8fe1dbd9f"
+          python3 tests/hbnf_packet20_r4_backport.py --fastled-root /tmp/fastled
+          python3 evidence/hbnf-packet20-fix-candidate-20261005/r4-offline/test_r4_golden.py --fastled-root /tmp/fastled --repo-root "$GITHUB_WORKSPACE"
 
       - name: Fetch exact WLED 16.0.1 base and apply overlay
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p /tmp/hbnf-p20-artifacts
           git clone --filter=blob:none https://github.com/wled/WLED.git /tmp/wled
           cd /tmp/wled
           git checkout 29b389df1c1aaec6ff53aea742d17063b985906c
@@ -81,9 +76,24 @@ jobs:
           test "$(grep -Fc 'extern "C" void hbnfPerfFrameEnd();' /tmp/wled/wled00/bus_manager.cpp)" = 1
           test "$(grep -Fc 'hbnfPerfFrameEnd();' /tmp/wled/wled00/bus_manager.cpp)" = 2
           cp "$GITHUB_WORKSPACE/.hbnf-packet20-cloud/source/usermod_hbnf_foundation_v1.cpp" /tmp/wled/usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp
+          test "$(git -C /tmp/fastled rev-parse HEAD)" = "adedfc40e73fb80f8e930318781036d8fe1dbd9f"
+          cp /tmp/fastled/LICENSE /tmp/hbnf-p20-artifacts/FASTLED-LICENSE
+          python - <<'PY'
+          import pathlib
+          p = pathlib.Path("platformio_override.ini")
+          s = p.read_text()
+          target = "[env:hbnf_matrix_wled16_packet20_diag]"
+          start = s.index(target); end = s.find("\n[", start + len(target))
+          if end < 0: end = len(s)
+          block = s[start:end]
+          needle = "-DHBNF_PACKET20_DIAGNOSTICS"
+          assert block.count(needle) == 1
+          block = block.replace(needle, needle + " -I/tmp/fastled/src", 1)
+          p.write_text(s[:start] + block + s[end:])
+          PY
           test -f /tmp/wled/usermods/hbnf_foundation_v1/hbnf_foundation_core.h
           test -f /tmp/wled/pio-scripts/load_usermods.py
-          test "$(sha256sum /tmp/wled/usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp | awk '{print $1}')" = "e8f2b185a72aa880d6cb3cc07d4d6a774a69449e1184f49b6bd00d2f9cb8e1ee"
+          test "$(sha256sum /tmp/wled/usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp | awk '{print $1}')" = "daab85f2fa2d2271e69a414416a6918e58da2d90f1f8af79aa858dd1daaea310"
           grep -q 'hbnf_matrix_wled16_packet20_diag' platformio_override.ini
           mkdir -p /tmp/hbnf-p20-artifacts
           sha256sum platformio_override.ini usermods/hbnf_foundation_v1/* packet20-frame-timing.patch wled00/bus_manager.cpp > /tmp/hbnf-p20-artifacts/source-input-sha256.txt
@@ -166,52 +176,8 @@ jobs:
           assert anim in final_block
           PY
 
-          # Capture the R1 compiler environment before changing any build flags.
-          pio project config --json-output > /tmp/hbnf-p20-artifacts/project-config-r1.json
-          pio pkg install -e hbnf_matrix_wled16_packet20_diag
-          pio run -e hbnf_matrix_wled16_packet20_diag -t envdump > /tmp/hbnf-p20-artifacts/effective-build-env-r1.txt
-          python - <<'PY'
-          import re
-          from pathlib import Path
-          s=Path("/tmp/hbnf-p20-artifacts/effective-build-env-r1.txt").read_text()
-          chunks=[]
-          for name in ("CCFLAGS","CXXFLAGS"):
-            next_key={"CCFLAGS":"CFILESUFFIX","CXXFLAGS":"DSUFFIXES"}[name]
-            m=re.search(r"(?ms)^  '"+name+r"': \[(.*?)^  '"+next_key+r"':",s)
-            assert m, f"R1 effective envdump omitted {name}"
-            chunks.extend(re.findall(r"'([^']*)'",m.group(1)))
-          flags=set(chunks)
-          assert "-Os" in flags, f"R1 effective compiler flags did not contain -Os: {sorted(flags)}"
-          assert "-O2" not in flags and "-fsingle-precision-constant" not in flags
-          PY
-
-          # Materialize WLED 16.0.1's own optional Speed_Flags definition verbatim,
-          # then opt in only the Packet20 diagnostic env plus single-precision literals.
-          python - <<'PY'
-          import pathlib,re
-          sample=pathlib.Path("platformio_override.sample.ini").read_text()
-          match=re.search(r"(?ms)^\[Speed_Flags\]\n.*?(?=^\[|\Z)",sample)
-          assert match, "pinned WLED Speed_Flags definition missing"
-          block=match.group(0).rstrip()+"\n"
-          p=pathlib.Path("platformio_override.ini"); text=p.read_text()
-          assert "[Speed_Flags]" not in text
-          text=text.rstrip()+"\n\n"+block
-          target="[env:hbnf_matrix_wled16_packet20_diag]"
-          start=text.index(target); end=text.find("\n[",start+len(target))
-          if end<0: end=len(text)
-          env=text[start:end]
-          old="build_flags = ${env:hbnf_matrix_wled16_max.build_flags} -DHBNF_PACKET20_DIAGNOSTICS"
-          new=("build_unflags = ${env:hbnf_matrix_wled16_max.build_unflags} ${Speed_Flags.build_unflags}\n"
-               "build_flags = ${env:hbnf_matrix_wled16_max.build_flags} ${Speed_Flags.build_flags} -fsingle-precision-constant -DHBNF_PACKET20_DIAGNOSTICS")
-          assert env.count(old)==1
-          env=env.replace(old,new,1)
-          text=text[:start]+env+text[end:]
-          p.write_text(text)
-          assert "-fsingle-precision-constant" in p.read_text()
-          PY
           sha256sum platformio_override.ini usermods/hbnf_foundation_v1/* packet20-frame-timing.patch wled00/bus_manager.cpp > /tmp/hbnf-p20-artifacts/source-input-sha256.txt
           pio project config --json-output > /tmp/hbnf-p20-artifacts/project-config.json
-          cp platformio_override.sample.ini /tmp/hbnf-p20-artifacts/wled-platformio_override.sample.ini
 
           # Fail before compile if the known-good WLED ESP32 closure is still
           # absent. These exact packages were present in prior successful HBNF
@@ -222,9 +188,7 @@ jobs:
           grep -q 'QuickESPNow' /tmp/hbnf-p20-artifacts/project-config.json
           grep -q 'netmindz/animartrix' /tmp/hbnf-p20-artifacts/project-config.json
           grep -q '81eb09b91c8c9c8c01f8ea442787f8127d56c72f' /tmp/hbnf-p20-artifacts/project-config.json
-          grep -q -- '-O2' /tmp/hbnf-p20-artifacts/project-config.json
-          grep -q -- '-fsingle-precision-constant' /tmp/hbnf-p20-artifacts/project-config.json
-          grep -q -- '-fno-jump-tables' /tmp/hbnf-p20-artifacts/project-config.json
+          grep -q '/tmp/fastled/src' /tmp/hbnf-p20-artifacts/project-config.json
 
           # Run 3 proved the dependency itself is present, then compiled far
           # enough to expose four Release07 animation-clock members that exist
@@ -233,25 +197,7 @@ jobs:
           # and apply that exact vendor patch before the one compile.
           PATCH="$GITHUB_WORKSPACE/.hbnf-packet20-cloud/source/animartrix-clock.patch"
           test "$(sha256sum "$PATCH" | awk '{print $1}')" = "f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4"
-          # Dump the real SCons compiler environment before the compile starts.
-          pio run -e hbnf_matrix_wled16_packet20_diag -t envdump > /tmp/hbnf-p20-artifacts/effective-build-env.txt
-          python - <<'PY'
-          from pathlib import Path
-          import re
-          s=Path("/tmp/hbnf-p20-artifacts/effective-build-env.txt").read_text()
-          required=["-O2","-free","-fipa-pta","-fno-jump-tables","-fno-tree-switch-conversion","-freorder-blocks","-Wwrite-strings","-fstrict-volatile-bitfields","-fsingle-precision-constant"]
-          # envdump includes BUILD_UNFLAGS, so inspect only the final compiler flag lists.
-          chunks=[]
-          for name in ("CCFLAGS","CXXFLAGS"):
-            next_key={"CCFLAGS":"CFILESUFFIX","CXXFLAGS":"DSUFFIXES"}[name]
-            m=re.search(r"(?ms)^  '"+name+r"': \[(.*?)^  '"+next_key+r"':",s)
-            assert m, f"effective envdump omitted {name}"
-            chunks.extend(re.findall(r"'([^']*)'",m.group(1)))
-          compiler_flags=set(chunks)
-          missing=[x for x in required if x not in compiler_flags]
-          assert not missing, f"effective compiler env missing required WLED/R3 flags: {missing}"
-          assert "-Os" not in compiler_flags, "effective compiler flags still contain -Os"
-          PY
+          pio pkg install -e hbnf_matrix_wled16_packet20_diag
           mapfile -t anim_headers < <(find .pio/libdeps/hbnf_matrix_wled16_packet20_diag -type f -name ANIMartRIX.h -print)
           test "${#anim_headers[@]}" -eq 1
           ANIM_HEADER="${anim_headers[0]}"
@@ -264,11 +210,19 @@ jobs:
           grep -q 'bool animation_clock_started_ = false;' "$ANIM_HEADER"
           grep -q 'void calculate_oscillators(const oscillators &timings) {' "$ANIM_HEADER"
           grep -q 'void run_default_oscillators() {' "$ANIM_HEADER"
-          # R3 is the exact R1 header lineage: apply only the existing clock patch.
-          ! grep -q 'cached_angle_bits\|cached_cos = cosf(animation.angle)\|cached_sin = sinf(animation.angle)' "$ANIM_HEADER"
           sha256sum "$PATCH" "$ANIM_HEADER" >> /tmp/hbnf-p20-artifacts/source-input-sha256.txt
           cp "$PATCH" /tmp/hbnf-p20-artifacts/animartrix-clock.patch
           cp "$ANIM_HEADER" /tmp/hbnf-p20-artifacts/ANIMartRIX.patched.h
+          python "$GITHUB_WORKSPACE/scripts/hbnf_packet20_r4_fastled_backport.py" --header "$ANIM_HEADER" --fastled-root /tmp/fastled --apply
+          test "$(sha256sum "$ANIM_HEADER" | awk '{print $1}')" = "db7bc1739ffcfee0e7447edaffcb1c2b48d438b66d6aaec10f3a8b1f592ed509"
+          grep -q 'FL_FAST_MATH_BEGIN' "$ANIM_HEADER"
+          grep -q 'FL_OPTIMIZATION_LEVEL_O3_BEGIN' "$ANIM_HEADER"
+          grep -q 'perlin_s16x16::pnoise2d_raw' /tmp/fastled/src/fl/fx/2d/animartrix_detail/render_value_fp.h
+          grep -q 'sincos32' /tmp/fastled/src/fl/fx/2d/animartrix_detail/render_value_fp.h
+          grep -q 'FL_OPTIMIZATION_LEVEL_O3_END' "$ANIM_HEADER"
+          grep -q 'FL_FAST_MATH_END' "$ANIM_HEADER"
+          cp "$ANIM_HEADER" /tmp/hbnf-p20-artifacts/ANIMartRIX.r4.h
+          sha256sum "$ANIM_HEADER" /tmp/fastled/LICENSE >> /tmp/hbnf-p20-artifacts/source-input-sha256.txt
 
       - name: Compile once
         shell: bash
@@ -330,6 +284,9 @@ jobs:
           assert "pre:pio-scripts/build_ui.py" not in override
           PY
 
+          sed -n '165,205p' /tmp/fastled/src/fl/stl/compiler_control.h > /tmp/hbnf-p20-artifacts/compiler-control.txt
+          grep -Fq 'GCC optimize (\"fast-math\")' /tmp/hbnf-p20-artifacts/compiler-control.txt
+          grep -Fq 'GCC optimize (\"O3\")' /tmp/hbnf-p20-artifacts/compiler-control.txt
           set +e
           pio run -v -e hbnf_matrix_wled16_packet20_diag 2>&1 | tee /tmp/hbnf-p20-artifacts/build.log
           status=${PIPESTATUS[0]}
@@ -338,17 +295,6 @@ jobs:
             printf 'BUILD_FAILED exit_code=%s\n' "$status" > /tmp/hbnf-p20-artifacts/build-result.txt
             exit "$status"
           fi
-          python - <<'PY'
-          from pathlib import Path
-          lines=Path("/tmp/hbnf-p20-artifacts/build.log").read_text(errors="replace").splitlines()
-          matches=[line for line in lines if "usermod_hbnf_foundation_v1.cpp" in line and ("xtensa-esp32-elf-g++" in line or "xtensa-esp32-elf-gcc" in line)]
-          assert matches, "verbose build log omitted HBNF usermod compile command"
-          cmd=matches[-1]
-          for flag in ("-O2","-fsingle-precision-constant","-free","-fipa-pta","-fno-jump-tables","-fno-tree-switch-conversion","-freorder-blocks","-Wwrite-strings","-fstrict-volatile-bitfields"):
-            assert flag in cmd, f"compile command missing {flag}"
-          assert "-Os" not in cmd, "compile command still contains -Os"
-          Path("/tmp/hbnf-p20-artifacts/effective-usercode-compile-command.txt").write_text(cmd+"\n")
-          PY
           cp .pio/build/hbnf_matrix_wled16_packet20_diag/firmware.bin /tmp/hbnf-p20-artifacts/firmware.bin
           cp .pio/build/hbnf_matrix_wled16_packet20_diag/firmware.elf /tmp/hbnf-p20-artifacts/firmware.elf
           pio project metadata --json-output > /tmp/hbnf-p20-artifacts/project-metadata.json
@@ -363,38 +309,32 @@ jobs:
           manifest = {
               "status": "BUILD_SUCCEEDED",
               "github_repository": "oookkkaaayyy/local-roots",
-              "github_branch": "hbnf-packet20-safe-point-cloud-20261004",
+              "github_branch": "hbnf-packet20-fastled-r4-20261005",
               "github_commit": os.environ["GH_SHA"],
               "github_run_id": os.environ["GH_RUN_ID"],
               "wled_base_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
               "platformio_core": "6.1.18",
               "environment": "hbnf_matrix_wled16_packet20_diag",
-              "diagnostic_source_sha256": hashlib.sha256(pathlib.Path("/tmp/wled/usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp").read_bytes()).hexdigest(),
-              "r1_source_sha256": "175541d69b1838e8e0ccd0adf623f8b34793c20ad25e0b1b43c13ecb4d5639a9",
-              "candidate_release_id": "hbnf-matrix-packet20-speedmath-v1-20261005-r3",
-              "source_delta_class": "candidate_identity_metadata_only; normalized candidate source SHA-256 equals exact R1 source",
-              "wled_speed_flags_definition_sha256": hashlib.sha256(pathlib.Path("/tmp/wled/platformio_override.sample.ini").read_bytes()).hexdigest(),
-              "effective_compiler_env_before_sha256": hashlib.sha256((root / "effective-build-env-r1.txt").read_bytes()).hexdigest(),
-              "effective_compiler_env_after_sha256": hashlib.sha256((root / "effective-build-env.txt").read_bytes()).hexdigest(),
-              "project_config_before_sha256": hashlib.sha256((root / "project-config-r1.json").read_bytes()).hexdigest(),
-              "r2_trig_cache_patch_applied": False,
+              "diagnostic_source_sha256": "daab85f2fa2d2271e69a414416a6918e58da2d90f1f8af79aa858dd1daaea310",
+              "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4",
+              "fastled_release": "3.10.4",
+              "fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+              "fastled_license_sha256": hashlib.sha256((pathlib.Path("/tmp/fastled/LICENSE")).read_bytes()).hexdigest(),
+              "animartrix_r1_source_sha256": "bd9d146e2ce5fde991a895ccc2ad2773df1cc77cb815381679c17c6425d7bbe8",
+              "r4_backported_header_sha256": hashlib.sha256((root / "ANIMartRIX.r4.h").read_bytes()).hexdigest(),
               "frame_timing_patch_sha256": hashlib.sha256((pathlib.Path("/tmp/wled/packet20-frame-timing.patch")).read_bytes()).hexdigest(),
               "patched_bus_manager_sha256": hashlib.sha256((pathlib.Path("/tmp/wled/wled00/bus_manager.cpp")).read_bytes()).hexdigest(),
               "source_patch_sha256": "aca7b2fa6fe45ce992e162d91447351487e854279de373e691cf02615c149b04",
               "animartrix_upstream_commit": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f",
               "animartrix_upstream_header_git_blob": "db640748175cfdd70dc103fc23c830e646fa5ab6",
               "animartrix_clock_patch_sha256": hashlib.sha256((root / "animartrix-clock.patch").read_bytes()).hexdigest(),
-
-              "animartrix_patched_header_sha256": hashlib.sha256((root / "ANIMartRIX.patched.h").read_bytes()).hexdigest(),
+              "animartrix_clock_patched_header_sha256": hashlib.sha256((root / "ANIMartRIX.patched.h").read_bytes()).hexdigest(),
+              "animartrix_r4_header_sha256": hashlib.sha256((root / "ANIMartRIX.r4.h").read_bytes()).hexdigest(),
               "firmware_sha256": hashlib.sha256(binary.read_bytes()).hexdigest(),
               "firmware_bytes": size,
               "ota_slot_bytes": slot,
               "ota_headroom_bytes": slot - size
           }
-          source=pathlib.Path("/tmp/wled/usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp").read_bytes()
-          original=b"hbnf-matrix-packet20-timing-hook-v1-20261004-r1"
-          candidate=b"hbnf-matrix-packet20-speedmath-v1-20261005-r3"
-          assert source.count(candidate)==3 and hashlib.sha256(source.replace(candidate,original)).hexdigest()==manifest["r1_source_sha256"]
           (root / 'provenance.json').write_text(json.dumps(manifest, indent=2) + '\n')
           (root / 'size-and-headroom.txt').write_text(f"firmware_bytes={size}\nota_slot_bytes={slot}\nota_headroom_bytes={slot-size}\n")
           PY
@@ -403,7 +343,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: HBNF-Packet20-SpeedMath-R3-${{ github.run_id }}
+          name: HBNF-Packet20-FastLED-R4-${{ github.run_id }}
           path: /tmp/hbnf-p20-artifacts
           if-no-files-found: warn
           retention-days: 1

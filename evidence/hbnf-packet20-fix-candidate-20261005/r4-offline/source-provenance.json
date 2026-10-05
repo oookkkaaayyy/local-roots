@@ -1,0 +1,59 @@
+{
+  "schema": "hbnf-packet20-r4-fastled-provenance-v1",
+  "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4",
+  "baseline": "R1 renderer lineage; exact source-bound ANIMartRIX header",
+  "r1_vendor_header_sha256": "bd9d146e2ce5fde991a895ccc2ad2773df1cc77cb815381679c17c6425d7bbe8",
+  "r4_transformed_header_sha256": "db7bc1739ffcfee0e7447edaffcb1c2b48d438b66d6aaec10f3a8b1f592ed509",
+  "hbnf_r1_usermod_source_sha256": "175541d69b1838e8e0ccd0adf623f8b34793c20ad25e0b1b43c13ecb4d5639a9",
+  "hbnf_diagnostic_source_identity_commit": "57cc3a7606144c81fb84946945d2bbc51116bd70",
+  "vendor_animartrix_upstream_commit": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f",
+  "vendor_animartrix_pristine_header_git_blob": "db640748175cfdd70dc103fc23c830e646fa5ab6",
+  "vendor_clock_patch_sha256": "f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4",
+  "fastled_version": "3.10.4",
+  "fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+  "fastled_license": "MIT",
+  "fastled_license_sha256": "4358d4c37f1305b43a3117a6a12780f666bf285538de0b28991613c0ccacecd8",
+  "fastled_files": {
+    "src/fl/fx/2d/animartrix_detail/render_value_fp.h": "b20ce34e6abd005bf77d8a2fc4b7e44cfa1cca77b7ec2d923e24eca588e90ec4",
+    "src/fl/math/fixed_point/s16x16.h": "2ef7e234e58816b64a59bd02de00e82db2a57718c89390f64d64036b48bc1337",
+    "src/fl/math/noise/perlin_s16x16.h": "23852d8ac105429546411db92d88f2f213877ea1e725ac50dea6aada169449be",
+    "src/fl/math/noise/perlin_s16x16.cpp.hpp": "10f8cac118a13f945f6d37d3ba99fde025f9563b5074b1791e198fc951a1f0be",
+    "src/fl/math/sin32.h": "985451802e7133811cd355561a693ef5a33a5b212057d24cbc86e7264667419b",
+    "src/fl/math/sin32.cpp.hpp": "212552961f22c1e4046bb26332a161bf19065242743ce9e0a9a8790dcb87ea75"
+  },
+  "optimization_scope": {
+    "mechanism": "FastLED 3.10.4 compiler_control macros at ANIMartRIX header scope",
+    "begin": [
+      "FL_FAST_MATH_BEGIN",
+      "FL_OPTIMIZATION_LEVEL_O3_BEGIN"
+    ],
+    "end": [
+      "FL_OPTIMIZATION_LEVEL_O3_END",
+      "FL_FAST_MATH_END"
+    ],
+    "global_platformio_flags_changed": false
+  },
+  "effect_map_sha256": "b6361eb0e44f6f65e0e340654bb749786d6e1996bf6f02a39e93fde7049995db",
+  "golden": {
+    "cases": 112,
+    "kernels": 28,
+    "pixels_compared": 57344,
+    "pixel_exact_count": 57342,
+    "pixel_exact_percent": 99.99651227678571,
+    "mean_channel_abs_error": 0.00013928571428571427,
+    "p95_channel_abs_error": 0,
+    "max_channel_abs_error": 12,
+    "affected_cases": [
+      "Parametric_Water@1000ms speed=1.0",
+      "Parametric_Water@5000ms speed=1.0"
+    ],
+    "thresholds": {
+      "exact_pixel_pct_min": 99.5,
+      "mean_channel_abs_error_max": 0.1,
+      "p95_channel_abs_error_max": 1,
+      "max_channel_abs_error_max": 16
+    },
+    "result": "PASS: one isolated red-channel excursion at one pixel in two Parametric_Water states; aggregate visual delta is negligible under stated gates"
+  },
+  "r2_trig_cache_patch": "ABSENT"
+}
