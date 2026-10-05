@@ -1,0 +1,24 @@
+{
+  "schema": "local-roots-platform-validation-v1",
+  "date": "2026-10-04",
+  "branch": "platform-rebuild-v1-20261004",
+  "checks": {
+    "python_syntax_compile": true,
+    "catalog_json_parse": true,
+    "policies_json_parse": true,
+    "golden_path_json_parse": true,
+    "workflow_validation_passed": true,
+    "capsule_create_simulation_passed": true,
+    "capsule_hash_check_simulation_passed": true,
+    "timeout_regression_8s_outer_vs_4x4s_inner_rejected": true,
+    "mutation_without_rollback_rejected": true,
+    "hbnf_installed_release_vs_adapter_identity_mismatch_detected": true,
+    "github_file_readback_verified": true
+  },
+  "notes": [
+    "Validation used a local isolated simulation of the exact platform.py logic and platform JSON structures before repository publication.",
+    "The HBNF identity mismatch is an intentional current blocker: installed seq19 does not match the named canonical Packet20 adapter's Release07 expected identity.",
+    "No GitHub Actions run was requested or required for platform validation.",
+    "This platform branch is isolated and has not changed the active HBNF device or production application state."
+  ]
+}
