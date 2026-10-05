@@ -1,0 +1,36 @@
+{
+  "schema": "local-roots-prelive-proof-v1",
+  "run_id": "REPLACE_WITH_CAPSULE_RUN_ID",
+  "capsule_sha256": "REPLACE_WITH_SHA256_OF_CAPSULE_FILE",
+  "approved_for_mutation": false,
+  "stages": {
+    "contract-closure": {
+      "status": "BLOCKED",
+      "evidence": []
+    },
+    "recovery-proof": {
+      "status": "BLOCKED",
+      "evidence": []
+    },
+    "transaction-rehearsal": {
+      "status": "BLOCKED",
+      "evidence": []
+    },
+    "capture-current-state": {
+      "status": "BLOCKED",
+      "evidence": []
+    }
+  },
+  "recovery_identity": {
+    "identity": "REPLACE_WITH_EXACT_LAST_KNOWN_GOOD_ARTIFACT_OR_VERSION",
+    "verification": "REPLACE_WITH_HASH_SIGNATURE_OR_PROVIDER_VERSION_VERIFICATION"
+  },
+  "pre_mutation_state": {
+    "device": "REPLACE_WITH_EXACT_DEVICE_IDENTITY_IF_APPLICABLE",
+    "cloud_deployment": "REPLACE_WITH_EXACT_DEPLOYMENT_OR_VERSION_IF_APPLICABLE"
+  },
+  "consumer_contract": {
+    "verified": false,
+    "identity": "REPLACE_WITH_ACTUAL_CONSUMER_URL_ROLE_API_OR_PROTOCOL"
+  }
+}
