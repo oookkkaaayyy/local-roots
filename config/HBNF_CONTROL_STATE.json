@@ -5,17 +5,17 @@
   "completed_receipts": [],
   "current_task": {
     "name": "Release07 all-kernel diagnosis and class-level fix preparation",
-    "status": "SEQ20_RECOVERY_BLOCKED__ZERO_TRAFFIC_OVERRIDE_REHEARSAL_NOT_YET_RUN",
+    "status": "SEQ20_RECOVERY_BLOCKED__REPLACEMENT_WORKER_FIRST_CANDIDATE_REQUIRED",
     "installed_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
     "installed_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "installed_release_role": "DIAGNOSTIC_TIMING_HOOK__PARTIAL_SWEEP_STOPPED__RECOVERY_REQUIRED",
     "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
     "blockers": [
-      "include candidate Worker version e4d31b2b-a9c1-4797-b5df-b8ad0121df6d in a split deployment at 0% while exact stable version 29bdcc12-17ce-4feb-bb9e-e83cec5e1567 remains at 100%",
-      "smoke-test the candidate through the normal production route using Cloudflare-Workers-Version-Overrides so no normal traffic reaches the candidate",
-      "verify exact seq20 recovery latest.json/signature/artifact plus representative unchanged assets/config/bindings and verify the override selected the candidate version",
-      "rollback the split deployment to exact stable version 29bdcc12-17ce-4feb-bb9e-e83cec5e1567 at 100%; do not require the historical deployment ID itself to be reused because Cloudflare rollback creates a new deployment object",
-      "only after that rehearsal passes: repeat the same bounded publication transaction for seq20 recovery, execute exact Release07 recovery, verify installed SHA 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab, then restore exact stable version at 100%; do not resume seq19 diagnostics"
+      "do not reuse candidate e4d31b2b-a9c1-4797-b5df-b8ad0121df6d for recovery; its asset-first config was proven unable to serve seq20 latest.json/latest.json.sig through version override",
+      "create a replacement Cloudflare Worker version from the exact stable Worker state using keep_assets=true, strict binding preservation, and selective assets.run_worker_first for only /firmware/matrix/stable/latest.json and /firmware/matrix/stable/latest.json.sig (or the narrowest verified equivalent)",
+      "rehearse replacement at 0% traffic with stable version 29bdcc12-17ce-4feb-bb9e-e83cec5e1567 at 100%, target smoke requests with Cloudflare-Workers-Version-Overrides, and require exact seq20 manifest/signature plus unchanged representative assets/config",
+      "rollback exact stable version to 100% and obtain PRELIVE_PROOF PASS before any device mutation",
+      "only after proof passes: execute exact seq20 Release07 recovery, verify SHA 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab, restore stable Cloudflare version, close mutation, and do not resume seq19 diagnostics"
     ],
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
     "publication_contract": {
@@ -36,11 +36,29 @@
         "verification": "undeployed Version URL or 0%-traffic version override",
         "production_rollback": "deploy/rollback exact prior version ID 29bdcc12-17ce-4feb-bb9e-e83cec5e1567",
         "provider_pattern": "platform/providers/cloudflare-workers.json",
-        "status": "VERSION_URL_BLOCKED__DOCUMENTED_ZERO_PERCENT_OVERRIDE_FALLBACK_SELECTED",
+        "status": "OLD_CANDIDATE_REJECTED__NEW_SELECTIVE_WORKER_FIRST_CANDIDATE_REQUIRED",
         "candidate_version": "e4d31b2b-a9c1-4797-b5df-b8ad0121df6d",
         "smoke_test": "0%-traffic split deployment plus Cloudflare-Workers-Version-Overrides against production route",
-        "rollback_success_criterion": "exact stable VERSION 29bdcc12-17ce-4feb-bb9e-e83cec5e1567 restored at 100%; deployment ID may change"
+        "rollback_success_criterion": "exact stable VERSION 29bdcc12-17ce-4feb-bb9e-e83cec5e1567 restored at 100%; deployment ID may change",
+        "rejected_candidate_version": "e4d31b2b-a9c1-4797-b5df-b8ad0121df6d",
+        "rejected_candidate_reason": "asset-first routing returned stable seq19 latest.json/latest.json.sig under 0%-traffic version override; candidate Worker code was not selected",
+        "next_candidate_requirement": {
+          "keep_assets": true,
+          "bindings_inherit": "strict",
+          "run_worker_first": [
+            "/firmware/matrix/stable/latest.json",
+            "/firmware/matrix/stable/latest.json.sig"
+          ],
+          "verification": "0%-traffic split deployment + Cloudflare-Workers-Version-Overrides from Opal; exact seq20 bytes/signature required"
+        }
       }
+    },
+    "durable_recovery_evidence": {
+      "drive_folder_id": "1LwC5lYDwFT_bEJo9cVxDMTcJe-IF6BYr",
+      "zero_traffic_rehearsal_file_id": "1ZJOseh2J4ls9dGlF_SOH5DHAH9djd4xp",
+      "prelive_proof_file_id": "1BLZuPicWwL8_eNlPeJPhKXqEsFzyGoc2",
+      "prelive_check_file_id": "1V-7mHZQT_XVYPGuDBE2VKVXY1BwFvjFv",
+      "run_blocked_file_id": "15Uc-TWPqEMXsAgj9glQKqD2MykW4hKZW"
     }
   },
   "live_mutation_authorized": true,
