@@ -5,17 +5,17 @@
   "completed_receipts": [],
   "current_task": {
     "name": "Release07 all-kernel diagnosis and class-level fix preparation",
-    "status": "SEQ19_PARTIAL_SWEEP__RESTORE_CONTRACT_UNRESOLVED",
+    "status": "SEQ19_PARTIAL_SWEEP__RECOVERY_ONLY",
     "installed_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
     "installed_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
-    "installed_release_role": "DIAGNOSTIC_TIMING_HOOK__PARTIAL_SWEEP_STOPPED",
+    "installed_release_role": "DIAGNOSTIC_TIMING_HOOK__PARTIAL_SWEEP_STOPPED__RECOVERY_REQUIRED",
     "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
     "blockers": [
-      "offline reconcile exact adapter/config used versus canonical seq19 tooling",
-      "determine whether firmware restoreVerified=true is equivalent to packet20Same() for this exact seq19 build",
-      "explain kernel6 telemetry timeout source from preserved evidence without new device commands",
-      "establish one tested host-side correction and safe recovery/resume decision",
-      "only then either recover exact Release07 seq20 or run one corrected bounded continuation as explicitly coordinated"
+      "execute exact signed Release07 seq20 recovery; do not resume seq19 diagnostics",
+      "verify installed Release07 identity/hash exactly 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+      "preserve and promote POSTINSTALL_03 plus offline reconciliation as decisive evidence",
+      "repair live-diagnostic host package offline before any future diagnostic attempt: exact artifact/source binding, explicit timeout hierarchy, post-restore state preservation",
+      "derive next diagnostic/fix action only after Release07 recovery is verified"
     ]
   },
   "live_mutation_authorized": true,
