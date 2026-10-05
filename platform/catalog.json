@@ -1,0 +1,127 @@
+{
+  "schema": "local-roots-platform-catalog-v1",
+  "authority": "single-machine-readable-catalog",
+  "storage_roles": {
+    "github": "canonical/buildable source, scripts, configs, workflow definitions, and small machine-readable provenance",
+    "google_drive": "durable binaries, recovery artifacts, decisive evidence, and large immutable run outputs",
+    "aks": "searchable routing, current-state pointers, acceptance/supersession metadata, and external artifact identities",
+    "local_workspace": "ephemeral execution only; never sole authority after a result becomes meaningful"
+  },
+  "systems": [
+    {
+      "id": "local-roots-events",
+      "kind": "web-and-data-product",
+      "owner": "andrew",
+      "repo_authority_paths": [
+        "README.md",
+        "docs/PRODUCT_SPEC.md",
+        "docs/DATA_CONTRACT.md",
+        "docs/SOURCE_RULES.md",
+        "docs/ACCEPTANCE_TESTS.md"
+      ],
+      "external_authorities": {
+        "runtime": "Cloudflare Pages + Local Roots/D&U Supabase",
+        "supabase_project_ref": "wtymjxscneufjlkkywyg"
+      },
+      "golden_paths": [
+        "software-change",
+        "artifact-release"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "dyed-unattached",
+      "kind": "web-ai-workflow",
+      "owner": "andrew",
+      "repo_authority_paths": [
+        "README.md",
+        "AGENTS.md"
+      ],
+      "external_authorities": {
+        "supabase_project_ref": "wtymjxscneufjlkkywyg",
+        "aks_router": "1CvCKk04BDMUEbxtqatUP_bU7KbFYYJo1Hu32bh_zgzM"
+      },
+      "golden_paths": [
+        "software-change",
+        "artifact-release"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "hbnf-cart",
+      "kind": "embedded-edge-system",
+      "owner": "andrew",
+      "repo_authority_paths": [
+        "config/HBNF_CONTROL_MODEL.json",
+        "config/HBNF_CONTROL_STATE.json",
+        "scripts/hbnf_control.py",
+        "scripts/hbnf_guarded_run.py"
+      ],
+      "external_authorities": {
+        "file_authority_drive_id": "1GwvPv_nihqoIj83WsO6VcvyujRkt8HnnULvLv717OHc",
+        "artifact_registry_drive_id": "18VsUYIYr62fYVaEqynM1kbMmfQpei-3H3rBgrw8S96k",
+        "release_engineering_drive_id": "1bw_VUNt2mEZ4JdKuRsQq7ZS1Bc4KeC8kMVABVK2OdgE",
+        "delta_inbox_sheet_id": "1tJIcKRfWFdHVYVo4G6mgySB46p6xwsseGON3JdnEnzY"
+      },
+      "golden_paths": [
+        "software-change",
+        "artifact-release",
+        "live-device-diagnostic"
+      ],
+      "depends_on": [
+        "hbnf-matrix",
+        "hbnf-aux",
+        "hbnf-opal"
+      ]
+    },
+    {
+      "id": "hbnf-matrix",
+      "kind": "embedded-device",
+      "owner": "andrew",
+      "repo_authority_paths": [
+        "config/HBNF_CONTROL_STATE.json"
+      ],
+      "external_authorities": {
+        "network_identity": "192.168.77.10"
+      },
+      "golden_paths": [
+        "live-device-diagnostic"
+      ],
+      "depends_on": [
+        "hbnf-opal"
+      ]
+    },
+    {
+      "id": "hbnf-aux",
+      "kind": "embedded-device",
+      "owner": "andrew",
+      "repo_authority_paths": [
+        "config/HBNF_CONTROL_STATE.json"
+      ],
+      "external_authorities": {
+        "network_identity": "192.168.77.11"
+      },
+      "golden_paths": [
+        "live-device-diagnostic"
+      ],
+      "depends_on": [
+        "hbnf-opal"
+      ]
+    },
+    {
+      "id": "hbnf-opal",
+      "kind": "edge-router-updater",
+      "owner": "andrew",
+      "repo_authority_paths": [
+        "config/HBNF_CONTROL_STATE.json"
+      ],
+      "external_authorities": {
+        "network_identity": "192.168.77.1"
+      },
+      "golden_paths": [
+        "live-device-diagnostic"
+      ],
+      "depends_on": []
+    }
+  ]
+}
