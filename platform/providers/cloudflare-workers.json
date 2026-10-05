@@ -71,6 +71,29 @@
       "evidence": "Drive folder 1LwC5lYDwFT_bEJo9cVxDMTcJe-IF6BYr / ZERO_TRAFFIC_REHEARSAL.json",
       "root_cause": "Candidate asset config has raw_run_worker_first=false and serve_directly=true; exact updater paths match preserved static assets so Worker code is bypassed.",
       "resolution": "Create a replacement candidate version using the same keep_assets=true preservation path but configure assets.run_worker_first selectively for /firmware/matrix/stable/latest.json and /firmware/matrix/stable/latest.json.sig (or the narrowest wildcard proven necessary). Rehearse the replacement at 0% with version override before any device mutation."
+    },
+    "expedited_recovery_overlay": {
+      "status": "SELECTED",
+      "rationale": "Avoid modifying/reconstructing the existing static-asset Worker. Cloudflare routes choose the most specific matching route, so a temporary no-assets Worker can safely intercept only the updater pointer paths.",
+      "existing_route": "hbnightflyers.com/firmware/matrix/stable/*",
+      "temporary_route": "hbnightflyers.com/firmware/matrix/stable/latest.json*",
+      "temporary_worker": "hbnf-seq20-recovery-pointer-temp",
+      "route_precedence": "temporary_route is more specific and wins only for latest.json, latest.json.sig, and query-string variants",
+      "worker_assets": "none",
+      "rehearsal": {
+        "baseline_version": "embed exact current seq19 latest.json/latest.json.sig bytes captured immediately before route creation; return marker header X-HBNF-Recovery-Overlay=stable-proxy",
+        "recovery_version": "embed exact signed seq20 recovery latest.json/latest.json.sig bytes; return marker header X-HBNF-Recovery-Overlay=recovery",
+        "deployment": "baseline version 100%, recovery version 0%",
+        "verification": "ordinary requests must return exact seq19 bytes plus stable-proxy marker; override requests to recovery version must return exact seq20 bytes plus recovery marker; then delete temporary route and prove original broad route resumes"
+      },
+      "live_transaction": "recreate proven temporary route/deployment, promote exact tested recovery version to 100%, verify Opal updater sees seq20, run exact Release07 recovery, delete temporary route, verify original broad stable route resumes",
+      "rollback": "delete temporary specific route; original broader Worker route remains untouched throughout",
+      "forbidden": [
+        "modifying original Worker assets",
+        "reconstructing original asset manifest",
+        "using the rejected asset-first candidate",
+        "weakening updater verification"
+      ]
     }
   },
   "official_doc_facts": [
