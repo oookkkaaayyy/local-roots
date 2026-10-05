@@ -189,7 +189,8 @@
     "id": "PACKET20-PUBLICATION-RECOVERY-CONTRACT-001",
     "symptom": "seq20 Release07 recovery rejected with confirmed-release-role-changed",
     "root_cause": "Updater is pinned to latest.json. latest.json remained seq19 role=update while exact signed seq20 role=recovery was separately published as recovery.json. The recovery artifact itself is valid, but the consumer/publication contract was never proven end-to-end before seq19 install.",
-    "current_cloud_blocker": "Current live Cloudflare Worker version/deployment identity is known, but the live version API response available to the worker did not expose a reusable asset-set token/manifest sufficient to prove a safe pointer-only version while preserving the entire active asset set.",
-    "required_resolution_standard": "Resolve using a standard versioned deployment or exact asset-preserving publication mechanism proven against current Cloudflare state. Do not reconstruct production assets from a stale local directory and do not modify updater security guards."
+    "current_cloud_blocker": "RESOLUTION PATH IDENTIFIED BUT NOT YET REHEARSED: Cloudflare official Direct Uploads documentation supports metadata keep_assets=true when uploading a new version of an existing Worker, explicitly reusing its current static asset set without an asset completion token. Current script content/settings/version resources can be read through Cloudflare APIs; version upload can remain undeployed for verification.",
+    "required_resolution_standard": "Create an undeployed version from the exact current Worker script/settings, use keep_assets=true, inherit bindings from the exact current version with strict failure behavior, change only latest.json recovery-pointer handling, verify the new version through Version URL or 0%-traffic version override, then and only then re-enable the exact seq20 recovery transaction. Restore the exact prior version after device recovery.",
+    "provider_pattern": "platform/providers/cloudflare-workers.json"
   }
 }
