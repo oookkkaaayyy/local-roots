@@ -122,13 +122,16 @@
       "github_run_id": "37300973483",
       "firmware_sha256": "42f2ed58c3b89af95926ee0cf5824a575df9dcf75c7fbb8ead9d6eaff427ee07",
       "firmware_size_bytes": 1463664,
-      "firmware_drive_file_id": "1Rxq2e_7oc-tE-JpDCP4gjKfsRR4xLPzr",
       "capsule_drive_file_id": "1zeONNTW3W4bHYkUbxlZK6XOJulknBLVq",
       "capsule_zip_sha256": "4eb9bf8cf34e4f2383be111f059290301938c645d59adf29df4bdfd42e91b0fc",
       "render_cache_patch_sha256": "fb2711140484a140cec35eb2dc90b4b7895a7723cf5bc7561c8e2057dea30b75",
       "status": "BUILD_VALIDATED__AWAITING_GUARDED_SEQ23_28_KERNEL_SWEEP_SEQ24_RELEASE07_RECOVERY",
       "build_validation": "PASS",
-      "offline_tests": "PASS: control, guarded-run, architecture fitness, runtime qualification static, kernel report, source identity, live sweep, Packet20 adapter, Packet20 build validation, trig cache exactness, and r2 transaction static"
+      "offline_tests": "PASS: control, guarded-run, architecture fitness, runtime qualification static, kernel report, source identity, live sweep, Packet20 adapter, Packet20 build validation, trig cache exactness, and r2 transaction static",
+      "release_capsule_drive_id": "1zeONNTW3W4bHYkUbxlZK6XOJulknBLVq",
+      "release_capsule_sha256": "4eb9bf8cf34e4f2383be111f059290301938c645d59adf29df4bdfd42e91b0fc",
+      "unverified_standalone_bin_drive_id": "1Rxq2e_7oc-tE-JpDCP4gjKfsRR4xLPzr",
+      "unverified_standalone_bin_status": "QUARANTINED__READBACK_HASH_DID_NOT_MATCH_LOCAL"
     }
   },
   "lifecycle_state": "DIAGNOSTIC_ACTIVE",
