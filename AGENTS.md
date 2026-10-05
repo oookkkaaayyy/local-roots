@@ -1,5 +1,16 @@
 # HBNF / Cart Upgrades — Repository Agent Instructions
 
+## Platform front door
+
+For substantial implementation, deployment, release, diagnostic, or recovery work, begin with:
+
+`python3 scripts/platform.py doctor`
+
+Then select the system and golden path from `platform/catalog.json` and `platform/workflows/`. Create and validate an execution capsule before any paid, live, or mutating step.
+
+The platform catalog + domain control state + selected capsule are operational execution authority. Historical handoffs, postmortems, old build directories, and prose remain evidence/search sources, not peer operational authorities.
+
+
 For any task touching HBNF release engineering, firmware promotion, Cart 2.0 integration, deployment, or acceptance:
 
 1. Run:
