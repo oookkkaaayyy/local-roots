@@ -93,8 +93,9 @@ with tempfile.TemporaryDirectory() as td:
         + f"{m.EXPECTED_ANIMARTRIX_CLOCK_PATCH_SHA256}  animartrix-clock.patch\n"
         + generated_output_lines
     )
-    (root / "project-config.json").write_text("{}")
-    (root / "project-metadata.json").write_text("{}")
+    # PlatformIO emits nested arrays for --json-output.
+    (root / "project-config.json").write_text('[["env", [["lib_deps", ["AsyncTCP"]]]]]')
+    (root / "project-metadata.json").write_text("git version 2.55.0\n{}")
     (root / "resolved-packages.txt").write_text("platform espressif32\nframework arduino\n")
     (root / "build.log").write_text("========================= [SUCCESS] Took 1.00 seconds =========================\n")
 
@@ -105,6 +106,15 @@ with tempfile.TemporaryDirectory() as td:
     assert receipt["ota_headroom_bytes"] == m.EXPECTED_OTA_SLOT_BYTES - size
     assert receipt["animartrix_patched_header_sha256"] == patched_sha
     assert receipt["generated_ui_sha256"] == m.EXPECTED_GENERATED_UI_SHA256
+    assert "without rereading" in receipt["next_gate"]
+
+    (root / "project-metadata.json").write_text("unexpected prefix\n{}")
+    try:
+        m.validate_artifact_dir(root, commit)
+        raise AssertionError("unexpected metadata prefix was accepted")
+    except m.ValidationError:
+        pass
+    (root / "project-metadata.json").write_text("git version 2.55.0\n{}")
 
     # A fix-candidate package must carry the exact optional class-level patch
     # in both the archive and provenance, with the patched header markers.

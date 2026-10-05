@@ -294,11 +294,38 @@ def validate_artifact_dir(
         if path.startswith("wled00/"):
             require_equal(source_hash_map.get(path), expected_sha, f"source-input generated output {path}")
 
-    # Require parseable structured PlatformIO evidence. Exact dependency
-    # versions are preserved separately in resolved-packages.txt.
-    load_json(root / "project-config.json")
+    # PlatformIO --json-output serializes project config as a nested list of
+    # section/key/value tuples (not an object). Accept either valid top-level
+    # shape while keeping the artifact's schema and package evidence checks.
     try:
-        metadata = json.loads((root / "project-metadata.json").read_text())
+        project_config = json.loads((root / "project-config.json").read_text())
+    except Exception as exc:
+        raise ValidationError(f"invalid JSON project-config.json: {exc}") from exc
+    if not isinstance(project_config, (dict, list)):
+        raise ValidationError("project-config.json must contain a JSON object or array")
+    try:
+        metadata_text = (root / "project-metadata.json").read_text()
+        try:
+            metadata = json.loads(metadata_text)
+        except json.JSONDecodeError:
+            # PlatformIO's metadata command can emit harmless git diagnostics
+            # before its JSON document while resolving package revisions.
+            # Accept only the known git-version / detached-checkout lines.
+            decoder = json.JSONDecoder()
+            start = metadata_text.find("{")
+            if start < 0:
+                raise
+            prefix = metadata_text[:start].splitlines()
+            allowed_prefix = all(
+                line.startswith("git version ")
+                or line.startswith("HEAD is now at ")
+                for line in prefix
+            )
+            if not allowed_prefix:
+                raise
+            metadata, end = decoder.raw_decode(metadata_text[start:])
+            if metadata_text[start + end :].strip():
+                raise ValidationError("unexpected trailing data in project-metadata.json")
     except Exception as exc:
         raise ValidationError(f"invalid JSON project-metadata.json: {exc}") from exc
     if not isinstance(metadata, (dict, list)):
@@ -338,7 +365,7 @@ def validate_artifact_dir(
         "required_files_verified": list(REQUIRED_FILES),
         "next_gate": (
             "PROMOTE firmware/provenance to Drive release capsules and registry; "
-            "then read live updater high-water once before any signing/publish/install decision"
+            "reuse the already-closed updater high-water prerequisite without rereading it"
         ),
     }
     return receipt
