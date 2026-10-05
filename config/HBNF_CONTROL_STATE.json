@@ -5,19 +5,31 @@
   "completed_receipts": [],
   "current_task": {
     "name": "Release07 all-kernel diagnosis and class-level fix preparation",
-    "status": "SEQ20_RECOVERY_BLOCKED__SSH_REAUTH_REQUIRED",
+    "status": "SEQ20_RECOVERY_BLOCKED__PUBLICATION_CONSUMER_PATH_UNPROVEN",
     "installed_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
     "installed_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "installed_release_role": "DIAGNOSTIC_TIMING_HOOK__PARTIAL_SWEEP_STOPPED__RECOVERY_REQUIRED",
     "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
     "blockers": [
-      "reauthenticate one SSH session to Opal; no other prerequisite is open",
-      "execute exact signed Release07 seq20 recovery",
+      "prove a safe publication transaction that makes exact signed seq20 recovery visible at the updater-consumed latest.json contract without reconstructing or dropping unrelated live Cloudflare assets",
+      "prove exact restoration of the current Cloudflare deployment/version after the temporary recovery pointer",
+      "execute exact signed Release07 seq20 recovery only after that transaction passes non-production/read-only verification",
       "verify installed Release07 identity/hash exactly 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-      "preserve/promote decisive Packet20 and recovery evidence",
-      "stop; do not resume seq19 diagnostics"
-    ]
+      "preserve/promote decisive recovery evidence; do not resume seq19 diagnostics"
+    ],
+    "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
+    "publication_contract": {
+      "updater_consumer": "latest.json",
+      "current_latest_role": "update",
+      "signed_recovery_manifest": "recovery.json",
+      "recovery_sequence": 20,
+      "recovery_manifest_sha256": "7741978130173a84d3f96aa80dd31a4ab8f6657d4810bdf492bc170f653a61b3",
+      "cloudflare_worker": "hbnf-matrix-firmware-stable",
+      "active_deployment_id": "dc7ffae3-62f6-49b8-9506-97eb3998efa4",
+      "active_version_id": "29bdcc12-17ce-4feb-bb9e-e83cec5e1567",
+      "exact_asset_reuse_status": "BLOCKED__VERSION_API_DID_NOT_EXPOSE_REUSABLE_ASSET_SET_TOKEN_OR_MANIFEST"
+    }
   },
-  "live_mutation_authorized": true,
+  "live_mutation_authorized": false,
   "phase2_implementation_authorized": false
 }
