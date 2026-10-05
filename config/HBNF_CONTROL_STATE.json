@@ -141,7 +141,7 @@
     "next_work": "Supersede the compiler-only r3 live trial. Build one bounded r4 candidate by backporting the relevant FastLED 3.10.4 stable Animartrix performance architecture into the pinned WLED 16.0.1 lineage: upstream per-file O3/fast-math behavior plus fixed-point render/noise/trig primitives and fixed-point effect variants for the exact retained HBNF effect set. Do not upgrade WLED wholesale. First prove host/golden-frame equivalence, exact retained-effect coverage, licensing/source provenance, and effective compiler flags. Then perform one 28-kernel live trial and exact Release07 recovery. If aggregate performance is materially improved, proceed directly into Foundation qualification.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "performance_findings": {
-      "candidate_fix": "shared render_value polar trig reuse keyed by exact angle; semantics-preserving class-level cache, subject to standalone tests/build/device qualification",
+      "candidate_fix": "Bounded FastLED 3.10.4 stable Animartrix performance architecture backport into pinned WLED 16.0.1: relevant per-file speed flags plus fixed-point render/noise/trig primitives and variants for the retained HBNF effect set. Selected for R4; host/source equivalence and exact effect coverage gates pending.",
       "dominant_stage": "ANIMartRIX per-kernel rendering; median kernel_avg_ms 70.24025 vs palette 11.8685, audio 2.8835, aux 0.135; worst Parametric_Water 167.353ms kernel and 205.045ms frame at 4 median FPS",
       "foundation_qualified": false,
       "report_drive_file_id": "1QhUQTFX4b3Uc5iLMxT4nKeK4t50a-Mw8",
@@ -251,6 +251,25 @@
       ],
       "conclusion": "The worker had not yet acted on the R4 supersession directive.",
       "enforcement": "Cloud build branch commit 8eaf4b13d816986c371ec885119c05b1170d0c35 adds an immediate R3 supersession gate. Any further workflow trigger must first remove/replace that gate as part of an R4 implementation after rereading current control state."
+    },
+    "r3_compiler_math_trial": {
+      "candidate": "hbnf-matrix-packet20-speedmath-v1-20261005-r3",
+      "status": "REJECTED__OTA_APPLICATION_PARTITION_SIZE",
+      "build_run_id": "37347074583",
+      "program_size_bytes": 1696369,
+      "maximum_allowed_bytes": 1572864,
+      "over_limit_bytes": 123505,
+      "effective_flags_verified": true,
+      "r2_trig_cache_absent": true,
+      "candidate_bin_sha256": null,
+      "device_install": "NOT_RUN",
+      "paired_metrics": "NOT_MEASURED",
+      "hypothesis": "NOT_CONFIRMED",
+      "evidence_path": "evidence/hbnf-packet20-fix-candidate-20261005/PACKET20_R3_COMPILER_MATH_RESULT.md",
+      "evidence_drive_file_id": "1pBnKwsgichjnoLfSQf00kweG2BNV4NAv",
+      "evidence_zip_sha256": "1178a3879145ab27bb8a8df532bdea2dabe83ff700500263da364feca84bc8a9",
+      "report_drive_file_id": "1AW4hjghXvDnFMKN42vibOcUtX2OnQtoh",
+      "report_sha256": "d8d14197bb978830d496cb64229369a13c88be2ff6d1be1e3e82d8136a442cfd"
     }
   },
   "lifecycle_state": "FIX_CANDIDATE",
