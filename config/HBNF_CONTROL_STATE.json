@@ -5,17 +5,17 @@
   "completed_receipts": [],
   "current_task": {
     "name": "Release07 all-kernel diagnosis and class-level fix preparation",
-    "status": "SEQ20_RECOVERY_BLOCKED__REPLACEMENT_WORKER_FIRST_CANDIDATE_REQUIRED",
+    "status": "SEQ20_RECOVERY_BLOCKED__TEMP_ROUTE_OVERLAY_REHEARSAL_NOT_YET_RUN",
     "installed_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
     "installed_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "installed_release_role": "DIAGNOSTIC_TIMING_HOOK__PARTIAL_SWEEP_STOPPED__RECOVERY_REQUIRED",
     "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
     "blockers": [
-      "do not reuse candidate e4d31b2b-a9c1-4797-b5df-b8ad0121df6d for recovery; its asset-first config was proven unable to serve seq20 latest.json/latest.json.sig through version override",
-      "create a replacement Cloudflare Worker version from the exact stable Worker state using keep_assets=true, strict binding preservation, and selective assets.run_worker_first for only /firmware/matrix/stable/latest.json and /firmware/matrix/stable/latest.json.sig (or the narrowest verified equivalent)",
-      "rehearse replacement at 0% traffic with stable version 29bdcc12-17ce-4feb-bb9e-e83cec5e1567 at 100%, target smoke requests with Cloudflare-Workers-Version-Overrides, and require exact seq20 manifest/signature plus unchanged representative assets/config",
-      "rollback exact stable version to 100% and obtain PRELIVE_PROOF PASS before any device mutation",
-      "only after proof passes: execute exact seq20 Release07 recovery, verify SHA 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab, restore stable Cloudflare version, close mutation, and do not resume seq19 diagnostics"
+      "stop trying to modify/reconstruct the original static-asset Worker; preserve it untouched",
+      "create temporary no-assets Worker hbnf-seq20-recovery-pointer-temp with a more-specific route hbnightflyers.com/firmware/matrix/stable/latest.json*; Cloudflare route precedence makes it override only the updater pointer paths while the existing broad stable/* route remains intact",
+      "create stable-proxy version from exact live seq19 latest.json/latest.json.sig bytes captured immediately before route creation and recovery version from exact signed seq20 bytes; stable-proxy 100%, recovery 0% during rehearsal",
+      "verify ordinary production-route requests hit stable-proxy and return exact seq19 bytes; verify Cloudflare-Workers-Version-Overrides targets recovery version and returns exact seq20 bytes; delete temporary route and verify original broad route resumes exact seq19 bytes",
+      "only after PRELIVE_PROOF PASS: recreate the proven overlay, promote exact recovery version to 100% for the bounded seq20 install, verify Opal sees recovery seq20, install exact Release07, verify SHA 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab, delete overlay route, verify original stable route resumes, close mutation"
     ],
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
     "publication_contract": {
@@ -29,36 +29,22 @@
       "active_version_id": "29bdcc12-17ce-4feb-bb9e-e83cec5e1567",
       "exact_asset_reuse_status": "BLOCKED__VERSION_API_DID_NOT_EXPOSE_REUSABLE_ASSET_SET_TOKEN_OR_MANIFEST",
       "safe_resolution_candidate": {
-        "mechanism": "Cloudflare Worker version upload with metadata keep_assets=true",
-        "script_content_source": "GET /workers/scripts/{script}/content/v2",
-        "settings_source": "GET /workers/scripts/{script}/settings and exact current version resources",
-        "binding_strategy": "inherit exact current version; fail strict on unresolved inherit binding",
-        "verification": "undeployed Version URL or 0%-traffic version override",
-        "production_rollback": "deploy/rollback exact prior version ID 29bdcc12-17ce-4feb-bb9e-e83cec5e1567",
-        "provider_pattern": "platform/providers/cloudflare-workers.json",
-        "status": "OLD_CANDIDATE_REJECTED__NEW_SELECTIVE_WORKER_FIRST_CANDIDATE_REQUIRED",
-        "candidate_version": "e4d31b2b-a9c1-4797-b5df-b8ad0121df6d",
-        "smoke_test": "0%-traffic split deployment plus Cloudflare-Workers-Version-Overrides against production route",
-        "rollback_success_criterion": "exact stable VERSION 29bdcc12-17ce-4feb-bb9e-e83cec5e1567 restored at 100%; deployment ID may change",
-        "rejected_candidate_version": "e4d31b2b-a9c1-4797-b5df-b8ad0121df6d",
-        "rejected_candidate_reason": "asset-first routing returned stable seq19 latest.json/latest.json.sig under 0%-traffic version override; candidate Worker code was not selected",
-        "next_candidate_requirement": {
-          "keep_assets": true,
-          "bindings_inherit": "strict",
-          "run_worker_first": [
-            "/firmware/matrix/stable/latest.json",
-            "/firmware/matrix/stable/latest.json.sig"
-          ],
-          "verification": "0%-traffic split deployment + Cloudflare-Workers-Version-Overrides from Opal; exact seq20 bytes/signature required"
-        }
+        "mechanism": "temporary more-specific Cloudflare route overlay with no static assets",
+        "existing_route": "hbnightflyers.com/firmware/matrix/stable/*",
+        "temporary_route": "hbnightflyers.com/firmware/matrix/stable/latest.json*",
+        "temporary_worker": "hbnf-seq20-recovery-pointer-temp",
+        "original_worker_modified": false,
+        "original_assets_modified": false,
+        "rejected_candidate": "e4d31b2b-a9c1-4797-b5df-b8ad0121df6d",
+        "status": "SELECTED__REHEARSAL_REQUIRED"
       }
     },
     "durable_recovery_evidence": {
       "drive_folder_id": "1LwC5lYDwFT_bEJo9cVxDMTcJe-IF6BYr",
+      "replacement_candidate_blocker_file_id": "11YAoeq7XRygMAONHUXCPa1GDLF80ur29",
       "zero_traffic_rehearsal_file_id": "1ZJOseh2J4ls9dGlF_SOH5DHAH9djd4xp",
       "prelive_proof_file_id": "1BLZuPicWwL8_eNlPeJPhKXqEsFzyGoc2",
-      "prelive_check_file_id": "1V-7mHZQT_XVYPGuDBE2VKVXY1BwFvjFv",
-      "run_blocked_file_id": "15Uc-TWPqEMXsAgj9glQKqD2MykW4hKZW"
+      "prelive_check_file_id": "1V-7mHZQT_XVYPGuDBE2VKVXY1BwFvjFv"
     }
   },
   "live_mutation_authorized": true,
