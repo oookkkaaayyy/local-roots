@@ -241,6 +241,16 @@
       "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
       "size_bytes": 1458624
+    },
+    "worker_alignment": {
+      "observed_at": "2026-10-05T17:19:34Z",
+      "status": "STALE_R3_EXECUTION_DETECTED_AND_GUARDED",
+      "evidence": [
+        "GitHub Actions run 37344887644 at 2026-10-05T16:58:16Z used R3 speedmath branch commit 2284bab02526e3776e33db766cf68984b69235be and failed.",
+        "GitHub Actions run 37347074583 at 2026-10-05T17:15:34Z used R3 speedmath branch commit 3c276ad125825ae687b7fa9c98d65ec8b5525407 and failed."
+      ],
+      "conclusion": "The worker had not yet acted on the R4 supersession directive.",
+      "enforcement": "Cloud build branch commit 8eaf4b13d816986c371ec885119c05b1170d0c35 adds an immediate R3 supersession gate. Any further workflow trigger must first remove/replace that gate as part of an R4 implementation after rereading current control state."
     }
   },
   "lifecycle_state": "FIX_CANDIDATE",
