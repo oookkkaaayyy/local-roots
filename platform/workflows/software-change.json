@@ -1,0 +1,125 @@
+{
+  "schema": "local-roots-golden-path-v2",
+  "id": "software-change",
+  "purpose": "Small reversible code/configuration change executed only after deterministic integration and rollback behavior are proven.",
+  "required_repo_inputs": [
+    "AGENTS.md"
+  ],
+  "prelive_contract": {
+    "closure_stage_id": "contract-closure",
+    "recovery_stage_id": "recovery-proof",
+    "rehearsal_stage_id": "transaction-rehearsal",
+    "capture_stage_id": "capture-current-state",
+    "required_before_stage_id": "deploy",
+    "deterministic_prerequisites_closed_offline": true,
+    "consumer_contract_verified": true,
+    "recovery_proven_before_first_device_mutation": true,
+    "end_to_end_rehearsal_required": true,
+    "exact_pre_mutation_state_capture_required": true
+  },
+  "stages": [
+    {
+      "id": "scope",
+      "kind": "preflight",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "explicit acceptance condition"
+      ]
+    },
+    {
+      "id": "implement",
+      "kind": "work",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "small code/config delta"
+      ]
+    },
+    {
+      "id": "test",
+      "kind": "verification",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "deterministic local test result"
+      ]
+    },
+    {
+      "id": "contract-closure",
+      "kind": "verification",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "producer/consumer integration contract PASS",
+        "no deterministic unknown deferred to production"
+      ]
+    },
+    {
+      "id": "recovery-proof",
+      "kind": "verification",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "exact last-known-good revision and rollback procedure PASS"
+      ]
+    },
+    {
+      "id": "transaction-rehearsal",
+      "kind": "verification",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "preview/staging/simulation transaction PASS",
+        "rollback rehearsal PASS"
+      ]
+    },
+    {
+      "id": "capture-current-state",
+      "kind": "preflight",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "exact current deployed revision captured"
+      ]
+    },
+    {
+      "id": "deploy",
+      "kind": "deployment",
+      "mutation": true,
+      "retry_policy": "explicit_only",
+      "rollback": {
+        "strategy": "restore exact captured last-known-good revision"
+      },
+      "outputs": [
+        "deployment identity"
+      ]
+    },
+    {
+      "id": "verify",
+      "kind": "verification",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "user-visible/runtime verification"
+      ]
+    },
+    {
+      "id": "record",
+      "kind": "evidence",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "terminal run summary and durable delta"
+      ]
+    }
+  ],
+  "terminal_recovery": "If deploy or verify fails, restore the exact captured last-known-good revision and record the failed stage before any further work.",
+  "expected_terminal_outputs": [
+    "accepted change or exact failed stage",
+    "deployed/source identity",
+    "test and integration-contract result",
+    "rollback identity",
+    "durable evidence pointer"
+  ]
+}
