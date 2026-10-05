@@ -138,7 +138,7 @@
       "signature_sha256": "d197c58e21010f3a1eec09d47e8e5abc452246355a6ad4f36f40c16b93c98be3"
     },
     "name": "Packet20 fresh 28-kernel run complete; prepare bounded class-level fix candidate",
-    "next_work": "Build and run one controlled r3 candidate from the r1 renderer lineage with no r2 trig-cache patch. Change only compiler/math optimization: use pinned WLED 16.0.1 Speed_Flags behavior and force single-precision constants. Verify the effective compiler command/flags before build. Then run the same exact 28-kernel sweep and paired comparison against r1. If aggregate performance materially improves without semantic drift, proceed to Foundation qualification; otherwise stop changing compiler flags and profile/optimize pnoise/render_value math next.",
+    "next_work": "Supersede the compiler-only r3 live trial. Build one bounded r4 candidate by backporting the relevant FastLED 3.10.4 stable Animartrix performance architecture into the pinned WLED 16.0.1 lineage: upstream per-file O3/fast-math behavior plus fixed-point render/noise/trig primitives and fixed-point effect variants for the exact retained HBNF effect set. Do not upgrade WLED wholesale. First prove host/golden-frame equivalence, exact retained-effect coverage, licensing/source provenance, and effective compiler flags. Then perform one 28-kernel live trial and exact Release07 recovery. If aggregate performance is materially improved, proceed directly into Foundation qualification.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "performance_findings": {
       "candidate_fix": "shared render_value polar trig reuse keyed by exact angle; semantics-preserving class-level cache, subject to standalone tests/build/device qualification",
@@ -146,27 +146,42 @@
       "foundation_qualified": false,
       "report_drive_file_id": "1QhUQTFX4b3Uc5iLMxT4nKeK4t50a-Mw8",
       "next_experiment": {
-        "candidate_id": "hbnf-matrix-packet20-speedmath-v1-20261005-r3",
-        "baseline_lineage": "r1 renderer/source lineage; do NOT carry forward r2 trig-cache patch",
-        "delta_only": [
-          "apply pinned WLED 16.0.1 Speed_Flags semantics (-O2 and required safety flags, with -Os removed if present)",
-          "add -fsingle-precision-constant"
+        "candidate_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4",
+        "supersedes": "hbnf-matrix-packet20-speedmath-v1-20261005-r3",
+        "upstream_authority": {
+          "repository": "FastLED/FastLED",
+          "stable_release": "3.10.4",
+          "release_commit": "adedfc40e7",
+          "relevant_history": [
+            "3.10.2 release: Animartrix ~30% faster via per-file -O3 + fast-math",
+            "2026 fixed-point rewrite issue #2179 closed; case study 172ns float -> 78ns fixed -> 48ns fixed+SIMD on x86",
+            "3.10.4 source defaults Animartrix to fixed-point on non-ESP32-P4 platforms and ships fixed-point render/noise/trig/effect variants"
+          ]
+        },
+        "delta_scope": [
+          "backport only the minimum upstream Animartrix fixed-point/performance files/primitives needed by the exact retained HBNF effect set",
+          "preserve pinned WLED 16.0.1, HBNF audio/control/runtime contracts, effect IDs/order, timing-hook telemetry, and direct-LAN recovery",
+          "apply upstream O3/fast-math semantics to the Animartrix translation unit/hot region",
+          "use upstream fixed-point render_value path with sincos32 and fixed-point Perlin; preserve 2D-noise fast path when z==0 where upstream does so",
+          "do not carry r2 trig-cache patch or r3 compiler-only experiment as separate live candidates"
         ],
-        "prebuild_gate": [
-          "inspect and preserve exact current effective compiler flags",
-          "prove r2 trig-cache patch absent",
-          "prove only intended compiler/math flags changed",
-          "reuse exact successful clean-room source/dependency/vendor/generated-input closure",
-          "no source-level effect/math redesign in this candidate"
+        "offline_gates": [
+          "map all 28 retained HBNF kernels to upstream float/fixed-point implementations; no silent substitutions",
+          "golden-frame A/B comparison at multiple timestamps/parameter states with HBNF-specific tolerances stricter than upstream catastrophic-only test",
+          "prove effect IDs/order and visual/control semantics preserved",
+          "prove source/license provenance for every backported upstream file",
+          "effective compile flags show intended O3/fast-math only in scoped hot path; no unrelated whole-firmware fast-math",
+          "full host tests/build/provenance pass before live install"
         ],
         "live_gate": [
-          "one exact diagnostic install using proven direct-LAN OTA",
-          "same 28-kernel Packet20 sweep",
-          "exact renderer snapshot/restore",
-          "exact Release07 recovery after trial",
-          "paired r1/r3 report with per-kernel and aggregate metrics"
+          "one direct-LAN install",
+          "same exact 28-kernel Packet20 sweep",
+          "paired r1/r4 aggregate/per-kernel comparison",
+          "exact renderer restore",
+          "exact Release07 recovery",
+          "if materially improved and stable, continue Foundation qualification without another exploratory candidate"
         ],
-        "decision_rule": "Promote only if aggregate median frame time/FPS materially improves and no effect/control/state regression appears. Otherwise do not iterate compiler knobs; next class-level target is pnoise/render_value math profiling."
+        "decision_rule": "Treat the upstream fixed-point backport as the primary full-optimization candidate. Do not spend another live cycle on r3 unless r4 offline integration proves impossible. If r4 still fails aggregate performance, profile only the residual stages after fixed-point conversion."
       },
       "research_acceleration_20261005": {
         "status": "ACTIVE",
@@ -188,7 +203,8 @@
           "Reuse FastLED float-vs-fixed tests as a starting point, but add HBNF-specific golden-frame/tolerance tests because upstream all-viz thresholds are intentionally loose.",
           "Only one live full-28 trial after host/source equivalence and build gates pass."
         ],
-        "decision_rule": "If compiler-only r3 yields only a modest gain, immediately move to the upstream FastLED 3.10.4 optimized Animartrix path as the primary class-level solution. Do not spend cycles on ad-hoc micro-optimizations that upstream has already solved."
+        "decision_rule": "If compiler-only r3 yields only a modest gain, immediately move to the upstream FastLED 3.10.4 optimized Animartrix path as the primary class-level solution. Do not spend cycles on ad-hoc micro-optimizations that upstream has already solved.",
+        "exhaustion_note": "Productive external research has reached diminishing returns for architecture selection. The highest-value path is now implementation/measurement of FastLED's released fixed-point Animartrix architecture, not additional broad web searching. Further research should be targeted only to concrete integration questions discovered during the backport."
       }
     },
     "publication_contract": {
@@ -220,7 +236,7 @@
     ],
     "seq19_diagnostic_incident": "CLOSED_RECOVERED_TO_RELEASE07",
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "PACKET20_R3_COMPILER_MATH_AB_TEST_SELECTED",
+    "status": "PACKET20_R4_UPSTREAM_FASTLED_FIXED_POINT_BACKPORT_SELECTED",
     "target_recovery": {
       "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
