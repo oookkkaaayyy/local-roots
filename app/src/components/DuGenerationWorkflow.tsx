@@ -6,10 +6,10 @@ import { buildDuGenerationPrompt, DU_GENERATION_PROMPT_VERSION } from '../lib/du
 type Credential = {kind:'session'|'device';value:string};
 type SourcePhoto = {id:string;original_filename:string|null;sort_order:number;signed_url:string|null};
 type WorkflowState = {
-  package: any|null; attempts: any[]; selection: any|null; correction: any|null;
+  package: any|null; style_references:any[]; attempts: any[]; selection: any|null; correction: any|null;
   final_master: any|null; production_run: any|null;
 };
-const emptyState:WorkflowState={package:null,attempts:[],selection:null,correction:null,final_master:null,production_run:null};
+const emptyState:WorkflowState={package:null,style_references:[],attempts:[],selection:null,correction:null,final_master:null,production_run:null};
 const authFor=(credential:Credential)=>credential.kind==='device'?{deviceToken:credential.value}:credential.value;
 
 function readFile(file:File):Promise<string>{
@@ -56,7 +56,7 @@ async function downloadSourcePackageZip(sources:any[],jobNumber:string){
   const href=URL.createObjectURL(blob);
   const anchor=document.createElement('a');
   anchor.href=href;
-  anchor.download=`${jobNumber}-ChatGPT-Sources.zip`;
+  anchor.download=`${jobNumber}-ChatGPT-Reference-Package.zip`;
   document.body.appendChild(anchor);
   anchor.click();
   anchor.remove();
@@ -71,6 +71,8 @@ function isPassingValidatorReport(report:any){
 export function DuGenerationWorkflow({jobId,jobNumber,notes,photos,credential}:{jobId:string;jobNumber:string;notes:string|null;photos:SourcePhoto[];credential:Credential}){
   const [state,setState]=useState<WorkflowState>(emptyState),[compositionId,setCompositionId]=useState('');
   const [correctionPrompt,setCorrectionPrompt]=useState(''),[outcomeNote,setOutcomeNote]=useState(''),[message,setMessage]=useState(''),[busy,setBusy]=useState(false);
+  const [styleReferenceFiles,setStyleReferenceFiles]=useState<File[]>([]);
+  const [visualReview,setVisualReview]=useState({composition_fidelity:false,pet_identity:false,style_match:false,detail_and_crop:false});
   const [candidateFile,setCandidateFile]=useState<File|null>(null),[correctionFile,setCorrectionFile]=useState<File|null>(null);
   const [productionFile,setProductionFile]=useState<File|null>(null),[validatorFile,setValidatorFile]=useState<File|null>(null);
   const [validatorPassed,setValidatorPassed]=useState(false),[validatorReport,setValidatorReport]=useState<any>(null);
@@ -82,7 +84,7 @@ export function DuGenerationWorkflow({jobId,jobNumber,notes,photos,credential}:{
   async function run(task:()=>Promise<unknown>,success:string){
     setBusy(true);setMessage('Working…');
     try{await task();await refresh();setMessage(success);}
-    catch(error){setMessage(error instanceof Error?error.message:'Generation workflow action failed.');}
+    catch(error){await refresh().catch(()=>undefined);setMessage(error instanceof Error?error.message:'Generation workflow action failed.');}
     finally{setBusy(false);}
   }
 
@@ -93,7 +95,7 @@ export function DuGenerationWorkflow({jobId,jobNumber,notes,photos,credential}:{
       setState(fresh);
       const sources=fresh.package?.source_manifest?.sources||[];
       await downloadSourcePackageZip(sources,jobNumber);
-      setMessage(`Downloaded ${sources.length} immutable source photo${sources.length===1?'':'s'} in one ZIP.`);
+      setMessage(`Downloaded ${sources.length} immutable source and style reference files in one ZIP.`);
     }catch(error){setMessage(error instanceof Error?error.message:'Could not create the source ZIP.');}
     finally{setBusy(false);}
   }
@@ -118,6 +120,23 @@ export function DuGenerationWorkflow({jobId,jobNumber,notes,photos,credential}:{
     try{const report=JSON.parse(await file.text());setValidatorReport(report);setValidatorPassed(isPassingValidatorReport(report));setMessage(isPassingValidatorReport(report)?'Validator report confirms PASS at 190.5 mm.':'Report does not show PASS for every case at 190.5 mm.');}
     catch{setMessage('Validator report is not valid JSON.');}
   }
+  async function importStyleReferences(){
+    if(styleReferenceFiles.length===0)return;
+    await run(async()=>{
+      const fresh=await invoke('generation_state');
+      setState(fresh);
+      const importedHashes=new Set((fresh.style_references||[]).map((reference:any)=>reference.sha256));
+      for(const file of styleReferenceFiles){
+        const digest=await sha256Hex(await file.arrayBuffer());
+        if(importedHashes.has(digest))continue;
+        const image=await readFile(file);
+        const updated=await invoke('generation_import_style_reference',{image_data_url:image,original_filename:file.name});
+        setState(updated);
+        for(const reference of updated.style_references||[])importedHashes.add(reference.sha256);
+      }
+      setStyleReferenceFiles([]);
+    },'Accepted style references are saved privately and will be locked into every new package.');
+  }
 
   const active=state.attempts.find(item=>item.status==='ready');
   const selectedAttempt=state.attempts.find(item=>item.id===state.selection?.attempt_id);
@@ -125,16 +144,22 @@ export function DuGenerationWorkflow({jobId,jobNumber,notes,photos,credential}:{
   return <section className="du-generation-workflow" aria-label="Generation attempts and review">
     <h4>Generation workflow</h4>
     {!state.package?<div className="du-generation-lock">
-      <p>Choose the composition source, then lock the package. D&amp;U supplies the current canonical generation prompt and snapshots each original source image privately for every fresh attempt.</p>
+      <p>First add the accepted D&amp;U stencil examples once. They are stored privately and used only to guide the graphic style. Then lock this pet’s composition and identity sources. Every attempt gets the same examples and source files.</p>
+      <div className="du-generation-style-library"><strong>Private accepted-style library · {state.style_references.length} saved</strong>
+        {state.style_references.length? <div className="du-generation-source-list">{state.style_references.map((reference:any)=><span key={reference.id}>{reference.filename} · {reference.sha256.slice(0,12)}</span>)}</div>:<p>Add the seven approved stencil examples you supplied. Import is one time; the references are stored in private storage.</p>}
+        {state.style_references.length<12?<><label className="button ghost">Choose stencil examples<input type="file" accept="image/png,image/jpeg,image/webp" multiple disabled={busy} onChange={event=>setStyleReferenceFiles(Array.from(event.target.files||[]))}/></label>{styleReferenceFiles.length?<><small>{styleReferenceFiles.length} file{styleReferenceFiles.length===1?'':'s'} selected</small><button className="button primary" type="button" disabled={busy} onClick={()=>void importStyleReferences()}>Save style references privately</button></>:null}</>:null}
+      </div>
       <label>Composition image<select value={compositionId} disabled={busy} onChange={event=>setCompositionId(event.target.value)}>{photos.map((photo,index)=><option key={photo.id} value={photo.id}>Source {index+1} · {photo.original_filename||'uploaded image'}</option>)}</select></label>
       <label>Canonical generation prompt<textarea readOnly value={canonicalPrompt} rows={8} aria-label="Canonical D&U generation prompt"/></label>
       <small>Prompt version {DU_GENERATION_PROMPT_VERSION}. Manufacturing targets are generation bias only; deterministic validation still controls cut readiness.</small>
-      <button className="button primary" type="button" disabled={busy||photos.length===0} onClick={()=>void run(()=>invoke('generation_lock_package',{composition_photo_id:compositionId,locked_prompt:canonicalPrompt,prompt_version:DU_GENERATION_PROMPT_VERSION}),'Immutable source package and canonical prompt locked; Attempt A is ready.')}>Lock source package and prepare Attempt A</button>
+      <button className="button primary" type="button" disabled={busy||photos.length===0||state.style_references.length<3} onClick={()=>void run(()=>invoke('generation_lock_package',{composition_photo_id:compositionId,locked_prompt:canonicalPrompt,prompt_version:DU_GENERATION_PROMPT_VERSION}),'Immutable source and style package locked; Attempt A is ready.')}>Lock source and style package</button>
+      {state.style_references.length<3?<small>At least three accepted stencil examples are required before the package can be locked.</small>:null}
     </div>:<>
-      <div className="du-generation-package"><strong>Locked clean-room package</strong><span>Prompt SHA-256: {state.package.prompt_sha256}</span><span>Source manifest SHA-256: {state.package.source_manifest_sha256}</span>
-        <p>For each attempt, start a brand-new ChatGPT conversation. Download the ZIP, unzip it, attach every source image as a native image attachment, then paste the exact locked prompt. Never attach a previous candidate.</p>
-        <div className="button-row"><button className="button primary" type="button" disabled={busy} onClick={()=>void downloadAllSources()}>Download all source photos (.zip)</button><button className="button ghost" type="button" onClick={()=>void copyText(promptText).then(setMessage)}>Copy locked prompt</button></div>
-        <details><summary>Individual source downloads</summary><div className="du-generation-source-list">{state.package.source_manifest.sources.map((source:any)=><button className="button ghost" type="button" key={source.source_photo_id} disabled={busy||!source.signed_url} onClick={()=>void downloadPrivate(source.signed_url,source.filename).catch(error=>setMessage(error.message))}>{source.filename} · {source.role==='composition'?'composition':'identity reference'}</button>)}</div></details>
+      <div className="du-generation-package"><strong>Locked source-and-style package</strong><span>Prompt SHA-256: {state.package.prompt_sha256}</span><span>Source manifest SHA-256: {state.package.source_manifest_sha256}</span>
+        <p>For each attempt, start a brand-new ChatGPT conversation. Download the ZIP, unzip it, attach every image as a native image attachment, then paste the exact locked prompt. The numbered style references are mandatory style controls; they cannot define the pet’s identity. Never attach a previous candidate.</p>
+        <div className="button-row"><button className="button primary" type="button" disabled={busy} onClick={()=>void downloadAllSources()}>Download full reference package (.zip)</button><button className="button ghost" type="button" onClick={()=>void copyText(promptText).then(setMessage)}>Copy locked prompt</button></div>
+        <details><summary>Individual package downloads</summary><div className="du-generation-source-list">{state.package.source_manifest.sources.map((source:any)=><button className="button ghost" type="button" key={source.filename} disabled={busy||!source.signed_url} onClick={()=>void downloadPrivate(source.signed_url,source.filename).catch(error=>setMessage(error.message))}>{source.filename} · {source.role==='composition'?'composition':source.role==='identity_reference'?'same-pet identity':'accepted stencil style'}</button>)}</div></details>
+        <details open><summary>Accepted stencil style references · compare every candidate to these</summary><div className="du-generation-reference-grid">{state.style_references.map((reference:any)=><figure key={reference.id}><img src={reference.signed_url} alt={`Accepted style reference: ${reference.filename}`} loading="lazy"/><figcaption>{reference.filename}</figcaption></figure>)}</div></details>
         <textarea readOnly value={promptText} rows={5} aria-label="Locked generation prompt"/>
       </div>
       <div className="du-generation-attempts"><h5>Independent attempts</h5><div className="du-generation-candidates">
@@ -144,7 +169,12 @@ export function DuGenerationWorkflow({jobId,jobNumber,notes,photos,credential}:{
           {attempt.candidate_sha256?<small>SHA-256 {attempt.candidate_sha256}</small>:null}
           {attempt.failure_note?<p><strong>Outcome note:</strong> {attempt.failure_note}</p>:null}
           {attempt.status==='ready'?<><p>Use the original package above in a fresh chat, then attach that chat’s result here.</p><label className="button ghost">Attach candidate<input type="file" accept="image/png,image/jpeg,image/webp" disabled={busy} onChange={event=>setCandidateFile(event.target.files?.[0]||null)}/></label><button className="button primary" type="button" disabled={busy||!candidateFile} onClick={()=>void uploadCandidate()}>{candidateFile?'Upload '+candidateFile.name:'Choose generated candidate'}</button><label>Failure note if this attempt cannot produce a candidate<textarea value={outcomeNote} onChange={event=>setOutcomeNote(event.target.value)} rows={2} maxLength={1000} placeholder="Record a short, non-identifying reason."/></label><button className="button ghost" type="button" disabled={busy||outcomeNote.trim().length<5} onClick={()=>void run(async()=>{await invoke('generation_mark_attempt',{attempt_id:attempt.id,status:'failed',failure_note:outcomeNote.trim()});setOutcomeNote('');},'Attempt marked failed. Original package remains unchanged.')}>Mark attempt failed</button></>:null}
-          {attempt.status==='candidate'?<><label>Rejection note if this candidate is not selected<textarea value={outcomeNote} onChange={event=>setOutcomeNote(event.target.value)} rows={2} maxLength={1000} placeholder="Record a short, non-identifying reason."/></label><div className="button-row"><button className="button primary" type="button" disabled={busy} onClick={()=>void run(()=>invoke('generation_select_attempt',{attempt_id:attempt.id}),'Candidate selected as immutable visual master.')}>Select visual master</button><button className="button ghost" type="button" disabled={busy||outcomeNote.trim().length<5} onClick={()=>void run(async()=>{await invoke('generation_mark_attempt',{attempt_id:attempt.id,status:'rejected',failure_note:outcomeNote.trim()});setOutcomeNote('');},'Candidate rejected; next fresh attempt is available.')}>Reject candidate</button></div></>:null}
+          {attempt.status==='candidate'?<><fieldset className="du-generation-review"><legend>Compare this candidate to the source and accepted style examples</legend>
+            <label><input type="checkbox" checked={visualReview.composition_fidelity} onChange={event=>setVisualReview(value=>({...value,composition_fidelity:event.target.checked}))}/> Keeps the composition photo’s pose, framing, gaze, and expression</label>
+            <label><input type="checkbox" checked={visualReview.pet_identity} onChange={event=>setVisualReview(value=>({...value,pet_identity:event.target.checked}))}/> Preserves this pet’s identity, markings, and natural anatomy</label>
+            <label><input type="checkbox" checked={visualReview.style_match} onChange={event=>setVisualReview(value=>({...value,style_match:event.target.checked}))}/> Matches accepted stencils: pure black/white only, no gray shading (including nose), no tiny white specks</label>
+            <label><input type="checkbox" checked={visualReview.detail_and_crop} onChange={event=>setVisualReview(value=>({...value,detail_and_crop:event.target.checked}))}/> Has no scratchboard texture, tiny specks/slivers, artificial eye rings, gray pixels, or unwanted chest/body</label>
+          </fieldset><label>Rejection note if this candidate is not selected<textarea value={outcomeNote} onChange={event=>setOutcomeNote(event.target.value)} rows={2} maxLength={1000} placeholder="Record a short, non-identifying reason."/></label><div className="button-row"><button className="button primary" type="button" disabled={busy||!Object.values(visualReview).every(Boolean)} onClick={()=>void run(()=>invoke('generation_select_attempt',{attempt_id:attempt.id,visual_review:visualReview}),'Candidate selected after visual review and locked as immutable master.')}>Select visual master</button><button className="button ghost" type="button" disabled={busy||outcomeNote.trim().length<5} onClick={()=>void run(async()=>{await invoke('generation_mark_attempt',{attempt_id:attempt.id,status:'rejected',failure_note:outcomeNote.trim()});setOutcomeNote('');setVisualReview({composition_fidelity:false,pet_identity:false,style_match:false,detail_and_crop:false});},'Candidate rejected; next fresh attempt is available.')}>Reject candidate</button></div></>:null}
           {attempt.status==='selected'?<strong>Selected immutable visual master</strong>:null}
         </article>)}
       </div>

@@ -9,6 +9,7 @@ assert.ok(base && anon && service, 'Local Supabase status environment is require
 const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const pngA = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jvXcAAAAASUVORK5CYII=', 'base64');
 const pngB = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADUlEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC', 'base64');
+const pngC = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNgAAAAAgABSK+kcQAAAABJRU5ErkJggg==', 'base64');
 
 async function request(path, method, body, token = service, key = service) {
   const response = await fetch(base + path, {
@@ -98,16 +99,22 @@ const detail = await expectAction(adminToken, { action: 'job', job_id: jobId });
 assert.equal(detail.photos.length, 2);
 assert.ok(detail.photos.every((photo) => photo.signed_url), 'private source photos get signed URLs');
 
-const promptVersion = 'clean-room-v2.2';
-const prompt = 'START D&U STENCIL — ' + jobNumber + ' — CLEAN ROOM v2.2\n\nUse 01-APPROVED-COMPOSITION as the only authority for pose and framing. Use identity references only for the same subject. Keep the portrait head-dominant; crop out chest, shoulders, forelegs, and torso without changing the locked composition source or identity. Return one pure-black-on-pure-white stencil, preserving recognizable identity and avoiding tiny floating white details. Generation targets are not production certification.';
+const promptVersion = 'reference-anchored-v3.1';
+const prompt = 'START D&U STENCIL — ' + jobNumber + ' — REFERENCE-ANCHORED v3.1\n\nUse 01-APPROVED-COMPOSITION as the only authority for pose and framing. Use identity references only for the same subject. Use 03-STYLE-REFERENCE images only for accepted stencil visual language; never copy their pet identity or anatomy. Keep the portrait head-dominant; crop out chest, shoulders, forelegs, and torso without changing the locked composition source or identity. Return one pure-black-on-pure-white stencil with controlled detail and recognizable identity. Generation targets are not production certification.';
+assert.equal((await action(adminToken, { action: 'generation_lock_package', job_id: jobId, composition_photo_id: photoA, locked_prompt: prompt, prompt_version: promptVersion })).response.status, 409, 'three accepted style references are required before locking');
+for (const [index, bytes] of [pngA, pngB, pngC].entries()) {
+  await expectAction(adminToken, { action: 'generation_import_style_reference', job_id: jobId, original_filename: `accepted-style-${index + 1}.png`, image_data_url: 'data:image/png;base64,' + bytes.toString('base64') });
+}
+assert.equal((await action(adminToken, { action: 'generation_import_style_reference', job_id: jobId, original_filename: 'duplicate.png', image_data_url: 'data:image/png;base64,' + pngA.toString('base64') })).response.status, 409, 'duplicate style bytes are rejected');
 assert.equal((await action(adminToken, { action: 'generation_lock_package', job_id: jobId, composition_photo_id: photoA, locked_prompt: prompt })).response.status, 409, 'prompt version is required');
 const locked = await expectAction(adminToken, { action: 'generation_lock_package', job_id: jobId, composition_photo_id: photoA, locked_prompt: prompt, prompt_version: promptVersion });
 assert.ok(locked.package.id);
-assert.equal(locked.package.source_manifest.sources.length, 2);
+assert.equal(locked.package.source_manifest.sources.length, 5);
 assert.equal(locked.package.source_manifest.prompt_version, promptVersion);
-assert.deepEqual(locked.package.source_manifest.sources.map((source) => source.role), ['composition', 'identity_reference']);
+assert.deepEqual(locked.package.source_manifest.sources.map((source) => source.role), ['composition', 'identity_reference', 'style_reference', 'style_reference', 'style_reference']);
 assert.equal(locked.package.source_manifest.sources[0].sha256, hash(pngA));
 assert.equal(locked.package.source_manifest.sources[1].sha256, hash(pngB));
+assert.deepEqual(locked.package.source_manifest.sources.slice(2).map((source) => source.sha256), [pngA, pngB, pngC].map(hash));
 assert.equal(Object.hasOwn(locked.package, 'client_name'), false);
 assert.equal(locked.attempts.length, 1);
 assert.equal((await action(adminToken, { action: 'generation_lock_package', job_id: jobId, composition_photo_id: photoA, locked_prompt: prompt, prompt_version: promptVersion })).response.status, 409);
@@ -139,10 +146,13 @@ assert.equal((await action(adminToken, { action: 'generation_upload_candidate', 
 assert.equal((await action(adminToken, { action: 'generation_next_attempt', job_id: jobId })).response.status, 409, 'three-attempt cap');
 assert.ok(candidateC.attempts.every((attempt) => attempt.package_id === locked.package.id), 'A/B/C share only the immutable original package');
 
-const selected = await expectAction(adminToken, { action: 'generation_select_attempt', job_id: jobId, attempt_id: attemptC.id });
+const visualReview = { composition_fidelity: true, pet_identity: true, style_match: true, detail_and_crop: true };
+assert.equal((await action(adminToken, { action: 'generation_select_attempt', job_id: jobId, attempt_id: attemptC.id })).response.status, 400, 'a visual review is mandatory before selection');
+const selected = await expectAction(adminToken, { action: 'generation_select_attempt', job_id: jobId, attempt_id: attemptC.id, visual_review: visualReview });
 assert.equal(selected.selection.attempt_id, attemptC.id);
+assert.deepEqual(selected.selection.visual_review, visualReview);
 assert.equal(selected.attempts[2].status, 'selected');
-assert.equal((await action(adminToken, { action: 'generation_select_attempt', job_id: jobId, attempt_id: attemptC.id })).response.status, 409);
+assert.equal((await action(adminToken, { action: 'generation_select_attempt', job_id: jobId, attempt_id: attemptC.id, visual_review: visualReview })).response.status, 409);
 
 const correction = await expectAction(adminToken, { action: 'generation_start_correction', job_id: jobId, correction_prompt: 'Widen only the left ear connection.' });
 assert.equal(correction.correction.base_attempt_id, attemptC.id);
@@ -165,12 +175,15 @@ assert.equal((await action(adminToken, { action: 'generation_upload_production',
 
 const browserRead = await request('/rest/v1/du_generation_packages?job_id=eq.' + jobId + '&select=id', 'GET', undefined, adminToken, anon);
 assert.equal(browserRead.response.status, 403, 'authenticated role is denied direct access to private orchestration rows');
+const styleBrowserRead = await request('/rest/v1/du_generation_style_references?select=id', 'GET', undefined, adminToken, anon);
+assert.equal(styleBrowserRead.response.status, 403, 'authenticated role is denied direct access to private style-reference rows');
 const immutableEdit = await request('/rest/v1/du_generation_packages?id=eq.' + locked.package.id, 'PATCH', { locked_prompt: 'Mutate locked prompt' });
 assert.equal(immutableEdit.response.status, 400, 'database trigger rejects service-role mutation');
 const readback = await expectAction(adminToken, { action: 'generation_state', job_id: jobId });
 assert.equal(readback.package.id, locked.package.id);
 assert.deepEqual(readback.attempts.map((attempt) => attempt.status), ['failed', 'rejected', 'selected']);
 assert.equal(readback.selection.attempt_id, attemptC.id);
+assert.deepEqual(readback.selection.visual_review, visualReview);
 assert.equal(readback.correction.base_candidate_sha256, candidateC.attempts[2].candidate_sha256);
 assert.equal(readback.final_master.master_sha256, finalMaster.final_master.master_sha256);
 assert.equal(readback.production_run.output_sha256, productionHash);
