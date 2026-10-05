@@ -1,0 +1,37 @@
+{
+  "schema": "local-roots-platform-policies-v1",
+  "process": {
+    "max_consecutive_tooling_blockers_without_product_evidence": 2,
+    "closed_prerequisite_reverification": "only_after_invalidating_state_change",
+    "same_mechanism_retry": "requires_new_evidence",
+    "batch_size": "smallest independently testable change",
+    "progress_definition": "terminal product evidence or closed acceptance criterion"
+  },
+  "cost": {
+    "paid_or_quota_limited_execution": "explicit_authorization_per_bounded_run",
+    "retry_inherits_authorization": false,
+    "remote_execution_for_source_archaeology": false
+  },
+  "user_interaction": {
+    "terminal_relay": false,
+    "max_user_actions_per_blocker": 1,
+    "required_user_action_fields": [
+      "prerequisite",
+      "action",
+      "expected_result",
+      "stop_condition"
+    ]
+  },
+  "provenance": {
+    "artifact_digest_required": true,
+    "source_identity_required": true,
+    "workflow_identity_required": true,
+    "durable_evidence_promotion_required": true
+  },
+  "observability": {
+    "run_id_required": true,
+    "trace_id_required": true,
+    "structured_events": true,
+    "terminal_summary_required": true
+  }
+}
