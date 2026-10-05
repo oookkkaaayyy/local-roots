@@ -1,11 +1,15 @@
 {
-  "schema": "local-roots-platform-policies-v1",
+  "schema": "local-roots-platform-policies-v2",
   "process": {
     "max_consecutive_tooling_blockers_without_product_evidence": 2,
     "closed_prerequisite_reverification": "only_after_invalidating_state_change",
     "same_mechanism_retry": "requires_new_evidence",
     "batch_size": "smallest independently testable change",
-    "progress_definition": "terminal product evidence or closed acceptance criterion"
+    "progress_definition": "terminal product evidence or closed acceptance criterion",
+    "deterministic_prerequisites_before_live": "required",
+    "live_surprise_budget": "irreducible_runtime_or_physical_only",
+    "full_transaction_rehearsal_before_mutation": true,
+    "integration_boundary_tests": true
   },
   "cost": {
     "paid_or_quota_limited_execution": "explicit_authorization_per_bounded_run",
@@ -20,18 +24,42 @@
       "action",
       "expected_result",
       "stop_condition"
-    ]
+    ],
+    "copy_paste_delivery": "one_single_fenced_block_per_action",
+    "resource_instruction_requires_direct_link_or_exact_path": true,
+    "terminal_app": "macOS Terminal"
   },
   "provenance": {
     "artifact_digest_required": true,
     "source_identity_required": true,
     "workflow_identity_required": true,
-    "durable_evidence_promotion_required": true
+    "durable_evidence_promotion_required": true,
+    "exact_recovery_identity_required_before_mutation": true,
+    "pre_mutation_deployment_identity_required": true,
+    "consumer_contract_identity_required": true
   },
   "observability": {
     "run_id_required": true,
     "trace_id_required": true,
     "structured_events": true,
     "terminal_summary_required": true
+  },
+  "engineering_standard": {
+    "deterministic_uncertainty": "must_be_eliminated_before_live_or_paid_mutation",
+    "live_execution_scope": "may_discover_only_irreducible_runtime_or_physical_behavior",
+    "end_to_end_contract_test_required": true,
+    "recovery_path_proven_before_risky_mutation": true,
+    "exact_consumer_path_verified": true,
+    "mutable_alias_policy": "discovery_only; after target selection execution is governed by exact signed identity/hash and the alias transition itself must be rehearsed if the consumer is pinned to it",
+    "cloud_change_policy": "capture exact current deployment/version first; create a non-production version/preview when provider supports it; verify there; deploy exact verified version; rollback by exact prior version identity",
+    "rollback_policy": "pre-registered last-known-good artifact/version; never rebuild rollback during an incident",
+    "build_policy": "complete source/dependency/vendor/generated-input closure before paid or remote build",
+    "worker_directive_policy": "derive from validated execution capsule; do not improvise the run plan after mutation begins",
+    "progress_policy": "count only terminal product evidence or a closed acceptance criterion"
+  },
+  "estimation": {
+    "unsupported_eta_prohibited": true,
+    "allowed_basis": "measured stage durations from a validated path plus explicitly identified irreducible unknowns",
+    "preparation_is_not_completion": true
   }
 }
