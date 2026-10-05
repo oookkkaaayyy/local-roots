@@ -1,0 +1,74 @@
+{
+  "schema": "local-roots-golden-path-v1",
+  "id": "software-change",
+  "purpose": "Small, reversible code/configuration change with fast feedback.",
+  "required_repo_inputs": [
+    "AGENTS.md"
+  ],
+  "stages": [
+    {
+      "id": "scope",
+      "kind": "preflight",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "explicit acceptance condition"
+      ]
+    },
+    {
+      "id": "implement",
+      "kind": "work",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "small code/config delta"
+      ]
+    },
+    {
+      "id": "test",
+      "kind": "verification",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "deterministic local test result"
+      ]
+    },
+    {
+      "id": "deploy",
+      "kind": "deployment",
+      "mutation": true,
+      "retry_policy": "explicit_only",
+      "rollback": {
+        "strategy": "revert exact deployed revision"
+      },
+      "outputs": [
+        "deployment identity"
+      ]
+    },
+    {
+      "id": "verify",
+      "kind": "verification",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "user-visible/runtime verification"
+      ]
+    },
+    {
+      "id": "record",
+      "kind": "evidence",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "terminal run summary and durable delta"
+      ]
+    }
+  ],
+  "terminal_recovery": "If deploy or verify fails, restore the last known-good revision and record the exact failure before further work.",
+  "expected_terminal_outputs": [
+    "accepted change or exact failed stage",
+    "deployed/source identity",
+    "test result",
+    "durable evidence pointer"
+  ]
+}
