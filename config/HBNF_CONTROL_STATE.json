@@ -5,17 +5,17 @@
   "completed_receipts": [],
   "current_task": {
     "name": "Release07 all-kernel diagnosis and class-level fix preparation",
-    "status": "SEQ19_PARTIAL_SWEEP__RECOVERY_ONLY",
+    "status": "SEQ20_RECOVERY_BLOCKED__SSH_REAUTH_REQUIRED",
     "installed_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
     "installed_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "installed_release_role": "DIAGNOSTIC_TIMING_HOOK__PARTIAL_SWEEP_STOPPED__RECOVERY_REQUIRED",
     "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
     "blockers": [
-      "execute exact signed Release07 seq20 recovery; do not resume seq19 diagnostics",
+      "reauthenticate one SSH session to Opal; no other prerequisite is open",
+      "execute exact signed Release07 seq20 recovery",
       "verify installed Release07 identity/hash exactly 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-      "preserve and promote POSTINSTALL_03 plus offline reconciliation as decisive evidence",
-      "repair live-diagnostic host package offline before any future diagnostic attempt: exact artifact/source binding, explicit timeout hierarchy, post-restore state preservation",
-      "derive next diagnostic/fix action only after Release07 recovery is verified"
+      "preserve/promote decisive Packet20 and recovery evidence",
+      "stop; do not resume seq19 diagnostics"
     ]
   },
   "live_mutation_authorized": true,
