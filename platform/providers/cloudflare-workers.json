@@ -1,0 +1,52 @@
+{
+  "schema": "local-roots-provider-pattern-v1",
+  "provider": "cloudflare-workers",
+  "area": "versioned Workers with Static Assets",
+  "authority": "Cloudflare official documentation current as of 2026-10-05",
+  "standard_pattern": {
+    "inspect_current": [
+      "GET /accounts/{account_id}/workers/scripts/{script_name}/deployments",
+      "GET /accounts/{account_id}/workers/scripts/{script_name}/versions/{version_id}",
+      "GET /accounts/{account_id}/workers/scripts/{script_name}/content/v2",
+      "GET /accounts/{account_id}/workers/scripts/{script_name}/settings"
+    ],
+    "create_undeployed_version": [
+      "Fetch exact current Worker script content and current version/settings before mutation.",
+      "Upload a new version with POST /accounts/{account_id}/workers/scripts/{script_name}/versions.",
+      "For an existing Worker whose current static assets must be preserved exactly, set metadata keep_assets=true. Do not require or reconstruct an asset manifest/JWT.",
+      "Use exact inherited bindings from the known current version and bindings_inherit=strict when inherit bindings are used, so unresolved bindings fail closed.",
+      "Do not deploy as part of version upload."
+    ],
+    "verify_before_deploy": [
+      "Use the Version URL when enabled, or a 0%-traffic version in a two-version deployment plus Cloudflare-Workers-Version-Overrides for smoke testing.",
+      "Verify exact response bytes/identity for the changed route plus representative unchanged routes/assets.",
+      "Compare returned version resources/settings against the captured current version; no unrelated configuration/binding drift."
+    ],
+    "deploy": [
+      "Deploy the exact verified version by version ID.",
+      "Preserve the exact prior version/deployment ID as rollback anchor."
+    ],
+    "rollback": [
+      "Rollback/deploy the exact prior Worker version ID. Do not reconstruct the prior script or static asset directory."
+    ]
+  },
+  "current_hbnf_application": {
+    "worker": "hbnf-matrix-firmware-stable",
+    "current_active_version": "29bdcc12-17ce-4feb-bb9e-e83cec5e1567",
+    "current_active_deployment": "dc7ffae3-62f6-49b8-9506-97eb3998efa4",
+    "recovery_need": "temporarily make exact signed seq20 recovery manifest visible through the updater-consumed latest.json contract while preserving every existing static asset",
+    "approved_mechanism_to_rehearse": "new undeployed Worker version based on exact current script/settings with keep_assets=true; change only latest.json handling; verify via Version URL or 0% version override; then deploy exact version; after device recovery restore exact prior version",
+    "forbidden": [
+      "rebuild static assets from a stale local directory",
+      "weaken updater role/signature/hash checks",
+      "assume an asset JWT must be recoverable from the existing version",
+      "deploy an unverified version"
+    ]
+  },
+  "official_doc_facts": [
+    "Cloudflare Direct Uploads documents keep_assets=true specifically for reusing an existing Worker's static asset set without supplying a completion token.",
+    "Worker Versions capture code, static assets, bindings, and compatibility settings.",
+    "Version uploads can be created without deployment and tested via Version URLs.",
+    "Cloudflare supports deployment/rollback by exact Worker version ID."
+  ]
+}
