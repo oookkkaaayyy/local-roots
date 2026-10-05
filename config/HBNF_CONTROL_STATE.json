@@ -167,6 +167,28 @@
           "paired r1/r3 report with per-kernel and aggregate metrics"
         ],
         "decision_rule": "Promote only if aggregate median frame time/FPS materially improves and no effect/control/state regression appears. Otherwise do not iterate compiler knobs; next class-level target is pnoise/render_value math profiling."
+      },
+      "research_acceleration_20261005": {
+        "status": "ACTIVE",
+        "evidence": [
+          "FastLED 3.10.2 release notes report Animartrix ~30% faster after forcing per-file -O3 plus fast-math.",
+          "FastLED 3.10.4 source ships fixed-point Animartrix implementations across the retained effect families and defaults to fixed-point on all platforms except ESP32-P4.",
+          "FastLED 3.10.4 render_value_fp uses sincos32 plus fixed-point Perlin and selects 2D noise when z==0; source comments describe ~2-3x speedup on MCUs without FPU.",
+          "GCC -Wdouble-promotion is specifically intended to expose accidental float-to-double promotion on CPUs with single-precision hardware and software-emulated double."
+        ],
+        "r3_prebuild_acceleration": [
+          "Add diagnostic-only -Wdouble-promotion for the Animartrix translation unit/build audit and preserve warnings; do not fail unrelated code.",
+          "Inspect r1/r3 ELF symbol/disassembly for software-double helper usage (e.g. *df* libgcc helpers) in the Animartrix hot path before spending a live trial.",
+          "If no meaningful double promotion exists and effective optimization is already equivalent, skip the live r3 trial and move directly to upstream optimization comparison."
+        ],
+        "after_r3_if_insufficient": [
+          "Do NOT invent a new pnoise optimization from scratch first.",
+          "Audit FastLED 3.10.4 stable Animartrix implementation against the exact 28 retained HBNF effects.",
+          "Prefer a bounded backport of upstream per-file O3/fast-math and/or fixed-point render/noise primitives into the pinned WLED 16.0.1 lineage rather than upgrading the whole WLED/FastLED stack.",
+          "Reuse FastLED float-vs-fixed tests as a starting point, but add HBNF-specific golden-frame/tolerance tests because upstream all-viz thresholds are intentionally loose.",
+          "Only one live full-28 trial after host/source equivalence and build gates pass."
+        ],
+        "decision_rule": "If compiler-only r3 yields only a modest gain, immediately move to the upstream FastLED 3.10.4 optimized Animartrix path as the primary class-level solution. Do not spend cycles on ad-hoc micro-optimizations that upstream has already solved."
       }
     },
     "publication_contract": {
