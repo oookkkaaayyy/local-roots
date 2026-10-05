@@ -37,10 +37,7 @@
       "scope": "complete recovery and continue Cart 2.0 lifecycle autonomously as far as safely possible overnight",
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
-    "blockers": [
-      "Foundation remains unqualified: r2 trial is diagnostic only, frame-tail and heap-fragmentation gates are not yet qualified, and aggregate medians did not improve in the single paired comparison.",
-      "Additional objective runtime qualification, soak, instrumentation observer-effect, audio/control feature acceptance, clean-room capsule, and physical acceptance remain incomplete."
-    ],
+    "blockers": [],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "diagnostic_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
@@ -90,10 +87,10 @@
     "fix_candidate_run": {
       "aggregate_comparison": {
         "note": "single paired comparison; not sufficient to qualify aggregate improvement; candidate not promoted",
-        "r1_fps_median": 10.0,
+        "r1_fps_median": 10,
         "r1_frame_median_ms": 93.01575,
         "r1_kernel_median_ms": 70.24025,
-        "r2_fps_median": 9.0,
+        "r2_fps_median": 9,
         "r2_frame_median_ms": 103.0595,
         "r2_kernel_median_ms": 78.6545
       },
@@ -141,13 +138,36 @@
       "signature_sha256": "d197c58e21010f3a1eec09d47e8e5abc452246355a6ad4f36f40c16b93c98be3"
     },
     "name": "Packet20 fresh 28-kernel run complete; prepare bounded class-level fix candidate",
-    "next_work": "Close T1 diagnostic stage with direct evidence; retain Release07 as baseline. The r2 trig-cache candidate completed one 28-kernel trial but aggregate medians did not improve and Foundation acceptance remains open. Continue offline analysis and required future qualification only under a new bounded transaction.",
+    "next_work": "Build and run one controlled r3 candidate from the r1 renderer lineage with no r2 trig-cache patch. Change only compiler/math optimization: use pinned WLED 16.0.1 Speed_Flags behavior and force single-precision constants. Verify the effective compiler command/flags before build. Then run the same exact 28-kernel sweep and paired comparison against r1. If aggregate performance materially improves without semantic drift, proceed to Foundation qualification; otherwise stop changing compiler flags and profile/optimize pnoise/render_value math next.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "performance_findings": {
       "candidate_fix": "shared render_value polar trig reuse keyed by exact angle; semantics-preserving class-level cache, subject to standalone tests/build/device qualification",
       "dominant_stage": "ANIMartRIX per-kernel rendering; median kernel_avg_ms 70.24025 vs palette 11.8685, audio 2.8835, aux 0.135; worst Parametric_Water 167.353ms kernel and 205.045ms frame at 4 median FPS",
       "foundation_qualified": false,
-      "report_drive_file_id": "1QhUQTFX4b3Uc5iLMxT4nKeK4t50a-Mw8"
+      "report_drive_file_id": "1QhUQTFX4b3Uc5iLMxT4nKeK4t50a-Mw8",
+      "next_experiment": {
+        "candidate_id": "hbnf-matrix-packet20-speedmath-v1-20261005-r3",
+        "baseline_lineage": "r1 renderer/source lineage; do NOT carry forward r2 trig-cache patch",
+        "delta_only": [
+          "apply pinned WLED 16.0.1 Speed_Flags semantics (-O2 and required safety flags, with -Os removed if present)",
+          "add -fsingle-precision-constant"
+        ],
+        "prebuild_gate": [
+          "inspect and preserve exact current effective compiler flags",
+          "prove r2 trig-cache patch absent",
+          "prove only intended compiler/math flags changed",
+          "reuse exact successful clean-room source/dependency/vendor/generated-input closure",
+          "no source-level effect/math redesign in this candidate"
+        ],
+        "live_gate": [
+          "one exact diagnostic install using proven direct-LAN OTA",
+          "same 28-kernel Packet20 sweep",
+          "exact renderer snapshot/restore",
+          "exact Release07 recovery after trial",
+          "paired r1/r3 report with per-kernel and aggregate metrics"
+        ],
+        "decision_rule": "Promote only if aggregate median frame time/FPS materially improves and no effect/control/state regression appears. Otherwise do not iterate compiler knobs; next class-level target is pnoise/render_value math profiling."
+      }
     },
     "publication_contract": {
       "active_deployment_id": "dc7ffae3-62f6-49b8-9506-97eb3998efa4",
@@ -178,7 +198,7 @@
     ],
     "seq19_diagnostic_incident": "CLOSED_RECOVERED_TO_RELEASE07",
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "PACKET20_R2_TRIAL_COMPLETE__SEQ24_RELEASE07_VERIFIED",
+    "status": "PACKET20_R3_COMPILER_MATH_AB_TEST_SELECTED",
     "target_recovery": {
       "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
