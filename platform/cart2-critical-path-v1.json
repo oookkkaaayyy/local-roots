@@ -1,5 +1,5 @@
 {
-  "schema": "hbnf-cart2-critical-path-v1",
+  "schema": "hbnf-cart2-critical-path-v2",
   "authority_scope": "execution-planning-only; lifecycle authority remains config/HBNF_CONTROL_MODEL.json + config/HBNF_CONTROL_STATE.json",
   "objective": "Reach lifecycle ACCEPTED with no live trial-and-error for deterministic backend/tooling prerequisites.",
   "current_lifecycle": "DIAGNOSTIC_ACTIVE",
@@ -22,7 +22,12 @@
         "prove target release ID hbnf-matrix-coordinated-v1-20261002-07",
         "prove target SHA-256 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
         "prove SSH transport using ~/.ssh/hbnf_opal_rsa",
-        "prepare exact post-install identity/hash verification and evidence capture"
+        "prepare exact post-install identity/hash verification and evidence capture",
+        "prove actual updater consumer URL/role contract for recovery, not merely recovery artifact validity",
+        "capture exact current Cloudflare deployment/version identity before publication mutation",
+        "prove a publication change that makes exact seq20 recovery visible at the updater-consumed URL without reconstructing or dropping unrelated active assets",
+        "prove exact restoration of the prior Cloudflare deployment/version",
+        "run non-production/preview readback of the recovery manifest through the same consumer contract before recovery install"
       ],
       "stop_if": [
         "artifact/signature/sequence ambiguity",
@@ -50,7 +55,9 @@
         "run a full host-side end-to-end rehearsal of snapshot -> 28 kernels -> restore -> report -> recovery using deterministic fixtures/mocks",
         "freeze report schema and root-cause classification rules",
         "freeze build dependency/vendor/generated-input closure",
-        "freeze rollback/recovery artifact and SSH transport"
+        "freeze rollback/recovery artifact and SSH transport",
+        "pre-rehearse diagnostic-manifest -> updater-consumed URL -> diagnostic install -> recovery-manifest -> updater-consumed URL -> exact recovery -> exact prior publication restore",
+        "prove publication transaction preserves unrelated current production assets/configuration"
       ],
       "live_action": "one diagnostic install + one complete 28-kernel sweep + exact restore + exact Release07 recovery",
       "stop_if": [
@@ -160,5 +167,29 @@
     "actual reboot/panic/uptime behavior",
     "actual physical AUX/Matrix/iPad/Wi-Fi/power behavior",
     "actual soak stability"
-  ]
+  ],
+  "publication_recovery_invariant": {
+    "problem_class": "A signed recovery artifact is not usable merely because it exists. The actual updater consumer path, manifest role, mutable pointer state, cloud asset/deployment semantics, and rollback of that publication layer must all be proven before diagnostic install.",
+    "mandatory_before_diagnostic_install": [
+      "exact current cloud deployment/version identity captured",
+      "exact diagnostic manifest available at the URL/role the updater will actually consume",
+      "exact recovery manifest available at the URL/role the updater will actually consume",
+      "diagnostic -> recovery pointer/role transition proven without reconstructing or dropping unrelated production assets",
+      "exact prior cloud deployment/version restoration proven",
+      "actual updater readback confirms each expected role/identity before device mutation"
+    ],
+    "forbidden": [
+      "assuming recovery.json is usable when updater is pinned to latest.json",
+      "reconstructing a live asset set during an incident",
+      "weakening updater role/signature/hash checks to force recovery",
+      "installing a diagnostic before recovery publication mechanics are rehearsed"
+    ]
+  },
+  "current_known_process_defect": {
+    "id": "PACKET20-PUBLICATION-RECOVERY-CONTRACT-001",
+    "symptom": "seq20 Release07 recovery rejected with confirmed-release-role-changed",
+    "root_cause": "Updater is pinned to latest.json. latest.json remained seq19 role=update while exact signed seq20 role=recovery was separately published as recovery.json. The recovery artifact itself is valid, but the consumer/publication contract was never proven end-to-end before seq19 install.",
+    "current_cloud_blocker": "Current live Cloudflare Worker version/deployment identity is known, but the live version API response available to the worker did not expose a reusable asset-set token/manifest sufficient to prove a safe pointer-only version while preserving the entire active asset set.",
+    "required_resolution_standard": "Resolve using a standard versioned deployment or exact asset-preserving publication mechanism proven against current Cloudflare state. Do not reconstruct production assets from a stale local directory and do not modify updater security guards."
+  }
 }
