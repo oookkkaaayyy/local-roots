@@ -27,11 +27,28 @@
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
     "blockers": [
-      "fresh Packet20 seq21 live diagnostic transaction not yet completed"
+      "Packet20 timing/performance acceptance gate fails; Foundation remains unqualified",
+      "Packet21 bounded fix candidate requires exact source/build closure and qualification"
     ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "diagnostic_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
+    "diagnostic_run": {
+      "drive_evidence_file_id": "1QhUQTFX4b3Uc5iLMxT4nKeK4t50a-Mw8",
+      "drive_evidence_sha256": "1b0408e2ee5b4a98c9c9d5802e5a8161e8ca9f196a37671a61484ce70ecced68",
+      "drive_evidence_url": "https://drive.google.com/file/d/1QhUQTFX4b3Uc5iLMxT4nKeK4t50a-Mw8/view?usp=drivesdk",
+      "evidence_path": "evidence/hbnf-packet20-fresh-20261005",
+      "kernel_count": 28,
+      "recovery_sequence": 22,
+      "recovery_status": "PASS",
+      "release_id": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
+      "restore_verified": true,
+      "sequence": 21,
+      "sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
+      "snapshot_hash": 4177970615,
+      "snapshot_id": 1,
+      "sweep_status": "PASS"
+    },
     "diagnostic_size_bytes": 1462480,
     "diagnostic_source_identity": "Git commit 57cc3a7606144c81fb84946945d2bbc51116bd70; exact overlay usermod source SHA 175541d69b1838e8e0ccd0adf623f8b34793c20ad25e0b1b43c13ecb4d5639a9; source archive stored in commit tree",
     "durable_recovery_evidence": {
@@ -44,7 +61,7 @@
     "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
     "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
-    "installed_release_role": "BASELINE_RECOVERY_VERIFIED__SEQ20",
+    "installed_release_role": "BASELINE_RECOVERY_VERIFIED__SEQ22",
     "last_recovery": {
       "attempts": 1,
       "evidence_drive_file_id": "1cKiC-0hmQrDV4n1uxV4HdZPL6nFPzqXy",
@@ -54,11 +71,15 @@
       "result": "PASS",
       "signature_sha256": "d197c58e21010f3a1eec09d47e8e5abc452246355a6ad4f36f40c16b93c98be3"
     },
-    "name": "Fresh bounded Packet20 run: seq21 exact r1 diagnostic then seq22 Release07 recovery",
-    "next_work": "Execute guarded exact source-bound seq21 diagnostic; one snapshot; one complete 28-kernel sweep; exact renderer restore; direct-LAN seq22 Release07 recovery.",
+    "name": "Packet20 fresh 28-kernel run complete; prepare bounded class-level fix candidate",
+    "next_work": "Prepare and qualify one semantics-preserving class-level render_value trigonometry reuse candidate; no second diagnostic until candidate closure and release transaction are validated.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
-    "planned_diagnostic_sequence": 21,
-    "planned_recovery_sequence": 22,
+    "performance_findings": {
+      "candidate_fix": "shared render_value polar trig reuse keyed by exact angle; semantics-preserving class-level cache, subject to standalone tests/build/device qualification",
+      "dominant_stage": "ANIMartRIX per-kernel rendering; median kernel_avg_ms 70.24025 vs palette 11.8685, audio 2.8835, aux 0.135; worst Parametric_Water 167.353ms kernel and 205.045ms frame at 4 median FPS",
+      "foundation_qualified": false,
+      "report_drive_file_id": "1QhUQTFX4b3Uc5iLMxT4nKeK4t50a-Mw8"
+    },
     "publication_contract": {
       "active_deployment_id": "dc7ffae3-62f6-49b8-9506-97eb3998efa4",
       "active_version_id": "29bdcc12-17ce-4feb-bb9e-e83cec5e1567",
@@ -88,7 +109,7 @@
     ],
     "seq19_diagnostic_incident": "CLOSED_RECOVERED_TO_RELEASE07",
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "DIAGNOSTIC_ARTIFACT_SOURCE_BOUND__LIVE_TRANSACTION_READY",
+    "status": "PACKET20_COMPLETE__SEQ21_DIAGNOSTIC_RESTORED__SEQ22_RELEASE07_VERIFIED",
     "target_recovery": {
       "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
@@ -103,7 +124,7 @@
     "scope": "One guarded fresh Packet20 transaction: exact source-bound diagnostic seq21, one renderer-safe snapshot, one all-28 sweep, exact state restore, and exact Release07 local-LAN recovery seq22.",
     "user_authorization": "Explicitly preauthorized by 2026-10-05 overnight completion directive."
   },
-  "live_mutation_authorized": true,
+  "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",
   "phase2_implementation_authorized": false,
   "schema": "hbnf-control-state-v2"
