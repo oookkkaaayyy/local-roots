@@ -12,10 +12,13 @@ const backend=readFileSync(new URL("../../supabase/functions/du-admin/index.ts",
 const packageJson=readFileSync(new URL("../../app/package.json",import.meta.url),"utf8");
 
 test("Generation V2 uses immutable same-pet roles and controlled accepted-style references",()=>{
-  assert.ok(prompt.includes("reference-anchored-v3.0"));
+  assert.ok(prompt.includes("reference-anchored-v3.1"));
   assert.ok(prompt.includes("03-STYLE-REFERENCE"));
   assert.ok(prompt.includes("Never copy their identity, markings, pose, expression, eye shape, or anatomy"));
   assert.ok(prompt.includes("scratchboard/engraving texture"));
+  assert.ok(prompt.includes("every pixel must be pure black (#000000) or pure white (#FFFFFF)"));
+  assert.ok(prompt.includes("No gray, grayscale, soft shading"));
+  assert.ok(workflow.includes("no tiny white specks"));
   assert.ok(prompt.includes("Crop out the chest, shoulders, forelegs, and torso"));
   assert.ok(prompt.includes("locked composition source"));
   assert.ok(prompt.includes("DU_ARTWORK_WIDTH_MM=190.5"));
@@ -29,7 +32,7 @@ test("Generation V2 uses immutable same-pet roles and controlled accepted-style 
   assert.ok(workflow.includes("visual_review:visualReview"));
   assert.ok(prompt.includes("mandatory controls"));
   assert.ok(workflow.includes("prompt_version:DU_GENERATION_PROMPT_VERSION"));
-  assert.ok(backend.includes('const generationPromptVersion = "reference-anchored-v3.0"'));
+  assert.ok(backend.includes('const generationPromptVersion = "reference-anchored-v3.1"'));
   assert.ok(backend.includes('"at_least_three_approved_style_references_required"'));
   assert.ok(backend.includes('"visual_review_incomplete"'));
   assert.ok(backend.includes('"generation_prompt_version_mismatch"'));

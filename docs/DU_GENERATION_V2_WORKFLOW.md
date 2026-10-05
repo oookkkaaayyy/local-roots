@@ -1,6 +1,6 @@
 # D&U Generation V2 operator workflow
 
-This workflow coordinates independent manual fresh-chat ChatGPT generations; it does not run an image model itself. Version `reference-anchored-v3.0` addresses the missing visual control that allowed scratchboard-like, over-detailed results: the same accepted stencil examples are privately stored, hash-checked, and included in every locked package as a distinct role.
+This workflow coordinates independent manual fresh-chat ChatGPT generations; it does not run an image model itself. Version `reference-anchored-v3.1` addresses the missing visual control that allowed scratchboard-like, over-detailed results: the same accepted stencil examples are privately stored, hash-checked, and included in every locked package as a distinct role.
 
 ## Operator sequence
 
@@ -32,3 +32,6 @@ This workflow coordinates independent manual fresh-chat ChatGPT generations; it 
 The prompt includes the 190.5 mm generation target and empirically calibrated retained-white bias (2.0 × 2.0 mm minimum enclosed/floating white region; 1.0 mm minimum meaningful connected white width when the run is at least 0.4 mm), while leaving final manufacturability certification to the unchanged deterministic productionizer/validator. It specifically guards against scratchboard/engraving texture, repeated hairline fur marks, and micro-detail while asking the model to preserve the pet's identity and anatomy.
 
 This improves repeatability by making the accepted visual examples part of the exact package each attempt uses. It does not automate generation or visual scoring: a human still has to reject outputs that fail the side-by-side identity and style review.
+
+
+Visual acceptance explicitly requires a strictly binary pure-black/pure-white file: no gray in the nose or other shading and no isolated tiny white specks. Reject or locally correct any candidate that fails either check.

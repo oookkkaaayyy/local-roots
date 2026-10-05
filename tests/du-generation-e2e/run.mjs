@@ -99,8 +99,8 @@ const detail = await expectAction(adminToken, { action: 'job', job_id: jobId });
 assert.equal(detail.photos.length, 2);
 assert.ok(detail.photos.every((photo) => photo.signed_url), 'private source photos get signed URLs');
 
-const promptVersion = 'reference-anchored-v3.0';
-const prompt = 'START D&U STENCIL — ' + jobNumber + ' — REFERENCE-ANCHORED v3.0\n\nUse 01-APPROVED-COMPOSITION as the only authority for pose and framing. Use identity references only for the same subject. Use 03-STYLE-REFERENCE images only for accepted stencil visual language; never copy their pet identity or anatomy. Keep the portrait head-dominant; crop out chest, shoulders, forelegs, and torso without changing the locked composition source or identity. Return one pure-black-on-pure-white stencil with controlled detail and recognizable identity. Generation targets are not production certification.';
+const promptVersion = 'reference-anchored-v3.1';
+const prompt = 'START D&U STENCIL — ' + jobNumber + ' — REFERENCE-ANCHORED v3.1\n\nUse 01-APPROVED-COMPOSITION as the only authority for pose and framing. Use identity references only for the same subject. Use 03-STYLE-REFERENCE images only for accepted stencil visual language; never copy their pet identity or anatomy. Keep the portrait head-dominant; crop out chest, shoulders, forelegs, and torso without changing the locked composition source or identity. Return one pure-black-on-pure-white stencil with controlled detail and recognizable identity. Generation targets are not production certification.';
 assert.equal((await action(adminToken, { action: 'generation_lock_package', job_id: jobId, composition_photo_id: photoA, locked_prompt: prompt, prompt_version: promptVersion })).response.status, 409, 'three accepted style references are required before locking');
 for (const [index, bytes] of [pngA, pngB, pngC].entries()) {
   await expectAction(adminToken, { action: 'generation_import_style_reference', job_id: jobId, original_filename: `accepted-style-${index + 1}.png`, image_data_url: 'data:image/png;base64,' + bytes.toString('base64') });
