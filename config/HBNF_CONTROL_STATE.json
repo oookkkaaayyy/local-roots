@@ -5,17 +5,17 @@
   "completed_receipts": [],
   "current_task": {
     "name": "Release07 all-kernel diagnosis and class-level fix preparation",
-    "status": "SEQ20_RECOVERY_AUTHORIZED_ONLY_THROUGH_VALIDATED_PRELIVE_GATE",
+    "status": "SEQ20_RECOVERY_BLOCKED__ZERO_TRAFFIC_OVERRIDE_REHEARSAL_NOT_YET_RUN",
     "installed_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
     "installed_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "installed_release_role": "DIAGNOSTIC_TIMING_HOOK__PARTIAL_SWEEP_STOPPED__RECOVERY_REQUIRED",
     "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
     "blockers": [
-      "before any mutation, create/validate the HBNF execution capsule and PRELIVE_PROOF for the provider-native Cloudflare keep_assets transaction; scripts/hbnf_guarded_run.py must pass both platform check-capsule and prelive-check",
-      "create an undeployed recovery-pointer Worker version from exact current content/settings with keep_assets=true and strict binding inheritance; verify exact seq20 recovery through Version URL plus representative unchanged assets/config/bindings",
-      "preserve exact current Cloudflare version 29bdcc12-17ce-4feb-bb9e-e83cec5e1567 as rollback target",
-      "only after the prelive proof passes: deploy exact verified recovery-pointer version, verify Opal sees exact seq20 recovery, execute exact Release07 recovery, verify installed SHA 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab, then restore exact prior Cloudflare version",
-      "set live mutation closed again after recovery; do not resume seq19 diagnostics"
+      "include candidate Worker version e4d31b2b-a9c1-4797-b5df-b8ad0121df6d in a split deployment at 0% while exact stable version 29bdcc12-17ce-4feb-bb9e-e83cec5e1567 remains at 100%",
+      "smoke-test the candidate through the normal production route using Cloudflare-Workers-Version-Overrides so no normal traffic reaches the candidate",
+      "verify exact seq20 recovery latest.json/signature/artifact plus representative unchanged assets/config/bindings and verify the override selected the candidate version",
+      "rollback the split deployment to exact stable version 29bdcc12-17ce-4feb-bb9e-e83cec5e1567 at 100%; do not require the historical deployment ID itself to be reused because Cloudflare rollback creates a new deployment object",
+      "only after that rehearsal passes: repeat the same bounded publication transaction for seq20 recovery, execute exact Release07 recovery, verify installed SHA 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab, then restore exact stable version at 100%; do not resume seq19 diagnostics"
     ],
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
     "publication_contract": {
@@ -36,7 +36,10 @@
         "verification": "undeployed Version URL or 0%-traffic version override",
         "production_rollback": "deploy/rollback exact prior version ID 29bdcc12-17ce-4feb-bb9e-e83cec5e1567",
         "provider_pattern": "platform/providers/cloudflare-workers.json",
-        "status": "IDENTIFIED__NOT_YET_REHEARSED"
+        "status": "VERSION_URL_BLOCKED__DOCUMENTED_ZERO_PERCENT_OVERRIDE_FALLBACK_SELECTED",
+        "candidate_version": "e4d31b2b-a9c1-4797-b5df-b8ad0121df6d",
+        "smoke_test": "0%-traffic split deployment plus Cloudflare-Workers-Version-Overrides against production route",
+        "rollback_success_criterion": "exact stable VERSION 29bdcc12-17ce-4feb-bb9e-e83cec5e1567 restored at 100%; deployment ID may change"
       }
     }
   },
