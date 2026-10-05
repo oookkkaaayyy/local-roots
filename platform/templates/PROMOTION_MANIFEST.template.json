@@ -1,0 +1,17 @@
+{
+  "schema": "local-roots-promotion-manifest-v1",
+  "run_id": "REQUIRED",
+  "items": [
+    {
+      "name": "example",
+      "role": "source|artifact|recovery|evidence|state|routing",
+      "source_path_or_pointer": "REQUIRED",
+      "sha256": "WHEN_FILE_APPLICABLE",
+      "destination": "github|google_drive|aks_registry|none",
+      "destination_pointer": null,
+      "required_before_task_close": true,
+      "readback_verified": false
+    }
+  ],
+  "task_close_allowed": false
+}
