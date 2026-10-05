@@ -243,14 +243,15 @@
       "size_bytes": 1458624
     },
     "worker_alignment": {
-      "observed_at": "2026-10-05T17:19:34Z",
-      "status": "STALE_R3_EXECUTION_DETECTED_AND_GUARDED",
+      "observed_at": "2026-10-05T17:48:54Z",
+      "status": "R3_CLOSED__R4_EXECUTION_REQUIRED",
       "evidence": [
-        "GitHub Actions run 37344887644 at 2026-10-05T16:58:16Z used R3 speedmath branch commit 2284bab02526e3776e33db766cf68984b69235be and failed.",
-        "GitHub Actions run 37347074583 at 2026-10-05T17:15:34Z used R3 speedmath branch commit 3c276ad125825ae687b7fa9c98d65ec8b5525407 and failed."
+        "Control/evidence commit 722b6c7dc77b67e4ec8158c0e3906d8269075565 recorded the R3 compile-gate result.",
+        "R3 produced no admissible BIN and no device install; Matrix remains exact Release07.",
+        "The worker explicitly recognized the current control authority selecting the FastLED 3.10.4 fixed-point backport as the next class-level fix."
       ],
-      "conclusion": "The worker had not yet acted on the R4 supersession directive.",
-      "enforcement": "Cloud build branch commit 8eaf4b13d816986c371ec885119c05b1170d0c35 adds an immediate R3 supersession gate. Any further workflow trigger must first remove/replace that gate as part of an R4 implementation after rereading current control state."
+      "conclusion": "The stale R3 loop is closed. The next worker action must be R4 implementation and qualification, not another R3 build or another broad profiling pass.",
+      "enforcement": "Build branch 8eaf4b13d816986c371ec885119c05b1170d0c35 remains gated against stale R3 execution. Replace that gate only as part of an R4 implementation that is bound to current control state."
     },
     "r3_compiler_math_trial": {
       "candidate": "hbnf-matrix-packet20-speedmath-v1-20261005-r3",
@@ -270,6 +271,17 @@
       "evidence_zip_sha256": "1178a3879145ab27bb8a8df532bdea2dabe83ff700500263da364feca84bc8a9",
       "report_drive_file_id": "1AW4hjghXvDnFMKN42vibOcUtX2OnQtoh",
       "report_sha256": "d8d14197bb978830d496cb64229369a13c88be2ff6d1be1e3e82d8136a442cfd"
+    },
+    "r4_execution_authority": {
+      "status": "AUTHORIZED_TO_IMPLEMENT_AND_QUALIFY",
+      "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4",
+      "instruction": "Proceed directly with the selected bounded FastLED 3.10.4 Animartrix fixed-point backport into pinned WLED 16.0.1. Do not stop at source audit. Complete host equivalence, exact 28-effect coverage, build, one 28-kernel live trial, exact Release07 recovery, and then continue Foundation qualification if the candidate materially improves aggregate performance.",
+      "no_repeat": [
+        "do not rerun R3",
+        "do not perform broad online research unless a concrete R4 integration question requires it",
+        "do not reopen dependency/build/source archaeology already closed",
+        "do not report intermediate implementation blockers that can be resolved or pivoted independently"
+      ]
     }
   },
   "lifecycle_state": "FIX_CANDIDATE",
