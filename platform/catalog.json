@@ -55,7 +55,11 @@
         "config/HBNF_CONTROL_MODEL.json",
         "config/HBNF_CONTROL_STATE.json",
         "scripts/hbnf_control.py",
-        "scripts/hbnf_guarded_run.py"
+        "scripts/hbnf_guarded_run.py",
+        "platform/policies.json",
+        "platform/workflows/live-device-diagnostic.json",
+        "platform/cart2-critical-path-v1.json",
+        "scripts/platform.py"
       ],
       "external_authorities": {
         "file_authority_drive_id": "1GwvPv_nihqoIj83WsO6VcvyujRkt8HnnULvLv717OHc",
