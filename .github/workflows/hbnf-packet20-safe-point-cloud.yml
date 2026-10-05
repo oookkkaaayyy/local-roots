@@ -19,6 +19,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: R3 supersession gate
+        shell: bash
+        run: |
+          echo "R3 compiler-only live/build lane is superseded by HBNF control-state commit b79e43ff5673f63e15dc593bc1498201cac65034."
+          echo "Read config/HBNF_CONTROL_STATE.json on hbnf-cart2-ready-to-implement-staging-20261001 and implement the selected R4 FastLED fixed-point backport before triggering this workflow again."
+          exit 64
+
       - name: Python
         uses: actions/setup-python@v5
         with:
