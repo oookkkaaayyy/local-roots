@@ -44,3 +44,15 @@ These rules apply to substantial implementation, debugging, deployment, and repa
 - Do not make the user a command/output relay. Ask for at most one genuinely user-only action at a time.
 - Progress is measured by completed deliverables, live evidence, or closed acceptance criteria—not by preparation activity.
 
+## Single-capsule execution model
+
+For any live, deployment, diagnostic, or high-cost task:
+
+- The coordinator must prepare exactly one execution capsule before the worker acts. The capsule consists of the exact repository ref/commit, exact scripts/configs, exact durable artifacts, required hashes, expected terminal outputs, and stop conditions.
+- The worker must execute only from that capsule. Do not search old Codex folders, Drive broadly, prior chats, or alternate checkouts unless the capsule validation itself fails.
+- All runtime paths must be explicit. Do not rely on cwd-sensitive defaults or temporary /tmp-relative paths.
+- A capsule must be self-validating before mutation: required files exist, expected hashes/identities match, and all non-network/pure tests required for that lane pass.
+- Live evidence must be promoted to durable authority immediately after the run. No decisive result may remain local-only after the task returns.
+- One run -> one result -> one durable delta. Do not create extra handoffs, summaries, or authority copies unless context loss makes one necessary.
+- If the capsule is incomplete, stop before mutation and fix the capsule offline. Do not discover missing dependencies during the live run.
+- Once a capsule has passed validation and begun execution, the worker may not silently substitute another adapter, helper, config, checkout, or artifact.
