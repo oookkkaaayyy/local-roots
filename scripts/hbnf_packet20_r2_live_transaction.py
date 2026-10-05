@@ -205,7 +205,10 @@ def main() -> int:
         raise RuntimeError("exact-r2-build-artifact-contract-failed")
     recovery = verify_recovery(manifest, signature, pubkey, recovery_bin, out)
     inventory = json.loads(pathlib.Path(args.inventory).read_text())
-    if len(inventory.get("kernels", [])) != 28:
+    entries = inventory.get("entries", [])
+    if (inventory.get("expected_kernel_count") != 28 or len(entries) != 28
+            or [item.get("effect_id") for item in entries] != list(range(220, 248))
+            or [item.get("runtime_kernel_index_expected") for item in entries] != list(range(28))):
         raise RuntimeError("expected-exactly-28-kernels")
     adapter = json.loads(pathlib.Path(args.adapter).read_text())
     if adapter.get("expected_release_id") != CANDIDATE_RELEASE or adapter.get("timeout_seconds") != 75:
