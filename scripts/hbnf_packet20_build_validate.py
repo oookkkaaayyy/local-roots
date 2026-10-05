@@ -24,6 +24,7 @@ EXPECTED_SOURCE_PATCH_SHA256 = "aca7b2fa6fe45ce992e162d91447351487e854279de373e6
 EXPECTED_ANIMARTRIX_COMMIT = "81eb09b91c8c9c8c01f8ea442787f8127d56c72f"
 EXPECTED_ANIMARTRIX_UPSTREAM_BLOB = "db640748175cfdd70dc103fc23c830e646fa5ab6"
 EXPECTED_ANIMARTRIX_CLOCK_PATCH_SHA256 = "f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4"
+EXPECTED_RENDER_VALUE_CACHE_PATCH_SHA256 = "fb2711140484a140cec35eb2dc90b4b7895a7723cf5bc7561c8e2057dea30b75"
 EXPECTED_GENERATED_UI_SHA256 = {
     "package-lock.json": "8a4a7dd525cbf4ddbeeec104c0eec089c9998e1c02f6df2ee2c4ccd1499916c0",
     "tools/cdata.js": "59d90a85abfdd013f4fb8cd71d002f7aa5eb29c44a7e5c91cc05ba09e30b0b5d",
@@ -207,6 +208,34 @@ def validate_artifact_dir(
         "provenance.animartrix_patched_header_sha256",
     )
 
+    # A fix-candidate build may add the tightly scoped render_value trig cache.
+    # Keep the verified Run5/seq19 artifact contract backward compatible while
+    # validating the exact additional patch whenever that candidate is present.
+    render_cache_patch = root / "animartrix-render-value-trig-cache.patch"
+    render_cache_patch_sha = None
+    if render_cache_patch.exists():
+        render_cache_patch_sha = sha256_file(render_cache_patch)
+        require_equal(
+            render_cache_patch_sha,
+            EXPECTED_RENDER_VALUE_CACHE_PATCH_SHA256,
+            "animartrix-render-value-trig-cache.patch SHA-256",
+        )
+        require_equal(
+            provenance.get("render_value_cache_patch_sha256"),
+            EXPECTED_RENDER_VALUE_CACHE_PATCH_SHA256,
+            "provenance.render_value_cache_patch_sha256",
+        )
+        for marker in (
+            "cached_angle_bits",
+            "cached_cos = cosf(animation.angle)",
+            "cached_sin = sinf(animation.angle)",
+        ):
+            if marker not in patched_text:
+                raise ValidationError(
+                    "patched ANIMartRIX header missing render_value cache marker: "
+                    + marker
+                )
+
     firmware = root / "firmware.bin"
     firmware_sha = sha256_file(firmware)
     firmware_bytes = firmware.stat().st_size
@@ -284,6 +313,7 @@ def validate_artifact_dir(
         "animartrix_upstream_header_git_blob": EXPECTED_ANIMARTRIX_UPSTREAM_BLOB,
         "animartrix_clock_patch_sha256": EXPECTED_ANIMARTRIX_CLOCK_PATCH_SHA256,
         "animartrix_patched_header_sha256": patched_sha,
+        "render_value_cache_patch_sha256": render_cache_patch_sha,
         "generated_ui_sha256": dict(EXPECTED_GENERATED_UI_SHA256),
         "firmware_sha256": firmware_sha,
         "firmware_bytes": firmware_bytes,

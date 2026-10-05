@@ -106,6 +106,34 @@ with tempfile.TemporaryDirectory() as td:
     assert receipt["animartrix_patched_header_sha256"] == patched_sha
     assert receipt["generated_ui_sha256"] == m.EXPECTED_GENERATED_UI_SHA256
 
+    # A fix-candidate package must carry the exact optional class-level patch
+    # in both the archive and provenance, with the patched header markers.
+    render_patch = b"exact render_value trig-cache patch fixture\n"
+    (root / "animartrix-render-value-trig-cache.patch").write_bytes(render_patch)
+    render_patch_sha = hashlib.sha256(render_patch).hexdigest()
+    m.EXPECTED_RENDER_VALUE_CACHE_PATCH_SHA256 = render_patch_sha
+    patched.write_text(
+        patched.read_text()
+        + "\n// cached_angle_bits\n// cached_cos = cosf(animation.angle)\n"
+        + "// cached_sin = sinf(animation.angle)\n"
+    )
+    provenance = json.loads((root / "provenance.json").read_text())
+    provenance["render_value_cache_patch_sha256"] = render_patch_sha
+    provenance["animartrix_patched_header_sha256"] = hashlib.sha256(
+        patched.read_bytes()
+    ).hexdigest()
+    (root / "provenance.json").write_text(json.dumps(provenance))
+    candidate_receipt = m.validate_artifact_dir(root, commit)
+    assert candidate_receipt["render_value_cache_patch_sha256"] == render_patch_sha
+
+    (root / "animartrix-render-value-trig-cache.patch").write_bytes(b"wrong patch\n")
+    try:
+        m.validate_artifact_dir(root, commit)
+        raise AssertionError("wrong render_value cache patch was accepted")
+    except m.ValidationError:
+        pass
+    (root / "animartrix-render-value-trig-cache.patch").write_bytes(render_patch)
+
     bad_generated = (root / "generated-ui-sha256.txt").read_text().replace(
         m.EXPECTED_GENERATED_UI_SHA256["wled00/html_ui.h"],
         "0" * 64,
