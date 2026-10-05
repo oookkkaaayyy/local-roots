@@ -5,15 +5,15 @@
   "completed_receipts": [],
   "current_task": {
     "name": "Release07 all-kernel diagnosis and class-level fix preparation",
-    "status": "TIMING_HOOK_SEQ19_PUBLISHED__LIVE_PACKET20_READY",
-    "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
-    "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-    "installed_release_role": "DIAGNOSTIC_BASE__PERFORMANCE_REJECTED",
+    "status": "SEQ19_INSTALLED__PRE_SWEEP_HOST_INVENTORY_PATH_FIX",
+    "installed_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
+    "installed_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
+    "installed_release_role": "DIAGNOSTIC_TIMING_HOOK__AWAITING_SWEEP",
     "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
     "blockers": [
-      "install signed diagnostic sequence 19 once",
-      "run one renderer-safe snapshot preflight",
-      "run one complete 28-kernel timing sweep if preflight passes",
+      "rerun read-only sweep preflight with explicit repository kernel inventory path",
+      "run one renderer-safe snapshot preflight if read-only telemetry passes",
+      "run one complete 28-kernel timing sweep if snapshot preflight passes",
       "restore exact Release07 with signed recovery sequence 20 and verify exact restore",
       "derive Packet21 only from the complete sweep report"
     ]
