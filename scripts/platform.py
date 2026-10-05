@@ -520,6 +520,62 @@ def summarize_runs(args: argparse.Namespace) -> int:
     return 0
 
 
+def validate_prelive_proof(cap_path: pathlib.Path, proof_path: pathlib.Path) -> list[str]:
+    cap = load_json(cap_path)
+    proof = load_json(proof_path)
+    errors: list[str] = []
+    if proof.get("schema") != "local-roots-prelive-proof-v1":
+        errors.append("invalid prelive proof schema")
+    if proof.get("run_id") != cap.get("run_id"):
+        errors.append("prelive proof run_id does not match capsule")
+    if proof.get("capsule_sha256") != sha256_file(cap_path):
+        errors.append("prelive proof capsule_sha256 does not match capsule bytes")
+    if proof.get("approved_for_mutation") is not True:
+        errors.append("prelive proof is not approved_for_mutation")
+
+    stages = proof.get("stages")
+    if not isinstance(stages, dict):
+        errors.append("prelive proof stages must be an object")
+        stages = {}
+    for stage_id in MANDATORY_PRELIVE_STAGES:
+        row = stages.get(stage_id)
+        if not isinstance(row, dict):
+            errors.append(f"prelive proof missing stage {stage_id}")
+            continue
+        if row.get("status") != "PASS":
+            errors.append(f"prelive proof stage {stage_id} is not PASS")
+        evidence = row.get("evidence")
+        if not isinstance(evidence, list) or not evidence or not all(isinstance(x, str) and x.strip() for x in evidence):
+            errors.append(f"prelive proof stage {stage_id} lacks evidence pointers")
+
+    recovery = proof.get("recovery_identity")
+    if not isinstance(recovery, dict) or not recovery.get("identity") or not recovery.get("verification"):
+        errors.append("prelive proof lacks exact recovery identity/verification")
+    prior = proof.get("pre_mutation_state")
+    if not isinstance(prior, dict) or not prior:
+        errors.append("prelive proof lacks exact pre_mutation_state")
+    consumer = proof.get("consumer_contract")
+    if not isinstance(consumer, dict) or consumer.get("verified") is not True:
+        errors.append("prelive proof consumer_contract is not verified")
+    return errors
+
+
+def prelive_check(args: argparse.Namespace) -> int:
+    cap_path = pathlib.Path(args.capsule).expanduser().resolve()
+    proof_path = pathlib.Path(args.proof).expanduser().resolve()
+    errors = validate_prelive_proof(cap_path, proof_path)
+    result = {
+        "schema": "local-roots-prelive-check-v1",
+        "ok": not errors,
+        "run_id": load_json(cap_path).get("run_id") if cap_path.exists() else None,
+        "capsule_sha256": sha256_file(cap_path) if cap_path.is_file() else None,
+        "proof_sha256": sha256_file(proof_path) if proof_path.is_file() else None,
+        "errors": errors,
+    }
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if not errors else 2
+
+
 def make_directive(args: argparse.Namespace) -> int:
     cap_path = pathlib.Path(args.capsule).expanduser().resolve()
     cap = load_json(cap_path)
@@ -629,6 +685,13 @@ def main() -> int:
     d.add_argument("--capsule", required=True)
     d.add_argument("--out", required=True)
 
+    pc = sub.add_parser(
+        "prelive-check",
+        help="Fail closed unless deterministic prelive closure is proven",
+    )
+    pc.add_argument("--capsule", required=True)
+    pc.add_argument("--proof", required=True)
+
     args = ap.parse_args()
     try:
         if args.cmd == "doctor":
@@ -643,6 +706,8 @@ def main() -> int:
             return summarize_runs(args)
         if args.cmd == "directive":
             return make_directive(args)
+        if args.cmd == "prelive-check":
+            return prelive_check(args)
     except PlatformError as exc:
         print(
             json.dumps(
