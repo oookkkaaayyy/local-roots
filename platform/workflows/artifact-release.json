@@ -1,10 +1,22 @@
 {
-  "schema": "local-roots-golden-path-v1",
+  "schema": "local-roots-golden-path-v2",
   "id": "artifact-release",
-  "purpose": "Produce one immutable artifact whose source, build inputs, digest, rollback, and deployment are bound together.",
+  "purpose": "Produce one immutable artifact whose source, build inputs, consumer contract, deployment identity, rollback, and production verification are bound together.",
   "required_repo_inputs": [
     "AGENTS.md"
   ],
+  "prelive_contract": {
+    "closure_stage_id": "contract-closure",
+    "recovery_stage_id": "recovery-proof",
+    "rehearsal_stage_id": "transaction-rehearsal",
+    "capture_stage_id": "capture-current-state",
+    "required_before_stage_id": "deploy",
+    "deterministic_prerequisites_closed_offline": true,
+    "consumer_contract_verified": true,
+    "recovery_proven_before_first_device_mutation": true,
+    "end_to_end_rehearsal_required": true,
+    "exact_pre_mutation_state_capture_required": true
+  },
   "stages": [
     {
       "id": "materialize-inputs",
@@ -45,12 +57,53 @@
       ]
     },
     {
+      "id": "contract-closure",
+      "kind": "verification",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "actual consumer path/API/role contract",
+        "immutable target identity independent of mutable discovery aliases"
+      ]
+    },
+    {
+      "id": "recovery-proof",
+      "kind": "verification",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "exact last-known-good artifact/version",
+        "exact rollback command/path",
+        "rollback acceptance checks"
+      ]
+    },
+    {
+      "id": "transaction-rehearsal",
+      "kind": "verification",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "preview/version/simulation deployment PASS",
+        "consumer readback PASS",
+        "rollback rehearsal PASS"
+      ]
+    },
+    {
+      "id": "capture-current-state",
+      "kind": "preflight",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "exact currently deployed version/identity frozen"
+      ]
+    },
+    {
       "id": "deploy",
       "kind": "deployment",
       "mutation": true,
       "retry_policy": "explicit_only",
       "rollback": {
-        "strategy": "restore exact registered recovery artifact"
+        "strategy": "restore exact pre-registered recovery artifact/version captured before deploy"
       },
       "outputs": [
         "installed/deployed identity"
@@ -62,7 +115,8 @@
       "mutation": false,
       "retry_policy": "idempotent",
       "outputs": [
-        "runtime smoke/acceptance result"
+        "runtime smoke/acceptance result",
+        "consumer observes exact deployed identity"
       ]
     },
     {
@@ -75,12 +129,14 @@
       ]
     }
   ],
-  "terminal_recovery": "Any deployment failure restores the exact pre-registered recovery artifact; never rebuild a rollback artifact during the incident.",
+  "terminal_recovery": "Any deployment failure restores the exact pre-registered last-known-good artifact/version; never rebuild rollback or reconstruct production state during the incident.",
   "expected_terminal_outputs": [
     "artifact sha256",
     "source identity",
     "build/workflow identity",
+    "consumer-contract identity",
     "recovery identity",
+    "pre/post deployment identities",
     "runtime result",
     "durable evidence pointer"
   ]
