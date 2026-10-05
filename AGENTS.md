@@ -1,5 +1,19 @@
 # HBNF / Cart Upgrades — Repository Agent Instructions
 
+
+## Mandatory platform front door
+
+For substantial HBNF implementation, build, deployment, diagnostic, recovery, or acceptance work:
+
+1. Run `python3 scripts/platform.py doctor`.
+2. Select the appropriate golden path from `platform/workflows/`.
+3. Create a self-validating execution capsule with `python3 scripts/platform.py capsule ...`.
+4. Validate it with `python3 scripts/platform.py check-capsule ...`.
+5. For worker execution, compile the directive with `python3 scripts/platform.py directive ...`.
+6. Do not perform a paid or mutating step unless the capsule validates and every mandatory prelive stage is closed.
+
+The platform layer does not replace the HBNF lifecycle control model. It enforces the engineering path used to reach the next lifecycle receipt.
+
 For any task touching HBNF release engineering, firmware promotion, Cart 2.0 integration, deployment, or acceptance:
 
 1. Run:
