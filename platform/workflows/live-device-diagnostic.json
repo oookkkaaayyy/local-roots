@@ -1,0 +1,191 @@
+{
+  "schema": "local-roots-golden-path-v2",
+  "id": "live-device-diagnostic",
+  "purpose": "Bounded live diagnostic where every deterministic build, publication, consumer-contract, timeout, restore, and recovery prerequisite is proven before device mutation.",
+  "required_repo_inputs": [
+    "AGENTS.md",
+    "config/HBNF_CONTROL_STATE.json",
+    "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+    "scripts/hbnf_live_kernel_sweep.py"
+  ],
+  "prelive_contract": {
+    "closure_stage_id": "contract-closure",
+    "recovery_stage_id": "recovery-proof",
+    "rehearsal_stage_id": "transaction-rehearsal",
+    "capture_stage_id": "capture-current-state",
+    "required_before_stage_id": "snapshot",
+    "deterministic_prerequisites_closed_offline": true,
+    "consumer_contract_verified": true,
+    "recovery_proven_before_first_device_mutation": true,
+    "end_to_end_rehearsal_required": true,
+    "exact_pre_mutation_state_capture_required": true
+  },
+  "release_transaction_contract": {
+    "exact_signed_artifact_identity_required": true,
+    "exact_recovery_artifact_identity_required": true,
+    "mutable_manifest_or_alias_may_not_be_assumed": true,
+    "consumer_requested_url_and_role_must_be_tested": true,
+    "pointer_or_role_transition_must_be_rehearsed_when_required": true,
+    "unrelated_production_assets_must_be_preserved": true,
+    "exact_cloud_version_or_deployment_rollback_required": true,
+    "production_install_forbidden_until_recovery_transaction_is_proven": true
+  },
+  "stages": [
+    {
+      "id": "package-doctor",
+      "kind": "preflight",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "all declared source/artifact/config identities and timeout budgets coherent"
+      ]
+    },
+    {
+      "id": "contract-closure",
+      "kind": "preflight",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "exact producer/consumer interface contract",
+        "exact manifest/alias/role semantics",
+        "all deterministic prerequisites closed"
+      ]
+    },
+    {
+      "id": "recovery-proof",
+      "kind": "preflight",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "exact registered last-known-good artifact/version",
+        "exact recovery consumer path",
+        "recovery acceptance checks"
+      ]
+    },
+    {
+      "id": "transaction-rehearsal",
+      "kind": "verification",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "full non-production or simulated install -> diagnostic -> restore/recovery transaction PASS",
+        "publication/alias transition PASS when applicable",
+        "failure paths preserve last-known-good state"
+      ]
+    },
+    {
+      "id": "capture-current-state",
+      "kind": "preflight",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "exact current device identity",
+        "exact current cloud deployment/version identity",
+        "rollback target frozen before mutation"
+      ]
+    },
+    {
+      "id": "read-only-preflight",
+      "kind": "preflight",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "timeout_budget": {
+        "outer_seconds": 30,
+        "inner_calls_max": 4,
+        "inner_timeout_seconds": 4,
+        "margin_seconds": 10
+      },
+      "outputs": [
+        "runtime identity and continuity sample"
+      ]
+    },
+    {
+      "id": "snapshot",
+      "kind": "live",
+      "mutation": true,
+      "retry_policy": "never",
+      "rollback": {
+        "strategy": "firmware-owned exact snapshot restore followed by pre-proven registered baseline recovery if uncertain"
+      },
+      "timeout_budget": {
+        "outer_seconds": 30,
+        "inner_calls_max": 4,
+        "inner_timeout_seconds": 4,
+        "margin_seconds": 10
+      },
+      "outputs": [
+        "immutable snapshot receipt"
+      ]
+    },
+    {
+      "id": "bounded-diagnostic",
+      "kind": "live",
+      "mutation": true,
+      "retry_policy": "never",
+      "rollback": {
+        "strategy": "always execute exact snapshot restore in finally; if exactness is uncertain, execute the already-proven baseline recovery transaction"
+      },
+      "timeout_budget": {
+        "outer_seconds": 70,
+        "inner_calls_max": 4,
+        "inner_timeout_seconds": 4,
+        "margin_seconds": 10
+      },
+      "outputs": [
+        "complete bounded telemetry/evidence",
+        "no host/tooling prerequisite discovered live"
+      ]
+    },
+    {
+      "id": "restore",
+      "kind": "recovery",
+      "mutation": true,
+      "retry_policy": "never",
+      "rollback": {
+        "strategy": "pre-registered baseline recovery artifact/version"
+      },
+      "timeout_budget": {
+        "outer_seconds": 30,
+        "inner_calls_max": 4,
+        "inner_timeout_seconds": 4,
+        "margin_seconds": 10
+      },
+      "outputs": [
+        "exact restore proof or explicit uncertainty"
+      ]
+    },
+    {
+      "id": "baseline-recovery",
+      "kind": "recovery",
+      "mutation": true,
+      "retry_policy": "explicit_only",
+      "rollback": {
+        "strategy": "restore exact pre-transaction device/cloud baseline and stop; no alternate image or publication state"
+      },
+      "outputs": [
+        "known baseline installed identity",
+        "exact publication/deployment baseline restored"
+      ]
+    },
+    {
+      "id": "record",
+      "kind": "evidence",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "terminal run summary",
+        "durable evidence pointer",
+        "toil/process metrics"
+      ]
+    }
+  ],
+  "terminal_recovery": "If exact restore is not proven, execute only the pre-rehearsed registered baseline recovery transaction, verify device and publication identities, preserve evidence, and stop.",
+  "expected_terminal_outputs": [
+    "diagnostic result or exact stop reason",
+    "snapshot/restore result",
+    "baseline recovery result",
+    "device identity",
+    "cloud deployment identity",
+    "durable evidence pointer"
+  ]
+}
