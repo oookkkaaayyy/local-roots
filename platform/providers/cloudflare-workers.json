@@ -18,30 +18,47 @@
       "Do not deploy as part of version upload."
     ],
     "verify_before_deploy": [
-      "Use the Version URL when enabled, or a 0%-traffic version in a two-version deployment plus Cloudflare-Workers-Version-Overrides for smoke testing.",
-      "Verify exact response bytes/identity for the changed route plus representative unchanged routes/assets.",
-      "Compare returned version resources/settings against the captured current version; no unrelated configuration/binding drift."
+      "Preferred: use the candidate Version URL when reachable.",
+      "Fallback when Version URL is unavailable or blocked: create a split deployment with the exact current version at 100% traffic and the candidate at 0% traffic.",
+      "Use the Cloudflare-Workers-Version-Overrides header against the normal production route to force ONLY the verification request to the 0% candidate version.",
+      "Verify exact response bytes/identity for the changed route plus representative unchanged routes/assets and confirm the override actually selected the candidate version.",
+      "Do not send any ordinary traffic percentage to the candidate during smoke testing."
     ],
     "deploy": [
       "Deploy the exact verified version by version ID.",
       "Preserve the exact prior version/deployment ID as rollback anchor."
     ],
     "rollback": [
-      "Rollback/deploy the exact prior Worker version ID. Do not reconstruct the prior script or static asset directory."
-    ]
+      "Rollback to the exact prior Worker VERSION ID at 100% traffic.",
+      "Cloudflare rollback creates a new deployment; do not require the historical deployment ID itself to become active again.",
+      "Verify the restored active version ID and production behavior after rollback."
+    ],
+    "version_url_failure_fallback": {
+      "supported_by_official_docs": true,
+      "method": "0%-traffic gradual deployment + Cloudflare-Workers-Version-Overrides smoke test",
+      "normal_user_traffic": "remains on exact current version at 100%",
+      "requirement": "candidate version must be included in the current split deployment at 0% before override requests can target it",
+      "verification_header": "Cloudflare-Workers-Version-Overrides: hbnf-matrix-firmware-stable=\"<candidate-version-id>\"",
+      "rollback_after_smoke": "rollback or deploy the exact prior stable version ID to 100%; Cloudflare creates a NEW deployment object, so success criterion is exact prior VERSION restored at 100%, not reuse of the old deployment ID"
+    }
   },
   "current_hbnf_application": {
     "worker": "hbnf-matrix-firmware-stable",
     "current_active_version": "29bdcc12-17ce-4feb-bb9e-e83cec5e1567",
     "current_active_deployment": "dc7ffae3-62f6-49b8-9506-97eb3998efa4",
     "recovery_need": "temporarily make exact signed seq20 recovery manifest visible through the updater-consumed latest.json contract while preserving every existing static asset",
-    "approved_mechanism_to_rehearse": "new undeployed Worker version based on exact current script/settings with keep_assets=true; change only latest.json handling; verify via Version URL or 0% version override; then deploy exact version; after device recovery restore exact prior version",
+    "approved_mechanism_to_rehearse": "If Version URL works, verify there. If it returns 403/1010 or is otherwise unavailable, use the documented 0%-traffic split deployment with current version 100% and candidate 0%, then force only smoke-test requests to candidate using Cloudflare-Workers-Version-Overrides. After verification, promote candidate only for the bounded recovery window; then rollback exact prior version ID to 100%.",
     "forbidden": [
       "rebuild static assets from a stale local directory",
       "weaken updater role/signature/hash checks",
       "assume an asset JWT must be recoverable from the existing version",
       "deploy an unverified version"
-    ]
+    ],
+    "current_preview_blocker": {
+      "candidate_version": "e4d31b2b-a9c1-4797-b5df-b8ad0121df6d",
+      "version_url_result": "HTTP 403 / Cloudflare error 1010",
+      "disposition": "NOT irreducible; use documented 0%-traffic version-override smoke-test fallback"
+    }
   },
   "official_doc_facts": [
     "Cloudflare Direct Uploads documents keep_assets=true specifically for reusing an existing Worker's static asset set without supplying a completion token.",
