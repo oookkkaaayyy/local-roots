@@ -72,7 +72,7 @@
       "signature_sha256": "d197c58e21010f3a1eec09d47e8e5abc452246355a6ad4f36f40c16b93c98be3"
     },
     "name": "Packet20 fresh 28-kernel run complete; prepare bounded class-level fix candidate",
-    "next_work": "Prepare and qualify one semantics-preserving class-level render_value trigonometry reuse candidate; no second diagnostic until candidate closure and release transaction are validated.",
+    "next_work": "One guarded seq23 local-LAN install of exact r2 BIN, one complete 28-kernel sweep with exact renderer-state restore, then one exact Release07 seq24 local-LAN recovery; no cloud publication or release-state reread.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "performance_findings": {
       "candidate_fix": "shared render_value polar trig reuse keyed by exact angle; semantics-preserving class-level cache, subject to standalone tests/build/device qualification",
@@ -114,17 +114,33 @@
       "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
       "size_bytes": 1458624
+    },
+    "fix_candidate": {
+      "candidate": "hbnf-matrix-packet20-timing-hook-v1-20261005-r2",
+      "source_sha256": "4449619d41a485126633baf15f35ec5507827587f2a38e6a372b8e5e4f2cab0b",
+      "github_commit": "d98cc5a94a326f0610238314c542e8c59083d414",
+      "github_run_id": "37300973483",
+      "firmware_sha256": "42f2ed58c3b89af95926ee0cf5824a575df9dcf75c7fbb8ead9d6eaff427ee07",
+      "firmware_size_bytes": 1463664,
+      "firmware_drive_file_id": "1Rxq2e_7oc-tE-JpDCP4gjKfsRR4xLPzr",
+      "capsule_drive_file_id": "1zeONNTW3W4bHYkUbxlZK6XOJulknBLVq",
+      "capsule_zip_sha256": "4eb9bf8cf34e4f2383be111f059290301938c645d59adf29df4bdfd42e91b0fc",
+      "render_cache_patch_sha256": "fb2711140484a140cec35eb2dc90b4b7895a7723cf5bc7561c8e2057dea30b75",
+      "status": "BUILD_VALIDATED__AWAITING_GUARDED_SEQ23_28_KERNEL_SWEEP_SEQ24_RELEASE07_RECOVERY",
+      "build_validation": "PASS",
+      "offline_tests": "PASS: control, guarded-run, architecture fitness, runtime qualification static, kernel report, source identity, live sweep, Packet20 adapter, Packet20 build validation, trig cache exactness, and r2 transaction static"
     }
   },
   "lifecycle_state": "DIAGNOSTIC_ACTIVE",
   "live_mutation_authorization": {
-    "diagnostic_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
-    "expiry": "Close live mutation immediately after Release07 seq22 verification or on any defined stop condition.",
+    "candidate_sha256": "42f2ed58c3b89af95926ee0cf5824a575df9dcf75c7fbb8ead9d6eaff427ee07",
+    "diagnostic_release": "hbnf-matrix-packet20-timing-hook-v1-20261005-r2",
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-    "scope": "One guarded fresh Packet20 transaction: exact source-bound diagnostic seq21, one renderer-safe snapshot, one all-28 sweep, exact state restore, and exact Release07 local-LAN recovery seq22.",
-    "user_authorization": "Explicitly preauthorized by 2026-10-05 overnight completion directive."
+    "scope": "One guarded seq23 exact r2 direct-LAN candidate install, one renderer-safe snapshot and complete all-28 Packet20 sweep, exact renderer-state restore, then one exact Release07 direct-LAN recovery seq24. No other device mutation.",
+    "expiry": "Close live mutation immediately after exact Release07 seq24 identity/health verification or on any defined stop condition.",
+    "user_authorization": "Explicitly preauthorized by 2026-10-05 HBNF Cart 2.0 Autonomous Overnight Completion Directive."
   },
-  "live_mutation_authorized": false,
+  "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
   "phase2_implementation_authorized": false,
   "schema": "hbnf-control-state-v2"
