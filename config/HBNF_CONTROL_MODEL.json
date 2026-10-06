@@ -76,10 +76,10 @@
       "to": "RELEASE_CANDIDATE",
       "receipt_type": "phase2_integration",
       "required_checks": [
-        "committed_features_implemented",
+        "committed_core_features_implemented",
         "integration_runtime_smokes_passed",
         "no_unapproved_scope_change",
-        "guest_platform_integrated",
+        "deferred_scope_preserved",
         "package_complete",
         "signed_release_preflight_passed"
       ],
@@ -93,7 +93,7 @@
       "required_checks": [
         "final_soak_passed",
         "physical_acceptance_passed",
-        "guest_shareability_passed",
+        "owner_operational_acceptance_passed",
         "update_recovery_passed",
         "final_capsule_complete"
       ],
@@ -290,9 +290,37 @@
       }
     },
     "parallelism": {
-      "rule": "Exactly one live-device mutation lane at a time. Any number of dependency-satisfied host/offline/staging lanes may run in parallel when they cannot alter the live candidate or its evidence.",
+      "rule": "Exactly one live-device mutation lane at a time. Dependency-satisfied host/offline/staging lanes run concurrently when they cannot alter the live candidate or its evidence.",
       "live_lane_limit": 1,
-      "prohibit_duplicate_investigation": true
+      "prohibit_duplicate_investigation": true,
+      "core_lanes": [
+        "P2_MISSION_CONTROL_SCORING",
+        "P2_VIBE_AUDIO",
+        "P2_TEXT_MOMENTS",
+        "P2_PWA_RELIABILITY"
+      ],
+      "activation": {
+        "foundation_soak": "When the Foundation soak is cleanly running, start every core lane that is offline-safe; each must be ACTIVE, DONE, or BLOCKED_WITH_EXACT_DEPENDENCY.",
+        "phase2": "At PHASE2_INTEGRATING and RELEASE_CANDIDATE, all four core lanes must be tracked as ACTIVE, DONE, or BLOCKED_WITH_EXACT_DEPENDENCY."
+      },
+      "required_when": [
+        "PHASE2_INTEGRATING",
+        "RELEASE_CANDIDATE"
+      ],
+      "allowed_lane_status": [
+        "ACTIVE",
+        "DONE",
+        "BLOCKED_WITH_EXACT_DEPENDENCY"
+      ],
+      "blocked_requires": [
+        "blocker",
+        "dependency"
+      ],
+      "anti_abandonment": "A ready lane may be removed, serialized, or deferred only for an explicit dependency or user scope change; chat turnover, worker turnover, sequence changes, or convenience are not valid reasons.",
+      "sequencing": [
+        "Integration waits for lane outputs; ready lanes do not wait for integration.",
+        "A worker may combine implementation internally only if each lane remains independently tracked."
+      ]
     },
     "phase2_dag": [
       {
@@ -371,43 +399,58 @@
       }
     ],
     "priority_rule": "Critical-path work first; use unavoidable wait/soak time for ready parallel work; never create event-only throwaway architecture when the same work can advance final Cart 2.0.",
-    "parallelism_enforcement": {
-      "schema": "hbnf-parallelism-enforcement-v1",
-      "purpose": "Prevent safe ready lanes from being silently serialized or abandoned.",
-      "core_lanes": [
-        "P2_MISSION_CONTROL_SCORING",
-        "P2_VIBE_AUDIO",
-        "P2_TEXT_MOMENTS",
-        "P2_PWA_RELIABILITY"
+    "authority_contract": {
+      "operational_lifecycle": [
+        "config/HBNF_CONTROL_MODEL.json",
+        "config/HBNF_CONTROL_STATE.json"
       ],
-      "activation": {
-        "foundation_soak": "As soon as the >=90-minute Foundation soak is cleanly running, start all core lanes that can proceed without mutating the live candidate. Each lane must be ACTIVE, DONE, or BLOCKED_WITH_EXACT_DEPENDENCY; silent IDLE/QUEUED is not acceptable.",
-        "phase2": "At PHASE2_INTEGRATING, all four core lanes are mandatory concurrent workstreams until DONE or BLOCKED_WITH_EXACT_DEPENDENCY."
-      },
-      "state_contract": {
-        "field": "lane_execution",
-        "required_when": [
-          "PHASE2_INTEGRATING",
-          "RELEASE_CANDIDATE"
-        ],
-        "lane_status_values": [
-          "ACTIVE",
-          "DONE",
-          "BLOCKED_WITH_EXACT_DEPENDENCY"
-        ],
-        "blocked_requires": [
-          "blocker",
-          "dependency"
-        ],
-        "idle_ready_lane_is_violation": true
-      },
-      "sequencing": [
-        "One live-device mutation lane maximum.",
-        "Offline/staging lanes do not wait on unrelated live work once their dependencies are satisfied.",
-        "A worker may combine lanes internally only if the state still records each lane independently and no lane becomes silently idle.",
-        "Integration waits for lane outputs; lanes do not wait for integration."
+      "product_scope": "Canonical Cart 2.0 scope/acceptance authority is reconciled into the T3 phase2_scope_lock receipt; product documents do not independently mutate lifecycle state.",
+      "diagnostic_memory": "config/HBNF_SOLVED_PROBLEMS.json is reusable diagnostic memory and regression routing, not lifecycle authority.",
+      "reference_only": [
+        "config/HBNF_CART2_STAGING_GATES.json",
+        "handoffs",
+        "postmortems",
+        "runbooks",
+        "historical release reports"
       ],
-      "anti_abandonment": "A previously declared parallel lane may be removed, serialized, or deferred only when its dependency is explicitly blocked or the user changes scope. Convenience, chat turnover, worker turnover, or a new transaction is not sufficient."
+      "conflict_rule": "If reference/history disagrees with current operational model/state, it cannot block or redirect execution. Reconcile any still-valid requirement into the primary model/state once; do not add another authority layer.",
+      "generated_status_rule": "Current status, next action, invalidation impact, and parallel-lane compliance must be derived from the primary model/state rather than restated as new authority documents."
+    },
+    "prelive_offline_first": {
+      "rule": "Before a live-device mutation, eliminate every reasonably testable host/orchestration failure offline using captured fixtures, exact artifacts, and dry-run/replay paths.",
+      "required_classes": [
+        "artifact/source identity",
+        "rollback availability",
+        "host deadline/timeout edges",
+        "disk/evidence-path headroom",
+        "response parsing",
+        "failure persistence",
+        "restore/recovery decision logic"
+      ],
+      "live_hardware_role": "Use live hardware only for evidence that cannot be obtained offline. Host/tooling defects discovered live become regression fixtures before another equivalent live attempt.",
+      "no_sequence_for_host_only_rule": "A host-only defect does not justify a new firmware sequence or reinstall when exact candidate identity, health, restart continuity, renderer restore, and required AUX health remain proven."
+    },
+    "learning_loop": {
+      "rule": "Every newly proven recurring failure class must be converted into a solved-problem record plus an automated regression fixture/test when technically practical.",
+      "recurrence_trigger": "A second occurrence of the same process/tooling failure class blocks another equivalent live attempt until a regression guard exists.",
+      "optimization_target": "Drive live attempts wasted by host/process defects toward zero; do not optimize by weakening device/runtime safety gates.",
+      "no_rediscovery": "Solved issues are not reinvestigated unless their explicit do_not_rediscover_unless condition is met."
+    },
+    "release_scope": {
+      "core_acceptance": [
+        "owner Mission Control + authoritative scoring/control",
+        "Vibe/audio core",
+        "premium text/moments",
+        "PWA/reliability",
+        "Matrix/AUX core runtime/recovery"
+      ],
+      "deferred_preserved_scope": [
+        "AUX UV expansion",
+        "Arcade",
+        "IRL games",
+        "Guest platform"
+      ],
+      "rule": "Deferred items remain Cart 2.0 expansion scope but do not block the core ACCEPTED transition unless the user explicitly moves them back onto the critical path."
     }
   }
 }
