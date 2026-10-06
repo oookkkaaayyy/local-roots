@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import importlib.util, json, pathlib, tempfile, types, unittest.mock, subprocess
+import importlib.util, json, pathlib, tempfile, types, unittest.mock, subprocess, sys
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location("runner",ROOT/"scripts/hbnf_live_kernel_sweep.py")
 m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
@@ -115,6 +115,16 @@ restore_worst_case=(
 )
 assert snapshot_worst_case==226 and foundation_adapter["timeout_seconds"]>=snapshot_worst_case+14
 assert restore_worst_case==175 and foundation_adapter["timeout_seconds"]>=restore_worst_case
+
+# A live run requesting soak but omitting a frozen policy must stop before any
+# adapter/device preflight. This invocation only exercises the host-side guard.
+with tempfile.TemporaryDirectory() as td:
+    blocked=subprocess.run([sys.executable,str(ROOT/"scripts/hbnf_live_kernel_sweep.py"),
+      "--adapter",str(ROOT/"config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json"),
+      "--inventory",str(ROOT/"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"),
+      "--outdir",str(pathlib.Path(td)/"run"),"--contract","foundation","--soak-seconds","5400"],
+      text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    assert blocked.returncode!=0 and "refuses before device preflight" in blocked.stderr
 wrong=dict(sample); wrong["kernel_name"]="RGB_Blobs5"
 try: m.verify_selected(wrong,inv["entries"][2]); raise AssertionError("wrong kernel accepted")
 except RuntimeError: pass

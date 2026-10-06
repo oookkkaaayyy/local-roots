@@ -61,5 +61,5 @@
     ],
     "control_state": "FIX_CANDIDATE; model_valid=true; live_mutation_authorized=false; no errors"
   },
-  "next_action": "After Andrew explicitly resumes and cart returns to trusted LAN, run one guarded read-only Release07/identity/artifact/headroom preflight; allocate a new bounded sequence pair only through the control plane; execute the prepared candidate transaction with one snapshot, 28 kernels, threshold freeze before >=90-minute soak, one restore, then exact Release07 recovery and health verification."
+  "next_action": "Before live work, resolve the still-null threshold policy and qualified baseline from accepted authority; the runner refuses soak unless these validate. After Andrew explicitly resumes and cart returns to trusted LAN, run one guarded read-only Release07/identity/artifact/headroom preflight; allocate a new bounded sequence pair only through the control plane; execute the prepared candidate transaction with one snapshot, 28 kernels, threshold receipt generated from measured sweep before >=90-minute soak, one restore, then exact Release07 recovery and health verification."
 }

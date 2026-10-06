@@ -238,7 +238,7 @@
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Foundation offline timeout and soak-harness checkpoint",
-      "next_work": "Offline-only continuation checkpointed in work/cart2/27_FOUNDATION_OFFLINE_RESUME_PLAN_20261005.md: integrated exact 28-kernel sweep plus >=90-minute changing soak inside one snapshot/boot; resume only after Andrew explicitly returns cart and authorizes a new guarded transaction. live_mutation_authorized=false; seq33/34 remain unallocated; no LAN/device operations while away.",
+      "next_work": "Offline-only continuation checkpointed in work/cart2/27_FOUNDATION_OFFLINE_RESUME_PLAN_20261005.md: before live work, resolve the still-null threshold policy/baseline from accepted authority; then after explicit resume/cart return use the integrated exact 28-kernel sweep plus >=90-minute changing soak inside one snapshot/boot. live_mutation_authorized=false; seq33/34 remain unallocated; no LAN/device operations while away.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "performance_findings": {
       "candidate_fix": "FastLED 3.10.4 bounded fixed-point Animartrix backport; R4 achieved a 42 FPS median across 28 kernels, 8.329 ms median kernel time, with 28 improved and 0 regressed. Material gain confirmed; continue Foundation gates.",

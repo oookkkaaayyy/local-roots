@@ -14,9 +14,7 @@ ABSOLUTE=("fps_floor_absolute","frame_ms_p99_ceiling_absolute",
           "aux_projection_age_ms_ceiling")
 
 def digest(path):return hashlib.sha256(pathlib.Path(path).read_bytes()).hexdigest()
-def freeze(policy_path,baseline_path,sweep_path,expected_release):
-    pp,bp,sp=map(lambda p:pathlib.Path(p).resolve(),(policy_path,baseline_path,sweep_path))
-    policy=json.loads(pp.read_text());baseline=json.loads(bp.read_text());sweep=json.loads(sp.read_text())
+def validate_inputs(policy,baseline):
     errors=[]
     if policy.get("schema")!="hbnf-runtime-qualification-policy-v1":errors.append("policy schema mismatch")
     if policy.get("status")!="FROZEN":errors.append("policy status must be FROZEN before soak")
@@ -38,6 +36,12 @@ def freeze(policy_path,baseline_path,sweep_path,expected_release):
                       (baseline.get("heap") or {}).get("minimum_free_min"),
                       (baseline.get("heap") or {}).get("largest_block_end"))
     if not all(isinstance(v,(int,float)) and v>0 for v in baseline_metrics):errors.append("baseline is missing required positive Foundation performance/heap metrics")
+    return errors
+
+def freeze(policy_path,baseline_path,sweep_path,expected_release):
+    pp,bp,sp=map(lambda p:pathlib.Path(p).resolve(),(policy_path,baseline_path,sweep_path))
+    policy=json.loads(pp.read_text());baseline=json.loads(bp.read_text());sweep=json.loads(sp.read_text())
+    errors=validate_inputs(policy,baseline)
     if sweep.get("release_id")!=expected_release:errors.append("sweep release identity mismatch")
     kernels=sweep.get("kernels")
     ids=[int(k.get("kernel_id",-1)) for k in kernels or []]
@@ -65,8 +69,14 @@ def freeze(policy_path,baseline_path,sweep_path,expected_release):
 
 def main():
     p=argparse.ArgumentParser();p.add_argument("--policy",required=True);p.add_argument("--baseline",required=True)
-    p.add_argument("--sweep-manifest",required=True);p.add_argument("--expected-release",required=True);p.add_argument("--output",required=True)
-    a=p.parse_args();r=freeze(a.policy,a.baseline,a.sweep_manifest,a.expected_release)
+    p.add_argument("--sweep-manifest");p.add_argument("--expected-release");p.add_argument("--output");p.add_argument("--validate-inputs-only",action="store_true")
+    a=p.parse_args()
+    if a.validate_inputs_only:
+        errors=validate_inputs(json.loads(pathlib.Path(a.policy).read_text()),json.loads(pathlib.Path(a.baseline).read_text()))
+        if errors:raise ValueError("threshold inputs refused: "+"; ".join(errors))
+        print(json.dumps({"status":"FROZEN_INPUTS_VALID"}));return 0
+    if not a.sweep_manifest or not a.expected_release or not a.output:raise ValueError("--sweep-manifest, --expected-release, and --output are required")
+    r=freeze(a.policy,a.baseline,a.sweep_manifest,a.expected_release)
     pathlib.Path(a.output).write_text(json.dumps(r,indent=2,sort_keys=True)+"\n");print(json.dumps(r,indent=2));return 0
 if __name__=="__main__":
     try:raise SystemExit(main())

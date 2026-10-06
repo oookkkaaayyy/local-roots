@@ -376,6 +376,8 @@ def main():
     ap.add_argument("--soak-seconds",type=int,default=0,
                     help="optional state-changing Foundation soak before the same transaction's exact renderer restore (minimum 5400s)")
     ap.add_argument("--soak-interval-seconds",type=float,default=8.0)
+    ap.add_argument("--threshold-policy",help="fully frozen Foundation policy; required for an integrated soak")
+    ap.add_argument("--threshold-baseline",help="qualified Foundation baseline profile; required for an integrated soak")
     ap.add_argument("--dry-run",action="store_true")
     args=ap.parse_args()
 
@@ -398,6 +400,13 @@ def main():
           "expected_release_id":adapter["expected_release_id"]
         },indent=2))
         return 0
+
+    if args.soak_seconds:
+        if not args.threshold_policy or not args.threshold_baseline:
+            raise SystemExit("integrated soak requires --threshold-policy and --threshold-baseline; refuses before device preflight")
+        freeze_validator=ROOT/"scripts/hbnf_foundation_threshold_freeze.py"
+        run_json([sys.executable,str(freeze_validator),"--policy",args.threshold_policy,
+                  "--baseline",args.threshold_baseline,"--validate-inputs-only"],timeout=15)
 
     try:
         available=require_disk_headroom(outdir)
@@ -451,10 +460,25 @@ def main():
         soak_result=None
         if args.soak_seconds:
             if args.contract!="foundation":raise ValueError("--soak-seconds requires --contract foundation")
+            pre_soak_manifest={"schema":"hbnf-kernel-sweep-input-v1","release_id":expected_release_id,
+                "contract":"foundation","expected_kernel_count":28,"restore_verified":False,"kernels":profiles}
+            pre_soak_path=outdir/"PRE_SOAK_SWEEP_MANIFEST.json"
+            atomic_write(pre_soak_path,json.dumps(pre_soak_manifest,indent=2,sort_keys=True)+"\n")
+            freeze_receipt=outdir/"THRESHOLD_FREEZE_RECEIPT.json"
+            freeze_result=run_json([sys.executable,str(ROOT/"scripts/hbnf_foundation_threshold_freeze.py"),
+                "--policy",str(pathlib.Path(args.threshold_policy).resolve()),
+                "--baseline",str(pathlib.Path(args.threshold_baseline).resolve()),
+                "--sweep-manifest",str(pre_soak_path),"--expected-release",expected_release_id,
+                "--output",str(freeze_receipt)],timeout=30)
+            if freeze_result.get("status")!="FROZEN_BEFORE_SOAK" or freeze_result.get("soak_started") is not False:
+                raise RuntimeError("threshold freeze receipt did not pass before soak")
             soak_result=run_foundation_soak(
                 adapter,inventory,outdir,timeout,expected_release_id,expected_restart_count,
                 previous_uptime,args.soak_seconds,args.soak_interval_seconds
             )
+            soak_result["pre_soak_manifest_path"]=str(pre_soak_path)
+            soak_result["threshold_freeze_receipt_path"]=str(freeze_receipt)
+            soak_result["threshold_freeze_receipt_sha256"]=__import__("hashlib").sha256(freeze_receipt.read_bytes()).hexdigest()
     except Exception as e:
         run_error=str(e)
         if snapshot is None and reserve is not None:
