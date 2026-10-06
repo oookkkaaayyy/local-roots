@@ -1,0 +1,1473 @@
+exit=2
+stdout={
+  "duration_seconds": 615.083878541,
+  "errors": [
+    "soak duration 615.1s is below required 5400s"
+  ],
+  "expected_kernel_count": 28,
+  "expected_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "foundation_qualification": {
+    "errors": [
+      "soak duration 615.1s is below required 5400s"
+    ],
+    "per_kernel": {
+      "0": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 32.0,
+          "frame_max": 48.197,
+          "frame_p95_median": 27.875,
+          "frame_p99_median": 41.375,
+          "kernel_name": "Complex_Kaleido_3",
+          "largest_free_block_min": 69620,
+          "minimum_free_heap": 58636,
+          "profile_sha256": "c8851a74b1ef40bd6981c916c9beb4c3c079f1f9b83c03ed688c7ca311f67c7a",
+          "sample_count": 15,
+          "samples_sha256": "91c3dcf826140991575176db45a9ffd27373ac80128953e858bc6ec0079d7c80",
+          "variant_id": 1347100672
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 72.2955,
+          "ratio": 0.9622175654086353
+        },
+        "kernel_name": "Complex_Kaleido_3",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 34.0,
+          "frame_max": 46.376,
+          "frame_p95_median": 27.25,
+          "frame_p99_median": 35.5,
+          "largest_free_block_min": 65524.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 4
+      },
+      "1": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 37.0,
+          "frame_max": 43.665,
+          "frame_p95_median": 23.125,
+          "frame_p99_median": 37.625,
+          "kernel_name": "Big_Caleido",
+          "largest_free_block_min": 69620,
+          "minimum_free_heap": 57416,
+          "profile_sha256": "72c2ac20a9fa8cb29d47ab4a31605e41a344e3962a5a84d26294b2fd553ffafc",
+          "sample_count": 15,
+          "samples_sha256": "3ffcfbf28b24946b96d2aa14f16a46053ccb2b68c22af141fce5f5af3c725e2a",
+          "variant_id": 1347100673
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 65.4975,
+          "ratio": 1.1308141532119547
+        },
+        "kernel_name": "Big_Caleido",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 39.0,
+          "frame_max": 49.377,
+          "frame_p95_median": 23.625,
+          "frame_p99_median": 37.875,
+          "largest_free_block_min": 61428.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 5
+      },
+      "10": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 41.0,
+          "frame_max": 39.432,
+          "frame_p95_median": 17.625,
+          "frame_p99_median": 31.125,
+          "kernel_name": "Complex_Kaleido_5",
+          "largest_free_block_min": 69620,
+          "minimum_free_heap": 57416,
+          "profile_sha256": "5fcd33de3011d3effa1e5c7f4252d030c5d6af8d300752578ee923bebbbd61cf",
+          "sample_count": 18,
+          "samples_sha256": "a1054ec9fdbea19fa085de2e7ceef349184d399f44bf157973890f55e891b8e4",
+          "variant_id": 1347100682
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 59.148,
+          "ratio": 1.1287532968147698
+        },
+        "kernel_name": "Complex_Kaleido_5",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 42.0,
+          "frame_max": 44.509,
+          "frame_p95_median": 16.625,
+          "frame_p99_median": 29.375,
+          "largest_free_block_min": 59380.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 5
+      },
+      "11": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 32.0,
+          "frame_max": 47.324,
+          "frame_p95_median": 28.25,
+          "frame_p99_median": 41.625,
+          "kernel_name": "Spiralus2",
+          "largest_free_block_min": 69620,
+          "minimum_free_heap": 57416,
+          "profile_sha256": "818785634978eec2cd005ba98aa9f1e8a81ccbb53c4f71cfa53e5901d38f301c",
+          "sample_count": 14,
+          "samples_sha256": "a41d0f2e7e2160cc2c11adc9cb32c960cef8ee2d5debbfdf4068533e975d706f",
+          "variant_id": 1347100683
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 70.98599999999999,
+          "ratio": 1.59272250866368
+        },
+        "kernel_name": "Spiralus2",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 37.0,
+          "frame_max": 75.374,
+          "frame_p95_median": 24.625,
+          "frame_p99_median": 35.375,
+          "largest_free_block_min": 65524.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 5
+      },
+      "12": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 40.0,
+          "frame_max": 42.521,
+          "frame_p95_median": 21.125,
+          "frame_p99_median": 34.875,
+          "kernel_name": "Hot_Blob",
+          "largest_free_block_min": 69620,
+          "minimum_free_heap": 57416,
+          "profile_sha256": "760b075557fc3c406635eee202614cefcf62998f145f23756ed373cb4cf20a1c",
+          "sample_count": 13,
+          "samples_sha256": "8ac937ff747ba22eaf2be2bbeda32cfe14d9b3bffec5c48f5a1bbe6a72bc699c",
+          "variant_id": 1347100684
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 63.7815,
+          "ratio": 1.2839302932668564
+        },
+        "kernel_name": "Hot_Blob",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 42.0,
+          "frame_max": 54.594,
+          "frame_p95_median": 20.125,
+          "frame_p99_median": 26.125,
+          "largest_free_block_min": 59380.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 5
+      },
+      "13": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 39.0,
+          "frame_max": 42.259,
+          "frame_p95_median": 21.25,
+          "frame_p99_median": 33.625,
+          "kernel_name": "Caleido3",
+          "largest_free_block_min": 69620,
+          "minimum_free_heap": 57416,
+          "profile_sha256": "fd37f68b3f1ab29ab564795c0bf4be71bf21d9114c5c508a4cce88d84f5f34dc",
+          "sample_count": 14,
+          "samples_sha256": "46662b011883ac48bf0d5db79adc8e6ae17465dfedd879a81fc903255a9ebb36",
+          "variant_id": 1347100685
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 63.3885,
+          "ratio": 1.267469651435197
+        },
+        "kernel_name": "Caleido3",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 41.0,
+          "frame_max": 53.562,
+          "frame_p95_median": 20.125,
+          "frame_p99_median": 28.125,
+          "largest_free_block_min": 61428.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 5
+      },
+      "14": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 41.0,
+          "frame_max": 39.275,
+          "frame_p95_median": 17.875,
+          "frame_p99_median": 31.125,
+          "kernel_name": "Waves",
+          "largest_free_block_min": 69620,
+          "minimum_free_heap": 57416,
+          "profile_sha256": "afd43abe671fe85e14d80096bd5ff8d42087ca0204e708a7661b03b69fbcde08",
+          "sample_count": 16,
+          "samples_sha256": "ad14394e4be42589e4e18243ae478aa81b87431cb24a8f8f605b06bcafac1a4d",
+          "variant_id": 1347100686
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 58.912499999999994,
+          "ratio": 0.9477275620623807
+        },
+        "kernel_name": "Waves",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 41.0,
+          "frame_max": 37.222,
+          "frame_p95_median": 17.0,
+          "frame_p99_median": 31.25,
+          "largest_free_block_min": 63476.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 4
+      },
+      "15": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 42.0,
+          "frame_max": 38.113,
+          "frame_p95_median": 17.375,
+          "frame_p99_median": 25.125,
+          "kernel_name": "Chasing_Spirals",
+          "largest_free_block_min": 65524,
+          "minimum_free_heap": 57416,
+          "profile_sha256": "9335fdf48a55988049bc56e830e50091355a6cad36da82364e255fae6a093876",
+          "sample_count": 9,
+          "samples_sha256": "705fc42846e45eccd003f1942f26d8302ce1ff2d4247c8739a5c32e056cf3044",
+          "variant_id": 1347100687
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": false,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 57.1695,
+          "ratio": 0.9708236034948705
+        },
+        "kernel_name": "Chasing_Spirals",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 42.0,
+          "frame_max": 37.001,
+          "frame_p95_median": 17.375,
+          "frame_p99_median": 31.875,
+          "largest_free_block_min": 59380.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 5
+      },
+      "16": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 41.0,
+          "frame_max": 37.848,
+          "frame_p95_median": 20.875,
+          "frame_p99_median": 28.875,
+          "kernel_name": "Rotating_Blob",
+          "largest_free_block_min": 69620,
+          "minimum_free_heap": 57416,
+          "profile_sha256": "af700df6f4a2b4f9dc8cc2fac0408c0a15d156c8426da3508e888a2c4c69f554",
+          "sample_count": 12,
+          "samples_sha256": "3a2f8fa6a1e40a38d9af890e1f232c288643c480c3824620f262bf6d3a5e84a0",
+          "variant_id": 1347100688
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": false,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 56.772,
+          "ratio": 1.4435373071232298
+        },
+        "kernel_name": "Rotating_Blob",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 41.0,
+          "frame_max": 54.635,
+          "frame_p95_median": 21.125,
+          "frame_p99_median": 36.375,
+          "largest_free_block_min": 57332.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 5
+      },
+      "17": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 41.5,
+          "frame_max": 39.601,
+          "frame_p95_median": 16.125,
+          "frame_p99_median": 29.125,
+          "kernel_name": "Center_Field",
+          "largest_free_block_min": 69620,
+          "minimum_free_heap": 57416,
+          "profile_sha256": "92faf61f1f4e0040a028a3077e39625cf9848a13aff286ffe629c62337884bdc",
+          "sample_count": 14,
+          "samples_sha256": "f52a1185943c8046ef6b0b5f5186369f38a72e574c62ad6fc57ee3785a7eb5df",
+          "variant_id": 1347100689
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 59.4015,
+          "ratio": 1.0258326809929044
+        },
+        "kernel_name": "Center_Field",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 42.0,
+          "frame_max": 40.624,
+          "frame_p95_median": 16.125,
+          "frame_p99_median": 23.5,
+          "largest_free_block_min": 57332.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 6
+      },
+      "18": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 41.0,
+          "frame_max": 36.929,
+          "frame_p95_median": 18.375,
+          "frame_p99_median": 32.875,
+          "kernel_name": "Distance_Experiment",
+          "largest_free_block_min": 61428,
+          "minimum_free_heap": 57416,
+          "profile_sha256": "7ead1c02745da4b1b9f5db1dabad3e5d1bc748a0ed84bd543e5fa0007f4c41bc",
+          "sample_count": 15,
+          "samples_sha256": "5cfd48522ee66331543568faf51412d2a56b1974aebade9669933414767caa51",
+          "variant_id": 1347100690
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 55.3935,
+          "ratio": 0.9189255057001273
+        },
+        "kernel_name": "Distance_Experiment",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 42.5,
+          "frame_max": 33.935,
+          "frame_p95_median": 17.5,
+          "frame_p99_median": 22.0,
+          "largest_free_block_min": 63476.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 4
+      },
+      "19": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 41.0,
+          "frame_max": 37.789,
+          "frame_p95_median": 19.625,
+          "frame_p99_median": 32.875,
+          "kernel_name": "Lava1",
+          "largest_free_block_min": 65524,
+          "minimum_free_heap": 55852,
+          "profile_sha256": "bcf956ba2796c7a789c4184e958f23496891c173d82002ec1389a48d3717c0e0",
+          "sample_count": 13,
+          "samples_sha256": "c07d496bb25566eca2492090702a37e732ade340355d432765a287f2997f2f84",
+          "variant_id": 1347100691
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 56.6835,
+          "ratio": 1.1295879753367382
+        },
+        "kernel_name": "Lava1",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 42.0,
+          "frame_max": 42.686,
+          "frame_p95_median": 19.375,
+          "frame_p99_median": 36.125,
+          "largest_free_block_min": 63476.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 3
+      },
+      "2": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 35.0,
+          "frame_max": 42.903,
+          "frame_p95_median": 23.875,
+          "frame_p99_median": 38.625,
+          "kernel_name": "Parametric_Water",
+          "largest_free_block_min": 69620,
+          "minimum_free_heap": 57416,
+          "profile_sha256": "d49e525434c68ef56856c3dfda6725a77534b861836824dac17cccb4645ff1bb",
+          "sample_count": 18,
+          "samples_sha256": "e44d4f14bab78c12a5fff8b9592806e75f259e043079532ef8e8deae0dc41d28",
+          "variant_id": 1347100674
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 64.3545,
+          "ratio": 1.5384705032282124
+        },
+        "kernel_name": "Parametric_Water",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 38.0,
+          "frame_max": 66.005,
+          "frame_p95_median": 23.625,
+          "frame_p99_median": 36.875,
+          "largest_free_block_min": 57332.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 5
+      },
+      "20": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 40.0,
+          "frame_max": 39.555,
+          "frame_p95_median": 20.375,
+          "frame_p99_median": 33.625,
+          "kernel_name": "Caleido2",
+          "largest_free_block_min": 65524,
+          "minimum_free_heap": 55852,
+          "profile_sha256": "d3e5497363b81fe03ca700ce8aada5f4c7f5e5a44a2980ad7e1be15cf9bcb950",
+          "sample_count": 15,
+          "samples_sha256": "9192f846e1585fbfdc2cb897dbad511bfe4f760c10cdcb1a48f893792e2d7a5b",
+          "variant_id": 1347100692
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 59.332499999999996,
+          "ratio": 1.5957021868284667
+        },
+        "kernel_name": "Caleido2",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 42.0,
+          "frame_max": 63.118,
+          "frame_p95_median": 21.375,
+          "frame_p99_median": 37.375,
+          "largest_free_block_min": 63476.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 4
+      },
+      "21": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 41.0,
+          "frame_max": 39.571,
+          "frame_p95_median": 20.375,
+          "frame_p99_median": 33.625,
+          "kernel_name": "Yves",
+          "largest_free_block_min": 69620,
+          "minimum_free_heap": 55852,
+          "profile_sha256": "b46399ccea0b02d2811c3bda18ee08511723ebf3ade5d355c42dd0fe2f7d4537",
+          "sample_count": 16,
+          "samples_sha256": "fdfe379ade2587938f3212e68a854de9a8ff5b3ebc4a1ccf34a57645add24747",
+          "variant_id": 1347100693
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 59.3565,
+          "ratio": 1.3384296580829396
+        },
+        "kernel_name": "Yves",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 42.0,
+          "frame_max": 52.963,
+          "frame_p95_median": 19.625,
+          "frame_p99_median": 30.375,
+          "largest_free_block_min": 63476.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 4
+      },
+      "22": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 41.0,
+          "frame_max": 38.307,
+          "frame_p95_median": 19.125,
+          "frame_p99_median": 32.5,
+          "kernel_name": "Scaledemo1",
+          "largest_free_block_min": 69620,
+          "minimum_free_heap": 55852,
+          "profile_sha256": "3557a07873ac62dcc96b42dfab6af5fb06e4022d53789e4b93c731313d57bf9c",
+          "sample_count": 16,
+          "samples_sha256": "151e22aa0bf892cb3db32e7af76135e656ec0a8fae9fccbf47294c39bdae02fb",
+          "variant_id": 1347100694
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 57.4605,
+          "ratio": 1.4518495314172344
+        },
+        "kernel_name": "Scaledemo1",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 42.0,
+          "frame_max": 55.616,
+          "frame_p95_median": 18.5,
+          "frame_p99_median": 29.125,
+          "largest_free_block_min": 63476.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 4
+      },
+      "23": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 41.0,
+          "frame_max": 34.422,
+          "frame_p95_median": 15.0,
+          "frame_p99_median": 23.125,
+          "kernel_name": "Zoom",
+          "largest_free_block_min": 65524,
+          "minimum_free_heap": 55852,
+          "profile_sha256": "000d1520f33c4d4662a6da70e78c31651bdf9db093cfa57754dc36e5a464b7cf",
+          "sample_count": 16,
+          "samples_sha256": "99778ca4b209cc2686ad0936d2fa5adf4b942af7764fb22e8a683caf7d4668ea",
+          "variant_id": 1347100695
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 51.632999999999996,
+          "ratio": 1.2173319388763002
+        },
+        "kernel_name": "Zoom",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 40.0,
+          "frame_max": 41.903,
+          "frame_p95_median": 15.125,
+          "frame_p99_median": 26.125,
+          "largest_free_block_min": 61428.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 3
+      },
+      "24": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 40.0,
+          "frame_max": 42.585,
+          "frame_p95_median": 21.375,
+          "frame_p99_median": 34.125,
+          "kernel_name": "Complex_Kaleido",
+          "largest_free_block_min": 69620,
+          "minimum_free_heap": 55852,
+          "profile_sha256": "8267e6c10aeb01e64ef6e3d4c382120f9d5436fdf0ad2f75b766505aaed9fb66",
+          "sample_count": 13,
+          "samples_sha256": "e6e02a7fd0737a4d06feca55302191e3f15fec753834b2fcb066b2a9fb247046",
+          "variant_id": 1347100696
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 63.8775,
+          "ratio": 0.8847951156510508
+        },
+        "kernel_name": "Complex_Kaleido",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 41.0,
+          "frame_max": 37.679,
+          "frame_p95_median": 21.375,
+          "frame_p99_median": 27.875,
+          "largest_free_block_min": 63476.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 3
+      },
+      "25": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 38.0,
+          "frame_max": 42.874,
+          "frame_p95_median": 22.125,
+          "frame_p99_median": 35.75,
+          "kernel_name": "RGB_Blobs3",
+          "largest_free_block_min": 65524,
+          "minimum_free_heap": 55712,
+          "profile_sha256": "a95e1adfa8153a76a5810ef4ada7c7525a499fe9671eaaad33b8f7284483b6ad",
+          "sample_count": 14,
+          "samples_sha256": "e6ecf1420e207052b570a6f60633d425a32d62a389a6e2563fa983f5f121e9b2",
+          "variant_id": 1347100697
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 64.311,
+          "ratio": 1.6296823249521852
+        },
+        "kernel_name": "RGB_Blobs3",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 41.0,
+          "frame_max": 69.871,
+          "frame_p95_median": 21.25,
+          "frame_p99_median": 34.125,
+          "largest_free_block_min": 59380.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 4
+      },
+      "26": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 37.0,
+          "frame_max": 41.152,
+          "frame_p95_median": 23.875,
+          "frame_p99_median": 37.125,
+          "kernel_name": "SM5",
+          "largest_free_block_min": 69620,
+          "minimum_free_heap": 55712,
+          "profile_sha256": "831bb8fcf575880417599583a8dd34a7c4915f0e01f242bec893df966e6c4e6d",
+          "sample_count": 16,
+          "samples_sha256": "919f553e41498690664b56b3e415273a4c5382f9ed61a129dd13b79229e65c2f",
+          "variant_id": 1347100698
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 61.728,
+          "ratio": 1.0981726283048212
+        },
+        "kernel_name": "SM5",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 38.0,
+          "frame_max": 45.192,
+          "frame_p95_median": 23.75,
+          "frame_p99_median": 36.875,
+          "largest_free_block_min": 59380.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 4
+      },
+      "27": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 26.0,
+          "frame_max": 55.608,
+          "frame_p95_median": 38.375,
+          "frame_p99_median": 53.0,
+          "kernel_name": "Module_Experiment10",
+          "largest_free_block_min": 69620,
+          "minimum_free_heap": 55712,
+          "profile_sha256": "80478828fcf936be7e112eda25b14b22e7dad26d0bf284cc0577037d2dcd6f63",
+          "sample_count": 16,
+          "samples_sha256": "79d7d12342318c5020597b8405d83089f52c190143e8af7f0358796103b61019",
+          "variant_id": 1347100699
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 83.41199999999999,
+          "ratio": 1.1844698604517336
+        },
+        "kernel_name": "Module_Experiment10",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 27.0,
+          "frame_max": 65.866,
+          "frame_p95_median": 36.75,
+          "frame_p99_median": 50.0,
+          "largest_free_block_min": 63476.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 4
+      },
+      "3": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 39.0,
+          "frame_max": 39.161,
+          "frame_p95_median": 21.875,
+          "frame_p99_median": 35.625,
+          "kernel_name": "RGB_Blobs5",
+          "largest_free_block_min": 69620,
+          "minimum_free_heap": 57416,
+          "profile_sha256": "13c7a12bdbb1317b928781ad7f1868f45f9b13caa4fbb971936d78dfd0c50f2b",
+          "sample_count": 18,
+          "samples_sha256": "ce77491d4187d8bfbe39e033d3ab7d9c6124bce738e93f309c776a099f14b13c",
+          "variant_id": 1347100675
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 58.7415,
+          "ratio": 1.774954674293302
+        },
+        "kernel_name": "RGB_Blobs5",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 41.0,
+          "frame_max": 69.509,
+          "frame_p95_median": 21.125,
+          "frame_p99_median": 23.375,
+          "largest_free_block_min": 59380.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 5
+      },
+      "4": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 39.0,
+          "frame_max": 41.255,
+          "frame_p95_median": 22.625,
+          "frame_p99_median": 35.875,
+          "kernel_name": "Polar_Waves",
+          "largest_free_block_min": 65524,
+          "minimum_free_heap": 57416,
+          "profile_sha256": "8dc25eacc2782fdc049f4a7fd2f9aa0217c145417009c300d65a3a205a0f05f2",
+          "sample_count": 12,
+          "samples_sha256": "f6b015b94ed78572c98672ab9bec7311ae315bc41d74e59d680e1605f88d1e3b",
+          "variant_id": 1347100676
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 61.88250000000001,
+          "ratio": 1.1353048115379953
+        },
+        "kernel_name": "Polar_Waves",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 39.0,
+          "frame_max": 46.837,
+          "frame_p95_median": 23.125,
+          "frame_p99_median": 37.125,
+          "largest_free_block_min": 61428.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 4
+      },
+      "5": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 41.0,
+          "frame_max": 39.173,
+          "frame_p95_median": 16.125,
+          "frame_p99_median": 30.0,
+          "kernel_name": "Zoom2",
+          "largest_free_block_min": 69620,
+          "minimum_free_heap": 57416,
+          "profile_sha256": "c79a11124247348c021ebbccec87aab325ef5456f94627ca5adf1d574e470563",
+          "sample_count": 16,
+          "samples_sha256": "8a834eaebdeaf54d5f0d50231712b2f56e123272f8d457343285cc7e1e2c270c",
+          "variant_id": 1347100677
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 58.7595,
+          "ratio": 1.8566104204426517
+        },
+        "kernel_name": "Zoom2",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 42.0,
+          "frame_max": 72.729,
+          "frame_p95_median": 16.375,
+          "frame_p99_median": 27.875,
+          "largest_free_block_min": 57332.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 5
+      },
+      "6": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 30.0,
+          "frame_max": 49.994,
+          "frame_p95_median": 30.375,
+          "frame_p99_median": 43.875,
+          "kernel_name": "Complex_Kaleido_4",
+          "largest_free_block_min": 69620,
+          "minimum_free_heap": 57416,
+          "profile_sha256": "91157b488468510a1e5c31d42cf242bba66cc602c27f5bb701b27c11dadfbe57",
+          "sample_count": 16,
+          "samples_sha256": "55cdb85a3b440f0155f65fd611ec0534606e621bd4a68b75e64374b008f5efa2",
+          "variant_id": 1347100678
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 74.991,
+          "ratio": 1.19438332599912
+        },
+        "kernel_name": "Complex_Kaleido_4",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 32.0,
+          "frame_max": 59.712,
+          "frame_p95_median": 28.375,
+          "frame_p99_median": 45.375,
+          "largest_free_block_min": 63476.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 5
+      },
+      "7": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 41.5,
+          "frame_max": 33.875,
+          "frame_p95_median": 17.125,
+          "frame_p99_median": 30.875,
+          "kernel_name": "Complex_Kaleido_6",
+          "largest_free_block_min": 61428,
+          "minimum_free_heap": 57416,
+          "profile_sha256": "4da17e847984491afb45fc35d4dadceb20c236cb0a7fe15c307a55c37b3ee3cc",
+          "sample_count": 16,
+          "samples_sha256": "62cb0d32478d226bbee53cf3f0d89ce3a607ac4002b1e856fa386981c0aeab09",
+          "variant_id": 1347100679
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 50.8125,
+          "ratio": 1.5523542435424353
+        },
+        "kernel_name": "Complex_Kaleido_6",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 42.0,
+          "frame_max": 52.586,
+          "frame_p95_median": 17.125,
+          "frame_p99_median": 28.625,
+          "largest_free_block_min": 63476.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 5
+      },
+      "8": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 34.0,
+          "frame_max": 43.59,
+          "frame_p95_median": 25.875,
+          "frame_p99_median": 39.125,
+          "kernel_name": "Water",
+          "largest_free_block_min": 69620,
+          "minimum_free_heap": 57416,
+          "profile_sha256": "72eb63d5f516f17428950e5b7792164ded2667ab451299be2937fde530922a22",
+          "sample_count": 15,
+          "samples_sha256": "8060547a7e19f65a93be48db3bbd370a234d40801d5088898316474c8aa006f9",
+          "variant_id": 1347100680
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 65.385,
+          "ratio": 1.862674925441615
+        },
+        "kernel_name": "Water",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 36.0,
+          "frame_max": 81.194,
+          "frame_p95_median": 24.625,
+          "frame_p99_median": 33.625,
+          "largest_free_block_min": 59380.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 5
+      },
+      "9": {
+        "baseline": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 39.0,
+          "frame_max": 41.684,
+          "frame_p95_median": 21.625,
+          "frame_p99_median": 34.75,
+          "kernel_name": "RGB_Blobs4",
+          "largest_free_block_min": 69620,
+          "minimum_free_heap": 57416,
+          "profile_sha256": "7322b8d9d2df63eac80a889cdadd4e41fc32b4e26953c725c6a36626a5a8c7b4",
+          "sample_count": 18,
+          "samples_sha256": "3809c52317a8d6825452483fd3de3370d06dc39d0e885e9de6b2f49f25d495f9",
+          "variant_id": 1347100681
+        },
+        "checks": {
+          "aux_stale_fraction": true,
+          "fps_median": true,
+          "frame_p95_median": true,
+          "frame_p99_median": true,
+          "largest_free_block_min": true,
+          "minimum_free_heap": false
+        },
+        "frame_max_diagnostic": {
+          "gate": "DIAGNOSTIC_ONLY",
+          "limit_ms": 62.525999999999996,
+          "ratio": 1.0096199980807985
+        },
+        "kernel_name": "RGB_Blobs4",
+        "metrics": {
+          "aux_stale_fraction": 0.0,
+          "fps_median": 41.5,
+          "frame_max": 42.085,
+          "frame_p95_median": 20.625,
+          "frame_p99_median": 29.125,
+          "largest_free_block_min": 59380.0,
+          "minimum_free_heap": 44084.0
+        },
+        "samples": 4
+      }
+    },
+    "status": "INCOMPLETE"
+  },
+  "frame_ms_max_max_across_samples": 81.194,
+  "frame_ms_p95_max_across_samples": 44.625,
+  "frame_ms_p99_max_across_samples": 54.875,
+  "minimum_free_heap_bytes": 44084.0,
+  "minimum_largest_free_block_bytes": 57332.0,
+  "observed_kernel_count": 28,
+  "performance_thresholds": "NOT_EVALUATED__SOAK_DURATION_INCOMPLETE",
+  "restart_count": 0,
+  "sample_count": 124,
+  "schema": "hbnf-foundation-soak-structural-audit-v1",
+  "status": "INCOMPLETE",
+  "sustained_performance": {
+    "errors": [],
+    "frame_max_diagnostics": [
+      {
+        "baseline_max_ms": 48.197,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 0,
+        "kernel_name": "Complex_Kaleido_3",
+        "legacy_relative_limit_ms": 72.2955,
+        "legacy_relative_ratio": 0.9622175654086353,
+        "observed_max_ms": 46.376,
+        "over_legacy_relative_limit": false
+      },
+      {
+        "baseline_max_ms": 43.665,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 1,
+        "kernel_name": "Big_Caleido",
+        "legacy_relative_limit_ms": 65.4975,
+        "legacy_relative_ratio": 1.1308141532119547,
+        "observed_max_ms": 49.377,
+        "over_legacy_relative_limit": false
+      },
+      {
+        "baseline_max_ms": 42.903,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 2,
+        "kernel_name": "Parametric_Water",
+        "legacy_relative_limit_ms": 64.3545,
+        "legacy_relative_ratio": 1.5384705032282124,
+        "observed_max_ms": 66.005,
+        "over_legacy_relative_limit": true
+      },
+      {
+        "baseline_max_ms": 39.161,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 3,
+        "kernel_name": "RGB_Blobs5",
+        "legacy_relative_limit_ms": 58.7415,
+        "legacy_relative_ratio": 1.774954674293302,
+        "observed_max_ms": 69.509,
+        "over_legacy_relative_limit": true
+      },
+      {
+        "baseline_max_ms": 41.255,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 4,
+        "kernel_name": "Polar_Waves",
+        "legacy_relative_limit_ms": 61.88250000000001,
+        "legacy_relative_ratio": 1.1353048115379953,
+        "observed_max_ms": 46.837,
+        "over_legacy_relative_limit": false
+      },
+      {
+        "baseline_max_ms": 39.173,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 5,
+        "kernel_name": "Zoom2",
+        "legacy_relative_limit_ms": 58.7595,
+        "legacy_relative_ratio": 1.8566104204426517,
+        "observed_max_ms": 72.729,
+        "over_legacy_relative_limit": true
+      },
+      {
+        "baseline_max_ms": 49.994,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 6,
+        "kernel_name": "Complex_Kaleido_4",
+        "legacy_relative_limit_ms": 74.991,
+        "legacy_relative_ratio": 1.19438332599912,
+        "observed_max_ms": 59.712,
+        "over_legacy_relative_limit": false
+      },
+      {
+        "baseline_max_ms": 33.875,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 7,
+        "kernel_name": "Complex_Kaleido_6",
+        "legacy_relative_limit_ms": 50.8125,
+        "legacy_relative_ratio": 1.5523542435424353,
+        "observed_max_ms": 52.586,
+        "over_legacy_relative_limit": true
+      },
+      {
+        "baseline_max_ms": 43.59,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 8,
+        "kernel_name": "Water",
+        "legacy_relative_limit_ms": 65.385,
+        "legacy_relative_ratio": 1.862674925441615,
+        "observed_max_ms": 81.194,
+        "over_legacy_relative_limit": true
+      },
+      {
+        "baseline_max_ms": 41.684,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 9,
+        "kernel_name": "RGB_Blobs4",
+        "legacy_relative_limit_ms": 62.525999999999996,
+        "legacy_relative_ratio": 1.0096199980807985,
+        "observed_max_ms": 42.085,
+        "over_legacy_relative_limit": false
+      },
+      {
+        "baseline_max_ms": 39.432,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 10,
+        "kernel_name": "Complex_Kaleido_5",
+        "legacy_relative_limit_ms": 59.148,
+        "legacy_relative_ratio": 1.1287532968147698,
+        "observed_max_ms": 44.509,
+        "over_legacy_relative_limit": false
+      },
+      {
+        "baseline_max_ms": 47.324,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 11,
+        "kernel_name": "Spiralus2",
+        "legacy_relative_limit_ms": 70.98599999999999,
+        "legacy_relative_ratio": 1.59272250866368,
+        "observed_max_ms": 75.374,
+        "over_legacy_relative_limit": true
+      },
+      {
+        "baseline_max_ms": 42.521,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 12,
+        "kernel_name": "Hot_Blob",
+        "legacy_relative_limit_ms": 63.7815,
+        "legacy_relative_ratio": 1.2839302932668564,
+        "observed_max_ms": 54.594,
+        "over_legacy_relative_limit": false
+      },
+      {
+        "baseline_max_ms": 42.259,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 13,
+        "kernel_name": "Caleido3",
+        "legacy_relative_limit_ms": 63.3885,
+        "legacy_relative_ratio": 1.267469651435197,
+        "observed_max_ms": 53.562,
+        "over_legacy_relative_limit": false
+      },
+      {
+        "baseline_max_ms": 39.275,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 14,
+        "kernel_name": "Waves",
+        "legacy_relative_limit_ms": 58.912499999999994,
+        "legacy_relative_ratio": 0.9477275620623807,
+        "observed_max_ms": 37.222,
+        "over_legacy_relative_limit": false
+      },
+      {
+        "baseline_max_ms": 38.113,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 15,
+        "kernel_name": "Chasing_Spirals",
+        "legacy_relative_limit_ms": 57.1695,
+        "legacy_relative_ratio": 0.9708236034948705,
+        "observed_max_ms": 37.001,
+        "over_legacy_relative_limit": false
+      },
+      {
+        "baseline_max_ms": 37.848,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 16,
+        "kernel_name": "Rotating_Blob",
+        "legacy_relative_limit_ms": 56.772,
+        "legacy_relative_ratio": 1.4435373071232298,
+        "observed_max_ms": 54.635,
+        "over_legacy_relative_limit": false
+      },
+      {
+        "baseline_max_ms": 39.601,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 17,
+        "kernel_name": "Center_Field",
+        "legacy_relative_limit_ms": 59.4015,
+        "legacy_relative_ratio": 1.0258326809929044,
+        "observed_max_ms": 40.624,
+        "over_legacy_relative_limit": false
+      },
+      {
+        "baseline_max_ms": 36.929,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 18,
+        "kernel_name": "Distance_Experiment",
+        "legacy_relative_limit_ms": 55.3935,
+        "legacy_relative_ratio": 0.9189255057001273,
+        "observed_max_ms": 33.935,
+        "over_legacy_relative_limit": false
+      },
+      {
+        "baseline_max_ms": 37.789,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 19,
+        "kernel_name": "Lava1",
+        "legacy_relative_limit_ms": 56.6835,
+        "legacy_relative_ratio": 1.1295879753367382,
+        "observed_max_ms": 42.686,
+        "over_legacy_relative_limit": false
+      },
+      {
+        "baseline_max_ms": 39.555,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 20,
+        "kernel_name": "Caleido2",
+        "legacy_relative_limit_ms": 59.332499999999996,
+        "legacy_relative_ratio": 1.5957021868284667,
+        "observed_max_ms": 63.118,
+        "over_legacy_relative_limit": true
+      },
+      {
+        "baseline_max_ms": 39.571,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 21,
+        "kernel_name": "Yves",
+        "legacy_relative_limit_ms": 59.3565,
+        "legacy_relative_ratio": 1.3384296580829396,
+        "observed_max_ms": 52.963,
+        "over_legacy_relative_limit": false
+      },
+      {
+        "baseline_max_ms": 38.307,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 22,
+        "kernel_name": "Scaledemo1",
+        "legacy_relative_limit_ms": 57.4605,
+        "legacy_relative_ratio": 1.4518495314172344,
+        "observed_max_ms": 55.616,
+        "over_legacy_relative_limit": false
+      },
+      {
+        "baseline_max_ms": 34.422,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 23,
+        "kernel_name": "Zoom",
+        "legacy_relative_limit_ms": 51.632999999999996,
+        "legacy_relative_ratio": 1.2173319388763002,
+        "observed_max_ms": 41.903,
+        "over_legacy_relative_limit": false
+      },
+      {
+        "baseline_max_ms": 42.585,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 24,
+        "kernel_name": "Complex_Kaleido",
+        "legacy_relative_limit_ms": 63.8775,
+        "legacy_relative_ratio": 0.8847951156510508,
+        "observed_max_ms": 37.679,
+        "over_legacy_relative_limit": false
+      },
+      {
+        "baseline_max_ms": 42.874,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 25,
+        "kernel_name": "RGB_Blobs3",
+        "legacy_relative_limit_ms": 64.311,
+        "legacy_relative_ratio": 1.6296823249521852,
+        "observed_max_ms": 69.871,
+        "over_legacy_relative_limit": true
+      },
+      {
+        "baseline_max_ms": 41.152,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 26,
+        "kernel_name": "SM5",
+        "legacy_relative_limit_ms": 61.728,
+        "legacy_relative_ratio": 1.0981726283048212,
+        "observed_max_ms": 45.192,
+        "over_legacy_relative_limit": false
+      },
+      {
+        "baseline_max_ms": 55.608,
+        "interpretation": "DIAGNOSTIC_ONLY__DOES_NOT_FAIL_SUSTAINED_PERFORMANCE",
+        "kernel_id": 27,
+        "kernel_name": "Module_Experiment10",
+        "legacy_relative_limit_ms": 83.41199999999999,
+        "legacy_relative_ratio": 1.1844698604517336,
+        "observed_max_ms": 65.866,
+        "over_legacy_relative_limit": false
+      }
+    ],
+    "policy": "FPS_MEDIAN_FRAME_P95_MEDIAN_FRAME_P99_MEDIAN_HEAP_FRAGMENTATION_AUX_AND_CATASTROPHIC_CONTINUITY_GATES",
+    "provisional_threshold_diagnostics": [
+      "kernel 0 minimum_free_heap failed frozen threshold",
+      "kernel 1 minimum_free_heap failed frozen threshold",
+      "kernel 2 minimum_free_heap failed frozen threshold",
+      "kernel 3 minimum_free_heap failed frozen threshold",
+      "kernel 4 minimum_free_heap failed frozen threshold",
+      "kernel 5 minimum_free_heap failed frozen threshold",
+      "kernel 6 minimum_free_heap failed frozen threshold",
+      "kernel 7 minimum_free_heap failed frozen threshold",
+      "kernel 8 minimum_free_heap failed frozen threshold",
+      "kernel 9 minimum_free_heap failed frozen threshold",
+      "kernel 10 minimum_free_heap failed frozen threshold",
+      "kernel 11 minimum_free_heap failed frozen threshold",
+      "kernel 12 minimum_free_heap failed frozen threshold",
+      "kernel 13 minimum_free_heap failed frozen threshold",
+      "kernel 14 minimum_free_heap failed frozen threshold",
+      "kernel 15 frame_p99_median failed frozen threshold",
+      "kernel 15 minimum_free_heap failed frozen threshold",
+      "kernel 16 frame_p99_median failed frozen threshold",
+      "kernel 16 minimum_free_heap failed frozen threshold",
+      "kernel 17 minimum_free_heap failed frozen threshold",
+      "kernel 18 minimum_free_heap failed frozen threshold",
+      "kernel 19 minimum_free_heap failed frozen threshold",
+      "kernel 20 minimum_free_heap failed frozen threshold",
+      "kernel 21 minimum_free_heap failed frozen threshold",
+      "kernel 22 minimum_free_heap failed frozen threshold",
+      "kernel 23 minimum_free_heap failed frozen threshold",
+      "kernel 24 minimum_free_heap failed frozen threshold",
+      "kernel 25 minimum_free_heap failed frozen threshold",
+      "kernel 26 minimum_free_heap failed frozen threshold",
+      "kernel 27 minimum_free_heap failed frozen threshold"
+    ],
+    "relative_frame_max": "DIAGNOSTIC_ONLY",
+    "status": "INCOMPLETE"
+  },
+  "uptime_end_seconds": 974.0,
+  "uptime_start_seconds": 359.0,
+  "valid_sample_count": 124
+}
+
+stderr=

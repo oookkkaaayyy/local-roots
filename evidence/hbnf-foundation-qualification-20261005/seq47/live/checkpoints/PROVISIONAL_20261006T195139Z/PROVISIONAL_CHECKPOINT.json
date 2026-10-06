@@ -1,0 +1,15 @@
+{
+  "audit_status": "INCOMPLETE",
+  "duration_seconds": 615.083878541,
+  "max_frame_max_ms": 81.194,
+  "max_frame_p95_ms": 44.625,
+  "max_frame_p99_ms": 54.875,
+  "minimum_free_heap_bytes": 44084.0,
+  "minimum_largest_free_block_bytes": 57332.0,
+  "qualification_status": "INCOMPLETE__NOT_FINAL_ADJUDICATION",
+  "sample_count": 124,
+  "schema": "hbnf-foundation-provisional-soak-checkpoint-v1",
+  "snapshot_path": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq47/live/checkpoints/PROVISIONAL_20261006T195139Z/FOUNDATION_SOAK.jsonl",
+  "source_samples_sha256": "e037114032abe7586c2d4d864e2c764360436ade2ccca62db204bdf8f466063a",
+  "sustained_status": "INCOMPLETE"
+}
