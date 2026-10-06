@@ -1,0 +1,30 @@
+{
+  "schema": "hbnf-p2-text-moments-recovery-checkpoint-v1",
+  "lane": "P2_TEXT_MOMENTS",
+  "date": "2026-10-06",
+  "status": "RECOVERED_AND_ISOLATED__OFFLINE_ONLY",
+  "base_branch": "hbnf-cart2-ready-to-implement-staging-20261001",
+  "lane_branch": "hbnf-p2-text-moments-offline-20261006",
+  "authority": {
+    "lifecycle_state": "FIX_CANDIDATE",
+    "phase2_implementation_authorized": false,
+    "foundation_seq43_soak": "RUNNING",
+    "live_mutation": "FORBIDDEN_FOR_THIS_LANE"
+  },
+  "recovered_work": [
+    "work/cart2/15_TEXT_MOMENT_COMPOSITOR_CANDIDATE_SPEC.md",
+    "config/HBNF_CART2_ACCEPTANCE_CORPUS_V1.json",
+    "config/HBNF_CART2_LANE_CONTRACTS.json"
+  ],
+  "recovered_conclusions": [
+    "premium text is a compositor over the active Vibe, not a generic marquee mode",
+    "glyph geometry remains stable during readable hold",
+    "phrase paging precedes scrolling",
+    "same 32x16 Matrix lineage has prior physical evidence for metric-identical 12px WBF foreground/inner-halo/outer-halo overlays while animation continues",
+    "recover/reuse proven local font primitive before adding a new typography dependency",
+    "lane must consume existing VisualMoment and VibeSelection shapes without inventing a replacement shared interface"
+  ],
+  "writes_to_live_hardware": 0,
+  "github_actions_runs": 0,
+  "next": "Implement host-only moment normalization/planning, acceptance fixtures, deterministic tests, and a durable offline completion receipt; stop at P2_INTERFACE_FREEZE/Foundation integration boundary."
+}
