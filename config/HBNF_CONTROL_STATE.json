@@ -339,7 +339,7 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
+      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Foundation offline timeout and soak-harness checkpoint",
@@ -681,7 +681,7 @@
     "prelive_evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq39/PRELIVE_PROOF.json",
     "scope": "One exact local clean-room telemetry-only candidate install seq39; exact one-time observer A/B on that changed artifact; sacrificial warm-up; complete all-28 Foundation sweep; hash-bound baseline/frozen policy; same-install >=5400s state-changing soak; seq40 exact Release07 REAL DEVICE/RUNTIME FAILURE recovery only. Host-only failure preserves candidate only with exact identity, health, no restart, renderer restore, and AUX health proof. No R3/R4/Packet20 re-exploration, no new build, no GitHub Actions.",
     "status": "AUTHORIZED__SEQ39_INSTALLED__FOUNDATION_RUN_IN_PROGRESS",
-    "user_authorization": "Current user directive EXPEDITE \u2014 BOUNDED TELEMETRY RANGE FIX ONLY explicitly authorizes next legal seq39 candidate / seq40 exact Release07 real failure recovery after offline gates; seq37 remains TELEMETRY_INSTRUMENTATION, not renderer/root-cause failure.",
+    "user_authorization": "Current user directive EXPEDITE — BOUNDED TELEMETRY RANGE FIX ONLY explicitly authorizes next legal seq39 candidate / seq40 exact Release07 real failure recovery after offline gates; seq37 remains TELEMETRY_INSTRUMENTATION, not renderer/root-cause failure.",
     "closure_reason": null
   },
   "live_mutation_authorized": true,
@@ -709,7 +709,11 @@
       "Observer-effect measurement on exact artifact SHA 6285f1...4338 is already PASS; do not rerun unless artifact/instrumentation changes.",
       "Exact Release07 rollback path is proven; do not re-derive it.",
       "Host-only failures do not consume a recovery install unless actual device/runtime safety evidence fails or becomes unknown.",
-      "Do not rebuild firmware or use GitHub Actions for a host-harness defect."
+      "Do not rebuild firmware or use GitHub Actions for a host-harness defect.",
+      "ANTI_STALL: no open-ended debugging. At 30 minutes without a material milestone, stop the current mechanism at the next safe boundary, preserve evidence, and pivot.",
+      "ANTI_STALL: one retry maximum per failure class, and only with a materially different mechanism supported by new evidence.",
+      "ANTI_STALL: at 60 minutes without lifecycle progress, activate ready offline-safe independent lanes unless the critical lane is inside a required healthy long-running gate.",
+      "ANTI_STALL: do not rebuild firmware or use GitHub Actions for host/transport/harness/telemetry-reader defects unless the existing artifact is invalidated."
     ],
     "parallel_ready_during_foundation_soak": [
       "Mission Control/scoring source reconciliation and host tests",
@@ -794,7 +798,7 @@
   ],
   "lane_execution": {
     "schema": "hbnf-lane-execution-state-v1",
-    "activation_rule": "At clean Foundation soak start, activate every offline-safe core lane. At PHASE2_INTEGRATING all four core lanes must be ACTIVE, DONE, or BLOCKED_WITH_EXACT_DEPENDENCY; no silent idle/queued lanes.",
+    "activation_rule": "Activate every offline-safe core lane at the earlier of: (a) clean Foundation soak start/readiness signal, or (b) 60 minutes without lifecycle progress while no required healthy long-running gate is monopolizing live mutation. live_mutation_limit remains 1; offline-safe work proceeds in parallel.",
     "lanes": {
       "P2_MISSION_CONTROL_SCORING": {
         "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
@@ -835,7 +839,9 @@
       "launch_mode": "FOUR_SEPARATE_WORKER_CONTEXTS",
       "launch_status": "WAITING_FOR_FOUNDATION_SOAK",
       "note": "Do not judge the live Foundation worker for not spawning chats; it is only responsible for signaling readiness and preserving the live lane.",
-      "status_sheet_id": "1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko"
+      "status_sheet_id": "1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko",
+      "anti_stall_policy": "config/HBNF_EXECUTION_BUDGET_POLICY.json",
+      "fallback_activation_event": "60_MINUTES_WITHOUT_LIFECYCLE_PROGRESS_AND_NO_HEALTHY_REQUIRED_LONG_RUNNING_GATE"
     }
   },
   "process_metrics": {
@@ -865,6 +871,17 @@
           "foundation_soak_passed"
         ]
       }
+    ],
+    "execution_budget_policy_enabled": true,
+    "execution_budget_policy_path": "config/HBNF_EXECUTION_BUDGET_POLICY.json",
+    "required_tracking": [
+      "attempt_start_time",
+      "30_minute_checkpoint",
+      "material_milestone_target",
+      "failure_class",
+      "retry_count_for_failure_class",
+      "fallback_mechanism",
+      "pivot_time_if_budget_expires"
     ]
   },
   "observability": {
@@ -884,5 +901,18 @@
     },
     "current_worker": "FOUNDATION_LIVE",
     "note": "Telemetry only; never operational authority. Heartbeats must yield to critical-path work and may be delayed by blocking operations."
+  },
+  "execution_budget_policy": {
+    "schema": "hbnf-execution-budget-policy-binding-v1",
+    "status": "ACTIVE",
+    "authority_file": "config/HBNF_EXECUTION_BUDGET_POLICY.json",
+    "authority_commit": "3d34509f16925e8f3d90fd9b434e82c8d7dbf0de",
+    "user_directive": "IMPLEMENT_IT__NOT_LIP_SERVICE",
+    "effective_date": "2026-10-06",
+    "no_material_milestone_minutes": 30,
+    "no_lifecycle_progress_minutes": 60,
+    "max_retry_per_failure_class": 1,
+    "enforcement": "MANDATORY_FOR_ALL_CURRENT_AND_FUTURE_CART2_WORKERS",
+    "current_seq39": "APPLY_PROSPECTIVELY__DO_NOT_INTERRUPT_HEALTHY_PROGRESS_OR_REQUIRED_90_MIN_SOAK"
   }
 }
