@@ -37,7 +37,44 @@ def validate_model(model):
         if t["from"] not in states or t["to"] not in states: errors.append(t["id"]+": unknown state")
         req=t.get("required_checks",[])
         if not req or len(req)!=len(set(req)): errors.append(t["id"]+": required_checks empty or duplicate")
+    es=model.get("execution_system")
+    if not isinstance(es,dict): return errors+["execution_system missing"]
+    for key in ("authority_contract","evidence_inheritance","failure_domains","change_impact","prelive_offline_first","learning_loop","parallelism","phase2_dag","release_scope"):
+        if key not in es: errors.append("execution_system."+key+" missing")
+    auth=es.get("authority_contract",{})
+    operational=auth.get("operational_lifecycle",[])
+    if operational!=["config/HBNF_CONTROL_MODEL.json","config/HBNF_CONTROL_STATE.json"]:
+        errors.append("operational authority must be exactly control model + control state")
     return errors
+
+def parallelism_status(model,state):
+    pe=model.get("execution_system",{}).get("parallelism",{})
+    core=pe.get("core_lanes",[])
+    lifecycle=state.get("lifecycle_state")
+    required=lifecycle in set(pe.get("required_when",[]))
+    lane_root=state.get("lane_execution",{})
+    lane_state=lane_root.get("lanes",{}) if isinstance(lane_root,dict) else {}
+    allowed=set(pe.get("allowed_lane_status",[]))
+    violations=[]
+    if required:
+        for lane in core:
+            item=lane_state.get(lane)
+            if not isinstance(item,dict):
+                violations.append(lane+": missing lane state")
+                continue
+            st=item.get("status")
+            if st not in allowed:
+                violations.append(lane+": invalid/non-active status "+str(st))
+            if st=="BLOCKED_WITH_EXACT_DEPENDENCY":
+                if not str(item.get("blocker") or "").strip() or not str(item.get("dependency") or "").strip():
+                    violations.append(lane+": blocked state missing blocker/dependency")
+    return {
+      "required":required,
+      "core_lanes":core,
+      "tracked":sorted(lane_state.keys()),
+      "violations":violations,
+      "pass":not violations
+    }
 
 def validate_state(model,state):
     errors=validate_model(model)
@@ -45,6 +82,34 @@ def validate_state(model,state):
     if state.get("lifecycle_state") not in model.get("states",[]): errors.append("unknown lifecycle state")
     for item in state.get("completed_receipts",[]):
         if set(item)!={"transition_id","receipt_sha256","subject"}: errors.append("completed receipt has unexpected fields")
+    cursor=state.get("execution_cursor")
+    if not isinstance(cursor,dict):
+        errors.append("execution_cursor missing")
+    else:
+        if cursor.get("current_lifecycle_state")!=state.get("lifecycle_state"):
+            errors.append("execution_cursor lifecycle does not match state")
+        nt=next_transition(model,state)
+        expected=nt.get("id") if nt else None
+        if cursor.get("current_transition")!=expected:
+            errors.append("execution_cursor transition does not match model")
+    inherited=state.get("inherited_evidence")
+    if not isinstance(inherited,list):
+        errors.append("inherited_evidence missing")
+    else:
+        ids=[]
+        for item in inherited:
+            if not isinstance(item,dict):
+                errors.append("inherited evidence item must be object"); continue
+            eid=item.get("id")
+            if not isinstance(eid,str) or not eid.strip(): errors.append("inherited evidence id missing")
+            else: ids.append(eid)
+            if item.get("status")!="REUSABLE": errors.append(str(eid)+": inherited evidence must be REUSABLE")
+            if not isinstance(item.get("proves"),list) or not item.get("proves"): errors.append(str(eid)+": proves missing")
+            if not isinstance(item.get("invalidators"),list) or not item.get("invalidators"): errors.append(str(eid)+": invalidators missing")
+        if len(ids)!=len(set(ids)): errors.append("duplicate inherited evidence ids")
+    p=parallelism_status(model,state)
+    if p["required"] and not p["pass"]:
+        errors.extend(["parallelism: "+x for x in p["violations"]])
     return errors
 
 def forbidden_evidence_name(model,name):
@@ -73,8 +138,7 @@ def validate_receipt(model,state,receipt):
             errors.append("subject.artifact_sha256 must be SHA-256 hex")
         identity_type=subject.get("source_identity_type")
         allowed=set(c.get("source_identity_types",[]))
-        if identity_type not in allowed:
-            errors.append("subject.source_identity_type is not allowed")
+        if identity_type not in allowed: errors.append("subject.source_identity_type is not allowed")
         identity=str(subject.get("source_identity",""))
         if identity_type=="git_commit" and not re.fullmatch(r"[0-9a-fA-F]{40}",identity):
             errors.append("git source_identity must be 40-hex commit SHA")
@@ -94,8 +158,7 @@ def validate_receipt(model,state,receipt):
             if not isinstance(item,dict) or set(item)!={"name","sha256"}:
                 errors.append("evidence artifact must contain exactly name + sha256"); continue
             name=str(item["name"])
-            if forbidden_evidence_name(model,name):
-                errors.append("forbidden recursive/policy evidence reference: "+name)
+            if forbidden_evidence_name(model,name): errors.append("forbidden recursive/policy evidence reference: "+name)
             if not re.fullmatch(r"[0-9a-fA-F]{64}",str(item["sha256"])):
                 errors.append("invalid evidence artifact sha256: "+name)
     if t.get("human_approval_required"):
@@ -106,32 +169,31 @@ def validate_receipt(model,state,receipt):
             errors.append("explicit user approval required")
     return errors
 
-def parallelism_status(model,state):
-    pe=model.get("execution_system",{}).get("parallelism_enforcement",{})
-    core=pe.get("core_lanes",[])
-    lifecycle=state.get("lifecycle_state")
-    required=lifecycle in set(pe.get("state_contract",{}).get("required_when",[]))
-    lane_state=state.get("lane_execution",{})
-    allowed=set(pe.get("state_contract",{}).get("lane_status_values",[]))
-    violations=[]
-    if required:
-        for lane in core:
-            item=lane_state.get(lane)
-            if not isinstance(item,dict):
-                violations.append(lane+": missing lane_execution state")
-                continue
-            st=item.get("status")
-            if st not in allowed:
-                violations.append(lane+": invalid/non-active status "+str(st))
-            if st=="BLOCKED_WITH_EXACT_DEPENDENCY":
-                if not str(item.get("blocker") or "").strip() or not str(item.get("dependency") or "").strip():
-                    violations.append(lane+": blocked state missing blocker/dependency")
+def impact_for_change(model,change_type):
+    ci=model["execution_system"]["change_impact"]
+    if change_type not in ci:
+        raise ValueError("unknown change type; use one of: "+", ".join(sorted(ci)))
+    item=ci[change_type]
     return {
-      "required":required,
-      "core_lanes":core,
-      "tracked":sorted(lane_state.keys()) if isinstance(lane_state,dict) else [],
-      "violations":violations,
-      "pass":not violations
+      "schema":"hbnf-change-impact-v1",
+      "change_type":change_type,
+      "invalidates":item.get("invalidates"),
+      "required_verification":item.get("required_verification",[]),
+      "foundation_requalification":item.get("foundation_requalification"),
+      "rule":"Run only impact-required verification unless dependency impact is unknown; unknown impact broadens conservatively."
+    }
+
+def failure_policy(model,domain):
+    fd=model["execution_system"]["failure_domains"]
+    if domain not in fd:
+        raise ValueError("unknown failure domain; use one of: "+", ".join(sorted(fd)))
+    item=fd[domain]
+    return {
+      "schema":"hbnf-failure-policy-v1",
+      "domain":domain,
+      "invalidates":item.get("invalidates",[]),
+      "default_action":item.get("default_action"),
+      "rule":"Invalidate only the affected evidence/lane; do not move unrelated lifecycle work backward."
     }
 
 def status(model,state):
@@ -147,6 +209,8 @@ def status(model,state):
       "required_receipt_type":t["receipt_type"] if t else None,
       "live_mutation_authorized":state.get("live_mutation_authorized") is True,
       "phase2_implementation_authorized":state.get("phase2_implementation_authorized") is True,
+      "execution_cursor":state.get("execution_cursor"),
+      "inherited_evidence_ids":[x.get("id") for x in state.get("inherited_evidence",[]) if isinstance(x,dict)],
       "parallelism":parallelism_status(model,state)
     }
 
@@ -162,6 +226,11 @@ def advance(model,state,receipt_path):
     })
     state["lifecycle_state"]=t["to"]
     state["phase2_implementation_authorized"]=(t["to"]=="PHASE2_INTEGRATING")
+    cursor=state.get("execution_cursor")
+    if isinstance(cursor,dict):
+        cursor["current_lifecycle_state"]=state["lifecycle_state"]
+        nt=next_transition(model,state)
+        cursor["current_transition"]=nt["id"] if nt else None
     return state
 
 def main():
@@ -171,14 +240,23 @@ def main():
     sub=ap.add_subparsers(dest="cmd",required=True)
     sub.add_parser("status")
     a=sub.add_parser("advance"); a.add_argument("--receipt",required=True)
+    i=sub.add_parser("impact"); i.add_argument("--change-type",required=True)
+    fp=sub.add_parser("failure"); fp.add_argument("--domain",required=True)
     args=ap.parse_args()
     model=load(args.model); state=load(args.state)
     if args.cmd=="status":
         print(json.dumps(status(model,state),indent=2,sort_keys=True))
         return 0 if not validate_state(model,state) else 2
+    if args.cmd=="impact":
+        if validate_model(model): raise SystemExit("invalid model")
+        print(json.dumps(impact_for_change(model,args.change_type),indent=2,sort_keys=True)); return 0
+    if args.cmd=="failure":
+        if validate_model(model): raise SystemExit("invalid model")
+        print(json.dumps(failure_policy(model,args.domain),indent=2,sort_keys=True)); return 0
     if args.cmd=="advance":
         advance(model,state,args.receipt)
-        if validate_state(model,state): raise SystemExit("refusing to save invalid state")
+        errs=validate_state(model,state)
+        if errs: raise SystemExit("refusing to save invalid state: "+"; ".join(errs))
         save(args.state,state)
         print(json.dumps(status(model,state),indent=2,sort_keys=True))
         return 0
