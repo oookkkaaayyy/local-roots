@@ -235,6 +235,20 @@ def record_failure(model,state,domain,reference,live_attempt=False):
     })
     return policy
 
+def external_parallel_launch_status(model,state):
+    pe=model.get("execution_system",{}).get("parallelism",{})
+    orch=pe.get("orchestration",{})
+    lane_root=state.get("lane_execution",{})
+    state_orch=lane_root.get("orchestration",{}) if isinstance(lane_root,dict) else {}
+    return {
+      "worker_can_spawn_workers": False,
+      "launch_owner": state_orch.get("owner","COORDINATOR_EXTERNAL_TO_LIVE_WORKER"),
+      "activation_event": state_orch.get("activation_event","FOUNDATION_SOAK_RUNNING"),
+      "required_live_worker_signal": state_orch.get("required_live_worker_signal","PARALLEL_LANES_READY"),
+      "launch_status": state_orch.get("launch_status"),
+      "failure_ownership": orch.get("failure_ownership")
+    }
+
 def status(model,state):
     errs=validate_state(model,state)
     t=next_transition(model,state) if not errs else None
@@ -250,7 +264,8 @@ def status(model,state):
       "phase2_implementation_authorized":state.get("phase2_implementation_authorized") is True,
       "execution_cursor":state.get("execution_cursor"),
       "inherited_evidence_ids":[x.get("id") for x in state.get("inherited_evidence",[]) if isinstance(x,dict)],
-      "parallelism":parallelism_status(model,state)
+      "parallelism":parallelism_status(model,state),
+      "external_parallel_launch":external_parallel_launch_status(model,state)
     }
 
 def advance(model,state,receipt_path):
