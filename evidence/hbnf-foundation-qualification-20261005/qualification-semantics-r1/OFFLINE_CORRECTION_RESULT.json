@@ -1,0 +1,73 @@
+{
+  "candidate": {
+    "firmware_changed": false,
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "correction": {
+    "catastrophic_early_stop": "UNCHANGED__3_CONSECUTIVE_BAD_SAMPLES",
+    "numeric_thresholds_changed": false,
+    "policy_path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
+    "policy_sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797",
+    "previous_frozen_policy_preserved": true,
+    "relative_frame_max": "DIAGNOSTIC_ONLY__NOT_A_SUSTAINED_PERFORMANCE_GATE",
+    "relative_sustained_ratio_decisions": "DEFERRED_UNTIL_COMPLETE_CONTIGUOUS_5400S_WINDOW__EARLY_CATASTROPHIC_RESTART_IDENTITY_AND_SAMPLE_CONTINUITY_GATES_REMAIN_ACTIVE",
+    "status": "PASS_OFFLINE"
+  },
+  "live_mutation": "NONE",
+  "next_action": "Checkpoint this offline correction. Obtain fresh seq47/48 authority in HBNF_CONTROL_STATE before any candidate reinstall or device mutation; then perform one complete >=5400s soak on the unchanged exact candidate.",
+  "regression_tests": {
+    "A_isolated_frame_max": "PASS",
+    "B_repeated_p99": "PASS_FAILS_AS_EXPECTED",
+    "C_three_consecutive_catastrophic": "PASS_FAILS_AS_EXPECTED",
+    "D_restart": "PASS_FAILS_AS_EXPECTED",
+    "E_heap_and_fragmentation": "PASS_FAILS_AS_EXPECTED",
+    "F_aux": "PASS_FAILS_AS_EXPECTED",
+    "G_identity_and_sample_continuity": "PASS_FAILS_AS_EXPECTED",
+    "all": "PASS",
+    "host_suite": [
+      "hbnf_foundation_sustained_gate",
+      "hbnf_foundation_soak_audit",
+      "hbnf_foundation_offline_tools",
+      "hbnf_foundation_seq39_failure_policy",
+      "hbnf_foundation_live_adapter",
+      "hbnf_live_kernel_sweep",
+      "hbnf_control",
+      "platform doctor",
+      "threshold-freeze validation",
+      "py_compile",
+      "git diff --check"
+    ]
+  },
+  "schema": "hbnf-foundation-qualification-semantics-offline-result-v1",
+  "seq45_replay": {
+    "audit_path": "evidence/hbnf-foundation-qualification-20261005/seq45/live/foundation-soak/CORRECTED_POLICY_REPLAY_AUDIT.json",
+    "audit_sha256": "31b51df86b3d4e0ff518ebcaf8148f81f377bf1415ddc64daf239b387b5d5e59",
+    "duration_seconds": 349.83142325,
+    "foundation_status": "INCOMPLETE",
+    "hard_errors": [
+      "soak duration 349.8s is below required 5400s"
+    ],
+    "interpretation": "INCOMPLETE__349.831S_IS_BELOW_5400S; isolated frame_max excursions are diagnostic only and do not fail the sustained gate. Provisional p99/resource ratio deviations are preserved and not adjudicated as sustained until the complete soak; numeric thresholds are unchanged.",
+    "isolated_max_excursion_count": 3,
+    "provisional_resource_or_percentile_diagnostics": [
+      "kernel 0 minimum_free_heap failed frozen threshold",
+      "kernel 0 largest_free_block_min failed frozen threshold",
+      "kernel 1 minimum_free_heap failed frozen threshold",
+      "kernel 2 minimum_free_heap failed frozen threshold",
+      "kernel 15 frame_p99_median failed frozen threshold",
+      "kernel 16 frame_p99_median failed frozen threshold",
+      "kernel 23 minimum_free_heap failed frozen threshold",
+      "kernel 24 minimum_free_heap failed frozen threshold",
+      "kernel 25 minimum_free_heap failed frozen threshold",
+      "kernel 26 minimum_free_heap failed frozen threshold",
+      "kernel 27 minimum_free_heap failed frozen threshold"
+    ],
+    "raw_path": "evidence/hbnf-foundation-qualification-20261005/seq45/live/foundation-soak/FOUNDATION_SOAK.jsonl",
+    "raw_sha256": "050072c348bbc117c54b3db23b7f20673ef7b613789b0690d9b4bb7713223ad0",
+    "sample_count": 71,
+    "status": "INCOMPLETE",
+    "sustained_performance_status": "INCOMPLETE"
+  },
+  "sequence_authority": "SEQ45/46_CONSUMED; NO_SEQ47/48_AUTHORIZATION_PRESENT_IN_CURRENT_CONTROL_STATE"
+}

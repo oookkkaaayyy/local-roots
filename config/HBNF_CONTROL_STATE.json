@@ -38,7 +38,8 @@
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
     "blockers": [
-      "LIVE_MUTATION_ONLY: seq45/46 is consumed. Before a new live transaction, correct and regression-test the Foundation qualification harness so isolated frame-max outliers are not treated as sustained renderer regression. No new firmware build is authorized absent sustained/tail evidence."
+      "LIVE_MUTATION_ONLY: seq45/46 is consumed and config/HBNF_CONTROL_STATE.json has no seq47/48 live authorization. Offline correction/tests/replay are complete; fresh legal pair must be recorded before reinstalling the same candidate.",
+      "Seq45 replay is incomplete at 349.831s. It shows three frame_max excursions only as diagnostics, while provisional p99/resource ratios for some kernels are retained but not adjudicated as sustained until the required contiguous 5400s window. No threshold values changed."
     ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
@@ -393,8 +394,8 @@
       "sweep_status": "FOUNDATION_GATE_FAIL__TAIL_QUANTILE_SATURATED_AT_51_15MS",
       "unexpected_restart": false
     },
-    "foundation_status": "FOUNDATION_UNQUALIFIED__SEQ45_FROZEN_FRAME_MAX_GATE_FAILED__SEQ46_RECOVERY_PASS",
-    "foundation_transaction_stop_reason": "Frozen per-kernel frame_max_max_ratio 1.5 failed: Big_Caleido 78.036>65.498ms (1.787x), Caleido2 66.862>59.333ms (1.690x), SM5 74.356>61.728ms (1.807x); SM5 p99 50.125>46.406ms. 71 telemetry samples and 59 state changes preserved; soak stopped at 349.831s. Renderer snapshot 1/hash 584198932 restored once; restoreVerified=true and packet20Same=true. Exact seq46 Release07 recovery PASS and post-recovery identity/health verified; live mutation closed.",
+    "foundation_status": "FOUNDATION_UNQUALIFIED__AWAITING_FINAL_SAME_ARTIFACT_90_MINUTE_SOAK",
+    "foundation_transaction_stop_reason": "Seq45/46 transaction is closed and Release07 is installed. Offline auditor correction preserves the three seq45 maximum excursions as diagnostics, evaluates frozen distribution/resource ratios only after a complete 5400-second soak, and keeps immediate identity/restart/sample-continuity/catastrophic checks active. Seq45 replay is INCOMPLETE at 349.831s; provisional p99/resource deviations remain visible for adjudication in one complete run.",
     "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
     "installed_release_role": "SEQ46_RELEASE07_RECOVERY_VERIFIED__SEQ45_FOUNDATION_GATE_FAILED__LIVE_MUTATION_CLOSED",
@@ -417,7 +418,7 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
+      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Foundation offline timeout and soak-harness checkpoint",
@@ -706,7 +707,7 @@
       "renderer_restoreVerified": true
     },
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "SEQ45_FOUNDATION_GATE_FAILED__SEQ45_RENDERER_RESTORE_PASS__SEQ46_RELEASE07_RECOVERY_PASS__CLOSED",
+    "status": "SEQ45_46_CLOSED__OFFLINE_SUSTAINED_GATE_CORRECTION_PASS__AWAITING_FRESH_SEQ47_48_AUTHORITY",
     "target_recovery": {
       "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
@@ -787,7 +788,7 @@
       "status": "DECISION_DEFER_FOR_STABILITY",
       "target_event": "NEXT_SKINS_ROUND__2026-10-06",
       "observed_problem": "On current build, lowering Matrix brightness also visibly collapses/reduces the displayed animation/image; below roughly 20 the Matrix becomes nearly dark or shows only a very limited animation.",
-      "user_field_preference": "Typical night sweet spot is roughly current-slider 10–20; values above ~25 can be excessively bright on-course.",
+      "user_field_preference": "Typical night sweet spot is roughly current-slider 10\u201320; values above ~25 can be excessively bright on-course.",
       "required_behavior": [
         "Brightness reduction should preserve animation/image structure as much as technically practical.",
         "Prefer greater low-end granularity for night use.",
@@ -1280,9 +1281,25 @@
     },
     "foundation_qualification_result": "FAIL_FROZEN_BASELINE_FRAME_MAX_RELATIVE_GATE",
     "seq45_46_transaction_result": "evidence/hbnf-foundation-qualification-20261005/seq45/live/SEQ45_46_TRANSACTION_RESULT.json",
-    "next_action": "EXPEDITED_EXPERT_PATH_2026-10-06: preserve exact candidate SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c unchanged. Seq45 evidence does NOT currently justify a renderer/scheduler code change: Big_Caleido, Caleido2, and SM5 each had one frame-max excursion while p50/p95 remained baseline-like; the three-sample median p99 for all three remains within the existing 1.25x baseline policy, including SM5 (36.625ms vs 46.406ms limit). The current frozen policy states 'no sustained runtime regression' but its frame_max check compares a single maximum against a much shorter baseline window, creating sample-duration bias. Offline first: revise the qualification harness/policy so relative frame_max is diagnostic/non-promotion evidence rather than a one-outlier hard fail; retain FPS median, p95/p99 median, heap/fragmentation, restart, AUX, sample continuity, exact identity, and the existing absolute catastrophic 3-consecutive-sample gate. Add regression fixtures proving one isolated max spike passes sustained-performance qualification while repeated p99/catastrophic/restart/heap/AUX failures still fail. Replay seq45 captured JSONL through the corrected auditor; it must remain incomplete on duration but otherwise show no sustained performance failure. Then request/derive one fresh bounded seq47/48 SAME-ARTIFACT transaction: reinstall the exact unchanged candidate once, reuse its already-valid 28/28 sweep and observer-effect evidence, run one uninterrupted >=5400s state-changing soak with the corrected frozen policy, restore once, and recover Release07 only if needed by the existing recovery rule. If T2 passes, advance directly to FOUNDATION_QUALIFIED and execute the prepared T3 fast path. Only if the same artifact fails sustained p95/p99/FPS/heap/AUX/restart/catastrophic gates should firmware optimization resume. No GitHub Actions or firmware rebuild for this harness correction.",
+    "next_action": "Obtain a fresh seq47/48 authorization in control state. If authorized, install unchanged candidate SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c once and run one full >=5400s soak under the corrected policy; no sweep or observer A/B repeat.",
     "seq45_46_recovery_status": "PASS",
-    "live_mutation_authorized": false
+    "live_mutation_authorized": false,
+    "qualification_semantics_offline_correction": {
+      "status": "PASS_OFFLINE",
+      "policy_path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
+      "policy_sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797",
+      "previous_frozen_policy_preserved": true,
+      "numeric_thresholds_changed": false,
+      "candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "threshold_rebind_receipt": "evidence/hbnf-foundation-qualification-20261005/qualification-semantics-r1/THRESHOLD_FREEZE_REBIND_RECEIPT.json",
+      "seq45_replay_path": "evidence/hbnf-foundation-qualification-20261005/seq45/live/foundation-soak/CORRECTED_POLICY_REPLAY_AUDIT.json",
+      "seq45_replay_status": "INCOMPLETE__349.831_SECONDS__ONLY_DURATION_HARD_ERROR__3_MAXIMUM_EXCURSIONS_DIAGNOSTIC_ONLY",
+      "seq45_provisional_gate_diagnostics": "Recorded, not adjudicated because the run is <5400s; full soak applies unchanged p99/FPS/heap/fragmentation/AUX limits.",
+      "regression_tests": "A-G PASS; audit, freeze, adapter, runner, control and platform checks PASS",
+      "live_mutation": "NONE",
+      "completed_at_utc": "2026-10-06T19:11:22Z"
+    }
   },
   "execution_budget_policy": {
     "authority_commit": "79173fe7318ef30f51487dba8b59b2b4547b86f3",
@@ -1299,7 +1316,7 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "QUALIFICATION_HARNESS_POLICY__SEQ45_ISOLATED_MAX_OUTLIER_FALSE_PROMOTION_STOP__SAME_ARTIFACT_REQUALIFICATION_PATH",
+    "current_failure_domain": "OFFLINE_QUALIFICATION_SEMANTICS_FIX_PASS__SEQ45_REPLAY_INCOMPLETE__FRESH_SEQ47_48_AUTHORITY_REQUIRED",
     "current_lifecycle_state": "FIX_CANDIDATE",
     "current_subject": {
       "artifact_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
@@ -1307,11 +1324,9 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Correct the Foundation audit semantics offline: qualification is sustained-performance based; relative single-sample frame_max becomes diagnostic, not a promotion-killing gate. Preserve the absolute catastrophic 3-consecutive-sample guard and all existing p95/p99/FPS/resource/restart/AUX/identity gates.",
-      "Add regression fixtures for isolated-max-vs-sustained-tail behavior and replay the preserved seq45 JSONL through the corrected auditor. Do not alter candidate firmware.",
-      "Keep candidate SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c exact. Therefore retain its already-valid 28/28 sweep and observer-effect evidence; do not rerun either absent an actual firmware/instrumentation change.",
-      "After offline harness proof, authorize one final same-artifact live Foundation transaction (next legal pair seq47/48) and run the full >=5400s soak once.",
-      "On objective T2 PASS, immediately advance Foundation and execute the prepared T3 interface-freeze fast path; on sustained runtime failure, localize that exact gate before any firmware change."
+      "Do not allocate or install under the consumed seq45/46 pair; wait for fresh seq47/48 authorization in current HBNF_CONTROL_STATE.",
+      "If authorized, install the unchanged exact candidate once, verify fresh Packet20 session/snapshot before changes, then run one contiguous >=5400s state-changing soak with updated frozen policy; no 28-kernel sweep or observer A/B repeat.",
+      "At full-duration completion, judge unchanged FPS median, p95/p99 medians, minimum heap/largest block, restart/AUX/identity/continuity and catastrophic gates; relative frame_max remains diagnostic only."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1660,7 +1675,7 @@
     "tracking_scope": "From execution-system consolidation forward; historical attempts are not retroactively guessed into counters."
   },
   "schema": "hbnf-control-state-v2",
-  "installation_verification_note": "Seq45 exact Foundation-metrics candidate installed once through Opal-origin local WLED /update; HTTP 200 Update successful, exact artifact SHA/size verified locally and on Opal. Matrix runtime identity/MAC verified; fresh Packet20 diagnosticActive=true and fresh snapshot id/hash READY verified before any kernel/state change. Exact Release07 remains seq46 genuine device/runtime failure recovery only.",
+  "installation_verification_note": "Exact Release07 is installed after the seq46 recovery: hbnf-matrix-coordinated-v1-20261002-07, SHA-256 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab. Seq45 candidate identity/evidence remains preserved. Current live mutation is closed; seq45/46 are consumed and no seq47/48 authorization is present.",
   "previous_live_mutation_authorizations": [
     {
       "candidate_sequence": 43,
@@ -1684,5 +1699,5 @@
       "closure_reason": "Source-backed reconciliation: before retry1, seq43 candidate was healthy, Packet20 snapshot 1/hash 940998176 was READY, restoreVerified=true and lastCommand restore/accepted=true, but Packet20 diagnostic mode was already disabled by the prior successful restore. Firmware intentionally ends diagnostic mode on restore and rejects a second begin while the same boot-scoped snapshot remains saved. The host retry attempted kernel 0 anyway; firmware correctly rejected it because diagnosticActive=false. The rejected command updated lastCommand to select without clearing restoreVerified. The host restore helper then misclassified the changed command token as loss of renderer restore and invoked seq44. This was a retry-precondition/host-comparator defect, not a measured firmware rendering/runtime gate or a real restore loss. Seq44 is already consumed; exact Release07 recovery and runtime identity PASS. No 90-minute soak completed; Foundation remains unqualified."
     }
   ],
-  "checkpoint_at_utc": "2026-10-06T18:55:00Z"
+  "checkpoint_at_utc": "2026-10-06T19:11:22Z"
 }

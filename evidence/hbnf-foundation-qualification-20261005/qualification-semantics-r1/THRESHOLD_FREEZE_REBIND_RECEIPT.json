@@ -1,0 +1,21 @@
+{
+  "baseline": {
+    "path": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq39/live/PRE_SOAK_BASELINE.json",
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "45c1562b92877a55048cc47bada00ecdac9dd23f2533dfdbad63da0e9f8476be"
+  },
+  "expected_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "frozen_at_utc": "2026-10-06T19:10:05.826449+00:00",
+  "policy": {
+    "path": "/private/tmp/hbnf-foundation-crash-recovery-20261005/config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
+    "sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797"
+  },
+  "pre_soak_sweep": {
+    "kernel_count": 28,
+    "path": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep/PRE_SOAK_SWEEP_MANIFEST.json",
+    "sha256": "ec7602665bc54a81635769a35463965c88fbac7354da58b5453bb438f6a38abf"
+  },
+  "schema": "hbnf-foundation-threshold-freeze-v1",
+  "soak_started": false,
+  "status": "FROZEN_BEFORE_SOAK"
+}

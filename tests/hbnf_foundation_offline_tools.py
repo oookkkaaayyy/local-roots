@@ -9,9 +9,11 @@ recovery=load("hbnf_foundation_recovery_audit")
 pack=load("hbnf_foundation_evidence_pack")
 baseline_builder=load("hbnf_foundation_baseline")
 soak_audit=load("hbnf_foundation_soak_audit")
-foundation_policy=json.loads((ROOT/"config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006.json").read_text())
+foundation_policy=json.loads((ROOT/"config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json").read_text())
 assert freeze.validate_policy(foundation_policy)==[]
 assert foundation_policy["catastrophic_early_stop"]["consecutive_samples"]==3
+assert foundation_policy["comparison"]["candidate_vs_baseline"]["frame_max_max_ratio"]==1.5
+assert foundation_policy["qualification_semantics"]["relative_frame_max"]=="DIAGNOSTIC_ONLY__NOT_A_SUSTAINED_PERFORMANCE_GATE"
 
 # The current null template must fail closed instead of inventing thresholds.
 template=json.loads((ROOT/"config/HBNF_RUNTIME_QUALIFICATION_POLICY_TEMPLATE.json").read_text())
@@ -26,6 +28,10 @@ with tempfile.TemporaryDirectory() as td:
     root=pathlib.Path(td);policy=json.loads(json.dumps(template));policy["status"]="FROZEN"
     policy["comparison"]["candidate_vs_baseline"]={k:(0.0 if k=="aux_stale_sample_max_fraction" else 0.9) for k in freeze.RATIOS}
     policy["catastrophic_early_stop"].update(fps_floor_absolute=10,frame_ms_p99_ceiling_absolute=100,aux_projection_active_required=True)
+    policy["qualification_semantics"]={"relative_frame_max":"DIAGNOSTIC_ONLY__NOT_A_SUSTAINED_PERFORMANCE_GATE",
+      "relative_frame_max_max_ratio":policy["comparison"]["candidate_vs_baseline"]["frame_max_max_ratio"],
+      "relative_sustained_gate_timing":"EVALUATE_FROZEN_DISTRIBUTION_AND_RESOURCE_RATIOS_ONLY_AFTER_FULL_CONTIGUOUS_90_MINUTE_WINDOW; BEFORE_THEN_REPORT_PROVISIONAL_METRICS_AND_KEEP_CATASTROPHIC_EARLY_STOPS_ACTIVE",
+      "catastrophic_early_stop":"UNCHANGED__3_CONSECUTIVE_BAD_SAMPLES"}
     baseline={"contract":"foundation","release_id":"candidate","fps":{"median":40},
               "frame_ms":{"p95_median":25,"p99_median":30,"max":40},
               "heap":{"minimum_free_min":90000,"largest_block_end":60000}}

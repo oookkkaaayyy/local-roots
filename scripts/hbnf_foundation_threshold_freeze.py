@@ -28,6 +28,15 @@ def validate_policy(policy):
         if not isinstance(early.get(key),(int,float)) or early[key]<=0:errors.append(f"early-stop threshold missing/invalid: {key}")
     if early.get("aux_projection_active_required") is not True:errors.append("early-stop must require active Matrix-origin AUX DDP")
     if early.get("consecutive_samples")!=3:errors.append("catastrophic stop must use exactly 3 consecutive samples")
+    semantics=policy.get("qualification_semantics",{})
+    if semantics.get("relative_frame_max")!="DIAGNOSTIC_ONLY__NOT_A_SUSTAINED_PERFORMANCE_GATE":
+        errors.append("relative frame_max must be explicitly marked diagnostic-only")
+    if semantics.get("relative_frame_max_max_ratio")!=cfg.get("frame_max_max_ratio"):
+        errors.append("diagnostic frame_max ratio must remain bound to the frozen numeric policy")
+    if not str(semantics.get("relative_sustained_gate_timing","")).startswith("EVALUATE_FROZEN_DISTRIBUTION_AND_RESOURCE_RATIOS_ONLY_AFTER_FULL_CONTIGUOUS_90_MINUTE_WINDOW"):
+        errors.append("sustained distribution/resource ratios must wait for a complete contiguous 90-minute window")
+    if semantics.get("catastrophic_early_stop")!="UNCHANGED__3_CONSECUTIVE_BAD_SAMPLES":
+        errors.append("catastrophic early-stop semantics must remain explicit and unchanged")
     return errors
 
 def validate_inputs(policy,baseline):

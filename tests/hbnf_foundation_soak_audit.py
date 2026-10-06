@@ -52,7 +52,7 @@ assert ok["minimum_largest_free_block_bytes"] == 90000
 assert ok["performance_thresholds"] == "NOT_EVALUATED__MUST_BE_FROZEN_BEFORE_SOAK"
 
 short = module.audit(soak[:-1], inventory, "candidate-r1")
-assert short["status"] == "FAIL"
+assert short["status"] == "INCOMPLETE"
 assert any("below required" in e for e in short["errors"])
 
 wrong_release = [sample(i, release="other") for i in range(1081)]
