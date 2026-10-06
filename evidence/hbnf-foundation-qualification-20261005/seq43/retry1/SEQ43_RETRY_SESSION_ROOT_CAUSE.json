@@ -1,0 +1,85 @@
+{
+  "captured_at_utc": "2026-10-06T17:47:15.787160+00:00",
+  "classification": "HOST_HARNESS_RETRY_PRECONDITION_DEFECT__SEQ44_RECOVERY_WAS_UNNECESSARY_BUT_ALREADY_COMPLETED",
+  "corrected_offline_behavior": "The same-install retry now captures read-only state and validates packet20_diagnostic_active before writing RETRY_STARTED or sending any select/restore command. A closed session fails as REFUSED_WITHOUT_DEVICE_MUTATION. Test fixture uses exact retry1 prelive evidence and checks the firmware source contract.",
+  "device_pre_retry": {
+    "candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "lastCommand": "restore",
+    "lastCommandAccepted": true,
+    "matrix_mac": "704bca5b345c",
+    "packet20_enabled": false,
+    "restoreVerified": true,
+    "snapshot_hash": 940998176,
+    "snapshot_id": 1,
+    "snapshot_state": "READY",
+    "snapshot_valid": true,
+    "telemetry_enabled": false,
+    "uptime_seconds": 2822.0
+  },
+  "evidence_paths": {
+    "firmware_packet20": "firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp",
+    "host_live_adapter": "scripts/hbnf_foundation_live_adapter.py",
+    "host_retry_script": "scripts/hbnf_foundation_seq43_soak_retry.py",
+    "post_restore_failure": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/POST_RESTORE_FAILURE.json",
+    "pre_retry_capture": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/RETRY_PRELIVE_READONLY.json",
+    "retry_offline_test": "tests/hbnf_foundation_seq43_retry_offline.py",
+    "retry_result": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/RETRY_RESULT.json",
+    "seq44_ota_receipt": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/seq44-opal-ota-response.txt",
+    "seq44_post_recovery_readonly": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ44_POST_RECOVERY_READONLY.json",
+    "session_regression_test": "tests/hbnf_foundation_seq43_retry_session.py",
+    "state_change_failure": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/STATE_CHANGER_FAILURE.json"
+  },
+  "evidence_sha256": {
+    "firmware_packet20": "31126d341bf0a3e54a33d87de0856c5f68e79f20dd05653ae1d5df3270a9bc9d",
+    "host_live_adapter": "e0ed4994021efadb8d9e8ed2ebc4fc879591a1ae75fc3af051a35090204dca5b",
+    "host_retry_script": "08e539fc7a3482bb3c2d1b60132f7e51d5cb2ec3e896d3d99b970a3f1342415e",
+    "post_restore_failure": "a3cfbb9bd460ff2023296a788a5f11d4c6d7c42d0044e24c6133d5d47c3e2411",
+    "pre_retry_capture": "b9fd8b4c37f8ac008778a480208cc9f44a629d88276804a2ba40263e8ae23535",
+    "retry_offline_test": "737d301423010281ca045d608c3a214556bb874f9851f8c7d3bfb17e2b7692d5",
+    "retry_result": "3022489b95d9d1a2c10ce1a17a599da5f8e3262c38cb88170391189da506b785",
+    "seq44_ota_receipt": "d4f42350ad1e3d48fb56b1729e57d85889248b4fe8b65839ca1604c16defa440",
+    "seq44_post_recovery_readonly": "e666b3739ecba0fef756f6d808b2b2d86f9dcb03f52b5505c4c479a3ae269927",
+    "session_regression_test": "7c197c9afadb21bbf62c043254a86f43fa91b559c16f014d86ec5c6a592033f1",
+    "state_change_failure": "b72e60dfe0cf35bee108d66a0c2b4ad7242af098c31f57f29cfd9399f11e8bd7"
+  },
+  "failure": {
+    "elapsed_seconds": 0.33496225,
+    "error": "RuntimeError: state-change command failed rc=2: foundation adapter error: RuntimeError: packet20-kernel-select-rejected\n",
+    "kernel_id": 0,
+    "kernel_name": "Complex_Kaleido_3",
+    "post_restore_error": "RuntimeError: packet20-restore-command-identity-mismatch",
+    "seq44_artifact_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "seq44_consumed": true,
+    "seq44_release": "hbnf-matrix-coordinated-v1-20261002-07",
+    "seq44_result": "RELEASE07_RECOVERY_PASS"
+  },
+  "offline_tests": [
+    "python3 tests/hbnf_foundation_seq43_retry_session.py PASS",
+    "python3 tests/hbnf_foundation_seq43_retry_offline.py PASS (consumed sequence pair fails closed)",
+    "python3 tests/hbnf_foundation_parallel_telemetry.py PASS",
+    "python3 tests/hbnf_foundation_live_adapter.py PASS",
+    "python3 -m py_compile relevant host scripts/tests PASS",
+    "git diff --check PASS"
+  ],
+  "recovery_state": {
+    "artifact_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "aux_native_ddp_live": true,
+    "captured_at_utc": "2026-10-06T17:35:18.845035+00:00",
+    "matrix_mac": "704bca5b345c",
+    "post_recovery_identity_status": "PASS",
+    "release": "hbnf-matrix-coordinated-v1-20261002-07"
+  },
+  "safety": "No further live mutation, seq45/46 allocation, firmware build, or GitHub Actions is performed. Seq43/44 pair is consumed and control authority is closed. Foundation remains UNQUALIFIED because the 90-minute T2 soak did not run.",
+  "schema": "hbnf-seq43-retry-precondition-root-cause-v1",
+  "source_proof": [
+    "firmware runtime diagnosticEndAfterRestore sets diagnosticMode_=false",
+    "packet20Restore invokes diagnosticEndAfterRestore after copying the saved runtime",
+    "packet20Command begin rejects when packet20SavedValid is already true, so this boot-scoped snapshot cannot begin another diagnostic session",
+    "packet20Command rejects select when runtime.diagnosticActive() is false; kernel 0 is within the 0..27 retained kernel range",
+    "packet20LastCommand and packet20LastCommandAccepted are overwritten before packet20Command returns false",
+    "packet20RestoreVerified=false occurs only after a successful diagnostic begin/select or accepted restore queue; rejected select returns before that assignment",
+    "host _restore_snapshot skips a restore POST when restoreVerified is true but still requires lastCommand == restore; the rejected select changed lastCommand and caused packet20-restore-command-identity-mismatch"
+  ],
+  "summary": "The same-install retry attempted to use Packet20 after the prior successful snapshot restore had deliberately closed firmware diagnostic mode. The first kernel select was therefore correctly rejected. The failed select overwrote lastCommand; the host restore comparator then treated that command receipt change as lost renderer-restore proof even though the pre-retry snapshot was restoreVerified and the firmware rejection path does not clear restoreVerified or mutate renderer state. The controller consequently invoked seq44. No actual renderer/kernel mutation or >=1000ms frame is proven for retry1."
+}

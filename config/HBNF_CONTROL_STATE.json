@@ -38,7 +38,7 @@
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
     "blockers": [
-      "Seq43 candidate remained safe after the initial host-only timeout and the one offline-proven same-install retry began under a fresh prelive PASS. The retry state changer rejected the first kernel selection (Complex_Kaleido_3: packet20-kernel-select-rejected); the subsequent exact snapshot restore command returned packet20-restore-command-identity-mismatch, so exact restore/safety could not be proven. The retry controller therefore consumed the authorized seq44 recovery. Seq44 uploaded the exact 1,458,624-byte Release07 BIN after remote hash verification; recovery returned PASS for SHA-256 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab. Post-recovery read-only Matrix identity is Release07 on MAC 70:4b:ca:5b:34:5c, uptime 68s at capture; AUX is present and reports native DDP live from Matrix. No >=1000ms frame was recorded; no pre-recovery unexpected reboot is asserted. Foundation remains unqualified and seq43/44 authority is consumed."
+      "Source-backed reconciliation: before retry1, seq43 candidate was healthy, Packet20 snapshot 1/hash 940998176 was READY, restoreVerified=true and lastCommand restore/accepted=true, but Packet20 diagnostic mode was already disabled by the prior successful restore. Firmware intentionally ends diagnostic mode on restore and rejects a second begin while the same boot-scoped snapshot remains saved. The host retry attempted kernel 0 anyway; firmware correctly rejected it because diagnosticActive=false. The rejected command updated lastCommand to select without clearing restoreVerified. The host restore helper then misclassified the changed command token as loss of renderer restore and invoked seq44. This was a retry-precondition/host-comparator defect, not a measured firmware rendering/runtime gate or a real restore loss. Seq44 is already consumed; exact Release07 recovery and runtime identity PASS. No 90-minute soak completed; Foundation remains unqualified."
     ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
@@ -393,8 +393,8 @@
       "sweep_status": "FOUNDATION_GATE_FAIL__TAIL_QUANTILE_SATURATED_AT_51_15MS",
       "unexpected_restart": false
     },
-    "foundation_status": "FOUNDATION_UNQUALIFIED__SEQ43_RETRY_DEVICE_RUNTIME_OR_RESTORE_CONTRACT_FAILURE__SEQ44_RECOVERY_PASS",
-    "foundation_transaction_stop_reason": "Seq43 candidate remained safe after the initial host-only timeout and the one offline-proven same-install retry began under a fresh prelive PASS. The retry state changer rejected the first kernel selection (Complex_Kaleido_3: packet20-kernel-select-rejected); the subsequent exact snapshot restore command returned packet20-restore-command-identity-mismatch, so exact restore/safety could not be proven. The retry controller therefore consumed the authorized seq44 recovery. Seq44 uploaded the exact 1,458,624-byte Release07 BIN after remote hash verification; recovery returned PASS for SHA-256 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab. Post-recovery read-only Matrix identity is Release07 on MAC 70:4b:ca:5b:34:5c, uptime 68s at capture; AUX is present and reports native DDP live from Matrix. No >=1000ms frame was recorded; no pre-recovery unexpected reboot is asserted. Foundation remains unqualified and seq43/44 authority is consumed.",
+    "foundation_status": "FOUNDATION_UNQUALIFIED__SOAK_NOT_COMPLETED__SEQ43_RETRY_HOST_PRECONDITION_DEFECT__SEQ44_RELEASE07_RECOVERED",
+    "foundation_transaction_stop_reason": "Source-backed reconciliation: before retry1, seq43 candidate was healthy, Packet20 snapshot 1/hash 940998176 was READY, restoreVerified=true and lastCommand restore/accepted=true, but Packet20 diagnostic mode was already disabled by the prior successful restore. Firmware intentionally ends diagnostic mode on restore and rejects a second begin while the same boot-scoped snapshot remains saved. The host retry attempted kernel 0 anyway; firmware correctly rejected it because diagnosticActive=false. The rejected command updated lastCommand to select without clearing restoreVerified. The host restore helper then misclassified the changed command token as loss of renderer restore and invoked seq44. This was a retry-precondition/host-comparator defect, not a measured firmware rendering/runtime gate or a real restore loss. Seq44 is already consumed; exact Release07 recovery and runtime identity PASS. No 90-minute soak completed; Foundation remains unqualified.",
     "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
     "installed_release_role": "RELEASE07_RUNTIME_IDENTITY_VERIFIED_AFTER_SEQ44_EXACT_RECOVERY",
@@ -407,7 +407,10 @@
       "method": "one exact Opal-origin WLED local /update upload after remote exact SHA/size verification",
       "result": "PASS__RELEASE07_RUNTIME_IDENTITY_VERIFIED",
       "evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/",
-      "post_recovery_readonly": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ44_POST_RECOVERY_READONLY.json"
+      "post_recovery_readonly": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ44_POST_RECOVERY_READONLY.json",
+      "classification": "SEQ44_RECOVERY_COMPLETED_PASS__TRIGGERED_BY_HOST_FALSE_NEGATIVE_AFTER_RETRY_PRECONDITION_DEFECT__EXACT_RELEASE07_IS_INSTALLED",
+      "root_cause_evidence": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ43_RETRY_SESSION_ROOT_CAUSE.json",
+      "root_cause_sha256": "95c9d342b701badf643727cc912ca898c31b11a1454e84728160d5bbd952cd7f"
     },
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
@@ -701,7 +704,7 @@
       "renderer_restoreVerified": true
     },
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "FOUNDATION_UNQUALIFIED__SEQ43_RETRY_FAILED__SEQ44_RECOVERED__LIVE_MUTATION_CLOSED",
+    "status": "FOUNDATION_UNQUALIFIED__SEQ44_RELEASE07_RECOVERED__LIVE_MUTATION_CLOSED",
     "target_recovery": {
       "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
@@ -845,7 +848,7 @@
       "transaction_result": "evidence/hbnf-foundation-qualification-20261005/seq41/live/TRANSACTION_RESULT.json"
     },
     "execution_cursor": {
-      "current_failure_domain": "SEQ43_RETRY_KERNEL_SELECT_AND_RESTORE_CONTRACT_FAILURE__SEQ44_RELEASE07_RECOVERY_PASS__MUTATION_CLOSED",
+      "current_failure_domain": "SEQ43_RETRY_HOST_PRECONDITION_DEFECT__SEQ44_RECOVERY_PASS__LIVE_MUTATION_CLOSED",
       "current_lifecycle_state": "FIX_CANDIDATE",
       "current_subject": {
         "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
@@ -853,10 +856,10 @@
       },
       "current_transition": "T2_FOUNDATION_QUALIFY",
       "exact_next_path": [
-        "Seq43 and seq44 authority is consumed. Release07 exact recovery has returned HTTP 200 UPDATE_OK; read-only runtime identity confirms Release07 and Matrix/AUX endpoints are healthy. Live mutation is closed.",
-        "Preserve exact seq43 retry failure, failed restore acknowledgement, seq44 OTA receipt and post-recovery read-only evidence. Foundation remains unqualified.",
-        "Continue only offline-safe Cart 2.0 staging under current scope; do not begin another Foundation transaction or deploy Phase 2 assets without fresh authority and passing lifecycle gates.",
-        "Skins brightness remains explicitly deferred for stability."
+        "No further seq43 retry or seq45/46 mutation is authorized. Exact Release07 is installed and verified after seq44; preserve the host-precondition false-negative as the final classification.",
+        "Continue offline-safe Cart 2.0 Skins field-readiness staging under current T2/T3 authority. Do not deploy Phase 2 assets or alter hardware while lifecycle gates remain false.",
+        "Foundation remains UNQUALIFIED because the >=90-minute state-changing soak and full T2 closure did not complete; obtain fresh sequence/control authority before another Foundation live transaction.",
+        "Brightness remains deferred for stability."
       ],
       "no_repeat": [
         "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -924,7 +927,7 @@
         "seq41 preserved samples: zero restart, frame max <=53.915ms, p99 <=44.375ms before host gap",
         "source-bound restore comparator correction regression-tested offline"
       ],
-      "reason": "Seq43 first same-install soak stopped after 74 clean samples because the serialized host telemetry child exceeded its 12s deadline. Device gates and restore remained clean; exact candidate stays installed. A materially different concurrent single-shot reader and a fresh read-only prelive pass now support the one authorized same-install retry.",
+      "reason": "Source-backed reconciliation: before retry1, seq43 candidate was healthy, Packet20 snapshot 1/hash 940998176 was READY, restoreVerified=true and lastCommand restore/accepted=true, but Packet20 diagnostic mode was already disabled by the prior successful restore. Firmware intentionally ends diagnostic mode on restore and rejects a second begin while the same boot-scoped snapshot remains saved. The host retry attempted kernel 0 anyway; firmware correctly rejected it because diagnosticActive=false. The rejected command updated lastCommand to select without clearing restoreVerified. The host restore helper then misclassified the changed command token as loss of renderer restore and invoked seq44. This was a retry-precondition/host-comparator defect, not a measured firmware rendering/runtime gate or a real restore loss. Seq44 is already consumed; exact Release07 recovery and runtime identity PASS. No 90-minute soak completed; Foundation remains unqualified.",
       "required_new_evidence": [
         "parallel single-shot telemetry reader and bounded timeout/failure localization tests PASS offline",
         "same-install retry dry run binds exact seq43 retained candidate and reused boot-scoped snapshot",
@@ -934,7 +937,7 @@
       "retry_does_not_reinstall": true,
       "retry_limit": 1,
       "schema": "hbnf-foundation-retry-v1",
-      "status": "SAME_INSTALL_RETRY_CONSUMED__SEQ44_RELEASE07_RECOVERY_PASS__FOUNDATION_UNQUALIFIED",
+      "status": "ONE_RETRY_USED__HOST_PRECONDITION_DEFECT__SEQ44_CONSUMED__RELEASE07_VERIFIED",
       "fresh_prelive": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/PRE_RETRY_READONLY.json",
       "fresh_prelive_sha256": "f54ea732e1f07b9d806cbc3e733e5336aa8d9552d579d68bf2608c100fe9f0c4",
       "retry_used": true,
@@ -955,7 +958,9 @@
       },
       "post_recovery_readonly": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ44_POST_RECOVERY_READONLY.json",
       "post_recovery_identity_status": "PASS",
-      "no_further_seq43_retry_authorized": true
+      "no_further_seq43_retry_authorized": true,
+      "root_cause_evidence": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ43_RETRY_SESSION_ROOT_CAUSE.json",
+      "root_cause_sha256": "95c9d342b701badf643727cc912ca898c31b11a1454e84728160d5bbd952cd7f"
     },
     "post_foundation_continuation": {
       "status": "CONDITIONALLY_PREAUTHORIZED_BY_USER_DIRECTIVE",
@@ -989,7 +994,7 @@
       "host_timeout_root_cause": "The telemetry adapter serialized five HTTP GET operations under a 12s child-process budget; the slow endpoint was not individually identifiable in the first attempt. The five endpoints are now polled concurrently, single-shot, with 4s request deadlines, 5.5s batch deadline, and 7s enclosing child deadline.",
       "implementation_commit": "7b8420663e309504accd4f67135f1bf4b4b30349",
       "inherited_evidence": "seq39 28/28 sweep, observer-effect, hash-bound baseline and frozen policy; no repeat",
-      "live_status": "SEQ44_EXACT_RELEASE07_RECOVERED__FOUNDATION_UNQUALIFIED__LIVE_MUTATION_CLOSED",
+      "live_status": "RELEASE07_VERIFIED__PAIR_CONSUMED__NO_LIVE_MUTATION_AUTHORIZED",
       "offline_proof": "evidence/hbnf-foundation-qualification-20261005/seq43/offline/HOST_SAMPLER_REGRESSION.json",
       "recovery_sequence": 44,
       "recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
@@ -1003,7 +1008,7 @@
         "retry_limit": 1,
         "script": "scripts/hbnf_foundation_seq43_soak_retry.py",
         "snapshot_reuse": "existing seq43 boot-scoped snapshot 1/hash 940998176",
-        "status": "ONE_AUTHORIZED_RETRY_CONSUMED__DEVICE_RUNTIME_OR_RESTORE_SAFETY_FAILURE__SEQ44_RECOVERY_PASS",
+        "status": "ONE_RETRY_ATTEMPT_CONSUMED__HOST_PRECONDITION_DEFECT__SEQ44_ALREADY_RECOVERED",
         "telemetry": "parallel five-endpoint one-shot sampler; per-request timeout 4s; batch 5.5s; sampler process timeout 7s",
         "host_sampler_commit": "7b8420663e309504accd4f67135f1bf4b4b30349",
         "no_further_retry_authorized": true,
@@ -1020,7 +1025,13 @@
           "POST_RESTORE_FAILURE.json": "a3cfbb9bd460ff2023296a788a5f11d4c6d7c42d0044e24c6133d5d47c3e2411",
           "seq44-opal-copy-receipt.json": "d72ed61041b3d6cf44a82487852afebf2f82b51239436f1b1bb7eb278ffa5363",
           "SEQ44_POST_RECOVERY_READONLY.json": "e666b3739ecba0fef756f6d808b2b2d86f9dcb03f52b5505c4c479a3ae269927"
-        }
+        },
+        "host_failure_class": "SAME_BOOT_PACKET20_DIAGNOSTIC_SESSION_CLOSED_AFTER_RESTORE",
+        "renderer_restore_proven_before_retry": true,
+        "firmware_gate_failure_proven": false,
+        "seq44_consumed_by_host_false_negative": true,
+        "root_cause_evidence": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ43_RETRY_SESSION_ROOT_CAUSE.json",
+        "root_cause_sha256": "95c9d342b701badf643727cc912ca898c31b11a1454e84728160d5bbd952cd7f"
       },
       "simulation": "24.114-second state-change stall; 56 samples; final measured max sample gap 1.023 seconds; parallel-ready signal asserted after three valid persisted samples; no device/network access",
       "soak": {
@@ -1033,27 +1044,28 @@
         "parallel_ready_evidence": "evidence/hbnf-foundation-qualification-20261005/seq43/live/PARALLEL_LANES_READY.json",
         "parallel_ready_sha256": "70e56d737e1687dcc410a8ba07452f783de9649c053ed95f6731fd124909c519",
         "parallel_ready_signal": "PARALLEL_LANES_READY",
-        "renderer_restore": "FAILED__packet20-restore-command-identity-mismatch",
+        "renderer_restore": "PRE_RETRY_SNAPSHOT_RESTOREVERIFIED_TRUE__NO_NEW_RESTORE_NEEDED_BEFORE_FAILED_KERNEL_SELECT",
         "requested_duration_seconds": 5400,
-        "sample_count": 1,
+        "sample_count": 0,
         "sample_period_seconds": 5,
         "sampler_timeout_seconds": 12,
         "selection_period_seconds": 8,
         "selection_timeout_seconds": 30,
         "started_at_unix": 1791305171.0970528,
         "state_changes": "evidence/hbnf-foundation-qualification-20261005/seq43/live/FOUNDATION_STATE_CHANGES.jsonl",
-        "status": "RETRY_STOPPED_ON_DEVICE_RUNTIME_OR_RESTORE_CONTRACT_FAILURE",
+        "status": "NOT_STARTED__RETRY_STATE_CHANGER_REFUSED_BEFORE_ANY_KERNEL_MUTATION",
         "unexpected_restart_observed": false,
         "host_gap_max_seconds": 11.417885459,
-        "recovery_sequence_consumed": true
+        "recovery_sequence_consumed": true,
+        "root_cause_evidence": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ43_RETRY_SESSION_ROOT_CAUSE.json"
       },
-      "status": "SEQ43_DEVICE_RUNTIME_OR_RESTORE_CONTRACT_FAILURE__SEQ44_RELEASE07_RECOVERY_PASS",
+      "status": "SEQ43_RETRY_PRECONDITION_DEFECT__SEQ44_RELEASE07_RECOVERY_PASS__FOUNDATION_UNQUALIFIED",
       "transaction_script": "scripts/hbnf_foundation_seq43_transaction.py",
       "retry_offline_proof": "evidence/hbnf-foundation-qualification-20261005/seq43/offline/HOST_TELEMETRY_PARALLEL_POLL_REGRESSION.json",
       "retry_prelive": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/PRE_RETRY_READONLY.json",
       "last_updated": "2026-10-06T17:28:00Z",
       "retry1": {
-        "status": "STOPPED_DEVICE_RUNTIME_OR_RESTORE_CONTRACT_FAILURE__SEQ44_RECOVERY_PASS",
+        "status": "HOST_RETRY_PRECONDITION_DEFECT__SEQ44_RECOVERY_ALREADY_COMPLETED",
         "attempted_at_utc": "2026-10-06T17:35:18.845035+00:00",
         "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
         "kernel_select_failure": "packet20-kernel-select-rejected on first selection Complex_Kaleido_3",
@@ -1067,11 +1079,22 @@
           "seq44-opal-copy-receipt.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/seq44-opal-copy-receipt.json",
           "SEQ44_POST_RECOVERY_READONLY.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ44_POST_RECOVERY_READONLY.json"
         },
-        "post_recovery_readonly_status": "PASS"
-      }
+        "post_recovery_readonly_status": "PASS",
+        "failure_class": "HOST_HARNESS__SAME_BOOT_PACKET20_SESSION_CLOSED",
+        "firmware_gate_failure_proven": false,
+        "renderer_restore_loss_proven": false,
+        "pre_retry_restore_verified": true,
+        "pre_retry_diagnostic_active": false,
+        "seq44_recovery_was_required": "NO__HOST_FALSE_NEGATIVE__ALREADY_EXECUTED",
+        "root_cause_evidence": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ43_RETRY_SESSION_ROOT_CAUSE.json",
+        "root_cause_sha256": "95c9d342b701badf643727cc912ca898c31b11a1454e84728160d5bbd952cd7f",
+        "no_further_retry_authorized": true
+      },
+      "host_retry_root_cause_evidence": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ43_RETRY_SESSION_ROOT_CAUSE.json",
+      "host_retry_root_cause_sha256": "95c9d342b701badf643727cc912ca898c31b11a1454e84728160d5bbd952cd7f"
     },
     "external_parallel_launch": {
-      "launch_status": "PARALLEL_READY_SIGNAL_PRESERVED__SOAK_ABORTED_ON_DEVICE_OR_RESTORE_CONTRACT_FAILURE__SEQ44_RECOVERY_PASS",
+      "launch_status": "PARALLEL_READY_SIGNAL_PRESERVED__SOAK_DID_NOT_START__SEQ44_RECOVERY_COMPLETE__OFFLINE_LANES_ONLY",
       "signal_evidence": "evidence/hbnf-foundation-qualification-20261005/seq43/live/PARALLEL_LANES_READY.json",
       "signal_sha256": "70e56d737e1687dcc410a8ba07452f783de9649c053ed95f6731fd124909c519"
     },
@@ -1119,7 +1142,10 @@
         "aux_native_ddp_live": true,
         "aux_native_ddp_source": "192.168.77.10",
         "uptime_seconds": 68
-      }
+      },
+      "consumption_classification": "SEQ44_RECOVERY_COMPLETED_PASS__TRIGGERED_BY_HOST_FALSE_NEGATIVE_AFTER_RETRY_PRECONDITION_DEFECT__EXACT_RELEASE07_IS_INSTALLED",
+      "root_cause_evidence": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ43_RETRY_SESSION_ROOT_CAUSE.json",
+      "root_cause_sha256": "95c9d342b701badf643727cc912ca898c31b11a1454e84728160d5bbd952cd7f"
     },
     "recovery_history": [
       {
@@ -1132,7 +1158,7 @@
         "signature_sha256": "d197c58e21010f3a1eec09d47e8e5abc452246355a6ad4f36f40c16b93c98be3"
       }
     ],
-    "checkpoint_at_utc": "2026-10-06T17:37:12.557266+00:00"
+    "checkpoint_at_utc": "2026-10-06T17:47:51.563374+00:00"
   },
   "execution_budget_policy": {
     "authority_commit": "79173fe7318ef30f51487dba8b59b2b4547b86f3",
@@ -1149,7 +1175,7 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "SEQ43_RETRY_KERNEL_SELECT_AND_RESTORE_CONTRACT_FAILURE__SEQ44_RELEASE07_RECOVERY_PASS__MUTATION_CLOSED",
+    "current_failure_domain": "SEQ43_RETRY_HOST_PRECONDITION_DEFECT__SEQ44_RECOVERY_PASS__LIVE_MUTATION_CLOSED",
     "current_lifecycle_state": "FIX_CANDIDATE",
     "current_subject": {
       "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
@@ -1157,10 +1183,10 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Seq43 and seq44 authority is consumed. Release07 exact recovery has returned HTTP 200 UPDATE_OK; read-only runtime identity confirms Release07 and Matrix/AUX endpoints are healthy. Live mutation is closed.",
-      "Preserve exact seq43 retry failure, failed restore acknowledgement, seq44 OTA receipt and post-recovery read-only evidence. Foundation remains unqualified.",
-      "Continue only offline-safe Cart 2.0 staging under current scope; do not begin another Foundation transaction or deploy Phase 2 assets without fresh authority and passing lifecycle gates.",
-      "Skins brightness remains explicitly deferred for stability."
+      "No further seq43 retry or seq45/46 mutation is authorized. Exact Release07 is installed and verified after seq44; preserve the host-precondition false-negative as the final classification.",
+      "Continue offline-safe Cart 2.0 Skins field-readiness staging under current T2/T3 authority. Do not deploy Phase 2 assets or alter hardware while lifecycle gates remain false.",
+      "Foundation remains UNQUALIFIED because the >=90-minute state-changing soak and full T2 closure did not complete; obtain fresh sequence/control authority before another Foundation live transaction.",
+      "Brightness remains deferred for stability."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1377,7 +1403,7 @@
   "live_mutation_authorization": {
     "candidate_sequence": 43,
     "recovery_sequence": 44,
-    "status": "CONSUMED__SEQ43_ATTEMPT__SEQ44_RELEASE07_RECOVERY_COMPLETED",
+    "status": "CONSUMED__SEQ43_RETRY_ATTEMPTED__SEQ44_RELEASE07_RECOVERY_COMPLETED",
     "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
@@ -1393,7 +1419,7 @@
     ],
     "recovery_rule": "SEQ44_RELEASE07_ONLY_FOR_GENUINE_DEVICE_RUNTIME_FOUNDATION_FAILURE_OR_LOST_SAFETY_PROOF__HOST_ONLY_FAILURE_PRESERVES_SEQ43",
     "live_mutation_limit": 1,
-    "closure_reason": "The one user-authorized same-install retry encountered packet20-kernel-select-rejected, followed by packet20-restore-command-identity-mismatch. Exact restore proof was lost, so seq44 exact Release07 recovery was consumed and verified. No further live mutation is authorized by this pair."
+    "closure_reason": "Source-backed reconciliation: before retry1, seq43 candidate was healthy, Packet20 snapshot 1/hash 940998176 was READY, restoreVerified=true and lastCommand restore/accepted=true, but Packet20 diagnostic mode was already disabled by the prior successful restore. Firmware intentionally ends diagnostic mode on restore and rejects a second begin while the same boot-scoped snapshot remains saved. The host retry attempted kernel 0 anyway; firmware correctly rejected it because diagnosticActive=false. The rejected command updated lastCommand to select without clearing restoreVerified. The host restore helper then misclassified the changed command token as loss of renderer restore and invoked seq44. This was a retry-precondition/host-comparator defect, not a measured firmware rendering/runtime gate or a real restore loss. Seq44 is already consumed; exact Release07 recovery and runtime identity PASS. No 90-minute soak completed; Foundation remains unqualified."
   },
   "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",

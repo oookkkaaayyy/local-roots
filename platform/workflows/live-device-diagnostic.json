@@ -25,7 +25,8 @@
     "tests/hbnf_foundation_seq39_failure_policy.py",
     "scripts/hbnf_foundation_seq43_soak_retry.py",
     "tests/hbnf_foundation_parallel_telemetry.py",
-    "tests/hbnf_foundation_seq43_retry_offline.py"
+    "tests/hbnf_foundation_seq43_retry_offline.py",
+    "tests/hbnf_foundation_seq43_retry_session.py"
   ],
   "prelive_contract": {
     "closure_stage_id": "contract-closure",

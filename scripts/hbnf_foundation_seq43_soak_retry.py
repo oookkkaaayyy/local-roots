@@ -46,7 +46,28 @@ def read_only_capture(out):
             "release_id":build.get("release_id"),"matrix_mac":info.get("mac"),
             "aux_ddp_live":True,"snapshot_id":p20.get("snapshotId"),"snapshot_hash":p20.get("snapshotHash"),
             "snapshot_valid":True,"packet20_restore_verified":p20.get("restoreVerified") is True,
+            "packet20_diagnostic_active":p20.get("enabled") is True,
+            "packet20_last_command":p20.get("lastCommand"),
+            "packet20_last_command_accepted":p20.get("lastCommandAccepted") is True,
             "telemetry_enabled":h.get("foundationTelemetry",{}).get("enabled") is True}
+
+def validate_retry_session(current, prior, snapshot):
+    """Fail before the soak if the boot-scoped diagnostic session was closed.
+
+    Firmware deliberately ends Packet20 diagnostic mode when restoring the saved
+    renderer state, and does not allow a second begin while that boot's snapshot
+    remains saved. A same-boot retry cannot select kernels from that state.
+    """
+    if current.get("release_id")!=CANDIDATE or current.get("matrix_mac","").replace(":","").lower()!=adapter.MAC:
+        raise RuntimeError("retained-seq43-candidate-runtime-identity-lost")
+    if current.get("uptime_seconds",0)<prior.get("prior_last_uptime_seconds",0):
+        raise RuntimeError("candidate-uptime-regressed-since-last-clean-sample")
+    if int(current.get("snapshot_id",-1))!=int(snapshot.get("snapshotId",-2)) or int(current.get("snapshot_hash",-1))!=int(snapshot.get("snapshotHash",-2)):
+        raise RuntimeError("current-device-snapshot-identity-changed")
+    if current.get("telemetry_enabled"):
+        raise RuntimeError("foundation-telemetry-mode-not-clean-after-prior-restore")
+    if not current.get("packet20_diagnostic_active"):
+        raise RuntimeError("same-install-retry-refused-before-start-packet20-diagnostic-session-closed")
 
 def verify_local_checkpoint(a):
     root=pathlib.Path(a.prior_live).resolve()
@@ -105,23 +126,24 @@ def main():
              "duration_seconds":5400,"reuse_snapshot":True})
         print(json.dumps({"status":"DRY_RUN_PASS","firmware_install":"NONE","sequence_allocation":"NONE","prior":prior},indent=2));return 0
     if (out/"RETRY_STARTED.json").exists():raise RuntimeError("same-install retry already started; do not repeat")
+    snapshot=json.loads((pathlib.Path(a.prior_live)/"PRE_SWEEP_STATE.json").read_text())
+    current=read_only_capture(out)
+    save(out/"RETRY_PRESTART_READONLY.json",current)
+    try:
+        validate_retry_session(current,prior,snapshot)
+    except RuntimeError as exc:
+        save(out/"RETRY_REFUSED_PRESTART.json",{"schema":"hbnf-seq43-retry-prestart-v1","status":"REFUSED_WITHOUT_DEVICE_MUTATION","error":str(exc),"candidate":CANDIDATE,"candidate_sha256":CANDIDATE_SHA,"snapshot_id":snapshot.get("snapshotId"),"snapshot_hash":snapshot.get("snapshotHash"),"current_read_only":current})
+        raise
     plan={"schema":"hbnf-seq43-same-install-soak-retry-v1","status":"STARTED","started_at_unix":time.time(),
           "firmware_install":"NONE","sequence_allocation":"NONE","candidate":CANDIDATE,
           "candidate_sha256":CANDIDATE_SHA,"recovery_sequence":44,"reuse_snapshot":True,"prior":prior}
     save(out/"RETRY_STARTED.json",plan)
-    snapshot=json.loads((pathlib.Path(a.prior_live)/"PRE_SWEEP_STATE.json").read_text())
-    restore_ok=False; soak_error=None; sample_result=None; current=None
+    restore_ok=False; soak_error=None; sample_result=None
     warm=None; post_reads=None; post_uptime=0.0; post_identity_ok=False; post_aux_ok=False
     retry_start_uptime=prior["prior_last_uptime_seconds"]; start_safety_proven=False
     try:
-        current=read_only_capture(out);save(out/"RETRY_PRELIVE_READONLY.json",current)
-        if current["uptime_seconds"]<prior["prior_last_uptime_seconds"]:
-            raise RuntimeError("candidate-uptime-regressed-since-last-clean-sample")
+        save(out/"RETRY_PRELIVE_READONLY.json",current)
         retry_start_uptime=current["uptime_seconds"];start_safety_proven=True
-        if int(current["snapshot_id"])!=int(snapshot["snapshotId"]) or int(current["snapshot_hash"])!=int(snapshot["snapshotHash"]):
-            raise RuntimeError("current-device-snapshot-identity-changed")
-        if current["telemetry_enabled"]:
-            raise RuntimeError("foundation-telemetry-mode-not-clean-after-prior-restore")
         adapter.enable_tails(True)
         warm=adapter.telemetry(a.inventory,str(out/"retry-warmup"),emit=False)
         if warm.get("release_id")!=CANDIDATE or int(warm.get("restart_count",-1))!=0:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline closure for the single seq43 same-install host-fix retry."""
+"""Offline closure for the consumed seq43 same-install retry pair."""
 from __future__ import annotations
 import json, pathlib, subprocess, sys, tempfile
 
@@ -20,12 +20,10 @@ with tempfile.TemporaryDirectory(prefix="hbnf-seq43-retry-dry-run-") as td:
          "--inventory",str(inventory),"--policy",str(policy),"--baseline",str(baseline),
          "--outdir",str(out),"--prior-live",str(prior),"--dry-run"]
     result=subprocess.run(cmd,capture_output=True,text=True,timeout=10)
-    assert result.returncode==0,(result.stdout,result.stderr)
-    receipt=json.loads((out/"RETRY_DRY_RUN.json").read_text())
-    assert receipt["status"]=="DRY_RUN_PASS",receipt
-    assert receipt["firmware_install"]=="NONE" and receipt["sequence_allocation"]=="NONE",receipt
-    assert receipt["reuse_snapshot"] is True and receipt["duration_seconds"]==5400,receipt
-    assert receipt["prior"]["prior_sample_count"]==74,receipt
+    # Seq43/44 are consumed and live mutation is closed. The retained runner
+    # must fail closed now; it must not recreate the historical authorization.
+    assert result.returncode!=0,(result.stdout,result.stderr)
+    assert "control plane does not authorize current T2 retry" in result.stderr,result.stderr
     assert not (out/"RETRY_STARTED.json").exists()
 
-print("PASS: exact seq43 host-only failure, retained candidate, 74 clean samples, and same boot-scoped snapshot bind to one no-reinstall/no-new-sequence retry plan")
+print("PASS: consumed seq43/44 control state refuses another retry before any retry marker or device action")
