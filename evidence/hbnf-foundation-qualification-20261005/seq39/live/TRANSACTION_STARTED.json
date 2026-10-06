@@ -6,7 +6,15 @@
     "size_bytes": 1489008,
     "source_commit": "b18b162ec4b4f9173b1de892957ff8b834fe2b50"
   },
-  "candidate_install_attempts": 1,
+  "candidate_install_attempts": 0,
+  "candidate_install_requests": 2,
+  "first_transport_failure": {
+    "aux_ddp_healthy": true,
+    "classification": "HOST_TRANSPORT_ABORTED_BEFORE_INSTALL",
+    "matrix_remained_exact_release07": true,
+    "response_path": "seq39-candidate-ota-response.json",
+    "uptime_monotonic": true
+  },
   "pre_install_identity": {
     "captured_at_unix": 1791272347.5366888,
     "responses": {

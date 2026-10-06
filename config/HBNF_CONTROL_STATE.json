@@ -219,16 +219,35 @@
       }
     },
     "foundation_metrics_run": {
+      "actual_host_transport": "Mac-origin attempt aborted before install; single Opal-origin /update attempt succeeded after remote SHA/size verification",
       "artifact_transfer_commit": "52f2252d680bcb67273929916b5f444d8fb9cda4",
+      "candidate_install_evidence": "evidence/hbnf-foundation-qualification-20261005/seq39/live/CANDIDATE_INSTALLED.json",
+      "candidate_install_requests": 2,
+      "candidate_install_status": "PASS__EXACT_CANDIDATE_RUNTIME_IDENTITY_VERIFIED",
+      "candidate_install_successes": 1,
       "candidate_sequence": 39,
       "checkpoint_path": "evidence/hbnf-foundation-qualification-20261005/OFFLINE_PAUSE_CHECKPOINT_20261006.json",
       "drive_evidence_file_id": "1E0te1eJH6TCAmLHVQct5huZAToLI1fwq",
+      "drive_evidence_url": "https://drive.google.com/file/d/1E0te1eJH6TCAmLHVQct5huZAToLI1fwq/view?usp=drivesdk",
       "evidence_path": "evidence/hbnf-foundation-qualification-20261005/CRASH_RECONCILIATION.json",
       "github_run_id": 37376862955,
+      "host_transport_failures": 1,
       "kernel_total": 28,
+      "last_host_transport_failure": "Mac curl returned exit 55 / HTTP 100 / broken pipe; read-only post-attempt identity remained exact Release07 with advancing uptime and AUX DDP live. No seq39 install and no seq40 recovery.",
+      "last_progress": "Seq39 completed observer, warm-up and 28/28 sweep; soak stopped at existing AUX projection-age gate; exact seq40 Release07 recovery verified.",
       "next_sequences": "SEQ39_CANDIDATE__SEQ40_REAL_FAILURE_RECOVERY_ONLY",
-      "next_transaction_status": "SEQ39_INSTALLED__OBSERVER_EFFECT_AND_FOUNDATION_SWEEP_IN_PROGRESS",
+      "next_transaction_status": "SEQ39_FOUNDATION_RUN_COMPLETE__AUX_AGE_GATE_FAILED__SEQ40_RELEASE07_RECOVERED",
       "observer_effect": "MEASURED_ON_EXACT_SEQ39__29_LIGHTWEIGHT_33_INSTRUMENTED__MEDIAN_DELTA_PLUS_0_2684_PERCENT",
+      "observer_effect_detail": {
+        "candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "evidence": "evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep/OBSERVER_EFFECT.json",
+        "instrumented_median_frame_average_ms": 24.279,
+        "instrumented_samples": 33,
+        "lightweight_median_frame_average_ms": 24.214,
+        "lightweight_samples": 29,
+        "relative_delta_pct": 0.2684397456017233,
+        "status": "PASS__NO_MATERIAL_OBSERVER_EFFECT"
+      },
       "offline_integrated_soak_runner": "scripts/hbnf_live_kernel_sweep.py runs >=5400s changing round-robin soak, then hbnf_foundation_soak_audit.py verifies frozen per-kernel relative FPS/frame p95/p99/max/heap/largest-block/AUX gates against the hash-bound baseline before pass.",
       "offline_resume_plan": "work/cart2/27_FOUNDATION_OFFLINE_RESUME_PLAN_20261005.md",
       "offline_soak_audit": "scripts/hbnf_foundation_soak_audit.py; JSONL-only, no device I/O; requires >=90 minutes, exact identity, 28-kernel state changes, <=15s sample gaps, no uptime regression/restart change; metrics summarized, thresholds remain a separate frozen-policy gate",
@@ -243,59 +262,63 @@
       "post_crash_readonly_drive_file_id": "1zv8xSWawK9sUbX0YOCncWI8GyhGkmpO4",
       "post_crash_readonly_evidence_path": "evidence/hbnf-foundation-qualification-20261005/POST_CRASH_READONLY_DEVICE_VERIFICATION.json",
       "previous_seq31_32_status": "SEQ31_INVALID_NONRESUMABLE__SEQ32_RECOVERED",
-      "profiles_completed_before_timeout": 3,
+      "profiles_completed_before_timeout": 28,
       "raw_bundle_sha256": "61b225be198af66400eb1940276c0a3b246f7cd4d88bfb4042be70392d90a44b",
       "recovery_sequence": 40,
-      "recovery_status": "PASS_SEQ32_VERIFIED_MATRIX_AUX_AND_LEDGER_WRITE",
+      "recovery_status": "PASS_SEQ40_EXACT_RELEASE07_VERIFIED",
       "release07_bin_drive_file_id": "12S4GPHMvryTIXKjtXsTyeatmfPzRWiTo",
       "release07_local_path": "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/artifact/release07.bin",
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
       "restore_status": "POST_STATE_UNKNOWN__RESTORE_POST_TIMED_OUT__THEN_RELEASE07_RECOVERY_OVERWROTE_DIAGNOSTIC",
       "restore_verified_observed_pre_recovery": false,
+      "resume_transport": "One exact-artifact SSH copy to Opal, verify SHA/size there, then one already-proven Opal-origin local Matrix /update; never retry Mac-origin transport.",
       "seq31_failure_drive_file_id": "1DQukszM7Py0vTOczJLlZFNY6qnjhCIgt",
       "seq31_failure_evidence_path": "evidence/hbnf-foundation-qualification-20261005/SEQ31_FAILURE_SEQ32_RECOVERY.json",
       "seq31_failure_evidence_sha256": "7394ae011c8b04daf923396bf7b2d4538f97e77a72870cb6dcfc1cf9da9a92c9",
       "seq31_seq32_raw_bundle_drive_file_id": "1Njiqyp-3XCLSyi4gJTqfesPp3ZqDsR8s",
       "seq32_recovery_drive_file_id": "1r6rc6YESHDQRCc9JHw0ZzRo3aIgT2P91",
       "seq32_recovery_evidence_path": "evidence/hbnf-foundation-qualification-20261005/SEQ32_RELEASE07_RECOVERY_VERIFICATION.json",
+      "seq39_40_result": {
+        "candidate_install": "PASS__EXACT_SEQ39_IDENTITY",
+        "evidence": "evidence/hbnf-foundation-qualification-20261005/seq39/live/TRANSACTION_RESULT.json",
+        "latest_failed_sample": {
+          "aux_projection_active": true,
+          "aux_projection_age_ms": 1226968,
+          "fps": 38,
+          "frame_max_ms": 36.78,
+          "frame_p99_ms": 31.125,
+          "restart_count": 0
+        },
+        "observer_effect": "PASS__29_LIGHTWEIGHT_33_INSTRUMENTED__DELTA_PLUS_0_2684_PERCENT",
+        "profiles_completed": 28,
+        "recovery_release": "hbnf-matrix-coordinated-v1-20261002-07",
+        "recovery_sequence": 40,
+        "recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+        "recovery_status": "PASS__HTTP_200__POST_RECOVERY_BUILD_IDENTITY_VERIFIED",
+        "renderer_restore": "PASS__restore_error=null",
+        "soak": "FAIL__AUX_PROJECTION_AGE_GT_1000MS_FOR_3_CONSECUTIVE_SAMPLES",
+        "soak_evidence": "evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep/FOUNDATION_SOAK.jsonl",
+        "sweep": "PASS__ALL_28__NO_POSTWARMUP_INTERVAL_GE_1000MS__NO_RESTART",
+        "warmup": "PASS__P99_41_125MS__MAX_47_087MS__NO_OVERFLOW__NO_RESTART"
+      },
       "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
       "size_bytes": 1489008,
-      "soak_status": "NOT_STARTED",
+      "soak_status": "FAIL__3_CONSECUTIVE_AUX_PROJECTION_AGE_SAMPLES_GT_1000MS",
       "source_commit": "b18b162ec4b4f9173b1de892957ff8b834fe2b50",
-      "sweep_status": "IN_PROGRESS__ALL_KERNEL_SWEEP",
+      "sweep_status": "PASS__28_OF_28_PROFILES__RENDERER_RESTORE_PASS",
       "timeout_hierarchy": "HTTP GET 10s; /json/state POST 25s; command ack 30s; snapshot 45s; restore 90s; outer runner 240s (226s maximum normal snapshot composition plus 14s margin)",
       "timeout_repair_commit": "98a111b51935655bc3320ad05463f0b521d03035",
       "transaction_authorization": "CURRENT_USER_EXPEDITE_BOUNDED_TELEMETRY_RANGE_FIX_DIRECTIVE",
-      "drive_evidence_url": "https://drive.google.com/file/d/1E0te1eJH6TCAmLHVQct5huZAToLI1fwq/view?usp=drivesdk",
-      "host_transport_failures": 1,
-      "candidate_install_successes": 1,
-      "last_host_transport_failure": "Mac curl returned exit 55 / HTTP 100 / broken pipe; read-only post-attempt identity remained exact Release07 with advancing uptime and AUX DDP live. No seq39 install and no seq40 recovery.",
-      "resume_transport": "One exact-artifact SSH copy to Opal, verify SHA/size there, then one already-proven Opal-origin local Matrix /update; never retry Mac-origin transport.",
-      "candidate_install_requests": 2,
-      "candidate_install_status": "PASS__EXACT_CANDIDATE_RUNTIME_IDENTITY_VERIFIED",
-      "candidate_install_evidence": "evidence/hbnf-foundation-qualification-20261005/seq39/live/CANDIDATE_INSTALLED.json",
-      "actual_host_transport": "Mac-origin attempt aborted before install; single Opal-origin /update attempt succeeded after remote SHA/size verification",
-      "observer_effect_detail": {
-        "candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-        "lightweight_samples": 29,
-        "instrumented_samples": 33,
-        "lightweight_median_frame_average_ms": 24.214,
-        "instrumented_median_frame_average_ms": 24.279,
-        "relative_delta_pct": 0.2684397456017233,
-        "status": "PASS__NO_MATERIAL_OBSERVER_EFFECT",
-        "evidence": "evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep/OBSERVER_EFFECT.json"
-      },
       "warmup_sample": {
-        "frame_ms_p99": 41.125,
+        "aux_projection_active": true,
+        "aux_projection_age_ms": 106797,
         "frame_ms_max": 47.087,
+        "frame_ms_p99": 41.125,
         "frame_tail_bin_resolution_us": 250,
         "frame_tail_overflow": false,
         "minimum_free_heap_bytes": 58636,
-        "restart_count": 0,
-        "aux_projection_active": true,
-        "aux_projection_age_ms": 106797
-      },
-      "last_progress": "Observer effect measured exactly once on seq39; sacrificial warmup complete; one-snapshot 28-kernel sweep underway."
+        "restart_count": 0
+      }
     },
     "foundation_seq33_attempts": [
       {
@@ -322,8 +345,33 @@
         "soft_reboot_before_attempt": true
       }
     ],
-    "foundation_status": "FOUNDATION_UNQUALIFIED__SEQ37_TAIL_QUANTILE_GATE_FAILED__SEQ38_RELEASE07_RECOVERED",
-    "foundation_transaction_stop_reason": "Seq37 exact candidate identity and health passed; reused observer PASS; tails-off steady-state and sacrificial warmup passed; 27/28 kernels profiled, then firmware tail quantile saturated at the histogram ceiling 51.15 ms while selecting Module_Experiment10. This is a Foundation telemetry gate failure, not a host transport/deadline failure. No >=1000 ms interval or unexpected restart was observed. Renderer restoreVerified=true and packet20Same=true. Exact Release07 recovery seq38 verified PASS. No soak/baseline was started.",
+    "foundation_seq37_38_attempt": {
+      "candidate_install_attempts": 1,
+      "candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+      "candidate_sequence": 37,
+      "candidate_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
+      "checkpoint_commit": "ddeb92f782dfa5cfc1d66c0d985c9bc23acbb777",
+      "drive_evidence_file_id": "1OgBevrj-0KB8Q_CweRh78Bw28qEhzteJ",
+      "drive_evidence_url": "https://drive.google.com/file/d/1OgBevrj-0KB8Q_CweRh78Bw28qEhzteJ/view?usp=drivesdk",
+      "evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq37/SEQ37_FAILURE_RECONCILIATION.json",
+      "exact_postwarmup_interval_ge_1000ms_observed": false,
+      "failing_selection": "Module_Experiment10",
+      "last_completed_kernel": "SM5",
+      "observer_effect": "REUSED_SEQ33_EXACT_CANDIDATE_PASS__27_SAMPLES_PER_MODE__MEDIAN_DELTA_MINUS_2_94_PERCENT",
+      "prequalification": "PASS__30S_TAILS_OFF__SACRIFICIAL_TAILS_ON_WARMUP_EXCLUDED",
+      "profiles_completed": 27,
+      "profiles_expected": 28,
+      "recovery_sequence": 38,
+      "recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+      "recovery_status": "PASS_SEQ38_EXACT_RELEASE07_SHA_VERIFIED",
+      "renderer_restore": "PASS__restoreVerified=true__packet20Same=true__snapshotId=1__snapshotHash=3294298572",
+      "soak_status": "NOT_STARTED",
+      "status": "COMPLETE__FOUNDATION_REMAINS_UNQUALIFIED",
+      "sweep_status": "FOUNDATION_GATE_FAIL__TAIL_QUANTILE_SATURATED_AT_51_15MS",
+      "unexpected_restart": false
+    },
+    "foundation_status": "FOUNDATION_UNQUALIFIED__SEQ39_AUX_PROJECTION_AGE_GATE_FAILED__SEQ40_RELEASE07_RECOVERED",
+    "foundation_transaction_stop_reason": "Seq39 exact candidate installed and identity verified; observer-effect PASS (+0.2684%); sacrificial warm-up PASS; all 28 kernel profiles completed and renderer restore passed. During the same-install state-changing soak, three consecutive samples exceeded the existing catastrophic AUX projection-age threshold (latest age 1,226,968 ms; FPS 38; frame p99 31.125 ms). No post-warm-up >=1000 ms frame interval or restart was observed; candidate and AUX health were true at recovery start. Exact seq40 Release07 recovery completed and post-recovery identity verified.",
     "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
     "installed_release_role": "BASELINE_RECOVERY_VERIFIED__SEQ36",
@@ -444,19 +492,22 @@
       }
     },
     "planned_foundation_transaction": {
-      "candidate_sequence": 39,
-      "recovery_sequence": 40,
       "candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "candidate_sequence": 39,
       "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
       "candidate_size_bytes": 1489008,
-      "path": "Direct-LAN exact WLED /update with exact hash-bound local artifact; no Cloudflare",
-      "recovery_role": "REAL_DEVICE_RUNTIME_FAILURE_ONLY",
+      "failure": "THREE_CONSECUTIVE_SOAK_SAMPLES_AUX_PROJECTION_AGE_GT_1000MS",
+      "failure_evidence": "evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep/FOUNDATION_SOAK.jsonl",
       "observer_effect": "One fresh exact artifact A/B; 40s tails OFF, 40s tails ON sacrificial warm-up, minimum 27 samples each",
-      "prequal": "40s production-like tails OFF, one tails-on sacrificial window; reset tails OFF before full 28-kernel sweep",
+      "offline_evidence": "evidence/hbnf-foundation-qualification-20261005/seq39/OFFLINE_GATES.json; Drive 1E0te1eJH6TCAmLHVQct5huZAToLI1fwq",
+      "path": "Direct-LAN exact WLED /update with exact hash-bound local artifact; no Cloudflare",
       "post_warmup_hard_stop": "any exact frame_ms_max >=1000ms",
+      "prequal": "40s production-like tails OFF, one tails-on sacrificial window; reset tails OFF before full 28-kernel sweep",
+      "recovery_evidence": "evidence/hbnf-foundation-qualification-20261005/seq39/live/TRANSACTION_RESULT.json",
+      "recovery_role": "REAL_DEVICE_RUNTIME_FAILURE_ONLY",
+      "recovery_sequence": 40,
       "soak": "same candidate, >=5400s state-changing 28-kernel round-robin; frozen baseline-relative p95/p99/max/heap/fragmentation/AUX/restart policy",
-      "status": "AUTHORIZED__OFFLINE_GATES_PASS__PRELIVE_REQUIRED",
-      "offline_evidence": "evidence/hbnf-foundation-qualification-20261005/seq39/OFFLINE_GATES.json; Drive 1E0te1eJH6TCAmLHVQct5huZAToLI1fwq"
+      "status": "COMPLETE__FOUNDATION_GATE_FAILED__SEQ40_RECOVERY_PASS"
     },
     "prior_candidate_trials": {
       "r2": {
@@ -641,67 +692,19 @@
       ],
       "observed_at": "2026-10-05T17:48:54Z",
       "status": "R3_CLOSED__R4_EXECUTION_REQUIRED"
-    },
-    "foundation_seq37_38_attempt": {
-      "candidate_sequence": 37,
-      "recovery_sequence": 38,
-      "candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
-      "candidate_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
-      "candidate_install_attempts": 1,
-      "observer_effect": "REUSED_SEQ33_EXACT_CANDIDATE_PASS__27_SAMPLES_PER_MODE__MEDIAN_DELTA_MINUS_2_94_PERCENT",
-      "prequalification": "PASS__30S_TAILS_OFF__SACRIFICIAL_TAILS_ON_WARMUP_EXCLUDED",
-      "sweep_status": "FOUNDATION_GATE_FAIL__TAIL_QUANTILE_SATURATED_AT_51_15MS",
-      "profiles_completed": 27,
-      "profiles_expected": 28,
-      "last_completed_kernel": "SM5",
-      "failing_selection": "Module_Experiment10",
-      "exact_postwarmup_interval_ge_1000ms_observed": false,
-      "unexpected_restart": false,
-      "renderer_restore": "PASS__restoreVerified=true__packet20Same=true__snapshotId=1__snapshotHash=3294298572",
-      "soak_status": "NOT_STARTED",
-      "recovery_status": "PASS_SEQ38_EXACT_RELEASE07_SHA_VERIFIED",
-      "recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-      "evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq37/SEQ37_FAILURE_RECONCILIATION.json",
-      "status": "COMPLETE__FOUNDATION_REMAINS_UNQUALIFIED",
-      "drive_evidence_file_id": "1OgBevrj-0KB8Q_CweRh78Bw28qEhzteJ",
-      "drive_evidence_url": "https://drive.google.com/file/d/1OgBevrj-0KB8Q_CweRh78Bw28qEhzteJ/view?usp=drivesdk",
-      "checkpoint_commit": "ddeb92f782dfa5cfc1d66c0d985c9bc23acbb777"
     }
   },
-  "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-  "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
-  "installed_release_role": "REAL_FAILURE_RECOVERY_VERIFIED__SEQ38",
-  "lifecycle_state": "FIX_CANDIDATE",
-  "live_mutation_authorization": {
-    "candidate_sequence": 39,
-    "recovery_sequence": 40,
-    "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-    "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-    "prelive_evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq39/PRELIVE_PROOF.json",
-    "scope": "One exact local clean-room telemetry-only candidate install seq39; exact one-time observer A/B on that changed artifact; sacrificial warm-up; complete all-28 Foundation sweep; hash-bound baseline/frozen policy; same-install >=5400s state-changing soak; seq40 exact Release07 REAL DEVICE/RUNTIME FAILURE recovery only. Host-only failure preserves candidate only with exact identity, health, no restart, renderer restore, and AUX health proof. No R3/R4/Packet20 re-exploration, no new build, no GitHub Actions.",
-    "status": "AUTHORIZED__SEQ39_INSTALLED__FOUNDATION_RUN_IN_PROGRESS",
-    "user_authorization": "Current user directive EXPEDITE \u2014 BOUNDED TELEMETRY RANGE FIX ONLY explicitly authorizes next legal seq39 candidate / seq40 exact Release07 real failure recovery after offline gates; seq37 remains TELEMETRY_INSTRUMENTATION, not renderer/root-cause failure.",
-    "closure_reason": null
-  },
-  "live_mutation_authorized": true,
-  "model_schema": "hbnf-control-model-v2",
-  "phase2_implementation_authorized": false,
-  "schema": "hbnf-control-state-v2",
   "execution_cursor": {
-    "schema": "hbnf-execution-cursor-v1",
-    "current_lifecycle_state": "FIX_CANDIDATE",
-    "current_transition": "T2_FOUNDATION_QUALIFY",
     "current_failure_domain": "TELEMETRY_INSTRUMENTATION",
+    "current_lifecycle_state": "FIX_CANDIDATE",
     "current_subject": {
       "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
     },
+    "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Finish the complete 28-kernel sweep once and preserve all raw per-frame/tail/heap/AUX evidence. Any post-warmup exact frame_ms_max >=1000ms is a hard stop.",
-      "If full sweep is clean, bind baseline and frozen policy, then immediately start same-install >=5400s state-changing soak.",
-      "After first three clean soak samples, emit PARALLEL_LANES_READY and checkpoint the external coordinator launch; keep soak running.",
-      "Promote Foundation only if full soak and all required feature/health/rollback/reproducibility gates objectively pass."
+      "Preserve the complete seq39 soak failure evidence and reconcile the exact AUX projection-age signal versus the configured 1000ms gate offline.",
+      "Do not allocate a new sequence or perform another live mutation until a new explicit authorization and corrected prelive proof."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -716,173 +719,194 @@
       "PWA/cache/versioning implementation and host tests",
       "AudioFeatures/Vibe source-level implementation preparation that does not mutate live firmware",
       "VisualMoment/text source-level implementation preparation that does not mutate live firmware"
-    ]
+    ],
+    "schema": "hbnf-execution-cursor-v1"
   },
   "inherited_evidence": [
     {
       "id": "PACKET20_DIAGNOSTIC_CLOSE",
-      "status": "REUSABLE",
+      "invalidators": [
+        "renderer lineage materially changes",
+        "new evidence contradicts root cause"
+      ],
+      "note": "T1 already completed; sequence/chat changes do not invalidate it.",
       "proves": [
         "timing_attribution_complete",
         "root_cause_proven",
         "bounded_fix_direction"
       ],
-      "invalidators": [
-        "renderer lineage materially changes",
-        "new evidence contradicts root cause"
-      ],
-      "note": "T1 already completed; sequence/chat changes do not invalidate it."
+      "status": "REUSABLE"
     },
     {
       "id": "R4_RENDERER_PERFORMANCE",
-      "status": "REUSABLE",
-      "subject_artifact_sha256": "3e11aa102309b5f871ea8ada339c90d0c1c9dfe1451a5c4f76958dba92a1156c",
+      "invalidators": [
+        "R4 renderer/fixed-point implementation changes"
+      ],
       "proves": [
         "28/28 kernels materially improved",
         "fixed-point renderer class selected",
         "visual equivalence within recorded tolerance"
       ],
-      "invalidators": [
-        "R4 renderer/fixed-point implementation changes"
-      ]
+      "status": "REUSABLE",
+      "subject_artifact_sha256": "3e11aa102309b5f871ea8ada339c90d0c1c9dfe1451a5c4f76958dba92a1156c"
     },
     {
-      "id": "FOUNDATION_OBSERVER_EFFECT",
-      "status": "REUSABLE",
-      "subject_artifact_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
-      "proves": [
-        "instrumentation_observer_effect_passed"
-      ],
       "evidence_summary": "seq33 exact-candidate observer measurement: 27 samples per mode, median delta -2.94%; later seq33 observer status PASS",
+      "id": "FOUNDATION_OBSERVER_EFFECT",
       "invalidators": [
         "candidate artifact SHA changes",
         "Foundation instrumentation implementation changes"
-      ]
+      ],
+      "proves": [
+        "instrumentation_observer_effect_passed"
+      ],
+      "status": "REUSABLE",
+      "subject_artifact_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338"
     },
     {
       "id": "RELEASE07_RECOVERY",
-      "status": "REUSABLE",
-      "subject_artifact_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-      "proves": [
-        "exact rollback artifact install path repeatedly verified"
-      ],
       "invalidators": [
         "rollback artifact changes",
         "Matrix update/recovery mechanism changes materially"
-      ]
+      ],
+      "proves": [
+        "exact rollback artifact install path repeatedly verified"
+      ],
+      "status": "REUSABLE",
+      "subject_artifact_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab"
     },
     {
       "id": "HOST_DEADLINE_REGRESSION",
-      "status": "REUSABLE",
+      "invalidators": [
+        "observer polling/deadline logic changes"
+      ],
       "proves": [
         "seq35 near-zero deadline defect has a tested host-side guard"
       ],
-      "invalidators": [
-        "observer polling/deadline logic changes"
-      ]
+      "status": "REUSABLE"
     },
     {
       "id": "HOST_HISTOGRAM_OVERFLOW_REGRESSION",
-      "status": "REUSABLE",
+      "invalidators": [
+        "Foundation histogram/percentile contract changes"
+      ],
       "proves": [
         "overflow-vs-percentile-saturation host defect has a tested correction"
       ],
-      "invalidators": [
-        "Foundation histogram/percentile contract changes"
-      ]
+      "status": "REUSABLE"
     }
   ],
+  "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+  "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
+  "installed_release_role": "REAL_FAILURE_RECOVERY_VERIFIED__SEQ40",
   "lane_execution": {
-    "schema": "hbnf-lane-execution-state-v1",
     "activation_rule": "At clean Foundation soak start, activate every offline-safe core lane. At PHASE2_INTEGRATING all four core lanes must be ACTIVE, DONE, or BLOCKED_WITH_EXACT_DEPENDENCY; no silent idle/queued lanes.",
+    "anti_abandonment": "Chat turnover, worker turnover, new sequence numbers, or convenience may not drop a lane. A ready lane can stop only when DONE, explicitly blocked on a named dependency, or user scope changes.",
     "lanes": {
       "P2_MISSION_CONTROL_SCORING": {
-        "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
         "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START",
         "execution_context": "SEPARATE_WORKER_REQUIRED",
         "launch_owner": "COORDINATOR",
+        "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
         "status_sheet_row": 4
       },
-      "P2_VIBE_AUDIO": {
-        "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
+      "P2_PWA_RELIABILITY": {
         "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START",
         "execution_context": "SEPARATE_WORKER_REQUIRED",
         "launch_owner": "COORDINATOR",
-        "status_sheet_row": 5
+        "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
+        "status_sheet_row": 7
       },
       "P2_TEXT_MOMENTS": {
-        "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
         "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START",
         "execution_context": "SEPARATE_WORKER_REQUIRED",
         "launch_owner": "COORDINATOR",
+        "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
         "status_sheet_row": 6
       },
-      "P2_PWA_RELIABILITY": {
-        "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
+      "P2_VIBE_AUDIO": {
         "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START",
         "execution_context": "SEPARATE_WORKER_REQUIRED",
         "launch_owner": "COORDINATOR",
-        "status_sheet_row": 7
+        "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
+        "status_sheet_row": 5
       }
     },
-    "anti_abandonment": "Chat turnover, worker turnover, new sequence numbers, or convenience may not drop a lane. A ready lane can stop only when DONE, explicitly blocked on a named dependency, or user scope changes.",
     "live_mutation_limit": 1,
     "orchestration": {
-      "owner": "COORDINATOR_EXTERNAL_TO_LIVE_WORKER",
-      "live_worker_can_spawn_workers": false,
       "activation_event": "FOUNDATION_SOAK_RUNNING",
-      "required_live_worker_signal": "PARALLEL_LANES_READY",
       "launch_mode": "FOUR_SEPARATE_WORKER_CONTEXTS",
       "launch_status": "WAITING_FOR_FOUNDATION_SOAK",
+      "live_worker_can_spawn_workers": false,
       "note": "Do not judge the live Foundation worker for not spawning chats; it is only responsible for signaling readiness and preserving the live lane.",
+      "owner": "COORDINATOR_EXTERNAL_TO_LIVE_WORKER",
+      "required_live_worker_signal": "PARALLEL_LANES_READY",
       "status_sheet_id": "1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko"
-    }
-  },
-  "process_metrics": {
-    "schema": "hbnf-process-metrics-v1",
-    "tracking_scope": "From execution-system consolidation forward; historical attempts are not retroactively guessed into counters.",
-    "live_attempt_failures_by_domain": {
-      "HOST_HARNESS": 0,
-      "DEVICE_RUNTIME": 0,
-      "RELEASE_DEPLOYMENT": 0,
-      "UI_BACKEND": 0,
-      "PHYSICAL_HARDWARE": 0,
-      "AESTHETIC_PRODUCT": 0,
-      "TELEMETRY_INSTRUMENTATION": 1
     },
-    "host_process_wasted_live_attempts": 0,
+    "schema": "hbnf-lane-execution-state-v1"
+  },
+  "lifecycle_state": "FIX_CANDIDATE",
+  "live_mutation_authorization": {
+    "candidate_sequence": 39,
+    "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "closure_reason": "Seq39 soak failed the existing three-consecutive-sample AUX projection-age gate; exact seq40 Release07 recovery and post-recovery identity verification passed. No new live mutation authorized.",
+    "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "prelive_evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq39/PRELIVE_PROOF.json",
+    "recovery_sequence": 40,
+    "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "scope": "One exact local clean-room telemetry-only candidate install seq39; exact one-time observer A/B on that changed artifact; sacrificial warm-up; complete all-28 Foundation sweep; hash-bound baseline/frozen policy; same-install >=5400s state-changing soak; seq40 exact Release07 REAL DEVICE/RUNTIME FAILURE recovery only. Host-only failure preserves candidate only with exact identity, health, no restart, renderer restore, and AUX health proof. No R3/R4/Packet20 re-exploration, no new build, no GitHub Actions.",
+    "status": "CLOSED__SEQ40_RELEASE07_RECOVERY_VERIFIED__FOUNDATION_GATE_FAILED",
+    "user_authorization": "Current user directive EXPEDITE \u2014 BOUNDED TELEMETRY RANGE FIX ONLY explicitly authorizes next legal seq39 candidate / seq40 exact Release07 real failure recovery after offline gates; seq37 remains TELEMETRY_INSTRUMENTATION, not renderer/root-cause failure."
+  },
+  "live_mutation_authorized": false,
+  "model_schema": "hbnf-control-model-v2",
+  "observability": {
+    "authority_effect": "NONE",
+    "cadence_minutes": 15,
+    "current_worker": "FOUNDATION_LIVE",
+    "note": "Telemetry only; never operational authority. Heartbeats must yield to critical-path work and may be delayed by blocking operations.",
+    "rows": {
+      "FOUNDATION_LIVE": 3,
+      "P2_MISSION_CONTROL_SCORING": 4,
+      "P2_PWA_RELIABILITY": 7,
+      "P2_TEXT_MOMENTS": 6,
+      "P2_VIBE_AUDIO": 5
+    },
+    "schema": "hbnf-worker-observability-state-v1",
+    "sheet_name": "Live Status",
+    "stale_after_minutes": 25,
+    "status_sheet_id": "1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko",
+    "status_sheet_url": "https://docs.google.com/spreadsheets/d/1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko/edit"
+  },
+  "phase2_implementation_authorized": false,
+  "process_metrics": {
     "device_runtime_failed_live_attempts": 0,
     "events": [
       {
-        "event_id": 1,
         "domain": "TELEMETRY_INSTRUMENTATION",
-        "reference": "seq37 Module_Experiment10 tail quantile saturated at 51.15ms",
-        "live_attempt": true,
+        "event_id": 1,
         "invalidates": [
           "runtime_telemetry_verified",
           "instrumentation_observer_effect_passed",
           "all_kernel_sweep_passed",
           "foundation_soak_passed"
-        ]
+        ],
+        "live_attempt": true,
+        "reference": "seq37 Module_Experiment10 tail quantile saturated at 51.15ms"
       }
-    ]
-  },
-  "observability": {
-    "schema": "hbnf-worker-observability-state-v1",
-    "authority_effect": "NONE",
-    "status_sheet_id": "1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko",
-    "status_sheet_url": "https://docs.google.com/spreadsheets/d/1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko/edit",
-    "sheet_name": "Live Status",
-    "cadence_minutes": 15,
-    "stale_after_minutes": 25,
-    "rows": {
-      "FOUNDATION_LIVE": 3,
-      "P2_MISSION_CONTROL_SCORING": 4,
-      "P2_VIBE_AUDIO": 5,
-      "P2_TEXT_MOMENTS": 6,
-      "P2_PWA_RELIABILITY": 7
+    ],
+    "host_process_wasted_live_attempts": 0,
+    "live_attempt_failures_by_domain": {
+      "AESTHETIC_PRODUCT": 0,
+      "DEVICE_RUNTIME": 0,
+      "HOST_HARNESS": 0,
+      "PHYSICAL_HARDWARE": 0,
+      "RELEASE_DEPLOYMENT": 0,
+      "TELEMETRY_INSTRUMENTATION": 1,
+      "UI_BACKEND": 0
     },
-    "current_worker": "FOUNDATION_LIVE",
-    "note": "Telemetry only; never operational authority. Heartbeats must yield to critical-path work and may be delayed by blocking operations."
-  }
+    "schema": "hbnf-process-metrics-v1",
+    "tracking_scope": "From execution-system consolidation forward; historical attempts are not retroactively guessed into counters."
+  },
+  "schema": "hbnf-control-state-v2"
 }

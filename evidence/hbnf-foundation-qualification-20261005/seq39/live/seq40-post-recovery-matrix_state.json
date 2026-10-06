@@ -1,0 +1,184 @@
+{
+  "AudioReactive": {
+    "on": true
+  },
+  "HBNF": {
+    "audio": {
+      "bass": 6,
+      "mid": 18,
+      "peak": true,
+      "treble": 223,
+      "volume": 255
+    },
+    "audioResponse": 50,
+    "auxBrightness": 87,
+    "candidate": "hbnf-matrix-coordinated-v1-20261002-07",
+    "companionLastNonzeroPixels": 16,
+    "companionRenderCount": 240,
+    "effectId": 142,
+    "kernel": 18,
+    "liveAcePot": 0,
+    "liveActive": false,
+    "liveEntryCount": 0,
+    "liveLabel": "",
+    "matrixBrightness": 49,
+    "motion": 50,
+    "overlayId": null,
+    "palette": {
+      "mode": "legacy"
+    },
+    "scene": 0,
+    "schema": "foundation-v1",
+    "timing": {
+      "audioModulationUs": 8747,
+      "companionDdpSendUs": 4055,
+      "companionPrepUs": 130,
+      "companionRenderCount": 240,
+      "fps": 13,
+      "freeHeap": 144416,
+      "kernel": 18,
+      "kernelRenderUs": 51856,
+      "overlayUs": 39,
+      "paletteColorUs": 2767,
+      "rssi": -52,
+      "schedulerVariantUs": 1140,
+      "unaccountedUs": 2714,
+      "uptimeSec": 18,
+      "variantSignature": 2269457343,
+      "wholeFrameUs": 71452
+    },
+    "transport": "wled-native-ddp-unicast",
+    "variantDwellSeconds": 76,
+    "variantSignature": 2269457343
+  },
+  "bri": 255,
+  "bs": 0,
+  "ledmap": 0,
+  "lor": 0,
+  "mainseg": 0,
+  "nl": {
+    "dur": 60,
+    "mode": 1,
+    "on": false,
+    "rem": -1,
+    "tbri": 0
+  },
+  "on": true,
+  "pl": -1,
+  "ps": 60,
+  "seg": [
+    {
+      "bm": 0,
+      "bri": 255,
+      "c1": 128,
+      "c2": 128,
+      "c3": 16,
+      "cct": 127,
+      "col": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "frz": false,
+      "fx": 142,
+      "grp": 1,
+      "id": 0,
+      "ix": 128,
+      "lc": 1,
+      "len": 32,
+      "m12": 0,
+      "mY": false,
+      "mi": false,
+      "o1": false,
+      "o2": false,
+      "o3": false,
+      "of": 0,
+      "on": true,
+      "pal": 64,
+      "rY": false,
+      "rev": false,
+      "sel": true,
+      "set": 0,
+      "si": 0,
+      "spc": 0,
+      "start": 0,
+      "startY": 0,
+      "stop": 32,
+      "stopY": 16,
+      "sx": 128,
+      "tp": false
+    },
+    {
+      "bm": 0,
+      "bri": 255,
+      "c1": 128,
+      "c2": 128,
+      "c3": 16,
+      "cct": 127,
+      "col": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "frz": false,
+      "fx": 142,
+      "grp": 1,
+      "id": 1,
+      "ix": 128,
+      "lc": 0,
+      "len": 22,
+      "m12": 0,
+      "mY": false,
+      "mi": false,
+      "o1": false,
+      "o2": false,
+      "o3": false,
+      "of": 0,
+      "on": true,
+      "pal": 0,
+      "rY": false,
+      "rev": false,
+      "sel": true,
+      "set": 0,
+      "si": 0,
+      "spc": 0,
+      "start": 512,
+      "startY": 0,
+      "stop": 534,
+      "stopY": 1,
+      "sx": 128,
+      "tp": false
+    }
+  ],
+  "transition": 7,
+  "udpn": {
+    "recv": false,
+    "rgrp": 0,
+    "send": false,
+    "sgrp": 1
+  }
+}

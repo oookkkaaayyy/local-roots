@@ -1,0 +1,233 @@
+{
+  "contract": "foundation",
+  "expected_kernel_count": 28,
+  "kernels": [
+    {
+      "effect_id": 220,
+      "kernel_id": 0,
+      "kernel_name": "Complex_Kaleido_3",
+      "preset": 61,
+      "profile_path": "00_Complex_Kaleido_3.profile.json",
+      "variant_id": 1347100672
+    },
+    {
+      "effect_id": 221,
+      "kernel_id": 1,
+      "kernel_name": "Big_Caleido",
+      "preset": 62,
+      "profile_path": "01_Big_Caleido.profile.json",
+      "variant_id": 1347100673
+    },
+    {
+      "effect_id": 222,
+      "kernel_id": 2,
+      "kernel_name": "Parametric_Water",
+      "preset": 63,
+      "profile_path": "02_Parametric_Water.profile.json",
+      "variant_id": 1347100674
+    },
+    {
+      "effect_id": 223,
+      "kernel_id": 3,
+      "kernel_name": "RGB_Blobs5",
+      "preset": 64,
+      "profile_path": "03_RGB_Blobs5.profile.json",
+      "variant_id": 1347100675
+    },
+    {
+      "effect_id": 224,
+      "kernel_id": 4,
+      "kernel_name": "Polar_Waves",
+      "preset": 65,
+      "profile_path": "04_Polar_Waves.profile.json",
+      "variant_id": 1347100676
+    },
+    {
+      "effect_id": 225,
+      "kernel_id": 5,
+      "kernel_name": "Zoom2",
+      "preset": 66,
+      "profile_path": "05_Zoom2.profile.json",
+      "variant_id": 1347100677
+    },
+    {
+      "effect_id": 226,
+      "kernel_id": 6,
+      "kernel_name": "Complex_Kaleido_4",
+      "preset": 67,
+      "profile_path": "06_Complex_Kaleido_4.profile.json",
+      "variant_id": 1347100678
+    },
+    {
+      "effect_id": 227,
+      "kernel_id": 7,
+      "kernel_name": "Complex_Kaleido_6",
+      "preset": 68,
+      "profile_path": "07_Complex_Kaleido_6.profile.json",
+      "variant_id": 1347100679
+    },
+    {
+      "effect_id": 228,
+      "kernel_id": 8,
+      "kernel_name": "Water",
+      "preset": 69,
+      "profile_path": "08_Water.profile.json",
+      "variant_id": 1347100680
+    },
+    {
+      "effect_id": 229,
+      "kernel_id": 9,
+      "kernel_name": "RGB_Blobs4",
+      "preset": 70,
+      "profile_path": "09_RGB_Blobs4.profile.json",
+      "variant_id": 1347100681
+    },
+    {
+      "effect_id": 230,
+      "kernel_id": 10,
+      "kernel_name": "Complex_Kaleido_5",
+      "preset": 71,
+      "profile_path": "10_Complex_Kaleido_5.profile.json",
+      "variant_id": 1347100682
+    },
+    {
+      "effect_id": 231,
+      "kernel_id": 11,
+      "kernel_name": "Spiralus2",
+      "preset": 72,
+      "profile_path": "11_Spiralus2.profile.json",
+      "variant_id": 1347100683
+    },
+    {
+      "effect_id": 232,
+      "kernel_id": 12,
+      "kernel_name": "Hot_Blob",
+      "preset": 73,
+      "profile_path": "12_Hot_Blob.profile.json",
+      "variant_id": 1347100684
+    },
+    {
+      "effect_id": 233,
+      "kernel_id": 13,
+      "kernel_name": "Caleido3",
+      "preset": 74,
+      "profile_path": "13_Caleido3.profile.json",
+      "variant_id": 1347100685
+    },
+    {
+      "effect_id": 234,
+      "kernel_id": 14,
+      "kernel_name": "Waves",
+      "preset": 75,
+      "profile_path": "14_Waves.profile.json",
+      "variant_id": 1347100686
+    },
+    {
+      "effect_id": 235,
+      "kernel_id": 15,
+      "kernel_name": "Chasing_Spirals",
+      "preset": 76,
+      "profile_path": "15_Chasing_Spirals.profile.json",
+      "variant_id": 1347100687
+    },
+    {
+      "effect_id": 236,
+      "kernel_id": 16,
+      "kernel_name": "Rotating_Blob",
+      "preset": 77,
+      "profile_path": "16_Rotating_Blob.profile.json",
+      "variant_id": 1347100688
+    },
+    {
+      "effect_id": 237,
+      "kernel_id": 17,
+      "kernel_name": "Center_Field",
+      "preset": 78,
+      "profile_path": "17_Center_Field.profile.json",
+      "variant_id": 1347100689
+    },
+    {
+      "effect_id": 238,
+      "kernel_id": 18,
+      "kernel_name": "Distance_Experiment",
+      "preset": 79,
+      "profile_path": "18_Distance_Experiment.profile.json",
+      "variant_id": 1347100690
+    },
+    {
+      "effect_id": 239,
+      "kernel_id": 19,
+      "kernel_name": "Lava1",
+      "preset": 80,
+      "profile_path": "19_Lava1.profile.json",
+      "variant_id": 1347100691
+    },
+    {
+      "effect_id": 240,
+      "kernel_id": 20,
+      "kernel_name": "Caleido2",
+      "preset": 81,
+      "profile_path": "20_Caleido2.profile.json",
+      "variant_id": 1347100692
+    },
+    {
+      "effect_id": 241,
+      "kernel_id": 21,
+      "kernel_name": "Yves",
+      "preset": 82,
+      "profile_path": "21_Yves.profile.json",
+      "variant_id": 1347100693
+    },
+    {
+      "effect_id": 242,
+      "kernel_id": 22,
+      "kernel_name": "Scaledemo1",
+      "preset": 83,
+      "profile_path": "22_Scaledemo1.profile.json",
+      "variant_id": 1347100694
+    },
+    {
+      "effect_id": 243,
+      "kernel_id": 23,
+      "kernel_name": "Zoom",
+      "preset": 84,
+      "profile_path": "23_Zoom.profile.json",
+      "variant_id": 1347100695
+    },
+    {
+      "effect_id": 244,
+      "kernel_id": 24,
+      "kernel_name": "Complex_Kaleido",
+      "preset": 85,
+      "profile_path": "24_Complex_Kaleido.profile.json",
+      "variant_id": 1347100696
+    },
+    {
+      "effect_id": 245,
+      "kernel_id": 25,
+      "kernel_name": "RGB_Blobs3",
+      "preset": 86,
+      "profile_path": "25_RGB_Blobs3.profile.json",
+      "variant_id": 1347100697
+    },
+    {
+      "effect_id": 246,
+      "kernel_id": 26,
+      "kernel_name": "SM5",
+      "preset": 87,
+      "profile_path": "26_SM5.profile.json",
+      "variant_id": 1347100698
+    },
+    {
+      "effect_id": 247,
+      "kernel_id": 27,
+      "kernel_name": "Module_Experiment10",
+      "preset": 88,
+      "profile_path": "27_Module_Experiment10.profile.json",
+      "variant_id": 1347100699
+    }
+  ],
+  "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "restore_verified": false,
+  "schema": "hbnf-kernel-sweep-input-v1"
+}

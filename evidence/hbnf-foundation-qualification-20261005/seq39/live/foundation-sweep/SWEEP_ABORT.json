@@ -1,0 +1,8 @@
+{
+  "status": "FAIL",
+  "run_error": "catastrophic Foundation threshold crossed for 3 consecutive samples: fps=38 p99_ms=31.125 aux_age_ms=1226968",
+  "restore_error": null,
+  "profiles_completed": 28,
+  "pre_sweep_state": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep/PRE_SWEEP_STATE.json",
+  "post_restore_state": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep/POST_RESTORE_STATE.json"
+}
