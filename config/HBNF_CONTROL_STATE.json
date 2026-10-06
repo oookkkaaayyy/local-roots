@@ -734,7 +734,23 @@
         "Do not repeat the completed 28/28 seq39 sweep unless an actual invalidator requires it.",
         "Do not use GitHub Actions or firmware rebuilds for host/harness/orchestration issues.",
         "Do not let non-field-critical polish block tomorrow's operational gate."
-      ]
+      ],
+      "worker_autonomy_extension": {
+        "status": "ACTIVE_FOR_OVERNIGHT_SKINS_PUSH",
+        "rule": "The current worker must not idle merely because it cannot spawn separate worker contexts. While a healthy long-running live operation is running or when live mutation is blocked, it may advance noncontending offline-safe field-critical work itself in the same worker context, one lane at a time, while preserving independent lane tracking and live_mutation_limit=1.",
+        "order": [
+          "Mission Control / authoritative Skins scoring",
+          "PWA / owner control reliability",
+          "Vibe/audio",
+          "Text/moments"
+        ],
+        "stop_conditions": [
+          "A genuinely user-only physical action is required",
+          "Continuing would contend with or invalidate the live qualification transaction",
+          "No productive autonomous work remains"
+        ],
+        "reporting": "Do not stop merely to report intermediate diagnostics; checkpoint durable state and continue."
+      }
     }
   },
   "execution_budget_policy": {
@@ -909,7 +925,8 @@
       "note": "Do not judge the live Foundation worker for not spawning chats; it is only responsible for signaling readiness and preserving the live lane.",
       "owner": "COORDINATOR_EXTERNAL_TO_LIVE_WORKER",
       "required_live_worker_signal": "PARALLEL_LANES_READY",
-      "status_sheet_id": "1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko"
+      "status_sheet_id": "1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko",
+      "overnight_fallback_mode": "IF_SEPARATE_WORKER_CONTEXTS_CANNOT_BE_SPAWNED, CURRENT_WORKER_MAY_ADVANCE_NONCONTENDING_OFFLINE_SAFE_LANES_SEQUENTIALLY_IN_SAME_CONTEXT__KEEP_LIVE_MUTATION_LIMIT_1__TRACK_LANES_INDEPENDENTLY__DO_NOT_IDLE"
     },
     "schema": "hbnf-lane-execution-state-v1"
   },
