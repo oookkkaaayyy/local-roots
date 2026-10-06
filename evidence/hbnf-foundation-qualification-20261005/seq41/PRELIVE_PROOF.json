@@ -1,0 +1,52 @@
+{
+  "approved_for_mutation": true,
+  "capsule_sha256": "8978cdc8b78a3010f7279ce115d6c4d695516007baa3bdc7cd6ed908afb9d55a",
+  "consumer_contract": {
+    "identity": "Single Opal-origin direct-LAN WLED multipart /update; exact local candidate SHA/size verified at Opal before POST, followed by Matrix MAC/release identity verification; no Cloudflare discovery or bootloader/settings/partition operation.",
+    "verified": true
+  },
+  "pre_mutation_state": {
+    "device": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c, exact Release07; AUX 192.168.77.11 MAC 8c:94:df:55:c3:4c, WLED live=true, lm=DDP, lip=192.168.77.10.",
+    "mutation_plan": "one exact seq41 candidate install, reused seq39 28/28 sweep and observer proof, one snapshot/warmup, 90-minute state-changing soak, exact renderer restore; leave candidate installed only if accepted; seq42 Release07 only for genuine Foundation/device failure.",
+    "preflight_evidence": "READONLY_PREFLIGHT.json"
+  },
+  "recovery_identity": {
+    "identity": "hbnf-matrix-coordinated-v1-20261002-07; SHA-256 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab; 1458624 bytes; seq42 genuine device/runtime/Foundation recovery only.",
+    "verification": "Release07 BIN is exact-hash verified locally and by Opal before its single /update POST; post-OTA runtime release/build identity is checked."
+  },
+  "run_id": "HBNF-FOUNDATION-SEQ41-42-20261006",
+  "schema": "local-roots-prelive-proof-v1",
+  "stages": {
+    "capture-current-state": {
+      "evidence": [
+        "READONLY_PREFLIGHT.json records fresh read-only capture at 2026-10-06 09:11:11Z: exact Release07, Matrix MAC 70:4b:ca:5b:34:5c, AUX MAC 8c:94:df:55:c3:4c, Matrix-origin DDP live.",
+        "Five endpoint response hashes retained alongside the preflight. Seq41 transaction repeats all identity/AUX reads immediately before candidate OTA."
+      ],
+      "status": "PASS"
+    },
+    "contract-closure": {
+      "evidence": [
+        "AUX_AGE_GATE_RECONCILIATION_20261006.md: exact firmware sender age is not receiver age; adapter uses native WLED DDP live/source while preserving custom HBNFAUX diagnostics.",
+        "seq39 28/28 baseline and exact artifact provenance; no renderer or firmware change; inherited observer-effect PASS for this SHA.",
+        "Offline tests: tests/hbnf_foundation_live_adapter.py, tests/hbnf_foundation_seq39_failure_policy.py, tests/hbnf_foundation_seq41_offline.py, tests/hbnf_foundation_soak_audit.py, tests/hbnf_live_kernel_sweep.py, tests/hbnf_skins_scoring_owner_flow.mjs; TypeScript/JS syntax checks PASS."
+      ],
+      "status": "PASS"
+    },
+    "recovery-proof": {
+      "evidence": [
+        "Release07 exact BIN SHA-256 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab; 1458624 bytes, locally checked.",
+        "Seq40 exact Release07 recovery receipt: evidence/hbnf-foundation-qualification-20261005/seq39/live/TRANSACTION_RESULT.json; actual post-recovery runtime identity verified.",
+        "Sequence 42 is wired only for real candidate/runtime/Foundation failure or unproven restore/device safety; host-only faults preserve candidate when identity/uptime/AUX/restore remain proven."
+      ],
+      "status": "PASS"
+    },
+    "transaction-rehearsal": {
+      "evidence": [
+        "Seq41 direct-LAN transaction dry-run: live/DRY_RUN.json; exact candidate/recovery hashes, source provenance, 28-kernel inheritance, policy and restore proof validated without device commands.",
+        "Seq39 transaction evidence proves exact Opal-origin WLED /update and recovery mechanism; Seq39 snapshot/restore proof is hash-bound at live/../SEQ39_RESTORATION_REUSE_PROOF.json.",
+        "Observer-effect evidence is inherited from exact candidate SHA and is intentionally not remeasured. Seq41 runs one warm-up, then same-install 5400-second state-changing soak; it does not repeat the 28-kernel sweep."
+      ],
+      "status": "PASS"
+    }
+  }
+}
