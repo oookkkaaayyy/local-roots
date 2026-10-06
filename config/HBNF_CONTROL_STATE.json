@@ -1162,7 +1162,7 @@
         "signature_sha256": "d197c58e21010f3a1eec09d47e8e5abc452246355a6ad4f36f40c16b93c98be3"
       }
     ],
-    "checkpoint_at_utc": "2026-10-06T18:20:00Z",
+    "checkpoint_at_utc": "2026-10-06T18:18:25Z",
     "foundation_seq45_transaction": {
       "schema": "hbnf-foundation-seq45-transaction-v1",
       "sequence": 45,
@@ -1191,7 +1191,7 @@
       ],
       "restore_policy": "Do not restore during soak. Perform exactly one renderer restore after a clean 5400s soak.",
       "host_failure_policy": "Preserve seq45 and do not invoke seq46 for host/precondition/telemetry failures while identity, continuity, restore/session and AUX safety remain proven.",
-      "captured_at_utc": "2026-10-06T18:20:00Z",
+      "captured_at_utc": "2026-10-06T18:18:25Z",
       "pre_soak_telemetry_evidence": "evidence/hbnf-foundation-qualification-20261005/seq45/live/foundation-soak/OPAL_ORIGIN_TELEMETRY_PRE_SOAK.json",
       "pre_soak_uptime_seconds": 643,
       "pre_soak_restart_count": 0,
