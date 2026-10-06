@@ -52,6 +52,32 @@ def ota_once(binary,response_path,label):
     save(pathlib.Path(response_path).with_suffix(".json"),receipt)
     if p.returncode or p.stdout.strip()!="200" or not receipt["update_successful"]:raise RuntimeError(f"{label}-ota-response-not-confirmed-single-attempt")
     return receipt
+def candidate_opal_ota_once(binary,out):
+    """Use the already-proven Opal-origin local OTA transport after a host-side broken pipe."""
+    data=binary.read_bytes();remote_path="/tmp/hbnf-seq39-candidate.bin"
+    remote=("umask 077; cat > "+remote_path+" && chmod 600 "+remote_path+
+      " && test \"$(sha256sum "+remote_path+" | cut -d' ' -f1)\" = "+CANDIDATE_SHA+
+      " && test \"$(wc -c < "+remote_path+" | tr -d ' ')\" = "+str(CANDIDATE_SIZE)+
+      " && printf OPAL_ARTIFACT_VERIFIED")
+    transfer=subprocess.run(SSH+["-o","ConnectTimeout=8","-T",OPAL,remote],input=data,capture_output=True,timeout=90)
+    if transfer.returncode or b"OPAL_ARTIFACT_VERIFIED" not in transfer.stdout:
+        raise RuntimeError("seq39-opal-candidate-copy-hash-verification-failed")
+    command=("code=$(curl --silent --show-error --connect-timeout 5 --max-time 180 "
+      "-F 'update=@"+remote_path+";type=application/octet-stream' "
+      "-o /tmp/hbnf-seq39-ota-response.html -w '%{http_code}' http://192.168.77.10/update) "
+      "&& test \"$code\" = 200 && grep -q 'Update successful' /tmp/hbnf-seq39-ota-response.html "
+      "&& printf 'HTTP_200 UPDATE_OK\\n' && sha256sum /tmp/hbnf-seq39-ota-response.html "
+      "&& cat /tmp/hbnf-seq39-ota-response.html")
+    result=subprocess.run(SSH+["-o","ConnectTimeout=8",OPAL,command],capture_output=True,text=True,timeout=210)
+    response=pathlib.Path(out)/"seq39-opal-ota-response.txt";response.write_text(result.stdout)
+    receipt={"exit":result.returncode,"http_200_update_successful":"HTTP_200 UPDATE_OK" in result.stdout,
+      "candidate_sha256":CANDIDATE_SHA,"candidate_size_bytes":CANDIDATE_SIZE,
+      "transport":"verified SSH copy to Opal followed by Opal-origin local WLED /update",
+      "stderr_tail":result.stderr[-1000:],"attempts":1}
+    save(pathlib.Path(out)/"seq39-opal-ota-response.json",receipt)
+    if result.returncode or not receipt["http_200_update_successful"]:
+        raise RuntimeError("seq39-opal-candidate-ota-not-confirmed-single-alternate-transport")
+    return receipt
 def recover_once(binary,out):
     data=binary.read_bytes();remote_path="/tmp/hbnf-seq40-release07.bin"
     remote="umask 077; cat > "+remote_path+" && chmod 600 "+remote_path+" && test \"$(sha256sum "+remote_path+" | cut -d' ' -f1)\" = "+BASE_SHA+" && test \"$(wc -c < "+remote_path+" | tr -d ' ')\" = "+str(BASE_SIZE)+" && printf OPAL_ARTIFACT_VERIFIED"
@@ -123,9 +149,34 @@ def run(args):
     provenance,inv=verify_artifacts(candidate,provp,recovery,inventory,adapter,policy)
     if args.dry_run:
         print(json.dumps({"status":"DRY_RUN_PASS","candidate_sha256":CANDIDATE_SHA,"candidate_size_bytes":CANDIDATE_SIZE,"recovery_sha256":BASE_SHA,"inventory_kernels":len(inv["entries"]),"soak_seconds":5400,"observer_evidence":"one exact seq39 artifact observer comparison required","host_failure_policy":"preserve only with identity/no-restart/restore/AUX proofs; seq40 genuine failures only"},indent=2));return 0
-    start={"schema":"hbnf-foundation-seq39-40-transaction-v1","candidate":{"sequence":39,"release":CANDIDATE,"sha256":CANDIDATE_SHA,"size_bytes":CANDIDATE_SIZE,"source_commit":provenance["source_authority"]["base_source_commit"]},"recovery":{"sequence":40,"release":BASE,"sha256":BASE_SHA,"size_bytes":BASE_SIZE,"role":"REAL_FAILURE_RECOVERY_ONLY"},"candidate_install_attempts":0,"sweep_attempts":0,"recovery_attempts":0,"status":"STARTED"};save(out/"TRANSACTION_STARTED.json",start)
-    pre=capture(out,"seq39-pre-install");identity(pre,BASE);assert_aux(pre);start["pre_install_identity"]=pre;start["candidate_install_attempts"]=1;save(out/"TRANSACTION_STARTED.json",start)
-    start["candidate_ota"]=ota_once(candidate,out/"seq39-candidate-ota-response.html","seq39-candidate");installed=wait_identity(out,CANDIDATE);start["candidate_runtime_identity"]=installed;ledger_write(39,CANDIDATE,CANDIDATE_SHA);start["seq39_ledger_write"]="PASS_WITHOUT_READBACK";save(out/"CANDIDATE_INSTALLED.json",start)
+    if args.resume_after_aborted_candidate_ota:
+        started_path=out/"TRANSACTION_STARTED.json";started=read_json(started_path)
+        failed_receipt=read_json(out/"seq39-candidate-ota-response.json")
+        if not started or started.get("status")!="STARTED" or not failed_receipt or failed_receipt.get("exit")!=55 or failed_receipt.get("http_status")!="100" or failed_receipt.get("update_successful") is not False:
+            raise RuntimeError("seq39-resume-requires-preserved-HTTP100-broken-pipe-before-install")
+        baseline=started.get("pre_install_identity")
+        if not baseline:raise RuntimeError("seq39-resume-preinstall-identity-missing")
+        base_info,base_build,base_state=identity(baseline,BASE);assert_aux(baseline)
+        current=capture(out,"seq39-before-opal-transport-readonly");cur_info,cur_build,cur_state=identity(current,BASE);assert_aux(current)
+        old_up=float(base_state.get("HBNF",{}).get("timing",{}).get("uptimeSec",0));new_up=float(cur_state.get("HBNF",{}).get("timing",{}).get("uptimeSec",cur_info.get("uptime",0)))
+        if new_up<old_up:raise RuntimeError("seq39-host-transport-failure-also-observed-matrix-uptime-regression")
+        started["candidate_install_attempts"]=0;started["candidate_install_requests"]=2
+        started["first_transport_failure"]={"classification":"HOST_TRANSPORT_ABORTED_BEFORE_INSTALL","response_path":"seq39-candidate-ota-response.json","matrix_remained_exact_release07":True,"uptime_monotonic":True,"aux_ddp_healthy":True}
+        save(started_path,started)
+        started["candidate_ota"]=candidate_opal_ota_once(candidate,out)
+        installed=wait_identity(out,CANDIDATE);assert_aux(installed)
+        ledger_write(39,CANDIDATE,CANDIDATE_SHA)
+        started["candidate_install_attempts"]=1;started["candidate_runtime_identity"]=installed
+        started["seq39_ledger_write"]="PASS_WITHOUT_READBACK";save(out/"CANDIDATE_INSTALLED.json",started)
+        args.resume_existing_candidate=True
+    if args.resume_existing_candidate:
+        start=read_json(out/"CANDIDATE_INSTALLED.json")
+        if not start:raise RuntimeError("seq39-resume-installed-candidate-receipt-missing")
+        installed=capture(out,"seq39-resume-candidate-readonly");identity(installed,CANDIDATE);assert_aux(installed)
+    else:
+        start={"schema":"hbnf-foundation-seq39-40-transaction-v1","candidate":{"sequence":39,"release":CANDIDATE,"sha256":CANDIDATE_SHA,"size_bytes":CANDIDATE_SIZE,"source_commit":provenance["source_authority"]["base_source_commit"]},"recovery":{"sequence":40,"release":BASE,"sha256":BASE_SHA,"size_bytes":BASE_SIZE,"role":"REAL_FAILURE_RECOVERY_ONLY"},"candidate_install_attempts":0,"candidate_install_requests":0,"sweep_attempts":0,"recovery_attempts":0,"status":"STARTED"};save(out/"TRANSACTION_STARTED.json",start)
+        pre=capture(out,"seq39-pre-install");identity(pre,BASE);assert_aux(pre);start["pre_install_identity"]=pre;start["candidate_install_requests"]=1;save(out/"TRANSACTION_STARTED.json",start)
+        start["candidate_ota"]=ota_once(candidate,out/"seq39-candidate-ota-response.html","seq39-candidate");installed=wait_identity(out,CANDIDATE);start["candidate_install_attempts"]=1;start["candidate_runtime_identity"]=installed;ledger_write(39,CANDIDATE,CANDIDATE_SHA);start["seq39_ledger_write"]="PASS_WITHOUT_READBACK";save(out/"CANDIDATE_INSTALLED.json",start)
     _,_,candidate_state=identity(installed,CANDIDATE);baseline_uptime=float(candidate_state.get("HBNF",{}).get("timing",{}).get("uptimeSec",0));start["sweep_attempts"]=1;save(out/"CANDIDATE_INSTALLED.json",start)
     code=run_sweep(adapter,inventory,policy,out);start["sweep_exit_code"]=code
     sweep=out/"foundation-sweep";report=read_json(sweep/"ALL_KERNEL_SWEEP_REPORT.json");manifest=read_json(sweep/"SWEEP_MANIFEST.json");receipt=read_json(sweep/"RESTORE_RECEIPT.json")
@@ -149,7 +200,7 @@ def run(args):
         start["status"]="REAL_FAILURE__RELEASE07_RECOVERY_"+start["recovery_status"]
     save(out/"TRANSACTION_RESULT.json",start);return 2
 def main():
-    p=argparse.ArgumentParser();p.add_argument("--candidate-bin",required=True);p.add_argument("--provenance",required=True);p.add_argument("--recovery-bin",required=True);p.add_argument("--adapter",required=True);p.add_argument("--inventory",required=True);p.add_argument("--policy",required=True);p.add_argument("--outdir",required=True);p.add_argument("--dry-run",action="store_true");return run(p.parse_args())
+    p=argparse.ArgumentParser();p.add_argument("--candidate-bin",required=True);p.add_argument("--provenance",required=True);p.add_argument("--recovery-bin",required=True);p.add_argument("--adapter",required=True);p.add_argument("--inventory",required=True);p.add_argument("--policy",required=True);p.add_argument("--outdir",required=True);p.add_argument("--dry-run",action="store_true");p.add_argument("--resume-after-aborted-candidate-ota",action="store_true");p.add_argument("--resume-existing-candidate",action="store_true");return run(p.parse_args())
 if __name__=="__main__":
     try:raise SystemExit(main())
     except Exception as e:print(f"seq39/40 transaction failed: {type(e).__name__}: {e}",file=sys.stderr);raise SystemExit(2)

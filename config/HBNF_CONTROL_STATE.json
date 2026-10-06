@@ -227,7 +227,7 @@
       "github_run_id": 37376862955,
       "kernel_total": 28,
       "next_sequences": "SEQ39_CANDIDATE__SEQ40_REAL_FAILURE_RECOVERY_ONLY",
-      "next_transaction_status": "AUTHORIZED__OFFLINE_GATES_PASS__PRELIVE_REQUIRED",
+      "next_transaction_status": "HOST_TRANSPORT_FAILURE_BEFORE_INSTALL__EXACT_RELEASE07_STILL_HEALTHY__ONE_OPAL_ORIGIN_RESUME_AUTHORIZED",
       "observer_effect": "SEQ33_EXACT_CANDIDATE_PASS__27_SAMPLES_PER_MODE__MEDIAN_DELTA_MINUS_2_94_PERCENT__REUSE_WITHOUT_REMEASUREMENT",
       "offline_integrated_soak_runner": "scripts/hbnf_live_kernel_sweep.py runs >=5400s changing round-robin soak, then hbnf_foundation_soak_audit.py verifies frozen per-kernel relative FPS/frame p95/p99/max/heap/largest-block/AUX gates against the hash-bound baseline before pass.",
       "offline_resume_plan": "work/cart2/27_FOUNDATION_OFFLINE_RESUME_PLAN_20261005.md",
@@ -266,7 +266,11 @@
       "timeout_hierarchy": "HTTP GET 10s; /json/state POST 25s; command ack 30s; snapshot 45s; restore 90s; outer runner 240s (226s maximum normal snapshot composition plus 14s margin)",
       "timeout_repair_commit": "98a111b51935655bc3320ad05463f0b521d03035",
       "transaction_authorization": "CURRENT_USER_EXPEDITE_BOUNDED_TELEMETRY_RANGE_FIX_DIRECTIVE",
-      "drive_evidence_url": "https://drive.google.com/file/d/1E0te1eJH6TCAmLHVQct5huZAToLI1fwq/view?usp=drivesdk"
+      "drive_evidence_url": "https://drive.google.com/file/d/1E0te1eJH6TCAmLHVQct5huZAToLI1fwq/view?usp=drivesdk",
+      "host_transport_failures": 1,
+      "candidate_install_successes": 0,
+      "last_host_transport_failure": "Mac curl returned exit 55 / HTTP 100 / broken pipe; read-only post-attempt identity remained exact Release07 with advancing uptime and AUX DDP live. No seq39 install and no seq40 recovery.",
+      "resume_transport": "One exact-artifact SSH copy to Opal, verify SHA/size there, then one already-proven Opal-origin local Matrix /update; never retry Mac-origin transport."
     },
     "foundation_seq33_attempts": [
       {
@@ -310,7 +314,7 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
+      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Foundation offline timeout and soak-harness checkpoint",
@@ -652,7 +656,7 @@
     "prelive_evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq39/PRELIVE_PROOF.json",
     "scope": "One exact local clean-room telemetry-only candidate install seq39; exact one-time observer A/B on that changed artifact; sacrificial warm-up; complete all-28 Foundation sweep; hash-bound baseline/frozen policy; same-install >=5400s state-changing soak; seq40 exact Release07 REAL DEVICE/RUNTIME FAILURE recovery only. Host-only failure preserves candidate only with exact identity, health, no restart, renderer restore, and AUX health proof. No R3/R4/Packet20 re-exploration, no new build, no GitHub Actions.",
     "status": "AUTHORIZED__OFFLINE_GATES_PASS__PRELIVE_REQUIRED",
-    "user_authorization": "Current user directive EXPEDITE — BOUNDED TELEMETRY RANGE FIX ONLY explicitly authorizes next legal seq39 candidate / seq40 exact Release07 real failure recovery after offline gates; seq37 remains TELEMETRY_INSTRUMENTATION, not renderer/root-cause failure.",
+    "user_authorization": "Current user directive EXPEDITE \u2014 BOUNDED TELEMETRY RANGE FIX ONLY explicitly authorizes next legal seq39 candidate / seq40 exact Release07 real failure recovery after offline gates; seq37 remains TELEMETRY_INSTRUMENTATION, not renderer/root-cause failure.",
     "closure_reason": null
   },
   "live_mutation_authorized": true,
@@ -669,11 +673,10 @@
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
     },
     "exact_next_path": [
-      "Verify a fresh read-only Matrix/AUX preflight proves exact Release07 and healthy Matrix-origin AUX DDP.",
-      "Pass current seq39 capsule and PRELIVE_PROOF through platform checks and guarded runner.",
-      "Install exact seq39 candidate once; measure observer effect once; warm up; run the complete 28-kernel Foundation sweep.",
-      "If clean, bind baseline/frozen policy and immediately start the same-install >=90-minute state-changing soak.",
-      "Seq40 exact Release07 is recovery only for genuine device/runtime/Foundation failure; do not consume for a host-only error when safety proofs pass.",
+      "Use the preserved HTTP100/curl55 evidence to resume the same authorized seq39 transaction via the already-proven Opal-origin local OTA path; verify exact candidate identity before writing seq39 ledger.",
+      "Measure observer effect once on the exact seq39 artifact, perform sacrificial warm-up, and execute the complete 28-kernel Foundation sweep.",
+      "If clean, bind baseline/frozen policy and immediately start same-install >=90-minute state-changing soak.",
+      "Seq40 exact Release07 remains genuine device/runtime/Foundation failure recovery only; preserve candidate on a host-only issue only when all safety proofs pass.",
       "After first three clean soak samples, emit PARALLEL_LANES_READY and checkpoint external launch state; continue live Foundation lane."
     ],
     "no_repeat": [

@@ -1,0 +1,9 @@
+{
+  "attempts": 1,
+  "exit": 55,
+  "http_status": "100",
+  "response_bytes": 0,
+  "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_tail": "curl: (55) Send failure: Broken pipe\n",
+  "update_successful": false
+}

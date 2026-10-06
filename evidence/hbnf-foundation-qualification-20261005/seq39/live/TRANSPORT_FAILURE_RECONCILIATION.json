@@ -1,0 +1,16 @@
+{
+  "candidate_install_successes": 0,
+  "candidate_ota_requests": 1,
+  "next_transport": "single Opal-origin /update after SSH-copy SHA/size verification; changed mechanism is the already-proven exact LAN recovery path",
+  "post_attempt_readonly": "evidence/hbnf-foundation-qualification-20261005/seq39/live/POST_OTA_TRANSPORT_READONLY_RECONCILIATION.json",
+  "request_receipt": "evidence/hbnf-foundation-qualification-20261005/seq39/live/seq39-candidate-ota-response.json",
+  "request_result": {
+    "curl_exit": 55,
+    "http_status": "100",
+    "response_bytes": 0,
+    "stderr": "Send failure: Broken pipe"
+  },
+  "schema": "hbnf-seq39-transport-failure-reconciliation-v1",
+  "status": "HOST_TRANSPORT_ABORTED_BEFORE_INSTALL",
+  "verified_device_state": "exact Release07 SHA 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab remains installed; uptime advanced 3591 to 3665 seconds; AUX DDP healthy; no seq39 install and no seq40 recovery"
+}
