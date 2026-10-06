@@ -45,6 +45,9 @@ def check(condition,message):
 
 def main() -> int:
     check(tuple(CONFIG["audio_features"]["semantic_features"])==module.FEATURE_NAMES,"feature contract drift")
+    adapter=CONFIG["audio_features"]["source_adapter"]
+    check(set(adapter)==set(module.FEATURE_NAMES),"source adapter does not cover every AudioFeatures semantic")
+    check(all("NEW_FFT" not in entry["operation"] for entry in adapter.values()),"source adapter introduces a second FFT")
     for kind in CONFIG["acceptance"]["synthetic_traces"]:
         for sample in run(kind):
             check(set(sample)==set(module.FEATURE_NAMES),f"{kind}: missing feature")
