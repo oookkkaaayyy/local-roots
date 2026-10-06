@@ -1,5 +1,5 @@
 {
-  "checkpoint_at_utc": "2026-10-06T22:55:09Z",
+  "checkpoint_at_utc": "2026-10-06T23:00:13Z",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -99,7 +99,7 @@
       "schema": "hbnf-brightness-field-target-v1",
       "status": "DECISION_DEFER_FOR_STABILITY",
       "target_event": "NEXT_SKINS_ROUND__2026-10-06",
-      "user_field_preference": "Typical night sweet spot is roughly current-slider 10\u201320; values above ~25 can be excessively bright on-course."
+      "user_field_preference": "Typical night sweet spot is roughly current-slider 10–20; values above ~25 can be excessively bright on-course."
     },
     "checkpoint_at_utc": "2026-10-06T18:27:00Z",
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
@@ -185,22 +185,25 @@
       "created_at_local": "2026-10-06T13:41:06-07:00",
       "current_seq47_retry_started_local": "approximately 2026-10-06T13:27:00-07:00",
       "expected_full_soak_completion_local": "approximately 2026-10-06T14:57:00-07:00 if uninterrupted",
-      "field_freeze_local": "2026-10-06T16:40:00-07:00",
-      "foundation_decision_cutoff_local": "2026-10-06T16:30:00-07:00",
+      "field_freeze_local": "2026-10-06T16:45:00-07:00",
+      "foundation_decision_cutoff_local": "2026-10-06T16:40:00-07:00",
       "priority": "FIELD_READINESS_OVERRIDES_NONESSENTIAL_CART2_PROGRESS",
       "rules": [
-        "Do not resume broad Foundation development or run another 90-minute soak before tonight's round.",
-        "First perform offline-only correction of qualification comparability: esp_get_minimum_free_heap_size is a boot-lifetime low-water mark and must not be treated as a fresh per-kernel sustained value; long-soak resource/AUX adjudication must use a measurement window comparable to the settled baseline rather than samples taken during/immediately after state transitions.",
-        "Do not numerically weaken the frozen FPS/p95/p99 thresholds and do not alter the proven renderer/FastLED path.",
-        "Replay the already-completed 5439.949-second seq47 evidence under the corrected, regression-tested audit semantics. Preserve the original frozen-audit FAIL as historical evidence; do not overwrite it.",
-        "If corrected offline replay still shows a genuine sustained resource/AUX defect, STOP and keep exact Release07 for tonight.",
-        "If corrected offline replay PASSes with regression fixtures proving sustained failures would still be caught, seq49 may reinstall the exact unchanged seq47 candidate SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c. No firmware rebuild and no GitHub Actions.",
-        "After seq49, run a short bounded settled-state validation covering all 28 kernels plus Matrix/AUX/DDP health, restart continuity, heap/current-free-block sanity, and actual owner-device iPad/iPhone Home Screen control smoke. Do not rerun a 90-minute soak because the exact artifact already completed one and the correction is audit/comparability-only.",
-        "Seq50 exact Release07 recovery is preauthorized only for install failure, genuine runtime/safety failure, failed targeted validation, or failed owner-device field smoke.",
-        "By 16:40 local freeze live changes and retain whichever version is objectively verified safer/course-ready. Preserve at least 20 minutes before 17:00 departure."
+        "Classify the seq49 stop as HOST_TELEMETRY_COLLECTION failure, not a measured device/runtime failure: all required parallel reads except AUX /json/state completed; no resource/AUX threshold violation was measured; renderer restore passed.",
+        "Do not rebuild firmware, alter renderer/FastLED code, change numeric thresholds, repeat the 90-minute soak, repeat observer A/B, or repeat the performance sweep.",
+        "Offline first: patch ONLY the targeted validation harness so AUX /json/state is not a required per-sample endpoint. WLED /json/info is the canonical required receiver proof for live realtime data and supplies live/lm/lip; current project aux_projection_health() already derives aux_projection_active solely from those /json/info fields.",
+        "Keep AUX /json/state/HBNFAUX counters optional diagnostic evidence only. A timeout on this optional endpoint must not fail the run or trigger recovery.",
+        "Regression-test the exact seq49 failure mode: injected AUX /json/state timeout must still allow a valid targeted sample when Matrix state + AUX info prove health; injected AUX /json/info absence/timeout must NOT be silently passed; explicit live=false, lm!=DDP, wrong lip, resource threshold failure, identity mismatch, or restart must still fail.",
+        "On offline regression PASS, seq51 may install the EXACT UNCHANGED candidate SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c. No firmware build and no GitHub Actions.",
+        "Seq51 targeted validation must use 5-second post-select settle for all 28 kernels and collect multiple successful post-settle Matrix-state + AUX-info samples per kernel. Matrix build/info identity may be captured pre/post rather than on every sample. Retry transient read timeouts within a bounded per-kernel window; transport timeout is missing evidence, not a device failure.",
+        "Require existing frozen current-free-heap and largest-free-block ratios, exact candidate identity, zero restart, Matrix-origin AUX DDP proven by AUX info live=true/lm=DDP/lip=192.168.77.10, and renderer restore. Reuse completed seq47 FPS/p95/p99/sample-continuity/90-minute/restore evidence.",
+        "If targeted validation PASSes, write the T2 Foundation qualification receipt and advance to FOUNDATION_QUALIFIED. Do not deploy unrelated Phase 2 changes tonight.",
+        "Immediately run intended-owner iPad/iPhone Home Screen/control smoke on the installed candidate. Course-ready requires visible Matrix response, AUX response, relaunch, Wi-Fi reconnect, and no blank/stale controller state.",
+        "Seq52 exact Release07 recovery is authorized ONLY for genuine install/runtime/resource/AUX/identity/restart/owner-smoke failure, or inability to obtain REQUIRED Matrix-state/AUX-info evidence by 16:40. Optional AUX-state timeout alone never triggers recovery.",
+        "Hard technical-change cutoff 16:45. Reserve 16:45-17:00 for final verification and, if objectively required, seq52 Release07 recovery."
       ],
       "schema": "hbnf-field-readiness-deadline-v1",
-      "user_directive": "User can remain home until 2026-10-06 17:00 America/Los_Angeles and explicitly authorizes a narrow Foundation rescue only if it preserves tonight's quality/reliability."
+      "user_directive": "User explicitly authorizes one final bounded technical Foundation rescue from 16:00 to 16:45 PDT, with 16:45-17:00 reserved for final vetting/owner smoke and recovery. Goal is to field the exact fast Foundation candidate tonight if objectively safe."
     },
     "field_version_policy": {
       "rules": [
@@ -867,7 +870,7 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
+      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "live_mutation_authorization": {
@@ -1462,6 +1465,46 @@
       "installed_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "owner_device_smoke": "NOT_RUN; candidate targeted qualification incomplete and exact Release07 restored",
       "evidence_dir": "evidence/hbnf-foundation-qualification-20261005/seq49"
+    },
+    "foundation_rescue_20261006_final": {
+      "schema": "hbnf-foundation-final-field-rescue-v1",
+      "classification": "HOST_TELEMETRY_TIMEOUT__NOT_MEASURED_FUNCTIONAL_FAILURE",
+      "user_authorization": "At 15:59 PDT user required one final maximum-45-minute technical rescue plus 15 minutes final vetting; user believes the failure is technical rather than functional and requests completion tonight if evidence supports that classification.",
+      "seq49_failure_evidence": {
+        "profiles_completed": 4,
+        "measured_threshold_failures": 0,
+        "failed_endpoint": "AUX /json/state",
+        "failed_endpoint_timeout_seconds": 4,
+        "parallel_batch_elapsed_seconds": 4.907699,
+        "successful_same_batch_endpoints": [
+          "matrix_info",
+          "matrix_build",
+          "matrix_state",
+          "aux_info"
+        ],
+        "renderer_restore": "PASS__restoreVerified_true__packet20Same_true",
+        "recovered_release07": "PASS"
+      },
+      "external_expertise_basis": [
+        "Official WLED JSON API documents /json/info as the info object and exposes live, lm, and lip for current realtime source.",
+        "Current WLED source populates info.live from realtimeMode, info.lm including DDP, and info.lip from realtime source IP.",
+        "A current WLED GitHub issue documents intermittent receiver HTTP timeouts during sustained DDP traffic while realtime data remains active; treat this as corroborating field evidence, not sole authority.",
+        "Espressif documents network timeouts as transport-level outcomes and esp_get_minimum_free_heap_size as minimum free heap ever available."
+      ],
+      "harness_fix": [
+        "Dedicated targeted-resource telemetry path requires Matrix /json/state and AUX /json/info only for per-sample gate data.",
+        "AUX /json/state is optional diagnostic-only and may be attempted pre/post or best-effort outside the critical sample path.",
+        "Transient required-endpoint timeout gets bounded retry and is classified MISSING_EVIDENCE until retries expire; it is never itself equivalent to aux_projection_active=false.",
+        "No general five-endpoint soak sampler is used for this targeted rescue."
+      ],
+      "completion_path": [
+        "Offline regression fixtures for seq49 aux_state timeout plus true negative cases.",
+        "Seq51 exact unchanged candidate install.",
+        "28-kernel 5-second-settled targeted current-free-heap/largest-block/AUX-info collection with multiple samples.",
+        "One renderer restore; T2 receipt/promotion on objective PASS using inherited seq47 evidence.",
+        "Actual iPad/iPhone owner-device smoke.",
+        "Freeze by 16:45; final verification/recovery window until 17:00."
+      ]
     }
   },
   "execution_budget_policy": {
@@ -1479,7 +1522,7 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "SEQ49_TARGETED_RESOURCE_AUX_TIMEOUT__SEQ50_RELEASE07_RECOVERY_PASS",
+    "current_failure_domain": "HOST_TELEMETRY_COLLECTION__AUX_STATE_TIMEOUT_NOT_RUNTIME_FAILURE",
     "current_lifecycle_state": "FIX_CANDIDATE",
     "current_subject": {
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
@@ -1487,11 +1530,11 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Seq49 targeted collection did not complete: AUX /json/state timed out during telemetry after four kernels; no measured resource/AUX threshold failure. Renderer restore verified.",
-      "Seq50 exact Release07 recovery and installed release identity/hash verified; live mutation closed.",
-      "Foundation remains UNQUALIFIED; do not allocate another sequence or mutate live hardware without fresh coordinator authority.",
-      "Owner-device Home Screen/control smoke was not run because candidate targeted qualification was incomplete.",
-      "Offline-correct and regress the AUX telemetry collection timeout before any future authorized targeted qualification."
+      "Offline patch/regress the targeted collector: required per-sample endpoints are Matrix state + AUX info; AUX state is optional diagnostic only.",
+      "On regression PASS, seq51 reinstall exact unchanged candidate SHA 338afdf5...3d8c.",
+      "Run short 28-kernel 5-second-settled resource/AUX-info validation with bounded retry. Reuse completed seq47 90-minute performance/stability proof.",
+      "On PASS, restore renderer once, write T2 Foundation receipt, advance FOUNDATION_QUALIFIED, and run actual iPad/iPhone owner-control smoke.",
+      "Seq52 Release07 only for genuine required evidence/runtime/owner-smoke failure. Technical work ends by 16:45; final vet/recovery ends by 17:00."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1709,40 +1752,40 @@
   },
   "lifecycle_state": "FIX_CANDIDATE",
   "live_mutation_authorization": {
-    "candidate_sequence": 49,
-    "recovery_sequence": 50,
-    "status": "CONDITIONAL__SEQ49_EXACT_UNCHANGED_CANDIDATE_AFTER_OFFLINE_AUDIT_REPLAY_PASS",
+    "candidate_sequence": 51,
+    "recovery_sequence": 52,
+    "status": "CONDITIONAL__FINAL_FIELD_RESCUE_AFTER_TARGETED_HARNESS_REGRESSION_PASS",
     "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "candidate_size_bytes": 1489008,
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "release07_recovery_size_bytes": 1458624,
-    "user_authorization": "Explicit 2026-10-06 field rescue directive: pursue the narrow fix and get the improved Foundation build onto the cart tonight if safely provable; user can remain until 17:00; avoid another full soak.",
+    "user_authorization": "Final 45-minute technical rescue authorized at 15:59 PDT; reserve final 15 minutes to 17:00 for vetting/recovery.",
     "scope": [
-      "OFFLINE FIRST: correct only qualification comparability semantics and regression-test them; do not alter renderer/FastLED code or numeric ratios.",
-      "Preserve and reuse the full seq47 5439.949s exact-artifact FPS/p95/p99/restart/sample-continuity/restore evidence. Original frozen-audit FAIL remains immutable historical evidence.",
-      "Re-derive comparable current-free-heap baseline from preserved seq39 raw settled profiles; do not use boot-lifetime esp_get_minimum_free_heap_size as a per-kernel sustained value.",
-      "Apply the frozen baseline's 5-second settle window to resource/AUX comparisons. Existing raw evidence proves the prior AUX false and all largest-block failure samples occurred during or within 4.431 seconds of selector activity.",
-      "If offline replay shows a genuine settled sustained resource/AUX failure, no seq49 install.",
-      "If offline replay PASSes OR is incomplete only because some kernels lack sufficient post-settle samples, install exact unchanged seq47 candidate bytes as seq49; no firmware rebuild and no GitHub Actions.",
-      "After seq49 collect only the missing/comparable resource+AUX proof with a short 28-kernel sweep using 5-second settle per kernel and multiple post-settle samples; reuse the completed 90-minute performance evidence rather than repeating it.",
-      "Then run actual owner-device field smoke. Use seq50 exact Release07 on any genuine failure.",
-      "Freeze live changes by 16:40 local."
+      "Offline patch/regression ONLY to targeted resource/AUX harness: remove AUX /json/state from mandatory per-sample path; preserve AUX /json/info as required canonical WLED realtime DDP source proof.",
+      "Regression must prove optional aux_state timeout no longer aborts; required aux_info timeout/inactive/wrong-source still cannot pass; resource/restart/identity failures still fail.",
+      "Install exact unchanged candidate only as seq51 after offline PASS; no firmware rebuild/Actions.",
+      "Collect short 28-kernel 5-second-settled current-free-heap/largest-block/AUX-info evidence with multiple successful samples; bounded retry required endpoints.",
+      "Reuse exact seq47 full 5439.949s FPS/p95/p99/restart/continuity evidence; no repeat soak/performance sweep.",
+      "On objective targeted PASS, restore renderer once, write T2 receipt, advance FOUNDATION_QUALIFIED, and run intended-owner device smoke.",
+      "Seq52 Release07 only for genuine required-evidence/runtime/owner-smoke failure or inability to close by 16:40; optional aux_state timeout alone is explicitly not a recovery trigger.",
+      "Hard live-change cutoff 16:45."
     ],
-    "recovery_rule": "SEQ50_RELEASE07_IF_SEQ49_INSTALL_RUNTIME_TARGETED_VALIDATION_OR_OWNER_DEVICE_SMOKE_FAILS",
+    "recovery_rule": "SEQ52_RELEASE07_ONLY_FOR_GENUINE_REQUIRED_RUNTIME_OR_OWNER_SMOKE_FAILURE__OPTIONAL_AUX_STATE_TIMEOUT_NEVER_TRIGGERS_RECOVERY",
     "live_mutation_limit": 1,
     "anti_repetition": [
       "NO_90_MINUTE_SOAK_REPEAT",
-      "NO_28_KERNEL_PERFORMANCE_SWEEP_REPEAT",
+      "NO_PERFORMANCE_SWEEP_REPEAT",
       "NO_OBSERVER_A_B_REPEAT",
       "NO_FIRMWARE_REBUILD",
       "NO_GITHUB_ACTIONS",
       "NO_RENDERER_CHANGE",
-      "NO_NUMERIC_THRESHOLD_SHOPPING"
+      "NO_THRESHOLD_SHOPPING",
+      "NO_REQUIRED_AUX_STATE_POLL"
     ],
-    "target": "Field the exact fast seq47 artifact tonight if the failed resource/AUX gates are proven to be audit-comparability artifacts rather than sustained runtime defects."
+    "target": "Objectively close the remaining resource/AUX evidence gap and field the already-proven fast exact candidate tonight."
   },
-  "live_mutation_authorized": false,
+  "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",
