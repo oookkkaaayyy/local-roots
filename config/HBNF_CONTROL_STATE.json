@@ -37,7 +37,9 @@
       "scope": "complete recovery and continue Cart 2.0 lifecycle autonomously as far as safely possible overnight",
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
-    "blockers": [],
+    "blockers": [
+      "Capsule/prelive-check not yet completed; no device mutation before both PASS."
+    ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "diagnostic_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
