@@ -309,11 +309,11 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
+      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Foundation offline timeout and soak-harness checkpoint",
-    "next_work": "Follow execution_cursor exactly. Complete host-only prelive/regression proof, then run authorized seq37 without repeating inherited observer/Packet20/R4 work. On a clean sweep continue directly into the same-installation 90-minute soak; use soak time for safe permanent Phase 2 host/staging work. Classify every failure by HBNF_CONTROL_MODEL.execution_system and invalidate only affected evidence.",
+    "next_work": "Resolve seq37 as a bounded telemetry-instrumentation limitation, not a renderer re-diagnosis: preserve all renderer/R4 evidence; widen the existing fixed-size tail histogram range without changing renderer/runtime behavior, persist raw failing telemetry before validation throws, prove telemetry-only diff offline, then run one changed-artifact observer check + full 28-kernel sweep + same-installation >=90-minute soak. No broad profiling or new optimization candidate unless the widened telemetry proves an actual runtime gate failure.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "performance_findings": {
       "candidate_fix": "FastLED 3.10.4 bounded fixed-point Animartrix backport; R4 achieved a 42 FPS median across 28 kernels, 8.329 ms median kernel time, with 28 improved and 0 regressed. Material gain confirmed; continue Foundation gates.",
@@ -650,7 +650,7 @@
     "prelive_evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq37/PRELIVE_PROOF.json",
     "scope": "One exact candidate install seq37; reuse exact seq33 observer PASS; tails-off steady interval, sacrificial warmup, full 28-kernel sweep, baseline-frozen >=90-minute changing soak; seq38 exact Release07 only for real device/Foundation failure. Host-only failures preserve candidate if exact identity, health, no restart, exact restore, and AUX health pass.",
     "status": "CLOSED__SEQ38_RECOVERY_VERIFIED__FOUNDATION_GATE_FAILED",
-    "user_authorization": "FOUNDATION CONVERGENCE DIRECTIVE \u2014 AUTHORIZE FRESH SEQ35/36; explicit later seq37/38 authorization supersedes pair, with this host-failure restriction.",
+    "user_authorization": "FOUNDATION CONVERGENCE DIRECTIVE — AUTHORIZE FRESH SEQ35/36; explicit later seq37/38 authorization supersedes pair, with this host-failure restriction.",
     "closure_reason": "Seq37 Foundation telemetry gate failed on saturated tail quantile; exact Release07 recovery seq38 verified. No further live mutation is authorized by this transaction."
   },
   "live_mutation_authorized": false,
@@ -661,7 +661,7 @@
     "schema": "hbnf-execution-cursor-v1",
     "current_lifecycle_state": "FIX_CANDIDATE",
     "current_transition": "T2_FOUNDATION_QUALIFY",
-    "current_failure_domain": "FIRMWARE_FOUNDATION_TELEMETRY_GATE",
+    "current_failure_domain": "TELEMETRY_INSTRUMENTATION",
     "current_subject": {
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
       "artifact_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338"
@@ -810,10 +810,24 @@
       "RELEASE_DEPLOYMENT": 0,
       "UI_BACKEND": 0,
       "PHYSICAL_HARDWARE": 0,
-      "AESTHETIC_PRODUCT": 0
+      "AESTHETIC_PRODUCT": 0,
+      "TELEMETRY_INSTRUMENTATION": 1
     },
     "host_process_wasted_live_attempts": 0,
     "device_runtime_failed_live_attempts": 0,
-    "events": []
+    "events": [
+      {
+        "event_id": 1,
+        "domain": "TELEMETRY_INSTRUMENTATION",
+        "reference": "seq37 Module_Experiment10 tail quantile saturated at 51.15ms",
+        "live_attempt": true,
+        "invalidates": [
+          "runtime_telemetry_verified",
+          "instrumentation_observer_effect_passed",
+          "all_kernel_sweep_passed",
+          "foundation_soak_passed"
+        ]
+      }
+    ]
   }
 }
