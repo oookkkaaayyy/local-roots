@@ -1333,12 +1333,33 @@
         "Continue the currently-running seq47 soak uninterrupted while healthy; do not restart or reflash merely because of this deadline.",
         "Immediately after a clean soak, perform the one restore and final T2 audit with no optional archaeology or repeated evidence.",
         "If FOUNDATION_QUALIFIED is not objectively achieved by 15:15 local, stop qualification work at the next safe boundary and prioritize course-ready rollback/verification.",
-        "For the 16:00 field deadline, seq48 exact Release07 recovery is authorized as a deadline fallback even if there is no new device failure, provided it is needed to return the cart to the known-good field baseline.",
+        "For the 16:00 field deadline, seq48 exact Release07 recovery remains available as a fallback but MUST NOT be used solely because the cutoff arrived; prefer the most current runtime that can be objectively verified safe/course-ready. Use seq48 only if seq47 has a genuine runtime/safety failure, cannot be safely restored/verified, or fails the field-readiness smoke in time.",
         "After any deadline fallback recovery, verify exact Release07 runtime identity, Matrix/AUX health, Matrix-origin AUX DDP, and the existing owner control path. Do not begin new renderer/firmware experimentation before the round.",
         "At 15:20 local, freeze nonessential live changes. No new firmware candidate, new Foundation transaction, brightness change, or unproven Phase 2 live deployment may begin before the round.",
         "If Foundation qualifies before the cutoff, preserve the qualified state. Do not jeopardize field readiness with optional post-T2 live changes; only field-critical controller/scoring work that can be fully smoked with rollback before the freeze may proceed.",
         "All four offline Phase 2 lane checkpoints and T3 fast-path preparation remain preserved for post-round continuation."
       ]
+    },
+    "field_version_policy": {
+      "schema": "hbnf-field-version-policy-v1",
+      "user_preference": "Use the most current version that is actually verified safe. Do not roll back to an older runtime or UI solely because of the field deadline.",
+      "rules": [
+        "If seq47 completes T2 and remains healthy, KEEP seq47 for the round; do not recover to Release07 merely because Release07 is older/known-good.",
+        "If seq47 is not fully qualified by the cutoff but has no genuine runtime/safety failure, do not automatically roll back. Decide course-readiness from exact identity, restart/AUX/restore safety proof and owner-device control smoke.",
+        "Use seq48 Release07 only if seq47 shows a genuine runtime/safety failure, cannot be restored/verified safely, or the current runtime cannot pass the field-readiness smoke in time.",
+        "For owner UI, prefer the newest package/source that passes offline closure AND intended-owner-device smoke before field freeze. If a newer UI cannot be fully smoked in time, keep the currently verified UI; do not arbitrarily revert farther.",
+        "Any fallback must be the smallest necessary rollback, with exact version identity recorded."
+      ]
+    },
+    "field_fastpath_prep": {
+      "status": "OFFLINE_PREPARED__NOT_DEPLOYED__NOT_PHASE2_AUTHORITY",
+      "branch": "hbnf-cart2-field-fastpath-prep-20261006",
+      "base_head": "e262a6d898d7207bba3e54133671a9ac89361a88",
+      "contents": "Current authoritative PWA/reliability source plus the exact six-file Mission Control/Skins scoring worker diff.",
+      "scoring_source_branch": "hbnf-cart2-p2-mission-control-scoring-20261006-r2",
+      "verification": "GitHub compare shows exactly six modified scoring files and no unrelated file changes.",
+      "intended_use": "If Foundation/T3 authority opens with enough pre-freeze time, reconcile this prep branch against then-current authority, run required host/package closure, and only deploy if intended-owner-device smoke can complete before field freeze.",
+      "live_mutation": "NONE"
     }
   },
   "execution_budget_policy": {
