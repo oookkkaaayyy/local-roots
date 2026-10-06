@@ -37,9 +37,7 @@
       "scope": "complete recovery and continue Cart 2.0 lifecycle autonomously as far as safely possible overnight",
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
-    "blockers": [
-      "User paused before any new live transaction. Seq31/32 are closed; seq33/34 are unallocated. Offline timeout and soak-harness preparation only; no install or soak may begin until the user resumes."
-    ],
+    "blockers": [],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "diagnostic_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
@@ -218,6 +216,55 @@
         "source": "evidence/hbnf-packet20-fix-candidate-20261005/r4-offline/R4_OFFLINE_REPORT.md"
       }
     },
+    "foundation_metrics_run": {
+      "artifact_transfer_commit": "52f2252d680bcb67273929916b5f444d8fb9cda4",
+      "candidate_sequence": 33,
+      "checkpoint_path": "evidence/hbnf-foundation-qualification-20261005/OFFLINE_PAUSE_CHECKPOINT_20261006.json",
+      "drive_evidence_file_id": "1T2JQLMq3UOr-anju-eSFnBoqoK35V4cX",
+      "evidence_path": "evidence/hbnf-foundation-qualification-20261005/CRASH_RECONCILIATION.json",
+      "github_run_id": 37376862955,
+      "kernel_total": 28,
+      "next_sequences": "UNALLOCATED__USER_PAUSED_BEFORE_SEQ33_34",
+      "next_transaction_status": "AUTHORIZED__PRELIVE_CAPSULE_REQUIRED_BEFORE_INSTALL",
+      "observer_effect": "PRIOR_SEQ29_MEASUREMENT_STATUS_DURABLE__NOT_REPEATED",
+      "offline_integrated_soak_runner": "scripts/hbnf_live_kernel_sweep.py --soak-seconds 5400 --soak-interval-seconds 8; one snapshot and one restore; 28-kernel round-robin; durable JSONL",
+      "offline_resume_plan": "work/cart2/27_FOUNDATION_OFFLINE_RESUME_PLAN_20261005.md",
+      "offline_soak_audit": "scripts/hbnf_foundation_soak_audit.py; JSONL-only, no device I/O; requires >=90 minutes, exact identity, 28-kernel state changes, <=15s sample gaps, no uptime regression/restart change; metrics summarized, thresholds remain a separate frozen-policy gate",
+      "offline_tools": [
+        "scripts/hbnf_foundation_soak_audit.py",
+        "scripts/hbnf_foundation_threshold_freeze.py",
+        "scripts/hbnf_foundation_recovery_audit.py",
+        "scripts/hbnf_foundation_evidence_pack.py"
+      ],
+      "offline_work_status": "TIMEOUT_AND_ENOSPC_HARDENING_TESTED__INTEGRATED_STATE_CHANGING_SOAK_PREPARED__THRESHOLD_FREEZE_FAILS_CLOSED__RECOVERY_AND_EVIDENCE_TOOLS_TESTED__NO_DEVICE_IO__NO_LIVE_MUTATION",
+      "post_crash_identity": "VERIFIED_READ_ONLY__RELEASE07__MAC_704BCA5B345C__MATRIX_AUX_HEALTH_PASS",
+      "post_crash_readonly_drive_file_id": "1zv8xSWawK9sUbX0YOCncWI8GyhGkmpO4",
+      "post_crash_readonly_evidence_path": "evidence/hbnf-foundation-qualification-20261005/POST_CRASH_READONLY_DEVICE_VERIFICATION.json",
+      "previous_seq31_32_status": "SEQ31_INVALID_NONRESUMABLE__SEQ32_RECOVERED",
+      "profiles_completed_before_timeout": 3,
+      "raw_bundle_sha256": "61b225be198af66400eb1940276c0a3b246f7cd4d88bfb4042be70392d90a44b",
+      "recovery_sequence": 34,
+      "recovery_status": "PASS_SEQ32_VERIFIED_MATRIX_AUX_AND_LEDGER_WRITE",
+      "release07_bin_drive_file_id": "12S4GPHMvryTIXKjtXsTyeatmfPzRWiTo",
+      "release07_local_path": "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/artifact/release07.bin",
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+      "restore_status": "POST_STATE_UNKNOWN__RESTORE_POST_TIMED_OUT__THEN_RELEASE07_RECOVERY_OVERWROTE_DIAGNOSTIC",
+      "restore_verified_observed_pre_recovery": false,
+      "seq31_failure_drive_file_id": "1DQukszM7Py0vTOczJLlZFNY6qnjhCIgt",
+      "seq31_failure_evidence_path": "evidence/hbnf-foundation-qualification-20261005/SEQ31_FAILURE_SEQ32_RECOVERY.json",
+      "seq31_failure_evidence_sha256": "7394ae011c8b04daf923396bf7b2d4538f97e77a72870cb6dcfc1cf9da9a92c9",
+      "seq31_seq32_raw_bundle_drive_file_id": "1Njiqyp-3XCLSyi4gJTqfesPp3ZqDsR8s",
+      "seq32_recovery_drive_file_id": "1r6rc6YESHDQRCc9JHw0ZzRo3aIgT2P91",
+      "seq32_recovery_evidence_path": "evidence/hbnf-foundation-qualification-20261005/SEQ32_RELEASE07_RECOVERY_VERIFICATION.json",
+      "sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
+      "size_bytes": 1488768,
+      "soak_status": "NOT_RUN",
+      "source_commit": "b18b162ec4b4f9173b1de892957ff8b834fe2b50",
+      "sweep_status": "SEQ31_INVALID_NONRESUMABLE__SEQ32_RECOVERED",
+      "timeout_hierarchy": "HTTP GET 10s; /json/state POST 25s; command ack 30s; snapshot 45s; restore 90s; outer runner 240s (226s maximum normal snapshot composition plus 14s margin)",
+      "timeout_repair_commit": "98a111b51935655bc3320ad05463f0b521d03035",
+      "transaction_authorization": "NEW_BOUNDED_SEQ31_32_FOUNDATION_QUALIFICATION__AUTHORIZED_BY_USER_FOUNDATION_DIRECTIVE"
+    },
     "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
     "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
@@ -238,7 +285,7 @@
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Foundation offline timeout and soak-harness checkpoint",
-      "next_work": "Offline-only continuation checkpointed in work/cart2/27_FOUNDATION_OFFLINE_RESUME_PLAN_20261005.md: before live work, resolve the still-null threshold policy/baseline from accepted authority; then after explicit resume/cart return use the integrated exact 28-kernel sweep plus >=90-minute changing soak inside one snapshot/boot. live_mutation_authorized=false; seq33/34 remain unallocated; no LAN/device operations while away.",
+    "next_work": "Execute guarded seq33 exact Foundation-metrics candidate install; run observer comparison + exact 28-kernel sweep, derive and freeze per-kernel baseline before exactly 5400s state-changing soak in the same diagnostic boot/snapshot; restore renderer once. On PASS leave candidate installed and close mutation; on failure use only exact seq34 Release07 recovery. Then complete remaining offline/runtime feature gates and field-ready Skins lane.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "performance_findings": {
       "candidate_fix": "FastLED 3.10.4 bounded fixed-point Animartrix backport; R4 achieved a 42 FPS median across 28 kernels, 8.329 ms median kernel time, with 28 improved and 0 regressed. Material gain confirmed; continue Foundation gates.",
@@ -337,6 +384,22 @@
         ],
         "status": "ACTIVE"
       }
+    },
+    "planned_foundation_transaction": {
+      "candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+      "candidate_sequence": 33,
+      "candidate_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
+      "candidate_size_bytes": 1488768,
+      "path": "Direct-LAN exact WLED /update; verified in seq30 and seq32; no Cloudflare",
+      "policy_path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006.json",
+      "preflight_path": "evidence/hbnf-foundation-qualification-20261005/seq33/READONLY_PREFLIGHT.json",
+      "preflight_sha256": "0036958ce2f1f420966199433ee005358d8d833483debb500f3f74b605aacd47",
+      "recovery_release": "hbnf-matrix-coordinated-v1-20261002-07",
+      "recovery_role": "FAILURE_PATH_ONLY__NOT_CONSUMED_IF_FOUNDATION_PASSES",
+      "recovery_sequence": 34,
+      "recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+      "recovery_size_bytes": 1458624,
+      "scope": "one install, one renderer-safe snapshot, one observer comparison, one full 28-kernel sweep, fresh sweep-bound per-kernel baseline, exact 5400s changing soak, one renderer restore; no other device writes during soak"
     },
     "prior_candidate_trials": {
       "r2": {
@@ -438,6 +501,13 @@
       "current_installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
       "current_installed_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "device_install": "TRIAL_COMPLETE__SEQ25__EXACT_RELEASE07_RECOVERED_SEQ26",
+      "durable_drive_evidence": {
+        "file_id": "1qYBS-FS5Z6mJxdD1y9EKDob5AINgku93",
+        "firmware_path": "evidence/hbnf-packet20-fix-candidate-20261005/r4-offline/build/firmware.bin",
+        "firmware_sha256": "3e11aa102309b5f871ea8ada339c90d0c1c9dfe1451a5c4f76958dba92a1156c",
+        "firmware_size_bytes": 1486336,
+        "zip_sha256": "3872c4bd7042a93239c3f52fcb0048fcf2630e65e35679ce7f17e594ee031b9d"
+      },
       "firmware_sha256": "3e11aa102309b5f871ea8ada339c90d0c1c9dfe1451a5c4f76958dba92a1156c",
       "firmware_size_bytes": 1486336,
       "first_compile_result": "FAILED__WLED_R_MACRO_COLLISION__FIXED",
@@ -461,19 +531,12 @@
       "ram_used_bytes": 103928,
       "transfer_branch": "hbnf-packet20-r4-artifact-37360339891",
       "transfer_branch_head": "952eae8aec1419cbaf2c928328a5521e1b466d7f",
+      "transfer_branch_status": "DELETED_AFTER_DURABLE_PROMOTION",
       "transfer_run": 37360339891,
       "transfer_run_status": "SUCCESS",
       "transfer_strategy": "one-use Git branch hbnf-packet20-r4-artifact-37360339891; upload-artifact is best-effort secondary only",
       "transferred_package_path": ".hbnf-r4-build-output/",
-      "upstream_fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
-      "transfer_branch_status": "DELETED_AFTER_DURABLE_PROMOTION",
-      "durable_drive_evidence": {
-        "file_id": "1qYBS-FS5Z6mJxdD1y9EKDob5AINgku93",
-        "zip_sha256": "3872c4bd7042a93239c3f52fcb0048fcf2630e65e35679ce7f17e594ee031b9d",
-        "firmware_path": "evidence/hbnf-packet20-fix-candidate-20261005/r4-offline/build/firmware.bin",
-        "firmware_sha256": "3e11aa102309b5f871ea8ada339c90d0c1c9dfe1451a5c4f76958dba92a1156c",
-        "firmware_size_bytes": 1486336
-      }
+      "upstream_fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f"
     },
     "recovery_strategy_priority": [
       "1: stop using Cloudflare publication as a prerequisite for this recovery; inspect the installed Opal updater and use its already-proven device-upload mechanism with the exact verified Release07 BIN as local input if possible",
@@ -483,7 +546,7 @@
     ],
     "seq19_diagnostic_incident": "CLOSED_RECOVERED_TO_RELEASE07",
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "SEQ32_RELEASE07_VERIFIED__SEQ31_INVALID__LIVE_PAUSED",
+    "status": "SEQ33_34_FOUNDATION_TRANSACTION_AUTHORIZED",
     "target_recovery": {
       "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
@@ -499,54 +562,6 @@
       ],
       "observed_at": "2026-10-05T17:48:54Z",
       "status": "R3_CLOSED__R4_EXECUTION_REQUIRED"
-    },
-    "foundation_metrics_run": {
-      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
-      "sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
-      "source_commit": "b18b162ec4b4f9173b1de892957ff8b834fe2b50",
-      "github_run_id": 37376862955,
-      "artifact_transfer_commit": "52f2252d680bcb67273929916b5f444d8fb9cda4",
-      "candidate_sequence": 31,
-      "recovery_sequence": 32,
-      "profiles_completed_before_timeout": 3,
-      "kernel_total": 28,
-      "sweep_status": "SEQ31_INVALID_NONRESUMABLE__SEQ32_RECOVERED",
-      "observer_effect": "PRIOR_SEQ29_MEASUREMENT_STATUS_DURABLE__NOT_REPEATED",
-      "restore_verified_observed_pre_recovery": false,
-      "soak_status": "NOT_RUN",
-      "recovery_status": "PASS_SEQ32_VERIFIED_MATRIX_AUX_AND_LEDGER_WRITE",
-      "post_crash_identity": "VERIFIED_READ_ONLY__RELEASE07__MAC_704BCA5B345C__MATRIX_AUX_HEALTH_PASS",
-      "evidence_path": "evidence/hbnf-foundation-qualification-20261005/CRASH_RECONCILIATION.json",
-      "drive_evidence_file_id": "1T2JQLMq3UOr-anju-eSFnBoqoK35V4cX",
-      "post_crash_readonly_evidence_path": "evidence/hbnf-foundation-qualification-20261005/POST_CRASH_READONLY_DEVICE_VERIFICATION.json",
-      "release07_bin_drive_file_id": "12S4GPHMvryTIXKjtXsTyeatmfPzRWiTo",
-      "size_bytes": 1488768,
-      "post_crash_readonly_drive_file_id": "1zv8xSWawK9sUbX0YOCncWI8GyhGkmpO4",
-      "release07_local_path": "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/artifact/release07.bin",
-      "transaction_authorization": "NEW_BOUNDED_SEQ31_32_FOUNDATION_QUALIFICATION__AUTHORIZED_BY_USER_FOUNDATION_DIRECTIVE",
-      "profiles_completed_before_timeout": 3,
-      "restore_status": "POST_STATE_UNKNOWN__RESTORE_POST_TIMED_OUT__THEN_RELEASE07_RECOVERY_OVERWROTE_DIAGNOSTIC",
-      "seq31_failure_evidence_path": "evidence/hbnf-foundation-qualification-20261005/SEQ31_FAILURE_SEQ32_RECOVERY.json",
-      "seq32_recovery_evidence_path": "evidence/hbnf-foundation-qualification-20261005/SEQ32_RELEASE07_RECOVERY_VERIFICATION.json",
-      "next_sequences": "UNALLOCATED__USER_PAUSED_BEFORE_SEQ33_34",
-      "seq31_failure_drive_file_id": "1DQukszM7Py0vTOczJLlZFNY6qnjhCIgt",
-      "seq31_seq32_raw_bundle_drive_file_id": "1Njiqyp-3XCLSyi4gJTqfesPp3ZqDsR8s",
-      "seq32_recovery_drive_file_id": "1r6rc6YESHDQRCc9JHw0ZzRo3aIgT2P91",
-      "seq31_failure_evidence_sha256": "7394ae011c8b04daf923396bf7b2d4538f97e77a72870cb6dcfc1cf9da9a92c9",
-      "raw_bundle_sha256": "61b225be198af66400eb1940276c0a3b246f7cd4d88bfb4042be70392d90a44b",
-      "timeout_repair_commit": "98a111b51935655bc3320ad05463f0b521d03035",
-      "timeout_hierarchy": "HTTP GET 10s; /json/state POST 25s; command ack 30s; snapshot 45s; restore 90s; outer runner 240s (226s maximum normal snapshot composition plus 14s margin)",
-      "offline_soak_audit": "scripts/hbnf_foundation_soak_audit.py; JSONL-only, no device I/O; requires >=90 minutes, exact identity, 28-kernel state changes, <=15s sample gaps, no uptime regression/restart change; metrics summarized, thresholds remain a separate frozen-policy gate",
-      "checkpoint_path": "evidence/hbnf-foundation-qualification-20261005/OFFLINE_PAUSE_CHECKPOINT_20261006.json",
-      "offline_resume_plan": "work/cart2/27_FOUNDATION_OFFLINE_RESUME_PLAN_20261005.md",
-      "offline_integrated_soak_runner": "scripts/hbnf_live_kernel_sweep.py --soak-seconds 5400 --soak-interval-seconds 8; one snapshot and one restore; 28-kernel round-robin; durable JSONL",
-      "offline_work_status": "TIMEOUT_AND_ENOSPC_HARDENING_TESTED__INTEGRATED_STATE_CHANGING_SOAK_PREPARED__THRESHOLD_FREEZE_FAILS_CLOSED__RECOVERY_AND_EVIDENCE_TOOLS_TESTED__NO_DEVICE_IO__NO_LIVE_MUTATION",
-      "offline_tools": [
-        "scripts/hbnf_foundation_soak_audit.py",
-        "scripts/hbnf_foundation_threshold_freeze.py",
-        "scripts/hbnf_foundation_recovery_audit.py",
-        "scripts/hbnf_foundation_evidence_pack.py"
-      ]
     }
   },
   "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
@@ -554,15 +569,19 @@
   "installed_release_role": "BASELINE_RECOVERY_VERIFIED__SEQ32_POST_TIMEOUT",
   "lifecycle_state": "FIX_CANDIDATE",
   "live_mutation_authorization": {
+    "candidate_sequence": 33,
     "candidate_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
     "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
-    "expiry": "CLOSED: seq31/32 transaction ended with exact Release07 recovery; user paused before any seq33/34 authorization.",
+    "expiry": "Close on Foundation pass with candidate retained, or after exact seq34 recovery and verification on failure.",
+    "prelive_evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq33/READONLY_PREFLIGHT.json",
+    "prelive_evidence_sha256": "0036958ce2f1f420966199433ee005358d8d833483debb500f3f74b605aacd47",
+    "recovery_sequence": 34,
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-    "scope": "CLOSED: seq31 candidate run invalid after control POST timeout; exact Release07 seq32 recovery verified. No seq33/34 allocation, install, snapshot, or soak.",
-    "status": "CLOSED",
-    "user_authorization": "Existing explicit user directive to continue Foundation qualification autonomously and preauthorization for bounded exact-artifact direct-LAN install/recovery, tests, and evidence updates."
+    "scope": "Single bounded Foundation transaction seq33 candidate install; one observer comparison + full 28-kernel sweep; create sweep-bound baseline and freeze supplied policy before exact 5400s changing soak; one snapshot/restore only. No unbounded device changes. Exact Release07 seq34 recovery only on failure; if Foundation passes retain candidate. Close authorization immediately at terminal result.",
+    "status": "OPEN__BOUNDED_SEQ33_34",
+    "user_authorization": "Explicit current user directive: cart home, resume live work; authorize exact Foundation candidate and exact Release07 recovery, no routine permission pauses."
   },
-  "live_mutation_authorized": false,
+  "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
   "phase2_implementation_authorized": false,
   "schema": "hbnf-control-state-v2"
