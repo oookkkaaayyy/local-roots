@@ -38,7 +38,7 @@
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
     "blockers": [
-      "Candidate seq33 failed AUX projection continuity: live Matrix telemetry aged to 546455 ms with companionDdpSendUs=0; exact AUX identity returned projectionRxActive=false and projectionRxPackets=0. Stop further diagnostics and execute exact Release07 seq34 recovery now; this is a runtime/AUX contract failure, not a tooling-only timeout."
+      "Seq33 attempt 1 failed in observer telemetry with a transient host GET timeout after a snapshot/select(0); exception-path renderer restore was confirmed. Zero sweep profiles and no soak were produced. AUX receive was inactive both before seq33 (READONLY_PREFLIGHT) and after this attempt, so no candidate-caused AUX regression is established. Correct adapter/read deadline, reboot once to clear the boot-scoped snapshot, then continue once without reinstalling candidate; exact seq34 recovery remains the only firmware failure path."
     ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
@@ -270,21 +270,22 @@
     "foundation_seq33_attempts": [
       {
         "attempt": 1,
+        "aux_comparison": "inactive before and after candidate; no demonstrated regression; see READONLY_PREFLIGHT.json and STOP_STATE_READONLY.json",
         "candidate_install": "PASS_ONCE",
         "evidence": "evidence/hbnf-foundation-qualification-20261005/seq33/OBSERVER_FAILURE_RECONCILIATION.json",
         "kernel_profiles_completed": 0,
         "live_matrix_aux_readonly_evidence": "evidence/hbnf-foundation-qualification-20261005/seq33/STOP_STATE_READONLY.json",
-        "next_action": "exact Release07 recovery seq34; no sweep retry",
+        "next_action": "after host fix, reboot once for fresh boot-scoped snapshot; run one full 28-kernel sweep + 5400s soak; exact seq34 recovery on any genuine contract failure",
         "observer_effect": "FAILED_ON_TRANSIENT_READ_ONLY_STATE_GET",
         "renderer_restore": "VERIFIED_READ_ONLY",
-        "runtime_gate": "FAIL_AUX_PROJECTION_NOT_CONTINUOUS",
+        "runtime_gate": "NOT_EVALUATED__NO_SWEEP_PROFILES",
         "seq34_consumed": false,
         "snapshot_created": true,
         "soak_started": false
       }
     ],
     "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
-    "foundation_transaction_stop_reason": "AUX projection continuity failed during seq33 candidate runtime: Matrix projection age 546455ms and send time 0; AUX projectionRxActive=false and projectionRxPackets=0. Exact read-only capture preserved.",
+    "foundation_transaction_stop_reason": "Attempt 1 aborted before sweep profiles/soak on transient host GET /json/state timeout during observer comparison. Exception-path renderer restore verified by POST_HOST_FAILURE_READONLY_STATE.json. AUX projection RX was inactive in preinstall preflight and remained inactive, so not attributed to candidate.",
     "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
     "installed_release_role": "BASELINE_RECOVERY_VERIFIED__SEQ24",
@@ -304,7 +305,7 @@
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Foundation offline timeout and soak-harness checkpoint",
-    "next_work": "Execute exact Release07 recovery sequence 34 once. Verify installed release/build identity, exact BIN SHA provenance and Matrix/AUX health; close live mutation. Do not retry this Foundation candidate transaction.",
+    "next_work": "Corrected single continuation using already-installed seq33 candidate: perform one safe soft reboot to clear the consumed boot-scoped snapshot; verify candidate identity/MAC and Matrix/AUX reachability; run observer comparison + one renderer-safe snapshot + complete 28-kernel sweep + frozen per-kernel baseline + exactly 5400s state-changing soak on that same boot; restore once. No candidate reinstall and no reboot between snapshot/sweep/soak/restore. Exact seq34 Release07 recovery only on a genuine failure.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "performance_findings": {
       "candidate_fix": "FastLED 3.10.4 bounded fixed-point Animartrix backport; R4 achieved a 42 FPS median across 28 kernels, 8.329 ms median kernel time, with 28 improved and 0 regressed. Material gain confirmed; continue Foundation gates.",
@@ -419,7 +420,7 @@
       "recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "recovery_size_bytes": 1458624,
       "scope": "Candidate seq33 is already installed exactly once. Attempt 1 consumed/restored one boot-scoped snapshot but generated zero sweep profiles and no soak. Corrected bounded continuation uses one fresh boot and one snapshot for observer comparison + complete 28-kernel sweep + exactly 5400s changing soak; no reboot between snapshot/sweep/soak/restore. Exact Release07 seq34 remains failure recovery only.",
-      "status": "SEQ33_FAILED_RUNTIME_AUX_CONTRACT__SEQ34_RECOVERY_REQUIRED"
+      "status": "SEQ33_INSTALLED__ATTEMPT1_HOST_TOOLING_ABORT__CONTINUATION_PENDING"
     },
     "prior_candidate_trials": {
       "r2": {
@@ -586,7 +587,7 @@
   },
   "installed_firmware_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
   "installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
-  "installed_release_role": "DIAGNOSTIC_CANDIDATE_SEQ33__RECOVERY_SEQ34_REQUIRED",
+  "installed_release_role": "DIAGNOSTIC_CANDIDATE_SEQ33__BOUNDED_CONTINUATION_PENDING__SEQ34_FAILURE_RECOVERY",
   "lifecycle_state": "FIX_CANDIDATE",
   "live_mutation_authorization": {
     "candidate_sequence": 33,

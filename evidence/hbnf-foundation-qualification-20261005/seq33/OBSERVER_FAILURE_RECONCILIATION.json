@@ -1,6 +1,13 @@
 {
+  "aux_context": {
+    "interpretation": "not a before/after candidate regression; the projection receiver was not engaged in the precondition session",
+    "postattempt_evidence": "STOP_STATE_READONLY.json",
+    "postattempt_rx_active": false,
+    "preinstall_evidence": "READONLY_PREFLIGHT.json",
+    "preinstall_rx_active": false
+  },
   "captured_at_unix": 1791261274.962409,
-  "device_state_after_attempt": "Candidate firmware remained installed; packet20 diagnostic snapshot remained READY and restoreVerified true on subsequent read-only observation. Snapshot slot is boot-scoped and cannot be reused for a clean one-snapshot sweep on this boot.",
+  "device_state_after_attempt": "Candidate firmware remained installed. Packet20 snapshot state READY and restoreVerified true were observed read-only. The same AUX projection receiver was inactive in the pre-install read-only preflight and after this attempt; no candidate-caused AUX regression is established.",
   "failed_stage": "read-only GET /json/state during observer-effect sampling",
   "failure": "TimeoutError after 0.0223237 seconds (below configured normal GET timeout due runner remaining-deadline budget)",
   "inputs": {
@@ -9,7 +16,7 @@
     "PRE_SWEEP_TELEMETRY.json": "805ce64d36779e43bffc02693e4b76cf158bbdb2fdb9dc599c0874666d85ab4b",
     "SWEEP_ABORT.json": "c741a706cc4d296159c1460a94032d75d08b34299fec3ca605d0676c3796d28d"
   },
-  "next_action": "Preserve this attempt, perform one standard soft reboot to reset boot-scoped snapshot RAM, verify exact candidate/MAC/Matrix+AUX health, then make one corrected bounded sweep+90-minute soak attempt in a fresh evidence subdirectory without reinstalling candidate. Do not reboot between that snapshot, sweep, soak, and renderer restore.",
+  "next_action": "Continue the same seq33/34 transaction once after one safe soft reboot clears boot-scoped snapshot RAM: verify candidate identity/MAC and Matrix/AUX reachability, then take one snapshot and perform observer comparison, full 28-kernel sweep, hash-bound baseline/freeze, exact 5400s changing soak, and one renderer restore on that same fresh boot. Do not reinstall candidate or reboot between snapshot/sweep/soak/restore. Use seq34 recovery only on an actual runtime/contract failure.",
   "observer_effect_behavior": "The observer phase did issue its explicit select(0) before telemetry reads. The adapter then attempted its exception-path renderer restore. This was an observer sample selection, not a sweep profile; runner reports profiles_completed=0.",
   "profiles_completed": 0,
   "recovery_seq34_consumed": false,
