@@ -1,0 +1,13 @@
+{"completed_at_monotonic":1.363269833,"kernel_id":0,"kernel_name":"Complex_Kaleido_3","select_index":0,"selector_pid":49773,"started_at_monotonic":0.028490583,"status":"PASS"}
+{"completed_at_monotonic":9.074157083,"kernel_id":1,"kernel_name":"Big_Caleido","select_index":1,"selector_pid":49773,"started_at_monotonic":6.038838041,"status":"PASS"}
+{"completed_at_monotonic":12.533465958,"kernel_id":2,"kernel_name":"Parametric_Water","select_index":2,"selector_pid":49773,"started_at_monotonic":12.038991875,"status":"PASS"}
+{"completed_at_monotonic":18.324108625,"kernel_id":3,"kernel_name":"RGB_Blobs5","select_index":3,"selector_pid":49773,"started_at_monotonic":18.039028208,"status":"PASS"}
+{"completed_at_monotonic":24.4627435,"kernel_id":4,"kernel_name":"Polar_Waves","select_index":4,"selector_pid":49773,"started_at_monotonic":24.039194291,"status":"PASS"}
+{"completed_at_monotonic":30.81792625,"kernel_id":5,"kernel_name":"Zoom2","select_index":5,"selector_pid":49773,"started_at_monotonic":30.034992041,"status":"PASS"}
+{"completed_at_monotonic":36.694435833,"kernel_id":6,"kernel_name":"Complex_Kaleido_4","select_index":6,"selector_pid":49773,"started_at_monotonic":36.0389765,"status":"PASS"}
+{"completed_at_monotonic":42.492673,"kernel_id":7,"kernel_name":"Complex_Kaleido_6","select_index":7,"selector_pid":49773,"started_at_monotonic":42.033258083,"status":"PASS"}
+{"completed_at_monotonic":48.735622041,"kernel_id":8,"kernel_name":"Water","select_index":8,"selector_pid":49773,"started_at_monotonic":48.03895625,"status":"PASS"}
+{"completed_at_monotonic":54.419612958,"kernel_id":9,"kernel_name":"RGB_Blobs4","select_index":9,"selector_pid":49773,"started_at_monotonic":54.029996541,"status":"PASS"}
+{"completed_at_monotonic":60.412321916,"kernel_id":10,"kernel_name":"Complex_Kaleido_5","select_index":10,"selector_pid":49773,"started_at_monotonic":60.039013875,"status":"PASS"}
+{"completed_at_monotonic":66.449658083,"kernel_id":11,"kernel_name":"Spiralus2","select_index":11,"selector_pid":49773,"started_at_monotonic":66.034912041,"status":"PASS"}
+{"completed_at_monotonic":72.431385416,"kernel_id":12,"kernel_name":"Hot_Blob","select_index":12,"selector_pid":49773,"started_at_monotonic":72.034175291,"status":"PASS"}
