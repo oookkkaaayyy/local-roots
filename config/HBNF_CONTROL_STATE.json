@@ -1089,11 +1089,19 @@
     "anti_abandonment": "Chat turnover, worker turnover, new sequence numbers, or convenience may not drop a lane. A ready lane can stop only when DONE, explicitly blocked on a named dependency, or user scope changes.",
     "lanes": {
       "P2_MISSION_CONTROL_SCORING": {
-        "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START",
+        "dependency": "T2_FOUNDATION_QUALIFY__THEN_P2_INTERFACE_FREEZE_AND_LEGAL_PHASE2_INTEGRATION",
         "execution_context": "SEPARATE_WORKER_REQUIRED",
         "launch_owner": "COORDINATOR",
-        "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
-        "status_sheet_row": 4
+        "status": "BLOCKED_WITH_EXACT_DEPENDENCY",
+        "status_sheet_row": 4,
+        "offline_checkpoint": {
+          "status": "OFFLINE_IMPLEMENTATION_COMPLETE__INTEGRATION_GATED",
+          "branch": "hbnf-cart2-p2-mission-control-scoring-20261006-r2",
+          "implementation_head": "eb2bb8f17b9dfce621e6aaeed4c7036acb541013",
+          "receipt": "evidence/hbnf-phase2-mission-control-scoring-20261006/OFFLINE_SCORING_LANE_RECEIPT.json",
+          "live_mutation": "NONE"
+        },
+        "blocker": "Apply the six-file scoring diff onto the then-current authoritative head only after T2 passes and T3 authorizes Phase 2; then run host/package tests and intended-owner scoring save/readback smoke."
       },
       "P2_PWA_RELIABILITY": {
         "dependency": "P2_INTERFACE_FREEZE_AND_PHASE2_DEPLOYMENT_AUTHORIZATION__THEN_INTENDED_OWNER_DEVICE_PWA_CONTROL_SCORING_SMOKE",
@@ -1130,18 +1138,35 @@
         }
       },
       "P2_TEXT_MOMENTS": {
-        "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START",
+        "dependency": "T2_FOUNDATION_QUALIFY__THEN_P2_INTERFACE_FREEZE__THEN_LEGAL_PHASE2_INTEGRATION",
         "execution_context": "SEPARATE_WORKER_REQUIRED",
         "launch_owner": "COORDINATOR",
-        "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
-        "status_sheet_row": 6
+        "status": "BLOCKED_WITH_EXACT_DEPENDENCY",
+        "status_sheet_row": 6,
+        "offline_checkpoint": {
+          "status": "OFFLINE_PREP_COMPLETE__NOT_RENDERER_INTEGRATED",
+          "branch": "hbnf-p2-text-moments-offline-20261006",
+          "head": "2bbe7ca5c244986c57d4d6f054ebcdfe6337b362",
+          "receipt": "evidence/hbnf-phase2-text-moments-20261006/OFFLINE_COMPLETION_RECEIPT.json",
+          "host_tests": "7/7 PASS",
+          "live_mutation": "NONE"
+        },
+        "blocker": "After T2/P2 interface freeze, bind/recover the qualified-source WBF/font primitive, integrate the framebuffer compositor, verify runtime/current budget, then perform physical readability/aesthetic acceptance."
       },
       "P2_VIBE_AUDIO": {
-        "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START",
+        "dependency": "T2_FOUNDATION_QUALIFY__THEN_P2_INTERFACE_FREEZE__QUALIFIED_AUDIO_REPLAY_AND_RUNTIME_COST_ACCEPTANCE",
         "execution_context": "SEPARATE_WORKER_REQUIRED",
         "launch_owner": "COORDINATOR",
-        "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
-        "status_sheet_row": 5
+        "status": "BLOCKED_WITH_EXACT_DEPENDENCY",
+        "status_sheet_row": 5,
+        "offline_checkpoint": {
+          "status": "OFFLINE_PREP_COMPLETE__NOT_PRODUCTION_MAPPED",
+          "branch": "hbnf-cart2-p2-vibe-audio-20261006",
+          "head": "f0ae01712bfeb2f2afb5cb1dda1cf12a638abcf6",
+          "receipt": "evidence/hbnf-phase2-vibe-audio-20261006/OFFLINE_PREP_RECEIPT.json",
+          "live_mutation": "NONE"
+        },
+        "blocker": "After T2/P2 interface freeze, replay preserved qualified-source real audio evidence and verify adapter cost against the qualified Foundation runtime budget before freezing production formulas/time constants."
       }
     },
     "live_mutation_limit": 0,
@@ -1160,7 +1185,14 @@
       "signal_evidence": "evidence/hbnf-foundation-qualification-20261005/seq41/live/PARALLEL_LANES_READY.json",
       "signal_sample_sha256": "9c9bbb495094dacd5ffc92eba97b9e3be462e38c3ae26b5cf860cfeb96dd1fdc",
       "last_live_transition": "Seq41 stopped after host sample gap; seq42 Release07 runtime identity verified, OTA HTTP receipt missing",
-      "soak_currently_running": false
+      "soak_currently_running": false,
+      "parallel_offline_summary": "ALL_FOUR_CORE_LANES_REACHED_OFFLINE_STOP_BOUNDARY__FOUNDATION_NOW_PRIMARY_GATE",
+      "next_after_t2": [
+        "Freeze P2 interfaces/contracts.",
+        "Integrate scoring and PWA work onto the then-current authoritative head without losing cross-lane changes.",
+        "Complete Foundation-dependent Vibe/audio and Text/moments bindings/validation.",
+        "Build integrated Phase 2 candidate and run owner-device/runtime smokes."
+      ]
     },
     "schema": "hbnf-lane-execution-state-v1"
   },
