@@ -38,7 +38,7 @@
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
     "blockers": [
-      "Foundation is unqualified; seq37/38 is authorized and all corrected host-path offline gates pass. Before install the guarded capsule/prelive proof and exact Release07 read-only preflight must pass. Seq38 is real failure recovery only; host-only failure with all safety proofs preserves seq37."
+      "No firmware/device defect was established by seq35; current critical-path blocker is completion of one clean Foundation qualification execution. Host-only failures must remain isolated from firmware lifecycle unless device safety/identity/restore evidence actually fails."
     ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
@@ -313,7 +313,7 @@
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Foundation offline timeout and soak-harness checkpoint",
-    "next_work": "Offline host correction is implemented and regression-tested: expose exact frame max and histogram overflow while rejecting only percentiles that land in the saturated final bin. Do not weaken tail/performance acceptance thresholds. Next live Foundation attempt requires a separately authorized fresh bounded transaction and a new decision on the 12.56s measured render-to-show interval; keep exact Release07 installed and live mutation closed. After Foundation qualifies, proceed to permanent Mission Control/scorer, Vibe/audio, and VisualMoment integration.",
+    "next_work": "Follow execution_cursor exactly. Complete host-only prelive/regression proof, then run authorized seq37 without repeating inherited observer/Packet20/R4 work. On a clean sweep continue directly into the same-installation 90-minute soak; use soak time for safe permanent Phase 2 host/staging work. Classify every failure by HBNF_CONTROL_MODEL.execution_system and invalidate only affected evidence.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "performance_findings": {
       "candidate_fix": "FastLED 3.10.4 bounded fixed-point Animartrix backport; R4 achieved a 42 FPS median across 28 kernels, 8.329 ms median kernel time, with 28 improved and 0 regressed. Material gain confirmed; continue Foundation gates.",
@@ -646,5 +646,117 @@
   "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
   "phase2_implementation_authorized": false,
-  "schema": "hbnf-control-state-v2"
+  "schema": "hbnf-control-state-v2",
+  "execution_cursor": {
+    "schema": "hbnf-execution-cursor-v1",
+    "current_lifecycle_state": "FIX_CANDIDATE",
+    "current_transition": "T2_FOUNDATION_QUALIFY",
+    "current_failure_domain": "HOST_HARNESS",
+    "current_subject": {
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+      "artifact_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338"
+    },
+    "exact_next_path": [
+      "Complete/verify host-only regression fixtures and prelive proof; no device mutation if these fail.",
+      "Execute authorized seq37 exact candidate install only after prelive gates pass.",
+      "Reuse exact-candidate observer-effect PASS; do not rerun it.",
+      "Run tails-off steady state and sacrificial warm-up.",
+      "Run complete 28-kernel Foundation sweep.",
+      "Bind baseline/frozen policy.",
+      "Run same-installation >=90-minute state-changing soak.",
+      "Close remaining T2 feature/rebuild/capsule/rollback/flight-recorder checks using inherited evidence where still valid.",
+      "Advance T2 to FOUNDATION_QUALIFIED.",
+      "Freeze Phase 2 shared interfaces once, then run Mission Control/scoring, Vibe/audio, Text/Moments, and PWA/reliability in parallel.",
+      "Build one integrated candidate, pass T4, then T5 release acceptance.",
+      "Only after core ACCEPTED: expand AUX UV, Arcade, IRL games, and Guest unless explicitly pulled earlier without affecting critical path."
+    ],
+    "no_repeat": [
+      "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
+      "R4 fixed-point performance trial is closed and materially successful; do not rerun exploratory R1-R4 selection.",
+      "Observer-effect measurement on exact artifact SHA 6285f1...4338 is already PASS; do not rerun unless artifact/instrumentation changes.",
+      "Exact Release07 rollback path is proven; do not re-derive it.",
+      "Host-only failures do not consume a recovery install unless actual device/runtime safety evidence fails or becomes unknown.",
+      "Do not rebuild firmware or use GitHub Actions for a host-harness defect."
+    ],
+    "parallel_ready_during_foundation_soak": [
+      "Mission Control/scoring source reconciliation and host tests",
+      "PWA/cache/versioning implementation and host tests",
+      "AudioFeatures/Vibe source-level implementation preparation that does not mutate live firmware",
+      "VisualMoment/text source-level implementation preparation that does not mutate live firmware"
+    ]
+  },
+  "inherited_evidence": [
+    {
+      "id": "PACKET20_DIAGNOSTIC_CLOSE",
+      "status": "REUSABLE",
+      "proves": [
+        "timing_attribution_complete",
+        "root_cause_proven",
+        "bounded_fix_direction"
+      ],
+      "invalidators": [
+        "renderer lineage materially changes",
+        "new evidence contradicts root cause"
+      ],
+      "note": "T1 already completed; sequence/chat changes do not invalidate it."
+    },
+    {
+      "id": "R4_RENDERER_PERFORMANCE",
+      "status": "REUSABLE",
+      "subject_artifact_sha256": "3e11aa102309b5f871ea8ada339c90d0c1c9dfe1451a5c4f76958dba92a1156c",
+      "proves": [
+        "28/28 kernels materially improved",
+        "fixed-point renderer class selected",
+        "visual equivalence within recorded tolerance"
+      ],
+      "invalidators": [
+        "R4 renderer/fixed-point implementation changes"
+      ]
+    },
+    {
+      "id": "FOUNDATION_OBSERVER_EFFECT",
+      "status": "REUSABLE",
+      "subject_artifact_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
+      "proves": [
+        "instrumentation_observer_effect_passed"
+      ],
+      "evidence_summary": "seq33 exact-candidate observer measurement: 27 samples per mode, median delta -2.94%; later seq33 observer status PASS",
+      "invalidators": [
+        "candidate artifact SHA changes",
+        "Foundation instrumentation implementation changes"
+      ]
+    },
+    {
+      "id": "RELEASE07_RECOVERY",
+      "status": "REUSABLE",
+      "subject_artifact_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+      "proves": [
+        "exact rollback artifact install path repeatedly verified"
+      ],
+      "invalidators": [
+        "rollback artifact changes",
+        "Matrix update/recovery mechanism changes materially"
+      ]
+    },
+    {
+      "id": "HOST_DEADLINE_REGRESSION",
+      "status": "REUSABLE",
+      "proves": [
+        "seq35 near-zero deadline defect has a tested host-side guard"
+      ],
+      "invalidators": [
+        "observer polling/deadline logic changes"
+      ]
+    },
+    {
+      "id": "HOST_HISTOGRAM_OVERFLOW_REGRESSION",
+      "status": "REUSABLE",
+      "proves": [
+        "overflow-vs-percentile-saturation host defect has a tested correction"
+      ],
+      "invalidators": [
+        "Foundation histogram/percentile contract changes"
+      ]
+    }
+  ]
 }
