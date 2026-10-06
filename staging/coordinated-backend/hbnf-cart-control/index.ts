@@ -1,6 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.0";
 import { chooseLive } from "./live.ts";
-import { laDate, readSkinsScoreState, writeSkinsWinner } from "./skins_scoring.ts";
+import { laDate, readSkinsScoreState, writeSkinsWinner, writeSkinsTiebreaker, writeSkinsAceWinner } from "./skins_scoring.ts";
 declare const EdgeRuntime:{waitUntil(p:Promise<unknown>):void};
 
 const cors = {
@@ -24,7 +24,7 @@ Deno.serve(async (req: Request) => {
   let request: Record<string, unknown>;
   try { request = await req.json(); } catch { return response({ error: "invalid_json" }, 400); }
   const action = String(request.action ?? "");
-  const protectedAction = action === "create_install_handoff" || action === "pair_device" || action === "skins_score_state" || action === "skins_score_set";
+  const protectedAction = action === "create_install_handoff" || action === "pair_device" || ["skins_score_state","skins_score_set","skins_tiebreaker_set","skins_ace_set"].includes(action);
 
   let authorized = !protectedAction;
   let operatorAuthorized = false;
@@ -65,23 +65,38 @@ Deno.serve(async (req: Request) => {
 
   if (!authorized) return response({ error: "unauthorized" }, 401);
 
-  if (action === "skins_score_state" || action === "skins_score_set") {
+  if (["skins_score_state","skins_score_set","skins_tiebreaker_set","skins_ace_set"].includes(action)) {
     if (!operatorAuthorized && !pairedDeviceAuthorized) return response({ error: "owner_authorization_required" }, 403);
     const roundDate = required(request.round_date, 10) ? String(request.round_date).trim() : laDate();
     if (!/^\d{4}-\d{2}-\d{2}$/.test(roundDate)) return response({ error: "invalid_round_date" }, 400);
     try {
       if (action === "skins_score_state") return response({ ok: true, ...(await readSkinsScoreState(service, roundDate)) });
+      const sectionName = String(request.section ?? "");
+      if (action === "skins_ace_set") {
+        if (typeof request.winner_name !== "string" || typeof request.expected_winner_name !== "string") {
+          return response({ error: "winner_name_and_expected_winner_name_required" }, 400);
+        }
+        const update = await writeSkinsAceWinner(service, {
+          roundDate,
+          sectionName,
+          winnerName: request.winner_name,
+          expectedWinnerName: request.expected_winner_name,
+        });
+        return response({ ok: true, action, ...update });
+      }
       if (typeof request.winner_id !== "string" || typeof request.expected_winner_id !== "string") {
         return response({ error: "winner_id_and_expected_winner_id_required" }, 400);
       }
-      const update = await writeSkinsWinner(service, {
+      const common = {
         roundDate,
-        sectionName: String(request.section ?? ""),
+        sectionName,
         cardId: String(request.card_id ?? ""),
-        hole: request.hole,
         winnerId: request.winner_id,
         expectedWinnerId: request.expected_winner_id,
-      });
+      };
+      const update = action === "skins_tiebreaker_set"
+        ? await writeSkinsTiebreaker(service, common)
+        : await writeSkinsWinner(service, { ...common, hole: request.hole });
       return response({ ok: true, action, ...update });
     } catch (error) {
       return response({ error: error instanceof Error ? error.message : "skins_score_update_failed" }, 409);
