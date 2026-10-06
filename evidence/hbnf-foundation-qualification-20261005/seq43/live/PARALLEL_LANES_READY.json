@@ -1,0 +1,17 @@
+{
+  "aux_projection_active": true,
+  "first_clean_soak_samples": 3,
+  "first_sample_kernel_ids": [
+    0,
+    0,
+    1
+  ],
+  "note": "Independent telemetry sampler is healthy; signal does not authorize device mutation.",
+  "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "restart_count": 0,
+  "sample_file": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq43/live/FOUNDATION_SOAK.jsonl",
+  "sample_sha256": "178639f1059b475c96a16411dc0f555a67584623bd066e6855c02e6c55cde684",
+  "sampler_pid": 39217,
+  "schema": "hbnf-foundation-parallel-ready-v1",
+  "status": "PARALLEL_LANES_READY"
+}

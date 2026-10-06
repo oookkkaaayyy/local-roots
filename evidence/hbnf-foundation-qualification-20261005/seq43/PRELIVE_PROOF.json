@@ -1,0 +1,56 @@
+{
+  "approved_for_mutation": true,
+  "capsule_sha256": "491aa99a9ad1a038ef021e67fbceb5a761cb24908c639ad4343e24fc3db04fd3",
+  "consumer_contract": {
+    "identity": "Direct-LAN Matrix /update using a single Opal-origin upload after exact local artifact SHA/size verification; runtime release/MAC and AUX DDP health are checked. Exact renderer snapshot/restore uses one snapshot per boot. No cloud aliases, erase/settings wipe, bootloader or partition changes.",
+    "verified": true
+  },
+  "pre_mutation_state": {
+    "cloud_deployment": "No Cloudflare/publication mutation in this direct-LAN transaction.",
+    "device": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c exact Release07; read-only paired captures show uptime 25766\u219225814 and companionRenderCount 427549\u2192428341. AUX 192.168.77.11 MAC 8c:94:df:55:c3:4c reports live DDP from Matrix.",
+    "preflight_evidence": "evidence/hbnf-foundation-qualification-20261005/seq43/live/seq43-prelive-readonly-* and seq43-prelive-continuity-*"
+  },
+  "recovery_identity": {
+    "identity": "hbnf-matrix-coordinated-v1-20261002-07; SHA-256 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab; 1458624 bytes; seq44 genuine device/runtime/Foundation failure or lost safety proof only.",
+    "verification": "Local immutable recovery artifact SHA/size verified; prior exact direct-LAN Recovery seq40 receipt is preserved. Seq43 repeats the same artifact hash/size check before any recovery install."
+  },
+  "run_id": "HBNF-FOUNDATION-SEQ43-44-20261006",
+  "schema": "local-roots-prelive-proof-v1",
+  "stages": {
+    "capture-current-state": {
+      "evidence": [
+        "evidence/hbnf-foundation-qualification-20261005/seq43/live/seq43-prelive-readonly-matrix_build.json: exact installed Release07 identity.",
+        "evidence/hbnf-foundation-qualification-20261005/seq43/live/seq43-prelive-readonly-matrix_info.json plus seq43-prelive-continuity-matrix_info.json: Matrix MAC 70:4b:ca:5b:34:5c; uptime advanced 25766 to 25814 seconds.",
+        "evidence/hbnf-foundation-qualification-20261005/seq43/live/seq43-prelive-readonly-matrix_state.json plus seq43-prelive-continuity-matrix_state.json: Matrix companionRenderCount advanced 427549 to 428341.",
+        "evidence/hbnf-foundation-qualification-20261005/seq43/live/seq43-prelive-readonly-aux_info.json and seq43-prelive-continuity-aux_info.json: AUX MAC 8c:94:df:55:c3:4c reports live=true, lm=DDP, lip=192.168.77.10 at both samples.",
+        "No cloud or publication state changed; no release-state read was performed."
+      ],
+      "status": "PASS"
+    },
+    "contract-closure": {
+      "evidence": [
+        "evidence/hbnf-foundation-qualification-20261005/seq39/OFFLINE_GATES.json: source-only 250us telemetry range change; exact artifact SHA/size/headroom PASS; 28-kernel/observer/baseline/policy evidence inherited without invalidator.",
+        "evidence/hbnf-foundation-qualification-20261005/seq43/offline/HOST_SAMPLER_REGRESSION.json: independent sampler blocks selector stall without gap, final measured max 1.023s; three-sample parallel-ready signal regression PASS.",
+        "Offline regression suite passed on branch commit 51d4c7f5f8e2ceafacbeda643fe6b7749f407c32; platform doctor PASS."
+      ],
+      "status": "PASS"
+    },
+    "recovery-proof": {
+      "evidence": [
+        "evidence/hbnf-foundation-qualification-20261005/seq39/artifact/release07.bin: exact SHA-256 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab, 1458624 bytes.",
+        "evidence/hbnf-foundation-qualification-20261005/seq39/live/seq40-opal-ota-response.txt and seq39/live/TRANSACTION_RESULT.json: prior exact Release07 recovery transaction evidence.",
+        "Seq43 transaction hashes the same recovery bytes before any install; seq44 is invoked only for real device/runtime/Foundation failure or loss of safety proof."
+      ],
+      "status": "PASS"
+    },
+    "transaction-rehearsal": {
+      "evidence": [
+        "evidence/hbnf-foundation-qualification-20261005/seq43/live/DRY_RUN.json: exact seq43/44 identities, completed sweep/baseline/frozen policy hashes, 28 kernels; no network or mutation.",
+        "tests/hbnf_foundation_continuous_soak.py: 24.114-second selector stall with independent sampler; no recurrence via the serialized host loop; max gap 1.023s.",
+        "evidence/hbnf-foundation-qualification-20261005/seq39/live/TRANSACTION_RESULT.json and seq39/live/RECOVERY_STARTED.json: exact direct-LAN install/restore/Release07 recovery path previously exercised.",
+        "Correctly bound the inherited seq41 threshold-freeze receipt to the exact seq39 reused 28-kernel manifest, baseline, and policy; corrected exact-input transaction dry-run PASS (DRY_RUN_PASS)."
+      ],
+      "status": "PASS"
+    }
+  }
+}
