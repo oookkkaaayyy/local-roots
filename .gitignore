@@ -32,3 +32,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
+# Seq39 firmware/build products are stored in Drive evidence package
+evidence/hbnf-foundation-qualification-20261005/seq39/artifact/*.bin
+evidence/hbnf-foundation-qualification-20261005/seq39/build/*.bin
+evidence/hbnf-foundation-qualification-20261005/seq39/build/*.elf
+evidence/hbnf-foundation-qualification-20261005/seq39/build/*.map
+evidence/hbnf-foundation-qualification-20261005/seq39/build/*.log

@@ -1,0 +1,25 @@
+--- seq37-base.cpp
++++ seq39-tail250.cpp
+@@ -22,8 +22,8 @@
+ namespace {
+
+ static const char HBNF_FX_DATA[] PROGMEM = "HBNF Foundation@;;;2";
+-static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1";
+-static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1\",\"basedOnReleaseId\":\"hbnf-matrix-coordinated-v1-20261002-06\",\"basedOnFirmwareSha256\":\"b9bb60dca1a9be8f7241670a7540810c604465c9adf7084b6efc90d5b4622886\",\"wled\":\"16.0.1\",\"features\":[\"canonical-palette-v1\",\"canonical-overlay-v1\",\"coordinated-ui-v1\"]}";
++static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1";
++static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1\",\"basedOnReleaseId\":\"hbnf-matrix-coordinated-v1-20261002-06\",\"basedOnFirmwareSha256\":\"b9bb60dca1a9be8f7241670a7540810c604465c9adf7084b6efc90d5b4622886\",\"wled\":\"16.0.1\",\"features\":[\"canonical-palette-v1\",\"canonical-overlay-v1\",\"coordinated-ui-v1\"]}";
+ static PaletteSelection hbnfPalette{};
+ static OverlayState hbnfCommandOverlay{};
+ static portMUX_TYPE hbnfOverlayMux=portMUX_INITIALIZER_UNLOCKED;
+@@ -42,9 +42,9 @@
+   uint8_t kernel=255; uint32_t variant=0; uint32_t whole=0; uint32_t unaccounted=0;
+ };
+ #if defined(HBNF_PACKET20_DIAGNOSTICS)
+-// Fixed 50-us bins collect real per-frame samples with bounded memory and no
++// Fixed 250-us bins collect real per-frame samples with bounded memory and no
+ // per-frame allocation, sorting, or logging. Maxima remain exact.
+-static constexpr uint16_t HBNF_TAIL_BINS=512,HBNF_TAIL_BIN_US=100;
++static constexpr uint16_t HBNF_TAIL_BINS=512,HBNF_TAIL_BIN_US=250;
+ static uint16_t hbnfTailHist[8][HBNF_TAIL_BINS]{};
+ static uint64_t hbnfTailSum[8]{};
+ static uint32_t hbnfTailMax[8]{};

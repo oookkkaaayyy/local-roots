@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Direct-LAN adapter for the bounded R4 Foundation-metrics transaction."""
 from __future__ import annotations
-import argparse, hashlib, json, pathlib, socket, sys, time, urllib.error, urllib.request
+import argparse, hashlib, json, pathlib, socket, statistics, sys, time, urllib.error, urllib.request
 
 MATRIX="http://192.168.77.10"
 AUX="http://192.168.77.11"
-EXPECTED="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1"
+EXPECTED="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
 MAC="704bca5b345c"
 CACHE=pathlib.Path("/tmp/hbnf-foundation-telemetry-cache.json")
 HTTP_TIMEOUT_SECONDS=10
@@ -14,6 +14,7 @@ COMMAND_ACK_TIMEOUT_SECONDS=30
 SNAPSHOT_READY_TIMEOUT_SECONDS=45
 RESTORE_VERIFY_TIMEOUT_SECONDS=90
 TAIL_HISTOGRAM_BINS=512
+EXPECTED_TAIL_BIN_US=250
 MIN_HTTP_REMAINING_BUDGET_SECONDS=1.0
 
 def get(url, timeout=HTTP_TIMEOUT_SECONDS, deadline=None):
@@ -159,27 +160,21 @@ def snapshot(observer_output=None, inventory=None):
     return {"snapshotId":p20.get("snapshotId"),"snapshotHash":p20.get("snapshotHash")}
 
 def foundation_prequal_windows(output, inventory):
-    """Run tails-off steady state and sacrificial warm-up, reusing seq33 proof."""
+    """Measure observer effect once on seq39 and use its instrumented window as the sacrificial warm-up."""
     select(0);time.sleep(5)
     enable_tails(False)
-    steady=collect_frame_window("foundation-steady-state-tails-off")
+    steady=collect_frame_window("foundation-steady-state-tails-off",window_seconds=40,minimum_samples=27)
     enable_tails(True)
-    warmup_frames=collect_frame_window("foundation-sacrificial-warmup-tails-on")
-    warmup=telemetry(inventory,"foundation-sacrificial-warmup",emit=False)
+    instrumented=collect_frame_window("foundation-observer-instrumented-sacrificial-warmup",window_seconds=40,minimum_samples=27)
+    warmup=telemetry(inventory,output,emit=False)
     enable_tails(False)
-    observer_path=pathlib.Path(__file__).resolve().parents[1]/"evidence/hbnf-foundation-qualification-20261005/seq33/continuation/OBSERVER_EFFECT.json"
-    candidate_binding_path=observer_path.parents[1]/"CANDIDATE_INSTALL_VERIFICATION.json"
-    observer=json.loads(observer_path.read_text())
-    candidate_binding=json.loads(candidate_binding_path.read_text())
-    if candidate_binding.get("candidate_sha256")!="6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338" or candidate_binding.get("candidate_release")!=EXPECTED or candidate_binding.get("pass") is not True:
-        raise RuntimeError("durable-seq33-observer-candidate-binding-failed")
-    if observer.get("status")!="MEASURED" or observer.get("lightweight_samples")!=27 or observer.get("instrumented_samples")!=27 or abs(float(observer.get("relative_delta_pct",0))-(-2.9440135818188895))>1e-9:
-        raise RuntimeError("durable-seq33-observer-evidence-contract-failed")
+    light_median=statistics.median(steady);instrumented_median=statistics.median(instrumented)
+    delta=(instrumented_median-light_median)/light_median*100.0 if light_median else None
     result={"schema":"hbnf-foundation-prequal-windows-v1","status":"PASS",
-      "observer_effect":{"status":"PASS_REUSED_PRIOR_EXACT_CANDIDATE_EVIDENCE","path":str(observer_path),"sha256":hashlib.sha256(observer_path.read_bytes()).hexdigest(),"candidate_binding_path":str(candidate_binding_path),"candidate_release":EXPECTED,"candidate_sha256":"6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338","lightweight_samples":27,"instrumented_samples":27,"relative_delta_pct":observer["relative_delta_pct"],"source_status":observer["status"]},
-      "steady_state":{"tails_enabled":False,"duration_seconds":30,"samples":len(steady),"frame_average_ms_min":min(steady),"frame_average_ms_max":max(steady)},
-      "sacrificial_warmup":{"tails_enabled":True,"duration_seconds":30,"samples":len(warmup_frames),"excluded_from_foundation":True,"sample":warmup},
-      "qualified_boundary":"tails disabled after sacrificial warm-up; mode transition resets firmware histogram before qualified sweep"}
+      "observer_effect":{"status":"MEASURED_ON_SEQ39_EXACT_ARTIFACT","candidate_release":EXPECTED,"lightweight_samples":len(steady),"instrumented_samples":len(instrumented),"lightweight_frame_average_median_ms":light_median,"instrumented_frame_average_median_ms":instrumented_median,"relative_delta_pct":delta,"metric":"same one-second latest-frame-average source in both modes"},
+      "steady_state":{"tails_enabled":False,"duration_seconds":40,"samples":len(steady),"frame_average_ms_min":min(steady),"frame_average_ms_max":max(steady)},
+      "sacrificial_warmup":{"tails_enabled":True,"duration_seconds":40,"samples":len(instrumented),"excluded_from_foundation":True,"sample":warmup},
+      "qualified_boundary":"observer comparison and sacrificial tails-on warm-up complete; tails disabled before the full 28-kernel sweep; mode transition resets firmware histogram"}
     path=pathlib.Path(output);path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(result,indent=2,sort_keys=True)+"\n")
     return result
 
@@ -218,6 +213,7 @@ def telemetry(inventory,session_id,emit=True):
     if not ft.get("enabled") or ft.get("frameMsP99") is None:raise RuntimeError("foundation-frame-tail-contract-missing")
     resolution_us=ft.get("frameTailBinResolutionUs")
     if not isinstance(resolution_us,(int,float)) or resolution_us<=0:raise RuntimeError("foundation-frame-tail-bin-resolution-invalid")
+    if int(resolution_us)!=EXPECTED_TAIL_BIN_US:raise RuntimeError(f"foundation-telemetry-resolution-mismatch:{resolution_us}!={EXPECTED_TAIL_BIN_US}")
     # The firmware overflow bit is global across eight metrics. A rare max can
     # occupy the final histogram bin while every reported percentile remains
     # below it; frameMsMax is maintained exactly outside the histogram. Reject
@@ -242,7 +238,7 @@ def telemetry(inventory,session_id,emit=True):
       }
       raw_path=pathlib.Path(str(session_id))/"SATURATED_TELEMETRY_RAW.json"
       raw_path.parent.mkdir(parents=True,exist_ok=True)
-      raw_path.write_text(json.dumps(raw,indent=2,sort_keys=True)+"\\n")
+      raw_path.write_text(json.dumps(raw,indent=2,sort_keys=True)+"\n")
       raise RuntimeError(f"foundation-frame-tail-quantile-saturated-at-{saturated_quantile_ms:g}ms fields={','.join(saturated_fields)} raw={raw_path}")
     aux=get(AUX+"/json/info"); leds=aux.get("leds",{})
     inv=json.loads(pathlib.Path(inventory).read_text())

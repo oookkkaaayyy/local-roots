@@ -1,0 +1,53 @@
+{
+  "approved_for_mutation": true,
+  "capsule_sha256": "01a26fae34d35bc3e01c8ac4c5533392c74a92838f39487319146b17d2d8a15b",
+  "consumer_contract": {
+    "identity": "Direct-LAN standard WLED /update with exact local candidate SHA/size, exact runtime release/MAC verification, existing renderer restore, no erase/settings/bootloader/partition changes.",
+    "verified": true
+  },
+  "pre_mutation_state": {
+    "cloud": "No Cloudflare/publication mutation. Physical AUX topology/WLED buses unchanged.",
+    "device": "Fresh read-only Matrix/AUX preflight proves exact Release07; Matrix MAC 70:4b:ca:5b:34:5c; AUX DDP live from Matrix. Full response hashes in READONLY_PREFLIGHT.json. Transaction repeats identity/AUX check immediately before candidate OTA.",
+    "preflight_evidence": "READONLY_PREFLIGHT.json"
+  },
+  "recovery_identity": {
+    "identity": "hbnf-matrix-coordinated-v1-20261002-07; BIN SHA-256 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab; 1,458,624 bytes; seq40 genuine device/runtime failure only.",
+    "verification": "Local exact recovery BIN is hash/size checked; prior exact direct-LAN recovery and current candidate/recovery package checks pass."
+  },
+  "run_id": "HBNF-FOUNDATION-SEQ39-40-20261006",
+  "schema": "local-roots-prelive-proof-v1",
+  "stages": {
+    "capture-current-state": {
+      "evidence": [
+        "READONLY_PREFLIGHT.json: current exact Release07 and healthy Matrix-origin AUX DDP",
+        "transaction repeats exact Matrix/AUX identity immediately before OTA"
+      ],
+      "status": "PASS"
+    },
+    "contract-closure": {
+      "evidence": [
+        "OFFLINE_GATES.json and OFFLINE_GATES.md",
+        "source-diff.patch plus tests/hbnf_foundation_tail_range.py prove telemetry-only change",
+        "seq39 adapter and host/regression tests PASS",
+        "local clean-room build provenance and exact firmware SHA/size/headroom"
+      ],
+      "status": "PASS"
+    },
+    "recovery-proof": {
+      "evidence": [
+        "exact local Release07 BIN SHA/size verified",
+        "prior exact Release07 direct-LAN recovery receipt from seq34",
+        "seq39 transaction validates Release07 before any recovery use"
+      ],
+      "status": "PASS"
+    },
+    "transaction-rehearsal": {
+      "evidence": [
+        "seq39 transaction --dry-run DRY_RUN_PASS",
+        "28-kernel inventory exact and policy frozen",
+        "host-only failure policy PASS; seq40 requires actual failure only"
+      ],
+      "status": "PASS"
+    }
+  }
+}

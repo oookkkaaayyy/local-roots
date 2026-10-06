@@ -1,0 +1,48 @@
+{
+  "schema": "hbnf-live-sweep-adapter-v1",
+  "snapshot_argv": [
+    "python3",
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_live_adapter.py",
+    "snapshot",
+    "--observer-output",
+    "{observer_output}",
+    "--inventory",
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"
+  ],
+  "select_argv": [
+    "python3",
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_live_adapter.py",
+    "select",
+    "--kernel",
+    "{runtime_kernel_index}"
+  ],
+  "telemetry_argv": [
+    "python3",
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_live_adapter.py",
+    "telemetry",
+    "--inventory",
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+    "--session-id",
+    "{session_id}"
+  ],
+  "restore_argv": [
+    "python3",
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_live_adapter.py",
+    "restore",
+    "--snapshot-file",
+    "{snapshot_file}"
+  ],
+  "settle_seconds": 5,
+  "sample_seconds": 30,
+  "sample_interval_seconds": 1,
+  "timeout_seconds": 240,
+  "expected_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "notes": [
+    "Seq39 exact candidate: hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1; local clean-room source derivative changes only telemetry histogram resolution 100 to 250 us, retaining 512 bins and exact-max tracking.",
+    "Exact absolute kernel inventory path is preserved; effect ids 220..247 map to runtime indices 0..27. No r2 trig cache, no renderer/source math change.",
+    "Telemetry HTTP GET/POST/ack/snapshot/restore hierarchy and saturated-raw JSON persistence are regression-tested against seq35/seq37 fixtures. Histogram quantile saturation at 127.875 ms is fail-closed after raw sample persistence; overflow alone is not failure when required quantiles remain unsaturated.",
+    "The new exact artifact requires one instrumented-vs-lightweight observer measurement: 40-second tails-OFF window and 40-second tails-ON sacrificial warm-up; compare and preserve both medians, then tails OFF resets histogram before complete Foundation sweep.",
+    "The same one boot-scoped Packet20 snapshot covers the 28-kernel sweep and >=5400s same-installation state-changing soak. Every post-warm-up sample with exact frame_ms_max >=1000 ms is a hard device stop.",
+    "Seq39 candidate is installed once. Seq40 exact Release07 is REAL DEVICE/RUNTIME FAILURE recovery only. Host-only failure does not consume seq40 if exact identity, health, restart continuity, renderer restore, and AUX continuity remain proven."
+  ]
+}

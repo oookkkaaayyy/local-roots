@@ -1,0 +1,181 @@
+{
+  "aux": {
+    "arch": "esp32",
+    "bootloaderSHA256": "b97d154765ea69ca895a33de59adb4b322509aa2a3e2c7c8409b31cbc1bcc2cd",
+    "brand": "WLED",
+    "clock": 240,
+    "cn": "Niji",
+    "core": "4.4.8.240628",
+    "cpalcount": 0,
+    "cpalmax": 129,
+    "deviceId": "e3d28e871aade5e29da7fa368a6759ea368fc3572d",
+    "flash": 4,
+    "freeheap": 105868,
+    "fs": {
+      "pmt": 0,
+      "t": 983,
+      "u": 20
+    },
+    "fxcount": 248,
+    "ip": "192.168.77.11",
+    "leds": {
+      "bootps": 0,
+      "cct": 0,
+      "count": 22,
+      "fps": 20,
+      "lc": 1,
+      "maxpwr": 900,
+      "maxseg": 32,
+      "pwr": 142,
+      "rgbw": false,
+      "seglc": [
+        1
+      ],
+      "wv": 0
+    },
+    "lip": "192.168.77.10",
+    "live": true,
+    "liveseg": -1,
+    "lm": "DDP",
+    "lwip": 0,
+    "mac": "8c94df55c34c",
+    "maps": [
+      {
+        "id": 0
+      }
+    ],
+    "name": "WLED",
+    "ndc": 1,
+    "opt": 79,
+    "palcount": 72,
+    "product": "FOSS",
+    "release": "ESP32",
+    "repo": "wled/WLED",
+    "simplifiedui": false,
+    "str": false,
+    "time": "1970-1-1, 03:22:08",
+    "u": {
+      "Animartrix": [
+        "Animartrix requires the Creative Commons Attribution License CC BY-NC 3.0"
+      ],
+      "AudioReactive": [
+        "<button class=\"btn btn-xs\" onclick=\"requestJson({AudioReactive:{enabled:true}});\"><i class=\"icons off\">&#xe08f;</i></button>"
+      ]
+    },
+    "udpport": 21324,
+    "um": [
+      32,
+      45
+    ],
+    "umpalcount": 0,
+    "uptime": 12128,
+    "ver": "16.0.1",
+    "vid": 2605010,
+    "wifi": {
+      "ap": false,
+      "bssid": "94:83:C4:98:78:94",
+      "channel": 4,
+      "rssi": -40,
+      "signal": 100
+    },
+    "ws": 0
+  },
+  "candidate_install_started": false,
+  "matrix_build": {
+    "basedOnFirmwareSha256": "b9bb60dca1a9be8f7241670a7540810c604465c9adf7084b6efc90d5b4622886",
+    "basedOnReleaseId": "hbnf-matrix-coordinated-v1-20261002-06",
+    "candidate": "hbnf-matrix-coordinated-v1-20261002-07",
+    "features": [
+      "canonical-palette-v1",
+      "canonical-overlay-v1",
+      "coordinated-ui-v1"
+    ],
+    "ip": "192.168.77.10",
+    "mac": "70:4b:ca:5b:34:5c",
+    "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
+    "schema": "hbnf-build-v1",
+    "wled": "16.0.1"
+  },
+  "matrix_hbnf_state": {
+    "audio": {
+      "bass": 0,
+      "mid": 0,
+      "peak": false,
+      "treble": 0,
+      "volume": 0
+    },
+    "audioResponse": 50,
+    "auxBrightness": 87,
+    "candidate": "hbnf-matrix-coordinated-v1-20261002-07",
+    "companionLastNonzeroPixels": 5,
+    "companionRenderCount": 53649,
+    "effectId": 142,
+    "kernel": 19,
+    "liveAcePot": 0,
+    "liveActive": false,
+    "liveEntryCount": 0,
+    "liveLabel": "",
+    "matrixBrightness": 49,
+    "motion": 50,
+    "overlayId": null,
+    "palette": {
+      "mode": "legacy"
+    },
+    "scene": 0,
+    "schema": "foundation-v1",
+    "timing": {
+      "audioModulationUs": 3393,
+      "companionDdpSendUs": 5593,
+      "companionPrepUs": 126,
+      "companionRenderCount": 53649,
+      "fps": 15,
+      "freeHeap": 144120,
+      "kernel": 19,
+      "kernelRenderUs": 42263,
+      "overlayUs": 34,
+      "paletteColorUs": 2645,
+      "rssi": -52,
+      "schedulerVariantUs": 1118,
+      "unaccountedUs": 2659,
+      "uptimeSec": 3170,
+      "variantSignature": 2635981280,
+      "wholeFrameUs": 57835
+    },
+    "transport": "wled-native-ddp-unicast",
+    "variantDwellSeconds": 79,
+    "variantSignature": 2635981280
+  },
+  "matrix_ip": "192.168.77.10",
+  "matrix_mac": "704bca5b345c",
+  "release07_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+  "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
+  "responses": {
+    "aux_info": {
+      "bytes": 1155,
+      "path": "evidence/hbnf-foundation-qualification-20261005/seq39/seq39-prelive-readonly-aux_info.json",
+      "sha256": "11e71306d20bf840a2c1faf8bc80e5447189d9f2fd7277af8efa4cd649d0cedc"
+    },
+    "aux_state": {
+      "bytes": 1822,
+      "path": "evidence/hbnf-foundation-qualification-20261005/seq39/seq39-prelive-readonly-aux_state.json",
+      "sha256": "45b6c2ed2c3a8d9fedbadb9b138a8219fb80eda642f2253535cc7276d27e26b4"
+    },
+    "matrix_build": {
+      "bytes": 426,
+      "path": "evidence/hbnf-foundation-qualification-20261005/seq39/seq39-prelive-readonly-matrix_build.json",
+      "sha256": "5206b257c6c11d69d2c7d54421ba8181147c2826509e63c7ed1b5c8dacd6ef51"
+    },
+    "matrix_info": {
+      "bytes": 1511,
+      "path": "evidence/hbnf-foundation-qualification-20261005/seq39/seq39-prelive-readonly-matrix_info.json",
+      "sha256": "fdff830d8a58a67fc1c68311d0fac8cd29cff63c06bf31e6358effb32c383ba6"
+    },
+    "matrix_state": {
+      "bytes": 1808,
+      "path": "evidence/hbnf-foundation-qualification-20261005/seq39/seq39-prelive-readonly-matrix_state.json",
+      "sha256": "5b0da95038f09c9fa4a1bc90bf32c7a8216c66eed7bbb88cd102a03143b18211"
+    }
+  },
+  "schema": "hbnf-seq39-readonly-prelive-v1",
+  "status": "PASS"
+}

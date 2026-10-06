@@ -1,0 +1,27 @@
+{
+  "schema": "hbnf-packet20-tail250-source-v1",
+  "candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "base_source_commit": "b18b162ec4b4f9173b1de892957ff8b834fe2b50",
+  "base_source_path": ".hbnf-packet20-cloud/source/usermod_hbnf_foundation_v1.cpp",
+  "base_source_sha256": "f0350177d671f44577d2bfd40780b498662f57d08e5a4078be738c995da8f67a",
+  "candidate_source_path": "firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp",
+  "candidate_source_sha256": "31126d341bf0a3e54a33d87de0856c5f68e79f20dd05653ae1d5df3270a9bc9d",
+  "firmware_delta": "HBNF_TAIL_BIN_US 100 -> 250; HBNF_TAIL_BINS remains 512. Candidate identity strings updated for seq39. Renderer/scheduler/audio/AUX/production behavior and exact-max tracking unchanged.",
+  "fixed_memory": true,
+  "tail_bin_count": 512,
+  "tail_bin_us": 250,
+  "quantile_saturation_midpoint_ms": 127.875,
+  "foundation_frame_p99_ceiling_ms": 75,
+  "exact_max_tracking_unchanged": true,
+  "renderer_code_unchanged": true,
+  "build_closure": {
+    "wled_base_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "fastled_release": "3.10.4",
+    "fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+    "platformio_core": "6.1.18",
+    "environment": "hbnf_matrix_wled16_packet20_diag",
+    "overlay_tar_gz_sha256": "7beac2c97a38257da08d1128f4a01fb39c5f90ec0811b5da6cb5bdf9310192ce",
+    "animartrix_upstream_commit": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f",
+    "animartrix_clock_patch_sha256": "f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4"
+  }
+}

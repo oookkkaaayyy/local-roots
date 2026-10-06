@@ -93,7 +93,7 @@ with tempfile.TemporaryDirectory() as td:
       "freeHeap":88000,"rssi":-45,"wholeFrameUs":19000,"auxProjectionAgeMs":2},
       "foundationTelemetry":{"enabled":True,"frameMsAvg":19,"frameMsP50":18,
       "frameMsP95":21,"frameMsP99":23,"frameMsMax":25,"minimumFreeHeapBytes":80000,
-      "largestFreeBlockBytes":60000,"sampleCount":300,"frameTailBinResolutionUs":1000,
+      "largestFreeBlockBytes":60000,"sampleCount":300,"frameTailBinResolutionUs":250,
       "frameTailOverflow":False,"kernelMsAvg":8,"kernelMsP95":10,"paletteMsAvg":3,
       "paletteMsP95":4,"audioMsAvg":1,"audioMsP95":2,"schedulerMsAvg":1,
       "schedulerMsP95":2,"overlayMsAvg":0.1,"overlayMsP95":0.2,
@@ -120,21 +120,25 @@ with tempfile.TemporaryDirectory() as td:
     # overflow flag for later baseline-relative gate evaluation.
     ft=state["HBNF"]["foundationTelemetry"]
     ft.update(frameTailOverflow=True,frameMsMax=12559.93,frameMsP99=36.65,
-              frameTailBinResolutionUs=100)
+              frameTailBinResolutionUs=250)
     with contextlib.redirect_stdout(io.StringIO()) as output:
         m.telemetry(str(inventory),"run-a")
     overflow_sample=json.loads(output.getvalue())
     assert overflow_sample["frame_tail_overflow"] is True
     assert overflow_sample["frame_ms_max"]==12559.93
-    assert overflow_sample["frame_tail_saturated_quantile_ms"]==51.15
+    assert overflow_sample["frame_tail_saturated_quantile_ms"]==127.875
     # If a percentile itself reaches the final-bin representative, the
     # telemetry contract still fails closed before any profile is accepted.
-    ft["frameMsP99"]=51.15
+    ft["frameMsP99"]=127.875
     try:
         with contextlib.redirect_stdout(io.StringIO()):m.telemetry(str(inventory),"run-a")
         raise AssertionError("saturated percentile was accepted")
     except RuntimeError as exc:
-        assert "foundation-frame-tail-quantile-saturated-at-51.15ms" in str(exc)
+        assert "foundation-frame-tail-quantile-saturated-at-127.875ms" in str(exc)
+        raw_path=pathlib.Path("run-a")/"SATURATED_TELEMETRY_RAW.json"
+        raw=json.loads(raw_path.read_text())
+        assert raw["status"]=="SATURATED" and raw["frame_ms_max"]==12559.93
+        assert raw["saturated_fields"]==["frameMsP99"]
     ft["frameMsP99"]=36.65
     state["HBNF"]["timing"]["uptimeSec"]=90
     with contextlib.redirect_stdout(io.StringIO()) as output:m.telemetry(str(inventory),"run-a")
@@ -196,8 +200,7 @@ with tempfile.TemporaryDirectory() as td:
     assert sidecar["restore"]["restoreVerified"] is True and sidecar["restore"]["packet20Same"] is True
     assert sidecar["status"]=="OBSERVER_FAILED__RENDERER_RESTORED"
 
-# Seq37 binds the already-qualified observer result and performs only the two
-# required production/warm-up windows; it cannot re-run the observer A/B.
+# Seq39 remeasures observer effect exactly once on the changed telemetry artifact.
 with tempfile.TemporaryDirectory() as td:
     m.foundation_prequal_windows=real_prequal
     m.select=lambda kernel:None
@@ -209,11 +212,11 @@ with tempfile.TemporaryDirectory() as td:
     m.telemetry=lambda *args,**kwargs:{"kernel_id":0,"frame_ms_max":40.0}
     result=m.foundation_prequal_windows(str(pathlib.Path(td)/"OBSERVER_EFFECT.json"),str(inventory))
     assert result["status"]=="PASS"
-    assert result["observer_effect"]["status"]=="PASS_REUSED_PRIOR_EXACT_CANDIDATE_EVIDENCE"
-    assert result["observer_effect"]["lightweight_samples"]==27 and result["observer_effect"]["instrumented_samples"]==27
-    assert result["steady_state"]["tails_enabled"] is False and result["steady_state"]["duration_seconds"]==30
+    assert result["observer_effect"]["status"]=="MEASURED_ON_SEQ39_EXACT_ARTIFACT"
+    assert result["observer_effect"]["lightweight_samples"]==25 and result["observer_effect"]["instrumented_samples"]==25
+    assert result["steady_state"]["tails_enabled"] is False and result["steady_state"]["duration_seconds"]==40
     assert result["sacrificial_warmup"]["tails_enabled"] is True and result["sacrificial_warmup"]["excluded_from_foundation"] is True
-    assert [x[0] for x in window_calls]==["foundation-steady-state-tails-off","foundation-sacrificial-warmup-tails-on"]
+    assert [x[0] for x in window_calls]==["foundation-steady-state-tails-off","foundation-observer-instrumented-sacrificial-warmup"]
 
 def invalid_json(*args,**kwargs):
     class Response:

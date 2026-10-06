@@ -1,0 +1,48 @@
+{
+  "artifact_paths": {
+    "candidate": "evidence/hbnf-foundation-qualification-20261005/seq39/artifact/firmware.bin",
+    "release07": "evidence/hbnf-foundation-qualification-20261005/seq39/artifact/release07.bin"
+  },
+  "build": {
+    "animartrix_clock_patch_sha256": "f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4",
+    "animartrix_commit": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f",
+    "compile_invocation": "pio run -v -j 1 -e hbnf_matrix_wled16_packet20_diag",
+    "environment": "hbnf_matrix_wled16_packet20_diag",
+    "fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+    "host_compatibility_notes": "WLED helper type annotations require Python >=3.10. Added future-annotations import to load_usermods.py and validate_modules.py; no executable logic changed. WLED requirements requested requests==2.33.0, absent from configured package index; PlatformIO 6.1.18 requires requests 2.*, resolved 2.32.5. See compatibility shim hashes and build log.",
+    "mode": "local clean room",
+    "node": "20.20.2",
+    "overlay_sha256": "7beac2c97a38257da08d1128f4a01fb39c5f90ec0811b5da6cb5bdf9310192ce",
+    "platformio_core": "6.1.18",
+    "python": "3.9.6 host runtime; workflow 3.12 annotations handled with future-annotations-only shim in two pio helper scripts",
+    "source_date_epoch": 1789948800,
+    "wled_base_commit": "29b389df1c1aaec6ff53aea742d17063b985906c"
+  },
+  "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "durable_evidence": {
+    "drive_file_id": "1E0te1eJH6TCAmLHVQct5huZAToLI1fwq",
+    "drive_url": "https://drive.google.com/file/d/1E0te1eJH6TCAmLHVQct5huZAToLI1fwq/view?usp=drivesdk"
+  },
+  "effective_compile_evidence": "build.log contains effective -Os global command and FastLED per-file O3/fast-math source pragmas in compiler-control.txt; telemetry change introduces no optimization flag changes",
+  "firmware_bytes": 1489008,
+  "firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "ota_headroom_bytes": 83856,
+  "ota_headroom_percent": 5.331,
+  "ota_slot_bytes": 1572864,
+  "release07": {
+    "candidate": "hbnf-matrix-coordinated-v1-20261002-07",
+    "firmware_bytes": 1458624,
+    "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab"
+  },
+  "schema": "hbnf-seq39-local-build-provenance-v1",
+  "source_authority": {
+    "active_branch": "hbnf-cart2-ready-to-implement-staging-20261001",
+    "base_source_commit": "b18b162ec4b4f9173b1de892957ff8b834fe2b50",
+    "base_source_sha256": "f0350177d671f44577d2bfd40780b498662f57d08e5a4078be738c995da8f67a",
+    "candidate_source_path": "firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp",
+    "candidate_source_sha256": "31126d341bf0a3e54a33d87de0856c5f68e79f20dd05653ae1d5df3270a9bc9d",
+    "control_head": "687ed74c678fb97fb1493c714565b0eb0f8cc0c5",
+    "delta": "HBNF_TAIL_BIN_US 100 to 250; bins remain 512; identity metadata updated; no renderer, scheduler, audio, AUX, production behavior, or exact-max change"
+  },
+  "status": "BUILD_SUCCEEDED"
+}
