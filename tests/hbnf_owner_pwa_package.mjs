@@ -10,9 +10,9 @@ const installer = fs.readFileSync(path.join(root, "hbnf-ui-v6-package/install_ui
 const uiWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-cart-ui-v6-package.yml"), "utf8");
 const releaseWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-coordinated-release-ci.yml"), "utf8");
 
-assert.match(html, /hbnf-cart-final-v7-3-skins-owner-20261006/);
+assert.match(html, /hbnf-cart-final-v7-3-skins-owner-pwa-r1-20261006/);
 assert.equal(manifest.id, "/hbnf-cart.html");
-assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261006-skins-owner-1");
+assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261006-skins-owner-pwa-r1");
 assert.equal(manifest.scope, "/hbnf-cart.html");
 assert.deepEqual(manifest.icons.map(({ sizes }) => sizes), ["192x192", "512x512"]);
 
@@ -29,6 +29,8 @@ for (const name of referenced) {
 
 for (const name of [
   "hbnf-cart-skins-score.mjs",
+  "hbnf-cart-net.mjs",
+  "hbnf-cart-sw.js",
   "hbnf-cart-icon-180.png",
   "hbnf-cart-icon-192.png",
   "hbnf-cart-icon-512.png",
@@ -38,9 +40,9 @@ for (const name of [
   assert.ok(releaseWorkflow.includes(`hbnf-final-controller/${name}`), `release package omits ${name}`);
 }
 
-assert.ok(!/serviceWorker\s*\.\s*register\s*\(/.test(html + fs.readFileSync(path.join(controller, "hbnf-cart.js"), "utf8")),
-  "owner controller must not introduce a service worker cache lifecycle");
-assert.match(uiWorkflow, /HBNF-CART-UI-V7-3-SKINS-OWNER-20261006/);
+assert.match(html, /navigator\.serviceWorker\.register/);
+assert.ok(fs.existsSync(path.join(controller, "hbnf-cart-sw.js")), "owner PWA service worker missing");
+assert.match(uiWorkflow, /HBNF-CART-UI-V7-3-SKINS-OWNER-PWA-R1-20261006/);
 assert.match(uiWorkflow, /tests\/hbnf_owner_pwa_package\.mjs/);
 assert.match(releaseWorkflow, /tests\/hbnf_owner_pwa_package\.mjs/);
 
