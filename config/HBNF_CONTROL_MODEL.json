@@ -370,6 +370,44 @@
         ]
       }
     ],
-    "priority_rule": "Critical-path work first; use unavoidable wait/soak time for ready parallel work; never create event-only throwaway architecture when the same work can advance final Cart 2.0."
+    "priority_rule": "Critical-path work first; use unavoidable wait/soak time for ready parallel work; never create event-only throwaway architecture when the same work can advance final Cart 2.0.",
+    "parallelism_enforcement": {
+      "schema": "hbnf-parallelism-enforcement-v1",
+      "purpose": "Prevent safe ready lanes from being silently serialized or abandoned.",
+      "core_lanes": [
+        "P2_MISSION_CONTROL_SCORING",
+        "P2_VIBE_AUDIO",
+        "P2_TEXT_MOMENTS",
+        "P2_PWA_RELIABILITY"
+      ],
+      "activation": {
+        "foundation_soak": "As soon as the >=90-minute Foundation soak is cleanly running, start all core lanes that can proceed without mutating the live candidate. Each lane must be ACTIVE, DONE, or BLOCKED_WITH_EXACT_DEPENDENCY; silent IDLE/QUEUED is not acceptable.",
+        "phase2": "At PHASE2_INTEGRATING, all four core lanes are mandatory concurrent workstreams until DONE or BLOCKED_WITH_EXACT_DEPENDENCY."
+      },
+      "state_contract": {
+        "field": "lane_execution",
+        "required_when": [
+          "PHASE2_INTEGRATING",
+          "RELEASE_CANDIDATE"
+        ],
+        "lane_status_values": [
+          "ACTIVE",
+          "DONE",
+          "BLOCKED_WITH_EXACT_DEPENDENCY"
+        ],
+        "blocked_requires": [
+          "blocker",
+          "dependency"
+        ],
+        "idle_ready_lane_is_violation": true
+      },
+      "sequencing": [
+        "One live-device mutation lane maximum.",
+        "Offline/staging lanes do not wait on unrelated live work once their dependencies are satisfied.",
+        "A worker may combine lanes internally only if the state still records each lane independently and no lane becomes silently idle.",
+        "Integration waits for lane outputs; lanes do not wait for integration."
+      ],
+      "anti_abandonment": "A previously declared parallel lane may be removed, serialized, or deferred only when its dependency is explicitly blocked or the user changes scope. Convenience, chat turnover, worker turnover, or a new transaction is not sufficient."
+    }
   }
 }
