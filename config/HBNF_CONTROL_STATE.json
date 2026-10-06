@@ -870,6 +870,36 @@
       "drive_url": "https://drive.google.com/file/d/1p31foPJ9a5z6l_ipJRLxTK0fV8ZBL7xv/view?usp=drivesdk",
       "source_commit": "6f13ed8bc683743f8c1c53e0c65f5247af07bdba",
       "deployment": "NOT_DEPLOYED__PHASE2_NOT_AUTHORIZED"
+    },
+    "foundation_retry": {
+      "schema": "hbnf-foundation-retry-v1",
+      "status": "AUTHORIZED__SEQ43_44",
+      "reason": "Seq41 device/runtime evidence remained clean; qualification failed only because the host sampler produced a 24.114s gap. Seq42 recovery was triggered by a now-corrected host restore-comparator false negative.",
+      "inherited_evidence": [
+        "seq39 28/28 kernel sweep PASS",
+        "exact-artifact observer effect PASS",
+        "hash-bound baseline/frozen policy",
+        "seq41 preserved samples: zero restart, frame max <=53.915ms, p99 <=44.375ms before host gap",
+        "source-bound restore comparator correction regression-tested offline"
+      ],
+      "required_new_evidence": [
+        "host sampling-gap mechanism corrected and regression-tested before live mutation",
+        "clean seq43 prelive proof",
+        ">=90 minute contiguous state-changing soak",
+        "remaining Foundation/T2 acceptance checks"
+      ]
+    },
+    "post_foundation_continuation": {
+      "status": "CONDITIONALLY_PREAUTHORIZED_BY_USER_DIRECTIVE",
+      "rule": "Do not stop merely because the soak passes. If every T2 required check is objectively PASS and evidence is durable, write the Foundation qualification receipt and advance to FOUNDATION_QUALIFIED. If the existing T3 scope-lock/interface/lane-plan/acceptance prerequisites are also PASS, advance to PHASE2_INTEGRATING and continue the field-critical owner path.",
+      "owner_pwa_after_t3": {
+        "package_drive_id": "1p31foPJ9a5z6l_ipJRLxTK0fV8ZBL7xv",
+        "package_name": "HBNF_CART_UI_V7_3_SKINS_OWNER_20261006.zip",
+        "package_sha256": "54eec1998410fdaf258477538d5494658639a10040a8746a2a79da525c013c2f",
+        "source_commit": "6f13ed8bc683743f8c1c53e0c65f5247af07bdba",
+        "action": "After legal T3 entry, deploy the exact staged permanent owner scoring/PWA package with rollback available and run intended-owner-device scoring/control smoke. Do not deploy before lifecycle authority permits it."
+      },
+      "brightness": "DEFER_FOR_STABILITY for the 2026-10-06 Skins field build; retain as locked Cart 2.0 core requirement after Foundation."
     }
   },
   "execution_budget_policy": {
@@ -895,10 +925,12 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Preserve seq41/seq42 evidence and do not rerun the consumed sequence pair.",
-      "Use exact source evidence to correct the host restore comparator so omitted packet20Same JSON is accepted only when the exact candidate artifact/source hash is bound and firmware restoreVerified=true.",
-      "Continue offline-only Skins scoring, owner PWA reliability, Vibe/audio and text/moment staging; do not deploy while Phase 2 remains unauthorized.",
-      "Keep live mutation closed until newer authority allocates a legal transaction; current Matrix runtime identity is exact Release07 and AUX native DDP is live."
+      "Commit/checkpoint the proven restore-comparator host fix and implement a materially different soak sampling mechanism that prevents the prior serialized-host 24.114s evidence gap; prove it offline first.",
+      "Run clean seq43 prelive proof, then perform one exact candidate install and the >=90-minute contiguous Foundation soak while reusing seq39 28/28/observer/baseline evidence.",
+      "On host-only failure, preserve seq43 when identity/health/restart/restore/AUX proofs remain valid; allow at most one same-install soak retry after a materially different offline-proven harness fix. Do not consume seq44 for host-only failure.",
+      "Use seq44 exact Release07 only for genuine device/runtime/Foundation failure or lost safety proof, and persist an actual OTA HTTP receipt plus post-recovery identity if used.",
+      "If T2 passes, promote Foundation instead of stopping for an intermediate report. If T3 prerequisites also pass, enter Phase2 and deploy/smoke the exact staged V7.3 owner scoring/PWA package.",
+      "Brightness remains explicitly DEFER_FOR_STABILITY for today's Skins field build; do not let it destabilize Foundation or owner scoring/control."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1053,26 +1085,26 @@
   },
   "lifecycle_state": "FIX_CANDIDATE",
   "live_mutation_authorization": {
-    "candidate_sequence": 41,
-    "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "closure_reason": "Seq39 completed the exact 28/28 sweep and passed renderer restore; seq39 soak stopped on a mislabeled sender-age metric. Seq40 exact Release07 recovery passed. Current bounded seq41 authorization remains active after the offline telemetry correction and fresh read-only prelive verification.",
+    "candidate_sequence": 43,
+    "recovery_sequence": 44,
+    "status": "AUTHORIZED__SEQ43_FOUNDATION_SOAK_REQUALIFICATION__SEQ44_REAL_FAILURE_RECOVERY_ONLY",
     "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-    "prelive_evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq41/PRELIVE_PROOF.json",
-    "recovery_sequence": 42,
+    "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "user_authorization": "Current user directive: expedite remaining work as much as safely possible for the 2026-10-06 Skins round; current worker reported seq41/42 consumed and requested newer control authority.",
     "scope": [
-      "First perform a bounded post-fix preflight proving AUX/controller reachability and actual current underglow response without changing firmware.",
-      "Reconcile seq39 auxProjectionAgeMs failure quickly against current send/receive evidence; if it is a measurement/gate defect, correct/test offline before live use.",
-      "If prelive proof is clean, authorize ONE exact bounded candidate Foundation install/run as seq41 using already-proven transport/artifact lineage; seq42 exact Release07 is recovery-only for genuine device/runtime/Foundation failure.",
-      "No broad Packet20/R4 re-exploration; no redundant 28/28 sweep unless the corrected artifact or runtime assumptions actually invalidate seq39 sweep evidence.",
-      "During any required soak/wait, immediately advance field-critical offline Phase2 work: Mission Control/scoring and PWA/reliability first, then Vibe/audio and text/moments."
+      "Checkpoint/commit the already-proven host restore-comparator correction before live mutation.",
+      "Before seq43, replace or harden the soak sampling mechanism so the prior 24.114s host sampling gap cannot recur through the same mechanism; prove the changed host path offline with regression/fixture tests. Prefer a decoupled continuous sampler/state-changer or another materially different bounded mechanism rather than repeating the same serialized Mac-host loop.",
+      "Reuse the exact seq39 28/28 sweep, hash-bound baseline, frozen policy, and exact-artifact observer-effect evidence. Do not repeat the 28-kernel sweep or observer A/B unless an actual artifact/instrumentation invalidator appears.",
+      "Perform one exact seq43 candidate install only after clean prelive proof, then complete the required >=5400s contiguous state-changing Foundation soak and remaining T2 checks.",
+      "If a host-only failure occurs while exact candidate identity, restart continuity, renderer restore and AUX health remain proven, preserve the installed seq43 candidate; do not consume seq44. One in-place soak retry is allowed only after a materially different host-harness fix is proven offline.",
+      "Seq44 exact Release07 recovery is permitted only for genuine device/runtime/Foundation failure or when safety/identity/restore proof becomes unavailable. Capture and persist the OTA HTTP receipt plus post-recovery runtime identity if seq44 is actually used.",
+      "No GitHub Actions or firmware rebuild for host-harness/orchestration defects."
     ],
-    "status": "AUTHORIZED__ONE_BOUNDED_FOUNDATION_REQUALIFICATION_AFTER_AUX_POSTFIX_PREFLIGHT",
-    "user_authorization": "User confirmed AUX fault was physical and fixed, and explicitly directed maximum safe overnight progress toward tomorrow's Skins field target.",
-    "recovery_rule": "SEQ42_RELEASE07_ONLY_FOR_GENUINE_DEVICE_RUNTIME_OR_FOUNDATION_FAILURE__NOT_FOR_HOST_ONLY_FAILURE",
+    "recovery_rule": "SEQ44_RELEASE07_ONLY_FOR_GENUINE_DEVICE_RUNTIME_FOUNDATION_FAILURE_OR_LOST_SAFETY_PROOF__HOST_ONLY_FAILURE_PRESERVES_SEQ43",
     "live_mutation_limit": 1
   },
-  "live_mutation_authorized": false,
+  "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",
