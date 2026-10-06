@@ -760,5 +760,29 @@
         "Foundation histogram/percentile contract changes"
       ]
     }
-  ]
+  ],
+  "lane_execution": {
+    "schema": "hbnf-lane-execution-state-v1",
+    "activation_rule": "At clean Foundation soak start, activate every offline-safe core lane. At PHASE2_INTEGRATING all four core lanes must be ACTIVE, DONE, or BLOCKED_WITH_EXACT_DEPENDENCY; no silent idle/queued lanes.",
+    "lanes": {
+      "P2_MISSION_CONTROL_SCORING": {
+        "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
+        "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START"
+      },
+      "P2_VIBE_AUDIO": {
+        "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
+        "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START"
+      },
+      "P2_TEXT_MOMENTS": {
+        "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
+        "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START"
+      },
+      "P2_PWA_RELIABILITY": {
+        "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
+        "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START"
+      }
+    },
+    "anti_abandonment": "Chat turnover, worker turnover, new sequence numbers, or convenience may not drop a lane. A ready lane can stop only when DONE, explicitly blocked on a named dependency, or user scope changes.",
+    "live_mutation_limit": 1
+  }
 }
