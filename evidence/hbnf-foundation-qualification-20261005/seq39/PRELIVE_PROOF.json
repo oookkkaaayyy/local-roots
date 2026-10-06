@@ -1,6 +1,6 @@
 {
   "approved_for_mutation": true,
-  "capsule_sha256": "01a26fae34d35bc3e01c8ac4c5533392c74a92838f39487319146b17d2d8a15b",
+  "capsule_sha256": "c1cbd00b9d7c5521487e95eb536f2364626a384160a40fc6fed62b0d1c0cfc7d",
   "consumer_contract": {
     "identity": "Direct-LAN standard WLED /update with exact local candidate SHA/size, exact runtime release/MAC verification, existing renderer restore, no erase/settings/bootloader/partition changes.",
     "verified": true

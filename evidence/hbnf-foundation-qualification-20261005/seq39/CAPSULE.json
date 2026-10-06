@@ -4,7 +4,7 @@
     "remote_execution_for_source_archaeology": false,
     "retry_inherits_authorization": false
   },
-  "created_at": "2026-10-06T07:35:22.333446+00:00",
+  "created_at": "2026-10-06T07:36:25.525213+00:00",
   "expected_terminal_outputs": [
     "diagnostic result or exact stop reason",
     "snapshot/restore result",
@@ -18,9 +18,9 @@
   },
   "repo_identity": {
     "branch": "hbnf-cart2-ready-to-implement-staging-20261001",
-    "dirty": true,
+    "dirty": false,
     "type": "git_commit",
-    "value": "687ed74c678fb97fb1493c714565b0eb0f8cc0c5"
+    "value": "cbd25a3c10d4673dc6093963c943aebce9247d8c"
   },
   "repo_inputs": [
     {
@@ -228,7 +228,7 @@
   },
   "system_id": "hbnf-matrix",
   "terminal_recovery": "If exact restore is not proven, execute only the pre-rehearsed registered baseline recovery transaction, verify device and publication identities, preserve evidence, and stop.",
-  "trace_id": "359deabedaf044cf867ea5850cda8fba",
+  "trace_id": "eba51146bc5147bb8e53f30a214adb69",
   "user_interaction_policy": {
     "copy_paste_delivery": "one_single_fenced_block_per_action",
     "max_user_actions_per_blocker": 1,
