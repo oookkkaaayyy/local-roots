@@ -543,7 +543,32 @@
         "Do not use the status sheet to authorize mutation, change lifecycle state, invalidate evidence, or override control model/state."
       ],
       "read_rule": "Coordinator may read this sheet at any time to report actual worker progress without waiting for a worker-chat return.",
-      "stale_rule": "A stale heartbeat is an observability warning only. It does not fail Foundation, trigger rollback, authorize intervention, or require interrupting a critical operation."
+      "stale_rule": "A stale heartbeat is an observability warning only. It does not fail Foundation, trigger rollback, authorize intervention, or require interrupting a critical operation.",
+      "user_status_summary_contract": {
+        "schema": "hbnf-user-status-summary-v1",
+        "purpose": "Make status/update/outlook replies communicate broad project position before low-level execution detail.",
+        "authority_effect": "NONE__REPORTING_FORMAT_ONLY",
+        "no_new_authority_layer": true,
+        "required_order": [
+          "OVERALL_CART2_POSITION: current lifecycle stage, what major stages are complete, and what major stages remain.",
+          "CURRENT_PROCESS_POSITION: what the active process is for, how far through it is in broad gate terms, and how it moves Cart 2.0 forward.",
+          "OUTLOOK: realistic best-case/likely remaining path, biggest uncertainty, and whether user action is needed.",
+          "RECENT_DELTA: only the few technical details that materially changed the broad outlook."
+        ],
+        "progress_measurement": [
+          "Use lifecycle transitions and major acceptance gates as the primary progress units.",
+          "Do not use commits, test counts, sequence numbers, or debugging activity as proxies for project progress.",
+          "When a sub-gate has a natural count (for example 22/28 kernels), it may be shown as supporting context but must not be confused with completion of the containing lifecycle stage.",
+          "Avoid false-precision percentages for overall Cart 2.0; use broad terms such as early/mid/late stage unless the denominator is authoritative."
+        ],
+        "response_style": [
+          "Lead with broad progress and remaining work.",
+          "Keep implementation detail subordinate unless it changes risk/outlook.",
+          "Explicitly distinguish CURRENT PROCESS completion from OVERALL CART 2.0 completion.",
+          "If the user asks only 'status' or 'update', do not require a follow-up to learn the overall outlook."
+        ],
+        "anti_complexity": "This is a reporting-format rule inside the existing observability section. It must not create a separate lifecycle, gate, policy file, worker requirement, or execution dependency."
+      }
     }
   }
 }
