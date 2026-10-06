@@ -38,7 +38,7 @@
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
     "blockers": [
-      "Foundation telemetry candidate seq33 failed closed: after the one snapshot, 0 kernel profiles completed because frameTailOverflow=true; exact max was 12559.93ms and the 512-bin/100us histogram saturates above 51.2ms. The runner restored renderer state with restoreVerified=true and packet20Same=true. Exact Release07 seq34 recovery passed. Foundation remains unqualified; no further live mutation is authorized."
+      "Foundation remains unqualified after seq33 stopped before kernel 0 on a 12,559.93 ms measured frame interval; exact Release07 seq34 recovery passed. The 51.2 ms histogram ceiling also flags Release07's 63.073 ms max. Host adapter correction now distinguishes percentile saturation from an isolated exact max while preserving both overflow and max; no fresh bounded live-mutation transaction is authorized, and seq33/34 cannot be reused."
     ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
@@ -313,7 +313,7 @@
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Foundation offline timeout and soak-harness checkpoint",
-    "next_work": "Offline: diagnose the captured tail histogram overflow and exact 12559.93ms frame maximum without weakening gates; correct/test the telemetry contract before preparing any new bounded live transaction. In parallel after Foundation readiness, advance permanent Cart 2.0 interfaces per current priority directive. Keep Release07 installed and live mutation closed.",
+    "next_work": "Offline host correction is implemented and regression-tested: expose exact frame max and histogram overflow while rejecting only percentiles that land in the saturated final bin. Do not weaken tail/performance acceptance thresholds. Next live Foundation attempt requires a separately authorized fresh bounded transaction and a new decision on the 12.56s measured render-to-show interval; keep exact Release07 installed and live mutation closed. After Foundation qualifies, proceed to permanent Mission Control/scorer, Vibe/audio, and VisualMoment integration.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "performance_findings": {
       "candidate_fix": "FastLED 3.10.4 bounded fixed-point Animartrix backport; R4 achieved a 42 FPS median across 28 kernels, 8.329 ms median kernel time, with 28 improved and 0 regressed. Material gain confirmed; continue Foundation gates.",

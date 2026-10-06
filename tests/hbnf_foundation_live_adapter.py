@@ -47,6 +47,27 @@ with tempfile.TemporaryDirectory() as td:
     assert sample["release_id"]==m.EXPECTED and sample["kernel_name"]=="Complex_Kaleido_3"
     assert sample["frame_ms_p99"]==23 and sample["minimum_free_heap_bytes"]==80000
     assert sample["largest_free_block_bytes"]==60000 and sample["restart_count"]==0
+    # A max in the final bin sets the firmware's global overflow bit, but does
+    # not invalidate unsaturated percentile ranks. Preserve the exact max and
+    # overflow flag for later baseline-relative gate evaluation.
+    ft=state["HBNF"]["foundationTelemetry"]
+    ft.update(frameTailOverflow=True,frameMsMax=12559.93,frameMsP99=36.65,
+              frameTailBinResolutionUs=100)
+    with contextlib.redirect_stdout(io.StringIO()) as output:
+        m.telemetry(str(inventory),"run-a")
+    overflow_sample=json.loads(output.getvalue())
+    assert overflow_sample["frame_tail_overflow"] is True
+    assert overflow_sample["frame_ms_max"]==12559.93
+    assert overflow_sample["frame_tail_saturated_quantile_ms"]==51.15
+    # If a percentile itself reaches the final-bin representative, the
+    # telemetry contract still fails closed before any profile is accepted.
+    ft["frameMsP99"]=51.15
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):m.telemetry(str(inventory),"run-a")
+        raise AssertionError("saturated percentile was accepted")
+    except RuntimeError as exc:
+        assert "foundation-frame-tail-quantile-saturated-at-51.15ms" in str(exc)
+    ft["frameMsP99"]=36.65
     state["HBNF"]["timing"]["uptimeSec"]=90
     with contextlib.redirect_stdout(io.StringIO()) as output:m.telemetry(str(inventory),"run-a")
     assert json.loads(output.getvalue())["restart_count"]==1

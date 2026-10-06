@@ -13,6 +13,7 @@ POST_TIMEOUT_SECONDS=25
 COMMAND_ACK_TIMEOUT_SECONDS=30
 SNAPSHOT_READY_TIMEOUT_SECONDS=45
 RESTORE_VERIFY_TIMEOUT_SECONDS=90
+TAIL_HISTOGRAM_BINS=512
 
 def get(url, timeout=HTTP_TIMEOUT_SECONDS):
     attempts=2 if url.endswith("/json/state") else 1
@@ -185,7 +186,19 @@ def telemetry(inventory,session_id):
         time.sleep(.1);state,p20=p20_state(deadline,stage="foundation-tail-readiness")
     h=state["HBNF"]; timing=h["timing"]; ft=h.get("foundationTelemetry",{})
     if not ft.get("enabled") or ft.get("frameMsP99") is None:raise RuntimeError("foundation-frame-tail-contract-missing")
-    if ft.get("frameTailOverflow"):raise RuntimeError("foundation-frame-tail-histogram-range-overflow")
+    resolution_us=ft.get("frameTailBinResolutionUs")
+    if not isinstance(resolution_us,(int,float)) or resolution_us<=0:raise RuntimeError("foundation-frame-tail-bin-resolution-invalid")
+    # The firmware overflow bit is global across eight metrics. A rare max can
+    # occupy the final histogram bin while every reported percentile remains
+    # below it; frameMsMax is maintained exactly outside the histogram. Reject
+    # only when a percentile itself is represented by the saturated final bin.
+    saturated_quantile_ms=((TAIL_HISTOGRAM_BINS-1)*resolution_us+resolution_us/2)/1000.0
+    quantiles={k:ft.get(k) for k in (
+      "frameMsP50","frameMsP95","frameMsP99","kernelMsP95","paletteMsP95",
+      "audioMsP95","schedulerMsP95","overlayMsP95","auxPrepareSendMsP95","unaccountedMsP95")}
+    if any(v is None for v in quantiles.values()):raise RuntimeError("foundation-frame-tail-quantile-contract-missing")
+    if any(float(v)>=saturated_quantile_ms for v in quantiles.values()):
+      raise RuntimeError(f"foundation-frame-tail-quantile-saturated-at-{saturated_quantile_ms:g}ms")
     aux=get(AUX+"/json/info"); leds=aux.get("leds",{})
     inv=json.loads(pathlib.Path(inventory).read_text())
     kid=int(timing["kernel"])
@@ -204,7 +217,7 @@ def telemetry(inventory,session_id):
       "frame_ms_avg":ft.get("frameMsAvg"),"frame_ms_p50":ft.get("frameMsP50"),"frame_ms_p95":ft.get("frameMsP95"),"frame_ms_p99":ft.get("frameMsP99"),"frame_ms_max":ft.get("frameMsMax"),
       "kernel_id":kid,"kernel_name":entry["kernel_name"],"variant_id":timing["variantSignature"],
       "free_heap_bytes":timing["freeHeap"],"minimum_free_heap_bytes":ft.get("minimumFreeHeapBytes"),"largest_free_block_bytes":ft.get("largestFreeBlockBytes"),
-      "frame_tail_bin_resolution_us":ft.get("frameTailBinResolutionUs"),"frame_tail_overflow":ft.get("frameTailOverflow"),"frame_tail_sample_count":ft.get("sampleCount"),
+      "frame_tail_bin_resolution_us":resolution_us,"frame_tail_overflow":ft.get("frameTailOverflow"),"frame_tail_saturated_quantile_ms":saturated_quantile_ms,"frame_tail_sample_count":ft.get("sampleCount"),
       "websocket_clients":info.get("ws"),"aux_projection_active":bool(aux.get("live") and aux.get("lm")=="DDP"),"aux_projection_age_ms":timing.get("auxProjectionAgeMs"),"aux_render_fps":leds.get("fps"),
       "wifi_rssi_dbm":timing["rssi"],"restart_count":cache["restart_count"],
       "kernel_ms_avg":ft.get("kernelMsAvg"),"kernel_ms_p95":ft.get("kernelMsP95"),"palette_ms_avg":ft.get("paletteMsAvg"),"palette_ms_p95":ft.get("paletteMsP95"),
