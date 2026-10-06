@@ -1,0 +1,10 @@
+{
+  "instrumented_frame_average_median_ms": 25.154,
+  "instrumented_samples": 27,
+  "kernel_id": 0,
+  "lightweight_frame_average_median_ms": 25.917,
+  "lightweight_samples": 27,
+  "metric": "same 1-second latest-frame-average source in both modes; true tail samples reserved for the foundation sweep",
+  "relative_delta_pct": -2.9440135818188895,
+  "status": "MEASURED"
+}

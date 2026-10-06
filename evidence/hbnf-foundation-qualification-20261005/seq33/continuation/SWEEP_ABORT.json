@@ -1,0 +1,8 @@
+{
+  "status": "FAIL",
+  "run_error": "command failed rc=2: ['python3', '/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_live_adapter.py', 'telemetry', '--inventory', '/private/tmp/hbnf-foundation-crash-recovery-20261005/config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json', '--session-id', '/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq33/continuation']\nfoundation adapter error: RuntimeError: foundation-frame-tail-histogram-range-overflow\n",
+  "restore_error": null,
+  "profiles_completed": 0,
+  "pre_sweep_state": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq33/continuation/PRE_SWEEP_STATE.json",
+  "post_restore_state": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq33/continuation/POST_RESTORE_STATE.json"
+}

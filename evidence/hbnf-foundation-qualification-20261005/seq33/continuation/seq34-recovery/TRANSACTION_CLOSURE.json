@@ -1,0 +1,57 @@
+{
+  "attempt1": {
+    "evidence": "../OBSERVER_FAILURE_RECONCILIATION.json",
+    "profiles": 0,
+    "soak": false,
+    "status": "HOST_OBSERVER_TIMEOUT__RESTORE_VERIFIED"
+  },
+  "attempt2": {
+    "binResolutionUs": 100,
+    "evidence": "../SWEEP_ABORT.json",
+    "frameMsMax": 12559.93,
+    "frameTailOverflow": true,
+    "histogramBins": 512,
+    "postRestore": "../POST_RESTORE_RAW_STATE.json",
+    "profiles": 0,
+    "saturationBoundaryMs": 51.2,
+    "soak": false,
+    "status": "TELEMETRY_CONTRACT_OVERFLOW__RESTORE_VERIFIED"
+  },
+  "candidate": {
+    "release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+    "sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338"
+  },
+  "foundation_qualified": false,
+  "mutation_closed": true,
+  "next": "offline telemetry/source diagnosis and permanent Cart 2.0 owner-control/scoring integration; no further device mutation",
+  "recovery": {
+    "artifact_size_bytes": 1458624,
+    "aux_ddp_live": true,
+    "aux_fps": 26,
+    "aux_mac": "8c94df55c34c",
+    "aux_projection_rx_packets": 0,
+    "aux_rx_active": false,
+    "completed_unix": 1791262192.183102,
+    "free_heap_bytes": 99444,
+    "identity_evidence_dir": "evidence/hbnf-foundation-qualification-20261005/seq33/continuation/seq34-recovery",
+    "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
+    "installed_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "ledger_update": "SEQ34_ATOMIC_WRITE_OK",
+    "matrix_ip": "192.168.77.10",
+    "matrix_mac": "704bca5b345c",
+    "matrix_on": true,
+    "ota_http_status": 200,
+    "ota_response_contains_update_successful": true,
+    "ota_response_sha256": "e989fc00de0b0d87a74771439a95cb6b231dac0ede16865104c2251612c6a128",
+    "recovery_transport": "one accepted exact Release07 multipart /update from Opal over LAN after the host-originated attempt failed without a response; uploaded Opal BIN SHA/size verified before OTA",
+    "release_state_policy": "did not read release-state; atomic seq34 ledger write follows verified runtime identity",
+    "runtime_candidate": "hbnf-matrix-coordinated-v1-20261002-07",
+    "schema": "hbnf-foundation-seq34-exact-release07-recovery-v1",
+    "sequence": 34,
+    "status": "PASS",
+    "uptime_seconds": 28,
+    "wled": "16.0.1"
+  },
+  "schema": "hbnf-seq33-34-transaction-closure-v1",
+  "status": "SEQ33_FOUNDATION_METRICS_FAILED__SEQ34_RELEASE07_RECOVERED"
+}

@@ -38,7 +38,7 @@
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
     "blockers": [
-      "Seq33 candidate is installed exactly once. One host observer-window GET failure consumed the boot-scoped snapshot, which has been restored. A single safe soft reboot has now been acknowledged and verified to restore the exact candidate build and device MACs with fresh Matrix uptime; next action is the one bounded clean 28-kernel + baseline/freeze + 5400s soak continuation."
+      "Foundation telemetry candidate seq33 failed closed: after the one snapshot, 0 kernel profiles completed because frameTailOverflow=true; exact max was 12559.93ms and the 512-bin/100us histogram saturates above 51.2ms. The runner restored renderer state with restoreVerified=true and packet20Same=true. Exact Release07 seq34 recovery passed. Foundation remains unqualified; no further live mutation is authorized."
     ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
@@ -270,24 +270,30 @@
     "foundation_seq33_attempts": [
       {
         "attempt": 1,
-        "aux_comparison": "inactive before and after candidate; no demonstrated regression; see READONLY_PREFLIGHT.json and STOP_STATE_READONLY.json",
         "candidate_install": "PASS_ONCE",
-        "continuation_boot": "SOFT_REBOOT_ACKNOWLEDGED_AND_EXACT_CANDIDATE_VERIFIED",
+        "cause": "transient GET /json/state timeout during observer telemetry; host correction added one bounded retry and restore sidecar",
         "evidence": "evidence/hbnf-foundation-qualification-20261005/seq33/OBSERVER_FAILURE_RECONCILIATION.json",
         "kernel_profiles_completed": 0,
-        "live_matrix_aux_readonly_evidence": "evidence/hbnf-foundation-qualification-20261005/seq33/STOP_STATE_READONLY.json",
-        "next_action": "one fresh snapshot/observer comparison + all 28 kernels + frozen baseline + exact 5400s soak + restore; no reinstall/reboot",
-        "observer_effect": "FAILED_ON_TRANSIENT_READ_ONLY_STATE_GET",
-        "reboot_evidence": "evidence/hbnf-foundation-qualification-20261005/seq33/continuation/SOFT_REBOOT_VERIFICATION.json",
-        "renderer_restore": "VERIFIED_READ_ONLY",
-        "runtime_gate": "NOT_EVALUATED__NO_SWEEP_PROFILES",
-        "seq34_consumed": false,
+        "observer_effect": "MEASURED__27_SAMPLES_PER_MODE__MEDIAN_DELTA_MINUS_2_94_PERCENT",
+        "renderer_restore": "VERIFIED_READONLY__PACKET20_SAME",
         "snapshot_created": true,
         "soak_started": false
+      },
+      {
+        "attempt": 2,
+        "candidate_reinstalled": false,
+        "cause": "foundation-frame-tail-histogram-range-overflow; raw telemetry frameMsMax 12559.93 ms; 512 bins x 100us saturate above 51.2ms",
+        "evidence": "evidence/hbnf-foundation-qualification-20261005/seq33/continuation/SWEEP_ABORT.json",
+        "kernel_profiles_completed": 0,
+        "observer_effect": "PASS",
+        "renderer_restore": "PASS__restoreVerified=true__packet20Same=true",
+        "snapshot_created": true,
+        "soak_started": false,
+        "soft_reboot_before_attempt": true
       }
     ],
-    "foundation_status": "FOUNDATION_UNQUALIFIED_PERFORMANCE_OPEN",
-    "foundation_transaction_stop_reason": "Attempt 1: observer telemetry GET /json/state timeout at 0.022s remaining in bounded observer window. Renderer snapshot restoreVerified=true on subsequent read-only capture. Runner profiles_completed=0; soak not started. AUX receiver inactive before and after, so not a demonstrated regression.",
+    "foundation_status": "FOUNDATION_UNQUALIFIED__SEQ33_METRICS_GATE_FAILED__RELEASE07_RESTORED",
+    "foundation_transaction_stop_reason": "The metrics artifact reported tail histogram overflow and frameMsMax=12559.93ms. Adapter failed closed before first kernel profile; 0/28 and no soak. Renderer restore verified exact packet20Same. Exact Release07 recovery seq34 completed.",
     "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
     "installed_release_role": "BASELINE_RECOVERY_VERIFIED__SEQ24",
@@ -307,7 +313,7 @@
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Foundation offline timeout and soak-harness checkpoint",
-    "next_work": "Run the corrected guarded Foundation runner once now on the fresh candidate boot. It must perform observer comparison + one renderer-safe snapshot + all 28 kernels + sweep-bound frozen thresholds + exactly 5400s changing soak and one renderer restore in this same boot. No candidate re-install or reboot. Exact Release07 seq34 recovery on any defined failure; leave candidate only on full objective PASS.",
+    "next_work": "Offline: diagnose the captured tail histogram overflow and exact 12559.93ms frame maximum without weakening gates; correct/test the telemetry contract before preparing any new bounded live transaction. In parallel after Foundation readiness, advance permanent Cart 2.0 interfaces per current priority directive. Keep Release07 installed and live mutation closed.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "performance_findings": {
       "candidate_fix": "FastLED 3.10.4 bounded fixed-point Animartrix backport; R4 achieved a 42 FPS median across 28 kernels, 8.329 ms median kernel time, with 28 improved and 0 regressed. Material gain confirmed; continue Foundation gates.",
@@ -412,6 +418,13 @@
       "candidate_sequence": 33,
       "candidate_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
       "candidate_size_bytes": 1488768,
+      "completed_recovery": {
+        "evidence": "evidence/hbnf-foundation-qualification-20261005/seq33/continuation/seq34-recovery/RECOVERY_RECEIPT.json",
+        "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
+        "sequence": 34,
+        "sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+        "status": "PASS"
+      },
       "continuation_reboot_evidence": "evidence/hbnf-foundation-qualification-20261005/seq33/continuation/SOFT_REBOOT_VERIFICATION.json",
       "path": "Direct-LAN exact WLED /update; verified in seq30 and seq32; no Cloudflare",
       "policy_path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006.json",
@@ -422,8 +435,8 @@
       "recovery_sequence": 34,
       "recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "recovery_size_bytes": 1458624,
-      "scope": "Seq33 candidate was installed once and remains installed. The first boot attempt created/restored its one snapshot, then observer telemetry aborted on a transient read-only /json/state timeout with zero sweep profiles and no soak. Continuation permits one safe soft reboot to clear boot-scoped snapshot RAM, no candidate reinstall, then exactly one fresh boot/snapshot for observer comparison + full 28-kernel sweep + frozen baseline + 5400s changing soak + one restore. No reboot between that snapshot/sweep/soak/restore. Exact Release07 seq34 is failure recovery only.",
-      "status": "SEQ33_CONTINUATION_BOOT_READY__SEQ34_FAILURE_RECOVERY"
+      "scope": "Seq33 Foundation qualification attempt closed after fail-closed telemetry histogram overflow before any kernel profile; no soak started. Exact Release07 seq34 recovery passed. Do not reuse partial sweep. Live mutation closed.",
+      "status": "CLOSED__SEQ33_METRICS_GATE_FAILED__SEQ34_RELEASE07_RECOVERED"
     },
     "prior_candidate_trials": {
       "r2": {
@@ -569,8 +582,18 @@
       "after successful Release07 recovery, use the same direct-LAN exact-artifact mechanism as the pre-proven rollback path for future diagnostic/fix sessions"
     ],
     "seq19_diagnostic_incident": "CLOSED_RECOVERED_TO_RELEASE07",
+    "seq34_recovery": {
+      "evidence": "evidence/hbnf-foundation-qualification-20261005/seq33/continuation/seq34-recovery/RECOVERY_RECEIPT.json",
+      "installed_unix": 1791262276.4597518,
+      "ledger": "atomic seq34 write succeeded; release-state was not reread",
+      "release": "hbnf-matrix-coordinated-v1-20261002-07",
+      "sequence": 34,
+      "sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+      "size_bytes": 1458624,
+      "status": "PASS"
+    },
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "SEQ33_34_BOUNDED_LIVE_TRANSACTION_READY",
+    "status": "SEQ33_FAILED__SEQ34_RECOVERED__LIVE_MUTATION_CLOSED",
     "target_recovery": {
       "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
@@ -588,24 +611,24 @@
       "status": "R3_CLOSED__R4_EXECUTION_REQUIRED"
     }
   },
-  "installed_firmware_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
-  "installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
-  "installed_release_role": "DIAGNOSTIC_CANDIDATE_SEQ33__BOUNDED_CONTINUATION_PENDING__SEQ34_FAILURE_RECOVERY",
+  "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+  "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
+  "installed_release_role": "BASELINE_RECOVERY_VERIFIED__SEQ34",
   "lifecycle_state": "FIX_CANDIDATE",
   "live_mutation_authorization": {
     "candidate_sequence": 33,
     "candidate_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
     "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
-    "expiry": "Close on Foundation pass with candidate retained, or after exact seq34 recovery and verification on failure.",
+    "expiry": "Closed after seq33 metrics-gate failure and verified exact Release07 seq34 recovery.",
     "prelive_evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq33/READONLY_PREFLIGHT.json",
     "prelive_evidence_sha256": "0036958ce2f1f420966199433ee005358d8d833483debb500f3f74b605aacd47",
     "recovery_sequence": 34,
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-    "scope": "Single bounded Foundation transaction seq33 candidate install; one observer comparison + full 28-kernel sweep; create sweep-bound baseline and freeze supplied policy before exact 5400s changing soak; one snapshot/restore only. No unbounded device changes. Exact Release07 seq34 recovery only on failure; if Foundation passes retain candidate. Close authorization immediately at terminal result.",
-    "status": "OPEN__SEQ33_34_PRELIVE_PASS",
+    "scope": "Seq33 Foundation attempt 2: observer comparison passed; one renderer-safe snapshot succeeded; tail histogram overflow with exact frameMsMax=12559.93ms caused fail-closed abort before any kernel profiles; zero soak. Renderer restoreVerified=true and packet20Same=true. Exact Release07 seq34 recovery passed and installed identity/hash were verified. No further live mutation is authorized.",
+    "status": "CLOSED__SEQ33_ABORTED__SEQ34_RELEASE07_RECOVERED",
     "user_authorization": "Explicit current user directive: cart home, resume live work; authorize exact Foundation candidate and exact Release07 recovery, no routine permission pauses."
   },
-  "live_mutation_authorized": true,
+  "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",
   "phase2_implementation_authorized": false,
   "schema": "hbnf-control-state-v2"

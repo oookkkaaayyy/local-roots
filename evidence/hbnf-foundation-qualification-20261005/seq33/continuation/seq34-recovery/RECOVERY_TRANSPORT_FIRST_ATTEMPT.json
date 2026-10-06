@@ -1,0 +1,10 @@
+{
+  "schema": "hbnf-seq34-recovery-transport-attempt-v1",
+  "attempt": 1,
+  "mechanism": "Local Mac multipart POST to Matrix WLED /update using the exact Release07 BIN",
+  "result": "NO_SUCCESS_RECEIPT",
+  "host_error": "The existing upload helper raised ota-response-not-confirmed-no-retry; it did not preserve a response file or stderr details.",
+  "post_attempt_readonly": "POST_OTA_READONLY.json shows exact candidate identity remained installed at uptime 307s; no reboot or firmware change was observed.",
+  "same_transport_retried": false,
+  "resolution": "Transferred the already hash-verified exact Release07 BIN to Opal over key-authenticated SSH, verified size and SHA there, then made one multipart /update request from Opal to Matrix. HTTP 200 and WLED Update successful response; seq34 runtime identity and health verification passed."
+}
