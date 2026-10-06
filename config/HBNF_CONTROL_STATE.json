@@ -514,7 +514,7 @@
       "observer_effect": "PRIOR_SEQ29_MEASUREMENT_STATUS_DURABLE__NOT_REPEATED",
       "restore_verified_observed_pre_recovery": false,
       "soak_status": "NOT_RUN",
-      "recovery_status": "PASS_SEQ32",
+      "recovery_status": "PASS_SEQ32_VERIFIED_MATRIX_AUX_AND_LEDGER_WRITE",
       "post_crash_identity": "VERIFIED_READ_ONLY__RELEASE07__MAC_704BCA5B345C__MATRIX_AUX_HEALTH_PASS",
       "evidence_path": "evidence/hbnf-foundation-qualification-20261005/CRASH_RECONCILIATION.json",
       "drive_evidence_file_id": "1T2JQLMq3UOr-anju-eSFnBoqoK35V4cX",
@@ -528,7 +528,12 @@
       "restore_status": "POST_STATE_UNKNOWN__RESTORE_POST_TIMED_OUT__THEN_RELEASE07_RECOVERY_OVERWROTE_DIAGNOSTIC",
       "seq31_failure_evidence_path": "evidence/hbnf-foundation-qualification-20261005/SEQ31_FAILURE_SEQ32_RECOVERY.json",
       "seq32_recovery_evidence_path": "evidence/hbnf-foundation-qualification-20261005/SEQ32_RELEASE07_RECOVERY_VERIFICATION.json",
-      "next_sequences": "33/34 after offline POST timeout hierarchy repair and new guarded capsule"
+      "next_sequences": "33/34 after offline POST timeout hierarchy repair and new guarded capsule",
+      "seq31_failure_drive_file_id": "1DQukszM7Py0vTOczJLlZFNY6qnjhCIgt",
+      "seq31_seq32_raw_bundle_drive_file_id": "1Njiqyp-3XCLSyi4gJTqfesPp3ZqDsR8s",
+      "seq32_recovery_drive_file_id": "1r6rc6YESHDQRCc9JHw0ZzRo3aIgT2P91",
+      "seq31_failure_evidence_sha256": "7394ae011c8b04daf923396bf7b2d4538f97e77a72870cb6dcfc1cf9da9a92c9",
+      "raw_bundle_sha256": "61b225be198af66400eb1940276c0a3b246f7cd4d88bfb4042be70392d90a44b"
     }
   },
   "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
