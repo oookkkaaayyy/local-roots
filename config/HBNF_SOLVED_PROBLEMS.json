@@ -149,6 +149,24 @@
       "validated_fix": "Validated by clean Packet20 cloud run 37234856834 / trigger 7928a256f31ce46775717731cf1338944a2b5709. Exact source.patch SHA aca7b2fa..., vendor-only Animartrix clock patch SHA f38d260d..., pristine upstream commit 81eb09b... / header Git blob db640748..., and patched header SHA bd9d146e... were all preserved; compile succeeded.",
       "do_not_rediscover_unless": "Animartrix revision, vendor patch, Release07 timing semantics, or build closure intentionally changes.",
       "note": "Run3 exposed the missing vendor patch; Run5 clean-room success closed the issue. Full reconciliation remains evidence/hbnf-phase2-migration-20261003/packet20-source-patch-reconciliation-20261004.json."
+    },
+    {
+      "id": "HBNF-SOLVED-017",
+      "title": "Foundation host observer deadline exhaustion",
+      "status": "SOLVED",
+      "symptom": "Foundation transaction aborts before the real sweep because the host starts a /json/state request with effectively no polling budget remaining.",
+      "root_cause": "Observer polling loop started a new HTTP read at the measurement-window boundary instead of stopping once the remaining deadline was too small for a bounded request.",
+      "validated_fix": "Stop starting new observer HTTP reads when less than one second remains; retain the minimum-sample gate and fail closed for genuine early/mid-window failures. Commit 12799be44a833ef85860fe1f09efb0a1f0d2f208 adds the guard and regression coverage.",
+      "do_not_rediscover_unless": "Observer polling/deadline logic or HTTP timeout composition changes."
+    },
+    {
+      "id": "HBNF-SOLVED-018",
+      "title": "Foundation histogram overflow was over-broad host rejection",
+      "status": "SOLVED",
+      "symptom": "Foundation aborts when any measured maximum exceeds the 51.2 ms histogram range even though required percentiles are not saturated.",
+      "root_cause": "Host adapter treated the global histogram overflow flag as equivalent to percentile saturation, although firmware preserves exact maxima independently.",
+      "validated_fix": "Preserve exact frame maximum and overflow evidence, but fail histogram-range validation only when a required percentile lands in the saturated final bin. Commit b298c27426ac01720b8499e8f91fea26643dced4 implements and tests the correction.",
+      "do_not_rediscover_unless": "Foundation histogram resolution/bin count, percentile reporting contract, or exact-max implementation changes."
     }
   ]
 }
