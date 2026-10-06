@@ -227,8 +227,8 @@
       "github_run_id": 37376862955,
       "kernel_total": 28,
       "next_sequences": "SEQ39_CANDIDATE__SEQ40_REAL_FAILURE_RECOVERY_ONLY",
-      "next_transaction_status": "HOST_TRANSPORT_FAILURE_BEFORE_INSTALL__EXACT_RELEASE07_STILL_HEALTHY__ONE_OPAL_ORIGIN_RESUME_AUTHORIZED",
-      "observer_effect": "SEQ33_EXACT_CANDIDATE_PASS__27_SAMPLES_PER_MODE__MEDIAN_DELTA_MINUS_2_94_PERCENT__REUSE_WITHOUT_REMEASUREMENT",
+      "next_transaction_status": "SEQ39_INSTALLED__OBSERVER_EFFECT_AND_FOUNDATION_SWEEP_IN_PROGRESS",
+      "observer_effect": "PENDING__MEASURE_ON_EXACT_SEQ39_ARTIFACT_ONCE",
       "offline_integrated_soak_runner": "scripts/hbnf_live_kernel_sweep.py runs >=5400s changing round-robin soak, then hbnf_foundation_soak_audit.py verifies frozen per-kernel relative FPS/frame p95/p99/max/heap/largest-block/AUX gates against the hash-bound baseline before pass.",
       "offline_resume_plan": "work/cart2/27_FOUNDATION_OFFLINE_RESUME_PLAN_20261005.md",
       "offline_soak_audit": "scripts/hbnf_foundation_soak_audit.py; JSONL-only, no device I/O; requires >=90 minutes, exact identity, 28-kernel state changes, <=15s sample gaps, no uptime regression/restart change; metrics summarized, thresholds remain a separate frozen-policy gate",
@@ -260,17 +260,21 @@
       "seq32_recovery_evidence_path": "evidence/hbnf-foundation-qualification-20261005/SEQ32_RELEASE07_RECOVERY_VERIFICATION.json",
       "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
       "size_bytes": 1489008,
-      "soak_status": "NOT_RUN",
+      "soak_status": "NOT_STARTED",
       "source_commit": "b18b162ec4b4f9173b1de892957ff8b834fe2b50",
-      "sweep_status": "SEQ31_INVALID_NONRESUMABLE__SEQ32_RECOVERED",
+      "sweep_status": "IN_PROGRESS",
       "timeout_hierarchy": "HTTP GET 10s; /json/state POST 25s; command ack 30s; snapshot 45s; restore 90s; outer runner 240s (226s maximum normal snapshot composition plus 14s margin)",
       "timeout_repair_commit": "98a111b51935655bc3320ad05463f0b521d03035",
       "transaction_authorization": "CURRENT_USER_EXPEDITE_BOUNDED_TELEMETRY_RANGE_FIX_DIRECTIVE",
       "drive_evidence_url": "https://drive.google.com/file/d/1E0te1eJH6TCAmLHVQct5huZAToLI1fwq/view?usp=drivesdk",
       "host_transport_failures": 1,
-      "candidate_install_successes": 0,
+      "candidate_install_successes": 1,
       "last_host_transport_failure": "Mac curl returned exit 55 / HTTP 100 / broken pipe; read-only post-attempt identity remained exact Release07 with advancing uptime and AUX DDP live. No seq39 install and no seq40 recovery.",
-      "resume_transport": "One exact-artifact SSH copy to Opal, verify SHA/size there, then one already-proven Opal-origin local Matrix /update; never retry Mac-origin transport."
+      "resume_transport": "One exact-artifact SSH copy to Opal, verify SHA/size there, then one already-proven Opal-origin local Matrix /update; never retry Mac-origin transport.",
+      "candidate_install_requests": 2,
+      "candidate_install_status": "PASS__EXACT_CANDIDATE_RUNTIME_IDENTITY_VERIFIED",
+      "candidate_install_evidence": "evidence/hbnf-foundation-qualification-20261005/seq39/live/CANDIDATE_INSTALLED.json",
+      "actual_host_transport": "Mac-origin attempt aborted before install; single Opal-origin /update attempt succeeded after remote SHA/size verification"
     },
     "foundation_seq33_attempts": [
       {
@@ -655,7 +659,7 @@
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "prelive_evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq39/PRELIVE_PROOF.json",
     "scope": "One exact local clean-room telemetry-only candidate install seq39; exact one-time observer A/B on that changed artifact; sacrificial warm-up; complete all-28 Foundation sweep; hash-bound baseline/frozen policy; same-install >=5400s state-changing soak; seq40 exact Release07 REAL DEVICE/RUNTIME FAILURE recovery only. Host-only failure preserves candidate only with exact identity, health, no restart, renderer restore, and AUX health proof. No R3/R4/Packet20 re-exploration, no new build, no GitHub Actions.",
-    "status": "AUTHORIZED__OFFLINE_GATES_PASS__PRELIVE_REQUIRED",
+    "status": "AUTHORIZED__SEQ39_INSTALLED__FOUNDATION_RUN_IN_PROGRESS",
     "user_authorization": "Current user directive EXPEDITE \u2014 BOUNDED TELEMETRY RANGE FIX ONLY explicitly authorizes next legal seq39 candidate / seq40 exact Release07 real failure recovery after offline gates; seq37 remains TELEMETRY_INSTRUMENTATION, not renderer/root-cause failure.",
     "closure_reason": null
   },
@@ -673,11 +677,10 @@
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
     },
     "exact_next_path": [
-      "Use the preserved HTTP100/curl55 evidence to resume the same authorized seq39 transaction via the already-proven Opal-origin local OTA path; verify exact candidate identity before writing seq39 ledger.",
-      "Measure observer effect once on the exact seq39 artifact, perform sacrificial warm-up, and execute the complete 28-kernel Foundation sweep.",
-      "If clean, bind baseline/frozen policy and immediately start same-install >=90-minute state-changing soak.",
-      "Seq40 exact Release07 remains genuine device/runtime/Foundation failure recovery only; preserve candidate on a host-only issue only when all safety proofs pass.",
-      "After first three clean soak samples, emit PARALLEL_LANES_READY and checkpoint external launch state; continue live Foundation lane."
+      "Finish exact seq39 observer measurement and sacrificial warm-up; begin full 28-kernel sweep on the one renderer-safe snapshot.",
+      "If any post-warm-up exact frame max is >=1000 ms or another actual firmware/Foundation gate fails, preserve evidence and perform exact seq40 Release07 recovery.",
+      "If all 28 pass, bind baseline/frozen policy and immediately start same-install >=90-minute state-changing soak.",
+      "When first three soak samples are clean, emit PARALLEL_LANES_READY and checkpoint the coordinator launch state; continue live qualification."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
