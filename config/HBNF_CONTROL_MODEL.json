@@ -507,7 +507,23 @@
         "premium text/moments",
         "owner Mission Control/PWA refinement beyond the hard operational gate"
       ],
-      "operating_standard": "Field use must be appliance-like: start, score/control when intentionally needed, otherwise ignore the technology while playing/hosting."
+      "operating_standard": "Field use must be appliance-like: start, score/control when intentionally needed, otherwise ignore the technology while playing/hosting.",
+      "brightness_quality_requirement": {
+        "schema": "hbnf-brightness-quality-requirement-v1",
+        "product_requirement": "Matrix brightness reduction must preserve the animation/image structure as much as technically practical; brightness control should reduce emitted light, not intentionally reduce rendered scene complexity, pixel coverage, or animation content.",
+        "field_use_target": "Night-course use should have a useful, controllable low-output region around the user's practical 10–20 current-slider range, with finer perceptual control there.",
+        "maximum_behavior": "Retain access to true maximum brightness. Do not create a false capped maximum merely to make the low end easier to control.",
+        "preferred_implementation": "Render scene/content at full logical detail, then apply brightness as late/final in the output pipeline as safely possible; use a perceptual/nonlinear UI mapping if needed so the low end is more granular while 255 remains reachable.",
+        "hardware_caveat": "Accept unavoidable WS2812B/8-bit low-end quantization only after software/output-stage behavior is isolated; do not assume disappearance of image detail at low settings is an unavoidable hardware limit.",
+        "tomorrow_rule": "Target the next Skins round only if the next worker return proves the change is localized, regression-testable, and does not invalidate/jeopardize Foundation or field stability. Otherwise explicitly defer it rather than risking tomorrow's build.",
+        "invalidation_guard": "Any implementation that changes renderer/scheduler/frame-budget assumptions must be treated according to existing change-impact rules and must not be smuggled into the field build as a cosmetic tweak.",
+        "acceptance_evidence": [
+          "At several low-night brightness settings, the same scene retains materially the same animation/image structure and pixel participation aside from unavoidable quantization.",
+          "Low-end control is meaningfully more granular than the current behavior.",
+          "Maximum brightness remains fully available.",
+          "No material regression in frame timing, stability, Matrix/AUX projection, scoring/control, or PWA operation."
+        ]
+      }
     },
     "observability": {
       "schema": "hbnf-worker-observability-v1",
