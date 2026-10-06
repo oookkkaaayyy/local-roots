@@ -1,5 +1,5 @@
 {
-  "checkpoint_at_utc": "2026-10-06T23:00:13Z",
+  "checkpoint_at_utc": "2026-10-06T23:03:56Z",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -1504,7 +1504,41 @@
         "One renderer restore; T2 receipt/promotion on objective PASS using inherited seq47 evidence.",
         "Actual iPad/iPhone owner-device smoke.",
         "Freeze by 16:45; final verification/recovery window until 17:00."
-      ]
+      ],
+      "efficiency_override": {
+        "status": "ACTIVE__PREFER_EPHEMERAL_TARGETED_COLLECTOR",
+        "rationale": "Tonight's remaining evidence gap does not require a permanent production harness rewrite. Minimize code churn and elapsed time by using a temporary evidence-producing collector with explicit required endpoints and failure semantics; harden the general harness after the round.",
+        "required_endpoints_per_sample": [
+          "Matrix /json/state",
+          "AUX /json/info"
+        ],
+        "optional_endpoints": [
+          "AUX /json/state",
+          "Matrix /json/info",
+          "Matrix /hbnf/build.json after preflight identity is established"
+        ],
+        "sampling": "For each of 28 kernels: select, wait >=5.0s, then obtain at least 2 successful required samples; allow up to 3 attempts inside a bounded per-kernel window. Any successful AUX info must report live=true, lm=DDP, lip=192.168.77.10. Transport timeout is missing evidence and retried, not counted as AUX inactive.",
+        "reuse": [
+          "Existing settled resource baseline derived by scripts/hbnf_foundation_settled_baseline.py",
+          "Seq47 5439.949s FPS/p95/p99/restart/sample-continuity/renderer evidence",
+          "Existing exact candidate and Release07 recovery artifacts"
+        ],
+        "stop_conditions": [
+          "Any successful required payload shows AUX inactive/wrong source",
+          "current free heap below frozen settled-baseline ratio",
+          "largest free block below frozen ratio",
+          "restart/identity mismatch",
+          "cannot obtain 2 successful required samples for a kernel inside bounded attempts",
+          "renderer restore failure",
+          "owner-device smoke failure"
+        ],
+        "forbidden_extra_work": [
+          "Do not block tonight on permanent refactor of hbnf_foundation_live_adapter.py",
+          "Do not build extensive fixture suite beyond a minimal local dry-run proving optional aux_state timeout does not affect the temporary collector",
+          "Do not rebuild firmware",
+          "Do not repeat performance soak/sweep"
+        ]
+      }
     }
   },
   "execution_budget_policy": {
@@ -1530,11 +1564,11 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Offline patch/regress the targeted collector: required per-sample endpoints are Matrix state + AUX info; AUX state is optional diagnostic only.",
-      "On regression PASS, seq51 reinstall exact unchanged candidate SHA 338afdf5...3d8c.",
-      "Run short 28-kernel 5-second-settled resource/AUX-info validation with bounded retry. Reuse completed seq47 90-minute performance/stability proof.",
-      "On PASS, restore renderer once, write T2 Foundation receipt, advance FOUNDATION_QUALIFIED, and run actual iPad/iPhone owner-control smoke.",
-      "Seq52 Release07 only for genuine required evidence/runtime/owner-smoke failure. Technical work ends by 16:45; final vet/recovery ends by 17:00."
+      "Do not spend tonight permanently refactoring the general telemetry harness. Create/use a temporary targeted collector with Matrix state + AUX info as the only required per-sample reads; minimal local dry-run only.",
+      "On dry-run PASS, seq51 reinstall exact unchanged candidate SHA 338afdf5...3d8c.",
+      "All 28 kernels: >=5s settle, then >=2 successful required samples with <=3 attempts; evaluate current-free-heap/largest-block against settled seq39 baseline and require AUX info live=true/lm=DDP/lip=192.168.77.10.",
+      "Reuse the completed seq47 90-minute FPS/tail/stability evidence. No repeat soak/performance sweep.",
+      "On PASS, restore once, write T2 receipt, FOUNDATION_QUALIFIED, then actual iPad/iPhone smoke. Seq52 only on genuine required evidence/runtime/owner-smoke failure. Technical cutoff 16:45."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1762,14 +1796,16 @@
     "release07_recovery_size_bytes": 1458624,
     "user_authorization": "Final 45-minute technical rescue authorized at 15:59 PDT; reserve final 15 minutes to 17:00 for vetting/recovery.",
     "scope": [
-      "Offline patch/regression ONLY to targeted resource/AUX harness: remove AUX /json/state from mandatory per-sample path; preserve AUX /json/info as required canonical WLED realtime DDP source proof.",
-      "Regression must prove optional aux_state timeout no longer aborts; required aux_info timeout/inactive/wrong-source still cannot pass; resource/restart/identity failures still fail.",
-      "Install exact unchanged candidate only as seq51 after offline PASS; no firmware rebuild/Actions.",
-      "Collect short 28-kernel 5-second-settled current-free-heap/largest-block/AUX-info evidence with multiple successful samples; bounded retry required endpoints.",
-      "Reuse exact seq47 full 5439.949s FPS/p95/p99/restart/continuity evidence; no repeat soak/performance sweep.",
-      "On objective targeted PASS, restore renderer once, write T2 receipt, advance FOUNDATION_QUALIFIED, and run intended-owner device smoke.",
-      "Seq52 Release07 only for genuine required-evidence/runtime/owner-smoke failure or inability to close by 16:40; optional aux_state timeout alone is explicitly not a recovery trigger.",
-      "Hard live-change cutoff 16:45."
+      "Use the smallest offline-safe mechanism: an EPHEMERAL targeted evidence collector is preferred over permanent harness refactoring for tonight.",
+      "Before live mutation, dry-run the temporary collector locally against fixtures/mocks sufficient to prove: optional AUX /json/state is not required; required Matrix state/AUX info failures remain fail-closed.",
+      "Install exact unchanged candidate only as seq51; no firmware rebuild/Actions.",
+      "Preflight exact candidate/recovery artifact SHA/size and current Release07 baseline once; do not repeat archaeology.",
+      "For each of 28 kernels: select, wait at least 5 seconds, collect at least 2 successful required samples with up to 3 attempts. Required endpoints are Matrix /json/state and AUX /json/info only.",
+      "Each successful AUX info sample must report live=true, lm=DDP, lip=192.168.77.10. HTTP timeout is missing evidence and may be retried; it is never equivalent to AUX inactive.",
+      "Evaluate current free heap and largest free block against the already-derived settled seq39 baseline using unchanged frozen ratios. Reuse seq47 5439.949s FPS/p95/p99/restart/continuity/restore evidence.",
+      "On targeted PASS, perform/verify renderer restore once, write T2 receipt, advance FOUNDATION_QUALIFIED, and immediately run intended-owner iPad/iPhone field smoke.",
+      "Seq52 Release07 only for a genuine required-payload/resource/restart/identity/restore/owner-smoke failure or inability to collect required evidence by cutoff.",
+      "No unrelated Phase 2 deployment tonight. Hard technical cutoff 16:45; 16:45-17:00 owner vet/recovery."
     ],
     "recovery_rule": "SEQ52_RELEASE07_ONLY_FOR_GENUINE_REQUIRED_RUNTIME_OR_OWNER_SMOKE_FAILURE__OPTIONAL_AUX_STATE_TIMEOUT_NEVER_TRIGGERS_RECOVERY",
     "live_mutation_limit": 1,
