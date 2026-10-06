@@ -1,0 +1,224 @@
+{
+  "schema": "hbnf-t3-phase2-fast-path-prep-v1",
+  "date": "2026-10-06",
+  "status": "PREPARED_NOT_APPROVED_NO_T3_AUTHORITY",
+  "purpose": "Preassemble the T3 Phase 2 scope/interface/lane/acceptance decision so a clean T2 Foundation PASS can move directly to a short human approval turn without reopening product archaeology.",
+  "guardrails": [
+    "Does not advance lifecycle.",
+    "Does not authorize Phase 2 implementation or deployment.",
+    "Does not mutate Matrix, AUX, Opal, firmware, hosted controller, or backend.",
+    "Foundation T2 and required human approval remain mandatory."
+  ],
+  "authority_basis": {
+    "control_branch": "hbnf-cart2-ready-to-implement-staging-20261001",
+    "foundation_candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "lifecycle_required_before_t3": "FOUNDATION_QUALIFIED",
+    "t3_required_checks": [
+      "scope_contract_locked",
+      "interfaces_frozen",
+      "lane_plan_ready",
+      "acceptance_matrix_locked"
+    ]
+  },
+  "lane_inputs": {
+    "scoring": {
+      "branch": "hbnf-cart2-p2-mission-control-scoring-20261006-r2",
+      "implementation_head": "eb2bb8f17b9dfce621e6aaeed4c7036acb541013",
+      "handoff_head": "e402caae482a33f1a5552858b9942468e20f80b6",
+      "receipt": "evidence/hbnf-phase2-mission-control-scoring-20261006/OFFLINE_SCORING_LANE_RECEIPT.json",
+      "state": "OFFLINE_IMPLEMENTATION_COMPLETE__INTEGRATION_GATED"
+    },
+    "pwa": {
+      "source_commit": "f7a9870e2a42b0fe005da0cb6c3849cce3fea9a9",
+      "receipt": "evidence/hbnf-phase2-pwa-reliability-20261006/OWNER_PWA_V7_3_PWA_R1_OFFLINE_CHECKPOINT.json",
+      "package": "HBNF_CART_UI_V7_3_SKINS_OWNER_PWA_R1_20261006.zip",
+      "package_sha256": "21cfee1b08ce122e86c703ff2060c3cdb3bcab2f544249822cc44dd2ef868d94",
+      "drive_file_id": "1MvBkyIqJJa-9uC0n73NXEozn28frLm47",
+      "state": "OFFLINE_IMPLEMENTATION_COMPLETE__NOT_DEPLOYED"
+    },
+    "vibe_audio": {
+      "branch": "hbnf-cart2-p2-vibe-audio-20261006",
+      "head": "f0ae01712bfeb2f2afb5cb1dda1cf12a638abcf6",
+      "receipt": "evidence/hbnf-phase2-vibe-audio-20261006/OFFLINE_PREP_RECEIPT.json",
+      "state": "OFFLINE_PREP_COMPLETE__NOT_PRODUCTION_MAPPED"
+    },
+    "text_moments": {
+      "branch": "hbnf-p2-text-moments-offline-20261006",
+      "head": "2bbe7ca5c244986c57d4d6f054ebcdfe6337b362",
+      "receipt": "evidence/hbnf-phase2-text-moments-20261006/OFFLINE_COMPLETION_RECEIPT.json",
+      "state": "OFFLINE_PREP_COMPLETE__NOT_RENDERER_INTEGRATED"
+    }
+  },
+  "proposed_scope_contract": {
+    "commit": [
+      "owner Mission Control + authoritative Skins scoring/control",
+      "owner PWA/control reliability",
+      "Vibe/audio core",
+      "premium owner text/moments",
+      "Matrix/AUX core runtime/recovery",
+      "Matrix low-brightness fidelity/granularity requirement"
+    ],
+    "manual_vibes": [
+      "CHILL",
+      "GROOVE",
+      "HEAVY",
+      "PSYCHEDELIC",
+      "COSMIC"
+    ],
+    "conditional_commit": [
+      "AUTO Vibe ships only if qualified-source replay confirms stable hysteresis/non-flapping behavior without material runtime regression"
+    ],
+    "deferred_preserved": [
+      "AUX UV expansion",
+      "Arcade",
+      "IRL games",
+      "Guest platform",
+      "guest-entered short text/moments",
+      "physical gamepad support"
+    ],
+    "operating_standard": "Appliance-like field use: normal round operation requires no Mac/Terminal and minimal troubleshooting."
+  },
+  "proposed_interface_freeze": {
+    "scoring_control_boundary": {
+      "authority": "existing league_state.state_json.skins.weeks[date]",
+      "front9": "holes 1-9 Singles",
+      "back9": "holes 10-18 Doubles",
+      "tiebreaker": "winners.tb",
+      "ace_state": "section aceWinner plus canonical skins ace-pot readback",
+      "mutation_guards": [
+        "paired-owner auth",
+        "updated_at compare-and-swap",
+        "per-hole expected-value protection",
+        "authoritative post-save reread"
+      ]
+    },
+    "owner_control_transport": {
+      "semantic_contract": "One desired/confirmed owner-control model independent of transport; mutation responses must resolve to confirmed state or explicit uncertainty.",
+      "preferred_routing": "Local cart-LAN direct control when reachable; authenticated remote relay when off-LAN/remote; fail closed when neither path is available.",
+      "cache_rule": "PWA app shell may cache; command/API/device mutation traffic must never be satisfied from stale cache.",
+      "implementation_note": "The semantic contract can freeze at T3; exact local relay binding remains an implementation task validated against the qualified Foundation."
+    },
+    "AudioFeatures": {
+      "fields": [
+        "energy_short",
+        "energy_medium",
+        "energy_slow",
+        "low_pressure",
+        "low_transient",
+        "mid_body",
+        "mid_change",
+        "high_detail",
+        "high_transient",
+        "spectral_brightness",
+        "spectral_change",
+        "activity",
+        "silence_confidence"
+      ],
+      "source_direction": "Reuse qualified WLED AudioReactive -> Vibe16 -> AudioExpression -> AudioFrame path; no second FFT by default.",
+      "freeze_boundary": "Freeze names/semantics/ownership at T3; numeric formulas, smoothing and thresholds freeze only after qualified-source real-audio replay and runtime-cost acceptance."
+    },
+    "VibeSelection": {
+      "values": [
+        "CHILL",
+        "GROOVE",
+        "HEAVY",
+        "PSYCHEDELIC",
+        "COSMIC",
+        "AUTO"
+      ],
+      "authority_rules": [
+        "manual owner selection overrides AUTO",
+        "AUTO is local-only and hysteretic",
+        "Motion remains owner-authoritative",
+        "no genre-recognition claim"
+      ]
+    },
+    "VisualMoment": {
+      "fields": [
+        "type",
+        "primary_text",
+        "secondary_text",
+        "value",
+        "duration",
+        "urgency",
+        "allow_audio_accent",
+        "return_behavior"
+      ],
+      "presentation_rules": [
+        "stable glyph geometry during readable hold",
+        "Vibe-aware entry/hold/exit",
+        "phrase paging before scrolling",
+        "marquee last resort",
+        "exact return-to-base-state where required"
+      ]
+    },
+    "HealthState": {
+      "minimum_semantics": [
+        "Matrix OK/DEGRADED/OFFLINE",
+        "AUX OK/DEGRADED/OFFLINE",
+        "Cart LAN OK/DEGRADED",
+        "Internet OPTIONAL/AVAILABLE/UNAVAILABLE",
+        "release identity",
+        "restart/reconnect warning",
+        "safe actionable recovery hint"
+      ],
+      "rule": "Health is human-readable status, not a raw debug console."
+    }
+  },
+  "proposed_lane_plan": [
+    "Create the T3 phase2_scope_lock receipt after T2 PASS and human approval.",
+    "Create one integration branch from the then-current authoritative head.",
+    "Integrate PWA reliability first, then apply the isolated six-file scoring diff; run host/package closure before any deployment.",
+    "Replay qualified-source real audio through the 13-feature adapter; freeze numeric AudioFeatures/Vibe tuning only after runtime-cost and differentiation acceptance.",
+    "Recover/bind the qualified-source WBF/font primitive and integrate the Text/Moment framebuffer compositor; validate runtime/current cost.",
+    "Implement the retained brightness-quality fix only with a localized output/perceptual mapping that preserves scene structure and full maximum; apply normal invalidation rules if renderer/runtime assumptions change.",
+    "Build one integrated Phase 2 candidate; avoid serial live flashes for lane-local intermediate states.",
+    "Run intended-owner iPad/iPhone Home Screen scoring/control smoke, Matrix/AUX coherence checks, Vibe/audio physical acceptance, text readability/aesthetic acceptance, and recovery checks.",
+    "Advance to RELEASE_CANDIDATE only after all committed core features and integration smokes pass."
+  ],
+  "proposed_acceptance_lock": {
+    "owner_go_no_go": [
+      "authoritative Skins scoring works end-to-end on intended owner device",
+      "owner can reliably control Matrix/AUX/system with confirmed state and no Mac/Terminal during normal round use"
+    ],
+    "pwa": [
+      "Home Screen launch/relaunch survives lock/wake and temporary network loss without blank screen",
+      "pairing persists as designed",
+      "app-shell cache never serves stale command/API authority",
+      "reconnect/resync produces understandable confirmed state"
+    ],
+    "vibe_audio": [
+      "five manual Vibes remain materially distinct beyond palette alone",
+      "bass/mid/high drive meaningfully different artistic dimensions",
+      "Motion remains authoritative",
+      "real-audio replay and runtime cost fit qualified Foundation budget"
+    ],
+    "text_moments": [
+      "short text readable at actual cart viewing distance",
+      "glyph geometry stable during hold",
+      "underlying Vibe remains visually coherent/reactive",
+      "phrase paging preferred; marquee last resort",
+      "human aesthetic acceptance required"
+    ],
+    "brightness": [
+      "low-night settings preserve materially the same scene structure/pixel participation aside from unavoidable quantization",
+      "low-end control is meaningfully more granular",
+      "true maximum remains available",
+      "no material runtime/AUX/control regression"
+    ],
+    "global_nonregression": [
+      "Matrix/AUX coherence",
+      "boot/reconnect behavior",
+      "OTA/recovery behavior",
+      "iPad compatibility",
+      "no new realtime cloud dependency",
+      "no material frame-pacing/control-latency regression",
+      "no unexplained heap/flash regression"
+    ]
+  },
+  "future_human_approval_packet": {
+    "timing": "Only after T2 Foundation is objectively PASS.",
+    "recommendation": "Approve the proposed core scope, five manual Vibes, conditional AUTO, owner text/moments, hybrid local-first owner-control semantic contract, deferred expansion scope, and acceptance matrix as written unless new T2 evidence invalidates a premise.",
+    "effect": "Human approval plus objective T3 checks permits FOUNDATION_QUALIFIED -> PHASE2_INTEGRATING."
+  }
+}
