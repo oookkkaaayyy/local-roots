@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Direct-LAN adapter for the bounded R4 Foundation-metrics transaction."""
 from __future__ import annotations
-import argparse, json, pathlib, socket, sys, time, urllib.error, urllib.request
+import argparse, hashlib, json, pathlib, socket, sys, time, urllib.error, urllib.request
 
 MATRIX="http://192.168.77.10"
 AUX="http://192.168.77.11"
@@ -70,6 +70,20 @@ def observer_poll_budget_available(deadline, reserve_seconds=1.0):
     """Do not start a telemetry GET that can only receive a near-zero timeout."""
     return deadline-time.monotonic()>=reserve_seconds
 
+def collect_frame_window(stage, window_seconds=30, reserve_seconds=1.0, minimum_samples=20):
+    """Collect a bounded frame-average window, failing closed only before minimum."""
+    deadline=time.monotonic()+window_seconds
+    samples=[]
+    while time.monotonic()<deadline and observer_poll_budget_available(deadline,reserve_seconds):
+        state,_=p20_state(deadline,stage=stage)
+        value=state.get("HBNF",{}).get("timing",{}).get("wholeFrameUs")
+        if value is not None:samples.append(float(value)/1000.0)
+        if time.monotonic()+1>=deadline:break
+        time.sleep(1)
+    if len(samples)<minimum_samples:
+        raise RuntimeError(f"{stage}-under-sampled:{len(samples)}<{minimum_samples}")
+    return samples
+
 def command(op,**kw):
     post_state({"on":True,"HBNF":{"packet20Diagnostic":{"op":op,**kw}}})
     deadline=time.monotonic()+COMMAND_ACK_TIMEOUT_SECONDS;last=None
@@ -119,7 +133,7 @@ def snapshot(observer_output=None, inventory=None):
             )
     if not p20.get("snapshotValid") or p20.get("snapshotState")!="READY":raise RuntimeError("packet20-existing-snapshot-not-ready")
     if new_snapshot and observer_output:
-        try:observer_effect(observer_output,inventory)
+        try:foundation_prequal_windows(observer_output,inventory)
         except Exception as exc:
             try:
                 restored=_restore_snapshot(p20.get("snapshotId"),p20.get("snapshotHash"))
@@ -133,31 +147,32 @@ def snapshot(observer_output=None, inventory=None):
             sidecar=pathlib.Path(observer_output).with_name("OBSERVER_EFFECT_FAILURE.json")
             sidecar.parent.mkdir(parents=True,exist_ok=True)
             sidecar.write_text(json.dumps(result,indent=2,sort_keys=True)+"\n")
-            raise RuntimeError(f"observer-effect-failed; snapshot={p20.get('snapshotId')} hash={p20.get('snapshotHash')}; sidecar={sidecar}; restore={result.get('status')}; cause={type(exc).__name__}: {exc}") from exc
+            raise RuntimeError(f"foundation-prequal-failed; snapshot={p20.get('snapshotId')} hash={p20.get('snapshotHash')}; sidecar={sidecar}; restore={result.get('status')}; cause={type(exc).__name__}: {exc}") from exc
     return {"snapshotId":p20.get("snapshotId"),"snapshotHash":p20.get("snapshotHash")}
 
-def observer_effect(output, inventory):
+def foundation_prequal_windows(output, inventory):
+    """Run tails-off steady state and sacrificial warm-up, reusing seq33 proof."""
     select(0);time.sleep(5)
     enable_tails(False)
-    light=[];deadline=time.monotonic()+30
-    while time.monotonic()<deadline and observer_poll_budget_available(deadline):
-        s,_=p20_state(deadline,stage="observer-lightweight-window");v=s.get("HBNF",{}).get("timing",{}).get("wholeFrameUs")
-        if v is not None:light.append(float(v)/1000.0)
-        time.sleep(1)
+    steady=collect_frame_window("foundation-steady-state-tails-off")
     enable_tails(True)
-    heavy=[];deadline=time.monotonic()+30
-    while time.monotonic()<deadline and observer_poll_budget_available(deadline):
-        s,_=p20_state(deadline,stage="observer-instrumented-window");v=s.get("HBNF",{}).get("timing",{}).get("wholeFrameUs")
-        if v is not None:heavy.append(float(v)/1000.0)
-        time.sleep(1)
-    if len(light)<20 or len(heavy)<20:raise RuntimeError("observer-effect-window-under-sampled")
-    light.sort();heavy.sort();lm=light[len(light)//2];hm=heavy[len(heavy)//2]
-    # Capture the sacrificial tails-enabled warm-up separately. It is preserved
-    # for diagnosis and explicitly excluded from Foundation sweep qualification.
-    warmup=telemetry(inventory, "foundation-observer-warmup", emit=False)
-    result={"status":"MEASURED","kernel_id":int(warmup["kernel_id"]),"lightweight_samples":len(light),"instrumented_samples":len(heavy),"lightweight_frame_average_median_ms":lm,"instrumented_frame_average_median_ms":hm,"relative_delta_pct":(hm-lm)*100.0/lm if lm else None,"metric":"same 1-second latest-frame-average source in both modes; warm-up tail telemetry captured separately and excluded from qualification","warmup_window":{"excluded_from_foundation":True,"tails_enabled":True,"sample":warmup}}
-    path=pathlib.Path(output);path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(result,indent=2,sort_keys=True)+"\n")
+    warmup_frames=collect_frame_window("foundation-sacrificial-warmup-tails-on")
+    warmup=telemetry(inventory,"foundation-sacrificial-warmup",emit=False)
     enable_tails(False)
+    observer_path=pathlib.Path(__file__).resolve().parents[1]/"evidence/hbnf-foundation-qualification-20261005/seq33/continuation/OBSERVER_EFFECT.json"
+    candidate_binding_path=observer_path.parents[1]/"CANDIDATE_INSTALL_VERIFICATION.json"
+    observer=json.loads(observer_path.read_text())
+    candidate_binding=json.loads(candidate_binding_path.read_text())
+    if candidate_binding.get("candidate_sha256")!="6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338" or candidate_binding.get("candidate_release")!=EXPECTED or candidate_binding.get("pass") is not True:
+        raise RuntimeError("durable-seq33-observer-candidate-binding-failed")
+    if observer.get("status")!="MEASURED" or observer.get("lightweight_samples")!=27 or observer.get("instrumented_samples")!=27 or abs(float(observer.get("relative_delta_pct",0))-(-2.9440135818188895))>1e-9:
+        raise RuntimeError("durable-seq33-observer-evidence-contract-failed")
+    result={"schema":"hbnf-foundation-prequal-windows-v1","status":"PASS",
+      "observer_effect":{"status":"PASS_REUSED_PRIOR_EXACT_CANDIDATE_EVIDENCE","path":str(observer_path),"sha256":hashlib.sha256(observer_path.read_bytes()).hexdigest(),"candidate_binding_path":str(candidate_binding_path),"candidate_release":EXPECTED,"candidate_sha256":"6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338","lightweight_samples":27,"instrumented_samples":27,"relative_delta_pct":observer["relative_delta_pct"],"source_status":observer["status"]},
+      "steady_state":{"tails_enabled":False,"duration_seconds":30,"samples":len(steady),"frame_average_ms_min":min(steady),"frame_average_ms_max":max(steady)},
+      "sacrificial_warmup":{"tails_enabled":True,"duration_seconds":30,"samples":len(warmup_frames),"excluded_from_foundation":True,"sample":warmup},
+      "qualified_boundary":"tails disabled after sacrificial warm-up; mode transition resets firmware histogram before qualified sweep"}
+    path=pathlib.Path(output);path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(result,indent=2,sort_keys=True)+"\n")
     return result
 
 def _restore_snapshot(sid,shash):

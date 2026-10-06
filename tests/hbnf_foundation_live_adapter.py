@@ -6,6 +6,7 @@ ROOT=pathlib.Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location("foundation_adapter",ROOT/"scripts/hbnf_foundation_live_adapter.py")
 m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
 real_get=m.get
+real_prequal=m.foundation_prequal_windows
 assert m.HTTP_TIMEOUT_SECONDS == 10
 assert m.POST_TIMEOUT_SECONDS == 25
 assert m.COMMAND_ACK_TIMEOUT_SECONDS == 30
@@ -14,6 +15,66 @@ assert m.RESTORE_VERIFY_TIMEOUT_SECONDS == 90
 with unittest.mock.patch.object(m.time,"monotonic",return_value=100.0):
     assert not m.observer_poll_budget_available(100.0162015)
     assert m.observer_poll_budget_available(101.0)
+with unittest.mock.patch.object(m.time,"monotonic",return_value=100.0):
+    assert not m.observer_poll_budget_available(100.999)
+
+# Bind the reproduced edge test to the retained seq35 response, which timed
+# out with 0.0162015 seconds left under the old polling loop.
+seq35=json.loads((ROOT/"evidence/hbnf-foundation-qualification-20261005/seq35/FAILURE_LOCALIZATION.json").read_text())
+assert "0.0162015s" in seq35["exact_failure"]
+edge_remaining=float(seq35["exact_failure"].split("after ",1)[1].split("s",1)[0])
+with unittest.mock.patch.object(m.time,"monotonic",return_value=100.0):
+    assert not m.observer_poll_budget_available(100.0+edge_remaining)
+
+# Deadline-edge regression: once the minimum count is reached, the window is
+# valid even when the reserve prevents another HTTP request from starting.
+class FakeClock:
+    now=0.0
+    def monotonic(self):return self.now
+    def sleep(self,seconds):self.now+=seconds
+clock=FakeClock();calls=[]
+def edge_state(deadline,stage):
+    calls.append(stage)
+    clock.now+=.4
+    return {"HBNF":{"timing":{"wholeFrameUs":20000}}},{}
+with unittest.mock.patch.object(m.time,"monotonic",side_effect=clock.monotonic), \
+     unittest.mock.patch.object(m.time,"sleep",side_effect=clock.sleep), \
+     unittest.mock.patch.object(m,"p20_state",side_effect=edge_state):
+    edge=m.collect_frame_window("edge",window_seconds=3,reserve_seconds=1,minimum_samples=2)
+assert len(edge)==2 and len(calls)==2, (edge,calls)
+
+# Never launch an HTTP state read when the remaining budget is below reserve.
+clock=FakeClock();calls=[]
+def reserve_edge_state(deadline,stage):
+    calls.append(stage);clock.now+=1.1
+    return {"HBNF":{"timing":{"wholeFrameUs":20000}}},{}
+with unittest.mock.patch.object(m.time,"monotonic",side_effect=clock.monotonic), \
+     unittest.mock.patch.object(m.time,"sleep",side_effect=clock.sleep), \
+     unittest.mock.patch.object(m,"p20_state",side_effect=reserve_edge_state):
+    try:m.collect_frame_window("reserve",window_seconds=2,reserve_seconds=1,minimum_samples=2);raise AssertionError("under-sampled window accepted")
+    except RuntimeError as exc:assert "reserve-under-sampled:1<2" in str(exc)
+assert len(calls)==1, calls
+
+# Genuine early/mid-window transport failures still fail closed.
+clock=FakeClock();calls=[]
+def fail_early(deadline,stage):raise TimeoutError("early seq35-like HTTP failure")
+with unittest.mock.patch.object(m.time,"monotonic",side_effect=clock.monotonic), \
+     unittest.mock.patch.object(m.time,"sleep",side_effect=clock.sleep), \
+     unittest.mock.patch.object(m,"p20_state",side_effect=fail_early):
+    try:m.collect_frame_window("early-failure",window_seconds=30,minimum_samples=20);raise AssertionError("early HTTP failure swallowed")
+    except TimeoutError as exc:assert "early seq35-like" in str(exc)
+
+clock=FakeClock();calls=[]
+def fail_mid_window(deadline,stage):
+    calls.append(stage)
+    if len(calls)==3:raise TimeoutError("preserved seq35-style HTTP timeout")
+    return {"HBNF":{"timing":{"wholeFrameUs":20000}}},{}
+with unittest.mock.patch.object(m.time,"monotonic",side_effect=clock.monotonic), \
+     unittest.mock.patch.object(m.time,"sleep",side_effect=clock.sleep), \
+     unittest.mock.patch.object(m,"p20_state",side_effect=fail_mid_window):
+    try:m.collect_frame_window("mid-failure",window_seconds=30,minimum_samples=2);raise AssertionError("mid-window HTTP failure swallowed")
+    except TimeoutError as exc:assert "seq35-style" in str(exc)
+assert len(calls)==3
 
 info={"ip":"192.168.77.10","mac":"70:4b:ca:5b:34:5c","uptime":100,"ws":0,
       "deviceId":"matrix-device","freeheap":90000,"wifi":{"rssi":-45}}
@@ -21,6 +82,7 @@ build={"release_id":m.EXPECTED,"candidate":m.EXPECTED,"wled":"16.0.1"}
 aux={"ip":"192.168.77.11","mac":"8c94df55c34c","live":True,"lm":"DDP",
      "lip":"192.168.77.10","leds":{"fps":42}}
 with tempfile.TemporaryDirectory() as td:
+    m.foundation_prequal_windows=real_prequal
     t=pathlib.Path(td); m.CACHE=t/"restart-cache.json"
     inventory=ROOT/"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"
     m.get=lambda url: info if url.endswith("/json/info") and "77.10" in url else build if url.endswith("/hbnf/build.json") else aux
@@ -122,13 +184,33 @@ with tempfile.TemporaryDirectory() as td:
     states=iter((idle,snapshot_state))
     m.p20_state=lambda *args,**kwargs:(s:=next(states),s["HBNF"]["packet20Diagnostic"])
     m.command=lambda *_args,**_kwargs:{"HBNF":{"packet20Diagnostic":{"lastCommandAccepted":True}}}
-    m.observer_effect=lambda *_: (_ for _ in ()).throw(TimeoutError("observer read failed"))
+    m.foundation_prequal_windows=lambda *_: (_ for _ in ()).throw(TimeoutError("prequal read failed"))
     m._restore_snapshot=lambda sid,shash:{"restoreVerified":True,"snapshotId":sid,"snapshotHash":shash,"packet20Same":True}
     try: m.snapshot(str(pathlib.Path(td)/"OBSERVER_EFFECT.json")); raise AssertionError("observer failure not surfaced")
     except RuntimeError as exc: assert "OBSERVER_FAILED__RENDERER_RESTORED" in str(exc)
     sidecar=json.loads((pathlib.Path(td)/"OBSERVER_EFFECT_FAILURE.json").read_text())
     assert sidecar["snapshotId"]==7 and sidecar["snapshotHash"]==1234
     assert sidecar["restore"]["restoreVerified"] is True and sidecar["restore"]["packet20Same"] is True
+    assert sidecar["status"]=="OBSERVER_FAILED__RENDERER_RESTORED"
+
+# Seq37 binds the already-qualified observer result and performs only the two
+# required production/warm-up windows; it cannot re-run the observer A/B.
+with tempfile.TemporaryDirectory() as td:
+    m.foundation_prequal_windows=real_prequal
+    m.select=lambda kernel:None
+    m.enable_tails=lambda enabled: ({"HBNF":{"foundationTelemetry":{"enabled":enabled}}},{})
+    window_calls=[]
+    def fake_window(stage,*args,**kwargs):
+        window_calls.append((stage,args,kwargs));return [20.0]*25
+    m.collect_frame_window=fake_window
+    m.telemetry=lambda *args,**kwargs:{"kernel_id":0,"frame_ms_max":40.0}
+    result=m.foundation_prequal_windows(str(pathlib.Path(td)/"OBSERVER_EFFECT.json"),str(inventory))
+    assert result["status"]=="PASS"
+    assert result["observer_effect"]["status"]=="PASS_REUSED_PRIOR_EXACT_CANDIDATE_EVIDENCE"
+    assert result["observer_effect"]["lightweight_samples"]==27 and result["observer_effect"]["instrumented_samples"]==27
+    assert result["steady_state"]["tails_enabled"] is False and result["steady_state"]["duration_seconds"]==30
+    assert result["sacrificial_warmup"]["tails_enabled"] is True and result["sacrificial_warmup"]["excluded_from_foundation"] is True
+    assert [x[0] for x in window_calls]==["foundation-steady-state-tails-off","foundation-sacrificial-warmup-tails-on"]
 
 def invalid_json(*args,**kwargs):
     class Response:

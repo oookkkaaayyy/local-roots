@@ -509,6 +509,23 @@ def main():
             soak_result["pre_soak_manifest_path"]=str(pre_soak_path)
             soak_result["threshold_freeze_receipt_path"]=str(freeze_receipt)
             soak_result["threshold_freeze_receipt_sha256"]=__import__("hashlib").sha256(freeze_receipt.read_bytes()).hexdigest()
+            # Apply the already-frozen per-kernel baseline-relative gates to
+            # the complete 90-minute JSONL before declaring Foundation PASS.
+            audit_path=outdir/"FOUNDATION_SOAK_AUDIT.json"
+            audit_cmd=[sys.executable,str(ROOT/"scripts/hbnf_foundation_soak_audit.py"),
+                "--input",str(outdir/"FOUNDATION_SOAK.jsonl"),
+                "--inventory",str(pathlib.Path(args.inventory).resolve()),
+                "--expected-release",expected_release_id,
+                "--baseline",str(baseline_path),"--policy",str(pathlib.Path(args.threshold_policy).resolve()),
+                "--output",str(audit_path)]
+            audit_proc=subprocess.run(audit_cmd,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            atomic_write(outdir/"FOUNDATION_SOAK_AUDIT_STDOUT.txt",audit_proc.stdout)
+            atomic_write(outdir/"FOUNDATION_SOAK_AUDIT_STDERR.txt",audit_proc.stderr)
+            audit_result=load(audit_path) if audit_path.is_file() else {}
+            soak_result["audit_path"]=str(audit_path)
+            soak_result["audit_status"]=audit_result.get("status")
+            if audit_proc.returncode!=0 or audit_result.get("status")!="PASS" or (audit_result.get("foundation_qualification") or {}).get("status")!="PASS":
+                raise RuntimeError("foundation-soak-audit-failed: "+json.dumps(audit_result.get("errors",[]),sort_keys=True))
     except Exception as e:
         run_error=str(e)
         if snapshot is None and reserve is not None:

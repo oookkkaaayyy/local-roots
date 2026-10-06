@@ -1,0 +1,103 @@
+{
+  "candidate": {
+    "release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+    "sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
+    "size_bytes": 1488768,
+    "source_commit": "b18b162ec4b4f9173b1de892957ff8b834fe2b50"
+  },
+  "deadline_tests": {
+    "early_http_failure": "PASS__PROPAGATES",
+    "mid_window_http_failure": "PASS__PROPAGATES",
+    "minimum_sample_count_at_deadline": "PASS__NO_EXTRA_SAMPLE_REQUIRED",
+    "snapshot_restore_sidecar": "PASS__SNAPSHOT_ID_HASH_RESTOREVERIFIED_PACKET20SAME_PRESERVED"
+  },
+  "device_commands": "NONE",
+  "firmware_build": "NONE",
+  "host_failure_policy_tests": "PASS__HOST_ONLY_PRESERVE_REQUIRES_EXACT_CANDIDATE_HEALTH_NO_RESTART_RESTORE_AND_AUX; SEQ38_ONLY_FOR_REAL_FAILURE_OR_MISSING_SAFETY_PROOF",
+  "inputs": {
+    "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json": {
+      "sha256": "937d036db17a600198cceda13e2f599384ffaacd17c24965fa9e7db048d77216",
+      "size_bytes": 4098
+    },
+    "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006.json": {
+      "sha256": "320199f5cb73a2c7eba02a0bee05dda06d84d32c835907465981e92dbb395607",
+      "size_bytes": 2318
+    },
+    "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json": {
+      "sha256": "44f62cf31e5efa57a360117d96d437d6f504fd93704b28a069661b2da64a49f0",
+      "size_bytes": 8881
+    },
+    "scripts/hbnf_foundation_live_adapter.py": {
+      "sha256": "549895b274cc56457d3e2bc13bc0221d87af4932cf7a6954b8d1369c5336547c",
+      "size_bytes": 18448
+    },
+    "scripts/hbnf_foundation_seq37_failure_policy.py": {
+      "sha256": "c27af73d9d22ffd529ed5d4899bdf3e5feacdfe1b3500727393041111023f9e4",
+      "size_bytes": 3654
+    },
+    "scripts/hbnf_foundation_seq37_transaction.py": {
+      "sha256": "cdd5c0a7311c0677b9aecf4a76ba8219466aa196e1dd18d743ed74d81c7796fd",
+      "size_bytes": 15162
+    },
+    "scripts/hbnf_live_kernel_sweep.py": {
+      "sha256": "f7f62447f07141dc6db7115dc2599b382e144ebaab414cfee3b5d6423f8e4d76",
+      "size_bytes": 30844
+    },
+    "tests/hbnf_foundation_live_adapter.py": {
+      "sha256": "ee038c84221c37acc929481ba3a8aad4adababbd845ada3db073498f811394ce",
+      "size_bytes": 13587
+    },
+    "tests/hbnf_foundation_offline_tools.py": {
+      "sha256": "20bb7b0449c69e4055f306d6cea711f92c1a6ef61784a821a341a62e7e444f63",
+      "size_bytes": 7395
+    },
+    "tests/hbnf_foundation_seq37_failure_policy.py": {
+      "sha256": "da70c4ae8ab3002f641b4ac02a7bb2419923845baea1c5114cf50f9f7bc00fca",
+      "size_bytes": 2061
+    },
+    "tests/hbnf_live_kernel_sweep.py": {
+      "sha256": "3c3b7b88cde9f09a80dbfb10b9422d3fd5e6a628563cee93c1ed0bc51876ca38",
+      "size_bytes": 11727
+    },
+    "tests/hbnf_packet20_http_adapter.py": {
+      "sha256": "986b36e970c9f817be094766b0b207d5e49d434fdda1b0e1ce84f1564e141f37",
+      "size_bytes": 8114
+    }
+  },
+  "observer_effect": {
+    "candidate_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
+    "median_delta_pct": -2.9440135818188895,
+    "samples_per_mode": 27,
+    "source": "evidence/hbnf-foundation-qualification-20261005/seq33/continuation/OBSERVER_EFFECT.json",
+    "status": "PASS_REUSED_NOT_RERUN"
+  },
+  "recorded_at_utc": "2026-10-06T06:08:08.657501+00:00",
+  "recovery": {
+    "release": "hbnf-matrix-coordinated-v1-20261002-07",
+    "sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "size_bytes": 1458624
+  },
+  "schema": "hbnf-foundation-seq37-offline-gates-v1",
+  "seq35_replay": {
+    "boundary_simulation": "PASS__NO_HTTP_READ_STARTED_BELOW_1S_RESERVE",
+    "exact_remaining_timeout_seconds": 0.0162015,
+    "source": "evidence/hbnf-foundation-qualification-20261005/seq35/FAILURE_LOCALIZATION.json"
+  },
+  "state_changing_soak": "INTEGRATED__90_MINUTES__BASELINE_RELATIVE_AUDIT_REQUIRED_BEFORE_PASS",
+  "status": "PASS_BEFORE_SEQUENCE_ALLOCATION_OR_DEVICE_MUTATION",
+  "tests": {
+    "platform_doctor": "PASS",
+    "seq37_package_dry_run": "PASS",
+    "tests/hbnf_control.py": "PASS",
+    "tests/hbnf_foundation_live_adapter.py": "PASS",
+    "tests/hbnf_foundation_offline_tools.py": "PASS",
+    "tests/hbnf_foundation_seq37_failure_policy.py": "PASS",
+    "tests/hbnf_guarded_run.py": "PASS",
+    "tests/hbnf_kernel_sweep_report.py": "PASS",
+    "tests/hbnf_live_kernel_sweep.py": "PASS",
+    "tests/hbnf_packet20_build_validate.py": "PASS",
+    "tests/hbnf_packet20_http_adapter.py": "PASS",
+    "tests/hbnf_runtime_qualify_static.py": "PASS",
+    "tests/hbnf_source_tree_identity.py": "PASS"
+  }
+}
