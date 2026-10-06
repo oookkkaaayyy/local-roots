@@ -38,7 +38,7 @@
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
     "blockers": [
-      "Capsule/prelive-check not yet completed; no device mutation before both PASS."
+      "Seq33/34 transaction is active; stop only on runtime contract failure or failed direct-LAN recovery."
     ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
@@ -227,7 +227,7 @@
       "github_run_id": 37376862955,
       "kernel_total": 28,
       "next_sequences": "UNALLOCATED__USER_PAUSED_BEFORE_SEQ33_34",
-      "next_transaction_status": "AUTHORIZED__PRELIVE_CAPSULE_REQUIRED_BEFORE_INSTALL",
+      "next_transaction_status": "AUTHORIZED__CAPSULE_AND_PRELIVE_PASS",
       "observer_effect": "PRIOR_SEQ29_MEASUREMENT_STATUS_DURABLE__NOT_REPEATED",
       "offline_integrated_soak_runner": "scripts/hbnf_live_kernel_sweep.py --soak-seconds 5400 --soak-interval-seconds 8; one snapshot and one restore; 28-kernel round-robin; durable JSONL",
       "offline_resume_plan": "work/cart2/27_FOUNDATION_OFFLINE_RESUME_PLAN_20261005.md",
@@ -548,7 +548,7 @@
     ],
     "seq19_diagnostic_incident": "CLOSED_RECOVERED_TO_RELEASE07",
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "SEQ33_34_FOUNDATION_TRANSACTION_AUTHORIZED",
+    "status": "SEQ33_34_BOUNDED_LIVE_TRANSACTION_READY",
     "target_recovery": {
       "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
@@ -580,7 +580,7 @@
     "recovery_sequence": 34,
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "scope": "Single bounded Foundation transaction seq33 candidate install; one observer comparison + full 28-kernel sweep; create sweep-bound baseline and freeze supplied policy before exact 5400s changing soak; one snapshot/restore only. No unbounded device changes. Exact Release07 seq34 recovery only on failure; if Foundation passes retain candidate. Close authorization immediately at terminal result.",
-    "status": "OPEN__BOUNDED_SEQ33_34",
+    "status": "OPEN__SEQ33_34_PRELIVE_PASS",
     "user_authorization": "Explicit current user directive: cart home, resume live work; authorize exact Foundation candidate and exact Release07 recovery, no routine permission pauses."
   },
   "live_mutation_authorized": true,
