@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Direct-LAN adapter for the bounded R4 Foundation-metrics transaction."""
 from __future__ import annotations
-import argparse, hashlib, json, pathlib, socket, statistics, sys, time, urllib.error, urllib.request
+import argparse, concurrent.futures, hashlib, json, os, pathlib, socket, statistics, sys, time, urllib.error, urllib.request
 
 MATRIX="http://192.168.77.10"
 AUX="http://192.168.77.11"
@@ -16,6 +16,8 @@ RESTORE_VERIFY_TIMEOUT_SECONDS=90
 TAIL_HISTOGRAM_BINS=512
 EXPECTED_TAIL_BIN_US=250
 MIN_HTTP_REMAINING_BUDGET_SECONDS=1.0
+SOAK_TELEMETRY_HTTP_TIMEOUT_SECONDS=4.0
+SOAK_TELEMETRY_BATCH_TIMEOUT_SECONDS=5.5
 
 def get(url, timeout=HTTP_TIMEOUT_SECONDS, deadline=None):
     attempts=2 if url.endswith("/json/state") else 1
@@ -145,6 +147,65 @@ def identity():
     if build.get("release_id")!=EXPECTED or build.get("candidate")!=EXPECTED:raise RuntimeError("foundation-metrics-release-identity-mismatch")
     return info,build
 
+def _get_json_once(url, timeout):
+    """One bounded GET for the continuous sampler; no retry can consume its cadence."""
+    req=urllib.request.Request(url,headers={"Accept":"application/json","Cache-Control":"no-store"})
+    with urllib.request.urlopen(req,timeout=timeout) as r:
+        raw=r.read()
+    return json.loads(raw.decode()),hashlib.sha256(raw).hexdigest()
+
+def _parallel_soak_reads(session_id):
+    """Read one coherent telemetry frame with parallel, single-shot LAN requests.
+
+    The prior adapter serialized identity, tail-mode confirmation, Matrix telemetry,
+    and AUX reads. Its 12s subprocess deadline was shorter than the possible sum of
+    those request/retry budgets. The soak path now fans out the five read-only GETs;
+    each request has a 4s timeout and the batch has a 5.5s wall budget.
+    """
+    endpoints={
+      "matrix_info":MATRIX+"/json/info",
+      "matrix_build":MATRIX+"/hbnf/build.json",
+      "matrix_state":MATRIX+"/json/state",
+      "aux_info":AUX+"/json/info",
+      "aux_state":AUX+"/json/state",
+    }
+    started=time.monotonic(); results={}; errors={}; pending_names=[]
+    pool=concurrent.futures.ThreadPoolExecutor(max_workers=len(endpoints),thread_name_prefix="hbnf-soak-read")
+    futures={pool.submit(_get_json_once,url,SOAK_TELEMETRY_HTTP_TIMEOUT_SECONDS):name for name,url in endpoints.items()}
+    try:
+        done,pending=concurrent.futures.wait(futures,timeout=SOAK_TELEMETRY_BATCH_TIMEOUT_SECONDS)
+        for future in done:
+            name=futures[future]
+            try:
+                body,digest=future.result()
+                results[name]={"body":body,"sha256":digest}
+            except Exception as exc:
+                errors[name]=f"{type(exc).__name__}: {exc}"
+        pending_names=sorted(futures[f] for f in pending)
+        for future in pending: future.cancel()
+    finally:
+        pool.shutdown(wait=True,cancel_futures=True)
+    elapsed=time.monotonic()-started
+    if errors or pending_names:
+        detail={"schema":"hbnf-soak-parallel-read-failure-v1","captured_at_unix":time.time(),
+                "elapsed_seconds":elapsed,"batch_timeout_seconds":SOAK_TELEMETRY_BATCH_TIMEOUT_SECONDS,
+                "request_timeout_seconds":SOAK_TELEMETRY_HTTP_TIMEOUT_SECONDS,
+                "failed_endpoints":errors,"pending_endpoints":pending_names,
+                "completed_response_sha256":{k:v["sha256"] for k,v in results.items()}}
+        path=pathlib.Path(str(session_id))/"TELEMETRY_PARALLEL_READ_FAILURES.jsonl"
+        path.parent.mkdir(parents=True,exist_ok=True)
+        raw=(json.dumps(detail,separators=(",",":"),sort_keys=True)+"\n").encode()
+        fd=os.open(path,os.O_CREAT|os.O_APPEND|os.O_WRONLY,0o600)
+        try: os.write(fd,raw); os.fsync(fd)
+        finally: os.close(fd)
+        raise RuntimeError("parallel-soak-telemetry-read-failed:"+json.dumps(detail,sort_keys=True))
+    info=results["matrix_info"]["body"]; build=results["matrix_build"]["body"]
+    if info.get("ip")!="192.168.77.10" or info.get("mac","" ).replace(":","").lower()!=MAC:
+        raise RuntimeError("matrix-ip-or-mac-mismatch")
+    if build.get("release_id")!=EXPECTED or build.get("candidate")!=EXPECTED:
+        raise RuntimeError("foundation-metrics-release-identity-mismatch")
+    return {k:v["body"] for k,v in results.items()},elapsed
+
 def snapshot(observer_output=None, inventory=None):
     identity(); state,p20=p20_state()
     new_snapshot=not p20.get("snapshotValid")
@@ -230,11 +291,11 @@ def select(kernel):
     if not command("select",kernel=int(kernel)).get("HBNF",{}).get("packet20Diagnostic",{}).get("lastCommandAccepted",False):raise RuntimeError("packet20-kernel-select-rejected")
 
 def telemetry(inventory,session_id,emit=True):
-    info,build=identity(); state,p20=enable_tails(True)
-    deadline=time.monotonic()+5
-    while state.get("HBNF",{}).get("foundationTelemetry",{}).get("frameMsP99") is None and time.monotonic()<deadline:
-        time.sleep(.1);state,p20=p20_state(deadline,stage="foundation-tail-readiness")
-    h=state["HBNF"]; timing=h["timing"]; ft=h.get("foundationTelemetry",{})
+    reads,read_elapsed=_parallel_soak_reads(session_id)
+    info=reads["matrix_info"]; build=reads["matrix_build"]; state=reads["matrix_state"]
+    aux=reads["aux_info"]; aux_state=reads["aux_state"]
+    h=state.get("HBNF",{}); timing=h.get("timing",{}); ft=h.get("foundationTelemetry",{})
+    if not ft.get("enabled"):raise RuntimeError("foundation-telemetry-disabled-during-soak")
     if not ft.get("enabled") or ft.get("frameMsP99") is None:raise RuntimeError("foundation-frame-tail-contract-missing")
     resolution_us=ft.get("frameTailBinResolutionUs")
     if not isinstance(resolution_us,(int,float)) or resolution_us<=0:raise RuntimeError("foundation-frame-tail-bin-resolution-invalid")
@@ -265,7 +326,7 @@ def telemetry(inventory,session_id,emit=True):
       raw_path.parent.mkdir(parents=True,exist_ok=True)
       raw_path.write_text(json.dumps(raw,indent=2,sort_keys=True)+"\n")
       raise RuntimeError(f"foundation-frame-tail-quantile-saturated-at-{saturated_quantile_ms:g}ms fields={','.join(saturated_fields)} raw={raw_path}")
-    aux=get(AUX+"/json/info"); aux_state=get(AUX+"/json/state"); leds=aux.get("leds",{})
+    leds=aux.get("leds",{})
     aux_rx=aux_projection_health(aux,aux_state)
     inv=json.loads(pathlib.Path(inventory).read_text())
     kid=int(timing["kernel"])
@@ -289,6 +350,7 @@ def telemetry(inventory,session_id,emit=True):
       "aux_projection_age_valid":aux_rx["age_valid"],"aux_frame_lock_rx_active":aux_rx["frame_lock_active"],
       "aux_projection_rx_packets":aux_rx["rx_packets"],"aux_projection_rx_sequence":aux_rx["rx_sequence"],"aux_projection_peer_known":aux_rx["peer_known"],"aux_projection_hello_packets":aux_rx["hello_packets"],"aux_wled_live_source":aux_rx["wled_live_source"],
       "wifi_rssi_dbm":timing["rssi"],"restart_count":cache["restart_count"],
+      "telemetry_read_elapsed_seconds":round(read_elapsed,6),
       "kernel_ms_avg":ft.get("kernelMsAvg"),"kernel_ms_p95":ft.get("kernelMsP95"),"palette_ms_avg":ft.get("paletteMsAvg"),"palette_ms_p95":ft.get("paletteMsP95"),
       "audio_ms_avg":ft.get("audioMsAvg"),"audio_ms_p95":ft.get("audioMsP95"),"scheduler_ms_avg":ft.get("schedulerMsAvg"),"scheduler_ms_p95":ft.get("schedulerMsP95"),
       "overlay_ms_avg":ft.get("overlayMsAvg"),"overlay_ms_p95":ft.get("overlayMsP95"),"aux_prepare_send_ms_avg":ft.get("auxPrepareSendMsAvg"),"aux_prepare_send_ms_p95":ft.get("auxPrepareSendMsP95"),

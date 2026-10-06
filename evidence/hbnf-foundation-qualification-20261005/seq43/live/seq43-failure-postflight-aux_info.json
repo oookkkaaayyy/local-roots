@@ -1,0 +1,81 @@
+{
+  "arch": "esp32",
+  "bootloaderSHA256": "b97d154765ea69ca895a33de59adb4b322509aa2a3e2c7c8409b31cbc1bcc2cd",
+  "brand": "WLED",
+  "clock": 240,
+  "cn": "Niji",
+  "core": "4.4.8.240628",
+  "cpalcount": 0,
+  "cpalmax": 129,
+  "deviceId": "e3d28e871aade5e29da7fa368a6759ea368fc3572d",
+  "flash": 4,
+  "freeheap": 103960,
+  "fs": {
+    "pmt": 0,
+    "t": 983,
+    "u": 20
+  },
+  "fxcount": 248,
+  "ip": "192.168.77.11",
+  "leds": {
+    "bootps": 0,
+    "cct": 0,
+    "count": 22,
+    "fps": 30,
+    "lc": 1,
+    "maxpwr": 900,
+    "maxseg": 32,
+    "pwr": 142,
+    "rgbw": false,
+    "seglc": [
+      1
+    ],
+    "wv": 0
+  },
+  "lip": "192.168.77.10",
+  "live": true,
+  "liveseg": -1,
+  "lm": "DDP",
+  "lwip": 0,
+  "mac": "8c94df55c34c",
+  "maps": [
+    {
+      "id": 0
+    }
+  ],
+  "name": "WLED",
+  "ndc": 1,
+  "opt": 79,
+  "palcount": 72,
+  "product": "FOSS",
+  "release": "ESP32",
+  "repo": "wled/WLED",
+  "simplifiedui": false,
+  "str": false,
+  "time": "1970-1-1, 08:31:17",
+  "u": {
+    "Animartrix": [
+      "Animartrix requires the Creative Commons Attribution License CC BY-NC 3.0"
+    ],
+    "AudioReactive": [
+      "<button class=\"btn btn-xs\" onclick=\"requestJson({AudioReactive:{enabled:true}});\"><i class=\"icons off\">&#xe08f;</i></button>"
+    ]
+  },
+  "udpport": 21324,
+  "um": [
+    32,
+    45
+  ],
+  "umpalcount": 0,
+  "uptime": 30677,
+  "ver": "16.0.1",
+  "vid": 2605010,
+  "wifi": {
+    "ap": false,
+    "bssid": "94:83:C4:98:78:94",
+    "channel": 4,
+    "rssi": -23,
+    "signal": 100
+  },
+  "ws": 0
+}

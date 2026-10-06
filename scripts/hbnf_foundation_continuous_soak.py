@@ -23,7 +23,10 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import hbnf_live_kernel_sweep as sweep
 
 SAMPLE_PERIOD_SECONDS = 5.0
-SAMPLE_COMMAND_TIMEOUT_SECONDS = 12.0
+# The telemetry adapter now performs a 5.5s parallel-read batch. Keep enough
+# room for process startup/JSON serialization while remaining below the 15s
+# maximum allowed inter-sample gap.
+SAMPLE_COMMAND_TIMEOUT_SECONDS = 7.0
 SELECT_PERIOD_SECONDS = 6.0
 SELECT_COMMAND_TIMEOUT_SECONDS = 30.0
 

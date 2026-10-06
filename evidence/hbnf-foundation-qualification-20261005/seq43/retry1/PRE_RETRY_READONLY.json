@@ -1,0 +1,36 @@
+{
+  "captured_at_utc": "2026-10-06T17:22:59.808062+00:00",
+  "device_safety": {
+    "aux_ip": "192.168.77.11",
+    "aux_live": true,
+    "aux_mac": "8c94df55c34c",
+    "aux_mode": "DDP",
+    "aux_source_ip": "192.168.77.10",
+    "candidate_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "candidate_size_bytes": 1489008,
+    "last_clean_sample_uptime_seconds": 449,
+    "matrix_ip": "192.168.77.10",
+    "matrix_mac": "704bca5b345c",
+    "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "release07_recovery_size_bytes": 1458624,
+    "restart_count_last_sample": 0,
+    "restoreVerified": true,
+    "snapshot_hash": 940998176,
+    "snapshot_id": 1,
+    "snapshot_state": "READY",
+    "snapshot_valid": true,
+    "tails_enabled": false,
+    "uptime_seconds": 2179
+  },
+  "parallel_read_elapsed_seconds": 0.240444,
+  "read_only": true,
+  "response_sha256": {
+    "aux_info": "20d955768446d6e5958cc816dd25f7282ed3677f43b4900d11e4ce5a2fec8551",
+    "aux_state": "6ea5b390d672b554afd184bdce73b0909cdc20a4e009012bbd9a171de9af3e1a",
+    "matrix_build": "93b26d73a46cf1cc0570669920de3138d3e3bbb00754413e1d9c4adddf8f2c2c",
+    "matrix_info": "79c557d0a82662cc909983b0b0cbeb4a765de7f86e670c8267ea14ce483d9df3",
+    "matrix_state": "b9de97e7ac5313b402fdec197778affe3d1ad7697d4698d5a6073e0e2ccbf859"
+  },
+  "schema": "hbnf-seq43-same-install-retry-prelive-v1"
+}

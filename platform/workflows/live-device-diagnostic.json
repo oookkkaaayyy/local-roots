@@ -22,7 +22,10 @@
     "scripts/hbnf_foundation_seq43_transaction.py",
     "tests/hbnf_foundation_continuous_soak.py",
     "tests/hbnf_foundation_seq43_offline.py",
-    "tests/hbnf_foundation_seq39_failure_policy.py"
+    "tests/hbnf_foundation_seq39_failure_policy.py",
+    "scripts/hbnf_foundation_seq43_soak_retry.py",
+    "tests/hbnf_foundation_parallel_telemetry.py",
+    "tests/hbnf_foundation_seq43_retry_offline.py"
   ],
   "prelive_contract": {
     "closure_stage_id": "contract-closure",
@@ -148,9 +151,9 @@
         "margin_seconds": 330
       },
       "outputs": [
-        "one exact seq43 candidate install, no repeated 28-kernel sweep or observer test",
-        "complete >=90-minute state-changing Foundation soak with a decoupled continuous sampler and <=15-second evidence gaps",
-        "exact snapshot restore, post-restore raw evidence, and candidate/recovery disposition"
+        "one exact seq43 candidate install at most; the single authorized host-only retry reuses that running installation and never reuploads or reallocates a sequence",
+        "complete >=90-minute state-changing Foundation soak with a decoupled sampler using parallel single-shot telemetry reads and <=15-second evidence gaps",
+        "reuse the same boot-scoped renderer snapshot for exact restore, preserve raw post-restore evidence, and consume seq44 only on a genuine device/Foundation failure or lost safety proof"
       ],
       "retry_policy_details": "At most one same-install retry only after a materially different offline-proven host fix and only with candidate identity, health, restart continuity, exact renderer restore, and AUX health all proven; never consume seq44 for a host-only failure."
     },

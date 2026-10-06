@@ -100,14 +100,6 @@ with tempfile.TemporaryDirectory() as td:
     m.foundation_prequal_windows=real_prequal
     t=pathlib.Path(td); m.CACHE=t/"restart-cache.json"
     inventory=ROOT/"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"
-    def fake_get(url,*args,**kwargs):
-        if url==m.MATRIX+"/json/info":return info
-        if url==m.MATRIX+"/hbnf/build.json":return build
-        if url==m.AUX+"/json/info":return aux
-        if url==m.AUX+"/json/state":return aux_state
-        raise AssertionError("unexpected telemetry endpoint: "+url)
-    m.get=fake_get
-    isolated_run=str(t/"run-a")
     state={"HBNF":{"timing":{"kernel":0,"uptimeSec":100,"fps":42,"variantSignature":7,
       "freeHeap":88000,"rssi":-45,"wholeFrameUs":19000,"auxProjectionAgeMs":2},
       "foundationTelemetry":{"enabled":True,"frameMsAvg":19,"frameMsP50":18,
@@ -118,7 +110,11 @@ with tempfile.TemporaryDirectory() as td:
       "schedulerMsP95":2,"overlayMsAvg":0.1,"overlayMsP95":0.2,
       "auxPrepareSendMsAvg":0.5,"auxPrepareSendMsP95":0.8,"unaccountedMsAvg":5,
       "unaccountedMsP95":6}}}
-    m.enable_tails=lambda enabled:(state,{})
+    reads={"matrix_info":info,"matrix_build":build,
+      "matrix_state":state,"aux_info":aux,"aux_state":aux_state}
+    m._parallel_soak_reads=lambda session_id:(reads,0.02)
+    m.get=lambda url,*args,**kwargs: info if url.endswith("/json/info") else build
+    isolated_run=str(t/"run-a")
     with contextlib.redirect_stdout(io.StringIO()) as output:
         m.telemetry(str(inventory),isolated_run)
     sample=json.loads(output.getvalue())

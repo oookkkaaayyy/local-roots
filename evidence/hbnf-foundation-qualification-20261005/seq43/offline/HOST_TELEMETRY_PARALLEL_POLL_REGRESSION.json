@@ -1,0 +1,103 @@
+{
+  "authority_commit_reconciled": "7ae9537e92100610125c32aeec460d49d36ab3b9",
+  "branch": "hbnf-cart2-ready-to-implement-staging-20261001",
+  "correction": {
+    "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "mechanism": "Five required read-only HTTP endpoints are now fetched concurrently with one attempt each. Tail telemetry is read without a per-sample enable/ack POST. Each GET is capped at 4 seconds, the concurrent batch at 5.5 seconds, and the sampler child at 7 seconds, leaving margin below the 15-second sample-gap limit.",
+    "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "same_install_retry": "One retry only; no firmware reupload, sequence allocation, observer remeasurement, 28-kernel sweep repeat, or new snapshot. Reuses seq43 candidate and boot-scoped snapshot 1/hash 940998176; seq44 remains genuine device/Foundation failure or lost safety proof only.",
+    "single_endpoint_failure": "Fail closed with endpoint name, elapsed time, completed-response hashes, and no retry; evidence is appended before exiting."
+  },
+  "created_at_utc": "2026-10-06T17:23:55.275968+00:00",
+  "current_disposition": {
+    "foundation": "UNQUALIFIED",
+    "fresh_same_install_prelive": {
+      "aux_matrix_origin_ddp": true,
+      "candidate_runtime_exact": true,
+      "path": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/PRE_RETRY_READONLY.json",
+      "restore_verified": true,
+      "same_install_retry_started": false,
+      "sha256": "f54ea732e1f07b9d806cbc3e733e5336aa8d9552d579d68bf2608c100fe9f0c4",
+      "snapshot_valid": true,
+      "status": "PASS_READ_ONLY_ONLY",
+      "tails_enabled": false,
+      "uptime_seconds": 2179
+    },
+    "inherited_seq39_sweep_observer_baseline_frozen_policy": "REUSED__NO_INVALIDATOR",
+    "next_action": "Use the freshly verified candidate and still-valid boot-scoped snapshot for one guarded 5400-second same-install soak retry. Do not install firmware or allocate sequence.",
+    "physical_candidate_after_host_failure": "last read-only verified as exact seq43 runtime at 2026-10-06T17:00:37Z; current prelive refresh required before retry.",
+    "same_install_retry": "NOT_STARTED"
+  },
+  "decisive_evidence": {
+    "initial_soak_samples": "evidence/hbnf-foundation-qualification-20261005/seq43/live/FOUNDATION_SOAK.jsonl",
+    "restore_receipt": "evidence/hbnf-foundation-qualification-20261005/seq43/live/RESTORE_RECEIPT.json",
+    "retained_candidate_readonly_capture": "evidence/hbnf-foundation-qualification-20261005/seq43/live/HOST_FAILURE_READONLY_RETAINED_CANDIDATE.json",
+    "sampler_failure": "evidence/hbnf-foundation-qualification-20261005/seq43/live/TELEMETRY_SAMPLER_FAILURE.json",
+    "seq43_failure": "evidence/hbnf-foundation-qualification-20261005/seq43/live/SEQ43_FAILURE.json",
+    "transaction_result": "evidence/hbnf-foundation-qualification-20261005/seq43/live/TRANSACTION_RESULT.json"
+  },
+  "host_failure": {
+    "aux_native_ddp_active_samples": 74,
+    "bounded_sample_count": 74,
+    "candidate_release_values": [
+      "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+    ],
+    "classification": "HOST_OR_EXTERNAL",
+    "individual_slow_endpoint": "NOT IDENTIFIED by the old run; the old reader did not record per-endpoint timings. The proven defect is its serialized retry/request budget exceeding its enclosing subprocess timeout.",
+    "max_frame_interval_ms": 56.947,
+    "max_frame_p99_ms": 56.875,
+    "max_observed_inter_sample_gap_seconds": 11.41788545899999,
+    "minimum_fps": 25.0,
+    "minimum_heap_bytes": 108632,
+    "no_seq44_recovery": true,
+    "observed_error": "Telemetry adapter child process exceeded the outer 12.0 second subprocess timeout after 74 persisted samples; the failing child produced no complete sample.",
+    "renderer_restore": {
+      "packet20Same": true,
+      "restoreVerified": true,
+      "snapshot_hash": 940998176,
+      "snapshot_id": 1
+    },
+    "restart_count_values": [
+      0
+    ]
+  },
+  "offline_tests": {
+    "architecture_fitness": "PASS",
+    "bounded_http_failure": "PASS: one delayed endpoint failed closed in about 4.0 seconds; exact aux_state endpoint and hashes of other completed responses were preserved.",
+    "control_plane_test": "PASS",
+    "existing_adapter_contract": "PASS: exact Matrix/runtime identity, tail/heap/stage fields, overflow evidence, and telemetry contract.",
+    "network_or_device_access_during_tests": false,
+    "offline_evidence_tooling": "PASS",
+    "parallel_http_fixture": "PASS: five local loopback endpoints each delayed 1.6 seconds overlapped; all returned in under 3.2 seconds (latest measured 1.629 seconds).",
+    "platform_doctor": "PASS",
+    "py_compile": "PASS",
+    "retry_dry_run": "PASS: exact prior seq43 host failure, candidate identity, 74 samples, restored snapshot, and no-reinstall/no-new-sequence plan validated offline.",
+    "selector_gap_regression": "PASS: decoupled sampler continued through 24.114-second simulated selector block; 56 samples; maximum gap 1.040 seconds; readiness signal only after three valid persisted samples.",
+    "seq43_failure_policy": "PASS: real runtime/lost safety proof selects exact Release07; host failure with all safety evidence preserves candidate.",
+    "soak_audit_tooling": "PASS"
+  },
+  "root_cause": {
+    "conclusion": "The old host timeout hierarchy was not compositional: five serial reads and a double Matrix-state attempt could exceed the 12-second enclosing subprocess deadline. This produced a host timeout after 74 samples; telemetry never demonstrated a firmware hard-stop or restart.",
+    "old_matrix_state_retry_budget": "up to 2 attempts at 10 seconds each",
+    "old_reader_operations_in_series": [
+      "Matrix /json/info",
+      "Matrix /hbnf/build.json",
+      "Matrix /json/state mode/tail confirmation",
+      "AUX /json/info",
+      "AUX /json/state"
+    ],
+    "old_sampler_subprocess_timeout_seconds": 12.0
+  },
+  "schema": "hbnf-seq43-host-telemetry-parallel-poll-regression-v1",
+  "source_sha256": {
+    "platform/workflows/live-device-diagnostic.json": "a01649718174e8f2ad588cd1b128452566fcffa0486fee93f03a0e1e692ab5b9",
+    "scripts/hbnf_foundation_continuous_soak.py": "34cdff5f81b66ed7bdbef148726cda11e9480c6b79e617aab77e588dbc3996c7",
+    "scripts/hbnf_foundation_live_adapter.py": "e0ed4994021efadb8d9e8ed2ebc4fc879591a1ae75fc3af051a35090204dca5b",
+    "scripts/hbnf_foundation_seq43_soak_retry.py": "beed37214e21413ba055cdaf3093c7b66b1f3f0c72787ca47939391719dea927",
+    "tests/hbnf_foundation_continuous_soak.py": "70580d666bff378bddd90daacb29fa4044579780d841082f9d466c758aa18733",
+    "tests/hbnf_foundation_live_adapter.py": "8f5d246153ed82d22753c92b87cb807f27763bd91c041fe8389cd4ad091c6afe",
+    "tests/hbnf_foundation_parallel_telemetry.py": "4bd10116b607ed663b72a840f2893c37a610ce45bfa871f3b93b411009946ba6",
+    "tests/hbnf_foundation_seq43_offline.py": "6da5d3a309d87ef97de46080123b7345975f445411fb1b6771b428e3b177b277",
+    "tests/hbnf_foundation_seq43_retry_offline.py": "48d9fd55b1adbb7748e22268c4c9f4862cbce8304dd2053145b18157ccb99406"
+  }
+}
