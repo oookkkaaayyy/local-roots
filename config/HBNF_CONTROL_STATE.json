@@ -697,7 +697,7 @@
     "aux_blocker": {
       "observed_at_local": "2026-10-06",
       "source": "USER_PHYSICAL_OBSERVATION",
-      "status": "UNRESOLVED_PHYSICAL_VS_SOFTWARE_AUX_FAILURE",
+      "status": "RESOLVED_BY_USER__PHYSICAL_CONNECTION_FAULT",
       "observations": [
         "AUX/underglow was visibly frozen dim green and ignored web-app/iPad control changes.",
         "User power-cycled only AUX/SP803E, waited, reconnected power, and pressed controller button twice with about two minutes between; no response.",
@@ -709,7 +709,32 @@
         "The same AUX state reported HBNFAUX projectionRxActive=false, projectionRxPackets=0, projectionPeerKnown=false while Foundation auxProjectionAgeMs became stale.",
         "Therefore neither a purely physical fault nor a purely software/telemetry fault is proven."
       ],
-      "safety_boundary": "DO_NOT_START_NEW_LIVE_MUTATION_OR_FIRMWARE_ATTEMPT UNTIL AUX IS DISCRIMINATED. Read-only LAN diagnosis and offline source/harness work are allowed. Do not spend overnight time on repeated physical/software guessing."
+      "safety_boundary": "DO_NOT_START_NEW_LIVE_MUTATION_OR_FIRMWARE_ATTEMPT UNTIL AUX IS DISCRIMINATED. Read-only LAN diagnosis and offline source/harness work are allowed. Do not spend overnight time on repeated physical/software guessing.",
+      "resolved_at_local": "2026-10-06",
+      "resolution_source": "USER_DIRECT_PHYSICAL_FIX_AND_CONFIRMATION",
+      "resolution_note": "User confirmed the AUX/underglow failure was physical and fixed it. Do not reopen as a software root-cause assumption unless fresh evidence independently proves a software/link fault.",
+      "software_implication": "Seq39 AUX-age telemetry failure still requires bounded reconciliation because physical output failure does not automatically validate or invalidate the Matrix send-age metric. Reconcile quickly; do not re-run broad archaeology."
+    },
+    "overnight_priority": {
+      "schema": "hbnf-overnight-priority-v1",
+      "target_event": "NEXT_SKINS_ROUND__2026-10-06",
+      "priority": "MAXIMUM_SAFE_AUTONOMOUS_PROGRESS_BEFORE_FIELD_USE",
+      "hard_field_go_no_go": [
+        "Underglow/AUX physically working and not destabilized by software work.",
+        "Authoritative Skins scoring works end-to-end on intended owner device.",
+        "Owner can reliably control the cart/system with confirmed state and no Mac/Terminal during normal round use."
+      ],
+      "secondary_priority": [
+        "Complete Foundation qualification if safely achievable.",
+        "Advance Mission Control/scoring and PWA/reliability first because they directly affect tomorrow field use.",
+        "Use remaining parallel/offline capacity for Vibe/audio and text/moments."
+      ],
+      "do_not_derail": [
+        "Do not reopen the resolved physical AUX fault as a software investigation without new evidence.",
+        "Do not repeat the completed 28/28 seq39 sweep unless an actual invalidator requires it.",
+        "Do not use GitHub Actions or firmware rebuilds for host/harness/orchestration issues.",
+        "Do not let non-field-critical polish block tomorrow's operational gate."
+      ]
     }
   },
   "execution_budget_policy": {
@@ -735,12 +760,12 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "READ-ONLY first: discriminate AUX controller reachability/state, DDP/live-source freshness, and Matrix send-side continuity from the current recovered Release07 state. No firmware install, no sequence allocation, no reboot/power action.",
-      "If AUX controller is unreachable or its state cannot be read after the user's AUX-only power cycle, classify as PHYSICAL/POWER/NETWORK BLOCKER and stop live diagnosis; preserve Foundation evidence and continue offline-safe Cart 2.0 work.",
-      "If AUX controller is reachable but LEDs remain dark/unresponsive while state commands/DDP counters prove controller activity, classify the LED/output/power path as PHYSICAL_HARDWARE until user can inspect it; do not mutate Matrix/AUX firmware overnight.",
-      "If controller is reachable and evidence proves Matrix/AUX software link freshness is actually failing independent of LED output, localize and test the smallest software/telemetry correction entirely offline; do not start another live qualification attempt without corrected prelive proof and explicit authorization.",
-      "While AUX is unresolved, use overnight time for noncontending offline-safe Cart 2.0 work already defined in the Phase 2 lanes; do not idle and do not create event-only throwaway work.",
-      "After user later restores/proves physical AUX output, resume Foundation from preserved seq39 evidence; do not repeat the 28/28 sweep unless an actual invalidator requires it."
+      "Bounded post-fix verification: confirm AUX is reachable and physically responding now; preserve the user's physical-fault classification unless fresh evidence contradicts it.",
+      "Reconcile seq39 AUX send-age telemetry against current behavior and source contract. Do not spend more than one bounded investigation cycle; preserve 28/28 sweep evidence unless a real invalidator exists.",
+      "If a telemetry/gate correction is needed, prove it offline and use the smallest possible delta. If no correction is needed and prelive proof is clean, proceed directly to the single authorized seq41 Foundation requalification.",
+      "If the 90-minute soak starts cleanly, keep it running and immediately use the wait for field-critical Cart 2.0 work: Mission Control/scoring and PWA/reliability first; Vibe/audio and text/moments next.",
+      "Before stopping overnight, maximize tomorrow's Skins readiness: authoritative scoring on intended owner device, reliable owner control without Mac/Terminal, and working underglow/AUX. Do not let noncritical polish block this field gate.",
+      "Promote Foundation and then advance lifecycle/Phase2 as far as objective gates allow; do not stop merely to report intermediate progress."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -890,18 +915,26 @@
   },
   "lifecycle_state": "FIX_CANDIDATE",
   "live_mutation_authorization": {
-    "candidate_sequence": 39,
+    "candidate_sequence": 41,
     "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "closure_reason": "Seq39 soak failed the existing three-consecutive-sample AUX projection-age gate; exact seq40 Release07 recovery and post-recovery identity verification passed. No new live mutation authorized.",
     "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "prelive_evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq39/PRELIVE_PROOF.json",
-    "recovery_sequence": 40,
+    "recovery_sequence": 42,
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-    "scope": "One exact local clean-room telemetry-only candidate install seq39; exact one-time observer A/B on that changed artifact; sacrificial warm-up; complete all-28 Foundation sweep; hash-bound baseline/frozen policy; same-install >=5400s state-changing soak; seq40 exact Release07 REAL DEVICE/RUNTIME FAILURE recovery only. Host-only failure preserves candidate only with exact identity, health, no restart, renderer restore, and AUX health proof. No R3/R4/Packet20 re-exploration, no new build, no GitHub Actions.",
-    "status": "CLOSED__SEQ40_RELEASE07_RECOVERY_VERIFIED__FOUNDATION_GATE_FAILED",
-    "user_authorization": "Current user directive EXPEDITE — BOUNDED TELEMETRY RANGE FIX ONLY explicitly authorizes next legal seq39 candidate / seq40 exact Release07 real failure recovery after offline gates; seq37 remains TELEMETRY_INSTRUMENTATION, not renderer/root-cause failure."
+    "scope": [
+      "First perform a bounded post-fix preflight proving AUX/controller reachability and actual current underglow response without changing firmware.",
+      "Reconcile seq39 auxProjectionAgeMs failure quickly against current send/receive evidence; if it is a measurement/gate defect, correct/test offline before live use.",
+      "If prelive proof is clean, authorize ONE exact bounded candidate Foundation install/run as seq41 using already-proven transport/artifact lineage; seq42 exact Release07 is recovery-only for genuine device/runtime/Foundation failure.",
+      "No broad Packet20/R4 re-exploration; no redundant 28/28 sweep unless the corrected artifact or runtime assumptions actually invalidate seq39 sweep evidence.",
+      "During any required soak/wait, immediately advance field-critical offline Phase2 work: Mission Control/scoring and PWA/reliability first, then Vibe/audio and text/moments."
+    ],
+    "status": "AUTHORIZED__ONE_BOUNDED_FOUNDATION_REQUALIFICATION_AFTER_AUX_POSTFIX_PREFLIGHT",
+    "user_authorization": "User confirmed AUX fault was physical and fixed, and explicitly directed maximum safe overnight progress toward tomorrow's Skins field target.",
+    "recovery_rule": "SEQ42_RELEASE07_ONLY_FOR_GENUINE_DEVICE_RUNTIME_OR_FOUNDATION_FAILURE__NOT_FOR_HOST_ONLY_FAILURE",
+    "live_mutation_limit": 1
   },
-  "live_mutation_authorized": false,
+  "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",
