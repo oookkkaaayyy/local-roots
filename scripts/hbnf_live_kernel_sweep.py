@@ -100,8 +100,9 @@ def validate_adapter(adapter):
         raise ValueError("expected_release_id must be a nonempty string")
     for k in ["snapshot_argv","select_argv","telemetry_argv","restore_argv"]:
         validate_argv(k,adapter[k])
-    if "{effect_id}" not in " ".join(adapter["select_argv"]):
-        raise ValueError("select_argv must contain {effect_id}")
+    selection_command=" ".join(adapter["select_argv"])
+    if "{effect_id}" not in selection_command and "{runtime_kernel_index}" not in selection_command:
+        raise ValueError("select_argv must contain {effect_id} or {runtime_kernel_index}")
     if "{snapshot_file}" not in " ".join(adapter["restore_argv"]):
         raise ValueError("restore_argv must contain {snapshot_file}")
     for k in ["settle_seconds","sample_seconds","sample_interval_seconds"]:

@@ -23,6 +23,10 @@ bad=dict(adapter); bad["select_argv"]=["python3","x.py","select"]
 try: m.validate_adapter(bad); raise AssertionError("missing effect placeholder accepted")
 except ValueError: pass
 
+runtime_index_adapter=dict(adapter)
+runtime_index_adapter["select_argv"]=["python3","x.py","select","--kernel","{runtime_kernel_index}"]
+m.validate_adapter(runtime_index_adapter)
+
 inv=json.loads((ROOT/"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json").read_text())
 m.validate_inventory(inv)
 assert inv["entries"][2]["kernel_name"]=="Parametric_Water"
@@ -63,6 +67,12 @@ foundation.update({
  "overlay_ms_p95":0.1,"aux_prepare_send_ms_p95":6,"unaccounted_ms_p95":4
 })
 m.validate_sample(foundation,"foundation")
+
+foundation_adapter=json.loads((ROOT/"config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json").read_text())
+m.validate_adapter(foundation_adapter)
+assert foundation_adapter["expected_release_id"]=="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1"
+assert "{runtime_kernel_index}" in " ".join(foundation_adapter["select_argv"])
+assert pathlib.Path(foundation_adapter["telemetry_argv"][foundation_adapter["telemetry_argv"].index("--inventory")+1]).is_absolute()
 wrong=dict(sample); wrong["kernel_name"]="RGB_Blobs5"
 try: m.verify_selected(wrong,inv["entries"][2]); raise AssertionError("wrong kernel accepted")
 except RuntimeError: pass

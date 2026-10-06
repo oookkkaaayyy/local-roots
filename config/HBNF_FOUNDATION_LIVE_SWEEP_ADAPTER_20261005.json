@@ -1,0 +1,41 @@
+{
+  "schema": "hbnf-live-sweep-adapter-v1",
+  "snapshot_argv": [
+    "python3",
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_live_adapter.py",
+    "snapshot"
+  ],
+  "select_argv": [
+    "python3",
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_live_adapter.py",
+    "select",
+    "--kernel",
+    "{runtime_kernel_index}"
+  ],
+  "telemetry_argv": [
+    "python3",
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_live_adapter.py",
+    "telemetry",
+    "--inventory",
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"
+  ],
+  "restore_argv": [
+    "python3",
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_live_adapter.py",
+    "restore",
+    "--snapshot-file",
+    "{snapshot_file}"
+  ],
+  "settle_seconds": 5,
+  "sample_seconds": 30,
+  "sample_interval_seconds": 1,
+  "timeout_seconds": 45,
+  "expected_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+  "notes": [
+    "Executed only from the canonical active repository checkout; exact Foundation adapter source from committed branch hbnf-packet20-foundation-metrics-20261005 at b18b162ec4b4f9173b1de892957ff8b834fe2b50.",
+    "Exact inventory path is absolute; runtime-kernel index placeholder maps directly to inventory field runtime_kernel_index_expected while preserving effect ids 220..247.",
+    "One Packet20 snapshot is created before sweep; observer-effect is measured against that same snapshot before runner execution; runner restores and persists POST_RESTORE_STATE before comparing.",
+    "True frame-tail percentiles, minimum-ever heap, largest free block, per-stage timing, Matrix/AUX health, RSSI, uptime, and kernel identity are required by foundation contract.",
+    "Direct-LAN WLED OTA was rehearsed in seq29/30 transaction; exact Release07 recovery BIN is retained locally and SHA-verified."
+  ]
+}

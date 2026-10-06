@@ -37,7 +37,9 @@
       "scope": "complete recovery and continue Cart 2.0 lifecycle autonomously as far as safely possible overnight",
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
-    "blockers": [],
+    "blockers": [
+      "Prelive capsule/proof closure is required before seq31 candidate mutation; exact candidate/recovery identities and device baseline are established."
+    ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "diagnostic_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
@@ -235,8 +237,8 @@
       "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
-    "name": "Packet20 fresh 28-kernel run complete; prepare bounded class-level fix candidate",
-    "next_work": "Fresh bounded Foundation measurement is eligible after prelive capsule, control authorization, and direct-LAN candidate/recovery artifact closure; old 13/28 sweep remains invalid and non-resumable.",
+    "name": "Foundation qualification fresh seq31/32 transaction after host crash",
+    "next_work": "Execute the fresh seq31 direct-LAN install, foundation telemetry observer effect and full 28-kernel sweep; freeze baseline-relative thresholds before the >=90-minute state-changing soak; complete feature/reproducibility/rollback gates; recover exact Release07 as seq32 and close mutation.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "performance_findings": {
       "candidate_fix": "FastLED 3.10.4 bounded fixed-point Animartrix backport; R4 achieved a 42 FPS median across 28 kernels, 8.329 ms median kernel time, with 28 improved and 0 regressed. Material gain confirmed; continue Foundation gates.",
@@ -504,11 +506,11 @@
       "source_commit": "b18b162ec4b4f9173b1de892957ff8b834fe2b50",
       "github_run_id": 37376862955,
       "artifact_transfer_commit": "52f2252d680bcb67273929916b5f444d8fb9cda4",
-      "candidate_sequence": 29,
-      "recovery_sequence": 30,
+      "candidate_sequence": 31,
+      "recovery_sequence": 32,
       "profiles_completed_before_enospc": 13,
       "kernel_total": 28,
-      "sweep_status": "INTERRUPTED_INVALID_HOST_ENOSPC",
+      "sweep_status": "OLD_SEQ29_RUN_INVALID__FRESH_SEQ31_RUN_NOT_STARTED",
       "observer_effect": "MEASURED_NO_MATERIAL_EFFECT",
       "restore_verified_observed_pre_recovery": true,
       "soak_status": "NOT_RUN",
@@ -517,7 +519,11 @@
       "evidence_path": "evidence/hbnf-foundation-qualification-20261005/CRASH_RECONCILIATION.json",
       "drive_evidence_file_id": "1T2JQLMq3UOr-anju-eSFnBoqoK35V4cX",
       "post_crash_readonly_evidence_path": "evidence/hbnf-foundation-qualification-20261005/POST_CRASH_READONLY_DEVICE_VERIFICATION.json",
-      "release07_bin_drive_file_id": "12S4GPHMvryTIXKjtXsTyeatmfPzRWiTo"
+      "release07_bin_drive_file_id": "12S4GPHMvryTIXKjtXsTyeatmfPzRWiTo",
+      "size_bytes": 1488768,
+      "post_crash_readonly_drive_file_id": "1zv8xSWawK9sUbX0YOCncWI8GyhGkmpO4",
+      "release07_local_path": "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/artifact/release07.bin",
+      "transaction_authorization": "NEW_BOUNDED_SEQ31_32_FOUNDATION_QUALIFICATION__AUTHORIZED_BY_USER_FOUNDATION_DIRECTIVE"
     }
   },
   "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
@@ -525,15 +531,15 @@
   "installed_release_role": "BASELINE_RECOVERY_VERIFIED__SEQ30__POST_CRASH_RUNTIME_IDENTITY_VERIFIED",
   "lifecycle_state": "FIX_CANDIDATE",
   "live_mutation_authorization": {
-    "candidate_sha256": "3e11aa102309b5f871ea8ada339c90d0c1c9dfe1451a5c4f76958dba92a1156c",
-    "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4",
-    "expiry": "Closed after pre-crash seq30 Release07 recovery; do not reuse.",
+    "candidate_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
+    "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+    "expiry": "CLOSE immediately after seq32 exact Release07 recovery verification, or on any defined stop condition.",
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-    "scope": "CLOSED: seq29 candidate install and partial, invalid 13/28 Foundation sweep stopped on host ENOSPC; exact seq30 Release07 recovery acknowledged and verified before host restart. No soak; post-restart device identity recheck required before any new mutation.",
-    "status": "CLOSED",
-    "user_authorization": "Explicit R4 execution and continue-to-Foundation directive dated 2026-10-05."
+    "scope": "Fresh seq31 candidate install and Foundation telemetry/observer-effect/full 28-kernel sweep, baseline threshold freeze, coordinated feature acceptance, minimum 90-minute state-changing soak, exact Release07 seq32 recovery. No reuse of seq29/30. Stop on restart/panic/reset, uptime regression, identity mismatch, snapshot/restore mismatch, telemetry contract failure, AUX/DDP failure, or other defined safety stop.",
+    "status": "OPEN",
+    "user_authorization": "Explicit user request to continue Foundation qualification after crash; original directive preauthorizes necessary bounded exact-artifact direct-LAN OTA/recovery, tests, and required evidence updates."
   },
-  "live_mutation_authorized": false,
+  "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
   "phase2_implementation_authorized": false,
   "schema": "hbnf-control-state-v2"
