@@ -115,6 +115,21 @@ def _sampler_worker(argv: list[str], entries: list[dict], outdir: pathlib.Path,
             observed.add(kid)
             if catastrophic_streak >= int(stop["consecutive_samples"]):
                 raise RuntimeError(f"catastrophic Foundation threshold crossed for {catastrophic_streak} consecutive telemetry samples")
+            if count == 3:
+                first_three = path.read_bytes().splitlines(keepends=True)[:3]
+                import hashlib
+                _atomic(outdir / "PARALLEL_LANES_READY.json", {
+                    "schema": "hbnf-foundation-parallel-ready-v1",
+                    "status": "PARALLEL_LANES_READY",
+                    "release_id": expected_release,
+                    "first_clean_soak_samples": 3,
+                    "first_sample_kernel_ids": [json.loads(x)["kernel_id"] for x in first_three],
+                    "restart_count": restart,
+                    "aux_projection_active": bool(sample["aux_projection_active"]),
+                    "sample_sha256": hashlib.sha256(b"".join(first_three)).hexdigest(),
+                    "sample_file": str(path),
+                    "sampler_pid": os.getpid(),
+                    "note": "Independent telemetry sampler is healthy; signal does not authorize device mutation."})
         except Exception as exc:
             if sample is not None and not persisted:
                 _append(path, sample)

@@ -83,9 +83,13 @@ with tempfile.TemporaryDirectory(prefix="hbnf-independent-soak-") as temp:
         select_timeout=26.0, require_kernel_coverage=False)
     samples = [json.loads(x) for x in (out / "FOUNDATION_SOAK.jsonl").read_text().splitlines()]
     selections = [json.loads(x) for x in (out / "FOUNDATION_STATE_CHANGES.jsonl").read_text().splitlines()]
+    ready = json.loads((out / "PARALLEL_LANES_READY.json").read_text())
     gaps = [b["sample_time"] - a["sample_time"] for a, b in zip(samples, samples[1:])]
     assert result["sample_count"] >= 20, result
     assert max(gaps) < 5.0, max(gaps)
     assert any(x["completed_at_monotonic"] - x["started_at_monotonic"] >= 24.0 for x in selections), selections
     assert result["max_gap_seconds"] == max(gaps)
+    assert ready["status"] == "PARALLEL_LANES_READY", ready
+    assert ready["first_clean_soak_samples"] == 3 and ready["sample_sha256"], ready
     print(f"PASS: telemetry remained continuous ({len(samples)} samples; max gap {max(gaps):.3f}s) while selector was blocked 24.114s")
+    print("PASS: parallel-ready signal is emitted only after three valid persisted telemetry samples")
