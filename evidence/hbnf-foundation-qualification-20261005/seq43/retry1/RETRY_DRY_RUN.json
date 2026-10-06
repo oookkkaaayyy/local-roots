@@ -1,0 +1,21 @@
+{
+  "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "duration_seconds": 5400,
+  "firmware_install": "NONE",
+  "prior": {
+    "candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "prior_host_failure": "RuntimeError: continuous Foundation telemetry sampler failed: TimeoutExpired: Command '['python3', '/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_live_adapter.py', 'telemetry', '--inventory', '/private/tmp/hbnf-foundation-crash-recovery-20261005/config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json', '--session-id', '/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq43/live']' timed out after 12.0 seconds",
+    "prior_last_uptime_seconds": 449.0,
+    "prior_sample_count": 74,
+    "snapshot_hash": 940998176,
+    "snapshot_id": 1
+  },
+  "recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+  "reuse_snapshot": true,
+  "schema": "hbnf-seq43-same-install-soak-retry-v1",
+  "sequence_allocation": "NONE",
+  "status": "DRY_RUN_PASS",
+  "telemetry": "five parallel single-shot reads; 4s per-request timeout, 5.5s batch, 7s sampler subprocess limit"
+}
