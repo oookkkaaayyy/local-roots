@@ -393,8 +393,8 @@
       "sweep_status": "FOUNDATION_GATE_FAIL__TAIL_QUANTILE_SATURATED_AT_51_15MS",
       "unexpected_restart": false
     },
-    "foundation_status": "FOUNDATION_UNQUALIFIED__SOAK_NOT_COMPLETED__SEQ43_RETRY_HOST_PRECONDITION_DEFECT__SEQ44_RELEASE07_RECOVERED",
-    "foundation_transaction_stop_reason": "Source-backed reconciliation: before retry1, seq43 candidate was healthy, Packet20 snapshot 1/hash 940998176 was READY, restoreVerified=true and lastCommand restore/accepted=true, but Packet20 diagnostic mode was already disabled by the prior successful restore. Firmware intentionally ends diagnostic mode on restore and rejects a second begin while the same boot-scoped snapshot remains saved. The host retry attempted kernel 0 anyway; firmware correctly rejected it because diagnosticActive=false. The rejected command updated lastCommand to select without clearing restoreVerified. The host restore helper then misclassified the changed command token as loss of renderer restore and invoked seq44. This was a retry-precondition/host-comparator defect, not a measured firmware rendering/runtime gate or a real restore loss. Seq44 is already consumed; exact Release07 recovery and runtime identity PASS. No 90-minute soak completed; Foundation remains unqualified.",
+    "foundation_status": "FOUNDATION_UNQUALIFIED__SEQ45_46_AUTHORIZED__CLEAN_SOAK_TRANSACTION_PENDING",
+    "foundation_transaction_stop_reason": "Seq43 retry failure is source-backed as a host precondition/comparator defect after a completed restore had closed Packet20 diagnostic mode; no firmware gate failure was proven. Seq44 exact Release07 recovery passed. Fresh seq45/46 authority now permits one clean candidate transaction using corrected preconditions and reused valid evidence.",
     "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
     "installed_release_role": "RELEASE07_RUNTIME_IDENTITY_VERIFIED_AFTER_SEQ44_EXACT_RECOVERY",
@@ -1187,10 +1187,13 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "No further seq43 retry or seq45/46 mutation is authorized. Exact Release07 is installed and verified after seq44; preserve the host-precondition false-negative as the final classification.",
-      "Continue offline-safe Cart 2.0 Skins field-readiness staging under current T2/T3 authority. Do not deploy Phase 2 assets or alter hardware while lifecycle gates remain false.",
-      "Foundation remains UNQUALIFIED because the >=90-minute state-changing soak and full T2 closure did not complete; obtain fresh sequence/control authority before another Foundation live transaction.",
-      "Brightness remains deferred for stability."
+      "Fresh-read current authority and exact seq45/46 artifact identities; verify Release07/AUX read-only prelive and exact candidate/recovery SHA+size.",
+      "Install exact candidate once as seq45 using the already-proven Opal-origin local /update path.",
+      "On the fresh seq45 boot, create/verify a fresh Packet20 diagnostic session + fresh boot-scoped snapshot; explicitly prove diagnosticActive=true before the first kernel/state change.",
+      "Start the >=5400s contiguous state-changing soak immediately with the proven decoupled concurrent telemetry sampler; reuse seq39 28/28, observer, baseline/frozen policy and other valid T2 evidence.",
+      "On clean soak completion, perform one restore, audit remaining T2 checks, write the Foundation qualification receipt and advance if every objective T2 gate passes.",
+      "Use seq46 Release07 only for genuine device/runtime/Foundation failure or genuinely lost safety proof; host/precondition faults preserve seq45 and stop without recovery.",
+      "After T2 PASS, reconcile the prepared T3 fast-path packet against then-current authority and continue under the existing post-Foundation conditional preauthorization. Brightness remains deferred until core field stability is secured."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1375,7 +1378,7 @@
         "blocker": "After T2/P2 interface freeze, replay preserved qualified-source real audio evidence and verify adapter cost against the qualified Foundation runtime budget before freezing production formulas/time constants."
       }
     },
-    "live_mutation_limit": 0,
+    "live_mutation_limit": 1,
     "orchestration": {
       "activation_event": "FOUNDATION_SOAK_RUNNING",
       "anti_stall_policy": "config/HBNF_EXECUTION_BUDGET_POLICY.json",
@@ -1405,27 +1408,42 @@
   },
   "lifecycle_state": "FIX_CANDIDATE",
   "live_mutation_authorization": {
-    "candidate_sequence": 43,
-    "recovery_sequence": 44,
-    "status": "CONSUMED__SEQ43_RETRY_ATTEMPTED__SEQ44_RELEASE07_RECOVERY_COMPLETED",
+    "candidate_sequence": 45,
+    "recovery_sequence": 46,
+    "status": "AUTHORIZED__ONE_CLEAN_FOUNDATION_TRANSACTION",
     "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "candidate_size_bytes": 1489008,
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-    "user_authorization": "Current user directive: expedite remaining work as much as safely possible for the 2026-10-06 Skins round; current worker reported seq41/42 consumed and requested newer control authority.",
+    "release07_recovery_size_bytes": 1458624,
+    "user_authorization": "Current coordinator user directive: streamline/help/expedite Foundation after repeated host-harness failures; preserve valid evidence and avoid redundant work. Existing post-Foundation continuation remains conditionally preauthorized by user directive.",
     "scope": [
-      "Checkpoint/commit the already-proven host restore-comparator correction before live mutation.",
-      "Before seq43, replace or harden the soak sampling mechanism so the prior 24.114s host sampling gap cannot recur through the same mechanism; prove the changed host path offline with regression/fixture tests. Prefer a decoupled continuous sampler/state-changer or another materially different bounded mechanism rather than repeating the same serialized Mac-host loop.",
-      "Reuse the exact seq39 28/28 sweep, hash-bound baseline, frozen policy, and exact-artifact observer-effect evidence. Do not repeat the 28-kernel sweep or observer A/B unless an actual artifact/instrumentation invalidator appears.",
-      "Perform one exact seq43 candidate install only after clean prelive proof, then complete the required >=5400s contiguous state-changing Foundation soak and remaining T2 checks.",
-      "If a host-only failure occurs while exact candidate identity, restart continuity, renderer restore and AUX health remain proven, preserve the installed seq43 candidate; do not consume seq44. One in-place soak retry is allowed only after a materially different host-harness fix is proven offline.",
-      "Seq44 exact Release07 recovery is permitted only for genuine device/runtime/Foundation failure or when safety/identity/restore proof becomes unavailable. Capture and persist the OTA HTTP receipt plus post-recovery runtime identity if seq44 is actually used.",
-      "No GitHub Actions or firmware rebuild for host-harness/orchestration defects."
+      "Use the exact already-qualified candidate bytes; no firmware rebuild and no GitHub Actions.",
+      "Fresh read-only Release07 identity/AUX-DDP prelive plus exact candidate/recovery SHA+size verification only; do not repeat prior source archaeology.",
+      "Install exact candidate once as seq45 from the proven Opal-origin local WLED /update path.",
+      "After seq45 boot, require a FRESH Packet20 diagnostic session and fresh boot-scoped snapshot. Before the first state change, explicitly prove diagnosticActive=true, snapshot READY, candidate identity exact, restart_count=0/expected fresh boot continuity, restoreVerified semantics available, and Matrix-origin AUX DDP healthy.",
+      "If the fresh diagnostic-session precondition is not true, STOP BEFORE STATE CHANGE and preserve candidate; do not invoke seq46 for a host/precondition defect.",
+      "Reuse seq39 exact-artifact 28/28 sweep, observer-effect PASS, baseline/frozen policy, common-path evidence, and all still-valid T2 evidence. Do not rerun those unless a real artifact/source/instrumentation invalidator is observed.",
+      "Run one contiguous >=5400s state-changing soak using the offline-proven independent concurrent single-shot telemetry sampler. Keep sampler/state changer decoupled; preserve incremental evidence continuously.",
+      "Do not perform a restore mid-soak. On clean soak completion, perform exactly one renderer restore and verify by source-bound restoreVerified/packet20Same semantics without requiring a stale lastCommand token.",
+      "Host-only telemetry/orchestration failure with exact candidate identity, active session/snapshot or proven final restore, restart continuity and AUX health must preserve seq45 and must not consume seq46.",
+      "Seq46 exact Release07 recovery is permitted only for a genuine device/runtime/Foundation failure or genuinely lost safety/identity/restore proof, with OTA HTTP receipt and post-recovery runtime identity captured.",
+      "No same-boot retry after a successful restore closes diagnostic mode. Any retry before restore is allowed only if diagnosticActive remains true, the same boot-scoped snapshot remains READY, and the failure was host-only; contiguous soak restarts from zero.",
+      "On objective T2 PASS, write the Foundation qualification receipt and advance to FOUNDATION_QUALIFIED under the existing conditional user preauthorization; immediately reconcile the prepared T3 fast-path packet against then-current authority."
     ],
-    "recovery_rule": "SEQ44_RELEASE07_ONLY_FOR_GENUINE_DEVICE_RUNTIME_FOUNDATION_FAILURE_OR_LOST_SAFETY_PROOF__HOST_ONLY_FAILURE_PRESERVES_SEQ43",
+    "recovery_rule": "SEQ46_RELEASE07_ONLY_FOR_GENUINE_DEVICE_RUNTIME_FOUNDATION_FAILURE_OR_GENUINELY_LOST_SAFETY_PROOF__HOST_PRECONDITION_OR_TELEMETRY_FAILURE_PRESERVES_SEQ45",
     "live_mutation_limit": 1,
-    "closure_reason": "Source-backed reconciliation: before retry1, seq43 candidate was healthy, Packet20 snapshot 1/hash 940998176 was READY, restoreVerified=true and lastCommand restore/accepted=true, but Packet20 diagnostic mode was already disabled by the prior successful restore. Firmware intentionally ends diagnostic mode on restore and rejects a second begin while the same boot-scoped snapshot remains saved. The host retry attempted kernel 0 anyway; firmware correctly rejected it because diagnosticActive=false. The rejected command updated lastCommand to select without clearing restoreVerified. The host restore helper then misclassified the changed command token as loss of renderer restore and invoked seq44. This was a retry-precondition/host-comparator defect, not a measured firmware rendering/runtime gate or a real restore loss. Seq44 is already consumed; exact Release07 recovery and runtime identity PASS. No 90-minute soak completed; Foundation remains unqualified."
+    "anti_repetition": [
+      "NO 28_KERNEL_SWEEP_REPEAT",
+      "NO OBSERVER_A_B_REPEAT",
+      "NO FIRMWARE_REBUILD",
+      "NO GITHUB_ACTIONS",
+      "NO SAME_BOOT_RETRY_AFTER_RESTORE",
+      "NO REDUNDANT RELEASE07/CANDIDATE SOURCE_ARCHEOLOGY"
+    ],
+    "target": "Complete the single missing Foundation requirement: a clean >=90-minute state-changing soak plus remaining T2 closure on the already-proven candidate lineage."
   },
-  "live_mutation_authorized": false,
+  "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",
@@ -1507,5 +1525,28 @@
     "tracking_scope": "From execution-system consolidation forward; historical attempts are not retroactively guessed into counters."
   },
   "schema": "hbnf-control-state-v2",
-  "installation_verification_note": "Opal verified exact Release07 BIN input SHA/size before one local OTA attempt; current Matrix /hbnf/build.json reports exact Release07 identity after uptime reset. OTA HTTP response file is empty; direct installed-byte readback unavailable."
+  "installation_verification_note": "Opal verified exact Release07 BIN input SHA/size before one local OTA attempt; current Matrix /hbnf/build.json reports exact Release07 identity after uptime reset. OTA HTTP response file is empty; direct installed-byte readback unavailable.",
+  "previous_live_mutation_authorizations": [
+    {
+      "candidate_sequence": 43,
+      "recovery_sequence": 44,
+      "status": "CONSUMED__SEQ43_RETRY_ATTEMPTED__SEQ44_RELEASE07_RECOVERY_COMPLETED",
+      "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+      "user_authorization": "Current user directive: expedite remaining work as much as safely possible for the 2026-10-06 Skins round; current worker reported seq41/42 consumed and requested newer control authority.",
+      "scope": [
+        "Checkpoint/commit the already-proven host restore-comparator correction before live mutation.",
+        "Before seq43, replace or harden the soak sampling mechanism so the prior 24.114s host sampling gap cannot recur through the same mechanism; prove the changed host path offline with regression/fixture tests. Prefer a decoupled continuous sampler/state-changer or another materially different bounded mechanism rather than repeating the same serialized Mac-host loop.",
+        "Reuse the exact seq39 28/28 sweep, hash-bound baseline, frozen policy, and exact-artifact observer-effect evidence. Do not repeat the 28-kernel sweep or observer A/B unless an actual artifact/instrumentation invalidator appears.",
+        "Perform one exact seq43 candidate install only after clean prelive proof, then complete the required >=5400s contiguous state-changing Foundation soak and remaining T2 checks.",
+        "If a host-only failure occurs while exact candidate identity, restart continuity, renderer restore and AUX health remain proven, preserve the installed seq43 candidate; do not consume seq44. One in-place soak retry is allowed only after a materially different host-harness fix is proven offline.",
+        "Seq44 exact Release07 recovery is permitted only for genuine device/runtime/Foundation failure or when safety/identity/restore proof becomes unavailable. Capture and persist the OTA HTTP receipt plus post-recovery runtime identity if seq44 is actually used.",
+        "No GitHub Actions or firmware rebuild for host-harness/orchestration defects."
+      ],
+      "recovery_rule": "SEQ44_RELEASE07_ONLY_FOR_GENUINE_DEVICE_RUNTIME_FOUNDATION_FAILURE_OR_LOST_SAFETY_PROOF__HOST_ONLY_FAILURE_PRESERVES_SEQ43",
+      "live_mutation_limit": 1,
+      "closure_reason": "Source-backed reconciliation: before retry1, seq43 candidate was healthy, Packet20 snapshot 1/hash 940998176 was READY, restoreVerified=true and lastCommand restore/accepted=true, but Packet20 diagnostic mode was already disabled by the prior successful restore. Firmware intentionally ends diagnostic mode on restore and rejects a second begin while the same boot-scoped snapshot remains saved. The host retry attempted kernel 0 anyway; firmware correctly rejected it because diagnosticActive=false. The rejected command updated lastCommand to select without clearing restoreVerified. The host restore helper then misclassified the changed command token as loss of renderer restore and invoked seq44. This was a retry-precondition/host-comparator defect, not a measured firmware rendering/runtime gate or a real restore loss. Seq44 is already consumed; exact Release07 recovery and runtime identity PASS. No 90-minute soak completed; Foundation remains unqualified."
+    }
+  ]
 }
