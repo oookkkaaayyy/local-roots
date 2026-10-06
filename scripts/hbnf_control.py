@@ -265,7 +265,8 @@ def status(model,state):
       "execution_cursor":state.get("execution_cursor"),
       "inherited_evidence_ids":[x.get("id") for x in state.get("inherited_evidence",[]) if isinstance(x,dict)],
       "parallelism":parallelism_status(model,state),
-      "external_parallel_launch":external_parallel_launch_status(model,state)
+      "external_parallel_launch":external_parallel_launch_status(model,state),
+      "observability":state.get("observability")
     }
 
 def advance(model,state,receipt_path):
