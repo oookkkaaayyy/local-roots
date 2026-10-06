@@ -8,22 +8,33 @@ AUX="http://192.168.77.11"
 EXPECTED="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1"
 MAC="704bca5b345c"
 CACHE=pathlib.Path("/tmp/hbnf-foundation-telemetry-cache.json")
+HTTP_TIMEOUT_SECONDS=10
+POST_TIMEOUT_SECONDS=25
+COMMAND_ACK_TIMEOUT_SECONDS=30
+SNAPSHOT_READY_TIMEOUT_SECONDS=45
+RESTORE_VERIFY_TIMEOUT_SECONDS=90
 
-def get(url, timeout=5):
+def get(url, timeout=HTTP_TIMEOUT_SECONDS):
     req=urllib.request.Request(url,headers={"Accept":"application/json","Cache-Control":"no-store"})
-    with urllib.request.urlopen(req,timeout=timeout) as r:return json.loads(r.read().decode())
+    try:
+        with urllib.request.urlopen(req,timeout=timeout) as r:return json.loads(r.read().decode())
+    except Exception as e:
+        raise RuntimeError(f"GET {url} failed after {timeout}s: {type(e).__name__}: {e}") from e
 
-def post_state(payload, timeout=8):
+def post_state(payload, timeout=POST_TIMEOUT_SECONDS):
     req=urllib.request.Request(MATRIX+"/json/state",data=json.dumps(payload,separators=(",",":")).encode(),headers={"Content-Type":"application/json"},method="POST")
-    with urllib.request.urlopen(req,timeout=timeout) as r:
-        raw=r.read().decode();return json.loads(raw) if raw.strip() else {}
+    try:
+        with urllib.request.urlopen(req,timeout=timeout) as r:
+            raw=r.read().decode();return json.loads(raw) if raw.strip() else {}
+    except Exception as e:
+        raise RuntimeError(f"POST {MATRIX}/json/state failed after {timeout}s: {type(e).__name__}: {e}") from e
 
 def p20_state():
     state=get(MATRIX+"/json/state");return state,state.get("HBNF",{}).get("packet20Diagnostic",{})
 
 def command(op,**kw):
     post_state({"on":True,"HBNF":{"packet20Diagnostic":{"op":op,**kw}}})
-    deadline=time.monotonic()+10;last=None
+    deadline=time.monotonic()+COMMAND_ACK_TIMEOUT_SECONDS;last=None
     while time.monotonic()<deadline:
         _,last=p20_state()
         if last.get("lastCommand")==op:return {"HBNF":{"packet20Diagnostic":last}}
@@ -34,7 +45,7 @@ def enable_tails(enabled):
     state,p20=p20_state(); current=state.get("HBNF",{}).get("foundationTelemetry",{}).get("enabled")
     if current is not enabled:
         post_state({"on":True,"HBNF":{"foundationTelemetry":{"enabled":enabled}}})
-        deadline=time.monotonic()+12
+        deadline=time.monotonic()+COMMAND_ACK_TIMEOUT_SECONDS
         while time.monotonic()<deadline:
             state,p20=p20_state()
             if state.get("HBNF",{}).get("foundationTelemetry",{}).get("enabled") is enabled:return state,p20
@@ -55,7 +66,7 @@ def snapshot(observer_output=None):
         command("begin"); time.sleep(1); state,p20=p20_state()
     if not p20.get("snapshotValid") and p20.get("snapshotState")=="IDLE":
         if not command("snapshot").get("HBNF",{}).get("packet20Diagnostic",{}).get("lastCommandAccepted",False):raise RuntimeError("packet20-snapshot-command-rejected")
-        deadline=time.monotonic()+30
+        deadline=time.monotonic()+SNAPSHOT_READY_TIMEOUT_SECONDS
         while time.monotonic()<deadline:
             state,p20=p20_state()
             if p20.get("snapshotState")=="READY" and p20.get("snapshotValid"):break
@@ -95,7 +106,7 @@ def _restore_snapshot(sid,shash):
     state,p20=p20_state()
     if p20.get("restoreVerified") is not True:
         if not command("restore",snapshotId=int(sid)).get("HBNF",{}).get("packet20Diagnostic",{}).get("lastCommandAccepted",False):raise RuntimeError("packet20-restore-command-rejected")
-        deadline=time.monotonic()+45
+        deadline=time.monotonic()+RESTORE_VERIFY_TIMEOUT_SECONDS
         while time.monotonic()<deadline:
             state,p20=p20_state()
             if p20.get("restoreVerified") is True:break

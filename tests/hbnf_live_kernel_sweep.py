@@ -73,6 +73,14 @@ m.validate_adapter(foundation_adapter)
 assert foundation_adapter["expected_release_id"]=="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1"
 assert "{runtime_kernel_index}" in " ".join(foundation_adapter["select_argv"])
 assert pathlib.Path(foundation_adapter["telemetry_argv"][foundation_adapter["telemetry_argv"].index("--inventory")+1]).is_absolute()
+assert foundation_adapter["timeout_seconds"]==180
+assert foundation_adapter["timeout_seconds"] >= (
+    25  # one state POST
+    + 30  # command acknowledgement polling budget
+    + 90  # renderer restore verification
+    + 10  # final identity/telemetry GET
+    + 25  # runner/adapter unwind margin
+)
 wrong=dict(sample); wrong["kernel_name"]="RGB_Blobs5"
 try: m.verify_selected(wrong,inv["entries"][2]); raise AssertionError("wrong kernel accepted")
 except RuntimeError: pass

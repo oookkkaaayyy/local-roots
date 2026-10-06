@@ -38,7 +38,7 @@
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
     "blockers": [
-      "Seq31 ended after 3/28 profiles when the Matrix /json/state select POST timed out at the adapter 8-second budget; restore POST also timed out. Exact Release07 seq32 recovery PASS. Instrument and repair the host timeout hierarchy, then use a fresh guarded seq33/34 transaction."
+      "User paused before any new live transaction. Seq31/32 are closed; seq33/34 are unallocated. Offline timeout and soak-harness preparation only; no install or soak may begin until the user resumes."
     ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
@@ -237,8 +237,8 @@
       "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
-    "name": "Foundation qualification fresh seq31/32 transaction after host crash",
-    "next_work": "Repair the direct-LAN POST timeout/ack hierarchy offline with URL-specific diagnostics and regression tests; then one fresh bounded seq33/34 complete Foundation run on the already-built exact candidate, if offline gates pass. No build or Actions rerun. Old seq29 and seq31 partial sweeps are non-resumable.",
+    "name": "Foundation offline timeout and soak-harness checkpoint",
+    "next_work": "Offline timeout hierarchy and soak execution plan are checkpointed. Live mutation is closed; seq33/34 are unallocated. Resume only after a new explicit user directive.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "performance_findings": {
       "candidate_fix": "FastLED 3.10.4 bounded fixed-point Animartrix backport; R4 achieved a 42 FPS median across 28 kernels, 8.329 ms median kernel time, with 28 improved and 0 regressed. Material gain confirmed; continue Foundation gates.",
@@ -483,7 +483,7 @@
     ],
     "seq19_diagnostic_incident": "CLOSED_RECOVERED_TO_RELEASE07",
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "SEQ32_RELEASE07_RECOVERED__SEQ31_INVALID_AFTER_JSON_STATE_TIMEOUT",
+    "status": "SEQ32_RELEASE07_VERIFIED__SEQ31_INVALID__LIVE_PAUSED",
     "target_recovery": {
       "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
@@ -508,9 +508,9 @@
       "artifact_transfer_commit": "52f2252d680bcb67273929916b5f444d8fb9cda4",
       "candidate_sequence": 31,
       "recovery_sequence": 32,
-      "profiles_completed_before_enospc": 13,
+      "profiles_completed_before_timeout": 3,
       "kernel_total": 28,
-      "sweep_status": "INTERRUPTED_INVALID_NONRESUMABLE__MATRIX_JSON_STATE_POST_TIMEOUT_AFTER_3_OF_28",
+      "sweep_status": "SEQ31_INVALID_NONRESUMABLE__SEQ32_RECOVERED",
       "observer_effect": "PRIOR_SEQ29_MEASUREMENT_STATUS_DURABLE__NOT_REPEATED",
       "restore_verified_observed_pre_recovery": false,
       "soak_status": "NOT_RUN",
@@ -528,12 +528,16 @@
       "restore_status": "POST_STATE_UNKNOWN__RESTORE_POST_TIMED_OUT__THEN_RELEASE07_RECOVERY_OVERWROTE_DIAGNOSTIC",
       "seq31_failure_evidence_path": "evidence/hbnf-foundation-qualification-20261005/SEQ31_FAILURE_SEQ32_RECOVERY.json",
       "seq32_recovery_evidence_path": "evidence/hbnf-foundation-qualification-20261005/SEQ32_RELEASE07_RECOVERY_VERIFICATION.json",
-      "next_sequences": "33/34 after offline POST timeout hierarchy repair and new guarded capsule",
+      "next_sequences": "UNALLOCATED__USER_PAUSED_BEFORE_SEQ33_34",
       "seq31_failure_drive_file_id": "1DQukszM7Py0vTOczJLlZFNY6qnjhCIgt",
       "seq31_seq32_raw_bundle_drive_file_id": "1Njiqyp-3XCLSyi4gJTqfesPp3ZqDsR8s",
       "seq32_recovery_drive_file_id": "1r6rc6YESHDQRCc9JHw0ZzRo3aIgT2P91",
       "seq31_failure_evidence_sha256": "7394ae011c8b04daf923396bf7b2d4538f97e77a72870cb6dcfc1cf9da9a92c9",
-      "raw_bundle_sha256": "61b225be198af66400eb1940276c0a3b246f7cd4d88bfb4042be70392d90a44b"
+      "raw_bundle_sha256": "61b225be198af66400eb1940276c0a3b246f7cd4d88bfb4042be70392d90a44b",
+      "timeout_repair_commit": "THIS_OFFLINE_CHECKPOINT_COMMIT",
+      "timeout_hierarchy": "HTTP GET 10s; /json/state POST 25s; command ack 30s; snapshot 45s; restore 90s; outer runner 180s",
+      "offline_soak_audit": "scripts/hbnf_foundation_soak_audit.py; JSONL-only, no device I/O; requires >=90 minutes, exact identity, 28-kernel state changes, <=15s sample gaps, no uptime regression/restart change; metrics summarized, thresholds remain a separate frozen-policy gate",
+      "checkpoint_path": "evidence/hbnf-foundation-qualification-20261005/OFFLINE_PAUSE_CHECKPOINT_20261006.json"
     }
   },
   "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
@@ -543,11 +547,11 @@
   "live_mutation_authorization": {
     "candidate_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
     "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
-    "expiry": "Closed after exact Release07 seq32 recovery verified following seq31 timeout; do not reuse.",
+    "expiry": "CLOSED: seq31/32 transaction ended with exact Release07 recovery; user paused before any seq33/34 authorization.",
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-    "scope": "CLOSED: seq31 installed exact metrics candidate, created one snapshot, completed only 3/28 profiles, Matrix control POST and restore POST timed out; exact seq32 Release07 recovery PASS. No soak.",
+    "scope": "CLOSED: seq31 candidate run invalid after control POST timeout; exact Release07 seq32 recovery verified. No seq33/34 allocation, install, snapshot, or soak.",
     "status": "CLOSED",
-    "user_authorization": "Explicit user request to continue Foundation qualification after crash; original directive preauthorizes necessary bounded exact-artifact direct-LAN OTA/recovery, tests, and required evidence updates."
+    "user_authorization": "Existing explicit user directive to continue Foundation qualification autonomously and preauthorization for bounded exact-artifact direct-LAN install/recovery, tests, and evidence updates."
   },
   "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",

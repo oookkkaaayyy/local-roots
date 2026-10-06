@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Pure contract tests for the R4 Foundation live adapter."""
-import contextlib, importlib.util, io, json, pathlib, tempfile
+import contextlib, importlib.util, io, json, pathlib, tempfile, unittest.mock
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location("foundation_adapter",ROOT/"scripts/hbnf_foundation_live_adapter.py")
 m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+real_get=m.get
 
 info={"ip":"192.168.77.10","mac":"70:4b:ca:5b:34:5c","uptime":100,"ws":0,
       "deviceId":"matrix-device","freeheap":90000,"wifi":{"rssi":-45}}
@@ -48,5 +49,17 @@ try:
     m.identity(); raise AssertionError("mismatched runtime release accepted")
 except RuntimeError as exc:
     assert "release-identity-mismatch" in str(exc)
+
+def timeout(*args,**kwargs): raise TimeoutError("timed out")
+m.get=real_get
+with unittest.mock.patch.object(m.urllib.request,"urlopen",side_effect=timeout):
+    try: m.post_state({"HBNF":{}}); raise AssertionError("POST timeout was not surfaced")
+    except RuntimeError as exc:
+        assert "POST http://192.168.77.10/json/state failed after 25s" in str(exc)
+        assert "TimeoutError" in str(exc)
+    try: m.get("http://192.168.77.10/json/state"); raise AssertionError("GET timeout was not surfaced")
+    except RuntimeError as exc:
+        assert "GET http://192.168.77.10/json/state failed after 10s" in str(exc)
+        assert "TimeoutError" in str(exc)
 
 print("PASS: Foundation adapter enforces exact Matrix/runtime identity and emits complete tail/heap/stage telemetry without network access")

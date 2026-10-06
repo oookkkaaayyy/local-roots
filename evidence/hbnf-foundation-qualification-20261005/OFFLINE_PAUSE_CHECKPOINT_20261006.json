@@ -1,0 +1,93 @@
+{
+  "base_branch": "hbnf-cart2-ready-to-implement-staging-20261001",
+  "base_head": "5809b5c17d9f74b9dc688ffe0d995ba6dbba93a3",
+  "captured_at_utc": "2026-10-06T00:52:53Z",
+  "checkpoint_scope": "Offline timeout hierarchy and JSONL soak audit only. No seq33/34 allocation, firmware install, snapshot, or soak execution.",
+  "drive_seq31_32_raw_bundle_id": "1Njiqyp-3XCLSyi4gJTqfesPp3ZqDsR8s",
+  "drive_seq31_failure_evidence_id": "1DQukszM7Py0vTOczJLlZFNY6qnjhCIgt",
+  "last_live_transaction": {
+    "candidate_result": "INVALID_NONRESUMABLE_AFTER_3_OF_28_PROFILES; /json/state select and restore POST timeouts; no restore verification captured.",
+    "candidate_sequence": 31,
+    "candidate_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
+    "recovery_result": "PASS; exact Release07 recovery verified in Drive evidence 1r6rc6YESHDQRCc9JHw0ZzRo3aIgT2P91",
+    "recovery_sequence": 32,
+    "release07_bin_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab"
+  },
+  "last_read_only_device_check": {
+    "aux_api": "RESPONDING",
+    "aux_ddp_live": true,
+    "aux_ip": "192.168.77.11",
+    "aux_mac": "8c:94:df:55:c3:4c",
+    "aux_version": "16.0.1",
+    "matrix_api": "RESPONDING",
+    "matrix_ip": "192.168.77.10",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "matrix_observed_free_heap_bytes": 98860,
+    "matrix_on": true,
+    "matrix_release07_artifact_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "matrix_release_id": "hbnf-matrix-coordinated-v1-20261002-07",
+    "matrix_rssi_dbm": -49,
+    "matrix_runtime_candidate": "hbnf-matrix-coordinated-v1-20261002-07",
+    "observation": "Read-only HTTP GETs to Matrix /json/info, /hbnf/build.json, /json/state and AUX /json/info. No release-state read and no device mutation.",
+    "safe_to_disconnect_for_course_use": "YES; no host tether required for Matrix/AUX operation; Matrix/AUX APIs responding, exact Release07 runtime identity and live DDP observed."
+  },
+  "offline_verification": {
+    "control_state": {
+      "lifecycle": "FIX_CANDIDATE",
+      "live_mutation_authorized": false,
+      "validation_errors": []
+    },
+    "passed": [
+      "Python compile",
+      "tests/hbnf_foundation_live_adapter.py",
+      "tests/hbnf_foundation_soak_audit.py",
+      "tests/hbnf_live_kernel_sweep.py",
+      "tests/hbnf_control.py",
+      "tests/hbnf_guarded_run.py",
+      "scripts/hbnf_architecture_fitness.py",
+      "tests/hbnf_runtime_qualify_static.py",
+      "tests/hbnf_kernel_sweep_report.py",
+      "tests/hbnf_source_tree_identity.py",
+      "tests/hbnf_packet20_http_adapter.py",
+      "tests/hbnf_packet20_build_validate.py",
+      "scripts/platform.py doctor",
+      "scripts/hbnf_control.py status",
+      "git diff --check"
+    ],
+    "seq33_34": "UNALLOCATED",
+    "status": "PASS"
+  },
+  "schema": "hbnf-foundation-offline-pause-checkpoint-v1",
+  "sha256": {
+    "config/HBNF_CONTROL_STATE.json": "02affd4df941670a74db69c65e629d5d39430acbb65817f5a09fb4e3914fe703",
+    "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json": "8ee95b784f032de3c22d619c955548ef09b89010c8628b136d5cd28814229eaa",
+    "scripts/hbnf_foundation_live_adapter.py": "94f586a637a2bb75d7c34881d476e809a37d7bdc1c26d5672b751b3035fdd085",
+    "scripts/hbnf_foundation_soak_audit.py": "f74a6c5c3c6f5a0e49f46f4f590cf69794ff7655a020c66db084b001e350aa63",
+    "tests/hbnf_foundation_live_adapter.py": "4422074584e6e51c534b35477c8d756d8117a3ead8555800111192f8a38238e0",
+    "tests/hbnf_foundation_soak_audit.py": "51edd3b53d1485a470433cd13e38fb9c3f6a2f6e9a01f968215b0a94dcddc131",
+    "tests/hbnf_live_kernel_sweep.py": "3cc4520dc95f4c028a900c22f475fdfeb8ea3dd4bc3fa4257d2b4ef42090a753"
+  },
+  "soak_audit": {
+    "checks": [
+      "minimum 90 minutes",
+      "exact candidate identity",
+      "all 28 inventory kernel IDs observed",
+      "maximum sample gap 15 seconds",
+      "monotonic sample timestamps and uptime",
+      "constant restart count",
+      "complete foundation telemetry fields"
+    ],
+    "mode": "offline JSONL only; no network or device writes",
+    "path": "scripts/hbnf_foundation_soak_audit.py",
+    "performance_thresholds": "NOT EVALUATED; must be frozen before a future soak from measured baseline/candidate evidence."
+  },
+  "timeout_repair": {
+    "command_ack_seconds": 30,
+    "diagnostic_context": "HTTP failures include method, URL, exception type, and configured budget.",
+    "get_seconds": 10,
+    "json_state_post_seconds": 25,
+    "restore_verify_seconds": 90,
+    "runner_seconds": 180,
+    "snapshot_ready_seconds": 45
+  }
+}
