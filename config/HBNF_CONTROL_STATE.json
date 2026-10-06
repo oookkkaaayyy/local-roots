@@ -410,7 +410,8 @@
       "post_recovery_readonly": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ44_POST_RECOVERY_READONLY.json",
       "classification": "SEQ44_RECOVERY_COMPLETED_PASS__TRIGGERED_BY_HOST_FALSE_NEGATIVE_AFTER_RETRY_PRECONDITION_DEFECT__EXACT_RELEASE07_IS_INSTALLED",
       "root_cause_evidence": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ43_RETRY_SESSION_ROOT_CAUSE.json",
-      "root_cause_sha256": "95c9d342b701badf643727cc912ca898c31b11a1454e84728160d5bbd952cd7f"
+      "root_cause_sha256": "95c9d342b701badf643727cc912ca898c31b11a1454e84728160d5bbd952cd7f",
+      "ota_http_status": "HTTP_200_UPDATE_OK"
     },
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
@@ -886,7 +887,7 @@
       "candidate_sequence": 43,
       "recovery_sequence": 44,
       "status": "CONSUMED__SEQ43_ATTEMPT__SEQ44_RELEASE07_RECOVERY_COMPLETED",
-      "closure_reason": "Seq43 initial soak stopped on host timeout with candidate preserved. The one authorized same-install retry then encountered packet20-kernel-select-rejected and packet20-restore-command-identity-mismatch, so the exact snapshot restore contract could not be re-proven; seq44 exact Release07 recovery was correctly consumed. No new live mutation is authorized by this transaction.",
+      "closure_reason": "The seq43 same-install retry precondition was invalid on the existing boot-scoped snapshot: firmware had already closed Packet20 diagnostic mode after the prior verified restore. Kernel0 was correctly rejected; the host comparator then treated the overwritten lastCommand token as loss of restore proof even though restoreVerified remained valid. This caused seq44 to be invoked unnecessarily. Exact Release07 recovery completed and was read-only verified. The seq43/44 authorization pair is consumed and no further live mutation is authorized.",
       "live_mutation_limit": 1,
       "scope": [
         "Perform exactly one seq43 candidate install after clean prelive proof.",
@@ -1117,20 +1118,22 @@
       "artifact_size_bytes": 1458624,
       "manifest_sha256": "7741978130173a84d3f96aa80dd31a4ab8f6657d4810bdf492bc170f653a61b3",
       "signature_sha256": "d197c58e21010f3a1eec09d47e8e5abc452246355a6ad4f36f40c16b93c98be3",
-      "result": "PASS__EXACT_ARTIFACT_REMOTE_HASH_CHECK__WLED_LOCAL_UPDATE__RUNTIME_IDENTITY_VERIFIED",
+      "result": "PASS__EXACT_RELEASE07_REMOTE_HASH_VERIFIED__HTTP_200_UPDATE_OK__RUNTIME_IDENTITY_READONLY_VERIFIED",
       "evidence": {
         "RETRY_RESULT.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/RETRY_RESULT.json",
         "STATE_CHANGER_FAILURE.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/STATE_CHANGER_FAILURE.json",
         "POST_RESTORE_FAILURE.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/POST_RESTORE_FAILURE.json",
         "seq44-opal-copy-receipt.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/seq44-opal-copy-receipt.json",
-        "SEQ44_POST_RECOVERY_READONLY.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ44_POST_RECOVERY_READONLY.json"
+        "SEQ44_POST_RECOVERY_READONLY.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ44_POST_RECOVERY_READONLY.json",
+        "seq44-opal-ota-response.txt": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/seq44-opal-ota-response.txt"
       },
       "evidence_sha256": {
         "RETRY_RESULT.json": "3022489b95d9d1a2c10ce1a17a599da5f8e3262c38cb88170391189da506b785",
         "STATE_CHANGER_FAILURE.json": "b72e60dfe0cf35bee108d66a0c2b4ad7242af098c31f57f29cfd9399f11e8bd7",
         "POST_RESTORE_FAILURE.json": "a3cfbb9bd460ff2023296a788a5f11d4c6d7c42d0044e24c6133d5d47c3e2411",
         "seq44-opal-copy-receipt.json": "d72ed61041b3d6cf44a82487852afebf2f82b51239436f1b1bb7eb278ffa5363",
-        "SEQ44_POST_RECOVERY_READONLY.json": "e666b3739ecba0fef756f6d808b2b2d86f9dcb03f52b5505c4c479a3ae269927"
+        "SEQ44_POST_RECOVERY_READONLY.json": "e666b3739ecba0fef756f6d808b2b2d86f9dcb03f52b5505c4c479a3ae269927",
+        "seq44-opal-ota-response.txt": "d4f42350ad1e3d48fb56b1729e57d85889248b4fe8b65839ca1604c16defa440"
       },
       "post_recovery_identity": {
         "status": "PASS",
@@ -1145,7 +1148,8 @@
       },
       "consumption_classification": "SEQ44_RECOVERY_COMPLETED_PASS__TRIGGERED_BY_HOST_FALSE_NEGATIVE_AFTER_RETRY_PRECONDITION_DEFECT__EXACT_RELEASE07_IS_INSTALLED",
       "root_cause_evidence": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ43_RETRY_SESSION_ROOT_CAUSE.json",
-      "root_cause_sha256": "95c9d342b701badf643727cc912ca898c31b11a1454e84728160d5bbd952cd7f"
+      "root_cause_sha256": "95c9d342b701badf643727cc912ca898c31b11a1454e84728160d5bbd952cd7f",
+      "ota_http_status": "HTTP_200_UPDATE_OK"
     },
     "recovery_history": [
       {
@@ -1158,7 +1162,7 @@
         "signature_sha256": "d197c58e21010f3a1eec09d47e8e5abc452246355a6ad4f36f40c16b93c98be3"
       }
     ],
-    "checkpoint_at_utc": "2026-10-06T17:47:51.563374+00:00"
+    "checkpoint_at_utc": "2026-10-06T17:50:00Z"
   },
   "execution_budget_policy": {
     "authority_commit": "79173fe7318ef30f51487dba8b59b2b4547b86f3",
