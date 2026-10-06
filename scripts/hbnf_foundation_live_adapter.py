@@ -17,29 +17,49 @@ RESTORE_VERIFY_TIMEOUT_SECONDS=90
 def get(url, timeout=HTTP_TIMEOUT_SECONDS):
     req=urllib.request.Request(url,headers={"Accept":"application/json","Cache-Control":"no-store"})
     try:
-        with urllib.request.urlopen(req,timeout=timeout) as r:return json.loads(r.read().decode())
+        with urllib.request.urlopen(req,timeout=timeout) as r:
+            raw=r.read().decode()
+            try:return json.loads(raw)
+            except Exception as e:
+                raise RuntimeError(f"GET {url} returned invalid JSON after {timeout:g}s: {type(e).__name__}: {e}; body_tail={raw[-1000:]!r}") from e
     except Exception as e:
-        raise RuntimeError(f"GET {url} failed after {timeout}s: {type(e).__name__}: {e}") from e
+        if isinstance(e,RuntimeError) and str(e).startswith(f"GET {url} returned invalid JSON"):raise
+        raise RuntimeError(f"GET {url} failed after {timeout:g}s: {type(e).__name__}: {e}") from e
 
 def post_state(payload, timeout=POST_TIMEOUT_SECONDS):
     req=urllib.request.Request(MATRIX+"/json/state",data=json.dumps(payload,separators=(",",":")).encode(),headers={"Content-Type":"application/json"},method="POST")
     try:
         with urllib.request.urlopen(req,timeout=timeout) as r:
-            raw=r.read().decode();return json.loads(raw) if raw.strip() else {}
+            raw=r.read().decode()
+            try:return json.loads(raw) if raw.strip() else {}
+            except Exception as e:
+                raise RuntimeError(f"POST {MATRIX}/json/state returned invalid JSON after {timeout:g}s: {type(e).__name__}: {e}; body_tail={raw[-1000:]!r}") from e
     except Exception as e:
-        raise RuntimeError(f"POST {MATRIX}/json/state failed after {timeout}s: {type(e).__name__}: {e}") from e
+        if isinstance(e,RuntimeError) and str(e).startswith(f"POST {MATRIX}/json/state returned invalid JSON"):raise
+        raise RuntimeError(f"POST {MATRIX}/json/state failed after {timeout:g}s: {type(e).__name__}: {e}") from e
 
-def p20_state():
-    state=get(MATRIX+"/json/state");return state,state.get("HBNF",{}).get("packet20Diagnostic",{})
+def p20_state(deadline=None,stage="packet20-state-read"):
+    timeout=HTTP_TIMEOUT_SECONDS
+    if deadline is not None:
+        remaining=deadline-time.monotonic()
+        if remaining<=0:raise RuntimeError(f"{stage} deadline expired before GET {MATRIX}/json/state")
+        timeout=min(timeout,remaining)
+    state=get(MATRIX+"/json/state",timeout=timeout)
+    return state,state.get("HBNF",{}).get("packet20Diagnostic",{})
+
+def _ack_timeout(stage, budget, last):
+    diag=last if isinstance(last,dict) else {}
+    summary={k:diag.get(k) for k in ("lastCommand","lastCommandAccepted","snapshotState","snapshotId","snapshotHash","restoreVerified")}
+    return RuntimeError(f"{stage} acknowledgement timed out after {budget}s; last_state={json.dumps(summary,sort_keys=True)}")
 
 def command(op,**kw):
     post_state({"on":True,"HBNF":{"packet20Diagnostic":{"op":op,**kw}}})
     deadline=time.monotonic()+COMMAND_ACK_TIMEOUT_SECONDS;last=None
     while time.monotonic()<deadline:
-        _,last=p20_state()
+        _,last=p20_state(deadline,stage=f"command-{op}-ack")
         if last.get("lastCommand")==op:return {"HBNF":{"packet20Diagnostic":last}}
         time.sleep(.1)
-    raise RuntimeError("packet20-command-ack-timeout:"+op)
+    raise _ack_timeout(f"command-{op}",COMMAND_ACK_TIMEOUT_SECONDS,last)
 
 def enable_tails(enabled):
     state,p20=p20_state(); current=state.get("HBNF",{}).get("foundationTelemetry",{}).get("enabled")
@@ -47,10 +67,10 @@ def enable_tails(enabled):
         post_state({"on":True,"HBNF":{"foundationTelemetry":{"enabled":enabled}}})
         deadline=time.monotonic()+COMMAND_ACK_TIMEOUT_SECONDS
         while time.monotonic()<deadline:
-            state,p20=p20_state()
+            state,p20=p20_state(deadline,stage="foundation-telemetry-mode-ack")
             if state.get("HBNF",{}).get("foundationTelemetry",{}).get("enabled") is enabled:return state,p20
             time.sleep(.25)
-        raise RuntimeError("foundation-telemetry-mode-timeout")
+        raise _ack_timeout("foundation-telemetry-mode",COMMAND_ACK_TIMEOUT_SECONDS,p20)
     return state,p20
 
 def identity():
@@ -67,12 +87,18 @@ def snapshot(observer_output=None):
     if not p20.get("snapshotValid") and p20.get("snapshotState")=="IDLE":
         if not command("snapshot").get("HBNF",{}).get("packet20Diagnostic",{}).get("lastCommandAccepted",False):raise RuntimeError("packet20-snapshot-command-rejected")
         deadline=time.monotonic()+SNAPSHOT_READY_TIMEOUT_SECONDS
+        last_state=None;last_p20=p20
         while time.monotonic()<deadline:
-            state,p20=p20_state()
+            state,p20=p20_state(deadline,stage="snapshot-ready")
+            last_state=state;last_p20=p20
             if p20.get("snapshotState")=="READY" and p20.get("snapshotValid"):break
             if p20.get("snapshotState")=="FAILED":raise RuntimeError("packet20-snapshot-failed")
             time.sleep(.25)
-        else:raise RuntimeError("packet20-snapshot-ready-timeout")
+        else:
+            raise RuntimeError(
+                f"packet20-snapshot-ready-timeout after {SNAPSHOT_READY_TIMEOUT_SECONDS}s; "
+                f"last_state={json.dumps({k:last_p20.get(k) for k in ('snapshotState','snapshotValid','snapshotId','snapshotHash')},sort_keys=True)}"
+            )
     if not p20.get("snapshotValid") or p20.get("snapshotState")!="READY":raise RuntimeError("packet20-existing-snapshot-not-ready")
     if new_snapshot and observer_output:
         try:observer_effect(observer_output)
@@ -86,13 +112,13 @@ def observer_effect(output):
     enable_tails(False)
     light=[];deadline=time.monotonic()+30
     while time.monotonic()<deadline:
-        s,_=p20_state();v=s.get("HBNF",{}).get("timing",{}).get("wholeFrameUs")
+        s,_=p20_state(deadline,stage="observer-lightweight-window");v=s.get("HBNF",{}).get("timing",{}).get("wholeFrameUs")
         if v is not None:light.append(float(v)/1000.0)
         time.sleep(1)
     enable_tails(True)
     heavy=[];deadline=time.monotonic()+30
     while time.monotonic()<deadline:
-        s,_=p20_state();v=s.get("HBNF",{}).get("timing",{}).get("wholeFrameUs")
+        s,_=p20_state(deadline,stage="observer-instrumented-window");v=s.get("HBNF",{}).get("timing",{}).get("wholeFrameUs")
         if v is not None:heavy.append(float(v)/1000.0)
         time.sleep(1)
     if len(light)<20 or len(heavy)<20:raise RuntimeError("observer-effect-window-under-sampled")
@@ -107,13 +133,22 @@ def _restore_snapshot(sid,shash):
     if p20.get("restoreVerified") is not True:
         if not command("restore",snapshotId=int(sid)).get("HBNF",{}).get("packet20Diagnostic",{}).get("lastCommandAccepted",False):raise RuntimeError("packet20-restore-command-rejected")
         deadline=time.monotonic()+RESTORE_VERIFY_TIMEOUT_SECONDS
+        last_p20=p20
         while time.monotonic()<deadline:
-            state,p20=p20_state()
+            state,p20=p20_state(deadline,stage="renderer-restore-verification")
+            last_p20=p20
             if p20.get("restoreVerified") is True:break
             if p20.get("snapshotState")=="FAILED":raise RuntimeError("packet20-restore-failed")
             time.sleep(.25)
-        else:raise RuntimeError("packet20-restore-verification-timeout")
+        else:
+            raise RuntimeError(
+                f"packet20-restore-verification-timeout after {RESTORE_VERIFY_TIMEOUT_SECONDS}s; "
+                f"last_state={json.dumps({k:last_p20.get(k) for k in ('lastCommand','lastCommandAccepted','snapshotState','snapshotId','snapshotHash','restoreVerified')},sort_keys=True)}"
+            )
+    if int(p20.get("snapshotId",-1))!=int(sid):raise RuntimeError("packet20-snapshot-id-mismatch")
     if int(p20.get("snapshotHash",-1))!=int(shash):raise RuntimeError("packet20-snapshot-hash-mismatch")
+    if p20.get("lastCommand")!="restore":raise RuntimeError("packet20-restore-command-identity-mismatch")
+    if p20.get("lastCommandAccepted") is not True:raise RuntimeError("packet20-restore-command-not-accepted")
     return {"restoreVerified":True,"snapshotId":int(sid),"snapshotHash":int(shash),"packet20Same":True}
 
 def select(kernel):
@@ -123,7 +158,7 @@ def telemetry(inventory):
     info,build=identity(); state,p20=enable_tails(True)
     deadline=time.monotonic()+5
     while state.get("HBNF",{}).get("foundationTelemetry",{}).get("frameMsP99") is None and time.monotonic()<deadline:
-        time.sleep(.1);state,p20=p20_state()
+        time.sleep(.1);state,p20=p20_state(deadline,stage="foundation-tail-readiness")
     h=state["HBNF"]; timing=h["timing"]; ft=h.get("foundationTelemetry",{})
     if not ft.get("enabled") or ft.get("frameMsP99") is None:raise RuntimeError("foundation-frame-tail-contract-missing")
     if ft.get("frameTailOverflow"):raise RuntimeError("foundation-frame-tail-histogram-range-overflow")
@@ -170,4 +205,4 @@ def main():
     elif a.action=="restore":restore(a.snapshot_file)
 if __name__=="__main__":
     try:main()
-    except Exception as e:print(f"foundation adapter error: {e}",file=sys.stderr);sys.exit(2)
+    except Exception as e:print(f"foundation adapter error: {type(e).__name__}: {e}",file=sys.stderr);sys.exit(2)

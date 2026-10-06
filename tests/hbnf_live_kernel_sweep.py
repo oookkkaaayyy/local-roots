@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import importlib.util, json, pathlib, tempfile
+import importlib.util, json, pathlib, tempfile, types, unittest.mock, subprocess
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location("runner",ROOT/"scripts/hbnf_live_kernel_sweep.py")
 m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
@@ -14,6 +14,13 @@ adapter={
  "expected_release_id":"r7"
 }
 m.validate_adapter(adapter)
+try:m.validate_soak_options("foundation",5399,8);raise AssertionError("sub-90-minute soak accepted")
+except ValueError as e:assert "at least 5400" in str(e)
+try:m.validate_soak_options("diagnostic",5400,8);raise AssertionError("diagnostic soak accepted")
+except ValueError as e:assert "requires --contract foundation" in str(e)
+m.validate_soak_options("foundation",5400,8)
+try:m.validate_soak_options("foundation",5400,15);raise AssertionError("unsafe soak interval accepted")
+except ValueError as e:assert "below 15" in str(e)
 
 missing_release=dict(adapter); missing_release["expected_release_id"]=""
 try: m.validate_adapter(missing_release); raise AssertionError("empty expected release accepted")
@@ -26,6 +33,9 @@ except ValueError: pass
 runtime_index_adapter=dict(adapter)
 runtime_index_adapter["select_argv"]=["python3","x.py","select","--kernel","{runtime_kernel_index}"]
 m.validate_adapter(runtime_index_adapter)
+bad_timeout=dict(adapter);bad_timeout["timeout_seconds"]=0
+try:m.validate_adapter(bad_timeout);raise AssertionError("nonpositive timeout accepted")
+except ValueError:pass
 
 inv=json.loads((ROOT/"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json").read_text())
 m.validate_inventory(inv)
@@ -67,20 +77,44 @@ foundation.update({
  "overlay_ms_p95":0.1,"aux_prepare_send_ms_p95":6,"unaccounted_ms_p95":4
 })
 m.validate_sample(foundation,"foundation")
+foundation["sample_time"]=100.0
+uptime,stamp=m.validate_soak_sample(foundation,inv["entries"][2],"r7",0,10,None)
+assert uptime==10 and stamp==100.0
+next_soak=dict(foundation);next_soak.update(sample_time=110.0,uptime_seconds=11)
+assert m.validate_soak_sample(next_soak,inv["entries"][2],"r7",0,10,100.0)==(11.0,110.0)
+for bad_gap in (100.0,116.0):
+    bad_soak=dict(foundation);bad_soak["sample_time"]=bad_gap
+    try:m.validate_soak_sample(bad_soak,inv["entries"][2],"r7",0,10,100.0);raise AssertionError("invalid soak gap accepted")
+    except RuntimeError as e:assert "sample gap invalid" in str(e)
+wrong_soak=dict(foundation);wrong_soak["kernel_id"]=3;wrong_soak["kernel_name"]="RGB_Blobs5"
+try:m.validate_soak_sample(wrong_soak,inv["entries"][2],"r7",0,10,None);raise AssertionError("wrong soak kernel accepted")
+except RuntimeError:pass
+with tempfile.TemporaryDirectory() as td:
+    p=pathlib.Path(td)/"soak.jsonl"
+    m.append_jsonl_durable(p,foundation);m.append_jsonl_durable(p,next_soak)
+    assert len(p.read_text().splitlines())==2
+    assert json.loads(p.read_text().splitlines()[0])["sample_time"]==100.0
 
 foundation_adapter=json.loads((ROOT/"config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json").read_text())
 m.validate_adapter(foundation_adapter)
 assert foundation_adapter["expected_release_id"]=="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1"
 assert "{runtime_kernel_index}" in " ".join(foundation_adapter["select_argv"])
 assert pathlib.Path(foundation_adapter["telemetry_argv"][foundation_adapter["telemetry_argv"].index("--inventory")+1]).is_absolute()
-assert foundation_adapter["timeout_seconds"]==180
-assert foundation_adapter["timeout_seconds"] >= (
-    25  # one state POST
-    + 30  # command acknowledgement polling budget
-    + 90  # renderer restore verification
-    + 10  # final identity/telemetry GET
-    + 25  # runner/adapter unwind margin
+assert foundation_adapter["timeout_seconds"]==240
+snapshot_worst_case=(
+    2*25                         # /json/state POSTs for begin + snapshot
+    + 2*(30+10)                  # ack windows, including one bounded GET overrun each
+    + 4*10                       # identity x2, initial state, state after begin
+    + 45+10                      # snapshot-ready window plus bounded GET overrun
+    + 1                          # begin settle
 )
+restore_worst_case=(
+    10                           # initial packet20 state read
+    + 25+30+10                  # restore POST, ack, bounded GET overrun
+    + 90+10                     # restore verification window + bounded GET overrun
+)
+assert snapshot_worst_case==226 and foundation_adapter["timeout_seconds"]>=snapshot_worst_case+14
+assert restore_worst_case==175 and foundation_adapter["timeout_seconds"]>=restore_worst_case
 wrong=dict(sample); wrong["kernel_name"]="RGB_Blobs5"
 try: m.verify_selected(wrong,inv["entries"][2]); raise AssertionError("wrong kernel accepted")
 except RuntimeError: pass
@@ -101,5 +135,40 @@ with tempfile.TemporaryDirectory() as td:
     assert payload["phase"]=="sample"
     assert payload["sample"]["kernel_name"]=="Parametric_Water"
     assert payload["requested"]["effect_id"]==222
+
+# A restore mismatch must leave both raw observations on disk before raising.
+with tempfile.TemporaryDirectory() as td:
+    out=pathlib.Path(td)
+    try:
+        m.persist_restore_evidence(out,'{"restoreVerified":true}\n',{"effect":221},{"effect":220})
+        raise AssertionError("restore mismatch accepted")
+    except RuntimeError:pass
+    assert (out/"POST_RESTORE_RAW_STATE.json").read_text()=='{"restoreVerified":true}\n'
+    assert json.loads((out/"POST_RESTORE_STATE.json").read_text())=={"effect":221}
+
+# ENOSPC protection fails closed before telemetry/device commands.
+with tempfile.TemporaryDirectory() as td:
+    real_disk_usage=m.shutil.disk_usage
+    m.shutil.disk_usage=lambda _:types.SimpleNamespace(free=m.MIN_FREE_BYTES-1)
+    try:m.require_disk_headroom(td);raise AssertionError("low evidence disk space accepted")
+    except RuntimeError as e:assert "insufficient evidence disk headroom" in str(e)
+    finally:m.shutil.disk_usage=real_disk_usage
+
+# Preallocated emergency evidence space is real and can be released for recovery.
+with tempfile.TemporaryDirectory() as td:
+    reserve=m.create_recovery_reserve(td,size=1024*1024)
+    assert reserve.stat().st_size==1024*1024
+    reserve.unlink()
+    assert not reserve.exists()
+
+# Adapter-process timeout errors retain budgets and partial output for diagnosis.
+with unittest.mock.patch.object(
+    m.subprocess,"run",
+    side_effect=subprocess.TimeoutExpired(["x"],7,output="partial-out",stderr="partial-err")
+):
+    try:m.run_ok(["x"],timeout=7);raise AssertionError("subprocess timeout was not surfaced")
+    except RuntimeError as e:
+        assert "timed out after 7s" in str(e)
+        assert "partial-out" in str(e) and "partial-err" in str(e)
 
 print("PASS: live sweep runner validates adapter/inventory/telemetry, cross-kernel continuity, failure evidence, kernel identity, and exact restore snapshots")

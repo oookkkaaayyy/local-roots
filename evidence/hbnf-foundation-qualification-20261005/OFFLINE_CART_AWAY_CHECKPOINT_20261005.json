@@ -1,0 +1,64 @@
+{
+  "schema": "hbnf-foundation-offline-cart-away-checkpoint-v1",
+  "status": "OFFLINE_WORK_COMPLETE__WAITING_FOR_EXPLICIT_RESUME_AND_CART_RETURN",
+  "checkpoint_base_commit": "c7f097d0df67c35a10693bcca8dd1b71eb61e3f6",
+  "branch": "hbnf-cart2-ready-to-implement-staging-20261001",
+  "lifecycle_state": "FIX_CANDIDATE",
+  "live_mutation_authorized": false,
+  "sequences_33_34": "UNALLOCATED",
+  "device_lan_operations": "NONE_DURING_THIS_OFFLINE_CHECKPOINT",
+  "last_durable_device_verification": {
+    "release": "hbnf-matrix-coordinated-v1-20261002-07",
+    "sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "sequence": 32,
+    "status": "PASS_FROM_DURABLE_SEQ32_RECEIPT; not re-read while cart away"
+  },
+  "candidate_artifact": {
+    "release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+    "path": "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/artifact/firmware.bin",
+    "sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
+    "bytes": 1488768,
+    "source_commit": "b18b162ec4b4f9173b1de892957ff8b834fe2b50",
+    "artifact_transfer_commit": "52f2252d680bcb67273929916b5f444d8fb9cda4",
+    "independent_remote_hash_match": true
+  },
+  "release07_recovery_artifact": {
+    "path": "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/artifact/release07.bin",
+    "sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "bytes": 1458624,
+    "drive_file_id": "12S4GPHMvryTIXKjtXsTyeatmfPzRWiTo"
+  },
+  "offline_changes": [
+    "Reconciled timeout_repair_commit to actual base checkpoint c7f097d0df67c35a10693bcca8dd1b71eb61e3f6 and corrected recorded outer runner timeout to 240 seconds.",
+    "Added deterministic HTTP/JSON/stage timeout diagnostics, bounded polling, restore identity checks, subprocess timeout output, 512 MiB headroom gate, 8 MiB emergency evidence reserve, atomic restore/failure/profile persistence.",
+    "Prepared optional same-boot Foundation 28-kernel sweep plus >=90-minute changing round-robin soak before the single renderer restore. Each sample is fsynced; exact identity/kernel/uptime/restart/gap checks fail closed.",
+    "Added threshold-freeze receipt generation that rejects the current null template and never chooses thresholds.",
+    "Added offline Release07 receipt/local-BIN audit and explicit-file SHA-bound evidence ZIP packager.",
+    "Added work/cart2/27_FOUNDATION_OFFLINE_RESUME_PLAN_20261005.md with exact resume gates and one-snapshot transaction ordering."
+  ],
+  "source_contract_finding": "The seq31-bound source at b18b162 confirms begin rejects while packet20SavedValid remains true; restore retains saved snapshot. Therefore sweep and soak must be integrated before the one restore, not attempted in a second diagnostic session on that boot.",
+  "threshold_gate": "CURRENT POLICY TEMPLATE HAS NULL PERFORMANCE/STOP THRESHOLDS. Freeze tool intentionally refuses to create a receipt until an authoritative populated FROZEN policy and baseline are supplied before soak.",
+  "offline_tests": {
+    "status": "PASS",
+    "commands": [
+      "tests/hbnf_foundation_live_adapter.py",
+      "tests/hbnf_live_kernel_sweep.py",
+      "tests/hbnf_foundation_soak_audit.py",
+      "tests/hbnf_foundation_offline_tools.py",
+      "tests/hbnf_runtime_qualify_static.py",
+      "tests/hbnf_kernel_sweep_report.py",
+      "tests/hbnf_source_tree_identity.py",
+      "tests/hbnf_packet20_http_adapter.py",
+      "tests/hbnf_packet20_build_validate.py",
+      "tests/hbnf_control.py",
+      "tests/hbnf_guarded_run.py",
+      "tests/platform_static.py",
+      "scripts/hbnf_architecture_fitness.py",
+      "scripts/platform.py doctor",
+      "scripts/hbnf_control.py status",
+      "foundation runner 28-kernel/5400-second DRY_RUN"
+    ],
+    "control_state": "FIX_CANDIDATE; model_valid=true; live_mutation_authorized=false; no errors"
+  },
+  "next_action": "After Andrew explicitly resumes and cart returns to trusted LAN, run one guarded read-only Release07/identity/artifact/headroom preflight; allocate a new bounded sequence pair only through the control plane; execute the prepared candidate transaction with one snapshot, 28 kernels, threshold freeze before >=90-minute soak, one restore, then exact Release07 recovery and health verification."
+}

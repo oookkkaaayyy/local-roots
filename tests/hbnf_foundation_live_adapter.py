@@ -6,6 +6,11 @@ ROOT=pathlib.Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location("foundation_adapter",ROOT/"scripts/hbnf_foundation_live_adapter.py")
 m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
 real_get=m.get
+assert m.HTTP_TIMEOUT_SECONDS == 10
+assert m.POST_TIMEOUT_SECONDS == 25
+assert m.COMMAND_ACK_TIMEOUT_SECONDS == 30
+assert m.SNAPSHOT_READY_TIMEOUT_SECONDS == 45
+assert m.RESTORE_VERIFY_TIMEOUT_SECONDS == 90
 
 info={"ip":"192.168.77.10","mac":"70:4b:ca:5b:34:5c","uptime":100,"ws":0,
       "deviceId":"matrix-device","freeheap":90000,"wifi":{"rssi":-45}}
@@ -57,9 +62,22 @@ with unittest.mock.patch.object(m.urllib.request,"urlopen",side_effect=timeout):
     except RuntimeError as exc:
         assert "POST http://192.168.77.10/json/state failed after 25s" in str(exc)
         assert "TimeoutError" in str(exc)
+    try: m.get("http://192.168.77.10/json/info"); raise AssertionError("GET timeout was not surfaced")
+    except RuntimeError as exc:
+        assert "GET http://192.168.77.10/json/info failed after 10s" in str(exc)
     try: m.get("http://192.168.77.10/json/state"); raise AssertionError("GET timeout was not surfaced")
     except RuntimeError as exc:
         assert "GET http://192.168.77.10/json/state failed after 10s" in str(exc)
         assert "TimeoutError" in str(exc)
+
+def invalid_json(*args,**kwargs):
+    class Response:
+        def __enter__(self):return self
+        def __exit__(self,*args):pass
+        def read(self):return b"{not-json"
+    return Response()
+with unittest.mock.patch.object(m.urllib.request,"urlopen",side_effect=invalid_json):
+    try:m.get("http://192.168.77.10/json/state");raise AssertionError("invalid GET JSON accepted")
+    except RuntimeError as exc:assert "returned invalid JSON" in str(exc) and "body_tail" in str(exc)
 
 print("PASS: Foundation adapter enforces exact Matrix/runtime identity and emits complete tail/heap/stage telemetry without network access")

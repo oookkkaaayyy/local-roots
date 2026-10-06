@@ -238,7 +238,7 @@
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Foundation offline timeout and soak-harness checkpoint",
-    "next_work": "Offline timeout hierarchy and soak execution plan are checkpointed. Live mutation is closed; seq33/34 are unallocated. Resume only after a new explicit user directive.",
+      "next_work": "Offline-only continuation checkpointed in work/cart2/27_FOUNDATION_OFFLINE_RESUME_PLAN_20261005.md: integrated exact 28-kernel sweep plus >=90-minute changing soak inside one snapshot/boot; resume only after Andrew explicitly returns cart and authorizes a new guarded transaction. live_mutation_authorized=false; seq33/34 remain unallocated; no LAN/device operations while away.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "performance_findings": {
       "candidate_fix": "FastLED 3.10.4 bounded fixed-point Animartrix backport; R4 achieved a 42 FPS median across 28 kernels, 8.329 ms median kernel time, with 28 improved and 0 regressed. Material gain confirmed; continue Foundation gates.",
@@ -534,10 +534,19 @@
       "seq32_recovery_drive_file_id": "1r6rc6YESHDQRCc9JHw0ZzRo3aIgT2P91",
       "seq31_failure_evidence_sha256": "7394ae011c8b04daf923396bf7b2d4538f97e77a72870cb6dcfc1cf9da9a92c9",
       "raw_bundle_sha256": "61b225be198af66400eb1940276c0a3b246f7cd4d88bfb4042be70392d90a44b",
-      "timeout_repair_commit": "THIS_OFFLINE_CHECKPOINT_COMMIT",
-      "timeout_hierarchy": "HTTP GET 10s; /json/state POST 25s; command ack 30s; snapshot 45s; restore 90s; outer runner 180s",
+      "timeout_repair_commit": "c7f097d0df67c35a10693bcca8dd1b71eb61e3f6",
+      "timeout_hierarchy": "HTTP GET 10s; /json/state POST 25s; command ack 30s; snapshot 45s; restore 90s; outer runner 240s (226s maximum normal snapshot composition plus 14s margin)",
       "offline_soak_audit": "scripts/hbnf_foundation_soak_audit.py; JSONL-only, no device I/O; requires >=90 minutes, exact identity, 28-kernel state changes, <=15s sample gaps, no uptime regression/restart change; metrics summarized, thresholds remain a separate frozen-policy gate",
-      "checkpoint_path": "evidence/hbnf-foundation-qualification-20261005/OFFLINE_PAUSE_CHECKPOINT_20261006.json"
+      "checkpoint_path": "evidence/hbnf-foundation-qualification-20261005/OFFLINE_PAUSE_CHECKPOINT_20261006.json",
+      "offline_resume_plan": "work/cart2/27_FOUNDATION_OFFLINE_RESUME_PLAN_20261005.md",
+      "offline_integrated_soak_runner": "scripts/hbnf_live_kernel_sweep.py --soak-seconds 5400 --soak-interval-seconds 8; one snapshot and one restore; 28-kernel round-robin; durable JSONL",
+      "offline_work_status": "TIMEOUT_AND_ENOSPC_HARDENING_TESTED__INTEGRATED_STATE_CHANGING_SOAK_PREPARED__THRESHOLD_FREEZE_FAILS_CLOSED__RECOVERY_AND_EVIDENCE_TOOLS_TESTED__NO_DEVICE_IO__NO_LIVE_MUTATION",
+      "offline_tools": [
+        "scripts/hbnf_foundation_soak_audit.py",
+        "scripts/hbnf_foundation_threshold_freeze.py",
+        "scripts/hbnf_foundation_recovery_audit.py",
+        "scripts/hbnf_foundation_evidence_pack.py"
+      ]
     }
   },
   "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
