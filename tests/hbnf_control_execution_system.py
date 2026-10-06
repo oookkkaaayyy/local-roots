@@ -50,6 +50,14 @@ class ExecutionSystemTests(unittest.TestCase):
         self.assertFalse(p["pass"])
         self.assertEqual(len(p["violations"]),4)
 
+    def test_failure_tracking_is_classified_and_nonretroactive(self):
+        state=copy.deepcopy(self.state)
+        p=MOD.record_failure(self.model,state,"HOST_HARNESS","fixture-host-1",True)
+        self.assertEqual(p["invalidates"],["host_harness_result_only"])
+        self.assertEqual(state["process_metrics"]["live_attempt_failures_by_domain"]["HOST_HARNESS"],1)
+        self.assertEqual(state["process_metrics"]["host_process_wasted_live_attempts"],1)
+        self.assertEqual(state["process_metrics"]["device_runtime_failed_live_attempts"],0)
+
     def test_core_acceptance_does_not_require_deferred_guest_scope(self):
         t4=next(t for t in self.model["transitions"] if t["id"]=="T4_PHASE2_INTEGRATION")
         t5=next(t for t in self.model["transitions"] if t["id"]=="T5_RELEASE_ACCEPT")
