@@ -107,6 +107,21 @@ def validate_state(model,state):
             if not isinstance(item.get("proves"),list) or not item.get("proves"): errors.append(str(eid)+": proves missing")
             if not isinstance(item.get("invalidators"),list) or not item.get("invalidators"): errors.append(str(eid)+": invalidators missing")
         if len(ids)!=len(set(ids)): errors.append("duplicate inherited evidence ids")
+    metrics=state.get("process_metrics")
+    domains=set(model.get("execution_system",{}).get("failure_domains",{}))
+    if not isinstance(metrics,dict):
+        errors.append("process_metrics missing")
+    else:
+        counts=metrics.get("live_attempt_failures_by_domain")
+        if not isinstance(counts,dict) or set(counts)!=domains:
+            errors.append("process_metrics domain counters must exactly match failure domains")
+        else:
+            for k,v in counts.items():
+                if not isinstance(v,int) or v<0: errors.append("process_metrics invalid counter "+k)
+        for key in ("host_process_wasted_live_attempts","device_runtime_failed_live_attempts"):
+            if not isinstance(metrics.get(key),int) or metrics.get(key)<0:
+                errors.append("process_metrics invalid "+key)
+        if not isinstance(metrics.get("events"),list): errors.append("process_metrics events missing")
     p=parallelism_status(model,state)
     if p["required"] and not p["pass"]:
         errors.extend(["parallelism: "+x for x in p["violations"]])
@@ -196,6 +211,30 @@ def failure_policy(model,domain):
       "rule":"Invalidate only the affected evidence/lane; do not move unrelated lifecycle work backward."
     }
 
+def record_failure(model,state,domain,reference,live_attempt=False):
+    policy=failure_policy(model,domain)
+    metrics=state.get("process_metrics")
+    if not isinstance(metrics,dict): raise ValueError("process_metrics missing")
+    events=metrics.setdefault("events",[])
+    if any(str(e.get("reference"))==reference for e in events if isinstance(e,dict)):
+        raise ValueError("failure reference already recorded")
+    counts=metrics.setdefault("live_attempt_failures_by_domain",{})
+    counts.setdefault(domain,0)
+    if live_attempt:
+        counts[domain]+=1
+        if domain in {"HOST_HARNESS","RELEASE_DEPLOYMENT"}:
+            metrics["host_process_wasted_live_attempts"]=metrics.get("host_process_wasted_live_attempts",0)+1
+        if domain=="DEVICE_RUNTIME":
+            metrics["device_runtime_failed_live_attempts"]=metrics.get("device_runtime_failed_live_attempts",0)+1
+    events.append({
+      "event_id":len(events)+1,
+      "domain":domain,
+      "reference":reference,
+      "live_attempt":bool(live_attempt),
+      "invalidates":policy["invalidates"]
+    })
+    return policy
+
 def status(model,state):
     errs=validate_state(model,state)
     t=next_transition(model,state) if not errs else None
@@ -242,6 +281,10 @@ def main():
     a=sub.add_parser("advance"); a.add_argument("--receipt",required=True)
     i=sub.add_parser("impact"); i.add_argument("--change-type",required=True)
     fp=sub.add_parser("failure"); fp.add_argument("--domain",required=True)
+    rf=sub.add_parser("record-failure")
+    rf.add_argument("--domain",required=True)
+    rf.add_argument("--reference",required=True)
+    rf.add_argument("--live-attempt",action="store_true")
     args=ap.parse_args()
     model=load(args.model); state=load(args.state)
     if args.cmd=="status":
@@ -253,6 +296,14 @@ def main():
     if args.cmd=="failure":
         if validate_model(model): raise SystemExit("invalid model")
         print(json.dumps(failure_policy(model,args.domain),indent=2,sort_keys=True)); return 0
+    if args.cmd=="record-failure":
+        if validate_model(model): raise SystemExit("invalid model")
+        policy=record_failure(model,state,args.domain,args.reference,args.live_attempt)
+        errs=validate_state(model,state)
+        if errs: raise SystemExit("refusing to save invalid state: "+"; ".join(errs))
+        save(args.state,state)
+        print(json.dumps({"recorded":True,"policy":policy,"process_metrics":state["process_metrics"]},indent=2,sort_keys=True))
+        return 0
     if args.cmd=="advance":
         advance(model,state,args.receipt)
         errs=validate_state(model,state)
