@@ -395,8 +395,8 @@
       "sweep_status": "FOUNDATION_GATE_FAIL__TAIL_QUANTILE_SATURATED_AT_51_15MS",
       "unexpected_restart": false
     },
-    "foundation_status": "FOUNDATION_UNQUALIFIED__SEQ43_HOST_TELEMETRY_TIMEOUT__SAME_INSTALL_RETRY_PENDING",
-    "foundation_transaction_stop_reason": "Seq41 installed the exact candidate and passed the tails-off and sacrificial warm-up windows. The 90-minute soak stopped as invalid after a 24.114-second host sample gap exceeded the 15-second continuity limit (48 samples preserved; no restart or >=1000ms frame observed). Firmware reported restoreVerified=true for snapshot 1/hash 3256860723; exact source proves this equals packet20Same(saved,verify), but the JSON omits packet20Same and the old host comparator falsely rejected it. The host safety path therefore consumed seq42 despite no measured device/Foundation gate failure. Seq42 Release07 input SHA/size was verified on Opal; the OTA response file is empty; current Matrix runtime identity is read-only verified Release07 after uptime reset. Foundation remains unqualified; live mutation is closed.",
+    "foundation_status": "FOUNDATION_UNQUALIFIED__SEQ43_HOST_ONLY_TIMEOUT__OFFLINE_FIX_PASS__SAME_INSTALL_RETRY_READY",
+    "foundation_transaction_stop_reason": "Seq43 initial soak ended after 74 clean samples because the old serialized five-GET host telemetry child exceeded its 12-second process deadline; no post-warm-up >=1000ms frame, unexpected restart, candidate identity loss, renderer restore failure, or AUX DDP loss was observed. Exact snapshot 1/hash 940998176 restoreVerified=true and packet20Same=true. Seq43 remains installed; seq44 is unused. Concurrent single-shot telemetry polling passed offline regression, and a fresh read-only candidate/uptime/snapshot/AUX prelive passed at 2026-10-06T17:22:59.808Z. One authorized same-install retry remains ready; it has not started.",
     "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
     "installed_release_role": "RELEASE07_RUNTIME_IDENTITY_VERIFIED_AFTER_SEQ42__OTA_HTTP_RECEIPT_MISSING",
@@ -845,14 +845,40 @@
       "transaction_result": "evidence/hbnf-foundation-qualification-20261005/seq41/live/TRANSACTION_RESULT.json"
     },
     "execution_cursor": {
-      "current_failure_domain": "NONE__QUALIFICATION_SOAK_ADVANCING",
+      "current_failure_domain": "HOST_FIX_OFFLINE_PASS__FRESH_PRELIVE_PASS__SAME_INSTALL_RETRY_READY",
+      "current_lifecycle_state": "FIX_CANDIDATE",
+      "current_subject": {
+        "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+        "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+      },
+      "current_transition": "T2_FOUNDATION_QUALIFY",
       "exact_next_path": [
-        "Keep the current exact seq43 installation and its independent >=90-minute sampler/state-change transaction running.",
-        "Preserve seq39 28/28 sweep, observer-effect, baseline, and frozen policy without repetition.",
-        "Complete Foundation soak audit and every remaining T2 feature/control/reproducibility/rollback/golden-capsule requirement.",
-        "Only after objectively passing T2, promote Foundation; if T3 prerequisites pass, enter Phase2 and deploy/smoke the exact staged V7.3 owner scoring/PWA package.",
-        "Brightness remains DEFER_FOR_STABILITY for today."
-      ]
+        "Recheck read-only exact seq43 runtime identity, advancing uptime, retained snapshot 1/hash 940998176 and restore proof, and Matrix-origin AUX DDP immediately before guarded retry.",
+        "Run exactly one same-install 90-minute state-changing soak with the offline-proven concurrent single-shot telemetry reader; no re-install, sequence allocation, snapshot retake, or seq39 evidence repetition.",
+        "If a further host-only issue occurs with all device safety proofs intact, preserve seq43 and do not use seq44 or retry again; seq44 is only for genuine device/Foundation failure or lost safety.",
+        "On clean soak completion, audit remaining T2 checks and package evidence; promote Foundation only if every objective T2 gate passes.",
+        "Enter Phase2 and deploy staged V7.3 only if T3 prerequisites pass; brightness stays deferred for Skins."
+      ],
+      "no_repeat": [
+        "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
+        "R4 fixed-point performance trial is closed and materially successful; do not rerun exploratory R1-R4 selection.",
+        "Observer-effect measurement on exact artifact SHA 6285f1...4338 is already PASS; do not rerun unless artifact/instrumentation changes.",
+        "Exact Release07 rollback path is proven; do not re-derive it.",
+        "Host-only failures do not consume a recovery install unless actual device/runtime safety evidence fails or becomes unknown.",
+        "Do not rebuild firmware or use GitHub Actions for a host-harness defect.",
+        "ANTI_STALL V2: the 30-minute clock is time since last measurable forward progress, not attempt duration; healthy advancing work continues.",
+        "ANTI_STALL V2: when stalled, stop only the stalled mechanism at a safe boundary and preserve install/session/snapshot/checkpoint whenever proven safe; no timer-based restart/reinstall/recovery/reboot.",
+        "ANTI_STALL V2: one retry maximum per failure class, only with a materially different mechanism supported by new evidence.",
+        "ANTI_STALL V2: after 60 minutes without lifecycle progress, activate noncontending offline-safe lanes in parallel; do not kill healthy critical-path work.",
+        "ANTI_STALL V2: no firmware rebuild or GitHub Actions for host/transport/harness/telemetry-reader defects unless the artifact itself is invalidated."
+      ],
+      "parallel_ready_during_foundation_soak": [
+        "Mission Control/scoring source reconciliation and host tests",
+        "PWA/cache/versioning implementation and host tests",
+        "AudioFeatures/Vibe source-level implementation preparation that does not mutate live firmware",
+        "VisualMoment/text source-level implementation preparation that does not mutate live firmware"
+      ],
+      "schema": "hbnf-execution-cursor-v1"
     },
     "live_mutation_authorization": {
       "candidate_sequence": 43,
@@ -883,9 +909,12 @@
         "single endpoint 4s timeout localized in 4.008s with partial response hashes",
         "24.114s selector-stall regression: 56 samples, max gap 1.040s",
         "seq43 retry dry run: exact retained candidate/snapshot, no firmware install/new sequence",
-        "Foundation adapter, seq39 failure policy, soak audit, offline tools, control plane, architecture fitness, platform doctor and py_compile all PASS"
+        "Foundation adapter, seq39 failure policy, soak audit, offline tools, control plane, architecture fitness, platform doctor and py_compile all PASS",
+        "Concurrent five-endpoint host telemetry test PASS (1.629s for five 1.6s delays); localized isolated 4s timeout PASS (4.008s) with partial hashes",
+        "Fresh read-only same-install retry prelive PASS: exact seq43 runtime, advancing uptime, retained snapshot/restore, Matrix-origin AUX DDP",
+        "Host fix committed and pushed at 7b8420663e309504accd4f67135f1bf4b4b30349"
       ],
-      "host_sampler_commit": "PENDING_COMMIT",
+      "host_sampler_commit": "7b8420663e309504accd4f67135f1bf4b4b30349",
       "host_sampler_proof": "evidence/hbnf-foundation-qualification-20261005/seq43/offline/HOST_TELEMETRY_PARALLEL_POLL_REGRESSION.json",
       "host_sampler_proof_sha256": "ec46ec70dae0a0c92558723b532e81c9aac1bdc005d936046c40031c8d832710",
       "host_timeout_root_cause": "Five serialized GET operations per sample; the Matrix /json/state helper permits two 10s attempts while the enclosing telemetry subprocess stops at 12s. The serialized endpoint/retry budget was not bounded by the sampler timeout.",
@@ -896,7 +925,7 @@
         "seq41 preserved samples: zero restart, frame max <=53.915ms, p99 <=44.375ms before host gap",
         "source-bound restore comparator correction regression-tested offline"
       ],
-      "reason": "Seq43 initial soak failed only because serial host telemetry reads exceeded the 12s sampler subprocess budget after 74 samples. No frame >=1000ms, restart, identity change, renderer restore failure, or AUX DDP loss was observed. Candidate remains installed.",
+      "reason": "Seq43 first same-install soak stopped after 74 clean samples because the serialized host telemetry child exceeded its 12s deadline. Device gates and restore remained clean; exact candidate stays installed. A materially different concurrent single-shot reader and a fresh read-only prelive pass now support the one authorized same-install retry.",
       "required_new_evidence": [
         "parallel single-shot telemetry reader and bounded timeout/failure localization tests PASS offline",
         "same-install retry dry run binds exact seq43 retained candidate and reused boot-scoped snapshot",
@@ -906,7 +935,9 @@
       "retry_does_not_reinstall": true,
       "retry_limit": 1,
       "schema": "hbnf-foundation-retry-v1",
-      "status": "SEQ43_PARALLEL_TELEMETRY_FIX_OFFLINE_PASS__PRELIVE_PENDING"
+      "status": "SEQ43_HOST_FIX_OFFLINE_PASS__FRESH_PRELIVE_PASS__ONE_SAME_INSTALL_RETRY_READY",
+      "fresh_prelive": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/PRE_RETRY_READONLY.json",
+      "fresh_prelive_sha256": "f54ea732e1f07b9d806cbc3e733e5336aa8d9552d579d68bf2608c100fe9f0c4"
     },
     "post_foundation_continuation": {
       "status": "CONDITIONALLY_PREAUTHORIZED_BY_USER_DIRECTIVE",
@@ -937,10 +968,10 @@
       "dry_run": "evidence/hbnf-foundation-qualification-20261005/seq43/live/DRY_RUN.json",
       "host_failure_readonly_revalidation": "evidence/hbnf-foundation-qualification-20261005/seq43/live/HOST_FAILURE_READONLY_RETAINED_CANDIDATE.json",
       "host_sampler_script": "scripts/hbnf_foundation_continuous_soak.py",
-      "host_timeout_root_cause": "Old sampler child had a 12s outer limit but its telemetry adapter serialized five GETs including a Matrix /json/state helper with two 10s attempts; the individual slow endpoint was not instrumented, while all 74 returned samples were clean.",
-      "implementation_commit": "66753cbee9a0d1e18f7e079f584b8a5915f19f32",
+      "host_timeout_root_cause": "The telemetry adapter serialized five HTTP GET operations under a 12s child-process budget; the slow endpoint was not individually identifiable in the first attempt. The five endpoints are now polled concurrently, single-shot, with 4s request deadlines, 5.5s batch deadline, and 7s enclosing child deadline.",
+      "implementation_commit": "7b8420663e309504accd4f67135f1bf4b4b30349",
       "inherited_evidence": "seq39 28/28 sweep, observer-effect, hash-bound baseline and frozen policy; no repeat",
-      "live_status": "HOST_HARNESS_TIMEOUT__RESTORE_PASS__CANDIDATE_IDENTITY_AND_SAFETY_RETAINED",
+      "live_status": "EXACT_CANDIDATE_AND_SAFETY_RETAINED__HOST_FIX_AND_FRESH_PRELIVE_PASS__RETRY_NOT_STARTED",
       "offline_proof": "evidence/hbnf-foundation-qualification-20261005/seq43/offline/HOST_SAMPLER_REGRESSION.json",
       "recovery_sequence": 44,
       "recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
@@ -955,7 +986,8 @@
         "script": "scripts/hbnf_foundation_seq43_soak_retry.py",
         "snapshot_reuse": "existing seq43 boot-scoped snapshot 1/hash 940998176",
         "status": "OFFLINE_FIX_PASS__FRESH_READONLY_PRELIVE_PASS__GUARDED_RETRY_READY",
-        "telemetry": "parallel five-endpoint one-shot sampler; per-request timeout 4s; batch 5.5s; sampler process timeout 7s"
+        "telemetry": "parallel five-endpoint one-shot sampler; per-request timeout 4s; batch 5.5s; sampler process timeout 7s",
+        "host_sampler_commit": "7b8420663e309504accd4f67135f1bf4b4b30349"
       },
       "simulation": "24.114-second state-change stall; 56 samples; final measured max sample gap 1.023 seconds; parallel-ready signal asserted after three valid persisted samples; no device/network access",
       "soak": {
@@ -977,14 +1009,18 @@
         "selection_timeout_seconds": 30,
         "started_at_unix": 1791305171.0970528,
         "state_changes": "evidence/hbnf-foundation-qualification-20261005/seq43/live/FOUNDATION_STATE_CHANGES.jsonl",
-        "status": "STOPPED_HOST_TELEMETRY_SUBPROCESS_TIMEOUT",
-        "unexpected_restart_observed": false
+        "status": "STOPPED_HOST_TELEMETRY_CHILD_TIMEOUT_AFTER_74_CLEAN_SAMPLES",
+        "unexpected_restart_observed": false,
+        "host_gap_max_seconds": 11.417885459
       },
-      "status": "SEQ43_INSTALLED__INITIAL_SOAK_STOPPED_HOST_TIMEOUT__CANDIDATE_PRESERVED__SAME_INSTALL_RETRY_PENDING",
-      "transaction_script": "scripts/hbnf_foundation_seq43_transaction.py"
+      "status": "SEQ43_RETAINED__HOST_ONLY_TIMEOUT__ONE_SAME_INSTALL_RETRY_READY",
+      "transaction_script": "scripts/hbnf_foundation_seq43_transaction.py",
+      "retry_offline_proof": "evidence/hbnf-foundation-qualification-20261005/seq43/offline/HOST_TELEMETRY_PARALLEL_POLL_REGRESSION.json",
+      "retry_prelive": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/PRE_RETRY_READONLY.json",
+      "last_updated": "2026-10-06T17:28:00Z"
     },
     "external_parallel_launch": {
-      "launch_status": "PARALLEL_READY_SIGNAL_PRESERVED__FIRST_SOAK_HOST_TIMEOUT__OFFLINE_TELEMETRY_FIX_PASS__RETRY_PRELIVE_PENDING",
+      "launch_status": "PARALLEL_READY_SIGNAL_PRESERVED__FIRST_SOAK_HOST_TIMEOUT__OFFLINE_FIX_PASS__FRESH_PRELIVE_PASS__RETRY_READY",
       "signal_evidence": "evidence/hbnf-foundation-qualification-20261005/seq43/live/PARALLEL_LANES_READY.json",
       "signal_sha256": "70e56d737e1687dcc410a8ba07452f783de9649c053ed95f6731fd124909c519"
     }
@@ -1004,7 +1040,7 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "HOST_HARNESS__PARALLEL_TELEMETRY_FIX_OFFLINE_PROVEN__PRELIVE_PENDING",
+    "current_failure_domain": "HOST_FIX_OFFLINE_PASS__FRESH_PRELIVE_PASS__SAME_INSTALL_RETRY_READY",
     "current_lifecycle_state": "FIX_CANDIDATE",
     "current_subject": {
       "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
@@ -1012,11 +1048,11 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Offline parallel telemetry fix and failure policy are regression-tested; host fix proof is at evidence/hbnf-foundation-qualification-20261005/seq43/offline/HOST_TELEMETRY_PARALLEL_POLL_REGRESSION.json.",
-      "Run a fresh read-only safety capture: exact seq43 runtime identity, Matrix MAC, uptime >= last sample, existing boot-scoped snapshot 1/hash 940998176 and restoreVerified=true, AUX MAC and native Matrix-origin DDP.",
-      "If all checks pass, invoke the one guarded 5400s same-install soak retry. Do not reupload seq43, allocate a sequence, retake a boot-scoped snapshot, or repeat seq39 sweep/observer/baseline/frozen policy.",
-      "If only another host/external issue occurs while all candidate identity, restart continuity, exact restore, and AUX proofs pass, preserve seq43 and do not retry again. Use seq44 only for a real device/Foundation failure or lost proof.",
-      "On soak/T2 PASS, promote Foundation. Enter Phase2 and deploy/smoke staged V7.3 only if the scope/interface/lane-plan/acceptance T3 prerequisites objectively pass; brightness remains deferred."
+      "Recheck read-only exact seq43 runtime identity, advancing uptime, retained snapshot 1/hash 940998176 and restore proof, and Matrix-origin AUX DDP immediately before guarded retry.",
+      "Run exactly one same-install 90-minute state-changing soak with the offline-proven concurrent single-shot telemetry reader; no re-install, sequence allocation, snapshot retake, or seq39 evidence repetition.",
+      "If a further host-only issue occurs with all device safety proofs intact, preserve seq43 and do not use seq44 or retry again; seq44 is only for genuine device/Foundation failure or lost safety.",
+      "On clean soak completion, audit remaining T2 checks and package evidence; promote Foundation only if every objective T2 gate passes.",
+      "Enter Phase2 and deploy staged V7.3 only if T3 prerequisites pass; brightness stays deferred for Skins."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
