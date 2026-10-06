@@ -4,7 +4,7 @@
     "remote_execution_for_source_archaeology": false,
     "retry_inherits_authorization": false
   },
-  "created_at": "2026-10-06T07:36:25.525213+00:00",
+  "created_at": "2026-10-06T07:46:40.482920+00:00",
   "expected_terminal_outputs": [
     "diagnostic result or exact stop reason",
     "snapshot/restore result",
@@ -20,28 +20,18 @@
     "branch": "hbnf-cart2-ready-to-implement-staging-20261001",
     "dirty": false,
     "type": "git_commit",
-    "value": "cbd25a3c10d4673dc6093963c943aebce9247d8c"
+    "value": "3e5d968a1a43bffdad293aaaed8be27d5c72dafa"
   },
   "repo_inputs": [
-    {
-      "bytes": 50253,
-      "path": "config/HBNF_CONTROL_STATE.json",
-      "sha256": "995a6e681f158c313f1e40ec1695c6ce6073723f738805fef002f1e0096c2873"
-    },
     {
       "bytes": 12789,
       "path": "AGENTS.md",
       "sha256": "5dbb1d4715e3a4d2646dff405647971f0f2885409c1d30beb1c70627627f21df"
     },
     {
-      "bytes": 8881,
-      "path": "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
-      "sha256": "44f62cf31e5efa57a360117d96d437d6f504fd93704b28a069661b2da64a49f0"
-    },
-    {
-      "bytes": 30844,
-      "path": "scripts/hbnf_live_kernel_sweep.py",
-      "sha256": "f7f62447f07141dc6db7115dc2599b382e144ebaab414cfee3b5d6423f8e4d76"
+      "bytes": 51767,
+      "path": "config/HBNF_CONTROL_STATE.json",
+      "sha256": "37b2a11773ab3ac7748a5a13f951f4b6d8f55a4c1211f614d23d7ee48b982103"
     },
     {
       "bytes": 4098,
@@ -49,9 +39,24 @@
       "sha256": "937d036db17a600198cceda13e2f599384ffaacd17c24965fa9e7db048d77216"
     },
     {
+      "bytes": 2795,
+      "path": "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_SEQ39_20261006.json",
+      "sha256": "6e07917bfacadbc25f3fb582dd10b345b179dc104facca61df075f67854b55b2"
+    },
+    {
       "bytes": 2318,
       "path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006.json",
       "sha256": "320199f5cb73a2c7eba02a0bee05dda06d84d32c835907465981e92dbb395607"
+    },
+    {
+      "bytes": 8881,
+      "path": "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+      "sha256": "44f62cf31e5efa57a360117d96d437d6f504fd93704b28a069661b2da64a49f0"
+    },
+    {
+      "bytes": 63169,
+      "path": "firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp",
+      "sha256": "31126d341bf0a3e54a33d87de0856c5f68e79f20dd05653ae1d5df3270a9bc9d"
     },
     {
       "bytes": 19301,
@@ -62,6 +67,31 @@
       "bytes": 12503,
       "path": "scripts/hbnf_foundation_seq35_transaction.py",
       "sha256": "cefa4fe8dda961e09d364a19c12db436cc2cdb84cf3112e2a88d741e9f982606"
+    },
+    {
+      "bytes": 3533,
+      "path": "scripts/hbnf_foundation_seq39_failure_policy.py",
+      "sha256": "19c7d6549f801aebd0be1f4307fe9724973457715efd28ba680198c1a429b931"
+    },
+    {
+      "bytes": 22092,
+      "path": "scripts/hbnf_foundation_seq39_transaction.py",
+      "sha256": "615a7161afde81d2cafa486907fd615d21a3c11a790d1fac11d5db76f787d975"
+    },
+    {
+      "bytes": 30844,
+      "path": "scripts/hbnf_live_kernel_sweep.py",
+      "sha256": "f7f62447f07141dc6db7115dc2599b382e144ebaab414cfee3b5d6423f8e4d76"
+    },
+    {
+      "bytes": 14121,
+      "path": "tests/hbnf_foundation_live_adapter.py",
+      "sha256": "c22b148e283f8a0ccbb7316bf6c3ec051cd5d28c05b71ee6ae47e3e87c1d2966"
+    },
+    {
+      "bytes": 1746,
+      "path": "tests/hbnf_foundation_seq39_transport_resume.py",
+      "sha256": "79450d184d454a902426a8265cf75902b95fbf8bc9b04692222ad2c385c4453a"
     },
     {
       "bytes": 11727,
@@ -228,7 +258,7 @@
   },
   "system_id": "hbnf-matrix",
   "terminal_recovery": "If exact restore is not proven, execute only the pre-rehearsed registered baseline recovery transaction, verify device and publication identities, preserve evidence, and stop.",
-  "trace_id": "eba51146bc5147bb8e53f30a214adb69",
+  "trace_id": "hbnf-foundation-seq39-40-opal-transport-resume-20261006",
   "user_interaction_policy": {
     "copy_paste_delivery": "one_single_fenced_block_per_action",
     "max_user_actions_per_blocker": 1,

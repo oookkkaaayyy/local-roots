@@ -1,13 +1,13 @@
 {
   "approved_for_mutation": true,
-  "capsule_sha256": "c1cbd00b9d7c5521487e95eb536f2364626a384160a40fc6fed62b0d1c0cfc7d",
+  "capsule_sha256": "27fdc5d03e376d8114999b4a564b6831c72c737e6539cb03472dcb83c20ef8f5",
   "consumer_contract": {
     "identity": "Direct-LAN standard WLED /update with exact local candidate SHA/size, exact runtime release/MAC verification, existing renderer restore, no erase/settings/bootloader/partition changes.",
     "verified": true
   },
   "pre_mutation_state": {
     "cloud": "No Cloudflare/publication mutation. Physical AUX topology/WLED buses unchanged.",
-    "device": "Fresh read-only Matrix/AUX preflight proves exact Release07; Matrix MAC 70:4b:ca:5b:34:5c; AUX DDP live from Matrix. Full response hashes in READONLY_PREFLIGHT.json. Transaction repeats identity/AUX check immediately before candidate OTA.",
+    "device": "Fresh read-only Matrix/AUX preflight proves exact Release07; Matrix MAC 70:4b:ca:5b:34:5c; AUX DDP live from Matrix. Full response hashes in READONLY_PREFLIGHT.json. Transaction repeats identity/AUX check immediately before candidate OTA. After the first aborted Mac-origin transfer, a fresh read-only capture reconfirmed exact Release07, advancing uptime, and healthy AUX DDP.",
     "preflight_evidence": "READONLY_PREFLIGHT.json"
   },
   "recovery_identity": {
@@ -45,7 +45,9 @@
       "evidence": [
         "seq39 transaction --dry-run DRY_RUN_PASS",
         "28-kernel inventory exact and policy frozen",
-        "host-only failure policy PASS; seq40 requires actual failure only"
+        "host-only failure policy PASS; seq40 requires actual failure only",
+        "tests/hbnf_foundation_seq39_transport_resume.py mocked pass for one exact-hash verified Opal-origin /update fallback after the preserved preinstall HTTP100/curl55 failure",
+        "TRANSPORT_FAILURE_RECONCILIATION.json proves the first request left exact Release07 installed; the sole fallback path is separately hash-verified at Opal and does not repeat Mac-origin transport"
       ],
       "status": "PASS"
     }
