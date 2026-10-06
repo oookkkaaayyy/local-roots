@@ -631,7 +631,10 @@
       "recovery_status": "PASS_SEQ38_EXACT_RELEASE07_SHA_VERIFIED",
       "recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq37/SEQ37_FAILURE_RECONCILIATION.json",
-      "status": "COMPLETE__FOUNDATION_REMAINS_UNQUALIFIED"
+      "status": "COMPLETE__FOUNDATION_REMAINS_UNQUALIFIED",
+      "drive_evidence_file_id": "1OgBevrj-0KB8Q_CweRh78Bw28qEhzteJ",
+      "drive_evidence_url": "https://drive.google.com/file/d/1OgBevrj-0KB8Q_CweRh78Bw28qEhzteJ/view?usp=drivesdk",
+      "checkpoint_commit": "ddeb92f782dfa5cfc1d66c0d985c9bc23acbb777"
     }
   },
   "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",

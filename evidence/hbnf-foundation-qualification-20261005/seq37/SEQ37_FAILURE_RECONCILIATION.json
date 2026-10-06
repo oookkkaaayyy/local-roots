@@ -61,5 +61,10 @@
     "seq38-post-recovery-aux_info.json": "6e116680bde4760418b5bf4f56ca299d0d9bcf84e1ff03a29ce64a8338eb68f8",
     "seq38-post-recovery-aux_state.json": "f0104e91873fccadf603e1c13dab399f05882e0dcd29dd220fc958ada773a969",
     "seq38-opal-ota-response.txt": "63ce9419cca2f6e43184f036e6524532d74740db9ccf4ac6c9b1fe3f014e159c"
+  },
+  "durable_evidence": {
+    "drive_file_id": "1OgBevrj-0KB8Q_CweRh78Bw28qEhzteJ",
+    "drive_url": "https://drive.google.com/file/d/1OgBevrj-0KB8Q_CweRh78Bw28qEhzteJ/view?usp=drivesdk",
+    "zip_sha256": "8f6a5dd0cea81a9dc4f420c883e552c2d4678b4c0b36d52f882647648b1ef6f9"
   }
 }
