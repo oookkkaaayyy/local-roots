@@ -767,23 +767,40 @@
     "lanes": {
       "P2_MISSION_CONTROL_SCORING": {
         "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
-        "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START"
+        "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START",
+        "execution_context": "SEPARATE_WORKER_REQUIRED",
+        "launch_owner": "COORDINATOR"
       },
       "P2_VIBE_AUDIO": {
         "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
-        "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START"
+        "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START",
+        "execution_context": "SEPARATE_WORKER_REQUIRED",
+        "launch_owner": "COORDINATOR"
       },
       "P2_TEXT_MOMENTS": {
         "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
-        "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START"
+        "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START",
+        "execution_context": "SEPARATE_WORKER_REQUIRED",
+        "launch_owner": "COORDINATOR"
       },
       "P2_PWA_RELIABILITY": {
         "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
-        "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START"
+        "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START",
+        "execution_context": "SEPARATE_WORKER_REQUIRED",
+        "launch_owner": "COORDINATOR"
       }
     },
     "anti_abandonment": "Chat turnover, worker turnover, new sequence numbers, or convenience may not drop a lane. A ready lane can stop only when DONE, explicitly blocked on a named dependency, or user scope changes.",
-    "live_mutation_limit": 1
+    "live_mutation_limit": 1,
+    "orchestration": {
+      "owner": "COORDINATOR_EXTERNAL_TO_LIVE_WORKER",
+      "live_worker_can_spawn_workers": false,
+      "activation_event": "FOUNDATION_SOAK_RUNNING",
+      "required_live_worker_signal": "PARALLEL_LANES_READY",
+      "launch_mode": "FOUR_SEPARATE_WORKER_CONTEXTS",
+      "launch_status": "WAITING_FOR_FOUNDATION_SOAK",
+      "note": "Do not judge the live Foundation worker for not spawning chats; it is only responsible for signaling readiness and preserving the live lane."
+    }
   },
   "process_metrics": {
     "schema": "hbnf-process-metrics-v1",
