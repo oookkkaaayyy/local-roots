@@ -846,8 +846,8 @@
     "status_sheet_id": "1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko",
     "status_sheet_url": "https://docs.google.com/spreadsheets/d/1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko/edit",
     "sheet_name": "Live Status",
-    "cadence_minutes": 10,
-    "stale_after_minutes": 15,
+    "cadence_minutes": 15,
+    "stale_after_minutes": 25,
     "rows": {
       "FOUNDATION_LIVE": 3,
       "P2_MISSION_CONTROL_SCORING": 4,
@@ -856,6 +856,6 @@
       "P2_PWA_RELIABILITY": 7
     },
     "current_worker": "FOUNDATION_LIVE",
-    "note": "Telemetry only; never operational authority."
+    "note": "Telemetry only; never operational authority. Heartbeats must yield to critical-path work and may be delayed by blocking operations."
   }
 }
