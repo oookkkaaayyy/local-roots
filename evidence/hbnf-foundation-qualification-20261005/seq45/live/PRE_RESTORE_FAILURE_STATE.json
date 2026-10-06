@@ -1,0 +1,17 @@
+{
+  "aux_native_ddp": true,
+  "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "diag": {
+    "enabled": true,
+    "lastCommand": "select",
+    "lastCommandAccepted": true,
+    "restoreVerified": false,
+    "snapshotHash": 584198932,
+    "snapshotId": 1,
+    "snapshotState": "READY",
+    "snapshotValid": true
+  },
+  "kernel": 2,
+  "matrix_mac": "704bca5b345c",
+  "uptime": 1086
+}

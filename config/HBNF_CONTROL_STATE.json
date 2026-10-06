@@ -38,7 +38,7 @@
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
     "blockers": [
-      "Seq45 >=5400-second same-installation state-changing soak is running with decoupled selector and corrected Opal-origin telemetry sampler; first 3 clean samples persisted and PARALLEL_LANES_READY emitted. No restore during soak. Seq46 remains reserved for genuine device/runtime/Foundation failure or lost safety/identity/restore proof."
+      "Seq45 candidate failed frozen baseline-relative frame_max gate for Big_Caleido, Caleido2, SM5. Renderer snapshot 1/hash 584198932 remains valid and seq46 exact Release07 recovery is authorized and in progress."
     ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
@@ -393,11 +393,11 @@
       "sweep_status": "FOUNDATION_GATE_FAIL__TAIL_QUANTILE_SATURATED_AT_51_15MS",
       "unexpected_restart": false
     },
-    "foundation_status": "FOUNDATION_UNQUALIFIED__SEQ45_46_AUTHORIZED__CLEAN_SOAK_TRANSACTION_PENDING",
-    "foundation_transaction_stop_reason": "One Mac-origin telemetry batch failed before soak; exact seq45 identity/diagnostic snapshot/restart continuity/AUX native DDP verified via Opal-origin; corrected Opal telemetry transport passed offline tests and one live read. No seq46.",
-    "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-    "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
-    "installed_release_role": "RELEASE07_RUNTIME_IDENTITY_VERIFIED_AFTER_SEQ44_EXACT_RECOVERY",
+    "foundation_status": "FOUNDATION_UNQUALIFIED__SEQ45_FROZEN_FRAME_MAX_GATE_FAILED",
+    "foundation_transaction_stop_reason": "Observed exact seq45 frame maxima exceeded the frozen per-kernel frame_max_max_ratio 1.5 gate: Big_Caleido 78.036>65.498ms, Caleido2 66.862>59.332ms, SM5 74.356>61.728ms. These exact maxima cannot be removed by later samples; preserved 71 telemetry samples/59 state changes, then stopped before consuming more device time. Seq46 is authorized as genuine Foundation gate recovery.",
+    "installed_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "installed_release_role": "SEQ45_FOUNDATION_METRICS_CANDIDATE_INSTALLED__DIAGNOSTIC_SESSION_ACTIVE__SOAK_RUNNING",
     "last_recovery": {
       "sequence": 44,
       "attempts": 1,
@@ -705,7 +705,7 @@
       "renderer_restoreVerified": true
     },
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "FOUNDATION_UNQUALIFIED__SEQ44_RELEASE07_RECOVERED__LIVE_MUTATION_CLOSED",
+    "status": "SEQ45_FOUNDATION_GATE_FAILED__SEQ46_RECOVERY_IN_PROGRESS",
     "target_recovery": {
       "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
@@ -1162,12 +1162,12 @@
         "signature_sha256": "d197c58e21010f3a1eec09d47e8e5abc452246355a6ad4f36f40c16b93c98be3"
       }
     ],
-    "checkpoint_at_utc": "2026-10-06T18:19:20Z",
+    "checkpoint_at_utc": "2026-10-06T18:19:24Z",
     "foundation_seq45_transaction": {
       "schema": "hbnf-foundation-seq45-transaction-v1",
       "sequence": 45,
       "recovery_sequence": 46,
-      "status": "SOAK_RUNNING__PARALLEL_LANES_READY__NO_RESTORE",
+      "status": "FAIL__FROZEN_BASELINE_FRAME_MAX_GATE__SEQ46_RECOVERY_IN_PROGRESS",
       "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
       "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
       "candidate_bytes": 1489008,
@@ -1191,7 +1191,7 @@
       ],
       "restore_policy": "Do not restore during soak. Perform exactly one renderer restore after a clean 5400s soak.",
       "host_failure_policy": "Preserve seq45 and do not invoke seq46 for host/precondition/telemetry failures while identity, continuity, restore/session and AUX safety remain proven.",
-      "captured_at_utc": "2026-10-06T18:19:20Z",
+      "captured_at_utc": "2026-10-06T18:25:30Z",
       "pre_soak_telemetry_evidence": "evidence/hbnf-foundation-qualification-20261005/seq45/live/foundation-soak/OPAL_ORIGIN_TELEMETRY_PRE_SOAK.json",
       "pre_soak_uptime_seconds": 643,
       "pre_soak_restart_count": 0,
@@ -1217,8 +1217,47 @@
       "soak_state_changer_pid": 43306,
       "soak_start_receipt": "evidence/hbnf-foundation-qualification-20261005/seq45/live/foundation-soak/SOAK_START_RECEIPT.json",
       "parallel_lanes_ready": "evidence/hbnf-foundation-qualification-20261005/seq45/live/foundation-soak/PARALLEL_LANES_READY.json",
-      "soak_samples_at_checkpoint": 10,
-      "soak_state_changes_at_checkpoint": 8
+      "soak_samples_at_checkpoint": 32,
+      "soak_state_changes_at_checkpoint": 27,
+      "soak_health_checkpoint": "evidence/hbnf-foundation-qualification-20261005/seq45/live/foundation-soak/SOAK_HEALTH_CHECK_20261006T181924Z.json",
+      "soak_status": "STOPPED_ON_NONRECOVERABLE_FROZEN_FRAME_MAX_GATE",
+      "soak_sample_count": 71,
+      "soak_state_change_count": 59,
+      "soak_evidence": "evidence/hbnf-foundation-qualification-20261005/seq45/live/foundation-soak/FOUNDATION_SOAK.jsonl",
+      "gate_failure_evidence": "evidence/hbnf-foundation-qualification-20261005/seq45/live/foundation-soak/SEQ45_FOUNDATION_GATE_FAILURE.json",
+      "gate_failure_kernels": [
+        {
+          "kernel_id": 1,
+          "kernel_name": "Big_Caleido",
+          "observed_frame_max_ms": 78.036,
+          "baseline_frame_max_ms": 43.665,
+          "allowed_ratio": 1.5,
+          "allowed_frame_max_ms": 65.4975,
+          "ratio": 1.7871521813809688,
+          "samples_for_kernel": 3
+        },
+        {
+          "kernel_id": 20,
+          "kernel_name": "Caleido2",
+          "observed_frame_max_ms": 66.862,
+          "baseline_frame_max_ms": 39.555,
+          "allowed_ratio": 1.5,
+          "allowed_frame_max_ms": 59.332499999999996,
+          "ratio": 1.6903552016180001,
+          "samples_for_kernel": 3
+        },
+        {
+          "kernel_id": 26,
+          "kernel_name": "SM5",
+          "observed_frame_max_ms": 74.356,
+          "baseline_frame_max_ms": 41.152,
+          "allowed_ratio": 1.5,
+          "allowed_frame_max_ms": 61.728,
+          "ratio": 1.8068623639191288,
+          "samples_for_kernel": 3
+        }
+      ],
+      "recovery_sequence_consumed": false
     }
   },
   "execution_budget_policy": {
@@ -1236,7 +1275,7 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "SEQ45_FOUNDATION_SOAK_RUNNING__PARALLEL_LANES_READY__SEQ46_GENUINE_FAILURE_ONLY",
+    "current_failure_domain": "SEQ45_FROZEN_BASELINE_FRAME_MAX_GATE_FAILED__SEQ46_EXACT_RELEASE07_RECOVERY",
     "current_lifecycle_state": "FIX_CANDIDATE",
     "current_subject": {
       "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
@@ -1244,10 +1283,9 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Keep the seq45 5400-second state-changing soak running without restore; inspect persisted samples and sampler/selector health at safe nonblocking checkpoints.",
-      "On clean completion, restore once and verify restoreVerified=true with packet20Same() semantics.",
-      "Audit all remaining T2 checks; if all objective gates pass, create the T2 receipt and advance to FOUNDATION_QUALIFIED under conditional user preauthorization.",
-      "Then reconcile T3 fast-path; honor its explicit human approval requirement."
+      "Perform exactly one renderer restore using snapshot 1/hash 584198932 and source-bound restore comparator.",
+      "Install exact seq46 Release07 recovery using already-verified Opal-staged bytes; verify runtime identity and health, then close mutation.",
+      "Preserve the failed soak evidence and stop; do not reuse seq45 or allocate a new pair without fresh authority."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1346,7 +1384,7 @@
   ],
   "installed_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
   "installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-  "installed_release_role": "SEQ45_FOUNDATION_METRICS_CANDIDATE_INSTALLED__FRESH_PACKET20_SESSION_AND_SNAPSHOT_READY__FOUNDATION_SOAK_STARTING",
+  "installed_release_role": "SEQ45_FOUNDATION_METRICS_CANDIDATE_INSTALLED__DIAGNOSTIC_SESSION_ACTIVE__SOAK_RUNNING",
   "lane_execution": {
     "activation_rule": "Activate offline-safe core lanes at the earlier of: (a) clean Foundation soak/readiness signal, or (b) 60 minutes without lifecycle progress, provided parallel work is noncontending and cannot invalidate the healthy live critical path. Never restart/interrupt healthy critical-path work merely to satisfy this timer. live_mutation_limit remains 1.",
     "anti_abandonment": "Chat turnover, worker turnover, new sequence numbers, or convenience may not drop a lane. A ready lane can stop only when DONE, explicitly blocked on a named dependency, or user scope changes.",
@@ -1464,7 +1502,7 @@
   "live_mutation_authorization": {
     "candidate_sequence": 45,
     "recovery_sequence": 46,
-    "status": "SEQ45_CANDIDATE_INSTALLED__FOUNDATION_SOAK_RUNNING__PARALLEL_LANES_READY__SEQ46_GENUINE_FAILURE_ONLY",
+    "status": "SEQ45_GENUINE_FOUNDATION_GATE_FAILURE__SEQ46_RECOVERY_IN_PROGRESS",
     "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "candidate_size_bytes": 1489008,
@@ -1501,8 +1539,9 @@
     "candidate_ota_http_status": "HTTP_200_UPDATE_SUCCESSFUL",
     "snapshot_id": 1,
     "snapshot_hash": 584198932,
-    "soak_status": "RUNNING__5400S_REQUIRED__NO_RESTORE_DURING_SOAK",
-    "soak_evidence_directory": "evidence/hbnf-foundation-qualification-20261005/seq45/live/foundation-soak"
+    "soak_status": "FAIL__FROZEN_BASELINE_FRAME_MAX_RELATIVE_GATE",
+    "soak_evidence_directory": "evidence/hbnf-foundation-qualification-20261005/seq45/live/foundation-soak",
+    "gate_failure_evidence": "evidence/hbnf-foundation-qualification-20261005/seq45/live/foundation-soak/SEQ45_FOUNDATION_GATE_FAILURE.json"
   },
   "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
@@ -1610,5 +1649,5 @@
       "closure_reason": "Source-backed reconciliation: before retry1, seq43 candidate was healthy, Packet20 snapshot 1/hash 940998176 was READY, restoreVerified=true and lastCommand restore/accepted=true, but Packet20 diagnostic mode was already disabled by the prior successful restore. Firmware intentionally ends diagnostic mode on restore and rejects a second begin while the same boot-scoped snapshot remains saved. The host retry attempted kernel 0 anyway; firmware correctly rejected it because diagnosticActive=false. The rejected command updated lastCommand to select without clearing restoreVerified. The host restore helper then misclassified the changed command token as loss of renderer restore and invoked seq44. This was a retry-precondition/host-comparator defect, not a measured firmware rendering/runtime gate or a real restore loss. Seq44 is already consumed; exact Release07 recovery and runtime identity PASS. No 90-minute soak completed; Foundation remains unqualified."
     }
   ],
-  "checkpoint_at_utc": "2026-10-06T18:12:52.862784+00:00"
+  "checkpoint_at_utc": "2026-10-06T18:25:30Z"
 }
