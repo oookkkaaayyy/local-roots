@@ -1,0 +1,105 @@
+{
+  "current_device": {
+    "aux_native_ddp_live_from_matrix": true,
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "read_only_evidence": "evidence/hbnf-foundation-qualification-20261005/seq41/SEQ41_SEQ42_POST_RECOVERY_READONLY.json",
+    "release_id": "hbnf-matrix-coordinated-v1-20261002-07"
+  },
+  "decisive_evidence": {
+    "build_provenance": {
+      "bytes": 3103,
+      "path": "evidence/hbnf-foundation-qualification-20261005/seq39/BUILD_PROVENANCE.json",
+      "sha256": "1b51fb13e8a95cc19618a949c422b3735ac2be7204084895d955f0df4d3cbf79"
+    },
+    "foundation_source": {
+      "bytes": 63169,
+      "path": "firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp",
+      "sha256": "31126d341bf0a3e54a33d87de0856c5f68e79f20dd05653ae1d5df3270a9bc9d"
+    },
+    "post_restore": {
+      "bytes": 607,
+      "path": "evidence/hbnf-foundation-qualification-20261005/seq41/live/POST_RESTORE_STATE.json",
+      "sha256": "e5cd98391ea95e8f311995b693ddcce579357d7c44ea0232943f3c78a7ece47b"
+    },
+    "raw_restore": {
+      "bytes": 489,
+      "path": "evidence/hbnf-foundation-qualification-20261005/seq41/live/POST_RESTORE_RAW_STATE.json",
+      "sha256": "750af1ec82387957fb9d73032ee0d409d73f6d11a4dd9e4f0cd8fd24715c34da"
+    },
+    "release07_opal_copy": {
+      "bytes": 151,
+      "path": "evidence/hbnf-foundation-qualification-20261005/seq41/live/seq42-opal-copy-receipt.json",
+      "sha256": "d72ed61041b3d6cf44a82487852afebf2f82b51239436f1b1bb7eb278ffa5363"
+    },
+    "release07_ota_response": {
+      "bytes": 0,
+      "path": "evidence/hbnf-foundation-qualification-20261005/seq41/live/seq42-opal-ota-response.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "release07_readonly": {
+      "bytes": 10663,
+      "path": "evidence/hbnf-foundation-qualification-20261005/seq41/SEQ41_SEQ42_POST_RECOVERY_READONLY.json",
+      "sha256": "7a358435e4112e5f486d43f564c3dfebf235a7065c7f16b545b8187011562ce4"
+    },
+    "restore_failure": {
+      "bytes": 59,
+      "path": "evidence/hbnf-foundation-qualification-20261005/seq41/live/RESTORE_FAILURE.json",
+      "sha256": "112133f3ad4aa5f18a0274b681b8706c53d606fbfdc78cf89e741d5037f7ed17"
+    },
+    "seq41_failure": {
+      "bytes": 166,
+      "path": "evidence/hbnf-foundation-qualification-20261005/seq41/live/SEQ41_FAILURE.json",
+      "sha256": "ff7a83106b125f43e96e6c6b41fd56ec790aadc5385d8f15b36f302824f2bca3"
+    },
+    "soak_jsonl": {
+      "bytes": 62572,
+      "path": "evidence/hbnf-foundation-qualification-20261005/seq41/live/FOUNDATION_SOAK.jsonl",
+      "sha256": "68f54ea22e1f3e5afa018d285e10ca1e6fbeb85b92a20accccdf8024ac5142e1"
+    }
+  },
+  "live_mutation_authorized": false,
+  "offline_correction": "restore_is_proven now accepts the omitted packet20Same JSON field only for this exact source-bound candidate when restoreVerified, artifact/source SHA, and snapshot ID/hash all agree; regression tests cover acceptance and mismatches. No firmware change.",
+  "result": "FOUNDATION_NOT_QUALIFIED__HOST_SOAK_CONTINUITY_FAILURE__RELEASE07_RUNTIME_IDENTITY_VERIFIED",
+  "schema": "hbnf-seq41-seq42-failure-reconciliation-v1",
+  "seq41": {
+    "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "device_gate_observations": {
+      "frame_ms_max_max": 53.915,
+      "frame_ms_p99_max": 44.375,
+      "matrix_origin_aux_wled_ddp_reported_live": true,
+      "restart_count": 0
+    },
+    "failure": "foundation soak sample gap invalid: 24.114s; maximum 15s",
+    "install": "ONE exact candidate install; Opal verified SHA/size; candidate runtime identity was verified",
+    "last_sample_kernel_id": 19,
+    "last_sample_time_seconds": 483.527133666,
+    "renderer_restore": {
+      "firmware_reported_restoreVerified": true,
+      "host_result": "false negative: transaction raw-state comparator required a serialized packet20Same field although firmware does not emit one",
+      "snapshot_hash": 3256860723,
+      "snapshot_id": 1,
+      "source_proof": {
+        "exact_logic": "const bool verified=packet20Same(packet20Saved,packet20Verify); packet20RestoreVerified=verified;",
+        "source_path": "firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp",
+        "source_sha256": "31126d341bf0a3e54a33d87de0856c5f68e79f20dd05653ae1d5df3270a9bc9d"
+      },
+      "wire_packet20Same_field": "omitted from firmware JSON response"
+    },
+    "samples_preserved": 48,
+    "soak": "INVALID_HOST_INTERRUPTED"
+  },
+  "seq41_42_pair_status": "CONSUMED__NO_NEW_SEQUENCE_PAIR_AUTHORIZED",
+  "seq42": {
+    "artifact_input": {
+      "Opal_copy_verified": true,
+      "bytes": 1458624,
+      "sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab"
+    },
+    "authorization": "recovery-only for genuine runtime/device/Foundation failure; host-only failure must preserve candidate when all safety evidence passes",
+    "installed_binary_hash": "not directly read back from device; exact recovery input hash was verified at Opal before its single local OTA request",
+    "ota_http_receipt": "not captured; response file is empty",
+    "post_recovery_runtime": "read-only Matrix build endpoint reports exact Release07 release identity; uptime reset; candidate no longer installed",
+    "reason_taken": "host incorrectly classified omitted packet20Same telemetry as unverified restoration, so the automated safety path sent exact Release07 recovery"
+  }
+}

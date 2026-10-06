@@ -1,0 +1,77 @@
+{
+  "authority": {
+    "branch": "hbnf-cart2-ready-to-implement-staging-20261001",
+    "head": "de74e02bd064e8a92b00c9b18c59430dda10131b",
+    "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
+    "installed_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "lifecycle": "FIX_CANDIDATE",
+    "live_mutation_authorized": false
+  },
+  "aux": {
+    "firmware": "16.0.1",
+    "http_reachable": true,
+    "http_status": 200,
+    "ip": "192.168.77.11",
+    "mac": "8c:94:df:55:c3:4c",
+    "projection_receive": {
+      "hello_packets_sample1": 1045,
+      "hello_packets_sample2": 1049,
+      "peer_age_ms": 4294967295,
+      "peer_known": false,
+      "rx_active": false,
+      "rx_age_ms": 4294967295,
+      "rx_packets_sample1": 0,
+      "rx_packets_sample2": 0,
+      "rx_sequence": 0,
+      "tx_active": false
+    },
+    "rssi_dbm": -46,
+    "state": {
+      "brightness": 255,
+      "effect_failures": 0,
+      "engine": "aux-r3-wow-1d",
+      "on": false,
+      "projection": "fold2-1d-v1",
+      "registered_effects": 28,
+      "release": "hbnf-wow-aux-r3-2026-09-22-v1",
+      "segment_on": true
+    },
+    "uptime_seconds_at_capture": 740,
+    "wled_info": {
+      "estimated_led_power": 142,
+      "fps": 15,
+      "live": true,
+      "live_mode": "DDP",
+      "live_source_ip": "192.168.77.10"
+    }
+  },
+  "captured_at_utc": "2026-10-06T08:39:00Z",
+  "classification": {
+    "capture_limit": "Opal has no tcpdump binary, so on-wire UDP delivery was not directly captured. No further live diagnosis is warranted tonight.",
+    "evidence": "AUX custom projection receiver reports no received packets, no sequence, inactive RX, and unknown peer across two reads while its discovery hello counter increments. Matrix render count advances by 45 over three seconds and its HBNF companion DDP send-stage timing is present. This does not prove the UDP datagram reached the AUX or that the strip output path works.",
+    "physical_state_note": "AUX reports global WLED on=false while its segment is on=true; this explains dark output as the controller currently reports it, but the reason it entered that state and the electrical output path are not established.",
+    "result": "SOFTWARE_LINK_FRESHNESS_FAILURE_PROVEN_AT_AUX_RECEIVER; PHYSICAL_LED_OUTPUT_PATH_NOT_DISPROVEN"
+  },
+  "decision": "Stop live investigation. Continue only offline source/telemetry analysis and Phase 2 lane work. No live mutation authorized.",
+  "matrix": {
+    "companion_ddp_send_stage_us_sample1": 3979,
+    "companion_ddp_send_stage_us_sample2": 3879,
+    "companion_nonzero_pixels_sample1": 20,
+    "companion_nonzero_pixels_sample2": 12,
+    "companion_render_count_sample1": 27058,
+    "companion_render_count_sample2": 27103,
+    "hbnf_transport": "wled-native-ddp-unicast",
+    "http_status_info_state": 200,
+    "ip": "192.168.77.10",
+    "mac": "70:4b:ca:5b:34:5c",
+    "release": "hbnf-matrix-coordinated-v1-20261002-07",
+    "reported_fps_sample1": 13,
+    "reported_fps_sample2": 14,
+    "rssi_dbm": -45,
+    "standard_wled_udp_send_setting": false,
+    "uptime_seconds_sample1": 1622,
+    "uptime_seconds_sample2": 1625
+  },
+  "schema": "hbnf-aux-readonly-classification-v1",
+  "source": "read-only HTTP requests executed from Opal 192.168.77.1 over LAN; no POST, reboot, OTA, sequence allocation, or configuration write"
+}

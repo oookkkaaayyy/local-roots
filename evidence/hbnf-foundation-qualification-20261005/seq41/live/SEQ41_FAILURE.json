@@ -1,0 +1,5 @@
+{
+  "candidate_may_be_preserved": true,
+  "classification": "HOST_OR_EXTERNAL",
+  "error": "RuntimeError: foundation soak sample gap invalid: 24.114s; maximum 15s"
+}

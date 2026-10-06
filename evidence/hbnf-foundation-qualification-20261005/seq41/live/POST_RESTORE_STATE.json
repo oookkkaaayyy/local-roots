@@ -1,0 +1,19 @@
+{
+  "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "packet20Diagnostic": {
+    "enabled": false,
+    "espResetReason": 3,
+    "lastCommand": "restore",
+    "lastCommandAccepted": true,
+    "resetReasonCore0": 12,
+    "resetReasonCore1": 12,
+    "restoreVerified": true,
+    "selectedKernel": 1,
+    "snapshotGeneration": 1,
+    "snapshotHash": 3256860723,
+    "snapshotId": 1,
+    "snapshotState": "READY",
+    "snapshotValid": true
+  },
+  "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+}

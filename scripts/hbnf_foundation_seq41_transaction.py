@@ -148,7 +148,14 @@ def main():
                 restore_value=adapter._restore_snapshot(snapshot["snapshotId"],snapshot["snapshotHash"])
                 raw_state,p20=adapter.p20_state();post_build=adapter.get(adapter.MATRIX+"/hbnf/build.json")
                 raw={"HBNF":{"packet20Diagnostic":p20},"restoreVerified":p20.get("restoreVerified"),"packet20Same":p20.get("packet20Same")}
-                receipt={"snapshot_equal":restore_value.get("packet20Same") is True,"snapshotId":snapshot["snapshotId"],"snapshotHash":snapshot["snapshotHash"]}
+                receipt={"snapshot_equal":restore_value.get("packet20Same") is True,
+                    "packet20Same":restore_value.get("packet20Same"),
+                    "snapshotId":snapshot["snapshotId"],"snapshotHash":snapshot["snapshotHash"],
+                    "packet20_same_contract":{
+                        "schema":"hbnf-packet20-restore-semantic-binding-v1",
+                        "candidate_release":CANDIDATE,"candidate_sha256":CANDIDATE_SHA,
+                        "source_path":"firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp",
+                        "source_sha256":"31126d341bf0a3e54a33d87de0856c5f68e79f20dd05653ae1d5df3270a9bc9d"}}
                 save(out/"POST_RESTORE_RAW_STATE.json",raw);save(out/"POST_RESTORE_STATE.json",{"release_id":post_build.get("release_id"),"candidate":post_build.get("candidate"),"packet20Diagnostic":p20})
                 restored=restore_is_proven(snapshot,raw,receipt)
                 if not restored:raise RuntimeError("packet20-restore-unverified")

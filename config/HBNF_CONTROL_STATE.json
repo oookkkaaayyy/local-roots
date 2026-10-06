@@ -38,8 +38,9 @@
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
     "blockers": [
-      "Seq37 exact candidate identity and health passed; reused observer PASS; tails-off steady-state and sacrificial warmup passed; 27/28 kernels profiled, then firmware tail quantile saturated at the histogram ceiling 51.15 ms while selecting Module_Experiment10. This is a Foundation telemetry gate failure, not a host transport/deadline failure. No >=1000 ms interval or unexpected restart was observed. Renderer restoreVerified=true and packet20Same=true. Exact Release07 recovery seq38 verified PASS. No soak/baseline was started.",
-      "NEW USER OBSERVATION: AUX/underglow froze dim green, ignored UI control, then became fully dark after an AUX-only power cycle. Physical vs software/link cause is unresolved. Treat as a bounded discrimination problem, not as proof of either class."
+      "Seq41 exact candidate installed once and passed its short steady-state/warm-up. 48 soak samples were preserved before a host-side sample gap of 24.114s exceeded the 15s continuity limit. No restart or >=1000ms frame was observed; the >=90-minute Foundation soak did not pass.",
+      "Firmware restore reported restoreVerified=true for snapshot 1/hash 3256860723. The endpoint omits packet20Same; exact candidate source proves restoreVerified is assigned from packet20Same(saved, verify). The host omission false-negative triggered seq42 recovery despite the failure being host-side. Offline source-bound comparator regression is now prepared.",
+      "Seq42 exact Release07 input SHA/size was verified on Opal. Its OTA HTTP response was not captured; subsequent read-only Matrix build identity is exact Release07, Matrix uptime reset, and AUX native DDP reports live from Matrix. Installed bytes were not directly read back. Foundation remains unqualified; no new live transaction is authorized by this checkpoint."
     ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
@@ -235,9 +236,9 @@
       "host_transport_failures": 1,
       "kernel_total": 28,
       "last_host_transport_failure": "Mac curl returned exit 55 / HTTP 100 / broken pipe; read-only post-attempt identity remained exact Release07 with advancing uptime and AUX DDP live. No seq39 install and no seq40 recovery.",
-      "last_progress": "Seq39 completed observer, warm-up and 28/28 sweep; soak stopped at existing AUX projection-age gate; exact seq40 Release07 recovery verified.",
-      "next_sequences": "SEQ39_CANDIDATE__SEQ40_REAL_FAILURE_RECOVERY_ONLY",
-      "next_transaction_status": "SEQ39_FOUNDATION_RUN_COMPLETE__AUX_AGE_GATE_FAILED__SEQ40_RELEASE07_RECOVERED",
+      "last_progress": "Seq41 exact candidate installed; 48 soak samples preserved before a 24.114s host gap; source-bound restore comparator defect proved; seq42 recovery input verified at Opal; current Release07 runtime identity read-only verified.",
+      "next_sequences": "SEQ41/42_CONSUMED__NO_NEXT_PAIR_AUTHORIZED",
+      "next_transaction_status": "SEQ41_HOST_SAMPLE_GAP__SEQ42_RELEASE07_RUNTIME_IDENTITY_VERIFIED__HTTP_RECEIPT_MISSING",
       "observer_effect": "MEASURED_ON_EXACT_SEQ39__29_LIGHTWEIGHT_33_INSTRUMENTED__MEDIAN_DELTA_PLUS_0_2684_PERCENT",
       "observer_effect_detail": {
         "candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
@@ -270,7 +271,7 @@
       "release07_bin_drive_file_id": "12S4GPHMvryTIXKjtXsTyeatmfPzRWiTo",
       "release07_local_path": "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/artifact/release07.bin",
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-      "restore_status": "POST_STATE_UNKNOWN__RESTORE_POST_TIMED_OUT__THEN_RELEASE07_RECOVERY_OVERWROTE_DIAGNOSTIC",
+      "restore_status": "SEQ41_FIRMWARE_RESTOREVERIFIED_TRUE__HOST_JSON_ALIAS_FALSE_NEGATIVE__SEQ42_RECOVERY_FOLLOWED",
       "restore_verified_observed_pre_recovery": false,
       "resume_transport": "One exact-artifact SSH copy to Opal, verify SHA/size there, then one already-proven Opal-origin local Matrix /update; never retry Mac-origin transport.",
       "seq31_failure_drive_file_id": "1DQukszM7Py0vTOczJLlZFNY6qnjhCIgt",
@@ -304,7 +305,7 @@
       },
       "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
       "size_bytes": 1489008,
-      "soak_status": "FAIL__3_CONSECUTIVE_AUX_PROJECTION_AGE_SAMPLES_GT_1000MS",
+      "soak_status": "SEQ41_INVALID_HOST_SAMPLE_GAP__NO_90_MINUTE_PASS",
       "source_commit": "b18b162ec4b4f9173b1de892957ff8b834fe2b50",
       "sweep_status": "PASS__28_OF_28_PROFILES__RENDERER_RESTORE_PASS",
       "timeout_hierarchy": "HTTP GET 10s; /json/state POST 25s; command ack 30s; snapshot 45s; restore 90s; outer runner 240s (226s maximum normal snapshot composition plus 14s margin)",
@@ -319,6 +320,27 @@
         "frame_tail_overflow": false,
         "minimum_free_heap_bytes": 58636,
         "restart_count": 0
+      },
+      "seq41_42_result": {
+        "status": "SEQ41_HOST_SOAK_GAP__SEQ42_RELEASE07_RUNTIME_IDENTITY_VERIFIED__HTTP_RECEIPT_MISSING",
+        "candidate_install": "ONE exact seq41 candidate install; runtime identity verified",
+        "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+        "soak_sample_count": 48,
+        "soak_last_sample_kernel": "Lava1 (kernel 19)",
+        "soak_host_failure": "24.114-second sampler gap exceeded 15-second limit; no 90-minute qualification",
+        "device_gate_observations": "No restart or >=1000ms frame in preserved samples; native Matrix-origin AUX DDP remained live",
+        "renderer_restore": "Firmware restoreVerified=true; snapshot id 1/hash 3256860723; packet20Same omitted from JSON. Exact candidate source binds restoreVerified to packet20Same(saved,verify).",
+        "host_failure_recovery": "Seq42 was triggered by the host comparator false-negative despite host-only sample-gap classification; this violated the recovery-only-for-genuine-device-failure policy.",
+        "recovery_input_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+        "recovery_input_bytes": 1458624,
+        "recovery_opal_copy": "exact SHA/size verified on Opal",
+        "recovery_http_receipt": "MISSING__SSH_RESPONSE_FILE_EMPTY",
+        "post_recovery_runtime_identity": "EXACT_RELEASE07_READONLY_VERIFIED; installed BIN not directly read back",
+        "post_recovery_readonly_evidence": "evidence/hbnf-foundation-qualification-20261005/seq41/SEQ41_SEQ42_POST_RECOVERY_READONLY.json",
+        "reconciliation_evidence": "evidence/hbnf-foundation-qualification-20261005/seq41/SEQ41_SEQ42_HOST_FAILURE_RECONCILIATION.json",
+        "sequence_pair_status": "SEQ41_SEQ42_CONSUMED__NO_NEW_PAIR_AUTHORIZED",
+        "live_mutation_authorized": false,
+        "transaction_result": "evidence/hbnf-foundation-qualification-20261005/seq41/live/TRANSACTION_RESULT.json"
       }
     },
     "foundation_seq33_attempts": [
@@ -371,11 +393,11 @@
       "sweep_status": "FOUNDATION_GATE_FAIL__TAIL_QUANTILE_SATURATED_AT_51_15MS",
       "unexpected_restart": false
     },
-    "foundation_status": "FOUNDATION_UNQUALIFIED__SEQ41_90_MINUTE_STATE_CHANGING_SOAK_IN_PROGRESS",
-    "foundation_transaction_stop_reason": "Seq39 exact candidate installed and identity verified; observer-effect PASS (+0.2684%); sacrificial warm-up PASS; all 28 kernel profiles completed and renderer restore passed. During the same-install state-changing soak, three consecutive samples exceeded the existing catastrophic AUX projection-age threshold (latest age 1,226,968 ms; FPS 38; frame p99 31.125 ms). No post-warm-up >=1000 ms frame interval or restart was observed; candidate and AUX health were true at recovery start. Exact seq40 Release07 recovery completed and post-recovery identity verified.",
-    "installed_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-    "installed_release_role": "FOUNDATION_CANDIDATE_INSTALLED__SEQ41_SOAK_UNDERWAY",
+    "foundation_status": "FOUNDATION_UNQUALIFIED__SEQ41_HOST_SOAK_GAP__SEQ42_RELEASE07_RUNTIME_IDENTITY_VERIFIED__HTTP_RECEIPT_MISSING__LIVE_MUTATION_CLOSED",
+    "foundation_transaction_stop_reason": "Seq41 installed the exact candidate and passed the tails-off and sacrificial warm-up windows. The 90-minute soak stopped as invalid after a 24.114-second host sample gap exceeded the 15-second continuity limit (48 samples preserved; no restart or >=1000ms frame observed). Firmware reported restoreVerified=true for snapshot 1/hash 3256860723; exact source proves this equals packet20Same(saved,verify), but the JSON omits packet20Same and the old host comparator falsely rejected it. The host safety path therefore consumed seq42 despite no measured device/Foundation gate failure. Seq42 Release07 input SHA/size was verified on Opal; the OTA response file is empty; current Matrix runtime identity is read-only verified Release07 after uptime reset. Foundation remains unqualified; live mutation is closed.",
+    "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
+    "installed_release_role": "RELEASE07_RUNTIME_IDENTITY_VERIFIED_AFTER_SEQ42__OTA_HTTP_RECEIPT_MISSING",
     "last_recovery": {
       "attempts": 1,
       "evidence_drive_file_id": "1cKiC-0hmQrDV4n1uxV4HdZPL6nFPzqXy",
@@ -392,7 +414,7 @@
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Foundation offline timeout and soak-harness checkpoint",
-    "next_work": "Resolve seq37 as a bounded telemetry-instrumentation limitation, not a renderer re-diagnosis: preserve all renderer/R4 evidence; widen the existing fixed-size tail histogram range without changing renderer/runtime behavior, persist raw failing telemetry before validation throws, prove telemetry-only diff offline, then run one changed-artifact observer check + full 28-kernel sweep + same-installation >=90-minute soak. No broad profiling or new optimization candidate unless the widened telemetry proves an actual runtime gate failure.",
+    "next_work": "Offline only: commit and preserve seq41/42 evidence, source-bound restore comparator correction and regressions; finish/test the V7.3 owner Skins/PWA package without deploying; continue only source-audit/preparation for Vibe/audio and text/moments; do not allocate a new sequence or mutate devices until newer authority.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "performance_findings": {
       "candidate_fix": "FastLED 3.10.4 bounded fixed-point Animartrix backport; R4 achieved a 42 FPS median across 28 kernels, 8.329 ms median kernel time, with 28 improved and 0 regressed. Material gain confirmed; continue Foundation gates.",
@@ -755,7 +777,7 @@
     },
     "brightness_field_target": {
       "schema": "hbnf-brightness-field-target-v1",
-      "status": "LOCKED_FOR_NEXT_WORKER_DECISION__DO_NOT_INTERRUPT_CURRENT_WORK",
+      "status": "DECISION_DEFER_FOR_STABILITY",
       "target_event": "NEXT_SKINS_ROUND__2026-10-06",
       "observed_problem": "On current build, lowering Matrix brightness also visibly collapses/reduces the displayed animation/image; below roughly 20 the Matrix becomes nearly dark or shows only a very limited animation.",
       "user_field_preference": "Typical night sweet spot is roughly current-slider 10–20; values above ~25 can be excessively bright on-course.",
@@ -764,7 +786,7 @@
         "Prefer greater low-end granularity for night use.",
         "Retain true maximum brightness; do not cap or fake the maximum."
       ],
-      "next_worker_decision": "AFTER_CURRENT_WORKER_RETURN, explicitly decide GO_FOR_TOMORROW or DEFER_FOR_STABILITY based on actual implementation blast radius and Foundation invalidation risk.",
+      "next_worker_decision": "DEFER_FOR_STABILITY",
       "go_if": [
         "Localized late/output-stage brightness mapping or UI-perceptual mapping change.",
         "Offline regression coverage can prove scene structure preservation and full-max reachability.",
@@ -778,7 +800,10 @@
       "priority_if_go": "Implement after the current critical Foundation/field-readiness transaction reaches a safe boundary; then validate/freeze it before tomorrow's field release.",
       "priority_if_defer": "Record as retained Cart 2.0 core product requirement and do not risk tomorrow's field build.",
       "authority": "config/HBNF_CONTROL_MODEL.json execution_system.release_scope.brightness_quality_requirement",
-      "authority_commit": "fd043077b5c4de00ff7bc11c2015d78df2d53378"
+      "authority_commit": "fd043077b5c4de00ff7bc11c2015d78df2d53378",
+      "decision_date": "2026-10-06",
+      "decision_reason": "The exact seq41/42 transaction is consumed, Foundation is not qualified, and the current 0-255 Matrix scale is linear. A perceptual owner mapping is source-local and unit-testable but changes real light/current; no safe physical low-light/max-output confirmation is available before the Skins round. Preserve the stable cart state and revisit after Foundation when a bounded physical check is authorized.",
+      "decision_evidence": "evidence/hbnf-foundation-qualification-20261005/OVERNIGHT_OFFLINE_FIELD_READINESS_20261006.md"
     },
     "aux_telemetry_reconciliation": {
       "status": "OFFLINE_CORRECTION_TESTED__FRESH_PRELIVE_PASS",
@@ -792,7 +817,7 @@
       ]
     },
     "foundation_seq41_resume": {
-      "status": "SOAK_RUNNING__PARALLEL_LANES_READY",
+      "status": "SEQ41_HOST_HARNESS_FAILURE__SEQ42_RELEASE07_RUNTIME_IDENTITY_VERIFIED",
       "candidate_sequence": 41,
       "candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
       "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
@@ -807,8 +832,35 @@
       "first_clean_soak_samples": 3,
       "parallel_ready_evidence": "evidence/hbnf-foundation-qualification-20261005/seq41/live/PARALLEL_LANES_READY.json",
       "soak_evidence": "evidence/hbnf-foundation-qualification-20261005/seq41/live/FOUNDATION_SOAK.jsonl",
-      "renderer_restore_obligation": "OPEN__ONE_SNAPSHOT_ID_1_HASH_3256860723",
-      "recovery_sequence_status": "SEQ42_RESERVED_FOR_GENUINE_DEVICE_RUNTIME_OR_FOUNDATION_FAILURE_ONLY"
+      "renderer_restore_obligation": "CLOSED_BY_SOURCE_BOUND_FIRMWARE_PROOF__restoreVerified=true__snapshot=1/hash=3256860723__seq42 recovery followed",
+      "recovery_sequence_status": "SEQ42_USED__RUNTIME_RELEASE07_VERIFIED__OTA_HTTP_RECEIPT_MISSING",
+      "soak_status": "INVALID_HOST_SAMPLE_GAP__48_SAMPLES__UNDER_90_MINUTES",
+      "soak_sample_count": 48,
+      "soak_failure": "24.114s sample gap > 15s",
+      "reconciliation_evidence": "evidence/hbnf-foundation-qualification-20261005/seq41/SEQ41_SEQ42_HOST_FAILURE_RECONCILIATION.json",
+      "post_recovery_readonly_evidence": "evidence/hbnf-foundation-qualification-20261005/seq41/SEQ41_SEQ42_POST_RECOVERY_READONLY.json",
+      "next_action": "OFFLINE_ONLY__correct source-bound restore comparator and complete overnight field-critical staging; do not allocate another sequence or perform live mutation without newer authority",
+      "transaction_result": "evidence/hbnf-foundation-qualification-20261005/seq41/live/TRANSACTION_RESULT.json"
+    },
+    "execution_cursor": {
+      "current_failure_domain": "HOST_HARNESS",
+      "exact_next_path": [
+        "Preserve seq41/seq42 evidence and do not rerun the consumed sequence pair.",
+        "Use exact source evidence to correct the host restore comparator so omitted packet20Same JSON is interpreted only when the exact candidate artifact/source hash is bound and firmware restoreVerified=true.",
+        "Continue offline-only Skins scoring, owner PWA reliability, Vibe/audio and text/moment staging; do not deploy while Phase 2 remains unauthorized.",
+        "Keep live mutation closed until new current authority allocates a legal transaction; current Matrix runtime identity is exact Release07 and AUX native DDP is live."
+      ]
+    },
+    "live_mutation_authorization": {
+      "status": "CLOSED__SEQ42_RECOVERY_RUNTIME_RELEASE07_IDENTITY_VERIFIED",
+      "closure_reason": "The one authorized seq41 attempt ended after a host sample-gap failure. The host restore comparator falsely rejected omitted packet20Same despite exact firmware source proving restoreVerified=true is assigned from packet20Same(saved,verify); seq42 was nevertheless consumed. Recovery OTA HTTP receipt is missing, but current read-only Matrix runtime identity is exact Release07. No new pair is authorized.",
+      "live_mutation_limit": 0,
+      "scope": [
+        "Read-only Matrix/AUX verification only as needed to preserve exact current identity and health.",
+        "Offline host-harness correction and tests.",
+        "Offline/staging Phase 2 work only; no deploy or hardware mutation until newer control authority allocates a legal transaction."
+      ],
+      "recovery_sequence_status": "SEQ42_USED__RELEASE07_RUNTIME_IDENTITY_VERIFIED__HTTP_RECEIPT_MISSING"
     }
   },
   "execution_budget_policy": {
@@ -826,7 +878,7 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "TELEMETRY_INSTRUMENTATION",
+    "current_failure_domain": "HOST_HARNESS",
     "current_lifecycle_state": "FIX_CANDIDATE",
     "current_subject": {
       "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
@@ -834,14 +886,10 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Treat the user-confirmed physical AUX fault as CLOSED. Do not reopen hardware diagnosis absent fresh contradictory evidence.",
-      "Finish only the bounded AUX telemetry qualification correction already proven offline: sender-age was mislabeled as receiver freshness.",
-      "Checkpoint the corrected adapter/gate and create clean seq41 capsule/prelive proof. If prelive passes, proceed with the single authorized seq41 qualification.",
-      "Preserve seq39 28/28 sweep evidence unless an actual invalidator exists.",
-      "If a telemetry/gate correction is needed, prove it offline and use the smallest possible delta. If no correction is needed and prelive proof is clean, proceed directly to the single authorized seq41 Foundation requalification.",
-      "If the 90-minute soak starts cleanly, keep it running and immediately use the wait for field-critical Cart 2.0 work: Mission Control/scoring and PWA/reliability first; Vibe/audio and text/moments next.",
-      "Promote Foundation and then advance lifecycle/Phase2 as far as objective gates allow; do not stop merely to report intermediate progress.",
-      "At the next worker-return boundary, evaluate the locked Matrix low-brightness fidelity requirement and make an explicit GO_FOR_TOMORROW vs DEFER_FOR_STABILITY decision. Do not interrupt the current critical transaction to work on it."
+      "Preserve seq41/seq42 evidence and do not rerun the consumed sequence pair.",
+      "Use exact source evidence to correct the host restore comparator so omitted packet20Same JSON is accepted only when the exact candidate artifact/source hash is bound and firmware restoreVerified=true.",
+      "Continue offline-only Skins scoring, owner PWA reliability, Vibe/audio and text/moment staging; do not deploy while Phase 2 remains unauthorized.",
+      "Keep live mutation closed until newer authority allocates a legal transaction; current Matrix runtime identity is exact Release07 and AUX native DDP is live."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -938,9 +986,9 @@
       "status": "REUSABLE"
     }
   ],
-  "installed_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-  "installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-  "installed_release_role": "FOUNDATION_CANDIDATE_INSTALLED__SEQ41_SOAK_UNDERWAY",
+  "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+  "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
+  "installed_release_role": "RELEASE07_RUNTIME_IDENTITY_VERIFIED_AFTER_SEQ42__OTA_HTTP_RECEIPT_MISSING",
   "lane_execution": {
     "activation_rule": "Activate offline-safe core lanes at the earlier of: (a) clean Foundation soak/readiness signal, or (b) 60 minutes without lifecycle progress, provided parallel work is noncontending and cannot invalidate the healthy live critical path. Never restart/interrupt healthy critical-path work merely to satisfy this timer. live_mutation_limit remains 1.",
     "anti_abandonment": "Chat turnover, worker turnover, new sequence numbers, or convenience may not drop a lane. A ready lane can stop only when DONE, explicitly blocked on a named dependency, or user scope changes.",
@@ -974,13 +1022,13 @@
         "status_sheet_row": 5
       }
     },
-    "live_mutation_limit": 1,
+    "live_mutation_limit": 0,
     "orchestration": {
       "activation_event": "FOUNDATION_SOAK_RUNNING",
       "anti_stall_policy": "config/HBNF_EXECUTION_BUDGET_POLICY.json",
       "fallback_activation_event": "60_MINUTES_WITHOUT_LIFECYCLE_PROGRESS__PARALLELIZE_NONCONTENDING_WORK__DO_NOT_INTERRUPT_HEALTHY_CRITICAL_PATH",
       "launch_mode": "FOUR_SEPARATE_WORKER_CONTEXTS",
-      "launch_status": "PARALLEL_LANES_READY",
+      "launch_status": "PARALLEL_LANES_READY__FOUNDATION_SOAK_STOPPED__OVERNIGHT_OFFLINE_FALLBACK_ACTIVE",
       "live_worker_can_spawn_workers": false,
       "note": "Do not judge the live Foundation worker for not spawning chats; it is only responsible for signaling readiness and preserving the live lane.",
       "owner": "COORDINATOR_EXTERNAL_TO_LIVE_WORKER",
@@ -988,7 +1036,9 @@
       "status_sheet_id": "1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko",
       "overnight_fallback_mode": "IF_SEPARATE_WORKER_CONTEXTS_CANNOT_BE_SPAWNED, CURRENT_WORKER_MAY_ADVANCE_NONCONTENDING_OFFLINE_SAFE_LANES_SEQUENTIALLY_IN_SAME_CONTEXT__KEEP_LIVE_MUTATION_LIMIT_1__TRACK_LANES_INDEPENDENTLY__DO_NOT_IDLE",
       "signal_evidence": "evidence/hbnf-foundation-qualification-20261005/seq41/live/PARALLEL_LANES_READY.json",
-      "signal_sample_sha256": "9c9bbb495094dacd5ffc92eba97b9e3be462e38c3ae26b5cf860cfeb96dd1fdc"
+      "signal_sample_sha256": "9c9bbb495094dacd5ffc92eba97b9e3be462e38c3ae26b5cf860cfeb96dd1fdc",
+      "last_live_transition": "Seq41 stopped after host sample gap; seq42 Release07 runtime identity verified, OTA HTTP receipt missing",
+      "soak_currently_running": false
     },
     "schema": "hbnf-lane-execution-state-v1"
   },
@@ -1013,7 +1063,7 @@
     "recovery_rule": "SEQ42_RELEASE07_ONLY_FOR_GENUINE_DEVICE_RUNTIME_OR_FOUNDATION_FAILURE__NOT_FOR_HOST_ONLY_FAILURE",
     "live_mutation_limit": 1
   },
-  "live_mutation_authorized": true,
+  "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",
@@ -1048,15 +1098,31 @@
         ],
         "live_attempt": true,
         "reference": "seq37 Module_Experiment10 tail quantile saturated at 51.15ms"
+      },
+      {
+        "domain": "HOST_HARNESS",
+        "event_id": 2,
+        "live_attempt": true,
+        "attempt_start_time_unix": 1791278644.285058,
+        "material_target": "seq41 exact Foundation-metrics soak qualification with inherited 28/28/observer evidence",
+        "failure_class": "HOST_SAMPLE_GAP_PLUS_RESTORE_JSON_ALIAS_FALSE_NEGATIVE",
+        "failure_evidence": "evidence/hbnf-foundation-qualification-20261005/seq41/live/SEQ41_FAILURE.json; evidence/hbnf-foundation-qualification-20261005/seq41/live/POST_RESTORE_RAW_STATE.json",
+        "last_forward_progress_evidence": "48 advancing samples; last kernel 19; no restart or >=1000ms frame in preserved sample set",
+        "fallback_mechanism": "Exact seq42 Release07 input SHA/size verified on Opal; current runtime identity is read-only verified; OTA HTTP receipt missing.",
+        "preserved_state_or_restart_reason": "Seq41 soak stopped as invalid after 24.114s host sample gap. Exact firmware source proves restoreVerified equals packet20Same(saved,verify), while JSON omits the alias; host bug incorrectly triggered recovery. Offline correction now source-bound and tested. Seq41/42 consumed; no new live sequence authorized.",
+        "invalidates": [
+          "foundation_soak_passed"
+        ],
+        "device_runtime_gate_failed": false
       }
     ],
     "execution_budget_policy_enabled": true,
     "execution_budget_policy_path": "config/HBNF_EXECUTION_BUDGET_POLICY.json",
-    "host_process_wasted_live_attempts": 0,
+    "host_process_wasted_live_attempts": 1,
     "live_attempt_failures_by_domain": {
       "AESTHETIC_PRODUCT": 0,
       "DEVICE_RUNTIME": 0,
-      "HOST_HARNESS": 0,
+      "HOST_HARNESS": 1,
       "PHYSICAL_HARDWARE": 0,
       "RELEASE_DEPLOYMENT": 0,
       "TELEMETRY_INSTRUMENTATION": 1,
@@ -1078,5 +1144,6 @@
     "schema": "hbnf-process-metrics-v1",
     "tracking_scope": "From execution-system consolidation forward; historical attempts are not retroactively guessed into counters."
   },
-  "schema": "hbnf-control-state-v2"
+  "schema": "hbnf-control-state-v2",
+  "installation_verification_note": "Opal verified exact Release07 BIN input SHA/size before one local OTA attempt; current Matrix /hbnf/build.json reports exact Release07 identity after uptime reset. OTA HTTP response file is empty; direct installed-byte readback unavailable."
 }

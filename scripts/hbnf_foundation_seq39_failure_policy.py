@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 """Fail-closed routing for seq39 failures without host-error recovery loops."""
 from __future__ import annotations
-import json
+import hashlib, json, pathlib
+
+ROOT=pathlib.Path(__file__).resolve().parents[1]
+RESTORE_SOURCE_PATH="firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp"
+RESTORE_SOURCE_SHA256="31126d341bf0a3e54a33d87de0856c5f68e79f20dd05653ae1d5df3270a9bc9d"
+RESTORE_CANDIDATE="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+RESTORE_CANDIDATE_SHA256="338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
 
 DEVICE_FAILURE_MARKERS=(
     "foundation-steady-state-frame-interval-stop",
@@ -38,10 +44,29 @@ def classify_run_error(error):
     return "DEVICE_OR_FOUNDATION_GATE" if any(marker.lower() in text for marker in DEVICE_FAILURE_MARKERS) else "HOST_OR_EXTERNAL"
 
 def restore_is_proven(snapshot, raw_restore, receipt=None):
-    """Require firmware proof and exact immutable snapshot id/hash binding."""
+    """Require firmware proof and exact immutable snapshot id/hash binding.
+
+    This firmware serializes restoreVerified but not packet20Same. For the
+    exact source-bound Foundation candidate below, restoreVerified is assigned
+    directly from packet20Same(saved, verify). Accept that omitted wire field
+    only with a receipt bound to that exact artifact and source bytes.
+    """
     if not isinstance(snapshot,dict) or not isinstance(raw_restore,dict):return False
     p20=raw_restore.get("HBNF",{}).get("packet20Diagnostic",raw_restore)
-    if p20.get("restoreVerified") is not True or p20.get("packet20Same") is not True:return False
+    if p20.get("restoreVerified") is not True:return False
+    same=p20.get("packet20Same")
+    if same is False:return False
+    if same is not True:
+        contract=(receipt or {}).get("packet20_same_contract",{})
+        source=ROOT/RESTORE_SOURCE_PATH
+        if (contract.get("schema")!="hbnf-packet20-restore-semantic-binding-v1" or
+            contract.get("candidate_release")!=RESTORE_CANDIDATE or
+            contract.get("candidate_sha256")!=RESTORE_CANDIDATE_SHA256 or
+            contract.get("source_path")!=RESTORE_SOURCE_PATH or
+            contract.get("source_sha256")!=RESTORE_SOURCE_SHA256 or
+            not source.is_file() or hashlib.sha256(source.read_bytes()).hexdigest()!=RESTORE_SOURCE_SHA256 or
+            (receipt or {}).get("packet20Same") is not True):
+            return False
     if p20.get("snapshotId")!=snapshot.get("snapshotId") or p20.get("snapshotHash")!=snapshot.get("snapshotHash"):return False
     if receipt and (receipt.get("snapshot_equal") is not True or receipt.get("snapshotId")!=snapshot.get("snapshotId") or receipt.get("snapshotHash")!=snapshot.get("snapshotHash")):return False
     return True

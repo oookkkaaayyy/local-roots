@@ -1,0 +1,52 @@
+{
+  "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "decisive_file_hashes": {
+    "evidence/hbnf-foundation-qualification-20261005/seq41/SEQ41_SEQ42_POST_RECOVERY_READONLY.json": "7a358435e4112e5f486d43f564c3dfebf235a7065c7f16b545b8187011562ce4",
+    "evidence/hbnf-foundation-qualification-20261005/seq41/live/POST_RESTORE_RAW_STATE.json": "750af1ec82387957fb9d73032ee0d409d73f6d11a4dd9e4f0cd8fd24715c34da",
+    "evidence/hbnf-foundation-qualification-20261005/seq41/live/RESTORE_FAILURE.json": "112133f3ad4aa5f18a0274b681b8706c53d606fbfdc78cf89e741d5037f7ed17",
+    "evidence/hbnf-foundation-qualification-20261005/seq41/live/SEQ41_FAILURE.json": "ff7a83106b125f43e96e6c6b41fd56ec790aadc5385d8f15b36f302824f2bca3",
+    "evidence/hbnf-foundation-qualification-20261005/seq41/live/seq42-opal-copy-receipt.json": "d72ed61041b3d6cf44a82487852afebf2f82b51239436f1b1bb7eb278ffa5363",
+    "evidence/hbnf-foundation-qualification-20261005/seq41/live/seq42-opal-ota-response.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "foundation_qualified": false,
+  "live_mutation_authorized": false,
+  "next_sequence_pair": "NONE__NEW_CURRENT_AUTHORITY_REQUIRED",
+  "observer_effect_reused": true,
+  "post_recovery_readonly_evidence": "evidence/hbnf-foundation-qualification-20261005/seq41/SEQ41_SEQ42_POST_RECOVERY_READONLY.json",
+  "recovery": {
+    "installed_bin_direct_readback": false,
+    "opal_copy_sha_size_verified": true,
+    "ota_http_receipt": "MISSING__RESPONSE_FILE_EMPTY",
+    "release": "hbnf-matrix-coordinated-v1-20261002-07",
+    "runtime_identity_readonly_verified": true,
+    "sequence": 42,
+    "sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "size_bytes": 1458624
+  },
+  "recovery_sequence": 42,
+  "renderer_restore": {
+    "firmware_reported_restoreVerified": true,
+    "offline_source_binding": "firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp sha256 31126d341bf0a3e54a33d87de0856c5f68e79f20dd05653ae1d5df3270a9bc9d; restoreVerified is assigned from packet20Same(saved,verify)",
+    "outcome": "source-bound firmware proof makes the missing JSON alias unambiguous; previous host comparator falsely rejected it",
+    "packet20Same_wire_field": "omitted",
+    "snapshot_hash": 3256860723,
+    "snapshot_id": 1
+  },
+  "repeat_28_kernel_sweep": false,
+  "schema": "hbnf-foundation-seq41-42-soak-v1",
+  "sequence": 41,
+  "soak": {
+    "failure": "foundation soak sample gap invalid: 24.114s; maximum 15s",
+    "frame_ms_max_observed": 53.915,
+    "frame_ms_p99_max": 44.375,
+    "last_kernel_id": 19,
+    "last_sample_time_seconds": 483.527133666,
+    "minimum_qualification_duration_seconds": 5400,
+    "preserved_samples": 48,
+    "qualified_duration": false,
+    "restart_count_max": 0,
+    "status": "INVALID_HOST_SAMPLE_GAP"
+  },
+  "status": "FAIL_HOST_HARNESS__SEQ42_RELEASE07_RUNTIME_IDENTITY_VERIFIED__OTA_HTTP_RECEIPT_MISSING"
+}

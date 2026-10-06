@@ -97,6 +97,8 @@ jobs:
           set -euo pipefail
           python3 tests/hbnf_control.py
           python3 tests/hbnf_guarded_run.py
+          python3 tests/hbnf_foundation_seq39_failure_policy.py
+          python3 tests/hbnf_foundation_seq41_offline.py
           python3 scripts/hbnf_architecture_fitness.py
           python3 tests/hbnf_runtime_qualify_static.py
           python3 tests/hbnf_kernel_sweep_report.py
@@ -110,6 +112,7 @@ jobs:
           node --check hbnf-final-controller/hbnf-cart-semantic.mjs
           node --check hbnf-final-controller/hbnf-cart-ui-v6.mjs
           node --check hbnf-final-controller/hbnf-cart-features.mjs
+          node --check hbnf-final-controller/hbnf-cart-skins-score.mjs
 
       - name: Coordinated visible-scope contract
         run: |
@@ -149,6 +152,8 @@ jobs:
           grep -q 'based_on_firmware_sha256' hbnf-final-controller/hbnf-cart-features.mjs
           grep -q 'LIVE_CACHE_MAX_MS' hbnf-final-controller/hbnf-cart-features.mjs
           node tests/hbnf-coordinated-controller-contract.mjs
+          node --experimental-strip-types tests/hbnf_skins_scoring_owner_flow.mjs
+          node tests/hbnf_owner_pwa_package.mjs
           node tests/hbnf-coordinated-backend-staging.mjs
           node tests/hbnf-release-readiness.mjs
           node tests/hbnf-ios12-compat-audit.mjs
@@ -185,7 +190,9 @@ jobs:
           cp hbnf-final-controller/hbnf-cart-ui-v6.css "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-ui-v6.mjs "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-features.mjs "$OUT/controller/"
+          cp hbnf-final-controller/hbnf-cart-skins-score.mjs "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-manifest.webmanifest "$OUT/controller/"
+          cp hbnf-final-controller/hbnf-cart-icon-180.png hbnf-final-controller/hbnf-cart-icon-192.png hbnf-final-controller/hbnf-cart-icon-512.png "$OUT/controller/"
           cp hbnf-ui-v6-package/install_ui_v6.py "$OUT/installer/"
           cp hbnf-cart-core/domain/palette-projection.mjs "$OUT/domain/"
           cp config/HBNF_COORDINATED_RELEASE_GATES.json "$OUT/config/"

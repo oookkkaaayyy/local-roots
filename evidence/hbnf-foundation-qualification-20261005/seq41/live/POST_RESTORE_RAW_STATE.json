@@ -1,0 +1,21 @@
+{
+  "HBNF": {
+    "packet20Diagnostic": {
+      "enabled": false,
+      "espResetReason": 3,
+      "lastCommand": "restore",
+      "lastCommandAccepted": true,
+      "resetReasonCore0": 12,
+      "resetReasonCore1": 12,
+      "restoreVerified": true,
+      "selectedKernel": 1,
+      "snapshotGeneration": 1,
+      "snapshotHash": 3256860723,
+      "snapshotId": 1,
+      "snapshotState": "READY",
+      "snapshotValid": true
+    }
+  },
+  "packet20Same": null,
+  "restoreVerified": true
+}

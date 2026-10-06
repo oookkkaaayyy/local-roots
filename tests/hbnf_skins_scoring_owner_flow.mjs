@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { applySkinsWinner, buildSkinsScoreState } from "../staging/coordinated-backend/hbnf-cart-control/skins_scoring.ts";
+import { applySkinsWinner, buildSkinsScoreState, writeSkinsWinner } from "../staging/coordinated-backend/hbnf-cart-control/skins_scoring.ts";
 import { readFileSync } from "node:fs";
 
 const root={skins:{weeks:{"2026-10-06":{
@@ -31,13 +31,24 @@ const locked={skins:{weeks:{d:{front:{scoresLocked:true,cards:[{id:"c",playersTe
 assert.throws(()=>applySkinsWinner(locked,{roundDate:"d",sectionName:"front",cardId:"c",hole:1,winnerId:"c_p_0",expectedWinnerId:""}),/locked/);
 assert.throws(()=>buildSkinsScoreState(root,"missing"),/No Skins round/);
 
+function mockService(initial,options={}){
+  let state=structuredClone(initial),updatedAt="v1",writes=0,reads=0;
+  return {service:{from(){const q={select(){return q;},eq(){return q;},async single(){reads++;return {data:{state_json:structuredClone(state),updated_at:updatedAt}};},update(patch){q.patch=patch;return q;},async maybeSingle(){writes++;if(options.conflictOnce&&writes===1){state.skins.weeks["2026-10-06"].front.cards[0].winners["3"]="front_a_p_0";updatedAt="v2";return {data:null};}state=q.patch.state_json;updatedAt="v2";return {data:{updated_at:updatedAt}};}};return q;}},counts:()=>({reads,writes}),state:()=>state};
+}
+const writable=mockService(root);
+const persisted=await writeSkinsWinner(writable.service,{roundDate:"2026-10-06",sectionName:"front",cardId:"front_a",hole:3,winnerId:"front_a_p_0",expectedWinnerId:""});
+assert.equal(persisted.winner_id,"front_a_p_0");assert.equal(persisted.updated_at,"v2");assert.equal(writable.counts().writes,1);
+const concurrent=mockService(root,{conflictOnce:true});
+await assert.rejects(()=>writeSkinsWinner(concurrent.service,{roundDate:"2026-10-06",sectionName:"front",cardId:"front_a",hole:3,winnerId:"front_a_p_1",expectedWinnerId:""}),/changed on another device/);
+assert.equal(concurrent.counts().writes,1);assert.equal(concurrent.state().skins.weeks["2026-10-06"].front.cards[0].winners["3"],"front_a_p_0");
+
 const html=readFileSync(new URL("../hbnf-final-controller/hbnf-cart.html",import.meta.url),"utf8");
 const controller=readFileSync(new URL("../hbnf-final-controller/hbnf-cart.js",import.meta.url),"utf8");
 const ui=readFileSync(new URL("../hbnf-final-controller/hbnf-cart-skins-score.mjs",import.meta.url),"utf8");
 const api=readFileSync(new URL("../staging/coordinated-backend/hbnf-cart-control/index.ts",import.meta.url),"utf8");
 assert.match(html,/Record Skins hole winner/);assert.match(html,/hbnf-cart-skins-score\.mjs/);
-assert.match(ui,/skins_score_state/);assert.match(ui,/skins_score_set/);assert.match(ui,/Score not confirmed/);
+assert.match(ui,/skins_score_state/);assert.match(ui,/skins_score_set/);assert.match(ui,/Save status is uncertain/);assert.match(ui,/save confirmed; refresh unavailable/);assert.match(ui,/expected_winner_id/);
 assert.match(controller,/headers\["x-hbnf-device"\]=token/);
 assert.match(api,/action === "skins_score_state" \|\| action === "skins_score_set"/);
 assert.match(api,/pairedDeviceAuthorized/);
-console.log("PASS: owner Skins scoring reads and writes authoritative card winners, preserves carries, validates F9/B9 and locks, and requires paired owner auth");
+console.log("PASS: owner Skins scoring reads/writes authoritative card winners, preserves carries, validates F9/B9 and locks, detects stale/concurrent changes, distinguishes confirmed saves from uncertain network outcomes, and requires paired owner auth");
