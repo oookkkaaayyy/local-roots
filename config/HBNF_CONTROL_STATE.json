@@ -784,5 +784,20 @@
     },
     "anti_abandonment": "Chat turnover, worker turnover, new sequence numbers, or convenience may not drop a lane. A ready lane can stop only when DONE, explicitly blocked on a named dependency, or user scope changes.",
     "live_mutation_limit": 1
+  },
+  "process_metrics": {
+    "schema": "hbnf-process-metrics-v1",
+    "tracking_scope": "From execution-system consolidation forward; historical attempts are not retroactively guessed into counters.",
+    "live_attempt_failures_by_domain": {
+      "HOST_HARNESS": 0,
+      "DEVICE_RUNTIME": 0,
+      "RELEASE_DEPLOYMENT": 0,
+      "UI_BACKEND": 0,
+      "PHYSICAL_HARDWARE": 0,
+      "AESTHETIC_PRODUCT": 0
+    },
+    "host_process_wasted_live_attempts": 0,
+    "device_runtime_failed_live_attempts": 0,
+    "events": []
   }
 }
