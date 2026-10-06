@@ -434,7 +434,16 @@
       "rule": "Every newly proven recurring failure class must be converted into a solved-problem record plus an automated regression fixture/test when technically practical.",
       "recurrence_trigger": "A second occurrence of the same process/tooling failure class blocks another equivalent live attempt until a regression guard exists.",
       "optimization_target": "Drive live attempts wasted by host/process defects toward zero; do not optimize by weakening device/runtime safety gates.",
-      "no_rediscovery": "Solved issues are not reinvestigated unless their explicit do_not_rediscover_unless condition is met."
+      "no_rediscovery": "Solved issues are not reinvestigated unless their explicit do_not_rediscover_unless condition is met.",
+      "metrics": {
+        "tracking_scope": "From execution-system consolidation forward; historical attempts remain evidence but are not retroactively guessed into counters.",
+        "required_counters": [
+          "live_attempt_failures_by_domain",
+          "host_process_wasted_live_attempts",
+          "device_runtime_failed_live_attempts"
+        ],
+        "update_rule": "Record a classified failure event when a live attempt closes. Use counters to expose recurring process waste, not as a release gate or performance target that could incentivize hiding failures."
+      }
     },
     "release_scope": {
       "core_acceptance": [
@@ -450,7 +459,17 @@
         "IRL games",
         "Guest platform"
       ],
-      "rule": "Deferred items remain Cart 2.0 expansion scope but do not block the core ACCEPTED transition unless the user explicitly moves them back onto the critical path."
+      "rule": "Deferred items remain Cart 2.0 expansion scope but do not block the core ACCEPTED transition unless the user explicitly moves them back onto the critical path.",
+      "hard_go_no_go": [
+        "authoritative Skins scoring works end-to-end on intended owner device",
+        "owner can reliably control the cart/system with confirmed state and no Mac/Terminal during normal round use"
+      ],
+      "development_priority": [
+        "Vibe/audio quality and nuanced music reactivity",
+        "premium text/moments",
+        "owner Mission Control/PWA refinement beyond the hard operational gate"
+      ],
+      "operating_standard": "Field use must be appliance-like: start, score/control when intentionally needed, otherwise ignore the technology while playing/hosting."
     }
   }
 }
