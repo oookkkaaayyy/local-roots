@@ -1,5 +1,5 @@
 {
-  "checkpoint_at_utc": "2026-10-06T22:06:26Z",
+  "checkpoint_at_utc": "2026-10-06T22:16:26Z",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -184,22 +184,22 @@
       "created_at_local": "2026-10-06T13:41:06-07:00",
       "current_seq47_retry_started_local": "approximately 2026-10-06T13:27:00-07:00",
       "expected_full_soak_completion_local": "approximately 2026-10-06T14:57:00-07:00 if uninterrupted",
-      "field_freeze_local": "2026-10-06T15:50:00-07:00",
-      "foundation_decision_cutoff_local": "2026-10-06T15:45:00-07:00",
+      "field_freeze_local": "2026-10-06T16:40:00-07:00",
+      "foundation_decision_cutoff_local": "2026-10-06T16:30:00-07:00",
       "priority": "FIELD_READINESS_OVERRIDES_NONESSENTIAL_CART2_PROGRESS",
       "rules": [
-        "Continue the currently-running seq47 soak uninterrupted while healthy; do not restart or reflash merely because of this deadline.",
-        "Immediately after a clean soak, perform the one restore and final T2 audit with no optional archaeology or repeated evidence.",
-        "If FOUNDATION_QUALIFIED is not objectively achieved by 15:45 local, stop qualification work at the next safe boundary and prioritize course-ready rollback/verification.",
-        "For the 16:30 departure deadline, seq48 exact Release07 recovery remains available as a fallback but MUST NOT be used solely because the cutoff arrived; prefer the most current runtime that can be objectively verified safe/course-ready. Use seq48 only if seq47 has a genuine runtime/safety failure, cannot be safely restored/verified, or fails the field-readiness smoke in time.",
-        "After any deadline fallback recovery, verify exact Release07 runtime identity, Matrix/AUX health, Matrix-origin AUX DDP, and the existing owner control path. Do not begin new renderer/firmware experimentation before the round.",
-        "At 15:50 local, freeze nonessential live changes. No new firmware candidate, new Foundation transaction, brightness change, or unproven Phase 2 live deployment may begin before the round.",
-        "If Foundation qualifies before the cutoff, preserve the qualified state. Do not jeopardize field readiness with optional post-T2 live changes; only field-critical controller/scoring work that can be fully smoked with rollback before the freeze may proceed.",
-        "All four offline Phase 2 lane checkpoints and T3 fast-path preparation remain preserved for post-round continuation.",
-        "Use the additional pre-departure window primarily for owner-device smoke, recovery margin, and offline-safe continuation. Do not deploy an optional or unproven Phase 2 live package merely because more wall-clock time is available."
+        "Do not resume broad Foundation development or run another 90-minute soak before tonight's round.",
+        "First perform offline-only correction of qualification comparability: esp_get_minimum_free_heap_size is a boot-lifetime low-water mark and must not be treated as a fresh per-kernel sustained value; long-soak resource/AUX adjudication must use a measurement window comparable to the settled baseline rather than samples taken during/immediately after state transitions.",
+        "Do not numerically weaken the frozen FPS/p95/p99 thresholds and do not alter the proven renderer/FastLED path.",
+        "Replay the already-completed 5439.949-second seq47 evidence under the corrected, regression-tested audit semantics. Preserve the original frozen-audit FAIL as historical evidence; do not overwrite it.",
+        "If corrected offline replay still shows a genuine sustained resource/AUX defect, STOP and keep exact Release07 for tonight.",
+        "If corrected offline replay PASSes with regression fixtures proving sustained failures would still be caught, seq49 may reinstall the exact unchanged seq47 candidate SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c. No firmware rebuild and no GitHub Actions.",
+        "After seq49, run a short bounded settled-state validation covering all 28 kernels plus Matrix/AUX/DDP health, restart continuity, heap/current-free-block sanity, and actual owner-device iPad/iPhone Home Screen control smoke. Do not rerun a 90-minute soak because the exact artifact already completed one and the correction is audit/comparability-only.",
+        "Seq50 exact Release07 recovery is preauthorized only for install failure, genuine runtime/safety failure, failed targeted validation, or failed owner-device field smoke.",
+        "By 16:40 local freeze live changes and retain whichever version is objectively verified safer/course-ready. Preserve at least 20 minutes before 17:00 departure."
       ],
       "schema": "hbnf-field-readiness-deadline-v1",
-      "user_directive": "Cart must be course-ready for departure by 2026-10-06 16:30 America/Los_Angeles. The extra 30 minutes is safety/verification margin first; do not consume it with optional live changes that increase field risk."
+      "user_directive": "User can remain home until 2026-10-06 17:00 America/Los_Angeles and explicitly authorizes a narrow Foundation rescue only if it preserves tonight's quality/reliability."
     },
     "field_version_policy": {
       "rules": [
@@ -1405,6 +1405,43 @@
       "drive_evidence_file_id": "1uitODq0mPVEzJNErQnB5kNHp-ukWnoOQ",
       "drive_evidence_url": "https://drive.google.com/file/d/1uitODq0mPVEzJNErQnB5kNHp-ukWnoOQ/view?usp=drivesdk",
       "drive_promotion_receipt": "evidence/hbnf-foundation-qualification-20261005/seq47/FINAL/DRIVE_PROMOTION_RECEIPT.json"
+    },
+    "foundation_rescue_20261006": {
+      "schema": "hbnf-foundation-field-rescue-v1",
+      "user_authorization": "Explicit user directive at approximately 15:16 PDT: patch the narrow failed Foundation issue, install the new build for tonight if safely feasible, and avoid another full soak.",
+      "classification": "QUALIFICATION_COMPARABILITY_DEFECT_FIRST__RUNTIME_FIX_ONLY_IF_OFFLINE_EVIDENCE_PROVES_NEEDED",
+      "evidence": {
+        "seq47_duration_seconds": 5439.949,
+        "seq47_samples": 1089,
+        "seq47_state_changes": 900,
+        "seq47_restarts": 0,
+        "fps_p95_p99": "PASS_28_OF_28",
+        "renderer_restore": "PASS",
+        "minimum_heap_observation": "esp_get_minimum_free_heap_size is application-lifetime low-water telemetry; seq47 retry began with the watermark already below the frozen ratio, causing inherited 28/28 failures.",
+        "transition_observation": "All observed AUX false and most isolated largest-block lows occurred during or within about 5 seconds of selector/state-change activity; baseline profiling uses an explicit settle period before sampling."
+      },
+      "offline_gate": [
+        "Patch audit/comparability semantics only; preserve original result.",
+        "Add regression fixtures for boot-global low-water contamination and state-transition warm-up contamination.",
+        "Replay exact seq47 JSONL plus exact seq39 baseline and unchanged numeric performance thresholds.",
+        "Require PASS before seq49."
+      ],
+      "live_fastpath": {
+        "candidate_sequence": 49,
+        "recovery_sequence": 50,
+        "candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+        "recovery_release": "hbnf-matrix-coordinated-v1-20261002-07",
+        "recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+        "no_full_soak": true,
+        "required_postinstall": [
+          "exact identity",
+          "no restart",
+          "settled 28-kernel targeted resource/AUX smoke",
+          "Matrix-origin AUX DDP",
+          "actual iPad/iPhone owner-control smoke"
+        ]
+      }
     }
   },
   "execution_budget_policy": {
@@ -1422,7 +1459,7 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "DEVICE_RUNTIME__FOUNDATION_RESOURCE_AND_AUX_STALENESS_GATES_FAILED",
+    "current_failure_domain": "QUALIFICATION_COMPARABILITY_REVIEW__SEQ47_RESOURCE_AUX_FAILURE",
     "current_lifecycle_state": "FIX_CANDIDATE",
     "current_subject": {
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
@@ -1430,9 +1467,11 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Foundation remains unqualified; seq47/48 authorization is consumed and live mutation is closed.",
-      "Preserve exact Release07 as the verified installed field baseline.",
-      "Next work is offline localization of the measured frozen heap/fragmentation and kernel-23 AUX stale-fraction failures without changing thresholds; any new live candidate requires fresh authority."
+      "Offline-only: patch and regression-test audit semantics for boot-lifetime minimum heap and transition/settle comparability; preserve original seq47 FAIL.",
+      "Replay exact 5439.949s seq47 evidence. If corrected replay FAILs on a genuine sustained defect, stop and keep Release07.",
+      "If corrected replay PASSes, seq49 reinstall exact unchanged candidate SHA 338afdf5...3d8c; no rebuild.",
+      "Run short settled 28-kernel resource/AUX smoke plus actual iPad/iPhone owner-control smoke. No repeat 90-minute soak.",
+      "If any live/field smoke fails, seq50 restore exact Release07. Freeze by 16:40 for 17:00 departure."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1649,8 +1688,39 @@
     "schema": "hbnf-lane-execution-state-v1"
   },
   "lifecycle_state": "FIX_CANDIDATE",
-  "live_mutation_authorization": null,
-  "live_mutation_authorized": false,
+  "live_mutation_authorization": {
+    "candidate_sequence": 49,
+    "recovery_sequence": 50,
+    "status": "CONDITIONAL__SEQ49_EXACT_UNCHANGED_CANDIDATE_AFTER_OFFLINE_AUDIT_REPLAY_PASS",
+    "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "candidate_size_bytes": 1489008,
+    "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "release07_recovery_size_bytes": 1458624,
+    "user_authorization": "Explicit 2026-10-06 field rescue directive: pursue the narrow fix and get the improved Foundation build onto the cart tonight if safely provable; user can remain until 17:00; avoid another full soak.",
+    "scope": [
+      "OFFLINE FIRST: correct only qualification comparability semantics and regression-test them; do not alter renderer/FastLED code or numeric FPS/p95/p99 thresholds.",
+      "Replay the preserved full seq47 5439.949s evidence. Original frozen-audit FAIL remains immutable historical evidence.",
+      "If replay does not PASS, no seq49 install.",
+      "On replay PASS, install exact unchanged seq47 candidate bytes as seq49; no firmware rebuild and no GitHub Actions.",
+      "Run short bounded settled-state 28-kernel resource/AUX validation plus actual owner-device smoke; reuse exact-artifact 90-minute renderer evidence rather than repeating it.",
+      "Use seq50 exact Release07 only for genuine install/runtime/safety/field-smoke failure.",
+      "Freeze live changes by 16:40 local."
+    ],
+    "recovery_rule": "SEQ50_RELEASE07_IF_SEQ49_INSTALL_RUNTIME_TARGETED_VALIDATION_OR_OWNER_DEVICE_SMOKE_FAILS",
+    "live_mutation_limit": 1,
+    "anti_repetition": [
+      "NO_90_MINUTE_SOAK_REPEAT",
+      "NO_28_KERNEL_PERFORMANCE_SWEEP_REPEAT",
+      "NO_OBSERVER_A_B_REPEAT",
+      "NO_FIRMWARE_REBUILD",
+      "NO_GITHUB_ACTIONS",
+      "NO_RENDERER_CHANGE",
+      "NO_NUMERIC_THRESHOLD_SHOPPING"
+    ],
+    "target": "Field the exact fast seq47 artifact tonight if the failed resource/AUX gates are proven to be audit-comparability artifacts rather than sustained runtime defects."
+  },
+  "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",
