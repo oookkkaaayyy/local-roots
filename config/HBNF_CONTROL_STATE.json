@@ -412,7 +412,7 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
+      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Foundation offline timeout and soak-harness checkpoint",
@@ -782,7 +782,7 @@
       "status": "DECISION_DEFER_FOR_STABILITY",
       "target_event": "NEXT_SKINS_ROUND__2026-10-06",
       "observed_problem": "On current build, lowering Matrix brightness also visibly collapses/reduces the displayed animation/image; below roughly 20 the Matrix becomes nearly dark or shows only a very limited animation.",
-      "user_field_preference": "Typical night sweet spot is roughly current-slider 10\u201320; values above ~25 can be excessively bright on-course.",
+      "user_field_preference": "Typical night sweet spot is roughly current-slider 10–20; values above ~25 can be excessively bright on-course.",
       "required_behavior": [
         "Brightness reduction should preserve animation/image structure as much as technically practical.",
         "Prefer greater low-end granularity for night use.",
@@ -984,7 +984,7 @@
       "Reuse seq39 28/28/observer/baseline/frozen policy; complete the >=90-minute independent-sampler state-changing soak and remaining T2 checks.",
       "On safe host-only failure preserve seq43; at most one same-install retry after a materially different offline-proven fix. Seq44 remains genuine failure/lost safety only.",
       "If every T2 check passes, promote Foundation. If T3 prerequisites also pass, enter Phase2 and deploy/smoke exact staged V7.3 owner scoring/PWA.",
-      "Keep brightness DEFER_FOR_STABILITY for today\u2019s Skins build."
+      "Keep brightness DEFER_FOR_STABILITY for today’s Skins build."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1096,11 +1096,38 @@
         "status_sheet_row": 4
       },
       "P2_PWA_RELIABILITY": {
-        "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START",
+        "dependency": "P2_INTERFACE_FREEZE_AND_PHASE2_DEPLOYMENT_AUTHORIZATION__THEN_INTENDED_OWNER_DEVICE_PWA_CONTROL_SCORING_SMOKE",
         "execution_context": "SEPARATE_WORKER_REQUIRED",
         "launch_owner": "COORDINATOR",
-        "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
-        "status_sheet_row": 7
+        "status": "BLOCKED_WITH_EXACT_DEPENDENCY",
+        "status_sheet_row": 7,
+        "blocker": "Offline-safe reliability implementation is complete, packaged and hash-verified. Further work requires the post-Foundation P2 interface freeze to define the local-control vs remote-relay transport boundary, followed by legal deployment and intended-owner-device Safari/Home Screen smoke. Do not equate cached app-shell availability with offline control mutation.",
+        "offline_checkpoint": {
+          "status": "OFFLINE_IMPLEMENTATION_COMPLETE__NOT_DEPLOYED",
+          "source_commit": "f7a9870e2a42b0fe005da0cb6c3849cce3fea9a9",
+          "evidence": "evidence/hbnf-phase2-pwa-reliability-20261006/OWNER_PWA_V7_3_PWA_R1_OFFLINE_CHECKPOINT.json",
+          "package_name": "HBNF_CART_UI_V7_3_SKINS_OWNER_PWA_R1_20261006.zip",
+          "package_sha256": "21cfee1b08ce122e86c703ff2060c3cdb3bcab2f544249822cc44dd2ef868d94",
+          "package_bytes": 44425,
+          "drive_file_id": "1MvBkyIqJJa-9uC0n73NXEozn28frLm47",
+          "manifest_sha256": "280adb1b5efbe4dff47cf33ae14a92ec9db1decfe6aa15a6a5d3b7585ab261a9",
+          "live_mutation": "NONE",
+          "foundation_invalidation": false,
+          "proven": [
+            "bounded owner API/visual-status request deadlines",
+            "one-time #pair fragment handling restored",
+            "versioned direct module dependencies",
+            "scoped owner PWA offline app-shell cache with API/device cache exclusion",
+            "online/offline resync messaging",
+            "host regression and package integrity PASS"
+          ],
+          "not_proven": [
+            "offline command mutation/local relay",
+            "production deployment",
+            "intended-owner-device Safari/Home Screen lifecycle",
+            "end-to-end owner scoring/control physical smoke"
+          ]
+        }
       },
       "P2_TEXT_MOMENTS": {
         "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START",
