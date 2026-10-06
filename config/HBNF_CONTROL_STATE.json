@@ -371,11 +371,11 @@
       "sweep_status": "FOUNDATION_GATE_FAIL__TAIL_QUANTILE_SATURATED_AT_51_15MS",
       "unexpected_restart": false
     },
-    "foundation_status": "FOUNDATION_UNQUALIFIED__SEQ39_AUX_PROJECTION_AGE_GATE_FAILED__SEQ40_RELEASE07_RECOVERED",
+    "foundation_status": "FOUNDATION_UNQUALIFIED__SEQ41_90_MINUTE_STATE_CHANGING_SOAK_IN_PROGRESS",
     "foundation_transaction_stop_reason": "Seq39 exact candidate installed and identity verified; observer-effect PASS (+0.2684%); sacrificial warm-up PASS; all 28 kernel profiles completed and renderer restore passed. During the same-install state-changing soak, three consecutive samples exceeded the existing catastrophic AUX projection-age threshold (latest age 1,226,968 ms; FPS 38; frame p99 31.125 ms). No post-warm-up >=1000 ms frame interval or restart was observed; candidate and AUX health were true at recovery start. Exact seq40 Release07 recovery completed and post-recovery identity verified.",
-    "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-    "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
-    "installed_release_role": "BASELINE_RECOVERY_VERIFIED__SEQ36",
+    "installed_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "installed_release_role": "FOUNDATION_CANDIDATE_INSTALLED__SEQ41_SOAK_UNDERWAY",
     "last_recovery": {
       "attempts": 1,
       "evidence_drive_file_id": "1cKiC-0hmQrDV4n1uxV4HdZPL6nFPzqXy",
@@ -792,7 +792,7 @@
       ]
     },
     "foundation_seq41_resume": {
-      "status": "PREPARED_OFFLINE__PRELIVE_EVIDENCE_PASS",
+      "status": "SOAK_RUNNING__PARALLEL_LANES_READY",
       "candidate_sequence": 41,
       "candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
       "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
@@ -803,7 +803,12 @@
       "prelive_capture": "evidence/hbnf-foundation-qualification-20261005/seq41/READONLY_PREFLIGHT.json",
       "reused_sweep_manifest": "evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep/PRE_SOAK_SWEEP_REUSE_MANIFEST.json",
       "threshold_freeze": "evidence/hbnf-foundation-qualification-20261005/seq41/THRESHOLD_FREEZE_RECEIPT.json",
-      "transaction_script": "scripts/hbnf_foundation_seq41_transaction.py"
+      "transaction_script": "scripts/hbnf_foundation_seq41_transaction.py",
+      "first_clean_soak_samples": 3,
+      "parallel_ready_evidence": "evidence/hbnf-foundation-qualification-20261005/seq41/live/PARALLEL_LANES_READY.json",
+      "soak_evidence": "evidence/hbnf-foundation-qualification-20261005/seq41/live/FOUNDATION_SOAK.jsonl",
+      "renderer_restore_obligation": "OPEN__ONE_SNAPSHOT_ID_1_HASH_3256860723",
+      "recovery_sequence_status": "SEQ42_RESERVED_FOR_GENUINE_DEVICE_RUNTIME_OR_FOUNDATION_FAILURE_ONLY"
     }
   },
   "execution_budget_policy": {
@@ -933,9 +938,9 @@
       "status": "REUSABLE"
     }
   ],
-  "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-  "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
-  "installed_release_role": "REAL_FAILURE_RECOVERY_VERIFIED__SEQ40",
+  "installed_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "installed_release_role": "FOUNDATION_CANDIDATE_INSTALLED__SEQ41_SOAK_UNDERWAY",
   "lane_execution": {
     "activation_rule": "Activate offline-safe core lanes at the earlier of: (a) clean Foundation soak/readiness signal, or (b) 60 minutes without lifecycle progress, provided parallel work is noncontending and cannot invalidate the healthy live critical path. Never restart/interrupt healthy critical-path work merely to satisfy this timer. live_mutation_limit remains 1.",
     "anti_abandonment": "Chat turnover, worker turnover, new sequence numbers, or convenience may not drop a lane. A ready lane can stop only when DONE, explicitly blocked on a named dependency, or user scope changes.",
@@ -975,13 +980,15 @@
       "anti_stall_policy": "config/HBNF_EXECUTION_BUDGET_POLICY.json",
       "fallback_activation_event": "60_MINUTES_WITHOUT_LIFECYCLE_PROGRESS__PARALLELIZE_NONCONTENDING_WORK__DO_NOT_INTERRUPT_HEALTHY_CRITICAL_PATH",
       "launch_mode": "FOUR_SEPARATE_WORKER_CONTEXTS",
-      "launch_status": "WAITING_FOR_FOUNDATION_SOAK",
+      "launch_status": "PARALLEL_LANES_READY",
       "live_worker_can_spawn_workers": false,
       "note": "Do not judge the live Foundation worker for not spawning chats; it is only responsible for signaling readiness and preserving the live lane.",
       "owner": "COORDINATOR_EXTERNAL_TO_LIVE_WORKER",
       "required_live_worker_signal": "PARALLEL_LANES_READY",
       "status_sheet_id": "1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko",
-      "overnight_fallback_mode": "IF_SEPARATE_WORKER_CONTEXTS_CANNOT_BE_SPAWNED, CURRENT_WORKER_MAY_ADVANCE_NONCONTENDING_OFFLINE_SAFE_LANES_SEQUENTIALLY_IN_SAME_CONTEXT__KEEP_LIVE_MUTATION_LIMIT_1__TRACK_LANES_INDEPENDENTLY__DO_NOT_IDLE"
+      "overnight_fallback_mode": "IF_SEPARATE_WORKER_CONTEXTS_CANNOT_BE_SPAWNED, CURRENT_WORKER_MAY_ADVANCE_NONCONTENDING_OFFLINE_SAFE_LANES_SEQUENTIALLY_IN_SAME_CONTEXT__KEEP_LIVE_MUTATION_LIMIT_1__TRACK_LANES_INDEPENDENTLY__DO_NOT_IDLE",
+      "signal_evidence": "evidence/hbnf-foundation-qualification-20261005/seq41/live/PARALLEL_LANES_READY.json",
+      "signal_sample_sha256": "9c9bbb495094dacd5ffc92eba97b9e3be462e38c3ae26b5cf860cfeb96dd1fdc"
     },
     "schema": "hbnf-lane-execution-state-v1"
   },
