@@ -1,0 +1,14 @@
+{
+  "schema":"hbnf-p2-text-moments-offline-fixtures-v1",
+  "status":"HOST_ACCEPTANCE_FIXTURES",
+  "cases":[
+    {"class":"HERO_WORD","primary_text":"ACE"},{"class":"HERO_WORD","primary_text":"WINNER"},
+    {"class":"NAME","primary_text":"ANDREW"},{"class":"NAME","primary_text":"TEAM 4"},
+    {"class":"NUMBER_VALUE","primary_text":"$187"},{"class":"NUMBER_VALUE","primary_text":"25 FT"},{"class":"NUMBER_VALUE","primary_text":"30 SEC"},
+    {"class":"DIRECTIVE","primary_text":"STATION 4"},{"class":"DIRECTIVE","primary_text":"READY"},{"class":"DIRECTIVE","primary_text":"GO"},{"class":"DIRECTIVE","primary_text":"REST"},
+    {"class":"SHORT_ANNOUNCEMENT","primary_text":"BACK 9"},{"class":"SHORT_ANNOUNCEMENT","primary_text":"ACE POT"},{"class":"SHORT_ANNOUNCEMENT","primary_text":"NEXT UP"},
+    {"class":"LONG_FREE_TEXT","primary_text":"SOURCE DEPENDENT LONG MESSAGE FIXTURE"}
+  ],
+  "vibes":["CHILL","GROOVE","HEAVY","PSYCHEDELIC","COSMIC","AUTO"],
+  "invariants":["glyph_geometry_stable","audio_may_not_deform_glyphs","phrase_paging_precedes_scroll","vibe_changes_treatment_not_text_geometry","return_behavior_preserved","unknown_unfrozen_vibe_falls_back_to_AUTO"]
+}
