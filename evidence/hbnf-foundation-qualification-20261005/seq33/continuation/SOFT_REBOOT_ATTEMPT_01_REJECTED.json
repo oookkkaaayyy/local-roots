@@ -1,0 +1,7 @@
+{
+  "attempt": 1,
+  "reason": "Malformed JSON body was rejected by Matrix with HTTP 400; no reboot acknowledged.",
+  "schema": "hbnf-seq33-soft-reboot-attempt-v1",
+  "source_file_invalid_json": "CONTROLLED_SOFT_REBOOT.json",
+  "status": "REJECTED_NO_DEVICE_CHANGE"
+}

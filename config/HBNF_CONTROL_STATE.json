@@ -38,7 +38,7 @@
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
     "blockers": [
-      "Seq33 attempt 1 failed in observer telemetry with a transient host GET timeout after a snapshot/select(0); exception-path renderer restore was confirmed. Zero sweep profiles and no soak were produced. AUX receive was inactive both before seq33 (READONLY_PREFLIGHT) and after this attempt, so no candidate-caused AUX regression is established. Correct adapter/read deadline, reboot once to clear the boot-scoped snapshot, then continue once without reinstalling candidate; exact seq34 recovery remains the only firmware failure path."
+      "Seq33 candidate is installed exactly once. One host observer-window GET failure consumed the boot-scoped snapshot, which has been restored. A single safe soft reboot has now been acknowledged and verified to restore the exact candidate build and device MACs with fresh Matrix uptime; next action is the one bounded clean 28-kernel + baseline/freeze + 5400s soak continuation."
     ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
@@ -272,11 +272,13 @@
         "attempt": 1,
         "aux_comparison": "inactive before and after candidate; no demonstrated regression; see READONLY_PREFLIGHT.json and STOP_STATE_READONLY.json",
         "candidate_install": "PASS_ONCE",
+        "continuation_boot": "SOFT_REBOOT_ACKNOWLEDGED_AND_EXACT_CANDIDATE_VERIFIED",
         "evidence": "evidence/hbnf-foundation-qualification-20261005/seq33/OBSERVER_FAILURE_RECONCILIATION.json",
         "kernel_profiles_completed": 0,
         "live_matrix_aux_readonly_evidence": "evidence/hbnf-foundation-qualification-20261005/seq33/STOP_STATE_READONLY.json",
-        "next_action": "after host fix, reboot once for fresh boot-scoped snapshot; run one full 28-kernel sweep + 5400s soak; exact seq34 recovery on any genuine contract failure",
+        "next_action": "one fresh snapshot/observer comparison + all 28 kernels + frozen baseline + exact 5400s soak + restore; no reinstall/reboot",
         "observer_effect": "FAILED_ON_TRANSIENT_READ_ONLY_STATE_GET",
+        "reboot_evidence": "evidence/hbnf-foundation-qualification-20261005/seq33/continuation/SOFT_REBOOT_VERIFICATION.json",
         "renderer_restore": "VERIFIED_READ_ONLY",
         "runtime_gate": "NOT_EVALUATED__NO_SWEEP_PROFILES",
         "seq34_consumed": false,
@@ -305,7 +307,7 @@
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Foundation offline timeout and soak-harness checkpoint",
-    "next_work": "Resume seq33 continuation after a single standard soft reboot. Verify exact candidate identity and device MACs, then one fresh renderer snapshot, observer comparison, complete 28-kernel sweep, sweep-bound baseline/threshold freeze and 5400s changing soak in that same boot; restore once. No re-install; no extra reboot. Use exact seq34 recovery only on actual failure.",
+    "next_work": "Run the corrected guarded Foundation runner once now on the fresh candidate boot. It must perform observer comparison + one renderer-safe snapshot + all 28 kernels + sweep-bound frozen thresholds + exactly 5400s changing soak and one renderer restore in this same boot. No candidate re-install or reboot. Exact Release07 seq34 recovery on any defined failure; leave candidate only on full objective PASS.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "performance_findings": {
       "candidate_fix": "FastLED 3.10.4 bounded fixed-point Animartrix backport; R4 achieved a 42 FPS median across 28 kernels, 8.329 ms median kernel time, with 28 improved and 0 regressed. Material gain confirmed; continue Foundation gates.",
@@ -410,6 +412,7 @@
       "candidate_sequence": 33,
       "candidate_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
       "candidate_size_bytes": 1488768,
+      "continuation_reboot_evidence": "evidence/hbnf-foundation-qualification-20261005/seq33/continuation/SOFT_REBOOT_VERIFICATION.json",
       "path": "Direct-LAN exact WLED /update; verified in seq30 and seq32; no Cloudflare",
       "policy_path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006.json",
       "preflight_path": "evidence/hbnf-foundation-qualification-20261005/seq33/READONLY_PREFLIGHT.json",
@@ -420,7 +423,7 @@
       "recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "recovery_size_bytes": 1458624,
       "scope": "Seq33 candidate was installed once and remains installed. The first boot attempt created/restored its one snapshot, then observer telemetry aborted on a transient read-only /json/state timeout with zero sweep profiles and no soak. Continuation permits one safe soft reboot to clear boot-scoped snapshot RAM, no candidate reinstall, then exactly one fresh boot/snapshot for observer comparison + full 28-kernel sweep + frozen baseline + 5400s changing soak + one restore. No reboot between that snapshot/sweep/soak/restore. Exact Release07 seq34 is failure recovery only.",
-      "status": "SEQ33_INSTALLED__ONE_HOST_TOOLING_CONTINUATION__SEQ34_FAILURE_RECOVERY"
+      "status": "SEQ33_CONTINUATION_BOOT_READY__SEQ34_FAILURE_RECOVERY"
     },
     "prior_candidate_trials": {
       "r2": {
