@@ -251,7 +251,7 @@ def append_jsonl_durable(path,sample):
         f.write(json.dumps(sample,separators=(",",":"))+"\n")
         f.flush();os.fsync(f.fileno())
 
-def run_foundation_soak(adapter,inventory,outdir,timeout,release_id,restart_count,previous_uptime,duration_seconds,interval_seconds):
+def run_foundation_soak(adapter,inventory,outdir,timeout,release_id,restart_count,previous_uptime,duration_seconds,interval_seconds,policy):
     """Run the changing 28-kernel soak inside the same one-snapshot transaction."""
     if duration_seconds<MIN_FOUNDATION_SOAK_SECONDS:
         raise ValueError(f"foundation soak must be at least {MIN_FOUNDATION_SOAK_SECONDS}s")
@@ -260,14 +260,15 @@ def run_foundation_soak(adapter,inventory,outdir,timeout,release_id,restart_coun
     path=pathlib.Path(outdir)/"FOUNDATION_SOAK.jsonl"
     path.unlink(missing_ok=True)
     started=time.monotonic();end=started+duration_seconds;sample_index=0
-    previous_sample_time=None;observed=set()
+    previous_sample_time=None;observed=set();catastrophic_streak=0
     entries=inventory["entries"]
     while True:
         now=time.monotonic()
         if now>=end:break
         entry=entries[sample_index%len(entries)]
         values={"effect_id":entry["effect_id"],"kernel_name":entry["kernel_name"],
-                "runtime_kernel_index":entry.get("runtime_kernel_index_expected"),"preset":entry.get("preset")}
+                "runtime_kernel_index":entry.get("runtime_kernel_index_expected"),"preset":entry.get("preset"),
+                "session_id":str(pathlib.Path(outdir).resolve())}
         run_ok(subst(adapter["select_argv"],values),timeout=timeout)
         # Keep telemetry cadence below the hard 15-second gap even when select/HTTP
         # overhead varies; any actual overrun is a fail-closed stop before restore.
@@ -280,6 +281,13 @@ def run_foundation_soak(adapter,inventory,outdir,timeout,release_id,restart_coun
         previous_uptime,previous_sample_time=validate_soak_sample(
             sample,entry,release_id,restart_count,previous_uptime,previous_sample_time
         )
+        stop=policy["catastrophic_early_stop"];bad=(float(sample["fps"])<float(stop["fps_floor_absolute"])
+            or float(sample["frame_ms_p99"])>float(stop["frame_ms_p99_ceiling_absolute"])
+            or float(sample["aux_projection_age_ms"])>float(stop["aux_projection_age_ms_ceiling"]))
+        catastrophic_streak=catastrophic_streak+1 if bad else 0
+        if catastrophic_streak>=int(stop["consecutive_samples"]):
+            append_jsonl_durable(path,sample)
+            raise RuntimeError(f"catastrophic Foundation threshold crossed for {catastrophic_streak} consecutive samples: fps={sample['fps']} p99_ms={sample['frame_ms_p99']} aux_age_ms={sample['aux_projection_age_ms']}")
         observed.add(int(sample["kernel_id"]))
         append_jsonl_durable(path,sample)
         sample_index+=1
@@ -323,6 +331,7 @@ def collect_kernel(adapter, entry, outdir, timeout, contract, expected_release_i
         "kernel_name":entry["kernel_name"],
         "runtime_kernel_index":entry.get("runtime_kernel_index_expected"),
         "preset":entry.get("preset"),
+        "session_id":str(pathlib.Path(outdir).resolve()),
     }
     run_ok(subst(adapter["select_argv"],vals),timeout=timeout)
     time.sleep(float(adapter["settle_seconds"]))
@@ -377,7 +386,7 @@ def main():
                     help="optional state-changing Foundation soak before the same transaction's exact renderer restore (minimum 5400s)")
     ap.add_argument("--soak-interval-seconds",type=float,default=8.0)
     ap.add_argument("--threshold-policy",help="fully frozen Foundation policy; required for an integrated soak")
-    ap.add_argument("--threshold-baseline",help="qualified Foundation baseline profile; required for an integrated soak")
+    ap.add_argument("--threshold-baseline",help="output path for the baseline generated from this run's complete 28-kernel sweep")
     ap.add_argument("--dry-run",action="store_true")
     args=ap.parse_args()
 
@@ -402,11 +411,12 @@ def main():
         return 0
 
     if args.soak_seconds:
-        if not args.threshold_policy or not args.threshold_baseline:
-            raise SystemExit("integrated soak requires --threshold-policy and --threshold-baseline; refuses before device preflight")
+        if not args.threshold_policy:
+            raise SystemExit("integrated soak requires a fully frozen --threshold-policy; refuses before device preflight")
         freeze_validator=ROOT/"scripts/hbnf_foundation_threshold_freeze.py"
         run_json([sys.executable,str(freeze_validator),"--policy",args.threshold_policy,
-                  "--baseline",args.threshold_baseline,"--validate-inputs-only"],timeout=15)
+                  "--baseline",str(ROOT/"config/HBNF_RUNTIME_QUALIFICATION_POLICY_TEMPLATE.json"),
+                  "--validate-policy-only"],timeout=15)
 
     try:
         available=require_disk_headroom(outdir)
@@ -415,7 +425,7 @@ def main():
         return 2
     # Read-only identity/continuity preflight MUST pass before the first select/mutation.
     try:
-        preflight=run_json(adapter["telemetry_argv"],timeout=timeout)
+        preflight=run_json(subst(adapter["telemetry_argv"],{"session_id":str(outdir)}),timeout=timeout)
         atomic_write(outdir/"PRE_SWEEP_TELEMETRY.json",json.dumps(preflight,indent=2,sort_keys=True)+"\n")
     except Exception as e:
         failure={"status":"READONLY_PREFLIGHT_FAILED","error":str(e),"device_mutation_started":False}
@@ -442,7 +452,7 @@ def main():
         # Hold real disk blocks so an unexpected host-full condition can still
         # release space for the mandatory restore response and state evidence.
         reserve=create_recovery_reserve(outdir)
-        snapshot=run_json(adapter["snapshot_argv"],timeout=timeout)
+        snapshot=run_json(subst(adapter["snapshot_argv"],{"observer_output":str(outdir/"OBSERVER_EFFECT.json")}),timeout=timeout)
         atomic_write(snapfile,json.dumps(snapshot,indent=2,sort_keys=True)+"\n")
         for entry in inventory["entries"]:
             profile,release_id,variant_id,restart_count,previous_uptime=collect_kernel(
@@ -464,18 +474,23 @@ def main():
                 "contract":"foundation","expected_kernel_count":28,"restore_verified":False,"kernels":profiles}
             pre_soak_path=outdir/"PRE_SOAK_SWEEP_MANIFEST.json"
             atomic_write(pre_soak_path,json.dumps(pre_soak_manifest,indent=2,sort_keys=True)+"\n")
+            baseline_path=pathlib.Path(args.threshold_baseline).resolve() if args.threshold_baseline else outdir/"PRE_SOAK_BASELINE.json"
+            run_json([sys.executable,str(ROOT/"scripts/hbnf_foundation_baseline.py"),
+                "--sweep-manifest",str(pre_soak_path),"--output",str(baseline_path)],timeout=30)
             freeze_receipt=outdir/"THRESHOLD_FREEZE_RECEIPT.json"
             freeze_result=run_json([sys.executable,str(ROOT/"scripts/hbnf_foundation_threshold_freeze.py"),
                 "--policy",str(pathlib.Path(args.threshold_policy).resolve()),
-                "--baseline",str(pathlib.Path(args.threshold_baseline).resolve()),
+                "--baseline",str(baseline_path),
                 "--sweep-manifest",str(pre_soak_path),"--expected-release",expected_release_id,
                 "--output",str(freeze_receipt)],timeout=30)
             if freeze_result.get("status")!="FROZEN_BEFORE_SOAK" or freeze_result.get("soak_started") is not False:
                 raise RuntimeError("threshold freeze receipt did not pass before soak")
             soak_result=run_foundation_soak(
                 adapter,inventory,outdir,timeout,expected_release_id,expected_restart_count,
-                previous_uptime,args.soak_seconds,args.soak_interval_seconds
+                previous_uptime,args.soak_seconds,args.soak_interval_seconds,
+                load(args.threshold_policy)
             )
+            soak_result["baseline_path"]=str(baseline_path)
             soak_result["pre_soak_manifest_path"]=str(pre_soak_path)
             soak_result["threshold_freeze_receipt_path"]=str(freeze_receipt)
             soak_result["threshold_freeze_receipt_sha256"]=__import__("hashlib").sha256(freeze_receipt.read_bytes()).hexdigest()

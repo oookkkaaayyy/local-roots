@@ -1,0 +1,62 @@
+{
+  "all_kernel_sweep": {
+    "common_path_audit_required": true,
+    "envelope": {
+      "max_frame_max_ms": null,
+      "max_frame_p95_ms": null,
+      "max_frame_p99_ms": null,
+      "min_fps_median": null
+    },
+    "expected_kernel_count": 28,
+    "failure_policy": "FAIL_FOUNDATION_IF_ANY_KERNEL_FAILS_OR_SHARED_PATH_REMAINS_UNEXPLAINED",
+    "same_scene_or_declared_comparable_baseline_required": true,
+    "sample_seconds_per_kernel": 30,
+    "settle_seconds_per_kernel": 5,
+    "thresholds": "USE_FROZEN_BASELINE_RELATIVE_POLICY__DO_NOT_INVENT_FROM_DEFECTIVE_RELEASE"
+  },
+  "baseline_profile": "GENERATED_FROM_THE_CURRENT_COMPLETE_28_KERNEL_SWEEP_BEFORE_SOAK",
+  "catastrophic_early_stop": {
+    "aux_projection_age_ms_ceiling": 1000,
+    "consecutive_samples": 3,
+    "enabled": true,
+    "fps_floor_absolute": 20,
+    "frame_ms_p99_ceiling_absolute": 75
+  },
+  "comparison": {
+    "candidate_vs_baseline": {
+      "aux_stale_sample_max_fraction": 0.01,
+      "fps_median_min_ratio": 0.9,
+      "frame_max_max_ratio": 1.5,
+      "frame_p95_max_ratio": 1.25,
+      "frame_p99_max_ratio": 1.25,
+      "largest_free_block_min_ratio": 0.8,
+      "minimum_free_heap_min_ratio": 0.85
+    },
+    "require_same_or_declared_comparable_kernel_variant": true
+  },
+  "note": "Frozen from explicit user directive for the 2026-10-06 Foundation transaction. The baseline is generated only from the complete 28-kernel sweep on the exact candidate, then hash-bound with the sweep before any soak sample.",
+  "observer_effect": {
+    "compare_instrumented_vs_lightweight_production_telemetry": true,
+    "expensive_diagnostics_allowed_in_golden": false,
+    "required": true
+  },
+  "phases": {
+    "final_release_soak_minutes": 90,
+    "foundation_preferred_extended_soak_minutes": 240,
+    "foundation_promotion_soak_minutes": 90,
+    "integration_smoke_minutes": 5,
+    "major_milestone_soak_minutes": 30
+  },
+  "qualification_requires": [
+    "telemetry_contract_pass",
+    "no_restart_during_run",
+    "no_sustained_runtime_regression_vs_baseline",
+    "no_unexplained_heap_or_fragmentation_deterioration",
+    "matrix_aux_projection_health",
+    "feature_regression_pass",
+    "exact_release_identity_match"
+  ],
+  "sample_interval_seconds": 8,
+  "schema": "hbnf-runtime-qualification-policy-v1",
+  "status": "FROZEN"
+}

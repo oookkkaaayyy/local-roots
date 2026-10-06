@@ -1,0 +1,98 @@
+{
+  "artifact_files": {
+    "firmware.bin": {
+      "bytes": 1488768,
+      "path": "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/artifact/firmware.bin",
+      "sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338"
+    },
+    "release07.bin": {
+      "bytes": 1458624,
+      "path": "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/artifact/release07.bin",
+      "sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab"
+    }
+  },
+  "captured_unix": 1791260384.191045,
+  "checks": {
+    "aux_continuity_render_count": true,
+    "aux_ddp_live_source_matrix": true,
+    "aux_mac_exact": true,
+    "candidate_sha_exact": true,
+    "disk_headroom": true,
+    "matrix_companion_continuity": true,
+    "matrix_mac_exact": true,
+    "matrix_on": true,
+    "matrix_release07_exact": true,
+    "ota_unlocked_same_subnet": true,
+    "recovery_sha_exact": true
+  },
+  "no_mutation": true,
+  "sample_a": {
+    "aux": {
+      "ddp_live": true,
+      "ddp_mode": "DDP",
+      "ddp_source_ip": "192.168.77.10",
+      "free_heap_bytes": 105968,
+      "http_health": true,
+      "ip": "192.168.77.11",
+      "mac": "8c94df55c34c",
+      "render_count": 0,
+      "rx_active": false,
+      "uptime": 583,
+      "wled": "16.0.1"
+    },
+    "matrix": {
+      "aux_transport": "wled-native-ddp-unicast",
+      "build": "hbnf-matrix-coordinated-v1-20261002-07",
+      "candidate": "hbnf-matrix-coordinated-v1-20261002-07",
+      "companion_render_count": 22767,
+      "free_heap_bytes": 142856,
+      "http_health": true,
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "on": true,
+      "restart_count": null,
+      "uptime": 1437,
+      "wled": "16.0.1"
+    },
+    "ota": {
+      "lock_wifi": false,
+      "locked": false,
+      "same_subnet_required": true
+    }
+  },
+  "sample_b": {
+    "aux": {
+      "ddp_live": true,
+      "ddp_mode": "DDP",
+      "ddp_source_ip": "192.168.77.10",
+      "free_heap_bytes": 102544,
+      "http_health": true,
+      "ip": "192.168.77.11",
+      "mac": "8c94df55c34c",
+      "render_count": 0,
+      "rx_active": false,
+      "uptime": 586,
+      "wled": "16.0.1"
+    },
+    "matrix": {
+      "aux_transport": "wled-native-ddp-unicast",
+      "build": "hbnf-matrix-coordinated-v1-20261002-07",
+      "candidate": "hbnf-matrix-coordinated-v1-20261002-07",
+      "companion_render_count": 22829,
+      "free_heap_bytes": 142864,
+      "http_health": true,
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "on": true,
+      "restart_count": null,
+      "uptime": 1441,
+      "wled": "16.0.1"
+    },
+    "ota": {
+      "lock_wifi": false,
+      "locked": false,
+      "same_subnet_required": true
+    }
+  },
+  "schema": "hbnf-seq33-readonly-preflight-v1"
+}

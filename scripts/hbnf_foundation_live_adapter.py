@@ -154,7 +154,7 @@ def _restore_snapshot(sid,shash):
 def select(kernel):
     if not command("select",kernel=int(kernel)).get("HBNF",{}).get("packet20Diagnostic",{}).get("lastCommandAccepted",False):raise RuntimeError("packet20-kernel-select-rejected")
 
-def telemetry(inventory):
+def telemetry(inventory,session_id):
     info,build=identity(); state,p20=enable_tails(True)
     deadline=time.monotonic()+5
     while state.get("HBNF",{}).get("foundationTelemetry",{}).get("frameMsP99") is None and time.monotonic()<deadline:
@@ -167,11 +167,13 @@ def telemetry(inventory):
     kid=int(timing["kernel"])
     entry=next((x for x in inv["entries"] if int(x["runtime_kernel_index_expected"])==kid),None)
     if entry is None:raise RuntimeError("runtime-kernel-outside-inventory")
-    cache={"restart_count":0,"uptime":int(timing["uptimeSec"])}
+    cache={"session_id":str(session_id),"restart_count":0,"uptime":int(timing["uptimeSec"])}
     try: old=json.loads(CACHE.read_text())
     except Exception: old={}
-    if cache["uptime"]<int(old.get("uptime",0)):cache["restart_count"]=int(old.get("restart_count",0))+1
-    else:cache["restart_count"]=int(old.get("restart_count",0))
+    if old.get("session_id")==cache["session_id"]:
+        cache["restart_count"]=int(old.get("restart_count",0))
+        if cache["uptime"]<int(old.get("uptime",0)):cache["restart_count"]+=1
+    else:cache["restart_count"]=0
     CACHE.write_text(json.dumps(cache))
     sample={
       "release_id":build["release_id"],"uptime_seconds":timing["uptimeSec"],"fps":timing["fps"],
@@ -196,12 +198,12 @@ def main():
     ap=argparse.ArgumentParser();sub=ap.add_subparsers(dest="action",required=True)
     s0=sub.add_parser("snapshot");s0.add_argument("--observer-output")
     s=sub.add_parser("select");s.add_argument("--kernel",required=True)
-    t=sub.add_parser("telemetry");t.add_argument("--inventory",required=True)
+    t=sub.add_parser("telemetry");t.add_argument("--inventory",required=True);t.add_argument("--session-id",default="legacy")
     r=sub.add_parser("restore");r.add_argument("--snapshot-file",required=True)
     a=ap.parse_args()
     if a.action=="snapshot":print(json.dumps(snapshot(a.observer_output),separators=(",",":")))
     elif a.action=="select":select(a.kernel)
-    elif a.action=="telemetry":telemetry(a.inventory)
+    elif a.action=="telemetry":telemetry(a.inventory,a.session_id)
     elif a.action=="restore":restore(a.snapshot_file)
 if __name__=="__main__":
     try:main()

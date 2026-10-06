@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import statistics
 import pathlib
 
 
@@ -43,7 +44,8 @@ def read_jsonl(path: str) -> list[dict]:
 
 
 def audit(samples: list[dict], inventory: dict, expected_release: str,
-          minimum_duration_seconds: int = MIN_DURATION_SECONDS) -> dict:
+          minimum_duration_seconds: int = MIN_DURATION_SECONDS,
+          baseline: dict | None = None, policy: dict | None = None) -> dict:
     errors: list[str] = []
     if minimum_duration_seconds < MIN_DURATION_SECONDS:
         errors.append("minimum duration cannot be less than 90 minutes")
@@ -110,6 +112,50 @@ def audit(samples: list[dict], inventory: dict, expected_release: str,
     frame_max = nums("frame_ms_max")
     minimum_heap = nums("minimum_free_heap_bytes")
     largest_block = nums("largest_free_block_bytes")
+    qualification_errors=[]; per_kernel={}
+    if baseline is not None or policy is not None:
+        if not baseline or baseline.get("schema")!="hbnf-foundation-28-kernel-baseline-v1":
+            qualification_errors.append("fresh complete 28-kernel baseline missing/invalid")
+        elif baseline.get("release_id")!=expected_release or baseline.get("kernel_count")!=28:
+            qualification_errors.append("fresh baseline is not bound to the exact candidate and 28-kernel contract")
+        if not policy or policy.get("status")!="FROZEN":
+            qualification_errors.append("frozen Foundation policy missing/invalid")
+        if baseline and policy:
+            cfg=policy["comparison"]["candidate_vs_baseline"]
+            base=baseline.get("kernels",{})
+            for kid in sorted(expected_ids):
+                rows=[s for s in valid if int(s["kernel_id"])==kid]
+                b=base.get(str(kid))
+                if not rows or not b:
+                    qualification_errors.append(f"kernel {kid}: baseline or soak samples missing");continue
+                vals=lambda k:[float(x[k]) for x in rows]
+                metrics={"fps_median":statistics.median(vals("fps")),
+                    "frame_p95_median":statistics.median(vals("frame_ms_p95")),
+                    "frame_p99_median":statistics.median(vals("frame_ms_p99")),
+                    "frame_max":max(vals("frame_ms_max")),
+                    "minimum_free_heap":min(vals("minimum_free_heap_bytes")),
+                    "largest_free_block_min":min(vals("largest_free_block_bytes")),
+                    "aux_stale_fraction":sum(not bool(x["aux_projection_active"]) for x in rows)/len(rows)}
+                checks={
+                    "fps_median":metrics["fps_median"]>=float(b["fps_median"])*float(cfg["fps_median_min_ratio"]),
+                    "frame_p95_median":metrics["frame_p95_median"]<=float(b["frame_p95_median"])*float(cfg["frame_p95_max_ratio"]),
+                    "frame_p99_median":metrics["frame_p99_median"]<=float(b["frame_p99_median"])*float(cfg["frame_p99_max_ratio"]),
+                    "frame_max":metrics["frame_max"]<=float(b["frame_max"])*float(cfg["frame_max_max_ratio"]),
+                    "minimum_free_heap":metrics["minimum_free_heap"]>=float(b["minimum_free_heap"])*float(cfg["minimum_free_heap_min_ratio"]),
+                    "largest_free_block_min":metrics["largest_free_block_min"]>=float(b["largest_free_block_min"])*float(cfg["largest_free_block_min_ratio"]),
+                    "aux_stale_fraction":metrics["aux_stale_fraction"]<=float(cfg["aux_stale_sample_max_fraction"])}
+                per_kernel[str(kid)]={"kernel_name":b["kernel_name"],"samples":len(rows),"baseline":b,"metrics":metrics,"checks":checks}
+                qualification_errors += [f"kernel {kid} {key} failed frozen threshold" for key,ok in checks.items() if not ok]
+            early=policy.get("catastrophic_early_stop",{})
+            streak=0
+            for i,s in enumerate(valid):
+                bad=(float(s["fps"])<float(early["fps_floor_absolute"]) or
+                    float(s["frame_ms_p99"])>float(early["frame_ms_p99_ceiling_absolute"]) or
+                    float(s["aux_projection_age_ms"])>float(early["aux_projection_age_ms_ceiling"]))
+                streak=streak+1 if bad else 0
+                if streak>=int(early["consecutive_samples"]):
+                    qualification_errors.append(f"catastrophic threshold exceeded for {streak} consecutive samples ending at {i}");break
+    errors.extend(qualification_errors)
     return {
         "schema": "hbnf-foundation-soak-structural-audit-v1",
         "status": "PASS" if not errors else "FAIL",
@@ -129,6 +175,9 @@ def audit(samples: list[dict], inventory: dict, expected_release: str,
         "frame_ms_p99_max_across_samples": max(frame_p99) if frame_p99 else None,
         "frame_ms_max_max_across_samples": max(frame_max) if frame_max else None,
         "performance_thresholds": "NOT_EVALUATED__MUST_BE_FROZEN_BEFORE_SOAK",
+        "foundation_qualification": (None if baseline is None and policy is None else {
+            "status":"PASS" if not errors and not qualification_errors else "FAIL",
+            "errors":qualification_errors,"per_kernel":per_kernel}),
     }
 
 
@@ -137,16 +186,20 @@ def main() -> int:
     parser.add_argument("--input", required=True, help="captured soak JSONL; offline only")
     parser.add_argument("--inventory", required=True)
     parser.add_argument("--expected-release", required=True)
+    parser.add_argument("--baseline")
+    parser.add_argument("--policy")
     parser.add_argument("--minimum-duration-seconds", type=int, default=MIN_DURATION_SECONDS)
     parser.add_argument("--output")
     args = parser.parse_args()
     result = audit(read_jsonl(args.input), read_json(args.inventory),
-                   args.expected_release, args.minimum_duration_seconds)
+                   args.expected_release, args.minimum_duration_seconds,
+                   read_json(args.baseline) if args.baseline else None,
+                   read_json(args.policy) if args.policy else None)
     rendered = json.dumps(result, indent=2, sort_keys=True) + "\n"
     if args.output:
         pathlib.Path(args.output).write_text(rendered)
     print(rendered, end="")
-    return 0 if result["status"] == "PASS" else 2
+    return 0 if result["status"] == "PASS" and (not result.get("foundation_qualification") or result["foundation_qualification"]["status"]=="PASS") else 2
 
 
 if __name__ == "__main__":

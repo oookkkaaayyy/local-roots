@@ -3,7 +3,9 @@
   "snapshot_argv": [
     "python3",
     "/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_live_adapter.py",
-    "snapshot"
+    "snapshot",
+    "--observer-output",
+    "{observer_output}"
   ],
   "select_argv": [
     "python3",
@@ -17,7 +19,9 @@
     "/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_live_adapter.py",
     "telemetry",
     "--inventory",
-    "/private/tmp/hbnf-foundation-crash-recovery-20261005/config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+    "--session-id",
+    "{session_id}"
   ],
   "restore_argv": [
     "python3",

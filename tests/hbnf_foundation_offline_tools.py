@@ -7,6 +7,11 @@ def load(name):
 freeze=load("hbnf_foundation_threshold_freeze")
 recovery=load("hbnf_foundation_recovery_audit")
 pack=load("hbnf_foundation_evidence_pack")
+baseline_builder=load("hbnf_foundation_baseline")
+soak_audit=load("hbnf_foundation_soak_audit")
+foundation_policy=json.loads((ROOT/"config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006.json").read_text())
+assert freeze.validate_policy(foundation_policy)==[]
+assert foundation_policy["catastrophic_early_stop"]["consecutive_samples"]==3
 
 # The current null template must fail closed instead of inventing thresholds.
 template=json.loads((ROOT/"config/HBNF_RUNTIME_QUALIFICATION_POLICY_TEMPLATE.json").read_text())
@@ -21,7 +26,7 @@ with tempfile.TemporaryDirectory() as td:
     root=pathlib.Path(td);policy=json.loads(json.dumps(template));policy["status"]="FROZEN"
     policy["comparison"]["candidate_vs_baseline"]={k:(0.0 if k=="aux_stale_sample_max_fraction" else 0.9) for k in freeze.RATIOS}
     policy["catastrophic_early_stop"].update(fps_floor_absolute=10,frame_ms_p99_ceiling_absolute=100,aux_projection_age_ms_ceiling=1000)
-    baseline={"contract":"foundation","release_id":"baseline","fps":{"median":40},
+    baseline={"contract":"foundation","release_id":"candidate","fps":{"median":40},
               "frame_ms":{"p95_median":25,"p99_median":30,"max":40},
               "heap":{"minimum_free_min":90000,"largest_block_end":60000}}
     (root/"policy.json").write_text(json.dumps(policy));(root/"baseline.json").write_text(json.dumps(baseline))
@@ -33,6 +38,43 @@ with tempfile.TemporaryDirectory() as td:
     (root/"sweep.json").write_text(json.dumps({"release_id":"candidate","kernels":kernels}))
     receipt=freeze.freeze(root/"policy.json",root/"baseline.json",root/"sweep.json","candidate")
     assert receipt["status"]=="FROZEN_BEFORE_SOAK" and receipt["soak_started"] is False
+
+# The baseline is generated from the fresh complete sweep, and the soak audit
+# applies the frozen ratios independently to each matching kernel.
+with tempfile.TemporaryDirectory() as td:
+    root=pathlib.Path(td);kernels=[]
+    for i in range(28):
+        name=f"kernel-{i}";slug=f"{i:02d}_{name}"
+        sample={"release_id":"candidate","uptime_seconds":10,"fps":40,"frame_ms_avg":20,
+          "frame_ms_p50":18,"frame_ms_p95":24,"frame_ms_p99":30,"frame_ms_max":38,
+          "kernel_id":i,"kernel_name":name,"variant_id":"v1","free_heap_bytes":100000,
+          "minimum_free_heap_bytes":95000,"largest_free_block_bytes":80000,"websocket_clients":1,
+          "aux_projection_active":True,"aux_projection_age_ms":30,"aux_render_fps":40,"wifi_rssi_dbm":-45,
+          "restart_count":0,"kernel_ms_avg":5,"kernel_ms_p95":6,"palette_ms_avg":1,"palette_ms_p95":1,
+          "audio_ms_avg":1,"audio_ms_p95":1,"scheduler_ms_avg":1,"scheduler_ms_p95":1,
+          "overlay_ms_avg":0,"overlay_ms_p95":0,"aux_prepare_send_ms_avg":0,"aux_prepare_send_ms_p95":0,
+          "unaccounted_ms_avg":1,"unaccounted_ms_p95":1}
+        raw=root/(slug+".jsonl");raw.write_text(json.dumps(sample)+"\n")
+        prof={"status":"PASS","profile":{"contract":"foundation","validation_errors":[],"release_id":"candidate",
+          "kernel":{"id":i,"name":name,"variant_id":"v1"},"fps":{"median":40},
+          "frame_ms":{"p95_median":24,"p99_median":30,"max":38},
+          "heap":{"minimum_free_min":95000,"largest_block_end":80000}}}
+        pp=root/(slug+".profile.json");pp.write_text(json.dumps(prof))
+        kernels.append({"kernel_id":i,"kernel_name":name,"profile_path":pp.name})
+    manifest={"contract":"foundation","release_id":"candidate","restore_verified":False,"kernels":kernels}
+    mp=root/"sweep.json";mp.write_text(json.dumps(manifest))
+    baseline=baseline_builder.build(mp)
+    assert baseline["kernel_count"]==28 and baseline["kernels"]["0"]["largest_free_block_min"]==80000
+    soak=[]
+    for i in range(1081):
+        s=json.loads((root/(f"{i%28:02d}_kernel-{i%28}.jsonl")).read_text())
+        s.update(sample_time=float(i*5),uptime_seconds=float(i*5+10),kernel_id=i%28,kernel_name=f"kernel-{i%28}")
+        soak.append(s)
+    result=soak_audit.audit(soak,{"entries":[{"runtime_kernel_index_expected":i} for i in range(28)]},"candidate",5400,baseline,foundation_policy)
+    assert result["status"]=="PASS" and result["foundation_qualification"]["status"]=="PASS",result
+    bad=[dict(x) for x in soak];bad[3]["fps"]=10;bad[4]["fps"]=10;bad[5]["fps"]=10
+    fail=soak_audit.audit(bad,{"entries":[{"runtime_kernel_index_expected":i} for i in range(28)]},"candidate",5400,baseline,foundation_policy)
+    assert any("catastrophic threshold" in e for e in fail["errors"])
 
 # The already-durable seq32 receipt is validated offline against the exact BIN.
 receipt=ROOT/"evidence/hbnf-foundation-qualification-20261005/SEQ32_RELEASE07_RECOVERY_VERIFICATION.json"

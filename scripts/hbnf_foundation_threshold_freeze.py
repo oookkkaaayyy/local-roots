@@ -14,7 +14,7 @@ ABSOLUTE=("fps_floor_absolute","frame_ms_p99_ceiling_absolute",
           "aux_projection_age_ms_ceiling")
 
 def digest(path):return hashlib.sha256(pathlib.Path(path).read_bytes()).hexdigest()
-def validate_inputs(policy,baseline):
+def validate_policy(policy):
     errors=[]
     if policy.get("schema")!="hbnf-runtime-qualification-policy-v1":errors.append("policy schema mismatch")
     if policy.get("status")!="FROZEN":errors.append("policy status must be FROZEN before soak")
@@ -27,6 +27,11 @@ def validate_inputs(policy,baseline):
     early=policy.get("catastrophic_early_stop",{})
     for key in ABSOLUTE:
         if not isinstance(early.get(key),(int,float)) or early[key]<=0:errors.append(f"early-stop threshold missing/invalid: {key}")
+    if early.get("consecutive_samples")!=3:errors.append("catastrophic stop must use exactly 3 consecutive samples")
+    return errors
+
+def validate_inputs(policy,baseline):
+    errors=validate_policy(policy)
     if baseline.get("contract")!="foundation":errors.append("baseline contract must be foundation")
     if baseline.get("release_id") in (None,""):errors.append("baseline release identity missing")
     baseline_metrics=((baseline.get("fps") or {}).get("median"),
@@ -42,6 +47,7 @@ def freeze(policy_path,baseline_path,sweep_path,expected_release):
     pp,bp,sp=map(lambda p:pathlib.Path(p).resolve(),(policy_path,baseline_path,sweep_path))
     policy=json.loads(pp.read_text());baseline=json.loads(bp.read_text());sweep=json.loads(sp.read_text())
     errors=validate_inputs(policy,baseline)
+    if baseline.get("release_id")!=expected_release:errors.append("fresh baseline release identity mismatch")
     if sweep.get("release_id")!=expected_release:errors.append("sweep release identity mismatch")
     kernels=sweep.get("kernels")
     ids=[int(k.get("kernel_id",-1)) for k in kernels or []]
@@ -70,7 +76,12 @@ def freeze(policy_path,baseline_path,sweep_path,expected_release):
 def main():
     p=argparse.ArgumentParser();p.add_argument("--policy",required=True);p.add_argument("--baseline",required=True)
     p.add_argument("--sweep-manifest");p.add_argument("--expected-release");p.add_argument("--output");p.add_argument("--validate-inputs-only",action="store_true")
+    p.add_argument("--validate-policy-only",action="store_true")
     a=p.parse_args()
+    if a.validate_policy_only:
+        errors=validate_policy(json.loads(pathlib.Path(a.policy).read_text()))
+        if errors:raise ValueError("threshold policy refused: "+"; ".join(errors))
+        print(json.dumps({"status":"FROZEN_POLICY_VALID"}));return 0
     if a.validate_inputs_only:
         errors=validate_inputs(json.loads(pathlib.Path(a.policy).read_text()),json.loads(pathlib.Path(a.baseline).read_text()))
         if errors:raise ValueError("threshold inputs refused: "+"; ".join(errors))

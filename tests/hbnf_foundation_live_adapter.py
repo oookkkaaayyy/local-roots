@@ -33,7 +33,7 @@ with tempfile.TemporaryDirectory() as td:
       "unaccountedMsP95":6}}}
     m.enable_tails=lambda enabled:(state,{})
     with contextlib.redirect_stdout(io.StringIO()) as output:
-        m.telemetry(str(inventory))
+        m.telemetry(str(inventory),"run-a")
     sample=json.loads(output.getvalue())
     required={"release_id","uptime_seconds","fps","frame_ms_p50","frame_ms_p95",
       "frame_ms_p99","frame_ms_max","kernel_id","kernel_name","variant_id",
@@ -47,6 +47,11 @@ with tempfile.TemporaryDirectory() as td:
     assert sample["release_id"]==m.EXPECTED and sample["kernel_name"]=="Complex_Kaleido_3"
     assert sample["frame_ms_p99"]==23 and sample["minimum_free_heap_bytes"]==80000
     assert sample["largest_free_block_bytes"]==60000 and sample["restart_count"]==0
+    state["HBNF"]["timing"]["uptimeSec"]=90
+    with contextlib.redirect_stdout(io.StringIO()) as output:m.telemetry(str(inventory),"run-a")
+    assert json.loads(output.getvalue())["restart_count"]==1
+    with contextlib.redirect_stdout(io.StringIO()) as output:m.telemetry(str(inventory),"run-b")
+    assert json.loads(output.getvalue())["restart_count"]==0
 
 bad_build={**build,"release_id":"wrong"}
 m.get=lambda url: info if url.endswith("/json/info") else bad_build
