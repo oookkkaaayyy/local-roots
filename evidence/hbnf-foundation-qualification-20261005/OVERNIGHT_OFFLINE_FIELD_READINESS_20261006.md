@@ -32,3 +32,7 @@ The current Foundation source contains a 3x5 glyph table. Command text/score ove
 - Owner HTML: `6012f6a763e08157a2401a51581f2772808d492d38b9ae5425257dcf933e3cd6`.
 - Owner PWA manifest: `f8040db1b96ffdd2aa716eb0ea48e3ee24f3d9e7badc736050e8f2e307a6444c`.
 - Overlay headers: `{"hbnf_animartrix_audio_bridge.h": "8748231ccf7733bd34c16dc0417933a46d3a5bdccfc47c2bd54ce2e3fa104535", "hbnf_audio_expression.h": "f4825884dd53cba9bca698bd8b9b7d9d13a81e7ce381957d23790f13073dc4c3", "hbnf_coordinated_contract.h": "22d17d917db8d74ba141fbc1825fe1a637e7f3396208b5cf0c706f4c6c7ecbaa", "hbnf_foundation_core.h": "9f4a63546bc42cef6ce71edfc6bb055fca40f1b28b8e7595fd09b6da9b5acf5c", "hbnf_local_ui.h": "f83b4664efcac701ad50e9dfb69059903a97ce62c51603f79d1fa688734cbbc0", "hbnf_vibe16.h": "f076acf0e5710bf5a9acffe63b31a95f2252230b5470bd362301caa73a743b0a"}`.
+
+## Staged owner package
+
+The offline V7.3 package passed its embedded installer integrity check and is stored in Drive: [HBNF_CART_UI_V7_3_SKINS_OWNER_20261006.zip](https://drive.google.com/file/d/1p31foPJ9a5z6l_ipJRLxTK0fV8ZBL7xv/view?usp=drivesdk). SHA-256: `54eec1998410fdaf258477538d5494658639a10040a8746a2a79da525c013c2f`; 34737 bytes. Source commit: `6f13ed8bc683743f8c1c53e0c65f5247af07bdba`. It remains staged and was not deployed. Receipt: `OWNER_PWA_V7_3_STAGING_PACKAGE_RECEIPT.json`.

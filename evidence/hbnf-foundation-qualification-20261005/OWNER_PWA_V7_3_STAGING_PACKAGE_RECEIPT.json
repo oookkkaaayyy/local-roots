@@ -1,0 +1,23 @@
+{
+  "branch": "hbnf-cart2-ready-to-implement-staging-20261001",
+  "deployment_status": "STAGED_NOT_DEPLOYED__PHASE2_NOT_AUTHORIZED",
+  "drive_file_id": "1p31foPJ9a5z6l_ipJRLxTK0fV8ZBL7xv",
+  "drive_url": "https://drive.google.com/file/d/1p31foPJ9a5z6l_ipJRLxTK0fV8ZBL7xv/view?usp=drivesdk",
+  "integrity_validation": "PASS__packaged installer check_package verified all controller file SHA256 values",
+  "live_mutation": "none",
+  "local_checks": [
+    "owner Skins model/auth/concurrency/uncertain-save flow PASS",
+    "owner PWA referenced asset/package closure PASS",
+    "JavaScript syntax PASS",
+    "installer Python syntax PASS",
+    "workflow YAML syntax PASS",
+    "git diff --check PASS"
+  ],
+  "manifest_sha256": "d941f6bdcaf59ea8528daaf78259014ccc07a396b56b79901242ded7da1ba5d6",
+  "package_bytes": 34737,
+  "package_name": "HBNF_CART_UI_V7_3_SKINS_OWNER_20261006.zip",
+  "package_sha256": "54eec1998410fdaf258477538d5494658639a10040a8746a2a79da525c013c2f",
+  "schema": "hbnf-owner-controller-v7-3-staging-package-receipt-v1",
+  "scope": "controller-only; no firmware; no deployed change",
+  "source_commit": "6f13ed8bc683743f8c1c53e0c65f5247af07bdba"
+}

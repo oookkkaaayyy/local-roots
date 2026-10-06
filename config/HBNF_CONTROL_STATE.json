@@ -861,6 +861,15 @@
         "Offline/staging Phase 2 work only; no deploy or hardware mutation until newer control authority allocates a legal transaction."
       ],
       "recovery_sequence_status": "SEQ42_USED__RELEASE07_RUNTIME_IDENTITY_VERIFIED__HTTP_RECEIPT_MISSING"
+    },
+    "owner_pwa_v7_3_package": {
+      "status": "STAGED_HASH_VERIFIED_NOT_DEPLOYED",
+      "package_receipt": "evidence/hbnf-foundation-qualification-20261005/OWNER_PWA_V7_3_STAGING_PACKAGE_RECEIPT.json",
+      "package_sha256": "54eec1998410fdaf258477538d5494658639a10040a8746a2a79da525c013c2f",
+      "drive_file_id": "1p31foPJ9a5z6l_ipJRLxTK0fV8ZBL7xv",
+      "drive_url": "https://drive.google.com/file/d/1p31foPJ9a5z6l_ipJRLxTK0fV8ZBL7xv/view?usp=drivesdk",
+      "source_commit": "6f13ed8bc683743f8c1c53e0c65f5247af07bdba",
+      "deployment": "NOT_DEPLOYED__PHASE2_NOT_AUTHORIZED"
     }
   },
   "execution_budget_policy": {
