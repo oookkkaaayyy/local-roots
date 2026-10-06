@@ -66,6 +66,10 @@ def _ack_timeout(stage, budget, last):
     summary={k:diag.get(k) for k in ("lastCommand","lastCommandAccepted","snapshotState","snapshotId","snapshotHash","restoreVerified")}
     return RuntimeError(f"{stage} acknowledgement timed out after {budget}s; last_state={json.dumps(summary,sort_keys=True)}")
 
+def observer_poll_budget_available(deadline, reserve_seconds=1.0):
+    """Do not start a telemetry GET that can only receive a near-zero timeout."""
+    return deadline-time.monotonic()>=reserve_seconds
+
 def command(op,**kw):
     post_state({"on":True,"HBNF":{"packet20Diagnostic":{"op":op,**kw}}})
     deadline=time.monotonic()+COMMAND_ACK_TIMEOUT_SECONDS;last=None
@@ -136,13 +140,13 @@ def observer_effect(output, inventory):
     select(0);time.sleep(5)
     enable_tails(False)
     light=[];deadline=time.monotonic()+30
-    while time.monotonic()<deadline:
+    while time.monotonic()<deadline and observer_poll_budget_available(deadline):
         s,_=p20_state(deadline,stage="observer-lightweight-window");v=s.get("HBNF",{}).get("timing",{}).get("wholeFrameUs")
         if v is not None:light.append(float(v)/1000.0)
         time.sleep(1)
     enable_tails(True)
     heavy=[];deadline=time.monotonic()+30
-    while time.monotonic()<deadline:
+    while time.monotonic()<deadline and observer_poll_budget_available(deadline):
         s,_=p20_state(deadline,stage="observer-instrumented-window");v=s.get("HBNF",{}).get("timing",{}).get("wholeFrameUs")
         if v is not None:heavy.append(float(v)/1000.0)
         time.sleep(1)

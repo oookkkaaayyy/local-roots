@@ -1,4 +1,11 @@
 {
+  "after_live_transaction": {
+    "live_mutation_authorized": false,
+    "post_recovery_readonly": "PASS",
+    "seq35_candidate_install": "PASS_ONCE_EXACT_BIN",
+    "seq35_sweep": "ABORTED_BEFORE_28_KERNELS_DURING_OBSERVER_EFFECT",
+    "seq36_release07_recovery": "PASS"
+  },
   "architecture_fitness": "PASS",
   "authority_commit": "b298c27426ac01720b8499e8f91fea26643dced4",
   "candidate": {
@@ -17,31 +24,44 @@
     "sha256": "5db42cdef4aa4c7a47e165b7d75bdaca2d382df88a7390f699eeb5f194578d42",
     "size_bytes": 7987
   },
+  "capsule_status": "CAPSULE_AND_PRELIVE_PASSED_BEFORE_SEQ35_INSTALL; capsule inputs changed after transaction to close authorization and record the minimal offline host correction; a future mutation requires a new capsule/proof.",
   "checks": {
     "capsule": "PASS",
     "prelive": "PASS"
   },
+  "current_control_state": {
+    "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
+    "installed_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "lifecycle": "FIX_CANDIDATE",
+    "live_mutation_authorized": false
+  },
+  "failure_localization": {
+    "path": "evidence/hbnf-foundation-qualification-20261005/seq35/FAILURE_LOCALIZATION.json",
+    "sha256": "6ac8d933b692e5b1e5aca7738b8779c5644c3c185fa8d7cc58b7ce9de6c18f3a",
+    "size_bytes": 18505
+  },
   "firmware_behavior_delta": "none; host-only capture/guard changes",
+  "host_timeout_regression_fix": {
+    "path": "scripts/hbnf_foundation_live_adapter.py",
+    "regression": "tests/hbnf_foundation_live_adapter.py",
+    "rule": "observer polling stops starting reads with <1s remaining in its 30s deadline",
+    "status": "PASS"
+  },
   "modified_source_inputs": {
     "config/HBNF_CONTROL_STATE.json": {
       "path": "config/HBNF_CONTROL_STATE.json",
-      "sha256": "bcd2dd06e91e10a4d5e8686e5882a6c200ed0880b2cd88b2cd324af45f7dc9b5",
-      "size_bytes": 40423
+      "sha256": "4138f92e8f10610e974c93711e03fe17e93737be4197423e375ef3f664f81d18",
+      "size_bytes": 41806
     },
     "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json": {
       "path": "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json",
-      "sha256": "9d8209d4e4feb0e1f0d4b0d72452a3bc39169134dd0a94ea2ab77e3a090d6f11",
-      "size_bytes": 3139
-    },
-    "platform/workflows/live-device-diagnostic.json": {
-      "path": "platform/workflows/live-device-diagnostic.json",
-      "sha256": "57344a628bf6e470e8ba7c192b6572acc27b50ab08e02029200da5a8ef743470",
-      "size_bytes": 6351
+      "sha256": "fd22bede8079182f83fecf4c0550ef35442d7515c97f298963947fb510319bc5",
+      "size_bytes": 3378
     },
     "scripts/hbnf_foundation_live_adapter.py": {
       "path": "scripts/hbnf_foundation_live_adapter.py",
-      "sha256": "ab497d515852f317d252487d154a81a42ea8ff8a27743e21c5cf035606c16f73",
-      "size_bytes": 16699
+      "sha256": "775f066e105c0e5109ad854ef18ebdac1e54d7604046848146a18bcf79f3741e",
+      "size_bytes": 16993
     },
     "scripts/hbnf_foundation_seq35_transaction.py": {
       "path": "scripts/hbnf_foundation_seq35_transaction.py",
@@ -53,6 +73,11 @@
       "sha256": "38089f1a4d69a77e7fc657e8551a46b36fd5e23f52c47b3df189abeb6b2e722d",
       "size_bytes": 29436
     },
+    "tests/hbnf_foundation_live_adapter.py": {
+      "path": "tests/hbnf_foundation_live_adapter.py",
+      "sha256": "3f28451bacc0c3ba9223ced0e1c09ff9b84376e0fe9ea006ecb946d4ad49a28d",
+      "size_bytes": 8611
+    },
     "tests/hbnf_live_kernel_sweep.py": {
       "path": "tests/hbnf_live_kernel_sweep.py",
       "sha256": "3c3b7b88cde9f09a80dbfb10b9422d3fd5e6a628563cee93c1ed0bc51876ca38",
@@ -62,6 +87,11 @@
   "no_firmware_build": "true; existing exact candidate only",
   "package_dry_run": "PASS",
   "platform_doctor": "PASS",
+  "post_recovery_readonly": {
+    "path": "evidence/hbnf-foundation-qualification-20261005/seq35/POST_RECOVERY_READONLY.json",
+    "sha256": "5f1d9672696203165e6130a4f803e568d1b2b4540a84aaaeb2ac04b2d6f486c5",
+    "size_bytes": 12757
+  },
   "prelive_proof": {
     "path": "evidence/hbnf-foundation-qualification-20261005/seq35/PRELIVE_PROOF.json",
     "sha256": "3ce2a803661dfde9e81b6bab9cedffc687192be53c67173e7b0e3df0af5875ad",
@@ -72,7 +102,7 @@
     "sha256": "7d9dc0895a752c26310b0b179d63b81403199341205edec8297c1417fd869802",
     "size_bytes": 12766
   },
-  "recorded_at_utc": "2026-10-06T05:38:20.178694+00:00",
+  "recorded_at_utc": "2026-10-06T05:45:33.708173+00:00",
   "release07_recovery": {
     "path": "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/artifact/release07.bin",
     "release": "hbnf-matrix-coordinated-v1-20261002-07",

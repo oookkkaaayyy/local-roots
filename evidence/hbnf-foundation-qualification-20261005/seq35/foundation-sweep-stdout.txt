@@ -1,0 +1,8 @@
+{
+  "status": "FAIL",
+  "run_error": "command failed rc=2: ['python3', '/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_live_adapter.py', 'snapshot', '--observer-output', '/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq35/foundation-sweep/OBSERVER_EFFECT.json', '--inventory', '/private/tmp/hbnf-foundation-crash-recovery-20261005/config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json']\nfoundation adapter error: RuntimeError: observer-effect-failed; snapshot=1 hash=1289851464; sidecar=/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq35/foundation-sweep/OBSERVER_EFFECT_FAILURE.json; restore=OBSERVER_FAILED__RENDERER_RESTORED; cause=RuntimeError: GET http://192.168.77.10/json/state failed after 0.0162015s (attempts=2): timeout: timed out\n",
+  "restore_error": "snapshot command did not return a verifiable snapshot; renderer state is uncertain; stop and use the pre-proven exact Release07 recovery path",
+  "profiles_completed": 0,
+  "pre_sweep_state": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq35/foundation-sweep/PRE_SWEEP_STATE.json",
+  "post_restore_state": null
+}

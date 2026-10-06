@@ -11,6 +11,9 @@ assert m.POST_TIMEOUT_SECONDS == 25
 assert m.COMMAND_ACK_TIMEOUT_SECONDS == 30
 assert m.SNAPSHOT_READY_TIMEOUT_SECONDS == 45
 assert m.RESTORE_VERIFY_TIMEOUT_SECONDS == 90
+with unittest.mock.patch.object(m.time,"monotonic",return_value=100.0):
+    assert not m.observer_poll_budget_available(100.0162015)
+    assert m.observer_poll_budget_available(101.0)
 
 info={"ip":"192.168.77.10","mac":"70:4b:ca:5b:34:5c","uptime":100,"ws":0,
       "deviceId":"matrix-device","freeheap":90000,"wifi":{"rssi":-45}}

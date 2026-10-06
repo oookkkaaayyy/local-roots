@@ -1,0 +1,13 @@
+{
+  "error": "RuntimeError: GET http://192.168.77.10/json/state failed after 0.0162015s (attempts=2): timeout: timed out",
+  "restore": {
+    "packet20Same": true,
+    "restoreVerified": true,
+    "snapshotHash": 1289851464,
+    "snapshotId": 1
+  },
+  "schema": "hbnf-observer-effect-failure-v1",
+  "snapshotHash": 1289851464,
+  "snapshotId": 1,
+  "status": "OBSERVER_FAILED__RENDERER_RESTORED"
+}
