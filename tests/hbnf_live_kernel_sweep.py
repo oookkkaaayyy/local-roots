@@ -77,6 +77,13 @@ foundation.update({
  "overlay_ms_p95":0.1,"aux_prepare_send_ms_p95":6,"unaccounted_ms_p95":4
 })
 m.validate_sample(foundation,"foundation")
+for frame_max, should_stop in ((999.999,False),(1000.0,True),(12559.93,True)):
+    bounded=dict(foundation);bounded["frame_ms_max"]=frame_max
+    try:
+        m.enforce_foundation_frame_interval(bounded)
+        assert not should_stop, f"{frame_max}ms hard-stop threshold was missed"
+    except RuntimeError as e:
+        assert should_stop and "foundation-steady-state-frame-interval-stop" in str(e)
 foundation["sample_time"]=100.0
 uptime,stamp=m.validate_soak_sample(foundation,inv["entries"][2],"r7",0,10,None)
 assert uptime==10 and stamp==100.0
@@ -101,6 +108,7 @@ assert foundation_adapter["expected_release_id"]=="hbnf-matrix-packet20-fastled-
 assert "{runtime_kernel_index}" in " ".join(foundation_adapter["select_argv"])
 assert pathlib.Path(foundation_adapter["telemetry_argv"][foundation_adapter["telemetry_argv"].index("--inventory")+1]).is_absolute()
 assert foundation_adapter["timeout_seconds"]==240
+assert "--inventory" in foundation_adapter["snapshot_argv"]
 snapshot_worst_case=(
     2*25                         # /json/state POSTs for begin + snapshot
     + 2*(30+10)                  # ack windows, including one bounded GET overrun each
@@ -145,6 +153,25 @@ with tempfile.TemporaryDirectory() as td:
     assert payload["phase"]=="sample"
     assert payload["sample"]["kernel_name"]=="Parametric_Water"
     assert payload["requested"]["effect_id"]==222
+
+# A post-warm-up >=1000ms sample is persisted before the fail-closed runner
+# returns control to the transaction's restore/recovery path.
+with tempfile.TemporaryDirectory() as td:
+    original=(m.run_ok,m.run_json,m.time.sleep)
+    try:
+        m.run_ok=lambda *args,**kwargs:None
+        tripped=dict(foundation);tripped.update(frame_ms_max=1000.0,sample_time=None)
+        m.run_json=lambda *args,**kwargs:tripped
+        m.time.sleep=lambda *args,**kwargs:None
+        try:
+            m.collect_kernel(adapter,inv["entries"][2],pathlib.Path(td),10,"foundation")
+            raise AssertionError(">=1000ms steady-state interval did not stop collection")
+        except RuntimeError as e:
+            assert "foundation-steady-state-frame-interval-stop" in str(e)
+        failure=json.loads((pathlib.Path(td)/"02_Parametric_Water.first_sample.failure.json").read_text())
+        assert failure["sample"]["frame_ms_max"]==1000.0
+    finally:
+        m.run_ok,m.run_json,m.time.sleep=original
 
 # A restore mismatch must leave both raw observations on disk before raising.
 with tempfile.TemporaryDirectory() as td:

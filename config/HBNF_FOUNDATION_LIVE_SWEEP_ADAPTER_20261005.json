@@ -5,7 +5,9 @@
     "/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_live_adapter.py",
     "snapshot",
     "--observer-output",
-    "{observer_output}"
+    "{observer_output}",
+    "--inventory",
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"
   ],
   "select_argv": [
     "python3",
@@ -39,7 +41,8 @@
     "Executed only from the canonical active repository checkout; exact Foundation adapter source from committed branch hbnf-packet20-foundation-metrics-20261005 at b18b162ec4b4f9173b1de892957ff8b834fe2b50.",
     "Exact inventory path is absolute; runtime-kernel index placeholder maps directly to inventory field runtime_kernel_index_expected while preserving effect ids 220..247.",
     "Corrected hierarchy after seq31 failure: HTTP GET timeout 10s, state POST timeout 25s, command acknowledgment deadline 30s (each poll bounded by remaining time), snapshot readiness 45s, restore verification 90s. The longest normal snapshot path composes to 226s including bounded poll overruns; runner subprocess timeout is 240s. Restore composes to 175s; no experimental transport retries. Errors include method, URL, stage, configured budget, and last observed command/snapshot state.",
-    "One Packet20 snapshot is created before sweep; observer-effect is measured against that same snapshot before runner execution; runner restores and persists POST_RESTORE_STATE before comparing.",
+    "One Packet20 snapshot is created before sweep; observer-effect is measured against that same snapshot; the tails-enabled sacrificial warm-up tail/max/heap sample is preserved in OBSERVER_EFFECT.json and excluded from qualification; telemetry is disabled before the runner's clean qualified-window boundary. Runner restores and persists POST_RESTORE_STATE before comparing.",
+    "Every actual Foundation kernel/soak telemetry sample hard-stops at exact frame_ms_max >= 1000 ms; the triggering sample is persisted before restore. Histogram overflow alone is not a stop if required quantiles are unsaturated.",
     "True frame-tail percentiles, minimum-ever heap, largest free block, per-stage timing, Matrix/AUX health, RSSI, uptime, and kernel identity are required by foundation contract.",
     "Direct-LAN WLED OTA was rehearsed in seq29/30 transaction; exact Release07 recovery BIN is retained locally and SHA-verified."
   ]

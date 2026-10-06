@@ -30,6 +30,7 @@ MIN_FREE_BYTES=512*1024*1024
 RECOVERY_RESERVE_BYTES=8*1024*1024
 MIN_FOUNDATION_SOAK_SECONDS=90*60
 MAX_FOUNDATION_SOAK_SAMPLE_GAP_SECONDS=15
+FOUNDATION_HARD_FRAME_INTERVAL_MS=1000.0
 
 REQUIRED_ADAPTER={
     "schema",
@@ -235,6 +236,7 @@ def validate_continuity(sample, expected_release_id=None, expected_restart_count
 def validate_soak_sample(sample, entry, release_id, restart_count, previous_uptime, previous_sample_time=None):
     """Validate one state-changing soak sample before it is appended durably."""
     validate_sample(sample,"foundation")
+    enforce_foundation_frame_interval(sample)
     verify_selected(sample,entry)
     _,_,uptime=validate_continuity(sample,release_id,restart_count,previous_uptime)
     stamp=float(sample.get("sample_time"))
@@ -243,6 +245,12 @@ def validate_soak_sample(sample, entry, release_id, restart_count, previous_upti
         if gap<=0 or gap>MAX_FOUNDATION_SOAK_SAMPLE_GAP_SECONDS:
             raise RuntimeError(f"foundation soak sample gap invalid: {gap:.3f}s; maximum {MAX_FOUNDATION_SOAK_SAMPLE_GAP_SECONDS}s")
     return uptime,stamp
+
+def enforce_foundation_frame_interval(sample):
+    """Fail closed on any exact post-warm-up frame interval >= 1 second."""
+    maximum=float(sample["frame_ms_max"])
+    if maximum>=FOUNDATION_HARD_FRAME_INTERVAL_MS:
+        raise RuntimeError(f"foundation-steady-state-frame-interval-stop: frame_ms_max={maximum:g}ms threshold={FOUNDATION_HARD_FRAME_INTERVAL_MS:g}ms kernel={sample.get('kernel_name')} id={sample.get('kernel_id')}")
 
 def append_jsonl_durable(path,sample):
     path=pathlib.Path(path)
@@ -278,9 +286,14 @@ def run_foundation_soak(adapter,inventory,outdir,timeout,release_id,restart_coun
         sample=run_json(subst(adapter["telemetry_argv"],values),timeout=timeout)
         # Monotonic time avoids wall-clock/NTP jumps invalidating interval checks.
         sample["sample_time"]=time.monotonic()
-        previous_uptime,previous_sample_time=validate_soak_sample(
-            sample,entry,release_id,restart_count,previous_uptime,previous_sample_time
-        )
+        try:
+            previous_uptime,previous_sample_time=validate_soak_sample(
+                sample,entry,release_id,restart_count,previous_uptime,previous_sample_time
+            )
+        except Exception as e:
+            append_jsonl_durable(path,sample)
+            persist_failure_sample(pathlib.Path(outdir),entry,"soak_sample",sample,e)
+            raise
         stop=policy["catastrophic_early_stop"];bad=(float(sample["fps"])<float(stop["fps_floor_absolute"])
             or float(sample["frame_ms_p99"])>float(stop["frame_ms_p99_ceiling_absolute"])
             or float(sample["aux_projection_age_ms"])>float(stop["aux_projection_age_ms_ceiling"]))
@@ -340,6 +353,7 @@ def collect_kernel(adapter, entry, outdir, timeout, contract, expected_release_i
     try:
         validate_sample(first,contract)
         verify_selected(first,entry)
+        if contract=="foundation":enforce_foundation_frame_interval(first)
         release_id,restart_count,previous_uptime=validate_continuity(
             first,expected_release_id,expected_restart_count,previous_uptime
         )
@@ -356,6 +370,7 @@ def collect_kernel(adapter, entry, outdir, timeout, contract, expected_release_i
         try:
             validate_sample(sample,contract)
             verify_selected(sample,entry)
+            if contract=="foundation":enforce_foundation_frame_interval(sample)
             _,_,previous_uptime=validate_continuity(sample,release_id,restart_count,previous_uptime)
         except Exception as e:
             persist_failure_sample(outdir,entry,"sample",sample,e)

@@ -6,7 +6,12 @@
     "AGENTS.md",
     "config/HBNF_CONTROL_STATE.json",
     "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
-    "scripts/hbnf_live_kernel_sweep.py"
+    "scripts/hbnf_live_kernel_sweep.py",
+    "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json",
+    "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006.json",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "scripts/hbnf_foundation_seq35_transaction.py",
+    "tests/hbnf_live_kernel_sweep.py"
   ],
   "prelive_contract": {
     "closure_stage_id": "contract-closure",

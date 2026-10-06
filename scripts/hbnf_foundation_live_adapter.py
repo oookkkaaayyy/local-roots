@@ -93,7 +93,7 @@ def identity():
     if build.get("release_id")!=EXPECTED or build.get("candidate")!=EXPECTED:raise RuntimeError("foundation-metrics-release-identity-mismatch")
     return info,build
 
-def snapshot(observer_output=None):
+def snapshot(observer_output=None, inventory=None):
     identity(); state,p20=p20_state()
     new_snapshot=not p20.get("snapshotValid")
     if not p20.get("enabled"):
@@ -115,7 +115,7 @@ def snapshot(observer_output=None):
             )
     if not p20.get("snapshotValid") or p20.get("snapshotState")!="READY":raise RuntimeError("packet20-existing-snapshot-not-ready")
     if new_snapshot and observer_output:
-        try:observer_effect(observer_output)
+        try:observer_effect(observer_output,inventory)
         except Exception as exc:
             try:
                 restored=_restore_snapshot(p20.get("snapshotId"),p20.get("snapshotHash"))
@@ -132,7 +132,7 @@ def snapshot(observer_output=None):
             raise RuntimeError(f"observer-effect-failed; snapshot={p20.get('snapshotId')} hash={p20.get('snapshotHash')}; sidecar={sidecar}; restore={result.get('status')}; cause={type(exc).__name__}: {exc}") from exc
     return {"snapshotId":p20.get("snapshotId"),"snapshotHash":p20.get("snapshotHash")}
 
-def observer_effect(output):
+def observer_effect(output, inventory):
     select(0);time.sleep(5)
     enable_tails(False)
     light=[];deadline=time.monotonic()+30
@@ -148,7 +148,10 @@ def observer_effect(output):
         time.sleep(1)
     if len(light)<20 or len(heavy)<20:raise RuntimeError("observer-effect-window-under-sampled")
     light.sort();heavy.sort();lm=light[len(light)//2];hm=heavy[len(heavy)//2]
-    result={"status":"MEASURED","kernel_id":0,"lightweight_samples":len(light),"instrumented_samples":len(heavy),"lightweight_frame_average_median_ms":lm,"instrumented_frame_average_median_ms":hm,"relative_delta_pct":(hm-lm)*100.0/lm if lm else None,"metric":"same 1-second latest-frame-average source in both modes; true tail samples reserved for the foundation sweep"}
+    # Capture the sacrificial tails-enabled warm-up separately. It is preserved
+    # for diagnosis and explicitly excluded from Foundation sweep qualification.
+    warmup=telemetry(inventory, "foundation-observer-warmup", emit=False)
+    result={"status":"MEASURED","kernel_id":int(warmup["kernel_id"]),"lightweight_samples":len(light),"instrumented_samples":len(heavy),"lightweight_frame_average_median_ms":lm,"instrumented_frame_average_median_ms":hm,"relative_delta_pct":(hm-lm)*100.0/lm if lm else None,"metric":"same 1-second latest-frame-average source in both modes; warm-up tail telemetry captured separately and excluded from qualification","warmup_window":{"excluded_from_foundation":True,"tails_enabled":True,"sample":warmup}}
     path=pathlib.Path(output);path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(result,indent=2,sort_keys=True)+"\n")
     enable_tails(False)
     return result
@@ -179,7 +182,7 @@ def _restore_snapshot(sid,shash):
 def select(kernel):
     if not command("select",kernel=int(kernel)).get("HBNF",{}).get("packet20Diagnostic",{}).get("lastCommandAccepted",False):raise RuntimeError("packet20-kernel-select-rejected")
 
-def telemetry(inventory,session_id):
+def telemetry(inventory,session_id,emit=True):
     info,build=identity(); state,p20=enable_tails(True)
     deadline=time.monotonic()+5
     while state.get("HBNF",{}).get("foundationTelemetry",{}).get("frameMsP99") is None and time.monotonic()<deadline:
@@ -225,7 +228,8 @@ def telemetry(inventory,session_id):
       "overlay_ms_avg":ft.get("overlayMsAvg"),"overlay_ms_p95":ft.get("overlayMsP95"),"aux_prepare_send_ms_avg":ft.get("auxPrepareSendMsAvg"),"aux_prepare_send_ms_p95":ft.get("auxPrepareSendMsP95"),
       "unaccounted_ms_avg":ft.get("unaccountedMsAvg"),"unaccounted_ms_p95":ft.get("unaccountedMsP95"),
     }
-    print(json.dumps(sample,separators=(",",":")))
+    if emit:print(json.dumps(sample,separators=(",",":")))
+    return sample
 
 def restore(path):
     snap=json.loads(pathlib.Path(path).read_text()); sid=int(snap["snapshotId"])
@@ -233,12 +237,12 @@ def restore(path):
 
 def main():
     ap=argparse.ArgumentParser();sub=ap.add_subparsers(dest="action",required=True)
-    s0=sub.add_parser("snapshot");s0.add_argument("--observer-output")
+    s0=sub.add_parser("snapshot");s0.add_argument("--observer-output");s0.add_argument("--inventory",required=True)
     s=sub.add_parser("select");s.add_argument("--kernel",required=True)
     t=sub.add_parser("telemetry");t.add_argument("--inventory",required=True);t.add_argument("--session-id",default="legacy")
     r=sub.add_parser("restore");r.add_argument("--snapshot-file",required=True)
     a=ap.parse_args()
-    if a.action=="snapshot":print(json.dumps(snapshot(a.observer_output),separators=(",",":")))
+    if a.action=="snapshot":print(json.dumps(snapshot(a.observer_output,a.inventory),separators=(",",":")))
     elif a.action=="select":select(a.kernel)
     elif a.action=="telemetry":telemetry(a.inventory,a.session_id)
     elif a.action=="restore":restore(a.snapshot_file)
