@@ -534,7 +534,7 @@
       "seq32_recovery_drive_file_id": "1r6rc6YESHDQRCc9JHw0ZzRo3aIgT2P91",
       "seq31_failure_evidence_sha256": "7394ae011c8b04daf923396bf7b2d4538f97e77a72870cb6dcfc1cf9da9a92c9",
       "raw_bundle_sha256": "61b225be198af66400eb1940276c0a3b246f7cd4d88bfb4042be70392d90a44b",
-      "timeout_repair_commit": "c7f097d0df67c35a10693bcca8dd1b71eb61e3f6",
+      "timeout_repair_commit": "98a111b51935655bc3320ad05463f0b521d03035",
       "timeout_hierarchy": "HTTP GET 10s; /json/state POST 25s; command ack 30s; snapshot 45s; restore 90s; outer runner 240s (226s maximum normal snapshot composition plus 14s margin)",
       "offline_soak_audit": "scripts/hbnf_foundation_soak_audit.py; JSONL-only, no device I/O; requires >=90 minutes, exact identity, 28-kernel state changes, <=15s sample gaps, no uptime regression/restart change; metrics summarized, thresholds remain a separate frozen-policy gate",
       "checkpoint_path": "evidence/hbnf-foundation-qualification-20261005/OFFLINE_PAUSE_CHECKPOINT_20261006.json",

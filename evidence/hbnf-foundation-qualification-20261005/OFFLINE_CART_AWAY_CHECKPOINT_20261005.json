@@ -2,6 +2,7 @@
   "schema": "hbnf-foundation-offline-cart-away-checkpoint-v1",
   "status": "OFFLINE_WORK_COMPLETE__WAITING_FOR_EXPLICIT_RESUME_AND_CART_RETURN",
   "checkpoint_base_commit": "c7f097d0df67c35a10693bcca8dd1b71eb61e3f6",
+  "offline_implementation_commit": "98a111b51935655bc3320ad05463f0b521d03035",
   "branch": "hbnf-cart2-ready-to-implement-staging-20261001",
   "lifecycle_state": "FIX_CANDIDATE",
   "live_mutation_authorized": false,
