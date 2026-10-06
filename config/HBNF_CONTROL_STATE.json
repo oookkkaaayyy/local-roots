@@ -38,7 +38,7 @@
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
     "blockers": [
-      "Foundation remains unqualified: frozen frame_max / p99 limits failed for Big_Caleido, Caleido2, and SM5. Seq45/46 authority pair is consumed; no further sequence or mutation authorized by this transaction."
+      "LIVE_MUTATION_ONLY: seq45/46 is consumed. No new sequence/install is authorized until a replacement candidate has exact source/artifact identity and passes the required offline gates."
     ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
@@ -417,7 +417,7 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
+      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Foundation offline timeout and soak-harness checkpoint",
@@ -787,7 +787,7 @@
       "status": "DECISION_DEFER_FOR_STABILITY",
       "target_event": "NEXT_SKINS_ROUND__2026-10-06",
       "observed_problem": "On current build, lowering Matrix brightness also visibly collapses/reduces the displayed animation/image; below roughly 20 the Matrix becomes nearly dark or shows only a very limited animation.",
-      "user_field_preference": "Typical night sweet spot is roughly current-slider 10\u201320; values above ~25 can be excessively bright on-course.",
+      "user_field_preference": "Typical night sweet spot is roughly current-slider 10–20; values above ~25 can be excessively bright on-course.",
       "required_behavior": [
         "Brightness reduction should preserve animation/image structure as much as technically practical.",
         "Prefer greater low-end granularity for night use.",
@@ -1280,7 +1280,7 @@
     },
     "foundation_qualification_result": "FAIL_FROZEN_BASELINE_FRAME_MAX_RELATIVE_GATE",
     "seq45_46_transaction_result": "evidence/hbnf-foundation-qualification-20261005/seq45/live/SEQ45_46_TRANSACTION_RESULT.json",
-    "next_action": "No further live mutation or sequence allocation under consumed seq45/46 authorization. A fresh coordinator authority is required for any next Foundation attempt.",
+    "next_action": "FRESH_COORDINATOR_AUTHORITY_2026-10-06: immediately continue offline/read-only Foundation repair. Attribute the seq45 frozen-tail failure using preserved telemetry before changing code; determine whether Big_Caleido/Caleido2/SM5 share a kernel primitive or whether the excursions are common-path/scheduler tails. Implement exactly one bounded evidence-backed renderer/scheduler fix, preserve effect identity and visual contract, run host/offline regressions and visual-equivalence checks, build locally if the pinned environment is available, and checkpoint an immutable candidate with source identity + SHA/size. Do not weaken frozen thresholds. Do not use live hardware, allocate a new sequence, or use GitHub Actions merely to investigate/build around a host/tooling issue. Return to coordinator only when a replacement candidate is immutable and offline-qualified enough for a fresh live transaction, or when an exact non-user-resolvable dependency is proven.",
     "seq45_46_recovery_status": "PASS",
     "live_mutation_authorized": false
   },
@@ -1299,7 +1299,7 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "SEQ45_FROZEN_BASELINE_FRAME_MAX_GATE_FAILED__RESTORE_PASS__SEQ46_RELEASE07_RECOVERY_VERIFIED__MUTATION_CLOSED",
+    "current_failure_domain": "DEVICE_RUNTIME__SEQ45_FROZEN_FRAME_TAIL_GATE_FAILED__OFFLINE_RESIDUAL_FIX_AUTHORIZED",
     "current_lifecycle_state": "FIX_CANDIDATE",
     "current_subject": {
       "artifact_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
@@ -1307,7 +1307,11 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Foundation remains unqualified; seq45/46 pair consumed. Await a fresh coordinator authority before allocating any new live transaction. Preserve all valid prior evidence; do not repeat 28-kernel sweep or observer A/B absent an invalidator."
+      "Use seq45 preserved soak data to classify the three frozen-gate failures as kernel-specific/shared-primitive versus common-path/scheduler tail behavior.",
+      "Implement one bounded evidence-backed residual performance fix only; preserve the 28-effect contract and visual equivalence.",
+      "Run all applicable host/offline regression and golden visual-equivalence gates; use the pinned local build path when available and avoid GitHub Actions unless genuinely necessary and separately authorized.",
+      "Checkpoint exact source identity plus immutable candidate BIN SHA/size. Because renderer/scheduler artifact identity changes, treat runtime telemetry/smoke/common-path/all-kernel/soak/feature gates as invalidated for the new artifact; observer-effect must also be re-established because its explicit invalidator is candidate SHA change.",
+      "Keep live mutation CLOSED. Request/derive a fresh bounded seq47/48 transaction only after the new candidate artifact exists and recovery input remains exact Release07."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1507,7 +1511,7 @@
       "overnight_fallback_mode": "IF_SEPARATE_WORKER_CONTEXTS_CANNOT_BE_SPAWNED, CURRENT_WORKER_MAY_ADVANCE_NONCONTENDING_OFFLINE_SAFE_LANES_SEQUENTIALLY_IN_SAME_CONTEXT__KEEP_LIVE_MUTATION_LIMIT_1__TRACK_LANES_INDEPENDENTLY__DO_NOT_IDLE",
       "signal_evidence": "evidence/hbnf-foundation-qualification-20261005/seq41/live/PARALLEL_LANES_READY.json",
       "signal_sample_sha256": "9c9bbb495094dacd5ffc92eba97b9e3be462e38c3ae26b5cf860cfeb96dd1fdc",
-      "last_live_transition": "Seq45 exact candidate installed; fresh Packet20 session and snapshot READY; Foundation soak launch pending.",
+      "last_live_transition": "Seq45 Foundation soak stopped on genuine frozen performance-tail failure (Big_Caleido, Caleido2, SM5); renderer restore PASS; seq46 exact Release07 recovery and health PASS; live mutation closed. Fresh coordinator authority now advances offline residual-fix engineering only.",
       "soak_currently_running": false,
       "parallel_offline_summary": "ALL_FOUR_CORE_LANES_REACHED_OFFLINE_STOP_BOUNDARY__FOUNDATION_NOW_PRIMARY_GATE",
       "next_after_t2": [
@@ -1678,5 +1682,5 @@
       "closure_reason": "Source-backed reconciliation: before retry1, seq43 candidate was healthy, Packet20 snapshot 1/hash 940998176 was READY, restoreVerified=true and lastCommand restore/accepted=true, but Packet20 diagnostic mode was already disabled by the prior successful restore. Firmware intentionally ends diagnostic mode on restore and rejects a second begin while the same boot-scoped snapshot remains saved. The host retry attempted kernel 0 anyway; firmware correctly rejected it because diagnosticActive=false. The rejected command updated lastCommand to select without clearing restoreVerified. The host restore helper then misclassified the changed command token as loss of renderer restore and invoked seq44. This was a retry-precondition/host-comparator defect, not a measured firmware rendering/runtime gate or a real restore loss. Seq44 is already consumed; exact Release07 recovery and runtime identity PASS. No 90-minute soak completed; Foundation remains unqualified."
     }
   ],
-  "checkpoint_at_utc": "2026-10-06T18:30:32Z"
+  "checkpoint_at_utc": "2026-10-06T18:38:00Z"
 }
