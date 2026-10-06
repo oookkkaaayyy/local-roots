@@ -1,0 +1,62 @@
+{
+  "schema": "hbnf-foundation-seq45-readonly-prelive-v1",
+  "captured_at_utc": "2026-10-06T18:06:18.755115+00:00",
+  "authority_commit": "fd2008304f17a867f57337e3bcd9863046889771",
+  "sequence": 45,
+  "mutation_performed": false,
+  "matrix": {
+    "ip": "192.168.77.10",
+    "mac": "70:4b:ca:5b:34:5c",
+    "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
+    "wled": "16.0.1",
+    "uptime_first": 1788,
+    "uptime_second": 1818,
+    "companion_render_count_first": 29029,
+    "companion_render_count_second": 29566,
+    "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "candidate_bytes": 1489008
+  },
+  "aux": {
+    "ip": "192.168.77.11",
+    "mac": "8c94df55c34c",
+    "wled_live": true,
+    "live_mode": "DDP",
+    "live_source_ip": "192.168.77.10",
+    "wled_live_second": true,
+    "live_mode_second": "DDP",
+    "live_source_ip_second": "192.168.77.10",
+    "hbnf_projection_rx_active_first": false,
+    "hbnf_projection_rx_packets_first": 0,
+    "hbnf_projection_rx_active_second": false,
+    "hbnf_projection_rx_packets_second": 0
+  },
+  "release07_recovery": {
+    "sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "bytes": 1458624
+  },
+  "remote_opal_artifacts": {
+    "candidate": {
+      "path": "/tmp/hbnf-seq45-candidate.bin",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "bytes": 1489008
+    },
+    "release07": {
+      "path": "/tmp/hbnf-seq46-release07.bin",
+      "sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+      "bytes": 1458624
+    }
+  },
+  "capture_evidence_sha256": {
+    "matrix_build": "5206b257c6c11d69d2c7d54421ba8181147c2826509e63c7ed1b5c8dacd6ef51",
+    "matrix_info": "ee6ed7a3e1dda76a2dfaf4264629928caf54430d89cc5dec7aaac17dcfeb1746",
+    "matrix_state": "1b11924a38ca47d6c4dacdfcaf3ab2e26d5fb29c2f7303683e4f9e22aedf2b02",
+    "aux_info": "9015972e72f13e3c02f363315b386eaacfb4453c8fba2443dc494d0b19f3dec7",
+    "aux_state": "e154bc0157134e50d32bed7b2c08a37f4ea36806720fbb5b4bd4dd1a1f79f0e3",
+    "matrix_info2": "f0b3aca7f8bc42a573bb000f4314666e01f3ec26c5cb9bb3c4f0b5ff1a677a0d",
+    "matrix_state2": "882d0c1ea8881bead4b1ec8803b750bb3b8d85018d9932dfe17fb62601f5fa10",
+    "aux_info2": "a9f1b432f42c071bc6365d76db0a7b63a28aad0acdff55caf6e0738abbe742dd",
+    "aux_state2": "c59648815c596ff41b41b25e1697f321e6115eb75f018449de6fc8e371831c43"
+  },
+  "prelive_result": "PASS__EXACT_RELEASE07_IDENTITY_AND_CONTINUITY__AUX_WLED_DDP_LIVE_FROM_MATRIX__EXACT_CANDIDATE_AND_RECOVERY_BYTES_VERIFIED_LOCAL_AND_ON_OPAL",
+  "note": "AUX HBNFAUX projectionRxActive remained false with zero HBNF projection RX packets in both snapshots; WLED /json/info separately reports native DDP live=true sourced from Matrix on both snapshots. This remains preserved for the Foundation AUX telemetry gate; no attempt was made to alter device state."
+}
