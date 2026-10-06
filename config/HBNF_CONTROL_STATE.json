@@ -38,7 +38,8 @@
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
     "blockers": [
-      "Seq37 exact candidate identity and health passed; reused observer PASS; tails-off steady-state and sacrificial warmup passed; 27/28 kernels profiled, then firmware tail quantile saturated at the histogram ceiling 51.15 ms while selecting Module_Experiment10. This is a Foundation telemetry gate failure, not a host transport/deadline failure. No >=1000 ms interval or unexpected restart was observed. Renderer restoreVerified=true and packet20Same=true. Exact Release07 recovery seq38 verified PASS. No soak/baseline was started."
+      "Seq37 exact candidate identity and health passed; reused observer PASS; tails-off steady-state and sacrificial warmup passed; 27/28 kernels profiled, then firmware tail quantile saturated at the histogram ceiling 51.15 ms while selecting Module_Experiment10. This is a Foundation telemetry gate failure, not a host transport/deadline failure. No >=1000 ms interval or unexpected restart was observed. Renderer restoreVerified=true and packet20Same=true. Exact Release07 recovery seq38 verified PASS. No soak/baseline was started.",
+      "NEW USER OBSERVATION: AUX/underglow froze dim green, ignored UI control, then became fully dark after an AUX-only power cycle. Physical vs software/link cause is unresolved. Treat as a bounded discrimination problem, not as proof of either class."
     ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
@@ -387,7 +388,7 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
+      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Foundation offline timeout and soak-harness checkpoint",
@@ -692,6 +693,23 @@
       ],
       "observed_at": "2026-10-05T17:48:54Z",
       "status": "R3_CLOSED__R4_EXECUTION_REQUIRED"
+    },
+    "aux_blocker": {
+      "observed_at_local": "2026-10-06",
+      "source": "USER_PHYSICAL_OBSERVATION",
+      "status": "UNRESOLVED_PHYSICAL_VS_SOFTWARE_AUX_FAILURE",
+      "observations": [
+        "AUX/underglow was visibly frozen dim green and ignored web-app/iPad control changes.",
+        "User power-cycled only AUX/SP803E, waited, reconnected power, and pressed controller button twice with about two minutes between; no response.",
+        "After unplug/replug, AUX LEDs are now fully dark.",
+        "User reports earlier same-day physical connection trouble that had been repaired and then worked normally for an extended stationary period."
+      ],
+      "evidence_context": [
+        "Seq39 failure/postflight showed AUX controller network endpoint alive, live=true, lm=DDP, lip=192.168.77.10.",
+        "The same AUX state reported HBNFAUX projectionRxActive=false, projectionRxPackets=0, projectionPeerKnown=false while Foundation auxProjectionAgeMs became stale.",
+        "Therefore neither a purely physical fault nor a purely software/telemetry fault is proven."
+      ],
+      "safety_boundary": "DO_NOT_START_NEW_LIVE_MUTATION_OR_FIRMWARE_ATTEMPT UNTIL AUX IS DISCRIMINATED. Read-only LAN diagnosis and offline source/harness work are allowed. Do not spend overnight time on repeated physical/software guessing."
     }
   },
   "execution_budget_policy": {
@@ -717,8 +735,12 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Preserve the complete seq39 soak failure evidence and reconcile the exact AUX projection-age signal versus the configured 1000ms gate offline.",
-      "Do not allocate a new sequence or perform another live mutation until a new explicit authorization and corrected prelive proof."
+      "READ-ONLY first: discriminate AUX controller reachability/state, DDP/live-source freshness, and Matrix send-side continuity from the current recovered Release07 state. No firmware install, no sequence allocation, no reboot/power action.",
+      "If AUX controller is unreachable or its state cannot be read after the user's AUX-only power cycle, classify as PHYSICAL/POWER/NETWORK BLOCKER and stop live diagnosis; preserve Foundation evidence and continue offline-safe Cart 2.0 work.",
+      "If AUX controller is reachable but LEDs remain dark/unresponsive while state commands/DDP counters prove controller activity, classify the LED/output/power path as PHYSICAL_HARDWARE until user can inspect it; do not mutate Matrix/AUX firmware overnight.",
+      "If controller is reachable and evidence proves Matrix/AUX software link freshness is actually failing independent of LED output, localize and test the smallest software/telemetry correction entirely offline; do not start another live qualification attempt without corrected prelive proof and explicit authorization.",
+      "While AUX is unresolved, use overnight time for noncontending offline-safe Cart 2.0 work already defined in the Phase 2 lanes; do not idle and do not create event-only throwaway work.",
+      "After user later restores/proves physical AUX output, resume Foundation from preserved seq39 evidence; do not repeat the 28/28 sweep unless an actual invalidator requires it."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -877,7 +899,7 @@
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "scope": "One exact local clean-room telemetry-only candidate install seq39; exact one-time observer A/B on that changed artifact; sacrificial warm-up; complete all-28 Foundation sweep; hash-bound baseline/frozen policy; same-install >=5400s state-changing soak; seq40 exact Release07 REAL DEVICE/RUNTIME FAILURE recovery only. Host-only failure preserves candidate only with exact identity, health, no restart, renderer restore, and AUX health proof. No R3/R4/Packet20 re-exploration, no new build, no GitHub Actions.",
     "status": "CLOSED__SEQ40_RELEASE07_RECOVERY_VERIFIED__FOUNDATION_GATE_FAILED",
-    "user_authorization": "Current user directive EXPEDITE \u2014 BOUNDED TELEMETRY RANGE FIX ONLY explicitly authorizes next legal seq39 candidate / seq40 exact Release07 real failure recovery after offline gates; seq37 remains TELEMETRY_INSTRUMENTATION, not renderer/root-cause failure."
+    "user_authorization": "Current user directive EXPEDITE — BOUNDED TELEMETRY RANGE FIX ONLY explicitly authorizes next legal seq39 candidate / seq40 exact Release07 real failure recovery after offline gates; seq37 remains TELEMETRY_INSTRUMENTATION, not renderer/root-cause failure."
   },
   "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",
