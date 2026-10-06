@@ -1,0 +1,14 @@
+{
+  "captured_at_utc": "2026-10-06T19:57:58.874744+00:00",
+  "qualification_status": "IN_PROGRESS__NO_GATE_ADJUDICATION",
+  "sample_chunk": "SAMPLES_000125-000199.jsonl",
+  "sample_chunk_sha256": "a5a4445cac6d7cd7d7ff9038972d944538a525547b2b5fef98e0c5cf2e9c7a10",
+  "sample_count": 199,
+  "sample_count_since_previous": 75,
+  "sample_timeline_seconds": 989.9520065,
+  "samples_from_previous_checkpoint": 125,
+  "schema": "hbnf-seq47-soak-durable-checkpoint-v1",
+  "state_change_chunk": "STATE_CHANGES_000001-000166.jsonl",
+  "state_change_chunk_sha256": "100eca553c71d6eb5460230559018d3d5a9bc68213ffd9c4faf12d5bda25fe74",
+  "state_change_count": 166
+}
