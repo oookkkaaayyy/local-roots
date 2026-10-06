@@ -38,7 +38,7 @@
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
     "blockers": [
-      "Seq45 candidate remains installed with fresh diagnostic session/snapshot and exact runtime identity. A Mac-origin concurrent HTTP telemetry attempt timed out on Matrix build/state endpoints; same-time Opal-origin reads passed and a key-only Opal-origin concurrent telemetry transport is offline-tested. Begin one contiguous 5400-second state-changing soak using that corrected transport. Seq46 remains reserved for genuine runtime/Foundation failure or lost safety proof."
+      "Seq45 >=5400-second same-installation state-changing soak is running with decoupled selector and corrected Opal-origin telemetry sampler; first 3 clean samples persisted and PARALLEL_LANES_READY emitted. No restore during soak. Seq46 remains reserved for genuine device/runtime/Foundation failure or lost safety/identity/restore proof."
     ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
@@ -1162,12 +1162,12 @@
         "signature_sha256": "d197c58e21010f3a1eec09d47e8e5abc452246355a6ad4f36f40c16b93c98be3"
       }
     ],
-    "checkpoint_at_utc": "2026-10-06T18:18:25Z",
+    "checkpoint_at_utc": "2026-10-06T18:19:20Z",
     "foundation_seq45_transaction": {
       "schema": "hbnf-foundation-seq45-transaction-v1",
       "sequence": 45,
       "recovery_sequence": 46,
-      "status": "CANDIDATE_INSTALLED__FRESH_SESSION_SNAPSHOT_READY__HOST_TRANSPORT_CORRECTED__SOAK_STARTING",
+      "status": "SOAK_RUNNING__PARALLEL_LANES_READY__NO_RESTORE",
       "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
       "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
       "candidate_bytes": 1489008,
@@ -1191,7 +1191,7 @@
       ],
       "restore_policy": "Do not restore during soak. Perform exactly one renderer restore after a clean 5400s soak.",
       "host_failure_policy": "Preserve seq45 and do not invoke seq46 for host/precondition/telemetry failures while identity, continuity, restore/session and AUX safety remain proven.",
-      "captured_at_utc": "2026-10-06T18:18:25Z",
+      "captured_at_utc": "2026-10-06T18:19:20Z",
       "pre_soak_telemetry_evidence": "evidence/hbnf-foundation-qualification-20261005/seq45/live/foundation-soak/OPAL_ORIGIN_TELEMETRY_PRE_SOAK.json",
       "pre_soak_uptime_seconds": 643,
       "pre_soak_restart_count": 0,
@@ -1211,7 +1211,14 @@
         "corrected_path": "key-only Opal-origin concurrent curl via scripts/hbnf_opal_telemetry_transport.py",
         "offline_test": "tests/hbnf_opal_telemetry_transport.py PASS; existing bounded-parallel telemetry, adapter, soak-audit and seq39 transport failure-policy tests PASS",
         "recovery_sequence_consumed": false
-      }
+      },
+      "soak_started_at_utc": "2026-10-06T18:19:20Z",
+      "soak_sampler_pid": 43305,
+      "soak_state_changer_pid": 43306,
+      "soak_start_receipt": "evidence/hbnf-foundation-qualification-20261005/seq45/live/foundation-soak/SOAK_START_RECEIPT.json",
+      "parallel_lanes_ready": "evidence/hbnf-foundation-qualification-20261005/seq45/live/foundation-soak/PARALLEL_LANES_READY.json",
+      "soak_samples_at_checkpoint": 10,
+      "soak_state_changes_at_checkpoint": 8
     }
   },
   "execution_budget_policy": {
@@ -1229,7 +1236,7 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "SEQ45_OPAL_ORIGIN_TELEMETRY_TRANSPORT_READY__SOAK_STARTING__SEQ46_GENUINE_FAILURE_ONLY",
+    "current_failure_domain": "SEQ45_FOUNDATION_SOAK_RUNNING__PARALLEL_LANES_READY__SEQ46_GENUINE_FAILURE_ONLY",
     "current_lifecycle_state": "FIX_CANDIDATE",
     "current_subject": {
       "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
@@ -1237,7 +1244,7 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Start the contiguous 5400-second state-changing soak on seq45 using the offline-tested key-only Opal-origin parallel telemetry transport; do not restore during soak.",
+      "Keep the seq45 5400-second state-changing soak running without restore; inspect persisted samples and sampler/selector health at safe nonblocking checkpoints.",
       "On clean completion, restore once and verify restoreVerified=true with packet20Same() semantics.",
       "Audit all remaining T2 checks; if all objective gates pass, create the T2 receipt and advance to FOUNDATION_QUALIFIED under conditional user preauthorization.",
       "Then reconcile T3 fast-path; honor its explicit human approval requirement."
@@ -1457,7 +1464,7 @@
   "live_mutation_authorization": {
     "candidate_sequence": 45,
     "recovery_sequence": 46,
-    "status": "SEQ45_CANDIDATE_INSTALLED__FRESH_SESSION_SNAPSHOT_READY__OPAL_TELEMETRY_TRANSPORT_READY__SOAK_STARTING__SEQ46_GENUINE_FAILURE_ONLY",
+    "status": "SEQ45_CANDIDATE_INSTALLED__FOUNDATION_SOAK_RUNNING__PARALLEL_LANES_READY__SEQ46_GENUINE_FAILURE_ONLY",
     "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "candidate_size_bytes": 1489008,
@@ -1494,7 +1501,7 @@
     "candidate_ota_http_status": "HTTP_200_UPDATE_SUCCESSFUL",
     "snapshot_id": 1,
     "snapshot_hash": 584198932,
-    "soak_status": "STARTING__5400S_REQUIRED__OPAL_ORIGIN_PARALLEL_TELEMETRY__NO_RESTORE_DURING_SOAK",
+    "soak_status": "RUNNING__5400S_REQUIRED__NO_RESTORE_DURING_SOAK",
     "soak_evidence_directory": "evidence/hbnf-foundation-qualification-20261005/seq45/live/foundation-soak"
   },
   "live_mutation_authorized": true,

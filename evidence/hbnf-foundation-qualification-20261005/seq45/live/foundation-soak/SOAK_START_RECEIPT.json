@@ -1,0 +1,49 @@
+{
+  "all_observed_release_ids_exact": true,
+  "all_observed_restart_counts_zero": true,
+  "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "first_sample_restart_count": 0,
+  "first_sample_uptime_seconds": 711,
+  "first_three_sample_sha256": "ce2d4a308c8a60ee0e95741da84049317dc5f87c58718e52b202412b0b6fd2e9",
+  "fresh_packet20_snapshot": {
+    "diagnosticActive": true,
+    "snapshotHash": 584198932,
+    "snapshotId": 1,
+    "snapshotState": "READY"
+  },
+  "latest_sample": {
+    "aux_projection_active": true,
+    "aux_wled_live_source": true,
+    "fps": 43,
+    "frame_ms_max": 35.866,
+    "frame_ms_p99": 27.375,
+    "kernel_id": 7,
+    "kernel_name": "Complex_Kaleido_6",
+    "restart_count": 0,
+    "uptime_seconds": 757
+  },
+  "native_aux_ddp_active_in_all_samples": true,
+  "no_renderer_restore_during_soak": true,
+  "note": "PARALLEL_LANES_READY marks three durable clean samples; independent sampler and selector remain running. HBNFAUX frame-lock diagnostics are inactive/age-invalid, while the frozen source contract uses Matrix-origin native WLED DDP live/source status, which is true.",
+  "pre_soak_uptime_seconds": 643,
+  "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "requested_contiguous_duration_seconds": 5400,
+  "sampler": {
+    "command_timeout_seconds": 7,
+    "entry_script": "scripts/hbnf_opal_telemetry_transport.py",
+    "period_seconds": 5,
+    "pid": 43305,
+    "transport": "five concurrent Opal-origin GETs over key-only SSH"
+  },
+  "samples_persisted_at_checkpoint": 10,
+  "schema": "hbnf-foundation-seq45-soak-start-v1",
+  "seq46_consumed": false,
+  "started_at_utc": "2026-10-06T18:19:20Z",
+  "state_changer": {
+    "command_timeout_seconds": 30,
+    "period_seconds": 6,
+    "pid": 43306
+  },
+  "state_changes_persisted_at_checkpoint": 8,
+  "status": "PARALLEL_LANES_READY"
+}
