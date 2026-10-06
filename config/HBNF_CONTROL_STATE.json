@@ -1319,6 +1319,26 @@
       "completed_at_utc": "2026-10-06T19:11:22Z",
       "drive_evidence_file_id": "1eemdq5kOfMyGgiT3J3FidWP8WryzQKVW",
       "drive_evidence_url": "https://drive.google.com/file/d/1eemdq5kOfMyGgiT3J3FidWP8WryzQKVW/view?usp=drivesdk"
+    },
+    "field_readiness_deadline": {
+      "schema": "hbnf-field-readiness-deadline-v1",
+      "user_directive": "Cart must be course-ready by 2026-10-06 16:00 America/Los_Angeles.",
+      "created_at_local": "2026-10-06T13:41:06-07:00",
+      "priority": "FIELD_READINESS_OVERRIDES_NONESSENTIAL_CART2_PROGRESS",
+      "current_seq47_retry_started_local": "approximately 2026-10-06T13:27:00-07:00",
+      "expected_full_soak_completion_local": "approximately 2026-10-06T14:57:00-07:00 if uninterrupted",
+      "foundation_decision_cutoff_local": "2026-10-06T15:15:00-07:00",
+      "field_freeze_local": "2026-10-06T15:20:00-07:00",
+      "rules": [
+        "Continue the currently-running seq47 soak uninterrupted while healthy; do not restart or reflash merely because of this deadline.",
+        "Immediately after a clean soak, perform the one restore and final T2 audit with no optional archaeology or repeated evidence.",
+        "If FOUNDATION_QUALIFIED is not objectively achieved by 15:15 local, stop qualification work at the next safe boundary and prioritize course-ready rollback/verification.",
+        "For the 16:00 field deadline, seq48 exact Release07 recovery is authorized as a deadline fallback even if there is no new device failure, provided it is needed to return the cart to the known-good field baseline.",
+        "After any deadline fallback recovery, verify exact Release07 runtime identity, Matrix/AUX health, Matrix-origin AUX DDP, and the existing owner control path. Do not begin new renderer/firmware experimentation before the round.",
+        "At 15:20 local, freeze nonessential live changes. No new firmware candidate, new Foundation transaction, brightness change, or unproven Phase 2 live deployment may begin before the round.",
+        "If Foundation qualifies before the cutoff, preserve the qualified state. Do not jeopardize field readiness with optional post-T2 live changes; only field-critical controller/scoring work that can be fully smoked with rollback before the freeze may proceed.",
+        "All four offline Phase 2 lane checkpoints and T3 fast-path preparation remain preserved for post-round continuation."
+      ]
     }
   },
   "execution_budget_policy": {
@@ -1344,11 +1364,11 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Run seq47 prelive verification and exact unchanged candidate install once.",
-      "Create/verify fresh Packet20 diagnostic session and boot-scoped snapshot.",
-      "Run one uninterrupted >=5400s state-changing soak under corrected sustained policy; preserve evidence continuously.",
-      "Perform one renderer restore and adjudicate T2 using inherited exact-artifact evidence plus final soak.",
-      "If T2 PASS, advance immediately to FOUNDATION_QUALIFIED and execute prepared T3 interface freeze; if genuine sustained failure, localize only that failed gate."
+      "Continue the currently-running seq47 contiguous soak; expected completion is approximately 14:57 local if uninterrupted.",
+      "On clean soak completion, immediately perform one renderer restore and final T2 audit using inherited evidence; no optional reruns.",
+      "If T2 PASS before 15:15 local, write Foundation qualification and preserve the qualified state. Field readiness takes priority over optional post-T2 live changes.",
+      "If Foundation is not objectively qualified by 15:15 local, stop at the next safe boundary and use exact seq48 Release07 as the authorized deadline fallback if needed to restore the known-good field baseline.",
+      "By 15:20 local, freeze nonessential live changes and verify course-ready Matrix/AUX/DDP plus existing owner control path for the 16:00 deadline."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
