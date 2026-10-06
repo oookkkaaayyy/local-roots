@@ -1300,8 +1300,7 @@
       "live_mutation": "NONE",
       "completed_at_utc": "2026-10-06T19:11:22Z",
       "drive_evidence_file_id": "1eemdq5kOfMyGgiT3J3FidWP8WryzQKVW",
-      "drive_evidence_url": "https://drive.google.com/file/d/1eemdq5kOfMyGgiT3J3FidWP8WryzQKVW/view?usp=drivesdk",
-      "drive_zip_sha256": "00a1e57159541971442f6087fdb8b65767757fea52a0be76fcfd5a824b07e9c4"
+      "drive_evidence_url": "https://drive.google.com/file/d/1eemdq5kOfMyGgiT3J3FidWP8WryzQKVW/view?usp=drivesdk"
     }
   },
   "execution_budget_policy": {
