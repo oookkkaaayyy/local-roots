@@ -201,6 +201,15 @@
           "affected_feature_human_acceptance_only"
         ],
         "default_action": "iterate affected feature without reopening unrelated technical gates"
+      },
+      "TELEMETRY_INSTRUMENTATION": {
+        "invalidates": [
+          "runtime_telemetry_verified",
+          "instrumentation_observer_effect_passed",
+          "all_kernel_sweep_passed",
+          "foundation_soak_passed"
+        ],
+        "default_action": "make the smallest measurement-only change needed to observe the required range; preserve renderer/root-cause/performance evidence; prove bounded instrumentation delta offline, then remeasure observer effect once on the changed artifact"
       }
     },
     "change_impact": {
@@ -230,7 +239,13 @@
           "all_kernel_sweep_passed",
           "foundation_soak_passed"
         ],
-        "foundation_requalification": true
+        "foundation_requalification": true,
+        "required_verification": [
+          "offline diff proves telemetry-only scope",
+          "host regression tests",
+          "observer-effect remeasurement on changed artifact",
+          "full runtime telemetry sweep and soak"
+        ]
       },
       "AUDIO_FEATURES_OR_REALTIME_RENDER_MAPPING": {
         "invalidates": [
