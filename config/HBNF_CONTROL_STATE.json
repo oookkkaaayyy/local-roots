@@ -37,7 +37,9 @@
       "scope": "complete recovery and continue Cart 2.0 lifecycle autonomously as far as safely possible overnight",
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
-    "blockers": [],
+    "blockers": [
+      "Post-restart Mac cannot reach Opal/Matrix LAN: SSH to 192.168.77.1 and HTTP to 192.168.77.10 time out; Mac is currently on 192.168.68.0/22 through 192.168.68.1 and the saved HBNF-Cart SSID was not discoverable."
+    ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "diagnostic_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
@@ -232,11 +234,11 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
+      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Packet20 fresh 28-kernel run complete; prepare bounded class-level fix candidate",
-    "next_work": "Foundation remains unqualified. Complete the measurement-capability closure for true frame p50/p95/p99/max, minimum-ever heap and largest-free-block fragmentation, and instrumented-versus-lightweight observer effect. Then freeze baseline-relative thresholds and execute the 90-minute soak plus runtime/control acceptance. Preserve exact Release07 rollback.",
+    "next_work": "Reconnect Mac to the Opal/Matrix LAN; read-only verify Matrix MAC/IP and exact Release07 runtime identity after host restart. Then prepare a fresh bounded transaction with new sequences (next planned diagnostic/recovery pair seq31/32), complete a clean full Foundation measurement and soak, then continue T2 only if every required gate passes. Do not resume the partial sweep or repeat R4/build.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "performance_findings": {
       "candidate_fix": "FastLED 3.10.4 bounded fixed-point Animartrix backport; R4 achieved a 42 FPS median across 28 kernels, 8.329 ms median kernel time, with 28 improved and 0 regressed. Material gain confirmed; continue Foundation gates.",
@@ -497,18 +499,37 @@
       ],
       "observed_at": "2026-10-05T17:48:54Z",
       "status": "R3_CLOSED__R4_EXECUTION_REQUIRED"
+    },
+    "foundation_metrics_run": {
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+      "sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
+      "source_commit": "b18b162ec4b4f9173b1de892957ff8b834fe2b50",
+      "github_run_id": 37376862955,
+      "artifact_transfer_commit": "52f2252d680bcb67273929916b5f444d8fb9cda4",
+      "candidate_sequence": 29,
+      "recovery_sequence": 30,
+      "profiles_completed_before_enospc": 13,
+      "kernel_total": 28,
+      "sweep_status": "INTERRUPTED_INVALID_HOST_ENOSPC",
+      "observer_effect": "MEASURED_NO_MATERIAL_EFFECT",
+      "restore_verified_observed_pre_recovery": true,
+      "soak_status": "NOT_RUN",
+      "recovery_status": "PASS_PRE_CRASH",
+      "post_crash_identity": "NOT_REVERIFIED_NO_LAN_CONNECTIVITY",
+      "evidence_path": "evidence/hbnf-foundation-qualification-20261005/CRASH_RECONCILIATION.json",
+      "drive_evidence_file_id": "1T2JQLMq3UOr-anju-eSFnBoqoK35V4cX"
     }
   },
   "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
   "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
-  "installed_release_role": "BASELINE_RECOVERY_VERIFIED__SEQ26",
+  "installed_release_role": "BASELINE_RECOVERY_VERIFIED__SEQ30_PRE_CRASH__POST_RESTART_RECHECK_REQUIRED",
   "lifecycle_state": "FIX_CANDIDATE",
   "live_mutation_authorization": {
     "candidate_sha256": "3e11aa102309b5f871ea8ada339c90d0c1c9dfe1451a5c4f76958dba92a1156c",
     "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4",
-    "expiry": "Closed after exact Release07 identity and AUX health verification.",
+    "expiry": "Closed after pre-crash seq30 Release07 recovery; do not reuse.",
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-    "scope": "CLOSED: seq25 R4 28-kernel trial, exact Packet20 state restore, seq26 Release07 exact recovery completed.",
+    "scope": "CLOSED: seq29 candidate install and partial, invalid 13/28 Foundation sweep stopped on host ENOSPC; exact seq30 Release07 recovery acknowledged and verified before host restart. No soak; post-restart device identity recheck required before any new mutation.",
     "status": "CLOSED",
     "user_authorization": "Explicit R4 execution and continue-to-Foundation directive dated 2026-10-05."
   },

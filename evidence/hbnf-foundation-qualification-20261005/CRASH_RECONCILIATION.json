@@ -1,0 +1,42 @@
+{
+  "schema": "hbnf-foundation-crash-reconciliation-v1",
+  "reconciled_unix": 1791245493.646229,
+  "github": {
+    "authority_branch": "hbnf-cart2-ready-to-implement-staging-20261001",
+    "authority_head": "2eae4e1d6c202a8bec6efb237d9d3948ae152d6a",
+    "lifecycle": "FIX_CANDIDATE",
+    "live_mutation_authorized": false,
+    "published_installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
+    "published_release_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "foundation_metrics_branch": "hbnf-packet20-foundation-metrics-20261005",
+    "foundation_metrics_commit": "b18b162ec4b4f9173b1de892957ff8b834fe2b50",
+    "build_run": 37376862955,
+    "build_run_result": "success",
+    "artifact_transfer_branch": "hbnf-packet20-foundation-metrics-artifact-37376862955",
+    "artifact_transfer_commit": "52f2252d680bcb67273929916b5f444d8fb9cda4"
+  },
+  "artifact": {
+    "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+    "sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
+    "size_bytes": 1488768,
+    "ota_headroom_bytes": 84096,
+    "source_commit": "b18b162ec4b4f9173b1de892957ff8b834fe2b50",
+    "local_recovered_from_transfer_branch": true
+  },
+  "live_transaction": {
+    "planned_pair": "seq29 candidate / seq30 exact Release07 recovery",
+    "seq29_candidate_upload": "performed once; candidate install was reported successful before the sweep",
+    "sweep": "interrupted after 13 of 28 profiles by host ENOSPC; invalid/incomplete; no Foundation qualification",
+    "90_minute_soak": "not started",
+    "renderer_restore": "before recovery, Matrix runtime returned restoreVerified=true and lastCommand=restore; raw post-restore host capture failed on ENOSPC",
+    "seq30_recovery": "exact Release07 BIN from Downloads SHA-verified as 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab; direct-LAN WLED /update returned HTTP 200 and Update successful; seq30 ledger atomic write returned LEDGER_WRITE_OK",
+    "last_pre_crash_live_identity": "Release07 build identity and Matrix MAC 70:4b:ca:5b:34:5c; uptime 16 s; basic Matrix health PASS; AUX MAC 8c94df55c34c, live DDP from Matrix PASS",
+    "durability": "seq29/30 runtime captures were uncommitted in disposable /private/tmp and were lost on host restart; facts above are from prior execution tool output, not durable published evidence"
+  },
+  "post_crash": {
+    "matrix_identity_verified": false,
+    "reason": "Mac cannot reach 192.168.77.1 or 192.168.77.10; SSH and HTTP timed out. Wi-Fi route is 192.168.68.0/22 via 192.168.68.1; preferred HBNF-Cart SSID was not found. No post-restart device mutation occurred.",
+    "next_required_action": "Restore Mac connectivity to the Opal/Matrix LAN, then read-only verify Matrix MAC/IP and exact Release07 runtime identity before authorizing any further mutation."
+  },
+  "durable_decision": "Foundation remains UNQUALIFIED. Do not reuse partial sweep or seq29/30 authorization. R4, telemetry candidate build, and instrumentation source are already durable; no rebuild or GitHub Actions rerun required."
+}
