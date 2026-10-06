@@ -1,0 +1,62 @@
+{
+  "schema": "hbnf-p2-pwa-reliability-offline-checkpoint-v1",
+  "lane": "P2_PWA_RELIABILITY",
+  "date": "2026-10-06",
+  "source_branch": "hbnf-cart2-ready-to-implement-staging-20261001",
+  "source_commit": "f7a9870e2a42b0fe005da0cb6c3849cce3fea9a9",
+  "base_package": {
+    "name": "HBNF_CART_UI_V7_3_SKINS_OWNER_20261006.zip",
+    "sha256": "54eec1998410fdaf258477538d5494658639a10040a8746a2a79da525c013c2f",
+    "source_commit": "6f13ed8bc683743f8c1c53e0c65f5247af07bdba",
+    "drive_file_id": "1p31foPJ9a5z6l_ipJRLxTK0fV8ZBL7xv"
+  },
+  "successor_package": {
+    "name": "HBNF_CART_UI_V7_3_SKINS_OWNER_PWA_R1_20261006.zip",
+    "sha256": "21cfee1b08ce122e86c703ff2060c3cdb3bcab2f544249822cc44dd2ef868d94",
+    "bytes": 44425,
+    "manifest_sha256": "280adb1b5efbe4dff47cf33ae14a92ec9db1decfe6aa15a6a5d3b7585ab261a9",
+    "drive_file_id": "1MvBkyIqJJa-9uC0n73NXEozn28frLm47",
+    "drive_url": "https://drive.google.com/file/d/1MvBkyIqJJa-9uC0n73NXEozn28frLm47/view?usp=drivesdk",
+    "upload_redownload_hash_verified": true
+  },
+  "changes": [
+    "Bound owner Supabase control requests to 8s and visual-health requests to 5s with AbortController-backed timeout handling.",
+    "Restored #pair=<64-hex-token> parsing and one-time paired-device acceptance UI; pairing fragment is stripped after acceptance by existing code.",
+    "Versioned direct ES-module dependencies so a fresh HTML build cannot silently reuse stale semantic/network modules.",
+    "Added a narrowly scoped owner app-shell service worker for /hbnf-cart.html only, network-first with bounded fallback.",
+    "Service worker caches only same-origin GET app-shell/assets; control/API/device traffic is explicitly outside its fetch/cache path.",
+    "Added online/offline UI resync messaging and a permanent host regression for deadline, pairing, cache isolation and package closure.",
+    "Updated controller-only and coordinated-release packaging contracts to include the new reliability assets/tests."
+  ],
+  "validation": {
+    "changed_runtime_installer_git_blobs_matched_exact_source_commit": true,
+    "node_syntax": [
+      "hbnf-cart.js PASS",
+      "hbnf-cart-net.mjs PASS",
+      "hbnf-cart-sw.js PASS"
+    ],
+    "python_installer_compile": "PASS",
+    "host_reliability_regression": "PASS",
+    "package_integrity_check": "PASS",
+    "repository_package_closure_audit": "PASS",
+    "inherited_unchanged_scoring_validation": "V7.3 owner scoring/auth/concurrency/uncertain-save tests remain applicable; scoring/backend source was not changed by this lane."
+  },
+  "safety": {
+    "deployment": "NOT_DEPLOYED",
+    "live_hardware_mutation": "NONE",
+    "opal_access": "NONE",
+    "live_matrix_aux_requests": "NONE",
+    "github_actions_triggered_by_lane": "NONE",
+    "foundation_seq43_soak_interference": "NONE"
+  },
+  "not_proven": [
+    "Offline app-shell availability is not the same as offline control mutation; current canonical command transport still targets the Supabase relay.",
+    "No intended-owner-device Safari/Home Screen service-worker lifecycle or control/scoring smoke has been run.",
+    "No production deployment has occurred."
+  ],
+  "exact_dependencies": [
+    "P2_INTERFACE_FREEZE / legal Phase 2 authorization must define/freeze the local-control versus remote-relay transport boundary before offline mutation transport is implemented or deployed.",
+    "After legal T3 entry, deploy with rollback available and run intended-owner-device smoke: first online load/install, Home Screen relaunch, temporary WAN-loss shell behavior, reconnect/resync, paired authoritative scoring, and confirmed cart-control state."
+  ],
+  "lane_offline_outcome": "BLOCKED_WITH_EXACT_DEPENDENCY_AFTER_OFFLINE_RELIABILITY_IMPLEMENTATION"
+}
