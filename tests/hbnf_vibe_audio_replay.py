@@ -47,7 +47,9 @@ def main() -> int:
     check(tuple(CONFIG["audio_features"]["semantic_features"])==module.FEATURE_NAMES,"feature contract drift")
     adapter=CONFIG["audio_features"]["source_adapter"]
     check(set(adapter)==set(module.FEATURE_NAMES),"source adapter does not cover every AudioFeatures semantic")
-    check(all("NEW_FFT" not in entry["operation"] for entry in adapter.values()),"source adapter introduces a second FFT")
+    check(all("SECOND_FFT" not in entry["operation"] for entry in adapter.values()),"source adapter introduces a second FFT")
+    fft_entries=[entry for entry in adapter.values() if any("fftResult" in source for source in entry["sources"])]
+    check(fft_entries and all("NO_NEW_FFT" in entry["operation"] for entry in fft_entries),"existing FFT-bin consumers must explicitly forbid a new FFT")
     for kind in CONFIG["acceptance"]["synthetic_traces"]:
         for sample in run(kind):
             check(set(sample)==set(module.FEATURE_NAMES),f"{kind}: missing feature")
