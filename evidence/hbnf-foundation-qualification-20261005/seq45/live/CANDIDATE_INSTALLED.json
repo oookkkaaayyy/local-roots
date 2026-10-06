@@ -1,0 +1,41 @@
+{
+  "aux_pre_soak": {
+    "hbnfaux_frame_lock_active": null,
+    "mode": "DDP",
+    "source_ip": "192.168.77.10",
+    "wled_live": true
+  },
+  "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "candidate_bytes": 1489008,
+  "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "captured_at_utc": "2026-10-06T18:12:04.419436+00:00",
+  "opal_copy_receipt": "evidence/hbnf-foundation-qualification-20261005/seq45/live/seq45-opal-copy-receipt.json",
+  "ota_http_status": 200,
+  "ota_response_contains_update_successful": true,
+  "ota_response_path": "evidence/hbnf-foundation-qualification-20261005/seq45/live/seq45-opal-ota-response.txt",
+  "ota_response_sha256": "2092b30955e6073dcdcaac6631ea81f18600863640d8c0543bec5343f2fe5c85",
+  "packet20_begin_evidence": "evidence/hbnf-foundation-qualification-20261005/seq45/live/PACKET20_BEGIN_VERIFIED.json",
+  "packet20_session": {
+    "diagnosticActive": true,
+    "restoreVerified": false,
+    "snapshotHash": 584198932,
+    "snapshotId": 1,
+    "snapshotState": "READY",
+    "snapshotValid": true
+  },
+  "runtime_identity": {
+    "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "esp_reset_reason": 3,
+    "matrix_mac": "704bca5b345c",
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "restart_reason_core0": 12,
+    "restart_reason_core1": 12,
+    "selected_kernel": 12,
+    "uptime_seconds": 26,
+    "wled": "16.0.1"
+  },
+  "schema": "hbnf-foundation-seq45-install-receipt-v1",
+  "sequence": 45,
+  "status": "PASS__EXACT_CANDIDATE_INSTALLED_ONCE__FRESH_SESSION_AND_SNAPSHOT_READY",
+  "transport": "single Opal-origin local WLED /update; one firmware install request"
+}

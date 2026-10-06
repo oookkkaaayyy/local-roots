@@ -1,0 +1,30 @@
+{
+  "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "candidate_bytes": 1489008,
+  "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "captured_at_utc": "2026-10-06T18:12:52.861624+00:00",
+  "diagnostic_active": true,
+  "fresh_session_evidence": "evidence/hbnf-foundation-qualification-20261005/seq45/live/PACKET20_BEGIN_VERIFIED.json",
+  "fresh_snapshot_evidence": "evidence/hbnf-foundation-qualification-20261005/seq45/live/FRESH_SESSION_SNAPSHOT_VERIFIED.json",
+  "host_failure_policy": "Preserve seq45 and do not invoke seq46 for host/precondition/telemetry failures while identity, continuity, restore/session and AUX safety remain proven.",
+  "inherited_evidence": [
+    "seq39 exact-artifact 28/28 sweep",
+    "exact-candidate observer-effect PASS",
+    "seq39 hash-bound baseline and seq41 frozen policy receipt",
+    "common-path performance audit"
+  ],
+  "install_evidence": "evidence/hbnf-foundation-qualification-20261005/seq45/live/CANDIDATE_INSTALLED.json",
+  "prelive_evidence": "evidence/hbnf-foundation-qualification-20261005/seq45/live/SEQ45_PRELIVE_READONLY.json",
+  "recovery_sequence": 46,
+  "restore_policy": "Do not restore during soak. Perform exactly one renderer restore after a clean 5400s soak.",
+  "schema": "hbnf-foundation-seq45-transaction-v1",
+  "sequence": 45,
+  "snapshot_hash": 584198932,
+  "snapshot_id": 1,
+  "snapshot_ready": true,
+  "soak_requested_seconds": 5400,
+  "soak_sampler": "scripts/hbnf_foundation_continuous_soak.py; independent sampler and selector processes; sample every 5s; selector every 6s; incremental fsynced JSONL",
+  "status": "CANDIDATE_INSTALLED__FRESH_PACKET20_SESSION_AND_SNAPSHOT_READY__SOAK_STARTING",
+  "tails_enabled": true,
+  "telemetry_ready_samples": 30
+}
