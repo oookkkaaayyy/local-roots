@@ -1,0 +1,29 @@
+{
+  "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "captured_at_unix": 1791320304.702461,
+  "checkpoint": 4,
+  "files": {
+    "FOUNDATION_SOAK.jsonl": {
+      "bytes": 484680,
+      "complete_lines": 360,
+      "sha256": "bcc630a13e148cb6f6582207774b0a42f3d01f58f4902643259d6d4fee6259e2"
+    },
+    "FOUNDATION_STATE_CHANGES.jsonl": {
+      "bytes": 52709,
+      "complete_lines": 299,
+      "sha256": "c4e0117c7808591d85b95ca22fd5413642207ba3a285b35ea3fba8ac4d914b64"
+    }
+  },
+  "max_restart_count": 0,
+  "max_sample_gap_seconds": 7.030780208999886,
+  "provisional_max_frame_p99_ms": 68.875,
+  "provisional_minimum_ever_heap_bytes": 40240,
+  "provisional_minimum_largest_free_block_bytes": 51188,
+  "sample_count": 360,
+  "sample_duration_seconds": 1795.077817791,
+  "schema": "hbnf-seq47-soak-checkpoint-v1",
+  "selector_count": 299,
+  "seq48_consumed": false,
+  "status": "RUNNING"
+}
