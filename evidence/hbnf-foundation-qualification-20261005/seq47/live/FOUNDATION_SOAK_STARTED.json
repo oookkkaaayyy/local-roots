@@ -1,0 +1,19 @@
+{
+  "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "diagnosticActive": true,
+  "duration_seconds": 5400,
+  "evidence_is_fsynced_jsonl": true,
+  "max_sample_gap_seconds": 15,
+  "policy_sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797",
+  "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "sequence": 47,
+  "snapshot": {
+    "snapshotHash": 2829015731,
+    "snapshotId": 1
+  },
+  "started_at_utc": 1791315681.581645,
+  "state_changer_period_seconds": 6,
+  "status": "STARTING",
+  "telemetry_enabled": true,
+  "telemetry_period_seconds": 5
+}

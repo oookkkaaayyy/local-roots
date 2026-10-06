@@ -1,0 +1,19 @@
+{
+  "artifact_and_evidence_hashes": {
+    "baseline_sha256": "45c1562b92877a55048cc47bada00ecdac9dd23f2533dfdbad63da0e9f8476be",
+    "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "candidate_size_bytes": 1489008,
+    "inventory_sha256": "44f62cf31e5efa57a360117d96d437d6f504fd93704b28a069661b2da64a49f0",
+    "policy_sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797",
+    "sweep_manifest_sha256": "ec7602665bc54a81635769a35463965c88fbac7354da58b5453bb438f6a38abf",
+    "threshold_freeze_sha256": "6637e7132abd64493f028e917ccd2fe5b884df23b44dcbdfd57378d9ccde1256"
+  },
+  "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "inherited_28_kernel_sweep": "PASS__28_OF_28__NOT_REPEATED",
+  "inherited_observer_effect": "PASS__EXACT_ARTIFACT__NOT_REPEATED",
+  "recovery_sequence": 48,
+  "release07_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+  "sequence": 47,
+  "status": "PASS"
+}

@@ -1,0 +1,41 @@
+{
+  "ack": {
+    "HBNF": {
+      "packet20Diagnostic": {
+        "enabled": true,
+        "espResetReason": 3,
+        "lastCommand": "begin",
+        "lastCommandAccepted": true,
+        "resetReasonCore0": 12,
+        "resetReasonCore1": 12,
+        "restoreVerified": false,
+        "selectedKernel": 24,
+        "snapshotGeneration": 0,
+        "snapshotHash": 0,
+        "snapshotId": 0,
+        "snapshotState": "IDLE",
+        "snapshotValid": false
+      }
+    }
+  },
+  "diagnosticActive": true,
+  "enabled": true,
+  "first_renderer_state_change_not_yet_sent": true,
+  "packet20Diagnostic": {
+    "enabled": true,
+    "espResetReason": 3,
+    "lastCommand": "begin",
+    "lastCommandAccepted": true,
+    "resetReasonCore0": 12,
+    "resetReasonCore1": 12,
+    "restoreVerified": false,
+    "selectedKernel": 24,
+    "snapshotGeneration": 0,
+    "snapshotHash": 0,
+    "snapshotId": 0,
+    "snapshotState": "IDLE",
+    "snapshotValid": false
+  },
+  "status": "PASS",
+  "uptime_seconds": 356
+}
