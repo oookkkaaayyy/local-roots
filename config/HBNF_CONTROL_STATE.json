@@ -38,7 +38,7 @@
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
     "blockers": [
-      "Seq45 candidate failed frozen baseline-relative frame_max gate for Big_Caleido, Caleido2, SM5. Renderer snapshot 1/hash 584198932 remains valid and seq46 exact Release07 recovery is authorized and in progress."
+      "Foundation remains unqualified: frozen frame_max / p99 limits failed for Big_Caleido, Caleido2, and SM5. Seq45/46 authority pair is consumed; no further sequence or mutation authorized by this transaction."
     ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
@@ -393,11 +393,11 @@
       "sweep_status": "FOUNDATION_GATE_FAIL__TAIL_QUANTILE_SATURATED_AT_51_15MS",
       "unexpected_restart": false
     },
-    "foundation_status": "FOUNDATION_UNQUALIFIED__SEQ45_FROZEN_FRAME_MAX_GATE_FAILED",
-    "foundation_transaction_stop_reason": "Observed exact seq45 frame maxima exceeded the frozen per-kernel frame_max_max_ratio 1.5 gate: Big_Caleido 78.036>65.498ms, Caleido2 66.862>59.332ms, SM5 74.356>61.728ms. These exact maxima cannot be removed by later samples; preserved 71 telemetry samples/59 state changes, then stopped before consuming more device time. Seq46 is authorized as genuine Foundation gate recovery. Renderer snapshot 1/hash 584198932 restored once; source-bound helper returned restoreVerified=true and packet20Same=true. Exact seq46 recovery now in progress.",
-    "installed_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-    "installed_release_role": "SEQ45_FOUNDATION_METRICS_CANDIDATE_INSTALLED__DIAGNOSTIC_SESSION_ACTIVE__SOAK_RUNNING",
+    "foundation_status": "FOUNDATION_UNQUALIFIED__SEQ45_FROZEN_FRAME_MAX_GATE_FAILED__SEQ46_RECOVERY_PASS",
+    "foundation_transaction_stop_reason": "Frozen per-kernel frame_max_max_ratio 1.5 failed: Big_Caleido 78.036>65.498ms (1.787x), Caleido2 66.862>59.333ms (1.690x), SM5 74.356>61.728ms (1.807x); SM5 p99 50.125>46.406ms. 71 telemetry samples and 59 state changes preserved; soak stopped at 349.831s. Renderer snapshot 1/hash 584198932 restored once; restoreVerified=true and packet20Same=true. Exact seq46 Release07 recovery PASS and post-recovery identity/health verified; live mutation closed.",
+    "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
+    "installed_release_role": "SEQ46_RELEASE07_RECOVERY_VERIFIED__SEQ45_FOUNDATION_GATE_FAILED__LIVE_MUTATION_CLOSED",
     "last_recovery": {
       "sequence": 44,
       "attempts": 1,
@@ -705,7 +705,7 @@
       "renderer_restoreVerified": true
     },
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "SEQ45_FROZEN_GATE_FAILED__RESTORE_VERIFIED__SEQ46_RECOVERY_IN_PROGRESS",
+    "status": "SEQ45_FOUNDATION_GATE_FAILED__SEQ45_RENDERER_RESTORE_PASS__SEQ46_RELEASE07_RECOVERY_PASS__CLOSED",
     "target_recovery": {
       "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
@@ -1264,7 +1264,12 @@
       "packet20_same": true,
       "restore_snapshot_id": 1,
       "restore_snapshot_hash": 584198932
-    }
+    },
+    "foundation_qualification_result": "FAIL_FROZEN_BASELINE_FRAME_MAX_RELATIVE_GATE",
+    "seq45_46_transaction_result": "evidence/hbnf-foundation-qualification-20261005/seq45/live/SEQ45_46_TRANSACTION_RESULT.json",
+    "next_action": "No further live mutation or sequence allocation under consumed seq45/46 authorization. A fresh coordinator authority is required for any next Foundation attempt.",
+    "seq45_46_recovery_status": "PASS",
+    "live_mutation_authorized": false
   },
   "execution_budget_policy": {
     "authority_commit": "79173fe7318ef30f51487dba8b59b2b4547b86f3",
@@ -1281,17 +1286,15 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "SEQ45_FROZEN_GATE_FAILED__PACKET20_SAME_RESTORED__SEQ46_EXACT_RELEASE07_RECOVERY",
+    "current_failure_domain": "SEQ45_FROZEN_BASELINE_FRAME_MAX_GATE_FAILED__RESTORE_PASS__SEQ46_RELEASE07_RECOVERY_VERIFIED__MUTATION_CLOSED",
     "current_lifecycle_state": "FIX_CANDIDATE",
     "current_subject": {
-      "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+      "artifact_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+      "release_id": "hbnf-matrix-coordinated-v1-20261002-07"
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Execute the already-authorized exact Release07 seq46 recovery using the verified Opal-staged BIN.",
-      "Verify Release07 runtime identity/health and record the atomic seq46 ledger write without reading release-state.",
-      "Close live mutation and preserve the seq45 Foundation failure result."
+      "Foundation remains unqualified; seq45/46 pair consumed. Await a fresh coordinator authority before allocating any new live transaction. Preserve all valid prior evidence; do not repeat 28-kernel sweep or observer A/B absent an invalidator."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1388,9 +1391,9 @@
       "status": "REUSABLE"
     }
   ],
-  "installed_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-  "installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-  "installed_release_role": "SEQ45_FOUNDATION_METRICS_CANDIDATE_INSTALLED__DIAGNOSTIC_SESSION_ACTIVE__SOAK_RUNNING",
+  "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+  "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
+  "installed_release_role": "SEQ46_RELEASE07_RECOVERY_VERIFIED__SEQ45_FOUNDATION_GATE_FAILED__LIVE_MUTATION_CLOSED",
   "lane_execution": {
     "activation_rule": "Activate offline-safe core lanes at the earlier of: (a) clean Foundation soak/readiness signal, or (b) 60 minutes without lifecycle progress, provided parallel work is noncontending and cannot invalidate the healthy live critical path. Never restart/interrupt healthy critical-path work merely to satisfy this timer. live_mutation_limit remains 1.",
     "anti_abandonment": "Chat turnover, worker turnover, new sequence numbers, or convenience may not drop a lane. A ready lane can stop only when DONE, explicitly blocked on a named dependency, or user scope changes.",
@@ -1508,7 +1511,7 @@
   "live_mutation_authorization": {
     "candidate_sequence": 45,
     "recovery_sequence": 46,
-    "status": "SEQ45_FOUNDATION_FAILURE__PACKET20_RESTORE_PASS__SEQ46_RECOVERY_IN_PROGRESS",
+    "status": "CONSUMED__SEQ45_FOUNDATION_GATE_FAILED__PACKET20_RESTORE_PASS__SEQ46_RELEASE07_RECOVERY_PASS__LIVE_MUTATION_CLOSED",
     "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "candidate_size_bytes": 1489008,
@@ -1550,9 +1553,13 @@
     "gate_failure_evidence": "evidence/hbnf-foundation-qualification-20261005/seq45/live/foundation-soak/SEQ45_FOUNDATION_GATE_FAILURE.json",
     "renderer_restore_evidence": "evidence/hbnf-foundation-qualification-20261005/seq45/live/FAILURE_RENDERER_RESTORE_RESULT.json",
     "renderer_restore_verified": true,
-    "packet20_same": true
+    "packet20_same": true,
+    "recovery_status": "PASS",
+    "recovery_sequence_consumed": true,
+    "recovery_evidence": "evidence/hbnf-foundation-qualification-20261005/seq45/live/SEQ45_46_TRANSACTION_RESULT.json",
+    "mutation_closed": true
   },
-  "live_mutation_authorized": true,
+  "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",
@@ -1658,5 +1665,5 @@
       "closure_reason": "Source-backed reconciliation: before retry1, seq43 candidate was healthy, Packet20 snapshot 1/hash 940998176 was READY, restoreVerified=true and lastCommand restore/accepted=true, but Packet20 diagnostic mode was already disabled by the prior successful restore. Firmware intentionally ends diagnostic mode on restore and rejects a second begin while the same boot-scoped snapshot remains saved. The host retry attempted kernel 0 anyway; firmware correctly rejected it because diagnosticActive=false. The rejected command updated lastCommand to select without clearing restoreVerified. The host restore helper then misclassified the changed command token as loss of renderer restore and invoked seq44. This was a retry-precondition/host-comparator defect, not a measured firmware rendering/runtime gate or a real restore loss. Seq44 is already consumed; exact Release07 recovery and runtime identity PASS. No 90-minute soak completed; Foundation remains unqualified."
     }
   ],
-  "checkpoint_at_utc": "2026-10-06T18:27:00Z"
+  "checkpoint_at_utc": "2026-10-06T18:30:32Z"
 }

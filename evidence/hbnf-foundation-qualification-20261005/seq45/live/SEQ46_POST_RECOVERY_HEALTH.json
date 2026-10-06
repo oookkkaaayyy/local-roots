@@ -1,0 +1,19 @@
+{
+  "aux_fps": 29,
+  "aux_mac": "8c94df55c34c",
+  "aux_native_ddp_live": true,
+  "aux_source": "192.168.77.10",
+  "candidate": "hbnf-matrix-coordinated-v1-20261002-07",
+  "installed_bin_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+  "matrix_fps": 12,
+  "matrix_free_heap": 99312,
+  "matrix_ip": "192.168.77.10",
+  "matrix_mac": "704bca5b345c",
+  "matrix_uptime_seconds": 70,
+  "matrix_wifi_rssi_dbm": -60,
+  "note": "BIN SHA belongs to the exact Release07 artifact independently SHA/size verified before seq45; runtime build/release identity is independently verified from the Matrix after seq46 recovery.",
+  "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
+  "runtime_kernel": 6,
+  "status": "PASS",
+  "wled": "16.0.1"
+}

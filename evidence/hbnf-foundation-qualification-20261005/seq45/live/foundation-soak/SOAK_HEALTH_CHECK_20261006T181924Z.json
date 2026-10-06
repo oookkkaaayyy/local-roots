@@ -1,0 +1,40 @@
+{
+  "all_release_ids_exact": true,
+  "candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "failure_receipts_present": {
+    "STATE_CHANGER_FAILURE.json": false,
+    "TELEMETRY_SAMPLER_FAILURE.json": false
+  },
+  "hbnfaux_frame_lock_diagnostic": "inactive/age-invalid in these samples; excluded from native DDP gate by frozen policy",
+  "latest_sample": {
+    "aux_projection_active": true,
+    "aux_wled_live_source": true,
+    "fps": 38,
+    "frame_ms_max": 23.922,
+    "frame_ms_p99": 23.875,
+    "free_heap_bytes": 106204,
+    "kernel_id": 26,
+    "kernel_name": "SM5",
+    "largest_free_block_bytes": 57332,
+    "minimum_free_heap_bytes": 51224,
+    "restart_count": 0,
+    "uptime_seconds": 867
+  },
+  "max_frame_ms_max": 78.036,
+  "max_frame_ms_p99": 50.375,
+  "max_sample_gap_seconds": 5.952,
+  "minimum_free_heap_bytes": 51224,
+  "minimum_largest_free_block_bytes": 57332,
+  "native_aux_ddp_all_samples": true,
+  "note": "In-progress diagnostic checkpoint only; thresholds remain governed by the frozen seq41 policy and final audit occurs only after the complete contiguous 5400-second soak.",
+  "observed_at_utc": "2026-10-06T18:19:24Z",
+  "restart_counts": [
+    0
+  ],
+  "sample_count": 32,
+  "sample_timeline_seconds": 155.026,
+  "schema": "hbnf-foundation-seq45-soak-inprogress-health-v1",
+  "state_change_count": 27,
+  "status": "RUNNING_NO_FAILURE_OBSERVED"
+}

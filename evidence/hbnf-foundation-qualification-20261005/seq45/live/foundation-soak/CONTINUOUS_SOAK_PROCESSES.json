@@ -1,0 +1,8 @@
+{
+  "elapsed_seconds": 352.654218583,
+  "sample_count": 71,
+  "sampler_returncode": -15,
+  "schema": "hbnf-foundation-independent-soak-processes-v1",
+  "selector_returncode": -15,
+  "status": "FAIL"
+}
