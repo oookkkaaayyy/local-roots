@@ -1,5 +1,5 @@
 {
-  "checkpoint_at_utc": "2026-10-06T23:43:44Z",
+  "checkpoint_at_utc": "2026-10-06T23:50:14Z",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -1564,6 +1564,17 @@
       "decision": "Reuse seq53 machine evidence; do not rerun targeted validation. Correct host assertion only, reinstall exact same candidate, perform minimal postinstall identity/AUX health, write T2 receipt/Foundation promotion, return OWNER SMOKE NOW.",
       "candidate_sequence": 55,
       "recovery_sequence": 56
+    },
+    "seq55_final_guardrail_20261006": {
+      "schema": "hbnf-seq55-final-guardrail-v1",
+      "purpose": "Prevent another host/transport false negative during the already-authorized final seq55 salvage.",
+      "rules": [
+        "Do not classify seq55 install as failed from missing/ambiguous HTTP success text alone. Always read runtime build/info after the device returns. Runtime identity is authoritative for whether the candidate actually installed.",
+        "If runtime release/candidate identity is exact seq55 candidate SHA lineage, Matrix responds normally, and AUX /json/info proves live=true, lm=DDP, lip=192.168.77.10, preserve the candidate and continue. Do not invoke seq56 for host/tooling/response-parser ambiguity.",
+        "Do not reopen Packet20 diagnostic mode, do not require packet20Same JSON, and do not rerun any kernel/resource/performance qualification. Seq53 already supplied the valid 28/28, 56/56, and source-bound restore evidence.",
+        "Minimal postinstall verification is exact release/candidate identity, Matrix responsiveness/health, and AUX DDP source health. On PASS, immediately write the T2 Foundation receipt, advance to FOUNDATION_QUALIFIED, leave seq55 installed, close mutation, and return OWNER SMOKE NOW.",
+        "Seq56 is only for a genuine runtime identity mismatch after post-boot verification, Matrix failure, AUX DDP actually inactive/wrong-source, or later owner-smoke failure."
+      ]
     }
   },
   "execution_budget_policy": {
@@ -1589,12 +1600,11 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Accept seq53 28/28 and 56/56 targeted PASS plus source-bound restoreVerified=true as valid machine evidence; do not rerun targeted validation.",
-      "Patch only the host restore assertion/reconciliation so packet20Same JSON alias is not required; regression fail-closed on restoreVerified=false or snapshot/command mismatch.",
-      "Seq55 reinstall exact unchanged candidate via proven Opal-origin direct WLED /update.",
-      "Minimal postinstall exact identity + Matrix health + AUX info live DDP check only.",
-      "On PASS write T2 receipt, FOUNDATION_QUALIFIED, leave candidate installed, close mutation, return OWNER SMOKE NOW.",
-      "Seq56 only for genuine device/owner-smoke failure."
+      "Finish current seq55 install attempt. Regardless of OTA response text, verify post-boot runtime release/candidate identity before classifying outcome.",
+      "If exact candidate is running: verify Matrix health and AUX /json/info live=true/lm=DDP/lip=192.168.77.10 only.",
+      "Reuse seq47 performance/stability + seq53 28/28 56/56 + source-bound restore evidence; perform no additional qualification work.",
+      "On minimal PASS: write T2 receipt, FOUNDATION_QUALIFIED, leave seq55 installed, close mutation, return OWNER SMOKE NOW.",
+      "Seq56 only for genuine post-boot runtime/health or owner-smoke failure."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1830,9 +1840,12 @@
       "Reuse all exact-artifact seq47 5439.949s performance/stability evidence, seq53 28/28 56/56 targeted resource/AUX PASS, and seq53 source-bound restore PASS. Do not rerun soak, performance sweep, observer A/B, or targeted 28-kernel validation.",
       "On minimal postinstall PASS: write T2 Foundation qualification receipt, advance lifecycle to FOUNDATION_QUALIFIED, leave seq55 candidate installed, close live mutation, and immediately return OWNER SMOKE NOW with the shortest required owner checks.",
       "Do not start Phase 2 deployment before owner smoke tonight.",
-      "Seq56 exact Release07 is authorized only for genuine seq55 install/identity/AUX/runtime failure or owner-device smoke failure. Host assertion/tooling errors do not trigger seq56."
+      "Seq56 exact Release07 is authorized only for genuine seq55 install/identity/AUX/runtime failure or owner-device smoke failure. Host assertion/tooling errors do not trigger seq56.",
+      "FINAL GUARDRAIL: ambiguous/missing OTA HTTP success text is not an install failure. Verify post-boot runtime identity before deciding; exact candidate runtime identity overrides host response ambiguity.",
+      "If seq55 exact candidate identity + Matrix health + AUX DDP live/source checks PASS, promote Foundation immediately from inherited seq47+seq53 evidence. Do not perform any additional Packet20/kernel/resource/performance checks.",
+      "Do not invoke seq56 for host parser/tooling/transport ambiguity when runtime candidate identity and required health checks are good."
     ],
-    "recovery_rule": "SEQ56_RELEASE07_ONLY_FOR_GENUINE_SEQ55_DEVICE_OR_OWNER_SMOKE_FAILURE__NEVER_FOR_HOST_ALIAS_ASSERTION",
+    "recovery_rule": "SEQ56_ONLY_FOR_POST_BOOT_RUNTIME_IDENTITY_OR_HEALTH_FAILURE_OR_OWNER_SMOKE_FAILURE__NEVER_HOST_RESPONSE_AMBIGUITY",
     "live_mutation_limit": 1,
     "anti_repetition": [
       "NO_28_KERNEL_RERUN",
