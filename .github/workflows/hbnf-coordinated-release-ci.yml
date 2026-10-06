@@ -111,6 +111,8 @@ jobs:
         run: |
           set -euo pipefail
           node --check hbnf-final-controller/hbnf-cart.js
+          node --check hbnf-final-controller/hbnf-cart-net.mjs
+          node --check hbnf-final-controller/hbnf-cart-sw.js
           node --check hbnf-final-controller/hbnf-cart-semantic.mjs
           node --check hbnf-final-controller/hbnf-cart-ui-v6.mjs
           node --check hbnf-final-controller/hbnf-cart-features.mjs
@@ -122,7 +124,7 @@ jobs:
           for id in featureLook featureColor featurePalette featureLookName featureSavedLooks featureApplyLook featureSaveLook featureApplySaved featureDeleteSaved featureText featureSendText featureLive featureRefreshLive featureScoreboard featureAcePot featureOtaStatus featureOtaCheck featureOtaInstall featureOtaResult featurePreflight featurePreflightResult; do
             grep -q "id=\"$id\"" hbnf-final-controller/hbnf-cart.html
           done
-          grep -q 'src="./hbnf-cart-features.mjs"' hbnf-final-controller/hbnf-cart.html
+          grep -q 'src="./hbnf-cart-features.mjs?v=20261006-skins-owner-pwa-r1"' hbnf-final-controller/hbnf-cart.html
           grep -q 'window.HBNFCanonical' hbnf-final-controller/hbnf-cart.js
           grep -q 'async function command(type, payload = {})' hbnf-final-controller/hbnf-cart.js
           grep -q 'bridge.command("SCENE"' hbnf-final-controller/hbnf-cart-features.mjs
@@ -156,6 +158,7 @@ jobs:
           node tests/hbnf-coordinated-controller-contract.mjs
           node --experimental-strip-types tests/hbnf_skins_scoring_owner_flow.mjs
           node tests/hbnf_owner_pwa_package.mjs
+          node tests/hbnf_owner_pwa_reliability.mjs
           node tests/hbnf-coordinated-backend-staging.mjs
           node tests/hbnf-release-readiness.mjs
           node tests/hbnf-ios12-compat-audit.mjs
@@ -188,6 +191,8 @@ jobs:
           mkdir -p "$OUT/controller" "$OUT/domain" "$OUT/work" "$OUT/config" "$OUT/tools" "$OUT/tests" "$OUT/installer"
           cp hbnf-final-controller/hbnf-cart.html "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart.js "$OUT/controller/"
+          cp hbnf-final-controller/hbnf-cart-net.mjs "$OUT/controller/"
+          cp hbnf-final-controller/hbnf-cart-sw.js "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-semantic.mjs "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-ui-v6.css "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-ui-v6.mjs "$OUT/controller/"
