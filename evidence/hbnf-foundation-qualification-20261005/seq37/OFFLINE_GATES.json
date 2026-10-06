@@ -13,8 +13,12 @@
   },
   "device_commands": "NONE",
   "firmware_build": "NONE",
-  "host_failure_policy_tests": "PASS__HOST_ONLY_PRESERVE_REQUIRES_EXACT_CANDIDATE_HEALTH_NO_RESTART_RESTORE_AND_AUX; SEQ38_ONLY_FOR_REAL_FAILURE_OR_MISSING_SAFETY_PROOF",
+  "host_failure_policy_tests": "PASS__HOST_OR_EXTERNAL_ERRORS_PRESERVE_ONLY_WITH_EXACT_IDENTITY_HEALTH_NO_RESTART_RESTORE_AND_AUX; PERFORMANCE_OR_FOUNDATION_REPORT_FAILURES_REQUIRE_SEQ38; TIMEOUT_EDGE DOES NOT START HTTP",
   "inputs": {
+    "config/HBNF_CONTROL_STATE.json": {
+      "sha256": "18d3ff22f605a70cfc14dcfdf67ef3138e527e6f92063bda5f3735f033ec558f",
+      "size_bytes": 41346
+    },
     "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json": {
       "sha256": "937d036db17a600198cceda13e2f599384ffaacd17c24965fa9e7db048d77216",
       "size_bytes": 4098
@@ -28,32 +32,32 @@
       "size_bytes": 8881
     },
     "scripts/hbnf_foundation_live_adapter.py": {
-      "sha256": "549895b274cc56457d3e2bc13bc0221d87af4932cf7a6954b8d1369c5336547c",
-      "size_bytes": 18448
+      "sha256": "a2ef9ce271fc4bb87a5d5e531e83ed53cc1a26f1c5c5c3d616ea0a4f5b56aeee",
+      "size_bytes": 19130
     },
     "scripts/hbnf_foundation_seq37_failure_policy.py": {
-      "sha256": "c27af73d9d22ffd529ed5d4899bdf3e5feacdfe1b3500727393041111023f9e4",
-      "size_bytes": 3654
+      "sha256": "577fe5c1db8eed8fd6b3728fe28ba0c1c1529d77df8a57f798d7ee62a5323686",
+      "size_bytes": 3533
     },
     "scripts/hbnf_foundation_seq37_transaction.py": {
-      "sha256": "cdd5c0a7311c0677b9aecf4a76ba8219466aa196e1dd18d743ed74d81c7796fd",
-      "size_bytes": 15162
+      "sha256": "881553738c51bbb57c92e0dc66cdc5e66d818d270b9e5e266292d580dd29ef50",
+      "size_bytes": 15469
     },
     "scripts/hbnf_live_kernel_sweep.py": {
       "sha256": "f7f62447f07141dc6db7115dc2599b382e144ebaab414cfee3b5d6423f8e4d76",
       "size_bytes": 30844
     },
     "tests/hbnf_foundation_live_adapter.py": {
-      "sha256": "ee038c84221c37acc929481ba3a8aad4adababbd845ada3db073498f811394ce",
-      "size_bytes": 13587
+      "sha256": "89aa56ca7a220bfe7ef625f17032fdc06b4bcdc07f836084e977a3be0a9b3a9a",
+      "size_bytes": 13936
     },
     "tests/hbnf_foundation_offline_tools.py": {
       "sha256": "20bb7b0449c69e4055f306d6cea711f92c1a6ef61784a821a341a62e7e444f63",
       "size_bytes": 7395
     },
     "tests/hbnf_foundation_seq37_failure_policy.py": {
-      "sha256": "da70c4ae8ab3002f641b4ac02a7bb2419923845baea1c5114cf50f9f7bc00fca",
-      "size_bytes": 2061
+      "sha256": "cb1a61504b81ebd75addcdda86f14bc417314d0df3dd6baf2ea6f0caf0e05c78",
+      "size_bytes": 2360
     },
     "tests/hbnf_live_kernel_sweep.py": {
       "sha256": "3c3b7b88cde9f09a80dbfb10b9422d3fd5e6a628563cee93c1ed0bc51876ca38",
@@ -71,7 +75,7 @@
     "source": "evidence/hbnf-foundation-qualification-20261005/seq33/continuation/OBSERVER_EFFECT.json",
     "status": "PASS_REUSED_NOT_RERUN"
   },
-  "recorded_at_utc": "2026-10-06T06:08:08.657501+00:00",
+  "recorded_at_utc": "2026-10-06T06:15:30.997721+00:00",
   "recovery": {
     "release": "hbnf-matrix-coordinated-v1-20261002-07",
     "sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
@@ -83,13 +87,14 @@
     "exact_remaining_timeout_seconds": 0.0162015,
     "source": "evidence/hbnf-foundation-qualification-20261005/seq35/FAILURE_LOCALIZATION.json"
   },
+  "soak_audit_integration": "PASS_STATIC_AND_UNIT_COVERAGE__SOAK_AUDIT_RUNS_AFTER_SOAK_BEFORE_FOUNDATION_PASS",
   "state_changing_soak": "INTEGRATED__90_MINUTES__BASELINE_RELATIVE_AUDIT_REQUIRED_BEFORE_PASS",
   "status": "PASS_BEFORE_SEQUENCE_ALLOCATION_OR_DEVICE_MUTATION",
   "tests": {
     "platform_doctor": "PASS",
-    "seq37_package_dry_run": "PASS",
+    "seq37_package_dry_run": "PASS__EXACT_28_KERNELS_CANDIDATE_AND_RELEASE07_HASHES_90MIN_SOAK_NO_NEW_BUILD",
     "tests/hbnf_control.py": "PASS",
-    "tests/hbnf_foundation_live_adapter.py": "PASS",
+    "tests/hbnf_foundation_live_adapter.py": "PASS__PRESERVED_SEQ35_0.0162015S_REPLAY__DEADLINE_MINIMUM_COUNT_EARLY_MID_FAILURE_SNAPSHOT_RESTORE_REUSE_OBSERVER",
     "tests/hbnf_foundation_offline_tools.py": "PASS",
     "tests/hbnf_foundation_seq37_failure_policy.py": "PASS",
     "tests/hbnf_guarded_run.py": "PASS",

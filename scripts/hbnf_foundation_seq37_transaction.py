@@ -106,7 +106,7 @@ def run(args):
     soak_audit=read_json(sweep/"FOUNDATION_SOAK_AUDIT.json")
     if code==0 and report and report.get("status")=="PASS" and manifest and receipt and receipt.get("snapshot_equal") is True and soak_audit and soak_audit.get("status")=="PASS" and (soak_audit.get("foundation_qualification") or {}).get("status")=="PASS":
         start.update({"sweep_status":"PASS","foundation_report":report,"sweep_manifest":manifest,"foundation_soak_audit":soak_audit,"recovery_status":"NOT_USED__FOUNDATION_PASS","status":"FOUNDATION_SWEEP_AND_90_MINUTE_SOAK_PASS"});save(out/"TRANSACTION_RESULT.json",start);return 0
-    abort=read_json(sweep/"SWEEP_ABORT.json") or {};error="; ".join(str(x) for x in (abort.get("run_error"),abort.get("restore_error"),"runner_exit="+str(code)) if x)
+    abort=read_json(sweep/"SWEEP_ABORT.json") or {};audit=read_json(sweep/"FOUNDATION_SOAK_AUDIT.json") or {};error="; ".join(str(x) for x in (abort.get("run_error"),abort.get("restore_error"),("foundation-sweep-report-failed: "+json.dumps(report.get("failures",[])) if report and report.get("status")!="PASS" else None),("foundation-soak-audit-failed: "+json.dumps(audit.get("errors",[])) if audit and audit.get("status")!="PASS" else None),"runner_exit="+str(code)) if x)
     restored=renderer_restore_evidence(out,adapter)
     try:
         after=capture(out,"seq37-failure-postflight");info,build,state=identity(after,CANDIDATE);assert_aux(after);up=float(state.get("HBNF",{}).get("timing",{}).get("uptimeSec",info.get("uptime",0)))

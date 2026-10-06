@@ -25,6 +25,9 @@ assert "0.0162015s" in seq35["exact_failure"]
 edge_remaining=float(seq35["exact_failure"].split("after ",1)[1].split("s",1)[0])
 with unittest.mock.patch.object(m.time,"monotonic",return_value=100.0):
     assert not m.observer_poll_budget_available(100.0+edge_remaining)
+    with unittest.mock.patch.object(m,"get",side_effect=lambda *a,**kw:(_ for _ in ()).throw(AssertionError("HTTP started with unusable budget"))):
+        try:m.p20_state(deadline=100.0162015,stage="preserved-seq35-edge");raise AssertionError("deadline-edge request accepted")
+        except RuntimeError as exc:assert "no GET started" in str(exc)
 
 # Deadline-edge regression: once the minimum count is reached, the window is
 # valid even when the reserve prevents another HTTP request from starting.

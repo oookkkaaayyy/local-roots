@@ -14,18 +14,26 @@ COMMAND_ACK_TIMEOUT_SECONDS=30
 SNAPSHOT_READY_TIMEOUT_SECONDS=45
 RESTORE_VERIFY_TIMEOUT_SECONDS=90
 TAIL_HISTOGRAM_BINS=512
+MIN_HTTP_REMAINING_BUDGET_SECONDS=1.0
 
-def get(url, timeout=HTTP_TIMEOUT_SECONDS):
+def get(url, timeout=HTTP_TIMEOUT_SECONDS, deadline=None):
     attempts=2 if url.endswith("/json/state") else 1
     last=None
     for attempt in range(attempts):
+        request_timeout=timeout
+        if deadline is not None:
+            remaining=deadline-time.monotonic()
+            if remaining<MIN_HTTP_REMAINING_BUDGET_SECONDS:
+                last=RuntimeError(f"deadline leaves {remaining:.6f}s; below minimum HTTP request budget {MIN_HTTP_REMAINING_BUDGET_SECONDS:g}s; no request started")
+                break
+            request_timeout=min(timeout,remaining)
         req=urllib.request.Request(url,headers={"Accept":"application/json","Cache-Control":"no-store"})
         try:
-            with urllib.request.urlopen(req,timeout=timeout) as r:
+            with urllib.request.urlopen(req,timeout=request_timeout) as r:
                 raw=r.read().decode()
                 try:return json.loads(raw)
                 except Exception as e:
-                    raise RuntimeError(f"GET {url} returned invalid JSON after {timeout:g}s: {type(e).__name__}: {e}; body_tail={raw[-1000:]!r}") from e
+                    raise RuntimeError(f"GET {url} returned invalid JSON after {request_timeout:g}s: {type(e).__name__}: {e}; body_tail={raw[-1000:]!r}") from e
         except RuntimeError as e:
             if str(e).startswith(f"GET {url} returned invalid JSON"):raise
             last=e
@@ -38,7 +46,7 @@ def get(url, timeout=HTTP_TIMEOUT_SECONDS):
                 continue
             last=e
         break
-    raise RuntimeError(f"GET {url} failed after {timeout:g}s (attempts={attempts}): {type(last).__name__}: {last}") from last
+    raise RuntimeError(f"GET {url} failed after {request_timeout if 'request_timeout' in locals() else timeout:g}s (attempts={attempts}): {type(last).__name__}: {last}") from last
 
 def post_state(payload, timeout=POST_TIMEOUT_SECONDS):
     req=urllib.request.Request(MATRIX+"/json/state",data=json.dumps(payload,separators=(",",":")).encode(),headers={"Content-Type":"application/json"},method="POST")
@@ -56,9 +64,9 @@ def p20_state(deadline=None,stage="packet20-state-read"):
     timeout=HTTP_TIMEOUT_SECONDS
     if deadline is not None:
         remaining=deadline-time.monotonic()
-        if remaining<=0:raise RuntimeError(f"{stage} deadline expired before GET {MATRIX}/json/state")
+        if remaining<MIN_HTTP_REMAINING_BUDGET_SECONDS:raise RuntimeError(f"{stage} deadline leaves {remaining:.6f}s; below minimum HTTP request budget {MIN_HTTP_REMAINING_BUDGET_SECONDS:g}s; no GET started for {MATRIX}/json/state")
         timeout=min(timeout,remaining)
-    state=get(MATRIX+"/json/state",timeout=timeout)
+    state=get(MATRIX+"/json/state",timeout=timeout,deadline=deadline)
     return state,state.get("HBNF",{}).get("packet20Diagnostic",{})
 
 def _ack_timeout(stage, budget, last):

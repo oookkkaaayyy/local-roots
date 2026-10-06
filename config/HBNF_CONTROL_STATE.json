@@ -226,10 +226,10 @@
       "evidence_path": "evidence/hbnf-foundation-qualification-20261005/CRASH_RECONCILIATION.json",
       "github_run_id": 37376862955,
       "kernel_total": 28,
-      "next_sequences": "UNALLOCATED__USER_PAUSED_BEFORE_SEQ33_34",
-      "next_transaction_status": "AUTHORIZED__CAPSULE_AND_PRELIVE_PASS",
-      "observer_effect": "PRIOR_SEQ29_MEASUREMENT_STATUS_DURABLE__NOT_REPEATED",
-      "offline_integrated_soak_runner": "scripts/hbnf_live_kernel_sweep.py --soak-seconds 5400 --soak-interval-seconds 8; one snapshot and one restore; 28-kernel round-robin; durable JSONL",
+      "next_sequences": "SEQ37_CANDIDATE__SEQ38_REAL_FAILURE_RECOVERY_ONLY",
+      "next_transaction_status": "AUTHORIZED__CORRECTED_HOST_TESTS_PASS__CAPSULE_PRELIVE_PASS",
+      "observer_effect": "SEQ33_EXACT_CANDIDATE_PASS__27_SAMPLES_PER_MODE__MEDIAN_DELTA_MINUS_2_94_PERCENT__REUSE_WITHOUT_REMEASUREMENT",
+      "offline_integrated_soak_runner": "scripts/hbnf_live_kernel_sweep.py runs >=5400s changing round-robin soak, then hbnf_foundation_soak_audit.py verifies frozen per-kernel relative FPS/frame p95/p99/max/heap/largest-block/AUX gates against the hash-bound baseline before pass.",
       "offline_resume_plan": "work/cart2/27_FOUNDATION_OFFLINE_RESUME_PLAN_20261005.md",
       "offline_soak_audit": "scripts/hbnf_foundation_soak_audit.py; JSONL-only, no device I/O; requires >=90 minutes, exact identity, 28-kernel state changes, <=15s sample gaps, no uptime regression/restart change; metrics summarized, thresholds remain a separate frozen-policy gate",
       "offline_tools": [
@@ -625,7 +625,9 @@
       "offline_evidence": "evidence/hbnf-foundation-qualification-20261005/seq37/OFFLINE_GATES.json",
       "readonly_preflight": "evidence/hbnf-foundation-qualification-20261005/seq37/READONLY_PREFLIGHT.json",
       "host_failure_policy": "PRESERVE_SEQ37_ONLY_IF_EXACT_IDENTITY_HEALTH_NO_RESTART_EXACT_PACKET20_RESTORE_AND_AUX_HEALTH_ALL_PASS; HOST_ONLY_FAILURE_NEVER_CONSUMES_SEQ38",
-      "status": "AUTHORIZED__PRELIVE_CAPSULE_PENDING"
+      "status": "AUTHORIZED__CAPSULE_AND_PRELIVE_PASS",
+      "capsule_path": "evidence/hbnf-foundation-qualification-20261005/seq37/CAPSULE.json",
+      "prelive_proof_path": "evidence/hbnf-foundation-qualification-20261005/seq37/PRELIVE_PROOF.json"
     }
   },
   "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
@@ -640,7 +642,7 @@
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "prelive_evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq37/PRELIVE_PROOF.json",
     "scope": "One exact candidate install seq37; reuse exact seq33 observer PASS; tails-off steady interval, sacrificial warmup, full 28-kernel sweep, baseline-frozen >=90-minute changing soak; seq38 exact Release07 only for real device/Foundation failure. Host-only failures preserve candidate if exact identity, health, no restart, exact restore, and AUX health pass.",
-    "status": "AUTHORIZED__CAPSULE_AND_PRELIVE_REQUIRED",
+    "status": "AUTHORIZED__CAPSULE_AND_PRELIVE_PASS",
     "user_authorization": "FOUNDATION CONVERGENCE DIRECTIVE — AUTHORIZE FRESH SEQ35/36; explicit later seq37/38 authorization supersedes pair, with this host-failure restriction."
   },
   "live_mutation_authorized": true,

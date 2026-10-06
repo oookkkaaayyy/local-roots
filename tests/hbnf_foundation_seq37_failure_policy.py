@@ -8,6 +8,9 @@ m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 assert m.classify_run_error("TimeoutError: evidence writer deadline expired")=="HOST_OR_EXTERNAL"
 assert m.classify_run_error("foundation-steady-state-frame-interval-stop: frame_ms_max=1000ms")=="DEVICE_OR_FOUNDATION_GATE"
 assert m.classify_run_error("release identity changed during sweep")=="DEVICE_OR_FOUNDATION_GATE"
+assert m.classify_run_error("foundation-sweep-report-failed: missing metrics")=="DEVICE_OR_FOUNDATION_GATE"
+assert m.classify_run_error("foundation soak sample gap invalid: 16s") == "HOST_OR_EXTERNAL"
+assert m.classify_run_error("foundation soak missed exact kernel coverage") == "HOST_OR_EXTERNAL"
 assert m.classify_run_error("OSError: disk full while writing report")=="HOST_OR_EXTERNAL"
 
 snapshot={"snapshotId":7,"snapshotHash":1234}

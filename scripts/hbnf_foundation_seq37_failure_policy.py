@@ -24,14 +24,11 @@ DEVICE_FAILURE_MARKERS=(
     "packet20-snapshot-hash-mismatch",
     "packet20-existing-snapshot-not-ready",
     "catastrophic Foundation threshold crossed",
-    "foundation soak sample gap invalid",
-    "foundation soak missed exact kernel coverage",
     "foundation-lost-snapshot-state",
     "envelope failure",
     "regressed vs qualified baseline",
     "projection stale/inactive fraction exceeded policy",
-    "all-kernel envelope not frozen",
-    "foundation baseline",
+    "foundation-sweep-report-failed",
 )
 
 def classify_run_error(error):
