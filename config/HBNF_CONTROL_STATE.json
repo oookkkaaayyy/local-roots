@@ -727,7 +727,8 @@
       "secondary_priority": [
         "Complete Foundation qualification if safely achievable.",
         "Advance Mission Control/scoring and PWA/reliability first because they directly affect tomorrow field use.",
-        "Use remaining parallel/offline capacity for Vibe/audio and text/moments."
+        "Use remaining parallel/offline capacity for Vibe/audio and text/moments.",
+        "After the current worker return, evaluate the locked Matrix low-brightness fidelity target. Implement for tomorrow only if localized and low-risk; otherwise explicitly defer without destabilizing the field build."
       ],
       "do_not_derail": [
         "Do not reopen the resolved physical AUX fault as a software investigation without new evidence.",
@@ -751,6 +752,33 @@
         ],
         "reporting": "Do not stop merely to report intermediate diagnostics; checkpoint durable state and continue."
       }
+    },
+    "brightness_field_target": {
+      "schema": "hbnf-brightness-field-target-v1",
+      "status": "LOCKED_FOR_NEXT_WORKER_DECISION__DO_NOT_INTERRUPT_CURRENT_WORK",
+      "target_event": "NEXT_SKINS_ROUND__2026-10-06",
+      "observed_problem": "On current build, lowering Matrix brightness also visibly collapses/reduces the displayed animation/image; below roughly 20 the Matrix becomes nearly dark or shows only a very limited animation.",
+      "user_field_preference": "Typical night sweet spot is roughly current-slider 10–20; values above ~25 can be excessively bright on-course.",
+      "required_behavior": [
+        "Brightness reduction should preserve animation/image structure as much as technically practical.",
+        "Prefer greater low-end granularity for night use.",
+        "Retain true maximum brightness; do not cap or fake the maximum."
+      ],
+      "next_worker_decision": "AFTER_CURRENT_WORKER_RETURN, explicitly decide GO_FOR_TOMORROW or DEFER_FOR_STABILITY based on actual implementation blast radius and Foundation invalidation risk.",
+      "go_if": [
+        "Localized late/output-stage brightness mapping or UI-perceptual mapping change.",
+        "Offline regression coverage can prove scene structure preservation and full-max reachability.",
+        "No renderer/scheduler/frame-budget invalidation and no meaningful risk to tomorrow scoring/control/AUX stability."
+      ],
+      "defer_if": [
+        "Requires renderer/scheduler architecture changes.",
+        "Would invalidate the current Foundation performance evidence or force a broad firmware requalification before tomorrow.",
+        "Cannot be regression-tested and field-frozen safely before the Skins round."
+      ],
+      "priority_if_go": "Implement after the current critical Foundation/field-readiness transaction reaches a safe boundary; then validate/freeze it before tomorrow's field release.",
+      "priority_if_defer": "Record as retained Cart 2.0 core product requirement and do not risk tomorrow's field build.",
+      "authority": "config/HBNF_CONTROL_MODEL.json execution_system.release_scope.brightness_quality_requirement",
+      "authority_commit": "fd043077b5c4de00ff7bc11c2015d78df2d53378"
     }
   },
   "execution_budget_policy": {
@@ -781,7 +809,8 @@
       "If a telemetry/gate correction is needed, prove it offline and use the smallest possible delta. If no correction is needed and prelive proof is clean, proceed directly to the single authorized seq41 Foundation requalification.",
       "If the 90-minute soak starts cleanly, keep it running and immediately use the wait for field-critical Cart 2.0 work: Mission Control/scoring and PWA/reliability first; Vibe/audio and text/moments next.",
       "Before stopping overnight, maximize tomorrow's Skins readiness: authoritative scoring on intended owner device, reliable owner control without Mac/Terminal, and working underglow/AUX. Do not let noncritical polish block this field gate.",
-      "Promote Foundation and then advance lifecycle/Phase2 as far as objective gates allow; do not stop merely to report intermediate progress."
+      "Promote Foundation and then advance lifecycle/Phase2 as far as objective gates allow; do not stop merely to report intermediate progress.",
+      "At the next worker-return boundary, evaluate the locked Matrix low-brightness fidelity requirement and make an explicit GO_FOR_TOMORROW vs DEFER_FOR_STABILITY decision. Do not interrupt the current critical transaction to work on it."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
