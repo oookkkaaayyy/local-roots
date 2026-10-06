@@ -310,7 +310,7 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
+      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Foundation offline timeout and soak-harness checkpoint",
@@ -652,7 +652,7 @@
     "prelive_evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq39/PRELIVE_PROOF.json",
     "scope": "One exact local clean-room telemetry-only candidate install seq39; exact one-time observer A/B on that changed artifact; sacrificial warm-up; complete all-28 Foundation sweep; hash-bound baseline/frozen policy; same-install >=5400s state-changing soak; seq40 exact Release07 REAL DEVICE/RUNTIME FAILURE recovery only. Host-only failure preserves candidate only with exact identity, health, no restart, renderer restore, and AUX health proof. No R3/R4/Packet20 re-exploration, no new build, no GitHub Actions.",
     "status": "AUTHORIZED__OFFLINE_GATES_PASS__PRELIVE_REQUIRED",
-    "user_authorization": "Current user directive EXPEDITE \u2014 BOUNDED TELEMETRY RANGE FIX ONLY explicitly authorizes next legal seq39 candidate / seq40 exact Release07 real failure recovery after offline gates; seq37 remains TELEMETRY_INSTRUMENTATION, not renderer/root-cause failure.",
+    "user_authorization": "Current user directive EXPEDITE — BOUNDED TELEMETRY RANGE FIX ONLY explicitly authorizes next legal seq39 candidate / seq40 exact Release07 real failure recovery after offline gates; seq37 remains TELEMETRY_INSTRUMENTATION, not renderer/root-cause failure.",
     "closure_reason": null
   },
   "live_mutation_authorized": true,
@@ -773,25 +773,29 @@
         "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
         "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START",
         "execution_context": "SEPARATE_WORKER_REQUIRED",
-        "launch_owner": "COORDINATOR"
+        "launch_owner": "COORDINATOR",
+        "status_sheet_row": 4
       },
       "P2_VIBE_AUDIO": {
         "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
         "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START",
         "execution_context": "SEPARATE_WORKER_REQUIRED",
-        "launch_owner": "COORDINATOR"
+        "launch_owner": "COORDINATOR",
+        "status_sheet_row": 5
       },
       "P2_TEXT_MOMENTS": {
         "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
         "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START",
         "execution_context": "SEPARATE_WORKER_REQUIRED",
-        "launch_owner": "COORDINATOR"
+        "launch_owner": "COORDINATOR",
+        "status_sheet_row": 6
       },
       "P2_PWA_RELIABILITY": {
         "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
         "dependency": "FOUNDATION_SOAK_RUNNING_FOR_SAFE_PARALLEL_START",
         "execution_context": "SEPARATE_WORKER_REQUIRED",
-        "launch_owner": "COORDINATOR"
+        "launch_owner": "COORDINATOR",
+        "status_sheet_row": 7
       }
     },
     "anti_abandonment": "Chat turnover, worker turnover, new sequence numbers, or convenience may not drop a lane. A ready lane can stop only when DONE, explicitly blocked on a named dependency, or user scope changes.",
@@ -803,7 +807,8 @@
       "required_live_worker_signal": "PARALLEL_LANES_READY",
       "launch_mode": "FOUR_SEPARATE_WORKER_CONTEXTS",
       "launch_status": "WAITING_FOR_FOUNDATION_SOAK",
-      "note": "Do not judge the live Foundation worker for not spawning chats; it is only responsible for signaling readiness and preserving the live lane."
+      "note": "Do not judge the live Foundation worker for not spawning chats; it is only responsible for signaling readiness and preserving the live lane.",
+      "status_sheet_id": "1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko"
     }
   },
   "process_metrics": {
@@ -834,5 +839,23 @@
         ]
       }
     ]
+  },
+  "observability": {
+    "schema": "hbnf-worker-observability-state-v1",
+    "authority_effect": "NONE",
+    "status_sheet_id": "1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko",
+    "status_sheet_url": "https://docs.google.com/spreadsheets/d/1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko/edit",
+    "sheet_name": "Live Status",
+    "cadence_minutes": 10,
+    "stale_after_minutes": 15,
+    "rows": {
+      "FOUNDATION_LIVE": 3,
+      "P2_MISSION_CONTROL_SCORING": 4,
+      "P2_VIBE_AUDIO": 5,
+      "P2_TEXT_MOMENTS": 6,
+      "P2_PWA_RELIABILITY": 7
+    },
+    "current_worker": "FOUNDATION_LIVE",
+    "note": "Telemetry only; never operational authority."
   }
 }
