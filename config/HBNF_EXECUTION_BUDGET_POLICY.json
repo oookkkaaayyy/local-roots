@@ -1,0 +1,61 @@
+{
+  "schema": "hbnf-execution-budget-policy-v1",
+  "status": "ACTIVE",
+  "effective_date": "2026-10-06",
+  "authority": "USER_EXPLICIT__IMPLEMENT_ANTI_STALL__2026-10-06",
+  "purpose": "Prevent repeated multi-hour debugging loops from consuming Cart 2.0 wall-clock time without lifecycle progress.",
+  "milestone_definition": [
+    "candidate install/recovery completed and identity verified",
+    "required qualification sweep completed",
+    "required soak started or completed",
+    "Foundation qualified",
+    "lifecycle transition completed",
+    "Phase 2 lane reaches a defined deliverable/acceptance gate"
+  ],
+  "budgets": {
+    "no_material_milestone_minutes": 30,
+    "no_lifecycle_progress_minutes": 60,
+    "max_retry_per_failure_class": 1
+  },
+  "enforcement": {
+    "at_30_minutes_without_material_milestone": [
+      "STOP the current mechanism at the next safe boundary.",
+      "Preserve evidence and classify the failure domain.",
+      "Do not continue tuning the same mechanism.",
+      "Pivot to a materially different mechanism or to an independent ready lane."
+    ],
+    "retry_rule": [
+      "One retry maximum per failure class.",
+      "A retry is legal only when the mechanism materially changes and the new evidence explains why the retry should succeed.",
+      "Parameter-only tweaking of the same failed mechanism is not a new mechanism."
+    ],
+    "at_60_minutes_without_lifecycle_progress": [
+      "The blocked lane may continue only if it is inside a required healthy long-running gate.",
+      "Otherwise it loses monopoly on wall-clock time.",
+      "Activate every offline-safe independent Cart 2.0 lane that is ready.",
+      "Maintain live_mutation_limit=1."
+    ],
+    "build_and_actions": [
+      "Do not rebuild firmware or use GitHub Actions for host, transport, harness, telemetry-reader, or orchestration defects unless the existing artifact itself is invalidated.",
+      "Prefer exact existing artifacts and local/direct mechanisms."
+    ],
+    "attempt_contract": [
+      "Before each live attempt record start time, 30-minute checkpoint, hard exit condition, material milestone target, failure class, and fallback mechanism.",
+      "A worker may not enter an open-ended debug loop."
+    ],
+    "required_long_running_gate_exception": [
+      "An explicitly required long-running gate such as the >=90-minute Foundation soak is not a stall while it is demonstrably running and healthy.",
+      "During such a gate, parallel offline-safe lanes must still activate as soon as their activation condition is satisfied.",
+      "A healthy soak must not be interrupted solely because 30 or 60 minutes elapsed."
+    ],
+    "reporting": [
+      "Report elapsed wall-clock against milestone targets, not commit/test activity.",
+      "If a budget expires, record the pivot and reason in durable authority."
+    ]
+  },
+  "current_seq39_application": {
+    "do_not_interrupt_if_progressing": true,
+    "rule": "Apply prospectively to the active seq39 Foundation transaction. If the active sweep/observer path stops producing a required material milestone for 30 minutes, preserve evidence and pivot. If Foundation has not advanced lifecycle within 60 minutes and no healthy required long-running gate is running, activate offline-safe Phase 2 lanes.",
+    "soak_rule": "Once the >=90-minute soak is actually running and healthy, keep it running and activate offline-safe Phase 2 lanes after the existing clean-sample readiness signal."
+  }
+}
