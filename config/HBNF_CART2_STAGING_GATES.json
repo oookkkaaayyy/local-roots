@@ -2,7 +2,7 @@
   "schema": "hbnf-cart2-staging-gates-v1",
   "stagingBranch": "hbnf-cart2-ready-to-implement-staging-20261001",
   "sourceSnapshot": "0c01d0c7f065264e2b9fd8127f1c48cc96a73b56",
-  "mode": "planning-qualification-reference-only",
+  "mode": "REFERENCE_ONLY__NON_OPERATIONAL",
   "implementationAuthorized": false,
   "liveMutationAuthorized": false,
   "githubActionsAuthorized": false,
@@ -87,7 +87,7 @@
     "foundationSoakPassed": false,
     "fieldFlightRecorderIntegrated": false
   },
-  "operational_authority": "REFERENCE_ONLY__USE_HBNF_CONTROL_MODEL_STATE",
+  "operational_authority": "config/HBNF_CONTROL_MODEL.json + config/HBNF_CONTROL_STATE.json",
   "currentFoundation": {
     "lifecycle": "DIAGNOSTIC_ACTIVE",
     "installedRelease": "hbnf-matrix-coordinated-v1-20261002-07",
@@ -102,5 +102,7 @@
     "GitHub Actions remain unauthorized from this staging lane unless the user separately authorizes them.",
     "Source-independent product/spec preparation is substantially complete; remaining substantive audits depend on the exact qualified foundation, explicit user scope approval, or physical validation.",
     "This reference does not advance lifecycle state or authorize implementation."
-  ]
+  ],
+  "operational_use_forbidden": true,
+  "note": "Historical/planning gate snapshot only. Do not use these booleans to block, authorize, regress, or redirect current execution; current operational decisions come only from the primary control model/state."
 }
