@@ -300,7 +300,7 @@
         "P2_PWA_RELIABILITY"
       ],
       "activation": {
-        "foundation_soak": "When the Foundation soak is cleanly running, start every core lane that is offline-safe; each must be ACTIVE, DONE, or BLOCKED_WITH_EXACT_DEPENDENCY.",
+        "foundation_soak": "When the Foundation soak is cleanly running, the live worker must emit PARALLEL_LANES_READY and checkpoint authority. The coordinator then launches one separate worker context per offline-safe core lane. The live worker is not expected or allowed to fabricate parallelism inside one chat.",
         "phase2": "At PHASE2_INTEGRATING and RELEASE_CANDIDATE, all four core lanes must be tracked as ACTIVE, DONE, or BLOCKED_WITH_EXACT_DEPENDENCY."
       },
       "required_when": [
@@ -320,7 +320,30 @@
       "sequencing": [
         "Integration waits for lane outputs; ready lanes do not wait for integration.",
         "A worker may combine implementation internally only if each lane remains independently tracked."
-      ]
+      ],
+      "orchestration": {
+        "capability_boundary": "A worker chat cannot create additional chats/workers. Parallel worker creation is an external coordinator/user action, not a responsibility of the live Foundation worker.",
+        "live_worker_role": [
+          "continue the one live-device mutation lane",
+          "when the Foundation soak is cleanly running, checkpoint current authority and emit PARALLEL_LANES_READY",
+          "do not serialize the four core implementation lanes inside the live worker merely because it cannot spawn them",
+          "later integrate outputs after their separate workers return"
+        ],
+        "coordinator_role": [
+          "launch one separate worker context per core lane when PARALLEL_LANES_READY is emitted",
+          "bind every lane worker to current HBNF_CONTROL_MODEL/HBNF_CONTROL_STATE and its lane contract",
+          "prevent overlapping file ownership or live-device mutation",
+          "record each launched worker/context in lane_execution"
+        ],
+        "prelaunch_status": "WAITING_FOR_EXTERNAL_WORKER_LAUNCH",
+        "readiness_status": "READY_FOR_EXTERNAL_WORKER_LAUNCH",
+        "postlaunch_status_values": [
+          "ACTIVE",
+          "DONE",
+          "BLOCKED_WITH_EXACT_DEPENDENCY"
+        ],
+        "failure_ownership": "Failure to spawn parallel workers is an orchestration/coordinator failure, never a failure of a worker that lacks spawn capability."
+      }
     },
     "phase2_dag": [
       {
