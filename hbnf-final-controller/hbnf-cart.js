@@ -1,5 +1,6 @@
 /* HBNF_CART_FINAL_V5_SEMANTIC_FRAME_LOCK */
-import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs";
+import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261006-skins-owner-pwa-r1";
+import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261006-skins-owner-pwa-r1";
 
 const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC";
@@ -125,8 +126,8 @@ function deviceToken() {
 
 function setAuthorizedUi() {
   if (authPanel) authPanel.hidden = true;
-  if (managePairPanel) managePairPanel.hidden = true;
-  if (pairAcceptPanel) pairAcceptPanel.hidden = true;
+  if (managePairPanel) managePairPanel.hidden = !validDeviceToken(deviceToken());
+  if (pairAcceptPanel && !pendingPairToken) pairAcceptPanel.hidden = true;
 }
 
 async function authHeaders() {
@@ -144,12 +145,12 @@ async function authHeaders() {
 
 async function call(body) {
   const { headers, mode } = await authHeaders();
-  const response = await fetch(endpoint, {
+  const response = await fetchWithDeadline(fetch, endpoint, {
     method: "POST",
     headers,
     body: JSON.stringify(body),
     cache: "no-store",
-  });
+  }, HBNF_API_TIMEOUT_MS, "Cart control");
   const json = await response.json().catch(() => ({}));
 
   if (!response.ok) {
@@ -165,12 +166,12 @@ async function call(body) {
 
 async function visualStatus() {
   const { headers, mode } = await authHeaders();
-  const response = await fetch(visualStatusEndpoint, {
+  const response = await fetchWithDeadline(fetch, visualStatusEndpoint, {
     method: "POST",
     headers,
     body: JSON.stringify({ action: "status" }),
     cache: "no-store",
-  });
+  }, HBNF_VISUAL_TIMEOUT_MS, "Hardware status");
   if (!response.ok) return null;
   return response.json().catch(() => null);
 }
@@ -390,8 +391,10 @@ window.HBNFCanonical = {
 };
 
 function detectPairFragment() {
-  pendingPairToken = null;
-  if (pairAcceptPanel) pairAcceptPanel.hidden = true;
+  pendingPairToken = parsePairFragment(location.hash);
+  if (!pairAcceptPanel) return;
+  pairAcceptPanel.hidden = !pendingPairToken;
+  if (pendingPairToken && pairAcceptStatus) pairAcceptStatus.textContent = "Pairing link recognized. Tap Pair this device once.";
 }
 
 $("#acceptPair").addEventListener("click", async () => {
@@ -479,9 +482,17 @@ function showError(error) {
   statusNode.textContent = `No change confirmed: ${error.message}`;
 }
 
+detectPairFragment();
 setAuthorizedUi();
 statusNode.textContent = "Connecting…";
 refresh().catch(showError);
+
+window.addEventListener("online", () => {
+  if (!document.hidden && !tuneInFlight && !tuneDirty) refresh().catch(showError);
+});
+window.addEventListener("offline", () => {
+  statusNode.textContent = "OFFLINE · no change sent. Current cart show continues locally; reconnect to control or score.";
+});
 
 setInterval(() => {
   if (!document.hidden && !tuneInFlight && !tuneDirty) refresh().catch(() => {});
