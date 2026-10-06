@@ -106,6 +106,34 @@ def validate_receipt(model,state,receipt):
             errors.append("explicit user approval required")
     return errors
 
+def parallelism_status(model,state):
+    pe=model.get("execution_system",{}).get("parallelism_enforcement",{})
+    core=pe.get("core_lanes",[])
+    lifecycle=state.get("lifecycle_state")
+    required=lifecycle in set(pe.get("state_contract",{}).get("required_when",[]))
+    lane_state=state.get("lane_execution",{})
+    allowed=set(pe.get("state_contract",{}).get("lane_status_values",[]))
+    violations=[]
+    if required:
+        for lane in core:
+            item=lane_state.get(lane)
+            if not isinstance(item,dict):
+                violations.append(lane+": missing lane_execution state")
+                continue
+            st=item.get("status")
+            if st not in allowed:
+                violations.append(lane+": invalid/non-active status "+str(st))
+            if st=="BLOCKED_WITH_EXACT_DEPENDENCY":
+                if not str(item.get("blocker") or "").strip() or not str(item.get("dependency") or "").strip():
+                    violations.append(lane+": blocked state missing blocker/dependency")
+    return {
+      "required":required,
+      "core_lanes":core,
+      "tracked":sorted(lane_state.keys()) if isinstance(lane_state,dict) else [],
+      "violations":violations,
+      "pass":not violations
+    }
+
 def status(model,state):
     errs=validate_state(model,state)
     t=next_transition(model,state) if not errs else None
@@ -118,7 +146,8 @@ def status(model,state):
       "next_state":t["to"] if t else None,
       "required_receipt_type":t["receipt_type"] if t else None,
       "live_mutation_authorized":state.get("live_mutation_authorized") is True,
-      "phase2_implementation_authorized":state.get("phase2_implementation_authorized") is True
+      "phase2_implementation_authorized":state.get("phase2_implementation_authorized") is True,
+      "parallelism":parallelism_status(model,state)
     }
 
 def advance(model,state,receipt_path):
