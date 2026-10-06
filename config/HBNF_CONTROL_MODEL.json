@@ -132,5 +132,244 @@
       "source_tree_sha256",
       "source_archive_sha256"
     ]
+  },
+  "execution_system": {
+    "schema": "hbnf-execution-system-v1",
+    "purpose": "Make the existing lifecycle model execute linearly with evidence reuse, selective invalidation, failure isolation, and safe parallelism; this is part of the primary control model, not a new authority layer.",
+    "operating_loop": [
+      "CURRENT_NODE",
+      "INHERIT_VALID_EVIDENCE",
+      "CLASSIFY_CHANGE_AND_REQUIRED_CHECKS",
+      "EXECUTE_READY_WORK",
+      "CLASSIFY_FAILURE_OR_PASS",
+      "INVALIDATE_ONLY_AFFECTED_EVIDENCE",
+      "ADVANCE_NODE"
+    ],
+    "evidence_inheritance": {
+      "rule": "A passed check remains valid for the exact subject it proves until an explicit invalidator changes.",
+      "exact_subject_fields": [
+        "release_id",
+        "artifact_sha256",
+        "source_identity_type",
+        "source_identity"
+      ],
+      "unknown_impact": "Conservatively broaden verification only when impact cannot be established; do not automatically reopen unrelated closed gates.",
+      "host_failure_rule": "A host/test-harness failure does not invalidate firmware/runtime evidence unless device identity, restart continuity, renderer restore, AUX health, or another actual device gate is unknown or failed.",
+      "no_repeat_rule": "Do not rerun a passed check merely because a new transaction, chat, sequence number, or worker begins."
+    },
+    "failure_domains": {
+      "HOST_HARNESS": {
+        "invalidates": [
+          "host_harness_result_only"
+        ],
+        "default_action": "repair/replay host path against fixtures; preserve device installation when exact identity/health/restore evidence remains valid"
+      },
+      "DEVICE_RUNTIME": {
+        "invalidates": [
+          "runtime_telemetry_verified",
+          "runtime_smoke_passed",
+          "common_path_performance_audit_passed",
+          "all_kernel_sweep_passed",
+          "foundation_soak_passed",
+          "feature_acceptance_passed"
+        ],
+        "default_action": "localize device/runtime defect; recover only when required by health/safety"
+      },
+      "RELEASE_DEPLOYMENT": {
+        "invalidates": [
+          "install_health_passed",
+          "signed_release_preflight_passed",
+          "update_recovery_passed"
+        ],
+        "default_action": "repair release/deployment mechanism without reopening unrelated product/runtime evidence"
+      },
+      "UI_BACKEND": {
+        "invalidates": [
+          "integration_runtime_smokes_passed",
+          "committed_features_implemented"
+        ],
+        "default_action": "repair affected UI/backend lane only"
+      },
+      "PHYSICAL_HARDWARE": {
+        "invalidates": [
+          "physical_acceptance_passed"
+        ],
+        "default_action": "repair/retest affected physical subsystem and its direct integration only"
+      },
+      "AESTHETIC_PRODUCT": {
+        "invalidates": [
+          "affected_feature_human_acceptance_only"
+        ],
+        "default_action": "iterate affected feature without reopening unrelated technical gates"
+      }
+    },
+    "change_impact": {
+      "HOST_HARNESS_ONLY": {
+        "invalidates": [],
+        "required_verification": [
+          "host regression fixtures",
+          "affected orchestration path"
+        ],
+        "foundation_requalification": false
+      },
+      "MATRIX_RENDERER_OR_SCHEDULER": {
+        "invalidates": [
+          "runtime_telemetry_verified",
+          "runtime_smoke_passed",
+          "common_path_performance_audit_passed",
+          "all_kernel_sweep_passed",
+          "foundation_soak_passed",
+          "feature_acceptance_passed"
+        ],
+        "foundation_requalification": true
+      },
+      "MATRIX_INSTRUMENTATION": {
+        "invalidates": [
+          "runtime_telemetry_verified",
+          "instrumentation_observer_effect_passed",
+          "all_kernel_sweep_passed",
+          "foundation_soak_passed"
+        ],
+        "foundation_requalification": true
+      },
+      "AUDIO_FEATURES_OR_REALTIME_RENDER_MAPPING": {
+        "invalidates": [
+          "runtime_smoke_passed",
+          "feature_acceptance_passed",
+          "integration_runtime_smokes_passed"
+        ],
+        "foundation_requalification": "ONLY_IF_REALTIME_RUNTIME_OR_FRAME_BUDGET_ASSUMPTIONS_CHANGE"
+      },
+      "VIBE_DATA_OR_TUNING_ONLY": {
+        "invalidates": [
+          "committed_features_implemented",
+          "integration_runtime_smokes_passed"
+        ],
+        "foundation_requalification": false
+      },
+      "MISSION_CONTROL_OR_PWA": {
+        "invalidates": [
+          "committed_features_implemented",
+          "integration_runtime_smokes_passed",
+          "physical_acceptance_passed"
+        ],
+        "foundation_requalification": false
+      },
+      "SCORING_BACKEND_OR_CONTRACT": {
+        "invalidates": [
+          "committed_features_implemented",
+          "integration_runtime_smokes_passed",
+          "physical_acceptance_passed"
+        ],
+        "foundation_requalification": false
+      },
+      "TEXT_OR_VISUAL_MOMENT": {
+        "invalidates": [
+          "committed_features_implemented",
+          "integration_runtime_smokes_passed"
+        ],
+        "foundation_requalification": "ONLY_IF_RENDERER_RUNTIME_ASSUMPTIONS_CHANGE"
+      },
+      "AUX_FIRMWARE_OR_DDP": {
+        "invalidates": [
+          "feature_acceptance_passed",
+          "integration_runtime_smokes_passed",
+          "physical_acceptance_passed"
+        ],
+        "foundation_requalification": "ONLY_IF_FOUNDATION_AUX_CONTINUITY_OR_LOAD_ASSUMPTIONS_CHANGE"
+      },
+      "PHYSICAL_AUX_UV": {
+        "invalidates": [
+          "physical_acceptance_passed"
+        ],
+        "foundation_requalification": false
+      },
+      "UNKNOWN": {
+        "invalidates": "CURRENT_AND_DOWNSTREAM_UNCLOSED_GATES_AS_NEEDED",
+        "foundation_requalification": "DETERMINE_FROM_ACTUAL_DEPENDENCY_IMPACT_BEFORE_MUTATION"
+      }
+    },
+    "parallelism": {
+      "rule": "Exactly one live-device mutation lane at a time. Any number of dependency-satisfied host/offline/staging lanes may run in parallel when they cannot alter the live candidate or its evidence.",
+      "live_lane_limit": 1,
+      "prohibit_duplicate_investigation": true
+    },
+    "phase2_dag": [
+      {
+        "node": "P2_INTERFACE_FREEZE",
+        "depends_on": [
+          "T2_FOUNDATION_QUALIFY"
+        ],
+        "outputs": [
+          "AudioFeatures",
+          "VibeSelection",
+          "VisualMoment",
+          "HealthState",
+          "scoring/control boundary"
+        ]
+      },
+      {
+        "node": "P2_MISSION_CONTROL_SCORING",
+        "depends_on": [
+          "P2_INTERFACE_FREEZE"
+        ],
+        "parallel_group": "CORE"
+      },
+      {
+        "node": "P2_VIBE_AUDIO",
+        "depends_on": [
+          "P2_INTERFACE_FREEZE"
+        ],
+        "parallel_group": "CORE"
+      },
+      {
+        "node": "P2_TEXT_MOMENTS",
+        "depends_on": [
+          "P2_INTERFACE_FREEZE"
+        ],
+        "parallel_group": "CORE"
+      },
+      {
+        "node": "P2_PWA_RELIABILITY",
+        "depends_on": [
+          "P2_INTERFACE_FREEZE"
+        ],
+        "parallel_group": "CORE"
+      },
+      {
+        "node": "P2_INTEGRATED_CANDIDATE",
+        "depends_on": [
+          "P2_MISSION_CONTROL_SCORING",
+          "P2_VIBE_AUDIO",
+          "P2_TEXT_MOMENTS",
+          "P2_PWA_RELIABILITY"
+        ]
+      },
+      {
+        "node": "T4_PHASE2_INTEGRATION",
+        "depends_on": [
+          "P2_INTEGRATED_CANDIDATE"
+        ]
+      },
+      {
+        "node": "T5_RELEASE_ACCEPT",
+        "depends_on": [
+          "T4_PHASE2_INTEGRATION"
+        ]
+      },
+      {
+        "node": "POST_ACCEPT_EXPANSION",
+        "depends_on": [
+          "T5_RELEASE_ACCEPT"
+        ],
+        "parallel_children": [
+          "AUX_UV",
+          "ARCADE",
+          "IRL_GAMES",
+          "GUEST_PLATFORM"
+        ]
+      }
+    ],
+    "priority_rule": "Critical-path work first; use unavoidable wait/soak time for ready parallel work; never create event-only throwaway architecture when the same work can advance final Cart 2.0."
   }
 }
