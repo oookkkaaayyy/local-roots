@@ -1,0 +1,17 @@
+{
+  "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "candidate_size_bytes": 1489008,
+  "captured_at_utc": "2026-10-06T19:35:48Z",
+  "installed_once": true,
+  "ota_response": "HTTP 200, Update successful",
+  "ota_response_sha256": "1150d36d21a464ce1d6189db846d58c398a0572333043277d4245b3199ed8092",
+  "prelive_proof": "prelive/PRELIVE_PROOF.json",
+  "recovery_sequence": 48,
+  "recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+  "recovery_size_bytes": 1458624,
+  "runtime_identity": "exact seq47 candidate SHA/release verified after reboot",
+  "sequence": 47,
+  "status": "PASS",
+  "transport": "SSH copy to Opal with remote SHA/size verification, then one Opal-origin local Matrix WLED /update"
+}
