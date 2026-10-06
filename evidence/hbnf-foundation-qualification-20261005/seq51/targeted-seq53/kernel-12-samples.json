@@ -1,0 +1,51 @@
+{
+  "accepted": [
+    {
+      "attempt": 1,
+      "aux_info_sha256": "4b9004077f13af8d89f370ff8f6c1c19fd828a1a7518b5d87ca84a6b00402778",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329725.173126,
+      "free_heap_bytes": 116952,
+      "free_heap_min_required": 99161.0,
+      "kernel_id": 12,
+      "largest_block_min_required": 55696.0,
+      "largest_free_block_bytes": 69620,
+      "matrix_state_sha256": "74e17e0d92326fae360e1053b6add3cb82dcaa3a8098dade565bf8a98ce12eaf",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 162
+    },
+    {
+      "attempt": 2,
+      "aux_info_sha256": "cef32ff743a827a2d8d0c58806b496083ce3714dda5d252f383fd4a0b2f04997",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329729.664143,
+      "free_heap_bytes": 117844,
+      "free_heap_min_required": 99161.0,
+      "kernel_id": 12,
+      "largest_block_min_required": 55696.0,
+      "largest_free_block_bytes": 69620,
+      "matrix_state_sha256": "d9995b304a72e6d337c630f067023ad0ca2919dc7780a880aa23c7c88e3414ec",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 166
+    }
+  ],
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "PASS"
+    },
+    {
+      "attempt": 2,
+      "status": "PASS"
+    }
+  ],
+  "kernel_id": 12,
+  "kernel_name": "Hot_Blob",
+  "settle_seconds": 5
+}

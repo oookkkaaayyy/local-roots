@@ -1,0 +1,14 @@
+{
+  "result": {
+    "duration_seconds": 5439.94933625,
+    "max_gap_seconds": 8.368297874999826,
+    "observed_kernel_count": 28,
+    "path": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq47/live/retry-20261006T2027Z/FOUNDATION_SOAK.jsonl",
+    "sample_count": 1089,
+    "sampler_process_count": 1,
+    "selector_process_count": 1,
+    "state_change_path": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq47/live/retry-20261006T2027Z/FOUNDATION_STATE_CHANGES.jsonl",
+    "state_changed_kernel_count": 28
+  },
+  "status": "COMPLETE"
+}

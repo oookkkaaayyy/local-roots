@@ -1,0 +1,49 @@
+{
+  "candidate": {
+    "opal_copy_verified": true,
+    "release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008,
+    "wled_update_confirmation": "FAILED: expected HTTP 200 and Update successful marker; host captured no response body/marker"
+  },
+  "captured_at_unix": 1791328971.2248828,
+  "device": {
+    "all_required_current_health_checks": "PASS",
+    "aux": {
+      "lip": "192.168.77.10",
+      "live": true,
+      "lm": "DDP"
+    },
+    "build_candidate": "hbnf-matrix-coordinated-v1-20261002-07",
+    "matrix_mac": "704bca5b345c",
+    "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
+    "runtime_candidate": "hbnf-matrix-coordinated-v1-20261002-07",
+    "uptime_seconds": 1957
+  },
+  "evidence": {
+    "aux_info": {
+      "path": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq51/SEQ51_FAILURE_POST_aux_info.json",
+      "sha256": "da885e209f9fb2db82a43b2ae3341076d313627e31f8b8690a10e0c70a2a973e"
+    },
+    "matrix_build": {
+      "path": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq51/SEQ51_FAILURE_POST_matrix_build.json",
+      "sha256": "5206b257c6c11d69d2c7d54421ba8181147c2826509e63c7ed1b5c8dacd6ef51"
+    },
+    "matrix_info": {
+      "path": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq51/SEQ51_FAILURE_POST_matrix_info.json",
+      "sha256": "3b9324e0babc526bc3e036eecd592a61766962919d9786b0d4dc1572c46183e3"
+    },
+    "matrix_state": {
+      "path": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq51/SEQ51_FAILURE_POST_matrix_state.json",
+      "sha256": "da68c9c6a8e17da5d44503c478220d1d56ee5c996902dfcef0a15c140b178786"
+    }
+  },
+  "recovery": {
+    "already_active_and_verified": true,
+    "release07_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "seq52_artifact_transfer_attempt": "incomplete transfer failed hash verification; no device mutation",
+    "seq52_ota_not_sent": true
+  },
+  "schema": "hbnf-seq51-install-failure-reconciliation-v1",
+  "status": "CANDIDATE_NOT_INSTALLED__EXACT_RELEASE07_REMAINS_ACTIVE"
+}

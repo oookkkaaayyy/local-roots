@@ -1,0 +1,51 @@
+{
+  "accepted": [
+    {
+      "attempt": 1,
+      "aux_info_sha256": "dcbca23082c32804bcf8faf09c1de2573ccbf550eee3aecb2db21e750995696b",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329740.2470489,
+      "free_heap_bytes": 117636,
+      "free_heap_min_required": 99395.59999999999,
+      "kernel_id": 13,
+      "largest_block_min_required": 55696.0,
+      "largest_free_block_bytes": 69620,
+      "matrix_state_sha256": "f97c6d8c5d9c3b1a3e4fe6b8634556d29d5cc1570d4b3d992bd13978df2631f7",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 179
+    },
+    {
+      "attempt": 2,
+      "aux_info_sha256": "8c83cc3d3ccc1cda54b941cdd45d0d484ce07a62cfa38df23957cbdb58d0b794",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329740.959507,
+      "free_heap_bytes": 119104,
+      "free_heap_min_required": 99395.59999999999,
+      "kernel_id": 13,
+      "largest_block_min_required": 55696.0,
+      "largest_free_block_bytes": 69620,
+      "matrix_state_sha256": "1603da0ddc57c4e21d8649111fb532026c3df50e1787ff53124bc0405e1c73d8",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 180
+    }
+  ],
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "PASS"
+    },
+    {
+      "attempt": 2,
+      "status": "PASS"
+    }
+  ],
+  "kernel_id": 13,
+  "kernel_name": "Caleido3",
+  "settle_seconds": 5
+}

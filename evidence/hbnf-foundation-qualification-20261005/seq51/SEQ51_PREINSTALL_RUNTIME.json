@@ -1,0 +1,10 @@
+{
+  "aux": {
+    "lip": "192.168.77.10",
+    "live": true,
+    "lm": "DDP"
+  },
+  "matrix_mac": "704bca5b345c",
+  "release": "hbnf-matrix-coordinated-v1-20261002-07",
+  "uptime_seconds": 1560
+}

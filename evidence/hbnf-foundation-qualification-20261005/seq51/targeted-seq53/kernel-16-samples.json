@@ -1,0 +1,51 @@
+{
+  "accepted": [
+    {
+      "attempt": 1,
+      "aux_info_sha256": "b66ddc300247ad1628b6cf038389052500f0639c3b6c18a49c6d4e10c396f28c",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329766.013091,
+      "free_heap_bytes": 117252,
+      "free_heap_min_required": 99705.0,
+      "kernel_id": 16,
+      "largest_block_min_required": 55696.0,
+      "largest_free_block_bytes": 65524,
+      "matrix_state_sha256": "aec835b531d12d58e839e1b580a3ea87a13033aad7dfb6dff23111ceb6919eb8",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 204
+    },
+    {
+      "attempt": 2,
+      "aux_info_sha256": "6a04520095e77a618fcedf2369c61c4efdb08d3205c36040fb1bca14923bd3be",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329768.3766909,
+      "free_heap_bytes": 119484,
+      "free_heap_min_required": 99705.0,
+      "kernel_id": 16,
+      "largest_block_min_required": 55696.0,
+      "largest_free_block_bytes": 69620,
+      "matrix_state_sha256": "1c89dacaed0c2825e805c2748c6c458c6aa27f20e7c45f7e235f0669617d6110",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 206
+    }
+  ],
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "PASS"
+    },
+    {
+      "attempt": 2,
+      "status": "PASS"
+    }
+  ],
+  "kernel_id": 16,
+  "kernel_name": "Rotating_Blob",
+  "settle_seconds": 5
+}

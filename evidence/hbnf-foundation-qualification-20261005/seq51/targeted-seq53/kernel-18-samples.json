@@ -1,0 +1,51 @@
+{
+  "accepted": [
+    {
+      "attempt": 1,
+      "aux_info_sha256": "fccf429c0830bd25a4715b267f8edc7792db3bacbe1c51aa57afa2e421a2c0df",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329783.724968,
+      "free_heap_bytes": 118808,
+      "free_heap_min_required": 97505.2,
+      "kernel_id": 18,
+      "largest_block_min_required": 49142.4,
+      "largest_free_block_bytes": 69620,
+      "matrix_state_sha256": "3787127277304cffe66df285f02e9be7efdc82a9d3934e69f6b429359c76680c",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 223
+    },
+    {
+      "attempt": 2,
+      "aux_info_sha256": "cbcfe72812a956ecd6067dc96478957485d8fb2aad3d88da2f5f76cd88683ba7",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329785.819319,
+      "free_heap_bytes": 118492,
+      "free_heap_min_required": 97505.2,
+      "kernel_id": 18,
+      "largest_block_min_required": 49142.4,
+      "largest_free_block_bytes": 69620,
+      "matrix_state_sha256": "ca292de594f0d036d638707d6ff26c1d9e2a270268dfeab130850e7e42118ab3",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 224
+    }
+  ],
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "PASS"
+    },
+    {
+      "attempt": 2,
+      "status": "PASS"
+    }
+  ],
+  "kernel_id": 18,
+  "kernel_name": "Distance_Experiment",
+  "settle_seconds": 5
+}

@@ -1,0 +1,51 @@
+{
+  "accepted": [
+    {
+      "attempt": 1,
+      "aux_info_sha256": "173c48dd81e05b2ec6df547778bfeba0315b10e991677542a033c972d65e0a9a",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329852.402113,
+      "free_heap_bytes": 119220,
+      "free_heap_min_required": 98868.59999999999,
+      "kernel_id": 25,
+      "largest_block_min_required": 52419.200000000004,
+      "largest_free_block_bytes": 69620,
+      "matrix_state_sha256": "3181ec203da00e61d3464deb69f9ecefa3ca9163684522f73833d016f558db6a",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 291
+    },
+    {
+      "attempt": 2,
+      "aux_info_sha256": "cc71b0a96afc9631373adcbbe10aabdda742ac2f109b3d08acea9f85bd6617b2",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329854.4570482,
+      "free_heap_bytes": 119500,
+      "free_heap_min_required": 98868.59999999999,
+      "kernel_id": 25,
+      "largest_block_min_required": 52419.200000000004,
+      "largest_free_block_bytes": 69620,
+      "matrix_state_sha256": "61d485992632c8448a15473b270ae16415b3b146f79d3c6964a607ef16044ff8",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 292
+    }
+  ],
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "PASS"
+    },
+    {
+      "attempt": 2,
+      "status": "PASS"
+    }
+  ],
+  "kernel_id": 25,
+  "kernel_name": "RGB_Blobs3",
+  "settle_seconds": 5
+}

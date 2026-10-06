@@ -1,0 +1,38 @@
+{
+  "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "packet20Diagnostic": {
+    "enabled": false,
+    "espResetReason": 3,
+    "lastCommand": "restore",
+    "lastCommandAccepted": true,
+    "resetReasonCore0": 12,
+    "resetReasonCore1": 12,
+    "restoreVerified": true,
+    "selectedKernel": 24,
+    "snapshotGeneration": 1,
+    "snapshotHash": 2829015731,
+    "snapshotId": 1,
+    "snapshotState": "READY",
+    "snapshotValid": true
+  },
+  "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "timing": {
+    "audioModulationUs": 1339,
+    "auxProjectionAgeMs": 8623496,
+    "companionDdpSendUs": 0,
+    "companionPrepUs": 156,
+    "companionRenderCount": 13279,
+    "fps": 36,
+    "freeHeap": 119468,
+    "kernel": 24,
+    "kernelRenderUs": 9016,
+    "overlayUs": 75,
+    "paletteColorUs": 416,
+    "rssi": -59,
+    "schedulerVariantUs": 1091,
+    "unaccountedUs": 14148,
+    "uptimeSec": 8623,
+    "variantSignature": 1964192906,
+    "wholeFrameUs": 26243
+  }
+}

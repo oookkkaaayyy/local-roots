@@ -1,0 +1,51 @@
+{
+  "accepted": [
+    {
+      "attempt": 1,
+      "aux_info_sha256": "987c146e9c9e319d6fb993e40db24d70de9a34e2b617ad2175275ec9612e483b",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329815.9458659,
+      "free_heap_bytes": 118420,
+      "free_heap_min_required": 99354.8,
+      "kernel_id": 21,
+      "largest_block_min_required": 55696.0,
+      "largest_free_block_bytes": 69620,
+      "matrix_state_sha256": "b21bf690a04de39e6cb411659fbd786ec4241d9be30b8ab8ec3dafdc7787d786",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 254
+    },
+    {
+      "attempt": 2,
+      "aux_info_sha256": "26ed9098e75b65d96e5a4c014759ebe18fd045cdd4ca772dd6116ed326b82bec",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329816.392607,
+      "free_heap_bytes": 119228,
+      "free_heap_min_required": 99354.8,
+      "kernel_id": 21,
+      "largest_block_min_required": 55696.0,
+      "largest_free_block_bytes": 69620,
+      "matrix_state_sha256": "1a2170c2a242c9bfac9fef42b455ed2a8093a05115889e0f298724823120c3f0",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 256
+    }
+  ],
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "PASS"
+    },
+    {
+      "attempt": 2,
+      "status": "PASS"
+    }
+  ],
+  "kernel_id": 21,
+  "kernel_name": "Yves",
+  "settle_seconds": 5
+}

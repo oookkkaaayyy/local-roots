@@ -1,0 +1,19 @@
+{
+  "install": {
+    "output": "CURL_RC=0 HTTP=200\ne989fc00de0b0d87a74771439a95cb6b231dac0ede16865104c2251612c6a128  /tmp/hbnf-seq53-ota-response.html\n<!DOCTYPE html> <html lang=en> <head> <meta content=\"width=device-width\" name=viewport> <title>WLED Message</title> <script>function B(){window.history.back()}function RS(){window.location=\"../settings\"}function RP(){top.location.href=\"../\"}</script> <style> @import url(\"style.css\"); </style> </head> <body> <h2>Update successful!</h2>Rebooting now...<script>setTimeout(RP,11000)</script></body> </html>",
+    "output_path": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq51/SEQ53_OPAL_OTA_RESPONSE.txt",
+    "remote_command_exit": 0,
+    "timed_out": false
+  },
+  "runtime": {
+    "aux": {
+      "lip": "192.168.77.10",
+      "live": true,
+      "lm": "DDP"
+    },
+    "matrix_mac": "704bca5b345c",
+    "release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "restart_count": 0,
+    "uptime_seconds": 27
+  }
+}

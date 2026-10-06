@@ -1,0 +1,51 @@
+{
+  "accepted": [
+    {
+      "attempt": 1,
+      "aux_info_sha256": "00cfb0b5d67f36eb2976f836bb548c00365463fd1ef2c7cb34eeea979b91ac65",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329656.531072,
+      "free_heap_bytes": 109376,
+      "free_heap_min_required": 99623.4,
+      "kernel_id": 5,
+      "largest_block_min_required": 55696.0,
+      "largest_free_block_bytes": 59380,
+      "matrix_state_sha256": "cc014a9f088bb58722fad7fdcdd85a910d069f804bfeb6636dedc61a355698ef",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 94
+    },
+    {
+      "attempt": 2,
+      "aux_info_sha256": "529c70131e7e29e0692f8277a85771612d49e2c4ba3e86f09ee61f4f983d176a",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329658.748297,
+      "free_heap_bytes": 118300,
+      "free_heap_min_required": 99623.4,
+      "kernel_id": 5,
+      "largest_block_min_required": 55696.0,
+      "largest_free_block_bytes": 65524,
+      "matrix_state_sha256": "f89ce8d102b0f298f09e561382a48e0d1e4134d4b9b12f16b1678cb9da42ca1e",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 97
+    }
+  ],
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "PASS"
+    },
+    {
+      "attempt": 2,
+      "status": "PASS"
+    }
+  ],
+  "kernel_id": 5,
+  "kernel_name": "Zoom2",
+  "settle_seconds": 5
+}

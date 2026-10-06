@@ -1,0 +1,59 @@
+{
+  "approved_for_mutation": true,
+  "capsule_sha256": "e363cb99eb6c26011e3d7b685f06e72126a56c687b0960b4697fe261c711e4a1",
+  "consumer_contract": {
+    "identity": "Exact local artifact staged with SHA/size verification on Opal; Opal-origin multipart WLED /update, no cloud/updater path",
+    "verified": true
+  },
+  "pre_mutation_state": {
+    "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "candidate_size_bytes": 1489008,
+    "matrix_release07": {
+      "aux": {
+        "lip": "192.168.77.10",
+        "live": true,
+        "lm": "DDP"
+      },
+      "matrix_mac": "704bca5b345c",
+      "release": "hbnf-matrix-coordinated-v1-20261002-07",
+      "restart_count": 0,
+      "uptime_seconds": 478
+    }
+  },
+  "recovery_identity": {
+    "identity": "Release07 exact SHA 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab size 1458624",
+    "verification": "Exact local artifact hash/size verified; seq54 exact Release07 /update PASS; current read-only baseline is Release07"
+  },
+  "run_id": "hbnf-seq55-owner-smoke-ready-20261006T1646",
+  "schema": "local-roots-prelive-proof-v1",
+  "stages": {
+    "capture-current-state": {
+      "evidence": [
+        "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq51/SEQ55_PRELIVE_READONLY.json"
+      ],
+      "status": "PASS"
+    },
+    "contract-closure": {
+      "evidence": [
+        "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq51/SEQ55_OFFLINE_RESTORE_FIXTURE_PASS.json",
+        "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq51/targeted_collector.py",
+        "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq51/execute_seq55_install.py"
+      ],
+      "status": "PASS"
+    },
+    "recovery-proof": {
+      "evidence": [
+        "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq51/SEQ53_SEQ54_FINAL_RECONCILIATION.json",
+        "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq39/artifact/release07.bin"
+      ],
+      "status": "PASS"
+    },
+    "transaction-rehearsal": {
+      "evidence": [
+        "/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_seq41_transaction.py",
+        "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq51/SEQ53_OPAL_OTA_RESPONSE.txt"
+      ],
+      "status": "PASS"
+    }
+  }
+}

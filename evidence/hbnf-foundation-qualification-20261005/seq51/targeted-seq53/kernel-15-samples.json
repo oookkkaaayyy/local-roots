@@ -1,0 +1,51 @@
+{
+  "accepted": [
+    {
+      "attempt": 1,
+      "aux_info_sha256": "66855c4a44c35a91698f319f43558bcf3065e3c61be12b40803cb42cac703e06",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329755.868545,
+      "free_heap_bytes": 117096,
+      "free_heap_min_required": 99365.0,
+      "kernel_id": 15,
+      "largest_block_min_required": 52419.200000000004,
+      "largest_free_block_bytes": 69620,
+      "matrix_state_sha256": "33dc3412f4dac559f9146ed25a1860c519b9eaf152113dc3861823267d3d4cbb",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 194
+    },
+    {
+      "attempt": 2,
+      "aux_info_sha256": "3f618731af9fe28bbb1789326872603a0964fcec5864f149a155d62457b0c52e",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329756.846943,
+      "free_heap_bytes": 118900,
+      "free_heap_min_required": 99365.0,
+      "kernel_id": 15,
+      "largest_block_min_required": 52419.200000000004,
+      "largest_free_block_bytes": 69620,
+      "matrix_state_sha256": "5c1462fb76c4da86cd4bcc82de874d07848b328c816bf34d89cf75b42a4cdab5",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 196
+    }
+  ],
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "PASS"
+    },
+    {
+      "attempt": 2,
+      "status": "PASS"
+    }
+  ],
+  "kernel_id": 15,
+  "kernel_name": "Chasing_Spirals",
+  "settle_seconds": 5
+}

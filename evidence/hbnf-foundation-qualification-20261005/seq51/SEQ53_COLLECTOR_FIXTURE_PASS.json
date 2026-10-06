@@ -1,0 +1,17 @@
+{
+  "schema": "hbnf-seq51-targeted-collector-fixture-v1",
+  "status": "PASS",
+  "checks": {
+    "optional_aux_state_failure_ignored": true,
+    "matrix_state_failure": "FAIL_CLOSED",
+    "aux_info_failure": "FAIL_CLOSED",
+    "aux_live_false": "FAIL_CLOSED",
+    "aux_wrong_lm": "FAIL_CLOSED",
+    "aux_wrong_lip": "FAIL_CLOSED"
+  },
+  "required_sample_endpoints": [
+    "http://192.168.77.10/json/state",
+    "http://192.168.77.11/json/info"
+  ],
+  "aux_json_state_required": false
+}

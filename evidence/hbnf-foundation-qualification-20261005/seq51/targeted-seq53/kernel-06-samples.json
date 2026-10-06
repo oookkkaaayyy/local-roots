@@ -1,0 +1,51 @@
+{
+  "accepted": [
+    {
+      "attempt": 1,
+      "aux_info_sha256": "ab5efe96a9266fd6ebe0345f8c5e4bf7d506d80a728f962a36c00912fe25e0f8",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329670.073617,
+      "free_heap_bytes": 119480,
+      "free_heap_min_required": 98960.4,
+      "kernel_id": 6,
+      "largest_block_min_required": 55696.0,
+      "largest_free_block_bytes": 69620,
+      "matrix_state_sha256": "3c64fe047bc97d6ff2d6ef03131255bbd97345ed5bda57e069c6459531edc49e",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 105
+    },
+    {
+      "attempt": 2,
+      "aux_info_sha256": "8954fac07abe13eafead7ead3a6e2367877aa51a266031731de992fdf1e1beb5",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329670.2265978,
+      "free_heap_bytes": 119488,
+      "free_heap_min_required": 98960.4,
+      "kernel_id": 6,
+      "largest_block_min_required": 55696.0,
+      "largest_free_block_bytes": 69620,
+      "matrix_state_sha256": "6c3774450fd950d0e43a80e0ac9844705a7e0e149c2eed65314afadf9831afee",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 110
+    }
+  ],
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "PASS"
+    },
+    {
+      "attempt": 2,
+      "status": "PASS"
+    }
+  ],
+  "kernel_id": 6,
+  "kernel_name": "Complex_Kaleido_4",
+  "settle_seconds": 5
+}

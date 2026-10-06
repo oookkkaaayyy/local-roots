@@ -1,0 +1,26 @@
+{
+  "authority_commit": "287b475f1318c7315670645e176098b16a404fad",
+  "aux_json_state_required": false,
+  "candidate": {
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008
+  },
+  "captured_at_unix": 1791329419.9991229,
+  "release07": {
+    "sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "size_bytes": 1458624
+  },
+  "runtime": {
+    "aux": {
+      "lip": "192.168.77.10",
+      "live": true,
+      "lm": "DDP"
+    },
+    "matrix_mac": "704bca5b345c",
+    "release": "hbnf-matrix-coordinated-v1-20261002-07",
+    "restart_count": 0,
+    "uptime_seconds": 2406
+  },
+  "schema": "hbnf-seq53-readonly-prelive-v1",
+  "status": "PASS"
+}

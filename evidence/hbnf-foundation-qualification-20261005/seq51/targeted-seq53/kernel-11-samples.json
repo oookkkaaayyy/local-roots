@@ -1,0 +1,51 @@
+{
+  "accepted": [
+    {
+      "attempt": 1,
+      "aux_info_sha256": "0908c8f1efc2990b3252c9189682da8d2e1ae48a0e86006d609281b385847f09",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329715.0588422,
+      "free_heap_bytes": 119064,
+      "free_heap_min_required": 99382.0,
+      "kernel_id": 11,
+      "largest_block_min_required": 55696.0,
+      "largest_free_block_bytes": 69620,
+      "matrix_state_sha256": "dad22cce9928f3eae496c3b590f00e631327850bc68b3fc78b6316422c6f70b6",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 154
+    },
+    {
+      "attempt": 2,
+      "aux_info_sha256": "c42c098283070db213120353fe9629c3385ae46114fbd3badbbfc527949a1bf8",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329715.72701,
+      "free_heap_bytes": 118664,
+      "free_heap_min_required": 99382.0,
+      "kernel_id": 11,
+      "largest_block_min_required": 55696.0,
+      "largest_free_block_bytes": 69620,
+      "matrix_state_sha256": "f8c60c1050906263f279ca1765961d6842fb8bda530da67fe607780d74a7bee8",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 155
+    }
+  ],
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "PASS"
+    },
+    {
+      "attempt": 2,
+      "status": "PASS"
+    }
+  ],
+  "kernel_id": 11,
+  "kernel_name": "Spiralus2",
+  "settle_seconds": 5
+}

@@ -1,0 +1,327 @@
+{
+  "cost_policy": {
+    "paid_or_quota_limited_execution": "explicit_authorization_per_bounded_run",
+    "remote_execution_for_source_archaeology": false,
+    "retry_inherits_authorization": false
+  },
+  "created_at": "2026-10-06T23:29:47.647091+00:00",
+  "expected_terminal_outputs": [
+    "diagnostic result or exact stop reason",
+    "snapshot/restore result",
+    "baseline recovery result",
+    "device identity",
+    "cloud deployment identity",
+    "durable evidence pointer"
+  ],
+  "external_authorities": {
+    "network_identity": "192.168.77.10"
+  },
+  "repo_identity": {
+    "branch": "hbnf-cart2-ready-to-implement-staging-20261001",
+    "dirty": true,
+    "type": "git_commit",
+    "value": "287b475f1318c7315670645e176098b16a404fad"
+  },
+  "repo_inputs": [
+    {
+      "bytes": 144822,
+      "path": "config/HBNF_CONTROL_STATE.json",
+      "sha256": "760b36d0c3c91d13b9671664857b6f956d173d818265d22e78c2dde2c5f5af18"
+    },
+    {
+      "bytes": 12789,
+      "path": "AGENTS.md",
+      "sha256": "5dbb1d4715e3a4d2646dff405647971f0f2885409c1d30beb1c70627627f21df"
+    },
+    {
+      "bytes": 8881,
+      "path": "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+      "sha256": "44f62cf31e5efa57a360117d96d437d6f504fd93704b28a069661b2da64a49f0"
+    },
+    {
+      "bytes": 30867,
+      "path": "scripts/hbnf_live_kernel_sweep.py",
+      "sha256": "2f9af473ae68e131169fd46e0d563841d7aecb9370807ff6cb9f7ac662ade18a"
+    },
+    {
+      "bytes": 4098,
+      "path": "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json",
+      "sha256": "937d036db17a600198cceda13e2f599384ffaacd17c24965fa9e7db048d77216"
+    },
+    {
+      "bytes": 2517,
+      "path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006.json",
+      "sha256": "9b518e864de19f7d209ed470e5823d7e62a880a610c8c213da82da1328f8d1d9"
+    },
+    {
+      "bytes": 24646,
+      "path": "scripts/hbnf_foundation_live_adapter.py",
+      "sha256": "e0ed4994021efadb8d9e8ed2ebc4fc879591a1ae75fc3af051a35090204dca5b"
+    },
+    {
+      "bytes": 12503,
+      "path": "scripts/hbnf_foundation_seq35_transaction.py",
+      "sha256": "cefa4fe8dda961e09d364a19c12db436cc2cdb84cf3112e2a88d741e9f982606"
+    },
+    {
+      "bytes": 11727,
+      "path": "tests/hbnf_live_kernel_sweep.py",
+      "sha256": "3c3b7b88cde9f09a80dbfb10b9422d3fd5e6a628563cee93c1ed0bc51876ca38"
+    },
+    {
+      "bytes": 5514,
+      "path": "config/HBNF_RUNTIME_TELEMETRY_CONTRACT.json",
+      "sha256": "9aca17e2339c5230b82997bbc5080f6cb3955558ad17ae8469a0a5f5a8aafa39"
+    },
+    {
+      "bytes": 17799,
+      "path": "scripts/hbnf_foundation_soak_audit.py",
+      "sha256": "e9ccfd5bcc494c354472939b378faf3400a5f9c238f0912119887c13fc07f62d"
+    },
+    {
+      "bytes": 7493,
+      "path": "scripts/hbnf_foundation_threshold_freeze.py",
+      "sha256": "40f4af5e0de13c7f4141741df7cf55f1e413a0b75703b0e7eee4a7189a9ddff1"
+    },
+    {
+      "bytes": 16415,
+      "path": "tests/hbnf_foundation_live_adapter.py",
+      "sha256": "8f5d246153ed82d22753c92b87cb807f27763bd91c041fe8389cd4ad091c6afe"
+    },
+    {
+      "bytes": 2795,
+      "path": "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_SEQ39_20261006.json",
+      "sha256": "6e07917bfacadbc25f3fb582dd10b345b179dc104facca61df075f67854b55b2"
+    },
+    {
+      "bytes": 5057,
+      "path": "scripts/hbnf_foundation_seq39_failure_policy.py",
+      "sha256": "56f4e80ab717923721f417a063a9f6647c807ff82e1e01e12c0966480a315d99"
+    },
+    {
+      "bytes": 18124,
+      "path": "scripts/hbnf_foundation_continuous_soak.py",
+      "sha256": "34cdff5f81b66ed7bdbef148726cda11e9480c6b79e617aab77e588dbc3996c7"
+    },
+    {
+      "bytes": 20038,
+      "path": "scripts/hbnf_foundation_seq43_transaction.py",
+      "sha256": "fc51c4cd83710f3208727fba6cb9f836d841a11001e852a62d3ffef216c513bb"
+    },
+    {
+      "bytes": 4543,
+      "path": "tests/hbnf_foundation_continuous_soak.py",
+      "sha256": "70580d666bff378bddd90daacb29fa4044579780d841082f9d466c758aa18733"
+    },
+    {
+      "bytes": 3028,
+      "path": "tests/hbnf_foundation_seq43_offline.py",
+      "sha256": "6da5d3a309d87ef97de46080123b7345975f445411fb1b6771b428e3b177b277"
+    },
+    {
+      "bytes": 4073,
+      "path": "tests/hbnf_foundation_seq39_failure_policy.py",
+      "sha256": "399ff36c93ffed7d08c61e2d8937104aa5c820789801916ca403f4a1483cb00a"
+    },
+    {
+      "bytes": 16539,
+      "path": "scripts/hbnf_foundation_seq43_soak_retry.py",
+      "sha256": "08e539fc7a3482bb3c2d1b60132f7e51d5cb2ec3e896d3d99b970a3f1342415e"
+    },
+    {
+      "bytes": 5426,
+      "path": "tests/hbnf_foundation_parallel_telemetry.py",
+      "sha256": "4bd10116b607ed663b72a840f2893c37a610ce45bfa871f3b93b411009946ba6"
+    },
+    {
+      "bytes": 1810,
+      "path": "tests/hbnf_foundation_seq43_retry_offline.py",
+      "sha256": "737d301423010281ca045d608c3a214556bb874f9851f8c7d3bfb17e2b7692d5"
+    },
+    {
+      "bytes": 3867,
+      "path": "tests/hbnf_foundation_seq43_retry_session.py",
+      "sha256": "7c197c9afadb21bbf62c043254a86f43fa91b559c16f014d86ec5c6a592033f1"
+    }
+  ],
+  "run_id": "hbnf-seq53-salvage-20261006T1628",
+  "schema": "local-roots-execution-capsule-v1",
+  "stages": [
+    {
+      "id": "package-doctor",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "all declared source/artifact/config identities and timeout budgets coherent"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "contract-closure",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "exact producer/consumer interface contract",
+        "exact manifest/alias/role semantics",
+        "all deterministic prerequisites closed"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "recovery-proof",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "exact registered last-known-good artifact/version",
+        "exact recovery consumer path",
+        "recovery acceptance checks"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "transaction-rehearsal",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "full non-production or simulated install -> diagnostic -> restore/recovery transaction PASS",
+        "publication/alias transition PASS when applicable",
+        "failure paths preserve last-known-good state"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "capture-current-state",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "exact current device identity",
+        "exact current cloud deployment/version identity",
+        "rollback target frozen before mutation"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "read-only-preflight",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "runtime identity and continuity sample"
+      ],
+      "retry_policy": "idempotent",
+      "timeout_budget": {
+        "inner_calls_max": 4,
+        "inner_timeout_seconds": 4,
+        "margin_seconds": 10,
+        "outer_seconds": 30
+      }
+    },
+    {
+      "id": "snapshot",
+      "kind": "live",
+      "mutation": true,
+      "outputs": [
+        "immutable snapshot receipt"
+      ],
+      "retry_policy": "never",
+      "rollback": {
+        "strategy": "firmware-owned exact snapshot restore followed by pre-proven registered baseline recovery if uncertain"
+      },
+      "timeout_budget": {
+        "inner_calls_max": 4,
+        "inner_timeout_seconds": 4,
+        "margin_seconds": 10,
+        "outer_seconds": 30
+      }
+    },
+    {
+      "id": "bounded-diagnostic",
+      "kind": "live",
+      "mutation": true,
+      "outputs": [
+        "one exact seq43 candidate install at most; the single authorized host-only retry reuses that running installation and never reuploads or reallocates a sequence",
+        "complete >=90-minute state-changing Foundation soak with a decoupled sampler using parallel single-shot telemetry reads and <=15-second evidence gaps",
+        "reuse the same boot-scoped renderer snapshot for exact restore, preserve raw post-restore evidence, and consume seq44 only on a genuine device/Foundation failure or lost safety proof"
+      ],
+      "retry_policy": "explicit_only",
+      "retry_policy_details": "At most one same-install retry only after a materially different offline-proven host fix and only with candidate identity, health, restart continuity, exact renderer restore, and AUX health all proven; never consume seq44 for a host-only failure.",
+      "rollback": {
+        "strategy": "always execute exact snapshot restore in finally; if exactness is uncertain, execute the already-proven baseline recovery transaction"
+      },
+      "timeout_budget": {
+        "inner_calls_max": 1,
+        "inner_timeout_seconds": 5670,
+        "margin_seconds": 330,
+        "outer_seconds": 6000
+      }
+    },
+    {
+      "id": "restore",
+      "kind": "recovery",
+      "mutation": true,
+      "outputs": [
+        "exact restore proof or explicit uncertainty"
+      ],
+      "retry_policy": "never",
+      "rollback": {
+        "strategy": "pre-registered baseline recovery artifact/version"
+      },
+      "timeout_budget": {
+        "inner_calls_max": 4,
+        "inner_timeout_seconds": 4,
+        "margin_seconds": 10,
+        "outer_seconds": 30
+      }
+    },
+    {
+      "id": "baseline-recovery",
+      "kind": "recovery",
+      "mutation": true,
+      "outputs": [
+        "known baseline installed identity",
+        "exact publication/deployment baseline restored"
+      ],
+      "retry_policy": "explicit_only",
+      "rollback": {
+        "strategy": "restore exact pre-transaction device/cloud baseline and stop; no alternate image or publication state"
+      }
+    },
+    {
+      "id": "record",
+      "kind": "evidence",
+      "mutation": false,
+      "outputs": [
+        "terminal run summary",
+        "durable evidence pointer",
+        "toil/process metrics"
+      ],
+      "retry_policy": "idempotent"
+    }
+  ],
+  "storage_policy": {
+    "aks": "searchable routing, current-state pointers, acceptance/supersession metadata, and external artifact identities",
+    "github": "canonical/buildable source, scripts, configs, workflow definitions, and small machine-readable provenance",
+    "google_drive": "durable binaries, recovery artifacts, decisive evidence, and large immutable run outputs",
+    "local_workspace": "ephemeral execution only; never sole authority after a result becomes meaningful"
+  },
+  "system_id": "hbnf-matrix",
+  "terminal_recovery": "If exact restore is not proven, execute only the pre-rehearsed registered baseline recovery transaction, verify device and publication identities, preserve evidence, and stop.",
+  "trace_id": "42c7c084c9a040c5a4d9ea18f39309a5",
+  "user_interaction_policy": {
+    "copy_paste_delivery": "one_single_fenced_block_per_action",
+    "max_user_actions_per_blocker": 1,
+    "required_user_action_fields": [
+      "prerequisite",
+      "action",
+      "expected_result",
+      "stop_condition"
+    ],
+    "resource_instruction_requires_direct_link_or_exact_path": true,
+    "terminal_app": "macOS Terminal",
+    "terminal_relay": false
+  },
+  "workflow_id": "live-device-diagnostic",
+  "workflow_source": {
+    "path": "platform/workflows/live-device-diagnostic.json",
+    "sha256": "2954ee3c24963e637632419049463e7d6b589300bb4d5519a3b6249d3638e849"
+  }
+}

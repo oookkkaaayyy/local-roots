@@ -1,0 +1,51 @@
+{
+  "accepted": [
+    {
+      "attempt": 1,
+      "aux_info_sha256": "20f18b82f90a4f90135580baf719fa1095037e2f833017dff58214e8faf15f0b",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329647.1998599,
+      "free_heap_bytes": 115744,
+      "free_heap_min_required": 99460.2,
+      "kernel_id": 4,
+      "largest_block_min_required": 52419.200000000004,
+      "largest_free_block_bytes": 69620,
+      "matrix_state_sha256": "55670d8a24a1da6f9b15c475cf1909d385c55974b85966e2a8a8118578706008",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 86
+    },
+    {
+      "attempt": 2,
+      "aux_info_sha256": "65d27fadbcd66a518a19f8cc7686b62887a0b4927ea81059b6ce0a53da14313d",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329647.743999,
+      "free_heap_bytes": 118960,
+      "free_heap_min_required": 99460.2,
+      "kernel_id": 4,
+      "largest_block_min_required": 52419.200000000004,
+      "largest_free_block_bytes": 69620,
+      "matrix_state_sha256": "5ab3a4bf639dfb923708a754ab44383583cc86e8797d3cd6874462d3b5fc36da",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 87
+    }
+  ],
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "PASS"
+    },
+    {
+      "attempt": 2,
+      "status": "PASS"
+    }
+  ],
+  "kernel_id": 4,
+  "kernel_name": "Polar_Waves",
+  "settle_seconds": 5
+}

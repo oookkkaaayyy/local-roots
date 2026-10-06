@@ -1,0 +1,52 @@
+{
+  "actual_restore_semantics": "PASS_SOURCE_BOUND",
+  "candidate_install": "PASS",
+  "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "captured_at_unix": 1791330100.850338,
+  "current_device": {
+    "aux": {
+      "lip": "192.168.77.10",
+      "live": true,
+      "lm": "DDP"
+    },
+    "matrix_mac": "704bca5b345c",
+    "release": "hbnf-matrix-coordinated-v1-20261002-07",
+    "uptime_seconds": 138
+  },
+  "evidence": {
+    "aux_info": {
+      "path": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq51/SEQ54_POST_RECOVERY_aux_info.json",
+      "sha256": "14d6ace1b8274b4dcf83b045f6559ad78c249205c6ede640e9bbf51e48545c6b"
+    },
+    "matrix_build": {
+      "path": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq51/SEQ54_POST_RECOVERY_matrix_build.json",
+      "sha256": "5206b257c6c11d69d2c7d54421ba8181147c2826509e63c7ed1b5c8dacd6ef51"
+    },
+    "matrix_info": {
+      "path": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq51/SEQ54_POST_RECOVERY_matrix_info.json",
+      "sha256": "090b3f08a207a205c90389f1255dd953c05b6841dc9639819280b868dcdff1e7"
+    },
+    "matrix_state": {
+      "path": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq51/SEQ54_POST_RECOVERY_matrix_state.json",
+      "sha256": "48d27b726471f655162c69ac61711def213696d2601329e8f72d22527d86370c"
+    }
+  },
+  "foundation": "NOT_PROMOTED__CANDIDATE_RECOVERED_TO_RELEASE07_BEFORE_OWNER_SMOKE",
+  "host_comparator_defect": "Collector additionally required packet20Same to be serialized in HBNF packet20Diagnostic. The exact firmware source does not serialize that alias; it emits restoreVerified only. The adapter source-bound comparator returned packet20Same=true from restoreVerified + command/snapshot identity, but collector discarded that result and declared FAIL. This was not a firmware restore failure.",
+  "owner_smoke": "NOT_RUN",
+  "restore_evidence": {
+    "device_restoreVerified": true,
+    "firmware_source_sha256": "31126d341bf0a3e54a33d87de0856c5f68e79f20dd05653ae1d5df3270a9bc9d",
+    "lastCommand": "restore",
+    "lastCommandAccepted": true,
+    "snapshotHash_matches_prestate": true,
+    "snapshotId_matches_prestate": true,
+    "snapshotState": "READY",
+    "source_line": "const bool verified=packet20Same(packet20Saved,packet20Verify);"
+  },
+  "schema": "hbnf-seq53-54-final-reconciliation-v1",
+  "seq54_recovery": "PASS_EXACT_RELEASE07",
+  "targeted_resource_aux_samples": "PASS_28_OF_28__56_OF_56",
+  "targeted_result_path": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq51/targeted-seq53/SEQ51_TARGETED_RESULT.json",
+  "targeted_result_sha256": "9d9c35f89091eec55a1e452e6f0bccb8e01d70cd056f07bdbb73fc95c476d0e5"
+}

@@ -1,0 +1,28 @@
+{
+  "schema": "hbnf-seq51-targeted-collector-fixture-v1",
+  "status": "PASS",
+  "checks": {
+    "optional_aux_state_failure_ignored": true,
+    "matrix_state_failure": "FAIL_CLOSED",
+    "aux_info_failure": "FAIL_CLOSED",
+    "aux_live_false": "FAIL_CLOSED",
+    "aux_wrong_lm": "FAIL_CLOSED",
+    "aux_wrong_lip": "FAIL_CLOSED"
+  },
+  "restore_assertion": {
+    "schema": "hbnf-source-bound-restore-fixture-v1",
+    "status": "PASS",
+    "checks": {
+      "source_bound_restore_pass": true,
+      "restore_false_fails": true,
+      "command_mismatch_fails": true,
+      "snapshot_mismatch_fails": true
+    },
+    "json_packet20Same_required": false
+  },
+  "required_sample_endpoints": [
+    "http://192.168.77.10/json/state",
+    "http://192.168.77.11/json/info"
+  ],
+  "aux_json_state_required": false
+}

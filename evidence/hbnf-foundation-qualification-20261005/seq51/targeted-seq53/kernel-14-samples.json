@@ -1,0 +1,51 @@
+{
+  "accepted": [
+    {
+      "attempt": 1,
+      "aux_info_sha256": "aaaab863fba91e006b0bad8b780adf5c5f52b527a9e90a9656a9061b9605cc21",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329747.4205928,
+      "free_heap_bytes": 118360,
+      "free_heap_min_required": 99351.4,
+      "kernel_id": 14,
+      "largest_block_min_required": 55696.0,
+      "largest_free_block_bytes": 69620,
+      "matrix_state_sha256": "4799deb0d679763212f5d4f1a1b1537d10756052dc99557dce949293446e715f",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 187
+    },
+    {
+      "attempt": 2,
+      "aux_info_sha256": "2e173d560222886c9ede370f2d7945889c5ae846480ab70e7380efe1747e411c",
+      "aux_live": true,
+      "aux_mode": "DDP",
+      "aux_source": "192.168.77.10",
+      "captured_at_unix": 1791329748.909612,
+      "free_heap_bytes": 118876,
+      "free_heap_min_required": 99351.4,
+      "kernel_id": 14,
+      "largest_block_min_required": 55696.0,
+      "largest_free_block_bytes": 69620,
+      "matrix_state_sha256": "2e4bc9ebfc8fd76c81571433dbc289e11f93aeccea615d4942028359885c662b",
+      "optional_aux_state_error_ignored": null,
+      "restart_count": 0,
+      "uptime_seconds": 188
+    }
+  ],
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "PASS"
+    },
+    {
+      "attempt": 2,
+      "status": "PASS"
+    }
+  ],
+  "kernel_id": 14,
+  "kernel_name": "Waves",
+  "settle_seconds": 5
+}
