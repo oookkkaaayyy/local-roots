@@ -1,0 +1,122 @@
+{
+  "baseline_sha256": "45c1562b92877a55048cc47bada00ecdac9dd23f2533dfdbad63da0e9f8476be",
+  "candidate": {
+    "release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sequence": 47,
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008
+  },
+  "evidence_paths": {
+    "audit": "evidence/hbnf-foundation-qualification-20261005/seq47/live/retry-20261006T2027Z/FOUNDATION_SOAK_AUDIT.json",
+    "audit_result": "evidence/hbnf-foundation-qualification-20261005/seq47/live/retry-20261006T2027Z/SOAK_AUDIT_RESULT.json",
+    "baseline": "evidence/hbnf-foundation-qualification-20261005/seq39/live/PRE_SOAK_BASELINE.json",
+    "candidate_install": "evidence/hbnf-foundation-qualification-20261005/seq47/CANDIDATE_INSTALLED.json",
+    "continuous_soak_result": "evidence/hbnf-foundation-qualification-20261005/seq47/live/retry-20261006T2027Z/CONTINUOUS_SOAK_RESULT.json",
+    "diagnostic_pre_state": "evidence/hbnf-foundation-qualification-20261005/seq47/live/DIAGNOSTIC_ACTIVE_PRE_STATE_CHANGE.json",
+    "fresh_snapshot": "evidence/hbnf-foundation-qualification-20261005/seq47/live/FRESH_PACKET20_SNAPSHOT.json",
+    "frozen_policy": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
+    "post_restore_raw": "evidence/hbnf-foundation-qualification-20261005/seq47/live/retry-20261006T2027Z/POST_RESTORE_RAW_STATE.json",
+    "post_restore_state": "evidence/hbnf-foundation-qualification-20261005/seq47/live/retry-20261006T2027Z/POST_RESTORE_STATE.json",
+    "recovery_ledger_write": "evidence/hbnf-foundation-qualification-20261005/seq47/live/retry-20261006T2027Z/SEQ48_LEDGER_WRITE.txt",
+    "recovery_ota_response": "evidence/hbnf-foundation-qualification-20261005/seq47/live/retry-20261006T2027Z/SEQ48_OTA_RESPONSE.txt",
+    "recovery_result": "evidence/hbnf-foundation-qualification-20261005/seq47/live/retry-20261006T2027Z/SEQ48_RECOVERY_RESULT.json",
+    "restore_receipt": "evidence/hbnf-foundation-qualification-20261005/seq47/live/retry-20261006T2027Z/RESTORE_RECEIPT.json",
+    "retry_preconditions": "evidence/hbnf-foundation-qualification-20261005/seq47/live/retry-20261006T2027Z/RETRY_PRECONDITIONS_PASS.json",
+    "retry_result": "evidence/hbnf-foundation-qualification-20261005/seq47/live/retry-20261006T2027Z/SEQ47_RETRY_RESULT.json",
+    "soak_raw": "evidence/hbnf-foundation-qualification-20261005/seq47/live/retry-20261006T2027Z/FOUNDATION_SOAK.jsonl",
+    "state_changes_raw": "evidence/hbnf-foundation-qualification-20261005/seq47/live/retry-20261006T2027Z/FOUNDATION_STATE_CHANGES.jsonl"
+  },
+  "evidence_sha256": {
+    "audit": "c9849ed0459e34e423d91b6d9c266ea639b5cc716c805e25fe51c8b21e391224",
+    "audit_result": "c9849ed0459e34e423d91b6d9c266ea639b5cc716c805e25fe51c8b21e391224",
+    "baseline": "45c1562b92877a55048cc47bada00ecdac9dd23f2533dfdbad63da0e9f8476be",
+    "candidate_install": "6abe359c189386ad9d7b68357e8bf96ae3ac334e7e9af3c145c22728f894c000",
+    "continuous_soak_result": "e76413b8c25a76697bafe54f0e1340a2436d3cbcfdd740f6b671e1f7788e40c4",
+    "diagnostic_pre_state": "0f3b1c8c80c00f9a851f5e6b840548fe24b59477622581714c935c53ab366416",
+    "fresh_snapshot": "633d7fc7f821ddd09ac6d85fddc5929895fbc96ea4185864d846a6c201ea6c13",
+    "frozen_policy": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797",
+    "post_restore_raw": "36f9b2b4a8ade6faa7f032a19f83e5ae55b0f6cf37d6e9f2e8ea5fd99e3d6cd1",
+    "post_restore_state": "49d90c7e58da8b5890a44eb29d3f667d8947425a596dd3eab0c0016bc20d1f3b",
+    "recovery_ledger_write": "4bf7ffba0f14ef207f3de47bf4e81738f509a43c33a9bc4951f2a64f87274cf4",
+    "recovery_ota_response": "0b00a7df84c4c6be8c03763cc3a941e98b6885fbbfe301b73984bdbc973fb381",
+    "recovery_result": "18877ac0f71ac3d196a9645fd7d9fb18dec5ddc9b6044f6b3ee8b2c04db85d6f",
+    "restore_receipt": "0dc04d1ea19ebeeb220bd7830b9743b4b5f78353fe6dad353dcacac104e47b37",
+    "retry_preconditions": "69005716180a1404308a5fdec6cba7e5a7fc8c850fed836d87af0a8d2f6ee059",
+    "retry_result": "67ae0760c83a1789c640038334693e8beb801ddede646827e41b1d08d27e496e",
+    "soak_raw": "a82653789022713a07420e8fc1ab297665fcc74a6e7498842be905d3ff7986d2",
+    "state_changes_raw": "85b24a76cf31ab7b568fcb7cae529b00f2a798d7a225edbfc769d5b0f92599cc"
+  },
+  "frozen_gate_pass_counts": {
+    "aux_stale_fraction": 27,
+    "fps_median": 28,
+    "frame_p95_median": 28,
+    "frame_p99_median": 28,
+    "largest_free_block_min": 18,
+    "minimum_free_heap": 0
+  },
+  "inherited_evidence": {
+    "28_kernel_sweep": "reused seq39 exact artifact",
+    "firmware_build": "none",
+    "github_actions": "none",
+    "observer_effect": "reused exact candidate seq39 PASS"
+  },
+  "lifecycle": "FIX_CANDIDATE; FOUNDATION_UNQUALIFIED; mutation pair 47/48 consumed; live mutation closed",
+  "measured_failure": {
+    "aux_staleness": {
+      "failing_kernels": 1,
+      "kernel_23_fraction": 0.02564102564102564,
+      "limit": 0.01
+    },
+    "largest_free_block": {
+      "failing_kernels": 10,
+      "observed_range_bytes": [
+        51188.0,
+        59380.0
+      ],
+      "policy_ratio_min": 0.8,
+      "total_kernels": 28
+    },
+    "minimum_free_heap": {
+      "failing_kernels": 28,
+      "observed_min_bytes": 40240.0,
+      "policy_ratio_min": 0.85,
+      "total_kernels": 28
+    },
+    "performance_distribution": {
+      "fps_pass": 28,
+      "frame_max_role": "DIAGNOSTIC_ONLY",
+      "frame_p95_pass": 28,
+      "frame_p99_pass": 28
+    }
+  },
+  "outcome": "FOUNDATION_FAIL__EXACT_RELEASE07_RECOVERY_PASS",
+  "policy_sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797",
+  "recorded_at_utc": "2026-10-06T22:04:43.784123+00:00",
+  "recovery": {
+    "aux_native_ddp_live": true,
+    "release": "hbnf-matrix-coordinated-v1-20261002-07",
+    "sequence": 48,
+    "sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "status": "PASS"
+  },
+  "restore": {
+    "packet20Same": true,
+    "restoreVerified": true,
+    "snapshotHash": 2829015731,
+    "snapshotId": 1,
+    "source_bound": true,
+    "status": "PASS"
+  },
+  "schema": "hbnf-seq47-foundation-final-result-v1",
+  "soak": {
+    "catastrophic_early_stop_triggered": false,
+    "duration_seconds": 5439.94933625,
+    "max_sample_gap_seconds": 8.368297874999826,
+    "restart_count": 0,
+    "samples": 1089,
+    "state_changed_kernels": 28,
+    "state_changes": 900,
+    "status": "COMPLETE_BUT_FROZEN_GATES_FAIL",
+    "telemetry_kernels": 28
+  }
+}
