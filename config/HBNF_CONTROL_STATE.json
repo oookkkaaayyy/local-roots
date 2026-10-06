@@ -38,7 +38,7 @@
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
     "blockers": [
-      "No firmware/device defect was established by seq35; current critical-path blocker is completion of one clean Foundation qualification execution. Host-only failures must remain isolated from firmware lifecycle unless device safety/identity/restore evidence actually fails."
+      "Seq37 exact candidate identity and health passed; reused observer PASS; tails-off steady-state and sacrificial warmup passed; 27/28 kernels profiled, then firmware tail quantile saturated at the histogram ceiling 51.15 ms while selecting Module_Experiment10. This is a Foundation telemetry gate failure, not a host transport/deadline failure. No >=1000 ms interval or unexpected restart was observed. Renderer restoreVerified=true and packet20Same=true. Exact Release07 recovery seq38 verified PASS. No soak/baseline was started."
     ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
@@ -292,8 +292,8 @@
         "soft_reboot_before_attempt": true
       }
     ],
-    "foundation_status": "FOUNDATION_UNQUALIFIED__SEQ37_38_AUTHORIZED__OFFLINE_HOST_GATES_PASS__LIVE_NOT_STARTED",
-    "foundation_transaction_stop_reason": "Seq35 was a host polling deadline boundary failure with 0.0162015s left; corrected offline windows, no-doomed-request behavior, minimum-sample completion, fail-closed transport behavior, and restore evidence are regression-tested. Existing exact-candidate seq33 observer PASS is reused, not remeasured.",
+    "foundation_status": "FOUNDATION_UNQUALIFIED__SEQ37_TAIL_QUANTILE_GATE_FAILED__SEQ38_RELEASE07_RECOVERED",
+    "foundation_transaction_stop_reason": "Seq37 exact candidate identity and health passed; reused observer PASS; tails-off steady-state and sacrificial warmup passed; 27/28 kernels profiled, then firmware tail quantile saturated at the histogram ceiling 51.15 ms while selecting Module_Experiment10. This is a Foundation telemetry gate failure, not a host transport/deadline failure. No >=1000 ms interval or unexpected restart was observed. Renderer restoreVerified=true and packet20Same=true. Exact Release07 recovery seq38 verified PASS. No soak/baseline was started.",
     "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
     "installed_release_role": "BASELINE_RECOVERY_VERIFIED__SEQ36",
@@ -309,7 +309,7 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
+      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Foundation offline timeout and soak-harness checkpoint",
@@ -616,23 +616,27 @@
       "recovery_sequence": 38,
       "candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
       "candidate_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
-      "candidate_size_bytes": 1488768,
-      "recovery_release": "hbnf-matrix-coordinated-v1-20261002-07",
+      "candidate_install_attempts": 1,
+      "observer_effect": "REUSED_SEQ33_EXACT_CANDIDATE_PASS__27_SAMPLES_PER_MODE__MEDIAN_DELTA_MINUS_2_94_PERCENT",
+      "prequalification": "PASS__30S_TAILS_OFF__SACRIFICIAL_TAILS_ON_WARMUP_EXCLUDED",
+      "sweep_status": "FOUNDATION_GATE_FAIL__TAIL_QUANTILE_SATURATED_AT_51_15MS",
+      "profiles_completed": 27,
+      "profiles_expected": 28,
+      "last_completed_kernel": "SM5",
+      "failing_selection": "Module_Experiment10",
+      "exact_postwarmup_interval_ge_1000ms_observed": false,
+      "unexpected_restart": false,
+      "renderer_restore": "PASS__restoreVerified=true__packet20Same=true__snapshotId=1__snapshotHash=3294298572",
+      "soak_status": "NOT_STARTED",
+      "recovery_status": "PASS_SEQ38_EXACT_RELEASE07_SHA_VERIFIED",
       "recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-      "recovery_role": "REAL_FAILURE_RECOVERY_ONLY",
-      "observer_effect": "REUSED_SEQ33_EXACT_CANDIDATE__27_SAMPLES_PER_MODE__MEDIAN_DELTA_MINUS_2_94_PERCENT__PASS",
-      "offline_gates": "PASS_BEFORE_ALLOCATION_OR_MUTATION",
-      "offline_evidence": "evidence/hbnf-foundation-qualification-20261005/seq37/OFFLINE_GATES.json",
-      "readonly_preflight": "evidence/hbnf-foundation-qualification-20261005/seq37/READONLY_PREFLIGHT.json",
-      "host_failure_policy": "PRESERVE_SEQ37_ONLY_IF_EXACT_IDENTITY_HEALTH_NO_RESTART_EXACT_PACKET20_RESTORE_AND_AUX_HEALTH_ALL_PASS; HOST_ONLY_FAILURE_NEVER_CONSUMES_SEQ38",
-      "status": "AUTHORIZED__CAPSULE_AND_PRELIVE_PASS",
-      "capsule_path": "evidence/hbnf-foundation-qualification-20261005/seq37/CAPSULE.json",
-      "prelive_proof_path": "evidence/hbnf-foundation-qualification-20261005/seq37/PRELIVE_PROOF.json"
+      "evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq37/SEQ37_FAILURE_RECONCILIATION.json",
+      "status": "COMPLETE__FOUNDATION_REMAINS_UNQUALIFIED"
     }
   },
   "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
   "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
-  "installed_release_role": "BASELINE_RECOVERY_VERIFIED__SEQ36",
+  "installed_release_role": "REAL_FAILURE_RECOVERY_VERIFIED__SEQ38",
   "lifecycle_state": "FIX_CANDIDATE",
   "live_mutation_authorization": {
     "candidate_sequence": 37,
@@ -642,10 +646,11 @@
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "prelive_evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq37/PRELIVE_PROOF.json",
     "scope": "One exact candidate install seq37; reuse exact seq33 observer PASS; tails-off steady interval, sacrificial warmup, full 28-kernel sweep, baseline-frozen >=90-minute changing soak; seq38 exact Release07 only for real device/Foundation failure. Host-only failures preserve candidate if exact identity, health, no restart, exact restore, and AUX health pass.",
-    "status": "AUTHORIZED__CAPSULE_AND_PRELIVE_PASS",
-    "user_authorization": "FOUNDATION CONVERGENCE DIRECTIVE — AUTHORIZE FRESH SEQ35/36; explicit later seq37/38 authorization supersedes pair, with this host-failure restriction."
+    "status": "CLOSED__SEQ38_RECOVERY_VERIFIED__FOUNDATION_GATE_FAILED",
+    "user_authorization": "FOUNDATION CONVERGENCE DIRECTIVE \u2014 AUTHORIZE FRESH SEQ35/36; explicit later seq37/38 authorization supersedes pair, with this host-failure restriction.",
+    "closure_reason": "Seq37 Foundation telemetry gate failed on saturated tail quantile; exact Release07 recovery seq38 verified. No further live mutation is authorized by this transaction."
   },
-  "live_mutation_authorized": true,
+  "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",
   "phase2_implementation_authorized": false,
   "schema": "hbnf-control-state-v2",
@@ -653,24 +658,15 @@
     "schema": "hbnf-execution-cursor-v1",
     "current_lifecycle_state": "FIX_CANDIDATE",
     "current_transition": "T2_FOUNDATION_QUALIFY",
-    "current_failure_domain": "HOST_HARNESS",
+    "current_failure_domain": "FIRMWARE_FOUNDATION_TELEMETRY_GATE",
     "current_subject": {
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
       "artifact_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338"
     },
     "exact_next_path": [
-      "Complete/verify host-only regression fixtures and prelive proof; no device mutation if these fail.",
-      "Execute authorized seq37 exact candidate install only after prelive gates pass.",
-      "Reuse exact-candidate observer-effect PASS; do not rerun it.",
-      "Run tails-off steady state and sacrificial warm-up.",
-      "Run complete 28-kernel Foundation sweep.",
-      "Bind baseline/frozen policy.",
-      "Run same-installation >=90-minute state-changing soak.",
-      "Close remaining T2 feature/rebuild/capsule/rollback/flight-recorder checks using inherited evidence where still valid.",
-      "Advance T2 to FOUNDATION_QUALIFIED.",
-      "Freeze Phase 2 shared interfaces once, then run Mission Control/scoring, Vibe/audio, Text/Moments, and PWA/reliability in parallel.",
-      "Build one integrated candidate, pass T4, then T5 release acceptance.",
-      "Only after core ACCEPTED: expand AUX UV, Arcade, IRL games, and Guest unless explicitly pulled earlier without affecting critical path."
+      "Keep exact Release07 installed; live mutation remains closed.",
+      "Review the seq37 failed telemetry evidence and decide whether the 51.15 ms histogram ceiling makes Module_Experiment10 percentile qualification unmeasurable or requires a separately authorized candidate/firmware change.",
+      "Do not repeat seq37/38 or begin another live transaction without new explicit authorization."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",

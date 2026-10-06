@@ -1,0 +1,65 @@
+{
+  "schema": "hbnf-foundation-seq37-runtime-gate-reconciliation-v1",
+  "status": "FOUNDATION_GATE_FAILED__SEQ38_RELEASE07_RECOVERY_PASS",
+  "candidate": {
+    "sequence": 37,
+    "release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+    "sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
+    "install_attempts": 1,
+    "identity_health": "PASS"
+  },
+  "observer_effect": {
+    "status": "PASS_REUSED_SEQ33_EXACT_CANDIDATE",
+    "samples_per_mode": 27,
+    "median_delta_pct": -2.9440135818188895,
+    "remeasured": false
+  },
+  "prequalification": {
+    "tails_off_steady_state": "PASS_30_SECONDS",
+    "sacrificial_tail_warmup": "PASS_EXCLUDED",
+    "unexpected_restart": false
+  },
+  "sweep": {
+    "status": "FAILED_FOUNDATION_TAIL_QUANTILE_SATURATION",
+    "profiles_completed": 27,
+    "profiles_expected": 28,
+    "last_completed_kernel": "SM5",
+    "failing_selection_from_inventory": "Module_Experiment10",
+    "reported_error": "foundation-frame-tail-quantile-saturated-at-51.15ms",
+    "histogram_overflow_alone": false,
+    "exact_post_warmup_interval_ge_1000ms_observed": false,
+    "exact_failed_sample_max_ms": "NOT_PRESERVED_BY_ADAPTER_BEFORE_THROW",
+    "raw_response_limitation": "Telemetry adapter rejected the saturated quantile before serializing the failing kernel sample. SWEEP_ABORT preserves the exact rejection and ceiling; no exact max or quantile is claimed."
+  },
+  "restore": {
+    "restoreVerified": true,
+    "packet20Same": true,
+    "snapshotId": 1,
+    "snapshotHash": 3294298572
+  },
+  "recovery": {
+    "sequence": 38,
+    "role": "REAL_FAILURE_RECOVERY_ONLY",
+    "release": "hbnf-matrix-coordinated-v1-20261002-07",
+    "sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "size_bytes": 1458624,
+    "attempts": 1,
+    "status": "PASS",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "aux_ddp_live": true
+  },
+  "foundation_status": "UNQUALIFIED",
+  "live_mutation_authorized": false,
+  "evidence": {
+    "TRANSACTION_RESULT.json": "2fadc633ff39602805a48f9168796ada2398c117b56c33de21c0523dc2c03219",
+    "foundation-sweep/SWEEP_ABORT.json": "96a3d077ebad04a2301a1a4a06dd252ddf9227b473912c6dbf0abc0d1527fe35",
+    "foundation-sweep/POST_RESTORE_RAW_STATE.json": "265301383bf8d808d996936e388dea53fc70ad97a8e0870103824a68f988e60d",
+    "foundation-sweep/PRE_SWEEP_STATE.json": "734bc2858f8f28d88143bb9168daa3fdfafd3c99e70bc7d37738e1d01a193099",
+    "foundation-sweep/OBSERVER_EFFECT.json": "f446974eea353f63aed0a7ca1ffb3fc7df6fa0d9ab28c5968735f03813b00674",
+    "seq38-post-recovery-matrix_build.json": "26630891311a46c942a3c9f71febf29c84e8e1e19a612298525bbc35efc1642f",
+    "seq38-post-recovery-matrix_info.json": "4a3b0426b1df6df1dee98b666c93ea27da730565baf81d6dc095d0d2b6c5da9f",
+    "seq38-post-recovery-aux_info.json": "6e116680bde4760418b5bf4f56ca299d0d9bcf84e1ff03a29ce64a8338eb68f8",
+    "seq38-post-recovery-aux_state.json": "f0104e91873fccadf603e1c13dab399f05882e0dcd29dd220fc958ada773a969",
+    "seq38-opal-ota-response.txt": "63ce9419cca2f6e43184f036e6524532d74740db9ccf4ac6c9b1fe3f014e159c"
+  }
+}

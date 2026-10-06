@@ -1,0 +1,126 @@
+{
+  "failures": [],
+  "profile": {
+    "aux": {
+      "age_p99_ms": 598857.32,
+      "inactive_samples": 0,
+      "render_fps_median": 37.0
+    },
+    "collection_errors": 0,
+    "contract": "foundation",
+    "fps": {
+      "median": 37.0,
+      "min": 35,
+      "p05": 35.9
+    },
+    "frame_ms": {
+      "avg_median": 19.87587,
+      "max": 46.09,
+      "p50_median": 19.05,
+      "p95_median": 23.15,
+      "p99_median": 37.75
+    },
+    "heap": {
+      "free_end": 119120,
+      "free_start": 119144,
+      "largest_block_end": 69620,
+      "largest_block_start": 69620,
+      "minimum_free_min": 58796
+    },
+    "kernel": {
+      "id": 13,
+      "name": "Caleido3",
+      "variant_id": 1347100685
+    },
+    "qualification_eligible": true,
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+    "restart_count_end": 0,
+    "restart_count_start": 0,
+    "sample_count": 19,
+    "schema": "hbnf-runtime-profile-v2",
+    "stages": {
+      "audio_ms_avg": {
+        "max": 2.374596,
+        "median": 2.329388,
+        "p95": 2.3738211
+      },
+      "audio_ms_p95": {
+        "max": 2.75,
+        "median": 2.75,
+        "p95": 2.75
+      },
+      "aux_prepare_send_ms_avg": {
+        "max": 0.1591,
+        "median": 0.158531,
+        "p95": 0.159046
+      },
+      "aux_prepare_send_ms_p95": {
+        "max": 0.25,
+        "median": 0.25,
+        "p95": 0.25
+      },
+      "frame_ms_avg": {
+        "max": 19.94423,
+        "median": 19.87587,
+        "p95": 19.941512000000003
+      },
+      "kernel_ms_avg": {
+        "max": 8.37406,
+        "median": 8.357395,
+        "p95": 8.3717722
+      },
+      "kernel_ms_p95": {
+        "max": 8.85,
+        "median": 8.75,
+        "p95": 8.85
+      },
+      "overlay_ms_avg": {
+        "max": 0.033106,
+        "median": 0.033013,
+        "p95": 0.0330952
+      },
+      "overlay_ms_p95": {
+        "max": 0.05,
+        "median": 0.05,
+        "p95": 0.05
+      },
+      "palette_ms_avg": {
+        "max": 0.457177,
+        "median": 0.448738,
+        "p95": 0.4565308
+      },
+      "palette_ms_p95": {
+        "max": 0.45,
+        "median": 0.45,
+        "p95": 0.45
+      },
+      "scheduler_ms_avg": {
+        "max": 1.345902,
+        "median": 1.309353,
+        "p95": 1.3279974
+      },
+      "scheduler_ms_p95": {
+        "max": 1.65,
+        "median": 1.65,
+        "p95": 1.65
+      },
+      "unaccounted_ms_avg": {
+        "max": 7.298388,
+        "median": 7.232908,
+        "p95": 7.2918756
+      },
+      "unaccounted_ms_p95": {
+        "max": 10.25,
+        "median": 9.75,
+        "p95": 10.25
+      }
+    },
+    "valid_sample_count": 19,
+    "validation_errors": [],
+    "wifi": {
+      "rssi_dbm_median": -47.0,
+      "rssi_dbm_min": -61
+    }
+  },
+  "status": "PASS"
+}

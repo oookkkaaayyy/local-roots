@@ -1,0 +1,15 @@
+{
+  "basedOnFirmwareSha256": "b9bb60dca1a9be8f7241670a7540810c604465c9adf7084b6efc90d5b4622886",
+  "basedOnReleaseId": "hbnf-matrix-coordinated-v1-20261002-06",
+  "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+  "features": [
+    "canonical-palette-v1",
+    "canonical-overlay-v1",
+    "coordinated-ui-v1"
+  ],
+  "ip": "192.168.77.10",
+  "mac": "70:4b:ca:5b:34:5c",
+  "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+  "schema": "hbnf-build-v1",
+  "wled": "16.0.1"
+}
