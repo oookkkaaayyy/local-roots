@@ -705,11 +705,11 @@
         "User reports earlier same-day physical connection trouble that had been repaired and then worked normally for an extended stationary period."
       ],
       "evidence_context": [
-        "Seq39 failure/postflight showed AUX controller network endpoint alive, live=true, lm=DDP, lip=192.168.77.10.",
-        "The same AUX state reported HBNFAUX projectionRxActive=false, projectionRxPackets=0, projectionPeerKnown=false while Foundation auxProjectionAgeMs became stale.",
-        "Therefore neither a purely physical fault nor a purely software/telemetry fault is proven."
+        "User directly confirmed the visible AUX/underglow failure was a physical connection fault and fixed it.",
+        "Post-fix read-only capture confirms exact Release07, AUX powered/on, and WLED native DDP source from Matrix.",
+        "Seq39 Foundation failure was caused by a mislabeled/incorrect AUX freshness metric: sender-side age was treated as receiver freshness. This is a telemetry qualification defect, not a reopened physical-fault investigation."
       ],
-      "safety_boundary": "DO_NOT_START_NEW_LIVE_MUTATION_OR_FIRMWARE_ATTEMPT UNTIL AUX IS DISCRIMINATED. Read-only LAN diagnosis and offline source/harness work are allowed. Do not spend overnight time on repeated physical/software guessing.",
+      "safety_boundary": "PHYSICAL AUX FAULT IS CLOSED. Do not investigate physical cause again without fresh contradictory evidence. Only the bounded telemetry qualification correction remains.",
       "resolved_at_local": "2026-10-06",
       "resolution_source": "USER_DIRECT_PHYSICAL_FIX_AND_CONFIRMATION",
       "resolution_note": "User confirmed the AUX/underglow failure was physical and fixed it. Do not reopen as a software root-cause assumption unless fresh evidence independently proves a software/link fault.",
@@ -779,6 +779,12 @@
       "priority_if_defer": "Record as retained Cart 2.0 core product requirement and do not risk tomorrow's field build.",
       "authority": "config/HBNF_CONTROL_MODEL.json execution_system.release_scope.brightness_quality_requirement",
       "authority_commit": "fd043077b5c4de00ff7bc11c2015d78df2d53378"
+    },
+    "aux_telemetry_reconciliation": {
+      "status": "OFFLINE_CORRECTION_PROVEN__PRELIVE_PENDING",
+      "conclusion": "Seq39 sender-age was mislabeled as receiver age. Host/Foundation gate must use actual Matrix-origin native WLED DDP live/source evidence; optional HBNFAUX frame-lock counters are separate and must not be conflated.",
+      "scope_limit": "No broad AUX debugging. No physical-fault re-investigation. Complete only the minimum prelive proof needed to unblock seq41.",
+      "next": "Checkpoint offline correction, build clean seq41 capsule/prelive proof, then run seq41 only if prelive passes."
     }
   },
   "execution_budget_policy": {
@@ -804,11 +810,12 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Bounded post-fix verification: confirm AUX is reachable and physically responding now; preserve the user's physical-fault classification unless fresh evidence contradicts it.",
-      "Reconcile seq39 AUX send-age telemetry against current behavior and source contract. Do not spend more than one bounded investigation cycle; preserve 28/28 sweep evidence unless a real invalidator exists.",
+      "Treat the user-confirmed physical AUX fault as CLOSED. Do not reopen hardware diagnosis absent fresh contradictory evidence.",
+      "Finish only the bounded AUX telemetry qualification correction already proven offline: sender-age was mislabeled as receiver freshness.",
+      "Checkpoint the corrected adapter/gate and create clean seq41 capsule/prelive proof. If prelive passes, proceed with the single authorized seq41 qualification.",
+      "Preserve seq39 28/28 sweep evidence unless an actual invalidator exists.",
       "If a telemetry/gate correction is needed, prove it offline and use the smallest possible delta. If no correction is needed and prelive proof is clean, proceed directly to the single authorized seq41 Foundation requalification.",
       "If the 90-minute soak starts cleanly, keep it running and immediately use the wait for field-critical Cart 2.0 work: Mission Control/scoring and PWA/reliability first; Vibe/audio and text/moments next.",
-      "Before stopping overnight, maximize tomorrow's Skins readiness: authoritative scoring on intended owner device, reliable owner control without Mac/Terminal, and working underglow/AUX. Do not let noncritical polish block this field gate.",
       "Promote Foundation and then advance lifecycle/Phase2 as far as objective gates allow; do not stop merely to report intermediate progress.",
       "At the next worker-return boundary, evaluate the locked Matrix low-brightness fidelity requirement and make an explicit GO_FOR_TOMORROW vs DEFER_FOR_STABILITY decision. Do not interrupt the current critical transaction to work on it."
     ],
