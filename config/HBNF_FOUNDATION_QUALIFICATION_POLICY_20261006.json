@@ -16,11 +16,11 @@
   },
   "baseline_profile": "GENERATED_FROM_THE_CURRENT_COMPLETE_28_KERNEL_SWEEP_BEFORE_SOAK",
   "catastrophic_early_stop": {
-    "aux_projection_age_ms_ceiling": 1000,
     "consecutive_samples": 3,
     "enabled": true,
     "fps_floor_absolute": 20,
-    "frame_ms_p99_ceiling_absolute": 75
+    "frame_ms_p99_ceiling_absolute": 75,
+    "aux_projection_active_required": true
   },
   "comparison": {
     "candidate_vs_baseline": {
@@ -34,7 +34,7 @@
     },
     "require_same_or_declared_comparable_kernel_variant": true
   },
-  "note": "Frozen from explicit user directive for the 2026-10-06 Foundation transaction. The baseline is generated only from the complete 28-kernel sweep on the exact candidate, then hash-bound with the sweep before any soak sample.",
+  "note": "Frozen from explicit user directive for the 2026-10-06 Foundation transaction. The baseline is generated only from the complete 28-kernel sweep on the exact candidate, then hash-bound with the sweep before any soak sample. AUX catastrophic/staleness decisions use Matrix-origin WLED DDP live-source status; HBNFAUX frame-lock age is retained as diagnostic telemetry but is not equivalent to native DDP receive freshness.",
   "observer_effect": {
     "compare_instrumented_vs_lightweight_production_telemetry": true,
     "expensive_diagnostics_allowed_in_golden": false,

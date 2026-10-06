@@ -1,0 +1,39 @@
+{
+  "aux_live": true,
+  "aux_mac": "8c94df55c34c",
+  "aux_mode": "DDP",
+  "aux_source_ip": "192.168.77.10",
+  "captured_at_utc": "2026-10-06T09:11:11.556626+00:00",
+  "matrix_mac": "704bca5b345c",
+  "matrix_release": "hbnf-matrix-coordinated-v1-20261002-07",
+  "matrix_uptime_seconds": 3706,
+  "mutation": "none",
+  "responses": {
+    "aux_info": {
+      "bytes": 1154,
+      "http": 200,
+      "sha256": "0a492127a8ddb1f92e5ee3a453cd3919eef410c032f10e07bd97719dea75d478"
+    },
+    "aux_state": {
+      "bytes": 1821,
+      "http": 200,
+      "sha256": "8c7ebc6775e178ac384e6d023fa52367e32b0a719049098e8d0ec8e7284be85f"
+    },
+    "matrix_build": {
+      "bytes": 426,
+      "http": 200,
+      "sha256": "5206b257c6c11d69d2c7d54421ba8181147c2826509e63c7ed1b5c8dacd6ef51"
+    },
+    "matrix_info": {
+      "bytes": 1510,
+      "http": 200,
+      "sha256": "e2aaec73301e6a73db353c9e142dbdf02f163d06836b90c68887d8b0314d048c"
+    },
+    "matrix_state": {
+      "bytes": 1809,
+      "http": 200,
+      "sha256": "dba5f95d8ef5789a4eef49a3cf1a5b349b3b88e47fe0b3dc00357f582c000445"
+    }
+  },
+  "schema": "hbnf-seq41-readonly-prelive-v1"
+}

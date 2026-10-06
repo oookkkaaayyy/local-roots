@@ -87,7 +87,7 @@
     "foundationSoakPassed": false,
     "fieldFlightRecorderIntegrated": false
   },
-  "operational_authority": "config/HBNF_CONTROL_MODEL.json + config/HBNF_CONTROL_STATE.json",
+  "operational_authority": "REFERENCE_ONLY__USE_HBNF_CONTROL_MODEL_STATE",
   "currentFoundation": {
     "lifecycle": "DIAGNOSTIC_ACTIVE",
     "installedRelease": "hbnf-matrix-coordinated-v1-20261002-07",

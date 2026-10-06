@@ -56,8 +56,26 @@
     "Heap health includes free heap, minimum free heap, and largest free block; free heap alone is insufficient.",
     "Install health and runtime qualification remain separate gates.",
     "Diagnostic sweep and foundation qualification are distinct modes: missing tail metrics must not force a new build before the current diagnostic firmware has ranked all 28 kernels.",
-    "Foundation telemetry must expose the full kernel/palette/audio/scheduler/overlay/AUX/unaccounted stage budget; a successful average FPS alone is insufficient."
+    "Foundation telemetry must expose the full kernel/palette/audio/scheduler/overlay/AUX/unaccounted stage budget; a successful average FPS alone is insufficient.",
+    "Native Matrix→AUX DDP health is measured from AUX /json/info live=true, lm=DDP, and lip=192.168.77.10; this is distinct from optional HBNFAUX frame-lock packets. Preserve HBNFAUX receive counters and age as diagnostics, but do not use that custom-protocol age as a gate for native WLED DDP freshness."
   ],
+  "aux_projection_source_contract": {
+    "native_ddp_active_source": "AUX /json/info live=true, lm=DDP, lip=192.168.77.10",
+    "custom_frame_lock_diagnostics": {
+      "receiver_state_endpoint": "/json/state",
+      "receiver_object": "HBNFAUX",
+      "fields": [
+        "projectionRxActive",
+        "projectionRxAgeMs",
+        "projectionRxPackets",
+        "projectionRxSeq",
+        "projectionPeerKnown",
+        "projectionHelloPackets"
+      ]
+    },
+    "matrix_send_age_must_not_be_used": "Matrix HBNF timing.auxProjectionAgeMs is sender-side and does not prove AUX receipt.",
+    "age_gate": "Do not enforce a numeric projectionRxAgeMs ceiling unless HBNFAUX frame-lock streaming is an explicit required active path; Foundation native DDP acceptance uses receiver live/source status."
+  },
   "all_kernel_sweep": {
     "expected_kernel_count": 28,
     "require_unique_kernel_identity": true,

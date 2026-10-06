@@ -157,6 +157,18 @@
       <button id="featureScoreboard" type="button">Show scoreboard</button>
       <button id="featureAcePot" type="button">Show ace pot</button>
     </div>
+    <details class="score-entry">
+      <summary>Record Skins hole winner</summary>
+      <p class="muted">Scores save to the current authoritative Skins card. A blank winner leaves the skin carrying to the next hole.</p>
+      <div class="score-grid">
+        <label>Section<select id="skinsSection"><option value="front">Front 9 · Singles</option><option value="back">Back 9 · Doubles</option></select></label>
+        <label>Card<select id="skinsCard"></select></label>
+        <label>Hole<select id="skinsHole"></select></label>
+        <label>Winner<select id="skinsWinner"></select></label>
+      </div>
+      <div class="row"><button id="skinsRefresh" type="button">Refresh scorecard</button><button id="skinsSave" type="button">Save hole</button></div>
+      <div id="skinsScoreStatus" class="status" role="status" aria-live="polite">Scorecard not loaded.</div>
+    </details>
   </section>
 
   <section class="panel" aria-label="Firmware update">
@@ -220,4 +232,4 @@
     <div id="status" class="status" role="status" aria-live="polite">Connecting…</div>
     <button id="refresh">Refresh status</button>
   </section>
-</main><script type="module" src="./hbnf-cart.js"></script><script type="module" src="./hbnf-cart-ui-v6.mjs"></script><script type="module" src="./hbnf-cart-features.mjs"></script></body></html>
+</main><script type="module" src="./hbnf-cart.js"></script><script type="module" src="./hbnf-cart-ui-v6.mjs"></script><script type="module" src="./hbnf-cart-features.mjs"></script><script type="module" src="./hbnf-cart-skins-score.mjs"></script></body></html>

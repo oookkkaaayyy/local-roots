@@ -33,7 +33,13 @@ body>main{max-width:760px!important;gap:14px!important}
 .control-grid{margin-top:0!important}
 #status{font-weight:700}
 .hardware-note{margin-top:10px;font-size:.73rem;color:var(--hbnf-muted)}
+.score-entry{margin-top:14px;border-top:1px solid var(--hbnf-line);padding-top:12px}
+.score-entry summary{font-weight:750;cursor:pointer;min-height:44px;display:flex;align-items:center}
+.score-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.score-grid label{display:grid;gap:5px;align-items:stretch}
+.score-entry button{min-height:44px}
 @media(max-width:560px){
   .truth-grid{grid-template-columns:1fr 1fr}.audio-bars{grid-template-columns:1fr 1fr}
+  .score-grid{grid-template-columns:1fr}
   .hero-v6{align-items:flex-start}.truth-badge{margin-top:4px}
 }

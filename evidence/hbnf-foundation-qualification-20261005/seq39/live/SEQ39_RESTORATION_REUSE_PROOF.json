@@ -1,0 +1,22 @@
+{
+  "packet20Same": true,
+  "restoreVerified": true,
+  "schema": "hbnf-seq39-restore-reuse-proof-v1",
+  "snapshot_hash": 1184947204,
+  "snapshot_id": 1,
+  "source": "seq39 completed sweep; no new device action",
+  "source_files": {
+    "post_restore_raw_state": {
+      "path": "POST_RESTORE_RAW_STATE.json",
+      "sha256": "fac36d0a79aaa49372f1ab63b134929e11fb8ea6231e72d718bdabf252161fc4"
+    },
+    "post_restore_state": {
+      "path": "POST_RESTORE_STATE.json",
+      "sha256": "5d2fcb38bdd9376fa5eaaf6d854212cbd018c6b5ef64f1412da4244a91527b61"
+    },
+    "pre_sweep_state": {
+      "path": "PRE_SWEEP_STATE.json",
+      "sha256": "5d2fcb38bdd9376fa5eaaf6d854212cbd018c6b5ef64f1412da4244a91527b61"
+    }
+  }
+}

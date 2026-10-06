@@ -151,7 +151,7 @@ def audit(samples: list[dict], inventory: dict, expected_release: str,
             for i,s in enumerate(valid):
                 bad=(float(s["fps"])<float(early["fps_floor_absolute"]) or
                     float(s["frame_ms_p99"])>float(early["frame_ms_p99_ceiling_absolute"]) or
-                    float(s["aux_projection_age_ms"])>float(early["aux_projection_age_ms_ceiling"]))
+                    (early.get("aux_projection_active_required",True) and not bool(s["aux_projection_active"])))
                 streak=streak+1 if bad else 0
                 if streak>=int(early["consecutive_samples"]):
                     qualification_errors.append(f"catastrophic threshold exceeded for {streak} consecutive samples ending at {i}");break

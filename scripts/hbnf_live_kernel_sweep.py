@@ -296,11 +296,11 @@ def run_foundation_soak(adapter,inventory,outdir,timeout,release_id,restart_coun
             raise
         stop=policy["catastrophic_early_stop"];bad=(float(sample["fps"])<float(stop["fps_floor_absolute"])
             or float(sample["frame_ms_p99"])>float(stop["frame_ms_p99_ceiling_absolute"])
-            or float(sample["aux_projection_age_ms"])>float(stop["aux_projection_age_ms_ceiling"]))
+            or (stop.get("aux_projection_active_required",True) and not bool(sample["aux_projection_active"])))
         catastrophic_streak=catastrophic_streak+1 if bad else 0
         if catastrophic_streak>=int(stop["consecutive_samples"]):
             append_jsonl_durable(path,sample)
-            raise RuntimeError(f"catastrophic Foundation threshold crossed for {catastrophic_streak} consecutive samples: fps={sample['fps']} p99_ms={sample['frame_ms_p99']} aux_age_ms={sample['aux_projection_age_ms']}")
+            raise RuntimeError(f"catastrophic Foundation threshold crossed for {catastrophic_streak} consecutive samples: fps={sample['fps']} p99_ms={sample['frame_ms_p99']} aux_projection_active={sample['aux_projection_active']}")
         observed.add(int(sample["kernel_id"]))
         append_jsonl_durable(path,sample)
         sample_index+=1

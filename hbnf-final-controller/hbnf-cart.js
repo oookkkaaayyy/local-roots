@@ -130,11 +130,14 @@ function setAuthorizedUi() {
 }
 
 async function authHeaders() {
+  const token=deviceToken();
+  const headers={
+    "Content-Type": "application/json",
+    apikey: SUPABASE_PUBLISHABLE_KEY,
+  };
+  if (validDeviceToken(token)) headers["x-hbnf-device"]=token;
   return {
-    headers: {
-      "Content-Type": "application/json",
-      apikey: SUPABASE_PUBLISHABLE_KEY,
-    },
+    headers,
     mode: "guest",
   };
 }

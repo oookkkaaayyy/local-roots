@@ -781,10 +781,29 @@
       "authority_commit": "fd043077b5c4de00ff7bc11c2015d78df2d53378"
     },
     "aux_telemetry_reconciliation": {
-      "status": "OFFLINE_CORRECTION_PROVEN__PRELIVE_PENDING",
-      "conclusion": "Seq39 sender-age was mislabeled as receiver age. Host/Foundation gate must use actual Matrix-origin native WLED DDP live/source evidence; optional HBNFAUX frame-lock counters are separate and must not be conflated.",
+      "status": "OFFLINE_CORRECTION_TESTED__FRESH_PRELIVE_PASS",
+      "conclusion": "Fresh read-only prelive confirms exact Release07 and Matrix-origin WLED DDP live/source; corrected host contract passes regression tests and preserves HBNFAUX frame-lock diagnostics separately.",
       "scope_limit": "No broad AUX debugging. No physical-fault re-investigation. Complete only the minimum prelive proof needed to unblock seq41.",
-      "next": "Checkpoint offline correction, build clean seq41 capsule/prelive proof, then run seq41 only if prelive passes."
+      "next": "Run the single guarded seq41 same-artifact Foundation soak requalification, reusing the exact seq39 28/28 sweep, observer-effect proof, baseline, and renderer restore proof; seq42 remains genuine failure recovery only.",
+      "evidence": [
+        "evidence/hbnf-foundation-qualification-20261005/AUX_AGE_GATE_RECONCILIATION_20261006.md",
+        "evidence/hbnf-foundation-qualification-20261005/AUX_POSTFIX_READONLY_20261006.json",
+        "evidence/hbnf-foundation-qualification-20261005/seq41/READONLY_PREFLIGHT.json"
+      ]
+    },
+    "foundation_seq41_resume": {
+      "status": "PREPARED_OFFLINE__PRELIVE_EVIDENCE_PASS",
+      "candidate_sequence": 41,
+      "candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "candidate_bytes": 1489008,
+      "recovery_sequence": 42,
+      "recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+      "sequence_plan": "exact candidate once; no repeat 28-kernel sweep; inherit seq39 observer-effect PASS, all-28 baseline and restore proof; one sacrificial warm-up; 90-minute same-installation state-changing soak; host-only failure does not consume seq42",
+      "prelive_capture": "evidence/hbnf-foundation-qualification-20261005/seq41/READONLY_PREFLIGHT.json",
+      "reused_sweep_manifest": "evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep/PRE_SOAK_SWEEP_REUSE_MANIFEST.json",
+      "threshold_freeze": "evidence/hbnf-foundation-qualification-20261005/seq41/THRESHOLD_FREEZE_RECEIPT.json",
+      "transaction_script": "scripts/hbnf_foundation_seq41_transaction.py"
     }
   },
   "execution_budget_policy": {
@@ -970,9 +989,9 @@
   "live_mutation_authorization": {
     "candidate_sequence": 41,
     "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "closure_reason": "Seq39 soak failed the existing three-consecutive-sample AUX projection-age gate; exact seq40 Release07 recovery and post-recovery identity verification passed. No new live mutation authorized.",
+    "closure_reason": "Seq39 completed the exact 28/28 sweep and passed renderer restore; seq39 soak stopped on a mislabeled sender-age metric. Seq40 exact Release07 recovery passed. Current bounded seq41 authorization remains active after the offline telemetry correction and fresh read-only prelive verification.",
     "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-    "prelive_evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq39/PRELIVE_PROOF.json",
+    "prelive_evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq41/PRELIVE_PROOF.json",
     "recovery_sequence": 42,
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "scope": [

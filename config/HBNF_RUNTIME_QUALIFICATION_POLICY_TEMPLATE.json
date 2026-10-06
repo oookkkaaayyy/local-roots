@@ -27,7 +27,7 @@
     "consecutive_samples": 3,
     "fps_floor_absolute": null,
     "frame_ms_p99_ceiling_absolute": null,
-    "aux_projection_age_ms_ceiling": null
+    "aux_projection_active_required": true
   },
   "qualification_requires": [
     "telemetry_contract_pass",

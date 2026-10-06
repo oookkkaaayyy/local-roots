@@ -7,6 +7,9 @@ model=json.loads((ROOT/"config/HBNF_CONTROL_MODEL.json").read_text())
 state=json.loads((ROOT/"config/HBNF_CONTROL_STATE.json").read_text())
 state["lifecycle_state"]="DIAGNOSTIC_ACTIVE"
 state["completed_receipts"]=[]
+state["live_mutation_authorized"]=False
+state["execution_cursor"]["current_lifecycle_state"]="DIAGNOSTIC_ACTIVE"
+state["execution_cursor"]["current_transition"]=m.next_transition(model,state)["id"]
 
 assert not m.validate_state(model,state)
 s=m.status(model,state)

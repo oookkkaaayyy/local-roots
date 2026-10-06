@@ -10,8 +10,7 @@ import argparse, datetime as dt, hashlib, json, pathlib
 RATIOS=("fps_median_min_ratio","frame_p95_max_ratio","frame_p99_max_ratio",
         "frame_max_max_ratio","minimum_free_heap_min_ratio",
         "largest_free_block_min_ratio","aux_stale_sample_max_fraction")
-ABSOLUTE=("fps_floor_absolute","frame_ms_p99_ceiling_absolute",
-          "aux_projection_age_ms_ceiling")
+ABSOLUTE=("fps_floor_absolute","frame_ms_p99_ceiling_absolute")
 
 def digest(path):return hashlib.sha256(pathlib.Path(path).read_bytes()).hexdigest()
 def validate_policy(policy):
@@ -27,6 +26,7 @@ def validate_policy(policy):
     early=policy.get("catastrophic_early_stop",{})
     for key in ABSOLUTE:
         if not isinstance(early.get(key),(int,float)) or early[key]<=0:errors.append(f"early-stop threshold missing/invalid: {key}")
+    if early.get("aux_projection_active_required") is not True:errors.append("early-stop must require active Matrix-origin AUX DDP")
     if early.get("consecutive_samples")!=3:errors.append("catastrophic stop must use exactly 3 consecutive samples")
     return errors
 

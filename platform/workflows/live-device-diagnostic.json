@@ -11,7 +11,13 @@
     "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006.json",
     "scripts/hbnf_foundation_live_adapter.py",
     "scripts/hbnf_foundation_seq35_transaction.py",
-    "tests/hbnf_live_kernel_sweep.py"
+    "tests/hbnf_live_kernel_sweep.py",
+    "config/HBNF_RUNTIME_TELEMETRY_CONTRACT.json",
+    "scripts/hbnf_foundation_soak_audit.py",
+    "scripts/hbnf_foundation_threshold_freeze.py",
+    "scripts/hbnf_foundation_seq41_transaction.py",
+    "tests/hbnf_foundation_seq41_offline.py",
+    "tests/hbnf_foundation_live_adapter.py"
   ],
   "prelive_contract": {
     "closure_stage_id": "contract-closure",

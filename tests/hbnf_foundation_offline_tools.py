@@ -25,7 +25,7 @@ with tempfile.TemporaryDirectory() as td:
 with tempfile.TemporaryDirectory() as td:
     root=pathlib.Path(td);policy=json.loads(json.dumps(template));policy["status"]="FROZEN"
     policy["comparison"]["candidate_vs_baseline"]={k:(0.0 if k=="aux_stale_sample_max_fraction" else 0.9) for k in freeze.RATIOS}
-    policy["catastrophic_early_stop"].update(fps_floor_absolute=10,frame_ms_p99_ceiling_absolute=100,aux_projection_age_ms_ceiling=1000)
+    policy["catastrophic_early_stop"].update(fps_floor_absolute=10,frame_ms_p99_ceiling_absolute=100,aux_projection_active_required=True)
     baseline={"contract":"foundation","release_id":"candidate","fps":{"median":40},
               "frame_ms":{"p95_median":25,"p99_median":30,"max":40},
               "heap":{"minimum_free_min":90000,"largest_block_end":60000}}
@@ -72,6 +72,15 @@ with tempfile.TemporaryDirectory() as td:
         soak.append(s)
     result=soak_audit.audit(soak,{"entries":[{"runtime_kernel_index_expected":i} for i in range(28)]},"candidate",5400,baseline,foundation_policy)
     assert result["status"]=="PASS" and result["foundation_qualification"]["status"]=="PASS",result
+    # Matrix send-age / optional custom frame-lock age is not the native DDP
+    # receive gate. WLED's Matrix-origin DDP status remains the health signal.
+    high_age=[dict(x,aux_projection_age_ms=4294967295,aux_projection_age_valid=False) for x in soak]
+    age_result=soak_audit.audit(high_age,{"entries":[{"runtime_kernel_index_expected":i} for i in range(28)]},"candidate",5400,baseline,foundation_policy)
+    assert age_result["status"]=="PASS",age_result["errors"]
+    inactive=[dict(x) for x in soak]
+    for i in (30,31,32):inactive[i]["aux_projection_active"]=False
+    inactive_result=soak_audit.audit(inactive,{"entries":[{"runtime_kernel_index_expected":i} for i in range(28)]},"candidate",5400,baseline,foundation_policy)
+    assert any("catastrophic threshold" in e for e in inactive_result["errors"])
     bad=[dict(x) for x in soak];bad[3]["fps"]=10;bad[4]["fps"]=10;bad[5]["fps"]=10
     fail=soak_audit.audit(bad,{"entries":[{"runtime_kernel_index_expected":i} for i in range(28)]},"candidate",5400,baseline,foundation_policy)
     assert any("catastrophic threshold" in e for e in fail["errors"])

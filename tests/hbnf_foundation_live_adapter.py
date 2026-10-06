@@ -3,6 +3,9 @@
 import contextlib, importlib.util, io, json, pathlib, tempfile, unittest.mock
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
+contract=json.loads((ROOT/"config/HBNF_RUNTIME_TELEMETRY_CONTRACT.json").read_text())
+assert contract["aux_projection_source_contract"]["native_ddp_active_source"]=="AUX /json/info live=true, lm=DDP, lip=192.168.77.10"
+assert contract["aux_projection_source_contract"]["custom_frame_lock_diagnostics"]["receiver_object"]=="HBNFAUX"
 spec=importlib.util.spec_from_file_location("foundation_adapter",ROOT/"scripts/hbnf_foundation_live_adapter.py")
 m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
 real_get=m.get
@@ -84,11 +87,26 @@ info={"ip":"192.168.77.10","mac":"70:4b:ca:5b:34:5c","uptime":100,"ws":0,
 build={"release_id":m.EXPECTED,"candidate":m.EXPECTED,"wled":"16.0.1"}
 aux={"ip":"192.168.77.11","mac":"8c94df55c34c","live":True,"lm":"DDP",
      "lip":"192.168.77.10","leds":{"fps":42}}
+aux_state={"on":False,"HBNFAUX":{"projectionRxPackets":0,"projectionRxSeq":0,
+    "projectionRxActive":False,"projectionRxAgeMs":4294967295,
+    "projectionHelloPackets":1045,"projectionPeerKnown":False}}
+rx=m.aux_projection_health(aux,aux_state)
+assert rx["active"] is True and rx["wled_live_source"] is True
+assert rx["frame_lock_active"] is False and rx["age_valid"] is False
+assert rx["age_ms"]==4294967295 and rx["rx_packets"]==0
+wrong_source=dict(aux,lip="192.168.77.99")
+assert m.aux_projection_health(wrong_source,aux_state)["active"] is False
 with tempfile.TemporaryDirectory() as td:
     m.foundation_prequal_windows=real_prequal
     t=pathlib.Path(td); m.CACHE=t/"restart-cache.json"
     inventory=ROOT/"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"
-    m.get=lambda url: info if url.endswith("/json/info") and "77.10" in url else build if url.endswith("/hbnf/build.json") else aux
+    def fake_get(url,*args,**kwargs):
+        if url==m.MATRIX+"/json/info":return info
+        if url==m.MATRIX+"/hbnf/build.json":return build
+        if url==m.AUX+"/json/info":return aux
+        if url==m.AUX+"/json/state":return aux_state
+        raise AssertionError("unexpected telemetry endpoint: "+url)
+    m.get=fake_get
     state={"HBNF":{"timing":{"kernel":0,"uptimeSec":100,"fps":42,"variantSignature":7,
       "freeHeap":88000,"rssi":-45,"wholeFrameUs":19000,"auxProjectionAgeMs":2},
       "foundationTelemetry":{"enabled":True,"frameMsAvg":19,"frameMsP50":18,
@@ -103,6 +121,10 @@ with tempfile.TemporaryDirectory() as td:
     with contextlib.redirect_stdout(io.StringIO()) as output:
         m.telemetry(str(inventory),"run-a")
     sample=json.loads(output.getvalue())
+    assert sample["aux_projection_active"] is True
+    assert sample["aux_frame_lock_rx_active"] is False
+    assert sample["aux_projection_age_valid"] is False
+    assert sample["aux_projection_age_ms"]==4294967295
     required={"release_id","uptime_seconds","fps","frame_ms_p50","frame_ms_p95",
       "frame_ms_p99","frame_ms_max","kernel_id","kernel_name","variant_id",
       "free_heap_bytes","minimum_free_heap_bytes","largest_free_block_bytes",
@@ -115,6 +137,22 @@ with tempfile.TemporaryDirectory() as td:
     assert sample["release_id"]==m.EXPECTED and sample["kernel_name"]=="Complex_Kaleido_3"
     assert sample["frame_ms_p99"]==23 and sample["minimum_free_heap_bytes"]==80000
     assert sample["largest_free_block_bytes"]==60000 and sample["restart_count"]==0
+    # Native WLED DDP and optional HBNF frame-lock counters are distinct paths.
+    # The expected Matrix-origin DDP is healthy while custom frame-lock is idle.
+    assert aux["live"] is True and sample["aux_wled_live_source"] is True
+    assert sample["aux_projection_active"] is True
+    assert sample["aux_frame_lock_rx_active"] is False
+    assert sample["aux_projection_age_valid"] is False
+    assert sample["aux_projection_age_ms"]==4294967295
+    assert sample["aux_projection_rx_packets"]==0 and sample["aux_projection_peer_known"] is False
+    aux_state["HBNFAUX"].update(projectionRxPackets=17,projectionRxSeq=16,
+        projectionRxActive=True,projectionRxAgeMs=24,projectionHelloPackets=1049,
+        projectionPeerKnown=True)
+    with contextlib.redirect_stdout(io.StringIO()) as output:m.telemetry(str(inventory),"run-a")
+    healthy_rx=json.loads(output.getvalue())
+    assert healthy_rx["aux_projection_active"] is True
+    assert healthy_rx["aux_projection_age_ms"]==24
+    assert healthy_rx["aux_projection_rx_packets"]==17
     # A max in the final bin sets the firmware's global overflow bit, but does
     # not invalidate unsaturated percentile ranks. Preserve the exact max and
     # overflow flag for later baseline-relative gate evaluation.

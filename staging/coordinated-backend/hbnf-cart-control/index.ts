@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.0";
 import { chooseLive } from "./live.ts";
+import { laDate, readSkinsScoreState, writeSkinsWinner } from "./skins_scoring.ts";
 declare const EdgeRuntime:{waitUntil(p:Promise<unknown>):void};
 
 const cors = {
@@ -23,10 +24,11 @@ Deno.serve(async (req: Request) => {
   let request: Record<string, unknown>;
   try { request = await req.json(); } catch { return response({ error: "invalid_json" }, 400); }
   const action = String(request.action ?? "");
-  const protectedAction = action === "create_install_handoff" || action === "pair_device";
+  const protectedAction = action === "create_install_handoff" || action === "pair_device" || action === "skins_score_state" || action === "skins_score_set";
 
   let authorized = !protectedAction;
   let operatorAuthorized = false;
+  let pairedDeviceAuthorized = false;
   const authorization = req.headers.get("Authorization") ?? "";
   if (authorization.startsWith("Bearer ")) {
     const auth = createClient(url, anon, { global: { headers: { Authorization: authorization } }, auth: { persistSession: false, autoRefreshToken: false } });
@@ -44,6 +46,7 @@ Deno.serve(async (req: Request) => {
       const digest = await sha256Hex(deviceToken);
       const { data: valid, error: deviceError } = await service.rpc("hbnf_cart_device_session_valid", { p_session_hash: digest });
       authorized = !deviceError && valid === true;
+      pairedDeviceAuthorized = authorized;
     }
   }
 
@@ -56,10 +59,34 @@ Deno.serve(async (req: Request) => {
       const digest = await sha256Hex(deviceToken);
       const { data: valid, error: deviceError } = await service.rpc("hbnf_cart_device_session_valid", { p_session_hash: digest });
       authorized = !deviceError && valid === true;
+      pairedDeviceAuthorized = authorized;
     }
   }
 
   if (!authorized) return response({ error: "unauthorized" }, 401);
+
+  if (action === "skins_score_state" || action === "skins_score_set") {
+    if (!operatorAuthorized && !pairedDeviceAuthorized) return response({ error: "owner_authorization_required" }, 403);
+    const roundDate = required(request.round_date, 10) ? String(request.round_date).trim() : laDate();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(roundDate)) return response({ error: "invalid_round_date" }, 400);
+    try {
+      if (action === "skins_score_state") return response({ ok: true, ...(await readSkinsScoreState(service, roundDate)) });
+      if (typeof request.winner_id !== "string" || typeof request.expected_winner_id !== "string") {
+        return response({ error: "winner_id_and_expected_winner_id_required" }, 400);
+      }
+      const update = await writeSkinsWinner(service, {
+        roundDate,
+        sectionName: String(request.section ?? ""),
+        cardId: String(request.card_id ?? ""),
+        hole: request.hole,
+        winnerId: request.winner_id,
+        expectedWinnerId: request.expected_winner_id,
+      });
+      return response({ ok: true, action, ...update });
+    } catch (error) {
+      return response({ error: error instanceof Error ? error.message : "skins_score_update_failed" }, 409);
+    }
+  }
 
 
   if (action === "create_install_handoff") {

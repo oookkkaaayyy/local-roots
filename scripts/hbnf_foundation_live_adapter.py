@@ -114,6 +114,31 @@ def enable_tails(enabled):
         raise _ack_timeout("foundation-telemetry-mode",COMMAND_ACK_TIMEOUT_SECONDS,p20)
     return state,p20
 
+def aux_projection_health(aux_info, aux_state):
+    """Report native WLED DDP receipt separately from optional HBNF frame-lock telemetry."""
+    hbnfaux = aux_state.get("HBNFAUX") if isinstance(aux_state, dict) else None
+    if not isinstance(hbnfaux, dict):hbnfaux={}
+    age = hbnfaux.get("projectionRxAgeMs")
+    packets = hbnfaux.get("projectionRxPackets")
+    sequence = hbnfaux.get("projectionRxSeq")
+    hellos = hbnfaux.get("projectionHelloPackets")
+    counter_valid=all(isinstance(value,(int,float)) and value>=0 for value in (age,packets,sequence,hellos))
+    peer_known = hbnfaux.get("projectionPeerKnown") is True
+    frame_lock_active = hbnfaux.get("projectionRxActive") is True and peer_known and isinstance(packets,(int,float)) and int(packets)>0
+    wled_live_source=bool(aux_info.get("live") is True and aux_info.get("lm")=="DDP" and aux_info.get("lip")=="192.168.77.10")
+    return {
+        "active": wled_live_source,
+        "age_ms": int(age) if counter_valid else 4294967295,
+        "age_valid": bool(counter_valid and frame_lock_active),
+        "frame_lock_active": frame_lock_active,
+        "rx_packets": int(packets) if isinstance(packets,(int,float)) and packets>=0 else None,
+        "rx_sequence": int(sequence) if isinstance(sequence,(int,float)) and sequence>=0 else None,
+        "peer_known": peer_known,
+        "hello_packets": int(hellos) if isinstance(hellos,(int,float)) and hellos>=0 else None,
+        "wled_live_source": wled_live_source,
+    }
+
+
 def identity():
     info=get(MATRIX+"/json/info"); build=get(MATRIX+"/hbnf/build.json")
     if info.get("ip")!="192.168.77.10" or info.get("mac","").replace(":","").lower()!=MAC:raise RuntimeError("matrix-ip-or-mac-mismatch")
@@ -240,7 +265,8 @@ def telemetry(inventory,session_id,emit=True):
       raw_path.parent.mkdir(parents=True,exist_ok=True)
       raw_path.write_text(json.dumps(raw,indent=2,sort_keys=True)+"\n")
       raise RuntimeError(f"foundation-frame-tail-quantile-saturated-at-{saturated_quantile_ms:g}ms fields={','.join(saturated_fields)} raw={raw_path}")
-    aux=get(AUX+"/json/info"); leds=aux.get("leds",{})
+    aux=get(AUX+"/json/info"); aux_state=get(AUX+"/json/state"); leds=aux.get("leds",{})
+    aux_rx=aux_projection_health(aux,aux_state)
     inv=json.loads(pathlib.Path(inventory).read_text())
     kid=int(timing["kernel"])
     entry=next((x for x in inv["entries"] if int(x["runtime_kernel_index_expected"])==kid),None)
@@ -259,7 +285,9 @@ def telemetry(inventory,session_id,emit=True):
       "kernel_id":kid,"kernel_name":entry["kernel_name"],"variant_id":timing["variantSignature"],
       "free_heap_bytes":timing["freeHeap"],"minimum_free_heap_bytes":ft.get("minimumFreeHeapBytes"),"largest_free_block_bytes":ft.get("largestFreeBlockBytes"),
       "frame_tail_bin_resolution_us":resolution_us,"frame_tail_overflow":ft.get("frameTailOverflow"),"frame_tail_saturated_quantile_ms":saturated_quantile_ms,"frame_tail_sample_count":ft.get("sampleCount"),
-      "websocket_clients":info.get("ws"),"aux_projection_active":bool(aux.get("live") and aux.get("lm")=="DDP"),"aux_projection_age_ms":timing.get("auxProjectionAgeMs"),"aux_render_fps":leds.get("fps"),
+      "websocket_clients":info.get("ws"),"aux_projection_active":aux_rx["active"],"aux_projection_age_ms":aux_rx["age_ms"],"aux_render_fps":leds.get("fps"),
+      "aux_projection_age_valid":aux_rx["age_valid"],"aux_frame_lock_rx_active":aux_rx["frame_lock_active"],
+      "aux_projection_rx_packets":aux_rx["rx_packets"],"aux_projection_rx_sequence":aux_rx["rx_sequence"],"aux_projection_peer_known":aux_rx["peer_known"],"aux_projection_hello_packets":aux_rx["hello_packets"],"aux_wled_live_source":aux_rx["wled_live_source"],
       "wifi_rssi_dbm":timing["rssi"],"restart_count":cache["restart_count"],
       "kernel_ms_avg":ft.get("kernelMsAvg"),"kernel_ms_p95":ft.get("kernelMsP95"),"palette_ms_avg":ft.get("paletteMsAvg"),"palette_ms_p95":ft.get("paletteMsP95"),
       "audio_ms_avg":ft.get("audioMsAvg"),"audio_ms_p95":ft.get("audioMsP95"),"scheduler_ms_avg":ft.get("schedulerMsAvg"),"scheduler_ms_p95":ft.get("schedulerMsP95"),
