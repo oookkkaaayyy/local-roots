@@ -227,8 +227,23 @@ def telemetry(inventory,session_id,emit=True):
       "frameMsP50","frameMsP95","frameMsP99","kernelMsP95","paletteMsP95",
       "audioMsP95","schedulerMsP95","overlayMsP95","auxPrepareSendMsP95","unaccountedMsP95")}
     if any(v is None for v in quantiles.values()):raise RuntimeError("foundation-frame-tail-quantile-contract-missing")
-    if any(float(v)>=saturated_quantile_ms for v in quantiles.values()):
-      raise RuntimeError(f"foundation-frame-tail-quantile-saturated-at-{saturated_quantile_ms:g}ms")
+    saturated_fields=[k for k,v in quantiles.items() if float(v)>=saturated_quantile_ms]
+    if saturated_fields:
+      raw={
+        "status":"SATURATED",
+        "saturated_fields":saturated_fields,
+        "saturated_quantile_ms":saturated_quantile_ms,
+        "frame_ms_max":ft.get("frameMsMax"),
+        "frame_tail_overflow":ft.get("frameTailOverflow"),
+        "frame_tail_sample_count":ft.get("sampleCount"),
+        "quantiles":quantiles,
+        "foundationTelemetry":ft,
+        "timing":timing,
+      }
+      raw_path=pathlib.Path(str(session_id))/"SATURATED_TELEMETRY_RAW.json"
+      raw_path.parent.mkdir(parents=True,exist_ok=True)
+      raw_path.write_text(json.dumps(raw,indent=2,sort_keys=True)+"\\n")
+      raise RuntimeError(f"foundation-frame-tail-quantile-saturated-at-{saturated_quantile_ms:g}ms fields={','.join(saturated_fields)} raw={raw_path}")
     aux=get(AUX+"/json/info"); leds=aux.get("leds",{})
     inv=json.loads(pathlib.Path(inventory).read_text())
     kid=int(timing["kernel"])
