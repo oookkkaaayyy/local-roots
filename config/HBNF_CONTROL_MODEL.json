@@ -508,6 +508,41 @@
         "owner Mission Control/PWA refinement beyond the hard operational gate"
       ],
       "operating_standard": "Field use must be appliance-like: start, score/control when intentionally needed, otherwise ignore the technology while playing/hosting."
+    },
+    "observability": {
+      "schema": "hbnf-worker-observability-v1",
+      "purpose": "Provide externally readable progress without turning progress reporting into operational authority.",
+      "authority_effect": "NONE",
+      "status_sheet_id": "1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko",
+      "status_sheet_url": "https://docs.google.com/spreadsheets/d/1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko/edit",
+      "cadence_minutes": 10,
+      "stale_after_minutes": 15,
+      "stage_transition_heartbeat": true,
+      "heartbeat_fields": [
+        "worker_id",
+        "role",
+        "heartbeat_status",
+        "current_stage",
+        "current_action",
+        "last_completed",
+        "next_checkpoint",
+        "blocker",
+        "live_device_mutation",
+        "branch_or_head",
+        "last_heartbeat_utc",
+        "stage_started_utc",
+        "notes"
+      ],
+      "worker_rules": [
+        "Update the assigned row at least every 10 minutes while actively working and immediately on every meaningful stage transition.",
+        "Heartbeat reporting must not pause, serialize, or otherwise delay the critical path.",
+        "For a command expected to run longer than 10 minutes, write a heartbeat before it starts. If safe tooling permits nonblocking execution, poll/update at the normal cadence; otherwise update immediately when the blocking command returns.",
+        "Report the concrete action actually underway, not generic labels such as researching, working, or running commands.",
+        "Report blockers only when they are real current blockers; ordinary investigation belongs in current_action.",
+        "Do not use the status sheet to authorize mutation, change lifecycle state, invalidate evidence, or override control model/state."
+      ],
+      "read_rule": "Coordinator may read this sheet at any time to report actual worker progress without waiting for a worker-chat return.",
+      "stale_rule": "A stale heartbeat is an observability warning only. It does not itself fail Foundation, trigger rollback, or authorize intervention."
     }
   }
 }
