@@ -37,9 +37,7 @@
       "scope": "complete recovery and continue Cart 2.0 lifecycle autonomously as far as safely possible overnight",
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
-    "blockers": [
-      "Post-restart Mac cannot reach Opal/Matrix LAN: SSH to 192.168.77.1 and HTTP to 192.168.77.10 time out; Mac is currently on 192.168.68.0/22 through 192.168.68.1 and the saved HBNF-Cart SSID was not discoverable."
-    ],
+    "blockers": [],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "diagnostic_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
@@ -238,7 +236,7 @@
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Packet20 fresh 28-kernel run complete; prepare bounded class-level fix candidate",
-    "next_work": "Reconnect Mac to the Opal/Matrix LAN; read-only verify Matrix MAC/IP and exact Release07 runtime identity after host restart. Then prepare a fresh bounded transaction with new sequences (next planned diagnostic/recovery pair seq31/32), complete a clean full Foundation measurement and soak, then continue T2 only if every required gate passes. Do not resume the partial sweep or repeat R4/build.",
+    "next_work": "Fresh bounded Foundation measurement is eligible after prelive capsule, control authorization, and direct-LAN candidate/recovery artifact closure; old 13/28 sweep remains invalid and non-resumable.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "performance_findings": {
       "candidate_fix": "FastLED 3.10.4 bounded fixed-point Animartrix backport; R4 achieved a 42 FPS median across 28 kernels, 8.329 ms median kernel time, with 28 improved and 0 regressed. Material gain confirmed; continue Foundation gates.",
@@ -515,14 +513,16 @@
       "restore_verified_observed_pre_recovery": true,
       "soak_status": "NOT_RUN",
       "recovery_status": "PASS_PRE_CRASH",
-      "post_crash_identity": "NOT_REVERIFIED_NO_LAN_CONNECTIVITY",
+      "post_crash_identity": "VERIFIED_READ_ONLY__RELEASE07__MAC_704BCA5B345C__MATRIX_AUX_HEALTH_PASS",
       "evidence_path": "evidence/hbnf-foundation-qualification-20261005/CRASH_RECONCILIATION.json",
-      "drive_evidence_file_id": "1T2JQLMq3UOr-anju-eSFnBoqoK35V4cX"
+      "drive_evidence_file_id": "1T2JQLMq3UOr-anju-eSFnBoqoK35V4cX",
+      "post_crash_readonly_evidence_path": "evidence/hbnf-foundation-qualification-20261005/POST_CRASH_READONLY_DEVICE_VERIFICATION.json",
+      "release07_bin_drive_file_id": "12S4GPHMvryTIXKjtXsTyeatmfPzRWiTo"
     }
   },
   "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
   "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
-  "installed_release_role": "BASELINE_RECOVERY_VERIFIED__SEQ30_PRE_CRASH__POST_RESTART_RECHECK_REQUIRED",
+  "installed_release_role": "BASELINE_RECOVERY_VERIFIED__SEQ30__POST_CRASH_RUNTIME_IDENTITY_VERIFIED",
   "lifecycle_state": "FIX_CANDIDATE",
   "live_mutation_authorization": {
     "candidate_sha256": "3e11aa102309b5f871ea8ada339c90d0c1c9dfe1451a5c4f76958dba92a1156c",

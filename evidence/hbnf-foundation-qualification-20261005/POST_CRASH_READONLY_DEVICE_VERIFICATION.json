@@ -1,0 +1,39 @@
+{
+  "aux": {
+    "ddp_live": true,
+    "fps": 13,
+    "free_heap_bytes": 107236,
+    "health_http": 200,
+    "ip": "192.168.77.11",
+    "live_mode": "DDP",
+    "mac": "8c94df55c34c",
+    "source_ip": "192.168.77.10",
+    "wled": "16.0.1"
+  },
+  "matrix": {
+    "audio_reactive_on": true,
+    "bootloader_sha256": "b97d154765ea69ca895a33de59adb4b322509aa2a3e2c7c8409b31cbc1bcc2cd",
+    "candidate": "hbnf-matrix-coordinated-v1-20261002-07",
+    "device_id": "52d5bc29d6bd3a4be1702e3b7393daae7d6581734d",
+    "effect_id": 142,
+    "fps": 13,
+    "free_heap_bytes": 98120,
+    "free_heap_telemetry": 143344,
+    "hbnf_candidate": "hbnf-matrix-coordinated-v1-20261002-07",
+    "health_http": 200,
+    "ip": "192.168.77.10",
+    "kernel_id": 10,
+    "kernel_render_us": 62410,
+    "mac": "704bca5b345c",
+    "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
+    "state_on": true,
+    "uptime_seconds": 6198,
+    "whole_frame_us": 88614,
+    "wifi_rssi_dbm": -50,
+    "wled": "16.0.1"
+  },
+  "observed_unix": 1791246003.65104,
+  "read_only": "No /etc/hbnf-updater/release-state read; no Packet20 snapshot; no device mutation.",
+  "release07_sha256_basis": "Exact Release07 BIN SHA-256 was verified before the successful seq30 direct-LAN recovery (HTTP 200 / Update successful); current runtime release_id/candidate match Release07, and no device mutation occurred after recovery. The runtime API does not expose the installed BIN bytes for a fresh on-device rehash.",
+  "schema": "hbnf-post-crash-readonly-device-verification-v1"
+}
