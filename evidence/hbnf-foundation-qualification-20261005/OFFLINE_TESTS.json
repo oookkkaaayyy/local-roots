@@ -1,0 +1,80 @@
+{
+  "observed_unix": 1791246676.2542348,
+  "repository_commit": "f80feff543e979084b1acec9417a440352b8f9c5",
+  "results": [
+    {
+      "command": "python3 tests/hbnf_control.py",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "PASS: linear receipt control plane is acyclic, nonrecursive, exact-input, and fail-closed\n"
+    },
+    {
+      "command": "python3 tests/hbnf_guarded_run.py",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "PASS: guarded execution blocks wrong-state/unauthorized mutation and requires platform prelive enforcement\n"
+    },
+    {
+      "command": "python3 scripts/hbnf_architecture_fitness.py",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "HBNF_ARCHITECTURE_FITNESS=PASS\nstates<=6 transitions<=5 linear_chain=true single_authority=true receipts_nonrecursive=true\n"
+    },
+    {
+      "command": "python3 tests/hbnf_runtime_qualify_static.py",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "PASS: diagnostic sweep can rank current firmware without tail metrics; foundation qualification remains fail-closed\n"
+    },
+    {
+      "command": "python3 tests/hbnf_kernel_sweep_report.py",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "PASS: diagnostic sweep ranks all kernels without overclaiming; foundation sweep remains fail-closed\n"
+    },
+    {
+      "command": "python3 tests/hbnf_source_tree_identity.py",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "PASS: deterministic source-tree identity ignores build outputs and changes on source edits\n"
+    },
+    {
+      "command": "python3 tests/hbnf_live_kernel_sweep.py",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "PASS: live sweep runner validates adapter/inventory/telemetry, cross-kernel continuity, failure evidence, kernel identity, and exact restore snapshots\n"
+    },
+    {
+      "command": "python3 tests/hbnf_foundation_live_adapter.py",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "PASS: Foundation adapter enforces exact Matrix/runtime identity and emits complete tail/heap/stage telemetry without network access\n"
+    },
+    {
+      "command": "python3 tests/hbnf_packet20_http_adapter.py",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "PASS: Packet20 adapter mapping, diagnostic telemetry normalization, one-snapshot post-restore semantics, exact config, and 28-kernel inventory\n"
+    },
+    {
+      "command": "python3 tests/hbnf_packet20_build_validate.py",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "PASS: Packet20 cloud build validator accepts exact provenance, vendor-patch/generated-UI evidence, and fails closed on source drift\n"
+    },
+    {
+      "command": "python3 scripts/platform.py doctor",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\n  \"errors\": [],\n  \"ok\": true,\n  \"repo_identity\": {\n    \"branch\": \"hbnf-cart2-ready-to-implement-staging-20261001\",\n    \"dirty\": true,\n    \"type\": \"git_commit\",\n    \"value\": \"f80feff543e979084b1acec9417a440352b8f9c5\"\n  },\n  \"schema\": \"local-roots-platform-doctor-v1\",\n  \"system_count\": 6,\n  \"warnings\": [],\n  \"workflow_count\": 3\n}\n"
+    },
+    {
+      "command": "python3 -m py_compile scripts/hbnf_foundation_live_adapter.py scripts/hbnf_live_kernel_sweep.py tests/hbnf_live_kernel_sweep.py tests/hbnf_foundation_live_adapter.py",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ""
+    }
+  ],
+  "schema": "hbnf-foundation-offline-tests-v1",
+  "status": "PASS"
+}

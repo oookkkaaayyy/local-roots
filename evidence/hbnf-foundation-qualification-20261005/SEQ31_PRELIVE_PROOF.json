@@ -1,0 +1,49 @@
+{
+  "approved_for_mutation": true,
+  "capsule_sha256": "7814a87aa228da29012cf58c46b40b8c7343d976afc7734d2e7bf51f0028af92",
+  "consumer_contract": {
+    "identity": "Direct-LAN WLED HTTP OTA POST to http://192.168.77.10/update; exact binary/bytes hash-bound locally, successful same path demonstrated in seq29/30 transaction. Cloudflare latest.json is not used.",
+    "verified": true
+  },
+  "pre_mutation_state": {
+    "cloud_deployment": "Not in this recovery path; no cloud pointer or deployment will be mutated.",
+    "device": "Matrix MAC 70:4b:ca:5b:34:5c, IP 192.168.77.10, exact Release07 build id; AUX 8c:94:df:55:c3:4c at 192.168.77.11 and DDP from Matrix. See SEQ31_PRE_MUTATION_READONLY.json."
+  },
+  "recovery_identity": {
+    "identity": "hbnf-matrix-coordinated-v1-20261002-07; BIN SHA-256 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab; 1458624 bytes",
+    "verification": "Local BIN SHA/size verified; Drive file ID 12S4GPHMvryTIXKjtXsTyeatmfPzRWiTo; exact direct-LAN /update recovery succeeded as seq30 and live runtime release id was reverified after host restart."
+  },
+  "run_id": "HBNF-FOUNDATION-SEQ31-32-20261005",
+  "schema": "local-roots-prelive-proof-v1",
+  "stages": {
+    "capture-current-state": {
+      "evidence": [
+        "evidence/hbnf-foundation-qualification-20261005/SEQ31_PRE_MUTATION_READONLY.json captures current Release07 MAC/IP/runtime identity, Matrix state, AUX DDP health, and artifact hashes immediately before mutation."
+      ],
+      "status": "PASS"
+    },
+    "contract-closure": {
+      "evidence": [
+        "GitHub staging commit f80feff543e979084b1acec9417a440352b8f9c5 contains exact Foundation adapter/config and runtime-index binding.",
+        "evidence/hbnf-foundation-qualification-20261005/OFFLINE_TESTS.json",
+        "evidence/hbnf-foundation-qualification-20261005/PACKAGE_DRY_RUN.json"
+      ],
+      "status": "PASS"
+    },
+    "recovery-proof": {
+      "evidence": [
+        "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/artifact/release07.bin exact SHA-256 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab and size 1458624",
+        "Drive file 12S4GPHMvryTIXKjtXsTyeatmfPzRWiTo",
+        "evidence/hbnf-foundation-qualification-20261005/CRASH_RECONCILIATION.json records seq30 direct-LAN HTTP 200 / Update successful and pre-crash verified Release07"
+      ],
+      "status": "PASS"
+    },
+    "transaction-rehearsal": {
+      "evidence": [
+        "evidence/hbnf-foundation-qualification-20261005/CRASH_RECONCILIATION.json: exact seq29 candidate installation, one snapshot, restoreVerified=true before recovery, then exact seq30 Release07 direct-LAN recovery PASS; 13/28 sweep stopped by host ENOSPC and is explicitly INVALID/NON-RESUMABLE.",
+        "evidence/hbnf-foundation-qualification-20261005/PACKAGE_DRY_RUN.json validates the exact 28-entry Foundation package without device calls."
+      ],
+      "status": "PASS"
+    }
+  }
+}

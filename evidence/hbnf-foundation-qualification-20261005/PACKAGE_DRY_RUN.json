@@ -1,0 +1,26 @@
+{
+  "status": "DRY_RUN_PASS",
+  "kernel_count": 28,
+  "first": {
+    "ordinal": 0,
+    "effect_id": 220,
+    "preset": 61,
+    "kernel_name": "Complex_Kaleido_3",
+    "runtime_kernel_index_expected": 0,
+    "variant_id": "DISCOVER_AND_CAPTURE",
+    "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+    "profile_path": null
+  },
+  "last": {
+    "ordinal": 27,
+    "effect_id": 247,
+    "preset": 88,
+    "kernel_name": "Module_Experiment10",
+    "runtime_kernel_index_expected": 27,
+    "variant_id": "DISCOVER_AND_CAPTURE",
+    "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+    "profile_path": null
+  },
+  "adapter_schema": "hbnf-live-sweep-adapter-v1",
+  "expected_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1"
+}

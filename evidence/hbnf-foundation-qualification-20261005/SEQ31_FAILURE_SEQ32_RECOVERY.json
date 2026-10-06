@@ -1,0 +1,77 @@
+{
+  "candidate_install": "PASS: exact candidate SHA locally, OTA HTTP 200 Update successful, runtime release identity verified",
+  "candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+  "candidate_sequence": 31,
+  "candidate_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
+  "completed_profile_count": 3,
+  "completed_profiles": [
+    {
+      "fps_median": 31.0,
+      "frame_ms_max": 47.123,
+      "frame_ms_p50_median": 24.25,
+      "frame_ms_p95_median": 33.55,
+      "frame_ms_p99_median": 43.65,
+      "kernel": "Complex_Kaleido_3",
+      "kernel_id": 0,
+      "largest_block_lowest": 65524,
+      "minimum_heap_lowest": 60808,
+      "sample_sha256": "bd5a9014956633dbe1d4854509d5205c339e30231ee3a0b5151b4dd1544e793d",
+      "samples": 22,
+      "uptime_first": 112,
+      "uptime_last": 142
+    },
+    {
+      "fps_median": 35.0,
+      "frame_ms_max": 40.776,
+      "frame_ms_p50_median": 20.45,
+      "frame_ms_p95_median": 26.75,
+      "frame_ms_p99_median": 37.65,
+      "kernel": "Big_Caleido",
+      "kernel_id": 1,
+      "largest_block_lowest": 65524,
+      "minimum_heap_lowest": 60808,
+      "sample_sha256": "3dde44c57eeb77555657fcc866f2f3e0b8fb7c95b648349bf49056366bee52cf",
+      "samples": 22,
+      "uptime_first": 148,
+      "uptime_last": 178
+    },
+    {
+      "fps_median": 35.0,
+      "frame_ms_max": 44.421,
+      "frame_ms_p50_median": 21.25,
+      "frame_ms_p95_median": 26.95,
+      "frame_ms_p99_median": 38.55,
+      "kernel": "Parametric_Water",
+      "kernel_id": 2,
+      "largest_block_lowest": 59380,
+      "minimum_heap_lowest": 59608,
+      "sample_sha256": "d945515c1a00fc9bb55ee66ca9159ec24e8bff310f2571ad9aa1fc89543140e7",
+      "samples": 12,
+      "uptime_first": 184,
+      "uptime_last": 214
+    }
+  ],
+  "durable_release07_file_id": "12S4GPHMvryTIXKjtXsTyeatmfPzRWiTo",
+  "evidence_file_hashes": {
+    "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/seq31-foundation-sweep/SWEEP_ABORT.json": "85213ac98656ef8fdc54808da0a3fad058a1d85a826914b89f5d6f875a275faa",
+    "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/seq31-sweep.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/seq31-sweep.stdout": "7659be3de99d7a67193211909cca6d60bc3ce577b56f4474c47c6890e3de0a3e",
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/SEQ31_CANDIDATE_INSTALL_VERIFICATION.json": "e745ab0d82d41e5119bf4f0d95c71f706d6e62eeae18b1c1131c156988b45211",
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/SEQ31_PRE_SWEEP_SNAPSHOT.json": "6afdada3ce298e1e7d979a2e00aec9da5bae84d78910652d2baff6ba6e8d2716",
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/SEQ32_RELEASE07_RECOVERY_VERIFICATION.json": "ff5b4e1605167cd83129cbac1032f212b64cdfa05c7d1f49f735aaf25bac0e0f"
+  },
+  "expected_kernel_count": 28,
+  "failure": "After profiles 0..2, runner entered next inventory item (RGB_Blobs5, runtime kernel 3) and the select command failed. Adapter source uses POST /json/state timeout=8s and command-ack deadline=10s; stderr was raw TimeoutError(\"timed out\"). Runner finally attempted renderer restore but the restore POST also timed out. No POST_RESTORE_STATE/restoreVerified result was captured. Device uptime was increasing across all 3 completed profiles; no reset/restart was observed. Disk had about 30 GB free, so this was not ENOSPC.",
+  "local_raw_directory": "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/seq31-foundation-sweep",
+  "recovery_sequence": 32,
+  "result": "FAIL_INVALID_NONRESUMABLE",
+  "root_cause": "The host adapter control-plane POST to Matrix /json/state exceeded its fixed 8-second timeout when selecting kernel index 3; restore POST hit the same timeout. The adapter did not identify the URL/method in the exception. Whether the Matrix temporarily stopped servicing control POSTs or the 8-second budget was too small is unresolved; recovery confirms the device remained reachable enough for OTA but does not prove renderer restore.",
+  "schema": "hbnf-seq31-foundation-run-failure-v1",
+  "seq31_and_32_authorization": "CLOSED_AFTER_SEQ32",
+  "seq32_release07_recovery": "PASS: exact SHA-bound Release07 uploaded once, HTTP 200 Update successful, runtime identity and Matrix/AUX health verified.",
+  "snapshot": {
+    "snapshotHash": 2166029802,
+    "snapshotId": 1
+  },
+  "soak": "NOT_RUN"
+}

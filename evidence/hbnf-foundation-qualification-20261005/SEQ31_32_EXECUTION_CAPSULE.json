@@ -1,0 +1,361 @@
+{
+  "artifact_bindings": [
+    {
+      "build_run_id": 37376862955,
+      "path": "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/artifact/firmware.bin",
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+      "role": "foundation_candidate",
+      "sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
+      "size_bytes": 1488768,
+      "source_branch": "hbnf-packet20-foundation-metrics-20261005",
+      "source_commit": "b18b162ec4b4f9173b1de892957ff8b834fe2b50"
+    },
+    {
+      "drive_file_id": "12S4GPHMvryTIXKjtXsTyeatmfPzRWiTo",
+      "path": "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/artifact/release07.bin",
+      "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
+      "role": "exact_release07_recovery",
+      "sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+      "size_bytes": 1458624
+    }
+  ],
+  "cost_policy": {
+    "paid_or_quota_limited_execution": "explicit_authorization_per_bounded_run",
+    "remote_execution_for_source_archaeology": false,
+    "retry_inherits_authorization": false
+  },
+  "created_at": "2026-10-06T00:31:38.862101+00:00",
+  "execution_contract": {
+    "candidate_sequence": 31,
+    "device": "Matrix 192.168.77.10 / MAC 70:4b:ca:5b:34:5c",
+    "measurement": "One renderer-safe Packet20 snapshot per candidate boot; observer effect; all 28 inventory entries exactly once; restore exact renderer state; complete T2 gates and at least 90-minute state-changing soak before seq32 Recovery Release07.",
+    "old_run": "Seq29 13/28 sweep is INVALID/NON-RESUMABLE; no kernels reused; seq29/30 authorization expired.",
+    "recovery_sequence": 32,
+    "rollback": "Direct-LAN WLED /update; exact Recovery Release07 bytes; one upload; verify runtime release id and known SHA-bound artifact. No mutable Cloudflare alias."
+  },
+  "expected_terminal_outputs": [
+    "diagnostic result or exact stop reason",
+    "snapshot/restore result",
+    "baseline recovery result",
+    "device identity",
+    "cloud deployment identity",
+    "durable evidence pointer"
+  ],
+  "external_authorities": {
+    "artifact_registry_drive_id": "18VsUYIYr62fYVaEqynM1kbMmfQpei-3H3rBgrw8S96k",
+    "delta_inbox_sheet_id": "1tJIcKRfWFdHVYVo4G6mgySB46p6xwsseGON3JdnEnzY",
+    "file_authority_drive_id": "1GwvPv_nihqoIj83WsO6VcvyujRkt8HnnULvLv717OHc",
+    "release_engineering_drive_id": "1bw_VUNt2mEZ4JdKuRsQq7ZS1Bc4KeC8kMVABVK2OdgE"
+  },
+  "repo_identity": {
+    "branch": "hbnf-cart2-ready-to-implement-staging-20261001",
+    "dirty": true,
+    "type": "git_commit",
+    "value": "f80feff543e979084b1acec9417a440352b8f9c5"
+  },
+  "repo_inputs": [
+    {
+      "bytes": 4084,
+      "path": "config/HBNF_CONTROL_MODEL.json",
+      "sha256": "c5cc3b04bd3b070880f71d071183056f865775d3b65228634376e1af7c4437a5"
+    },
+    {
+      "bytes": 33080,
+      "path": "config/HBNF_CONTROL_STATE.json",
+      "sha256": "c6293ac2e00a5ef99513585939b9d96caed631ea43d652ea499faf463524f77e"
+    },
+    {
+      "bytes": 7808,
+      "path": "scripts/hbnf_control.py",
+      "sha256": "c979cc0c09e6a1d6c5861e97fd4a155b2ea8846e39e432be3e1701b4866670b7"
+    },
+    {
+      "bytes": 2644,
+      "path": "scripts/hbnf_guarded_run.py",
+      "sha256": "9ddbdd656a817bfd9c6fb3d156289dc090db6e21f5ae4d36c73fe69b9f15c2b8"
+    },
+    {
+      "bytes": 5404,
+      "path": "platform/policies.json",
+      "sha256": "16b80bafcb81002885164ba3799e1401d5007addb38ebb1e9a5336fdfa9bc37a"
+    },
+    {
+      "bytes": 6085,
+      "path": "platform/workflows/live-device-diagnostic.json",
+      "sha256": "ec372bca9ee03a6178e216ea867696fb9b8eab86d2bcacba9f1c676a6953b7d9"
+    },
+    {
+      "bytes": 10962,
+      "path": "platform/cart2-critical-path-v1.json",
+      "sha256": "d372e14f5e95c3bbe377b39dc5e512728860eee775b99081a1c0885122b05fed"
+    },
+    {
+      "bytes": 27029,
+      "path": "scripts/platform.py",
+      "sha256": "67fd6fa96cfbf576224ec24fccc7db1e6ac374e134f59435cdcb62de2e31d251"
+    },
+    {
+      "bytes": 8202,
+      "path": "platform/providers/cloudflare-workers.json",
+      "sha256": "67c0c79c310b780d2934fbf7ef12b06562d014adafac2105822a4c2d79ff74da"
+    },
+    {
+      "bytes": 12789,
+      "path": "AGENTS.md",
+      "sha256": "5dbb1d4715e3a4d2646dff405647971f0f2885409c1d30beb1c70627627f21df"
+    },
+    {
+      "bytes": 8881,
+      "path": "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+      "sha256": "44f62cf31e5efa57a360117d96d437d6f504fd93704b28a069661b2da64a49f0"
+    },
+    {
+      "bytes": 16131,
+      "path": "scripts/hbnf_live_kernel_sweep.py",
+      "sha256": "ce5a5c34e386c9c985b8d0cc4be8453f8659eccf82458dd247665469dbbaa865"
+    },
+    {
+      "bytes": 2012,
+      "path": "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json",
+      "sha256": "aa7eb8841b7d2a9281ae5187de4c7014124d92b6a0e718ab76fab0f09e070fc8"
+    },
+    {
+      "bytes": 9989,
+      "path": "scripts/hbnf_foundation_live_adapter.py",
+      "sha256": "20d768d878418b725b8ad96e14e9c2ab96d64381bf777ac5db730e25bb8cc01b"
+    },
+    {
+      "bytes": 11021,
+      "path": "scripts/hbnf_runtime_qualify.py",
+      "sha256": "59a389b32864423a76f5583fad72ead40765d6f5def5c4ccc70bfa4fca931293"
+    },
+    {
+      "bytes": 4400,
+      "path": "config/HBNF_RUNTIME_TELEMETRY_CONTRACT.json",
+      "sha256": "5b391df689ea7245090bff4dfd3bdf5f3b19d45f53e439ff4f490bed1d2e63e4"
+    },
+    {
+      "bytes": 2257,
+      "path": "config/HBNF_RUNTIME_QUALIFICATION_POLICY_TEMPLATE.json",
+      "sha256": "afa0b88fafea243d647ccb8752ad2fbadb222f8b6cb6e70cde3f555f307a2c77"
+    },
+    {
+      "bytes": 5104,
+      "path": "tests/hbnf_live_kernel_sweep.py",
+      "sha256": "ad50ad2cb3c263764bb9fb15dc034aee06bf7a847aba1093d6e0ce21550b7a06"
+    },
+    {
+      "bytes": 3323,
+      "path": "tests/hbnf_foundation_live_adapter.py",
+      "sha256": "7a12e3fa8b139aee302111f31df1a0333efc81fb999c654fb88a72cbe0e3948c"
+    },
+    {
+      "bytes": 3512,
+      "path": "evidence/hbnf-foundation-qualification-20261005/OFFLINE_TESTS.json",
+      "sha256": "14f74b0a4c93bd4065ea38f751be6f8f0fe0bc74cbdfebf28057c6cd3dcd57bf"
+    },
+    {
+      "bytes": 786,
+      "path": "evidence/hbnf-foundation-qualification-20261005/PACKAGE_DRY_RUN.json",
+      "sha256": "b72880be825d44142f8b14155249667e5e8d104f02116192998cafcd59cac715"
+    },
+    {
+      "bytes": 1532,
+      "path": "evidence/hbnf-foundation-qualification-20261005/POST_CRASH_READONLY_DEVICE_VERIFICATION.json",
+      "sha256": "5c97d08bd7bccc14d1062506da00a611b1089d448269edc936f2b87e7fe40bce"
+    },
+    {
+      "bytes": 1488768,
+      "path": "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/artifact/firmware.bin",
+      "sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338"
+    },
+    {
+      "bytes": 1930,
+      "path": "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/artifact/provenance.json",
+      "sha256": "47f45d4bd7c9222b7ae7bea43fccd5c7b8d5874b4837b2b1aef21a0dcf7f4909"
+    },
+    {
+      "bytes": 1458624,
+      "path": "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/artifact/release07.bin",
+      "sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab"
+    }
+  ],
+  "run_id": "HBNF-FOUNDATION-SEQ31-32-20261005",
+  "schema": "local-roots-execution-capsule-v1",
+  "stages": [
+    {
+      "id": "package-doctor",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "all declared source/artifact/config identities and timeout budgets coherent"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "contract-closure",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "exact producer/consumer interface contract",
+        "exact manifest/alias/role semantics",
+        "all deterministic prerequisites closed"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "recovery-proof",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "exact registered last-known-good artifact/version",
+        "exact recovery consumer path",
+        "recovery acceptance checks"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "transaction-rehearsal",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "full non-production or simulated install -> diagnostic -> restore/recovery transaction PASS",
+        "publication/alias transition PASS when applicable",
+        "failure paths preserve last-known-good state"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "capture-current-state",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "exact current device identity",
+        "exact current cloud deployment/version identity",
+        "rollback target frozen before mutation"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "read-only-preflight",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "runtime identity and continuity sample"
+      ],
+      "retry_policy": "idempotent",
+      "timeout_budget": {
+        "inner_calls_max": 4,
+        "inner_timeout_seconds": 4,
+        "margin_seconds": 10,
+        "outer_seconds": 30
+      }
+    },
+    {
+      "id": "snapshot",
+      "kind": "live",
+      "mutation": true,
+      "outputs": [
+        "immutable snapshot receipt"
+      ],
+      "retry_policy": "never",
+      "rollback": {
+        "strategy": "firmware-owned exact snapshot restore followed by pre-proven registered baseline recovery if uncertain"
+      },
+      "timeout_budget": {
+        "inner_calls_max": 4,
+        "inner_timeout_seconds": 4,
+        "margin_seconds": 10,
+        "outer_seconds": 30
+      }
+    },
+    {
+      "id": "bounded-diagnostic",
+      "kind": "live",
+      "mutation": true,
+      "outputs": [
+        "complete bounded telemetry/evidence",
+        "no host/tooling prerequisite discovered live"
+      ],
+      "retry_policy": "never",
+      "rollback": {
+        "strategy": "always execute exact snapshot restore in finally; if exactness is uncertain, execute the already-proven baseline recovery transaction"
+      },
+      "timeout_budget": {
+        "inner_calls_max": 4,
+        "inner_timeout_seconds": 4,
+        "margin_seconds": 10,
+        "outer_seconds": 70
+      }
+    },
+    {
+      "id": "restore",
+      "kind": "recovery",
+      "mutation": true,
+      "outputs": [
+        "exact restore proof or explicit uncertainty"
+      ],
+      "retry_policy": "never",
+      "rollback": {
+        "strategy": "pre-registered baseline recovery artifact/version"
+      },
+      "timeout_budget": {
+        "inner_calls_max": 4,
+        "inner_timeout_seconds": 4,
+        "margin_seconds": 10,
+        "outer_seconds": 30
+      }
+    },
+    {
+      "id": "baseline-recovery",
+      "kind": "recovery",
+      "mutation": true,
+      "outputs": [
+        "known baseline installed identity",
+        "exact publication/deployment baseline restored"
+      ],
+      "retry_policy": "explicit_only",
+      "rollback": {
+        "strategy": "restore exact pre-transaction device/cloud baseline and stop; no alternate image or publication state"
+      }
+    },
+    {
+      "id": "record",
+      "kind": "evidence",
+      "mutation": false,
+      "outputs": [
+        "terminal run summary",
+        "durable evidence pointer",
+        "toil/process metrics"
+      ],
+      "retry_policy": "idempotent"
+    }
+  ],
+  "storage_policy": {
+    "aks": "searchable routing, current-state pointers, acceptance/supersession metadata, and external artifact identities",
+    "github": "canonical/buildable source, scripts, configs, workflow definitions, and small machine-readable provenance",
+    "google_drive": "durable binaries, recovery artifacts, decisive evidence, and large immutable run outputs",
+    "local_workspace": "ephemeral execution only; never sole authority after a result becomes meaningful"
+  },
+  "system_id": "hbnf-cart",
+  "terminal_recovery": "If exact restore is not proven, execute only the pre-rehearsed registered baseline recovery transaction, verify device and publication identities, preserve evidence, and stop.",
+  "trace_id": "d8ca0cf2acd84e6f91f6670a076231c9",
+  "user_interaction_policy": {
+    "copy_paste_delivery": "one_single_fenced_block_per_action",
+    "max_user_actions_per_blocker": 1,
+    "required_user_action_fields": [
+      "prerequisite",
+      "action",
+      "expected_result",
+      "stop_condition"
+    ],
+    "resource_instruction_requires_direct_link_or_exact_path": true,
+    "terminal_app": "macOS Terminal",
+    "terminal_relay": false
+  },
+  "workflow_id": "live-device-diagnostic",
+  "workflow_source": {
+    "path": "platform/workflows/live-device-diagnostic.json",
+    "sha256": "ec372bca9ee03a6178e216ea867696fb9b8eab86d2bcacba9f1c676a6953b7d9"
+  }
+}

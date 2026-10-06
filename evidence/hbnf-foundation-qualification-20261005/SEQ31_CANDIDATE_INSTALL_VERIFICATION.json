@@ -1,0 +1,20 @@
+{
+  "candidate_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+  "candidate_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
+  "candidate_size_bytes": 1488768,
+  "free_heap_bytes": 71920,
+  "hbnf_candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+  "matrix_ip": "192.168.77.10",
+  "matrix_mac": "704bca5b345c",
+  "observed_unix": 1791246811.399063,
+  "ota_http_status": 200,
+  "ota_response_contains_update_successful": true,
+  "ota_response_sha256": "e989fc00de0b0d87a74771439a95cb6b231dac0ede16865104c2251612c6a128",
+  "rss_dbm": -48,
+  "runtime_candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+  "runtime_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+  "schema": "hbnf-seq31-candidate-install-identity-v1",
+  "state_on": true,
+  "uptime_seconds": 16,
+  "wled": "16.0.1"
+}
