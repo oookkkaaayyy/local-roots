@@ -1,5 +1,5 @@
 {
-  "checkpoint_at_utc": "2026-10-06T22:16:26Z",
+  "checkpoint_at_utc": "2026-10-06T22:18:00Z",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -1422,9 +1422,11 @@
       },
       "offline_gate": [
         "Patch audit/comparability semantics only; preserve original result.",
-        "Add regression fixtures for boot-global low-water contamination and state-transition warm-up contamination.",
-        "Replay exact seq47 JSONL plus exact seq39 baseline and unchanged numeric performance thresholds.",
-        "Require PASS before seq49."
+        "Prove esp_get_minimum_free_heap_size is boot-lifetime telemetry and cannot be adjudicated per kernel; derive settled current-free-heap baseline values from preserved seq39 raw profiles instead.",
+        "Apply the same explicit 5-second post-select settle semantics used by the frozen baseline when evaluating largest-free-block and AUX samples.",
+        "Replay exact seq47 JSONL to separate genuine sustained failures from transition-window contamination.",
+        "If the replay PASSes, proceed. If replay is INCOMPLETE only because the long soak did not capture enough post-5-second settled samples for every kernel, that is NOT a runtime failure: seq49 may collect only the missing/comparable resource+AUX evidence with a short settled 28-kernel sweep.",
+        "Any genuine settled resource/AUX failure blocks seq49 field acceptance and requires seq50/Release07."
       ],
       "live_fastpath": {
         "candidate_sequence": 49,
@@ -1437,7 +1439,10 @@
         "required_postinstall": [
           "exact identity",
           "no restart",
-          "settled 28-kernel targeted resource/AUX smoke",
+          "short 28-kernel targeted resource/AUX sweep: 5-second settle per kernel matching baseline, then multiple resource/AUX samples per kernel; do not repeat performance sweep",
+          "current-free-heap comparison against re-derived seq39 settled raw baseline using the existing 0.85 numeric ratio",
+          "largest-free-block comparison using the existing 0.80 ratio",
+          "AUX live-source/stale fraction using the existing 0.01 ratio",
           "Matrix-origin AUX DDP",
           "actual iPad/iPhone owner-control smoke"
         ]
@@ -1467,11 +1472,11 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Offline-only: patch and regression-test audit semantics for boot-lifetime minimum heap and transition/settle comparability; preserve original seq47 FAIL.",
-      "Replay exact 5439.949s seq47 evidence. If corrected replay FAILs on a genuine sustained defect, stop and keep Release07.",
-      "If corrected replay PASSes, seq49 reinstall exact unchanged candidate SHA 338afdf5...3d8c; no rebuild.",
-      "Run short settled 28-kernel resource/AUX smoke plus actual iPad/iPhone owner-control smoke. No repeat 90-minute soak.",
-      "If any live/field smoke fails, seq50 restore exact Release07. Freeze by 16:40 for 17:00 departure."
+      "Offline-only: correct/regression-test audit comparability for boot-lifetime heap watermark and 5-second state-change settle; preserve original seq47 FAIL.",
+      "Replay seq47. A genuine settled resource/AUX failure stops the rescue; lack of enough settled samples is INCOMPLETE, not FAIL.",
+      "If replay PASS or only settled-sample evidence is missing, seq49 reinstall exact unchanged candidate SHA 338afdf5...3d8c; no rebuild.",
+      "Run only a short 28-kernel 5-second-settled resource/AUX sweep to fill comparable evidence, reusing the completed 90-minute FPS/tail/stability/restore proof.",
+      "Run actual iPad/iPhone owner-control smoke. Seq50 Release07 on any failure. Freeze by 16:40 for 17:00 departure."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1699,12 +1704,14 @@
     "release07_recovery_size_bytes": 1458624,
     "user_authorization": "Explicit 2026-10-06 field rescue directive: pursue the narrow fix and get the improved Foundation build onto the cart tonight if safely provable; user can remain until 17:00; avoid another full soak.",
     "scope": [
-      "OFFLINE FIRST: correct only qualification comparability semantics and regression-test them; do not alter renderer/FastLED code or numeric FPS/p95/p99 thresholds.",
-      "Replay the preserved full seq47 5439.949s evidence. Original frozen-audit FAIL remains immutable historical evidence.",
-      "If replay does not PASS, no seq49 install.",
-      "On replay PASS, install exact unchanged seq47 candidate bytes as seq49; no firmware rebuild and no GitHub Actions.",
-      "Run short bounded settled-state 28-kernel resource/AUX validation plus actual owner-device smoke; reuse exact-artifact 90-minute renderer evidence rather than repeating it.",
-      "Use seq50 exact Release07 only for genuine install/runtime/safety/field-smoke failure.",
+      "OFFLINE FIRST: correct only qualification comparability semantics and regression-test them; do not alter renderer/FastLED code or numeric ratios.",
+      "Preserve and reuse the full seq47 5439.949s exact-artifact FPS/p95/p99/restart/sample-continuity/restore evidence. Original frozen-audit FAIL remains immutable historical evidence.",
+      "Re-derive comparable current-free-heap baseline from preserved seq39 raw settled profiles; do not use boot-lifetime esp_get_minimum_free_heap_size as a per-kernel sustained value.",
+      "Apply the frozen baseline's 5-second settle window to resource/AUX comparisons. Existing raw evidence proves the prior AUX false and all largest-block failure samples occurred during or within 4.431 seconds of selector activity.",
+      "If offline replay shows a genuine settled sustained resource/AUX failure, no seq49 install.",
+      "If offline replay PASSes OR is incomplete only because some kernels lack sufficient post-settle samples, install exact unchanged seq47 candidate bytes as seq49; no firmware rebuild and no GitHub Actions.",
+      "After seq49 collect only the missing/comparable resource+AUX proof with a short 28-kernel sweep using 5-second settle per kernel and multiple post-settle samples; reuse the completed 90-minute performance evidence rather than repeating it.",
+      "Then run actual owner-device field smoke. Use seq50 exact Release07 on any genuine failure.",
       "Freeze live changes by 16:40 local."
     ],
     "recovery_rule": "SEQ50_RELEASE07_IF_SEQ49_INSTALL_RUNTIME_TARGETED_VALIDATION_OR_OWNER_DEVICE_SMOKE_FAILS",
