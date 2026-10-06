@@ -1298,7 +1298,10 @@
       "seq45_provisional_gate_diagnostics": "Recorded, not adjudicated because the run is <5400s; full soak applies unchanged p99/FPS/heap/fragmentation/AUX limits.",
       "regression_tests": "A-G PASS; audit, freeze, adapter, runner, control and platform checks PASS",
       "live_mutation": "NONE",
-      "completed_at_utc": "2026-10-06T19:11:22Z"
+      "completed_at_utc": "2026-10-06T19:11:22Z",
+      "drive_evidence_file_id": "1eemdq5kOfMyGgiT3J3FidWP8WryzQKVW",
+      "drive_evidence_url": "https://drive.google.com/file/d/1eemdq5kOfMyGgiT3J3FidWP8WryzQKVW/view?usp=drivesdk",
+      "drive_zip_sha256": "00a1e57159541971442f6087fdb8b65767757fea52a0be76fcfd5a824b07e9c4"
     }
   },
   "execution_budget_policy": {

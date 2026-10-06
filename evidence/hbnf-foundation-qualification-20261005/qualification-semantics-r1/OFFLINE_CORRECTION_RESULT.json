@@ -14,6 +14,11 @@
     "relative_sustained_ratio_decisions": "DEFERRED_UNTIL_COMPLETE_CONTIGUOUS_5400S_WINDOW__EARLY_CATASTROPHIC_RESTART_IDENTITY_AND_SAMPLE_CONTINUITY_GATES_REMAIN_ACTIVE",
     "status": "PASS_OFFLINE"
   },
+  "durable_drive_evidence": {
+    "file_id": "1eemdq5kOfMyGgiT3J3FidWP8WryzQKVW",
+    "url": "https://drive.google.com/file/d/1eemdq5kOfMyGgiT3J3FidWP8WryzQKVW/view?usp=drivesdk",
+    "zip_sha256": "00a1e57159541971442f6087fdb8b65767757fea52a0be76fcfd5a824b07e9c4"
+  },
   "live_mutation": "NONE",
   "next_action": "Checkpoint this offline correction. Obtain fresh seq47/48 authority in HBNF_CONTROL_STATE before any candidate reinstall or device mutation; then perform one complete >=5400s soak on the unchanged exact candidate.",
   "regression_tests": {
