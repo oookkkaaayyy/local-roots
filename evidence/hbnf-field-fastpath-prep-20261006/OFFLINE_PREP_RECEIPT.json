@@ -1,0 +1,22 @@
+{
+  "schema": "hbnf-field-fastpath-prep-receipt-v1",
+  "created_at": "2026-10-06",
+  "status": "OFFLINE_PREPARED__NOT_DEPLOYED__NO_PHASE2_AUTHORITY",
+  "branch": "hbnf-cart2-field-fastpath-prep-20261006",
+  "base_head": "e262a6d898d7207bba3e54133671a9ac89361a88",
+  "scoring_source_branch": "hbnf-cart2-p2-mission-control-scoring-20261006-r2",
+  "integrated_files": [
+    "hbnf-final-controller/hbnf-cart-skins-score.mjs",
+    "hbnf-final-controller/hbnf-cart.html",
+    "staging/coordinated-backend/hbnf-cart-control/index.ts",
+    "staging/coordinated-backend/hbnf-cart-control/live.ts",
+    "staging/coordinated-backend/hbnf-cart-control/skins_scoring.ts",
+    "tests/hbnf_skins_scoring_owner_flow.mjs"
+  ],
+  "exact_compare": "Exactly six modified files versus authoritative base at prep time; no unrelated changes.",
+  "pwa_reliability_basis": "Already present on authoritative lineage from source commit f7a9870e2a42b0fe005da0cb6c3849cce3fea9a9.",
+  "deployment": "NONE",
+  "live_hardware_mutation": "NONE",
+  "intended_use": "After Foundation/T3 legal entry, reconcile against then-current authority, run host/package closure, and deploy only if owner-device smoke can complete before field freeze; otherwise preserve for post-round deployment.",
+  "field_version_policy": "Newest objectively verified-safe version wins; rollback only as small as necessary for actual failure or failed field smoke."
+}
