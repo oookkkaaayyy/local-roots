@@ -1,0 +1,89 @@
+{
+  "schema": "hbnf-execution-budget-policy-v2",
+  "status": "ACTIVE",
+  "effective_date": "2026-10-06",
+  "authority": "USER_EXPLICIT__IMPLEMENT_ANTI_STALL__2026-10-06",
+  "purpose": "Prevent repeated multi-hour debugging loops while preserving healthy forward progress and avoiding needless restart/recovery work.",
+  "milestone_definition": [
+    "candidate install/recovery completed and identity verified",
+    "required qualification sweep completed",
+    "required soak started or completed",
+    "Foundation qualified",
+    "lifecycle transition completed",
+    "Phase 2 lane reaches a defined deliverable/acceptance gate"
+  ],
+  "budgets": {
+    "no_measurable_forward_progress_minutes": 30,
+    "no_lifecycle_progress_parallelize_minutes": 60,
+    "max_retry_per_failure_class": 1
+  },
+  "enforcement": {
+    "progress_timer": [
+      "The 30-minute clock measures time since the last measurable forward progress, NOT elapsed time since the attempt began.",
+      "Every measurable progress event resets the 30-minute stall clock.",
+      "A healthy bounded operation may run longer than 30 minutes without interruption when its watchdog/expected-duration evidence remains good."
+    ],
+    "at_30_minutes_without_measurable_forward_progress": [
+      "At the next safe boundary, stop only the stalled mechanism, not the entire transaction.",
+      "Preserve the current install/session/snapshot/checkpoint whenever safety and identity remain proven.",
+      "Preserve evidence and classify the failure domain.",
+      "Pivot to a materially different mechanism or continue from the preserved checkpoint with a different mechanism.",
+      "Do NOT reinstall/reboot/recover/restart from zero solely because the 30-minute budget expired."
+    ],
+    "retry_rule": [
+      "One retry maximum per failure class.",
+      "A retry is legal only when the mechanism materially changes and new evidence explains why it should succeed.",
+      "Parameter-only tweaking of the same failed mechanism is not a new mechanism."
+    ],
+    "at_60_minutes_without_lifecycle_progress": [
+      "Do not terminate a healthy critical-path operation merely because 60 minutes elapsed.",
+      "Activate ready offline-safe independent Cart 2.0 lanes in parallel when they will not contend with or invalidate the live critical path.",
+      "Maintain live_mutation_limit=1.",
+      "The purpose of the 60-minute rule is to eliminate idle project time, not to restart healthy work."
+    ],
+    "restart_minimization": [
+      "Prefer continuation from the current verified state over restart.",
+      "Recovery/reinstall/reboot is permitted only when required by device/runtime safety, identity uncertainty, transaction contract, or an actual Foundation gate failure.",
+      "A host/harness/transport failure alone must not cause device recovery if device identity/health and renderer state remain proven.",
+      "Required long-running gates must not be reset solely for orchestration-policy timing."
+    ],
+    "build_and_actions": [
+      "Do not rebuild firmware or use GitHub Actions for host, transport, harness, telemetry-reader, or orchestration defects unless the existing artifact itself is invalidated.",
+      "Prefer exact existing artifacts and local/direct mechanisms."
+    ],
+    "attempt_contract": [
+      "Before each live attempt record start time, expected bounded duration, material target, measurable progress signal, hard exit condition, failure class, and fallback mechanism.",
+      "Record last_forward_progress_at and the evidence that reset the stall clock.",
+      "A worker may not enter an open-ended debug loop."
+    ],
+    "required_long_running_gate_exception": [
+      "A required long-running gate such as the >=90-minute Foundation soak is healthy progress while its required samples/uptime/state changes continue and watchdog conditions remain clean.",
+      "The soak runs uninterrupted unless its own acceptance/failure criteria fire.",
+      "Parallel offline-safe lanes should run during the soak when they cannot interfere with qualification."
+    ],
+    "reporting": [
+      "Report elapsed wall-clock against material/lifecycle progress, not commit/test activity.",
+      "If a stall budget expires, record the pivot, preserved state, and why no restart was required or why a restart was objectively required."
+    ]
+  },
+  "current_seq39_application": {
+    "do_not_interrupt_if_progressing": true,
+    "rule": "Apply immediately to active seq39. The ongoing 28-kernel sweep is healthy progress while profile count/telemetry advances. Do not stop, reinstall, recover, reboot, or restart it because a timer elapsed. Only if there is 30 minutes with no measurable forward progress should the stalled mechanism be stopped at a safe boundary and changed while preserving verified transaction state wherever possible.",
+    "soak_rule": "Once the >=90-minute soak starts and remains healthy, keep it running uninterrupted; its continuing samples/state changes are measurable progress. Run offline-safe Phase 2 work in parallel when noncontending."
+  },
+  "progress_definition": {
+    "measurable_forward_progress": [
+      "a bounded operation is actively running, healthy, and still within its expected duration",
+      "kernel/profile/sample/step counts are increasing",
+      "a required install, verification, sweep, soak, recovery, or acceptance phase advances",
+      "new decisive evidence closes or materially narrows the active failure",
+      "an independent lane reaches a defined deliverable or gate"
+    ],
+    "not_progress": [
+      "repeating the same failed mechanism without new evidence",
+      "parameter tweaking that does not change the failure mechanism",
+      "waiting on a hung/stale operation beyond its bounded expected duration",
+      "commits/tests/logging that do not advance or materially de-risk an active gate"
+    ]
+  }
+}
