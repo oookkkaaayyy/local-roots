@@ -1,0 +1,33 @@
+{
+  "captured_at_unix": 1791261274.962409,
+  "device_state_after_attempt": "Candidate firmware remained installed; packet20 diagnostic snapshot remained READY and restoreVerified true on subsequent read-only observation. Snapshot slot is boot-scoped and cannot be reused for a clean one-snapshot sweep on this boot.",
+  "failed_stage": "read-only GET /json/state during observer-effect sampling",
+  "failure": "TimeoutError after 0.0223237 seconds (below configured normal GET timeout due runner remaining-deadline budget)",
+  "inputs": {
+    "CANDIDATE_INSTALL_VERIFICATION.json": "0ba7184d7dcc6903522e6ea67e8ff26df3e37655435f6b4abc47f6fa4b2b7f94",
+    "POST_HOST_FAILURE_READONLY_STATE.json": "a7eb0297be3a432ba9efd2fbdf06aed2b0de327ccf6d7cf719d012ef09285f89",
+    "PRE_SWEEP_TELEMETRY.json": "805ce64d36779e43bffc02693e4b76cf158bbdb2fdb9dc599c0874666d85ab4b",
+    "SWEEP_ABORT.json": "c741a706cc4d296159c1460a94032d75d08b34299fec3ca605d0676c3796d28d"
+  },
+  "next_action": "Preserve this attempt, perform one standard soft reboot to reset boot-scoped snapshot RAM, verify exact candidate/MAC/Matrix+AUX health, then make one corrected bounded sweep+90-minute soak attempt in a fresh evidence subdirectory without reinstalling candidate. Do not reboot between that snapshot, sweep, soak, and renderer restore.",
+  "observer_effect_behavior": "The observer phase did issue its explicit select(0) before telemetry reads. The adapter then attempted its exception-path renderer restore. This was an observer sample selection, not a sweep profile; runner reports profiles_completed=0.",
+  "profiles_completed": 0,
+  "recovery_seq34_consumed": false,
+  "restore": {
+    "lastCommand": "restore",
+    "lastCommandAccepted": true,
+    "post_readonly_evidence": "POST_HOST_FAILURE_READONLY_STATE.json",
+    "post_readonly_response_sha256": "623ac017d256ca19ee707202736f2d6a9e41727d2ef6d3ff4d873a6956d36919",
+    "restoreVerified": true
+  },
+  "result": "HOST_TOOLING_FAILURE__SNAPSHOT_RESTORED__NO_KERNEL_PROFILES",
+  "runner_abort": "SWEEP_ABORT.json",
+  "schema": "hbnf-seq33-observer-failure-reconciliation-v1",
+  "snapshot": {
+    "hash": 467638406,
+    "id": 1,
+    "state": "READY",
+    "valid": true
+  },
+  "soak_started": false
+}

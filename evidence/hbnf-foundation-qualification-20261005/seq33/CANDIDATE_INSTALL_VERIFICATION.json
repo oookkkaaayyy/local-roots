@@ -1,0 +1,34 @@
+{
+  "aux": {
+    "ddp_live": true,
+    "ddp_mode": "DDP",
+    "http_info": 200,
+    "http_state": 200,
+    "ip": "192.168.77.11",
+    "mac": "8c94df55c34c",
+    "render_fps": 41,
+    "source_ip": "192.168.77.10"
+  },
+  "candidate_bytes": 1488768,
+  "candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+  "candidate_sha256": "6285f1fde93edf74038e718dee519df5340ec27a9c18bef6075562b272894338",
+  "install_attempts": 1,
+  "matrix": {
+    "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+    "free_heap_bytes": 118144,
+    "http_build": 200,
+    "http_info": 200,
+    "http_state": 200,
+    "ip": "192.168.77.10",
+    "mac": "704bca5b345c",
+    "on": true,
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+    "telemetry_available": true,
+    "uptime": 8
+  },
+  "ota_http_status": 200,
+  "ota_response_contains_update_successful": true,
+  "ota_response_sha256": "e989fc00de0b0d87a74771439a95cb6b231dac0ede16865104c2251612c6a128",
+  "pass": true,
+  "schema": "hbnf-seq33-candidate-install-verification-v1"
+}

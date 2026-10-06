@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Direct-LAN adapter for the bounded R4 Foundation-metrics transaction."""
 from __future__ import annotations
-import argparse, json, pathlib, sys, time, urllib.request
+import argparse, json, pathlib, socket, sys, time, urllib.error, urllib.request
 
 MATRIX="http://192.168.77.10"
 AUX="http://192.168.77.11"
@@ -15,16 +15,29 @@ SNAPSHOT_READY_TIMEOUT_SECONDS=45
 RESTORE_VERIFY_TIMEOUT_SECONDS=90
 
 def get(url, timeout=HTTP_TIMEOUT_SECONDS):
-    req=urllib.request.Request(url,headers={"Accept":"application/json","Cache-Control":"no-store"})
-    try:
-        with urllib.request.urlopen(req,timeout=timeout) as r:
-            raw=r.read().decode()
-            try:return json.loads(raw)
-            except Exception as e:
-                raise RuntimeError(f"GET {url} returned invalid JSON after {timeout:g}s: {type(e).__name__}: {e}; body_tail={raw[-1000:]!r}") from e
-    except Exception as e:
-        if isinstance(e,RuntimeError) and str(e).startswith(f"GET {url} returned invalid JSON"):raise
-        raise RuntimeError(f"GET {url} failed after {timeout:g}s: {type(e).__name__}: {e}") from e
+    attempts=2 if url.endswith("/json/state") else 1
+    last=None
+    for attempt in range(attempts):
+        req=urllib.request.Request(url,headers={"Accept":"application/json","Cache-Control":"no-store"})
+        try:
+            with urllib.request.urlopen(req,timeout=timeout) as r:
+                raw=r.read().decode()
+                try:return json.loads(raw)
+                except Exception as e:
+                    raise RuntimeError(f"GET {url} returned invalid JSON after {timeout:g}s: {type(e).__name__}: {e}; body_tail={raw[-1000:]!r}") from e
+        except RuntimeError as e:
+            if str(e).startswith(f"GET {url} returned invalid JSON"):raise
+            last=e
+        except Exception as e:
+            reason=getattr(e,"reason",None)
+            transient=isinstance(e,(TimeoutError,socket.timeout,ConnectionResetError,ConnectionAbortedError)) or isinstance(reason,(TimeoutError,socket.timeout,ConnectionResetError,ConnectionAbortedError))
+            if attempt+1<attempts and url.endswith("/json/state") and transient:
+                time.sleep(.25)
+                last=e
+                continue
+            last=e
+        break
+    raise RuntimeError(f"GET {url} failed after {timeout:g}s (attempts={attempts}): {type(last).__name__}: {last}") from last
 
 def post_state(payload, timeout=POST_TIMEOUT_SECONDS):
     req=urllib.request.Request(MATRIX+"/json/state",data=json.dumps(payload,separators=(",",":")).encode(),headers={"Content-Type":"application/json"},method="POST")
@@ -102,9 +115,20 @@ def snapshot(observer_output=None):
     if not p20.get("snapshotValid") or p20.get("snapshotState")!="READY":raise RuntimeError("packet20-existing-snapshot-not-ready")
     if new_snapshot and observer_output:
         try:observer_effect(observer_output)
-        except Exception:
-            _restore_snapshot(p20.get("snapshotId"),p20.get("snapshotHash"))
-            raise
+        except Exception as exc:
+            try:
+                restored=_restore_snapshot(p20.get("snapshotId"),p20.get("snapshotHash"))
+                result={"schema":"hbnf-observer-effect-failure-v1","status":"OBSERVER_FAILED__RENDERER_RESTORED",
+                        "snapshotId":p20.get("snapshotId"),"snapshotHash":p20.get("snapshotHash"),
+                        "restore":restored,"error":f"{type(exc).__name__}: {exc}"}
+            except Exception as restore_exc:
+                result={"schema":"hbnf-observer-effect-failure-v1","status":"OBSERVER_FAILED__RESTORE_UNVERIFIED",
+                        "snapshotId":p20.get("snapshotId"),"snapshotHash":p20.get("snapshotHash"),
+                        "error":f"{type(exc).__name__}: {exc}","restore_error":f"{type(restore_exc).__name__}: {restore_exc}"}
+            sidecar=pathlib.Path(observer_output).with_name("OBSERVER_EFFECT_FAILURE.json")
+            sidecar.parent.mkdir(parents=True,exist_ok=True)
+            sidecar.write_text(json.dumps(result,indent=2,sort_keys=True)+"\n")
+            raise RuntimeError(f"observer-effect-failed; snapshot={p20.get('snapshotId')} hash={p20.get('snapshotHash')}; sidecar={sidecar}; restore={result.get('status')}; cause={type(exc).__name__}: {exc}") from exc
     return {"snapshotId":p20.get("snapshotId"),"snapshotHash":p20.get("snapshotHash")}
 
 def observer_effect(output):

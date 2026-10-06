@@ -1,0 +1,22 @@
+{
+  "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1",
+  "captured_unix": 1791260981.9991639,
+  "companion_render_count": 4581,
+  "http": 200,
+  "kernel": 13,
+  "matrix_on": true,
+  "packet20": {
+    "enabled": false,
+    "lastCommand": "restore",
+    "lastCommandAccepted": true,
+    "restoreVerified": true,
+    "snapshotHash": 467638406,
+    "snapshotId": 1,
+    "snapshotState": "READY",
+    "snapshotValid": true
+  },
+  "read_only": true,
+  "response_sha256": "623ac017d256ca19ee707202736f2d6a9e41727d2ef6d3ff4d873a6956d36919",
+  "schema": "hbnf-seq33-post-snapshot-host-failure-readonly-v1",
+  "uptime": 179
+}

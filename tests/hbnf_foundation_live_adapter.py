@@ -72,8 +72,39 @@ with unittest.mock.patch.object(m.urllib.request,"urlopen",side_effect=timeout):
         assert "GET http://192.168.77.10/json/info failed after 10s" in str(exc)
     try: m.get("http://192.168.77.10/json/state"); raise AssertionError("GET timeout was not surfaced")
     except RuntimeError as exc:
-        assert "GET http://192.168.77.10/json/state failed after 10s" in str(exc)
+        assert "GET http://192.168.77.10/json/state failed after 10s (attempts=2)" in str(exc)
         assert "TimeoutError" in str(exc)
+
+# Only transient read-only /json/state failures get one bounded retry.
+class GoodResponse:
+    def __enter__(self): return self
+    def __exit__(self,*args): pass
+    def read(self): return b'{"ok":true}'
+calls=[]
+def transient_then_ok(*args,**kwargs):
+    calls.append(1)
+    if len(calls)==1: raise TimeoutError("transient read timeout")
+    return GoodResponse()
+with unittest.mock.patch.object(m.urllib.request,"urlopen",side_effect=transient_then_ok), unittest.mock.patch.object(m.time,"sleep"):
+    assert m.get("http://192.168.77.10/json/state")=={"ok":True}
+assert len(calls)==2
+
+# Observer-window errors preserve the snapshot identity and verified auto-restore.
+with tempfile.TemporaryDirectory() as td:
+    m.identity=lambda: ({}, {})
+    idle={"HBNF":{"packet20Diagnostic":{"enabled":True,"snapshotValid":False,"snapshotState":"IDLE"}}}
+    snapshot_state={"HBNF":{"packet20Diagnostic":{"enabled":True,"snapshotValid":True,
+        "snapshotState":"READY","snapshotId":7,"snapshotHash":1234}}}
+    states=iter((idle,snapshot_state))
+    m.p20_state=lambda *args,**kwargs:(s:=next(states),s["HBNF"]["packet20Diagnostic"])
+    m.command=lambda *_args,**_kwargs:{"HBNF":{"packet20Diagnostic":{"lastCommandAccepted":True}}}
+    m.observer_effect=lambda *_: (_ for _ in ()).throw(TimeoutError("observer read failed"))
+    m._restore_snapshot=lambda sid,shash:{"restoreVerified":True,"snapshotId":sid,"snapshotHash":shash,"packet20Same":True}
+    try: m.snapshot(str(pathlib.Path(td)/"OBSERVER_EFFECT.json")); raise AssertionError("observer failure not surfaced")
+    except RuntimeError as exc: assert "OBSERVER_FAILED__RENDERER_RESTORED" in str(exc)
+    sidecar=json.loads((pathlib.Path(td)/"OBSERVER_EFFECT_FAILURE.json").read_text())
+    assert sidecar["snapshotId"]==7 and sidecar["snapshotHash"]==1234
+    assert sidecar["restore"]["restoreVerified"] is True and sidecar["restore"]["packet20Same"] is True
 
 def invalid_json(*args,**kwargs):
     class Response:
