@@ -87,8 +87,7 @@ async function refreshAfterSave(result){
   }catch{status(`${outcome} · save confirmed; authoritative readback unavailable. Refresh before the next edit.`,true);}
 }
 if(sectionNode&&window.HBNFCanonical){
-  sectionNode.addEventListener("change",paintCards);cardNode.addEventListener("change",paintHoles);holeNode.addEventListener("change",paintWinners);winnerNode.addEventListener("change",paintWinners);
-  aceWinnerNode.addEventListener("change",paintAce);
+  sectionNode.addEventListener("change",paintCards);cardNode.addEventListener("change",paintHoles);holeNode.addEventListener("change",paintWinners);
   $("skinsRefresh").addEventListener("click",refresh);$("skinsSave").addEventListener("click",save);$("skinsAceSave").addEventListener("click",saveAce);
   paintWinners();paintAce();refresh();
 }
