@@ -1023,6 +1023,18 @@
       "launch_status": "PARALLEL_READY_SIGNAL_PRESERVED__FIRST_SOAK_HOST_TIMEOUT__OFFLINE_FIX_PASS__FRESH_PRELIVE_PASS__RETRY_READY",
       "signal_evidence": "evidence/hbnf-foundation-qualification-20261005/seq43/live/PARALLEL_LANES_READY.json",
       "signal_sha256": "70e56d737e1687dcc410a8ba07452f783de9649c053ed95f6731fd124909c519"
+    },
+    "t3_fast_path_preparation": {
+      "schema": "hbnf-t3-fast-path-preparation-v1",
+      "status": "PREPARED_NOT_APPROVED_NO_T3_AUTHORITY",
+      "prepared_date": "2026-10-06",
+      "machine_packet": "config/HBNF_T3_PHASE2_FAST_PATH_CANDIDATE_20261006.json",
+      "human_packet": "work/cart2/27_T3_PHASE2_FAST_PATH_PREP_20261006.md",
+      "prerequisite": "T2_FOUNDATION_QUALIFIED",
+      "human_approval_required": true,
+      "no_lifecycle_effect": true,
+      "lane_inputs": "ALL_FOUR_CORE_OFFLINE_LANES_AT_DURABLE_DEPENDENCY_BOUNDARY",
+      "intended_use": "After objective T2 PASS, reconcile packet against then-current authority, surface only changed premises plus one short approval turn, then write phase2_scope_lock receipt if all four T3 checks PASS."
     }
   },
   "execution_budget_policy": {
@@ -1052,7 +1064,7 @@
       "Run exactly one same-install 90-minute state-changing soak with the offline-proven concurrent single-shot telemetry reader; no re-install, sequence allocation, snapshot retake, or seq39 evidence repetition.",
       "If a further host-only issue occurs with all device safety proofs intact, preserve seq43 and do not use seq44 or retry again; seq44 is only for genuine device/Foundation failure or lost safety.",
       "On clean soak completion, audit remaining T2 checks and package evidence; promote Foundation only if every objective T2 gate passes.",
-      "Enter Phase2 and deploy staged V7.3 only if T3 prerequisites pass; brightness stays deferred for Skins."
+      "After T2 PASS, reconcile config/HBNF_T3_PHASE2_FAST_PATH_CANDIDATE_20261006.json against the then-current authority; obtain the required short human approval; enter Phase2 only if all T3 checks PASS. Then integrate the current PWA/scoring successors rather than the older staged V7.3 package."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1260,7 +1272,8 @@
         "Integrate scoring and PWA work onto the then-current authoritative head without losing cross-lane changes.",
         "Complete Foundation-dependent Vibe/audio and Text/moments bindings/validation.",
         "Build integrated Phase 2 candidate and run owner-device/runtime smokes."
-      ]
+      ],
+      "t3_fast_path": "PREPARED__WAITING_FOR_T2_AND_HUMAN_APPROVAL"
     },
     "schema": "hbnf-lane-execution-state-v1"
   },
