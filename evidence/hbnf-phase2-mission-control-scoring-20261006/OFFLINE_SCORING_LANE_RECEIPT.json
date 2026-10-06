@@ -1,0 +1,62 @@
+{
+  "schema": "hbnf-cart2-p2-mission-control-scoring-offline-receipt-v1",
+  "created_at": "2026-10-06",
+  "lane": "P2_MISSION_CONTROL_SCORING",
+  "status": "OFFLINE_IMPLEMENTATION_COMPLETE__INTEGRATION_GATED",
+  "authority": {
+    "control_branch": "hbnf-cart2-ready-to-implement-staging-20261001",
+    "authority_head_at_r2_base": "e797ae4c9d08e6130e8dfd4b13a12004e62377d9",
+    "latest_authority_head_checked": "f7a9870e2a42b0fe005da0cb6c3849cce3fea9a9",
+    "lifecycle": "FIX_CANDIDATE",
+    "phase2_implementation_authorized": false,
+    "current_transition": "T2_FOUNDATION_QUALIFY",
+    "compatibility_check": "PASS__six newer authority commits touch PWA packaging/test files only; no overlap with scoring lane files"
+  },
+  "worker": {
+    "branch": "hbnf-cart2-p2-mission-control-scoring-20261006-r2",
+    "implementation_head": "eb2bb8f17b9dfce621e6aaeed4c7036acb541013",
+    "live_hardware_mutation": "NONE",
+    "live_backend_deployment": "NONE",
+    "github_actions_used": false,
+    "foundation_seq43_interference": "NONE"
+  },
+  "implemented": [
+    "authoritative league_state Front-9 Singles winner entry/edit/save/readback",
+    "authoritative league_state Back-9 Doubles winner entry/edit/save/readback",
+    "blank winner push/carry preservation",
+    "authoritative card tiebreaker winner state via winners.tb",
+    "authoritative front/back ace winner state via section aceWinner",
+    "ace-pot readback reused from existing skinsAcePot contract",
+    "Back-9 section becomes active when Back-9 teams are populated",
+    "paired-owner/operator authorization for all scoring mutations",
+    "optimistic expected-value plus updated_at CAS conflict protection",
+    "confirmed authoritative readback after mutations",
+    "existing owner selection-reset UI defect removed"
+  ],
+  "exact_blobs": {
+    "staging/coordinated-backend/hbnf-cart-control/skins_scoring.ts": "8e54a96b240e5e0a14e21352aca854ca982b69b0",
+    "staging/coordinated-backend/hbnf-cart-control/live.ts": "195801a5556bc0c3a1238d1089804570e7cf3c7b",
+    "staging/coordinated-backend/hbnf-cart-control/index.ts": "db69d5ef564adcbc8fcc955ae88c46c4db107e29",
+    "hbnf-final-controller/hbnf-cart-skins-score.mjs": "49aff583f44b2f9dc7974f1fba650ee9149170c8",
+    "hbnf-final-controller/hbnf-cart.html": "74f19a1f6f3ca7352a117f168092d65dd00d37dc",
+    "tests/hbnf_skins_scoring_owner_flow.mjs": "c6a453b495cf2ce35774da12f3d52a2fa68c4104"
+  },
+  "validation": {
+    "exact_byte_scoring_harness": "PASS",
+    "scoring_checks": 15,
+    "ui_javascript_parse": "PASS",
+    "pwa_shell_preserved": "PASS",
+    "branch_diff_scope": "six scoring-lane files only",
+    "official_repo_test_runner": "NOT_RUN__container GitHub network unavailable; GitHub Actions intentionally not used under current authority"
+  },
+  "pwa_cross_lane": {
+    "current_authority_owner_pwa_package_test_blob": "5860605482ac8d91ccc739b979b841fedb3de7f3",
+    "current_authority_ui_package_workflow_blob": "85246b1702c5f18ba59784950ca98a3f92229260",
+    "status": "PWA package/service-worker contract repaired on authority after r2 base; no scoring-file overlap"
+  },
+  "exact_dependency": [
+    "T2 Foundation must qualify and T3 must authorize Phase-2 integration before deploy/integration/physical smoke.",
+    "At integration, apply this six-file scoring diff onto the latest authoritative head so the latest PWA packaging commits are retained.",
+    "Then run the repository host test suite/package closure and perform owner-device score save/readback smoke; do not deploy from this worker branch directly."
+  ]
+}
