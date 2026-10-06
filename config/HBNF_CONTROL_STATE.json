@@ -1,5 +1,5 @@
 {
-  "checkpoint_at_utc": "2026-10-06T23:41:12Z",
+  "checkpoint_at_utc": "2026-10-06T23:43:44Z",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -1546,6 +1546,24 @@
       "recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "completion_deadline_local": "2026-10-06T16:42:00-07:00",
       "live_freeze_local": "2026-10-06T16:45:00-07:00"
+    },
+    "final_seq55_salvage_20261006": {
+      "schema": "hbnf-final-seq55-salvage-v1",
+      "classification": "SEQ53_MACHINE_PASS__HOST_RESTORE_ALIAS_FALSE_NEGATIVE",
+      "evidence_file_id": "1mfEaXZ99yJlw7A0sV7oGRxEwTaEihOa1",
+      "evidence_summary": {
+        "candidate_install": "PASS",
+        "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+        "targeted_resource_aux_samples": "PASS_28_OF_28__56_OF_56",
+        "device_restoreVerified": true,
+        "actual_restore_semantics": "PASS_SOURCE_BOUND",
+        "host_comparator_defect": "Collector required packet20Same JSON alias that firmware does not serialize; exact source proves restoreVerified is assigned from packet20Same(saved, verify).",
+        "seq54_recovery": "PASS_EXACT_RELEASE07",
+        "owner_smoke": "NOT_RUN"
+      },
+      "decision": "Reuse seq53 machine evidence; do not rerun targeted validation. Correct host assertion only, reinstall exact same candidate, perform minimal postinstall identity/AUX health, write T2 receipt/Foundation promotion, return OWNER SMOKE NOW.",
+      "candidate_sequence": 55,
+      "recovery_sequence": 56
     }
   },
   "execution_budget_policy": {
@@ -1563,7 +1581,7 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "ACTIVE_SEQ53_FINAL_SALVAGE__CONTINUE_WHILE_PROGRESSING",
+    "current_failure_domain": "HOST_RESTORE_ALIAS_FALSE_NEGATIVE__SEQ53_MACHINE_PASS",
     "current_lifecycle_state": "FIX_CANDIDATE",
     "current_subject": {
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
@@ -1571,10 +1589,12 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Continue the currently active seq53 path without clock-based abort.",
-      "Complete the existing 28-kernel targeted validation using the already-authorized settled Matrix-state + AUX-info method.",
-      "On PASS: restore once, write T2 receipt, advance FOUNDATION_QUALIFIED, leave candidate installed, return OWNER SMOKE NOW.",
-      "Use seq54 only for genuine measured failure, real no-progress stall, or explicit user stop."
+      "Accept seq53 28/28 and 56/56 targeted PASS plus source-bound restoreVerified=true as valid machine evidence; do not rerun targeted validation.",
+      "Patch only the host restore assertion/reconciliation so packet20Same JSON alias is not required; regression fail-closed on restoreVerified=false or snapshot/command mismatch.",
+      "Seq55 reinstall exact unchanged candidate via proven Opal-origin direct WLED /update.",
+      "Minimal postinstall exact identity + Matrix health + AUX info live DDP check only.",
+      "On PASS write T2 receipt, FOUNDATION_QUALIFIED, leave candidate installed, close mutation, return OWNER SMOKE NOW.",
+      "Seq56 only for genuine device/owner-smoke failure."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1792,43 +1812,40 @@
   },
   "lifecycle_state": "FIX_CANDIDATE",
   "live_mutation_authorization": {
-    "candidate_sequence": 53,
-    "recovery_sequence": 54,
-    "status": "AUTHORIZED__CURRENT_SEQ53_CONTINUE_WHILE_PROGRESSING",
+    "candidate_sequence": 55,
+    "recovery_sequence": 56,
+    "status": "AUTHORIZED__FINAL_SEQ55_REINSTALL_AND_PROMOTE_USING_SEQ53_PASS",
     "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "candidate_size_bytes": 1489008,
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "release07_recovery_size_bytes": 1458624,
-    "user_authorization": "Immediate salvage requested at 16:23 PDT after seq51 failed to install and exact Release07 remained healthy.",
+    "user_authorization": "At 16:43 PDT user requested immediate salvage while away for ~10 minutes and explicitly directed that this false blocker not prevent completion; target is ready for owner smoke on return.",
     "scope": [
-      "Do not investigate seq51 install path before tonight.",
-      "Verify exact candidate SHA/size, then perform one seq53 install using the same proven Opal-origin direct WLED /update mechanism that successfully installed this exact artifact in seq47/seq49.",
-      "No updater/cloud/signature path, no firmware rebuild, no GitHub Actions.",
-      "Verify exact candidate runtime identity immediately post-reboot; otherwise seq54 Release07.",
-      "Run existing ephemeral targeted collector: all 28 kernels, >=5s settle, >=2 successful required Matrix-state+AUX-info samples/kernel, <=3 attempts.",
-      "AUX /json/state is optional and cannot block or trigger recovery.",
-      "Reuse seq47 90-minute performance evidence and seq39 settled resource baseline.",
-      "On PASS: renderer restore once, T2 receipt, FOUNDATION_QUALIFIED, leave candidate installed and return OWNER SMOKE NOW.",
-      "Seq54 exact Release07 only for genuine install/runtime/gate/evidence failure or cutoff.",
-      "Continue the already-active seq53 transaction/targeted validation while measurable progress continues; prior time cutoff alone is not a failure.",
-      "Do not add new scope. Complete the existing targeted proof, then return OWNER SMOKE NOW on PASS.",
-      "Use seq54 only for genuine failure, real stall, or explicit user stop."
+      "Treat seq53 targeted machine validation as PASS: 28/28 kernels and 56/56 required settled samples passed; do not rerun it.",
+      "Treat seq53 restore as source-bound PASS when restoreVerified=true, lastCommand=restore, lastCommandAccepted=true, snapshot id/hash match prestate. Do not require a serialized packet20Same field because exact firmware source does not emit that alias and derives restoreVerified from packet20Same(saved, verify).",
+      "Offline-only first: patch the temporary collector/assertion or reconciliation logic so source-bound restoreVerified semantics are accepted; minimal regression proving missing packet20Same alias no longer false-fails while restoreVerified=false or snapshot/command mismatch still fails.",
+      "Then install exact unchanged candidate once as seq55 using the already-proven Opal-origin direct WLED /update path. No firmware rebuild, no GitHub Actions, no cloud/updater path.",
+      "Post-seq55 require exact candidate release/SHA identity, Matrix health/no unexpected restart condition, and AUX /json/info live=true lm=DDP lip=192.168.77.10.",
+      "Reuse all exact-artifact seq47 5439.949s performance/stability evidence, seq53 28/28 56/56 targeted resource/AUX PASS, and seq53 source-bound restore PASS. Do not rerun soak, performance sweep, observer A/B, or targeted 28-kernel validation.",
+      "On minimal postinstall PASS: write T2 Foundation qualification receipt, advance lifecycle to FOUNDATION_QUALIFIED, leave seq55 candidate installed, close live mutation, and immediately return OWNER SMOKE NOW with the shortest required owner checks.",
+      "Do not start Phase 2 deployment before owner smoke tonight.",
+      "Seq56 exact Release07 is authorized only for genuine seq55 install/identity/AUX/runtime failure or owner-device smoke failure. Host assertion/tooling errors do not trigger seq56."
     ],
-    "recovery_rule": "SEQ54_RELEASE07_ONLY_FOR_GENUINE_MEASURED_FAILURE_REAL_STALL_OR_EXPLICIT_USER_STOP__NOT_CLOCK_ALONE",
+    "recovery_rule": "SEQ56_RELEASE07_ONLY_FOR_GENUINE_SEQ55_DEVICE_OR_OWNER_SMOKE_FAILURE__NEVER_FOR_HOST_ALIAS_ASSERTION",
     "live_mutation_limit": 1,
     "anti_repetition": [
-      "NO_SEQ51_PATH_DEBUG",
-      "NO_UPDATER_OR_CLOUD_PATH",
+      "NO_28_KERNEL_RERUN",
       "NO_90_MIN_SOAK",
       "NO_PERFORMANCE_SWEEP",
       "NO_OBSERVER_AB",
-      "NO_BUILD",
+      "NO_FIRMWARE_BUILD",
       "NO_ACTIONS",
       "NO_THRESHOLD_CHANGES",
-      "NO_REQUIRED_AUX_STATE"
+      "NO_PACKET20SAME_JSON_REQUIREMENT",
+      "NO_PHASE2_BEFORE_OWNER_SMOKE"
     ],
-    "target": "Get exact fast candidate installed via already-proven transport and close only the remaining targeted proof before 16:42."
+    "target": "Have exact fast candidate installed and machine-qualified, ready for OWNER SMOKE NOW within the user's ~10-minute dog walk."
   },
   "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
