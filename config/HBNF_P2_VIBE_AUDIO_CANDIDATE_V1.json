@@ -102,7 +102,99 @@
       "steady loud input must not pin every feature at maximum"
     ],
     "production_mapping_principle": "adapt the qualified existing WLED AudioReactive -> Vibe16 -> AudioExpression -> AudioFrame path; do not introduce a second FFT or parallel realtime DSP path",
-    "host_replay_scope": "synthetic semantics/differentiation only until a qualified-source observable trace is preserved"
+    "host_replay_scope": "synthetic semantics/differentiation only until a qualified-source observable trace is preserved",
+    "source_adapter": {
+      "energy_short": {
+        "sources": [
+          "AudioFrame.energy"
+        ],
+        "operation": "reuse_current_candidate_signal"
+      },
+      "energy_medium": {
+        "sources": [
+          "AudioFrame.lowEnergy",
+          "AudioFrame.midEnergy",
+          "AudioFrame.highEnergy"
+        ],
+        "operation": "candidate_aggregate_or_smoothing__NOT_FROZEN"
+      },
+      "energy_slow": {
+        "sources": [
+          "AudioFrame.slowEnergy"
+        ],
+        "operation": "reuse_current_candidate_signal"
+      },
+      "low_pressure": {
+        "sources": [
+          "AudioFrame.bassBody",
+          "AudioFrame.lowEnergy"
+        ],
+        "operation": "candidate_blend__NOT_FROZEN"
+      },
+      "low_transient": {
+        "sources": [
+          "AudioFrame.bassPulse"
+        ],
+        "operation": "reuse_current_candidate_signal"
+      },
+      "mid_body": {
+        "sources": [
+          "AudioFrame.midBody",
+          "AudioFrame.midEnergy"
+        ],
+        "operation": "candidate_blend__NOT_FROZEN"
+      },
+      "mid_change": {
+        "sources": [
+          "AudioFrame.midEnergy"
+        ],
+        "operation": "candidate_frame_delta_or_expression_extension__NOT_FROZEN"
+      },
+      "high_detail": {
+        "sources": [
+          "AudioFrame.trebleBody",
+          "AudioFrame.highEnergy"
+        ],
+        "operation": "candidate_blend__NOT_FROZEN"
+      },
+      "high_transient": {
+        "sources": [
+          "AudioFrame.treblePulse",
+          "AudioFrame.transient"
+        ],
+        "operation": "candidate_blend__NOT_FROZEN"
+      },
+      "spectral_brightness": {
+        "sources": [
+          "WLED_AudioReactive.fftResult[16]"
+        ],
+        "operation": "centroid_over_existing_bins__NO_NEW_FFT"
+      },
+      "spectral_change": {
+        "sources": [
+          "WLED_AudioReactive.fftResult[16]"
+        ],
+        "operation": "frame_delta_over_existing_bins__NO_NEW_FFT"
+      },
+      "activity": {
+        "sources": [
+          "AudioFrame.energy",
+          "AudioFrame.transient",
+          "AudioFrame.lowEnergy",
+          "AudioFrame.midEnergy",
+          "AudioFrame.highEnergy"
+        ],
+        "operation": "candidate_bounded_aggregate__NOT_FROZEN"
+      },
+      "silence_confidence": {
+        "sources": [
+          "VibeMetrics.silent",
+          "AudioFrame.energy",
+          "WLED_AudioReactive.volumeSmth"
+        ],
+        "operation": "candidate_confidence__NOT_FROZEN"
+      }
+    }
   },
   "response_axes": [
     "structure",
