@@ -150,51 +150,5 @@
     }
   },
   "rule": "Shared-interface changes require explicit integration review; lane convenience does not authorize scope reduction.",
-  "execution": {
-    "schema": "hbnf-cart2-lane-execution-v1",
-    "core_parallel_lanes": {
-      "P2_MISSION_CONTROL_SCORING": {
-        "owner": "mission_control_guest",
-        "activation": "FOUNDATION_SOAK_RUNNING_IF_OFFLINE_SAFE__MANDATORY_AT_PHASE2",
-        "outputs": [
-          "authoritative scoring/control integration",
-          "owner Mission Control",
-          "field-safe readback/control"
-        ]
-      },
-      "P2_VIBE_AUDIO": {
-        "owner": "visual_audio",
-        "activation": "FOUNDATION_SOAK_RUNNING_IF_OFFLINE_SAFE__MANDATORY_AT_PHASE2",
-        "outputs": [
-          "AudioFeatures implementation",
-          "distinct Vibes",
-          "audio-causality acceptance"
-        ]
-      },
-      "P2_TEXT_MOMENTS": {
-        "owner": "text_moments",
-        "activation": "FOUNDATION_SOAK_RUNNING_IF_OFFLINE_SAFE__MANDATORY_AT_PHASE2",
-        "outputs": [
-          "VisualMoment compositor",
-          "premium text/moments",
-          "exact return-to-base behavior"
-        ]
-      },
-      "P2_PWA_RELIABILITY": {
-        "owner": "reliability_integration",
-        "activation": "FOUNDATION_SOAK_RUNNING_IF_OFFLINE_SAFE__MANDATORY_AT_PHASE2",
-        "outputs": [
-          "PWA freshness/cache/versioning",
-          "lock-wake/reopen reliability",
-          "deployment/readback reliability"
-        ]
-      }
-    },
-    "deferred_until_core_accepted": [
-      "games",
-      "guest_platform",
-      "physical_aux_uv"
-    ],
-    "rule": "Core lanes are parallel by default. A ready lane may not silently wait for another ready lane."
-  }
+  "operational_note": "Interface/product reference only. Execution/parallelism authority lives only in HBNF_CONTROL_MODEL.json + HBNF_CONTROL_STATE.json."
 }
