@@ -22,6 +22,7 @@ DEVICE_FAILURE_MARKERS=(
     "auxiliary health failed",
     "foundation-frame-tail-",
     "foundation-telemetry-",
+    "telemetry runtime-kernel identity outside inventory",
     "packet20-snapshot-failed",
     "packet20-snapshot-command-rejected",
     "packet20-restore-failed",

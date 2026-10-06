@@ -13,6 +13,7 @@ assert m.classify_run_error("release identity changed during sweep")=="DEVICE_OR
 assert m.classify_run_error("foundation-sweep-report-failed: missing metrics")=="DEVICE_OR_FOUNDATION_GATE"
 assert m.classify_run_error("foundation soak sample gap invalid: 16s") == "HOST_OR_EXTERNAL"
 assert m.classify_run_error("foundation soak missed exact kernel coverage") == "HOST_OR_EXTERNAL"
+assert m.classify_run_error("telemetry runtime-kernel identity outside inventory: 99/unknown") == "DEVICE_OR_FOUNDATION_GATE"
 assert m.classify_run_error("OSError: disk full while writing report")=="HOST_OR_EXTERNAL"
 
 snapshot={"snapshotId":7,"snapshotHash":1234}

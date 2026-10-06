@@ -1,7 +1,7 @@
 {
   "schema": "local-roots-golden-path-v2",
   "id": "live-device-diagnostic",
-  "purpose": "Bounded live diagnostic where every deterministic build, publication, consumer-contract, timeout, restore, and recovery prerequisite is proven before device mutation.",
+  "purpose": "Bounded HBNF Foundation qualification with deterministic offline host closure, exact recovery, one snapshot/restore, and independently scheduled state-changing telemetry.",
   "required_repo_inputs": [
     "AGENTS.md",
     "config/HBNF_CONTROL_STATE.json",
@@ -15,9 +15,14 @@
     "config/HBNF_RUNTIME_TELEMETRY_CONTRACT.json",
     "scripts/hbnf_foundation_soak_audit.py",
     "scripts/hbnf_foundation_threshold_freeze.py",
-    "scripts/hbnf_foundation_seq41_transaction.py",
-    "tests/hbnf_foundation_seq41_offline.py",
-    "tests/hbnf_foundation_live_adapter.py"
+    "tests/hbnf_foundation_live_adapter.py",
+    "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_SEQ39_20261006.json",
+    "scripts/hbnf_foundation_seq39_failure_policy.py",
+    "scripts/hbnf_foundation_continuous_soak.py",
+    "scripts/hbnf_foundation_seq43_transaction.py",
+    "tests/hbnf_foundation_continuous_soak.py",
+    "tests/hbnf_foundation_seq43_offline.py",
+    "tests/hbnf_foundation_seq39_failure_policy.py"
   ],
   "prelive_contract": {
     "closure_stage_id": "contract-closure",
@@ -132,20 +137,22 @@
       "id": "bounded-diagnostic",
       "kind": "live",
       "mutation": true,
-      "retry_policy": "never",
+      "retry_policy": "explicit_only",
       "rollback": {
         "strategy": "always execute exact snapshot restore in finally; if exactness is uncertain, execute the already-proven baseline recovery transaction"
       },
       "timeout_budget": {
-        "outer_seconds": 70,
-        "inner_calls_max": 4,
-        "inner_timeout_seconds": 4,
-        "margin_seconds": 10
+        "outer_seconds": 6000,
+        "inner_calls_max": 1,
+        "inner_timeout_seconds": 5670,
+        "margin_seconds": 330
       },
       "outputs": [
-        "complete bounded telemetry/evidence",
-        "no host/tooling prerequisite discovered live"
-      ]
+        "one exact seq43 candidate install, no repeated 28-kernel sweep or observer test",
+        "complete >=90-minute state-changing Foundation soak with a decoupled continuous sampler and <=15-second evidence gaps",
+        "exact snapshot restore, post-restore raw evidence, and candidate/recovery disposition"
+      ],
+      "retry_policy_details": "At most one same-install retry only after a materially different offline-proven host fix and only with candidate identity, health, restart continuity, exact renderer restore, and AUX health all proven; never consume seq44 for a host-only failure."
     },
     {
       "id": "restore",

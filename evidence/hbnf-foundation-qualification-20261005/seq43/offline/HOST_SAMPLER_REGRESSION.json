@@ -1,0 +1,51 @@
+{
+  "candidate_artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "created_at_utc": "2026-10-06T16:32:12.017195+00:00",
+  "failure_class": "HOST_HARNESS",
+  "file_sha256": {
+    ".github/workflows/hbnf-coordinated-release-ci.yml": "7b274c74751e87afbcd8a06f0e21a86a710a6959a7d4213064c0f83ef7063c1a",
+    "platform/workflows/live-device-diagnostic.json": "403cc15c0779f8f42bd0de7a7cbf2b135e11440936179a7fc189bd0d8cae1b74",
+    "scripts/hbnf_foundation_continuous_soak.py": "3f01fc127b0251a681ea2ea1ac332821a6ab4fa5842eec5b8b023b7b97cf25e8",
+    "scripts/hbnf_foundation_seq39_failure_policy.py": "56f4e80ab717923721f417a063a9f6647c807ff82e1e01e12c0966480a315d99",
+    "scripts/hbnf_foundation_seq43_transaction.py": "fc51c4cd83710f3208727fba6cb9f836d841a11001e852a62d3ffef216c513bb",
+    "tests/hbnf_foundation_continuous_soak.py": "f88a97f91b3633625dfb94a92c6935fcac46f1e623298d0164c701ff7330289e",
+    "tests/hbnf_foundation_live_adapter.py": "eec0ec127978b4cf97de9873ac5f677998edef42c3046996f1aa0d2610b8b53b",
+    "tests/hbnf_foundation_offline_tools.py": "df1e229c9d6daae86b3c826ec9192f1206c4e033629ad72848eee7175acb481c",
+    "tests/hbnf_foundation_seq39_failure_policy.py": "399ff36c93ffed7d08c61e2d8937104aa5c820789801916ca403f4a1483cb00a",
+    "tests/hbnf_foundation_seq41_offline.py": "673f8e62824e149484e3dfa19db37274d68260d01ae159f1832d6cb9419467af",
+    "tests/hbnf_foundation_seq43_offline.py": "6da5d3a309d87ef97de46080123b7345975f445411fb1b6771b428e3b177b277",
+    "tests/hbnf_foundation_soak_audit.py": "51edd3b53d1485a470433cd13e38fb9c3f6a2f6e9a01f968215b0a94dcddc131"
+  },
+  "mechanism": {
+    "design": "Independent telemetry-sampler and kernel-state-changer OS processes. A blocked select/acknowledgement cannot suspend the sampler process.",
+    "duration_margin": "Sampler continues through the requested window plus selector timeout and two telemetry periods so the sample timeline covers at least 5400 seconds and includes the final in-flight state change.",
+    "invalid_or_slow_telemetry": "Fails closed at bounded subprocess timeout and preserves any returned raw sample before contract rejection.",
+    "kernel_coverage": "All 28 kernel ids must be selected and observed before soak PASS.",
+    "sample_logging": "Each raw returned telemetry response is appended and fsynced before validation; no per-sample progress sidecar write blocks the sampler.",
+    "selector_command_timeout_seconds": 30,
+    "selector_period_seconds": 8,
+    "telemetry_command_timeout_seconds": 12,
+    "telemetry_period_seconds": 5
+  },
+  "mutation_authority": "seq43 candidate / seq44 genuine failure recovery only; no transaction started by this offline proof",
+  "other_offline_checks": [
+    "seq43 dry-run binds exact candidate/recovery artifacts, inherited seq39 sweep/baseline/frozen policy, and performs no network/device mutation",
+    "source-bound restore comparator regression PASS",
+    "Foundation adapter regression PASS",
+    "soak audit and threshold/evidence tooling tests PASS",
+    "seq41 dry-run regression PASS",
+    "control-plane and architecture-fitness tests PASS",
+    "platform doctor PASS"
+  ],
+  "regression": {
+    "assertion": "No sampler gap over 5s while selector remained blocked for 24.114s; production soak enforces <=15s.",
+    "maximum_observed_gap_seconds": 1.037,
+    "network_or_device_access": false,
+    "simulated_selector_block_seconds": 24.114,
+    "telemetry_samples": 56,
+    "test": "tests/hbnf_foundation_continuous_soak.py"
+  },
+  "release07_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+  "schema": "hbnf-seq43-offline-host-sampler-proof-v1",
+  "status": "PASS"
+}

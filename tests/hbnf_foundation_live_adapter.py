@@ -107,6 +107,7 @@ with tempfile.TemporaryDirectory() as td:
         if url==m.AUX+"/json/state":return aux_state
         raise AssertionError("unexpected telemetry endpoint: "+url)
     m.get=fake_get
+    isolated_run=str(t/"run-a")
     state={"HBNF":{"timing":{"kernel":0,"uptimeSec":100,"fps":42,"variantSignature":7,
       "freeHeap":88000,"rssi":-45,"wholeFrameUs":19000,"auxProjectionAgeMs":2},
       "foundationTelemetry":{"enabled":True,"frameMsAvg":19,"frameMsP50":18,
@@ -119,7 +120,7 @@ with tempfile.TemporaryDirectory() as td:
       "unaccountedMsP95":6}}}
     m.enable_tails=lambda enabled:(state,{})
     with contextlib.redirect_stdout(io.StringIO()) as output:
-        m.telemetry(str(inventory),"run-a")
+        m.telemetry(str(inventory),isolated_run)
     sample=json.loads(output.getvalue())
     assert sample["aux_projection_active"] is True
     assert sample["aux_frame_lock_rx_active"] is False
@@ -148,7 +149,7 @@ with tempfile.TemporaryDirectory() as td:
     aux_state["HBNFAUX"].update(projectionRxPackets=17,projectionRxSeq=16,
         projectionRxActive=True,projectionRxAgeMs=24,projectionHelloPackets=1049,
         projectionPeerKnown=True)
-    with contextlib.redirect_stdout(io.StringIO()) as output:m.telemetry(str(inventory),"run-a")
+    with contextlib.redirect_stdout(io.StringIO()) as output:m.telemetry(str(inventory),isolated_run)
     healthy_rx=json.loads(output.getvalue())
     assert healthy_rx["aux_projection_active"] is True
     assert healthy_rx["aux_projection_age_ms"]==24
@@ -160,7 +161,7 @@ with tempfile.TemporaryDirectory() as td:
     ft.update(frameTailOverflow=True,frameMsMax=12559.93,frameMsP99=36.65,
               frameTailBinResolutionUs=250)
     with contextlib.redirect_stdout(io.StringIO()) as output:
-        m.telemetry(str(inventory),"run-a")
+        m.telemetry(str(inventory),isolated_run)
     overflow_sample=json.loads(output.getvalue())
     assert overflow_sample["frame_tail_overflow"] is True
     assert overflow_sample["frame_ms_max"]==12559.93
@@ -169,19 +170,19 @@ with tempfile.TemporaryDirectory() as td:
     # telemetry contract still fails closed before any profile is accepted.
     ft["frameMsP99"]=127.875
     try:
-        with contextlib.redirect_stdout(io.StringIO()):m.telemetry(str(inventory),"run-a")
+        with contextlib.redirect_stdout(io.StringIO()):m.telemetry(str(inventory),isolated_run)
         raise AssertionError("saturated percentile was accepted")
     except RuntimeError as exc:
         assert "foundation-frame-tail-quantile-saturated-at-127.875ms" in str(exc)
-        raw_path=pathlib.Path("run-a")/"SATURATED_TELEMETRY_RAW.json"
+        raw_path=pathlib.Path(isolated_run)/"SATURATED_TELEMETRY_RAW.json"
         raw=json.loads(raw_path.read_text())
         assert raw["status"]=="SATURATED" and raw["frame_ms_max"]==12559.93
         assert raw["saturated_fields"]==["frameMsP99"]
     ft["frameMsP99"]=36.65
     state["HBNF"]["timing"]["uptimeSec"]=90
-    with contextlib.redirect_stdout(io.StringIO()) as output:m.telemetry(str(inventory),"run-a")
+    with contextlib.redirect_stdout(io.StringIO()) as output:m.telemetry(str(inventory),isolated_run)
     assert json.loads(output.getvalue())["restart_count"]==1
-    with contextlib.redirect_stdout(io.StringIO()) as output:m.telemetry(str(inventory),"run-b")
+    with contextlib.redirect_stdout(io.StringIO()) as output:m.telemetry(str(inventory),str(t/"run-b"))
     assert json.loads(output.getvalue())["restart_count"]==0
 
 bad_build={**build,"release_id":"wrong"}

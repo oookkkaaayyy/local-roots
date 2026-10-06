@@ -99,6 +99,8 @@ jobs:
           python3 tests/hbnf_guarded_run.py
           python3 tests/hbnf_foundation_seq39_failure_policy.py
           python3 tests/hbnf_foundation_seq41_offline.py
+          python3 tests/hbnf_foundation_continuous_soak.py
+          python3 tests/hbnf_foundation_seq43_offline.py
           python3 scripts/hbnf_architecture_fitness.py
           python3 tests/hbnf_runtime_qualify_static.py
           python3 tests/hbnf_kernel_sweep_report.py
