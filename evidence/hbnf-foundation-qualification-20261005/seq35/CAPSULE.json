@@ -4,7 +4,7 @@
     "remote_execution_for_source_archaeology": false,
     "retry_inherits_authorization": false
   },
-  "created_at": "2026-10-06T05:15:00.393256+00:00",
+  "created_at": "2026-10-06T05:36:08.033849+00:00",
   "expected_terminal_outputs": [
     "diagnostic result or exact stop reason",
     "snapshot/restore result",
@@ -14,62 +14,19 @@
     "durable evidence pointer"
   ],
   "external_authorities": {
-    "artifact_registry_drive_id": "18VsUYIYr62fYVaEqynM1kbMmfQpei-3H3rBgrw8S96k",
-    "delta_inbox_sheet_id": "1tJIcKRfWFdHVYVo4G6mgySB46p6xwsseGON3JdnEnzY",
-    "file_authority_drive_id": "1GwvPv_nihqoIj83WsO6VcvyujRkt8HnnULvLv717OHc",
-    "release_engineering_drive_id": "1bw_VUNt2mEZ4JdKuRsQq7ZS1Bc4KeC8kMVABVK2OdgE"
+    "network_identity": "192.168.77.10"
   },
   "repo_identity": {
     "branch": "hbnf-cart2-ready-to-implement-staging-20261001",
     "dirty": false,
     "type": "git_commit",
-    "value": "b298c27426ac01720b8499e8f91fea26643dced4"
+    "value": "3e5e4393fefcbfe5b189c299488b13420a5b8cdc"
   },
   "repo_inputs": [
     {
-      "bytes": 4084,
-      "path": "config/HBNF_CONTROL_MODEL.json",
-      "sha256": "c5cc3b04bd3b070880f71d071183056f865775d3b65228634376e1af7c4437a5"
-    },
-    {
-      "bytes": 40124,
+      "bytes": 40423,
       "path": "config/HBNF_CONTROL_STATE.json",
-      "sha256": "33ff0bb79765cf052f413916d1a9427c6bb888e75178a0f8315e067d7390312b"
-    },
-    {
-      "bytes": 7808,
-      "path": "scripts/hbnf_control.py",
-      "sha256": "c979cc0c09e6a1d6c5861e97fd4a155b2ea8846e39e432be3e1701b4866670b7"
-    },
-    {
-      "bytes": 2644,
-      "path": "scripts/hbnf_guarded_run.py",
-      "sha256": "9ddbdd656a817bfd9c6fb3d156289dc090db6e21f5ae4d36c73fe69b9f15c2b8"
-    },
-    {
-      "bytes": 5404,
-      "path": "platform/policies.json",
-      "sha256": "16b80bafcb81002885164ba3799e1401d5007addb38ebb1e9a5336fdfa9bc37a"
-    },
-    {
-      "bytes": 6085,
-      "path": "platform/workflows/live-device-diagnostic.json",
-      "sha256": "ec372bca9ee03a6178e216ea867696fb9b8eab86d2bcacba9f1c676a6953b7d9"
-    },
-    {
-      "bytes": 10962,
-      "path": "platform/cart2-critical-path-v1.json",
-      "sha256": "d372e14f5e95c3bbe377b39dc5e512728860eee775b99081a1c0885122b05fed"
-    },
-    {
-      "bytes": 27029,
-      "path": "scripts/platform.py",
-      "sha256": "67fd6fa96cfbf576224ec24fccc7db1e6ac374e134f59435cdcb62de2e31d251"
-    },
-    {
-      "bytes": 8202,
-      "path": "platform/providers/cloudflare-workers.json",
-      "sha256": "67c0c79c310b780d2934fbf7ef12b06562d014adafac2105822a4c2d79ff74da"
+      "sha256": "bcd2dd06e91e10a4d5e8686e5882a6c200ed0880b2cd88b2cd324af45f7dc9b5"
     },
     {
       "bytes": 12789,
@@ -82,12 +39,37 @@
       "sha256": "44f62cf31e5efa57a360117d96d437d6f504fd93704b28a069661b2da64a49f0"
     },
     {
-      "bytes": 28554,
+      "bytes": 29436,
       "path": "scripts/hbnf_live_kernel_sweep.py",
-      "sha256": "6700e86ba1a8cfb814e98deae909bfd2a33c7ae380afef4531fad5e9124ee1dc"
+      "sha256": "38089f1a4d69a77e7fc657e8551a46b36fd5e23f52c47b3df189abeb6b2e722d"
+    },
+    {
+      "bytes": 3139,
+      "path": "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json",
+      "sha256": "9d8209d4e4feb0e1f0d4b0d72452a3bc39169134dd0a94ea2ab77e3a090d6f11"
+    },
+    {
+      "bytes": 2318,
+      "path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006.json",
+      "sha256": "320199f5cb73a2c7eba02a0bee05dda06d84d32c835907465981e92dbb395607"
+    },
+    {
+      "bytes": 16699,
+      "path": "scripts/hbnf_foundation_live_adapter.py",
+      "sha256": "ab497d515852f317d252487d154a81a42ea8ff8a27743e21c5cf035606c16f73"
+    },
+    {
+      "bytes": 12503,
+      "path": "scripts/hbnf_foundation_seq35_transaction.py",
+      "sha256": "cefa4fe8dda961e09d364a19c12db436cc2cdb84cf3112e2a88d741e9f982606"
+    },
+    {
+      "bytes": 11727,
+      "path": "tests/hbnf_live_kernel_sweep.py",
+      "sha256": "3c3b7b88cde9f09a80dbfb10b9422d3fd5e6a628563cee93c1ed0bc51876ca38"
     }
   ],
-  "run_id": "hbnf-cart-20261006T051500Z-4602d7e2",
+  "run_id": "HBNF-FOUNDATION-SEQ35-36-20261005",
   "schema": "local-roots-execution-capsule-v1",
   "stages": [
     {
@@ -244,9 +226,9 @@
     "google_drive": "durable binaries, recovery artifacts, decisive evidence, and large immutable run outputs",
     "local_workspace": "ephemeral execution only; never sole authority after a result becomes meaningful"
   },
-  "system_id": "hbnf-cart",
+  "system_id": "hbnf-matrix",
   "terminal_recovery": "If exact restore is not proven, execute only the pre-rehearsed registered baseline recovery transaction, verify device and publication identities, preserve evidence, and stop.",
-  "trace_id": "5989b5cb40bd4c5a84c15c8ecdb0293c",
+  "trace_id": "dcc13d14a9ca40cc9337a57dcd3a5569",
   "user_interaction_policy": {
     "copy_paste_delivery": "one_single_fenced_block_per_action",
     "max_user_actions_per_blocker": 1,
@@ -263,6 +245,6 @@
   "workflow_id": "live-device-diagnostic",
   "workflow_source": {
     "path": "platform/workflows/live-device-diagnostic.json",
-    "sha256": "ec372bca9ee03a6178e216ea867696fb9b8eab86d2bcacba9f1c676a6953b7d9"
+    "sha256": "57344a628bf6e470e8ba7c192b6572acc27b50ab08e02029200da5a8ef743470"
   }
 }

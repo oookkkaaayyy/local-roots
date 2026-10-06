@@ -12,17 +12,31 @@
     "sha256": "47f45d4bd7c9222b7ae7bea43fccd5c7b8d5874b4837b2b1aef21a0dcf7f4909",
     "size_bytes": 1930
   },
+  "capsule": {
+    "path": "evidence/hbnf-foundation-qualification-20261005/seq35/CAPSULE.json",
+    "sha256": "5db42cdef4aa4c7a47e165b7d75bdaca2d382df88a7390f699eeb5f194578d42",
+    "size_bytes": 7987
+  },
+  "checks": {
+    "capsule": "PASS",
+    "prelive": "PASS"
+  },
   "firmware_behavior_delta": "none; host-only capture/guard changes",
   "modified_source_inputs": {
     "config/HBNF_CONTROL_STATE.json": {
       "path": "config/HBNF_CONTROL_STATE.json",
-      "sha256": "279b8d5771765bf991ca919ea800778daf7eeb020ef7eca8cd42f8263526c6da",
-      "size_bytes": 40299
+      "sha256": "bcd2dd06e91e10a4d5e8686e5882a6c200ed0880b2cd88b2cd324af45f7dc9b5",
+      "size_bytes": 40423
     },
     "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json": {
       "path": "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json",
       "sha256": "9d8209d4e4feb0e1f0d4b0d72452a3bc39169134dd0a94ea2ab77e3a090d6f11",
       "size_bytes": 3139
+    },
+    "platform/workflows/live-device-diagnostic.json": {
+      "path": "platform/workflows/live-device-diagnostic.json",
+      "sha256": "57344a628bf6e470e8ba7c192b6572acc27b50ab08e02029200da5a8ef743470",
+      "size_bytes": 6351
     },
     "scripts/hbnf_foundation_live_adapter.py": {
       "path": "scripts/hbnf_foundation_live_adapter.py",
@@ -48,12 +62,17 @@
   "no_firmware_build": "true; existing exact candidate only",
   "package_dry_run": "PASS",
   "platform_doctor": "PASS",
+  "prelive_proof": {
+    "path": "evidence/hbnf-foundation-qualification-20261005/seq35/PRELIVE_PROOF.json",
+    "sha256": "3ce2a803661dfde9e81b6bab9cedffc687192be53c67173e7b0e3df0af5875ad",
+    "size_bytes": 3553
+  },
   "readonly_preflight": {
     "path": "evidence/hbnf-foundation-qualification-20261005/seq35/READONLY_PREFLIGHT.json",
     "sha256": "7d9dc0895a752c26310b0b179d63b81403199341205edec8297c1417fd869802",
     "size_bytes": 12766
   },
-  "recorded_at_utc": "2026-10-06T05:35:04.684587+00:00",
+  "recorded_at_utc": "2026-10-06T05:38:20.178694+00:00",
   "release07_recovery": {
     "path": "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/artifact/release07.bin",
     "release": "hbnf-matrix-coordinated-v1-20261002-07",

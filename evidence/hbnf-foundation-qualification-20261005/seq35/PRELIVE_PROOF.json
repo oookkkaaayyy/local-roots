@@ -1,0 +1,58 @@
+{
+  "approved_for_mutation": true,
+  "capsule_sha256": "5db42cdef4aa4c7a47e165b7d75bdaca2d382df88a7390f699eeb5f194578d42",
+  "consumer_contract": {
+    "identity": "Direct-LAN exact WLED HTTP OTA /update. Candidate artifact and Release07 bytes are each checked for exact SHA-256 and size before upload; existing direct-LAN exact-artifact candidate and recovery path was demonstrated in seq33/34 and seq29/30. Cloudflare latest.json is not used. Candidate identity, Matrix MAC/IP, and runtime identity are verified after install.",
+    "verified": true
+  },
+  "pre_mutation_state": {
+    "cloud": "No Cloudflare or mutable publication pointer is used or changed in this transaction. Physical AUX topology and AUX WLED buses/GPIO/PWM configuration are not changed.",
+    "device": "Fresh read-only capture at evidence/hbnf-foundation-qualification-20261005/seq35/READONLY_PREFLIGHT.json: Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c Release07/WLED16.0.1; AUX 192.168.77.11 MAC 8c:94:df:55:c3:4c, Matrix-origin DDP live. Current API responses and device state are hash-bound in the capture.",
+    "recovery_artifact": "Exact Release07 BIN hash/size and candidate BIN hash/size are independently rechecked immediately before candidate install."
+  },
+  "recovery_identity": {
+    "identity": "hbnf-matrix-coordinated-v1-20261002-07; exact BIN SHA-256 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab; 1,458,624 bytes; seq36 failure path only.",
+    "verification": "The exact local BIN hash/size are verified by the transaction package; seq34 direct-LAN recovery PASS is already durable. Recovery uses one key-authenticated Opal-origin multipart /update, followed by runtime Release07 identity and AUX DDP verification."
+  },
+  "run_id": "HBNF-FOUNDATION-SEQ35-36-20261005",
+  "schema": "local-roots-prelive-proof-v1",
+  "stages": {
+    "capture-current-state": {
+      "evidence": [
+        "evidence/hbnf-foundation-qualification-20261005/seq35/READONLY_PREFLIGHT.json"
+      ],
+      "status": "PASS"
+    },
+    "contract-closure": {
+      "evidence": [
+        "evidence/hbnf-foundation-qualification-20261005/seq35/OFFLINE_GATES.json",
+        "scripts/hbnf_foundation_seq35_transaction.py",
+        "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json",
+        "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006.json"
+      ],
+      "status": "PASS"
+    },
+    "package-doctor": {
+      "evidence": [
+        "platform.py doctor PASS at source commit 3e5e4393fefcbfe5b189c299488b13420a5b8cdc",
+        "scripts/platform.py check-capsule PASS for this capsule"
+      ],
+      "status": "PASS"
+    },
+    "recovery-proof": {
+      "evidence": [
+        "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/artifact/release07.bin exact SHA-256 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab and size 1458624",
+        "evidence/hbnf-foundation-qualification-20261005/seq33/continuation/seq34-recovery/RECOVERY_RECEIPT.json"
+      ],
+      "status": "PASS"
+    },
+    "transaction-rehearsal": {
+      "evidence": [
+        "evidence/hbnf-foundation-qualification-20261005/seq33/CANDIDATE_INSTALL_VERIFICATION.json records exact seq33 candidate installation PASS",
+        "evidence/hbnf-foundation-qualification-20261005/seq33/continuation/seq34-recovery/RECOVERY_RECEIPT.json records exact Release07 recovery PASS",
+        "evidence/hbnf-foundation-qualification-20261005/seq35/OFFLINE_GATES.json records hard-stop/sweep/soak package tests and dry-run PASS"
+      ],
+      "status": "PASS"
+    }
+  }
+}

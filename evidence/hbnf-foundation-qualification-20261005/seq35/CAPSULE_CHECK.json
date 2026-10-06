@@ -1,0 +1,12 @@
+{
+  "current_repo_identity": {
+    "branch": "hbnf-cart2-ready-to-implement-staging-20261001",
+    "dirty": true,
+    "type": "git_commit",
+    "value": "3e5e4393fefcbfe5b189c299488b13420a5b8cdc"
+  },
+  "errors": [],
+  "ok": true,
+  "run_id": "HBNF-FOUNDATION-SEQ35-36-20261005",
+  "schema": "local-roots-capsule-check-v1"
+}
