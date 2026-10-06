@@ -309,7 +309,7 @@
       "source_commit": "b18b162ec4b4f9173b1de892957ff8b834fe2b50",
       "sweep_status": "PASS__28_OF_28_PROFILES__RENDERER_RESTORE_PASS",
       "timeout_hierarchy": "HTTP GET 10s; /json/state POST 25s; command ack 30s; snapshot 45s; restore 90s; outer runner 240s (226s maximum normal snapshot composition plus 14s margin)",
-      "timeout_repair_commit": "b3faae45f9232c862aeb7391483b0324f8cf88a3",
+      "timeout_repair_commit": "66753cbee9a0d1e18f7e079f584b8a5915f19f32",
       "transaction_authorization": "CURRENT_USER_EXPEDITE_BOUNDED_TELEMETRY_RANGE_FIX_DIRECTIVE",
       "warmup_sample": {
         "aux_projection_active": true,
@@ -911,7 +911,7 @@
       "brightness": "DEFER_FOR_STABILITY for the 2026-10-06 Skins field build; retain as locked Cart 2.0 core requirement after Foundation."
     },
     "foundation_seq43_preparation": {
-      "status": "HOST_SAMPLER_OFFLINE_PASS__DRY_RUN_PASS__PRELIVE_PENDING",
+      "status": "HOST_SAMPLER_OFFLINE_PASS__DRY_RUN_PASS__PARALLEL_READY_SIGNAL_TESTED__PRELIVE_PENDING",
       "candidate_sequence": 43,
       "candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
       "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
@@ -922,9 +922,10 @@
       "transaction_script": "scripts/hbnf_foundation_seq43_transaction.py",
       "dry_run": "evidence/hbnf-foundation-qualification-20261005/seq43/live/DRY_RUN.json",
       "offline_proof": "evidence/hbnf-foundation-qualification-20261005/seq43/offline/HOST_SAMPLER_REGRESSION.json",
-      "simulation": "24.114-second state-change stall; 56 samples; max sample gap 1.037 seconds; no device/network access",
+      "simulation": "24.114-second state-change stall; 56 samples; final measured max sample gap 1.023 seconds; parallel-ready signal asserted after three valid persisted samples; no device/network access",
       "inherited_evidence": "seq39 28/28 sweep, observer-effect, hash-bound baseline and frozen policy; no repeat",
-      "live_status": "NOT_STARTED__AWAIT_CLEAN_SEQ43_PRELIVE_PROOF"
+      "live_status": "NOT_STARTED__AWAIT_CLEAN_SEQ43_PRELIVE_PROOF",
+      "implementation_commit": "66753cbee9a0d1e18f7e079f584b8a5915f19f32"
     }
   },
   "execution_budget_policy": {
