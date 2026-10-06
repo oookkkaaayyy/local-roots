@@ -29,6 +29,8 @@ PATHS = {
     "aux_info": "http://192.168.77.11/json/info",
     "aux_state": "http://192.168.77.11/json/state",
 }
+CURL_TIMEOUT_SECONDS = 8
+SSH_COMMAND_TIMEOUT_SECONDS = 11
 
 
 def fetch(session_id: str) -> tuple[dict, float]:
@@ -40,7 +42,7 @@ def fetch(session_id: str) -> tuple[dict, float]:
     for name, url in PATHS.items():
         target = f"$d/{name}.json"
         commands.append(
-            f"curl --silent --show-error --fail --connect-timeout 2 --max-time 4 "
+            f"curl --silent --show-error --fail --connect-timeout 2 --max-time {CURL_TIMEOUT_SECONDS} "
             f"{shlex.quote(url)} -o {target} & p_{name}=$!"
         )
     waits = "\n".join(f"wait \"$p_{name}\" || exit 41" for name in names)
@@ -62,7 +64,8 @@ def fetch(session_id: str) -> tuple[dict, float]:
         "-o", "ConnectTimeout=5", SSH_HOST, remote,
     ]
     try:
-        proc = subprocess.run(argv, text=True, capture_output=True, timeout=6.0, check=False)
+        proc = subprocess.run(argv, text=True, capture_output=True,
+                              timeout=SSH_COMMAND_TIMEOUT_SECONDS, check=False)
         if proc.returncode:
             raise RuntimeError(f"Opal-origin telemetry command rc={proc.returncode}: {proc.stderr[-1000:]}")
         payload = json.loads(proc.stdout)
@@ -79,7 +82,7 @@ def fetch(session_id: str) -> tuple[dict, float]:
             "schema": "hbnf-opal-origin-parallel-read-failure-v1",
             "captured_at_unix": time.time(),
             "transport": "ssh-key/opalshell-concurrent-curl",
-            "request_timeout_seconds": 4,
+            "request_timeout_seconds": CURL_TIMEOUT_SECONDS,
             "error": f"{type(exc).__name__}: {exc}",
             "partial_stdout_sha256": hashlib.sha256(
                 (locals().get("proc").stdout if "proc" in locals() else "").encode()

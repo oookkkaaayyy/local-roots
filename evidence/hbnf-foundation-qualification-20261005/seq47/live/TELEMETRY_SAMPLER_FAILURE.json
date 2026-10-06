@@ -1,0 +1,8 @@
+{
+  "error": "RuntimeError: telemetry command failed rc=1: nsport.py\", line 103, in main\n    sample = adapter.telemetry(args.inventory, args.session_id, emit=False)\n  File \"/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_live_adapter.py\", line 294, in telemetry\n    reads,read_elapsed=_parallel_soak_reads(session_id)\n  File \"/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_opal_telemetry_transport.py\", line 102, in <lambda>\n    adapter._parallel_soak_reads = lambda _session: fetch(args.session_id)\n  File \"/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_opal_telemetry_transport.py\", line 94, in fetch\n    raise RuntimeError(\"opal-origin-parallel-telemetry-failed:\" + json.dumps(failure, sort_keys=True)) from exc\nRuntimeError: opal-origin-parallel-telemetry-failed:{\"captured_at_unix\": 1791317728.092185, \"error\": \"RuntimeError: Opal-origin telemetry command rc=41: curl: (28) Operation timed out after 4002 milliseconds with 1225 out of 1513 bytes received\\n\", \"partial_stdout_sha256\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"request_timeout_seconds\": 4, \"schema\": \"hbnf-opal-origin-parallel-read-failure-v1\", \"transport\": \"ssh-key/opalshell-concurrent-curl\"}\n",
+  "failing_sample": null,
+  "last_sample_time_monotonic": 2037.095964416,
+  "sample_count": 408,
+  "sampler_pid": 46411,
+  "status": "FAIL"
+}

@@ -28,6 +28,10 @@ with tempfile.TemporaryDirectory(prefix="hbnf-opal-transport-") as td:
     assert "IdentitiesOnly=yes" in argv
     assert all(url in remote for url in transport.PATHS.values())
     assert remote.count("curl --silent") == 5
+    assert remote.count(f"--max-time {transport.CURL_TIMEOUT_SECONDS}") == 5
+    assert transport.CURL_TIMEOUT_SECONDS == 8
+    assert transport.SSH_COMMAND_TIMEOUT_SECONDS == 11
+    assert run.call_args.kwargs["timeout"] == transport.SSH_COMMAND_TIMEOUT_SECONDS
     assert all(f"wait \"$p_{name}\"" in remote for name in transport.PATHS)
     print("PASS: five fixed read-only LAN endpoints are fetched concurrently over key-only Opal SSH")
 

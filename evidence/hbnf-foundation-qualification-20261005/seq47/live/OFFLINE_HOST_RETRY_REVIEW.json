@@ -1,0 +1,56 @@
+{
+  "device_restore_performed": false,
+  "evidence": {
+    "FOUNDATION_SOAK.jsonl": {
+      "bytes": 549213,
+      "sha256": "716b28028d83acff0d9a88cad46c98e98714b158c689d83133db70b1e08e95a7"
+    },
+    "FOUNDATION_STATE_CHANGES.jsonl": {
+      "bytes": 60033,
+      "sha256": "1a9bd757d0459de4806916566dc607f0b192d28236328b789b8ca528e6b8d8dc"
+    },
+    "HOST_FAILURE_SAFETY_PROOF.json": {
+      "bytes": 2763,
+      "sha256": "3c5aaebc2c642e07533d62aca344b5d733dee8648d099b2eb35ec494248d748c"
+    },
+    "HOST_FAILURE_SAFETY_READONLY.txt": {
+      "bytes": 7903,
+      "sha256": "f36663ce7d7e0eac36c1b3afeadb4d2a2b9e7bb7e6129923df9eacee2ded3c95"
+    },
+    "PRE_SWEEP_STATE.json": {
+      "bytes": 3977,
+      "sha256": "cdbd8977d3704e94027519f089eab633a3c0de57d9c02c0877307349ef07b76f"
+    },
+    "SOAK_SEED_SAMPLE.json": {
+      "bytes": 1508,
+      "sha256": "bb30199b3c954828ea8f2fa1d5598e9909eda1360159f9fa76d516fdcadc130b"
+    },
+    "TELEMETRY_OPAL_READ_FAILURES.jsonl": {
+      "bytes": 414,
+      "sha256": "9854ca7fe05c546f845a67129bad6cbf30a92b531275cf70812f158e8b36b6dd"
+    },
+    "TELEMETRY_SAMPLER_FAILURE.json": {
+      "bytes": 1443,
+      "sha256": "22db3037e1e8c3cfc5851149e85dc79cd027b00feed2df38bcda50aa3b98ccff"
+    }
+  },
+  "failed_after_seconds": 2037.096,
+  "failure_class": "HOST_OR_EXTERNAL",
+  "host_correction": {
+    "mechanism": "increase only Opal-origin parallel HTTP request timeout from 4s to 8s, SSH wrapper 6s to 11s; sampler remains independent and bounded at 12.5s under 15s continuity ceiling",
+    "recovery_artifact_changed": false,
+    "renderer_firmware_changed": false,
+    "tests": [
+      "tests/hbnf_opal_telemetry_transport.py",
+      "tests/hbnf_foundation_continuous_soak.py",
+      "tests/hbnf_foundation_seq39_failure_policy.py",
+      "tests/hbnf_foundation_seq47_soak_retry.py"
+    ]
+  },
+  "last_good_restart_count": 0,
+  "last_good_uptime_seconds": 2395,
+  "post_failure_safety_proof": "HOST_FAILURE_SAFETY_PROOF.json",
+  "schema": "hbnf-seq47-host-timeout-review-v1",
+  "seq48_consumed": false,
+  "valid_samples": 408
+}

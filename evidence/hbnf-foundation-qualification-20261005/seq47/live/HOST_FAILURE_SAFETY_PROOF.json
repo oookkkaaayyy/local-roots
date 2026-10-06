@@ -1,0 +1,57 @@
+{
+  "aux_native_ddp": {
+    "lip": "192.168.77.10",
+    "live": true,
+    "lm": "DDP"
+  },
+  "aux_projection_frame_lock": {
+    "projectionPeerKnown": false,
+    "projectionRxActive": false,
+    "projectionRxAgeMs": 4294967295,
+    "projectionRxPackets": 0
+  },
+  "candidate_preservation_safe": true,
+  "captured_at_utc": "2026-10-06T20:17:06.929162+00:00",
+  "checks": {
+    "aux_native_ddp": true,
+    "candidate_identity": true,
+    "diagnostic_active": true,
+    "matrix_identity": true,
+    "matrix_restart_count": true,
+    "snapshot_same": true,
+    "uptime_continuity": true
+  },
+  "classification": "HOST_OR_EXTERNAL",
+  "current_uptime_seconds": 2502,
+  "exact_failure": {
+    "error": "RuntimeError: telemetry command failed rc=1: nsport.py\", line 103, in main\n    sample = adapter.telemetry(args.inventory, args.session_id, emit=False)\n  File \"/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_live_adapter.py\", line 294, in telemetry\n    reads,read_elapsed=_parallel_soak_reads(session_id)\n  File \"/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_opal_telemetry_transport.py\", line 102, in <lambda>\n    adapter._parallel_soak_reads = lambda _session: fetch(args.session_id)\n  File \"/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_opal_telemetry_transport.py\", line 94, in fetch\n    raise RuntimeError(\"opal-origin-parallel-telemetry-failed:\" + json.dumps(failure, sort_keys=True)) from exc\nRuntimeError: opal-origin-parallel-telemetry-failed:{\"captured_at_unix\": 1791317728.092185, \"error\": \"RuntimeError: Opal-origin telemetry command rc=41: curl: (28) Operation timed out after 4002 milliseconds with 1225 out of 1513 bytes received\\n\", \"partial_stdout_sha256\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"request_timeout_seconds\": 4, \"schema\": \"hbnf-opal-origin-parallel-read-failure-v1\", \"transport\": \"ssh-key/opalshell-concurrent-curl\"}\n",
+    "failing_sample": null,
+    "last_sample_time_monotonic": 2037.095964416,
+    "sample_count": 408,
+    "sampler_pid": 46411,
+    "status": "FAIL"
+  },
+  "latest_good_sample": {
+    "kernel_id": 2,
+    "kernel_name": "Parametric_Water",
+    "restart_count": 0,
+    "sample_time": 2037.095964416,
+    "uptime_seconds": 2395
+  },
+  "packet20Diagnostic": {
+    "enabled": true,
+    "espResetReason": 3,
+    "lastCommand": "select",
+    "lastCommandAccepted": true,
+    "resetReasonCore0": 12,
+    "resetReasonCore1": 12,
+    "restoreVerified": false,
+    "selectedKernel": 3,
+    "snapshotGeneration": 1,
+    "snapshotHash": 2829015731,
+    "snapshotId": 1,
+    "snapshotState": "READY",
+    "snapshotValid": true
+  },
+  "schema": "hbnf-seq47-host-transport-failure-safety-v1"
+}
