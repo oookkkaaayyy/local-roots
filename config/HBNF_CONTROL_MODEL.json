@@ -515,8 +515,8 @@
       "authority_effect": "NONE",
       "status_sheet_id": "1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko",
       "status_sheet_url": "https://docs.google.com/spreadsheets/d/1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko/edit",
-      "cadence_minutes": 10,
-      "stale_after_minutes": 15,
+      "cadence_minutes": 15,
+      "stale_after_minutes": 25,
       "stage_transition_heartbeat": true,
       "heartbeat_fields": [
         "worker_id",
@@ -534,15 +534,16 @@
         "notes"
       ],
       "worker_rules": [
-        "Update the assigned row at least every 10 minutes while actively working and immediately on every meaningful stage transition.",
-        "Heartbeat reporting must not pause, serialize, or otherwise delay the critical path.",
-        "For a command expected to run longer than 10 minutes, write a heartbeat before it starts. If safe tooling permits nonblocking execution, poll/update at the normal cadence; otherwise update immediately when the blocking command returns.",
+        "Update immediately on meaningful stage transitions.",
+        "If no stage transition occurs, send a lightweight heartbeat about every 15 minutes only when doing so will not interrupt a build, sweep, soak, OTA, recovery, or other critical blocking operation.",
+        "Before any operation expected to block longer than 15 minutes, write one heartbeat first; update immediately when it returns.",
+        "Never interrupt or restart substantive work merely to satisfy heartbeat cadence.",
+        "Do not repeat unchanged detail; update only current action, last completed, next checkpoint, blocker, mutation state, branch/head, timestamps, and concise notes.",
         "Report the concrete action actually underway, not generic labels such as researching, working, or running commands.",
-        "Report blockers only when they are real current blockers; ordinary investigation belongs in current_action.",
         "Do not use the status sheet to authorize mutation, change lifecycle state, invalidate evidence, or override control model/state."
       ],
       "read_rule": "Coordinator may read this sheet at any time to report actual worker progress without waiting for a worker-chat return.",
-      "stale_rule": "A stale heartbeat is an observability warning only. It does not itself fail Foundation, trigger rollback, or authorize intervention."
+      "stale_rule": "A stale heartbeat is an observability warning only. It does not fail Foundation, trigger rollback, authorize intervention, or require interrupting a critical operation."
     }
   }
 }
