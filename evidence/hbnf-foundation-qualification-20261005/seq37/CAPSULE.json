@@ -1,0 +1,212 @@
+{
+  "created_at": "2026-10-06T06:11:29.576712+00:00",
+  "external_authorities": {
+    "artifact_identity": "exact Foundation candidate and Release07 BIN hashes verified locally",
+    "device_install": "direct LAN WLED /update, no mutable cloud pointer",
+    "network_identity": "Matrix 192.168.77.10 / AUX 192.168.77.11"
+  },
+  "repo_identity": {
+    "branch": "hbnf-cart2-ready-to-implement-staging-20261001",
+    "dirty": true,
+    "type": "git_commit",
+    "value": "789a2221aa257905b15b9bdf15b9ad2f797a4bed"
+  },
+  "repo_inputs": [
+    {
+      "bytes": 12789,
+      "path": "AGENTS.md",
+      "sha256": "5dbb1d4715e3a4d2646dff405647971f0f2885409c1d30beb1c70627627f21df"
+    },
+    {
+      "bytes": 46102,
+      "path": "config/HBNF_CONTROL_STATE.json",
+      "sha256": "7f71a113d912c10b4ba5b3794cb900f1c495fe2a6c8207512ff4e5cf72148804"
+    },
+    {
+      "bytes": 12161,
+      "path": "config/HBNF_CONTROL_MODEL.json",
+      "sha256": "14e525e75cf04dd32d1eb1a97dcad2324eab5e0352767fc92a9b4d1561786db8"
+    },
+    {
+      "bytes": 8881,
+      "path": "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+      "sha256": "44f62cf31e5efa57a360117d96d437d6f504fd93704b28a069661b2da64a49f0"
+    },
+    {
+      "bytes": 4098,
+      "path": "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json",
+      "sha256": "937d036db17a600198cceda13e2f599384ffaacd17c24965fa9e7db048d77216"
+    },
+    {
+      "bytes": 2318,
+      "path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006.json",
+      "sha256": "320199f5cb73a2c7eba02a0bee05dda06d84d32c835907465981e92dbb395607"
+    },
+    {
+      "bytes": 19130,
+      "path": "scripts/hbnf_foundation_live_adapter.py",
+      "sha256": "a2ef9ce271fc4bb87a5d5e531e83ed53cc1a26f1c5c5c3d616ea0a4f5b56aeee"
+    },
+    {
+      "bytes": 30844,
+      "path": "scripts/hbnf_live_kernel_sweep.py",
+      "sha256": "f7f62447f07141dc6db7115dc2599b382e144ebaab414cfee3b5d6423f8e4d76"
+    },
+    {
+      "bytes": 3533,
+      "path": "scripts/hbnf_foundation_seq37_failure_policy.py",
+      "sha256": "577fe5c1db8eed8fd6b3728fe28ba0c1c1529d77df8a57f798d7ee62a5323686"
+    },
+    {
+      "bytes": 15469,
+      "path": "scripts/hbnf_foundation_seq37_transaction.py",
+      "sha256": "881553738c51bbb57c92e0dc66cdc5e66d818d270b9e5e266292d580dd29ef50"
+    },
+    {
+      "bytes": 3998,
+      "path": "scripts/hbnf_foundation_baseline.py",
+      "sha256": "e8eae7e36a62b44492fd53e30e5b851fb5fd8232aa52d4c352f164dbc54c7907"
+    },
+    {
+      "bytes": 6505,
+      "path": "scripts/hbnf_foundation_threshold_freeze.py",
+      "sha256": "30c82490ea4c48ea7d49bfa3593dee48357b80cbf28ba1b055d5659b4406cf49"
+    },
+    {
+      "bytes": 11054,
+      "path": "scripts/hbnf_foundation_soak_audit.py",
+      "sha256": "1634eaf357a7f77ee5e74833f72fbe65c073ae0a3acc032e733c44187d8ff05a"
+    },
+    {
+      "bytes": 13936,
+      "path": "tests/hbnf_foundation_live_adapter.py",
+      "sha256": "89aa56ca7a220bfe7ef625f17032fdc06b4bcdc07f836084e977a3be0a9b3a9a"
+    },
+    {
+      "bytes": 2360,
+      "path": "tests/hbnf_foundation_seq37_failure_policy.py",
+      "sha256": "cb1a61504b81ebd75addcdda86f14bc417314d0df3dd6baf2ea6f0caf0e05c78"
+    },
+    {
+      "bytes": 11727,
+      "path": "tests/hbnf_live_kernel_sweep.py",
+      "sha256": "3c3b7b88cde9f09a80dbfb10b9422d3fd5e6a628563cee93c1ed0bc51876ca38"
+    },
+    {
+      "bytes": 8114,
+      "path": "tests/hbnf_packet20_http_adapter.py",
+      "sha256": "986b36e970c9f817be094766b0b207d5e49d434fdda1b0e1ce84f1564e141f37"
+    },
+    {
+      "bytes": 7395,
+      "path": "tests/hbnf_foundation_offline_tools.py",
+      "sha256": "20bb7b0449c69e4055f306d6cea711f92c1a6ef61784a821a341a62e7e444f63"
+    },
+    {
+      "bytes": 5037,
+      "path": "evidence/hbnf-foundation-qualification-20261005/seq37/OFFLINE_GATES.json",
+      "sha256": "6c7fa708ae1e047abbb9a05e5b6e9da8dd52b28c0f82fe042a5d5d5f70cfb01c"
+    },
+    {
+      "bytes": 14784,
+      "path": "evidence/hbnf-foundation-qualification-20261005/seq37/READONLY_PREFLIGHT.json",
+      "sha256": "12316be6d8466001af830b8d6c1b77d53a5ed26a2b332d3e36d8748100afe5ac"
+    },
+    {
+      "bytes": 6351,
+      "path": "platform/workflows/live-device-diagnostic.json",
+      "sha256": "57344a628bf6e470e8ba7c192b6572acc27b50ab08e02029200da5a8ef743470"
+    }
+  ],
+  "run_id": "HBNF-FOUNDATION-SEQ37-38-20261006",
+  "schema": "local-roots-execution-capsule-v1",
+  "stages": [
+    {
+      "id": "offline-host-closure",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "deadline-edge regression pass",
+        "failure evidence and restore contract preserved",
+        "observer evidence exact-bound and reused",
+        "soak baseline-relative audit required"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "capture-current-state",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "exact Release07 Matrix identity",
+        "Matrix/AUX DDP continuity"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "bounded-candidate-install",
+      "kind": "live",
+      "mutation": true,
+      "outputs": [
+        "exact seq37 candidate installed once"
+      ],
+      "retry_policy": "never",
+      "rollback": {
+        "strategy": "seq38 exact Release07 only for actual candidate/Foundation failure"
+      }
+    },
+    {
+      "id": "foundation-sweep-and-soak",
+      "kind": "live",
+      "mutation": true,
+      "outputs": [
+        "all 28 kernels",
+        "baseline and frozen policy",
+        ">=5400s state-changing soak",
+        "all p95/p99/heap/fragmentation/AUX/restart gates"
+      ],
+      "retry_policy": "never",
+      "rollback": {
+        "strategy": "seq38 only for real device/Foundation failure; host-only failure preserves exact healthy seq37 with verified restore"
+      }
+    },
+    {
+      "id": "restore-and-close",
+      "kind": "recovery",
+      "mutation": true,
+      "outputs": [
+        "exact renderer restore and transaction evidence"
+      ],
+      "retry_policy": "never",
+      "rollback": {
+        "strategy": "Release07 seq38 only for genuine failure"
+      }
+    },
+    {
+      "id": "record",
+      "kind": "evidence",
+      "mutation": false,
+      "outputs": [
+        "hash-bound evidence package and control receipt"
+      ],
+      "retry_policy": "idempotent"
+    }
+  ],
+  "storage_policy": {
+    "github": "canonical source/config/tests/control",
+    "google_drive": "decisive run evidence/artifacts",
+    "local_workspace": "execution only"
+  },
+  "system_id": "hbnf-matrix",
+  "terminal_recovery": "Seq38 exact Release07 is real-failure recovery only. Never consume it for a host-only error when exact seq37 identity/health, no restart, renderer restore, and AUX health are proven.",
+  "trace_id": "hbnf-foundation-seq37-38-host-safe-20261006",
+  "user_interaction_policy": {
+    "routine_approval_required": false,
+    "terminal_relay": false
+  },
+  "workflow_id": "live-device-diagnostic",
+  "workflow_source": {
+    "path": "platform/workflows/live-device-diagnostic.json",
+    "sha256": "57344a628bf6e470e8ba7c192b6572acc27b50ab08e02029200da5a8ef743470"
+  }
+}

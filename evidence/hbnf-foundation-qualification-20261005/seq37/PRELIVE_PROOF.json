@@ -1,0 +1,49 @@
+{
+  "approved_for_mutation": true,
+  "capsule_sha256": "7c3acde64741b6f4a7796fd69bb4a5ad2e353ac94d8c464aa8d39000eb26b1fc",
+  "consumer_contract": {
+    "identity": "Direct-LAN standard WLED /update with exact SHA/size checked BIN, post-install release identity/MAC verification, no erase/settings/bootloader/partition changes.",
+    "verified": true
+  },
+  "pre_mutation_state": {
+    "cloud": "No Cloudflare/publication mutation. Physical AUX topology/WLED buses remain unchanged.",
+    "device": "Fresh read-only preflight: Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c exact Release07; AUX 192.168.77.11 MAC 8c:94:df:55:c3:4c, Matrix-origin DDP live. Full response hashes in READONLY_PREFLIGHT.json. Transaction repeats exact identity/AUX preflight immediately before OTA."
+  },
+  "recovery_identity": {
+    "identity": "hbnf-matrix-coordinated-v1-20261002-07; BIN SHA-256 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab; 1,458,624 bytes; seq38 failure-only",
+    "verification": "Exact local BIN SHA/size checked by seq37 transaction; prior seq34 exact LAN restore PASS evidence."
+  },
+  "run_id": "HBNF-FOUNDATION-SEQ37-38-20261006",
+  "schema": "local-roots-prelive-proof-v1",
+  "stages": {
+    "capture-current-state": {
+      "evidence": [
+        "evidence/hbnf-foundation-qualification-20261005/seq37/READONLY_PREFLIGHT.json: exact Release07 and Matrix-origin AUX DDP, captured after offline host tests; seq37 transaction repeats immediately before OTA",
+        "config/HBNF_CONTROL_STATE.json: current execution_cursor seq37/38"
+      ],
+      "status": "PASS"
+    },
+    "contract-closure": {
+      "evidence": [
+        "evidence/hbnf-foundation-qualification-20261005/seq37/OFFLINE_GATES.json",
+        "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json",
+        "scripts/hbnf_foundation_seq37_transaction.py"
+      ],
+      "status": "PASS"
+    },
+    "recovery-proof": {
+      "evidence": [
+        "/Users/andrew/Downloads/HBNF-Foundation-Crash-Recovery-20261005/artifact/release07.bin SHA-256 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab size 1458624",
+        "evidence/hbnf-foundation-qualification-20261005/seq33/continuation/seq34-recovery/RECOVERY_RECEIPT.json"
+      ],
+      "status": "PASS"
+    },
+    "transaction-rehearsal": {
+      "evidence": [
+        "offline regression suite and seq37 transaction dry-run PASS",
+        "seq35 exact candidate and seq36 exact recovery receipts; new package runs one candidate OTA and seq38 only on actual failure"
+      ],
+      "status": "PASS"
+    }
+  }
+}
