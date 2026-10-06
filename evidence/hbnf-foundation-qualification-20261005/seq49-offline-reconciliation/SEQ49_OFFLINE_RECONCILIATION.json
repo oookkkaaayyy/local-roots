@@ -1,0 +1,111 @@
+{
+  "authority_commit": "049fd500ca55cd0b657506e4f6be5edd8def7425",
+  "candidate": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008
+  },
+  "numeric_policy": {
+    "numeric_ratios_unchanged": true,
+    "path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
+    "sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797"
+  },
+  "offline_validation": {
+    "status": "PASS",
+    "tests": [
+      "tests/hbnf_foundation_settled_baseline.py",
+      "tests/hbnf_foundation_sustained_gate.py",
+      "tests/hbnf_foundation_offline_tools.py",
+      "tests/hbnf_foundation_continuous_soak.py",
+      "tests/hbnf_live_kernel_sweep.py",
+      "tests/hbnf_foundation_live_adapter.py",
+      "tests/hbnf_control.py",
+      "tests/hbnf_guarded_run.py",
+      "scripts/hbnf_architecture_fitness.py",
+      "tests/hbnf_runtime_qualify_static.py",
+      "tests/hbnf_kernel_sweep_report.py",
+      "tests/hbnf_source_tree_identity.py",
+      "tests/hbnf_packet20_http_adapter.py",
+      "tests/hbnf_packet20_build_validate.py"
+    ]
+  },
+  "original_seq47_frozen_audit": {
+    "path": "evidence/hbnf-foundation-qualification-20261005/seq47/live/retry-20261006T2027Z/FOUNDATION_SOAK_AUDIT.json",
+    "preserved_unchanged": true,
+    "sha256": "c9849ed0459e34e423d91b6d9c266ea639b5cc716c805e25fe51c8b21e391224"
+  },
+  "preserved_seq47_inputs": {
+    "duration_seconds": 5439.94933625,
+    "soak_jsonl_sha256": "a82653789022713a07420e8fc1ab297665fcc74a6e7498842be905d3ff7986d2",
+    "state_changes_jsonl_sha256": "85b24a76cf31ab7b568fcb7cae529b00f2a798d7a225edbfc769d5b0f92599cc"
+  },
+  "release07": {
+    "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
+    "sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "size_bytes": 1458624
+  },
+  "replay": {
+    "errors": [],
+    "incomplete_reasons": [
+      "kernel 5: only 1 settled resource/AUX samples; require 2",
+      "kernel 27: only 0 settled resource/AUX samples; require 2"
+    ],
+    "path": "evidence/hbnf-foundation-qualification-20261005/seq49-offline-reconciliation/SEQ47_COMPARABILITY_REPLAY.json",
+    "settled_counts": {
+      "0": 2,
+      "1": 4,
+      "10": 2,
+      "11": 2,
+      "12": 2,
+      "13": 3,
+      "14": 3,
+      "15": 4,
+      "16": 5,
+      "17": 3,
+      "18": 3,
+      "19": 4,
+      "2": 2,
+      "20": 2,
+      "21": 4,
+      "22": 4,
+      "23": 3,
+      "24": 4,
+      "25": 4,
+      "26": 4,
+      "27": 0,
+      "3": 14,
+      "4": 4,
+      "5": 1,
+      "6": 6,
+      "7": 5,
+      "8": 2,
+      "9": 4
+    },
+    "settled_gate_failures": [],
+    "sha256": "6005d78dc314b38e39bb05320852e72d0995aad6c044f39a5d00ddcee7309b83",
+    "status": "INCOMPLETE",
+    "sustained_status": "INCOMPLETE"
+  },
+  "schema": "hbnf-seq49-offline-comparability-closure-v1",
+  "seq39_comparable_resource_baseline": {
+    "aux_from": "inactive fraction in same settled raw profile",
+    "current_free_heap_from": "free_heap_bytes in hash-matched per-kernel raw profiles; esp_get_minimum_free_heap_size retained diagnostic-only",
+    "kernel_count": 28,
+    "largest_block_from": "minimum largest_free_block_bytes in same settled raw profile",
+    "path": "evidence/hbnf-foundation-qualification-20261005/seq49-offline-reconciliation/SEQ39_COMPARABLE_SETTLED_RESOURCE_BASELINE.json",
+    "settle_seconds": 5,
+    "sha256": "168bf05b7930cce87a945d3f6ada86814f2a8499cd54ccc251b0b112eb852572",
+    "source_sweep_manifest_sha256": "ec7602665bc54a81635769a35463965c88fbac7354da58b5453bb438f6a38abf"
+  },
+  "seq49_targeted_plan": {
+    "adapter": "SEQ49_TARGETED_RESOURCE_ADAPTER.json",
+    "firmware_rebuild": false,
+    "full_soak_repeat": false,
+    "github_actions": false,
+    "observer_effect_repeat": false,
+    "sample_seconds": 2.1,
+    "samples_min_per_kernel": 2,
+    "settle_seconds": 5
+  },
+  "status": "PASS_FOR_CONDITIONAL_SEQ49__REPLAY_INCOMPLETE_ONLY_FOR_MISSING_SETTLED_SAMPLES"
+}

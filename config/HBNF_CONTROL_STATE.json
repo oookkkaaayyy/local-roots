@@ -1,5 +1,5 @@
 {
-  "checkpoint_at_utc": "2026-10-06T22:18:00Z",
+  "checkpoint_at_utc": "2026-10-06T22:54:07Z",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -99,7 +99,7 @@
       "schema": "hbnf-brightness-field-target-v1",
       "status": "DECISION_DEFER_FOR_STABILITY",
       "target_event": "NEXT_SKINS_ROUND__2026-10-06",
-      "user_field_preference": "Typical night sweet spot is roughly current-slider 10–20; values above ~25 can be excessively bright on-course."
+      "user_field_preference": "Typical night sweet spot is roughly current-slider 10\u201320; values above ~25 can be excessively bright on-course."
     },
     "checkpoint_at_utc": "2026-10-06T18:27:00Z",
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
@@ -131,39 +131,20 @@
       "zero_traffic_rehearsal_file_id": "1ZJOseh2J4ls9dGlF_SOH5DHAH9djd4xp"
     },
     "execution_cursor": {
-      "current_failure_domain": "SEQ43_RETRY_HOST_PRECONDITION_DEFECT__SEQ44_RECOVERY_PASS__LIVE_MUTATION_CLOSED",
+      "current_failure_domain": "SEQ49_TARGETED_RESOURCE_AUX_TIMEOUT__SEQ50_RELEASE07_RECOVERY_PASS",
       "current_lifecycle_state": "FIX_CANDIDATE",
       "current_subject": {
-        "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-        "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+        "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
       },
       "current_transition": "T2_FOUNDATION_QUALIFY",
       "exact_next_path": [
-        "No further seq43 retry or seq45/46 mutation is authorized. Exact Release07 is installed and verified after seq44; preserve the host-precondition false-negative as the final classification.",
-        "Continue offline-safe Cart 2.0 Skins field-readiness staging under current T2/T3 authority. Do not deploy Phase 2 assets or alter hardware while lifecycle gates remain false.",
-        "Foundation remains UNQUALIFIED because the >=90-minute state-changing soak and full T2 closure did not complete; obtain fresh sequence/control authority before another Foundation live transaction.",
-        "Brightness remains deferred for stability."
-      ],
-      "no_repeat": [
-        "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
-        "R4 fixed-point performance trial is closed and materially successful; do not rerun exploratory R1-R4 selection.",
-        "Observer-effect measurement on exact artifact SHA 6285f1...4338 is already PASS; do not rerun unless artifact/instrumentation changes.",
-        "Exact Release07 rollback path is proven; do not re-derive it.",
-        "Host-only failures do not consume a recovery install unless actual device/runtime safety evidence fails or becomes unknown.",
-        "Do not rebuild firmware or use GitHub Actions for a host-harness defect.",
-        "ANTI_STALL V2: the 30-minute clock is time since last measurable forward progress, not attempt duration; healthy advancing work continues.",
-        "ANTI_STALL V2: when stalled, stop only the stalled mechanism at a safe boundary and preserve install/session/snapshot/checkpoint whenever proven safe; no timer-based restart/reinstall/recovery/reboot.",
-        "ANTI_STALL V2: one retry maximum per failure class, only with a materially different mechanism supported by new evidence.",
-        "ANTI_STALL V2: after 60 minutes without lifecycle progress, activate noncontending offline-safe lanes in parallel; do not kill healthy critical-path work.",
-        "ANTI_STALL V2: no firmware rebuild or GitHub Actions for host/transport/harness/telemetry-reader defects unless the artifact itself is invalidated."
-      ],
-      "parallel_ready_during_foundation_soak": [
-        "Mission Control/scoring source reconciliation and host tests",
-        "PWA/cache/versioning implementation and host tests",
-        "AudioFeatures/Vibe source-level implementation preparation that does not mutate live firmware",
-        "VisualMoment/text source-level implementation preparation that does not mutate live firmware"
-      ],
-      "schema": "hbnf-execution-cursor-v1"
+        "Seq49 targeted collection did not complete: AUX /json/state timed out during telemetry after four kernels; no measured resource/AUX threshold failure. Renderer restore verified.",
+        "Seq50 exact Release07 recovery and installed release identity/hash verified; live mutation closed.",
+        "Foundation remains UNQUALIFIED; do not allocate another sequence or mutate live hardware without fresh coordinator authority.",
+        "Owner-device Home Screen/control smoke was not run because candidate targeted qualification was incomplete.",
+        "Offline-correct and regress the AUX telemetry collection timeout before any future authorized targeted qualification."
+      ]
     },
     "external_parallel_launch": {
       "launch_status": "PARALLEL_READY_SIGNAL_PRESERVED__SOAK_DID_NOT_START__SEQ44_RECOVERY_COMPLETE__OFFLINE_LANES_ONLY",
@@ -866,7 +847,7 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
+      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "live_mutation_authorization": {
@@ -906,7 +887,7 @@
     },
     "live_mutation_authorized": true,
     "name": "Foundation offline timeout and soak-harness checkpoint",
-    "next_action": "OFFLINE_LOCALIZE_SEQ47_HEAP_FRAGMENTATION_AND_KERNEL23_AUX_STALENESS; no new candidate/build/live mutation until fresh authority",
+    "next_action": "Seq49 targeted resource/AUX collection stopped after transient AUX /json/state telemetry timeout; exact renderer restore passed and authorized seq50 Release07 recovery passed. Foundation remains unqualified; no further live mutation is authorized without fresh coordinator authority.",
     "next_work": "Offline only: commit and preserve seq41/42 evidence, source-bound restore comparator correction and regressions; finish/test the V7.3 owner Skins/PWA package without deploying; continue only source-audit/preparation for Vibe/audio and text/moments; do not allocate a new sequence or mutate devices until newer authority.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "overnight_priority": {
@@ -1447,6 +1428,20 @@
           "actual iPad/iPhone owner-control smoke"
         ]
       }
+    },
+    "seq49_field_rescue": {
+      "authority_commit": "049fd500ca55cd0b657506e4f6be5edd8def7425",
+      "status": "INCOMPLETE__RELEASE07_RECOVERED",
+      "seq49_candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "seq49_install_verified": true,
+      "targeted_kernels_completed": 4,
+      "targeted_collection_failure": "AUX /json/state request timed out after 4.0s during telemetry; no device/runtime threshold failure was measured",
+      "renderer_restore_verified": true,
+      "seq50_release07_recovery_verified": true,
+      "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
+      "installed_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+      "owner_device_smoke": "NOT_RUN; candidate targeted qualification incomplete and exact Release07 restored",
+      "evidence_dir": "evidence/hbnf-foundation-qualification-20261005/seq49"
     }
   },
   "execution_budget_policy": {
@@ -1464,7 +1459,7 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "QUALIFICATION_COMPARABILITY_REVIEW__SEQ47_RESOURCE_AUX_FAILURE",
+    "current_failure_domain": "SEQ49_TARGETED_RESOURCE_AUX_TIMEOUT__SEQ50_RELEASE07_RECOVERY_PASS",
     "current_lifecycle_state": "FIX_CANDIDATE",
     "current_subject": {
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
@@ -1472,34 +1467,12 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Offline-only: correct/regression-test audit comparability for boot-lifetime heap watermark and 5-second state-change settle; preserve original seq47 FAIL.",
-      "Replay seq47. A genuine settled resource/AUX failure stops the rescue; lack of enough settled samples is INCOMPLETE, not FAIL.",
-      "If replay PASS or only settled-sample evidence is missing, seq49 reinstall exact unchanged candidate SHA 338afdf5...3d8c; no rebuild.",
-      "Run only a short 28-kernel 5-second-settled resource/AUX sweep to fill comparable evidence, reusing the completed 90-minute FPS/tail/stability/restore proof.",
-      "Run actual iPad/iPhone owner-control smoke. Seq50 Release07 on any failure. Freeze by 16:40 for 17:00 departure."
-    ],
-    "no_repeat": [
-      "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
-      "R4 fixed-point performance trial is closed and materially successful; do not rerun exploratory R1-R4 selection.",
-      "Observer-effect measurement on exact artifact SHA 6285f1...4338 is already PASS; do not rerun unless artifact/instrumentation changes.",
-      "Exact Release07 rollback path is proven; do not re-derive it.",
-      "Host-only failures do not consume a recovery install unless actual device/runtime safety evidence fails or becomes unknown.",
-      "Do not rebuild firmware or use GitHub Actions for a host-harness defect.",
-      "ANTI_STALL V2: the 30-minute clock is time since last measurable forward progress, not attempt duration; healthy advancing work continues.",
-      "ANTI_STALL V2: when stalled, stop only the stalled mechanism at a safe boundary and preserve install/session/snapshot/checkpoint whenever proven safe; no timer-based restart/reinstall/recovery/reboot.",
-      "ANTI_STALL V2: one retry maximum per failure class, only with a materially different mechanism supported by new evidence.",
-      "ANTI_STALL V2: after 60 minutes without lifecycle progress, activate noncontending offline-safe lanes in parallel; do not kill healthy critical-path work.",
-      "ANTI_STALL V2: no firmware rebuild or GitHub Actions for host/transport/harness/telemetry-reader defects unless the artifact itself is invalidated.",
-      "Do not create a replacement firmware candidate from seq45 isolated frame-max excursions unless corrected sustained-tail analysis proves a real renderer/runtime regression.",
-      "Do not rerun 28-kernel sweep or observer-effect A/B when reusing exact candidate SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c."
-    ],
-    "parallel_ready_during_foundation_soak": [
-      "Mission Control/scoring source reconciliation and host tests",
-      "PWA/cache/versioning implementation and host tests",
-      "AudioFeatures/Vibe source-level implementation preparation that does not mutate live firmware",
-      "VisualMoment/text source-level implementation preparation that does not mutate live firmware"
-    ],
-    "schema": "hbnf-execution-cursor-v1"
+      "Seq49 targeted collection did not complete: AUX /json/state timed out during telemetry after four kernels; no measured resource/AUX threshold failure. Renderer restore verified.",
+      "Seq50 exact Release07 recovery and installed release identity/hash verified; live mutation closed.",
+      "Foundation remains UNQUALIFIED; do not allocate another sequence or mutate live hardware without fresh coordinator authority.",
+      "Owner-device Home Screen/control smoke was not run because candidate targeted qualification was incomplete.",
+      "Offline-correct and regress the AUX telemetry collection timeout before any future authorized targeted qualification."
+    ]
   },
   "inherited_evidence": [
     {
@@ -1727,7 +1700,7 @@
     ],
     "target": "Field the exact fast seq47 artifact tonight if the failed resource/AUX gates are proven to be audit-comparability artifacts rather than sustained runtime defects."
   },
-  "live_mutation_authorized": true,
+  "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",

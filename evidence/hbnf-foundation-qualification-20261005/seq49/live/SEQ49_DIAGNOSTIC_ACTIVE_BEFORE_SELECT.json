@@ -1,0 +1,27 @@
+{
+  "boot_uptime_seconds": 15,
+  "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "captured_at_unix": 1791326851.5882711,
+  "diagnosticActive": true,
+  "matrix_aux_ddp_live": true,
+  "runtime_identity": {
+    "basedOnFirmwareSha256": "b9bb60dca1a9be8f7241670a7540810c604465c9adf7084b6efc90d5b4622886",
+    "basedOnReleaseId": "hbnf-matrix-coordinated-v1-20261002-06",
+    "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "features": [
+      "canonical-palette-v1",
+      "canonical-overlay-v1",
+      "coordinated-ui-v1"
+    ],
+    "ip": "192.168.77.10",
+    "mac": "70:4b:ca:5b:34:5c",
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "schema": "hbnf-build-v1",
+    "wled": "16.0.1"
+  },
+  "schema": "hbnf-seq49-fresh-diagnostic-session-v1",
+  "sequence": 49,
+  "snapshotState": "IDLE",
+  "snapshotValid": false
+}

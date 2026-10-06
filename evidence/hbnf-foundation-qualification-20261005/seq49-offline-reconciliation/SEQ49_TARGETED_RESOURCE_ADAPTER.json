@@ -1,0 +1,41 @@
+{
+  "schema": "hbnf-live-sweep-adapter-v1",
+  "snapshot_argv": [
+    "python3",
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_live_adapter.py",
+    "snapshot",
+    "--inventory",
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"
+  ],
+  "select_argv": [
+    "python3",
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_live_adapter.py",
+    "select",
+    "--kernel",
+    "{runtime_kernel_index}"
+  ],
+  "telemetry_argv": [
+    "python3",
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_live_adapter.py",
+    "telemetry",
+    "--inventory",
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+    "--session-id",
+    "{session_id}"
+  ],
+  "restore_argv": [
+    "python3",
+    "/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_live_adapter.py",
+    "restore",
+    "--snapshot-file",
+    "{snapshot_file}"
+  ],
+  "settle_seconds": 5,
+  "sample_seconds": 2.1,
+  "sample_interval_seconds": 1,
+  "timeout_seconds": 240,
+  "expected_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "notes": [
+    "Seq49 targeted resource/AUX evidence only. Exact unchanged candidate SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c. One fresh Packet20 snapshot; observer-effect A/B is inherited and NOT repeated. Each kernel has 5s post-select settle and then at least two telemetry samples. No 90-minute soak, firmware build, Actions, or renderer/FastLED delta."
+  ]
+}

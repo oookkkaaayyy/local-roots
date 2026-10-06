@@ -1,0 +1,5 @@
+{
+  "device_mutation_started": false,
+  "error": "command failed rc=2: ['python3', '/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_live_adapter.py', 'telemetry', '--inventory', '/private/tmp/hbnf-foundation-crash-recovery-20261005/config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json', '--session-id', '/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq49/live/targeted-resource-sweep']\nfoundation adapter error: RuntimeError: foundation-telemetry-disabled-during-soak\n",
+  "status": "READONLY_PREFLIGHT_FAILED"
+}

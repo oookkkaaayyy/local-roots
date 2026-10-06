@@ -1,0 +1,3 @@
+HTTP_200 UPDATE_OK
+e989fc00de0b0d87a74771439a95cb6b231dac0ede16865104c2251612c6a128  /tmp/hbnf-seq49-ota-response.html
+<!DOCTYPE html> <html lang=en> <head> <meta content="width=device-width" name=viewport> <title>WLED Message</title> <script>function B(){window.history.back()}function RS(){window.location="../settings"}function RP(){top.location.href="../"}</script> <style> @import url("style.css"); </style> </head> <body> <h2>Update successful!</h2>Rebooting now...<script>setTimeout(RP,11000)</script></body> </html>

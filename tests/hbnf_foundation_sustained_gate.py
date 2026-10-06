@@ -14,13 +14,15 @@ baseline={"schema":"hbnf-foundation-28-kernel-baseline-v1","release_id":release,
 for i in range(28):
     baseline["kernels"][str(i)]={"kernel_name":f"kernel-{i}","fps_median":40.0,
       "frame_p95_median":25.0,"frame_p99_median":35.0,"frame_max":40.0,
-      "minimum_free_heap":90000.0,"largest_free_block_min":60000.0}
+      "minimum_free_heap":90000.0,"largest_free_block_min":60000.0,
+      "comparable_settled_resources":{"current_free_heap_min":90000.0,
+        "largest_free_block_min":60000.0,"aux_stale_fraction":0.0}}
 
 def make_samples():
     rows=[]
-    for i in range(1081):
-        kid=i%28
-        rows.append({"sample_time":float(i*5),"release_id":release,"uptime_seconds":float(i*5+700),
+    for i in range(541):
+        kid=(i//2)%28
+        rows.append({"sample_time":float(i*10),"release_id":release,"uptime_seconds":float(i*10+700),
           "fps":40.0,"frame_ms_p50":20.0,"frame_ms_p95":24.0,"frame_ms_p99":35.0,"frame_ms_max":40.0,
           "kernel_id":kid,"kernel_name":f"kernel-{kid}","variant_id":f"variant-{kid}",
           "free_heap_bytes":95000,"minimum_free_heap_bytes":85000,"largest_free_block_bytes":55000,
@@ -29,7 +31,14 @@ def make_samples():
     return rows
 
 def run(rows):
-    return audit_mod.audit(rows,inventory,release,baseline=baseline,policy=policy)
+    events=[]
+    select_index=0
+    for i,row in enumerate(rows):
+        if i%2: continue
+        sample_time=float(row["sample_time"])
+        events.append({"select_index":select_index,"kernel_id":row["kernel_id"],"started_at_monotonic":sample_time-5.2,
+                       "completed_at_monotonic":sample_time-5.1,"status":"PASS"});select_index+=1
+    return audit_mod.audit(rows,inventory,release,baseline=baseline,policy=policy,state_changes=events)
 
 # A: A single high frame maximum stays visible in the report but cannot fail
 # the sustained-performance gate when percentiles/resources remain healthy.
@@ -60,14 +69,21 @@ restarted=make_samples();restarted[500]["restart_count"]=1
 result=run(restarted)
 assert result["status"]=="FAIL" and any("restart count changed" in e for e in result["errors"])
 
-# E: Heap and largest-block/fragmentation floors remain enforced.
+# E: Boot-lifetime minimum-free-heap watermark is ignored for per-kernel
+# sustained comparison; settled current free heap and fragmentation remain gated.
 resources=make_samples()
 for row in resources:
     if row["kernel_id"]==0:
-        row["minimum_free_heap_bytes"]=70000
+        row["minimum_free_heap_bytes"]=1000
+result=run(resources)
+assert not any("settled_current_free_heap_min" in e for e in result["sustained_performance"]["errors"])
+resources=make_samples()
+for row in resources:
+    if row["kernel_id"]==0:
+        row["free_heap_bytes"]=70000
         row["largest_free_block_bytes"]=40000
 result=run(resources)
-assert any("minimum_free_heap" in e for e in result["sustained_performance"]["errors"])
+assert any("settled_current_free_heap_min" in e for e in result["sustained_performance"]["errors"])
 assert any("largest_free_block_min" in e for e in result["sustained_performance"]["errors"])
 
 # F: AUX health/staleness remains a hard gate.
@@ -87,6 +103,28 @@ for row in gapped[400:]: row["sample_time"]+=20.0
 result=run(gapped)
 assert result["status"]=="FAIL" and any("gap exceeded" in e for e in result["errors"])
 
+# A false AUX sample inside the 5-second selector settle window is excluded;
+# repeated settled false samples remain a sustained failure.
+settle_rows=make_samples(); settle_events=[]
+select_index=0
+for i,row in enumerate(settle_rows):
+    if i%2: continue
+    ts=float(row["sample_time"])
+    settle_events.append({"select_index":select_index,"kernel_id":row["kernel_id"],"started_at_monotonic":ts-5.2,
+                          "completed_at_monotonic":ts-5.1,"status":"PASS"});select_index+=1
+    if row["kernel_id"]==0:
+        row["aux_projection_active"]=False
+        if i % 56 == 0:
+            settle_events[-1]["completed_at_monotonic"]=ts-1.0
+result=audit_mod.audit(settle_rows,inventory,release,baseline=baseline,policy=policy,state_changes=settle_events)
+assert result["sustained_performance"]["status"]=="PASS",result["sustained_performance"]
+
+settled_aux=make_samples()
+for row in settled_aux:
+    if row["kernel_id"]==0: row["aux_projection_active"]=False
+result=run(settled_aux)
+assert any("settled_aux_stale_fraction" in e for e in result["sustained_performance"]["errors"])
+
 # Replay the preserved seq45 run: it is too short for sustained ratio decisions.
 # Its max excursions remain diagnostic; early catastrophic and structural gates
 # stay active, while provisional resource/p99 deviations remain visible.
@@ -95,7 +133,8 @@ if seq45.is_file():
     raw=audit_mod.read_jsonl(str(seq45))
     exact_inventory=audit_mod.read_json(str(ROOT/"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"))
     exact_baseline=audit_mod.read_json(str(ROOT/"evidence/hbnf-foundation-qualification-20261005/seq39/live/PRE_SOAK_BASELINE.json"))
-    replay=audit_mod.audit(raw,exact_inventory,release,baseline=exact_baseline,policy=policy)
+    for kid in range(28): exact_baseline["kernels"][str(kid)]["comparable_settled_resources"]=baseline["kernels"][str(kid)]["comparable_settled_resources"]
+    replay=audit_mod.audit(raw,exact_inventory,release,baseline=exact_baseline,policy=policy,state_changes=[])
     assert replay["status"]=="INCOMPLETE",replay["errors"]
     assert replay["foundation_qualification"]["status"]=="INCOMPLETE"
     assert replay["sustained_performance"]["status"]=="INCOMPLETE"

@@ -8,6 +8,7 @@ freeze=load("hbnf_foundation_threshold_freeze")
 recovery=load("hbnf_foundation_recovery_audit")
 pack=load("hbnf_foundation_evidence_pack")
 baseline_builder=load("hbnf_foundation_baseline")
+settled_baseline_builder=load("hbnf_foundation_settled_baseline")
 soak_audit=load("hbnf_foundation_soak_audit")
 foundation_policy=json.loads((ROOT/"config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json").read_text())
 assert freeze.validate_policy(foundation_policy)==[]
@@ -71,24 +72,30 @@ with tempfile.TemporaryDirectory() as td:
     mp=root/"sweep.json";mp.write_text(json.dumps(manifest))
     baseline=baseline_builder.build(mp)
     assert baseline["kernel_count"]==28 and baseline["kernels"]["0"]["largest_free_block_min"]==80000
+    adapter=root/"adapter.json";adapter.write_text(json.dumps({"settle_seconds":5}))
+    baseline_path=root/"baseline.json";baseline_path.write_text(json.dumps(baseline))
+    baseline=settled_baseline_builder.derive(str(baseline_path),str(mp),str(adapter))
     soak=[]
-    for i in range(1081):
-        s=json.loads((root/(f"{i%28:02d}_kernel-{i%28}.jsonl")).read_text())
-        s.update(sample_time=float(i*5),uptime_seconds=float(i*5+10),kernel_id=i%28,kernel_name=f"kernel-{i%28}")
+    changes=[]
+    for i in range(541):
+        kid=(i//2)%28;stamp=float(i*10)
+        s=json.loads((root/(f"{kid:02d}_kernel-{kid}.jsonl")).read_text())
+        s.update(sample_time=stamp,uptime_seconds=stamp+10,kernel_id=kid,kernel_name=f"kernel-{kid}",minimum_free_heap_bytes=50000)
         soak.append(s)
-    result=soak_audit.audit(soak,{"entries":[{"runtime_kernel_index_expected":i} for i in range(28)]},"candidate",5400,baseline,foundation_policy)
+        if i%2==0: changes.append({"select_index":len(changes),"kernel_id":kid,"started_at_monotonic":stamp-5.2,"completed_at_monotonic":stamp-5.1,"status":"PASS"})
+    result=soak_audit.audit(soak,{"entries":[{"runtime_kernel_index_expected":i} for i in range(28)]},"candidate",5400,baseline,foundation_policy,changes)
     assert result["status"]=="PASS" and result["foundation_qualification"]["status"]=="PASS",result
     # Matrix send-age / optional custom frame-lock age is not the native DDP
     # receive gate. WLED's Matrix-origin DDP status remains the health signal.
     high_age=[dict(x,aux_projection_age_ms=4294967295,aux_projection_age_valid=False) for x in soak]
-    age_result=soak_audit.audit(high_age,{"entries":[{"runtime_kernel_index_expected":i} for i in range(28)]},"candidate",5400,baseline,foundation_policy)
+    age_result=soak_audit.audit(high_age,{"entries":[{"runtime_kernel_index_expected":i} for i in range(28)]},"candidate",5400,baseline,foundation_policy,changes)
     assert age_result["status"]=="PASS",age_result["errors"]
     inactive=[dict(x) for x in soak]
     for i in (30,31,32):inactive[i]["aux_projection_active"]=False
-    inactive_result=soak_audit.audit(inactive,{"entries":[{"runtime_kernel_index_expected":i} for i in range(28)]},"candidate",5400,baseline,foundation_policy)
+    inactive_result=soak_audit.audit(inactive,{"entries":[{"runtime_kernel_index_expected":i} for i in range(28)]},"candidate",5400,baseline,foundation_policy,changes)
     assert any("catastrophic threshold" in e for e in inactive_result["errors"])
     bad=[dict(x) for x in soak];bad[3]["fps"]=10;bad[4]["fps"]=10;bad[5]["fps"]=10
-    fail=soak_audit.audit(bad,{"entries":[{"runtime_kernel_index_expected":i} for i in range(28)]},"candidate",5400,baseline,foundation_policy)
+    fail=soak_audit.audit(bad,{"entries":[{"runtime_kernel_index_expected":i} for i in range(28)]},"candidate",5400,baseline,foundation_policy,changes)
     assert any("catastrophic threshold" in e for e in fail["errors"])
 
 # The already-durable seq32 receipt is validated offline against the exact BIN.

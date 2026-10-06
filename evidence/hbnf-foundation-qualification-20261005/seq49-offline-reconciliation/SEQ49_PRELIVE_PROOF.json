@@ -1,0 +1,55 @@
+{
+  "approved_for_mutation": true,
+  "capsule_sha256": "d30d1ac00de35e1a462fec05d416ed36f5f23aba2b5bc91dbdc5b12da2ba56f1",
+  "consumer_contract": {
+    "identity": "Opal-origin local WLED multipart POST to http://192.168.77.10/update; exact candidate/recovery SHA+size checked at source and Opal; no mutable cloud discovery",
+    "verified": true
+  },
+  "pre_mutation_state": {
+    "cloud_deployment": "Not used for direct-LAN recovery",
+    "device": "Matrix 192.168.77.10, MAC 70:4b:ca:5b:34:5c; Release07 verified in fresh readonly prelive. AUX 192.168.77.11 MAC 8c:94:df:55:c3:4c, native DDP live from Matrix"
+  },
+  "recovery_identity": {
+    "identity": "hbnf-matrix-coordinated-v1-20261002-07; SHA-256 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab; 1458624 bytes",
+    "verification": "Exact local artifact SHA/size verified; seq48 exact recovery receipt and post-recovery read-only identity/health evidence; direct Opal-origin WLED /update path established"
+  },
+  "run_id": "hbnf-matrix-20261006T224601Z-08c621dc",
+  "schema": "local-roots-prelive-proof-v1",
+  "stages": {
+    "capture-current-state": {
+      "evidence": [
+        "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq49-offline-reconciliation/SEQ49_READONLY_PRELIVE.json",
+        "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq49-offline-reconciliation/seq49-pre-install-readonly-matrix_build.json",
+        "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq49-offline-reconciliation/seq49-pre-install-readonly-aux_info.json",
+        "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq49-offline-reconciliation/seq49-pre-install-readonly-aux_state.json"
+      ],
+      "status": "PASS"
+    },
+    "contract-closure": {
+      "evidence": [
+        "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq49-offline-reconciliation/SEQ49_OFFLINE_RECONCILIATION.json",
+        "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq49-offline-reconciliation/SEQ47_COMPARABILITY_REPLAY.json",
+        "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq49-offline-reconciliation/SEQ49_TARGETED_RESOURCE_ADAPTER.json",
+        "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq49-offline-reconciliation/dry-run",
+        "/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_seq49_targeted_resources.py"
+      ],
+      "status": "PASS"
+    },
+    "recovery-proof": {
+      "evidence": [
+        "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq47/live/retry-20261006T2027Z/SEQ48_RECOVERY_RESULT.json",
+        "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq47/live/retry-20261006T2027Z/post-recovery-readonly",
+        "Release07 hash/size verified locally and exact seq48 recovery receipt confirms the established recovery path"
+      ],
+      "status": "PASS"
+    },
+    "transaction-rehearsal": {
+      "evidence": [
+        "/private/tmp/hbnf-foundation-crash-recovery-20261005/scripts/hbnf_foundation_seq41_transaction.py",
+        "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq49-offline-reconciliation/dry-run",
+        "same exact candidate install path and seq48 recovery path exercised in seq47/48; bounded targeted sweep adapter dry-run PASS"
+      ],
+      "status": "PASS"
+    }
+  }
+}

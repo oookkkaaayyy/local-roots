@@ -22,6 +22,8 @@ REQUIRED = (
 )
 MIN_DURATION_SECONDS = 90 * 60
 MAX_SAMPLE_GAP_SECONDS = 15
+RESOURCE_SETTLE_SECONDS = 5.0
+MIN_SETTLED_RESOURCE_SAMPLES_PER_KERNEL = 2
 
 
 def read_json(path: str) -> dict:
@@ -45,7 +47,8 @@ def read_jsonl(path: str) -> list[dict]:
 
 def audit(samples: list[dict], inventory: dict, expected_release: str,
           minimum_duration_seconds: int = MIN_DURATION_SECONDS,
-          baseline: dict | None = None, policy: dict | None = None) -> dict:
+          baseline: dict | None = None, policy: dict | None = None,
+          state_changes: list[dict] | None = None) -> dict:
     errors: list[str] = []
     structural_errors: list[str] = []
     if minimum_duration_seconds < MIN_DURATION_SECONDS:
@@ -115,6 +118,7 @@ def audit(samples: list[dict], inventory: dict, expected_release: str,
     largest_block = nums("largest_free_block_bytes")
     per_kernel={}
     sustained_performance_errors=[]
+    qualification_incomplete=[]
     isolated_max_diagnostics=[]
     provisional_threshold_diagnostics=[]
     if baseline is not None or policy is not None:
@@ -127,26 +131,40 @@ def audit(samples: list[dict], inventory: dict, expected_release: str,
         if baseline and policy:
             cfg=policy["comparison"]["candidate_vs_baseline"]
             base=baseline.get("kernels",{})
+            state_log_ok, state_log_reason = _state_change_log_valid(state_changes or [], expected_ids)
+            if not state_log_ok:
+                qualification_incomplete.append(state_log_reason)
             for kid in sorted(expected_ids):
                 rows=[s for s in valid if int(s["kernel_id"])==kid]
                 b=base.get(str(kid))
                 if not rows or not b:
-                    qualification_errors.append(f"kernel {kid}: baseline or soak samples missing");continue
+                    structural_errors.append(f"kernel {kid}: baseline or soak samples missing");continue
                 vals=lambda k:[float(x[k]) for x in rows]
+                settled_rows = (_settled_resource_rows(rows, state_changes or [], RESOURCE_SETTLE_SECONDS)
+                                if state_log_ok else [])
                 metrics={"fps_median":statistics.median(vals("fps")),
                     "frame_p95_median":statistics.median(vals("frame_ms_p95")),
                     "frame_p99_median":statistics.median(vals("frame_ms_p99")),
                     "frame_max":max(vals("frame_ms_max")),
-                    "minimum_free_heap":min(vals("minimum_free_heap_bytes")),
-                    "largest_free_block_min":min(vals("largest_free_block_bytes")),
-                    "aux_stale_fraction":sum(not bool(x["aux_projection_active"]) for x in rows)/len(rows)}
+                    "settled_resource_sample_count":len(settled_rows),
+                    "settled_current_free_heap_min":min((float(x["free_heap_bytes"]) for x in settled_rows), default=None),
+                    "settled_largest_free_block_min":min((float(x["largest_free_block_bytes"]) for x in settled_rows), default=None),
+                    "settled_aux_stale_fraction":(sum(not bool(x["aux_projection_active"]) for x in settled_rows)/len(settled_rows) if settled_rows else None)}
                 checks={
                     "fps_median":metrics["fps_median"]>=float(b["fps_median"])*float(cfg["fps_median_min_ratio"]),
                     "frame_p95_median":metrics["frame_p95_median"]<=float(b["frame_p95_median"])*float(cfg["frame_p95_max_ratio"]),
-                    "frame_p99_median":metrics["frame_p99_median"]<=float(b["frame_p99_median"])*float(cfg["frame_p99_max_ratio"]),
-                    "minimum_free_heap":metrics["minimum_free_heap"]>=float(b["minimum_free_heap"])*float(cfg["minimum_free_heap_min_ratio"]),
-                    "largest_free_block_min":metrics["largest_free_block_min"]>=float(b["largest_free_block_min"])*float(cfg["largest_free_block_min_ratio"]),
-                    "aux_stale_fraction":metrics["aux_stale_fraction"]<=float(cfg["aux_stale_sample_max_fraction"])}
+                    "frame_p99_median":metrics["frame_p99_median"]<=float(b["frame_p99_median"])*float(cfg["frame_p99_max_ratio"])}
+                resource_baseline=b.get("comparable_settled_resources")
+                if not resource_baseline:
+                    structural_errors.append(f"kernel {kid}: comparable settled resource baseline missing")
+                elif len(settled_rows)<MIN_SETTLED_RESOURCE_SAMPLES_PER_KERNEL:
+                    qualification_incomplete.append(f"kernel {kid}: only {len(settled_rows)} settled resource/AUX samples; require {MIN_SETTLED_RESOURCE_SAMPLES_PER_KERNEL}")
+                else:
+                    checks.update({
+                        "settled_current_free_heap_min":metrics["settled_current_free_heap_min"]>=float(resource_baseline["current_free_heap_min"])*float(cfg["minimum_free_heap_min_ratio"]),
+                        "settled_largest_free_block_min":metrics["settled_largest_free_block_min"]>=float(resource_baseline["largest_free_block_min"])*float(cfg["largest_free_block_min_ratio"]),
+                        "settled_aux_stale_fraction":metrics["settled_aux_stale_fraction"]<=float(cfg["aux_stale_sample_max_fraction"]),
+                    })
                 max_limit=float(b["frame_max"])*float(cfg["frame_max_max_ratio"])
                 max_ratio=metrics["frame_max"]/float(b["frame_max"])
                 isolated_max_diagnostics.append({"kernel_id":kid,"kernel_name":b["kernel_name"],
@@ -175,9 +193,9 @@ def audit(samples: list[dict], inventory: dict, expected_release: str,
     duration_incomplete=(timestamps and duration < minimum_duration_seconds)
     non_duration_structural=[e for e in structural_errors if not e.startswith("soak duration ")]
     performance_status=("FAIL" if sustained_performance_errors else
-                        "INCOMPLETE" if duration_incomplete else "PASS")
+                        "INCOMPLETE" if duration_incomplete or qualification_incomplete else "PASS")
     overall_status=("FAIL" if sustained_performance_errors or non_duration_structural else
-                    "INCOMPLETE" if duration_incomplete else "PASS")
+                    "INCOMPLETE" if duration_incomplete or qualification_incomplete else "PASS")
     return {
         "schema": "hbnf-foundation-soak-structural-audit-v1",
         "status": overall_status,
@@ -191,7 +209,12 @@ def audit(samples: list[dict], inventory: dict, expected_release: str,
         "restart_count": restarts[0] if restarts else None,
         "uptime_start_seconds": uptimes[0] if uptimes else None,
         "uptime_end_seconds": uptimes[-1] if uptimes else None,
-        "minimum_free_heap_bytes": min(minimum_heap) if minimum_heap else None,
+        "boot_lifetime_low_watermark_observed_min_bytes": min(minimum_heap) if minimum_heap else None,
+        "resource_metric_semantics": {
+            "minimum_free_heap_bytes_field": "boot-lifetime low-watermark diagnostic only; never used as per-kernel sustained current-free-heap",
+            "settled_resource_comparison": "current free_heap_bytes, largest_free_block_bytes, and AUX active fraction from samples >=5s after selector completion",
+            "minimum_settled_samples_per_kernel": MIN_SETTLED_RESOURCE_SAMPLES_PER_KERNEL,
+        },
         "minimum_largest_free_block_bytes": min(largest_block) if largest_block else None,
         "frame_ms_p95_max_across_samples": max(frame_p95) if frame_p95 else None,
         "frame_ms_p99_max_across_samples": max(frame_p99) if frame_p99 else None,
@@ -200,6 +223,7 @@ def audit(samples: list[dict], inventory: dict, expected_release: str,
         "sustained_performance": (None if baseline is None and policy is None else {
             "status":performance_status,
             "errors":sustained_performance_errors,
+            "incomplete_reasons":qualification_incomplete,
             "provisional_threshold_diagnostics":provisional_threshold_diagnostics,
             "policy":"FPS_MEDIAN_FRAME_P95_MEDIAN_FRAME_P99_MEDIAN_HEAP_FRAGMENTATION_AUX_AND_CATASTROPHIC_CONTINUITY_GATES",
             "relative_frame_max":"DIAGNOSTIC_ONLY",
@@ -210,6 +234,51 @@ def audit(samples: list[dict], inventory: dict, expected_release: str,
     }
 
 
+def _settled_resource_rows(rows: list[dict], state_changes: list[dict], settle_seconds: float) -> list[dict]:
+    """Return samples at least settle_seconds after the latest completed selector action.
+
+    Samples during selector activity and the post-selection settling window are
+    excluded. Both logs use the same host monotonic clock.
+    """
+    if not state_changes:
+        return []
+    events=[]
+    for event in state_changes:
+        try:
+            events.append((float(event["started_at_monotonic"]), float(event["completed_at_monotonic"]), int(event["kernel_id"])))
+        except (KeyError, TypeError, ValueError):
+            continue
+    events.sort()
+    settled=[]
+    for sample in rows:
+        try: stamp=float(sample["sample_time"]); kid=int(sample["kernel_id"])
+        except (KeyError, TypeError, ValueError): continue
+        prior=[e for e in events if e[1] <= stamp]
+        if not prior: continue
+        start, complete, selected=prior[-1]
+        if selected==kid and stamp>=complete+settle_seconds and not any(started<=stamp<done for started,done,_ in events):
+            settled.append(sample)
+    return settled
+
+
+def _state_change_log_valid(state_changes: list[dict], expected_ids: set[int]) -> tuple[bool, str]:
+    if not state_changes:
+        return False, "selector activity log missing; settled resource/AUX comparison cannot be proven"
+    previous_start=-float("inf");previous_complete=-float("inf")
+    for index,event in enumerate(state_changes):
+        try:
+            select_index=int(event["select_index"])
+            started=float(event["started_at_monotonic"])
+            completed=float(event["completed_at_monotonic"])
+            kid=int(event["kernel_id"])
+        except (KeyError,TypeError,ValueError):
+            return False, f"selector activity log entry {index} lacks valid identity/timestamps"
+        if select_index!=index or event.get("status")!="PASS" or completed<started or started<previous_start or started<previous_complete or kid not in expected_ids:
+            return False, f"selector activity log is discontinuous or invalid at entry {index}"
+        previous_start=started;previous_complete=completed
+    return True, ""
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", required=True, help="captured soak JSONL; offline only")
@@ -217,13 +286,15 @@ def main() -> int:
     parser.add_argument("--expected-release", required=True)
     parser.add_argument("--baseline")
     parser.add_argument("--policy")
+    parser.add_argument("--state-changes", help="selector activity JSONL; required for comparable settled resource/AUX gates")
     parser.add_argument("--minimum-duration-seconds", type=int, default=MIN_DURATION_SECONDS)
     parser.add_argument("--output")
     args = parser.parse_args()
     result = audit(read_jsonl(args.input), read_json(args.inventory),
                    args.expected_release, args.minimum_duration_seconds,
                    read_json(args.baseline) if args.baseline else None,
-                   read_json(args.policy) if args.policy else None)
+                   read_json(args.policy) if args.policy else None,
+                   read_jsonl(args.state_changes) if args.state_changes else None)
     rendered = json.dumps(result, indent=2, sort_keys=True) + "\n"
     if args.output:
         pathlib.Path(args.output).write_text(rendered)
