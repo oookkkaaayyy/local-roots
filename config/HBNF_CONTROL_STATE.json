@@ -38,9 +38,7 @@
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
     "blockers": [
-      "Seq41 exact candidate installed once and passed its short steady-state/warm-up. 48 soak samples were preserved before a host-side sample gap of 24.114s exceeded the 15s continuity limit. No restart or >=1000ms frame was observed; the >=90-minute Foundation soak did not pass.",
-      "Firmware restore reported restoreVerified=true for snapshot 1/hash 3256860723. The endpoint omits packet20Same; exact candidate source proves restoreVerified is assigned from packet20Same(saved, verify). The host omission false-negative triggered seq42 recovery despite the failure being host-side. Offline source-bound comparator regression is now prepared.",
-      "Seq42 exact Release07 input SHA/size was verified on Opal. Its OTA HTTP response was not captured; subsequent read-only Matrix build identity is exact Release07, Matrix uptime reset, and AUX native DDP reports live from Matrix. Installed bytes were not directly read back. Foundation remains unqualified; no new live transaction is authorized by this checkpoint."
+      "Seq43 candidate remained safe after the initial host-only timeout and the one offline-proven same-install retry began under a fresh prelive PASS. The retry state changer rejected the first kernel selection (Complex_Kaleido_3: packet20-kernel-select-rejected); the subsequent exact snapshot restore command returned packet20-restore-command-identity-mismatch, so exact restore/safety could not be proven. The retry controller therefore consumed the authorized seq44 recovery. Seq44 uploaded the exact 1,458,624-byte Release07 BIN after remote hash verification; recovery returned PASS for SHA-256 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab. Post-recovery read-only Matrix identity is Release07 on MAC 70:4b:ca:5b:34:5c, uptime 68s at capture; AUX is present and reports native DDP live from Matrix. No >=1000ms frame was recorded; no pre-recovery unexpected reboot is asserted. Foundation remains unqualified and seq43/44 authority is consumed."
     ],
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
@@ -395,19 +393,21 @@
       "sweep_status": "FOUNDATION_GATE_FAIL__TAIL_QUANTILE_SATURATED_AT_51_15MS",
       "unexpected_restart": false
     },
-    "foundation_status": "FOUNDATION_UNQUALIFIED__SEQ43_HOST_ONLY_TIMEOUT__OFFLINE_FIX_PASS__SAME_INSTALL_RETRY_READY",
-    "foundation_transaction_stop_reason": "Seq43 initial soak ended after 74 clean samples because the old serialized five-GET host telemetry child exceeded its 12-second process deadline; no post-warm-up >=1000ms frame, unexpected restart, candidate identity loss, renderer restore failure, or AUX DDP loss was observed. Exact snapshot 1/hash 940998176 restoreVerified=true and packet20Same=true. Seq43 remains installed; seq44 is unused. Concurrent single-shot telemetry polling passed offline regression, and a fresh read-only candidate/uptime/snapshot/AUX prelive passed at 2026-10-06T17:22:59.808Z. One authorized same-install retry remains ready; it has not started.",
+    "foundation_status": "FOUNDATION_UNQUALIFIED__SEQ43_RETRY_DEVICE_RUNTIME_OR_RESTORE_CONTRACT_FAILURE__SEQ44_RECOVERY_PASS",
+    "foundation_transaction_stop_reason": "Seq43 candidate remained safe after the initial host-only timeout and the one offline-proven same-install retry began under a fresh prelive PASS. The retry state changer rejected the first kernel selection (Complex_Kaleido_3: packet20-kernel-select-rejected); the subsequent exact snapshot restore command returned packet20-restore-command-identity-mismatch, so exact restore/safety could not be proven. The retry controller therefore consumed the authorized seq44 recovery. Seq44 uploaded the exact 1,458,624-byte Release07 BIN after remote hash verification; recovery returned PASS for SHA-256 8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab. Post-recovery read-only Matrix identity is Release07 on MAC 70:4b:ca:5b:34:5c, uptime 68s at capture; AUX is present and reports native DDP live from Matrix. No >=1000ms frame was recorded; no pre-recovery unexpected reboot is asserted. Foundation remains unqualified and seq43/44 authority is consumed.",
     "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
-    "installed_release_role": "RELEASE07_RUNTIME_IDENTITY_VERIFIED_AFTER_SEQ42__OTA_HTTP_RECEIPT_MISSING",
+    "installed_release_role": "RELEASE07_RUNTIME_IDENTITY_VERIFIED_AFTER_SEQ44_EXACT_RECOVERY",
     "last_recovery": {
+      "sequence": 44,
       "attempts": 1,
-      "evidence_drive_file_id": "1cKiC-0hmQrDV4n1uxV4HdZPL6nFPzqXy",
-      "evidence_zip_sha256": "98622da04e4716f5e38f6e2ce7c8b072986c0e0a89247fa4964f71e924868d6d",
-      "manifest_sha256": "7741978130173a84d3f96aa80dd31a4ab8f6657d4810bdf492bc170f653a61b3",
-      "method": "one exact local WLED /update multipart upload following installed Opal updater transport contract",
-      "result": "PASS",
-      "signature_sha256": "d197c58e21010f3a1eec09d47e8e5abc452246355a6ad4f36f40c16b93c98be3"
+      "release": "hbnf-matrix-coordinated-v1-20261002-07",
+      "artifact_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+      "artifact_size_bytes": 1458624,
+      "method": "one exact Opal-origin WLED local /update upload after remote exact SHA/size verification",
+      "result": "PASS__RELEASE07_RUNTIME_IDENTITY_VERIFIED",
+      "evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/",
+      "post_recovery_readonly": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ44_POST_RECOVERY_READONLY.json"
     },
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
@@ -701,7 +701,7 @@
       "renderer_restoreVerified": true
     },
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "SEQ35_OBSERVER_HOST_TIMEOUT__SEQ36_RELEASE07_RECOVERED__MUTATION_CLOSED",
+    "status": "FOUNDATION_UNQUALIFIED__SEQ43_RETRY_FAILED__SEQ44_RECOVERED__LIVE_MUTATION_CLOSED",
     "target_recovery": {
       "firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
@@ -845,7 +845,7 @@
       "transaction_result": "evidence/hbnf-foundation-qualification-20261005/seq41/live/TRANSACTION_RESULT.json"
     },
     "execution_cursor": {
-      "current_failure_domain": "HOST_FIX_OFFLINE_PASS__FRESH_PRELIVE_PASS__SAME_INSTALL_RETRY_READY",
+      "current_failure_domain": "SEQ43_RETRY_KERNEL_SELECT_AND_RESTORE_CONTRACT_FAILURE__SEQ44_RELEASE07_RECOVERY_PASS__MUTATION_CLOSED",
       "current_lifecycle_state": "FIX_CANDIDATE",
       "current_subject": {
         "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
@@ -853,11 +853,10 @@
       },
       "current_transition": "T2_FOUNDATION_QUALIFY",
       "exact_next_path": [
-        "Recheck read-only exact seq43 runtime identity, advancing uptime, retained snapshot 1/hash 940998176 and restore proof, and Matrix-origin AUX DDP immediately before guarded retry.",
-        "Run exactly one same-install 90-minute state-changing soak with the offline-proven concurrent single-shot telemetry reader; no re-install, sequence allocation, snapshot retake, or seq39 evidence repetition.",
-        "If a further host-only issue occurs with all device safety proofs intact, preserve seq43 and do not use seq44 or retry again; seq44 is only for genuine device/Foundation failure or lost safety.",
-        "On clean soak completion, audit remaining T2 checks and package evidence; promote Foundation only if every objective T2 gate passes.",
-        "Enter Phase2 and deploy staged V7.3 only if T3 prerequisites pass; brightness stays deferred for Skins."
+        "Seq43 and seq44 authority is consumed. Release07 exact recovery has returned HTTP 200 UPDATE_OK; read-only runtime identity confirms Release07 and Matrix/AUX endpoints are healthy. Live mutation is closed.",
+        "Preserve exact seq43 retry failure, failed restore acknowledgement, seq44 OTA receipt and post-recovery read-only evidence. Foundation remains unqualified.",
+        "Continue only offline-safe Cart 2.0 staging under current scope; do not begin another Foundation transaction or deploy Phase 2 assets without fresh authority and passing lifecycle gates.",
+        "Skins brightness remains explicitly deferred for stability."
       ],
       "no_repeat": [
         "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -883,8 +882,8 @@
     "live_mutation_authorization": {
       "candidate_sequence": 43,
       "recovery_sequence": 44,
-      "status": "AUTHORIZED__SEQ43_FOUNDATION_SOAK_REQUALIFICATION__SEQ44_REAL_FAILURE_RECOVERY_ONLY",
-      "closure_reason": "Fresh authority 7ae9537e92100610125c32aeec460d49d36ab3b9 superseded consumed seq41/42. Offline host sampler fix is committed and passed the 24.114-second blocked-selector regression; seq43 still requires clean prelive proof.",
+      "status": "CONSUMED__SEQ43_ATTEMPT__SEQ44_RELEASE07_RECOVERY_COMPLETED",
+      "closure_reason": "Seq43 initial soak stopped on host timeout with candidate preserved. The one authorized same-install retry then encountered packet20-kernel-select-rejected and packet20-restore-command-identity-mismatch, so the exact snapshot restore contract could not be re-proven; seq44 exact Release07 recovery was correctly consumed. No new live mutation is authorized by this transaction.",
       "live_mutation_limit": 1,
       "scope": [
         "Perform exactly one seq43 candidate install after clean prelive proof.",
@@ -935,9 +934,28 @@
       "retry_does_not_reinstall": true,
       "retry_limit": 1,
       "schema": "hbnf-foundation-retry-v1",
-      "status": "SEQ43_HOST_FIX_OFFLINE_PASS__FRESH_PRELIVE_PASS__ONE_SAME_INSTALL_RETRY_READY",
+      "status": "SAME_INSTALL_RETRY_CONSUMED__SEQ44_RELEASE07_RECOVERY_PASS__FOUNDATION_UNQUALIFIED",
       "fresh_prelive": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/PRE_RETRY_READONLY.json",
-      "fresh_prelive_sha256": "f54ea732e1f07b9d806cbc3e733e5336aa8d9552d579d68bf2608c100fe9f0c4"
+      "fresh_prelive_sha256": "f54ea732e1f07b9d806cbc3e733e5336aa8d9552d579d68bf2608c100fe9f0c4",
+      "retry_used": true,
+      "seq44_consumed": true,
+      "failure_evidence": {
+        "RETRY_RESULT.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/RETRY_RESULT.json",
+        "STATE_CHANGER_FAILURE.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/STATE_CHANGER_FAILURE.json",
+        "POST_RESTORE_FAILURE.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/POST_RESTORE_FAILURE.json",
+        "seq44-opal-copy-receipt.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/seq44-opal-copy-receipt.json",
+        "SEQ44_POST_RECOVERY_READONLY.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ44_POST_RECOVERY_READONLY.json"
+      },
+      "failure_evidence_sha256": {
+        "RETRY_RESULT.json": "3022489b95d9d1a2c10ce1a17a599da5f8e3262c38cb88170391189da506b785",
+        "STATE_CHANGER_FAILURE.json": "b72e60dfe0cf35bee108d66a0c2b4ad7242af098c31f57f29cfd9399f11e8bd7",
+        "POST_RESTORE_FAILURE.json": "a3cfbb9bd460ff2023296a788a5f11d4c6d7c42d0044e24c6133d5d47c3e2411",
+        "seq44-opal-copy-receipt.json": "d72ed61041b3d6cf44a82487852afebf2f82b51239436f1b1bb7eb278ffa5363",
+        "SEQ44_POST_RECOVERY_READONLY.json": "e666b3739ecba0fef756f6d808b2b2d86f9dcb03f52b5505c4c479a3ae269927"
+      },
+      "post_recovery_readonly": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ44_POST_RECOVERY_READONLY.json",
+      "post_recovery_identity_status": "PASS",
+      "no_further_seq43_retry_authorized": true
     },
     "post_foundation_continuation": {
       "status": "CONDITIONALLY_PREAUTHORIZED_BY_USER_DIRECTIVE",
@@ -971,7 +989,7 @@
       "host_timeout_root_cause": "The telemetry adapter serialized five HTTP GET operations under a 12s child-process budget; the slow endpoint was not individually identifiable in the first attempt. The five endpoints are now polled concurrently, single-shot, with 4s request deadlines, 5.5s batch deadline, and 7s enclosing child deadline.",
       "implementation_commit": "7b8420663e309504accd4f67135f1bf4b4b30349",
       "inherited_evidence": "seq39 28/28 sweep, observer-effect, hash-bound baseline and frozen policy; no repeat",
-      "live_status": "EXACT_CANDIDATE_AND_SAFETY_RETAINED__HOST_FIX_AND_FRESH_PRELIVE_PASS__RETRY_NOT_STARTED",
+      "live_status": "SEQ44_EXACT_RELEASE07_RECOVERED__FOUNDATION_UNQUALIFIED__LIVE_MUTATION_CLOSED",
       "offline_proof": "evidence/hbnf-foundation-qualification-20261005/seq43/offline/HOST_SAMPLER_REGRESSION.json",
       "recovery_sequence": 44,
       "recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
@@ -985,42 +1003,75 @@
         "retry_limit": 1,
         "script": "scripts/hbnf_foundation_seq43_soak_retry.py",
         "snapshot_reuse": "existing seq43 boot-scoped snapshot 1/hash 940998176",
-        "status": "OFFLINE_FIX_PASS__FRESH_READONLY_PRELIVE_PASS__GUARDED_RETRY_READY",
+        "status": "ONE_AUTHORIZED_RETRY_CONSUMED__DEVICE_RUNTIME_OR_RESTORE_SAFETY_FAILURE__SEQ44_RECOVERY_PASS",
         "telemetry": "parallel five-endpoint one-shot sampler; per-request timeout 4s; batch 5.5s; sampler process timeout 7s",
-        "host_sampler_commit": "7b8420663e309504accd4f67135f1bf4b4b30349"
+        "host_sampler_commit": "7b8420663e309504accd4f67135f1bf4b4b30349",
+        "no_further_retry_authorized": true,
+        "failure_evidence": {
+          "RETRY_RESULT.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/RETRY_RESULT.json",
+          "STATE_CHANGER_FAILURE.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/STATE_CHANGER_FAILURE.json",
+          "POST_RESTORE_FAILURE.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/POST_RESTORE_FAILURE.json",
+          "seq44-opal-copy-receipt.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/seq44-opal-copy-receipt.json",
+          "SEQ44_POST_RECOVERY_READONLY.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ44_POST_RECOVERY_READONLY.json"
+        },
+        "failure_evidence_sha256": {
+          "RETRY_RESULT.json": "3022489b95d9d1a2c10ce1a17a599da5f8e3262c38cb88170391189da506b785",
+          "STATE_CHANGER_FAILURE.json": "b72e60dfe0cf35bee108d66a0c2b4ad7242af098c31f57f29cfd9399f11e8bd7",
+          "POST_RESTORE_FAILURE.json": "a3cfbb9bd460ff2023296a788a5f11d4c6d7c42d0044e24c6133d5d47c3e2411",
+          "seq44-opal-copy-receipt.json": "d72ed61041b3d6cf44a82487852afebf2f82b51239436f1b1bb7eb278ffa5363",
+          "SEQ44_POST_RECOVERY_READONLY.json": "e666b3739ecba0fef756f6d808b2b2d86f9dcb03f52b5505c4c479a3ae269927"
+        }
       },
       "simulation": "24.114-second state-change stall; 56 samples; final measured max sample gap 1.023 seconds; parallel-ready signal asserted after three valid persisted samples; no device/network access",
       "soak": {
-        "candidate_preserved": true,
+        "candidate_preserved": false,
         "evidence": "evidence/hbnf-foundation-qualification-20261005/seq43/live/FOUNDATION_SOAK.jsonl",
-        "failure_evidence": "evidence/hbnf-foundation-qualification-20261005/seq43/live/SEQ43_FAILURE.json",
+        "failure_evidence": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/RETRY_RESULT.json",
         "hard_runtime_stop_observed": false,
         "last_checkpoint_sample_count": 29,
         "max_observed_sample_gap_seconds": 11.417885459,
         "parallel_ready_evidence": "evidence/hbnf-foundation-qualification-20261005/seq43/live/PARALLEL_LANES_READY.json",
         "parallel_ready_sha256": "70e56d737e1687dcc410a8ba07452f783de9649c053ed95f6731fd124909c519",
         "parallel_ready_signal": "PARALLEL_LANES_READY",
-        "renderer_restore": "PASS__restoreVerified=true__packet20Same=true__snapshot=1/hash=940998176",
+        "renderer_restore": "FAILED__packet20-restore-command-identity-mismatch",
         "requested_duration_seconds": 5400,
-        "sample_count": 74,
+        "sample_count": 1,
         "sample_period_seconds": 5,
         "sampler_timeout_seconds": 12,
         "selection_period_seconds": 8,
         "selection_timeout_seconds": 30,
         "started_at_unix": 1791305171.0970528,
         "state_changes": "evidence/hbnf-foundation-qualification-20261005/seq43/live/FOUNDATION_STATE_CHANGES.jsonl",
-        "status": "STOPPED_HOST_TELEMETRY_CHILD_TIMEOUT_AFTER_74_CLEAN_SAMPLES",
+        "status": "RETRY_STOPPED_ON_DEVICE_RUNTIME_OR_RESTORE_CONTRACT_FAILURE",
         "unexpected_restart_observed": false,
-        "host_gap_max_seconds": 11.417885459
+        "host_gap_max_seconds": 11.417885459,
+        "recovery_sequence_consumed": true
       },
-      "status": "SEQ43_RETAINED__HOST_ONLY_TIMEOUT__ONE_SAME_INSTALL_RETRY_READY",
+      "status": "SEQ43_DEVICE_RUNTIME_OR_RESTORE_CONTRACT_FAILURE__SEQ44_RELEASE07_RECOVERY_PASS",
       "transaction_script": "scripts/hbnf_foundation_seq43_transaction.py",
       "retry_offline_proof": "evidence/hbnf-foundation-qualification-20261005/seq43/offline/HOST_TELEMETRY_PARALLEL_POLL_REGRESSION.json",
       "retry_prelive": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/PRE_RETRY_READONLY.json",
-      "last_updated": "2026-10-06T17:28:00Z"
+      "last_updated": "2026-10-06T17:28:00Z",
+      "retry1": {
+        "status": "STOPPED_DEVICE_RUNTIME_OR_RESTORE_CONTRACT_FAILURE__SEQ44_RECOVERY_PASS",
+        "attempted_at_utc": "2026-10-06T17:35:18.845035+00:00",
+        "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+        "kernel_select_failure": "packet20-kernel-select-rejected on first selection Complex_Kaleido_3",
+        "restore_failure": "packet20-restore-command-identity-mismatch",
+        "hard_frame_stop_observed": false,
+        "seq44_consumed": true,
+        "recovery_evidence": {
+          "RETRY_RESULT.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/RETRY_RESULT.json",
+          "STATE_CHANGER_FAILURE.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/STATE_CHANGER_FAILURE.json",
+          "POST_RESTORE_FAILURE.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/POST_RESTORE_FAILURE.json",
+          "seq44-opal-copy-receipt.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/seq44-opal-copy-receipt.json",
+          "SEQ44_POST_RECOVERY_READONLY.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ44_POST_RECOVERY_READONLY.json"
+        },
+        "post_recovery_readonly_status": "PASS"
+      }
     },
     "external_parallel_launch": {
-      "launch_status": "PARALLEL_READY_SIGNAL_PRESERVED__FIRST_SOAK_HOST_TIMEOUT__OFFLINE_FIX_PASS__FRESH_PRELIVE_PASS__RETRY_READY",
+      "launch_status": "PARALLEL_READY_SIGNAL_PRESERVED__SOAK_ABORTED_ON_DEVICE_OR_RESTORE_CONTRACT_FAILURE__SEQ44_RECOVERY_PASS",
       "signal_evidence": "evidence/hbnf-foundation-qualification-20261005/seq43/live/PARALLEL_LANES_READY.json",
       "signal_sha256": "70e56d737e1687dcc410a8ba07452f783de9649c053ed95f6731fd124909c519"
     },
@@ -1035,7 +1086,53 @@
       "no_lifecycle_effect": true,
       "lane_inputs": "ALL_FOUR_CORE_OFFLINE_LANES_AT_DURABLE_DEPENDENCY_BOUNDARY",
       "intended_use": "After objective T2 PASS, reconcile packet against then-current authority, surface only changed premises plus one short approval turn, then write phase2_scope_lock receipt if all four T3 checks PASS."
-    }
+    },
+    "seq44_recovery": {
+      "sequence": 44,
+      "release": "hbnf-matrix-coordinated-v1-20261002-07",
+      "artifact_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+      "artifact_size_bytes": 1458624,
+      "manifest_sha256": "7741978130173a84d3f96aa80dd31a4ab8f6657d4810bdf492bc170f653a61b3",
+      "signature_sha256": "d197c58e21010f3a1eec09d47e8e5abc452246355a6ad4f36f40c16b93c98be3",
+      "result": "PASS__EXACT_ARTIFACT_REMOTE_HASH_CHECK__WLED_LOCAL_UPDATE__RUNTIME_IDENTITY_VERIFIED",
+      "evidence": {
+        "RETRY_RESULT.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/RETRY_RESULT.json",
+        "STATE_CHANGER_FAILURE.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/STATE_CHANGER_FAILURE.json",
+        "POST_RESTORE_FAILURE.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/POST_RESTORE_FAILURE.json",
+        "seq44-opal-copy-receipt.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/seq44-opal-copy-receipt.json",
+        "SEQ44_POST_RECOVERY_READONLY.json": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ44_POST_RECOVERY_READONLY.json"
+      },
+      "evidence_sha256": {
+        "RETRY_RESULT.json": "3022489b95d9d1a2c10ce1a17a599da5f8e3262c38cb88170391189da506b785",
+        "STATE_CHANGER_FAILURE.json": "b72e60dfe0cf35bee108d66a0c2b4ad7242af098c31f57f29cfd9399f11e8bd7",
+        "POST_RESTORE_FAILURE.json": "a3cfbb9bd460ff2023296a788a5f11d4c6d7c42d0044e24c6133d5d47c3e2411",
+        "seq44-opal-copy-receipt.json": "d72ed61041b3d6cf44a82487852afebf2f82b51239436f1b1bb7eb278ffa5363",
+        "SEQ44_POST_RECOVERY_READONLY.json": "e666b3739ecba0fef756f6d808b2b2d86f9dcb03f52b5505c4c479a3ae269927"
+      },
+      "post_recovery_identity": {
+        "status": "PASS",
+        "captured_at_utc": "2026-10-06T17:35:18.845035+00:00",
+        "release_id": "hbnf-matrix-coordinated-v1-20261002-07",
+        "candidate": "hbnf-matrix-coordinated-v1-20261002-07",
+        "matrix_mac": "704bca5b345c",
+        "aux_mac": "8c94df55c34c",
+        "aux_native_ddp_live": true,
+        "aux_native_ddp_source": "192.168.77.10",
+        "uptime_seconds": 68
+      }
+    },
+    "recovery_history": [
+      {
+        "attempts": 1,
+        "evidence_drive_file_id": "1cKiC-0hmQrDV4n1uxV4HdZPL6nFPzqXy",
+        "evidence_zip_sha256": "98622da04e4716f5e38f6e2ce7c8b072986c0e0a89247fa4964f71e924868d6d",
+        "manifest_sha256": "7741978130173a84d3f96aa80dd31a4ab8f6657d4810bdf492bc170f653a61b3",
+        "method": "one exact local WLED /update multipart upload following installed Opal updater transport contract",
+        "result": "PASS",
+        "signature_sha256": "d197c58e21010f3a1eec09d47e8e5abc452246355a6ad4f36f40c16b93c98be3"
+      }
+    ],
+    "checkpoint_at_utc": "2026-10-06T17:37:12.557266+00:00"
   },
   "execution_budget_policy": {
     "authority_commit": "79173fe7318ef30f51487dba8b59b2b4547b86f3",
@@ -1052,7 +1149,7 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "HOST_FIX_OFFLINE_PASS__FRESH_PRELIVE_PASS__SAME_INSTALL_RETRY_READY",
+    "current_failure_domain": "SEQ43_RETRY_KERNEL_SELECT_AND_RESTORE_CONTRACT_FAILURE__SEQ44_RELEASE07_RECOVERY_PASS__MUTATION_CLOSED",
     "current_lifecycle_state": "FIX_CANDIDATE",
     "current_subject": {
       "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
@@ -1060,11 +1157,10 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Recheck read-only exact seq43 runtime identity, advancing uptime, retained snapshot 1/hash 940998176 and restore proof, and Matrix-origin AUX DDP immediately before guarded retry.",
-      "Run exactly one same-install 90-minute state-changing soak with the offline-proven concurrent single-shot telemetry reader; no re-install, sequence allocation, snapshot retake, or seq39 evidence repetition.",
-      "If a further host-only issue occurs with all device safety proofs intact, preserve seq43 and do not use seq44 or retry again; seq44 is only for genuine device/Foundation failure or lost safety.",
-      "On clean soak completion, audit remaining T2 checks and package evidence; promote Foundation only if every objective T2 gate passes.",
-      "After T2 PASS, reconcile config/HBNF_T3_PHASE2_FAST_PATH_CANDIDATE_20261006.json against the then-current authority; obtain the required short human approval; enter Phase2 only if all T3 checks PASS. Then integrate the current PWA/scoring successors rather than the older staged V7.3 package."
+      "Seq43 and seq44 authority is consumed. Release07 exact recovery has returned HTTP 200 UPDATE_OK; read-only runtime identity confirms Release07 and Matrix/AUX endpoints are healthy. Live mutation is closed.",
+      "Preserve exact seq43 retry failure, failed restore acknowledgement, seq44 OTA receipt and post-recovery read-only evidence. Foundation remains unqualified.",
+      "Continue only offline-safe Cart 2.0 staging under current scope; do not begin another Foundation transaction or deploy Phase 2 assets without fresh authority and passing lifecycle gates.",
+      "Skins brightness remains explicitly deferred for stability."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1163,7 +1259,7 @@
   ],
   "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
   "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
-  "installed_release_role": "RELEASE07_RUNTIME_IDENTITY_VERIFIED_AFTER_SEQ42__OTA_HTTP_RECEIPT_MISSING",
+  "installed_release_role": "RELEASE07_RUNTIME_IDENTITY_VERIFIED_AFTER_SEQ44_EXACT_RECOVERY",
   "lane_execution": {
     "activation_rule": "Activate offline-safe core lanes at the earlier of: (a) clean Foundation soak/readiness signal, or (b) 60 minutes without lifecycle progress, provided parallel work is noncontending and cannot invalidate the healthy live critical path. Never restart/interrupt healthy critical-path work merely to satisfy this timer. live_mutation_limit remains 1.",
     "anti_abandonment": "Chat turnover, worker turnover, new sequence numbers, or convenience may not drop a lane. A ready lane can stop only when DONE, explicitly blocked on a named dependency, or user scope changes.",
@@ -1281,7 +1377,7 @@
   "live_mutation_authorization": {
     "candidate_sequence": 43,
     "recovery_sequence": 44,
-    "status": "AUTHORIZED__SEQ43_FOUNDATION_SOAK_REQUALIFICATION__SEQ44_REAL_FAILURE_RECOVERY_ONLY",
+    "status": "CONSUMED__SEQ43_ATTEMPT__SEQ44_RELEASE07_RECOVERY_COMPLETED",
     "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
@@ -1296,9 +1392,10 @@
       "No GitHub Actions or firmware rebuild for host-harness/orchestration defects."
     ],
     "recovery_rule": "SEQ44_RELEASE07_ONLY_FOR_GENUINE_DEVICE_RUNTIME_FOUNDATION_FAILURE_OR_LOST_SAFETY_PROOF__HOST_ONLY_FAILURE_PRESERVES_SEQ43",
-    "live_mutation_limit": 1
+    "live_mutation_limit": 1,
+    "closure_reason": "The one user-authorized same-install retry encountered packet20-kernel-select-rejected, followed by packet20-restore-command-identity-mismatch. Exact restore proof was lost, so seq44 exact Release07 recovery was consumed and verified. No further live mutation is authorized by this pair."
   },
-  "live_mutation_authorized": true,
+  "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",

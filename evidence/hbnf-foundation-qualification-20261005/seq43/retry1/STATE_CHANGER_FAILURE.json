@@ -1,0 +1,10 @@
+{
+  "completed_at_monotonic": 0.3629595,
+  "error": "RuntimeError: state-change command failed rc=2: foundation adapter error: RuntimeError: packet20-kernel-select-rejected\n",
+  "kernel_id": 0,
+  "kernel_name": "Complex_Kaleido_3",
+  "select_index": 0,
+  "selector_pid": 41057,
+  "started_at_monotonic": 0.02799725,
+  "status": "FAIL"
+}
