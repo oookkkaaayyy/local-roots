@@ -399,19 +399,20 @@
     "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
     "installed_release_role": "SEQ46_RELEASE07_RECOVERY_VERIFIED__SEQ45_FOUNDATION_GATE_FAILED__LIVE_MUTATION_CLOSED",
     "last_recovery": {
-      "sequence": 44,
+      "sequence": 46,
       "attempts": 1,
       "release": "hbnf-matrix-coordinated-v1-20261002-07",
       "artifact_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "artifact_size_bytes": 1458624,
-      "method": "one exact Opal-origin WLED local /update upload after remote exact SHA/size verification",
-      "result": "PASS__RELEASE07_RUNTIME_IDENTITY_VERIFIED",
-      "evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/",
-      "post_recovery_readonly": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ44_POST_RECOVERY_READONLY.json",
-      "classification": "SEQ44_RECOVERY_COMPLETED_PASS__TRIGGERED_BY_HOST_FALSE_NEGATIVE_AFTER_RETRY_PRECONDITION_DEFECT__EXACT_RELEASE07_IS_INSTALLED",
-      "root_cause_evidence": "evidence/hbnf-foundation-qualification-20261005/seq43/retry1/SEQ43_RETRY_SESSION_ROOT_CAUSE.json",
-      "root_cause_sha256": "95c9d342b701badf643727cc912ca898c31b11a1454e84728160d5bbd952cd7f",
-      "ota_http_status": "HTTP_200_UPDATE_OK"
+      "method": "single Opal-origin WLED local /update upload of exact staged Release07 BIN",
+      "result": "PASS__RELEASE07_RUNTIME_IDENTITY_AND_HEALTH_VERIFIED",
+      "evidence_path": "evidence/hbnf-foundation-qualification-20261005/seq45/live/",
+      "post_recovery_readonly": "evidence/hbnf-foundation-qualification-20261005/seq45/live/SEQ46_POST_RECOVERY_READONLY.txt",
+      "post_recovery_health": "evidence/hbnf-foundation-qualification-20261005/seq45/live/SEQ46_POST_RECOVERY_HEALTH.json",
+      "ota_http_status": "HTTP_200_UPDATE_SUCCESSFUL",
+      "ota_response_sha256": "e989fc00de0b0d87a74771439a95cb6b231dac0ede16865104c2251612c6a128",
+      "ledger_write": "PASS",
+      "classification": "GENUINE_FROZEN_FOUNDATION_GATE_FAILURE__EXACT_RELEASE07_RECOVERY_PASS__LIVE_MUTATION_CLOSED"
     },
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
@@ -1160,6 +1161,18 @@
         "method": "one exact local WLED /update multipart upload following installed Opal updater transport contract",
         "result": "PASS",
         "signature_sha256": "d197c58e21010f3a1eec09d47e8e5abc452246355a6ad4f36f40c16b93c98be3"
+      },
+      {
+        "attempts": 1,
+        "sequence": 46,
+        "result": "PASS",
+        "release": "hbnf-matrix-coordinated-v1-20261002-07",
+        "artifact_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+        "artifact_size_bytes": 1458624,
+        "method": "single Opal-origin WLED local /update upload of exact staged Release07 BIN",
+        "ota_http_status": "HTTP_200_UPDATE_SUCCESSFUL",
+        "evidence_drive_file_id": "1WnIfBI2jSCiJ-7SeS0F1K5VoGoPimMIX",
+        "evidence_zip_sha256": "7fc22df5212798a26aef9c14618cb9e21ce1e7df2169b5e15e4121439d541cda"
       }
     ],
     "checkpoint_at_utc": "2026-10-06T18:27:00Z",
