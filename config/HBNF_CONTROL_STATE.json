@@ -710,10 +710,11 @@
       "Exact Release07 rollback path is proven; do not re-derive it.",
       "Host-only failures do not consume a recovery install unless actual device/runtime safety evidence fails or becomes unknown.",
       "Do not rebuild firmware or use GitHub Actions for a host-harness defect.",
-      "ANTI_STALL: no open-ended debugging. At 30 minutes without a material milestone, stop the current mechanism at the next safe boundary, preserve evidence, and pivot.",
-      "ANTI_STALL: one retry maximum per failure class, and only with a materially different mechanism supported by new evidence.",
-      "ANTI_STALL: at 60 minutes without lifecycle progress, activate ready offline-safe independent lanes unless the critical lane is inside a required healthy long-running gate.",
-      "ANTI_STALL: do not rebuild firmware or use GitHub Actions for host/transport/harness/telemetry-reader defects unless the existing artifact is invalidated."
+      "ANTI_STALL V2: the 30-minute clock is time since last measurable forward progress, not attempt duration; healthy advancing work continues.",
+      "ANTI_STALL V2: when stalled, stop only the stalled mechanism at a safe boundary and preserve install/session/snapshot/checkpoint whenever proven safe; no timer-based restart/reinstall/recovery/reboot.",
+      "ANTI_STALL V2: one retry maximum per failure class, only with a materially different mechanism supported by new evidence.",
+      "ANTI_STALL V2: after 60 minutes without lifecycle progress, activate noncontending offline-safe lanes in parallel; do not kill healthy critical-path work.",
+      "ANTI_STALL V2: no firmware rebuild or GitHub Actions for host/transport/harness/telemetry-reader defects unless the artifact itself is invalidated."
     ],
     "parallel_ready_during_foundation_soak": [
       "Mission Control/scoring source reconciliation and host tests",
@@ -798,7 +799,7 @@
   ],
   "lane_execution": {
     "schema": "hbnf-lane-execution-state-v1",
-    "activation_rule": "Activate every offline-safe core lane at the earlier of: (a) clean Foundation soak start/readiness signal, or (b) 60 minutes without lifecycle progress while no required healthy long-running gate is monopolizing live mutation. live_mutation_limit remains 1; offline-safe work proceeds in parallel.",
+    "activation_rule": "Activate offline-safe core lanes at the earlier of: (a) clean Foundation soak/readiness signal, or (b) 60 minutes without lifecycle progress, provided parallel work is noncontending and cannot invalidate the healthy live critical path. Never restart/interrupt healthy critical-path work merely to satisfy this timer. live_mutation_limit remains 1.",
     "lanes": {
       "P2_MISSION_CONTROL_SCORING": {
         "status": "READY_OFFLINE_AT_FOUNDATION_SOAK",
@@ -841,7 +842,7 @@
       "note": "Do not judge the live Foundation worker for not spawning chats; it is only responsible for signaling readiness and preserving the live lane.",
       "status_sheet_id": "1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko",
       "anti_stall_policy": "config/HBNF_EXECUTION_BUDGET_POLICY.json",
-      "fallback_activation_event": "60_MINUTES_WITHOUT_LIFECYCLE_PROGRESS_AND_NO_HEALTHY_REQUIRED_LONG_RUNNING_GATE"
+      "fallback_activation_event": "60_MINUTES_WITHOUT_LIFECYCLE_PROGRESS__PARALLELIZE_NONCONTENDING_WORK__DO_NOT_INTERRUPT_HEALTHY_CRITICAL_PATH"
     }
   },
   "process_metrics": {
@@ -876,12 +877,16 @@
     "execution_budget_policy_path": "config/HBNF_EXECUTION_BUDGET_POLICY.json",
     "required_tracking": [
       "attempt_start_time",
-      "30_minute_checkpoint",
-      "material_milestone_target",
+      "expected_bounded_duration",
+      "material_target",
+      "measurable_progress_signal",
+      "last_forward_progress_at",
+      "last_forward_progress_evidence",
       "failure_class",
       "retry_count_for_failure_class",
       "fallback_mechanism",
-      "pivot_time_if_budget_expires"
+      "pivot_time_if_stall_budget_expires",
+      "preserved_state_or_objective_restart_reason"
     ]
   },
   "observability": {
@@ -903,16 +908,17 @@
     "note": "Telemetry only; never operational authority. Heartbeats must yield to critical-path work and may be delayed by blocking operations."
   },
   "execution_budget_policy": {
-    "schema": "hbnf-execution-budget-policy-binding-v1",
+    "schema": "hbnf-execution-budget-policy-binding-v2",
     "status": "ACTIVE",
     "authority_file": "config/HBNF_EXECUTION_BUDGET_POLICY.json",
-    "authority_commit": "3d34509f16925e8f3d90fd9b434e82c8d7dbf0de",
-    "user_directive": "IMPLEMENT_IT__NOT_LIP_SERVICE",
+    "authority_commit": "79173fe7318ef30f51487dba8b59b2b4547b86f3",
     "effective_date": "2026-10-06",
-    "no_material_milestone_minutes": 30,
-    "no_lifecycle_progress_minutes": 60,
+    "stall_clock": "30_MINUTES_SINCE_LAST_MEASURABLE_FORWARD_PROGRESS__NOT_ATTEMPT_ELAPSED_TIME",
+    "no_measurable_forward_progress_minutes": 30,
+    "no_lifecycle_progress_parallelize_minutes": 60,
     "max_retry_per_failure_class": 1,
+    "restart_policy": "PRESERVE_VERIFIED_TRANSACTION_STATE__NO_TIMER_BASED_RESTARTS",
     "enforcement": "MANDATORY_FOR_ALL_CURRENT_AND_FUTURE_CART2_WORKERS",
-    "current_seq39": "APPLY_PROSPECTIVELY__DO_NOT_INTERRUPT_HEALTHY_PROGRESS_OR_REQUIRED_90_MIN_SOAK"
+    "current_seq39": "KEEP_HEALTHY_SWEEP_RUNNING__PROGRESS_RESETS_STALL_CLOCK__NO_TIMER_BASED_REINSTALL_RECOVERY_OR_REBOOT"
   }
 }
