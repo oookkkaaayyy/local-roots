@@ -158,8 +158,8 @@
       <button id="featureAcePot" type="button">Show ace pot</button>
     </div>
     <details class="score-entry">
-      <summary>Record Skins hole winner</summary>
-      <p class="muted">Scores save to the current authoritative Skins card. A blank winner leaves the skin carrying to the next hole.</p>
+      <summary>Record Skins scoring</summary>
+      <p class="muted">Scores save to the current authoritative Skins card. A blank hole winner carries the skin. Tiebreakers and ace state use the same authoritative round data.</p>
       <div class="score-grid">
         <label>Section<select id="skinsSection"><option value="front">Front 9 · Singles</option><option value="back">Back 9 · Doubles</option></select></label>
         <label>Card<select id="skinsCard"></select></label>
@@ -167,6 +167,10 @@
         <label>Winner<select id="skinsWinner"></select></label>
       </div>
       <div class="row"><button id="skinsRefresh" type="button">Refresh scorecard</button><button id="skinsSave" type="button">Save hole</button></div>
+      <div class="score-grid">
+        <label class="wide">Ace winner<select id="skinsAceWinner"><option value="">No ace</option></select></label>
+      </div>
+      <div class="row"><button id="skinsAceSave" type="button">Save ace</button><span id="skinsAceSummary" class="muted">Ace pot not loaded.</span></div>
       <div id="skinsScoreStatus" class="status" role="status" aria-live="polite">Scorecard not loaded.</div>
     </details>
   </section>
