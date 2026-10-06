@@ -309,7 +309,7 @@
       "source_commit": "b18b162ec4b4f9173b1de892957ff8b834fe2b50",
       "sweep_status": "PASS__28_OF_28_PROFILES__RENDERER_RESTORE_PASS",
       "timeout_hierarchy": "HTTP GET 10s; /json/state POST 25s; command ack 30s; snapshot 45s; restore 90s; outer runner 240s (226s maximum normal snapshot composition plus 14s margin)",
-      "timeout_repair_commit": "98a111b51935655bc3320ad05463f0b521d03035",
+      "timeout_repair_commit": "b3faae45f9232c862aeb7391483b0324f8cf88a3",
       "transaction_authorization": "CURRENT_USER_EXPEDITE_BOUNDED_TELEMETRY_RANGE_FIX_DIRECTIVE",
       "warmup_sample": {
         "aux_projection_active": true,
@@ -341,7 +341,9 @@
         "sequence_pair_status": "SEQ41_SEQ42_CONSUMED__NO_NEW_PAIR_AUTHORIZED",
         "live_mutation_authorized": false,
         "transaction_result": "evidence/hbnf-foundation-qualification-20261005/seq41/live/TRANSACTION_RESULT.json"
-      }
+      },
+      "offline_host_sampler_proof": "evidence/hbnf-foundation-qualification-20261005/seq43/offline/HOST_SAMPLER_REGRESSION.json",
+      "offline_host_sampler_status": "PASS__24_114S_BLOCKED_SELECTOR__56_SAMPLES__MAX_GAP_1_037S"
     },
     "foundation_seq33_attempts": [
       {
@@ -410,7 +412,7 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
+      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "name": "Foundation offline timeout and soak-harness checkpoint",
@@ -780,7 +782,7 @@
       "status": "DECISION_DEFER_FOR_STABILITY",
       "target_event": "NEXT_SKINS_ROUND__2026-10-06",
       "observed_problem": "On current build, lowering Matrix brightness also visibly collapses/reduces the displayed animation/image; below roughly 20 the Matrix becomes nearly dark or shows only a very limited animation.",
-      "user_field_preference": "Typical night sweet spot is roughly current-slider 10–20; values above ~25 can be excessively bright on-course.",
+      "user_field_preference": "Typical night sweet spot is roughly current-slider 10\u201320; values above ~25 can be excessively bright on-course.",
       "required_behavior": [
         "Brightness reduction should preserve animation/image structure as much as technically practical.",
         "Prefer greater low-end granularity for night use.",
@@ -809,7 +811,7 @@
       "status": "OFFLINE_CORRECTION_TESTED__FRESH_PRELIVE_PASS",
       "conclusion": "Fresh read-only prelive confirms exact Release07 and Matrix-origin WLED DDP live/source; corrected host contract passes regression tests and preserves HBNFAUX frame-lock diagnostics separately.",
       "scope_limit": "No broad AUX debugging. No physical-fault re-investigation. Complete only the minimum prelive proof needed to unblock seq41.",
-      "next": "Run the single guarded seq41 same-artifact Foundation soak requalification, reusing the exact seq39 28/28 sweep, observer-effect proof, baseline, and renderer restore proof; seq42 remains genuine failure recovery only.",
+      "next": "Use the fresh seq43/44 authorization after clean prelive; preserve the corrected native WLED DDP source contract and do not reopen physical AUX investigation.",
       "evidence": [
         "evidence/hbnf-foundation-qualification-20261005/AUX_AGE_GATE_RECONCILIATION_20261006.md",
         "evidence/hbnf-foundation-qualification-20261005/AUX_POSTFIX_READONLY_20261006.json",
@@ -845,22 +847,27 @@
     "execution_cursor": {
       "current_failure_domain": "HOST_HARNESS",
       "exact_next_path": [
-        "Preserve seq41/seq42 evidence and do not rerun the consumed sequence pair.",
-        "Use exact source evidence to correct the host restore comparator so omitted packet20Same JSON is interpreted only when the exact candidate artifact/source hash is bound and firmware restoreVerified=true.",
-        "Continue offline-only Skins scoring, owner PWA reliability, Vibe/audio and text/moment staging; do not deploy while Phase 2 remains unauthorized.",
-        "Keep live mutation closed until new current authority allocates a legal transaction; current Matrix runtime identity is exact Release07 and AUX native DDP is live."
+        "Host sampler and seq43 transaction are committed at b3faae45f9232c862aeb7391483b0324f8cf88a3; offline simulated 24.114-second selector stall PASS.",
+        "Complete fresh read-only prelive capture, validate current capsule/proof, then execute exactly one guarded seq43 candidate install.",
+        "Reuse seq39 28/28/observer/baseline/frozen policy; complete the >=90-minute independent-sampler state-changing soak and remaining T2 checks.",
+        "On safe host-only failure preserve seq43; at most one same-install retry after a materially different offline-proven fix. Seq44 remains genuine failure/lost safety only.",
+        "If every T2 check passes, promote Foundation. If T3 prerequisites also pass, enter Phase2 and deploy/smoke exact staged V7.3 owner scoring/PWA.",
+        "Keep brightness DEFER_FOR_STABILITY for today\u2019s Skins build."
       ]
     },
     "live_mutation_authorization": {
-      "status": "CLOSED__SEQ42_RECOVERY_RUNTIME_RELEASE07_IDENTITY_VERIFIED",
-      "closure_reason": "The one authorized seq41 attempt ended after a host sample-gap failure. The host restore comparator falsely rejected omitted packet20Same despite exact firmware source proving restoreVerified=true is assigned from packet20Same(saved,verify); seq42 was nevertheless consumed. Recovery OTA HTTP receipt is missing, but current read-only Matrix runtime identity is exact Release07. No new pair is authorized.",
-      "live_mutation_limit": 0,
+      "candidate_sequence": 43,
+      "recovery_sequence": 44,
+      "status": "AUTHORIZED__SEQ43_FOUNDATION_SOAK_REQUALIFICATION__SEQ44_REAL_FAILURE_RECOVERY_ONLY",
+      "closure_reason": "Fresh authority 7ae9537e92100610125c32aeec460d49d36ab3b9 superseded consumed seq41/42. Offline host sampler fix is committed and passed the 24.114-second blocked-selector regression; seq43 still requires clean prelive proof.",
+      "live_mutation_limit": 1,
       "scope": [
-        "Read-only Matrix/AUX verification only as needed to preserve exact current identity and health.",
-        "Offline host-harness correction and tests.",
-        "Offline/staging Phase 2 work only; no deploy or hardware mutation until newer control authority allocates a legal transaction."
-      ],
-      "recovery_sequence_status": "SEQ42_USED__RELEASE07_RUNTIME_IDENTITY_VERIFIED__HTTP_RECEIPT_MISSING"
+        "Perform exactly one seq43 candidate install after clean prelive proof.",
+        "Reuse seq39 28/28 sweep, observer-effect evidence, baseline and frozen policy; do not repeat absent an invalidator.",
+        "Run the one-snapshot/sacrificial warm-up path and >=5400-second independent telemetry/state-change soak.",
+        "Preserve exact candidate on host-only failure when identity, health, uptime/restart continuity, renderer restore and AUX are proven; at most one same-install retry only after a materially different offline-proven host correction.",
+        "Consume seq44 exact Release07 only for genuine device/runtime/Foundation failure or lost safety proof, and preserve actual OTA receipt plus post-recovery identity."
+      ]
     },
     "owner_pwa_v7_3_package": {
       "status": "STAGED_HASH_VERIFIED_NOT_DEPLOYED",
@@ -873,7 +880,7 @@
     },
     "foundation_retry": {
       "schema": "hbnf-foundation-retry-v1",
-      "status": "AUTHORIZED__SEQ43_44",
+      "status": "AUTHORIZED__SEQ43_44__HOST_FIX_PROVEN__PRELIVE_PENDING",
       "reason": "Seq41 device/runtime evidence remained clean; qualification failed only because the host sampler produced a 24.114s gap. Seq42 recovery was triggered by a now-corrected host restore-comparator false negative.",
       "inherited_evidence": [
         "seq39 28/28 kernel sweep PASS",
@@ -883,11 +890,13 @@
         "source-bound restore comparator correction regression-tested offline"
       ],
       "required_new_evidence": [
-        "host sampling-gap mechanism corrected and regression-tested before live mutation",
+        "host sampling mechanism corrected and regression-tested before live mutation: PASS at commit b3faae45f9232c862aeb7391483b0324f8cf88a3",
         "clean seq43 prelive proof",
         ">=90 minute contiguous state-changing soak",
         "remaining Foundation/T2 acceptance checks"
-      ]
+      ],
+      "host_sampler_commit": "b3faae45f9232c862aeb7391483b0324f8cf88a3",
+      "host_sampler_proof": "evidence/hbnf-foundation-qualification-20261005/seq43/offline/HOST_SAMPLER_REGRESSION.json"
     },
     "post_foundation_continuation": {
       "status": "CONDITIONALLY_PREAUTHORIZED_BY_USER_DIRECTIVE",
@@ -900,6 +909,22 @@
         "action": "After legal T3 entry, deploy the exact staged permanent owner scoring/PWA package with rollback available and run intended-owner-device scoring/control smoke. Do not deploy before lifecycle authority permits it."
       },
       "brightness": "DEFER_FOR_STABILITY for the 2026-10-06 Skins field build; retain as locked Cart 2.0 core requirement after Foundation."
+    },
+    "foundation_seq43_preparation": {
+      "status": "HOST_SAMPLER_OFFLINE_PASS__DRY_RUN_PASS__PRELIVE_PENDING",
+      "candidate_sequence": 43,
+      "candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "candidate_bytes": 1489008,
+      "recovery_sequence": 44,
+      "recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+      "host_sampler_script": "scripts/hbnf_foundation_continuous_soak.py",
+      "transaction_script": "scripts/hbnf_foundation_seq43_transaction.py",
+      "dry_run": "evidence/hbnf-foundation-qualification-20261005/seq43/live/DRY_RUN.json",
+      "offline_proof": "evidence/hbnf-foundation-qualification-20261005/seq43/offline/HOST_SAMPLER_REGRESSION.json",
+      "simulation": "24.114-second state-change stall; 56 samples; max sample gap 1.037 seconds; no device/network access",
+      "inherited_evidence": "seq39 28/28 sweep, observer-effect, hash-bound baseline and frozen policy; no repeat",
+      "live_status": "NOT_STARTED__AWAIT_CLEAN_SEQ43_PRELIVE_PROOF"
     }
   },
   "execution_budget_policy": {
@@ -925,12 +950,12 @@
     },
     "current_transition": "T2_FOUNDATION_QUALIFY",
     "exact_next_path": [
-      "Commit/checkpoint the proven restore-comparator host fix and implement a materially different soak sampling mechanism that prevents the prior serialized-host 24.114s evidence gap; prove it offline first.",
-      "Run clean seq43 prelive proof, then perform one exact candidate install and the >=90-minute contiguous Foundation soak while reusing seq39 28/28/observer/baseline evidence.",
-      "On host-only failure, preserve seq43 when identity/health/restart/restore/AUX proofs remain valid; allow at most one same-install soak retry after a materially different offline-proven harness fix. Do not consume seq44 for host-only failure.",
-      "Use seq44 exact Release07 only for genuine device/runtime/Foundation failure or lost safety proof, and persist an actual OTA HTTP receipt plus post-recovery identity if used.",
-      "If T2 passes, promote Foundation instead of stopping for an intermediate report. If T3 prerequisites also pass, enter Phase2 and deploy/smoke the exact staged V7.3 owner scoring/PWA package.",
-      "Brightness remains explicitly DEFER_FOR_STABILITY for today's Skins field build; do not let it destabilize Foundation or owner scoring/control."
+      "Host sampler and seq43 transaction are committed at b3faae45f9232c862aeb7391483b0324f8cf88a3; offline simulated 24.114-second selector stall PASS.",
+      "Complete fresh read-only prelive capture, validate current capsule/proof, then execute exactly one guarded seq43 candidate install.",
+      "Reuse seq39 28/28/observer/baseline/frozen policy; complete the >=90-minute independent-sampler state-changing soak and remaining T2 checks.",
+      "On safe host-only failure preserve seq43; at most one same-install retry after a materially different offline-proven fix. Seq44 remains genuine failure/lost safety only.",
+      "If every T2 check passes, promote Foundation. If T3 prerequisites also pass, enter Phase2 and deploy/smoke exact staged V7.3 owner scoring/PWA.",
+      "Keep brightness DEFER_FOR_STABILITY for today\u2019s Skins build."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1069,7 +1094,7 @@
       "anti_stall_policy": "config/HBNF_EXECUTION_BUDGET_POLICY.json",
       "fallback_activation_event": "60_MINUTES_WITHOUT_LIFECYCLE_PROGRESS__PARALLELIZE_NONCONTENDING_WORK__DO_NOT_INTERRUPT_HEALTHY_CRITICAL_PATH",
       "launch_mode": "FOUR_SEPARATE_WORKER_CONTEXTS",
-      "launch_status": "PARALLEL_LANES_READY__FOUNDATION_SOAK_STOPPED__OVERNIGHT_OFFLINE_FALLBACK_ACTIVE",
+      "launch_status": "SEQ43_HOST_FIX_PASS__PRELIVE_PENDING__OVERNIGHT_OFFLINE_FALLBACK_ACTIVE",
       "live_worker_can_spawn_workers": false,
       "note": "Do not judge the live Foundation worker for not spawning chats; it is only responsible for signaling readiness and preserving the live lane.",
       "owner": "COORDINATOR_EXTERNAL_TO_LIVE_WORKER",
