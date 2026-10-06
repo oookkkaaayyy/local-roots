@@ -1,0 +1,24 @@
+{
+  "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "pre_retry_read_elapsed_seconds": 1.528922208,
+  "prior_attempt": "HOST_TRANSPORT_TIMEOUT__PRESERVED_SEQ47",
+  "safety_checks": {
+    "aux_native_ddp": true,
+    "candidate_identity": true,
+    "diagnostic_active": true,
+    "matrix_identity": true,
+    "restart_continuity": true,
+    "snapshot_same": true,
+    "uptime_continuity": true
+  },
+  "sampler_timeout_seconds": 12.5,
+  "snapshot": {
+    "snapshotHash": 2829015731,
+    "snapshotId": 1
+  },
+  "ssh_command_timeout_seconds": 11,
+  "status": "PASS",
+  "telemetry_request_timeout_seconds": 8,
+  "uptime_seconds": 3178.0
+}

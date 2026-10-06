@@ -1,0 +1,16 @@
+{
+  "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "duration_seconds": 5400,
+  "fresh_packet20_snapshot_reused": {
+    "snapshotHash": 2829015731,
+    "snapshotId": 1
+  },
+  "policy_sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797",
+  "previous_attempt_data_preserved": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq47/live",
+  "same_candidate_boot": true,
+  "sample_command_timeout_seconds": 12.5,
+  "sample_period_seconds": 5,
+  "selector_period_seconds": 6,
+  "started_at_unix": 1791318504.546196,
+  "status": "STARTING"
+}
