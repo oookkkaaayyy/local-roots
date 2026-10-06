@@ -20,7 +20,7 @@ assert not m.restore_is_proven(snapshot,{"HBNF":{"packet20Diagnostic":{**restore
 assert not m.restore_is_proven(snapshot,restored,{"snapshot_equal":False,"snapshotId":7,"snapshotHash":1234})
 
 safe=m.recovery_decision("TimeoutError: host evidence write failed",True,True,True,True)
-assert safe=={"action":"PRESERVE_SEQ37_AND_FIX_HOST","reason":"host_or_external_failure_with_all_device_safety_proofs","safe_candidate_retry":True}
+assert safe=={"action":"PRESERVE_SEQ39_AND_FIX_HOST","reason":"host_or_external_failure_with_all_device_safety_proofs","safe_candidate_retry":True}
 for params in ((False,True,True,True),(True,False,True,True),(True,True,False,True),(True,True,True,False)):
     assert m.recovery_decision("TimeoutError: host failure",*params)["action"]=="RECOVER_RELEASE07"
 assert m.recovery_decision("foundation-steady-state-frame-interval-stop",True,True,True,True)["action"]=="RECOVER_RELEASE07"

@@ -55,7 +55,7 @@ def recovery_decision(error, candidate_healthy, no_restart, renderer_restored, a
     if not no_restart:return {"action":"RECOVER_RELEASE07","reason":"unexpected_restart_or_uptime_regression","safe_candidate_retry":False}
     if not aux_healthy:return {"action":"RECOVER_RELEASE07","reason":"aux_health_failed","safe_candidate_retry":False}
     if not renderer_restored:return {"action":"RECOVER_RELEASE07","reason":"renderer_restore_unverified","safe_candidate_retry":False}
-    if safe:return {"action":"PRESERVE_SEQ37_AND_FIX_HOST","reason":"host_or_external_failure_with_all_device_safety_proofs","safe_candidate_retry":True}
+    if safe:return {"action":"PRESERVE_SEQ39_AND_FIX_HOST","reason":"host_or_external_failure_with_all_device_safety_proofs","safe_candidate_retry":True}
     return {"action":"RECOVER_RELEASE07","reason":"one_or_more_safety_proofs_missing","safe_candidate_retry":False}
 
 def read_json(path):
