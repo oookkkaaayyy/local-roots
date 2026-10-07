@@ -1,0 +1,145 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "HBNF-CART2-WOW-BACKEND-PREP-20261007",
+  "summary": "Prepare isolated offline guest capability, native-WLED UV policy, and owner-reviewable text/Vibe treatment contracts without touching active Phase 2 files or lifecycle state.",
+  "change_class": "ARCHITECTURAL_DECISION",
+  "impact": {
+    "architecture": true,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "expert_basis": {
+      "sources": [
+        {
+          "title": "HBNF Cart 2 scope/change authority",
+          "authority_type": "PROJECT_SOURCE_AUTHORITY",
+          "locator": "AKS Drive 105J0xKbNFD26NOGChN9MssOVjbJ9Q2p6LYhz2Ky7EgM; HBNF_CONTROL_MODEL.json and HBNF_CONTROL_STATE.json at staging base 3c081676f719d0f77a0b99e056e0d211c09b1389",
+          "relevance": "Defines guest, Vibe/text requirements and the active Phase 2 boundaries."
+        },
+        {
+          "title": "Supabase Anonymous Sign-Ins",
+          "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+          "locator": "https://supabase.com/docs/guides/auth/auth-anonymous",
+          "relevance": "Documents authenticated anonymous users without email/PII and warns that RLS must distinguish the is_anonymous JWT claim."
+        },
+        {
+          "title": "WLED 16.0.1 release",
+          "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+          "locator": "https://github.com/wled/WLED/releases/tag/v16.0.1",
+          "relevance": "Confirms exact project release identity and fixes in the 16.0.1 line."
+        },
+        {
+          "title": "WLED multi-strip documentation",
+          "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+          "locator": "https://github.com/wled/WLED/wiki/Multi-strip",
+          "relevance": "Documents multiple outputs from one ESP, recommends ESP32 for multiple outputs, and reports PWM white as a confirmed output type."
+        },
+        {
+          "title": "WLED analog wiring documentation",
+          "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+          "locator": "https://github.com/wled/WLED-Docs/blob/main/docs/basics/getting-started.md",
+          "relevance": "Documents non-addressable analog strips and an independent GPIO/MOSFET channel per output color channel."
+        },
+        {
+          "title": "WLED JSON API",
+          "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+          "locator": "https://kno.wled.ge/interfaces/json-api/",
+          "relevance": "Documents native state/segment JSON control including per-segment brightness."
+        },
+        {
+          "title": "WLED 16 announcement",
+          "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+          "locator": "https://github.com/wled/WLED/releases/tag/v16.0.0",
+          "relevance": "Describes native segment layering, transition blending, and custom font support for scrolling text in WLED 16."
+        }
+      ],
+      "findings": [
+        {
+          "kind": "ESTABLISHED_FACT",
+          "statement": "Supabase anonymous sign-ins create authenticated user identities without email/PII; they use the authenticated Postgres role and require RLS policies to distinguish anonymous users.",
+          "source_ref": "Supabase Anonymous Sign-Ins"
+        },
+        {
+          "kind": "ESTABLISHED_FACT",
+          "statement": "WLED documents multiple ESP outputs and PWM white, analog outputs driven through MOSFET circuitry, per-segment brightness JSON control, and WLED 16 native segment layering/transitions.",
+          "source_ref": "WLED multi-strip documentation"
+        },
+        {
+          "kind": "INFERENCE",
+          "statement": "The native WLED path is the least-complex control abstraction for UV if exact AUX firmware, output pin, segment/output mapping, and independent load driver are present; none is assumed by this offline adapter.",
+          "source_ref": "WLED multi-strip documentation"
+        },
+        {
+          "kind": "FIELD_EVIDENCE",
+          "statement": "The Phase 2 branch already contains P2 text/Vibe candidate fixtures and a guest-platform readiness audit; the WOW branch can prepare isolated contracts without editing those owned files.",
+          "source_ref": "HBNF Cart 2 scope/change authority"
+        }
+      ]
+    },
+    "native_capability_check": {
+      "evaluated": true,
+      "capability": "Supabase anonymous Auth; WLED native multi-output/segment JSON API; WLED 16 transition/text primitives; existing Cart Vibe/text interfaces.",
+      "result": "SUFFICIENT",
+      "source_refs": [
+        "Supabase Anonymous Sign-Ins",
+        "WLED multi-strip documentation",
+        "WLED JSON API",
+        "WLED 16 announcement",
+        "HBNF Cart 2 scope/change authority"
+      ],
+      "rationale": "Native platforms cover guest identity, segment dimming, and style composition. Only bounded policy adapters/contracts are prepared; hardware topology and owner-selected presentation remain unverified/unfrozen. Production integration must reuse existing Supabase sessions and device-control paths."
+    },
+    "mature_external_component_check": {
+      "relevant": false,
+      "alternatives": [],
+      "rationale": "No new auth or rendering component is needed; native Supabase/WLED facilities are preferred and no dependency is introduced.",
+      "not_relevant_reason": "No external component is needed because the current Supabase Auth and WLED platforms already provide the required native mechanisms."
+    },
+    "decision_rationale": {
+      "selected_path": "Add reversible, offline-only policy and interface artifacts in a new isolated directory; use existing Supabase anonymous auth and WLED native JSON/segment capabilities at later integration.",
+      "alternatives_considered": [
+        "Supabase anonymous Auth",
+        "new guest auth/JWT service",
+        "WLED JSON segment/output controls",
+        "custom PWM device protocol",
+        "existing functional text layer with native transitions",
+        "custom text renderer"
+      ],
+      "challenger_analysis": "The native facilities cover the core capabilities; a bespoke service, device protocol, or renderer would duplicate platform capability and add support burden. The strongest unresolved UV issue is physical output/load capability. The strongest text limitation is subjective treatment quality and must be reviewed by the owner.",
+      "tradeoffs": "Reference policy code is not production persistence and is intentionally isolated. Supabase RLS must be audited for anonymous-user role behavior before wiring. WLED JSON payloads require verified segment mapping and existing network authority. Text options need owner visual selection.",
+      "simplest_robust_solution": "Keep session and owner authority in current Supabase/backend; add only scope checks at existing mutation entrypoints; express UV as native WLED segment JSON; layer treatments over existing text rendering.",
+      "critical_path_reason": "Parallel, offline preparation can proceed without changing Phase 2 worker-owned files or lifecycle state."
+    },
+    "reproducibility": {
+      "source_inputs": [
+        "staging commit 3c081676f719d0f77a0b99e056e0d211c09b1389",
+        "hbnf-wow-backend-prep/**"
+      ],
+      "version_pins": [
+        "Python standard library",
+        "WLED device version to verify: 16.0.1"
+      ],
+      "configuration_inputs": [
+        "guest capability limits",
+        "UV segment/output IDs injected only after inspection",
+        "owner-reviewed text treatments"
+      ],
+      "build_inputs": [
+        "none; host Python reference tests only"
+      ],
+      "tooling_identity": [
+        "python3 standard-library unittest"
+      ]
+    },
+    "rollback_or_exit_path": {
+      "rollback_path": "Revert the isolated WOW branch commit.",
+      "uninstall_or_removal_path": "Remove hbnf-wow-backend-prep/ artifacts by branch revert.",
+      "replacement_path": "Integrate small policy rules into the existing Supabase Edge Function/session store and existing WLED control route after Phase 2 interface freeze.",
+      "recovery_method": "Return to branch parent 3c081676f719d0f77a0b99e056e0d211c09b1389.",
+      "prior_known_good_state": "Authoritative staging governance commit 3c081676f719d0f77a0b99e056e0d211c09b1389; Phase 2 branch remains read-only."
+    }
+  }
+}
