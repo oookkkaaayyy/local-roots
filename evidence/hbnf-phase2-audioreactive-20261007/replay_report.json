@@ -200,9 +200,9 @@
   },
   "replay_time_model": "uniform sequence spacing over captured wall-span; packet protocol has no sender timestamp and local receive queue delivered bursts",
   "host_replay_cost_us": {
-    "median": 40.375,
-    "p95": 46.334,
-    "max": 1313.542
+    "median": 41.125,
+    "p95": 47.042,
+    "max": 1724.041
   },
   "embedded_runtime_budget_comparison": "not measurable from host replay; requires instrumented candidate runtime and must remain a live design-review gate",
   "dt_s": {

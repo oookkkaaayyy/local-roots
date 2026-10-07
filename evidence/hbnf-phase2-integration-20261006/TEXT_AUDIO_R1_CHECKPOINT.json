@@ -21,7 +21,7 @@
     "derived_features_vibes": "evidence/hbnf-phase2-audioreactive-20261007/derived_features_vibes.jsonl",
     "derived_sha256": "863e9c00b67f5934c6c20f6589065c027396945340397fa3b3d6898f007d4af2",
     "report": "evidence/hbnf-phase2-audioreactive-20261007/replay_report.json",
-    "report_sha256": "d65efa8ee26f5342a3fbdfc026a87a9767c2d1eaee1e2de9fa5571cbc7559b44",
+    "report_sha256": "61947a7c7390278e48a62b71651b13d14534d31f9df1c4705d91cedf8d2ffcfc",
     "readonly_matrix_state": "evidence/hbnf-phase2-audioreactive-20261007/source_readonly_state.json",
     "samples": 3852,
     "duration_s": 120.012565208,
@@ -46,9 +46,9 @@
       }
     ],
     "host_replay_cost_us": {
-      "median": 40.375,
-      "p95": 46.334,
-      "max": 1313.542
+      "median": 41.125,
+      "p95": 47.042,
+      "max": 1724.041
     },
     "embedded_runtime_budget_comparison": "not measurable from host replay; requires instrumented candidate runtime and must remain a live design-review gate",
     "coverage_caveat": "unlabelled capture; mid-dominant and high-dominant music segments not established"
@@ -62,5 +62,6 @@
     "device_mutation": "NONE"
   },
   "candidate": null,
-  "next_action": "capture a controlled, labeled real-audio excerpt set at the Matrix mic (bass-heavy, mid/rhythmic, high-detail/transient, quiet), then close embedded cost during the first integrated Matrix design-review candidate; no firmware build or install completed"
+  "next_action": "capture a controlled, labeled real-audio excerpt set at the Matrix mic (bass-heavy, mid/rhythmic, high-detail/transient, quiet), then close embedded cost during the first integrated Matrix design-review candidate; no firmware build or install completed",
+  "drive_evidence_folder": "https://drive.google.com/drive/folders/1qw3Lo9M-ZwuaH9OO6vJQpdqT2XAXBLek"
 }
