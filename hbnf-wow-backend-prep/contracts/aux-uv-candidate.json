@@ -1,0 +1,38 @@
+{
+  "schema": "hbnf-aux-uv-candidate-v1",
+  "status": "OFFLINE_CANDIDATE_NOT_APPLIED",
+  "software_feature_enabled": false,
+  "requested_mode": "OFF",
+  "max_brightness": 0,
+  "ramp_per_tick": 4,
+  "hardware_available": false,
+  "controller": "SP803E",
+  "wled_version_expected": "16.0.1",
+  "preserve_existing_output": {
+    "gpio": 16,
+    "role": "qualified 12V WS2811 addressable underglow",
+    "edit_allowed": false
+  },
+  "candidate_uv_output": {
+    "gpio": 25,
+    "role": "single-channel analog PWM UV brightness",
+    "board_documented_pwm_channels": [25, 26, 27],
+    "board_documented_fet": "onboard NMOS PWM output, up to 6 A/channel per filed SP803E user manual",
+    "uv_segment_id": null,
+    "enabled": false,
+    "selection_reason": "Existing AUX backend maps GPIO25 to UV main; GPIO26 to UV short. This candidate adds no new pin choice.",
+    "qualification_required": [
+      "read back exact installed WLED firmware and LED output topology without writing",
+      "confirm installed SP803E board revision matches FCC-filed model/manual",
+      "resolve safe 5V UV load supply path while SP803E and addressable strip remain on 12V",
+      "verify no backfeed or overcurrent if the UV strip uses a separate 5V supply",
+      "verify fail-dark PWM output through power-up, reboot, Wi-Fi loss, and WLED restart",
+      "measure strip wavelength and irradiance; complete placement/exposure review",
+      "bench-check underglow coexistence and current/thermal limits"
+    ]
+  },
+  "controls": ["OFF", "MANUAL", "FOLLOW_MATRIX", "VIBE_REACTIVE"],
+  "owner_override": "existing owner control boundary has priority",
+  "integration": "Use aux_uv_policy.py and existing WLED JSON/segment route after segment IDs and physical 5V load path are qualified. No new transport or firmware protocol.",
+  "fail_safe": "OFF on disabled feature, hardware unavailable, missing configuration, or invalid setpoint"
+}

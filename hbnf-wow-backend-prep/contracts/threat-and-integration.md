@@ -1,29 +1,34 @@
-# Threat cases and deferred integration manifest
+# Guest V1 and AUX UV threat/integration notes
 
-## Abuse cases covered by policy
+## Guest V1 controls
 
-- QR photographed or forwarded: short ticket TTL + single-use atomic consume, cart binding, scoped capabilities, revoke all active sessions at owner action. Production session check is server-side on each mutation.
-- Guess/replay/cross-cart capability: high-entropy random ticket, digest at rest, explicit cart binding, expiry, one-use ticket consumption; failed/expired tickets deny by default.
-- Guest probes admin/release/device/network endpoints: default-deny scope allowlist; no such capability scopes exist.
-- Guest spams Vibe/moment/game endpoints: per-session and per-route request window, total-use/session lifetime bounds, plus edge/WAF IP route limits; body size/content limits before persistence.
-- Guest submits arbitrary text as device command or another guest's text: `moment.submit` is its own permission; input is data only and must pass existing content constraints/owner publication policy; never execute text as API/action.
-- Owner issues revoke while guest remains connected: per-mutation current store/version lookup; revocation fails closed immediately; no stale capability cache.
-- Owner changes Vibe or triggers safety override while a guest request races: existing owner authority serializes/applies last-writer priority; guest policy rejects when owner override is active.
-- Supabase anonymous user abuses `authenticated` RLS role: inspect/adjust existing RLS to require `is_anonymous` and exact server-issued cart grants; service-role keys stay server-only. Anonymous Auth alone is not authorization.
-- UV segment misidentification or output absent: hardware availability/config readiness remains false until readback/commissioning; output policy resolves to OFF. Never guess segment IDs or pin assignment.
-- UV owner cap raised or Vibe input spikes: clamp to configured max, bounded envelope, monotonic ramp; owner override remains cap-constrained and OFF remains immediate.
-- WLED/API or AUX unavailable: no retry loop or fallback protocol; report unavailable and stay OFF until the existing controller health path reports ready.
+- Forwarded/static QR: it only identifies the cart and page; Guest Mode OFF is the hard interaction gate. Keep the QR same-origin and never place an owner secret or guest bearer token in its URL.
+- Session copied across carts: session lookup checks the cart binding, server-side expiry, and current Guest Mode on every request.
+- Session restored after an OFF/ON cycle: Guest Mode OFF expires that cart's server sessions; mode ON creates a fresh round.
+- Accidental tap floods: per-session minute window and same-action debounce; return a clear retry response without repeated commands.
+- Owner action races with guest: check owner override before dispatch and serialize writes at the existing cart authority boundary; guest cannot overwrite owner/safety state.
+- Guest tries administrative/device actions: only the current guest-page action names are passed to existing cart handlers. No general control proxy exists.
+- Reconnect after network interruption: HttpOnly session cookie revalidates against the same session store; expiry does not slide forward. Offline UI sends no commands.
+- Shared backend deployment: the local reference throttle is per instance. If the existing backend runs multiple replicas, substitute its existing shared/native throttling mechanism during integration.
+
+## AUX UV gates
+
+- Controller disconnected: user reports AUX is reconnected and stable. Connectivity is closed as a blocker; no live probe or write was performed in this lane.
+- Output/pin conflict: SP803E filed manual identifies PWM/NMOS channels IO25/26/27; current qualified underglow uses GPIO16. Existing AUX code maps 25/26 as UV candidates and 27 spare. Still require exact installed revision/config readback and boot-dark verification before enabling.
+- Voltage/topology mismatch: the cart's addressable underglow is 12V and the installed UV strip is 5V USB. SP803E's PWM output is a built-in NMOS channel and the filed manual describes matching strip/controller supply voltage. The exact separate 5V UV supply wiring through the built-in channel, including no backfeed, must be proven before live connection; if not supported, add a separately powered 5V low-side MOSFET module driven by a verified logic-level output.
+- Optical exposure: wavelength/irradiance are not established by the known strip label. No live use until wavelength, exposure distance, and shielding/placement receive review.
+- Candidate config in `aux-uv-candidate.json` remains `software_feature_enabled=false`, `hardware_available=false`, brightness cap 0, and leaves GPIO16 unchanged.
+
+## Preserved text/Vibe evidence
+
 - Text too long/clips, unstable hold, or uncontrolled animation: keep existing functional text geometry, bounds-check content with the existing renderer, hold glyphs stable, revert to prior state on exit; default to current functional treatment until owner review.
 
-## Minimal later integration manifest
+## Later integration ordering
 
-No shared files are modified in this branch. Once the main Phase 2 worker closes and existing interfaces are frozen, the coordinator should make a separate reviewed integration change:
+1. Wait for primary Phase 2 candidate closure; read its exact current route/session/action interfaces from that durable checkpoint.
+2. Merge `guest-v1.html/js` into existing application hosting; add only one QR route and two session endpoints plus one action route, reusing existing owner state, session storage and action dispatch.
+3. Add Guest Mode owner setting default OFF, expire sessions on OFF, set cookie attributes, validate guest action payloads, and check owner precedence through the current serialized authority path.
+4. Keep UV software disabled and cap zero until exact WLED config readback and board/load/exposure checks close. Apply the native WLED output/segment mapping through existing AUX route only after no-conflict offline review.
+5. Preserve the existing text treatment preparation and let the primary text/Vibe owner continue their current work; this continuation makes no text subsystem changes.
 
-1. Existing guest UI/session routes (identify exact current owners from the closed Phase 2 tree): add a disabled-by-default owner toggle and owner-only issue/revoke actions. QR carries only a short-lived one-use ticket, never admin credentials.
-2. Existing Supabase Auth/session flow: guest opens QR, uses `signInAnonymously()`, and exchanges the ticket with its JWT. Store anonymous user ID + cart ID + explicit scopes + expiry in existing session storage. Add RLS regression coverage for `is_anonymous`; make every guest mutation re-check current grant/revocation server-side.
-3. Existing Cart mutation endpoints: require only the corresponding `vibe.select`, `moment.submit`, or `game.join` scope; keep owner actions/safety path and release/device administration independent and superior.
-4. Existing AUX backend owner (`hbnf-aux-lighting/backend/aux_control.ts` on staging): use `aux_uv_policy` only for pure setpoint calculation; adapt the output patch through its established device-control route after exact WLED output/segment IDs and physical MOSFET/load stage are verified. Preserve existing feature/commissioning gates; no new transport.
-5. Existing text/Vibe integration owner: bind an owner-selected treatment ID to the current text and Vibe APIs. Do not add presets to the current release candidate until owner review approves one and the active text fixtures/runtime smokes pass.
-6. Keep `HBNF_CONTROL_STATE.json` and lifecycle unchanged. Integration consumes these as implementation evidence only; it is not a new lifecycle transition.
-
-Merge-risk assessment: low for this branch's additive, isolated Python/config/docs only. Integration risk becomes moderate if it changes Supabase RLS/session semantics or WLED output topology, and high if it edits the active Phase 2 UI/renderer/control routes before that worker closes. Therefore those shared-file changes are explicitly deferred.
+No production wiring, Matrix/AUX mutation, Supabase write, deployment, or lifecycle change occurred.

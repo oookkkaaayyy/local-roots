@@ -1,0 +1,145 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "HBNF-CART2-WOW-GUEST-AUX-CONTINUATION-20261007",
+  "summary": "Supersede the earlier ticket/capability guest draft with the owner-approved trusted-friends Guest V1 adapter and static UI; close AUX board output research using filed SP803E material while retaining fail-closed UV electrical/optical qualification gates. Preserve text/Vibe prep without editing that subsystem.",
+  "change_class": "ARCHITECTURAL_DECISION",
+  "impact": {
+    "architecture": true,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "expert_basis": {
+      "sources": [
+        {
+          "title": "Current owner-approved Guest V1 scope",
+          "authority_type": "PROJECT_SOURCE_AUTHORITY",
+          "locator": "CONTINUE WOW BACKEND — SIMPLIFIED GUEST V1 + AUX UV CAPABILITY CLOSURE, 2026-10-07",
+          "relevance": "Supersedes the preceding one-use ticket, granular capability, and anonymous-auth proposal; defines a static QR, owner ON/OFF, existing backend mediation, lightweight continuity, bounded action throttling, and disabled default."
+        },
+        {
+          "title": "HBNF Cart 2 scope/change authority",
+          "authority_type": "PROJECT_SOURCE_AUTHORITY",
+          "locator": "AKS Drive 105J0xKbNFD26NOGChN9MssOVjbJ9Q2p6LYhz2Ky7EgM; current Phase 2 branch head read-only at 6a98de3c73c613f9cb1251c5e8054f8d6cd35697",
+          "relevance": "Defines the current owner authority and lane boundaries. Latest Phase 2 App.tsx confirms the current React app has no /guest/{cartId} route; Phase 2 files remain unmodified."
+        },
+        {
+          "title": "SP803E manufacturer user manual filed with FCC",
+          "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+          "locator": "https://apps.fcc.gov/eas/GetApplicationAttachment.html?id=8367961",
+          "relevance": "Identifies SP803E IO16 as SPI data and IO25/26/27 as PWM NMOS outputs; manual lists 6 A/channel and says controller supply voltage must match the LED load."
+        },
+        {
+          "title": "WLED multi-strip documentation",
+          "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+          "locator": "https://github.com/wled/WLED/wiki/Multi-strip",
+          "relevance": "Documents multiple LED outputs on one ESP32 and PWM white as a confirmed output type."
+        },
+        {
+          "title": "WLED analog wiring documentation",
+          "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+          "locator": "https://kno.wled.ge/basics/getting-started/",
+          "relevance": "Documents non-addressable strip channel control through GPIO/MOSFET and says to use the exact board pinout and common ground."
+        },
+        {
+          "title": "SP803E current project commissioning contract and runbook",
+          "authority_type": "FIELD_EVIDENCE",
+          "locator": "hbnf-aux-lighting/commissioning/contract.json; hbnf-aux-lighting/commissioning/README.md; hbnf-aux-lighting/backend/aux_control.ts at staging base 3c081676f719d0f77a0b99e056e0d211c09b1389",
+          "relevance": "Records GPIO16 addressable underglow, UV 5V USB versus controller's existing 12V setup, GPIO25/26 UV candidates, and fail-closed physical commissioning gates."
+        },
+        {
+          "title": "CDC Ultraviolet Radiation",
+          "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+          "locator": "https://www.cdc.gov/radiation-health/features/uv-radiation.html",
+          "relevance": "Supports a wavelength/irradiance and exposure review before any UV strip is energized."
+        }
+      ],
+      "findings": [
+        {
+          "kind": "FIELD_EVIDENCE",
+          "statement": "For trusted friends physically near the cart, static QR plus the existing server-side session store and per-cart owner Guest Mode gate replaces the earlier ticket/capability/anonymous-auth draft. Guest browsers receive no direct database authority.",
+          "source_ref": "Current owner-approved Guest V1 scope"
+        },
+        {
+          "kind": "ESTABLISHED_FACT",
+          "statement": "The filed SP803E manual documents PWM NMOS outputs on IO25, IO26, IO27 and SPI output on IO16; WLED documents multi-output ESP32 configurations and PWM white support.",
+          "source_ref": "SP803E manufacturer user manual filed with FCC"
+        },
+        {
+          "kind": "FIELD_EVIDENCE",
+          "statement": "The current accepted AUX output plan uses GPIO16 for the 12V addressable underglow; existing UV candidate pins are 25/26 and the spare channel is 27. The UV strip is 5V USB while AUX uses a 12V setup, and current commissioning refuses to enable UV without physical verification.",
+          "source_ref": "SP803E current project commissioning contract and runbook"
+        },
+        {
+          "kind": "INFERENCE",
+          "statement": "AUX can likely host an independent PWM UV channel beside the GPIO16 addressable bus using native WLED output configuration, but safe 5V load wiring on the 12V-powered board, no-backfeed, boot-dark behavior, installed firmware configuration, segment mapping, and optical exposure remain unproven; software therefore remains disabled with cap 0.",
+          "source_ref": "WLED multi-strip documentation"
+        }
+      ]
+    },
+    "native_capability_check": {
+      "evaluated": true,
+      "capability": "Existing Cart session/state/action backend; static browser page; SP803E onboard PWM NMOS outputs; WLED multi-output/JSON control.",
+      "result": "SUFFICIENT",
+      "source_refs": [
+        "Current owner-approved Guest V1 scope",
+        "SP803E manufacturer user manual filed with FCC",
+        "WLED multi-strip documentation",
+        "WLED analog wiring documentation",
+        "SP803E current project commissioning contract and runbook"
+      ],
+      "rationale": "The simplified guest flow needs no new identity provider or guest authorization subsystem; a small adapter can call the existing server session and cart-action paths. WLED and the SP803E board have the native PWM/output family. UV remains off until the exact existing board/load topology, firmware config and optical exposure are verified."
+    },
+    "mature_external_component_check": {
+      "relevant": false,
+      "alternatives": [],
+      "rationale": "No added service or library is required; reuse existing Cart session/control interfaces and WLED native output/API features.",
+      "not_relevant_reason": "The task is bounded glue to existing native capabilities; no external component fills an unmet requirement."
+    },
+    "decision_rationale": {
+      "selected_path": "Implement an isolated static guest page and dependency-injected backend adapter around current session/mode/action interfaces. Keep Guest Mode disabled by default. Keep UV policy native-WLED-facing and disabled, while recording existing SP803E PWM channels and precise wiring/readback gates.",
+      "alternatives_considered": [
+        "Supabase anonymous Auth and RLS grants",
+        "single-use QR ticket and scoped capability framework",
+        "existing Cart server sessions and owner mode flag",
+        "custom guest JWT/session server",
+        "SP803E onboard PWM channels with native WLED outputs",
+        "custom PWM protocol or firmware"
+      ],
+      "challenger_analysis": "The prior ticket/capability solution added authentication and revocation machinery not required by the updated small trusted-friends context. Static QR is not itself a security boundary; the live owner gate and server-side session are. For UV, the board manual disproves the assumption that no PWM/MOSFET channel exists, while the manual's load-supply guidance and the 5V/12V mismatch prevent claiming the existing output is safe to wire now.",
+      "tradeoffs": "Guest trust boundary is deliberately contextual and the session relies on the current backend store; its process-local debounce is only suitable on a single backend instance unless replaced by the host's existing shared limiter. UV output wiring/configuration remains a physical qualification task. Existing Phase 2 files remain untouched.",
+      "simplest_robust_solution": "Reuse owner state, current server session storage, current serialized cart action handler, SP803E PWM NMOS hardware, and WLED JSON/multi-output capability. Add only narrow same-origin routes and an isolated UI after Phase 2 closes.",
+      "critical_path_reason": "This is offline preparation on the isolated WOW feature branch and does not change Phase 2 or Cart lifecycle state."
+    },
+    "reproducibility": {
+      "source_inputs": [
+        "WOW branch prior HEAD 44249779b4b74945e647d18656e7aa8b3a434144",
+        "hbnf-wow-backend-prep/**",
+        "hbnf-aux-lighting/commissioning/**",
+        "Phase 2 branch read-only at 6a98de3c73c613f9cb1251c5e8054f8d6cd35697"
+      ],
+      "version_pins": [
+        "Python standard library",
+        "WLED expected device version 16.0.1; installed exact config not read in this offline lane"
+      ],
+      "configuration_inputs": [
+        "Guest Mode default false",
+        "guest session default TTL 7200 s, configurable up to 14400 s",
+        "guest action limit 20 per minute, repeated-action debounce 400 ms",
+        "UV software disabled, output unavailable, cap 0",
+        "existing GPIO16 underglow preserved"
+      ],
+      "build_inputs": ["none; deterministic Python unit tests and static browser code"],
+      "tooling_identity": ["python3 standard-library unittest"]
+    },
+    "rollback_or_exit_path": {
+      "rollback_path": "Revert the isolated WOW continuation commit.",
+      "uninstall_or_removal_path": "Remove hbnf-wow-backend-prep Guest V1 and UV candidate files by branch revert; existing Phase 2 files are unaffected.",
+      "replacement_path": "Bind the adapter to exact owner/session/action interfaces selected after Phase 2 candidate closure; retain the owner's ON/OFF and QR contract.",
+      "recovery_method": "Return to prior WOW branch HEAD 44249779b4b74945e647d18656e7aa8b3a434144.",
+      "prior_known_good_state": "WOW branch at 44249779b4b74945e647d18656e7aa8b3a434144; Phase 2 branch read-only at 6a98de3c73c613f9cb1251c5e8054f8d6cd35697."
+    }
+  }
+}
