@@ -1,0 +1,44 @@
+--- usermod_hbnf_foundation_v1.cpp
++++ usermod_hbnf_foundation_v1.cpp
+@@ -9,0 +10 @@
++#include "hbnf_brightness_output.h"
+@@ -201 +202,2 @@
+-  const uint32_t fg=packed(applyMatrixBrightness(Rgb8(overlay.r,overlay.g,overlay.b),matrixBrightness));
++  const Rgb8 overlayColor(overlay.r,overlay.g,overlay.b);
++  const uint32_t fg=packed(hbnf_brightness::scaleOutputPixel(overlayColor,overlayColor,matrixBrightness));
+@@ -225,0 +228 @@
++  const uint8_t outputScale=hbnf_brightness::outputScale(matrixBrightness);
+@@ -230,3 +233,3 @@
+-  hbnfDrawText(header,0,packed(scaleRgb(applyMatrixBrightness(Rgb8(176,224,132),matrixBrightness),fade)));
+-  hbnfDrawText(live.entries[page*2u],5,packed(scaleRgb(applyMatrixBrightness(Rgb8(255,255,255),matrixBrightness),fade)));
+-  if((uint8_t)(page*2u+1u)<live.count)hbnfDrawText(live.entries[page*2u+1u],10,packed(scaleRgb(applyMatrixBrightness(Rgb8(255,255,255),matrixBrightness),fade)));
++  hbnfDrawText(header,0,packed(scaleRgb(hbnf_brightness::scaleOutputPixel(Rgb8(176,224,132),Rgb8(176,224,132),outputScale),fade)));
++  hbnfDrawText(live.entries[page*2u],5,packed(scaleRgb(hbnf_brightness::scaleOutputPixel(Rgb8(255,255,255),Rgb8(255,255,255),outputScale),fade)));
++  if((uint8_t)(page*2u+1u)<live.count)hbnfDrawText(live.entries[page*2u+1u],10,packed(scaleRgb(hbnf_brightness::scaleOutputPixel(Rgb8(255,255,255),Rgb8(255,255,255),outputScale),fade)));
+@@ -535,0 +539 @@
++    outputScale_=hbnf_brightness::outputScale(f.controls.matrixBrightness);
+@@ -595,5 +599,2 @@
+-        const Rgb8 matrix=applyMatrixBrightness(canonicalMatrixPixels[i],frame_->controls.matrixBrightness);
+-        const uint8_t r=SEGMENT.check2?gamma8(matrix.r):matrix.r;
+-        const uint8_t g=SEGMENT.check2?gamma8(matrix.g):matrix.g;
+-        const uint8_t b=SEGMENT.check2?gamma8(matrix.b):matrix.b;
+-        SEGMENT.setPixelColorXY(x,y,RGBW32(r,g,b,0));
++        const Rgb8 matrix=hbnfScaleMatrixOutput(canonicalMatrixPixels[i],outputScale_);
++        SEGMENT.setPixelColorXY(x,y,RGBW32(matrix.r,matrix.g,matrix.b,0));
+@@ -619,0 +621,6 @@
++  uint8_t outputScale_=255;
++
++  static Rgb8 hbnfScaleMatrixOutput(const Rgb8& canonical,uint8_t scale) {
++    const Rgb8 gammaCorrected=SEGMENT.check2?Rgb8(gamma8(canonical.r),gamma8(canonical.g),gamma8(canonical.b)):canonical;
++    return hbnf_brightness::scaleOutputPixel(gammaCorrected,canonical,scale);
++  }
+@@ -638,4 +645,2 @@
+-    const Rgb8 matrix=applyMatrixBrightness(rendered,frame_->controls.matrixBrightness);
+-    if(SEGMENT.check2){r=gamma8(matrix.r);g=gamma8(matrix.g);b=gamma8(matrix.b);}
+-    else {r=matrix.r;g=matrix.g;b=matrix.b;}
+-    SEGMENT.setPixelColorXY(tx,ty,RGBW32(r,g,b,0));
++    const Rgb8 matrix=hbnfScaleMatrixOutput(rendered,outputScale_);
++    SEGMENT.setPixelColorXY(tx,ty,RGBW32(matrix.r,matrix.g,matrix.b,0));
+@@ -932 +937 @@
+-    SEGMENT.setPixelColor(i,packed(applyMatrixBrightness(c,f.controls.matrixBrightness)));
++    SEGMENT.setPixelColor(i,packed(hbnf_brightness::scaleOutputPixel(SEGMENT.check2?Rgb8(gamma8(c.r),gamma8(c.g),gamma8(c.b)):c,c,hbnf_brightness::outputScale(f.controls.matrixBrightness))));
