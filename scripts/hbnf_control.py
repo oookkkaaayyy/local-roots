@@ -39,12 +39,32 @@ def validate_model(model):
         if not req or len(req)!=len(set(req)): errors.append(t["id"]+": required_checks empty or duplicate")
     es=model.get("execution_system")
     if not isinstance(es,dict): return errors+["execution_system missing"]
-    for key in ("authority_contract","evidence_inheritance","failure_domains","change_impact","prelive_offline_first","learning_loop","parallelism","phase2_dag","release_scope"):
+    for key in ("authority_contract","evidence_inheritance","failure_domains","change_impact","prelive_offline_first","learning_loop","parallelism","phase2_dag","release_scope","engineering_change_governance"):
         if key not in es: errors.append("execution_system."+key+" missing")
     auth=es.get("authority_contract",{})
     operational=auth.get("operational_lifecycle",[])
     if operational!=["config/HBNF_CONTROL_MODEL.json","config/HBNF_CONTROL_STATE.json"]:
         errors.append("operational authority must be exactly control model + control state")
+    governance=es.get("engineering_change_governance",{})
+    if governance.get("schema")!="hbnf-engineering-change-governance-v1":
+        errors.append("engineering change governance schema mismatch")
+    if not isinstance(governance.get("classes"),dict) or set(governance.get("classes",{}))!={
+        "TRIVIAL_BOUNDED","APPROVED_ARCHITECTURE_IMPLEMENTATION","ARCHITECTURAL_DECISION",
+        "SUBJECTIVE_DESIGN","BESPOKE_REPLACEMENT","UNKNOWN_IMPACT"
+    }:
+        errors.append("engineering change applicability classes incomplete")
+    if set(governance.get("full_evidence_fields",[]))!={
+        "expert_basis","native_capability_check","mature_external_component_check",
+        "decision_rationale","reproducibility","rollback_or_exit_path"
+    }:
+        errors.append("full engineering evidence contract incomplete")
+    if not _has_text(governance.get("t4_manifest_path")):
+        errors.append("T4 engineering governance manifest path missing")
+    if governance.get("policy_only_invalidates_foundation") is not False:
+        errors.append("governance-only changes must preserve Foundation evidence")
+    t4=next((t for t in model.get("transitions",[]) if t.get("id")=="T4_PHASE2_INTEGRATION"),None)
+    if t4 and governance.get("t4_receipt_check") not in t4.get("required_checks",[]):
+        errors.append("T4 receipt must require engineering governance completion")
     return errors
 
 def parallelism_status(model,state):
@@ -131,7 +151,7 @@ def forbidden_evidence_name(model,name):
     low=name.lower()
     return any(p in low for p in model["receipt_contract"]["forbidden_evidence_name_patterns"])
 
-def validate_receipt(model,state,receipt):
+def validate_receipt(model,state,receipt,evidence_root=ROOT):
     t=next_transition(model,state)
     if not t: return ["no next transition"]
     c=model["receipt_contract"]
@@ -182,6 +202,243 @@ def validate_receipt(model,state,receipt):
             errors.append("approval must contain exactly approved_by_user + reference")
         elif ap.get("approved_by_user") is not True or not str(ap.get("reference") or "").strip():
             errors.append("explicit user approval required")
+    governance=model.get("execution_system",{}).get("engineering_change_governance",{})
+    if t.get("id")=="T4_PHASE2_INTEGRATION":
+        if receipt.get("checks",{}).get(governance.get("t4_receipt_check")) is not True:
+            errors.append("T4 requires validated engineering change governance")
+        manifest_path=governance.get("t4_manifest_path")
+        manifests=[x for x in artifacts if isinstance(x,dict) and x.get("name")==manifest_path] if isinstance(artifacts,list) else []
+        if len(manifests)!=1:
+            errors.append("T4 evidence_artifacts must include exactly one engineering governance manifest")
+        else:
+            path=(pathlib.Path(evidence_root)/manifest_path).resolve()
+            try: path.relative_to(pathlib.Path(evidence_root).resolve())
+            except ValueError: errors.append("T4 governance manifest path escapes evidence root")
+            else:
+                if not path.is_file(): errors.append("T4 engineering governance manifest is missing")
+                else:
+                    if sha256_file(path)!=manifests[0].get("sha256"):
+                        errors.append("T4 engineering governance manifest hash mismatch")
+                    try: manifest=load(path)
+                    except Exception as exc: errors.append("T4 engineering governance manifest is invalid JSON: "+str(exc))
+                    else: errors.extend(validate_governance_manifest(model,manifest))
+    return errors
+
+def _has_text(value):
+    return isinstance(value,str) and bool(value.strip())
+
+def _text_list(value):
+    return isinstance(value,list) and bool(value) and all(_has_text(x) for x in value)
+
+def _require_text_fields(obj,fields,label,errors):
+    if not isinstance(obj,dict):
+        errors.append(label+" must be an object"); return
+    for field in fields:
+        if not _has_text(obj.get(field)):
+            errors.append(label+"."+field+" must be nonempty")
+
+def validate_change_governance(model,record):
+    """Validate one classified engineering decision using the primary control model."""
+    cfg=model.get("execution_system",{}).get("engineering_change_governance",{})
+    errors=[]
+    required={"schema","change_id","summary","change_class","impact","evidence"}
+    if not isinstance(record,dict): return ["change record must be an object"]
+    if set(record)!=required: errors.append("change record fields must exactly match the governance contract")
+    if record.get("schema")!=cfg.get("change_record_schema"): errors.append("change record schema mismatch")
+    for key in ("change_id","summary"):
+        if not _has_text(record.get(key)): errors.append(key+" must be nonempty")
+
+    classes=cfg.get("classes",{})
+    cls=record.get("change_class")
+    if cls not in classes:
+        errors.append("unknown change class; classify before progression")
+        return errors
+    if classes[cls]=="reject": errors.append("unknown or ambiguous impact fails closed")
+
+    impact=record.get("impact")
+    flag_names=set(cfg.get("impact_flags",[]))
+    if not isinstance(impact,dict) or set(impact)!=flag_names or any(type(impact.get(k)) is not bool for k in flag_names):
+        errors.append("impact must contain exactly the declared boolean classification flags")
+        impact={k:True for k in flag_names}
+
+    evidence=record.get("evidence")
+    if not isinstance(evidence,dict):
+        errors.append("evidence must be an object"); evidence={}
+    if impact.get("unknown"):
+        errors.append("unknown impact must be classified before progression")
+    if impact.get("bespoke") and (cls!="BESPOKE_REPLACEMENT" or not impact.get("architecture")):
+        errors.append("bespoke work must be classified as an architectural bespoke replacement")
+    if cls=="TRIVIAL_BOUNDED" and any(impact.get(k) for k in flag_names):
+        errors.append("trivial bounded changes cannot claim material impact flags")
+    if cls=="APPROVED_ARCHITECTURE_IMPLEMENTATION" and any(impact.get(k) for k in flag_names):
+        errors.append("approved-architecture implementation cannot introduce architecture, dependency, design, or bespoke impact")
+    if cls=="ARCHITECTURAL_DECISION" and (not impact.get("architecture") or impact.get("bespoke") or impact.get("subjective_design")):
+        errors.append("architectural decision classification conflicts with impact flags")
+    if cls=="SUBJECTIVE_DESIGN" and not impact.get("subjective_design"):
+        errors.append("subjective design classification requires subjective_design impact")
+    if cls=="BESPOKE_REPLACEMENT" and not impact.get("bespoke"):
+        errors.append("bespoke replacement classification requires bespoke impact")
+
+    level=classes[cls]
+    full=(level=="full" or impact.get("architecture") or impact.get("new_dependency"))
+    scoped=(level in {"scoped","scoped_or_full"} and not full) or (cls=="SUBJECTIVE_DESIGN" and not full)
+    if full:
+        for field in cfg.get("full_evidence_fields",[]):
+            if field not in evidence: errors.append("missing full governance evidence: "+field)
+    elif scoped:
+        scoped_evidence=evidence.get("scoped_evidence")
+        _require_text_fields(scoped_evidence,["approved_architecture_reference","affected_subsystem","rollback_reference"],"scoped_evidence",errors)
+        if isinstance(scoped_evidence,dict) and not _text_list(scoped_evidence.get("evidence_sources")):
+            errors.append("scoped_evidence.evidence_sources must be a nonempty string list")
+        if isinstance(scoped_evidence,dict) and not _text_list(scoped_evidence.get("tests")):
+            errors.append("scoped_evidence.tests must be a nonempty string list")
+
+    sources=[]; source_refs=set()
+    if full:
+        expert=evidence.get("expert_basis")
+        if not isinstance(expert,dict):
+            errors.append("expert_basis must be an object")
+        else:
+            sources=expert.get("sources",[])
+            if not isinstance(sources,list) or not sources:
+                errors.append("expert_basis.sources must be nonempty")
+                sources=[]
+            else:
+                for i,source in enumerate(sources):
+                    _require_text_fields(source,["title","authority_type","locator","relevance"],f"expert_basis.sources[{i}]",errors)
+                    if isinstance(source,dict):
+                        if _has_text(source.get("title")): source_refs.add(source["title"])
+                        if _has_text(source.get("locator")): source_refs.add(source["locator"])
+                        if source.get("authority_type") not in {"PROJECT_SOURCE_AUTHORITY","OFFICIAL_PRIMARY_DOCUMENTATION","UPSTREAM_MAINTAINER_GUIDANCE","RECOGNIZED_STANDARD","EXPERT_ENGINEERING_GUIDANCE","FIELD_EVIDENCE"}:
+                            errors.append(f"expert_basis.sources[{i}].authority_type is not a recognized evidence class")
+                if not any(isinstance(source,dict) and source.get("authority_type") in {"OFFICIAL_PRIMARY_DOCUMENTATION","UPSTREAM_MAINTAINER_GUIDANCE","RECOGNIZED_STANDARD","EXPERT_ENGINEERING_GUIDANCE"} for source in sources):
+                    errors.append("expert_basis requires primary, upstream, standards, or expert guidance")
+            findings=expert.get("findings",[])
+            allowed={"ESTABLISHED_FACT","FIELD_EVIDENCE","INFERENCE"}
+            if not isinstance(findings,list) or not findings:
+                errors.append("expert_basis.findings must distinguish facts, field evidence, or inference")
+            else:
+                for i,item in enumerate(findings):
+                    _require_text_fields(item,["kind","statement","source_ref"],f"expert_basis.findings[{i}]",errors)
+                    if isinstance(item,dict) and item.get("kind") not in allowed:
+                        errors.append(f"expert_basis.findings[{i}].kind is invalid")
+                    if isinstance(item,dict) and item.get("source_ref") not in source_refs:
+                        errors.append(f"expert_basis.findings[{i}].source_ref must identify a consulted source")
+
+        native=evidence.get("native_capability_check")
+        if not isinstance(native,dict): errors.append("native_capability_check must be an object")
+        else:
+            if native.get("evaluated") is not True: errors.append("native capability must be evaluated")
+            _require_text_fields(native,["capability","result","rationale"],"native_capability_check",errors)
+            if native.get("result") not in {"SUFFICIENT","INSUFFICIENT"}: errors.append("native capability result must be SUFFICIENT or INSUFFICIENT")
+            if not _text_list(native.get("source_refs")): errors.append("native_capability_check.source_refs must be nonempty")
+            elif any(ref not in source_refs for ref in native["source_refs"]): errors.append("native capability source_refs must identify consulted sources")
+
+        mature=evidence.get("mature_external_component_check")
+        if not isinstance(mature,dict): errors.append("mature_external_component_check must be an object")
+        elif mature.get("relevant") is True:
+            alternatives=mature.get("alternatives")
+            if not isinstance(alternatives,list) or not alternatives: errors.append("relevant mature alternatives must be evaluated")
+            else:
+                fields=["name","maturity","maintenance","compatibility","provenance","license","documentation_support","dependency_burden","disposition","rationale"]
+                for i,alternative in enumerate(alternatives):
+                    _require_text_fields(alternative,fields,f"mature_external_component_check.alternatives[{i}]",errors)
+                    if isinstance(alternative,dict):
+                        if alternative.get("disposition") not in {"SELECTED","REJECTED"}:
+                            errors.append(f"mature_external_component_check.alternatives[{i}].disposition must be SELECTED or REJECTED")
+                        if alternative.get("provenance") not in source_refs:
+                            errors.append(f"mature_external_component_check.alternatives[{i}].provenance must identify a consulted source")
+        elif mature.get("relevant") is False:
+            if not _has_text(mature.get("not_relevant_reason")):
+                errors.append("irrelevant mature alternatives require a reason")
+            if mature.get("alternatives") not in (None,[]): errors.append("irrelevant mature alternatives must not contain unevaluated entries")
+        else: errors.append("mature_external_component_check.relevant must be boolean")
+        if impact.get("bespoke") and (not isinstance(mature,dict) or mature.get("relevant") is not True or not mature.get("alternatives")):
+            errors.append("bespoke replacement requires evaluated mature external alternatives")
+
+        rationale=evidence.get("decision_rationale")
+        _require_text_fields(rationale,["selected_path","challenger_analysis","tradeoffs","simplest_robust_solution","critical_path_reason"],"decision_rationale",errors)
+        if isinstance(rationale,dict) and not _text_list(rationale.get("alternatives_considered")):
+            errors.append("decision_rationale.alternatives_considered must be nonempty")
+
+        reproducibility=evidence.get("reproducibility")
+        repro_fields=["source_inputs","version_pins","configuration_inputs","build_inputs","tooling_identity"]
+        if not isinstance(reproducibility,dict): errors.append("reproducibility must be an object")
+        else:
+            for field in repro_fields:
+                if not _text_list(reproducibility.get(field)):
+                    errors.append("reproducibility."+field+" must be a nonempty string list")
+
+        rollback=evidence.get("rollback_or_exit_path")
+        _require_text_fields(rollback,["rollback_path","uninstall_or_removal_path","replacement_path","recovery_method","prior_known_good_state"],"rollback_or_exit_path",errors)
+
+    if impact.get("new_dependency"):
+        identity=evidence.get("dependency_identity")
+        entries=identity.get("dependencies") if isinstance(identity,dict) else None
+        if not isinstance(entries,list) or not entries: errors.append("new dependencies require exact dependency identity")
+        else:
+            selected_alternatives=[]
+            mature=evidence.get("mature_external_component_check",{})
+            if isinstance(mature,dict) and isinstance(mature.get("alternatives"),list):
+                selected_alternatives=[item.get("name") for item in mature["alternatives"] if isinstance(item,dict) and item.get("disposition")=="SELECTED"]
+            if len(selected_alternatives)!=1:
+                errors.append("new dependency decisions must select exactly one mature alternative")
+            for i,item in enumerate(entries):
+                _require_text_fields(item,["name","upstream_project","version_or_commit","source_identity","provenance","license","compatibility"],f"dependency_identity.dependencies[{i}]",errors)
+                if isinstance(item,dict) and item.get("provenance") not in source_refs:
+                    errors.append(f"dependency_identity.dependencies[{i}].provenance must identify a consulted source")
+                if isinstance(item,dict) and selected_alternatives and item.get("name") not in selected_alternatives:
+                    errors.append(f"dependency_identity.dependencies[{i}] must match the selected mature alternative")
+                if isinstance(item,dict) and _has_text(item.get("source_identity")):
+                    identity=item["source_identity"]
+                    exact=(re.fullmatch(r"[0-9a-fA-F]{40}",identity) or
+                           re.fullmatch(r"[0-9a-fA-F]{64}",identity) or
+                           re.fullmatch(r"git:[0-9a-fA-F]{40}",identity) or
+                           re.fullmatch(r"sha256:[0-9a-fA-F]{64}",identity) or
+                           re.fullmatch(r"tag:[A-Za-z0-9][A-Za-z0-9._+-]*",identity) or
+                           re.fullmatch(r"release:[A-Za-z0-9][A-Za-z0-9._+-]*",identity))
+                    if not exact: errors.append(f"dependency_identity.dependencies[{i}].source_identity must be an exact commit, hash, tag, or release identity")
+                    if identity.startswith(("tag:","release:")) and identity.split(":",1)[1]!=item.get("version_or_commit"):
+                        errors.append(f"dependency_identity.dependencies[{i}] version_or_commit must match its tag/release source identity")
+
+    if impact.get("subjective_design"):
+        gate=evidence.get("owner_design_gate")
+        if not isinstance(gate,dict): errors.append("subjective design requires owner_design_gate")
+        elif gate.get("decision_status")=="APPROVED":
+            _require_text_fields(gate,["selected_option","approval_reference"],"owner_design_gate",errors)
+            if gate.get("approved_by_owner") is not True: errors.append("subjective design approval must be explicit")
+        elif gate.get("decision_status")=="OPTIONS_ONLY":
+            if gate.get("approved_by_owner") is not False or _has_text(gate.get("selected_option")):
+                errors.append("OPTIONS_ONLY cannot freeze a selected subjective treatment")
+        else: errors.append("owner_design_gate must be APPROVED or OPTIONS_ONLY")
+
+    if impact.get("bespoke"):
+        exception=evidence.get("bespoke_exception")
+        fields=["unmet_requirement","why_minimal_glue_is_insufficient","required_custom_scope","maintenance_burden","dependency_burden","technical_debt_implications","test_plan","rollback_exit_path","owner_approval_reference"]
+        _require_text_fields(exception,fields,"bespoke_exception",errors)
+        if isinstance(exception,dict):
+            if exception.get("native_option_evaluated") is not True: errors.append("bespoke exception must evaluate native capability")
+            if exception.get("external_alternatives_evaluated") is not True: errors.append("bespoke exception must evaluate mature external alternatives")
+            if exception.get("owner_approved") is not True: errors.append("architecturally significant bespoke work requires explicit owner approval")
+    elif "bespoke_exception" in evidence:
+        errors.append("bespoke_exception is only valid for bespoke replacement")
+    return errors
+
+def validate_governance_manifest(model,manifest):
+    cfg=model.get("execution_system",{}).get("engineering_change_governance",{})
+    if not isinstance(manifest,dict) or set(manifest)!={"schema","records"}:
+        return ["engineering governance manifest must contain exactly schema + records"]
+    if manifest.get("schema")!=cfg.get("manifest_schema"):
+        return ["engineering governance manifest schema mismatch"]
+    records=manifest.get("records")
+    if not isinstance(records,list) or not records:
+        return ["engineering governance manifest records must be nonempty"]
+    errors=[]; ids=[]
+    for index,record in enumerate(records):
+        if isinstance(record,dict) and _has_text(record.get("change_id")):
+            ids.append(record["change_id"])
+        errors.extend([f"records[{index}]: {e}" for e in validate_change_governance(model,record)])
+    if len(ids)!=len(set(ids)): errors.append("engineering governance manifest has duplicate change_id")
     return errors
 
 def impact_for_change(model,change_type):
@@ -294,6 +551,7 @@ def main():
     ap.add_argument("--state",default=str(DEFAULT_STATE))
     sub=ap.add_subparsers(dest="cmd",required=True)
     sub.add_parser("status")
+    cc=sub.add_parser("check-change"); cc.add_argument("--change",required=True)
     a=sub.add_parser("advance"); a.add_argument("--receipt",required=True)
     i=sub.add_parser("impact"); i.add_argument("--change-type",required=True)
     fp=sub.add_parser("failure"); fp.add_argument("--domain",required=True)
@@ -303,6 +561,16 @@ def main():
     rf.add_argument("--live-attempt",action="store_true")
     args=ap.parse_args()
     model=load(args.model); state=load(args.state)
+    if args.cmd=="check-change":
+        model_errors=validate_model(model)
+        change=load(args.change)
+        if model_errors: errors=model_errors
+        elif isinstance(change,dict) and change.get("schema")==model["execution_system"]["engineering_change_governance"].get("manifest_schema"):
+            errors=validate_governance_manifest(model,change)
+        else: errors=validate_change_governance(model,change)
+        result={"schema":"hbnf-change-governance-result-v1","valid":not errors,"errors":errors}
+        print(json.dumps(result,indent=2,sort_keys=True))
+        return 0 if not errors else 2
     if args.cmd=="status":
         print(json.dumps(status(model,state),indent=2,sort_keys=True))
         return 0 if not validate_state(model,state) else 2

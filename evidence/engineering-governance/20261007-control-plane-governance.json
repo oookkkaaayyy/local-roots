@@ -1,0 +1,148 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "HBNF-CART2-EXPERT-FIRST-CONTROL-GOVERNANCE-20261007",
+  "summary": "Extend the existing HBNF control model, validator, tests, and doctor path with change applicability and evidence gates while preserving the current lifecycle and Foundation evidence.",
+  "change_class": "ARCHITECTURAL_DECISION",
+  "impact": {
+    "architecture": true,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "expert_basis": {
+      "sources": [
+        {
+          "title": "HBNF control model and validator at base commit 655372fab6e270c058e0fa4cb95cdb1cd30a1958",
+          "authority_type": "PROJECT_SOURCE_AUTHORITY",
+          "locator": "config/HBNF_CONTROL_MODEL.json; config/HBNF_CONTROL_STATE.json; scripts/hbnf_control.py; scripts/platform.py",
+          "relevance": "Existing primary lifecycle authority, Python validation entrypoint, doctor, and tests are the mandated integration points."
+        },
+        {
+          "title": "JSON Schema object reference",
+          "authority_type": "RECOGNIZED_STANDARD",
+          "locator": "https://json-schema.org/understanding-json-schema/reference/object",
+          "relevance": "Documents required properties and additional-property controls useful for structural JSON validation."
+        },
+        {
+          "title": "python-jsonschema validation documentation",
+          "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+          "locator": "https://github.com/python-jsonschema/jsonschema/blob/v4.21.1/docs/validate.rst",
+          "relevance": "Documents a maintained Python implementation of JSON Schema and its validator protocol."
+        },
+        {
+          "title": "python-jsonschema v4.21.1 project metadata",
+          "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+          "locator": "https://github.com/python-jsonschema/jsonschema/blob/v4.21.1/pyproject.toml",
+          "relevance": "Provides the exact release's Python compatibility, license, production classifier, and runtime dependencies."
+        },
+        {
+          "title": "Python unittest documentation",
+          "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+          "locator": "https://docs.python.org/3/library/unittest.html",
+          "relevance": "Supports extending the existing standard-library unit test path with deterministic fixtures."
+        },
+        {
+          "title": "GitHub protected branches documentation",
+          "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+          "locator": "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches",
+          "relevance": "Documents required checks as a repository branch-protection capability; no GitHub Actions or branch protection settings were changed in this task."
+        }
+      ],
+      "findings": [
+        {
+          "kind": "ESTABLISHED_FACT",
+          "statement": "The current branch control model is the lifecycle authority and currently reports PHASE2_INTEGRATING; its transition graph is linear and already uses direct evidence receipts.",
+          "source_ref": "HBNF control model and validator at base commit 655372fab6e270c058e0fa4cb95cdb1cd30a1958"
+        },
+        {
+          "kind": "ESTABLISHED_FACT",
+          "statement": "JSON Schema supports required-property and additional-property constraints, and python-jsonschema v4.21.1 declares Python >=3.8, MIT licensing, production/stable classification, and four runtime dependencies.",
+          "source_ref": "python-jsonschema v4.21.1 project metadata"
+        },
+        {
+          "kind": "FIELD_EVIDENCE",
+          "statement": "The existing control validator and doctor already run on the project's Python entrypoints, and the current test runtime is Python 3.9; focused control and doctor tests pass without adding packages.",
+          "source_ref": "HBNF control model and validator at base commit 655372fab6e270c058e0fa4cb95cdb1cd30a1958"
+        },
+        {
+          "kind": "INFERENCE",
+          "statement": "Keeping cross-field classification in the existing validator avoids a new runtime dependency and a parallel authority while retaining the current test/runtime compatibility.",
+          "source_ref": "JSON Schema object reference"
+        }
+      ]
+    },
+    "native_capability_check": {
+      "evaluated": true,
+      "capability": "Existing HBNF_CONTROL_MODEL, hbnf_control.py validator, Python standard-library JSON handling, control tests, and platform doctor.",
+      "result": "INSUFFICIENT",
+      "source_refs": [
+        "HBNF control model and validator at base commit 655372fab6e270c058e0fa4cb95cdb1cd30a1958"
+      ],
+      "rationale": "The current machinery owns lifecycle receipts and project health but has no change applicability classes or Expert-First evidence validator. Extending its existing model and validator is sufficient; the unextended capability is not."
+    },
+    "mature_external_component_check": {
+      "relevant": true,
+      "alternatives": [
+        {
+          "name": "python-jsonschema 4.21.1 with JSON Schema 2020-12 validation",
+          "maturity": "Official upstream classifies the release as Production/Stable.",
+          "maintenance": "Maintained upstream project with current documentation and a versioned source release.",
+          "compatibility": "The pinned 4.21.1 release supports Python >=3.8 and is compatible with the current Python 3.9 runtime.",
+          "provenance": "python-jsonschema v4.21.1 project metadata",
+          "license": "MIT per upstream project metadata.",
+          "documentation_support": "Official maintainer documentation covers validator classes and schema validation.",
+          "dependency_burden": "Adds jsonschema plus attrs, jsonschema-specifications, referencing, and rpds-py runtime dependencies; still needs project-specific semantic checks for approval, evidence-source references, and T4 lifecycle binding.",
+          "disposition": "REJECTED",
+          "rationale": "Its structural schema capability is sound, but the present control plane already contains a dependency-free validation entrypoint. Adding this library would not replace the contextual checks or T4 receipt integration and would expand dependency closure for a narrow existing-validator extension."
+        }
+      ]
+    },
+    "decision_rationale": {
+      "selected_path": "Add a bounded change-governance contract and validator command to scripts/hbnf_control.py; keep the policy inside config/HBNF_CONTROL_MODEL.json; reuse existing control tests and platform doctor; require a hashed, validated governance manifest at T4.",
+      "alternatives_considered": [
+        "Extend the existing control validator and doctor",
+        "Add python-jsonschema as a new runtime dependency",
+        "Create a standalone governance validator or policy authority",
+        "Enable or broaden GitHub Actions and branch protection for this task"
+      ],
+      "challenger_analysis": "JSON Schema can provide structural constraints, but the core rules are contextual: change class and impact flags must agree; native and mature-alternative analysis must be present; dependency identity is conditional; subjective decisions need owner approval; and T4 must bind the validated manifest. A separate schema engine does not remove those semantics. GitHub required checks can gate protected branches, but this task's existing action workflow does not target the authoritative staging branch and the repository's project instructions prohibit unnecessary Actions runs or settings changes.",
+      "tradeoffs": "A small project-specific semantic validator remains, but it is attached to the existing authority and has no additional runtime package. The policy requires a classification record and tests; it does not infer subjective acceptance or validate the truth of cited claims.",
+      "simplest_robust_solution": "Use the existing control-model JSON, hbnf_control.py, standard-library test suite, and platform doctor; add no new lifecycle state, transition, service, package, or workflow.",
+      "critical_path_reason": "The change adds a fail-closed evidence check to future engineering decisions and the existing T4 progression receipt without changing product behavior or the current Phase 2 state."
+    },
+    "reproducibility": {
+      "source_inputs": [
+        "config/HBNF_CONTROL_MODEL.json",
+        "config/HBNF_CONTROL_STATE.json",
+        "scripts/hbnf_control.py",
+        "scripts/platform.py",
+        "tests/hbnf_control.py",
+        "tests/hbnf_control_execution_system.py"
+      ],
+      "version_pins": [
+        "Git base commit 655372fab6e270c058e0fa4cb95cdb1cd30a1958",
+        "No external runtime dependencies added"
+      ],
+      "configuration_inputs": [
+        "engineering_change_governance contract in config/HBNF_CONTROL_MODEL.json",
+        "Current lifecycle state in config/HBNF_CONTROL_STATE.json"
+      ],
+      "build_inputs": [
+        "No firmware or product build inputs; host-only Python validation"
+      ],
+      "tooling_identity": [
+        "Python 3.9 standard library",
+        "Git repository oookkkaaayyy/local-roots"
+      ]
+    },
+    "rollback_or_exit_path": {
+      "rollback_path": "Revert the governance implementation commit on hbnf-cart2-ready-to-implement-staging-20261001.",
+      "uninstall_or_removal_path": "Remove only the added governance contract, validation branch, tests, and corresponding AGENTS/doctor integration by reverting the atomic commit.",
+      "replacement_path": "Replace the hand-written structural layer with an explicitly version-pinned compatible JSON Schema validator only if project dependency policy and cross-field coverage justify it; retain lifecycle-specific semantic checks.",
+      "recovery_method": "Restore the parent commit 655372fab6e270c058e0fa4cb95cdb1cd30a1958; the existing transition graph and control-state file are not rewritten.",
+      "prior_known_good_state": "Clean authoritative staging HEAD 655372fab6e270c058e0fa4cb95cdb1cd30a1958 with lifecycle PHASE2_INTEGRATING."
+    }
+  }
+}

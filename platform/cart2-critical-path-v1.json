@@ -2,7 +2,7 @@
   "schema": "hbnf-cart2-critical-path-v2",
   "authority_scope": "execution-planning-only; lifecycle authority remains config/HBNF_CONTROL_MODEL.json + config/HBNF_CONTROL_STATE.json",
   "objective": "Reach lifecycle ACCEPTED with no live trial-and-error for deterministic backend/tooling prerequisites.",
-  "current_lifecycle": "FIX_CANDIDATE",
+  "current_lifecycle": "PHASE2_INTEGRATING",
   "operating_rule": "Before any live mutation, every deterministic prerequisite for that live stage must be closed offline in one dependency-closure pass. Live execution may discover only hardware/firmware runtime behavior that cannot be simulated or proven offline.",
   "no_credit_for": [
     "documentation-only progress",
