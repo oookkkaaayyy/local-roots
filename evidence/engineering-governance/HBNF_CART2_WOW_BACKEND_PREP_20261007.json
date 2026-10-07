@@ -54,6 +54,12 @@
           "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
           "locator": "https://github.com/wled/WLED/releases/tag/v16.0.0",
           "relevance": "Describes native segment layering, transition blending, and custom font support for scrolling text in WLED 16."
+        },
+        {
+          "title": "CDC Ultraviolet Radiation",
+          "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+          "locator": "https://www.cdc.gov/radiation-health/features/uv-radiation.html",
+          "relevance": "Identifies UVA/UVB/UVC wavelength bands and describes skin/eye hazards from overexposure; supports an optical exposure requirement before enabling UV LEDs."
         }
       ],
       "findings": [
@@ -76,6 +82,11 @@
           "kind": "FIELD_EVIDENCE",
           "statement": "The Phase 2 branch already contains P2 text/Vibe candidate fixtures and a guest-platform readiness audit; the WOW branch can prepare isolated contracts without editing those owned files.",
           "source_ref": "HBNF Cart 2 scope/change authority"
+        },
+        {
+          "kind": "ESTABLISHED_FACT",
+          "statement": "UV exposure can harm skin and eyes, and UVA, UVB, and UVC are distinct wavelength bands; the product label alone does not establish the output wavelength or exposure safety.",
+          "source_ref": "CDC Ultraviolet Radiation"
         }
       ]
     },
@@ -90,7 +101,7 @@
         "WLED 16 announcement",
         "HBNF Cart 2 scope/change authority"
       ],
-      "rationale": "Native platforms cover guest identity, segment dimming, and style composition. Only bounded policy adapters/contracts are prepared; hardware topology and owner-selected presentation remain unverified/unfrozen. Production integration must reuse existing Supabase sessions and device-control paths."
+      "rationale": "Native platforms cover guest identity, segment dimming, and style composition. Only bounded policy adapters/contracts are prepared; hardware topology and owner-selected presentation remain unverified/unfrozen. Production integration must reuse existing Supabase sessions and device-control paths. Physical UV energization also requires wavelength and exposure review; the software cap alone is not an optical safety assessment."
     },
     "mature_external_component_check": {
       "relevant": false,
@@ -109,7 +120,7 @@
         "custom text renderer"
       ],
       "challenger_analysis": "The native facilities cover the core capabilities; a bespoke service, device protocol, or renderer would duplicate platform capability and add support burden. The strongest unresolved UV issue is physical output/load capability. The strongest text limitation is subjective treatment quality and must be reviewed by the owner.",
-      "tradeoffs": "Reference policy code is not production persistence and is intentionally isolated. Supabase RLS must be audited for anonymous-user role behavior before wiring. WLED JSON payloads require verified segment mapping and existing network authority. Text options need owner visual selection.",
+      "tradeoffs": "Reference policy code is not production persistence and is intentionally isolated. Supabase RLS must be audited for anonymous-user role behavior before wiring. WLED JSON payloads require verified segment mapping and existing network authority. Text options need owner visual selection. UV wavelength/exposure and shielding/placement remain an explicit physical commissioning gate.",
       "simplest_robust_solution": "Keep session and owner authority in current Supabase/backend; add only scope checks at existing mutation entrypoints; express UV as native WLED segment JSON; layer treatments over existing text rendering.",
       "critical_path_reason": "Parallel, offline preparation can proceed without changing Phase 2 worker-owned files or lifecycle state."
     },
