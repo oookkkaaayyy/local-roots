@@ -1,0 +1,62 @@
+{
+  "schema": "hbnf-cart2-final-offline-candidate-v1",
+  "status": "BUILT_AND_VERIFIED_OFFLINE__NOT_INSTALLED__NOT_DEPLOYED",
+  "release_id": "hbnf-cart2-phase2-offline-wow-r1-20261007",
+  "branch": "hbnf-cart2-phase2-integration-20261006",
+  "firmware_source_commit": "7bb32043f3fba753a5e450e0034ff2515befe2ba",
+  "wled_source": {
+    "version": "16.0.1",
+    "commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "source_tree_sha256": "5ae369df59e30a29f262980f7611a865af16b8d5632d47eedb9478c56f071960",
+    "source_tree_file_count": 607,
+    "animartrix_commit": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f",
+    "animartrix_clock_patch_sha256": "f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4",
+    "integrated_usermod_sha256": "2f438f3842db0adf71f1f87806eb8d86114e8e4df5da4eba2d6a6af13a9dfe50",
+    "phase2_integration_patch_sha256": "431cd58aa88461898318d5914505622751041a32e5a72bcd26fed4672f9e8b5d"
+  },
+  "artifact": {
+    "filename": "hbnf-cart2-phase2-offline-wow-r1-20261007.bin",
+    "path": "outputs/hbnf-cart2-phase2-offline-wow-r1-20261007.bin",
+    "sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3",
+    "bytes": 1458832,
+    "installed": false
+  },
+  "build": {
+    "result": "PASS",
+    "command": "PLATFORMIO_CORE_DIR=/tmp/hbnf-p2-build/pio-local SOURCE_DATE_EPOCH=1789948800 pio run -e hbnf_matrix_wled16_max",
+    "platformio_core": "6.1.18",
+    "python": "3.9.6",
+    "board": "esp32dev",
+    "framework": "Arduino ESP32 2.0.18+sha.8ba0dc0",
+    "toolchain": "xtensa-esp32-elf 8.4.0+2021r2-patch5",
+    "esptool": "4.7.4",
+    "flash": {
+      "partition": "app0",
+      "used_bytes": 1452137,
+      "slot_bytes": 1572864,
+      "used_percent": 92.3,
+      "headroom_bytes": 120727
+    },
+    "ram": {
+      "used_bytes": 87288,
+      "available_bytes": 327680,
+      "used_percent": 26.6
+    },
+    "binary_matches_prior_core_firmware_sha256": true,
+    "warnings": "Upstream ESP32 ADC deprecation and GIF decoder warnings only; build and usermod-link validation succeeded."
+  },
+  "integrated_offline_features": {
+    "guest": "Static /guest/hbnf-cart/ page; Guest Mode defaults OFF; existing owner auth; existing reducer/command bridge/reconcile; no guest cookie/session/auth subsystem.",
+    "uv": "Dormant only; software disabled, hardware unavailable, max brightness 0; documented physical gates preserved.",
+    "text_vibe": "Native WLED 16.0.1 options retained; functional 5x12 baseline and multiple native font/treatment review choices; visual selection remains UNFROZEN."
+  },
+  "validation": {
+    "governance": "PASS: nine required governance tests; platform doctor/capsule; engineering change record validated.",
+    "guest": "PASS: 9 Guest static-route/sessionless, reducer, default-off, stale-revision, owner-precedence, commit-race, bridge/reconcile tests.",
+    "phase2_host": "PASS: text moments 11, audio trace 2, vibe replay 13 semantics/six traces, UDP capture 4, matrix brightness, native text smoke, AUX readiness, UV/text contracts 4, WOW contracts 7.",
+    "deployed_functions": "Existing interface versions v16/v11 were verified read-only before integration; source hashes recorded in evidence/engineering-governance/HBNF_CART2_GUEST_V1_INTEGRATION_20261007.json."
+  },
+  "deployment": "NONE",
+  "live_mutation_authorized": false,
+  "owner_acceptance": "Visual font/treatment choice, labeled audio evidence, and UV physical commissioning remain unfrozen/deferred; none block this offline candidate."
+}
