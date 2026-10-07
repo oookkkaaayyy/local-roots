@@ -1,5 +1,5 @@
 {
-  "checkpoint_at_utc": "2026-10-07T05:03:00Z",
+  "checkpoint_at_utc": "2026-10-07T05:15:00Z",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -1661,24 +1661,37 @@
       "tests_result": "PASS"
     },
     "phase2_vibe_text_integration_r1_20261006": {
-      "status": "PASS_HOST_OFFLINE__FIRMWARE_INTEGRATION_PENDING",
+      "status": "HOST_OFFLINE_INTEGRATED__CANDIDATE_BUILD_BLOCKED_ON_FONT_AND_BUILD_CLOSURE",
       "integration_branch": "hbnf-cart2-phase2-integration-20261006",
       "integration_head": "1fb1df85164c7b5243cfadd5a6d92a232337fcc4",
       "evidence": "evidence/hbnf-phase2-integration-20261006/VIBE_TEXT_INTEGRATION_R1.json",
+      "live_mutation": "NONE",
       "vibe_audio": {
-        "synthetic_replay": "PASS",
-        "five_manual_vibes_distinct": true,
+        "result": "PASS_SYNTHETIC_CANDIDATE_ONLY",
+        "manual_vibes": "PASS_DIFFERENTIATION",
         "auto_hysteresis": "PASS_SYNTHETIC",
-        "production_numeric_mapping": "UNFROZEN_PENDING_SOURCE_BOUND_REAL_AUDIO_ACCEPTANCE"
+        "production_numeric_mapping": "UNFROZEN_PENDING_SOURCE_BOUND_REAL_AUDIO_REPLAY_AND_RUNTIME_COST"
       },
       "text_moments": {
-        "planner_host_tests": "PASS_10_OF_10",
-        "firmware_compositor": "NOT_YET_INTEGRATED",
-        "exact_historical_wbf_bytes": "NOT_RETRIEVABLE_FROM_CURRENT_SOURCE_AUTHORITY"
+        "planner_and_host_contract": "PASS_10_OF_10",
+        "firmware_compositor": "NOT_INTEGRATED",
+        "blocker": "Qualified 12px WBF/font bytes have no established retrievable identity in current lane authority."
       },
-      "combined_host_closure": "PASS",
-      "candidate_built": false,
-      "live_mutation": "NONE"
+      "build_closure_reconciliation": {
+        "newly_found_authority": "Historical clean-room WLED/PlatformIO build closure is already durable in Drive and AKS; build-path archaeology itself is NOT an unsolved problem.",
+        "run5_drive_file_id": "1VhqoXzlNwBzHCPVrqLDQG1T7Z0Cp9yVF",
+        "run5_artifact_name": "HBNF-Packet20-Safe-Point-37234856834.zip",
+        "run5_zip_sha256": "dca762bce1d934a04c18b9cc6e0b0f9880d0a4779f3945c7943ca6b84c8ef8ed",
+        "wled_base_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+        "platformio_version": "6.1.18",
+        "target_env": "hbnf_matrix_wled16_packet20_diag",
+        "note": "Do not rediscover/reconstruct build closure from scratch. Reuse the preserved capsule/provenance or an equivalent exact source-authorized workspace."
+      },
+      "font_reconciliation": {
+        "source_registry_fact": "Three metric-identical 12px WBF artifacts were historically generated and physically verified, but durable individual Drive file IDs/bytes were never established in the registry.",
+        "current_search_result": "No .wbf file is directly retrievable by Drive metadata search; current production matrix-control source now contains proven native WLED 5x12/6x8 text paths, but that is not automatically authorized as a replacement for the locked premium WBF contract.",
+        "required_next_decision": "Bounded source-authority recovery first; if exact WBF bytes cannot be recovered from preserved capsules/source, return a deliberate interface/scope change request rather than inventing or silently substituting a font."
+      }
     },
     "phase2_font_build_recovery_decision_20261006": {
       "status": "AUTHORIZED_PATH",
@@ -1727,13 +1740,13 @@
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Continue on hbnf-cart2-phase2-integration-20261006 from 1fb1df85164c7b5243cfadd5a6d92a232337fcc4.",
-      "Reconstruct a source-controlled compatible 12px WBF font set from one locked glyph metric source; preserve foreground/1px/2px metric identity and add invariant tests.",
-      "Reconstruct a pinned local WLED 0.16.0.1 clean-room PlatformIO build workspace from upstream source plus current repository patches; no GitHub Actions unless this path is objectively impossible.",
-      "Integrate the Text/VisualMoment framebuffer compositor and the synthetic-proven Vibe/audio candidate mapping.",
-      "Run combined host/build closure and produce one offline integrated candidate with exact release/source/firmware/package/rollback identities.",
-      "Wait for explicit hardware-ready handshake.",
-      "At first hardware-ready window, capture source-bound real-audio evidence, freeze Vibe numeric mapping if gates pass, then perform one integrated owner/runtime acceptance cycle."
+      "Do not redo PWA/scoring/touch/brightness/Vibe/Text host work.",
+      "Perform one bounded source-authority recovery pass for the exact historical 12px WBF assets using AKS/source registry, preserved release capsules and existing production-source history.",
+      "Reuse the already-proven clean-room WLED/PlatformIO closure from Drive file 1VhqoXzlNwBzHCPVrqLDQG1T7Z0Cp9yVF; do not rediscover build tooling.",
+      "In parallel, locate source-bound real-audio evidence sufficient to freeze Vibe/audio production mapping and runtime-cost acceptance.",
+      "If exact WBF bytes are recovered, bind compositor, run combined host closure, and build one offline integrated candidate.",
+      "If exact WBF bytes are genuinely unrecoverable after the bounded pass, return one explicit coordinator decision: preserve premium contract via newly generated source-bound font with human reacceptance, or adopt the newer proven native WLED text primitive with acceptance reset.",
+      "No live Matrix/AUX/Opal/WLED/OTA action until hardware-ready handshake."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1898,8 +1911,8 @@
         }
       },
       "P2_TEXT_MOMENTS": {
-        "blocker": null,
-        "dependency": "T3_PASS__QUALIFIED_SOURCE_FONT_BINDING_AND_FRAMEBUFFER_INTEGRATION_HOST_ACCEPTANCE",
+        "blocker": "Exact qualified 12px WBF/font asset bytes not yet recovered; firmware compositor cannot be source-bound.",
+        "dependency": "RECOVER_EXACT_WBF_ASSET_FROM_PRESERVED_SOURCE_OR_REQUEST_EXPLICIT_SCOPE_CHANGE",
         "execution_context": "LUNA_WORKER_BOUNDED_TASKS",
         "launch_owner": "COORDINATOR",
         "offline_checkpoint": {
@@ -1910,12 +1923,12 @@
           "receipt": "evidence/hbnf-phase2-text-moments-20261006/OFFLINE_COMPLETION_RECEIPT.json",
           "status": "OFFLINE_PREP_COMPLETE__NOT_RENDERER_INTEGRATED"
         },
-        "status": "ACTIVE",
+        "status": "BLOCKED_WITH_EXACT_DEPENDENCY",
         "status_sheet_row": 6
       },
       "P2_VIBE_AUDIO": {
-        "blocker": null,
-        "dependency": "T3_PASS__QUALIFIED_SOURCE_AUDIO_REPLAY_AND_RUNTIME_COST_HOST_ACCEPTANCE",
+        "blocker": "Production numeric mapping requires source-bound real-audio replay and runtime-cost acceptance.",
+        "dependency": "QUALIFIED_SOURCE_AUDIO_EVIDENCE_OR_EXACT_SOURCE_BOUND_REPLAY_FIXTURE",
         "execution_context": "LUNA_WORKER_BOUNDED_TASKS",
         "launch_owner": "COORDINATOR",
         "offline_checkpoint": {
@@ -1925,7 +1938,7 @@
           "receipt": "evidence/hbnf-phase2-vibe-audio-20261006/OFFLINE_PREP_RECEIPT.json",
           "status": "OFFLINE_PREP_COMPLETE__NOT_PRODUCTION_MAPPED"
         },
-        "status": "ACTIVE",
+        "status": "BLOCKED_WITH_EXACT_DEPENDENCY",
         "status_sheet_row": 5
       }
     },
