@@ -1,5 +1,5 @@
 {
-  "checkpoint_at_utc": "2026-10-06T23:53:02Z",
+  "checkpoint_at_utc": "2026-10-07T00:01:00Z",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -109,7 +109,7 @@
       "schema": "hbnf-brightness-field-target-v1",
       "status": "DECISION_DEFER_FOR_STABILITY",
       "target_event": "NEXT_SKINS_ROUND__2026-10-06",
-      "user_field_preference": "Typical night sweet spot is roughly current-slider 10\u201320; values above ~25 can be excessively bright on-course."
+      "user_field_preference": "Typical night sweet spot is roughly current-slider 10–20; values above ~25 can be excessively bright on-course."
     },
     "checkpoint_at_utc": "2026-10-06T23:53:02Z",
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
@@ -202,7 +202,7 @@
         "Prior 16:42/16:45 times are not automatic abort or rollback triggers for the currently active seq53 path.",
         "Continue the already-authorized seq53 install/targeted validation while commands are actively progressing and safety/identity evidence remains intact.",
         "Do not broaden scope or start new exploratory work.",
-        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop\u2014not for elapsed wall-clock time alone.",
+        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop—not for elapsed wall-clock time alone.",
         "Owner-device smoke remains mandatory before declaring field-ready."
       ],
       "schema": "hbnf-field-readiness-deadline-v1",
@@ -1040,7 +1040,7 @@
       "soak_status": "COMPLETE_BUT_FROZEN_GATES_FAIL",
       "state_changes": 900
     },
-    "foundation_status": "FOUNDATION_QUALIFIED__SEQ55_POSTINSTALL_PASS__OWNER_SMOKE_PENDING",
+    "foundation_status": "FOUNDATION_QUALIFIED__OWNER_SMOKE_PASS__FIELD_READY",
     "foundation_transaction_stop_reason": "FOUNDATION_FAIL__EXACT_RELEASE07_RECOVERY_PASS; full 5439.949s soak completed, renderer restore source-bound PASS, exact seq48 Release07 recovery PASS. Frozen minimum-free-heap gate failed 28/28, largest-free-block gate failed 10/28, AUX stale fraction failed kernel 23; FPS/p95/p99 passed all 28. New firmware mutation requires fresh authority.",
     "installed_firmware_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
     "installed_release": "hbnf-matrix-coordinated-v1-20261002-07",
@@ -1064,7 +1064,7 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
+      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "live_mutation_authorization": {
@@ -1585,7 +1585,24 @@
       ],
       "observed_at": "2026-10-05T17:48:54Z",
       "status": "R3_CLOSED__R4_EXECUTION_REQUIRED"
-    }
+    },
+    "owner_device_smoke_20261006": {
+      "status": "PASS__FIELD_READY",
+      "user_reported_at_local": "2026-10-06T17:01:00-07:00",
+      "device_path": "intended iPhone/iPad Home Screen cart app on HBNF-Cart",
+      "checks": [
+        "Home Screen cart app opened successfully",
+        "Current Skins round and owner controls/current scores appeared",
+        "One legitimate score update persisted exactly once after refresh",
+        "Matrix control responded",
+        "Normal slider/scene controls responded",
+        "AUX/underglow responded normally",
+        "App relaunch/reconnect behavior passed"
+      ],
+      "user_confirmation": "All worked.",
+      "field_decision": "PASS__SAFE_TO_FREEZE_AND_POWER_DOWN"
+    },
+    "field_readiness_status": "PASS__COURSE_READY__SEQ55"
   },
   "execution_budget_policy": {
     "authority_commit": "79173fe7318ef30f51487dba8b59b2b4547b86f3",
@@ -1602,7 +1619,7 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "HOST_RESTORE_ALIAS_FALSE_NEGATIVE__SEQ53_MACHINE_PASS",
+    "current_failure_domain": "NONE__FOUNDATION_AND_OWNER_SMOKE_PASS",
     "current_lifecycle_state": "FOUNDATION_QUALIFIED",
     "current_subject": {
       "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
@@ -1610,12 +1627,10 @@
     },
     "current_transition": "T3_PHASE2_START",
     "exact_next_path": [
-      "Accept seq53 28/28 and 56/56 targeted PASS plus source-bound restoreVerified=true as valid machine evidence; do not rerun targeted validation.",
-      "Patch only the host restore assertion/reconciliation so packet20Same JSON alias is not required; regression fail-closed on restoreVerified=false or snapshot/command mismatch.",
-      "Seq55 reinstall exact unchanged candidate via proven Opal-origin direct WLED /update.",
-      "Minimal postinstall exact identity + Matrix health + AUX info live DDP check only.",
-      "On PASS write T2 receipt, FOUNDATION_QUALIFIED, leave candidate installed, close mutation, return OWNER SMOKE NOW.",
-      "Seq56 only for genuine device/owner-smoke failure."
+      "Field freeze: preserve seq55 exact qualified candidate and current owner-control path for tonight.",
+      "Normal cart power-down is permitted; no further firmware or Phase 2 mutation before the round.",
+      "On next boot, perform only a brief normal-use sanity check unless a genuine regression appears.",
+      "Resume Phase 2 work after the field event under fresh authority."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
