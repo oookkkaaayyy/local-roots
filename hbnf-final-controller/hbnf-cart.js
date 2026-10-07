@@ -1,6 +1,6 @@
 /* HBNF_CART_FINAL_V5_SEMANTIC_FRAME_LOCK */
-import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261006-phase2-integrated-r1";
-import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261006-phase2-integrated-r1";
+import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261007-wow-r2";
+import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261007-wow-r2";
 
 const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC";
@@ -31,6 +31,8 @@ const sharePair = $("#sharePair");
 const copyPair = $("#copyPair");
 const matrixHealth = $("#matrixTruth");
 const auxHealth = $("#auxTruth");
+const guestModeToggle = $("#guestMode");
+const guestModeStatus = $("#guestModeStatus");
 const syncHealth = null;
 const rendererHealth = null;
 
@@ -128,6 +130,7 @@ function setAuthorizedUi() {
   if (authPanel) authPanel.hidden = true;
   if (managePairPanel) managePairPanel.hidden = !validDeviceToken(deviceToken());
   if (pairAcceptPanel && !pendingPairToken) pairAcceptPanel.hidden = true;
+  if (guestModeToggle) guestModeToggle.disabled = !validDeviceToken(deviceToken());
 }
 
 async function authHeaders() {
@@ -210,6 +213,10 @@ function hydrateControls(state) {
   hydrating = true;
   try {
     if (state.sceneId) $("#scene").value = state.sceneId;
+    if (guestModeToggle) guestModeToggle.checked = state.guestMode === true;
+    if (guestModeStatus) guestModeStatus.textContent = state.guestMode === true
+      ? "Guest Mode is open. Owner commands remain authoritative."
+      : "Guest Mode is off unless the owner opens it.";
 
     const tuning = valueOr(state.tuning, {});
     const energy = Number(valueOr(tuning.energy, valueOr({ mellow: 15, moderate: 40, energetic: 68, peak: 90 }[state.vibe], 65)));
@@ -454,6 +461,23 @@ copyPair.addEventListener("click", async () => {
 document.querySelectorAll("[data-command]").forEach(button => {
   button.addEventListener("click", () => command(button.dataset.command).catch(showError));
 });
+
+if (guestModeToggle) {
+  guestModeToggle.addEventListener("change", async () => {
+    const enabled = guestModeToggle.checked;
+    guestModeToggle.disabled = true;
+    if (guestModeStatus) guestModeStatus.textContent = enabled ? "Opening Guest Mode…" : "Closing Guest Mode…";
+    try {
+      await command("GUEST_MODE", { enabled });
+    } catch (error) {
+      guestModeToggle.checked = !enabled;
+      if (guestModeStatus) guestModeStatus.textContent = "Guest Mode change was not accepted.";
+      showError(error);
+    } finally {
+      guestModeToggle.disabled = !validDeviceToken(deviceToken());
+    }
+  });
+}
 
 for (const id of ["scene", "audioProfile", "audioStyle"]) {
   $(id).addEventListener("change", () => queueTune(0));

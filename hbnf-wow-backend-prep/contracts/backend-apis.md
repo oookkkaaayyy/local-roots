@@ -1,25 +1,15 @@
-# WOW backend preparation contracts (offline only)
+# WOW integration contracts — offline only
 
-This package is implementation preparation, not production wiring. It adds no network endpoint, database migration, device write, or deployment. Integrate only after the primary Phase 2 worker closes and the coordinator freezes the shared interface. The existing owner/auth/session store remains the production source of identity and revocation; do not create a competing control plane.
+## Trusted-friends Guest V1 (coordinator correction, 2026-10-07)
 
-## Trusted-friends Guest V1 (supersedes the earlier ticket/capability draft)
+The static Cart host is `https://hbnightflyers.com`. The QR destination is `/guest/hbnf-cart/`, served from the existing Cloudflare static worker public root. Cloudflare's directory index behavior serves `guest/hbnf-cart/index.html` at that route.
 
-- Join flow: static QR opens the same-origin `/guest/{cartId}` page. QR contains only that route and cart identifier; no ticket or credential. No email, account creation, visible login, Supabase anonymous Auth, custom JWT, or direct database authority.
-- Feature flag and owner switch are both required and default OFF. Owner ON/OFF lives in the existing owner-authorized settings surface. OFF makes the backend reject every guest request immediately and expires that cart's guest sessions so a later ON starts fresh.
-- `GET /api/cart/{cartId}/guest/session` checks current state without creating a session. When enabled but disconnected, the page calls `POST /api/cart/{cartId}/guest/session`; that creates/reuses a session in the existing Cart session store and sets a same-origin HttpOnly, Secure, SameSite=Strict cookie. Default lifetime is two hours; configurable up to four hours. Reconnect reuses the same unexpired session and never extends its expiry. No localStorage/sessionStorage bearer token.
-- `POST /api/cart/{cartId}/guest/actions` accepts only actions represented in the Guest UI (`vibe`, `open_mode`, `game_action`), validates action payloads, and dispatches through existing Cart mutation handlers. It does not accept arbitrary WLED/device, administrative, release, network, or firmware commands. Apply per-session 20-actions/minute throttling and a 400 ms repeated-action debounce.
-- Owner actions and safety override retain the existing serialization and authority boundary. Check owner override before guest dispatch, and have the host dispatcher serialize guest writes against owner writes so an in-flight guest update cannot overwrite an owner action.
-- `hbnf-wow-backend-prep/backend/guest_v1.py` is a dependency-injected policy adapter; it does not implement a session store, auth, HTTP server, or device transport. The host provides adapters for its existing session store, owner-mode state, and cart-action dispatcher. The reference rate limiter is process-local and suitable only when the existing backend is single-instance; otherwise use its native shared throttle.
-- Supabase is not required for this use case unless the existing backend is itself Supabase-hosted and requires Supabase internally. Guest browsers do not receive database access.
+The page calls the existing Supabase Edge Function `hbnf-cart-control` directly. Browser requests use the already deployed `https://hbnightflyers.com` CORS allowance and the existing publishable key. There is no guest account, identity, ticket, JWT, cookie, session store, or separate limiter service.
 
-## AUX UV control
+Guest Mode is a canonical state field, defaults OFF when absent, and can only be changed by the existing paired-device/operator owner authorization path. `GUEST_MODE` commits through `hbnf_cart_commit_command_bridge` and then calls the existing reconciler with no actuator targets; the v11 reconciler carries forward Matrix/AUX observations without an adapter write. Guest actions are a closed mapping to VIBE, VIBE_AUTO, NEXT, and AUTO in the existing reducer. `guest_command` reads current canonical context, checks Guest Mode and expected revision, applies the same reducer, commits through the same bridge, and reconciles through `hbnf-cart-reconcile`. No alternate device path or duplicate state machine exists. Stale revisions are rejected without retry. Owner writes retain precedence through the canonical revision compare-and-commit boundary.
 
-`hbnf-wow-backend-prep/backend/aux_uv_policy.py` is a pure policy adapter. It maps OFF, MANUAL, FOLLOW_MATRIX, and VIBE_REACTIVE to WLED JSON segment updates, applies a configurable brightness cap and per-tick ramp, and emits OFF when software is disabled or capability hardware is unavailable. Candidate SP803E PWM channels are board-documented GPIO25/26/27; GPIO25 is the existing AUX code's UV-main candidate and 26 UV-short. The current accepted WLED config remains the GPIO16 addressable bus only. Do not choose WLED output type/segment IDs or enable a candidate until offline config readback plus board revision and fail-dark boot behavior are verified. Owner override precedes automatic modes. Matrix brightness/Vibe envelopes are inputs from existing control interfaces; no secondary runtime or protocol is introduced.
+The page exposes only Vibe and Cart fun controls. It contains no release, firmware, device-admin, deployment, or pairing controls. Browser memory holds only the latest status revision; requests omit credentials and use no browser persistence. A small in-page debounce prevents accidental repeat taps.
 
-## Text/Vibe presentation
+## AUX UV and text/Vibe
 
-`text_presentation.json` describes three optional treatments using the existing text layer, segment/preset, and transition primitives. Treatments change entry/exit and background treatment only; the text geometry stays stable during hold. This document is a menu for owner evaluation, not a selected design or a frozen implementation. Unknown/unapproved treatment falls back to the existing functional treatment. No new font renderer is proposed.
-
-## QR target
-
-`{cart_origin}/guest/{cartId}` is the target contract. `cart_origin` must resolve to the same origin that serves the Cart Guest API. The actual local hostname/origin remains a deployment value and is deliberately not guessed in this branch.
+Dormant UV policy and the exact commissioning gates remain in `aux-uv-candidate.json` and `uv-hardware-requirements.md`; software defaults OFF, hardware unavailable, cap zero. The text presentation menu remains in `text_presentation.json`; supported native WLED 16.0.1 font choices and three treatment concepts remain UNFROZEN for owner review.

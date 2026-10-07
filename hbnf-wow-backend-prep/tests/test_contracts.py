@@ -37,8 +37,10 @@ class CandidateContractTests(unittest.TestCase):
 
     def test_guest_qr_is_static_route_without_auth_ticket_contract(self):
         contract=(ROOT / 'hbnf-wow-backend-prep' / 'contracts' / 'backend-apis.md').read_text()
-        self.assertIn('{cart_origin}/guest/{cartId}',contract)
-        self.assertIn('no email, account creation, visible login',contract.lower())
-        self.assertNotIn('one-use QR',contract)
+        self.assertIn('https://hbnightflyers.com',contract)
+        self.assertIn('/guest/hbnf-cart/',contract)
+        self.assertIn('no guest account, identity, ticket, jwt, cookie, session store',contract.lower())
+        self.assertIn('hbnf_cart_commit_command_bridge',contract)
+        self.assertNotIn('session-cookie',contract.lower())
 
 if __name__=='__main__': unittest.main()

@@ -1,0 +1,131 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "HBNF-CART2-GUEST-V1-DIRECT-CANONICAL-INTEGRATION-20261007",
+  "summary": "Integrate trusted-friends Guest V1 into the existing hbnightflyers.com static root and current hbnf-cart-control canonical command/reconcile path; supersede prior session-cookie prep. Preserve dormant UV and unfrozen native text options.",
+  "change_class": "ARCHITECTURAL_DECISION",
+  "impact": {
+    "architecture": true,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "expert_basis": {
+      "sources": [
+        {
+          "title": "Current owner-authorized Guest V1 integration correction",
+          "authority_type": "PROJECT_SOURCE_AUTHORITY",
+          "locator": "User instruction CONTINUE \u2014 GUEST BLOCKER RESOLVED BY COORDINATOR, 2026-10-07",
+          "relevance": "Identifies static host and deployed endpoints; explicitly supersedes guest cookies/session/auth infrastructure and requires same reducer/bridge/reconcile path."
+        },
+        {
+          "title": "Existing deployed hbnf-cart-control v16",
+          "authority_type": "FIELD_EVIDENCE",
+          "locator": "Supabase project phcpbvuqibyarpfrftgx, Edge Function hbnf-cart-control v16; source SHA-256 3e4816988a9ac0b33f5b660ccefedf27e0249c7e7f5e11b1a8622a3c59fbd80d",
+          "relevance": "Confirms existing command endpoint, operator/paired-device authorization, CORS allowlist for https://hbnightflyers.com, and canonical state/action interface."
+        },
+        {
+          "title": "Existing deployed hbnf-cart-reconcile v11",
+          "authority_type": "FIELD_EVIDENCE",
+          "locator": "Supabase project phcpbvuqibyarpfrftgx, Edge Function hbnf-cart-reconcile v11; source SHA-256 4f400b2ee1d733f07a90baa231c843990802a3a72aedb507e6963a78685a1d93",
+          "relevance": "Confirms same revision-fenced reconcile route and no-target metadata behavior carries current observations without Matrix/AUX adapter action."
+        },
+        {
+          "title": "Supabase Edge Function CORS",
+          "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+          "locator": "https://supabase.com/docs/guides/functions/cors",
+          "relevance": "Official platform guidance for browser-origin function CORS."
+        },
+        {
+          "title": "Cloudflare Workers static HTML routing",
+          "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+          "locator": "https://developers.cloudflare.com/workers/static-assets/routing/advanced/html-handling/",
+          "relevance": "Official directory index route behavior for static page path."
+        }
+      ],
+      "findings": [
+        {
+          "kind": "ESTABLISHED_FACT",
+          "statement": "The deployed Cart control function allows the static origin and routes owner commands through the existing serialized bridge/reconcile path.",
+          "source_ref": "Existing deployed hbnf-cart-control v16"
+        },
+        {
+          "kind": "ESTABLISHED_FACT",
+          "statement": "Guest Mode defaults closed when absent and is committed as metadata with an empty actuator target set; guest command actions are mapped into the existing reducer and revision-fenced bridge.",
+          "source_ref": "Current owner-authorized Guest V1 integration correction"
+        },
+        {
+          "kind": "INFERENCE",
+          "statement": "Direct browser-to-existing-function calls are the smallest compatible architecture because the exact static host is already CORS-allowed and the current backend owns command serialization.",
+          "source_ref": "Existing deployed hbnf-cart-control v16"
+        }
+      ]
+    },
+    "native_capability_check": {
+      "evaluated": true,
+      "capability": "Existing Cloudflare static host, deployed Supabase Cart control function, canonical reducer, bridge, and reconcile function.",
+      "result": "SUFFICIENT",
+      "source_refs": [
+        "Current owner-authorized Guest V1 integration correction",
+        "Existing deployed hbnf-cart-control v16",
+        "Existing deployed hbnf-cart-reconcile v11",
+        "Supabase Edge Function CORS",
+        "Cloudflare Workers static HTML routing"
+      ],
+      "rationale": "The verified platform surface provides the static page, existing CORS, owner authorization, canonical state, serialized commit, and reconciliation; no alternate identity or session subsystem is needed."
+    },
+    "mature_external_component_check": {
+      "relevant": false,
+      "alternatives": [],
+      "rationale": "No new component or dependency is required; existing platform services already satisfy the requirements.",
+      "not_relevant_reason": "This is minimal glue to the deployed native Cart path."
+    },
+    "decision_rationale": {
+      "selected_path": "Direct static Guest page to existing hbnf-cart-control; owner-only GUEST_MODE uses existing paired-device/operator authorization; guest action mapping uses same reducer, bridge, and reconcile.",
+      "alternatives_considered": [
+        "Separate guest cookie/session platform",
+        "Supabase anonymous Auth and RLS expansion",
+        "One-use tickets or capability JWT",
+        "Direct device-control endpoint",
+        "Existing canonical Cart command path"
+      ],
+      "challenger_analysis": "Separate sessions, identities, tokens, and device endpoints duplicate machinery and weaken reuse of the current serialized state boundary. Existing CORS and deployed routes meet this case. Metadata changes reconcile with no hardware targets; commit races are rejected at expectedRevision compare-and-commit.",
+      "tradeoffs": "Trusted-friend V1 uses the publicly reachable function with no separate guest identity, as explicitly approved. Guest action surface remains narrow. No live service or device was mutated.",
+      "simplest_robust_solution": "Use existing static hosting and the existing revision-fenced Cart command path with a closed action mapping.",
+      "critical_path_reason": "Coordinator identified the exact host and deployed interfaces, resolving the previous integration blocker without live mutation."
+    },
+    "reproducibility": {
+      "source_inputs": [
+        "Current branch hbnf-cart2-phase2-integration-20261006",
+        "hbnf-final-controller/guest/hbnf-cart/**",
+        "staging/coordinated-backend/hbnf-cart-control/guest-command.ts",
+        "deployed hbnf-cart-control v16 and hbnf-cart-reconcile v11 source identities above"
+      ],
+      "version_pins": [
+        "Node.js built-in strip-types test runtime",
+        "deployed interfaces inspected read-only"
+      ],
+      "configuration_inputs": [
+        "guestMode absent defaults false",
+        "guest command allowlist VIBE, VIBE_AUTO, NEXT, AUTO",
+        "metadata reconcile targetDevices=[]",
+        "no browser cookies/session persistence"
+      ],
+      "build_inputs": [
+        "Existing pinned Phase 2 WLED build closure unchanged"
+      ],
+      "tooling_identity": [
+        "node:test",
+        "python3 hbnf_control.py check-change"
+      ]
+    },
+    "rollback_or_exit_path": {
+      "rollback_path": "Revert this integration commit; no remote deployment state changed.",
+      "uninstall_or_removal_path": "Revert static Guest route and Guest Mode integration; preserve core candidate and dormant UV/text files.",
+      "replacement_path": "Continue using the same owner canonical reducer/bridge/reconcile interfaces.",
+      "recovery_method": "Git revert to parent commit.",
+      "prior_known_good_state": "Current branch head before integration commit, 680c26e70bfef58297d347180936d95e3b17e979."
+    }
+  }
+}

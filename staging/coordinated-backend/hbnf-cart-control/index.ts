@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.0";
+import { isMetadataOnlyCommand, reduceCartCommand, reconcileTargetsForCommand, requiresOwnerAuthorization, runGuestCommand } from "./guest-command.ts";
 import { chooseLive } from "./live.ts";
 import { laDate, readSkinsScoreState, writeSkinsWinner, writeSkinsTiebreaker, writeSkinsAceWinner } from "./skins_scoring.ts";
 declare const EdgeRuntime:{waitUntil(p:Promise<unknown>):void};
@@ -24,7 +25,7 @@ Deno.serve(async (req: Request) => {
   let request: Record<string, unknown>;
   try { request = await req.json(); } catch { return response({ error: "invalid_json" }, 400); }
   const action = String(request.action ?? "");
-  const protectedAction = action === "create_install_handoff" || action === "pair_device" || ["skins_score_state","skins_score_set","skins_tiebreaker_set","skins_ace_set"].includes(action);
+  const protectedAction = requiresOwnerAuthorization(action, request.type);
 
   let authorized = !protectedAction;
   let operatorAuthorized = false;
@@ -144,17 +145,37 @@ Deno.serve(async (req: Request) => {
   if (action === "status") {
     const { data: snapshot, error: statusError } = await service.rpc("hbnf_cart_get_status", { p_cart_id: "hbnf-cart" });
     if (statusError || !snapshot) return response({ error: "state_read_failed" }, 500);
-    return response({ ...snapshot, capabilities: { coordinatedRelease: "2026-10-01", canonicalPaletteIntentV1: true, canonicalOverlayIntentV1: true, pairedDeviceAuth: true, tuneV1: true } });
+    const desired = snapshot.desired as { state?: Record<string, unknown> } | null;
+    const state = desired?.state ? { ...desired.state, guestMode: desired.state.guestMode === true } : desired?.state;
+    return response({ ...snapshot, desired: desired ? { ...desired, state } : desired, capabilities: { coordinatedRelease: "2026-10-01", canonicalPaletteIntentV1: true, canonicalOverlayIntentV1: true, pairedDeviceAuth: true, tuneV1: true, guestV1: true } });
+  }
+  if (action === "guest_command") {
+    const guestResult = await runGuestCommand(request, {
+      readContext: () => service.rpc("hbnf_cart_get_context", { p_cart_id: "hbnf-cart" }),
+      commit: ({ commandId, type, expectedRevision, nextState }) => service.rpc("hbnf_cart_commit_command_bridge", {
+        p_cart_id: "hbnf-cart", p_command_id: commandId, p_command_type: type,
+        p_expected_revision: expectedRevision, p_next_state: nextState,
+      }).single(),
+      reconcile: async ({ revision, fence, type }) => {
+        const reconcileResponse = await fetch(`${url}/functions/v1/hbnf-cart-reconcile`, {
+          method: "POST", headers: { Authorization: `Bearer ${serviceKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ cartId: "hbnf-cart", revision, releaseId: fence.release_id, fenceEpoch: fence.epoch, commandType: type, targetDevices: [...devices], fastBrightness: false }),
+        });
+        return { ok: reconcileResponse.ok, status: reconcileResponse.status, body: await reconcileResponse.json().catch(() => ({})) };
+      },
+    });
+    return response(guestResult.body, guestResult.status);
   }
   if (action !== "command" || !required(request.commandId, 80) || !required(request.type, 48) || !Number.isSafeInteger(request.expectedRevision) || Number(request.expectedRevision) < 0 || !request.payload || typeof request.payload !== "object") {
     return response({ error: "invalid_command" }, 400);
   }
+  if (request.type === "GUEST_MODE" && !operatorAuthorized && !pairedDeviceAuthorized) return response({ error: "owner_authorization_required" }, 403);
   const { data: context, error: readError } = await service.rpc("hbnf_cart_get_context", { p_cart_id: "hbnf-cart" });
   const row = context?.desired as { revision: number; state: Record<string, unknown> } | null;
   const fence = context?.fence as { epoch: number; release_id: string; active: boolean } | null;
   if (readError || !row || !fence?.active) return response({ error: "cart_not_ready" }, 503);
   if (request.expectedRevision !== row.revision) return response({ error: "stale_revision", currentRevision: row.revision }, 409);
-  const next = reduce(row.state, String(request.type), request.payload as Record<string, unknown>, request.commandId as string, row.revision);
+  const next = reduceCartCommand(row.state, String(request.type), request.payload as Record<string, unknown>, request.commandId as string, row.revision);
   if (!next) return response({ error: "command_rejected" }, 400);
 
   const tuneDelta = (() => {
@@ -172,8 +193,10 @@ Deno.serve(async (req: Request) => {
     }
     return { targetDevices: changed, brightnessOnly: changed.length > 0 };
   })();
-  const targetDevices = tuneDelta.targetDevices;
-  const brightnessOnly = tuneDelta.brightnessOnly;
+  // A Guest Mode change advances canonical metadata but carries forward the
+  // current observations through reconcile with no actuator targets.
+  const targetDevices = reconcileTargetsForCommand(String(request.type), tuneDelta.targetDevices);
+  const brightnessOnly = isMetadataOnlyCommand(String(request.type)) ? false : tuneDelta.brightnessOnly;
   const { data: committed, error: commitError } = await service.rpc("hbnf_cart_commit_command_bridge", {
     p_cart_id: "hbnf-cart", p_command_id: request.commandId, p_command_type: request.type,
     p_expected_revision: row.revision, p_next_state: next,
@@ -193,179 +216,6 @@ Deno.serve(async (req: Request) => {
   const reconcileResponse = await reconcileRequest();
   return response({ revision, duplicate: Boolean((committed as Record<string, unknown>).duplicate), reconciliation: reconcileResponse.ok ? await reconcileResponse.json() : { status: "pending", httpStatus: reconcileResponse.status } }, 202);
 });
-
-function reduce(state: Record<string, unknown>, type: string, payload: Record<string, unknown>, commandId: string, revision: number) {
-  const next = structuredClone(state) as Record<string, unknown>;
-  const devicesState = structuredClone((state.devices ?? {}) as Record<string, Record<string, unknown>>);
-  switch (type) {
-    case "OFF": next.power = "off"; break;
-    case "ON": next.power = "on"; break;
-    case "NEXT": next.sequenceCursor = Number(next.sequenceCursor ?? 0) + 1; next.programMode = "auto"; break;
-    case "AUTO": next.programMode = "auto"; break;
-    case "LOCK": next.programMode = "lock"; break;
-    case "SCENE": if (!required(payload.sceneId, 80) || ["brightness", "power", "deviceProfiles"].some(k => JSON.stringify(payload).toLowerCase().includes(k.toLowerCase()))) return null; next.sceneId = payload.sceneId; next.programMode = "lock"; break;
-    case "PALETTE": if (!required(payload.paletteId, 80)) return null; next.paletteId = payload.paletteId; break;
-    case "TUNE": {
-      let changed = false;
-      const tune = structuredClone((state.tuning ?? {}) as Record<string, unknown>);
-
-      if (payload.sceneId !== undefined) {
-        if (!required(payload.sceneId, 80) || !["course-flow","field-mix","hbnf-signature","quiet-cosmos"].includes(String(payload.sceneId))) return null;
-        next.sceneId = String(payload.sceneId);
-        changed = true;
-      }
-      if (payload.paletteId !== undefined) {
-        if (!required(payload.paletteId, 80)) return null;
-        next.paletteId = String(payload.paletteId);
-        changed = true;
-      }
-      if (payload.vibe !== undefined) {
-        if (!["mellow","moderate","energetic","peak"].includes(String(payload.vibe))) return null;
-        next.vibe = String(payload.vibe);
-        next.vibeMode = "manual";
-        changed = true;
-      }
-      if (payload.speedBias !== undefined) {
-        if (!Number.isFinite(payload.speedBias)) return null;
-        next.manualSpeedBias = Math.max(0.5, Math.min(2, Number(payload.speedBias)));
-        next.tempoMode = "manual";
-        changed = true;
-      }
-      if (payload.tempoMode !== undefined) {
-        if (String(payload.tempoMode) !== "manual") return null;
-        next.tempoMode = "manual";
-        changed = true;
-      }
-      if (payload.matrixBrightness !== undefined || payload.auxBrightness !== undefined) {
-        const matrixProfile = devicesState.matrix;
-        const auxProfile = devicesState.aux;
-        const oldMatrix = clamp(Number(matrixProfile.brightness ?? 0), 0, 255);
-        const oldAux = clamp(Number(auxProfile.brightness ?? 0), 0, 255);
-
-        const requestedMatrix = payload.matrixBrightness === undefined
-          ? oldMatrix
-          : clamp(Number(payload.matrixBrightness), 0, 255);
-        const requestedAux = payload.auxBrightness === undefined
-          ? oldAux
-          : clamp(Number(payload.auxBrightness), 0, 255);
-
-        if (!Number.isFinite(requestedMatrix) || !Number.isFinite(requestedAux)) return null;
-
-        const matrixChanged = requestedMatrix !== oldMatrix;
-        const auxExplicitlyChanged = requestedAux !== oldAux;
-
-        let finalAux = requestedAux;
-        if (matrixChanged && !auxExplicitlyChanged) {
-          finalAux = oldMatrix > 0
-            ? clamp(Math.round(oldAux * requestedMatrix / oldMatrix), 0, 255)
-            : (requestedMatrix === 0 ? 0 : oldAux);
-        }
-
-        if (oldMatrix !== requestedMatrix) matrixProfile.profileRevision = Number(matrixProfile.profileRevision ?? 0) + 1;
-        matrixProfile.brightness = requestedMatrix;
-        matrixProfile.brightnessLocked = true;
-
-        if (oldAux !== finalAux) auxProfile.profileRevision = Number(auxProfile.profileRevision ?? 0) + 1;
-        auxProfile.brightness = finalAux;
-        auxProfile.brightnessLocked = true;
-
-        changed = true;
-      }
-      if (payload.micSensitivity !== undefined) {
-        if (!Number.isFinite(payload.micSensitivity)) return null;
-        tune.micSensitivity = clamp(Number(payload.micSensitivity), 64, 255);
-        changed = true;
-      }
-      if (payload.audioProfile !== undefined) {
-        if (!["scene","bass","mid","balanced","treble","full","impact"].includes(String(payload.audioProfile))) return null;
-        tune.audioProfile = String(payload.audioProfile);
-        changed = true;
-      }
-      if (payload.audioStyle !== undefined) {
-        if (!["scene","clean","punch","ring","spark","chroma","hybrid"].includes(String(payload.audioStyle))) return null;
-        tune.audioStyle = String(payload.audioStyle);
-        changed = true;
-      }
-      if (payload.responseBoost !== undefined) {
-        if (!Number.isFinite(payload.responseBoost)) return null;
-        tune.responseBoost = Math.max(1, Math.min(1.5, Number(payload.responseBoost)));
-        changed = true;
-      }
-      if (payload.variation !== undefined) {
-        if (!Number.isFinite(payload.variation)) return null;
-        tune.variation = clamp(Number(payload.variation), 0, 100);
-        changed = true;
-      }
-      if (payload.energy !== undefined) {
-        if (!Number.isFinite(payload.energy)) return null;
-        tune.energy = clamp(Number(payload.energy), 0, 100);
-        changed = true;
-      }
-      if (payload.audioResponse !== undefined) {
-        if (!Number.isFinite(payload.audioResponse)) return null;
-        tune.audioResponse = clamp(Number(payload.audioResponse), 0, 100);
-        changed = true;
-      }
-      if (payload.motion !== undefined) {
-        if (!Number.isFinite(payload.motion)) return null;
-        tune.motion = clamp(Number(payload.motion), 0, 100);
-        changed = true;
-      }
-      if (!changed) return null;
-      next.tuning = tune;
-      break;
-    }
-    case "VIBE": if (!["mellow", "moderate", "energetic", "peak"].includes(String(payload.vibe))) return null; next.vibe = payload.vibe; next.vibeMode = "manual"; break;
-    case "VIBE_AUTO": next.vibeMode = "music"; break;
-    case "TEMPO_AUTO": return null;
-    case "SPEED": if (!Number.isFinite(payload.speedBias)) return null; next.manualSpeedBias = clamp(Number(payload.speedBias), 0.5, 2); next.tempoMode = "manual"; break;
-    case "OVERLAY_START": {
-      if (!required(payload.overlayId, 80)) return null;
-      const kind = String(payload.kind ?? "");
-      if (!["text","scoreboard"].includes(kind)) return null;
-      const ttlMs = clamp(Number(payload.ttlMs ?? 8000), 1000, 30000);
-      const priority = clamp(Number(payload.priority ?? 60), 1, 100);
-      const data = payload.data && typeof payload.data === "object" ? structuredClone(payload.data as Record<string, unknown>) : {};
-      if (kind === "text") {
-        const text = String((data as Record<string, unknown>).text ?? "").trim();
-        if (!text || text.length > 63) return null;
-        (data as Record<string, unknown>).text = text;
-        const color = String((data as Record<string, unknown>).color ?? "#FFFFFF").toUpperCase();
-        if (!/^#[0-9A-F]{6}$/.test(color)) return null;
-        (data as Record<string, unknown>).color = color;
-      } else {
-        const entries = Array.isArray((data as Record<string, unknown>).entries) ? (data as Record<string, unknown>).entries as unknown[] : [];
-        if (!entries.length || entries.length > 12) return null;
-        (data as Record<string, unknown>).entries = entries.map(x => String(x).trim().slice(0,48)).filter(Boolean);
-        (data as Record<string, unknown>).label = String((data as Record<string, unknown>).label ?? "SCORES").trim().slice(0,24);
-      }
-      const now = Date.now();
-      const overlays = Array.isArray(next.overlays) ? next.overlays as Record<string, unknown>[] : [];
-      next.overlays = overlays
-        .filter(x => Number(x.expiresAt) > now && String(x.id) !== String(payload.overlayId))
-        .concat([{ id:String(payload.overlayId), kind, priority, expiresAt:now + ttlMs, payload:data }]);
-      break;
-    }
-    case "OVERLAY_EXPIRE": {
-      const now = Date.now();
-      const overlays = Array.isArray(next.overlays) ? next.overlays as Record<string, unknown>[] : [];
-      next.overlays = overlays.filter(x => Number(x.expiresAt) > now);
-      break;
-    }
-
-    case "BRIGHTNESS": {
-      const id = payload.deviceId;
-      if (!devices.includes(id as typeof devices[number]) || !Number.isFinite(payload.brightness)) return null;
-      const profile = devicesState[String(id)]; profile.brightness = clamp(Number(payload.brightness), 0, 255); profile.brightnessLocked = true; profile.profileRevision = Number(profile.profileRevision ?? 0) + 1;
-      break;
-    }
-    default: return null;
-  }
-  if (Array.isArray(next.overlays)) next.overlays = (next.overlays as Record<string, unknown>[]).filter(x => Number(x.expiresAt) > Date.now());
-  next.devices = devicesState; next.revision = revision + 1; next.lastCommandId = commandId;
-  return next;
-}
-function clamp(value: number, min: number, max: number) { return Math.round(Math.min(max, Math.max(min, value))); }
 
 async function sha256Hex(value: string) {
   const bytes = new TextEncoder().encode(value);
