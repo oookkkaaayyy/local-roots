@@ -1,5 +1,5 @@
 {
-  "checkpoint_at_utc": "2026-10-07T04:02:00Z",
+  "checkpoint_at_utc": "2026-10-07T04:54:00Z",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -1631,6 +1631,34 @@
       "problem": "Current range-slider thumbs/hit areas are too small and finicky for finger use on-course.",
       "requirement": "All frequently used range controls must expose a finger-friendly acquisition/drag region at least 44x44 CSS/pt-equivalent around the interactive thumb/track area, with no dependence on precise tiny-thumb targeting.",
       "acceptance": "Owner can acquire and adjust sliders reliably one-handed on iPhone/iPad without repeated attempts."
+    },
+    "phase2_host_integration_r1_20261006": {
+      "status": "PASS__PWA_SCORING_TOUCH_BRIGHTNESS_HOST_CLOSURE",
+      "integration_branch": "hbnf-cart2-phase2-integration-20261006",
+      "integration_head": "e9df34a255d1b60ef52b4ce8082b96624cdfe806",
+      "evidence": "evidence/hbnf-phase2-integration-20261006/HOST_OFFLINE_INTEGRATION_R1.json",
+      "live_mutation": "NONE",
+      "deployment": "NONE",
+      "firmware_build": "NONE",
+      "completed": [
+        "PWA reliability integrated",
+        "All course/audio/brightness sliders >=44x44 effective hit area",
+        "Authoritative Skins scoring integrated",
+        "Brightness final-output mapping source patch + host contract"
+      ],
+      "brightness_root_cause": "Brightness had been applied before gamma correction, crushing low-level output toward black and visually dropping low-intensity pixels.",
+      "brightness_fix": "Preserve canonical scene generation, gamma-correct canonical RGB first, then apply Matrix-only final output luminance scaling. Zero is off; 255 is identity/full output; nonzero canonical pixels remain participating for nonzero brightness.",
+      "tests": [
+        "node tests/hbnf_owner_pwa_package.mjs",
+        "node tests/hbnf_owner_pwa_reliability.mjs",
+        "node --experimental-strip-types tests/hbnf_skins_scoring_owner_flow.mjs",
+        "node tests/hbnf-coordinated-backend-staging.mjs",
+        "node tests/hbnf_matrix_brightness_output.mjs",
+        "python3 -m py_compile hbnf-ui-v6-package/install_ui_v6.py",
+        "python3 scripts/platform.py doctor",
+        "python3 scripts/hbnf_control.py status"
+      ],
+      "tests_result": "PASS"
     }
   },
   "execution_budget_policy": {
@@ -1656,14 +1684,13 @@
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Create/use one Phase 2 integration branch from the current authoritative head.",
-      "Integrate PWA reliability and field touch-target fix first; run host/package tests.",
-      "Apply authoritative scoring diff and rerun scoring/PWA host closure.",
-      "Implement/test brightness final-output luminance mapping against preserved canonical frames; do not live-flash.",
-      "Complete Vibe/audio replay/mapping and Text/moments integration against the same integration branch.",
+      "Continue on hbnf-cart2-phase2-integration-20261006 from e9df34a255d1b60ef52b4ce8082b96624cdfe806.",
+      "Integrate existing P2_VIBE_AUDIO offline work; replay preserved qualified-source audio evidence, freeze production mapping only if differentiation/runtime-cost gates pass.",
+      "Integrate existing P2_TEXT_MOMENTS offline work; bind qualified-source font/WBF primitive and framebuffer compositor with runtime/current host checks.",
+      "Run combined host/package closure across PWA + scoring + brightness + Vibe/audio + Text/moments.",
       "Build one integrated candidate only after host closure.",
-      "Wait for explicit hardware-ready handshake before any live Matrix/AUX/OTA action.",
-      "Run one intended-owner integration acceptance cycle, then evaluate T4."
+      "Wait for explicit hardware-ready handshake before any Matrix/AUX/Opal/WLED/OTA action.",
+      "Run one integrated intended-owner device/runtime acceptance cycle, then evaluate T4."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1772,7 +1799,7 @@
     "lanes": {
       "P2_MISSION_CONTROL_SCORING": {
         "blocker": null,
-        "dependency": "T3_PASS__HOST_OFFLINE_INTEGRATION_ACTIVE__LIVE_DEPLOYMENT_GATED_BY_HARDWARE_READY_HANDSHAKE",
+        "dependency": "INTEGRATED_HOST_OFFLINE__OWNER_DEVICE_ACCEPTANCE_AT_INTEGRATED_CANDIDATE",
         "execution_context": "LUNA_WORKER_BOUNDED_TASKS",
         "launch_owner": "COORDINATOR",
         "offline_checkpoint": {
@@ -1782,12 +1809,16 @@
           "receipt": "evidence/hbnf-phase2-mission-control-scoring-20261006/OFFLINE_SCORING_LANE_RECEIPT.json",
           "status": "OFFLINE_IMPLEMENTATION_COMPLETE__INTEGRATION_GATED"
         },
-        "status": "ACTIVE",
-        "status_sheet_row": 4
+        "status": "DONE",
+        "status_sheet_row": 4,
+        "integration": {
+          "head": "e9df34a255d1b60ef52b4ce8082b96624cdfe806",
+          "result": "PASS"
+        }
       },
       "P2_PWA_RELIABILITY": {
         "blocker": null,
-        "dependency": "T3_PASS__HOST_OFFLINE_INTEGRATION_ACTIVE__LIVE_DEPLOYMENT_GATED_BY_HARDWARE_READY_HANDSHAKE",
+        "dependency": "INTEGRATED_HOST_OFFLINE__DEVICE_ACCEPTANCE_AT_INTEGRATED_CANDIDATE",
         "execution_context": "LUNA_WORKER_BOUNDED_TASKS",
         "launch_owner": "COORDINATOR",
         "offline_checkpoint": {
@@ -1816,12 +1847,16 @@
           "source_commit": "f7a9870e2a42b0fe005da0cb6c3849cce3fea9a9",
           "status": "OFFLINE_IMPLEMENTATION_COMPLETE__NOT_DEPLOYED"
         },
-        "status": "ACTIVE",
-        "status_sheet_row": 7
+        "status": "DONE",
+        "status_sheet_row": 7,
+        "integration": {
+          "head": "e9df34a255d1b60ef52b4ce8082b96624cdfe806",
+          "result": "PASS"
+        }
       },
       "P2_TEXT_MOMENTS": {
         "blocker": null,
-        "dependency": "T3_PASS__HOST_OFFLINE_INTEGRATION_ACTIVE__LIVE_DEPLOYMENT_GATED_BY_HARDWARE_READY_HANDSHAKE",
+        "dependency": "T3_PASS__QUALIFIED_SOURCE_FONT_BINDING_AND_FRAMEBUFFER_INTEGRATION_HOST_ACCEPTANCE",
         "execution_context": "LUNA_WORKER_BOUNDED_TASKS",
         "launch_owner": "COORDINATOR",
         "offline_checkpoint": {
@@ -1837,7 +1872,7 @@
       },
       "P2_VIBE_AUDIO": {
         "blocker": null,
-        "dependency": "T3_PASS__HOST_OFFLINE_INTEGRATION_ACTIVE__LIVE_DEPLOYMENT_GATED_BY_HARDWARE_READY_HANDSHAKE",
+        "dependency": "T3_PASS__QUALIFIED_SOURCE_AUDIO_REPLAY_AND_RUNTIME_COST_HOST_ACCEPTANCE",
         "execution_context": "LUNA_WORKER_BOUNDED_TASKS",
         "launch_owner": "COORDINATOR",
         "offline_checkpoint": {
