@@ -1,5 +1,5 @@
 {
-  "checkpoint_at_utc": "2026-10-07T04:54:00Z",
+  "checkpoint_at_utc": "2026-10-07T05:03:00Z",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -1659,6 +1659,49 @@
         "python3 scripts/hbnf_control.py status"
       ],
       "tests_result": "PASS"
+    },
+    "phase2_vibe_text_integration_r1_20261006": {
+      "status": "PASS_HOST_OFFLINE__FIRMWARE_INTEGRATION_PENDING",
+      "integration_branch": "hbnf-cart2-phase2-integration-20261006",
+      "integration_head": "1fb1df85164c7b5243cfadd5a6d92a232337fcc4",
+      "evidence": "evidence/hbnf-phase2-integration-20261006/VIBE_TEXT_INTEGRATION_R1.json",
+      "vibe_audio": {
+        "synthetic_replay": "PASS",
+        "five_manual_vibes_distinct": true,
+        "auto_hysteresis": "PASS_SYNTHETIC",
+        "production_numeric_mapping": "UNFROZEN_PENDING_SOURCE_BOUND_REAL_AUDIO_ACCEPTANCE"
+      },
+      "text_moments": {
+        "planner_host_tests": "PASS_10_OF_10",
+        "firmware_compositor": "NOT_YET_INTEGRATED",
+        "exact_historical_wbf_bytes": "NOT_RETRIEVABLE_FROM_CURRENT_SOURCE_AUTHORITY"
+      },
+      "combined_host_closure": "PASS",
+      "candidate_built": false,
+      "live_mutation": "NONE"
+    },
+    "phase2_font_build_recovery_decision_20261006": {
+      "status": "AUTHORIZED_PATH",
+      "font_recovery_finding": "Historical evidence proves three metric-identical 12px WBF fonts and successful layered-overlay use, but durable registry/checkpoint evidence explicitly states individual WBF file IDs/bytes were not established and current Drive search exposes no retrievable .wbf asset.",
+      "decision": "DO_NOT_STALL_ON_LOST_BYTES__RECONSTRUCT_BYTE_NEW_COMPATIBLE_12PX_WBF_SET",
+      "font_requirements": [
+        "Keep the proven WLED custom-font/WBF primitive family rather than inventing a different text system for convenience.",
+        "Use one locked 12px glyph metric set; foreground/inner-halo/outer-halo assets must remain metric-identical.",
+        "Preserve stable glyph geometry; halo treatment may vary intensity only.",
+        "Recreate 1px inner and 2px outer treatment from the same locked glyph geometry.",
+        "Add deterministic metric/invariant tests and package exact source+generator+hashes so this asset can never become untraceable again.",
+        "Human readability/aesthetic acceptance remains required at actual cart viewing distance."
+      ],
+      "build_closure_decision": "RECONSTRUCT_CLEAN_ROOM_LOCALLY_FROM_PINNED_WLED_0_16_0_1_PLUS_CURRENT_REPO_PATCHES",
+      "build_rules": [
+        "Use a disposable local/worker build workspace; installing PlatformIO locally/venv is allowed.",
+        "Pin exact upstream WLED 0.16.0.1 source identity and all dependencies/patches.",
+        "Do not use GitHub Actions merely because pio/platformio is absent in the current checkout.",
+        "Produce a reproducible build capsule including platformio config, dependency identities, patch order, source hash, firmware hash and rollback identity."
+      ],
+      "audio_freeze_decision": "LACK_OF_HISTORICAL_REAL_AUDIO_TRACE_DOES_NOT_BLOCK_OFFLINE_CANDIDATE_BUILD",
+      "audio_rule": "Carry current synthetic-proven mapping as CANDIDATE/UNFROZEN. At first hardware-ready window, capture/replay a short source-bound real-audio trace against the integrated candidate, freeze numeric mapping only after differentiation/runtime-cost acceptance, then proceed to owner physical acceptance.",
+      "live_gate": "NO_DEVICE_ACTION_UNTIL_HARDWARE_READY_HANDSHAKE"
     }
   },
   "execution_budget_policy": {
@@ -1684,13 +1727,13 @@
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Continue on hbnf-cart2-phase2-integration-20261006 from e9df34a255d1b60ef52b4ce8082b96624cdfe806.",
-      "Integrate existing P2_VIBE_AUDIO offline work; replay preserved qualified-source audio evidence, freeze production mapping only if differentiation/runtime-cost gates pass.",
-      "Integrate existing P2_TEXT_MOMENTS offline work; bind qualified-source font/WBF primitive and framebuffer compositor with runtime/current host checks.",
-      "Run combined host/package closure across PWA + scoring + brightness + Vibe/audio + Text/moments.",
-      "Build one integrated candidate only after host closure.",
-      "Wait for explicit hardware-ready handshake before any Matrix/AUX/Opal/WLED/OTA action.",
-      "Run one integrated intended-owner device/runtime acceptance cycle, then evaluate T4."
+      "Continue on hbnf-cart2-phase2-integration-20261006 from 1fb1df85164c7b5243cfadd5a6d92a232337fcc4.",
+      "Reconstruct a source-controlled compatible 12px WBF font set from one locked glyph metric source; preserve foreground/1px/2px metric identity and add invariant tests.",
+      "Reconstruct a pinned local WLED 0.16.0.1 clean-room PlatformIO build workspace from upstream source plus current repository patches; no GitHub Actions unless this path is objectively impossible.",
+      "Integrate the Text/VisualMoment framebuffer compositor and the synthetic-proven Vibe/audio candidate mapping.",
+      "Run combined host/build closure and produce one offline integrated candidate with exact release/source/firmware/package/rollback identities.",
+      "Wait for explicit hardware-ready handshake.",
+      "At first hardware-ready window, capture source-bound real-audio evidence, freeze Vibe numeric mapping if gates pass, then perform one integrated owner/runtime acceptance cycle."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
