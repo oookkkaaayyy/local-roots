@@ -1,6 +1,6 @@
 /* HBNF_CART_FINAL_V5_SEMANTIC_FRAME_LOCK */
-import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261006-skins-owner-pwa-r1";
-import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261006-skins-owner-pwa-r1";
+import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261006-phase2-integrated-r1";
+import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261006-phase2-integrated-r1";
 
 const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC";

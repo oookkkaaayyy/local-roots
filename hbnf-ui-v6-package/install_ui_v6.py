@@ -5,7 +5,7 @@ ROOT=pathlib.Path(__file__).resolve().parent
 CONTROLLER=ROOT/"controller"
 MANIFEST_PATH=ROOT/"MANIFEST.json"
 LIVE_URL="https://hbnightflyers.com/hbnf-cart.html"
-BUILD_MARKER="hbnf-cart-final-v7-3-skins-owner-pwa-r1-20261006"
+BUILD_MARKER="hbnf-cart-final-v7-3-phase2-integrated-r1-20261006"
 FILES=[
     "hbnf-cart.html",
     "hbnf-cart.js",
@@ -78,7 +78,7 @@ def resolve_wrangler(worker):
 
 def live_marker():
     req=urllib.request.Request(
-        LIVE_URL+"?release=HBNF_CART_UI_V7_3_SKINS_OWNER_PWA_R1_20261006&ts="+str(int(time.time())),
+        LIVE_URL+"?release=HBNF_CART_UI_V7_3_PHASE2_INTEGRATED_R1_20261006&ts="+str(int(time.time())),
         headers={
             "User-Agent":"Mozilla/5.0",
             "Accept":"text/html,application/xhtml+xml",
@@ -95,7 +95,7 @@ def live_marker():
         return 0, False
 
 def main():
-    print("HBNF CART UI V7.3 SKINS OWNER PWA R1 — controller-only package")
+    print("HBNF CART UI V7.3 PHASE 2 INTEGRATION R1 — controller-only package")
     print("No Matrix/AUX firmware or Phase 2 game/router changes.")
     check_package()
     worker=find_worker()

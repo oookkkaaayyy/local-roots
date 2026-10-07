@@ -10,7 +10,7 @@ const js = fs.readFileSync(path.join(controller, "hbnf-cart.js"), "utf8");
 const sw = fs.readFileSync(path.join(controller, "hbnf-cart-sw.js"), "utf8");
 const manifest = JSON.parse(fs.readFileSync(path.join(controller, "hbnf-cart-manifest.webmanifest"), "utf8"));
 const installer = fs.readFileSync(path.join(root, "hbnf-ui-v6-package/install_ui_v6.py"), "utf8");
-const VERSION = "20261006-skins-owner-pwa-r1";
+const VERSION = "20261006-phase2-integrated-r1";
 const TOKEN = "a".repeat(64);
 
 assert.equal(parsePairFragment(`#pair=${TOKEN}`), TOKEN);
@@ -46,7 +46,7 @@ assert.equal(manifest.start_url, `/hbnf-cart.html?app=${VERSION}`);
 assert.match(html, /navigator\.serviceWorker\.register/);
 assert.match(html, new RegExp(`hbnf-cart-sw\\.js\\?v=${VERSION}`));
 assert.match(html, /scope:"\/hbnf-cart\.html"/);
-assert.match(sw, /hbnf-owner-pwa-v7-3-r1-20261006/);
+assert.match(sw, /hbnf-owner-pwa-v7-3-phase2-r1-20261006/);
 assert.match(sw, /self\.skipWaiting\(\)/);
 assert.match(sw, /self\.clients\.claim\(\)/);
 assert.match(sw, /url\.origin !== self\.location\.origin/);

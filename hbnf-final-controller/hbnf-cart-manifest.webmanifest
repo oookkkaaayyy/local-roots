@@ -2,7 +2,7 @@
   "name": "HBNF Cart Control",
   "short_name": "HBNF Cart",
   "id": "/hbnf-cart.html",
-  "start_url": "/hbnf-cart.html?app=20261006-skins-owner-pwa-r1",
+  "start_url": "/hbnf-cart.html?app=20261006-phase2-integrated-r1",
   "scope": "/hbnf-cart.html",
   "display": "standalone",
   "background_color": "#071018",
