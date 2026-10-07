@@ -81,6 +81,7 @@
         "no_unapproved_scope_change",
         "deferred_scope_preserved",
         "package_complete",
+        "engineering_governance_complete",
         "signed_release_preflight_passed"
       ],
       "human_approval_required": false
@@ -136,6 +137,38 @@
   "execution_system": {
     "schema": "hbnf-execution-system-v1",
     "purpose": "Make the existing lifecycle model execute linearly with evidence reuse, selective invalidation, failure isolation, and safe parallelism; this is part of the primary control model, not a new authority layer.",
+    "engineering_change_governance": {
+      "schema": "hbnf-engineering-change-governance-v1",
+      "change_record_schema": "hbnf-change-governance-v1",
+      "manifest_schema": "hbnf-engineering-governance-manifest-v1",
+      "classes": {
+        "TRIVIAL_BOUNDED": "none",
+        "APPROVED_ARCHITECTURE_IMPLEMENTATION": "scoped",
+        "ARCHITECTURAL_DECISION": "full",
+        "SUBJECTIVE_DESIGN": "scoped_or_full",
+        "BESPOKE_REPLACEMENT": "full",
+        "UNKNOWN_IMPACT": "reject"
+      },
+      "impact_flags": [
+        "architecture",
+        "new_dependency",
+        "subjective_design",
+        "bespoke",
+        "unknown"
+      ],
+      "full_evidence_fields": [
+        "expert_basis",
+        "native_capability_check",
+        "mature_external_component_check",
+        "decision_rationale",
+        "reproducibility",
+        "rollback_or_exit_path"
+      ],
+      "t4_receipt_check": "engineering_governance_complete",
+      "t4_manifest_name": "engineering-governance-manifest.json",
+      "t4_manifest_path": "evidence/engineering-governance/T4_ENGINEERING_GOVERNANCE_MANIFEST.json",
+      "policy_only_invalidates_foundation": false
+    },
     "operating_loop": [
       "CURRENT_NODE",
       "INHERIT_VALID_EVIDENCE",

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import copy, importlib.util, json, pathlib, tempfile
+import copy, importlib.util, json, pathlib, subprocess, sys, tempfile
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location("ctrl",ROOT/"scripts/hbnf_control.py")
 m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
@@ -63,3 +63,4 @@ while cur!="ACCEPTED":
 assert cur=="ACCEPTED"
 
 print("PASS: linear receipt control plane is acyclic, nonrecursive, exact-input, and fail-closed")
+subprocess.run([sys.executable,str(ROOT/"tests/hbnf_control_execution_system.py")],check=True)

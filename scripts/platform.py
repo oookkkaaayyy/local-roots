@@ -307,6 +307,25 @@ def doctor() -> int:
 
     validate_hbnf_coherence(errors, warnings)
 
+    control_validator = ROOT / "scripts/hbnf_control.py"
+    if control_validator.is_file():
+        try:
+            control = subprocess.run(
+                [sys.executable, str(control_validator), "status"],
+                cwd=ROOT,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                timeout=10,
+                check=False,
+            )
+            status = json.loads(control.stdout)
+            if control.returncode != 0 or status.get("model_valid") is not True:
+                details = status.get("validation_errors") or [control.stdout.strip()]
+                errors.append("HBNF control-plane validation failed: " + "; ".join(details))
+        except Exception as exc:
+            errors.append("HBNF control-plane validation unavailable: " + str(exc))
+
     proof_template = PLATFORM / "templates/PRELIVE_PROOF.template.json"
     if not proof_template.is_file():
         errors.append("platform: missing PRELIVE_PROOF template")

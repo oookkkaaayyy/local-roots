@@ -105,6 +105,7 @@ if AGENTS.is_file():
     txt=AGENTS.read_text()
     for needle in [
       "python3 scripts/hbnf_control.py status",
+      "python3 scripts/hbnf_control.py check-change --change <record-or-manifest.json>",
       "python3 scripts/hbnf_architecture_fitness.py",
       "Do not add free-floating governance rules",
     ]:

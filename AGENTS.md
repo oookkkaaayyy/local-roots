@@ -106,6 +106,8 @@ For any task touching HBNF release engineering, firmware promotion, Cart 2.0 int
 
 25. Same-mechanism retry rule: no retry after a failure unless new evidence materially changes why that retry should succeed.
 
+26. For every engineering change, create a record using the applicability classes in `config/HBNF_CONTROL_MODEL.json` and validate it with `python3 scripts/hbnf_control.py check-change --change <record-or-manifest.json>`. Store decision records as evidence, not as policy. Unknown impact fails closed; architecture, new dependencies, subjective design, and bespoke replacement require the evidence defined by the control model. T4 progression requires the validated `evidence/engineering-governance/T4_ENGINEERING_GOVERNANCE_MANIFEST.json` artifact.
+
 These instructions exist to prevent governance drift, artifact loss, repeated rediscovery, storage bloat, and execution wheel-spinning across Codex tasks and chats.
 
 ## Single-capsule execution model
@@ -142,4 +144,3 @@ This section governs every future implementation, build, deployment, release, di
 - Never use the user as a relay between tools/workers when the backend can perform or preserve the step directly.
 
 For HBNF/Cart 2.0 specifically, a diagnostic install is forbidden unless the exact recovery artifact **and the actual updater/publication/manifest path required to consume it** have already been proven end-to-end and the exact prior cloud deployment can be restored without reconstruction.
-
