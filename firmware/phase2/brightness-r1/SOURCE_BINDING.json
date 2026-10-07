@@ -1,6 +1,6 @@
 {
   "schema": "hbnf-phase2-brightness-output-source-v1",
-  "status": "OFFLINE_SOURCE_PATCH_NOT_BUILT_OR_DEPLOYED",
+  "status": "SOURCE_ADOPTED_IN_PHASE2_INTEGRATION_R2_PATCH__NOT_SEPARATELY_APPLIED",
   "base_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
   "base_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
   "base_source_path": "firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp",
@@ -13,5 +13,8 @@
   "source_semantics": "Gamma is applied to each completed canonical pixel, then its final Matrix-only output scale is applied. The renderer writes canonicalMatrixPixels before this output stage. AUX transport brightness is untouched.",
   "helper_sha256": "921e29f4fe79f6827fd9865b0aa69603f8bde6b53382edce2af1a6c29e27f0b7",
   "host_test_path": "tests/hbnf_matrix_brightness_output.cpp",
-  "integration_test_path": "tests/hbnf_matrix_brightness_output.mjs"
+  "integration_test_path": "tests/hbnf_matrix_brightness_output.mjs",
+  "integrated_patch": "firmware/phase2/integration-r2/usermod_hbnf_foundation_v1.patch",
+  "offline_candidate_status": "BUILT_IN_INTEGRATION_R2__NOT_INSTALLED",
+  "candidate_sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3"
 }

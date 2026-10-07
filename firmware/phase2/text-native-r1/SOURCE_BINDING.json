@@ -1,26 +1,45 @@
 {
   "schema": "hbnf-p2-native-text-source-binding-v1",
-  "status": "OFFLINE_DESIGN_REVIEW_IMPLEMENTATION",
-  "font_choice": "WLED native WBF 5x12 primary; native console 6x8 alternate",
+  "status": "OFFLINE_NATIVE_WLED_FONTMANAGER_ADAPTER_R2",
+  "font_choice": "WLED FontManager built-in font index 4 (font_5x12) as a reversible functional default; owner presentation remains UNFROZEN.",
   "wled_base_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
   "font_sources": {
     "wled00/src/font/font_5x12.h": "4546e0ee28726de1c6a48b63b7fa55c1e351e70624769f6d6a128e1c5e32806e",
     "wled00/src/font/console_font_6x8.h": "0340e513da6dfbc98dadad079278710291981db524ad068a21d7dab894929ea6"
   },
   "adapter": "hbnf_native_text.h",
-  "prepared_r4_source_delta": "usermod_hbnf_foundation_v1.patch",
+  "prepared_r4_source_delta": "firmware/phase2/integration-r2/usermod_hbnf_foundation_v1.patch",
   "owner_review_artifact": "evidence/hbnf-phase2-integration-20261006/TEXT_OWNER_REVIEW_R1.svg",
   "adapter_contract": [
-    "reads WLED's native PROGMEM bitmap and width table",
-    "stable bitmap glyph geometry; no audio-driven glyph deformation",
-    "empty input returns before font scan and framebuffer writes",
-    "centers native glyphs in the 32x16 Matrix logical viewport",
-    "no custom font bytes, WBF recovery, or invented glyphs"
+    "calls pinned WLED FontManager for native glyph metrics/cache/rasterization",
+    "HBNF glue only pages at word boundaries and centers within the 32x16 logical Matrix viewport",
+    "transparent glyph rendering preserves the current Foundation Vibe frame under text",
+    "empty input returns before font cache load or framebuffer writes",
+    "oversized single word scrolling remains a provisional fallback"
   ],
   "qualification": {
     "firmware_built": false,
     "hardware_rendered": false,
-    "page_layout": "word-boundary paging on native pixel widths, 2200 ms/page; only oversized single words scroll",
-    "owner_visual_acceptance": "REQUIRED_ON_FIRST_INTEGRATED_DESIGN_REVIEW_CANDIDATE"
-  }
+    "page_layout": "existing word-boundary paging and 2200 ms hold; functional default only",
+    "presentation_status": "UNFROZEN",
+    "owner_visual_acceptance": "REQUIRED_BEFORE_VISUAL_FREEZE"
+  },
+  "native_api": {
+    "class": "FontManager",
+    "font_index": 4,
+    "use_file_font": false,
+    "methods": [
+      "loadFont",
+      "getFontWidth",
+      "getFontHeight",
+      "getFontSpacing",
+      "getGlyphWidth",
+      "drawCharacter"
+    ],
+    "source": "WLED 16.0.1 commit 29b389df1c1aaec6ff53aea742d17063b985906c"
+  },
+  "offline_candidate_status": "BUILT_IN_INTEGRATION_R2__NOT_INSTALLED",
+  "candidate_sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3",
+  "firmware_built": true,
+  "hardware_rendered": false
 }

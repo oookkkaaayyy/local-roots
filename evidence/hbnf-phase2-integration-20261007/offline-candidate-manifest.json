@@ -1,0 +1,50 @@
+{
+  "schema": "hbnf-phase2-offline-firmware-candidate-v1",
+  "status": "OFFLINE_CANDIDATE_BUILT__NOT_INSTALLED",
+  "candidate_id": "hbnf-cart2-phase2-offline-r1-20261007",
+  "branch": "hbnf-cart2-phase2-integration-20261006",
+  "reconciliation_commit": "6a98de3c73c613f9cb1251c5e8054f8d6cd35697",
+  "base_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "base_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "wled_source_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+  "animartrix_commit": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f",
+  "animartrix_clock_patch_sha256": "f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4",
+  "integrated_source_sha256": "2f438f3842db0adf71f1f87806eb8d86114e8e4df5da4eba2d6a6af13a9dfe50",
+  "phase2_patch_sha256": "431cd58aa88461898318d5914505622751041a32e5a72bcd26fed4672f9e8b5d",
+  "candidate_artifact": "work/phase2-build-prep/artifacts/hbnf-cart2-phase2-offline-r1-20261007.bin",
+  "candidate_sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3",
+  "candidate_bytes": 1458832,
+  "partition": {
+    "name": "app0",
+    "slot_bytes": 1572864,
+    "linker_flash_used_bytes": 1452137,
+    "linker_flash_used_percent": 92.3,
+    "bin_bytes_remaining_to_slot_limit": 114032
+  },
+  "linker_ram_used_bytes": 87288,
+  "linker_ram_bytes": 327680,
+  "build": {
+    "result": "PASS",
+    "environment": "hbnf_matrix_wled16_max",
+    "platformio_core": "6.1.18",
+    "python": "3.9.6 (local host fallback)",
+    "board": "esp32dev",
+    "framework": "Arduino ESP32 2.0.18+sha.8ba0dc0",
+    "toolchain": "xtensa-esp32-elf 8.4.0+2021r2-patch5",
+    "esptool": "4.7.4",
+    "ldf_mode": "chain",
+    "ui_build_time_epoch": 1789948800,
+    "warnings": "Upstream ESP32 ADC deprecation and GIF decoder warnings only; build and usermod-link validation succeeded.",
+    "host_validation_shims": [
+      "Temporary WLED build copy only: pio-scripts/load_usermods.py Optional[str] annotation compatibility for Python 3.9.",
+      "Temporary WLED build copy only: pio-scripts/validate_modules.py Optional[str] annotation compatibility for Python 3.9."
+    ],
+    "firmware_source_unchanged_by_host_shims": true
+  },
+  "presentation_status": "UNFROZEN",
+  "audio_mapping_status": "UNFROZEN__CONTROLLED_LABELED_CAPTURE_REQUIRED",
+  "live_mutation_authorized": false,
+  "installed": false,
+  "deployment": "NONE",
+  "acceptance": "OFFLINE BUILD ONLY; requires owner visual review, labeled audio evidence and hardware-ready handshake before any live transaction."
+}

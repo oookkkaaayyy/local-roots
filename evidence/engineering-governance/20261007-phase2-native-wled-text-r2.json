@@ -1,0 +1,168 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "P2_NATIVE_WLED_TEXT_AND_OUTPUT_R2_20261007",
+  "summary": "Use the exact pinned WLED FontManager and built-in 5x12 font for Phase 2 text glyph rendering, retain only minimal HBNF paging/placement glue, composite text over the current Vibe frame, and apply the already-approved Matrix brightness transform only at final output. The 5x12 choice is a reversible functional default; visual style and owner acceptance remain UNFROZEN.",
+  "change_class": "ARCHITECTURAL_DECISION",
+  "impact": {
+    "architecture": true,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "expert_basis": {
+      "sources": [
+        {
+          "title": "WLED 16.0.1 FontManager upstream source at 29b389df1c1aaec6ff53aea742d17063b985906c",
+          "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+          "locator": "https://github.com/wled/WLED/blob/29b389df1c1aaec6ff53aea742d17063b985906c/wled00/fontmanager.cpp and wled00/fontmanager.h",
+          "relevance": "Exact source shows native flash font 4 is font_5x12, exposes loadFont/getGlyphWidth/drawCharacter, caches required glyphs, and writes only set glyph pixels to the existing segment."
+        },
+        {
+          "title": "WLED 16.0.1 Scrolling Text implementation at pinned source",
+          "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+          "locator": "https://github.com/wled/WLED/blob/29b389df1c1aaec6ff53aea742d17063b985906c/wled00/FX.cpp#L6382-L6565",
+          "relevance": "Shows native Scrolling Text is an effect-level wrapper around FontManager, but applies segment fading and motion behavior that does not directly preserve HBNF stable readable holds."
+        },
+        {
+          "title": "WLED official custom fonts documentation",
+          "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+          "locator": "https://kno.wled.ge/features/custom-fonts/",
+          "relevance": "Documents the native font and WBF font ecosystem in WLED; supports choosing an existing WLED primitive rather than creating a new font system."
+        },
+        {
+          "title": "HBNF current integration source and phase2 tests",
+          "authority_type": "PROJECT_SOURCE_AUTHORITY",
+          "locator": "firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp; firmware/phase2/brightness-r1; firmware/phase2/text-native-r1; tests/native_text_adapter_smoke.cpp",
+          "relevance": "Defines the exact source-bound Foundation render path, already-required final-output brightness semantics, existing native text host planning contract, and rollback point."
+        },
+        {
+          "title": "Current owner task instruction in Pasted text.txt",
+          "authority_type": "PROJECT_SOURCE_AUTHORITY",
+          "locator": "/Users/andrew/.codex/attachments/1447e20a-5d92-4f25-82a6-99a57aacfb25/Pasted text.txt",
+          "relevance": "Explicitly directs the worker to adopt WLED-native text when it satisfies the immediate functional requirement and keep visual presentation provisional for owner review."
+        }
+      ],
+      "findings": [
+        {
+          "kind": "ESTABLISHED_FACT",
+          "statement": "The pinned WLED source implements FontManager flash-font index 4 with the upstream font_5x12 bitmap and native glyph metric/cache/render methods.",
+          "source_ref": "WLED 16.0.1 FontManager upstream source at 29b389df1c1aaec6ff53aea742d17063b985906c"
+        },
+        {
+          "kind": "ESTABLISHED_FACT",
+          "statement": "The WLED Scrolling Text effect invokes the same FontManager but adds motion and segment-fade behavior; HBNF needs a stable readable hold composited over the current Foundation frame.",
+          "source_ref": "WLED 16.0.1 Scrolling Text implementation at pinned source"
+        },
+        {
+          "kind": "FIELD_EVIDENCE",
+          "statement": "Existing host planning and compositor tests establish word-boundary paging, stable glyph geometry, current-frame restoration, and an owner design review gate; no integrated firmware build previously existed.",
+          "source_ref": "HBNF current integration source and phase2 tests"
+        },
+        {
+          "kind": "INFERENCE",
+          "statement": "Calling FontManager directly inside the current HBNF overlay path, with only paging/placement glue, is the narrow compatible adoption path and removes the hand-parsed font bitmap implementation.",
+          "source_ref": "WLED 16.0.1 FontManager upstream source at 29b389df1c1aaec6ff53aea742d17063b985906c"
+        },
+        {
+          "kind": "ESTABLISHED_FACT",
+          "statement": "The owner task explicitly permits a reversible provisional functional default and prohibits treating it as owner-approved visual design.",
+          "source_ref": "Current owner task instruction in Pasted text.txt"
+        }
+      ]
+    },
+    "native_capability_check": {
+      "evaluated": true,
+      "capability": "Pinned WLED 16.0.1 FontManager with built-in font 4 (font_5x12), existing segment raster output, and native Scrolling Text effect.",
+      "result": "SUFFICIENT",
+      "source_refs": [
+        "WLED 16.0.1 FontManager upstream source at 29b389df1c1aaec6ff53aea742d17063b985906c",
+        "WLED 16.0.1 Scrolling Text implementation at pinned source"
+      ],
+      "rationale": "FontManager supplies native 5x12 glyph data, metrics, caching and transparent glyph drawing. Minimal HBNF code is limited to stable word paging, centering, and a reversible oversized-word fallback; direct drawing avoids the full effect\u2019s motion/fade behavior and preserves the continuously rendered Vibe frame."
+    },
+    "mature_external_component_check": {
+      "relevant": true,
+      "alternatives": [
+        {
+          "name": "WLED 16.0.1 FontManager built-in flash font 4",
+          "maturity": "Maintained as part of the pinned WLED release and used by its native Scrolling Text effect.",
+          "maintenance": "Maintained upstream within WLED; no separate package or asset lifecycle.",
+          "compatibility": "Exact pinned WLED commit is the qualified Foundation base and has the required 32x16 segment renderer.",
+          "provenance": "WLED 16.0.1 FontManager upstream source at 29b389df1c1aaec6ff53aea742d17063b985906c",
+          "license": "WLED upstream project license; no separately distributed font asset is added.",
+          "documentation_support": "Upstream FontManager API plus WLED custom-font documentation.",
+          "dependency_burden": "No new dependency; reuses the already-pinned WLED source.",
+          "disposition": "SELECTED",
+          "rationale": "Provides the needed immediate native glyph capability with small reversible HBNF paging/placement glue."
+        },
+        {
+          "name": "WLED 16.0.1 Scrolling Text effect (FX_MODE_2DSCROLLTEXT)",
+          "maturity": "Maintained upstream WLED effect in the same pinned release.",
+          "maintenance": "Maintained with WLED; no external dependency.",
+          "compatibility": "Available on the 2D Matrix, but owns motion/fade parameters and segment effect state rather than the HBNF moment timing interface.",
+          "provenance": "WLED 16.0.1 Scrolling Text implementation at pinned source",
+          "license": "WLED upstream project license.",
+          "documentation_support": "Official WLED effect and segment documentation.",
+          "dependency_burden": "No new dependency; full effect would require routing text into a separate WLED segment/effect path.",
+          "disposition": "REJECTED",
+          "rationale": "The effect scrolls/fades through WLED\u2019s effect lifecycle and cannot directly provide HBNF\u2019s fixed readable hold over its continuously rendered Foundation Vibe without a broader segment/effect-routing change."
+        }
+      ]
+    },
+    "decision_rationale": {
+      "selected_path": "Adapt the existing HBNF text overlay to use WLED FontManager font 4 (native 5x12), preserving existing host planner semantics and drawing glyphs over the current Matrix frame. Keep page timing and provisional font presentation unfrozen. Use the pre-existing final-output brightness requirement at Matrix output only.",
+      "alternatives_considered": [
+        "Invoke native WLED 2D Scrolling Text as a full effect",
+        "Use FontManager directly with only paging/placement glue",
+        "Continue reading WLED PROGMEM bitmaps with a bespoke HBNF raster parser",
+        "Recover or recreate external WBF font assets"
+      ],
+      "challenger_analysis": "The full WLED effect is mature but brings vertical motion, trail behavior, and segment/effect routing that do not match the immediate stable-hold HBNF moment contract. Direct WLED FontManager calls reuse native glyph data, width metrics, cache and pixel writes. The previous adapter read WLED font byte tables itself; removing that parser reduces bespoke work. Exact historical WBF assets are not required because the pinned upstream contains a built-in native 5x12 font. The 5x12 appearance remains provisional and unaccepted.",
+      "tradeoffs": "Word paging and centering remain minimal HBNF glue; oversized single words use a reversible scroll fallback. The provisional 5x12 font may be changed after owner review without changing shared contracts. Direct FontManager segment cache and ESP32 runtime cost still require target build/runtime evidence before acceptance.",
+      "simplest_robust_solution": "Use FontManager\u2019s built-in font 4 and native glyph rendering; retain only word-boundary pagination, centering and the existing 2200 ms hold as provisional implementation details.",
+      "critical_path_reason": "This closes offline text/brightness source integration without inventing font assets or an alternate renderer and enables one offline Phase 2 build candidate. It does not authorize live mutation or final visual acceptance."
+    },
+    "reproducibility": {
+      "source_inputs": [
+        "firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp sha256 31126d341bf0a3e54a33d87de0856c5f68e79f20dd05653ae1d5df3270a9bc9d",
+        "firmware/phase2/brightness-r1/hbnf_brightness_output.h",
+        "firmware/phase2/text-native-r1/hbnf_native_text.h",
+        "firmware/phase2/integration-r2/usermod_hbnf_foundation_v1.patch",
+        "WLED build overlay recovered from Git commit 7928a256f31ce46775717731cf1338944a2b5709; per-file hashes in Drive source map and build manifest"
+      ],
+      "version_pins": [
+        "WLED 16.0.1 commit 29b389df1c1aaec6ff53aea742d17063b985906c",
+        "PlatformIO Core 6.1.18",
+        "Node.js 20.20.2 / npm 10.8.2",
+        "Animartrix commit 81eb09b91c8c9c8c01f8ea442787f8127d56c72f plus exact clock patch f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4"
+      ],
+      "configuration_inputs": [
+        "platformio_override.ini from the exact recovered seq39 overlay; official WLED esp32dev base dependency closure added only to the Packet20 target environment",
+        "SOURCE_DATE_EPOCH=1789948800 for generated WLED UI assets",
+        "HBNF_CONTROL_STATE remains PHASE2_INTEGRATING; live_mutation_authorized=false"
+      ],
+      "build_inputs": [
+        "Pinned WLED 16.0.1 source",
+        "Current Phase 2 integrated Foundation usermod source",
+        "Exact preserved Packet20 overlay headers and Animartrix clock patch",
+        "Generated WLED UI from exact package-lock"
+      ],
+      "tooling_identity": [
+        "macOS Apple Silicon host",
+        "isolated Python 3.9 virtual environment",
+        "PlatformIO Core 6.1.18",
+        "Node.js 20.20.2 and npm 10.8.2",
+        "Git/GitHub private repository oookkkaaayyy/local-roots"
+      ]
+    },
+    "rollback_or_exit_path": {
+      "rollback_path": "Revert the atomic Phase 2 R2 integration commit on hbnf-cart2-phase2-integration-20261006; preserve the exact Foundation baseline source and artifact identity. No live candidate has been installed.",
+      "uninstall_or_removal_path": "Remove only the R2 source patch, native adapter changes, and integration evidence by reverting their commit; no new package or WBF file is installed.",
+      "replacement_path": "Revert to the exact current Foundation text path and defer native text visual freeze until owner review; existing host planner/fixture evidence remains intact.",
+      "recovery_method": "Checkout parent commit and rebuild only from the previously qualified Foundation source/capsule if an offline candidate artifact later needs recovery; no OTA or hardware operation in this task.",
+      "prior_known_good_state": "Foundation-qualified candidate hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1, firmware SHA256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c; control lifecycle PHASE2_INTEGRATING."
+    }
+  }
+}

@@ -19,6 +19,7 @@ GROUP = "239.0.0.1"
 PORT = 11988
 HEADER = b"00002\0"
 PACKET_SIZE = 44
+LABELS = ("BASS_HEAVY", "MID_RHYTHMIC", "HIGH_DETAIL_TRANSIENT", "QUIET_LOW_ACTIVITY")
 
 
 def parse_packet(packet: bytes) -> dict:
@@ -36,8 +37,33 @@ def parse_packet(packet: bytes) -> dict:
     }
 
 
+def capture_metadata(seconds: float, *, matrix_ip: str, release_id: str,
+                     firmware_sha256: str, matrix_mac: str,
+                     label: str | None = None, group: str = GROUP,
+                     port: int = PORT) -> dict:
+    if label is not None and label not in LABELS:
+        raise ValueError(f"label must be one of {', '.join(LABELS)}")
+    return {
+        "record_type": "capture_metadata",
+        "schema": "hbnf-audioreactive-udp-v2-capture-v1",
+        "captured_at_utc": datetime.now(timezone.utc).isoformat(),
+        "transport": "WLED AudioReactive UDP Sound Sync v2 multicast",
+        "multicast_group": group,
+        "port": port,
+        "expected_source_ip": matrix_ip,
+        "expected_source_mac": matrix_mac,
+        "release_id": release_id,
+        "firmware_sha256": firmware_sha256,
+        "duration_seconds": seconds,
+        "category_label": label,
+        "sample_fields": ["sample_raw", "sample_smth", "sample_peak", "fft_result[16]", "fft_magnitude", "fft_major_peak"],
+        "audio_recording": False,
+    }
+
+
 def capture(path: Path, seconds: float, *, matrix_ip: str, release_id: str,
-            firmware_sha256: str, matrix_mac: str, group: str = GROUP,
+            firmware_sha256: str, matrix_mac: str, label: str | None = None,
+            group: str = GROUP,
             port: int = PORT, iface_ip: str = "0.0.0.0") -> int:
     path.parent.mkdir(parents=True, exist_ok=True)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -50,21 +76,9 @@ def capture(path: Path, seconds: float, *, matrix_ip: str, release_id: str,
     count = 0
     try:
         with path.open("w", encoding="utf-8") as out:
-            metadata = {
-                "record_type": "capture_metadata",
-                "schema": "hbnf-audioreactive-udp-v2-capture-v1",
-                "captured_at_utc": datetime.now(timezone.utc).isoformat(),
-                "transport": "WLED AudioReactive UDP Sound Sync v2 multicast",
-                "multicast_group": group,
-                "port": port,
-                "expected_source_ip": matrix_ip,
-                "expected_source_mac": matrix_mac,
-                "release_id": release_id,
-                "firmware_sha256": firmware_sha256,
-                "duration_seconds": seconds,
-                "sample_fields": ["sample_raw", "sample_smth", "sample_peak", "fft_result[16]", "fft_magnitude", "fft_major_peak"],
-                "audio_recording": False,
-            }
+            metadata = capture_metadata(seconds,matrix_ip=matrix_ip,release_id=release_id,
+                                        firmware_sha256=firmware_sha256,matrix_mac=matrix_mac,
+                                        label=label,group=group,port=port)
             out.write(json.dumps(metadata, separators=(",", ":")) + "\n")
             while time.monotonic() < deadline:
                 try:
@@ -108,11 +122,13 @@ def main() -> int:
     ap.add_argument("--matrix-mac", required=True)
     ap.add_argument("--release-id", required=True)
     ap.add_argument("--firmware-sha256", required=True)
+    ap.add_argument("--label", choices=LABELS, help="controlled source category for this capture")
     ap.add_argument("--iface-ip", default="0.0.0.0")
     args = ap.parse_args()
     n = capture(args.out, args.seconds, matrix_ip=args.matrix_ip,
                 matrix_mac=args.matrix_mac, release_id=args.release_id,
-                firmware_sha256=args.firmware_sha256, iface_ip=args.iface_ip)
+                firmware_sha256=args.firmware_sha256, label=args.label,
+                iface_ip=args.iface_ip)
     print(json.dumps({"result": "PASS" if n else "NO_PACKETS", "samples": n,
                       "out": str(args.out)}))
     return 0 if n else 2

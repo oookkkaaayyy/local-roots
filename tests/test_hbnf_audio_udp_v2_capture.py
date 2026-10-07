@@ -23,6 +23,19 @@ def fixture_packet():
 
 
 class AudioUdpV2CaptureTests(unittest.TestCase):
+    def test_controlled_category_is_bound_to_capture_metadata(self):
+        metadata = CAPTURE.capture_metadata(
+            30, matrix_ip="192.168.77.10", matrix_mac="70:4b:ca:5b:34:5c",
+            release_id="candidate", firmware_sha256="a" * 64,
+            label="BASS_HEAVY")
+        self.assertEqual(metadata["category_label"], "BASS_HEAVY")
+        self.assertFalse(metadata["audio_recording"])
+        with self.assertRaisesRegex(ValueError, "label must be one of"):
+            CAPTURE.capture_metadata(
+                30, matrix_ip="192.168.77.10", matrix_mac="70:4b:ca:5b:34:5c",
+                release_id="candidate", firmware_sha256="a" * 64,
+                label="UNCONTROLLED")
+
     def test_exact_v2_packet_fields(self):
         got = CAPTURE.parse_packet(fixture_packet())
         self.assertEqual(got["sample_raw"], 0.25)
