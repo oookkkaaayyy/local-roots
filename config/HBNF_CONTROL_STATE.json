@@ -1,5 +1,5 @@
 {
-  "checkpoint_at_utc": "2026-10-07T00:01:00Z",
+  "checkpoint_at_utc": "2026-10-07T04:02:00Z",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -20,6 +20,16 @@
         "source_identity_type": "git_commit"
       },
       "transition_id": "T2_FOUNDATION_QUALIFY"
+    },
+    {
+      "transition_id": "T3_PHASE2_START",
+      "receipt_sha256": "ad20b56507807290acacb7a0d189ce2141d81448e1483de5283ccc4cac1585fd",
+      "subject": {
+        "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "source_identity_type": "git_commit",
+        "source_identity": "b18b162ec4b4f9173b1de892957ff8b834fe2b50",
+        "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+      }
     }
   ],
   "current_task": {
@@ -82,34 +92,11 @@
     },
     "blockers": [],
     "brightness_field_target": {
-      "authority": "config/HBNF_CONTROL_MODEL.json execution_system.release_scope.brightness_quality_requirement",
-      "authority_commit": "fd043077b5c4de00ff7bc11c2015d78df2d53378",
-      "decision_date": "2026-10-06",
-      "decision_evidence": "evidence/hbnf-foundation-qualification-20261005/OVERNIGHT_OFFLINE_FIELD_READINESS_20261006.md",
-      "decision_reason": "The exact seq41/42 transaction is consumed, Foundation is not qualified, and the current 0-255 Matrix scale is linear. A perceptual owner mapping is source-local and unit-testable but changes real light/current; no safe physical low-light/max-output confirmation is available before the Skins round. Preserve the stable cart state and revisit after Foundation when a bounded physical check is authorized.",
-      "defer_if": [
-        "Requires renderer/scheduler architecture changes.",
-        "Would invalidate the current Foundation performance evidence or force a broad firmware requalification before tomorrow.",
-        "Cannot be regression-tested and field-frozen safely before the Skins round."
-      ],
-      "go_if": [
-        "Localized late/output-stage brightness mapping or UI-perceptual mapping change.",
-        "Offline regression coverage can prove scene structure preservation and full-max reachability.",
-        "No renderer/scheduler/frame-budget invalidation and no meaningful risk to tomorrow scoring/control/AUX stability."
-      ],
-      "next_worker_decision": "DEFER_FOR_STABILITY",
-      "observed_problem": "On current build, lowering Matrix brightness also visibly collapses/reduces the displayed animation/image; below roughly 20 the Matrix becomes nearly dark or shows only a very limited animation.",
-      "priority_if_defer": "Record as retained Cart 2.0 core product requirement and do not risk tomorrow's field build.",
-      "priority_if_go": "Implement after the current critical Foundation/field-readiness transaction reaches a safe boundary; then validate/freeze it before tomorrow's field release.",
-      "required_behavior": [
-        "Brightness reduction should preserve animation/image structure as much as technically practical.",
-        "Prefer greater low-end granularity for night use.",
-        "Retain true maximum brightness; do not cap or fake the maximum."
-      ],
-      "schema": "hbnf-brightness-field-target-v1",
-      "status": "DECISION_DEFER_FOR_STABILITY",
-      "target_event": "NEXT_SKINS_ROUND__2026-10-06",
-      "user_field_preference": "Typical night sweet spot is roughly current-slider 10–20; values above ~25 can be excessively bright on-course."
+      "status": "PHASE2_COMMITTED_REQUIREMENT",
+      "field_observation": "At roughly <=20 brightness Matrix appears effectively off; roughly 20-60 visibly loses LED/pixel participation and scene structure, requiring uncomfortable brightness to obtain a full-looking animation.",
+      "required_semantics": "For every nonzero brightness setting, preserve materially the same animation geometry, pixel participation, audio-driven behavior, motion and scene evolution as full brightness, aside from unavoidable output quantization.",
+      "implementation_direction": "Generate the full canonical frame first, then apply brightness as final output/perceptual luminance mapping only. Brightness must not gate pixels, kernel state, audio features, motion or scene complexity.",
+      "ui_requirement": "Provide useful low-night perceptual granularity while retaining true maximum."
     },
     "checkpoint_at_utc": "2026-10-06T23:53:02Z",
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
@@ -1602,7 +1589,47 @@
       "user_confirmation": "All worked.",
       "field_decision": "PASS__SAFE_TO_FREEZE_AND_POWER_DOWN"
     },
-    "field_readiness_status": "PASS__COURSE_READY__SEQ55"
+    "field_readiness_status": "PASS__COURSE_READY__SEQ55",
+    "phase2_start_20261006": {
+      "status": "AUTHORIZED__HOST_OFFLINE_INTEGRATION_ACTIVE__LIVE_DEVICE_GATED",
+      "t3_receipt": "evidence/hbnf-phase2-integration-20261006/T3_PHASE2_SCOPE_LOCK.json",
+      "t3_receipt_sha256": "ad20b56507807290acacb7a0d189ce2141d81448e1483de5283ccc4cac1585fd",
+      "integration_strategy": "SMALL_BATCH_CONTINUOUS_INTEGRATION__HOST_FIRST__ONE_LIVE_INTEGRATED_CANDIDATE",
+      "qualified_foundation_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "qualified_foundation_preserved": true,
+      "live_device_gate": "BLOCKED_UNTIL_HARDWARE_READY_HANDSHAKE",
+      "hardware_availability_rule": "AUX may be physically disconnected; do not classify AUX unavailable as a software failure during host/offline work.",
+      "worker_compute_policy": {
+        "model": "LUNA_ONLY",
+        "reasoning": "LIGHT_DEFAULT__MEDIUM_FOR_INTEGRATION_OR_DEBUGGING",
+        "higher_intelligence": "PROHIBITED_BY_DEFAULT",
+        "escalation": "Only after two materially different bounded Luna Medium attempts fail on the same evidence-backed blocker, or coordinator identifies a genuinely novel cross-subsystem correctness problem Luna Medium cannot resolve."
+      },
+      "integration_order": [
+        "PWA reliability plus field touch-target fix",
+        "authoritative scoring integration",
+        "brightness output-fidelity implementation and host tests",
+        "Vibe/audio qualified-source replay and production mapping",
+        "Text/moments renderer integration",
+        "single integrated Phase 2 candidate",
+        "hardware-ready handshake",
+        "one live integration and intended-owner acceptance cycle"
+      ],
+      "efficiency_rules": [
+        "No project-wide archaeology when current authority and lane checkpoint resolve the task.",
+        "No repeating Foundation evidence absent explicit invalidator.",
+        "No serial live flashes for lane-local work.",
+        "No broad refactor unless a bounded implementation proves it necessary.",
+        "Every worker returns commit, tests, exact blocker if any, and smallest next action.",
+        "Coordinator reviews evidence and issues next bounded task; worker does not create new governance or reopen solved problems."
+      ]
+    },
+    "field_touch_controls_20261006": {
+      "status": "PHASE2_COMMITTED_REQUIREMENT",
+      "problem": "Current range-slider thumbs/hit areas are too small and finicky for finger use on-course.",
+      "requirement": "All frequently used range controls must expose a finger-friendly acquisition/drag region at least 44x44 CSS/pt-equivalent around the interactive thumb/track area, with no dependence on precise tiny-thumb targeting.",
+      "acceptance": "Owner can acquire and adjust sliders reliably one-handed on iPhone/iPad without repeated attempts."
+    }
   },
   "execution_budget_policy": {
     "authority_commit": "79173fe7318ef30f51487dba8b59b2b4547b86f3",
@@ -1619,18 +1646,22 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "NONE__FOUNDATION_AND_OWNER_SMOKE_PASS",
-    "current_lifecycle_state": "FOUNDATION_QUALIFIED",
+    "current_failure_domain": "NONE__PHASE2_INTEGRATION_ACTIVE",
+    "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
       "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
     },
-    "current_transition": "T3_PHASE2_START",
+    "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Field freeze: preserve seq55 exact qualified candidate and current owner-control path for tonight.",
-      "Normal cart power-down is permitted; no further firmware or Phase 2 mutation before the round.",
-      "On next boot, perform only a brief normal-use sanity check unless a genuine regression appears.",
-      "Resume Phase 2 work after the field event under fresh authority."
+      "Create/use one Phase 2 integration branch from the current authoritative head.",
+      "Integrate PWA reliability and field touch-target fix first; run host/package tests.",
+      "Apply authoritative scoring diff and rerun scoring/PWA host closure.",
+      "Implement/test brightness final-output luminance mapping against preserved canonical frames; do not live-flash.",
+      "Complete Vibe/audio replay/mapping and Text/moments integration against the same integration branch.",
+      "Build one integrated candidate only after host closure.",
+      "Wait for explicit hardware-ready handshake before any live Matrix/AUX/OTA action.",
+      "Run one intended-owner integration acceptance cycle, then evaluate T4."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1738,9 +1769,9 @@
     "anti_abandonment": "Chat turnover, worker turnover, new sequence numbers, or convenience may not drop a lane. A ready lane can stop only when DONE, explicitly blocked on a named dependency, or user scope changes.",
     "lanes": {
       "P2_MISSION_CONTROL_SCORING": {
-        "blocker": "Apply the six-file scoring diff onto the then-current authoritative head only after T2 passes and T3 authorizes Phase 2; then run host/package tests and intended-owner scoring save/readback smoke.",
-        "dependency": "T2_FOUNDATION_QUALIFY__THEN_P2_INTERFACE_FREEZE_AND_LEGAL_PHASE2_INTEGRATION",
-        "execution_context": "SEPARATE_WORKER_REQUIRED",
+        "blocker": null,
+        "dependency": "T3_PASS__HOST_OFFLINE_INTEGRATION_ACTIVE__LIVE_DEPLOYMENT_GATED_BY_HARDWARE_READY_HANDSHAKE",
+        "execution_context": "LUNA_WORKER_BOUNDED_TASKS",
         "launch_owner": "COORDINATOR",
         "offline_checkpoint": {
           "branch": "hbnf-cart2-p2-mission-control-scoring-20261006-r2",
@@ -1749,13 +1780,13 @@
           "receipt": "evidence/hbnf-phase2-mission-control-scoring-20261006/OFFLINE_SCORING_LANE_RECEIPT.json",
           "status": "OFFLINE_IMPLEMENTATION_COMPLETE__INTEGRATION_GATED"
         },
-        "status": "BLOCKED_WITH_EXACT_DEPENDENCY",
+        "status": "ACTIVE",
         "status_sheet_row": 4
       },
       "P2_PWA_RELIABILITY": {
-        "blocker": "Offline-safe reliability implementation is complete, packaged and hash-verified. Further work requires the post-Foundation P2 interface freeze to define the local-control vs remote-relay transport boundary, followed by legal deployment and intended-owner-device Safari/Home Screen smoke. Do not equate cached app-shell availability with offline control mutation.",
-        "dependency": "P2_INTERFACE_FREEZE_AND_PHASE2_DEPLOYMENT_AUTHORIZATION__THEN_INTENDED_OWNER_DEVICE_PWA_CONTROL_SCORING_SMOKE",
-        "execution_context": "SEPARATE_WORKER_REQUIRED",
+        "blocker": null,
+        "dependency": "T3_PASS__HOST_OFFLINE_INTEGRATION_ACTIVE__LIVE_DEPLOYMENT_GATED_BY_HARDWARE_READY_HANDSHAKE",
+        "execution_context": "LUNA_WORKER_BOUNDED_TASKS",
         "launch_owner": "COORDINATOR",
         "offline_checkpoint": {
           "drive_file_id": "1MvBkyIqJJa-9uC0n73NXEozn28frLm47",
@@ -1783,13 +1814,13 @@
           "source_commit": "f7a9870e2a42b0fe005da0cb6c3849cce3fea9a9",
           "status": "OFFLINE_IMPLEMENTATION_COMPLETE__NOT_DEPLOYED"
         },
-        "status": "BLOCKED_WITH_EXACT_DEPENDENCY",
+        "status": "ACTIVE",
         "status_sheet_row": 7
       },
       "P2_TEXT_MOMENTS": {
-        "blocker": "After T2/P2 interface freeze, bind/recover the qualified-source WBF/font primitive, integrate the framebuffer compositor, verify runtime/current budget, then perform physical readability/aesthetic acceptance.",
-        "dependency": "T2_FOUNDATION_QUALIFY__THEN_P2_INTERFACE_FREEZE__THEN_LEGAL_PHASE2_INTEGRATION",
-        "execution_context": "SEPARATE_WORKER_REQUIRED",
+        "blocker": null,
+        "dependency": "T3_PASS__HOST_OFFLINE_INTEGRATION_ACTIVE__LIVE_DEPLOYMENT_GATED_BY_HARDWARE_READY_HANDSHAKE",
+        "execution_context": "LUNA_WORKER_BOUNDED_TASKS",
         "launch_owner": "COORDINATOR",
         "offline_checkpoint": {
           "branch": "hbnf-p2-text-moments-offline-20261006",
@@ -1799,13 +1830,13 @@
           "receipt": "evidence/hbnf-phase2-text-moments-20261006/OFFLINE_COMPLETION_RECEIPT.json",
           "status": "OFFLINE_PREP_COMPLETE__NOT_RENDERER_INTEGRATED"
         },
-        "status": "BLOCKED_WITH_EXACT_DEPENDENCY",
+        "status": "ACTIVE",
         "status_sheet_row": 6
       },
       "P2_VIBE_AUDIO": {
-        "blocker": "After T2/P2 interface freeze, replay preserved qualified-source real audio evidence and verify adapter cost against the qualified Foundation runtime budget before freezing production formulas/time constants.",
-        "dependency": "T2_FOUNDATION_QUALIFY__THEN_P2_INTERFACE_FREEZE__QUALIFIED_AUDIO_REPLAY_AND_RUNTIME_COST_ACCEPTANCE",
-        "execution_context": "SEPARATE_WORKER_REQUIRED",
+        "blocker": null,
+        "dependency": "T3_PASS__HOST_OFFLINE_INTEGRATION_ACTIVE__LIVE_DEPLOYMENT_GATED_BY_HARDWARE_READY_HANDSHAKE",
+        "execution_context": "LUNA_WORKER_BOUNDED_TASKS",
         "launch_owner": "COORDINATOR",
         "offline_checkpoint": {
           "branch": "hbnf-cart2-p2-vibe-audio-20261006",
@@ -1814,7 +1845,7 @@
           "receipt": "evidence/hbnf-phase2-vibe-audio-20261006/OFFLINE_PREP_RECEIPT.json",
           "status": "OFFLINE_PREP_COMPLETE__NOT_PRODUCTION_MAPPED"
         },
-        "status": "BLOCKED_WITH_EXACT_DEPENDENCY",
+        "status": "ACTIVE",
         "status_sheet_row": 5
       }
     },
@@ -1823,9 +1854,9 @@
       "activation_event": "FOUNDATION_SOAK_RUNNING",
       "anti_stall_policy": "config/HBNF_EXECUTION_BUDGET_POLICY.json",
       "fallback_activation_event": "60_MINUTES_WITHOUT_LIFECYCLE_PROGRESS__PARALLELIZE_NONCONTENDING_WORK__DO_NOT_INTERRUPT_HEALTHY_CRITICAL_PATH",
-      "last_live_transition": "Seq45/46 closed safely. Expert review reclassified the immediate blocker as qualification-harness policy semantics, not proven renderer regression. Same-artifact final Foundation qualification is the critical path after offline harness correction.",
-      "launch_mode": "FOUR_SEPARATE_WORKER_CONTEXTS",
-      "launch_status": "SEQ43_HOST_FIX_PASS__PRELIVE_PENDING__OVERNIGHT_OFFLINE_FALLBACK_ACTIVE",
+      "last_live_transition": "Foundation seq55 qualified and owner smoke passed. Live firmware remains frozen while Phase 2 host/offline integration proceeds.",
+      "launch_mode": "BOUNDED_LUNA_WORKER_TASKS__INTEGRATE_FREQUENTLY__NO_DUPLICATE_ARCHAEOLOGY",
+      "launch_status": "PHASE2_ACTIVE__HOST_OFFLINE_ONLY",
       "live_worker_can_spawn_workers": false,
       "next_after_t2": [
         "Freeze P2 interfaces/contracts.",
@@ -1842,11 +1873,11 @@
       "signal_sample_sha256": "9c9bbb495094dacd5ffc92eba97b9e3be462e38c3ae26b5cf860cfeb96dd1fdc",
       "soak_currently_running": false,
       "status_sheet_id": "1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko",
-      "t3_fast_path": "PREPARED__WAITING_FOR_T2_AND_HUMAN_APPROVAL"
+      "t3_fast_path": "PASS__PHASE2_INTEGRATING"
     },
     "schema": "hbnf-lane-execution-state-v1"
   },
-  "lifecycle_state": "FOUNDATION_QUALIFIED",
+  "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "anti_repetition": [
       "NO_28_KERNEL_RERUN",
@@ -1904,7 +1935,7 @@
     "status_sheet_id": "1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko",
     "status_sheet_url": "https://docs.google.com/spreadsheets/d/1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko/edit"
   },
-  "phase2_implementation_authorized": false,
+  "phase2_implementation_authorized": true,
   "previous_live_mutation_authorizations": [
     {
       "candidate_sequence": 43,
