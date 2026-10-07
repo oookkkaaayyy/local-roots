@@ -1,0 +1,126 @@
+{
+  "schema": "hbnf-t3-direct-scope-lock-evidence-v1",
+  "created_at_utc": "2026-10-07T03:58:00Z",
+  "foundation": {
+    "lifecycle_required": "FOUNDATION_QUALIFIED",
+    "qualified_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "owner_smoke": "PASS",
+    "field_baseline": "FROZEN__DO_NOT_MUTATE_DURING_OFFLINE_PHASE2"
+  },
+  "user_approval": {
+    "status": "PASS",
+    "statement_summary": "User explicitly directed immediate forward progress to Cart 2.0, prioritized efficiency and safe continuous progress, and approved a coordinator-chat / worker-Work-or-Codex execution model with Luna Light/Medium only unless absolutely necessary.",
+    "higher_model_policy": "NO_HIGHER_MODEL_UNLESS_ESCALATION_TRIGGER_MET"
+  },
+  "scope_contract": {
+    "committed": [
+      "Owner Mission Control + authoritative Skins scoring/control",
+      "Owner PWA/control reliability",
+      "Vibe/audio core",
+      "Premium owner text/moments",
+      "Matrix/AUX core runtime/recovery",
+      "Low-brightness fidelity/granularity",
+      "Field-usable touch controls"
+    ],
+    "manual_vibes": [
+      "CHILL",
+      "GROOVE",
+      "HEAVY",
+      "PSYCHEDELIC",
+      "COSMIC"
+    ],
+    "conditional": [
+      "AUTO Vibe only after stable hysteresis/non-flapping replay and runtime-cost acceptance"
+    ],
+    "deferred_preserved": [
+      "AUX UV expansion",
+      "Arcade",
+      "IRL games",
+      "Guest platform",
+      "guest-entered short text/moments",
+      "physical gamepad support"
+    ]
+  },
+  "interfaces_frozen": {
+    "scoring": "Existing league_state.state_json.skins.weeks[date] authority; paired-owner mutation guards; authoritative reread.",
+    "owner_control": "One desired/confirmed semantic model. Local cart-LAN direct when reachable; authenticated remote relay when not; stale cache never supplies mutation authority.",
+    "audio_features": [
+      "energy_short",
+      "energy_medium",
+      "energy_slow",
+      "low_pressure",
+      "low_transient",
+      "mid_body",
+      "mid_change",
+      "high_detail",
+      "high_transient",
+      "spectral_brightness",
+      "spectral_change",
+      "activity",
+      "silence_confidence"
+    ],
+    "vibe_selection": [
+      "CHILL",
+      "GROOVE",
+      "HEAVY",
+      "PSYCHEDELIC",
+      "COSMIC",
+      "AUTO"
+    ],
+    "visual_moment": [
+      "type",
+      "primary_text",
+      "secondary_text",
+      "value",
+      "duration",
+      "urgency",
+      "allow_audio_accent",
+      "return_behavior"
+    ],
+    "health_state": "Matrix/AUX/Cart LAN/Internet/release/restart-reconnect/actionable recovery owner-facing semantics",
+    "hardware_boundary": "AUX may be physically disconnected by the parallel hardware lane. Offline/host software work continues; live AUX absence is not a software regression."
+  },
+  "new_field_requirements": {
+    "slider_touchability": {
+      "requirement": "All high-frequency course sliders must have a finger-friendly interaction region; target at least 44x44 CSS/pt-equivalent for the thumb/track interaction area and avoid requiring precise acquisition of a tiny native thumb.",
+      "acceptance": "Owner can acquire and adjust each slider reliably one-handed on iPhone/iPad without repeated attempts."
+    },
+    "brightness_semantics": {
+      "observed_problem": "Below roughly 20 Matrix appears effectively off; roughly 20-60 visibly loses participating LEDs/scene structure, forcing uncomfortable brightness for full-looking animations.",
+      "invariant": "For every nonzero brightness setting, animation geometry, pixel participation, audio-driven behavior, motion, and scene evolution remain materially identical to the full-brightness frame aside from unavoidable channel quantization.",
+      "implementation_direction": "Generate the complete canonical frame first; apply brightness only as a final output/perceptual luminance transform. Do not use brightness to gate pixels, animation state, audio features, kernel behavior, or scene complexity.",
+      "ui_requirement": "Low-night range must provide useful perceptual granularity while preserving true maximum."
+    }
+  },
+  "execution_plan": {
+    "strategy": "SMALL_BATCH_CONTINUOUS_INTEGRATION__HOST_FIRST__ONE_LIVE_CANDIDATE",
+    "integration_order": [
+      "PWA reliability + field touch-control fix",
+      "authoritative scoring diff",
+      "brightness output mapping host implementation/tests",
+      "Vibe/audio qualified-source replay + mapping",
+      "Text/moments renderer integration",
+      "single integrated Phase 2 candidate",
+      "hardware-ready handshake",
+      "one live integration/owner acceptance cycle"
+    ],
+    "no_repeat": [
+      "No Foundation re-qualification unless an explicit invalidator changes renderer/runtime assumptions.",
+      "No reopening solved packet20 archaeology.",
+      "No serial live flashes for lane-local work.",
+      "No broad product ideation before core acceptance.",
+      "No worker should reread full project history when current authority and lane checkpoint resolve the task."
+    ]
+  },
+  "worker_compute_policy": {
+    "default_model": "LUNA",
+    "default_reasoning": "LIGHT for bounded routine edits/tests; MEDIUM for integration/debugging",
+    "prohibited_by_default": [
+      "HIGHER_INTELLIGENCE",
+      "HIGH_REASONING"
+    ],
+    "escalation_trigger": "Only after two materially different bounded attempts fail on the same evidence-backed blocker, or when the coordinator identifies a genuinely novel cross-subsystem correctness problem that Luna Medium cannot resolve.",
+    "coordinator_surface": "Regular Chat remains authority/architecture/review surface; Work executes multi-step tasks; Codex only for genuinely repository-native edits/build/test/debug work."
+  }
+}
