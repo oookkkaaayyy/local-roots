@@ -1,0 +1,66 @@
+{
+  "schema": "hbnf-phase2-text-audio-r1-checkpoint",
+  "branch": "hbnf-cart2-phase2-integration-20261006",
+  "base_head": "1fb1df85164c7b5243cfadd5a6d92a232337fcc4",
+  "lifecycle": "PHASE2_INTEGRATING",
+  "live_mutation_authorized": false,
+  "text": {
+    "wled_base": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "font_5x12_sha256": "4546e0ee28726de1c6a48b63b7fa55c1e351e70624769f6d6a128e1c5e32806e",
+    "font_6x8_sha256": "0340e513da6dfbc98dadad079278710291981db524ad068a21d7dab894929ea6",
+    "owner_review_svg": "evidence/hbnf-phase2-integration-20261006/TEXT_OWNER_REVIEW_R1.svg",
+    "owner_review_svg_sha256": "ace8f3234af49919aa00cf940aa5d4c759f2f39b132692b709dc608787b86bab",
+    "adapter_header": "firmware/phase2/text-native-r1/hbnf_native_text.h",
+    "integration_patch": "firmware/phase2/text-native-r1/usermod_hbnf_foundation_v1.patch",
+    "host_tests": "PASS: pixel width planning, phrase paging, oversized-word marquee, bitmap geometry, empty fast path, base frame restoration; owner acceptance still required"
+  },
+  "audio": {
+    "capture": "evidence/hbnf-phase2-audioreactive-20261007/real_audio_capture.jsonl",
+    "capture_sha256": "712dd275bd260ebec2c60c17ed9413bf8d6cd0c58b2121c913916b0944f7e951",
+    "capture_bytes": 1320008,
+    "derived_features_vibes": "evidence/hbnf-phase2-audioreactive-20261007/derived_features_vibes.jsonl",
+    "derived_sha256": "863e9c00b67f5934c6c20f6589065c027396945340397fa3b3d6898f007d4af2",
+    "report": "evidence/hbnf-phase2-audioreactive-20261007/replay_report.json",
+    "report_sha256": "d65efa8ee26f5342a3fbdfc026a87a9767c2d1eaee1e2de9fa5571cbc7559b44",
+    "readonly_matrix_state": "evidence/hbnf-phase2-audioreactive-20261007/source_readonly_state.json",
+    "samples": 3852,
+    "duration_s": 120.012565208,
+    "all_packets_from_matrix": true,
+    "manual_vibe_min_mean_distance": 0.12652461086067868,
+    "vibe_threshold": 0.1,
+    "auto_switches": [
+      {
+        "sequence": 1,
+        "time_s": 0.031164000313684756,
+        "vibe": "CHILL"
+      },
+      {
+        "sequence": 1552,
+        "time_s": 48.36652848683969,
+        "vibe": "GROOVE"
+      },
+      {
+        "sequence": 3030,
+        "time_s": 94.42692095046253,
+        "vibe": "HEAVY"
+      }
+    ],
+    "host_replay_cost_us": {
+      "median": 40.375,
+      "p95": 46.334,
+      "max": 1313.542
+    },
+    "embedded_runtime_budget_comparison": "not measurable from host replay; requires instrumented candidate runtime and must remain a live design-review gate",
+    "coverage_caveat": "unlabelled capture; mid-dominant and high-dominant music segments not established"
+  },
+  "validation": {
+    "python_unittests": "PASS 16",
+    "vibe_synthetic_regressions": "PASS",
+    "native_text_cpp11_smoke": "PASS",
+    "source_patch_application_check": "PASS",
+    "firmware_build": "NOT RUN",
+    "device_mutation": "NONE"
+  },
+  "candidate": null,
+  "next_action": "capture a controlled, labeled real-audio excerpt set at the Matrix mic (bass-heavy, mid/rhythmic, high-detail/transient, quiet), then close embedded cost during the first integrated Matrix design-review candidate; no firmware build or install completed"
+}

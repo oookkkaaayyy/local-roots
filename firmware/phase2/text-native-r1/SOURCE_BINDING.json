@@ -1,0 +1,26 @@
+{
+  "schema": "hbnf-p2-native-text-source-binding-v1",
+  "status": "OFFLINE_DESIGN_REVIEW_IMPLEMENTATION",
+  "font_choice": "WLED native WBF 5x12 primary; native console 6x8 alternate",
+  "wled_base_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+  "font_sources": {
+    "wled00/src/font/font_5x12.h": "4546e0ee28726de1c6a48b63b7fa55c1e351e70624769f6d6a128e1c5e32806e",
+    "wled00/src/font/console_font_6x8.h": "0340e513da6dfbc98dadad079278710291981db524ad068a21d7dab894929ea6"
+  },
+  "adapter": "hbnf_native_text.h",
+  "prepared_r4_source_delta": "usermod_hbnf_foundation_v1.patch",
+  "owner_review_artifact": "evidence/hbnf-phase2-integration-20261006/TEXT_OWNER_REVIEW_R1.svg",
+  "adapter_contract": [
+    "reads WLED's native PROGMEM bitmap and width table",
+    "stable bitmap glyph geometry; no audio-driven glyph deformation",
+    "empty input returns before font scan and framebuffer writes",
+    "centers native glyphs in the 32x16 Matrix logical viewport",
+    "no custom font bytes, WBF recovery, or invented glyphs"
+  ],
+  "qualification": {
+    "firmware_built": false,
+    "hardware_rendered": false,
+    "page_layout": "word-boundary paging on native pixel widths, 2200 ms/page; only oversized single words scroll",
+    "owner_visual_acceptance": "REQUIRED_ON_FIRST_INTEGRATED_DESIGN_REVIEW_CANDIDATE"
+  }
+}

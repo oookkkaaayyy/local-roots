@@ -1,0 +1,19 @@
+--- a/usermod_hbnf_foundation_v1.cpp
++++ b/usermod_hbnf_foundation_v1.cpp
+@@ -7,6 +7,7 @@
+ #include "hbnf_animartrix_audio_bridge.h"
+ #include "hbnf_local_ui.h"
+ #include "hbnf_home_screen_icon.h"
++#include "hbnf_native_text.h"
+ #include <ANIMartRIX.h>
+ #include <string.h>
+ #if defined(HBNF_PACKET20_DIAGNOSTICS)
+@@ -199,7 +200,7 @@
+   const uint32_t now=millis();if(!overlayVisible(overlay,now))return false;
+   for(uint8_t y=0;y<16;y++)for(uint8_t x=0;x<32;x++)SEGMENT.setPixelColorXY(x,y,0);
+   const uint32_t fg=packed(applyMatrixBrightness(Rgb8(overlay.r,overlay.g,overlay.b),matrixBrightness));
+-  if(overlay.kind==OVERLAY_TEXT)hbnfDrawText(overlay.text,5,fg);
++  if(overlay.kind==OVERLAY_TEXT)HbnfNativeText::drawPaged(SEGMENT,HbnfNativeText::font5x12(),overlay.text,now-overlay.startedAt,32,16,fg,2200);
+   else if(overlay.kind==OVERLAY_SCOREBOARD&&overlay.entryCount) {
+     hbnfDrawText(overlay.label,0,fg);
+     const uint8_t pages=(uint8_t)((overlay.entryCount+1u)/2u);

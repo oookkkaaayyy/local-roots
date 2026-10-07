@@ -1,0 +1,52 @@
+{
+  "captured_at_utc": "2026-10-07T05:55:15.178120+00:00",
+  "method": "read-only Matrix WLED JSON API",
+  "matrix": {
+    "ip": "192.168.77.10",
+    "mac": "704bca5b345c",
+    "ver": "16.0.1",
+    "release_id": null
+  },
+  "audio_reactive": {
+    "enabled": true,
+    "digitalmic_type": 5,
+    "sync_mode": 1,
+    "sync_port": 11988
+  },
+  "secrets_omitted": true,
+  "matrix_runtime_identity": {
+    "captured_at_utc": "2026-10-07T05:56:29.111122+00:00",
+    "method": "read-only Matrix WLED /json/state; selected identity only",
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "firmware_sha256": null,
+    "firmware_version": null,
+    "identity_payload_keys": [
+      "audio",
+      "audioResponse",
+      "auxBrightness",
+      "candidate",
+      "companionLastNonzeroPixels",
+      "companionRenderCount",
+      "effectId",
+      "foundationTelemetry",
+      "kernel",
+      "liveAcePot",
+      "liveActive",
+      "liveEntryCount",
+      "liveLabel",
+      "matrixBrightness",
+      "motion",
+      "overlayId",
+      "packet20Diagnostic",
+      "palette",
+      "scene",
+      "schema",
+      "timing",
+      "transport",
+      "variantDwellSeconds",
+      "variantSignature"
+    ],
+    "authoritative_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "sha256_binding": "authoritative candidate identity matched Matrix HBNF.candidate; exact SHA from current control/artifact authority, not emitted by WLED /json/state"
+  }
+}

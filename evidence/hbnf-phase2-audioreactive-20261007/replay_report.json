@@ -1,0 +1,214 @@
+{
+  "schema": "hbnf-audioreactive-udp-v2-replay-v1",
+  "trace_sha256": "712dd275bd260ebec2c60c17ed9413bf8d6cd0c58b2121c913916b0944f7e951",
+  "source": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "source_ip": "192.168.77.10",
+    "source_mac_from_readonly_info": "70:4b:ca:5b:34:5c"
+  },
+  "capture": {
+    "sample_count": 3852,
+    "duration_s": 120.012565208,
+    "all_packets_from_matrix": true,
+    "audio_recording": false
+  },
+  "features": {
+    "energy_short": {
+      "min": 0.0,
+      "median": 3.54837250133968e-13,
+      "p90": 0.526009479005533,
+      "max": 0.9052440426089848,
+      "nonzero": 3600
+    },
+    "energy_medium": {
+      "min": 0.0,
+      "median": 0.0026627137178924444,
+      "p90": 0.40074872172287423,
+      "max": 0.6231550524755438,
+      "nonzero": 3600
+    },
+    "energy_slow": {
+      "min": 0.0,
+      "median": 0.07702582881633036,
+      "p90": 0.23249200031829953,
+      "max": 0.3951074348434816,
+      "nonzero": 3600
+    },
+    "low_pressure": {
+      "min": 0.0,
+      "median": 0.0073908918973134875,
+      "p90": 0.6592093427100303,
+      "max": 0.9652371633498746,
+      "nonzero": 3599
+    },
+    "low_transient": {
+      "min": 0.0,
+      "median": 0.0,
+      "p90": 0.9299463419769718,
+      "max": 1.0,
+      "nonzero": 676
+    },
+    "mid_body": {
+      "min": 0.0,
+      "median": 0.004011630381506324,
+      "p90": 0.4227967095447606,
+      "max": 0.8277754870606451,
+      "nonzero": 3599
+    },
+    "mid_change": {
+      "min": 0.0,
+      "median": 0.041067768770345,
+      "p90": 1.0,
+      "max": 1.0,
+      "nonzero": 3599
+    },
+    "high_detail": {
+      "min": 0.0,
+      "median": 2.088919774451523e-43,
+      "p90": 0.00012750491776084474,
+      "max": 0.6499258483369796,
+      "nonzero": 3582
+    },
+    "high_transient": {
+      "min": 0.0,
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 1.0,
+      "nonzero": 197
+    },
+    "spectral_brightness": {
+      "min": 0.0,
+      "median": 0.0,
+      "p90": 0.2717360114777618,
+      "max": 0.46866359447004613,
+      "nonzero": 823
+    },
+    "spectral_change": {
+      "min": 0.0,
+      "median": 1.6394193758763076e-09,
+      "p90": 0.1431613637637083,
+      "max": 0.4403750601208233,
+      "nonzero": 3599
+    },
+    "activity": {
+      "min": 0.0,
+      "median": 0.0438366571901962,
+      "p90": 1.0,
+      "max": 1.0,
+      "nonzero": 3600
+    },
+    "silence_confidence": {
+      "min": 0.0,
+      "median": 1.0,
+      "p90": 1.0,
+      "max": 1.0,
+      "nonzero": 3111
+    }
+  },
+  "bands_normalized": {
+    "bass_bins_0_3": {
+      "min": 0.0,
+      "median": 0.0,
+      "p90": 0.9225490196078432,
+      "max": 0.996078431372549,
+      "nonzero": 873
+    },
+    "mid_bins_4_10": {
+      "min": 0.0,
+      "median": 0.0,
+      "p90": 0.5787114845938376,
+      "max": 0.996078431372549,
+      "nonzero": 697
+    },
+    "high_bins_11_15": {
+      "min": 0.0,
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.7505882352941177,
+      "nonzero": 159
+    }
+  },
+  "dominant_active_sample_counts": {
+    "bass_bins_0_3": 847,
+    "mid_bins_4_10": 26
+  },
+  "manual_vibe_pairwise_mean_response_distance": {
+    "CHILL/GROOVE": 0.1863057843727734,
+    "CHILL/HEAVY": 0.20667497590091405,
+    "CHILL/PSYCHEDELIC": 0.2485172885309051,
+    "CHILL/COSMIC": 0.12652461086067868,
+    "GROOVE/HEAVY": 0.1487575034208068,
+    "GROOVE/PSYCHEDELIC": 0.15056911358493394,
+    "GROOVE/COSMIC": 0.18486052665963928,
+    "HEAVY/PSYCHEDELIC": 0.18212506855519192,
+    "HEAVY/COSMIC": 0.22180865124296653,
+    "PSYCHEDELIC/COSMIC": 0.20218136780640295
+  },
+  "minimum_pairwise_mean_distance": 0.12652461086067868,
+  "auto_switches": [
+    {
+      "sequence": 1,
+      "time_s": 0.031164000313684756,
+      "vibe": "CHILL"
+    },
+    {
+      "sequence": 1552,
+      "time_s": 48.36652848683969,
+      "vibe": "GROOVE"
+    },
+    {
+      "sequence": 3030,
+      "time_s": 94.42692095046253,
+      "vibe": "HEAVY"
+    }
+  ],
+  "band_to_visual_axis_mean_absolute_response_delta": {
+    "bass_bins_0_3": {
+      "structure": 0.027106643124471076,
+      "flow": 0.007651146273346486,
+      "depth": 0.02434267424589253,
+      "symmetry": 0.0032790626885770653,
+      "detail": 0.0,
+      "palette_motion": 0.0,
+      "density": 0.0052632809180308176,
+      "negative_space": 0.0026316404590154088,
+      "transition_energy": 0.013662761202404441
+    },
+    "mid_bins_4_10": {
+      "structure": 0.013708727945788996,
+      "flow": 0.016191443440626736,
+      "depth": 0.0,
+      "symmetry": 0.02730987044321517,
+      "detail": 0.0,
+      "palette_motion": 0.011172219726769841,
+      "density": 0.0,
+      "negative_space": 0.0,
+      "transition_energy": 0.0
+    },
+    "high_bins_11_15": {
+      "structure": 0.0,
+      "flow": 0.0,
+      "depth": 0.0,
+      "symmetry": 0.0,
+      "detail": 0.0031222204939365633,
+      "palette_motion": 0.0,
+      "density": 0.0,
+      "negative_space": 0.0,
+      "transition_energy": 0.0
+    }
+  },
+  "replay_time_model": "uniform sequence spacing over captured wall-span; packet protocol has no sender timestamp and local receive queue delivered bursts",
+  "host_replay_cost_us": {
+    "median": 40.375,
+    "p95": 46.334,
+    "max": 1313.542
+  },
+  "embedded_runtime_budget_comparison": "not measurable from host replay; requires instrumented candidate runtime and must remain a live design-review gate",
+  "dt_s": {
+    "median": 0.031164000313684756,
+    "min": 0.031164000313684756,
+    "max": 0.031164000313684756
+  },
+  "interpretation": "feature replay and measurable signal coverage only; subjective Vibe rendering acceptance is deferred to the first integrated Matrix design-review candidate"
+}
