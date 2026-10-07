@@ -109,4 +109,3 @@ class GuestV1:
         if not session or session.cart_id != cart_id or session.expires_at <= int(self.clock()):
             return None
         return session
-

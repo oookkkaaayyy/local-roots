@@ -80,7 +80,7 @@ class GuestV1Tests(unittest.TestCase):
     def test_admin_or_unknown_actions_are_not_guest_ui_actions(self):
         self.service.enabled=True; self.cart.enabled=True
         session=self.service.connect("cart")
-        for action in ("admin", "release", "device", "network", "raw_wled", ""): 
+        for action in ("admin", "release", "device", "network", "raw_wled", ""):
             with self.subTest(action=action), self.assertRaises(PermissionError):
                 self.service.act("cart",session.session_id,action,{})
 
