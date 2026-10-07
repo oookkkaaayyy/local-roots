@@ -2,6 +2,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import mqtt from "npm:mqtt@5.10.4";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { UV_OFFLINE_CONFIG, nextUvOutput, wledUvStatePatch } from "./aux_uv_policy.mjs";
 
 const ENV_ENABLED=(Deno.env.get("HBNF_AUX_ENABLED")||"").toLowerCase()==="true";
 const ENV_MIXED=(Deno.env.get("HBNF_AUX_MIXED_LOAD_ENABLED")||"").toLowerCase()==="true";
@@ -62,15 +63,20 @@ Deno.serve(async(req)=>{
  if(action==="status"||action==="passive_probe"){const st=await passiveStatus();return json({ok:true,action,enabled,mixedLoadAccepted:mixed,...st,commissioningState:c,nextAction:nextStep(c,st.online)});}
  if(action==="commissioning_plan"||action==="selftest"){const st=await passiveStatus(900);return json({ok:true,action,enabled,mixedLoadAccepted:mixed,selfTest:{ok:MODES.off===223&&UV_ACTION_PRESETS.off===MODES.music,globalOffPreset:MODES.off,uvOffReturnsToPreset:UV_ACTION_PRESETS.off,safeDefaultClosed:!(ENV_ENABLED||c.aux_enabled===true)},commissioning:COMMISSIONING,commissioningState:c,passiveProbe:st,nextAction:nextStep(c,st.online),modes:MODES,uvActions:UV_ACTION_PRESETS});}
  if(action==="dry_run"){try{return json({ok:true,action,mutationIssued:false,enabled,mixedLoadAccepted:mixed,wouldPublish:dryRun(b),syncPolicy:SYNC_POLICY,mirrorPolicy:MIRROR_POLICY});}catch(e){return json({ok:false,error:e instanceof Error?e.message:String(e)},400);}}
+ if(action==="uv_policy"){
+  const mode=String(b?.mode||"OFF").toUpperCase();
+  const output=nextUvOutput({mode,manualBrightness:b?.brightness,ownerOverride:b?.ownerOverride,currentOutput:b?.currentOutput},UV_OFFLINE_CONFIG,{matrixBrightness:b?.matrixBrightness,vibeEnvelope:b?.vibeEnvelope});
+  return json({ok:false,action,mutationIssued:false,error:"UV software capability is disabled until physical commissioning is accepted.",mode,output,policy:UV_OFFLINE_CONFIG,wouldPublish:wledUvStatePatch(UV_OFFLINE_CONFIG,output)},409);
+ }
  // Safety exception: a blackout is non-energizing and may be issued even before acceptance.
  if(action==="blackout"||action==="off"){try{await publish({on:false},true);return json({ok:true,mode:"off",safetyAction:true});}catch(e){return json({ok:false,error:e instanceof Error?e.message:String(e)},503);}}
  if(!enabled)return json({ok:false,error:"Aux hardware actions are feature-gated off until physical commissioning is accepted.",commissioningState:c,nextAction:nextStep(c,false)},409);
  try{
   if(action==="sync_arm"){const payload={on:true,mainseg:0,seg:[{id:0,on:true,sel:true},{id:1,sel:false},{id:2,sel:false}]};await publish(payload,enabled);return json({ok:true,action,matrixSlave:true,syncPolicy:SYNC_POLICY,payload});}
   if(action==="mirror_visual"){const m=mirrorPayload(b?.visual??b);await publish(m.payload,enabled);return json({ok:true,action,matrixSlave:true,segment:0,applied:m.seg,uvPreserved:true,brightnessClamped:m.requested!==m.bri,mirrorPolicy:MIRROR_POLICY});}
-  if(action==="mode"){const mode=String(b?.mode||"").toLowerCase();if(!(mode in MODES))return json({ok:false,error:"Unknown aux mode"},400);if(mode==="glow_live"&&!mixed)return json({ok:false,error:"Mixed underglow + UV is locked until physical mixed-load acceptance passes."},409);const m=modePayload(mode);await publish(m.payload,enabled);return json({ok:true,mode,matrixSlave:true,visualMaster:"matrix",uv:m.uv,syncPolicy:SYNC_POLICY});}
+  if(action==="mode"){const mode=String(b?.mode||"").toLowerCase();if(!(mode in MODES))return json({ok:false,error:"Unknown aux mode"},400);if(mode==="glow_live")return json({ok:false,error:"UV remains disabled until physical commissioning is accepted.",mutationIssued:false},409);const m=modePayload(mode);await publish(m.payload,enabled);return json({ok:true,mode,matrixSlave:true,visualMaster:"matrix",uv:m.uv,syncPolicy:SYNC_POLICY});}
   if(action==="underglow_brightness"){const bri=Math.max(1,Math.min(MIRROR_BRI_MAX,Math.round(Number(b?.brightness)||96)));const payload={on:true,bri:255,seg:{id:0,on:true,bri}};await publish(payload,enabled);return json({ok:true,brightness:bri,max:MIRROR_BRI_MAX});}
-  if(action==="uv"){const mode=String(b?.mode||"off").toLowerCase();if(!(mode in UV_ACTION_PRESETS))return json({ok:false,error:"UV mode must be full/main/short/off"},400);const u=uvPayload(mode);await publish(u.payload,enabled);return json({ok:true,uv:mode,matrixSlavePreserved:true,main:u.main,short:u.short,syncPolicy:SYNC_POLICY});}
+  if(action==="uv"){return json({ok:false,error:"UV remains disabled until physical commissioning is accepted.",mutationIssued:false,policy:UV_OFFLINE_CONFIG},409);}
   return json({ok:false,error:"Unknown action"},400);
  }catch(e){return json({ok:false,error:e instanceof Error?e.message:String(e)},503);}
 });

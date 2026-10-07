@@ -1,0 +1,62 @@
+{
+  "schema": "hbnf-cart2-wow-integration-checkpoint-v1",
+  "date": "2026-10-07",
+  "branch": "hbnf-cart2-phase2-integration-20261006",
+  "base_head": "65044c4db0a4ae970451251b3198eb072049be09",
+  "source_branch": "hbnf-cart2-wow-backend-prep-20261007",
+  "source_head": "787f72ff55ce96b4f1e25b7ec715cb317126f181",
+  "lifecycle": "PHASE2_INTEGRATING",
+  "live_mutation_authorized": false,
+  "result": "BLOCKED_BEFORE_FINAL_CANDIDATE",
+  "integrated_offline": {
+    "guest_v1": false,
+    "uv_policy_hooks": true,
+    "native_text_font_treatment_owner_review_menu": true
+  },
+  "blocker": {
+    "class": "MISSING_AUTHORIZED_HBNF_SAME_ORIGIN_GUEST_HOST_AND_OWNER_PRECEDENCE_CONTRACT",
+    "evidence": [
+      "The current HBNF controller calls a Supabase Edge Function on a separate origin; the active backend has no Guest Mode state, guest session endpoints, or guest-action endpoint.",
+      "The existing device-session validator shares credentials with the broad command route and therefore cannot safely be repurposed as a guest session boundary.",
+      "The checked-out React application is Local Roots, not the HBNF Cart origin; using its /guest route would serve the feature from the wrong product origin.",
+      "The repository has no configured HBNF same-origin Pages Functions route/build entrypoint. Supabase Edge Function paths are project/functions/v1/name and do not by themselves provide the requested Cart-origin /guest/{cartId} and /api/cart/... paths.",
+      "The authoritative current source does not specify how owner override is atomically checked/serialized against a guest write. Guessing a route host or trust boundary could grant guest access to owner/device commands."
+    ],
+    "safe_to_resolve_without_owner": false,
+    "required_owner_input": "Identify/authorize the existing HBNF same-origin host/build entrypoint for /guest/{cartId} and its API routes, and identify the existing owner-override/serialized-dispatch interface Guest V1 must call. This is interface/source authority, not a visual preference."
+  },
+  "uv": {
+    "defaults": {"enabled": false, "hardware_available": false, "max_brightness": 0},
+    "modes": ["OFF", "MANUAL", "FOLLOW_MATRIX", "VIBE_REACTIVE"],
+    "fail_safe": "OFF",
+    "live_mutation": false,
+    "physical_commissioning_gates_preserved": true
+  },
+  "text": {
+    "wled_source_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "font_choices": [
+      {"index": 4, "name": "font_5x12", "role": "current functional baseline"},
+      {"index": 2, "name": "console_font_6x8", "role": "compact option"},
+      {"index": 3, "name": "c64esque_9px", "role": "distinct 7x9 option"},
+      {"index": 1, "name": "font_TinyUnicode_8px", "role": "7x8 option"}
+    ],
+    "treatments": ["quiet_reveal", "vibe_contour", "soft_dissolve"],
+    "font_frozen": false,
+    "treatment_frozen": false,
+    "custom_renderer": false
+  },
+  "candidate": {
+    "previous_core_candidate_release_id": "hbnf-cart2-phase2-offline-r1-20261007",
+    "previous_core_candidate_sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3",
+    "install_authorized": false,
+    "new_final_candidate_built": false
+  },
+  "validation": {
+    "governance_and_phase2_host_suites": "PASS",
+    "guest_route_http_session_owner_precedence": "NOT_IMPLEMENTED_BLOCKED",
+    "uv_policy_tests": "PASS",
+    "native_text_font_contract_and_adapter_smoke": "PASS",
+    "deno_typescript_check": "UNAVAILABLE_DENO_NOT_INSTALLED",
+    "final_firmware_rebuild": "NOT_RUN_GUEST_INTEGRATION_BLOCKED"
+  }
+}

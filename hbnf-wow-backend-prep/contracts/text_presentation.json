@@ -1,0 +1,86 @@
+{
+  "schema": "hbnf-text-presentation-treatment-contract-v1",
+  "status": "OWNER_REVIEW_REQUIRED_OFFLINE_PREPARATION",
+  "renderer": "pinned WLED 16.0.1 FontManager plus existing HBNF stable glyph hold",
+  "wled_source_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+  "functional_baseline": {
+    "font_index": 4,
+    "font": "font_5x12",
+    "glyph_hold": "stable; no geometry animation",
+    "owner_review_required_before_visual_freeze": true
+  },
+  "font_options_for_review": [
+    {
+      "font_index": 4,
+      "name": "font_5x12",
+      "metrics": {"width": 5, "height": 12, "spacing": 1},
+      "asset": "wled00/src/font/font_5x12.wbf",
+      "sha256": "e98ecd3cb8b6a135a0b318e51ebd08eb61fa6b718e2d1ffca2d4d863bb7c0581",
+      "role": "current functional baseline"
+    },
+    {
+      "font_index": 2,
+      "name": "console_font_6x8",
+      "metrics": {"width": 6, "height": 8, "spacing": 1},
+      "asset": "wled00/src/font/console_font_6x8.wbf",
+      "sha256": "d51368397a5127e07fe2efc9c338912296f7abe4b28c95253bcdcd5e2cf3aa79",
+      "role": "proportional small-glyph option"
+    },
+    {
+      "font_index": 3,
+      "name": "c64esque_9px",
+      "metrics": {"width": 7, "height": 9, "spacing": 1},
+      "asset": "wled00/src/font/c64esque_9px.wbf",
+      "sha256": "3634990b15a4096c86df3f862e6c0f420503a9926d13869364612db4ab3afe5a",
+      "role": "pixel-display option"
+    },
+    {
+      "font_index": 1,
+      "name": "font_TinyUnicode_8px",
+      "metrics": {"width": 7, "height": 8, "spacing": 1},
+      "asset": "wled00/src/font/font_TinyUnicode_8px.wbf",
+      "sha256": "1a8c382c4cf289ab2ab0602bfeb74010df8b737131cb7c8dc8b097870b1668dd",
+      "role": "compact variable-width bitmap option"
+    }
+  ],
+  "treatments_are_owner_selectable": true,
+  "treatment_options_for_review": [
+    {
+      "id": "quiet_reveal",
+      "entry": "native transition reveal",
+      "hold": "stable text glyph mask; existing Vibe frame remains subdued behind it",
+      "exit": "native fade; return to continuously rendered prior Matrix frame"
+    },
+    {
+      "id": "vibe_contour",
+      "entry": "native segment transition/preset pair",
+      "hold": "stable text glyph mask; optional bounded Vibe input changes background only",
+      "exit": "restore captured prior preset/segment state"
+    },
+    {
+      "id": "soft_dissolve",
+      "entry": "native brightness transition",
+      "hold": "stable text glyph mask; low-amplitude existing background motion",
+      "exit": "native fade to prior Matrix frame"
+    }
+  ],
+  "optional_vibe_mapping": {
+    "enabled": false,
+    "owner_selection": "UNFROZEN",
+    "unassigned_vibes": ["CHILL", "GROOVE", "HEAVY", "PSYCHEDELIC", "COSMIC", "AUTO"],
+    "rule": "Vibe may affect the existing background envelope only; it never changes glyph geometry during hold."
+  },
+  "invariants": [
+    "no_custom_font_renderer",
+    "font_options_are_exact_pinned_wled_fontmanager_indices_1_to_4",
+    "no_glyph_geometry_modification_during_hold",
+    "text_layer_above_background",
+    "background_subordinate_to_text",
+    "clip_bounds_validated_by_existing_matrix_mapping",
+    "unknown_treatment_falls_back_to_quiet_reveal",
+    "prior_state_restored_on_exit",
+    "owner_review_required_before_visual_freeze"
+  ],
+  "visual_freeze": false,
+  "integration_note": "Menu only. Font and treatment remain unselected; no new renderer or aesthetic default is approved by this manifest."
+}

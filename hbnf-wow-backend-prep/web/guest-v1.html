@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071018">
+  <title>Cart Guest</title>
+  <style>
+    :root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif;background:#071018;color:#eaf4f7}
+    *{box-sizing:border-box}body{margin:0;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom)}
+    main{max-width:720px;margin:auto;padding:20px 0 36px}.card{background:#0d1d25;border:1px solid #24414c;border-radius:18px;padding:18px;margin:14px 0}
+    h1{margin:.25rem 0;font-size:1.8rem}.kicker{color:#8ce3ad;font-size:.75rem;font-weight:800;letter-spacing:.14em}
+    p{color:#a4bec6;line-height:1.45}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+    button{min-height:54px;padding:12px;border:1px solid #3a6876;border-radius:12px;background:#142c36;color:#eaf4f7;font:inherit;font-weight:700;touch-action:manipulation}
+    button:disabled{opacity:.45}.status{font-weight:700}.error{color:#ffb4a8}.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  </style>
+</head>
+<body>
+  <main>
+    <header><span class="kicker">CART GUEST</span><h1>Pick the next vibe</h1></header>
+    <section class="card" aria-live="polite">
+      <div id="status" class="status">Checking whether Guest Mode is open…</div>
+      <p id="detail">No account or email needed. Guest Mode is controlled by the cart owner.</p>
+      <button id="retry" type="button">Check again</button>
+    </section>
+    <section class="card" aria-label="Vibe controls">
+      <h2>Vibe</h2>
+      <div class="grid">
+        <button data-action="vibe" data-value="chill" disabled>Chill</button>
+        <button data-action="vibe" data-value="groove" disabled>Groove</button>
+        <button data-action="vibe" data-value="heavy" disabled>Heavy</button>
+        <button data-action="vibe" data-value="psychedelic" disabled>Psychedelic</button>
+        <button data-action="vibe" data-value="cosmic" disabled>Cosmic</button>
+        <button data-action="vibe" data-value="auto" disabled>Auto</button>
+      </div>
+    </section>
+    <section class="card" aria-label="Game controls">
+      <h2>Play</h2>
+      <div class="grid">
+        <button data-action="open_mode" data-value="arcade" disabled>Arcade</button>
+        <button data-action="open_mode" data-value="shuffle" disabled>Shuffle Call</button>
+        <button data-action="open_mode" data-value="pressure" disabled>Pressure Clock</button>
+        <button data-action="open_mode" data-value="sequence" disabled>Sequence Run</button>
+      </div>
+    </section>
+    <p id="live" class="sr" aria-live="polite"></p>
+  </main>
+  <script src="guest-v1.js" defer></script>
+</body>
+</html>

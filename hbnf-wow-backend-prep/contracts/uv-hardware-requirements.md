@@ -1,0 +1,16 @@
+# AUX UV hardware capability requirement
+
+Software support is not evidence that the hardware is present. Before enabling any UV output, an offline inspection/commissioning record must identify:
+
+1. AUX ESP32 board model/revision and WLED 16.0.1 build/config identity.
+2. The filed SP803E manufacturer manual documents onboard PWM/NMOS output channels IO25/26/27, 6 A/channel, separate from addressable DATA IO16. Existing AUX code assigns IO25/26 as UV candidates and IO27 spare. Espressif's ESP32 datasheet identifies the strapping pins (GPIO0, GPIO2, MTDI/GPIO12, MTDO/GPIO15, GPIO5); GPIO25/26/27 are not boot strapping pins. So the candidate pins do not conflict with ESP32 boot-mode sampling. The board's onboard NMOS output level during power-up/reset is a separate unanswered fail-dark check; exact installed WLED config and that output behavior need read-only verification and bench qualification before enabling.
+3. The SP803E manual directs the controller supply voltage to match the LED load. Current AUX is powered at 12V; the installed UV strip is 5V USB. Do not connect the UV strip to the 12V VCC rail. Before switching the 5V strip, either prove the onboard NMOS channel can safely sink the separately powered 5V load without backfeed and within current/thermal limits, or use a separate fused 5V supply and a logic-level low-side MOSFET module driven by a verified logic-level PWM signal. A raw ESP32 GPIO must never drive the strip load directly.
+4. UV strip voltage/current/nameplate, polarity, connector, physical placement, heat dissipation, and a verified safe OFF state on power-up, reboot, network loss, and WLED restart.
+5. UV strip wavelength/peak and irradiance from a traceable datasheet or measurement, plus the planned distance/exposure context. UVA, UVB, and UVC are materially different; do not infer wavelength or safety from a product label. CDC notes UV overexposure can injure skin and eyes; if UVC is present, do not energize an exposed strip or permit line-of-sight exposure. Require a documented optical exposure/safety review and shielding/placement before any live use.
+6. Independent OFF, dimming curve, configured cap, transition/ramp, underglow coexistence, and owner override behavior validated on a current-limited bench before integration.
+
+Board evidence proves SP803E PWM outputs exist; it does not prove a safe 5V UV load path, actual installed WLED output allocation/segment IDs, boot-dark behavior, or UV optical exposure. AUX connectivity/stability is not a blocker. The remaining exact hardware dependency is a qualified 5V load-driving path through the documented PWM output topology, plus measured/documented wavelength and exposure review.
+
+Board source: manufacturer user manual filed with FCC, [SP803E User Manual (FCC document 8367961)](https://apps.fcc.gov/eas/GetApplicationAttachment.html?id=8367961). WLED native output guidance: [Multi-strip](https://github.com/wled/WLED/wiki/Multi-strip), [WLED analog strip wiring](https://kno.wled.ge/basics/getting-started/). The firmware's multiple-output capability does not override electrical verification.
+
+Safety source: CDC, [Ultraviolet Radiation](https://www.cdc.gov/radiation-health/features/uv-radiation.html).
