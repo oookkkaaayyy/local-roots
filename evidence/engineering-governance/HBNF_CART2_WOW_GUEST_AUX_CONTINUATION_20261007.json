@@ -44,6 +44,12 @@
           "relevance": "Documents non-addressable strip channel control through GPIO/MOSFET and says to use the exact board pinout and common ground."
         },
         {
+          "title": "Espressif ESP32 Datasheet",
+          "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+          "locator": "https://documentation.espressif.com/esp32_datasheet_en.html",
+          "relevance": "Lists ESP32 Series strapping pins and GPIO25/26/27 pin functions; these candidate GPIOs are not boot strapping pins. The board-level NMOS fail-dark state remains unproven."
+        },
+        {
           "title": "SP803E current project commissioning contract and runbook",
           "authority_type": "FIELD_EVIDENCE",
           "locator": "hbnf-aux-lighting/commissioning/contract.json; hbnf-aux-lighting/commissioning/README.md; hbnf-aux-lighting/backend/aux_control.ts at staging base 3c081676f719d0f77a0b99e056e0d211c09b1389",
@@ -68,6 +74,11 @@
           "source_ref": "SP803E manufacturer user manual filed with FCC"
         },
         {
+          "kind": "ESTABLISHED_FACT",
+          "statement": "Espressif lists ESP32 Series strapping pins as GPIO0, GPIO2, MTDI/GPIO12, MTDO/GPIO15, and GPIO5; GPIO25/26/27 are not strapping pins. This does not establish the SP803E board output circuit's dark state during reset.",
+          "source_ref": "Espressif ESP32 Datasheet"
+        },
+        {
           "kind": "FIELD_EVIDENCE",
           "statement": "The current accepted AUX output plan uses GPIO16 for the 12V addressable underglow; existing UV candidate pins are 25/26 and the spare channel is 27. The UV strip is 5V USB while AUX uses a 12V setup, and current commissioning refuses to enable UV without physical verification.",
           "source_ref": "SP803E current project commissioning contract and runbook"
@@ -88,9 +99,10 @@
         "SP803E manufacturer user manual filed with FCC",
         "WLED multi-strip documentation",
         "WLED analog wiring documentation",
+        "Espressif ESP32 Datasheet",
         "SP803E current project commissioning contract and runbook"
       ],
-      "rationale": "The simplified guest flow needs no new identity provider or guest authorization subsystem; a small adapter can call the existing server session and cart-action paths. WLED and the SP803E board have the native PWM/output family. UV remains off until the exact existing board/load topology, firmware config and optical exposure are verified."
+      "rationale": "The simplified guest flow needs no new identity provider or guest authorization subsystem; a small adapter can call the existing server session and cart-action paths. WLED and the SP803E board have the native PWM/output family, and the candidate GPIOs are not ESP32 boot strapping pins. UV remains off until board-level fail-dark behavior, the exact existing load topology, firmware config and optical exposure are verified."
     },
     "mature_external_component_check": {
       "relevant": false,
