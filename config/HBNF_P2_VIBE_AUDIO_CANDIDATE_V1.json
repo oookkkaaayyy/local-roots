@@ -1,0 +1,435 @@
+{
+  "schema": "hbnf-p2-vibe-audio-candidate-v1",
+  "status": "OFFLINE_PRE_FREEZE_CANDIDATE_ONLY",
+  "production_authority": false,
+  "live_mutation_permitted": false,
+  "source_evidence": {
+    "control_model_blob_sha": "9d97636f9e527a25f4e5ccd016c2ae99bf911cf1",
+    "control_state_blob_sha": "cf77a324f4d1707ea0e0a060b5248a38a4de3392",
+    "seq43_candidate_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "seq43_candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "r4_usermod_blob_sha": "6ab03d5b1b2b838209d311e3a5004e46d0629180",
+    "preserved_audio_bridge_blob_sha": "1c1b7ee927e3ad1ae5cf817388943f48874955c2",
+    "preserved_vibe16_blob_sha": "4b409835208df329300f253ff9aefcefec192786",
+    "preserved_audio_domains_test_blob_sha": "dfcf7a23ede6f07ad8f9b64768fe9d3a43a36044",
+    "preserved_audio_lanes_test_blob_sha": "f21101c249cf55bf676c6602e15946b7a50914ce",
+    "current_drive_source_map_id": "1kTb3o_qPvHTVh4hQReC-ga6kcI50VxSD",
+    "seq39_overlay_archive_sha256": "7beac2c97a38257da08d1128f4a01fb39c5f90ec0811b5da6cb5bdf9310192ce",
+    "exact_overlay_sha256": {
+      "hbnf_animartrix_audio_bridge.h": "8748231ccf7733bd34c16dc0417933a46d3a5bdccfc47c2bd54ce2e3fa104535",
+      "hbnf_audio_expression.h": "f4825884dd53cba9bca698bd8b9b7d9d13a81e7ce381957d23790f13073dc4c3",
+      "hbnf_coordinated_contract.h": "22d17d917db8d74ba141fbc1825fe1a637e7f3396208b5cf0c706f4c6c7ecbaa",
+      "hbnf_foundation_core.h": "9f4a63546bc42cef6ce71edfc6bb055fca40f1b28b8e7595fd09b6da9b5acf5c",
+      "hbnf_local_ui.h": "f83b4664efcac701ad50e9dfb69059903a97ce62c51603f79d1fa688734cbbc0",
+      "hbnf_vibe16.h": "f076acf0e5710bf5a9acffe63b31a95f2252230b5470bd362301caa73a743b0a"
+    }
+  },
+  "dependencies": {
+    "production_integration": "T2_FOUNDATION_QUALIFY then P2_INTERFACE_FREEZE then qualified-source audio-observable replay",
+    "shared_interface_change": "forbidden_in_lane_worker",
+    "foundation_performance_budget": "WAIT_FOR_SEQ43_FOUNDATION_QUALIFICATION"
+  },
+  "audio_features": {
+    "input": {
+      "fft_bins": 16,
+      "fft_range": [
+        0,
+        255
+      ],
+      "volumeSmth_range": [
+        0,
+        255
+      ],
+      "samplePeak": "boolean",
+      "dt_seconds": "bounded_host_replay_input"
+    },
+    "preserved_candidate_band_partition": {
+      "low": [
+        0,
+        4
+      ],
+      "mid": [
+        4,
+        11
+      ],
+      "high": [
+        11,
+        16
+      ]
+    },
+    "semantic_features": [
+      "energy_short",
+      "energy_medium",
+      "energy_slow",
+      "low_pressure",
+      "low_transient",
+      "mid_body",
+      "mid_change",
+      "high_detail",
+      "high_transient",
+      "spectral_brightness",
+      "spectral_change",
+      "activity",
+      "silence_confidence"
+    ],
+    "range": [
+      0,
+      1
+    ],
+    "candidate_time_constants_seconds": {
+      "energy_short": 0.08,
+      "energy_medium": 0.45,
+      "energy_slow": 2.5,
+      "band_fast": 0.09,
+      "band_medium": 0.55,
+      "mid_change": 0.18,
+      "spectral_change": 0.12
+    },
+    "freeze_status": {
+      "feature_names": "CANDIDATE_FROM_CURRENT_LANE_CONTRACT",
+      "numeric_formulas": "NOT_FROZEN",
+      "fft_partition": "PRESERVED_SOURCE_CANDIDATE_NOT_FROZEN",
+      "time_constants": "REPLAY_CANDIDATE_NOT_FROZEN",
+      "performance_budget": "QUALIFIED_FOUNDATION_DEPENDENT_NOT_FROZEN"
+    },
+    "invariants": [
+      "same interface feeds every manual Vibe",
+      "Motion remains owner-authoritative and is not an AudioFeatures output",
+      "no genre recognition",
+      "no realtime cloud dependency",
+      "no second FFT",
+      "silence/noise floor must not synthesize musical activity",
+      "steady loud input must not pin every feature at maximum"
+    ],
+    "production_mapping_principle": "adapt the qualified existing WLED AudioReactive -> Vibe16 -> AudioExpression -> AudioFrame path; do not introduce a second FFT or parallel realtime DSP path",
+    "host_replay_scope": "synthetic semantics/differentiation only until a qualified-source observable trace is preserved",
+    "source_adapter": {
+      "energy_short": {
+        "sources": [
+          "AudioFrame.energy"
+        ],
+        "operation": "reuse_current_candidate_signal"
+      },
+      "energy_medium": {
+        "sources": [
+          "AudioFrame.lowEnergy",
+          "AudioFrame.midEnergy",
+          "AudioFrame.highEnergy"
+        ],
+        "operation": "candidate_aggregate_or_smoothing__NOT_FROZEN"
+      },
+      "energy_slow": {
+        "sources": [
+          "AudioFrame.slowEnergy"
+        ],
+        "operation": "reuse_current_candidate_signal"
+      },
+      "low_pressure": {
+        "sources": [
+          "AudioFrame.bassBody",
+          "AudioFrame.lowEnergy"
+        ],
+        "operation": "candidate_blend__NOT_FROZEN"
+      },
+      "low_transient": {
+        "sources": [
+          "AudioFrame.bassPulse"
+        ],
+        "operation": "reuse_current_candidate_signal"
+      },
+      "mid_body": {
+        "sources": [
+          "AudioFrame.midBody",
+          "AudioFrame.midEnergy"
+        ],
+        "operation": "candidate_blend__NOT_FROZEN"
+      },
+      "mid_change": {
+        "sources": [
+          "AudioFrame.midEnergy"
+        ],
+        "operation": "candidate_frame_delta_or_expression_extension__NOT_FROZEN"
+      },
+      "high_detail": {
+        "sources": [
+          "AudioFrame.trebleBody",
+          "AudioFrame.highEnergy"
+        ],
+        "operation": "candidate_blend__NOT_FROZEN"
+      },
+      "high_transient": {
+        "sources": [
+          "AudioFrame.treblePulse",
+          "AudioFrame.transient"
+        ],
+        "operation": "candidate_blend__NOT_FROZEN"
+      },
+      "spectral_brightness": {
+        "sources": [
+          "WLED_AudioReactive.fftResult[16]"
+        ],
+        "operation": "centroid_over_existing_bins__NO_NEW_FFT"
+      },
+      "spectral_change": {
+        "sources": [
+          "WLED_AudioReactive.fftResult[16]"
+        ],
+        "operation": "frame_delta_over_existing_bins__NO_NEW_FFT"
+      },
+      "activity": {
+        "sources": [
+          "AudioFrame.energy",
+          "AudioFrame.transient",
+          "AudioFrame.lowEnergy",
+          "AudioFrame.midEnergy",
+          "AudioFrame.highEnergy"
+        ],
+        "operation": "candidate_bounded_aggregate__NOT_FROZEN"
+      },
+      "silence_confidence": {
+        "sources": [
+          "VibeMetrics.silent",
+          "AudioFrame.energy",
+          "WLED_AudioReactive.volumeSmth"
+        ],
+        "operation": "candidate_confidence__NOT_FROZEN"
+      }
+    }
+  },
+  "response_axes": [
+    "structure",
+    "flow",
+    "depth",
+    "symmetry",
+    "detail",
+    "palette_motion",
+    "density",
+    "negative_space",
+    "transition_energy"
+  ],
+  "vibes": {
+    "CHILL": {
+      "structure": {
+        "base": 0.26,
+        "low_pressure": 0.18
+      },
+      "flow": {
+        "base": 0.34,
+        "energy_medium": 0.15,
+        "mid_body": 0.12
+      },
+      "depth": {
+        "base": 0.42,
+        "low_pressure": 0.2
+      },
+      "symmetry": {
+        "base": 0.26,
+        "mid_change": 0.08
+      },
+      "detail": {
+        "base": 0.2,
+        "high_detail": 0.12
+      },
+      "palette_motion": {
+        "base": 0.2,
+        "spectral_change": 0.1
+      },
+      "density": {
+        "base": 0.26,
+        "energy_medium": 0.1
+      },
+      "negative_space": {
+        "base": 0.72,
+        "activity": -0.1
+      },
+      "transition_energy": {
+        "base": 0.18,
+        "spectral_change": 0.1
+      }
+    },
+    "GROOVE": {
+      "structure": {
+        "base": 0.38,
+        "low_pressure": 0.15
+      },
+      "flow": {
+        "base": 0.48,
+        "low_transient": 0.28,
+        "mid_change": 0.22
+      },
+      "depth": {
+        "base": 0.28,
+        "low_pressure": 0.12
+      },
+      "symmetry": {
+        "base": 0.22,
+        "mid_change": 0.1
+      },
+      "detail": {
+        "base": 0.36,
+        "high_transient": 0.2
+      },
+      "palette_motion": {
+        "base": 0.34,
+        "mid_change": 0.18
+      },
+      "density": {
+        "base": 0.48,
+        "activity": 0.14
+      },
+      "negative_space": {
+        "base": 0.42,
+        "activity": -0.1
+      },
+      "transition_energy": {
+        "base": 0.4,
+        "low_transient": 0.2
+      }
+    },
+    "HEAVY": {
+      "structure": {
+        "base": 0.56,
+        "low_pressure": 0.26,
+        "low_transient": 0.3
+      },
+      "flow": {
+        "base": 0.24,
+        "energy_medium": 0.08
+      },
+      "depth": {
+        "base": 0.32,
+        "low_pressure": 0.18
+      },
+      "symmetry": {
+        "base": 0.36,
+        "low_transient": 0.12
+      },
+      "detail": {
+        "base": 0.26,
+        "high_transient": 0.1
+      },
+      "palette_motion": {
+        "base": 0.22,
+        "spectral_change": 0.08
+      },
+      "density": {
+        "base": 0.62,
+        "low_pressure": 0.16
+      },
+      "negative_space": {
+        "base": 0.3,
+        "low_pressure": -0.08
+      },
+      "transition_energy": {
+        "base": 0.48,
+        "low_transient": 0.3
+      }
+    },
+    "PSYCHEDELIC": {
+      "structure": {
+        "base": 0.34,
+        "mid_change": 0.18
+      },
+      "flow": {
+        "base": 0.34,
+        "spectral_change": 0.2
+      },
+      "depth": {
+        "base": 0.38,
+        "spectral_brightness": 0.14
+      },
+      "symmetry": {
+        "base": 0.58,
+        "mid_change": 0.26,
+        "spectral_change": 0.22
+      },
+      "detail": {
+        "base": 0.52,
+        "high_detail": 0.22
+      },
+      "palette_motion": {
+        "base": 0.64,
+        "spectral_change": 0.22,
+        "spectral_brightness": 0.12
+      },
+      "density": {
+        "base": 0.46,
+        "activity": 0.12
+      },
+      "negative_space": {
+        "base": 0.38,
+        "activity": -0.08
+      },
+      "transition_energy": {
+        "base": 0.5,
+        "spectral_change": 0.24
+      }
+    },
+    "COSMIC": {
+      "structure": {
+        "base": 0.3,
+        "mid_body": 0.12
+      },
+      "flow": {
+        "base": 0.24,
+        "energy_slow": 0.12
+      },
+      "depth": {
+        "base": 0.66,
+        "low_pressure": 0.24,
+        "energy_slow": 0.14
+      },
+      "symmetry": {
+        "base": 0.34,
+        "spectral_change": 0.08
+      },
+      "detail": {
+        "base": 0.46,
+        "high_detail": 0.24,
+        "high_transient": 0.12
+      },
+      "palette_motion": {
+        "base": 0.38,
+        "spectral_brightness": 0.18
+      },
+      "density": {
+        "base": 0.3,
+        "energy_medium": 0.1
+      },
+      "negative_space": {
+        "base": 0.66,
+        "activity": -0.1
+      },
+      "transition_energy": {
+        "base": 0.3,
+        "spectral_change": 0.12
+      }
+    }
+  },
+  "auto": {
+    "status": "CANDIDATE_INTERNAL_POLICY_NOT_GENRE_RECOGNITION",
+    "manual_targets": [
+      "CHILL",
+      "GROOVE",
+      "HEAVY",
+      "PSYCHEDELIC",
+      "COSMIC"
+    ],
+    "minimum_dwell_seconds": 45,
+    "switch_margin": 0.12,
+    "principle": "score observable musical characteristics, apply long dwell plus hysteresis, and emit a manual Vibe target/bias without claiming genre"
+  },
+  "acceptance": {
+    "synthetic_traces": [
+      "silence",
+      "isolated_kick",
+      "sustained_bass",
+      "mid_swell",
+      "high_transient_burst",
+      "steady_broadband"
+    ],
+    "minimum_pairwise_response_distance": 0.1,
+    "palette_normalized_axes": true,
+    "final_aesthetic_acceptance": "USER_REQUIRED_AFTER_INTERFACE_FREEZE_AND_RUNTIME_INTEGRATION"
+  }
+}

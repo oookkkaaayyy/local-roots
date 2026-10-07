@@ -1,0 +1,58 @@
+{
+  "schema": "hbnf-p2-vibe-audio-offline-receipt-v1",
+  "created_at": "2026-10-06T10:00:00-07:00",
+  "lane": "P2_VIBE_AUDIO",
+  "status": "OFFLINE_PREP_COMPLETE__EXACT_DEPENDENCY_P2_INTERFACE_FREEZE",
+  "live_mutation": "NONE",
+  "live_firmware_change": "NONE",
+  "branch": "hbnf-cart2-p2-vibe-audio-20261006",
+  "base_branch": "hbnf-cart2-ready-to-implement-staging-20261001",
+  "authority": {
+    "control_model_blob_sha": "9d97636f9e527a25f4e5ccd016c2ae99bf911cf1",
+    "control_state_blob_sha": "cf77a324f4d1707ea0e0a060b5248a38a4de3392",
+    "seq43_candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "source_map_drive_id": "1kTb3o_qPvHTVh4hQReC-ga6kcI50VxSD",
+    "seq39_overlay_archive_sha256": "7beac2c97a38257da08d1128f4a01fb39c5f90ec0811b5da6cb5bdf9310192ce"
+  },
+  "commits": {
+    "candidate_contract": "489f06a3c85ea0a5c90127af7154b787e59dffde",
+    "replay_model": "9b625b8ddb4a9317585e569fe708aa13215ff4ca",
+    "replay_regression_initial": "e8fa430fa6016aae1c3881292758da22cc1b12ee",
+    "no_second_fft_guard_fix": "0b9cbf876a884ec96346a3be96f8ca81794b672a",
+    "checkpoint": "2c388321abc2bb1413f3248c5492aa2db1505864"
+  },
+  "deliverables": [
+    "config/HBNF_P2_VIBE_AUDIO_CANDIDATE_V1.json",
+    "tools/hbnf_vibe_audio_replay.py",
+    "tests/hbnf_vibe_audio_replay.py",
+    "work/cart2/P2_VIBE_AUDIO_OFFLINE_CHECKPOINT_20261006.md"
+  ],
+  "test": {
+    "command": "python3 -m py_compile tools/hbnf_vibe_audio_replay.py tests/hbnf_vibe_audio_replay.py && python3 tests/hbnf_vibe_audio_replay.py",
+    "result": "PASS",
+    "message": "PASS hbnf_vibe_audio_replay: 13 AudioFeatures semantics, six synthetic traces, pairwise Vibe differentiation, AUTO hysteresis",
+    "min_pairwise_distances": {
+      "isolated_kick": 0.1278,
+      "sustained_bass": 0.1415,
+      "mid_swell": 0.131,
+      "high_transient_burst": 0.1136,
+      "steady_broadband": 0.1324
+    },
+    "minimum_required": 0.1,
+    "limitations": "host/synthetic design qualification only; not physical aesthetics, final DSP freeze, or runtime-cost acceptance"
+  },
+  "architecture_result": {
+    "production_direction": "reuse qualified existing WLED AudioReactive -> Vibe16 -> AudioExpression -> AudioFrame path",
+    "second_fft_required": false,
+    "parallel_realtime_audio_engine_required": false,
+    "motion_authority": "owner/manual Motion remains authoritative",
+    "shared_audiofeatures_frozen": false,
+    "vibe_selection_frozen": false
+  },
+  "exact_dependency": [
+    "T2_FOUNDATION_QUALIFY completes for current seq43 lineage",
+    "P2_INTERFACE_FREEZE freezes AudioFeatures and VibeSelection",
+    "qualified-source audio-observable trace is preserved and replayed",
+    "qualified Foundation frame/runtime budget is available for adapter-cost acceptance"
+  ]
+}
