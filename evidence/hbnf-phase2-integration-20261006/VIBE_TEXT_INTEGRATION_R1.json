@@ -1,0 +1,43 @@
+{
+  "schema": "hbnf-phase2-vibe-text-integration-checkpoint-v1",
+  "status": "HOST_OFFLINE_LANES_INTEGRATED__FIRMWARE_CANDIDATE_BLOCKED_ON_SOURCE_BUILD_CLOSURE",
+  "branch": "hbnf-cart2-phase2-integration-20261006",
+  "base_commit": "e9df34a255d1b60ef52b4ce8082b96624cdfe806",
+  "implementation_commit": "c6c5fc975de852e157ce4081442d89a63f3d5a2f",
+  "live_mutation": false,
+  "donors": {
+    "vibe_audio": {
+      "branch": "hbnf-cart2-p2-vibe-audio-20261006",
+      "commit": "f0ae01712bfeb2f2afb5cb1dda1cf12a638abcf6",
+      "receipt": "evidence/hbnf-phase2-vibe-audio-20261006/OFFLINE_PREP_RECEIPT.json",
+      "result": "candidate replay integrated; synthetic semantic/differentiation tests pass; production formulas and runtime-cost acceptance remain unfrozen"
+    },
+    "text_moments": {
+      "branch": "hbnf-p2-text-moments-offline-20261006",
+      "commit": "2bbe7ca5c244986c57d4d6f054ebcdfe6337b362",
+      "receipt": "evidence/hbnf-phase2-text-moments-20261006/OFFLINE_COMPLETION_RECEIPT.json",
+      "result": "planner integrated; 10 host tests pass including stateless clock/base-frame/no-text fast-path oracle; firmware compositor not integrated"
+    }
+  },
+  "combined_host_tests": [
+    {"command": "node tests/hbnf_owner_pwa_package.mjs", "result": "PASS"},
+    {"command": "node tests/hbnf_owner_pwa_reliability.mjs", "result": "PASS"},
+    {"command": "node --experimental-strip-types tests/hbnf_skins_scoring_owner_flow.mjs", "result": "PASS"},
+    {"command": "node tests/hbnf-coordinated-backend-staging.mjs", "result": "PASS"},
+    {"command": "node tests/hbnf_matrix_brightness_output.mjs", "result": "PASS"},
+    {"command": "python3 -m py_compile hbnf-ui-v6-package/install_ui_v6.py tools/hbnf_vibe_audio_replay.py tests/hbnf_vibe_audio_replay.py tools/hbnf_text_moments_offline.py tests/test_hbnf_text_moments_offline.py", "result": "PASS"},
+    {"command": "python3 tests/hbnf_vibe_audio_replay.py", "result": "PASS_SYNTHETIC_CANDIDATE_ONLY"},
+    {"command": "python3 -m unittest -v tests/test_hbnf_text_moments_offline.py", "result": "PASS_10_TESTS"},
+    {"command": "python3 scripts/platform.py doctor", "result": "PASS_NO_ERRORS_OR_WARNINGS"},
+    {"command": "python3 scripts/hbnf_control.py status", "result": "PHASE2_INTEGRATING__T4__PARALLELISM_PASS__LIVE_MUTATION_CLOSED"}
+  ],
+  "text_oracle_limit": "The new pure host oracle proves its own stateless compositing contract only; it is not evidence of production framebuffer integration, measured ESP32 no-text frame cost, or WBF rendering.",
+  "candidate_build": {
+    "built": false,
+    "reason": "No pio/platformio executable, no platformio.ini, and no complete local WLED 16.0.1 clean-room build tree are present in this checkout. GitHub Actions was not used.",
+    "release_id": null,
+    "firmware_sha256": null
+  },
+  "single_integration_blocker": "The qualified firmware source/build closure needed for a safe integrated candidate is incomplete: the existing proven 12px WBF/font assets have no established retrievable source identity or bytes in the lane evidence, and this checkout lacks the pinned WLED/PlatformIO build environment. Reconstructing a font or substituting the current 3x5 clear-screen renderer would violate the requested source/visual contract; Actions are outside this bounded offline build path.",
+  "next_action": "Recover the exact qualified WBF/font asset and the already-proven local clean-room build closure (or provide a source-authorized offline build workspace); then integrate and test the compositor and freeze Vibe numeric mappings against source-bound real-audio evidence before producing one offline candidate."
+}
