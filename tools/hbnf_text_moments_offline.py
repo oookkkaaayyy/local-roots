@@ -25,6 +25,26 @@ class RenderIntent:
     marquee_fallback: bool = False
     return_behavior: str = "RESTORE_BASE"
 
+@dataclass(frozen=True)
+class ReferenceFrame:
+    """Tiny host oracle for the compositor boundary, not firmware rendering."""
+    animation_tick: int
+    pixels: tuple[tuple[int, int, int], ...]
+
+def compose_reference(base: ReferenceFrame, glyph_mask: tuple[bool, ...] | None,
+                      color: tuple[int, int, int]) -> ReferenceFrame:
+    """Composite a supplied, already-shaped mask without owning scene state.
+
+    The caller supplies the current canonical frame on every invocation. This
+    helper deliberately owns neither a font nor an animation clock/cache.
+    """
+    if glyph_mask is None or not any(glyph_mask):
+        return base
+    if len(glyph_mask) != len(base.pixels):
+        raise ValueError("glyph mask must match the base frame")
+    pixels = tuple(color if glyph_mask[i] else px for i, px in enumerate(base.pixels))
+    return ReferenceFrame(base.animation_tick, pixels)
+
 def _text(moment: Mapping[str, Any]) -> str:
     for k in ("primary_text","text","value","secondary_text"):
         v=moment.get(k)

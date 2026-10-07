@@ -1,5 +1,5 @@
 import unittest
-from tools.hbnf_text_moments_offline import plan, classify
+from tools.hbnf_text_moments_offline import plan, classify, ReferenceFrame, compose_reference
 
 class TextMomentTests(unittest.TestCase):
     def test_acceptance_corpus(self):
@@ -19,4 +19,22 @@ class TextMomentTests(unittest.TestCase):
         self.assertEqual(classify({"primary_text":"25 FT"}),"NUMBER_VALUE"); self.assertEqual(classify({"primary_text":"ACE"}),"HERO_WORD")
     def test_empty_is_deterministic(self):
         p=plan({},{}); self.assertEqual(p.pages,("",)); self.assertEqual(p.vibe,"AUTO")
+    def test_text_compositor_does_not_own_or_advance_animation_clock(self):
+        base=ReferenceFrame(120,( (1,2,3), )*512)
+        masked=compose_reference(base,tuple(i==0 for i in range(512)),(9,8,7))
+        self.assertEqual(masked.animation_tick,base.animation_tick)
+        self.assertEqual(base.pixels[0],(1,2,3))
+        self.assertEqual(masked.pixels[1:],base.pixels[1:])
+    def test_moment_exit_returns_exact_current_base_without_state_leak(self):
+        first=ReferenceFrame(120,((1,2,3),)*512)
+        during=compose_reference(first,tuple(i==7 for i in range(512)),(9,8,7))
+        self.assertNotEqual(during.pixels,first.pixels)
+        current_base=ReferenceFrame(121,((4,5,6),)*512)
+        after=compose_reference(current_base,None,(9,8,7))
+        self.assertIs(after,current_base)
+        self.assertEqual(after, current_base)
+    def test_no_text_fast_path_is_constant_reference_return(self):
+        # The inactive path must not walk, copy, or modify the 512-pixel frame.
+        base=ReferenceFrame(9,((3,4,5),)*512)
+        self.assertIs(compose_reference(base,None,(255,255,255)),base)
 if __name__=="__main__": unittest.main()
