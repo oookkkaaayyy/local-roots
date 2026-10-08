@@ -120,7 +120,9 @@
     "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "size_bytes": 1489008,
     "runtime_restore_verified": true,
-    "latest_live_identity": "R4 exact, verified in 8 post-restore samples"
+    "latest_live_identity": "R4 exact, verified in 8 post-restore samples",
+    "drive_file_id": "1hy-U_zu4Wqkzwe87Br2xOSMUnCzYdrYB",
+    "drive_url": "https://drive.google.com/file/d/1hy-U_zu4Wqkzwe87Br2xOSMUnCzYdrYB/view?usp=drivesdk"
   },
   "live": {
     "installed": false,
