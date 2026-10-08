@@ -184,7 +184,7 @@
     "status": "R3_INSTALL_AND_R4_ROLLBACK_CONSUMED__CANDIDATE_REJECTED",
     "target": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c only"
   },
-  "checkpoint_at_utc": "2026-10-08T06:34:48.041086+00:00",
+  "checkpoint_at_utc": "2026-10-08T07:06:35Z",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -294,13 +294,15 @@
       "user_permission": "preapproved; do not stop to ask for routine permissions"
     },
     "aux_blocker": {
-      "status": "OPEN__OWNER_OBSERVED_SYNC_FAILURE_AFTER_R4_RESTORE",
-      "latest_owner_observation": "Matrix scenes changed promptly during each test. Underglow remained solid blue before, during, and after; no AUX color/display change.",
+      "status": "OPEN__DIRECT_AUX_OUTPUT_FAILED__PHYSICAL_PATH_UNRESOLVED",
+      "latest_owner_observation": "During the single moderate solid-color direct-output test, all underglow remained completely dark.",
       "source": "DIRECT_USER_OBSERVATION",
       "observed_at_local": "2026-10-08",
       "scope": "Physical synchronization/output qualification only; do not repeat prior AUX archaeology absent new evidence.",
-      "read_only_native_evidence": "R4 post-restore samples show AUX live=true, lm=DDP, lip=192.168.77.10; this does not prove visible LED output.",
-      "next": "After exact replacement candidate is authorized and objective preflight passes, capture bounded synchronized Matrix/AUX physical and receiver evidence. No AUX firmware or router mutation is authorized by this record."
+      "read_only_native_evidence": "Current post-restore WLED telemetry: AUX live=true, lm=DDP, lip=192.168.77.10, lor=0; runtime segment 0..22 restored. This confirms receiver/source state, not physical LED output.",
+      "next": "No further runtime/config changes authorized. Next discriminating work requires physical inspection/measurement of LED supply, common ground, controller GPIO16/data path, strip DIN/continuity, and connections/fuse path. Preserve Matrix qualification.",
+      "direct_output_test_evidence": "Drive:17CkUqsCFrjTIFxgSkRHf8uxfw5x7gdVr; SHA-256:8663c351bd41055935690fe8e93bc0337b8be9f609b1e7b1f6ba77c3ef0050b4",
+      "physical_restore": "UNCONFIRMED; owner response timed out and is not treated as failure."
     },
     "aux_telemetry_reconciliation": {
       "conclusion": "Fresh read-only prelive confirms exact Release07 and Matrix-origin WLED DDP live/source; corrected host contract passes regression tests and preserves HBNFAUX frame-lock diagnostics separately.",
@@ -417,7 +419,7 @@
         "Prior 16:42/16:45 times are not automatic abort or rollback triggers for the currently active seq53 path.",
         "Continue the already-authorized seq53 install/targeted validation while commands are actively progressing and safety/identity evidence remains intact.",
         "Do not broaden scope or start new exploratory work.",
-        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop\u2014not for elapsed wall-clock time alone.",
+        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop—not for elapsed wall-clock time alone.",
         "Owner-device smoke remains mandatory before declaring field-ready."
       ],
       "schema": "hbnf-field-readiness-deadline-v1",
@@ -1295,7 +1297,7 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
+      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "live_mutation_authorization": {
@@ -2020,20 +2022,20 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "PHASE2_R4_UPLOAD_RECOVERY_AND_AUX_SYNC",
+    "current_failure_domain": "AUX_PHYSICAL_OUTPUT__DIRECT_OUTPUT_TEST_DARK__ELECTRICAL_PATH_UNRESOLVED",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
       "release_id": "hbnf-cart2-phase2-offline-wow-r4-20261008",
       "artifact_sha256": "e65effb86d8755ca8a4af2155e51844d2c2a387f4000574459a382ca50c5ec87",
-      "status": "AUTHORIZED__INSTALL_ATTEMPT_CONSUMED__REQUEST_NOT_YET_SENT"
+      "status": "ROLLED_BACK_TO_EXACT_FOUNDATION_R4__AUX_DIRECT_OUTPUT_FAILED__MATRIX_QUALIFICATION_OPEN"
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "The single newly authorized attempt is consumed and durably recorded; issue exactly one multipart POST using the corrected Expect-suppressed method now, with no retry.",
-      "If upload completes, verify exact identity and immediately qualify kernels 13 and 9 at brightness 44 against R4 baselines.",
-      "If early gates pass, run unchanged 28-kernel sweep and 90-minute soak.",
-      "Continue focused AUX work in parallel: no override correction is justified because lor=0, native DDP source is .10, the 22-pixel output/segment mappings are complete, and Matrix virtual DDP bus is enabled to .11; require actual visible sync and recovery before release.",
-      "All substantial owner tests and physical AUX verification must occur tonight; tomorrow owner availability is at most five minutes."
+      "No further AUX runtime/configuration mutation under the consumed one-test authority; current read-only WLED telemetry confirms restoration: lor=0, live=true, lm=DDP, lip=192.168.77.10.",
+      "Preserve the exact Foundation R4 Matrix runtime; no Matrix command, reboot, firmware update, or renderer-state change was made during AUX testing.",
+      "Next discriminating work requires owner-safe physical measurements/inspection of AUX LED supply/fuse, common ground, controller GPIO16/output, data conductor/DIN, and connections; no rewiring or persistent AUX changes are authorized.",
+      "Continue Matrix qualification from its last valid checkpoint without repeating completed Foundation/AUX/DDP/PWA/scoring investigations; matched kernel 13/9 plus full sweep/soak remain incomplete.",
+      "Remain PHASE2_INTEGRATING/T4; do not mark Cart 2.0 accepted. T5 owner acceptance remains open."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -2048,7 +2050,8 @@
       "ANTI_STALL V2: after 60 minutes without lifecycle progress, activate noncontending offline-safe lanes in parallel; do not kill healthy critical-path work.",
       "ANTI_STALL V2: no firmware rebuild or GitHub Actions for host/transport/harness/telemetry-reader defects unless the artifact itself is invalidated.",
       "Do not create a replacement firmware candidate from seq45 isolated frame-max excursions unless corrected sustained-tail analysis proves a real renderer/runtime regression.",
-      "Do not rerun 28-kernel sweep or observer-effect A/B when reusing exact candidate SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c."
+      "Do not rerun 28-kernel sweep or observer-effect A/B when reusing exact candidate SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
+      "Do not interpret the unanswered physical restore question as a failed restore or DDP failure; current WLED telemetry confirms DDP resumed."
     ],
     "parallel_ready_during_foundation_soak": [
       "Mission Control/scoring source reconciliation and host tests",
@@ -2291,11 +2294,13 @@
       "Do not start Phase 2 deployment before owner smoke tonight.",
       "Seq56 exact Release07 is authorized only for genuine seq55 install/identity/AUX/runtime failure or owner-device smoke failure. Host assertion/tooling errors do not trigger seq56."
     ],
-    "status": "CONSUMED__SEQ55_PASS__LIVE_MUTATION_CLOSED",
+    "status": "CLOSED__CURRENT_TRANSACTION_AUTHORITIES_CONSUMED",
     "target": "Have exact fast candidate installed and machine-qualified, ready for OWNER SMOKE NOW within the user's ~10-minute dog walk.",
-    "user_authorization": "At 16:43 PDT user requested immediate salvage while away for ~10 minutes and explicitly directed that this false blocker not prevent completion; target is ready for owner smoke on return."
+    "user_authorization": "At 16:43 PDT user requested immediate salvage while away for ~10 minutes and explicitly directed that this false blocker not prevent completion; target is ready for owner smoke on return.",
+    "current_authorized": false,
+    "closure_evidence": "Drive:17CkUqsCFrjTIFxgSkRHf8uxfw5x7gdVr; SHA-256:8663c351bd41055935690fe8e93bc0337b8be9f609b1e7b1f6ba77c3ef0050b4"
   },
-  "live_mutation_authorization_closed_at_utc": "2026-10-08T05:22:00+00:00",
+  "live_mutation_authorization_closed_at_utc": "2026-10-08T07:06:35Z",
   "live_mutation_authorization_closure": {
     "candidate_install_attempts": 1,
     "candidate_release": "hbnf-cart2-phase2-offline-wow-r3-20261008",
@@ -2304,15 +2309,19 @@
       "evidence/hbnf-phase2-integration-20261007/live-r3-night-20261008/FULL_FOUNDATION/SWEEP_ABORT.json",
       "evidence/hbnf-phase2-integration-20261007/live-r3-night-20261008/R4_ROLLBACK_UPLOAD_RECEIPT.json",
       "evidence/hbnf-phase2-integration-20261007/live-r3-night-20261008/R4_POST_ROLLBACK_IDENTITY.json",
-      "evidence/hbnf-phase2-integration-20261007/live-r3-night-20261008/R4_POSTRESTORE_HEALTH_SAMPLES.json"
+      "evidence/hbnf-phase2-integration-20261007/live-r3-night-20261008/R4_POSTRESTORE_HEALTH_SAMPLES.json",
+      "Drive:17CkUqsCFrjTIFxgSkRHf8uxfw5x7gdVr"
     ],
-    "next_live_mutation": "REQUIRES_NEW_EXACT_ARTIFACT_AUTHORITY_AND_FRESH_PREFLIGHT",
+    "next_live_mutation": "REQUIRES_NEW_EXACT_AUTHORITY_AND_FRESH_PREFLIGHT",
     "rollback_attempts": 1,
     "rollback_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "status": "CLOSED__R3_CANDIDATE_REJECTED_R4_RESTORED"
+    "status": "CLOSED__PHASE2_R4_ROLLED_BACK__AUX_RUNTIME_TEST_RESTORED__NO_LIVE_MUTATION_AUTHORITY",
+    "closed_at_utc": "2026-10-08T07:06:35Z",
+    "current_device_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "current_device_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
   },
-  "live_mutation_authorized": true,
+  "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",
@@ -2530,7 +2539,7 @@
   },
   "schema": "hbnf-control-state-v2",
   "phase2_r3_regression_repair": {
-    "status": "NEW_EXACT_R4_INSTALL_ATTEMPT_AUTHORIZED__PREFLIGHT_PASS__NOT_YET_CONSUMED",
+    "status": "R4_CANDIDATE_NOT_QUALIFIED__EXACT_FOUNDATION_R4_RESTORED__AUX_DIRECT_OUTPUT_FAILED__LIVE_AUTHORITY_CLOSED",
     "release_id": "hbnf-cart2-phase2-offline-wow-r4-20261008",
     "sha256": "e65effb86d8755ca8a4af2155e51844d2c2a387f4000574459a382ca50c5ec87",
     "size_bytes": 1490160,
@@ -2538,18 +2547,19 @@
     "correction": "GCC always_inline on existing scaleChannel and scaleOutputPixel helpers; behavior/arithmetic unchanged.",
     "offline_evidence": "evidence/hbnf-phase2-integration-20261007/performance-repair-r4-20261008",
     "build_and_host_tests": "PASS",
-    "runtime_performance": "UNVERIFIED_PENDING_EXACT_INSTALL_AND_FROZEN_GATES",
-    "aux_physical_sync": "OPEN__DIRECT_OWNER_OBSERVATION_FAILED",
+    "runtime_performance": "UNVERIFIED__MATCHED_KERNEL13_KERNEL9_NOT_COMPLETED",
+    "aux_physical_sync": "FAIL__DIRECT_AUX_OUTPUT_TEST_REMAINED_DARK",
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "live_installed": false,
-    "live_mutation_authorized": true,
-    "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008"
+    "live_mutation_authorized": false,
+    "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
+    "latest_evidence": "Drive:17CkUqsCFrjTIFxgSkRHf8uxfw5x7gdVr; SHA-256:8663c351bd41055935690fe8e93bc0337b8be9f609b1e7b1f6ba77c3ef0050b4"
   },
   "bounded_phase2_r4_live_qualification_authorization": {
     "schema": "hbnf-phase2-r4-bounded-live-authorization-v1",
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
     "status": "CONSUMED__UPLOAD_INTERRUPTED__CANDIDATE_NOT_INSTALLED",
-    "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: CART 2.0 — FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
     "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
     "preflight_path": "evidence/hbnf-phase2-integration-20261007/live-r4-qualification-20261008/PREINSTALL_PREFLIGHT.json",
     "preflight_sha256": "a3fcce9e4f63d4d8eed491f517390f3ea575473d8860cf4a1f7d62e1caef00ed",
@@ -2618,7 +2628,7 @@
     "schema": "hbnf-phase2-r4-bounded-live-authorization-v1",
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
     "status": "CONSUMED__UPLOAD_INTERRUPTED__CANDIDATE_NOT_INSTALLED",
-    "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: CART 2.0 — FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
     "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
     "preflight_path": "evidence/hbnf-phase2-integration-20261007/live-r4-qualification-20261008/PREINSTALL_PREFLIGHT.json",
     "preflight_sha256": "a3fcce9e4f63d4d8eed491f517390f3ea575473d8860cf4a1f7d62e1caef00ed",
@@ -2687,7 +2697,7 @@
     "schema": "hbnf-phase2-r4-bounded-live-authorization-v1",
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008-RETRY1",
     "status": "CANDIDATE_REJECTED__EXACT_R4_RESTORED__LIVE_MUTATION_CLOSED",
-    "authorized_by": "Current user instruction: URGENT \u2014 RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: URGENT — RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
     "authorized_at_utc": "2026-10-08T06:20:06.671131+00:00",
     "preflight_path": "evidence/hbnf-phase2-integration-20261007/live-r4-qualification-20261008/PREINSTALL_PREFLIGHT_ATTEMPT2.json",
     "preflight_sha256": "fc37bfa1568c584985c04011a0007c4a0b126f93074b92c35105dfa6196cb9c1",
@@ -2786,6 +2796,61 @@
       "aux_wled_liveview_zero_payload_frames": 19,
       "matched_kernel13_kernel9": "NOT_COMPLETED__PACKET20_ONE_BOOT_SESSION_REENTRY_REJECTED_AFTER_HOST_UNDERSAMPLE",
       "collector_failure": "26_samples_below_existing_minimum_27; snapshot restored; retry blocked by one-shot snapshot/diagnostic lifecycle"
+    },
+    "direct_aux_output_test": {
+      "result": "FAIL__OWNER_OBSERVED_ALL_UNDERGLOW_DARK_DURING_DIRECT_SOLID_COLOR_OVERRIDE",
+      "readback": "lor=2; on=true; brightness=255; segment 0..22 active; effect 0; commanded RGB [96,0,96]",
+      "authorization_status": "CONSUMED__RESTORED",
+      "restore": {
+        "state_matches_pretest_runtime_fields": true,
+        "persistent_config_unchanged": true,
+        "ddp_readback_after_restore": "live=true; lm=DDP; lip=192.168.77.10; lor=0",
+        "physical_after_restore": "UNCONFIRMED__NO_FAILURE_INFERRED_FROM_TIMEOUT"
+      },
+      "evidence_drive_file_id": "17CkUqsCFrjTIFxgSkRHf8uxfw5x7gdVr",
+      "evidence_sha256": "8663c351bd41055935690fe8e93bc0337b8be9f609b1e7b1f6ba77c3ef0050b4"
     }
+  },
+  "bounded_aux_runtime_direct_output_test": {
+    "schema": "hbnf-bounded-aux-runtime-direct-output-test-v1",
+    "authorization_id": "AUX-DIRECT-OUTPUT-20261008-ONE-TEST",
+    "authorized_by": "Current user: one reversible AUX runtime-only direct-output test.",
+    "target": {
+      "ip": "192.168.77.11",
+      "mac": "8c:94:df:55:c3:4c",
+      "wled": "16.0.1"
+    },
+    "limit": 1,
+    "attempts": 1,
+    "status": "CONSUMED__DIRECT_OUTPUT_DARK__RUNTIME_RESTORED__DDP_READBACK_PASS__PHYSICAL_RESTORE_UNCONFIRMED",
+    "test": {
+      "http_status": 200,
+      "lor": 2,
+      "brightness": 255,
+      "segment": {
+        "start": 0,
+        "stop": 22,
+        "fx": 0
+      },
+      "rgb": [
+        96,
+        0,
+        96
+      ],
+      "owner_observation": "All LEDs completely dark."
+    },
+    "restore": {
+      "http_status": 200,
+      "state_matches_pretest": true,
+      "config_sha256_before": "fd0717f5064a7bb77e89e3a864b2ce1a50c7172f4b8e3dc881e71294acf5b37a",
+      "config_sha256_after": "fd0717f5064a7bb77e89e3a864b2ce1a50c7172f4b8e3dc881e71294acf5b37a",
+      "aux_ddp_readback": "live=true; lm=DDP; lip=192.168.77.10; lor=0",
+      "physical_after": "UNCONFIRMED"
+    },
+    "evidence": {
+      "drive_file_id": "17CkUqsCFrjTIFxgSkRHf8uxfw5x7gdVr",
+      "sha256": "8663c351bd41055935690fe8e93bc0337b8be9f609b1e7b1f6ba77c3ef0050b4"
+    },
+    "live_mutation_authorized": false
   }
 }
