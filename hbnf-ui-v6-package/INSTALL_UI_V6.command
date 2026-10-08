@@ -1,8 +1,8 @@
 #!/bin/zsh
 set -euo pipefail
 cd "$(dirname "$0")"
-echo "HBNF Cart UI V7.3 — Phase 2 Integration R1"
-echo "Controller-only update. Stable READY/APPLYING status; noisy live telemetry removed. No Matrix/AUX firmware changes."
+echo "HBNF Cart Owner UX R4 + Guest Route R2 — static package"
+echo "Deploys Owner/Guest static assets only. No Matrix/AUX firmware changes."
 /usr/bin/python3 ./install_ui_v6.py
 echo
 echo "Done. Press Return to close."

@@ -9,6 +9,7 @@ const html = fs.readFileSync(path.join(controller, "hbnf-cart.html"), "utf8");
 const css = fs.readFileSync(path.join(controller, "hbnf-cart-ui-v6.css"), "utf8");
 const manifest = JSON.parse(fs.readFileSync(path.join(controller, "hbnf-cart-manifest.webmanifest"), "utf8"));
 const installer = fs.readFileSync(path.join(root, "hbnf-ui-v6-package/install_ui_v6.py"), "utf8");
+const installerCommand = fs.readFileSync(path.join(root, "hbnf-ui-v6-package/INSTALL_UI_V6.command"), "utf8");
 const uiWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-cart-ui-v6-package.yml"), "utf8");
 const releaseWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-coordinated-release-ci.yml"), "utf8");
 
@@ -79,6 +80,8 @@ assert.match(installer, /\?release="\+BUILD_MARKER\+/);
 assert.match(installer, /HBNF_CART_OWNER_UX_R4_GUEST_ROUTE_R2_INSTALL=PASS/);
 assert.match(installer, /if not verified:\s+raise RuntimeError\("Deploy finished but exact Owner UX R4 \+ Guest Route R2 marker did not verify/);
 assert.doesNotMatch(installer, /HBNF_CART_UI_V7_3_PHASE2_INTEGRATED_R1_20261006|HBNF_CART_UI_V7_3_PWA_R1_INSTALL/);
+assert.match(installerCommand, /HBNF Cart Owner UX R4 \+ Guest Route R2/);
+assert.doesNotMatch(installerCommand, /V7\.3|Phase 2 Integration R1|noisy live telemetry removed/i);
 assert.match(uiWorkflow, /"schema":"hbnf-cart-owner-ux-r4-guest-route-r2-package-v1"/);
 assert.match(uiWorkflow, /tests\/hbnf_owner_pwa_package\.mjs/);
 assert.match(releaseWorkflow, /tests\/hbnf_owner_pwa_package\.mjs/);

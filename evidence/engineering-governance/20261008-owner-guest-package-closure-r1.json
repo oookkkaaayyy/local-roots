@@ -30,7 +30,8 @@
         "python3 tests/hbnf_control.py: PASS 23/23; python3 tests/hbnf_guarded_run.py: PASS.",
         "python3 scripts/hbnf_architecture_fitness.py: PASS after preserving byte-identical checkpoint authority snapshots in an archive and removing duplicate loose authority copies.",
         "Governance change record validation and release-engineering static checks: PASS.",
-        "Installer regression checks exact Owner UX R4 + Guest Route R2 marker and fails closed for HTTP 401/403 or any missing live marker; no deployment was performed."
+        "Installer regression checks exact Owner UX R4 + Guest Route R2 marker and fails closed for HTTP 401/403 or any missing live marker; no deployment was performed.",
+        "node tests/hbnf_owner_pwa_package.mjs verifies INSTALL_UI_V6.command identifies Owner UX R4 + Guest Route R2 and rejects stale V7.3/Phase 2 R1 messaging: PASS."
       ],
       "live_state": {
         "deployed": false,
