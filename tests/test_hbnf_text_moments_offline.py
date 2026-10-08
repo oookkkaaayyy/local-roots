@@ -58,7 +58,9 @@ class TextMomentTests(unittest.TestCase):
             target=temp/"usermods/hbnf_foundation_v1"
             target.mkdir(parents=True)
             shutil.copy2(root/"firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp",target/"usermod_hbnf_foundation_v1.cpp")
-            shutil.copy2(pinned/"usermods/hbnf_foundation_v1/hbnf_coordinated_contract.h",target/"hbnf_coordinated_contract.h")
+            base_contract=root/binding["base_coordinated_contract_header_path"]
+            self.assertEqual(hashlib.sha256(base_contract.read_bytes()).hexdigest(),binding["base_coordinated_contract_header_sha256"])
+            shutil.copy2(base_contract,target/"hbnf_coordinated_contract.h")
             r4_patch=root/"firmware/phase2/integration-r4/usermod_hbnf_foundation_v1.patch"
             subprocess.run(["patch","--batch","--forward","-p1","-i",str(r4_patch)],cwd=target,check=True,capture_output=True,text=True)
             usermod=target/"usermod_hbnf_foundation_v1.cpp"
@@ -67,6 +69,8 @@ class TextMomentTests(unittest.TestCase):
             subprocess.run(["patch","--batch","--forward","-p1","--dry-run","-i",str(r5_patch)],cwd=temp,check=True,capture_output=True,text=True)
             subprocess.run(["patch","--batch","--forward","-p1","-i",str(r5_patch)],cwd=temp,check=True,capture_output=True,text=True)
             self.assertEqual(hashlib.sha256(usermod.read_bytes()).hexdigest(),binding["r5_integrated_usermod_sha256"])
+            contract_hash=hashlib.sha256((target/"hbnf_coordinated_contract.h").read_bytes()).hexdigest()
+            self.assertEqual(contract_hash,binding["r5_coordinated_contract_header_sha256"])
 
     def test_acceptance_corpus(self):
         cases=[("HERO_WORD","ACE"),("HERO_WORD","WINNER"),("NAME","ANDREW"),("NAME","TEAM 4"),("NUMBER_VALUE","$187"),("NUMBER_VALUE","25 FT"),("NUMBER_VALUE","30 SEC"),("DIRECTIVE","STATION 4"),("DIRECTIVE","READY"),("DIRECTIVE","GO"),("DIRECTIVE","REST"),("SHORT_ANNOUNCEMENT","BACK 9"),("SHORT_ANNOUNCEMENT","ACE POT"),("SHORT_ANNOUNCEMENT","NEXT UP"),("LONG_FREE_TEXT","SOURCE DEPENDENT LONG MESSAGE FIXTURE")]
