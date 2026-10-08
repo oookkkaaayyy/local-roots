@@ -14,7 +14,7 @@
     "scoped_evidence": {
       "approved_architecture_reference": "Owner direction requires APPLYING not to obscure actual command status; the Owner PWA remains a client of the existing Supabase command path.",
       "affected_subsystem": "Owner Mission Control status rendering and PWA cache version only; backend, command semantics, pairing, Guest Mode, firmware, and devices are unchanged.",
-      "rollback_reference": "Revert the small Owner PWA status handling and cache-version change; remote branch baseline d638dabb6f7ef44a9bc84a0613e55c22902a155c is preserved.",
+      "rollback_reference": "Revert the small Owner PWA status handling and cache-version change; remote current branch prior commit d638dabb6f7ef44a9bc84a0613e55c22902a155c is the preserved baseline.",
       "evidence_sources": [
         "User direction: persistent APPLYING states must not obscure actual command status.",
         "Existing Owner PWA status-fetch implementation and package/reliability tests."

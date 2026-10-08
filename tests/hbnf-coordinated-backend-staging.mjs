@@ -36,6 +36,9 @@ for (const marker of [
 }
 assert.ok(stagedFoundation.includes("function paletteSpec"),"foundation palette normalization missing");
 assert.ok(stagedFoundation.includes("function overlaySpec"),"foundation overlay normalization missing");
+assert.match(stagedFoundation,/const rawFontIndex=data\.fontIndex;[\s\S]*return\{id,kind,ttlMs,text,color,fontIndex\}/,"foundation adapter must pass the validated native font index through to WLED");
+assert.match(stagedFoundation,/\[0,2,3,4\]\.includes\(fontIndex\)/,"foundation adapter must reject unsupported WLED slots");
+assert.match(stagedReducer,/const rawFontIndex = \(data as Record<string, unknown>\)\.fontIndex;[\s\S]*fontIndex = rawFontIndex === undefined \? 4 : rawFontIndex/);
 assert.ok(stagedFoundation.includes("palette,"),"foundation HBNF palette projection missing");
 assert.ok(stagedFoundation.includes("overlay"),"foundation HBNF overlay projection missing");
 assert.ok(stagedFoundation.includes('["hbnf-balanced","copper","ocean"]'),"legacy palette compatibility missing");

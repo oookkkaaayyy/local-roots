@@ -5,7 +5,7 @@ ROOT=pathlib.Path(__file__).resolve().parent
 CONTROLLER=ROOT/"controller"
 MANIFEST_PATH=ROOT/"MANIFEST.json"
 LIVE_URL="https://hbnightflyers.com/hbnf-cart.html"
-BUILD_MARKER="hbnf-cart-final-v7-3-phase2-integrated-r1-20261006"
+BUILD_MARKER="hbnf-cart2-owner-ux-r4-20261008"
 FILES=[
     "hbnf-cart.html",
     "hbnf-cart.js",
@@ -21,6 +21,11 @@ FILES=[
     "hbnf-cart-icon-192.png",
     "hbnf-cart-icon-512.png",
 ]
+GUEST_FILES=[
+    "guest/hbnf-cart/index.html",
+    "guest/hbnf-cart/guest.js",
+    "guest/hbnf-cart/guest.css",
+]
 
 def sha256(path):
     h=hashlib.sha256()
@@ -32,7 +37,7 @@ def check_package():
     if not MANIFEST_PATH.is_file(): raise RuntimeError("MANIFEST.json missing")
     manifest=json.loads(MANIFEST_PATH.read_text())
     if manifest.get("buildMarker")!=BUILD_MARKER: raise RuntimeError("Package build marker mismatch")
-    for name in FILES:
+    for name in FILES+GUEST_FILES:
         path=CONTROLLER/name
         expected=manifest.get("files",{}).get(name)
         if not path.is_file() or not expected or sha256(path)!=expected:
@@ -40,6 +45,9 @@ def check_package():
     html=(CONTROLLER/"hbnf-cart.html").read_text(errors="replace")
     if BUILD_MARKER not in html:
         raise RuntimeError("Controller identity mismatch")
+    guest=(CONTROLLER/"guest/hbnf-cart/index.html").read_text(errors="replace")
+    if "HBNF Cart Guest" not in guest or "/functions/v1/hbnf-cart-control" not in (CONTROLLER/"guest/hbnf-cart/guest.js").read_text(errors="replace"):
+        raise RuntimeError("Guest route identity or Cart command contract mismatch")
 
 def worker_candidates():
     home=pathlib.Path.home()
@@ -95,7 +103,7 @@ def live_marker():
         return 0, False
 
 def main():
-    print("HBNF CART UI V7.3 PHASE 2 INTEGRATION R1 — controller-only package")
+    print("HBNF CART OWNER UX R4 + GUEST ROUTE R2 — static package")
     print("No Matrix/AUX firmware or Phase 2 game/router changes.")
     check_package()
     worker=find_worker()
@@ -103,12 +111,13 @@ def main():
     backup=pathlib.Path.home()/("HBNF_CART_UI_BACKUP_"+stamp)
     backup.mkdir(parents=True,exist_ok=False)
     public=worker/"public"
-    for name in FILES:
+    for name in FILES+GUEST_FILES:
         src=public/name
         if src.exists():
             (backup/name).parent.mkdir(parents=True,exist_ok=True)
             shutil.copy2(src,backup/name)
-    for name in FILES:
+    for name in FILES+GUEST_FILES:
+        (public/name).parent.mkdir(parents=True,exist_ok=True)
         shutil.copy2(CONTROLLER/name,public/name)
     wrangler=resolve_wrangler(worker)
     print("Deploying controller with Wrangler...")

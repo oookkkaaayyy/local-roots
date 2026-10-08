@@ -2,7 +2,7 @@
   "name": "HBNF Cart Control",
   "short_name": "HBNF Cart",
   "id": "/hbnf-cart.html",
-  "start_url": "/hbnf-cart.html?app=20261008-owner-ux-r2",
+  "start_url": "/hbnf-cart.html?app=20261008-owner-ux-r4",
   "scope": "/hbnf-cart.html",
   "display": "standalone",
   "background_color": "#071018",

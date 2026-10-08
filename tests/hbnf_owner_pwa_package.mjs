@@ -12,10 +12,10 @@ const installer = fs.readFileSync(path.join(root, "hbnf-ui-v6-package/install_ui
 const uiWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-cart-ui-v6-package.yml"), "utf8");
 const releaseWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-coordinated-release-ci.yml"), "utf8");
 
-assert.match(html, /hbnf-cart2-owner-ux-r2-20261008/);
+assert.match(html, /hbnf-cart2-owner-ux-r4-20261008/);
 assert.doesNotMatch(html, /skins-owner-pwa-r1/);
 assert.equal(manifest.id, "/hbnf-cart.html");
-assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261008-owner-ux-r2");
+assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261008-owner-ux-r4");
 assert.equal(manifest.scope, "/hbnf-cart.html");
 assert.deepEqual(manifest.icons.map(({ sizes }) => sizes), ["192x192", "512x512"]);
 
@@ -48,6 +48,13 @@ for (const name of [
 }
 
 assert.match(html, /navigator\.serviceWorker\.register/);
+assert.match(html, /id="featureFontIndex"[\s\S]*value="4" selected[\s\S]*Slot 0 · Tom Thumb 6px[\s\S]*Slot 2 · Console 6×8[\s\S]*Slot 3 · C64-esque 9px/);
+assert.doesNotMatch(html, /TinyUnicode/i, "unsupported UTF-8 font slot is not offered by the ASCII overlay adapter");
+const featureModule = fs.readFileSync(path.join(controller, "hbnf-cart-features.mjs"), "utf8");
+assert.match(featureModule, /nativeTextFontIndexV1===true/);
+assert.match(featureModule, /if \(fontIndex\) fontIndex\.disabled=!fontIndexReady/);
+assert.match(featureModule, /if \(canonicalCapabilities\(\)\.nativeTextFontIndexV1===true\) data\.fontIndex=/);
+assert.doesNotMatch(featureModule, /\?\.value\s*\?\?/);
 const sliders = [...html.matchAll(/<input\b[^>]*type="range"[^>]*>/g)].map(([tag]) => tag);
 assert.equal(sliders.length, 7, "all course/audio/brightness sliders are covered");
 for (const tag of sliders) {
@@ -66,9 +73,20 @@ assert.match(css, /::-webkit-slider-thumb[^}]*width:20px;height:20px/);
 assert.match(css, /::-moz-range-thumb[^}]*width:16px;height:16px/);
 assert.match(html, /:focus-visible/, "keyboard focus styling remains visible");
 assert.ok(fs.existsSync(path.join(controller, "hbnf-cart-sw.js")), "owner PWA service worker missing");
-assert.match(uiWorkflow, /HBNF-CART-UI-V7-3-PHASE2-INTEGRATED-R1-20261006/);
+assert.match(uiWorkflow, /HBNF-CART-OWNER-UX-R4-GUEST-ROUTE-R2-20261008/);
+assert.match(installer, /BUILD_MARKER="hbnf-cart2-owner-ux-r4-20261008"/);
+assert.match(uiWorkflow, /"schema":"hbnf-cart-owner-ux-r4-guest-route-r2-package-v1"/);
 assert.match(uiWorkflow, /tests\/hbnf_owner_pwa_package\.mjs/);
 assert.match(releaseWorkflow, /tests\/hbnf_owner_pwa_package\.mjs/);
+
+for (const name of ["index.html", "guest.js", "guest.css"]) {
+  const rel = `guest/hbnf-cart/${name}`;
+  assert.ok(fs.existsSync(path.join(controller, rel)), `Guest route asset missing: ${rel}`);
+  assert.match(installer, new RegExp(rel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `installer omits ${rel}`);
+  assert.ok(uiWorkflow.includes(`hbnf-final-controller/${rel}`), `package workflow omits ${rel}`);
+}
+assert.match(installer, /FILES\+GUEST_FILES/);
+assert.match(uiWorkflow, /\.rglob\("\*"\)/, "package manifest must hash nested Guest files");
 
 const guestHtml = fs.readFileSync(path.join(guestRoute, "index.html"), "utf8");
 const guestJs = fs.readFileSync(path.join(guestRoute, "guest.js"), "utf8");

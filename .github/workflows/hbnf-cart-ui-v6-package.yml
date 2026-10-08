@@ -1,4 +1,4 @@
-name: HBNF Cart UI V7.3 Phase 2 Integration
+name: HBNF Cart Owner UX R4 + Guest Route R2 Package
 on:
   push:
     branches:
@@ -42,7 +42,7 @@ jobs:
           ! grep -q 'createClient' hbnf-final-controller/hbnf-cart.js
           ! grep -Fq '\\n' hbnf-final-controller/hbnf-cart.html
           python3 -m py_compile hbnf-ui-v6-package/install_ui_v6.py
-          grep -q 'hbnf-cart-final-v7-3-phase2-integrated-r1-20261006' hbnf-final-controller/hbnf-cart.html
+          grep -q 'hbnf-cart2-owner-ux-r4-20261008' hbnf-final-controller/hbnf-cart.html
           node --experimental-strip-types tests/hbnf_skins_scoring_owner_flow.mjs
           node tests/hbnf_owner_pwa_package.mjs
           node tests/hbnf_owner_pwa_reliability.mjs
@@ -57,7 +57,7 @@ jobs:
       - name: Build controller-only package
         run: |
           set -euo pipefail
-          OUT="$RUNNER_TEMP/HBNF_CART_UI_V7_3_PHASE2_INTEGRATED_R1_20261006"
+          OUT="$RUNNER_TEMP/HBNF_CART_OWNER_UX_R4_GUEST_ROUTE_R2_20261008"
           mkdir -p "$OUT/controller"
           cp hbnf-final-controller/hbnf-cart.html "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart.js "$OUT/controller/"
@@ -72,6 +72,10 @@ jobs:
           cp hbnf-final-controller/hbnf-cart-icon-180.png "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-icon-192.png "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-icon-512.png "$OUT/controller/"
+          mkdir -p "$OUT/controller/guest/hbnf-cart"
+          cp hbnf-final-controller/guest/hbnf-cart/index.html "$OUT/controller/guest/hbnf-cart/"
+          cp hbnf-final-controller/guest/hbnf-cart/guest.js "$OUT/controller/guest/hbnf-cart/"
+          cp hbnf-final-controller/guest/hbnf-cart/guest.css "$OUT/controller/guest/hbnf-cart/"
           cp hbnf-ui-v6-package/install_ui_v6.py "$OUT/"
           cp hbnf-ui-v6-package/INSTALL_UI_V6.command "$OUT/"
           chmod +x "$OUT/INSTALL_UI_V6.command" "$OUT/install_ui_v6.py"
@@ -80,12 +84,12 @@ jobs:
           import hashlib,json,pathlib,sys
           root=pathlib.Path(sys.argv[1])
           files={}
-          for p in sorted((root/"controller").iterdir()):
+          for p in sorted((root/"controller").rglob("*")):
               if p.is_file():
-                  files[p.name]=hashlib.sha256(p.read_bytes()).hexdigest()
+                  files[p.relative_to(root/"controller").as_posix()]=hashlib.sha256(p.read_bytes()).hexdigest()
           manifest={
-              "schema":"hbnf-cart-ui-v7-3-phase2-integrated-r1-package-v1",
-              "buildMarker":"hbnf-cart-final-v7-3-phase2-integrated-r1-20261006",
+              "schema":"hbnf-cart-owner-ux-r4-guest-route-r2-package-v1",
+              "buildMarker":"hbnf-cart2-owner-ux-r4-20261008",
               "sourceCommit":(root/"SOURCE_COMMIT.txt").read_text().strip(),
               "scope":"controller-only-no-firmware-no-phase2-hardware",
               "files":files,
@@ -93,15 +97,15 @@ jobs:
           (root/"MANIFEST.json").write_text(json.dumps(manifest,indent=2)+"\n")
           PY
           cd "$RUNNER_TEMP"
-          zip -yr HBNF_CART_UI_V7_3_PHASE2_INTEGRATED_R1_20261006.zip HBNF_CART_UI_V7_3_PHASE2_INTEGRATED_R1_20261006
-          sha256sum HBNF_CART_UI_V7_3_PHASE2_INTEGRATED_R1_20261006.zip > HBNF_CART_UI_V7_3_PHASE2_INTEGRATED_R1_20261006.zip.sha256
+          zip -yr HBNF_CART_OWNER_UX_R4_GUEST_ROUTE_R2_20261008.zip HBNF_CART_OWNER_UX_R4_GUEST_ROUTE_R2_20261008
+          sha256sum HBNF_CART_OWNER_UX_R4_GUEST_ROUTE_R2_20261008.zip > HBNF_CART_OWNER_UX_R4_GUEST_ROUTE_R2_20261008.zip.sha256
 
       - name: Upload exact package
         uses: actions/upload-artifact@v4
         with:
-          name: HBNF-CART-UI-V7-3-PHASE2-INTEGRATED-R1-20261006
+          name: HBNF-CART-OWNER-UX-R4-GUEST-ROUTE-R2-20261008
           path: |
-            ${{ runner.temp }}/HBNF_CART_UI_V7_3_PHASE2_INTEGRATED_R1_20261006.zip
-            ${{ runner.temp }}/HBNF_CART_UI_V7_3_PHASE2_INTEGRATED_R1_20261006.zip.sha256
+            ${{ runner.temp }}/HBNF_CART_OWNER_UX_R4_GUEST_ROUTE_R2_20261008.zip
+            ${{ runner.temp }}/HBNF_CART_OWNER_UX_R4_GUEST_ROUTE_R2_20261008.zip.sha256
           if-no-files-found: error
           retention-days: 30

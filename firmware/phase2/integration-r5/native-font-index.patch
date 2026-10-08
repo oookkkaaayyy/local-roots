@@ -1,0 +1,51 @@
+--- a/usermods/hbnf_foundation_v1/hbnf_coordinated_contract.h
++++ b/usermods/hbnf_foundation_v1/hbnf_coordinated_contract.h
+@@ -20,6 +20,7 @@
+   char label[16]{};
+   char entries[12][64]{};
+   uint8_t entryCount=0;
++  uint8_t fontIndex=4;
+   uint8_t r=255,g=255,b=255;
+   uint32_t startedAt=0,ttlMs=0;
+ };
+@@ -38,12 +39,12 @@
+ }
+ 
+ inline void setTextOverlay(OverlayState& s,const char* id,const char* text,uint32_t ttl,
+-                           uint8_t r,uint8_t g,uint8_t b,uint32_t now) {
++                           uint8_t r,uint8_t g,uint8_t b,uint32_t now,uint8_t fontIndex=4) {
+   const bool same=s.kind==OVERLAY_TEXT && strcmp(s.id,id)==0;
+   const uint32_t started=same?s.startedAt:now;
+   s=OverlayState{}; s.kind=OVERLAY_TEXT; s.startedAt=started; s.ttlMs=ttl;
+   strncpy(s.id,id,sizeof(s.id)-1u); strncpy(s.text,text,sizeof(s.text)-1u);
+-  s.r=r;s.g=g;s.b=b;
++  s.r=r;s.g=g;s.b=b;s.fontIndex=fontIndex;
+ }
+ 
+ inline void setScoreboardOverlay(OverlayState& s,const char* id,const char* label,
+--- a/usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp
++++ b/usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp
+@@ -150,9 +150,11 @@
+   if(!validBoundedText(id,39)||ttl<250u||ttl>30000u)goto invalid;
+   if(strcmp(kind,"text")==0) {
+     const char* text=obj["text"]|"";uint8_t r=255,g=255,b=255;
++    const int requestedFontIndex=obj["fontIndex"]|4;
++    const uint8_t fontIndex=(requestedFontIndex==0||requestedFontIndex==2||requestedFontIndex==3||requestedFontIndex==4)?(uint8_t)requestedFontIndex:4;
+     if(!validBoundedText(text,63)||!hbnfParseHexColor(obj["color"]|"#FFFFFF",r,g,b))goto invalid;
+     portENTER_CRITICAL(&hbnfOverlayMux);
+-    setTextOverlay(hbnfCommandOverlay,id,text,ttl,r,g,b,now);
++    setTextOverlay(hbnfCommandOverlay,id,text,ttl,r,g,b,now,fontIndex);
+     portEXIT_CRITICAL(&hbnfOverlayMux);return true;
+   }
+   if(strcmp(kind,"scoreboard")==0) {
+@@ -205,7 +207,8 @@
+   const uint32_t fg=packed(hbnf_brightness::scaleOutputPixel(overlayColor,overlayColor,scale));
+   if(overlay.kind==OVERLAY_TEXT) {
+     FontManager font(&SEGMENT);
+-    if(font.loadFont(4,overlay.text,false))
+-      HbnfNativeText::drawPaged(font,overlay.text,now-overlay.startedAt,32,16,fg,2200);
++    bool fontLoaded=font.loadFont(overlay.fontIndex,overlay.text,false);
++    if(!fontLoaded&&overlay.fontIndex!=4)fontLoaded=font.loadFont(4,overlay.text,false);
++    if(fontLoaded)HbnfNativeText::drawPaged(font,overlay.text,now-overlay.startedAt,32,16,fg,2200);
+   } else {
+     for(uint8_t y=0;y<16;y++)for(uint8_t x=0;x<32;x++)SEGMENT.setPixelColorXY(x,y,0);

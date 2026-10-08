@@ -44,7 +44,10 @@ function overlaySpec(raw:any){
     const text=String(data.text||"").trim().slice(0,63);
     const color=String(data.color||"#FFFFFF").toUpperCase();
     if(!text||!/^#[0-9A-F]{6}$/.test(color))return null;
-    return{id,kind,ttlMs,text,color};
+    const rawFontIndex=data.fontIndex;
+    const fontIndex=rawFontIndex===undefined?4:rawFontIndex;
+    if(!Number.isInteger(fontIndex)||![0,2,3,4].includes(fontIndex))return null;
+    return{id,kind,ttlMs,text,color,fontIndex};
   }
   const entries=Array.isArray(data.entries)?data.entries.map((x:any)=>String(x).trim().slice(0,48)).filter(Boolean).slice(0,12):[];
   if(!entries.length)return null;

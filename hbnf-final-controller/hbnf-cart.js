@@ -1,6 +1,6 @@
 /* HBNF_CART_FINAL_V5_SEMANTIC_FRAME_LOCK */
-import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261008-owner-ux-r2";
-import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261008-owner-ux-r2";
+import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261008-owner-ux-r4";
+import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261008-owner-ux-r4";
 
 const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC";
@@ -324,6 +324,7 @@ async function refresh({ hydrate = true } = {}) {
     const auxBri = pathValue(auxObs, ["reported","appliedProjection","brightness"], pathValue(auxObs, ["reported","brightness"], "—"));
     const failed = observed.some(x => Number(x.desired_revision) === Number(revision) && (x.status === "failed" || (x.reported && x.reported.confirmed === false && x.reported.error)));
     const submitted = observed.some(x => Number(x.desired_revision) === Number(revision) && x.status === "submitted");
+    if (fullyApplied || failed) pendingRevision = null;
     statusNode.textContent = fullyApplied
       ? `Connected and synchronized · revision ${revision} · Matrix ${matrixBri} · Underglow ${auxBri}`
       : failed
@@ -426,7 +427,6 @@ async function flushTune() {
     }
     await new Promise(r => setTimeout(r, 500));
   }
-  pendingRevision = null;
   await refresh({ hydrate: true });
 }
 
@@ -456,7 +456,6 @@ async function command(type, payload = {}) {
         if (failed || confirmed) break;
         if (Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 750));
       } while (Date.now() < deadline);
-      pendingRevision = null;
       await refresh({ hydrate: false });
       return;
     } catch (error) {
@@ -603,28 +602,34 @@ for (const id of ["energy", "audioResponse", "motion", "variation"]) {
   $(id).addEventListener("change", () => queueTune(0));
 }
 
-$("#refresh").addEventListener("click", () => refresh().catch(showError));
+$("#refresh").addEventListener("click", () => refresh().catch(showRefreshError));
+
+function showRefreshError(error) {
+  statusNode.textContent = `Cart service unavailable · this status check sent no control or scoring command. ${error.message}`;
+}
 
 function showError(error) {
-  statusNode.textContent = `No change confirmed: ${error.message}`;
+  statusNode.textContent = pendingRevision !== null
+    ? `Cart change accepted · revision ${pendingRevision}; device confirmation unavailable. ${error.message}`
+    : `No change confirmed: ${error.message}`;
 }
 
 detectPairFragment();
 setAuthorizedUi();
 statusNode.textContent = "Connecting…";
-refresh().catch(showError);
+refresh().catch(showRefreshError);
 
 window.addEventListener("online", () => {
-  if (!document.hidden && !tuneInFlight && !tuneDirty) refresh().catch(showError);
+  if (!document.hidden && !tuneInFlight && !tuneDirty) refresh().catch(showRefreshError);
 });
 window.addEventListener("offline", () => {
   statusNode.textContent = "OFFLINE · no change sent. Current cart show continues locally; reconnect to control or score.";
 });
 
 setInterval(() => {
-  if (!document.hidden && !tuneInFlight && !tuneDirty) refresh().catch(() => {});
+  if (!document.hidden && !tuneInFlight && !tuneDirty) refresh().catch(showRefreshError);
 }, 6000);
 
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden && !tuneInFlight && !tuneDirty) refresh().catch(() => {});
+  if (!document.hidden && !tuneInFlight && !tuneDirty) refresh().catch(showRefreshError);
 });

@@ -142,6 +142,22 @@ test("Guest Mode is a metadata-only canonical command", () => {
   assert.equal(requiresOwnerAuthorization("command", "VIBE"), false);
 });
 
+test("text overlays default to native font slot 4 and accept only reviewable ASCII slots", () => {
+  const make = data => reduceCartCommand(state(), "OVERLAY_START", {
+    overlayId: "text-font-review",
+    kind: "text",
+    ttlMs: 8000,
+    data: { text: "ACE 25 FT", ...data },
+  }, commandId, 17);
+  assert.equal(make({}).overlays.at(-1).payload.fontIndex, 4);
+  for (const fontIndex of [0, 2, 3, 4]) {
+    assert.equal(make({ fontIndex }).overlays.at(-1).payload.fontIndex, fontIndex);
+  }
+  for (const fontIndex of [1, 5, -1, 2.5, "2", null]) {
+    assert.equal(make({ fontIndex }), null, `font index ${String(fontIndex)} must be rejected`);
+  }
+});
+
 test("Static Guest route calls only the existing endpoint without browser session persistence", () => {
   const page = readFileSync(new URL("../../../hbnf-final-controller/guest/hbnf-cart/index.html", import.meta.url), "utf8");
   const script = readFileSync(new URL("../../../hbnf-final-controller/guest/hbnf-cart/guest.js", import.meta.url), "utf8");
