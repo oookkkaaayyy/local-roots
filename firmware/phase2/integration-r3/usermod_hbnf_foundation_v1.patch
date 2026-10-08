@@ -1,0 +1,133 @@
+--- a/usermod_hbnf_foundation_v1.cpp
++++ b/usermod_hbnf_foundation_v1.cpp
+@@ -7,6 +7,9 @@
+ #include "hbnf_animartrix_audio_bridge.h"
+ #include "hbnf_local_ui.h"
+ #include "hbnf_home_screen_icon.h"
++#include "hbnf_brightness_output.h"
++#include "hbnf_native_text.h"
++#include "fontmanager.h"
+ #include <ANIMartRIX.h>
+ #include <string.h>
+ #if defined(HBNF_PACKET20_DIAGNOSTICS)
+@@ -22,8 +25,8 @@
+ namespace {
+ 
+ static const char HBNF_FX_DATA[] PROGMEM = "HBNF Foundation@;;;2";
+-static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1";
+-static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1\",\"basedOnReleaseId\":\"hbnf-matrix-coordinated-v1-20261002-06\",\"basedOnFirmwareSha256\":\"b9bb60dca1a9be8f7241670a7540810c604465c9adf7084b6efc90d5b4622886\",\"wled\":\"16.0.1\",\"features\":[\"canonical-palette-v1\",\"canonical-overlay-v1\",\"coordinated-ui-v1\"]}";
++static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-phase2-offline-wow-r3-20261008";
++static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-phase2-offline-wow-r3-20261008\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-phase2-offline-wow-r3-20261008\",\"basedOnReleaseId\":\"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1\",\"basedOnFirmwareSha256\":\"338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-audio-vibe-path-unfrozen\"]}";
+ static PaletteSelection hbnfPalette{};
+ static OverlayState hbnfCommandOverlay{};
+ static portMUX_TYPE hbnfOverlayMux=portMUX_INITIALIZER_UNLOCKED;
+@@ -197,15 +200,22 @@
+   overlay=hbnfCommandOverlay;
+   portEXIT_CRITICAL(&hbnfOverlayMux);
+   const uint32_t now=millis();if(!overlayVisible(overlay,now))return false;
+-  for(uint8_t y=0;y<16;y++)for(uint8_t x=0;x<32;x++)SEGMENT.setPixelColorXY(x,y,0);
+-  const uint32_t fg=packed(applyMatrixBrightness(Rgb8(overlay.r,overlay.g,overlay.b),matrixBrightness));
+-  if(overlay.kind==OVERLAY_TEXT)hbnfDrawText(overlay.text,5,fg);
+-  else if(overlay.kind==OVERLAY_SCOREBOARD&&overlay.entryCount) {
+-    hbnfDrawText(overlay.label,0,fg);
+-    const uint8_t pages=(uint8_t)((overlay.entryCount+1u)/2u);
+-    const uint8_t page=(uint8_t)(((uint32_t)(now-overlay.startedAt)/1800u)%pages);
+-    hbnfDrawText(overlay.entries[page*2u],5,fg);
+-    if(page*2u+1u<overlay.entryCount)hbnfDrawText(overlay.entries[page*2u+1u],10,fg);
++  const Rgb8 overlayColor(overlay.r,overlay.g,overlay.b);
++  const uint8_t scale=hbnf_brightness::outputScale(matrixBrightness);
++  const uint32_t fg=packed(hbnf_brightness::scaleOutputPixel(overlayColor,overlayColor,scale));
++  if(overlay.kind==OVERLAY_TEXT) {
++    FontManager font(&SEGMENT);
++    if(font.loadFont(4,overlay.text,false))
++      HbnfNativeText::drawPaged(font,overlay.text,now-overlay.startedAt,32,16,fg,2200);
++  } else {
++    for(uint8_t y=0;y<16;y++)for(uint8_t x=0;x<32;x++)SEGMENT.setPixelColorXY(x,y,0);
++    if(overlay.kind==OVERLAY_SCOREBOARD&&overlay.entryCount) {
++      hbnfDrawText(overlay.label,0,fg);
++      const uint8_t pages=(uint8_t)((overlay.entryCount+1u)/2u);
++      const uint8_t page=(uint8_t)(((uint32_t)(now-overlay.startedAt)/1800u)%pages);
++      hbnfDrawText(overlay.entries[page*2u],5,fg);
++      if(page*2u+1u<overlay.entryCount)hbnfDrawText(overlay.entries[page*2u+1u],10,fg);
++    }
+   }
+   return true;
+ }
+@@ -222,14 +232,16 @@
+   else if(live.overlayDurationMs-elapsed<fadeOut)fade=(uint8_t)((live.overlayDurationMs-elapsed)*255u/fadeOut);
+   const uint8_t shade=(uint8_t)(210u*fade/255u);
+   for(uint8_t y=0;y<16;y++)for(uint8_t x=0;x<32;x++)SEGMENT.blendPixelColorXY(x,y,RGBW32(0,0,0,0),shade);
++  const uint8_t outputScale=hbnf_brightness::outputScale(matrixBrightness);
+ 
+   const uint8_t pages=(uint8_t)((live.count+1u)/2u);
+   const uint8_t page=(uint8_t)(((elapsed/1900u)%pages));
+   char header[12];
+   snprintf(header,sizeof(header),"%s $%u",live.label,(unsigned)live.acePot);
+-  hbnfDrawText(header,0,packed(scaleRgb(applyMatrixBrightness(Rgb8(176,224,132),matrixBrightness),fade)));
+-  hbnfDrawText(live.entries[page*2u],5,packed(scaleRgb(applyMatrixBrightness(Rgb8(255,255,255),matrixBrightness),fade)));
+-  if((uint8_t)(page*2u+1u)<live.count)hbnfDrawText(live.entries[page*2u+1u],10,packed(scaleRgb(applyMatrixBrightness(Rgb8(255,255,255),matrixBrightness),fade)));
++  const Rgb8 headerColor(176,224,132), entryColor(255,255,255);
++  hbnfDrawText(header,0,packed(scaleRgb(hbnf_brightness::scaleOutputPixel(headerColor,headerColor,outputScale),fade)));
++  hbnfDrawText(live.entries[page*2u],5,packed(scaleRgb(hbnf_brightness::scaleOutputPixel(entryColor,entryColor,outputScale),fade)));
++  if((uint8_t)(page*2u+1u)<live.count)hbnfDrawText(live.entries[page*2u+1u],10,packed(scaleRgb(hbnf_brightness::scaleOutputPixel(entryColor,entryColor,outputScale),fade)));
+ }
+ 
+ static bool hbnfAcceptLiveSnapshot(JsonObjectConst root) {
+@@ -533,6 +545,7 @@
+ 
+   void beginFrame(const CanonicalFrame& f,uint32_t now) {
+     frame_=&f;
++    outputScale_=hbnf_brightness::outputScale(f.controls.matrixBrightness);
+     const uint16_t responseQ8=audioGainQ8(f.controls.audioResponse);
+     const uint32_t audioStart=hbnfCycles();
+     audio_.beginFrameFromAudio(now,f.variant.profile,f.variant.style,f.variant.amount,responseQ8,32,16,
+@@ -592,11 +605,8 @@
+       for(uint16_t y=0;y<16;y++) for(uint16_t x=0;x<32;x++) {
+         const uint16_t i=y*32u+x;
+         canonicalMatrixPixels[i]=blend(transitionFromPixels[i],canonicalMatrixPixels[i],mix);
+-        const Rgb8 matrix=applyMatrixBrightness(canonicalMatrixPixels[i],frame_->controls.matrixBrightness);
+-        const uint8_t r=SEGMENT.check2?gamma8(matrix.r):matrix.r;
+-        const uint8_t g=SEGMENT.check2?gamma8(matrix.g):matrix.g;
+-        const uint8_t b=SEGMENT.check2?gamma8(matrix.b):matrix.b;
+-        SEGMENT.setPixelColorXY(x,y,RGBW32(r,g,b,0));
++        const Rgb8 matrix=hbnfScaleMatrixOutput(canonicalMatrixPixels[i],outputScale_);
++        SEGMENT.setPixelColorXY(x,y,RGBW32(matrix.r,matrix.g,matrix.b,0));
+       }
+       hbnfPerfWorking.color+=hbnfCycles()-colorStart;
+       if(mix==255u) deferOutput_=false;
+@@ -612,6 +622,12 @@
+   }
+ 
+  private:
++  uint8_t outputScale_=255;
++  static Rgb8 hbnfScaleMatrixOutput(const Rgb8& canonical,uint8_t scale) {
++    const Rgb8 gammaCorrected=SEGMENT.check2?Rgb8(gamma8(canonical.r),gamma8(canonical.g),gamma8(canonical.b)):canonical;
++    return hbnf_brightness::scaleOutputPixel(gammaCorrected,canonical,scale);
++  }
++
+   hbnf::AnimartrixAudioBridge audio_{};
+   const CanonicalFrame* frame_=nullptr;
+   uint8_t lastKernel_=255;
+@@ -635,10 +651,8 @@
+     const Rgb8 rendered=colored;
+     if(x>=0&&x<32&&y>=0&&y<16&&tx<32&&ty<16) canonicalMatrixPixels[ty*32u+tx]=rendered;
+     if(deferOutput_) return;
+-    const Rgb8 matrix=applyMatrixBrightness(rendered,frame_->controls.matrixBrightness);
+-    if(SEGMENT.check2){r=gamma8(matrix.r);g=gamma8(matrix.g);b=gamma8(matrix.b);}
+-    else {r=matrix.r;g=matrix.g;b=matrix.b;}
+-    SEGMENT.setPixelColorXY(tx,ty,RGBW32(r,g,b,0));
++    const Rgb8 matrix=hbnfScaleMatrixOutput(rendered,outputScale_);
++    SEGMENT.setPixelColorXY(tx,ty,RGBW32(matrix.r,matrix.g,matrix.b,0));
+   }
+ 
+   static Rgb8 blend(const Rgb8& from,const Rgb8& to,uint8_t mix) {
+@@ -929,7 +943,8 @@
+     if(len==22) perimeterCoord22((uint8_t)i,x,y);
+     else { x=(uint16_t)(((uint32_t)i*31u)/(len>1?len-1:1)); y=15; }
+     Rgb8 c=fieldColor(f,x,y,32,16);
+-    SEGMENT.setPixelColor(i,packed(applyMatrixBrightness(c,f.controls.matrixBrightness)));
++    const Rgb8 gammaCorrected=SEGMENT.check2?Rgb8(gamma8(c.r),gamma8(c.g),gamma8(c.b)):c;
++    SEGMENT.setPixelColor(i,packed(hbnf_brightness::scaleOutputPixel(gammaCorrected,c,hbnf_brightness::outputScale(f.controls.matrixBrightness))));
+   }
+ }
+ 

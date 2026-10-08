@@ -1,0 +1,33 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "PHASE2_COMPILED_PACKET20_TELEMETRY_CLOSURE_20261008",
+  "summary": "Restore the existing R4 Packet20 telemetry compile definition and frame/DDP dispatcher hooks in the Phase 2 WLED 16.0.1 build closure, and make the existing build-closure gate validate the emitted firmware binary and linked hook references.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Already-qualified R4 Packet20 instrumentation contract in evidence/hbnf-foundation-qualification-20261005/seq39/BUILD_PROVENANCE.json and its linked firmware.map; this restores the same existing observer hooks to the Phase 2 candidate.",
+      "affected_subsystem": "Offline PlatformIO build closure and existing R4 telemetry build/release gate only; runtime telemetry adds no new endpoint, product state machine, dependency, or device behavior.",
+      "rollback_reference": "Revert this offline source/build-gate commit. Exact R4 rollback SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c remains the device recovery artifact; no installation occurs here.",
+      "evidence_sources": [
+        "https://docs.platformio.org/en/stable/projectconf/sections/env/options/build/build_flags.html",
+        "https://docs.platformio.org/en/latest/projectconf/sections/env/options/advanced/extends.html",
+        "https://github.com/wled/WLED/blob/29b389df1c1aaec6ff53aea742d17063b985906c/wled00/bus_manager.cpp",
+        "evidence/hbnf-foundation-qualification-20261005/seq39/BUILD_PROVENANCE.json and archived firmware.map",
+        "evidence/hbnf-phase2-integration-20261007/live-r2-install/FIVE_MINUTE_RUNTIME_SMOKE.json",
+        "firmware/phase2/integration-r3/packet20-frame-timing.patch"
+      ],
+      "tests": [
+        "tests/hbnf_phase2_r4_build_closure.py proves fail-closed compiled macro, map-callsite, firmware JSON-key, and source-binding checks",
+        "scripts/hbnf_phase2_apply_r4_build_closure.py verifies pinned WLED input and applies only the diagnostics-guarded hooks",
+        "PlatformIO Python 3.9.6/Core 6.1.18 clean-room diagnostic and non-diagnostic builds with matched Phase 2 source"
+      ]
+    }
+  }
+}
