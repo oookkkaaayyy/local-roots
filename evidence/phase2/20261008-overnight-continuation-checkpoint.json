@@ -1,0 +1,56 @@
+{
+  "schema": "hbnf-cart2-offline-continuation-checkpoint-v1",
+  "captured_at": "2026-10-08T12:20:00Z",
+  "branch": "hbnf-cart2-phase2-integration-20261006",
+  "remote_branch_head_before_write": "795ff8af21b4cb5579763c3950e0e7c7e01d7009",
+  "local_head": "2b41a94eeeffd1abe610658e8033ab68cc14d3a1",
+  "checkpoint": {
+    "local_archive": "work/checkpoints/20261008-0520-full-working-tree-preserve/changed-files.tar.gz",
+    "local_manifest": "work/checkpoints/20261008-0520-full-working-tree-preserve/manifest.json",
+    "archive_sha256": "700ad81849e503d49e698b8e5a6d21f431afe9a20a477ae4a3acffcb817b508a",
+    "entry_count": 25,
+    "per_file_hash_verification": "PASS"
+  },
+  "verified_offline": {
+    "owner_pwa_reliability_and_package": "PASS",
+    "guest_static_contract": "PASS",
+    "backend_contract_tests": "3/3 PASS",
+    "authoritative_scoring_flow": "PASS",
+    "vibe_audio_synthetic_replay_and_traces": "PASS; not firmware/runtime proof",
+    "firmware_static_gates": "PASS",
+    "governance": "PASS",
+    "text_moments_host_checks": "14/14 PASS; not target render proof",
+    "typescript_5_8_3_typecheck": "PASS",
+    "repo_node_tests": "86/86 PASS"
+  },
+  "local_source_binding": {
+    "r4_integrated_source_sha256": "9672125b4f1914c73bf0d7a997ae81a430c8f4e4b1cb50956e1303ac19687bfa",
+    "r5_font_patch_sha256": "06c9f5763d4c10ee96a04d6b64558e36f9048bd3e0c0f7e17e18ab6e55a7ea89",
+    "firmware_built": false,
+    "treatments": "UNFROZEN; feasibility options only"
+  },
+  "readonly_live_host_check": {
+    "owner_page": "https://hbnightflyers.com/hbnf-cart.html",
+    "owner_page_build": "hbnf-cart2-phase2-wow-r2-20261007",
+    "owner_page_status": 200,
+    "guest_page": "https://hbnightflyers.com/guest/hbnf-cart/",
+    "guest_page_status": 200,
+    "guest_and_owner_live_assets_match_current_local_source": false,
+    "intended_owner_device_operation": "NOT_VERIFIED"
+  },
+  "control": {
+    "lifecycle": "PHASE2_INTEGRATING/T4",
+    "live_mutation_authorized": false,
+    "installed_fallback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "t4_t5_acceptance": "NOT_ACCEPTED"
+  },
+  "remaining_release_gates": [
+    "approved Vibe-to-renderer semantic/interface contract and target runtime validation",
+    "complete production Text/Moments treatments and target runtime qualification",
+    "fresh Cloudflare deployment source/config/rollback preflight before host writes",
+    "backend/device confirmation mismatch resolved with authoritative live evidence",
+    "one integrated exact firmware candidate with frozen 28-kernel sweep, combined performance cases, contiguous 90-minute soak and recovery",
+    "actual Owner and Guest Home Screen operation, physical owner acceptance, T5"
+  ],
+  "notes": "No device/backend/Cloudflare mutation. This checkpoint records offline progress and observed live host identity only; no Cart 2.0 acceptance is claimed."
+}
