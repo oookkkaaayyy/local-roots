@@ -69,7 +69,14 @@
     "size_bytes": 1482624,
     "embedded_candidate_and_release_id": "hbnf-cart2-phase2-offline-wow-r2-20261008",
     "installed": false,
-    "deployed": false
+    "deployed": false,
+    "drive_file_id": "1UtEVVSBIJ6gMj3Vt7uEopcoasbb9YW04",
+    "drive_url": "https://drive.google.com/file/d/1UtEVVSBIJ6gMj3Vt7uEopcoasbb9YW04/view?usp=drivesdk",
+    "manifest_drive_file_id": "1EwCaygL1Bjq6r3XFv-BKH0gZMfA7y6-I",
+    "manifest_drive_url": "https://drive.google.com/file/d/1EwCaygL1Bjq6r3XFv-BKH0gZMfA7y6-I/view?usp=drivesdk",
+    "github_source_commit": "e0d2a00",
+    "receipt_drive_file_id": "1WLoO84wbyfu0vNmbgbesK2lNh758bEAF",
+    "receipt_drive_url": "https://drive.google.com/file/d/1WLoO84wbyfu0vNmbgbesK2lNh758bEAF/view?usp=drivesdk"
   },
   "memory": {
     "partition": "app0",

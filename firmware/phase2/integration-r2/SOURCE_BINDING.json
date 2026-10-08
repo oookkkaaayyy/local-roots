@@ -17,7 +17,7 @@
   "live_mutation": false,
   "presentation_status": "UNFROZEN",
   "build_or_live_mutation": true,
-  "build_evidence": "evidence/hbnf-phase2-integration-20261007/offline-candidate-manifest.json",
+  "build_evidence": "evidence/hbnf-phase2-integration-20261007/phase2-r4-parity-repair-20261008-manifest.json",
   "candidate_artifact": "outputs/hbnf-cart2-phase2-offline-wow-r2-20261008.bin",
   "candidate_sha256": "8be42c878cb6502db1571e58e417848bd732e2d5debfb27b399738b1e70fcf6c",
   "candidate_bytes": 1482624,

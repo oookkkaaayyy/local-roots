@@ -1825,7 +1825,19 @@
       "size_bytes": 1482624,
       "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
       "live_mutation_authorized": false,
-      "next_authorization": "One separate bounded Matrix install/runtime qualification for this exact artifact SHA; no Cloudflare/Supabase changes and no additional firmware operations."
+      "next_authorization": "One separate bounded Matrix install/runtime qualification for this exact artifact SHA; no Cloudflare/Supabase changes and no additional firmware operations.",
+      "manifest": "evidence/hbnf-phase2-integration-20261007/phase2-r4-parity-repair-20261008-manifest.json",
+      "github_source_commit": "e0d2a00",
+      "drive_artifacts": {
+        "firmware_id": "1UtEVVSBIJ6gMj3Vt7uEopcoasbb9YW04",
+        "manifest_id": "1EwCaygL1Bjq6r3XFv-BKH0gZMfA7y6-I",
+        "receipt_id": "1WLoO84wbyfu0vNmbgbesK2lNh758bEAF"
+      },
+      "drive_verified_sizes_bytes": {
+        "firmware": 1482624,
+        "manifest": 4815,
+        "receipt": 8053
+      }
     }
   },
   "execution_budget_policy": {
@@ -1843,19 +1855,19 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "PHASE2_CANDIDATE_RUNTIME_PERFORMANCE_GATE",
+    "current_failure_domain": "PHASE2_CANDIDATE_OFFLINE_REBUILT__RUNTIME_GATE_PENDING",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
-      "artifact_sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3",
-      "release_id": "hbnf-cart2-phase2-offline-wow-r1-20261007"
+      "release_id": "hbnf-cart2-phase2-offline-wow-r2-20261008",
+      "artifact_sha256": "8be42c878cb6502db1571e58e417848bd732e2d5debfb27b399738b1e70fcf6c"
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "The exact WOW-integrated artifact eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3 was installed once under bounded authority, then the exact R4 rollback was restored after a sustained objective FPS regression: 12-21 FPS over 147 seconds versus 41 FPS preinstall. Evidence: evidence/hbnf-phase2-integration-20261007/live-rollout/CANDIDATE_RUNTIME_REGRESSION_AND_R4_RESTORE.json.",
-      "Current runtime is exact R4 SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c; five post-restore samples show 37-43 FPS and AUX live=true, lm=DDP, lip=192.168.77.10.",
-      "The one-install authority for the prior artifact is consumed and closed. Do not install a replacement SHA without new bounded authority. Diagnose and correct the runtime performance regression offline first; preserve the exact pin/rollback and repeat governance/integration tests.",
-      "Cloudflare Guest page/static assets and Supabase hbnf-cart-control v17 remain deployed with Guest Mode OFF; previous Cloudflare version and Supabase v16 source are preserved for rollback. Do not change live host/backend until a separate regression is evidenced.",
-      "T5 final owner acceptance, owner-authenticated Cart/scoring/PWA smoke, visual text/font/Vibe acceptance, labeled audio capture, and UV physical commissioning remain pending for the consolidated owner session after a candidate passes objective runtime validation."
+      "The rejected candidate build omitted the exact R4 FastLED 3.10.4 transformed ANIMartRIX header and compiler include path; the embedded build identity also disagreed with its published WOW-r1 release ID. Root-cause evidence is retained in evidence/hbnf-phase2-integration-20261007/phase2-r4-parity-repair-20261008.json.",
+      "Offline candidate hbnf-cart2-phase2-offline-wow-r2-20261008 is built, hash verified and durably stored; its exact manifest and firmware are in the active Cart 2.0 Drive folder. Live performance remains unverified.",
+      "The previous one-install authorization is consumed. Do not install/reboot/OTA or modify Matrix/AUX/Opal until a new bounded authorization explicitly covers this exact SHA 8be42c878cb6502db1571e58e417848bd732e2d5debfb27b399738b1e70fcf6c.",
+      "After that authorization, measure sustained FPS/wholeFrameUs at the same kernel and brightness; verify embedded identity, heap/restart health, brightness behavior and Matrix-to-AUX DDP. Keep Guest Mode OFF and UV dormant.",
+      "Remain in PHASE2_INTEGRATING/T4 until T4 checks are valid; do not skip T5 owner acceptance. Do not reopen unaffected PWA/scoring/AUX/DDP or subjective presentation work without a new invalidator."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",

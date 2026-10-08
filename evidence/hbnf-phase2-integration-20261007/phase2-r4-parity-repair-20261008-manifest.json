@@ -1,0 +1,86 @@
+{
+  "schema": "hbnf-cart2-offline-firmware-candidate-v2",
+  "status": "BUILT_AND_VERIFIED_OFFLINE__NOT_INSTALLED__NOT_DEPLOYED__RUNTIME_FPS_UNVERIFIED",
+  "release_id": "hbnf-cart2-phase2-offline-wow-r2-20261008",
+  "branch": "hbnf-cart2-phase2-integration-20261006",
+  "firmware_source_commit": "e0d2a00",
+  "firmware_source_identity_type": "git_commit",
+  "source_binding": "firmware/phase2/integration-r2/SOURCE_BINDING.json",
+  "integrated_source_sha256": "8d07e04588c91cd40f0a3a14fd204173a5dc8619af759fb92903758b3a35b1e6",
+  "phase2_patch_sha256": "111ec4b4bb33aac275e86d7fce2dc0d57d2c9680fd614a39bc639df8eeac9ef0",
+  "wled": {
+    "version": "16.0.1",
+    "commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "animartrix_commit": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f",
+    "animartrix_clock_patch_sha256": "f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c"
+  },
+  "fastled_r4": {
+    "release": "3.10.4",
+    "commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+    "license_sha256": "4358d4c37f1305b43a3117a6a12780f666bf285538de0b28991613c0ccacecd8",
+    "r1_header_sha256": "bd9d146e2ce5fde991a895ccc2ad2773df1cc77cb815381679c17c6425d7bbe8",
+    "r4_header_sha256": "a2bc03b5196dbaacb39e56885ed9301106b15c4916e0b906f86c02db1601ec1b",
+    "fixed_point_function": "render_value_fp_from_float",
+    "compiler_scope": "FastLED GCC fast-math/tree-vectorize/unroll and O3 pragmas; global WLED build remains -Os",
+    "include_dir": "FastLED/src, scoped to hbnf_matrix_wled16_max"
+  },
+  "artifact": {
+    "filename": "hbnf-cart2-phase2-offline-wow-r2-20261008.bin",
+    "path": "outputs/hbnf-cart2-phase2-offline-wow-r2-20261008.bin",
+    "sha256": "8be42c878cb6502db1571e58e417848bd732e2d5debfb27b399738b1e70fcf6c",
+    "bytes": 1482624,
+    "embedded_candidate": "hbnf-cart2-phase2-offline-wow-r2-20261008",
+    "embedded_release_id": "hbnf-cart2-phase2-offline-wow-r2-20261008",
+    "drive_file_id": "1UtEVVSBIJ6gMj3Vt7uEopcoasbb9YW04",
+    "drive_url": "https://drive.google.com/file/d/1UtEVVSBIJ6gMj3Vt7uEopcoasbb9YW04/view?usp=drivesdk"
+  },
+  "build": {
+    "result": "PASS",
+    "environment": "hbnf_matrix_wled16_max",
+    "platformio_core": "6.1.18",
+    "python": "3.9.6",
+    "board": "esp32dev",
+    "framework": "Arduino ESP32 2.0.18+sha.8ba0dc0",
+    "toolchain": "xtensa-esp32-elf 8.4.0+2021r2-patch5",
+    "esptool": "4.7.4",
+    "source_date_epoch": 1789948800,
+    "cache": "isolated empty local build cache; no cached object retrieval reported",
+    "clean_build_log": "/tmp/hbnf-p2-build/rebuild-r2-isolated.log",
+    "host_shims": "Python 3.9 syntax compatibility only, temporary build copy; no firmware behavior change"
+  },
+  "memory": {
+    "partition": "app0",
+    "slot_bytes": 1572864,
+    "linker_flash_used_bytes": 1475889,
+    "flash_used_percent": 93.8,
+    "flash_headroom_bytes": 96975,
+    "ram_used_bytes": 88328,
+    "ram_total_bytes": 327680,
+    "ram_used_percent": 27.0
+  },
+  "features_preserved": {
+    "guest": "unchanged; Guest Mode defaults OFF",
+    "uv": "unchanged; disabled, hardware_available=false, cap=0",
+    "text_vibe": "unchanged; native WLED fonts/treatments preserved, owner presentation remains UNFROZEN"
+  },
+  "validation": {
+    "governance": "PASS: nine mandated checks; change record and T4 engineering governance manifest validated",
+    "focused_regressions": "PASS: exact R4 transformed header, fixed-point function, compiler controls, macro isolation, Phase 2 source closure and embedded release label",
+    "inherited_phase2_host_receipt": "evidence/hbnf-phase2-integration-20261007/wow-integrated-final-offline-candidate-manifest.json; no Phase 2 feature behavior changed by this repair",
+    "live_runtime": "NOT MEASURED; requires new bounded install authorization"
+  },
+  "rollback": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008,
+    "status": "EXACT R4 RESTORED AND VERIFIED; preserved in existing rollback closure"
+  },
+  "root_cause_receipt": "evidence/hbnf-phase2-integration-20261007/phase2-r4-parity-repair-20261008.json",
+  "live_mutation_authorized": false,
+  "next_authorization": "One bounded Matrix install and objective runtime qualification of this exact SHA; no other hardware or host/backend deployment changes.",
+  "manifest_drive_file_id": "1EwCaygL1Bjq6r3XFv-BKH0gZMfA7y6-I",
+  "manifest_drive_url": "https://drive.google.com/file/d/1EwCaygL1Bjq6r3XFv-BKH0gZMfA7y6-I/view?usp=drivesdk",
+  "github_source_commit": "e0d2a00",
+  "root_cause_receipt_drive_file_id": "1WLoO84wbyfu0vNmbgbesK2lNh758bEAF",
+  "root_cause_receipt_drive_url": "https://drive.google.com/file/d/1WLoO84wbyfu0vNmbgbesK2lNh758bEAF/view?usp=drivesdk"
+}
