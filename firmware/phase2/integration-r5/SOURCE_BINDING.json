@@ -39,5 +39,8 @@
   "r4_preserved_byte_for_byte": true,
   "firmware_built": false,
   "live_mutation": false,
-  "load_failure_behavior": "If a nondefault native font load fails, retry exact R4 baseline slot 4; if slot 4 fails, do not draw or corrupt the underlying frame."
+  "load_failure_behavior": "If a nondefault native font load fails, retry exact R4 baseline slot 4; if slot 4 fails, do not draw or corrupt the underlying frame.",
+  "base_coordinated_contract_header_path": "firmware/phase2/integration-r4/hbnf_coordinated_contract.h",
+  "base_coordinated_contract_header_sha256": "22d17d917db8d74ba141fbc1825fe1a637e7f3396208b5cf0c706f4c6c7ecbaa",
+  "r5_coordinated_contract_header_sha256": "e65399d2117f79d302bd8bd7474da955000e74689f6712a726a7e2759a477d25"
 }
