@@ -14,19 +14,24 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from tools.hbnf_text_moments_offline import plan, classify, ReferenceFrame, compose_reference
 
 class TextMomentTests(unittest.TestCase):
-    def test_treatment_review_does_not_claim_unimplemented_or_frozen_options(self):
+    def test_treatment_review_records_provisional_runtime_without_freezing_aesthetics(self):
         root=pathlib.Path(__file__).resolve().parents[1]
         decision=json.loads((root/"firmware/phase2/integration-r5/ENGINEERING_DECISION.json").read_text())
         review=decision["evidence"]["scoped_evidence"]["text_treatment_capability_review"]
-        self.assertEqual(review["status"],"OPTIONS_ONLY__NOT_IMPLEMENTED_OR_BUILT__AESTHETICS_UNFROZEN")
+        self.assertEqual(review["status"],"NATIVE_FONTMANAGER_RUNTIME_IMPLEMENTED__AESTHETICS_UNFROZEN__TARGET_QUALIFICATION_PENDING")
         options={item["id"]:item for item in review["review_options"]}
         self.assertEqual(set(options),{"quiet_reveal","vibe_contour","soft_dissolve"})
-        self.assertEqual(options["quiet_reveal"]["state"],"PROVISIONAL_OPTION_ONLY")
+        self.assertEqual(options["quiet_reveal"]["state"],"IMPLEMENTED_PROVISIONAL_DEFAULT")
         self.assertIn("not a literal outline/contour",options["vibe_contour"]["concept"])
-        self.assertIn("native source adaptation absent",options["soft_dissolve"]["compatibility"])
+        self.assertEqual(options["vibe_contour"]["state"],"IMPLEMENTED_PROVISIONAL_VIBE_MAPPING_UNFROZEN")
+        self.assertEqual(options["soft_dissolve"]["state"],"IMPLEMENTED_PROVISIONAL_BLEND_PATH__TARGET_COST_QUALIFICATION_PENDING")
+        self.assertIn("blendPixelColorXY",options["soft_dissolve"]["compatibility"])
+        self.assertEqual(review["acceptance_boundary"].split("; ")[0],"Runtime implementation is present with reversible defaults")
         binding=json.loads((root/"firmware/phase2/integration-r5/SOURCE_BINDING.json").read_text())
         self.assertFalse(binding["firmware_built"])
-        self.assertEqual(binding["release_identity"],"NOT_ASSIGNED_PENDING_FULL_BUILD_AND_QUALIFICATION")
+        self.assertEqual(binding["release_identity"],"hbnf-cart2-phase2-offline-wow-r5-20261008")
+        self.assertEqual(binding["schema"],"hbnf-phase2-integration-r5-source-binding-v3")
+        self.assertEqual(binding["complete_runtime_source_closure"]["total_bytes"],535529)
 
     def test_native_font_index_patch_defaults_and_falls_back_to_slot_four(self):
         root=pathlib.Path(__file__).resolve().parents[1]
@@ -44,7 +49,7 @@ class TextMomentTests(unittest.TestCase):
             self.assertIn(marker,font_manager)
         font=pinned/"wled00/src/font/font_5x12.wbf"
         self.assertEqual(hashlib.sha256(font.read_bytes()).hexdigest(),"e98ecd3cb8b6a135a0b318e51ebd08eb61fa6b718e2d1ffca2d4d863bb7c0581")
-        self.assertEqual(binding["status"],"R4_SOURCE_REBASE_VERIFIED__NOT_BUILT")
+        self.assertTrue(binding["status"].startswith("R5_"))
         self.assertTrue(binding["r4_preserved_byte_for_byte"])
         self.assertEqual(hashlib.sha256((root/"firmware/phase2/integration-r4/usermod_hbnf_foundation_v1.patch").read_bytes()).hexdigest(),binding["r4_patch_sha256"])
         self.assertEqual(hashlib.sha256((root/"firmware/phase2/integration-r5/native-font-index.patch").read_bytes()).hexdigest(),binding["patch_sha256"])
@@ -58,19 +63,27 @@ class TextMomentTests(unittest.TestCase):
             target=temp/"usermods/hbnf_foundation_v1"
             target.mkdir(parents=True)
             shutil.copy2(root/"firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp",target/"usermod_hbnf_foundation_v1.cpp")
-            base_contract=root/binding["base_coordinated_contract_header_path"]
-            self.assertEqual(hashlib.sha256(base_contract.read_bytes()).hexdigest(),binding["base_coordinated_contract_header_sha256"])
-            shutil.copy2(base_contract,target/"hbnf_coordinated_contract.h")
+            shutil.copy2(pinned/"usermods/hbnf_foundation_v1/hbnf_coordinated_contract.h",target/"hbnf_coordinated_contract.h")
             r4_patch=root/"firmware/phase2/integration-r4/usermod_hbnf_foundation_v1.patch"
             subprocess.run(["patch","--batch","--forward","-p1","-i",str(r4_patch)],cwd=target,check=True,capture_output=True,text=True)
             usermod=target/"usermod_hbnf_foundation_v1.cpp"
             self.assertEqual(hashlib.sha256(usermod.read_bytes()).hexdigest(),binding["r4_integrated_source_sha256"])
-            r5_patch=root/"firmware/phase2/integration-r5/native-font-index.patch"
-            subprocess.run(["patch","--batch","--forward","-p1","--dry-run","-i",str(r5_patch)],cwd=temp,check=True,capture_output=True,text=True)
-            subprocess.run(["patch","--batch","--forward","-p1","-i",str(r5_patch)],cwd=temp,check=True,capture_output=True,text=True)
-            self.assertEqual(hashlib.sha256(usermod.read_bytes()).hexdigest(),binding["r5_integrated_usermod_sha256"])
-            contract_hash=hashlib.sha256((target/"hbnf_coordinated_contract.h").read_bytes()).hexdigest()
-            self.assertEqual(contract_hash,binding["r5_coordinated_contract_header_sha256"])
+            font_patch=root/"firmware/phase2/integration-r5/native-font-index.patch"
+            subprocess.run(["patch","--batch","--forward","-p1","--dry-run","-i",str(font_patch)],cwd=temp,check=True,capture_output=True,text=True)
+            subprocess.run(["patch","--batch","--forward","-p1","-i",str(font_patch)],cwd=temp,check=True,capture_output=True,text=True)
+            self.assertEqual(hashlib.sha256(usermod.read_bytes()).hexdigest(),binding["r5_font_only_intermediate_usermod_sha256"])
+
+        runtime=binding["complete_runtime_source_closure"]
+        self.assertEqual(hashlib.sha256((root/"firmware/phase2/integration-r5/phase2-vibe-text-runtime.patch").read_bytes()).hexdigest(),binding["r5_patch_sha256"])
+        self.assertEqual(runtime["path"],"firmware/phase2/integration-r5/usermod")
+        self.assertEqual(sum(item["bytes"] for item in runtime["files"]),runtime["total_bytes"])
+        for item in runtime["files"]:
+            path=root/runtime["path"]/item["path"]
+            raw=path.read_bytes()
+            self.assertEqual(len(raw),item["bytes"],item["path"])
+            self.assertEqual(hashlib.sha256(raw).hexdigest(),item["sha256"],item["path"])
+        integrated=root/runtime["path"]/"usermod_hbnf_foundation_v1.cpp"
+        self.assertEqual(hashlib.sha256(integrated.read_bytes()).hexdigest(),binding["r5_integrated_usermod_sha256"])
 
     def test_acceptance_corpus(self):
         cases=[("HERO_WORD","ACE"),("HERO_WORD","WINNER"),("NAME","ANDREW"),("NAME","TEAM 4"),("NUMBER_VALUE","$187"),("NUMBER_VALUE","25 FT"),("NUMBER_VALUE","30 SEC"),("DIRECTIVE","STATION 4"),("DIRECTIVE","READY"),("DIRECTIVE","GO"),("DIRECTIVE","REST"),("SHORT_ANNOUNCEMENT","BACK 9"),("SHORT_ANNOUNCEMENT","ACE POT"),("SHORT_ANNOUNCEMENT","NEXT UP"),("LONG_FREE_TEXT","SOURCE DEPENDENT LONG MESSAGE FIXTURE")]

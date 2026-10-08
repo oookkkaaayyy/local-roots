@@ -20,6 +20,24 @@ required = [
 missing=[str(p) for p in required if not p.is_file()]
 assert not missing, "missing release-engineering files: " + ", ".join(missing)
 
+anti_stall=Path("AGENTS.md").read_text()
+build_runbook=Path("work/release-engineering/TARGETED_UPDATE_RUNBOOK.md").read_text()
+for phrase in [
+    "last successful pinned release capsule",
+    "exact command, environment, dependency closure, source identity, and cache state",
+    "30 minutes without measurable progress",
+    "one evidence-supported mechanism change",
+    "15-minute Live Status heartbeat",
+]:
+    assert phrase in anti_stall, f"anti-stall instruction missing: {phrase}"
+for phrase in [
+    "resolved dependency/LDF closure",
+    "object count and newest object time",
+    "classify the failure",
+    "15-minute Live Status heartbeat",
+]:
+    assert phrase in build_runbook, f"build recovery procedure missing: {phrase}"
+
 status=json.loads(Path("config/HBNF_RELEASE_STATUS_TEMPLATE.json").read_text())
 assert status["live_mutation_authorized"] is False
 assert status["gates"]["baseline_source_proven"] is False

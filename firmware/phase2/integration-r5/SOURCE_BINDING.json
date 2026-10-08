@@ -1,6 +1,6 @@
 {
-  "schema": "hbnf-phase2-integration-r5-source-binding-v1",
-  "status": "R4_SOURCE_REBASE_VERIFIED__NOT_BUILT",
+  "schema": "hbnf-phase2-integration-r5-source-binding-v3",
+  "status": "R5_COMPLETE_VIBE_TEXT_SOURCE_BOUND__NOT_BUILT",
   "base_release": "hbnf-cart2-phase2-offline-wow-r4-20261008",
   "base_firmware_sha256": "e65effb86d8755ca8a4af2155e51844d2c2a387f4000574459a382ca50c5ec87",
   "base_source_path": "firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp",
@@ -13,7 +13,7 @@
   "pinned_fontmanager_source_sha256": "e177d820b58b5628f92f2513bfd7b5a4bb0e2cb39bb559af0ce5050c9857ffd5",
   "patch_path": "firmware/phase2/integration-r5/native-font-index.patch",
   "patch_sha256": "06c9f5763d4c10ee96a04d6b64558e36f9048bd3e0c0f7e17e18ab6e55a7ea89",
-  "r5_integrated_usermod_sha256": "b6b32d1eb755909a89875fe711de4b4c9e6c6c33c2a80b92dafeb544b9e099d0",
+  "r5_integrated_usermod_sha256": "13d2a54cfba1913bb4c74cf6296875204546f6cd4c19b92656bf0c9187ba9a56",
   "scope": {
     "field": "OVERLAY_START.data.fontIndex",
     "default": 4,
@@ -26,7 +26,31 @@
     "unsupported_slots_fallback_to": 4,
     "tiny_unicode_slot_1_exposed": false,
     "treatments": "UNFROZEN",
-    "custom_renderer": false
+    "custom_renderer": false,
+    "vibe_audio_runtime": {
+      "status": "IMPLEMENTED_PROVISIONAL__BUILD_AND_TARGET_QUALIFICATION_PENDING",
+      "source": "firmware/phase2/integration-r5/usermod/hbnf_vibe_runtime.h",
+      "pinned_engine": "WLED AudioReactive 16-band FFT plus existing Vibe16/AudioExpression; no additional FFT or dependency",
+      "behaviors": [
+        "local manual Vibe selection",
+        "Auto selector with 45-second dwell and hysteresis",
+        "band envelopes, spectral/mid change, transient, and silence features",
+        "Vibe-specific donor profile/style/speed/detail/transform and native source-pixel modulation"
+      ],
+      "aesthetic_acceptance": "UNFROZEN",
+      "synthetic_replay": "tests/hbnf_vibe_audio_replay.py covers eight synthetic traces; not real-music validation"
+    },
+    "text_moments_runtime": {
+      "status": "IMPLEMENTED_PROVISIONAL__BUILD_AND_TARGET_QUALIFICATION_PENDING",
+      "architecture": "pinned native WLED FontManager with slots 0,2,3,4; no custom renderer",
+      "treatments": [
+        "quiet reveal",
+        "Vibe-aware native gradient",
+        "soft dissolve via native blend path"
+      ],
+      "readability_hold": "stable hold; base Matrix animation remains live beneath overlay",
+      "aesthetics": "UNFROZEN"
+    }
   },
   "rebase_check": {
     "result": "PASS_PATCH_APPLIED_TO_EXACT_R4_INTEGRATED_SOURCE",
@@ -35,12 +59,118 @@
     "r5_patch_application": "PASS",
     "evidence": "work/checkpoints/20261008-r5-exact-r4-rebase-check/report.json"
   },
-  "release_identity": "NOT_ASSIGNED_PENDING_FULL_BUILD_AND_QUALIFICATION",
+  "release_identity": "hbnf-cart2-phase2-offline-wow-r5-20261008",
   "r4_preserved_byte_for_byte": true,
   "firmware_built": false,
   "live_mutation": false,
   "load_failure_behavior": "If a nondefault native font load fails, retry exact R4 baseline slot 4; if slot 4 fails, do not draw or corrupt the underlying frame.",
-  "base_coordinated_contract_header_path": "firmware/phase2/integration-r4/hbnf_coordinated_contract.h",
-  "base_coordinated_contract_header_sha256": "22d17d917db8d74ba141fbc1825fe1a637e7f3396208b5cf0c706f4c6c7ecbaa",
-  "r5_coordinated_contract_header_sha256": "e65399d2117f79d302bd8bd7474da955000e74689f6712a726a7e2759a477d25"
+  "r5_patch_path": "firmware/phase2/integration-r5/phase2-vibe-text-runtime.patch",
+  "r5_patch_sha256": "0fa493e1fd97686a87c91959c3ba2fbdc8f3e1c5ab36add45e9bdf2d6be7c34a",
+  "r5_runtime_source_sha256": "13d2a54cfba1913bb4c74cf6296875204546f6cd4c19b92656bf0c9187ba9a56",
+  "r5_vibe_runtime_header_sha256": "bb76b97b4f3207a152fa61b81af4a7cba16b1180b8cf4c133ca1b98ade65b72f",
+  "r5_audio_bridge_source_sha256": "8748231ccf7733bd34c16dc0417933a46d3a5bdccfc47c2bd54ce2e3fa104535",
+  "hardware_qualification": "NOT_PERFORMED_CART_AWAY",
+  "build_binding": {
+    "mechanism": "WLED pio-scripts/load_usermods.py local custom_usermods source directory",
+    "custom_usermod_source": "firmware/phase2/integration-r5/usermod",
+    "status": "SOURCE_CLOSURE_PINNED__CLEANROOM_BUILD_PENDING"
+  },
+  "r5_font_only_intermediate_usermod_sha256": "b6b32d1eb755909a89875fe711de4b4c9e6c6c33c2a80b92dafeb544b9e099d0",
+  "complete_runtime_source_closure": {
+    "path": "firmware/phase2/integration-r5/usermod",
+    "files": [
+      {
+        "path": "hbnf_animartrix_audio_bridge.h",
+        "bytes": 17941,
+        "sha256": "8748231ccf7733bd34c16dc0417933a46d3a5bdccfc47c2bd54ce2e3fa104535"
+      },
+      {
+        "path": "hbnf_audio_expression.h",
+        "bytes": 3171,
+        "sha256": "f4825884dd53cba9bca698bd8b9b7d9d13a81e7ce381957d23790f13073dc4c3"
+      },
+      {
+        "path": "hbnf_brightness_output.h",
+        "bytes": 1196,
+        "sha256": "921e29f4fe79f6827fd9865b0aa69603f8bde6b53382edce2af1a6c29e27f0b7"
+      },
+      {
+        "path": "hbnf_coordinated_contract.h",
+        "bytes": 2246,
+        "sha256": "e65399d2117f79d302bd8bd7474da955000e74689f6712a726a7e2759a477d25"
+      },
+      {
+        "path": "hbnf_foundation_core.h",
+        "bytes": 25270,
+        "sha256": "d4646267f8fbc03cc4921368fc801e528e6a6cb92133a0c1fc74b48b211be0e4"
+      },
+      {
+        "path": "hbnf_generative_v4.h",
+        "bytes": 10031,
+        "sha256": "13163419b6453d448a795a7580e784f54b23b7586c8317eff467863f648a6dfa"
+      },
+      {
+        "path": "hbnf_home_screen_icon.h",
+        "bytes": 350552,
+        "sha256": "e272644675566a969f65e96b855b824109b8ae6fbcb168da8c6efdeb842097d6"
+      },
+      {
+        "path": "hbnf_local_ui.h",
+        "bytes": 34401,
+        "sha256": "feed7e614cf43d7efe211b54bba5b37fb352e70646e887e3b0341c3f97b0068b"
+      },
+      {
+        "path": "hbnf_native_text.h",
+        "bytes": 4531,
+        "sha256": "0633c5d31c1003f901ec6a71c8545319235200ad0deeb4866fe3753391841b69"
+      },
+      {
+        "path": "hbnf_vibe16.h",
+        "bytes": 6422,
+        "sha256": "f076acf0e5710bf5a9acffe63b31a95f2252230b5470bd362301caa73a743b0a"
+      },
+      {
+        "path": "hbnf_vibe_runtime.h",
+        "bytes": 10572,
+        "sha256": "bb76b97b4f3207a152fa61b81af4a7cba16b1180b8cf4c133ca1b98ade65b72f"
+      },
+      {
+        "path": "library.json",
+        "bytes": 128,
+        "sha256": "2dc685da45efe57fe1d199b5407a00a7bd42b2f473599f6f432df515b4b6c96a"
+      },
+      {
+        "path": "usermod_hbnf_foundation_v1.cpp",
+        "bytes": 69068,
+        "sha256": "13d2a54cfba1913bb4c74cf6296875204546f6cd4c19b92656bf0c9187ba9a56"
+      }
+    ],
+    "total_bytes": 535529,
+    "wled_overlay_files": [
+      {
+        "path": "wled00/fontmanager.cpp",
+        "base_sha256": "e177d820b58b5628f92f2513bfd7b5a4bb0e2cb39bb559af0ce5050c9857ffd5",
+        "built_sha256": "cdd9e7915733b2974098f2c8c67b8fb72b8d5d338fe6127c7184cffb855c8618"
+      },
+      {
+        "path": "wled00/fontmanager.h",
+        "built_sha256": "981996b3f3e0226d35f0a4c061dd5c7d787642ee6873d5786de21da8006456e5"
+      }
+    ]
+  },
+  "source_reconciliation": {
+    "authoritative_branch": "hbnf-cart2-phase2-integration-20261006",
+    "authoritative_head": "f52bb627188a5e9d2309515935d4b556e1522ae5",
+    "local_base": "2b41a94eeeffd1abe610658e8033ab68cc14d3a1",
+    "remote_compare": "19 commits ahead; merge base equals local base",
+    "firmware_inputs_matching_authoritative_state": {
+      "WLED_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+      "native_font_patch_sha256": "06c9f5763d4c10ee96a04d6b64558e36f9048bd3e0c0f7e17e18ab6e55a7ea89",
+      "r5_coordinated_contract_header_sha256": "e65399d2117f79d302bd8bd7474da955000e74689f6712a726a7e2759a477d25",
+      "r5_runtime_patch_sha256": "0fa493e1fd97686a87c91959c3ba2fbdc8f3e1c5ab36add45e9bdf2d6be7c34a"
+    },
+    "authorized_local_extension": "Complete provisional Vibe/audio and Text/Moments runtime patch/source closure, now captured under complete_runtime_source_closure.",
+    "fontmanager_overlay": "Pinned WLED FontManager source was adapted by the recorded R5 Vibe/Text runtime patch; post-patch source hashes are listed in complete_runtime_source_closure.wled_overlay_files."
+  },
+  "r5_vibe_runtime_header_path": "firmware/phase2/integration-r5/usermod/hbnf_vibe_runtime.h"
 }

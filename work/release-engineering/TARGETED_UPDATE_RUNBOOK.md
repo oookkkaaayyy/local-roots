@@ -12,6 +12,13 @@ Before any build:
    - canonical frozen inputs match expected hashes and their generator is disabled/guarded.
 7. Verify source snapshot remains unmodified by build staging.
 
+## Build recovery and anti-stall
+Before PlatformIO starts, reuse the last successful pinned release capsule. Record the exact command, selected environment, resolved dependency/LDF closure, source hashes, toolchain versions, cache/build-directory state, and expected output paths. Give each phase (materialization, dependency resolution, compile, link/package) a bounded diagnostic budget and record its measurable outputs before the run.
+
+During a long build, track stage/log progress, object count and newest object time, compiler/SCons process CPU and RSS, memory pressure, and free disk. A changing elapsed timer alone is not progress. If 30 minutes pass without a stage change or measurable file/process progress, preserve the complete log and build tree, classify the failure (resource, external termination, dependency scan, compiler, toolchain, or source), and make at most one materially different, evidence-supported recovery. Do not repeat dependency archaeology unless evidence invalidates the previous capsule; do not change LDF mode, package versions, or compiler flags without proving the required closure and release semantics remain intact.
+
+Use the existing 15-minute Live Status heartbeat. Record the start and expected checkpoint before a long blocking build, then update immediately after completion or a material state change. Heartbeats must not interrupt the build.
+
 STOP before PlatformIO if any materialization/input-closure gate fails.
 
 ## Phase 0 — Baseline proof

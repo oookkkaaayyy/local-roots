@@ -1,0 +1,646 @@
+--- a/usermods/hbnf_foundation_v1/hbnf_foundation_core.h
++++ b/usermods/hbnf_foundation_v1/hbnf_foundation_core.h
+@@ -15,6 +15,16 @@
+   FIELD_MIX=1,
+   SIGNATURE=2,
+   QUIET_COSMOS=3
++};
++
++// Local manual/automatic presentation state. AUTO resolves to one of the five
++// manual Vibes and never changes the user's independent Motion control.
++enum Vibe : uint8_t { VIBE_CHILL=0, VIBE_GROOVE=1, VIBE_HEAVY=2,
++                      VIBE_PSYCHEDELIC=3, VIBE_COSMIC=4, VIBE_AUTO=5 };
++
++struct VibeAxes {
++  uint8_t structure=0,flow=0,depth=0,symmetry=0,detail=0;
++  uint8_t paletteMotion=0,density=0,negativeSpace=0,transitionEnergy=0;
+ };
+ 
+ struct Controls {
+@@ -24,6 +34,7 @@
+   uint8_t matrixBrightness=24; // independent Matrix pixel scale; WLED master is transport-fixed at 255
+   uint8_t auxBrightness=24; // independent scale before native DDP output
+   Scene scene=COURSE_FLOW;
++  Vibe vibe=VIBE_CHILL;
+ };
+ 
+ struct VisualVariant {
+@@ -65,6 +76,8 @@
+   VisualVariant variant{};
+   VisualVariant previousVariant{};
+   uint8_t variantMix=255;
++  Vibe vibe=VIBE_CHILL;
++  VibeAxes vibeAxes{};
+   Rgb8 palette[4]{};
+   Rgb8 previousPalette[4]{};
+ };
+--- a/usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp
++++ b/usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp
+@@ -1,5 +1,6 @@
+ #include "wled.h"
+ #include "hbnf_foundation_core.h"
++#include "hbnf_vibe_runtime.h"
+ #include "hbnf_generative_v4.h"
+ #include "hbnf_vibe16.h"
+ #include "hbnf_audio_expression.h"
+@@ -25,8 +26,8 @@
+ namespace {
+ 
+ static const char HBNF_FX_DATA[] PROGMEM = "HBNF Foundation@;;;2";
+-static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-phase2-offline-wow-r4-20261008";
+-static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-phase2-offline-wow-r4-20261008\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-phase2-offline-wow-r4-20261008\",\"basedOnReleaseId\":\"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1\",\"basedOnFirmwareSha256\":\"338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-audio-vibe-path-unfrozen\"]}";
++static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-phase2-offline-wow-r5-20261008";
++static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-phase2-offline-wow-r5-20261008\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-phase2-offline-wow-r5-20261008\",\"basedOnReleaseId\":\"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1\",\"basedOnFirmwareSha256\":\"338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r5-unfrozen\",\"native-text-moments-r5-unfrozen\"]}";
+ static PaletteSelection hbnfPalette{};
+ static OverlayState hbnfCommandOverlay{};
+ static portMUX_TYPE hbnfOverlayMux=portMUX_INITIALIZER_UNLOCKED;
+@@ -189,7 +190,7 @@
+   return hueRotate(Rgb8(r,g,b),index);
+ }
+ 
+-static bool hbnfRenderCommandOverlay(uint8_t matrixBrightness) {
++static bool hbnfRenderCommandOverlay(uint8_t matrixBrightness,Vibe activeVibe) {
+   // The fixed OverlayState contains 768 bytes of scoreboard entry storage.
+   // Avoid copying it under the spinlock on every render frame when no command
+   // overlay is active (the normal palette/showcase path).
+@@ -209,9 +210,23 @@
+     FontManager font(&SEGMENT);
+     bool fontLoaded=font.loadFont(overlay.fontIndex,overlay.text,false);
+     if(!fontLoaded&&overlay.fontIndex!=4)fontLoaded=font.loadFont(4,overlay.text,false);
+-    if(fontLoaded)HbnfNativeText::drawPaged(font,overlay.text,now-overlay.startedAt,32,16,fg,2200);
++    const uint32_t elapsed=(uint32_t)(now-overlay.startedAt);
++    const uint32_t remaining=overlay.ttlMs>elapsed?overlay.ttlMs-elapsed:0;
++    uint8_t alpha=255;
++    if(elapsed<420u)alpha=(uint8_t)(elapsed*255u/420u);
++    if(remaining<520u){const uint8_t out=(uint8_t)(remaining*255u/520u);if(out<alpha)alpha=out;}
++    int8_t yOffset=elapsed<280u?(int8_t)(2u-(elapsed*2u/280u)):(remaining<220u?-1:0);
++    Rgb8 accent=overlayColor;
++    switch(activeVibe){
++      case VIBE_GROOVE: accent=blend(overlayColor,Rgb8(255,98,52),92);break;
++      case VIBE_HEAVY: accent=blend(overlayColor,Rgb8(255,122,38),112);break;
++      case VIBE_PSYCHEDELIC: accent=blend(overlayColor,Rgb8(190,64,255),112);break;
++      case VIBE_COSMIC: accent=blend(overlayColor,Rgb8(74,136,255),96);break;
++      default: accent=blend(overlayColor,Rgb8(115,220,236),72);break;
++    }
++    const uint32_t gradient=packed(hbnf_brightness::scaleOutputPixel(accent,accent,scale));
++    if(fontLoaded)HbnfNativeText::drawPaged(font,overlay.text,elapsed,32,16,fg,2200,gradient,alpha,yOffset);
+   } else {
+-    for(uint8_t y=0;y<16;y++)for(uint8_t x=0;x<32;x++)SEGMENT.setPixelColorXY(x,y,0);
+     if(overlay.kind==OVERLAY_SCOREBOARD&&overlay.entryCount) {
+       hbnfDrawText(overlay.label,0,fg);
+       const uint8_t pages=(uint8_t)((overlay.entryCount+1u)/2u);
+@@ -301,6 +316,7 @@
+     nextVariantAt_ = 0; transitionStartAt_ = 0; transitionActive_ = false; configDirtyAt_ = 0;
+     hasSelectedVariant_=false;
+     configDirty_ = false; vibe_.reset(); expression_.reset();
++    vibeFeatures_.reset(); autoVibe_.reset(); resolvedVibe_=VIBE_CHILL; audioFeatures_=AudioFeatures{};
+   }
+ 
+   void initialize(uint32_t seed,uint32_t now) { generator_.reset(seed); chooseVariant(now); previousVariant_=variant_; transitionActive_=false; }
+@@ -319,6 +335,14 @@
+   void markConfigDirty(uint32_t now) { configDirty_=true; configDirtyAt_=now; }
+   void invalidateFrame() { cachedNow_=0xffffffffu; }
+   void restoreSettings(uint8_t matrix,uint8_t aux) { controls_.matrixBrightness=matrix; controls_.auxBrightness=aux; }
++  void selectVibe(Vibe vibe,uint32_t now) {
++    if((uint8_t)vibe>(uint8_t)VIBE_AUTO||controls_.vibe==vibe)return;
++    controls_.vibe=vibe;
++    if(vibe!=VIBE_AUTO)resolvedVibe_=vibe;
++    else {autoVibe_.reset(now);resolvedVibe_=VIBE_CHILL;}
++    chooseVariant(now);invalidateFrame();
++  }
++  Vibe resolvedVibe() const { return resolvedVibe_; }
+ 
+   const CanonicalFrame& frame() {
+     const uint32_t now = strip.now;
+@@ -334,9 +358,13 @@
+     phaseQ16_ = advancePhaseQ16(phaseQ16_,dt,controls_.motion);
+ 
+     if (audioNow_ != now) lastAudio_ = readAudio(now);
++    const Vibe nextVibe=controls_.vibe==VIBE_AUTO?autoVibe_.update(audioFeatures_,now):controls_.vibe;
++    if(nextVibe!=resolvedVibe_){resolvedVibe_=nextVibe;chooseVariant(now);}
+     // Keep every appearance-defining variant field fixed for the full dwell.
+     // The effect clock supplies continuous motion; audio lanes supply continuous response.
+     cached_ = makeFrame(++frameNo_, phaseQ16_, controls_, lastAudio_, variant_, previousVariant_, transitionMix(millis()));
++    cached_.vibe=resolvedVibe_;
++    cached_.vibeAxes=vibeResponse(resolvedVibe_,audioFeatures_);
+     cachedNow_ = now;
+     return cached_;
+   }
+@@ -371,7 +399,12 @@
+       memcmp(&generator_,&other.generator_,sizeof(generator_))==0 &&
+       memcmp(&vibe_,&other.vibe_,sizeof(vibe_))==0 &&
+       memcmp(&expression_,&other.expression_,sizeof(expression_))==0 &&
++      memcmp(&vibeFeatures_,&other.vibeFeatures_,sizeof(vibeFeatures_))==0 &&
++      memcmp(&autoVibe_,&other.autoVibe_,sizeof(autoVibe_))==0 &&
++      memcmp(&audioFeatures_,&other.audioFeatures_,sizeof(audioFeatures_))==0 &&
++      resolvedVibe_==other.resolvedVibe_ &&
+       transitionStartAt_==other.transitionStartAt_ && configDirtyAt_==other.configDirtyAt_ &&
++      transitionDurationMs_==other.transitionDurationMs_ &&
+       hasSelectedVariant_==other.hasSelectedVariant_ && transitionActive_==other.transitionActive_ &&
+       configDirty_==other.configDirty_ && audioNow_==other.audioNow_;
+   }
+@@ -390,7 +423,12 @@
+   hbnf::GenerativeV4 generator_{};
+   hbnf::Vibe16 vibe_{};
+   hbnf::AudioExpression expression_{};
++  VibeAudioFeatures vibeFeatures_{};
++  AutoVibeSelector autoVibe_{};
++  AudioFeatures audioFeatures_{};
++  Vibe resolvedVibe_=VIBE_CHILL;
+   uint32_t nextVariantAt_=0,transitionStartAt_=0,configDirtyAt_=0;
++  uint16_t transitionDurationMs_=3000;
+   bool hasSelectedVariant_=false;
+   bool transitionActive_=false,configDirty_=false;
+   uint32_t audioNow_=0;
+@@ -414,6 +452,18 @@
+     variant_.transform=(uint8_t)(v.variantCode&7u);
+     variant_.warp=(uint8_t)(v.variantCode>>5);
+     variant_.salt=v.offset; variant_.dwellSeconds=v.dwellSeconds; variant_.signature=v.signature;
++    const VibeAxes axes=vibeResponse(resolvedVibe_,audioFeatures_);
++    variant_.profile=vibeProfileCode(resolvedVibe_);
++    variant_.style=vibeStyleCode(resolvedVibe_);
++    const uint16_t speedScale=(uint16_t)(128u+(uint16_t)axes.flow*127u/255u);
++    uint16_t mappedSpeed=(uint16_t)(((uint16_t)v.speed*speedScale+127u)/255u);
++    variant_.speed=(uint8_t)(mappedSpeed<54u?54u:(mappedSpeed>220u?220u:mappedSpeed));
++    const uint16_t mappedAmount=(uint16_t)v.amount-((uint16_t)(255u-axes.detail)*18u/255u);
++    variant_.amount=(uint8_t)(mappedAmount<160u?160u:(mappedAmount>255u?255u:mappedAmount));
++    variant_.hueOffset=(int8_t)((int16_t)axes.paletteMotion-128);
++    if(axes.symmetry>190u)variant_.transform^=0x03u;
++    static const uint16_t transitionMs[5]={4200,2300,1550,1900,4800};
++    transitionDurationMs_=transitionMs[(uint8_t)resolvedVibe_<5u?(uint8_t)resolvedVibe_:0u];
+     nextVariantAt_=now+(uint32_t)v.dwellSeconds*1000u;
+     hasSelectedVariant_=true;
+   }
+@@ -421,8 +471,8 @@
+   uint8_t transitionMix(uint32_t now) const {
+     if(!transitionActive_) return 255;
+     const uint32_t elapsed=now-transitionStartAt_;
+-    if(elapsed>=3000u) return 255;
+-    return (uint8_t)((elapsed*255u)/3000u);
++    if(elapsed>=transitionDurationMs_) return 255;
++    return (uint8_t)((elapsed*255u)/transitionDurationMs_);
+   }
+ 
+   static uint8_t unit8(float v) {
+@@ -443,6 +493,8 @@
+       const hbnf::AudioExpressionSignals e=expression_.update(silent,dt);
+       a.lowEnergy=unit8(e.lowEnergy);a.midEnergy=unit8(e.midEnergy);a.highEnergy=unit8(e.highEnergy);
+       a.transient=unit8(e.transient);a.slowEnergy=unit8(e.slowEnergy);
++      VibeAudioInput input{};input.silent=true;
++      audioFeatures_=vibeFeatures_.update(input,(uint32_t)(dt*1000.0f));
+       return a;
+     }
+ 
+@@ -459,6 +511,13 @@
+     a=audioFromVibe(m.bassPulse,m.midPulse,m.treblePulse,m.bassAtt,m.midAtt,m.trebleAtt,m.energy,a.volume,peak);
+     a.lowEnergy=unit8(e.lowEnergy);a.midEnergy=unit8(e.midEnergy);a.highEnergy=unit8(e.highEnergy);
+     a.transient=unit8(e.transient);a.slowEnergy=unit8(e.slowEnergy);
++    VibeAudioInput input{};
++    for(uint8_t i=0;i<16;i++)input.fft[i]=fft[i];
++    input.volume=volume/255.0f;input.bassAtt=m.bassAtt;input.midAtt=m.midAtt;input.trebleAtt=m.trebleAtt;
++    input.bassPulse=m.bassPulse;input.midPulse=m.midPulse;input.treblePulse=m.treblePulse;
++    input.energy=m.energy;input.lowEnergy=e.lowEnergy;input.midEnergy=e.midEnergy;input.highEnergy=e.highEnergy;
++    input.transient=e.transient;input.slowEnergy=e.slowEnergy;input.silent=m.silent;
++    audioFeatures_=vibeFeatures_.update(input,(uint32_t)(dt*1000.0f));
+     return a;
+   }
+ };
+@@ -651,7 +710,7 @@
+     const Rgb8 colored=hbnfPalette.mode==PALETTE_LEGACY?hueRotate(Rgb8(r,g,b),hue):hbnfPaletteColor(r,g,b,hue);
+     const uint32_t colorCycles=hbnfCycles()-colorStart; hbnfPerfWorking.color+=colorCycles;
+     if(hbnfPerfWorking.inKernel)hbnfPerfWorking.colorInKernel+=colorCycles;
+-    const Rgb8 rendered=colored;
++    const Rgb8 rendered=composeVibeColor(colored,*frame_,tx,ty);
+     if(x>=0&&x<32&&y>=0&&y<16&&tx<32&&ty<16) canonicalMatrixPixels[ty*32u+tx]=rendered;
+     if(deferOutput_) return;
+     const Rgb8 matrix=hbnfScaleMatrixOutput(rendered,outputScale_);
+@@ -932,7 +991,7 @@
+     foundationAnimartrix.beginFrame(f,millis());
+     foundationAnimartrix.render(f.variant.kernel,f.variant.speed);
+     const uint32_t overlayStart=hbnfCycles();
+-    if(!hbnfRenderCommandOverlay(f.controls.matrixBrightness))hbnfRenderLiveOverlay(f.controls.matrixBrightness);
++    if(!hbnfRenderCommandOverlay(f.controls.matrixBrightness,f.vibe))hbnfRenderLiveOverlay(f.controls.matrixBrightness);
+     hbnfPerfWorking.overlay+=hbnfCycles()-overlayStart;
+ #if defined(HBNF_PACKET20_DIAGNOSTICS)
+     if(matrixSegment)packet20ServiceAtRendererSafePoint();
+@@ -965,6 +1024,20 @@
+     return (Scene)n;
+   }
+   return fallback;
++}
++
++static bool vibeFrom(JsonVariantConst v,Vibe& out) {
++  if(v.is<int>()) { const int n=v.as<int>();if(n<0||n>(int)VIBE_AUTO)return false;out=(Vibe)n;return true; }
++  if(!v.is<const char*>())return false;
++  const char* s=v.as<const char*>();
++  if(!strcmp(s,"chill"))out=VIBE_CHILL;
++  else if(!strcmp(s,"groove"))out=VIBE_GROOVE;
++  else if(!strcmp(s,"heavy"))out=VIBE_HEAVY;
++  else if(!strcmp(s,"psychedelic"))out=VIBE_PSYCHEDELIC;
++  else if(!strcmp(s,"cosmic"))out=VIBE_COSMIC;
++  else if(!strcmp(s,"auto"))out=VIBE_AUTO;
++  else return false;
++  return true;
+ }
+ 
+ class HbnfFoundationV1Usermod : public Usermod {
+@@ -990,6 +1063,7 @@
+     JsonObject h=root.createNestedObject("hbnfFoundationV1");
+     h["matrixBrightness"]=runtime.controls().matrixBrightness;
+     h["auxBrightness"]=runtime.controls().auxBrightness;
++    h["vibe"]=(uint8_t)runtime.controls().vibe;
+   }
+ 
+   bool readFromConfig(JsonObject& root) override {
+@@ -998,6 +1072,8 @@
+     uint8_t matrix=h["matrixBrightness"] | 24;
+     uint8_t aux=h["auxBrightness"] | 24;
+     runtime.restoreSettings(matrix,aux);
++    if(!h["vibe"].isNull()&&h["vibe"].is<int>()&&h["vibe"].as<int>()>=0&&h["vibe"].as<int>()<=(int)VIBE_AUTO)
++      runtime.controls().vibe=(Vibe)h["vibe"].as<int>();
+     return complete;
+   }
+ 
+@@ -1080,6 +1156,8 @@
+     h["transport"]="wled-native-ddp-unicast";
+     h["effectId"]=foundationEffectId;
+     h["scene"]=(uint8_t)c.scene;
++    h["vibe"]=(uint8_t)c.vibe;
++    h["activeVibe"]=(uint8_t)runtime.resolvedVibe();
+     h["motion"]=c.motion;
+     h["audioResponse"]=c.audioResponse;
+     h["matrixBrightness"]=c.matrixBrightness;
+@@ -1193,10 +1271,12 @@
+     if(!h["audioResponse"].isNull()) { uint8_t v=(uint8_t)constrain(h["audioResponse"].as<int>(),0,100); renderChanged|=v!=c.audioResponse; c.audioResponse=v; }
+     if(!h["matrixBrightness"].isNull()) { uint8_t v=(uint8_t)constrain(h["matrixBrightness"].as<int>(),0,255); settingsChanged|=v!=c.matrixBrightness; c.matrixBrightness=v; }
+     if(!h["auxBrightness"].isNull()) { uint8_t v=(uint8_t)constrain(h["auxBrightness"].as<int>(),0,255); settingsChanged|=v!=c.auxBrightness; c.auxBrightness=v; }
++    bool vibeChanged=false;
++    if(!h["vibe"].isNull()) { Vibe requested;if(vibeFrom(h["vibe"],requested)&&requested!=c.vibe){runtime.selectVibe(requested,millis());renderChanged=true;vibeChanged=true;} }
+     Scene previous=c.scene;
+     if(!h["scene"].isNull()) c.scene=sceneFrom(h["scene"],c.scene);
+     if(previous!=c.scene) { runtime.chooseSceneVariant(millis()); renderChanged=true; }
+-    if(settingsChanged) runtime.markConfigDirty(millis());
++    if(settingsChanged||vibeChanged) runtime.markConfigDirty(millis());
+     if(settingsChanged || renderChanged) { runtime.invalidateFrame(); stateChanged=true; }
+     bri=255; briLast=255;
+     strip.setBrightness(255,true);
+--- a/usermods/hbnf_foundation_v1/hbnf_local_ui.h
++++ b/usermods/hbnf_foundation_v1/hbnf_local_ui.h
+@@ -62,6 +62,16 @@
+ </div>
+ </section>
+ 
++<section class="panel" aria-label="Vibe selection">
++<div class="head"><span>Vibe</span><span id="activeVibe" class="sub">CHILL</span></div>
++<div class="scene">
++<button data-vibe="chill">Chill</button><button data-vibe="groove">Groove</button>
++<button data-vibe="psychedelic">Psychedelic</button><button data-vibe="heavy">Heavy</button>
++<button data-vibe="cosmic">Cosmic</button><button data-vibe="auto">Auto</button>
++</div>
++<p class="sub">Local Matrix selection. Auto follows broad audio features with a long dwell; appearance remains owner-reviewable.</p>
++</section>
++
+ <section class="panel">
+ <label><span class="head"><span>Motion</span><output id="motionOut">50</output></span>
+ <input id="motion" type="range" min="0" max="100" value="50"></label>
+@@ -99,7 +109,7 @@
+ 
+ <script>
+ const $=s=>document.querySelector(s);
+-const defaults={scene:"course-flow",motion:50,audio:50,matrixBrightness:24,auxBrightness:24};
++const defaults={scene:"course-flow",vibe:"chill",motion:50,audio:50,matrixBrightness:24,auxBrightness:24};
+ const stored=(()=>{try{return JSON.parse(localStorage.getItem("hbnf.foundation.v1")||"{}")}catch(_){return {}}})();
+ const state=Object.assign({},defaults,stored),pending={};
+ let ws=null,fx=null,retry=null,retryDelay=500,fxInitSent=false,brightnessTimers={},everConnected=false,connectStarted=0,lastPongAt=0,pendingAt={};
+@@ -131,6 +141,8 @@
+ document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){publishLive(true);clearTimeout(liveTimer);liveTimer=setTimeout(refreshLive,150)}});window.addEventListener("online",()=>{setWanStatus("checking");clearTimeout(liveTimer);liveTimer=setTimeout(refreshLive,150)});window.addEventListener("offline",()=>{setWanStatus("offline");if(liveSnapshot&&Date.now()-liveSnapshot.receivedAt<LIVE_CACHE_TTL_MS)liveDisplay(liveSnapshot.data,"CACHED")});if(restoreLiveSnapshot()){liveDisplay(liveSnapshot.data,"CACHED");publishLive(true)}refreshLive();
+ // AI: end
+ const sceneName=n=>["course-flow","field-mix","hbnf-signature","quiet-cosmos"][Number(n)]||"course-flow";
++const vibeNames=["chill","groove","heavy","psychedelic","cosmic","auto"];
++const vibeIndex=v=>typeof v==="number"?((v>=0&&v<6)?v:0):Math.max(0,vibeNames.indexOf(String(v).toLowerCase()));
+ function saveLocal(){try{localStorage.setItem("hbnf.foundation.v1",JSON.stringify(state))}catch(_){}}
+ function setStatus(id,text,kind){const el=$(id);if(el){el.textContent=text;el.className="status-value "+kind}}
+ function setWanStatus(value){if(value==="online")setStatus("#wanTruth","LIVE DATA REACHABLE","ok");else if(value==="offline")setStatus("#wanTruth",liveSnapshot&&freshLiveSnapshot()?"WAN UNAVAILABLE · CACHED":"WAN / LIVE DATA UNAVAILABLE","bad");else setStatus("#wanTruth","CHECKING","unknown")}
+@@ -146,6 +158,8 @@
+  const h=s.HBNF||{};
+  if(h.effectId!=null)fx=Number(h.effectId);
+  if(h.scene!=null&&!pending.scene)state.scene=typeof h.scene==="number"?sceneName(h.scene):h.scene;
++ if(h.vibe!=null){if(pending.vibe!=null&&(Number(h.vibe)===pending.vibe||Date.now()-pendingAt.vibe>2000)){delete pending.vibe;delete pendingAt.vibe}if(!pending.vibe)state.vibe=vibeNames[vibeIndex(h.vibe)]};
++ if(h.activeVibe!=null)$("#activeVibe").textContent=vibeNames[vibeIndex(h.activeVibe)].toUpperCase()+(state.vibe==="auto"?" · AUTO":"");
+  if(h.motion!=null&&!pending.motion)state.motion=Number(h.motion);
+  if(h.audioResponse!=null&&!pending.audio)state.audio=Number(h.audioResponse);
+  if(h.palette&&h.palette.mode){$("#paletteMode").value=h.palette.mode;if(h.palette.mode==="wled"&&h.palette.index!=null)$("#paletteIndex").value=String(h.palette.index);if(h.palette.mode==="solid"&&Array.isArray(h.palette.rgb))$("#solidColor").value="#"+h.palette.rgb.map(v=>Number(v).toString(16).padStart(2,"0")).join("")}
+@@ -158,18 +172,19 @@
+  setSlider("#motion","#motionOut",state.motion);setSlider("#audio","#audioOut",state.audio);
+  setSlider("#matrix","#matrixOut",state.matrixBrightness);setSlider("#aux","#auxOut",state.auxBrightness);
+  document.querySelectorAll("[data-scene]").forEach(b=>b.classList.toggle("active",b.dataset.scene===state.scene));
++ document.querySelectorAll("[data-vibe]").forEach(b=>b.classList.toggle("active",b.dataset.vibe===state.vibe));$("#activeVibe").textContent=vibeNames[vibeIndex(h.activeVibe==null?h.vibe:h.activeVibe)].toUpperCase()+(state.vibe==="auto"?" · AUTO":"");
+  renderLocalStatus(true);
+  const seg=Array.isArray(s.seg)?s.seg:[],m=seg.find(x=>Number(x.id)===0),a=seg.find(x=>Number(x.id)===1);
+  if(fx!=null&&!fxInitSent&&(!m||Number(m.fx)!==fx||!a||Number(a.fx)!==fx)){fxInitSent=true;ensureFx()}
+  saveLocal();notifyCanonicalWaiters();
+ }
+-const canonicalCaps={canonicalPaletteIntentV1:true,canonicalOverlayIntentV1:true,localWebSocketV1:true};
++const canonicalCaps={canonicalPaletteIntentV1:true,canonicalOverlayIntentV1:true,localWebSocketV1:true,localVibeSelectionV1:true};
+ const canonicalScenes={"course-flow":0,"field-mix":1,"hbnf-signature":2,"quiet-cosmos":3};
+ function canonicalPaletteId(h){const p=h&&h.palette;if(!p)return "";if(p.mode==="wled")return "wled-"+Number(p.index);if(p.mode==="solid"&&Array.isArray(p.rgb)&&p.rgb.length===3)return "solid-"+p.rgb.map(v=>Number(v).toString(16).padStart(2,"0")).join("").toUpperCase();return ""}
+-function canonicalSnapshot(){const s=canonicalDeviceState||{},h=s.HBNF||{},scene=typeof h.scene==="string"?h.scene:sceneName(h.scene||0);return {capabilities:canonicalCaps,desired:{revision:canonicalRevision,state:{sceneId:scene,paletteId:canonicalPaletteId(h),tuning:{motion:Number(h.motion==null?50:h.motion),audioResponse:Number(h.audioResponse==null?50:h.audioResponse)},devices:{matrix:{brightness:Number(h.matrixBrightness==null?24:h.matrixBrightness)},aux:{brightness:Number(h.auxBrightness==null?24:h.auxBrightness)}}}},observed:[],localState:s}}
++function canonicalSnapshot(){const s=canonicalDeviceState||{},h=s.HBNF||{},scene=typeof h.scene==="string"?h.scene:sceneName(h.scene||0),vibe=vibeNames[vibeIndex(h.vibe)];return {capabilities:canonicalCaps,desired:{revision:canonicalRevision,state:{sceneId:scene,vibe:vibe,paletteId:canonicalPaletteId(h),tuning:{motion:Number(h.motion==null?50:h.motion),audioResponse:Number(h.audioResponse==null?50:h.audioResponse)},devices:{matrix:{brightness:Number(h.matrixBrightness==null?24:h.matrixBrightness)},aux:{brightness:Number(h.auxBrightness==null?24:h.auxBrightness)}}}},observed:[],localState:s}}
+ function notifyCanonicalWaiters(){for(let i=canonicalWaiters.length-1;i>=0;i--){const w=canonicalWaiters[i];if(canonicalRevision<=w.after)continue;let ok=false;try{ok=w.test(canonicalDeviceState||{})}catch(_){}if(ok){canonicalWaiters.splice(i,1);clearTimeout(w.timer);w.resolve(canonicalSnapshot())}}}
+ function waitCanonical(test,after){return new Promise((resolve,reject)=>{const waiter={test:test,after:after,resolve:resolve,reject:reject,timer:null};waiter.timer=setTimeout(()=>{const i=canonicalWaiters.indexOf(waiter);if(i>=0)canonicalWaiters.splice(i,1);reject(new Error("Local Matrix did not confirm the requested state."))},2500);canonicalWaiters.push(waiter);if(ws&&ws.readyState===1)try{ws.send('{"v":true}')}catch(_){}})}
+-function canonicalPatch(type,p){p=p||{};const h={};if(type==="SCENE"){if(!Object.prototype.hasOwnProperty.call(canonicalScenes,String(p.sceneId||"")))throw new Error("Unsupported local scene.");h.scene=String(p.sceneId)}else if(type==="PALETTE"){const id=String(p.paletteId||"");let m=/^wled-(\d{1,3})$/.exec(id);if(m){const index=Number(m[1]);if(index<0||index>255)throw new Error("Invalid palette index.");h.palette={mode:"wled",index:index}}else if((m=/^solid-([0-9A-Fa-f]{6})$/.exec(id))){const hex=m[1];h.palette={mode:"solid",rgb:[parseInt(hex.slice(0,2),16),parseInt(hex.slice(2,4),16),parseInt(hex.slice(4,6),16)]}}else throw new Error("Unsupported local palette selection.")}else if(type==="TUNE"){if(p.sceneId!=null){if(!Object.prototype.hasOwnProperty.call(canonicalScenes,String(p.sceneId)))throw new Error("Unsupported local scene.");h.scene=String(p.sceneId)}for(const pair of [["motion","motion",0,100],["audioResponse","audioResponse",0,100],["matrixBrightness","matrixBrightness",0,255],["auxBrightness","auxBrightness",0,255]])if(p[pair[0]]!=null){const n=Number(p[pair[0]]);if(!Number.isInteger(n)||n<pair[2]||n>pair[3])throw new Error("Invalid local "+pair[0]+".");h[pair[1]]=n}if(!Object.keys(h).length)throw new Error("No supported local tuning values were supplied.")}else if(type==="OVERLAY_START"){const d=p.data||{},id=String(p.overlayId||""),ttl=Number(p.ttlMs),kind=String(p.kind||"");if(!id||id.length>39||!Number.isInteger(ttl)||ttl<250||ttl>30000)throw new Error("Invalid local overlay identity or TTL.");if(kind==="text"){const text=String(d.text||"").trim(),color=String(d.color||"#FFFFFF");if(!text||text.length>63||!/^#[0-9A-Fa-f]{6}$/.test(color))throw new Error("Invalid local text overlay.");h.overlay={id:id,kind:kind,ttlMs:ttl,text:text,color:color.toUpperCase()}}else if(kind==="scoreboard"){const label=String(d.label||"SCORES"),entries=Array.isArray(d.entries)?d.entries.slice(0,12).map(x=>String(x).trim()):[];if(["F9","B9","GLOW","SCORES"].indexOf(label)<0||!entries.length||entries.some(x=>!x||x.length>63))throw new Error("Invalid local scoreboard overlay.");h.overlay={id:id,kind:kind,ttlMs:ttl,label:label,entries:entries}}else throw new Error("Unsupported local overlay kind.")}else if(type==="OVERLAY_CLEAR"||type==="OVERLAY_EXPIRE")h.overlay=null;else throw new Error("Unsupported local canonical command: "+String(type));return {HBNF:h}}
++function canonicalPatch(type,p){p=p||{};const h={};if(type==="SCENE"){if(!Object.prototype.hasOwnProperty.call(canonicalScenes,String(p.sceneId||"")))throw new Error("Unsupported local scene.");h.scene=String(p.sceneId)}else if(type==="VIBE"){const v=String(p.vibe||"").toLowerCase(),n=vibeNames.indexOf(v);if(n<0)throw new Error("Unsupported local Vibe.");h.vibe=n}else if(type==="PALETTE"){const id=String(p.paletteId||"");let m=/^wled-(\d{1,3})$/.exec(id);if(m){const index=Number(m[1]);if(index<0||index>255)throw new Error("Invalid palette index.");h.palette={mode:"wled",index:index}}else if((m=/^solid-([0-9A-Fa-f]{6})$/.exec(id))){const hex=m[1];h.palette={mode:"solid",rgb:[parseInt(hex.slice(0,2),16),parseInt(hex.slice(2,4),16),parseInt(hex.slice(4,6),16)]}}else throw new Error("Unsupported local palette selection.")}else if(type==="TUNE"){if(p.sceneId!=null){if(!Object.prototype.hasOwnProperty.call(canonicalScenes,String(p.sceneId)))throw new Error("Unsupported local scene.");h.scene=String(p.sceneId)}for(const pair of [["vibe","vibe",0,5],["motion","motion",0,100],["audioResponse","audioResponse",0,100],["matrixBrightness","matrixBrightness",0,255],["auxBrightness","auxBrightness",0,255]])if(p[pair[0]]!=null){const n=Number(p[pair[0]]);if(!Number.isInteger(n)||n<pair[2]||n>pair[3])throw new Error("Invalid local "+pair[0]+".");h[pair[1]]=n}if(!Object.keys(h).length)throw new Error("No supported local tuning values were supplied.")}else if(type==="OVERLAY_START"){const d=p.data||{},id=String(p.overlayId||""),ttl=Number(p.ttlMs),kind=String(p.kind||"");if(!id||id.length>39||!Number.isInteger(ttl)||ttl<250||ttl>30000)throw new Error("Invalid local overlay identity or TTL.");if(kind==="text"){const text=String(d.text||"").trim(),color=String(d.color||"#FFFFFF");if(!text||text.length>63||!/^#[0-9A-Fa-f]{6}$/.test(color))throw new Error("Invalid local text overlay.");h.overlay={id:id,kind:kind,ttlMs:ttl,text:text,color:color.toUpperCase()}}else if(kind==="scoreboard"){const label=String(d.label||"SCORES"),entries=Array.isArray(d.entries)?d.entries.slice(0,12).map(x=>String(x).trim()):[];if(["F9","B9","GLOW","SCORES"].indexOf(label)<0||!entries.length||entries.some(x=>!x||x.length>63))throw new Error("Invalid local scoreboard overlay.");h.overlay={id:id,kind:kind,ttlMs:ttl,label:label,entries:entries}}else throw new Error("Unsupported local overlay kind.")}else if(type==="OVERLAY_CLEAR"||type==="OVERLAY_EXPIRE")h.overlay=null;else throw new Error("Unsupported local canonical command: "+String(type));return {HBNF:h}}
+ function canonicalCommand(type,payload){if(!ws||ws.readyState!==1)return Promise.reject(new Error("Local Matrix WebSocket is unavailable."));const message=canonicalPatch(type,payload),expected=message.HBNF,before=canonicalRevision;const confirmed=waitCanonical(next=>Object.keys(expected).every(key=>{const h=next.HBNF||{};if(key==="overlay"&&expected.overlay===null)return !h.overlayId;if(key==="overlay"&&expected.overlay)return h.overlayId===expected.overlay.id;if(key==="palette")return JSON.stringify(h.palette)===JSON.stringify(expected.palette);return h[key]===expected[key]}),before);if(!send(message))return Promise.reject(new Error("Local Matrix WebSocket is unavailable."));return confirmed.then(out=>({revision:out.desired.revision,accepted:true,state:out}))}
+ function canonicalOverlay(kind,data,ttlMs){const ttl=Number.isFinite(Number(ttlMs))?Math.max(1000,Math.min(30000,Math.round(Number(ttlMs)) )):(kind==="scoreboard"?22000:8000);return canonicalCommand("OVERLAY_START",{overlayId:newOverlayId(),kind:kind,priority:60,ttlMs:ttl,data:data||{}})}
+ function canonicalRefresh(){if(!ws||ws.readyState!==1)return Promise.reject(new Error("Local Matrix WebSocket is unavailable."));const before=canonicalRevision;try{ws.send('{"v":true}')}catch(error){return Promise.reject(error)}return waitCanonical(next=>!!next.HBNF,before)}
+@@ -197,6 +212,7 @@
+ window.addEventListener("online",()=>{clearTimeout(liveTimer);liveTimer=setTimeout(refreshLive,150);resumeConnection()});
+ connect();setInterval(()=>{if(ws&&ws.readyState===1){if(lastPongAt&&Date.now()-lastPongAt>15000){dropSocket();renderLocalStatus(false,"MATRIX STATUS STALE · RECONNECTING");scheduleReconnect();return}try{ws.send("p")}catch(_){dropSocket();scheduleReconnect()}}},5000);
+ document.querySelectorAll("[data-scene]").forEach(b=>b.onclick=()=>{state.scene=b.dataset.scene;saveLocal();document.querySelectorAll("[data-scene]").forEach(x=>x.classList.toggle("active",x===b));send({HBNF:{scene:state.scene}})});
++document.querySelectorAll("[data-vibe]").forEach(b=>b.onclick=()=>{const i=vibeNames.indexOf(b.dataset.vibe);if(i<0)return;state.vibe=b.dataset.vibe;saveLocal();document.querySelectorAll("[data-vibe]").forEach(x=>x.classList.toggle("active",x===b));$("#activeVibe").textContent=state.vibe.toUpperCase();pending.vibe=i;pendingAt.vibe=Date.now();send({HBNF:{vibe:i}})});
+ function liveRange(id,out,field){const el=$(id),o=$(out);let timer=null;function commit(){const v=Number(el.value);state[field]=v;saveLocal();const update={};update[field]=v;if(send({HBNF:update})){pending[field]=v;pendingAt[field]=Date.now()}else{delete pending[field];delete pendingAt[field]}}
+  el.oninput=()=>{const v=Number(el.value);o.value=v;state[field]=v;saveLocal();clearTimeout(timer);timer=setTimeout(commit,90)};
+  el.onchange=()=>{clearTimeout(timer);commit()};}
+--- a/usermods/hbnf_foundation_v1/hbnf_native_text.h
++++ b/usermods/hbnf_foundation_v1/hbnf_native_text.h
+@@ -33,13 +33,13 @@
+ 
+ template<class FontT>
+ static inline void draw(FontT& font, const char* text, int16_t x,
+-                        int16_t y, uint32_t color) {
++                        int16_t y, uint32_t color,uint32_t color2=0,uint8_t alpha=255) {
+   if (!text || !*text) return;
+   const uint8_t spacing = font.getFontSpacing();
+   for (const uint8_t* p = reinterpret_cast<const uint8_t*>(text); *p; ++p) {
+     const uint8_t code = (*p >= 32 && *p <= 126) ? *p : '?';
+     const uint8_t width = font.getGlyphWidth(code);
+-    font.drawCharacter(code, x, y, color, color, 0);
++    font.drawCharacter(code, x, y, color, color2?color2:color, 0, alpha);
+     x = static_cast<int16_t>(x + width + spacing);
+   }
+ }
+@@ -87,7 +87,8 @@
+ static inline void drawPaged(FontT& font, const char* text,
+                              uint32_t elapsedMs, uint8_t canvasWidth,
+                              uint8_t canvasHeight, uint32_t color,
+-                             uint16_t pageHoldMs = 2200) {
++                             uint16_t pageHoldMs = 2200,uint32_t color2=0,
++                             uint8_t alpha=255,int8_t yOffset=0) {
+   if (!text || !*text) return;
+   char pageText[64]{};
+   const uint8_t count = packPage(font, text, 0, pageText);
+@@ -95,7 +96,7 @@
+   packPage(font, text, page, pageText);
+   const uint16_t width = textWidth(font, pageText);
+   int16_t x = static_cast<int16_t>(canvasWidth - width) / 2;
+-  const int16_t y = static_cast<int16_t>(canvasHeight - font.getFontHeight()) / 2;
++  const int16_t y = static_cast<int16_t>((canvasHeight - font.getFontHeight()) / 2)+yOffset;
+   if (width > canvasWidth) {
+     const uint16_t travel = static_cast<uint16_t>(width - canvasWidth);
+     const uint16_t phase = static_cast<uint16_t>(elapsedMs % pageHoldMs);
+@@ -104,6 +105,6 @@
+     x = static_cast<int16_t>(-((uint32_t)travel *
+         (active > scrollDuration ? scrollDuration : active) / scrollDuration));
+   }
+-  draw(font, pageText, x, y, color);
++  draw(font, pageText, x, y, color,color2,alpha);
+ }
+ } // namespace HbnfNativeText
+--- /dev/null
++++ b/usermods/hbnf_foundation_v1/hbnf_vibe_runtime.h
+@@ -0,0 +1,203 @@
++#pragma once
++
++#ifndef HBNF_VIBE_CORE_TYPES_DEFINED
++#include "hbnf_foundation_core.h"
++#endif
++#include <math.h>
++#include <stdint.h>
++
++namespace hbnf_v1 {
++
++struct AudioFeatures {
++  uint8_t energyShort=0,energyMedium=0,energySlow=0,lowPressure=0;
++  uint8_t lowTransient=0,midBody=0,midChange=0,highDetail=0;
++  uint8_t highTransient=0,spectralBrightness=0,spectralChange=0;
++  uint8_t activity=0,silenceConfidence=255;
++};
++
++// This is a reversible runtime adapter over WLED's existing FFT bins and the
++// existing Vibe16/AudioExpression envelopes. It does not run another FFT.
++struct VibeAudioInput {
++  uint8_t fft[16]{};
++  float volume=0.0f;
++  float bassAtt=0.0f,midAtt=0.0f,trebleAtt=0.0f;
++  float bassPulse=0.0f,midPulse=0.0f,treblePulse=0.0f;
++  float energy=0.0f,lowEnergy=0.0f,midEnergy=0.0f,highEnergy=0.0f;
++  float transient=0.0f,slowEnergy=0.0f;
++  bool silent=true;
++};
++
++class VibeAudioFeatures {
++ public:
++  void reset() {
++    initialized_=false;midChange_=spectralChange_=0;
++    for(uint8_t i=0;i<16;i++)previous_[i]=0;
++  }
++
++  AudioFeatures update(const VibeAudioInput& in,uint32_t dtMs) {
++    const uint16_t dt=(uint16_t)(dtMs<5u?5u:(dtMs>100u?100u:dtMs));
++    uint16_t bandSum[3]={0,0,0};
++    for(uint8_t i=0;i<4;i++)bandSum[0]+=in.fft[i];
++    for(uint8_t i=4;i<11;i++)bandSum[1]+=in.fft[i];
++    for(uint8_t i=11;i<16;i++)bandSum[2]+=in.fft[i];
++    const uint8_t band[3]={(uint8_t)(bandSum[0]/4u),(uint8_t)(bandSum[1]/7u),(uint8_t)(bandSum[2]/5u)};
++    const uint8_t fast[3]={normalizeEnvelope(in.bassAtt),normalizeEnvelope(in.midAtt),normalizeEnvelope(in.trebleAtt)};
++    const uint8_t medium[3]={unit(in.lowEnergy),unit(in.midEnergy),unit(in.highEnergy)};
++
++    AudioFeatures out{};
++    out.energyShort=in.silent?0:unit(in.energy);
++    out.energyMedium=(uint8_t)(((uint16_t)medium[0]+medium[1]+medium[2])/3u);
++    out.energySlow=in.silent?0:unit(in.slowEnergy);
++    out.lowPressure=mix(fast[0],medium[0],82,173);
++    out.lowTransient=in.silent?0:unit(in.bassPulse);
++    out.midBody=mix(fast[1],medium[1],77,178);
++    const uint8_t midDelta=absDiff(out.midBody,previousMid_);
++    previousMid_=out.midBody;
++    midChange_=smooth(midChange_,(uint8_t)min8(255u,(uint16_t)midDelta*5u),dt,180u);
++    out.midChange=midChange_;
++    out.highDetail=mix(fast[2],band[2],140,115);
++    out.highTransient=mix(unit(in.treblePulse),unit(in.transient),166,89);
++
++    uint32_t total=0,weighted=0,delta=0;
++    for(uint8_t i=0;i<16;i++) {
++      total+=in.fft[i];
++      weighted+=(uint32_t)i*in.fft[i];
++      if(initialized_)delta+=absDiff(in.fft[i],previous_[i]);
++      previous_[i]=in.fft[i];
++    }
++    initialized_=true;
++    out.spectralBrightness=total?(uint8_t)((weighted*255u+(total*7u))/(total*15u)):0;
++    const uint8_t rawChange=(uint8_t)min8(255u,(delta*3u+8u)/16u);
++    spectralChange_=smooth(spectralChange_,rawChange,dt,120u);
++    out.spectralChange=spectralChange_;
++    out.activity=out.energyShort>153u?(uint8_t)min8(255u,(uint16_t)out.energyShort*8u/5u):out.energyShort;
++    out.activity=max8(out.activity,max8(out.lowTransient,max8(out.midChange,max8(out.highTransient,out.spectralChange))));
++    const uint8_t presence=max8(unit(in.volume), (uint8_t)((total+8u)/16u));
++    out.silenceConfidence=in.silent?255u:(presence>25u?0u:(uint8_t)(255u-presence*10u));
++    return out;
++  }
++
++ private:
++  static uint8_t unit(float v) { return !isfinite(v)||v<=0?0:(v>=1.0f?255:(uint8_t)(v*255.0f+0.5f)); }
++  static uint8_t normalizeEnvelope(float v) { return !isfinite(v)||v<=0.62f?0:(v>=1.40f?255:(uint8_t)(((v-0.62f)*326.9231f)+0.5f)); }
++  static uint8_t mix(uint8_t a,uint8_t b,uint8_t wa,uint8_t wb) { return (uint8_t)(((uint16_t)a*wa+(uint16_t)b*wb+127u)/255u); }
++  static uint8_t absDiff(uint8_t a,uint8_t b) { return a>b?(uint8_t)(a-b):(uint8_t)(b-a); }
++  static uint16_t min8(uint16_t a,uint16_t b) { return a<b?a:b; }
++  static uint8_t max8(uint8_t a,uint8_t b) { return a>b?a:b; }
++  static uint8_t smooth(uint8_t old,uint8_t target,uint16_t dt,uint16_t tau) {
++    const uint16_t alpha=(uint16_t)(((uint32_t)dt*255u)/(tau+dt));
++    return (uint8_t)(((uint16_t)old*(255u-alpha)+(uint16_t)target*alpha+127u)/255u);
++  }
++  uint8_t previous_[16]{};
++  uint8_t previousMid_=0,midChange_=0,spectralChange_=0;
++  bool initialized_=false;
++};
++
++struct AxisWeights { int16_t base; int8_t feature[13]; };
++
++inline uint8_t vibeAxis(const AxisWeights& w,const AudioFeatures& f) {
++  const uint8_t values[13]={f.energyShort,f.energyMedium,f.energySlow,f.lowPressure,
++    f.lowTransient,f.midBody,f.midChange,f.highDetail,f.highTransient,
++    f.spectralBrightness,f.spectralChange,f.activity,f.silenceConfidence};
++  int32_t value=w.base;
++  for(uint8_t i=0;i<13;i++) value+=((int32_t)values[i]*(int32_t)w.feature[i])/255;
++  return (uint8_t)(value<0?0:(value>255?255:value));
++}
++
++inline VibeAxes vibeResponse(Vibe vibe,const AudioFeatures& f) {
++  // Q8 coefficients are a direct integer encoding of the checked-in provisional
++  // response grammar. Each audio dimension remains bounded to 0..255.
++  static const AxisWeights w[5][9]={
++    {{66,{0,0,0,0,0,0,0,0,0,0,0,0,0}}, {87,{0,38,0,0,0,31,0,0,0,0,0,0,0}}, {107,{0,0,0,51,0,0,0,0,0,0,0,0,0}}, {66,{0,0,0,0,0,0,20,0,0,0,0,0,0}}, {51,{0,0,0,0,0,0,0,31,0,0,0,0,0}}, {51,{0,0,0,0,0,0,0,0,0,0,26,0,0}}, {66,{0,26,0,0,0,0,0,0,0,0,0,0,0}}, {184,{0,0,0,0,0,0,0,0,0,0,-26,0,32}}, {46,{0,0,0,0,0,0,0,0,0,0,26,0,0}}},
++    {{97,{0,0,0,38,0,0,0,0,0,0,0,0,0}}, {122,{0,0,0,0,71,0,56,0,0,0,0,51,0}}, {71,{0,0,0,31,0,0,0,0,0,0,0,0,0}}, {56,{0,0,0,0,0,0,26,0,0,0,0,0,0}}, {92,{0,0,0,0,0,0,0,0,51,0,0,0,0}}, {87,{0,0,0,0,0,0,46,0,0,0,0,0,0}}, {122,{0,36,0,0,0,0,0,0,0,0,0,36,0}}, {107,{0,0,0,0,0,0,0,0,0,0,0,-26,0}}, {102,{0,0,0,0,51,0,0,0,0,0,0,0,0}}},
++    {{143,{0,0,0,66,77,0,0,0,0,0,0,0,0}}, {61,{0,20,0,0,0,0,0,0,0,0,0,0,0}}, {82,{0,0,0,46,0,0,0,0,0,0,0,0,0}}, {92,{0,0,0,0,31,0,0,0,0,0,0,0,0}}, {66,{0,0,0,0,0,0,0,0,26,0,0,0,0}}, {56,{0,0,0,0,0,0,0,0,0,0,20,0,0}}, {158,{0,0,0,0,0,0,0,0,0,0,0,0,0}}, {77,{0,0,0,-20,0,0,0,0,0,0,0,0,0}}, {122,{0,0,0,0,77,0,0,0,0,0,0,0,0}}},
++    {{87,{0,0,0,0,0,0,46,0,0,0,0,0,0}}, {87,{0,0,0,0,0,0,0,0,0,0,51,0,0}}, {97,{0,0,0,0,0,0,0,0,0,36,0,0,0}}, {148,{0,0,0,0,0,0,66,0,0,0,56,0,0}}, {133,{0,0,0,0,0,0,0,56,0,0,0,0,0}}, {163,{0,0,0,0,0,0,0,0,0,31,56,0,0}}, {117,{0,0,0,0,0,0,0,0,0,0,0,31,0}}, {97,{0,0,0,0,0,0,0,0,0,0,0,-20,0}}, {128,{0,0,0,0,0,0,0,0,0,0,61,0,0}}},
++    {{77,{0,0,0,0,0,31,0,0,0,0,0,0,0}}, {61,{0,0,31,0,0,0,0,0,0,0,0,0,0}}, {168,{0,0,0,61,0,0,0,0,0,0,0,0,36}}, {87,{0,0,0,0,0,0,20,0,0,0,0,0,0}}, {117,{0,0,0,0,0,0,0,61,31,0,0,0,0}}, {97,{0,0,0,0,0,0,0,0,0,46,0,0,0}}, {77,{0,26,0,0,0,0,0,0,0,0,0,0,0}}, {168,{0,0,0,0,0,0,0,0,0,0,0,-26,0}}, {77,{0,0,0,0,0,0,0,0,0,0,31,0,0}}}
++  };
++  const uint8_t v=(uint8_t)vibe<5u?(uint8_t)vibe:0u;
++  VibeAxes out{};
++  out.structure=vibeAxis(w[v][0],f);out.flow=vibeAxis(w[v][1],f);
++  out.depth=vibeAxis(w[v][2],f);out.symmetry=vibeAxis(w[v][3],f);
++  out.detail=vibeAxis(w[v][4],f);out.paletteMotion=vibeAxis(w[v][5],f);
++  out.density=vibeAxis(w[v][6],f);out.negativeSpace=vibeAxis(w[v][7],f);
++  out.transitionEnergy=vibeAxis(w[v][8],f);
++  return out;
++}
++
++// Reversible palette/composition defaults over the existing donor frame.
++// This bounded integer pass keeps the native renderer and continuous motion.
++inline Rgb8 composeVibeColor(Rgb8 c,const CanonicalFrame& f,uint16_t x,uint16_t y) {
++  if(!(c.r|c.g|c.b))return c;
++  const VibeAxes& a=f.vibeAxes;
++  const uint8_t t=(uint8_t)(f.phaseQ16>>8);
++  switch(f.vibe){
++    case VIBE_GROOVE: {
++      const uint8_t pulse=f.audio.midPulse>f.audio.bassPulse?f.audio.midPulse:f.audio.bassPulse;
++      const uint8_t weave=(uint8_t)((x*11u+y*7u+t/3u)&63u);
++      c=blend(c,Rgb8(c.g,c.b,c.r),(uint8_t)(30u+weave/3u+pulse/5u));
++      const uint8_t lift=(uint8_t)(188u+(uint16_t)a.flow*45u/255u+(uint16_t)pulse*22u/255u);
++      return scaleRgb(c,lift);
++    }
++    case VIBE_HEAVY: {
++      const uint8_t pulse=f.audio.bassPulse;
++      const uint8_t pressure=(uint8_t)(168u+(uint16_t)a.structure*55u/255u+(uint16_t)pulse*32u/255u);
++      c=scaleRgb(c,pressure);
++      if(((x+y+(t>>4))&7u)==0)c=blend(c,Rgb8(255,74,26),(uint8_t)(a.density/6u));
++      return c;
++    }
++    case VIBE_PSYCHEDELIC: {
++      const uint8_t wave=(uint8_t)((x*17u+y*29u+t+(uint16_t)f.audio.spectralChange/2u)&255u);
++      const uint8_t mix=(uint8_t)(24u+(uint16_t)a.paletteMotion/4u+(uint16_t)f.audio.highDetail/5u);
++      const Rgb8 shifted=(wave&128u)?Rgb8(c.g,c.b,c.r):Rgb8(c.b,c.r,c.g);
++      return blend(c,shifted,mix);
++    }
++    case VIBE_COSMIC: {
++      const uint8_t drift=(uint8_t)((t/24u)+(uint16_t)f.audio.slowEnergy/5u+(x*3u+y*5u)/4u);
++      if(drift&32u)c=blend(c,Rgb8(c.g,c.r,c.b),32u);
++      const uint8_t shade=(uint8_t)(174u+(uint16_t)a.depth*42u/255u+(uint16_t)f.audio.slowEnergy*23u/255u);
++      c=scaleRgb(c,shade);
++      return blend(c,Rgb8(44,72,190),(uint8_t)(a.negativeSpace/7u));
++    }
++    case VIBE_CHILL:
++    default: {
++      const uint8_t shade=(uint8_t)(184u+(uint16_t)a.depth*45u/255u+(uint16_t)f.audio.slowEnergy*18u/255u);
++      return scaleRgb(blend(c,Rgb8(c.g,c.b,c.r),a.paletteMotion/8u),shade);
++    }
++  }
++}
++
++class AutoVibeSelector {
++ public:
++  void reset(uint32_t now=0) { current_=VIBE_CHILL;lastSwitchMs_=now; }
++  Vibe update(const AudioFeatures& f,uint32_t now) {
++    if((uint32_t)(now-lastSwitchMs_)<45000u)return current_;
++    const uint8_t s[5]={
++      (uint8_t)(((uint16_t)f.silenceConfidence*140u+(uint16_t)(255u-f.activity)*77u+(uint16_t)f.energySlow*38u)/255u),
++      (uint8_t)(((uint16_t)f.midChange*115u+(uint16_t)f.lowTransient*89u+(uint16_t)f.activity*51u)/255u),
++      (uint8_t)(((uint16_t)f.lowPressure*128u+(uint16_t)f.lowTransient*89u+(uint16_t)f.energyMedium*38u)/255u),
++      (uint8_t)(((uint16_t)f.spectralChange*115u+(uint16_t)f.midChange*77u+(uint16_t)f.spectralBrightness*64u)/255u),
++      (uint8_t)(((uint16_t)f.energySlow*102u+(uint16_t)f.highDetail*77u+(uint16_t)(255u-f.activity)*77u)/255u)
++    };
++    uint8_t challenger=0;
++    for(uint8_t i=1;i<5;i++)if(s[i]>s[challenger])challenger=i;
++    if(challenger!=(uint8_t)current_ && (uint16_t)s[challenger]>=(uint16_t)s[(uint8_t)current_]+31u){
++      current_=(Vibe)challenger;lastSwitchMs_=now;
++    }
++    return current_;
++  }
++  Vibe current() const { return current_; }
++ private:
++  Vibe current_=VIBE_CHILL;
++  uint32_t lastSwitchMs_=0;
++};
++
++inline uint8_t vibeProfileCode(Vibe vibe) {
++  static const uint8_t code[5]={24,112,240,202,104};
++  return code[(uint8_t)vibe<5u?(uint8_t)vibe:0u];
++}
++inline uint8_t vibeStyleCode(Vibe vibe) {
++  static const uint8_t code[5]={24,104,64,204,24};
++  return code[(uint8_t)vibe<5u?(uint8_t)vibe:0u];
++}
++
++} // namespace hbnf_v1
+--- a/wled00/fontmanager.h
++++ b/wled00/fontmanager.h
+@@ -93,7 +93,7 @@
+   uint8_t getGlyphWidth(uint32_t unicode);
+ 
+   // Rendering
+-  void drawCharacter(uint32_t unicode, int16_t x, int16_t y, uint32_t color, uint32_t col2, int8_t rotate);
++  void drawCharacter(uint32_t unicode, int16_t x, int16_t y, uint32_t color, uint32_t col2, int8_t rotate, uint8_t alpha=255);
+ 
+ private:
+   Segment* _segment;
+--- a/wled00/fontmanager.cpp
++++ b/wled00/fontmanager.cpp
+@@ -386,7 +386,7 @@
+   return count;
+ }
+ 
+-void FontManager::drawCharacter(uint32_t unicode, int16_t x, int16_t y, uint32_t color, uint32_t col2, int8_t rotate) {
++void FontManager::drawCharacter(uint32_t unicode, int16_t x, int16_t y, uint32_t color, uint32_t col2, int8_t rotate, uint8_t alpha) {
+   uint8_t w, h;
+   const uint8_t* bitmap = getGlyphBitmap(unicode, w, h);
+   if (!bitmap || w == 0) return;
+@@ -407,7 +407,8 @@
+           case  2: x0 = x + (w-1) - col; y0 = y + (h-1) - row; break;
+           default: x0 = x + col;         y0 = y + row;         break;
+         }
+-        _segment->setPixelColorXY(x0, y0, c.color32); // bounds checking is done in setPixelColorXY
++        if(alpha==255)_segment->setPixelColorXY(x0, y0, c.color32);
++        else _segment->blendPixelColorXY(x0, y0, c.color32, alpha); // retain the rendered Matrix frame
+       }
+       bitIndex++;
+     }

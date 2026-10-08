@@ -108,6 +108,10 @@ For any task touching HBNF release engineering, firmware promotion, Cart 2.0 int
 
 26. For every engineering change, create a record using the applicability classes in `config/HBNF_CONTROL_MODEL.json` and validate it with `python3 scripts/hbnf_control.py check-change --change <record-or-manifest.json>`. Store decision records as evidence, not as policy. Unknown impact fails closed; architecture, new dependencies, subjective design, and bespoke replacement require the evidence defined by the control model. T4 progression requires the validated `evidence/engineering-governance/T4_ENGINEERING_GOVERNANCE_MANIFEST.json` artifact.
 
+27. Before each PlatformIO build, reuse the last successful pinned release capsule and record the exact command, environment, dependency closure, source identity, and cache state. Set a diagnostic budget and measurable phase outputs before starting. Judge progress from stage/log changes, object counts and timestamps, process CPU/RSS, memory pressure, and disk—not elapsed time alone. After 30 minutes without measurable progress, preserve the log and build tree, classify the failure/stall, then make at most one evidence-supported mechanism change. Do not repeat dependency archaeology unless new evidence invalidates the recorded closure; do not change LDF, packages, or compiler flags without proof.
+
+28. Use the existing 15-minute Live Status heartbeat during active work. Before a long operation record its start and expected checkpoint; update after it completes or its state materially changes. Include current task, last accomplishment, next checkpoint, actual blocker, source branch/head, timestamp, and live-mutation state. Never let heartbeat work interrupt a critical build, and never leave a stopped worker marked ACTIVE.
+
 These instructions exist to prevent governance drift, artifact loss, repeated rediscovery, storage bloat, and execution wheel-spinning across Codex tasks and chats.
 
 ## Single-capsule execution model

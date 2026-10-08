@@ -1,7 +1,7 @@
 {
   "schema": "hbnf-change-governance-v1",
-  "change_id": "P2_NATIVE_WLED_FONT_REVIEW_OPTIONS_R5_20261008",
-  "summary": "Add an optional native WLED FontManager slot field to the existing text overlay payload, preserve slot 4 as the default, and expose reversible review choices without freezing presentation.",
+  "change_id": "P2_VIBE_AUDIO_TEXT_MOMENTS_R5_20261008",
+  "summary": "Integrate provisional Vibe-specific audio interpretation and premium native-font Text/Moments rendering over the pinned WLED AudioReactive, ANIMartRIX, and FontManager paths; keep subjective presentation UNFROZEN.",
   "change_class": "SUBJECTIVE_DESIGN",
   "impact": {
     "architecture": false,
@@ -11,25 +11,32 @@
     "unknown": false
   },
   "evidence": {
-    "note": "Only the user-approved font option menu is exposed. Slot 4 remains selected by default. Treatment concepts remain UNFROZEN; this does not claim visual or owner acceptance.",
+    "note": "Implementation uses the pinned WLED AudioReactive FFT16, gain/AGC/noise gate, existing Vibe16/AudioExpression, donor ANIMartRIX effects, and FontManager. No second FFT, custom font renderer, or new dependency. Mappings and presentation defaults are reversible; owner aesthetic acceptance remains UNFROZEN.",
     "scoped_evidence": {
       "approved_architecture_reference": "Direct user direction: expose multiple viable pinned WLED-native font options, retain slot 4 as the provisional default, and keep font/treatment aesthetics UNFROZEN; preserve the existing OVERLAY_START command envelope.",
-      "affected_subsystem": "Optional OVERLAY_START.data.fontIndex validation and projection, pinned WLED FontManager selection, and Owner Text panel; no treatment renderer, scoring, audio/Vibe mapping, or live state change.",
+      "affected_subsystem": "Local Vibe state and Auto dwell, band-specific WLED audio feature adapter, Vibe-specific donor effect profile/style/speed/detail/transform and native scene-pixel modulation; native FontManager Text/Moments with blended entry/exit over continuing Matrix frames. No live state or cloud deployment.",
       "rollback_reference": "Remove the integration-r5 patch and additive reducer/adapter/UI/test changes; exact integration-r4 source patch and release identity remain unchanged.",
       "evidence_sources": [
         "https://github.com/wled/WLED/blob/29b389df1c1aaec6ff53aea742d17063b985906c/wled00/fontmanager.cpp",
         "https://kno.wled.ge/features/custom-fonts/",
         "firmware/phase2/integration-r4/SOURCE_BINDING.json: exact reconstructed R4 integrated source SHA-256 9672125b4f1914c73bf0d7a997ae81a430c8f4e4b1cb50956e1303ac19687bfa",
-        "work/checkpoints/20261008-r5-exact-r4-rebase-check/report.json: patch dry-run and application against exact R4 integrated source"
+        "work/checkpoints/20261008-r5-exact-r4-rebase-check/report.json: patch dry-run and application against exact R4 integrated source",
+        "https://kno.wled.ge/advanced/audio-reactive/",
+        "https://github.com/wled/WLED/tree/29b389df1c1aaec6ff53aea742d17063b985906c/usermods/audioreactive",
+        "work/r5-patch-work/usermods/hbnf_foundation_v1/hbnf_vibe_runtime.h",
+        "work/r5-patch-work/usermods/hbnf_foundation_v1/hbnf_animartrix_audio_bridge.h"
       ],
       "tests": [
         "Focused reducer tests for default slot 4, supported native slots 0/2/3/4, and rejection of slot 1/out-of-range/non-integer values.",
         "Staging adapter contract tests for validated fontIndex pass-through.",
         "Owner PWA package checks for font choices, slot 4 default, and disabled-until-capability behavior.",
-        "Patch dry-run and application against reconstructed exact integration-r4 source hash 9672125b4f1914c73bf0d7a997ae81a430c8f4e4b1cb50956e1303ac19687bfa."
+        "Patch dry-run and application against reconstructed exact integration-r4 source hash 9672125b4f1914c73bf0d7a997ae81a430c8f4e4b1cb50956e1303ac19687bfa.",
+        "Host replay covers bass-heavy, sustained-bass, mid-forward, percussion-rich, high-frequency, quiet-noise, silence, and steady-broadband synthetic traces; these are synthetic cases, not real-music evidence.",
+        "C++11 host compile verifies WLED-derived feature handling and distinct provisional renderer grammars.",
+        "ESP32 target build/performance and live frame pacing remain unqualified until hardware is available."
       ],
       "text_treatment_capability_review": {
-        "status": "OPTIONS_ONLY__NOT_IMPLEMENTED_OR_BUILT__AESTHETICS_UNFROZEN",
+        "status": "NATIVE_FONTMANAGER_RUNTIME_IMPLEMENTED__AESTHETICS_UNFROZEN__TARGET_QUALIFICATION_PENDING",
         "pinned_wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
         "native_findings": [
           "FontManager::drawCharacter writes native glyph pixels via Segment::setPixelColorXY and supports flat or two-color vertical gradient fills; it has no alpha parameter or built-in entry/exit lifecycle.",
@@ -41,19 +48,19 @@
             "id": "quiet_reveal",
             "concept": "Brightness ramp into stable native glyph hold.",
             "compatibility": "Small timing/brightness glue over FontManager; no alternate renderer.",
-            "state": "PROVISIONAL_OPTION_ONLY"
+            "state": "IMPLEMENTED_PROVISIONAL_DEFAULT"
           },
           {
             "id": "vibe_contour",
             "concept": "Vibe-aware two-tone glyph fill using the native vertical gradient; it is a gradient, not a literal outline/contour.",
             "compatibility": "Native gradient is available, but a Vibe-to-renderer mapping is not frozen.",
-            "state": "UNFROZEN_AND_BLOCKED_ON_VIBE_ADAPTER_CONTRACT"
+            "state": "IMPLEMENTED_PROVISIONAL_VIBE_MAPPING_UNFROZEN"
           },
           {
             "id": "soft_dissolve",
             "concept": "Blend native glyph pixels into the live Matrix frame during entry/exit.",
             "compatibility": "Requires an alpha parameter/update to the native FontManager drawing path to call Segment::blendPixelColorXY; no custom bitmap/font renderer, but this is a native source adaptation absent from the pinned baseline.",
-            "state": "UNFROZEN__REQUIRES_PATCH_AND_TARGET_COST_QUALIFICATION"
+            "state": "IMPLEMENTED_PROVISIONAL_BLEND_PATH__TARGET_COST_QUALIFICATION_PENDING"
           }
         ],
         "source_refs": [
@@ -61,7 +68,7 @@
           "https://github.com/wled/WLED/blob/29b389df1c1aaec6ff53aea742d17063b985906c/wled00/FX.h",
           "https://kno.wled.ge/features/custom-fonts/"
         ],
-        "acceptance_boundary": "No treatment/font aesthetic is selected or frozen. These are feasibility options, not runtime implementation or acceptance evidence."
+        "acceptance_boundary": "Runtime implementation is present with reversible defaults; no font or treatment is owner-approved or frozen. Live readability, clipping, frame pacing, and aesthetic acceptance remain pending."
       }
     },
     "owner_design_gate": {
@@ -69,7 +76,7 @@
       "approved_by_owner": false,
       "selected_option": "",
       "approval_reference": "",
-      "note": "Font options are a review menu only. Slot 4 is a reversible provisional default; neither font nor treatment aesthetics are owner-approved."
+      "note": "Runtime implementation is present with reversible defaults. This gate records implementation only; final font/treatment appearance remains UNFROZEN and is not owner-approved."
     }
   }
 }
