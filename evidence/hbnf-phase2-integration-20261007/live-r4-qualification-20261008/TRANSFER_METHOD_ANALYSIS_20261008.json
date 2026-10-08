@@ -1,0 +1,49 @@
+{
+  "schema": "hbnf-phase2-ota-transfer-analysis-v1",
+  "captured_at_utc": "2026-10-08T06:20:06.671131+00:00",
+  "previous_failed_attempt": {
+    "receipt": "FAILED_CANDIDATE_UPLOAD_20261008.json",
+    "curl_exit_code": 55,
+    "stderr": "Send failure: Broken pipe",
+    "write_out": "100",
+    "final_status": null,
+    "device_outcome": "candidate not installed; exact Foundation R4 stayed active and uptime advanced"
+  },
+  "previous_successful_comparisons": [
+    {
+      "source": "../../live-r3-night-20261008/UPLOAD_RECEIPT.json",
+      "result": "HTTP 200; response contained Update successful; curl exit 0; no retry; receipt does not record Expect request header."
+    },
+    {
+      "source": "../../live-r3-night-20261008/R4_ROLLBACK_UPLOAD_RECEIPT.json",
+      "result": "HTTP 200; Update successful; exact R4 recovery; no retry; receipt does not record Expect request header."
+    },
+    {
+      "source": "../../../../scripts/hbnf_foundation_seq43_transaction.py",
+      "result": "uses multipart -F update=@...;type=application/octet-stream to /update, with 5s connect timeout and 180s max-time; does not suppress Expect."
+    }
+  ],
+  "trace_interpretation": "For a ~1.49 MB multipart POST, libcurl normally adds Expect: 100-continue. The client received only 100 and then broken pipe, which is consistent with the handshake being involved but does not prove it caused the interruption. Earlier successful WLED uploads used the same multipart route; their response receipts do not preserve request headers.",
+  "materially_corrected_method": {
+    "preserve": "exact same multipart field, artifact bytes, WLED 16.0.1 /update target, local source, timeouts; one request only",
+    "change": "add curl header override -H 'Expect:' to suppress Expect: 100-continue; no HTTP version, endpoint, artifact, or payload change",
+    "why": "addresses the only newly visible transfer behavior in the failed trace and keeps the known-good WLED multipart consumer contract. Not represented as proven root cause."
+  },
+  "primary_sources": [
+    {
+      "title": "curl FAQ: My HTTP POST or PUT requests are slow",
+      "url": "https://curl.se/docs/faq.html",
+      "material_fact": "libcurl normally uses Expect: 100-continue for larger POST/PUT bodies and says it can be disabled by overriding the header with -H / CURLOPT_HTTPHEADER."
+    },
+    {
+      "title": "Pinned WLED 16.0.1 OTA handler",
+      "commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+      "paths": [
+        "wled00/wled_server.cpp:506-556",
+        "wled00/ota_update.cpp:323-420",
+        "wled00/wled_metadata.cpp:147-194"
+      ],
+      "material_fact": "/update expects multipart callback chunks; final success is returned only after upload-complete path."
+    }
+  ]
+}

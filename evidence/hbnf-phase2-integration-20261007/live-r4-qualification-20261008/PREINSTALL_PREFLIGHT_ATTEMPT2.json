@@ -1,0 +1,120 @@
+{
+  "schema": "hbnf-phase2-r4-install-attempt2-preflight-v1",
+  "captured_at_utc": "2026-10-08T06:19:07.006256+00:00",
+  "authority": {
+    "new_authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008-RETRY1",
+    "user_instruction": "URGENT RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH, authorizes exactly one new conditional Matrix installation attempt for the same candidate and exact R4 rollback.",
+    "previous_authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
+    "previous_attempt_disposition": "consumed; curl 55/broken pipe; candidate not installed; no retry remains on prior authorization"
+  },
+  "candidate": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r4-20261008",
+    "path": "/Users/andrew/Documents/Codex/2026-10-07/reconcile-the-current-authoritative-staging-branch/outputs/hbnf-cart2-phase2-offline-wow-r4-20261008.bin",
+    "sha256": "e65effb86d8755ca8a4af2155e51844d2c2a387f4000574459a382ca50c5ec87",
+    "size_bytes": 1490160,
+    "drive_id": "1Xt8uCndhTfuSHl65n7pAv7cAAfMN08AQ"
+  },
+  "rollback": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "path": "/Users/andrew/Documents/Codex/2026-10-07/reconcile-the-current-authoritative-staging-branch/outputs/hbnf-r4-foundation-metrics-tail250-rollback-20261007.bin",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008,
+    "drive_id": "1hy-U_zu4Wqkzwe87Br2xOSMUnCzYdrYB"
+  },
+  "matrix": {
+    "build_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "ip": "192.168.77.10",
+    "mac": "704bca5b345c",
+    "wled": "16.0.1",
+    "board_release": "ESP32",
+    "uptime_seconds": 3882,
+    "free_heap_bytes": 71796,
+    "fps": 34,
+    "live": false,
+    "network_buses": [
+      {
+        "type": 80,
+        "start": 512,
+        "length": 22,
+        "destination_ip": "192.168.77.11",
+        "enabled": true
+      }
+    ],
+    "companion_segment": [
+      {
+        "id": 1,
+        "start": 512,
+        "stop": 534,
+        "len": 22,
+        "on": true,
+        "fx": 142
+      }
+    ]
+  },
+  "aux": {
+    "wled": "16.0.1",
+    "board_release": "ESP32",
+    "ip": "192.168.77.11",
+    "mac": "8c94df55c34c",
+    "uptime_seconds": 32269,
+    "free_heap_bytes": 104376,
+    "native_live": true,
+    "lm": "DDP",
+    "lip": "192.168.77.10",
+    "lor": 0,
+    "on": true,
+    "segment_count": 1,
+    "segments": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 22,
+        "len": 22,
+        "on": true,
+        "bri": 255,
+        "fx": 0
+      }
+    ],
+    "realtime_input": {
+      "en": true,
+      "mso": false,
+      "rlm": true,
+      "port": 5568,
+      "mc": false,
+      "timeout": 650,
+      "maxbri": false,
+      "no-gc": true,
+      "offset": 0
+    },
+    "physical_led_bus": {
+      "total": 22,
+      "buses": [
+        {
+          "type": 22,
+          "start": 0,
+          "length": 22,
+          "pin": [
+            16
+          ],
+          "off": null
+        }
+      ]
+    }
+  },
+  "governance": {
+    "branch": "hbnf-cart2-phase2-integration-20261006",
+    "head": "ec03ecc6be933e0f26d106639f7910f7907a57af",
+    "worktree_clean": true,
+    "control_state_valid": true,
+    "wled_source_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "wled_source_expected": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "frozen_policy_sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797",
+    "free_disk_bytes": 6559682560
+  },
+  "transfer_analysis": {
+    "prior_successful_method": "Same multipart POST to WLED /update, prior exact R3 and exact R4 recovery attempts both returned HTTP 200 and Update successful. Prior command receipts do not preserve HTTP request headers.",
+    "failed_trace": "Single prior candidate transfer returned curl exit 55 / Send failure: Broken pipe, curl write-out 100, no final response. Curl auto-adds Expect: 100-continue for this large multipart request.",
+    "material_correction": "Keep proven multipart WLED /update body and target; add -H Expect: to suppress the Expect header so upload data is sent without that interim handshake. Official curl docs state large POSTs normally use Expect and support suppressing it via an empty Expect header; this is a plausible transport compatibility correction, not proven root cause."
+  }
+}

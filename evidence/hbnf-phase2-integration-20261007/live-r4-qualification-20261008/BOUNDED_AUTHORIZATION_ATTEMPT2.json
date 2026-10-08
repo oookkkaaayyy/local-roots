@@ -1,0 +1,59 @@
+{
+  "schema": "hbnf-phase2-r4-bounded-live-authorization-v1",
+  "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008-RETRY1",
+  "status": "AUTHORIZED__PREFLIGHT_PASS__NOT_YET_CONSUMED",
+  "authorized_by": "Current user instruction: URGENT \u2014 RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
+  "authorized_at_utc": "2026-10-08T06:20:06.671131+00:00",
+  "preflight_path": "evidence/hbnf-phase2-integration-20261007/live-r4-qualification-20261008/PREINSTALL_PREFLIGHT_ATTEMPT2.json",
+  "preflight_sha256": "fc37bfa1568c584985c04011a0007c4a0b126f93074b92c35105dfa6196cb9c1",
+  "preflight_pass": true,
+  "transfer_analysis": "evidence/hbnf-phase2-integration-20261007/live-r4-qualification-20261008/TRANSFER_METHOD_ANALYSIS_20261008.json",
+  "candidate": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r4-20261008",
+    "sha256": "e65effb86d8755ca8a4af2155e51844d2c2a387f4000574459a382ca50c5ec87",
+    "size_bytes": 1490160,
+    "drive_id": "1Xt8uCndhTfuSHl65n7pAv7cAAfMN08AQ",
+    "install_limit": 1,
+    "install_attempts": 0,
+    "consumed_before_network_request": false
+  },
+  "rollback": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743a2f3d8c",
+    "size_bytes": 1489008,
+    "drive_id": "1hy-U_zu4Wqkzwe87Br2xOSMUnCzYdrYB",
+    "limit": 1,
+    "attempts": 0,
+    "allowed_only_if": "Exact candidate identity, frozen performance/safety, Matrix runtime health, or required physical Matrix-to-AUX behavior fails."
+  },
+  "target": {
+    "ip": "192.168.77.10",
+    "mac": "70:4b:ca:5b:34:5c"
+  },
+  "method": "One local curl multipart POST to http://192.168.77.10/update using the exact proven update field and binary, adding -H 'Expect:' to suppress Expect: 100-continue; no retry.",
+  "qualification": {
+    "early_checks": [
+      "kernel 13 brightness44 vs matched exact R4 baseline",
+      "dense kernel9 brightness44 vs matched exact R4 baseline"
+    ],
+    "then": [
+      "unchanged full 28-kernel sweep",
+      "unchanged continuous 90-minute soak",
+      "physical AUX synchronization and recovery"
+    ],
+    "frozen_policy_path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
+    "frozen_policy_sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797",
+    "minimum_soak_seconds": 5400,
+    "thresholds_may_not_be_weakened": true
+  },
+  "exclusions": [
+    "AUX persistent configuration or firmware changes",
+    "Opal/router/network changes",
+    "Cloudflare/Supabase deployments",
+    "Guest Mode activation",
+    "UV energization",
+    "any third candidate installation attempt",
+    "T5 acceptance without owner evidence"
+  ],
+  "no_other_device_mutation": true
+}
