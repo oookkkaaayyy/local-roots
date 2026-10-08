@@ -1,0 +1,61 @@
+{
+  "schema": "hbnf-phase2-r4-bounded-live-authorization-v1",
+  "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
+  "status": "AUTHORIZED__PREFLIGHT_PASS__NOT_YET_CONSUMED",
+  "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
+  "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
+  "preflight_path": "evidence/hbnf-phase2-integration-20261007/live-r4-qualification-20261008/PREINSTALL_PREFLIGHT.json",
+  "preflight_sha256": "bd34fb43705f525b34746274213fbc37fa83629c82ba598f290590c73398c19e",
+  "preflight_pass": true,
+  "candidate": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r4-20261008",
+    "sha256": "e65effb86d8755ca8a4af2155e51844d2c2a387f4000574459a382ca50c5ec87",
+    "size_bytes": 1490160,
+    "drive_id": "1Xt8uCndhTfuSHl65n7pAv7cAAfMN08AQ",
+    "install_limit": 1,
+    "install_attempts": 0,
+    "install_reserved": 1,
+    "consumed_before_network_request": false
+  },
+  "rollback": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008,
+    "drive_id": "1hy-U_zu4Wqkzwe87Br2xOSMUnCzYdrYB",
+    "limit": 1,
+    "attempts": 0,
+    "allowed_only_if": "Exact candidate identity, frozen performance/safety, Matrix runtime health, or required Matrix-to-AUX behavior fails."
+  },
+  "target": {
+    "ip": "192.168.77.10",
+    "mac": "70:4b:ca:5b:34:5c"
+  },
+  "method": "One local multipart POST to the established WLED /update endpoint, matching the prior proven successful installation method; no retry.",
+  "qualification": {
+    "early_checks": [
+      "kernel 13 at brightness 44 against matched R4 baseline",
+      "dense kernel 9 at brightness 44 against matched R4 baseline"
+    ],
+    "if_early_checks_pass": [
+      "unchanged complete 28-kernel sweep",
+      "unchanged contiguous 90-minute soak",
+      "objective T4 integration and AUX matrix-to-underglow qualification"
+    ],
+    "frozen_policy_path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
+    "frozen_policy_sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797",
+    "minimum_soak_seconds": 5400,
+    "early_stop": "Frozen catastrophic early stop: 3 consecutive samples with FPS below 20, p99 above 75 ms, or required AUX native DDP source inactive; no threshold weakening."
+  },
+  "exclusions": [
+    "AUX firmware/configuration persistent changes",
+    "Opal/router changes",
+    "Cloudflare/Supabase deployment changes",
+    "Guest Mode activation",
+    "UV energization",
+    "any second Phase 2 candidate install",
+    "T5 acceptance without owner evidence"
+  ],
+  "current_live_mutation_authorized": true,
+  "no_other_device_mutation": true,
+  "disk_free_bytes_before_run": 9821282304
+}
