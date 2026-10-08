@@ -1,0 +1,293 @@
+{
+  "interpretation": {
+    "attempt_counter_increased": true,
+    "aux_ddp_live_all_samples": true,
+    "send_counter_increased": true,
+    "target_stable": true,
+    "transport_errors_zero": true
+  },
+  "sample_count": 10,
+  "samples": [
+    {
+      "aux": {
+        "freeheap": 105548,
+        "ip": "192.168.77.11",
+        "lip": "192.168.77.10",
+        "live": true,
+        "lm": "DDP",
+        "mac": "8c94df55c34c",
+        "uptime": 13653
+      },
+      "candidate": "hbnf-cart2-ddp-sender-diag-r1-20261007",
+      "fps": 13,
+      "freeheap": 99216,
+      "matrix_uptime": 33,
+      "observed_utc": "2026-10-08T01:08:45+00:00",
+      "render_count": 460,
+      "telemetry": {
+        "beginPacketFailures": 0,
+        "enabled": true,
+        "endPacketFailures": 0,
+        "errorCount": 0,
+        "lastSendMillis": 33380,
+        "lastTargetIp": "192.168.77.11",
+        "realtimeBroadcastAttempts": 461,
+        "sendCount": 318,
+        "successfulSends": 318
+      }
+    },
+    {
+      "aux": {
+        "freeheap": 105500,
+        "ip": "192.168.77.11",
+        "lip": "192.168.77.10",
+        "live": true,
+        "lm": "DDP",
+        "mac": "8c94df55c34c",
+        "uptime": 13656
+      },
+      "candidate": "hbnf-cart2-ddp-sender-diag-r1-20261007",
+      "fps": 14,
+      "freeheap": 99184,
+      "matrix_uptime": 36,
+      "observed_utc": "2026-10-08T01:08:48+00:00",
+      "render_count": 503,
+      "telemetry": {
+        "beginPacketFailures": 0,
+        "enabled": true,
+        "endPacketFailures": 0,
+        "errorCount": 0,
+        "lastSendMillis": 36454,
+        "lastTargetIp": "192.168.77.11",
+        "realtimeBroadcastAttempts": 504,
+        "sendCount": 361,
+        "successfulSends": 361
+      }
+    },
+    {
+      "aux": {
+        "freeheap": 105536,
+        "ip": "192.168.77.11",
+        "lip": "192.168.77.10",
+        "live": true,
+        "lm": "DDP",
+        "mac": "8c94df55c34c",
+        "uptime": 13659
+      },
+      "candidate": "hbnf-cart2-ddp-sender-diag-r1-20261007",
+      "fps": 14,
+      "freeheap": 99088,
+      "matrix_uptime": 39,
+      "observed_utc": "2026-10-08T01:08:52+00:00",
+      "render_count": 552,
+      "telemetry": {
+        "beginPacketFailures": 0,
+        "enabled": true,
+        "endPacketFailures": 0,
+        "errorCount": 0,
+        "lastSendMillis": 40012,
+        "lastTargetIp": "192.168.77.11",
+        "realtimeBroadcastAttempts": 553,
+        "sendCount": 410,
+        "successfulSends": 410
+      }
+    },
+    {
+      "aux": {
+        "freeheap": 105540,
+        "ip": "192.168.77.11",
+        "lip": "192.168.77.10",
+        "live": true,
+        "lm": "DDP",
+        "mac": "8c94df55c34c",
+        "uptime": 13663
+      },
+      "candidate": "hbnf-cart2-ddp-sender-diag-r1-20261007",
+      "fps": 14,
+      "freeheap": 99100,
+      "matrix_uptime": 43,
+      "observed_utc": "2026-10-08T01:08:55+00:00",
+      "render_count": 596,
+      "telemetry": {
+        "beginPacketFailures": 0,
+        "enabled": true,
+        "endPacketFailures": 0,
+        "errorCount": 0,
+        "lastSendMillis": 43170,
+        "lastTargetIp": "192.168.77.11",
+        "realtimeBroadcastAttempts": 597,
+        "sendCount": 454,
+        "successfulSends": 454
+      }
+    },
+    {
+      "aux": {
+        "freeheap": 105548,
+        "ip": "192.168.77.11",
+        "lip": "192.168.77.10",
+        "live": true,
+        "lm": "DDP",
+        "mac": "8c94df55c34c",
+        "uptime": 13666
+      },
+      "candidate": "hbnf-cart2-ddp-sender-diag-r1-20261007",
+      "fps": 14,
+      "freeheap": 99116,
+      "matrix_uptime": 46,
+      "observed_utc": "2026-10-08T01:08:59+00:00",
+      "render_count": 644,
+      "telemetry": {
+        "beginPacketFailures": 0,
+        "enabled": true,
+        "endPacketFailures": 0,
+        "errorCount": 0,
+        "lastSendMillis": 46643,
+        "lastTargetIp": "192.168.77.11",
+        "realtimeBroadcastAttempts": 645,
+        "sendCount": 502,
+        "successfulSends": 502
+      }
+    },
+    {
+      "aux": {
+        "freeheap": 105548,
+        "ip": "192.168.77.11",
+        "lip": "192.168.77.10",
+        "live": true,
+        "lm": "DDP",
+        "mac": "8c94df55c34c",
+        "uptime": 13669
+      },
+      "candidate": "hbnf-cart2-ddp-sender-diag-r1-20261007",
+      "fps": 14,
+      "freeheap": 99140,
+      "matrix_uptime": 49,
+      "observed_utc": "2026-10-08T01:09:02+00:00",
+      "render_count": 688,
+      "telemetry": {
+        "beginPacketFailures": 0,
+        "enabled": true,
+        "endPacketFailures": 0,
+        "errorCount": 0,
+        "lastSendMillis": 49780,
+        "lastTargetIp": "192.168.77.11",
+        "realtimeBroadcastAttempts": 689,
+        "sendCount": 546,
+        "successfulSends": 546
+      }
+    },
+    {
+      "aux": {
+        "freeheap": 105536,
+        "ip": "192.168.77.11",
+        "lip": "192.168.77.10",
+        "live": true,
+        "lm": "DDP",
+        "mac": "8c94df55c34c",
+        "uptime": 13673
+      },
+      "candidate": "hbnf-cart2-ddp-sender-diag-r1-20261007",
+      "fps": 14,
+      "freeheap": 99124,
+      "matrix_uptime": 52,
+      "observed_utc": "2026-10-08T01:09:05+00:00",
+      "render_count": 737,
+      "telemetry": {
+        "beginPacketFailures": 0,
+        "enabled": true,
+        "endPacketFailures": 0,
+        "errorCount": 0,
+        "lastSendMillis": 53254,
+        "lastTargetIp": "192.168.77.11",
+        "realtimeBroadcastAttempts": 738,
+        "sendCount": 594,
+        "successfulSends": 594
+      }
+    },
+    {
+      "aux": {
+        "freeheap": 105548,
+        "ip": "192.168.77.11",
+        "lip": "192.168.77.10",
+        "live": true,
+        "lm": "DDP",
+        "mac": "8c94df55c34c",
+        "uptime": 13676
+      },
+      "candidate": "hbnf-cart2-ddp-sender-diag-r1-20261007",
+      "fps": 14,
+      "freeheap": 99120,
+      "matrix_uptime": 56,
+      "observed_utc": "2026-10-08T01:09:08+00:00",
+      "render_count": 781,
+      "telemetry": {
+        "beginPacketFailures": 0,
+        "enabled": true,
+        "endPacketFailures": 0,
+        "errorCount": 0,
+        "lastSendMillis": 56472,
+        "lastTargetIp": "192.168.77.11",
+        "realtimeBroadcastAttempts": 782,
+        "sendCount": 639,
+        "successfulSends": 639
+      }
+    },
+    {
+      "aux": {
+        "freeheap": 105548,
+        "ip": "192.168.77.11",
+        "lip": "192.168.77.10",
+        "live": true,
+        "lm": "DDP",
+        "mac": "8c94df55c34c",
+        "uptime": 13679
+      },
+      "candidate": "hbnf-cart2-ddp-sender-diag-r1-20261007",
+      "fps": 14,
+      "freeheap": 97104,
+      "matrix_uptime": 59,
+      "observed_utc": "2026-10-08T01:09:12+00:00",
+      "render_count": 828,
+      "telemetry": {
+        "beginPacketFailures": 0,
+        "enabled": true,
+        "endPacketFailures": 0,
+        "errorCount": 0,
+        "lastSendMillis": 59899,
+        "lastTargetIp": "192.168.77.11",
+        "realtimeBroadcastAttempts": 829,
+        "sendCount": 686,
+        "successfulSends": 686
+      }
+    },
+    {
+      "aux": {
+        "freeheap": 104072,
+        "ip": "192.168.77.11",
+        "lip": "192.168.77.10",
+        "live": true,
+        "lm": "DDP",
+        "mac": "8c94df55c34c",
+        "uptime": 13682
+      },
+      "candidate": "hbnf-cart2-ddp-sender-diag-r1-20261007",
+      "fps": 14,
+      "freeheap": 99112,
+      "matrix_uptime": 63,
+      "observed_utc": "2026-10-08T01:09:15+00:00",
+      "render_count": 871,
+      "telemetry": {
+        "beginPacketFailures": 0,
+        "enabled": true,
+        "endPacketFailures": 0,
+        "errorCount": 0,
+        "lastSendMillis": 62963,
+        "lastTargetIp": "192.168.77.11",
+        "realtimeBroadcastAttempts": 872,
+        "sendCount": 729,
+        "successfulSends": 729
+      }
+    }
+  ],
+  "schema": "hbnf-ddp-sender-diagnostic-postinstall-samples-v1"
+}
