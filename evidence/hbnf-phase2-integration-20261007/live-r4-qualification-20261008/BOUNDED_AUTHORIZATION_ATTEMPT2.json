@@ -1,7 +1,7 @@
 {
   "schema": "hbnf-phase2-r4-bounded-live-authorization-v1",
   "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008-RETRY1",
-  "status": "AUTHORIZED__INSTALL_ATTEMPT_CONSUMED__REQUEST_NOT_YET_SENT",
+  "status": "CANDIDATE_INSTALLED__EARLY_QUALIFICATION_IN_PROGRESS",
   "authorized_by": "Current user instruction: URGENT \u2014 RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
   "authorized_at_utc": "2026-10-08T06:20:06.671131+00:00",
   "preflight_path": "evidence/hbnf-phase2-integration-20261007/live-r4-qualification-20261008/PREINSTALL_PREFLIGHT_ATTEMPT2.json",
@@ -17,7 +17,36 @@
     "install_attempts": 1,
     "consumed_before_network_request": true,
     "consumption_recorded_at_utc": "2026-10-08T06:21:47.880324+00:00",
-    "network_request_sent": false
+    "network_request_sent": true,
+    "installation_completed": true,
+    "result_receipt": "evidence/hbnf-phase2-integration-20261007/live-r4-qualification-20261008/CANDIDATE_INSTALL_RECEIPT_ATTEMPT2.json",
+    "runtime_identity": {
+      "build_json": {
+        "schema": "hbnf-build-v1",
+        "candidate": "hbnf-cart2-phase2-offline-wow-r4-20261008",
+        "ip": "192.168.77.10",
+        "mac": "70:4b:ca:5b:34:5c",
+        "release_id": "hbnf-cart2-phase2-offline-wow-r4-20261008",
+        "basedOnReleaseId": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "basedOnFirmwareSha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+        "wled": "16.0.1",
+        "features": [
+          "phase2-brightness-output-v1",
+          "wled-native-fontmanager-text-v1",
+          "foundation-audio-vibe-path-unfrozen"
+        ]
+      },
+      "wled": "16.0.1",
+      "mac": "704bca5b345c",
+      "ip": "192.168.77.10",
+      "uptime_seconds": 130,
+      "freeheap_bytes": 74428,
+      "fps": 42,
+      "kernel": 22,
+      "matrix_brightness": 44,
+      "aux_projection_age_ms": 16,
+      "companion_ddp_send_us": 4954
+    }
   },
   "rollback": {
     "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
@@ -57,5 +86,6 @@
     "any third candidate installation attempt",
     "T5 acceptance without owner evidence"
   ],
-  "no_other_device_mutation": true
+  "no_other_device_mutation": true,
+  "live_mutation_authorized": true
 }
