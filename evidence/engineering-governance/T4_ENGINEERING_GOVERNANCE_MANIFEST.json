@@ -1255,6 +1255,40 @@
           }
         }
       }
+    },
+    {
+      "schema": "hbnf-change-governance-v1",
+      "change_id": "DETERMINISTIC_OWNER_GUEST_ZIP_R1_20261008",
+      "summary": "Replace host-dependent ZIP packaging metadata and traversal order with a standard-library builder that emits stable bytes for the same pinned source commit.",
+      "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+      "impact": {
+        "architecture": false,
+        "new_dependency": false,
+        "subjective_design": false,
+        "bespoke": false,
+        "unknown": false
+      },
+      "evidence": {
+        "scoped_evidence": {
+          "approved_architecture_reference": "Existing Owner/Guest package structure, file closure, install procedure, release marker, and lifecycle remain unchanged; only deterministic archive construction and its regression test are added.",
+          "affected_subsystem": "Offline Owner/Guest package build and validation only; no device, backend, cloud deployment, firmware, Guest Mode, or package content changes.",
+          "rollback_reference": "Revert scripts/hbnf_build_owner_guest_package.py, the Owner/Guest package workflow and package regression test, and this governance entry; restore prior ZIP packaging step.",
+          "evidence_sources": [
+            "https://docs.python.org/3/library/zipfile.html",
+            "Current branch workflow .github/workflows/hbnf-cart-ui-v6-package.yml and existing tests/hbnf_owner_pwa_package.mjs"
+          ],
+          "tests": [
+            "node tests/hbnf_owner_pwa_package.mjs: PASS; builds in distinct temporary directories and byte-compares archives for an identical pinned source commit.",
+            "Manual clean-room reproduction using Python standard library: PASS; same source commit produced identical archive bytes and matching SHA-256 sidecar."
+          ],
+          "live_state": {
+            "deployed": false,
+            "live_mutation_authorized": false,
+            "current_state": "PHASE2_INTEGRATING/T4",
+            "owner_aesthetics": "UNFROZEN"
+          }
+        }
+      }
     }
   ]
 }
