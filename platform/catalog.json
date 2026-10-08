@@ -71,7 +71,8 @@
       "golden_paths": [
         "software-change",
         "artifact-release",
-        "live-device-diagnostic"
+        "live-device-diagnostic",
+        "phase2-live-qualification"
       ],
       "depends_on": [
         "hbnf-matrix",
