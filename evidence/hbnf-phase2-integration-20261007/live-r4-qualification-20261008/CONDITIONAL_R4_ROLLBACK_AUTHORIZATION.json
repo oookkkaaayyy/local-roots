@@ -1,0 +1,27 @@
+{
+  "schema": "hbnf-phase2-exact-r4-conditional-rollback-v1",
+  "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008-RETRY1-ROLLBACK",
+  "authority": "Current user authorized conditional rollback to the exact Foundation R4 SHA when frozen performance/safety or required physical Matrix-to-AUX behavior fails. AUX synchronization has now physically failed, corroborated by the user and read-only AUX live-view output.",
+  "reason": "The Matrix changed scenes while the owner observed the underglow remain solid blue. AUX reports live=true,lm=DDP,lip=192.168.77.10,lor=0,22 enabled segments; WLED /ws live-view emitted 19 frames with 22 RGB pixels all zero. Required physical Matrix-to-AUX behavior failed.",
+  "target": {
+    "ip": "192.168.77.10",
+    "mac": "70:4b:ca:5b:34:5c"
+  },
+  "artifact": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008,
+    "local_path": "/private/tmp/hbnf-foundation-crash-recovery-20261005/evidence/hbnf-foundation-qualification-20261005/seq39/artifact/firmware.bin",
+    "drive_id": "1hy-U_zu4Wqkzwe87Br2xOSMUnCzYdrYB"
+  },
+  "attempt_limit": 1,
+  "attempts_reserved": 1,
+  "attempts_consumed_before_request": true,
+  "network_request_sent": false,
+  "method": "One curl multipart POST /update to Matrix using exact local SHA-verified R4 artifact and -H Expect:; no retry.",
+  "verification": "Immediately read /hbnf/build.json and /json/info; require exact Foundation R4 release, Matrix IP/MAC, WLED 16.0.1, stable health and AUX native DDP live.",
+  "phase2_candidate_install_attempts": 1,
+  "third_candidate_install_permitted": false,
+  "authorization_recorded_utc": "2026-10-08T06:33:28.927916+00:00",
+  "status": "AUTHORIZED__ROLLBACK_RESERVED__NOT_YET_SENT"
+}

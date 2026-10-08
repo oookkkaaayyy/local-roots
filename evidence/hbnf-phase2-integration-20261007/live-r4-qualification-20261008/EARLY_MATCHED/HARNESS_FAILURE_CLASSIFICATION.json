@@ -1,0 +1,10 @@
+{
+  "schema": "hbnf-phase2-early-kernel-harness-failure-v1",
+  "status": "INCOMPLETE__NO_KERNEL_GATE_RESULT",
+  "first_failure": "observer tails-off collector obtained 26 samples against existing minimum 27; snapshot guard restored snapshot 1/hash 2599541673 and reported restoreVerified=true",
+  "second_failure": "one-shot Packet20 snapshot remains valid; restore ends diagnostic mode. Existing adapter attempted begin/select re-entry and firmware rejected commands (lastCommandAccepted=false). No kernel selection/profile was recorded.",
+  "classification": "HOST_COLLECTOR_AND_ONE_BOOT_DIAGNOSTIC_SESSION_LIFECYCLE; NOT A FIRMWARE PERFORMANCE RESULT",
+  "device_state_after": "exact Phase 2 R4 identity remains installed; user scene restored to captured scene 0; AUX remains live DDP from Matrix but all 22 RGB bytes in read-only WLED live view were zero; no restart or config change made.",
+  "temporary_tool_change": "42-second observer windows in temporary /tmp adapter only, retaining min 27 samples; first under-sample was still insufficient due lifecycle guard. No source or frozen thresholds changed.",
+  "next_required": "fresh bounded live measurement session after clean diagnostic lifecycle entry is available; no re-install required."
+}

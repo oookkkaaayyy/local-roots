@@ -184,7 +184,7 @@
     "status": "R3_INSTALL_AND_R4_ROLLBACK_CONSUMED__CANDIDATE_REJECTED",
     "target": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c only"
   },
-  "checkpoint_at_utc": "2026-10-08T06:23:00Z",
+  "checkpoint_at_utc": "2026-10-08T06:33:28.929140+00:00",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -2686,7 +2686,7 @@
   "bounded_phase2_r4_install_attempt2_authorization": {
     "schema": "hbnf-phase2-r4-bounded-live-authorization-v1",
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008-RETRY1",
-    "status": "CANDIDATE_INSTALLED__EARLY_QUALIFICATION_IN_PROGRESS",
+    "status": "CONDITIONAL_R4_ROLLBACK_RESERVED__PHYSICAL_AUX_SYNC_FAILED",
     "authorized_by": "Current user instruction: URGENT \u2014 RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
     "authorized_at_utc": "2026-10-08T06:20:06.671131+00:00",
     "preflight_path": "evidence/hbnf-phase2-integration-20261007/live-r4-qualification-20261008/PREINSTALL_PREFLIGHT_ATTEMPT2.json",
@@ -2735,12 +2735,16 @@
     },
     "rollback": {
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743a2f3d8c",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
       "size_bytes": 1489008,
       "drive_id": "1hy-U_zu4Wqkzwe87Br2xOSMUnCzYdrYB",
       "limit": 1,
       "attempts": 0,
-      "allowed_only_if": "Exact candidate identity, frozen performance/safety, Matrix runtime health, or required physical Matrix-to-AUX behavior fails."
+      "allowed_only_if": "Exact candidate identity, frozen performance/safety, Matrix runtime health, or required physical Matrix-to-AUX behavior fails.",
+      "attempts_reserved": 1,
+      "attempts_consumed_before_request": true,
+      "authorization_path": "evidence/hbnf-phase2-integration-20261007/live-r4-qualification-20261008/CONDITIONAL_R4_ROLLBACK_AUTHORIZATION.json",
+      "reason": "Physical Matrix-to-AUX synchronization failed during owner-observed scene changes; owner confirms underglow stayed solid blue; AUX live view showed 22 zero RGB pixels on each of 19 frames."
     },
     "target": {
       "ip": "192.168.77.10",

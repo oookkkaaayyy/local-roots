@@ -1,0 +1,13 @@
+{
+  "error": "RuntimeError: foundation-steady-state-tails-off-under-sampled:26<27",
+  "restore": {
+    "packet20Same": true,
+    "restoreVerified": true,
+    "snapshotHash": 2599541673,
+    "snapshotId": 1
+  },
+  "schema": "hbnf-observer-effect-failure-v1",
+  "snapshotHash": 2599541673,
+  "snapshotId": 1,
+  "status": "OBSERVER_FAILED__RENDERER_RESTORED"
+}

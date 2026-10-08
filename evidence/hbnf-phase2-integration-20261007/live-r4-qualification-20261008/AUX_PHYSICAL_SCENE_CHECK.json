@@ -1,0 +1,136 @@
+{
+  "schema": "hbnf-phase2-aux-scene-check-observations-v1",
+  "authorization_basis": "User requested complete physical AUX testing tonight and confirmed ready now; no persistent AUX/Opal/config mutation. Matrix scenes restored to captured scene value.",
+  "saved_scene": 0,
+  "observations": [
+    {
+      "label": "before",
+      "captured_utc": "2026-10-08T06:29:54.947303+00:00",
+      "matrix": {
+        "release": "hbnf-cart2-phase2-offline-wow-r4-20261008",
+        "scene": 0,
+        "kernel": 13,
+        "variantSignature": 1563862790,
+        "wholeFrameUs": 20660,
+        "renderCount": 13881,
+        "lastNonzeroPixels": 20,
+        "ddpSendUs": 4050,
+        "auxAgeMs": 37
+      },
+      "aux": {
+        "live": true,
+        "lm": "DDP",
+        "lip": "192.168.77.10",
+        "lor": 0,
+        "on": true,
+        "bri": 68,
+        "segments": [
+          {
+            "start": 0,
+            "stop": 22,
+            "len": 22,
+            "on": true
+          }
+        ]
+      }
+    },
+    {
+      "label": "scene-1",
+      "captured_utc": "2026-10-08T06:30:01.139028+00:00",
+      "matrix": {
+        "release": "hbnf-cart2-phase2-offline-wow-r4-20261008",
+        "scene": 1,
+        "kernel": 18,
+        "variantSignature": 2047133363,
+        "wholeFrameUs": 52548,
+        "renderCount": 14006,
+        "lastNonzeroPixels": 15,
+        "ddpSendUs": 4584,
+        "auxAgeMs": 25
+      },
+      "aux": {
+        "live": true,
+        "lm": "DDP",
+        "lip": "192.168.77.10",
+        "lor": 0,
+        "on": true,
+        "bri": 68,
+        "segments": [
+          {
+            "start": 0,
+            "stop": 22,
+            "len": 22,
+            "on": true
+          }
+        ]
+      },
+      "post_status": 200,
+      "post_body": "{\"success\":true}"
+    },
+    {
+      "label": "scene-2",
+      "captured_utc": "2026-10-08T06:30:09.777034+00:00",
+      "matrix": {
+        "release": "hbnf-cart2-phase2-offline-wow-r4-20261008",
+        "scene": 2,
+        "kernel": 9,
+        "variantSignature": 1499265249,
+        "wholeFrameUs": 18991,
+        "renderCount": 14337,
+        "lastNonzeroPixels": 16,
+        "ddpSendUs": 3436,
+        "auxAgeMs": 24
+      },
+      "aux": {
+        "live": true,
+        "lm": "DDP",
+        "lip": "192.168.77.10",
+        "lor": 0,
+        "on": true,
+        "bri": 68,
+        "segments": [
+          {
+            "start": 0,
+            "stop": 22,
+            "len": 22,
+            "on": true
+          }
+        ]
+      },
+      "post_status": 200,
+      "post_body": "{\"success\":true}"
+    },
+    {
+      "label": "restored-scene-0",
+      "captured_utc": "2026-10-08T06:30:16.264583+00:00",
+      "matrix": {
+        "release": "hbnf-cart2-phase2-offline-wow-r4-20261008",
+        "scene": 0,
+        "kernel": 5,
+        "variantSignature": 1389888450,
+        "wholeFrameUs": 12963,
+        "renderCount": 14601,
+        "lastNonzeroPixels": 22,
+        "ddpSendUs": 3233,
+        "auxAgeMs": 22
+      },
+      "aux": {
+        "live": true,
+        "lm": "DDP",
+        "lip": "192.168.77.10",
+        "lor": 0,
+        "on": true,
+        "bri": 68,
+        "segments": [
+          {
+            "start": 0,
+            "stop": 22,
+            "len": 22,
+            "on": true
+          }
+        ]
+      },
+      "post_status": 200
+    }
+  ]
+}
