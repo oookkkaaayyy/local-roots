@@ -1,0 +1,47 @@
+{
+  "schema": "local-roots-prelive-proof-v1",
+  "run_id": "hbnf-matrix-20261008T060852Z-199f0a56",
+  "capsule_sha256": "f896b1023c0700f0455d155fce5aee8eaa5a0f77557d294efb6c3460cff0c68b",
+  "approved_for_mutation": true,
+  "stages": {
+    "contract-closure": {
+      "status": "PASS",
+      "evidence": [
+        "../PREINSTALL_PREFLIGHT.json (candidate SHA/size/embedded identity, compiled telemetry contract and exact WLED /update consumer verification)",
+        "../../performance-repair-r4-20261008/FINAL_OFFLINE_CANDIDATE_MANIFEST.json"
+      ]
+    },
+    "recovery-proof": {
+      "status": "PASS",
+      "evidence": [
+        "../PREINSTALL_PREFLIGHT.json (Foundation R4 recovery SHA/size and exact runtime identity)",
+        "../../live-r3-night-20261008/R4_POST_ROLLBACK_IDENTITY.json",
+        "../../live-r3-night-20261008/R4_POSTRESTORE_HEALTH_SAMPLES.json"
+      ]
+    },
+    "transaction-rehearsal": {
+      "status": "PASS",
+      "evidence": [
+        "../../live-r3-night-20261008/UPLOAD_RECEIPT.json (single local /update consumer path)",
+        "../../live-r3-night-20261008/R4_ROLLBACK_UPLOAD_RECEIPT.json (same exact recovery transaction path)"
+      ]
+    },
+    "capture-current-state": {
+      "status": "PASS",
+      "evidence": [
+        "../PREINSTALL_PREFLIGHT.json (immediate Matrix/AUX identity, health, segment mapping, native realtime fields, and renderer baseline)"
+      ]
+    }
+  },
+  "recovery_identity": {
+    "identity": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1; SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c; 1489008 bytes",
+    "verification": "Locally SHA-256 verified in PREINSTALL_PREFLIGHT.json; previously installed and recovered using same WLED 16.0.1 /update method with exact post-recovery build identity receipt."
+  },
+  "pre_mutation_state": {
+    "device": "Matrix 192.168.77.10, MAC 70:4b:ca:5b:34:5c, Foundation R4 exact release identity; AUX 192.168.77.11, MAC 8c:94:df:55:c3:4c, WLED 16.0.1, native DDP live=true/lm=DDP/lip=192.168.77.10; Opal unchanged/read-only."
+  },
+  "consumer_contract": {
+    "verified": true,
+    "identity": "One local multipart POST of exact SHA-verified binary to http://192.168.77.10/update (WLED 16.0.1); exact upload/recovery transaction receipts already prove consumer endpoint and response contract."
+  }
+}
