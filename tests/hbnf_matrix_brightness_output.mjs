@@ -22,6 +22,9 @@ try {
   execFileSync("patch", ["-s", "-p0", "-i", patch], { cwd: temp, stdio: "pipe" });
   copyFileSync(helper, path.join(temp, "hbnf_brightness_output.h"));
   const source = readFileSync(staged, "utf8");
+  const brightness = readFileSync(helper, "utf8");
+  assert.match(brightness, /always_inline[^\n]*scaleChannel/);
+  assert.match(brightness, /always_inline[^\n]*scaleOutputPixel/);
   assert.match(source, /canonicalMatrixPixels\[ty\*32u\+tx\]=rendered;[\s\S]*?hbnfScaleMatrixOutput\(rendered,outputScale_\)/);
   assert.match(source, /canonicalMatrixPixels\[i\]=blend[\s\S]*?hbnfScaleMatrixOutput\(canonicalMatrixPixels\[i\],outputScale_\)/);
   assert.match(source, /const Rgb8 gammaCorrected=SEGMENT\.check2\?Rgb8\(gamma8\(canonical\.r\),gamma8\(canonical\.g\),gamma8\(canonical\.b\)\):canonical/);

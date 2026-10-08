@@ -1,0 +1,29 @@
+{
+  "schema": "hbnf-brightness-codegen-regression-evidence-v1",
+  "r3_object": {
+    "path": "/tmp/hbnf-p2-build/WLED-r3-diag-clean-20261008/.pio/build/hbnf_matrix_wled16_packet20_diag/lib326/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp.o",
+    "sha256": "ff39848057181280365939aa52442399bd399d6e5ea67e6f3de6b7b754706660",
+    "bytes": 3310636
+  },
+  "r4_object": {
+    "path": "/tmp/hbnf-p2-build/WLED-r4fix-clean-20261008/.pio/build/hbnf_matrix_wled16_packet20_diag/lib7cc/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp.o",
+    "sha256": "a1f7150eac63cd72f9f958f9c4cfcf08fbb49fc1655470bc98d51b4ec7cf558f",
+    "bytes": 3320064
+  },
+  "r3": {
+    "hbnfScaleMatrixOutput_callx8": 1,
+    "scaleOutputPixel_callx8_to_scaleChannel": 3,
+    "out_of_line_scaleChannel_symbol_present": true,
+    "out_of_line_scaleOutputPixel_symbol_present": true,
+    "hbnfScaleMatrixOutput_instruction_lines": 42,
+    "scaleOutputPixel_instruction_lines": 55
+  },
+  "r4": {
+    "hbnfScaleMatrixOutput_callx8": 0,
+    "out_of_line_scaleChannel_symbol_present": false,
+    "out_of_line_scaleOutputPixel_symbol_present": false,
+    "hbnfScaleMatrixOutput_instruction_lines": 73
+  },
+  "compiler": "xtensa-esp32-elf GCC 8.4.0+2021r2-patch5, global -Os; no transport, target, timing, or brightness arithmetic change; GCC always_inline as documented",
+  "interpretation": "The R3 per-pixel path made one out-of-line call from hbnfScaleMatrixOutput to scaleOutputPixel and three channel calls from scaleOutputPixel to scaleChannel. R4 emits hbnfScaleMatrixOutput with no callx8 and no out-of-line helper symbols. The exact channel arithmetic and nonzero-pixel fallback are unchanged. The live FPS contribution remains subject to the next exact-artifact qualification."
+}

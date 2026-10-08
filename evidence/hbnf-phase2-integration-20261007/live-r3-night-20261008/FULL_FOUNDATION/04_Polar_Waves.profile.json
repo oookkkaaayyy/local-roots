@@ -1,0 +1,126 @@
+{
+  "failures": [],
+  "profile": {
+    "aux": {
+      "age_p99_ms": 4294967295.0,
+      "inactive_samples": 0,
+      "render_fps_median": 37.0
+    },
+    "collection_errors": 0,
+    "contract": "foundation",
+    "fps": {
+      "median": 37.0,
+      "min": 36,
+      "p05": 36.0
+    },
+    "frame_ms": {
+      "avg_median": 22.71067,
+      "max": 80.063,
+      "p50_median": 21.625,
+      "p95_median": 24.625,
+      "p99_median": 54.125
+    },
+    "heap": {
+      "free_end": 115424,
+      "free_start": 115428,
+      "largest_block_end": 69620,
+      "largest_block_start": 69620,
+      "minimum_free_min": 51132
+    },
+    "kernel": {
+      "id": 4,
+      "name": "Polar_Waves",
+      "variant_id": 1347100676
+    },
+    "qualification_eligible": true,
+    "release_id": "hbnf-cart2-phase2-offline-wow-r3-20261008",
+    "restart_count_end": 0,
+    "restart_count_start": 0,
+    "sample_count": 26,
+    "schema": "hbnf-runtime-profile-v2",
+    "stages": {
+      "audio_ms_avg": {
+        "max": 2.293474,
+        "median": 2.2708525,
+        "p95": 2.2905655
+      },
+      "audio_ms_p95": {
+        "max": 2.625,
+        "median": 2.625,
+        "p95": 2.625
+      },
+      "aux_prepare_send_ms_avg": {
+        "max": 4.556938,
+        "median": 4.5187835,
+        "p95": 4.5468227500000005
+      },
+      "aux_prepare_send_ms_p95": {
+        "max": 6.375,
+        "median": 6.375,
+        "p95": 6.375
+      },
+      "frame_ms_avg": {
+        "max": 22.76407,
+        "median": 22.71067,
+        "p95": 22.7593175
+      },
+      "kernel_ms_avg": {
+        "max": 11.30193,
+        "median": 11.25386,
+        "p95": 11.297987500000001
+      },
+      "kernel_ms_p95": {
+        "max": 11.375,
+        "median": 11.375,
+        "p95": 11.375
+      },
+      "overlay_ms_avg": {
+        "max": 0.041173,
+        "median": 0.040861,
+        "p95": 0.04113075
+      },
+      "overlay_ms_p95": {
+        "max": 0.125,
+        "median": 0.125,
+        "p95": 0.125
+      },
+      "palette_ms_avg": {
+        "max": 0.451507,
+        "median": 0.44276,
+        "p95": 0.4496775
+      },
+      "palette_ms_p95": {
+        "max": 0.375,
+        "median": 0.375,
+        "p95": 0.375
+      },
+      "scheduler_ms_avg": {
+        "max": 1.243929,
+        "median": 1.23689,
+        "p95": 1.24369825
+      },
+      "scheduler_ms_p95": {
+        "max": 1.625,
+        "median": 1.625,
+        "p95": 1.625
+      },
+      "unaccounted_ms_avg": {
+        "max": 2.980812,
+        "median": 2.939339,
+        "p95": 2.97109225
+      },
+      "unaccounted_ms_p95": {
+        "max": 3.375,
+        "median": 3.375,
+        "p95": 3.375
+      }
+    },
+    "valid_sample_count": 26,
+    "validation_errors": [],
+    "wifi": {
+      "rssi_dbm_median": -41.5,
+      "rssi_dbm_min": -47
+    }
+  },
+  "status": "PASS"
+}

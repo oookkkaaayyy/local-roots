@@ -11,10 +11,11 @@
   "behavior": "canonical renderer and audio generate/store unchanged pixels first; gamma is applied to canonical RGB then the user brightness is applied as a final output-only scale; zero is black and 255 is identity; nonzero output keeps any nonzero canonical pixel participating despite channel quantization",
   "build_or_live_mutation": false,
   "source_semantics": "Gamma is applied to each completed canonical pixel, then its final Matrix-only output scale is applied. The renderer writes canonicalMatrixPixels before this output stage. AUX transport brightness is untouched.",
-  "helper_sha256": "921e29f4fe79f6827fd9865b0aa69603f8bde6b53382edce2af1a6c29e27f0b7",
+  "helper_sha256": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a",
   "host_test_path": "tests/hbnf_matrix_brightness_output.cpp",
   "integration_test_path": "tests/hbnf_matrix_brightness_output.mjs",
   "integrated_patch": "firmware/phase2/integration-r2/usermod_hbnf_foundation_v1.patch",
   "offline_candidate_status": "BUILT_IN_INTEGRATION_R2__NOT_INSTALLED",
-  "candidate_sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3"
+  "candidate_sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3",
+  "performance_correction": "GCC always_inline on scaleChannel and scaleOutputPixel preserves exact channel math and fallback semantics while removing the three per-channel out-of-line calls visible in the R3 Xtensa object under -Os."
 }

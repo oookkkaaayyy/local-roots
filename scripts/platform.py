@@ -248,11 +248,28 @@ def validate_hbnf_coherence(
     installed = str(
         state.get("current_task", {}).get("installed_release") or ""
     )
+    # A later, receipt-backed recovery can legitimately supersede the release
+    # pinned in the older sweep adapter template. Require both current-state
+    # fields and the recovery receipt to agree before treating that as current.
+    recovery = state.get("current_task", {}).get(
+        "r3_install_rollback_reconciliation", {}
+    )
+    recovery_is_current = (
+        recovery.get("status")
+        == "CLOSED__R4_RESTORED_AND_VERIFIED__AUTHORITY_CONSUMED"
+        and recovery.get("r4_rollback_sha256")
+        == state.get("current_task", {}).get("installed_firmware_sha256")
+        == state.get("installed_firmware_sha256")
+        and recovery.get("r4_rollback_sha256")
+        == state.get("bounded_phase2_r3_live_qualification_authorization", {}).get(
+            "rollback_sha256"
+        )
+    )
 
     if adapter_cfg.exists():
         cfg = load_json(adapter_cfg)
         expected = str(cfg.get("expected_release_id") or "")
-        if installed and expected and installed != expected:
+        if installed and expected and installed != expected and not recovery_is_current:
             status = str(state.get("current_task", {}).get("status") or "")
             message = (
                 "HBNF live-tool identity mismatch: control state says "

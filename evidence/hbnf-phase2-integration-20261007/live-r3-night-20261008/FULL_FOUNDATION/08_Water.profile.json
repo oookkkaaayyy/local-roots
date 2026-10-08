@@ -1,0 +1,126 @@
+{
+  "failures": [],
+  "profile": {
+    "aux": {
+      "age_p99_ms": 4294967295.0,
+      "inactive_samples": 0,
+      "render_fps_median": 34.0
+    },
+    "collection_errors": 0,
+    "contract": "foundation",
+    "fps": {
+      "median": 34.0,
+      "min": 33,
+      "p05": 33.3
+    },
+    "frame_ms": {
+      "avg_median": 24.69991,
+      "max": 82.929,
+      "p50_median": 23.625,
+      "p95_median": 26.375,
+      "p99_median": 61.375
+    },
+    "heap": {
+      "free_end": 112464,
+      "free_start": 113056,
+      "largest_block_end": 65524,
+      "largest_block_start": 65524,
+      "minimum_free_min": 51132
+    },
+    "kernel": {
+      "id": 8,
+      "name": "Water",
+      "variant_id": 1347100680
+    },
+    "qualification_eligible": true,
+    "release_id": "hbnf-cart2-phase2-offline-wow-r3-20261008",
+    "restart_count_end": 0,
+    "restart_count_start": 0,
+    "sample_count": 27,
+    "schema": "hbnf-runtime-profile-v2",
+    "stages": {
+      "audio_ms_avg": {
+        "max": 2.268527,
+        "median": 2.219026,
+        "p95": 2.2668824
+      },
+      "audio_ms_p95": {
+        "max": 2.625,
+        "median": 2.625,
+        "p95": 2.625
+      },
+      "aux_prepare_send_ms_avg": {
+        "max": 4.48839,
+        "median": 4.455892,
+        "p95": 4.4864951
+      },
+      "aux_prepare_send_ms_p95": {
+        "max": 6.375,
+        "median": 6.375,
+        "p95": 6.375
+      },
+      "frame_ms_avg": {
+        "max": 24.87876,
+        "median": 24.69991,
+        "p95": 24.865422000000002
+      },
+      "kernel_ms_avg": {
+        "max": 13.41802,
+        "median": 13.35338,
+        "p95": 13.409317
+      },
+      "kernel_ms_p95": {
+        "max": 13.375,
+        "median": 13.375,
+        "p95": 13.375
+      },
+      "overlay_ms_avg": {
+        "max": 0.037205,
+        "median": 0.037007,
+        "p95": 0.037147
+      },
+      "overlay_ms_p95": {
+        "max": 0.125,
+        "median": 0.125,
+        "p95": 0.125
+      },
+      "palette_ms_avg": {
+        "max": 0.464325,
+        "median": 0.450728,
+        "p95": 0.4622755
+      },
+      "palette_ms_p95": {
+        "max": 0.375,
+        "median": 0.375,
+        "p95": 0.375
+      },
+      "scheduler_ms_avg": {
+        "max": 1.262382,
+        "median": 1.243325,
+        "p95": 1.2576129
+      },
+      "scheduler_ms_p95": {
+        "max": 1.625,
+        "median": 1.625,
+        "p95": 1.625
+      },
+      "unaccounted_ms_avg": {
+        "max": 2.975678,
+        "median": 2.933687,
+        "p95": 2.9708663
+      },
+      "unaccounted_ms_p95": {
+        "max": 3.375,
+        "median": 3.375,
+        "p95": 3.375
+      }
+    },
+    "valid_sample_count": 27,
+    "validation_errors": [],
+    "wifi": {
+      "rssi_dbm_median": -41.0,
+      "rssi_dbm_min": -45
+    }
+  },
+  "status": "PASS"
+}

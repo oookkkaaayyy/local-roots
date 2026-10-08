@@ -1,0 +1,126 @@
+{
+  "failures": [],
+  "profile": {
+    "aux": {
+      "age_p99_ms": 4294967295.0,
+      "inactive_samples": 0,
+      "render_fps_median": 38.0
+    },
+    "collection_errors": 0,
+    "contract": "foundation",
+    "fps": {
+      "median": 37.0,
+      "min": 36,
+      "p05": 36.0
+    },
+    "frame_ms": {
+      "avg_median": 22.03439,
+      "max": 84.82,
+      "p50_median": 21.125,
+      "p95_median": 23.875,
+      "p99_median": 52.625
+    },
+    "heap": {
+      "free_end": 112728,
+      "free_start": 115408,
+      "largest_block_end": 65524,
+      "largest_block_start": 69620,
+      "minimum_free_min": 51132
+    },
+    "kernel": {
+      "id": 1,
+      "name": "Big_Caleido",
+      "variant_id": 1347100673
+    },
+    "qualification_eligible": true,
+    "release_id": "hbnf-cart2-phase2-offline-wow-r3-20261008",
+    "restart_count_end": 0,
+    "restart_count_start": 0,
+    "sample_count": 27,
+    "schema": "hbnf-runtime-profile-v2",
+    "stages": {
+      "audio_ms_avg": {
+        "max": 2.119001,
+        "median": 2.067395,
+        "p95": 2.1126817
+      },
+      "audio_ms_p95": {
+        "max": 2.625,
+        "median": 2.625,
+        "p95": 2.625
+      },
+      "aux_prepare_send_ms_avg": {
+        "max": 4.470935,
+        "median": 4.438248,
+        "p95": 4.4670661
+      },
+      "aux_prepare_send_ms_p95": {
+        "max": 6.375,
+        "median": 6.125,
+        "p95": 6.375
+      },
+      "frame_ms_avg": {
+        "max": 22.19294,
+        "median": 22.03439,
+        "p95": 22.186826999999997
+      },
+      "kernel_ms_avg": {
+        "max": 11.00352,
+        "median": 10.92592,
+        "p95": 10.981807
+      },
+      "kernel_ms_p95": {
+        "max": 11.125,
+        "median": 11.125,
+        "p95": 11.125
+      },
+      "overlay_ms_avg": {
+        "max": 0.032114,
+        "median": 0.031622,
+        "p95": 0.0319476
+      },
+      "overlay_ms_p95": {
+        "max": 0.125,
+        "median": 0.125,
+        "p95": 0.125
+      },
+      "palette_ms_avg": {
+        "max": 0.444173,
+        "median": 0.430202,
+        "p95": 0.44245569999999995
+      },
+      "palette_ms_p95": {
+        "max": 0.375,
+        "median": 0.375,
+        "p95": 0.375
+      },
+      "scheduler_ms_avg": {
+        "max": 1.238729,
+        "median": 1.228215,
+        "p95": 1.2379234
+      },
+      "scheduler_ms_p95": {
+        "max": 1.625,
+        "median": 1.625,
+        "p95": 1.625
+      },
+      "unaccounted_ms_avg": {
+        "max": 2.953689,
+        "median": 2.925519,
+        "p95": 2.9497885
+      },
+      "unaccounted_ms_p95": {
+        "max": 3.375,
+        "median": 3.375,
+        "p95": 3.375
+      }
+    },
+    "valid_sample_count": 27,
+    "validation_errors": [],
+    "wifi": {
+      "rssi_dbm_median": -44.0,
+      "rssi_dbm_min": -50
+    }
+  },
+  "status": "PASS"
+}

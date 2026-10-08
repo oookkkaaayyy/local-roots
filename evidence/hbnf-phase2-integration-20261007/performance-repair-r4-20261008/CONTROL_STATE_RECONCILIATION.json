@@ -1,0 +1,36 @@
+{
+  "schema": "hbnf-r3-control-state-reconciliation-v1",
+  "status": "RECONCILED__R3_AND_R4_ONE_TIME_AUTHORITY_CONSUMED__NO_LIVE_AUTHORITY",
+  "correction": {
+    "field": "bounded_phase2_r3_live_qualification_authorization.rollback_sha256",
+    "verified_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "length_characters": 64,
+    "verified_against": "R4_ROLLBACK_UPLOAD_RECEIPT.json and R4_POST_ROLLBACK_IDENTITY.json"
+  },
+  "r3_install_attempts": 1,
+  "r4_rollback_attempts": 1,
+  "current_device_identity": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "verified_by": "evidence/hbnf-phase2-integration-20261007/live-r3-night-20261008/R4_POST_ROLLBACK_IDENTITY.json"
+  },
+  "live_mutation_authorized": false,
+  "replacement_candidate": {
+    "status": "OFFLINE_CANDIDATE_BUILT__NEW_EXACT_ARTIFACT_AUTHORIZATION_REQUIRED",
+    "release_id": "hbnf-cart2-phase2-offline-wow-r4-20261008",
+    "sha256": "e65effb86d8755ca8a4af2155e51844d2c2a387f4000574459a382ca50c5ec87",
+    "size_bytes": 1490160,
+    "root_cause": "R3 emitted the newly added per-pixel brightness scaler as out-of-line helper calls under the intentional global -Os build. Disassembly showed one call from hbnfScaleMatrixOutput to scaleOutputPixel and three per-channel calls to scaleChannel. The R4 correction uses GCC always_inline for those small header definitions. Arithmetic, gamma order, brightness levels, and nonzero-pixel fallback are unchanged.",
+    "correction": "GCC always_inline on existing scaleChannel and scaleOutputPixel helpers; behavior/arithmetic unchanged.",
+    "offline_evidence": "evidence/hbnf-phase2-integration-20261007/performance-repair-r4-20261008",
+    "build_and_host_tests": "PASS",
+    "runtime_performance": "UNVERIFIED_PENDING_EXACT_INSTALL_AND_FROZEN_GATES",
+    "aux_physical_sync": "OPEN__DIRECT_OWNER_OBSERVATION_FAILED",
+    "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "live_installed": false,
+    "live_mutation_authorized": false
+  },
+  "latest_physical_aux_observation": "Matrix scenes changed promptly during each test. Underglow remained solid blue before, during, and after; no AUX color/display change.",
+  "lifecycle": "PHASE2_INTEGRATING/T4; T4 and T5 remain incomplete",
+  "timestamp_utc": "2026-10-08T05:43:38.658374+00:00"
+}

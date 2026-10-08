@@ -1,0 +1,24 @@
+{
+  "schema": "hbnf-phase2-integration-r4-source-binding-v1",
+  "status": "OFFLINE_PERFORMANCE_REPAIR__NOT_INSTALLED",
+  "base_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "base_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "base_source_path": "firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp",
+  "base_source_sha256": "31126d341bf0a3e54a33d87de0856c5f68e79f20dd05653ae1d5df3270a9bc9d",
+  "patch_path": "firmware/phase2/integration-r4/usermod_hbnf_foundation_v1.patch",
+  "patch_sha256": "553ac4f2d262e38e5436196b7c79b0b9bc001e6883775b8769da6773877f60ef",
+  "integrated_source_sha256": "9672125b4f1914c73bf0d7a997ae81a430c8f4e4b1cb50956e1303ac19687bfa",
+  "includes": [
+    "all Phase 2 integration-r2 functionality unchanged; release identity corrected to WOW-r3",
+    "R4 diagnostics restored through exact hbnf_matrix_wled16_packet20_diag environment and WLED frame/DDP hook patch",
+    "WLED 16.0.1, FastLED 3.10.4 R4 source closure unchanged",
+    "R3 kernel path call overhead corrected with always_inline; exact brightness math retained"
+  ],
+  "telemetry_hook_patch_path": "firmware/phase2/integration-r4/packet20-frame-timing.patch",
+  "telemetry_hook_patch_sha256": "3000796a0d9e1b2df56ddde7f5b08ee325035c2d0bdcdb436de170cef50633e3",
+  "telemetry_hooked_wled_source_sha256": "0dee93bd5fb281e5f3760feceda7d8cdf42448bda3a6a2fd8c2b1dd9c95ed1c5",
+  "build_environment": "hbnf_matrix_wled16_packet20_diag",
+  "live_mutation": false,
+  "candidate_release": "hbnf-cart2-phase2-offline-wow-r4-20261008",
+  "live_mutation_authorized": false
+}

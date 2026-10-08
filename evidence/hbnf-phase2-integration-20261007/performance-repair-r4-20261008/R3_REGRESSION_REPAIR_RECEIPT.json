@@ -1,0 +1,118 @@
+{
+  "schema": "hbnf-phase2-r3-regression-repair-receipt-v1",
+  "status": "OFFLINE_CANDIDATE_BUILT__LIVE_AUTHORIZATION_REQUIRED__T4_NOT_ACCEPTED",
+  "timestamp_local": "2026-10-08",
+  "root_cause": {
+    "finding": "R3 build parity retained the R4 FastLED fixed-point backport and compiler closure. The independently proven regression is in the new output-brightness helper code generation: with global -Os, helper calls remained out-of-line in the per-pixel loop.",
+    "compiled_evidence": "evidence/hbnf-phase2-integration-20261007/performance-repair-r4-20261008/BRIGHTNESS_CODEGEN_COMPARISON.json",
+    "r3_calls_per_pixel": "1 callx8 hbnfScaleMatrixOutput -> scaleOutputPixel; 3 callx8 scaleOutputPixel -> scaleChannel",
+    "r4_calls_per_pixel": "0 callx8 in hbnfScaleMatrixOutput; neither helper symbol emitted out-of-line",
+    "runtime_causality_limit": "This proves an avoidable per-pixel call overhead defect, but only live matched qualification can establish whether corrected FPS clears the frozen gates."
+  },
+  "correction": {
+    "source": "firmware/phase2/brightness-r1/hbnf_brightness_output.h",
+    "method": "GCC always_inline on the existing small channel/pixel helper functions",
+    "behavior_preserved": [
+      "same arithmetic",
+      "same gamma order",
+      "same brightness mapping",
+      "same nonzero-pixel fallback",
+      "all Phase 2 features preserved"
+    ],
+    "no_transport_or_effect_changes": true,
+    "source_sha256": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a"
+  },
+  "candidate": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r4-20261008",
+    "sha256": "e65effb86d8755ca8a4af2155e51844d2c2a387f4000574459a382ca50c5ec87",
+    "size_bytes": 1490160,
+    "path": "outputs/hbnf-cart2-phase2-offline-wow-r4-20261008.bin",
+    "embedded_identity_verified": true,
+    "installed": false
+  },
+  "build": {
+    "method": "proven local clean-room PlatformIO",
+    "python": "3.9.6",
+    "platformio_core": "6.1.18",
+    "environment": "hbnf_matrix_wled16_packet20_diag",
+    "required_define": "HBNF_PACKET20_DIAGNOSTICS",
+    "source_date_epoch": 1789948800,
+    "build_log_sha256": "e7a9844a65ec818e1d486a90c9c6eebb1abcf94e85c137c10a82125cbe72ca50",
+    "firmware_map_sha256": "4b05187b84ec944c7572e2c7101ffbc998976482642afa7ecab8248b99548c3a",
+    "object_cache": "fresh unique empty SCons cache; build log contains no Retrieved-from-cache object entries",
+    "build_result": "PASS",
+    "compiled_telemetry_contract": "PASS: HBNF_PACKET20_DIAGNOSTICS, WLED BusManager/BusNetwork hooks, binary JSON markers",
+    "compiled_brightness_codegen": {
+      "r3_hbnfScaleMatrixOutput_callx8": 1,
+      "r3_scaleOutputPixel_callx8_to_scaleChannel": 3,
+      "r4_hbnfScaleMatrixOutput_callx8": 0,
+      "r4_scaleChannel_out_of_line_symbol_present": false,
+      "r4_scaleOutputPixel_out_of_line_symbol_present": false,
+      "r4_hbnfScaleMatrixOutput_instruction_lines": 73,
+      "evidence": "evidence/hbnf-phase2-integration-20261007/performance-repair-r4-20261008/BRIGHTNESS_CODEGEN_COMPARISON.json"
+    },
+    "source_date": "pinned"
+  },
+  "resources": {
+    "partition_bytes": 1572864,
+    "linker_flash_used_bytes": 1483429,
+    "flash_remaining_bytes": 89435,
+    "firmware_bin_bytes": 1490160,
+    "static_ram_used_bytes": 112288,
+    "ram_total_bytes": 327680,
+    "ram_remaining_bytes": 215392
+  },
+  "tests": {
+    "governance": [
+      "hbnf_control 23 tests PASS",
+      "hbnf_guarded_run PASS",
+      "architecture_fitness PASS",
+      "runtime_qualify_static PASS",
+      "kernel_sweep_report PASS",
+      "source_tree_identity PASS",
+      "live_kernel_sweep PASS",
+      "packet20_http_adapter PASS",
+      "packet20_build_validate PASS"
+    ],
+    "phase2": [
+      "brightness contract PASS",
+      "R4 FastLED closure PASS",
+      "compiled telemetry contract PASS",
+      "compiled brightness codegen PASS",
+      "Vibe audio replay PASS",
+      "Guest platform static PASS",
+      "UV policy and disabled defaults PASS",
+      "native text adapter compile/run PASS",
+      "text moments offline 11 tests PASS",
+      "owner scoring flow PASS"
+    ]
+  },
+  "rollback": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008,
+    "runtime_restore_verified": true,
+    "latest_live_identity": "R4 exact, verified in 8 post-restore samples"
+  },
+  "live": {
+    "mutation_authority": "CLOSED; R3 install and R4 rollback one-time authorization consumed",
+    "next": "request new exact-artifact authority, then fresh read-only preflight before one installation",
+    "aux_physical_sync": "FAILED by direct owner observation; remains independently open"
+  },
+  "references": [
+    {
+      "title": "GCC Common Attributes: always_inline",
+      "url": "https://gcc.gnu.org/onlinedocs/gcc/Common-Attributes.html"
+    },
+    {
+      "title": "Pinned FastLED scale8 implementation",
+      "url": "https://github.com/FastLED/FastLED/blob/adedfc40e73fb80f8e930318781036d8fe1dbd9f/src/platforms/scale8.h"
+    }
+  ],
+  "durable_drive_evidence": {
+    "manifest_file_id": "1LiWQMKtNn5IB-WR_aPgebFBIdDThYyXr",
+    "receipt_file_id": "1mcqO-dX-_fTt3M3Qk4kIAxpndEdqBsfp",
+    "codegen_file_id": "1uGAELmGM8VBBbPbeQe9UjQfY34sbDJLW",
+    "control_reconciliation_file_id": "1Tm94j1joIRwmIcymCa2Sf_-WpjnUK0se"
+  }
+}

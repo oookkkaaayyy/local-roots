@@ -1,0 +1,123 @@
+00000000 <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)>:
+   0:	006136        	entry	a1, 48
+   3:	02bd      	mov.n	a11, a2
+   5:	000021        	l32r	a2, fffc0008 <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0xfffc0008>
+   8:	03cd      	mov.n	a12, a3
+   a:	6228      	l32i.n	a2, a2, 24
+   c:	8228      	l32i.n	a2, a2, 32
+   e:	4a7267        	bbci	a2, 22, 5c <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0x5c>
+  11:	000021        	l32r	a2, fffc0014 <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0xfffc0014>
+  14:	000b82        	l8ui	a8, a11, 0
+  17:	020ba2        	l8ui	a10, a11, 2
+  1a:	828a      	add.n	a8, a2, a8
+  1c:	000892        	l8ui	a9, a8, 0
+  1f:	010b82        	l8ui	a8, a11, 1
+  22:	0a4192        	s8i	a9, a1, 10
+  25:	828a      	add.n	a8, a2, a8
+  27:	22aa      	add.n	a2, a2, a10
+  29:	000882        	l8ui	a8, a8, 0
+  2c:	000222        	l8ui	a2, a2, 0
+  2f:	0b4182        	s8i	a8, a1, 11
+  32:	0c4122        	s8i	a2, a1, 12
+  35:	a1ab      	addi.n	a10, a1, 10
+  37:	000081        	l32r	a8, fffc0038 <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0xfffc0038>
+  3a:	0008e0        	callx8	a8
+  3d:	7488a0        	extui	a8, a10, 8, 8
+  40:	7420a0        	extui	a2, a10, 0, 8
+  43:	118880        	slli	a8, a8, 8
+  46:	202280        	or	a2, a2, a8
+  49:	000081        	l32r	a8, fffc004c <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0xfffc004c>
+  4c:	75a0a0        	extui	a10, a10, 16, 8
+  4f:	11aa00        	slli	a10, a10, 16
+  52:	102280        	and	a2, a2, a8
+  55:	2022a0        	or	a2, a2, a10
+  58:	f01d      	retw.n
+  5a:	00          	.byte 00
+  5b:	00          	.byte 00
+  5c:	000b22        	l8ui	a2, a11, 0
+  5f:	010b82        	l8ui	a8, a11, 1
+  62:	0a4122        	s8i	a2, a1, 10
+  65:	020b22        	l8ui	a2, a11, 2
+  68:	0b4182        	s8i	a8, a1, 11
+  6b:	0c4122        	s8i	a2, a1, 12
+  6e:	fff0c6        	j	35 <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0x35>
+
+
+00000000 <hbnf_v1::Rgb8 hbnf_brightness::scaleOutputPixel<hbnf_v1::Rgb8>(hbnf_v1::Rgb8 const&, hbnf_v1::Rgb8 const&, unsigned char)>:
+   0:	006136        	entry	a1, 48
+   3:	744040        	extui	a4, a4, 0, 8
+   6:	f4dc      	bnez.n	a4, 29 <hbnf_v1::Rgb8 hbnf_brightness::scaleOutputPixel<hbnf_v1::Rgb8>(hbnf_v1::Rgb8 const&, hbnf_v1::Rgb8 const&, unsigned char)+0x29>
+   8:	0d4142        	s8i	a4, a1, 13
+   b:	0e4142        	s8i	a4, a1, 14
+   e:	0f4142        	s8i	a4, a1, 15
+  11:	0e0152        	l8ui	a5, a1, 14
+  14:	0d0122        	l8ui	a2, a1, 13
+  17:	0f0142        	l8ui	a4, a1, 15
+  1a:	115580        	slli	a5, a5, 8
+  1d:	114400        	slli	a4, a4, 16
+  20:	202250        	or	a2, a2, a5
+  23:	202240        	or	a2, a2, a4
+  26:	f01d      	retw.n
+  28:	00          	.byte 00
+  29:	0002a2        	l8ui	a10, a2, 0
+  2c:	04bd      	mov.n	a11, a4
+  2e:	000081        	l32r	a8, fffc0030 <hbnf_v1::Rgb8 hbnf_brightness::scaleOutputPixel<hbnf_v1::Rgb8>(hbnf_v1::Rgb8 const&, hbnf_v1::Rgb8 const&, unsigned char)+0xfffc0030>
+  31:	0008e0        	callx8	a8
+  34:	0a5d      	mov.n	a5, a10
+  36:	0102a2        	l8ui	a10, a2, 1
+  39:	04bd      	mov.n	a11, a4
+  3b:	000081        	l32r	a8, fffc003c <hbnf_v1::Rgb8 hbnf_brightness::scaleOutputPixel<hbnf_v1::Rgb8>(hbnf_v1::Rgb8 const&, hbnf_v1::Rgb8 const&, unsigned char)+0xfffc003c>
+  3e:	0008e0        	callx8	a8
+  41:	0a6d      	mov.n	a6, a10
+  43:	0202a2        	l8ui	a10, a2, 2
+  46:	04bd      	mov.n	a11, a4
+  48:	000081        	l32r	a8, fffc0048 <hbnf_v1::Rgb8 hbnf_brightness::scaleOutputPixel<hbnf_v1::Rgb8>(hbnf_v1::Rgb8 const&, hbnf_v1::Rgb8 const&, unsigned char)+0xfffc0048>
+  4b:	0008e0        	callx8	a8
+  4e:	a5ec      	bnez.n	a5, 7c <hbnf_v1::Rgb8 hbnf_brightness::scaleOutputPixel<hbnf_v1::Rgb8>(hbnf_v1::Rgb8 const&, hbnf_v1::Rgb8 const&, unsigned char)+0x7c>
+  50:	86ec      	bnez.n	a6, 7c <hbnf_v1::Rgb8 hbnf_brightness::scaleOutputPixel<hbnf_v1::Rgb8>(hbnf_v1::Rgb8 const&, hbnf_v1::Rgb8 const&, unsigned char)+0x7c>
+  52:	065d      	mov.n	a5, a6
+  54:	4aec      	bnez.n	a10, 7c <hbnf_v1::Rgb8 hbnf_brightness::scaleOutputPixel<hbnf_v1::Rgb8>(hbnf_v1::Rgb8 const&, hbnf_v1::Rgb8 const&, unsigned char)+0x7c>
+  56:	000382        	l8ui	a8, a3, 0
+  59:	010342        	l8ui	a4, a3, 1
+  5c:	020322        	l8ui	a2, a3, 2
+  5f:	205840        	or	a5, a8, a4
+  62:	205250        	or	a5, a2, a5
+  65:	f59c      	beqz.n	a5, 88 <hbnf_v1::Rgb8 hbnf_brightness::scaleOutputPixel<hbnf_v1::Rgb8>(hbnf_v1::Rgb8 const&, hbnf_v1::Rgb8 const&, unsigned char)+0x88>
+  67:	063847        	bltu	a8, a4, 71 <hbnf_v1::Rgb8 hbnf_brightness::scaleOutputPixel<hbnf_v1::Rgb8>(hbnf_v1::Rgb8 const&, hbnf_v1::Rgb8 const&, unsigned char)+0x71>
+  6a:	0a6d      	mov.n	a6, a10
+  6c:	150c      	movi.n	a5, 1
+  6e:	0ab827        	bgeu	a8, a2, 7c <hbnf_v1::Rgb8 hbnf_brightness::scaleOutputPixel<hbnf_v1::Rgb8>(hbnf_v1::Rgb8 const&, hbnf_v1::Rgb8 const&, unsigned char)+0x7c>
+  71:	0a5d      	mov.n	a5, a10
+  73:	160c      	movi.n	a6, 1
+  75:	03b427        	bgeu	a4, a2, 7c <hbnf_v1::Rgb8 hbnf_brightness::scaleOutputPixel<hbnf_v1::Rgb8>(hbnf_v1::Rgb8 const&, hbnf_v1::Rgb8 const&, unsigned char)+0x7c>
+  78:	0a6d      	mov.n	a6, a10
+  7a:	1a0c      	movi.n	a10, 1
+  7c:	0d4152        	s8i	a5, a1, 13
+  7f:	0e4162        	s8i	a6, a1, 14
+  82:	0f41a2        	s8i	a10, a1, 15
+  85:	ffe206        	j	11 <hbnf_v1::Rgb8 hbnf_brightness::scaleOutputPixel<hbnf_v1::Rgb8>(hbnf_v1::Rgb8 const&, hbnf_v1::Rgb8 const&, unsigned char)+0x11>
+  88:	05ad      	mov.n	a10, a5
+  8a:	056d      	mov.n	a6, a5
+  8c:	fffb06        	j	7c <hbnf_v1::Rgb8 hbnf_brightness::scaleOutputPixel<hbnf_v1::Rgb8>(hbnf_v1::Rgb8 const&, hbnf_v1::Rgb8 const&, unsigned char)+0x7c>
+
+
+00000000 <hbnf_brightness::scaleChannel(unsigned char, unsigned char)>:
+   0:	004136        	entry	a1, 32
+   3:	742020        	extui	a2, a2, 0, 8
+   6:	190c      	movi.n	a9, 1
+   8:	080c      	movi.n	a8, 0
+   a:	838920        	moveqz	a8, a9, a2
+   d:	748080        	extui	a8, a8, 0, 8
+  10:	743030        	extui	a3, a3, 0, 8
+  13:	68dc      	bnez.n	a8, 2d <hbnf_brightness::scaleChannel(unsigned char, unsigned char)+0x2d>
+  15:	838930        	moveqz	a8, a9, a3
+  18:	18dc      	bnez.n	a8, 2d <hbnf_brightness::scaleChannel(unsigned char, unsigned char)+0x2d>
+  1a:	c12230        	mul16u	a2, a2, a3
+  1d:	fea032        	movi	a3, 254
+  20:	223a      	add.n	a2, a2, a3
+  22:	000031        	l32r	a3, fffc0024 <hbnf_brightness::scaleChannel(unsigned char, unsigned char)+0xfffc0024>
+  25:	a22230        	muluh	a2, a2, a3
+  28:	742720        	extui	a2, a2, 7, 8
+  2b:	f01d      	retw.n
+  2d:	020c      	movi.n	a2, 0
+  2f:	fffe06        	j	2b <hbnf_brightness::scaleChannel(unsigned char, unsigned char)+0x2b>

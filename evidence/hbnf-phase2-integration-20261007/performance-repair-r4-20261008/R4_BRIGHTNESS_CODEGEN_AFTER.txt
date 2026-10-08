@@ -1,0 +1,74 @@
+00000000 <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)>:
+   0:	006136        	entry	a1, 48
+   3:	0002c2        	l8ui	a12, a2, 0
+   6:	0102b2        	l8ui	a11, a2, 1
+   9:	0202a2        	l8ui	a10, a2, 2
+   c:	000021        	l32r	a2, fffc000c <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0xfffc000c>
+   f:	6228      	l32i.n	a2, a2, 24
+  11:	8228      	l32i.n	a2, a2, 32
+  13:	02f267        	bbsi	a2, 22, 19 <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0x19>
+  16:	0021c6        	j	a1 <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0xa1>
+  19:	000021        	l32r	a2, fffc001c <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0xfffc001c>
+  1c:	82ca      	add.n	a8, a2, a12
+  1e:	92ba      	add.n	a9, a2, a11
+  20:	22aa      	add.n	a2, a2, a10
+  22:	000882        	l8ui	a8, a8, 0
+  25:	000992        	l8ui	a9, a9, 0
+  28:	000222        	l8ui	a2, a2, 0
+  2b:	07b316        	beqz	a3, aa <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0xaa>
+  2e:	089c      	beqz.n	a8, 42 <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0x42>
+  30:	c18380        	mul16u	a8, a3, a8
+  33:	fea0d2        	movi	a13, 254
+  36:	8088d0        	add	a8, a8, a13
+  39:	0000d1        	l32r	a13, fffc003c <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0xfffc003c>
+  3c:	a288d0        	muluh	a8, a8, a13
+  3f:	748780        	extui	a8, a8, 7, 8
+  42:	f98c      	beqz.n	a9, 55 <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0x55>
+  44:	c19390        	mul16u	a9, a3, a9
+  47:	fea0d2        	movi	a13, 254
+  4a:	99da      	add.n	a9, a9, a13
+  4c:	0000d1        	l32r	a13, fffc004c <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0xfffc004c>
+  4f:	a299d0        	muluh	a9, a9, a13
+  52:	749790        	extui	a9, a9, 7, 8
+  55:	f28c      	beqz.n	a2, 68 <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0x68>
+  57:	c12320        	mul16u	a2, a3, a2
+  5a:	fea032        	movi	a3, 254
+  5d:	223a      	add.n	a2, a2, a3
+  5f:	000031        	l32r	a3, fffc0060 <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0xfffc0060>
+  62:	a22230        	muluh	a2, a2, a3
+  65:	742720        	extui	a2, a2, 7, 8
+  68:	18ec      	bnez.n	a8, 8d <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0x8d>
+  6a:	f9dc      	bnez.n	a9, 8d <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0x8d>
+  6c:	098d      	mov.n	a8, a9
+  6e:	b2dc      	bnez.n	a2, 8d <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0x8d>
+  70:	208bc0        	or	a8, a11, a12
+  73:	208a80        	or	a8, a10, a8
+  76:	a8bc      	beqz.n	a8, b4 <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0xb4>
+  78:	063cb7        	bltu	a12, a11, 82 <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0x82>
+  7b:	029d      	mov.n	a9, a2
+  7d:	180c      	movi.n	a8, 1
+  7f:	0abca7        	bgeu	a12, a10, 8d <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0x8d>
+  82:	028d      	mov.n	a8, a2
+  84:	190c      	movi.n	a9, 1
+  86:	03bba7        	bgeu	a11, a10, 8d <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0x8d>
+  89:	029d      	mov.n	a9, a2
+  8b:	120c      	movi.n	a2, 1
+  8d:	749090        	extui	a9, a9, 0, 8
+  90:	119980        	slli	a9, a9, 8
+  93:	748080        	extui	a8, a8, 0, 8
+  96:	208890        	or	a8, a8, a9
+  99:	112200        	slli	a2, a2, 16
+  9c:	202820        	or	a2, a8, a2
+  9f:	f01d      	retw.n
+  a1:	0a2d      	mov.n	a2, a10
+  a3:	0b9d      	mov.n	a9, a11
+  a5:	0c8d      	mov.n	a8, a12
+  a7:	ffe006        	j	2b <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0x2b>
+  aa:	032d      	mov.n	a2, a3
+  ac:	039d      	mov.n	a9, a3
+  ae:	038d      	mov.n	a8, a3
+  b0:	fff646        	j	8d <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0x8d>
+  b3:	00          	.byte 00
+  b4:	082d      	mov.n	a2, a8
+  b6:	089d      	mov.n	a9, a8
+  b8:	fff446        	j	8d <(anonymous namespace)::FoundationAnimartrix::hbnfScaleMatrixOutput(hbnf_v1::Rgb8 const&, unsigned char)+0x8d>

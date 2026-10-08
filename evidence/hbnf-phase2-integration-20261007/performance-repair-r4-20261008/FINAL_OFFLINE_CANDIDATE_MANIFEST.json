@@ -1,0 +1,138 @@
+{
+  "schema": "hbnf-cart2-offline-candidate-v3",
+  "status": "BUILT_AND_VERIFIED_OFFLINE__NOT_INSTALLED__T4_NOT_ACCEPTED",
+  "release_id": "hbnf-cart2-phase2-offline-wow-r4-20261008",
+  "branch": "hbnf-cart2-phase2-integration-20261006",
+  "artifact": {
+    "filename": "hbnf-cart2-phase2-offline-wow-r4-20261008.bin",
+    "path": "outputs/hbnf-cart2-phase2-offline-wow-r4-20261008.bin",
+    "sha256": "e65effb86d8755ca8a4af2155e51844d2c2a387f4000574459a382ca50c5ec87",
+    "size_bytes": 1490160,
+    "embedded_release_id": "hbnf-cart2-phase2-offline-wow-r4-20261008",
+    "embedded_release_occurrences": 3,
+    "old_r3_identity_absent": true,
+    "drive_file_id": "1Xt8uCndhTfuSHl65n7pAv7cAAfMN08AQ",
+    "drive_url": "https://drive.google.com/file/d/1Xt8uCndhTfuSHl65n7pAv7cAAfMN08AQ/view?usp=drivesdk"
+  },
+  "source": {
+    "base_wled": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "animartrix": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f",
+    "fastled": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+    "fastled_release": "3.10.4",
+    "r4_transformed_animartrix_header_sha256": "a2bc03b5196dbaacb39e56885ed9301106b15c4916e0b906f86c02db1601ec1b",
+    "integrated_usermod_sha256": "9672125b4f1914c73bf0d7a997ae81a430c8f4e4b1cb50956e1303ac19687bfa",
+    "phase2_patch_sha256": "553ac4f2d262e38e5436196b7c79b0b9bc001e6883775b8769da6773877f60ef",
+    "brightness_helper_sha256": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a",
+    "build_closure_helper_sha256": "36c9a5addfe9facf4cf91c6cd9ea1794501ece858fbe8dd95ff7402f2c9731af"
+  },
+  "build": {
+    "method": "proven local clean-room PlatformIO",
+    "python": "3.9.6",
+    "platformio_core": "6.1.18",
+    "environment": "hbnf_matrix_wled16_packet20_diag",
+    "required_define": "HBNF_PACKET20_DIAGNOSTICS",
+    "source_date_epoch": 1789948800,
+    "build_log_sha256": "e7a9844a65ec818e1d486a90c9c6eebb1abcf94e85c137c10a82125cbe72ca50",
+    "firmware_map_sha256": "4b05187b84ec944c7572e2c7101ffbc998976482642afa7ecab8248b99548c3a",
+    "object_cache": "fresh unique empty SCons cache; build log contains no Retrieved-from-cache object entries",
+    "build_result": "PASS",
+    "compiled_telemetry_contract": "PASS: HBNF_PACKET20_DIAGNOSTICS, WLED BusManager/BusNetwork hooks, binary JSON markers",
+    "compiled_brightness_codegen": {
+      "r3_hbnfScaleMatrixOutput_callx8": 1,
+      "r3_scaleOutputPixel_callx8_to_scaleChannel": 3,
+      "r4_hbnfScaleMatrixOutput_callx8": 0,
+      "r4_scaleChannel_out_of_line_symbol_present": false,
+      "r4_scaleOutputPixel_out_of_line_symbol_present": false,
+      "r4_hbnfScaleMatrixOutput_instruction_lines": 73,
+      "evidence": "evidence/hbnf-phase2-integration-20261007/performance-repair-r4-20261008/BRIGHTNESS_CODEGEN_COMPARISON.json",
+      "instruction_lines": 73
+    },
+    "source_date": "pinned",
+    "durable_evidence_files": {
+      "R4_CLEANROOM_BUILD.log": {
+        "path": "evidence/hbnf-phase2-integration-20261007/performance-repair-r4-20261008/R4_CLEANROOM_BUILD.log",
+        "sha256": "e7a9844a65ec818e1d486a90c9c6eebb1abcf94e85c137c10a82125cbe72ca50",
+        "size_bytes": 6886474,
+        "drive_file_id": "1kJOCPCsSEaEz9IY0tQ6WV-aMePm2zFF2",
+        "drive_url": "https://drive.google.com/file/d/1kJOCPCsSEaEz9IY0tQ6WV-aMePm2zFF2/view?usp=drivesdk"
+      },
+      "R4_FIRMWARE.map": {
+        "path": "evidence/hbnf-phase2-integration-20261007/performance-repair-r4-20261008/R4_FIRMWARE.map",
+        "sha256": "4b05187b84ec944c7572e2c7101ffbc998976482642afa7ecab8248b99548c3a",
+        "size_bytes": 16414956,
+        "drive_file_id": "1hN8A4crYowhP-n_ZQMdS0r6uF5j3BT8E",
+        "drive_url": "https://drive.google.com/file/d/1hN8A4crYowhP-n_ZQMdS0r6uF5j3BT8E/view?usp=drivesdk"
+      },
+      "R4_INTEGRATED_USERMOD.cpp": {
+        "path": "evidence/hbnf-phase2-integration-20261007/performance-repair-r4-20261008/R4_INTEGRATED_USERMOD.cpp",
+        "sha256": "9672125b4f1914c73bf0d7a997ae81a430c8f4e4b1cb50956e1303ac19687bfa",
+        "size_bytes": 63865
+      },
+      "BRIGHTNESS_CODEGEN_COMPARISON.json": {
+        "path": "evidence/hbnf-phase2-integration-20261007/performance-repair-r4-20261008/BRIGHTNESS_CODEGEN_COMPARISON.json",
+        "sha256": "8adb41505274d2624f4a3b3fe623e7a56b95f312e9ca982b1ed50b105e3df1c9",
+        "size_bytes": 1752
+      }
+    }
+  },
+  "resource_headroom": {
+    "partition_bytes": 1572864,
+    "linker_flash_used_bytes": 1483429,
+    "flash_remaining_bytes": 89435,
+    "firmware_bin_bytes": 1490160,
+    "static_ram_used_bytes": 112288,
+    "ram_total_bytes": 327680,
+    "ram_remaining_bytes": 215392
+  },
+  "correction": {
+    "root_cause": "R3 emitted the newly added per-pixel brightness scaler as out-of-line helper calls under the intentional global -Os build. Disassembly showed one call from hbnfScaleMatrixOutput to scaleOutputPixel and three per-channel calls to scaleChannel. The R4 correction uses GCC always_inline for those small header definitions. Arithmetic, gamma order, brightness levels, and nonzero-pixel fallback are unchanged.",
+    "runtime_causality": "offline code-generation defect confirmed; exact share of the measured FPS regression and recovered target FPS still require one live candidate qualification under the frozen gates.",
+    "source_ref": "firmware/phase2/brightness-r1/hbnf_brightness_output.h",
+    "evidence_basis": "Compiled Xtensa object disassembly from exact R3 and R4 builds; R3 has one callx8 per pixel into scaleOutputPixel and three channel calls per pixel; R4 has no such callx8 and no emitted helper symbols."
+  },
+  "tests": {
+    "governance": [
+      "hbnf_control 23 tests PASS",
+      "hbnf_guarded_run PASS",
+      "architecture_fitness PASS",
+      "runtime_qualify_static PASS",
+      "kernel_sweep_report PASS",
+      "source_tree_identity PASS",
+      "live_kernel_sweep PASS",
+      "packet20_http_adapter PASS",
+      "packet20_build_validate PASS"
+    ],
+    "phase2": [
+      "brightness contract PASS",
+      "R4 FastLED closure PASS",
+      "compiled telemetry contract PASS",
+      "compiled brightness codegen PASS",
+      "Vibe audio replay PASS",
+      "Guest platform static PASS",
+      "UV policy and disabled defaults PASS",
+      "native text adapter compile/run PASS",
+      "text moments offline 11 tests PASS",
+      "owner scoring flow PASS"
+    ]
+  },
+  "rollback": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008,
+    "runtime_restore_verified": true,
+    "latest_live_identity": "R4 exact, verified in 8 post-restore samples"
+  },
+  "live": {
+    "installed": false,
+    "live_mutation_authorized": false,
+    "device_current_release": "R4 exact verified; see R3 recovery receipts",
+    "remaining": "new exact-artifact install authorization; fresh read-only preflight; matching kernel/brightness comparison with frozen thresholds; full required T4 and physical AUX synchronization/recovery qualification; T5 owner acceptance and soak"
+  },
+  "codegen_evidence": "evidence/hbnf-phase2-integration-20261007/performance-repair-r4-20261008/BRIGHTNESS_CODEGEN_COMPARISON.json",
+  "durable_drive_evidence": {
+    "manifest_file_id": "1LiWQMKtNn5IB-WR_aPgebFBIdDThYyXr",
+    "receipt_file_id": "1mcqO-dX-_fTt3M3Qk4kIAxpndEdqBsfp",
+    "codegen_file_id": "1uGAELmGM8VBBbPbeQe9UjQfY34sbDJLW",
+    "control_reconciliation_file_id": "1Tm94j1joIRwmIcymCa2Sf_-WpjnUK0se"
+  }
+}

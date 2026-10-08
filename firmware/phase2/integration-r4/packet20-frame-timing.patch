@@ -1,0 +1,39 @@
+--- a/wled00/bus_manager.cpp
++++ b/wled00/bus_manager.cpp
+@@ -16,6 +16,12 @@
+ #include "bus_manager.h"
+ #include "bus_wrapper.h"
+ #include "wled.h"
++
++#if defined(HBNF_PACKET20_DIAGNOSTICS)
++extern "C" void hbnfPerfDdpStart();
++extern "C" void hbnfPerfDdpEnd();
++extern "C" void hbnfPerfFrameEnd();
++#endif
+ 
+ // functions to get/set bits in an array - based on functions created by Brandon for GOL
+ //  toDo : make this a class that's completely defined in a header file
+@@ -732,7 +738,13 @@
+ void BusNetwork::show() {
+   if (!_valid || !canShow()) return;
+   _broadcastLock = true;
++#if defined(HBNF_PACKET20_DIAGNOSTICS)
++  hbnfPerfDdpStart();
++#endif
+   realtimeBroadcast(_UDPtype, _client, _len, _data, _bri, hasWhite());
++#if defined(HBNF_PACKET20_DIAGNOSTICS)
++  hbnfPerfDdpEnd();
++#endif
+   _broadcastLock = false;
+ }
+ 
+@@ -1413,6 +1425,9 @@
+   for (auto &bus : busses) {
+     bus->show();
+   }
++#if defined(HBNF_PACKET20_DIAGNOSTICS)
++  hbnfPerfFrameEnd();
++#endif
+ }
+ 
+ void IRAM_ATTR BusManager::setPixelColor(unsigned pix, uint32_t c) {

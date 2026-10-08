@@ -1,0 +1,8 @@
+{
+  "status": "FAIL",
+  "run_error": "command failed rc=2: ['python3', '/tmp/hbnf-r3-live-install/hbnf_foundation_live_adapter_r3.py', 'telemetry', '--inventory', '/tmp/hbnf-r3-verify-clone-20261008/config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json', '--session-id', '/private/tmp/hbnf-r3-verify-clone-20261008/evidence/hbnf-phase2-integration-20261007/live-r3-night-20261008/FULL_FOUNDATION']\nfoundation adapter error: RuntimeError: foundation-frame-tail-quantile-saturated-at-127.875ms fields=frameMsP99 raw=/private/tmp/hbnf-r3-verify-clone-20261008/evidence/hbnf-phase2-integration-20261007/live-r3-night-20261008/FULL_FOUNDATION/SATURATED_TELEMETRY_RAW.json\n",
+  "restore_error": null,
+  "profiles_completed": 9,
+  "pre_sweep_state": "/private/tmp/hbnf-r3-verify-clone-20261008/evidence/hbnf-phase2-integration-20261007/live-r3-night-20261008/FULL_FOUNDATION/PRE_SWEEP_STATE.json",
+  "post_restore_state": "/private/tmp/hbnf-r3-verify-clone-20261008/evidence/hbnf-phase2-integration-20261007/live-r3-night-20261008/FULL_FOUNDATION/POST_RESTORE_STATE.json"
+}

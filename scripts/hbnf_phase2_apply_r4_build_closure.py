@@ -25,7 +25,7 @@ def sha(path: pathlib.Path) -> str:
 
 def apply_telemetry_hooks(wled: pathlib.Path) -> tuple[str, str]:
     """Apply the bounded, diagnostics-only hooks to pinned WLED bus dispatch."""
-    patch = pathlib.Path(__file__).resolve().parents[1] / "firmware/phase2/integration-r3/packet20-frame-timing.patch"
+    patch = pathlib.Path(__file__).resolve().parents[1] / "firmware/phase2/integration-r4/packet20-frame-timing.patch"
     bus = wled / "wled00/bus_manager.cpp"
     if not patch.is_file() or not bus.is_file():
         raise SystemExit("pinned WLED source or telemetry hook patch is missing")
@@ -75,6 +75,34 @@ def verify_compiled_telemetry(firmware_bin: pathlib.Path, firmware_map: pathlib.
     }
 
 
+def verify_compiled_brightness_codegen(object_file: pathlib.Path, objdump: pathlib.Path) -> dict:
+    """Fail if the -Os output hot path regresses to per-channel helper calls."""
+    disassembly = subprocess.check_output([str(objdump), "-Cd", str(object_file)], text=True, errors="replace")
+    match = re.search(
+        r"(?m)^([0-9a-f]+ <[^\n]*FoundationAnimartrix::hbnfScaleMatrixOutput\([^\n]*>:\n)(.*?)(?=^Disassembly of section|\Z)",
+        disassembly,
+        re.S,
+    )
+    if not match:
+        raise SystemExit("compiled usermod object lacks hbnfScaleMatrixOutput")
+    body = match.group(2)
+    forbidden = ("callx8", "scaleChannel(unsigned char", "scaleOutputPixel<")
+    present = [marker for marker in forbidden if marker in body]
+    if present:
+        raise SystemExit("brightness hot path contains avoidable out-of-line call(s): " + ", ".join(present))
+    if "scaleChannel(unsigned char" in disassembly or "scaleOutputPixel<" in disassembly:
+        raise SystemExit("brightness helper was emitted as an out-of-line function in the compiled usermod object")
+    return {
+        "status": "PASS_COMPILED_BRIGHTNESS_HOT_PATH_INLINE",
+        "object_sha256": sha(object_file),
+        "object_bytes": object_file.stat().st_size,
+        "symbol": "FoundationAnimartrix::hbnfScaleMatrixOutput",
+        "instruction_lines": sum(1 for line in body.splitlines() if re.match(r"^\s*[0-9a-f]+:", line)),
+        "out_of_line_calls": 0,
+        "objdump": str(objdump),
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--wled-root", required=True, type=pathlib.Path)
@@ -83,6 +111,9 @@ def main() -> int:
     ap.add_argument("--firmware-bin", type=pathlib.Path)
     ap.add_argument("--firmware-map", type=pathlib.Path)
     ap.add_argument("--build-log", type=pathlib.Path)
+    ap.add_argument("--verify-compiled-brightness", action="store_true")
+    ap.add_argument("--brightness-object", type=pathlib.Path)
+    ap.add_argument("--xtensa-objdump", type=pathlib.Path)
     args = ap.parse_args()
     wled = args.wled_root.resolve()
     fastled = args.fastled_root.resolve()
@@ -94,6 +125,11 @@ def main() -> int:
         if not all((args.firmware_bin, args.firmware_map, args.build_log)):
             raise SystemExit("compiled telemetry verification requires --firmware-bin, --firmware-map, and --build-log")
         print(json.dumps(verify_compiled_telemetry(args.firmware_bin, args.firmware_map, args.build_log), indent=2, sort_keys=True))
+        return 0
+    if args.verify_compiled_brightness:
+        if not all((args.brightness_object, args.xtensa_objdump)):
+            raise SystemExit("compiled brightness verification requires --brightness-object and --xtensa-objdump")
+        print(json.dumps(verify_compiled_brightness_codegen(args.brightness_object, args.xtensa_objdump), indent=2, sort_keys=True))
         return 0
     header = wled / ".pio/libdeps" / ENV / "animartrix/ANIMartRIX.h"
     config = wled / "platformio_override.ini"
