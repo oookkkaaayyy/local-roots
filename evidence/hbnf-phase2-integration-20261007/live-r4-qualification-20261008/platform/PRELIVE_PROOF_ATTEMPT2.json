@@ -1,0 +1,47 @@
+{
+  "schema": "local-roots-prelive-proof-v1",
+  "run_id": "hbnf-matrix-20261008T062102Z-c698ff5b",
+  "capsule_sha256": "1f729e865bae3b40cf5b6bfe92602988e05c7c0a9cef502a3997481f1509b468",
+  "approved_for_mutation": true,
+  "stages": {
+    "contract-closure": {
+      "status": "PASS",
+      "evidence": [
+        "../PREINSTALL_PREFLIGHT_ATTEMPT2.json (candidate exact SHA/size/embedded identity, target and WLED 16.0.1 OTA contract)",
+        "../TRANSFER_METHOD_ANALYSIS_20261008.json (proven multipart contract; corrected Expect suppression selected)"
+      ]
+    },
+    "recovery-proof": {
+      "status": "PASS",
+      "evidence": [
+        "../PREINSTALL_PREFLIGHT_ATTEMPT2.json (exact R4 rollback SHA/size/local file and Drive identity)",
+        "../../live-r3-night-20261008/R4_POST_ROLLBACK_IDENTITY.json",
+        "../../live-r3-night-20261008/R4_POSTRESTORE_HEALTH_SAMPLES.json"
+      ]
+    },
+    "transaction-rehearsal": {
+      "status": "PASS",
+      "evidence": [
+        "../../live-r3-night-20261008/UPLOAD_RECEIPT.json (prior successful candidate /update)",
+        "../../live-r3-night-20261008/R4_ROLLBACK_UPLOAD_RECEIPT.json (prior successful exact R4 recovery /update)"
+      ]
+    },
+    "capture-current-state": {
+      "status": "PASS",
+      "evidence": [
+        "../PREINSTALL_PREFLIGHT_ATTEMPT2.json (fresh Matrix/AUX identity, health, network bus target and full 22-pixel output mapping)"
+      ]
+    }
+  },
+  "recovery_identity": {
+    "identity": "Foundation R4 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1, SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743a2f3d8c, 1,489,008 bytes",
+    "verification": "SHA-256 rechecked in PREINSTALL_PREFLIGHT_ATTEMPT2.json; prior exact installed and recovery identity/health receipts; same /update method proven."
+  },
+  "pre_mutation_state": {
+    "device": "Matrix 192.168.77.10 / 70:4b:ca:5b:34:5c running exact Foundation R4; AUX 192.168.77.11 / 8c:94:df:55:c3:4c WLED16.0.1; Opal unmodified."
+  },
+  "consumer_contract": {
+    "verified": true,
+    "identity": "Single local multipart file field update via curl to Matrix WLED /update; add empty Expect header to avoid 100-continue handshake; preserve exact bytes/endpoint/field; no retry."
+  }
+}
