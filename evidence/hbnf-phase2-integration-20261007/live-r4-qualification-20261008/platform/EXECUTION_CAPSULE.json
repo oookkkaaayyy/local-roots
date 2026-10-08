@@ -4,7 +4,7 @@
     "remote_execution_for_source_archaeology": false,
     "retry_inherits_authorization": false
   },
-  "created_at": "2026-10-08T06:08:52.770368+00:00",
+  "created_at": "2026-10-08T06:10:30.905050+00:00",
   "expected_terminal_outputs": [
     "R4 runtime qualification or exact failure classification",
     "exact Matrix release identity",
@@ -21,13 +21,13 @@
     "branch": "hbnf-cart2-phase2-integration-20261006",
     "dirty": false,
     "type": "git_commit",
-    "value": "14b360b8839bea7f396cd63592223a22caebf4f3"
+    "value": "61c230c9d9f703206aaaa23874cd79c898991c35"
   },
   "repo_inputs": [
     {
-      "bytes": 182059,
+      "bytes": 182159,
       "path": "config/HBNF_CONTROL_STATE.json",
-      "sha256": "58acb4368bafc4023c96e9bdb74315c1c3796fdec2844fa3fcafa22de4c34320"
+      "sha256": "e7ef25e295744811f8bf90f3bc87e70afe2bf3798f7220902b83243ef702e17e"
     },
     {
       "bytes": 13339,
@@ -95,7 +95,7 @@
       "sha256": "ca14c429fe130dbba8a3d0ae7b27e50613d89e8b24b2c5f43dd878fb28513eb3"
     }
   ],
-  "run_id": "hbnf-matrix-20261008T060852Z-199f0a56",
+  "run_id": "hbnf-matrix-20261008T061030Z-340f26b9",
   "schema": "local-roots-execution-capsule-v1",
   "stages": [
     {
@@ -232,7 +232,7 @@
   },
   "system_id": "hbnf-matrix",
   "terminal_recovery": "If the exact candidate is unqualified or runtime safety/required AUX behavior fails, preserve the failure evidence, install only the exact R4 recovery within the authorized limit, verify exact R4 identity and health, then continue offline work; never stop solely because a soak failed.",
-  "trace_id": "6256bcf62178445cb1a75efeea97e496",
+  "trace_id": "4a33997074aa4eb6a6600db89ebebb95",
   "user_interaction_policy": {
     "copy_paste_delivery": "one_single_fenced_block_per_action",
     "max_user_actions_per_blocker": 1,

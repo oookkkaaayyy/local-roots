@@ -1,20 +1,19 @@
 {
   "schema": "local-roots-prelive-proof-v1",
-  "run_id": "hbnf-matrix-20261008T060852Z-199f0a56",
-  "capsule_sha256": "f896b1023c0700f0455d155fce5aee8eaa5a0f77557d294efb6c3460cff0c68b",
+  "run_id": "hbnf-matrix-20261008T061030Z-340f26b9",
+  "capsule_sha256": "e973bd14a0cf0399080a63464ec9681f77cdae284fe45502b13e65f8d31eb750",
   "approved_for_mutation": true,
   "stages": {
     "contract-closure": {
       "status": "PASS",
       "evidence": [
-        "../PREINSTALL_PREFLIGHT.json (candidate SHA/size/embedded identity, compiled telemetry contract and exact WLED /update consumer verification)",
-        "../../performance-repair-r4-20261008/FINAL_OFFLINE_CANDIDATE_MANIFEST.json"
+        "../PREINSTALL_PREFLIGHT.json (exact authorized candidate SHA, size, embedded release and telemetry contract; WLED 16.0.1 /update consumer)"
       ]
     },
     "recovery-proof": {
       "status": "PASS",
       "evidence": [
-        "../PREINSTALL_PREFLIGHT.json (Foundation R4 recovery SHA/size and exact runtime identity)",
+        "../PREINSTALL_PREFLIGHT.json (exact Foundation R4 recovery SHA and size)",
         "../../live-r3-night-20261008/R4_POST_ROLLBACK_IDENTITY.json",
         "../../live-r3-night-20261008/R4_POSTRESTORE_HEALTH_SAMPLES.json"
       ]
@@ -22,26 +21,26 @@
     "transaction-rehearsal": {
       "status": "PASS",
       "evidence": [
-        "../../live-r3-night-20261008/UPLOAD_RECEIPT.json (single local /update consumer path)",
-        "../../live-r3-night-20261008/R4_ROLLBACK_UPLOAD_RECEIPT.json (same exact recovery transaction path)"
+        "../../live-r3-night-20261008/UPLOAD_RECEIPT.json (candidate /update transaction)",
+        "../../live-r3-night-20261008/R4_ROLLBACK_UPLOAD_RECEIPT.json (exact recovery path)"
       ]
     },
     "capture-current-state": {
       "status": "PASS",
       "evidence": [
-        "../PREINSTALL_PREFLIGHT.json (immediate Matrix/AUX identity, health, segment mapping, native realtime fields, and renderer baseline)"
+        "../PREINSTALL_PREFLIGHT.json (immediate device identity, uptime/heap/FPS, AUX native live/source, all 22 mapped LEDs and Matrix renderer count)"
       ]
     }
   },
   "recovery_identity": {
-    "identity": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1; SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c; 1489008 bytes",
-    "verification": "Locally SHA-256 verified in PREINSTALL_PREFLIGHT.json; previously installed and recovered using same WLED 16.0.1 /update method with exact post-recovery build identity receipt."
+    "identity": "Foundation R4 release; SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743a2f3d8c; 1,489,008 bytes",
+    "verification": "Candidate and rollback files locally SHA-256 verified; prior exact R4 post-recovery identity and health receipts; same WLED /update upload path."
   },
   "pre_mutation_state": {
-    "device": "Matrix 192.168.77.10, MAC 70:4b:ca:5b:34:5c, Foundation R4 exact release identity; AUX 192.168.77.11, MAC 8c:94:df:55:c3:4c, WLED 16.0.1, native DDP live=true/lm=DDP/lip=192.168.77.10; Opal unchanged/read-only."
+    "device": "Matrix .10 / MAC 70:4b:ca:5b:34:5c on exact Foundation R4; AUX .11 / MAC 8c:94:df:55:c3:4c WLED16.0.1; Opal read-only and unchanged."
   },
   "consumer_contract": {
     "verified": true,
-    "identity": "One local multipart POST of exact SHA-verified binary to http://192.168.77.10/update (WLED 16.0.1); exact upload/recovery transaction receipts already prove consumer endpoint and response contract."
+    "identity": "One local multipart POST to http://192.168.77.10/update for exact binary; response captured; do not retry."
   }
 }
