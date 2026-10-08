@@ -184,7 +184,7 @@
     "status": "R3_INSTALL_AND_R4_ROLLBACK_CONSUMED__CANDIDATE_REJECTED",
     "target": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c only"
   },
-  "checkpoint_at_utc": "2026-10-08T06:33:28.929140+00:00",
+  "checkpoint_at_utc": "2026-10-08T06:34:48.041086+00:00",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -2686,7 +2686,7 @@
   "bounded_phase2_r4_install_attempt2_authorization": {
     "schema": "hbnf-phase2-r4-bounded-live-authorization-v1",
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008-RETRY1",
-    "status": "CONDITIONAL_R4_ROLLBACK_RESERVED__PHYSICAL_AUX_SYNC_FAILED",
+    "status": "CANDIDATE_REJECTED__EXACT_R4_RESTORED__LIVE_MUTATION_CLOSED",
     "authorized_by": "Current user instruction: URGENT \u2014 RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
     "authorized_at_utc": "2026-10-08T06:20:06.671131+00:00",
     "preflight_path": "evidence/hbnf-phase2-integration-20261007/live-r4-qualification-20261008/PREINSTALL_PREFLIGHT_ATTEMPT2.json",
@@ -2739,12 +2739,15 @@
       "size_bytes": 1489008,
       "drive_id": "1hy-U_zu4Wqkzwe87Br2xOSMUnCzYdrYB",
       "limit": 1,
-      "attempts": 0,
+      "attempts": 1,
       "allowed_only_if": "Exact candidate identity, frozen performance/safety, Matrix runtime health, or required physical Matrix-to-AUX behavior fails.",
       "attempts_reserved": 1,
       "attempts_consumed_before_request": true,
       "authorization_path": "evidence/hbnf-phase2-integration-20261007/live-r4-qualification-20261008/CONDITIONAL_R4_ROLLBACK_AUTHORIZATION.json",
-      "reason": "Physical Matrix-to-AUX synchronization failed during owner-observed scene changes; owner confirms underglow stayed solid blue; AUX live view showed 22 zero RGB pixels on each of 19 frames."
+      "reason": "Physical Matrix-to-AUX synchronization failed during owner-observed scene changes; owner confirms underglow stayed solid blue; AUX live view showed 22 zero RGB pixels on each of 19 frames.",
+      "request_sent": true,
+      "result_receipt": "evidence/hbnf-phase2-integration-20261007/live-r4-qualification-20261008/R4_ROLLBACK_RESULT_ATTEMPT2.json",
+      "status": "RESTORED_AND_VERIFIED"
     },
     "target": {
       "ip": "192.168.77.10",
@@ -2776,6 +2779,13 @@
       "T5 acceptance without owner evidence"
     ],
     "no_other_device_mutation": true,
-    "live_mutation_authorized": true
+    "live_mutation_authorized": false,
+    "qualification_result": {
+      "physical_matrix_to_aux_sync": "FAIL__OWNER_OBSERVED_SOLID_BLUE_DURING_TWO_MATRIX_SCENES",
+      "aux_wled_liveview_frames": 19,
+      "aux_wled_liveview_zero_payload_frames": 19,
+      "matched_kernel13_kernel9": "NOT_COMPLETED__PACKET20_ONE_BOOT_SESSION_REENTRY_REJECTED_AFTER_HOST_UNDERSAMPLE",
+      "collector_failure": "26_samples_below_existing_minimum_27; snapshot restored; retry blocked by one-shot snapshot/diagnostic lifecycle"
+    }
   }
 }

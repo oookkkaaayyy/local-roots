@@ -1,0 +1,75 @@
+{
+  "schema": "hbnf-phase2-exact-r4-rollback-result-v1",
+  "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008-RETRY1-ROLLBACK",
+  "candidate_rejected": "hbnf-cart2-phase2-offline-wow-r4-20261008",
+  "candidate_sha256": "e65effb86d8755ca8a4af2155e51844d2c2a387f4000574459a382ca50c5ec87",
+  "rollback": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008,
+    "upload_http_status": 200,
+    "curl_result": "http_code=200\nsize_upload=1489226\nsize_download=404\ntime_total=32.816878",
+    "response_body": "<!DOCTYPE html> <html lang=en> <head> <meta content=\"width=device-width\" name=viewport> <title>WLED Message</title> <script>function B(){window.history.back()}function RS(){window.location=\"../settings\"}function RP(){top.location.href=\"../\"}</script> <style> @import url(\"style.css\"); </style> </head> <body> <h2>Update successful!</h2>Rebooting now...<script>setTimeout(RP,11000)</script></body> </html>",
+    "response_headers": "HTTP/1.1 200 OK\nContent-Type: text/html\nAccess-Control-Allow-Origin: *\nAccess-Control-Allow-Methods: *\nAccess-Control-Allow-Headers: *\nConnection: close\nAccept-Ranges: none\nTransfer-Encoding: chunked\n\n",
+    "binary_sha256_local": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "runtime": {
+    "build": {
+      "schema": "hbnf-build-v1",
+      "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "ip": "192.168.77.10",
+      "mac": "70:4b:ca:5b:34:5c",
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "basedOnReleaseId": "hbnf-matrix-coordinated-v1-20261002-06",
+      "basedOnFirmwareSha256": "b9bb60dca1a9be8f7241670a7540810c604465c9adf7084b6efc90d5b4622886",
+      "wled": "16.0.1",
+      "features": [
+        "canonical-palette-v1",
+        "canonical-overlay-v1",
+        "coordinated-ui-v1"
+      ]
+    },
+    "wled": "16.0.1",
+    "matrix_mac": "704bca5b345c",
+    "matrix_ip": "192.168.77.10",
+    "uptime_seconds": 22,
+    "fps": 35,
+    "freeheap": 74744,
+    "timing": {
+      "kernel": 8,
+      "variantSignature": 234465365,
+      "wholeFrameUs": 23296,
+      "kernelRenderUs": 12982,
+      "audioModulationUs": 1482,
+      "schedulerVariantUs": 1042,
+      "paletteColorUs": 424,
+      "overlayUs": 39,
+      "companionPrepUs": 144,
+      "companionDdpSendUs": 0,
+      "auxProjectionAgeMs": 23084,
+      "unaccountedUs": 7180,
+      "fps": 34,
+      "companionRenderCount": 808,
+      "freeHeap": 119756,
+      "rssi": -30,
+      "uptimeSec": 23
+    },
+    "brightness": 44
+  },
+  "aux": {
+    "live": true,
+    "lm": "DDP",
+    "lip": "192.168.77.10",
+    "lor": 0,
+    "segment_lengths": [
+      22
+    ]
+  },
+  "exact_identity_pass": true,
+  "captured_utc": "2026-10-08T06:34:36.183770+00:00",
+  "post_rollback_health": "PASS",
+  "authorization_consumed_before_request": true,
+  "rollback_attempts": 1,
+  "live_mutation_authorized_after_restore": false,
+  "qualification_status": "CANDIDATE_REJECTED__T4_REMAINS_OPEN"
+}
