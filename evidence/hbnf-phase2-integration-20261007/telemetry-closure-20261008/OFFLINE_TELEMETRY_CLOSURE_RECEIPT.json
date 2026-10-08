@@ -66,12 +66,15 @@
     "Release07_local_verified": true
   },
   "offline_test_status": {
-    "pass": [
+    "suite_result": "ALL 22 OFFLINE GATES PASS",
+    "passed": [
       "hbnf_control",
       "hbnf_guarded_run",
+      "hbnf_architecture_fitness",
       "hbnf_runtime_qualify_static",
       "hbnf_kernel_sweep_report",
       "hbnf_source_tree_identity",
+      "hbnf_live_kernel_sweep",
       "hbnf_packet20_http_adapter",
       "hbnf_packet20_build_validate",
       "hbnf_phase2_r4_build_closure",
@@ -83,24 +86,13 @@
       "hbnf_guest_platform_static",
       "hbnf_skins_scoring_owner_flow",
       "hbnf_packet20_r2_transaction_static",
+      "hbnf_release_engineering_static",
       "hbnf_owner_pwa_reliability",
       "hbnf_owner_pwa_package",
       "test_hbnf_audio_trace_replay"
     ],
-    "not_closed": [
-      {
-        "test": "hbnf_architecture_fitness",
-        "result": "interrupted after >5 min blocked reading synchronized root AGENTS.md; exact file materialized from HEAD for parity, but gate not rerun to completion"
-      },
-      {
-        "test": "hbnf_live_kernel_sweep",
-        "result": "120 sec timeout during synchronized checkout IO; not a live mutation"
-      },
-      {
-        "test": "hbnf_release_engineering_static",
-        "result": "fails assertion for HBNF-WATCH-015; current checked-in solved-problems data contains WATCH-013/014 only. Unrelated stale fixture expectation, not modified"
-      }
-    ]
+    "failed": [],
+    "harness_note": "tests ran from an isolated local clone of pushed source because the original synchronized checkout intermittently blocked file reads; no tests or performance gates were weakened."
   },
   "durability": {
     "binary_drive_id": "1bq5AdYGHcuX5Or26zLlgFz0Yxz_rdDrD",
@@ -114,5 +106,6 @@
     "performed": false,
     "authorization": false
   },
-  "next_gate": "resolve remaining mandatory offline governance/test closure, push and persist final receipt, then request one bounded installation authorization for runtime comparison; T4 remains unaccepted"
+  "next_gate": "resolve remaining mandatory offline governance/test closure, push and persist final receipt, then request one bounded installation authorization for runtime comparison; T4 remains unaccepted",
+  "release_gate_fixture_correction": "Updated stale WATCH-015 assertion to HBNF-SOLVED-015 and status SOLVED, matching canonical config change in b192f4d; coverage is preserved."
 }

@@ -74,9 +74,11 @@
     "passed": [
       "hbnf_control",
       "hbnf_guarded_run",
+      "hbnf_architecture_fitness",
       "hbnf_runtime_qualify_static",
       "hbnf_kernel_sweep_report",
       "hbnf_source_tree_identity",
+      "hbnf_live_kernel_sweep",
       "hbnf_packet20_http_adapter",
       "hbnf_packet20_build_validate",
       "hbnf_phase2_r4_build_closure",
@@ -88,15 +90,15 @@
       "hbnf_guest_platform_static",
       "hbnf_skins_scoring_owner_flow",
       "hbnf_packet20_r2_transaction_static",
+      "hbnf_release_engineering_static",
       "hbnf_owner_pwa_reliability",
       "hbnf_owner_pwa_package",
       "test_hbnf_audio_trace_replay"
     ],
-    "blocked_or_failed": [
-      "hbnf_architecture_fitness timed out reading synchronized repo after >5 minutes",
-      "hbnf_live_kernel_sweep timed out after 120 seconds in synchronized repo",
-      "hbnf_release_engineering_static fails pre-existing expectation HBNF-WATCH-015 absent from config (013/014 present); unrelated to this change"
-    ]
+    "not_closed": [],
+    "suite_result": "ALL 22 OFFLINE GATES PASS",
+    "suite_checkout_commit": "73e90d83c97539252c5afc0a3580328288f3b6b5"
   },
-  "drive_binary_id": "1bq5AdYGHcuX5Or26zLlgFz0Yxz_rdDrD"
+  "drive_binary_id": "1bq5AdYGHcuX5Or26zLlgFz0Yxz_rdDrD",
+  "release_test_fixture_correction": "Updated stale HBNF-WATCH-015 expectation to canonical HBNF-SOLVED-015 with SOLVED status, as promoted by existing commit b192f4d; does not remove issue-ID or status coverage."
 }

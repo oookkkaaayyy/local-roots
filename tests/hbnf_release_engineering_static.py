@@ -39,6 +39,6 @@ assert capsule["dependency_closure"]["captured"] is False
 assert capsule["generated_inputs"]["policy_verified"] is False
 assert any(x["id"]=="HBNF-WATCH-013" for x in problems["issues"])
 assert any(x["id"]=="HBNF-WATCH-014" for x in problems["issues"])
-assert any(x["id"]=="HBNF-WATCH-015" for x in problems["issues"])
+assert any(x["id"]=="HBNF-SOLVED-015" and x["status"]=="SOLVED" for x in problems["issues"])
 
 print("PASS: HBNF release-engineering staging integrity")

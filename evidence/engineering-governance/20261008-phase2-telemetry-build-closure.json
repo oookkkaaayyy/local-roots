@@ -26,7 +26,8 @@
       "tests": [
         "tests/hbnf_phase2_r4_build_closure.py proves fail-closed compiled macro, map-callsite, firmware JSON-key, and source-binding checks",
         "scripts/hbnf_phase2_apply_r4_build_closure.py verifies pinned WLED input and applies only the diagnostics-guarded hooks",
-        "PlatformIO Python 3.9.6/Core 6.1.18 clean-room diagnostic and non-diagnostic builds with matched Phase 2 source"
+        "PlatformIO Python 3.9.6/Core 6.1.18 clean-room diagnostic and non-diagnostic builds with matched Phase 2 source",
+        "tests/hbnf_release_engineering_static.py aligns the stale WATCH-015 assertion with canonical HBNF-SOLVED-015 state established by commit b192f4d; issue coverage remains fail-closed and status-checked"
       ]
     }
   }
