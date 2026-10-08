@@ -1,0 +1,220 @@
+{
+  "schema": "hbnf-phase2-live-runtime-regression-and-rollback-v1",
+  "captured_utc": "2026-10-08T01:45:23.640975+00:00",
+  "candidate": {
+    "requested_release": "hbnf-cart2-phase2-offline-wow-r1-20261007",
+    "installed_artifact_sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3",
+    "installed_artifact_size_bytes": 1458832,
+    "on_device_embedded_release_id": "hbnf-cart2-phase2-offline-r1-20261007",
+    "runtime_samples": 7,
+    "uptime_seconds": [
+      86,
+      96,
+      106,
+      117,
+      127,
+      137,
+      147
+    ],
+    "observed_fps": [
+      14,
+      12,
+      12,
+      21,
+      14,
+      14,
+      14
+    ],
+    "wholeFrameUs": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "free_heap_bytes": [
+      97196,
+      91248,
+      89616,
+      90556,
+      92992,
+      90640,
+      95376
+    ],
+    "companion_render_count": [
+      1213,
+      1347,
+      1476,
+      1630,
+      1815,
+      1969,
+      2152
+    ],
+    "matrix_brightness": 44,
+    "aux_all_samples_live_ddp_from_matrix": true
+  },
+  "comparison_preinstall": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "fps": 41,
+    "kernel": 13,
+    "wholeFrameUs": 21880,
+    "matrixBrightness": 44,
+    "aux_live": true,
+    "aux_lm": "DDP",
+    "aux_lip": "192.168.77.10",
+    "source": "FINAL_PREINSTALL_DEVICE_SNAPSHOT.json"
+  },
+  "rollback": {
+    "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "artifact_size_bytes": 1489008,
+    "opal_side_sha256_verified": true,
+    "ota_http_status": 200,
+    "response": "Update successful; rebooting now",
+    "post_restore_samples": [
+      {
+        "captured_utc": "2026-10-08T01:44:48.998873+00:00",
+        "matrix": {
+          "ip": "192.168.77.10",
+          "mac": "704bca5b345c",
+          "wled": "16.0.1",
+          "uptime": 191,
+          "heap": 74252,
+          "fps": 37,
+          "wholeFrameUs": 23561,
+          "kernel": 4,
+          "companionRenderCount": 7064,
+          "matrixBrightness": 44,
+          "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+          "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+        },
+        "aux": {
+          "ip": "192.168.77.11",
+          "mac": "8c94df55c34c",
+          "live": true,
+          "lm": "DDP",
+          "lip": "192.168.77.10",
+          "uptime": 15817,
+          "freeheap": 105512
+        }
+      },
+      {
+        "captured_utc": "2026-10-08T01:44:57.589874+00:00",
+        "matrix": {
+          "ip": "192.168.77.10",
+          "mac": "704bca5b345c",
+          "wled": "16.0.1",
+          "uptime": 200,
+          "heap": 74240,
+          "fps": 37,
+          "wholeFrameUs": 20065,
+          "kernel": 4,
+          "companionRenderCount": 7394,
+          "matrixBrightness": 44,
+          "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+          "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+        },
+        "aux": {
+          "ip": "192.168.77.11",
+          "mac": "8c94df55c34c",
+          "live": true,
+          "lm": "DDP",
+          "lip": "192.168.77.10",
+          "uptime": 15825,
+          "freeheap": 104040
+        }
+      },
+      {
+        "captured_utc": "2026-10-08T01:45:06.004538+00:00",
+        "matrix": {
+          "ip": "192.168.77.10",
+          "mac": "704bca5b345c",
+          "wled": "16.0.1",
+          "uptime": 208,
+          "heap": 74240,
+          "fps": 43,
+          "wholeFrameUs": 13628,
+          "kernel": 17,
+          "companionRenderCount": 7739,
+          "matrixBrightness": 44,
+          "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+          "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+        },
+        "aux": {
+          "ip": "192.168.77.11",
+          "mac": "8c94df55c34c",
+          "live": true,
+          "lm": "DDP",
+          "lip": "192.168.77.10",
+          "uptime": 15834,
+          "freeheap": 105536
+        }
+      },
+      {
+        "captured_utc": "2026-10-08T01:45:14.577960+00:00",
+        "matrix": {
+          "ip": "192.168.77.10",
+          "mac": "704bca5b345c",
+          "wled": "16.0.1",
+          "uptime": 217,
+          "heap": 74332,
+          "fps": 41,
+          "wholeFrameUs": 14125,
+          "kernel": 17,
+          "companionRenderCount": 8100,
+          "matrixBrightness": 44,
+          "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+          "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+        },
+        "aux": {
+          "ip": "192.168.77.11",
+          "mac": "8c94df55c34c",
+          "live": true,
+          "lm": "DDP",
+          "lip": "192.168.77.10",
+          "uptime": 15842,
+          "freeheap": 105512
+        }
+      },
+      {
+        "captured_utc": "2026-10-08T01:45:23.095064+00:00",
+        "matrix": {
+          "ip": "192.168.77.10",
+          "mac": "704bca5b345c",
+          "wled": "16.0.1",
+          "uptime": 225,
+          "heap": 74360,
+          "fps": 42,
+          "wholeFrameUs": 13670,
+          "kernel": 17,
+          "companionRenderCount": 8464,
+          "matrixBrightness": 44,
+          "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+          "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+        },
+        "aux": {
+          "ip": "192.168.77.11",
+          "mac": "8c94df55c34c",
+          "live": true,
+          "lm": "DDP",
+          "lip": "192.168.77.10",
+          "uptime": 15851,
+          "freeheap": 105520
+        }
+      }
+    ],
+    "stable_release_id": true,
+    "aux_ddp_live_all_samples": true
+  },
+  "classification": {
+    "result": "CANDIDATE_FAILED_OBJECTIVE_RUNTIME_FPS_GATE__EXACT_R4_RESTORED",
+    "evidence": "Candidate stayed at 12-21 FPS versus recorded preinstall 41 FPS; companion render count advanced at the low rate. Candidate identity was the SHA-verified requested artifact; its embedded release alias reports offline-r1 rather than wow-r1. Exact one-install authority is exhausted; no second image installed."
+  },
+  "limits": {
+    "no_matrix_restart_test_after_candidate": "Candidate OTA reboot was the only restart; a separate restart test was not run after low FPS was observed.",
+    "aux_restart_test": "Not run because rollout was rolled back at Matrix FPS gate; AUX remained live throughout.",
+    "authenticated_owner_smoke": "Not run; owner GUI remained locked and no owner-authenticated writes were attempted.",
+    "guest_default_off": "Previously verified through read-only canonical state revision 117 and closed guest action 403; remains off."
+  }
+}
