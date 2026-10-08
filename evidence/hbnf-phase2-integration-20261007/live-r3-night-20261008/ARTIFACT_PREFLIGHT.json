@@ -1,0 +1,125 @@
+{
+  "candidate": {
+    "exists": true,
+    "path": "/Users/andrew/Documents/Codex/2026-10-07/reconcile-the-current-authoritative-staging-branch/outputs/hbnf-cart2-phase2-offline-wow-r3-20261008.bin",
+    "sha256": "656418f63830205196ca07e39b84bc188db8839eaf631fc9e620ccf5f5feeedb",
+    "size_bytes": 1490048
+  },
+  "current_control": "PHASE2_INTEGRATING/T4; prior R2 authorization closed; new user authorization received for exact R3 and recovery if gates fail.",
+  "drive": {
+    "candidate_binary_id": "1bq5AdYGHcuX5Or26zLlgFz0Yxz_rdDrD",
+    "manifest_id": "17q0pCAqUX1nxq9M3z5oVN99FKqltbDeh",
+    "prior_drive_readback_sha256_matches": true
+  },
+  "manifest": {
+    "build": {
+      "build_log_sha256": "0ed439874689cccf3f53b6cd4456d854dea9d157795778822553cadb54b86d94",
+      "clean_object_cache": true,
+      "environment": "hbnf_matrix_wled16_packet20_diag",
+      "firmware_map_sha256": "7778cf43e6b06ad3c2f00dc66d53168b9b83e22f9d049c53b7e079757f3d0bff",
+      "method": "proven local clean-room PlatformIO",
+      "platformio_core": "6.1.18",
+      "python": "3.9.6",
+      "required_define": "HBNF_PACKET20_DIAGNOSTICS"
+    },
+    "compiled_telemetry_contract": {
+      "binary_json_markers": [
+        "packet20Diagnostic",
+        "foundationTelemetry",
+        "wholeFrameUs",
+        "lastCommandAccepted",
+        "largestFreeBlockBytes",
+        "frameMsP95"
+      ],
+      "effective_macro_compile_line": true,
+      "linked_busmanager_hook": "hbnfPerfFrameEnd",
+      "linked_busnetwork_hooks": [
+        "hbnfPerfDdpStart",
+        "hbnfPerfDdpEnd"
+      ],
+      "verification": "PASS_COMPILED_TELEMETRY_CONTRACT"
+    },
+    "drive_binary_id": "1bq5AdYGHcuX5Or26zLlgFz0Yxz_rdDrD",
+    "firmware": {
+      "embedded_release_identity": "verified 3 occurrences; old R2 identity absent",
+      "file": "hbnf-cart2-phase2-offline-wow-r3-20261008.bin",
+      "sha256": "656418f63830205196ca07e39b84bc188db8839eaf631fc9e620ccf5f5feeedb",
+      "size_bytes": 1490048
+    },
+    "live_install": {
+      "authorized": false,
+      "installed": false
+    },
+    "release_id": "hbnf-cart2-phase2-offline-wow-r3-20261008",
+    "release_test_fixture_correction": "Updated stale HBNF-WATCH-015 expectation to canonical HBNF-SOLVED-015 with SOLVED status, as promoted by existing commit b192f4d; does not remove issue-ID or status coverage.",
+    "resource_headroom": {
+      "flash_remaining_bytes": 89559,
+      "flash_slot_bytes": 1572864,
+      "flash_used_bytes": 1483305,
+      "instrumentation_flash_delta_bytes": 7416,
+      "instrumentation_static_ram_delta_bytes": 23960,
+      "matched_nondiagnostic_flash_bytes": 1475889,
+      "matched_nondiagnostic_static_ram_bytes": 88328,
+      "ram_available_bytes": 327680,
+      "ram_remaining_bytes": 215392,
+      "runtime_cpu_overhead": "not measured offline; live frame timing comparison required",
+      "static_ram_used_bytes": 112288
+    },
+    "rollback": {
+      "r4_local_verified": true,
+      "r4_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "r4_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "release07_local_verified": true,
+      "release07_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab"
+    },
+    "schema": "hbnf-phase2-offline-candidate-manifest-v1",
+    "source": {
+      "branch": "hbnf-cart2-phase2-integration-20261006",
+      "build_base_commit": "ec49ca536bf8488674e24498126cba6f5e3ae867",
+      "hooked_bus_manager_sha256": "0dee93bd5fb281e5f3760feceda7d8cdf42448bda3a6a2fd8c2b1dd9c95ed1c5",
+      "integrated_usermod_sha256": "d5873bf2e3deb72ac6490594e36bc41f3c54de53b25cf5e2b1106ddb71028c74",
+      "phase2_patch_sha256": "96e4133c37580d1f8feb3f02df7e2d83a2e311f33a3c6c36b91a977892766839",
+      "phase2_usermod_base_sha256": "31126d341bf0a3e54a33d87de0856c5f68e79f20dd05653ae1d5df3270a9bc9d",
+      "pinned_fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+      "pinned_wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+      "telemetry_hook_patch_sha256": "3000796a0d9e1b2df56ddde7f5b08ee325035c2d0bdcdb436de170cef50633e3"
+    },
+    "status": "BUILT_OFFLINE__LIVE_INSTALL_NOT_AUTHORIZED",
+    "test_status": {
+      "not_closed": [],
+      "passed": [
+        "hbnf_control",
+        "hbnf_guarded_run",
+        "hbnf_architecture_fitness",
+        "hbnf_runtime_qualify_static",
+        "hbnf_kernel_sweep_report",
+        "hbnf_source_tree_identity",
+        "hbnf_live_kernel_sweep",
+        "hbnf_packet20_http_adapter",
+        "hbnf_packet20_build_validate",
+        "hbnf_phase2_r4_build_closure",
+        "hbnf_packet20_r4_backport",
+        "hbnf_animartrix_trig_cache",
+        "hbnf_matrix_brightness_output",
+        "hbnf_vibe_audio_replay",
+        "test_hbnf_text_moments_offline",
+        "hbnf_guest_platform_static",
+        "hbnf_skins_scoring_owner_flow",
+        "hbnf_packet20_r2_transaction_static",
+        "hbnf_release_engineering_static",
+        "hbnf_owner_pwa_reliability",
+        "hbnf_owner_pwa_package",
+        "test_hbnf_audio_trace_replay"
+      ],
+      "suite_checkout_commit": "73e90d83c97539252c5afc0a3580328288f3b6b5",
+      "suite_result": "ALL 22 OFFLINE GATES PASS"
+    }
+  },
+  "rollback": {
+    "exists": true,
+    "path": "/Users/andrew/Documents/Codex/2026-10-07/reconcile-the-current-authoritative-staging-branch/outputs/hbnf-r4-foundation-metrics-tail250-rollback-20261007.bin",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008
+  },
+  "schema": "hbnf-phase2-r3-artifact-preflight-v1"
+}

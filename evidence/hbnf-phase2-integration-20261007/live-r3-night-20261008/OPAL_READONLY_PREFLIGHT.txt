@@ -1,0 +1,29 @@
+ 21:43:51 up 11:54,  load average: 1.25, 1.24, 1.25
+Filesystem                Size      Used Available Use% Mounted on
+/dev/root                14.5M     14.5M         0 100% /rom
+tmpfs                    58.0M      3.5M     54.5M   6% /tmp
+/dev/ubi0_1              92.6M      1.7M     86.2M   2% /overlay
+overlayfs:/overlay       92.6M      1.7M     86.2M   2% /
+tmpfs                   512.0K         0    512.0K   0% /dev
+55 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c
+lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> 
+ifb0             DOWN           0a:28:72:0a:b5:5e <BROADCAST,NOARP> 
+ifb1             DOWN           66:47:c0:f8:84:05 <BROADCAST,NOARP> 
+eth0             UNKNOWN        94:83:c4:98:78:92 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+br-lan           UP             94:83:c4:98:78:93 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+eth0.1@eth0      UP             94:83:c4:98:78:93 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+eth0.2@eth0      UP             94:83:c4:98:78:92 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+wlan0            UP             94:83:c4:98:78:94 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+wlan-sta0        UP             6e:83:c4:98:78:95 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ifb0             DOWN           
+ifb1             DOWN           
+eth0             UNKNOWN        fe80::9683:c4ff:fe98:7892/64 
+br-lan           UP             192.168.77.1/24 
+eth0.1@eth0      UP             
+eth0.2@eth0      UP             
+wlan0            UP             
+wlan-sta0        UP             192.168.68.60/22 
+4b61e7c89af5f52f9fc27b87175677b79583a428ea1701b15d1e3cd291328e8f  /etc/config/network
+702edb301a8dd11ea2c9b44877b54bca3b778466bd3baadb7cbbe78e82628a98  /etc/config/wireless
+f279ebf1cae167ab4b86fdb58d32bd1cc93157920e835c8bec92e0ea454ea9a9  /etc/config/firewall
