@@ -71,6 +71,20 @@
     "candidate_release": "hbnf-cart2-phase2-offline-wow-r1-20261007",
     "candidate_sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3",
     "candidate_size_bytes": 1458832,
+    "current_checkpoint": {
+      "backend_ezbr_sha256": "8629c8484a7ce335bee9c14c613f0e1858c18d3f2fa041b71c6ac0492d691e37",
+      "backend_function": "hbnf-cart-control",
+      "backend_version": 17,
+      "candidate_traffic_percent": 0,
+      "candidate_version": "4a675ee4-807d-4ab1-b7e6-e2f91e27e39c",
+      "cloudflare_worker": "hbnf",
+      "evidence": "evidence/hbnf-phase2-integration-20261007/live-rollout/GUEST_HOST_CANDIDATE_0PCT_VERIFICATION.json",
+      "guest_closed_action_rejected_without_commit": true,
+      "guest_mode_confirmed_off": true,
+      "prior_stable_version": "27a67b46-79d1-4ccc-9dbc-abb5f0ab4542",
+      "status": "BACKEND_V17_DEPLOYED_AND_STATIC_CANDIDATE_VERIFIED_AT_0_PERCENT",
+      "supabase_reconcile_version_unchanged": 11
+    },
     "expires": "After this bounded rollout/recovery transaction closes; no general future firmware/cloud authority.",
     "explicit_exclusions": [
       "UV energization or physical commissioning",

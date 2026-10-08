@@ -1,0 +1,330 @@
+{
+  "asset_count": 59,
+  "asset_manifest": [
+    {
+      "bytes": 53,
+      "path": "/.assetsignore",
+      "sha256": "b4c1bda158d1aa5b8c526cd554b64a92ff4654da8967293b86488336531031bb"
+    },
+    {
+      "bytes": 1959,
+      "path": "/DEPLOY_README.txt",
+      "sha256": "ec47125562bccaf6dd5eb7e12cf62f6a1ed16ab10da8625be7b6527903fc5aa7"
+    },
+    {
+      "bytes": 219,
+      "path": "/_headers",
+      "sha256": "194cd9f341a7f2ce6ebe874b2b76aae612f93416c3163af3627002b50be49da8"
+    },
+    {
+      "bytes": 67303,
+      "path": "/admin.html",
+      "sha256": "efb836fa3abccfafbb332beeb76eb5a9359b1f6fdf5e706c358404f2be7f04ec"
+    },
+    {
+      "bytes": 44916,
+      "path": "/apple-touch-icon.png",
+      "sha256": "0087400eded30c1ab88cb39bbae04064fb79d54d56316b8e1fd0da3abd331843"
+    },
+    {
+      "bytes": 3912,
+      "path": "/bag-tags-prominence.js",
+      "sha256": "e4db42185d987e72abe79ec181efad160ba176067eebdcae77a45b3814d811ce"
+    },
+    {
+      "bytes": 423,
+      "path": "/cart.html",
+      "sha256": "bd7b87b1a88d8cc34f3233b3d364e9126527a900bcdc23c54834f96e232ba077"
+    },
+    {
+      "bytes": 155,
+      "path": "/config.js",
+      "sha256": "e69ad284f6c965d4e960ded3648a0337a6b82a6c51d99546ac44f7fc546eda88"
+    },
+    {
+      "bytes": 709,
+      "path": "/favicon-16.png",
+      "sha256": "9049e46f132dc19c4212f2974e2d404aeec154a5e7e2bfb11c4a34bc87a9291a"
+    },
+    {
+      "bytes": 2154,
+      "path": "/favicon-32.png",
+      "sha256": "7969c7f55f4602068690e8558bab8bed0b1b30b8dc38a0ed797297ab29ccff79"
+    },
+    {
+      "bytes": 4181,
+      "path": "/favicon-48.png",
+      "sha256": "4b49816c31de62c70fffb98485e81a581dcf0fe892cbb3a7cc1d1e122627bb05"
+    },
+    {
+      "bytes": 7154,
+      "path": "/favicon.ico",
+      "sha256": "989834e2338b4414ff54d74ed1188f1160ea7071cb29e0f3862f7a2476956aca"
+    },
+    {
+      "bytes": 1576612,
+      "path": "/glow.html",
+      "sha256": "ca1d97b53d1f3195c48726ee71c99051d7225bf2ead54c9ba983dc3983ba175a"
+    },
+    {
+      "bytes": 2157,
+      "path": "/guest/hbnf-cart/guest.css",
+      "sha256": "bccb2a3179beb2116d953d083929fd97cdb13aa356742abfb45ce9a9919ce2ad"
+    },
+    {
+      "bytes": 5107,
+      "path": "/guest/hbnf-cart/guest.js",
+      "sha256": "9a51e6c67514a711585e5c044bb6407728a112ba48fef160c44800f17335133d"
+    },
+    {
+      "bytes": 2440,
+      "path": "/guest/hbnf-cart/index.html",
+      "sha256": "3cfb93d7348bfdda78b97c96d6661a2d372254e428ba5f639b504ca5de619459"
+    },
+    {
+      "bytes": 784,
+      "path": "/hbnf-cart-favicon-16.png",
+      "sha256": "9b86a1bad3bd7f84b480a57e3ff5736421844d9ea390601c050273ee3f581ba6"
+    },
+    {
+      "bytes": 2471,
+      "path": "/hbnf-cart-favicon-32.png",
+      "sha256": "2831d9499c57cada0e4ee06c9371d8cae295c77d27e37dcc5374f012cb9215b5"
+    },
+    {
+      "bytes": 5054,
+      "path": "/hbnf-cart-favicon-48.png",
+      "sha256": "64afa296405b5c23b0a1fa72d35c6fb488d12d7df0379b5bf032e8b1010ab6f1"
+    },
+    {
+      "bytes": 8463,
+      "path": "/hbnf-cart-favicon.ico",
+      "sha256": "e4b396e9d6d3e320cd7eb45785eae52bc195c52eb0dd69ecfd5318d1042e4fcd"
+    },
+    {
+      "bytes": 20970,
+      "path": "/hbnf-cart-features.mjs",
+      "sha256": "5aa1b63a7aaf8a033176989e96f024e1227d5f48743bdefd9c36a76b1cefbe84"
+    },
+    {
+      "bytes": 1999,
+      "path": "/hbnf-cart-icon-180.png",
+      "sha256": "02a42add542f156fb8cd32ff020d827fb139d70cce6e6c3564cc821c95aec3ed"
+    },
+    {
+      "bytes": 2171,
+      "path": "/hbnf-cart-icon-192.png",
+      "sha256": "200dd4c1bb58dd1f3b6fe353404d29cae306673a4bc854b21049c475011b42ab"
+    },
+    {
+      "bytes": 5994,
+      "path": "/hbnf-cart-icon-512.png",
+      "sha256": "05ecdcb818aaf9d1f23af59ca73c27d7a00b328705e62d0e9adf3954db6e5838"
+    },
+    {
+      "bytes": 36964,
+      "path": "/hbnf-cart-icon-maskable-192.png",
+      "sha256": "5c75733fa17fc67b0e6c58000f281e183da6433f34998b512c8bc52b802cec70"
+    },
+    {
+      "bytes": 217651,
+      "path": "/hbnf-cart-icon-maskable-512.png",
+      "sha256": "1332ce363d865f7a21dea030915e7447b293f8debfc671af35e829db499e1b97"
+    },
+    {
+      "bytes": 486,
+      "path": "/hbnf-cart-manifest.webmanifest",
+      "sha256": "895f4c579594dcd7789a2a7f7cb69a21dad3c02975a2ae829825a2ad0e05e627"
+    },
+    {
+      "bytes": 1511,
+      "path": "/hbnf-cart-net.mjs",
+      "sha256": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b"
+    },
+    {
+      "bytes": 2611,
+      "path": "/hbnf-cart-semantic.mjs",
+      "sha256": "c7eada1028dddd0321ffa34e894bcb5e7d5ff4cf13a084f72623adcbb963d5a1"
+    },
+    {
+      "bytes": 6933,
+      "path": "/hbnf-cart-skins-score.mjs",
+      "sha256": "29e4a53144f6c0adc501d80425bad7f9aa8f9f681d711d0ea24f6ca179475316"
+    },
+    {
+      "bytes": 2489,
+      "path": "/hbnf-cart-sw.js",
+      "sha256": "55cfd341e609c972ebb1ac463cf394f065e83fe383a1ee32b9872d3efbc8e716"
+    },
+    {
+      "bytes": 4731,
+      "path": "/hbnf-cart-ui-v6.css",
+      "sha256": "e7e30733df824864d415a69d4dcc0b297718fa414938d4d54ff158b408b93672"
+    },
+    {
+      "bytes": 1053,
+      "path": "/hbnf-cart-ui-v6.mjs",
+      "sha256": "0e0f16ea7c6e573cc5d5180309d899732598c9b630c7732dfbe10326e542a6e0"
+    },
+    {
+      "bytes": 13997,
+      "path": "/hbnf-cart.html",
+      "sha256": "19ac1d6c80f628ba7e61551f10defcd2309e5f899576cfb1a4ea60c40a903712"
+    },
+    {
+      "bytes": 18894,
+      "path": "/hbnf-cart.js",
+      "sha256": "bf40263a375aa4150d7afc9ff0466a4db05ef33ed9ad95f035300c8d6742e2fe"
+    },
+    {
+      "bytes": 4521,
+      "path": "/hbnf-main-cart-shell.js",
+      "sha256": "15ddae0a94d3c0139812185c93dd6d0f0b6be105c6c42d683fefc04366a6acae"
+    },
+    {
+      "bytes": 50069,
+      "path": "/hbnf-main-icon-180.png",
+      "sha256": "2aa8ffe82d6639339125a616ef5d3ea7cb20783f092d02c9e046908946c3ec9e"
+    },
+    {
+      "bytes": 56460,
+      "path": "/hbnf-main-icon-192.png",
+      "sha256": "f1b0dc702fb6f2046ae57853a689ffbd147ebfbe7374c1a517cbb388ed3a3f49"
+    },
+    {
+      "bytes": 356606,
+      "path": "/hbnf-main-icon-512.png",
+      "sha256": "17dec5a8986ba03deea0c479f47dd25bfb045a9bcf6728b5a307feb80608cb18"
+    },
+    {
+      "bytes": 26626,
+      "path": "/hbnf-main-icon-maskable-192.png",
+      "sha256": "39f136c8610397eebf399be6f498bc5f26b90f76fee4b7959d30291d7da41b84"
+    },
+    {
+      "bytes": 188460,
+      "path": "/hbnf-main-icon-maskable-512.png",
+      "sha256": "8521a796eed63e2ec596c1351f285f6f8e6652c2b7a3c1c0fc45b50703b055d2"
+    },
+    {
+      "bytes": 883,
+      "path": "/hbnf-main-manifest.webmanifest",
+      "sha256": "5e3ec344821acfd6c954e7bee79e383a6c483a9110544461b6f5445e7b45e24a"
+    },
+    {
+      "bytes": 100616,
+      "path": "/index.html",
+      "sha256": "9353c065815b849fb2992b68a5253d592e7ad8feecaed7404bac1eb915cd7ac7"
+    },
+    {
+      "bytes": 48333,
+      "path": "/matrix-apple-touch-icon.png",
+      "sha256": "b4714e155ca82dc92a07b92cbfa0b69b11fc0095b5209d40d86e5794c67d6d47"
+    },
+    {
+      "bytes": 329,
+      "path": "/matrix-build.json",
+      "sha256": "68a0c2ee0174cc245c0f0d804ebd5c81da49c5c636fe7e57058bcb1a337145db"
+    },
+    {
+      "bytes": 5465,
+      "path": "/matrix-control.js",
+      "sha256": "cf9abf652c7c3c07d0156251cd1490c56d6d095217c5b8db4bda36486ee17f9f"
+    },
+    {
+      "bytes": 235800,
+      "path": "/matrix-icon-512.png",
+      "sha256": "e4c30160cdafe215de87c6b25ef491d783c01c00b6fb9798beb024a12fbcba6f"
+    },
+    {
+      "bytes": 364,
+      "path": "/matrix-manifest.webmanifest",
+      "sha256": "72b90fc7deef0dfc4cb1a57ead272319fee7924252b485946ef1020252a8bd84"
+    },
+    {
+      "bytes": 7888,
+      "path": "/matrix-quick-controls.js",
+      "sha256": "bf00fb02c68e630f62ac727d721b6e2bdb638bf6fb5d9c6a509f776fa98b8ec3"
+    },
+    {
+      "bytes": 36890,
+      "path": "/matrix-show-library.json",
+      "sha256": "554e730552ea907b6bcf98486724ba094e2ac0188f3c6f6d5264761266c54f5b"
+    },
+    {
+      "bytes": 1535,
+      "path": "/matrix.html",
+      "sha256": "f1547b580ae189ffac54d9f898312a65f09586af0375f59ed54b4def9c367d46"
+    },
+    {
+      "bytes": 1472092,
+      "path": "/random.html",
+      "sha256": "90efffe5f32162bb9c53c03bfa5d55107ed8b77844590862398f921ca12ef352"
+    },
+    {
+      "bytes": 95973,
+      "path": "/round-tags.js",
+      "sha256": "3f4ec094565105c711b2607569397eec2ff2b5ea602b38ec1c69de1d7b4d3bd8"
+    },
+    {
+      "bytes": 1474073,
+      "path": "/skills.html",
+      "sha256": "73ab38d13efcbe26644d23ff0d18fbd23e987de85746258a9dde288a64eb9fe7"
+    },
+    {
+      "bytes": 18705,
+      "path": "/skins-tag-editor.js",
+      "sha256": "590abbebb490106047c22f37bf0df4b0405fc19d682c169cd12ed93f79508125"
+    },
+    {
+      "bytes": 5283,
+      "path": "/skins-tag-projection-modal.js",
+      "sha256": "40498efa59d7eeb1e9bf38f1483aa7b6455839327be7ababcbcd59dad54824da"
+    },
+    {
+      "bytes": 24403,
+      "path": "/skins-tag-tracker.js",
+      "sha256": "0e029fc93896f3971240d721a9f1d95eb1c378d2dc47e663d70bfbca4d2951f8"
+    },
+    {
+      "bytes": 14365,
+      "path": "/skins-ux-polish.js",
+      "sha256": "78c92d0b0c2d0ef48792f58163ae52f7ca70be731a05bfe2815882be564097dd"
+    },
+    {
+      "bytes": 194805,
+      "path": "/skins.html",
+      "sha256": "6b8248f2973175892240d059bcc32ad62f003dd056b4196e8aa66e9bf169762d"
+    }
+  ],
+  "backend": {
+    "deployed_ezbr_sha256": "8629c8484a7ce335bee9c14c613f0e1858c18d3f2fa041b71c6ac0492d691e37",
+    "deployed_version": 17,
+    "function": "hbnf-cart-control",
+    "guest_action_closed_mode_result": "HTTP 403 guest_mode_closed; no state change",
+    "guest_mode_live_default": false,
+    "previous_version": 16,
+    "read_only_status_revision": 117,
+    "reconcile_unchanged_version": 11
+  },
+  "candidate_smoke": {
+    "body_marker": "Pick the Cart vibe",
+    "existing_home_http": 200,
+    "guest_js_http": 200,
+    "http": 200,
+    "owner_cart_html_http": 200,
+    "owner_cart_js_http": 200,
+    "route": "/guest/hbnf-cart/",
+    "version_override_selected_candidate": true
+  },
+  "candidate_traffic_during_smoke_percent": 0,
+  "candidate_version": "4a675ee4-807d-4ab1-b7e6-e2f91e27e39c",
+  "captured_at_utc": "2026-10-08T01:32:59.760000+00:00",
+  "cloudflare_worker": "hbnf",
+  "deploy": "Candidate exists at 0% in a 100%-stable/0%-candidate deployment. No production user traffic was shifted while it was verified.",
+  "full_static_asset_snapshot_source": "2026-09-30 hosted-source-copy/public; six deployed Cart root assets matched 2026-10-07 live snapshot before overlay",
+  "prior_stable_version": "27a67b46-79d1-4ccc-9dbc-abb5f0ab4542",
+  "schema": "hbnf-cart2-guest-static-candidate-verification-v1",
+  "static_source": "hbnf-final-controller on hbnf-cart2-phase2-integration-20261006",
+  "wrangler_version": "4.148.0"
+}
