@@ -1,0 +1,59 @@
+{
+  "schema": "local-roots-prelive-proof-v1",
+  "run_id": "phase2-r2-kernel13-matched-telemetry-20261008",
+  "capsule_sha256": "7a982c1881619a03b19e86cff99949fca130cb5065081e71acbf80355121f646",
+  "approved_for_mutation": true,
+  "authority": {
+    "source": "Current user explicitly requested matched kernel 13 / brightness44 sustained FPS and frame timing comparison plus objective qualification of the exact single install.",
+    "scope": "One saved-snapshot telemetry session with kernel13 selection and tails on/off; restore exact saved renderer state; zero firmware installs."
+  },
+  "stages": {
+    "contract-closure": {
+      "status": "PASS",
+      "evidence": [
+        "Existing scripts/hbnf_foundation_live_adapter.py uses WLED /json/state and Packet20 snapshot/select/restore; exact runtime candidate identity is verified before state commands."
+      ]
+    },
+    "recovery-proof": {
+      "status": "PASS",
+      "evidence": [
+        "Exact R4 rollback SHA/size verified locally and runtime recovery previously passed; candidate runtime rollback remains authorized only on frozen-gate failure.",
+        "Existing source-bound Packet20 restore mechanism preserves pre-measurement renderer state."
+      ]
+    },
+    "transaction-rehearsal": {
+      "status": "PASS",
+      "evidence": [
+        "R4 Packet20 snapshot/select/restore was previously executed and source-bound restore verified; scripts/hbnf_foundation_live_adapter.py.",
+        "Current R2 five-minute smoke shows no restart, renderer count advances, AUX native DDP remains live."
+      ]
+    },
+    "capture-current-state": {
+      "status": "PASS",
+      "evidence": [
+        "evidence/hbnf-phase2-integration-20261007/live-r2-install/FIVE_MINUTE_RUNTIME_SMOKE.json",
+        "Exact runtime identity R2; WLED16.0.1; uptime monotonic through 5 minutes; current kernel1 brightness44; AUX live=true DDP from .10."
+      ]
+    }
+  },
+  "recovery_identity": {
+    "identity": "R4 SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c, 1,489,008 bytes",
+    "verification": "Local binary exact hash; prior exact restore verified on device; direct /update path previously returned HTTP 200."
+  },
+  "pre_mutation_state": {
+    "matrix_release": "hbnf-cart2-phase2-offline-wow-r2-20261008",
+    "matrix_sha256_uploaded": "8be42c878cb6502db1571e58e417848bd732e2d5debfb27b399738b1e70fcf6c",
+    "matrix_kernel": 1,
+    "matrix_brightness": 44,
+    "uptime_seconds": 366,
+    "free_heap_bytes": 142888,
+    "renderer_count": 13869,
+    "aux_live": true,
+    "aux_mode": "DDP",
+    "aux_source": "192.168.77.10"
+  },
+  "consumer_contract": {
+    "verified": true,
+    "identity": "Existing hbnf_foundation_live_adapter.py Packet20 command path on Matrix WLED /json/state; no network/device config or firmware install."
+  }
+}

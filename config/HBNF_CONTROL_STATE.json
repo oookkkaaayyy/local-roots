@@ -33,7 +33,7 @@
     "target": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c only",
     "transport_behavior_change": false
   },
-  "checkpoint_at_utc": "2026-10-08T02:46:00Z",
+  "checkpoint_at_utc": "2026-10-08T02:52:45Z",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -1855,7 +1855,7 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "PHASE2_R2_INSTALLED__OBJECTIVE_T4_QUALIFICATION_IN_PROGRESS",
+    "current_failure_domain": "PHASE2_R2_MATCHED_KERNEL13_TELEMETRY_MEASUREMENT",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
       "release_id": "hbnf-cart2-phase2-offline-wow-r2-20261008",
@@ -1863,10 +1863,10 @@
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Current user grants exactly one Matrix install of hbnf-cart2-phase2-offline-wow-r2-20261008 SHA-256 8be42c878cb6502db1571e58e417848bd732e2d5debfb27b399738b1e70fcf6c; preflight is durably recorded in evidence/hbnf-phase2-integration-20261007/live-r2-install/PRELIVE_PROOF.json.",
-      "Install that exact artifact once through the proven WLED /update endpoint; do not mutate Opal, AUX firmware, network, backend, Guest Mode, or UV.",
-      "Compare measured candidate FPS and sampled frame timings with R4 at kernel 13/brightness44; verify exact runtime identity, advancing render count, heap/restarts, brightness and AUX native DDP against frozen gates. Restore exact R4 SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c only if gates fail.",
-      "If objective gates pass, continue the remaining objective T4 integration checks. Do not advance to ACCEPTED; T5 owner acceptance remains mandatory."
+      "The one authorized candidate install is complete and exact runtime identity is verified; its authorization is consumed and no second candidate installation is permitted.",
+      "Run exactly one existing Packet20 saved-snapshot/select/tail-telemetry session on the installed R2 candidate at kernel 13 and brightness44 to compare FPS/frame p95/p99 and heap against frozen R4 kernel13 profile evidence.",
+      "Disable telemetry tails and restore the source-bound saved renderer state. If frozen performance/reliability gates fail, restore exact R4 once and stop live mutation; if they pass, continue objective T4 host/integration checks.",
+      "Do not advance beyond PHASE2_INTEGRATING/T4; T5 owner acceptance remains required."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -2128,7 +2128,7 @@
     "target": "Have exact fast candidate installed and machine-qualified, ready for OWNER SMOKE NOW within the user's ~10-minute dog walk.",
     "user_authorization": "At 16:43 PDT user requested immediate salvage while away for ~10 minutes and explicitly directed that this false blocker not prevent completion; target is ready for owner smoke on return."
   },
-  "live_mutation_authorized": false,
+  "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",
@@ -2392,5 +2392,27 @@
     "candidate_initial_evidence": "evidence/hbnf-phase2-integration-20261007/live-r2-install/POSTINSTALL_IDENTITY.json",
     "rollback_remains_authorized": true,
     "rollback_limit_remaining": 1
+  },
+  "bounded_phase2_r2_runtime_measurement_authorization": {
+    "schema": "hbnf-bounded-runtime-qualification-session-v1",
+    "authorized_by": "Current user instruction authorizing objective qualification of the single R2 install; measurement is required for matched kernel13/frame timing comparison.",
+    "status": "ONE_MATCHED_KERNEL13_TELEMETRY_SESSION_AUTHORIZED__NO_FIRMWARE_INSTALL",
+    "candidate_release": "hbnf-cart2-phase2-offline-wow-r2-20261008",
+    "candidate_sha256": "8be42c878cb6502db1571e58e417848bd732e2d5debfb27b399738b1e70fcf6c",
+    "session_limit": 1,
+    "target_kernel": 13,
+    "matrix_brightness": 44,
+    "method": "Existing Packet20 snapshot/select and Foundation tail telemetry adapter; disable tails and restore the exact saved renderer snapshot after measurement.",
+    "rollback_if_measurement_gate_fails": "one exact R4 Matrix /update rollback already authorized; no candidate reinstall",
+    "excluded": [
+      "second firmware install",
+      "Opal/router changes",
+      "AUX firmware",
+      "Cloudflare/Supabase",
+      "Guest Mode",
+      "UV",
+      "T5 acceptance"
+    ],
+    "preflight": "evidence/hbnf-phase2-integration-20261007/live-r2-install/FIVE_MINUTE_RUNTIME_SMOKE.json"
   }
 }
