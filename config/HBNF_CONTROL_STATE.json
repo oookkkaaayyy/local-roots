@@ -33,7 +33,7 @@
     "target": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c only",
     "transport_behavior_change": false
   },
-  "checkpoint_at_utc": "2026-10-08T02:52:45Z",
+  "checkpoint_at_utc": "2026-10-08T02:55:10Z",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -1855,7 +1855,7 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "PHASE2_R2_MATCHED_KERNEL13_TELEMETRY_MEASUREMENT",
+    "current_failure_domain": "PHASE2_R2_QUALIFICATION_FAILED_CLOSED__EXACT_R4_RESTORE_AUTHORIZED",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
       "release_id": "hbnf-cart2-phase2-offline-wow-r2-20261008",
@@ -1863,10 +1863,9 @@
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "The one authorized candidate install is complete and exact runtime identity is verified; its authorization is consumed and no second candidate installation is permitted.",
-      "Run exactly one existing Packet20 saved-snapshot/select/tail-telemetry session on the installed R2 candidate at kernel 13 and brightness44 to compare FPS/frame p95/p99 and heap against frozen R4 kernel13 profile evidence.",
-      "Disable telemetry tails and restore the source-bound saved renderer state. If frozen performance/reliability gates fail, restore exact R4 once and stop live mutation; if they pass, continue objective T4 host/integration checks.",
-      "Do not advance beyond PHASE2_INTEGRATING/T4; T5 owner acceptance remains required."
+      "Install exact R4 rollback artifact 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c once via Matrix WLED /update using existing proven direct-LAN mechanism.",
+      "Verify exact R4 embedded/runtime release identity, advancing uptime, heap/FPS, renderer output and Matrix-origin AUX DDP recovery.",
+      "Immediately close live_mutation_authorized after restoration; stop live mutations. Keep lifecycle PHASE2_INTEGRATING/T4 and preserve T5 owner acceptance."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -2348,7 +2347,7 @@
   "bounded_phase2_r2_install_authorization": {
     "schema": "hbnf-bounded-matrix-install-authorization-v1",
     "authorized_by": "Current user message, 2026-10-08 UTC",
-    "status": "CANDIDATE_INSTALLED__OBJECTIVE_T4_QUALIFICATION_IN_PROGRESS",
+    "status": "CANDIDATE_INSTALLED__QUALIFICATION_FAILED_CLOSED__R4_ROLLBACK_REQUIRED",
     "candidate_release": "hbnf-cart2-phase2-offline-wow-r2-20261008",
     "candidate_sha256": "8be42c878cb6502db1571e58e417848bd732e2d5debfb27b399738b1e70fcf6c",
     "candidate_size_bytes": 1482624,
@@ -2391,12 +2390,14 @@
     "candidate_runtime_initial_aux_ddp": "live=true; lm=DDP; lip=192.168.77.10",
     "candidate_initial_evidence": "evidence/hbnf-phase2-integration-20261007/live-r2-install/POSTINSTALL_IDENTITY.json",
     "rollback_remains_authorized": true,
-    "rollback_limit_remaining": 1
+    "rollback_limit_remaining": 1,
+    "runtime_gate": "FAIL_CLOSED__FRAME_TAIL_TELEMETRY_UNAVAILABLE",
+    "candidate_qualification_evidence": "evidence/hbnf-phase2-integration-20261007/live-r2-install/R2_QUALIFICATION_GATE_CLASSIFICATION.json"
   },
   "bounded_phase2_r2_runtime_measurement_authorization": {
     "schema": "hbnf-bounded-runtime-qualification-session-v1",
     "authorized_by": "Current user instruction authorizing objective qualification of the single R2 install; measurement is required for matched kernel13/frame timing comparison.",
-    "status": "ONE_MATCHED_KERNEL13_TELEMETRY_SESSION_AUTHORIZED__NO_FIRMWARE_INSTALL",
+    "status": "FAILED__R2_PACKET20_DIAGNOSTIC_INTERFACE_MISSING__NO_RENDERER_STATE_CHANGE_ACKNOWLEDGED",
     "candidate_release": "hbnf-cart2-phase2-offline-wow-r2-20261008",
     "candidate_sha256": "8be42c878cb6502db1571e58e417848bd732e2d5debfb27b399738b1e70fcf6c",
     "session_limit": 1,
@@ -2414,5 +2415,20 @@
       "T5 acceptance"
     ],
     "preflight": "evidence/hbnf-phase2-integration-20261007/live-r2-install/FIVE_MINUTE_RUNTIME_SMOKE.json"
+  },
+  "bounded_phase2_r2_rollback_authorization": {
+    "schema": "hbnf-bounded-r4-rollback-authorization-v1",
+    "authorized_by": "Current user request: if performance/safety gates fail, restore exact R4 SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
+    "status": "AUTHORIZED__ONE_EXACT_R4_RESTORE_RESERVED__NOT_STARTED",
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008,
+    "install_limit": 1,
+    "restore_attempts_reserved": 1,
+    "retry_permitted": false,
+    "target": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c only",
+    "method": "one multipart POST of exact local SHA-verified R4 binary to Matrix WLED /update",
+    "rollback_reason": "Frozen performance gate cannot be demonstrated because R2 /json/state lacks frame-tail and Packet20 diagnostic telemetry; fail closed and return to known-good R4.",
+    "evidence": "evidence/hbnf-phase2-integration-20261007/live-r2-install/R2_QUALIFICATION_GATE_CLASSIFICATION.json"
   }
 }

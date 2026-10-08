@@ -1,0 +1,64 @@
+{
+  "schema": "hbnf-phase2-r2-live-qualification-gate-classification-v1",
+  "captured_utc": "2026-10-08T02:55:10Z",
+  "candidate": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r2-20261008",
+    "sha256": "8be42c878cb6502db1571e58e417848bd732e2d5debfb27b399738b1e70fcf6c"
+  },
+  "five_minute_smoke": {
+    "sample_count": 35,
+    "elapsed_seconds": 300,
+    "fps_median": 38,
+    "wholeFrameUs_p50": null,
+    "wholeFrameUs_p95": null,
+    "wholeFrameUs_p99": null,
+    "minimum_free_heap": 140416,
+    "aux_not_live_fraction": 0.0,
+    "renderer_count_advanced": true,
+    "uptime_monotonic": true,
+    "identity_stable": true,
+    "frozen_thresholds": {
+      "minimum_candidate_fps_median": 35.1,
+      "max_sampled_wholeFrameUs_p95": 50507.5,
+      "max_sampled_wholeFrameUs_p99": 50507.5,
+      "minimum_heap_ratio": 101014.0,
+      "largest_free_block_minimum_ratio": 52419.200000000004,
+      "max_aux_not_live_fraction": 0.01,
+      "catastrophic_fps_floor": 20,
+      "catastrophic_wholeFrameUs_ceiling": 75000,
+      "catastrophic_consecutive_samples": 3
+    },
+    "gate_checks": {
+      "fps_median_vs_r4": true,
+      "sampled_frame_timing_vs_r4": false,
+      "heap_vs_r4": true,
+      "aux_native_ddp": true,
+      "restart_continuity": true,
+      "rendering_advances": true
+    },
+    "overall_pass": false
+  },
+  "kernel13_matched_measurement": {
+    "error": "RuntimeError: command-begin-ack deadline leaves 0.965504s; below minimum HTTP request budget 1s; no GET started for http://192.168.77.10/json/state",
+    "metrics": null,
+    "restore": null,
+    "restored": false
+  },
+  "frozen_r4_kernel13_baseline": {
+    "profile_path": "evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep/13_Caleido3.profile.json",
+    "fps_median": 39,
+    "frame_ms_p95_median": 21.25,
+    "frame_ms_p99_median": 33.625,
+    "minimum_free_heap_bytes": 57416,
+    "largest_free_block_end_bytes": 73716
+  },
+  "frozen_policy_path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
+  "observations": [
+    "Five-minute smoke: 35 samples; median FPS 38 across automatically cycling kernels; 35/35 AUX samples live=true, lm=DDP, lip=192.168.77.10; uptime monotonic; renderer count advanced; minimum observed heap 140416 bytes.",
+    "R2 reports wholeFrameUs=0 and omits foundationTelemetry and packet20Diagnostic fields in /json/state; candidate p95/p99 frame-tail metrics unavailable.",
+    "Existing Packet20 snapshot/select/tail adapter begin command could not be acknowledged because required packet20Diagnostic interface is absent; no saved snapshot was created and no renderer state change was acknowledged. The native WLED endpoint ignored the unsupported field; subsequent live read-only capture shows normal rendering and AUX DDP.",
+    "Kernel 2 samples were 29-30 FPS versus R4 kernel 2 profile median 35 FPS (0.857x); variant signature was not captured in the smoke, so this observation is not used as a conclusive same-variant gate failure."
+  ],
+  "decision": "FAIL_CLOSED__REQUIRED_FROZEN_FRAME_TIMING_GATE_UNAVAILABLE__CANDIDATE_NOT_QUALIFIED__RESTORE_EXACT_R4",
+  "reason": "The frozen performance/reliability gate set cannot pass without frame-tail p95/p99, and the required matched kernel13 sustained measurement could not be produced using the existing supported R2 runtime interfaces. Do not claim performance success from FPS alone. Exact R4 rollback is authorized and is being executed once."
+}
