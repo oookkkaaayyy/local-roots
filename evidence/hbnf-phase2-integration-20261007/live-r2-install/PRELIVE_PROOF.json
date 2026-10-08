@@ -1,7 +1,7 @@
 {
   "schema": "local-roots-prelive-proof-v1",
   "run_id": "phase2-r2-single-install-20261008",
-  "capsule_sha256": "b548fdbfcf6c8e292ecccdc917395a826507169e7fe56f001d1e678da2972fa4",
+  "capsule_sha256": "06f9547ffb0089192cb92317dece6891e34272983423a9f0adbf87591dfc5707",
   "approved_for_mutation": true,
   "authority": {
     "source": "Current user message authorizing exactly ONE bounded Matrix installation of release hbnf-cart2-phase2-offline-wow-r2-20261008 SHA-256 8be42c878cb6502db1571e58e417848bd732e2d5debfb27b399738b1e70fcf6c",

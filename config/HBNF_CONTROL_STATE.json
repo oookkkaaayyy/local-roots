@@ -33,7 +33,7 @@
     "target": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c only",
     "transport_behavior_change": false
   },
-  "checkpoint_at_utc": "2026-10-08T02:44:00Z",
+  "checkpoint_at_utc": "2026-10-08T02:45:00Z",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -2348,12 +2348,12 @@
   "bounded_phase2_r2_install_authorization": {
     "schema": "hbnf-bounded-matrix-install-authorization-v1",
     "authorized_by": "Current user message, 2026-10-08 UTC",
-    "status": "AUTHORIZED__ONE_INSTALL_RESERVED__NOT_STARTED",
+    "status": "INSTALL_ATTEMPT_CONSUMED__UPLOAD_PENDING",
     "candidate_release": "hbnf-cart2-phase2-offline-wow-r2-20261008",
     "candidate_sha256": "8be42c878cb6502db1571e58e417848bd732e2d5debfb27b399738b1e70fcf6c",
     "candidate_size_bytes": 1482624,
     "install_limit": 1,
-    "install_attempts": 0,
+    "install_attempts": 1,
     "target": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c only",
     "method": "single multipart POST to Matrix WLED /update using verified Drive artifact bytes",
     "rollback_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
@@ -2376,6 +2376,9 @@
     "state_transition": "PHASE2_INTEGRATING/T4 remains unchanged; this is bounded transaction authorization only.",
     "install_attempts_reserved": 1,
     "retry_permitted": false,
-    "reservation_note": "The single candidate attempt is reserved. No second candidate install is authorized even if transport/result is ambiguous."
+    "reservation_note": "The single candidate attempt is reserved. No second candidate install is authorized even if transport/result is ambiguous.",
+    "install_attempt_started_utc": "2026-10-08T02:45:00Z",
+    "candidate_upload_attempts": 1,
+    "consumed_before_network_request": true
   }
 }

@@ -4,7 +4,7 @@
     "remote_execution_for_source_archaeology": false,
     "retry_inherits_authorization": false
   },
-  "created_at": "2026-10-08T02:45:32.095889+00:00",
+  "created_at": "2026-10-08T02:45:53.979382+00:00",
   "expected_terminal_outputs": [
     "diagnostic result or exact stop reason",
     "snapshot/restore result",
@@ -20,13 +20,13 @@
     "branch": "hbnf-cart2-phase2-integration-20261006",
     "dirty": true,
     "type": "git_commit",
-    "value": "a63661fda995f41f01d46e430e3e66340f26386a"
+    "value": "7ffb514dc3ec732b4f2bcdb2f5a35152344c0e0c"
   },
   "repo_inputs": [
     {
-      "bytes": 166460,
+      "bytes": 166595,
       "path": "config/HBNF_CONTROL_STATE.json",
-      "sha256": "3332940a5e9e8b118fdf9f8007bba7df6a28dcded1c03d55904e76859235143b"
+      "sha256": "a1bc34437723a9d7477e72abdf84766f095d98c29f4d23f42f81462e1d27e644"
     },
     {
       "bytes": 13339,
@@ -305,7 +305,7 @@
   },
   "system_id": "hbnf-matrix",
   "terminal_recovery": "If exact restore is not proven, execute only the pre-rehearsed registered baseline recovery transaction, verify device and publication identities, preserve evidence, and stop.",
-  "trace_id": "d20cddcf742e4729b1cf3c4b870166b8",
+  "trace_id": "863e779208974cb5a057ed8e2a0eaa93",
   "user_interaction_policy": {
     "copy_paste_delivery": "one_single_fenced_block_per_action",
     "max_user_actions_per_blocker": 1,
