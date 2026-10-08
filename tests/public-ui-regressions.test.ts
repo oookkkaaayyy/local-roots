@@ -270,3 +270,16 @@ test("compact public navigation keeps Events and Dyed & Unattached visible", () 
   const styles = source("styles.css");
   assert.ok(styles.includes(".site-header .nav-events,.site-header .nav-du{display:block}"));
 });
+
+test("past dates never imply verified completion in public status", () => {
+  const events=source("pages/EventsPage.tsx");
+  const detail=source("pages/EventDetailPage.tsx");
+  const presentation=source("lib/eventPresentation.ts");
+  assert.ok(events.includes("eventDisplayStatus(event,today)"));
+  assert.ok(detail.includes("eventDisplayStatus(event,today)"));
+  assert.ok(detail.includes("const canSubmitResults=event.status==='completed';"));
+  assert.ok(presentation.includes("['completed','canceled','postponed'].includes(event.status)"));
+  assert.ok(presentation.includes("event.end_date < today ? 'date_passed' : event.status"));
+  assert.equal(events.includes("event.end_date<today ? 'completed'"),false);
+  assert.equal(detail.includes("event.end_date<today?'completed'"),false);
+});
