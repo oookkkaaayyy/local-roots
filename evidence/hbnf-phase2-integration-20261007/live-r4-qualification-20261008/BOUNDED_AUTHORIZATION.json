@@ -1,7 +1,7 @@
 {
   "schema": "hbnf-phase2-r4-bounded-live-authorization-v1",
   "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
-  "status": "AUTHORIZED__INSTALL_ATTEMPT_CONSUMED__REQUEST_NOT_YET_SENT",
+  "status": "CONSUMED__UPLOAD_INTERRUPTED__CANDIDATE_NOT_INSTALLED",
   "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
   "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
   "preflight_path": "evidence/hbnf-phase2-integration-20261007/live-r4-qualification-20261008/PREINSTALL_PREFLIGHT.json",
@@ -17,7 +17,10 @@
     "install_reserved": 1,
     "consumed_before_network_request": true,
     "consumption_recorded_at_utc": "2026-10-08T06:10:00.723317+00:00",
-    "network_request_sent": false
+    "network_request_sent": true,
+    "result_receipt": "evidence/hbnf-phase2-integration-20261007/live-r4-qualification-20261008/FAILED_CANDIDATE_UPLOAD_20261008.json",
+    "installation_completed": false,
+    "last_error": "curl exit 55 Send failure: Broken pipe; only interim HTTP 100 Continue observed; device remained exact Foundation R4."
   },
   "rollback": {
     "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
@@ -57,7 +60,7 @@
     "any second Phase 2 candidate install",
     "T5 acceptance without owner evidence"
   ],
-  "current_live_mutation_authorized": true,
+  "current_live_mutation_authorized": false,
   "no_other_device_mutation": true,
   "disk_free_bytes_before_run": 9821282304,
   "preflight_captured_at_utc": "2026-10-08T06:07:42.125010+00:00",

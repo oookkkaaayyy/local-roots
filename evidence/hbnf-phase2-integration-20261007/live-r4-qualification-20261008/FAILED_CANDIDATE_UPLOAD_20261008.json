@@ -1,0 +1,65 @@
+{
+  "schema": "hbnf-phase2-firmware-upload-attempt-v1",
+  "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
+  "candidate_release": "hbnf-cart2-phase2-offline-wow-r4-20261008",
+  "candidate_sha256": "e65effb86d8755ca8a4af2155e51844d2c2a387f4000574459a382ca50c5ec87",
+  "candidate_size_bytes": 1490160,
+  "request_time_utc": "2026-10-08T06:12Z (approximate; shell transaction started after 06:10:30Z)",
+  "attempt_count": 1,
+  "http_client_result": {
+    "curl_exit_code": 55,
+    "stderr": "Send failure: Broken pipe",
+    "curl_write_out": "100",
+    "interpretation": "100 Continue is an interim response, not final OTA success; no final HTTP response/body was received."
+  },
+  "device_after_attempt": {
+    "observed_at_utc": "2026-10-08T06:14:25.685100+00:00",
+    "samples": 6,
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "mac": "70:4b:ca:5b:34:5c",
+    "ip": "192.168.77.10",
+    "wled": "16.0.1",
+    "uptime_seconds": [
+      3434,
+      3436,
+      3439,
+      3441,
+      3443,
+      3446
+    ],
+    "fps": [
+      41,
+      41,
+      41,
+      41,
+      41,
+      42
+    ],
+    "free_heap_bytes": [
+      71816,
+      71584,
+      71800,
+      71796,
+      71820,
+      71576
+    ],
+    "restart_observed": false
+  },
+  "disposition": "Candidate did not become active. Exact Foundation R4 remained active and healthy; no recovery upload was necessary. The single candidate-install transaction is consumed; no retry is authorized under this receipt.",
+  "failure_classification": {
+    "proven": "OTA upload transfer terminated before a final HTTP result; target remained on current image with uptime continuous.",
+    "not_proven": "Whether the termination originated in client/socket transport, AP/network, WLED request handling, OTA admission, or storage/flash handling; do not infer a server-side rejection or candidate invalidity.",
+    "source_basis": "Exact pinned WLED 16.0.1 source: wled00/wled_server.cpp handles multipart /update and replies Update successful only after getOTAResult reports completed upload; wled00/ota_update.cpp handles data chunks, marks uploadComplete only at final chunk, and calls Update.end(uploadComplete) on disconnect."
+  },
+  "pinned_source": {
+    "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "source_tree": "/tmp/hbnf-p2-build/WLED-r4fix-clean-20261008",
+    "files": [
+      "wled00/wled_server.cpp",
+      "wled00/ota_update.cpp",
+      "wled00/wled_metadata.cpp"
+    ]
+  },
+  "next_safe_step": "Preserve evidence and close mutation authority. Diagnose transfer path offline; request fresh exact-artifact authority before any new /update transaction."
+}

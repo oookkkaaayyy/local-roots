@@ -1,0 +1,6 @@
+Authorization HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008; exactly one POST attempted.
+Command: curl --silent --show-error --connect-timeout 5 --max-time 180 -F update=@<authorized exact artifact>;type=application/octet-stream -o CANDIDATE_UPDATE_RESPONSE.txt -w %{http_code} http://192.168.77.10/update
+Guard: hbnf_guarded_run passed PHASE2_INTEGRATING mutation=true with matching capsule and prelive proof.
+Result: curl exit 55; stderr: Send failure: Broken pipe; curl write-out: 100 (interim Continue, no final HTTP status/body). No retry.
+Read-only follow-up: six samples over ~12 seconds, exact Foundation R4 identity throughout, uptime advanced 3434 -> 3446 seconds, FPS 41-42, free heap 71,576-71,816 bytes.
+Conclusion: candidate installation did not complete; device remained on known Foundation R4. Cause within transfer/admission path is not conclusively identified.
