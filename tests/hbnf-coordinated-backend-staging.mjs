@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 const liveControl=fs.readFileSync("evidence/live-production-20261001/hbnf-cart-control/index.ts","utf8");
 const stagedControl=fs.readFileSync("staging/coordinated-backend/hbnf-cart-control/index.ts","utf8");
+const stagedReducer=fs.readFileSync("staging/coordinated-backend/hbnf-cart-control/guest-command.ts","utf8");
 const liveFoundation=fs.readFileSync("evidence/live-production-20261001/hbnf-matrix-adapter-foundation/index.ts","utf8");
 const stagedFoundation=fs.readFileSync("staging/coordinated-backend/hbnf-matrix-adapter-foundation/index.ts","utf8");
 const feature=fs.readFileSync("hbnf-final-controller/hbnf-cart-features.mjs","utf8");
@@ -12,14 +13,15 @@ for (const marker of [
   'x-hbnf-device','action === "pair_device"','case "TUNE"','case "PALETTE"'
 ]) {
   assert.ok(liveControl.toLowerCase().includes(marker.toLowerCase()),"live v16 baseline marker missing: "+marker);
-  assert.ok(stagedControl.toLowerCase().includes(marker.toLowerCase()),"staged control regressed live marker: "+marker);
+  const stagedSource=['case "TUNE"','case "PALETTE"'].includes(marker) ? stagedReducer : stagedControl;
+  assert.ok(stagedSource.toLowerCase().includes(marker.toLowerCase()),"staged control/reducer regressed live marker: "+marker);
 }
-assert.ok(stagedControl.includes('case "OVERLAY_START"'),"canonical overlay start reducer missing");
+assert.ok(stagedReducer.includes('case "OVERLAY_START"'),"canonical overlay start reducer missing");
 assert.ok(stagedControl.includes("canonicalOverlayIntentV1"),"staged overlay capability marker missing");
 assert.ok(stagedControl.includes("canonicalPaletteIntentV1"),"staged palette capability marker missing");
-assert.ok(stagedControl.includes('case "OVERLAY_EXPIRE"'),"canonical overlay expiry reducer missing");
-assert.ok(stagedControl.includes('["text","scoreboard"]'),"overlay kind allowlist missing");
-assert.ok(stagedControl.includes('expiresAt:now + ttlMs'),"overlay TTL persistence missing");
+assert.ok(stagedReducer.includes('case "OVERLAY_EXPIRE"'),"canonical overlay expiry reducer missing");
+assert.ok(stagedReducer.includes('["text","scoreboard"]'),"overlay kind allowlist missing");
+assert.ok(stagedReducer.includes('expiresAt:now + ttlMs'),"overlay TTL persistence missing");
 
 for (const marker of [
   'const EFFECT_ID=142','{id:0,on:true,bri:255,fx:EFFECT_ID}',

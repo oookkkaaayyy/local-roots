@@ -1,0 +1,59 @@
+{
+  "schema": "hbnf-phase2-live-qualification-receipt-v1",
+  "recorded_at": "2026-10-08",
+  "branch": "hbnf-cart2-phase2-integration-20261006",
+  "candidate": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r2-20261008",
+    "sha256": "8be42c878cb6502db1571e58e417848bd732e2d5debfb27b399738b1e70fcf6c",
+    "install_count": 1,
+    "qualification": "FAIL_CLOSED_UNQUALIFIED"
+  },
+  "qualification": {
+    "frozen_gates": "not demonstrated; no thresholds weakened",
+    "reason": "Candidate runtime JSON omitted wholeFrameUs, foundationTelemetry, and packet20Diagnostic. Frozen frame-tail and sustained matched-kernel-13 qualification therefore could not be completed. Five-minute smoke: 35 samples, median FPS 38 across rotating kernels, renderer advanced, uptime monotonic, minimum heap 140416 bytes, AUX native DDP live in 35/35 samples.",
+    "telemetry_adapter": "Existing Packet20 adapter command-begin-ack timed out after 30 seconds because candidate did not expose the required telemetry. No renderer mutation or snapshot was acknowledged.",
+    "test_harness": "Static contract checks were corrected to follow reducer extraction into guest-command.ts; test expectations were not weakened. PWA stale version/cache/asset assumptions and text test import path were corrected to match the current source/package contract."
+  },
+  "rollback": {
+    "release_id": "hbnf-r4-foundation-metrics-tail250-rollback-20261007",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "restoration_samples": 8,
+    "matrix_identity": "exact R4 in all 8 samples; uptime monotonic; renderer advanced",
+    "aux": "native DDP live in all 8 samples",
+    "live_mutation_authorized": false
+  },
+  "host_validation": {
+    "passed": [
+      "hbnf_control",
+      "hbnf_guarded_run",
+      "architecture_fitness",
+      "runtime_qualify_static",
+      "kernel_sweep_report",
+      "source_tree_identity",
+      "live_kernel_sweep",
+      "packet20_http_adapter",
+      "packet20_build_validate",
+      "text_moments_offline (11 tests)",
+      "guest_platform_static",
+      "owner_pwa_reliability",
+      "owner_pwa_package",
+      "coordinated_controller_contract",
+      "skins_scoring_owner_flow",
+      "coordinated_backend_staging",
+      "release_readiness source gates",
+      "iOS 12 compatibility audit",
+      "canonical palette projection",
+      "matrix brightness output"
+    ],
+    "release_readiness": "production readiness remains NO with pre-existing production blockers; not a T4 acceptance",
+    "t4": "OPEN_NOT_ACCEPTED",
+    "t5": "owner acceptance still required"
+  },
+  "live_scope": "No Opal, AUX firmware, Cloudflare, Supabase, Guest Mode, or UV mutation. Exactly one R2 Matrix install followed by exact R4 restore.",
+  "evidence_files": [
+    "PREINSTALL_DEVICE_PREFLIGHT.json",
+    "FIVE_MINUTE_RUNTIME_SMOKE.json",
+    "matched-kernel13/MATCHED_KERNEL13_TELEMETRY.json",
+    "rollback/R4_RESTORATION_VERIFICATION.json"
+  ]
+}

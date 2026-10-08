@@ -11,18 +11,22 @@ const installer = fs.readFileSync(path.join(root, "hbnf-ui-v6-package/install_ui
 const uiWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-cart-ui-v6-package.yml"), "utf8");
 const releaseWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-coordinated-release-ci.yml"), "utf8");
 
-assert.match(html, /hbnf-cart-final-v7-3-phase2-integrated-r1-20261006/);
+assert.match(html, /hbnf-cart2-phase2-wow-r2-20261007/);
 assert.doesNotMatch(html, /skins-owner-pwa-r1/);
 assert.equal(manifest.id, "/hbnf-cart.html");
-assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261006-phase2-integrated-r1");
+assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261007-wow-r2");
 assert.equal(manifest.scope, "/hbnf-cart.html");
 assert.deepEqual(manifest.icons.map(({ sizes }) => sizes), ["192x192", "512x512"]);
 
 const referenced = new Set();
-for (const [, raw] of html.matchAll(/(?:src|href)="([^"]+)"/g)) {
-  const local = raw.split(/[?#]/, 1)[0];
-  if (!local || /^(?:https?:|data:|#)/i.test(local)) continue;
-  referenced.add(path.basename(local));
+// Inspect resource-bearing elements. Anchor hrefs are navigation routes, not
+// packaged static assets (for example /guest/hbnf-cart/).
+for (const [, , attrs] of html.matchAll(/<(script|link|img|source|iframe)\b([^>]*)>/gi)) {
+  for (const [, raw] of attrs.matchAll(/(?:src|href)="([^"]+)"/g)) {
+    const local = raw.split(/[?#]/, 1)[0];
+    if (!local || /^(?:https?:|data:|#)/i.test(local)) continue;
+    referenced.add(path.basename(local));
+  }
 }
 for (const icon of manifest.icons) referenced.add(path.basename(icon.src));
 for (const name of referenced) {

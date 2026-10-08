@@ -1,4 +1,11 @@
+import pathlib
+import sys
 import unittest
+
+# Make the repository's namespace-package tools importable when this test is
+# launched by an external runner whose working directory is not the repo root.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+
 from tools.hbnf_text_moments_offline import plan, classify, ReferenceFrame, compose_reference
 
 class TextMomentTests(unittest.TestCase):
