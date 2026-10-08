@@ -1,7 +1,7 @@
 {
   "schema": "local-roots-golden-path-v2",
   "id": "phase2-live-qualification",
-  "purpose": "One exact Phase 2 Matrix candidate installation, objective runtime qualification, Matrix-to-AUX synchronization/recovery checks, and frozen soak without host deployment or peripheral firmware mutation.",
+  "purpose": "One exact Phase 2 Matrix R4 candidate installation, objective runtime qualification, Matrix-to-AUX synchronization/recovery checks, and frozen soak without host deployment or peripheral firmware mutation.",
   "required_repo_inputs": [
     "AGENTS.md",
     "config/HBNF_CONTROL_MODEL.json",
@@ -40,9 +40,9 @@
     "production_install_forbidden_until_recovery_transaction_is_proven": true
   },
   "qualification_contract": {
-    "candidate_release": "hbnf-cart2-phase2-offline-wow-r3-20261008",
-    "candidate_sha256": "656418f63830205196ca07e39b84bc188db8839eaf631fc9e620ccf5f5feeedb",
-    "candidate_size_bytes": 1490048,
+    "candidate_release": "hbnf-cart2-phase2-offline-wow-r4-20261008",
+    "candidate_sha256": "e65effb86d8755ca8a4af2155e51844d2c2a387f4000574459a382ca50c5ec87",
+    "candidate_size_bytes": 1490160,
     "recovery_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "recovery_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743a2f3d8c",
     "target": "Matrix 192.168.77.10 / 70:4b:ca:5b:34:5c only",
@@ -65,18 +65,140 @@
     "thresholds_may_be_weakened": false
   },
   "stages": [
-    {"id":"package-doctor","kind":"preflight","mutation":false,"retry_policy":"idempotent","outputs":["platform doctor and HBNF control state pass; pushed branch is clean"]},
-    {"id":"contract-closure","kind":"preflight","mutation":false,"retry_policy":"idempotent","outputs":["exact candidate SHA/size/embedded identity and compiled telemetry manifest verified","Matrix WLED 16.0.1 /update consumer path and target identity verified"]},
-    {"id":"recovery-proof","kind":"preflight","mutation":false,"retry_policy":"idempotent","outputs":["exact R4 local recovery SHA/size and runtime ledger verified","same /update recovery path already proven end-to-end"]},
-    {"id":"transaction-rehearsal","kind":"verification","mutation":false,"retry_policy":"idempotent","outputs":["one multipart install and exact recovery transaction mechanically rehearsed from prior receipts; no live change"]},
-    {"id":"capture-current-state","kind":"preflight","mutation":false,"retry_policy":"idempotent","outputs":["fresh Matrix/AUX/Opal state, exact identities, health, and renderer baseline captured"]},
-    {"id":"read-only-preflight","kind":"preflight","mutation":false,"retry_policy":"idempotent","timeout_budget":{"outer_seconds":30,"inner_calls_max":4,"inner_timeout_seconds":4,"margin_seconds":10},"outputs":["immediate pre-mutation identities and continuity pass"]},
-    {"id":"candidate-install","kind":"live","mutation":true,"retry_policy":"never","rollback":{"strategy":"one exact SHA-verified R4 Matrix /update recovery only if candidate identity/runtime/safety/frozen performance or required AUX synchronization fails"},"timeout_budget":{"outer_seconds":240,"inner_calls_max":1,"inner_timeout_seconds":190,"margin_seconds":50},"outputs":["one candidate multipart /update only; immediately capture HTTP response, exact runtime identity, Matrix/AUX health"]},
-    {"id":"runtime-smoke-and-physical-sync","kind":"verification","mutation":false,"retry_policy":"idempotent","outputs":["matched kernel13/brightness44 performance and advancing renderer; exact telemetry fields; heap/restarts; actual Matrix-to-AUX output and owner-observed physical sync"]},
-    {"id":"all-kernel-sweep-and-soak","kind":"live","mutation":true,"retry_policy":"explicit_only","rollback":{"strategy":"restore exact renderer snapshot; if frozen device/safety/AUX gate fails, use only the exact pre-proven R4 recovery; preserve evidence before continuing offline"},"timeout_budget":{"outer_seconds":6000,"inner_calls_max":1,"inner_timeout_seconds":5670,"margin_seconds":330},"outputs":["28-kernel sweep and uninterrupted >=5400-second soak audited against the unchanged frozen policy; no threshold weakening"]},
-    {"id":"owner-acceptance","kind":"verification","mutation":false,"retry_policy":"idempotent","outputs":["one consolidated owner session records physical AUX sync/recovery, text/Vibe/audio, iPad/PWA/Guest behavior, and final acceptance decisions; T5 not inferred"]},
-    {"id":"record","kind":"evidence","mutation":false,"retry_policy":"idempotent","outputs":["terminal qualification receipt, candidate/recovery identities, GitHub/Drive/AKS pointers, and control state reconciled"]}
+    {
+      "id": "package-doctor",
+      "kind": "preflight",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "platform doctor and HBNF control state pass; pushed branch is clean"
+      ]
+    },
+    {
+      "id": "contract-closure",
+      "kind": "preflight",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "exact candidate SHA/size/embedded identity and compiled telemetry manifest verified",
+        "Matrix WLED 16.0.1 /update consumer path and target identity verified"
+      ]
+    },
+    {
+      "id": "recovery-proof",
+      "kind": "preflight",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "exact R4 local recovery SHA/size and runtime ledger verified",
+        "same /update recovery path already proven end-to-end"
+      ]
+    },
+    {
+      "id": "transaction-rehearsal",
+      "kind": "verification",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "one multipart install and exact recovery transaction mechanically rehearsed from prior receipts; no live change"
+      ]
+    },
+    {
+      "id": "capture-current-state",
+      "kind": "preflight",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "fresh Matrix/AUX/Opal state, exact identities, health, and renderer baseline captured"
+      ]
+    },
+    {
+      "id": "read-only-preflight",
+      "kind": "preflight",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "timeout_budget": {
+        "outer_seconds": 30,
+        "inner_calls_max": 4,
+        "inner_timeout_seconds": 4,
+        "margin_seconds": 10
+      },
+      "outputs": [
+        "immediate pre-mutation identities and continuity pass"
+      ]
+    },
+    {
+      "id": "candidate-install",
+      "kind": "live",
+      "mutation": true,
+      "retry_policy": "never",
+      "rollback": {
+        "strategy": "one exact SHA-verified R4 Matrix /update recovery only if candidate identity/runtime/safety/frozen performance or required AUX synchronization fails"
+      },
+      "timeout_budget": {
+        "outer_seconds": 240,
+        "inner_calls_max": 1,
+        "inner_timeout_seconds": 190,
+        "margin_seconds": 50
+      },
+      "outputs": [
+        "one candidate multipart /update only; immediately capture HTTP response, exact runtime identity, Matrix/AUX health"
+      ]
+    },
+    {
+      "id": "runtime-smoke-and-physical-sync",
+      "kind": "verification",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "matched kernel13 and dense kernel9 at brightness44 versus exact R4 baselines; advancing renderer; exact telemetry fields; heap/restarts; actual Matrix-to-AUX output and owner-observed physical sync"
+      ]
+    },
+    {
+      "id": "all-kernel-sweep-and-soak",
+      "kind": "live",
+      "mutation": true,
+      "retry_policy": "explicit_only",
+      "rollback": {
+        "strategy": "restore exact renderer snapshot; if frozen device/safety/AUX gate fails, use only the exact pre-proven R4 recovery; preserve evidence before continuing offline"
+      },
+      "timeout_budget": {
+        "outer_seconds": 6000,
+        "inner_calls_max": 1,
+        "inner_timeout_seconds": 5670,
+        "margin_seconds": 330
+      },
+      "outputs": [
+        "28-kernel sweep and uninterrupted >=5400-second soak audited against the unchanged frozen policy; no threshold weakening"
+      ]
+    },
+    {
+      "id": "owner-acceptance",
+      "kind": "verification",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "one consolidated owner session records physical AUX sync/recovery, text/Vibe/audio, iPad/PWA/Guest behavior, and final acceptance decisions; T5 not inferred"
+      ]
+    },
+    {
+      "id": "record",
+      "kind": "evidence",
+      "mutation": false,
+      "retry_policy": "idempotent",
+      "outputs": [
+        "terminal Phase 2 R4 qualification receipt, candidate/recovery identities, GitHub/Drive/AKS pointers, and control state reconciled"
+      ]
+    }
   ],
   "terminal_recovery": "If the exact candidate is unqualified or runtime safety/required AUX behavior fails, preserve the failure evidence, install only the exact R4 recovery within the authorized limit, verify exact R4 identity and health, then continue offline work; never stop solely because a soak failed.",
-  "expected_terminal_outputs": ["R3 runtime qualification or exact failure classification","exact Matrix release identity","R4 recovery evidence if used","AUX physical synchronization/recovery evidence","soak audit","T4/T5 lifecycle state","durable evidence pointers"]
+  "expected_terminal_outputs": [
+    "R4 runtime qualification or exact failure classification",
+    "exact Matrix release identity",
+    "R4 recovery evidence if used",
+    "AUX physical synchronization/recovery evidence",
+    "soak audit",
+    "T4/T5 lifecycle state",
+    "durable evidence pointers"
+  ]
 }
