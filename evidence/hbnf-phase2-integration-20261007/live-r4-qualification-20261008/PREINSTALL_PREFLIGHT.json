@@ -1,6 +1,6 @@
 {
   "schema": "hbnf-phase2-r4-live-preflight-v1",
-  "captured_at_utc": "2026-10-08T05:57:40.851819+00:00",
+  "captured_at_utc": "2026-10-08T06:07:42.125010+00:00",
   "branch": "hbnf-cart2-phase2-integration-20261006",
   "head": "d9bddd6c6c33fde06b64af3399faaf2ebafe135b",
   "read_only": true,
@@ -396,5 +396,44 @@
     "both_devices_up": true,
     "no_live_authority": true
   },
-  "preflight_pass": true
+  "preflight_pass": true,
+  "fresh_immediate_recheck": {
+    "matrix": {
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "mac": "704bca5b345c",
+      "ip": null,
+      "uptime_seconds": 3202,
+      "free_heap": 74000,
+      "fps": 40,
+      "renderer_count": 127468
+    },
+    "aux": {
+      "wled_version": "16.0.1",
+      "mac": "8c94df55c34c",
+      "ip": null,
+      "uptime_seconds": 31589,
+      "live": null,
+      "lor": 0,
+      "lm": null,
+      "lip": null,
+      "on": true,
+      "segment_count": 1,
+      "segments": [
+        {
+          "id": 0,
+          "start": 0,
+          "stop": 22,
+          "len": 22,
+          "on": true,
+          "bri": 255,
+          "fx": 0
+        }
+      ]
+    },
+    "candidate_local": {
+      "sha256": "e65effb86d8755ca8a4af2155e51844d2c2a387f4000574459a382ca50c5ec87",
+      "size_bytes": 1490160
+    }
+  }
 }
