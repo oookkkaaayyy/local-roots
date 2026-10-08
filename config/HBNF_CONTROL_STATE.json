@@ -2025,11 +2025,11 @@
     "current_subject": {
       "release_id": "hbnf-cart2-phase2-offline-wow-r4-20261008",
       "artifact_sha256": "e65effb86d8755ca8a4af2155e51844d2c2a387f4000574459a382ca50c5ec87",
-      "status": "AUTHORIZED__PREFLIGHT_PASS__NOT_YET_CONSUMED"
+      "status": "AUTHORIZED__INSTALL_ATTEMPT_CONSUMED__REQUEST_NOT_YET_SENT"
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Record and validate the new exact authorization; consume it immediately before exactly one multipart POST with Expect suppressed.",
+      "The single newly authorized attempt is consumed and durably recorded; issue exactly one multipart POST using the corrected Expect-suppressed method now, with no retry.",
       "If upload completes, verify exact identity and immediately qualify kernels 13 and 9 at brightness 44 against R4 baselines.",
       "If early gates pass, run unchanged 28-kernel sweep and 90-minute soak.",
       "Continue focused AUX work in parallel: no override correction is justified because lor=0, native DDP source is .10, the 22-pixel output/segment mappings are complete, and Matrix virtual DDP bus is enabled to .11; require actual visible sync and recovery before release.",
@@ -2686,7 +2686,7 @@
   "bounded_phase2_r4_install_attempt2_authorization": {
     "schema": "hbnf-phase2-r4-bounded-live-authorization-v1",
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008-RETRY1",
-    "status": "AUTHORIZED__PREFLIGHT_PASS__NOT_YET_CONSUMED",
+    "status": "AUTHORIZED__INSTALL_ATTEMPT_CONSUMED__REQUEST_NOT_YET_SENT",
     "authorized_by": "Current user instruction: URGENT \u2014 RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
     "authorized_at_utc": "2026-10-08T06:20:06.671131+00:00",
     "preflight_path": "evidence/hbnf-phase2-integration-20261007/live-r4-qualification-20261008/PREINSTALL_PREFLIGHT_ATTEMPT2.json",
@@ -2699,8 +2699,10 @@
       "size_bytes": 1490160,
       "drive_id": "1Xt8uCndhTfuSHl65n7pAv7cAAfMN08AQ",
       "install_limit": 1,
-      "install_attempts": 0,
-      "consumed_before_network_request": false
+      "install_attempts": 1,
+      "consumed_before_network_request": true,
+      "consumption_recorded_at_utc": "2026-10-08T06:21:47.880324+00:00",
+      "network_request_sent": false
     },
     "rollback": {
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
