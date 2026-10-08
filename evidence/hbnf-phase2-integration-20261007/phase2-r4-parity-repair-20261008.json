@@ -1,0 +1,102 @@
+{
+  "schema": "hbnf-phase2-r4-parity-repair-v1",
+  "captured_utc": "2026-10-08T02:28:24+00:00",
+  "lifecycle": {
+    "state": "PHASE2_INTEGRATING",
+    "transition": "T4_PHASE2_INTEGRATION",
+    "live_mutation_authorized": false,
+    "authorization_note": "Previous exact candidate install authorization was consumed and closed; this offline build does not create live install authority."
+  },
+  "root_cause": {
+    "verdict": "BUILD_PARITY_FAIL_CONFIRMED__R4_FASTLED_BACKPORT_OMITTED_FROM_PHASE2_BUILD_CLOSURE",
+    "facts": [
+      "Rejected WOW-r1 candidate measured 12\u201321 FPS at brightness 44 versus 41 FPS before installation; exact R4 restoration measured 37\u201343 FPS with AUX DDP live.",
+      "Phase 2 materialized ANIMartRIX header SHA bd9d146e2ce5fde991a895ccc2ad2773df1cc77cb815381679c17c6425d7bbe8, which is only the Animartrix clock-patched R1 header.",
+      "R4 uses transformed header SHA a2bc03b5196dbaacb39e56885ed9301106b15c4916e0b906f86c02db1601ec1b, pinned FastLED 3.10.4 commit adedfc40e73fb80f8e930318781036d8fe1dbd9f, render_value_fp_from_float, scoped fast-math/O3 controls, and FastLED/src include path.",
+      "Candidate WOW-r1 manifest named hbnf-cart2-phase2-offline-wow-r1-20261007 while embedded identity reported hbnf-cart2-phase2-offline-r1-20261007."
+    ],
+    "causal_limit": "The exact build-parity defect is proven and repaired. Offline evidence cannot conclusively attribute all of the measured FPS loss to this omission; runtime performance must be remeasured on the repaired artifact."
+  },
+  "correction": {
+    "method": "Reuse existing R4 helper; transform only the exact pinned Animartrix dependency header and add a target-scoped FastLED include path. Align embedded candidate/build identity. No Phase 2 product feature removed or redesigned.",
+    "helper": "scripts/hbnf_phase2_apply_r4_build_closure.py",
+    "existing_r4_helper": "scripts/hbnf_packet20_r4_fastled_backport.py",
+    "release_identity": "hbnf-cart2-phase2-offline-wow-r2-20261008",
+    "source": {
+      "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+      "animartrix_commit": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f",
+      "animartrix_clock_patch_sha256": "f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4",
+      "fastled_release": "3.10.4",
+      "fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+      "fastled_license_sha256": "4358d4c37f1305b43a3117a6a12780f666bf285538de0b28991613c0ccacecd8",
+      "r1_header_sha256": "bd9d146e2ce5fde991a895ccc2ad2773df1cc77cb815381679c17c6425d7bbe8",
+      "r4_header_sha256": "a2bc03b5196dbaacb39e56885ed9301106b15c4916e0b906f86c02db1601ec1b",
+      "phase2_patch_sha256": "111ec4b4bb33aac275e86d7fce2dc0d57d2c9680fd614a39bc639df8eeac9ef0",
+      "integrated_usermod_sha256": "8d07e04588c91cd40f0a3a14fd204173a5dc8619af759fb92903758b3a35b1e6"
+    },
+    "source_identity_discrepancy_corrected": true
+  },
+  "build": {
+    "result": "PASS_CLEAN_LOCAL_BUILD",
+    "command": "PLATFORMIO_CORE_DIR=/tmp/hbnf-p2-build/pio-local SOURCE_DATE_EPOCH=1789948800 pio run -d /tmp/hbnf-p2-build/WLED-clean -e hbnf_matrix_wled16_max -v",
+    "platformio_core": "6.1.18",
+    "python": "3.9.6",
+    "board": "esp32dev",
+    "framework": "Arduino ESP32 2.0.18+sha.8ba0dc0",
+    "toolchain": "xtensa-esp32-elf 8.4.0+2021r2-patch5",
+    "esptool": "4.7.4",
+    "isolated_build_cache": "/tmp/hbnf-p2-build/WLED-clean/.hbnf-clean-build-cache (fresh empty cache; no Retrieved cache records in build log)",
+    "build_configuration": {
+      "environment": "hbnf_matrix_wled16_max",
+      "platformio_override_sha256": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922",
+      "platformio_ini_sha256": "3d36be18b2178cd268ed7545512638af3fb6b91d9b6dba66ff1c7b220dec8a1d",
+      "compiler_global_optimization": "-Os",
+      "r4_compiler_scope": "FastLED 3.10.4 compiler_control.h applies GCC fast-math/tree-vectorize/unroll and O3 pragmas only within transformed Animartrix translation unit",
+      "include_path": "-I/private/tmp/hbnf-p2-build/FastLED/src"
+    },
+    "python39_host_shims": {
+      "scope": "Temporary WLED build copy only; no production firmware behavior change",
+      "load_usermods_py_sha256": "74e8c86cfc467b2aba65482e4ddb804539c2a7c19edacca5473552cd34dc29c8",
+      "validate_modules_py_sha256": "e00ecbe974b5b5ca54055381e8541f1a0259c592482d944d5f33a5f2b44b12f6"
+    },
+    "compiler_log": "/tmp/hbnf-p2-build/rebuild-r2-isolated.log (local diagnostic log; compiler command confirms include path and -Os; no external build cache reuse)",
+    "warnings": "Known upstream ESP32 warnings only; build succeeded."
+  },
+  "artifact": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r2-20261008",
+    "path": "outputs/hbnf-cart2-phase2-offline-wow-r2-20261008.bin",
+    "sha256": "8be42c878cb6502db1571e58e417848bd732e2d5debfb27b399738b1e70fcf6c",
+    "size_bytes": 1482624,
+    "embedded_candidate_and_release_id": "hbnf-cart2-phase2-offline-wow-r2-20261008",
+    "installed": false,
+    "deployed": false
+  },
+  "memory": {
+    "partition": "app0",
+    "slot_bytes": 1572864,
+    "linker_flash_used_bytes": 1475889,
+    "flash_used_percent": 93.8,
+    "flash_headroom_bytes": 96975,
+    "linker_ram_used_bytes": 88328,
+    "ram_total_bytes": 327680,
+    "ram_used_percent": 27.0
+  },
+  "rollback": {
+    "status": "EXACT_R4_RESTORED_AND_VERIFIED; no firmware mutation in this task",
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008,
+    "runtime_evidence": "evidence/hbnf-phase2-integration-20261007/live-rollout/CANDIDATE_RUNTIME_REGRESSION_AND_R4_RESTORE.json"
+  },
+  "validation": {
+    "required_governance_tests": "PASS: all nine repository-mandated governance/static/integration checks (hbnf_control, guarded_run, architecture_fitness, runtime_qualify_static, kernel_sweep_report, source_tree_identity, live_kernel_sweep static, packet20_http_adapter, packet20_build_validate).",
+    "focused_firmware_tests": "PASS: exact R4 backport source fixture/hash/macro isolation; Phase 2 R4 closure/release-label regression; native text adapter compile; brightness output contract; Vibe replay; WOW Guest/UV/text contract tests; scoring owner-flow test.",
+    "engineering_change_governance": "PASS after check-change validation.",
+    "unchanged_lane_test_notes": [
+      "Some optional legacy checks attempted during broad collection were stale/out-of-scope: Guest platform test has invalid JS regex syntax; PWA package tests still assert pre-WOW-r2 asset version strings; text-moments test command has unresolved tools import path. No related Guest/PWA/scoring source was changed. These are not used as evidence of a firmware regression."
+    ],
+    "integrated_features": "Guest V1, disabled UV hooks, and text/font/treatment review menu are unchanged and retained."
+  },
+  "remaining_risk": "Offline build proves the R4 source/compiler closure is present, not the target runtime FPS. The repaired artifact requires one separately authorized bounded live install and objective performance/health/AUX validation.",
+  "next_authorization_required": "One new bounded authorization for exactly this artifact SHA for one Matrix install and objective runtime qualification, including exact R4 restoration only under its predeclared rollback conditions. Current live_mutation_authorized remains false."
+}

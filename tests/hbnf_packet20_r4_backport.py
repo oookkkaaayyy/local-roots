@@ -8,7 +8,7 @@ import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 FIX = ROOT / "scripts/hbnf_packet20_r4_fastled_backport.py"
-R1 = ROOT / "evidence/hbnf-packet20-fix-candidate-20261005/r4-offline/ANIMartRIX_R1_host.h"
+R1 = ROOT / "tests/fixtures/ANIMartRIX_R1_clockpatched.h"
 INVENTORY = ROOT / "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"
 EXPECTED_INPUT = "bd9d146e2ce5fde991a895ccc2ad2773df1cc77cb815381679c17c6425d7bbe8"
 EXPECTED_OUTPUT = "a2bc03b5196dbaacb39e56885ed9301106b15c4916e0b906f86c02db1601ec1b"

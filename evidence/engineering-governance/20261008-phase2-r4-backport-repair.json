@@ -1,0 +1,162 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "PHASE2_R4_FASTLED_BUILD_CLOSURE_REPAIR_20261008",
+  "summary": "Restore the already-qualified R4 FastLED 3.10.4 fixed-point Animartrix source and scoped compiler include path to the Phase 2 clean-room build; align embedded release identity with the WOW-r2 artifact.",
+  "change_class": "ARCHITECTURAL_DECISION",
+  "impact": {
+    "architecture": true,
+    "new_dependency": true,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "expert_basis": {
+      "sources": [
+        {
+          "title": "FastLED 3.10.4 pinned source commit",
+          "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+          "locator": "https://github.com/FastLED/FastLED/tree/adedfc40e73fb80f8e930318781036d8fe1dbd9f/src/fl/fx/2d/animartrix_detail",
+          "relevance": "Contains render_value_fp_from_float, fixed-point Perlin/trigonometric primitives, and compiler-control definitions used by the already-qualified R4 backport."
+        },
+        {
+          "title": "PlatformIO build_flags official documentation",
+          "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+          "locator": "https://docs.platformio.org/en/stable/projectconf/sections/env/options/build/build_flags.html",
+          "relevance": "Defines -I as the supported way to add a scoped compiler include directory; the FastLED source path is scoped only to the Phase 2 WLED target."
+        },
+        {
+          "title": "HBNF R4 exact build provenance and artifacts",
+          "authority_type": "PROJECT_SOURCE_AUTHORITY",
+          "locator": "Git commit 52f2252:.hbnf-r4-build-output/provenance.json and HBNF pinned applicator scripts/hbnf_packet20_r4_fastled_backport.py",
+          "relevance": "Records the exact WLED/FastLED commits, R4 transformed header hash, and proven PlatformIO 6.1.18 build closure."
+        },
+        {
+          "title": "Phase 2 runtime regression and exact R4 restoration receipt",
+          "authority_type": "PROJECT_SOURCE_AUTHORITY",
+          "locator": "evidence/hbnf-phase2-integration-20261007/live-rollout/CANDIDATE_RUNTIME_REGRESSION_AND_R4_RESTORE.json",
+          "relevance": "Records 12\u201321 FPS on the prior candidate, 37\u201343 FPS after restoring exact R4, and the installed artifact's embedded release-label mismatch."
+        }
+      ],
+      "findings": [
+        {
+          "kind": "ESTABLISHED_FACT",
+          "statement": "Phase 2 materialized ANIMartRIX at the R1 clock-patched SHA bd9d146e2ce5fde991a895ccc2ad2773df1cc77cb815381679c17c6425d7bbe8 and omitted the R4 transformed header, FastLED source pin, and include directory.",
+          "source_ref": "Phase 2 runtime regression and exact R4 restoration receipt"
+        },
+        {
+          "kind": "ESTABLISHED_FACT",
+          "statement": "The existing R4 helper deterministically transforms that exact R1 header into SHA a2bc03b5196dbaacb39e56885ed9301106b15c4916e0b906f86c02db1601ec1b and uses render_value_fp_from_float within scoped fast-math/O3 controls.",
+          "source_ref": "FastLED 3.10.4 pinned source commit"
+        },
+        {
+          "kind": "INFERENCE",
+          "statement": "Omission of the exact already-qualified R4 optimization is the smallest evidence-backed cause of the candidate's FPS regression; live runtime confirmation is still required before claiming causal closure.",
+          "source_ref": "Phase 2 runtime regression and exact R4 restoration receipt"
+        }
+      ]
+    },
+    "native_capability_check": {
+      "evaluated": true,
+      "capability": "Pinned WLED 16.0.1 / Animartrix source and FastLED 3.10.4 optimized Animartrix primitives.",
+      "result": "SUFFICIENT",
+      "source_refs": [
+        "FastLED 3.10.4 pinned source commit",
+        "PlatformIO build_flags official documentation"
+      ],
+      "rationale": "Phase 2 must retain its exact WLED 16.0.1 closure; changing WLED or reimplementing its renderer is unnecessary when the already-qualified FastLED backport fits the same pinned source."
+    },
+    "mature_external_component_check": {
+      "relevant": true,
+      "alternatives": [
+        {
+          "name": "FastLED 3.10.4 R4 Animartrix backport",
+          "maturity": "Maintained upstream component at exact pinned commit; previously built and measured in R4.",
+          "maintenance": "Uses the existing project-owned patch helper and exact source pin; no new runtime service.",
+          "compatibility": "Exact WLED 16.0.1 and Animartrix commits, with verified macro isolation and deterministic header hash.",
+          "provenance": "HBNF R4 exact build provenance and artifacts",
+          "license": "Upstream FastLED license hash 4358d4c37f1305b43a3117a6a12780f666bf285538de0b28991613c0ccacecd8.",
+          "documentation_support": "Pinned upstream source and PlatformIO official build_flags documentation.",
+          "dependency_burden": "Adds the pinned upstream source directory to the reproducible build input closure only.",
+          "disposition": "SELECTED",
+          "rationale": "It is the exact previously qualified implementation and therefore preserves Phase 2 features while restoring measured R4 baseline behavior."
+        },
+        {
+          "name": "Whole WLED/FastLED stack upgrade",
+          "maturity": "Upstream-supported but outside the exact qualified source closure.",
+          "maintenance": "Would require broad dependency and regression requalification.",
+          "compatibility": "Unnecessary for restoring the known R4 source into the pinned WLED 16.0.1 tree.",
+          "provenance": "FastLED 3.10.4 pinned source commit",
+          "license": "Not applicable to the rejected option.",
+          "documentation_support": "Upstream versioned source trees.",
+          "dependency_burden": "Broad new source/build closure and upgrade risk.",
+          "disposition": "REJECTED",
+          "rationale": "No unmet requirement requires a stack upgrade."
+        }
+      ],
+      "rationale": "Adopt the existing pinned mature implementation rather than create another renderer or change the qualified WLED stack."
+    },
+    "decision_rationale": {
+      "selected_path": "Apply the existing R4 header transformer to the exact Phase 2 materialized ANIMartRIX header; scope the pinned FastLED src include directory to hbnf_matrix_wled16_max; correct embedded candidate/release strings to WOW-r2.",
+      "alternatives_considered": [
+        "Restore the exact R4 FastLED backport and compiler include closure",
+        "Keep the R1 floating point renderer",
+        "Upgrade WLED/FastLED wholesale",
+        "Write a bespoke replacement renderer"
+      ],
+      "challenger_analysis": "The measured FPS regression alone did not prove a missing patch. The built header and build manifests show the R4 transformed input was absent, while the prior R4 runtime and pinned closure establish a compatible mature path. The proposed change restores that path; it does not remove Phase 2 features. A live run remains necessary to establish actual performance on the combined candidate.",
+      "tradeoffs": "The new artifact grows relative to the rejected image and must be checked against the exact app partition. Runtime frame rate cannot be certified offline.",
+      "simplest_robust_solution": "Use the existing R4 helper and exact FastLED pin with a narrowly scoped PlatformIO include path.",
+      "critical_path_reason": "The exact R4 FastLED source closure is required to restore the proven Phase 2 performance baseline before any new bounded runtime qualification."
+    },
+    "reproducibility": {
+      "source_inputs": [
+        "WLED commit 29b389df1c1aaec6ff53aea742d17063b985906c",
+        "Animartrix commit 81eb09b91c8c9c8c01f8ea442787f8127d56c72f and clock patch SHA f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4",
+        "FastLED commit adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+        "R4 transformed ANIMartRIX SHA a2bc03b5196dbaacb39e56885ed9301106b15c4916e0b906f86c02db1601ec1b",
+        "Phase 2 integrated usermod and firmware/phase2/integration-r2 patch"
+      ],
+      "version_pins": [
+        "Python 3.9.6",
+        "PlatformIO Core 6.1.18",
+        "ESP32 toolchain 8.4.0+2021r2-patch5"
+      ],
+      "configuration_inputs": [
+        "hbnf_matrix_wled16_max environment",
+        "FastLED include path scoped to that environment",
+        "isolated empty PlatformIO build cache",
+        "SOURCE_DATE_EPOCH=1789948800"
+      ],
+      "build_inputs": [
+        "Pinned WLED and ANIMartRIX source",
+        "Phase 2 integrated source",
+        "R4 exact FastLED source/header closure",
+        "existing generated WLED UI inputs"
+      ],
+      "tooling_identity": [
+        "Local macOS Apple Silicon clean-room PlatformIO build"
+      ]
+    },
+    "rollback_or_exit_path": {
+      "rollback_path": "Keep the failed WOW-r1 artifact rejected; exact R4 runtime remains the rollback firmware and must not be installed again without separate authorization.",
+      "uninstall_or_removal_path": "Revert the bounded Phase 2 build-closure and release-label commit; candidate is offline only.",
+      "replacement_path": "Preserve Phase 2 scope and use subsequent live evidence to decide whether another narrowly evidenced firmware correction is required.",
+      "recovery_method": "No device mutation is part of this change. Existing exact R4 artifact SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c remains locally available.",
+      "prior_known_good_state": "Exact R4 runtime verified 37\u201343 FPS after rollback; AUX DDP live=true."
+    },
+    "dependency_identity": {
+      "dependencies": [
+        {
+          "name": "FastLED 3.10.4 R4 Animartrix backport",
+          "upstream_project": "FastLED/FastLED",
+          "version_or_commit": "3.10.4 / adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+          "source_identity": "git:adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+          "provenance": "FastLED 3.10.4 pinned source commit",
+          "license": "FastLED license SHA-256 4358d4c37f1305b43a3117a6a12780f666bf285538de0b28991613c0ccacecd8",
+          "compatibility": "Exact prior R4 qualified dependency; include directory is scoped to Phase 2 WLED target and no separate runtime service/package is introduced."
+        }
+      ]
+    }
+  }
+}

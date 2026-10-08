@@ -1,0 +1,931 @@
+{
+  "schema": "hbnf-engineering-governance-manifest-v1",
+  "records": [
+    {
+      "schema": "hbnf-change-governance-v1",
+      "change_id": "HBNF-CART2-EXPERT-FIRST-CONTROL-GOVERNANCE-20261007",
+      "summary": "Extend the existing HBNF control model, validator, tests, and doctor path with change applicability and evidence gates while preserving the current lifecycle and Foundation evidence.",
+      "change_class": "ARCHITECTURAL_DECISION",
+      "impact": {
+        "architecture": true,
+        "new_dependency": false,
+        "subjective_design": false,
+        "bespoke": false,
+        "unknown": false
+      },
+      "evidence": {
+        "expert_basis": {
+          "sources": [
+            {
+              "title": "HBNF control model and validator at base commit 655372fab6e270c058e0fa4cb95cdb1cd30a1958",
+              "authority_type": "PROJECT_SOURCE_AUTHORITY",
+              "locator": "config/HBNF_CONTROL_MODEL.json; config/HBNF_CONTROL_STATE.json; scripts/hbnf_control.py; scripts/platform.py",
+              "relevance": "Existing primary lifecycle authority, Python validation entrypoint, doctor, and tests are the mandated integration points."
+            },
+            {
+              "title": "JSON Schema object reference",
+              "authority_type": "RECOGNIZED_STANDARD",
+              "locator": "https://json-schema.org/understanding-json-schema/reference/object",
+              "relevance": "Documents required properties and additional-property controls useful for structural JSON validation."
+            },
+            {
+              "title": "python-jsonschema validation documentation",
+              "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+              "locator": "https://github.com/python-jsonschema/jsonschema/blob/v4.21.1/docs/validate.rst",
+              "relevance": "Documents a maintained Python implementation of JSON Schema and its validator protocol."
+            },
+            {
+              "title": "python-jsonschema v4.21.1 project metadata",
+              "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+              "locator": "https://github.com/python-jsonschema/jsonschema/blob/v4.21.1/pyproject.toml",
+              "relevance": "Provides the exact release's Python compatibility, license, production classifier, and runtime dependencies."
+            },
+            {
+              "title": "Python unittest documentation",
+              "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+              "locator": "https://docs.python.org/3/library/unittest.html",
+              "relevance": "Supports extending the existing standard-library unit test path with deterministic fixtures."
+            },
+            {
+              "title": "GitHub protected branches documentation",
+              "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+              "locator": "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches",
+              "relevance": "Documents required checks as a repository branch-protection capability; no GitHub Actions or branch protection settings were changed in this task."
+            }
+          ],
+          "findings": [
+            {
+              "kind": "ESTABLISHED_FACT",
+              "statement": "The current branch control model is the lifecycle authority and currently reports PHASE2_INTEGRATING; its transition graph is linear and already uses direct evidence receipts.",
+              "source_ref": "HBNF control model and validator at base commit 655372fab6e270c058e0fa4cb95cdb1cd30a1958"
+            },
+            {
+              "kind": "ESTABLISHED_FACT",
+              "statement": "JSON Schema supports required-property and additional-property constraints, and python-jsonschema v4.21.1 declares Python >=3.8, MIT licensing, production/stable classification, and four runtime dependencies.",
+              "source_ref": "python-jsonschema v4.21.1 project metadata"
+            },
+            {
+              "kind": "FIELD_EVIDENCE",
+              "statement": "The existing control validator and doctor already run on the project's Python entrypoints, and the current test runtime is Python 3.9; focused control and doctor tests pass without adding packages.",
+              "source_ref": "HBNF control model and validator at base commit 655372fab6e270c058e0fa4cb95cdb1cd30a1958"
+            },
+            {
+              "kind": "INFERENCE",
+              "statement": "Keeping cross-field classification in the existing validator avoids a new runtime dependency and a parallel authority while retaining the current test/runtime compatibility.",
+              "source_ref": "JSON Schema object reference"
+            }
+          ]
+        },
+        "native_capability_check": {
+          "evaluated": true,
+          "capability": "Existing HBNF_CONTROL_MODEL, hbnf_control.py validator, Python standard-library JSON handling, control tests, and platform doctor.",
+          "result": "INSUFFICIENT",
+          "source_refs": [
+            "HBNF control model and validator at base commit 655372fab6e270c058e0fa4cb95cdb1cd30a1958"
+          ],
+          "rationale": "The current machinery owns lifecycle receipts and project health but has no change applicability classes or Expert-First evidence validator. Extending its existing model and validator is sufficient; the unextended capability is not."
+        },
+        "mature_external_component_check": {
+          "relevant": true,
+          "alternatives": [
+            {
+              "name": "python-jsonschema 4.21.1 with JSON Schema 2020-12 validation",
+              "maturity": "Official upstream classifies the release as Production/Stable.",
+              "maintenance": "Maintained upstream project with current documentation and a versioned source release.",
+              "compatibility": "The pinned 4.21.1 release supports Python >=3.8 and is compatible with the current Python 3.9 runtime.",
+              "provenance": "python-jsonschema v4.21.1 project metadata",
+              "license": "MIT per upstream project metadata.",
+              "documentation_support": "Official maintainer documentation covers validator classes and schema validation.",
+              "dependency_burden": "Adds jsonschema plus attrs, jsonschema-specifications, referencing, and rpds-py runtime dependencies; still needs project-specific semantic checks for approval, evidence-source references, and T4 lifecycle binding.",
+              "disposition": "REJECTED",
+              "rationale": "Its structural schema capability is sound, but the present control plane already contains a dependency-free validation entrypoint. Adding this library would not replace the contextual checks or T4 receipt integration and would expand dependency closure for a narrow existing-validator extension."
+            }
+          ]
+        },
+        "decision_rationale": {
+          "selected_path": "Add a bounded change-governance contract and validator command to scripts/hbnf_control.py; keep the policy inside config/HBNF_CONTROL_MODEL.json; reuse existing control tests and platform doctor; require a hashed, validated governance manifest at T4.",
+          "alternatives_considered": [
+            "Extend the existing control validator and doctor",
+            "Add python-jsonschema as a new runtime dependency",
+            "Create a standalone governance validator or policy authority",
+            "Enable or broaden GitHub Actions and branch protection for this task"
+          ],
+          "challenger_analysis": "JSON Schema can provide structural constraints, but the core rules are contextual: change class and impact flags must agree; native and mature-alternative analysis must be present; dependency identity is conditional; subjective decisions need owner approval; and T4 must bind the validated manifest. A separate schema engine does not remove those semantics. GitHub required checks can gate protected branches, but this task's existing action workflow does not target the authoritative staging branch and the repository's project instructions prohibit unnecessary Actions runs or settings changes.",
+          "tradeoffs": "A small project-specific semantic validator remains, but it is attached to the existing authority and has no additional runtime package. The policy requires a classification record and tests; it does not infer subjective acceptance or validate the truth of cited claims.",
+          "simplest_robust_solution": "Use the existing control-model JSON, hbnf_control.py, standard-library test suite, and platform doctor; add no new lifecycle state, transition, service, package, or workflow.",
+          "critical_path_reason": "The change adds a fail-closed evidence check to future engineering decisions and the existing T4 progression receipt without changing product behavior or the current Phase 2 state."
+        },
+        "reproducibility": {
+          "source_inputs": [
+            "config/HBNF_CONTROL_MODEL.json",
+            "config/HBNF_CONTROL_STATE.json",
+            "scripts/hbnf_control.py",
+            "scripts/platform.py",
+            "tests/hbnf_control.py",
+            "tests/hbnf_control_execution_system.py"
+          ],
+          "version_pins": [
+            "Git base commit 655372fab6e270c058e0fa4cb95cdb1cd30a1958",
+            "No external runtime dependencies added"
+          ],
+          "configuration_inputs": [
+            "engineering_change_governance contract in config/HBNF_CONTROL_MODEL.json",
+            "Current lifecycle state in config/HBNF_CONTROL_STATE.json"
+          ],
+          "build_inputs": [
+            "No firmware or product build inputs; host-only Python validation"
+          ],
+          "tooling_identity": [
+            "Python 3.9 standard library",
+            "Git repository oookkkaaayyy/local-roots"
+          ]
+        },
+        "rollback_or_exit_path": {
+          "rollback_path": "Revert the governance implementation commit on hbnf-cart2-ready-to-implement-staging-20261001.",
+          "uninstall_or_removal_path": "Remove only the added governance contract, validation branch, tests, and corresponding AGENTS/doctor integration by reverting the atomic commit.",
+          "replacement_path": "Replace the hand-written structural layer with an explicitly version-pinned compatible JSON Schema validator only if project dependency policy and cross-field coverage justify it; retain lifecycle-specific semantic checks.",
+          "recovery_method": "Restore the parent commit 655372fab6e270c058e0fa4cb95cdb1cd30a1958; the existing transition graph and control-state file are not rewritten.",
+          "prior_known_good_state": "Clean authoritative staging HEAD 655372fab6e270c058e0fa4cb95cdb1cd30a1958 with lifecycle PHASE2_INTEGRATING."
+        }
+      }
+    },
+    {
+      "schema": "hbnf-change-governance-v1",
+      "change_id": "P2_NATIVE_WLED_TEXT_AND_OUTPUT_R2_20261007",
+      "summary": "Use the exact pinned WLED FontManager and built-in 5x12 font for Phase 2 text glyph rendering, retain only minimal HBNF paging/placement glue, composite text over the current Vibe frame, and apply the already-approved Matrix brightness transform only at final output. The 5x12 choice is a reversible functional default; visual style and owner acceptance remain UNFROZEN.",
+      "change_class": "ARCHITECTURAL_DECISION",
+      "impact": {
+        "architecture": true,
+        "new_dependency": false,
+        "subjective_design": false,
+        "bespoke": false,
+        "unknown": false
+      },
+      "evidence": {
+        "expert_basis": {
+          "sources": [
+            {
+              "title": "WLED 16.0.1 FontManager upstream source at 29b389df1c1aaec6ff53aea742d17063b985906c",
+              "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+              "locator": "https://github.com/wled/WLED/blob/29b389df1c1aaec6ff53aea742d17063b985906c/wled00/fontmanager.cpp and wled00/fontmanager.h",
+              "relevance": "Exact source shows native flash font 4 is font_5x12, exposes loadFont/getGlyphWidth/drawCharacter, caches required glyphs, and writes only set glyph pixels to the existing segment."
+            },
+            {
+              "title": "WLED 16.0.1 Scrolling Text implementation at pinned source",
+              "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+              "locator": "https://github.com/wled/WLED/blob/29b389df1c1aaec6ff53aea742d17063b985906c/wled00/FX.cpp#L6382-L6565",
+              "relevance": "Shows native Scrolling Text is an effect-level wrapper around FontManager, but applies segment fading and motion behavior that does not directly preserve HBNF stable readable holds."
+            },
+            {
+              "title": "WLED official custom fonts documentation",
+              "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+              "locator": "https://kno.wled.ge/features/custom-fonts/",
+              "relevance": "Documents the native font and WBF font ecosystem in WLED; supports choosing an existing WLED primitive rather than creating a new font system."
+            },
+            {
+              "title": "HBNF current integration source and phase2 tests",
+              "authority_type": "PROJECT_SOURCE_AUTHORITY",
+              "locator": "firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp; firmware/phase2/brightness-r1; firmware/phase2/text-native-r1; tests/native_text_adapter_smoke.cpp",
+              "relevance": "Defines the exact source-bound Foundation render path, already-required final-output brightness semantics, existing native text host planning contract, and rollback point."
+            },
+            {
+              "title": "Current owner task instruction in Pasted text.txt",
+              "authority_type": "PROJECT_SOURCE_AUTHORITY",
+              "locator": "/Users/andrew/.codex/attachments/1447e20a-5d92-4f25-82a6-99a57aacfb25/Pasted text.txt",
+              "relevance": "Explicitly directs the worker to adopt WLED-native text when it satisfies the immediate functional requirement and keep visual presentation provisional for owner review."
+            }
+          ],
+          "findings": [
+            {
+              "kind": "ESTABLISHED_FACT",
+              "statement": "The pinned WLED source implements FontManager flash-font index 4 with the upstream font_5x12 bitmap and native glyph metric/cache/render methods.",
+              "source_ref": "WLED 16.0.1 FontManager upstream source at 29b389df1c1aaec6ff53aea742d17063b985906c"
+            },
+            {
+              "kind": "ESTABLISHED_FACT",
+              "statement": "The WLED Scrolling Text effect invokes the same FontManager but adds motion and segment-fade behavior; HBNF needs a stable readable hold composited over the current Foundation frame.",
+              "source_ref": "WLED 16.0.1 Scrolling Text implementation at pinned source"
+            },
+            {
+              "kind": "FIELD_EVIDENCE",
+              "statement": "Existing host planning and compositor tests establish word-boundary paging, stable glyph geometry, current-frame restoration, and an owner design review gate; no integrated firmware build previously existed.",
+              "source_ref": "HBNF current integration source and phase2 tests"
+            },
+            {
+              "kind": "INFERENCE",
+              "statement": "Calling FontManager directly inside the current HBNF overlay path, with only paging/placement glue, is the narrow compatible adoption path and removes the hand-parsed font bitmap implementation.",
+              "source_ref": "WLED 16.0.1 FontManager upstream source at 29b389df1c1aaec6ff53aea742d17063b985906c"
+            },
+            {
+              "kind": "ESTABLISHED_FACT",
+              "statement": "The owner task explicitly permits a reversible provisional functional default and prohibits treating it as owner-approved visual design.",
+              "source_ref": "Current owner task instruction in Pasted text.txt"
+            }
+          ]
+        },
+        "native_capability_check": {
+          "evaluated": true,
+          "capability": "Pinned WLED 16.0.1 FontManager with built-in font 4 (font_5x12), existing segment raster output, and native Scrolling Text effect.",
+          "result": "SUFFICIENT",
+          "source_refs": [
+            "WLED 16.0.1 FontManager upstream source at 29b389df1c1aaec6ff53aea742d17063b985906c",
+            "WLED 16.0.1 Scrolling Text implementation at pinned source"
+          ],
+          "rationale": "FontManager supplies native 5x12 glyph data, metrics, caching and transparent glyph drawing. Minimal HBNF code is limited to stable word paging, centering, and a reversible oversized-word fallback; direct drawing avoids the full effect\u2019s motion/fade behavior and preserves the continuously rendered Vibe frame."
+        },
+        "mature_external_component_check": {
+          "relevant": true,
+          "alternatives": [
+            {
+              "name": "WLED 16.0.1 FontManager built-in flash font 4",
+              "maturity": "Maintained as part of the pinned WLED release and used by its native Scrolling Text effect.",
+              "maintenance": "Maintained upstream within WLED; no separate package or asset lifecycle.",
+              "compatibility": "Exact pinned WLED commit is the qualified Foundation base and has the required 32x16 segment renderer.",
+              "provenance": "WLED 16.0.1 FontManager upstream source at 29b389df1c1aaec6ff53aea742d17063b985906c",
+              "license": "WLED upstream project license; no separately distributed font asset is added.",
+              "documentation_support": "Upstream FontManager API plus WLED custom-font documentation.",
+              "dependency_burden": "No new dependency; reuses the already-pinned WLED source.",
+              "disposition": "SELECTED",
+              "rationale": "Provides the needed immediate native glyph capability with small reversible HBNF paging/placement glue."
+            },
+            {
+              "name": "WLED 16.0.1 Scrolling Text effect (FX_MODE_2DSCROLLTEXT)",
+              "maturity": "Maintained upstream WLED effect in the same pinned release.",
+              "maintenance": "Maintained with WLED; no external dependency.",
+              "compatibility": "Available on the 2D Matrix, but owns motion/fade parameters and segment effect state rather than the HBNF moment timing interface.",
+              "provenance": "WLED 16.0.1 Scrolling Text implementation at pinned source",
+              "license": "WLED upstream project license.",
+              "documentation_support": "Official WLED effect and segment documentation.",
+              "dependency_burden": "No new dependency; full effect would require routing text into a separate WLED segment/effect path.",
+              "disposition": "REJECTED",
+              "rationale": "The effect scrolls/fades through WLED\u2019s effect lifecycle and cannot directly provide HBNF\u2019s fixed readable hold over its continuously rendered Foundation Vibe without a broader segment/effect-routing change."
+            }
+          ]
+        },
+        "decision_rationale": {
+          "selected_path": "Adapt the existing HBNF text overlay to use WLED FontManager font 4 (native 5x12), preserving existing host planner semantics and drawing glyphs over the current Matrix frame. Keep page timing and provisional font presentation unfrozen. Use the pre-existing final-output brightness requirement at Matrix output only.",
+          "alternatives_considered": [
+            "Invoke native WLED 2D Scrolling Text as a full effect",
+            "Use FontManager directly with only paging/placement glue",
+            "Continue reading WLED PROGMEM bitmaps with a bespoke HBNF raster parser",
+            "Recover or recreate external WBF font assets"
+          ],
+          "challenger_analysis": "The full WLED effect is mature but brings vertical motion, trail behavior, and segment/effect routing that do not match the immediate stable-hold HBNF moment contract. Direct WLED FontManager calls reuse native glyph data, width metrics, cache and pixel writes. The previous adapter read WLED font byte tables itself; removing that parser reduces bespoke work. Exact historical WBF assets are not required because the pinned upstream contains a built-in native 5x12 font. The 5x12 appearance remains provisional and unaccepted.",
+          "tradeoffs": "Word paging and centering remain minimal HBNF glue; oversized single words use a reversible scroll fallback. The provisional 5x12 font may be changed after owner review without changing shared contracts. Direct FontManager segment cache and ESP32 runtime cost still require target build/runtime evidence before acceptance.",
+          "simplest_robust_solution": "Use FontManager\u2019s built-in font 4 and native glyph rendering; retain only word-boundary pagination, centering and the existing 2200 ms hold as provisional implementation details.",
+          "critical_path_reason": "This closes offline text/brightness source integration without inventing font assets or an alternate renderer and enables one offline Phase 2 build candidate. It does not authorize live mutation or final visual acceptance."
+        },
+        "reproducibility": {
+          "source_inputs": [
+            "firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp sha256 31126d341bf0a3e54a33d87de0856c5f68e79f20dd05653ae1d5df3270a9bc9d",
+            "firmware/phase2/brightness-r1/hbnf_brightness_output.h",
+            "firmware/phase2/text-native-r1/hbnf_native_text.h",
+            "firmware/phase2/integration-r2/usermod_hbnf_foundation_v1.patch",
+            "WLED build overlay recovered from Git commit 7928a256f31ce46775717731cf1338944a2b5709; per-file hashes in Drive source map and build manifest"
+          ],
+          "version_pins": [
+            "WLED 16.0.1 commit 29b389df1c1aaec6ff53aea742d17063b985906c",
+            "PlatformIO Core 6.1.18",
+            "Node.js 20.20.2 / npm 10.8.2",
+            "Animartrix commit 81eb09b91c8c9c8c01f8ea442787f8127d56c72f plus exact clock patch f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4"
+          ],
+          "configuration_inputs": [
+            "platformio_override.ini from the exact recovered seq39 overlay; official WLED esp32dev base dependency closure added only to the Packet20 target environment",
+            "SOURCE_DATE_EPOCH=1789948800 for generated WLED UI assets",
+            "HBNF_CONTROL_STATE remains PHASE2_INTEGRATING; live_mutation_authorized=false"
+          ],
+          "build_inputs": [
+            "Pinned WLED 16.0.1 source",
+            "Current Phase 2 integrated Foundation usermod source",
+            "Exact preserved Packet20 overlay headers and Animartrix clock patch",
+            "Generated WLED UI from exact package-lock"
+          ],
+          "tooling_identity": [
+            "macOS Apple Silicon host",
+            "isolated Python 3.9 virtual environment",
+            "PlatformIO Core 6.1.18",
+            "Node.js 20.20.2 and npm 10.8.2",
+            "Git/GitHub private repository oookkkaaayyy/local-roots"
+          ]
+        },
+        "rollback_or_exit_path": {
+          "rollback_path": "Revert the atomic Phase 2 R2 integration commit on hbnf-cart2-phase2-integration-20261006; preserve the exact Foundation baseline source and artifact identity. No live candidate has been installed.",
+          "uninstall_or_removal_path": "Remove only the R2 source patch, native adapter changes, and integration evidence by reverting their commit; no new package or WBF file is installed.",
+          "replacement_path": "Revert to the exact current Foundation text path and defer native text visual freeze until owner review; existing host planner/fixture evidence remains intact.",
+          "recovery_method": "Checkout parent commit and rebuild only from the previously qualified Foundation source/capsule if an offline candidate artifact later needs recovery; no OTA or hardware operation in this task.",
+          "prior_known_good_state": "Foundation-qualified candidate hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1, firmware SHA256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c; control lifecycle PHASE2_INTEGRATING."
+        }
+      }
+    },
+    {
+      "schema": "hbnf-change-governance-v1",
+      "change_id": "HBNF-CART2-WOW-BACKEND-PREP-20261007",
+      "summary": "Prepare isolated offline guest capability, native-WLED UV policy, and owner-reviewable text/Vibe treatment contracts without touching active Phase 2 files or lifecycle state.",
+      "change_class": "ARCHITECTURAL_DECISION",
+      "impact": {
+        "architecture": true,
+        "new_dependency": false,
+        "subjective_design": false,
+        "bespoke": false,
+        "unknown": false
+      },
+      "evidence": {
+        "expert_basis": {
+          "sources": [
+            {
+              "title": "HBNF Cart 2 scope/change authority",
+              "authority_type": "PROJECT_SOURCE_AUTHORITY",
+              "locator": "AKS Drive 105J0xKbNFD26NOGChN9MssOVjbJ9Q2p6LYhz2Ky7EgM; HBNF_CONTROL_MODEL.json and HBNF_CONTROL_STATE.json at staging base 3c081676f719d0f77a0b99e056e0d211c09b1389",
+              "relevance": "Defines guest, Vibe/text requirements and the active Phase 2 boundaries."
+            },
+            {
+              "title": "Supabase Anonymous Sign-Ins",
+              "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+              "locator": "https://supabase.com/docs/guides/auth/auth-anonymous",
+              "relevance": "Documents authenticated anonymous users without email/PII and warns that RLS must distinguish the is_anonymous JWT claim."
+            },
+            {
+              "title": "WLED 16.0.1 release",
+              "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+              "locator": "https://github.com/wled/WLED/releases/tag/v16.0.1",
+              "relevance": "Confirms exact project release identity and fixes in the 16.0.1 line."
+            },
+            {
+              "title": "WLED multi-strip documentation",
+              "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+              "locator": "https://github.com/wled/WLED/wiki/Multi-strip",
+              "relevance": "Documents multiple outputs from one ESP, recommends ESP32 for multiple outputs, and reports PWM white as a confirmed output type."
+            },
+            {
+              "title": "WLED analog wiring documentation",
+              "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+              "locator": "https://github.com/wled/WLED-Docs/blob/main/docs/basics/getting-started.md",
+              "relevance": "Documents non-addressable analog strips and an independent GPIO/MOSFET channel per output color channel."
+            },
+            {
+              "title": "WLED JSON API",
+              "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+              "locator": "https://kno.wled.ge/interfaces/json-api/",
+              "relevance": "Documents native state/segment JSON control including per-segment brightness."
+            },
+            {
+              "title": "WLED 16 announcement",
+              "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+              "locator": "https://github.com/wled/WLED/releases/tag/v16.0.0",
+              "relevance": "Describes native segment layering, transition blending, and custom font support for scrolling text in WLED 16."
+            },
+            {
+              "title": "CDC Ultraviolet Radiation",
+              "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+              "locator": "https://www.cdc.gov/radiation-health/features/uv-radiation.html",
+              "relevance": "Identifies UVA/UVB/UVC wavelength bands and describes skin/eye hazards from overexposure; supports an optical exposure requirement before enabling UV LEDs."
+            }
+          ],
+          "findings": [
+            {
+              "kind": "ESTABLISHED_FACT",
+              "statement": "Supabase anonymous sign-ins create authenticated user identities without email/PII; they use the authenticated Postgres role and require RLS policies to distinguish anonymous users.",
+              "source_ref": "Supabase Anonymous Sign-Ins"
+            },
+            {
+              "kind": "ESTABLISHED_FACT",
+              "statement": "WLED documents multiple ESP outputs and PWM white, analog outputs driven through MOSFET circuitry, per-segment brightness JSON control, and WLED 16 native segment layering/transitions.",
+              "source_ref": "WLED multi-strip documentation"
+            },
+            {
+              "kind": "INFERENCE",
+              "statement": "The native WLED path is the least-complex control abstraction for UV if exact AUX firmware, output pin, segment/output mapping, and independent load driver are present; none is assumed by this offline adapter.",
+              "source_ref": "WLED multi-strip documentation"
+            },
+            {
+              "kind": "FIELD_EVIDENCE",
+              "statement": "The Phase 2 branch already contains P2 text/Vibe candidate fixtures and a guest-platform readiness audit; the WOW branch can prepare isolated contracts without editing those owned files.",
+              "source_ref": "HBNF Cart 2 scope/change authority"
+            },
+            {
+              "kind": "ESTABLISHED_FACT",
+              "statement": "UV exposure can harm skin and eyes, and UVA, UVB, and UVC are distinct wavelength bands; the product label alone does not establish the output wavelength or exposure safety.",
+              "source_ref": "CDC Ultraviolet Radiation"
+            }
+          ]
+        },
+        "native_capability_check": {
+          "evaluated": true,
+          "capability": "Supabase anonymous Auth; WLED native multi-output/segment JSON API; WLED 16 transition/text primitives; existing Cart Vibe/text interfaces.",
+          "result": "SUFFICIENT",
+          "source_refs": [
+            "Supabase Anonymous Sign-Ins",
+            "WLED multi-strip documentation",
+            "WLED JSON API",
+            "WLED 16 announcement",
+            "HBNF Cart 2 scope/change authority"
+          ],
+          "rationale": "Native platforms cover guest identity, segment dimming, and style composition. Only bounded policy adapters/contracts are prepared; hardware topology and owner-selected presentation remain unverified/unfrozen. Production integration must reuse existing Supabase sessions and device-control paths. Physical UV energization also requires wavelength and exposure review; the software cap alone is not an optical safety assessment."
+        },
+        "mature_external_component_check": {
+          "relevant": false,
+          "alternatives": [],
+          "rationale": "No new auth or rendering component is needed; native Supabase/WLED facilities are preferred and no dependency is introduced.",
+          "not_relevant_reason": "No external component is needed because the current Supabase Auth and WLED platforms already provide the required native mechanisms."
+        },
+        "decision_rationale": {
+          "selected_path": "Add reversible, offline-only policy and interface artifacts in a new isolated directory; use existing Supabase anonymous auth and WLED native JSON/segment capabilities at later integration.",
+          "alternatives_considered": [
+            "Supabase anonymous Auth",
+            "new guest auth/JWT service",
+            "WLED JSON segment/output controls",
+            "custom PWM device protocol",
+            "existing functional text layer with native transitions",
+            "custom text renderer"
+          ],
+          "challenger_analysis": "The native facilities cover the core capabilities; a bespoke service, device protocol, or renderer would duplicate platform capability and add support burden. The strongest unresolved UV issue is physical output/load capability. The strongest text limitation is subjective treatment quality and must be reviewed by the owner.",
+          "tradeoffs": "Reference policy code is not production persistence and is intentionally isolated. Supabase RLS must be audited for anonymous-user role behavior before wiring. WLED JSON payloads require verified segment mapping and existing network authority. Text options need owner visual selection. UV wavelength/exposure and shielding/placement remain an explicit physical commissioning gate.",
+          "simplest_robust_solution": "Keep session and owner authority in current Supabase/backend; add only scope checks at existing mutation entrypoints; express UV as native WLED segment JSON; layer treatments over existing text rendering.",
+          "critical_path_reason": "Parallel, offline preparation can proceed without changing Phase 2 worker-owned files or lifecycle state."
+        },
+        "reproducibility": {
+          "source_inputs": [
+            "staging commit 3c081676f719d0f77a0b99e056e0d211c09b1389",
+            "hbnf-wow-backend-prep/**"
+          ],
+          "version_pins": [
+            "Python standard library",
+            "WLED device version to verify: 16.0.1"
+          ],
+          "configuration_inputs": [
+            "guest capability limits",
+            "UV segment/output IDs injected only after inspection",
+            "owner-reviewed text treatments"
+          ],
+          "build_inputs": [
+            "none; host Python reference tests only"
+          ],
+          "tooling_identity": [
+            "python3 standard-library unittest"
+          ]
+        },
+        "rollback_or_exit_path": {
+          "rollback_path": "Revert the isolated WOW branch commit.",
+          "uninstall_or_removal_path": "Remove hbnf-wow-backend-prep/ artifacts by branch revert.",
+          "replacement_path": "Integrate small policy rules into the existing Supabase Edge Function/session store and existing WLED control route after Phase 2 interface freeze.",
+          "recovery_method": "Return to branch parent 3c081676f719d0f77a0b99e056e0d211c09b1389.",
+          "prior_known_good_state": "Authoritative staging governance commit 3c081676f719d0f77a0b99e056e0d211c09b1389; Phase 2 branch remains read-only."
+        }
+      }
+    },
+    {
+      "schema": "hbnf-change-governance-v1",
+      "change_id": "HBNF-CART2-GUEST-V1-DIRECT-CANONICAL-INTEGRATION-20261007",
+      "summary": "Integrate trusted-friends Guest V1 into the existing hbnightflyers.com static root and current hbnf-cart-control canonical command/reconcile path; supersede prior session-cookie prep. Preserve dormant UV and unfrozen native text options.",
+      "change_class": "ARCHITECTURAL_DECISION",
+      "impact": {
+        "architecture": true,
+        "new_dependency": false,
+        "subjective_design": false,
+        "bespoke": false,
+        "unknown": false
+      },
+      "evidence": {
+        "expert_basis": {
+          "sources": [
+            {
+              "title": "Current owner-authorized Guest V1 integration correction",
+              "authority_type": "PROJECT_SOURCE_AUTHORITY",
+              "locator": "User instruction CONTINUE \u2014 GUEST BLOCKER RESOLVED BY COORDINATOR, 2026-10-07",
+              "relevance": "Identifies static host and deployed endpoints; explicitly supersedes guest cookies/session/auth infrastructure and requires same reducer/bridge/reconcile path."
+            },
+            {
+              "title": "Existing deployed hbnf-cart-control v16",
+              "authority_type": "FIELD_EVIDENCE",
+              "locator": "Supabase project phcpbvuqibyarpfrftgx, Edge Function hbnf-cart-control v16; source SHA-256 3e4816988a9ac0b33f5b660ccefedf27e0249c7e7f5e11b1a8622a3c59fbd80d",
+              "relevance": "Confirms existing command endpoint, operator/paired-device authorization, CORS allowlist for https://hbnightflyers.com, and canonical state/action interface."
+            },
+            {
+              "title": "Existing deployed hbnf-cart-reconcile v11",
+              "authority_type": "FIELD_EVIDENCE",
+              "locator": "Supabase project phcpbvuqibyarpfrftgx, Edge Function hbnf-cart-reconcile v11; source SHA-256 4f400b2ee1d733f07a90baa231c843990802a3a72aedb507e6963a78685a1d93",
+              "relevance": "Confirms same revision-fenced reconcile route and no-target metadata behavior carries current observations without Matrix/AUX adapter action."
+            },
+            {
+              "title": "Supabase Edge Function CORS",
+              "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+              "locator": "https://supabase.com/docs/guides/functions/cors",
+              "relevance": "Official platform guidance for browser-origin function CORS."
+            },
+            {
+              "title": "Cloudflare Workers static HTML routing",
+              "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+              "locator": "https://developers.cloudflare.com/workers/static-assets/routing/advanced/html-handling/",
+              "relevance": "Official directory index route behavior for static page path."
+            }
+          ],
+          "findings": [
+            {
+              "kind": "ESTABLISHED_FACT",
+              "statement": "The deployed Cart control function allows the static origin and routes owner commands through the existing serialized bridge/reconcile path.",
+              "source_ref": "Existing deployed hbnf-cart-control v16"
+            },
+            {
+              "kind": "ESTABLISHED_FACT",
+              "statement": "Guest Mode defaults closed when absent and is committed as metadata with an empty actuator target set; guest command actions are mapped into the existing reducer and revision-fenced bridge.",
+              "source_ref": "Current owner-authorized Guest V1 integration correction"
+            },
+            {
+              "kind": "INFERENCE",
+              "statement": "Direct browser-to-existing-function calls are the smallest compatible architecture because the exact static host is already CORS-allowed and the current backend owns command serialization.",
+              "source_ref": "Existing deployed hbnf-cart-control v16"
+            }
+          ]
+        },
+        "native_capability_check": {
+          "evaluated": true,
+          "capability": "Existing Cloudflare static host, deployed Supabase Cart control function, canonical reducer, bridge, and reconcile function.",
+          "result": "SUFFICIENT",
+          "source_refs": [
+            "Current owner-authorized Guest V1 integration correction",
+            "Existing deployed hbnf-cart-control v16",
+            "Existing deployed hbnf-cart-reconcile v11",
+            "Supabase Edge Function CORS",
+            "Cloudflare Workers static HTML routing"
+          ],
+          "rationale": "The verified platform surface provides the static page, existing CORS, owner authorization, canonical state, serialized commit, and reconciliation; no alternate identity or session subsystem is needed."
+        },
+        "mature_external_component_check": {
+          "relevant": false,
+          "alternatives": [],
+          "rationale": "No new component or dependency is required; existing platform services already satisfy the requirements.",
+          "not_relevant_reason": "This is minimal glue to the deployed native Cart path."
+        },
+        "decision_rationale": {
+          "selected_path": "Direct static Guest page to existing hbnf-cart-control; owner-only GUEST_MODE uses existing paired-device/operator authorization; guest action mapping uses same reducer, bridge, and reconcile.",
+          "alternatives_considered": [
+            "Separate guest cookie/session platform",
+            "Supabase anonymous Auth and RLS expansion",
+            "One-use tickets or capability JWT",
+            "Direct device-control endpoint",
+            "Existing canonical Cart command path"
+          ],
+          "challenger_analysis": "Separate sessions, identities, tokens, and device endpoints duplicate machinery and weaken reuse of the current serialized state boundary. Existing CORS and deployed routes meet this case. Metadata changes reconcile with no hardware targets; commit races are rejected at expectedRevision compare-and-commit.",
+          "tradeoffs": "Trusted-friend V1 uses the publicly reachable function with no separate guest identity, as explicitly approved. Guest action surface remains narrow. No live service or device was mutated.",
+          "simplest_robust_solution": "Use existing static hosting and the existing revision-fenced Cart command path with a closed action mapping.",
+          "critical_path_reason": "Coordinator identified the exact host and deployed interfaces, resolving the previous integration blocker without live mutation."
+        },
+        "reproducibility": {
+          "source_inputs": [
+            "Current branch hbnf-cart2-phase2-integration-20261006",
+            "hbnf-final-controller/guest/hbnf-cart/**",
+            "staging/coordinated-backend/hbnf-cart-control/guest-command.ts",
+            "deployed hbnf-cart-control v16 and hbnf-cart-reconcile v11 source identities above"
+          ],
+          "version_pins": [
+            "Node.js built-in strip-types test runtime",
+            "deployed interfaces inspected read-only"
+          ],
+          "configuration_inputs": [
+            "guestMode absent defaults false",
+            "guest command allowlist VIBE, VIBE_AUTO, NEXT, AUTO",
+            "metadata reconcile targetDevices=[]",
+            "no browser cookies/session persistence"
+          ],
+          "build_inputs": [
+            "Existing pinned Phase 2 WLED build closure unchanged"
+          ],
+          "tooling_identity": [
+            "node:test",
+            "python3 hbnf_control.py check-change"
+          ]
+        },
+        "rollback_or_exit_path": {
+          "rollback_path": "Revert this integration commit; no remote deployment state changed.",
+          "uninstall_or_removal_path": "Revert static Guest route and Guest Mode integration; preserve core candidate and dormant UV/text files.",
+          "replacement_path": "Continue using the same owner canonical reducer/bridge/reconcile interfaces.",
+          "recovery_method": "Git revert to parent commit.",
+          "prior_known_good_state": "Current branch head before integration commit, 680c26e70bfef58297d347180936d95e3b17e979."
+        }
+      }
+    },
+    {
+      "schema": "hbnf-change-governance-v1",
+      "change_id": "HBNF-CART2-WOW-GUEST-AUX-CONTINUATION-20261007",
+      "summary": "Supersede the earlier ticket/capability guest draft with the owner-approved trusted-friends Guest V1 adapter and static UI; close AUX board output research using filed SP803E material while retaining fail-closed UV electrical/optical qualification gates. Preserve text/Vibe prep without editing that subsystem.",
+      "change_class": "ARCHITECTURAL_DECISION",
+      "impact": {
+        "architecture": true,
+        "new_dependency": false,
+        "subjective_design": false,
+        "bespoke": false,
+        "unknown": false
+      },
+      "evidence": {
+        "expert_basis": {
+          "sources": [
+            {
+              "title": "Current owner-approved Guest V1 scope",
+              "authority_type": "PROJECT_SOURCE_AUTHORITY",
+              "locator": "CONTINUE WOW BACKEND \u2014 SIMPLIFIED GUEST V1 + AUX UV CAPABILITY CLOSURE, 2026-10-07",
+              "relevance": "Supersedes the preceding one-use ticket, granular capability, and anonymous-auth proposal; defines a static QR, owner ON/OFF, existing backend mediation, lightweight continuity, bounded action throttling, and disabled default."
+            },
+            {
+              "title": "HBNF Cart 2 scope/change authority",
+              "authority_type": "PROJECT_SOURCE_AUTHORITY",
+              "locator": "AKS Drive 105J0xKbNFD26NOGChN9MssOVjbJ9Q2p6LYhz2Ky7EgM; current Phase 2 branch head read-only at 6a98de3c73c613f9cb1251c5e8054f8d6cd35697",
+              "relevance": "Defines the current owner authority and lane boundaries. Latest Phase 2 App.tsx confirms the current React app has no /guest/{cartId} route; Phase 2 files remain unmodified."
+            },
+            {
+              "title": "SP803E manufacturer user manual filed with FCC",
+              "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+              "locator": "https://apps.fcc.gov/eas/GetApplicationAttachment.html?id=8367961",
+              "relevance": "Identifies SP803E IO16 as SPI data and IO25/26/27 as PWM NMOS outputs; manual lists 6 A/channel and says controller supply voltage must match the LED load."
+            },
+            {
+              "title": "WLED multi-strip documentation",
+              "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+              "locator": "https://github.com/wled/WLED/wiki/Multi-strip",
+              "relevance": "Documents multiple LED outputs on one ESP32 and PWM white as a confirmed output type."
+            },
+            {
+              "title": "WLED analog wiring documentation",
+              "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+              "locator": "https://kno.wled.ge/basics/getting-started/",
+              "relevance": "Documents non-addressable strip channel control through GPIO/MOSFET and says to use the exact board pinout and common ground."
+            },
+            {
+              "title": "Espressif ESP32 Datasheet",
+              "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+              "locator": "https://documentation.espressif.com/esp32_datasheet_en.html",
+              "relevance": "Lists ESP32 Series strapping pins and GPIO25/26/27 pin functions; these candidate GPIOs are not boot strapping pins. The board-level NMOS fail-dark state remains unproven."
+            },
+            {
+              "title": "SP803E current project commissioning contract and runbook",
+              "authority_type": "FIELD_EVIDENCE",
+              "locator": "hbnf-aux-lighting/commissioning/contract.json; hbnf-aux-lighting/commissioning/README.md; hbnf-aux-lighting/backend/aux_control.ts at staging base 3c081676f719d0f77a0b99e056e0d211c09b1389",
+              "relevance": "Records GPIO16 addressable underglow, UV 5V USB versus controller's existing 12V setup, GPIO25/26 UV candidates, and fail-closed physical commissioning gates."
+            },
+            {
+              "title": "CDC Ultraviolet Radiation",
+              "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+              "locator": "https://www.cdc.gov/radiation-health/features/uv-radiation.html",
+              "relevance": "Supports a wavelength/irradiance and exposure review before any UV strip is energized."
+            }
+          ],
+          "findings": [
+            {
+              "kind": "FIELD_EVIDENCE",
+              "statement": "For trusted friends physically near the cart, static QR plus the existing server-side session store and per-cart owner Guest Mode gate replaces the earlier ticket/capability/anonymous-auth draft. Guest browsers receive no direct database authority.",
+              "source_ref": "Current owner-approved Guest V1 scope"
+            },
+            {
+              "kind": "ESTABLISHED_FACT",
+              "statement": "The filed SP803E manual documents PWM NMOS outputs on IO25, IO26, IO27 and SPI output on IO16; WLED documents multi-output ESP32 configurations and PWM white support.",
+              "source_ref": "SP803E manufacturer user manual filed with FCC"
+            },
+            {
+              "kind": "ESTABLISHED_FACT",
+              "statement": "Espressif lists ESP32 Series strapping pins as GPIO0, GPIO2, MTDI/GPIO12, MTDO/GPIO15, and GPIO5; GPIO25/26/27 are not strapping pins. This does not establish the SP803E board output circuit's dark state during reset.",
+              "source_ref": "Espressif ESP32 Datasheet"
+            },
+            {
+              "kind": "FIELD_EVIDENCE",
+              "statement": "The current accepted AUX output plan uses GPIO16 for the 12V addressable underglow; existing UV candidate pins are 25/26 and the spare channel is 27. The UV strip is 5V USB while AUX uses a 12V setup, and current commissioning refuses to enable UV without physical verification.",
+              "source_ref": "SP803E current project commissioning contract and runbook"
+            },
+            {
+              "kind": "INFERENCE",
+              "statement": "AUX can likely host an independent PWM UV channel beside the GPIO16 addressable bus using native WLED output configuration, but safe 5V load wiring on the 12V-powered board, no-backfeed, boot-dark behavior, installed firmware configuration, segment mapping, and optical exposure remain unproven; software therefore remains disabled with cap 0.",
+              "source_ref": "WLED multi-strip documentation"
+            }
+          ]
+        },
+        "native_capability_check": {
+          "evaluated": true,
+          "capability": "Existing Cart session/state/action backend; static browser page; SP803E onboard PWM NMOS outputs; WLED multi-output/JSON control.",
+          "result": "SUFFICIENT",
+          "source_refs": [
+            "Current owner-approved Guest V1 scope",
+            "SP803E manufacturer user manual filed with FCC",
+            "WLED multi-strip documentation",
+            "WLED analog wiring documentation",
+            "Espressif ESP32 Datasheet",
+            "SP803E current project commissioning contract and runbook"
+          ],
+          "rationale": "The simplified guest flow needs no new identity provider or guest authorization subsystem; a small adapter can call the existing server session and cart-action paths. WLED and the SP803E board have the native PWM/output family, and the candidate GPIOs are not ESP32 boot strapping pins. UV remains off until board-level fail-dark behavior, the exact existing load topology, firmware config and optical exposure are verified."
+        },
+        "mature_external_component_check": {
+          "relevant": false,
+          "alternatives": [],
+          "rationale": "No added service or library is required; reuse existing Cart session/control interfaces and WLED native output/API features.",
+          "not_relevant_reason": "The task is bounded glue to existing native capabilities; no external component fills an unmet requirement."
+        },
+        "decision_rationale": {
+          "selected_path": "Implement an isolated static guest page and dependency-injected backend adapter around current session/mode/action interfaces. Keep Guest Mode disabled by default. Keep UV policy native-WLED-facing and disabled, while recording existing SP803E PWM channels and precise wiring/readback gates.",
+          "alternatives_considered": [
+            "Supabase anonymous Auth and RLS grants",
+            "single-use QR ticket and scoped capability framework",
+            "existing Cart server sessions and owner mode flag",
+            "custom guest JWT/session server",
+            "SP803E onboard PWM channels with native WLED outputs",
+            "custom PWM protocol or firmware"
+          ],
+          "challenger_analysis": "The prior ticket/capability solution added authentication and revocation machinery not required by the updated small trusted-friends context. Static QR is not itself a security boundary; the live owner gate and server-side session are. For UV, the board manual disproves the assumption that no PWM/MOSFET channel exists, while the manual's load-supply guidance and the 5V/12V mismatch prevent claiming the existing output is safe to wire now.",
+          "tradeoffs": "Guest trust boundary is deliberately contextual and the session relies on the current backend store; its process-local debounce is only suitable on a single backend instance unless replaced by the host's existing shared limiter. UV output wiring/configuration remains a physical qualification task. Existing Phase 2 files remain untouched.",
+          "simplest_robust_solution": "Reuse owner state, current server session storage, current serialized cart action handler, SP803E PWM NMOS hardware, and WLED JSON/multi-output capability. Add only narrow same-origin routes and an isolated UI after Phase 2 closes.",
+          "critical_path_reason": "This is offline preparation on the isolated WOW feature branch and does not change Phase 2 or Cart lifecycle state."
+        },
+        "reproducibility": {
+          "source_inputs": [
+            "WOW branch prior HEAD 44249779b4b74945e647d18656e7aa8b3a434144",
+            "hbnf-wow-backend-prep/**",
+            "hbnf-aux-lighting/commissioning/**",
+            "Phase 2 branch read-only at 6a98de3c73c613f9cb1251c5e8054f8d6cd35697"
+          ],
+          "version_pins": [
+            "Python standard library",
+            "WLED expected device version 16.0.1; installed exact config not read in this offline lane"
+          ],
+          "configuration_inputs": [
+            "Guest Mode default false",
+            "guest session default TTL 7200 s, configurable up to 14400 s",
+            "guest action limit 20 per minute, repeated-action debounce 400 ms",
+            "UV software disabled, output unavailable, cap 0",
+            "existing GPIO16 underglow preserved"
+          ],
+          "build_inputs": [
+            "none; deterministic Python unit tests and static browser code"
+          ],
+          "tooling_identity": [
+            "python3 standard-library unittest"
+          ]
+        },
+        "rollback_or_exit_path": {
+          "rollback_path": "Revert the isolated WOW continuation commit.",
+          "uninstall_or_removal_path": "Remove hbnf-wow-backend-prep Guest V1 and UV candidate files by branch revert; existing Phase 2 files are unaffected.",
+          "replacement_path": "Bind the adapter to exact owner/session/action interfaces selected after Phase 2 candidate closure; retain the owner's ON/OFF and QR contract.",
+          "recovery_method": "Return to prior WOW branch HEAD 44249779b4b74945e647d18656e7aa8b3a434144.",
+          "prior_known_good_state": "WOW branch at 44249779b4b74945e647d18656e7aa8b3a434144; Phase 2 branch read-only at 6a98de3c73c613f9cb1251c5e8054f8d6cd35697."
+        }
+      }
+    },
+    {
+      "schema": "hbnf-change-governance-v1",
+      "change_id": "PHASE2_R4_FASTLED_BUILD_CLOSURE_REPAIR_20261008",
+      "summary": "Restore the already-qualified R4 FastLED 3.10.4 fixed-point Animartrix source and scoped compiler include path to the Phase 2 clean-room build; align embedded release identity with the WOW-r2 artifact.",
+      "change_class": "ARCHITECTURAL_DECISION",
+      "impact": {
+        "architecture": true,
+        "new_dependency": true,
+        "subjective_design": false,
+        "bespoke": false,
+        "unknown": false
+      },
+      "evidence": {
+        "expert_basis": {
+          "sources": [
+            {
+              "title": "FastLED 3.10.4 pinned source commit",
+              "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+              "locator": "https://github.com/FastLED/FastLED/tree/adedfc40e73fb80f8e930318781036d8fe1dbd9f/src/fl/fx/2d/animartrix_detail",
+              "relevance": "Contains render_value_fp_from_float, fixed-point Perlin/trigonometric primitives, and compiler-control definitions used by the already-qualified R4 backport."
+            },
+            {
+              "title": "PlatformIO build_flags official documentation",
+              "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+              "locator": "https://docs.platformio.org/en/stable/projectconf/sections/env/options/build/build_flags.html",
+              "relevance": "Defines -I as the supported way to add a scoped compiler include directory; the FastLED source path is scoped only to the Phase 2 WLED target."
+            },
+            {
+              "title": "HBNF R4 exact build provenance and artifacts",
+              "authority_type": "PROJECT_SOURCE_AUTHORITY",
+              "locator": "Git commit 52f2252:.hbnf-r4-build-output/provenance.json and HBNF pinned applicator scripts/hbnf_packet20_r4_fastled_backport.py",
+              "relevance": "Records the exact WLED/FastLED commits, R4 transformed header hash, and proven PlatformIO 6.1.18 build closure."
+            },
+            {
+              "title": "Phase 2 runtime regression and exact R4 restoration receipt",
+              "authority_type": "PROJECT_SOURCE_AUTHORITY",
+              "locator": "evidence/hbnf-phase2-integration-20261007/live-rollout/CANDIDATE_RUNTIME_REGRESSION_AND_R4_RESTORE.json",
+              "relevance": "Records 12\u201321 FPS on the prior candidate, 37\u201343 FPS after restoring exact R4, and the installed artifact's embedded release-label mismatch."
+            }
+          ],
+          "findings": [
+            {
+              "kind": "ESTABLISHED_FACT",
+              "statement": "Phase 2 materialized ANIMartRIX at the R1 clock-patched SHA bd9d146e2ce5fde991a895ccc2ad2773df1cc77cb815381679c17c6425d7bbe8 and omitted the R4 transformed header, FastLED source pin, and include directory.",
+              "source_ref": "Phase 2 runtime regression and exact R4 restoration receipt"
+            },
+            {
+              "kind": "ESTABLISHED_FACT",
+              "statement": "The existing R4 helper deterministically transforms that exact R1 header into SHA a2bc03b5196dbaacb39e56885ed9301106b15c4916e0b906f86c02db1601ec1b and uses render_value_fp_from_float within scoped fast-math/O3 controls.",
+              "source_ref": "FastLED 3.10.4 pinned source commit"
+            },
+            {
+              "kind": "INFERENCE",
+              "statement": "Omission of the exact already-qualified R4 optimization is the smallest evidence-backed cause of the candidate's FPS regression; live runtime confirmation is still required before claiming causal closure.",
+              "source_ref": "Phase 2 runtime regression and exact R4 restoration receipt"
+            }
+          ]
+        },
+        "native_capability_check": {
+          "evaluated": true,
+          "capability": "Pinned WLED 16.0.1 / Animartrix source and FastLED 3.10.4 optimized Animartrix primitives.",
+          "result": "SUFFICIENT",
+          "source_refs": [
+            "FastLED 3.10.4 pinned source commit",
+            "PlatformIO build_flags official documentation"
+          ],
+          "rationale": "Phase 2 must retain its exact WLED 16.0.1 closure; changing WLED or reimplementing its renderer is unnecessary when the already-qualified FastLED backport fits the same pinned source."
+        },
+        "mature_external_component_check": {
+          "relevant": true,
+          "alternatives": [
+            {
+              "name": "FastLED 3.10.4 R4 Animartrix backport",
+              "maturity": "Maintained upstream component at exact pinned commit; previously built and measured in R4.",
+              "maintenance": "Uses the existing project-owned patch helper and exact source pin; no new runtime service.",
+              "compatibility": "Exact WLED 16.0.1 and Animartrix commits, with verified macro isolation and deterministic header hash.",
+              "provenance": "HBNF R4 exact build provenance and artifacts",
+              "license": "Upstream FastLED license hash 4358d4c37f1305b43a3117a6a12780f666bf285538de0b28991613c0ccacecd8.",
+              "documentation_support": "Pinned upstream source and PlatformIO official build_flags documentation.",
+              "dependency_burden": "Adds the pinned upstream source directory to the reproducible build input closure only.",
+              "disposition": "SELECTED",
+              "rationale": "It is the exact previously qualified implementation and therefore preserves Phase 2 features while restoring measured R4 baseline behavior."
+            },
+            {
+              "name": "Whole WLED/FastLED stack upgrade",
+              "maturity": "Upstream-supported but outside the exact qualified source closure.",
+              "maintenance": "Would require broad dependency and regression requalification.",
+              "compatibility": "Unnecessary for restoring the known R4 source into the pinned WLED 16.0.1 tree.",
+              "provenance": "FastLED 3.10.4 pinned source commit",
+              "license": "Not applicable to the rejected option.",
+              "documentation_support": "Upstream versioned source trees.",
+              "dependency_burden": "Broad new source/build closure and upgrade risk.",
+              "disposition": "REJECTED",
+              "rationale": "No unmet requirement requires a stack upgrade."
+            }
+          ],
+          "rationale": "Adopt the existing pinned mature implementation rather than create another renderer or change the qualified WLED stack."
+        },
+        "decision_rationale": {
+          "selected_path": "Apply the existing R4 header transformer to the exact Phase 2 materialized ANIMartRIX header; scope the pinned FastLED src include directory to hbnf_matrix_wled16_max; correct embedded candidate/release strings to WOW-r2.",
+          "alternatives_considered": [
+            "Restore the exact R4 FastLED backport and compiler include closure",
+            "Keep the R1 floating point renderer",
+            "Upgrade WLED/FastLED wholesale",
+            "Write a bespoke replacement renderer"
+          ],
+          "challenger_analysis": "The measured FPS regression alone did not prove a missing patch. The built header and build manifests show the R4 transformed input was absent, while the prior R4 runtime and pinned closure establish a compatible mature path. The proposed change restores that path; it does not remove Phase 2 features. A live run remains necessary to establish actual performance on the combined candidate.",
+          "tradeoffs": "The new artifact grows relative to the rejected image and must be checked against the exact app partition. Runtime frame rate cannot be certified offline.",
+          "simplest_robust_solution": "Use the existing R4 helper and exact FastLED pin with a narrowly scoped PlatformIO include path.",
+          "critical_path_reason": "The exact R4 FastLED source closure is required to restore the proven Phase 2 performance baseline before any new bounded runtime qualification."
+        },
+        "reproducibility": {
+          "source_inputs": [
+            "WLED commit 29b389df1c1aaec6ff53aea742d17063b985906c",
+            "Animartrix commit 81eb09b91c8c9c8c01f8ea442787f8127d56c72f and clock patch SHA f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4",
+            "FastLED commit adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+            "R4 transformed ANIMartRIX SHA a2bc03b5196dbaacb39e56885ed9301106b15c4916e0b906f86c02db1601ec1b",
+            "Phase 2 integrated usermod and firmware/phase2/integration-r2 patch"
+          ],
+          "version_pins": [
+            "Python 3.9.6",
+            "PlatformIO Core 6.1.18",
+            "ESP32 toolchain 8.4.0+2021r2-patch5"
+          ],
+          "configuration_inputs": [
+            "hbnf_matrix_wled16_max environment",
+            "FastLED include path scoped to that environment",
+            "isolated empty PlatformIO build cache",
+            "SOURCE_DATE_EPOCH=1789948800"
+          ],
+          "build_inputs": [
+            "Pinned WLED and ANIMartRIX source",
+            "Phase 2 integrated source",
+            "R4 exact FastLED source/header closure",
+            "existing generated WLED UI inputs"
+          ],
+          "tooling_identity": [
+            "Local macOS Apple Silicon clean-room PlatformIO build"
+          ]
+        },
+        "rollback_or_exit_path": {
+          "rollback_path": "Keep the failed WOW-r1 artifact rejected; exact R4 runtime remains the rollback firmware and must not be installed again without separate authorization.",
+          "uninstall_or_removal_path": "Revert the bounded Phase 2 build-closure and release-label commit; candidate is offline only.",
+          "replacement_path": "Preserve Phase 2 scope and use subsequent live evidence to decide whether another narrowly evidenced firmware correction is required.",
+          "recovery_method": "No device mutation is part of this change. Existing exact R4 artifact SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c remains locally available.",
+          "prior_known_good_state": "Exact R4 runtime verified 37\u201343 FPS after rollback; AUX DDP live=true."
+        },
+        "dependency_identity": {
+          "dependencies": [
+            {
+              "name": "FastLED 3.10.4 R4 Animartrix backport",
+              "upstream_project": "FastLED/FastLED",
+              "version_or_commit": "3.10.4 / adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+              "source_identity": "git:adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+              "provenance": "FastLED 3.10.4 pinned source commit",
+              "license": "FastLED license SHA-256 4358d4c37f1305b43a3117a6a12780f666bf285538de0b28991613c0ccacecd8",
+              "compatibility": "Exact prior R4 qualified dependency; include directory is scoped to Phase 2 WLED target and no separate runtime service/package is introduced."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

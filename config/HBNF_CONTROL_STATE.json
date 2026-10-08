@@ -182,7 +182,7 @@
       "status": "PHASE2_COMMITTED_REQUIREMENT",
       "ui_requirement": "Provide useful low-night perceptual granularity while retaining true maximum."
     },
-    "checkpoint_at_utc": "2026-10-07T18:09:50Z",
+    "checkpoint_at_utc": "2026-10-08T02:26:44+00:00",
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "diagnostic_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
@@ -212,19 +212,19 @@
       "zero_traffic_rehearsal_file_id": "1ZJOseh2J4ls9dGlF_SOH5DHAH9djd4xp"
     },
     "execution_cursor": {
-      "current_failure_domain": "OWNER_EVIDENCE_AND_ACCEPTANCE__NO_LIVE_MUTATION",
+      "current_failure_domain": "PHASE2_CANDIDATE_OFFLINE_REBUILT__RUNTIME_GATE_PENDING",
       "current_lifecycle_state": "PHASE2_INTEGRATING",
       "current_subject": {
-        "artifact_sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3",
-        "release_id": "hbnf-cart2-phase2-offline-r1-20261007"
+        "release_id": "hbnf-cart2-phase2-offline-wow-r2-20261008",
+        "artifact_sha256": "8be42c878cb6502db1571e58e417848bd732e2d5debfb27b399738b1e70fcf6c"
       },
       "current_transition": "T4_PHASE2_INTEGRATION",
       "exact_next_path": [
-        "Do not redo completed PWA/scoring/touch/brightness/Vibe/Text host work; all recorded Phase 2 host suites remain PASS.",
-        "The exact historical premium 12px WBF recovery gate is superseded for this task by the current user instruction: use the exact WLED 16.0.1 native text capability when it satisfies stable readable functional text. The native FontManager capability check passed; use built-in 5x12 only as a reversible provisional functional default. Keep all visual/presentation acceptance UNFROZEN.",
-        "The FontManager adapter and existing final-output brightness path are integrated in R2; one offline integrated image built and passed the WLED usermod-link check. Candidate SHA-256 eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3; 1,458,832 bytes; app0 slot 1,572,864 bytes. Candidate is not installed and does not authorize deployment.",
-        "Vibe/audio production mapping remains candidate/unfrozen. The prior unlabeled trace is not category coverage. The passive labeled-capture tool and exact four-window owner procedure are committed; after those samples are captured, replay/analyze them offline and preserve the evidence.",
-        "Remaining owner-only gates are controlled labeled source playback/capture, subjective readability/presentation review before visual freeze, and the hardware-ready handshake before any live install. Do not perform live Matrix/AUX/Opal/WLED/OTA action before that handshake and separately authorized transition."
+        "Root cause confirmed in build inputs: the rejected Phase 2 binary omitted the exact pinned R4 FastLED 3.10.4 transformed ANIMartRIX header and its include path; its embedded candidate string also differed from the published WOW release ID.",
+        "Offline repair built hbnf-cart2-phase2-offline-wow-r2-20261008 with the exact existing R4 transformer and pinned FastLED source. Artifact identity and evidence: evidence/hbnf-phase2-integration-20261007/phase2-r4-parity-repair-20261008.json.",
+        "Current Matrix remains on exact R4; do not install or mutate devices under the consumed prior candidate authorization. A separate bounded install authorization for SHA 8be42c878cb6502db1571e58e417848bd732e2d5debfb27b399738b1e70fcf6c is required before one controlled runtime qualification.",
+        "After authorization, measure sustained FPS/wholeFrameUs at the same kernel and brightness, verify exact embedded identity, heap/restarts and AUX DDP; objective success is required before any owner subjective review. Preserve Guest OFF and UV disabled.",
+        "Lifecycle remains PHASE2_INTEGRATING / T4. T5 owner acceptance is not skipped; do not reopen completed PWA/scoring/AUX/DDP/subjective lanes absent a fresh invalidator."
       ],
       "no_repeat": [
         "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1815,6 +1815,17 @@
       ],
       "observed_at": "2026-10-05T17:48:54Z",
       "status": "R3_CLOSED__R4_EXECUTION_REQUIRED"
+    },
+    "phase2_r4_parity_repair_20261008": {
+      "status": "OFFLINE_BUILD_PASS__LIVE_PERFORMANCE_UNVERIFIED__NO_INSTALL_AUTHORITY",
+      "root_cause": "Phase 2 build materialization omitted the exact R4 transformed ANIMartRIX header and FastLED include path; prior candidate also embedded offline-r1 while published as wow-r1.",
+      "evidence": "evidence/hbnf-phase2-integration-20261007/phase2-r4-parity-repair-20261008.json",
+      "release_id": "hbnf-cart2-phase2-offline-wow-r2-20261008",
+      "sha256": "8be42c878cb6502db1571e58e417848bd732e2d5debfb27b399738b1e70fcf6c",
+      "size_bytes": 1482624,
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "live_mutation_authorized": false,
+      "next_authorization": "One separate bounded Matrix install/runtime qualification for this exact artifact SHA; no Cloudflare/Supabase changes and no additional firmware operations."
     }
   },
   "execution_budget_policy": {
