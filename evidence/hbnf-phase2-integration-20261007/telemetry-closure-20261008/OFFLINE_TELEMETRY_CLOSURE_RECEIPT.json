@@ -107,7 +107,8 @@
     "binary_size_drive_verified": 1490048,
     "manifest_drive_id": "17q0pCAqUX1nxq9M3z5oVN99FKqltbDeh",
     "github_commit_ref": "c8b9f8d8c6f45a85ad7946e867a5bcadd766d715",
-    "push_status": "source commit pushed; durable evidence receipt commit pending"
+    "source_commit": "c8b9f8d8c6f45a85ad7946e867a5bcadd766d715",
+    "evidence_commit": "22330e9978afe359eaf7d278635c68db351d8687"
   },
   "live_install": {
     "performed": false,
