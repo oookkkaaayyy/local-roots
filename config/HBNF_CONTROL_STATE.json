@@ -2024,7 +2024,7 @@
   },
   "bounded_ddp_sender_diagnostic_authorization": {
     "schema": "hbnf-bounded-live-diagnostic-authorization-v1",
-    "status": "DIAGNOSTIC_INSTALLED__SENDER_AND_DOWNSTREAM_OPERATIONAL_AFTER_RESTART",
+    "status": "CLOSED__DIAGNOSTIC_CLASSIFIED__EXACT_R4_RESTORED__AUX_DDP_HEALTHY",
     "authority_source": "Current user instruction: after SSH restoration, perform read-only Opal preflight, record bounded diagnostic install authority, install the exact diagnostic build once, collect telemetry, classify sender versus downstream fault. This is one diagnostic Matrix install only; not Phase 2 production rollout.",
     "recorded_utc": "2026-10-08T01:06:35+00:00",
     "target": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c only",
@@ -2044,15 +2044,17 @@
     "consumed_utc": "2026-10-08T01:10:44+00:00",
     "postinstall_evidence": "evidence/hbnf-phase2-integration-20261007/ddp-sender-diagnostic-live/POSTINSTALL_TELEMETRY_CLASSIFICATION.json",
     "restore_r4_authorization": {
-      "status": "AUTHORIZED_ONCE_PENDING_RESTORE",
+      "status": "RESTORED_AND_VERIFIED",
       "authority_source": "Earlier current-task user instruction: restore the exact R4 rollback if the telemetry-only diagnostic image is no longer needed; diagnostic classification is now captured.",
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
       "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
       "size_bytes": 1489008,
       "install_limit": 1,
       "method": "proven Opal-origin local WLED multipart POST /update",
-      "production_phase2_authorized": false
-    }
+      "production_phase2_authorized": false,
+      "verification_evidence": "evidence/hbnf-phase2-integration-20261007/ddp-sender-diagnostic-live/R4_RESTORATION_VERIFICATION.json"
+    },
+    "closure_evidence": "evidence/hbnf-phase2-integration-20261007/ddp-sender-diagnostic-live/TRANSACTION_CLOSURE.json"
   },
   "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",

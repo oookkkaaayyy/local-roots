@@ -1,0 +1,159 @@
+{
+  "pass": true,
+  "sample_count": 8,
+  "samples": [
+    {
+      "aux": {
+        "freeheap": 105532,
+        "lip": "192.168.77.10",
+        "live": true,
+        "lm": "DDP",
+        "uptime": 13833
+      },
+      "matrix": {
+        "fps": 41,
+        "freeheap": 74352,
+        "ip": "192.168.77.10",
+        "mac": "704bca5b345c",
+        "release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "renderCount": 744,
+        "uptime": 18
+      },
+      "observed_utc": "2026-10-08T01:11:46+00:00"
+    },
+    {
+      "aux": {
+        "freeheap": 105532,
+        "lip": "192.168.77.10",
+        "live": true,
+        "lm": "DDP",
+        "uptime": 13838
+      },
+      "matrix": {
+        "fps": 42,
+        "freeheap": 74352,
+        "ip": "192.168.77.10",
+        "mac": "704bca5b345c",
+        "release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "renderCount": 934,
+        "uptime": 23
+      },
+      "observed_utc": "2026-10-08T01:11:50+00:00"
+    },
+    {
+      "aux": {
+        "freeheap": 104044,
+        "lip": "192.168.77.10",
+        "live": true,
+        "lm": "DDP",
+        "uptime": 13842
+      },
+      "matrix": {
+        "fps": 41,
+        "freeheap": 74352,
+        "ip": "192.168.77.10",
+        "mac": "704bca5b345c",
+        "release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "renderCount": 1121,
+        "uptime": 27
+      },
+      "observed_utc": "2026-10-08T01:11:55+00:00"
+    },
+    {
+      "aux": {
+        "freeheap": 105536,
+        "lip": "192.168.77.10",
+        "live": true,
+        "lm": "DDP",
+        "uptime": 13847
+      },
+      "matrix": {
+        "fps": 42,
+        "freeheap": 74272,
+        "ip": "192.168.77.10",
+        "mac": "704bca5b345c",
+        "release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "renderCount": 1306,
+        "uptime": 32
+      },
+      "observed_utc": "2026-10-08T01:11:59+00:00"
+    },
+    {
+      "aux": {
+        "freeheap": 105536,
+        "lip": "192.168.77.10",
+        "live": true,
+        "lm": "DDP",
+        "uptime": 13851
+      },
+      "matrix": {
+        "fps": 42,
+        "freeheap": 74264,
+        "ip": "192.168.77.10",
+        "mac": "704bca5b345c",
+        "release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "renderCount": 1491,
+        "uptime": 36
+      },
+      "observed_utc": "2026-10-08T01:12:03+00:00"
+    },
+    {
+      "aux": {
+        "freeheap": 105532,
+        "lip": "192.168.77.10",
+        "live": true,
+        "lm": "DDP",
+        "uptime": 13855
+      },
+      "matrix": {
+        "fps": 42,
+        "freeheap": 74256,
+        "ip": "192.168.77.10",
+        "mac": "704bca5b345c",
+        "release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "renderCount": 1672,
+        "uptime": 41
+      },
+      "observed_utc": "2026-10-08T01:12:08+00:00"
+    },
+    {
+      "aux": {
+        "freeheap": 105532,
+        "lip": "192.168.77.10",
+        "live": true,
+        "lm": "DDP",
+        "uptime": 13860
+      },
+      "matrix": {
+        "fps": 41,
+        "freeheap": 74280,
+        "ip": "192.168.77.10",
+        "mac": "704bca5b345c",
+        "release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "renderCount": 1856,
+        "uptime": 45
+      },
+      "observed_utc": "2026-10-08T01:12:12+00:00"
+    },
+    {
+      "aux": {
+        "freeheap": 105536,
+        "lip": "192.168.77.10",
+        "live": true,
+        "lm": "DDP",
+        "uptime": 13864
+      },
+      "matrix": {
+        "fps": 38,
+        "freeheap": 74268,
+        "ip": "192.168.77.10",
+        "mac": "704bca5b345c",
+        "release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "renderCount": 2021,
+        "uptime": 50
+      },
+      "observed_utc": "2026-10-08T01:12:17+00:00"
+    }
+  ],
+  "schema": "hbnf-r4-rollback-postinstall-verification-v1"
+}

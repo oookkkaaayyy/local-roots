@@ -1,0 +1,56 @@
+{
+  "classification": "SENDER_EMITS_AFTER_MATRIX_RESTART; DOWNSTREAM_PATH_HEALTHY",
+  "diagnostic_result": {
+    "attempt_delta": 411,
+    "attempts_at_first_read": 161,
+    "aux_ddp_live_all_samples": true,
+    "begin_packet_failures": 0,
+    "counter_note": "Instrumentation is before the native early network/client/length guard; guard-return attempts are not added to errorCount. Later established sending advanced attempts and successfulSends one-for-one.",
+    "end_packet_failures": 0,
+    "error_count_delta": 0,
+    "observed_matrix_fps": 14,
+    "release_id": "hbnf-cart2-ddp-sender-diag-r1-20261007",
+    "sample_window_seconds": 30,
+    "send_delta": 411,
+    "sends_at_first_read": 18,
+    "sha256": "59d7284cb91d08e4b51ad9c0affb00457fcb836b43aa828545ae0cdf2f3ebf2b",
+    "size_bytes": 1459232,
+    "startup_attempts_without_completed_send": 143,
+    "target_ip": "192.168.77.11"
+  },
+  "event_that_restored": "Matrix reboot during the diagnostic OTA; the same native transport then emitted sustained successful DDP and AUX accepted it.",
+  "next": "Keep exact R4 running; proceed to remaining Phase 2 gates under HBNF control state. Reopen sender investigation only on recurrence.",
+  "opal_cleanup": "Temporary diagnostic and rollback artifacts removed from Opal /tmp; no Opal/router configuration changed.",
+  "permanent_fix": "No firmware source change indicated. Preserve native WLED transport; reboot reinitialized the sender. Historical pre-restart failure mechanism remains unobserved and should be reopened only if live=false recurs under stable R4.",
+  "phase2_production_candidate": "Not installed; production Phase 2 live mutation remains unauthorized.",
+  "recorded_utc": "2026-10-08T01:12:43+00:00",
+  "recovery_test": {
+    "aux_live_all_samples": true,
+    "diagnostic_install_reboot": "PASS; exact diagnostic release observed; continuous DDP send telemetry and AUX live=true",
+    "exact_r4_rollback": "HTTP 200; exact R4 release identity restored",
+    "matrix_restart_uptime_advanced": true,
+    "post_rollback_pass": true,
+    "post_rollback_samples": 8
+  },
+  "restored_runtime": {
+    "aux": {
+      "freeheap": 105536,
+      "lip": "192.168.77.10",
+      "live": true,
+      "lm": "DDP",
+      "uptime": 13864
+    },
+    "matrix": {
+      "fps": 38,
+      "freeheap": 74268,
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "renderCount": 2021,
+      "uptime": 50
+    },
+    "observed_utc": "2026-10-08T01:12:17+00:00"
+  },
+  "root_cause": "The original long-lived Matrix runtime had AUX live=false. A Matrix firmware restart through the single telemetry-only diagnostic install reinitialized the native DDP sender; the diagnostic recorded successful packets to 192.168.77.11 and AUX moved to live=true/lm=DDP/lip=192.168.77.10. The exact pre-restart sender failure cannot be narrowed further because counters were not present before restart. The evidence supports a stale/recoverable Matrix sender/runtime lifecycle condition; it does not support an Opal/AP/AUX transport defect or a specific permanent code defect.",
+  "schema": "hbnf-ddp-sender-diagnostic-transaction-closure-v1"
+}
