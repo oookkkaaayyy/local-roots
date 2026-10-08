@@ -1,0 +1,35 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "P2_R5_CONTRACT_HEADER_SOURCE_CLOSURE_20261008",
+  "summary": "Check in the exact Phase 2 coordinated-contract header baseline and assert both baseline and R5 patched hashes in the existing source-rebase regression test.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing Phase 2 R4/R5 native WLED FontManager integration and exact R4 source-rebase binding; this change only pins an existing build input.",
+      "affected_subsystem": "Firmware source provenance and the existing Text/Moments source-rebase test. No firmware semantics, UI behavior, cloud state, or device state changes.",
+      "rollback_reference": "Revert the checked-in integration-r4 contract header, R5 source-binding header fields, regression assertions, and this governance record/manifest entry.",
+      "evidence_sources": [
+        "https://github.com/wled/WLED/tree/29b389df1c1aaec6ff53aea742d17063b985906c",
+        "work/checkpoints/20261008-r5-exact-r4-rebase-check/report.json",
+        "firmware/phase2/integration-r5/SOURCE_BINDING.json"
+      ],
+      "tests": [
+        "tests/test_hbnf_text_moments_offline.py: 14/14 PASS; R4 integrated usermod SHA 9672125b\u2026 and R5 usermod SHA b6b32d1e\u2026 match; base header SHA 22d17d91\u2026 and R5 header SHA e65399d2\u2026 match.",
+        "No firmware build or device/cloud mutation was performed."
+      ]
+    },
+    "live_state": {
+      "deployed": false,
+      "live_mutation_authorized": false,
+      "current_state": "PHASE2_INTEGRATING/T4",
+      "owner_aesthetics": "UNFROZEN"
+    }
+  }
+}
