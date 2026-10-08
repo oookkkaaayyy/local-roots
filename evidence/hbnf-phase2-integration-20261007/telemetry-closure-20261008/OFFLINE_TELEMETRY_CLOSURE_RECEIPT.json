@@ -1,0 +1,117 @@
+{
+  "schema": "hbnf-phase2-telemetry-closure-receipt-v1",
+  "result": "OFFLINE_CANDIDATE_BUILT__GOVERNANCE_SUITE_NOT_FULLY_CLOSED",
+  "root_cause": {
+    "r2_diagnostic_environment": "hbnf_matrix_wled16_max",
+    "missing_compile_definition": "HBNF_PACKET20_DIAGNOSTICS",
+    "missing_pinned_wled_callsites": [
+      "BusNetwork::show -> hbnfPerfDdpStart/end around existing realtimeBroadcast",
+      "BusManager::show -> hbnfPerfFrameEnd after dispatch"
+    ],
+    "effect": "instrumentation was present in usermod source but excluded by build closure; linked WLED hooks and resulting JSON telemetry fields were absent/unpopulated, including wholeFrameUs"
+  },
+  "comparison": {
+    "R4_environment": "hbnf_matrix_wled16_packet20_diag",
+    "pinned_wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "pinned_fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+    "R4_backport_preserved": true,
+    "R4_original_patch_archive_status": "the referenced original frame timing patch file was absent from preserved seq39 archive; restored a minimal source-delta matching the proven R4 map/link contract; not represented as byte-identical recovery"
+  },
+  "correction": {
+    "release": "hbnf-cart2-phase2-offline-wow-r3-20261008",
+    "build_method": "local clean-room PlatformIO, Python 3.9.6, PlatformIO Core 6.1.18",
+    "diag_define_present": true,
+    "hooks_only_instrument_existing_dispatch": true,
+    "transport_behavior_changed": false,
+    "Phase2_features_preserved": true,
+    "source_commit": "c8b9f8d8c6f45a85ad7946e867a5bcadd766d715"
+  },
+  "compiled_contract": {
+    "status": "PASS_COMPILED_TELEMETRY_CONTRACT",
+    "firmware_sha256": "656418f63830205196ca07e39b84bc188db8839eaf631fc9e620ccf5f5feeedb",
+    "firmware_map_sha256": "7778cf43e6b06ad3c2f00dc66d53168b9b83e22f9d049c53b7e079757f3d0bff",
+    "build_log_sha256": "0ed439874689cccf3f53b6cd4456d854dea9d157795778822553cadb54b86d94",
+    "symbols": [
+      "packet20Diagnostic",
+      "foundationTelemetry",
+      "wholeFrameUs",
+      "lastCommandAccepted",
+      "largestFreeBlockBytes",
+      "frameMsP95"
+    ],
+    "linked_hooks": [
+      "hbnfPerfDdpStart",
+      "hbnfPerfDdpEnd",
+      "hbnfPerfFrameEnd"
+    ]
+  },
+  "resource_headroom": {
+    "binary_bytes": 1490048,
+    "flash_used": 1483305,
+    "flash_capacity": 1572864,
+    "flash_remaining": 89559,
+    "static_ram_used": 112288,
+    "ram_capacity": 327680,
+    "ram_remaining": 215392,
+    "matched_nondiagnostic_flash_used": 1475889,
+    "matched_nondiagnostic_ram_used": 88328,
+    "instrumentation_flash_delta": 7416,
+    "instrumentation_ram_delta": 23960,
+    "runtime_cpu_overhead": "requires live measurement; no claim of neutral overhead"
+  },
+  "rollback": {
+    "R4_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "R4_local_verified": true,
+    "Release07_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "Release07_local_verified": true
+  },
+  "offline_test_status": {
+    "pass": [
+      "hbnf_control",
+      "hbnf_guarded_run",
+      "hbnf_runtime_qualify_static",
+      "hbnf_kernel_sweep_report",
+      "hbnf_source_tree_identity",
+      "hbnf_packet20_http_adapter",
+      "hbnf_packet20_build_validate",
+      "hbnf_phase2_r4_build_closure",
+      "hbnf_packet20_r4_backport",
+      "hbnf_animartrix_trig_cache",
+      "hbnf_matrix_brightness_output",
+      "hbnf_vibe_audio_replay",
+      "test_hbnf_text_moments_offline",
+      "hbnf_guest_platform_static",
+      "hbnf_skins_scoring_owner_flow",
+      "hbnf_packet20_r2_transaction_static",
+      "hbnf_owner_pwa_reliability",
+      "hbnf_owner_pwa_package",
+      "test_hbnf_audio_trace_replay"
+    ],
+    "not_closed": [
+      {
+        "test": "hbnf_architecture_fitness",
+        "result": "interrupted after >5 min blocked reading synchronized root AGENTS.md; exact file materialized from HEAD for parity, but gate not rerun to completion"
+      },
+      {
+        "test": "hbnf_live_kernel_sweep",
+        "result": "120 sec timeout during synchronized checkout IO; not a live mutation"
+      },
+      {
+        "test": "hbnf_release_engineering_static",
+        "result": "fails assertion for HBNF-WATCH-015; current checked-in solved-problems data contains WATCH-013/014 only. Unrelated stale fixture expectation, not modified"
+      }
+    ]
+  },
+  "durability": {
+    "binary_drive_id": "1bq5AdYGHcuX5Or26zLlgFz0Yxz_rdDrD",
+    "binary_size_drive_verified": 1490048,
+    "manifest_drive_id": "17q0pCAqUX1nxq9M3z5oVN99FKqltbDeh",
+    "github_commit_ref": "c8b9f8d8c6f45a85ad7946e867a5bcadd766d715",
+    "push_status": "source commit pushed; durable evidence receipt commit pending"
+  },
+  "live_install": {
+    "performed": false,
+    "authorization": false
+  },
+  "next_gate": "resolve remaining mandatory offline governance/test closure, push and persist final receipt, then request one bounded installation authorization for runtime comparison; T4 remains unaccepted"
+}

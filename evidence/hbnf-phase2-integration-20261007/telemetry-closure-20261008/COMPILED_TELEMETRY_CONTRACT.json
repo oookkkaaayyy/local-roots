@@ -1,0 +1,20 @@
+{
+  "binary_output_markers": [
+    "packet20Diagnostic",
+    "foundationTelemetry",
+    "wholeFrameUs",
+    "lastCommandAccepted",
+    "largestFreeBlockBytes",
+    "frameMsP95"
+  ],
+  "build_log_sha256": "0ed439874689cccf3f53b6cd4456d854dea9d157795778822553cadb54b86d94",
+  "compile_define": "HBNF_PACKET20_DIAGNOSTICS",
+  "environment": "hbnf_matrix_wled16_packet20_diag",
+  "firmware_sha256": "656418f63830205196ca07e39b84bc188db8839eaf631fc9e620ccf5f5feeedb",
+  "linked_wled_callers": [
+    "BusNetwork::show -> hbnfPerfDdpStart/hbnfPerfDdpEnd",
+    "BusManager::show -> hbnfPerfFrameEnd"
+  ],
+  "map_sha256": "7778cf43e6b06ad3c2f00dc66d53168b9b83e22f9d049c53b7e079757f3d0bff",
+  "status": "PASS_COMPILED_TELEMETRY_CONTRACT"
+}
