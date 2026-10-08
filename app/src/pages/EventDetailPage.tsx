@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Shell } from '../components/Shell';
 import { callFunction, supabase } from '../lib/supabase';
-import { downloadEventCalendar, eventDateRange, eventTitle, HBNF_EVENT_LINKS, isHbnfEvent, pacificToday, resultValue, resultsLinkLabel } from '../lib/eventPresentation';
+import { downloadEventCalendar, eventDisplayStatus, eventDateRange, eventTitle, HBNF_EVENT_LINKS, isHbnfEvent, pacificToday, resultValue, resultsLinkLabel } from '../lib/eventPresentation';
 import { parseOrganizerResultsText, type OrganizerScoreType } from '../lib/resultsSubmission';
 import type { PublicEventDetail, PublicResult } from '../types';
 
@@ -132,10 +132,10 @@ export function EventDetailPage({slug}:{slug:string}) {
   if(!event)return <Shell><main className="content narrow event-detail-page"><div className="empty-state"><strong>Event not found.</strong><span>It may have been unpublished, renamed, or removed.</span></div><a href={returnPath}>Return to events</a></main></Shell>;
 
   const today=pacificToday();
-  const effectiveStatus=['canceled','completed'].includes(event.status)?event.status:event.end_date<today?'completed':event.status;
+  const effectiveStatus=eventDisplayStatus(event,today);
   const canShowRegistration=Boolean(event.registration_url&&event.end_date>=today&&event.registration_status!=='closed'&&!['canceled','completed'].includes(effectiveStatus));
   const canAddCalendar=event.end_date>=today&&!['canceled','completed'].includes(effectiveStatus);
-  const canSubmitResults=effectiveStatus==='completed';
+  const canSubmitResults=event.status==='completed';
   const stale=Boolean(event.last_verified_at&&Date.now()-new Date(event.last_verified_at).getTime()>14*86400000);
   const resultLabel=event.results_url?resultsLinkLabel(event.results_url):'';
   const tdNames=event.td_names??[];
