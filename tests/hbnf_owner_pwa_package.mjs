@@ -12,10 +12,10 @@ const installer = fs.readFileSync(path.join(root, "hbnf-ui-v6-package/install_ui
 const uiWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-cart-ui-v6-package.yml"), "utf8");
 const releaseWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-coordinated-release-ci.yml"), "utf8");
 
-assert.match(html, /hbnf-cart2-owner-ux-r1-20261008/);
+assert.match(html, /hbnf-cart2-owner-ux-r2-20261008/);
 assert.doesNotMatch(html, /skins-owner-pwa-r1/);
 assert.equal(manifest.id, "/hbnf-cart.html");
-assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261008-owner-ux-r1");
+assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261008-owner-ux-r2");
 assert.equal(manifest.scope, "/hbnf-cart.html");
 assert.deepEqual(manifest.icons.map(({ sizes }) => sizes), ["192x192", "512x512"]);
 

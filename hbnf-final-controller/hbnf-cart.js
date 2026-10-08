@@ -1,6 +1,6 @@
 /* HBNF_CART_FINAL_V5_SEMANTIC_FRAME_LOCK */
-import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261008-owner-ux-r1";
-import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261008-owner-ux-r1";
+import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261008-owner-ux-r2";
+import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261008-owner-ux-r2";
 
 const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC";
@@ -293,7 +293,20 @@ function hydrateControls(state) {
 }
 
 async function refresh({ hydrate = true } = {}) {
-  const out = await call({ action: "status" });
+  let out;
+  try {
+    out = await call({ action: "status" });
+  } catch (error) {
+    if (backendHealth) backendHealth.textContent = "Unavailable";
+    if (matrixHealth) matrixHealth.textContent = "Not confirmed";
+    if (auxHealth) auxHealth.textContent = "Not confirmed";
+    const badge = $("#truthBadge");
+    if (badge) {
+      badge.textContent = "Cart service unavailable";
+      badge.className = "truth-badge warn";
+    }
+    throw error;
+  }
   canonicalCapabilities = out && out.capabilities ? out.capabilities : {};
   try { window.dispatchEvent(new CustomEvent("hbnf-canonical-capabilities",{detail:canonicalCapabilities})); } catch (_) {}
 
