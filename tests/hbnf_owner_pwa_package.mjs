@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
+import crypto from "node:crypto";
+import { execFileSync } from "node:child_process";
 
 const root = path.resolve(import.meta.dirname, "..");
 const controller = path.join(root, "hbnf-final-controller");
@@ -12,6 +15,8 @@ const installer = fs.readFileSync(path.join(root, "hbnf-ui-v6-package/install_ui
 const installerCommand = fs.readFileSync(path.join(root, "hbnf-ui-v6-package/INSTALL_UI_V6.command"), "utf8");
 const uiWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-cart-ui-v6-package.yml"), "utf8");
 const releaseWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-coordinated-release-ci.yml"), "utf8");
+const packageBuilderPath = path.join(root, "scripts/hbnf_build_owner_guest_package.py");
+const packageBuilder = fs.readFileSync(packageBuilderPath, "utf8");
 
 assert.match(html, /hbnf-cart2-owner-ux-r4-20261008/);
 assert.doesNotMatch(html, /skins-owner-pwa-r1/);
@@ -44,7 +49,7 @@ for (const name of [
   "hbnf-cart-icon-512.png",
 ]) {
   assert.ok(installer.includes(`"${name}"`), `installer omits ${name}`);
-  assert.ok(uiWorkflow.includes(`hbnf-final-controller/${name}`), `Owner/Guest package omits ${name}`);
+  assert.ok(packageBuilder.includes(`"${name}"`), `Owner/Guest package builder omits ${name}`);
   assert.ok(releaseWorkflow.includes(`hbnf-final-controller/${name}`), `release package omits ${name}`);
 }
 
@@ -82,7 +87,7 @@ assert.match(installer, /if not verified:\s+raise RuntimeError\("Deploy finished
 assert.doesNotMatch(installer, /HBNF_CART_UI_V7_3_PHASE2_INTEGRATED_R1_20261006|HBNF_CART_UI_V7_3_PWA_R1_INSTALL/);
 assert.match(installerCommand, /HBNF Cart Owner UX R4 \+ Guest Route R2/);
 assert.doesNotMatch(installerCommand, /V7\.3|Phase 2 Integration R1|noisy live telemetry removed/i);
-assert.match(uiWorkflow, /"schema":"hbnf-cart-owner-ux-r4-guest-route-r2-package-v1"/);
+assert.match(packageBuilder, /hbnf-cart-owner-ux-r4-guest-route-r2-package-v1/);
 assert.match(uiWorkflow, /tests\/hbnf_owner_pwa_package\.mjs/);
 assert.match(releaseWorkflow, /tests\/hbnf_owner_pwa_package\.mjs/);
 
@@ -90,10 +95,31 @@ for (const name of ["index.html", "guest.js", "guest.css"]) {
   const rel = `guest/hbnf-cart/${name}`;
   assert.ok(fs.existsSync(path.join(controller, rel)), `Guest route asset missing: ${rel}`);
   assert.match(installer, new RegExp(rel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `installer omits ${rel}`);
-  assert.ok(uiWorkflow.includes(`hbnf-final-controller/${rel}`), `package workflow omits ${rel}`);
+  assert.ok(packageBuilder.includes(`"${rel}"`), `package builder omits ${rel}`);
 }
 assert.match(installer, /FILES\+GUEST_FILES/);
-assert.match(uiWorkflow, /\.rglob\("\*"\)/, "package manifest must hash nested Guest files");
+assert.match(packageBuilder, /guest\/hbnf-cart\/index\.html/);
+assert.match(packageBuilder, /ZIP_STORED/);
+assert.match(packageBuilder, /date_time=\(2020, 1, 1, 0, 0, 0\)/);
+assert.match(packageBuilder, /for name in PACKAGE_FILES/);
+assert.match(uiWorkflow, /hbnf_build_owner_guest_package\.py/);
+assert.doesNotMatch(uiWorkflow, /\bzip -yr\b/, "workflow must not depend on host ZIP timestamps or traversal order");
+
+const temp = fs.mkdtempSync(path.join(os.tmpdir(), "hbnf-owner-guest-determinism-"));
+try {
+  const outputs = [path.join(temp, "a"), path.join(temp, "b")];
+  for (const out of outputs) {
+    execFileSync("python3", [packageBuilderPath, "--source-root", root, "--output-dir", out, "--source-commit", "0123456789abcdef"], { stdio: "pipe" });
+  }
+  const archiveName = "HBNF_CART_OWNER_UX_R4_GUEST_ROUTE_R2_20261008.zip";
+  const bytesA = fs.readFileSync(path.join(outputs[0], archiveName));
+  const bytesB = fs.readFileSync(path.join(outputs[1], archiveName));
+  assert.deepEqual(bytesA, bytesB, "same source commit must produce byte-identical archives in different output directories");
+  const sha = crypto.createHash("sha256").update(bytesA).digest("hex");
+  assert.match(fs.readFileSync(path.join(outputs[0], `${archiveName}.sha256`), "utf8"), new RegExp(`^${sha}  ${archiveName}\\n$`));
+} finally {
+  fs.rmSync(temp, { recursive: true, force: true });
+}
 
 const guestHtml = fs.readFileSync(path.join(guestRoute, "index.html"), "utf8");
 const guestJs = fs.readFileSync(path.join(guestRoute, "guest.js"), "utf8");
