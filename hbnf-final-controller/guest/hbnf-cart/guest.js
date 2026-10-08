@@ -12,7 +12,7 @@
   var live=document.getElementById("live");
 
   function announce(message,error){status.textContent=message;live.textContent=message;if(error)detail.textContent=error;}
-  function controls(on){buttons.forEach(function(button){button.disabled=!on;});}
+  function controls(on){buttons.forEach(function(button){button.disabled=!on||button.hasAttribute("data-vibe-control");});}
   function id(){
     var bytes=new Uint8Array(16);window.crypto.getRandomValues(bytes);
     bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;
@@ -42,7 +42,7 @@
       document.getElementById("guestBadge").textContent=enabled?"OPEN":"CLOSED";
       document.getElementById("guestBadge").className="badge "+(enabled?"ready":"closed");
       controls(enabled);
-      announce(enabled?"Guest Mode is open.":"Guest Mode is closed.",enabled?"Choose a Vibe or ask the Cart to advance its look.":"Ask the Cart owner to switch Guest Mode on.");
+      announce(enabled?"Guest Mode is open.":"Guest Mode is closed.",enabled?"Vibe selection is unavailable until the matching Cart runtime is qualified. Use Next look or Cart Auto.":"Ask the Cart owner to switch Guest Mode on.");
     }).catch(function(error){
       enabled=false;revision=null;controls(false);
       document.getElementById("connectionBadge").textContent="OFFLINE";

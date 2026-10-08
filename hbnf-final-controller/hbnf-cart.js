@@ -1,6 +1,6 @@
 /* HBNF_CART_FINAL_V5_SEMANTIC_FRAME_LOCK */
-import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261007-wow-r2";
-import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261007-wow-r2";
+import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261008-owner-ux-r1";
+import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261008-owner-ux-r1";
 
 const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC";
@@ -31,8 +31,11 @@ const sharePair = $("#sharePair");
 const copyPair = $("#copyPair");
 const matrixHealth = $("#matrixTruth");
 const auxHealth = $("#auxTruth");
+const backendHealth = $("#backendTruth");
 const guestModeToggle = $("#guestMode");
 const guestModeStatus = $("#guestModeStatus");
+const vibeModeLabel = $("#vibeModeLabel");
+let pendingRevision = null;
 const syncHealth = null;
 const rendererHealth = null;
 
@@ -148,12 +151,19 @@ async function authHeaders() {
 
 async function call(body) {
   const { headers, mode } = await authHeaders();
-  const response = await fetchWithDeadline(fetch, endpoint, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(body),
-    cache: "no-store",
-  }, HBNF_API_TIMEOUT_MS, "Cart control");
+  let response;
+  try {
+    response = await fetchWithDeadline(fetch, endpoint, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+      cache: "no-store",
+    }, HBNF_API_TIMEOUT_MS, "Cart control");
+    if (backendHealth) backendHealth.textContent = "Reachable";
+  } catch (error) {
+    if (backendHealth) backendHealth.textContent = "Unavailable";
+    throw error;
+  }
   const json = await response.json().catch(() => ({}));
 
   if (!response.ok) {
@@ -179,28 +189,71 @@ async function visualStatus() {
   return response.json().catch(() => null);
 }
 
-function renderVisualHealth(snapshot) {
+function shortDeviceFailure(device) {
+  const reported = device && device.reported ? device.reported : null;
+  const error = String(reported && reported.error || "");
+  if (error === "invalid_or_mismatched_foundation_ack") return "Matrix command not confirmed";
+  if (error) return error.replace(/_/g, " ").slice(0, 64);
+  if (device && device.status === "failed") return "device reported failure";
+  return "";
+}
+
+function observedAgeLabel(value) {
+  const at = Date.parse(value || "");
+  if (!Number.isFinite(at)) return "no prior report";
+  const seconds = Math.max(0, Math.floor((Date.now() - at) / 1000));
+  if (seconds < 90) return `last report ${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 90) return `last report ${minutes}m ago`;
+  return `last report ${Math.floor(minutes / 60)}h ago`;
+}
+
+function renderVisualHealth(snapshot, canonicalSnapshot) {
   const badge = $("#truthBadge");
   if (!snapshot) {
-    if (badge) { badge.textContent = "STATUS CHECK"; badge.className = "truth-badge warn"; }
+    if (badge) { badge.textContent = "Device status unavailable"; badge.className = "truth-badge warn"; }
     return;
   }
   const matrix = snapshot.devices ? snapshot.devices.matrix : null;
   const aux = snapshot.devices ? snapshot.devices.aux : null;
-  const matrixOk = !!(matrix && matrix.confirmed === true);
-  const auxOk = !!(aux && aux.confirmed === true);
+  const observed = canonicalSnapshot && Array.isArray(canonicalSnapshot.observed) ? canonicalSnapshot.observed : [];
+  const desiredRevision = Number(canonicalSnapshot && canonicalSnapshot.desired && canonicalSnapshot.desired.revision);
+  const reportFor = id => observed.find(x => x.device_id === id) || {};
+  const matrixReport = reportFor("matrix"), auxReport = reportFor("aux");
+  const matrixOk = !!(matrix && matrix.confirmed === true && Number(matrix.confirmedRevision) === desiredRevision);
+  const auxOk = !!(aux && aux.confirmed === true && Number(aux.confirmedRevision) === desiredRevision);
+  const labelFor = (report, isConfirmed) => {
+    if (isConfirmed) return `CONFIRMED · r${desiredRevision}`;
+    const failure = shortDeviceFailure(report);
+    if (failure) return `FAILED · ${failure}`;
+    const reportedRevision = report && report.reported ? report.reported.cartRevision : null;
+    const seen = Number(reportedRevision !== null && reportedRevision !== undefined
+      ? reportedRevision
+      : (report ? report.desired_revision : undefined));
+    if (Number.isFinite(desiredRevision) && Number.isFinite(seen)) return `NOT CONFIRMED · r${seen} / r${desiredRevision} · ${observedAgeLabel(report.observed_at)}`;
+    if ((report && report.status === "off") || (report && report.online === false)) return `OFFLINE · ${observedAgeLabel(report.observed_at)}`;
+    return `NO RECENT ACK · ${observedAgeLabel(report.observed_at)}`;
+  };
   if (matrixHealth) {
-    matrixHealth.textContent = matrixOk ? `CONNECTED · r${matrix.confirmedRevision}` : "APPLYING";
-    matrixHealth.className = matrixOk ? "ok" : "degraded";
+    matrixHealth.textContent = labelFor(matrixReport, matrixOk);
+    matrixHealth.className = matrixOk ? "ok" : (shortDeviceFailure(matrixReport) ? "bad" : "degraded");
   }
   if (auxHealth) {
-    auxHealth.textContent = auxOk ? `CONNECTED · r${aux.confirmedRevision}` : "APPLYING";
-    auxHealth.className = auxOk ? "ok" : "degraded";
+    auxHealth.textContent = labelFor(auxReport, auxOk);
+    auxHealth.className = auxOk ? "ok" : (shortDeviceFailure(auxReport) ? "bad" : "degraded");
   }
   if (badge) {
-    if (matrixOk && auxOk) { badge.textContent = "READY"; badge.className = "truth-badge good"; }
-    else { badge.textContent = "APPLYING"; badge.className = "truth-badge warn"; }
+    if (matrixOk && auxOk) { badge.textContent = "Both devices confirmed"; badge.className = "truth-badge good"; }
+    else if (shortDeviceFailure(matrixReport) || shortDeviceFailure(auxReport)) { badge.textContent = "Device command failed"; badge.className = "truth-badge bad"; }
+    else { badge.textContent = "Device state not confirmed"; badge.className = "truth-badge warn"; }
   }
+}
+
+function updateVibeSelection(_state) {
+  document.querySelectorAll(".vibe-option").forEach(button => button.setAttribute("aria-pressed", "false"));
+  const autoButton = $("#vibeAuto");
+  if (autoButton) autoButton.setAttribute("aria-pressed", "false");
+  if (vibeModeLabel) vibeModeLabel.textContent = "Runtime not qualified";
 }
 
 function setRange(id, outputId, value, formatter = v => String(v)) {
@@ -219,6 +272,7 @@ function hydrateControls(state) {
       : "Guest Mode is off unless the owner opens it.";
 
     const tuning = valueOr(state.tuning, {});
+    updateVibeSelection(state);
     const energy = Number(valueOr(tuning.energy, valueOr({ mellow: 15, moderate: 40, energetic: 68, peak: 90 }[state.vibe], 65)));
     const audioResponse = Number(valueOr(tuning.audioResponse, Math.round(((Number(valueOr(tuning.responseBoost, 1)) - 1) / 0.005))));
     const motion = Number(valueOr(tuning.motion, Math.round((Number(valueOr(state.manualSpeedBias, 1.4)) - 0.5) / 0.015)));
@@ -250,17 +304,27 @@ async function refresh({ hydrate = true } = {}) {
 
   if (out.desired) {
     const observed = Array.isArray(out.observed) ? out.observed : [];
-    const fullyApplied = observed.length >= 2 && observed.every(x => Number(x.desired_revision) === Number(out.desired.revision) && ["online","off"].includes(String(x.status)));
+    const fullyApplied = observed.length >= 2 && observed.every(x => Number(x.desired_revision) === Number(out.desired.revision) && ["online","off"].includes(String(x.status)) && x.reported && x.reported.confirmed === true);
     const matrixObs = observed.find(x => x.device_id === "matrix");
     const auxObs = observed.find(x => x.device_id === "aux");
     const matrixBri = pathValue(matrixObs, ["reported","appliedProjection","brightness"], pathValue(matrixObs, ["reported","brightness"], "—"));
     const auxBri = pathValue(auxObs, ["reported","appliedProjection","brightness"], pathValue(auxObs, ["reported","brightness"], "—"));
-    statusNode.textContent = `Revision ${revision} · ${fullyApplied ? "APPLIED" : "APPLYING…"} · Matrix ${matrixBri} · AUX ${auxBri}`;
+    const failed = observed.some(x => Number(x.desired_revision) === Number(revision) && (x.status === "failed" || (x.reported && x.reported.confirmed === false && x.reported.error)));
+    const submitted = observed.some(x => Number(x.desired_revision) === Number(revision) && x.status === "submitted");
+    statusNode.textContent = fullyApplied
+      ? `Connected and synchronized · revision ${revision} · Matrix ${matrixBri} · Underglow ${auxBri}`
+      : failed
+        ? `Command failed at revision ${revision} · Matrix ${matrixBri} · Underglow ${auxBri}. See the device error above.`
+        : submitted
+          ? `Command submitted · revision ${revision} · device application and underglow output are not confirmed · Matrix ${matrixBri} · Underglow ${auxBri}.`
+        : pendingRevision === revision
+          ? `Command accepted · revision ${revision} pending device confirmation · Matrix ${matrixBri} · Underglow ${auxBri}.`
+          : `Not synchronized · revision ${revision} is not confirmed on both devices · Matrix ${matrixBri} · Underglow ${auxBri}. See device status above.`;
   } else {
     statusNode.textContent = "Cart is not initialized; no control was sent.";
   }
 
-  visualStatus().then(renderVisualHealth).catch(() => {});
+  visualStatus().then(value => renderVisualHealth(value, out)).catch(() => renderVisualHealth(null, out));
   return out;
 }
 
@@ -321,7 +385,8 @@ async function flushTune() {
             expectedRevision: revision,
           });
           revision = result.revision;
-          statusNode.textContent = `Revision ${revision} · tuning applied`;
+          pendingRevision = revision;
+          statusNode.textContent = `Tuning accepted · revision ${revision} pending device confirmation.`;
           break;
         } catch (error) {
           if (error.status === 409 && error.data && error.data.error === "stale_revision" && attempt === 0) {
@@ -340,13 +405,15 @@ async function flushTune() {
   for (let i = 0; i < 12; i++) {
     const snap = await refresh({ hydrate: false });
     const observed = Array.isArray(snap.observed) ? snap.observed : [];
-    const applied = snap.desired && observed.length >= 2 && observed.every(x => Number(x.desired_revision) === Number(snap.desired.revision) && ["online","off"].includes(String(x.status)));
+    const applied = snap.desired && observed.length >= 2 && observed.every(x => Number(x.desired_revision) === Number(snap.desired.revision) && ["online","off"].includes(String(x.status)) && x.reported && x.reported.confirmed === true);
     if (applied) {
+      pendingRevision = null;
       hydrateControls(snap.desired.state);
       return;
     }
     await new Promise(r => setTimeout(r, 500));
   }
+  pendingRevision = null;
   await refresh({ hydrate: true });
 }
 
@@ -363,8 +430,21 @@ async function command(type, payload = {}) {
         expectedRevision: revision,
       });
       revision = result.revision;
-      statusNode.textContent = `Revision ${revision} accepted · reconciliation ${valueOr(result.reconciliation && result.reconciliation.status, "pending")}`;
-      await refresh();
+      pendingRevision = revision;
+      statusNode.textContent = `Command accepted · revision ${revision} pending device confirmation (checking for up to 6 seconds).`;
+      const deadline = Date.now() + 6000;
+      let latest = null;
+      do {
+        latest = await refresh({ hydrate: false });
+        const observed = Array.isArray(latest.observed) ? latest.observed : [];
+        const reports = observed.filter(x => Number(x.desired_revision) === Number(revision));
+        const failed = reports.some(x => x.status === "failed" || (x.reported && x.reported.confirmed === false && x.reported.error));
+        const confirmed = reports.length >= 2 && reports.every(x => ["online","off"].includes(String(x.status)) && x.reported && x.reported.confirmed === true);
+        if (failed || confirmed) break;
+        if (Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 750));
+      } while (Date.now() < deadline);
+      pendingRevision = null;
+      await refresh({ hydrate: false });
       return;
     } catch (error) {
       if (error.status === 409 && error.data && error.data.error === "stale_revision" && attempt === 0) {
@@ -478,6 +558,16 @@ if (guestModeToggle) {
     }
   });
 }
+
+document.querySelectorAll(".vibe-option").forEach(button => {
+  button.addEventListener("click", () => {
+    if (button.disabled) return;
+    command("VIBE", { vibe: button.dataset.vibe }).catch(showError);
+  });
+});
+$("#vibeAuto").addEventListener("click", () => {
+  if (!$("#vibeAuto").disabled) command("VIBE_AUTO").catch(showError);
+});
 
 for (const id of ["scene", "audioProfile", "audioStyle"]) {
   $(id).addEventListener("change", () => queueTune(0));

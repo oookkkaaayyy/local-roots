@@ -1,0 +1,42 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "FOUNDATION_OFF_PROJECTION_CONFIRMATION_R1_20261008",
+  "summary": "Keep disabled/off Cart projections within the same evidence-based transport confirmation contract and report submission rather than observed device-off state.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing Matrix-owned AUX/DDP release path. MQTT publish acceptance and retained WLED MQTT online are not correlated proof of application of a particular Cart projection.",
+      "affected_subsystem": "Offline staged Foundation adapter and reconciliation status serialization only. No live Supabase, MQTT, Matrix, AUX, Cloudflare, or device changes.",
+      "rollback_reference": "Revert adapter, reconcile, test, and evidence files to branch base 2b41a94eeeffd1abe610658e8033ab68cc14d3a1; no live deployment occurred.",
+      "evidence_sources": [
+        "https://github.com/wled/WLED/blob/29b389df1c1aaec6ff53aea742d17063b985906c/wled00/mqtt.cpp",
+        "https://supabase.com/docs/reference/javascript/functions-invoke",
+        "https://supabase.com/docs/guides/functions/error-handling",
+        "work/checkpoints/20261008-supabase-v17-source/deployment.json",
+        "work/checkpoints/20261008-live-edge-source/hbnf-matrix-adapter-foundation/deployment.json",
+        "AKS Delta Inbox row 1450: exact read-only live project/function versions and revision-123 mismatch; no live writes."
+      ],
+      "findings": [
+        "Established fact: pinned WLED 16.0.1 publishes retained MQTT status=online on connection lifecycle; this is not a revision-correlated response to a Cart projection.",
+        "Established fact: previous disabled/off adapter branch set transportConfirmed=true after MQTT publish acceptance without running the liveness observer.",
+        "Established fact: reconciliation persisted such responses as online/off, overstating application evidence.",
+        "Correction: disabled/off projections now pass through the shared liveness observer and confirmation shape; both enabled and disabled commands are recorded as submitted when transport liveness is observed, and failures remain bounded when it is not.",
+        "Inference: truthful submission state prevents the Owner UI/reconciliation layer from implying physical device-off confirmation without a correlated device observation."
+      ],
+      "tests": [
+        "node --test staging/coordinated-backend/hbnf-cart-control/guest-command.test.mjs tests/hbnf-foundation-confirmation-contract.mjs tests/hbnf-foundation-reconcile-outcome.mjs tests/hbnf-coordinated-backend-staging.mjs tests/hbnf_skins_scoring_owner_flow.mjs: PASS 13/13.",
+        "Disabled projection with observed liveness: classify as submitted.",
+        "Disabled projection without observed liveness: preserve mqtt_publish_accepted_status_not_observed failure.",
+        "Governance/control plane remains PHASE2_INTEGRATING/T4; live mutation remains false."
+      ],
+      "validation_limit": "Deno and tsc are unavailable, so no Deno typecheck is claimed. No deployment, remote database write, device command, or live behavior validation occurred."
+    }
+  }
+}

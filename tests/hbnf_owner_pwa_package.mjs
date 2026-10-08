@@ -4,6 +4,7 @@ import path from "node:path";
 
 const root = path.resolve(import.meta.dirname, "..");
 const controller = path.join(root, "hbnf-final-controller");
+const guestRoute = path.join(controller, "guest/hbnf-cart");
 const html = fs.readFileSync(path.join(controller, "hbnf-cart.html"), "utf8");
 const css = fs.readFileSync(path.join(controller, "hbnf-cart-ui-v6.css"), "utf8");
 const manifest = JSON.parse(fs.readFileSync(path.join(controller, "hbnf-cart-manifest.webmanifest"), "utf8"));
@@ -11,10 +12,10 @@ const installer = fs.readFileSync(path.join(root, "hbnf-ui-v6-package/install_ui
 const uiWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-cart-ui-v6-package.yml"), "utf8");
 const releaseWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-coordinated-release-ci.yml"), "utf8");
 
-assert.match(html, /hbnf-cart2-phase2-wow-r2-20261007/);
+assert.match(html, /hbnf-cart2-owner-ux-r1-20261008/);
 assert.doesNotMatch(html, /skins-owner-pwa-r1/);
 assert.equal(manifest.id, "/hbnf-cart.html");
-assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261007-wow-r2");
+assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261008-owner-ux-r1");
 assert.equal(manifest.scope, "/hbnf-cart.html");
 assert.deepEqual(manifest.icons.map(({ sizes }) => sizes), ["192x192", "512x512"]);
 
@@ -68,5 +69,16 @@ assert.ok(fs.existsSync(path.join(controller, "hbnf-cart-sw.js")), "owner PWA se
 assert.match(uiWorkflow, /HBNF-CART-UI-V7-3-PHASE2-INTEGRATED-R1-20261006/);
 assert.match(uiWorkflow, /tests\/hbnf_owner_pwa_package\.mjs/);
 assert.match(releaseWorkflow, /tests\/hbnf_owner_pwa_package\.mjs/);
+
+const guestHtml = fs.readFileSync(path.join(guestRoute, "index.html"), "utf8");
+const guestJs = fs.readFileSync(path.join(guestRoute, "guest.js"), "utf8");
+for (const vibe of ["chill", "groove", "heavy", "psychedelic", "cosmic"]) {
+  assert.match(guestHtml, new RegExp(`data-value="${vibe}"`), `Guest page exposes approved ${vibe} name`);
+}
+assert.match(guestHtml, /data-guest-action="vibe_auto" data-vibe-control disabled/);
+assert.match(guestHtml, /Guest Vibes stay disabled until the Cart’s matching Vibe runtime is qualified/);
+assert.doesNotMatch(guestHtml, /data-value="(?:mellow|moderate|energetic|peak)"/);
+assert.match(guestJs, /button\.hasAttribute\("data-vibe-control"\)/, "Guest status refresh must never enable an unqualified Vibe action");
+assert.match(guestJs, /Vibe selection is unavailable until the matching Cart runtime is qualified/);
 
 console.log("HBNF owner PWA package closure: PASS");

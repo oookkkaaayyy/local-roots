@@ -74,7 +74,8 @@ def repo_identity() -> dict[str, Any]:
             "type": "git_commit",
             "value": commit,
             "branch": branch or None,
-            "dirty": bool(dirty),
+            # A timed-out/unavailable status command is unknown, not a clean tree.
+            "dirty": None if dirty is None else bool(dirty),
         }
 
     candidates: list[pathlib.Path] = []

@@ -1,0 +1,61 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OWNER_MISSION_CONTROL_UX_R1_20261008",
+  "summary": "Reorder the Owner PWA primary surface so Matrix/Underglow brightness comes first, followed by genuine Vibe choices and then power/show-sequence controls; clarify queued versus device-confirmed state; align the Guest route with approved Vibe names while keeping them disabled until the runtime is qualified; retain all committed controls in primary or Advanced views and keep aesthetics UNFROZEN.",
+  "change_class": "SUBJECTIVE_DESIGN",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": true,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "owner_design_gate": {
+      "decision_status": "OPTIONS_ONLY",
+      "approved_by_owner": false,
+      "selected_option": "",
+      "approval_reference": "",
+      "note": "Functional ordering and status requirements are user-approved; visual styling and aesthetic choices remain UNFROZEN."
+    },
+    "scoped_evidence": {
+      "approved_architecture_reference": "User-approved Owner/Admin requirements in the 2026-10-08 Cart 2.0 final UX/performance directive; feature scope and Vibe contract in work/cart2/27_T3_PHASE2_FAST_PATH_PREP_20261006.md.",
+      "affected_subsystem": "Owner PWA and Guest-route presentation, responsive layout, status labeling, and command-acceptance wording only; no backend, firmware, scoring semantics, Guest default, or hardware state changes.",
+      "rollback_reference": "Revert hbnf-final-controller/hbnf-cart.html, hbnf-cart.js, hbnf-cart-ui-v6.css, hbnf-cart-sw.js, hbnf-cart-manifest.webmanifest, and tests; if later deployed, restore prior Cloudflare version 4a675ee4-807d-4ab1-b7e6-e2f91e27e39c.",
+      "evidence_sources": [
+        "https://developer.apple.com/design/human-interface-guidelines/layout?changes=lat_3__1_2",
+        "https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum",
+        "work/cart2/27_T3_PHASE2_FAST_PATH_PREP_20261006.md",
+        "config/HBNF_CONTROL_STATE.json",
+        "User acceptance direction: immediate brightness, prominent genuine Vibes, truthful status, iPad mini first, responsive iPhone, preserve committed features."
+      ],
+      "tests": [
+        "node --check hbnf-final-controller/hbnf-cart.js",
+        "node tests/hbnf_owner_pwa_reliability.mjs",
+        "node tests/hbnf_owner_pwa_package.mjs",
+        "node tests/hbnf-coordinated-controller-contract.mjs",
+        "node tests/hbnf-ios12-compat-audit.mjs",
+        "Read-only local browser preview confirms brightness then Vibe then power/show sequence; Guest route exposes approved names but keeps Vibe commands disabled until runtime qualification."
+      ],
+      "ios12_source_compatibility": {
+        "change": "Replace optional chaining, nullish coalescing, and String.replaceAll in the Owner PWA status path with equivalent null checks and a global regular expression. The same compatibility audit also covers the owner-loaded Skins scoring module, service worker, and Guest script.",
+        "source_audit": "PASS: zero known post-iOS-12 syntax/APIs in all 8 audited owner, scoring, worker, and Guest runtime scripts.",
+        "runtime_acceptance": "UNVERIFIED: the production gate fullControllerIos12CompatibilityVerified remains false until verified on the actual owner iPad/runtime.",
+        "evidence_sources": [
+          {
+            "title": "Safari 14 JavaScript support for optional chaining",
+            "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+            "locator": "https://webkit.org/blog/11340/new-webkit-features-in-safari-14/",
+            "relevance": "WebKit identifies Safari 14 as introducing optional chaining; the owner iPad requirement includes iOS 12, so the Owner PWA avoids syntax unavailable to that engine."
+          },
+          {
+            "title": "Safari 13.1 JavaScript support for nullish coalescing and String.replaceAll",
+            "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+            "locator": "https://webkit.org/blog/10247/new-webkit-features-in-safari-13-1/",
+            "relevance": "WebKit identifies Safari 13.1 as introducing these features; equivalent ES2018-compatible null checks and global underscore replacement preserve behavior for older iOS."
+          }
+        ]
+      }
+    }
+  }
+}

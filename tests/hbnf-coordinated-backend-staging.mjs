@@ -6,6 +6,9 @@ const stagedControl=fs.readFileSync("staging/coordinated-backend/hbnf-cart-contr
 const stagedReducer=fs.readFileSync("staging/coordinated-backend/hbnf-cart-control/guest-command.ts","utf8");
 const liveFoundation=fs.readFileSync("evidence/live-production-20261001/hbnf-matrix-adapter-foundation/index.ts","utf8");
 const stagedFoundation=fs.readFileSync("staging/coordinated-backend/hbnf-matrix-adapter-foundation/index.ts","utf8");
+const confirmation=fs.readFileSync("staging/coordinated-backend/hbnf-matrix-adapter-foundation/confirmation.ts","utf8");
+const stagedReconcile=fs.readFileSync("staging/coordinated-backend/hbnf-cart-reconcile/index.ts","utf8");
+const reconcileOutcome=fs.readFileSync("staging/coordinated-backend/hbnf-cart-reconcile/foundation-result.ts","utf8");
 const feature=fs.readFileSync("hbnf-final-controller/hbnf-cart-features.mjs","utf8");
 const controller=fs.readFileSync("hbnf-final-controller/hbnf-cart.js","utf8");
 
@@ -36,6 +39,18 @@ assert.ok(stagedFoundation.includes("function overlaySpec"),"foundation overlay 
 assert.ok(stagedFoundation.includes("palette,"),"foundation HBNF palette projection missing");
 assert.ok(stagedFoundation.includes("overlay"),"foundation HBNF overlay projection missing");
 assert.ok(stagedFoundation.includes('["hbnf-balanced","copper","ocean"]'),"legacy palette compatibility missing");
+assert.ok(stagedFoundation.includes('verification:"mqtt-connection-liveness-only"'),"foundation adapter overstates MQTT liveness as command verification");
+assert.ok(stagedFoundation.includes('mqtt_publish_accepted_status_not_observed'),"foundation adapter does not distinguish missing WLED liveness from publish failure");
+assert.ok(stagedFoundation.includes('if(!p.enabled){') && stagedFoundation.includes('const transport=await confirmTransport();'),"disabled/off projection bypasses liveness observation");
+assert.ok(!stagedFoundation.includes('confirmed:false,transportConfirmed:true'),"MQTT publish acceptance is incorrectly treated as off-command transport confirmation");
+assert.ok(/commandApplicationConfirmed:\s*false/.test(confirmation),"foundation adapter must not claim a correlated command application ack");
+assert.ok(confirmation.includes('masterUnityObserved'),"master brightness observation is not explicitly represented");
+assert.ok(stagedReconcile.includes('classifyFoundationInvocation'),"reconcile does not preserve adapter outcome classes");
+assert.ok(stagedReconcile.includes('p_status: "submitted"'),"reconcile overstates a projection submission as applied/off state");
+assert.ok(stagedReconcile.includes('p_status: "submitted",') && stagedReconcile.includes('requestedEnabled: matrixProjection.enabled'),"AUX proxy observation does not distinguish requested off from observed off");
+assert.ok(stagedReconcile.includes('["online","off","submitted"]'),"reconcile cannot carry forward a previously submitted, unconfirmed state");
+assert.ok(stagedReconcile.includes('results.every((x) => good.has(x.status)) ? "submitted" : "degraded"'),"reconcile response overstates submitted commands as applied");
+assert.ok(reconcileOutcome.includes('foundation_ack_field_mismatch'),"reconcile no longer distinguishes mismatched ack fields");
 
 assert.ok(controller.includes("window.HBNFCanonical"),"browser canonical bridge missing");
 assert.ok(controller.includes("OVERLAY_START"),"browser overlay command bridge missing");
