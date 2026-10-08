@@ -1,4 +1,38 @@
 {
+  "bounded_ddp_sender_diagnostic_authorization": {
+    "artifact_release_id": "hbnf-cart2-ddp-sender-diag-r1-20261007",
+    "artifact_sha256": "59d7284cb91d08e4b51ad9c0affb00457fcb836b43aa828545ae0cdf2f3ebf2b",
+    "artifact_size_bytes": 1459232,
+    "authority_source": "Current user instruction: after SSH restoration, perform read-only Opal preflight, record bounded diagnostic install authority, install the exact diagnostic build once, collect telemetry, classify sender versus downstream fault. This is one diagnostic Matrix install only; not Phase 2 production rollout.",
+    "authorization_consumed": true,
+    "closure_evidence": "evidence/hbnf-phase2-integration-20261007/ddp-sender-diagnostic-live/TRANSACTION_CLOSURE.json",
+    "consumed_utc": "2026-10-08T01:10:44+00:00",
+    "fallback_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "fallback_size_bytes": 1458624,
+    "install_limit": 1,
+    "observed_known_fault": "AUX is reachable but currently reports live=false, lm empty, lip empty. This is the diagnostic target. The production Phase 2 rollout remains unauthorized.",
+    "postinstall_evidence": "evidence/hbnf-phase2-integration-20261007/ddp-sender-diagnostic-live/POSTINSTALL_TELEMETRY_CLASSIFICATION.json",
+    "preflight_evidence": "evidence/hbnf-phase2-integration-20261007/ddp-sender-diagnostic-live/PREINSTALL_AUTHORIZATION.json",
+    "recorded_utc": "2026-10-08T01:06:35+00:00",
+    "restore_r4_authorization": {
+      "authority_source": "Earlier current-task user instruction: restore the exact R4 rollback if the telemetry-only diagnostic image is no longer needed; diagnostic classification is now captured.",
+      "install_limit": 1,
+      "method": "proven Opal-origin local WLED multipart POST /update",
+      "production_phase2_authorized": false,
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "size_bytes": 1489008,
+      "status": "RESTORED_AND_VERIFIED",
+      "verification_evidence": "evidence/hbnf-phase2-integration-20261007/ddp-sender-diagnostic-live/R4_RESTORATION_VERIFICATION.json"
+    },
+    "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "rollback_size_bytes": 1489008,
+    "schema": "hbnf-bounded-live-diagnostic-authorization-v1",
+    "scope": "Install telemetry-only native WLED DDP sender diagnostic once via proven Opal-origin local WLED /update, then read telemetry and classify Matrix sender versus downstream fault.",
+    "status": "CLOSED__DIAGNOSTIC_CLASSIFIED__EXACT_R4_RESTORED__AUX_DDP_HEALTHY",
+    "target": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c only",
+    "transport_behavior_change": false
+  },
   "checkpoint_at_utc": "2026-10-07T18:09:50Z",
   "completed_receipts": [
     {
@@ -22,16 +56,42 @@
       "transition_id": "T2_FOUNDATION_QUALIFY"
     },
     {
-      "transition_id": "T3_PHASE2_START",
       "receipt_sha256": "ad20b56507807290acacb7a0d189ce2141d81448e1483de5283ccc4cac1585fd",
       "subject": {
+        "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
         "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-        "source_identity_type": "git_commit",
         "source_identity": "b18b162ec4b4f9173b1de892957ff8b834fe2b50",
-        "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
-      }
+        "source_identity_type": "git_commit"
+      },
+      "transition_id": "T3_PHASE2_START"
     }
   ],
+  "conditional_phase2_live_rollout_authorization": {
+    "authorized_by": "Current user instruction dated 2026-10-07, including reconciliation of standing conditional rollout authorization and owner-gate sequencing.",
+    "candidate_release": "hbnf-cart2-phase2-offline-wow-r1-20261007",
+    "candidate_sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3",
+    "candidate_size_bytes": 1458832,
+    "expires": "After this bounded rollout/recovery transaction closes; no general future firmware/cloud authority.",
+    "explicit_exclusions": [
+      "UV energization or physical commissioning",
+      "router/Opal configuration changes",
+      "unrelated device changes",
+      "subjective presentation freeze",
+      "T5 final owner acceptance"
+    ],
+    "fallback_release07_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "ordered_scope": [
+      "deploy backward-compatible Guest/backend/static assets with Guest Mode false",
+      "smoke existing owner Cart control/scoring/PWA before firmware install",
+      "install exact Phase 2 candidate once using proven Opal-origin WLED /update path",
+      "objective runtime identity/health/brightness/Matrix-to-AUX DDP/restart/reconnect validation",
+      "restore exact R4 only on defined runtime safety/identity failure"
+    ],
+    "owner_gate_reconciliation": "No owner-as-intermediary go, no subjective font/text/Vibe acceptance, and no labeled audio playback required before install. Batch these after objective validation. T5 final owner acceptance remains required.",
+    "preflight_receipt": "evidence/hbnf-phase2-integration-20261007/live-rollout/PREINSTALL_PREFLIGHT.json",
+    "rollback_r4_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "status": "ACTIVE__BOUNDED_TO_EXACT_CANDIDATE_AND_ORDERED_GATES"
+  },
   "current_task": {
     "autonomous_completion_authorization": {
       "allowed": [
@@ -92,10 +152,10 @@
     },
     "blockers": [],
     "brightness_field_target": {
-      "status": "PHASE2_COMMITTED_REQUIREMENT",
       "field_observation": "At roughly <=20 brightness Matrix appears effectively off; roughly 20-60 visibly loses LED/pixel participation and scene structure, requiring uncomfortable brightness to obtain a full-looking animation.",
-      "required_semantics": "For every nonzero brightness setting, preserve materially the same animation geometry, pixel participation, audio-driven behavior, motion and scene evolution as full brightness, aside from unavoidable output quantization.",
       "implementation_direction": "Generate the full canonical frame first, then apply brightness as final output/perceptual luminance mapping only. Brightness must not gate pixels, kernel state, audio features, motion or scene complexity.",
+      "required_semantics": "For every nonzero brightness setting, preserve materially the same animation geometry, pixel participation, audio-driven behavior, motion and scene evolution as full brightness, aside from unavoidable output quantization.",
+      "status": "PHASE2_COMMITTED_REQUIREMENT",
       "ui_requirement": "Provide useful low-night perceptual granularity while retaining true maximum."
     },
     "checkpoint_at_utc": "2026-10-07T18:09:50Z",
@@ -131,8 +191,8 @@
       "current_failure_domain": "OWNER_EVIDENCE_AND_ACCEPTANCE__NO_LIVE_MUTATION",
       "current_lifecycle_state": "PHASE2_INTEGRATING",
       "current_subject": {
-        "release_id": "hbnf-cart2-phase2-offline-r1-20261007",
-        "artifact_sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3"
+        "artifact_sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3",
+        "release_id": "hbnf-cart2-phase2-offline-r1-20261007"
       },
       "current_transition": "T4_PHASE2_INTEGRATION",
       "exact_next_path": [
@@ -194,6 +254,13 @@
       ],
       "schema": "hbnf-field-readiness-deadline-v1",
       "user_directive": "At 16:41 PDT the user explicitly directed that the currently running seq53 rescue must not be abandoned solely because the prior time cutoff arrives. Continue the already-authorized seq53 path while it is measurably progressing; owner-device smoke remains required before field use."
+    },
+    "field_readiness_status": "PASS__COURSE_READY__SEQ55",
+    "field_touch_controls_20261006": {
+      "acceptance": "Owner can acquire and adjust sliders reliably one-handed on iPhone/iPad without repeated attempts.",
+      "problem": "Current range-slider thumbs/hit areas are too small and finicky for finger use on-course.",
+      "requirement": "All frequently used range controls must expose a finger-friendly acquisition/drag region at least 44x44 CSS/pt-equivalent around the interactive thumb/track area, with no dependence on precise tiny-thumb targeting.",
+      "status": "PHASE2_COMMITTED_REQUIREMENT"
     },
     "field_version_policy": {
       "rules": [
@@ -1133,6 +1200,22 @@
         ]
       }
     },
+    "owner_device_smoke_20261006": {
+      "checks": [
+        "Home Screen cart app opened successfully",
+        "Current Skins round and owner controls/current scores appeared",
+        "One legitimate score update persisted exactly once after refresh",
+        "Matrix control responded",
+        "Normal slider/scene controls responded",
+        "AUX/underglow responded normally",
+        "App relaunch/reconnect behavior passed"
+      ],
+      "device_path": "intended iPhone/iPad Home Screen cart app on HBNF-Cart",
+      "field_decision": "PASS__SAFE_TO_FREEZE_AND_POWER_DOWN",
+      "status": "PASS__FIELD_READY",
+      "user_confirmation": "All worked.",
+      "user_reported_at_local": "2026-10-06T17:01:00-07:00"
+    },
     "owner_pwa_v7_3_package": {
       "deployment": "NOT_DEPLOYED__PHASE2_NOT_AUTHORIZED",
       "drive_file_id": "1p31foPJ9a5z6l_ipJRLxTK0fV8ZBL7xv",
@@ -1238,6 +1321,142 @@
           "If no meaningful double promotion exists and effective optimization is already equivalent, skip the live r3 trial and move directly to upstream optimization comparison."
         ],
         "status": "ACTIVE"
+      }
+    },
+    "phase2_font_build_recovery_decision_20261006": {
+      "audio_freeze_decision": "LACK_OF_HISTORICAL_REAL_AUDIO_TRACE_DOES_NOT_BLOCK_OFFLINE_CANDIDATE_BUILD",
+      "audio_rule": "Carry current synthetic-proven mapping as CANDIDATE/UNFROZEN. At first hardware-ready window, capture/replay a short source-bound real-audio trace against the integrated candidate, freeze numeric mapping only after differentiation/runtime-cost acceptance, then proceed to owner physical acceptance.",
+      "audio_status": "UNFROZEN__LABELED_CAPTURE_REQUIRED",
+      "build_closure_decision": "REUSE_PINNED_LOCAL_WLED_PLATFORMIO_CLOSURE__OFFLINE_CANDIDATE_BUILT",
+      "build_rules": [
+        "Use a disposable local/worker build workspace; installing PlatformIO locally/venv is allowed.",
+        "Pin exact upstream WLED 0.16.0.1 source identity and all dependencies/patches.",
+        "Do not use GitHub Actions merely because pio/platformio is absent in the current checkout.",
+        "Produce a reproducible build capsule including platformio config, dependency identities, patch order, source hash, firmware hash and rollback identity."
+      ],
+      "candidate": {
+        "bytes": 1458832,
+        "flash_slot_bytes": 1572864,
+        "manifest": "evidence/hbnf-phase2-integration-20261007/offline-candidate-manifest.json",
+        "release_id": "hbnf-cart2-phase2-offline-r1-20261007",
+        "sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3",
+        "source_commit": "caea391fdf228fca3ebccec1b5f5444e9c437c4a",
+        "status": "OFFLINE_ONLY_NOT_INSTALLED"
+      },
+      "decision": "ADOPT_EXACT_PINNED_WLED_FONTMANAGER_FONT_5X12_AS_REVERSIBLE_FUNCTIONAL_DEFAULT__OWNER_PRESENTATION_UNFROZEN",
+      "font_recovery_finding": "Prior source registry evidence established historical 12px WBF existence but no retrievable individual bytes. This current user task explicitly directs the worker to verify exact WLED 16.0.1 native text/font/segment capability and use it when sufficient; the built-in FontManager font_5x12 and transparent glyph drawing satisfy stable functional text with minimal HBNF glue. No new font engine or WBF reconstruction was introduced.",
+      "font_requirements": [
+        "Use exact pinned WLED FontManager for built-in 5x12 metrics/cache/glyph rasterization.",
+        "Keep HBNF additions limited to word-boundary paging and placement.",
+        "Owner retains readability/presentation acceptance; typography, halo, motion and other aesthetic choices remain UNFROZEN.",
+        "Do not implement a new custom font system."
+      ],
+      "live_gate": "NO_DEVICE_ACTION_UNTIL_HARDWARE_READY_HANDSHAKE",
+      "presentation_status": "UNFROZEN__OWNER_REVIEW_REQUIRED",
+      "status": "COMPLETED__NATIVE_WLED_FONTMANAGER_SELECTED_PER_CURRENT_USER_TASK__VISUAL_UNFROZEN"
+    },
+    "phase2_host_integration_r1_20261006": {
+      "brightness_fix": "Preserve canonical scene generation, gamma-correct canonical RGB first, then apply Matrix-only final output luminance scaling. Zero is off; 255 is identity/full output; nonzero canonical pixels remain participating for nonzero brightness.",
+      "brightness_root_cause": "Brightness had been applied before gamma correction, crushing low-level output toward black and visually dropping low-intensity pixels.",
+      "completed": [
+        "PWA reliability integrated",
+        "All course/audio/brightness sliders >=44x44 effective hit area",
+        "Authoritative Skins scoring integrated",
+        "Brightness final-output mapping source patch + host contract"
+      ],
+      "deployment": "NONE",
+      "evidence": "evidence/hbnf-phase2-integration-20261006/HOST_OFFLINE_INTEGRATION_R1.json",
+      "firmware_build": "NONE",
+      "integration_branch": "hbnf-cart2-phase2-integration-20261006",
+      "integration_head": "e9df34a255d1b60ef52b4ce8082b96624cdfe806",
+      "live_mutation": "NONE",
+      "status": "PASS__PWA_SCORING_TOUCH_BRIGHTNESS_HOST_CLOSURE",
+      "tests": [
+        "node tests/hbnf_owner_pwa_package.mjs",
+        "node tests/hbnf_owner_pwa_reliability.mjs",
+        "node --experimental-strip-types tests/hbnf_skins_scoring_owner_flow.mjs",
+        "node tests/hbnf-coordinated-backend-staging.mjs",
+        "node tests/hbnf_matrix_brightness_output.mjs",
+        "python3 -m py_compile hbnf-ui-v6-package/install_ui_v6.py",
+        "python3 scripts/platform.py doctor",
+        "python3 scripts/hbnf_control.py status"
+      ],
+      "tests_result": "PASS"
+    },
+    "phase2_start_20261006": {
+      "efficiency_rules": [
+        "No project-wide archaeology when current authority and lane checkpoint resolve the task.",
+        "No repeating Foundation evidence absent explicit invalidator.",
+        "No serial live flashes for lane-local work.",
+        "No broad refactor unless a bounded implementation proves it necessary.",
+        "Every worker returns commit, tests, exact blocker if any, and smallest next action.",
+        "Coordinator reviews evidence and issues next bounded task; worker does not create new governance or reopen solved problems."
+      ],
+      "hardware_availability_rule": "AUX may be physically disconnected; do not classify AUX unavailable as a software failure during host/offline work.",
+      "integration_branch": "hbnf-cart2-phase2-integration-20261006",
+      "integration_branch_base_commit": "cc620e124b791a90f190bba249ddb34ed9a8f219",
+      "integration_order": [
+        "PWA reliability plus field touch-target fix",
+        "authoritative scoring integration",
+        "brightness output-fidelity implementation and host tests",
+        "Vibe/audio qualified-source replay and production mapping",
+        "Text/moments renderer integration",
+        "single integrated Phase 2 candidate",
+        "hardware-ready handshake",
+        "one live integration and intended-owner acceptance cycle"
+      ],
+      "integration_strategy": "SMALL_BATCH_CONTINUOUS_INTEGRATION__HOST_FIRST__ONE_LIVE_INTEGRATED_CANDIDATE",
+      "live_device_gate": "BLOCKED_UNTIL_HARDWARE_READY_HANDSHAKE",
+      "qualified_foundation_preserved": true,
+      "qualified_foundation_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "status": "AUTHORIZED__HOST_OFFLINE_INTEGRATION_ACTIVE__LIVE_DEVICE_GATED",
+      "t3_receipt": "evidence/hbnf-phase2-integration-20261006/T3_PHASE2_SCOPE_LOCK.json",
+      "t3_receipt_sha256": "ad20b56507807290acacb7a0d189ce2141d81448e1483de5283ccc4cac1585fd",
+      "worker_compute_policy": {
+        "escalation": "Only after two materially different bounded Luna Medium attempts fail on the same evidence-backed blocker, or coordinator identifies a genuinely novel cross-subsystem correctness problem Luna Medium cannot resolve.",
+        "higher_intelligence": "PROHIBITED_BY_DEFAULT",
+        "model": "LUNA_ONLY",
+        "reasoning": "LIGHT_DEFAULT__MEDIUM_FOR_INTEGRATION_OR_DEBUGGING"
+      }
+    },
+    "phase2_vibe_text_integration_r1_20261006": {
+      "build_closure_reconciliation": {
+        "newly_found_authority": "Historical clean-room WLED/PlatformIO build closure is already durable in Drive and AKS; build-path archaeology itself is NOT an unsolved problem.",
+        "note": "Do not rediscover/reconstruct build closure from scratch. Reuse the preserved capsule/provenance or an equivalent exact source-authorized workspace.",
+        "platformio_version": "6.1.18",
+        "run5_artifact_name": "HBNF-Packet20-Safe-Point-37234856834.zip",
+        "run5_drive_file_id": "1VhqoXzlNwBzHCPVrqLDQG1T7Z0Cp9yVF",
+        "run5_zip_sha256": "dca762bce1d934a04c18b9cc6e0b0f9880d0a4779f3945c7943ca6b84c8ef8ed",
+        "target_env": "hbnf_matrix_wled16_packet20_diag",
+        "wled_base_commit": "29b389df1c1aaec6ff53aea742d17063b985906c"
+      },
+      "evidence": "evidence/hbnf-phase2-integration-20261007/offline-candidate-manifest.json",
+      "font_reconciliation": {
+        "current_search_result": "No .wbf file is directly retrievable by Drive metadata search; current production matrix-control source now contains proven native WLED 5x12/6x8 text paths, but that is not automatically authorized as a replacement for the locked premium WBF contract.",
+        "required_next_decision": "Bounded source-authority recovery first; if exact WBF bytes cannot be recovered from preserved capsules/source, return a deliberate interface/scope change request rather than inventing or silently substituting a font.",
+        "source_registry_fact": "Three metric-identical 12px WBF artifacts were historically generated and physically verified, but durable individual Drive file IDs/bytes were never established in the registry."
+      },
+      "integration_branch": "hbnf-cart2-phase2-integration-20261006",
+      "integration_commit": "caea391fdf228fca3ebccec1b5f5444e9c437c4a",
+      "integration_head": "caea391fdf228fca3ebccec1b5f5444e9c437c4a",
+      "live_mutation": "NONE",
+      "offline_candidate": {
+        "bytes": 1458832,
+        "release_id": "hbnf-cart2-phase2-offline-r1-20261007",
+        "sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3",
+        "status": "BUILT_NOT_INSTALLED"
+      },
+      "status": "OFFLINE_INTEGRATED__NATIVE_WLED_TEXT_AND_BUILD_PASS__CANDIDATE_BUILT",
+      "text_moments": {
+        "firmware_compositor": "INTEGRATED_USING_PINNED_WLED_FONTMANAGER_FONT_5X12",
+        "planner_and_host_contract": "PASS_11_OF_11",
+        "presentation_status": "UNFROZEN_OWNER_REVIEW_REQUIRED"
+      },
+      "vibe_audio": {
+        "auto_hysteresis": "PASS_SYNTHETIC",
+        "manual_vibes": "PASS_DIFFERENTIATION",
+        "production_numeric_mapping": "UNFROZEN_PENDING_CONTROLLED_LABELED_REAL_AUDIO_AND_TARGET_RUNTIME_COST",
+        "result": "PASS_SYNTHETIC_CANDIDATE_ONLY"
       }
     },
     "planned_foundation_transaction": {
@@ -1572,165 +1791,6 @@
       ],
       "observed_at": "2026-10-05T17:48:54Z",
       "status": "R3_CLOSED__R4_EXECUTION_REQUIRED"
-    },
-    "owner_device_smoke_20261006": {
-      "status": "PASS__FIELD_READY",
-      "user_reported_at_local": "2026-10-06T17:01:00-07:00",
-      "device_path": "intended iPhone/iPad Home Screen cart app on HBNF-Cart",
-      "checks": [
-        "Home Screen cart app opened successfully",
-        "Current Skins round and owner controls/current scores appeared",
-        "One legitimate score update persisted exactly once after refresh",
-        "Matrix control responded",
-        "Normal slider/scene controls responded",
-        "AUX/underglow responded normally",
-        "App relaunch/reconnect behavior passed"
-      ],
-      "user_confirmation": "All worked.",
-      "field_decision": "PASS__SAFE_TO_FREEZE_AND_POWER_DOWN"
-    },
-    "field_readiness_status": "PASS__COURSE_READY__SEQ55",
-    "phase2_start_20261006": {
-      "status": "AUTHORIZED__HOST_OFFLINE_INTEGRATION_ACTIVE__LIVE_DEVICE_GATED",
-      "t3_receipt": "evidence/hbnf-phase2-integration-20261006/T3_PHASE2_SCOPE_LOCK.json",
-      "t3_receipt_sha256": "ad20b56507807290acacb7a0d189ce2141d81448e1483de5283ccc4cac1585fd",
-      "integration_strategy": "SMALL_BATCH_CONTINUOUS_INTEGRATION__HOST_FIRST__ONE_LIVE_INTEGRATED_CANDIDATE",
-      "qualified_foundation_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-      "qualified_foundation_preserved": true,
-      "live_device_gate": "BLOCKED_UNTIL_HARDWARE_READY_HANDSHAKE",
-      "hardware_availability_rule": "AUX may be physically disconnected; do not classify AUX unavailable as a software failure during host/offline work.",
-      "worker_compute_policy": {
-        "model": "LUNA_ONLY",
-        "reasoning": "LIGHT_DEFAULT__MEDIUM_FOR_INTEGRATION_OR_DEBUGGING",
-        "higher_intelligence": "PROHIBITED_BY_DEFAULT",
-        "escalation": "Only after two materially different bounded Luna Medium attempts fail on the same evidence-backed blocker, or coordinator identifies a genuinely novel cross-subsystem correctness problem Luna Medium cannot resolve."
-      },
-      "integration_order": [
-        "PWA reliability plus field touch-target fix",
-        "authoritative scoring integration",
-        "brightness output-fidelity implementation and host tests",
-        "Vibe/audio qualified-source replay and production mapping",
-        "Text/moments renderer integration",
-        "single integrated Phase 2 candidate",
-        "hardware-ready handshake",
-        "one live integration and intended-owner acceptance cycle"
-      ],
-      "efficiency_rules": [
-        "No project-wide archaeology when current authority and lane checkpoint resolve the task.",
-        "No repeating Foundation evidence absent explicit invalidator.",
-        "No serial live flashes for lane-local work.",
-        "No broad refactor unless a bounded implementation proves it necessary.",
-        "Every worker returns commit, tests, exact blocker if any, and smallest next action.",
-        "Coordinator reviews evidence and issues next bounded task; worker does not create new governance or reopen solved problems."
-      ],
-      "integration_branch": "hbnf-cart2-phase2-integration-20261006",
-      "integration_branch_base_commit": "cc620e124b791a90f190bba249ddb34ed9a8f219"
-    },
-    "field_touch_controls_20261006": {
-      "status": "PHASE2_COMMITTED_REQUIREMENT",
-      "problem": "Current range-slider thumbs/hit areas are too small and finicky for finger use on-course.",
-      "requirement": "All frequently used range controls must expose a finger-friendly acquisition/drag region at least 44x44 CSS/pt-equivalent around the interactive thumb/track area, with no dependence on precise tiny-thumb targeting.",
-      "acceptance": "Owner can acquire and adjust sliders reliably one-handed on iPhone/iPad without repeated attempts."
-    },
-    "phase2_host_integration_r1_20261006": {
-      "status": "PASS__PWA_SCORING_TOUCH_BRIGHTNESS_HOST_CLOSURE",
-      "integration_branch": "hbnf-cart2-phase2-integration-20261006",
-      "integration_head": "e9df34a255d1b60ef52b4ce8082b96624cdfe806",
-      "evidence": "evidence/hbnf-phase2-integration-20261006/HOST_OFFLINE_INTEGRATION_R1.json",
-      "live_mutation": "NONE",
-      "deployment": "NONE",
-      "firmware_build": "NONE",
-      "completed": [
-        "PWA reliability integrated",
-        "All course/audio/brightness sliders >=44x44 effective hit area",
-        "Authoritative Skins scoring integrated",
-        "Brightness final-output mapping source patch + host contract"
-      ],
-      "brightness_root_cause": "Brightness had been applied before gamma correction, crushing low-level output toward black and visually dropping low-intensity pixels.",
-      "brightness_fix": "Preserve canonical scene generation, gamma-correct canonical RGB first, then apply Matrix-only final output luminance scaling. Zero is off; 255 is identity/full output; nonzero canonical pixels remain participating for nonzero brightness.",
-      "tests": [
-        "node tests/hbnf_owner_pwa_package.mjs",
-        "node tests/hbnf_owner_pwa_reliability.mjs",
-        "node --experimental-strip-types tests/hbnf_skins_scoring_owner_flow.mjs",
-        "node tests/hbnf-coordinated-backend-staging.mjs",
-        "node tests/hbnf_matrix_brightness_output.mjs",
-        "python3 -m py_compile hbnf-ui-v6-package/install_ui_v6.py",
-        "python3 scripts/platform.py doctor",
-        "python3 scripts/hbnf_control.py status"
-      ],
-      "tests_result": "PASS"
-    },
-    "phase2_vibe_text_integration_r1_20261006": {
-      "status": "OFFLINE_INTEGRATED__NATIVE_WLED_TEXT_AND_BUILD_PASS__CANDIDATE_BUILT",
-      "integration_branch": "hbnf-cart2-phase2-integration-20261006",
-      "integration_head": "caea391fdf228fca3ebccec1b5f5444e9c437c4a",
-      "evidence": "evidence/hbnf-phase2-integration-20261007/offline-candidate-manifest.json",
-      "live_mutation": "NONE",
-      "vibe_audio": {
-        "result": "PASS_SYNTHETIC_CANDIDATE_ONLY",
-        "manual_vibes": "PASS_DIFFERENTIATION",
-        "auto_hysteresis": "PASS_SYNTHETIC",
-        "production_numeric_mapping": "UNFROZEN_PENDING_CONTROLLED_LABELED_REAL_AUDIO_AND_TARGET_RUNTIME_COST"
-      },
-      "text_moments": {
-        "planner_and_host_contract": "PASS_11_OF_11",
-        "firmware_compositor": "INTEGRATED_USING_PINNED_WLED_FONTMANAGER_FONT_5X12",
-        "presentation_status": "UNFROZEN_OWNER_REVIEW_REQUIRED"
-      },
-      "build_closure_reconciliation": {
-        "newly_found_authority": "Historical clean-room WLED/PlatformIO build closure is already durable in Drive and AKS; build-path archaeology itself is NOT an unsolved problem.",
-        "run5_drive_file_id": "1VhqoXzlNwBzHCPVrqLDQG1T7Z0Cp9yVF",
-        "run5_artifact_name": "HBNF-Packet20-Safe-Point-37234856834.zip",
-        "run5_zip_sha256": "dca762bce1d934a04c18b9cc6e0b0f9880d0a4779f3945c7943ca6b84c8ef8ed",
-        "wled_base_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
-        "platformio_version": "6.1.18",
-        "target_env": "hbnf_matrix_wled16_packet20_diag",
-        "note": "Do not rediscover/reconstruct build closure from scratch. Reuse the preserved capsule/provenance or an equivalent exact source-authorized workspace."
-      },
-      "font_reconciliation": {
-        "source_registry_fact": "Three metric-identical 12px WBF artifacts were historically generated and physically verified, but durable individual Drive file IDs/bytes were never established in the registry.",
-        "current_search_result": "No .wbf file is directly retrievable by Drive metadata search; current production matrix-control source now contains proven native WLED 5x12/6x8 text paths, but that is not automatically authorized as a replacement for the locked premium WBF contract.",
-        "required_next_decision": "Bounded source-authority recovery first; if exact WBF bytes cannot be recovered from preserved capsules/source, return a deliberate interface/scope change request rather than inventing or silently substituting a font."
-      },
-      "integration_commit": "caea391fdf228fca3ebccec1b5f5444e9c437c4a",
-      "offline_candidate": {
-        "release_id": "hbnf-cart2-phase2-offline-r1-20261007",
-        "sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3",
-        "bytes": 1458832,
-        "status": "BUILT_NOT_INSTALLED"
-      }
-    },
-    "phase2_font_build_recovery_decision_20261006": {
-      "status": "COMPLETED__NATIVE_WLED_FONTMANAGER_SELECTED_PER_CURRENT_USER_TASK__VISUAL_UNFROZEN",
-      "font_recovery_finding": "Prior source registry evidence established historical 12px WBF existence but no retrievable individual bytes. This current user task explicitly directs the worker to verify exact WLED 16.0.1 native text/font/segment capability and use it when sufficient; the built-in FontManager font_5x12 and transparent glyph drawing satisfy stable functional text with minimal HBNF glue. No new font engine or WBF reconstruction was introduced.",
-      "decision": "ADOPT_EXACT_PINNED_WLED_FONTMANAGER_FONT_5X12_AS_REVERSIBLE_FUNCTIONAL_DEFAULT__OWNER_PRESENTATION_UNFROZEN",
-      "font_requirements": [
-        "Use exact pinned WLED FontManager for built-in 5x12 metrics/cache/glyph rasterization.",
-        "Keep HBNF additions limited to word-boundary paging and placement.",
-        "Owner retains readability/presentation acceptance; typography, halo, motion and other aesthetic choices remain UNFROZEN.",
-        "Do not implement a new custom font system."
-      ],
-      "build_closure_decision": "REUSE_PINNED_LOCAL_WLED_PLATFORMIO_CLOSURE__OFFLINE_CANDIDATE_BUILT",
-      "build_rules": [
-        "Use a disposable local/worker build workspace; installing PlatformIO locally/venv is allowed.",
-        "Pin exact upstream WLED 0.16.0.1 source identity and all dependencies/patches.",
-        "Do not use GitHub Actions merely because pio/platformio is absent in the current checkout.",
-        "Produce a reproducible build capsule including platformio config, dependency identities, patch order, source hash, firmware hash and rollback identity."
-      ],
-      "audio_freeze_decision": "LACK_OF_HISTORICAL_REAL_AUDIO_TRACE_DOES_NOT_BLOCK_OFFLINE_CANDIDATE_BUILD",
-      "audio_rule": "Carry current synthetic-proven mapping as CANDIDATE/UNFROZEN. At first hardware-ready window, capture/replay a short source-bound real-audio trace against the integrated candidate, freeze numeric mapping only after differentiation/runtime-cost acceptance, then proceed to owner physical acceptance.",
-      "live_gate": "NO_DEVICE_ACTION_UNTIL_HARDWARE_READY_HANDSHAKE",
-      "candidate": {
-        "release_id": "hbnf-cart2-phase2-offline-r1-20261007",
-        "sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3",
-        "bytes": 1458832,
-        "flash_slot_bytes": 1572864,
-        "status": "OFFLINE_ONLY_NOT_INSTALLED",
-        "source_commit": "caea391fdf228fca3ebccec1b5f5444e9c437c4a",
-        "manifest": "evidence/hbnf-phase2-integration-20261007/offline-candidate-manifest.json"
-      },
-      "presentation_status": "UNFROZEN__OWNER_REVIEW_REQUIRED",
-      "audio_status": "UNFROZEN__LABELED_CAPTURE_REQUIRED"
     }
   },
   "execution_budget_policy": {
@@ -1748,19 +1808,19 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "OWNER_EVIDENCE_AND_ACCEPTANCE__NO_LIVE_MUTATION",
+    "current_failure_domain": "PHASE2_CONDITIONAL_LIVE_ROLLOUT__BOUNDED_AUTHORIZATION",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
-      "release_id": "hbnf-cart2-phase2-offline-r1-20261007",
-      "artifact_sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3"
+      "artifact_sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3",
+      "release_id": "hbnf-cart2-phase2-offline-wow-r1-20261007"
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
       "Do not redo completed PWA/scoring/touch/brightness/Vibe/Text host work; all recorded Phase 2 host suites remain PASS.",
       "The exact historical premium 12px WBF recovery gate is superseded for this task by the current user instruction: use the exact WLED 16.0.1 native text capability when it satisfies stable readable functional text. The native FontManager capability check passed; use built-in 5x12 only as a reversible provisional functional default. Keep all visual/presentation acceptance UNFROZEN.",
       "The FontManager adapter and existing final-output brightness path are integrated in R2; one offline integrated image built and passed the WLED usermod-link check. Candidate SHA-256 eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3; 1,458,832 bytes; app0 slot 1,572,864 bytes. Candidate is not installed and does not authorize deployment.",
-      "Vibe/audio production mapping remains candidate/unfrozen. The prior unlabeled trace is not category coverage. The passive labeled-capture tool and exact four-window owner procedure are committed; after those samples are captured, replay/analyze them offline and preserve the evidence.",
-      "Remaining owner-only gates are controlled labeled source playback/capture, subjective readability/presentation review before visual freeze, and the hardware-ready handshake before any live install. Do not perform live Matrix/AUX/Opal/WLED/OTA action before that handshake and separately authorized transition."
+      "Current owner directive supersedes pre-install owner-as-intermediary go, subjective font/text/Vibe acceptance, and labeled audio playback gates. Batch those after objective installation/runtime validation into one owner session; T5 final owner acceptance remains required.",
+      "Fresh read-only hardware, candidate/rollback, Cloudflare, and Supabase preflight PASS is durably recorded in evidence/hbnf-phase2-integration-20261007/live-rollout/PREINSTALL_PREFLIGHT.json. Install only the exact authorized WOW-integrated candidate under conditional_phase2_live_rollout_authorization; restore exact R4 if defined runtime safety/identity failure occurs."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -1871,6 +1931,10 @@
         "blocker": null,
         "dependency": "INTEGRATED_HOST_OFFLINE__OWNER_DEVICE_ACCEPTANCE_AT_INTEGRATED_CANDIDATE",
         "execution_context": "LUNA_WORKER_BOUNDED_TASKS",
+        "integration": {
+          "head": "e9df34a255d1b60ef52b4ce8082b96624cdfe806",
+          "result": "PASS"
+        },
         "launch_owner": "COORDINATOR",
         "offline_checkpoint": {
           "branch": "hbnf-cart2-p2-mission-control-scoring-20261006-r2",
@@ -1880,16 +1944,16 @@
           "status": "OFFLINE_IMPLEMENTATION_COMPLETE__INTEGRATION_GATED"
         },
         "status": "DONE",
-        "status_sheet_row": 4,
-        "integration": {
-          "head": "e9df34a255d1b60ef52b4ce8082b96624cdfe806",
-          "result": "PASS"
-        }
+        "status_sheet_row": 4
       },
       "P2_PWA_RELIABILITY": {
         "blocker": null,
         "dependency": "INTEGRATED_HOST_OFFLINE__DEVICE_ACCEPTANCE_AT_INTEGRATED_CANDIDATE",
         "execution_context": "LUNA_WORKER_BOUNDED_TASKS",
+        "integration": {
+          "head": "e9df34a255d1b60ef52b4ce8082b96624cdfe806",
+          "result": "PASS"
+        },
         "launch_owner": "COORDINATOR",
         "offline_checkpoint": {
           "drive_file_id": "1MvBkyIqJJa-9uC0n73NXEozn28frLm47",
@@ -1918,11 +1982,7 @@
           "status": "OFFLINE_IMPLEMENTATION_COMPLETE__NOT_DEPLOYED"
         },
         "status": "DONE",
-        "status_sheet_row": 7,
-        "integration": {
-          "head": "e9df34a255d1b60ef52b4ce8082b96624cdfe806",
-          "result": "PASS"
-        }
+        "status_sheet_row": 7
       },
       "P2_TEXT_MOMENTS": {
         "blocker": "Exact qualified 12px WBF/font asset bytes not yet recovered; firmware compositor cannot be source-bound.",
@@ -2022,41 +2082,7 @@
     "target": "Have exact fast candidate installed and machine-qualified, ready for OWNER SMOKE NOW within the user's ~10-minute dog walk.",
     "user_authorization": "At 16:43 PDT user requested immediate salvage while away for ~10 minutes and explicitly directed that this false blocker not prevent completion; target is ready for owner smoke on return."
   },
-  "bounded_ddp_sender_diagnostic_authorization": {
-    "schema": "hbnf-bounded-live-diagnostic-authorization-v1",
-    "status": "CLOSED__DIAGNOSTIC_CLASSIFIED__EXACT_R4_RESTORED__AUX_DDP_HEALTHY",
-    "authority_source": "Current user instruction: after SSH restoration, perform read-only Opal preflight, record bounded diagnostic install authority, install the exact diagnostic build once, collect telemetry, classify sender versus downstream fault. This is one diagnostic Matrix install only; not Phase 2 production rollout.",
-    "recorded_utc": "2026-10-08T01:06:35+00:00",
-    "target": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c only",
-    "artifact_release_id": "hbnf-cart2-ddp-sender-diag-r1-20261007",
-    "artifact_sha256": "59d7284cb91d08e4b51ad9c0affb00457fcb836b43aa828545ae0cdf2f3ebf2b",
-    "artifact_size_bytes": 1459232,
-    "scope": "Install telemetry-only native WLED DDP sender diagnostic once via proven Opal-origin local WLED /update, then read telemetry and classify Matrix sender versus downstream fault.",
-    "transport_behavior_change": false,
-    "install_limit": 1,
-    "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "rollback_size_bytes": 1489008,
-    "fallback_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-    "fallback_size_bytes": 1458624,
-    "preflight_evidence": "evidence/hbnf-phase2-integration-20261007/ddp-sender-diagnostic-live/PREINSTALL_AUTHORIZATION.json",
-    "observed_known_fault": "AUX is reachable but currently reports live=false, lm empty, lip empty. This is the diagnostic target. The production Phase 2 rollout remains unauthorized.",
-    "authorization_consumed": true,
-    "consumed_utc": "2026-10-08T01:10:44+00:00",
-    "postinstall_evidence": "evidence/hbnf-phase2-integration-20261007/ddp-sender-diagnostic-live/POSTINSTALL_TELEMETRY_CLASSIFICATION.json",
-    "restore_r4_authorization": {
-      "status": "RESTORED_AND_VERIFIED",
-      "authority_source": "Earlier current-task user instruction: restore the exact R4 rollback if the telemetry-only diagnostic image is no longer needed; diagnostic classification is now captured.",
-      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-      "size_bytes": 1489008,
-      "install_limit": 1,
-      "method": "proven Opal-origin local WLED multipart POST /update",
-      "production_phase2_authorized": false,
-      "verification_evidence": "evidence/hbnf-phase2-integration-20261007/ddp-sender-diagnostic-live/R4_RESTORATION_VERIFICATION.json"
-    },
-    "closure_evidence": "evidence/hbnf-phase2-integration-20261007/ddp-sender-diagnostic-live/TRANSACTION_CLOSURE.json"
-  },
-  "live_mutation_authorized": false,
+  "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",
