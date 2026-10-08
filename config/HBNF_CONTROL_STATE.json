@@ -33,7 +33,7 @@
     "target": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c only",
     "transport_behavior_change": false
   },
-  "checkpoint_at_utc": "2026-10-08T02:45:00Z",
+  "checkpoint_at_utc": "2026-10-08T02:46:00Z",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -1855,7 +1855,7 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "PHASE2_R2_BOUNDED_INSTALL_AUTHORIZED__PRELIVE_PASS",
+    "current_failure_domain": "PHASE2_R2_INSTALLED__OBJECTIVE_T4_QUALIFICATION_IN_PROGRESS",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
       "release_id": "hbnf-cart2-phase2-offline-wow-r2-20261008",
@@ -2128,7 +2128,7 @@
     "target": "Have exact fast candidate installed and machine-qualified, ready for OWNER SMOKE NOW within the user's ~10-minute dog walk.",
     "user_authorization": "At 16:43 PDT user requested immediate salvage while away for ~10 minutes and explicitly directed that this false blocker not prevent completion; target is ready for owner smoke on return."
   },
-  "live_mutation_authorized": true,
+  "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",
@@ -2348,7 +2348,7 @@
   "bounded_phase2_r2_install_authorization": {
     "schema": "hbnf-bounded-matrix-install-authorization-v1",
     "authorized_by": "Current user message, 2026-10-08 UTC",
-    "status": "INSTALL_ATTEMPT_CONSUMED__UPLOAD_PENDING",
+    "status": "CANDIDATE_INSTALLED__OBJECTIVE_T4_QUALIFICATION_IN_PROGRESS",
     "candidate_release": "hbnf-cart2-phase2-offline-wow-r2-20261008",
     "candidate_sha256": "8be42c878cb6502db1571e58e417848bd732e2d5debfb27b399738b1e70fcf6c",
     "candidate_size_bytes": 1482624,
@@ -2379,6 +2379,18 @@
     "reservation_note": "The single candidate attempt is reserved. No second candidate install is authorized even if transport/result is ambiguous.",
     "install_attempt_started_utc": "2026-10-08T02:45:00Z",
     "candidate_upload_attempts": 1,
-    "consumed_before_network_request": true
+    "consumed_before_network_request": true,
+    "candidate_ota_http_status": 200,
+    "candidate_ota_response_bytes": 404,
+    "candidate_ota_response_contains_update_successful": true,
+    "candidate_runtime_identity": "hbnf-cart2-phase2-offline-wow-r2-20261008",
+    "candidate_runtime_wled": "16.0.1",
+    "candidate_runtime_initial_uptime_seconds": 7,
+    "candidate_runtime_initial_kernel": 13,
+    "candidate_runtime_initial_matrix_brightness": 44,
+    "candidate_runtime_initial_aux_ddp": "live=true; lm=DDP; lip=192.168.77.10",
+    "candidate_initial_evidence": "evidence/hbnf-phase2-integration-20261007/live-r2-install/POSTINSTALL_IDENTITY.json",
+    "rollback_remains_authorized": true,
+    "rollback_limit_remaining": 1
   }
 }

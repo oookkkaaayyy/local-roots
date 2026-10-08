@@ -1,0 +1,386 @@
+{
+  "captured_utc": "2026-10-08T02:46:22Z",
+  "http_identity": true,
+  "matrix_info": {
+    "ver": "16.0.1",
+    "vid": 2605010,
+    "cn": "Niji",
+    "release": "ESP32",
+    "repo": "wled/WLED",
+    "deviceId": "52d5bc29d6bd3a4be1702e3b7393daae7d6581734d",
+    "leds": {
+      "count": 534,
+      "pwr": 635,
+      "fps": 41,
+      "maxpwr": 1800,
+      "maxseg": 32,
+      "bootps": 60,
+      "matrix": {
+        "w": 32,
+        "h": 16
+      },
+      "seglc": [
+        1,
+        0
+      ],
+      "lc": 1,
+      "rgbw": false,
+      "wv": 0,
+      "cct": 0
+    },
+    "str": false,
+    "name": "WLED-Gledopto",
+    "udpport": 21324,
+    "simplifiedui": false,
+    "live": false,
+    "liveseg": -1,
+    "lm": "",
+    "lip": "",
+    "ws": 0,
+    "fxcount": 220,
+    "palcount": 72,
+    "cpalcount": 0,
+    "umpalcount": 0,
+    "cpalmax": 129,
+    "maps": [
+      {
+        "id": 0
+      }
+    ],
+    "wifi": {
+      "bssid": "94:83:C4:98:78:94",
+      "rssi": -48,
+      "signal": 100,
+      "channel": 4,
+      "ap": false
+    },
+    "fs": {
+      "u": 364,
+      "t": 983,
+      "pmt": 0
+    },
+    "ndc": 0,
+    "arch": "esp32",
+    "core": "4.4.8.240628",
+    "clock": 240,
+    "flash": 4,
+    "lwip": 0,
+    "bootloaderSHA256": "b97d154765ea69ca895a33de59adb4b322509aa2a3e2c7c8409b31cbc1bcc2cd",
+    "freeheap": 97932,
+    "uptime": 7,
+    "time": "1970-1-1, 00:00:07",
+    "um": [
+      32,
+      58
+    ],
+    "u": {
+      "AudioReactive": [
+        "<button class=\"btn btn-xs\" onclick=\"requestJson({AudioReactive:{enabled:false}});\"><i class=\"icons on\">&#xe08f;</i></button>"
+      ],
+      "GEQ Input Level": [
+        "<div class=\"slider\"><div class=\"sliderwrap il\"><input class=\"noslide\" onchange=\"requestJson({AudioReactive:{inputLevel:parseInt(this.value)}});\" oninput=\"updateTrail(this);\" max=255 min=0 type=\"range\" value=255 /><div class=\"sliderdisplay\"></div></div></div>"
+      ],
+      "Audio Source": [
+        "PDM digital",
+        " - peak  40%"
+      ],
+      "Sound Processing": [
+        "running"
+      ],
+      "AGC Gain": [
+        4.78,
+        "x"
+      ],
+      "UDP Sound Sync": [
+        "send mode",
+        " v2"
+      ]
+    },
+    "opt": 79,
+    "brand": "WLED",
+    "product": "FOSS",
+    "mac": "704bca5b345c",
+    "ip": "192.168.77.10"
+  },
+  "build": {
+    "schema": "hbnf-build-v1",
+    "candidate": "hbnf-cart2-phase2-offline-wow-r2-20261008",
+    "ip": "192.168.77.10",
+    "mac": "70:4b:ca:5b:34:5c",
+    "release_id": "hbnf-cart2-phase2-offline-wow-r2-20261008",
+    "basedOnReleaseId": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "basedOnFirmwareSha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "wled": "16.0.1",
+    "features": [
+      "phase2-brightness-output-v1",
+      "wled-native-fontmanager-text-v1",
+      "foundation-audio-vibe-path-unfrozen"
+    ]
+  },
+  "matrix_state": {
+    "on": true,
+    "bri": 255,
+    "transition": 7,
+    "bs": 0,
+    "ps": 60,
+    "pl": -1,
+    "ledmap": 0,
+    "AudioReactive": {
+      "on": true
+    },
+    "HBNF": {
+      "schema": "foundation-v1",
+      "candidate": "hbnf-cart2-phase2-offline-wow-r2-20261008",
+      "transport": "wled-native-ddp-unicast",
+      "effectId": 142,
+      "scene": 0,
+      "motion": 50,
+      "audioResponse": 50,
+      "matrixBrightness": 44,
+      "auxBrightness": 60,
+      "palette": {
+        "mode": "legacy"
+      },
+      "overlayId": null,
+      "kernel": 13,
+      "variantSignature": 1190622067,
+      "variantDwellSeconds": 81,
+      "companionRenderCount": 283,
+      "companionLastNonzeroPixels": 13,
+      "timing": {
+        "kernel": 255,
+        "variantSignature": 0,
+        "wholeFrameUs": 0,
+        "kernelRenderUs": 0,
+        "audioModulationUs": 0,
+        "schedulerVariantUs": 0,
+        "paletteColorUs": 0,
+        "overlayUs": 0,
+        "companionPrepUs": 0,
+        "companionDdpSendUs": 0,
+        "auxProjectionAgeMs": 7838,
+        "unaccountedUs": 0,
+        "fps": 40,
+        "companionRenderCount": 283,
+        "freeHeap": 142248,
+        "rssi": -49,
+        "uptimeSec": 7
+      },
+      "liveActive": false,
+      "liveLabel": "",
+      "liveAcePot": 0,
+      "liveEntryCount": 0,
+      "audio": {
+        "bass": 52,
+        "mid": 39,
+        "treble": 0,
+        "volume": 84,
+        "peak": false
+      }
+    },
+    "nl": {
+      "on": false,
+      "dur": 60,
+      "mode": 1,
+      "tbri": 0,
+      "rem": -1
+    },
+    "udpn": {
+      "send": false,
+      "recv": false,
+      "sgrp": 1,
+      "rgrp": 0
+    },
+    "lor": 0,
+    "mainseg": 0,
+    "seg": [
+      {
+        "id": 0,
+        "start": 0,
+        "stop": 32,
+        "startY": 0,
+        "stopY": 16,
+        "len": 32,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 255,
+        "cct": 127,
+        "set": 0,
+        "lc": 1,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "fx": 142,
+        "sx": 128,
+        "ix": 128,
+        "pal": 8,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "o1": false,
+        "o2": false,
+        "o3": false,
+        "si": 0,
+        "m12": 0,
+        "bm": 0
+      },
+      {
+        "id": 1,
+        "start": 512,
+        "stop": 534,
+        "startY": 0,
+        "stopY": 1,
+        "len": 22,
+        "grp": 1,
+        "spc": 0,
+        "of": 0,
+        "on": true,
+        "frz": false,
+        "bri": 255,
+        "cct": 127,
+        "set": 0,
+        "lc": 0,
+        "col": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "fx": 142,
+        "sx": 128,
+        "ix": 128,
+        "pal": 0,
+        "c1": 128,
+        "c2": 128,
+        "c3": 16,
+        "sel": true,
+        "rev": false,
+        "mi": false,
+        "rY": false,
+        "mY": false,
+        "tp": false,
+        "o1": false,
+        "o2": false,
+        "o3": false,
+        "si": 0,
+        "m12": 0,
+        "bm": 0
+      }
+    ]
+  },
+  "aux_info": {
+    "ver": "16.0.1",
+    "vid": 2605010,
+    "cn": "Niji",
+    "release": "ESP32",
+    "repo": "wled/WLED",
+    "deviceId": "e3d28e871aade5e29da7fa368a6759ea368fc3572d",
+    "leds": {
+      "count": 22,
+      "pwr": 142,
+      "fps": 37,
+      "maxpwr": 900,
+      "maxseg": 32,
+      "bootps": 0,
+      "seglc": [
+        1
+      ],
+      "lc": 1,
+      "rgbw": false,
+      "wv": 0,
+      "cct": 0
+    },
+    "str": false,
+    "name": "WLED",
+    "udpport": 21324,
+    "simplifiedui": false,
+    "live": true,
+    "liveseg": -1,
+    "lm": "DDP",
+    "lip": "192.168.77.10",
+    "ws": 1,
+    "fxcount": 248,
+    "palcount": 72,
+    "cpalcount": 0,
+    "umpalcount": 0,
+    "cpalmax": 129,
+    "maps": [
+      {
+        "id": 0
+      }
+    ],
+    "wifi": {
+      "bssid": "94:83:C4:98:78:94",
+      "rssi": -26,
+      "signal": 100,
+      "channel": 4,
+      "ap": false
+    },
+    "fs": {
+      "u": 20,
+      "t": 983,
+      "pmt": 1791408637
+    },
+    "ndc": 1,
+    "arch": "esp32",
+    "core": "4.4.8.240628",
+    "clock": 240,
+    "flash": 4,
+    "lwip": 0,
+    "bootloaderSHA256": "b97d154765ea69ca895a33de59adb4b322509aa2a3e2c7c8409b31cbc1bcc2cd",
+    "freeheap": 105560,
+    "uptime": 19510,
+    "time": "2026-10-8, 02:46:22",
+    "um": [
+      32,
+      45
+    ],
+    "u": {
+      "AudioReactive": [
+        "<button class=\"btn btn-xs\" onclick=\"requestJson({AudioReactive:{enabled:true}});\"><i class=\"icons off\">&#xe08f;</i></button>"
+      ],
+      "Animartrix": [
+        "Animartrix requires the Creative Commons Attribution License CC BY-NC 3.0"
+      ]
+    },
+    "opt": 79,
+    "brand": "WLED",
+    "product": "FOSS",
+    "mac": "8c94df55c34c",
+    "ip": "192.168.77.11"
+  }
+}
