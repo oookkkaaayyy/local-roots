@@ -1,0 +1,92 @@
+{
+  "schema": "local-roots-prelive-proof-v1",
+  "run_id": "phase2-r2-single-install-20261008",
+  "capsule_sha256": "b548fdbfcf6c8e292ecccdc917395a826507169e7fe56f001d1e678da2972fa4",
+  "approved_for_mutation": true,
+  "authority": {
+    "source": "Current user message authorizing exactly ONE bounded Matrix installation of release hbnf-cart2-phase2-offline-wow-r2-20261008 SHA-256 8be42c878cb6502db1571e58e417848bd732e2d5debfb27b399738b1e70fcf6c",
+    "scope": "One Matrix OTA of this exact artifact; if frozen runtime/safety gates fail, one exact R4 rollback is authorized. No Opal/config/router/AUX firmware/Cloudflare/Supabase/Guest/UV actions."
+  },
+  "stages": {
+    "contract-closure": {
+      "status": "PASS",
+      "evidence": [
+        "outputs/hbnf-cart2-phase2-offline-wow-r2-20261008.manifest.json",
+        "Drive artifact 1UtEVVSBIJ6gMj3Vt7uEopcoasbb9YW04 SHA-256 verified from bytes; WLED /update POST contract and proven existing direct HTTP installation path"
+      ]
+    },
+    "recovery-proof": {
+      "status": "PASS",
+      "evidence": [
+        "../../outputs/hbnf-r4-foundation-metrics-tail250-rollback-20261007.bin SHA-256 and size verified locally",
+        "evidence/hbnf-phase2-integration-20261007/ddp-sender-diagnostic-live/R4_RESTORATION_VERIFICATION.json",
+        "evidence/hbnf-phase2-integration-20261007/live-rollout/CANDIDATE_RUNTIME_REGRESSION_AND_R4_RESTORE.json"
+      ]
+    },
+    "transaction-rehearsal": {
+      "status": "PASS",
+      "evidence": [
+        "evidence/hbnf-phase2-integration-20261007/live-rollout/CANDIDATE_RUNTIME_REGRESSION_AND_R4_RESTORE.json: same Matrix /update method returned HTTP 200 and exact R4 runtime identity after rollback",
+        "scripts/hbnf_packet20_r4_live_transaction.py: bounded multipart /update implementation"
+      ]
+    },
+    "capture-current-state": {
+      "status": "PASS",
+      "evidence": [
+        "evidence/hbnf-phase2-integration-20261007/live-r2-install/PREINSTALL_DEVICE_PREFLIGHT.json",
+        "Opal read-only release-state: sequence 55, exact R4 release and SHA; routine read-only SSH healthy; no Opal mutation"
+      ]
+    }
+  },
+  "recovery_identity": {
+    "identity": "R4 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1; SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c; 1,489,008 bytes",
+    "verification": "local binary SHA-256 exact; prior eight-sample post-restore identity/AUX verification PASS; release-state sequence55 exact R4; POST /update exact restore previously returned 200"
+  },
+  "pre_mutation_state": {
+    "matrix_ip": "192.168.77.10",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "matrix_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "wled": "16.0.1",
+    "kernel": 13,
+    "matrix_brightness": 44,
+    "matrix_uptime_seconds": [
+      3687,
+      3698,
+      3708
+    ],
+    "matrix_fps": [
+      39,
+      39,
+      42
+    ],
+    "matrix_wholeFrameUs": [
+      24103,
+      40406,
+      19947
+    ],
+    "matrix_heap_bytes": [
+      119288,
+      119328,
+      118840
+    ],
+    "renderer_count": [
+      148914,
+      149348,
+      149785
+    ],
+    "aux_identity": [
+      "192.168.77.11",
+      "8c:94:df:55:c3:4c"
+    ],
+    "aux_native_ddp": {
+      "live": true,
+      "lm": "DDP",
+      "lip": "192.168.77.10"
+    },
+    "opal_uptime": "9:52; exact R4 release-state sequence55; read-only SSH"
+  },
+  "consumer_contract": {
+    "verified": true,
+    "identity": "Multipart POST exact SHA-verified BIN to Matrix WLED 16.0.1 http://192.168.77.10/update from local host; this is the previously used direct-LAN installation path and does not alter Opal."
+  }
+}
