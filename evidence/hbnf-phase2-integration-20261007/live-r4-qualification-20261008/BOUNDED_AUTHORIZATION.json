@@ -1,11 +1,11 @@
 {
   "schema": "hbnf-phase2-r4-bounded-live-authorization-v1",
   "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
-  "status": "AUTHORIZED__PREFLIGHT_PASS__NOT_YET_CONSUMED",
+  "status": "AUTHORIZED__INSTALL_ATTEMPT_CONSUMED__REQUEST_NOT_YET_SENT",
   "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
   "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
   "preflight_path": "evidence/hbnf-phase2-integration-20261007/live-r4-qualification-20261008/PREINSTALL_PREFLIGHT.json",
-  "preflight_sha256": "bd34fb43705f525b34746274213fbc37fa83629c82ba598f290590c73398c19e",
+  "preflight_sha256": "a3fcce9e4f63d4d8eed491f517390f3ea575473d8860cf4a1f7d62e1caef00ed",
   "preflight_pass": true,
   "candidate": {
     "release_id": "hbnf-cart2-phase2-offline-wow-r4-20261008",
@@ -13,9 +13,11 @@
     "size_bytes": 1490160,
     "drive_id": "1Xt8uCndhTfuSHl65n7pAv7cAAfMN08AQ",
     "install_limit": 1,
-    "install_attempts": 0,
+    "install_attempts": 1,
     "install_reserved": 1,
-    "consumed_before_network_request": false
+    "consumed_before_network_request": true,
+    "consumption_recorded_at_utc": "2026-10-08T06:10:00.723317+00:00",
+    "network_request_sent": false
   },
   "rollback": {
     "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
@@ -57,5 +59,8 @@
   ],
   "current_live_mutation_authorized": true,
   "no_other_device_mutation": true,
-  "disk_free_bytes_before_run": 9821282304
+  "disk_free_bytes_before_run": 9821282304,
+  "preflight_captured_at_utc": "2026-10-08T06:07:42.125010+00:00",
+  "request_method": "single local multipart POST to http://192.168.77.10/update",
+  "retry_policy": "never"
 }

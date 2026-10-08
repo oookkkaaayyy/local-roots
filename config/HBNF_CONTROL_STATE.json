@@ -2025,11 +2025,11 @@
     "current_subject": {
       "release_id": "hbnf-cart2-phase2-offline-wow-r4-20261008",
       "artifact_sha256": "e65effb86d8755ca8a4af2155e51844d2c2a387f4000574459a382ca50c5ec87",
-      "status": "AUTHORIZED__PREFLIGHT_PASS__INSTALL_NOT_YET_STARTED"
+      "status": "AUTHORIZED__INSTALL_ATTEMPT_CONSUMED__REQUEST_NOT_YET_SENT"
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Consume the single authorized install attempt immediately before one multipart POST of the exact candidate to Matrix /update; do not retry.",
+      "The single authorized install attempt is consumed and durably recorded; issue exactly one multipart POST to Matrix /update now, with no retry.",
       "After exact identity and runtime health, qualify kernel 13 and then dense kernel 9 at brightness 44 against exact R4 baselines before allowing the 28-kernel sweep.",
       "If early gates pass, run the full unchanged 28-kernel sweep, freeze its hash-bound baseline, and start the unchanged contiguous 90-minute soak; preserve incremental evidence.",
       "Inspect AUX WLED 16.0.1 lor/live/lm/lip, realtime input, segment mapping/output and native DDP separately from HBNFAUX projection. Resolve the physical sync failure using reversible runtime-only changes only when justified; no persistent AUX settings or firmware changes.",
@@ -2548,11 +2548,11 @@
   "bounded_phase2_r4_live_qualification_authorization": {
     "schema": "hbnf-phase2-r4-bounded-live-authorization-v1",
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
-    "status": "AUTHORIZED__PREFLIGHT_PASS__NOT_YET_CONSUMED",
+    "status": "AUTHORIZED__INSTALL_ATTEMPT_CONSUMED__REQUEST_NOT_YET_SENT",
     "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
     "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
     "preflight_path": "evidence/hbnf-phase2-integration-20261007/live-r4-qualification-20261008/PREINSTALL_PREFLIGHT.json",
-    "preflight_sha256": "bd34fb43705f525b34746274213fbc37fa83629c82ba598f290590c73398c19e",
+    "preflight_sha256": "a3fcce9e4f63d4d8eed491f517390f3ea575473d8860cf4a1f7d62e1caef00ed",
     "preflight_pass": true,
     "candidate": {
       "release_id": "hbnf-cart2-phase2-offline-wow-r4-20261008",
@@ -2560,9 +2560,11 @@
       "size_bytes": 1490160,
       "drive_id": "1Xt8uCndhTfuSHl65n7pAv7cAAfMN08AQ",
       "install_limit": 1,
-      "install_attempts": 0,
+      "install_attempts": 1,
       "install_reserved": 1,
-      "consumed_before_network_request": false
+      "consumed_before_network_request": true,
+      "consumption_recorded_at_utc": "2026-10-08T06:10:00.723317+00:00",
+      "network_request_sent": false
     },
     "rollback": {
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
@@ -2605,7 +2607,8 @@
     "current_live_mutation_authorized": true,
     "no_other_device_mutation": true,
     "disk_free_bytes_before_run": 9821282304,
-    "evidence_path": "evidence/hbnf-phase2-integration-20261007/live-r4-qualification-20261008/BOUNDED_AUTHORIZATION.json",
-    "evidence_sha256": "587dc6a6a838652ffb85976cb4621bfe8e14592dcf02c6f2f7c07c2dc151bc86"
+    "preflight_captured_at_utc": "2026-10-08T06:07:42.125010+00:00",
+    "request_method": "single local multipart POST to http://192.168.77.10/update",
+    "retry_policy": "never"
   }
 }
