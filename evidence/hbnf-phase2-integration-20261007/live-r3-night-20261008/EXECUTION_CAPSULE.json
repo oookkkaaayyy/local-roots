@@ -1,0 +1,282 @@
+{
+  "cost_policy": {
+    "paid_or_quota_limited_execution": "explicit_authorization_per_bounded_run",
+    "remote_execution_for_source_archaeology": false,
+    "retry_inherits_authorization": false
+  },
+  "created_at": "2026-10-08T04:49:05.560555+00:00",
+  "expected_terminal_outputs": [
+    "R3 runtime qualification or exact failure classification",
+    "exact Matrix release identity",
+    "R4 recovery evidence if used",
+    "AUX physical synchronization/recovery evidence",
+    "soak audit",
+    "T4/T5 lifecycle state",
+    "durable evidence pointers"
+  ],
+  "external_authorities": {
+    "artifact_registry_drive_id": "18VsUYIYr62fYVaEqynM1kbMmfQpei-3H3rBgrw8S96k",
+    "delta_inbox_sheet_id": "1tJIcKRfWFdHVYVo4G6mgySB46p6xwsseGON3JdnEnzY",
+    "file_authority_drive_id": "1GwvPv_nihqoIj83WsO6VcvyujRkt8HnnULvLv717OHc",
+    "release_engineering_drive_id": "1bw_VUNt2mEZ4JdKuRsQq7ZS1Bc4KeC8kMVABVK2OdgE"
+  },
+  "repo_identity": {
+    "branch": "hbnf-cart2-phase2-integration-20261006",
+    "dirty": false,
+    "type": "git_commit",
+    "value": "6012e4b9904588ce8ab59d50ce135a8031753d20"
+  },
+  "repo_inputs": [
+    {
+      "bytes": 27965,
+      "path": "config/HBNF_CONTROL_MODEL.json",
+      "sha256": "24b43a09fbc03c8c58e1f3e86000ec50d1a01aafb718e776a09f1869e8bed2ec"
+    },
+    {
+      "bytes": 174306,
+      "path": "config/HBNF_CONTROL_STATE.json",
+      "sha256": "5c6c2fe9f389a26a43d805bb406ed88e87b6ceba799d0d5426cb0576a455f87e"
+    },
+    {
+      "bytes": 36358,
+      "path": "scripts/hbnf_control.py",
+      "sha256": "ec21785778042ed6a454960c8030fa96f1ed1d3d95baa2bd8cd942f30235ec16"
+    },
+    {
+      "bytes": 2644,
+      "path": "scripts/hbnf_guarded_run.py",
+      "sha256": "9ddbdd656a817bfd9c6fb3d156289dc090db6e21f5ae4d36c73fe69b9f15c2b8"
+    },
+    {
+      "bytes": 5404,
+      "path": "platform/policies.json",
+      "sha256": "16b80bafcb81002885164ba3799e1401d5007addb38ebb1e9a5336fdfa9bc37a"
+    },
+    {
+      "bytes": 7843,
+      "path": "platform/workflows/live-device-diagnostic.json",
+      "sha256": "2954ee3c24963e637632419049463e7d6b589300bb4d5519a3b6249d3638e849"
+    },
+    {
+      "bytes": 10967,
+      "path": "platform/cart2-critical-path-v1.json",
+      "sha256": "f19ef4feea2528c47a919d2deac967746690a2b9ead9a33db191b4b02cbe237b"
+    },
+    {
+      "bytes": 27873,
+      "path": "scripts/platform.py",
+      "sha256": "3042e74dd31f126d81809eec55e5b1d5379bae93f243bd6eed345b9c771cb81e"
+    },
+    {
+      "bytes": 8202,
+      "path": "platform/providers/cloudflare-workers.json",
+      "sha256": "67c0c79c310b780d2934fbf7ef12b06562d014adafac2105822a4c2d79ff74da"
+    },
+    {
+      "bytes": 13339,
+      "path": "AGENTS.md",
+      "sha256": "edc72feed7559f693669aa883ae472e3c78186b0bf040f09802653276dbbfd51"
+    },
+    {
+      "bytes": 3481,
+      "path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
+      "sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797"
+    },
+    {
+      "bytes": 8881,
+      "path": "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+      "sha256": "44f62cf31e5efa57a360117d96d437d6f504fd93704b28a069661b2da64a49f0"
+    },
+    {
+      "bytes": 5514,
+      "path": "config/HBNF_RUNTIME_TELEMETRY_CONTRACT.json",
+      "sha256": "9aca17e2339c5230b82997bbc5080f6cb3955558ad17ae8469a0a5f5a8aafa39"
+    },
+    {
+      "bytes": 4386,
+      "path": "evidence/hbnf-phase2-integration-20261007/telemetry-closure-20261008/CANDIDATE_MANIFEST.json",
+      "sha256": "068e07894ffdd937d51df7e44a3419bf8a47a380300dca63db3e983815e36009"
+    },
+    {
+      "bytes": 730,
+      "path": "evidence/hbnf-phase2-integration-20261007/telemetry-closure-20261008/COMPILED_TELEMETRY_CONTRACT.json",
+      "sha256": "446af1c442372ec20168dd367ebe0aace3d891ae20e55752aa0e6b886dec60ae"
+    },
+    {
+      "bytes": 24646,
+      "path": "scripts/hbnf_foundation_live_adapter.py",
+      "sha256": "e0ed4994021efadb8d9e8ed2ebc4fc879591a1ae75fc3af051a35090204dca5b"
+    },
+    {
+      "bytes": 30867,
+      "path": "scripts/hbnf_live_kernel_sweep.py",
+      "sha256": "2f9af473ae68e131169fd46e0d563841d7aecb9370807ff6cb9f7ac662ade18a"
+    },
+    {
+      "bytes": 17799,
+      "path": "scripts/hbnf_foundation_soak_audit.py",
+      "sha256": "e9ccfd5bcc494c354472939b378faf3400a5f9c238f0912119887c13fc07f62d"
+    },
+    {
+      "bytes": 15574,
+      "path": "scripts/hbnf_packet20_r4_live_transaction.py",
+      "sha256": "c34633fe2a4554ea59ed94c8c9a6af2e91600b6def4633bcd896571bd0656ff4"
+    }
+  ],
+  "run_id": "phase2-r3-night-qualification-20261008",
+  "schema": "local-roots-execution-capsule-v1",
+  "stages": [
+    {
+      "id": "package-doctor",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "platform doctor and HBNF control state pass; pushed branch is clean"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "contract-closure",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "exact candidate SHA/size/embedded identity and compiled telemetry manifest verified",
+        "Matrix WLED 16.0.1 /update consumer path and target identity verified"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "recovery-proof",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "exact R4 local recovery SHA/size and runtime ledger verified",
+        "same /update recovery path already proven end-to-end"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "transaction-rehearsal",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "one multipart install and exact recovery transaction mechanically rehearsed from prior receipts; no live change"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "capture-current-state",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "fresh Matrix/AUX/Opal state, exact identities, health, and renderer baseline captured"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "read-only-preflight",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "immediate pre-mutation identities and continuity pass"
+      ],
+      "retry_policy": "idempotent",
+      "timeout_budget": {
+        "inner_calls_max": 4,
+        "inner_timeout_seconds": 4,
+        "margin_seconds": 10,
+        "outer_seconds": 30
+      }
+    },
+    {
+      "id": "candidate-install",
+      "kind": "live",
+      "mutation": true,
+      "outputs": [
+        "one candidate multipart /update only; immediately capture HTTP response, exact runtime identity, Matrix/AUX health"
+      ],
+      "retry_policy": "never",
+      "rollback": {
+        "strategy": "one exact SHA-verified R4 Matrix /update recovery only if candidate identity/runtime/safety/frozen performance or required AUX synchronization fails"
+      },
+      "timeout_budget": {
+        "inner_calls_max": 1,
+        "inner_timeout_seconds": 190,
+        "margin_seconds": 50,
+        "outer_seconds": 240
+      }
+    },
+    {
+      "id": "runtime-smoke-and-physical-sync",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "matched kernel13/brightness44 performance and advancing renderer; exact telemetry fields; heap/restarts; actual Matrix-to-AUX output and owner-observed physical sync"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "all-kernel-sweep-and-soak",
+      "kind": "live",
+      "mutation": true,
+      "outputs": [
+        "28-kernel sweep and uninterrupted >=5400-second soak audited against the unchanged frozen policy; no threshold weakening"
+      ],
+      "retry_policy": "explicit_only",
+      "rollback": {
+        "strategy": "restore exact renderer snapshot; if frozen device/safety/AUX gate fails, use only the exact pre-proven R4 recovery; preserve evidence before continuing offline"
+      },
+      "timeout_budget": {
+        "inner_calls_max": 1,
+        "inner_timeout_seconds": 5670,
+        "margin_seconds": 330,
+        "outer_seconds": 6000
+      }
+    },
+    {
+      "id": "owner-acceptance",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "one consolidated owner session records physical AUX sync/recovery, text/Vibe/audio, iPad/PWA/Guest behavior, and final acceptance decisions; T5 not inferred"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "record",
+      "kind": "evidence",
+      "mutation": false,
+      "outputs": [
+        "terminal qualification receipt, candidate/recovery identities, GitHub/Drive/AKS pointers, and control state reconciled"
+      ],
+      "retry_policy": "idempotent"
+    }
+  ],
+  "storage_policy": {
+    "aks": "searchable routing, current-state pointers, acceptance/supersession metadata, and external artifact identities",
+    "github": "canonical/buildable source, scripts, configs, workflow definitions, and small machine-readable provenance",
+    "google_drive": "durable binaries, recovery artifacts, decisive evidence, and large immutable run outputs",
+    "local_workspace": "ephemeral execution only; never sole authority after a result becomes meaningful"
+  },
+  "system_id": "hbnf-cart",
+  "terminal_recovery": "If the exact candidate is unqualified or runtime safety/required AUX behavior fails, preserve the failure evidence, install only the exact R4 recovery within the authorized limit, verify exact R4 identity and health, then continue offline work; never stop solely because a soak failed.",
+  "trace_id": "0f59f167f6ce4bfbac1ea6a760e3ce65",
+  "user_interaction_policy": {
+    "copy_paste_delivery": "one_single_fenced_block_per_action",
+    "max_user_actions_per_blocker": 1,
+    "required_user_action_fields": [
+      "prerequisite",
+      "action",
+      "expected_result",
+      "stop_condition"
+    ],
+    "resource_instruction_requires_direct_link_or_exact_path": true,
+    "terminal_app": "macOS Terminal",
+    "terminal_relay": false
+  },
+  "workflow_id": "phase2-live-qualification",
+  "workflow_source": {
+    "path": "platform/workflows/phase2-live-qualification.json",
+    "sha256": "4111c2405b8add025f7a5dd75950aa0c03619729c55fee89a1246053deeaf7c3"
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "authority": "Exact one R3 install is consumed. Do not reflash R3. Exact R4 recovery remains limited to the already authorized single recovery when required by frozen gates. No Opal/router/AUX firmware/host deployment changes.",
+  "branch": "hbnf-cart2-phase2-integration-20261006",
+  "candidate": {
+    "install_attempts": 1,
+    "release_id": "hbnf-cart2-phase2-offline-wow-r3-20261008",
+    "runtime_identity_verified": true,
+    "sha256": "656418f63830205196ca07e39b84bc188db8839eaf631fc9e620ccf5f5feeedb",
+    "size_bytes": 1490048,
+    "upload_status": 200
+  },
+  "evidence_files": [
+    "UPLOAD_RECEIPT.json",
+    "POSTINSTALL_IDENTITY.json",
+    "R3_INITIAL_5MIN_RUNTIME_WINDOW.json",
+    "PHYSICAL_SYNC_FAILURE_SNAPSHOT.json",
+    "R3_AUX_INACTIVE_CONSECUTIVE_CHECKS.json",
+    "AUX_WS_LIVE_BUFFER.json",
+    "MATCHED_KERNEL13_OBSERVER_EFFECT.json",
+    "EXECUTION_CAPSULE.json",
+    "PRELIVE_PROOF.json"
+  ],
+  "initial_five_minute_window": {
+    "aux_custom_projection_active_samples": 0,
+    "aux_native_live_source_samples": 36,
+    "ddp_call_timing_nonzero_samples": 36,
+    "fps_median_mixed_kernels_not_comparable": 36.5,
+    "identity_exact": true,
+    "render_count_first_last": [
+      5066,
+      15868
+    ],
+    "renderer_count_advanced": true,
+    "restart_count": 0,
+    "sample_count": 36
+  },
+  "lifecycle": "PHASE2_INTEGRATING / T4; T5 owner acceptance remains open",
+  "matched_kernel13_brightness44": {
+    "observer_effect_delta_pct": -1.3192084749150477,
+    "r3_fps": 36,
+    "r3_frame_p95_ms": 21.875,
+    "r3_frame_p99_ms": 40.875,
+    "r3_frame_tail_overflow": false,
+    "r3_largest_block_bytes": 65524,
+    "r3_min_heap_bytes": 54908,
+    "r3_restart_count": 0,
+    "r4_baseline_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "r4_baseline_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "r4_fps_median": 39.0,
+    "r4_frame_p95_median_ms": 21.25,
+    "r4_frame_p99_median_ms": 33.625,
+    "r4_largest_block_bytes": 73716,
+    "r4_min_heap_bytes": 57416,
+    "ratios": {
+      "fps": 0.9230769230769231,
+      "frame_p95": 1.0294117647058822,
+      "frame_p99": 1.2156133828996283,
+      "largest_block": 0.8888708014542297,
+      "min_heap": 0.9563187961543821
+    }
+  },
+  "physical_sync": {
+    "aux_hbnf_projection_packets": 0,
+    "aux_wled_configuration": "22 LEDs on GPIO16; realtime input enabled",
+    "aux_wled_info_at_capture": {
+      "live": true,
+      "mode": "DDP",
+      "source": "192.168.77.10"
+    },
+    "aux_wled_live_buffer": {
+      "all_zero": true,
+      "frames": 41,
+      "payload_rgb_hex": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "unique_22_pixel_payloads": 1
+    },
+    "classification": "PHYSICAL_SYNCHRONIZATION_FAILED; the source/runtime timing and receiver status do not establish delivery of changing nonzero pixel data. Root cause remains unclassified; no AUX/Opal/router mutation.",
+    "matrix_ddp_virtual_bus": "22 RGB pixels to 192.168.77.11:4048, confirmed by read-only config",
+    "owner_observation": "Two distinct Matrix scene changes took effect promptly; underglow remained solid blue before, through, and after, with no color/display change."
+  },
+  "pretest_head": "6012e4b9904588ce8ab59d50ce135a8031753d20",
+  "qualification_started": {
+    "completed_profile_count": 2,
+    "current_status": "IN_PROGRESS",
+    "first_completed_profile": "00_Complex_Kaleido_3.profile.json",
+    "run_directory": "evidence/hbnf-phase2-integration-20261007/live-r3-night-20261008/FULL_FOUNDATION",
+    "workflow": "frozen 28-kernel sweep followed by >=5400s soak"
+  },
+  "recorded_at_utc": "2026-10-08T05:08:18.938686+00:00",
+  "rollback": {
+    "authorized_limit": 1,
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008,
+    "verified_available": true
+  },
+  "schema": "hbnf-phase2-r3-live-qualification-checkpoint-v1"
+}

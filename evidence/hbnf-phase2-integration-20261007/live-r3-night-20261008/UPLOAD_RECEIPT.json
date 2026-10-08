@@ -1,0 +1,16 @@
+{
+  "attempts": 1,
+  "candidate_sha256": "656418f63830205196ca07e39b84bc188db8839eaf631fc9e620ccf5f5feeedb",
+  "candidate_size_bytes": 1490048,
+  "curl_exit": 0,
+  "http_status": "200",
+  "method": "single local multipart POST to WLED /update",
+  "response_bytes": 404,
+  "response_contains_update_successful": true,
+  "response_sha256": "e989fc00de0b0d87a74771439a95cb6b231dac0ede16865104c2251612c6a128",
+  "retry_performed": false,
+  "schema": "hbnf-r3-one-shot-install-receipt-v1",
+  "started_at_utc": "2026-10-08T04:49:30.024505+00:00",
+  "stderr": "",
+  "target": "Matrix 192.168.77.10 / 70:4b:ca:5b:34:5c"
+}

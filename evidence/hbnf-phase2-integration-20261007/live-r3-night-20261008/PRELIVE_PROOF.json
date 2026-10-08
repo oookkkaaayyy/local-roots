@@ -1,0 +1,76 @@
+{
+  "approved_for_mutation": true,
+  "authority": {
+    "scope": "One Matrix install of R3 exact SHA only; exact R4 rollback once if objective performance/safety/identity/AUX synchronization fails; no other device, host, Guest, or UV mutation.",
+    "source": "User explicitly authorized this exact R3 install and all no-cost/non-communication actions."
+  },
+  "capsule_sha256": "e8441e9de097947c90565b3ea569a6f02e55cbd7ff75d91f27eaf29ab09434ae",
+  "consumer_contract": {
+    "identity": "Single local multipart POST of exact R3 bytes to http://192.168.77.10/update on Matrix WLED 16.0.1; no publication alias.",
+    "verified": true
+  },
+  "pre_mutation_state": {
+    "aux_ip": "192.168.77.11",
+    "aux_mac": "8c94df55c34c",
+    "aux_native_ddp": {
+      "lip": "192.168.77.10",
+      "live": true,
+      "lm": "DDP"
+    },
+    "aux_projection_rx_packets": 0,
+    "captured_at_utc": "2026-10-08T04:49:05.797249+00:00",
+    "matrix_brightness": 44,
+    "matrix_fps": 42,
+    "matrix_ip": "192.168.77.10",
+    "matrix_kernel": 13,
+    "matrix_mac": "704bca5b345c",
+    "matrix_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "matrix_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "matrix_uptime_seconds": 6783,
+    "opal_release_state": [
+      "55",
+      "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    ]
+  },
+  "qualification_note": "AUX physical synchronization remains open; live DDP source is reported from Matrix but AUX projectionRxPackets is zero. Candidate install is diagnostic/qualification only; not acceptance.",
+  "recovery_identity": {
+    "identity": "Exact R4 release hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1; SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c; size 1489008 bytes.",
+    "verification": "Current Matrix build.json, Opal ledger sequence55, local SHA/size, and previous recovery evidence match."
+  },
+  "run_id": "phase2-r3-night-qualification-20261008",
+  "schema": "local-roots-prelive-proof-v1",
+  "stages": {
+    "capture-current-state": {
+      "evidence": [
+        "/tmp/hbnf-r3-exact-prelive-now.json; immediate state and exact artifact hashes captured.",
+        "evidence/hbnf-phase2-integration-20261007/live-r3-night-20261008/PREINSTALL_DEVICE_PREFLIGHT.json",
+        "evidence/hbnf-phase2-integration-20261007/live-r3-night-20261008/OPAL_READONLY_PREFLIGHT.txt"
+      ],
+      "status": "PASS"
+    },
+    "contract-closure": {
+      "evidence": [
+        "evidence/hbnf-phase2-integration-20261007/telemetry-closure-20261008/CANDIDATE_MANIFEST.json",
+        "evidence/hbnf-phase2-integration-20261007/telemetry-closure-20261008/COMPILED_TELEMETRY_CONTRACT.json",
+        "evidence/hbnf-phase2-integration-20261007/live-r3-night-20261008/ARTIFACT_PREFLIGHT.json",
+        "WLED 16.0.1 multipart POST /update contract verified in the prior exact R2 prelive proof."
+      ],
+      "status": "PASS"
+    },
+    "recovery-proof": {
+      "evidence": [
+        "Exact local R4 SHA/size 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c / 1489008 bytes.",
+        "Current Opal release ledger 55 records exact R4; prior successful exact recovery in evidence/hbnf-phase2-integration-20261007/live-r2-install/rollback/R4_RESTORATION_VERIFICATION.json."
+      ],
+      "status": "PASS"
+    },
+    "transaction-rehearsal": {
+      "evidence": [
+        "evidence/hbnf-phase2-integration-20261007/live-rollout/CANDIDATE_RUNTIME_REGRESSION_AND_R4_RESTORE.json; same /update mechanism and exact R4 identity verified.",
+        "scripts/hbnf_packet20_r4_live_transaction.py: existing single multipart upload and runtime identity contract."
+      ],
+      "status": "PASS"
+    }
+  }
+}
