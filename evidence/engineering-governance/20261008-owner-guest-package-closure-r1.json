@@ -1,0 +1,42 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OWNER_GUEST_STATIC_PACKAGE_CLOSURE_R1_20261008",
+  "summary": "Include the already-approved static Guest route in the versioned Owner/Guest static package, hash nested assets, and align the package identity with the actual Owner UX R4 build marker.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Current user directives authorize the existing Owner/Guest UI release path, require Guest Mode OFF by default, preserve owner pairing/functionality, and require Guest interface delivery; the current static route and same-origin-page invocation of hbnf-cart-control are already prepared.",
+      "affected_subsystem": "Offline UI package closure only: include guest/hbnf-cart/index.html, guest.js, and guest.css in the existing UI package, installer copy/backup set, and recursive SHA-256 manifest; align the package marker with hbnf-cart2-owner-ux-r4-20261008. No new endpoint, auth, runtime capability, device, Supabase, or Cloudflare state is changed.",
+      "rollback_reference": "Revert the additive GUEST_FILES list, nested copy/manifest changes, package identity correction, associated package assertions, this record, and the manifest entry; the active Cloudflare version remains unchanged.",
+      "evidence_sources": [
+        "Read-only live host check 2026-10-08: Owner and Guest routes return HTTP 200 but are serving 2026-10-07 WOW R2 assets; current local Guest JavaScript hash differs from served asset.",
+        "Supabase Edge Functions official docs: https://supabase.com/docs/guides/functions",
+        "User-approved Guest architecture: static Guest route uses the existing Cart command endpoint and existing owner-controlled Guest Mode, with no separate auth/session subsystem."
+      ],
+      "tests": [
+        "node --check tests/hbnf_owner_pwa_package.mjs: PASS",
+        "node tests/hbnf_owner_pwa_package.mjs: PASS with nested Guest assets and current build identity coverage",
+        "python3 -m py_compile hbnf-ui-v6-package/install_ui_v6.py: PASS",
+        "No deployment was performed; package integrity and live Worker rollback remain separate predeployment gates.",
+        "Offline package rehearsal: build exact 16-file controller/Guest staging tree from current local sources, generate the same nested SHA-256 manifest as the workflow, call installer check_package(): PASS.",
+        "python3 scripts/platform.py doctor: PASS; software-change capsule created and checked.",
+        "python3 tests/hbnf_control.py: PASS 23/23; python3 tests/hbnf_guarded_run.py: PASS.",
+        "python3 scripts/hbnf_architecture_fitness.py: PASS after preserving byte-identical checkpoint authority snapshots in an archive and removing duplicate loose authority copies.",
+        "Governance change record validation and release-engineering static checks: PASS."
+      ],
+      "live_state": {
+        "deployed": false,
+        "live_mutation_authorized": false,
+        "current_state": "PHASE2_INTEGRATING/T4",
+        "guest_mode_default": "OFF"
+      }
+    }
+  }
+}

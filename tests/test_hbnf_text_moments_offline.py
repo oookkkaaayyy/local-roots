@@ -1,5 +1,10 @@
 import pathlib
+import hashlib
+import json
+import shutil
 import sys
+import subprocess
+import tempfile
 import unittest
 
 # Make the repository's namespace-package tools importable when this test is
@@ -9,6 +14,60 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from tools.hbnf_text_moments_offline import plan, classify, ReferenceFrame, compose_reference
 
 class TextMomentTests(unittest.TestCase):
+    def test_treatment_review_does_not_claim_unimplemented_or_frozen_options(self):
+        root=pathlib.Path(__file__).resolve().parents[1]
+        decision=json.loads((root/"firmware/phase2/integration-r5/ENGINEERING_DECISION.json").read_text())
+        review=decision["evidence"]["scoped_evidence"]["text_treatment_capability_review"]
+        self.assertEqual(review["status"],"OPTIONS_ONLY__NOT_IMPLEMENTED_OR_BUILT__AESTHETICS_UNFROZEN")
+        options={item["id"]:item for item in review["review_options"]}
+        self.assertEqual(set(options),{"quiet_reveal","vibe_contour","soft_dissolve"})
+        self.assertEqual(options["quiet_reveal"]["state"],"PROVISIONAL_OPTION_ONLY")
+        self.assertIn("not a literal outline/contour",options["vibe_contour"]["concept"])
+        self.assertIn("native source adaptation absent",options["soft_dissolve"]["compatibility"])
+        binding=json.loads((root/"firmware/phase2/integration-r5/SOURCE_BINDING.json").read_text())
+        self.assertFalse(binding["firmware_built"])
+        self.assertEqual(binding["release_identity"],"NOT_ASSIGNED_PENDING_FULL_BUILD_AND_QUALIFICATION")
+
+    def test_native_font_index_patch_defaults_and_falls_back_to_slot_four(self):
+        root=pathlib.Path(__file__).resolve().parents[1]
+        patch=(root/"firmware/phase2/integration-r5/native-font-index.patch").read_text()
+        binding=json.loads((root/"firmware/phase2/integration-r5/SOURCE_BINDING.json").read_text())
+        pinned=root.parent/"WLED-v16.0.1"
+        font_manager=(pinned/"wled00/fontmanager.cpp").read_text()
+        self.assertIn('const int requestedFontIndex=obj["fontIndex"]|4;',patch)
+        self.assertIn('requestedFontIndex==0||requestedFontIndex==2||requestedFontIndex==3||requestedFontIndex==4',patch)
+        self.assertIn('bool fontLoaded=font.loadFont(overlay.fontIndex,overlay.text,false);',patch)
+        self.assertIn('if(!fontLoaded&&overlay.fontIndex!=4)fontLoaded=font.loadFont(4,overlay.text,false);',patch)
+        self.assertIn('if(fontLoaded)HbnfNativeText::drawPaged',patch)
+        self.assertIn('s.fontIndex=fontIndex;',patch)
+        for marker in ('case 0: flashFont = font_tom_thumb_6px','case 1: flashFont = font_TinyUnicode_8px','case 2: flashFont = console_font_6x8','case 3: flashFont = c64esque_9px','case 4: flashFont = font_5x12'):
+            self.assertIn(marker,font_manager)
+        font=pinned/"wled00/src/font/font_5x12.wbf"
+        self.assertEqual(hashlib.sha256(font.read_bytes()).hexdigest(),"e98ecd3cb8b6a135a0b318e51ebd08eb61fa6b718e2d1ffca2d4d863bb7c0581")
+        self.assertEqual(binding["status"],"R4_SOURCE_REBASE_VERIFIED__NOT_BUILT")
+        self.assertTrue(binding["r4_preserved_byte_for_byte"])
+        self.assertEqual(hashlib.sha256((root/"firmware/phase2/integration-r4/usermod_hbnf_foundation_v1.patch").read_bytes()).hexdigest(),binding["r4_patch_sha256"])
+        self.assertEqual(hashlib.sha256((root/"firmware/phase2/integration-r5/native-font-index.patch").read_bytes()).hexdigest(),binding["patch_sha256"])
+
+    def test_native_font_index_patch_applies_to_exact_reconstructed_r4_source(self):
+        root=pathlib.Path(__file__).resolve().parents[1]
+        binding=json.loads((root/"firmware/phase2/integration-r5/SOURCE_BINDING.json").read_text())
+        pinned=root.parent/"WLED-v16.0.1"
+        with tempfile.TemporaryDirectory(prefix="hbnf-r5-font-") as td:
+            temp=pathlib.Path(td)
+            target=temp/"usermods/hbnf_foundation_v1"
+            target.mkdir(parents=True)
+            shutil.copy2(root/"firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp",target/"usermod_hbnf_foundation_v1.cpp")
+            shutil.copy2(pinned/"usermods/hbnf_foundation_v1/hbnf_coordinated_contract.h",target/"hbnf_coordinated_contract.h")
+            r4_patch=root/"firmware/phase2/integration-r4/usermod_hbnf_foundation_v1.patch"
+            subprocess.run(["patch","--batch","--forward","-p1","-i",str(r4_patch)],cwd=target,check=True,capture_output=True,text=True)
+            usermod=target/"usermod_hbnf_foundation_v1.cpp"
+            self.assertEqual(hashlib.sha256(usermod.read_bytes()).hexdigest(),binding["r4_integrated_source_sha256"])
+            r5_patch=root/"firmware/phase2/integration-r5/native-font-index.patch"
+            subprocess.run(["patch","--batch","--forward","-p1","--dry-run","-i",str(r5_patch)],cwd=temp,check=True,capture_output=True,text=True)
+            subprocess.run(["patch","--batch","--forward","-p1","-i",str(r5_patch)],cwd=temp,check=True,capture_output=True,text=True)
+            self.assertEqual(hashlib.sha256(usermod.read_bytes()).hexdigest(),binding["r5_integrated_usermod_sha256"])
+
     def test_acceptance_corpus(self):
         cases=[("HERO_WORD","ACE"),("HERO_WORD","WINNER"),("NAME","ANDREW"),("NAME","TEAM 4"),("NUMBER_VALUE","$187"),("NUMBER_VALUE","25 FT"),("NUMBER_VALUE","30 SEC"),("DIRECTIVE","STATION 4"),("DIRECTIVE","READY"),("DIRECTIVE","GO"),("DIRECTIVE","REST"),("SHORT_ANNOUNCEMENT","BACK 9"),("SHORT_ANNOUNCEMENT","ACE POT"),("SHORT_ANNOUNCEMENT","NEXT UP"),("LONG_FREE_TEXT","SOURCE DEPENDENT LONG MESSAGE FIXTURE")]
         for cls,text in cases:

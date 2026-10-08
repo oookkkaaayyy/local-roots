@@ -1,5 +1,6 @@
 // @ts-nocheck
 import mqtt from "npm:mqtt@5.10.4";
+import { confirmationContract } from "./confirmation.ts";
 
 const json=(x:any,s=200)=>new Response(JSON.stringify(x),{status:s,headers:{"Content-Type":"application/json","Cache-Control":"no-store"}});
 const HOST=(Deno.env.get("HBNF_MQTT_HOST")||"broker.emqx.io").trim();
@@ -43,7 +44,10 @@ function overlaySpec(raw:any){
     const text=String(data.text||"").trim().slice(0,63);
     const color=String(data.color||"#FFFFFF").toUpperCase();
     if(!text||!/^#[0-9A-F]{6}$/.test(color))return null;
-    return{id,kind,ttlMs,text,color};
+    const rawFontIndex=data.fontIndex;
+    const fontIndex=rawFontIndex===undefined?4:rawFontIndex;
+    if(!Number.isInteger(fontIndex)||![0,2,3,4].includes(fontIndex))return null;
+    return{id,kind,ttlMs,text,color,fontIndex};
   }
   const entries=Array.isArray(data.entries)?data.entries.map((x:any)=>String(x).trim().slice(0,48)).filter(Boolean).slice(0,12):[];
   if(!entries.length)return null;
@@ -103,11 +107,16 @@ Deno.serve(async(req:Request)=>{
 
   if(!p.enabled){
     await publish({on:false,HBNF:{matrixBrightness:0,auxBrightness:0}});
+    const transport=await confirmTransport();
+    const confirmation=confirmationContract(transport.transportConfirmed===true,transport.masterBrightness);
     return json({
-      confirmed:false,transportConfirmed:true,semanticConfirmed:false,
+      confirmed:false,...confirmation,semanticConfirmed:false,
       deviceId:"matrix",cartRevision:p.cartRevision,fenceEpoch:p.fenceEpoch,
       brightness:matrixBrightness,auxBrightness,enabled:false,
       driver:"hbnf-matrix-adapter-foundation",adapterRoute:"foundation-ddp-off",
+      verification:"mqtt-connection-liveness-only",
+      masterBrightness:transport.masterBrightness,
+      failureCode:confirmation.transportConfirmed?null:"mqtt_publish_accepted_status_not_observed",
       requestedMatrixBrightness:matrixBrightness,requestedAuxBrightness:auxBrightness
     });
   }
@@ -136,20 +145,22 @@ Deno.serve(async(req:Request)=>{
 
   await publish(payload);
   const transport=await confirmTransport();
+  const confirmation=confirmationContract(transport.transportConfirmed===true,transport.masterBrightness);
 
   return json({
     confirmed:false,
-    transportConfirmed:transport.transportConfirmed===true,
+    ...confirmation,
     semanticConfirmed:false,
     deviceId:"matrix",cartRevision:p.cartRevision,fenceEpoch:p.fenceEpoch,
     brightness:matrixBrightness,auxBrightness,enabled:true,
     sceneId:scene,paletteId:p.paletteId,overlayId:overlay?.id??null,motion,audioResponse,
     driver:"hbnf-matrix-adapter-foundation",
     adapterRoute:"foundation-native-ddp",
-    verification:"mqtt-online-plus-wled-master-unity",
+    verification:"mqtt-connection-liveness-only",
     masterBrightness:transport.masterBrightness,
     requestedMatrixBrightness:matrixBrightness,
     requestedAuxBrightness:auxBrightness,
+    failureCode:confirmation.transportConfirmed?null:"mqtt_publish_accepted_status_not_observed",
     appliedProjection:p
   }, transport.transportConfirmed===true?200:502);
 });

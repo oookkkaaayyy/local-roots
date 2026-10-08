@@ -10,6 +10,20 @@ module = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(module)
 
+# A Git status timeout must not be collapsed into an apparently clean checkout.
+original_git = module.git
+def git_with_unavailable_status(args):
+    if args == ["rev-parse", "HEAD"]:
+        return "0123456789abcdef"
+    if args == ["rev-parse", "--abbrev-ref", "HEAD"]:
+        return "main"
+    if args == ["status", "--porcelain"]:
+        return None
+    return original_git(args)
+module.git = git_with_unavailable_status
+assert module.repo_identity()["dirty"] is None
+module.git = original_git
+
 catalog = module.load_json(ROOT / "platform/catalog.json")
 policies = module.load_json(ROOT / "platform/policies.json")
 
@@ -36,6 +50,7 @@ assert workflow_ids == {
     "software-change",
     "artifact-release",
     "live-device-diagnostic",
+    "phase2-live-qualification",
 }
 
 # Timeout-budget regression: the class of defect that stopped Packet20 must fail.

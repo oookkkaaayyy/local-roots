@@ -272,6 +272,10 @@ export function reduceCartCommand(state: Record<string, unknown>, type: string, 
         const color = String((data as Record<string, unknown>).color ?? "#FFFFFF").toUpperCase();
         if (!/^#[0-9A-F]{6}$/.test(color)) return null;
         (data as Record<string, unknown>).color = color;
+        const rawFontIndex = (data as Record<string, unknown>).fontIndex;
+        const fontIndex = rawFontIndex === undefined ? 4 : rawFontIndex;
+        if (!Number.isInteger(fontIndex) || ![0, 2, 3, 4].includes(fontIndex as number)) return null;
+        (data as Record<string, unknown>).fontIndex = fontIndex;
       } else {
         const entries = Array.isArray((data as Record<string, unknown>).entries) ? (data as Record<string, unknown>).entries as unknown[] : [];
         if (!entries.length || entries.length > 12) return null;

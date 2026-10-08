@@ -1,0 +1,44 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OWNER_STATUS_TRUTHFUL_REFRESH_R2_20261008",
+  "summary": "Keep Owner Mission Control's truth state accurate across refresh failures and accepted-but-unconfirmed commands, and rotate the PWA asset/cache version for this offline source change.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Owner direction requires APPLYING not to obscure actual command status and the Owner PWA to use the existing Supabase command path; HBNF_CONTROL_STATE remains PHASE2_INTEGRATING/T4 with live mutation unauthorized.",
+      "affected_subsystem": "Owner PWA refresh/error presentation and static cache identity only; no command, pairing, Guest Mode, backend, firmware, deployment, or device behavior changed.",
+      "rollback_reference": "Revert hbnf-cart.js, hbnf-cart-sw.js, hbnf-cart.html, hbnf-cart-manifest.webmanifest, package/reliability tests, and this record; cache identity reverts with the prior worker.",
+      "evidence_sources": [
+        "https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/update",
+        "https://developer.mozilla.org/en-US/docs/Web/API/CacheStorage/delete",
+        "evidence/engineering-governance/20261008-owner-status-failure-r1.json",
+        "User direction: APPLYING must not obscure actual command status; cached UI must not imply local control."
+      ],
+      "tests": [
+        "node --check hbnf-final-controller/hbnf-cart.js: PASS",
+        "node tests/hbnf_owner_pwa_reliability.mjs: PASS",
+        "node tests/hbnf_owner_pwa_package.mjs: PASS",
+        "node tests/hbnf-ios12-compat-audit.mjs: PASS; source gate only, actual iPad runtime remains unverified.",
+        "Read-only local browser: refresh settles service unavailable and Matrix/AUX not confirmed after checking; no status request sent a control/scoring command.",
+        "Responsive measurements at 744x1133 and 390x844: document/body scroll widths equal viewport; viewport override reset."
+      ],
+      "service_worker_cache_invalidation": {
+        "change": "Bump owner UX asset/cache key r3 to r4 because packaged JS changed after r3; preserve existing worker lifecycle.",
+        "basis": "MDN documents changed service-worker script installation and activation-time old-cache cleanup; source URLs/cache name are versioned in this PWA."
+      },
+      "live_state": {
+        "deployed": false,
+        "live_mutation_authorized": false,
+        "current_state": "PHASE2_INTEGRATING/T4",
+        "owner_aesthetics": "UNFROZEN"
+      }
+    }
+  }
+}

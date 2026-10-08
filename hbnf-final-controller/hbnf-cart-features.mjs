@@ -283,7 +283,9 @@ async function sendText() {
   if (!text) throw new Error("Type a message first.");
   setFeatureStatus("Sending text…");
   const bridge=canonicalOverlayBridge();
-  await bridge.overlay("text",{text:text,color:$("featureColor").value || "#FFFFFF"});
+  const data={text:text,color:$("featureColor").value || "#FFFFFF"};
+  if (canonicalCapabilities().nativeTextFontIndexV1===true) data.fontIndex=Number($("featureFontIndex").value || 4);
+  await bridge.overlay("text",data);
   $("featureText").value="";
   setFeatureStatus("Text command accepted.");
 }
@@ -474,6 +476,9 @@ async function runPreflight() {
 function syncOverlayAvailability() {
   const caps=canonicalCapabilities();
   const overlayReady=!!(window.HBNFCanonical && typeof window.HBNFCanonical.overlay==="function" && caps.canonicalOverlayIntentV1===true);
+  const fontIndexReady=caps.nativeTextFontIndexV1===true;
+  const fontIndex=$("featureFontIndex");
+  if (fontIndex) fontIndex.disabled=!fontIndexReady;
   const paletteReady=caps.canonicalPaletteIntentV1===true;
   ["featureSendText","featureScoreboard","featureAcePot"].forEach(function(id){
     const node=$(id);

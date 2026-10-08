@@ -20,13 +20,15 @@
     </section>
     <section class="boot-card" aria-label="Vibe controls">
       <div class="section-head"><div><p class="eyebrow">GUEST CONTROLS</p><h2>Vibe</h2></div><span id="guestBadge" class="badge closed">CLOSED</span></div>
-      <div class="vibe-grid">
-        <button data-guest-action="vibe" data-value="mellow" disabled><strong>Mellow</strong><span>Soft energy</span></button>
-        <button data-guest-action="vibe" data-value="moderate" disabled><strong>Moderate</strong><span>Easy flow</span></button>
-        <button data-guest-action="vibe" data-value="energetic" disabled><strong>Energetic</strong><span>More movement</span></button>
-        <button data-guest-action="vibe" data-value="peak" disabled><strong>Peak</strong><span>Full energy</span></button>
-        <button data-guest-action="vibe_auto" disabled><strong>Auto Vibe</strong><span>Let the Cart follow its current music behavior</span></button>
+      <div class="vibe-grid" aria-describedby="vibeAvailability">
+        <button data-guest-action="vibe" data-value="chill" data-vibe-control disabled><strong>CHILL</strong></button>
+        <button data-guest-action="vibe" data-value="groove" data-vibe-control disabled><strong>GROOVE</strong></button>
+        <button data-guest-action="vibe" data-value="heavy" data-vibe-control disabled><strong>HEAVY</strong></button>
+        <button data-guest-action="vibe" data-value="psychedelic" data-vibe-control disabled><strong>PSYCHEDELIC</strong></button>
+        <button data-guest-action="vibe" data-value="cosmic" data-vibe-control disabled><strong>COSMIC</strong></button>
+        <button data-guest-action="vibe_auto" data-vibe-control disabled><strong>AUTO VIBE</strong></button>
       </div>
+      <p id="vibeAvailability" class="muted" role="status">Guest Vibes stay disabled until the Cart’s matching Vibe runtime is qualified.</p>
     </section>
     <section class="boot-card" aria-label="Cart actions">
       <h2>Play</h2>

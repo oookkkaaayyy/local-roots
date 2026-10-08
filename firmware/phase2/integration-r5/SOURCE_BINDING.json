@@ -1,0 +1,43 @@
+{
+  "schema": "hbnf-phase2-integration-r5-source-binding-v1",
+  "status": "R4_SOURCE_REBASE_VERIFIED__NOT_BUILT",
+  "base_release": "hbnf-cart2-phase2-offline-wow-r4-20261008",
+  "base_firmware_sha256": "e65effb86d8755ca8a4af2155e51844d2c2a387f4000574459a382ca50c5ec87",
+  "base_source_path": "firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp",
+  "base_source_sha256": "31126d341bf0a3e54a33d87de0856c5f68e79f20dd05653ae1d5df3270a9bc9d",
+  "r4_patch_path": "firmware/phase2/integration-r4/usermod_hbnf_foundation_v1.patch",
+  "r4_patch_sha256": "553ac4f2d262e38e5436196b7c79b0b9bc001e6883775b8769da6773877f60ef",
+  "r4_integrated_source_sha256": "9672125b4f1914c73bf0d7a997ae81a430c8f4e4b1cb50956e1303ac19687bfa",
+  "pinned_wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+  "pinned_hbnf_coordinated_contract_header_sha256": "e65399d2117f79d302bd8bd7474da955000e74689f6712a726a7e2759a477d25",
+  "pinned_fontmanager_source_sha256": "e177d820b58b5628f92f2513bfd7b5a4bb0e2cb39bb559af0ce5050c9857ffd5",
+  "patch_path": "firmware/phase2/integration-r5/native-font-index.patch",
+  "patch_sha256": "06c9f5763d4c10ee96a04d6b64558e36f9048bd3e0c0f7e17e18ab6e55a7ea89",
+  "r5_integrated_usermod_sha256": "b6b32d1eb755909a89875fe711de4b4c9e6c6c33c2a80b92dafeb544b9e099d0",
+  "scope": {
+    "field": "OVERLAY_START.data.fontIndex",
+    "default": 4,
+    "accepted_native_slots": [
+      0,
+      2,
+      3,
+      4
+    ],
+    "unsupported_slots_fallback_to": 4,
+    "tiny_unicode_slot_1_exposed": false,
+    "treatments": "UNFROZEN",
+    "custom_renderer": false
+  },
+  "rebase_check": {
+    "result": "PASS_PATCH_APPLIED_TO_EXACT_R4_INTEGRATED_SOURCE",
+    "reconstructed_r4_sha256": "9672125b4f1914c73bf0d7a997ae81a430c8f4e4b1cb50956e1303ac19687bfa",
+    "r5_patch_dry_run": "PASS",
+    "r5_patch_application": "PASS",
+    "evidence": "work/checkpoints/20261008-r5-exact-r4-rebase-check/report.json"
+  },
+  "release_identity": "NOT_ASSIGNED_PENDING_FULL_BUILD_AND_QUALIFICATION",
+  "r4_preserved_byte_for_byte": true,
+  "firmware_built": false,
+  "live_mutation": false,
+  "load_failure_behavior": "If a nondefault native font load fails, retry exact R4 baseline slot 4; if slot 4 fails, do not draw or corrupt the underlying frame."
+}

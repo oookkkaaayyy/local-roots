@@ -8,10 +8,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="HBNF Cart">
   <meta name="hbnf-access" content="guest-zero-pair">
-  <meta name="hbnf-build" content="hbnf-cart2-phase2-wow-r2-20261007">
-  <link rel="manifest" href="./hbnf-cart-manifest.webmanifest?v=20261007-wow-r2">
-  <link rel="apple-touch-icon" sizes="180x180" href="./hbnf-cart-icon-180.png?v=20261007-wow-r2">
-  <link rel="stylesheet" href="./hbnf-cart-ui-v6.css?v=20261007-wow-r2">
+  <meta name="hbnf-build" content="hbnf-cart2-owner-ux-r4-20261008">
+  <link rel="manifest" href="./hbnf-cart-manifest.webmanifest?v=20261008-owner-ux-r4">
+  <link rel="apple-touch-icon" sizes="180x180" href="./hbnf-cart-icon-180.png?v=20261008-owner-ux-r4">
+  <link rel="stylesheet" href="./hbnf-cart-ui-v6.css?v=20261008-owner-ux-r4">
   <title>HBNF Cart Control</title>
   <style>
     :root{color-scheme:dark;font:16px/1.4 system-ui,sans-serif;background:#071018;color:#eaf4f7}*{box-sizing:border-box}body{margin:0;padding:20px;max-width:680px;margin-inline:auto}h1{font-size:1.55rem}main{display:grid;gap:18px}.panel{border:1px solid #24414c;border-radius:14px;padding:16px;background:#0d1d25}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}button,select,input,textarea{font:inherit;color:inherit;background:#142c36;border:1px solid #35606b;border-radius:9px;padding:10px}button{min-width:74px;cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #57e0c0;outline-offset:2px}.danger{border-color:#c94c61}.device{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;margin-top:12px}input[type=range]{grid-column:1/-1;width:100%;padding:0}.muted{color:#a4bec6}.status{white-space:pre-wrap;min-height:3em}label{display:flex;align-items:center;gap:8px}select{max-width:100%}.pair-link{width:100%;min-height:78px;word-break:break-all}.good{color:#8ce3ad}.warn{color:#f2ca75}
@@ -36,16 +36,70 @@
 </head>
 <body><main>
   <header class="hero-v6">
-    <div><p class="eyebrow">HBNF CART</p><h1>Live Control</h1></div>
+    <div><p class="eyebrow">HBNF CART</p><h1>Mission Control</h1></div>
     <div id="truthBadge" class="truth-badge warn">CHECKING HARDWARE</div>
   </header>
 
   <section class="panel truth-panel" aria-label="Hardware truth">
     <div class="truth-grid">
+      <div class="truth-cell"><span>Cart service</span><strong id="backendTruth">Checking…</strong></div>
       <div class="truth-cell"><span>Matrix</span><strong id="matrixTruth">—</strong></div>
       <div class="truth-cell"><span>Underglow</span><strong id="auxTruth">—</strong></div>
     </div>
+    <p class="hardware-note">The cached page does not provide local control; commands require the Cart service.</p>
   </section>
+
+  <section class="panel quick-brightness" aria-label="Brightness">
+    <h2>Brightness</h2>
+    <div class="quick-brightness-grid">
+      <label class="device"><span class="range-head"><strong>Matrix</strong><output id="matrixValue">8</output></span><input aria-label="Matrix brightness" id="matrixBrightness" type="range" min="0" max="255" value="8"></label>
+      <label class="device"><span class="range-head"><strong>Underglow</strong><output id="auxValue">64</output></span><input aria-label="Underglow brightness" id="auxBrightness" type="range" min="0" max="255" value="64"></label>
+    </div>
+    <p class="apply-note">Release a slider to apply its brightness.</p>
+  </section>
+
+  <section class="panel quick-vibe" aria-label="Vibe">
+    <div class="section-heading"><div><p class="eyebrow">SET THE FEEL</p><h2>Vibe</h2></div><span id="vibeModeLabel" class="muted">—</span></div>
+    <div class="vibe-options" role="group" aria-label="Choose a Vibe">
+      <button type="button" class="vibe-option" data-vibe="chill" aria-pressed="false" disabled><strong>CHILL</strong><span>Manual Vibe</span></button>
+      <button type="button" class="vibe-option" data-vibe="groove" aria-pressed="false" disabled><strong>GROOVE</strong><span>Manual Vibe</span></button>
+      <button type="button" class="vibe-option" data-vibe="heavy" aria-pressed="false" disabled><strong>HEAVY</strong><span>Manual Vibe</span></button>
+      <button type="button" class="vibe-option" data-vibe="psychedelic" aria-pressed="false" disabled><strong>PSYCHEDELIC</strong><span>Manual Vibe</span></button>
+      <button type="button" class="vibe-option" data-vibe="cosmic" aria-pressed="false" disabled><strong>COSMIC</strong><span>Manual Vibe</span></button>
+      <button id="vibeAuto" type="button" class="vibe-auto" aria-pressed="false" disabled>Auto Vibe <span>Not qualified</span></button>
+    </div>
+    <p class="apply-note" id="vibeAvailability" role="status">Manual Vibes and Auto Vibe remain unavailable until the approved runtime and replay gates are qualified. Energy tuning is available under Fine-tune visual response.</p>
+  </section>
+
+  <section class="panel cart-commands" aria-label="Power and show sequence">
+    <h2>Power &amp; sequence</h2>
+    <div class="row">
+      <button class="danger" data-command="OFF">OFF</button>
+      <button data-command="ON">ON</button>
+      <button data-command="NEXT">NEXT</button>
+      <button data-command="AUTO">SHOW AUTO</button>
+    </div>
+    <details class="sub-controls"><summary>Scenes and program</summary>
+    <button data-command="LOCK">LOCK</button>
+    <div class="control-grid">
+      <div id="sceneButtons" class="scene-buttons" aria-label="Scene"></div>
+      <label class="scene-native-wrap">Scene
+        <select id="scene">
+          <option value="course-flow">Course Flow</option>
+          <option value="field-mix">Field Mix</option>
+          <option value="hbnf-signature">HBNF Signature</option>
+          <option value="quiet-cosmos">Quiet Cosmos</option>
+        </select>
+      </label>
+    </div>
+    <p class="apply-note">Scenes and Shows are separate choices. NEXT advances the sequence; Show Auto lets the Cart choose its program.</p>
+    </details>
+  </section>
+
+  <nav class="quick-links" aria-label="Everyday tools">
+    <a href="#textPanel">Text / Moments</a>
+    <a href="#scoresPanel">Scores</a>
+  </nav>
 
   <section id="pairAcceptPanel" class="panel" hidden aria-label="Pair this device">
     <h2>Pair this device</h2>
@@ -67,27 +121,6 @@
     <div id="pairCreateStatus" class="muted" role="status" aria-live="polite"></div>
   </section>
 
-  <section class="panel" aria-label="Cart commands">
-    <div class="row">
-      <button class="danger" data-command="OFF">OFF</button>
-      <button data-command="ON">ON</button>
-      <button data-command="NEXT">NEXT</button>
-      <button data-command="AUTO">AUTO</button>
-      <button data-command="LOCK">LOCK</button>
-    </div>
-    <div class="control-grid">
-      <div id="sceneButtons" class="scene-buttons" aria-label="Scene"></div>
-      <label class="scene-native-wrap">Scene
-        <select id="scene">
-          <option value="course-flow">Course Flow</option>
-          <option value="field-mix">Field Mix</option>
-          <option value="hbnf-signature">HBNF Signature</option>
-          <option value="quiet-cosmos">Quiet Cosmos</option>
-        </select>
-      </label>
-    </div>
-    <p class="apply-note">Selections apply immediately. No Set/Apply button.</p>
-  </section>
 
   <section class="panel" aria-label="Guest access">
     <h2>Guest Mode</h2>
@@ -99,8 +132,8 @@
     <a href="/guest/hbnf-cart/">Open the Guest page</a>
   </section>
 
-  <section class="panel">
-    <h2>Visual direction</h2>
+  <details class="panel sub-controls">
+    <summary>Fine-tune visual response</summary>
     <div class="tune-grid">
       <label>
         <span class="range-head"><span>Energy</span><output id="energyValue">65</output></span>
@@ -119,11 +152,11 @@
         <input id="variation" type="range" min="0" max="100" step="1" value="85">
       </label>
     </div>
-    <p class="apply-note">All scenes use the same source-coupled audio engine. Variation changes evolution rate; anti-repeat remains enforced.</p>
-  </section>
+    <p class="apply-note">These controls refine the selected Vibe. All scenes use the same source-coupled audio engine; anti-repeat remains enforced.</p>
+  </details>
 
-  <section class="panel" aria-label="Looks and color">
-    <h2>Shows + color</h2>
+  <details class="panel sub-controls" aria-label="Shows, color, and saved looks">
+    <summary>Shows, color, and saved looks</summary>
     <div class="fine-grid">
       <label class="wide">Show
         <select id="featureLook"></select>
@@ -149,17 +182,25 @@
     </div>
     <div id="featureStatus" class="status">Feature controls staged.</div>
     <p class="apply-note">Show/palette changes use canonical cart state; palette names are discovered read-only from the local Matrix.</p>
-  </section>
+  </details>
 
-  <section class="panel" aria-label="Matrix message">
+  <section id="textPanel" class="panel" aria-label="Matrix message">
     <h2>Text</h2>
     <div class="row">
       <input id="featureText" type="text" maxlength="63" placeholder="Type Matrix message" style="flex:1;min-width:180px">
+      <label for="featureFontIndex">Native WLED font</label>
+      <select id="featureFontIndex" aria-label="Native WLED font review option" disabled>
+        <option value="4" selected>Slot 4 · 5×12 (current default)</option>
+        <option value="0">Slot 0 · Tom Thumb 6px</option>
+        <option value="2">Slot 2 · Console 6×8</option>
+        <option value="3">Slot 3 · C64-esque 9px</option>
+      </select>
       <button id="featureSendText" type="button">Send</button>
     </div>
+    <p class="muted">Font options are not frozen. They unlock only when the installed Matrix reports the matching native-font capability; slot 4 remains the current default.</p>
   </section>
 
-  <section class="panel" aria-label="Skins and Glow live data">
+  <section id="scoresPanel" class="panel" aria-label="Skins and Glow live data">
     <h2>Skins + Glow</h2>
     <div id="featureLive" class="status">Live round not checked yet.</div>
     <div class="row">
@@ -185,8 +226,8 @@
     </details>
   </section>
 
-  <section class="panel" aria-label="Firmware update">
-    <h2>Firmware</h2>
+  <details class="panel sub-controls" aria-label="Firmware and diagnostics">
+    <summary>Firmware and diagnostics</summary>
     <div id="featureOtaStatus" class="status">Signed update not checked yet.</div>
     <div class="row">
       <button id="featureOtaCheck" type="button">Check signed update</button>
@@ -195,7 +236,7 @@
       <button id="featurePreflight" type="button">Run rollout preflight</button>
     </div>
     <div id="featurePreflightResult" class="status">Preflight not run.</div>
-  </section>
+  </details>
 
   <details class="panel">
     <summary>Advanced audio</summary>
@@ -230,20 +271,8 @@
   </details>
 
   <section class="panel">
-    <h2>Persistent device brightness</h2>
-    <p class="muted">Release a slider and the new value is applied immediately.</p>
-    <div class="device">
-      <strong>Matrix</strong><output id="matrixValue">8</output>
-      <input aria-label="Matrix brightness" id="matrixBrightness" type="range" min="0" max="255" value="8">
-    </div>
-    <div class="device">
-      <strong>Underglow (AUX)</strong><output id="auxValue">64</output>
-      <input aria-label="Underglow brightness" id="auxBrightness" type="range" min="0" max="255" value="64">
-    </div>
-  </section>
-  <section class="panel">
-    <h2>Cart state</h2>
+    <h2>Command status</h2>
     <div id="status" class="status" role="status" aria-live="polite">Connecting…</div>
     <button id="refresh">Refresh status</button>
   </section>
-</main><script>if("serviceWorker" in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("./hbnf-cart-sw.js?v=20261007-wow-r2",{scope:"/hbnf-cart.html"}).catch(function(){});}</script><script type="module" src="./hbnf-cart.js?v=20261007-wow-r2"></script><script type="module" src="./hbnf-cart-ui-v6.mjs?v=20261007-wow-r2"></script><script type="module" src="./hbnf-cart-features.mjs?v=20261007-wow-r2"></script><script type="module" src="./hbnf-cart-skins-score.mjs?v=20261007-wow-r2"></script></body></html>
+</main><script>if("serviceWorker" in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("./hbnf-cart-sw.js?v=20261008-owner-ux-r4",{scope:"/hbnf-cart.html"}).catch(function(){});}</script><script type="module" src="./hbnf-cart.js?v=20261008-owner-ux-r4"></script><script type="module" src="./hbnf-cart-ui-v6.mjs?v=20261008-owner-ux-r4"></script><script type="module" src="./hbnf-cart-features.mjs?v=20261008-owner-ux-r4"></script><script type="module" src="./hbnf-cart-skins-score.mjs?v=20261008-owner-ux-r4"></script></body></html>

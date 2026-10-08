@@ -1,0 +1,35 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "FOUNDATION_CONFIRMATION_SEMANTICS_R1_20261008",
+  "summary": "Preserve the Foundation adapter's MQTT liveness failure code, distinguish it from invocation and acknowledgement-field failures, and report transport submission without claiming revision-correlated command application.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing Foundation Matrix-owned AUX/DDP architecture and current user direction to resolve the stale/incompatible backend-device confirmation contract without changing MQTT configuration or hardware.",
+      "affected_subsystem": "Offline staged hbnf-matrix-adapter-foundation and hbnf-cart-reconcile sources plus Owner PWA command status wording; no live Supabase, MQTT, Matrix, AUX, Cloudflare, or device changes.",
+      "rollback_reference": "Discard this scoped change or revert the listed files to branch base 2b41a94eeeffd1abe610658e8033ab68cc14d3a1; no live deployment occurred.",
+      "evidence_sources": [
+        "https://supabase.com/docs/reference/javascript/functions-invoke",
+        "https://supabase.com/docs/guides/functions/error-handling",
+        "work/WLED-v16.0.1/wled00/mqtt.cpp",
+        "evidence/live-production-20261001/hbnf-cart-reconcile/index.ts",
+        "evidence/live-production-20261001/hbnf-matrix-adapter-foundation/index.ts",
+        "AKS Delta Inbox row 1450: live hbnf-cart-control v17, hbnf-cart-reconcile v11, adapter v2; deployed v17 exact source not preserved in the pinned predeploy snapshot."
+      ],
+      "tests": [
+        "node --experimental-strip-types tests/hbnf-foundation-confirmation-contract.mjs",
+        "node --experimental-strip-types tests/hbnf-foundation-reconcile-outcome.mjs",
+        "node tests/hbnf-coordinated-backend-staging.mjs",
+        "node tests/hbnf_owner_pwa_reliability.mjs",
+        "Read-only audit of pinned WLED 16.0.1 MQTT lifecycle and source review of the v11 reconciliation path."
+      ]
+    }
+  }
+}

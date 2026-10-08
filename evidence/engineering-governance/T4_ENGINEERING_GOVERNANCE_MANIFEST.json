@@ -960,6 +960,258 @@
           ]
         }
       }
-    }
+    },
+    {
+      "schema": "hbnf-change-governance-v1",
+      "change_id": "OWNER_MISSION_CONTROL_UX_R1_20261008",
+      "summary": "Reorder the Owner PWA primary surface so Matrix/Underglow brightness comes first, followed by genuine Vibe choices and then power/show-sequence controls; clarify queued versus device-confirmed state; align the Guest route with approved Vibe names while keeping them disabled until the runtime is qualified; retain all committed controls in primary or Advanced views and keep aesthetics UNFROZEN.",
+      "change_class": "SUBJECTIVE_DESIGN",
+      "impact": {
+        "architecture": false,
+        "new_dependency": false,
+        "subjective_design": true,
+        "bespoke": false,
+        "unknown": false
+      },
+      "evidence": {
+        "owner_design_gate": {
+          "decision_status": "OPTIONS_ONLY",
+          "approved_by_owner": false,
+          "selected_option": "",
+          "approval_reference": "",
+          "note": "Functional ordering and status requirements are user-approved; visual styling and aesthetic choices remain UNFROZEN."
+        },
+        "scoped_evidence": {
+          "approved_architecture_reference": "User-approved Owner/Admin requirements in the 2026-10-08 Cart 2.0 final UX/performance directive; feature scope and Vibe contract in work/cart2/27_T3_PHASE2_FAST_PATH_PREP_20261006.md.",
+          "affected_subsystem": "Owner PWA and Guest-route presentation, responsive layout, status labeling, and command-acceptance wording only; no backend, firmware, scoring semantics, Guest default, or hardware state changes.",
+          "rollback_reference": "Revert hbnf-final-controller/hbnf-cart.html, hbnf-cart.js, hbnf-cart-ui-v6.css, hbnf-cart-sw.js, hbnf-cart-manifest.webmanifest, and tests; if later deployed, restore prior Cloudflare version 4a675ee4-807d-4ab1-b7e6-e2f91e27e39c.",
+          "evidence_sources": [
+            "https://developer.apple.com/design/human-interface-guidelines/layout?changes=lat_3__1_2",
+            "https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum",
+            "work/cart2/27_T3_PHASE2_FAST_PATH_PREP_20261006.md",
+            "config/HBNF_CONTROL_STATE.json",
+            "User acceptance direction: immediate brightness, prominent genuine Vibes, truthful status, iPad mini first, responsive iPhone, preserve committed features."
+          ],
+          "tests": [
+            "node --check hbnf-final-controller/hbnf-cart.js",
+            "node tests/hbnf_owner_pwa_reliability.mjs",
+            "node tests/hbnf_owner_pwa_package.mjs",
+            "node tests/hbnf-coordinated-controller-contract.mjs",
+            "node tests/hbnf-ios12-compat-audit.mjs",
+            "Read-only local browser preview confirms brightness then Vibe then power/show sequence; Guest route exposes approved names but keeps Vibe commands disabled until runtime qualification."
+          ],
+          "ios12_source_compatibility": {
+            "change": "Replace optional chaining, nullish coalescing, and String.replaceAll in the Owner PWA status path with equivalent null checks and a global regular expression. The same compatibility audit also covers the owner-loaded Skins scoring module, service worker, and Guest script.",
+            "source_audit": "PASS: zero known post-iOS-12 syntax/APIs in all 8 audited owner, scoring, worker, and Guest runtime scripts.",
+            "runtime_acceptance": "UNVERIFIED: the production gate fullControllerIos12CompatibilityVerified remains false until verified on the actual owner iPad/runtime.",
+            "evidence_sources": [
+              {
+                "title": "Safari 14 JavaScript support for optional chaining",
+                "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+                "locator": "https://webkit.org/blog/11340/new-webkit-features-in-safari-14/",
+                "relevance": "WebKit identifies Safari 14 as introducing optional chaining; the owner iPad requirement includes iOS 12, so the Owner PWA avoids syntax unavailable to that engine."
+              },
+              {
+                "title": "Safari 13.1 JavaScript support for nullish coalescing and String.replaceAll",
+                "authority_type": "OFFICIAL_PRIMARY_DOCUMENTATION",
+                "locator": "https://webkit.org/blog/10247/new-webkit-features-in-safari-13-1/",
+                "relevance": "WebKit identifies Safari 13.1 as introducing these features; equivalent ES2018-compatible null checks and global underscore replacement preserve behavior for older iOS."
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "schema": "hbnf-change-governance-v1",
+      "change_id": "FOUNDATION_CONFIRMATION_SEMANTICS_R1_20261008",
+      "summary": "Preserve the Foundation adapter's MQTT liveness failure code, distinguish it from invocation and acknowledgement-field failures, and report transport submission without claiming revision-correlated command application.",
+      "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+      "impact": {
+        "architecture": false,
+        "new_dependency": false,
+        "subjective_design": false,
+        "bespoke": false,
+        "unknown": false
+      },
+      "evidence": {
+        "scoped_evidence": {
+          "approved_architecture_reference": "Existing Foundation Matrix-owned AUX/DDP architecture and current user direction to resolve the stale/incompatible backend-device confirmation contract without changing MQTT configuration or hardware.",
+          "affected_subsystem": "Offline staged hbnf-matrix-adapter-foundation and hbnf-cart-reconcile sources plus Owner PWA command status wording; no live Supabase, MQTT, Matrix, AUX, Cloudflare, or device changes.",
+          "rollback_reference": "Discard this scoped change or revert the listed files to branch base 2b41a94eeeffd1abe610658e8033ab68cc14d3a1; no live deployment occurred.",
+          "evidence_sources": [
+            "https://supabase.com/docs/reference/javascript/functions-invoke",
+            "https://supabase.com/docs/guides/functions/error-handling",
+            "work/WLED-v16.0.1/wled00/mqtt.cpp",
+            "evidence/live-production-20261001/hbnf-cart-reconcile/index.ts",
+            "evidence/live-production-20261001/hbnf-matrix-adapter-foundation/index.ts",
+            "AKS Delta Inbox row 1450: live hbnf-cart-control v17, hbnf-cart-reconcile v11, adapter v2; deployed v17 exact source not preserved in the pinned predeploy snapshot."
+          ],
+          "tests": [
+            "node --experimental-strip-types tests/hbnf-foundation-confirmation-contract.mjs",
+            "node --experimental-strip-types tests/hbnf-foundation-reconcile-outcome.mjs",
+            "node tests/hbnf-coordinated-backend-staging.mjs",
+            "node tests/hbnf_owner_pwa_reliability.mjs",
+            "Read-only audit of pinned WLED 16.0.1 MQTT lifecycle and source review of the v11 reconciliation path."
+          ]
+        }
+      }
+    },
+    {
+      "schema": "hbnf-change-governance-v1",
+      "change_id": "FOUNDATION_OFF_PROJECTION_CONFIRMATION_R1_20261008",
+      "summary": "Keep disabled/off Cart projections within the same evidence-based transport confirmation contract and report submission rather than observed device-off state.",
+      "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+      "impact": {
+        "architecture": false,
+        "new_dependency": false,
+        "subjective_design": false,
+        "bespoke": false,
+        "unknown": false
+      },
+      "evidence": {
+        "scoped_evidence": {
+          "approved_architecture_reference": "Existing Matrix-owned AUX/DDP release path. MQTT publish acceptance and retained WLED MQTT online are not correlated proof of application of a particular Cart projection.",
+          "affected_subsystem": "Offline staged Foundation adapter and reconciliation status serialization only. No live Supabase, MQTT, Matrix, AUX, Cloudflare, or device changes.",
+          "rollback_reference": "Revert adapter, reconcile, test, and evidence files to branch base 2b41a94eeeffd1abe610658e8033ab68cc14d3a1; no live deployment occurred.",
+          "evidence_sources": [
+            "https://github.com/wled/WLED/blob/29b389df1c1aaec6ff53aea742d17063b985906c/wled00/mqtt.cpp",
+            "https://supabase.com/docs/reference/javascript/functions-invoke",
+            "https://supabase.com/docs/guides/functions/error-handling",
+            "work/checkpoints/20261008-supabase-v17-source/deployment.json",
+            "work/checkpoints/20261008-live-edge-source/hbnf-matrix-adapter-foundation/deployment.json",
+            "AKS Delta Inbox row 1450: exact read-only live project/function versions and revision-123 mismatch; no live writes."
+          ],
+          "findings": [
+            "Established fact: pinned WLED 16.0.1 publishes retained MQTT status=online on connection lifecycle; this is not a revision-correlated response to a Cart projection.",
+            "Established fact: previous disabled/off adapter branch set transportConfirmed=true after MQTT publish acceptance without running the liveness observer.",
+            "Established fact: reconciliation persisted such responses as online/off, overstating application evidence.",
+            "Correction: disabled/off projections now pass through the shared liveness observer and confirmation shape; both enabled and disabled commands are recorded as submitted when transport liveness is observed, and failures remain bounded when it is not.",
+            "Inference: truthful submission state prevents the Owner UI/reconciliation layer from implying physical device-off confirmation without a correlated device observation."
+          ],
+          "tests": [
+            "node --test staging/coordinated-backend/hbnf-cart-control/guest-command.test.mjs tests/hbnf-foundation-confirmation-contract.mjs tests/hbnf-foundation-reconcile-outcome.mjs tests/hbnf-coordinated-backend-staging.mjs tests/hbnf_skins_scoring_owner_flow.mjs: PASS 13/13.",
+            "Disabled projection with observed liveness: classify as submitted.",
+            "Disabled projection without observed liveness: preserve mqtt_publish_accepted_status_not_observed failure.",
+            "Governance/control plane remains PHASE2_INTEGRATING/T4; live mutation remains false."
+          ],
+          "validation_limit": "Deno and tsc are unavailable, so no Deno typecheck is claimed. No deployment, remote database write, device command, or live behavior validation occurred."
+        }
+      }
+    },
+    {
+      "schema": "hbnf-change-governance-v1",
+      "change_id": "OWNER_STATUS_FAILURE_SETTLE_R1_20261008",
+      "summary": "Settle Owner Mission Control's device status to an explicit unavailable/not-confirmed state after a backend status-fetch failure so a command cannot remain visually stuck in CHECKING HARDWARE.",
+      "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+      "impact": {
+        "architecture": false,
+        "new_dependency": false,
+        "subjective_design": false,
+        "bespoke": false,
+        "unknown": false
+      },
+      "evidence": {
+        "scoped_evidence": {
+          "approved_architecture_reference": "Owner direction requires APPLYING not to obscure actual command status; the Owner PWA remains a client of the existing Supabase command path.",
+          "affected_subsystem": "Owner Mission Control status rendering and PWA cache version only; backend, command semantics, pairing, Guest Mode, firmware, and devices are unchanged.",
+          "rollback_reference": "Revert the small Owner PWA status handling and cache-version change; remote current branch prior commit d638dabb6f7ef44a9bc84a0613e55c22902a155c is the preserved baseline.",
+          "evidence_sources": [
+            "User direction: persistent APPLYING states must not obscure actual command status.",
+            "Existing Owner PWA status-fetch implementation and package/reliability tests."
+          ],
+          "tests": [
+            "node tests/hbnf_owner_pwa_package.mjs: PASS.",
+            "node tests/hbnf_owner_pwa_reliability.mjs: PASS, including settled unavailable and not-confirmed presentation after fetch failure.",
+            "Read-only local browser preview with backend fetch failure: service unavailable, Matrix/AUX not confirmed, no false applying state."
+          ]
+        }
+      }
+    },
+    {
+      "schema": "hbnf-change-governance-v1",
+      "change_id": "P2_NATIVE_WLED_FONT_REVIEW_OPTIONS_R5_20261008",
+      "summary": "Add an optional native WLED FontManager slot field to the existing text overlay payload, preserve slot 4 as the default, and expose reversible review choices without freezing presentation.",
+      "change_class": "SUBJECTIVE_DESIGN",
+      "impact": {
+        "architecture": false,
+        "new_dependency": false,
+        "subjective_design": true,
+        "bespoke": false,
+        "unknown": false
+      },
+      "evidence": {
+        "note": "Only the user-approved font option menu is exposed. Slot 4 remains selected by default. Treatment concepts remain UNFROZEN; this does not claim visual or owner acceptance.",
+        "scoped_evidence": {
+          "approved_architecture_reference": "Direct user direction: expose multiple viable pinned WLED-native font options, retain slot 4 as the provisional default, and keep font/treatment aesthetics UNFROZEN; preserve the existing OVERLAY_START command envelope.",
+          "affected_subsystem": "Optional OVERLAY_START.data.fontIndex validation and projection, pinned WLED FontManager selection, and Owner Text panel; no treatment renderer, scoring, audio/Vibe mapping, or live state change.",
+          "rollback_reference": "Remove the integration-r5 patch and additive reducer/adapter/UI/test changes; exact integration-r4 source patch and release identity remain unchanged.",
+          "evidence_sources": [
+            "https://github.com/wled/WLED/blob/29b389df1c1aaec6ff53aea742d17063b985906c/wled00/fontmanager.cpp",
+            "https://kno.wled.ge/features/custom-fonts/",
+            "firmware/phase2/integration-r4/SOURCE_BINDING.json: exact reconstructed R4 integrated source SHA-256 9672125b4f1914c73bf0d7a997ae81a430c8f4e4b1cb50956e1303ac19687bfa",
+            "work/checkpoints/20261008-r5-exact-r4-rebase-check/report.json: patch dry-run and application against exact R4 integrated source"
+          ],
+          "tests": [
+            "Focused reducer tests for default slot 4, supported native slots 0/2/3/4, and rejection of slot 1/out-of-range/non-integer values.",
+            "Staging adapter contract tests for validated fontIndex pass-through.",
+            "Owner PWA package checks for font choices, slot 4 default, and disabled-until-capability behavior.",
+            "Patch dry-run and application against reconstructed exact integration-r4 source hash 9672125b4f1914c73bf0d7a997ae81a430c8f4e4b1cb50956e1303ac19687bfa."
+          ]
+        },
+        "owner_design_gate": {
+          "decision_status": "OPTIONS_ONLY",
+          "approved_by_owner": false,
+          "selected_option": "",
+          "approval_reference": "",
+          "note": "Font options are a review menu only. Slot 4 is a reversible provisional default; neither font nor treatment aesthetics are owner-approved."
+        }
+      }
+    },
+    {
+      "schema": "hbnf-change-governance-v1",
+      "change_id": "OWNER_STATUS_TRUTHFUL_REFRESH_R2_20261008",
+      "summary": "Keep Owner Mission Control's truth state accurate across refresh failures and accepted-but-unconfirmed commands, and rotate the PWA asset/cache version for this offline source change.",
+      "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+      "impact": {
+        "architecture": false,
+        "new_dependency": false,
+        "subjective_design": false,
+        "bespoke": false,
+        "unknown": false
+      },
+      "evidence": {
+        "scoped_evidence": {
+          "approved_architecture_reference": "Owner direction requires APPLYING not to obscure actual command status and the Owner PWA to use the existing Supabase command path; HBNF_CONTROL_STATE remains PHASE2_INTEGRATING/T4 with live mutation unauthorized.",
+          "affected_subsystem": "Owner PWA refresh/error presentation and static cache identity only; no command, pairing, Guest Mode, backend, firmware, deployment, or device behavior changed.",
+          "rollback_reference": "Revert hbnf-cart.js, hbnf-cart-sw.js, hbnf-cart.html, hbnf-cart-manifest.webmanifest, package/reliability tests, and this record; cache identity reverts with the prior worker.",
+          "evidence_sources": [
+            "https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/update",
+            "https://developer.mozilla.org/en-US/docs/Web/API/CacheStorage/delete",
+            "evidence/engineering-governance/20261008-owner-status-failure-r1.json",
+            "User direction: APPLYING must not obscure actual command status; cached UI must not imply local control."
+          ],
+          "tests": [
+            "node --check hbnf-final-controller/hbnf-cart.js: PASS",
+            "node tests/hbnf_owner_pwa_reliability.mjs: PASS",
+            "node tests/hbnf_owner_pwa_package.mjs: PASS",
+            "node tests/hbnf-ios12-compat-audit.mjs: PASS; source gate only, actual iPad runtime remains unverified.",
+            "Read-only local browser: refresh settles service unavailable and Matrix/AUX not confirmed after checking; no status request sent a control/scoring command.",
+            "Responsive measurements at 744x1133 and 390x844: document/body scroll widths equal viewport; viewport override reset."
+          ],
+          "service_worker_cache_invalidation": {
+            "change": "Bump owner UX asset/cache key r3 to r4 because packaged JS changed after r3; preserve existing worker lifecycle.",
+            "basis": "MDN documents changed service-worker script installation and activation-time old-cache cleanup; source URLs/cache name are versioned in this PWA."
+          },
+          "live_state": {
+            "deployed": false,
+            "live_mutation_authorized": false,
+            "current_state": "PHASE2_INTEGRATING/T4",
+            "owner_aesthetics": "UNFROZEN"
+          }
+        }
+      }
+    },
+    "evidence/engineering-governance/20261008-owner-guest-package-closure-r1.json"
   ]
 }
