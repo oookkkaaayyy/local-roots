@@ -1,0 +1,102 @@
+{
+  "authority_scope": "One backward-compatible static Guest/backend deployment with Guest Mode closed; existing-owner smoke; one exact Phase 2 Matrix candidate install; objective runtime/control/recovery validation; exact R4 restoration only if the defined runtime safety/identity failure occurs. No UV energization, router changes, speculative AUX archaeology, or T5 acceptance.",
+  "authorization_source": "Current user instruction CONTINUE TO PHASE 2 LIVE ROLLOUT, reconciled with standing conditional rollout authorization and hardware-ready handshake language.",
+  "authorized_install": {
+    "candidate_sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3",
+    "count": 1,
+    "install_started": false,
+    "method": "proven Opal-origin curl POST to Matrix WLED /update after Opal-side SHA-256 and size verification",
+    "rollback": "exact R4 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c; Release07 fallback verified"
+  },
+  "candidate": {
+    "installed": false,
+    "manifest": "outputs/hbnf-cart2-phase2-offline-wow-r1-20261007.manifest.json",
+    "path": "outputs/hbnf-cart2-phase2-offline-wow-r1-20261007.bin",
+    "release_id": "hbnf-cart2-phase2-offline-wow-r1-20261007",
+    "sha256": "eee9169f0953b6ccca3c449ece11ae5dde0fbec3dc2a95604a806bf13fbdbbf3",
+    "size_bytes": 1458832
+  },
+  "captured_at_utc": "2026-10-08T01:27:00.773417+00:00",
+  "checks": {
+    "aux_native_ddp_runtime": "PASS",
+    "candidate_hash_size": "PASS",
+    "guest_defaults_off": "PASS",
+    "host_source_and_rollback_identity": "PASS",
+    "matrix_identity_runtime": "PASS",
+    "r4_and_release07_hash_size": "PASS",
+    "supabase_current_versions_and_rollback_source": "PASS",
+    "uv_dormant": "PASS"
+  },
+  "cloudflare_active_deployment": "157f592b-cee8-4f6b-a687-d079210c26c4",
+  "cloudflare_active_version": "4a675ee4-807d-4ab1-b7e6-e2f91e27e39c",
+  "cloudflare_public_asset_snapshot": {
+    "guest_page_currently_not_deployed": true,
+    "manifest": "outputs/live-predeploy-snapshot/cloudflare/manifest.json",
+    "paths": 13
+  },
+  "device_response_hashes": {
+    "aux_info": "48ac4f430257bfc4c61a00dc70ca1e95f61c27b719718decae5465e0962feec5",
+    "aux_state": "b4a1d9d7c449feb5ecd5375a7fffe4992ca92f41cd3242d12dc3326be691691a",
+    "matrix_build": "05d753ff7e2bc01143a0230e98cd3e0c7ec6f3bab64588972e2509629fde8cd6",
+    "matrix_info": "7d92fc8697775abe85c7e7038bb623fa7bf2352c6dc8b917c9fe8a742e938ad7",
+    "matrix_state": "8a8fe0429bf7a3b2923b4daea4b9580677701d9455b8e067e0d3788816583a6e"
+  },
+  "final_preinstall_captured_at_utc": "2026-10-08T01:37:16.647108+00:00",
+  "guest_closed_action_http": "403 guest_mode_closed",
+  "guest_mode_live": false,
+  "hardware": {
+    "aux": {
+      "brightness": 68,
+      "ddp_live": true,
+      "ddp_mode": "DDP",
+      "ddp_source": "192.168.77.10",
+      "identity_and_native_ddp_check": "PASS",
+      "ip": "192.168.77.11",
+      "mac": "8c94df55c34c",
+      "uptime_seconds": 14748,
+      "wled": "16.0.1"
+    },
+    "matrix": {
+      "brightness": 44,
+      "fps": 41,
+      "free_heap_bytes": 67344,
+      "identity_check": "PASS",
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "uptime_seconds": 934,
+      "wled": "16.0.1"
+    },
+    "opal_access": "Existing key restored; routine read-only SSH works; no Opal/router changes made.",
+    "router_configuration": "Not modified."
+  },
+  "host_backend": {
+    "cloudflare_worker": "hbnf",
+    "current_active_deployment": "801f5107-f63f-4c97-b95f-8f86f4ea7b3d",
+    "current_active_version": "27a67b46-79d1-4ccc-9dbc-abb5f0ab4542",
+    "exact_prior_static_asset_snapshot": "outputs/live-predeploy-snapshot/cloudflare/manifest.json",
+    "guest_mode": "absent; false by default",
+    "guest_route_before_deploy": "404 as expected; deployed Guest Mode not enabled",
+    "hbnf_cart_control_current_source_sha256": "3e4816988a9ac0b33f5b660ccefedf27e0249c7e7f5e11b1a8622a3c59fbd80d",
+    "hbnf_cart_control_current_version": 16,
+    "hbnf_cart_reconcile_current_source_sha256": "4f400b2ee1d733f07a90baa231c843990802a3a72aedb507e6963a78685a1d93",
+    "hbnf_cart_reconcile_current_version": 11,
+    "live_cart_assets_matching_saved_source": "6/6 checked Cart root assets",
+    "live_cart_revision": 117,
+    "supabase_project": "phcpbvuqibyarpfrftgx",
+    "uv": "software dormant; hardware_available=false; brightness_cap=0 per candidate manifest"
+  },
+  "host_backend_closure": "evidence/hbnf-phase2-integration-20261007/live-rollout/HOST_BACKEND_LIVE_DEPLOYMENT_CLOSURE.json",
+  "owner_interaction": "No GUI available because Mac is locked; no owner-authenticated control/scoring writes attempted; these remain in consolidated owner session after objective runtime checks.",
+  "remaining_gates": "Deploy backend/static Guest changes with Guest Mode off; smoke current owner controls/scoring/PWA; install exact candidate once; verify exact identity, health, brightness and restart/reconnect recovery. T5 owner acceptance remains pending.",
+  "rollback": {
+    "local_verification": "PASS",
+    "r4_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "r4_size_bytes": 1489008,
+    "release07_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
+    "release07_size_bytes": 1458624
+  },
+  "schema": "hbnf-cart2-live-rollout-preinstall-preflight-v1",
+  "static_host_smoke": "all 16 source assets HTTP 200; Cloudflare-injected bot/telemetry script additions observed in HTML responses; source page body and script routes served.",
+  "supabase_control_active_version": 17
+}

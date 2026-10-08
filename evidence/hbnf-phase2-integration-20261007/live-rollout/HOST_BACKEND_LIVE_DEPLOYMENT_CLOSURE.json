@@ -1,0 +1,180 @@
+{
+  "captured_at_utc": "2026-10-08T01:37:16.645968+00:00",
+  "cloudflare": {
+    "all_http_200": true,
+    "asset_responses": [
+      {
+        "bytes": 2157,
+        "content_type": "text/css",
+        "path": "/guest/hbnf-cart/guest.css",
+        "served_sha256": "bccb2a3179beb2116d953d083929fd97cdb13aa356742abfb45ce9a9919ce2ad",
+        "source_sha256": "bccb2a3179beb2116d953d083929fd97cdb13aa356742abfb45ce9a9919ce2ad",
+        "status": 200,
+        "url": "https://hbnightflyers.com/guest/hbnf-cart/guest.css"
+      },
+      {
+        "bytes": 5107,
+        "content_type": "text/javascript",
+        "path": "/guest/hbnf-cart/guest.js",
+        "served_sha256": "9a51e6c67514a711585e5c044bb6407728a112ba48fef160c44800f17335133d",
+        "source_sha256": "9a51e6c67514a711585e5c044bb6407728a112ba48fef160c44800f17335133d",
+        "status": 200,
+        "url": "https://hbnightflyers.com/guest/hbnf-cart/guest.js"
+      },
+      {
+        "bytes": 3745,
+        "content_type": "text/html",
+        "path": "/guest/hbnf-cart/index.html",
+        "served_sha256": "f8d1bcb2b2001f756d8430c11964edf6842c69202e6be68cb0db549bea5839ec",
+        "source_sha256": "3cfb93d7348bfdda78b97c96d6661a2d372254e428ba5f639b504ca5de619459",
+        "status": 200,
+        "url": "https://hbnightflyers.com/guest/hbnf-cart/"
+      },
+      {
+        "bytes": 20970,
+        "content_type": "text/javascript",
+        "path": "/hbnf-cart-features.mjs",
+        "served_sha256": "5aa1b63a7aaf8a033176989e96f024e1227d5f48743bdefd9c36a76b1cefbe84",
+        "source_sha256": "5aa1b63a7aaf8a033176989e96f024e1227d5f48743bdefd9c36a76b1cefbe84",
+        "status": 200,
+        "url": "https://hbnightflyers.com/hbnf-cart-features.mjs"
+      },
+      {
+        "bytes": 1999,
+        "content_type": "image/png",
+        "path": "/hbnf-cart-icon-180.png",
+        "served_sha256": "02a42add542f156fb8cd32ff020d827fb139d70cce6e6c3564cc821c95aec3ed",
+        "source_sha256": "02a42add542f156fb8cd32ff020d827fb139d70cce6e6c3564cc821c95aec3ed",
+        "status": 200,
+        "url": "https://hbnightflyers.com/hbnf-cart-icon-180.png"
+      },
+      {
+        "bytes": 2171,
+        "content_type": "image/png",
+        "path": "/hbnf-cart-icon-192.png",
+        "served_sha256": "200dd4c1bb58dd1f3b6fe353404d29cae306673a4bc854b21049c475011b42ab",
+        "source_sha256": "200dd4c1bb58dd1f3b6fe353404d29cae306673a4bc854b21049c475011b42ab",
+        "status": 200,
+        "url": "https://hbnightflyers.com/hbnf-cart-icon-192.png"
+      },
+      {
+        "bytes": 5994,
+        "content_type": "image/png",
+        "path": "/hbnf-cart-icon-512.png",
+        "served_sha256": "05ecdcb818aaf9d1f23af59ca73c27d7a00b328705e62d0e9adf3954db6e5838",
+        "source_sha256": "05ecdcb818aaf9d1f23af59ca73c27d7a00b328705e62d0e9adf3954db6e5838",
+        "status": 200,
+        "url": "https://hbnightflyers.com/hbnf-cart-icon-512.png"
+      },
+      {
+        "bytes": 486,
+        "content_type": "application/manifest+json",
+        "path": "/hbnf-cart-manifest.webmanifest",
+        "served_sha256": "895f4c579594dcd7789a2a7f7cb69a21dad3c02975a2ae829825a2ad0e05e627",
+        "source_sha256": "895f4c579594dcd7789a2a7f7cb69a21dad3c02975a2ae829825a2ad0e05e627",
+        "status": 200,
+        "url": "https://hbnightflyers.com/hbnf-cart-manifest.webmanifest"
+      },
+      {
+        "bytes": 1511,
+        "content_type": "text/javascript",
+        "path": "/hbnf-cart-net.mjs",
+        "served_sha256": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+        "source_sha256": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+        "status": 200,
+        "url": "https://hbnightflyers.com/hbnf-cart-net.mjs"
+      },
+      {
+        "bytes": 2611,
+        "content_type": "text/javascript",
+        "path": "/hbnf-cart-semantic.mjs",
+        "served_sha256": "c7eada1028dddd0321ffa34e894bcb5e7d5ff4cf13a084f72623adcbb963d5a1",
+        "source_sha256": "c7eada1028dddd0321ffa34e894bcb5e7d5ff4cf13a084f72623adcbb963d5a1",
+        "status": 200,
+        "url": "https://hbnightflyers.com/hbnf-cart-semantic.mjs"
+      },
+      {
+        "bytes": 6933,
+        "content_type": "text/javascript",
+        "path": "/hbnf-cart-skins-score.mjs",
+        "served_sha256": "29e4a53144f6c0adc501d80425bad7f9aa8f9f681d711d0ea24f6ca179475316",
+        "source_sha256": "29e4a53144f6c0adc501d80425bad7f9aa8f9f681d711d0ea24f6ca179475316",
+        "status": 200,
+        "url": "https://hbnightflyers.com/hbnf-cart-skins-score.mjs"
+      },
+      {
+        "bytes": 2489,
+        "content_type": "text/javascript",
+        "path": "/hbnf-cart-sw.js",
+        "served_sha256": "55cfd341e609c972ebb1ac463cf394f065e83fe383a1ee32b9872d3efbc8e716",
+        "source_sha256": "55cfd341e609c972ebb1ac463cf394f065e83fe383a1ee32b9872d3efbc8e716",
+        "status": 200,
+        "url": "https://hbnightflyers.com/hbnf-cart-sw.js"
+      },
+      {
+        "bytes": 4731,
+        "content_type": "text/css",
+        "path": "/hbnf-cart-ui-v6.css",
+        "served_sha256": "e7e30733df824864d415a69d4dcc0b297718fa414938d4d54ff158b408b93672",
+        "source_sha256": "e7e30733df824864d415a69d4dcc0b297718fa414938d4d54ff158b408b93672",
+        "status": 200,
+        "url": "https://hbnightflyers.com/hbnf-cart-ui-v6.css"
+      },
+      {
+        "bytes": 1053,
+        "content_type": "text/javascript",
+        "path": "/hbnf-cart-ui-v6.mjs",
+        "served_sha256": "0e0f16ea7c6e573cc5d5180309d899732598c9b630c7732dfbe10326e542a6e0",
+        "source_sha256": "0e0f16ea7c6e573cc5d5180309d899732598c9b630c7732dfbe10326e542a6e0",
+        "status": 200,
+        "url": "https://hbnightflyers.com/hbnf-cart-ui-v6.mjs"
+      },
+      {
+        "bytes": 15302,
+        "content_type": "text/html",
+        "path": "/hbnf-cart.html",
+        "served_sha256": "f781c1a751d82705eb4512874e3adfff79e49c9c7bc62942ac175147166ef69d",
+        "source_sha256": "19ac1d6c80f628ba7e61551f10defcd2309e5f899576cfb1a4ea60c40a903712",
+        "status": 200,
+        "url": "https://hbnightflyers.com/hbnf-cart.html"
+      },
+      {
+        "bytes": 18894,
+        "content_type": "text/javascript",
+        "path": "/hbnf-cart.js",
+        "served_sha256": "bf40263a375aa4150d7afc9ff0466a4db05ef33ed9ad95f035300c8d6742e2fe",
+        "source_sha256": "bf40263a375aa4150d7afc9ff0466a4db05ef33ed9ad95f035300c8d6742e2fe",
+        "status": 200,
+        "url": "https://hbnightflyers.com/hbnf-cart.js"
+      }
+    ],
+    "deployment": "157f592b-cee8-4f6b-a687-d079210c26c4",
+    "guest_route": "/guest/hbnf-cart",
+    "previous_stable_version": "27a67b46-79d1-4ccc-9dbc-abb5f0ab4542",
+    "smoke_asset_count": 16,
+    "traffic_percent": 100,
+    "version": "4a675ee4-807d-4ab1-b7e6-e2f91e27e39c",
+    "worker": "hbnf"
+  },
+  "guest_default": "OFF; closed action returns before commit; no canonical revision change",
+  "owner_behavior": "PWA shell and all 16 source paths fetched. Existing live status read passes. Scoring write not attempted because owner session is unavailable; host scoring tests passed. T5 and owner operation session remain pending.",
+  "schema": "hbnf-cart2-host-backend-live-deployment-closure-v1",
+  "supabase": {
+    "cart_revision": 117,
+    "closed_guest_command_error": "guest_mode_closed",
+    "closed_guest_command_http": 403,
+    "guest_mode": false,
+    "hbnf_cart_control_current_version": 17,
+    "hbnf_cart_control_ezbr_sha256": "8629c8484a7ce335bee9c14c613f0e1858c18d3f2fa041b71c6ac0492d691e37",
+    "hbnf_cart_control_previous_version": 16,
+    "hbnf_cart_reconcile_version_unchanged": 11,
+    "live_status_http": 200,
+    "no_owner_write_attempted": true,
+    "project": "phcpbvuqibyarpfrftgx",
+    "revision_after_closed_guest_smoke": 117,
+    "score_state_error": "unauthorized",
+    "score_state_without_owner_session_http": 401,
+    "status_http": 200
+  },
+  "uv": "disabled, hardware unavailable, cap 0."
+}
