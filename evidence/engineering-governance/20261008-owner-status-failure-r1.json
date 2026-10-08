@@ -1,0 +1,29 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OWNER_STATUS_FAILURE_SETTLE_R1_20261008",
+  "summary": "Settle Owner Mission Control's device status to an explicit unavailable/not-confirmed state after a backend status-fetch failure so a command cannot remain visually stuck in CHECKING HARDWARE.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Owner direction requires APPLYING not to obscure actual command status; the Owner PWA remains a client of the existing Supabase command path.",
+      "affected_subsystem": "Owner Mission Control status rendering and PWA cache version only; backend, command semantics, pairing, Guest Mode, firmware, and devices are unchanged.",
+      "rollback_reference": "Revert the small Owner PWA status handling and cache-version change; remote branch baseline d638dabb6f7ef44a9bc84a0613e55c22902a155c is preserved.",
+      "evidence_sources": [
+        "User direction: persistent APPLYING states must not obscure actual command status.",
+        "Existing Owner PWA status-fetch implementation and package/reliability tests."
+      ],
+      "tests": [
+        "node tests/hbnf_owner_pwa_package.mjs: PASS.",
+        "node tests/hbnf_owner_pwa_reliability.mjs: PASS, including settled unavailable and not-confirmed presentation after fetch failure.",
+        "Read-only local browser preview with backend fetch failure: service unavailable, Matrix/AUX not confirmed, no false applying state."
+      ]
+    }
+  }
+}
