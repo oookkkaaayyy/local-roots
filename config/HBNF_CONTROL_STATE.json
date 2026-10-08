@@ -130,8 +130,11 @@
   "bounded_phase2_r3_live_qualification_authorization": {
     "authorized_by": "Current user instruction: autonomously complete Cart 2.0 before the 2026-10-08 07:00 PDT departure; user reply explicitly authorizes all no-cost/non-communication actions and the exact R3 install request.",
     "candidate_drive_binary_id": "1bq5AdYGHcuX5Or26zLlgFz0Yxz_rdDrD",
-    "candidate_install_attempts": 0,
+    "candidate_install_attempt_started_utc": "2026-10-08T04:48:45.951859+00:00",
+    "candidate_install_attempts": 1,
     "candidate_install_attempts_reserved": 1,
+    "candidate_install_consumed_before_network_request": true,
+    "candidate_install_evidence": "evidence/hbnf-phase2-integration-20261007/live-r3-night-20261008/CANDIDATE_INSTALL_RESPONSE.json",
     "candidate_install_limit": 1,
     "candidate_release": "hbnf-cart2-phase2-offline-wow-r3-20261008",
     "candidate_sha256": "656418f63830205196ca07e39b84bc188db8839eaf631fc9e620ccf5f5feeedb",
@@ -163,7 +166,7 @@
     "rollback_size_bytes": 1489008,
     "schema": "hbnf-bounded-phase2-r3-live-qualification-authorization-v1",
     "state_transition": "Remain PHASE2_INTEGRATING/T4 during qualification; only advance via the existing validated lifecycle transition after all required T4 evidence passes.",
-    "status": "AUTHORIZED__PRELIVE_REQUIRED__ONE_INSTALL_RESERVED",
+    "status": "ONE_CANDIDATE_INSTALL_RESERVED__ATTEMPT_CONSUMED_BEFORE_REQUEST",
     "target": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c only"
   },
   "checkpoint_at_utc": "2026-10-08T02:57:10Z",
@@ -308,8 +311,8 @@
       "status": "OFFLINE_CORRECTION_TESTED__FRESH_PRELIVE_PASS"
     },
     "blockers": [
-      "R3 candidate live qualification is authorized once but remains blocked until exact candidate/recovery identity and current Matrix/AUX/Opal prelive proof pass the platform guard.",
-      "AUX physical Matrix-to-underglow synchronization is an open acceptance check: native WLED DDP reports live from Matrix, while the HBNFAUX frame-projection counter is currently zero and the owner previously reported a held solid color. Do not claim physical synchronization until dynamic output and recovery are observed."
+      "The single R3 candidate installation attempt is reserved and will be consumed before POST; no candidate reupload/retry is permitted. Continue only by postinstall evidence and, if objective gates require, the exact authorized R4 recovery.",
+      "AUX physical Matrix-to-underglow synchronization remains an open acceptance check: native WLED DDP reports live from Matrix, but the HBNFAUX frame-projection counter is currently zero and prior owner reported a held solid color."
     ],
     "brightness_field_target": {
       "field_observation": "At roughly <=20 brightness Matrix appears effectively off; roughly 20-60 visibly loses LED/pixel participation and scene structure, requiring uncomfortable brightness to obtain a full-looking animation.",
