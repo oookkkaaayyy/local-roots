@@ -43,7 +43,7 @@ for (const name of [
   "hbnf-cart-icon-512.png",
 ]) {
   assert.ok(installer.includes(`"${name}"`), `installer omits ${name}`);
-  assert.ok(uiWorkflow.includes(`hbnf-final-controller/${name}`), `V7.3 package omits ${name}`);
+  assert.ok(uiWorkflow.includes(`hbnf-final-controller/${name}`), `Owner/Guest package omits ${name}`);
   assert.ok(releaseWorkflow.includes(`hbnf-final-controller/${name}`), `release package omits ${name}`);
 }
 
@@ -75,6 +75,10 @@ assert.match(html, /:focus-visible/, "keyboard focus styling remains visible");
 assert.ok(fs.existsSync(path.join(controller, "hbnf-cart-sw.js")), "owner PWA service worker missing");
 assert.match(uiWorkflow, /HBNF-CART-OWNER-UX-R4-GUEST-ROUTE-R2-20261008/);
 assert.match(installer, /BUILD_MARKER="hbnf-cart2-owner-ux-r4-20261008"/);
+assert.match(installer, /\?release="\+BUILD_MARKER\+/);
+assert.match(installer, /HBNF_CART_OWNER_UX_R4_GUEST_ROUTE_R2_INSTALL=PASS/);
+assert.match(installer, /if not verified:\s+raise RuntimeError\("Deploy finished but exact Owner UX R4 \+ Guest Route R2 marker did not verify/);
+assert.doesNotMatch(installer, /HBNF_CART_UI_V7_3_PHASE2_INTEGRATED_R1_20261006|HBNF_CART_UI_V7_3_PWA_R1_INSTALL/);
 assert.match(uiWorkflow, /"schema":"hbnf-cart-owner-ux-r4-guest-route-r2-package-v1"/);
 assert.match(uiWorkflow, /tests\/hbnf_owner_pwa_package\.mjs/);
 assert.match(releaseWorkflow, /tests\/hbnf_owner_pwa_package\.mjs/);

@@ -86,7 +86,7 @@ def resolve_wrangler(worker):
 
 def live_marker():
     req=urllib.request.Request(
-        LIVE_URL+"?release=HBNF_CART_UI_V7_3_PHASE2_INTEGRATED_R1_20261006&ts="+str(int(time.time())),
+        LIVE_URL+"?release="+BUILD_MARKER+"&ts="+str(int(time.time())),
         headers={
             "User-Agent":"Mozilla/5.0",
             "Accept":"text/html,application/xhtml+xml",
@@ -128,18 +128,17 @@ def main():
         last_status,verified=live_marker()
         if verified: break
         time.sleep(3)
-    if not verified and last_status not in (401,403):
-        raise RuntimeError("Deploy finished but exact live V7.3 marker did not verify")
-    print("HBNF_CART_UI_V7_3_PWA_R1_INSTALL=PASS")
+    if not verified:
+        raise RuntimeError("Deploy finished but exact Owner UX R4 + Guest Route R2 marker did not verify (HTTP "+str(last_status)+")")
+    print("HBNF_CART_OWNER_UX_R4_GUEST_ROUTE_R2_INSTALL=PASS")
     print("BACKUP="+str(backup))
-    if verified: print("LIVE_MARKER=PASS")
-    else: print("LIVE_MARKER=BLOCKED_HTTP_"+str(last_status)+" (Wrangler deploy succeeded)")
+    print("LIVE_MARKER=PASS")
     subprocess.run(["/usr/bin/open",LIVE_URL],check=False)
 
 if __name__=="__main__":
     try:
         main()
     except Exception as e:
-        print("HBNF_CART_UI_V7_3_PWA_R1_INSTALL=FAIL")
+        print("HBNF_CART_OWNER_UX_R4_GUEST_ROUTE_R2_INSTALL=FAIL")
         print(str(e))
         sys.exit(1)
