@@ -4,7 +4,7 @@
     "remote_execution_for_source_archaeology": false,
     "retry_inherits_authorization": false
   },
-  "created_at": "2026-10-09T10:22:06.875010+00:00",
+  "created_at": "2026-10-09T10:22:47.593841+00:00",
   "expected_terminal_outputs": [
     "R4 runtime qualification or exact failure classification",
     "exact Matrix release identity",
@@ -24,7 +24,7 @@
     "branch": "codex/cart2-r7-checkpoint-20261009",
     "dirty": true,
     "type": "git_commit",
-    "value": "d22685c3524a6cb7660b38e114b45bd63a211345"
+    "value": "1e7ebf1b12e47431e992ed38a9b8a60fdec3c4eb"
   },
   "repo_inputs": [
     {
@@ -33,9 +33,9 @@
       "sha256": "73e77d5fba8527a0dfb1b329665f12cd9a4991c671c1ccc3cff4f43f8d39f4a9"
     },
     {
-      "bytes": 203652,
+      "bytes": 203644,
       "path": "config/HBNF_CONTROL_STATE.json",
-      "sha256": "698b3d1b820d6e2121a9e3ffc0c76246eb761029a9a16bd5fa869bcd39ef2d1d"
+      "sha256": "ef4e88e05c2ae1cabeb39f15907d8336c27b957e5805d50e9b1483caa220fe16"
     },
     {
       "bytes": 41347,
@@ -260,7 +260,7 @@
   },
   "system_id": "hbnf-cart",
   "terminal_recovery": "If the exact R7 candidate is unqualified or runtime safety/required AUX behavior fails, preserve the failure evidence, install only the exact R4 recovery within the authorized limit, verify exact R4 identity and health, then continue offline work; never stop solely because a soak failed.",
-  "trace_id": "55c634d32ed34feca61b6c74613f4c04",
+  "trace_id": "b7e51a4c2af2459b92f6a8775b0de0dd",
   "user_interaction_policy": {
     "copy_paste_delivery": "one_single_fenced_block_per_action",
     "max_user_actions_per_blocker": 1,

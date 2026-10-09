@@ -495,7 +495,7 @@
     "target": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c",
     "transaction_start_evidence": "/tmp/hbnf-p2-build/r6-live-validation/evidence/R6_INSTALL_TRANSACTION_START.json"
   },
-  "checkpoint_at_utc": "2026-10-09T09:22:37.162Z",
+  "checkpoint_at_utc": "2026-10-09T10:22:47.546266+00:00",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -678,7 +678,7 @@
       "status": "PHASE2_COMMITTED_REQUIREMENT",
       "ui_requirement": "Provide useful low-night perceptual granularity while retaining true maximum."
     },
-    "checkpoint_at_utc": "2026-10-09T10:21:24.422076+00:00",
+    "checkpoint_at_utc": "2026-10-09T10:22:47.546266+00:00",
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "diagnostic_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
@@ -1692,7 +1692,7 @@
     "live_mutation_authorized": true,
     "name": "Foundation offline timeout and soak-harness checkpoint",
     "next_action": "Run final prelive checks and exactly one R7 multipart /update request; then verify exact identity/health and execute frozen qualification; no R8+.",
-    "next_work": "After owner captures, run offline trace replay and evaluate labeled feature coverage/manual Vibe separation/AUTO hysteresis. Keep mapping and visual presentation UNFROZEN until evidence/owner review. Preserve the offline candidate and do not install it without the hardware-ready handshake and current lifecycle authorization.",
+    "next_work": "After the single R7 install, preserve objective runtime evidence and complete the unchanged frozen 28-kernel sweep, representative combined-feature checks, and contiguous 5400-second soak only if the early gates pass. R7-specific physical synchronization and final T4/T5 owner evidence remain required; no R8+.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "overnight_priority": {
       "do_not_derail": [
@@ -2618,7 +2618,7 @@
     },
     "schema": "hbnf-lane-execution-state-v1"
   },
-  "last_updated_utc": "2026-10-09T10:12:41.381569+00:00",
+  "last_updated_utc": "2026-10-09T10:22:47.546266+00:00",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "admission_path": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_APPROVED_ADMISSION.json",

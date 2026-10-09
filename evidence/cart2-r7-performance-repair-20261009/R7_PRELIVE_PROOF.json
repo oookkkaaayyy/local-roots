@@ -4,7 +4,7 @@
     "scope": "One exact R7 Matrix install and normal reboot; full unchanged qualification. One exact R4 recovery only on objectively defined device safety/runtime/performance/AUX gate failure. No AUX/router/cloud mutation.",
     "source": "Explicit conditional R7 installation/qualification authorization, latest safety clarification restricts candidates to R6/R7, and exact R7 LIVE_APPROVED admission pass. No R8+."
   },
-  "capsule_sha256": "4b8d0b9bdb84d4e60ba400c501821a0a712caa82c9c16e9c324286bfb4ec5ba5",
+  "capsule_sha256": "f81e02ec069aa095fdfa14d1b80b03a892a8436109aee94dc7eed659b8d682d2",
   "consumer_contract": {
     "identity": "One multipart POST of the exact R7 BIN to WLED 16.0.1 Matrix http://192.168.77.10/update using the established direct-LAN curl method; -H Expect:; no retry; exact release ID and SHA post-checked.",
     "verified": true
