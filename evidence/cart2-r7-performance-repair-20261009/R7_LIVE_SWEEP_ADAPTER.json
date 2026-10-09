@@ -2,7 +2,8 @@
   "expected_release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
   "notes": [
     "Derived from existing Foundation live adapter; pinned expected R7 release and existing 28-kernel inventory. No software behavior or frozen threshold change.",
-    "Observer prequalification and exact source-bound snapshot restoration use existing scripts/hbnf_foundation_live_adapter.py."
+    "Observer prequalification and exact source-bound snapshot restoration use existing scripts/hbnf_foundation_live_adapter.py.",
+    "Adjusted to 300s after the evidence-backed first-run host timeout of 20s: snapshot observer setup contains bounded 40s tails-off and 40s tails-on windows plus command acknowledgements. The already-created exact boot-scoped snapshot will be reused; no diagnostic reentry or reboot."
   ],
   "preflight_argv": [
     "python3",
@@ -54,7 +55,7 @@
     "--enabled",
     "{enabled}"
   ],
-  "timeout_seconds": 20,
+  "timeout_seconds": 300,
   "verify_restore_argv": [
     "python3",
     "scripts/hbnf_foundation_live_adapter.py",

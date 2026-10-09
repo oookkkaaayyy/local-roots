@@ -1,6 +1,6 @@
 {
   "adapter": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_SWEEP_ADAPTER.json",
-  "adapter_sha256": "ee2ec5bd20a46d530a9c68f3a8dfa9b176e71bf0603735d9843da430a8ef7920",
+  "adapter_sha256": "f8715d894bb0e12a9e6e34541947f28dd9f7ec1bec9c9c097fc8a67448bf5d11",
   "after_early_gate_pass": [
     "all remaining and early kernels in full frozen 28-kernel sweep",
     "representative combined-feature checks within existing procedure",
@@ -18,13 +18,19 @@
   "firmware_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
   "frozen_policy_sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797",
   "head_before_run": "fa219edc6dcb642f94f6cf2116ee0203709b19a5",
+  "host_failure_classification": "evidence/cart2-r7-performance-repair-20261009/R7_QUALIFICATION_TIMEOUT_FAILURE_CLASSIFICATION.json",
+  "host_failure_classification_sha256": "7b0702ce0cd8df8806d0fc442289e640dbd14b9f6307f1b746b61bc954557674",
   "live_mutation": "YES \u2014 Packet20 snapshot/select, telemetry-mode changes, and kernel changes; no OTA, reboot, AUX firmware/config, router, or cloud mutation.",
+  "next_checkpoint": "Observer windows complete on same snapshot, then exact matched kernel13/9 gate result.",
   "preflight": "evidence/cart2-r7-performance-repair-20261009/live-qualification/PRE_SWEEP_READONLY_PREFLIGHT.json",
   "preflight_sha256": "550b6be2ce4149cce47c2f762feb2697d0b8fb90385bc7efce7351c12838b5e7",
   "procedure": "evidence/cart2-r7-performance-repair-20261009/R7_FROZEN_LIVE_QUALIFICATION_PROCEDURE.json",
   "procedure_sha256": "9eeacb0fc3eeae144f0e11e8b72a5141161e8e7f1ab3412fde244ef497eb7303",
   "r4_recovery_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
   "release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+  "resume_rule": "Use the existing exact valid snapshot; do not issue a second begin/snapshot or reboot.",
+  "resume_snapshot_hash": 4051728214,
+  "resume_snapshot_id": 1,
   "run_id": "phase2-r7-execution-20261009",
   "schema": "hbnf-r7-qualification-run-start-v1",
   "started_at_local": "2026-10-09T10:31:13+00:00"

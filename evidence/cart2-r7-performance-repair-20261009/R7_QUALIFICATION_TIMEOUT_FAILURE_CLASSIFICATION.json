@@ -1,0 +1,42 @@
+{
+  "captured_at_utc": "2026-10-09T10:32:13.371136+00:00",
+  "corrective_action": "Preserve and resume the already-valid boot-scoped snapshot id/hash without issuing begin/snapshot again; run the existing observer-window function with an adequate host deadline and then continue the original sweep/soak on the same saved state. Adapter child deadline raised to 300 s; firmware bytes unchanged.",
+  "device_state": "R7 remains exact and healthy by readback; diagnostic is active with exact valid snapshot; renderer temporarily selected kernel 0 and must be restored by the same transaction at completion or on any failure.",
+  "failure_class": "HOST_HARNESS",
+  "first_attempt": {
+    "expected_observer_setup_minimum_window_seconds": 80,
+    "qualification_profiles_collected": 0,
+    "result": {
+      "post_restore_state": null,
+      "pre_sweep_state": "/private/tmp/hbnf-p2-build/r7-authority-root/evidence/cart2-r7-performance-repair-20261009/live-qualification/PRE_SWEEP_STATE.json",
+      "profiles_completed": 0,
+      "restore_error": "snapshot command did not return a verifiable snapshot and no matching verified observer-sidecar restore exists; renderer state is uncertain; stop live testing and preserve exact recovery path",
+      "run_error": "subprocess timed out after 20s: argv=['python3', 'scripts/hbnf_foundation_live_adapter.py', 'snapshot', '--observer-output', '/private/tmp/hbnf-p2-build/r7-authority-root/evidence/cart2-r7-performance-repair-20261009/live-qualification/OBSERVER_EFFECT.json', '--inventory', 'config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json']; stdout_tail=''; stderr_tail=''",
+      "status": "FAIL"
+    },
+    "runner_adapter_timeout_seconds": 20,
+    "soak_started": false
+  },
+  "new_installation_authorized": false,
+  "read_only_state": {
+    "aux_native_ddp_live": true,
+    "aux_source_ip": "192.168.77.10",
+    "foundation_telemetry_enabled": false,
+    "fps_during_unqualified_kernel0_observer_setup": 16,
+    "kernel_selected": 0,
+    "matrix_on": true,
+    "matrix_release": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+    "matrix_uptime_seconds": 479,
+    "packet20_enabled": true,
+    "receipt": "evidence/cart2-r7-performance-repair-20261009/live-qualification/POST_TIMEOUT_READONLY_STATE.json",
+    "receipt_sha256": "08718bf5864f007251c67942ef63a13a83ccd7fa226c93e093bdc2a13145aa77",
+    "restore_verified": false,
+    "snapshot_hash": 4051728214,
+    "snapshot_id": 1,
+    "snapshot_valid": true
+  },
+  "retry_snapshot_or_reentry_permitted": false,
+  "rollback_indicated": false,
+  "root_cause": "Host-side subprocess deadline (20 s) is shorter than the adapter snapshot path, which deliberately runs at least 40 s tails-off and 40 s tails-on observer windows before returning. Process was terminated by host timeout; this is not proof of firmware performance failure.",
+  "schema": "hbnf-r7-qualification-host-timeout-classification-v1"
+}
