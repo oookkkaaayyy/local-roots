@@ -1,6 +1,7 @@
 // @ts-nocheck
 import mqtt from "npm:mqtt@5.10.4";
 import { confirmationContract } from "./confirmation.ts";
+import { runtimeVibeField } from "./runtime-vibe.ts";
 
 const json=(x:any,s=200)=>new Response(JSON.stringify(x),{status:s,headers:{"Content-Type":"application/json","Cache-Control":"no-store"}});
 const HOST=(Deno.env.get("HBNF_MQTT_HOST")||"broker.emqx.io").trim();
@@ -134,6 +135,7 @@ Deno.serve(async(req:Request)=>{
     ],
     HBNF:{
       scene,
+      ...runtimeVibeField(p.selectedVibe),
       motion,
       audioResponse,
       matrixBrightness,

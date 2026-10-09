@@ -5,14 +5,14 @@
   var endpoint=SUPABASE_URL+"/functions/v1/hbnf-cart-control";
   var path=window.location.pathname.replace(/\/+$/,"/").split("/").filter(Boolean);
   var cartId=path[1]||"";
-  var revision=null,busy=false,enabled=false,lastAction={};
+  var revision=null,busy=false,enabled=false,vibeRuntimeReady=false,lastAction={};
   var buttons=Array.prototype.slice.call(document.querySelectorAll("[data-guest-action]"));
   var status=document.getElementById("primaryStatus");
   var detail=document.getElementById("secondaryStatus");
   var live=document.getElementById("live");
 
   function announce(message,error){status.textContent=message;live.textContent=message;if(error)detail.textContent=error;}
-  function controls(on){buttons.forEach(function(button){button.disabled=!on||button.hasAttribute("data-vibe-control");});}
+  function controls(on){buttons.forEach(function(button){button.disabled=!on||(button.hasAttribute("data-vibe-control")&&!vibeRuntimeReady);});}
   function id(){
     var bytes=new Uint8Array(16);window.crypto.getRandomValues(bytes);
     bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;
@@ -34,6 +34,7 @@
     }
     busy=true;controls(false);
     return post({action:"status"}).then(function(snapshot){
+      vibeRuntimeReady=!!(snapshot&&snapshot.capabilities&&snapshot.capabilities.phase2VibeRuntimeV1===true);
       var desired=snapshot&&snapshot.desired;
       var cartState=desired&&desired.state;
       revision=desired&&Number.isSafeInteger(Number(desired.revision))?Number(desired.revision):null;
@@ -42,7 +43,7 @@
       document.getElementById("guestBadge").textContent=enabled?"OPEN":"CLOSED";
       document.getElementById("guestBadge").className="badge "+(enabled?"ready":"closed");
       controls(enabled);
-      announce(enabled?"Guest Mode is open.":"Guest Mode is closed.",enabled?"Vibe selection is unavailable until the matching Cart runtime is qualified. Use Next look or Cart Auto.":"Ask the Cart owner to switch Guest Mode on.");
+      announce(enabled?"Guest Mode is open.":"Guest Mode is closed.",enabled?(vibeRuntimeReady?"Choose a Vibe or use Next look and Cart Auto. The owner can close Guest Mode at any time.":"Vibe selection is unavailable until the matching Cart runtime is qualified. Use Next look or Cart Auto."):"Ask the Cart owner to switch Guest Mode on.");
     }).catch(function(error){
       enabled=false;revision=null;controls(false);
       document.getElementById("connectionBadge").textContent="OFFLINE";

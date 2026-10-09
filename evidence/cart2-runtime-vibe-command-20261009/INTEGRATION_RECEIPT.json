@@ -1,0 +1,60 @@
+{
+  "schema": "hbnf-cart2-runtime-vibe-command-integration-receipt-v1",
+  "status": "OFFLINE_SOURCE_INTEGRATION_PASS__LIVE_QUALIFICATION_PENDING",
+  "base_commit": "a31ea3473182ca77c1c4bf7d84d82e0e42f6ce5b",
+  "candidate_scope": "Cart 2.0 manual/Auto Vibe desired-state reducer, Matrix projection, Owner/Guest availability gate",
+  "firmware_contract": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r5-20261008",
+    "sha256": "f663c0736256186eff009b69818f5d41b1eec9df310be3128e1b3c67a9feea8b",
+    "pinned_wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "enum": {
+      "chill": 0,
+      "groove": 1,
+      "heavy": 2,
+      "psychedelic": 3,
+      "cosmic": 4,
+      "auto": 5
+    }
+  },
+  "rollback": {
+    "release_id": "Foundation R4",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "changes": [
+    "Separate selectedVibe from the legacy energy-category field and preserve legacy values.",
+    "Transmit the selected Vibe through the existing reconcile -> Matrix adapter -> WLED HBNF.vibe path.",
+    "Make Owner and Guest Vibe controls capability-gated; default closed unless HBNF_PHASE2_VIBE_RUNTIME_READY is exactly true.",
+    "Keep command/application status truthful; no MQTT transport observation is treated as revision-bound device confirmation."
+  ],
+  "validation": {
+    "runtime_vibe_command_tests": "PASS 15/15",
+    "owner_guest_static_rc": "PASS",
+    "owner_pwa_package_and_reliability": "PASS",
+    "coordinated_owner_and_backend_contracts": "PASS",
+    "authoritative_scoring_flow": "PASS",
+    "vibe_audio_replay": "PASS 13 feature semantics and six synthetic traces",
+    "audio_trace_and_capture_tests": "PASS",
+    "native_text_adapter_smoke": "PASS",
+    "text_moments_offline_source_reconstruction": "BLOCKED: expected pinned WLED source snapshot /tmp/WLED-v16.0.1 is absent; prior R5 source-bound closure recorded exact pinned WLED and Text/Moments source checks as passing",
+    "control_state": "PHASE2_INTEGRATING; live mutation false"
+  },
+  "not_claimed": [
+    "live device application",
+    "revision-bound device acknowledgement",
+    "R5 frozen performance qualification",
+    "production deployment",
+    "T4/T5 acceptance",
+    "aesthetic acceptance"
+  ],
+  "source_sha256": {
+    "hbnf-final-controller/hbnf-cart.js": "60a9417664e445d0be272bda14c76913340bb9814e725af46b6910dde2ee3ed1",
+    "hbnf-final-controller/guest/hbnf-cart/guest.js": "57ed9d21bd063e93225de14a5306525c21f8a3cecd7b2a4c7b756d33684e0f77",
+    "staging/coordinated-backend/hbnf-cart-control/guest-command.ts": "09d181d27e6beeec7a9b9727bce404c0e5621a26ddc85895d68d7419f60f918d",
+    "staging/coordinated-backend/hbnf-cart-control/index.ts": "ed8b1a29da99cbbf1240c39faabde297b1d2ff15731f1400aaa817c810369c96",
+    "staging/coordinated-backend/hbnf-cart-control/runtime-vibe.ts": "711a9bd8a933b02dd6696cf2166338363128688b0257f8a1cb14c3935d31f1f7",
+    "staging/coordinated-backend/hbnf-cart-control/runtime-vibe.test.mjs": "f4478251efc448a30d9851d056ce4cd64946e8c9f4e55e8178d754bed575c250",
+    "staging/coordinated-backend/hbnf-cart-reconcile/index.ts": "24299078b5a0a5c236d90674e8249102000cf3e0958c70ef5fb8fad7b1425033",
+    "staging/coordinated-backend/hbnf-matrix-adapter-foundation/index.ts": "73f7830a51af2806f7973f2f2466d58eee5c6b119692e2b347e15ec9c4029956",
+    "staging/coordinated-backend/hbnf-matrix-adapter-foundation/runtime-vibe.ts": "0953feeba35dcf0b91e9c65f28a2e54a6343c12d7d837355532f2e96de6b152f"
+  }
+}

@@ -2,6 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.0";
 import { isMetadataOnlyCommand, reduceCartCommand, reconcileTargetsForCommand, requiresOwnerAuthorization, runGuestCommand } from "./guest-command.ts";
 import { chooseLive } from "./live.ts";
 import { laDate, readSkinsScoreState, writeSkinsWinner, writeSkinsTiebreaker, writeSkinsAceWinner } from "./skins_scoring.ts";
+import { phase2VibeReady } from "./runtime-vibe.ts";
 declare const EdgeRuntime:{waitUntil(p:Promise<unknown>):void};
 
 const cors = {
@@ -147,7 +148,7 @@ Deno.serve(async (req: Request) => {
     if (statusError || !snapshot) return response({ error: "state_read_failed" }, 500);
     const desired = snapshot.desired as { state?: Record<string, unknown> } | null;
     const state = desired?.state ? { ...desired.state, guestMode: desired.state.guestMode === true } : desired?.state;
-    return response({ ...snapshot, desired: desired ? { ...desired, state } : desired, capabilities: { coordinatedRelease: "2026-10-01", canonicalPaletteIntentV1: true, canonicalOverlayIntentV1: true, pairedDeviceAuth: true, tuneV1: true, guestV1: true } });
+    return response({ ...snapshot, desired: desired ? { ...desired, state } : desired, capabilities: { coordinatedRelease: "2026-10-01", canonicalPaletteIntentV1: true, canonicalOverlayIntentV1: true, pairedDeviceAuth: true, tuneV1: true, guestV1: true, phase2VibeRuntimeV1: phase2VibeReady(Deno.env.get("HBNF_PHASE2_VIBE_RUNTIME_READY")) } });
   }
   if (action === "guest_command") {
     const guestResult = await runGuestCommand(request, {

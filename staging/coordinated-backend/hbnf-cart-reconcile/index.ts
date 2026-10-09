@@ -38,6 +38,7 @@ Deno.serve(async (req: Request) => {
     auxBrightness: profiles.aux.brightness,
     brightnessProfileRevision: profiles[deviceId].profileRevision,
     programMode: state.programMode, sceneId: state.sceneId, paletteId: state.paletteId,
+    selectedVibe: state.selectedVibe,
     vibe: state.vibe, tempoMode: "manual", speedBias: state.manualSpeedBias ?? 1,
     sequenceCursor: state.sequenceCursor,
     tuning: {

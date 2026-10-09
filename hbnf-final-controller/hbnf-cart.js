@@ -250,10 +250,22 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
 }
 
 function updateVibeSelection(_state) {
-  document.querySelectorAll(".vibe-option").forEach(button => button.setAttribute("aria-pressed", "false"));
+  const vibe = String(_state && _state.selectedVibe || "");
+  const ready = canonicalCapabilities.phase2VibeRuntimeV1 === true;
+  document.querySelectorAll(".vibe-option").forEach(button => {
+    button.disabled = !ready;
+    button.setAttribute("aria-pressed", button.dataset.vibe === vibe ? "true" : "false");
+  });
   const autoButton = $("#vibeAuto");
-  if (autoButton) autoButton.setAttribute("aria-pressed", "false");
-  if (vibeModeLabel) vibeModeLabel.textContent = "Runtime not qualified";
+  if (autoButton) {
+    autoButton.disabled = !ready;
+    autoButton.setAttribute("aria-pressed", vibe === "auto" ? "true" : "false");
+  }
+  if (vibeModeLabel) vibeModeLabel.textContent = ready ? (vibe ? `Desired · ${vibe.toUpperCase()}` : "Ready") : "Runtime not qualified";
+  const availability = $("#vibeAvailability");
+  if (availability) availability.textContent = ready
+    ? "Vibe selection is available. Device application remains subject to the revision-bound status below."
+    : "Vibes stay unavailable until the matching firmware and frozen runtime gates are accepted.";
 }
 
 function setRange(id, outputId, value, formatter = v => String(v)) {

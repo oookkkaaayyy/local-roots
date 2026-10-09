@@ -4,6 +4,7 @@
  * Guest inputs are reduced by the exact Cart command reducer used by the owner
  * route. This module owns no persistence, identity, or device transport.
  */
+import { isManualRuntimeVibe } from "./runtime-vibe.ts";
 export interface GuestCommandPlan {
   ok: true;
   type: string;
@@ -40,7 +41,7 @@ export function planGuestCommand(
   const value = String(request.value ?? "");
   let type: string;
   let payload: Record<string, unknown>;
-  if (action === "vibe" && ["mellow", "moderate", "energetic", "peak"].includes(value)) {
+  if (action === "vibe" && (isManualRuntimeVibe(value) || ["mellow", "moderate", "energetic", "peak"].includes(value))) {
     type = "VIBE";
     payload = { vibe: value };
   } else if (action === "vibe_auto" && value === "") {
@@ -159,9 +160,15 @@ export function reduceCartCommand(state: Record<string, unknown>, type: string, 
         changed = true;
       }
       if (payload.vibe !== undefined) {
-        if (!["mellow","moderate","energetic","peak"].includes(String(payload.vibe))) return null;
-        next.vibe = String(payload.vibe);
-        next.vibeMode = "manual";
+        const value = String(payload.vibe);
+        if (isManualRuntimeVibe(value)) {
+          next.selectedVibe = value;
+          next.vibeMode = "manual";
+        } else if (["mellow","moderate","energetic","peak"].includes(value)) {
+          // Keep the pre-Cart-2.0 energy category compatible for old clients.
+          next.vibe = value;
+          next.vibeMode = "manual";
+        } else return null;
         changed = true;
       }
       if (payload.speedBias !== undefined) {
@@ -254,8 +261,18 @@ export function reduceCartCommand(state: Record<string, unknown>, type: string, 
       next.tuning = tune;
       break;
     }
-    case "VIBE": if (!["mellow", "moderate", "energetic", "peak"].includes(String(payload.vibe))) return null; next.vibe = payload.vibe; next.vibeMode = "manual"; break;
-    case "VIBE_AUTO": next.vibeMode = "music"; break;
+    case "VIBE": {
+      const value = String(payload.vibe);
+      if (isManualRuntimeVibe(value)) {
+        next.selectedVibe = value;
+        next.vibeMode = "manual";
+      } else if (["mellow","moderate","energetic","peak"].includes(value)) {
+        next.vibe = value;
+        next.vibeMode = "manual";
+      } else return null;
+      break;
+    }
+    case "VIBE_AUTO": next.selectedVibe = "auto"; next.vibeMode = "music"; break;
     case "TEMPO_AUTO": return null;
     case "SPEED": if (!Number.isFinite(payload.speedBias)) return null; next.manualSpeedBias = clamp(Number(payload.speedBias), 0.5, 2); next.tempoMode = "manual"; break;
     case "OVERLAY_START": {
