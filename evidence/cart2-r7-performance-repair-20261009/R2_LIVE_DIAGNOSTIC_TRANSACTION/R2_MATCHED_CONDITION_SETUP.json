@@ -1,0 +1,24 @@
+{
+  "captured_at_utc": "2026-10-09T19:04:27.444530+00:00",
+  "checks": {
+    "brightness": true,
+    "kernel": true,
+    "matrix_on": true,
+    "variant": true
+  },
+  "runtime_controls": {
+    "audioResponse": 50,
+    "auxBrightness": 245,
+    "kernel": 13,
+    "matrixBrightness": 44,
+    "motion": 50,
+    "overlayId": null,
+    "palette": {
+      "mode": "legacy"
+    },
+    "scene": 0,
+    "variantSignature": 1347100685,
+    "vibe": 0
+  },
+  "uptime_seconds": 470
+}

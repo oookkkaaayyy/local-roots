@@ -9,7 +9,7 @@
   "cpalmax": 129,
   "deviceId": "52d5bc29d6bd3a4be1702e3b7393daae7d6581734d",
   "flash": 4,
-  "freeheap": 71608,
+  "freeheap": 73632,
   "fs": {
     "pmt": 0,
     "t": 983,
@@ -21,7 +21,7 @@
     "bootps": 60,
     "cct": 0,
     "count": 534,
-    "fps": 32,
+    "fps": 41,
     "lc": 1,
     "matrix": {
       "h": 16,
@@ -29,7 +29,7 @@
     },
     "maxpwr": 1800,
     "maxseg": 32,
-    "pwr": 683,
+    "pwr": 686,
     "rgbw": false,
     "seglc": [
       1,
@@ -57,7 +57,7 @@
   "repo": "wled/WLED",
   "simplifiedui": false,
   "str": false,
-  "time": "1970-1-1, 00:00:08",
+  "time": "1970-1-1, 00:00:12",
   "u": {
     "AGC Gain": [
       1,
@@ -87,7 +87,7 @@
     58
   ],
   "umpalcount": 0,
-  "uptime": 8,
+  "uptime": 12,
   "ver": "16.0.1",
   "vid": 2605010,
   "wifi": {

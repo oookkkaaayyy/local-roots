@@ -9,7 +9,7 @@
   "cpalmax": 129,
   "deviceId": "e3d28e871aade5e29da7fa368a6759ea368fc3572d",
   "flash": 4,
-  "freeheap": 105128,
+  "freeheap": 105136,
   "fs": {
     "pmt": 0,
     "t": 983,
@@ -21,11 +21,11 @@
     "bootps": 0,
     "cct": 0,
     "count": 22,
-    "fps": 34,
+    "fps": 38,
     "lc": 1,
     "maxpwr": 900,
     "maxseg": 32,
-    "pwr": 303,
+    "pwr": 170,
     "rgbw": false,
     "seglc": [
       1
@@ -52,7 +52,7 @@
   "repo": "wled/WLED",
   "simplifiedui": false,
   "str": false,
-  "time": "1970-1-1, 13:50:10",
+  "time": "1970-1-1, 14:04:28",
   "u": {
     "Animartrix": [
       "Animartrix requires the Creative Commons Attribution License CC BY-NC 3.0"
@@ -67,14 +67,14 @@
     45
   ],
   "umpalcount": 0,
-  "uptime": 49810,
+  "uptime": 50668,
   "ver": "16.0.1",
   "vid": 2605010,
   "wifi": {
     "ap": false,
     "bssid": "94:83:C4:98:78:94",
     "channel": 4,
-    "rssi": -40,
+    "rssi": -36,
     "signal": 100
   },
   "ws": 0

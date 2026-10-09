@@ -1,0 +1,30 @@
+{
+  "schema": "hbnf-r2-trace-encoding-diagnosis-v1",
+  "classification": "DIAGNOSTIC_SERIALIZATION_DEFECT_CONFIRMED",
+  "diagnostic_release": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+  "diagnostic_sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
+  "installed_firmware_after_transaction": "Foundation R4",
+  "installed_r4_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "evidence": {
+    "source_formatter": "firmware/phase2/integration-r7/usermod/usermod_hbnf_foundation_v1.cpp:hbnfFormatTraceRecord uses %llu for the uint64_t monotonicUs value, followed by 32-bit %lu fields.",
+    "pinned_framework_configuration": "Pinned framework-arduinoespressif32 2.0.18+sha.8ba0dc0 tools/sdk/esp32/sdkconfig defines CONFIG_NEWLIB_NANO_FORMAT=y (SHA-256 2e7dcb1827219a6b41ac52bb2bbf28676fb113ac675218b5387d41e5ba05b7a9).",
+    "formatter_source_sha256": "6d6ed64ae6c35c75ee79484c06bb2d4357d67bcb91541d8ac3d72d651ffb4c43",
+    "raw_readback_sha256": "2111501977ba86ac4e6cdac2a9eed712dbe607a64e1f0c131ccbca3b0cf07def",
+    "result_receipt_sha256": "372ea29fe09a31a6ee34e77d275c7b81723510b72e1c76eae748d20d912368e3",
+    "captured_output": "All five retained records start with literal 'lu,' followed by numeric columns that do not match the declared 16-field schema.",
+    "runtime_pattern": "The pinned ESP32 Arduino framework selects the ROM Newlib nano printf path. On the 32-bit Xtensa target, the unsupported %llu conversion is not consumed as a 64-bit conversion; the output begins with the trailing 'lu' text and subsequent %lu conversions read the two 32-bit argument words for monotonicUs before the remaining values. This matches the captured field shift.",
+    "official_basis": "Espressif ESP-IDF v4.2.2 ESP32 Kconfig documentation says CONFIG_NEWLIB_NANO_FORMAT does not support 64-bit integer formats; the pinned framework sdkconfig is direct local target evidence.",
+    "links": [
+      "https://docs.espressif.com/projects/esp-idf/en/v4.2.2/esp32/api-reference/kconfig.html",
+      "https://github.com/espressif/esp-idf/blob/master/components/esp_rom/esp32/ld/esp32.rom.newlib-nano.ld"
+    ]
+  },
+  "diagnostic_interpretation": {
+    "trace_stage_attribution": "INVALID; no retained record may be used to attribute frame-stage cost.",
+    "matched_window_metrics": "The two 60-second windows and their polling/observer-effect metrics remain usable as diagnostic observations; the prior R7 p99 regression was not reproduced under these conditions.",
+    "overall_result": "INCONCLUSIVE__MALFORMED_TRACE_RECORDS",
+    "production_acceptance": "NOT ESTABLISHED"
+  },
+  "smallest_evidence_based_correction": "Change only diagnostic timestamp serialization to a target-compatible representation that does not pass a 64-bit value through nano printf (for example a bounded manual unsigned-decimal conversion or explicit high/low 32-bit fields with a versioned schema). Add target-format regression coverage. Do not alter frame timing, renderer behavior, or frozen gates.",
+  "live_authority": "Consumed. R2 installation and exact R4 restoration are complete. This diagnosis authorizes no new firmware installation, restart, or diagnostic session."
+}
