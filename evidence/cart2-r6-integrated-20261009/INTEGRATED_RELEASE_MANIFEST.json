@@ -40,7 +40,7 @@
     "evidence_directory": "evidence/cart2-owner-guest-vibe-r2-20261009"
   },
   "feature_contract": {
-    "owner_mission_control": "included; owner controls and pairing preserved; iPad-first hierarchy and accessible Matrix/AUX brightness, genuine Vibe selection, status semantics, and secondary Advanced controls in packaged assets",
+    "owner_mission_control": "included; owner controls and pairing preserved; iPad-first hierarchy and accessible Matrix/AUX brightness, genuine Vibe selection, status semantics, and secondary Advanced controls in packaged assets; source-level iOS 12 compatibility audit passes (actual device runtime test still required)",
     "guest": "included; Guest Mode defaults OFF; owner toggle stays authoritative; guest controls use existing serialized Cart command/reconcile path",
     "vibe_audio": "firmware feature closure inherited from R5; synthetic replay/host differentiation checks pass; owner real-music/physical acceptance remains pending",
     "text_moments": "native WLED font foundation and Text/Moments source/tests included; appearance remains unaccepted until owner review",
@@ -144,7 +144,8 @@
   },
   "test_receipt": {
     "path": "evidence/cart2-r6-integrated-20261009/OFFLINE_TEST_RECEIPT.json",
-    "sha256": "6362e3507ebcf1d8e12cae7e119641352a19fafcf8aad5dba609eeb53846f109"
+    "sha256": "575a6a5aa8a61d10bcf535a8ae146c489362fe906237011bac034196e8557110",
+    "drive_file_id": "1F6LvCpXqoH7qjLPwEGdRUM9W8oKvoFTb"
   },
   "rejected_artifacts": [
     {
@@ -153,5 +154,26 @@
       "actual_sha256": "34c15eaa6593d69d409f8babef7c066d6ee1833c6738400a3f300472ab65290e",
       "status": "REJECTED_AS_ROLLBACK_BYTES_DO_NOT_MATCH_FILENAME"
     }
-  ]
+  ],
+  "bespoke_exception_required": {
+    "requirement": "Truthful Matrix application confirmation bound to exact Cart desired revision and active fence epoch.",
+    "evidence": {
+      "pinned_firmware": "WLED 16.0.1 commit 29b389df1c1aaec6ff53aea742d17063b985906c exposes current HBNF projection state, palette and overlay identifiers, but no cartRevision/fenceEpoch in device readback; current confirmation contract always returns commandApplicationConfirmed=false.",
+      "current_adapter": "Supabase reconcile submits through MQTT; confirmation subscribes to /status and master /g only. It records transport liveness and never confirms semantic application.",
+      "native_alternatives_evaluated": [
+        "WLED MQTT status and /g,/c,/v: docs describe online status, brightness/color/XML state, not Cart revision/fence; current MQTT credentials are transmitted without encryption.",
+        "WLED JSON API/WebSocket readback: native API can return state and WebSocket updates, but the remote Supabase function cannot access private LAN state and current device state lacks revision/fence correlation.",
+        "Owner browser local readback: LAN-dependent and not a backend-trusted revision-bound receipt; no existing paired local relay contract is present in this checkout."
+      ],
+      "sources": [
+        "https://kno.wled.ge/interfaces/mqtt/",
+        "https://kno.wled.ge/interfaces/json-api/",
+        "https://kno.wled.ge/interfaces/websocket/"
+      ],
+      "why_existing_architecture_fails": "No current path proves that this specific device applied this exact desired revision while the active fence remained unchanged. Treating MQTT liveness as applied would falsify the UI contract.",
+      "maintenance_cost": "A new authenticated device-to-backend receipt or trusted LAN relay, correlation/fence checks, identity/key lifecycle, replay protection, and regression tests.",
+      "rollback_exit": "Keep status submitted/unconfirmed; no false applied claim. Retain current field baseline and exact R4 recovery artifact if a future authorized firmware change requires recovery.",
+      "owner_decision": "Explicit approval of a BESPOKE EXCEPTION and selection of secure receipt transport; otherwise keep this gate blocked and do not claim Cart 2.0 release readiness."
+    }
+  }
 }

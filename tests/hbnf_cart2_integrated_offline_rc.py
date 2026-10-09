@@ -30,6 +30,8 @@ assert manifest["feature_contract"]["guest_mode_default"] is False
 assert manifest["feature_contract"]["uv"] == "dormant OFF; hardware_available=false; max brightness 0"
 assert manifest["application_confirmation"]["mqtt_liveness_is_application_confirmation"] is False
 assert manifest["application_confirmation"]["matrix_status"] == "submitted until revision/fence-bound evidence exists"
+assert "BESPOKE EXCEPTION" in manifest["bespoke_exception_required"]["evidence"]["owner_decision"]
+assert manifest["bespoke_exception_required"]["requirement"].startswith("Truthful Matrix application confirmation")
 
 fw_manifest = json.loads((EVIDENCE / "FINAL_OFFLINE_CANDIDATE_MANIFEST.json").read_text())
 assert fw_manifest["artifact"]["sha256"] == manifest["firmware"]["sha256"]

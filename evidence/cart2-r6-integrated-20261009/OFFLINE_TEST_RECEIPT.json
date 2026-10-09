@@ -5,7 +5,7 @@
   "owner_guest_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
   "status": "OFFLINE_TESTS_PASS__PRODUCTION_RELEASE_READINESS_NO",
   "passed": [
-    "R5-to-R6 radial pixel equivalence: 512 production pixels × 8 coordinate transforms; bounded int32 path for 32×16, generic int64 fallback retained",
+    "R5-to-R6 radial pixel equivalence: 512 production pixels \u00d7 8 coordinate transforms; bounded int32 path for 32\u00d716, generic int64 fallback retained",
     "R6 target artifact: SHA, embedded release identity, exact runtime source binding, R4 rollback hash, flash/RAM headroom, and production-path disassembly",
     "WLED 16.0.1 pinned Text/Moments source reconstruction: 14/14",
     "Owner/Guest actual installer validation: exact package accepted; mismatched build marker, asset marker, source identity, and installer tampering rejected; no network/deployment operation",
@@ -14,7 +14,8 @@
     "Synthetic AudioFeatures replay: 13 semantics, six synthetic traces, pairwise Vibe differentiation and AUTO hysteresis",
     "Mission Control scoring and Guest static platform checks",
     "Release engineering, control plane 23/23, guarded runner, architecture fitness, runtime qualification static checks, 28-kernel runner/report policy, source-tree identity, Packet20 adapters/build validator",
-    "Integrated offline release rehearsal: exact R6 and R4 hashes, source hashes, deterministic Owner/Guest ZIP rebuild byte-identical, actual installer validation, candidate static overlay and source rollback"
+    "Integrated offline release rehearsal: exact R6 and R4 hashes, source hashes, deterministic Owner/Guest ZIP rebuild byte-identical, actual installer validation, candidate static overlay and source rollback",
+    "iOS 12 source-compatibility audit: zero unsupported syntax/API across all eight packaged controller/Guest JS modules; actual owner-device runtime gate remains open"
   ],
   "production_readiness": {
     "gate": "NO",
