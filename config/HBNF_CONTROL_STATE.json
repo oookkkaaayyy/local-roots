@@ -432,6 +432,13 @@
     "install_attempts": 1,
     "install_limit": 1,
     "method": "one direct-LAN multipart POST to the already-proven WLED 16.0.1 /update endpoint, with -H Expect: (prior transfer correction); exact local bytes and no retry",
+    "ota_response": {
+      "curl_exit_code": 0,
+      "evidence": "/tmp/hbnf-p2-build/r6-live-validation/evidence/R6_OTA_RESULT.json",
+      "http_status": 200,
+      "response_indicates_success": true,
+      "response_sha256": "e989fc00de0b0d87a74771439a95cb6b231dac0ede16865104c2251612c6a128"
+    },
     "preflight_evidence": "/tmp/hbnf-p2-build/r6-live-validation/evidence/R6_LIVE_READONLY_PREFLIGHT.json",
     "rollback_attempts": 0,
     "rollback_limit": 1,
@@ -448,11 +455,11 @@
       "normal diagnostic cleanup and renderer restoration",
       "conditional exact R4 recovery within the one rollback limit"
     ],
-    "status": "INSTALL_ATTEMPT_CONSUMED_BEFORE_NETWORK_REQUEST",
+    "status": "OTA_RESPONSE_SUCCESS__AWAITING_RUNTIME_IDENTITY_AND_HEALTH",
     "target": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c",
     "transaction_start_evidence": "/tmp/hbnf-p2-build/r6-live-validation/evidence/R6_INSTALL_TRANSACTION_START.json"
   },
-  "checkpoint_at_utc": "2026-10-09T09:07:37+00:00",
+  "checkpoint_at_utc": "2026-10-09T09:09:08+00:00",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -2248,7 +2255,7 @@
       "status": "PASS"
     },
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "R6_INSTALL_ATTEMPT_CONSUMED_BEFORE_NETWORK_REQUEST__NO_RETRY",
+    "status": "R6_OTA_HTTP_SUCCESS__NORMAL_REBOOT_IDENTITY_PENDING",
     "t3_fast_path_preparation": {
       "human_approval_required": true,
       "human_packet": "work/cart2/27_T3_PHASE2_FAST_PATH_PREP_20261006.md",
@@ -2293,12 +2300,12 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "R6_ONE_INSTALL_ATTEMPT_CONSUMED__OTA_REQUEST_PENDING",
+    "current_failure_domain": "R6_OTA_HTTP_SUCCESS__NORMAL_REBOOT_IDENTITY_PENDING",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
       "artifact_sha256": "0a4b9563c7debfb5a01e9d36aeb8aac2583e105303064de3db0466b7dd9d89d6",
       "release_id": "hbnf-cart2-phase2-offline-wow-r6-20261009",
-      "status": "R6_INSTALL_ATTEMPT_CONSUMED_BEFORE_NETWORK_REQUEST"
+      "status": "R6_UPLOAD_SUCCESS__WAITING_FOR_RUNTIME_IDENTITY"
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
@@ -2553,6 +2560,13 @@
     "install_attempts": 1,
     "install_limit": 1,
     "method": "one direct-LAN multipart POST to the already-proven WLED 16.0.1 /update endpoint, with -H Expect: (prior transfer correction); exact local bytes and no retry",
+    "ota_response": {
+      "curl_exit_code": 0,
+      "evidence": "/tmp/hbnf-p2-build/r6-live-validation/evidence/R6_OTA_RESULT.json",
+      "http_status": 200,
+      "response_indicates_success": true,
+      "response_sha256": "e989fc00de0b0d87a74771439a95cb6b231dac0ede16865104c2251612c6a128"
+    },
     "preflight_evidence": "/tmp/hbnf-p2-build/r6-live-validation/evidence/R6_LIVE_READONLY_PREFLIGHT.json",
     "rollback_attempts": 0,
     "rollback_limit": 1,
@@ -2569,7 +2583,7 @@
       "normal diagnostic cleanup and renderer restoration",
       "conditional exact R4 recovery within the one rollback limit"
     ],
-    "status": "INSTALL_ATTEMPT_CONSUMED_BEFORE_NETWORK_REQUEST",
+    "status": "OTA_RESPONSE_SUCCESS__AWAITING_RUNTIME_IDENTITY_AND_HEALTH",
     "target": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c",
     "transaction_start_evidence": "/tmp/hbnf-p2-build/r6-live-validation/evidence/R6_INSTALL_TRANSACTION_START.json"
   },
