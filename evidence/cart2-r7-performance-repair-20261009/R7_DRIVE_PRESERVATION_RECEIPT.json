@@ -1,0 +1,55 @@
+{
+  "captured_at_utc": "2026-10-09T10:10:53.110842+00:00",
+  "files": [
+    {
+      "drive_id": "1QzPfOk3Aa_puEocRVO8pKp4bJXhqVal6",
+      "name": "hbnf-cart2-phase2-offline-wow-r7-20261009.bin",
+      "readback": "Full file bytes fetched from Drive and SHA-256 verified exact.",
+      "role": "firmware",
+      "sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+      "size_bytes": 1497920
+    },
+    {
+      "drive_id": "1pMBnI9SpvhEK-EBaBBjT6Q-iBuOMgSjX",
+      "name": "R7_FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
+      "role": "manifest",
+      "size_bytes": 3747
+    },
+    {
+      "drive_id": "1o86y2og3kOxo21KHFgwztNh8LSujtmyp",
+      "name": "SOURCE_BINDING_R7.json",
+      "role": "source_binding",
+      "size_bytes": 7947
+    },
+    {
+      "drive_id": "1K_pn7ukXg1qduUpwWlkBi-xgGMlJdW-_",
+      "name": "R7_OFFLINE_TEST_RESULTS_FINAL_20261009.json",
+      "role": "offline_test_results",
+      "size_bytes": 7375
+    },
+    {
+      "drive_id": "1hTRZ9M_EiVopLpwKcyAuPaaAI1Dma7pi",
+      "name": "R7_LIVE_APPROVED_ADMISSION.json",
+      "role": "live_admission",
+      "size_bytes": 6241
+    },
+    {
+      "drive_id": "1BnmUCQ4iMb0eCX_4VWku2lGtabiVbhCT",
+      "name": "R7_READONLY_PREFLIGHT_CURRENT_20261009.json",
+      "role": "current_readonly_preflight",
+      "size_bytes": 22803
+    },
+    {
+      "drive_id": "1hy-U_zu4Wqkzwe87Br2xOSMUnCzYdrYB",
+      "name": "hbnf-matrix-r4-exact-rollback-20261007-338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.bin",
+      "role": "exact_recovery",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "size_bytes": 1489008,
+      "status": "Previously preserved in Drive; exact local recovery artifact also verified."
+    }
+  ],
+  "folder_id": "17B-XkjyK92FS7dT8TWDRqcTxozZRjTFV",
+  "live_mutation": "NONE",
+  "schema": "hbnf-r7-drive-preservation-receipt-v1",
+  "verification": "Drive folder metadata read back and sizes match all newly uploaded files. R7 binary complete-byte readback SHA matches local exact artifact. Exact R4 fallback remains present in Drive and verified locally."
+}

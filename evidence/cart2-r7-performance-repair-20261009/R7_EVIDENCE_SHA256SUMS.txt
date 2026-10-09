@@ -7,6 +7,7 @@ c6e9c55f828429622497c66334f784234257ea052ed4ca3133023e71b0aa041d  /private/tmp/h
 e401b7fdaedaa4616a24ba64d143d6ea0763c1f73faeecc750caa82668f012fd  /private/tmp/hbnf-p2-build/r7-authority-root/evidence/cart2-r7-performance-repair-20261009/R6_hbnf_animartrix_audio_bridge.h
 ad74da1fb8e8ec7862e0e32e3fe4e464c917849140c490ef85ef732304240d94  /private/tmp/hbnf-p2-build/r7-authority-root/evidence/cart2-r7-performance-repair-20261009/R7_AUTHORITY_RECONCILIATION.json
 95e9fc20c41a5a2daa963697b6424e5bb348a728ca95b39d0ff8cc97839e51d9  /private/tmp/hbnf-p2-build/r7-authority-root/evidence/cart2-r7-performance-repair-20261009/R7_BUILD_20261009.log
+91c1bae7220d3584c87a56c550ddbdde361444d61b55f7b3c057b852ea4f5da1  /private/tmp/hbnf-p2-build/r7-authority-root/evidence/cart2-r7-performance-repair-20261009/R7_DRIVE_PRESERVATION_RECEIPT.json
 0974a69e17400e92958842b26b8f85ed363ea09e52c07a1ec4b7f438b97ec1d9  /private/tmp/hbnf-p2-build/r7-authority-root/evidence/cart2-r7-performance-repair-20261009/R7_FINAL_OFFLINE_CANDIDATE_MANIFEST.json
 c57a8bed5fa2e192f5d68f177172db53c0258f5a3d3e9d1ff62cc6f82dcf27ab  /private/tmp/hbnf-p2-build/r7-authority-root/evidence/cart2-r7-performance-repair-20261009/R7_FROZEN_LIVE_QUALIFICATION_PROCEDURE.json
 67fc8c99ec9c66b658bba3394a4638b06ce1acb8605454cefa1c9d603ae4b375  /private/tmp/hbnf-p2-build/r7-authority-root/evidence/cart2-r7-performance-repair-20261009/R7_INVALID_LIVE_ADMISSION_ZERO_REQUEST_PROOF.json

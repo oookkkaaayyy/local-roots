@@ -591,6 +591,8 @@
     "consumed_before_network_request": false,
     "device_preflight": "evidence/cart2-r7-performance-repair-20261009/R7_READONLY_PREFLIGHT_CURRENT_20261009.json",
     "device_preflight_sha256": "9c5811aac91a1dce7a416ed37c9aa0d49a0931bef02ea2c03670cdd32d9968bd",
+    "drive_preservation_receipt": "evidence/cart2-r7-performance-repair-20261009/R7_DRIVE_PRESERVATION_RECEIPT.json",
+    "drive_preservation_receipt_sha256": "91c1bae7220d3584c87a56c550ddbdde361444d61b55f7b3c057b852ea4f5da1",
     "failure_correction": {
       "R6_root_cause": "Per-pixel 64-bit radial division in fixed 32x16 audio modulation generated __divdi3; matched tails-on/off proves observer overhead is not cause.",
       "R7_correction": "Exact fixed-grid int32 path, exhaustive pixel/coordinate equivalence, generic int64 fallback preserved.",
@@ -624,7 +626,7 @@
     "rollback_attempts": 0,
     "schema": "hbnf-conditional-r7-successor-v1",
     "scope_exclusion": "No R8 or later installation without new user authorization.",
-    "status": "OFFLINE_AND_LIVE_ADMISSION_EVIDENCE_PASS__AWAITING_AUTHORITATIVE_CONSUMPTION_TRANSITION"
+    "status": "OFFLINE_AND_LIVE_ADMISSION_PASS__GITHUB_DRIVE_CHECKPOINTED__FRESH_PREOTA_GATE_NEXT"
   },
   "current_task": {
     "autonomous_completion_authorization": {
@@ -2380,12 +2382,12 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "R6_CLOSED_EXACT_R4_CURRENT__R7_OFFLINE_AND_READONLY_PREFLIGHT_PASS__LIVE_APPROVED_ADMISSION_NEXT",
+    "current_failure_domain": "R6_CLOSED__R7_EXACT_OFFLINE_AND_LIVE_ADMISSION_PASS__FINAL_PREOTA_PREFLIGHT_NEXT",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
       "artifact_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
       "release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
-      "status": "R7_OFFLINE_TESTS_AND_READONLY_PREFLIGHT_PASS__AWAITING_LIVE_APPROVED_ADMISSION"
+      "status": "R7_OFFLINE_AND_LIVE_ADMISSION_PASS__GITHUB_DRIVE_CHECKPOINTED__FRESH_PREOTA_GATE_NEXT"
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
@@ -2618,7 +2620,7 @@
     },
     "schema": "hbnf-lane-execution-state-v1"
   },
-  "last_updated_utc": "2026-10-09T10:08:45.784148+00:00",
+  "last_updated_utc": "2026-10-09T10:11:48.819359+00:00",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "candidate_release": "hbnf-cart2-phase2-offline-wow-r6-20261009",
