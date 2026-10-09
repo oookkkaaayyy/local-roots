@@ -1,5 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.0";
-import { canCarryForwardObservation, classifyFoundationInvocation } from "./foundation-result.ts";
+import { carryForwardObservation, classifyFoundationInvocation } from "./foundation-result.ts";
 
 const DEVICES = ["matrix", "aux"] as const;
 const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
@@ -93,15 +93,11 @@ Deno.serve(async (req: Request) => {
 
   const carryForward = async (deviceId: typeof DEVICES[number]) => {
     const { data: prior, error: priorError } = await db.rpc("hbnf_cart_get_observed", { p_cart_id: body.cartId, p_device_id: deviceId });
-    if (priorError || !canCarryForwardObservation(prior, cart.revision, fence.epoch, fence.release_id)) {
+    const carried = priorError ? null : carryForwardObservation(prior, cart.revision, fence.epoch, fence.release_id);
+    if (!carried) {
       return { deviceId, status: "carry_unavailable" };
     }
-    const { error: writeError } = await db.rpc("hbnf_cart_upsert_observed", {
-      p_cart_id: body.cartId, p_device_id: deviceId, p_online: prior.online === true, p_status: prior.status,
-      p_desired_revision: cart.revision, p_fence_epoch: fence.epoch, p_release_id: fence.release_id,
-      p_boot_id: prior.boot_id ?? null, p_reported: prior.reported ?? {}, p_observed_at: new Date().toISOString(),
-    });
-    return { deviceId, status: writeError ? "carry_failed" : "carried" };
+    return { deviceId, ...carried };
   };
 
   const targets = projections.filter((p) => p.deviceId === "matrix" && effectiveTargets.has("matrix"));
@@ -140,6 +136,7 @@ Deno.serve(async (req: Request) => {
   const good = new Set(["applied","off","carried","submitted"]);
   const status = results.every((x) => x.status === "off")
     ? "off"
+    : results.every((x) => x.status === "carried" || x.status === "off") ? "carried"
     : results.every((x) => good.has(x.status)) ? "submitted" : "degraded";
   return reply({
     cartRevision: cart.revision,

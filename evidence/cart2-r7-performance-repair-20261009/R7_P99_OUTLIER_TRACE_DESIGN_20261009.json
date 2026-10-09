@@ -1,0 +1,60 @@
+{
+  "schema": "hbnf-r7-p99-outlier-trace-design-v1",
+  "created_at_utc": "2026-10-09T17:08:29Z",
+  "status": "OFFLINE_DESIGN_ONLY__NO_LIVE_DIAGNOSTIC_AUTHORIZED_OR_PROPOSED",
+  "candidate_context": {
+    "failed_candidate_release": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+    "failed_candidate_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+    "field_baseline_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "field_baseline_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "live_mutation_authorized": false
+  },
+  "existing_instrumentation": {
+    "source": "firmware/phase2/integration-r7/usermod/usermod_hbnf_foundation_v1.cpp",
+    "cycle_source": "hbnfCycles() wraps ESP.getCycleCount(); hbnfPerfFrameEnd() already retains start/whole cycles and per-frame scheduler, kernel, audio, color, overlay, companion preparation, DDP send, and unaccounted cycle totals.",
+    "discard_point": "hbnfPerfLatest is overwritten at frame end; enabled Packet20 tail telemetry retains only cumulative fixed-bin distributions and sums/maxima, so stage totals cannot be joined back to individual long frames.",
+    "missing_evidence": [
+      "Monotonic timestamped individual frame records aligned to the >42.03125 ms tail frames.",
+      "Stage costs for those same frames, including DDP and unaccounted remainder.",
+      "A p99-level observer-on/off comparison; the preserved observer experiment measured average-frame change only."
+    ]
+  },
+  "minimal_trace_design": {
+    "capture_predicate": "Only when the already-existing bounded Packet20 diagnostic is enabled and a completed frame exceeds the frozen 42.03125 ms ceiling; store raw cycles, without rounding the threshold comparison.",
+    "record_fields": [
+      "monotonic esp_timer timestamp in microseconds, read only after an outlier is detected",
+      "frame start/end cycle counts and raw whole-frame cycles",
+      "tail sample index, kernel id, and variant signature",
+      "scheduler, kernel gross, audio, color, overlay, companion preparation, DDP send, and unaccounted raw cycle totals",
+      "trace-write cycle duration"
+    ],
+    "storage": "Fixed 32-entry single-writer ring in static internal RAM; approximately 2 KiB at a 64-byte record. Saturating overwrite counter makes loss explicit. Read only after collection is stopped.",
+    "hot_path": "No per-frame allocation, formatting, logging, HTTP, sorting, or per-pixel timing. The ordinary path adds only an outlier-threshold branch to the existing frame-end code; an outlier writes one fixed record. Existing per-stage cycle instrumentation is reused.",
+    "diagnostic_boundary": "The trace distinguishes an outlier dominated by measured application stages from one dominated by the unaccounted interval. A high unaccounted value alone does not prove Wi-Fi, scheduler, observer, or interrupt causality; that result remains unclassified rather than triggering speculative subsystem instrumentation.",
+    "readout": "After the bounded observation window, disable collection and fetch the ring once through the existing read-only telemetry response. Do not poll while measuring. Preserve a tails-off control window and compare the p99 distribution under the unchanged frozen gates."
+  },
+  "measurement_proof": {
+    "offline_functionality": "Not yet implemented or tested; this document specifies the bounded record contract only.",
+    "overhead_proof": "Not established. The existing R7 measurement uses per-frame ESP.getCycleCount stage brackets. The incremental compare/copy path still needs exact pinned-target compilation/disassembly, fixed-memory verification, and host replay tests before any live diagnostic can be proposed.",
+    "required_offline_checks_before_any_live_proposal": [
+      "Compile the isolated trace helper with the exact pinned R7 Xtensa toolchain and optimization flags, not a replacement PlatformIO closure.",
+      "Verify disassembly has no allocation, logging, network, division, or unbounded loop on the ordinary frame path.",
+      "Measure exact record size, ring clear/read behavior, wrap/overflow semantics, threshold-edge behavior, and disabled-path equality with host fixtures.",
+      "Record target instruction/cycle delta for ordinary frame-end and outlier append paths; reject the design if the measured bound is material against frozen headroom.",
+      "Replay preserved R7 tail distributions and synthetic aligned stage records without treating synthetic data as historical measurements."
+    ]
+  },
+  "expert_sources": [
+    {
+      "url": "https://docs.espressif.com/projects/esp-idf/en/v5.2.4/esp32/api-guides/performance/speed.html",
+      "relevant_fact": "Espressif describes cycle-count timing as lower overhead than esp_timer_get_time for short measurements and warns that cycle counters are per-core; the measured task must remain pinned. It also cautions about cache variation in small microbenchmarks.",
+      "application": "Reuse the already-established renderer cycle counter and avoid per-frame wall-clock calls; read the higher-resolution timestamp only for rare outlier records."
+    },
+    {
+      "url": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/system/esp_timer.html",
+      "relevant_fact": "esp_timer_get_time provides a microsecond monotonic timestamp and does not use locking; its resolution/overhead differs from the per-core CPU cycle counter.",
+      "application": "Use only as an outlier-only correlation timestamp, pending exact pinned-target overhead verification."
+    }
+  ],
+  "decision": "No R8 build, device access, restart, OTA, or live diagnostic. Cause remains unresolved. Complete the stated offline measurement proof first; then seek new exact-artifact authority only if that proof and a source-backed correction/diagnostic requirement justify it."
+}

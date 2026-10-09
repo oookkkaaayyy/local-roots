@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { canCarryForwardObservation, classifyFoundationInvocation } from "../staging/coordinated-backend/hbnf-cart-reconcile/foundation-result.ts";
+import { canCarryForwardObservation, carryForwardObservation, classifyFoundationInvocation } from "../staging/coordinated-backend/hbnf-cart-reconcile/foundation-result.ts";
 
 const projection = {
   cartRevision: 123,
@@ -11,9 +11,15 @@ const projection = {
 
 const carried = {
   status: "online", desired_revision: 123, fence_epoch: 4, release_id: "r4",
+  observed_at: "2026-10-09T10:00:00.000Z",
   reported: { cartRevision: 123, fenceEpoch: 4, confirmed: true },
 };
 assert.equal(canCarryForwardObservation(carried, 123, 4, "r4"), true);
+assert.deepEqual(carryForwardObservation(carried, 123, 4, "r4"), {
+  status: "carried", observedAt: "2026-10-09T10:00:00.000Z", commandApplicationConfirmed: false,
+});
+assert.equal(carryForwardObservation({ ...carried, observed_at: undefined }, 123, 4, "r4"), null, "missing observation time cannot be made fresh by carry-forward");
+assert.equal(carryForwardObservation({ ...carried, observed_at: "not-a-date" }, 123, 4, "r4"), null, "invalid observation time cannot be made fresh by carry-forward");
 assert.equal(canCarryForwardObservation({ ...carried, desired_revision: 122 }, 123, 4, "r4"), false);
 assert.equal(canCarryForwardObservation({ ...carried, reported: { cartRevision: 122, fenceEpoch: 4, confirmed: true } }, 123, 4, "r4"), false);
 assert.equal(canCarryForwardObservation({ ...carried, fence_epoch: 3 }, 123, 4, "r4"), false);

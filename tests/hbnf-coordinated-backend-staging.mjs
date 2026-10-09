@@ -51,8 +51,14 @@ assert.ok(confirmation.includes('masterUnityObserved'),"master brightness observ
 assert.ok(stagedReconcile.includes('classifyFoundationInvocation'),"reconcile does not preserve adapter outcome classes");
 assert.ok(stagedReconcile.includes('p_status: "submitted"'),"reconcile overstates a projection submission as applied/off state");
 assert.ok(stagedReconcile.includes('p_status: "submitted",') && stagedReconcile.includes('requestedEnabled: matrixProjection.enabled'),"AUX proxy observation does not distinguish requested off from observed off");
-assert.ok(stagedReconcile.includes('canCarryForwardObservation(prior, cart.revision, fence.epoch, fence.release_id)'),"reconcile carry-forward does not require the exact current revision and fence");
+assert.ok(stagedReconcile.includes('carryForwardObservation(prior, cart.revision, fence.epoch, fence.release_id)'),"reconcile carry-forward does not require the exact current revision and fence");
 assert.ok(reconcileOutcome.includes('Number(prior.reported?.cartRevision) === cartRevision') && reconcileOutcome.includes('Number(prior.reported?.fenceEpoch) === fenceEpoch'),"carry-forward can restamp a stale device report onto a new revision");
+const carryForwardBody = stagedReconcile.match(/const carryForward = async \(deviceId:[\s\S]*?\n  \};/);
+assert.ok(carryForwardBody, "carry-forward implementation is missing");
+assert.ok(!carryForwardBody[0].includes('hbnf_cart_upsert_observed'), "carried evidence must not rewrite the observation row or timestamp");
+assert.ok(!carryForwardBody[0].includes('new Date().toISOString()'), "carry-forward must never create a fresh observation timestamp");
+assert.ok(reconcileOutcome.includes('commandApplicationConfirmed: false'), "carried evidence must not imply device application");
+assert.ok(stagedReconcile.includes('results.every((x) => x.status === "carried" || x.status === "off") ? "carried"'), "carry-only reconciliation must not report a new submission");
 assert.ok(stagedReconcile.includes('results.every((x) => good.has(x.status)) ? "submitted" : "degraded"'),"reconcile response overstates submitted commands as applied");
 assert.ok(reconcileOutcome.includes('foundation_ack_field_mismatch'),"reconcile no longer distinguishes mismatched ack fields");
 

@@ -1,0 +1,102 @@
+{
+  "schema": "hbnf-r7-kernel13-tail-attribution-v1",
+  "recorded_at_utc": "2026-10-09T16:48:24Z",
+  "status": "P99_REGRESSION_CONFIRMED__ROOT_CAUSE_NOT_ISOLATED__NO_SUCCESSOR_BUILD",
+  "candidate": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+    "sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+    "source_commit": "fa415b2c52cc450895c2e6435977422b35be7558"
+  },
+  "baseline": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "matched_conditions": {
+    "kernel": "Caleido3",
+    "kernel_index": 13,
+    "variant_id": 1347100685,
+    "brightness": 44,
+    "r7_valid_samples": 25,
+    "r7_collection_errors": 0,
+    "r7_restart_count_delta": 0,
+    "r7_wifi_rssi_dbm_range": [
+      -58,
+      -48
+    ]
+  },
+  "whole_frame": {
+    "frozen_p99_ceiling_ms": 42.03125,
+    "r4_median_frame_avg_ms": 18.63129,
+    "r7_median_frame_avg_ms": 18.55363,
+    "r7_minus_r4_frame_avg_ms": -0.07766,
+    "r4_median_frame_p95_ms": 21.25,
+    "r7_median_frame_p95_ms": 20.375,
+    "r7_minus_r4_frame_p95_ms": -0.875,
+    "r4_median_frame_p99_ms": 33.625,
+    "r7_median_frame_p99_ms": 55.625,
+    "r7_minus_r4_frame_p99_ms": 22.0,
+    "r7_max_frame_ms": 72.916,
+    "p99_snapshot_range_ms": [
+      21.375,
+      56.375
+    ],
+    "p99_snapshots_over_frozen_ceiling": 20,
+    "first_over_ceiling_uptime_seconds": 1414,
+    "last_over_ceiling_uptime_seconds": 1438,
+    "first_over_ceiling_cumulative_tail_samples": 481,
+    "interpretation": "The whole-frame median average and p95 did not regress; the valid cumulative tail p99 crossed the unchanged frozen ceiling and remained above it in the later snapshots, with long frame maxima. This is an intermittent-tail pattern, not evidence of a sustained FPS/average-frame slowdown."
+  },
+  "measured_stage_costs": {
+    "kernel_ms_avg_median_r4": 8.291882000000001,
+    "kernel_ms_avg_median_r7": 8.849908,
+    "kernel_ms_avg_delta": 0.558026,
+    "kernel_ms_p95_median_r4": 8.625,
+    "kernel_ms_p95_median_r7": 8.875,
+    "kernel_ms_p95_delta": 0.25,
+    "aux_prepare_send_avg_delta_ms": 3.820483,
+    "unaccounted_avg_delta_ms": -3.760752,
+    "aux_plus_unaccounted_net_delta_ms": 0.059732,
+    "interpretation": "R7 kernel average is 0.558026 ms higher and kernel p95 0.25 ms higher. The R7 per-pixel composeVibeColor call executes inside the measured render/kernel path, so it is a plausible source of this modest sustained kernel cost, not a proven cause. AUX-prepare average rises 3.820484 ms while unaccounted average falls 3.760752 ms; their combined delta is only 0.059732 ms, consistent with timing bucket attribution moving rather than a comparable whole-frame penalty."
+  },
+  "source_observation": {
+    "r7_renderer": "firmware/phase2/integration-r7/usermod/usermod_hbnf_foundation_v1.cpp:713 calls composeVibeColor from writePixel for rendered pixels.",
+    "vibe_compositor": "firmware/phase2/integration-r5/usermod/hbnf_vibe_runtime.h:129 onward; 860-byte routine in prior disassembly receipt.",
+    "scope": "The render stage timing encompasses kernel rendering; composeVibeColor itself has no separately captured per-call timing distribution. Existing source did not establish a path that explains isolated 55-73 ms frame tails."
+  },
+  "evidence_files": {
+    "existing_diagnosis": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/R7_OFFLINE_PERFORMANCE_DIAGNOSIS.json",
+      "sha256": "7b42aa4470f5ed9f220cf3e3615a2ae7b46091b2905bb1b7ff7e308bfce12079"
+    },
+    "r7_trace": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/live-qualification/13_Caleido3.jsonl",
+      "sha256": "c750b230b39b3e53cf3c5acee7945139eb57dcfff2b3640395c9fbf572466b1b"
+    },
+    "r7_profile": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/live-qualification/13_Caleido3.profile.json",
+      "sha256": "ecea2c860bb30450f75c22320fe3e32c5b484ed6105e5e89a3225db94d115f73"
+    },
+    "r4_profile": {
+      "path": "evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep/13_Caleido3.profile.json",
+      "sha256": "fd37f68b3f1ab29ab564795c0bf4be71bf21d9114c5c508a4cce88d84f5f34dc"
+    },
+    "r7_renderer_source": {
+      "path": "firmware/phase2/integration-r7/usermod/usermod_hbnf_foundation_v1.cpp",
+      "sha256": "5a02f89c6af8466dd6592d6f4b88da3e84b1153ba0d6be16ff2bc3a1bb24f572"
+    },
+    "vibe_runtime_source": {
+      "path": "firmware/phase2/integration-r5/usermod/hbnf_vibe_runtime.h",
+      "sha256": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc"
+    },
+    "r4_recovery_receipt": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/R7_R4_RECOVERY_RESULT.json",
+      "sha256": "70bb779e8e94156cd120512a1b848442a0cf16683273e6bfd5a57a2eac80af9c"
+    }
+  },
+  "exact_missing_evidence_for_causal_attribution": [
+    "Timestamped per-frame durations from the qualification window, including the individual frames contributing to the >42.03125 ms p99 and 72.916 ms maximum.",
+    "Per-frame stage-resolved durations aligned to those same frame IDs (kernel/compositor, audio, scheduler/loop, AUX preparation/send), rather than once-per-second means/p95 snapshots.",
+    "A capture-path effect measurement at p99 on matched R4/R7, because the prior observer A/B established only a 3.739% frame-average delta."
+  ],
+  "decision": "No source-backed p99 correction has been demonstrated. Preserve the R7 failure and exact R4 recovery. Do not build or install R8 from this evidence; first obtain event-level attribution through an offline replay source if available, or a newly authorized, safely instrumented live measurement."
+}

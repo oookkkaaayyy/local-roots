@@ -19,6 +19,18 @@ export function canCarryForwardObservation(prior: any, cartRevision: number, fen
     Number(prior.reported?.fenceEpoch) === fenceEpoch;
 }
 
+/** Carry validity without manufacturing a new device observation or application acknowledgement. */
+export function carryForwardObservation(prior: any, cartRevision: number, fenceEpoch: number, releaseId: string) {
+  if (!canCarryForwardObservation(prior, cartRevision, fenceEpoch, releaseId)) return null;
+  const observedAt = prior.observed_at;
+  if (typeof observedAt !== "string" || !Number.isFinite(Date.parse(observedAt))) return null;
+  return {
+    status: "carried" as const,
+    observedAt,
+    commandApplicationConfirmed: false as const,
+  };
+}
+
 /** Preserve the adapter's bounded failure code without persisting its raw body. */
 export async function classifyFoundationInvocation(invokeError: any, ack: any, projection: any) {
   if (invokeError) {
