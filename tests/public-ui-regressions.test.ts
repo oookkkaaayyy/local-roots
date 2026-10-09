@@ -277,9 +277,26 @@ test("past dates never imply verified completion in public status", () => {
   const presentation=source("lib/eventPresentation.ts");
   assert.ok(events.includes("eventDisplayStatus(event,today)"));
   assert.ok(detail.includes("eventDisplayStatus(event,today)"));
-  assert.ok(detail.includes("const canSubmitResults=event.status==='completed';"));
+  assert.ok(detail.includes("const canSubmitResults=event.status==='completed'||(event.end_date<today&&!['canceled','postponed'].includes(event.status));"));
   assert.ok(presentation.includes("['completed','canceled','postponed'].includes(event.status)"));
   assert.ok(presentation.includes("event.end_date < today ? 'date_passed' : event.status"));
   assert.equal(events.includes("event.end_date<today ? 'completed'"),false);
   assert.equal(detail.includes("event.end_date<today?'completed'"),false);
+});
+
+
+test("organizer-owned results submissions remain available for elapsed unverified events only", () => {
+  const detail=source("pages/EventDetailPage.tsx");
+  const expression=detail.match(/const canSubmitResults=([^;]+);/)?.[1];
+  assert.ok(expression, "results eligibility expression must remain present");
+  const eligible=new Function("event","today",`return (${expression});`);
+  const today="2026-10-09";
+  for(const status of ["announced","upcoming","registration_open","full","waitlist","completed"]){
+    assert.equal(eligible({status,end_date:"2026-10-08"},today),true,`elapsed ${status} should allow organizer-owned results`);
+  }
+  for(const status of ["canceled","postponed"]){
+    assert.equal(eligible({status,end_date:"2026-10-08"},today),false,`elapsed ${status} must not accept results`);
+  }
+  assert.equal(eligible({status:"upcoming",end_date:"2026-10-10"},today),false);
+  assert.equal(eligible({status:"completed",end_date:"2026-10-10"},today),true);
 });
