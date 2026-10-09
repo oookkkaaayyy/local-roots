@@ -229,9 +229,10 @@ def validate_sample(sample, contract):
     missing=sorted(k for k in required if sample.get(k) is None)
     if missing: raise ValueError("telemetry missing: "+", ".join(missing))
 
-def validate_readonly_preflight(sample, expected_release_id):
+def validate_readonly_preflight(sample, expected_release_id, resume_snapshot=None):
     required=("schema","release_id","candidate","wled","matrix_ip","matrix_mac","matrix_uptime_seconds",
       "uptime_seconds","restart_count","matrix_on","matrix_brightness","packet20_enabled",
+      "packet20_snapshot_valid","packet20_snapshot_id","packet20_snapshot_hash","packet20_restore_verified",
       "foundation_telemetry_enabled","aux_ip","aux_mac","aux_on","aux_live","aux_live_mode",
       "aux_live_ip","aux_led_count")
     missing=[k for k in required if sample.get(k) is None]
@@ -239,7 +240,22 @@ def validate_readonly_preflight(sample, expected_release_id):
     if sample["schema"]!="hbnf-live-qualification-preflight-v1":raise ValueError("read-only preflight schema mismatch")
     if sample["release_id"]!=expected_release_id or sample["candidate"]!=expected_release_id:raise RuntimeError("preflight-release-identity-mismatch")
     if sample["matrix_on"] is not True or sample["matrix_brightness"]!=44:raise RuntimeError("preflight-matrix-output-or-brightness-mismatch")
-    if sample["packet20_enabled"] is True or sample["foundation_telemetry_enabled"] is True:raise RuntimeError("preflight-diagnostics-already-active")
+    if resume_snapshot is None:
+        if sample["packet20_enabled"] is True or sample["foundation_telemetry_enabled"] is True:
+            raise RuntimeError("preflight-diagnostics-already-active")
+    else:
+        if sample["packet20_enabled"] is not True or sample["packet20_snapshot_valid"] is not True:
+            raise RuntimeError("resume-preflight-no-active-valid-packet20-snapshot")
+        if sample["packet20_restore_verified"] is True:
+            raise RuntimeError("resume-preflight-snapshot-already-restored")
+        if int(sample["packet20_snapshot_id"])!=int(resume_snapshot.get("snapshotId",-1)):
+            raise RuntimeError("resume-preflight-snapshot-id-mismatch")
+        if int(sample["packet20_snapshot_hash"])!=int(resume_snapshot.get("snapshotHash",-1)):
+            raise RuntimeError("resume-preflight-snapshot-hash-mismatch")
+        if sample["foundation_telemetry_enabled"] is not resume_snapshot.get("foundationTelemetryEnabledBefore"):
+            raise RuntimeError("resume-preflight-foundation-telemetry-state-mismatch")
+        if not isinstance(resume_snapshot.get("foundationTelemetryEnabledBefore"),bool):
+            raise RuntimeError("resume-snapshot-missing-foundation-telemetry-prestate")
     if sample["aux_on"] is not True or not (sample["aux_live"] is True and sample["aux_live_mode"]=="DDP" and sample["aux_live_ip"]=="192.168.77.10" and sample["aux_led_count"]==22):raise RuntimeError("preflight-aux-native-ddp-source-mismatch")
 
 def verify_selected(sample, entry):
@@ -287,8 +303,8 @@ def enforce_foundation_frame_interval(sample):
     if maximum>=FOUNDATION_HARD_FRAME_INTERVAL_MS:
         raise RuntimeError(f"foundation-steady-state-frame-interval-stop: frame_ms_max={maximum:g}ms threshold={FOUNDATION_HARD_FRAME_INTERVAL_MS:g}ms kernel={sample.get('kernel_name')} id={sample.get('kernel_id')}")
 
-def compare_early_profile_to_r4(candidate_path, r4_profile_dir, entry, frozen_policy, expected_r4_release):
-    """Fail fast on the two owner-designated kernels against exact R4 profiles."""
+def compare_profile_to_r4(candidate_path, r4_profile_dir, entry, frozen_policy, expected_r4_release):
+    """Apply the unchanged frozen candidate/R4 distribution and resource ratios."""
     candidate=load(candidate_path).get("profile",{})
     slug=f"{int(entry['runtime_kernel_index_expected']):02d}_{entry['kernel_name']}.profile.json"
     baseline_path=pathlib.Path(r4_profile_dir)/slug
@@ -297,11 +313,11 @@ def compare_early_profile_to_r4(candidate_path, r4_profile_dir, entry, frozen_po
     if baseline_doc.get("status")!="PASS" or baseline.get("release_id")!=expected_r4_release:
         raise RuntimeError(f"early-R4-baseline-invalid: {baseline_path}")
     if candidate.get("qualification_eligible") is not True:
-        raise RuntimeError(f"early-R5-profile-ineligible: {candidate_path}")
+        raise RuntimeError(f"candidate-profile-ineligible: {candidate_path}")
     if candidate.get("kernel",{}).get("name")!=entry["kernel_name"] or baseline.get("kernel",{}).get("name")!=entry["kernel_name"]:
-        raise RuntimeError(f"early-kernel-name-mismatch: {entry['kernel_name']}")
+        raise RuntimeError(f"kernel-name-mismatch: {entry['kernel_name']}")
     if candidate.get("kernel",{}).get("variant_id")!=baseline.get("kernel",{}).get("variant_id"):
-        raise RuntimeError(f"early-kernel-variant-not-comparable: {entry['kernel_name']}")
+        raise RuntimeError(f"kernel-variant-not-comparable: {entry['kernel_name']}")
     cfg=frozen_policy["comparison"]["candidate_vs_baseline"]
     c_heap=candidate["heap"]; b_heap=baseline["heap"]
     checks={
@@ -311,7 +327,7 @@ def compare_early_profile_to_r4(candidate_path, r4_profile_dir, entry, frozen_po
       "minimum_free_heap":c_heap["minimum_free_min"] >= b_heap["minimum_free_min"]*cfg["minimum_free_heap_min_ratio"],
       "largest_free_block":min(c_heap["largest_block_start"],c_heap["largest_block_end"]) >= min(b_heap["largest_block_start"],b_heap["largest_block_end"])*cfg["largest_free_block_min_ratio"],
     }
-    result={"schema":"hbnf-early-r5-vs-r4-kernel-profile-v1","status":"PASS" if all(checks.values()) else "FAIL",
+    result={"schema":"hbnf-candidate-vs-r4-kernel-profile-v1","status":"PASS" if all(checks.values()) else "FAIL",
       "kernel":entry["kernel_name"],"kernel_index":entry["runtime_kernel_index_expected"],
       "candidate_profile":str(candidate_path),"r4_profile":str(baseline_path),
       "candidate_release":candidate.get("release_id"),"r4_release":baseline.get("release_id"),
@@ -491,13 +507,35 @@ def main():
     ap.add_argument("--threshold-baseline",help="output path for the baseline generated from this run's complete 28-kernel sweep")
     ap.add_argument("--early-r4-profile-dir",help="exact R4 profile directory; when supplied, run kernel indices 13 and 9 first and stop before remaining kernels if frozen relative gates fail")
     ap.add_argument("--early-r4-release",default="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1")
+    ap.add_argument("--compare-all-r4",action="store_true",help="after the early 13/9 gates, apply the same frozen relative profile/resource gates to every kernel against the exact R4 profile directory before starting any soak")
+    ap.add_argument("--resume-snapshot-file",help="resume one exact previously captured, still-open Packet20 snapshot; never issues begin/snapshot")
+    ap.add_argument("--resume-observer-proof",help="PASS observer-effect receipt for the exact expected release, required with --resume-snapshot-file")
     ap.add_argument("--dry-run",action="store_true")
     args=ap.parse_args()
 
     adapter=load(args.adapter); validate_adapter(adapter,args.contract)
     inventory=load(args.inventory); validate_inventory(inventory)
+    resume_snapshot=None
+    if args.resume_snapshot_file:
+        if args.contract!="foundation":
+            raise SystemExit("--resume-snapshot-file requires --contract foundation")
+        if not args.resume_observer_proof:
+            raise SystemExit("--resume-snapshot-file requires --resume-observer-proof")
+        resume_snapshot=load(args.resume_snapshot_file)
+        observer=load(args.resume_observer_proof)
+        effect=observer.get("observer_effect",{})
+        if (observer.get("status")!="PASS" or observer.get("candidate_release")!=adapter["expected_release_id"]
+            or effect.get("candidate_release")!=adapter["expected_release_id"]
+            or effect.get("status")!="MEASURED_ON_CURRENT_ARTIFACT"):
+            raise SystemExit("resume observer proof is not a PASS for the exact expected release")
+        if (type(resume_snapshot.get("snapshotId")) is not int
+            or type(resume_snapshot.get("snapshotHash")) is not int
+            or not isinstance(resume_snapshot.get("foundationTelemetryEnabledBefore"),bool)):
+            raise SystemExit("resume snapshot file lacks exact snapshot ID/hash or telemetry prestate")
     if args.qualify and args.contract!="foundation":
         raise SystemExit("--qualify requires --contract foundation")
+    if args.compare_all_r4 and not args.early_r4_profile_dir:
+        raise SystemExit("--compare-all-r4 requires --early-r4-profile-dir")
     try:validate_soak_options(args.contract,args.soak_seconds,args.soak_interval_seconds)
     except ValueError as e:raise SystemExit(str(e))
     outdir=pathlib.Path(args.outdir).resolve(); outdir.mkdir(parents=True,exist_ok=True)
@@ -540,7 +578,7 @@ def main():
         return 2
     try:
         if preflight.get("schema")=="hbnf-live-qualification-preflight-v1":
-            validate_readonly_preflight(preflight,adapter["expected_release_id"])
+            validate_readonly_preflight(preflight,adapter["expected_release_id"],resume_snapshot)
         else:validate_sample(preflight,args.contract)
         expected_release_id,expected_restart_count,previous_uptime=validate_continuity(
             preflight,adapter["expected_release_id"],None,None
@@ -560,7 +598,12 @@ def main():
         # Hold real disk blocks so an unexpected host-full condition can still
         # release space for the mandatory restore response and state evidence.
         reserve=create_recovery_reserve(outdir)
-        snapshot=run_json(subst(adapter["snapshot_argv"],{"observer_output":str(outdir/"OBSERVER_EFFECT.json")}),timeout=timeout)
+        if resume_snapshot is not None:
+            # Reuse only the exact snapshot already confirmed by the read-only
+            # preflight above. This path cannot issue a second begin/snapshot.
+            snapshot=resume_snapshot
+        else:
+            snapshot=run_json(subst(adapter["snapshot_argv"],{"observer_output":str(outdir/"OBSERVER_EFFECT.json")}),timeout=timeout)
         atomic_write(snapfile,json.dumps(snapshot,indent=2,sort_keys=True)+"\n")
         telemetry_mode_before=snapshot.get("foundationTelemetryEnabledBefore")
         if args.contract=="foundation":
@@ -588,11 +631,16 @@ def main():
               "preset":entry.get("preset"),
               "profile_path":profile.name
             })
-            if args.early_r4_profile_dir and int(entry["runtime_kernel_index_expected"]) in (13,9):
-                comparison=compare_early_profile_to_r4(profile,args.early_r4_profile_dir,entry,frozen_policy,args.early_r4_release)
-                atomic_write(outdir/f"EARLY_R4_COMPARISON_KERNEL_{entry['runtime_kernel_index_expected']}.json",json.dumps(comparison,indent=2,sort_keys=True)+"\n")
+            kernel_index=int(entry["runtime_kernel_index_expected"])
+            compare_this=(args.early_r4_profile_dir is not None and
+                (kernel_index in (13,9) or args.compare_all_r4))
+            if compare_this:
+                comparison=compare_profile_to_r4(profile,args.early_r4_profile_dir,entry,frozen_policy,args.early_r4_release)
+                label="EARLY_R4" if kernel_index in (13,9) else "R4"
+                atomic_write(outdir/f"{label}_COMPARISON_KERNEL_{kernel_index}.json",json.dumps(comparison,indent=2,sort_keys=True)+"\n")
                 if comparison["status"]!="PASS":
-                    raise RuntimeError(f"early-matched-R4-kernel-gate-failed: {entry['kernel_name']}: {json.dumps(comparison['checks'],sort_keys=True)}")
+                    gate="early-matched-R4" if kernel_index in (13,9) else "frozen-R4"
+                    raise RuntimeError(f"{gate}-kernel-gate-failed: {entry['kernel_name']}: {json.dumps(comparison['checks'],sort_keys=True)}")
         soak_result=None
         if args.soak_seconds:
             if args.contract!="foundation":raise ValueError("--soak-seconds requires --contract foundation")

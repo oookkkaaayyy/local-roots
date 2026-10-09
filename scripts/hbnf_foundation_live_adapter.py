@@ -266,7 +266,7 @@ def snapshot(observer_output=None, inventory=None):
             "foundationTelemetryEnabledBefore":telemetry_before}
 
 def foundation_prequal_windows(output, inventory):
-    """Measure observer effect once on seq39 and use its instrumented window as the sacrificial warm-up."""
+    """Measure observer effect on the readback-verified current artifact and retain its instrumented window as sacrificial warm-up."""
     select(0);time.sleep(5)
     enable_tails(False)
     steady=collect_frame_window("foundation-steady-state-tails-off",window_seconds=40,minimum_samples=27)
@@ -297,7 +297,7 @@ def foundation_prequal_windows(output, inventory):
     light_median=statistics.median(steady);instrumented_median=statistics.median(instrumented)
     delta=(instrumented_median-light_median)/light_median*100.0 if light_median else None
     result={"schema":"hbnf-foundation-prequal-windows-v1","status":"PASS",
-      "observer_effect":{"status":"MEASURED_ON_SEQ39_EXACT_ARTIFACT","candidate_release":EXPECTED,"lightweight_samples":len(steady),"instrumented_samples":len(instrumented),"lightweight_frame_average_median_ms":light_median,"instrumented_frame_average_median_ms":instrumented_median,"relative_delta_pct":delta,"metric":"same one-second latest-frame-average source in both modes"},
+      "observer_effect":{"status":"MEASURED_ON_CURRENT_ARTIFACT","candidate_release":EXPECTED,"lightweight_samples":len(steady),"instrumented_samples":len(instrumented),"lightweight_frame_average_median_ms":light_median,"instrumented_frame_average_median_ms":instrumented_median,"relative_delta_pct":delta,"metric":"same one-second latest-frame-average source in both modes"},
       "steady_state":{"tails_enabled":False,"duration_seconds":40,"samples":len(steady),"frame_average_ms_min":min(steady),"frame_average_ms_max":max(steady)},
       "sacrificial_warmup":{"tails_enabled":True,"duration_seconds":40,"samples":len(instrumented),"excluded_from_foundation":True,"sample":warmup},
       "qualified_boundary":"observer comparison and sacrificial tails-on warm-up complete; tails disabled before the full 28-kernel sweep; mode transition resets firmware histogram"}
@@ -447,6 +447,10 @@ def readonly_preflight(session_id):
       "fps":state.get("HBNF",{}).get("timing",{}).get("fps"),
       "matrix_on":state.get("on"),"matrix_brightness":h.get("matrixBrightness"),
       "packet20_enabled":h.get("packet20Diagnostic",{}).get("enabled"),
+      "packet20_snapshot_valid":h.get("packet20Diagnostic",{}).get("snapshotValid"),
+      "packet20_snapshot_id":h.get("packet20Diagnostic",{}).get("snapshotId"),
+      "packet20_snapshot_hash":h.get("packet20Diagnostic",{}).get("snapshotHash"),
+      "packet20_restore_verified":h.get("packet20Diagnostic",{}).get("restoreVerified"),
       "foundation_telemetry_enabled":h.get("foundationTelemetry",{}).get("enabled"),
       "aux_ip":aux.get("ip"),"aux_mac":aux.get("mac","" ).replace(":","").lower(),
       "aux_on":aux_state.get("on"),"aux_live":aux.get("live"),"aux_live_mode":aux.get("lm"),

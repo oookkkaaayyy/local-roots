@@ -97,6 +97,63 @@ for before,after in (
     try:m.assert_same_snapshot(before,after);raise AssertionError("invalid restore receipt accepted")
     except RuntimeError: pass
 
+# A host-timeout continuation may reuse only the exact still-open firmware
+# snapshot. Ordinary preflight remains closed to active diagnostics.
+preflight={"schema":"hbnf-live-qualification-preflight-v1","release_id":"r7","candidate":"r7",
+ "wled":"16.0.1","matrix_ip":"192.168.77.10","matrix_mac":"704bca5b345c",
+ "matrix_uptime_seconds":100,"uptime_seconds":100,"restart_count":0,"matrix_on":True,
+ "matrix_brightness":44,"packet20_enabled":False,"packet20_snapshot_valid":False,
+ "packet20_snapshot_id":0,"packet20_snapshot_hash":0,"packet20_restore_verified":False,
+ "foundation_telemetry_enabled":False,"aux_ip":"192.168.77.11","aux_mac":"8c94df55c34c",
+ "aux_on":True,"aux_live":True,"aux_live_mode":"DDP","aux_live_ip":"192.168.77.10","aux_led_count":22}
+m.validate_readonly_preflight(preflight,"r7")
+resume={"snapshotId":1,"snapshotHash":4051728214,"foundationTelemetryEnabledBefore":False}
+active_preflight=dict(preflight,packet20_enabled=True,packet20_snapshot_valid=True,
+ packet20_snapshot_id=1,packet20_snapshot_hash=4051728214)
+try:m.validate_readonly_preflight(active_preflight,"r7");raise AssertionError("active diagnostic accepted without explicit resume")
+except RuntimeError as e:assert "preflight-diagnostics-already-active" in str(e)
+m.validate_readonly_preflight(active_preflight,"r7",resume)
+for altered in (
+ dict(resume,snapshotId=2),dict(resume,snapshotHash=7),
+ dict(resume,foundationTelemetryEnabledBefore=True),
+):
+    try:m.validate_readonly_preflight(active_preflight,"r7",altered);raise AssertionError("mismatched resume snapshot accepted")
+    except RuntimeError:pass
+for altered_preflight in (
+ dict(active_preflight,packet20_snapshot_valid=False),
+ dict(active_preflight,packet20_restore_verified=True),
+ dict(active_preflight,foundation_telemetry_enabled=True),
+ dict(active_preflight,release_id="r8"),
+):
+    try:m.validate_readonly_preflight(altered_preflight,"r7",resume);raise AssertionError("invalid active snapshot resume accepted")
+    except RuntimeError:pass
+
+# The exact frozen relative ratios can be applied to all comparable R4 kernel
+# profiles before a long soak begins. Subjective frame-max remains diagnostic
+# per the unchanged policy.
+with tempfile.TemporaryDirectory() as td:
+    base=pathlib.Path(td)/"09_RGB_Blobs4.profile.json"
+    candidate=pathlib.Path(td)/"candidate.profile.json"
+    r4_release="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+    base_doc={"status":"PASS","profile":{"release_id":r4_release,"qualification_eligible":True,
+      "kernel":{"name":"RGB_Blobs4","variant_id":9},"fps":{"median":40},
+      "frame_ms":{"p95_median":20,"p99_median":30},
+      "heap":{"minimum_free_min":60000,"largest_block_start":70000,"largest_block_end":69000}}}
+    cand_doc={"status":"PASS","profile":{"release_id":"r7","qualification_eligible":True,
+      "kernel":{"name":"RGB_Blobs4","variant_id":9},"fps":{"median":37},
+      "frame_ms":{"p95_median":24.9,"p99_median":37.3,"max":1000},
+      "heap":{"minimum_free_min":52000,"largest_block_start":57000,"largest_block_end":56000}}}
+    base.write_text(json.dumps(base_doc));candidate.write_text(json.dumps(cand_doc))
+    frozen={"comparison":{"candidate_vs_baseline":{"fps_median_min_ratio":0.9,
+      "frame_p95_max_ratio":1.25,"frame_p99_max_ratio":1.25,
+      "minimum_free_heap_min_ratio":0.85,"largest_free_block_min_ratio":0.8}}}
+    result=m.compare_profile_to_r4(candidate,pathlib.Path(td),inv["entries"][9],frozen,r4_release)
+    assert result["status"]=="PASS" and all(result["checks"].values())
+    assert "frame_max" not in result["checks"]  # unchanged frozen policy treats it as diagnostic
+    cand_doc["profile"]["fps"]["median"]=35.9;candidate.write_text(json.dumps(cand_doc))
+    failed=m.compare_profile_to_r4(candidate,pathlib.Path(td),inv["entries"][9],frozen,r4_release)
+    assert failed["status"]=="FAIL" and failed["checks"]["fps_median"] is False
+
 foundation=dict(sample)
 foundation.update({
  "frame_ms_p50":80,"frame_ms_p95":90,"frame_ms_p99":100,"frame_ms_max":120,
@@ -168,6 +225,28 @@ with tempfile.TemporaryDirectory() as td:
        "--outdir",str(pathlib.Path(td)/"r7-dry"),"--contract","foundation","--dry-run"],
        text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=20)
     assert dry.returncode==0 and json.loads(dry.stdout)["status"]=="DRY_RUN_PASS",(dry.stdout,dry.stderr)
+
+# Resume arguments are validated offline and bind both the snapshot and
+# observer proof to the exact expected R7 release before any adapter/device call.
+with tempfile.TemporaryDirectory() as td:
+    td=pathlib.Path(td)
+    snap=td/"snapshot.json"; observer=td/"observer.json"
+    snap.write_text(json.dumps({"snapshotId":1,"snapshotHash":4051728214,
+      "foundationTelemetryEnabledBefore":False}))
+    proof={"status":"PASS","candidate_release":"hbnf-cart2-phase2-offline-wow-r7-20261009",
+      "observer_effect":{"candidate_release":"hbnf-cart2-phase2-offline-wow-r7-20261009",
+        "status":"MEASURED_ON_CURRENT_ARTIFACT"}}
+    observer.write_text(json.dumps(proof))
+    cmd=[sys.executable,str(ROOT/"scripts/hbnf_live_kernel_sweep.py"),
+      "--adapter",str(ROOT/"config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_R7_20261009.json"),
+      "--inventory",str(ROOT/"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"),
+      "--outdir",str(td/"r7-resume"),"--contract","foundation","--dry-run",
+      "--resume-snapshot-file",str(snap),"--resume-observer-proof",str(observer)]
+    resumed=subprocess.run(cmd,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=20)
+    assert resumed.returncode==0 and json.loads(resumed.stdout)["status"]=="DRY_RUN_PASS",(resumed.stdout,resumed.stderr)
+    proof["candidate_release"]="r8";observer.write_text(json.dumps(proof))
+    rejected=subprocess.run(cmd,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=20)
+    assert rejected.returncode!=0 and "not a PASS for the exact expected release" in rejected.stderr
 
 # A live run requesting soak but omitting a frozen policy must stop before any
 # adapter/device preflight. This invocation only exercises the host-side guard.

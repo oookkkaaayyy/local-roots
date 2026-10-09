@@ -1,0 +1,33 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "r7-open-snapshot-resume-and-all-r4-pre-soak-gates-20261009",
+  "summary": "Resume the already-open exact Packet20 snapshot after the proven host timeout, and apply frozen R4-relative gates to all 28 kernel profiles before starting soak.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing Foundation live-kernel qualification runner and exact snapshot/restore contract in scripts/hbnf_live_kernel_sweep.py and scripts/hbnf_foundation_live_adapter.py.",
+      "affected_subsystem": "Host-side live qualification orchestration only; firmware and device behavior are unchanged.",
+      "rollback_reference": "Revert only this runner/test change; the qualification automatically restores the same existing Packet20 snapshot ID 1/hash 4051728214 in its finally path.",
+      "evidence_sources": [
+        "Python subprocess documentation: subprocess.run timeout expiry kills and waits for the child; https://docs.python.org/3/library/subprocess.html#subprocess.run",
+        "R7_QUALIFICATION_TIMEOUT_FAILURE_CLASSIFICATION.json",
+        "R7_OPEN_SNAPSHOT_RESUME.json",
+        "R7_OBSERVER_EFFECT_IDENTITY_RECEIPT.json"
+      ],
+      "tests": [
+        "tests/hbnf_live_kernel_sweep.py: exact snapshot resume/mismatch fail-closed and all-kernel frozen R4 comparator fixtures",
+        "tests/hbnf_foundation_live_adapter.py",
+        "tests/hbnf_packet20_http_adapter.py",
+        "python3 -m py_compile scripts/hbnf_live_kernel_sweep.py scripts/hbnf_foundation_live_adapter.py",
+        "git diff --check"
+      ]
+    }
+  }
+}

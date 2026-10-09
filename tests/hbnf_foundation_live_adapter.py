@@ -246,7 +246,8 @@ with tempfile.TemporaryDirectory() as td:
     assert sidecar["restore"]["restoreVerified"] is True and sidecar["restore"]["packet20Same"] is True
     assert sidecar["status"]=="OBSERVER_FAILED__RENDERER_RESTORED"
 
-# Seq39 remeasures observer effect exactly once on the changed telemetry artifact.
+# Observer effect is labeled for the current identity-verified artifact, not a
+# historical sequence number, because the same host adapter serves R4 and R7.
 with tempfile.TemporaryDirectory() as td:
     m.foundation_prequal_windows=real_prequal
     m.select=lambda kernel:None
@@ -258,7 +259,7 @@ with tempfile.TemporaryDirectory() as td:
     m.telemetry=lambda *args,**kwargs:{"kernel_id":0,"frame_ms_max":40.0}
     result=m.foundation_prequal_windows(str(pathlib.Path(td)/"OBSERVER_EFFECT.json"),str(inventory))
     assert result["status"]=="PASS"
-    assert result["observer_effect"]["status"]=="MEASURED_ON_SEQ39_EXACT_ARTIFACT"
+    assert result["observer_effect"]["status"]=="MEASURED_ON_CURRENT_ARTIFACT"
     assert result["observer_effect"]["lightweight_samples"]==25 and result["observer_effect"]["instrumented_samples"]==25
     assert result["steady_state"]["tails_enabled"] is False and result["steady_state"]["duration_seconds"]==40
     assert result["sacrificial_warmup"]["tails_enabled"] is True and result["sacrificial_warmup"]["excluded_from_foundation"] is True

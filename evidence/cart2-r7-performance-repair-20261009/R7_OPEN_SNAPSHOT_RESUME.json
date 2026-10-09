@@ -1,0 +1,18 @@
+{
+  "candidate_release": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+  "captured_at_utc": "2026-10-09T10:40:05.554503+00:00",
+  "foundationTelemetryEnabledBefore": false,
+  "matrix_ip": "192.168.77.10",
+  "matrix_mac": "704bca5b345c",
+  "no_reentry_or_restart": true,
+  "observed_packet20_enabled": true,
+  "observed_restore_verified": false,
+  "observed_snapshot_valid": true,
+  "resume_observer_proof": "evidence/cart2-r7-performance-repair-20261009/R7_OBSERVER_EFFECT_IDENTITY_RECEIPT.json",
+  "resume_observer_proof_sha256": "b6758e9456775d9b743ef656fa0fb6393f6ce310ca5418d3fc13cd6c6b8f5023",
+  "schema": "hbnf-packet20-open-snapshot-resume-v1",
+  "snapshotHash": 4051728214,
+  "snapshotId": 1,
+  "source_preflight": "evidence/cart2-r7-performance-repair-20261009/live-qualification/RESUME_READONLY_PREFLIGHT.json",
+  "source_preflight_sha256": "3e11ee5e3e21d4ac89a57273b6e9c98cba23c1e3edff11860e4910b038535887"
+}

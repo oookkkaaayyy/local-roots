@@ -2369,20 +2369,20 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "R7_LIVE_QUALIFICATION__R6_ROOT_CAUSE_CORRECTED__NO_REPEAT_INSTALL",
+    "current_failure_domain": "R7_QUALIFICATION__HOST_TIMEOUT_CORRECTED__EXACT_SNAPSHOT_RESUME",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
       "artifact_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
       "release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
-      "status": "R7_INSTALLED__OBJECTIVE_QUALIFICATION_IN_PROGRESS"
+      "status": "R7_INSTALLED__QUALIFICATION_RESUMING_WITH_OPEN_SNAPSHOT_1"
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Preserve verified R7 install and postboot receipt; no OTA retry or reboot.",
-      "Use one fresh Packet20 snapshot transaction; run matched kernels 13 and 9 first against exact R4 frozen profiles and unchanged policy.",
-      "If early gates pass, continue all 28 kernels, combined feature checks, and one contiguous 5400-second soak; always restore renderer and diagnostic state.",
-      "If objective device/runtime gate fails, preserve evidence and use only the already-authorized exact R4 recovery once; if only host tooling fails, do not rollback.",
-      "After objective qualification, obtain owner physical R7 sync and subjective Vibe/Text acceptance before T4/T5 closure."
+      "Resume exact existing Packet20 snapshot ID 1/hash 4051728214; never issue begin/snapshot, restart, or OTA.",
+      "Run matched kernels 13 and 9 first, then all 28 kernels with unchanged frozen R4-relative gates before allowing the 5400-second soak.",
+      "Automatically restore exact renderer snapshot and telemetry prestate on every terminal path; host-only failure does not trigger firmware rollback.",
+      "Use exact R4 recovery only if an objectively defined device/runtime safety, frozen performance, or required AUX gate fails.",
+      "After objective runtime gates, retain owner physical sync report and owner-only aesthetic acceptance as distinct evidence; do not declare T4/T5 without it."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -2398,7 +2398,8 @@
       "ANTI_STALL V2: no firmware rebuild or GitHub Actions for host/transport/harness/telemetry-reader defects unless the artifact itself is invalidated.",
       "Do not create a replacement firmware candidate from seq45 isolated frame-max excursions unless corrected sustained-tail analysis proves a real renderer/runtime regression.",
       "Do not rerun 28-kernel sweep or observer-effect A/B when reusing exact candidate SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
-      "Do not interpret the unanswered physical restore question as a failed restore or DDP failure; current WLED telemetry confirms DDP resumed."
+      "Do not interpret the unanswered physical restore question as a failed restore or DDP failure; current WLED telemetry confirms DDP resumed.",
+      "Observer-effect measurement on exact R7 SHA-256 22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994 is complete in R7_OBSERVER_EFFECT_IDENTITY_RECEIPT.json; do not repeat the windows."
     ],
     "parallel_ready_during_foundation_soak": [
       "Mission Control/scoring source reconciliation and host tests",
@@ -2607,7 +2608,15 @@
     },
     "schema": "hbnf-lane-execution-state-v1"
   },
-  "last_updated_utc": "2026-10-09T10:33:35Z",
+  "last_r7_resume_preflight": {
+    "captured_at_utc": "2026-10-09T10:44:53.340763+00:00",
+    "path": "evidence/cart2-r7-performance-repair-20261009/R7_RESUME_READONLY_PREFLIGHT.json",
+    "restore_verified": false,
+    "sha256": "63974a34ef46c575cb8c94663b665183d95f4e747205a5e86f10fa434c54bf5c",
+    "snapshot_hash": 4051728214,
+    "snapshot_id": 1
+  },
+  "last_updated_utc": "2026-10-09T10:45:33Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "admission_path": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_APPROVED_ADMISSION.json",
@@ -2960,15 +2969,24 @@
         ],
         "live_attempt": true,
         "reference": "evidence/hbnf-foundation-qualification-20261005/seq47/FINAL/SEQ47_FOUNDATION_FINAL_RESULT.json"
+      },
+      {
+        "domain": "HOST_HARNESS",
+        "event_id": 4,
+        "invalidates": [
+          "host_harness_result_only"
+        ],
+        "live_attempt": true,
+        "reference": "evidence/cart2-r7-performance-repair-20261009/R7_QUALIFICATION_TIMEOUT_FAILURE_CLASSIFICATION.json"
       }
     ],
     "execution_budget_policy_enabled": true,
     "execution_budget_policy_path": "config/HBNF_EXECUTION_BUDGET_POLICY.json",
-    "host_process_wasted_live_attempts": 1,
+    "host_process_wasted_live_attempts": 2,
     "live_attempt_failures_by_domain": {
       "AESTHETIC_PRODUCT": 0,
       "DEVICE_RUNTIME": 1,
-      "HOST_HARNESS": 1,
+      "HOST_HARNESS": 2,
       "PHYSICAL_HARDWARE": 0,
       "RELEASE_DEPLOYMENT": 0,
       "TELEMETRY_INSTRUMENTATION": 1,

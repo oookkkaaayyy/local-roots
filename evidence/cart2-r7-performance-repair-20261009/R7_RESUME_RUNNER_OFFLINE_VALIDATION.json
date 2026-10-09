@@ -1,0 +1,89 @@
+{
+  "device_artifact_unchanged": true,
+  "exact_existing_snapshot_reused": {
+    "new_begin_or_snapshot_commands": 0,
+    "snapshot_hash": 4051728214,
+    "snapshot_id": 1
+  },
+  "failure_class": "WRAPPER_TIMEOUT_SHORTER_THAN_ADAPTER_OBSERVER_WINDOWS",
+  "failure_domain": "HOST_HARNESS",
+  "schema": "hbnf-r7-resume-runner-offline-validation-v1",
+  "source_hashes": [
+    {
+      "bytes": 44701,
+      "path": "scripts/hbnf_live_kernel_sweep.py",
+      "sha256": "153be6ff93eec1b7e596e8f82a9cc5e27cab4fdd0f8478d61dab92d0c7c36907"
+    },
+    {
+      "bytes": 32736,
+      "path": "scripts/hbnf_foundation_live_adapter.py",
+      "sha256": "7a34fb9fa8b7fefd1e4391676c449ac4414bdb94edc478370e68efe25e71df64"
+    },
+    {
+      "bytes": 20773,
+      "path": "tests/hbnf_live_kernel_sweep.py",
+      "sha256": "9a4d407823d8fd67720c208cc4266408883e40965c22ef7b8d3e46674a17d95f"
+    },
+    {
+      "bytes": 17380,
+      "path": "tests/hbnf_foundation_live_adapter.py",
+      "sha256": "359557d2b7e6c7597f90d73941275ce9896e8b2f00f004cae773e04b8e606193"
+    },
+    {
+      "bytes": 8114,
+      "path": "tests/hbnf_packet20_http_adapter.py",
+      "sha256": "986b36e970c9f817be094766b0b207d5e49d434fdda1b0e1ce84f1564e141f37"
+    },
+    {
+      "bytes": 203730,
+      "path": "config/HBNF_CONTROL_STATE.json",
+      "sha256": "f418701a181b1f0a589d239f88cd4a60e48e9048b90f73e7d3c82b3d2d83f206"
+    },
+    {
+      "bytes": 1276,
+      "path": "evidence/cart2-r7-performance-repair-20261009/R7_RESUME_READONLY_PREFLIGHT.json",
+      "sha256": "63974a34ef46c575cb8c94663b665183d95f4e747205a5e86f10fa434c54bf5c"
+    },
+    {
+      "bytes": 919,
+      "path": "evidence/cart2-r7-performance-repair-20261009/R7_OPEN_SNAPSHOT_RESUME.json",
+      "sha256": "51433cb97b032867ff5549c47de6bf57d342668b125b7b9f4eaffdbcd7538632"
+    },
+    {
+      "bytes": 3570,
+      "path": "evidence/cart2-r7-performance-repair-20261009/R7_OBSERVER_EFFECT_IDENTITY_RECEIPT.json",
+      "sha256": "b6758e9456775d9b743ef656fa0fb6393f6ce310ca5418d3fc13cd6c6b8f5023"
+    }
+  ],
+  "status": "PASS",
+  "tests": [
+    {
+      "command": "python3 tests/hbnf_live_kernel_sweep.py",
+      "status": "PASS"
+    },
+    {
+      "command": "python3 tests/hbnf_foundation_live_adapter.py",
+      "status": "PASS"
+    },
+    {
+      "command": "python3 tests/hbnf_packet20_http_adapter.py",
+      "status": "PASS"
+    },
+    {
+      "command": "python3 -m py_compile scripts/hbnf_live_kernel_sweep.py scripts/hbnf_foundation_live_adapter.py",
+      "status": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "status": "PASS"
+    },
+    {
+      "command": "python3 scripts/hbnf_control.py check-change --change evidence/cart2-r7-performance-repair-20261009/R7_RESUME_RUNNER_CHANGE.json",
+      "status": "PASS"
+    },
+    {
+      "command": "python3 scripts/platform.py doctor",
+      "status": "PASS"
+    }
+  ]
+}

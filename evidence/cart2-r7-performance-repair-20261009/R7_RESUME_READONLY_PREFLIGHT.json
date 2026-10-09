@@ -1,0 +1,40 @@
+{
+  "aux_ip": "192.168.77.11",
+  "aux_led_count": 22,
+  "aux_live": true,
+  "aux_live_ip": "192.168.77.10",
+  "aux_live_mode": "DDP",
+  "aux_mac": "8c94df55c34c",
+  "aux_on": true,
+  "aux_physical_output_status": "NOT_OBSERVABLE_FROM_WLED_JSON",
+  "candidate": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+  "captured_at_utc": "2026-10-09T10:44:53.340763+00:00",
+  "foundation_telemetry_enabled": false,
+  "fps": 17,
+  "matrix_brightness": 44,
+  "matrix_ip": "192.168.77.10",
+  "matrix_mac": "704bca5b345c",
+  "matrix_on": true,
+  "matrix_uptime_seconds": 1238,
+  "owner_physical_observation": {
+    "automated_physical_verification": false,
+    "source": "current user message",
+    "statement": "User reported Matrix and AUX both active and AUX mirrors Matrix."
+  },
+  "packet20_enabled": true,
+  "packet20_restore_verified": false,
+  "packet20_snapshot_hash": 4051728214,
+  "packet20_snapshot_id": 1,
+  "packet20_snapshot_valid": true,
+  "power_and_network": {
+    "gateway": "192.168.77.1",
+    "interface": "en0",
+    "mac_power": "AC Power, 100%"
+  },
+  "read_elapsed_seconds": 0.200792,
+  "release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+  "restart_count": 0,
+  "schema": "hbnf-live-qualification-preflight-v1",
+  "uptime_seconds": 1238,
+  "wled": "16.0.1"
+}
