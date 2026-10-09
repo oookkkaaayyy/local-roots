@@ -1,0 +1,143 @@
+{
+  "schema": "hbnf-cart2-integrated-offline-release-v1",
+  "release_id": "hbnf-cart2-integrated-offline-r6-owner-guest-r2-20261009",
+  "status": "OFFLINE_INTEGRATION_CANDIDATE__NOT_DEPLOYED__NOT_LIVE_QUALIFIED__NOT_ACCEPTED",
+  "source_commit": "08c863a2e8d9594c360b8c62f41ee4356cc7110c",
+  "authorization": {
+    "live_mutation_authorized": false,
+    "production_deployment_authorized": false,
+    "guest_mode_enable_authorized": false,
+    "uv_energization_authorized": false
+  },
+  "firmware": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+    "path": "evidence/cart2-r6-integrated-20261009/hbnf-cart2-phase2-offline-wow-r6-integrated-20261009.bin",
+    "sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
+    "bytes": 1497936,
+    "source_binding": "firmware/phase2/integration-r6/SOURCE_BINDING.json",
+    "source_binding_sha256": "991ec959a6ee178d0e1783861567e3b7605b0daf00c4179152a83799f79ed657",
+    "platformio_environment": "hbnf_matrix_wled16_packet20_diag",
+    "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c"
+  },
+  "rollback": {
+    "release_id": "Foundation R4",
+    "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "bytes": 1489008,
+    "verified": true
+  },
+  "owner_guest_package": {
+    "file": "HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009.zip",
+    "sidecar": "HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009.zip.sha256",
+    "sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
+    "bytes": 122754,
+    "source_commit": "08c863a2e8d9594c360b8c62f41ee4356cc7110c",
+    "rollback_source_commit": "bbedf3c847435010089cd7a3f1c8b7342c138af3",
+    "build_marker": "hbnf-cart2-owner-guest-vibe-r2-20261009",
+    "scope": "controller-only-no-firmware-no-phase2-hardware",
+    "actual_installer_validation": "PASS: exact package accepted; marker, asset, source-identity, and installer tampering rejected; validation-only performs no network/deployment",
+    "evidence_directory": "evidence/cart2-owner-guest-vibe-r2-20261009"
+  },
+  "feature_contract": {
+    "owner_mission_control": "included; owner controls and pairing preserved; iPad-first hierarchy and accessible Matrix/AUX brightness, genuine Vibe selection, status semantics, and secondary Advanced controls in packaged assets",
+    "guest": "included; Guest Mode defaults OFF; owner toggle stays authoritative; guest controls use existing serialized Cart command/reconcile path",
+    "vibe_audio": "firmware feature closure inherited from R5; synthetic replay/host differentiation checks pass; owner real-music/physical acceptance remains pending",
+    "text_moments": "native WLED font foundation and Text/Moments source/tests included; appearance remains unaccepted until owner review",
+    "scoring": "authoritative scoring source and regression coverage included",
+    "matrix_aux": "existing synchronized DDP feature retained; UV dormant OFF; hardware_available=false; brightness cap 0",
+    "application_confirmation": "MQTT transport/liveness is not application confirmation; Matrix remains submitted pending revision/fence-bound device evidence",
+    "guest_mode_default": false,
+    "uv": "dormant OFF; hardware_available=false; max brightness 0"
+  },
+  "source_hashes": {
+    "hbnf-final-controller/guest/hbnf-cart/guest.css": "bccb2a3179beb2116d953d083929fd97cdb13aa356742abfb45ce9a9919ce2ad",
+    "hbnf-final-controller/guest/hbnf-cart/guest.js": "57ed9d21bd063e93225de14a5306525c21f8a3cecd7b2a4c7b756d33684e0f77",
+    "hbnf-final-controller/guest/hbnf-cart/index.html": "5b1ddd97512a6606b61aeca78929fd645a86a32b10f62ad7547941018442cedf",
+    "hbnf-final-controller/hbnf-cart-features.mjs": "698406cb78565a05bc842b90c01928724cfabd553ed4af28d73178b6d725677d",
+    "hbnf-final-controller/hbnf-cart-icon-180.png": "02a42add542f156fb8cd32ff020d827fb139d70cce6e6c3564cc821c95aec3ed",
+    "hbnf-final-controller/hbnf-cart-icon-192.png": "200dd4c1bb58dd1f3b6fe353404d29cae306673a4bc854b21049c475011b42ab",
+    "hbnf-final-controller/hbnf-cart-icon-512.png": "05ecdcb818aaf9d1f23af59ca73c27d7a00b328705e62d0e9adf3954db6e5838",
+    "hbnf-final-controller/hbnf-cart-manifest.webmanifest": "a58f59a6f921f5104c61dc2e633e0015a5c4f34ba23475f57738ad785bf8251d",
+    "hbnf-final-controller/hbnf-cart-net.mjs": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+    "hbnf-final-controller/hbnf-cart-semantic.mjs": "c7eada1028dddd0321ffa34e894bcb5e7d5ff4cf13a084f72623adcbb963d5a1",
+    "hbnf-final-controller/hbnf-cart-skins-score.mjs": "cf63ca5425210f9dbbe9666f623dc7b6324a2153d5bbfaa7522493eb085ea97f",
+    "hbnf-final-controller/hbnf-cart-sw.js": "8c745075dda10ad676f4d54615b03100c813318f275b30106c79cf4f25399516",
+    "hbnf-final-controller/hbnf-cart-ui-v6.css": "7ec82e48648e662517b281ae5162c278f705521c29907d95112a2cca6e50c707",
+    "hbnf-final-controller/hbnf-cart-ui-v6.mjs": "0e0f16ea7c6e573cc5d5180309d899732598c9b630c7732dfbe10326e542a6e0",
+    "hbnf-final-controller/hbnf-cart.html": "c4464e2304010da98ad30342b17452fda241c6670f9cbc667750c8f968d10244",
+    "hbnf-final-controller/hbnf-cart.js": "799854d994964fd6c05fe78cb35147c1b9a569000b6d5e4377cc9cbeb37d28f3",
+    "staging/coordinated-backend/hbnf-cart-control/index.ts": "ed8b1a29da99cbbf1240c39faabde297b1d2ff15731f1400aaa817c810369c96",
+    "staging/coordinated-backend/hbnf-cart-control/live.ts": "7844a5057f11f82344e3ff49c5f9062ba73019c62bfaab52636e93c897b69323",
+    "staging/coordinated-backend/hbnf-cart-control/guest-command.ts": "09d181d27e6beeec7a9b9727bce404c0e5621a26ddc85895d68d7419f60f918d",
+    "staging/coordinated-backend/hbnf-cart-control/skins_scoring.ts": "aa7d74bbd10bff41111411d7b07b895e1c82a7f7d8d075cb04aec4cf35ba16d6",
+    "staging/coordinated-backend/hbnf-cart-reconcile/index.ts": "24299078b5a0a5c236d90674e8249102000cf3e0958c70ef5fb8fad7b1425033",
+    "staging/coordinated-backend/hbnf-cart-reconcile/foundation-result.ts": "50cf29305925b8604153109e7f505918e517597175de8d6f8a9ab3c83dac433f",
+    "staging/coordinated-backend/hbnf-matrix-adapter-foundation/index.ts": "73f7830a51af2806f7973f2f2466d58eee5c6b119692e2b347e15ec9c4029956",
+    "staging/coordinated-backend/hbnf-matrix-adapter-foundation/confirmation.ts": "05b1f22ef72564ceff13469f8c6ec6ad719e788955f42be142b30f54dca47987"
+  },
+  "qualification": {
+    "offline_tests": "PASS per OFFLINE_TEST_RECEIPT.json; production readiness remains NO.",
+    "live_28_kernel_sweep": "NOT_RUN",
+    "combined_feature_performance": "NOT_RUN",
+    "contiguous_90_minute_soak": "NOT_RUN",
+    "owner_device_smoke": "NOT_RUN",
+    "T4": "NOT_ACCEPTED",
+    "T5": "NOT_ACCEPTED",
+    "production_release_readiness": "NO"
+  },
+  "deployment_rehearsal": {
+    "static_package": "PASS: installer's real validation path in isolation; deterministic ZIP rebuild byte-identical; candidate overlay and exact source rollback rehearsed offline",
+    "backend": "NO DEPLOY: source contract tests pass; no deploy calls made",
+    "firmware": "NO INSTALL: candidate and exact R4 recovery verified offline"
+  },
+  "unresolved_contract": "Current pinned WLED MQTT /status and /v responses do not carry Cart command revision/fence evidence. Existing adapter reports transport/liveness only. A secure, revision-bound confirmation transport or trusted local relay is not present; no confirmation is fabricated.",
+  "test_receipts": [
+    "python3 tests/test_r5_audio_radial_fastpath.py",
+    "python3 tests/test_r6_integrated_candidate.py",
+    "python3 tests/test_hbnf_text_moments_offline.py",
+    "python3 tests/hbnf_ui_package_validation.py",
+    "node tests/hbnf_owner_pwa_package.mjs",
+    "node tests/hbnf_owner_pwa_reliability.mjs",
+    "node tests/hbnf-coordinated-controller-contract.mjs",
+    "node tests/hbnf-coordinated-backend-staging.mjs",
+    "node --experimental-strip-types tests/hbnf-foundation-confirmation-contract.mjs",
+    "node --experimental-strip-types tests/hbnf-foundation-reconcile-outcome.mjs",
+    "python3 tests/hbnf_vibe_audio_replay.py",
+    "node --experimental-strip-types tests/hbnf_skins_scoring_owner_flow.mjs",
+    "node tests/hbnf-guest-platform-static.mjs",
+    "python3 tests/hbnf_owner_guest_r4_rc.py",
+    "python3 tests/hbnf_release_engineering_static.py",
+    "python3 tests/hbnf_control.py",
+    "python3 tests/hbnf_guarded_run.py",
+    "python3 scripts/hbnf_architecture_fitness.py",
+    "python3 tests/hbnf_runtime_qualify_static.py",
+    "python3 tests/hbnf_kernel_sweep_report.py",
+    "python3 tests/hbnf_source_tree_identity.py",
+    "python3 tests/hbnf_live_kernel_sweep.py",
+    "python3 tests/hbnf_packet20_http_adapter.py",
+    "python3 tests/hbnf_packet20_build_validate.py",
+    "node tests/hbnf-release-readiness.mjs (source gates pass; production readiness NO)"
+  ],
+  "application_confirmation": {
+    "mqtt_liveness_is_application_confirmation": false,
+    "matrix_status": "submitted until revision/fence-bound evidence exists"
+  },
+  "drive_artifacts": {
+    "folder_id": "17B-XkjyK92FS7dT8TWDRqcTxozZRjTFV",
+    "firmware_bin_id": "18NEUKfXJKovlPv-CXMpOwgQMX1r_5mxc",
+    "firmware_manifest_id": "1qfEonYExu6-GFOoEi9sEIoCb2suF6ffB",
+    "integrated_manifest_id": "1jdZ8dP9X89YAhmx8t9bQj53LIAJX7iLo",
+    "owner_guest_zip_id": "1GZQzQLPfhImsW00nEDRb_VuIFSxgaEVR",
+    "owner_guest_sha256_sidecar_id": "1KF6pcHxyqq5aVQPKNoNmc3uSavCD-9fo",
+    "offline_test_receipt_id": "1F6LvCpXqoH7qjLPwEGdRUM9W8oKvoFTb"
+  },
+  "drive_readback": {
+    "firmware_size_bytes": 1497936,
+    "owner_guest_package_size_bytes": 122754,
+    "sha256_verified_locally_before_upload": true
+  },
+  "test_receipt": {
+    "path": "evidence/cart2-r6-integrated-20261009/OFFLINE_TEST_RECEIPT.json",
+    "sha256": "6362e3507ebcf1d8e12cae7e119641352a19fafcf8aad5dba609eeb53846f109"
+  }
+}

@@ -11,7 +11,7 @@
   },
   "source_binding": {
     "path": "firmware/phase2/integration-r6/SOURCE_BINDING.json",
-    "sha256": "6fc6782cf58ca8e9d5d98a21e43739bee9a4804fdd1eea44fa83f1d47f159e18",
+    "sha256": "991ec959a6ee178d0e1783861567e3b7605b0daf00c4179152a83799f79ed657",
     "runtime_files": {
       "hbnf_animartrix_audio_bridge.h": "56a391336b72bc6f37d835bbe1a6eca1108f3819fd99f5af9816e671ada46351",
       "hbnf_audio_expression.h": "f4825884dd53cba9bca698bd8b9b7d9d13a81e7ce381957d23790f13073dc4c3",
@@ -67,8 +67,8 @@
     "verified": true
   },
   "qualification": {
-    "offline_pixel_equivalence": "512 production pixels \u00d7 8 transforms exact vs original R5 expression",
-    "offline_host_tests": "Focused firmware/source, package, backend, Vibe, scoring, PWA, and Text/Moments tests pending final integrated pass",
+    "offline_pixel_equivalence": "512 production pixels \u00d7 8 coordinate transforms exact vs original R5 expression",
+    "offline_host_tests": "PASS: exact radial equivalence; target artifact/hash/codegen; pinned Text/Moments tests; package/controller/backend/Vibe/audio/scoring and mandatory host release gates. Production readiness gate remains NO.",
     "live_28_kernel_sweep": "NOT_RUN",
     "combined_feature_performance": "NOT_RUN",
     "90_minute_soak": "NOT_RUN",
@@ -81,5 +81,7 @@
     "production_deployment_authorized": false,
     "guest_mode_enable_authorized": false,
     "uv_energization_authorized": false
-  }
+  },
+  "drive_artifact_id": "18NEUKfXJKovlPv-CXMpOwgQMX1r_5mxc",
+  "drive_manifest_id": "1qfEonYExu6-GFOoEi9sEIoCb2suF6ffB"
 }

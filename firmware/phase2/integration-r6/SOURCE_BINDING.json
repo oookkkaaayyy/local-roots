@@ -99,5 +99,6 @@
     },
     "dependency_versions": "Exact dependencies and versions recorded in the pinned R5 clean-room manifest and build log; no dependency, LDF, or compiler setting changed."
   },
-  "feature_scope": "R5 runtime feature/source closure, except radial arithmetic specialization and embedded R6 identity; no feature removals."
+  "feature_scope": "R5 runtime feature/source closure, except radial arithmetic specialization and embedded R6 identity; no feature removals.",
+  "repository_source_commit": "08c863a2e8d9594c360b8c62f41ee4356cc7110c"
 }

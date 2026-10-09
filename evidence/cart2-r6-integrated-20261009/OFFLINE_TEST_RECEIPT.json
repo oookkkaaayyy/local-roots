@@ -1,0 +1,36 @@
+{
+  "schema": "hbnf-cart2-integrated-offline-test-receipt-v1",
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+  "firmware_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
+  "owner_guest_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
+  "status": "OFFLINE_TESTS_PASS__PRODUCTION_RELEASE_READINESS_NO",
+  "passed": [
+    "R5-to-R6 radial pixel equivalence: 512 production pixels × 8 coordinate transforms; bounded int32 path for 32×16, generic int64 fallback retained",
+    "R6 target artifact: SHA, embedded release identity, exact runtime source binding, R4 rollback hash, flash/RAM headroom, and production-path disassembly",
+    "WLED 16.0.1 pinned Text/Moments source reconstruction: 14/14",
+    "Owner/Guest actual installer validation: exact package accepted; mismatched build marker, asset marker, source identity, and installer tampering rejected; no network/deployment operation",
+    "Owner PWA package/reliability and coordinated controller contracts",
+    "Coordinated backend staging, Guest command, scoring, Vibe runtime, and Foundation confirmation/reconcile contracts",
+    "Synthetic AudioFeatures replay: 13 semantics, six synthetic traces, pairwise Vibe differentiation and AUTO hysteresis",
+    "Mission Control scoring and Guest static platform checks",
+    "Release engineering, control plane 23/23, guarded runner, architecture fitness, runtime qualification static checks, 28-kernel runner/report policy, source-tree identity, Packet20 adapters/build validator",
+    "Integrated offline release rehearsal: exact R6 and R4 hashes, source hashes, deterministic Owner/Guest ZIP rebuild byte-identical, actual installer validation, candidate static overlay and source rollback"
+  ],
+  "production_readiness": {
+    "gate": "NO",
+    "reasons": [
+      "No live 28-kernel qualification, combined-feature measurement, contiguous 90-minute soak, or owner physical acceptance has been run for R6.",
+      "Release readiness checker reports required accepted source identity, updater/rollback publication, baseline reconciliation, owner-device compatibility, canonical overlay/palette bridge, and first physical OTA acceptance gates still open.",
+      "Matrix application acknowledgement remains submitted until revision/fence-bound device evidence exists; MQTT transport/liveness is not confirmation."
+    ],
+    "T4": "NOT_ACCEPTED",
+    "T5": "NOT_ACCEPTED"
+  },
+  "authority": {
+    "device_mutation": false,
+    "production_deployment": false,
+    "threshold_changes": false,
+    "guest_mode_enable": false,
+    "uv_energization": false
+  }
+}

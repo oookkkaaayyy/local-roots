@@ -36,12 +36,12 @@ assert hashlib.sha256((ROOT / manifest["firmware"]["path"]).read_bytes()).hexdig
 assert hashlib.sha256((ROOT / manifest["rollback"]["path"]).read_bytes()).hexdigest() == manifest["rollback"]["sha256"]
 
 package_meta = manifest["owner_guest_package"]
-archive = EVIDENCE / package_meta["file"]
+archive = ROOT / "evidence/cart2-owner-guest-vibe-r2-20261009" / package_meta["file"]
 data = archive.read_bytes()
 digest = hashlib.sha256(data).hexdigest()
 assert digest == package_meta["sha256"]
 assert len(data) == package_meta["bytes"]
-assert (EVIDENCE / package_meta["sidecar"]).read_text() == f"{digest}  {archive.name}\n"
+assert (archive.parent / package_meta["sidecar"]).read_text() == f"{digest}  {archive.name}\n"
 assert manifest["source_commit"] == package_meta["source_commit"]
 
 for path, expected in manifest["source_hashes"].items():
@@ -80,7 +80,7 @@ with zipfile.ZipFile(archive) as package:
         for member in rel_files:
             relative = member.removeprefix("controller/")
             target = staged / relative
-            target.write_bytes(package.read(member))
+            target.write_bytes(package.read(root + member))
             assert hashlib.sha256(target.read_bytes()).hexdigest() == embedded["files"][relative]
         assert (staged / "hbnf-cart.html").read_text().find("hbnf-cart2-owner-guest-vibe-r2-20261009") >= 0
         for relative, content in original.items():
