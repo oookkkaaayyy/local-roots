@@ -495,7 +495,7 @@
     "target": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c",
     "transaction_start_evidence": "/tmp/hbnf-p2-build/r6-live-validation/evidence/R6_INSTALL_TRANSACTION_START.json"
   },
-  "checkpoint_at_utc": "2026-10-09T10:27:49Z",
+  "checkpoint_at_utc": "2026-10-09T10:31:13+00:00",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -634,7 +634,9 @@
     ],
     "preota_authority_checkpoint": "evidence/cart2-r7-performance-repair-20261009/R7_PREOTA_AUTHORITY_CHECKPOINT.json",
     "preota_authority_checkpoint_sha256": "364ae4c5905096aa7546cc74a8142c2e0365c7b247e0014fa9215997ca72c174",
-    "qualification_status": "IN_PROGRESS__POSTINSTALL_IDENTITY_HEALTH_PASS__MATCHED_EARLY_GATES_PENDING",
+    "qualification_run_id": "phase2-r7-execution-20261009",
+    "qualification_status": "START_RECORDED__MATCHED_EARLY_GATES_THEN_FROZEN_SWEEP_AND_SOAK",
+    "qualification_transaction_start": "evidence/cart2-r7-performance-repair-20261009/R7_QUALIFICATION_RUN_START.json",
     "r4_rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "retry_permitted": false,
     "rollback_attempts": 0,
@@ -687,7 +689,7 @@
       "status": "PHASE2_COMMITTED_REQUIREMENT",
       "ui_requirement": "Provide useful low-night perceptual granularity while retaining true maximum."
     },
-    "checkpoint_at_utc": "2026-10-09T10:27:49Z",
+    "checkpoint_at_utc": "2026-10-09T10:31:13+00:00",
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "diagnostic_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
@@ -1671,8 +1673,8 @@
     "live_mutation_authorization": "R7 exact-artifact install consumed; remaining current authorization is the bounded R7 qualification transaction including diagnostics, effects, and exact restoration; no R8+.",
     "live_mutation_authorized": true,
     "name": "Foundation offline timeout and soak-harness checkpoint",
-    "next_action": "Without restarting or reinstalling, run R7-specific matched kernel 13 then dense kernel 9 tails-off profiles against exact R4 profiles; if both pass, run frozen 28-kernel sweep, combined-feature cases, and uninterrupted 5400-second soak, preserving restore and exact release identity.",
-    "next_work": "Without restarting or reinstalling, run R7-specific matched kernel 13 then dense kernel 9 tails-off profiles against exact R4 profiles; if both pass, run frozen 28-kernel sweep, combined-feature cases, and uninterrupted 5400-second soak, preserving restore and exact release identity.",
+    "next_action": "Execute the single pre-authorized, source-bound Packet20 qualification transaction: matched kernel 13 and 9 first, then complete 28-kernel sweep and contiguous 5400-second soak only if gates pass, with restore on exit.",
+    "next_work": "Execute the single pre-authorized, source-bound Packet20 qualification transaction: matched kernel 13 and 9 first, then complete 28-kernel sweep and contiguous 5400-second soak only if gates pass, with restore on exit.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "overnight_priority": {
       "do_not_derail": [
@@ -2316,7 +2318,7 @@
       "status": "PASS"
     },
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "R7_INSTALLED__OBJECTIVE_QUALIFICATION_IN_PROGRESS",
+    "status": "R7_LIVE_QUALIFICATION_RUNNING__EARLY_MATCHED_GATES_FIRST",
     "t3_fast_path_preparation": {
       "human_approval_required": true,
       "human_packet": "work/cart2/27_T3_PHASE2_FAST_PATH_PREP_20261006.md",
@@ -2599,7 +2601,7 @@
     },
     "schema": "hbnf-lane-execution-state-v1"
   },
-  "last_updated_utc": "2026-10-09T10:27:49Z",
+  "last_updated_utc": "2026-10-09T10:31:13+00:00",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "admission_path": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_APPROVED_ADMISSION.json",
