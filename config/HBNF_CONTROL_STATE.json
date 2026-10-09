@@ -2134,6 +2134,12 @@
       "ota_attempts": 1,
       "r4_return_attempt_consumed_at_utc": "2026-10-09T19:08:13.294970+00:00",
       "r4_return_attempts": 1,
+      "r4_return_preflight": {
+        "observed_fps": 10,
+        "path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R4_RETURN_PREFLIGHT_RECEIPT.json",
+        "result": "SAFE_TO_EXECUTE_MANDATORY_R4_RETURN__SINGLE_LOW_FPS_OBSERVATION_RECORDED",
+        "sha256": "ab284b26884149e624b5ee3a8ab2f676b7122abf28113d3e13dce1b11cbc0887"
+      },
       "receipt_path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R2_CANDIDATE_INSTALLED_RECEIPT.json",
       "receipt_sha256": "5457c178efd99e36bc9cb2a554017a4f7943ad8a91e0b4bd3c3ebb448d3a5bf0",
       "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
@@ -2660,7 +2666,7 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-09T19:08:13.294970+00:00",
+  "last_updated_utc": "2026-10-09T19:09:59.211046+00:00",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "admission_path": "evidence/cart2-r7-performance-repair-20261009/R2_DIAGNOSTIC_OWNER_AUTHORIZATION.json",
@@ -3141,6 +3147,12 @@
     "ota_attempts": 1,
     "r4_return_attempt_consumed_at_utc": "2026-10-09T19:08:13.294970+00:00",
     "r4_return_attempts": 1,
+    "r4_return_preflight": {
+      "observed_fps": 10,
+      "path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R4_RETURN_PREFLIGHT_RECEIPT.json",
+      "result": "SAFE_TO_EXECUTE_MANDATORY_R4_RETURN__SINGLE_LOW_FPS_OBSERVATION_RECORDED",
+      "sha256": "ab284b26884149e624b5ee3a8ab2f676b7122abf28113d3e13dce1b11cbc0887"
+    },
     "receipt_path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R2_CANDIDATE_INSTALLED_RECEIPT.json",
     "receipt_sha256": "5457c178efd99e36bc9cb2a554017a4f7943ad8a91e0b4bd3c3ebb448d3a5bf0",
     "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",

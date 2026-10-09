@@ -1,0 +1,53 @@
+{
+  "aux": {
+    "led_count": 22,
+    "live": true,
+    "mode": "DDP",
+    "on": true,
+    "source": "192.168.77.10"
+  },
+  "captured_at_utc": "2026-10-09T19:09:59.208331+00:00",
+  "health_interpretation": "One read reported FPS 10; the unchanged catastrophic rule requires three consecutive 8-second samples below FPS 20 (or p99>75ms/AUX projection inactive). No three-sample evidence was collected. The user mandated exact R4 return after this completed diagnostic. Matrix identity, uptime continuity, renderer restore, power, AUX DDP, exact R4 bytes, and proven Opal path are verified. The single low FPS observation is preserved and post-return health will be rechecked.",
+  "limit": 1,
+  "no_active_ota_or_sampler_process": true,
+  "no_retry": true,
+  "preflight_files": {
+    "R4_HOST_POWER.txt": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R4_HOST_POWER.txt",
+      "sha256": "af03c572c2cdfbaaf33d9bbbe09df43a3ec9fde3d2765a15d63d3ff524443750"
+    },
+    "R4_HOST_PROCESSES.txt": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R4_HOST_PROCESSES.txt",
+      "sha256": "0e7ecc64c63b4bbe65b6d17783490ea2c8f2d54b04d4e6786cd3b4f345f6961c"
+    },
+    "R4_OPAL_READONLY_PREFLIGHT.txt": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R4_OPAL_READONLY_PREFLIGHT.txt",
+      "sha256": "f712538004bc75a5fee64ed0d66f2e79698fc3a97fc8b123bf128a759eb75b8a"
+    },
+    "R4_RETURN_PREFLIGHT.json": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R4_RETURN_PREFLIGHT.json",
+      "sha256": "8c93c8590f108b452cf1ce1eae9bdec285a2c7b2a2f987e9c242e8989ccbfcce"
+    }
+  },
+  "r2_current": {
+    "foundation_telemetry_enabled": false,
+    "fps_single_read": 10,
+    "mac": "704bca5b345c",
+    "on": true,
+    "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+    "renderer_restored": true,
+    "restart_count": 0,
+    "uptime": 742
+  },
+  "result": "SAFE_TO_EXECUTE_MANDATORY_R4_RETURN__SINGLE_LOW_FPS_OBSERVATION_RECORDED",
+  "return_artifact": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "repository_path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008,
+    "temp_path": "/tmp/cart2-r4-rollback-338afdf5-20261009.bin",
+    "temp_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "return_attempt": 1,
+  "schema": "hbnf-r2-mandatory-r4-return-preflight-v1"
+}
