@@ -1,0 +1,66 @@
+{
+  "approved_for_mutation": true,
+  "authorization_basis": "Current user standing conditional authorization for one R7 install and its complete qualification; R7 install attempt is consumed, and the present bounded mutation is the authorized qualification transaction only. No R8+.",
+  "capsule_sha256": "ee41e15f963961bfd49da709d8c47c75fb512b745576bbd9acf48ea2f57ce990",
+  "captured_at_utc": "2026-10-09T10:29:14.056853+00:00",
+  "consumer_contract": {
+    "identity": "Direct LAN WLED 16.0.1 JSON state adapter for Matrix 192.168.77.10; bounded native Packet20 select/snapshot, Foundation telemetry, AUX source reads, and exact snapshot restore; no OTA or cloud request during qualification.",
+    "verified": true
+  },
+  "host_preflight": "evidence/cart2-r7-performance-repair-20261009/R7_QUALIFICATION_HOST_PREFLIGHT.json",
+  "host_preflight_sha256": "b9d8678d1f6deba9c7faccfd8b1f88feed481cb559c3bfe4eb6562a5c1642414",
+  "pre_mutation_state": {
+    "aux_ip": "192.168.77.11",
+    "aux_led_count": 22,
+    "aux_mac": "8c:94:df:55:c3:4c",
+    "aux_native_ddp_live": true,
+    "aux_source_ip": "192.168.77.10",
+    "host_network": "HBNF-Cart local gateway 192.168.77.1 on en0",
+    "host_power": "AC Power, battery 100%",
+    "matrix_ip": "192.168.77.10",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "matrix_release": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+    "matrix_runtime_health": "on; 42 FPS; brightness 44; Packet20 and Foundation tail telemetry off; read-only preflight above",
+    "matrix_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+    "physical_aux_visual": "NOT OBSERVABLE IN AUTOMATED READBACK; owner R7-specific check pending"
+  },
+  "recovery_identity": {
+    "identity": "Foundation R4 exact; SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c; 1,489,008 bytes",
+    "verification": "Locally preserved exact binary SHA/size; Drive R4 artifact receipt; prior exact R4 recovery receipt and proven WLED /update restore path."
+  },
+  "run_id": "phase2-r7-qualification-20261009",
+  "schema": "local-roots-prelive-proof-v1",
+  "stages": {
+    "capture-current-state": {
+      "evidence": [
+        "live-qualification/PRE_SWEEP_READONLY_PREFLIGHT.json captured at 2026-10-09T10:29:14.057106+00:00: exact Matrix MAC/IP, R7 release/candidate, WLED 16.0.1, Matrix on at brightness 44, 42 FPS, uptime 273s, diagnostics off; AUX exact MAC/IP, 22 LEDs, on and native DDP live from Matrix.",
+        "R7_POSTINSTALL_IDENTITY_HEALTH.json retains the immediately post-install readbacks and states WLED JSON cannot observe physical output; R7-specific physical visual acceptance remains pending.",
+        "Mac read-only AC status shows AC Power/100%, and default route is HBNF-Cart gateway 192.168.77.1 on en0.",
+        "R7_QUALIFICATION_HOST_PREFLIGHT.json stores AC power readback, HBNF-Cart gateway route, exact current R7/R4 byte hashes, and the current Matrix/AUX read-only preflight."
+      ],
+      "status": "PASS"
+    },
+    "contract-closure": {
+      "evidence": [
+        "R7_OFFLINE_COMPILED_ADMISSION.json and R7_FINAL_OFFLINE_CANDIDATE_MANIFEST.json: exact R7 firmware SHA/size/source closure and offline admission already passed.",
+        "R7_POSTINSTALL_IDENTITY_HEALTH.json: exact installed R7 release identity and Matrix WLED 16.0.1 health readback; receipt SHA-256 a4e79c75e7c7c1a9b3f868b6104bed14e8ec54f6e8cc64ac3f894f439fd3cb2b",
+        "R7_LIVE_SWEEP_ADAPTER.json binds the existing Foundation adapter and exact expected R7 ID; live 28-kernel runner dry-run PASS."
+      ],
+      "status": "PASS"
+    },
+    "recovery-proof": {
+      "evidence": [
+        "Local exact R4 recovery artifact hbnf-matrix-foundation-r4-exact.bin SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c, 1,489,008 bytes; preinstall byte verification and Drive preservation receipts already exist.",
+        "R4 exact recovery path and prior successful exact restoration are recorded in existing Foundation recovery receipts; no rollback has been performed in the R7 transaction."
+      ],
+      "status": "PASS"
+    },
+    "transaction-rehearsal": {
+      "evidence": [
+        "R7_RELEASE_TRANSACTION_DRYRUN.json historical host failure replays and release guard rehearsal passed before install; no OTA retry permitted.",
+        "scripts/hbnf_live_kernel_sweep.py existing restore-on-exit path validated with --dry-run; R7 adapter validates for Foundation contract and uses one source-bound renderer snapshot/restore."
+      ],
+      "status": "PASS"
+    }
+  }
+}
