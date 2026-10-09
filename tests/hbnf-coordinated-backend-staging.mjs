@@ -51,7 +51,8 @@ assert.ok(confirmation.includes('masterUnityObserved'),"master brightness observ
 assert.ok(stagedReconcile.includes('classifyFoundationInvocation'),"reconcile does not preserve adapter outcome classes");
 assert.ok(stagedReconcile.includes('p_status: "submitted"'),"reconcile overstates a projection submission as applied/off state");
 assert.ok(stagedReconcile.includes('p_status: "submitted",') && stagedReconcile.includes('requestedEnabled: matrixProjection.enabled'),"AUX proxy observation does not distinguish requested off from observed off");
-assert.ok(stagedReconcile.includes('["online","off","submitted"]'),"reconcile cannot carry forward a previously submitted, unconfirmed state");
+assert.ok(stagedReconcile.includes('canCarryForwardObservation(prior, cart.revision, fence.epoch, fence.release_id)'),"reconcile carry-forward does not require the exact current revision and fence");
+assert.ok(reconcileOutcome.includes('Number(prior.reported?.cartRevision) === cartRevision') && reconcileOutcome.includes('Number(prior.reported?.fenceEpoch) === fenceEpoch'),"carry-forward can restamp a stale device report onto a new revision");
 assert.ok(stagedReconcile.includes('results.every((x) => good.has(x.status)) ? "submitted" : "degraded"'),"reconcile response overstates submitted commands as applied");
 assert.ok(reconcileOutcome.includes('foundation_ack_field_mismatch'),"reconcile no longer distinguishes mismatched ack fields");
 

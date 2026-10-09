@@ -1,5 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.0";
-import { classifyFoundationInvocation } from "./foundation-result.ts";
+import { canCarryForwardObservation, classifyFoundationInvocation } from "./foundation-result.ts";
 
 const DEVICES = ["matrix", "aux"] as const;
 const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
@@ -93,7 +93,7 @@ Deno.serve(async (req: Request) => {
 
   const carryForward = async (deviceId: typeof DEVICES[number]) => {
     const { data: prior, error: priorError } = await db.rpc("hbnf_cart_get_observed", { p_cart_id: body.cartId, p_device_id: deviceId });
-    if (priorError || !prior || !["online","off","submitted"].includes(String(prior.status))) {
+    if (priorError || !canCarryForwardObservation(prior, cart.revision, fence.epoch, fence.release_id)) {
       return { deviceId, status: "carry_unavailable" };
     }
     const { error: writeError } = await db.rpc("hbnf_cart_upsert_observed", {

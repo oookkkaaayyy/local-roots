@@ -8,6 +8,17 @@ const sameProjection = (ack: any, projection: any) =>
   ack?.requestedAuxBrightness === projection.auxBrightness &&
   ack?.enabled === projection.enabled;
 
+/** A carried observation remains valid only for the exact stored revision and fence it reports. */
+export function canCarryForwardObservation(prior: any, cartRevision: number, fenceEpoch: number, releaseId: string) {
+  return !!prior &&
+    ["online", "off", "submitted"].includes(String(prior.status)) &&
+    Number(prior.desired_revision) === cartRevision &&
+    Number(prior.fence_epoch) === fenceEpoch &&
+    prior.release_id === releaseId &&
+    Number(prior.reported?.cartRevision) === cartRevision &&
+    Number(prior.reported?.fenceEpoch) === fenceEpoch;
+}
+
 /** Preserve the adapter's bounded failure code without persisting its raw body. */
 export async function classifyFoundationInvocation(invokeError: any, ack: any, projection: any) {
   if (invokeError) {
