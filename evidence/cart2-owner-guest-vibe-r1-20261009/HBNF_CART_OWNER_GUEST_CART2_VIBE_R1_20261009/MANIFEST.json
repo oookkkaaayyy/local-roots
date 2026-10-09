@@ -1,0 +1,24 @@
+{
+  "schema": "hbnf-cart2-owner-guest-vibe-package-v1",
+  "buildMarker": "hbnf-cart2-owner-guest-vibe-r1-20261009",
+  "sourceCommit": "9d44a05cd6797b0a05fd7d4063ad0a5192d5cfea",
+  "scope": "owner-guest-static-assets-bound-to-staged-backend-and-r5-firmware",
+  "files": {
+    "guest/hbnf-cart/guest.css": "bccb2a3179beb2116d953d083929fd97cdb13aa356742abfb45ce9a9919ce2ad",
+    "guest/hbnf-cart/guest.js": "57ed9d21bd063e93225de14a5306525c21f8a3cecd7b2a4c7b756d33684e0f77",
+    "guest/hbnf-cart/index.html": "5b1ddd97512a6606b61aeca78929fd645a86a32b10f62ad7547941018442cedf",
+    "hbnf-cart-features.mjs": "698406cb78565a05bc842b90c01928724cfabd553ed4af28d73178b6d725677d",
+    "hbnf-cart-icon-180.png": "02a42add542f156fb8cd32ff020d827fb139d70cce6e6c3564cc821c95aec3ed",
+    "hbnf-cart-icon-192.png": "200dd4c1bb58dd1f3b6fe353404d29cae306673a4bc854b21049c475011b42ab",
+    "hbnf-cart-icon-512.png": "05ecdcb818aaf9d1f23af59ca73c27d7a00b328705e62d0e9adf3954db6e5838",
+    "hbnf-cart-manifest.webmanifest": "b67d8baed05478c42082712bbad2c053e494fc340655cdd3b45a6e1b023e0560",
+    "hbnf-cart-net.mjs": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+    "hbnf-cart-semantic.mjs": "c7eada1028dddd0321ffa34e894bcb5e7d5ff4cf13a084f72623adcbb963d5a1",
+    "hbnf-cart-skins-score.mjs": "cf63ca5425210f9dbbe9666f623dc7b6324a2153d5bbfaa7522493eb085ea97f",
+    "hbnf-cart-sw.js": "0abac8f6672631c610df37c727d53ff7d25a1023cb433f4112cc8a7e44ae5abc",
+    "hbnf-cart-ui-v6.css": "7ec82e48648e662517b281ae5162c278f705521c29907d95112a2cca6e50c707",
+    "hbnf-cart-ui-v6.mjs": "0e0f16ea7c6e573cc5d5180309d899732598c9b630c7732dfbe10326e542a6e0",
+    "hbnf-cart.html": "6f9b869d7265a02ac100d6e4465967bce2d31e0e700912c0ad981ae379763e3f",
+    "hbnf-cart.js": "60a9417664e445d0be272bda14c76913340bb9814e725af46b6910dde2ee3ed1"
+  }
+}

@@ -28,10 +28,19 @@ def digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def build(source_root: Path, output_dir: Path, source_commit: str) -> tuple[Path, str]:
+def build(
+    source_root: Path,
+    output_dir: Path,
+    source_commit: str,
+    *,
+    package_name: str = PACKAGE,
+    manifest_schema: str = "hbnf-cart-owner-ux-r4-guest-route-r2-package-v1",
+    build_marker: str = "hbnf-cart2-owner-ux-r4-20261008",
+    scope: str = "controller-only-no-firmware-no-phase2-hardware",
+) -> tuple[Path, str]:
     source_root = source_root.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
-    package_dir = output_dir / PACKAGE
+    package_dir = output_dir / package_name
     if package_dir.exists():
         shutil.rmtree(package_dir)
     controller = package_dir / "controller"
@@ -53,18 +62,18 @@ def build(source_root: Path, output_dir: Path, source_commit: str) -> tuple[Path
         for relative in sorted(CONTROLLER_FILES)
     }
     manifest = {
-        "schema": "hbnf-cart-owner-ux-r4-guest-route-r2-package-v1",
-        "buildMarker": "hbnf-cart2-owner-ux-r4-20261008",
+        "schema": manifest_schema,
+        "buildMarker": build_marker,
         "sourceCommit": source_commit.strip(),
-        "scope": "controller-only-no-firmware-no-phase2-hardware",
+        "scope": scope,
         "files": files,
     }
     (package_dir / "MANIFEST.json").write_bytes((json.dumps(manifest, indent=2, ensure_ascii=False) + "\n").encode("utf-8"))
-    archive = output_dir / f"{PACKAGE}.zip"
+    archive = output_dir / f"{package_name}.zip"
     with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_STORED, strict_timestamps=True) as zf:
         for name in PACKAGE_FILES:
             path = package_dir / name
-            info = zipfile.ZipInfo(f"{PACKAGE}/{name}", date_time=(2020, 1, 1, 0, 0, 0))
+            info = zipfile.ZipInfo(f"{package_name}/{name}", date_time=(2020, 1, 1, 0, 0, 0))
             info.create_system = 3
             executable = name in ("INSTALL_UI_V6.command", "install_ui_v6.py")
             info.external_attr = (stat.S_IFREG | (0o755 if executable else 0o644)) << 16
@@ -80,8 +89,18 @@ def main() -> None:
     ap.add_argument("--source-root", type=Path, required=True)
     ap.add_argument("--output-dir", type=Path, required=True)
     ap.add_argument("--source-commit", required=True)
+    ap.add_argument("--package-name", default=PACKAGE)
+    ap.add_argument("--manifest-schema", default="hbnf-cart-owner-ux-r4-guest-route-r2-package-v1")
+    ap.add_argument("--build-marker", default="hbnf-cart2-owner-ux-r4-20261008")
+    ap.add_argument("--scope", default="controller-only-no-firmware-no-phase2-hardware")
     args = ap.parse_args()
-    archive, sha = build(args.source_root, args.output_dir, args.source_commit)
+    archive, sha = build(
+        args.source_root, args.output_dir, args.source_commit,
+        package_name=args.package_name,
+        manifest_schema=args.manifest_schema,
+        build_marker=args.build_marker,
+        scope=args.scope,
+    )
     print(f"PACKAGE={archive}")
     print(f"SHA256={sha}")
     print(f"BYTES={archive.stat().st_size}")
