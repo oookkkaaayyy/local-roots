@@ -229,7 +229,7 @@
   "bounded_phase2_r4_install_attempt2_authorization": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008-RETRY1",
     "authorized_at_utc": "2026-10-08T06:20:06.671131+00:00",
-    "authorized_by": "Current user instruction: URGENT \u2014 RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: URGENT — RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:21:47.880324+00:00",
@@ -347,7 +347,7 @@
   "bounded_phase2_r4_live_qualification_authorization": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
     "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
-    "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: CART 2.0 — FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:10:00.723317+00:00",
@@ -455,11 +455,33 @@
       "normal diagnostic cleanup and renderer restoration",
       "conditional exact R4 recovery within the one rollback limit"
     ],
-    "status": "OTA_RESPONSE_SUCCESS__AWAITING_RUNTIME_IDENTITY_AND_HEALTH",
+    "status": "R6_INSTALLED_IDENTITY_HEALTH_VERIFIED__QUALIFICATION_IN_PROGRESS",
     "target": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c",
-    "transaction_start_evidence": "/tmp/hbnf-p2-build/r6-live-validation/evidence/R6_INSTALL_TRANSACTION_START.json"
+    "transaction_start_evidence": "/tmp/hbnf-p2-build/r6-live-validation/evidence/R6_INSTALL_TRANSACTION_START.json",
+    "runtime_identity_evidence": "evidence/cart2-r6-live-qualification-20261009/R6_POSTINSTALL_IDENTITY_HEALTH.json",
+    "runtime_identity_evidence_sha256": "c6e9c55f828429622497c66334f784234257ea052ed4ca3133023e71b0aa041d",
+    "runtime_identity": {
+      "release_id": "hbnf-cart2-phase2-offline-wow-r6-20261009",
+      "mac": "70:4b:ca:5b:34:5c",
+      "wled": "16.0.1",
+      "matrix_on": true,
+      "matrix_brightness": 44,
+      "free_heap_bytes": 74092,
+      "kernel_index": 9,
+      "wholeFrameUs": 27680,
+      "aux_live": true,
+      "aux_live_mode": "DDP",
+      "aux_live_ip": "192.168.77.10",
+      "aux_pixels": 22,
+      "physical_owner_confirmation": "PENDING"
+    },
+    "qualification_progress": {
+      "stage": "EARLY_MATCHED_KERNELS_THEN_28_KERNEL_SWEEP_THEN_COMBINED_FEATURES_AND_90_MINUTE_SOAK",
+      "status": "NOT_STARTED",
+      "next": "PREPARE_AND_VALIDATE_EXACT_R6_ADAPTER_AND_RUNNER_WITH_NO_THRESHOLD_CHANGES"
+    }
   },
-  "checkpoint_at_utc": "2026-10-09T09:09:08+00:00",
+  "checkpoint_at_utc": "2026-10-09T09:12:56.172Z",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -595,9 +617,9 @@
       "status": "OFFLINE_CORRECTION_TESTED__FRESH_PRELIVE_PASS"
     },
     "blockers": [
-      "R6 has not yet been installed or live-qualified.",
-      "R6-specific physical AUX output/scene response remains to be observed after install; owner currently reports R5 synchronization working.",
-      "T4 and T5 acceptance remain open pending full frozen qualification and required owner evidence."
+      "R6 exact runtime identity and initial health verified; full live qualification remains in progress.",
+      "R6-specific physical AUX output/scene response still requires owner visual confirmation.",
+      "T4 and T5 acceptance remain open; do not promote without full frozen and owner evidence."
     ],
     "brightness_field_target": {
       "field_observation": "At roughly <=20 brightness Matrix appears effectively off; roughly 20-60 visibly loses LED/pixel participation and scene structure, requiring uncomfortable brightness to obtain a full-looking animation.",
@@ -636,19 +658,19 @@
       "zero_traffic_rehearsal_file_id": "1ZJOseh2J4ls9dGlF_SOH5DHAH9djd4xp"
     },
     "execution_cursor": {
-      "current_failure_domain": "PHASE2_CANDIDATE_OFFLINE_REBUILT__RUNTIME_GATE_PENDING",
+      "current_failure_domain": "R6_INSTALLED__EARLY_MATCHED_QUALIFICATION_PENDING",
       "current_lifecycle_state": "PHASE2_INTEGRATING",
       "current_subject": {
-        "artifact_sha256": "8be42c878cb6502db1571e58e417848bd732e2d5debfb27b399738b1e70fcf6c",
-        "release_id": "hbnf-cart2-phase2-offline-wow-r2-20261008"
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-20261009",
+        "artifact_sha256": "0a4b9563c7debfb5a01e9d36aeb8aac2583e105303064de3db0466b7dd9d89d6"
       },
       "current_transition": "T4_PHASE2_INTEGRATION",
       "exact_next_path": [
-        "Root cause confirmed in build inputs: the rejected Phase 2 binary omitted the exact pinned R4 FastLED 3.10.4 transformed ANIMartRIX header and its include path; its embedded candidate string also differed from the published WOW release ID.",
-        "Offline repair built hbnf-cart2-phase2-offline-wow-r2-20261008 with the exact existing R4 transformer and pinned FastLED source. Artifact identity and evidence: evidence/hbnf-phase2-integration-20261007/phase2-r4-parity-repair-20261008.json.",
-        "Current Matrix remains on exact R4; do not install or mutate devices under the consumed prior candidate authorization. A separate bounded install authorization for SHA 8be42c878cb6502db1571e58e417848bd732e2d5debfb27b399738b1e70fcf6c is required before one controlled runtime qualification.",
-        "After authorization, measure sustained FPS/wholeFrameUs at the same kernel and brightness, verify exact embedded identity, heap/restarts and AUX DDP; objective success is required before any owner subjective review. Preserve Guest OFF and UV disabled.",
-        "Lifecycle remains PHASE2_INTEGRATING / T4. T5 owner acceptance is not skipped; do not reopen completed PWA/scoring/AUX/DDP/subjective lanes absent a fresh invalidator."
+        "Use the exact frozen R6 live runner and policy; compare matched kernels 13 and 9 against exact R4 first.",
+        "Continue the unchanged 28-kernel sweep and combined-feature qualification only if early frozen gates pass.",
+        "Start one contiguous >=5400-second soak only after required prior gates pass; preserve exact renderer restore evidence.",
+        "Keep R6 installed on host-only failures; exact R4 recovery is authorized only for objectively defined device/runtime safety or frozen-gate failure.",
+        "T4/T5 remain open until objective and owner-specific evidence closes them."
       ],
       "no_repeat": [
         "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -697,7 +719,7 @@
         "Prior 16:42/16:45 times are not automatic abort or rollback triggers for the currently active seq53 path.",
         "Continue the already-authorized seq53 install/targeted validation while commands are actively progressing and safety/identity evidence remains intact.",
         "Do not broaden scope or start new exploratory work.",
-        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop\u2014not for elapsed wall-clock time alone.",
+        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop—not for elapsed wall-clock time alone.",
         "Owner-device smoke remains mandatory before declaring field-ready."
       ],
       "schema": "hbnf-field-readiness-deadline-v1",
@@ -1575,7 +1597,7 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
+      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "live_mutation_authorization": {
@@ -2416,9 +2438,9 @@
     }
   ],
   "installation_verification_note": "Fresh read-only Matrix /hbnf/build.json and /json/info verified R5 release ID, MAC 70:4b:ca:5b:34:5c, WLED 16.0.1 and active renderer. Exact R5 SHA is bound to prior approved artifact/installation record and AKS row 1461; WLED API does not expose runtime SHA. Current Matrix/AUX health preflight is in R6_LIVE_READONLY_PREFLIGHT.json.",
-  "installed_firmware_sha256": "f663c0736256186eff009b69818f5d41b1eec9df310be3128e1b3c67a9feea8b",
-  "installed_release": "hbnf-cart2-phase2-offline-wow-r5-20261008",
-  "installed_release_role": "CURRENT_INSTALLED_UNQUALIFIED_BASELINE__EXACT_R5__READ_ONLY_RECONCILED",
+  "installed_firmware_sha256": "0a4b9563c7debfb5a01e9d36aeb8aac2583e105303064de3db0466b7dd9d89d6",
+  "installed_release": "hbnf-cart2-phase2-offline-wow-r6-20261009",
+  "installed_release_role": "R6_EXACT_CANDIDATE_INSTALLED__FROZEN_LIVE_QUALIFICATION_IN_PROGRESS__NOT_ACCEPTED",
   "lane_execution": {
     "activation_rule": "Activate offline-safe core lanes at the earlier of: (a) clean Foundation soak/readiness signal, or (b) 60 minutes without lifecycle progress, provided parallel work is noncontending and cannot invalidate the healthy live critical path. Never restart/interrupt healthy critical-path work merely to satisfy this timer. live_mutation_limit remains 1.",
     "anti_abandonment": "Chat turnover, worker turnover, new sequence numbers, or convenience may not drop a lane. A ready lane can stop only when DONE, explicitly blocked on a named dependency, or user scope changes.",
@@ -2790,7 +2812,7 @@
   "previous_phase2_r4_install_authorization_consumed": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
     "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
-    "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: CART 2.0 — FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:10:00.723317+00:00",
