@@ -1,0 +1,72 @@
+{
+  "approved_for_mutation": true,
+  "authorization_basis": "Standing user authorization covers the single installed R7 qualification transaction and exact R4 recovery on objective gate failure. R7 installation is already consumed; this operation resumes only open Packet20 snapshot ID 1/hash 4051728214, with no OTA, reboot, or new snapshot.",
+  "capsule_sha256": "8f87843a14d045524476880b26499e931a233c7ad0b6cc25792277d5f9b09b4e",
+  "consumer_contract": {
+    "identity": "Existing WLED 16.0.1 direct LAN qualification adapter at Matrix .10; continue the exact source-bound snapshot 1/hash 4051728214, run frozen sweep and exact restore. No new install or alternate control path.",
+    "verified": true
+  },
+  "pre_mutation_state": {
+    "aux_ip": "192.168.77.11",
+    "aux_led_count": 22,
+    "aux_mac": "8c:94:df:55:c3:4c",
+    "aux_native_ddp_live": true,
+    "aux_on": true,
+    "aux_source_ip": "192.168.77.10",
+    "firmware_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+    "foundation_telemetry_enabled": false,
+    "matrix_brightness": 44,
+    "matrix_ip": "192.168.77.10",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "matrix_on": true,
+    "matrix_restart_count": 0,
+    "matrix_uptime_seconds": 1238,
+    "matrix_wled": "16.0.1",
+    "packet20_enabled": true,
+    "packet20_restore_verified": false,
+    "packet20_snapshot_hash": 4051728214,
+    "packet20_snapshot_id": 1,
+    "packet20_snapshot_valid": true,
+    "physical_observation": "Owner reports Matrix and AUX both active and AUX mirrors Matrix; the WLED API itself cannot observe the LEDs physically.",
+    "power_network": "Mac on AC at 100%; default route via HBNF-Cart gateway 192.168.77.1 on en0.",
+    "release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009"
+  },
+  "recovery_identity": {
+    "identity": "Exact Foundation R4 release hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1, SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c, size 1,489,008 bytes.",
+    "verification": "Exact local binary SHA/size and Drive preservation receipt are already verified; exact restore route and runtime recovery were proven earlier. Recovery remains conditional on an objective device/runtime gate failure."
+  },
+  "run_id": "phase2-r7-resume-open-snapshot1-20261009",
+  "schema": "local-roots-prelive-proof-v1",
+  "stages": {
+    "capture-current-state": {
+      "evidence": [
+        "R7_RESUME_READONLY_PREFLIGHT.json SHA-256 63974a34ef46c575cb8c94663b665183d95f4e747205a5e86f10fa434c54bf5c records exact identity, health, open snapshot 1/hash 4051728214, and native AUX DDP readback.",
+        "Owner's current message confirms Matrix and AUX are active and AUX mirrors Matrix; no automated physical-output claim is made.",
+        "The previous interrupted runner returned no profiles and no soak samples; the same open snapshot and no-restart continuity are preserved."
+      ],
+      "status": "PASS"
+    },
+    "contract-closure": {
+      "evidence": [
+        "R7 exact installed identity and firmware SHA are unchanged; current preflight confirms Matrix .10, WLED 16.0.1, brightness 44, and AUX .11 with 22 LEDs and native DDP live from Matrix.",
+        "R7_RESUME_RUNNER_OFFLINE_VALIDATION.json and R7_RESUME_RUNNER_CHANGE.json bind the corrected source hashes and passing regression fixtures."
+      ],
+      "status": "PASS"
+    },
+    "recovery-proof": {
+      "evidence": [
+        "Exact local and Drive R4 recovery identity and SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c verified in prior authority and recovery receipts.",
+        "R7_QUALIFICATION_TIMEOUT_FAILURE_CLASSIFICATION.json classifies the wrapper timeout as host harness failure and states rollback is not indicated."
+      ],
+      "status": "PASS"
+    },
+    "transaction-rehearsal": {
+      "evidence": [
+        "Host timeout failure replayed and classified; corrected 300-second observer setup budget exceeds the existing 40-second tails-off plus 40-second tails-on windows.",
+        "Fail-closed runner tests prove only an exact ID/hash/prestate-matched active snapshot can resume; resume branch skips snapshot_argv and uses existing restore-on-exit behavior.",
+        "All 28 exact R4 baseline profiles are present; unchanged frozen policy SHA-256 is 2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797."
+      ],
+      "status": "PASS"
+    }
+  }
+}
