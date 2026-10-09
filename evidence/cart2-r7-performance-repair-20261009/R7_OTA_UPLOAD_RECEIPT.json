@@ -1,0 +1,22 @@
+{
+  "boot_identity_verification": "PENDING_READ_ONLY",
+  "candidate_release": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+  "candidate_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+  "candidate_size_bytes": 1497920,
+  "curl_exit_code": 0,
+  "http_status": 200,
+  "request_count": 1,
+  "request_sent_at_utc": "2026-10-09T10:20:38.369981+00:00",
+  "response_bytes": 404,
+  "response_captured_at_utc": "2026-10-09T10:24:39.569893+00:00",
+  "response_excerpt": "<!DOCTYPE html> <html lang=en> <head> <meta content=\"width=device-width\" name=viewport> <title>WLED Message</title> <script>function B(){window.history.back()}function RS(){window.location=\"../settings\"}function RP(){top.location.href=\"../\"}</script> <style> @import url(\"style.css\"); </style> </head> <body> <h2>Update successful!</h2>Rebooting now...<script>setTimeout(RP,11000)</script></body> </html>",
+  "response_indicates_update_successful": true,
+  "response_sha256": "e989fc00de0b0d87a74771439a95cb6b231dac0ede16865104c2251612c6a128",
+  "retry_performed": false,
+  "schema": "hbnf-r7-one-install-ota-receipt-v1",
+  "target": {
+    "endpoint": "http://192.168.77.10/update",
+    "ip": "192.168.77.10",
+    "mac": "70:4b:ca:5b:34:5c"
+  }
+}

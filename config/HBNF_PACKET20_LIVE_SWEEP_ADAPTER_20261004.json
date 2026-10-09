@@ -1,33 +1,14 @@
 {
-  "schema": "hbnf-live-sweep-adapter-v1",
-  "snapshot_argv": [
-    "python3",
-    "tools/hbnf_packet20_http_adapter.py",
-    "--matrix-url",
-    "http://192.168.77.10",
-    "--aux-url",
-    "http://192.168.77.11",
-    "snapshot"
-  ],
-  "select_argv": [
-    "python3",
-    "tools/hbnf_packet20_http_adapter.py",
-    "--matrix-url",
-    "http://192.168.77.10",
-    "--aux-url",
-    "http://192.168.77.11",
-    "select",
-    "--effect-id",
-    "{effect_id}"
-  ],
-  "telemetry_argv": [
-    "python3",
-    "tools/hbnf_packet20_http_adapter.py",
-    "--matrix-url",
-    "http://192.168.77.10",
-    "--aux-url",
-    "http://192.168.77.11",
-    "telemetry"
+  "expected_release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+  "notes": [
+    "CANDIDATE SUPPORT TOOLING. Host-side pure tests are required before live use.",
+    "Packet20 firmware accepts runtime kernel indices 0..27; this adapter maps exact retained effect IDs 220..247 to those indices.",
+    "Packet20 supports one volatile renderer-safe snapshot per boot. Never automatically retry a failed session.",
+    "After restore, the runner's second snapshot call returns the original immutable snapshot receipt only if firmware reports restoreVerified=true and diagnostic mode is disabled.",
+    "In-firmware packet20Same() is the authoritative exact restore check.",
+    "The pre-run intentional Matrix power cycle is excluded from diagnostic interpretation; the live sweep runner's uptime monotonicity guard detects any reboot during the sweep.",
+    "AUX physical underglow LEDs may remain disconnected for Packet20; the AUX controller itself should remain reachable for projection telemetry.",
+    "Operational expected release reconciled to the exact installed R7 candidate on 2026-10-09; R4 comparison baselines remain separately pinned in the frozen live qualification procedure."
   ],
   "restore_argv": [
     "python3",
@@ -40,18 +21,38 @@
     "--snapshot",
     "{snapshot_file}"
   ],
-  "settle_seconds": 5,
-  "sample_seconds": 30,
   "sample_interval_seconds": 1,
-  "timeout_seconds": 15,
-  "expected_release_id": "hbnf-matrix-coordinated-v1-20261002-07",
-  "notes": [
-    "CANDIDATE SUPPORT TOOLING. Host-side pure tests are required before live use.",
-    "Packet20 firmware accepts runtime kernel indices 0..27; this adapter maps exact retained effect IDs 220..247 to those indices.",
-    "Packet20 supports one volatile renderer-safe snapshot per boot. Never automatically retry a failed session.",
-    "After restore, the runner's second snapshot call returns the original immutable snapshot receipt only if firmware reports restoreVerified=true and diagnostic mode is disabled.",
-    "In-firmware packet20Same() is the authoritative exact restore check.",
-    "The pre-run intentional Matrix power cycle is excluded from diagnostic interpretation; the live sweep runner's uptime monotonicity guard detects any reboot during the sweep.",
-    "AUX physical underglow LEDs may remain disconnected for Packet20; the AUX controller itself should remain reachable for projection telemetry."
-  ]
+  "sample_seconds": 30,
+  "schema": "hbnf-live-sweep-adapter-v1",
+  "select_argv": [
+    "python3",
+    "tools/hbnf_packet20_http_adapter.py",
+    "--matrix-url",
+    "http://192.168.77.10",
+    "--aux-url",
+    "http://192.168.77.11",
+    "select",
+    "--effect-id",
+    "{effect_id}"
+  ],
+  "settle_seconds": 5,
+  "snapshot_argv": [
+    "python3",
+    "tools/hbnf_packet20_http_adapter.py",
+    "--matrix-url",
+    "http://192.168.77.10",
+    "--aux-url",
+    "http://192.168.77.11",
+    "snapshot"
+  ],
+  "telemetry_argv": [
+    "python3",
+    "tools/hbnf_packet20_http_adapter.py",
+    "--matrix-url",
+    "http://192.168.77.10",
+    "--aux-url",
+    "http://192.168.77.11",
+    "telemetry"
+  ],
+  "timeout_seconds": 15
 }

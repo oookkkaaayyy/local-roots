@@ -1,0 +1,65 @@
+{
+  "expected_release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+  "notes": [
+    "Derived from existing Foundation live adapter; pinned expected R7 release and existing 28-kernel inventory. No software behavior or frozen threshold change.",
+    "Observer prequalification and exact source-bound snapshot restoration use existing scripts/hbnf_foundation_live_adapter.py."
+  ],
+  "preflight_argv": [
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "preflight",
+    "--session-id",
+    "{session_id}"
+  ],
+  "restore_argv": [
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "restore",
+    "--snapshot-file",
+    "{snapshot_file}"
+  ],
+  "sample_interval_seconds": 1,
+  "sample_seconds": 30,
+  "schema": "hbnf-live-sweep-adapter-v1",
+  "select_argv": [
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "select",
+    "--kernel",
+    "{runtime_kernel_index}"
+  ],
+  "settle_seconds": 5,
+  "snapshot_argv": [
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "snapshot",
+    "--observer-output",
+    "{observer_output}",
+    "--inventory",
+    "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"
+  ],
+  "telemetry_argv": [
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "telemetry",
+    "--inventory",
+    "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+    "--session-id",
+    "{session_id}"
+  ],
+  "telemetry_mode_argv": [
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "telemetry-mode",
+    "--enabled",
+    "{enabled}"
+  ],
+  "timeout_seconds": 20,
+  "verify_restore_argv": [
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "verify-restore",
+    "--snapshot-file",
+    "{snapshot_file}"
+  ]
+}
