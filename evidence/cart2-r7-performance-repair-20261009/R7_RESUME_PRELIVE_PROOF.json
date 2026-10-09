@@ -1,0 +1,61 @@
+{
+  "approved_for_mutation": true,
+  "authorization_basis": "Current user standing conditional R7 installation and qualification authority; R7 OTA attempt is consumed. This mutation only resumes the existing valid snapshot session ID 1/hash 4051728214; no snapshot reentry, reboot, OTA, R8+, AUX/config/router/cloud mutation.",
+  "capsule_sha256": "b63e3ae0cd70e45ff229db793e78673a860bdabec1348598ce7ddf5473099c79",
+  "captured_at_utc": "2026-10-09T10:34:07.878228+00:00",
+  "consumer_contract": {
+    "identity": "Existing Matrix WLED JSON state/Packet20 qualification adapter; same saved snapshot ID/hash; reuse exact source-bound renderer restore after observer measurement/sweep/soak.",
+    "verified": true
+  },
+  "pre_mutation_state": {
+    "aux_live_ddp": true,
+    "aux_source": "192.168.77.10",
+    "current_kernel": 0,
+    "firmware_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "matrix_uptime_seconds": 479,
+    "no_new_snapshot_or_reboot": true,
+    "packet20_enabled": true,
+    "release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+    "restore_verified": false,
+    "snapshot_hash": 4051728214,
+    "snapshot_id": 1
+  },
+  "recovery_identity": {
+    "identity": "Foundation R4 exact; SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c; 1,489,008 bytes",
+    "verification": "Locally exact hash/size and Drive artifact receipt; prior exact restoration and update path already proven."
+  },
+  "run_id": "phase2-r7-resume-snapshot1-20261009",
+  "schema": "local-roots-prelive-proof-v1",
+  "stages": {
+    "capture-current-state": {
+      "evidence": [
+        "POST_TIMEOUT_READONLY_STATE.json SHA-256 08718bf5864f007251c67942ef63a13a83ccd7fa226c93e093bdc2a13145aa77 proves exact R7 still running, Matrix on, uptime 479s, no restart; AUX is live DDP from Matrix.",
+        "Packet20 readback: enabled=true, snapshotValid=true, ID 1, hash 4051728214, restoreVerified=false, selected kernel 0. This is the preexisting open snapshot to resume and restore.",
+        "R7_QUALIFICATION_HOST_PREFLIGHT.json records Mac on AC and HBNF-Cart route. R7-specific physical underglow observation remains pending; automated WLED readback is not treated as physical proof."
+      ],
+      "status": "PASS"
+    },
+    "contract-closure": {
+      "evidence": [
+        "Exact installed R7 identity/health receipt and exact firmware artifact hash; frozen policy unchanged.",
+        "R7_LIVE_SWEEP_ADAPTER.json binds existing Foundation source adapter, exact R7 release and existing kernel inventory. Host timeout corrected to 300 seconds based on measured 40s + 40s observer windows."
+      ],
+      "status": "PASS"
+    },
+    "recovery-proof": {
+      "evidence": [
+        "Exact locally verified R4 rollback bytes SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c and Drive preservation receipt.",
+        "R7_QUALIFICATION_TIMEOUT_FAILURE_CLASSIFICATION.json confirms no device-runtime failure and exact valid snapshot ID/hash available; no rollback indicated."
+      ],
+      "status": "PASS"
+    },
+    "transaction-rehearsal": {
+      "evidence": [
+        "Original runner failure was host command timeout at 20 seconds; no kernel profiles and no soak samples were produced. Root cause was too-short caller deadline versus bounded observer setup.",
+        "Same-snapshot resume will first run the existing observer function with 300s limit, then use existing sweep script; it will not issue begin or snapshot again. Existing restore-on-exit path will use ID/hash 1/4051728214."
+      ],
+      "status": "PASS"
+    }
+  }
+}
