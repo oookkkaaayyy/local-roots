@@ -46,7 +46,7 @@
     "text_moments": "native WLED font foundation and Text/Moments source/tests included; appearance remains unaccepted until owner review",
     "scoring": "authoritative scoring source and regression coverage included",
     "matrix_aux": "existing synchronized DDP feature retained; UV dormant OFF; hardware_available=false; brightness cap 0",
-    "application_confirmation": "MQTT transport/liveness is not application confirmation; Matrix remains submitted pending revision/fence-bound device evidence",
+    "application_confirmation": "Staged revision/fence-bound Matrix readback relay implemented and offline-tested; NOT deployed or target-validated. Production continues to report submitted/unconfirmed until live release and runtime evidence.",
     "guest_mode_default": false,
     "uv": "dormant OFF; hardware_available=false; max brightness 0"
   },
@@ -71,10 +71,19 @@
     "staging/coordinated-backend/hbnf-cart-control/live.ts": "7844a5057f11f82344e3ff49c5f9062ba73019c62bfaab52636e93c897b69323",
     "staging/coordinated-backend/hbnf-cart-control/guest-command.ts": "09d181d27e6beeec7a9b9727bce404c0e5621a26ddc85895d68d7419f60f918d",
     "staging/coordinated-backend/hbnf-cart-control/skins_scoring.ts": "aa7d74bbd10bff41111411d7b07b895e1c82a7f7d8d075cb04aec4cf35ba16d6",
-    "staging/coordinated-backend/hbnf-cart-reconcile/index.ts": "24299078b5a0a5c236d90674e8249102000cf3e0958c70ef5fb8fad7b1425033",
-    "staging/coordinated-backend/hbnf-cart-reconcile/foundation-result.ts": "50cf29305925b8604153109e7f505918e517597175de8d6f8a9ab3c83dac433f",
-    "staging/coordinated-backend/hbnf-matrix-adapter-foundation/index.ts": "73f7830a51af2806f7973f2f2466d58eee5c6b119692e2b347e15ec9c4029956",
-    "staging/coordinated-backend/hbnf-matrix-adapter-foundation/confirmation.ts": "05b1f22ef72564ceff13469f8c6ec6ad719e788955f42be142b30f54dca47987"
+    "staging/coordinated-backend/hbnf-cart-reconcile/index.ts": "8a31f1da25a70f8005117c00b488115895925a86df3e60f59153660984dad534",
+    "staging/coordinated-backend/hbnf-cart-reconcile/foundation-result.ts": "9379c8ca7d76e0b4e34b6af8ad7085a215c94693d375226fd7f789c3533b074f",
+    "staging/coordinated-backend/hbnf-matrix-adapter-foundation/index.ts": "7a2db29ddbda3ec1c07ad34b0cbcd25251940d24f7807d0a4b79b4423c0b7523",
+    "staging/coordinated-backend/hbnf-matrix-adapter-foundation/confirmation.ts": "2ed8c61bc3ede6fe410b5dff2889b99172b94825565fe6e5720bb534918c3062",
+    "staging/coordinated-backend/hbnf-cart-relay/index.ts": "9b507a16e3cdd9bf5e7ce8dfd5f4a65cbcc347ebb6e39d98388400a8ae3a6ec5",
+    "staging/coordinated-backend/hbnf-cart-relay/projection.ts": "d7145886b431444f0543c2bdfed86b18384d95a6f83ec5acd715116f43e2fe79",
+    "staging/coordinated-backend/hbnf-cart-relay/relay-auth.ts": "aae9ffd25cc31448b7ddf0c8f90539e9ad22ecdb2b4094f53ec829d6d4f2f248",
+    "staging/coordinated-backend/migrations/20261009190000_hbnf_matrix_relay_confirmation.sql": "874f86c27457b081f2cdae6c24598091718c4643072460b131a26126c5248b7b",
+    "staging/coordinated-backend/migrations/20261009190000_hbnf_matrix_relay_confirmation.down.sql": "b510775c9081936d60ef0f99bc918b1e70eff8933ed804121b3660e70ca22f05",
+    "staging/coordinated-backend/opal/hbnf-matrix-relay": "53fa87ab1546d3258756115b5c7c67ef75b6a7712e811159078c16374a42fb2c",
+    "staging/coordinated-backend/opal/hbnf-matrix-relay.init": "1572ddc3b9dc278d141a6e9cf65891c684e09efc793f7822c3738f98e4e6122a",
+    "staging/coordinated-backend/opal/hbnf-matrix-relay.conf.example": "befe25976f9db062a2e06f95659ae9257424d462ba92bf80e07f4d2cb7740588",
+    "evidence/cart2-matrix-relay-20261009/IMPLEMENTATION_RECEIPT.json": "f701cf97d1ff024f495d09f96efc2ce9da2dc86385e147a57f814e6b647b6a62"
   },
   "qualification": {
     "offline_tests": "PASS per OFFLINE_TEST_RECEIPT.json; production readiness remains NO.",
@@ -84,14 +93,15 @@
     "owner_device_smoke": "NOT_RUN",
     "T4": "NOT_ACCEPTED",
     "T5": "NOT_ACCEPTED",
-    "production_release_readiness": "NO"
+    "production_release_readiness": "NO",
+    "backend_edge_target": "offline migration/Edge mock PASS; managed Supabase and target OpenWrt NOT VALIDATED"
   },
   "deployment_rehearsal": {
     "static_package": "PASS: installer's real validation path in isolation; deterministic ZIP rebuild byte-identical; candidate overlay and exact source rollback rehearsed offline",
-    "backend": "NO DEPLOY: source contract tests pass; no deploy calls made",
+    "backend": "PASS offline SQL migration in PGlite and Edge handler loopback integration against a PostgREST mock; no managed Supabase deployment. Target OpenWrt runtime preflight remains outstanding.",
     "firmware": "NO INSTALL: candidate and exact R4 recovery verified offline"
   },
-  "unresolved_contract": "Current pinned WLED MQTT /status and /v responses do not carry Cart command revision/fence evidence. Existing adapter reports transport/liveness only. A secure, revision-bound confirmation transport or trusted local relay is not present; no confirmation is fabricated.",
+  "unresolved_contract": "The offline staged relay now implements the revision/fence-bound readback contract. The production contract remains unresolved until managed Supabase API-key/JWT and database-role behavior and target OpenWrt jsonfilter/procd behavior are validated, then the exact release is deployed and exercised; no confirmation is claimed before that.",
   "test_receipts": [
     "python3 tests/test_r5_audio_radial_fastpath.py",
     "python3 tests/test_r6_integrated_candidate.py",
@@ -117,11 +127,23 @@
     "python3 tests/hbnf_live_kernel_sweep.py",
     "python3 tests/hbnf_packet20_http_adapter.py",
     "python3 tests/hbnf_packet20_build_validate.py",
-    "node tests/hbnf-release-readiness.mjs (source gates pass; production readiness NO)"
+    "node tests/hbnf-release-readiness.mjs (source gates pass; production readiness NO)",
+    "node --experimental-strip-types tests/hbnf_matrix_relay_contract.mjs",
+    "npm test --prefix tests/matrix-relay-runtime (locked PGlite + loopback PostgREST mock)",
+    "deno check --no-lock staging/coordinated-backend/hbnf-cart-relay/index.ts staging/coordinated-backend/hbnf-matrix-adapter-foundation/index.ts staging/coordinated-backend/hbnf-cart-reconcile/index.ts"
   ],
   "application_confirmation": {
     "mqtt_liveness_is_application_confirmation": false,
-    "matrix_status": "submitted until revision/fence-bound evidence exists"
+    "matrix_status": "submitted until deployed relay produces current revision/fence-bound runtime readback",
+    "staged_relay_status": "implemented and offline-tested; not deployed or target-validated",
+    "proof_scope": "exact normalized WLED runtime state for fixed Matrix identity, candidate, topology, current Cart revision and active fence at atomic confirmation time",
+    "not_proven": [
+      "signed firmware attestation",
+      "physical LED emission",
+      "AUX physical output",
+      "AUTO-resolved Vibe",
+      "microphone/audio internals"
+    ]
   },
   "drive_artifacts": {
     "folder_id": "17B-XkjyK92FS7dT8TWDRqcTxozZRjTFV",
@@ -173,7 +195,32 @@
       "why_existing_architecture_fails": "No current path proves that this specific device applied this exact desired revision while the active fence remained unchanged. Treating MQTT liveness as applied would falsify the UI contract.",
       "maintenance_cost": "A new authenticated device-to-backend receipt or trusted LAN relay, correlation/fence checks, identity/key lifecycle, replay protection, and regression tests.",
       "rollback_exit": "Keep status submitted/unconfirmed; no false applied claim. Retain current field baseline and exact R4 recovery artifact if a future authorized firmware change requires recovery.",
-      "owner_decision": "Explicit approval of a BESPOKE EXCEPTION and selection of secure receipt transport; otherwise keep this gate blocked and do not claim Cart 2.0 release readiness."
+      "owner_decision": "Owner explicitly approved the narrowly limited BESPOKE EXCEPTION on 2026-10-09: establish truthful revision/fence-bound Matrix application confirmation only; no general-purpose architecture, firmware rewrite, live deployment, router change, or diagnostic cycle."
+    },
+    "implementation": {
+      "status": "implemented offline; staged and not deployed",
+      "source_path": "staging/coordinated-backend/hbnf-cart-relay/",
+      "database_migration": "staging/coordinated-backend/migrations/20261009190000_hbnf_matrix_relay_confirmation.sql",
+      "rollback_migration": "staging/coordinated-backend/migrations/20261009190000_hbnf_matrix_relay_confirmation.down.sql",
+      "opal_worker": "staging/coordinated-backend/opal/hbnf-matrix-relay",
+      "source_receipt": "evidence/cart2-matrix-relay-20261009/IMPLEMENTATION_RECEIPT.json"
     }
+  },
+  "integration_source_commit": "f8aaa78f4f4412f93672de7d7ef1929bf25febc6",
+  "matrix_confirmation": {
+    "status": "OFFLINE_SOURCE_IMPLEMENTED__HOST_CONTRACT_TESTS_PASS__NOT_DEPLOYED__NOT_TARGET_VALIDATED",
+    "receipt_path": "evidence/cart2-matrix-relay-20261009/IMPLEMENTATION_RECEIPT.json",
+    "receipt_sha256": "f701cf97d1ff024f495d09f96efc2ce9da2dc86385e147a57f814e6b647b6a62",
+    "integration_source_commit": "f8aaa78f4f4412f93672de7d7ef1929bf25febc6",
+    "mechanism": "single outbound-only authenticated Opal worker; one-use short-lived revision/fence challenge; fixed Matrix identity; exact normalized WLED JSON readback; atomic current-revision/fence confirmation",
+    "production_deployment": false,
+    "target_validated": false,
+    "limitations": [
+      "runtime JSON readback is not signed firmware attestation",
+      "does not prove physical LED emission",
+      "Matrix runtime confirmation includes AUX brightness/Companion settings, not AUX physical output",
+      "AUTO resolved Vibe and microphone/audio internals are not echoed and are not claimed",
+      "brief stale write race between apply authorization and WLED POST cannot be prevented by current firmware; an advanced revision/fence is rejected at acknowledgement and next poll converges to current state"
+    ]
   }
 }

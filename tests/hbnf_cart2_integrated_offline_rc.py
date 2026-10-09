@@ -29,7 +29,13 @@ assert manifest["rejected_artifacts"][0]["status"] == "REJECTED_AS_ROLLBACK_BYTE
 assert manifest["feature_contract"]["guest_mode_default"] is False
 assert manifest["feature_contract"]["uv"] == "dormant OFF; hardware_available=false; max brightness 0"
 assert manifest["application_confirmation"]["mqtt_liveness_is_application_confirmation"] is False
-assert manifest["application_confirmation"]["matrix_status"] == "submitted until revision/fence-bound evidence exists"
+assert manifest["application_confirmation"]["matrix_status"] == "submitted until deployed relay produces current revision/fence-bound runtime readback"
+assert manifest["integration_source_commit"] == "f8aaa78f4f4412f93672de7d7ef1929bf25febc6"
+assert manifest["matrix_confirmation"]["status"] == "OFFLINE_SOURCE_IMPLEMENTED__HOST_CONTRACT_TESTS_PASS__NOT_DEPLOYED__NOT_TARGET_VALIDATED"
+assert manifest["matrix_confirmation"]["production_deployment"] is False
+assert manifest["matrix_confirmation"]["target_validated"] is False
+assert manifest["matrix_confirmation"]["receipt_sha256"] == hashlib.sha256((ROOT / manifest["matrix_confirmation"]["receipt_path"]).read_bytes()).hexdigest()
+assert any("public MQTT mutation path removed" in item for item in json.loads((ROOT / manifest["matrix_confirmation"]["receipt_path"]).read_text())["implementation"]["security"])
 assert "BESPOKE EXCEPTION" in manifest["bespoke_exception_required"]["evidence"]["owner_decision"]
 assert manifest["bespoke_exception_required"]["requirement"].startswith("Truthful Matrix application confirmation")
 
