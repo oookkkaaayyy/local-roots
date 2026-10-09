@@ -618,6 +618,60 @@
         ],
         "anti_complexity": "This is a reporting-format rule inside the existing observability section. It must not create a separate lifecycle, gate, policy file, worker requirement, or execution dependency."
       }
+    },
+    "delivery_rail": {
+      "schema": "hbnf-cart2-delivery-rail-v1",
+      "status": "MANDATORY_OWNER_DIRECTIVE_20261009",
+      "owner_authorization_scope": "NO_LIVE_MUTATION_GRANT; NO_CHANGE_TO_PRODUCT_SCOPE",
+      "guiding_principle": "Live release is the final step of a rehearsed system; a failed repeated mechanism stops at the entry gate, not after another device operation.",
+      "runbook": "work/cart2/DELIVERY_RAIL_20261009.md",
+      "required_order": [
+        "CURRENT_RECEIPTS_RECONCILED",
+        "PINNED_LOCAL_BUILD_ENV_PROVEN",
+        "ONE_INTEGRATED_CANDIDATE_BUILT_AND_IDENTIFIED",
+        "COMPLETE_HISTORICAL_FAILURE_REPLAY_PASS",
+        "FULL_TRANSACTION_DRY_RUN_PASS",
+        "RELEASE_ADMISSION_RECEIPT_PASS",
+        "FRESH_EXACT_OWNER_AUTHORIZATION",
+        "MATCHED_TAILS_OFF_SMOKE",
+        "FROZEN_FULL_SWEEP",
+        "FROZEN_90_MIN_SOAK",
+        "FIELD_OWNER_ACCEPTANCE"
+      ],
+      "active_release_candidate_limit": 1,
+      "live_lane_limit": 1,
+      "live_authority_starts_closed": true,
+      "check_command": "python3 scripts/hbnf_control.py check-admission --admission <path> --stage OFFLINE_COMPILED",
+      "live_check_command": "python3 scripts/hbnf_control.py check-admission --admission <path> --stage LIVE_APPROVED",
+      "host_failure_replays": [
+        "inherited_R4_release_id_on_R5",
+        "telemetry_read_before_enable",
+        "observer_HTTP_deadline_and_extension",
+        "histogram_overflow_vs_required_percentile_saturation",
+        "missing_packet20Same_alias",
+        "raw_telemetry_failure_persistence",
+        "snapshot_verified_restore",
+        "failure_tails_off_cleanup",
+        "disk_full_partial_response",
+        "duplicate_runner_and_environment_pinning"
+      ],
+      "candidate_preflight": [
+        "exact_source_dependency_build_closure",
+        "fully_local_accessible_platformio_core_and_metadata",
+        "known_good_compiler_entry_smoke",
+        "embedded_candidate_ID_and_bin_SHA",
+        "flash_and_RAM_headroom",
+        "unchanged_frozen_thresholds",
+        "rollback_available_and_hash_verified",
+        "offline_feature_regressions",
+        "complete_scripted_transaction_dryrun"
+      ],
+      "failure_rule": "A repeat of any host failure class is NO_GO for more live attempts until root cause repaired and a full replay of the entire release launch path demonstrates the old failure and its prevention; changing arbitrary timeouts is insufficient.",
+      "progress": "Only verified completed exit-gate evidence or meaningful reduction of a critical blocker. Activity/test counts/status updates do not reset milestone success.",
+      "scope": "No silent downgrade of full premium visuals, nuanced audio, owner Mission Control, Skins scoring, text/moments, night-vision goal, offline operation, accepted expansion obligations.",
+      "field_release": "No owner acceptance without intended-device control, scoring, Vibe/audio/text, AUX, brightness/night-vision, and recovery field evidence.",
+      "admission_entrypoints_must_fail_closed": true,
+      "technical_enforcement_limit": "Validator is a mandatory condition for project live-release approval; arbitrary direct hardware APIs cannot be made impossible by these source-only checks. Require integration tests proving launcher refuses invalid admission before network/device access."
     }
   }
 }
