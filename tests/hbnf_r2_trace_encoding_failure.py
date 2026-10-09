@@ -15,10 +15,11 @@ assert result["status"] == "INCONCLUSIVE__MALFORMED_TRACE_RECORDS"
 assert result["trace"]["parsed_record_count"] == 0
 assert len(result["trace"]["records_raw"]) == 5
 assert all(row.startswith("lu,") and len(row.split(",")) == 16 for row in result["trace"]["records_raw"])
-assert "%llu" not in formatter and '"%s,%lu' in formatter
+assert "%llu" not in formatter and "hbnf_u64_format::formatTraceRecord" in formatter
+assert '#include "hbnf_u64_format.h"' in source
 assert "CONFIG_NEWLIB_NANO_FORMAT=y" in sdkconfig
-assert diagnosis["evidence"]["formatter_source_sha256"] == "6d6ed64ae6c35c75ee79484c06bb2d4357d67bcb91541d8ac3d72d651ffb4c43"
+assert diagnosis["evidence"]["formatter_source_sha256"] == "6d6ed64ae6c35c75ee79484c06bb2d4357d67bcb91541d8ac3d72d651ffb4c43"  # historical defective build
 assert diagnosis["classification"] == "DIAGNOSTIC_SERIALIZATION_DEFECT_CONFIRMED"
 assert diagnosis["installed_r4_sha256"] == "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
 assert diagnosis["live_authority"].startswith("Consumed.")
-print("PASS: retained trace corruption matches unsupported target %llu formatter; no stage attribution accepted")
+print("PASS: historical trace corruption matches unsupported target %llu formatter; corrected bounded formatter is wired; no old stage attribution accepted")

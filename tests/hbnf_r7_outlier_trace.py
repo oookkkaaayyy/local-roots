@@ -99,7 +99,7 @@ assert "hbnfOutlierTrace.append(record)" in frame_end
 assert "hbnfOutlierTrace.setLastCaptureBodyCycles" in frame_end
 assert "HBNF_OUTLIER_TRACE_CAPACITY=32" in text
 assert "42.03125" in text
-assert 'hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009' in text
+assert 'hbnf-cart2-r7-outlier-trace-diagnostic-r2-u64fix-20261009' in text
 assert '22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994' in text
 assert '"outlierTraceCommand"' in text
 assert 'recoverySnapshotReady' in text

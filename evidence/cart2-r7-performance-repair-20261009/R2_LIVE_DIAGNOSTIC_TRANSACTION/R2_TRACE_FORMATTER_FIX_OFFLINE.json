@@ -1,6 +1,6 @@
 {
   "schema": "hbnf-r2-trace-formatter-source-fix-v1",
-  "status": "SOURCE_FIX_TESTED_HOST_ONLY__NOT_BUILT__NOT_LIVE_AUTHORIZED",
+  "status": "TARGET_BUILD_VERIFIED_OFFLINE__NOT_INSTALLED__NO_LIVE_AUTHORITY",
   "cause": "The R2 diagnostic formatter used %llu for monotonicUs on the pinned ESP32 target configured with Newlib nano, whose printf path does not support 64-bit integer formats. This caused the literal 'lu' prefix and shifted trace columns observed in the actual readback.",
   "change": "Added a bounded 20-digit unsigned decimal helper and changed only the rare readback formatter to serialize monotonicUs as a decimal string before formatting the remaining 32-bit values. No frame hot path, renderer behavior, trace storage, timing, or production threshold changed.",
   "source": {
@@ -10,18 +10,25 @@
     "test_sha256": "6f7e63f48196a2d1661e696e94950df458c6e823de8dfed79342be527b5f997b"
   },
   "validation": {
-    "native_host_cxx11_helper_test": "PASS: 0, UINT32_MAX, UINT64_MAX and undersized output buffer; -Wall -Wextra -Werror",
-    "trace_encoding_failure_regression": "PASS: original target output remains explicitly classified invalid; corrected source no longer uses %llu in trace formatter",
-    "paired_window_protocol": "PASS",
-    "transaction_dry_run": "PASS",
-    "control_plane": "PASS: 23 tests",
-    "architecture_fitness": "PASS",
-    "git_diff_check": "PASS"
+    "native_host_cxx11_helper_test": "PASS: exact 16-column formatter; timestamp 0/UINT64_MAX; uint32 fields 0/UINT32_MAX; uint8 kernel 255; undersized buffer fail-closed.",
+    "pinned_xtensa_target_compile": "PASS: target compiler from the exact pinned PlatformIO toolchain compiled the same formatter fixture; compile-only, no silicon execution claimed.",
+    "full_pinned_firmware_build": "PASS: exact WLED/PlatformIO clean-room environment; BIN SHA-256 dfefa17a3b57dc2fd971dd4af1149bf5cf174acbfd738a3f31d9e970c323a8b2.",
+    "offline_regressions": "PASS: R2 formatter/encoding, R7 trace/protocol/dry-run, control (23 tests), architecture fitness, source closure, Vibe replay, Text/Moments (14), and Node host suites (12).",
+    "resource_headroom": "Flash 77,003 bytes under PlatformIO maximum (binary 1,502,592 bytes); RAM 212,768 bytes free of 327,680.",
+    "live_authority": "No install/restart/device access authorized; exact R4 remains the restored baseline."
   },
   "artifact_boundary": "The existing R2 BIN is unchanged and identifies the pre-fix source closure. This source correction has not been included in a new BIN, firmware build, or release manifest. No post-fix target-build or silicon measurement is claimed.",
   "live_authority": "R2 install and exact R4 restoration authority are consumed. This source fix authorizes no new install, restart, or live diagnostic.",
   "expert_basis": [
     "Espressif ESP-IDF v4.2.2 ESP32 Kconfig documentation for CONFIG_NEWLIB_NANO_FORMAT: https://docs.espressif.com/projects/esp-idf/en/v4.2.2/esp32/api-reference/kconfig.html",
     "Pinned local Arduino-ESP32 framework 2.0.18+sha.8ba0dc0 ESP32 sdkconfig: CONFIG_NEWLIB_NANO_FORMAT=y; SHA-256 2e7dcb1827219a6b41ac52bb2bbf28676fb113ac675218b5387d41e5ba05b7a9."
-  ]
+  ],
+  "artifact": {
+    "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-u64fix-20261009",
+    "sha256": "dfefa17a3b57dc2fd971dd4af1149bf5cf174acbfd738a3f31d9e970c323a8b2",
+    "size_bytes": 1502592,
+    "manifest_path": "evidence/cart2-r7-performance-repair-20261009/R2_U64FIX_OFFLINE_MANIFEST.json",
+    "build_log_path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R2_U64FIX_BUILD.log"
+  },
+  "root_cause_scope": "Only diagnostic readback of 64-bit monotonicUs was malformed under pinned Newlib nano; this defect invalidated R2 same-frame trace attribution but does not prove or explain the R7 p99 runtime regression."
 }

@@ -1,0 +1,83 @@
+{
+  "schema": "hbnf-r2-u64fix-offline-test-results-v1",
+  "status": "PASS_OFFLINE_ONLY__NO_DEVICE_REQUESTS",
+  "formatter_contract": "All 16 comma-separated fields; exact 15 commas; monotonicUs 0 and UINT64_MAX; remaining uint32 fields 0 and UINT32_MAX; uint8 kernel ID 255; undersized output buffer fails closed and clears output.",
+  "host_execution": "PASS with native C++11 compiler, -Wall -Wextra -Werror.",
+  "target_compilation": "PASS compile-only using pinned xtensa-esp32-elf-g++ 8.4.0+2021r2-patch5, -std=gnu++11 -mlongcalls -Wall -Wextra -Werror. No silicon execution claimed.",
+  "regression_gates": {
+    "trace_formatter": {
+      "command": "python3 tests/hbnf_r2_trace_u64_formatter.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "output_tail": "PASS: same trace formatter emits all 16 fields, tests zero/UINT64_MAX and buffer failure; native execution and pinned Xtensa target compile PASS\n"
+    },
+    "historical_encoding": {
+      "command": "python3 tests/hbnf_r2_trace_encoding_failure.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "output_tail": "PASS: historical trace corruption matches unsupported target %llu formatter; corrected bounded formatter is wired; no old stage attribution accepted\n"
+    },
+    "trace_contract": {
+      "command": "python3 tests/hbnf_r7_outlier_trace.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "output_tail": "record_size=72 store_size=328 retained=3 overflow=3 worst=900\nR7 outlier trace integration contract PASS\n"
+    },
+    "protocol": {
+      "command": "python3 tests/hbnf_r7_diagnostic_protocol.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "output_tail": "PASS: frozen catastrophic monitor, exact R2 telemetry binding, matched 60s windows, serialization symmetry and restore contract\n"
+    },
+    "transaction_dry_run": {
+      "command": "python3 tests/hbnf_r7_diagnostic_transaction_dryrun.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "output_tail": "PASS: offline sequence handles success, 3-sample catastrophic abort, collector failure, exact renderer restore, and bounded R4 return; zero device requests\n8dc8fc5a5c99dc498e06338287bad3c845c45488b4de5861c42838d9deb349b7\n"
+    },
+    "trace_observation": {
+      "command": "python3 tests/hbnf_r7_trace_observation.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "output_tail": "R7 paired-window host protocol PASS: 8s sampler, catastrophic gates, timeout/identity failure, trace overflow retention, and restore verification replayed offline\n"
+    },
+    "control_plane": {
+      "command": "python3 tests/hbnf_control.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "output_tail": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 0.145s\n\nOK\nPASS: linear receipt control plane is acyclic, nonrecursive, exact-input, and fail-closed\n"
+    },
+    "architecture_fitness": {
+      "command": "python3 scripts/hbnf_architecture_fitness.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "output_tail": "HBNF_ARCHITECTURE_FITNESS=PASS\nstates<=6 transitions<=5 linear_chain=true single_authority=true receipts_nonrecursive=true\n"
+    },
+    "phase2_source_closure": {
+      "command": "python3 tests/hbnf_packet20_r2_transaction_static.py && python3 tests/hbnf_phase2_r4_build_closure.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "output_tail": "PASS: exact candidate/recovery identities, one-shot transaction calls, explicit inventory, no ledger read\nPASS: Phase 2 source binding preserves R4 source and embeds unique WOW-r4 identity\nPASS: clean-room closure requires the exact R4 FastLED transformation, diagnostics environment, telemetry hook patch, and empty local object cache\nPASS: existing build gate fails closed unless the compiled binary, effective macro, and linked WLED hook references satisfy the telemetry contract\n"
+    },
+    "vibe_audio_replay": {
+      "command": "python3 tests/hbnf_vibe_audio_replay.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "output_tail": "PASS hbnf_vibe_audio_replay: 13 AudioFeatures semantics, six synthetic traces, pairwise Vibe differentiation, AUTO hysteresis\n"
+    },
+    "node_mjs_suite": {
+      "command": "node --test tests/*.mjs",
+      "exit_code": 0,
+      "result": "PASS",
+      "output_tail": "BNF_IOS12_GATE_STATE=false\n\u2714 tests/hbnf-ios12-compat-audit.mjs (47.10925ms)\nHBNF_SOURCE_GATES=PASS\nHBNF_PRODUCTION_BLOCKERS=acceptedLiveSourceIdentityReconciled,immutableOpalUpdaterPackageContainsAllLiveFixes,matrixOriginReadOnlyUpdaterResultPath,candidateBuiltFromAcceptedBaseline,signedCandidatePublished,firstRealOtaPhysicalAcceptance,liveLocalDashboardSourceReconciled,fullControllerIos12CompatibilityVerified,singleCanonicalWriterReconciled,canonicalOverlayBridgeReconciled,canonicalPaletteAdapterReconciled,firmwarePaletteOverlayContractImplemented\nHBNF_PRODUCTION_READY=NO\n\u2714 tests/hbnf-release-readiness.mjs (41.218334ms)\nMatrix brightness output contract: PASS (canonical fixture unchanged at 0/1/8/20/64/128/255; patched R4 source applies brightness after canonical generation)\n\u2714 tests/hbnf_matrix_brightness_output.mjs (514.000833ms)\nHBNF owner PWA package closure: PASS\n\u2714 tests/hbnf_owner_pwa_package.mjs (148.010416ms)\nPASS: owner PWA deadline, pairing, versioned imports, offline shell cache, and cache isolation contracts\nPASS: owner mission hierarchy, Vibe controls, status truth, responsive layouts, Guest default, and PWA versioning\n\u2714 tests/hbnf_owner_pwa_reliability.mjs (295.153ms)\nPASS: owner Mission Control scoring covers authoritative F9 singles/B9 doubles, hole edits, pushes/carry, tiebreaker, ace winner/pot state, stale/concurrent protection, confirmed readback, paired-owner auth, and confirmed cart-control state\n\u2714 tests/hbnf_skins_scoring_owner_flow.mjs (154.319042ms)\n\u2139 tests 12\n\u2139 suites 0\n\u2139 pass 12\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 577.206959\n"
+    },
+    "text_moments_offline": {
+      "command": "python3 tests/test_hbnf_text_moments_offline.py (with exact local WLED 29b389df source tree materialized at /tmp/WLED-v16.0.1 and R4 HBNF contract header)",
+      "exit_code": 0,
+      "result": "PASS: 14 tests",
+      "evidence": "Exact pinned WLED source was materialized from local git objects only; temporary worktree removed after test."
+    }
+  },
+  "hardware_access": "NONE",
+  "production_acceptance": "NOT CLAIMED"
+}

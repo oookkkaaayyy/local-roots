@@ -1,0 +1,99 @@
+{
+  "schema": "hbnf-r2-u64fix-diagnostic-offline-build-manifest-v1",
+  "classification": "DIAGNOSTIC_ONLY_NOT_A_PRODUCTION_RELEASE_NOT_LIVE_AUTHORIZED",
+  "artifact": {
+    "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-u64fix-20261009",
+    "sha256": "dfefa17a3b57dc2fd971dd4af1149bf5cf174acbfd738a3f31d9e970c323a8b2",
+    "size_bytes": 1502592,
+    "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-cart2-r7-outlier-trace-diagnostic-r2-u64fix-20261009.bin",
+    "embedded_identity": "candidate/release_id in hbnf-build-v1 JSON; feature trace-u64-formatter-fix-v1; prior label absent",
+    "based_on": {
+      "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+      "sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
+      "r7_base_release": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+      "r7_base_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994"
+    },
+    "drive_file_id": "1Yig1pyo9lKgA81MUq6XbyVASkaIyItDl",
+    "drive_readback": {
+      "size_bytes": 1502592,
+      "sha256": "dfefa17a3b57dc2fd971dd4af1149bf5cf174acbfd738a3f31d9e970c323a8b2",
+      "verified": true
+    }
+  },
+  "source": {
+    "integration_branch": "codex/cart2-offline-audio-fixture-20261009",
+    "integration_head_before_this_checkpoint": "4b25cee7c083c52001c0bc6fd20f117d71044c15",
+    "r7_candidate_source_commit": "fa415b2c52cc450895c2e6435977422b35be7558",
+    "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "modified_source_files": [
+      {
+        "path": "firmware/phase2/integration-r7/usermod/usermod_hbnf_foundation_v1.cpp",
+        "sha256": "e250163d4cf011ad7febb99cda4e2816d0e69b4d3d4d18eed1a04be7f4f30027"
+      },
+      {
+        "path": "firmware/phase2/integration-r7/usermod/hbnf_u64_format.h",
+        "sha256": "1cf3a04ed4ecfa03e8a955690af5691be3166e462a4201b9611f358be7ba0c9c"
+      }
+    ],
+    "build_copy_byte_match": true,
+    "rendering_behavior_changed": false,
+    "only_firmware_source_delta": "Readback-only trace formatter factoring and a unique diagnostic release identity/feature marker; no frame hot path, transport, renderer, output, threshold, or Vibe/Text behavior changed."
+  },
+  "toolchain": {
+    "platformio_core": "6.1.18",
+    "python": "3.9.6",
+    "environment": "hbnf_matrix_wled16_packet20_diag (extends env:hbnf_matrix_wled16_max)",
+    "build_host_tree": "/tmp/hbnf-p2-build/WLED-r7-local-20261009",
+    "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "platform": "tasmota platform-espressif32 2024.06.00",
+    "target": "ESP32, 240 MHz, 320 KiB RAM, 4 MiB flash",
+    "arduino_framework": "2.0.18+sha.8ba0dc0",
+    "idf": "4.4.8",
+    "xtensa_toolchain": "8.4.0+2021r2-patch5",
+    "build_parallelism": 1,
+    "newlib_nano_format": true,
+    "sdkconfig_sha256": "2e7dcb1827219a6b41ac52bb2bbf28676fb113ac675218b5387d41e5ba05b7a9",
+    "build_command": "PYTHONPATH=/tmp/hbnf-p2-build/pio-cli PLATFORMIO_CORE_DIR=/tmp/hbnf-p2-build/pio-local /Applications/Xcode.app/Contents/Developer/usr/bin/python3 /tmp/hbnf-p2-build/pio-cli/bin/pio run -v -j 1 -e hbnf_matrix_wled16_packet20_diag",
+    "dependency_closure_evidence": {
+      "build_log_path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R2_U64FIX_BUILD.log",
+      "build_log_sha256": "2521a2e7763e8b7d0d1c24bd0ab2f62f8fca5f196b71d0d75080a8153e1f05f9",
+      "note": "The successful build log captures effective environment, LDF mode, exact compile/link commands and resolved dependency graph; no package upgrades or downloads."
+    }
+  },
+  "resources": {
+    "platformio_ram_used_bytes": 114912,
+    "ram_limit_bytes": 327680,
+    "ram_headroom_bytes": 212768,
+    "platformio_flash_used_bytes": 1495861,
+    "flash_limit_bytes": 1572864,
+    "flash_headroom_bytes": 77003,
+    "bin_bytes": 1502592,
+    "bin_to_limit_bytes": 70272,
+    "source": "Pinned build log lines 81-82; same output BIN copied byte-for-byte and SHA-verified."
+  },
+  "validation": {
+    "compiled_firmware_identity": "PASS: strings in BIN include the new release id and trace-u64-formatter-fix-v1; old R2 label absent; image hash verified. Device SHA/runtime identity not claimed.",
+    "target_format_contract": "PASS native runtime plus pinned Xtensa compile; all 16 fields and integer boundaries",
+    "offline_test_results_path": "evidence/cart2-r7-performance-repair-20261009/R2_U64FIX_OFFLINE_TEST_RESULTS.json",
+    "offline_test_results_sha256": "fcc5785f2d0a746d7d63d4df34518473a475052177f0929f2bf73fc9e9fbaae6",
+    "build_log_path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R2_U64FIX_BUILD.log",
+    "build_log_sha256": "2521a2e7763e8b7d0d1c24bd0ab2f62f8fca5f196b71d0d75080a8153e1f05f9",
+    "binary_matches_build_output": true,
+    "existing_r2_binary_preserved": true,
+    "live_install": "NOT PERFORMED",
+    "frozen_qualification": "NOT PERFORMED; requires new live authority and device access"
+  },
+  "drive_files": {
+    "manifest_file_id": "1MQ7LexmEcyic3GfCaZPKSc7aBsu0AnzB",
+    "comparison_file_id": "1Qul5Qb923fEy2q-u7WWysw2bB3JM2O_A",
+    "test_results_file_id": "1XuHJjzI85EGjjjka47ascY6UoeoKaDS5",
+    "binary_file_id": "1Yig1pyo9lKgA81MUq6XbyVASkaIyItDl",
+    "folder_id": "17B-XkjyK92FS7dT8TWDRqcTxozZRjTFV"
+  },
+  "evidence_files": {
+    "comparison_path": "evidence/cart2-r7-performance-repair-20261009/R7_R2_TAIL_EVIDENCE_COMPARISON_20261009.json",
+    "comparison_sha256": "ce4e93917dfbffc03a6af0b866f786b29f9248da0e15e21d23d72a5bd1be926a",
+    "test_results_path": "evidence/cart2-r7-performance-repair-20261009/R2_U64FIX_OFFLINE_TEST_RESULTS.json",
+    "test_results_sha256": "fcc5785f2d0a746d7d63d4df34518473a475052177f0929f2bf73fc9e9fbaae6"
+  }
+}

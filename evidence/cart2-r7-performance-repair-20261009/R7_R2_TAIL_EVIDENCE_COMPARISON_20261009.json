@@ -1,0 +1,172 @@
+{
+  "schema": "hbnf-r7-vs-r2-tail-evidence-comparison-v1",
+  "status": "R7_P99_FAILURE_STANDS__R2_DID_NOT_REPRODUCE__ROOT_CAUSE_UNRESOLVED",
+  "frozen_gate_ms": 42.03125,
+  "expert_references": [
+    {
+      "source": "Espressif ESP-IDF v4.4 ESP32 Kconfig documentation",
+      "url": "https://docs.espressif.com/projects/esp-idf/en/v4.4/esp32/api-reference/kconfig.html",
+      "material_fact": "CONFIG_NEWLIB_NANO_FORMAT enables nano printf; 64-bit integer formats are unsupported. This corroborates the pinned sdkconfig and malformed %llu trace evidence."
+    },
+    {
+      "source": "NIST/SEMATECH e-Handbook, Percentiles",
+      "url": "https://www.itl.nist.gov/div898/handbook/prc/section2/prc262.htm",
+      "material_fact": "Sample percentiles are order-statistic estimates; a larger frame sample gives more observations in the upper 1% tail. The proposed sample-count arithmetic is an inference and does not remove frame autocorrelation or guarantee rare-event recurrence."
+    }
+  ],
+  "verified_r7": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+    "sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+    "source_commit": "fa415b2c52cc450895c2e6435977422b35be7558",
+    "kernel": "Caleido3",
+    "kernel_index": 13,
+    "variant_id": 1347100685,
+    "brightness": 44,
+    "samples": 25,
+    "uptime_start_seconds": 1408,
+    "uptime_first_gate_crossing_seconds": 1414,
+    "uptime_end_seconds": 1438,
+    "tail_sample_count_first": 224,
+    "tail_sample_count_first_gate_crossing": 481,
+    "tail_sample_count_end": 1441,
+    "p99_ms": 55.625,
+    "p99_over_gate_snapshots": 20,
+    "max_ms": 72.916,
+    "avg_ms_r4_vs_r7": [
+      18.63129,
+      18.55363
+    ],
+    "p95_ms_r4_vs_r7": [
+      21.25,
+      20.375
+    ],
+    "stage_summary": {
+      "kernel_ms_avg_median_r4": 8.291882000000001,
+      "kernel_ms_avg_median_r7": 8.849908,
+      "kernel_ms_avg_delta": 0.558026,
+      "kernel_ms_p95_median_r4": 8.625,
+      "kernel_ms_p95_median_r7": 8.875,
+      "kernel_ms_p95_delta": 0.25,
+      "aux_prepare_send_avg_delta_ms": 3.820483,
+      "unaccounted_avg_delta_ms": -3.760752,
+      "aux_plus_unaccounted_net_delta_ms": 0.059732,
+      "interpretation": "R7 kernel average is 0.558026 ms higher and kernel p95 0.25 ms higher. The R7 per-pixel composeVibeColor call executes inside the measured render/kernel path, so it is a plausible source of this modest sustained kernel cost, not a proven cause. AUX-prepare average rises 3.820484 ms while unaccounted average falls 3.760752 ms; their combined delta is only 0.059732 ms, consistent with timing bucket attribution moving rather than a comparable whole-frame penalty."
+    },
+    "restart_count_delta": 0,
+    "wifi_rssi_dbm_range": [
+      -58,
+      -48
+    ]
+  },
+  "verified_r2": {
+    "diagnostic_release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+    "diagnostic_sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
+    "disarmed": {
+      "poll_window_seconds": 60.354126625,
+      "uptime_start": 487,
+      "uptime_end": 543,
+      "tail_count_start": 591,
+      "tail_count_end": 2948,
+      "p99_ms": 22.375,
+      "max_ms": 59.636,
+      "fps_median": 41.0,
+      "wifi_rssi_dbm_range": [
+        -59,
+        -48
+      ]
+    },
+    "armed": {
+      "poll_window_seconds": 60.352087292,
+      "uptime_start": 569,
+      "uptime_end": 625,
+      "tail_count_start": 546,
+      "tail_count_end": 2913,
+      "p99_ms": 22.125,
+      "max_ms": 52.184,
+      "fps_median": 41.0,
+      "wifi_rssi_dbm_range": [
+        -50,
+        -48
+      ]
+    },
+    "trace_records_above_threshold": 5,
+    "trace_stage_attribution": "INVALID: all five records are malformed; no R2 same-frame stage cost may be used",
+    "runtime_controls": {
+      "audioResponse": 50,
+      "auxBrightness": 245,
+      "kernel": 13,
+      "matrixBrightness": 44,
+      "motion": 50,
+      "overlayId": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "scene": 0,
+      "variantSignature": 1347100685,
+      "vibe": 0
+    },
+    "cpu_mhz": 240,
+    "heap_free_sample_range": [
+      105176,
+      115868
+    ],
+    "minimum_free_heap": 47932,
+    "tail_poll_windows_equal": true
+  },
+  "verified_differences": [
+    {
+      "item": "runtime_age",
+      "evidence": "R7 onset window uptime 1408-1438 s; R2 windows uptime 487-543 s and 569-625 s.",
+      "interpretation": "R2 did not sample near the R7 observed onset age; this is a confound, not proof of age-caused regression."
+    },
+    {
+      "item": "histogram_population_and_duration",
+      "evidence": "R7 cumulative tail count grows 224 at uptime 1408 to 1441 by uptime 1438. R2 final populations are 2948 and 2913 frames while host polling lasted 60.354 s and 60.352 s; R2 first poll already had 591/546 frames, so each cumulative percentile includes frames before the first host sample.",
+      "interpretation": "The p99 estimates use unequal populations and differing reset/pre-window boundaries; they are not equivalent samples."
+    },
+    {
+      "item": "kernel_variant_brightness",
+      "evidence": "R7 and R2 both kernel 13/Caleido3, variant 1347100685, brightness 44; R2 CPU readback/trace was 240 MHz.",
+      "interpretation": "These named conditions match. R7 CPU frequency readback and all audio/motion controls are not present in the compared R7 sampling record, so full runtime equivalence is unverified."
+    },
+    {
+      "item": "network_observation",
+      "evidence": "R7 used 25 valid telemetry reads over about 30 s, about once per second, each reported read around 0.15-0.20 s. R2 used 8 matched safety polls over 60.35 s, five parallel read-only endpoints per poll; observed per-endpoint latency varied and Matrix info reached 2.439 s.",
+      "interpretation": "Observation load differs; endpoint latency is recorded but has no frame-level timestamp correlation, so it cannot explain the tail."
+    },
+    {
+      "item": "aux_ddp",
+      "evidence": "Both data sets report native WLED live DDP sourced from Matrix. R7/R2 HBNF projection frame-lock RX fields are stale/inactive/invalid; they are a distinct projection telemetry path and not evidence that WLED native DDP stopped. Physical AUX LEDs are not observable from WLED JSON.",
+      "interpretation": "No demonstrated AUX transport failure explains the Matrix p99."
+    },
+    {
+      "item": "heap_scheduler_and_stage",
+      "evidence": "R7 free heap was roughly 107-117 KB with lifetime minimum 49,048 bytes; R2 free heap was roughly 105-116 KB with lifetime minimum 47,932 bytes. R7 scheduler p95 was 2.125 ms; R2 1.875 ms. R7 kernel average delta vs R4 was +0.558 ms and kernel p95 +0.25 ms; AUX-prepare +3.820 ms was largely offset by unaccounted -3.761 ms. R2 arm/disarm p99 delta was -0.25 ms, max delta -7.452 ms, median FPS delta 0.",
+      "interpretation": "No sustained CPU/heap collapse or persistent stage-cost increase is shown. The arm/disarm comparison is short, ordered, and corrupted at trace serialization; it cannot prove zero observer effect or explain R7."
+    },
+    {
+      "item": "instrumentation",
+      "evidence": "R2 is a diagnostic build with outlier trace; R7 production qualification has no valid per-frame trace records. R2 retained five over-threshold records, but all serialize malformed.",
+      "interpretation": "No valid same-frame stage attribution is available; R2 p99 below threshold does not invalidate the original R7 failure."
+    }
+  ],
+  "root_cause": {
+    "status": "NOT_PROVEN",
+    "confidence": "high that the original R7 p99 gate failure is real in the preserved run; low/none on causal source attribution",
+    "reason": "The R7 stage aggregates do not correlate to individual slow frame IDs. R2 differs in runtime age, cumulative histogram sample count/reset window, read cadence and diagnostic instrumentation, and its outlier records cannot be parsed."
+  },
+  "recommended_next_measurement": {
+    "justified": true,
+    "reason": "Corrected R2 build makes the previously unavailable same-frame traces parseable; existing R2 has only five malformed records at runtime <625 s, whereas R7 tail failure began at 1414 s. This adds information unavailable from current files.",
+    "candidate_release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-u64fix-20261009",
+    "candidate_sha256": "dfefa17a3b57dc2fd971dd4af1149bf5cf174acbfd738a3f31d9e970c323a8b2",
+    "scope": "One fresh exact diagnostic install and one exact R4 return only after new authorization; no production deployment or R8.",
+    "sequence": "After fresh preflight/authority, install once; keep kernel 13, Caleido3 variant 1347100685, brightness 44, and all other runtime controls as recorded/matched. Maintain identical 8-second five-endpoint safety polling throughout. Reach uptime >=1390 s before timed windows to cover the prior onset region. Collect trace-disarmed then trace-armed windows of 600 seconds each (20 min total), resetting cumulative histogram to zero immediately before each timed window after identical 2-second settle. No p99 exclusion. Stop collection, read/parse trace, restore the exact renderer snapshot, then return once to R4 SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743a2f3d8c and verify identity/health/AUX DDP.",
+    "expected_sample_size": "At approximately 41 FPS, ~24,600 frames per 10-minute condition; around 246 observations occupy the empirical top 1% under stationary independent sampling. Frame autocorrelation and rare-event recurrence mean this improves p99 resolution but cannot guarantee a rare spike will recur.",
+    "live_stop_rule": "Retain the unchanged catastrophic three-consecutive-sample abort and AUX safety checks; p99 >42.03125 ms is evidence, not an abort. Any identity/recovery/health failure is fail-closed. No extensions or repeat transaction.",
+    "evidence": "Exact R4 rollback available and SHA-verified offline; no device preflight/authority in this task."
+  },
+  "drive_file_id": "1Qul5Qb923fEy2q-u7WWysw2bB3JM2O_A",
+  "artifact_manifest_file_id": "1MQ7LexmEcyic3GfCaZPKSc7aBsu0AnzB",
+  "test_results_file_id": "1XuHJjzI85EGjjjka47ascY6UoeoKaDS5"
+}

@@ -29,8 +29,8 @@ using namespace hbnf_v1;
 namespace {
 
 static const char HBNF_FX_DATA[] PROGMEM = "HBNF Foundation@;;;2";
-static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009";
-static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009\",\"basedOnReleaseId\":\"hbnf-cart2-phase2-offline-wow-r7-20261009\",\"basedOnFirmwareSha256\":\"22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r6-unfrozen\",\"native-text-moments-r6-unfrozen\",\"offline-r7-outlier-trace-diagnostic-r2\"]}";
+static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-r7-outlier-trace-diagnostic-r2-u64fix-20261009";
+static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-r7-outlier-trace-diagnostic-r2-u64fix-20261009\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-r7-outlier-trace-diagnostic-r2-u64fix-20261009\",\"basedOnReleaseId\":\"hbnf-cart2-phase2-offline-wow-r7-20261009\",\"basedOnFirmwareSha256\":\"22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r6-unfrozen\",\"native-text-moments-r6-unfrozen\",\"offline-r7-outlier-trace-diagnostic-r2\",\"trace-u64-formatter-fix-v1\"]}";
 static PaletteSelection hbnfPalette{};
 static OverlayState hbnfCommandOverlay{};
 static portMUX_TYPE hbnfOverlayMux=portMUX_INITIALIZER_UNLOCKED;
@@ -66,20 +66,11 @@ static uint8_t hbnfTailKernel=255;
 static bool hbnfTailEnabled=false;
 static portMUX_TYPE hbnfTailMux=portMUX_INITIALIZER_UNLOCKED;
 static void hbnfFormatTraceRecord(const hbnf_outlier_trace::Record& r,char* row,size_t capacity) {
-  char monotonicUs[21];
-  if(!hbnf_u64_format::decimal(r.monotonicUs,monotonicUs,sizeof(monotonicUs)) || capacity==0) {
-    if(capacity>0)row[0]='\0';
-    return;
-  }
-  snprintf(row,capacity,"%s,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%u",
-    monotonicUs,(unsigned long)r.frameSequence,
-    (unsigned long)r.frameStartCycles,(unsigned long)r.frameEndCycles,
-    (unsigned long)r.wholeFrameCycles,(unsigned long)r.kernelGrossCycles,
-    (unsigned long)r.audioCycles,(unsigned long)r.colorCycles,
-    (unsigned long)r.schedulerCycles,(unsigned long)r.overlayCycles,
-    (unsigned long)r.companionPrepCycles,(unsigned long)r.ddpSendCycles,
-    (unsigned long)r.unaccountedCycles,(unsigned long)r.variantSignature,
-    (unsigned long)r.traceCaptureBodyCycles,(unsigned)r.kernelId);
+  hbnf_u64_format::formatTraceRecord(r.monotonicUs,r.frameSequence,
+    r.frameStartCycles,r.frameEndCycles,r.wholeFrameCycles,r.kernelGrossCycles,
+    r.audioCycles,r.colorCycles,r.schedulerCycles,r.overlayCycles,
+    r.companionPrepCycles,r.ddpSendCycles,r.unaccountedCycles,r.variantSignature,
+    r.traceCaptureBodyCycles,r.kernelId,row,capacity);
 }
 static bool hbnfTailSetEnabled(bool enabled) {
   portENTER_CRITICAL(&hbnfTailMux);
