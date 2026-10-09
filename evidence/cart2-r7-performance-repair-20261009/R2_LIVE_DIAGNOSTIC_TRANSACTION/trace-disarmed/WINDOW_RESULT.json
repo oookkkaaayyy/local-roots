@@ -1,0 +1,16 @@
+{
+  "exit_code": 0,
+  "finished_at_utc": "2026-10-09T19:05:40.058535+00:00",
+  "sample_count": 8,
+  "sample_sha256": "ef777a17010e5519568f2a26365e6f55788e928eb76eb860a9d8363d671ba89a",
+  "sampler_failure": null,
+  "sampler_progress": {
+    "duration_seconds": 60.354126625,
+    "observed_kernel_ids": [
+      13
+    ],
+    "sample_count": 8,
+    "sampler_pid": 49760,
+    "status": "COMPLETE"
+  }
+}

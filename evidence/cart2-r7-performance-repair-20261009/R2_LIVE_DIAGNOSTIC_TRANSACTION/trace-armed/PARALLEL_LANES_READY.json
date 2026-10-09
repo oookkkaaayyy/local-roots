@@ -1,0 +1,17 @@
+{
+  "aux_projection_active": true,
+  "first_clean_soak_samples": 3,
+  "first_sample_kernel_ids": [
+    13,
+    13,
+    13
+  ],
+  "note": "Independent telemetry sampler is healthy; signal does not authorize device mutation.",
+  "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+  "restart_count": 0,
+  "sample_file": "/private/tmp/cart2-github-local-direct-20261009/evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/trace-armed/FOUNDATION_SOAK.jsonl",
+  "sample_sha256": "41a01ddc1b102098a77a16a58c25a6f78d58248694af75178443f2a127680802",
+  "sampler_pid": 49804,
+  "schema": "hbnf-foundation-parallel-ready-v1",
+  "status": "PARALLEL_LANES_READY"
+}

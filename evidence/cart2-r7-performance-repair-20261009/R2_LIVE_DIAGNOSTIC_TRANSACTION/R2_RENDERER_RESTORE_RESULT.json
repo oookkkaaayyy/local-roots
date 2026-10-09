@@ -1,0 +1,22 @@
+{
+  "captured_at_utc": "2026-10-09T19:07:54.127947+00:00",
+  "foundationTelemetry_enabled_after": false,
+  "foundationTelemetry_enabled_before": false,
+  "readback": {
+    "lastCommand": "restore",
+    "lastCommandAccepted": true,
+    "restoreVerified": true,
+    "snapshotHash": 4153677286,
+    "snapshotId": 1
+  },
+  "restore_response": {
+    "packet20Same": true,
+    "restoreVerified": true,
+    "snapshotHash": 4153677286,
+    "snapshotId": 1
+  },
+  "schema": "hbnf-r2-renderer-snapshot-restore-v1",
+  "snapshot_hash": 4153677286,
+  "snapshot_id": 1,
+  "verified": true
+}

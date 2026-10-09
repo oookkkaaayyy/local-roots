@@ -1,0 +1,248 @@
+{
+  "candidate": {
+    "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+    "sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
+    "sha_attestation": "single Opal SHA-verified copy plus one successful HTTP200 Update successful response; device endpoint reports release identity, not binary SHA"
+  },
+  "captured_at_utc": "2026-10-09T19:08:13.293374+00:00",
+  "frozen_catastrophic_abort": "unchanged 3 consecutive valid samples: FPS<20, p99>75ms, or AUX native Matrix-origin DDP projection inactive; no threshold was altered.",
+  "frozen_p99_ceiling_ms": 42.03125,
+  "observer_effect": {
+    "final_frame_max_delta_armed_minus_disarmed_ms": -7.452000000000005,
+    "final_p99_delta_armed_minus_disarmed_ms": -0.25,
+    "interpretation": "Matched 8-second five-endpoint sampling in each window; temporal association does not prove request causality.",
+    "median_fps_delta_armed_minus_disarmed": 0.0
+  },
+  "reason": "The firmware serialized each record timestamp as literal \"lu\" followed by a numeric sequence; remaining cycle fields are inconsistent with the expected record layout. Stage attribution is not reliable. Raw evidence is preserved; do not infer stage cost from these records.",
+  "regression_p99_above_ceiling": false,
+  "renderer_restore": {
+    "path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R2_RENDERER_RESTORE_RESULT.json",
+    "sha256": "b57374a74b4aeddcf25aa4a4eeb824603bca3aaaf2a3ad7465c0240781e8edea",
+    "verified": true
+  },
+  "schema": "hbnf-r2-outlier-trace-diagnostic-result-v1",
+  "status": "INCONCLUSIVE__MALFORMED_TRACE_RECORDS",
+  "trace": {
+    "capacity": 32,
+    "cpu_mhz_at_start": 240,
+    "cpu_mhz_readback": 240,
+    "enabled_after_stop": false,
+    "malformed_records": [
+      {
+        "parse_error": "invalid literal for int() with base 10: 'lu'",
+        "record": "lu,1109925888,577528174,0,794,1203890640,1214643747,10753107,8367980,456456,1417266,572485,13682,44778,899672,769502"
+      },
+      {
+        "parse_error": "invalid literal for int() with base 10: 'lu'",
+        "record": "lu,1073527444,585565823,0,1133,3132541827,3143676621,11134794,4529432,204244,211140,312520,14852,2494087,1886324,1850580"
+      },
+      {
+        "parse_error": "invalid literal for int() with base 10: 'lu'",
+        "record": "lu,1073527564,601733720,0,1817,2716483286,2729007470,12524184,9845462,948105,1331391,544697,14336,57926,785570,1190489"
+      },
+      {
+        "parse_error": "invalid literal for int() with base 10: 'lu'",
+        "record": "lu,1073527684,617654610,0,2488,2244643948,2255050900,10406952,8147318,2238430,1312714,534521,12623,40872,770557,814991"
+      },
+      {
+        "parse_error": "invalid literal for int() with base 10: 'lu'",
+        "record": "lu,1073527802,625602734,0,2823,4148707465,4162598134,13890669,6130928,228757,135334,358247,16976,73809,2864495,4401471"
+      }
+    ],
+    "outlier_count": 5,
+    "overflow_count": 0,
+    "parsed_record_count": 0,
+    "raw_trace_readback_path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R2_FINAL_TRACE_READBACK.json",
+    "raw_trace_readback_sha256": "2111501977ba86ac4e6cdac2a9eed712dbe607a64e1f0c131ccbca3b0cf07def",
+    "records_raw": [
+      "lu,1109925888,577528174,0,794,1203890640,1214643747,10753107,8367980,456456,1417266,572485,13682,44778,899672,769502",
+      "lu,1073527444,585565823,0,1133,3132541827,3143676621,11134794,4529432,204244,211140,312520,14852,2494087,1886324,1850580",
+      "lu,1073527564,601733720,0,1817,2716483286,2729007470,12524184,9845462,948105,1331391,544697,14336,57926,785570,1190489",
+      "lu,1073527684,617654610,0,2488,2244643948,2255050900,10406952,8147318,2238430,1312714,534521,12623,40872,770557,814991",
+      "lu,1073527802,625602734,0,2823,4148707465,4162598134,13890669,6130928,228757,135334,358247,16976,73809,2864495,4401471"
+    ],
+    "retained_count": 5,
+    "threshold_us": 42.03125,
+    "worst_record_raw": "lu,1073527922,625602734,0,2823,4148707465,4162598134,13890669,6130928,228757,135334,358247,16976,73809,2864495,4401471"
+  },
+  "windows": {
+    "trace_armed": {
+      "endpoint_elapsed_seconds": {
+        "aux_info": [
+          0.108268,
+          0.138959,
+          0.193594,
+          0.101198,
+          0.140397,
+          0.142199,
+          0.084547,
+          0.232086
+        ],
+        "aux_state": [
+          0.103303,
+          0.138949,
+          0.417973,
+          0.101156,
+          0.140379,
+          0.235856,
+          0.129708,
+          0.211496
+        ],
+        "matrix_build": [
+          0.08864,
+          0.145874,
+          0.192662,
+          0.119445,
+          0.855507,
+          0.219046,
+          0.289584,
+          0.233108
+        ],
+        "matrix_info": [
+          0.122495,
+          0.204694,
+          0.195685,
+          0.119682,
+          0.3506,
+          0.147787,
+          0.29007,
+          0.232062
+        ],
+        "matrix_state": [
+          0.139167,
+          0.145852,
+          0.192953,
+          0.101476,
+          0.380813,
+          0.219285,
+          0.324262,
+          0.232841
+        ]
+      },
+      "final_frame_max_ms": 52.184,
+      "final_p99_ms": 22.125,
+      "fps": [
+        41,
+        41,
+        41,
+        41,
+        42,
+        42,
+        39,
+        42
+      ],
+      "fps_median": 41.0,
+      "frame_max_ms": [
+        38.346,
+        39.645,
+        44.804,
+        46.394,
+        46.394,
+        52.184,
+        52.184,
+        52.184
+      ],
+      "heap_min_bytes": 106264,
+      "p99_ms": [
+        29.125,
+        23.625,
+        22.625,
+        22.125,
+        22.125,
+        22.125,
+        22.375,
+        22.125
+      ],
+      "sample_count": 8
+    },
+    "trace_disarmed": {
+      "endpoint_elapsed_seconds": {
+        "aux_info": [
+          0.303874,
+          0.20692,
+          0.18054,
+          0.19389,
+          0.485798,
+          0.166691,
+          0.241897,
+          0.138421
+        ],
+        "aux_state": [
+          0.330489,
+          0.308069,
+          0.142015,
+          0.192906,
+          0.485458,
+          0.302148,
+          0.241497,
+          0.15536
+        ],
+        "matrix_build": [
+          0.214659,
+          0.464895,
+          0.305036,
+          0.088283,
+          0.436515,
+          0.390372,
+          0.359841,
+          0.245059
+        ],
+        "matrix_info": [
+          0.214687,
+          0.532658,
+          0.305836,
+          0.19498,
+          2.439356,
+          0.490263,
+          0.360297,
+          0.245111
+        ],
+        "matrix_state": [
+          0.232967,
+          0.464602,
+          0.305275,
+          0.194375,
+          0.435677,
+          0.439656,
+          0.359553,
+          0.175116
+        ]
+      },
+      "final_frame_max_ms": 59.636,
+      "final_p99_ms": 22.375,
+      "fps": [
+        41,
+        42,
+        41,
+        40,
+        39,
+        40,
+        41,
+        41
+      ],
+      "fps_median": 41.0,
+      "frame_max_ms": [
+        38.333,
+        59.553,
+        59.634,
+        59.634,
+        59.636,
+        59.636,
+        59.636,
+        59.636
+      ],
+      "heap_min_bytes": 105176,
+      "p99_ms": [
+        22.125,
+        22.125,
+        22.125,
+        22.125,
+        22.125,
+        22.625,
+        22.625,
+        22.375
+      ],
+      "sample_count": 8
+    }
+  }
+}

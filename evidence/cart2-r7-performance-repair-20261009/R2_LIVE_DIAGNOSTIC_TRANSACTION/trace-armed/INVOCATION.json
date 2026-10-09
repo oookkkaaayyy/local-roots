@@ -1,0 +1,398 @@
+{
+  "argv": [
+    "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+    "/private/tmp/cart2-github-local-direct-20261009/scripts/hbnf_foundation_live_adapter.py",
+    "telemetry",
+    "--inventory",
+    "/private/tmp/cart2-github-local-direct-20261009/config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+    "--session-id",
+    "/private/tmp/cart2-github-local-direct-20261009/evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/trace-armed"
+  ],
+  "prepared_at_utc": "2026-10-09T19:06:01.765092+00:00",
+  "worker_data": {
+    "argv": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "/private/tmp/cart2-github-local-direct-20261009/scripts/hbnf_foundation_live_adapter.py",
+      "telemetry",
+      "--inventory",
+      "/private/tmp/cart2-github-local-direct-20261009/config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+      "--session-id",
+      "/private/tmp/cart2-github-local-direct-20261009/evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/trace-armed"
+    ],
+    "duration": 60.0,
+    "entries": [
+      {
+        "effect_id": 220,
+        "kernel_name": "Complex_Kaleido_3",
+        "ordinal": 0,
+        "preset": 61,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 0,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 221,
+        "kernel_name": "Big_Caleido",
+        "ordinal": 1,
+        "preset": 62,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 1,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 222,
+        "kernel_name": "Parametric_Water",
+        "ordinal": 2,
+        "preset": 63,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 2,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 223,
+        "kernel_name": "RGB_Blobs5",
+        "ordinal": 3,
+        "preset": 64,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 3,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 224,
+        "kernel_name": "Polar_Waves",
+        "ordinal": 4,
+        "preset": 65,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 4,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 225,
+        "kernel_name": "Zoom2",
+        "ordinal": 5,
+        "preset": 66,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 5,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 226,
+        "kernel_name": "Complex_Kaleido_4",
+        "ordinal": 6,
+        "preset": 67,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 6,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 227,
+        "kernel_name": "Complex_Kaleido_6",
+        "ordinal": 7,
+        "preset": 68,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 7,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 228,
+        "kernel_name": "Water",
+        "ordinal": 8,
+        "preset": 69,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 8,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 229,
+        "kernel_name": "RGB_Blobs4",
+        "ordinal": 9,
+        "preset": 70,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 9,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 230,
+        "kernel_name": "Complex_Kaleido_5",
+        "ordinal": 10,
+        "preset": 71,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 10,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 231,
+        "kernel_name": "Spiralus2",
+        "ordinal": 11,
+        "preset": 72,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 11,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 232,
+        "kernel_name": "Hot_Blob",
+        "ordinal": 12,
+        "preset": 73,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 12,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 233,
+        "kernel_name": "Caleido3",
+        "ordinal": 13,
+        "preset": 74,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 13,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 234,
+        "kernel_name": "Waves",
+        "ordinal": 14,
+        "preset": 75,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 14,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 235,
+        "kernel_name": "Chasing_Spirals",
+        "ordinal": 15,
+        "preset": 76,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 15,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 236,
+        "kernel_name": "Rotating_Blob",
+        "ordinal": 16,
+        "preset": 77,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 16,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 237,
+        "kernel_name": "Center_Field",
+        "ordinal": 17,
+        "preset": 78,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 17,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 238,
+        "kernel_name": "Distance_Experiment",
+        "ordinal": 18,
+        "preset": 79,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 18,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 239,
+        "kernel_name": "Lava1",
+        "ordinal": 19,
+        "preset": 80,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 19,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 240,
+        "kernel_name": "Caleido2",
+        "ordinal": 20,
+        "preset": 81,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 20,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 241,
+        "kernel_name": "Yves",
+        "ordinal": 21,
+        "preset": 82,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 21,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 242,
+        "kernel_name": "Scaledemo1",
+        "ordinal": 22,
+        "preset": 83,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 22,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 243,
+        "kernel_name": "Zoom",
+        "ordinal": 23,
+        "preset": 84,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 23,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 244,
+        "kernel_name": "Complex_Kaleido",
+        "ordinal": 24,
+        "preset": 85,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 24,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 245,
+        "kernel_name": "RGB_Blobs3",
+        "ordinal": 25,
+        "preset": 86,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 25,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 246,
+        "kernel_name": "SM5",
+        "ordinal": 26,
+        "preset": 87,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 26,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      },
+      {
+        "effect_id": 247,
+        "kernel_name": "Module_Experiment10",
+        "ordinal": 27,
+        "preset": 88,
+        "profile_path": null,
+        "runtime_kernel_index_expected": 27,
+        "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+        "variant_id": "DISCOVER_AND_CAPTURE"
+      }
+    ],
+    "expected_cpu_mhz": 240,
+    "expected_kernel_id": 13,
+    "expected_matrix_brightness": 44,
+    "expected_trace_armed": true,
+    "expected_variant_id": 1347100685,
+    "include_boundary_sample": true,
+    "initial_delay": 4.0,
+    "outdir": "/private/tmp/cart2-github-local-direct-20261009/evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/trace-armed",
+    "period": 8.0,
+    "policy": {
+      "all_kernel_sweep": {
+        "common_path_audit_required": true,
+        "envelope": {
+          "max_frame_max_ms": null,
+          "max_frame_p95_ms": null,
+          "max_frame_p99_ms": null,
+          "min_fps_median": null
+        },
+        "expected_kernel_count": 28,
+        "failure_policy": "FAIL_FOUNDATION_IF_ANY_KERNEL_FAILS_OR_SHARED_PATH_REMAINS_UNEXPLAINED",
+        "same_scene_or_declared_comparable_baseline_required": true,
+        "sample_seconds_per_kernel": 30,
+        "settle_seconds_per_kernel": 5,
+        "thresholds": "USE_FROZEN_BASELINE_RELATIVE_POLICY__DO_NOT_INVENT_FROM_DEFECTIVE_RELEASE"
+      },
+      "baseline_profile": "GENERATED_FROM_THE_CURRENT_COMPLETE_28_KERNEL_SWEEP_BEFORE_SOAK",
+      "catastrophic_early_stop": {
+        "aux_projection_active_required": true,
+        "consecutive_samples": 3,
+        "enabled": true,
+        "fps_floor_absolute": 20,
+        "frame_ms_p99_ceiling_absolute": 75
+      },
+      "comparison": {
+        "candidate_vs_baseline": {
+          "aux_stale_sample_max_fraction": 0.01,
+          "fps_median_min_ratio": 0.9,
+          "frame_max_max_ratio": 1.5,
+          "frame_p95_max_ratio": 1.25,
+          "frame_p99_max_ratio": 1.25,
+          "largest_free_block_min_ratio": 0.8,
+          "minimum_free_heap_min_ratio": 0.85
+        },
+        "require_same_or_declared_comparable_kernel_variant": true
+      },
+      "note": "Frozen from explicit user directive for the 2026-10-06 Foundation transaction. The baseline is generated only from the complete 28-kernel sweep on the exact candidate, then hash-bound with the sweep before any soak sample. AUX catastrophic/staleness decisions use Matrix-origin WLED DDP live-source status; HBNFAUX frame-lock age is retained as diagnostic telemetry but is not equivalent to native DDP receive freshness. Numeric frozen ratios and catastrophic limits are unchanged from the prior policy; this revision changes only relative frame_max from a single-observation promotion gate to retained diagnostic evidence.",
+      "observer_effect": {
+        "compare_instrumented_vs_lightweight_production_telemetry": true,
+        "expensive_diagnostics_allowed_in_golden": false,
+        "required": true
+      },
+      "phases": {
+        "final_release_soak_minutes": 90,
+        "foundation_preferred_extended_soak_minutes": 240,
+        "foundation_promotion_soak_minutes": 90,
+        "integration_smoke_minutes": 5,
+        "major_milestone_soak_minutes": 30
+      },
+      "qualification_requires": [
+        "telemetry_contract_pass",
+        "no_restart_during_run",
+        "no_sustained_runtime_regression_vs_baseline",
+        "no_unexplained_heap_or_fragmentation_deterioration",
+        "matrix_aux_projection_health",
+        "feature_regression_pass",
+        "exact_release_identity_match"
+      ],
+      "qualification_semantics": {
+        "catastrophic_early_stop": "UNCHANGED__3_CONSECUTIVE_BAD_SAMPLES",
+        "relative_frame_max": "DIAGNOSTIC_ONLY__NOT_A_SUSTAINED_PERFORMANCE_GATE",
+        "relative_frame_max_max_ratio": 1.5,
+        "relative_sustained_gate_timing": "EVALUATE_FROZEN_DISTRIBUTION_AND_RESOURCE_RATIOS_ONLY_AFTER_FULL_CONTIGUOUS_90_MINUTE_WINDOW; BEFORE_THEN_REPORT_PROVISIONAL_METRICS_AND_KEEP_CATASTROPHIC_EARLY_STOPS_ACTIVE",
+        "sustained_gates": [
+          "fps_median_min_ratio",
+          "frame_p95_max_ratio",
+          "frame_p99_max_ratio",
+          "minimum_free_heap_min_ratio",
+          "largest_free_block_min_ratio",
+          "aux_stale_sample_max_fraction",
+          "restart_continuity",
+          "sample_continuity",
+          "exact_release_identity"
+        ]
+      },
+      "sample_interval_seconds": 8,
+      "schema": "hbnf-runtime-qualification-policy-v1",
+      "status": "FROZEN"
+    },
+    "release": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+    "restart": 0,
+    "timeout": 7.0,
+    "uptime": 559.0
+  }
+}

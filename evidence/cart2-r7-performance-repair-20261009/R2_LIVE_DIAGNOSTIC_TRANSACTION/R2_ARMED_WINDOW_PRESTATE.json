@@ -1,0 +1,36 @@
+{
+  "after_baseline_sample_uptime": 543,
+  "armed_start_uptime": 559,
+  "baseline_samples_sha256": "ef777a17010e5519568f2a26365e6f55788e928eb76eb860a9d8363d671ba89a",
+  "captured_at_utc": "2026-10-09T19:05:55.546538+00:00",
+  "fixed_settle_seconds": 2,
+  "runtime_controls": {
+    "audioResponse": 50,
+    "auxBrightness": 245,
+    "kernel": 13,
+    "matrixBrightness": 44,
+    "motion": 50,
+    "overlayId": null,
+    "palette": {
+      "mode": "legacy"
+    },
+    "scene": 0,
+    "variantSignature": 1347100685,
+    "vibe": 0
+  },
+  "schema": "hbnf-r2-armed-window-prestate-v1",
+  "status": "PASS_ARMED_WINDOW_READY",
+  "trace": {
+    "capacity": 32,
+    "compileCpuMHz": 240,
+    "cpuMHzAtReadback": 240,
+    "cpuMHzAtTraceStart": 240,
+    "enabled": true,
+    "outlierCount": 0,
+    "overflowCount": 0,
+    "recordEncoding": "comma-separated decimal v2: monotonicUs,frameSequence,frameStartCycles,frameEndCycles,wholeFrameCycles,kernelGrossCycles,audioCycles,colorCycles,schedulerCycles,overlayCycles,companionPrepCycles,ddpSendCycles,unaccountedCycles,variantSignature,traceCaptureBodyCycles,kernelId",
+    "retainedCount": 0,
+    "thresholdCycles": 10087500,
+    "thresholdUs": 42.03125
+  }
+}

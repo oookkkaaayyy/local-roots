@@ -1,0 +1,9 @@
+{
+  "duration_seconds": 60.354126625,
+  "observed_kernel_ids": [
+    13
+  ],
+  "sample_count": 8,
+  "sampler_pid": 49760,
+  "status": "COMPLETE"
+}

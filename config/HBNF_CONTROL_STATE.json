@@ -2127,13 +2127,17 @@
       "threshold_rebind_receipt": "evidence/hbnf-foundation-qualification-20261005/qualification-semantics-r1/THRESHOLD_FREEZE_REBIND_RECEIPT.json"
     },
     "r2_diagnostic_transaction": {
+      "diagnostic_result_path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R2_DIAGNOSTIC_RESULT.json",
+      "diagnostic_result_sha256": "372ea29fe09a31a6ee34e77d275c7b81723510b72e1c76eae748d20d912368e3",
       "firmware_sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
       "mandatory_exact_r4_return": true,
       "ota_attempts": 1,
-      "r4_return_attempts": 0,
+      "r4_return_attempt_consumed_at_utc": "2026-10-09T19:08:13.294970+00:00",
+      "r4_return_attempts": 1,
       "receipt_path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R2_CANDIDATE_INSTALLED_RECEIPT.json",
       "receipt_sha256": "5457c178efd99e36bc9cb2a554017a4f7943ad8a91e0b4bd3c3ebb448d3a5bf0",
       "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+      "renderer_restore_sha256": "b57374a74b4aeddcf25aa4a4eeb824603bca3aaaf2a3ad7465c0240781e8edea",
       "renderer_snapshot": {
         "foundationTelemetryEnabledBefore": false,
         "receipt_path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/RENDERER_SNAPSHOT.json",
@@ -2141,7 +2145,8 @@
         "snapshotHash": 4153677286,
         "snapshotId": 1
       },
-      "status": "R2_INSTALLED__DIAGNOSTIC_PENDING"
+      "renderer_snapshot_restored": true,
+      "status": "DIAGNOSTIC_INCONCLUSIVE__MALFORMED_TRACE_RECORDS__R4_RETURN_ATTEMPT_CONSUMED_BEFORE_REQUEST"
     },
     "r3_compiler_math_trial": {
       "build_run_id": "37347074583",
@@ -2354,7 +2359,7 @@
       "status": "PASS"
     },
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "RECOVERY__TEMPORARY_R2_DIAGNOSTIC_INSTALLED__R4_RETURN_MANDATORY",
+    "status": "RECOVERY__R2_DIAGNOSTIC_COMPLETE__R4_RETURN_IN_PROGRESS",
     "t3_fast_path_preparation": {
       "human_approval_required": true,
       "human_packet": "work/cart2/27_T3_PHASE2_FAST_PATH_PREP_20261006.md",
@@ -2404,13 +2409,13 @@
     "current_subject": {
       "artifact_sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
       "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
-      "status": "TEMPORARY_DIAGNOSTIC__ONE_MATCHED_PAIR_PENDING__R4_RETURN_MANDATORY"
+      "status": "R2_DIAGNOSTIC_INCONCLUSIVE__MALFORMED_TRACE__RENDERER_RESTORED__R4_RETURN_IN_PROGRESS"
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Run only matched kernel-13 / brightness-44 / variant-1347100685 trace-disarmed and trace-armed 60-second windows with identical 8-second five-endpoint collection.",
-      "On any stop/failure or after successful pair: stop capture, preserve trace, restore and verify exact renderer snapshot.",
-      "After verified renderer restore, perform one exact R4 firmware return and verify identity, Matrix health, AUX native DDP."
+      "Send the one already-consumed exact R4 return request through the proven Opal-origin path; no retry.",
+      "Verify exact R4 identity, Matrix health and native AUX DDP; then close live mutation authority.",
+      "Treat diagnostic stage attribution as inconclusive due malformed firmware trace serialization; preserve R2 raw evidence and continue offline analysis."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -2655,7 +2660,7 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-09T19:02:00.631686Z",
+  "last_updated_utc": "2026-10-09T19:08:13.294970+00:00",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "admission_path": "evidence/cart2-r7-performance-repair-20261009/R2_DIAGNOSTIC_OWNER_AUTHORIZATION.json",
@@ -2668,6 +2673,7 @@
     "candidate_sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
     "consumed_at_utc": "2026-10-09T18:55:02.940394+00:00",
     "consumed_before_network_request": true,
+    "consumed_rollback_at_utc": "2026-10-09T19:08:13.294970+00:00",
     "dryrun_path": "evidence/cart2-r7-performance-repair-20261009/R2_DIAGNOSTIC_TRANSACTION_DRYRUN.json",
     "dryrun_sha256": "8dc8fc5a5c99dc498e06338287bad3c845c45488b4de5861c42838d9deb349b7",
     "exclusions": [
@@ -2686,12 +2692,12 @@
     "preflight_sha256": "5b38a53871492668c676b30036ca58bf4654e788290f474e96444674789b0f36",
     "prewrite_receipt_path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_GO_PREWRITE_RECEIPT.json",
     "prewrite_receipt_sha256": "cc2d213502216176228ccd0768c5cdb3e95e9452bf3cbb788fbf6e97f36265d1",
-    "rollback_attempts": 0,
+    "rollback_attempts": 1,
     "rollback_limit": 1,
     "rollback_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "schema": "hbnf-r2-bounded-live-diagnostic-authorization-v1",
-    "status": "R2_INSTALLED__EXACT_IDENTITY_AND_SNAPSHOT_VERIFIED__ONE_DIAGNOSTIC_PENDING",
+    "status": "R4_RETURN_ATTEMPT_CONSUMED_BEFORE_NETWORK_REQUEST",
     "target": "192.168.77.10 / MAC 70:4b:ca:5b:34:5c only"
   },
   "live_mutation_authorization_closed_at_utc": null,
@@ -3128,13 +3134,17 @@
     }
   },
   "r2_diagnostic_transaction": {
+    "diagnostic_result_path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R2_DIAGNOSTIC_RESULT.json",
+    "diagnostic_result_sha256": "372ea29fe09a31a6ee34e77d275c7b81723510b72e1c76eae748d20d912368e3",
     "firmware_sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
     "mandatory_exact_r4_return": true,
     "ota_attempts": 1,
-    "r4_return_attempts": 0,
+    "r4_return_attempt_consumed_at_utc": "2026-10-09T19:08:13.294970+00:00",
+    "r4_return_attempts": 1,
     "receipt_path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R2_CANDIDATE_INSTALLED_RECEIPT.json",
     "receipt_sha256": "5457c178efd99e36bc9cb2a554017a4f7943ad8a91e0b4bd3c3ebb448d3a5bf0",
     "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+    "renderer_restore_sha256": "b57374a74b4aeddcf25aa4a4eeb824603bca3aaaf2a3ad7465c0240781e8edea",
     "renderer_snapshot": {
       "foundationTelemetryEnabledBefore": false,
       "receipt_path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/RENDERER_SNAPSHOT.json",
@@ -3142,7 +3152,8 @@
       "snapshotHash": 4153677286,
       "snapshotId": 1
     },
-    "status": "R2_INSTALLED__DIAGNOSTIC_PENDING"
+    "renderer_snapshot_restored": true,
+    "status": "DIAGNOSTIC_INCONCLUSIVE__MALFORMED_TRACE_RECORDS__R4_RETURN_ATTEMPT_CONSUMED_BEFORE_REQUEST"
   },
   "r2_final_prewrite_readonly": {
     "captured_at_utc": null,
