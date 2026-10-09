@@ -1,0 +1,591 @@
+{
+  "all_checks_pass": true,
+  "authorization_state_at_capture": {
+    "lifecycle_state": "PHASE2_INTEGRATING",
+    "live_mutation_authorized": false,
+    "r7_consumed_before_network_request": false,
+    "r7_install_attempts": 0
+  },
+  "candidate": {
+    "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-cart2-phase2-offline-wow-r7-20261009.bin",
+    "release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+    "sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+    "size_bytes": 1497920
+  },
+  "captured_at_utc": "2026-10-09T10:18:07.425614+00:00",
+  "captured_before_any_r7_network_request": true,
+  "checks": {
+    "aux_22_pixels_on_ddp_live": true,
+    "candidate_sha_exact": true,
+    "exact_aux_mac": true,
+    "exact_matrix_mac": true,
+    "exact_r4_release": true,
+    "lan_gateway_correct": true,
+    "mac_on_ac_100": true,
+    "mac_on_hbnf_lan": true,
+    "matrix_diagnostic_off": true,
+    "matrix_wled16_on_healthy": true,
+    "no_install_process": true,
+    "rollback_sha_exact": true,
+    "upstream_https_ok": true
+  },
+  "device_observation": {
+    "aux_info": {
+      "arch": "esp32",
+      "bootloaderSHA256": "b97d154765ea69ca895a33de59adb4b322509aa2a3e2c7c8409b31cbc1bcc2cd",
+      "brand": "WLED",
+      "clock": 240,
+      "cn": "Niji",
+      "core": "4.4.8.240628",
+      "cpalcount": 0,
+      "cpalmax": 129,
+      "deviceId": "e3d28e871aade5e29da7fa368a6759ea368fc3572d",
+      "flash": 4,
+      "freeheap": 103884,
+      "fs": {
+        "pmt": 0,
+        "t": 983,
+        "u": 20
+      },
+      "fxcount": 248,
+      "ip": "192.168.77.11",
+      "leds": {
+        "bootps": 0,
+        "cct": 0,
+        "count": 22,
+        "fps": 42,
+        "lc": 1,
+        "maxpwr": 900,
+        "maxseg": 32,
+        "pwr": 142,
+        "rgbw": false,
+        "seglc": [
+          1
+        ],
+        "wv": 0
+      },
+      "lip": "192.168.77.10",
+      "live": true,
+      "liveseg": -1,
+      "lm": "DDP",
+      "lwip": 0,
+      "mac": "8c94df55c34c",
+      "maps": [
+        {
+          "id": 0
+        }
+      ],
+      "name": "WLED",
+      "ndc": 1,
+      "opt": 79,
+      "palcount": 72,
+      "product": "FOSS",
+      "release": "ESP32",
+      "repo": "wled/WLED",
+      "simplifiedui": false,
+      "str": false,
+      "time": "1970-1-1, 05:11:31",
+      "u": {
+        "Animartrix": [
+          "Animartrix requires the Creative Commons Attribution License CC BY-NC 3.0"
+        ],
+        "AudioReactive": [
+          "<button class=\"btn btn-xs\" onclick=\"requestJson({AudioReactive:{enabled:true}});\"><i class=\"icons off\">&#xe08f;</i></button>"
+        ]
+      },
+      "udpport": 21324,
+      "um": [
+        32,
+        45
+      ],
+      "umpalcount": 0,
+      "uptime": 18691,
+      "ver": "16.0.1",
+      "vid": 2605010,
+      "wifi": {
+        "ap": false,
+        "bssid": "94:83:C4:98:78:94",
+        "channel": 4,
+        "rssi": -36,
+        "signal": 100
+      },
+      "ws": 0
+    },
+    "aux_state": {
+      "AudioReactive": {
+        "inputLevel": 128,
+        "on": false,
+        "syncMode": 2,
+        "syncPort": 11988
+      },
+      "HBNFAUX": {
+        "amount": 0,
+        "audioActive": false,
+        "audioGeometry": "source-coupled-v4",
+        "bass": 0,
+        "buildWitness": "registry28-tempo-lock-1d-v6-network-no-starve",
+        "drop": 0,
+        "energy": 0,
+        "engine": "aux-r3-wow-1d",
+        "fxFailed": 0,
+        "fxFirst": 220,
+        "fxLast": 247,
+        "fxRegistered": 28,
+        "generator": "anti-repeat-v4",
+        "generatorDomain": 0,
+        "generatorEnabled": false,
+        "generatorLocked": false,
+        "impact": 0,
+        "lumaPolicy": "camera-bright-v1",
+        "mid": 0,
+        "modeCount": 248,
+        "profile": 0,
+        "projection": "fold2-1d-v1",
+        "projectionGeometry": "perimeter-5-6-5-6-v1",
+        "projectionHelloPackets": 24581,
+        "projectionLink": "frame-lock-v1",
+        "projectionPeerAgeMs": 4294967295,
+        "projectionPeerKnown": false,
+        "projectionQueuePolicy": "newest-frame-v1",
+        "projectionRole": "receiver",
+        "projectionRxActive": false,
+        "projectionRxAgeMs": 4294967295,
+        "projectionRxPackets": 0,
+        "projectionRxSeq": 0,
+        "projectionScheduler": "network-before-bus-guard-v1",
+        "projectionSeq": 0,
+        "projectionTransport": "udp-unicast-discovery-v1",
+        "projectionTxActive": false,
+        "projectionTxAgeMs": 4294967295,
+        "pulse": 0,
+        "release": "hbnf-wow-aux-r3-2026-09-22-v1",
+        "sceneParams": "profile-via-ix-style-amount-by-effect-id",
+        "style": 0,
+        "syncEffectContract": "ids220-247",
+        "treble": 0,
+        "variantDwellSeconds": 14,
+        "variantFamily": 0,
+        "variantSequence": 0,
+        "variantSignature": 0,
+        "variation": 85
+      },
+      "bri": 255,
+      "bs": 0,
+      "ledmap": 0,
+      "lor": 0,
+      "mainseg": 0,
+      "nl": {
+        "dur": 60,
+        "mode": 1,
+        "on": false,
+        "rem": -1,
+        "tbri": 0
+      },
+      "on": true,
+      "pl": -1,
+      "ps": -1,
+      "seg": [
+        {
+          "bm": 0,
+          "bri": 255,
+          "c1": 128,
+          "c2": 128,
+          "c3": 16,
+          "cct": 127,
+          "col": [
+            [
+              255,
+              160,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ]
+          ],
+          "frz": false,
+          "fx": 0,
+          "grp": 1,
+          "id": 0,
+          "ix": 128,
+          "lc": 1,
+          "len": 22,
+          "m12": 0,
+          "mi": false,
+          "o1": false,
+          "o2": false,
+          "o3": false,
+          "of": 0,
+          "on": true,
+          "pal": 0,
+          "rev": false,
+          "sel": true,
+          "set": 0,
+          "si": 0,
+          "spc": 0,
+          "start": 0,
+          "stop": 22,
+          "sx": 128
+        }
+      ],
+      "transition": 7,
+      "udpn": {
+        "recv": false,
+        "rgrp": 0,
+        "send": false,
+        "sgrp": 0
+      }
+    },
+    "matrix_build": {
+      "basedOnFirmwareSha256": "b9bb60dca1a9be8f7241670a7540810c604465c9adf7084b6efc90d5b4622886",
+      "basedOnReleaseId": "hbnf-matrix-coordinated-v1-20261002-06",
+      "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "features": [
+        "canonical-palette-v1",
+        "canonical-overlay-v1",
+        "coordinated-ui-v1"
+      ],
+      "ip": "192.168.77.10",
+      "mac": "70:4b:ca:5b:34:5c",
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "schema": "hbnf-build-v1",
+      "wled": "16.0.1"
+    },
+    "matrix_info": {
+      "arch": "esp32",
+      "bootloaderSHA256": "b97d154765ea69ca895a33de59adb4b322509aa2a3e2c7c8409b31cbc1bcc2cd",
+      "brand": "WLED",
+      "clock": 240,
+      "cn": "Niji",
+      "core": "4.4.8.240628",
+      "cpalcount": 0,
+      "cpalmax": 129,
+      "deviceId": "52d5bc29d6bd3a4be1702e3b7393daae7d6581734d",
+      "flash": 4,
+      "freeheap": 74316,
+      "fs": {
+        "pmt": 0,
+        "t": 983,
+        "u": 364
+      },
+      "fxcount": 220,
+      "ip": "192.168.77.10",
+      "leds": {
+        "bootps": 60,
+        "cct": 0,
+        "count": 534,
+        "fps": 41,
+        "lc": 1,
+        "matrix": {
+          "h": 16,
+          "w": 32
+        },
+        "maxpwr": 1800,
+        "maxseg": 32,
+        "pwr": 632,
+        "rgbw": false,
+        "seglc": [
+          1,
+          0
+        ],
+        "wv": 0
+      },
+      "lip": "",
+      "live": false,
+      "liveseg": -1,
+      "lm": "",
+      "lwip": 0,
+      "mac": "704bca5b345c",
+      "maps": [
+        {
+          "id": 0
+        }
+      ],
+      "name": "WLED-Gledopto",
+      "ndc": 1,
+      "opt": 79,
+      "palcount": 72,
+      "product": "FOSS",
+      "release": "ESP32",
+      "repo": "wled/WLED",
+      "simplifiedui": false,
+      "str": false,
+      "time": "1970-1-1, 00:57:07",
+      "u": {
+        "AGC Gain": [
+          2.33,
+          "x"
+        ],
+        "Audio Source": [
+          "PDM digital",
+          " - quiet"
+        ],
+        "AudioReactive": [
+          "<button class=\"btn btn-xs\" onclick=\"requestJson({AudioReactive:{enabled:false}});\"><i class=\"icons on\">&#xe08f;</i></button>"
+        ],
+        "GEQ Input Level": [
+          "<div class=\"slider\"><div class=\"sliderwrap il\"><input class=\"noslide\" onchange=\"requestJson({AudioReactive:{inputLevel:parseInt(this.value)}});\" oninput=\"updateTrail(this);\" max=255 min=0 type=\"range\" value=255 /><div class=\"sliderdisplay\"></div></div></div>"
+        ],
+        "Sound Processing": [
+          "running"
+        ],
+        "UDP Sound Sync": [
+          "send mode",
+          " v2"
+        ]
+      },
+      "udpport": 21324,
+      "um": [
+        32,
+        58
+      ],
+      "umpalcount": 0,
+      "uptime": 3427,
+      "ver": "16.0.1",
+      "vid": 2605010,
+      "wifi": {
+        "ap": false,
+        "bssid": "94:83:C4:98:78:94",
+        "channel": 4,
+        "rssi": -49,
+        "signal": 100
+      },
+      "ws": 0
+    },
+    "matrix_state": {
+      "AudioReactive": {
+        "on": true
+      },
+      "HBNF": {
+        "audio": {
+          "bass": 0,
+          "mid": 0,
+          "peak": false,
+          "treble": 0,
+          "volume": 0
+        },
+        "audioResponse": 50,
+        "auxBrightness": 245,
+        "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "companionLastNonzeroPixels": 0,
+        "companionRenderCount": 139074,
+        "effectId": 142,
+        "foundationTelemetry": {
+          "enabled": false,
+          "frameMsAvg": null,
+          "frameMsMax": null,
+          "frameMsP50": null,
+          "frameMsP95": null,
+          "frameMsP99": null,
+          "kernelId": 255,
+          "largestFreeBlockBytes": 65524,
+          "minimumFreeHeapBytes": 55100,
+          "sampleCount": 0
+        },
+        "kernel": 18,
+        "liveAcePot": 0,
+        "liveActive": false,
+        "liveEntryCount": 0,
+        "liveLabel": "",
+        "matrixBrightness": 44,
+        "motion": 50,
+        "overlayId": null,
+        "packet20Diagnostic": {
+          "enabled": false,
+          "espResetReason": 3,
+          "lastCommand": "",
+          "lastCommandAccepted": false,
+          "resetReasonCore0": 12,
+          "resetReasonCore1": 12,
+          "restoreVerified": false,
+          "selectedKernel": 18,
+          "snapshotGeneration": 0,
+          "snapshotHash": 0,
+          "snapshotId": 0,
+          "snapshotState": "IDLE",
+          "snapshotValid": false
+        },
+        "palette": {
+          "mode": "legacy"
+        },
+        "scene": 0,
+        "schema": "foundation-v1",
+        "timing": {
+          "audioModulationUs": 1184,
+          "auxProjectionAgeMs": 3427126,
+          "companionDdpSendUs": 0,
+          "companionPrepUs": 144,
+          "companionRenderCount": 139074,
+          "fps": 40,
+          "freeHeap": 119384,
+          "kernel": 18,
+          "kernelRenderUs": 5605,
+          "overlayUs": 39,
+          "paletteColorUs": 336,
+          "rssi": -49,
+          "schedulerVariantUs": 1349,
+          "unaccountedUs": 8147,
+          "uptimeSec": 3427,
+          "variantSignature": 399131425,
+          "wholeFrameUs": 16806
+        },
+        "transport": "wled-native-ddp-unicast",
+        "variantDwellSeconds": 82,
+        "variantSignature": 399131425
+      },
+      "bri": 255,
+      "bs": 0,
+      "ledmap": 0,
+      "lor": 0,
+      "mainseg": 0,
+      "nl": {
+        "dur": 60,
+        "mode": 1,
+        "on": false,
+        "rem": -1,
+        "tbri": 0
+      },
+      "on": true,
+      "pl": -1,
+      "ps": 60,
+      "seg": [
+        {
+          "bm": 0,
+          "bri": 255,
+          "c1": 128,
+          "c2": 128,
+          "c3": 16,
+          "cct": 127,
+          "col": [
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ]
+          ],
+          "frz": false,
+          "fx": 142,
+          "grp": 1,
+          "id": 0,
+          "ix": 128,
+          "lc": 1,
+          "len": 32,
+          "m12": 0,
+          "mY": false,
+          "mi": false,
+          "o1": false,
+          "o2": false,
+          "o3": false,
+          "of": 0,
+          "on": true,
+          "pal": 22,
+          "rY": false,
+          "rev": false,
+          "sel": true,
+          "set": 0,
+          "si": 0,
+          "spc": 0,
+          "start": 0,
+          "startY": 0,
+          "stop": 32,
+          "stopY": 16,
+          "sx": 128,
+          "tp": false
+        },
+        {
+          "bm": 0,
+          "bri": 255,
+          "c1": 128,
+          "c2": 128,
+          "c3": 16,
+          "cct": 127,
+          "col": [
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ]
+          ],
+          "frz": false,
+          "fx": 142,
+          "grp": 1,
+          "id": 1,
+          "ix": 128,
+          "lc": 0,
+          "len": 22,
+          "m12": 0,
+          "mY": false,
+          "mi": false,
+          "o1": false,
+          "o2": false,
+          "o3": false,
+          "of": 0,
+          "on": true,
+          "pal": 0,
+          "rY": false,
+          "rev": false,
+          "sel": true,
+          "set": 0,
+          "si": 0,
+          "spc": 0,
+          "start": 512,
+          "startY": 0,
+          "stop": 534,
+          "stopY": 1,
+          "sx": 128,
+          "tp": false
+        }
+      ],
+      "transition": 7,
+      "udpn": {
+        "recv": false,
+        "rgrp": 0,
+        "send": false,
+        "sgrp": 1
+      }
+    },
+    "owner_physical_observation": "Owner reported immediately before sleeping: Matrix and AUX active; AUX mirrors Matrix; currently functioning properly. Not independently re-observed by worker."
+  },
+  "host": {
+    "active_mutation_processes": [],
+    "default_route": "   route to: default\ndestination: default\n       mask: default\n    gateway: 192.168.77.1\n  interface: en0\n      flags: <UP,GATEWAY,DONE,STATIC,PRCLONING,GLOBAL>\n recvpipe  sendpipe  ssthresh  rtt,msec    rttvar  hopcount      mtu     expire\n       0         0         0         0         0         0      1500         0 \n",
+    "internet_head": "HTTP/2 200 \ndate: Fri, 09 Oct 2026 10:18:06 GMT\ncontent-type: text/html; charset=utf-8\ncontent-language: en-US\nvary: X-PJAX, X-PJAX-Container, Turbo-Visit, Turbo-Frame, X-Requested-With, X-GitHub-Client-Version, Accept-Language, Sec-Fetch-Site,Accept",
+    "mac_interface": "en0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500\n\toptions=6460<TSO4,TSO6,CHANNEL_IO,PARTIAL_CSUM,ZEROINVERT_CSUM>\n\tether ce:cb:a4:99:c3:11\n\tinet6 fe80::452:66b3:c66d:8e88%en0 prefixlen 64 secured scopeid 0xb \n\tinet 192.168.77.180 netmask 0xffffff00 broadcast 192.168.77.255\n\tnd6 options=201<PERFORMNUD,DAD>\n\tmedia: autoselect\n\tstatus: active\n",
+    "mac_power": "Now drawing from 'AC Power'\n -InternalBattery-0 (id=38600803)\t100%; charged; 0:00 remaining present: true\n",
+    "mac_uptime": "kern.boottime: { sec = 1791240660, usec = 576319 } Mon Oct  5 15:51:00 2026"
+  },
+  "power_stability_note": "No household-voltage telemetry is available. Since the reported house flickers, Mac remained on AC, device uptimes are stable across this preflight, and no subsequent interruption is observed in available state.",
+  "rollback": {
+    "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008
+  },
+  "schema": "hbnf-r7-readonly-preota-v1"
+}

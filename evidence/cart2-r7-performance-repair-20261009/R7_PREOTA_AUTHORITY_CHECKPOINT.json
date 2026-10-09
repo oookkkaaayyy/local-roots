@@ -1,0 +1,28 @@
+{
+  "captured_at_utc": "2026-10-09T10:12:34.858126+00:00",
+  "conditional_owner_authority": "One exact R7 install/qualification and one exact R4 recovery only on objective failure; no R8+; all frozen thresholds unchanged.",
+  "current_live_mutation_authorized": false,
+  "drive_receipt_sha256": "91c1bae7220d3584c87a56c550ddbdde361444d61b55f7b3c057b852ea4f5da1",
+  "exact_r4_rollback": {
+    "bytes": 1489008,
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "sha256_reverified": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "github_source_checkpoint": "d22685c3524a6cb7660b38e114b45bd63a211345",
+  "live_preflight_path": "evidence/cart2-r7-performance-repair-20261009/R7_READONLY_PREOTA_20261009.json",
+  "live_preflight_result": "PASS",
+  "live_preflight_sha256": "997fbc6dcfb194b78da3744ed3976b96652142223ac24f5a53468020e97b0c27",
+  "prior_to_install": true,
+  "r4_restored_and_current": true,
+  "r6_failure_evidence_sha256": "b2e14deeab3abbd907d4c063131a2edac937f0f97eb389e23dcb14658dbf5368",
+  "r6_transaction_closed": true,
+  "r7_candidate": {
+    "bytes": 1497920,
+    "release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+    "sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+    "sha256_reverified": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994"
+  },
+  "schema": "hbnf-r7-preota-authority-checkpoint-v1",
+  "single_live_worker_path": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_WORKER_INVENTORY.json",
+  "single_live_worker_sha256": "597b0fd9109b3565b02d9cc33647e9d9771f9c289a972f140da58e62dd46c459"
+}

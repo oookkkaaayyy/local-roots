@@ -588,9 +588,9 @@
     "candidate_size_bytes": 1497920,
     "candidate_source_binding": "evidence/cart2-r7-performance-repair-20261009/SOURCE_BINDING_R7.json",
     "candidate_source_binding_sha256": "d2a3ae8ca6b22728008a92b5f90b8fd15b53e1f15b0fdd4dc3f494eb571f6fec",
-    "consumed_before_network_request": false,
-    "device_preflight": "evidence/cart2-r7-performance-repair-20261009/R7_READONLY_PREFLIGHT_CURRENT_20261009.json",
-    "device_preflight_sha256": "9c5811aac91a1dce7a416ed37c9aa0d49a0931bef02ea2c03670cdd32d9968bd",
+    "consumed_before_network_request": true,
+    "device_preflight": "/private/tmp/hbnf-p2-build/r7-authority-root/evidence/cart2-r7-performance-repair-20261009/R7_READONLY_PREOTA_AUTHORIZATION_FINAL_20261009.json",
+    "device_preflight_sha256": "63013c009800af1ab6320c8faae7cfc2542a821b073d288c57f892137f5e881b",
     "drive_preservation_receipt": "evidence/cart2-r7-performance-repair-20261009/R7_DRIVE_PRESERVATION_RECEIPT.json",
     "drive_preservation_receipt_sha256": "91c1bae7220d3584c87a56c550ddbdde361444d61b55f7b3c057b852ea4f5da1",
     "failure_correction": {
@@ -598,15 +598,17 @@
       "R7_correction": "Exact fixed-grid int32 path, exhaustive pixel/coordinate equivalence, generic int64 fallback preserved.",
       "preserves_features_and_frozen_gates": true
     },
-    "install_attempts": 0,
+    "install_attempt_started_utc": "2026-10-09T10:20:38.369981+00:00",
+    "install_attempts": 1,
     "install_limit": 1,
+    "install_transaction_start": "evidence/cart2-r7-performance-repair-20261009/R7_INSTALL_TRANSACTION_START.json",
     "live_admission": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_APPROVED_ADMISSION.json",
     "live_admission_result": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_APPROVED_ADMISSION_RESULT.json",
-    "live_admission_result_sha256": "c4f379d538718081beac3fc4074d916de8995036b0b2fc5c95a7bc38328cf8c7",
-    "live_admission_sha256": "f6a23ee096a5e99c329fee68665f273ef78b5ff35de2bd62c16ee1264fa42205",
-    "live_mutation_authorized": false,
+    "live_admission_result_sha256": "e00f85dc3552c53becba4685bc0f4e0488cebd72f010ee8aeffafdf87739b700",
+    "live_admission_sha256": "1d242f4e55cc9d95e8cdc45e3040ce0ad73fe7783f2f3bbfff6dbfb25d2f61e6",
+    "live_mutation_authorized": true,
     "live_worker_inventory": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_WORKER_INVENTORY.json",
-    "live_worker_inventory_sha256": "597b0fd9109b3565b02d9cc33647e9d9771f9c289a972f140da58e62dd46c459",
+    "live_worker_inventory_sha256": "0f406ef0f07ca32613897fdfa8fb41e50742ca1657fb868467029369200b5fad",
     "offline_admission": "evidence/cart2-r7-performance-repair-20261009/R7_OFFLINE_COMPILED_ADMISSION.json",
     "offline_admission_sha256": "aa5e93a7a6ae684dddf6ed0ea9d2732cdca783bf155d96d88d78cd0e61b12207",
     "offline_manifest": "evidence/cart2-r7-performance-repair-20261009/R7_FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
@@ -622,11 +624,13 @@
       "fresh device/power/safety preflight passes",
       "authoritative control state records exact R7 identity and consumed R6 transaction"
     ],
+    "preota_authority_checkpoint": "evidence/cart2-r7-performance-repair-20261009/R7_PREOTA_AUTHORITY_CHECKPOINT.json",
+    "preota_authority_checkpoint_sha256": "364ae4c5905096aa7546cc74a8142c2e0365c7b247e0014fa9215997ca72c174",
     "r4_rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "rollback_attempts": 0,
     "schema": "hbnf-conditional-r7-successor-v1",
     "scope_exclusion": "No R8 or later installation without new user authorization.",
-    "status": "OFFLINE_AND_LIVE_ADMISSION_PASS__GITHUB_DRIVE_CHECKPOINTED__FRESH_PREOTA_GATE_NEXT"
+    "status": "R7_INSTALL_AND_QUALIFICATION_AUTHORIZED__ATTEMPT_CONSUMED_BEFORE_NETWORK_REQUEST__NOT_YET_SENT"
   },
   "current_task": {
     "autonomous_completion_authorization": {
@@ -674,7 +678,7 @@
       "status": "PHASE2_COMMITTED_REQUIREMENT",
       "ui_requirement": "Provide useful low-night perceptual granularity while retaining true maximum."
     },
-    "checkpoint_at_utc": "2026-10-08T02:26:44+00:00",
+    "checkpoint_at_utc": "2026-10-09T10:21:24.422076+00:00",
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "diagnostic_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
@@ -1655,44 +1659,39 @@
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "live_mutation_authorization": {
-      "anti_repetition": [
-        "NO 28_KERNEL_SWEEP_REPEAT",
-        "NO OBSERVER_A_B_REPEAT",
-        "NO FIRMWARE_REBUILD",
-        "NO GITHUB_ACTIONS",
-        "NO BROAD_SOURCE_ARCHAEOLOGY",
-        "NO THRESHOLD_SHOPPING"
+      "admission_path": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_APPROVED_ADMISSION.json",
+      "admission_result_path": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_APPROVED_ADMISSION_RESULT.json",
+      "admission_result_sha256": "e00f85dc3552c53becba4685bc0f4e0488cebd72f010ee8aeffafdf87739b700",
+      "admission_sha256": "1d242f4e55cc9d95e8cdc45e3040ce0ad73fe7783f2f3bbfff6dbfb25d2f61e6",
+      "authorization": "One conditional R7 installation and full unchanged qualification, plus one exact R4 recovery only on objective device/safety/performance/required-AUX failure; no R8+; user is asleep and no further routine input required.",
+      "candidate_release": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+      "candidate_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+      "consumed_before_network_request": true,
+      "exclusions": [
+        "R8 or later install",
+        "AUX/Opal/router mutation",
+        "cloud deployment",
+        "Guest Mode activation",
+        "UV energization",
+        "threshold weakening"
       ],
-      "candidate_sequence": 47,
-      "candidate_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-      "candidate_size_bytes": 1489008,
-      "completed_sequence": 55,
-      "diagnostic_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-      "live_mutation_limit": 1,
-      "recovery_rule": "SEQ48_RELEASE07_ONLY_FOR_GENUINE_DEVICE_RUNTIME_FOUNDATION_FAILURE_OR_GENUINELY_LOST_SAFETY_PROOF__HOST_ONLY_FAILURE_PRESERVES_SEQ47",
-      "recovery_sequence": 48,
-      "release07_recovery_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
-      "release07_recovery_size_bytes": 1458624,
-      "scope": [
-        "Use the exact unchanged candidate bytes; no firmware rebuild and no GitHub Actions.",
-        "Reuse exact-artifact seq39 28/28 sweep, observer-effect PASS, baseline/common-path evidence; do not repeat absent a real artifact/instrumentation invalidator.",
-        "Use corrected sustained policy config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json, policy SHA256 2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797. Relative single-sample frame_max remains diagnostic only; numeric sustained thresholds and catastrophic 3-consecutive rule remain unchanged.",
-        "Fresh read-only Release07/AUX prelive plus exact candidate/recovery SHA+size verification only.",
-        "Install exact candidate once as seq47 using the proven Opal-origin local WLED /update path.",
-        "After seq47 boot, create and verify a fresh Packet20 diagnostic session and boot-scoped snapshot before any state change.",
-        "Run one uninterrupted contiguous >=5400-second state-changing Foundation soak with independent sampler/state changer; persist evidence continuously.",
-        "Do not stop on isolated relative frame_max alone. Enforce sustained FPS/p95/p99/resource gates only over the complete contiguous 5400s window, while restart/identity/sample-continuity/AUX and catastrophic early-stop protections remain active.",
-        "Perform exactly one renderer restore after clean soak completion; verify source-bound restore semantics.",
-        "Seq48 exact Release07 recovery is permitted only for genuine device/runtime/Foundation failure or genuinely lost safety/identity/restore proof. Host-only harness failure preserves seq47 when safety proof remains valid.",
-        "On objective T2 PASS, write the Foundation receipt, advance to FOUNDATION_QUALIFIED, and immediately execute the prepared T3 interface-freeze fast path under existing conditional preauthorization."
-      ],
-      "status": "CONSUMED__SEQ55_PASS__LIVE_MUTATION_CLOSED",
-      "target": "Complete the final missing Foundation requirement with one unchanged-artifact >=90-minute sustained-performance soak.",
-      "user_authorization": "Standing coordinator autonomy plus current status/outlook continuation: remove administrative blocker and execute the already-defined expedited final Foundation transaction after offline correction PASS."
+      "install_attempts": 1,
+      "install_limit": 1,
+      "live_worker_inventory_path": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_WORKER_INVENTORY.json",
+      "live_worker_inventory_sha256": "0f406ef0f07ca32613897fdfa8fb41e50742ca1657fb868467029369200b5fad",
+      "preflight_path": "/private/tmp/hbnf-p2-build/r7-authority-root/evidence/cart2-r7-performance-repair-20261009/R7_READONLY_PREOTA_AUTHORIZATION_FINAL_20261009.json",
+      "preflight_sha256": "63013c009800af1ab6320c8faae7cfc2542a821b073d288c57f892137f5e881b",
+      "rollback_attempts": 0,
+      "rollback_limit": 1,
+      "rollback_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "schema": "hbnf-r7-bounded-live-authorization-v1",
+      "status": "ACTIVE__R7_ATTEMPT_CONSUMED_BEFORE_REQUEST__ONE_INSTALL_AND_QUALIFICATION_ONLY",
+      "target": "Matrix 192.168.77.10 / MAC 70:4b:ca:5b:34:5c only"
     },
     "live_mutation_authorized": true,
     "name": "Foundation offline timeout and soak-harness checkpoint",
-    "next_action": "Owner: complete the four 30-second labeled passive audio captures using docs/phase2-audio-capture-owner-procedure.md; optionally review provisional text presentation; confirm hardware-ready before any requested live transaction. No live action is authorized by this checkpoint.",
+    "next_action": "Run final prelive checks and exactly one R7 multipart /update request; then verify exact identity/health and execute frozen qualification; no R8+.",
     "next_work": "After owner captures, run offline trace replay and evaluate labeled feature coverage/manual Vibe separation/AUTO hysteresis. Keep mapping and visual presentation UNFROZEN until evidence/owner review. Preserve the offline candidate and do not install it without the hardware-ready handshake and current lifecycle authorization.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "overnight_priority": {
@@ -2337,7 +2336,7 @@
       "status": "PASS"
     },
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "R6_OTA_HTTP_SUCCESS__NORMAL_REBOOT_IDENTITY_PENDING",
+    "status": "R7_ONE_INSTALL_AUTHORIZED_CONSUMED_BEFORE_REQUEST__GUARDED_REQUEST_PENDING",
     "t3_fast_path_preparation": {
       "human_approval_required": true,
       "human_packet": "work/cart2/27_T3_PHASE2_FAST_PATH_PREP_20261006.md",
@@ -2382,20 +2381,19 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "R6_CLOSED__R7_EXACT_OFFLINE_AND_LIVE_ADMISSION_PASS__FINAL_PREOTA_PREFLIGHT_NEXT",
+    "current_failure_domain": "R7_ONE_AUTHORIZED_INSTALL_ATTEMPT_CONSUMED_BEFORE_NETWORK_REQUEST",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
       "artifact_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
       "release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
-      "status": "R7_OFFLINE_AND_LIVE_ADMISSION_PASS__GITHUB_DRIVE_CHECKPOINTED__FRESH_PREOTA_GATE_NEXT"
+      "status": "R7_AUTHORITY_CONSUMED__GUARDED_CAPSULE_AND_SINGLE_REQUEST_PENDING"
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Validate the exact R7 LIVE_APPROVED admission against the authoritative state, current preflight, pinned binary, and exact R4 rollback.",
-      "When admission passes, record the one R7 attempt consumed before network request, then use the guarded capsule path for a single exact Matrix OTA.",
-      "Run matched tails-off kernel13 and dense kernel9 versus exact R4 profiles; preserve and stop at first frozen gate failure.",
-      "If early gates pass, run the unchanged 28-kernel sweep, combined-feature checks, and one contiguous 5400-second soak.",
-      "Keep T4/T5 incomplete pending all required live physical/UI/scoring evidence and owner acceptance; no R8+."
+      "Validate actual-state LIVE_APPROVED admission and final guarded capsule.",
+      "Send exactly one R7 multipart OTA request to Matrix 192.168.77.10.",
+      "Verify exact R7 identity/health, then run matched kernels13 and9; if they pass, unchanged 28-kernel sweep, combined cases, and contiguous 5400-second soak.",
+      "Do not mark T4/T5 accepted without remaining evidence; exact R4 recovery is limited to one objectively justified failure recovery."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -2620,23 +2618,46 @@
     },
     "schema": "hbnf-lane-execution-state-v1"
   },
-  "last_updated_utc": "2026-10-09T10:11:48.819359+00:00",
+  "last_updated_utc": "2026-10-09T10:12:41.381569+00:00",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
-    "candidate_release": "hbnf-cart2-phase2-offline-wow-r6-20261009",
-    "candidate_sha256": "0a4b9563c7debfb5a01e9d36aeb8aac2583e105303064de3db0466b7dd9d89d6",
-    "closure_evidence": "evidence/cart2-r6-live-qualification-20261009/R6_FAILURE_R4_RECOVERY_CLOSURE.json",
-    "closure_evidence_sha256": "dcbe9d642a09adb81f0c2d96684d9f8bf852aef512a6b5a6d44881759be71cc1",
-    "effective_next_authority": "conditional_phase2_r7_successor_authorization only",
-    "status": "CLOSED__R6_PERFORMANCE_GATE_FAILED__EXACT_R4_RECOVERY_COMPLETED"
+    "admission_path": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_APPROVED_ADMISSION.json",
+    "admission_result_path": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_APPROVED_ADMISSION_RESULT.json",
+    "admission_result_sha256": "e00f85dc3552c53becba4685bc0f4e0488cebd72f010ee8aeffafdf87739b700",
+    "admission_sha256": "1d242f4e55cc9d95e8cdc45e3040ce0ad73fe7783f2f3bbfff6dbfb25d2f61e6",
+    "authorization": "One conditional R7 installation and full unchanged qualification, plus one exact R4 recovery only on objective device/safety/performance/required-AUX failure; no R8+; user is asleep and no further routine input required.",
+    "candidate_release": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+    "candidate_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+    "consumed_before_network_request": true,
+    "exclusions": [
+      "R8 or later install",
+      "AUX/Opal/router mutation",
+      "cloud deployment",
+      "Guest Mode activation",
+      "UV energization",
+      "threshold weakening"
+    ],
+    "install_attempts": 1,
+    "install_limit": 1,
+    "live_worker_inventory_path": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_WORKER_INVENTORY.json",
+    "live_worker_inventory_sha256": "0f406ef0f07ca32613897fdfa8fb41e50742ca1657fb868467029369200b5fad",
+    "preflight_path": "/private/tmp/hbnf-p2-build/r7-authority-root/evidence/cart2-r7-performance-repair-20261009/R7_READONLY_PREOTA_AUTHORIZATION_FINAL_20261009.json",
+    "preflight_sha256": "63013c009800af1ab6320c8faae7cfc2542a821b073d288c57f892137f5e881b",
+    "rollback_attempts": 0,
+    "rollback_limit": 1,
+    "rollback_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "schema": "hbnf-r7-bounded-live-authorization-v1",
+    "status": "ACTIVE__R7_ATTEMPT_CONSUMED_BEFORE_REQUEST__ONE_INSTALL_AND_QUALIFICATION_ONLY",
+    "target": "Matrix 192.168.77.10 / MAC 70:4b:ca:5b:34:5c only"
   },
-  "live_mutation_authorization_closed_at_utc": "2026-10-09T09:22:37.162Z",
+  "live_mutation_authorization_closed_at_utc": null,
   "live_mutation_authorization_closure": {
     "evidence": "evidence/cart2-r6-live-qualification-20261009/R6_FAILURE_R4_RECOVERY_CLOSURE.json",
     "evidence_sha256": "dcbe9d642a09adb81f0c2d96684d9f8bf852aef512a6b5a6d44881759be71cc1",
     "reason": "R6 matched tails-off performance gate failed; exact authorized R4 recovery completed and verified; no remaining authorized live mutations."
   },
-  "live_mutation_authorized": false,
+  "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",

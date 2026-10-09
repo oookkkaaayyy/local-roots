@@ -1,0 +1,34 @@
+{
+  "attempt_number": 1,
+  "authorization": "One conditional R7 candidate installation and full unchanged qualification; one exact R4 recovery only on objectively defined device gate failure; no R8+.",
+  "candidate": {
+    "bytes": 1497920,
+    "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-cart2-phase2-offline-wow-r7-20261009.bin",
+    "release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+    "sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994"
+  },
+  "capsule_path": "evidence/cart2-r7-performance-repair-20261009/R7_EXECUTION_CAPSULE.json",
+  "consumed_at_utc": "2026-10-09T10:14:50.629410+00:00",
+  "consumed_before_network_request": true,
+  "live_admission_path": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_APPROVED_ADMISSION.json",
+  "live_admission_sha256": "949b343cb1a7b41960f4cc8317a52b79fdd8ec652f473c8e8a2ac83c4a0d82f5",
+  "preflight_path": "evidence/cart2-r7-performance-repair-20261009/R7_READONLY_PREOTA_20261009.json",
+  "preflight_sha256": "997fbc6dcfb194b78da3744ed3976b96652142223ac24f5a53468020e97b0c27",
+  "prelive_proof_path": "evidence/cart2-r7-performance-repair-20261009/R7_PRELIVE_PROOF.json",
+  "rollback": {
+    "bytes": 1489008,
+    "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "rollback_attempt_limit": 1,
+    "rollback_attempts_so_far": 0,
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "run_id": "phase2-r7-one-install-20261009",
+  "schema": "hbnf-r7-live-install-transaction-start-v1",
+  "status": "ONE_R7_ATTEMPT_CONSUMED_BEFORE_NETWORK_REQUEST__GUARDED_REQUEST_PENDING",
+  "target": {
+    "endpoint": "http://192.168.77.10/update",
+    "ip": "192.168.77.10",
+    "mac": "70:4b:ca:5b:34:5c"
+  }
+}

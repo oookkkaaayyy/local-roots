@@ -1,9 +1,9 @@
 {
   "errors": [],
-  "live_admission_sha256": "f6a23ee096a5e99c329fee68665f273ef78b5ff35de2bd62c16ee1264fa42205",
+  "live_admission_sha256": "1d242f4e55cc9d95e8cdc45e3040ce0ad73fe7783f2f3bbfff6dbfb25d2f61e6",
   "pass": true,
   "schema": "hbnf-cart2-release-admission-result-v1",
   "stage": "LIVE_APPROVED",
-  "validated_against": "temporary state copy enables only the exact conditional R7 authority for admission evaluation; actual control state remains closed pending this published transition",
-  "validated_at_utc": "2026-10-09T10:08:45.783167+00:00"
+  "validated_against": "Authoritative config/HBNF_CONTROL_STATE.json after the exact conditional R7 install attempt was consumed before network request; exact R4 remains installed at admission time.",
+  "validated_at_utc": "2026-10-09T10:21:24.420776+00:00"
 }
