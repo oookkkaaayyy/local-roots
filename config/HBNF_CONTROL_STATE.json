@@ -484,7 +484,7 @@
     "performance_failure_evidence": "evidence/cart2-r6-live-qualification-20261009/R6_PERFORMANCE_FAILURE_CLASSIFICATION.json",
     "performance_failure_evidence_sha256": "b2e14deeab3abbd907d4c063131a2edac937f0f97eb389e23dcb14658dbf5368",
     "rollback_preflight": "evidence/cart2-r6-live-qualification-20261009/R6_PRE_ROLLBACK_READONLY_PREFLIGHT.json",
-    "rollback_preflight_sha256": "79b04aa3cbf1d44f82d9e2661d2a5ea7362313fcf3914fb06bb949c76c79d692",
+    "rollback_preflight_sha256": "acb88a17bf4f9c76b02655e340312f7593c6fe925cf2d91b914a743756f8b8c4",
     "rollback_attempt_receipt": "PENDING"
   },
   "checkpoint_at_utc": "2026-10-09T09:20:00.875Z",
