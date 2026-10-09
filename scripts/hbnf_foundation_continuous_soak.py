@@ -73,7 +73,8 @@ def _sampler_worker(argv: list[str], entries: list[dict], outdir: pathlib.Path,
                     expected_kernel_id: int | None = None,
                     expected_variant_id: int | None = None,
                     expected_trace_armed: bool | None = None,
-                    expected_cpu_mhz: int | None = None) -> int:
+                    expected_cpu_mhz: int | None = None,
+                    expected_matrix_brightness: int | None = None) -> int:
     path = outdir / "FOUNDATION_SOAK.jsonl"
     failure = outdir / "TELEMETRY_SAMPLER_FAILURE.json"
     started = time.monotonic()
@@ -110,6 +111,11 @@ def _sampler_worker(argv: list[str], entries: list[dict], outdir: pathlib.Path,
                 raise RuntimeError(f"diagnostic-sample-contract:kernel-id:{sample.get('kernel_id')}!={expected_kernel_id}")
             if expected_variant_id is not None and int(sample.get("variant_id", -1)) != expected_variant_id:
                 raise RuntimeError(f"diagnostic-sample-contract:variant-id:{sample.get('variant_id')}!={expected_variant_id}")
+            controls=sample.get("runtime_controls") or {}
+            if expected_matrix_brightness is not None and int(controls.get("matrix_brightness", -1)) != expected_matrix_brightness:
+                raise RuntimeError(f"diagnostic-sample-contract:matrix-brightness:{controls.get('matrix_brightness')}!={expected_matrix_brightness}")
+            if expected_matrix_brightness is not None and controls.get("matrix_on") is not True:
+                raise RuntimeError("diagnostic-sample-contract:matrix-off-during-window")
             if expected_trace_armed is not None and sample.get("trace_armed") is not expected_trace_armed:
                 raise RuntimeError(f"diagnostic-sample-contract:trace-armed:{sample.get('trace_armed')}!={expected_trace_armed}")
             if expected_cpu_mhz is not None:

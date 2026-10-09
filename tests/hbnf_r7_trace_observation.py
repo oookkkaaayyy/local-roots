@@ -33,6 +33,7 @@ good={
  "overlay_ms_avg":0.2,"overlay_ms_p95":1.0,"aux_prepare_send_ms_avg":0.1,
  "aux_prepare_send_ms_p95":0.5,"unaccounted_ms_avg":3.0,"unaccounted_ms_p95":6.0,
  "trace_overflow_count":0,"trace_armed":False,"trace_records_serialized":False,
+ "runtime_controls":{"matrix_on":True,"matrix_brightness":44,"vibe":"GROOVE","scene":"GROOVE"},
  "telemetry_endpoint_reads":{"matrix_info":{"status":"PASS","elapsed_seconds":0.01},
   "matrix_build":{"status":"PASS","elapsed_seconds":0.01},"matrix_state":{"status":"PASS","elapsed_seconds":0.02},
   "aux_info":{"status":"PASS","elapsed_seconds":0.01},"aux_state":{"status":"PASS","elapsed_seconds":0.01}},
@@ -67,7 +68,8 @@ def window(armed):
    trace_overflow_count=(8 if armed else 0),trace_records_serialized=False,
    trace_cpu_mhz_start=240,trace_cpu_mhz_readback=240) for i in range(8)]
  rc,out=run_sampler(samples,60.0,initial_delay=4.0,include_boundary_sample=True,
-  expected_kernel_id=13,expected_variant_id=1347100685,expected_trace_armed=armed,expected_cpu_mhz=240)
+  expected_kernel_id=13,expected_variant_id=1347100685,expected_trace_armed=armed,expected_cpu_mhz=240,
+  expected_matrix_brightness=44)
  assert rc==0
  rows=[json.loads(line) for line in (out/"FOUNDATION_SOAK.jsonl").read_text().splitlines()]
  assert len(rows)==8 and all(x["frame_ms_p99"]==42.5 for x in rows)
@@ -95,7 +97,8 @@ def fails(samples,duration,expected_text,**sample_contract):
 # variant, trace mode, or serialization state changes; the observation is not skipped.
 bad_clock=dict(good,trace_cpu_mhz_start=240,trace_cpu_mhz_readback=160)
 fail,out=fails([bad_clock],8.0,"diagnostic-sample-contract:cpu-mhz",
- expected_kernel_id=13,expected_variant_id=1347100685,expected_trace_armed=False,expected_cpu_mhz=240)
+ expected_kernel_id=13,expected_variant_id=1347100685,expected_trace_armed=False,expected_cpu_mhz=240,
+ expected_matrix_brightness=44)
 assert len((out/"FOUNDATION_SOAK.jsonl").read_text().splitlines())==1
 
 # All defined catastrophic causes stop after exactly three consecutive 8s samples.

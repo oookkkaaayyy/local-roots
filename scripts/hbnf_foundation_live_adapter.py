@@ -465,6 +465,13 @@ def telemetry(inventory,session_id,emit=True):
       "telemetry_endpoint_reads":endpoint_timing,
       "expected_release_id":EXPECTED,
       "expected_firmware_sha256":expected_sha,
+      "runtime_controls":{
+        "matrix_on":state.get("on"),"wled_brightness":state.get("bri"),
+        "matrix_brightness":h.get("matrixBrightness"),"aux_brightness":h.get("auxBrightness"),
+        "scene":h.get("scene"),"vibe":h.get("vibe"),"motion":h.get("motion"),
+        "audio_response":h.get("audioResponse"),"palette":h.get("palette"),
+        "overlay_id":h.get("overlayId"),"kernel":h.get("kernel"),
+        "variant_signature":h.get("variantSignature")},
       "trace_armed":bool(ft.get("outlierTrace",{}).get("enabled")),
       "trace_retained_count":ft.get("outlierTrace",{}).get("retainedCount"),
       "trace_outlier_count":ft.get("outlierTrace",{}).get("outlierCount"),

@@ -1,0 +1,12 @@
+{
+  "install_attempt": 1,
+  "install_limit": 1,
+  "prewrite_commit": "87f5f06335c1ceeb22ed1c687351bfc3291fc607",
+  "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+  "rollback_attempt": 0,
+  "rollback_limit": 1,
+  "schema": "hbnf-r2-live-diagnostic-transaction-v1",
+  "sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
+  "started_at_utc": "2026-10-09T18:55:57.467423+00:00",
+  "status": "R2_OTA_REQUEST_STARTING__ONE_ATTEMPT_CONSUMED"
+}

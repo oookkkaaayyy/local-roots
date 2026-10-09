@@ -1,0 +1,227 @@
+{
+  "AudioReactive": {
+    "on": true
+  },
+  "HBNF": {
+    "activeVibe": 0,
+    "audio": {
+      "bass": 0,
+      "mid": 0,
+      "peak": false,
+      "treble": 0,
+      "volume": 0
+    },
+    "audioResponse": 50,
+    "auxBrightness": 245,
+    "candidate": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+    "companionLastNonzeroPixels": 22,
+    "companionRenderCount": 283,
+    "effectId": 142,
+    "foundationTelemetry": {
+      "enabled": false,
+      "frameMsAvg": null,
+      "frameMsMax": null,
+      "frameMsP50": null,
+      "frameMsP95": null,
+      "frameMsP99": null,
+      "kernelId": 255,
+      "largestFreeBlockBytes": 69620,
+      "minimumFreeHeapBytes": 57540,
+      "outlierTrace": {
+        "capacity": 32,
+        "compileCpuMHz": 240,
+        "cpuMHzAtReadback": 240,
+        "cpuMHzAtTraceStart": 0,
+        "enabled": false,
+        "outlierCount": 0,
+        "overflowCount": 0,
+        "recordEncoding": "comma-separated decimal v2: monotonicUs,frameSequence,frameStartCycles,frameEndCycles,wholeFrameCycles,kernelGrossCycles,audioCycles,colorCycles,schedulerCycles,overlayCycles,companionPrepCycles,ddpSendCycles,unaccountedCycles,variantSignature,traceCaptureBodyCycles,kernelId",
+        "retainedCount": 0,
+        "thresholdCycles": 0,
+        "thresholdUs": 42.03125
+      },
+      "sampleCount": 0
+    },
+    "kernel": 24,
+    "liveAcePot": 0,
+    "liveActive": false,
+    "liveEntryCount": 0,
+    "liveLabel": "",
+    "matrixBrightness": 44,
+    "motion": 50,
+    "overlayId": null,
+    "packet20Diagnostic": {
+      "enabled": false,
+      "espResetReason": 3,
+      "lastCommand": "",
+      "lastCommandAccepted": false,
+      "resetReasonCore0": 12,
+      "resetReasonCore1": 12,
+      "restoreVerified": false,
+      "selectedKernel": 24,
+      "snapshotGeneration": 0,
+      "snapshotHash": 0,
+      "snapshotId": 0,
+      "snapshotState": "IDLE",
+      "snapshotValid": false
+    },
+    "palette": {
+      "mode": "legacy"
+    },
+    "scene": 0,
+    "schema": "foundation-v1",
+    "timing": {
+      "audioModulationUs": 790,
+      "auxProjectionAgeMs": 23,
+      "companionDdpSendUs": 4108,
+      "companionPrepUs": 157,
+      "companionRenderCount": 283,
+      "fps": 31,
+      "freeHeap": 116444,
+      "kernel": 24,
+      "kernelRenderUs": 16393,
+      "overlayUs": 39,
+      "paletteColorUs": 400,
+      "rssi": -47,
+      "schedulerVariantUs": 1445,
+      "unaccountedUs": 3503,
+      "uptimeSec": 8,
+      "variantSignature": 1789221577,
+      "wholeFrameUs": 26838
+    },
+    "transport": "wled-native-ddp-unicast",
+    "variantDwellSeconds": 59,
+    "variantSignature": 1789221577,
+    "vibe": 0
+  },
+  "bri": 255,
+  "bs": 0,
+  "ledmap": 0,
+  "lor": 0,
+  "mainseg": 0,
+  "nl": {
+    "dur": 60,
+    "mode": 1,
+    "on": false,
+    "rem": -1,
+    "tbri": 0
+  },
+  "on": true,
+  "pl": -1,
+  "ps": 60,
+  "seg": [
+    {
+      "bm": 0,
+      "bri": 255,
+      "c1": 128,
+      "c2": 128,
+      "c3": 16,
+      "cct": 127,
+      "col": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "frz": false,
+      "fx": 142,
+      "grp": 1,
+      "id": 0,
+      "ix": 128,
+      "lc": 1,
+      "len": 32,
+      "m12": 0,
+      "mY": false,
+      "mi": false,
+      "o1": false,
+      "o2": false,
+      "o3": false,
+      "of": 0,
+      "on": true,
+      "pal": 6,
+      "rY": false,
+      "rev": false,
+      "sel": true,
+      "set": 0,
+      "si": 0,
+      "spc": 0,
+      "start": 0,
+      "startY": 0,
+      "stop": 32,
+      "stopY": 16,
+      "sx": 128,
+      "tp": false
+    },
+    {
+      "bm": 0,
+      "bri": 255,
+      "c1": 128,
+      "c2": 128,
+      "c3": 16,
+      "cct": 127,
+      "col": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "frz": false,
+      "fx": 142,
+      "grp": 1,
+      "id": 1,
+      "ix": 128,
+      "lc": 0,
+      "len": 22,
+      "m12": 0,
+      "mY": false,
+      "mi": false,
+      "o1": false,
+      "o2": false,
+      "o3": false,
+      "of": 0,
+      "on": true,
+      "pal": 0,
+      "rY": false,
+      "rev": false,
+      "sel": true,
+      "set": 0,
+      "si": 0,
+      "spc": 0,
+      "start": 512,
+      "startY": 0,
+      "stop": 534,
+      "stopY": 1,
+      "sx": 128,
+      "tp": false
+    }
+  ],
+  "transition": 7,
+  "udpn": {
+    "recv": false,
+    "rgrp": 0,
+    "send": false,
+    "sgrp": 1
+  }
+}

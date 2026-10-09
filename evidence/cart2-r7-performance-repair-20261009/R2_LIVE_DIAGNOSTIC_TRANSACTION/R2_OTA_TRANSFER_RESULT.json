@@ -1,0 +1,7 @@
+{
+  "release": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+  "sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
+  "size_bytes": 1502256,
+  "status": "PASS",
+  "transport": "single Opal-origin WLED local /update after remote exact hash/size verification"
+}

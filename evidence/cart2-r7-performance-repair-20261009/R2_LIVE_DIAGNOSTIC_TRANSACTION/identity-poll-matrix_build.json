@@ -1,0 +1,17 @@
+{
+  "basedOnFirmwareSha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+  "basedOnReleaseId": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+  "candidate": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+  "features": [
+    "phase2-brightness-output-v1",
+    "wled-native-fontmanager-text-v1",
+    "foundation-vibe-audio-r6-unfrozen",
+    "native-text-moments-r6-unfrozen",
+    "offline-r7-outlier-trace-diagnostic-r2"
+  ],
+  "ip": "192.168.77.10",
+  "mac": "70:4b:ca:5b:34:5c",
+  "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+  "schema": "hbnf-build-v1",
+  "wled": "16.0.1"
+}
