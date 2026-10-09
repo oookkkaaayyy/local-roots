@@ -1,0 +1,72 @@
+{
+  "schema": "hbnf-cart2-owner-guest-software-rc-v1",
+  "release_id": "hbnf-cart2-owner-guest-r4-software-rc1-20261009",
+  "status": "OFFLINE_CANDIDATE__NOT_DEPLOYED__NOT_OWNER_ACCEPTED",
+  "source_commit": "461508673764cabbe9db58708f0d364a68524272",
+  "source_branch": "codex/cart2-offline-audio-fixture-20261009",
+  "base_firmware": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "static_package": {
+    "file": "cart2-owner-guest-r4-software-rc-20261009/HBNF_CART_OWNER_UX_R4_GUEST_ROUTE_R2_20261008.zip",
+    "sha256": "408e55abdb00906c7723f9758e40a6899400b43975db7dbc8d31b65ee95857fe",
+    "bytes": 120812,
+    "sha256_sidecar": "cart2-owner-guest-r4-software-rc-20261009/HBNF_CART_OWNER_UX_R4_GUEST_ROUTE_R2_20261008.zip.sha256"
+  },
+  "source_sha256": {
+    "hbnf-final-controller/hbnf-cart.html": "6f9b869d7265a02ac100d6e4465967bce2d31e0e700912c0ad981ae379763e3f",
+    "hbnf-final-controller/hbnf-cart.js": "b0391ca50259e4273b43589346a9ea3828ed93b1377dbb6194db5157da0976ec",
+    "hbnf-final-controller/hbnf-cart-net.mjs": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+    "hbnf-final-controller/hbnf-cart-sw.js": "0abac8f6672631c610df37c727d53ff7d25a1023cb433f4112cc8a7e44ae5abc",
+    "hbnf-final-controller/hbnf-cart-semantic.mjs": "c7eada1028dddd0321ffa34e894bcb5e7d5ff4cf13a084f72623adcbb963d5a1",
+    "hbnf-final-controller/hbnf-cart-manifest.webmanifest": "b67d8baed05478c42082712bbad2c053e494fc340655cdd3b45a6e1b023e0560",
+    "hbnf-final-controller/hbnf-cart-ui-v6.css": "7ec82e48648e662517b281ae5162c278f705521c29907d95112a2cca6e50c707",
+    "hbnf-final-controller/hbnf-cart-ui-v6.mjs": "0e0f16ea7c6e573cc5d5180309d899732598c9b630c7732dfbe10326e542a6e0",
+    "hbnf-final-controller/hbnf-cart-features.mjs": "698406cb78565a05bc842b90c01928724cfabd553ed4af28d73178b6d725677d",
+    "hbnf-final-controller/hbnf-cart-skins-score.mjs": "cf63ca5425210f9dbbe9666f623dc7b6324a2153d5bbfaa7522493eb085ea97f",
+    "hbnf-final-controller/guest/hbnf-cart/index.html": "5b1ddd97512a6606b61aeca78929fd645a86a32b10f62ad7547941018442cedf",
+    "hbnf-final-controller/guest/hbnf-cart/guest.js": "de0b488fd95964789e2868f7697a27fe6329488d9cbce7c202a171c636ab8fd5",
+    "hbnf-final-controller/guest/hbnf-cart/guest.css": "bccb2a3179beb2116d953d083929fd97cdb13aa356742abfb45ce9a9919ce2ad",
+    "staging/coordinated-backend/hbnf-cart-control/index.ts": "10a31c36c95df8ea1fc6a292fc7aa7570e8a63703f592037fae2adba7f6ce253",
+    "staging/coordinated-backend/hbnf-cart-control/skins_scoring.ts": "aa7d74bbd10bff41111411d7b07b895e1c82a7f7d8d075cb04aec4cf35ba16d6",
+    "staging/coordinated-backend/hbnf-cart-reconcile/index.ts": "a65241756046c5603a13092f3b297c7a1f2c1c6ae8514c9cca3909d978b8e0fb",
+    "staging/coordinated-backend/hbnf-cart-reconcile/foundation-result.ts": "50cf29305925b8604153109e7f505918e517597175de8d6f8a9ab3c83dac433f",
+    "staging/coordinated-backend/hbnf-matrix-adapter-foundation/index.ts": "ead412dd34cc3d8246e4b2569d32afc59bc55182e5e44ae98ac601c9ad5f25ef",
+    "staging/coordinated-backend/hbnf-matrix-adapter-foundation/confirmation.ts": "05b1f22ef72564ceff13469f8c6ec6ad719e788955f42be142b30f54dca47987"
+  },
+  "product_scope": {
+    "owner_mission_control": "included: brightness-first, Vibe controls retained but disabled until runtime qualification, truthful command state, iPad/iPhone responsive layout",
+    "guest": "included: static guest route; Guest Mode defaults OFF; Vibe guest commands remain disabled until runtime capability is qualified",
+    "scoring": "included: authoritative Skins frontend and staged function source for F9 singles/B9 doubles, carries, tiebreakers, ace and stale-write protections",
+    "pwa": "included: bounded request deadlines, shell-only service worker, pairing path, visibility-aware status refresh",
+    "aesthetic_acceptance": "UNFROZEN; this candidate preserves the functional hierarchy and feature surfaces but makes no final visual/aesthetic acceptance claim."
+  },
+  "compatibility": {
+    "firmware_baseline": "Foundation R4 is the recorded baseline; no firmware bytes or device state are changed by this package",
+    "backend": "not included in static ZIP; exact staged source hashes are bound above. Live backend/device acknowledgement mismatch remains unresolved; no claim of confirmed control application.",
+    "guest_mode": "OFF by default; no Guest Vibe or unqualified runtime feature enabled"
+  },
+  "validation": {
+    "node tests/hbnf_owner_pwa_package.mjs": "PASS",
+    "node tests/hbnf_owner_pwa_reliability.mjs": "PASS",
+    "node tests/hbnf-coordinated-controller-contract.mjs": "PASS",
+    "node --experimental-strip-types tests/hbnf_skins_scoring_owner_flow.mjs": "PASS",
+    "node tests/hbnf-coordinated-backend-staging.mjs": "PASS",
+    "node --experimental-strip-types staging/coordinated-backend/hbnf-cart-control/guest-command.test.mjs": "PASS (10/10)"
+  },
+  "not_proven": [
+    "production static/backend deployment",
+    "intended-owner iPad/iPhone Home Screen operation",
+    "live scoring/control application and revision-bound device acknowledgement",
+    "offline local-control mutation",
+    "Vibe runtime qualification",
+    "Text/Moments runtime acceptance",
+    "T4/T5"
+  ],
+  "next_requirements": [
+    "resolve staged/live backend acknowledgement compatibility using revision-bound device evidence",
+    "production deployment with current authorized release controls and exact rollback",
+    "owner iPad/iPhone acceptance of Home Screen load, pairing, brightness/control state, scoring read/write/readback, Guest Mode OFF and Guest route isolation"
+  ]
+}

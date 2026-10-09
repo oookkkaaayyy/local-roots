@@ -1,0 +1,108 @@
+{
+  "schema": "hbnf-r7-polling-comparability-review-v1",
+  "reviewed_at_utc": "2026-10-09",
+  "classification": "C_INSUFFICIENT_EVIDENCE_TO_DISTINGUISH_FIRMWARE_REGRESSION_FROM_MEASUREMENT_LOAD",
+  "scope": "Focused offline review of preserved records and current Owner PWA source only; no device, build, restart, OTA, deployment, or long diagnostic.",
+  "verified_measurements": {
+    "r4": {
+      "host_polls": 14,
+      "window_seconds_approx": 31,
+      "reported_frame_p99_ms": 33.625,
+      "sampler_period_approx_seconds": 2.2
+    },
+    "r7": {
+      "host_polls": 25,
+      "window_seconds_approx": 30,
+      "reported_frame_p99_ms": 55.625,
+      "sampler_period_approx_seconds": 1.2
+    },
+    "r2": {
+      "host_polls": 8,
+      "window_seconds": 60,
+      "reported_frame_p99_ms_disarmed": 22.375,
+      "reported_frame_p99_ms_armed": 22.125,
+      "sampler_period_seconds": 8,
+      "parallel_read_endpoints_per_poll": 5
+    }
+  },
+  "verified_caveats": [
+    "R7 and R4 telemetry are cumulative histogram snapshots; they are not independent non-overlapping samples.",
+    "R7 used a materially denser direct-to-device HTTP sampler than R4 and R2. Existing live telemetry reads five direct Matrix/AUX endpoints per poll; R7 sampled about every 1.2 seconds, R4 about every 2.2 seconds, and R2 every 8 seconds.",
+    "Assuming the recorded five endpoint reads per poll are counted equally, the R7 sampler request cadence was about 1.8x R4 and 6.25x R2; this is a rate comparison, not a measured load or causal effect.",
+    "R7 host-read elapsed times were typically about 0.1-0.2 seconds. They include end-to-end request timing, not measured ESP32 CPU time spent serializing JSON.",
+    "R7 frame histograms contain no timestamped request begin/end events correlated with frame IDs. Therefore the tails cannot be matched to HTTP/JSON work.",
+    "R2 ran at substantially lower uptime than the R7 tail-onset period and had unequal cumulative histogram populations; its lower p99 does not disprove the R7 failure.",
+    "The visible Owner page schedules both the `hbnf-cart-control` status request and a separate `hbnf-cart-visual-status` request when `refresh()` runs, every 6 seconds while visible and idle. It also refreshes `live_status` about every 30 seconds. These are Supabase HTTPS endpoints; the UI itself contains no direct Matrix `/json/state` or `/json/info` call in that loop.",
+    "The checked-in backend source shows `hbnf-cart-control` status as a canonical database read and `live_status` as a league-state read. The implementation of the deployed `hbnf-cart-visual-status` function is not in this checkout, so whether that endpoint performs an indirect device/MQTT read is unresolved.",
+    "The scoring module reads on entry/manual refresh and after a save; it has no periodic score polling. Direct Matrix `/json/info` use is in the local diagnostics/preflight path, not the normal hosted Owner PWA status loop."
+  ],
+  "causality": {
+    "http_json_load_could_contribute": "POSSIBLE: the direct Matrix sampler cadence differs materially. Each request requires WLED to handle an HTTP endpoint and produce JSON. This is a technically plausible source of CPU/network contention.",
+    "actual_contribution_demonstrated": false,
+    "sampler_cadence_explains_p99_difference": "NOT ESTABLISHED: p99 snapshots have no request-to-frame correlation; actual device serialization time is not measured; R4/R7 cumulative sample windows and runtime ages differ.",
+    "normal_owner_pwa_has_comparable_direct_matrix_load": "NO direct Matrix polling is present in the checked-in Owner UI refresh loop; two Supabase endpoint requests run each six-second refresh. Whether the deployed visual-status function performs indirect device polling is unknown because its source is absent here, and no live request trace was available.",
+    "final_firmware_decision": "Original R7 p99 gate failure remains valid. Current evidence cannot distinguish a realistic-use firmware regression from a high-rate observer interaction or their interaction. Do not claim the R2 result resolves it.",
+    "normal_owner_pwa_polling_comparability": "INCOMPLETE: client request cadence is known from source; deployed visual-status backend behavior and actual network request rates were not measured."
+  },
+  "sources": [
+    {
+      "kind": "preserved_project_evidence",
+      "path": "evidence/cart2-r7-performance-repair-20261009/R7_R2_TAIL_EVIDENCE_COMPARISON_20261009.json"
+    },
+    {
+      "kind": "preserved_project_evidence",
+      "path": "evidence/cart2-r7-performance-repair-20261009/R7_KERNEL13_TAIL_ATTRIBUTION_20261009.json"
+    },
+    {
+      "kind": "owner_pwa_source",
+      "path": "hbnf-final-controller/hbnf-cart.js",
+      "anchors": [
+        "async function refresh",
+        "setInterval(..., 6000)",
+        "status action through hbnf-cart-control"
+      ]
+    },
+    {
+      "kind": "owner_pwa_source",
+      "path": "hbnf-final-controller/hbnf-cart-features.mjs",
+      "anchors": [
+        "refreshLive",
+        "setInterval(..., 30000)",
+        "canonicalRead(\"live_status\")"
+      ]
+    },
+    {
+      "kind": "backend_source",
+      "path": "staging/coordinated-backend/hbnf-cart-control/index.ts",
+      "anchors": [
+        "action === status",
+        "action === live_status"
+      ]
+    },
+    {
+      "kind": "owner_pwa_source",
+      "path": "hbnf-final-controller/hbnf-cart.js",
+      "anchors": [
+        "visualStatusEndpoint = hbnf-cart-visual-status",
+        "visualStatus() POST on refresh"
+      ]
+    },
+    {
+      "kind": "source_gap",
+      "path": "deployed hbnf-cart-visual-status source not present in checkout; no backend polling claim made"
+    },
+    {
+      "kind": "official_primary_documentation",
+      "title": "WLED JSON API",
+      "url": "https://kno.wled.ge/interfaces/json-api/",
+      "material_fact": "WLED exposes its state/info through an HTTP JSON API; an HTTP read requires the device to handle and serialize a JSON response."
+    },
+    {
+      "kind": "official_primary_documentation",
+      "title": "WLED WebSocket",
+      "url": "https://kno.wled.ge/interfaces/websocket/",
+      "material_fact": "WLED documents /ws state push without polling. The same documentation says the endpoint is ws:// only and browsers disallow ws:// from HTTPS pages, so a hosted HTTPS Owner PWA cannot adopt it directly without a separate secure proxy."
+    }
+  ],
+  "decision": "No 10+10-minute diagnostic is requested or initiated. Firmware work remains paused at R4. A future test is needed only if firmware performance attribution must be closed; current software RC work does not depend on that attribution."
+}
