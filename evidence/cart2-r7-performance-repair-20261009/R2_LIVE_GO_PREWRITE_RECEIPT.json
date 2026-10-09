@@ -1,0 +1,85 @@
+{
+  "authorization": {
+    "id": null,
+    "owner_auth_receipt": "evidence/cart2-r7-performance-repair-20261009/R2_DIAGNOSTIC_OWNER_AUTHORIZATION.json",
+    "owner_scope": "one exact R2 diagnostic install, one mandatory exact R4 return after completed diagnostic; no retries or other mutations",
+    "sha256": "90fb1fa29de1e3b6ac34ca61e9c48bc1f158a3d2441f50a16e3d47966d321b10"
+  },
+  "aux_preflight": {
+    "ip": "192.168.77.11",
+    "led_count": 22,
+    "mac": "8c94df55c34c",
+    "mode": "DDP",
+    "native_ddp_live": true,
+    "on": true,
+    "physical_output": "not observable via WLED JSON; owner previously reported working output",
+    "source_ip": "192.168.77.10"
+  },
+  "candidate": {
+    "embedded_release_id_occurrences": 3,
+    "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+    "sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
+    "size_bytes": 1502256
+  },
+  "captured_at_utc": "2026-10-09T18:55:02.940394+00:00",
+  "host": {
+    "aux_route": "en0",
+    "battery": "100% charged",
+    "matrix_route": "en0",
+    "no_active_ota_or_curl_process": true,
+    "power_source": "AC Power",
+    "upstream_network": "not required for LAN OTA; no router changes"
+  },
+  "limits": {
+    "R2_install_attempts": 1,
+    "R4_return_attempts": 1,
+    "no_aux_router_cloud_changes": true,
+    "no_production_acceptance": true,
+    "no_retry": true
+  },
+  "matrix_preflight": {
+    "foundation_telemetry_enabled": false,
+    "fps": 41,
+    "identity_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "ip": "192.168.77.10",
+    "mac": "704bca5b345c",
+    "on": true,
+    "packet20_enabled": false,
+    "read_only_preflight_sha256": "5b38a53871492668c676b30036ca58bf4654e788290f474e96444674789b0f36",
+    "restart_count": 0,
+    "uptime_seconds": 28944
+  },
+  "offline_sequence_dryrun": {
+    "cases": [
+      "success",
+      "catastrophic 3-sample abort",
+      "collector failure",
+      "renderer restoration failure stops before R4 write"
+    ],
+    "device_requests": 0,
+    "result": "PASS_OFFLINE_SEQUENCE_POLICY",
+    "sha256": "8dc8fc5a5c99dc498e06338287bad3c845c45488b4de5861c42838d9deb349b7"
+  },
+  "opal_path": {
+    "evidence_sha256": "95e271615ef7b21e0c1fa0db10f4857d3eca7ee4652cf101d113a3ac4dcd0e26",
+    "read_only_route_release_state_and_device_reads_pass": true
+  },
+  "power_stability_note": "Mac is on AC and device uptimes advanced through the read-only checks; there is no direct household voltage monitor.",
+  "result": "PASS_ALL_CONDITIONAL_PREWRITE_GATES",
+  "rollback": {
+    "drive_file_id": "1hy-U_zu4Wqkzwe87Br2xOSMUnCzYdrYB",
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "repository_path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008,
+    "temp_path": "/tmp/cart2-r4-rollback-338afdf5-20261009.bin"
+  },
+  "schema": "hbnf-r2-diagnostic-live-prewrite-v1",
+  "single_worker": {
+    "active_worker": "current Codex task only",
+    "app_task_snapshot": "only current Codex task active; project coordinator idle",
+    "coordinator": "idle",
+    "evidence_sha256": "bd851cc34c90f0410088ec63d101ef1139c71d2f71e73a3a7215a4acf72e62c4",
+    "result": "PASS_SINGLE_LIVE_WORKER"
+  }
+}

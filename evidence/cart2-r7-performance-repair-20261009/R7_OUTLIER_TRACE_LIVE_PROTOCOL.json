@@ -1,6 +1,6 @@
 {
   "schema": "hbnf-r7-outlier-trace-live-protocol-v3",
-  "status": "OFFLINE_HOST_PROTOCOL_PASS__GO_PROPOSAL",
+  "status": "OWNER_AUTHORIZED__FRESH_PREWRITE_GATES_REQUIRED",
   "created_at_utc": "2026-10-09T18:24:19Z",
   "source_checkpoint_base": "d801fe876452fe8e932f369e4c129fb89418735d",
   "exact_artifact": {
@@ -53,7 +53,7 @@
       "fact_used": "CONFIG_PM_ENABLE enables PM/DFS support; if disabled, DFS is not active unless the application configures it. The exact build is ESP32 rather than ESP32-S3; ESP32 SDK config independently confirms PM disabled and the source closure sets 240 MHz."
     }
   ],
-  "live_authorization": "NOT REQUESTED; exact-artifact owner authorization is still required.",
+  "live_authorization": "OWNER_AUTHORIZED_FOR_ONE_EXACT_R2_DIAGNOSTIC_INSTALL_AND_ONE_EXACT_R4_RETURN_ONLY; authorization is not consumed until a fresh prewrite gate receipt passes and the attempt is recorded before the first Matrix write.",
   "telemetry": {
     "collector": "scripts/hbnf_foundation_continuous_soak.py::_sampler_worker + scripts/hbnf_foundation_live_adapter.py telemetry",
     "period_seconds": 8,
@@ -149,11 +149,11 @@
       "Any missing/late sample, failed endpoint, lost DDP source, CPU-frequency mismatch, asymmetric trace serialization, or unknown renderer restore state."
     ],
     "live_go_basis": "The prior conflict is resolved by the existing parallel 8-second safety collector, run with identical endpoints, cadence, timeouts, and controls in both windows. Trace hot path itself performs no polling, logging, allocation, formatting, or network I/O.",
-    "live_recommendation": "GO for one bounded diagnostic transaction after exact-artifact owner authorization and fresh admission/preflight. This is not a production release or R8 and authorizes no install by itself."
+    "live_recommendation": "GO only after a fresh exact-artifact prewrite gate receipt passes. This is a diagnostic, not a production release or R8. The user has authorized one R2 install and one exact R4 return; no retry or other mutation is authorized."
   },
   "execution_recovery": {
     "restore_on_every_exit": "Stop/pause trace, persist all sampler/trace/error files, and invoke the existing Packet20 snapshot restore in a finally path after success, catastrophic stop, timeout, identity mismatch, collector failure, or user interruption. Verify exact snapshot ID/hash, restoreVerified, lastCommand=restore and lastCommandAccepted=true. Do not restart diagnostic or re-enter after restore.",
     "end_of_transaction": "This diagnostic is not a field release. After the matched pair and verified renderer restoration, return the Matrix to the exact Foundation R4 firmware once and verify release identity/health before leaving it in use.",
-    "owner_authority": "Exact-artifact owner authorization is still required before one diagnostic installation and one exact R4 recovery/restoration transaction."
+    "owner_authority": "Current user explicitly authorized one install of exact R2 SHA-256 9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b, followed after diagnostic completion by one exact Foundation R4 return SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c. No retries, further candidate, AUX/router/cloud change, production release, or threshold change. Authorization remains conditional on every fresh prewrite gate passing."
   }
 }

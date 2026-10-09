@@ -14,8 +14,10 @@ policy = json.loads(POLICY.read_text())
 header = TRACE.read_text()
 source = SOURCE.read_text()
 
-assert p["live_authorization"].startswith("NOT REQUESTED")
-assert p["safety_abort_and_go"]["live_recommendation"].startswith("GO for one bounded diagnostic transaction")
+assert p["status"] == "OWNER_AUTHORIZED__FRESH_PREWRITE_GATES_REQUIRED"
+assert p["live_authorization"].startswith("OWNER_AUTHORIZED_FOR_ONE_EXACT_R2_DIAGNOSTIC_INSTALL")
+assert "not consumed until a fresh prewrite gate receipt passes" in p["live_authorization"]
+assert p["safety_abort_and_go"]["live_recommendation"].startswith("GO only after a fresh exact-artifact prewrite gate receipt passes")
 assert p["frozen_policy"]["production_p99_ceiling_ms"] == 42.03125
 assert p["frozen_policy"]["catastrophic_abort"] == {
     "bad_samples_consecutive": 3,

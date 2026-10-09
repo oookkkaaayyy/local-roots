@@ -1,0 +1,19 @@
+{
+  "active_hbnf_live_authorized_workers": 1,
+  "active_install_or_ota_processes": [],
+  "active_worker": "current Codex task only",
+  "audit_agents": {
+    "backend_contract_audit": "completed",
+    "text_moments_audit": "completed",
+    "vibe_audio_audit": "completed"
+  },
+  "basis": [
+    "current Codex thread inventory: this worker active; coordinator idle; no second active HBNF worker",
+    "read-only process scan found no OTA/install process",
+    "no other live worker holds a current mutation action"
+  ],
+  "captured_at_utc": "2026-10-09T18:49:36.744770+00:00",
+  "other_hbnf_coordinator": "idle",
+  "result": "PASS_SINGLE_LIVE_WORKER",
+  "schema": "hbnf-r2-live-worker-inventory-v1"
+}

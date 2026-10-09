@@ -1,0 +1,542 @@
+{
+  "candidate": {
+    "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+    "sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b"
+  },
+  "cases": [
+    {
+      "events": [
+        "admission_pass",
+        "artifact_sha_verify",
+        "preflight_exact_r4_aux_ac_single_worker",
+        "upload_r2_once",
+        "verify_exact_r2_identity",
+        "snapshot_renderer",
+        "select_kernel13_brightness44_variant_1347100685",
+        "trace_start",
+        "trace_stop_empty_store",
+        "reset_histogram",
+        "settle_2s",
+        "baseline_60s_8_samples",
+        "sample_trace_disarmed_4s_persist",
+        "sample_trace_disarmed_12s_persist",
+        "sample_trace_disarmed_20s_persist",
+        "sample_trace_disarmed_28s_persist",
+        "sample_trace_disarmed_36s_persist",
+        "sample_trace_disarmed_44s_persist",
+        "sample_trace_disarmed_52s_persist",
+        "sample_trace_disarmed_60s_persist",
+        "reset_histogram",
+        "settle_2s",
+        "trace_resume",
+        "armed_60s_8_samples",
+        "sample_trace_armed_4s_persist",
+        "sample_trace_armed_12s_persist",
+        "sample_trace_armed_20s_persist",
+        "sample_trace_armed_28s_persist",
+        "sample_trace_armed_36s_persist",
+        "sample_trace_armed_44s_persist",
+        "sample_trace_armed_52s_persist",
+        "sample_trace_armed_60s_persist",
+        "trace_stop",
+        "final_trace_readback",
+        "stop_collection",
+        "restore_renderer_snapshot",
+        "verify_renderer_snapshot_exact",
+        "upload_exact_r4_once",
+        "verify_exact_r4_identity",
+        "verify_matrix_health_aux_ddp"
+      ],
+      "r2_install_requests": 1,
+      "r4_restore_requests": 1,
+      "result": "PASS",
+      "sample_count": 16,
+      "sample_rows": [
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 4
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 12
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 20
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 28
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 36
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 44
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 52
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 60
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_armed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 4
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_armed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 12
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_armed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 20
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_armed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 28
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_armed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 36
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_armed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 44
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_armed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 52
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_armed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 60
+        }
+      ],
+      "scenario": "success"
+    },
+    {
+      "events": [
+        "admission_pass",
+        "artifact_sha_verify",
+        "preflight_exact_r4_aux_ac_single_worker",
+        "upload_r2_once",
+        "verify_exact_r2_identity",
+        "snapshot_renderer",
+        "select_kernel13_brightness44_variant_1347100685",
+        "trace_start",
+        "trace_stop_empty_store",
+        "reset_histogram",
+        "settle_2s",
+        "baseline_60s_8_samples",
+        "sample_trace_disarmed_4s_persist",
+        "sample_trace_disarmed_12s_persist",
+        "sample_trace_disarmed_20s_persist",
+        "sample_trace_disarmed_28s_persist",
+        "sample_trace_disarmed_36s_persist",
+        "sample_trace_disarmed_44s_persist",
+        "sample_trace_disarmed_52s_persist",
+        "sample_trace_disarmed_60s_persist",
+        "reset_histogram",
+        "settle_2s",
+        "trace_resume",
+        "armed_60s_8_samples",
+        "sample_trace_armed_4s_persist",
+        "sample_trace_armed_12s_persist",
+        "sample_trace_armed_20s_persist",
+        "catastrophic_abort_after_third_persisted_sample",
+        "persist_failure_evidence",
+        "stop_collection",
+        "restore_renderer_snapshot",
+        "verify_renderer_snapshot_exact",
+        "upload_exact_r4_once",
+        "verify_exact_r4_identity",
+        "verify_matrix_health_aux_ddp"
+      ],
+      "r2_install_requests": 1,
+      "r4_restore_requests": 1,
+      "result": "CATASTROPHIC_ABORT",
+      "sample_count": 11,
+      "sample_rows": [
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 4
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 12
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 20
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 28
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 36
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 44
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 52
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 60
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_armed",
+          "fps": 19,
+          "frame_ms_p99": 76,
+          "read_result": "PASS",
+          "scheduled_s": 4
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_armed",
+          "fps": 19,
+          "frame_ms_p99": 76,
+          "read_result": "PASS",
+          "scheduled_s": 12
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_armed",
+          "fps": 19,
+          "frame_ms_p99": 76,
+          "read_result": "PASS",
+          "scheduled_s": 20
+        }
+      ],
+      "scenario": "catastrophic"
+    },
+    {
+      "events": [
+        "admission_pass",
+        "artifact_sha_verify",
+        "preflight_exact_r4_aux_ac_single_worker",
+        "upload_r2_once",
+        "verify_exact_r2_identity",
+        "snapshot_renderer",
+        "select_kernel13_brightness44_variant_1347100685",
+        "trace_start",
+        "trace_stop_empty_store",
+        "reset_histogram",
+        "settle_2s",
+        "baseline_60s_8_samples",
+        "collector_timeout_recorded_no_sample_skipped",
+        "persist_failure_evidence",
+        "stop_collection",
+        "restore_renderer_snapshot",
+        "verify_renderer_snapshot_exact",
+        "upload_exact_r4_once",
+        "verify_exact_r4_identity",
+        "verify_matrix_health_aux_ddp"
+      ],
+      "r2_install_requests": 1,
+      "r4_restore_requests": 1,
+      "result": "INCONCLUSIVE_COLLECTOR_FAILURE",
+      "sample_count": 0,
+      "sample_rows": [],
+      "scenario": "collector_failure"
+    },
+    {
+      "events": [
+        "admission_pass",
+        "artifact_sha_verify",
+        "preflight_exact_r4_aux_ac_single_worker",
+        "upload_r2_once",
+        "verify_exact_r2_identity",
+        "snapshot_renderer",
+        "select_kernel13_brightness44_variant_1347100685",
+        "trace_start",
+        "trace_stop_empty_store",
+        "reset_histogram",
+        "settle_2s",
+        "baseline_60s_8_samples",
+        "sample_trace_disarmed_4s_persist",
+        "sample_trace_disarmed_12s_persist",
+        "sample_trace_disarmed_20s_persist",
+        "sample_trace_disarmed_28s_persist",
+        "sample_trace_disarmed_36s_persist",
+        "sample_trace_disarmed_44s_persist",
+        "sample_trace_disarmed_52s_persist",
+        "sample_trace_disarmed_60s_persist",
+        "reset_histogram",
+        "settle_2s",
+        "trace_resume",
+        "armed_60s_8_samples",
+        "sample_trace_armed_4s_persist",
+        "sample_trace_armed_12s_persist",
+        "sample_trace_armed_20s_persist",
+        "sample_trace_armed_28s_persist",
+        "sample_trace_armed_36s_persist",
+        "sample_trace_armed_44s_persist",
+        "sample_trace_armed_52s_persist",
+        "sample_trace_armed_60s_persist",
+        "trace_stop",
+        "final_trace_readback",
+        "stop_collection",
+        "restore_renderer_snapshot",
+        "stop_no_blind_r4_restore_snapshot_unverified"
+      ],
+      "r2_install_requests": 1,
+      "r4_restore_requests": 0,
+      "result": "BLOCKED_RESTORE_UNVERIFIED",
+      "sample_count": 16,
+      "sample_rows": [
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 4
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 12
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 20
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 28
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 36
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 44
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 52
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_disarmed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 60
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_armed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 4
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_armed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 12
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_armed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 20
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_armed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 28
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_armed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 36
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_armed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 44
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_armed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 52
+        },
+        {
+          "aux_projection_active": true,
+          "condition": "trace_armed",
+          "fps": 41,
+          "frame_ms_p99": 42.5,
+          "read_result": "PASS",
+          "scheduled_s": 60
+        }
+      ],
+      "scenario": "success"
+    }
+  ],
+  "device_requests": 0,
+  "firmware_source_changed": false,
+  "mandatory_return": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "result": "PASS_OFFLINE_SEQUENCE_POLICY",
+  "schema": "hbnf-r7-diagnostic-transaction-dryrun-v1",
+  "unchanged_catastrophic_policy": {
+    "aux_projection_active_required": true,
+    "consecutive_samples": 3,
+    "enabled": true,
+    "fps_floor_absolute": 20,
+    "frame_ms_p99_ceiling_absolute": 75
+  }
+}

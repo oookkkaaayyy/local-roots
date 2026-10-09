@@ -1,0 +1,81 @@
+{
+  "authorization_consumed_before_network_request": false,
+  "authorized_sequence": {
+    "diagnostic_install_max_attempts": 1,
+    "frozen_catastrophic_policy_unchanged": true,
+    "matched_windows": [
+      "trace_disarmed:60s, samples at 4,12,20,28,36,44,52,60s",
+      "trace_armed:60s, samples at 4,12,20,28,36,44,52,60s"
+    ],
+    "return_to_r4_after_completed_diagnostic": true,
+    "safety_poll_period_seconds": 8,
+    "stop_collection_then_restore_renderer_snapshot": true
+  },
+  "candidate": {
+    "drive_id": "1sYGsE7WKXYB2vxNUgpvi7znWQ3kUx1eD",
+    "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+    "sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
+    "size_bytes": 1502256
+  },
+  "lifecycle_state": "PHASE2_INTEGRATING",
+  "mandatory_return": {
+    "drive_id": "1hy-U_zu4Wqkzwe87Br2xOSMUnCzYdrYB",
+    "maximum_attempts": 1,
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008
+  },
+  "owner_authorization": "Current user authorized exactly one diagnostic-only Matrix installation of hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009 SHA-256 9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b, followed after any completed diagnostic by one exact Foundation R4 return SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c. No retry, second diagnostic, AUX/router/cloud mutation, production release, R8, or threshold change. Fail closed if any prerequisite is unproven.",
+  "prewrite_gate_evidence": {
+    "candidate_local": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009.bin",
+      "sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
+      "size_bytes": 1502256
+    },
+    "dryrun": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/R2_DIAGNOSTIC_TRANSACTION_DRYRUN.json",
+      "sha256": "8dc8fc5a5c99dc498e06338287bad3c845c45488b4de5861c42838d9deb349b7"
+    },
+    "manifest": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/R7_OUTLIER_TRACE_DIAGNOSTIC_R2_MANIFEST.json",
+      "sha256": "2b5251f65795f19349398a5bc830110e8448c49c767f8f0a242d94c036d898cd"
+    },
+    "opal": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/R2_OPAL_READONLY_PREFLIGHT.json",
+      "sha256": "95e271615ef7b21e0c1fa0db10f4857d3eca7ee4652cf101d113a3ac4dcd0e26"
+    },
+    "preflight": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/R2_PREWRITE_READONLY_PREFLIGHT_CURRENT.json",
+      "sha256": "5b38a53871492668c676b30036ca58bf4654e788290f474e96444674789b0f36"
+    },
+    "protocol": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/R7_OUTLIER_TRACE_LIVE_PROTOCOL.json",
+      "sha256": "307eea85172919fefe61bf2bf3e0611bc7c2d03c0e553b6c0d892ef71eb83d84"
+    },
+    "rollback_local": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "size_bytes": 1489008
+    },
+    "rollback_temp_copy": {
+      "path": "/tmp/cart2-r4-rollback-338afdf5-20261009.bin",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "size_bytes": 1489008
+    },
+    "workers": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_WORKER_INVENTORY_CURRENT_20261009.json",
+      "sha256": "bd851cc34c90f0410088ec63d101ef1139c71d2f71e73a3a7215a4acf72e62c4"
+    }
+  },
+  "prewrite_gate_result": "PASS",
+  "production_release": false,
+  "recorded_at_utc": "2026-10-09T18:55:02.940394+00:00",
+  "schema": "hbnf-r2-diagnostic-owner-authorization-v1",
+  "status": "AUTHORIZED__FRESH_PREWRITE_GATES_PASS__NOT_CONSUMED",
+  "target": {
+    "aux_ip": "192.168.77.11",
+    "aux_mac": "8c:94:df:55:c3:4c",
+    "matrix_ip": "192.168.77.10",
+    "matrix_mac": "70:4b:ca:5b:34:5c"
+  }
+}

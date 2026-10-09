@@ -740,10 +740,10 @@
       "current_failure_domain": "R7_DEVICE_RUNTIME__KERNEL13_P99_GATE_FAILED__EXACT_R4_RESTORED__TAIL_CAUSE_UNRESOLVED",
       "current_lifecycle_state": "PHASE2_INTEGRATING",
       "current_subject": {
-        "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
         "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
         "r7_candidate_release": "hbnf-cart2-phase2-offline-wow-r7-20261009",
-        "r7_candidate_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994"
+        "r7_candidate_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+        "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
       },
       "current_transition": "R7_REJECTED__R4_RECOVERY_VERIFIED__OFFLINE_ANALYSIS",
       "exact_next_path": [
@@ -2381,20 +2381,20 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "R7_DEVICE_RUNTIME__KERNEL13_P99_GATE_FAILED__EXACT_R4_RESTORED",
+    "current_failure_domain": "R7_KERNEL13_P99_REGRESSION__R2_TRACE_DIAGNOSTIC_CONDITIONALLY_AUTHORIZED__R4_CURRENT_BASELINE",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
       "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-      "status": "FIELD_BASELINE_RESTORED__R7_REJECTED__OFFLINE_DIAGNOSIS_NEXT"
+      "status": "R4_BASELINE__R2_INSTALL_ATTEMPT_CONSUMED_BEFORE_REQUEST"
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Live mutation authority is closed. No R8 or later installation is authorized.",
-      "R7 exact artifact failed the frozen kernel13 p99 gate; exact R4 recovery and identity/health readback passed.",
-      "Offline source/object inspection identified a new per-pixel Vibe color composition path that may contribute to average renderer cost; available evidence does not prove it caused the p99 excursions. Observer measurement covers frame average only.",
-      "Continue independent offline Cart 2.0 product work; do not modify hardware or production cloud services.",
-      "Do not build a firmware successor until an offline targeted correction is established; any future live installation requires fresh exact-artifact authority. T4/T5 remain incomplete."
+      "Fresh exact prewrite receipt PASS; dry-run PASS; one R2 install attempt is now durably consumed before any network request. Do not retry.",
+      "Send the single exact R2 OTA request through verified Opal-origin path; verify R2 identity and collect only the matched 60s windows, with 8s identical polling.",
+      "Stop collection, persist evidence, restore and verify renderer snapshot; then perform exactly one authorized R4 return and verify Matrix health/AUX DDP.",
+      "Stop collection and verify the exact renderer snapshot restore. Only after verified snapshot restoration, perform the one authorized exact R4 return and verify R4 identity, Matrix health and AUX native DDP. If safe restoration cannot be established, stop device writes.",
+      "Keep R2 diagnostic findings separate from production qualification. Continue offline product lanes; T4/T5 remain incomplete and require their existing evidence."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -2496,6 +2496,17 @@
     }
   ],
   "installation_verification_note": "R7 OTA HTTP 200 and exact /hbnf/build.json release/candidate, Matrix MAC/WLED 16.0.1/runtime health, and AUX native DDP live/source verified read-only; receipt evidence/cart2-r7-performance-repair-20261009/R7_POSTINSTALL_IDENTITY_HEALTH.json SHA-256 a4e79c75e7c7c1a9b3f868b6104bed14e8ec54f6e8cc64ac3f894f439fd3cb2b. R7 matched performance qualification not yet passed; physical sync owner confirmation and T4/T5 remain open. Subsequent matched kernel-13 p99 failed the frozen ceiling; exact Foundation R4 SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c recovery completed and was verified by receipt evidence/cart2-r7-performance-repair-20261009/R7_R4_RECOVERY_RESULT.json SHA-256 70bb779e8e94156cd120512a1b848442a0cf16683273e6bfd5a57a2eac80af9c. Live mutation authority is closed.",
+  "installed_firmware_reconciliation": {
+    "basis": "PASS recovery receipt verifies exact Matrix IP/MAC, R4 identity, WLED 16.0.1, brightness 44, device on, AUX native DDP live from Matrix; no new device poll was made.",
+    "evidence_path": "evidence/cart2-r7-performance-repair-20261009/R7_R4_RECOVERY_RESULT.json",
+    "evidence_sha256": "70bb779e8e94156cd120512a1b848442a0cf16683273e6bfd5a57a2eac80af9c",
+    "live_mutation_authorized": false,
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "tail_attribution_path": "evidence/cart2-r7-performance-repair-20261009/R7_KERNEL13_TAIL_ATTRIBUTION_20261009.json",
+    "tail_attribution_sha256": "bdf02d36642d4ec8abfce07b2a9b2de6bb1a15897158fac1e923a83ec853539c",
+    "verified_at_utc": "2026-10-09T10:53:07.839125+00:00"
+  },
   "installed_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
   "installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
   "installed_release_role": "FOUNDATION_R4_FIELD_BASELINE__R7_GATE_FAILED_AND_EXACT_RECOVERY_VERIFIED",
@@ -2628,55 +2639,50 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-09T11:06:19Z",
+  "last_updated_utc": "2026-10-09T18:53:01.874203Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
-    "admission_path": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_APPROVED_ADMISSION.json",
-    "admission_result_path": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_APPROVED_ADMISSION_RESULT.json",
-    "admission_result_sha256": "e00f85dc3552c53becba4685bc0f4e0488cebd72f010ee8aeffafdf87739b700",
-    "admission_sha256": "1d242f4e55cc9d95e8cdc45e3040ce0ad73fe7783f2f3bbfff6dbfb25d2f61e6",
-    "authorization": "One conditional R7 installation and full unchanged qualification, plus one exact R4 recovery only on objective device/safety/performance/required-AUX failure; no R8+; user is asleep and no further routine input required.",
-    "candidate_release": "hbnf-cart2-phase2-offline-wow-r7-20261009",
-    "candidate_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+    "admission_path": "evidence/cart2-r7-performance-repair-20261009/R2_DIAGNOSTIC_OWNER_AUTHORIZATION.json",
+    "admission_sha256": "90fb1fa29de1e3b6ac34ca61e9c48bc1f158a3d2441f50a16e3d47966d321b10",
+    "authorization": "Current user authorized exactly one diagnostic-only Matrix installation of hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009 SHA-256 9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b, followed after any completed diagnostic by one exact Foundation R4 return SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c. No retry, second diagnostic, AUX/router/cloud mutation, production release, R8, or threshold change. Fail closed if any prerequisite is unproven.",
+    "authorization_id": null,
+    "candidate_release": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+    "candidate_sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
+    "consumed_at_utc": "2026-10-09T18:55:02.940394+00:00",
     "consumed_before_network_request": true,
+    "dryrun_path": "evidence/cart2-r7-performance-repair-20261009/R2_DIAGNOSTIC_TRANSACTION_DRYRUN.json",
+    "dryrun_sha256": "8dc8fc5a5c99dc498e06338287bad3c845c45488b4de5861c42838d9deb349b7",
     "exclusions": [
-      "R8 or later install",
-      "AUX/Opal/router mutation",
-      "cloud deployment",
-      "Guest Mode activation",
-      "UV energization",
+      "any retry or additional diagnostic candidate",
+      "AUX or router mutation",
+      "cloud/production deployment",
+      "R8 or any other firmware",
+      "production acceptance claim",
       "threshold weakening"
     ],
     "install_attempts": 1,
     "install_limit": 1,
-    "live_worker_inventory_path": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_WORKER_INVENTORY.json",
-    "live_worker_inventory_sha256": "0f406ef0f07ca32613897fdfa8fb41e50742ca1657fb868467029369200b5fad",
-    "network_request_sent": true,
-    "ota_http_status": 200,
-    "ota_response_sha256": "e989fc00de0b0d87a74771439a95cb6b231dac0ede16865104c2251612c6a128",
-    "preflight_path": "/private/tmp/hbnf-p2-build/r7-authority-root/evidence/cart2-r7-performance-repair-20261009/R7_READONLY_PREOTA_AUTHORIZATION_FINAL_20261009.json",
-    "preflight_sha256": "63013c009800af1ab6320c8faae7cfc2542a821b073d288c57f892137f5e881b",
-    "rollback_attempts": 1,
-    "rollback_consumed_before_network_request": true,
-    "rollback_http_status": 200,
+    "live_worker_inventory_path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_WORKER_INVENTORY_CURRENT_20261009.json",
+    "live_worker_inventory_sha256": "bd851cc34c90f0410088ec63d101ef1139c71d2f71e73a3a7215a4acf72e62c4",
+    "preflight_path": "evidence/cart2-r7-performance-repair-20261009/R2_PREWRITE_READONLY_PREFLIGHT_CURRENT.json",
+    "preflight_sha256": "5b38a53871492668c676b30036ca58bf4654e788290f474e96444674789b0f36",
+    "prewrite_receipt_path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_GO_PREWRITE_RECEIPT.json",
+    "prewrite_receipt_sha256": "cc2d213502216176228ccd0768c5cdb3e95e9452bf3cbb788fbf6e97f36265d1",
+    "rollback_attempts": 0,
     "rollback_limit": 1,
     "rollback_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-    "rollback_request_sent": true,
-    "rollback_response_sha256": "e989fc00de0b0d87a74771439a95cb6b231dac0ede16865104c2251612c6a128",
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "rollback_started_utc": "2026-10-09T10:50:08Z",
-    "rollback_status": "EXACT_R4_RECOVERY_PASS__LIVE_AUTHORITY_CLOSED",
-    "schema": "hbnf-r7-bounded-live-authorization-v1",
-    "status": "R7_GATE_FAILED__EXACT_R4_RESTORED__LIVE_MUTATION_CLOSED",
-    "target": "Matrix 192.168.77.10 / MAC 70:4b:ca:5b:34:5c only"
+    "schema": "hbnf-r2-bounded-live-diagnostic-authorization-v1",
+    "status": "ARMED__FRESH_PREWRITE_GATES_PASS__CONSUMED_BEFORE_NETWORK_REQUEST",
+    "target": "192.168.77.10 / MAC 70:4b:ca:5b:34:5c only"
   },
-  "live_mutation_authorization_closed_at_utc": "2026-10-09T10:53:07.839125+00:00",
+  "live_mutation_authorization_closed_at_utc": null,
   "live_mutation_authorization_closure": {
     "evidence": "evidence/cart2-r7-performance-repair-20261009/R7_R4_RECOVERY_RESULT.json",
     "evidence_sha256": "70bb779e8e94156cd120512a1b848442a0cf16683273e6bfd5a57a2eac80af9c",
     "reason": "R7 failed the frozen kernel13 p99 gate; one exact R4 recovery completed and read-only identity/health verified. Current live mutation authority is closed; no R8+ install authority."
   },
-  "live_mutation_authorized": false,
+  "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",
@@ -2695,6 +2701,13 @@
     "stale_after_minutes": 25,
     "status_sheet_id": "1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko",
     "status_sheet_url": "https://docs.google.com/spreadsheets/d/1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko/edit"
+  },
+  "owner_observation_after_r4_recovery": {
+    "aux": "Active; visibly mirrors Matrix scenes and is functioning properly.",
+    "matrix": "Active; normal moving animations.",
+    "reported_at_utc": "2026-10-09T11:06:19Z",
+    "scope": "Owner physical observation of current R4 field baseline only; it does not qualify R7 or close T4/T5.",
+    "source": "Current owner statement after the exact R4 recovery receipt."
   },
   "phase2_implementation_authorized": true,
   "phase2_r3_regression_repair": {
@@ -3026,19 +3039,82 @@
     "schema": "hbnf-process-metrics-v1",
     "tracking_scope": "From execution-system consolidation forward; historical attempts are not retroactively guessed into counters."
   },
+  "r2_diagnostic_authorization": {
+    "authorization_consumed_before_network_request": true,
+    "authorized_sequence": {
+      "diagnostic_install_max_attempts": 1,
+      "frozen_catastrophic_policy_unchanged": true,
+      "matched_windows": [
+        "trace_disarmed:60s, samples at 4,12,20,28,36,44,52,60s",
+        "trace_armed:60s, samples at 4,12,20,28,36,44,52,60s"
+      ],
+      "return_to_r4_after_completed_diagnostic": true,
+      "safety_poll_period_seconds": 8,
+      "stop_collection_then_restore_renderer_snapshot": true
+    },
+    "candidate": {
+      "drive_id": "1sYGsE7WKXYB2vxNUgpvi7znWQ3kUx1eD",
+      "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+      "sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
+      "size_bytes": 1502256
+    },
+    "lifecycle_state": "PHASE2_INTEGRATING",
+    "live_prewrite_receipt": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_GO_PREWRITE_RECEIPT.json",
+      "sha256": "cc2d213502216176228ccd0768c5cdb3e95e9452bf3cbb788fbf6e97f36265d1"
+    },
+    "mandatory_return": {
+      "drive_id": "1hy-U_zu4Wqkzwe87Br2xOSMUnCzYdrYB",
+      "maximum_attempts": 1,
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "size_bytes": 1489008
+    },
+    "owner_authorization": "Current user authorized exactly one diagnostic-only Matrix installation of hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009 SHA-256 9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b, followed after any completed diagnostic by one exact Foundation R4 return SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c. No retry, second diagnostic, AUX/router/cloud mutation, production release, R8, or threshold change. Fail closed if any prerequisite is unproven.",
+    "prewrite_gate_evidence": {
+      "dryrun": {
+        "path": "evidence/cart2-r7-performance-repair-20261009/R2_DIAGNOSTIC_TRANSACTION_DRYRUN.json",
+        "sha256": "8dc8fc5a5c99dc498e06338287bad3c845c45488b4de5861c42838d9deb349b7"
+      },
+      "manifest": {
+        "path": "evidence/cart2-r7-performance-repair-20261009/R7_OUTLIER_TRACE_DIAGNOSTIC_R2_MANIFEST.json",
+        "sha256": "2b5251f65795f19349398a5bc830110e8448c49c767f8f0a242d94c036d898cd"
+      },
+      "opal": {
+        "path": "evidence/cart2-r7-performance-repair-20261009/R2_OPAL_READONLY_PREFLIGHT.json",
+        "sha256": "95e271615ef7b21e0c1fa0db10f4857d3eca7ee4652cf101d113a3ac4dcd0e26"
+      },
+      "preflight": {
+        "path": "evidence/cart2-r7-performance-repair-20261009/R2_PREWRITE_READONLY_PREFLIGHT_CURRENT.json",
+        "sha256": "5b38a53871492668c676b30036ca58bf4654e788290f474e96444674789b0f36"
+      },
+      "protocol": {
+        "path": "evidence/cart2-r7-performance-repair-20261009/R7_OUTLIER_TRACE_LIVE_PROTOCOL.json",
+        "sha256": "307eea85172919fefe61bf2bf3e0611bc7c2d03c0e553b6c0d892ef71eb83d84"
+      },
+      "workers": {
+        "path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_WORKER_INVENTORY_CURRENT_20261009.json",
+        "sha256": "bd851cc34c90f0410088ec63d101ef1139c71d2f71e73a3a7215a4acf72e62c4"
+      }
+    },
+    "prewrite_gate_result": "PASS",
+    "production_release": false,
+    "recorded_at_utc": "2026-10-09T18:55:02.940394+00:00",
+    "schema": "hbnf-r2-diagnostic-owner-authorization-v1",
+    "status": "AUTHORIZED__PREWRITE_GATES_PASS__INSTALL_ATTEMPT_CONSUMED",
+    "target": {
+      "aux_ip": "192.168.77.11",
+      "aux_mac": "8c:94:df:55:c3:4c",
+      "matrix_ip": "192.168.77.10",
+      "matrix_mac": "70:4b:ca:5b:34:5c"
+    }
+  },
   "r7_failure_gate": {
     "captured_at_utc": "2026-10-09T10:50:08.535089+00:00",
     "path": "evidence/cart2-r7-performance-repair-20261009/R7_KERNEL13_FROZEN_GATE_FAILURE.json",
     "sha256": "804eee189c113b74b0781f886646e5eb07e8bffa215c4eaf2ce8f86c3bab3d97",
     "status": "OBJECTIVE_FROZEN_GATE_FAILED"
   },
-  "r7_recovery_result": {
-    "live_mutation_authority_closed": true,
-    "path": "evidence/cart2-r7-performance-repair-20261009/R7_R4_RECOVERY_RESULT.json",
-    "sha256": "70bb779e8e94156cd120512a1b848442a0cf16683273e6bfd5a57a2eac80af9c",
-    "status": "PASS"
-  },
-  "schema": "hbnf-control-state-v2",
   "r7_offline_diagnosis": {
     "path": "evidence/cart2-r7-performance-repair-20261009/R7_OFFLINE_PERFORMANCE_DIAGNOSIS.json",
     "sha256": "7b42aa4470f5ed9f220cf3e3615a2ae7b46091b2905bb1b7ff7e308bfce12079",
@@ -3046,31 +3122,20 @@
     "tail_attribution_path": "evidence/cart2-r7-performance-repair-20261009/R7_KERNEL13_TAIL_ATTRIBUTION_20261009.json",
     "tail_attribution_sha256": "bdf02d36642d4ec8abfce07b2a9b2de6bb1a15897158fac1e923a83ec853539c"
   },
-  "owner_observation_after_r4_recovery": {
-    "reported_at_utc": "2026-10-09T11:06:19Z",
-    "source": "Current owner statement after the exact R4 recovery receipt.",
-    "matrix": "Active; normal moving animations.",
-    "aux": "Active; visibly mirrors Matrix scenes and is functioning properly.",
-    "scope": "Owner physical observation of current R4 field baseline only; it does not qualify R7 or close T4/T5."
+  "r7_recovery_result": {
+    "live_mutation_authority_closed": true,
+    "path": "evidence/cart2-r7-performance-repair-20261009/R7_R4_RECOVERY_RESULT.json",
+    "sha256": "70bb779e8e94156cd120512a1b848442a0cf16683273e6bfd5a57a2eac80af9c",
+    "status": "PASS"
   },
-  "installed_firmware_reconciliation": {
-    "verified_at_utc": "2026-10-09T10:53:07.839125+00:00",
-    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "evidence_path": "evidence/cart2-r7-performance-repair-20261009/R7_R4_RECOVERY_RESULT.json",
-    "evidence_sha256": "70bb779e8e94156cd120512a1b848442a0cf16683273e6bfd5a57a2eac80af9c",
-    "basis": "PASS recovery receipt verifies exact Matrix IP/MAC, R4 identity, WLED 16.0.1, brightness 44, device on, AUX native DDP live from Matrix; no new device poll was made.",
-    "live_mutation_authorized": false,
-    "tail_attribution_path": "evidence/cart2-r7-performance-repair-20261009/R7_KERNEL13_TAIL_ATTRIBUTION_20261009.json",
-    "tail_attribution_sha256": "bdf02d36642d4ec8abfce07b2a9b2de6bb1a15897158fac1e923a83ec853539c"
-  },
-  "status": "R7_REJECTED__EXACT_R4_RECOVERED__OFFLINE_TAIL_CAUSE_UNRESOLVED",
   "r7_tail_trace_design": {
-    "status": "OFFLINE_DESIGN_ONLY__OVERHEAD_AND_IMPLEMENTATION_PROOF_REQUIRED",
-    "path": "evidence/cart2-r7-performance-repair-20261009/R7_P99_OUTLIER_TRACE_DESIGN_20261009.json",
-    "sha256": "fc29afc2618ec7e3f863497cd8ac619b1599fc73e965cb25fa68ac5c12f4b370",
-    "live_mutation_authorized": false,
     "candidate_build_authorized": false,
-    "scope": "Fixed-capacity trace for only frozen-threshold outlier frames; no R8 build or live diagnostic proposed."
-  }
+    "live_mutation_authorized": false,
+    "path": "evidence/cart2-r7-performance-repair-20261009/R7_P99_OUTLIER_TRACE_DESIGN_20261009.json",
+    "scope": "Fixed-capacity trace for only frozen-threshold outlier frames; no R8 build or live diagnostic proposed.",
+    "sha256": "fc29afc2618ec7e3f863497cd8ac619b1599fc73e965cb25fa68ac5c12f4b370",
+    "status": "OFFLINE_DESIGN_ONLY__OVERHEAD_AND_IMPLEMENTATION_PROOF_REQUIRED"
+  },
+  "schema": "hbnf-control-state-v2",
+  "status": "R7_REJECTED__EXACT_R4_RECOVERED__OFFLINE_TAIL_CAUSE_UNRESOLVED"
 }
