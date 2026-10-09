@@ -1,0 +1,31 @@
+{
+  "candidate": {
+    "install_attempts": 1,
+    "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+    "sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b"
+  },
+  "completed_at_utc": "2026-10-09T19:11:35.536618+00:00",
+  "diagnostic_result": {
+    "path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R2_DIAGNOSTIC_RESULT.json",
+    "sha256": "372ea29fe09a31a6ee34e77d275c7b81723510b72e1c76eae748d20d912368e3",
+    "status": "INCONCLUSIVE__MALFORMED_TRACE_RECORDS"
+  },
+  "live_authority": "CLOSED__NO_FURTHER_INSTALL_OR_DEVICE_MUTATION_AUTHORIZED_BY_THIS_TRANSACTION",
+  "mandatory_r4_return": {
+    "attempts": 1,
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "result_path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R4_RETURN_RESULT.json",
+    "result_sha256": "75372f92cdb3d65d4c924cc49e4cf7092394b448bd57329e788084d44abd2ee3",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "status": "PASS_EXACT_R4_IDENTITY_HEALTH_AUX_DDP",
+    "transfer_result_path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R4_RETURN_TRANSFER_RESULT.json",
+    "transfer_sha256": "d39e20b6a4726b905a8f4ee8329c35ac2daed9ab430a4f43338232bad4b04459"
+  },
+  "renderer_restore": {
+    "path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R2_RENDERER_RESTORE_RESULT.json",
+    "sha256": "b57374a74b4aeddcf25aa4a4eeb824603bca3aaaf2a3ad7465c0240781e8edea",
+    "verified": true
+  },
+  "schema": "hbnf-r2-live-diagnostic-transaction-final-v1",
+  "status": "COMPLETE__INCONCLUSIVE_TRACE_RECORDS__RENDERER_RESTORED__EXACT_R4_RESTORED_AND_VERIFIED"
+}
