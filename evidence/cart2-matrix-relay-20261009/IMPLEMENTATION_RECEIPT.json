@@ -1,0 +1,76 @@
+{
+  "schema": "hbnf-cart2-matrix-relay-offline-implementation-v1",
+  "status": "OFFLINE_SOURCE_IMPLEMENTED__HOST_CONTRACT_TESTS_PASS__NOT_DEPLOYED__NOT_TARGET_VALIDATED",
+  "source_base_commit": "e9ed74ca67d0ff8e6dc06e7c5347cef56ce22842",
+  "live_mutation": false,
+  "preserved_artifacts": {
+    "r6_release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+    "r6_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
+    "r4_rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "owner_guest_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
+    "note": "identities read from the existing R6 integrated release manifest; no binary or package was modified"
+  },
+  "implementation": {
+    "writer": "one authenticated Opal-origin worker writes Matrix through private WLED JSON API",
+    "cloud_path": "canonical owner/guest reducer -> pending-only reconcile -> authenticated relay Edge Function -> revision/fence challenge -> WLED readback -> atomic observation RPC",
+    "security": [
+      "public MQTT mutation path removed from staged adapter",
+      "relay token constant-time checked and limited to fixed relay id",
+      "service-role key remains Edge-only",
+      "Opal token is root-owned mode 0600 and passed to curl through a protected config file, not argv",
+      "Matrix MAC, candidate and 534-LED topology fail closed",
+      "challenge expires after 20 seconds and is one-use",
+      "apply authorization is at most once per challenge",
+      "current revision, active fence and exact normalized readback are rechecked during atomic confirmation",
+      "no browser CORS policy",
+      "R4 and R6 binaries unchanged",
+      "Opal sends a publishable/anon API key for Supabase gateway routing plus the dedicated relay bearer; neither is a service-role key"
+    ],
+    "known_limits": [
+      "runtime JSON readback is not signed firmware attestation",
+      "does not prove physical LED emission",
+      "Matrix runtime confirmation includes AUX brightness/Companion settings, not AUX physical output",
+      "AUTO resolved Vibe and microphone/audio internals are not echoed and are not claimed",
+      "brief stale write race between apply authorization and WLED POST cannot be prevented by current firmware; an advanced revision/fence is rejected at acknowledgement and next poll converges to current state"
+    ]
+  },
+  "test_results": {
+    "pass": [
+      "node --experimental-strip-types tests/hbnf_matrix_relay_contract.mjs: projection/readback equality, overlay content hash, wrong MAC/topology, invalid/replayed/expired challenge outcomes, apply-once, new-challenge recovery after lost response, token negative cases, single-writer and credential-placement source checks",
+      "node --experimental-strip-types tests/hbnf-foundation-confirmation-contract.mjs: legacy adapter cannot confirm",
+      "node tests/hbnf-coordinated-backend-staging.mjs: existing controller/guest/scoring staging contract preserved; relay-only writer invariant",
+      "Node 24.18 TypeScript syntax loading for modified TypeScript sources",
+      "sh -n for relay worker and procd init script"
+    ],
+    "unavailable": [
+      "No Deno/Supabase CLI/PostgreSQL/OpenWrt jsonfilter/procd on the host; SQL migration was contract-reviewed but not executed, Edge handlers were syntax-loaded but not runtime-integrated, and target shell behavior was not simulated against OpenWrt tools."
+    ]
+  },
+  "deployment": {
+    "supabase": false,
+    "opal": false,
+    "firmware": false,
+    "owner_guest": false,
+    "guest_mode_enabled": false,
+    "uv_energized": false,
+    "next_required": "run the disposable/local Supabase migration + Edge runtime tests and OpenWrt tool preflight before a single coordinated live authorization; do not infer release readiness from this receipt"
+  },
+  "source_blobs_sha1": {
+    "staging/coordinated-backend/hbnf-cart-relay/index.ts": "231ea59716601231c927441e44daf136a7fa87fd",
+    "staging/coordinated-backend/hbnf-cart-relay/projection.ts": "0409330fb37220670c1543072eb59f93d2b07933",
+    "staging/coordinated-backend/hbnf-cart-relay/relay-auth.ts": "0fb845eb6c84902856106135d9998e456982ddff",
+    "staging/coordinated-backend/hbnf-matrix-adapter-foundation/index.ts": "3047bc5c0092aa975cb44967e04b28f23e656d83",
+    "staging/coordinated-backend/hbnf-matrix-adapter-foundation/confirmation.ts": "3bbda00075585a7847f14bd8f8784c3915c418bc",
+    "staging/coordinated-backend/hbnf-cart-reconcile/index.ts": "3f04d53e060a3526e885be760520e140f14f093b",
+    "staging/coordinated-backend/hbnf-cart-reconcile/foundation-result.ts": "d50ff35967cd213bac6644a3e995c23fa9daa94f",
+    "staging/coordinated-backend/migrations/20261009190000_hbnf_matrix_relay_confirmation.sql": "00d0b030dcd4e8c492ba37bded6ea042d3f94e42",
+    "staging/coordinated-backend/migrations/20261009190000_hbnf_matrix_relay_confirmation.down.sql": "c4fbd673a2eaba751c9d9dff561430c0f324b2f7",
+    "staging/coordinated-backend/opal/hbnf-matrix-relay": "ddeb15bb4676abe956f1d52a83d30b6983a5e4f3",
+    "staging/coordinated-backend/opal/hbnf-matrix-relay.init": "fb562b848ca071e6c3d0caffb0d21a5675b39db1",
+    "staging/coordinated-backend/opal/hbnf-matrix-relay.conf.example": "d7150c6579e27fc6c088f0211a434dac4c6a859d",
+    "tests/hbnf_matrix_relay_contract.mjs": "8f6f87f60cc814c90cc0a5d1536105ea1a88638f",
+    "tests/hbnf-coordinated-backend-staging.mjs": "f97f057117483be345e78b6d46754bb00b00dc48",
+    "tests/hbnf-foundation-confirmation-contract.mjs": "4a2345e4a04e11454c6e8d4c612055f5521668c9",
+    "work/cart2/MATRIX_REVISION_BOUND_CONFIRMATION_20261009.md": "f66830150b03339e3529410ed7e95c67590896fd"
+  }
+}

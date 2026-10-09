@@ -1,0 +1,7 @@
+# Copy to /etc/hbnf-matrix-relay.conf and chmod 0600 root:root.
+# Relay bearer token is a fresh 32-byte base64url value; it is not the Supabase service-role key.
+SUPABASE_RELAY_URL='https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-relay'
+RELAY_ID='opal-hbnf-cart'
+RELAY_TOKEN='GENERATE_A_FRESH_32_BYTE_BASE64URL_TOKEN'
+# Supabase publishable/anon key only; this is not a service-role credential.
+RELAY_API_KEY='SUPABASE_PUBLISHABLE_OR_ANON_KEY'

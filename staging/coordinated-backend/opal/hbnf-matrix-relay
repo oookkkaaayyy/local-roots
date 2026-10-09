@@ -1,0 +1,62 @@
+#!/bin/ash
+# Outbound-only relay worker; install disabled until the exact release transaction is authorized.
+set -eu
+umask 077
+CONF=/etc/hbnf-matrix-relay.conf
+[ -r "$CONF" ] || exit 1
+command -v stat >/dev/null 2>&1 || exit 1
+[ "$(stat -c %u "$CONF")" = "0" ] && [ "$(stat -c %a "$CONF")" = "600" ] || exit 1
+. "$CONF"
+: "${SUPABASE_RELAY_URL:?missing relay URL}"
+: "${RELAY_TOKEN:?missing relay token}"
+: "${RELAY_API_KEY:?missing Supabase publishable/anon API key}"
+: "${RELAY_ID:?missing relay identity}"
+MATRIX_URL=http://192.168.77.10
+TMP=/tmp/hbnf-matrix-relay
+mkdir -p "$TMP"; chmod 700 "$TMP"
+log(){ logger -t hbnf-matrix-relay "$1"; }
+need(){ command -v "$1" >/dev/null 2>&1 || { log "required command missing"; exit 1; }; }
+need curl; need jsonfilter
+case "$RELAY_TOKEN" in *[!A-Za-z0-9_-]*|"") log "relay token format invalid"; exit 1;; esac
+[ "${#RELAY_TOKEN}" -ge 43 ] || { log "relay token too short"; exit 1; }
+case "$RELAY_API_KEY" in *[!A-Za-z0-9._-]*|"") log "API key format invalid"; exit 1;; esac
+printf 'header = "Authorization: Bearer %s"\nheader = "apikey: %s"\n' "$RELAY_TOKEN" "$RELAY_API_KEY" > "$TMP/curl-auth.conf"
+chmod 600 "$TMP/curl-auth.conf"
+unset RELAY_TOKEN RELAY_API_KEY
+[ "$RELAY_ID" = "opal-hbnf-cart" ] || { log "relay identity mismatch"; exit 1; }
+[ "$SUPABASE_RELAY_URL" = "https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-relay" ] || { log "relay endpoint mismatch"; exit 1; }
+snapshot(){
+ curl -fsS --connect-timeout 2 --max-time 4 "$MATRIX_URL/json/si" -o "$TMP/si.json"
+ jsonfilter -i "$TMP/si.json" -e '@.info' > "$TMP/info.json"
+ jsonfilter -i "$TMP/si.json" -e '@.state' > "$TMP/state.json"
+ mac="$(jsonfilter -i "$TMP/info.json" -e '@.mac' | tr -d ':')"
+ candidate="$(jsonfilter -i "$TMP/state.json" -e '@.HBNF.candidate')"
+ [ "$mac" = "704bca5b345c" ] && [ "$candidate" = "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009" ]
+}
+while :; do
+ if ! snapshot; then sleep 5; continue; fi
+ printf '%s' '{"op":"next","relayId":"opal-hbnf-cart","matrixMac":"70:4b:ca:5b:34:5c","candidate":"hbnf-cart2-phase2-offline-wow-r6-integrated-20261009"}' > "$TMP/request.json"
+ if ! curl -fsS --connect-timeout 3 --max-time 8 --config "$TMP/curl-auth.conf" -H 'Content-Type: application/json' --data-binary @"$TMP/request.json" "$SUPABASE_RELAY_URL" -o "$TMP/next.json"; then sleep 5; continue; fi
+ challenge="$(jsonfilter -i "$TMP/next.json" -e '@.challengeId' 2>/dev/null || true)"
+ [ -n "$challenge" ] || { sleep 2; continue; }
+ if ! snapshot; then sleep 2; continue; fi
+ check_readback(){
+  curl -sS --connect-timeout 3 --max-time 8 --config "$TMP/curl-auth.conf" \
+   -F 'op=check' -F 'relayId=opal-hbnf-cart' -F "challengeId=$challenge" \
+   -F "info=@$TMP/info.json;type=application/json" -F "state=@$TMP/state.json;type=application/json" \
+   "$SUPABASE_RELAY_URL" -o "$TMP/check.json" -w '%{http_code}'
+ }
+ code="$(check_readback 2>/dev/null || printf '000')"
+ if [ "$code" = "200" ]; then log "revision-bound Matrix readback confirmed"; sleep 2; continue; fi
+ if [ "$code" = "409" ] && [ "$(jsonfilter -i "$TMP/check.json" -e '@.status' 2>/dev/null || true)" = "apply_required" ]; then
+  payload="$(jsonfilter -i "$TMP/check.json" -e '@.wledPayload' 2>/dev/null || true)"
+  if [ -n "$payload" ]; then
+   printf '%s' "$payload" > "$TMP/payload.json"
+   if curl -fsS --connect-timeout 2 --max-time 4 -H 'Content-Type: application/json' --data-binary @"$TMP/payload.json" "$MATRIX_URL/json/state" -o /dev/null && snapshot; then
+    code="$(check_readback 2>/dev/null || printf '000')"
+    [ "$code" = "200" ] && log "revision-bound Matrix readback confirmed after one apply"
+   fi
+  fi
+ fi
+ sleep 2
+done
