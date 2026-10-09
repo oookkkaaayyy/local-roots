@@ -1,0 +1,68 @@
+{
+  "samples": [
+    {
+      "at_utc": "2026-10-09T09:21:55.055900+00:00",
+      "aux": {
+        "live": true,
+        "mode": "DDP",
+        "source_ip": "192.168.77.10",
+        "uptime": 15321
+      },
+      "matrix": {
+        "auxProjectionAgeMs": 56289,
+        "companionDdpSendUs": 0,
+        "companionRenderCount": 2036,
+        "fps": 36,
+        "kernel": 8,
+        "lastNonzeroPixels": 22,
+        "on": true,
+        "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "wholeFrameUs": 27711
+      },
+      "sample": 1
+    },
+    {
+      "at_utc": "2026-10-09T09:22:01.443141+00:00",
+      "aux": {
+        "live": true,
+        "mode": "DDP",
+        "source_ip": "192.168.77.10",
+        "uptime": 15326
+      },
+      "matrix": {
+        "auxProjectionAgeMs": 62650,
+        "companionDdpSendUs": 0,
+        "companionRenderCount": 2267,
+        "fps": 36,
+        "kernel": 8,
+        "lastNonzeroPixels": 17,
+        "on": true,
+        "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "wholeFrameUs": 24865
+      },
+      "sample": 2
+    },
+    {
+      "at_utc": "2026-10-09T09:22:06.839868+00:00",
+      "aux": {
+        "live": true,
+        "mode": "DDP",
+        "source_ip": "192.168.77.10",
+        "uptime": 15332
+      },
+      "matrix": {
+        "auxProjectionAgeMs": 68039,
+        "companionDdpSendUs": 0,
+        "companionRenderCount": 2464,
+        "fps": 36,
+        "kernel": 8,
+        "lastNonzeroPixels": 17,
+        "on": true,
+        "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "wholeFrameUs": 21571
+      },
+      "sample": 3
+    }
+  ],
+  "schema": "hbnf-r4-post-recovery-ddp-samples-v1"
+}

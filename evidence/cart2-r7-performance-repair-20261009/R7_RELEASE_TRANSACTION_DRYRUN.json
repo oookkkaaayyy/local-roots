@@ -1,0 +1,79 @@
+{
+  "authority_reconciliation_sha256": "e8093c7573242db37cadb6e5f883dfb2ef1b652310b1386226a0e96792d9ecb2",
+  "candidate_feature_regression": {
+    "all_pass": true,
+    "command_count": 21,
+    "report_sha256": "89e6318e2abeb7338a355037fe71fef6c291e65ab4954f2a75b8218590f35b06",
+    "tests": "R7 offline suite final"
+  },
+  "candidate_offline_test_sha256": "89e6318e2abeb7338a355037fe71fef6c291e65ab4954f2a75b8218590f35b06",
+  "candidate_release": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+  "candidate_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+  "delivery_rail_negative_replay": {
+    "evidence": "21/21 offline commands passed, including tests/hbnf_delivery_rail_host.py and tests/hbnf_live_kernel_sweep.py; actual guarded-run invalid state rejected before marker-producing child.",
+    "test_report_sha256": "32296c1df214fb6c521d86a0d842f31c2092ff10732c4078652fa8f5c213e48c"
+  },
+  "device_requests": 0,
+  "fresh_r7_live_sweep_dryrun_sha256": "994742eadd0eaad3e4e769632a7adc07a23a773f0fedef5f078c38abce9b67e6",
+  "historical_failure_replays": [
+    "telemetry normalization and partial response preservation",
+    "Packet20 restore alias semantics",
+    "restore mismatch raw evidence persistence",
+    "ENOSPC preflight and recovery reserve cleanup",
+    "adapter timeout partial stdout/stderr",
+    "unauthorized/wrong lifecycle blocks child",
+    "admission schema/evidence/hash failures block child/device",
+    "source drift fails build provenance"
+  ],
+  "host_transaction_rehearsal_reused_from_r6": {
+    "listed_failures": [
+      "telemetry normalization and partial response preservation",
+      "Packet20 restore alias semantics",
+      "restore mismatch raw evidence persistence",
+      "ENOSPC preflight and recovery reserve cleanup",
+      "adapter timeout partial stdout/stderr",
+      "unauthorized/wrong lifecycle blocks child",
+      "admission schema/evidence/hash failures block child/device",
+      "source drift fails build provenance"
+    ],
+    "result": "PASS_HOST_ONLY",
+    "sha256": "c7823b7bdfdf0def95f0e538a0354484ad2448f8fa4c8e38d38c49346dd3b34e"
+  },
+  "live_mutations": 0,
+  "manifest_sha256": "0974a69e17400e92958842b26b8f85ed363ea09e52c07a1ec4b7f438b97ec1d9",
+  "offline_sweep_only": true,
+  "r7_28_kernel_plan_dryrun": {
+    "adapter_schema": "hbnf-live-sweep-adapter-v1",
+    "expected_release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+    "first": {
+      "effect_id": 220,
+      "kernel_name": "Complex_Kaleido_3",
+      "ordinal": 0,
+      "preset": 61,
+      "profile_path": null,
+      "runtime_kernel_index_expected": 0,
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "variant_id": "DISCOVER_AND_CAPTURE"
+    },
+    "kernel_count": 28,
+    "last": {
+      "effect_id": 247,
+      "kernel_name": "Module_Experiment10",
+      "ordinal": 27,
+      "preset": 88,
+      "profile_path": null,
+      "runtime_kernel_index_expected": 27,
+      "selection_method": "DISCOVER_FROM_RELEASE07_CONTROL_PATH",
+      "variant_id": "DISCOVER_AND_CAPTURE"
+    },
+    "status": "DRY_RUN_PASS"
+  },
+  "r7_invalid_live_admission_zero_request_proof_sha256": "67fc8c99ec9c66b658bba3394a4638b06ce1acb8605454cefa1c9d603ae4b375",
+  "result": "PASS_HOST_ONLY",
+  "rollback_recovery_artifact_sha256_verified": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "schema": "hbnf-cart2-r7-offline-release-transaction-dryrun-v1",
+  "source_binding_sha256": "d2a3ae8ca6b22728008a92b5f90b8fd15b53e1f15b0fdd4dc3f494eb571f6fec",
+  "t4_t5_claimed": false,
+  "test_commands_count": 21
+}

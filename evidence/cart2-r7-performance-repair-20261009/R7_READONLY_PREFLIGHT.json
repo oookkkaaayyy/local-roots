@@ -1,0 +1,84 @@
+{
+  "schema": "hbnf-r7-readonly-live-preflight-v1",
+  "captured_utc": "2026-10-09T09:56:50.849109+00:00",
+  "device_mutation": false,
+  "matrix": {
+    "ip": "192.168.77.10",
+    "mac": "704bca5b345c",
+    "wled": "16.0.1",
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "installed_firmware_sha256_from_control_state": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "basis": "Exact R4 recovery receipt plus current unique R4 release ID readback; WLED endpoint does not expose raw BIN SHA.",
+    "uptime_seconds": 1857,
+    "fps": 42,
+    "free_heap_bytes": 74620,
+    "on": true,
+    "matrix_brightness": 44,
+    "kernel": 21,
+    "whole_frame_us": 18644,
+    "packet20_enabled": false,
+    "foundation_telemetry_enabled": false
+  },
+  "aux": {
+    "ip": "192.168.77.11",
+    "mac": "8c94df55c34c",
+    "wled": "16.0.1",
+    "uptime_seconds": 17121,
+    "free_heap_bytes": 103908,
+    "on": true,
+    "led_count": 22,
+    "live": true,
+    "live_mode": "DDP",
+    "live_ip": "192.168.77.10",
+    "direct_physical_output": "owner reports current physical mirror; independent R7-specific owner observation deferred"
+  },
+  "host": {
+    "power": "Now drawing from 'AC Power'\n -InternalBattery-0 (id=38600803)\t100%; charged; 0:00 remaining present: true",
+    "uptime": "2:56  up 3 days, 11:06, 1 user, load averages: 5.55 6.03 5.28",
+    "route_summary": "route to: default\ndestination: default\n       mask: default\n    gateway: 192.168.77.1\n  interface: en0\n      flags: <UP,GATEWAY,DONE,STATIC,PRCLONING,GLOBAL>\n recvpipe  sendpipe  ssthresh  rtt,msec    rttvar  hopcount      mtu     expire\n       0         0         0         0         0         0      1500         0",
+    "upstream_https_returncode": 0,
+    "upstream_https_status_line": "HTTP/2 200 ",
+    "lan_requests_all_http_200": true
+  },
+  "power_assessment": {
+    "status": "PASS_CURRENT_STABILITY_INDICATORS",
+    "basis": "Mac on AC; Matrix uptime 1857 s and AUX uptime 17121 s at capture; no new interruption observed/reported since the R4 recovery event. No independent household voltage sensor is available, so this is an uptime/AC assessment, not voltage instrumentation."
+  },
+  "network": {
+    "status": "PASS",
+    "basis": "Direct LAN GETs returned HTTP 200 for Matrix and AUX and gateway route to 192.168.77.1 on en0; upstream HTTPS to GitHub succeeded."
+  },
+  "all_read_receipts": {
+    "matrix_build": {
+      "returncode": 0,
+      "http_status": 200,
+      "captured_utc": "2026-10-09T09:51:55Z",
+      "body_sha256": "05d753ff7e2bc01143a0230e98cd3e0c7ec6f3bab64588972e2509629fde8cd6"
+    },
+    "matrix_info": {
+      "returncode": 0,
+      "http_status": 200,
+      "captured_utc": "2026-10-09T09:51:56Z",
+      "body_sha256": "5cd50d248e435bee2b577bcc1ecc4633b151dc3ebbc83629a0625c93058014ae"
+    },
+    "matrix_state": {
+      "returncode": 0,
+      "http_status": 200,
+      "captured_utc": "2026-10-09T09:51:56Z",
+      "body_sha256": "8d13f612685cb7e5322544afd0218c3778d5e27085677eb5da3bdb0e5d753eda"
+    },
+    "aux_info": {
+      "returncode": 0,
+      "http_status": 200,
+      "captured_utc": "2026-10-09T09:51:56Z",
+      "body_sha256": "c2b78f92115c1cfed5c1b90230f3f2e159d0134eac298c70c1148b5a56676f16"
+    },
+    "aux_state": {
+      "returncode": 0,
+      "http_status": 200,
+      "captured_utc": "2026-10-09T09:51:56Z",
+      "body_sha256": "f59de367ef42005d8680b5cd7e568aa4ef5d3076c8832e3512d7437e6b022d1b"
+    }
+  },
+  "result": "PASS_READ_ONLY__EXACT_R4_CURRENT__AUX_NATIVE_DDP_LIVE__R7_MUTATION_NOT_STARTED"
+}

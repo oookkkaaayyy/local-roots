@@ -1,0 +1,9 @@
+{
+  "errors": [],
+  "live_admission_sha256": "f6a23ee096a5e99c329fee68665f273ef78b5ff35de2bd62c16ee1264fa42205",
+  "pass": true,
+  "schema": "hbnf-cart2-release-admission-result-v1",
+  "stage": "LIVE_APPROVED",
+  "validated_against": "temporary state copy enables only the exact conditional R7 authority for admission evaluation; actual control state remains closed pending this published transition",
+  "validated_at_utc": "2026-10-09T10:08:45.783167+00:00"
+}

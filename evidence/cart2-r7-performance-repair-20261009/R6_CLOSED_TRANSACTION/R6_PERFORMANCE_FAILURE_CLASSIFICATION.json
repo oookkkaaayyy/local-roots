@@ -1,0 +1,77 @@
+{
+  "baseline": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "candidate": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-20261009",
+    "sha256": "0a4b9563c7debfb5a01e9d36aeb8aac2583e105303064de3db0466b7dd9d89d6"
+  },
+  "captured_at_utc": "2026-10-09T09:19:50.306811+00:00",
+  "evidence_sha256": {
+    "r4_observer": "1b5cc0ff4ef488ee63dcb1ae512a5fefe33a065732ea3a06cb1ba5245ad549d9",
+    "r6_observer": "e1fd6a3079f444b0e9333ca32b523e8a11058ab0bf3263aba0f66fba461d43c0",
+    "r6_pre_rollback_readonly": "acb88a17bf4f9c76b02655e340312f7593c6fe925cf2d91b914a743756f8b8c4",
+    "r6_prequal_windows": "3de475f205b1ec30c75462a589a019b672ea9fce8050d3f898e007afceee9493",
+    "r6_restore_receipt": "1a20ac32371b44e05acb20c20188815e5d9693b35dd94e8b9e23fec941f97745"
+  },
+  "frozen_thresholds": {
+    "changes": false,
+    "fps_median_min_ratio": 0.9,
+    "frame_p95_max_ratio": 1.25,
+    "frame_p99_max_ratio": 1.25,
+    "sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797",
+    "source": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json"
+  },
+  "interpretation": {
+    "instrumentation": "EXONERATED_AS_PRIMARY_CAUSE__R6 tails-off was 51.468 ms and tails-on 50.332 ms (-2.21%); R4 tails-off 24.214 ms and tails-on 24.279 ms (+0.27%).",
+    "runtime": "R6 actual frame runtime is approximately 2.13x slower in matched tails-off kernel 0, corresponding to ~47% of R4 throughput; R6 warm-up reports 19 FPS, p95 56.625 ms and p99 78.625 ms vs R4 33 FPS, p95 26.875 ms and p99 41.125 ms. The R6 runtime is not acceptably fluid and misses the frozen 0.90 throughput floor by a wide margin.",
+    "separation": "The qualification runner then failed at the host contract (`foundationTelemetry` disabled after prequal) and over-strict whole-object restore equality. It nevertheless returned source-bound `restoreVerified=true`, `packet20Same=true`, matching snapshot ID/hash; failure is not attributed to R6 or loss of renderer restore. No full sweep or soak was run.",
+    "stage_evidence": "R6 kernelRender 30.94 ms vs R4 14.685 ms; audio modulation 8.598 ms vs R4 1.381 ms; AUX prepare/send 4.148 ms vs R4 0.136 ms. These are candidate runtime path costs, not host observer overhead. Root cause is bounded to integrated R6 per-frame render/audio/output paths; exact source-level hot operation remains offline investigation."
+  },
+  "matched_case": {
+    "kernel_index": 0,
+    "kernel_name": "Complex_Kaleido_3",
+    "matrix_brightness": 44,
+    "metric": "same one-second latest-frame-average (wholeFrameUs) source, 40-second tails-OFF observer window; 29 R6 samples; R4 exact seq39 observer comparison; exact runtime kernel variant matches",
+    "variant_id_r4": 1347100672,
+    "variant_id_r6": 1347100672,
+    "vibe": "R6 default state: 0 (Chill)"
+  },
+  "measured": {
+    "r4_implied_fps": 41.298422400264315,
+    "r4_instrumentation_delta_pct": 0.2684397456017233,
+    "r4_tails_off_frame_average_ms_median": 24.214,
+    "r4_tails_off_sample_count": 29,
+    "r4_tails_on_frame_average_ms_median": 24.279,
+    "r4_warmup": {
+      "audio_ms_avg": 1.380705,
+      "aux_prepare_send_ms_avg": 0.136337,
+      "fps": 33,
+      "frame_ms_avg": 24.71317,
+      "frame_ms_p95": 26.875,
+      "frame_ms_p99": 41.125,
+      "kernel_ms_avg": 14.68535
+    },
+    "r6_implied_fps": 19.42954845729385,
+    "r6_instrumentation_delta_pct": -2.2081681821714563,
+    "r6_tails_off_frame_average_ms_median": 51.468,
+    "r6_tails_off_max_ms": 55.621,
+    "r6_tails_off_min_ms": 46.353,
+    "r6_tails_off_sample_count": 29,
+    "r6_tails_on_frame_average_ms_median": 50.3315,
+    "r6_to_r4_fps_ratio": 0.47046708634491324,
+    "r6_warmup": {
+      "audio_ms_avg": 8.597984,
+      "aux_prepare_send_ms_avg": 4.147528,
+      "fps": 19,
+      "frame_ms_avg": 49.01865,
+      "frame_ms_p95": 56.625,
+      "frame_ms_p99": 78.625,
+      "kernel_ms_avg": 30.94
+    }
+  },
+  "result": "FAIL__R6_RENDERER_RUNTIME_PERFORMANCE_VS_EXACT_R4__BEFORE_28_KERNEL_OR_SOAK",
+  "rollback_decision": "CONDITIONAL_EXACT_R4_ROLLBACK_AUTHORIZED_AND_REQUIRED_TO_RESTORE_VERIFIED_FIELD_BASELINE; one attempt maximum; no candidate retry or restart.",
+  "schema": "hbnf-r6-early-performance-failure-classification-v1"
+}

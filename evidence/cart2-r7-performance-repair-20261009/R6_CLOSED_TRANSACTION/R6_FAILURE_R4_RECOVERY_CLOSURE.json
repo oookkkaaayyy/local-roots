@@ -1,0 +1,63 @@
+{
+  "closed_at_utc": "2026-10-09T09:22:22.115730+00:00",
+  "comparison": {
+    "frozen_thresholds_modified": false,
+    "kernel": "Complex_Kaleido_3",
+    "kernel_index": 0,
+    "matrix_brightness": 44,
+    "observer_penalty_r4_pct": 0.2684397456017233,
+    "observer_penalty_r6_pct": -2.2081681821714563,
+    "r4_audio_avg_ms": 1.380705,
+    "r4_kernel_avg_ms": 14.68535,
+    "r4_tails_off_frame_avg_median_ms": 24.214,
+    "r6_audio_avg_ms": 8.597984,
+    "r6_kernel_avg_ms": 30.94,
+    "r6_tails_off_frame_avg_median_ms": 51.468,
+    "throughput_ratio_r6_to_r4": 0.47046708634491324,
+    "variant_id": 1347100672
+  },
+  "host_harness": {
+    "classification": "HOST_CONTRACT_FAILURE__SEPARATE_FROM_RENDERER_REGRESSION",
+    "errors": [
+      "foundation telemetry collector attempted a full tails telemetry sample after the observer prequal had correctly disabled tails; adapter/harness has no coherent tails-off collection contract for the full sweep",
+      "restore verified correctly as restoreVerified=true and packet20Same=true with matching snapshot id/hash; whole-object equality assertion rejected the legitimate receipt because it contained additional fields"
+    ],
+    "session_safety": "one Packet20 session used and restored; no restart/reentry; no full sweep or soak"
+  },
+  "next": "Offline source-profile R6 Vibe/audio renderer hot path while retaining all quality features; correct and regression-test host runner. Build one R7 only if targeted source correction and all offline release-admission gates pass; no live install unless the exact conditional R7 prerequisites are met.",
+  "r6": {
+    "install_attempts": 1,
+    "performance_evidence": "R6_PERFORMANCE_FAILURE_CLASSIFICATION.json",
+    "performance_evidence_sha256": "b2e14deeab3abbd907d4c063131a2edac937f0f97eb389e23dcb14658dbf5368",
+    "qualification_runs": {
+      "full_28_kernel": false,
+      "reason": "Early same-kernel observer comparison showed a material objective regression; first admitted runner also failed its host telemetry/restore contract; no repeat boot-scoped session or reboot authorized.",
+      "soak": false
+    },
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-20261009",
+    "result": "CANDIDATE_NOT_QUALIFIED__MATCHED_TAILS_OFF_KERNEL0_PERFORMANCE_FAIL",
+    "sha256": "0a4b9563c7debfb5a01e9d36aeb8aac2583e105303064de3db0466b7dd9d89d6"
+  },
+  "recovery": {
+    "aux_live_ddp_from_matrix": true,
+    "aux_pixels": 22,
+    "brightness": 44,
+    "curl_exit_code": 0,
+    "exact_runtime_identity_verified": true,
+    "fps_last_sample": 36,
+    "http_status": 200,
+    "matrix_on": true,
+    "ota_attempts": 1,
+    "physical_visual_after_R4_recovery": "NOT_CONFIRMED__OWNER_ASLEEP",
+    "post_recovery_samples": "R4_POSTRECOVERY_DDP_HEALTH_SAMPLES.json",
+    "post_recovery_samples_sha256": "9a450a77d46b2d1b9a97bb415ae545496ec9872f44067e3a735db3d596594529",
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "response_sha256": "e989fc00de0b0d87a74771439a95cb6b231dac0ede16865104c2251612c6a128",
+    "runtime_receipt": "R4_RECOVERY_RUNTIME_VERIFICATION.json",
+    "runtime_receipt_sha256": "9e32bb667c48bd961406fe811da6835aff7f68672f092216cb0ad41bf5192550",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008,
+    "wholeFrameUs_last_sample": 21571
+  },
+  "schema": "hbnf-r6-failure-and-r4-recovery-closure-v1"
+}

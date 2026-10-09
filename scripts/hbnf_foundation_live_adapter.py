@@ -5,7 +5,7 @@ import argparse, concurrent.futures, hashlib, json, os, pathlib, socket, statist
 
 MATRIX="http://192.168.77.10"
 AUX="http://192.168.77.11"
-EXPECTED="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+EXPECTED=os.environ.get("HBNF_EXPECTED_RELEASE_ID", "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1")
 MAC="704bca5b345c"
 CACHE=pathlib.Path("/tmp/hbnf-foundation-telemetry-cache.json")
 HTTP_TIMEOUT_SECONDS=10
@@ -81,18 +81,33 @@ def observer_poll_budget_available(deadline, reserve_seconds=1.0):
     """Do not start a telemetry GET that can only receive a near-zero timeout."""
     return deadline-time.monotonic()>=reserve_seconds
 
-def collect_frame_window(stage, window_seconds=30, reserve_seconds=1.0, minimum_samples=20):
-    """Collect a bounded frame-average window, failing closed only before minimum."""
-    deadline=time.monotonic()+window_seconds
+def collect_frame_window(stage, window_seconds=30, reserve_seconds=1.0, minimum_samples=20,
+                         max_extension_seconds=10):
+    """Collect the full window; allow one bounded extension to reach the unchanged sample floor."""
+    started=time.monotonic()
+    deadline=started+window_seconds
+    hard_deadline=deadline+max_extension_seconds
     samples=[]
-    while time.monotonic()<deadline and observer_poll_budget_available(deadline,reserve_seconds):
-        state,_=p20_state(deadline,stage=stage)
+    while time.monotonic()<hard_deadline and observer_poll_budget_available(hard_deadline,reserve_seconds):
+        now=time.monotonic()
+        if now>=deadline and len(samples)>=minimum_samples:break
+        if len(samples)>=minimum_samples and now+1>=deadline:
+            time.sleep(max(0.0,deadline-now))
+            break
+        # A request must have a full reserve even during the nominal window;
+        # otherwise switch to the already-bounded extension instead of failing
+        # before the extension logic can run.
+        active_deadline=deadline if deadline-now>=reserve_seconds else hard_deadline
+        if hard_deadline-now<reserve_seconds:break
+        state,_=p20_state(active_deadline,stage=stage)
         value=state.get("HBNF",{}).get("timing",{}).get("wholeFrameUs")
         if value is not None:samples.append(float(value)/1000.0)
-        if time.monotonic()+1>=deadline:break
+        now=time.monotonic()
+        if now>=deadline and len(samples)>=minimum_samples:break
+        if now+1>=hard_deadline:break
         time.sleep(1)
     if len(samples)<minimum_samples:
-        raise RuntimeError(f"{stage}-under-sampled:{len(samples)}<{minimum_samples}")
+        raise RuntimeError(f"{stage}-under-sampled:{len(samples)}<{minimum_samples}; duration={time.monotonic()-started:.3f}s; hard_limit={window_seconds+max_extension_seconds:.3f}s")
     return samples
 
 def command(op,**kw):
@@ -208,6 +223,10 @@ def _parallel_soak_reads(session_id):
 
 def snapshot(observer_output=None, inventory=None):
     identity(); state,p20=p20_state()
+    telemetry_before=state.get("HBNF",{}).get("foundationTelemetry",{}).get("enabled")
+    if not isinstance(telemetry_before,bool):raise RuntimeError("snapshot-missing-foundation-telemetry-enabled-state")
+    if p20.get("restoreVerified") is True and p20.get("enabled") is not True:
+        raise RuntimeError("packet20-diagnostic-session-already-restored; one-shot session cannot re-enter before a fresh boot")
     new_snapshot=not p20.get("snapshotValid")
     if not p20.get("enabled"):
         command("begin"); time.sleep(1); state,p20=p20_state()
@@ -243,17 +262,38 @@ def snapshot(observer_output=None, inventory=None):
             sidecar.parent.mkdir(parents=True,exist_ok=True)
             sidecar.write_text(json.dumps(result,indent=2,sort_keys=True)+"\n")
             raise RuntimeError(f"foundation-prequal-failed; snapshot={p20.get('snapshotId')} hash={p20.get('snapshotHash')}; sidecar={sidecar}; restore={result.get('status')}; cause={type(exc).__name__}: {exc}") from exc
-    return {"snapshotId":p20.get("snapshotId"),"snapshotHash":p20.get("snapshotHash")}
+    return {"snapshotId":p20.get("snapshotId"),"snapshotHash":p20.get("snapshotHash"),
+            "foundationTelemetryEnabledBefore":telemetry_before}
 
 def foundation_prequal_windows(output, inventory):
     """Measure observer effect once on seq39 and use its instrumented window as the sacrificial warm-up."""
     select(0);time.sleep(5)
     enable_tails(False)
     steady=collect_frame_window("foundation-steady-state-tails-off",window_seconds=40,minimum_samples=27)
+    # Persist the uninstrumented window before enabling tails so an instrumented
+    # failure cannot erase the only observer comparison evidence.
+    path=pathlib.Path(output);path.parent.mkdir(parents=True,exist_ok=True)
+    windows_path=path.with_name("OBSERVER_PREQUAL_WINDOWS.json")
+    windows={"schema":"hbnf-observer-prequal-windows-v1","status":"IN_PROGRESS",
+      "candidate_release":EXPECTED,"kernel_id":0,"steady_state":{"tails_enabled":False,"duration_seconds":40,"samples":steady}}
+    windows_path.write_text(json.dumps(windows,indent=2,sort_keys=True)+"\n")
     enable_tails(True)
-    instrumented=collect_frame_window("foundation-observer-instrumented-sacrificial-warmup",window_seconds=40,minimum_samples=27)
-    warmup=telemetry(inventory,output,emit=False)
-    enable_tails(False)
+    try:
+        instrumented=collect_frame_window("foundation-observer-instrumented-sacrificial-warmup",window_seconds=40,minimum_samples=27)
+        windows["instrumented"]={"tails_enabled":True,"duration_seconds":40,"samples":instrumented,"excluded_from_foundation":True}
+        windows["status"]="WINDOWS_CAPTURED__TELEMETRY_PENDING"
+        windows_path.write_text(json.dumps(windows,indent=2,sort_keys=True)+"\n")
+        try:
+            warmup=telemetry(inventory,output,emit=False)
+        except Exception as exc:
+            windows["status"]="PREQUAL_FAILED__TELEMETRY_CONTRACT"
+            windows["telemetry_error"]=f"{type(exc).__name__}: {exc}"
+            windows_path.write_text(json.dumps(windows,indent=2,sort_keys=True)+"\n")
+            raise
+    finally:
+        # Saturated or missing quantiles remain a hard failure. This cleanup
+        # only returns the diagnostic instrumentation to its preflight state.
+        enable_tails(False)
     light_median=statistics.median(steady);instrumented_median=statistics.median(instrumented)
     delta=(instrumented_median-light_median)/light_median*100.0 if light_median else None
     result={"schema":"hbnf-foundation-prequal-windows-v1","status":"PASS",
@@ -261,7 +301,7 @@ def foundation_prequal_windows(output, inventory):
       "steady_state":{"tails_enabled":False,"duration_seconds":40,"samples":len(steady),"frame_average_ms_min":min(steady),"frame_average_ms_max":max(steady)},
       "sacrificial_warmup":{"tails_enabled":True,"duration_seconds":40,"samples":len(instrumented),"excluded_from_foundation":True,"sample":warmup},
       "qualified_boundary":"observer comparison and sacrificial tails-on warm-up complete; tails disabled before the full 28-kernel sweep; mode transition resets firmware histogram"}
-    path=pathlib.Path(output);path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(result,indent=2,sort_keys=True)+"\n")
+    path.write_text(json.dumps(result,indent=2,sort_keys=True)+"\n")
     return result
 
 def _restore_snapshot(sid,shash):
@@ -283,9 +323,22 @@ def _restore_snapshot(sid,shash):
             )
     if int(p20.get("snapshotId",-1))!=int(sid):raise RuntimeError("packet20-snapshot-id-mismatch")
     if int(p20.get("snapshotHash",-1))!=int(shash):raise RuntimeError("packet20-snapshot-hash-mismatch")
-    if p20.get("lastCommand")!="restore":raise RuntimeError("packet20-restore-command-identity-mismatch")
-    if p20.get("lastCommandAccepted") is not True:raise RuntimeError("packet20-restore-command-not-accepted")
+    if p20.get("restoreVerified") is not True:raise RuntimeError("packet20-restore-not-verified")
     return {"restoreVerified":True,"snapshotId":int(sid),"snapshotHash":int(shash),"packet20Same":True}
+
+def verify_restore(path):
+    """Read-only verification after restore; never tries to begin/re-enter diagnostics."""
+    snap=json.loads(pathlib.Path(path).read_text())
+    sid=int(snap["snapshotId"]); shash=int(snap["snapshotHash"])
+    state,p20=p20_state()
+    if p20.get("restoreVerified") is not True:raise RuntimeError("packet20-restore-not-verified")
+    if int(p20.get("snapshotId",-1))!=sid:raise RuntimeError("packet20-snapshot-id-mismatch")
+    if int(p20.get("snapshotHash",-1))!=shash:raise RuntimeError("packet20-snapshot-hash-mismatch")
+    enabled=state.get("HBNF",{}).get("foundationTelemetry",{}).get("enabled")
+    expected=snap.get("foundationTelemetryEnabledBefore")
+    if not isinstance(expected,bool) or enabled is not expected:raise RuntimeError("foundation-telemetry-mode-restore-mismatch")
+    print(json.dumps({"restoreVerified":True,"snapshotId":sid,"snapshotHash":shash,"packet20Same":True,
+                      "foundationTelemetryEnabled":enabled},separators=(",",":")))
 
 def select(kernel):
     if not command("select",kernel=int(kernel)).get("HBNF",{}).get("packet20Diagnostic",{}).get("lastCommandAccepted",False):raise RuntimeError("packet20-kernel-select-rejected")
@@ -321,6 +374,27 @@ def telemetry(inventory,session_id,emit=True):
         "quantiles":quantiles,
         "foundationTelemetry":ft,
         "timing":timing,
+        # Retain the settings that explain code-path cost when the hard tail
+        # contract rejects a sample. This is read-only state already fetched
+        # for this telemetry point, not an extra device request.
+        "runtime_context":{
+          "release_id":build.get("release_id"),
+          "wled":info.get("ver"),
+          "matrix_on":state.get("on"),
+          "matrix_brightness":state.get("bri"),
+          "scene":h.get("scene"),
+          "vibe":h.get("vibe"),
+          "active_vibe":h.get("activeVibe"),
+          "motion":h.get("motion"),
+          "audio_response":h.get("audioResponse"),
+          "matrix_output_brightness":h.get("matrixBrightness"),
+          "aux_output_brightness":h.get("auxBrightness"),
+          "palette":h.get("palette"),
+          "overlay_id":h.get("overlayId"),
+          "kernel":h.get("kernel"),
+          "variant_signature":h.get("variantSignature"),
+          "segment0":({k:state.get("seg",[{}])[0].get(k) for k in ("id","start","stop","on","bri","fx","pal","col","sel","rev")} if isinstance(state.get("seg"),list) and state.get("seg") else None),
+        },
       }
       raw_path=pathlib.Path(str(session_id))/"SATURATED_TELEMETRY_RAW.json"
       raw_path.parent.mkdir(parents=True,exist_ok=True)
@@ -349,6 +423,7 @@ def telemetry(inventory,session_id,emit=True):
       "websocket_clients":info.get("ws"),"aux_projection_active":aux_rx["active"],"aux_projection_age_ms":aux_rx["age_ms"],"aux_render_fps":leds.get("fps"),
       "aux_projection_age_valid":aux_rx["age_valid"],"aux_frame_lock_rx_active":aux_rx["frame_lock_active"],
       "aux_projection_rx_packets":aux_rx["rx_packets"],"aux_projection_rx_sequence":aux_rx["rx_sequence"],"aux_projection_peer_known":aux_rx["peer_known"],"aux_projection_hello_packets":aux_rx["hello_packets"],"aux_wled_live_source":aux_rx["wled_live_source"],
+      "aux_physical_output_status":"NOT_OBSERVABLE_FROM_WLED_JSON",
       "wifi_rssi_dbm":timing["rssi"],"restart_count":cache["restart_count"],
       "telemetry_read_elapsed_seconds":round(read_elapsed,6),
       "kernel_ms_avg":ft.get("kernelMsAvg"),"kernel_ms_p95":ft.get("kernelMsP95"),"palette_ms_avg":ft.get("paletteMsAvg"),"palette_ms_p95":ft.get("paletteMsP95"),
@@ -359,21 +434,56 @@ def telemetry(inventory,session_id,emit=True):
     if emit:print(json.dumps(sample,separators=(",",":")))
     return sample
 
+def readonly_preflight(session_id):
+    """Check identity and safety inputs before enabling diagnostic telemetry."""
+    reads,elapsed=_parallel_soak_reads(session_id)
+    info=reads["matrix_info"];build=reads["matrix_build"];state=reads["matrix_state"]
+    aux=reads["aux_info"];aux_state=reads["aux_state"]
+    h=state.get("HBNF",{})
+    result={"schema":"hbnf-live-qualification-preflight-v1","release_id":build.get("release_id"),
+      "candidate":build.get("candidate"),"wled":info.get("ver"),"matrix_ip":info.get("ip"),
+      "matrix_mac":info.get("mac","" ).replace(":","").lower(),"matrix_uptime_seconds":info.get("uptime"),
+      "uptime_seconds":state.get("HBNF",{}).get("timing",{}).get("uptimeSec"),"restart_count":0,
+      "fps":state.get("HBNF",{}).get("timing",{}).get("fps"),
+      "matrix_on":state.get("on"),"matrix_brightness":h.get("matrixBrightness"),
+      "packet20_enabled":h.get("packet20Diagnostic",{}).get("enabled"),
+      "foundation_telemetry_enabled":h.get("foundationTelemetry",{}).get("enabled"),
+      "aux_ip":aux.get("ip"),"aux_mac":aux.get("mac","" ).replace(":","").lower(),
+      "aux_on":aux_state.get("on"),"aux_live":aux.get("live"),"aux_live_mode":aux.get("lm"),
+      "aux_live_ip":aux.get("lip"),"aux_led_count":aux.get("leds",{}).get("count"),
+      "aux_physical_output_status":"NOT_OBSERVABLE_FROM_WLED_JSON","read_elapsed_seconds":round(elapsed,6)}
+    if result["release_id"]!=EXPECTED or result["candidate"]!=EXPECTED:raise RuntimeError("preflight-release-identity-mismatch")
+    if result["wled"]!="16.0.1" or result["matrix_ip"]!="192.168.77.10" or result["matrix_mac"]!=MAC:raise RuntimeError("preflight-matrix-target-mismatch")
+    if result["matrix_on"] is not True or result["matrix_brightness"]!=44:raise RuntimeError("preflight-matrix-output-or-brightness-mismatch")
+    if result["aux_ip"]!="192.168.77.11" or result["aux_mac"]!="8c94df55c34c" or result["aux_on"] is not True:raise RuntimeError("preflight-aux-target-or-output-mismatch")
+    if not (result["aux_live"] is True and result["aux_live_mode"]=="DDP" and result["aux_live_ip"]=="192.168.77.10" and result["aux_led_count"]==22):raise RuntimeError("preflight-aux-native-ddp-source-mismatch")
+    return result
+
 def restore(path):
     snap=json.loads(pathlib.Path(path).read_text()); sid=int(snap["snapshotId"])
     print(json.dumps(_restore_snapshot(sid,snap["snapshotHash"])))
+
+def telemetry_mode(enabled):
+    state,_=enable_tails(enabled)
+    print(json.dumps({"HBNF":{"foundationTelemetry":{"enabled":state.get("HBNF",{}).get("foundationTelemetry",{}).get("enabled")}}},separators=(",",":")))
 
 def main():
     ap=argparse.ArgumentParser();sub=ap.add_subparsers(dest="action",required=True)
     s0=sub.add_parser("snapshot");s0.add_argument("--observer-output");s0.add_argument("--inventory",required=True)
     s=sub.add_parser("select");s.add_argument("--kernel",required=True)
     t=sub.add_parser("telemetry");t.add_argument("--inventory",required=True);t.add_argument("--session-id",default="legacy")
+    pre=sub.add_parser("preflight");pre.add_argument("--session-id",default="r5-preflight")
     r=sub.add_parser("restore");r.add_argument("--snapshot-file",required=True)
+    vr=sub.add_parser("verify-restore");vr.add_argument("--snapshot-file",required=True)
+    tm=sub.add_parser("telemetry-mode");tm.add_argument("--enabled",choices=["true","false"],required=True)
     a=ap.parse_args()
     if a.action=="snapshot":print(json.dumps(snapshot(a.observer_output,a.inventory),separators=(",",":")))
     elif a.action=="select":select(a.kernel)
     elif a.action=="telemetry":telemetry(a.inventory,a.session_id)
+    elif a.action=="preflight":print(json.dumps(readonly_preflight(a.session_id),separators=(",",":")))
     elif a.action=="restore":restore(a.snapshot_file)
+    elif a.action=="verify-restore":verify_restore(a.snapshot_file)
+    elif a.action=="telemetry-mode":telemetry_mode(a.enabled=="true")
 if __name__=="__main__":
     try:main()
     except Exception as e:print(f"foundation adapter error: {type(e).__name__}: {e}",file=sys.stderr);sys.exit(2)

@@ -1,0 +1,78 @@
+{
+  "aesthetic_acceptance": "UNFROZEN",
+  "branch": "hbnf-cart2-phase2-integration-20261006",
+  "build": {
+    "animartrix_commit": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f",
+    "build_log_path": "evidence/cart2-r7-performance-repair-20261009/R7_BUILD_20261009.log",
+    "build_log_sha256": "95e9fc20c41a5a2daa963697b6424e5bb348a728ca95b39d0ff8cc97839e51d9",
+    "environment": "hbnf_matrix_wled16_packet20_diag",
+    "exact_command": "PYTHONPATH=/tmp/hbnf-p2-build/pio-cli PLATFORMIO_CORE_DIR=/tmp/hbnf-p2-build/pio-local /Applications/Xcode.app/Contents/Developer/usr/bin/python3 /tmp/hbnf-p2-build/pio-cli/bin/pio run -v -j 1 -e hbnf_matrix_wled16_packet20_diag",
+    "fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+    "platformio_core": "6.1.18",
+    "python": "3.9.6",
+    "resolved_package_list_sha256": "e41bb394d1adc1d721f482b83bd4942b8b4b1196aeabc30d71590c648dc6574c",
+    "resolved_project_config_sha256": "3e1ef2692097c84c02fcc74e28c302b7d049b4b137103f5c35eb1636f4ec2c99",
+    "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c"
+  },
+  "compiled_contract": {
+    "HBNF_PACKET20_DIAGNOSTICS_effective_compile_define": true,
+    "foundationTelemetry": true,
+    "packet20Diagnostic": true,
+    "wholeFrameUs": true
+  },
+  "firmware": {
+    "bytes": 1497920,
+    "embedded_release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+    "embedded_release_id_count": 3,
+    "sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+    "wled": "16.0.1"
+  },
+  "head_at_build": "be534c7747ac46d2c6fa302f237baa53debee2b6",
+  "not_performed": [
+    "live Matrix/AUX/Opal mutation",
+    "R7 install",
+    "28-kernel live sweep",
+    "90-minute live soak",
+    "T4/T5 acceptance"
+  ],
+  "offline_tests": {
+    "all_pass": true,
+    "commands_run": 21,
+    "fresh_remote_derived_worktree_run": true,
+    "includes_exact_radial_path_equivalence": true,
+    "includes_historical_failure_replays": true,
+    "platform_doctor": "PASS",
+    "report": "evidence/cart2-r7-performance-repair-20261009/R7_OFFLINE_TEST_RESULTS_FINAL_20261009.json",
+    "report_sha256": "89e6318e2abeb7338a355037fe71fef6c291e65ab4954f2a75b8218590f35b06"
+  },
+  "physical_acceptance": "PENDING",
+  "release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+  "resource_usage": {
+    "flash_capacity_bytes": 1572864,
+    "flash_free_bytes": 81679,
+    "flash_used_bytes": 1491185,
+    "flash_used_percent": 94.8,
+    "ram_capacity_bytes": 327680,
+    "ram_free_bytes": 215200,
+    "ram_used_percent": 34.3,
+    "static_ram_bytes": 112480
+  },
+  "rollback": {
+    "bytes": 1489008,
+    "release": "Foundation R4 exact",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "root_cause_and_fix": {
+    "R6_gate": "matched kernel 0 R4 median 24.214ms vs R6 51.468ms; audio stage 8.598ms vs 1.381ms and AUX prepare/send 4.148ms vs .136ms. Tails observer delta R4 +0.27%, R6 -2.21%, so observer overhead was not causal.",
+    "correction": "R7 specializes the 32x16 expression using exact int32 constant arithmetic and preserves 64-bit fallback elsewhere.",
+    "root_cause": "per-pixel 64-bit radial division in AudioBridge::modulate on fixed 32x16 production grid generated Xtensa __divdi3 helper; exact disassembly evidence preserved."
+  },
+  "schema": "hbnf-cart2-r7-offline-candidate-manifest-v1",
+  "source_binding": {
+    "integration_head_at_build": "be534c7747ac46d2c6fa302f237baa53debee2b6",
+    "path": "evidence/cart2-r7-performance-repair-20261009/SOURCE_BINDING_R7.json",
+    "sha256": "d2a3ae8ca6b22728008a92b5f90b8fd15b53e1f15b0fdd4dc3f494eb571f6fec",
+    "source_commit": "fa415b2c52cc450895c2e6435977422b35be7558"
+  },
+  "status": "BUILT_VERIFIED_OFFLINE__LIVE_QUALIFICATION_PENDING"
+}

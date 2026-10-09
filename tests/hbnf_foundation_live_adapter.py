@@ -49,7 +49,8 @@ with unittest.mock.patch.object(m.time,"monotonic",side_effect=clock.monotonic),
     edge=m.collect_frame_window("edge",window_seconds=3,reserve_seconds=1,minimum_samples=2)
 assert len(edge)==2 and len(calls)==2, (edge,calls)
 
-# Never launch an HTTP state read when the remaining budget is below reserve.
+# Use the explicit, bounded extension when the nominal window no longer has
+# enough request budget; with no extension, preserve fail-closed under-sampling.
 clock=FakeClock();calls=[]
 def reserve_edge_state(deadline,stage):
     calls.append(stage);clock.now+=1.1
@@ -57,9 +58,19 @@ def reserve_edge_state(deadline,stage):
 with unittest.mock.patch.object(m.time,"monotonic",side_effect=clock.monotonic), \
      unittest.mock.patch.object(m.time,"sleep",side_effect=clock.sleep), \
      unittest.mock.patch.object(m,"p20_state",side_effect=reserve_edge_state):
-    try:m.collect_frame_window("reserve",window_seconds=2,reserve_seconds=1,minimum_samples=2);raise AssertionError("under-sampled window accepted")
+    try:m.collect_frame_window("reserve",window_seconds=2,reserve_seconds=1,minimum_samples=2,max_extension_seconds=0);raise AssertionError("under-sampled window accepted")
     except RuntimeError as exc:assert "reserve-under-sampled:1<2" in str(exc)
 assert len(calls)==1, calls
+
+clock=FakeClock();calls=[];request_deadlines=[]
+def bounded_extension_state(deadline,stage):
+    calls.append(stage);request_deadlines.append(deadline);clock.now+=1.1
+    return {"HBNF":{"timing":{"wholeFrameUs":20000}}},{}
+with unittest.mock.patch.object(m.time,"monotonic",side_effect=clock.monotonic), \
+     unittest.mock.patch.object(m.time,"sleep",side_effect=clock.sleep), \
+     unittest.mock.patch.object(m,"p20_state",side_effect=bounded_extension_state):
+    extended=m.collect_frame_window("bounded-extension",window_seconds=2,reserve_seconds=1,minimum_samples=2,max_extension_seconds=3)
+assert len(extended)==2 and len(calls)==2 and all(d<=5 for d in request_deadlines), (extended,request_deadlines)
 
 # Genuine early/mid-window transport failures still fail closed.
 clock=FakeClock();calls=[]
@@ -220,8 +231,8 @@ assert len(calls)==2
 # Observer-window errors preserve the snapshot identity and verified auto-restore.
 with tempfile.TemporaryDirectory() as td:
     m.identity=lambda: ({}, {})
-    idle={"HBNF":{"packet20Diagnostic":{"enabled":True,"snapshotValid":False,"snapshotState":"IDLE"}}}
-    snapshot_state={"HBNF":{"packet20Diagnostic":{"enabled":True,"snapshotValid":True,
+    idle={"HBNF":{"foundationTelemetry":{"enabled":True},"packet20Diagnostic":{"enabled":True,"snapshotValid":False,"snapshotState":"IDLE"}}}
+    snapshot_state={"HBNF":{"foundationTelemetry":{"enabled":True},"packet20Diagnostic":{"enabled":True,"snapshotValid":True,
         "snapshotState":"READY","snapshotId":7,"snapshotHash":1234}}}
     states=iter((idle,snapshot_state))
     m.p20_state=lambda *args,**kwargs:(s:=next(states),s["HBNF"]["packet20Diagnostic"])

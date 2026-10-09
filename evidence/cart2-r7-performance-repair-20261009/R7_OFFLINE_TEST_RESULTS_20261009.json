@@ -1,0 +1,182 @@
+{
+  "schema": "hbnf-r7-offline-suite-run-v1",
+  "candidate_release": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+  "candidate_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+  "captured_at_utc": "2026-10-09T09:58:07.921539+00:00",
+  "all_pass": true,
+  "commands_run": 21,
+  "results": [
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_vibe_audio_replay.py"
+      ],
+      "exit_code": 0,
+      "output": "PASS hbnf_vibe_audio_replay: 13 AudioFeatures semantics, six synthetic traces, pairwise Vibe differentiation, AUTO hysteresis\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/test_hbnf_text_moments_offline.py"
+      ],
+      "exit_code": 0,
+      "output": "..............\n----------------------------------------------------------------------\nRan 14 tests in 0.046s\n\nOK\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_release_engineering_static.py"
+      ],
+      "exit_code": 0,
+      "output": "PASS: HBNF release-engineering staging integrity\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_phase2_r4_build_closure.py"
+      ],
+      "exit_code": 0,
+      "output": "PASS: Phase 2 source binding preserves R4 source and embeds unique WOW-r4 identity\nPASS: clean-room closure requires the exact R4 FastLED transformation, diagnostics environment, telemetry hook patch, and empty local object cache\nPASS: existing build gate fails closed unless the compiled binary, effective macro, and linked WLED hook references satisfy the telemetry contract\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_control_execution_system.py"
+      ],
+      "exit_code": 0,
+      "output": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 0.130s\n\nOK\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_delivery_rail_host.py"
+      ],
+      "exit_code": 0,
+      "output": "REJECT historical replay failed : failed/missing check: all_historical_host_failures_replayed\nREJECT fabricated dry-run evidence digest : missing/hash-mismatch evidence: entire_release_transaction_dryrun\nREJECT binary sha mismatch : candidate binary SHA mismatch\nREJECT no live authorization : failed/missing check: launcher_rejects_invalid_manifest_before_device_access\nREJECT missing evidence files : missing/hash-mismatch evidence: device_and_source_authority_reconciled\nPASS: offline checker accepts complete host fixture and fails closed for invalid proofs; no hardware invoked\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_live_kernel_sweep.py"
+      ],
+      "exit_code": 0,
+      "output": "PASS: live sweep runner validates adapter/inventory/telemetry, cross-kernel continuity, failure evidence, kernel identity, and exact restore snapshots\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_guarded_run.py"
+      ],
+      "exit_code": 0,
+      "output": "PASS: guarded execution blocks wrong-state/unauthorized mutation and requires platform prelive enforcement\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_packet20_build_validate.py"
+      ],
+      "exit_code": 0,
+      "output": "PASS: Packet20 cloud build validator accepts exact provenance, vendor-patch/generated-UI evidence, and fails closed on source drift\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_packet20_http_adapter.py"
+      ],
+      "exit_code": 0,
+      "output": "PASS: Packet20 adapter mapping, diagnostic telemetry normalization, one-snapshot post-restore semantics, exact config, and 28-kernel inventory\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_foundation_seq39_failure_policy.py"
+      ],
+      "exit_code": 0,
+      "output": "PASS: seq39 host/external failures preserve only a fully healthy candidate with exact renderer restore; genuine runtime or missing safety proof selects exact Release07 recovery\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_foundation_seq39_transport_resume.py"
+      ],
+      "exit_code": 0,
+      "output": "PASS: Opal fallback verifies exact local artifact before one Opal-origin /update and records its receipt; calls are mocked and no network occurs\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_packet20_r4_backport.py",
+        "--fastled-root",
+        "/tmp/hbnf-p2-build/FastLED"
+      ],
+      "exit_code": 0,
+      "output": "PASS: exact R1 renderer source; only shared render_value plus scoped FastLED compiler controls changed\nR1 SHA-256: bd9d146e2ce5fde991a895ccc2ad2773df1cc77cb815381679c17c6425d7bbe8\nR4 transformed header SHA-256: a2bc03b5196dbaacb39e56885ed9301106b15c4916e0b906f86c02db1601ec1b\nPASS: WLED R(c) macro collision isolated while FastLED headers are included\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_animartrix_trig_cache.py"
+      ],
+      "exit_code": 0,
+      "output": "PASS: cached trig pair is bit-exact for repeated and distinct angles, including signed zero/NaN\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_foundation_parallel_telemetry.py"
+      ],
+      "exit_code": 0,
+      "output": "PASS: all five endpoints overlapped; 1.6s simulated latency per endpoint completed in 1.632s\nPASS: slow endpoint failed closed and was localized in 4.015s with partial-response hashes preserved\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_foundation_tail_range.py"
+      ],
+      "exit_code": 0,
+      "output": "PASS: exact 100->250us telemetry-bin change, fixed 512-bin memory, candidate identity only, max tracking/render source unchanged\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_foundation_seq37_failure_policy.py"
+      ],
+      "exit_code": 0,
+      "output": "PASS: seq37 host/external failures preserve only a fully healthy candidate with exact renderer restore; genuine runtime or missing safety proof selects exact Release07 recovery\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_foundation_sustained_gate.py"
+      ],
+      "exit_code": 0,
+      "output": "PASS: isolated max diagnostic; sustained p99, catastrophic streak, restart, heap/fragmentation, AUX, identity, and sampling continuity gates all enforced\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_packet20_r2_transaction_static.py"
+      ],
+      "exit_code": 0,
+      "output": "PASS: exact candidate/recovery identities, one-shot transaction calls, explicit inventory, no ledger read\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_foundation_offline_tools.py"
+      ],
+      "exit_code": 0,
+      "output": "PASS: threshold freezing fails closed, Release07 recovery receipt verifies offline, and evidence packaging is explicit/hash-bound/path-safe\n"
+    },
+    {
+      "command": [
+        "python3",
+        "evidence/cart2-r7-performance-repair-20261009/test_audio_radial_fastpath.py"
+      ],
+      "exit_code": 0,
+      "output": "PASS: 512/512 pixels \u00d7 8 coordinate transforms exact; alternate-grid fallback retained\n"
+    }
+  ],
+  "source_checkpoint_parent": "be534c7747ac46d2c6fa302f237baa53debee2b6",
+  "live_hardware_touched": false
+}

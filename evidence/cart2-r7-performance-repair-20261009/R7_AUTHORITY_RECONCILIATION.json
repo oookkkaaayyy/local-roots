@@ -1,0 +1,45 @@
+{
+  "active_device_readonly_preflight": {
+    "path": "evidence/cart2-r7-performance-repair-20261009/R7_READONLY_PREFLIGHT_CURRENT_20261009.json",
+    "result": "PASS_READ_ONLY__EXACT_R4_CURRENT__AUX_NATIVE_DDP_LIVE_AND_OWNER_VISUALLY_CONFIRMED__R7_MUTATION_NOT_STARTED",
+    "sha256": "9c5811aac91a1dce7a416ed37c9aa0d49a0931bef02ea2c03670cdd32d9968bd"
+  },
+  "branch": "hbnf-cart2-phase2-integration-20261006",
+  "branch_head_at_reconcile": "be534c7747ac46d2c6fa302f237baa53debee2b6",
+  "candidate": {
+    "conditional_owner_authority": "R7 only, one install, conditional exact R4 recovery, no R8+; all stated safety gates unchanged",
+    "current_live_mutation_authorized": false,
+    "fresh_current_preflight_sha256": "9c5811aac91a1dce7a416ed37c9aa0d49a0931bef02ea2c03670cdd32d9968bd",
+    "manifest_sha256": "0974a69e17400e92958842b26b8f85ed363ea09e52c07a1ec4b7f438b97ec1d9",
+    "offline_admission": "PASS_FINAL_21_TESTS_AND_RELEASE_REHEARSAL",
+    "offline_test_report_sha256": "89e6318e2abeb7338a355037fe71fef6c291e65ab4954f2a75b8218590f35b06",
+    "release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+    "sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+    "source_binding_sha256": "d2a3ae8ca6b22728008a92b5f90b8fd15b53e1f15b0fdd4dc3f494eb571f6fec"
+  },
+  "captured_at_utc": "2026-10-09T09:58:50.182516+00:00",
+  "r6": {
+    "candidate_sha256": "0a4b9563c7debfb5a01e9d36aeb8aac2583e105303064de3db0466b7dd9d89d6",
+    "failure_receipt": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/R6_CLOSED_TRANSACTION/R6_PERFORMANCE_FAILURE_CLASSIFICATION.json",
+      "sha256": "b2e14deeab3abbd907d4c063131a2edac937f0f97eb389e23dcb14658dbf5368"
+    },
+    "r4_rollback_consumed_and_verified": true,
+    "r4_runtime_verification": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/R6_CLOSED_TRANSACTION/R4_RECOVERY_RUNTIME_VERIFICATION.json",
+      "sha256": "9e32bb667c48bd961406fe811da6835aff7f68672f092216cb0ad41bf5192550"
+    },
+    "r6_authorization_consumed": true,
+    "recovery_receipt": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/R6_CLOSED_TRANSACTION/R6_FAILURE_R4_RECOVERY_CLOSURE.json",
+      "sha256": "dcbe9d642a09adb81f0c2d96684d9f8bf852aef512a6b5a6d44881759be71cc1"
+    }
+  },
+  "remote_state_git_blob_sha": "da00e3d0102855f6202261d339562f2be9b5adf5",
+  "result": "R6_CLOSED_R4_CURRENT_R7_EXACT_OFFLINE_CANDIDATE_READY_FOR_FINAL_LIVE_APPROVED_ADMISSION",
+  "schema": "hbnf-r7-authority-and-source-reconciliation-v1",
+  "stale_state_conflict": {
+    "execution_cursor_before": "R6_OTA_HTTP_SUCCESS__NORMAL_REBOOT_IDENTITY_PENDING",
+    "resolution": "Specific bounded_phase2_r6_live_qualification_authorization and its R6 failure/recovery receipts supersede the stale cursor; current read-only build endpoint independently reports exact R4 release ID. The cursor is corrected in the next state commit."
+  }
+}

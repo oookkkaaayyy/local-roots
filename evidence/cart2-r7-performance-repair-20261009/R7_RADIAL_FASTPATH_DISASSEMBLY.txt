@@ -1,0 +1,52 @@
+R7 optimized object disassembly excerpts.
+R7 bridge SHA-256: edfe168658d548fe8e52e05b5b9d0cc3390cfe11092423a2c1c12de95884ae74
+Whole disassembly SHA-256: f5cedd0b8584aad7a3d39cc7369c9a5308ea3bdab64b0c1789bea831f680bf8a
+
+			14: R_XTENSA_32	hbnf::AnimartrixAudioBridge::blend8(unsigned char, unsigned char, unsigned char)
+			18: R_XTENSA_32	hbnf::AnimartrixAudioBridge::blend8(unsigned char, unsigned char, unsigned char)
+			1c: R_XTENSA_32	hbnf::AnimartrixAudioBridge::blend8(unsigned char, unsigned char, unsigned char)
+			20: R_XTENSA_32	__divdi3
+			24: R_XTENSA_32	hbnf::AnimartrixAudioBridge::blend8(unsigned char, unsigned char, unsigned char)
+			28: R_XTENSA_32	hbnf::AnimartrixAudioBridge::blend8(unsigned char, unsigned char, unsigned char)
+			2c: R_XTENSA_32	hbnf::AnimartrixAudioBridge::blend8(unsigned char, unsigned char, unsigned char)
+
+Disassembly of section .literal._ZN12_GLOBAL__N_120FoundationAnimartrix10writePixelEii3rgb:
+
+00000000 <.literal._ZN12_GLOBAL__N_120FoundationAnimartrix10writePixelEii3rgb>:
+   0:	00 00 00 00 	
+			3c: R_XTENSA_32	__cxa_guard_release
+			40: R_XTENSA_32	fl::perlin_s16x16::pnoise2d_raw(int, int, int const*, unsigned char const*)
+			44: R_XTENSA_32	fl::perlin_s16x16::pnoise3d_raw(int, int, int, int const*, unsigned char const*)
+			48: R_XTENSA_32	__divdi3
+
+Disassembly of section .literal._ZN2fl13perlin_s16x168pnoise3dENS_6s16x16ES1_S1_PKiPKh:
+
+00000000 <.literal._ZN2fl13perlin_s16x168pnoise3dENS_6s16x16ES1_S1_PKiPKh>:
+   0:	00 00 00 00 	
+			0: R_XTENSA_32	fl::perlin_s16x16::pnoise3d_raw(int, int, int, int const*, unsigned char const*)
+
+Disassembly of section .literal._ZN10ANIMartRIXC5Ev:
+ 400:	51f9      	s32i.n	a15, a1, 20
+ 402:	000081        	l32r	a8, fffc0404 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0xfffc0404>
+			402: R_XTENSA_SLOT0_OP	.literal._ZNK4hbnf21AnimartrixAudioBridge8modulateEiiRhS1_S1_+0x20
+			402: R_XTENSA_ASM_EXPAND	__divdi3
+ 405:	0008e0        	callx8	a8
+ 408:	51f8      	l32i.n	a15, a1, 20
+ 40a:	31e8      	l32i.n	a14, a1, 12
+ 40c:	4198      	l32i.n	a9, a1, 16
+ 40e:	2188      	l32i.n	a8, a1, 8
+ 410:	ff3b06        	j	100 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x100>
+			410: R_XTENSA_SLOT0_OP	.text._ZNK4hbnf21AnimartrixAudioBridge8modulateEiiRhS1_S1_+0x100
+ 413:	00          	.byte 00
+ 358:	31df30        	srai	a13, a3, 31
+ 35b:	000081        	l32r	a8, fffc035c <hbnf_r4_render_value(fl::render_parameters const&)+0xfffc035c>
+			35b: R_XTENSA_SLOT0_OP	.literal._ZL20hbnf_r4_render_valueRKN2fl17render_parametersE+0x48
+			35b: R_XTENSA_ASM_EXPAND	__divdi3
+ 35e:	0008e0        	callx8	a8
+ 361:	ffa022        	movi	a2, 255
+ 364:	432a20        	min	a2, a10, a2
+ 367:	0a0c      	movi.n	a10, 0
+ 369:	5322a0        	max	a2, a2, a10
+ 36c:	ca0200        	float.s	f0, a2, 0
+ 36f:	fa2040        	rfr	a2, f0
+ 372:	f01d      	retw.n

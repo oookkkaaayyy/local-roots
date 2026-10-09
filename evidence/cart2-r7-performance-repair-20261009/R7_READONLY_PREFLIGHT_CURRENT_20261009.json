@@ -1,0 +1,619 @@
+{
+  "captured_at_utc": "2026-10-09T10:01:52.640672+00:00",
+  "checks": {
+    "aux_logical_22_pixels": true,
+    "aux_target_mac": true,
+    "aux_wled16_on_and_ddp_live_from_matrix": true,
+    "lan_default_route_gateway_77_1": true,
+    "mac_ac_power_100": true,
+    "matrix_exact_foundation_r4": true,
+    "matrix_runtime_healthy": true,
+    "matrix_target_mac": true,
+    "matrix_wled16_and_on": true,
+    "upstream_https_reachable": true
+  },
+  "host": {
+    "ac_power": {
+      "command": "pmset -g batt",
+      "exit_code": 0,
+      "output": "Now drawing from 'AC Power'\n -InternalBattery-0 (id=38600803)\t100%; charged; 0:00 remaining present: true"
+    },
+    "default_route": {
+      "command": "route -n get default",
+      "exit_code": 0,
+      "output": "route to: default\ndestination: default\n       mask: default\n    gateway: 192.168.77.1\n  interface: en0\n      flags: <UP,GATEWAY,DONE,STATIC,PRCLONING,GLOBAL>\n recvpipe  sendpipe  ssthresh  rtt,msec    rttvar  hopcount      mtu     expire\n       0         0         0         0         0         0      1500         0"
+    },
+    "ethernet_link": {
+      "command": "ifconfig en0",
+      "exit_code": 0,
+      "output": "en0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500\n\toptions=6460<TSO4,TSO6,CHANNEL_IO,PARTIAL_CSUM,ZEROINVERT_CSUM>\n\tether ce:cb:a4:99:c3:11\n\tinet6 fe80::452:66b3:c66d:8e88%en0 prefixlen 64 secured scopeid 0xb \n\tinet 192.168.77.180 netmask 0xffffff00 broadcast 192.168.77.255\n\tnd6 options=201<PERFORMNUD,DAD>\n\tmedia: autoselect\n\tstatus: active"
+    },
+    "host_uptime": {
+      "command": "uptime",
+      "exit_code": 0,
+      "output": "3:01  up 3 days, 11:11, 1 user, load averages: 3.22 4.45 4.79"
+    },
+    "upstream_https": {
+      "command": "curl --fail --silent --show-error --max-time 8 -I https://github.com",
+      "exit_code": 0,
+      "output": "HTTP/2 200 \ndate: Fri, 09 Oct 2026 10:01:44 GMT\ncontent-type: text/html; charset=utf-8\ncontent-language: en-US\nvary: X-PJAX, X-PJAX-Container, Turbo-Visit, Turbo-Frame, X-Requested-With, X-GitHub-Client-Version, Accept-Language, Sec-Fetch-Site,Accept-Encoding, Accept, X-Requested-With\netag: W/\"427e219f364658f562e26801775a5195\"\ncache-control: max-age=0, private, must-revalidate\nstrict-transport-security: max-age=31536000; includeSubdomains; preload\nx-frame-options: deny\nx-content-type-options: nosniff\nx-xss-protection: 0\nreferrer-policy: origin-when-cross-origin, strict-origin-when-cross-origin\ncontent-security-policy: default-src 'none'; base-uri 'self'; child-src github.githubassets.com github.com/assets-cdn/worker/ github.com/assets/ gist.github.com/assets-cdn/worker/; connect-src 'self' uploads.github.com www.githubstatus.com collector.github.com raw.githubusercontent.com api.github.com github-cloud.s3.amazonaws.com github-production-repository-file-5c1aeb.s3.amazonaws.com github-production-upload-manifest-file-7fdce7.s3.amazonaws.com github-production-user-asset-6210df.s3.amazonaws.com *.rel.tunnels.api.visualstudio.com wss://*.rel.tunnels.api.visualstudio.com github.githubassets.com objects-origin.githubusercontent.com copilot-proxy.githubusercontent.com proxy.individual.githubcopilot.com proxy.business.githubcopilot.com proxy.enterprise.githubcopilot.com *.actions.githubusercontent.com wss://*.actions.githubusercontent.com productionresultssa0.blob.core.windows.net productionresultssa1.blob.core.windows.net productionresultssa2.blob.core.windows.net productionresultssa3.blob.core.windows.net productionresultssa4.blob.core.windows.net productionresultssa5.blob.core.windows.net productionresultssa6.blob.core.windows.net productionresultssa7.blob.core.windows.net productionresultssa8.blob.core.windows.net productionresultssa9.blob.core.windows.net productionresultssa10.blob.core.windows.net productionresultssa11.blob.core.windows.net productionresultssa12.blob.core.windows.net productionresultssa13.blob.core.windows.net productionresultssa14.blob.core.windows.net productionresultssa15.blob.core.windows.net productionresultssa16.blob.core.windows.net productionresultssa17.blob.core.windows.net productionresultssa18.blob.core.windows.net productionresultssa19.blob.core.windows.net github-production-repository-image-32fea6.s3.amazonaws.com github-production-release-asset-2e65be.s3.amazonaws.com insights.github.com wss://alive.github.com wss://alive-staging.github.com api.githubcopilot.com api.individual.githubcopilot.com api.business.githubcopilot.com api.enterprise.githubcopilot.com wss://production-copilot-host.webpubsub.azure.com api.github.com/cmc_internal/api/ edge.fullstory.com rs.fullstory.com; font-src github.githubassets.com; form-action 'self' github.com gist.github.com copilot-workspace.githubnext.com objects-origin.githubusercontent.com; frame-ancestors 'none'; frame-src viewscreen.githubusercontent.com notebooks.githubusercontent.com www.youtube-nocookie.com; img-src 'self' data: blob: github.githubassets.com media.githubusercontent.com camo.githubusercontent.com identicons.github.com avatars.githubusercontent.com private-avatars.githubusercontent.com github-cloud.s3.amazonaws.com objects.githubusercontent.com release-assets.githubusercontent.com secured-user-images.githubusercontent.com user-images.githubusercontent.com private-user-images.githubusercontent.com opengraph.githubassets.com repository-images.githubusercontent.com marketplace-screenshots.githubusercontent.com copilotprodattachments.blob.core.windows.net/github-production-copilot-attachments/ github-production-user-asset-6210df.s3.amazonaws.com customer-stories-feed.github.com spotlights-feed.github.com explore-feed.github.com *.googleusercontent.com objects-origin.githubusercontent.com *.githubusercontent.com images.ctfassets.net/8aevphvgewt8/; manifest-src 'self'; media-src github.com user-images.githubusercontent.com secured-user-images.githubusercontent.com private-user-images.githubusercontent.com github-production-user-asset-6210df.s3.amazonaws.com gist.github.com github.githubassets.com assets.ctfassets.net/8aevphvgewt8/ videos.ctfassets.net/8aevphvgewt8/; script-src github.githubassets.com 'sha256-tSjmyPUky1KbRZ0fw9VUil3wFEbeM82rtbJDygGJAXw='; style-src 'unsafe-inline' github.githubassets.com; upgrade-insecure-requests; worker-src github.githubassets.com github.com/assets-cdn/worker/ github.com/assets/ gist.github.com/assets-cdn/worker/\nserver: github.com\naccept-ranges: bytes\nset-cookie: _gh_sess=ndrcwx412blbUaWUP1QSgPfCCRM9oFJWJVTQ%2BXpDop5BGD37m447A0XBaqYU%2F8bMPu7%2BA4u3xtHDbbv%2F5kGRbBzqXuLpxI7zyy7ntsplvV2BLUC6rHbFbUOIPCUlMTStMRahnZWvnXvZt9be5Z755TcRfbYL%2FITPa4zn%2Ba%2FzvDU2Atbui1zqfsQig5ugYIPJtrF3QMT6xNbbXaFS7uEISY5MJ4cxHcpk2MCg8sLi5xOiZcG%2FOuOV%2BAp%2F5O%2F9u3EFsiEHJVsGLqCttAFtVcrDQw%3D%3D--%2FvHYW%2B4DQKrCsCZW--bYeOeUbmVJuOulTiSE4EGw%3D%3D; path=/; HttpOnly; secure; SameSite=Lax\nset-cookie: _octo=GH1.1.1730545771.1791540112; expires=Sat, 09 Oct 2027 10:01:52 GMT; domain=.github.com; path=/; secure; SameSite=Lax\nset-cookie: logged_in=no; expires=Sat, 09 Oct 2027 10:01:52 GMT; domain=.github.com; path=/; HttpOnly; secure; SameSite=Lax\nx-github-request-id: F661:152CB4:1B057B:2D10BE:6AC8BB90\nx-github-edge-region: westus3"
+    },
+    "wifi_association": {
+      "command": "networksetup -getairportnetwork en0",
+      "exit_code": 0,
+      "output": "You are not associated with an AirPort network."
+    }
+  },
+  "power_stability_note": "Mac is on AC at 100%; device uptimes are current. No independent household voltage monitor is available.",
+  "responses": {
+    "aux_info": {
+      "body": {
+        "arch": "esp32",
+        "bootloaderSHA256": "b97d154765ea69ca895a33de59adb4b322509aa2a3e2c7c8409b31cbc1bcc2cd",
+        "brand": "WLED",
+        "clock": 240,
+        "cn": "Niji",
+        "core": "4.4.8.240628",
+        "cpalcount": 0,
+        "cpalmax": 129,
+        "deviceId": "e3d28e871aade5e29da7fa368a6759ea368fc3572d",
+        "flash": 4,
+        "freeheap": 105392,
+        "fs": {
+          "pmt": 0,
+          "t": 983,
+          "u": 20
+        },
+        "fxcount": 248,
+        "ip": "192.168.77.11",
+        "leds": {
+          "bootps": 0,
+          "cct": 0,
+          "count": 22,
+          "fps": 46,
+          "lc": 1,
+          "maxpwr": 900,
+          "maxseg": 32,
+          "pwr": 154,
+          "rgbw": false,
+          "seglc": [
+            1
+          ],
+          "wv": 0
+        },
+        "lip": "192.168.77.10",
+        "live": true,
+        "liveseg": -1,
+        "lm": "DDP",
+        "lwip": 0,
+        "mac": "8c94df55c34c",
+        "maps": [
+          {
+            "id": 0
+          }
+        ],
+        "name": "WLED",
+        "ndc": 1,
+        "opt": 79,
+        "palcount": 72,
+        "product": "FOSS",
+        "release": "ESP32",
+        "repo": "wled/WLED",
+        "simplifiedui": false,
+        "str": false,
+        "time": "1970-1-1, 04:55:16",
+        "u": {
+          "Animartrix": [
+            "Animartrix requires the Creative Commons Attribution License CC BY-NC 3.0"
+          ],
+          "AudioReactive": [
+            "<button class=\"btn btn-xs\" onclick=\"requestJson({AudioReactive:{enabled:true}});\"><i class=\"icons off\">&#xe08f;</i></button>"
+          ]
+        },
+        "udpport": 21324,
+        "um": [
+          32,
+          45
+        ],
+        "umpalcount": 0,
+        "uptime": 17716,
+        "ver": "16.0.1",
+        "vid": 2605010,
+        "wifi": {
+          "ap": false,
+          "bssid": "94:83:C4:98:78:94",
+          "channel": 4,
+          "rssi": -35,
+          "signal": 100
+        },
+        "ws": 0
+      },
+      "http_status": 200,
+      "sha256": "bb8f554e5c3bd245edd6c8dd59a7f758bb27fb00aaba26e7fb7ce1db0cf407fc",
+      "url": "http://192.168.77.11/json/info"
+    },
+    "aux_state": {
+      "body": {
+        "AudioReactive": {
+          "inputLevel": 128,
+          "on": false,
+          "syncMode": 2,
+          "syncPort": 11988
+        },
+        "HBNFAUX": {
+          "amount": 0,
+          "audioActive": false,
+          "audioGeometry": "source-coupled-v4",
+          "bass": 0,
+          "buildWitness": "registry28-tempo-lock-1d-v6-network-no-starve",
+          "drop": 0,
+          "energy": 0,
+          "engine": "aux-r3-wow-1d",
+          "fxFailed": 0,
+          "fxFirst": 220,
+          "fxLast": 247,
+          "fxRegistered": 28,
+          "generator": "anti-repeat-v4",
+          "generatorDomain": 0,
+          "generatorEnabled": false,
+          "generatorLocked": false,
+          "impact": 0,
+          "lumaPolicy": "camera-bright-v1",
+          "mid": 0,
+          "modeCount": 248,
+          "profile": 0,
+          "projection": "fold2-1d-v1",
+          "projectionGeometry": "perimeter-5-6-5-6-v1",
+          "projectionHelloPackets": 23282,
+          "projectionLink": "frame-lock-v1",
+          "projectionPeerAgeMs": 4294967295,
+          "projectionPeerKnown": false,
+          "projectionQueuePolicy": "newest-frame-v1",
+          "projectionRole": "receiver",
+          "projectionRxActive": false,
+          "projectionRxAgeMs": 4294967295,
+          "projectionRxPackets": 0,
+          "projectionRxSeq": 0,
+          "projectionScheduler": "network-before-bus-guard-v1",
+          "projectionSeq": 0,
+          "projectionTransport": "udp-unicast-discovery-v1",
+          "projectionTxActive": false,
+          "projectionTxAgeMs": 4294967295,
+          "pulse": 0,
+          "release": "hbnf-wow-aux-r3-2026-09-22-v1",
+          "sceneParams": "profile-via-ix-style-amount-by-effect-id",
+          "style": 0,
+          "syncEffectContract": "ids220-247",
+          "treble": 0,
+          "variantDwellSeconds": 14,
+          "variantFamily": 0,
+          "variantSequence": 0,
+          "variantSignature": 0,
+          "variation": 85
+        },
+        "bri": 255,
+        "bs": 0,
+        "ledmap": 0,
+        "lor": 0,
+        "mainseg": 0,
+        "nl": {
+          "dur": 60,
+          "mode": 1,
+          "on": false,
+          "rem": -1,
+          "tbri": 0
+        },
+        "on": true,
+        "pl": -1,
+        "ps": -1,
+        "seg": [
+          {
+            "bm": 0,
+            "bri": 255,
+            "c1": 128,
+            "c2": 128,
+            "c3": 16,
+            "cct": 127,
+            "col": [
+              [
+                255,
+                160,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            "frz": false,
+            "fx": 0,
+            "grp": 1,
+            "id": 0,
+            "ix": 128,
+            "lc": 1,
+            "len": 22,
+            "m12": 0,
+            "mi": false,
+            "o1": false,
+            "o2": false,
+            "o3": false,
+            "of": 0,
+            "on": true,
+            "pal": 0,
+            "rev": false,
+            "sel": true,
+            "set": 0,
+            "si": 0,
+            "spc": 0,
+            "start": 0,
+            "stop": 22,
+            "sx": 128
+          }
+        ],
+        "transition": 7,
+        "udpn": {
+          "recv": false,
+          "rgrp": 0,
+          "send": false,
+          "sgrp": 0
+        }
+      },
+      "http_status": 200,
+      "sha256": "7556fa8baa3e27ea5aa95b1d5554b1c94dbfc9f91b5b6142ce4ef67079ebe017",
+      "url": "http://192.168.77.11/json/state"
+    },
+    "matrix_build": {
+      "body": {
+        "basedOnFirmwareSha256": "b9bb60dca1a9be8f7241670a7540810c604465c9adf7084b6efc90d5b4622886",
+        "basedOnReleaseId": "hbnf-matrix-coordinated-v1-20261002-06",
+        "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "features": [
+          "canonical-palette-v1",
+          "canonical-overlay-v1",
+          "coordinated-ui-v1"
+        ],
+        "ip": "192.168.77.10",
+        "mac": "70:4b:ca:5b:34:5c",
+        "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "schema": "hbnf-build-v1",
+        "wled": "16.0.1"
+      },
+      "http_status": 200,
+      "sha256": "05d753ff7e2bc01143a0230e98cd3e0c7ec6f3bab64588972e2509629fde8cd6",
+      "url": "http://192.168.77.10/hbnf/build.json"
+    },
+    "matrix_info": {
+      "body": {
+        "arch": "esp32",
+        "bootloaderSHA256": "b97d154765ea69ca895a33de59adb4b322509aa2a3e2c7c8409b31cbc1bcc2cd",
+        "brand": "WLED",
+        "clock": 240,
+        "cn": "Niji",
+        "core": "4.4.8.240628",
+        "cpalcount": 0,
+        "cpalmax": 129,
+        "deviceId": "52d5bc29d6bd3a4be1702e3b7393daae7d6581734d",
+        "flash": 4,
+        "freeheap": 74344,
+        "fs": {
+          "pmt": 0,
+          "t": 983,
+          "u": 364
+        },
+        "fxcount": 220,
+        "ip": "192.168.77.10",
+        "leds": {
+          "bootps": 60,
+          "cct": 0,
+          "count": 534,
+          "fps": 42,
+          "lc": 1,
+          "matrix": {
+            "h": 16,
+            "w": 32
+          },
+          "maxpwr": 1800,
+          "maxseg": 32,
+          "pwr": 636,
+          "rgbw": false,
+          "seglc": [
+            1,
+            0
+          ],
+          "wv": 0
+        },
+        "lip": "",
+        "live": false,
+        "liveseg": -1,
+        "lm": "",
+        "lwip": 0,
+        "mac": "704bca5b345c",
+        "maps": [
+          {
+            "id": 0
+          }
+        ],
+        "name": "WLED-Gledopto",
+        "ndc": 1,
+        "opt": 79,
+        "palcount": 72,
+        "product": "FOSS",
+        "release": "ESP32",
+        "repo": "wled/WLED",
+        "simplifiedui": false,
+        "str": false,
+        "time": "1970-1-1, 00:40:52",
+        "u": {
+          "AGC Gain": [
+            2.33,
+            "x"
+          ],
+          "Audio Source": [
+            "PDM digital",
+            " - quiet"
+          ],
+          "AudioReactive": [
+            "<button class=\"btn btn-xs\" onclick=\"requestJson({AudioReactive:{enabled:false}});\"><i class=\"icons on\">&#xe08f;</i></button>"
+          ],
+          "GEQ Input Level": [
+            "<div class=\"slider\"><div class=\"sliderwrap il\"><input class=\"noslide\" onchange=\"requestJson({AudioReactive:{inputLevel:parseInt(this.value)}});\" oninput=\"updateTrail(this);\" max=255 min=0 type=\"range\" value=255 /><div class=\"sliderdisplay\"></div></div></div>"
+          ],
+          "Sound Processing": [
+            "running"
+          ],
+          "UDP Sound Sync": [
+            "send mode",
+            " v2"
+          ]
+        },
+        "udpport": 21324,
+        "um": [
+          32,
+          58
+        ],
+        "umpalcount": 0,
+        "uptime": 2452,
+        "ver": "16.0.1",
+        "vid": 2605010,
+        "wifi": {
+          "ap": false,
+          "bssid": "94:83:C4:98:78:94",
+          "channel": 4,
+          "rssi": -49,
+          "signal": 100
+        },
+        "ws": 0
+      },
+      "http_status": 200,
+      "sha256": "2a5946eeb1846d9f162a5d2bd464fe017e838a8b3438081e2dd02f777cea18d5",
+      "url": "http://192.168.77.10/json/info"
+    },
+    "matrix_state": {
+      "body": {
+        "AudioReactive": {
+          "on": true
+        },
+        "HBNF": {
+          "audio": {
+            "bass": 0,
+            "mid": 0,
+            "peak": false,
+            "treble": 0,
+            "volume": 0
+          },
+          "audioResponse": 50,
+          "auxBrightness": 245,
+          "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+          "companionLastNonzeroPixels": 12,
+          "companionRenderCount": 99857,
+          "effectId": 142,
+          "foundationTelemetry": {
+            "enabled": false,
+            "frameMsAvg": null,
+            "frameMsMax": null,
+            "frameMsP50": null,
+            "frameMsP95": null,
+            "frameMsP99": null,
+            "kernelId": 255,
+            "largestFreeBlockBytes": 65524,
+            "minimumFreeHeapBytes": 55484,
+            "sampleCount": 0
+          },
+          "kernel": 17,
+          "liveAcePot": 0,
+          "liveActive": false,
+          "liveEntryCount": 0,
+          "liveLabel": "",
+          "matrixBrightness": 44,
+          "motion": 50,
+          "overlayId": null,
+          "packet20Diagnostic": {
+            "enabled": false,
+            "espResetReason": 3,
+            "lastCommand": "",
+            "lastCommandAccepted": false,
+            "resetReasonCore0": 12,
+            "resetReasonCore1": 12,
+            "restoreVerified": false,
+            "selectedKernel": 17,
+            "snapshotGeneration": 0,
+            "snapshotHash": 0,
+            "snapshotId": 0,
+            "snapshotState": "IDLE",
+            "snapshotValid": false
+          },
+          "palette": {
+            "mode": "legacy"
+          },
+          "scene": 0,
+          "schema": "foundation-v1",
+          "timing": {
+            "audioModulationUs": 1238,
+            "auxProjectionAgeMs": 2452812,
+            "companionDdpSendUs": 0,
+            "companionPrepUs": 148,
+            "companionRenderCount": 99857,
+            "fps": 42,
+            "freeHeap": 118992,
+            "kernel": 17,
+            "kernelRenderUs": 4023,
+            "overlayUs": 39,
+            "paletteColorUs": 412,
+            "rssi": -48,
+            "schedulerVariantUs": 1602,
+            "unaccountedUs": 6066,
+            "uptimeSec": 2452,
+            "variantSignature": 328249780,
+            "wholeFrameUs": 13530
+          },
+          "transport": "wled-native-ddp-unicast",
+          "variantDwellSeconds": 51,
+          "variantSignature": 328249780
+        },
+        "bri": 255,
+        "bs": 0,
+        "ledmap": 0,
+        "lor": 0,
+        "mainseg": 0,
+        "nl": {
+          "dur": 60,
+          "mode": 1,
+          "on": false,
+          "rem": -1,
+          "tbri": 0
+        },
+        "on": true,
+        "pl": -1,
+        "ps": 60,
+        "seg": [
+          {
+            "bm": 0,
+            "bri": 255,
+            "c1": 128,
+            "c2": 128,
+            "c3": 16,
+            "cct": 127,
+            "col": [
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            "frz": false,
+            "fx": 142,
+            "grp": 1,
+            "id": 0,
+            "ix": 128,
+            "lc": 1,
+            "len": 32,
+            "m12": 0,
+            "mY": false,
+            "mi": false,
+            "o1": false,
+            "o2": false,
+            "o3": false,
+            "of": 0,
+            "on": true,
+            "pal": 40,
+            "rY": false,
+            "rev": false,
+            "sel": true,
+            "set": 0,
+            "si": 0,
+            "spc": 0,
+            "start": 0,
+            "startY": 0,
+            "stop": 32,
+            "stopY": 16,
+            "sx": 128,
+            "tp": false
+          },
+          {
+            "bm": 0,
+            "bri": 255,
+            "c1": 128,
+            "c2": 128,
+            "c3": 16,
+            "cct": 127,
+            "col": [
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            "frz": false,
+            "fx": 142,
+            "grp": 1,
+            "id": 1,
+            "ix": 128,
+            "lc": 0,
+            "len": 22,
+            "m12": 0,
+            "mY": false,
+            "mi": false,
+            "o1": false,
+            "o2": false,
+            "o3": false,
+            "of": 0,
+            "on": true,
+            "pal": 0,
+            "rY": false,
+            "rev": false,
+            "sel": true,
+            "set": 0,
+            "si": 0,
+            "spc": 0,
+            "start": 512,
+            "startY": 0,
+            "stop": 534,
+            "stopY": 1,
+            "sx": 128,
+            "tp": false
+          }
+        ],
+        "transition": 7,
+        "udpn": {
+          "recv": false,
+          "rgrp": 0,
+          "send": false,
+          "sgrp": 1
+        }
+      },
+      "http_status": 200,
+      "sha256": "5b183786e22115578d7dd6959cb6d78ac5ebe543ed74f5b7bcc1a94a90b4a3a2",
+      "url": "http://192.168.77.10/json/state"
+    }
+  },
+  "result": "PASS_READ_ONLY",
+  "schema": "hbnf-r7-readonly-preflight-current-v1",
+  "scope": "read-only HTTP GETs and host/network status; no device mutation",
+  "user_observation": "Owner reports Matrix and AUX active and AUX mirrors Matrix at current state."
+}

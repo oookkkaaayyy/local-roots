@@ -1,0 +1,29 @@
+{
+  "schema": "hbnf-r7-frozen-live-qualification-procedure-v1",
+  "candidate_release": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+  "candidate_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+  "policy_path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
+  "policy_sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797",
+  "thresholds_unchanged": true,
+  "ordered_gates": [
+    "fresh exact R4 read-only identity/network/power preflight",
+    "install exact R7 once through existing local WLED /update path",
+    "verify release id and SHA-linked artifact/runtime identity; health/heap/uptime/restarts; output brightness; Matrix-origin AUX DDP; owner visual smoke",
+    "matched tails-off kernel 13 vs exact R4; then dense kernel 9 vs exact R4; stop on first frozen gate fail",
+    "complete frozen 28-kernel sweep with exact R4 profile comparability",
+    "representative combined Vibe/palette/text/audio performance cases without bespoke test framework",
+    "one contiguous 5400-second soak with sustained metrics and auto-abort per frozen policy",
+    "restore diagnostic/renderer state and verify exact restore; exact R4 recovery only on objective device safety/runtime/performance/AUX gate failure",
+    "physical owner confirmation of actual Matrix-to-AUX output and T5 acceptance separately"
+  ],
+  "rollback": {
+    "release": "Foundation R4 exact",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "bytes": 1489008,
+    "limit": 1,
+    "condition": "Only objective device safety, exact identity, frozen performance, or required Matrix-to-AUX behavior failure; host-only failures do not trigger firmware rollback."
+  },
+  "current_status": "PROCEDURE_READY__LIVE_GATES_NOT_STARTED",
+  "owner_physical_acceptance_required": true,
+  "no_live_mutation": true
+}

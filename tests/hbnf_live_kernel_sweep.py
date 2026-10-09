@@ -10,10 +10,27 @@ adapter={
  "select_argv":["python3","x.py","select","{effect_id}"],
  "telemetry_argv":["python3","x.py","telemetry"],
  "restore_argv":["python3","x.py","restore","{snapshot_file}"],
+ "verify_restore_argv":["python3","x.py","verify-restore","{snapshot_file}"],
+ "telemetry_mode_argv":["python3","x.py","telemetry-mode","{enabled}"],
  "settle_seconds":1,"sample_seconds":2,"sample_interval_seconds":1,
  "expected_release_id":"r7"
 }
 m.validate_adapter(adapter)
+mode_calls=[]
+mode_adapter=dict(adapter,telemetry_mode_argv=["mode","{enabled}"])
+original_run_json=m.run_json
+try:
+    m.run_json=lambda argv,timeout=10:(mode_calls.append(argv[-1]) or {"HBNF":{"foundationTelemetry":{"enabled":argv[-1]=="true"}}})
+    assert m.set_foundation_telemetry(mode_adapter,True,12) is True
+    assert m.set_foundation_telemetry(mode_adapter,False,12) is False
+    assert mode_calls==["true","false"]
+    m.run_json=lambda *a,**k:{"HBNF":{"foundationTelemetry":{"enabled":False}}}
+    try:m.set_foundation_telemetry(mode_adapter,True,12);raise AssertionError("mode mismatch accepted")
+    except RuntimeError as e:assert "readback mismatch" in str(e)
+finally:m.run_json=original_run_json
+runner_source=(ROOT/"scripts/hbnf_live_kernel_sweep.py").read_text()
+assert runner_source.index("set_foundation_telemetry(adapter,True,timeout)") < runner_source.index("for entry in entries:")
+assert runner_source.index("set_foundation_telemetry(adapter,telemetry_mode_before,timeout)") < runner_source.index('subst(adapter["restore_argv"]')
 try:m.validate_soak_options("foundation",5399,8);raise AssertionError("sub-90-minute soak accepted")
 except ValueError as e:assert "at least 5400" in str(e)
 try:m.validate_soak_options("diagnostic",5400,8);raise AssertionError("diagnostic soak accepted")
@@ -64,9 +81,21 @@ except RuntimeError: pass
 lower_uptime=dict(sample); lower_uptime["uptime_seconds"]=9
 try: m.validate_continuity(lower_uptime,"r7",0,10); raise AssertionError("uptime regression accepted")
 except RuntimeError: pass
-m.assert_same_snapshot({"effect":220,"bri":90},{"effect":220,"bri":90})
-try: m.assert_same_snapshot({"effect":220},{"effect":221}); raise AssertionError("restore mismatch accepted")
-except RuntimeError: pass
+m.assert_same_snapshot({"snapshotId":42,"snapshotHash":987,"foundationTelemetryEnabledBefore":True},
+  {"snapshotId":42,"snapshotHash":987,"foundationTelemetryEnabled":True,"restoreVerified":True,
+   "packet20Same":True,"receipt":"post-restore-only-field"})
+for before,after in (
+  ({"snapshotId":42,"snapshotHash":987,"foundationTelemetryEnabledBefore":True},
+   {"snapshotId":43,"snapshotHash":987,"foundationTelemetryEnabled":True,"restoreVerified":True,"packet20Same":True}),
+  ({"snapshotId":42,"snapshotHash":987,"foundationTelemetryEnabledBefore":True},
+   {"snapshotId":42,"snapshotHash":988,"foundationTelemetryEnabled":True,"restoreVerified":True,"packet20Same":True}),
+  ({"snapshotId":42,"snapshotHash":987,"foundationTelemetryEnabledBefore":True},
+   {"snapshotId":42,"snapshotHash":987,"foundationTelemetryEnabled":True,"restoreVerified":False,"packet20Same":True}),
+  ({"snapshotId":42,"snapshotHash":987,"foundationTelemetryEnabledBefore":True},
+   {"snapshotId":42,"snapshotHash":987,"foundationTelemetryEnabled":False,"restoreVerified":True,"packet20Same":True}),
+):
+    try:m.assert_same_snapshot(before,after);raise AssertionError("invalid restore receipt accepted")
+    except RuntimeError: pass
 
 foundation=dict(sample)
 foundation.update({
@@ -123,6 +152,22 @@ restore_worst_case=(
 )
 assert snapshot_worst_case==226 and foundation_adapter["timeout_seconds"]>=snapshot_worst_case+14
 assert restore_worst_case==175 and foundation_adapter["timeout_seconds"]>=restore_worst_case
+
+r7_adapter=json.loads((ROOT/"config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_R7_20261009.json").read_text())
+m.validate_adapter(r7_adapter,"foundation")
+assert r7_adapter["expected_release_id"]=="hbnf-cart2-phase2-offline-wow-r7-20261009"
+assert all("HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r7-20261009" in " ".join(r7_adapter[k])
+           for k in ("snapshot_argv","select_argv","telemetry_argv","restore_argv","verify_restore_argv","telemetry_mode_argv","preflight_argv"))
+missing_mode=dict(r7_adapter);missing_mode.pop("telemetry_mode_argv")
+try:m.validate_adapter(missing_mode,"foundation");raise AssertionError("Foundation adapter without telemetry-mode control accepted")
+except ValueError as e:assert "telemetry_mode_argv" in str(e)
+with tempfile.TemporaryDirectory() as td:
+    dry=subprocess.run([sys.executable,str(ROOT/"scripts/hbnf_live_kernel_sweep.py"),
+       "--adapter",str(ROOT/"config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_R7_20261009.json"),
+       "--inventory",str(ROOT/"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"),
+       "--outdir",str(pathlib.Path(td)/"r7-dry"),"--contract","foundation","--dry-run"],
+       text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=20)
+    assert dry.returncode==0 and json.loads(dry.stdout)["status"]=="DRY_RUN_PASS",(dry.stdout,dry.stderr)
 
 # A live run requesting soak but omitting a frozen policy must stop before any
 # adapter/device preflight. This invocation only exercises the host-side guard.

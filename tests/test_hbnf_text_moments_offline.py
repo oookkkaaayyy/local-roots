@@ -28,10 +28,10 @@ class TextMomentTests(unittest.TestCase):
         self.assertIn("blendPixelColorXY",options["soft_dissolve"]["compatibility"])
         self.assertEqual(review["acceptance_boundary"].split("; ")[0],"Runtime implementation is present with reversible defaults")
         binding=json.loads((root/"firmware/phase2/integration-r5/SOURCE_BINDING.json").read_text())
-        self.assertFalse(binding["firmware_built"])
+        self.assertTrue(binding["firmware_built"])
         self.assertEqual(binding["release_identity"],"hbnf-cart2-phase2-offline-wow-r5-20261008")
         self.assertEqual(binding["schema"],"hbnf-phase2-integration-r5-source-binding-v3")
-        self.assertEqual(binding["complete_runtime_source_closure"]["total_bytes"],535529)
+        self.assertEqual(binding["complete_runtime_source_closure"]["total_bytes"],535877)
 
     def test_native_font_index_patch_defaults_and_falls_back_to_slot_four(self):
         root=pathlib.Path(__file__).resolve().parents[1]

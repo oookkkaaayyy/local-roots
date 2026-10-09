@@ -48,5 +48,19 @@
     "After the 90-minute state-changing soak, scripts/hbnf_foundation_soak_audit.py evaluates every frozen per-kernel FPS/frame p95/p99/max/heap/largest-block/AUX threshold against the hash-bound sweep baseline before Foundation can pass.",
     "True frame-tail percentiles, minimum-ever heap, largest free block, per-stage timing, Matrix/AUX health, RSSI, uptime, and kernel identity are required by foundation contract.",
     "Direct-LAN WLED OTA was rehearsed in seq29/30 transaction; exact Release07 recovery BIN is retained locally and SHA-verified."
+  ],
+  "telemetry_mode_argv": [
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "telemetry-mode",
+    "--enabled",
+    "{enabled}"
+  ],
+  "verify_restore_argv": [
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "verify-restore",
+    "--snapshot-file",
+    "{snapshot_file}"
   ]
 }

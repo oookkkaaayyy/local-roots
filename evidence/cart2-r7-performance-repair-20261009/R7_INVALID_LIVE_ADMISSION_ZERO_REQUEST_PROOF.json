@@ -1,0 +1,24 @@
+{
+  "schema": "hbnf-r7-invalid-live-admission-zero-request-v1",
+  "candidate_release": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+  "candidate_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+  "command": [
+    "python3",
+    "scripts/hbnf_guarded_run.py",
+    "--require-state",
+    "PHASE2_INTEGRATING",
+    "--mutation",
+    "--capsule",
+    "missing-r7-capsule.json",
+    "--prelive-proof",
+    "missing-r7-prelive.json",
+    "--",
+    "/usr/bin/touch",
+    "/tmp/hbnf-p2-build/r7-authority-root/evidence/cart2-r7-performance-repair-20261009/R7_INVALID_LIVE_ADMISSION_CHILD_RAN.marker"
+  ],
+  "returncode": 1,
+  "output": "BLOCKED: live mutation is not authorized",
+  "device_network_requests": 0,
+  "child_marker_created": false,
+  "authority_state": "live_mutation_authorized=false"
+}

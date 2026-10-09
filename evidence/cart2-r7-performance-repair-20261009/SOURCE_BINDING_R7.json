@@ -1,0 +1,190 @@
+{
+  "animartrix_commit": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f",
+  "artifact": {
+    "bytes": 1497920,
+    "embedded_release_id_count": 3,
+    "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-cart2-phase2-offline-wow-r7-20261009.bin",
+    "sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994"
+  },
+  "base_source_commit": "fa415b2c52cc450895c2e6435977422b35be7558",
+  "build_provenance": {
+    "exact_command": "PYTHONPATH=/tmp/hbnf-p2-build/pio-cli PLATFORMIO_CORE_DIR=/tmp/hbnf-p2-build/pio-local /Applications/Xcode.app/Contents/Developer/usr/bin/python3 /tmp/hbnf-p2-build/pio-cli/bin/pio run -v -j 1 -e hbnf_matrix_wled16_packet20_diag",
+    "log_path": "evidence/cart2-r7-performance-repair-20261009/R7_BUILD_20261009.log",
+    "log_sha256": "95e9fc20c41a5a2daa963697b6424e5bb348a728ca95b39d0ff8cc97839e51d9"
+  },
+  "changed_from_r5": [
+    "hbnf_animartrix_audio_bridge.h",
+    "usermod_hbnf_foundation_v1.cpp"
+  ],
+  "complete_runtime_closure": [
+    {
+      "bytes": 18532,
+      "path": "hbnf_animartrix_audio_bridge.h",
+      "sha256": "edfe168658d548fe8e52e05b5b9d0cc3390cfe11092423a2c1c12de95884ae74"
+    },
+    {
+      "bytes": 3171,
+      "path": "hbnf_audio_expression.h",
+      "sha256": "f4825884dd53cba9bca698bd8b9b7d9d13a81e7ce381957d23790f13073dc4c3"
+    },
+    {
+      "bytes": 1549,
+      "path": "hbnf_brightness_output.h",
+      "sha256": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a"
+    },
+    {
+      "bytes": 2246,
+      "path": "hbnf_coordinated_contract.h",
+      "sha256": "e65399d2117f79d302bd8bd7474da955000e74689f6712a726a7e2759a477d25"
+    },
+    {
+      "bytes": 25270,
+      "path": "hbnf_foundation_core.h",
+      "sha256": "d4646267f8fbc03cc4921368fc801e528e6a6cb92133a0c1fc74b48b211be0e4"
+    },
+    {
+      "bytes": 10031,
+      "path": "hbnf_generative_v4.h",
+      "sha256": "13163419b6453d448a795a7580e784f54b23b7586c8317eff467863f648a6dfa"
+    },
+    {
+      "bytes": 350552,
+      "path": "hbnf_home_screen_icon.h",
+      "sha256": "e272644675566a969f65e96b855b824109b8ae6fbcb168da8c6efdeb842097d6"
+    },
+    {
+      "bytes": 34401,
+      "path": "hbnf_local_ui.h",
+      "sha256": "feed7e614cf43d7efe211b54bba5b37fb352e70646e887e3b0341c3f97b0068b"
+    },
+    {
+      "bytes": 4531,
+      "path": "hbnf_native_text.h",
+      "sha256": "0633c5d31c1003f901ec6a71c8545319235200ad0deeb4866fe3753391841b69"
+    },
+    {
+      "bytes": 6422,
+      "path": "hbnf_vibe16.h",
+      "sha256": "f076acf0e5710bf5a9acffe63b31a95f2252230b5470bd362301caa73a743b0a"
+    },
+    {
+      "bytes": 10567,
+      "path": "hbnf_vibe_runtime.h",
+      "sha256": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc"
+    },
+    {
+      "bytes": 128,
+      "path": "library.json",
+      "sha256": "2dc685da45efe57fe1d199b5407a00a7bd42b2f473599f6f432df515b4b6c96a"
+    },
+    {
+      "bytes": 69068,
+      "path": "usermod_hbnf_foundation_v1.cpp",
+      "sha256": "5a02f89c6af8466dd6592d6f4b88da3e84b1153ba0d6be16ff2bc3a1bb24f572"
+    }
+  ],
+  "fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+  "generated_inputs": {
+    "html_cpal.h": {
+      "bytes": 39883,
+      "matches_r5": true,
+      "sha256": "9b338eb9ad416235224e485875af45d6c015187ad97c3a333218d8e29d3bafbb"
+    },
+    "html_edit.h": {
+      "bytes": 25766,
+      "matches_r5": true,
+      "sha256": "50b3bdf9f26a77d2c226effe5c6d5953041e13d46ed36f32d45a2a8d37f1d73e"
+    },
+    "html_other.h": {
+      "bytes": 43747,
+      "matches_r5": true,
+      "sha256": "eaf806122da30fa4b617379f2733fcfd578f4c7b14a4b290e55694923ec11946"
+    },
+    "html_pixart.h": {
+      "bytes": 46141,
+      "matches_r5": true,
+      "sha256": "7b1c9669606e157635f184d726ce0343d044f2a081b38615ed269a71117852ef"
+    },
+    "html_pixelforge.h": {
+      "bytes": 68060,
+      "matches_r5": true,
+      "sha256": "50804c5326437c7f0ba15841c9faefafafa88aee3b9ba62fde582db389e09250"
+    },
+    "html_pxmagic.h": {
+      "bytes": 53719,
+      "matches_r5": true,
+      "sha256": "cee8f86037992ac342a6e98617048ae5930256ee7af79ff4ae2e3e532fff1cba"
+    },
+    "html_settings.h": {
+      "bytes": 250089,
+      "matches_r5": true,
+      "sha256": "bb46c944d5362becfb0feb52531ef0be6e9a8282f5fb608e044cc6ba800c197e"
+    },
+    "html_ui.h": {
+      "bytes": 243592,
+      "matches_r5": true,
+      "sha256": "101f34fafc71b34adb50d5b649c8099767a5b625b43f2647b5f39416ab15389c"
+    },
+    "js_iro.h": {
+      "bytes": 61389,
+      "matches_r5": true,
+      "sha256": "595cd77f29776a8f3907c70eb82b838e72b49ca890b7ee0ed9a329f1b5888476"
+    },
+    "js_omggif.h": {
+      "bytes": 16082,
+      "matches_r5": true,
+      "sha256": "7563b9037ddb8d52e2580d1d0992a8707bc5add437990e72fee3dfc1c4758306"
+    }
+  },
+  "integration_branch": "hbnf-cart2-phase2-integration-20261006",
+  "integration_head_at_build": "be534c7747ac46d2c6fa302f237baa53debee2b6",
+  "offline_only": true,
+  "offline_qualification": {
+    "all_pass": true,
+    "commands_run": 21,
+    "platform_doctor": "PASS",
+    "report": "evidence/cart2-r7-performance-repair-20261009/R7_OFFLINE_TEST_RESULTS_FINAL_20261009.json",
+    "report_sha256": "89e6318e2abeb7338a355037fe71fef6c291e65ab4954f2a75b8218590f35b06"
+  },
+  "platformio": {
+    "build_log_sha256": "95e9fc20c41a5a2daa963697b6424e5bb348a728ca95b39d0ff8cc97839e51d9",
+    "command": "PYTHONPATH=/tmp/hbnf-p2-build/pio-cli PLATFORMIO_CORE_DIR=/tmp/hbnf-p2-build/pio-local /Applications/Xcode.app/Contents/Developer/usr/bin/python3 /tmp/hbnf-p2-build/pio-cli/bin/pio run -v -j 1 -e hbnf_matrix_wled16_packet20_diag",
+    "core": "6.1.18",
+    "environment": "hbnf_matrix_wled16_packet20_diag",
+    "platformio_ini_sha256": "fa4c9bbe11aa50cd241136775540f598f851969dfbe3dc94dd0603e0e40d4f13",
+    "platformio_override_sha256": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922",
+    "platformio_release_config": "declared in extra_configs but absent in build tree; no implicit file content was resolved",
+    "python": "3.9.6",
+    "resolved_package_list": {
+      "bytes": 1817,
+      "path": "evidence/cart2-r7-performance-repair-20261009/R7_PINNED_PACKAGE_LIST.txt",
+      "sha256": "e41bb394d1adc1d721f482b83bd4942b8b4b1196aeabc30d71590c648dc6574c"
+    },
+    "resolved_project_config": {
+      "bytes": 91446,
+      "path": "evidence/cart2-r7-performance-repair-20261009/R7_PROJECT_CONFIG_RESOLVED.json",
+      "sha256": "3e1ef2692097c84c02fcc74e28c302b7d049b4b137103f5c35eb1636f4ec2c99"
+    }
+  },
+  "preserved_r5_manifest_sha256": "2b25d74b20bcc73d8fcb9de6fd8a104f8bbe80e84413911800a273fe4485622f",
+  "preserved_r5_source_binding_sha256": "d2d2ade525e4993a0308ad273725596dc9ddf3a5a228ce449205f6f08bf1e687",
+  "r6_failed_candidate_sha256": "0a4b9563c7debfb5a01e9d36aeb8aac2583e105303064de3db0466b7dd9d89d6",
+  "release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+  "rollback": {
+    "bytes": 1489008,
+    "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "release": "Foundation R4 exact",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "schema": "hbnf-cart2-r7-source-binding-v1",
+  "status": "EXACT_R7_OVERLAY_BOUND_TO_PRESERVED_R5_SOURCE_CLOSURE__LIVE_QUALIFICATION_PENDING",
+  "targeted_correction": {
+    "behavior": "Bit-exact int32 radial calculation on fixed 32x16 production geometry; original int64 expression retained for all other dimensions.",
+    "cpp_r7_sha256": "5a02f89c6af8466dd6592d6f4b88da3e84b1153ba0d6be16ff2bc3a1bb24f572",
+    "file": "usermods/hbnf_foundation_v1/hbnf_animartrix_audio_bridge.h",
+    "r6_sha256": "e401b7fdaedaa4616a24ba64d143d6ea0763c1f73faeecc750caa82668f012fd",
+    "r7_sha256": "edfe168658d548fe8e52e05b5b9d0cc3390cfe11092423a2c1c12de95884ae74",
+    "source_check": "tests/test_audio_radial_fastpath.py exhaustively compares 512 pixels x 8 coordinate transforms."
+  },
+  "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c"
+}

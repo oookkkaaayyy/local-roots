@@ -1,0 +1,8 @@
+{
+  "admission_sha256": "aa5e93a7a6ae684dddf6ed0ea9d2732cdca783bf155d96d88d78cd0e61b12207",
+  "errors": [],
+  "pass": true,
+  "schema": "hbnf-cart2-release-admission-result-v1",
+  "stage": "OFFLINE_COMPILED",
+  "validated_at_utc": "2026-10-09T10:08:45.786023+00:00"
+}

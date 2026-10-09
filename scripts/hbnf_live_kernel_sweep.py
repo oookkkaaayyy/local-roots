@@ -80,7 +80,7 @@ def _run_error(argv, timeout, exc):
     )
 
 def run_json(argv, timeout=10):
-    try:p=subprocess.run(argv,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=timeout)
+    try:p=subprocess.run(argv,cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=timeout)
     except subprocess.TimeoutExpired as e:raise _run_error(argv,timeout,e) from e
     if p.returncode:
         raise RuntimeError(f"command failed rc={p.returncode}: {argv!r}\n{p.stderr[-2000:]}")
@@ -93,7 +93,7 @@ def run_json(argv, timeout=10):
         ) from e
 
 def run_ok(argv, timeout=15):
-    try:p=subprocess.run(argv,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=timeout)
+    try:p=subprocess.run(argv,cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=timeout)
     except subprocess.TimeoutExpired as e:raise _run_error(argv,timeout,e) from e
     if p.returncode:
         raise RuntimeError(f"command failed rc={p.returncode}: {argv!r}\n{p.stderr[-2000:]}")
@@ -151,6 +151,22 @@ def persist_restore_evidence(outdir, restore_stdout, post_restore_state, expecte
     # Persist both observations before equality checks can raise.
     assert_same_snapshot(expected_state,post_restore_state)
 
+def reconcile_verified_observer_restore(outdir):
+    """Retain a restore already proven by the adapter when its snapshot call fails."""
+    outdir=pathlib.Path(outdir);sidecar=outdir/"OBSERVER_EFFECT_FAILURE.json"
+    try:failure=load(sidecar) if sidecar.is_file() else {}
+    except Exception:return None
+    restored=failure.get("restore",{})
+    if not (failure.get("status")=="OBSERVER_FAILED__RENDERER_RESTORED"
+        and restored.get("restoreVerified") is True and restored.get("packet20Same") is True
+        and isinstance(restored.get("snapshotId"),int) and isinstance(restored.get("snapshotHash"),int)):
+        return None
+    state={"restoreVerified":True,"packet20Same":True,"snapshotId":restored["snapshotId"],
+      "snapshotHash":restored["snapshotHash"],"evidence":"OBSERVER_EFFECT_FAILURE.json"}
+    atomic_write(outdir/"POST_RESTORE_STATE.json",json.dumps(state,indent=2,sort_keys=True)+"\n")
+    atomic_write(outdir/"RESTORE_RECEIPT.json",json.dumps({"status":"RESTORE_VERIFIED_AFTER_PREQUAL_FAILURE",**state},indent=2,sort_keys=True)+"\n")
+    return state
+
 def subst(argv, values):
     out=[]
     for item in argv:
@@ -164,9 +180,9 @@ def validate_argv(name,value):
     if not isinstance(value,list) or not value or not all(isinstance(x,str) and x for x in value):
         raise ValueError(name+" must be a nonempty argv string array")
 
-def validate_adapter(adapter):
+def validate_adapter(adapter, contract=None):
     missing=sorted(REQUIRED_ADAPTER-set(adapter))
-    extra=sorted(set(adapter)-REQUIRED_ADAPTER-{"timeout_seconds","notes"})
+    extra=sorted(set(adapter)-REQUIRED_ADAPTER-{"timeout_seconds","notes","preflight_argv","verify_restore_argv","telemetry_mode_argv"})
     if missing: raise ValueError("adapter missing: "+", ".join(missing))
     if extra: raise ValueError("adapter unknown fields: "+", ".join(extra))
     if adapter.get("schema")!="hbnf-live-sweep-adapter-v1":
@@ -175,6 +191,12 @@ def validate_adapter(adapter):
         raise ValueError("expected_release_id must be a nonempty string")
     for k in ["snapshot_argv","select_argv","telemetry_argv","restore_argv"]:
         validate_argv(k,adapter[k])
+    for k in ("verify_restore_argv","telemetry_mode_argv"):
+        if k in adapter:validate_argv(k,adapter[k])
+    if contract=="foundation":
+        missing_foundation=[k for k in ("verify_restore_argv","telemetry_mode_argv") if k not in adapter]
+        if missing_foundation:raise ValueError("Foundation adapter missing: "+", ".join(missing_foundation))
+    if "preflight_argv" in adapter:validate_argv("preflight_argv",adapter["preflight_argv"])
     selection_command=" ".join(adapter["select_argv"])
     if "{effect_id}" not in selection_command and "{runtime_kernel_index}" not in selection_command:
         raise ValueError("select_argv must contain {effect_id} or {runtime_kernel_index}")
@@ -206,6 +228,19 @@ def validate_sample(sample, contract):
     required=REQUIRED_SAMPLE_DIAGNOSTIC if contract=="diagnostic" else REQUIRED_SAMPLE_FOUNDATION
     missing=sorted(k for k in required if sample.get(k) is None)
     if missing: raise ValueError("telemetry missing: "+", ".join(missing))
+
+def validate_readonly_preflight(sample, expected_release_id):
+    required=("schema","release_id","candidate","wled","matrix_ip","matrix_mac","matrix_uptime_seconds",
+      "uptime_seconds","restart_count","matrix_on","matrix_brightness","packet20_enabled",
+      "foundation_telemetry_enabled","aux_ip","aux_mac","aux_on","aux_live","aux_live_mode",
+      "aux_live_ip","aux_led_count")
+    missing=[k for k in required if sample.get(k) is None]
+    if missing:raise ValueError("read-only preflight missing: "+", ".join(missing))
+    if sample["schema"]!="hbnf-live-qualification-preflight-v1":raise ValueError("read-only preflight schema mismatch")
+    if sample["release_id"]!=expected_release_id or sample["candidate"]!=expected_release_id:raise RuntimeError("preflight-release-identity-mismatch")
+    if sample["matrix_on"] is not True or sample["matrix_brightness"]!=44:raise RuntimeError("preflight-matrix-output-or-brightness-mismatch")
+    if sample["packet20_enabled"] is True or sample["foundation_telemetry_enabled"] is True:raise RuntimeError("preflight-diagnostics-already-active")
+    if sample["aux_on"] is not True or not (sample["aux_live"] is True and sample["aux_live_mode"]=="DDP" and sample["aux_live_ip"]=="192.168.77.10" and sample["aux_led_count"]==22):raise RuntimeError("preflight-aux-native-ddp-source-mismatch")
 
 def verify_selected(sample, entry):
     # Runtime kernels are zero-based in current evidence; names are the stronger guard.
@@ -251,6 +286,39 @@ def enforce_foundation_frame_interval(sample):
     maximum=float(sample["frame_ms_max"])
     if maximum>=FOUNDATION_HARD_FRAME_INTERVAL_MS:
         raise RuntimeError(f"foundation-steady-state-frame-interval-stop: frame_ms_max={maximum:g}ms threshold={FOUNDATION_HARD_FRAME_INTERVAL_MS:g}ms kernel={sample.get('kernel_name')} id={sample.get('kernel_id')}")
+
+def compare_early_profile_to_r4(candidate_path, r4_profile_dir, entry, frozen_policy, expected_r4_release):
+    """Fail fast on the two owner-designated kernels against exact R4 profiles."""
+    candidate=load(candidate_path).get("profile",{})
+    slug=f"{int(entry['runtime_kernel_index_expected']):02d}_{entry['kernel_name']}.profile.json"
+    baseline_path=pathlib.Path(r4_profile_dir)/slug
+    baseline_doc=load(baseline_path)
+    baseline=baseline_doc.get("profile",{})
+    if baseline_doc.get("status")!="PASS" or baseline.get("release_id")!=expected_r4_release:
+        raise RuntimeError(f"early-R4-baseline-invalid: {baseline_path}")
+    if candidate.get("qualification_eligible") is not True:
+        raise RuntimeError(f"early-R5-profile-ineligible: {candidate_path}")
+    if candidate.get("kernel",{}).get("name")!=entry["kernel_name"] or baseline.get("kernel",{}).get("name")!=entry["kernel_name"]:
+        raise RuntimeError(f"early-kernel-name-mismatch: {entry['kernel_name']}")
+    if candidate.get("kernel",{}).get("variant_id")!=baseline.get("kernel",{}).get("variant_id"):
+        raise RuntimeError(f"early-kernel-variant-not-comparable: {entry['kernel_name']}")
+    cfg=frozen_policy["comparison"]["candidate_vs_baseline"]
+    c_heap=candidate["heap"]; b_heap=baseline["heap"]
+    checks={
+      "fps_median":candidate["fps"]["median"] >= baseline["fps"]["median"]*cfg["fps_median_min_ratio"],
+      "frame_p95_median":candidate["frame_ms"]["p95_median"] <= baseline["frame_ms"]["p95_median"]*cfg["frame_p95_max_ratio"],
+      "frame_p99_median":candidate["frame_ms"]["p99_median"] <= baseline["frame_ms"]["p99_median"]*cfg["frame_p99_max_ratio"],
+      "minimum_free_heap":c_heap["minimum_free_min"] >= b_heap["minimum_free_min"]*cfg["minimum_free_heap_min_ratio"],
+      "largest_free_block":min(c_heap["largest_block_start"],c_heap["largest_block_end"]) >= min(b_heap["largest_block_start"],b_heap["largest_block_end"])*cfg["largest_free_block_min_ratio"],
+    }
+    result={"schema":"hbnf-early-r5-vs-r4-kernel-profile-v1","status":"PASS" if all(checks.values()) else "FAIL",
+      "kernel":entry["kernel_name"],"kernel_index":entry["runtime_kernel_index_expected"],
+      "candidate_profile":str(candidate_path),"r4_profile":str(baseline_path),
+      "candidate_release":candidate.get("release_id"),"r4_release":baseline.get("release_id"),
+      "candidate_variant_id":candidate["kernel"]["variant_id"],"r4_variant_id":baseline["kernel"]["variant_id"],
+      "checks":checks,"candidate_metrics":{"fps_median":candidate["fps"]["median"],"frame_p95_median":candidate["frame_ms"]["p95_median"],"frame_p99_median":candidate["frame_ms"]["p99_median"],"minimum_free_heap":c_heap["minimum_free_min"],"largest_free_block_min":min(c_heap["largest_block_start"],c_heap["largest_block_end"])},
+      "r4_metrics":{"fps_median":baseline["fps"]["median"],"frame_p95_median":baseline["frame_ms"]["p95_median"],"frame_p99_median":baseline["frame_ms"]["p99_median"],"minimum_free_heap":b_heap["minimum_free_min"],"largest_free_block_min":min(b_heap["largest_block_start"],b_heap["largest_block_end"])}}
+    return result
 
 def append_jsonl_durable(path,sample):
     path=pathlib.Path(path)
@@ -319,8 +387,27 @@ def validate_soak_options(contract,duration_seconds,interval_seconds):
         raise ValueError(f"--soak-interval-seconds must be positive and below {MAX_FOUNDATION_SOAK_SAMPLE_GAP_SECONDS}")
 
 def assert_same_snapshot(before, after):
-    if before!=after:
+    """Verify firmware's source-bound snapshot receipt, ignoring receipt-only fields."""
+    expected_id=before.get("snapshotId"); expected_hash=before.get("snapshotHash")
+    if not isinstance(expected_id,int) or not isinstance(expected_hash,int):
+        # Legacy adapters bind selected renderer fields directly rather than a
+        # firmware snapshot hash. Require every captured field to match; ignore
+        # additional restore receipt metadata.
+        if not isinstance(before,dict) or not before or any(after.get(k)!=v for k,v in before.items()):
+            raise RuntimeError("post-restore visual-state snapshot does not match pre-sweep snapshot")
+        return
+    if (after.get("snapshotId")!=expected_id or after.get("snapshotHash")!=expected_hash
+        or after.get("restoreVerified") is not True or after.get("packet20Same") is not True
+        or after.get("foundationTelemetryEnabled") is not before.get("foundationTelemetryEnabledBefore")):
         raise RuntimeError("post-restore visual-state snapshot does not match pre-sweep snapshot")
+
+def set_foundation_telemetry(adapter, enabled, timeout):
+    argv=subst(adapter["telemetry_mode_argv"],{"enabled":"true" if enabled else "false"})
+    state=run_json(argv,timeout=timeout)
+    actual=state.get("HBNF",{}).get("foundationTelemetry",{}).get("enabled")
+    if actual is not enabled:
+        raise RuntimeError(f"foundation telemetry mode readback mismatch: requested={enabled} actual={actual}")
+    return actual
 
 def persist_failure_sample(outdir, entry, phase, sample, error):
     slug=f"{int(entry['runtime_kernel_index_expected']):02d}_{entry['kernel_name']}"
@@ -402,10 +489,12 @@ def main():
     ap.add_argument("--soak-interval-seconds",type=float,default=8.0)
     ap.add_argument("--threshold-policy",help="fully frozen Foundation policy; required for an integrated soak")
     ap.add_argument("--threshold-baseline",help="output path for the baseline generated from this run's complete 28-kernel sweep")
+    ap.add_argument("--early-r4-profile-dir",help="exact R4 profile directory; when supplied, run kernel indices 13 and 9 first and stop before remaining kernels if frozen relative gates fail")
+    ap.add_argument("--early-r4-release",default="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1")
     ap.add_argument("--dry-run",action="store_true")
     args=ap.parse_args()
 
-    adapter=load(args.adapter); validate_adapter(adapter)
+    adapter=load(args.adapter); validate_adapter(adapter,args.contract)
     inventory=load(args.inventory); validate_inventory(inventory)
     if args.qualify and args.contract!="foundation":
         raise SystemExit("--qualify requires --contract foundation")
@@ -440,7 +529,8 @@ def main():
         return 2
     # Read-only identity/continuity preflight MUST pass before the first select/mutation.
     try:
-        preflight=run_json(subst(adapter["telemetry_argv"],{"session_id":str(outdir)}),timeout=timeout)
+        preflight_argv=adapter.get("preflight_argv",adapter["telemetry_argv"])
+        preflight=run_json(subst(preflight_argv,{"session_id":str(outdir)}),timeout=timeout)
         atomic_write(outdir/"PRE_SWEEP_TELEMETRY.json",json.dumps(preflight,indent=2,sort_keys=True)+"\n")
     except Exception as e:
         failure={"status":"READONLY_PREFLIGHT_FAILED","error":str(e),"device_mutation_started":False}
@@ -449,7 +539,9 @@ def main():
         print(json.dumps(failure,indent=2))
         return 2
     try:
-        validate_sample(preflight,args.contract)
+        if preflight.get("schema")=="hbnf-live-qualification-preflight-v1":
+            validate_readonly_preflight(preflight,adapter["expected_release_id"])
+        else:validate_sample(preflight,args.contract)
         expected_release_id,expected_restart_count,previous_uptime=validate_continuity(
             preflight,adapter["expected_release_id"],None,None
         )
@@ -462,6 +554,7 @@ def main():
     snapfile=outdir/"PRE_SWEEP_STATE.json"
     profiles=[]; release_ids=set()
     run_error=None; restore_error=None; post_restore_state=None;snapshot=None
+    telemetry_mode_before=None
     reserve=None
     try:
         # Hold real disk blocks so an unexpected host-full condition can still
@@ -469,7 +562,20 @@ def main():
         reserve=create_recovery_reserve(outdir)
         snapshot=run_json(subst(adapter["snapshot_argv"],{"observer_output":str(outdir/"OBSERVER_EFFECT.json")}),timeout=timeout)
         atomic_write(snapfile,json.dumps(snapshot,indent=2,sort_keys=True)+"\n")
-        for entry in inventory["entries"]:
+        telemetry_mode_before=snapshot.get("foundationTelemetryEnabledBefore")
+        if args.contract=="foundation":
+            if not isinstance(telemetry_mode_before,bool):
+                raise RuntimeError("snapshot did not preserve pre-transaction foundation telemetry mode")
+            # The observer window intentionally ends with tails OFF; kernel profiling
+            # requires the histogram contract, so explicitly enable and verify it.
+            set_foundation_telemetry(adapter,True,timeout)
+        entries=inventory["entries"]
+        if args.early_r4_profile_dir:
+            early_indices=(13,9)
+            by_index={int(e["runtime_kernel_index_expected"]):e for e in entries}
+            entries=[by_index[i] for i in early_indices]+[e for e in entries if int(e["runtime_kernel_index_expected"]) not in early_indices]
+            frozen_policy=load(args.threshold_policy or str(ROOT/"config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json"))
+        for entry in entries:
             profile,release_id,variant_id,restart_count,previous_uptime=collect_kernel(
                 adapter,entry,outdir,timeout,args.contract,expected_release_id,expected_restart_count,previous_uptime
             )
@@ -482,6 +588,11 @@ def main():
               "preset":entry.get("preset"),
               "profile_path":profile.name
             })
+            if args.early_r4_profile_dir and int(entry["runtime_kernel_index_expected"]) in (13,9):
+                comparison=compare_early_profile_to_r4(profile,args.early_r4_profile_dir,entry,frozen_policy,args.early_r4_release)
+                atomic_write(outdir/f"EARLY_R4_COMPARISON_KERNEL_{entry['runtime_kernel_index_expected']}.json",json.dumps(comparison,indent=2,sort_keys=True)+"\n")
+                if comparison["status"]!="PASS":
+                    raise RuntimeError(f"early-matched-R4-kernel-gate-failed: {entry['kernel_name']}: {json.dumps(comparison['checks'],sort_keys=True)}")
         soak_result=None
         if args.soak_seconds:
             if args.contract!="foundation":raise ValueError("--soak-seconds requires --contract foundation")
@@ -529,22 +640,30 @@ def main():
     except Exception as e:
         run_error=str(e)
         if snapshot is None and reserve is not None:
-            restore_error=(
-                "snapshot command did not return a verifiable snapshot; renderer state is uncertain; "
-                "stop and use the pre-proven exact Release07 recovery path"
-            )
+            post_restore_state=reconcile_verified_observer_restore(outdir)
+            if post_restore_state is None:
+                restore_error=(
+                    "snapshot command did not return a verifiable snapshot and no matching verified observer-sidecar restore exists; "
+                    "renderer state is uncertain; stop live testing and preserve exact recovery path"
+                )
     finally:
         if reserve is not None:
             try:reserve.unlink()
             except FileNotFoundError:pass
             except Exception as e:restore_error=f"could-not-release-restore-evidence-reserve: {e}"
         if snapshot is not None:
+            if args.contract=="foundation":
+                try:set_foundation_telemetry(adapter,telemetry_mode_before,timeout)
+                except Exception as e:restore_error=(f"{restore_error}; " if restore_error else "")+f"telemetry-mode-restore-failed: {e}"
             try:
                 restore_stdout=run_ok(subst(adapter["restore_argv"],{
                     "snapshot_file":str(snapfile),
                     "restore_raw_state":str(outdir/"POST_RESTORE_RAW_STATE.json")
                 }),timeout=max(timeout,20))
-                post_restore_state=run_json(adapter["snapshot_argv"],timeout=timeout)
+                verify_argv=adapter.get("verify_restore_argv",adapter["restore_argv"])
+                post_restore_state=run_json(subst(verify_argv,{
+                    "snapshot_file":str(snapfile),"session_id":str(outdir.resolve())
+                }),timeout=timeout)
                 persist_restore_evidence(outdir,restore_stdout,post_restore_state,snapshot)
             except Exception as e:
                 restore_error=str(e)
