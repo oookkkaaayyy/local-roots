@@ -1,0 +1,243 @@
+{
+  "schema": "hbnf-cart2-final-offline-candidate-v1",
+  "status": "BUILT_AND_OFFLINE_QUALIFIED__LIVE_T4_PENDING",
+  "release_id": "hbnf-cart2-phase2-offline-wow-r5-20261008",
+  "candidate": "hbnf-cart2-phase2-offline-wow-r5-20261008",
+  "branch": "hbnf-cart2-phase2-integration-20261006",
+  "authoritative_base_commit": "fa415b2c52cc450895c2e6435977422b35be7558",
+  "source_checkout_base": "2b41a94eeeffd1abe610658e8033ab68cc14d3a1",
+  "firmware": {
+    "path": "evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/hbnf-cart2-phase2-offline-wow-r5-20261008.bin",
+    "filename": "hbnf-cart2-phase2-offline-wow-r5-20261008.bin",
+    "sha256": "f663c0736256186eff009b69818f5d41b1eec9df310be3128e1b3c67a9feea8b",
+    "bytes": 1497824,
+    "embedded_release_id": "hbnf-cart2-phase2-offline-wow-r5-20261008",
+    "wled_release": "16.0.1",
+    "board": "ESP32 Dev Module"
+  },
+  "rollback": {
+    "release_id": "Foundation R4",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "availability": "previously verified local/Drive artifact; no recovery operation performed in this task"
+  },
+  "source_closure": {
+    "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+    "animartrix_commit": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f",
+    "platformio_environment": "hbnf_matrix_wled16_packet20_diag",
+    "source_binding_path": "firmware/phase2/integration-r5/SOURCE_BINDING.json",
+    "source_binding_sha256": "54ea47fc1f7fe311b165fca332bdecf1ea165a6198b4cab0be7cdcb71eb5e746",
+    "complete_runtime_source_closure_bytes": 535877,
+    "runtime_usermod_sha256": "13d2a54cfba1913bb4c74cf6296875204546f6cd4c19b92656bf0c9187ba9a56",
+    "vibe_audio_header_sha256": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc",
+    "vibe_text_patch_sha256": "3699884f656fa1a0ba2153e71edf5510c01801ba994ed0550e7f5df0d3cd931f",
+    "brightness_helper_sha256": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a",
+    "local_build_source_deltas": [
+      {
+        "path": "firmware/phase2/integration-r5/phase2-vibe-text-runtime.patch",
+        "sha256": "3699884f656fa1a0ba2153e71edf5510c01801ba994ed0550e7f5df0d3cd931f",
+        "reason": "Corrected AudioFrame field references to exact pinned target type."
+      },
+      {
+        "path": "firmware/phase2/integration-r5/usermod/hbnf_vibe_runtime.h",
+        "sha256": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc",
+        "reason": "Compiles against target AudioFrame fields highEnergy and transient."
+      },
+      {
+        "path": "firmware/phase2/integration-r5/usermod/hbnf_brightness_output.h",
+        "sha256": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a",
+        "reason": "Restored proven R4 always-inline brightness helper; compiled hot-path gate passes."
+      }
+    ]
+  },
+  "build": {
+    "command": "pio run -v -j 1 -e hbnf_matrix_wled16_packet20_diag",
+    "python": "3.9.6",
+    "platformio_core": "6.1.18",
+    "xtensa_gcc": "8.4.0+2021r2-patch5",
+    "optimization": "-Os",
+    "ldf": "strict + chain (unchanged)",
+    "build_log_path": "evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/build.log",
+    "build_log_sha256": "0804cf86d5e2aee7cc5ac6e32466251eb5d73cf9cae492270c0f7586c6785fe2",
+    "scons_cache": "empty cache at /tmp/hbnf-p2-build/r4final-empty-cache-20261008; retained object cache on incremental retry",
+    "successful_duration_seconds": 1705.961,
+    "platformio_ini_sha256": "99718bfd8614da297c94692bc41dea48c9af87dbe829ded2e4a7cad7f0368820",
+    "platformio_override_ini_sha256": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922",
+    "successful_build_log_sha256": "0804cf86d5e2aee7cc5ac6e32466251eb5d73cf9cae492270c0f7586c6785fe2"
+  },
+  "resource_usage": {
+    "flash_used_bytes": 1491089,
+    "flash_partition_bytes": 1572864,
+    "flash_remaining_bytes": 81775,
+    "flash_used_percent": 94.8,
+    "ram_used_bytes": 112456,
+    "ram_available_bytes": 327680,
+    "ram_remaining_bytes": 215224,
+    "ram_used_percent": 34.3,
+    "firmware_bin_bytes": 1497824
+  },
+  "offline_gates": {
+    "compiled_brightness": "PASS_COMPILED_BRIGHTNESS_HOT_PATH_INLINE",
+    "compiled_telemetry": "PASS_COMPILED_TELEMETRY_CONTRACT",
+    "features": [
+      "R4 fixed-point FastLED/O3 closure retained",
+      "Vibe16/AudioExpression runtime and five distinct renderer grammars",
+      "native WLED FontManager and Text/Moments compositor",
+      "HBNF_PACKET20_DIAGNOSTICS and wholeFrameUs contract",
+      "native WLED Vibe controls embedded"
+    ],
+    "host_tests": "10 focused Phase 2/offline suites passed",
+    "tests": [
+      "hbnf_matrix_brightness_output.cpp",
+      "hbnf_matrix_brightness_output.mjs",
+      "hbnf_vibe_audio_replay.py",
+      "hbnf_vibe_runtime_host.cpp",
+      "test_hbnf_text_moments_offline.py",
+      "hbnf_release_engineering_static.py",
+      "hbnf_phase2_r4_build_closure.py",
+      "hbnf_control.py",
+      "hbnf_control_execution_system.py",
+      "native_text_adapter_smoke.cpp"
+    ]
+  },
+  "qualification": {
+    "live_device_qualification": "NOT_PERFORMED_CART_AWAY",
+    "kernel_sweep_28": "PENDING hardware availability and exact install authority",
+    "continuous_soak_90min": "PENDING hardware availability and exact install authority",
+    "combined_feature_esp32_timing": "PENDING hardware availability",
+    "aesthetic_acceptance": "UNFROZEN",
+    "t4": "NOT_CLAIMED",
+    "t5": "NOT_CLAIMED",
+    "live_mutation": false
+  },
+  "diagnostic_history": {
+    "first_failure": "Generated html_ui.h was omitted from build staging; exact R5 generated WLED headers restored.",
+    "second_failure": "js_omggif.h empty in prior R5 build copy; input hash matched R4 and exact generated header restored.",
+    "performance_gate": "Initial linked R5 helper emitted avoidable callx8; compared against R4 passing codegen, replaced with byte-for-byte proven R4 always-inline helper and rebuilt.",
+    "recovery_build_log_path": "evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/build-initial-header-failure.log",
+    "gif_build_log_path": "evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/build-gif-header-failure.log"
+  },
+  "artifact_sha256": "f663c0736256186eff009b69818f5d41b1eec9df310be3128e1b3c67a9feea8b",
+  "generated_inputs": {
+    "html_ui.h": "101f34fafc71b34adb50d5b649c8099767a5b625b43f2647b5f39416ab15389c",
+    "html_pixart.h": "7b1c9669606e157635f184d726ce0343d044f2a081b38615ed269a71117852ef",
+    "html_cpal.h": "9b338eb9ad416235224e485875af45d6c015187ad97c3a333218d8e29d3bafbb",
+    "html_edit.h": "50b3bdf9f26a77d2c226effe5c6d5953041e13d46ed36f32d45a2a8d37f1d73e",
+    "html_pxmagic.h": "cee8f86037992ac342a6e98617048ae5930256ee7af79ff4ae2e3e532fff1cba",
+    "html_pixelforge.h": "50804c5326437c7f0ba15841c9faefafafa88aee3b9ba62fde582db389e09250",
+    "html_settings.h": "bb46c944d5362becfb0feb52531ef0be6e9a8282f5fb608e044cc6ba800c197e",
+    "html_other.h": "eaf806122da30fa4b617379f2733fcfd578f4c7b14a4b290e55694923ec11946",
+    "js_iro.h": "595cd77f29776a8f3907c70eb82b838e72b49ca890b7ee0ed9a329f1b5888476",
+    "js_omggif.h": "7563b9037ddb8d52e2580d1d0992a8707bc5add437990e72fee3dfc1c4758306"
+  },
+  "generated_inputs_policy": "Pinned WLED 16.0.1 generated web assets restored from the matching prepared R5 source snapshot; same-input R4 generated outputs were used for missing generated header bytes. All generated output files are hash-pinned here; no source HTML/CSS/JS changes were made for R5.",
+  "compiled_runtime_symbols": {
+    "path": "evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/RUNTIME_BINARY_SYMBOLS.txt",
+    "sha256": "72c3357c3f58e9ac588c052c47dc24351eb137c0b9946caff985f47f59010fcf",
+    "verified": [
+      "AudioExpression::update",
+      "Vibe16::update",
+      "AnimartrixAudioBridge::modulate",
+      "composeVibeColor",
+      "HbnfNativeText::packPage",
+      "FontManager::loadFont",
+      "hbnfDrawText"
+    ]
+  },
+  "compiled_code_checks": {
+    "brightness": {
+      "path": "evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/COMPILED_BRIGHTNESS_CODEGEN.json",
+      "sha256": "cb1faa41dc99edadcc051f5516cd61a5d25f2c953b21bb0f97039621e289c53d",
+      "status": "PASS_COMPILED_BRIGHTNESS_HOT_PATH_INLINE",
+      "object_sha256": "8bbed32068bdda226782cc6ee2e0776b183bf033c7dc5dcb08de48409243aa7a"
+    },
+    "telemetry": {
+      "path": "evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/COMPILED_TELEMETRY_CONTRACT.json",
+      "sha256": "1d60877179fc83484c21e93c2d7f5addb49ebef02da8685f83dc4546df95f8c1",
+      "status": "PASS_COMPILED_TELEMETRY_CONTRACT",
+      "binary_sha256": "f663c0736256186eff009b69818f5d41b1eec9df310be3128e1b3c67a9feea8b"
+    }
+  },
+  "manifest_sha256_note": "This file is self-describing; its SHA-256 is recorded by the outer release receipt after final edits.",
+  "source_reproducibility": {
+    "source_parent_commit": "fa415b2c52cc450895c2e6435977422b35be7558",
+    "corrected_sources": {
+      "firmware/phase2/integration-r5/phase2-vibe-text-runtime.patch": "3699884f656fa1a0ba2153e71edf5510c01801ba994ed0550e7f5df0d3cd931f",
+      "firmware/phase2/integration-r5/usermod/hbnf_vibe_runtime.h": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc",
+      "firmware/phase2/integration-r5/usermod/hbnf_brightness_output.h": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a"
+    },
+    "source_binding_sha256": "54ea47fc1f7fe311b165fca332bdecf1ea165a6198b4cab0be7cdcb71eb5e746",
+    "runtime_source_closure_files": {
+      "hbnf_animartrix_audio_bridge.h": "8748231ccf7733bd34c16dc0417933a46d3a5bdccfc47c2bd54ce2e3fa104535",
+      "hbnf_audio_expression.h": "f4825884dd53cba9bca698bd8b9b7d9d13a81e7ce381957d23790f13073dc4c3",
+      "hbnf_brightness_output.h": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a",
+      "hbnf_coordinated_contract.h": "e65399d2117f79d302bd8bd7474da955000e74689f6712a726a7e2759a477d25",
+      "hbnf_foundation_core.h": "d4646267f8fbc03cc4921368fc801e528e6a6cb92133a0c1fc74b48b211be0e4",
+      "hbnf_generative_v4.h": "13163419b6453d448a795a7580e784f54b23b7586c8317eff467863f648a6dfa",
+      "hbnf_home_screen_icon.h": "e272644675566a969f65e96b855b824109b8ae6fbcb168da8c6efdeb842097d6",
+      "hbnf_local_ui.h": "feed7e614cf43d7efe211b54bba5b37fb352e70646e887e3b0341c3f97b0068b",
+      "hbnf_native_text.h": "0633c5d31c1003f901ec6a71c8545319235200ad0deeb4866fe3753391841b69",
+      "hbnf_vibe16.h": "f076acf0e5710bf5a9acffe63b31a95f2252230b5470bd362301caa73a743b0a",
+      "hbnf_vibe_runtime.h": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc",
+      "library.json": "2dc685da45efe57fe1d199b5407a00a7bd42b2f473599f6f432df515b4b6c96a",
+      "usermod_hbnf_foundation_v1.cpp": "13d2a54cfba1913bb4c74cf6296875204546f6cd4c19b92656bf0c9187ba9a56"
+    },
+    "generated_input_snapshot": "evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/generated-inputs/wled00",
+    "generated_inputs": {
+      "html_ui.h": {
+        "sha256": "101f34fafc71b34adb50d5b649c8099767a5b625b43f2647b5f39416ab15389c",
+        "bytes": 243592
+      },
+      "html_pixart.h": {
+        "sha256": "7b1c9669606e157635f184d726ce0343d044f2a081b38615ed269a71117852ef",
+        "bytes": 46141
+      },
+      "html_cpal.h": {
+        "sha256": "9b338eb9ad416235224e485875af45d6c015187ad97c3a333218d8e29d3bafbb",
+        "bytes": 39883
+      },
+      "html_edit.h": {
+        "sha256": "50b3bdf9f26a77d2c226effe5c6d5953041e13d46ed36f32d45a2a8d37f1d73e",
+        "bytes": 25766
+      },
+      "html_pxmagic.h": {
+        "sha256": "cee8f86037992ac342a6e98617048ae5930256ee7af79ff4ae2e3e532fff1cba",
+        "bytes": 53719
+      },
+      "html_pixelforge.h": {
+        "sha256": "50804c5326437c7f0ba15841c9faefafafa88aee3b9ba62fde582db389e09250",
+        "bytes": 68060
+      },
+      "html_settings.h": {
+        "sha256": "bb46c944d5362becfb0feb52531ef0be6e9a8282f5fb608e044cc6ba800c197e",
+        "bytes": 250089
+      },
+      "html_other.h": {
+        "sha256": "eaf806122da30fa4b617379f2733fcfd578f4c7b14a4b290e55694923ec11946",
+        "bytes": 43747
+      },
+      "js_iro.h": {
+        "sha256": "595cd77f29776a8f3907c70eb82b838e72b49ca890b7ee0ed9a329f1b5888476",
+        "bytes": 61389
+      },
+      "js_omggif.h": {
+        "sha256": "7563b9037ddb8d52e2580d1d0992a8707bc5add437990e72fee3dfc1c4758306",
+        "bytes": 16082
+      }
+    },
+    "generated_inputs_bytes": 848468,
+    "build_input_snapshot": "evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/build-inputs",
+    "build_inputs": {
+      "platformio.ini": {
+        "sha256": "99718bfd8614da297c94692bc41dea48c9af87dbe829ded2e4a7cad7f0368820",
+        "bytes": 40344
+      },
+      "platformio_override.ini": {
+        "sha256": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922",
+        "bytes": 1354
+      }
+    },
+    "exact_successful_binary_unchanged": true,
+    "full_rebuild_performed_for_preservation": false
+  }
+}

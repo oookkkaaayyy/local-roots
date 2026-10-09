@@ -1,0 +1,167 @@
+{
+  "schema": "hbnf-r5-source-preservation-receipt-v1",
+  "status": "SOURCE_CLOSURE_HASH_VERIFIED__NO_REBUILD__CANDIDATE_NOT_LIVE_QUALIFIED",
+  "branch": "hbnf-cart2-phase2-integration-20261006",
+  "source_parent_commit": "fa415b2c52cc450895c2e6435977422b35be7558",
+  "release_id": "hbnf-cart2-phase2-offline-wow-r5-20261008",
+  "firmware_sha256": "f663c0736256186eff009b69818f5d41b1eec9df310be3128e1b3c67a9feea8b",
+  "firmware_bytes": 1497824,
+  "source_binding_sha256": "54ea47fc1f7fe311b165fca332bdecf1ea165a6198b4cab0be7cdcb71eb5e746",
+  "source_corrections": [
+    {
+      "path": "firmware/phase2/integration-r5/phase2-vibe-text-runtime.patch",
+      "sha256": "3699884f656fa1a0ba2153e71edf5510c01801ba994ed0550e7f5df0d3cd931f",
+      "reason": "Corrected AudioFrame field references to exact pinned target type."
+    },
+    {
+      "path": "firmware/phase2/integration-r5/usermod/hbnf_vibe_runtime.h",
+      "sha256": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc",
+      "reason": "Compiles against target AudioFrame fields highEnergy and transient."
+    },
+    {
+      "path": "firmware/phase2/integration-r5/usermod/hbnf_brightness_output.h",
+      "sha256": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a",
+      "reason": "Restored proven R4 always-inline brightness helper; compiled hot-path gate passes."
+    }
+  ],
+  "generated_inputs_path": "evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/generated-inputs/wled00",
+  "generated_input_files": {
+    "html_ui.h": {
+      "sha256": "101f34fafc71b34adb50d5b649c8099767a5b625b43f2647b5f39416ab15389c",
+      "bytes": 243592
+    },
+    "html_pixart.h": {
+      "sha256": "7b1c9669606e157635f184d726ce0343d044f2a081b38615ed269a71117852ef",
+      "bytes": 46141
+    },
+    "html_cpal.h": {
+      "sha256": "9b338eb9ad416235224e485875af45d6c015187ad97c3a333218d8e29d3bafbb",
+      "bytes": 39883
+    },
+    "html_edit.h": {
+      "sha256": "50b3bdf9f26a77d2c226effe5c6d5953041e13d46ed36f32d45a2a8d37f1d73e",
+      "bytes": 25766
+    },
+    "html_pxmagic.h": {
+      "sha256": "cee8f86037992ac342a6e98617048ae5930256ee7af79ff4ae2e3e532fff1cba",
+      "bytes": 53719
+    },
+    "html_pixelforge.h": {
+      "sha256": "50804c5326437c7f0ba15841c9faefafafa88aee3b9ba62fde582db389e09250",
+      "bytes": 68060
+    },
+    "html_settings.h": {
+      "sha256": "bb46c944d5362becfb0feb52531ef0be6e9a8282f5fb608e044cc6ba800c197e",
+      "bytes": 250089
+    },
+    "html_other.h": {
+      "sha256": "eaf806122da30fa4b617379f2733fcfd578f4c7b14a4b290e55694923ec11946",
+      "bytes": 43747
+    },
+    "js_iro.h": {
+      "sha256": "595cd77f29776a8f3907c70eb82b838e72b49ca890b7ee0ed9a329f1b5888476",
+      "bytes": 61389
+    },
+    "js_omggif.h": {
+      "sha256": "7563b9037ddb8d52e2580d1d0992a8707bc5add437990e72fee3dfc1c4758306",
+      "bytes": 16082
+    }
+  },
+  "brightness_helper_sha256": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a",
+  "toolchain": {
+    "python": "3.9.6",
+    "platformio_core": "6.1.18",
+    "platformio_environment": "hbnf_matrix_wled16_packet20_diag",
+    "xtensa_gcc": "8.4.0+2021r2-patch5",
+    "command": "pio run -v -j 1 -e hbnf_matrix_wled16_packet20_diag",
+    "platformio_ini_sha256": "99718bfd8614da297c94692bc41dea48c9af87dbe829ded2e4a7cad7f0368820",
+    "platformio_override_ini_sha256": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922",
+    "verification": "Retained environment read-only checked: Python 3.9.6, PlatformIO Core 6.1.18, Xtensa GCC 8.4.0+2021r2-patch5."
+  },
+  "offline_verification": {
+    "source_closure": "PASS",
+    "generated_inputs": "PASS",
+    "successful_build_log_hash": "PASS",
+    "binary_hash": "PASS",
+    "flash_used_bytes": 1491089,
+    "ram_used_bytes": 112456,
+    "no_rebuild": true,
+    "live_installation": "NOT_PERFORMED",
+    "T4": "PENDING",
+    "T5": "NOT_ACCEPTED"
+  },
+  "drive_evidence_ids": {
+    "binary": "1qsXkZqGI_f64CVhNo4L30pW3oqh19dzZ",
+    "candidate_manifest": "1MQ6o67Jj6WHmj64k9b4pgmwPCw7fdAsN",
+    "release_capsule": "1HVmD2-ULZs7GGKQQoh8gXYY23MTpi-dv",
+    "build_log": "1g5rgoFit9CrA96yCmaz3utEO1YrlNc8h"
+  },
+  "source_closure_commit": "RECORDED_IN_FOLLOWUP_METADATA_COMMIT",
+  "runtime_source_closure_files": {
+    "hbnf_animartrix_audio_bridge.h": "8748231ccf7733bd34c16dc0417933a46d3a5bdccfc47c2bd54ce2e3fa104535",
+    "hbnf_audio_expression.h": "f4825884dd53cba9bca698bd8b9b7d9d13a81e7ce381957d23790f13073dc4c3",
+    "hbnf_brightness_output.h": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a",
+    "hbnf_coordinated_contract.h": "e65399d2117f79d302bd8bd7474da955000e74689f6712a726a7e2759a477d25",
+    "hbnf_foundation_core.h": "d4646267f8fbc03cc4921368fc801e528e6a6cb92133a0c1fc74b48b211be0e4",
+    "hbnf_generative_v4.h": "13163419b6453d448a795a7580e784f54b23b7586c8317eff467863f648a6dfa",
+    "hbnf_home_screen_icon.h": "e272644675566a969f65e96b855b824109b8ae6fbcb168da8c6efdeb842097d6",
+    "hbnf_local_ui.h": "feed7e614cf43d7efe211b54bba5b37fb352e70646e887e3b0341c3f97b0068b",
+    "hbnf_native_text.h": "0633c5d31c1003f901ec6a71c8545319235200ad0deeb4866fe3753391841b69",
+    "hbnf_vibe16.h": "f076acf0e5710bf5a9acffe63b31a95f2252230b5470bd362301caa73a743b0a",
+    "hbnf_vibe_runtime.h": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc",
+    "library.json": "2dc685da45efe57fe1d199b5407a00a7bd42b2f473599f6f432df515b4b6c96a",
+    "usermod_hbnf_foundation_v1.cpp": "13d2a54cfba1913bb4c74cf6296875204546f6cd4c19b92656bf0c9187ba9a56"
+  },
+  "generated_inputs": {
+    "html_ui.h": {
+      "sha256": "101f34fafc71b34adb50d5b649c8099767a5b625b43f2647b5f39416ab15389c",
+      "bytes": 243592
+    },
+    "html_pixart.h": {
+      "sha256": "7b1c9669606e157635f184d726ce0343d044f2a081b38615ed269a71117852ef",
+      "bytes": 46141
+    },
+    "html_cpal.h": {
+      "sha256": "9b338eb9ad416235224e485875af45d6c015187ad97c3a333218d8e29d3bafbb",
+      "bytes": 39883
+    },
+    "html_edit.h": {
+      "sha256": "50b3bdf9f26a77d2c226effe5c6d5953041e13d46ed36f32d45a2a8d37f1d73e",
+      "bytes": 25766
+    },
+    "html_pxmagic.h": {
+      "sha256": "cee8f86037992ac342a6e98617048ae5930256ee7af79ff4ae2e3e532fff1cba",
+      "bytes": 53719
+    },
+    "html_pixelforge.h": {
+      "sha256": "50804c5326437c7f0ba15841c9faefafafa88aee3b9ba62fde582db389e09250",
+      "bytes": 68060
+    },
+    "html_settings.h": {
+      "sha256": "bb46c944d5362becfb0feb52531ef0be6e9a8282f5fb608e044cc6ba800c197e",
+      "bytes": 250089
+    },
+    "html_other.h": {
+      "sha256": "eaf806122da30fa4b617379f2733fcfd578f4c7b14a4b290e55694923ec11946",
+      "bytes": 43747
+    },
+    "js_iro.h": {
+      "sha256": "595cd77f29776a8f3907c70eb82b838e72b49ca890b7ee0ed9a329f1b5888476",
+      "bytes": 61389
+    },
+    "js_omggif.h": {
+      "sha256": "7563b9037ddb8d52e2580d1d0992a8707bc5add437990e72fee3dfc1c4758306",
+      "bytes": 16082
+    }
+  },
+  "build_inputs": {
+    "platformio.ini": {
+      "sha256": "99718bfd8614da297c94692bc41dea48c9af87dbe829ded2e4a7cad7f0368820",
+      "bytes": 40344
+    },
+    "platformio_override.ini": {
+      "sha256": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922",
+      "bytes": 1354
+    }
+  }
+}

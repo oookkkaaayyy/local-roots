@@ -1,0 +1,102 @@
+{
+  "schema": "hbnf-cart2-release-capsule-v1",
+  "release_id": "hbnf-cart2-phase2-offline-wow-r5-20261008",
+  "accepted_baseline": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r4-20261008",
+    "sha256": "e65effb86d8755ca8a4af2155e51844d2c2a387f4000574459a382ca50c5ec87"
+  },
+  "source": {
+    "authoritative_branch": "hbnf-cart2-phase2-integration-20261006",
+    "authoritative_base_commit": "fa415b2c52cc450895c2e6435977422b35be7558",
+    "local_build_deltas": [
+      {
+        "path": "firmware/phase2/integration-r5/phase2-vibe-text-runtime.patch",
+        "sha256": "3699884f656fa1a0ba2153e71edf5510c01801ba994ed0550e7f5df0d3cd931f",
+        "reason": "Corrected AudioFrame field references to exact pinned target type."
+      },
+      {
+        "path": "firmware/phase2/integration-r5/usermod/hbnf_vibe_runtime.h",
+        "sha256": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc",
+        "reason": "Compiles against target AudioFrame fields highEnergy and transient."
+      },
+      {
+        "path": "firmware/phase2/integration-r5/usermod/hbnf_brightness_output.h",
+        "sha256": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a",
+        "reason": "Restored proven R4 always-inline brightness helper; compiled hot-path gate passes."
+      }
+    ],
+    "lineage_verified": true,
+    "source_preservation_parent_commit": "fa415b2c52cc450895c2e6435977422b35be7558",
+    "corrected_source_files": {
+      "firmware/phase2/integration-r5/phase2-vibe-text-runtime.patch": "3699884f656fa1a0ba2153e71edf5510c01801ba994ed0550e7f5df0d3cd931f",
+      "firmware/phase2/integration-r5/usermod/hbnf_vibe_runtime.h": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc",
+      "firmware/phase2/integration-r5/usermod/hbnf_brightness_output.h": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a"
+    },
+    "source_binding_sha256": "54ea47fc1f7fe311b165fca332bdecf1ea165a6198b4cab0be7cdcb71eb5e746",
+    "generated_input_snapshot": "evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/generated-inputs/wled00",
+    "build_input_snapshot": "evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/build-inputs"
+  },
+  "build_environment": {
+    "captured": true,
+    "command": "pio run -v -j 1 -e hbnf_matrix_wled16_packet20_diag",
+    "python": "3.9.6",
+    "platformio_core": "6.1.18",
+    "xtensa_gcc": "8.4.0+2021r2-patch5",
+    "environment": "hbnf_matrix_wled16_packet20_diag",
+    "optimization": "-Os",
+    "ldf": "strict + chain (unchanged)"
+  },
+  "source_materialization": {
+    "fully_local": true,
+    "fileprovider_placeholders_absent": true,
+    "evidence": "Built from the materialized local clean-room WLED 16.0.1 tree; all source closure files and generated inputs were SHA-256 checked. The actual PlatformIO compile/link completed."
+  },
+  "dependency_closure": {
+    "captured": true,
+    "unexpected_global_libraries_absent": true,
+    "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+    "animartrix_commit": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f",
+    "runtime_source_bytes": 535877,
+    "platformio_environment": "hbnf_matrix_wled16_packet20_diag"
+  },
+  "generated_inputs": {
+    "policy_verified": true,
+    "files": {
+      "html_ui.h": "101f34fafc71b34adb50d5b649c8099767a5b625b43f2647b5f39416ab15389c",
+      "html_pixart.h": "7b1c9669606e157635f184d726ce0343d044f2a081b38615ed269a71117852ef",
+      "html_cpal.h": "9b338eb9ad416235224e485875af45d6c015187ad97c3a333218d8e29d3bafbb",
+      "html_edit.h": "50b3bdf9f26a77d2c226effe5c6d5953041e13d46ed36f32d45a2a8d37f1d73e",
+      "html_pxmagic.h": "cee8f86037992ac342a6e98617048ae5930256ee7af79ff4ae2e3e532fff1cba",
+      "html_pixelforge.h": "50804c5326437c7f0ba15841c9faefafafa88aee3b9ba62fde582db389e09250",
+      "html_settings.h": "bb46c944d5362becfb0feb52531ef0be6e9a8282f5fb608e044cc6ba800c197e",
+      "html_other.h": "eaf806122da30fa4b617379f2733fcfd578f4c7b14a4b290e55694923ec11946",
+      "js_iro.h": "595cd77f29776a8f3907c70eb82b838e72b49ca890b7ee0ed9a329f1b5888476",
+      "js_omggif.h": "7563b9037ddb8d52e2580d1d0992a8707bc5add437990e72fee3dfc1c4758306"
+    },
+    "policy": "Pinned WLED 16.0.1 generated web assets restored from the matching prepared R5 source snapshot; same-input R4 generated outputs were used for missing generated header bytes. All generated output files are hash-pinned here; no source HTML/CSS/JS changes were made for R5."
+  },
+  "artifact": {
+    "path": "evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/hbnf-cart2-phase2-offline-wow-r5-20261008.bin",
+    "filename": "hbnf-cart2-phase2-offline-wow-r5-20261008.bin",
+    "sha256": "f663c0736256186eff009b69818f5d41b1eec9df310be3128e1b3c67a9feea8b",
+    "bytes": 1497824,
+    "embedded_release_id": "hbnf-cart2-phase2-offline-wow-r5-20261008"
+  },
+  "rollback": {
+    "release_id": "Foundation R4",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "availability": "previously verified local/Drive artifact; no recovery operation performed in this task"
+  },
+  "acceptance": {
+    "offline_build": "PASS",
+    "offline_tests": "PASS",
+    "compiled_brightness": "PASS",
+    "compiled_telemetry": "PASS",
+    "live_installation": "NOT_PERFORMED",
+    "T4": "PENDING_LIVE_HARDWARE_QUALIFICATION",
+    "T5": "NOT_ACCEPTED",
+    "aesthetics": "UNFROZEN",
+    "live_mutation": false
+  }
+}

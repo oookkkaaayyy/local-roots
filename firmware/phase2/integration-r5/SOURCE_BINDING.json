@@ -1,6 +1,6 @@
 {
   "schema": "hbnf-phase2-integration-r5-source-binding-v3",
-  "status": "R5_COMPLETE_VIBE_TEXT_SOURCE_BOUND__NOT_BUILT",
+  "status": "R5_BUILT_OFFLINE__HARDWARE_QUALIFICATION_PENDING",
   "base_release": "hbnf-cart2-phase2-offline-wow-r4-20261008",
   "base_firmware_sha256": "e65effb86d8755ca8a4af2155e51844d2c2a387f4000574459a382ca50c5ec87",
   "base_source_path": "firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp",
@@ -61,19 +61,19 @@
   },
   "release_identity": "hbnf-cart2-phase2-offline-wow-r5-20261008",
   "r4_preserved_byte_for_byte": true,
-  "firmware_built": false,
+  "firmware_built": true,
   "live_mutation": false,
   "load_failure_behavior": "If a nondefault native font load fails, retry exact R4 baseline slot 4; if slot 4 fails, do not draw or corrupt the underlying frame.",
   "r5_patch_path": "firmware/phase2/integration-r5/phase2-vibe-text-runtime.patch",
-  "r5_patch_sha256": "0fa493e1fd97686a87c91959c3ba2fbdc8f3e1c5ab36add45e9bdf2d6be7c34a",
+  "r5_patch_sha256": "3699884f656fa1a0ba2153e71edf5510c01801ba994ed0550e7f5df0d3cd931f",
   "r5_runtime_source_sha256": "13d2a54cfba1913bb4c74cf6296875204546f6cd4c19b92656bf0c9187ba9a56",
-  "r5_vibe_runtime_header_sha256": "bb76b97b4f3207a152fa61b81af4a7cba16b1180b8cf4c133ca1b98ade65b72f",
+  "r5_vibe_runtime_header_sha256": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc",
   "r5_audio_bridge_source_sha256": "8748231ccf7733bd34c16dc0417933a46d3a5bdccfc47c2bd54ce2e3fa104535",
   "hardware_qualification": "NOT_PERFORMED_CART_AWAY",
   "build_binding": {
     "mechanism": "WLED pio-scripts/load_usermods.py local custom_usermods source directory",
     "custom_usermod_source": "firmware/phase2/integration-r5/usermod",
-    "status": "SOURCE_CLOSURE_PINNED__CLEANROOM_BUILD_PENDING"
+    "status": "SOURCE_CLOSURE_PINNED__CLEANROOM_BUILD_PASS"
   },
   "r5_font_only_intermediate_usermod_sha256": "b6b32d1eb755909a89875fe711de4b4c9e6c6c33c2a80b92dafeb544b9e099d0",
   "complete_runtime_source_closure": {
@@ -91,8 +91,8 @@
       },
       {
         "path": "hbnf_brightness_output.h",
-        "bytes": 1196,
-        "sha256": "921e29f4fe79f6827fd9865b0aa69603f8bde6b53382edce2af1a6c29e27f0b7"
+        "bytes": 1549,
+        "sha256": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a"
       },
       {
         "path": "hbnf_coordinated_contract.h",
@@ -131,8 +131,8 @@
       },
       {
         "path": "hbnf_vibe_runtime.h",
-        "bytes": 10572,
-        "sha256": "bb76b97b4f3207a152fa61b81af4a7cba16b1180b8cf4c133ca1b98ade65b72f"
+        "bytes": 10567,
+        "sha256": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc"
       },
       {
         "path": "library.json",
@@ -145,7 +145,7 @@
         "sha256": "13d2a54cfba1913bb4c74cf6296875204546f6cd4c19b92656bf0c9187ba9a56"
       }
     ],
-    "total_bytes": 535529,
+    "total_bytes": 535877,
     "wled_overlay_files": [
       {
         "path": "wled00/fontmanager.cpp",
@@ -160,17 +160,115 @@
   },
   "source_reconciliation": {
     "authoritative_branch": "hbnf-cart2-phase2-integration-20261006",
-    "authoritative_head": "f52bb627188a5e9d2309515935d4b556e1522ae5",
+    "authoritative_head": "fa415b2c52cc450895c2e6435977422b35be7558",
     "local_base": "2b41a94eeeffd1abe610658e8033ab68cc14d3a1",
-    "remote_compare": "19 commits ahead; merge base equals local base",
+    "remote_compare": "Fetched authoritative branch ref fa415b2c52cc450895c2e6435977422b35be7558; compared exact R5 closure files. This artifact includes local source deltas listed in local_build_source_deltas and in the final offline manifest.",
     "firmware_inputs_matching_authoritative_state": {
       "WLED_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
       "native_font_patch_sha256": "06c9f5763d4c10ee96a04d6b64558e36f9048bd3e0c0f7e17e18ab6e55a7ea89",
       "r5_coordinated_contract_header_sha256": "e65399d2117f79d302bd8bd7474da955000e74689f6712a726a7e2759a477d25",
-      "r5_runtime_patch_sha256": "0fa493e1fd97686a87c91959c3ba2fbdc8f3e1c5ab36add45e9bdf2d6be7c34a"
+      "r5_runtime_patch_sha256": "3699884f656fa1a0ba2153e71edf5510c01801ba994ed0550e7f5df0d3cd931f"
     },
     "authorized_local_extension": "Complete provisional Vibe/audio and Text/Moments runtime patch/source closure, now captured under complete_runtime_source_closure.",
-    "fontmanager_overlay": "Pinned WLED FontManager source was adapted by the recorded R5 Vibe/Text runtime patch; post-patch source hashes are listed in complete_runtime_source_closure.wled_overlay_files."
+    "fontmanager_overlay": "Pinned WLED FontManager source was adapted by the recorded R5 Vibe/Text runtime patch; post-patch source hashes are listed in complete_runtime_source_closure.wled_overlay_files.",
+    "local_build_source_deltas": [
+      {
+        "path": "firmware/phase2/integration-r5/phase2-vibe-text-runtime.patch",
+        "sha256": "3699884f656fa1a0ba2153e71edf5510c01801ba994ed0550e7f5df0d3cd931f",
+        "reason": "Corrected AudioFrame field references to exact pinned target type."
+      },
+      {
+        "path": "firmware/phase2/integration-r5/usermod/hbnf_vibe_runtime.h",
+        "sha256": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc",
+        "reason": "Compiles against target AudioFrame fields highEnergy and transient."
+      },
+      {
+        "path": "firmware/phase2/integration-r5/usermod/hbnf_brightness_output.h",
+        "sha256": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a",
+        "reason": "Restored proven R4 always-inline brightness helper; compiled hot-path gate passes."
+      }
+    ],
+    "source_preservation_parent_commit": "fa415b2c52cc450895c2e6435977422b35be7558",
+    "source_corrections_preserved_in_checkpoint": true,
+    "toolchain_verified_after_build": {
+      "python": "3.9.6",
+      "platformio_core": "6.1.18",
+      "xtensa_gcc": "8.4.0+2021r2-patch5",
+      "verification": "Read-only version checks; no rebuild."
+    }
   },
-  "r5_vibe_runtime_header_path": "firmware/phase2/integration-r5/usermod/hbnf_vibe_runtime.h"
+  "r5_vibe_runtime_header_path": "firmware/phase2/integration-r5/usermod/hbnf_vibe_runtime.h",
+  "generated_input_snapshot": {
+    "path": "evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/generated-inputs/wled00",
+    "files": [
+      {
+        "path": "/Users/andrew/Documents/Codex/2026-10-07/reconcile-the-current-authoritative-staging-branch/work/r5-source-preservation/evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/generated-inputs/wled00/html_ui.h",
+        "bytes": 243592,
+        "sha256": "101f34fafc71b34adb50d5b649c8099767a5b625b43f2647b5f39416ab15389c"
+      },
+      {
+        "path": "/Users/andrew/Documents/Codex/2026-10-07/reconcile-the-current-authoritative-staging-branch/work/r5-source-preservation/evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/generated-inputs/wled00/html_pixart.h",
+        "bytes": 46141,
+        "sha256": "7b1c9669606e157635f184d726ce0343d044f2a081b38615ed269a71117852ef"
+      },
+      {
+        "path": "/Users/andrew/Documents/Codex/2026-10-07/reconcile-the-current-authoritative-staging-branch/work/r5-source-preservation/evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/generated-inputs/wled00/html_cpal.h",
+        "bytes": 39883,
+        "sha256": "9b338eb9ad416235224e485875af45d6c015187ad97c3a333218d8e29d3bafbb"
+      },
+      {
+        "path": "/Users/andrew/Documents/Codex/2026-10-07/reconcile-the-current-authoritative-staging-branch/work/r5-source-preservation/evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/generated-inputs/wled00/html_edit.h",
+        "bytes": 25766,
+        "sha256": "50b3bdf9f26a77d2c226effe5c6d5953041e13d46ed36f32d45a2a8d37f1d73e"
+      },
+      {
+        "path": "/Users/andrew/Documents/Codex/2026-10-07/reconcile-the-current-authoritative-staging-branch/work/r5-source-preservation/evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/generated-inputs/wled00/html_pxmagic.h",
+        "bytes": 53719,
+        "sha256": "cee8f86037992ac342a6e98617048ae5930256ee7af79ff4ae2e3e532fff1cba"
+      },
+      {
+        "path": "/Users/andrew/Documents/Codex/2026-10-07/reconcile-the-current-authoritative-staging-branch/work/r5-source-preservation/evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/generated-inputs/wled00/html_pixelforge.h",
+        "bytes": 68060,
+        "sha256": "50804c5326437c7f0ba15841c9faefafafa88aee3b9ba62fde582db389e09250"
+      },
+      {
+        "path": "/Users/andrew/Documents/Codex/2026-10-07/reconcile-the-current-authoritative-staging-branch/work/r5-source-preservation/evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/generated-inputs/wled00/html_settings.h",
+        "bytes": 250089,
+        "sha256": "bb46c944d5362becfb0feb52531ef0be6e9a8282f5fb608e044cc6ba800c197e"
+      },
+      {
+        "path": "/Users/andrew/Documents/Codex/2026-10-07/reconcile-the-current-authoritative-staging-branch/work/r5-source-preservation/evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/generated-inputs/wled00/html_other.h",
+        "bytes": 43747,
+        "sha256": "eaf806122da30fa4b617379f2733fcfd578f4c7b14a4b290e55694923ec11946"
+      },
+      {
+        "path": "/Users/andrew/Documents/Codex/2026-10-07/reconcile-the-current-authoritative-staging-branch/work/r5-source-preservation/evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/generated-inputs/wled00/js_iro.h",
+        "bytes": 61389,
+        "sha256": "595cd77f29776a8f3907c70eb82b838e72b49ca890b7ee0ed9a329f1b5888476"
+      },
+      {
+        "path": "/Users/andrew/Documents/Codex/2026-10-07/reconcile-the-current-authoritative-staging-branch/work/r5-source-preservation/evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/generated-inputs/wled00/js_omggif.h",
+        "bytes": 16082,
+        "sha256": "7563b9037ddb8d52e2580d1d0992a8707bc5add437990e72fee3dfc1c4758306"
+      }
+    ],
+    "total_bytes": 848468,
+    "policy": "Exact generated header bytes used by successful R5 build; each file hash matches the R5 manifest."
+  },
+  "build_input_snapshot": {
+    "path": "evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/build-inputs",
+    "files": [
+      {
+        "path": "evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/build-inputs/platformio.ini",
+        "sha256": "99718bfd8614da297c94692bc41dea48c9af87dbe829ded2e4a7cad7f0368820",
+        "bytes": 40344
+      },
+      {
+        "path": "evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/build-inputs/platformio_override.ini",
+        "sha256": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922",
+        "bytes": 1354
+      }
+    ],
+    "policy": "Exact configuration files used in the already-successful R5 clean-room build; no new build performed."
+  }
 }

@@ -146,8 +146,8 @@ inline Rgb8 composeVibeColor(Rgb8 c,const CanonicalFrame& f,uint16_t x,uint16_t 
       return c;
     }
     case VIBE_PSYCHEDELIC: {
-      const uint8_t wave=(uint8_t)((x*17u+y*29u+t+(uint16_t)f.audio.spectralChange/2u)&255u);
-      const uint8_t mix=(uint8_t)(24u+(uint16_t)a.paletteMotion/4u+(uint16_t)f.audio.highDetail/5u);
+      const uint8_t wave=(uint8_t)((x*17u+y*29u+t+(uint16_t)f.audio.transient/2u)&255u);
+      const uint8_t mix=(uint8_t)(24u+(uint16_t)a.paletteMotion/4u+(uint16_t)f.audio.highEnergy/5u);
       const Rgb8 shifted=(wave&128u)?Rgb8(c.g,c.b,c.r):Rgb8(c.b,c.r,c.g);
       return blend(c,shifted,mix);
     }
