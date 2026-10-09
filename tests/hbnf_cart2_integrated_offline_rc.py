@@ -23,6 +23,9 @@ assert manifest["authorization"] == {
 assert manifest["firmware"]["sha256"] == "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb"
 assert manifest["firmware"]["release_id"] == "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009"
 assert manifest["rollback"]["sha256"] == "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+assert manifest["rollback"]["drive_file_id"] == "1MepE3RCuEVErOHKLQ2FLZAj-fMPVWCt_"
+assert manifest["drive_readback"]["rollback_sha256"] == manifest["rollback"]["sha256"]
+assert manifest["rejected_artifacts"][0]["status"] == "REJECTED_AS_ROLLBACK_BYTES_DO_NOT_MATCH_FILENAME"
 assert manifest["feature_contract"]["guest_mode_default"] is False
 assert manifest["feature_contract"]["uv"] == "dormant OFF; hardware_available=false; max brightness 0"
 assert manifest["application_confirmation"]["mqtt_liveness_is_application_confirmation"] is False
