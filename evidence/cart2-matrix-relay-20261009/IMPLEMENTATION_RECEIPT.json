@@ -76,11 +76,51 @@
     "work/cart2/MATRIX_REVISION_BOUND_CONFIRMATION_20261009.md": "f66830150b03339e3529410ed7e95c67590896fd",
     "tests/matrix-relay-runtime/package.json": "257ffb6fb0f33467e9242cc20110e90bb0f5b0df",
     "tests/matrix-relay-runtime/package-lock.json": "3a9f6b13536c253d6e45d65242d38008833b045e",
-    "tests/matrix-relay-runtime/test.mjs": "dcacf78f5a465afbe36492e1d578536ac4534aed"
+    "tests/matrix-relay-runtime/test.mjs": "dcacf78f5a465afbe36492e1d578536ac4534aed",
+    "evidence/cart2-matrix-relay-20261009/predeploy-rollback-snapshot/hbnf-matrix-adapter-foundation-v2/index.ts": "e3df59415e8e5555a2ef212c97961d4635741005",
+    "evidence/cart2-matrix-relay-20261009/predeploy-rollback-snapshot/hbnf-cart-reconcile-v11/index.ts": "4c50e12ed8439e40aa58eec8780be47f4d6d470d",
+    "evidence/cart2-matrix-relay-20261009/predeploy-rollback-snapshot/hbnf-cart-reconcile-v11/deno.json": "35fd5984ee3bfe3fd1b9f9a389c215b4fa143cf1"
   },
   "validation_environment": {
     "pglite_version": "0.5.8",
     "deno_version": "2.9.7 stable aarch64-apple-darwin",
     "note": "temporary offline validation tools only; not part of firmware, deployed backend, or Opal runtime dependency closure"
+  },
+  "predeploy_live_rollback_snapshot": {
+    "project_id": "phcpbvuqibyarpfrftgx",
+    "captured_read_only": true,
+    "captured_at_utc": "2026-10-09 22:15:17 UTC",
+    "functions": [
+      {
+        "slug": "hbnf-matrix-adapter-foundation",
+        "version": 2,
+        "status": "ACTIVE",
+        "verify_jwt": true,
+        "ezbr_sha256": "4925765bdad4726e3eda85d1d781813c783c64d2d425f0aafe572bf918fbcdb1"
+      },
+      {
+        "slug": "hbnf-cart-reconcile",
+        "version": 11,
+        "status": "ACTIVE",
+        "verify_jwt": true,
+        "ezbr_sha256": "4f400b2ee1d733f07a90baa231c843990802a3a72aedb507e6963a78685a1d93"
+      }
+    ],
+    "relay_function_present_before_install": false,
+    "note": "Active bundles and source were read back before any release transaction. No live function, schema, secret, device, Opal, or Cloudflare mutation occurred.",
+    "source_files": [
+      {
+        "path": "evidence/cart2-matrix-relay-20261009/predeploy-rollback-snapshot/hbnf-matrix-adapter-foundation-v2/index.ts",
+        "git_blob_sha": "e3df59415e8e5555a2ef212c97961d4635741005"
+      },
+      {
+        "path": "evidence/cart2-matrix-relay-20261009/predeploy-rollback-snapshot/hbnf-cart-reconcile-v11/index.ts",
+        "git_blob_sha": "4c50e12ed8439e40aa58eec8780be47f4d6d470d"
+      },
+      {
+        "path": "evidence/cart2-matrix-relay-20261009/predeploy-rollback-snapshot/hbnf-cart-reconcile-v11/deno.json",
+        "git_blob_sha": "35fd5984ee3bfe3fd1b9f9a389c215b4fa143cf1"
+      }
+    ]
   }
 }
