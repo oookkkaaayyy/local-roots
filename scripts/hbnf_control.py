@@ -65,6 +65,82 @@ def validate_model(model):
     t4=next((t for t in model.get("transitions",[]) if t.get("id")=="T4_PHASE2_INTEGRATION"),None)
     if t4 and governance.get("t4_receipt_check") not in t4.get("required_checks",[]):
         errors.append("T4 receipt must require engineering governance completion")
+    rail=es.get("delivery_rail",{})
+    if rail.get("schema")!="hbnf-cart2-delivery-rail-v1":
+        errors.append("owner-mandated delivery rail missing or incorrect")
+    if rail.get("live_authority_starts_closed") is not True or rail.get("admission_entrypoints_must_fail_closed") is not True:
+        errors.append("release admission must fail closed and cannot authorize hardware")
+    if rail.get("active_release_candidate_limit")!=1 or rail.get("live_lane_limit")!=1:
+        errors.append("one-candidate/one-live-lane release limits violated")
+    return errors
+
+def release_admission_errors(model,state,manifest,stage):
+    """Pure offline release-evidence admission; never calls a device or grants permission."""
+    errors=[]
+    if not isinstance(manifest,dict) or manifest.get("schema")!="hbnf-cart2-release-admission-v1":
+        return ["wrong admission schema"]
+    if stage not in ("OFFLINE_COMPILED","LIVE_APPROVED") or manifest.get("stage")!=stage:
+        errors.append("wrong admission stage")
+    if manifest.get("outcome")!="PASS": errors.append("manifest outcome is not PASS")
+    identities=manifest.get("identities",{})
+    if not isinstance(identities,dict):
+        identities={}; errors.append("identities missing")
+    for key in ("candidate_release_id","source_commit","candidate_bin_sha256","rollback_bin_sha256"):
+        if not isinstance(identities.get(key),str) or not identities[key].strip(): errors.append("missing "+key)
+    for key in ("candidate_bin_sha256","rollback_bin_sha256"):
+        if identities.get(key) and not re.fullmatch(r"[a-f0-9]{64}",str(identities[key])):
+            errors.append("invalid "+key)
+    checks=manifest.get("checks",{})
+    if not isinstance(checks,dict): checks={}; errors.append("checks missing")
+    required=(
+        "device_and_source_authority_reconciled",
+        "fully_local_pinned_build_toolchain",
+        "known_good_compiler_entry_smoke",
+        "exact_source_dependency_generated_input_closure",
+        "compiled_embedded_candidate_id_and_sha",
+        "flash_and_ram_headroom",
+        "committed_feature_scope_preserved",
+        "all_historical_host_failures_replayed",
+        "entire_release_transaction_dryrun",
+        "frozen_performance_soak_and_restore_procedure",
+        "rollback_artifact_hash_verified"
+    )
+    if stage=="LIVE_APPROVED":
+        required+=("launcher_rejects_invalid_manifest_before_device_access",
+                   "matched_tails_off_test_plan",
+                   "preflight_read_only_hardware_state_and_identity")
+    for key in required:
+        item=checks.get(key)
+        if not isinstance(item,dict) or item.get("pass") is not True:
+            errors.append("failed/missing check: "+key); continue
+        path=item.get("evidence_file"); sha=item.get("sha256")
+        if not isinstance(path,str) or not path.strip() or not isinstance(sha,str) or not re.fullmatch(r"[a-f0-9]{64}",sha):
+            errors.append("missing evidence SHA/path: "+key); continue
+        path=pathlib.Path(path).expanduser()
+        try:
+            if not path.is_file() or sha256_file(path)!=sha:
+                errors.append("missing/hash-mismatch evidence: "+key)
+        except OSError:
+            errors.append("unreadable evidence: "+key)
+    for prefix in ("candidate","rollback"):
+        path=identities.get(prefix+"_bin_path")
+        expected=identities.get(prefix+"_bin_sha256")
+        if not isinstance(path,str) or not path.strip():
+            errors.append("missing "+prefix+" binary path"); continue
+        try:
+            if sha256_file(pathlib.Path(path).expanduser())!=expected:
+                errors.append(prefix+" binary SHA mismatch")
+        except OSError:
+            errors.append(prefix+" binary unreadable")
+    if stage=="LIVE_APPROVED":
+        if state.get("live_mutation_authorized") is not True:
+            errors.append("primary control state has NO live mutation authorization")
+        if not isinstance(manifest.get("fresh_owner_authorization"),str) or not manifest["fresh_owner_authorization"].strip():
+            errors.append("fresh exact owner authorization missing")
+        if identities.get("expected_installed_release")!=state.get("installed_release"):
+            errors.append("installed release differs from primary state")
+        if identities.get("expected_installed_bin_sha256")!=state.get("installed_firmware_sha256"):
+            errors.append("installed BIN differs from primary state")
     return errors
 
 def parallelism_status(model,state):
@@ -552,6 +628,8 @@ def main():
     sub=ap.add_subparsers(dest="cmd",required=True)
     sub.add_parser("status")
     cc=sub.add_parser("check-change"); cc.add_argument("--change",required=True)
+    ra=sub.add_parser("check-admission"); ra.add_argument("--admission",required=True)
+    ra.add_argument("--stage",default="OFFLINE_COMPILED",choices=["OFFLINE_COMPILED","LIVE_APPROVED"])
     a=sub.add_parser("advance"); a.add_argument("--receipt",required=True)
     i=sub.add_parser("impact"); i.add_argument("--change-type",required=True)
     fp=sub.add_parser("failure"); fp.add_argument("--domain",required=True)
@@ -561,6 +639,10 @@ def main():
     rf.add_argument("--live-attempt",action="store_true")
     args=ap.parse_args()
     model=load(args.model); state=load(args.state)
+    if args.cmd=="check-admission":
+        errors=validate_model(model)+release_admission_errors(model,state,load(args.admission),args.stage)
+        print(json.dumps({"schema":"hbnf-cart2-release-admission-result-v1","pass":not errors,"stage":args.stage,"errors":errors},indent=2,sort_keys=True))
+        return 0 if not errors else 2
     if args.cmd=="check-change":
         model_errors=validate_model(model)
         change=load(args.change)
