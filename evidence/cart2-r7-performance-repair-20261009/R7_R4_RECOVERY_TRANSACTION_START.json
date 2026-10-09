@@ -1,0 +1,25 @@
+{
+  "authorization": "Current user conditional R7 transaction authorization: exactly one exact R4 recovery only after an objective frozen device/runtime/safety/AUX failure.",
+  "candidate_release": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+  "candidate_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+  "failure_receipt": "evidence/cart2-r7-performance-repair-20261009/R7_KERNEL13_FROZEN_GATE_FAILURE.json",
+  "failure_receipt_sha256": "804eee189c113b74b0781f886646e5eb07e8bffa215c4eaf2ce8f86c3bab3d97",
+  "network_request_sent": false,
+  "prepared_at_utc": "2026-10-09T10:50:43.604001+00:00",
+  "rollback_attempt_limit": 1,
+  "rollback_attempt_number": 1,
+  "rollback_consumed_before_network_request": true,
+  "rollback_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "rollback_size_bytes": 1489008,
+  "run_id": "phase2-r7-r4-recovery-after-kernel13-failure-20261009",
+  "schema": "hbnf-r7-exact-r4-recovery-transaction-v1",
+  "status": "EXACT_R4_RECOVERY_AUTHORITY_CONSUMED__REQUEST_NOT_YET_SENT",
+  "target": {
+    "ip": "192.168.77.10",
+    "mac": "70:4b:ca:5b:34:5c",
+    "url": "http://192.168.77.10/update"
+  },
+  "transfer": "One exact local-host WLED multipart /update POST using the exact verified R4 artifact; no retry, no Opal/router/AUX/cloud change.",
+  "verification": "Read-only exact /hbnf/build.json, /json/info, Matrix state/health and AUX native DDP live/source readback after WLED restart."
+}

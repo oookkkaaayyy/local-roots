@@ -1,0 +1,70 @@
+{
+  "approved_for_mutation": true,
+  "authorization_basis": "Current standing owner authorization permits exactly one exact Foundation R4 recovery when R7 fails an objectively defined frozen device/performance gate. R7 kernel 13 p99 comparison failed the unchanged frozen threshold; rollback attempt 1 of 1 is consumed in HBNF_CONTROL_STATE before the request. No other install, retry, restart, or R8+ is authorized.",
+  "capsule_sha256": "da5c2449bc76350bf246e4a55a938f3aec2ba5411a1920ec7e814c13804f30d7",
+  "consumer_contract": {
+    "identity": "Existing direct local-host multipart WLED 16.0.1 /update at http://192.168.77.10/update. Same direct path previously returned HTTP 200 for R7 and exact R4 recovery; one exact R4 POST only, followed by read-only runtime identity/health verification.",
+    "verified": true
+  },
+  "pre_mutation_state": {
+    "active_ota_or_sweep_processes": 0,
+    "aux_led_count": 22,
+    "aux_mac": "8c:94:df:55:c3:4c",
+    "aux_native_ddp_live": true,
+    "aux_on": true,
+    "aux_source_ip": "192.168.77.10",
+    "foundation_telemetry_enabled": false,
+    "mac_power": "AC Power, 100%",
+    "mac_route": "192.168.77.1 via en0",
+    "matrix_brightness": 44,
+    "matrix_ip": "192.168.77.10",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "matrix_on": true,
+    "matrix_release": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+    "matrix_restart_count": 0,
+    "matrix_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+    "matrix_uptime_seconds": 1484,
+    "packet20_restore_verified": true,
+    "packet20_snapshot_hash": 4051728214,
+    "packet20_snapshot_id": 1,
+    "packet20_snapshot_valid": true,
+    "physical_observation": "Owner reports Matrix and AUX are active and AUX mirrors Matrix; machine telemetry is not represented as physical proof.",
+    "r7_failure_receipt": "evidence/cart2-r7-performance-repair-20261009/R7_KERNEL13_FROZEN_GATE_FAILURE.json SHA-256 804eee189c113b74b0781f886646e5eb07e8bffa215c4eaf2ce8f86c3bab3d97"
+  },
+  "recovery_identity": {
+    "identity": "Foundation R4 exact hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1, SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c, 1,489,008 bytes.",
+    "verification": "Immediately verified local BIN SHA-256 and size. Exact artifact has prior successful direct /update recovery and post-restore verification receipts; Drive preservation receipt remains current."
+  },
+  "run_id": "phase2-r7-r4-recovery-after-kernel13-failure-20261009",
+  "schema": "local-roots-prelive-proof-v1",
+  "stages": {
+    "capture-current-state": {
+      "evidence": [
+        "R7_PRE_R4_RECOVERY_READONLY_PREFLIGHT.json SHA-256 23ae783e78bbf302e412c926b6fc94c4ed1913c02e61c979d0a30e7a75284c81 captures exact read-only state immediately before recovery.",
+        "No OTA or sweep process remains active; the original renderer snapshot restored exactly and the Matrix is still the authorized target."
+      ],
+      "status": "PASS"
+    },
+    "contract-closure": {
+      "evidence": [
+        "R7_KERNEL13_FROZEN_GATE_FAILURE.json records the exact candidate/R4 profile pair, same variant ID, and unchanged frame-p99 ratio threshold failure; no full sweep or soak started.",
+        "R7_PRE_R4_RECOVERY_READONLY_PREFLIGHT.json records exact current R7 identity, target MAC, health, restored snapshot, and AUX native DDP readback."
+      ],
+      "status": "PASS"
+    },
+    "recovery-proof": {
+      "evidence": [
+        "Local exact R4 binary SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c; size 1,489,008 bytes.",
+        "R7_DRIVE_PRESERVATION_RECEIPT.json and prior exact R4 recovery receipts prove retained artifact and successful WLED restore path."
+      ],
+      "status": "PASS"
+    },
+    "transaction-rehearsal": {
+      "evidence": [
+        "Existing WLED multipart /update and direct-host curl procedure is source-recorded in scripts/hbnf_packet20_r4_live_transaction.py; prior exact R4 restore receipt confirms HTTP 200 and runtime identity.",
+        "One-attempt boundary is consumed before the network request in config/HBNF_CONTROL_STATE.json; no retry branch is permitted."
+      ],
+      "status": "PASS"
+    }
+  }
+}

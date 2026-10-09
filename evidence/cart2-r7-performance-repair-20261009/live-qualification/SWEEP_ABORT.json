@@ -1,8 +1,8 @@
 {
   "status": "FAIL",
-  "run_error": "subprocess timed out after 20s: argv=['python3', 'scripts/hbnf_foundation_live_adapter.py', 'snapshot', '--observer-output', '/private/tmp/hbnf-p2-build/r7-authority-root/evidence/cart2-r7-performance-repair-20261009/live-qualification/OBSERVER_EFFECT.json', '--inventory', 'config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json']; stdout_tail=''; stderr_tail=''",
-  "restore_error": "snapshot command did not return a verifiable snapshot and no matching verified observer-sidecar restore exists; renderer state is uncertain; stop live testing and preserve exact recovery path",
-  "profiles_completed": 0,
+  "run_error": "early-matched-R4-kernel-gate-failed: Caleido3: {\"fps_median\": true, \"frame_p95_median\": true, \"frame_p99_median\": false, \"largest_free_block\": true, \"minimum_free_heap\": true}",
+  "restore_error": null,
+  "profiles_completed": 1,
   "pre_sweep_state": "/private/tmp/hbnf-p2-build/r7-authority-root/evidence/cart2-r7-performance-repair-20261009/live-qualification/PRE_SWEEP_STATE.json",
-  "post_restore_state": null
+  "post_restore_state": "/private/tmp/hbnf-p2-build/r7-authority-root/evidence/cart2-r7-performance-repair-20261009/live-qualification/POST_RESTORE_STATE.json"
 }
