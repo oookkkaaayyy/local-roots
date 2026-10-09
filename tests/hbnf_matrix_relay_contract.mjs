@@ -13,7 +13,15 @@ assert.equal(built.wledPayload.on,true);assert.equal(built.wledPayload.seg[1].st
 assert.equal(built.expectedState.hbnf.vibe,1);assert.match(built.expectedState.hbnf.overlayId,/^hbnf-[0-9a-f]{32}$/);
 const state={on:true,bri:255,seg:built.expectedState.segments,HBNF:{...built.expectedState.hbnf}};
 const info={mac:"704bca5b345c",ver:"0.16.0",leds:{count:534}};
+// Preserve and parse the actual read-only Opal preflight capture. It is Foundation R4,
+// so the R6-pinned relay must reject it until the authorized R6 install completes.
+const captured=JSON.parse(fs.readFileSync("evidence/cart2-matrix-relay-20261009/target-fixtures/matrix-json-si.json","utf8"));
+assert.equal(captured.info.mac,"704bca5b345c");
+assert.equal(captured.info.leds.count,534);
+assert.equal(captured.state.HBNF.candidate,"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1");
+assert.notEqual(captured.state.HBNF.candidate,MATRIX_CANDIDATE,"R4 fixture must not be accepted as R6 identity");
 const actual=normalizeReadback(info,state);
+assert.equal(JSON.parse(JSON.stringify(built.wledPayload)).seg[1].stop,534,"WLED request JSON serialization round-trip");
 assert.equal(readbackMatches(actual,built.expectedState),true);
 assert.equal(checkDecision({expires_at:new Date(9000).toISOString(),expected_state:built.expectedState},actual,1000),"confirm");
 assert.equal(checkDecision({expires_at:new Date(9000).toISOString(),expected_state:{...built.expectedState,on:false}},actual,1000),"apply_once");
@@ -45,7 +53,14 @@ assert.ok(relay.includes("HBNF_MATRIX_RELAY_TOKEN"));assert.ok(relay.includes("h
 const opal=fs.readFileSync("staging/coordinated-backend/opal/hbnf-matrix-relay","utf8");
 assert.ok(!opal.includes("SUPABASE_SERVICE_ROLE_KEY"));assert.ok(opal.includes("704bca5b345c"));
 assert.ok(opal.includes('--config "$TMP/curl-auth.conf"'),"credentials must stay out of curl argv");
-assert.ok(opal.includes("stat -c %a")&&opal.includes('= "600"'),"relay secret config must be root-only");
+assert.ok(opal.includes('LC_ALL=C ls -ldn "$CONF"')&&opal.includes('$1 == "-rw-------"')&&opal.includes('$2 == "1"')&&opal.includes('$3 == "0"')&&opal.includes('$4 == "0"'),"relay secret config must fail closed unless it is a single-link root:root 0600 regular file using target BusyBox ls");
+assert.ok(!opal.includes("stat -c"),"relay must not depend on GNU stat absent from target OpenWrt");
+assert.ok(opal.includes('[ -f "$CONF" ] && [ ! -L "$CONF" ]'),"relay config must be regular and cannot be a symlink");
 assert.ok(opal.includes('apikey: %s'),"Supabase gateway publishable-key header is missing");
 assert.ok(opal.includes("if ! snapshot; then sleep 2; continue; fi"),"readback must occur after challenge issuance");
+assert.ok(opal.includes('if [ "$code" = "200" ]; then log "revision-bound Matrix readback confirmed"'),"only a successful current readback is reported as confirmed");
+assert.ok(opal.includes('[ "$code" = "409" ] && [ "$(jsonfilter -i "$TMP/check.json" -e \'@.status\' 2>/dev/null || true)" = "apply_required" ]'),"409 may trigger one apply only for the explicit apply_required status");
+assert.ok(opal.includes('if ! curl -fsS --connect-timeout 3 --max-time 8 --config "$TMP/curl-auth.conf" -H \'Content-Type: application/json\' --data-binary @"$TMP/request.json" "$SUPABASE_RELAY_URL" -o "$TMP/next.json"; then sleep 5; continue; fi'),"next-request transport failures must back off and recover without a Matrix write");
+assert.ok(opal.includes('code="$(check_readback 2>/dev/null || printf \'000\')"'),"check transport failures must fail closed as status 000");
+assert.ok(opal.includes('sleep 2\ndone'),"worker must return to a fresh challenge after stale/failed reads");
 console.log("HBNF Matrix relay protocol: PASS");

@@ -1,0 +1,27 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "CART2_OPAL_BUSYBOX_PERMISSION_GUARD_20261009",
+  "summary": "Replace the Opal relay's unavailable GNU stat -c secret-file check with a fail-closed regular-file, non-symlink, single-link, root:root 0600 check using BusyBox ls -ldn and awk verified on the target.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "primary_source": "OpenWrt procd documentation confirms the target's native procd service model; actual GL-SFT1200 read-only inspection confirmed BusyBox v1.29.3, ls -n and awk available, stat absent, and existing root:root single-link mode 0600 metadata. https://openwrt.org/docs/techref/procd",
+    "implementation": "staging/coordinated-backend/opal/hbnf-matrix-relay; no Opal file or service was installed or started.",
+    "validation": [
+      "Exact strict metadata predicate executed over SSH on target; root:root 0600 file accepted, group-writable file and symlink rejected.",
+      "Actual read-only Matrix /json/si captured with MAC 704bca5b345c, current installed Foundation R4 identity, and 534-LED topology.",
+      "node --experimental-strip-types tests/hbnf_matrix_relay_contract.mjs PASS.",
+      "python3 tests/hbnf_cart2_integrated_offline_rc.py PASS.",
+      "Pinned PGlite migration tests PASS; Edge handler smoke could not rerun because Deno executable is absent in this clean clone; existing preserved receipt records prior Deno 2.9.7 Edge handler PASS.",
+      "sh -n worker/init and git diff --check PASS."
+    ],
+    "rollback": "Revert only this BusyBox metadata predicate and its host assertions; prior worker required GNU stat, which is absent on this target. No target state changed.",
+    "deployment_status": "NOT_INSTALLED_NOT_STARTED_NO_LIVE_MUTATION"
+  }
+}

@@ -80,10 +80,14 @@
     "staging/coordinated-backend/hbnf-cart-relay/relay-auth.ts": "aae9ffd25cc31448b7ddf0c8f90539e9ad22ecdb2b4094f53ec829d6d4f2f248",
     "staging/coordinated-backend/migrations/20261009190000_hbnf_matrix_relay_confirmation.sql": "874f86c27457b081f2cdae6c24598091718c4643072460b131a26126c5248b7b",
     "staging/coordinated-backend/migrations/20261009190000_hbnf_matrix_relay_confirmation.down.sql": "b510775c9081936d60ef0f99bc918b1e70eff8933ed804121b3660e70ca22f05",
-    "staging/coordinated-backend/opal/hbnf-matrix-relay": "53fa87ab1546d3258756115b5c7c67ef75b6a7712e811159078c16374a42fb2c",
+    "staging/coordinated-backend/opal/hbnf-matrix-relay": "22ee5cca27acba57d6f082b824ac67e2a607553579ae2522abf2bfa711477202",
     "staging/coordinated-backend/opal/hbnf-matrix-relay.init": "1572ddc3b9dc278d141a6e9cf65891c684e09efc793f7822c3738f98e4e6122a",
     "staging/coordinated-backend/opal/hbnf-matrix-relay.conf.example": "befe25976f9db062a2e06f95659ae9257424d462ba92bf80e07f4d2cb7740588",
-    "evidence/cart2-matrix-relay-20261009/IMPLEMENTATION_RECEIPT.json": "f701cf97d1ff024f495d09f96efc2ce9da2dc86385e147a57f814e6b647b6a62"
+    "evidence/cart2-matrix-relay-20261009/IMPLEMENTATION_RECEIPT.json": "5d3643eae57af5203cf1c86844c5ec952a840ca4b4894050c9d955a3e8549290",
+    "evidence/cart2-matrix-relay-20261009/OPAL_READONLY_PREFLIGHT_20261009.json": "28db11e200d2243604d1dd0c9c4c4799a92ad11e00a5ccd22ab6cd29bbc17806",
+    "evidence/cart2-matrix-relay-20261009/target-fixtures/matrix-json-si.json": "0e4c739149bb053654bb473d16b07b6f0ad905d7dc32341403b656b2dbcbea14",
+    "tests/hbnf_matrix_relay_contract.mjs": "b9fe0450c241d425c282e76ca0b1d6eac293c0cb30529c2bc20ce6fb7e617c66",
+    "evidence/engineering-governance/20261009-opal-busybox-permission-guard.json": "c9fedeb5e53bb711abb1379cc7dbb086e5513229d4ebd7855cf9a0b69ff63825"
   },
   "qualification": {
     "offline_tests": "PASS per OFFLINE_TEST_RECEIPT.json; production readiness remains NO.",
@@ -98,10 +102,10 @@
   },
   "deployment_rehearsal": {
     "static_package": "PASS: installer's real validation path in isolation; deterministic ZIP rebuild byte-identical; candidate overlay and exact source rollback rehearsed offline",
-    "backend": "PASS offline SQL migration in PGlite and Edge handler loopback integration against a PostgREST mock; no managed Supabase deployment. Target OpenWrt runtime preflight remains outstanding.",
+    "backend": "PASS offline SQL migration and Edge handler loopback against PostgREST mock; target OpenWrt compatibility preflight PASS; managed Supabase deployment/runtime and Opal service start remain controlled release transaction acceptance gates.",
     "firmware": "NO INSTALL: candidate and exact R4 recovery verified offline"
   },
-  "unresolved_contract": "The offline staged relay now implements the revision/fence-bound readback contract. The production contract remains unresolved until managed Supabase API-key/JWT and database-role behavior and target OpenWrt jsonfilter/procd behavior are validated, then the exact release is deployed and exercised; no confirmation is claimed before that.",
+  "unresolved_contract": "Offline revision/fence-bound relay contract and actual OpenWrt toolchain compatibility are validated. Live controlled release acceptance remains: managed Supabase migration/function behavior, R6 runtime state readback through exactly one active Opal writer, frozen firmware performance/recovery/soak and physical acceptance; no confirmation or T4/T5 acceptance claimed.",
   "test_receipts": [
     "python3 tests/test_r5_audio_radial_fastpath.py",
     "python3 tests/test_r6_integrated_candidate.py",
@@ -208,9 +212,9 @@
   },
   "integration_source_commit": "f8aaa78f4f4412f93672de7d7ef1929bf25febc6",
   "matrix_confirmation": {
-    "status": "OFFLINE_SOURCE_IMPLEMENTED__HOST_CONTRACT_TESTS_PASS__NOT_DEPLOYED__NOT_TARGET_VALIDATED",
+    "status": "OFFLINE_SOURCE_IMPLEMENTED__HOST_CONTRACT_TESTS_PASS__OPAL_TARGET_PREFLIGHT_PASS__NOT_DEPLOYED__NOT_SERVICE_RUNTIME_VALIDATED",
     "receipt_path": "evidence/cart2-matrix-relay-20261009/IMPLEMENTATION_RECEIPT.json",
-    "receipt_sha256": "f701cf97d1ff024f495d09f96efc2ce9da2dc86385e147a57f814e6b647b6a62",
+    "receipt_sha256": "5d3643eae57af5203cf1c86844c5ec952a840ca4b4894050c9d955a3e8549290",
     "integration_source_commit": "f8aaa78f4f4412f93672de7d7ef1929bf25febc6",
     "mechanism": "single outbound-only authenticated Opal worker; one-use short-lived revision/fence challenge; fixed Matrix identity; exact normalized WLED JSON readback; atomic current-revision/fence confirmation",
     "production_deployment": false,
@@ -221,6 +225,42 @@
       "Matrix runtime confirmation includes AUX brightness/Companion settings, not AUX physical output",
       "AUTO resolved Vibe and microphone/audio internals are not echoed and are not claimed",
       "brief stale write race between apply authorization and WLED POST cannot be prevented by current firmware; an advanced revision/fence is rejected at acknowledgement and next poll converges to current state"
+    ],
+    "target_preflight_path": "evidence/cart2-matrix-relay-20261009/OPAL_READONLY_PREFLIGHT_20261009.json",
+    "target_preflight_sha256": "28db11e200d2243604d1dd0c9c4c4799a92ad11e00a5ccd22ab6cd29bbc17806"
+  },
+  "coordinated_live_transaction": {
+    "authorization_status": "NOT_AUTHORIZED_BY_CURRENT_INSTRUCTION; exact bounded request may be presented after this preflight",
+    "preflight_abort_before_first_write": [
+      "verify current Cloudflare active version/deployment and confirm rollback version 4a675ee4-807d-4ab1-b7e6-e2f91e27e39c remains available",
+      "capture exact current static asset hashes and retain the prior Cloudflare version/deployment 157f592b-cee8-4f6b-a687-d079210c26c4",
+      "re-read exact Supabase function versions and compare to predeploy bundle hashes in relay receipt",
+      "verify R6 SHA/embedded identity, exact R4 rollback bytes, Matrix MAC/IP/current R4, AUX DDP health, power, networking, and single-worker authority"
+    ],
+    "ordered_steps": [
+      "capture and durably preserve Cloudflare static content/config/version plus Supabase active function/schema/secret-name snapshots; confirm rollback paths",
+      "apply relay SQL migration and deploy authenticated relay Edge Function with secrets provisioned but Opal worker absent; test inert path, with no alternate writer activated",
+      "install exact R6 integrated Matrix image 340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb once; verify exact identity, health, and AUX DDP",
+      "cut reconcile to pending-only relay architecture and make legacy MQTT adapter fail closed; verify the old Matrix writer is inactive before any relay process starts",
+      "install the Opal config/worker/init with the fresh least-scope relay token and publishable key; verify root:root single-link 0600; start exactly one procd worker",
+      "verify authenticated challenge and revision/fence-bound exact Matrix JSON readback; assert no service-role credential on Opal and no confirmation from MQTT liveness",
+      "deploy matching Owner/Guest package SHA 7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc only after backend/device command smoke; retain Guest Mode OFF and UV dormant",
+      "run unchanged frozen 28-kernel sweep, combined-feature checks, physical Matrix/AUX checks, contiguous 90-minute soak, restore/recovery tests, and owner device acceptance; no T4/T5 promotion without receipts and owner gate"
+    ],
+    "failure_rollback_order": [
+      "block new commands and stop the Opal relay worker so only one command writer exists",
+      "if firmware/device safety gate fails, restore exact Foundation R4 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c and verify identity/health/AUX DDP",
+      "restore captured Supabase function bundles/schema using the recorded down migration and exact predeploy source/version identities",
+      "rollback Cloudflare to the verified active Worker version 4a675ee4-807d-4ab1-b7e6-e2f91e27e39c and verify the restored deployment and static assets"
+    ],
+    "live_release_acceptance_gates": [
+      "Managed Supabase migration/function behavior and roles per current verified release receipt",
+      "R6 runtime identity and device health",
+      "one active WLED writer (Opal relay) only",
+      "current revision/fence-bound readback, never MQTT transport as confirmation",
+      "unchanged 28-kernel/performance thresholds and combined-feature behavior",
+      "contiguous 90-minute soak and physical Matrix/AUX/owner acceptance",
+      "T4/T5 remain NOT_ACCEPTED until lifecycle receipts and owner acceptance"
     ]
   }
 }

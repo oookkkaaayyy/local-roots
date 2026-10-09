@@ -31,9 +31,12 @@ assert manifest["feature_contract"]["uv"] == "dormant OFF; hardware_available=fa
 assert manifest["application_confirmation"]["mqtt_liveness_is_application_confirmation"] is False
 assert manifest["application_confirmation"]["matrix_status"] == "submitted until deployed relay produces current revision/fence-bound runtime readback"
 assert manifest["integration_source_commit"] == "f8aaa78f4f4412f93672de7d7ef1929bf25febc6"
-assert manifest["matrix_confirmation"]["status"] == "OFFLINE_SOURCE_IMPLEMENTED__HOST_CONTRACT_TESTS_PASS__NOT_DEPLOYED__NOT_TARGET_VALIDATED"
+assert manifest["matrix_confirmation"]["status"] == "OFFLINE_SOURCE_IMPLEMENTED__HOST_CONTRACT_TESTS_PASS__OPAL_TARGET_PREFLIGHT_PASS__NOT_DEPLOYED__NOT_SERVICE_RUNTIME_VALIDATED"
 assert manifest["matrix_confirmation"]["production_deployment"] is False
 assert manifest["matrix_confirmation"]["target_validated"] is False
+preflight = ROOT / manifest["matrix_confirmation"]["target_preflight_path"]
+assert preflight.is_file() and manifest["matrix_confirmation"]["target_preflight_sha256"] == hashlib.sha256(preflight.read_bytes()).hexdigest()
+assert json.loads(preflight.read_text())["tools"]["stat"].startswith("absent")
 assert manifest["matrix_confirmation"]["receipt_sha256"] == hashlib.sha256((ROOT / manifest["matrix_confirmation"]["receipt_path"]).read_bytes()).hexdigest()
 assert any("public MQTT mutation path removed" in item for item in json.loads((ROOT / manifest["matrix_confirmation"]["receipt_path"]).read_text())["implementation"]["security"])
 assert "BESPOKE EXCEPTION" in manifest["bespoke_exception_required"]["evidence"]["owner_decision"]

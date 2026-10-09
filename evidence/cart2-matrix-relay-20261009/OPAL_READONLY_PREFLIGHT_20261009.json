@@ -1,0 +1,93 @@
+{
+  "schema": "hbnf-opal-readonly-target-preflight-v1",
+  "observed_at_utc": "2026-10-09T23:27:20Z",
+  "scope": "read-only target inspection and offline compatibility correction only; no package, config, service, firmware, network, or device mutation",
+  "target": {
+    "model": "GL-SFT1200",
+    "os": "OpenWrt/LEDE 18.06 r0-d5ed0258f",
+    "kernel": "Linux 4.14.90 MIPS",
+    "busybox": "v1.29.3",
+    "board": "siflower/sf19a28-fullmask"
+  },
+  "tools": {
+    "ash": "present",
+    "ls": "BusyBox ls -l/-n supported",
+    "awk": "/usr/bin/awk present",
+    "jsonfilter": "/usr/bin/jsonfilter present",
+    "curl": "8.12.1 MIPS LE, OpenSSL 1.1.1i",
+    "procd": "/sbin/procd and /lib/functions/procd.sh present",
+    "rc_common": "/etc/rc.common present",
+    "sha256sum": "present",
+    "stat": "absent; stat -c unsupported"
+  },
+  "permissions": {
+    "relay_config": "absent on target; no relay installed",
+    "worker": "absent",
+    "init_script": "absent",
+    "process": "absent",
+    "guard": "now uses regular non-symlink test plus BusyBox ls -ldn; exact -rw-------, single link, uid 0, gid 0; fail-closed on unsupported/malformed metadata",
+    "target_guard_probe": "passed against root-owned 0600 existing key; rejected group-writable /etc/passwd and symlink fixture; no files changed"
+  },
+  "https": {
+    "ca_bundle": "/etc/ssl/certs/ca-certificates.crt readable, root:root 0644, 200313 bytes",
+    "curl_tls_probe": "HTTPS handshake verified; request to existing Supabase project root returned 404 (expected for a path with no deployed route); TLS verification was enabled"
+  },
+  "resources": {
+    "uptime_seconds": 62882,
+    "overlay_total_mib": 92.6,
+    "overlay_used_mib": 1.7,
+    "overlay_free_mib": 86.2,
+    "tmp_total_mib": 58.0,
+    "tmp_used_mib": 3.3,
+    "tmp_free_mib": 54.7,
+    "memory_total_kib": 118784,
+    "memory_available_kib": 35532,
+    "memory_free_plus_cache_kib": 71180,
+    "swap": "none"
+  },
+  "service_compatibility": {
+    "procd_api": "target procd.sh exposes procd_open_instance/procd_set_param/procd_close_instance; init script passes ash syntax parse",
+    "runtime_service_test": "NOT_RUN; installation and service start are not authorized",
+    "service_expected_behavior": "one procd-managed outbound worker instance with bounded respawn"
+  },
+  "actual_matrix_readback": {
+    "fixture": "evidence/cart2-matrix-relay-20261009/target-fixtures/matrix-json-si.json",
+    "sha256": "0e4c739149bb053654bb473d16b07b6f0ad905d7dc32341403b656b2dbcbea14",
+    "outer_keys": [
+      "info",
+      "state"
+    ],
+    "mac": "704bca5b345c",
+    "led_count": 534,
+    "running_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "runtime_uptime_sec": 15323,
+    "ddp_transport": "wled-native-ddp-unicast",
+    "note": "Read-only target snapshot identifies current Foundation R4; relay worker is pinned to R6 and will intentionally fail closed until R6 is installed in an authorized transaction."
+  },
+  "aux_readback": {
+    "ip": "192.168.77.11",
+    "mac": "8c94df55c34c",
+    "live": true,
+    "mode": "DDP",
+    "source_ip": "192.168.77.10",
+    "uptime_seconds": 65767,
+    "source": "read-only preflight already recorded in the same session; no AUX write"
+  },
+  "validation": {
+    "target_busybox_permission_guard": "PASS",
+    "target_busybox_jsonfilter_actual_matrix_json_si_extraction": "PASS",
+    "target_curl_features": "PASS for --config, --connect-timeout, --max-time, --data-binary, -F, -w",
+    "procd_init_ash_syntax": "PASS",
+    "representative_relay_409_apply_required_jsonfilter": "PASS from prior bounded read-only fixture check",
+    "representative_stale_409": "PASS in offline Edge/SQL tests; worker only applies when status exactly apply_required",
+    "offline_recovery": "fresh challenge after stale/failed reads; single apply per challenge, transport failure no Matrix write",
+    "relay_deployed_or_started": false,
+    "matrix_or_aux_mutated": false
+  },
+  "not_proven": [
+    "Relay service runtime on target (must be a live release acceptance gate after deployment).",
+    "Managed Supabase migration/Edge deployment behavior (user confirms its permission/schema gates are already independently verified; actual release transaction acceptance remains).",
+    "R6 target readback and exact applied state (requires authorized R6 install and relay cutover).",
+    "Physical LED emission or AUX photons are not proven by JSON readback."
+  ]
+}

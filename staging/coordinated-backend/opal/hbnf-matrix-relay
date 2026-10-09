@@ -4,8 +4,13 @@ set -eu
 umask 077
 CONF=/etc/hbnf-matrix-relay.conf
 [ -r "$CONF" ] || exit 1
-command -v stat >/dev/null 2>&1 || exit 1
-[ "$(stat -c %u "$CONF")" = "0" ] && [ "$(stat -c %a "$CONF")" = "600" ] || exit 1
+secure_conf(){
+ [ -f "$CONF" ] && [ ! -L "$CONF" ] || return 1
+ command -v ls >/dev/null 2>&1 && command -v awk >/dev/null 2>&1 || return 1
+ meta="$(LC_ALL=C ls -ldn "$CONF" 2>/dev/null)" || return 1
+ printf '%s\n' "$meta" | awk 'NR == 1 && NF >= 4 && $1 == "-rw-------" && $2 == "1" && $3 == "0" && $4 == "0" { ok=1 } END { exit (ok ? 0 : 1) }'
+}
+secure_conf || exit 1
 . "$CONF"
 : "${SUPABASE_RELAY_URL:?missing relay URL}"
 : "${RELAY_TOKEN:?missing relay token}"
