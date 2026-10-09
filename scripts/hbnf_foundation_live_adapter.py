@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Direct-LAN adapter for the bounded R4 Foundation-metrics transaction."""
 from __future__ import annotations
-import argparse, concurrent.futures, hashlib, json, os, pathlib, socket, statistics, sys, time, urllib.error, urllib.request
+import argparse, concurrent.futures, hashlib, json, os, pathlib, socket, statistics, sys, threading, time, urllib.error, urllib.request
 
 MATRIX="http://192.168.77.10"
 AUX="http://192.168.77.11"
@@ -184,9 +184,24 @@ def _parallel_soak_reads(session_id):
       "aux_info":AUX+"/json/info",
       "aux_state":AUX+"/json/state",
     }
-    started=time.monotonic(); results={}; errors={}; pending_names=[]
+    started=time.monotonic(); results={}; errors={}; pending_names=[]; endpoint_timing={}
+    timing_lock=threading.Lock()
+    def timed_read(name,url):
+        before=time.monotonic_ns()
+        status="PASS"
+        try:
+            body,digest=_get_json_once(url,SOAK_TELEMETRY_HTTP_TIMEOUT_SECONDS)
+            return body,digest
+        except Exception:
+            status="FAIL"
+            raise
+        finally:
+            after=time.monotonic_ns()
+            with timing_lock:
+                endpoint_timing[name]={"endpoint":url,"status":status,"started_monotonic_ns":before,
+                    "completed_monotonic_ns":after,"elapsed_seconds":round((after-before)/1e9,6)}
     pool=concurrent.futures.ThreadPoolExecutor(max_workers=len(endpoints),thread_name_prefix="hbnf-soak-read")
-    futures={pool.submit(_get_json_once,url,SOAK_TELEMETRY_HTTP_TIMEOUT_SECONDS):name for name,url in endpoints.items()}
+    futures={pool.submit(timed_read,name,url):name for name,url in endpoints.items()}
     try:
         done,pending=concurrent.futures.wait(futures,timeout=SOAK_TELEMETRY_BATCH_TIMEOUT_SECONDS)
         for future in done:
@@ -201,25 +216,40 @@ def _parallel_soak_reads(session_id):
     finally:
         pool.shutdown(wait=True,cancel_futures=True)
     elapsed=time.monotonic()-started
-    if errors or pending_names:
+    for name,url in endpoints.items():
+        if name not in endpoint_timing:
+            endpoint_timing[name]={"endpoint":url,"status":"NOT_STARTED_OR_CANCELLED",
+                "started_monotonic_ns":None,"completed_monotonic_ns":None,"elapsed_seconds":None}
+    def persist_read_failure(reason):
         detail={"schema":"hbnf-soak-parallel-read-failure-v1","captured_at_unix":time.time(),
                 "elapsed_seconds":elapsed,"batch_timeout_seconds":SOAK_TELEMETRY_BATCH_TIMEOUT_SECONDS,
                 "request_timeout_seconds":SOAK_TELEMETRY_HTTP_TIMEOUT_SECONDS,
-                "failed_endpoints":errors,"pending_endpoints":pending_names,
+                "failure_reason":reason,"failed_endpoints":errors,"pending_endpoints":pending_names,
+                "endpoint_timing":endpoint_timing,
                 "completed_response_sha256":{k:v["sha256"] for k,v in results.items()}}
         path=pathlib.Path(str(session_id))/"TELEMETRY_PARALLEL_READ_FAILURES.jsonl"
         path.parent.mkdir(parents=True,exist_ok=True)
         raw=(json.dumps(detail,separators=(",",":"),sort_keys=True)+"\n").encode()
         fd=os.open(path,os.O_CREAT|os.O_APPEND|os.O_WRONLY,0o600)
-        try: os.write(fd,raw); os.fsync(fd)
-        finally: os.close(fd)
+        try:
+            offset=0
+            while offset<len(raw):offset+=os.write(fd,raw[offset:])
+            os.fsync(fd)
+        finally:os.close(fd)
+        return detail
+    if errors or pending_names:
+        detail=persist_read_failure("parallel-read-failed-or-pending")
         raise RuntimeError("parallel-soak-telemetry-read-failed:"+json.dumps(detail,sort_keys=True))
     info=results["matrix_info"]["body"]; build=results["matrix_build"]["body"]
     if info.get("ip")!="192.168.77.10" or info.get("mac","" ).replace(":","").lower()!=MAC:
+        persist_read_failure("matrix-ip-or-mac-mismatch")
         raise RuntimeError("matrix-ip-or-mac-mismatch")
     if build.get("release_id")!=EXPECTED or build.get("candidate")!=EXPECTED:
+        persist_read_failure("foundation-metrics-release-identity-mismatch")
         raise RuntimeError("foundation-metrics-release-identity-mismatch")
-    return {k:v["body"] for k,v in results.items()},elapsed
+    bodies={k:v["body"] for k,v in results.items()}
+    bodies["_endpoint_timing"]=endpoint_timing
+    return bodies,elapsed
 
 def snapshot(observer_output=None, inventory=None):
     identity(); state,p20=p20_state()
@@ -324,6 +354,8 @@ def _restore_snapshot(sid,shash):
     if int(p20.get("snapshotId",-1))!=int(sid):raise RuntimeError("packet20-snapshot-id-mismatch")
     if int(p20.get("snapshotHash",-1))!=int(shash):raise RuntimeError("packet20-snapshot-hash-mismatch")
     if p20.get("restoreVerified") is not True:raise RuntimeError("packet20-restore-not-verified")
+    if p20.get("lastCommand")!="restore":raise RuntimeError("packet20-restore-command-identity-mismatch")
+    if p20.get("lastCommandAccepted") is not True:raise RuntimeError("packet20-restore-command-not-accepted")
     return {"restoreVerified":True,"snapshotId":int(sid),"snapshotHash":int(shash),"packet20Same":True}
 
 def verify_restore(path):
@@ -344,7 +376,11 @@ def select(kernel):
     if not command("select",kernel=int(kernel)).get("HBNF",{}).get("packet20Diagnostic",{}).get("lastCommandAccepted",False):raise RuntimeError("packet20-kernel-select-rejected")
 
 def telemetry(inventory,session_id,emit=True):
+    expected_sha=os.environ.get("HBNF_EXPECTED_FIRMWARE_SHA256")
+    if expected_sha is not None and (len(expected_sha)!=64 or any(c not in "0123456789abcdef" for c in expected_sha.lower())):
+        raise RuntimeError("expected-firmware-sha256-invalid")
     reads,read_elapsed=_parallel_soak_reads(session_id)
+    endpoint_timing=reads.pop("_endpoint_timing",{})
     info=reads["matrix_info"]; build=reads["matrix_build"]; state=reads["matrix_state"]
     aux=reads["aux_info"]; aux_state=reads["aux_state"]
     h=state.get("HBNF",{}); timing=h.get("timing",{}); ft=h.get("foundationTelemetry",{})
@@ -426,6 +462,16 @@ def telemetry(inventory,session_id,emit=True):
       "aux_physical_output_status":"NOT_OBSERVABLE_FROM_WLED_JSON",
       "wifi_rssi_dbm":timing["rssi"],"restart_count":cache["restart_count"],
       "telemetry_read_elapsed_seconds":round(read_elapsed,6),
+      "telemetry_endpoint_reads":endpoint_timing,
+      "expected_release_id":EXPECTED,
+      "expected_firmware_sha256":expected_sha,
+      "trace_armed":bool(ft.get("outlierTrace",{}).get("enabled")),
+      "trace_retained_count":ft.get("outlierTrace",{}).get("retainedCount"),
+      "trace_outlier_count":ft.get("outlierTrace",{}).get("outlierCount"),
+      "trace_overflow_count":ft.get("outlierTrace",{}).get("overflowCount"),
+      "trace_cpu_mhz_start":ft.get("outlierTrace",{}).get("cpuMHzAtTraceStart"),
+      "trace_cpu_mhz_readback":ft.get("outlierTrace",{}).get("cpuMHzAtReadback"),
+      "trace_records_serialized":isinstance(ft.get("outlierTrace",{}).get("records"),list),
       "kernel_ms_avg":ft.get("kernelMsAvg"),"kernel_ms_p95":ft.get("kernelMsP95"),"palette_ms_avg":ft.get("paletteMsAvg"),"palette_ms_p95":ft.get("paletteMsP95"),
       "audio_ms_avg":ft.get("audioMsAvg"),"audio_ms_p95":ft.get("audioMsP95"),"scheduler_ms_avg":ft.get("schedulerMsAvg"),"scheduler_ms_p95":ft.get("schedulerMsP95"),
       "overlay_ms_avg":ft.get("overlayMsAvg"),"overlay_ms_p95":ft.get("overlayMsP95"),"aux_prepare_send_ms_avg":ft.get("auxPrepareSendMsAvg"),"aux_prepare_send_ms_p95":ft.get("auxPrepareSendMsP95"),
@@ -436,7 +482,11 @@ def telemetry(inventory,session_id,emit=True):
 
 def readonly_preflight(session_id):
     """Check identity and safety inputs before enabling diagnostic telemetry."""
+    expected_sha=os.environ.get("HBNF_EXPECTED_FIRMWARE_SHA256")
+    if expected_sha is not None and (len(expected_sha)!=64 or any(c not in "0123456789abcdef" for c in expected_sha.lower())):
+        raise RuntimeError("expected-firmware-sha256-invalid")
     reads,elapsed=_parallel_soak_reads(session_id)
+    endpoint_timing=reads.pop("_endpoint_timing",{})
     info=reads["matrix_info"];build=reads["matrix_build"];state=reads["matrix_state"]
     aux=reads["aux_info"];aux_state=reads["aux_state"]
     h=state.get("HBNF",{})
@@ -455,7 +505,9 @@ def readonly_preflight(session_id):
       "aux_ip":aux.get("ip"),"aux_mac":aux.get("mac","" ).replace(":","").lower(),
       "aux_on":aux_state.get("on"),"aux_live":aux.get("live"),"aux_live_mode":aux.get("lm"),
       "aux_live_ip":aux.get("lip"),"aux_led_count":aux.get("leds",{}).get("count"),
-      "aux_physical_output_status":"NOT_OBSERVABLE_FROM_WLED_JSON","read_elapsed_seconds":round(elapsed,6)}
+      "aux_physical_output_status":"NOT_OBSERVABLE_FROM_WLED_JSON","read_elapsed_seconds":round(elapsed,6),
+      "endpoint_reads":endpoint_timing,"expected_release_id":EXPECTED,
+      "expected_firmware_sha256":expected_sha}
     if result["release_id"]!=EXPECTED or result["candidate"]!=EXPECTED:raise RuntimeError("preflight-release-identity-mismatch")
     if result["wled"]!="16.0.1" or result["matrix_ip"]!="192.168.77.10" or result["matrix_mac"]!=MAC:raise RuntimeError("preflight-matrix-target-mismatch")
     if result["matrix_on"] is not True or result["matrix_brightness"]!=44:raise RuntimeError("preflight-matrix-output-or-brightness-mismatch")

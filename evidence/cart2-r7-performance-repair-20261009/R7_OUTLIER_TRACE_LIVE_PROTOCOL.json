@@ -1,7 +1,7 @@
 {
-  "schema": "hbnf-r7-outlier-trace-live-protocol-v2",
-  "status": "OFFLINE_R2_BUILT__LIVE_NO_GO_PENDING_CATASTROPHIC_MONITOR_COMPATIBILITY",
-  "created_at_utc": "2026-10-09T18:02:00Z",
+  "schema": "hbnf-r7-outlier-trace-live-protocol-v3",
+  "status": "OFFLINE_HOST_PROTOCOL_PASS__GO_PROPOSAL",
+  "created_at_utc": "2026-10-09T18:24:19Z",
   "source_checkpoint_base": "d801fe876452fe8e932f369e4c129fb89418735d",
   "exact_artifact": {
     "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
@@ -43,39 +43,6 @@
     },
     "p99_diagnostic_rule": "A p99 above 42.03125 ms is recorded as regression evidence and does not end the trace. The threshold and all production gates remain unchanged. The separate existing three-consecutive-sample catastrophic limits remain mandatory."
   },
-  "observation_sequence": {
-    "preflight": [
-      "No live action until a fresh exact-artifact authorization and control-plane admission pass.",
-      "Verify Matrix .10/MAC 70:4b:ca:5b:34:5c and installed exact Foundation R4 identity; verify AUX .11 exact identity, current Matrix-origin DDP projection, Matrix/AUX health, uptime/restarts, local route, stable power, and one live worker.",
-      "Re-hash diagnostic and R4 recovery bytes; verify rollback compatibility, renderer snapshot/restore capability, clean read-only device state, and current 240 MHz reading. Any mismatch is NO-GO.",
-      "Record prestate and current feature/runtime controls. Establish Packet20 snapshot and select kernel 13, brightness 44, the previously failing variant signature 1347100685, and identical remaining presentation controls. Confirm renderer advances and Matrix-origin AUX DDP remains active before timing."
-    ],
-    "installation_and_return": [
-      "Install this exact diagnostic artifact once and verify booted release identity, SHA-linked manifest, device MAC/IP, WLED version, health, uptime/restart count, heap, output brightness, and AUX projection.",
-      "After all measurement windows, restore and verify the exact Packet20 renderer snapshot. Because this diagnostic build is not a qualified product release, restore exact Foundation R4 once at the end of the transaction and verify its release/SHA/health before field use.",
-      "One diagnostic install maximum and one exact R4 restoration maximum. No diagnostic retry, AUX/router/cloud mutation, R8, or production qualification claim. If R4 restoration cannot be verified, stop and require owner intervention before use."
-    ],
-    "windows": [
-      "Use 60-second trace-disarmed baseline and 60-second trace-armed window first, with tails histogram enabled identically, same kernel/variant/brightness/controls, and stable 240 MHz. Reset only the existing histogram between conditions; the first trace start is one-shot and later resume does not clear records.",
-      "Do not issue HTTP/JSON polls or telemetry reads during a window. At the end of each completed window, stop trace if armed and perform one state read. Record sampleCount, avg, p95, p99, max, FPS, current/capture CPU MHz, outlierCount, overflowCount, chronological records, worstRecord, and renderer state.",
-      "Evidence-driven matched extension: if either condition has fewer than 2,000 valid frames, or the trace condition has fewer than 20 captured outliers, add matched 30-second pairs (one trace-disarmed and one trace-resumed window), preserving cumulative totals for each condition. Read data only after the pair. Stop at 180 seconds per condition. The 20-outlier target is a diagnostic representativeness trigger only, not an acceptance threshold; 2,000 frames ensures about 20 observations in a 1% tail. If still insufficient at 180 seconds, classify INCONCLUSIVE.",
-      "Use no extra p99 production threshold to stop early. If prior 60-second data shows p99 above 42.03125 ms, continue through the bounded diagnostic window unless an existing catastrophic condition is met. If failure is not reproduced by the maximum duration, classify INCONCLUSIVE, not PASS."
-    ],
-    "evidence_and_decisions": {
-      "regression_reproduced": "Trace-disarmed exact diagnostic window p99 exceeds 42.03125 ms with enough samples; this records the phenomenon only, not a product pass/fail override.",
-      "stage_localization": "Report same-frame raw stage-cycle values and unaccounted remainder for each retained outlier. A large unaccounted remainder is unclassified; do not infer Wi-Fi, interrupts, scheduler, or compositor causality from remainder alone.",
-      "observer_effect": "Compare matched trace-disarmed and trace-armed sample count, FPS, p99, maximum, and stage distributions. Report raw differences and the partial traceCaptureBodyCycles field. There is no frozen diagnostic observer-effect acceptance threshold; do not label it acceptable without evidence.",
-      "inconclusive": "No reproduced p99 regression, insufficient outlier/sampling evidence at 180s per condition, CPU-frequency mismatch, continuity/identity mismatch, collector failure, or unverified restore means INCONCLUSIVE. Preserve evidence and do not claim PASS or cause."
-    }
-  },
-  "safety_abort_and_no_go": {
-    "abort_immediately": [
-      "Matrix identity/release mismatch, reboot or uptime regression, confirmed power instability, device health loss, or loss of verified rollback readiness.",
-      "Existing frozen catastrophic rule: three consecutive valid 8-second samples with FPS below 20, p99 above 75 ms, or required Matrix-origin AUX projection inactive.",
-      "Telemetry/source identity, sampling continuity, frequency, or exact renderer restore becomes unknown; stop collection, preserve output, restore snapshot where verifiable, and return exact R4 before field use. Host-only collector failure is not firmware causation."
-    ],
-    "live_no_go_reason": "The prescribed quiet windows forbid all host polling, while the existing frozen catastrophic-stop rule requires valid samples every 8 seconds and abort after three consecutive bad samples. Without polling, the required early-stop monitor cannot operate; polling would violate the quiet-window condition and alter the observer comparison. Therefore this protocol is NOT READY for live authorization until an owner-approved way to resolve that conflict is selected. Do not weaken either condition."
-  },
   "external_sources": [
     {
       "url": "https://docs.espressif.com/projects/esp-idf/en/v5.2.4/esp32/api-guides/performance/speed.html",
@@ -86,5 +53,107 @@
       "fact_used": "CONFIG_PM_ENABLE enables PM/DFS support; if disabled, DFS is not active unless the application configures it. The exact build is ESP32 rather than ESP32-S3; ESP32 SDK config independently confirms PM disabled and the source closure sets 240 MHz."
     }
   ],
-  "live_authorization": "NOT REQUESTED; NO LIVE REQUESTS, OTA, RESTART, AUX/ROUTER CHANGE OR DEPLOYMENT PERFORMED."
+  "live_authorization": "NOT REQUESTED; exact-artifact owner authorization is still required.",
+  "telemetry": {
+    "collector": "scripts/hbnf_foundation_continuous_soak.py::_sampler_worker + scripts/hbnf_foundation_live_adapter.py telemetry",
+    "period_seconds": 8,
+    "command_timeout_seconds": 7,
+    "parallel_request_timeout_seconds": 4,
+    "parallel_batch_timeout_seconds": 5.5,
+    "endpoints": [
+      "Matrix /json/info",
+      "Matrix /hbnf/build.json",
+      "Matrix /json/state",
+      "AUX /json/info",
+      "AUX /json/state"
+    ],
+    "endpoint_timing": "Each GET records monotonic start, monotonic completion, elapsed duration, endpoint identity and status; samples record batch elapsed and sample monotonic time. Failed, pending, or missing endpoints are durably recorded and fail closed.",
+    "identity_binding": {
+      "expected_release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+      "expected_firmware_sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
+      "adapter_environment": [
+        "HBNF_EXPECTED_RELEASE_ID",
+        "HBNF_EXPECTED_FIRMWARE_SHA256"
+      ],
+      "device_attestation": "Adapter verifies exact release/candidate identity from live /hbnf/build.json. SHA is bound by the verified OTA transaction and local/Drive artifact receipt; WLED JSON does not attest binary SHA."
+    },
+    "frozen_safety": "Every sample preserves FPS, p99, max, heap/restarts, Matrix identity, and Matrix-origin AUX native DDP state. The existing 3 consecutive bad-sample rule remains active (FPS <20, p99 >75ms, or AUX projection inactive). No 42.03125ms diagnostic p99 stop.",
+    "missed_sample": "Collector timeout, invalid response, schedule overrun, identity mismatch, AUX failure, or sample gap is a hard invalidation and stops the pair; it is persisted, never skipped.",
+    "host_invocation_template": "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009 HBNF_EXPECTED_FIRMWARE_SHA256=9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b python3 scripts/hbnf_foundation_continuous_soak.py --worker sampler --worker-data <phase-specific JSON: adapter telemetry argv, one kernel-13 inventory entry, durable output directory, duration=60s, initial_delay=4s, include_boundary_sample=true, period=8s, timeout=7s, exact R2 release ID, frozen policy and preflight uptime/restart>",
+    "schedule_overrun": "The existing sampler fails closed and persists the just-returned sample when completion overruns its next 8-second deadline; it does not shift cadence or skip the missed poll.",
+    "boundary_sample": "The existing sampler supports a 4-second initial delay and final boundary sample: reads start at t=4,12,20,28,36,44,52,60. This gives eight 8-second safety samples and an exact 60-second histogram window."
+  },
+  "windows": {
+    "duration_seconds": 60,
+    "pair_order": [
+      "trace_disarmed",
+      "trace_armed"
+    ],
+    "extensions": false,
+    "controls": "Kernel 13, brightness 44, variant signature 1347100685, tails enabled; same DDP, audio, Vibe, palette, overlay, and runtime controls in both windows. Same 8-second five-endpoint parallel telemetry collector and timeouts in both conditions.",
+    "preparation": "Take one Packet20 snapshot and keep the recovery snapshot valid. Keep the existing diagnostics mode active. Reset the frame-tail histogram before each condition using the same tails-off/tails-on transition, then apply the same fixed 2-second settle. Confirm kernel, brightness, variant, uptime, 240MHz CPU, and AUX projection via the same read-only collector before timing.",
+    "trace_control_sequence": [
+      "start",
+      "stop",
+      "reset_tail_histogram",
+      "fixed_settle",
+      "baseline_window",
+      "reset_tail_histogram",
+      "fixed_settle",
+      "resume",
+      "armed_window",
+      "stop",
+      "final_readback",
+      "restore_renderer"
+    ],
+    "trace_serialization_contamination": "Firmware serializes trace record strings only when traceArmed is false AND retainedCount > 0. Before baseline, start then stop once so trace is consumed but empty. Baseline is disarmed with zero records; armed window keeps traceArmed true so record strings are not serialized in any 8-second poll. Do not run a disarmed extension after trace stop. Stop only after armed window; perform final trace readback afterward. If telemetry reports records serialized during either timed window, invalidate as INCONCLUSIVE.",
+    "timing": "Sample cadence is 8 seconds with an intentional initial 4-second offset; boundary sample at t=60 captures the full histogram. Every request start/end/duration and actual completion time is persisted. Any command timeout, sample gap, or schedule overrun invalidates the pair.",
+    "contamination": "HTTP reads can create frame spikes. They are not excluded. The identical endpoint set, parallel request schedule, timeouts, and read cadence are used in both conditions. Attribute spikes near request intervals as correlated evidence only, not causal proof. If polling variance or timing overlap prevents attribution, return INCONCLUSIVE.",
+    "metrics": [
+      "per-window sample count and exact sample timestamps",
+      "p99, maximum frame time, FPS, and 8-second catastrophic streak",
+      "frame-to-stage correlation for all retained trace outliers and the separate worst frame",
+      "unaccounted-cycle remainder",
+      "trace outlier/overflow counts and any retained-record loss",
+      "per-endpoint request duration and endpoint status",
+      "trace armed state and whether any trace records were serialized during a timed window",
+      "CPU MHz and runtime identity on every sample"
+    ],
+    "no_exclusion": "Do not discard slow frames, HTTP-correlated frames, overflow indications, failed reads, or invalid samples to improve a comparison. No optional extension; insufficient observations at 60 seconds is INCONCLUSIVE.",
+    "duration_realization": "Each condition is exactly 60 seconds from monotonic t=0 to t=60. The existing sampler starts at t=4 then polls at t=12,20,28,36,44,52,60; 8 samples total with every inter-sample interval exactly 8 seconds. The final read begins at the window boundary and completes within the same 7-second command budget. Keep trace armed through its completion, record actual endpoint timings, then stop and perform readback.",
+    "expected_samples_per_condition": 8,
+    "expected_histogram_coverage_seconds": 60,
+    "initial_sample_offset_seconds": 4,
+    "sample_times_seconds": [
+      4,
+      12,
+      20,
+      28,
+      36,
+      44,
+      52,
+      60
+    ]
+  },
+  "decision_rules": {
+    "diagnostic_threshold": "R7 p99 >42.03125ms is recorded as regression evidence and does not terminate the diagnostic.",
+    "catastrophic_abort": "Unchanged frozen policy: 3 consecutive valid 8-second samples with FPS <20, p99 >75ms, or Matrix-origin AUX projection inactive; plus immediate identity, power, restart, health, and rollback safety stops.",
+    "observer_effect": "Use raw paired distributions and endpoint timings. Do not claim attribution if polling dominates or trace overflow prevents representative stage evidence.",
+    "insufficient_or_contaminated": "INCONCLUSIVE if regression is not reproduced, sample missing/late, endpoint timing incomplete, trace records serialized asymmetrically, frequency/identity changes, trace overflow prevents useful attribution, or collector/restore fails.",
+    "pass_semantics": "There is no diagnostic PASS. The outcome is reproduced/localized, reproduced/unlocalized, or INCONCLUSIVE. Production qualification gates remain unchanged."
+  },
+  "safety_abort_and_go": {
+    "abort_immediately": [
+      "Matrix identity/release mismatch, reboot or uptime regression, confirmed power instability, device health loss, or loss of verified rollback readiness.",
+      "Existing frozen catastrophic rule: three consecutive valid 8-second samples with FPS below 20, p99 above 75ms, or Matrix-origin AUX projection inactive.",
+      "Any missing/late sample, failed endpoint, lost DDP source, CPU-frequency mismatch, asymmetric trace serialization, or unknown renderer restore state."
+    ],
+    "live_go_basis": "The prior conflict is resolved by the existing parallel 8-second safety collector, run with identical endpoints, cadence, timeouts, and controls in both windows. Trace hot path itself performs no polling, logging, allocation, formatting, or network I/O.",
+    "live_recommendation": "GO for one bounded diagnostic transaction after exact-artifact owner authorization and fresh admission/preflight. This is not a production release or R8 and authorizes no install by itself."
+  },
+  "execution_recovery": {
+    "restore_on_every_exit": "Stop/pause trace, persist all sampler/trace/error files, and invoke the existing Packet20 snapshot restore in a finally path after success, catastrophic stop, timeout, identity mismatch, collector failure, or user interruption. Verify exact snapshot ID/hash, restoreVerified, lastCommand=restore and lastCommandAccepted=true. Do not restart diagnostic or re-enter after restore.",
+    "end_of_transaction": "This diagnostic is not a field release. After the matched pair and verified renderer restoration, return the Matrix to the exact Foundation R4 firmware once and verify release identity/health before leaving it in use.",
+    "owner_authority": "Exact-artifact owner authorization is still required before one diagnostic installation and one exact R4 recovery/restoration transaction."
+  }
 }

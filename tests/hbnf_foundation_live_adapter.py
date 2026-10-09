@@ -120,9 +120,13 @@ with tempfile.TemporaryDirectory() as td:
       "paletteMsP95":4,"audioMsAvg":1,"audioMsP95":2,"schedulerMsAvg":1,
       "schedulerMsP95":2,"overlayMsAvg":0.1,"overlayMsP95":0.2,
       "auxPrepareSendMsAvg":0.5,"auxPrepareSendMsP95":0.8,"unaccountedMsAvg":5,
-      "unaccountedMsP95":6}}}
+      "unaccountedMsP95":6,"outlierTrace":{"enabled":True,"retainedCount":4,
+        "outlierCount":4,"overflowCount":0,"cpuMHzAtTraceStart":240,"cpuMHzAtReadback":240}}}}
     reads={"matrix_info":info,"matrix_build":build,
       "matrix_state":state,"aux_info":aux,"aux_state":aux_state}
+    reads["_endpoint_timing"]={name:{"status":"PASS","started_monotonic_ns":1,
+      "completed_monotonic_ns":2,"elapsed_seconds":0.000001} for name in
+      ("matrix_info","matrix_build","matrix_state","aux_info","aux_state")}
     m._parallel_soak_reads=lambda session_id:(reads,0.02)
     m.get=lambda url,*args,**kwargs: info if url.endswith("/json/info") else build
     isolated_run=str(t/"run-a")
@@ -133,6 +137,10 @@ with tempfile.TemporaryDirectory() as td:
     assert sample["aux_frame_lock_rx_active"] is False
     assert sample["aux_projection_age_valid"] is False
     assert sample["aux_projection_age_ms"]==4294967295
+    assert sample["trace_armed"] is True and sample["trace_retained_count"]==4
+    assert sample["trace_records_serialized"] is False
+    assert set(sample["telemetry_endpoint_reads"])=={"matrix_info","matrix_build","matrix_state","aux_info","aux_state"}
+    assert sample["expected_firmware_sha256"] is None # WLED does not attest installed bytes.
     required={"release_id","uptime_seconds","fps","frame_ms_p50","frame_ms_p95",
       "frame_ms_p99","frame_ms_max","kernel_id","kernel_name","variant_id",
       "free_heap_bytes","minimum_free_heap_bytes","largest_free_block_bytes",

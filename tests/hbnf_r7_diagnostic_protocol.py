@@ -15,8 +15,7 @@ header = TRACE.read_text()
 source = SOURCE.read_text()
 
 assert p["live_authorization"].startswith("NOT REQUESTED")
-assert p["safety_abort_and_no_go"]["live_no_go_reason"]
-assert "NOT READY" in p["safety_abort_and_no_go"]["live_no_go_reason"]
+assert p["safety_abort_and_go"]["live_recommendation"].startswith("GO for one bounded diagnostic transaction")
 assert p["frozen_policy"]["production_p99_ceiling_ms"] == 42.03125
 assert p["frozen_policy"]["catastrophic_abort"] == {
     "bad_samples_consecutive": 3,
@@ -30,11 +29,23 @@ assert policy["catastrophic_early_stop"]["fps_floor_absolute"] == 20
 assert policy["catastrophic_early_stop"]["frame_ms_p99_ceiling_absolute"] == 75
 assert policy["comparison"]["candidate_vs_baseline"]["frame_p99_max_ratio"] == 1.25
 assert "does not end the trace" in p["frozen_policy"]["p99_diagnostic_rule"]
-assert "INCONCLUSIVE" in p["observation_sequence"]["evidence_and_decisions"]["inconclusive"]
-assert "do not claim PASS" in p["observation_sequence"]["evidence_and_decisions"]["inconclusive"]
-assert "resume" in p["observation_sequence"]["windows"][2]
-assert "180 seconds per condition" in p["observation_sequence"]["windows"][2]
-assert "Do not issue HTTP/JSON polls" in " ".join(p["observation_sequence"]["windows"])
+assert "INCONCLUSIVE" in p["decision_rules"]["insufficient_or_contaminated"]
+assert p["telemetry"]["period_seconds"] == 8
+assert p["telemetry"]["command_timeout_seconds"] == 7
+assert p["telemetry"]["parallel_request_timeout_seconds"] == 4
+assert p["telemetry"]["parallel_batch_timeout_seconds"] == 5.5
+assert p["telemetry"]["identity_binding"]["expected_release_id"] == p["exact_artifact"]["release_id"]
+assert p["telemetry"]["identity_binding"]["expected_firmware_sha256"] == p["exact_artifact"]["sha256"]
+assert "monotonic start" in p["telemetry"]["endpoint_timing"]
+assert p["windows"]["duration_seconds"] == 60 and p["windows"]["extensions"] is False
+assert p["windows"]["initial_sample_offset_seconds"] == 4
+assert p["windows"]["sample_times_seconds"] == [4,12,20,28,36,44,52,60]
+assert p["windows"]["expected_samples_per_condition"] == 8
+assert p["windows"]["pair_order"] == ["trace_disarmed", "trace_armed"]
+assert p["windows"]["trace_control_sequence"] == ["start","stop","reset_tail_histogram","fixed_settle","baseline_window","reset_tail_histogram","fixed_settle","resume","armed_window","stop","final_readback","restore_renderer"]
+assert "if(!traceArmed&&traceCount)" in source
+assert "Do not run a disarmed extension" in p["windows"]["trace_serialization_contamination"]
+assert "INCONCLUSIVE" in p["decision_rules"]["insufficient_or_contaminated"]
 assert len(p["exact_artifact"]["sha256"]) == 64
 assert p["exact_artifact"]["sha256"] == "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b"
 
@@ -52,4 +63,4 @@ for forbidden in ("malloc", "Serial", "WiFi", "HTTP", "snprintf", "new "):
     assert forbidden not in frame_end, f"forbidden hot-path operation: {forbidden}"
 assert "esp_timer_get_time()" in frame_end
 assert "traceCaptureBodyCycles" not in frame_end  # set after append via helper; not a false total-cost claim
-print("PASS: threshold is evidence, catastrophic gates unchanged, paired extension is bounded, resume preserves trace, protocol correctly NO-GO under quiet-window conflict")
+print("PASS: frozen catastrophic monitor, exact R2 telemetry binding, matched 60s windows, serialization symmetry and restore contract")

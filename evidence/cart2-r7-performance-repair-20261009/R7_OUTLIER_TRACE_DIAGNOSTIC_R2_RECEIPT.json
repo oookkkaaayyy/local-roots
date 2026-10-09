@@ -1,13 +1,17 @@
 {
   "schema": "hbnf-r7-outlier-trace-diagnostic-r2-receipt-v1",
-  "status": "OFFLINE_BUILT_AND_TESTED__LIVE_NO_GO",
-  "created_at_utc": "2026-10-09T17:59:28Z",
+  "status": "OFFLINE_BUILT_AND_TESTED__GO_PROPOSAL_PENDING_OWNER_AUTHORIZATION",
+  "created_at_utc": "2026-10-09T18:24:19Z",
   "prior_checkpoint": "d801fe876452fe8e932f369e4c129fb89418735d",
   "corrections": [
     "Added pause/resume that preserves sequence, recent ring, overflow/outlier counts, and worst record so paired 30-second extension windows can continue within the one boot-scoped session.",
     "Renamed the per-record cost to traceCaptureBodyCycles and explicitly excluded final self-accounting write/critical-section exit; whole-window A/B is the full observer-effect measurement.",
     "Trace start and resume fail closed if runtime CPU MHz does not match compiled/captured MHz; JSON readback exposes compile, trace-start, and readback frequency.",
-    "Frozen 42.03125 ms p99 ceiling is evidence only during this diagnostic; only existing catastrophic 3-consecutive-sample gates abort. Production thresholds are unchanged."
+    "Frozen 42.03125 ms p99 ceiling is evidence only during this diagnostic; only existing catastrophic 3-consecutive-sample gates abort. Production thresholds are unchanged.",
+    "Resolved the quiet-window/catastrophic-monitor conflict by using the existing parallel read-only sampler every 8 seconds in both windows with identical five endpoints, request/batch budgets and controls.",
+    "Host adapter records monotonic start/end/duration/status for every endpoint read; missing/late requests and schedule overruns persist evidence and fail closed.",
+    "Removed the optional disarmed extension. Trace record strings serialize only when stopped with retained records; baseline begins with a consumed empty trace and the armed window never serializes records. Final readback occurs only after the armed window.",
+    "Renderer restore now verifies lastCommand=restore and accepted=true in addition to snapshot ID/hash and restoreVerified."
   ],
   "artifact": {
     "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
@@ -48,7 +52,8 @@
     "trace_store_and_hot_path": "PASS",
     "protocol_stop_conditions_extensions_and_no_go": "PASS",
     "existing_phase2_regression_suite": "PASS",
-    "control_state": "PASS; live mutation false"
+    "control_state": "PASS; live mutation false",
+    "protocol_failure_replays": "PASS: good exact 60s paired windows (8 samples at t=4..60 each) retaining 42.5ms p99 evidence; three frozen catastrophic causes; timeout; exact identity mismatch; trace overflow retention; schedule overrun; exact renderer restore/hash mismatch."
   },
   "protocol": {
     "path": "evidence/cart2-r7-performance-repair-20261009/R7_OUTLIER_TRACE_LIVE_PROTOCOL.json",
@@ -72,5 +77,35 @@
     "readback_sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
     "readback_size_bytes": 1502256,
     "readback_matches_local": true
+  },
+  "host_protocol": {
+    "schema": "hbnf-r7-outlier-trace-live-protocol-v3",
+    "protocol_path": "evidence/cart2-r7-performance-repair-20261009/R7_OUTLIER_TRACE_LIVE_PROTOCOL.json",
+    "recommendation": "GO_FOR_OWNER_AUTHORIZATION",
+    "firmware_rebuilt": false,
+    "binary_sha_unchanged": true,
+    "host_test_path": "tests/hbnf_r7_trace_observation.py",
+    "sampler_schedule": "8-second period; 4-second per-request timeout; 5.5-second batch timeout; 7-second command timeout; no silent skip.",
+    "protocol_commit_base": "d429390abdd126e86747c39c602d72b6136eb88c",
+    "sample_count_per_window": 8,
+    "sampler_sha256": "f4fb053acb09a2ffa3fc0a3796059eaa79abb04c192aed1f18e7ce8e0d9fd48e",
+    "window_schedule": "t=4,12,20,28,36,44,52,60; 8 samples per 60s condition",
+    "sample_schedule": [
+      4,
+      12,
+      20,
+      28,
+      36,
+      44,
+      52,
+      60
+    ]
+  },
+  "live_transaction": {
+    "live_operations_performed": false,
+    "authorization_required": "Owner exact-artifact authorization required for one diagnostic install and one exact R4 recovery at transaction end.",
+    "candidate_release": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+    "candidate_sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
+    "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
   }
 }

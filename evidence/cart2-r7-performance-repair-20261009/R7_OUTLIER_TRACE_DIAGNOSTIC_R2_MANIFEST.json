@@ -121,12 +121,15 @@
       "python3 tests/hbnf_kernel_sweep_report.py",
       "python3 tests/hbnf_live_kernel_sweep.py"
     ],
-    "result": "ALL PASS; control model valid and live mutation authority false."
+    "result": "ALL PASS; control model valid and live mutation authority false.",
+    "r7_complete_observation_sequence": "PASS: good paired windows (42.5ms p99 retained as evidence), catastrophic FPS/p99/AUX cases, timeout, identity mismatch, trace overflow retention, schedule overrun, per-endpoint timing and exact renderer restore/readback simulated.",
+    "r7_observation_test_sha256": "4d6581d7872e45479fbfbef3526d9bed48f6ffea8cafadeab3c98c7e30042fbe",
+    "r7_diagnostic_protocol_test_sha256": "6a02429bab84592480519ff6e5f34383a16094ccdd0a91ee1d682a39e2c7c949",
+    "foundation_adapter_regression_test_sha256": "8f130570afe2b9fe33a3d4505f932e585df7daa5109c69ef6cb0b5a893739dfe"
   },
   "live_readiness": {
-    "recommendation": "NO_GO",
-    "reason": "Quiet windows prohibit polling, but the frozen catastrophic abort needs 8-second samples and aborts after three consecutive bad samples. Neither requirement is weakened. Exact protocol presents the conflict; no live operation is authorized here.",
-    "requested_live_operations": "NONE"
+    "recommendation": "GO_FOR_OWNER_AUTHORIZATION",
+    "reason": "Existing parallel 8-second collector maintains the unchanged catastrophic monitor in both matched windows; trace hot path does not poll. Read endpoint timings and trace serialization symmetry are explicitly checked. This authorizes no live operation by itself."
   },
   "drive_preservation": {
     "drive_file_id": "1sYGsE7WKXYB2vxNUgpvi7znWQ3kUx1eD",
@@ -134,5 +137,39 @@
     "readback_sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
     "readback_size_bytes": 1502256,
     "readback_matches_local": true
+  },
+  "host_protocol": {
+    "baseline_commit": "d429390abdd126e86747c39c602d72b6136eb88c",
+    "adapter_path": "scripts/hbnf_foundation_live_adapter.py",
+    "adapter_sha256": "8ca16bf83b06f3e0565ed5768659fbfab4718834402ee4f21b7add1b567e3905",
+    "sampler_path": "scripts/hbnf_foundation_continuous_soak.py",
+    "sampler_sha256": "f4fb053acb09a2ffa3fc0a3796059eaa79abb04c192aed1f18e7ce8e0d9fd48e",
+    "expected_release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+    "expected_firmware_sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
+    "sampler_period_seconds": 8,
+    "request_timeout_seconds": 4,
+    "parallel_batch_timeout_seconds": 5.5,
+    "per_endpoint_monotonic_timing": true,
+    "missed_samples_fail_closed": true,
+    "firmware_rebuilt": false,
+    "binary_sha_unchanged": true,
+    "scheduled_worker": "existing parallel sampler worker at exactly 8-second period; five read-only endpoints per sample; no kernel selector.",
+    "sampler_schedule": "Eight samples at t=4,12,20,28,36,44,52,60 for each exact 60s window; 4s initial offset and explicit boundary sample. Five read-only endpoints per sample; no kernel selector.",
+    "sample_schedule": {
+      "initial_delay_seconds": 4,
+      "period_seconds": 8,
+      "include_boundary_sample": true,
+      "sample_times_seconds": [
+        4,
+        12,
+        20,
+        28,
+        36,
+        44,
+        52,
+        60
+      ],
+      "sample_count_per_window": 8
+    }
   }
 }

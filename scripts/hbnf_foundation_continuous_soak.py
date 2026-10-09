@@ -68,21 +68,25 @@ def _stop_process(proc: subprocess.Popen) -> None:
 def _sampler_worker(argv: list[str], entries: list[dict], outdir: pathlib.Path,
                     duration: float, expected_release: str, expected_restart: int,
                     previous_uptime: float, policy: dict, period: float,
-                    command_timeout: float) -> int:
+                    command_timeout: float, initial_delay: float = 0.0,
+                    include_boundary_sample: bool = False) -> int:
     path = outdir / "FOUNDATION_SOAK.jsonl"
     failure = outdir / "TELEMETRY_SAMPLER_FAILURE.json"
     started = time.monotonic()
     end = started + duration
-    next_start = started
+    next_start = started + initial_delay
     previous_sample_time = None
     observed: set[int] = set()
     catastrophic_streak = 0
     count = 0
     by_id = {int(e["runtime_kernel_index_expected"]): e for e in entries}
-    while time.monotonic() < end:
+    while next_start < end or (include_boundary_sample and next_start == end):
+        if next_start > end:
+            break
         delay = next_start - time.monotonic()
         if delay > 0:
             time.sleep(delay)
+        scheduled_start = next_start
         sample = None
         persisted = False
         try:
@@ -141,10 +145,17 @@ def _sampler_worker(argv: list[str], entries: list[dict], outdir: pathlib.Path,
                               "failing_sample": sample,
                               "sampler_pid": os.getpid()})
             return 2
-        next_start += period
-        if next_start <= time.monotonic():
-            # Do not burst stale polls after a slow but successful telemetry read.
-            next_start = time.monotonic()
+        next_start = scheduled_start + period
+        now = time.monotonic()
+        if next_start <= now:
+            # This observer is a safety monitor: a late completion means a
+            # scheduled sample was missed. Preserve the sample above, record
+            # the gap, and fail closed instead of silently shifting cadence.
+            _atomic(failure, {"status":"FAIL", "error":"telemetry-sample-schedule-overrun",
+                              "sample_count":count,"last_sample_time_monotonic":previous_sample_time,
+                              "next_sample_deadline_monotonic":next_start,
+                              "overrun_seconds":now-next_start,"sampler_pid":os.getpid()})
+            return 2
     _atomic(outdir / "SAMPLER_PROGRESS.json", {
         "status": "COMPLETE", "sample_count": count,
         "observed_kernel_ids": sorted(observed), "sampler_pid": os.getpid(),
@@ -317,7 +328,8 @@ def main() -> int:
     if args.worker == "sampler":
         return _sampler_worker(data["argv"], data["entries"], pathlib.Path(data["outdir"]),
             float(data["duration"]), data["release"], int(data["restart"]), float(data["uptime"]),
-            data["policy"], float(data["period"]), float(data["timeout"]))
+            data["policy"], float(data["period"]), float(data["timeout"]),
+            float(data.get("initial_delay",0.0)),bool(data.get("include_boundary_sample",False)))
     return _selector_worker(data["argv"], data["entries"], pathlib.Path(data["outdir"]),
         float(data["duration"]), float(data["period"]), float(data["timeout"]))
 
