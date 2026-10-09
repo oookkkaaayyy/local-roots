@@ -69,7 +69,11 @@ def _sampler_worker(argv: list[str], entries: list[dict], outdir: pathlib.Path,
                     duration: float, expected_release: str, expected_restart: int,
                     previous_uptime: float, policy: dict, period: float,
                     command_timeout: float, initial_delay: float = 0.0,
-                    include_boundary_sample: bool = False) -> int:
+                    include_boundary_sample: bool = False,
+                    expected_kernel_id: int | None = None,
+                    expected_variant_id: int | None = None,
+                    expected_trace_armed: bool | None = None,
+                    expected_cpu_mhz: int | None = None) -> int:
     path = outdir / "FOUNDATION_SOAK.jsonl"
     failure = outdir / "TELEMETRY_SAMPLER_FAILURE.json"
     started = time.monotonic()
@@ -99,6 +103,21 @@ def _sampler_worker(argv: list[str], entries: list[dict], outdir: pathlib.Path,
             # Save the exact returned response before any contract check can reject it.
             _append(path, sample)
             persisted = True
+            # Optional exact diagnostic contract. These checks run per sample
+            # so a changed kernel/variant, trace mode, or CPU clock invalidates
+            # the window immediately while preserving the failing evidence.
+            if expected_kernel_id is not None and int(sample.get("kernel_id", -1)) != expected_kernel_id:
+                raise RuntimeError(f"diagnostic-sample-contract:kernel-id:{sample.get('kernel_id')}!={expected_kernel_id}")
+            if expected_variant_id is not None and int(sample.get("variant_id", -1)) != expected_variant_id:
+                raise RuntimeError(f"diagnostic-sample-contract:variant-id:{sample.get('variant_id')}!={expected_variant_id}")
+            if expected_trace_armed is not None and sample.get("trace_armed") is not expected_trace_armed:
+                raise RuntimeError(f"diagnostic-sample-contract:trace-armed:{sample.get('trace_armed')}!={expected_trace_armed}")
+            if expected_cpu_mhz is not None:
+                clocks=(sample.get("trace_cpu_mhz_start"),sample.get("trace_cpu_mhz_readback"))
+                if clocks != (expected_cpu_mhz,expected_cpu_mhz):
+                    raise RuntimeError(f"diagnostic-sample-contract:cpu-mhz:{clocks}!={(expected_cpu_mhz,expected_cpu_mhz)}")
+            if expected_trace_armed is not None and sample.get("trace_records_serialized") is not False:
+                raise RuntimeError("diagnostic-sample-contract:trace-records-serialized-during-window")
             sweep.validate_sample(sample, "foundation")
             sweep.enforce_foundation_frame_interval(sample)
             release, restart, uptime = sweep.validate_continuity(

@@ -43,7 +43,7 @@ class Clock:
  def monotonic(self):return self.now
  def sleep(self,n):self.now+=n
 
-def run_sampler(samples,duration,initial_delay=0.0,include_boundary_sample=False):
+def run_sampler(samples,duration,initial_delay=0.0,include_boundary_sample=False,**sample_contract):
  clock=Clock();items=iter(samples); out=pathlib.Path(tempfile.mkdtemp(prefix="r7-observer-replay-"))
  def fake_run(argv,**kwargs):
   sample=next(items);clock.now+=0.01
@@ -52,11 +52,11 @@ def run_sampler(samples,duration,initial_delay=0.0,include_boundary_sample=False
   with unittest.mock.patch.object(soak.subprocess,"run",side_effect=fake_run), \
        unittest.mock.patch.object(soak.time,"monotonic",side_effect=clock.monotonic), \
        unittest.mock.patch.object(soak.time,"sleep",side_effect=clock.sleep):
-   return soak._sampler_worker(["fake telemetry"],[{"runtime_kernel_index_expected":13,"kernel_name":"kernel-13"}],
+    return soak._sampler_worker(["fake telemetry"],[{"runtime_kernel_index_expected":13,"kernel_name":"kernel-13"}],
     out,duration,diag_identity,0,100.0,
     {"catastrophic_early_stop":{"consecutive_samples":3,"enabled":True,"fps_floor_absolute":20,
       "frame_ms_p99_ceiling_absolute":75,"aux_projection_active_required":True}},8.0,7.0,
-    initial_delay,include_boundary_sample)
+    initial_delay,include_boundary_sample,**sample_contract)
  return invoke(),out
 
 # Good paired windows include the 42.03125ms phenomenon without aborting.
@@ -64,8 +64,10 @@ def run_sampler(samples,duration,initial_delay=0.0,include_boundary_sample=False
 def window(armed):
  samples=[dict(good,uptime_seconds=108.0+i*8,trace_armed=armed,
    trace_retained_count=(32 if armed else 0),trace_outlier_count=(40 if armed else 0),
-   trace_overflow_count=(8 if armed else 0),trace_records_serialized=False) for i in range(8)]
- rc,out=run_sampler(samples,60.0,initial_delay=4.0,include_boundary_sample=True)
+   trace_overflow_count=(8 if armed else 0),trace_records_serialized=False,
+   trace_cpu_mhz_start=240,trace_cpu_mhz_readback=240) for i in range(8)]
+ rc,out=run_sampler(samples,60.0,initial_delay=4.0,include_boundary_sample=True,
+  expected_kernel_id=13,expected_variant_id=1347100685,expected_trace_armed=armed,expected_cpu_mhz=240)
  assert rc==0
  rows=[json.loads(line) for line in (out/"FOUNDATION_SOAK.jsonl").read_text().splitlines()]
  assert len(rows)==8 and all(x["frame_ms_p99"]==42.5 for x in rows)
@@ -83,11 +85,18 @@ overflow=dict(good,trace_overflow_count=9,trace_armed=True,trace_retained_count=
 rc,out=run_sampler([overflow],8.0)
 assert rc==0 and json.loads((out/"FOUNDATION_SOAK.jsonl").read_text().splitlines()[0])["trace_overflow_count"]==9
 
-def fails(samples,duration,expected_text):
- rc,out=run_sampler(samples,duration)
+def fails(samples,duration,expected_text,**sample_contract):
+ rc,out=run_sampler(samples,duration,**sample_contract)
  fail=json.loads((out/"TELEMETRY_SAMPLER_FAILURE.json").read_text())
  assert rc==2 and expected_text in fail["error"]
  return fail,out
+
+# Runtime diagnostic contracts fail on the first persisted sample when CPU,
+# variant, trace mode, or serialization state changes; the observation is not skipped.
+bad_clock=dict(good,trace_cpu_mhz_start=240,trace_cpu_mhz_readback=160)
+fail,out=fails([bad_clock],8.0,"diagnostic-sample-contract:cpu-mhz",
+ expected_kernel_id=13,expected_variant_id=1347100685,expected_trace_armed=False,expected_cpu_mhz=240)
+assert len((out/"FOUNDATION_SOAK.jsonl").read_text().splitlines())==1
 
 # All defined catastrophic causes stop after exactly three consecutive 8s samples.
 for mutate,reason in [

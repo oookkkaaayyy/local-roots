@@ -1,0 +1,24 @@
+{
+  "artifact_sha256_bound_by_verified_single_ota_transaction": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
+  "captured_at_utc": "2026-10-09T19:00:45.761909+00:00",
+  "identity": {
+    "path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R2_POSTINSTALL_IDENTITY.json",
+    "sha256": "949f403a233fdea9b750fd7e04ae0cffba3d94c3f18989258842c842e97ad6a5"
+  },
+  "next": "Run exactly two matched 60-second kernel 13 windows; then stop, restore snapshot, and return to exact R4 once.",
+  "ota_attempts": 1,
+  "ota_response": {
+    "path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R2_OTA_TRANSFER_RESULT.json",
+    "sha256": "d9894fcf8e2995b0703a28b7cb36743105f3ed1556129c35274d2f5ae865cabe"
+  },
+  "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+  "renderer_snapshot": {
+    "foundationTelemetryEnabledBefore": false,
+    "path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/RENDERER_SNAPSHOT.json",
+    "sha256": "3d7fe1f072f84f5ea160847527c0270cb821ecec2bdcb2a9f91e6861b106bb83",
+    "snapshotHash": 4153677286,
+    "snapshotId": 1
+  },
+  "schema": "hbnf-r2-candidate-installed-v1",
+  "status": "R2_IDENTITY_AND_RENDERER_SNAPSHOT_VERIFIED"
+}
