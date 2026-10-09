@@ -42,10 +42,11 @@
       "Node 24.18 TypeScript syntax loading for modified TypeScript sources",
       "sh -n for relay worker and procd init script",
       "PGlite 0.5.8 PostgreSQL-WASM migration execution tests: issue/get, stale revision/fence denial, apply-once, exact readback confirmation, mismatch, replay, expiry, wrong identity and anon execute denial; locked test dependency.",
-      "Deno 2.9.7 `deno check --no-lock` on relay, legacy adapter and reconcile Edge Functions; their pinned `@supabase/supabase-js@2.57.0` import resolves and types check."
+      "Deno 2.9.7 `deno check --no-lock` on relay, legacy adapter and reconcile Edge Functions; their pinned `@supabase/supabase-js@2.57.0` import resolves and types check.",
+      "Deno 2.9.7 actual Edge request-handler integration on loopback with a PostgREST mock: unauthorized requests produce zero RPCs; challenge binds fixed identity; mismatch permits one apply authorization; exact normalized readback confirms revision/fence."
     ],
     "unavailable": [
-      "No full local Supabase Edge services/emulator or actual Opal OpenWrt host was available. SQL migration semantics were executed in PGlite PostgreSQL-WASM, not the managed Supabase instance; Deno check is type validation, not Edge RPC integration. OpenWrt jsonfilter/procd behavior remains target-unvalidated."
+      "No actual managed/local Supabase platform stack or Opal OpenWrt target was available. Edge handler ran on Deno against a loopback PostgREST mock; SQL migration executed in PGlite PostgreSQL-WASM. Managed Supabase API-key/JWT and DB-role behavior, plus target OpenWrt jsonfilter/procd behavior, remain unverified."
     ]
   },
   "deployment": {
@@ -74,17 +75,19 @@
     "tests/hbnf-coordinated-backend-staging.mjs": "f97f057117483be345e78b6d46754bb00b00dc48",
     "tests/hbnf-foundation-confirmation-contract.mjs": "4a2345e4a04e11454c6e8d4c612055f5521668c9",
     "work/cart2/MATRIX_REVISION_BOUND_CONFIRMATION_20261009.md": "f66830150b03339e3529410ed7e95c67590896fd",
-    "tests/matrix-relay-runtime/package.json": "257ffb6fb0f33467e9242cc20110e90bb0f5b0df",
+    "tests/matrix-relay-runtime/package.json": "644936a359fd32502a174be5aa1b87239fef9331",
     "tests/matrix-relay-runtime/package-lock.json": "3a9f6b13536c253d6e45d65242d38008833b045e",
     "tests/matrix-relay-runtime/test.mjs": "dcacf78f5a465afbe36492e1d578536ac4534aed",
     "evidence/cart2-matrix-relay-20261009/predeploy-rollback-snapshot/hbnf-matrix-adapter-foundation-v2/index.ts": "e3df59415e8e5555a2ef212c97961d4635741005",
     "evidence/cart2-matrix-relay-20261009/predeploy-rollback-snapshot/hbnf-cart-reconcile-v11/index.ts": "4c50e12ed8439e40aa58eec8780be47f4d6d470d",
-    "evidence/cart2-matrix-relay-20261009/predeploy-rollback-snapshot/hbnf-cart-reconcile-v11/deno.json": "35fd5984ee3bfe3fd1b9f9a389c215b4fa143cf1"
+    "evidence/cart2-matrix-relay-20261009/predeploy-rollback-snapshot/hbnf-cart-reconcile-v11/deno.json": "35fd5984ee3bfe3fd1b9f9a389c215b4fa143cf1",
+    "tests/matrix-relay-runtime/edge-handler-smoke.mjs": "05264b5c5ccb26dd83ae86a76ded246b113e2d03"
   },
   "validation_environment": {
     "pglite_version": "0.5.8",
     "deno_version": "2.9.7 stable aarch64-apple-darwin",
-    "note": "temporary offline validation tools only; not part of firmware, deployed backend, or Opal runtime dependency closure"
+    "note": "temporary offline validation tools only; not part of firmware, deployed backend, or Opal runtime dependency closure",
+    "edge_test": "tests/matrix-relay-runtime/edge-handler-smoke.mjs (loopback-only runtime; production source copied with only listener bind changed for isolation)"
   },
   "predeploy_live_rollback_snapshot": {
     "project_id": "phcpbvuqibyarpfrftgx",
