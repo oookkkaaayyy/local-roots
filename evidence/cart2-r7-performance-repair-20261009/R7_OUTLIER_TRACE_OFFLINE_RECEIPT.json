@@ -1,0 +1,187 @@
+{
+  "schema": "hbnf-r7-outlier-trace-offline-receipt-v1",
+  "status": "OFFLINE_TRACE_IMPLEMENTED_AND_BUILT__LIVE_INSTALL_NOT_AUTHORIZED",
+  "created_at_utc": "2026-10-09T17:26:57Z",
+  "source_checkpoint_base": {
+    "branch": "codex/cart2-offline-audio-fixture-20261009",
+    "commit": "166ba847becb65860e2e8606222fede373f94ecc",
+    "working_tree_before_change": "clean",
+    "source_binding_r7_sha256": "d2a3ae8ca6b22728008a92b5f90b8fd15b53e1f15b0fdd4dc3f494eb571f6fec"
+  },
+  "diagnostic_artifact": {
+    "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-20261009",
+    "sha256": "1b9349139c49e60cb9bfd970f544c8e33d9bf31dd478620387e5f92bcb7953d7",
+    "bytes": 1502080,
+    "drive_copy": {
+      "file_id": "1PDsmNRzLLLX7d03DG0K3PO2OeW3xJugw",
+      "url": "https://drive.google.com/file/d/1PDsmNRzLLLX7d03DG0K3PO2OeW3xJugw/view?usp=drivesdk",
+      "readback_verified": true,
+      "readback_sha256": "1b9349139c49e60cb9bfd970f544c8e33d9bf31dd478620387e5f92bcb7953d7",
+      "readback_bytes": 1502080
+    },
+    "embedded_release_id_count": 3,
+    "base_r7_release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+    "base_r7_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+    "rollback_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "live_install_authorized": false,
+    "production_candidate": false
+  },
+  "build": {
+    "exact_command": "PYTHONPATH=/tmp/hbnf-p2-build/pio-cli PLATFORMIO_CORE_DIR=/tmp/hbnf-p2-build/pio-local /Applications/Xcode.app/Contents/Developer/usr/bin/python3 /tmp/hbnf-p2-build/pio-cli/bin/pio run -v -j 1 -e hbnf_matrix_wled16_packet20_diag",
+    "platformio_core": "6.1.18",
+    "python": "3.9.6",
+    "environment": "hbnf_matrix_wled16_packet20_diag",
+    "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+    "r7_base_closure": "evidence/cart2-r7-performance-repair-20261009/SOURCE_BINDING_R7.json",
+    "r7_base_closure_sha256": "d2a3ae8ca6b22728008a92b5f90b8fd15b53e1f15b0fdd4dc3f494eb571f6fec",
+    "build_log_sha256": "8880e982bfe94e1478d155ee2ffea7e3a34544f0ac5543074e801224f30f0cfc",
+    "build_result": "PASS",
+    "build_elapsed_seconds": 12.903,
+    "compile_failure_classification": "Initial build rejected direct ArduinoJson 64-bit integer serialization because the pinned WLED configuration disables 64-bit JSON integers. Corrected readback to the existing bounded CSV-string representation; no dependency, compiler, or runtime behavior substitution.",
+    "source_files_changed_from_r7": [
+      {
+        "path": "firmware/phase2/integration-r7/usermod/usermod_hbnf_foundation_v1.cpp",
+        "r7_sha256": "5a02f89c6af8466dd6592d6f4b88da3e84b1153ba0d6be16ff2bc3a1bb24f572",
+        "diagnostic_sha256": "635d8842b093f791cd29de409777d82af3ebcff5b1f2d1028167f0484582d7ec"
+      },
+      {
+        "path": "firmware/phase2/integration-r7/usermod/hbnf_outlier_trace.h",
+        "diagnostic_sha256": "1080be01e5863a647c569d6f48cdf4b6e38a7cd4758401b6e4314d67c290e5d9"
+      }
+    ],
+    "host_regression_test": {
+      "path": "tests/hbnf_r7_outlier_trace.py",
+      "sha256": "81b8291771ef0fdd25812fd57941f8d1c88fbcbff5165397f82cebba26a33cde",
+      "result": "PASS"
+    },
+    "existing_offline_gates": {
+      "result": "PASS",
+      "commands": [
+        "python3 tests/hbnf_phase2_r4_build_closure.py",
+        "python3 tests/hbnf_packet20_http_adapter.py",
+        "python3 tests/hbnf_packet20_build_validate.py",
+        "python3 tests/hbnf_runtime_qualify_static.py",
+        "python3 tests/hbnf_source_tree_identity.py",
+        "python3 tests/hbnf_control.py",
+        "python3 tests/hbnf_guarded_run.py",
+        "python3 scripts/hbnf_architecture_fitness.py",
+        "python3 tests/hbnf_kernel_sweep_report.py",
+        "python3 tests/hbnf_live_kernel_sweep.py"
+      ],
+      "control_status": "PASS; model_valid=true; validation_errors=[]; live_mutation_authorized=false"
+    }
+  },
+  "trace_contract": {
+    "compile_gate": "HBNF_PACKET20_DIAGNOSTICS",
+    "capture_gate": "Packet20 diagnostic active, saved renderer snapshot READY, foundation telemetry enabled, explicit one-shot trace start, and whole-frame raw cycles strictly greater than the frozen 42.03125 ms trace threshold.",
+    "record_fields": [
+      "monotonicUs",
+      "frameSequence",
+      "frameStartCycles",
+      "frameEndCycles",
+      "wholeFrameCycles",
+      "kernelGrossCycles",
+      "audioCycles",
+      "colorCycles",
+      "schedulerCycles",
+      "overlayCycles",
+      "companionPrepCycles",
+      "ddpSendCycles",
+      "unaccountedCycles",
+      "variantSignature",
+      "traceWriteCycles",
+      "kernelId"
+    ],
+    "frame_stage_correlation": "Each outlier record retains the same frame's start/end/whole cycles, frame sequence, kernel, variant signature, all existing stage totals, and unaccounted remainder. Cycle subtraction is uint32 wrap-safe; the monotonic microsecond timestamp is captured only after the outlier threshold is crossed.",
+    "capacity_records": 32,
+    "target_record_bytes": 72,
+    "target_store_symbol_bytes": 2408,
+    "storage_policy": "Static fixed-size ring retains the latest 32 outliers plus a separate exact worst-frame record. Ring wrap increments overflowCount; outlierCount saturates rather than wrapping. No sorting or loop is used in the frame-end append path.",
+    "disabled_path": "No trace writes or sequence increments when collection is not armed; trace start is one-shot per boot and requires the preserved Packet20 renderer snapshot. Disabling tail telemetry stops trace collection without clearing already captured records.",
+    "readback": "Stop collection, then read the existing /json/state HBNF.foundationTelemetry.outlierTrace fields once. The 32 records use a fixed comma-separated decimal string schema to remain compatible with pinned ArduinoJson; no JSON serialization occurs during frame capture.",
+    "hot_path_exclusions": [
+      "dynamic allocation",
+      "logging or serial output",
+      "network or HTTP access",
+      "sorting",
+      "per-pixel timing"
+    ],
+    "overflow_test": "PASS: 5 outliers into a 3-entry fixture retained latest 3, reported 2 overwritten entries, and preserved the earlier 900-cycle worst record.",
+    "disabled_test": "PASS: append while stopped left count, overflow, outlier, and worst-record state unchanged.",
+    "threshold_test": "PASS: exact 42.03125 ms cycle threshold is excluded; the next cycle is captured.",
+    "cycle_wrap_test": "PASS: uint32 frame end minus frame start across wrap matched the recorded whole-frame cycles.",
+    "source_static_check": "PASS: cycle timestamp is within the threshold branch; hot frame-end section has no allocation/log/network calls."
+  },
+  "instrumentation_overhead": {
+    "target_disassembly": {
+      "base_r7_frame_end_instruction_lines": 218,
+      "diagnostic_frame_end_instruction_lines": 344,
+      "base_r7_function_bytes": 554,
+      "diagnostic_function_bytes": 891,
+      "frame_end_code_growth_bytes": 337,
+      "trace_store_static_bytes": 2408,
+      "trace_disassembly_sha256": "4f654ef59d4712882be442f8a42dc68919d34b2b30dce1c0b0706298921a6543"
+    },
+    "common_path_instruction_delta": {
+      "tails_off": "Trace branch is bypassed with the existing tails-disabled branch.",
+      "tails_on_trace_disarmed": 2,
+      "trace_armed_non_outlier": 8,
+      "outlier_only": "One monotonic timer read, one fixed 72-byte record copy, one worst-record comparison/copy, and a measured traceWriteCycles field; no variable-length loop."
+    },
+    "interpretation": "Exact target code generation and static RAM/flash cost are measured. The estimated single-cycle floor for the 8-instruction armed/non-outlier path at 240 MHz is about 33 ns, but cache and interrupt effects cannot be established offline. Silicon runtime observer effect is therefore NOT claimed accepted; the bounded live proposal includes matched trace-off/trace-on p99 windows and uses traceWriteCycles for outlier append cost.",
+    "resource_headroom": {
+      "baseline_r7_flash_used_bytes": 1491185,
+      "diagnostic_flash_used_bytes": 1495349,
+      "flash_partition_bytes": 1572864,
+      "diagnostic_flash_headroom_bytes": 77515,
+      "baseline_r7_ram_used_bytes": 112480,
+      "diagnostic_ram_used_bytes": 114912,
+      "ram_total_bytes": 327680,
+      "diagnostic_ram_headroom_bytes": 212768,
+      "build_reported_flash_delta_bytes": 4164,
+      "build_reported_ram_delta_bytes": 2432
+    }
+  },
+  "other_recoverable_source_evidence": {
+    "vibe_audio": {
+      "existing_real_capture": "evidence/hbnf-phase2-audioreactive-20261007/real_audio_capture.jsonl",
+      "sha256": "712dd275bd260ebec2c60c17ed9413bf8d6cd0c58b2121c913916b0944f7e951",
+      "packets": 3852,
+      "duration_seconds": 120.012565208,
+      "limitation": "Source-bound real AudioReactive feature packets are preserved; they are unlabelled ambient capture, contain no PCM recording, and the report says only 159 samples had energy in high FFT bins 11-15 with no active sample high-band dominant. Existing synthetic cases do not close the labeled real-music or embedded runtime-cost gates. No new audio claim is made."
+    },
+    "text_moments": {
+      "existing_checkpoint": "evidence/hbnf-phase2-integration-20261006/TEXT_AUDIO_R1_CHECKPOINT.json",
+      "checkpoint_sha256": "4a54e4987c02be07a99955894e3e0d44226fe2ac3c8b7414181bc9fb01db58d7",
+      "existing_native_text_source": "firmware/phase2/text-native-r1/hbnf_native_text.h",
+      "recoverable_source_result": "The repo contains the native WLED font adapter and prior 5x12/6x8 checkpoint identities, but no exact WBF font payload file. The current Artifact & Source Registry records three metric-identical 12px WBF assets but explicitly has no individual Drive IDs. No asset bytes were recovered, so the existing exact-font dependency remains open."
+    }
+  },
+  "bounded_live_diagnostic_proposal": {
+    "authorization": "NOT REQUESTED OR GRANTED BY THIS RECEIPT; requires a fresh exact-artifact control-plane admission and owner authorization.",
+    "target": "Matrix 192.168.77.10, MAC 70:4b:ca:5b:34:5c; no AUX/router/cloud mutation.",
+    "artifact": {
+      "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-20261009",
+      "sha256": "1b9349139c49e60cb9bfd970f544c8e33d9bf31dd478620387e5f92bcb7953d7"
+    },
+    "expected_information": "For each frame exceeding the unchanged 42.03125 ms capture threshold, join whole-frame duration with same-frame kernel/audio/color/scheduler/overlay/AUX DDP and unaccounted cycles, kernel ID, variant signature, and monotonic timestamp. This separates measured application-stage cost from an unaccounted interval; an unaccounted spike alone will not be attributed to Wi-Fi, interrupts, or any other subsystem.",
+    "bounded_sequence": [
+      "At a future authorized session, verify current R4 device identity/health, exact diagnostic artifact and exact R4 recovery bytes, power stability, control state, and one-live-worker admission.",
+      "Install this exact diagnostic artifact once only after fresh exact live authority. Do not change Matrix/AUX/router/cloud settings.",
+      "Create the existing Packet20 renderer snapshot and select the same failing kernel 13; fix Matrix brightness at the existing matched value 44 and preserve the recorded R7 presentation/runtime controls.",
+      "Collect a 60-second telemetry baseline with tail histograms enabled and outlier tracing disarmed; do not poll during the window, then read /json/state once.",
+      "Reset only the tail histogram through its existing off/on control, start the trace once, collect one matched 60-second window without polling, stop trace, then read /json/state once. Compare p99 and FPS against the baseline under unchanged frozen gates.",
+      "If p99/safety gates fail or collector restoration is uncertain, stop diagnostic collection and restore the exact saved renderer snapshot; if device/runtime failure triggers the existing recovery condition, restore only exact Foundation R4 SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
+      "Preserve the trace and stop. Do not repeat the installation or boot-scoped trace session; no R8 or successor is implied."
+    ],
+    "observer_effect_controls": [
+      "No polling or JSON serialization during either measurement window.",
+      "Compare matched trace-disarmed and trace-armed p99 windows under the same tail telemetry mode; preserve the existing frozen 28-kernel and 90-minute soak gates for any future production candidate.",
+      "Trace adds two target instructions per tails-enabled frame when disarmed and eight more when armed but not over threshold; a rare outlier-only record captures its own traceWriteCycles.",
+      "Fixed 32-record storage, overwrite counter, separate worst-frame record, and one read only after stop bound memory and readout work."
+    ],
+    "rollback_requirements": "Exact R4 binary SHA above verified locally at build time and recorded in prior AKS; re-read/verify exact local and Drive bytes and rerun read-only hardware preflight before any future mutation. Restore the same Packet20 snapshot before normal use; exact R4 recovery only on objectively defined device/runtime failure."
+  }
+}

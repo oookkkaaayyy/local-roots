@@ -10,12 +10,14 @@
 #include "hbnf_home_screen_icon.h"
 #include "hbnf_brightness_output.h"
 #include "hbnf_native_text.h"
+#include "hbnf_outlier_trace.h"
 #include "fontmanager.h"
 #include <ANIMartRIX.h>
 #include <string.h>
 #if defined(HBNF_PACKET20_DIAGNOSTICS)
 #include <esp_system.h>
 #include <esp_heap_caps.h>
+#include <esp_timer.h>
 #include <rom/rtc.h>
 #include <new>
 #include <type_traits>
@@ -26,8 +28,8 @@ using namespace hbnf_v1;
 namespace {
 
 static const char HBNF_FX_DATA[] PROGMEM = "HBNF Foundation@;;;2";
-static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-phase2-offline-wow-r7-20261009";
-static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-phase2-offline-wow-r7-20261009\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-phase2-offline-wow-r7-20261009\",\"basedOnReleaseId\":\"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1\",\"basedOnFirmwareSha256\":\"338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r6-unfrozen\",\"native-text-moments-r6-unfrozen\"]}";
+static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-r7-outlier-trace-diagnostic-20261009";
+static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-r7-outlier-trace-diagnostic-20261009\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-r7-outlier-trace-diagnostic-20261009\",\"basedOnReleaseId\":\"hbnf-cart2-phase2-offline-wow-r7-20261009\",\"basedOnFirmwareSha256\":\"22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r6-unfrozen\",\"native-text-moments-r6-unfrozen\",\"offline-r7-outlier-trace-diagnostic\"]}";
 static PaletteSelection hbnfPalette{};
 static OverlayState hbnfCommandOverlay{};
 static portMUX_TYPE hbnfOverlayMux=portMUX_INITIALIZER_UNLOCKED;
@@ -49,6 +51,12 @@ struct HbnfPerfFrame {
 // Fixed 250-us bins collect real per-frame samples with bounded memory and no
 // per-frame allocation, sorting, or logging. Maxima remain exact.
 static constexpr uint16_t HBNF_TAIL_BINS=512,HBNF_TAIL_BIN_US=250;
+static constexpr size_t HBNF_OUTLIER_TRACE_CAPACITY=32;
+static constexpr uint32_t HBNF_OUTLIER_THRESHOLD_US_MILLI=42031u; // 42.03125 ms frozen capture threshold
+static hbnf_outlier_trace::Store<HBNF_OUTLIER_TRACE_CAPACITY> hbnfOutlierTrace{};
+static uint32_t hbnfOutlierThresholdCycles=0;
+static uint32_t hbnfOutlierCpuMHz=0;
+static bool hbnfOutlierTraceStartConsumed=false;
 static uint16_t hbnfTailHist[8][HBNF_TAIL_BINS]{};
 static uint64_t hbnfTailSum[8]{};
 static uint32_t hbnfTailMax[8]{};
@@ -56,9 +64,21 @@ static uint16_t hbnfTailCount=0;
 static uint8_t hbnfTailKernel=255;
 static bool hbnfTailEnabled=false;
 static portMUX_TYPE hbnfTailMux=portMUX_INITIALIZER_UNLOCKED;
+static void hbnfFormatTraceRecord(const hbnf_outlier_trace::Record& r,char* row,size_t capacity) {
+  snprintf(row,capacity,"%llu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%u",
+    (unsigned long long)r.monotonicUs,(unsigned long)r.frameSequence,
+    (unsigned long)r.frameStartCycles,(unsigned long)r.frameEndCycles,
+    (unsigned long)r.wholeFrameCycles,(unsigned long)r.kernelGrossCycles,
+    (unsigned long)r.audioCycles,(unsigned long)r.colorCycles,
+    (unsigned long)r.schedulerCycles,(unsigned long)r.overlayCycles,
+    (unsigned long)r.companionPrepCycles,(unsigned long)r.ddpSendCycles,
+    (unsigned long)r.unaccountedCycles,(unsigned long)r.variantSignature,
+    (unsigned long)r.traceWriteCycles,(unsigned)r.kernelId);
+}
 static bool hbnfTailSetEnabled(bool enabled) {
   portENTER_CRITICAL(&hbnfTailMux);
   if(enabled==hbnfTailEnabled) { portEXIT_CRITICAL(&hbnfTailMux); return true; }
+  if(!enabled)hbnfOutlierTrace.stop();
   hbnfTailEnabled=enabled;hbnfTailCount=0;hbnfTailKernel=255;
   memset(hbnfTailHist,0,sizeof(hbnfTailHist));memset(hbnfTailSum,0,sizeof(hbnfTailSum));memset(hbnfTailMax,0,sizeof(hbnfTailMax));
   portEXIT_CRITICAL(&hbnfTailMux);return true;
@@ -1230,6 +1250,33 @@ class HbnfFoundationV1Usermod : public Usermod {
       foundationTelemetry["frameTailBinResolutionUs"]=HBNF_TAIL_BIN_US;
       foundationTelemetry["frameTailOverflow"]=tailOverflow;
     }else{foundationTelemetry["frameMsAvg"]=nullptr;foundationTelemetry["frameMsP50"]=nullptr;foundationTelemetry["frameMsP95"]=nullptr;foundationTelemetry["frameMsP99"]=nullptr;foundationTelemetry["frameMsMax"]=nullptr;}
+    {
+      bool traceArmed;uint32_t traceCount,traceOverflow,traceOutliers;bool worstValid;
+      portENTER_CRITICAL(&hbnfTailMux);
+      traceArmed=hbnfOutlierTrace.armed();traceCount=hbnfOutlierTrace.count();
+      traceOverflow=hbnfOutlierTrace.overflowCount();traceOutliers=hbnfOutlierTrace.outlierCount();
+      worstValid=hbnfOutlierTrace.worstValid();
+      portEXIT_CRITICAL(&hbnfTailMux);
+      JsonObject trace=foundationTelemetry.createNestedObject("outlierTrace");
+      trace["enabled"]=traceArmed;trace["thresholdUs"]=42.03125;
+      trace["thresholdCycles"]=hbnfOutlierThresholdCycles;trace["cpuMHz"]=hbnfOutlierCpuMHz;
+      trace["capacity"]=HBNF_OUTLIER_TRACE_CAPACITY;trace["retainedCount"]=traceCount;
+      trace["outlierCount"]=traceOutliers;trace["overflowCount"]=traceOverflow;
+      trace["recordEncoding"]="comma-separated decimal v1: monotonicUs,frameSequence,frameStartCycles,frameEndCycles,wholeFrameCycles,kernelGrossCycles,audioCycles,colorCycles,schedulerCycles,overlayCycles,companionPrepCycles,ddpSendCycles,unaccountedCycles,variantSignature,traceWriteCycles,kernelId";
+      if(!traceArmed&&traceCount){
+        JsonArray records=trace.createNestedArray("records");
+        for(uint32_t i=0;i<traceCount;i++){
+          const hbnf_outlier_trace::Record& r=hbnfOutlierTrace.chronological(i);
+          char row[192];
+          hbnfFormatTraceRecord(r,row,sizeof(row));
+          records.add(row);
+        }
+        if(worstValid){
+          const hbnf_outlier_trace::Record& r=hbnfOutlierTrace.worst();
+          char row[192];hbnfFormatTraceRecord(r,row,sizeof(row));trace["worstRecord"]=row;
+        }
+      }
+    }
 #endif
     HbnfLiveSnapshot live;
     portENTER_CRITICAL(&hbnfLiveMux);live=hbnfLive;portEXIT_CRITICAL(&hbnfLiveMux);
@@ -1255,6 +1302,28 @@ class HbnfFoundationV1Usermod : public Usermod {
 #if defined(HBNF_PACKET20_DIAGNOSTICS)
     if(!h["foundationTelemetry"]["enabled"].isNull()) {
       if(!hbnfTailSetEnabled(h["foundationTelemetry"]["enabled"].as<bool>()))return;
+    }
+    if(h.containsKey("outlierTraceCommand")){
+      const char* traceOp=h["outlierTraceCommand"]["op"]|"";
+      bool accepted=false;
+      bool recoverySnapshotReady=false;
+      portENTER_CRITICAL(&packet20SnapshotMux);
+      recoverySnapshotReady=packet20SavedValid&&packet20SnapshotState==Packet20SnapshotState::READY;
+      portEXIT_CRITICAL(&packet20SnapshotMux);
+      portENTER_CRITICAL(&hbnfTailMux);
+      if(!strcmp(traceOp,"start")&&hbnfTailEnabled&&runtime.diagnosticActive()&&
+         recoverySnapshotReady&&
+         !hbnfOutlierTraceStartConsumed){
+        hbnfOutlierTrace.start();
+        hbnfOutlierCpuMHz=ESP.getCpuFreqMHz();
+        hbnfOutlierThresholdCycles=hbnfOutlierCpuMHz*HBNF_OUTLIER_THRESHOLD_US_MILLI+hbnfOutlierCpuMHz/4u;
+        accepted=hbnfOutlierThresholdCycles!=0;
+        if(!accepted)hbnfOutlierTrace.stop();else hbnfOutlierTraceStartConsumed=true;
+      } else if(!strcmp(traceOp,"stop")) {
+        hbnfOutlierTrace.stop();accepted=true;
+      }
+      portEXIT_CRITICAL(&hbnfTailMux);
+      if(!accepted)return;
     }
     if(h.containsKey("packet20Diagnostic")) {
       JsonObjectConst command=h["packet20Diagnostic"].as<JsonObjectConst>();
@@ -1305,6 +1374,23 @@ extern "C" void hbnfPerfFrameEnd() {
     uint32_t values[8]={hbnfCycleUs(hbnfPerfWorking.whole),hbnfCycleUs(hbnfPerfWorking.kernelGross>hbnfPerfWorking.audioInKernel+hbnfPerfWorking.colorInKernel?hbnfPerfWorking.kernelGross-hbnfPerfWorking.audioInKernel-hbnfPerfWorking.colorInKernel:0),hbnfCycleUs(hbnfPerfWorking.color),hbnfCycleUs(hbnfPerfWorking.audio),hbnfCycleUs(hbnfPerfWorking.scheduler),hbnfCycleUs(hbnfPerfWorking.overlay),hbnfCycleUs(hbnfPerfWorking.companionPrep+hbnfPerfWorking.ddpSend),hbnfCycleUs(hbnfPerfWorking.unaccounted)};
     for(uint8_t metric=0;metric<8;metric++){uint16_t bin=values[metric]/HBNF_TAIL_BIN_US;if(bin>=HBNF_TAIL_BINS)bin=HBNF_TAIL_BINS-1;if(hbnfTailHist[metric][bin]!=UINT16_MAX)hbnfTailHist[metric][bin]++;hbnfTailSum[metric]+=values[metric];if(values[metric]>hbnfTailMax[metric])hbnfTailMax[metric]=values[metric];}
     if(hbnfTailCount<UINT16_MAX)hbnfTailCount++;
+    if(hbnfOutlierTrace.armed()){
+      const uint32_t frameSequence=hbnfOutlierTrace.nextFrameSequence();
+      if(hbnf_outlier_trace::exceeds(hbnfPerfWorking.whole,hbnfOutlierThresholdCycles)){
+        const uint32_t traceStart=hbnfCycles();
+        hbnf_outlier_trace::Record record{};
+        record.monotonicUs=(uint64_t)esp_timer_get_time();record.frameSequence=frameSequence;
+        record.frameStartCycles=hbnfPerfWorking.start;record.frameEndCycles=end;
+        record.wholeFrameCycles=hbnfPerfWorking.whole;record.kernelGrossCycles=hbnfPerfWorking.kernelGross;
+        record.audioCycles=hbnfPerfWorking.audio;record.colorCycles=hbnfPerfWorking.color;
+        record.schedulerCycles=hbnfPerfWorking.scheduler;record.overlayCycles=hbnfPerfWorking.overlay;
+        record.companionPrepCycles=hbnfPerfWorking.companionPrep;record.ddpSendCycles=hbnfPerfWorking.ddpSend;
+        record.unaccountedCycles=hbnfPerfWorking.unaccounted;
+        record.variantSignature=hbnfPerfWorking.variant;record.kernelId=hbnfPerfWorking.kernel;
+        hbnfOutlierTrace.append(record);
+        hbnfOutlierTrace.setLastWriteCycles(hbnfCycles()-traceStart);
+      }
+    }
   }
   portEXIT_CRITICAL(&hbnfTailMux);
 #endif
