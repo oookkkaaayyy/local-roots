@@ -354,7 +354,10 @@ def main() -> int:
         return _sampler_worker(data["argv"], data["entries"], pathlib.Path(data["outdir"]),
             float(data["duration"]), data["release"], int(data["restart"]), float(data["uptime"]),
             data["policy"], float(data["period"]), float(data["timeout"]),
-            float(data.get("initial_delay",0.0)),bool(data.get("include_boundary_sample",False)))
+            float(data.get("initial_delay",0.0)),bool(data.get("include_boundary_sample",False)),
+            data.get("expected_kernel_id"),data.get("expected_variant_id"),
+            data.get("expected_trace_armed"),data.get("expected_cpu_mhz"),
+            data.get("expected_matrix_brightness"))
     return _selector_worker(data["argv"], data["entries"], pathlib.Path(data["outdir"]),
         float(data["duration"]), float(data["period"]), float(data["timeout"]))
 
