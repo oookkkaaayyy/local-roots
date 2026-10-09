@@ -1,0 +1,76 @@
+{
+  "schema": "hbnf-r7-outlier-trace-diagnostic-r2-receipt-v1",
+  "status": "OFFLINE_BUILT_AND_TESTED__LIVE_NO_GO",
+  "created_at_utc": "2026-10-09T17:59:28Z",
+  "prior_checkpoint": "d801fe876452fe8e932f369e4c129fb89418735d",
+  "corrections": [
+    "Added pause/resume that preserves sequence, recent ring, overflow/outlier counts, and worst record so paired 30-second extension windows can continue within the one boot-scoped session.",
+    "Renamed the per-record cost to traceCaptureBodyCycles and explicitly excluded final self-accounting write/critical-section exit; whole-window A/B is the full observer-effect measurement.",
+    "Trace start and resume fail closed if runtime CPU MHz does not match compiled/captured MHz; JSON readback exposes compile, trace-start, and readback frequency.",
+    "Frozen 42.03125 ms p99 ceiling is evidence only during this diagnostic; only existing catastrophic 3-consecutive-sample gates abort. Production thresholds are unchanged."
+  ],
+  "artifact": {
+    "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+    "sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
+    "bytes": 1502256,
+    "supersedes_diagnostic_sha256": "1b9349139c49e60cb9bfd970f544c8e33d9bf31dd478620387e5f92bcb7953d7",
+    "drive_readback_verified": true,
+    "production_candidate": false,
+    "live_install_authorized": false
+  },
+  "source_identity": {
+    "r7_binding_sha256": "d2a3ae8ca6b22728008a92b5f90b8fd15b53e1f15b0fdd4dc3f494eb571f6fec",
+    "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+    "umod_cpp_sha256": "6d6ed64ae6c35c75ee79484c06bb2d4357d67bcb91541d8ac3d72d651ffb4c43",
+    "trace_header_sha256": "c1af7d1f4b8030d7db29d844046021de140a3448b41a0caedeef69e5f9a73ba7",
+    "no_rendering_feature_changes": true
+  },
+  "build": {
+    "result": "PASS",
+    "elapsed_seconds": 14.913,
+    "build_log_sha256": "6c69b84d87f59fa9811c6354c756234aeb18bff9dc4bb4ea340934b043adf87f",
+    "platformio_core": "6.1.18",
+    "python": "3.9.6",
+    "environment": "hbnf_matrix_wled16_packet20_diag",
+    "compiler": "xtensa-esp32-elf-g++",
+    "esp_idf": "4.4.8.240628",
+    "cpu_flag": "F_CPU=240000000L",
+    "flash_used_bytes": 1495521,
+    "flash_headroom_bytes": 77343,
+    "ram_used_bytes": 114912,
+    "ram_headroom_bytes": 212768,
+    "target_static_trace_store_bytes": 2408,
+    "frame_end_symbol_bytes": 827,
+    "runtime_observer_overhead": "NOT MEASURED; offline disassembly/static data only."
+  },
+  "tests": {
+    "trace_store_and_hot_path": "PASS",
+    "protocol_stop_conditions_extensions_and_no_go": "PASS",
+    "existing_phase2_regression_suite": "PASS",
+    "control_state": "PASS; live mutation false"
+  },
+  "protocol": {
+    "path": "evidence/cart2-r7-performance-repair-20261009/R7_OUTLIER_TRACE_LIVE_PROTOCOL.json",
+    "recommendation": "NO_GO",
+    "reason": "Quiet measurement windows disallow polling; the existing catastrophic early-stop requires valid 8-second samples and three consecutive bad samples. No evidence-backed way currently satisfies both without polling during the windows or changing the frozen safety rule.",
+    "p99_failure_rule": "p99 >42.03125 ms is recorded and does not stop capture; p99 >75 ms for three consecutive 8-second samples remains catastrophic per frozen policy.",
+    "bounded_extension": "60-second matched windows; if either has fewer than 2,000 frames or trace has fewer than 20 outliers, extend in matched 30-second pairs to a strict maximum 180 seconds per condition. Insufficient evidence at the cap is INCONCLUSIVE.",
+    "required_future_owner_authorization": "Fresh exact-artifact admission for one diagnostic install and one exact R4 restoration at transaction end; no diagnostic retry, R8, AUX/router/cloud change, or production claim.",
+    "no_live_operations_performed": true
+  },
+  "rollback": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "bytes": 1489008,
+    "drive_file_id": "1hy-U_zu4Wqkzwe87Br2xOSMUnCzYdrYB",
+    "local_bytes_rehashed": true
+  },
+  "drive_preservation": {
+    "drive_file_id": "1sYGsE7WKXYB2vxNUgpvi7znWQ3kUx1eD",
+    "url": "https://drive.google.com/file/d/1sYGsE7WKXYB2vxNUgpvi7znWQ3kUx1eD/view",
+    "readback_sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
+    "readback_size_bytes": 1502256,
+    "readback_matches_local": true
+  }
+}

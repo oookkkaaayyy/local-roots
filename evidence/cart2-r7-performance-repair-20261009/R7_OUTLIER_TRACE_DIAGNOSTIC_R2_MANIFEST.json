@@ -1,0 +1,138 @@
+{
+  "schema": "hbnf-cart2-diagnostic-firmware-manifest-v1",
+  "status": "OFFLINE_BUILT__NOT_LIVE_AUTHORIZED__NOT_PRODUCTION",
+  "source_checkpoint_base": {
+    "branch": "codex/cart2-offline-audio-fixture-20261009",
+    "commit": "d801fe876452fe8e932f369e4c129fb89418735d",
+    "remote_was_fresh_read_at": "d801fe876452fe8e932f369e4c129fb89418735d"
+  },
+  "artifact": {
+    "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+    "sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
+    "size_bytes": 1502256,
+    "embedded_release_id_occurrences": 3,
+    "based_on_release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+    "based_on_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+    "production_release": false,
+    "live_install_authorized": false
+  },
+  "source_closure": {
+    "r7_source_binding_path": "evidence/cart2-r7-performance-repair-20261009/SOURCE_BINDING_R7.json",
+    "r7_source_binding_sha256": "d2a3ae8ca6b22728008a92b5f90b8fd15b53e1f15b0fdd4dc3f494eb571f6fec",
+    "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+    "pio_core": "6.1.18",
+    "python": "3.9.6",
+    "platformio_environment": "hbnf_matrix_wled16_packet20_diag",
+    "arduino_framework_package": "framework-arduinoespressif32 2.0.18+sha.8ba0dc0",
+    "esp_idf": "4.4.8.240628",
+    "changed_firmware_inputs": [
+      {
+        "path": "firmware/phase2/integration-r7/usermod/usermod_hbnf_foundation_v1.cpp",
+        "sha256": "6d6ed64ae6c35c75ee79484c06bb2d4357d67bcb91541d8ac3d72d651ffb4c43"
+      },
+      {
+        "path": "firmware/phase2/integration-r7/usermod/hbnf_outlier_trace.h",
+        "sha256": "c1af7d1f4b8030d7db29d844046021de140a3448b41a0caedeef69e5f9a73ba7"
+      }
+    ],
+    "build_only_overlay_changes": "Trace v2 pause/resume preservation, truthful per-record capture-body-cycle label, runtime CPU MHz fail-closed start/resume check, and unique diagnostic release identity. No rendering/Vibe/audio/Text behavior changes."
+  },
+  "target_timing_provenance": {
+    "cpu_frequency": {
+      "compile_flag": "F_CPU=240000000L",
+      "arduino_startup": "initArduino calls setCpuFrequencyMhz(F_CPU/1000000)",
+      "power_management": "Selected ESP32 sdkconfig has CONFIG_PM_ENABLE unset; source closure contains no later setCpuFrequencyMhz or esp_pm_configure call.",
+      "runtime_guard": "Trace start requires ESP.getCpuFreqMHz()==F_CPU/1000000; resume requires current MHz==captured MHz; readback exposes compile, start, and readback MHz. A mismatch invalidates the window."
+    },
+    "task_core": "Pinned Arduino main.cpp creates loopTask on CONFIG_ARDUINO_RUNNING_CORE=1. WLED loop executes strip.service; WLED output calls BusManager::show; the HBNF measurement object is initialized by the matrix effect and finalized from BusManager::show. ESP.getCycleCount is per-core and all captured values therefore originate on the same pinned renderer task/core.",
+    "frame_correlation": "Trace-relative frameSequence increments once at frame end while armed. Frame start/end/whole, kernel/audio/color/scheduler/overlay/companion/DDP/unaccounted totals, kernel id, and variant signature are copied from the same HbnfPerfWorking object. It is not represented as a native WLED frame number.",
+    "expert_basis": [
+      "Espressif ESP-IDF v5.2.4 performance guidance: cycle counts are per-core; use only from a pinned task/ISR; esp_timer has moderate overhead and is suitable only for the rare outlier correlation timestamp; short microbenchmarks vary with cache state. https://docs.espressif.com/projects/esp-idf/en/v5.2.4/esp32/api-guides/performance/speed.html",
+      "Exact pinned framework source and sdkconfig were checked locally; the online ESP-IDF v5.2.5 S3 Kconfig page is not treated as evidence for this ESP32 target."
+    ]
+  },
+  "trace_contract": {
+    "threshold_us": 42031.25,
+    "threshold_cycles_formula": "runtimeCpuMHz * 42031 + runtimeCpuMHz / 4",
+    "threshold_role": "Capture/diagnostic threshold only; its production p99 exceedance is not an early-stop condition.",
+    "storage": {
+      "capacity_recent": 32,
+      "target_record_bytes": 72,
+      "target_store_symbol_bytes": 2408,
+      "separate_worst_frame": true,
+      "overwrite_counter": "Saturating counter increments on each outlier write after the recent ring is full.",
+      "outlier_counter": "Saturating counter.",
+      "pause_resume": "stop pauses; resume preserves frame sequence, ring, counts and worst record; initial start is one-shot per boot and clears state.",
+      "readback": "Serialize only after stop; fixed decimal CSV strings preserve 64-bit timestamp under pinned ArduinoJson configuration."
+    },
+    "hot_path": {
+      "heap_allocation": false,
+      "logging": false,
+      "polling": false,
+      "added_network_io": false,
+      "normal_wled_ddp_continues": true,
+      "record_cost_field": "traceCaptureBodyCycles; includes outlier timestamp acquisition and record construction/append. It excludes the final self-accounting field write and the enclosing critical-section exit; it is not total observer overhead.",
+      "observer_effect_measurement": "Matched trace-disarmed/trace-armed full windows compare p99, max, FPS and sample count; no acceptance limit is invented."
+    },
+    "host_contract_test": {
+      "path": "tests/hbnf_r7_outlier_trace.py",
+      "sha256": "929a2fa5e1ef5392c1ca84a847afceb839389e56d3e0bbe34b9abae10bed5e43",
+      "result": "PASS"
+    }
+  },
+  "build": {
+    "command": "PYTHONPATH=/tmp/hbnf-p2-build/pio-cli PLATFORMIO_CORE_DIR=/tmp/hbnf-p2-build/pio-local /Applications/Xcode.app/Contents/Developer/usr/bin/python3 /tmp/hbnf-p2-build/pio-cli/bin/pio run -v -j 1 -e hbnf_matrix_wled16_packet20_diag",
+    "working_directory": "/tmp/hbnf-p2-build/WLED-r7-local-20261009",
+    "result": "PASS",
+    "elapsed_seconds": 14.913,
+    "build_log": "/tmp/hbnf-p2-build/r7-outlier-trace-diagnostic-r2-build.log",
+    "build_log_sha256": "6c69b84d87f59fa9811c6354c756234aeb18bff9dc4bb4ea340934b043adf87f",
+    "flash_used_bytes": 1495521,
+    "flash_partition_bytes": 1572864,
+    "flash_headroom_bytes": 77343,
+    "ram_used_bytes": 114912,
+    "ram_total_bytes": 327680,
+    "ram_headroom_bytes": 212768,
+    "target_symbols": {
+      "hbnfPerfFrameEnd_bytes": 827,
+      "hbnfOutlierTrace_bytes": 2408
+    },
+    "offline_proof_limit": "Code generation, static storage, and partitions are measured; actual ESP32 runtime observer effect has not been measured."
+  },
+  "rollback": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "bytes": 1489008,
+    "drive_file_id": "1hy-U_zu4Wqkzwe87Br2xOSMUnCzYdrYB",
+    "availability": "Exact local SHA reverified; prior Drive preservation receipt identifies exact same SHA. Reverify before any future live transaction."
+  },
+  "offline_tests": {
+    "trace_and_protocol": "PASS",
+    "existing_phase2_regression_commands": [
+      "python3 tests/hbnf_phase2_r4_build_closure.py",
+      "python3 tests/hbnf_packet20_http_adapter.py",
+      "python3 tests/hbnf_packet20_build_validate.py",
+      "python3 tests/hbnf_runtime_qualify_static.py",
+      "python3 tests/hbnf_source_tree_identity.py",
+      "python3 tests/hbnf_control.py",
+      "python3 tests/hbnf_guarded_run.py",
+      "python3 scripts/hbnf_architecture_fitness.py",
+      "python3 tests/hbnf_kernel_sweep_report.py",
+      "python3 tests/hbnf_live_kernel_sweep.py"
+    ],
+    "result": "ALL PASS; control model valid and live mutation authority false."
+  },
+  "live_readiness": {
+    "recommendation": "NO_GO",
+    "reason": "Quiet windows prohibit polling, but the frozen catastrophic abort needs 8-second samples and aborts after three consecutive bad samples. Neither requirement is weakened. Exact protocol presents the conflict; no live operation is authorized here.",
+    "requested_live_operations": "NONE"
+  },
+  "drive_preservation": {
+    "drive_file_id": "1sYGsE7WKXYB2vxNUgpvi7znWQ3kUx1eD",
+    "url": "https://drive.google.com/file/d/1sYGsE7WKXYB2vxNUgpvi7znWQ3kUx1eD/view",
+    "readback_sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
+    "readback_size_bytes": 1502256,
+    "readback_matches_local": true
+  }
+}

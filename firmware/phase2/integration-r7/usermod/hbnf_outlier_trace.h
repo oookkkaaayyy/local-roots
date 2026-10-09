@@ -26,7 +26,10 @@ struct Record {
   uint32_t ddpSendCycles=0;
   uint32_t unaccountedCycles=0;
   uint32_t variantSignature=0;
-  uint32_t traceWriteCycles=0;
+  // Cost through the fixed record append, excluding the final accounting
+  // field store and the enclosing critical-section exit. The matched window
+  // comparison measures total observer effect.
+  uint32_t traceCaptureBodyCycles=0;
   uint8_t kernelId=255;
 };
 
@@ -43,11 +46,18 @@ class Store {
     outlierCount_=0;
     worstValid_=false;
     frameSequence_=0;
+    started_=true;
     armed_=true;
   }
 
   void stop() { armed_=false; }
+  bool resume() {
+    if (!started_) return false;
+    armed_=true;
+    return true;
+  }
   bool armed() const { return armed_; }
+  bool started() const { return started_; }
   uint32_t nextFrameSequence() { return armed_ ? ++frameSequence_ : 0; }
   uint32_t count() const { return count_; }
   uint32_t overflowCount() const { return overflowCount_; }
@@ -76,11 +86,11 @@ class Store {
     return true;
   }
 
-  void setLastWriteCycles(uint32_t cycles) {
+  void setLastCaptureBodyCycles(uint32_t cycles) {
     if (!count_) return;
-    records_[lastIndex_].traceWriteCycles=cycles;
+    records_[lastIndex_].traceCaptureBodyCycles=cycles;
     if (worstValid_ && worst_.frameSequence==records_[lastIndex_].frameSequence)
-      worst_.traceWriteCycles=cycles;
+      worst_.traceCaptureBodyCycles=cycles;
   }
 
   // Chronological order, oldest retained entry first.
@@ -99,6 +109,7 @@ class Store {
   size_t next_=0;
   size_t lastIndex_=0;
   bool armed_=false;
+  bool started_=false;
   bool worstValid_=false;
 };
 

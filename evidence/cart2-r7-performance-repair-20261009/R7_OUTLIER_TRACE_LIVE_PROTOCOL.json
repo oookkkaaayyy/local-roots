@@ -1,0 +1,90 @@
+{
+  "schema": "hbnf-r7-outlier-trace-live-protocol-v2",
+  "status": "OFFLINE_R2_BUILT__LIVE_NO_GO_PENDING_CATASTROPHIC_MONITOR_COMPATIBILITY",
+  "created_at_utc": "2026-10-09T18:02:00Z",
+  "source_checkpoint_base": "d801fe876452fe8e932f369e4c129fb89418735d",
+  "exact_artifact": {
+    "release_id": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
+    "sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
+    "bytes": 1502256,
+    "based_on_release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+    "based_on_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+    "purpose": "One-off diagnostic firmware only; not a production release and not R8."
+  },
+  "exact_rollback": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "bytes": 1489008,
+    "drive_file_id": "1hy-U_zu4Wqkzwe87Br2xOSMUnCzYdrYB",
+    "availability": "Exact local bytes re-hashed for this receipt; prior Drive byte-preservation receipt identifies file 1hy-U_zu4Wqkzwe87Br2xOSMUnCzYdrYB. Reverify both exact bytes and target compatibility immediately before any future transaction."
+  },
+  "offline_source_proof": {
+    "pinned_wled": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "pinned_platformio_core": "6.1.18",
+    "pinned_arduino_framework": "ESP-IDF 4.4.8.240628 framework source in the R7 build closure",
+    "render_task_affinity": "Pinned framework main.cpp creates loopTask using ARDUINO_RUNNING_CORE; exact ESP32 sdkconfig sets CONFIG_ARDUINO_RUNNING_CORE=1; WLED loop calls effect service and BusManager::show on that task. Therefore ESP.getCycleCount() start/end and frame stage counters are read on the same pinned Core 1 task.",
+    "frequency": "Build command uses F_CPU=240000000L. Pinned Arduino initArduino() sets CPU frequency from F_CPU; selected ESP32 sdkconfig has CONFIG_PM_ENABLE unset; source search found no later CPU-frequency or esp_pm_configure call in WLED or the Foundation usermod. Runtime still must read 240 MHz before the baseline, at trace start, and after each window; any mismatch invalidates that window.",
+    "frame_stage_join": "hbnfPerfFrameWorking is initialized at Matrix effect start; every stage counter and kernel/variant value accumulates into that same object until BusManager::show calls hbnfPerfFrameEnd. The trace-relative frameSequence advances once at each frame end while armed and labels those same values. It is a trace-local sequence, not an asserted WLED-native frame number.",
+    "monotonic_timestamp": "esp_timer_get_time() is called only after the raw-cycle threshold test passes. It marks the frame-end capture point, not the beginning of the slow frame.",
+    "retention_and_loss": "Fixed static ring keeps latest 32 outlier records plus a separate maximum frame record. overflowCount increments once for each overwritten ring record and saturates at UINT32_MAX; outlierCount also saturates. Stop/resume preserves ring, counts, worst frame, and sequence; only the initial start clears them.",
+    "capture_cycle_accounting": "traceCaptureBodyCycles measures from just before the rare outlier timestamp/record construction through append, but excludes the final self-accounting field store and critical-section exit. It is explicitly partial. Whole-window trace-disarmed versus trace-armed p99/FPS/max is the measurement of total observer effect.",
+    "capture_path": "No heap allocation, formatting, logging, polling, or added network I/O in hbnfPerfFrameEnd. Normal WLED frame output and the existing Matrix-to-AUX DDP traffic continue; zero network traffic overall is not possible while maintaining identical live rendering conditions. Host does not poll or fetch JSON inside a measurement window."
+  },
+  "frozen_policy": {
+    "path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
+    "sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797",
+    "production_p99_ceiling_ms": 42.03125,
+    "catastrophic_abort": {
+      "bad_samples_consecutive": 3,
+      "sample_interval_seconds": 8,
+      "fps_below": 20,
+      "p99_above_ms": 75,
+      "matrix_origin_aux_projection_must_remain_active": true
+    },
+    "p99_diagnostic_rule": "A p99 above 42.03125 ms is recorded as regression evidence and does not end the trace. The threshold and all production gates remain unchanged. The separate existing three-consecutive-sample catastrophic limits remain mandatory."
+  },
+  "observation_sequence": {
+    "preflight": [
+      "No live action until a fresh exact-artifact authorization and control-plane admission pass.",
+      "Verify Matrix .10/MAC 70:4b:ca:5b:34:5c and installed exact Foundation R4 identity; verify AUX .11 exact identity, current Matrix-origin DDP projection, Matrix/AUX health, uptime/restarts, local route, stable power, and one live worker.",
+      "Re-hash diagnostic and R4 recovery bytes; verify rollback compatibility, renderer snapshot/restore capability, clean read-only device state, and current 240 MHz reading. Any mismatch is NO-GO.",
+      "Record prestate and current feature/runtime controls. Establish Packet20 snapshot and select kernel 13, brightness 44, the previously failing variant signature 1347100685, and identical remaining presentation controls. Confirm renderer advances and Matrix-origin AUX DDP remains active before timing."
+    ],
+    "installation_and_return": [
+      "Install this exact diagnostic artifact once and verify booted release identity, SHA-linked manifest, device MAC/IP, WLED version, health, uptime/restart count, heap, output brightness, and AUX projection.",
+      "After all measurement windows, restore and verify the exact Packet20 renderer snapshot. Because this diagnostic build is not a qualified product release, restore exact Foundation R4 once at the end of the transaction and verify its release/SHA/health before field use.",
+      "One diagnostic install maximum and one exact R4 restoration maximum. No diagnostic retry, AUX/router/cloud mutation, R8, or production qualification claim. If R4 restoration cannot be verified, stop and require owner intervention before use."
+    ],
+    "windows": [
+      "Use 60-second trace-disarmed baseline and 60-second trace-armed window first, with tails histogram enabled identically, same kernel/variant/brightness/controls, and stable 240 MHz. Reset only the existing histogram between conditions; the first trace start is one-shot and later resume does not clear records.",
+      "Do not issue HTTP/JSON polls or telemetry reads during a window. At the end of each completed window, stop trace if armed and perform one state read. Record sampleCount, avg, p95, p99, max, FPS, current/capture CPU MHz, outlierCount, overflowCount, chronological records, worstRecord, and renderer state.",
+      "Evidence-driven matched extension: if either condition has fewer than 2,000 valid frames, or the trace condition has fewer than 20 captured outliers, add matched 30-second pairs (one trace-disarmed and one trace-resumed window), preserving cumulative totals for each condition. Read data only after the pair. Stop at 180 seconds per condition. The 20-outlier target is a diagnostic representativeness trigger only, not an acceptance threshold; 2,000 frames ensures about 20 observations in a 1% tail. If still insufficient at 180 seconds, classify INCONCLUSIVE.",
+      "Use no extra p99 production threshold to stop early. If prior 60-second data shows p99 above 42.03125 ms, continue through the bounded diagnostic window unless an existing catastrophic condition is met. If failure is not reproduced by the maximum duration, classify INCONCLUSIVE, not PASS."
+    ],
+    "evidence_and_decisions": {
+      "regression_reproduced": "Trace-disarmed exact diagnostic window p99 exceeds 42.03125 ms with enough samples; this records the phenomenon only, not a product pass/fail override.",
+      "stage_localization": "Report same-frame raw stage-cycle values and unaccounted remainder for each retained outlier. A large unaccounted remainder is unclassified; do not infer Wi-Fi, interrupts, scheduler, or compositor causality from remainder alone.",
+      "observer_effect": "Compare matched trace-disarmed and trace-armed sample count, FPS, p99, maximum, and stage distributions. Report raw differences and the partial traceCaptureBodyCycles field. There is no frozen diagnostic observer-effect acceptance threshold; do not label it acceptable without evidence.",
+      "inconclusive": "No reproduced p99 regression, insufficient outlier/sampling evidence at 180s per condition, CPU-frequency mismatch, continuity/identity mismatch, collector failure, or unverified restore means INCONCLUSIVE. Preserve evidence and do not claim PASS or cause."
+    }
+  },
+  "safety_abort_and_no_go": {
+    "abort_immediately": [
+      "Matrix identity/release mismatch, reboot or uptime regression, confirmed power instability, device health loss, or loss of verified rollback readiness.",
+      "Existing frozen catastrophic rule: three consecutive valid 8-second samples with FPS below 20, p99 above 75 ms, or required Matrix-origin AUX projection inactive.",
+      "Telemetry/source identity, sampling continuity, frequency, or exact renderer restore becomes unknown; stop collection, preserve output, restore snapshot where verifiable, and return exact R4 before field use. Host-only collector failure is not firmware causation."
+    ],
+    "live_no_go_reason": "The prescribed quiet windows forbid all host polling, while the existing frozen catastrophic-stop rule requires valid samples every 8 seconds and abort after three consecutive bad samples. Without polling, the required early-stop monitor cannot operate; polling would violate the quiet-window condition and alter the observer comparison. Therefore this protocol is NOT READY for live authorization until an owner-approved way to resolve that conflict is selected. Do not weaken either condition."
+  },
+  "external_sources": [
+    {
+      "url": "https://docs.espressif.com/projects/esp-idf/en/v5.2.4/esp32/api-guides/performance/speed.html",
+      "fact_used": "ESP-IDF says cycle counters are per-core and should be used in a task pinned to one core; esp_timer_get_time has higher overhead; short microbenchmarks can vary with flash-cache behavior."
+    },
+    {
+      "url": "https://docs.espressif.com/projects/esp-idf/en/v5.2.5/esp32s3/api-reference/kconfig.html",
+      "fact_used": "CONFIG_PM_ENABLE enables PM/DFS support; if disabled, DFS is not active unless the application configures it. The exact build is ESP32 rather than ESP32-S3; ESP32 SDK config independently confirms PM disabled and the source closure sets 240 MHz."
+    }
+  ],
+  "live_authorization": "NOT REQUESTED; NO LIVE REQUESTS, OTA, RESTART, AUX/ROUTER CHANGE OR DEPLOYMENT PERFORMED."
+}

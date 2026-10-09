@@ -36,7 +36,7 @@ int main() {
   r.companionPrepCycles=59; r.ddpSendCycles=60; r.unaccountedCycles=61;
   r.kernelId=13; r.variantSignature=0xaabbccdd;
   assert(trace.append(r));
-  trace.setLastWriteCycles(77);
+  trace.setLastCaptureBodyCycles(77);
   for (uint32_t i=2;i<=5;i++) {
     assert(trace.nextFrameSequence()==i);
     r.frameSequence=i; r.wholeFrameCycles=100*i;
@@ -50,7 +50,7 @@ int main() {
   assert(trace.chronological(2).frameSequence==5);
   assert(trace.worstValid());
   assert(trace.worst().frameSequence==1);
-  assert(trace.worst().wholeFrameCycles==900 && trace.worst().traceWriteCycles==77);
+  assert(trace.worst().wholeFrameCycles==900 && trace.worst().traceCaptureBodyCycles==77);
   assert(trace.worst().kernelId==13 && trace.worst().variantSignature==0xaabbccdd);
   assert(trace.worst().frameStartCycles==4294967200u && trace.worst().frameEndCycles==804);
   assert((uint32_t)(trace.worst().frameEndCycles-trace.worst().frameStartCycles)==trace.worst().wholeFrameCycles);
@@ -64,6 +64,15 @@ int main() {
   assert(!trace.append(r));
   assert(trace.count()==oldCount && trace.overflowCount()==oldOverflow && trace.outlierCount()==oldOutliers);
   assert(trace.worst().frameSequence==1);
+  assert(trace.resume());
+  assert(trace.armed() && trace.count()==oldCount && trace.overflowCount()==oldOverflow);
+  assert(trace.nextFrameSequence()==6);
+  r.frameSequence=6;r.wholeFrameCycles=100;
+  assert(trace.append(r));
+  assert(trace.count()==3 && trace.outlierCount()==6 && trace.overflowCount()==3);
+  trace.stop();
+  hbnf_outlier_trace::Store<3> neverStarted;
+  assert(!neverStarted.resume() && !neverStarted.armed());
   printf("record_size=%zu store_size=%zu retained=%u overflow=%u worst=%u\n",
     sizeof(Record),sizeof(trace),trace.count(),trace.overflowCount(),trace.worst().wholeFrameCycles);
   return 0;
@@ -87,14 +96,16 @@ assert "hbnfOutlierTrace.nextFrameSequence()" in frame_end
 assert "hbnf_outlier_trace::exceeds(hbnfPerfWorking.whole,hbnfOutlierThresholdCycles)" in frame_end
 assert "esp_timer_get_time()" in frame_end
 assert "hbnfOutlierTrace.append(record)" in frame_end
-assert "hbnfOutlierTrace.setLastWriteCycles" in frame_end
+assert "hbnfOutlierTrace.setLastCaptureBodyCycles" in frame_end
 assert "HBNF_OUTLIER_TRACE_CAPACITY=32" in text
 assert "42.03125" in text
-assert 'hbnf-cart2-r7-outlier-trace-diagnostic-20261009' in text
+assert 'hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009' in text
 assert '22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994' in text
 assert '"outlierTraceCommand"' in text
 assert 'recoverySnapshotReady' in text
 assert 'runtime.diagnosticActive()' in text
+assert 'traceOp,"resume"' in text and 'hbnfOutlierTrace.resume()' in text
+assert 'cpuMHzAtTraceStart' in text and 'cpuMHzAtReadback' in text
 assert '"outlierTrace"' in text and '"records"' in text and '"worstRecord"' in text
 assert "new hbnf_outlier_trace" not in frame_end
 assert "malloc" not in frame_end and "Serial" not in frame_end

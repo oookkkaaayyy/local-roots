@@ -28,8 +28,8 @@ using namespace hbnf_v1;
 namespace {
 
 static const char HBNF_FX_DATA[] PROGMEM = "HBNF Foundation@;;;2";
-static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-r7-outlier-trace-diagnostic-20261009";
-static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-r7-outlier-trace-diagnostic-20261009\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-r7-outlier-trace-diagnostic-20261009\",\"basedOnReleaseId\":\"hbnf-cart2-phase2-offline-wow-r7-20261009\",\"basedOnFirmwareSha256\":\"22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r6-unfrozen\",\"native-text-moments-r6-unfrozen\",\"offline-r7-outlier-trace-diagnostic\"]}";
+static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009";
+static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009\",\"basedOnReleaseId\":\"hbnf-cart2-phase2-offline-wow-r7-20261009\",\"basedOnFirmwareSha256\":\"22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r6-unfrozen\",\"native-text-moments-r6-unfrozen\",\"offline-r7-outlier-trace-diagnostic-r2\"]}";
 static PaletteSelection hbnfPalette{};
 static OverlayState hbnfCommandOverlay{};
 static portMUX_TYPE hbnfOverlayMux=portMUX_INITIALIZER_UNLOCKED;
@@ -73,7 +73,7 @@ static void hbnfFormatTraceRecord(const hbnf_outlier_trace::Record& r,char* row,
     (unsigned long)r.schedulerCycles,(unsigned long)r.overlayCycles,
     (unsigned long)r.companionPrepCycles,(unsigned long)r.ddpSendCycles,
     (unsigned long)r.unaccountedCycles,(unsigned long)r.variantSignature,
-    (unsigned long)r.traceWriteCycles,(unsigned)r.kernelId);
+    (unsigned long)r.traceCaptureBodyCycles,(unsigned)r.kernelId);
 }
 static bool hbnfTailSetEnabled(bool enabled) {
   portENTER_CRITICAL(&hbnfTailMux);
@@ -1259,10 +1259,13 @@ class HbnfFoundationV1Usermod : public Usermod {
       portEXIT_CRITICAL(&hbnfTailMux);
       JsonObject trace=foundationTelemetry.createNestedObject("outlierTrace");
       trace["enabled"]=traceArmed;trace["thresholdUs"]=42.03125;
-      trace["thresholdCycles"]=hbnfOutlierThresholdCycles;trace["cpuMHz"]=hbnfOutlierCpuMHz;
+      trace["thresholdCycles"]=hbnfOutlierThresholdCycles;
+      trace["compileCpuMHz"]=F_CPU/1000000u;
+      trace["cpuMHzAtTraceStart"]=hbnfOutlierCpuMHz;
+      trace["cpuMHzAtReadback"]=ESP.getCpuFreqMHz();
       trace["capacity"]=HBNF_OUTLIER_TRACE_CAPACITY;trace["retainedCount"]=traceCount;
       trace["outlierCount"]=traceOutliers;trace["overflowCount"]=traceOverflow;
-      trace["recordEncoding"]="comma-separated decimal v1: monotonicUs,frameSequence,frameStartCycles,frameEndCycles,wholeFrameCycles,kernelGrossCycles,audioCycles,colorCycles,schedulerCycles,overlayCycles,companionPrepCycles,ddpSendCycles,unaccountedCycles,variantSignature,traceWriteCycles,kernelId";
+      trace["recordEncoding"]="comma-separated decimal v2: monotonicUs,frameSequence,frameStartCycles,frameEndCycles,wholeFrameCycles,kernelGrossCycles,audioCycles,colorCycles,schedulerCycles,overlayCycles,companionPrepCycles,ddpSendCycles,unaccountedCycles,variantSignature,traceCaptureBodyCycles,kernelId";
       if(!traceArmed&&traceCount){
         JsonArray records=trace.createNestedArray("records");
         for(uint32_t i=0;i<traceCount;i++){
@@ -1313,12 +1316,16 @@ class HbnfFoundationV1Usermod : public Usermod {
       portENTER_CRITICAL(&hbnfTailMux);
       if(!strcmp(traceOp,"start")&&hbnfTailEnabled&&runtime.diagnosticActive()&&
          recoverySnapshotReady&&
-         !hbnfOutlierTraceStartConsumed){
+         !hbnfOutlierTraceStartConsumed&&ESP.getCpuFreqMHz()==(F_CPU/1000000u)){
         hbnfOutlierTrace.start();
         hbnfOutlierCpuMHz=ESP.getCpuFreqMHz();
         hbnfOutlierThresholdCycles=hbnfOutlierCpuMHz*HBNF_OUTLIER_THRESHOLD_US_MILLI+hbnfOutlierCpuMHz/4u;
         accepted=hbnfOutlierThresholdCycles!=0;
         if(!accepted)hbnfOutlierTrace.stop();else hbnfOutlierTraceStartConsumed=true;
+      } else if(!strcmp(traceOp,"resume")&&hbnfTailEnabled&&runtime.diagnosticActive()&&
+         recoverySnapshotReady&&hbnfOutlierTraceStartConsumed&&!hbnfOutlierTrace.armed()&&
+         ESP.getCpuFreqMHz()==hbnfOutlierCpuMHz) {
+        accepted=hbnfOutlierTrace.resume();
       } else if(!strcmp(traceOp,"stop")) {
         hbnfOutlierTrace.stop();accepted=true;
       }
@@ -1388,7 +1395,7 @@ extern "C" void hbnfPerfFrameEnd() {
         record.unaccountedCycles=hbnfPerfWorking.unaccounted;
         record.variantSignature=hbnfPerfWorking.variant;record.kernelId=hbnfPerfWorking.kernel;
         hbnfOutlierTrace.append(record);
-        hbnfOutlierTrace.setLastWriteCycles(hbnfCycles()-traceStart);
+        hbnfOutlierTrace.setLastCaptureBodyCycles(hbnfCycles()-traceStart);
       }
     }
   }
