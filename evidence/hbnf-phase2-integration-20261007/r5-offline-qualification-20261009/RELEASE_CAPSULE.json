@@ -32,9 +32,10 @@
       "firmware/phase2/integration-r5/usermod/hbnf_vibe_runtime.h": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc",
       "firmware/phase2/integration-r5/usermod/hbnf_brightness_output.h": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a"
     },
-    "source_binding_sha256": "54ea47fc1f7fe311b165fca332bdecf1ea165a6198b4cab0be7cdcb71eb5e746",
+    "source_binding_sha256": "d2d2ade525e4993a0308ad273725596dc9ddf3a5a228ce449205f6f08bf1e687",
     "generated_input_snapshot": "evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/generated-inputs/wled00",
-    "build_input_snapshot": "evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/build-inputs"
+    "build_input_snapshot": "evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/build-inputs",
+    "source_commit": "9652e30929b7ae40c2801256ba8401c23408452d"
   },
   "build_environment": {
     "captured": true,

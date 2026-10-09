@@ -1,6 +1,6 @@
 {
   "schema": "hbnf-phase2-integration-r5-source-binding-v3",
-  "status": "R5_BUILT_OFFLINE__HARDWARE_QUALIFICATION_PENDING",
+  "status": "R5_SOURCE_CLOSURE_PRESERVED__HARDWARE_QUALIFICATION_PENDING",
   "base_release": "hbnf-cart2-phase2-offline-wow-r4-20261008",
   "base_firmware_sha256": "e65effb86d8755ca8a4af2155e51844d2c2a387f4000574459a382ca50c5ec87",
   "base_source_path": "firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp",
@@ -160,7 +160,7 @@
   },
   "source_reconciliation": {
     "authoritative_branch": "hbnf-cart2-phase2-integration-20261006",
-    "authoritative_head": "fa415b2c52cc450895c2e6435977422b35be7558",
+    "authoritative_head": "9652e30929b7ae40c2801256ba8401c23408452d",
     "local_base": "2b41a94eeeffd1abe610658e8033ab68cc14d3a1",
     "remote_compare": "Fetched authoritative branch ref fa415b2c52cc450895c2e6435977422b35be7558; compared exact R5 closure files. This artifact includes local source deltas listed in local_build_source_deltas and in the final offline manifest.",
     "firmware_inputs_matching_authoritative_state": {
@@ -195,7 +195,8 @@
       "platformio_core": "6.1.18",
       "xtensa_gcc": "8.4.0+2021r2-patch5",
       "verification": "Read-only version checks; no rebuild."
-    }
+    },
+    "source_preservation_commit": "9652e30929b7ae40c2801256ba8401c23408452d"
   },
   "r5_vibe_runtime_header_path": "firmware/phase2/integration-r5/usermod/hbnf_vibe_runtime.h",
   "generated_input_snapshot": {

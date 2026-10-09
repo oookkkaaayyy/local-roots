@@ -26,7 +26,7 @@
     "animartrix_commit": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f",
     "platformio_environment": "hbnf_matrix_wled16_packet20_diag",
     "source_binding_path": "firmware/phase2/integration-r5/SOURCE_BINDING.json",
-    "source_binding_sha256": "54ea47fc1f7fe311b165fca332bdecf1ea165a6198b4cab0be7cdcb71eb5e746",
+    "source_binding_sha256": "d2d2ade525e4993a0308ad273725596dc9ddf3a5a228ce449205f6f08bf1e687",
     "complete_runtime_source_closure_bytes": 535877,
     "runtime_usermod_sha256": "13d2a54cfba1913bb4c74cf6296875204546f6cd4c19b92656bf0c9187ba9a56",
     "vibe_audio_header_sha256": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc",
@@ -166,7 +166,7 @@
       "firmware/phase2/integration-r5/usermod/hbnf_vibe_runtime.h": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc",
       "firmware/phase2/integration-r5/usermod/hbnf_brightness_output.h": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a"
     },
-    "source_binding_sha256": "54ea47fc1f7fe311b165fca332bdecf1ea165a6198b4cab0be7cdcb71eb5e746",
+    "source_binding_sha256": "d2d2ade525e4993a0308ad273725596dc9ddf3a5a228ce449205f6f08bf1e687",
     "runtime_source_closure_files": {
       "hbnf_animartrix_audio_bridge.h": "8748231ccf7733bd34c16dc0417933a46d3a5bdccfc47c2bd54ce2e3fa104535",
       "hbnf_audio_expression.h": "f4825884dd53cba9bca698bd8b9b7d9d13a81e7ce381957d23790f13073dc4c3",
@@ -238,6 +238,8 @@
       }
     },
     "exact_successful_binary_unchanged": true,
-    "full_rebuild_performed_for_preservation": false
-  }
+    "full_rebuild_performed_for_preservation": false,
+    "source_preservation_commit": "9652e30929b7ae40c2801256ba8401c23408452d"
+  },
+  "source_preservation_commit": "9652e30929b7ae40c2801256ba8401c23408452d"
 }

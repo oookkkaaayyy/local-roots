@@ -6,7 +6,7 @@
   "release_id": "hbnf-cart2-phase2-offline-wow-r5-20261008",
   "firmware_sha256": "f663c0736256186eff009b69818f5d41b1eec9df310be3128e1b3c67a9feea8b",
   "firmware_bytes": 1497824,
-  "source_binding_sha256": "54ea47fc1f7fe311b165fca332bdecf1ea165a6198b4cab0be7cdcb71eb5e746",
+  "source_binding_sha256": "d2d2ade525e4993a0308ad273725596dc9ddf3a5a228ce449205f6f08bf1e687",
   "source_corrections": [
     {
       "path": "firmware/phase2/integration-r5/phase2-vibe-text-runtime.patch",
@@ -96,7 +96,7 @@
     "release_capsule": "1HVmD2-ULZs7GGKQQoh8gXYY23MTpi-dv",
     "build_log": "1g5rgoFit9CrA96yCmaz3utEO1YrlNc8h"
   },
-  "source_closure_commit": "RECORDED_IN_FOLLOWUP_METADATA_COMMIT",
+  "source_closure_commit": "9652e30929b7ae40c2801256ba8401c23408452d",
   "runtime_source_closure_files": {
     "hbnf_animartrix_audio_bridge.h": "8748231ccf7733bd34c16dc0417933a46d3a5bdccfc47c2bd54ce2e3fa104535",
     "hbnf_audio_expression.h": "f4825884dd53cba9bca698bd8b9b7d9d13a81e7ce381957d23790f13073dc4c3",
