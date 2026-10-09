@@ -1,0 +1,101 @@
+{
+  "arch": "esp32",
+  "bootloaderSHA256": "b97d154765ea69ca895a33de59adb4b322509aa2a3e2c7c8409b31cbc1bcc2cd",
+  "brand": "WLED",
+  "clock": 240,
+  "cn": "Niji",
+  "core": "4.4.8.240628",
+  "cpalcount": 0,
+  "cpalmax": 129,
+  "deviceId": "52d5bc29d6bd3a4be1702e3b7393daae7d6581734d",
+  "flash": 4,
+  "freeheap": 73580,
+  "fs": {
+    "pmt": 0,
+    "t": 983,
+    "u": 364
+  },
+  "fxcount": 220,
+  "ip": "192.168.77.10",
+  "leds": {
+    "bootps": 60,
+    "cct": 0,
+    "count": 534,
+    "fps": 42,
+    "lc": 1,
+    "matrix": {
+      "h": 16,
+      "w": 32
+    },
+    "maxpwr": 1800,
+    "maxseg": 32,
+    "pwr": 632,
+    "rgbw": false,
+    "seglc": [
+      1,
+      0
+    ],
+    "wv": 0
+  },
+  "lip": "",
+  "live": false,
+  "liveseg": -1,
+  "lm": "",
+  "lwip": 0,
+  "mac": "704bca5b345c",
+  "maps": [
+    {
+      "id": 0
+    }
+  ],
+  "name": "WLED-Gledopto",
+  "ndc": 1,
+  "opt": 79,
+  "palcount": 72,
+  "product": "FOSS",
+  "release": "ESP32",
+  "repo": "wled/WLED",
+  "simplifiedui": false,
+  "str": false,
+  "time": "1970-1-1, 00:01:00",
+  "u": {
+    "AGC Gain": [
+      1,
+      "x"
+    ],
+    "Audio Source": [
+      "PDM digital",
+      " - quiet"
+    ],
+    "AudioReactive": [
+      "<button class=\"btn btn-xs\" onclick=\"requestJson({AudioReactive:{enabled:false}});\"><i class=\"icons on\">&#xe08f;</i></button>"
+    ],
+    "GEQ Input Level": [
+      "<div class=\"slider\"><div class=\"sliderwrap il\"><input class=\"noslide\" onchange=\"requestJson({AudioReactive:{inputLevel:parseInt(this.value)}});\" oninput=\"updateTrail(this);\" max=255 min=0 type=\"range\" value=255 /><div class=\"sliderdisplay\"></div></div></div>"
+    ],
+    "Sound Processing": [
+      "running"
+    ],
+    "UDP Sound Sync": [
+      "send mode",
+      " v2"
+    ]
+  },
+  "udpport": 21324,
+  "um": [
+    32,
+    58
+  ],
+  "umpalcount": 0,
+  "uptime": 60,
+  "ver": "16.0.1",
+  "vid": 2605010,
+  "wifi": {
+    "ap": false,
+    "bssid": "94:83:C4:98:78:94",
+    "channel": 4,
+    "rssi": -47,
+    "signal": 100
+  },
+  "ws": 0
+}

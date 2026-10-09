@@ -1,0 +1,72 @@
+{
+  "aux": {
+    "ip": "192.168.77.11",
+    "led_count": 22,
+    "live": true,
+    "mac": "8c94df55c34c",
+    "mode": "DDP",
+    "on": true,
+    "physical_led_output": "not machine-verifiable; owner visual confirmation after recovery pending",
+    "source_ip": "192.168.77.10"
+  },
+  "candidate_failure": "evidence/cart2-r7-performance-repair-20261009/R7_KERNEL13_FROZEN_GATE_FAILURE.json",
+  "candidate_qualified": false,
+  "candidate_release": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+  "candidate_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+  "checks": {
+    "aux_22_leds": true,
+    "aux_exact_mac": true,
+    "aux_native_ddp_live": true,
+    "aux_on": true,
+    "brightness_44": true,
+    "exact_matrix_ip": true,
+    "exact_matrix_mac": true,
+    "exact_r4_release": true,
+    "foundation_telemetry_disabled": true,
+    "matrix_on": true,
+    "ota_http_200": true,
+    "packet20_disabled": true,
+    "response_contains_update_successful": true,
+    "wled_16_0_1": true
+  },
+  "evidence": {
+    "kernel13_comparison": "evidence/cart2-r7-performance-repair-20261009/live-qualification/EARLY_R4_COMPARISON_KERNEL_13.json",
+    "kernel13_profile": "evidence/cart2-r7-performance-repair-20261009/live-qualification/13_Caleido3.profile.json",
+    "post_recovery_readbacks": "evidence/cart2-r7-performance-repair-20261009/R7_R4_RECOVERY_READBACK/"
+  },
+  "failure_gate_sha256": "804eee189c113b74b0781f886646e5eb07e8bffa215c4eaf2ce8f86c3bab3d97",
+  "full_28_kernel_sweep_started": false,
+  "matched_profiles_completed": 1,
+  "matrix": {
+    "brightness": 44,
+    "expected_ota_reboot_observed_by_new_uptime": true,
+    "foundation_telemetry_enabled": false,
+    "fps": 41,
+    "free_heap_bytes": 117324,
+    "ip": "192.168.77.10",
+    "mac": "704bca5b345c",
+    "on": true,
+    "packet20_enabled": false,
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "uptime_seconds": 60,
+    "wled": "16.0.1"
+  },
+  "ota_attempts": 1,
+  "ota_http_status": 200,
+  "recovery_bytes": 1489008,
+  "recovery_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "recovery_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "response_bytes": 404,
+  "response_sha256": "e989fc00de0b0d87a74771439a95cb6b231dac0ede16865104c2251612c6a128",
+  "retry_performed": false,
+  "schema": "hbnf-r7-exact-r4-recovery-result-v1",
+  "snapshot_restore_before_recovery": {
+    "restore_verified": true,
+    "snapshot_hash": 4051728214,
+    "snapshot_id": 1
+  },
+  "soak_started": false,
+  "status": "PASS",
+  "verification_method": "One exact direct-host curl multipart /update request; existing R4 source transaction wait_identity/capture/identity/assert_aux; waited 8 seconds after R4 identity for DDP settle.",
+  "verified_at_utc": "2026-10-09T10:53:07.839125+00:00"
+}

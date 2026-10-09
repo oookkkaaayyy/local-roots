@@ -607,7 +607,7 @@
     "live_admission_result": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_APPROVED_ADMISSION_RESULT.json",
     "live_admission_result_sha256": "e00f85dc3552c53becba4685bc0f4e0488cebd72f010ee8aeffafdf87739b700",
     "live_admission_sha256": "1d242f4e55cc9d95e8cdc45e3040ce0ad73fe7783f2f3bbfff6dbfb25d2f61e6",
-    "live_mutation_authorized": true,
+    "live_mutation_authorized": false,
     "live_worker_inventory": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_WORKER_INVENTORY.json",
     "live_worker_inventory_sha256": "0f406ef0f07ca32613897fdfa8fb41e50742ca1657fb868467029369200b5fad",
     "network_request_sent": true,
@@ -645,18 +645,23 @@
       "snapshot_hash": 4051728214,
       "snapshot_id": 1
     },
-    "qualification_status": "OBJECTIVE_FROZEN_KERNEL13_P99_GATE_FAILED__EXACT_R4_RECOVERY_IN_PROGRESS",
+    "qualification_status": "R7_OBJECTIVE_KERNEL13_P99_GATE_FAILED__EXACT_R4_RECOVERY_PASS",
     "qualification_transaction_start": "evidence/cart2-r7-performance-repair-20261009/R7_QUALIFICATION_RUN_START.json",
     "r4_rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "retry_permitted": false,
     "rollback_attempts": 1,
     "rollback_consumed_before_network_request": true,
-    "rollback_request_sent": false,
+    "rollback_http_status": 200,
+    "rollback_request_sent": true,
+    "rollback_response_bytes": 404,
+    "rollback_response_sha256": "e989fc00de0b0d87a74771439a95cb6b231dac0ede16865104c2251612c6a128",
+    "rollback_result": "evidence/cart2-r7-performance-repair-20261009/R7_R4_RECOVERY_RESULT.json",
+    "rollback_result_sha256": "70bb779e8e94156cd120512a1b848442a0cf16683273e6bfd5a57a2eac80af9c",
     "rollback_started_utc": "2026-10-09T10:50:08Z",
-    "rollback_status": "ONE_EXACT_R4_RECOVERY_ATTEMPT_RESERVED__NO_RETRY",
+    "rollback_status": "EXACT_R4_RECOVERY_PASS",
     "schema": "hbnf-conditional-r7-successor-v1",
     "scope_exclusion": "No R8 or later installation without new user authorization.",
-    "status": "R7_FAILED_OBJECTIVE_KERNEL13_P99__EXACT_R4_RECOVERY_RESERVED"
+    "status": "R7_REJECTED__EXACT_R4_RESTORED__NO_R8_AUTHORITY"
   },
   "current_task": {
     "autonomous_completion_authorization": {
@@ -2375,20 +2380,20 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "R7_DEVICE_RUNTIME__FROZEN_KERNEL13_P99_GATE_FAILED__EXACT_R4_RECOVERY",
+    "current_failure_domain": "R7_DEVICE_RUNTIME__KERNEL13_P99_GATE_FAILED__EXACT_R4_RESTORED",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
-      "artifact_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
-      "release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
-      "status": "R7_FAILED_KERNEL13_P99__R4_RECOVERY_ATTEMPT_RESERVED"
+      "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "status": "FIELD_BASELINE_RESTORED__R7_REJECTED__OFFLINE_DIAGNOSIS_NEXT"
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Use the single already-authorized exact R4 recovery attempt after the frozen R7 kernel13 p99 failure; no R7 reinstall, restart, or R8+ candidate.",
-      "Use the previously proven single multipart WLED /update request with the exact locally hash-verified R4 binary; no Opal/router/AUX/cloud changes.",
-      "Read back exact R4 identity and Matrix health, then verify native AUX DDP resumes from Matrix; preserve the recovery receipt.",
-      "Close live mutation authority once exact R4 runtime health is verified.",
-      "Diagnose R7 p99 regression offline, preserve full feature scope and frozen gates; do not ask for another installation authorization without new exact candidate readiness."
+      "Live mutation authority is closed. No R8 or later installation is authorized.",
+      "Preserve exact R7 failure and R4 recovery evidence; physical AUX output after recovery still needs owner visual confirmation when available.",
+      "Diagnose the R7 kernel13 p99 regression offline using source/profile/observer evidence; preserve all committed features and frozen gates.",
+      "Prepare a corrected successor only after evidence-backed root cause and full offline admission; live install requires new exact authorization.",
+      "Continue independent Cart 2.0 offline engineering; do not mark T4/T5 accepted."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -2622,7 +2627,7 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-09T10:50:08Z",
+  "last_updated_utc": "2026-10-09T10:53:07Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "admission_path": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_APPROVED_ADMISSION.json",
@@ -2652,13 +2657,16 @@
     "preflight_sha256": "63013c009800af1ab6320c8faae7cfc2542a821b073d288c57f892137f5e881b",
     "rollback_attempts": 1,
     "rollback_consumed_before_network_request": true,
+    "rollback_http_status": 200,
     "rollback_limit": 1,
     "rollback_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "rollback_request_sent": true,
+    "rollback_response_sha256": "e989fc00de0b0d87a74771439a95cb6b231dac0ede16865104c2251612c6a128",
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "rollback_started_utc": "2026-10-09T10:50:08Z",
-    "rollback_status": "ONE_EXACT_R4_RECOVERY_ATTEMPT_RESERVED__NO_RETRY",
+    "rollback_status": "EXACT_R4_RECOVERY_PASS__LIVE_AUTHORITY_CLOSED",
     "schema": "hbnf-r7-bounded-live-authorization-v1",
-    "status": "EXACT_R4_RECOVERY_ATTEMPT_RESERVED__NO_RETRY",
+    "status": "R7_GATE_FAILED__EXACT_R4_RESTORED__LIVE_MUTATION_CLOSED",
     "target": "Matrix 192.168.77.10 / MAC 70:4b:ca:5b:34:5c only"
   },
   "live_mutation_authorization_closed_at_utc": null,
@@ -2667,7 +2675,7 @@
     "evidence_sha256": "dcbe9d642a09adb81f0c2d96684d9f8bf852aef512a6b5a6d44881759be71cc1",
     "reason": "R6 matched tails-off performance gate failed; exact authorized R4 recovery completed and verified; no remaining authorized live mutations."
   },
-  "live_mutation_authorized": true,
+  "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",
@@ -3022,6 +3030,12 @@
     "path": "evidence/cart2-r7-performance-repair-20261009/R7_KERNEL13_FROZEN_GATE_FAILURE.json",
     "sha256": "804eee189c113b74b0781f886646e5eb07e8bffa215c4eaf2ce8f86c3bab3d97",
     "status": "OBJECTIVE_FROZEN_GATE_FAILED"
+  },
+  "r7_recovery_result": {
+    "live_mutation_authority_closed": true,
+    "path": "evidence/cart2-r7-performance-repair-20261009/R7_R4_RECOVERY_RESULT.json",
+    "sha256": "70bb779e8e94156cd120512a1b848442a0cf16683273e6bfd5a57a2eac80af9c",
+    "status": "PASS"
   },
   "schema": "hbnf-control-state-v2"
 }
