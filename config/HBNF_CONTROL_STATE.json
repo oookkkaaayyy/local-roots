@@ -2639,7 +2639,7 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-09T18:53:01.874203Z",
+  "last_updated_utc": "2026-10-09T18:55:45.014446Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "admission_path": "evidence/cart2-r7-performance-repair-20261009/R2_DIAGNOSTIC_OWNER_AUTHORIZATION.json",
@@ -3108,6 +3108,13 @@
       "matrix_ip": "192.168.77.10",
       "matrix_mac": "70:4b:ca:5b:34:5c"
     }
+  },
+  "r2_final_prewrite_readonly": {
+    "captured_at_utc": null,
+    "note": "Fresh read-only check immediately before the one authorized R2 OTA request; does not itself perform or authorize mutation.",
+    "path": "evidence/cart2-r7-performance-repair-20261009/R2_PREOTA_FINAL_READONLY.json",
+    "result": "PASS_R4_MATRIX_HEALTH_AUX_DDP_DIAGNOSTIC_IDLE",
+    "sha256": "6d1a344d243be5c3a39cc1c152a502d333ca6611f22dc2ec4a7d0ec41119724f"
   },
   "r7_failure_gate": {
     "captured_at_utc": "2026-10-09T10:50:08.535089+00:00",
