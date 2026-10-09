@@ -18,10 +18,10 @@ const releaseWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-
 const packageBuilderPath = path.join(root, "scripts/hbnf_build_owner_guest_package.py");
 const packageBuilder = fs.readFileSync(packageBuilderPath, "utf8");
 
-assert.match(html, /hbnf-cart2-owner-ux-r4-20261008/);
+assert.match(html, /hbnf-cart2-owner-guest-vibe-r2-20261009/);
 assert.doesNotMatch(html, /skins-owner-pwa-r1/);
 assert.equal(manifest.id, "/hbnf-cart.html");
-assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261008-owner-ux-r4");
+assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261009-cart2-vibe-r2");
 assert.equal(manifest.scope, "/hbnf-cart.html");
 assert.deepEqual(manifest.icons.map(({ sizes }) => sizes), ["192x192", "512x512"]);
 
@@ -79,15 +79,15 @@ assert.match(css, /::-webkit-slider-thumb[^}]*width:20px;height:20px/);
 assert.match(css, /::-moz-range-thumb[^}]*width:16px;height:16px/);
 assert.match(html, /:focus-visible/, "keyboard focus styling remains visible");
 assert.ok(fs.existsSync(path.join(controller, "hbnf-cart-sw.js")), "owner PWA service worker missing");
-assert.match(uiWorkflow, /HBNF-CART-OWNER-UX-R4-GUEST-ROUTE-R2-20261008/);
-assert.match(installer, /BUILD_MARKER="hbnf-cart2-owner-ux-r4-20261008"/);
+assert.match(uiWorkflow, /HBNF-CART-OWNER-GUEST-CART2-VIBE-R2-20261009/);
+assert.match(installer, /BUILD_MARKER="hbnf-cart2-owner-guest-vibe-r2-20261009"/);
 assert.match(installer, /\?release="\+BUILD_MARKER\+/);
-assert.match(installer, /HBNF_CART_OWNER_UX_R4_GUEST_ROUTE_R2_INSTALL=PASS/);
-assert.match(installer, /if not verified:\s+raise RuntimeError\("Deploy finished but exact Owner UX R4 \+ Guest Route R2 marker did not verify/);
+assert.match(installer, /HBNF_CART2_OWNER_GUEST_INSTALL=PASS/);
+assert.match(installer, /if not verified:\s+raise RuntimeError\("Deploy finished but exact Cart 2.0 marker did not verify/);
 assert.doesNotMatch(installer, /HBNF_CART_UI_V7_3_PHASE2_INTEGRATED_R1_20261006|HBNF_CART_UI_V7_3_PWA_R1_INSTALL/);
-assert.match(installerCommand, /HBNF Cart Owner UX R4 \+ Guest Route R2/);
+assert.match(installerCommand, /HBNF Cart 2.0 Owner\/Guest Vibe R2/);
 assert.doesNotMatch(installerCommand, /V7\.3|Phase 2 Integration R1|noisy live telemetry removed/i);
-assert.match(packageBuilder, /hbnf-cart-owner-ux-r4-guest-route-r2-package-v1/);
+assert.match(packageBuilder, /hbnf-cart2-owner-guest-vibe-package-v2/);
 assert.match(uiWorkflow, /tests\/hbnf_owner_pwa_package\.mjs/);
 assert.match(releaseWorkflow, /tests\/hbnf_owner_pwa_package\.mjs/);
 
@@ -111,7 +111,7 @@ try {
   for (const out of outputs) {
     execFileSync("python3", [packageBuilderPath, "--source-root", root, "--output-dir", out, "--source-commit", "0123456789abcdef"], { stdio: "pipe" });
   }
-  const archiveName = "HBNF_CART_OWNER_UX_R4_GUEST_ROUTE_R2_20261008.zip";
+  const archiveName = "HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009.zip";
   const bytesA = fs.readFileSync(path.join(outputs[0], archiveName));
   const bytesB = fs.readFileSync(path.join(outputs[1], archiveName));
   assert.deepEqual(bytesA, bytesB, "same source commit must produce byte-identical archives in different output directories");

@@ -1,4 +1,4 @@
-name: HBNF Cart Owner UX R4 + Guest Route R2 Package
+name: HBNF Cart 2.0 Owner/Guest Vibe R2 Package
 on:
   push:
     branches:
@@ -43,7 +43,7 @@ jobs:
           ! grep -q 'createClient' hbnf-final-controller/hbnf-cart.js
           ! grep -Fq '\\n' hbnf-final-controller/hbnf-cart.html
           python3 -m py_compile hbnf-ui-v6-package/install_ui_v6.py
-          grep -q 'hbnf-cart2-owner-ux-r4-20261008' hbnf-final-controller/hbnf-cart.html
+          grep -q 'hbnf-cart2-owner-guest-vibe-r2-20261009' hbnf-final-controller/hbnf-cart.html
           node --experimental-strip-types tests/hbnf_skins_scoring_owner_flow.mjs
           node tests/hbnf_owner_pwa_package.mjs
           node tests/hbnf_owner_pwa_reliability.mjs
@@ -66,9 +66,9 @@ jobs:
       - name: Upload exact package
         uses: actions/upload-artifact@v4
         with:
-          name: HBNF-CART-OWNER-UX-R4-GUEST-ROUTE-R2-20261008
+          name: HBNF-CART-OWNER-GUEST-CART2-VIBE-R2-20261009
           path: |
-            ${{ runner.temp }}/HBNF_CART_OWNER_UX_R4_GUEST_ROUTE_R2_20261008.zip
-            ${{ runner.temp }}/HBNF_CART_OWNER_UX_R4_GUEST_ROUTE_R2_20261008.zip.sha256
+            ${{ runner.temp }}/HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009.zip
+            ${{ runner.temp }}/HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009.zip.sha256
           if-no-files-found: error
           retention-days: 30

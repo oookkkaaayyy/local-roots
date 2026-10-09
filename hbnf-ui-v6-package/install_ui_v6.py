@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-import hashlib, json, os, pathlib, shutil, subprocess, sys, time, urllib.error, urllib.request
+import argparse, hashlib, json, os, pathlib, shutil, subprocess, sys, time, urllib.error, urllib.request
 
 ROOT=pathlib.Path(__file__).resolve().parent
 CONTROLLER=ROOT/"controller"
 MANIFEST_PATH=ROOT/"MANIFEST.json"
 LIVE_URL="https://hbnightflyers.com/hbnf-cart.html"
-BUILD_MARKER="hbnf-cart2-owner-ux-r4-20261008"
+BUILD_MARKER="hbnf-cart2-owner-guest-vibe-r2-20261009"
+RELEASE_LABEL="HBNF CART 2.0 OWNER/GUEST VIBE R2"
 FILES=[
     "hbnf-cart.html",
     "hbnf-cart.js",
@@ -36,7 +37,8 @@ def sha256(path):
 def check_package():
     if not MANIFEST_PATH.is_file(): raise RuntimeError("MANIFEST.json missing")
     manifest=json.loads(MANIFEST_PATH.read_text())
-    if manifest.get("buildMarker")!=BUILD_MARKER: raise RuntimeError("Package build marker mismatch")
+    marker=manifest.get("buildMarker")
+    if marker!=BUILD_MARKER: raise RuntimeError("Package build marker mismatch")
     for name in FILES+GUEST_FILES:
         path=CONTROLLER/name
         expected=manifest.get("files",{}).get(name)
@@ -45,6 +47,12 @@ def check_package():
     html=(CONTROLLER/"hbnf-cart.html").read_text(errors="replace")
     if BUILD_MARKER not in html:
         raise RuntimeError("Controller identity mismatch")
+    if manifest.get("sourceCommit") != (ROOT/"SOURCE_COMMIT.txt").read_text().strip():
+        raise RuntimeError("Package source commit mismatch")
+    for name in ("install_ui_v6.py", "INSTALL_UI_V6.command", "SOURCE_COMMIT.txt"):
+        expected=manifest.get("packageFiles",{}).get(name)
+        if not expected or sha256(ROOT/name)!=expected:
+            raise RuntimeError("Package metadata integrity failed: "+name)
     guest=(CONTROLLER/"guest/hbnf-cart/index.html").read_text(errors="replace")
     if "HBNF Cart Guest" not in guest or "/functions/v1/hbnf-cart-control" not in (CONTROLLER/"guest/hbnf-cart/guest.js").read_text(errors="replace"):
         raise RuntimeError("Guest route identity or Cart command contract mismatch")
@@ -103,9 +111,15 @@ def live_marker():
         return 0, False
 
 def main():
-    print("HBNF CART OWNER UX R4 + GUEST ROUTE R2 — static package")
+    parser=argparse.ArgumentParser()
+    parser.add_argument("--validate-only",action="store_true",help="Validate the extracted package without deployment or network access")
+    args=parser.parse_args()
+    print(RELEASE_LABEL+" — static package")
     print("No Matrix/AUX firmware or Phase 2 game/router changes.")
     check_package()
+    if args.validate_only:
+        print("HBNF_CART2_PACKAGE_VALIDATION=PASS")
+        return
     worker=find_worker()
     stamp=time.strftime("%Y%m%d-%H%M%S")
     backup=pathlib.Path.home()/("HBNF_CART_UI_BACKUP_"+stamp)
@@ -129,8 +143,8 @@ def main():
         if verified: break
         time.sleep(3)
     if not verified:
-        raise RuntimeError("Deploy finished but exact Owner UX R4 + Guest Route R2 marker did not verify (HTTP "+str(last_status)+")")
-    print("HBNF_CART_OWNER_UX_R4_GUEST_ROUTE_R2_INSTALL=PASS")
+        raise RuntimeError("Deploy finished but exact Cart 2.0 marker did not verify (HTTP "+str(last_status)+")")
+    print("HBNF_CART2_OWNER_GUEST_INSTALL=PASS")
     print("BACKUP="+str(backup))
     print("LIVE_MARKER=PASS")
     subprocess.run(["/usr/bin/open",LIVE_URL],check=False)
@@ -139,6 +153,6 @@ if __name__=="__main__":
     try:
         main()
     except Exception as e:
-        print("HBNF_CART_OWNER_UX_R4_GUEST_ROUTE_R2_INSTALL=FAIL")
+        print("HBNF_CART2_OWNER_GUEST_INSTALL=FAIL")
         print(str(e))
         sys.exit(1)

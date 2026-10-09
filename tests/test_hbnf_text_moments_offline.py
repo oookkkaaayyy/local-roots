@@ -63,7 +63,16 @@ class TextMomentTests(unittest.TestCase):
             target=temp/"usermods/hbnf_foundation_v1"
             target.mkdir(parents=True)
             shutil.copy2(root/"firmware/packet20/seq39-tail250/usermod_hbnf_foundation_v1.cpp",target/"usermod_hbnf_foundation_v1.cpp")
-            shutil.copy2(pinned/"usermods/hbnf_foundation_v1/hbnf_coordinated_contract.h",target/"hbnf_coordinated_contract.h")
+            # Recover the exact pre-font-index contract from the preserved
+            # final R5 source by reversing the pinned R5 patch's three edits.
+            # The pinned WLED source tree is restored from its existing git
+            # objects in the clean-room build workspace; it is not a second
+            # authority for this exact test input.
+            contract=(root/"firmware/phase2/integration-r5/usermod/hbnf_coordinated_contract.h").read_text()
+            contract=contract.replace("  uint8_t fontIndex=4;\n", "")
+            contract=contract.replace("uint8_t r,uint8_t g,uint8_t b,uint32_t now,uint8_t fontIndex=4)", "uint8_t r,uint8_t g,uint8_t b,uint32_t now)")
+            contract=contract.replace("s.r=r;s.g=g;s.b=b;s.fontIndex=fontIndex;", "s.r=r;s.g=g;s.b=b;")
+            (target/"hbnf_coordinated_contract.h").write_text(contract)
             r4_patch=root/"firmware/phase2/integration-r4/usermod_hbnf_foundation_v1.patch"
             subprocess.run(["patch","--batch","--forward","-p1","-i",str(r4_patch)],cwd=target,check=True,capture_output=True,text=True)
             usermod=target/"usermod_hbnf_foundation_v1.cpp"

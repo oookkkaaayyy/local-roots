@@ -1,0 +1,61 @@
+    if(bass && srcPeak>3){
+400db6d3:	a198      	l32i.n	a9, a1, 40
+400db6d5:	140c      	movi.n	a4, 1
+400db6d7:	0149f6        	bgeui	a9, 4, 400db6dc <_ZNK4hbnf21AnimartrixAudioBridge8modulateEiiRhS1_S1_+0x15c>
+400db6da:	040c      	movi.n	a4, 0
+400db6dc:	748040        	extui	a8, a4, 0, 8
+400db6df:	0c4216        	beqz	a2, 400db7a7 <_ZNK4hbnf21AnimartrixAudioBridge8modulateEiiRhS1_S1_+0x227>
+400db6e2:	0c1816        	beqz	a8, 400db7a7 <_ZNK4hbnf21AnimartrixAudioBridge8modulateEiiRhS1_S1_+0x227>
+    const int cx2=(int)width_-1, cy2=(int)height_-1;
+400db6e5:	4317b2        	l16ui	a11, a7, 134
+400db6e8:	4417c2        	l16ui	a12, a7, 136
+400db6eb:	eb0b      	addi.n	a14, a11, -1
+400db6ed:	4c0b      	addi.n	a4, a12, -1
+    const int maxd2=cx2*cx2+cy2*cy2;
+400db6ef:	82aee0        	mull	a10, a14, a14
+400db6f2:	82d440        	mull	a13, a4, a4
+      uint8_t mask=255;
+400db6f5:	ffa0f2        	movi	a15, 255
+    const int maxd2=cx2*cx2+cy2*cy2;
+400db6f8:	dada      	add.n	a13, a10, a13
+      if(maxd2>0){
+400db6fa:	4b1da6        	blti	a13, 1, 400db749 <_ZNK4hbnf21AnimartrixAudioBridge8modulateEiiRhS1_S1_+0x1c9>
+    const int dx2=2*x-cx2, dy2=2*y-cy2;
+400db6fd:	6198      	l32i.n	a9, a1, 24
+400db6ff:	11a9f0        	slli	a10, a9, 1
+400db702:	4198      	l32i.n	a9, a1, 16
+400db704:	c0aa40        	sub	a10, a10, a4
+400db707:	1149f0        	slli	a4, a9, 1
+400db70a:	c044e0        	sub	a4, a4, a14
+    const int d2=dx2*dx2+dy2*dy2;
+400db70d:	824440        	mull	a4, a4, a4
+400db710:	82aaa0        	mull	a10, a10, a10
+400db713:	44aa      	add.n	a4, a4, a10
+        const int radial=(width_==32u && height_==16u)
+400db715:	02bc26        	beqi	a12, 16, 400db71b <_ZNK4hbnf21AnimartrixAudioBridge8modulateEiiRhS1_S1_+0x19b>
+400db718:	00c706        	j	400dba38 <_ZNK4hbnf21AnimartrixAudioBridge8modulateEiiRhS1_S1_+0x4b8>
+400db71b:	02cb26        	beqi	a11, 32, 400db721 <_ZNK4hbnf21AnimartrixAudioBridge8modulateEiiRhS1_S1_+0x1a1>
+400db71e:	00c586        	j	400dba38 <_ZNK4hbnf21AnimartrixAudioBridge8modulateEiiRhS1_S1_+0x4b8>
+          ? (int)(((int32_t)d2*159)/1186)
+400db721:	11a4e0        	slli	a10, a4, 2
+400db724:	aa4a      	add.n	a10, a10, a4
+400db726:	11aab0        	slli	a10, a10, 5
+400db729:	c0aa40        	sub	a10, a10, a4
+400db72c:	d4ee41        	l32r	a4, 400d0ae4 <_stext+0xac4>
+400db72f:	a2aa40        	muluh	a10, a10, a4
+400db732:	41a9a0        	srli	a10, a10, 9
+        mask=(sceneKey&1u)?(uint8_t)(96+radial):(uint8_t)(255-radial);
+400db735:	5148      	l32i.n	a4, a1, 20
+400db737:	74a0a0        	extui	a10, a10, 0, 8
+400db73a:	ffa0f2        	movi	a15, 255
+400db73d:	30faf0        	xor	a15, a10, a15
+400db740:	056407        	bbci	a4, 0, 400db749 <_ZNK4hbnf21AnimartrixAudioBridge8modulateEiiRhS1_S1_+0x1c9>
+400db743:	60caa2        	addi	a10, a10, 96
+400db746:	74f0a0        	extui	a15, a10, 0, 8
+      const uint8_t gain=(uint8_t)min16(104u,((uint16_t)bass*mask)>>7);
+400db749:	c122f0        	mul16u	a2, a2, a15
+
+-- fallback call target map (firmware.map) --
+1408: .pio/build/hbnf_matrix_wled16_packet20_diag/lib4a1/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp.o (__divdi3)
+105975: 0x000000004000ca84 __divdi3 = 0x4000ca84
+-- above source branch skips the generic fallback for width=32,height=16 --

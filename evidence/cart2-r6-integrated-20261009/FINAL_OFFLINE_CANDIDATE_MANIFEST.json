@@ -1,0 +1,85 @@
+{
+  "schema": "hbnf-cart2-phase2-final-offline-candidate-v1",
+  "release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+  "status": "OFFLINE_CANDIDATE__NOT_LIVE_QUALIFIED__NOT_ACCEPTED",
+  "artifact": {
+    "path": "evidence/cart2-r6-integrated-20261009/hbnf-cart2-phase2-offline-wow-r6-integrated-20261009.bin",
+    "sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
+    "bytes": 1497936,
+    "embedded_candidate_and_release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+    "target": "ESP32 / exact established WLED 16.0.1 PlatformIO environment"
+  },
+  "source_binding": {
+    "path": "firmware/phase2/integration-r6/SOURCE_BINDING.json",
+    "sha256": "6fc6782cf58ca8e9d5d98a21e43739bee9a4804fdd1eea44fa83f1d47f159e18",
+    "runtime_files": {
+      "hbnf_animartrix_audio_bridge.h": "56a391336b72bc6f37d835bbe1a6eca1108f3819fd99f5af9816e671ada46351",
+      "hbnf_audio_expression.h": "f4825884dd53cba9bca698bd8b9b7d9d13a81e7ce381957d23790f13073dc4c3",
+      "hbnf_brightness_output.h": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a",
+      "hbnf_coordinated_contract.h": "e65399d2117f79d302bd8bd7474da955000e74689f6712a726a7e2759a477d25",
+      "hbnf_foundation_core.h": "d4646267f8fbc03cc4921368fc801e528e6a6cb92133a0c1fc74b48b211be0e4",
+      "hbnf_generative_v4.h": "13163419b6453d448a795a7580e784f54b23b7586c8317eff467863f648a6dfa",
+      "hbnf_home_screen_icon.h": "e272644675566a969f65e96b855b824109b8ae6fbcb168da8c6efdeb842097d6",
+      "hbnf_local_ui.h": "feed7e614cf43d7efe211b54bba5b37fb352e70646e887e3b0341c3f97b0068b",
+      "hbnf_native_text.h": "0633c5d31c1003f901ec6a71c8545319235200ad0deeb4866fe3753391841b69",
+      "hbnf_vibe16.h": "f076acf0e5710bf5a9acffe63b31a95f2252230b5470bd362301caa73a743b0a",
+      "hbnf_vibe_runtime.h": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc",
+      "library.json": "2dc685da45efe57fe1d199b5407a00a7bd42b2f473599f6f432df515b4b6c96a",
+      "usermod_hbnf_foundation_v1.cpp": "a4c7aa07d990ee7f6abb453b1e6cf53d35df98b004e29b403794cfbf8cbb1ab0"
+    },
+    "all_runtime_files_match": true
+  },
+  "build_closure": {
+    "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "environment": "hbnf_matrix_wled16_packet20_diag",
+    "platformio_core": "6.1.18",
+    "python": "3.9.6",
+    "esp32_framework": "2.0.18+sha.8ba0dc0",
+    "xtensa_toolchain": "8.4.0+2021r2-patch5",
+    "platformio_ini_sha256": "99718bfd8614da297c94692bc41dea48c9af87dbe829ded2e4a7cad7f0368820",
+    "platformio_override_ini_sha256": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922",
+    "source_date_epoch": 1791450000,
+    "dependency_set": "Exact R5 closure listed in parent manifest; no dependency, LDF, or compiler-setting changes.",
+    "clean_room": "Established pinned R5 local source/toolchain/dependency closure; successful target binary matches durable candidate byte-for-byte; current incremental no-op verification preserved."
+  },
+  "resource_usage": {
+    "flash_used_bytes": 1491197,
+    "flash_partition_bytes": 1572864,
+    "flash_remaining_bytes": 81667,
+    "flash_used_percent": 94.8,
+    "ram_used_bytes": 112456,
+    "ram_available_bytes": 327680,
+    "ram_remaining_bytes": 215224,
+    "ram_used_percent": 34.3,
+    "firmware_bin_bytes": 1497936
+  },
+  "codegen_review": {
+    "evidence_path": "evidence/cart2-r6-integrated-20261009/AnimartrixAudioBridge_modulate_target_disassembly.txt",
+    "production_32x16_path_skips_64bit_division_fallback": true,
+    "fallback_preserved_for_other_geometry": true,
+    "mechanism": "Xtensa code branches to generic int64 division fallback when dimensions are not 32x16; the production 32x16 path lowers to target multiply-high and shifts. The fallback helper remains linked for other geometry."
+  },
+  "rollback": {
+    "release_id": "Foundation R4",
+    "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "bytes": 1489008,
+    "verified": true
+  },
+  "qualification": {
+    "offline_pixel_equivalence": "512 production pixels \u00d7 8 transforms exact vs original R5 expression",
+    "offline_host_tests": "Focused firmware/source, package, backend, Vibe, scoring, PWA, and Text/Moments tests pending final integrated pass",
+    "live_28_kernel_sweep": "NOT_RUN",
+    "combined_feature_performance": "NOT_RUN",
+    "90_minute_soak": "NOT_RUN",
+    "matrix_aux_physical_and_owner_acceptance": "NOT_RUN",
+    "T4": "NOT_ACCEPTED",
+    "T5": "NOT_ACCEPTED"
+  },
+  "authority": {
+    "live_mutation_authorized": false,
+    "production_deployment_authorized": false,
+    "guest_mode_enable_authorized": false,
+    "uv_energization_authorized": false
+  }
+}

@@ -13,7 +13,7 @@ static inline Rgb8 blend(Rgb8 a,Rgb8 b,uint8_t m){return Rgb8((uint16_t(a.r)*(25
 static inline Rgb8 scaleRgb(Rgb8 a,uint8_t m){return Rgb8((uint16_t(a.r)*m+127)/255,(uint16_t(a.g)*m+127)/255,(uint16_t(a.b)*m+127)/255);}
 }
 
-#include "../firmware/phase2/integration-r5/usermod/hbnf_vibe_runtime.h"
+#include "../firmware/phase2/integration-r6/usermod/hbnf_vibe_runtime.h"
 
 using namespace hbnf_v1;
 

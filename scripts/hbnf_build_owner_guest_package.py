@@ -10,7 +10,7 @@ import stat
 import zipfile
 from pathlib import Path
 
-PACKAGE = "HBNF_CART_OWNER_UX_R4_GUEST_ROUTE_R2_20261008"
+PACKAGE = "HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009"
 CONTROLLER_FILES = (
     "hbnf-cart.html", "hbnf-cart.js", "hbnf-cart-net.mjs", "hbnf-cart-sw.js",
     "hbnf-cart-semantic.mjs", "hbnf-cart-manifest.webmanifest", "hbnf-cart-ui-v6.css",
@@ -34,8 +34,8 @@ def build(
     source_commit: str,
     *,
     package_name: str = PACKAGE,
-    manifest_schema: str = "hbnf-cart-owner-ux-r4-guest-route-r2-package-v1",
-    build_marker: str = "hbnf-cart2-owner-ux-r4-20261008",
+    manifest_schema: str = "hbnf-cart2-owner-guest-vibe-package-v2",
+    build_marker: str = "hbnf-cart2-owner-guest-vibe-r2-20261009",
     scope: str = "controller-only-no-firmware-no-phase2-hardware",
 ) -> tuple[Path, str]:
     source_root = source_root.resolve()
@@ -61,12 +61,17 @@ def build(
         relative: digest((controller / relative).read_bytes())
         for relative in sorted(CONTROLLER_FILES)
     }
+    package_files = {
+        name: digest((package_dir / name).read_bytes())
+        for name in ("install_ui_v6.py", "INSTALL_UI_V6.command", "SOURCE_COMMIT.txt")
+    }
     manifest = {
         "schema": manifest_schema,
         "buildMarker": build_marker,
         "sourceCommit": source_commit.strip(),
         "scope": scope,
         "files": files,
+        "packageFiles": package_files,
     }
     (package_dir / "MANIFEST.json").write_bytes((json.dumps(manifest, indent=2, ensure_ascii=False) + "\n").encode("utf-8"))
     archive = output_dir / f"{package_name}.zip"
@@ -80,7 +85,7 @@ def build(
             info.compress_type = zipfile.ZIP_STORED
             zf.writestr(info, path.read_bytes())
     sha = digest(archive.read_bytes())
-    (output_dir / f"{PACKAGE}.zip.sha256").write_bytes(f"{sha}  {archive.name}\n".encode("ascii"))
+    (output_dir / f"{package_name}.zip.sha256").write_bytes(f"{sha}  {archive.name}\n".encode("ascii"))
     return archive, sha
 
 
@@ -90,8 +95,8 @@ def main() -> None:
     ap.add_argument("--output-dir", type=Path, required=True)
     ap.add_argument("--source-commit", required=True)
     ap.add_argument("--package-name", default=PACKAGE)
-    ap.add_argument("--manifest-schema", default="hbnf-cart-owner-ux-r4-guest-route-r2-package-v1")
-    ap.add_argument("--build-marker", default="hbnf-cart2-owner-ux-r4-20261008")
+    ap.add_argument("--manifest-schema", default="hbnf-cart2-owner-guest-vibe-package-v2")
+    ap.add_argument("--build-marker", default="hbnf-cart2-owner-guest-vibe-r2-20261009")
     ap.add_argument("--scope", default="controller-only-no-firmware-no-phase2-hardware")
     args = ap.parse_args()
     archive, sha = build(

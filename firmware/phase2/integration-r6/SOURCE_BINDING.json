@@ -1,0 +1,103 @@
+{
+  "schema": "hbnf-phase2-integration-r6-source-binding-v1",
+  "status": "R6_FULL_SOURCE_CLOSURE__OFFLINE_BUILD_VERIFIED__LIVE_QUALIFICATION_PENDING",
+  "release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+  "parent_release_id": "hbnf-cart2-phase2-offline-wow-r5-20261008",
+  "parent_firmware_sha256": "f663c0736256186eff009b69818f5d41b1eec9df310be3128e1b3c67a9feea8b",
+  "parent_manifest_sha256": "2b25d74b20bcc73d8fcb9de6fd8a104f8bbe80e84413911800a273fe4485622f",
+  "parent_source_binding_sha256": "d2d2ade525e4993a0308ad273725596dc9ddf3a5a228ce449205f6f08bf1e687",
+  "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+  "runtime_source_directory": "firmware/phase2/integration-r6/usermod",
+  "runtime_files": {
+    "hbnf_animartrix_audio_bridge.h": "56a391336b72bc6f37d835bbe1a6eca1108f3819fd99f5af9816e671ada46351",
+    "hbnf_audio_expression.h": "f4825884dd53cba9bca698bd8b9b7d9d13a81e7ce381957d23790f13073dc4c3",
+    "hbnf_brightness_output.h": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a",
+    "hbnf_coordinated_contract.h": "e65399d2117f79d302bd8bd7474da955000e74689f6712a726a7e2759a477d25",
+    "hbnf_foundation_core.h": "d4646267f8fbc03cc4921368fc801e528e6a6cb92133a0c1fc74b48b211be0e4",
+    "hbnf_generative_v4.h": "13163419b6453d448a795a7580e784f54b23b7586c8317eff467863f648a6dfa",
+    "hbnf_home_screen_icon.h": "e272644675566a969f65e96b855b824109b8ae6fbcb168da8c6efdeb842097d6",
+    "hbnf_local_ui.h": "feed7e614cf43d7efe211b54bba5b37fb352e70646e887e3b0341c3f97b0068b",
+    "hbnf_native_text.h": "0633c5d31c1003f901ec6a71c8545319235200ad0deeb4866fe3753391841b69",
+    "hbnf_vibe16.h": "f076acf0e5710bf5a9acffe63b31a95f2252230b5470bd362301caa73a743b0a",
+    "hbnf_vibe_runtime.h": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc",
+    "library.json": "2dc685da45efe57fe1d199b5407a00a7bd42b2f473599f6f432df515b4b6c96a",
+    "usermod_hbnf_foundation_v1.cpp": "a4c7aa07d990ee7f6abb453b1e6cf53d35df98b004e29b403794cfbf8cbb1ab0"
+  },
+  "source_deltas": {
+    "hbnf_animartrix_audio_bridge.h": {
+      "r5_sha256": "8748231ccf7733bd34c16dc0417933a46d3a5bdccfc47c2bd54ce2e3fa104535",
+      "r6_sha256": "56a391336b72bc6f37d835bbe1a6eca1108f3819fd99f5af9816e671ada46351",
+      "change": "Specialize exact 32x16 geometry to bounded int32 multiply/divide by 1186; retain existing int64 path for every other geometry.",
+      "equivalence_fixture": "tests/test_r5_audio_radial_fastpath.py"
+    },
+    "usermod_hbnf_foundation_v1.cpp": {
+      "r5_sha256": "13d2a54cfba1913bb4c74cf6296875204546f6cd4c19b92656bf0c9187ba9a56",
+      "r6_sha256": "a4c7aa07d990ee7f6abb453b1e6cf53d35df98b004e29b403794cfbf8cbb1ab0",
+      "change": "Embedded candidate/release label only; underlying Foundation R4 lineage and feature set unchanged."
+    }
+  },
+  "expert_reference": {
+    "selected_source": "firmware/phase2/integration-r7/SOURCE_BINDING.json",
+    "selected_source_bridge_sha256": "edfe168658d548fe8e52e05b5b9d0cc3390cfe11092423a2c1c12de95884ae74",
+    "selection": "Port only the proven bounded 32x16 radial arithmetic from the later source; do not adopt unrelated R7 runtime changes.",
+    "supporting_artifact": "evidence/cart2-r7-performance-repair-20261009/R7_RADIAL_FASTPATH_DISASSEMBLY.txt"
+  },
+  "inherited_r5_build_closure": {
+    "manifest_path": "evidence/hbnf-phase2-integration-20261007/r5-offline-qualification-20261009/FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
+    "source_binding_sha256": "d2d2ade525e4993a0308ad273725596dc9ddf3a5a228ce449205f6f08bf1e687",
+    "build_inputs": {
+      "platformio.ini": {
+        "sha256": "99718bfd8614da297c94692bc41dea48c9af87dbe829ded2e4a7cad7f0368820",
+        "bytes": 40344
+      },
+      "platformio_override.ini": {
+        "sha256": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922",
+        "bytes": 1354
+      }
+    },
+    "generated_inputs": {
+      "html_ui.h": {
+        "sha256": "101f34fafc71b34adb50d5b649c8099767a5b625b43f2647b5f39416ab15389c",
+        "bytes": 243592
+      },
+      "html_pixart.h": {
+        "sha256": "7b1c9669606e157635f184d726ce0343d044f2a081b38615ed269a71117852ef",
+        "bytes": 46141
+      },
+      "html_cpal.h": {
+        "sha256": "9b338eb9ad416235224e485875af45d6c015187ad97c3a333218d8e29d3bafbb",
+        "bytes": 39883
+      },
+      "html_edit.h": {
+        "sha256": "50b3bdf9f26a77d2c226effe5c6d5953041e13d46ed36f32d45a2a8d37f1d73e",
+        "bytes": 25766
+      },
+      "html_pxmagic.h": {
+        "sha256": "cee8f86037992ac342a6e98617048ae5930256ee7af79ff4ae2e3e532fff1cba",
+        "bytes": 53719
+      },
+      "html_pixelforge.h": {
+        "sha256": "50804c5326437c7f0ba15841c9faefafafa88aee3b9ba62fde582db389e09250",
+        "bytes": 68060
+      },
+      "html_settings.h": {
+        "sha256": "bb46c944d5362becfb0feb52531ef0be6e9a8282f5fb608e044cc6ba800c197e",
+        "bytes": 250089
+      },
+      "html_other.h": {
+        "sha256": "eaf806122da30fa4b617379f2733fcfd578f4c7b14a4b290e55694923ec11946",
+        "bytes": 43747
+      },
+      "js_iro.h": {
+        "sha256": "595cd77f29776a8f3907c70eb82b838e72b49ca890b7ee0ed9a329f1b5888476",
+        "bytes": 61389
+      },
+      "js_omggif.h": {
+        "sha256": "7563b9037ddb8d52e2580d1d0992a8707bc5add437990e72fee3dfc1c4758306",
+        "bytes": 16082
+      }
+    },
+    "dependency_versions": "Exact dependencies and versions recorded in the pinned R5 clean-room manifest and build log; no dependency, LDF, or compiler setting changed."
+  },
+  "feature_scope": "R5 runtime feature/source closure, except radial arithmetic specialization and embedded R6 identity; no feature removals."
+}

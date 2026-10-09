@@ -10,7 +10,7 @@ const js = fs.readFileSync(path.join(controller, "hbnf-cart.js"), "utf8");
 const sw = fs.readFileSync(path.join(controller, "hbnf-cart-sw.js"), "utf8");
 const manifest = JSON.parse(fs.readFileSync(path.join(controller, "hbnf-cart-manifest.webmanifest"), "utf8"));
 const installer = fs.readFileSync(path.join(root, "hbnf-ui-v6-package/install_ui_v6.py"), "utf8");
-const VERSION = "20261008-owner-ux-r4";
+const VERSION = "20261009-cart2-vibe-r2";
 const TOKEN = "a".repeat(64);
 
 assert.equal(parsePairFragment(`#pair=${TOKEN}`), TOKEN);
@@ -49,7 +49,7 @@ assert.equal(manifest.start_url, `/hbnf-cart.html?app=${VERSION}`);
 assert.match(html, /navigator\.serviceWorker\.register/);
 assert.match(html, new RegExp(`hbnf-cart-sw\\.js\\?v=${VERSION}`));
 assert.match(html, /scope:"\/hbnf-cart\.html"/);
-assert.match(sw, /hbnf-owner-pwa-v7-4-owner-ux-r4-20261008/);
+assert.match(sw, /hbnf-owner-pwa-v7-cart2-vibe-r2-20261009/);
 assert.match(sw, /self\.skipWaiting\(\)/);
 assert.match(sw, /self\.clients\.claim\(\)/);
 assert.match(sw, /url\.origin !== self\.location\.origin/);
@@ -111,5 +111,5 @@ assert.match(js, /invalid_or_mismatched_foundation_ack.*Matrix command not confi
 const css = fs.readFileSync(path.join(controller, "hbnf-cart-ui-v6.css"), "utf8");
 assert.match(css, /min-height:50px/);
 assert.match(css, /@media\(max-width:340px\)/);
-assert.match(sw, /hbnf-owner-pwa-v7-4-owner-ux-r4-20261008/);
+assert.match(sw, /hbnf-owner-pwa-v7-cart2-vibe-r2-20261009/);
 console.log("PASS: owner mission hierarchy, Vibe controls, status truth, responsive layouts, Guest default, and PWA versioning");
