@@ -1,0 +1,27 @@
+{
+  "schema": "hbnf-r2-trace-formatter-source-fix-v1",
+  "status": "SOURCE_FIX_TESTED_HOST_ONLY__NOT_BUILT__NOT_LIVE_AUTHORIZED",
+  "cause": "The R2 diagnostic formatter used %llu for monotonicUs on the pinned ESP32 target configured with Newlib nano, whose printf path does not support 64-bit integer formats. This caused the literal 'lu' prefix and shifted trace columns observed in the actual readback.",
+  "change": "Added a bounded 20-digit unsigned decimal helper and changed only the rare readback formatter to serialize monotonicUs as a decimal string before formatting the remaining 32-bit values. No frame hot path, renderer behavior, trace storage, timing, or production threshold changed.",
+  "source": {
+    "pre_fix_formatter_file_sha256": "6d6ed64ae6c35c75ee79484c06bb2d4357d67bcb91541d8ac3d72d651ffb4c43",
+    "post_fix_usermod_sha256": "cdbf4b1df665d1146ea488f87db4de97c92bb00e8e327ccf7712a6689f6f9b1b",
+    "new_helper_sha256": "e7c2044ab3341131c518db8ee9e8ccab4ca387719fb31855f26c1497cd02453b",
+    "test_sha256": "6f7e63f48196a2d1661e696e94950df458c6e823de8dfed79342be527b5f997b"
+  },
+  "validation": {
+    "native_host_cxx11_helper_test": "PASS: 0, UINT32_MAX, UINT64_MAX and undersized output buffer; -Wall -Wextra -Werror",
+    "trace_encoding_failure_regression": "PASS: original target output remains explicitly classified invalid; corrected source no longer uses %llu in trace formatter",
+    "paired_window_protocol": "PASS",
+    "transaction_dry_run": "PASS",
+    "control_plane": "PASS: 23 tests",
+    "architecture_fitness": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "artifact_boundary": "The existing R2 BIN is unchanged and identifies the pre-fix source closure. This source correction has not been included in a new BIN, firmware build, or release manifest. No post-fix target-build or silicon measurement is claimed.",
+  "live_authority": "R2 install and exact R4 restoration authority are consumed. This source fix authorizes no new install, restart, or live diagnostic.",
+  "expert_basis": [
+    "Espressif ESP-IDF v4.2.2 ESP32 Kconfig documentation for CONFIG_NEWLIB_NANO_FORMAT: https://docs.espressif.com/projects/esp-idf/en/v4.2.2/esp32/api-reference/kconfig.html",
+    "Pinned local Arduino-ESP32 framework 2.0.18+sha.8ba0dc0 ESP32 sdkconfig: CONFIG_NEWLIB_NANO_FORMAT=y; SHA-256 2e7dcb1827219a6b41ac52bb2bbf28676fb113ac675218b5387d41e5ba05b7a9."
+  ]
+}

@@ -11,6 +11,7 @@
 #include "hbnf_brightness_output.h"
 #include "hbnf_native_text.h"
 #include "hbnf_outlier_trace.h"
+#include "hbnf_u64_format.h"
 #include "fontmanager.h"
 #include <ANIMartRIX.h>
 #include <string.h>
@@ -65,8 +66,13 @@ static uint8_t hbnfTailKernel=255;
 static bool hbnfTailEnabled=false;
 static portMUX_TYPE hbnfTailMux=portMUX_INITIALIZER_UNLOCKED;
 static void hbnfFormatTraceRecord(const hbnf_outlier_trace::Record& r,char* row,size_t capacity) {
-  snprintf(row,capacity,"%llu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%u",
-    (unsigned long long)r.monotonicUs,(unsigned long)r.frameSequence,
+  char monotonicUs[21];
+  if(!hbnf_u64_format::decimal(r.monotonicUs,monotonicUs,sizeof(monotonicUs)) || capacity==0) {
+    if(capacity>0)row[0]='\0';
+    return;
+  }
+  snprintf(row,capacity,"%s,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%u",
+    monotonicUs,(unsigned long)r.frameSequence,
     (unsigned long)r.frameStartCycles,(unsigned long)r.frameEndCycles,
     (unsigned long)r.wholeFrameCycles,(unsigned long)r.kernelGrossCycles,
     (unsigned long)r.audioCycles,(unsigned long)r.colorCycles,
