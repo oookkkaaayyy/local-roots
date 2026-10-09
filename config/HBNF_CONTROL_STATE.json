@@ -229,7 +229,7 @@
   "bounded_phase2_r4_install_attempt2_authorization": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008-RETRY1",
     "authorized_at_utc": "2026-10-08T06:20:06.671131+00:00",
-    "authorized_by": "Current user instruction: URGENT \u2014 RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: URGENT — RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:21:47.880324+00:00",
@@ -347,7 +347,7 @@
   "bounded_phase2_r4_live_qualification_authorization": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
     "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
-    "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: CART 2.0 — FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:10:00.723317+00:00",
@@ -800,7 +800,7 @@
         "Prior 16:42/16:45 times are not automatic abort or rollback triggers for the currently active seq53 path.",
         "Continue the already-authorized seq53 install/targeted validation while commands are actively progressing and safety/identity evidence remains intact.",
         "Do not broaden scope or start new exploratory work.",
-        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop\u2014not for elapsed wall-clock time alone.",
+        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop—not for elapsed wall-clock time alone.",
         "Owner-device smoke remains mandatory before declaring field-ready."
       ],
       "schema": "hbnf-field-readiness-deadline-v1",
@@ -1686,7 +1686,7 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
+      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "live_mutation_authorization": "R7 install and exact R4 recovery are consumed and closed; R7 failed the frozen kernel13 p99 gate, exact R4 recovery is verified, and no live mutation authority remains.",
@@ -2417,7 +2417,7 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "R2_TRACE_RECORD_FORMAT_DEFECT__STAGE_ATTRIBUTION_INCONCLUSIVE__R4_HEALTHY_BASELINE",
+    "current_failure_domain": "R2_TRACE_FORMATTER_SOURCE_FIX_NOT_TARGET_BUILT__STAGE_ATTRIBUTION_INCONCLUSIVE__R4_HEALTHY_BASELINE",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
       "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
@@ -2426,9 +2426,9 @@
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Continue offline source analysis of R2 trace formatter/record layout; preserve sample distributions and do not infer stage attribution from malformed records.",
-      "Continue ready independent offline Cart 2.0 product work; R4 is the verified field baseline.",
-      "No further firmware install, restart, or live diagnostic is authorized by this transaction; T4/T5 remain unaccepted."
+      "Confirmed R2 trace defect: the pinned ESP32 Newlib nano printf path cannot format %llu; corrected only the diagnostic readback timestamp serializer and committed host regression coverage at cd848842b328cce044181d06c39055f12a218e77. This correction is source-only and not target-built.",
+      "Continue independent offline Cart 2.0 work with exact Foundation R4 as the verified installed baseline.",
+      "No further firmware installation, restart, or live diagnostic is authorized by the consumed R2 transaction. A future diagnostic needs a target-built exact artifact, offline validation, fresh exact authority, and full admission; T4/T5 remain unaccepted."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -2930,7 +2930,7 @@
   "previous_phase2_r4_install_authorization_consumed": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
     "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
-    "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: CART 2.0 — FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:10:00.723317+00:00",
