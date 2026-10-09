@@ -2390,10 +2390,10 @@
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
       "Live mutation authority is closed. No R8 or later installation is authorized.",
-      "Preserve exact R7 failure and R4 recovery evidence; physical AUX output after recovery still needs owner visual confirmation when available.",
-      "Diagnose the R7 kernel13 p99 regression offline using source/profile/observer evidence; preserve all committed features and frozen gates.",
-      "Prepare a corrected successor only after evidence-backed root cause and full offline admission; live install requires new exact authorization.",
-      "Continue independent Cart 2.0 offline engineering; do not mark T4/T5 accepted."
+      "R7 exact artifact failed the frozen kernel13 p99 gate; exact R4 recovery and identity/health readback passed.",
+      "Offline source/object inspection identified a new per-pixel Vibe color composition path that may contribute to average renderer cost; available evidence does not prove it caused the p99 excursions. Observer measurement covers frame average only.",
+      "Continue independent offline Cart 2.0 product work; do not modify hardware or production cloud services.",
+      "Do not build a firmware successor until an offline targeted correction is established; any future live installation requires fresh exact-artifact authority. T4/T5 remain incomplete."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -2627,7 +2627,7 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-09T10:53:07Z",
+  "last_updated_utc": "2026-10-09T10:53:07.839125Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "admission_path": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_APPROVED_ADMISSION.json",
@@ -2669,11 +2669,11 @@
     "status": "R7_GATE_FAILED__EXACT_R4_RESTORED__LIVE_MUTATION_CLOSED",
     "target": "Matrix 192.168.77.10 / MAC 70:4b:ca:5b:34:5c only"
   },
-  "live_mutation_authorization_closed_at_utc": null,
+  "live_mutation_authorization_closed_at_utc": "2026-10-09T10:53:07.839125+00:00",
   "live_mutation_authorization_closure": {
-    "evidence": "evidence/cart2-r6-live-qualification-20261009/R6_FAILURE_R4_RECOVERY_CLOSURE.json",
-    "evidence_sha256": "dcbe9d642a09adb81f0c2d96684d9f8bf852aef512a6b5a6d44881759be71cc1",
-    "reason": "R6 matched tails-off performance gate failed; exact authorized R4 recovery completed and verified; no remaining authorized live mutations."
+    "evidence": "evidence/cart2-r7-performance-repair-20261009/R7_R4_RECOVERY_RESULT.json",
+    "evidence_sha256": "70bb779e8e94156cd120512a1b848442a0cf16683273e6bfd5a57a2eac80af9c",
+    "reason": "R7 failed the frozen kernel13 p99 gate; one exact R4 recovery completed and read-only identity/health verified. Current live mutation authority is closed; no R8+ install authority."
   },
   "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",
@@ -3037,5 +3037,10 @@
     "sha256": "70bb779e8e94156cd120512a1b848442a0cf16683273e6bfd5a57a2eac80af9c",
     "status": "PASS"
   },
-  "schema": "hbnf-control-state-v2"
+  "schema": "hbnf-control-state-v2",
+  "r7_offline_diagnosis": {
+    "path": "evidence/cart2-r7-performance-repair-20261009/R7_OFFLINE_PERFORMANCE_DIAGNOSIS.json",
+    "sha256": "f700b07645178d245b8760598462ce9263371bb73bad54097de5d9d366092917",
+    "status": "CAUSE_UNRESOLVED__NO_SOURCE_FIX_OR_NEW_CANDIDATE_CLAIMED"
+  }
 }

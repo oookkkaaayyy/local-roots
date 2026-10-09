@@ -1,0 +1,227 @@
+{
+  "schema": "hbnf-r7-offline-performance-diagnosis-v1",
+  "recorded_at_utc": "2026-10-09T11:05:00.300830+00:00",
+  "status": "CAUSE_UNRESOLVED__LIVE_MUTATION_CLOSED__R4_FIELD_BASELINE",
+  "live_mutation_authorized": false,
+  "candidate": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+    "sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
+    "source_commit": "fa415b2c52cc450895c2e6435977422b35be7558"
+  },
+  "baseline": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "runtime_observation": {
+    "kernel": "Caleido3",
+    "index": 13,
+    "variant_id": 1347100685,
+    "brightness": 44,
+    "r7_samples": 25,
+    "r7_fps_median": 42.0,
+    "r4_fps_median": 39.0,
+    "r7_avg_frame_median_ms": 18.55363,
+    "r4_avg_frame_median_ms": 18.63129,
+    "r7_p95_median_ms": 20.375,
+    "r4_p95_median_ms": 21.25,
+    "r7_p99_median_ms": 55.625,
+    "r4_p99_median_ms": 33.625,
+    "frozen_r7_p99_ceiling_ms": 42.03125,
+    "r7_max_frame_ms": 72.916,
+    "r7_frame_tail_overflow": false,
+    "r7_profile_p99_by_second": [
+      {
+        "uptime_seconds": 1408,
+        "p99_ms": 21.375,
+        "max_ms": 37.463,
+        "tail_sample_count": 224
+      },
+      {
+        "uptime_seconds": 1409,
+        "p99_ms": 23.875,
+        "max_ms": 72.721,
+        "tail_sample_count": 277
+      },
+      {
+        "uptime_seconds": 1411,
+        "p99_ms": 25.375,
+        "max_ms": 72.721,
+        "tail_sample_count": 328
+      },
+      {
+        "uptime_seconds": 1412,
+        "p99_ms": 37.375,
+        "max_ms": 72.721,
+        "tail_sample_count": 378
+      },
+      {
+        "uptime_seconds": 1413,
+        "p99_ms": 37.375,
+        "max_ms": 72.721,
+        "tail_sample_count": 430
+      },
+      {
+        "uptime_seconds": 1414,
+        "p99_ms": 50.375,
+        "max_ms": 72.721,
+        "tail_sample_count": 481
+      },
+      {
+        "uptime_seconds": 1416,
+        "p99_ms": 50.375,
+        "max_ms": 72.721,
+        "tail_sample_count": 531
+      },
+      {
+        "uptime_seconds": 1417,
+        "p99_ms": 55.625,
+        "max_ms": 72.721,
+        "tail_sample_count": 583
+      },
+      {
+        "uptime_seconds": 1418,
+        "p99_ms": 55.625,
+        "max_ms": 72.721,
+        "tail_sample_count": 635
+      },
+      {
+        "uptime_seconds": 1419,
+        "p99_ms": 56.375,
+        "max_ms": 72.721,
+        "tail_sample_count": 687
+      },
+      {
+        "uptime_seconds": 1421,
+        "p99_ms": 55.625,
+        "max_ms": 72.721,
+        "tail_sample_count": 737
+      },
+      {
+        "uptime_seconds": 1422,
+        "p99_ms": 55.625,
+        "max_ms": 72.721,
+        "tail_sample_count": 786
+      },
+      {
+        "uptime_seconds": 1423,
+        "p99_ms": 55.625,
+        "max_ms": 72.721,
+        "tail_sample_count": 837
+      },
+      {
+        "uptime_seconds": 1424,
+        "p99_ms": 56.375,
+        "max_ms": 72.916,
+        "tail_sample_count": 886
+      },
+      {
+        "uptime_seconds": 1426,
+        "p99_ms": 56.375,
+        "max_ms": 72.916,
+        "tail_sample_count": 937
+      },
+      {
+        "uptime_seconds": 1427,
+        "p99_ms": 56.375,
+        "max_ms": 72.916,
+        "tail_sample_count": 989
+      },
+      {
+        "uptime_seconds": 1428,
+        "p99_ms": 56.375,
+        "max_ms": 72.916,
+        "tail_sample_count": 1041
+      },
+      {
+        "uptime_seconds": 1429,
+        "p99_ms": 56.375,
+        "max_ms": 72.916,
+        "tail_sample_count": 1090
+      },
+      {
+        "uptime_seconds": 1431,
+        "p99_ms": 55.625,
+        "max_ms": 72.916,
+        "tail_sample_count": 1139
+      },
+      {
+        "uptime_seconds": 1432,
+        "p99_ms": 55.625,
+        "max_ms": 72.916,
+        "tail_sample_count": 1188
+      },
+      {
+        "uptime_seconds": 1433,
+        "p99_ms": 55.625,
+        "max_ms": 72.916,
+        "tail_sample_count": 1238
+      },
+      {
+        "uptime_seconds": 1434,
+        "p99_ms": 55.625,
+        "max_ms": 72.916,
+        "tail_sample_count": 1289
+      },
+      {
+        "uptime_seconds": 1436,
+        "p99_ms": 53.625,
+        "max_ms": 72.916,
+        "tail_sample_count": 1341
+      },
+      {
+        "uptime_seconds": 1437,
+        "p99_ms": 55.625,
+        "max_ms": 72.916,
+        "tail_sample_count": 1391
+      },
+      {
+        "uptime_seconds": 1438,
+        "p99_ms": 55.625,
+        "max_ms": 72.916,
+        "tail_sample_count": 1441
+      }
+    ],
+    "stage_kernel_avg_median_r7_ms": 8.849908,
+    "stage_kernel_avg_median_r4_ms": 8.291882000000001,
+    "observer_effect_frame_average_delta_pct": 3.738982087005973,
+    "observer_effect_note": "Only frame-average observer effect was measured; no p99 observer A/B exists. It cannot waive or explain the p99 failure."
+  },
+  "static_source_evidence": {
+    "wled_source_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "r4_usermod_sha256": "9672125b4f1914c73bf0d7a997ae81a430c8f4e4b1cb50956e1303ac19687bfa",
+    "r7_usermod_sha256": "5a02f89c6af8466dd6592d6f4b88da3e84b1153ba0d6be16ff2bc3a1bb24f572",
+    "r4_usermod_object_sha256": "a1f7150eac63cd72f9f958f9c4cfcf08fbb49fc1655470bc98d51b4ec7cf558f",
+    "r7_usermod_object_sha256": "e09d96bc0733a0d3d9ba4b84bcc2c9f2828a5d84df63c67d31497a79b4145ea4",
+    "r4_usermod_object_text_bytes": 198831,
+    "r7_usermod_object_text_bytes": 207124,
+    "r4_renderFoundationPixel_text_bytes": 513,
+    "r7_renderFoundationPixel_text_bytes": 513,
+    "r7_new_composeVibeColor_text_bytes": 860,
+    "interpretation": "The R7 object contains a new 860-byte composeVibeColor routine, invoked from renderFoundationPixel after donor rendering. This establishes added per-pixel work as a plausible contributor to the modest kernel-average delta; static disassembly does not prove it caused the p99 excursions. Existing source comparison found the Matrix-to-AUX preparation/sender source unchanged; stage timing attribution shift is not by itself a root cause."
+  },
+  "failure_classification": {
+    "frozen_gate": "OBJECTIVE_DEVICE_RUNTIME_P99_FAILURE",
+    "host_harness": "NOT_THE_CAUSE_OF_THIS_GATE_FAILURE__PROFILE_VALID_25_OF_25__ZERO_COLLECTION_ERRORS",
+    "instrumentation": "OBSERVER_EFFECT_ONLY_MEASURED_FOR_FRAME_AVERAGE; P99_EFFECT_UNRESOLVED",
+    "application_rendering": "NEW_R7_PER_PIXEL_COMPOSITION_IS_PLAUSIBLE_FOR_AVERAGE_COST_BUT_NOT_PROVEN_AS_P99_CAUSE",
+    "root_cause": "UNRESOLVED"
+  },
+  "expert_basis": [
+    {
+      "source": "https://docs.espressif.com/projects/esp-idf/en/v5.2.4/esp32/api-guides/performance/speed.html",
+      "fact": "Espressif notes per-core cycle counters require a pinned task/ISR and that small (<1\u20132ms) microbenchmarks can show code-layout/cache variation; it does not identify this R7 frame-tail cause.",
+      "use": "Avoid attributing measured runtime tails to code layout without artifact-specific evidence."
+    },
+    {
+      "source": "https://github.com/espressif/arduino-esp32/blob/master/cores/esp32/main.cpp",
+      "fact": "Arduino loop task is created through xTaskCreateUniversal using ARDUINO_RUNNING_CORE.",
+      "use": "Use pinned task/cycle semantics only if another live qualification is later authorized."
+    }
+  ],
+  "not_done": [
+    "No device, router, cloud, AUX, or Matrix changes; no polling/restart/OTA.",
+    "No R8 build or installation; live authority remains closed.",
+    "No source correction is claimed because the measured p99 regression has not been causally isolated."
+  ],
+  "next_safe_step": "Continue independent offline product work. A future exact candidate needs an offline targeted change plus source-level/performance replay; before any live measurement, obtain new exact-artifact authority and compare p99 with properly matched R4 conditions. Do not repeat R7 observer windows."
+}
