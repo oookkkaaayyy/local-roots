@@ -2627,7 +2627,7 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-09T10:53:07.839125Z",
+  "last_updated_utc": "2026-10-09T11:06:19Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "admission_path": "evidence/cart2-r7-performance-repair-20261009/R7_LIVE_APPROVED_ADMISSION.json",
@@ -3040,7 +3040,14 @@
   "schema": "hbnf-control-state-v2",
   "r7_offline_diagnosis": {
     "path": "evidence/cart2-r7-performance-repair-20261009/R7_OFFLINE_PERFORMANCE_DIAGNOSIS.json",
-    "sha256": "f700b07645178d245b8760598462ce9263371bb73bad54097de5d9d366092917",
+    "sha256": "7b42aa4470f5ed9f220cf3e3615a2ae7b46091b2905bb1b7ff7e308bfce12079",
     "status": "CAUSE_UNRESOLVED__NO_SOURCE_FIX_OR_NEW_CANDIDATE_CLAIMED"
+  },
+  "owner_observation_after_r4_recovery": {
+    "reported_at_utc": "2026-10-09T11:06:19Z",
+    "source": "Current owner statement after the exact R4 recovery receipt.",
+    "matrix": "Active; normal moving animations.",
+    "aux": "Active; visibly mirrors Matrix scenes and is functioning properly.",
+    "scope": "Owner physical observation of current R4 field baseline only; it does not qualify R7 or close T4/T5."
   }
 }

@@ -223,5 +223,11 @@
     "No R8 build or installation; live authority remains closed.",
     "No source correction is claimed because the measured p99 regression has not been causally isolated."
   ],
-  "next_safe_step": "Continue independent offline product work. A future exact candidate needs an offline targeted change plus source-level/performance replay; before any live measurement, obtain new exact-artifact authority and compare p99 with properly matched R4 conditions. Do not repeat R7 observer windows."
+  "next_safe_step": "Continue independent offline product work. A future exact candidate needs an offline targeted change plus source-level/performance replay; before any live measurement, obtain new exact-artifact authority and compare p99 with properly matched R4 conditions. Do not repeat R7 observer windows.",
+  "current_baseline_owner_observation": {
+    "reported_at_utc": "2026-10-09T11:06:19Z",
+    "matrix": "Active; normal moving animations.",
+    "aux": "Active; visually mirrors Matrix scenes; owner reports both functioning properly.",
+    "scope": "Current Foundation R4 baseline after recovery only; not evidence of R7 qualification or T4/T5 acceptance."
+  }
 }
