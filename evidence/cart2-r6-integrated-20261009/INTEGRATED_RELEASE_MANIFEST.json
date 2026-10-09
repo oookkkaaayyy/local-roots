@@ -133,8 +133,10 @@
   },
   "drive_readback": {
     "firmware_size_bytes": 1497936,
+    "firmware_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
     "owner_guest_package_size_bytes": 122754,
-    "sha256_verified_locally_before_upload": true
+    "owner_guest_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
+    "owner_guest_sha256_sidecar_readback_matches": true
   },
   "test_receipt": {
     "path": "evidence/cart2-r6-integrated-20261009/OFFLINE_TEST_RECEIPT.json",
