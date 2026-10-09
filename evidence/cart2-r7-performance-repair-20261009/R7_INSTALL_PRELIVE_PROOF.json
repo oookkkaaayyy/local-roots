@@ -1,0 +1,60 @@
+{
+  "approved_for_mutation": true,
+  "authority": {
+    "scope": "One exact R7 Matrix install and normal reboot; full unchanged qualification. One exact R4 recovery only on objectively defined device safety/runtime/performance/AUX gate failure. No AUX/router/cloud mutation.",
+    "source": "Explicit conditional R7 installation/qualification authorization, latest safety clarification restricts candidates to R6/R7, and exact R7 LIVE_APPROVED admission pass. No R8+."
+  },
+  "capsule_sha256": "f81e02ec069aa095fdfa14d1b80b03a892a8436109aee94dc7eed659b8d682d2",
+  "consumer_contract": {
+    "identity": "One multipart POST of the exact R7 BIN to WLED 16.0.1 Matrix http://192.168.77.10/update using the established direct-LAN curl method; -H Expect:; no retry; exact release ID and SHA post-checked.",
+    "verified": true
+  },
+  "pre_mutation_state": {
+    "aux_ip": "192.168.77.11",
+    "aux_mac": "8c:94:df:55:c3:4c",
+    "aux_native_ddp_live": true,
+    "aux_source_ip": "192.168.77.10",
+    "mac_on_ac": true,
+    "matrix_ip": "192.168.77.10",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "matrix_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "matrix_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "preflight_file": "evidence/cart2-r7-performance-repair-20261009/R7_READONLY_PREOTA_AUTHORIZATION_FINAL_20261009.json"
+  },
+  "recovery_identity": {
+    "identity": "Foundation R4 exact; SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c; 1,489,008 bytes",
+    "verification": "Local SHA/size, prior exact R4 recovery receipt, current Matrix /hbnf/build.json exact R4 readback, existing WLED OTA path."
+  },
+  "run_id": "phase2-r7-one-install-20261009",
+  "schema": "local-roots-prelive-proof-v1",
+  "stages": {
+    "capture-current-state": {
+      "evidence": [
+        "R7_READONLY_PREOTA_AUTHORIZATION_FINAL_20261009.json exact Matrix/AUX MACs and R4 identity; Matrix healthy/WLED16.0.1/diagnostics off; AUX 22 pixels and native DDP live from .10; Mac AC/LAN/upstream HTTPS; no install process; exact candidate and recovery SHA.",
+        "Owner reports current Foundation R4 Matrix/AUX both active and AUX mirrors Matrix."
+      ],
+      "status": "PASS"
+    },
+    "contract-closure": {
+      "evidence": [
+        "R7 exact embedded release id, 1,497,920-byte BIN SHA-256 22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994; SOURCE_BINDING_R7 and 21/21 offline tests PASS.",
+        "R7_LIVE_APPROVED_ADMISSION.json passes against authoritative state; exact R4 installed release/SHA, current conditional R7 attempt consumed before network request."
+      ],
+      "status": "PASS"
+    },
+    "recovery-proof": {
+      "evidence": [
+        "Exact R4 recovery BIN SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c, 1,489,008 bytes, locally verified and Drive preserved.",
+        "Prior R6 transaction restored this exact R4 and current read-only identity verifies exact release; same WLED /update path has proven R4 recovery."
+      ],
+      "status": "PASS"
+    },
+    "transaction-rehearsal": {
+      "evidence": [
+        "R7_RELEASE_TRANSACTION_DRYRUN.json preserves historical host-failure replays and 28-kernel dry-run with zero device requests.",
+        "R7 LIVE admission, fail-closed guard and exact multipart WLED /update route are verified; single request only, Expect: suppression, no retry."
+      ],
+      "status": "PASS"
+    }
+  }
+}
