@@ -1,0 +1,77 @@
+{
+  "bin_path": "evidence/cart2-execution-reset-20261010/artifact/hbnf-cart2-r6-frame-context-diagnostic-20261010.bin",
+  "build_source_commit": "2219ade3db3e0c021b151fd1b3aec7d8360d4804",
+  "embedded_release_id": "hbnf-cart2-r6-frame-context-diagnostic-20261010",
+  "environment": "hbnf_matrix_wled16_packet20_diag",
+  "release_id": "hbnf-cart2-r6-frame-context-diagnostic-20261010",
+  "rollback": {
+    "bin_path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008
+  },
+  "schema": "hbnf-r6-diagnostic-artifact-identity-v1",
+  "sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
+  "size_bytes": 1511456,
+  "source_files_match": true,
+  "source_manifest_files": [
+    {
+      "path": "firmware/phase2/integration-r6/usermod/hbnf_animartrix_audio_bridge.h",
+      "sha256": "56a391336b72bc6f37d835bbe1a6eca1108f3819fd99f5af9816e671ada46351"
+    },
+    {
+      "path": "firmware/phase2/integration-r6/usermod/hbnf_audio_expression.h",
+      "sha256": "f4825884dd53cba9bca698bd8b9b7d9d13a81e7ce381957d23790f13073dc4c3"
+    },
+    {
+      "path": "firmware/phase2/integration-r6/usermod/hbnf_brightness_output.h",
+      "sha256": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a"
+    },
+    {
+      "path": "firmware/phase2/integration-r6/usermod/hbnf_coordinated_contract.h",
+      "sha256": "e65399d2117f79d302bd8bd7474da955000e74689f6712a726a7e2759a477d25"
+    },
+    {
+      "path": "firmware/phase2/integration-r6/usermod/hbnf_foundation_core.h",
+      "sha256": "d4646267f8fbc03cc4921368fc801e528e6a6cb92133a0c1fc74b48b211be0e4"
+    },
+    {
+      "path": "firmware/phase2/integration-r6/usermod/hbnf_generative_v4.h",
+      "sha256": "13163419b6453d448a795a7580e784f54b23b7586c8317eff467863f648a6dfa"
+    },
+    {
+      "path": "firmware/phase2/integration-r6/usermod/hbnf_home_screen_icon.h",
+      "sha256": "e272644675566a969f65e96b855b824109b8ae6fbcb168da8c6efdeb842097d6"
+    },
+    {
+      "path": "firmware/phase2/integration-r6/usermod/hbnf_local_ui.h",
+      "sha256": "feed7e614cf43d7efe211b54bba5b37fb352e70646e887e3b0341c3f97b0068b"
+    },
+    {
+      "path": "firmware/phase2/integration-r6/usermod/hbnf_native_text.h",
+      "sha256": "0633c5d31c1003f901ec6a71c8545319235200ad0deeb4866fe3753391841b69"
+    },
+    {
+      "path": "firmware/phase2/integration-r6/usermod/hbnf_vibe16.h",
+      "sha256": "f076acf0e5710bf5a9acffe63b31a95f2252230b5470bd362301caa73a743b0a"
+    },
+    {
+      "path": "firmware/phase2/integration-r6/usermod/hbnf_vibe_runtime.h",
+      "sha256": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc"
+    },
+    {
+      "path": "firmware/phase2/integration-r6/usermod/library.json",
+      "sha256": "2dc685da45efe57fe1d199b5407a00a7bd42b2f473599f6f432df515b4b6c96a"
+    },
+    {
+      "path": "firmware/phase2/integration-r6/usermod/usermod_hbnf_foundation_v1.cpp",
+      "sha256": "aa9d8f546677a568482f22e0f4f636eaedf3189601a415e7c55209a95c678a22"
+    },
+    {
+      "path": "firmware/phase2/integration-r6/usermod/hbnf_outlier_trace.h",
+      "sha256": "d97672e7f41ad3fc21a5ed453f49197d149d9533426a17d0e152d8ceba466a66"
+    }
+  ],
+  "verified_at_utc": "2026-10-10T08:43:16.648415+00:00",
+  "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c"
+}

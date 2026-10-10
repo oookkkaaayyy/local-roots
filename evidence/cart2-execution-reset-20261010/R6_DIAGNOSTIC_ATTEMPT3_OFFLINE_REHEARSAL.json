@@ -4,10 +4,12 @@
     "Before R4 recovery, reread and validate Matrix IP/MAC/WLED and release/candidate identity; do not flash an unknown target.",
     "If exact R4 is already installed and healthy, record readback as restored and avoid an unnecessary flash/reboot."
   ],
+  "artifact_identity_receipt": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_ATTEMPT3_ARTIFACT_IDENTITY.json",
+  "artifact_identity_sha256": "8ea811d2da5d63b762293ad65a2afb145481077ab5c00e3ac7642271ef0db54b",
   "attempt2_failure_classification": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_ATTEMPT2_HOST_FAILURE_AND_FIX.json",
   "candidate_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
   "current_readonly_preflight": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-03/READONLY_PREFLIGHT.json",
-  "current_readonly_preflight_sha256": "ce4c5bc422a0aa57319f684a879d6f36d0d8a5fbd65a8fb08a85dcceaf6f04ba",
+  "current_readonly_preflight_sha256": "4eff9c05c60cc7174a19152ec2bf363875678cf3f633bdbeba39236f60988193",
   "device_requests": 0,
   "dry_run_receipt_sha256": "c0bc30ea148cc0f82937d65019b626ab3855a5064373854f765616becf9935ce",
   "firmware_source_changed": false,
@@ -28,7 +30,7 @@
   },
   "offline_test_log_sha256": "f14a2369b0ecd8b7068d6be8f0de88f405f2ec557abb79ba4066085a48ebb805",
   "r4_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-  "recorded_at_utc": "2026-10-10T08:41:56.610356+00:00",
+  "recorded_at_utc": "2026-10-10T08:43:16.650953+00:00",
   "schema": "hbnf-r6-diagnostic-attempt3-offline-rehearsal-v1",
   "status": "PASS_OFFLINE_HOST_CORRECTION__FRESH_PREFLIGHT_PASS__LIVE_ADMISSION_PENDING"
 }
