@@ -1,13 +1,13 @@
 {
-  "admission_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_POST_BACKEND_LIVE_ADMISSION.json",
-  "admission_sha256": "31a72e402148e77498767f6429996f6f3e43dc7d4511b3dbc059fd44933ab766",
-  "device_mutation_or_backend_write": false,
-  "errors": [],
-  "pass": true,
-  "preflight_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/FRESH_INSTALL_PREFLIGHT.json",
-  "preflight_sha256": "4b72e4cabc35594e4ba3d177368b75424842a000ce89c1b9dd8b559e6f18f1f1",
   "schema": "hbnf-cart2-release-admission-result-v1",
-  "scope": "exact already-authorized R6 coordinated transaction; this receipt grants no authority beyond the current owner authorization",
   "stage": "LIVE_APPROVED",
-  "validated_at_utc": "2026-10-10T05:32:28.313407+00:00"
+  "pass": true,
+  "errors": [],
+  "preflight_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/FRESH_INSTALL_PREFLIGHT.json",
+  "preflight_sha256": "fd5e20338c2ade808c36d6018ae84ca5d809746678cfef8e1c4747ae36b07b59",
+  "admission_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_POST_BACKEND_LIVE_ADMISSION.json",
+  "admission_sha256": "a542a3be50bab3a1549c59d05d39e2519f3377c7276eb9ab5a805bcddd887e57",
+  "validated_at_utc": "2026-10-10T05:35:10.921963+00:00",
+  "device_mutation_or_backend_write": false,
+  "scope": "exact already-authorized R6 coordinated transaction; this receipt grants no authority beyond current owner authorization"
 }

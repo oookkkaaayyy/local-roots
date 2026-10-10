@@ -1,0 +1,51 @@
+{
+  "schema": "hbnf-cart2-r6-install-attempt-consumption-v1",
+  "consumed_at_utc": "2026-10-10T05:35:32.619999+00:00",
+  "owner_authority": "Current user directive resumes exact existing authorized R6 coordinated transaction; one R6 OTA and normal reboot, exact R4 rollback only on defined device/runtime/safety/performance/AUX failure.",
+  "attempt_number": 1,
+  "attempt_limit": 1,
+  "candidate": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+    "path": "evidence/cart2-r6-integrated-20261009/hbnf-cart2-phase2-offline-wow-r6-integrated-20261009.bin",
+    "sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
+    "size_bytes": 1497936,
+    "target_ip": "192.168.77.10",
+    "target_mac": "70:4b:ca:5b:34:5c"
+  },
+  "rollback": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "attempt_limit": 1
+  },
+  "preflight": {
+    "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/FRESH_INSTALL_PREFLIGHT.json",
+    "sha256": "fd5e20338c2ade808c36d6018ae84ca5d809746678cfef8e1c4747ae36b07b59",
+    "result": "PASS_FOR_EXACT_R6_INSTALL"
+  },
+  "admission": {
+    "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_POST_BACKEND_LIVE_ADMISSION.json",
+    "sha256": "a542a3be50bab3a1549c59d05d39e2519f3377c7276eb9ab5a805bcddd887e57",
+    "result_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_POST_BACKEND_LIVE_ADMISSION_RESULT.json",
+    "result_sha256": "29f293305e5ffa2c969c8fba1aaef9092d905802986f19ab3f2ebec7ae550abc",
+    "result": "PASS_LIVE_APPROVED"
+  },
+  "scope": [
+    "one exact R6 OTA request using the proven Opal-origin WLED /update path",
+    "normal device reboot caused by WLED update",
+    "immediate identity/health/AUX readback",
+    "frozen early 13/9 gates then unchanged 28-kernel sweep, combined-feature validation, one 5400-second contiguous soak",
+    "one exact R4 recovery only on objective candidate device/runtime/safety/performance/AUX failure"
+  ],
+  "prohibited": [
+    "retry or second R6 upload",
+    "different firmware",
+    "router/Opal configuration or firmware changes",
+    "AUX firmware/configuration changes",
+    "Guest Mode activation",
+    "UV energization",
+    "threshold changes",
+    "unrelated cloud changes"
+  ],
+  "current_device_state": "Exact Foundation R4 remains installed; no candidate OTA request has yet been issued."
+}

@@ -23,7 +23,7 @@
     "device_and_source_authority_reconciled": {
       "evidence_file": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/FRESH_INSTALL_PREFLIGHT.json",
       "pass": true,
-      "sha256": "4b72e4cabc35594e4ba3d177368b75424842a000ce89c1b9dd8b559e6f18f1f1"
+      "sha256": "fd5e20338c2ade808c36d6018ae84ca5d809746678cfef8e1c4747ae36b07b59"
     },
     "entire_release_transaction_dryrun": {
       "evidence_file": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_OFFLINE_TRANSACTION_REUSE_RECEIPT.json",
@@ -33,7 +33,7 @@
     "exact_candidate_rollback_package_and_current_opal_verified": {
       "evidence_file": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/FRESH_INSTALL_PREFLIGHT.json",
       "pass": true,
-      "sha256": "4b72e4cabc35594e4ba3d177368b75424842a000ce89c1b9dd8b559e6f18f1f1"
+      "sha256": "fd5e20338c2ade808c36d6018ae84ca5d809746678cfef8e1c4747ae36b07b59"
     },
     "exact_source_dependency_generated_input_closure": {
       "evidence_file": "firmware/phase2/integration-r6/SOURCE_BINDING.json",
@@ -73,12 +73,12 @@
     "one_authorized_live_worker": {
       "evidence_file": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/FRESH_INSTALL_PREFLIGHT.json",
       "pass": true,
-      "sha256": "4b72e4cabc35594e4ba3d177368b75424842a000ce89c1b9dd8b559e6f18f1f1"
+      "sha256": "fd5e20338c2ade808c36d6018ae84ca5d809746678cfef8e1c4747ae36b07b59"
     },
     "preflight_read_only_hardware_state_and_identity": {
       "evidence_file": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/FRESH_INSTALL_PREFLIGHT.json",
       "pass": true,
-      "sha256": "4b72e4cabc35594e4ba3d177368b75424842a000ce89c1b9dd8b559e6f18f1f1"
+      "sha256": "fd5e20338c2ade808c36d6018ae84ca5d809746678cfef8e1c4747ae36b07b59"
     },
     "rollback_artifact_hash_verified": {
       "evidence_file": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
