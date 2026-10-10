@@ -1,0 +1,17 @@
+{
+  "captured_utc": "2026-10-10T20:52:03.700949+00:00",
+  "content_type": "application/json",
+  "endpoint": "GET /edit?func=download&path=%2Fcfg.json",
+  "hbnf_foundation_v1": {
+    "auxBrightness": 245,
+    "matrixBrightness": 52,
+    "vibe": 2
+  },
+  "http_status": 200,
+  "raw_config_persisted": false,
+  "read_only": true,
+  "response_bytes": 2997,
+  "schema": "hbnf-r6-readonly-persisted-brightness-prestate-v1",
+  "secret_fields_logged_or_saved": false,
+  "source_sha256": "f8594a161c7a7450cbacd26f3b6677e7ed05e12a6a902028ff009b5d915473c3"
+}

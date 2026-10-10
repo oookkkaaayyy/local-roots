@@ -3,7 +3,7 @@
     "all_historical_host_failures_replayed": {
       "evidence_file": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_TRANSACTION_DRYRUN.json",
       "pass": true,
-      "sha256": "7cbea8d1d66779618fd31960b9617eb0bb1e27671596c320feb7851e89535114"
+      "sha256": "a8c18bd9fa08bea2b658669b8e4a9946834d8c1e1cb887d3a16f46e5b2812b0f"
     },
     "combined_feature_check_sequence": {
       "evidence_file": "evidence/cart2-r6-audio-cache-20261010/COMBINED_FEATURE_OFFLINE_TESTS.json",
@@ -33,7 +33,7 @@
     "entire_release_transaction_dryrun": {
       "evidence_file": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_TRANSACTION_DRYRUN.json",
       "pass": true,
-      "sha256": "7cbea8d1d66779618fd31960b9617eb0bb1e27671596c320feb7851e89535114"
+      "sha256": "a8c18bd9fa08bea2b658669b8e4a9946834d8c1e1cb887d3a16f46e5b2812b0f"
     },
     "exact_recovery_bytes_available": {
       "evidence_file": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
@@ -51,9 +51,9 @@
       "sha256": "d4a4a7c120f1c9e01dea2f0546323df35107ea57d521f331a0f8ab949dd53d22"
     },
     "fresh_installed_candidate_runtime_identity": {
-      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json",
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/live-qualification/CURRENT_READONLY_RECONNECT_20261010.json",
       "pass": true,
-      "sha256": "470992075259d5c4cc6e73e33ff4d51580f1f70d3ff9188743acc4b126ee2bbc"
+      "sha256": "edaeef757dc4845685f1857e44bbb98f845099f70b509e379fd42b1225293b4d"
     },
     "frozen_performance_soak_and_restore_procedure": {
       "evidence_file": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_FROZEN_LIVE_QUALIFICATION_PROCEDURE.json",
@@ -78,7 +78,7 @@
     "launcher_rejects_invalid_manifest_before_device_access": {
       "evidence_file": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_TRANSACTION_DRYRUN.json",
       "pass": true,
-      "sha256": "7cbea8d1d66779618fd31960b9617eb0bb1e27671596c320feb7851e89535114"
+      "sha256": "a8c18bd9fa08bea2b658669b8e4a9946834d8c1e1cb887d3a16f46e5b2812b0f"
     },
     "matched_tails_off_test_plan": {
       "evidence_file": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_FROZEN_LIVE_QUALIFICATION_PROCEDURE.json",
@@ -86,9 +86,9 @@
       "sha256": "f566e9383b5be6a2d0aaf3e26cf8685e69158350637816c73fefd548740aa061"
     },
     "preflight_read_only_hardware_state_and_identity": {
-      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json",
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/live-qualification/CURRENT_READONLY_RECONNECT_20261010.json",
       "pass": true,
-      "sha256": "470992075259d5c4cc6e73e33ff4d51580f1f70d3ff9188743acc4b126ee2bbc"
+      "sha256": "edaeef757dc4845685f1857e44bbb98f845099f70b509e379fd42b1225293b4d"
     },
     "rollback_artifact_hash_verified": {
       "evidence_file": "evidence/cart2-r6-audio-cache-20261010/R6_DRIVE_ARTIFACT_READBACK.json",
@@ -97,7 +97,7 @@
     }
   },
   "classification": "CONTINUE_EXISTING_EXACT_R6_TRANSACTION__QUALIFICATION_ONLY__NO_INSTALL",
-  "created_at_utc": "2026-10-10T10:19:02Z",
+  "created_at_utc": "2026-10-10T21:14:11Z",
   "fresh_owner_authorization": {
     "attempt_number": 1,
     "authorization_id": "OWNER-20261010-R6-AUDIO-CACHE-FULL-QUALIFICATION",

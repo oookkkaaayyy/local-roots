@@ -1,0 +1,78 @@
+{
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+  "captured_at_utc": "2026-10-10T21:14:01.122214+00:00",
+  "device_requests": false,
+  "firmware_rebuilt": false,
+  "frozen_gates_changed": false,
+  "production_mutation": false,
+  "results": {
+    "28_kernel_sequence_and_identity": "PASS \u2014 fixed inventory 220\u2013247, kernel 0 then 13 early gate, exact identity, cross-kernel continuity, and restore snapshot enforced.",
+    "brightness_setup_restore_and_fail_closed_cases": "PASS \u2014 current persisted prestate 52/245/Vibe2; runner temporarily sets only Matrix HBNF brightness 44, proves persisted and runtime value, restores original persisted/runtime values; no retry after ambiguous writes.",
+    "combined_feature_sequence": "PASS \u2014 existing combined-feature host regression check.",
+    "network_interruption": "PASS AS NEGATIVE TEST \u2014 interruption during sampling/restoration is recorded as failure, never accepted; restore failure remains an explicit stop condition.",
+    "observer_deadline_and_restore_behavior": "PASS \u2014 no global 6000s timeout can kill the runner before finally; per-call bounded phases remain; injected KeyboardInterrupt enters cleanup and verifies exact renderer snapshot.",
+    "recovery_path": "PASS HOST CONTRACT ONLY \u2014 exact R4 hash and bounded restoration/recovery cases are exercised; no live recovery occurred in this run.",
+    "soak_handling": "PASS HOST CONTRACT ONLY \u2014 unchanged 5400s contiguous soak, 8s polling and gap/catastrophic semantics audited; synthetic collector cadence test passes. No live soak has run.",
+    "transaction_host_failure_and_invalid_admission": "PASS \u2014 invalid admission produced zero device requests; simulated success/failure/recovery paths pass."
+  },
+  "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "schema": "hbnf-r6-qualification-harness-adversarial-tests-v1",
+  "source_sha256": {
+    "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/OBSERVER_DEADLINE_FIX_TESTS.json": "3e6c14d4de3b99678d0fb2f935ea51a04738670a2d998a4a129738a1efde2404",
+    "scripts/hbnf_foundation_live_adapter.py": "78add0f89b359fc3c4ccef5486d12b3c662a35ea0e3858f334f6b26d87ab0d0f",
+    "scripts/hbnf_live_kernel_sweep.py": "1647837aabd56fd9a39615a84190a6a0a67bd9ac3cda617e092131527ca23c33",
+    "scripts/hbnf_r6_audio_cache_live_transaction.py": "9cc5731cf2901b2acb26044b574c4587d42d64fae4b85c425f46eddaa77971a9",
+    "tests/hbnf_foundation_continuous_soak.py": "70580d666bff378bddd90daacb29fa4044579780d841082f9d466c758aa18733",
+    "tests/hbnf_foundation_live_adapter.py": "9f80c467e11e6465227f8dd99dbb5b50c9575493f28dd7bb1ba3d6a862f29ec4",
+    "tests/hbnf_foundation_soak_audit.py": "96f1decd075543b976aaeef17ebe10405e021d1ebcc98efa52d45324ea826d6a",
+    "tests/hbnf_live_kernel_sweep.py": "dcf202bad826ac5ae8d5ab69cfdd8c601a6308869e29d67cea6270693d344555",
+    "tests/test_hbnf_r6_combined_feature_check.py": "3dcfb342fb358f13d282aff73cb3005b6da8d7d6fc4db420c8bbe584372204fc",
+    "tests/test_r6_audio_cache_transaction_dryrun.py": "30933ddee0181be51cc5c1b2f7f3092c83e0fe9643109cd7a9f255282a36aa7d",
+    "tests/test_r6_qualification_brightness_transaction.py": "19c9343951a44c526f9a9aa3958204610d714a3c86907521bf467ca8bf4d1a4b",
+    "tests/test_r6_qualification_continuation_control.py": "2ac4db985a1b531a83aa5610a1964538ef11cd7822d143cf322a9117d869064a",
+    "tests/test_r6_reboot_window_resolution.py": "128f4bb5934bdd19576326a5457df8622bbfdd770a9416e3f30dd41e24596ece"
+  },
+  "tests": [
+    {
+      "path": "tests/test_r6_qualification_brightness_transaction.py",
+      "result": "PASS"
+    },
+    {
+      "path": "tests/test_r6_audio_cache_transaction_dryrun.py",
+      "result": "PASS"
+    },
+    {
+      "path": "tests/test_r6_reboot_window_resolution.py",
+      "result": "PASS"
+    },
+    {
+      "path": "tests/test_hbnf_r6_combined_feature_check.py",
+      "result": "PASS"
+    },
+    {
+      "path": "tests/hbnf_live_kernel_sweep.py",
+      "result": "PASS"
+    },
+    {
+      "path": "tests/test_r6_qualification_continuation_control.py",
+      "result": "PASS"
+    },
+    {
+      "path": "tests/hbnf_foundation_live_adapter.py",
+      "result": "PASS"
+    },
+    {
+      "path": "tests/hbnf_foundation_continuous_soak.py",
+      "result": "PASS"
+    },
+    {
+      "path": "tests/hbnf_foundation_soak_audit.py",
+      "result": "PASS"
+    },
+    {
+      "path": "scripts/platform.py doctor",
+      "result": "PASS"
+    }
+  ]
+}

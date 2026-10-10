@@ -229,7 +229,7 @@
   "bounded_phase2_r4_install_attempt2_authorization": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008-RETRY1",
     "authorized_at_utc": "2026-10-08T06:20:06.671131+00:00",
-    "authorized_by": "Current user instruction: URGENT \u2014 RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: URGENT — RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:21:47.880324+00:00",
@@ -347,7 +347,7 @@
   "bounded_phase2_r4_live_qualification_authorization": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
     "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
-    "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: CART 2.0 — FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:10:00.723317+00:00",
@@ -924,18 +924,17 @@
   "current_task": {
     "autonomous_completion_authorization": {
       "allowed": [
-        "Current owner-authorized bounded Cart-only route validation and retention of the two approved routes after all exact-byte/fallback checks pass.",
-        "No-cost offline release integration, tests, and private evidence preservation within the committed Cart 2.0 scope.",
-        "One exact R6 frame-context diagnostic installation and mandatory exact R4 return after current direct owner authorization, exact LIVE_APPROVED admission, and fresh fail-closed preflight."
+        "Offline qualification-harness, Owner app, and backend/relay work requested in the current owner directive.",
+        "Qualification-only continuation for the exact already-installed R6 artifact after fresh read-only preflight and fail-closed LIVE_QUALIFICATION admission.",
+        "Temporary application of frozen brightness 44 inside the qualified harness, with captured persisted/runtime state restored and readback-verified on every exit path."
       ],
       "forbidden": [
-        "Router/Opal/AUX firmware or configuration changes outside the transaction, Guest Mode activation, UV energization, scope reduction, threshold changes, spending, or external outreach.",
-        "Cloudflare API writes until the authenticated Cloudflare session is re-established.",
-        "No diagnostic or production firmware installation until its own exact-artifact authorization and required fail-closed preflight pass.",
-        "Any candidate change, repeat of the diagnostic without new evidence, or live action outside the exact binding; no production release acceptance from this diagnostic."
+        "No firmware installation, OTA, speculative rebuild, router/Opal/AUX firmware or configuration change, cloud production deployment, Guest Mode activation, or UV energization.",
+        "No weakening performance/reliability thresholds, no unsafe MQTT fallback, no external communications or paid/usage-charged actions.",
+        "No qualification start unless exact installed R6 identity, power, LAN, AUX, rollback readiness, single worker, capsule, proof, and LIVE_QUALIFICATION admission all pass."
       ],
-      "scope": "Current owner authorization covers the exact diagnostic SHA, target Matrix MAC, bounded kernel-0 capture, one exact R4 return, and further evidence-based in-scope work subject to fresh per-attempt admission, health and recovery checks. No paid/charged actions or external communications.",
-      "user_permission": "The latest direct owner message authorizes the exact diagnostic SHA eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a and exact R4 rollback 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c, plus evidence-based in-scope attempts without another permission request. Every attempt still requires exact binding, passing admission, read-only safety preflight, one live worker, and verified recovery."
+      "scope": "Current owner instruction: complete the exact installed R6 qualification-only continuation when safe, after verifying live Matrix/AUX identity, power, LAN, recovery readiness, and reconciling current controls. Do not reinstall firmware.",
+      "user_permission": "Current owner message: “AC — CART 2.0: START PARALLEL DEBUGGING NOW”; explicitly directs exact installed R6 qualification-only continuation, no firmware reinstall, all frozen gates unchanged, and no unnecessary approvals."
     },
     "aux_blocker": {
       "historical_direct_output_failure": "Preserved; does not override the newer current owner observation.",
@@ -955,9 +954,9 @@
       "status": "OFFLINE_CORRECTION_TESTED__FRESH_PRELIVE_PASS"
     },
     "blockers": [
-      "Corrected public route test passed, but the execution host is not currently connected to HBNF-Cart: Wi-Fi is not associated, host IP is 192.168.68.91, the saved HBNF-Cart network could not be found in range, and bounded read-only requests to Matrix .10/AUX .11 timed out.",
-      "The live Owner page reports Cart service reachable but Matrix command unconfirmed/failed; AUX confirmation is stale. Do not deploy the backend/frontend package or install R6 until actual device identity/health/power/recovery and revision-bound application evidence are safely established.",
-      "R6 exact integrated firmware remains uninstalled and unqualified; current device identity is not freshly verified. Frozen gates remain unchanged."
+      "Qualification has not started. Latest read-only reconnect receipt captured 2026-10-10T20:39:53Z reports exact R6 release/SHA on Matrix, Matrix on, AUX 22 LEDs/live DDP from Matrix, host on AC, and Opal read-only ledger. Repeat fresh preflight immediately before qualification.",
+      "Persisted and runtime Matrix HBNF brightness at that receipt was 52; frozen qualification requires 44. Corrected runner temporarily sets 44 and verifies exact restoration of prior Matrix/AUX/Vibe runtime and persisted values; it never weakens the threshold.",
+      "No corrected 28-kernel profiles or uninterrupted 90-minute soak have been collected. Owner physical/audio/visual acceptance and end-to-end Owner/Guest command application remain unverified."
     ],
     "brightness_field_target": {
       "field_observation": "At roughly <=20 brightness Matrix appears effectively off; roughly 20-60 visibly loses LED/pixel participation and scene structure, requiring uncomfortable brightness to obtain a full-looking animation.",
@@ -966,7 +965,7 @@
       "status": "PHASE2_COMMITTED_REQUIREMENT",
       "ui_requirement": "Provide useful low-night perceptual granularity while retaining true maximum."
     },
-    "checkpoint_at_utc": "2026-10-10T04:16:14.495271+00:00",
+    "checkpoint_at_utc": "2026-10-10T21:13:22.464003+00:00",
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "diagnostic_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
@@ -996,33 +995,27 @@
       "zero_traffic_rehearsal_file_id": "1ZJOseh2J4ls9dGlF_SOH5DHAH9djd4xp"
     },
     "execution_cursor": {
-      "current_failure_domain": "R7_DEVICE_RUNTIME__KERNEL13_P99_GATE_FAILED__EXACT_R4_RESTORED__TAIL_CAUSE_UNRESOLVED",
+      "current_failure_domain": "R6_QUALIFICATION_HOST_DEADLINE_FIXED__FRESH_PREFLIGHT_28_KERNEL_SWEEP_AND_SOAK_PENDING",
       "current_lifecycle_state": "PHASE2_INTEGRATING",
       "current_subject": {
-        "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-        "r7_candidate_release": "hbnf-cart2-phase2-offline-wow-r7-20261009",
-        "r7_candidate_sha256": "22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994",
-        "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+        "artifact_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+        "installed_runtime_readback": "evidence/cart2-r6-audio-cache-20261010/live-qualification/CURRENT_READONLY_RECONNECT_20261010.json",
+        "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
       },
-      "current_transition": "R7_REJECTED__R4_RECOVERY_VERIFIED__OFFLINE_ANALYSIS",
+      "current_transition": "T4_PHASE2_INTEGRATION",
       "exact_next_path": [
-        "Keep exact R4 as the reported field baseline; live mutation authority remains closed.",
-        "Continue independently ready offline product lanes and staged backend work; do not deploy production.",
-        "Do not build R8 until source-backed correction of the R7 p99 failure is demonstrated.",
-        "The existing evidence is insufficient for causal attribution: no timestamped per-frame stage data aligned with long-frame outliers and no p99 observer A/B. Preserve the frozen thresholds."
+        "Fresh-read exact R6 Matrix identity, AUX native DDP, Mac power/LAN, exact R4 recovery bytes/Opal ledger, and one-worker status immediately before the qualification transaction.",
+        "Run LIVE_QUALIFICATION admission, capsule validation, and exact-hash prelive proof. No device write before every guard passes.",
+        "If safe, use the qualification-only continuation on the already-installed exact R6: set frozen Matrix brightness 44, run early kernels 0/13, all frozen 28 kernels, combined checks and a contiguous 5400-second soak, then restore and verify captured renderer and brightness/persisted baseline.",
+        "No R6 re-install/restart, production cloud/backend change, threshold changes, or scope reduction. Complete physical/audio/visual and owner-app acceptance only after objective tests."
       ],
       "no_repeat": [
-        "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
-        "R4 fixed-point performance trial is closed and materially successful; do not rerun exploratory R1-R4 selection.",
-        "Observer-effect measurement on exact artifact SHA 6285f1...4338 is already PASS; do not rerun unless artifact/instrumentation changes.",
-        "Exact Release07 rollback path is proven; do not re-derive it.",
-        "Host-only failures do not consume a recovery install unless actual device/runtime safety evidence fails or becomes unknown.",
-        "Do not rebuild firmware or use GitHub Actions for a host-harness defect.",
-        "ANTI_STALL V2: the 30-minute clock is time since last measurable forward progress, not attempt duration; healthy advancing work continues.",
-        "ANTI_STALL V2: when stalled, stop only the stalled mechanism at a safe boundary and preserve install/session/snapshot/checkpoint whenever proven safe; no timer-based restart/reinstall/recovery/reboot.",
-        "ANTI_STALL V2: one retry maximum per failure class, only with a materially different mechanism supported by new evidence.",
-        "ANTI_STALL V2: after 60 minutes without lifecycle progress, activate noncontending offline-safe lanes in parallel; do not kill healthy critical-path work.",
-        "ANTI_STALL V2: no firmware rebuild or GitHub Actions for host/transport/harness/telemetry-reader defects unless the artifact itself is invalidated."
+        "Do not repeat the exact R6 firmware installation or initiate a speculative rebuild.",
+        "Do not rerun completed R7/Packet20 diagnostics or rederive the exact R4 rollback.",
+        "Do not weaken frozen 28-kernel, combined-feature, 8-second safety polling, or 5400-second soak gates.",
+        "A host-only qualification failure preserves valid device state; never rollback unless objective device/runtime/safety/performance conditions require it.",
+        "No additional AUX/router/cloud/device diagnostics outside the minimum fresh read-only preflight and approved qualification sequence."
       ],
       "parallel_ready_during_foundation_soak": [
         "Mission Control/scoring source reconciliation and host tests",
@@ -1058,7 +1051,7 @@
         "Prior 16:42/16:45 times are not automatic abort or rollback triggers for the currently active seq53 path.",
         "Continue the already-authorized seq53 install/targeted validation while commands are actively progressing and safety/identity evidence remains intact.",
         "Do not broaden scope or start new exploratory work.",
-        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop\u2014not for elapsed wall-clock time alone.",
+        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop—not for elapsed wall-clock time alone.",
         "Owner-device smoke remains mandatory before declaring field-ready."
       ],
       "schema": "hbnf-field-readiness-deadline-v1",
@@ -1944,14 +1937,14 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
+      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
-    "live_mutation_authorization": "Current user authorizes the exact coordinated R6 transaction; authority is conditional and remains admission-gated. No device/backend/firmware write is permitted while current preflight is NOT_READY.",
-    "live_mutation_authorized": false,
-    "name": "Cart 2.0 coordinated R6 release \u2014 Cart routes verified; device preflight pending",
-    "next_action": "Restore a verified Mac-to-HBNF-Cart LAN connection when the AP is in range; then perform one fresh read-only Matrix/AUX/Opal and rollback/power preflight. Proceed to backend/firmware writes only if the existing LIVE_APPROVED admission passes.",
-    "next_work": "Keep the two verified Cart-only Worker routes. Complete current backend command-confirmation audit and offline transaction rehearsal while device connectivity is unavailable. No R6 OTA or production backend change yet.",
+    "live_mutation_authorization": "Qualification-only continuation for the exact installed R6; no installation. Fresh fail-closed preflight/admission required; temporary brightness 44 must restore the captured baseline.",
+    "live_mutation_authorized": true,
+    "name": "Cart 2.0 coordinated R6 release — Cart routes verified; device preflight pending",
+    "next_action": "Complete fresh read-only Matrix/AUX/Opal/power/rollback/single-worker preflight and exact admission; if all gates pass, run qualification-only continuation on installed R6 with frozen 28 kernels, combined checks, uninterrupted 5400-second soak, and verified renderer/brightness restoration. No firmware installation.",
+    "next_work": "Maintain the independent offline Owner app and backend/relay findings; after objective R6 qualification, complete owner physical/audio/visual acceptance and end-to-end command/scoring checks under existing authority.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "overnight_priority": {
       "do_not_derail": [
@@ -2645,7 +2638,7 @@
       "status": "PASS"
     },
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED",
+    "status": "R6_INSTALLED__QUALIFICATION_PENDING",
     "t3_fast_path_preparation": {
       "human_approval_required": true,
       "human_packet": "work/cart2/27_T3_PHASE2_FAST_PATH_PREP_20261006.md",
@@ -2690,37 +2683,27 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "R6_AUDIO_CACHE_LIVE_APPROVED_PASS__GUARDED_LAUNCH_PENDING",
+    "current_failure_domain": "R6_QUALIFICATION_HOST_DEADLINE_FIXED__FRESH_PREFLIGHT_28_KERNEL_SWEEP_AND_SOAK_PENDING",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
       "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
       "artifact_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
-      "status": "EXACT_CANDIDATE_AUTHORIZED__LIVE_APPROVED_PASS__NO_WRITE_YET"
+      "installed_runtime_readback": "evidence/cart2-r6-audio-cache-20261010/live-qualification/CURRENT_READONLY_RECONNECT_20261010.json",
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Complete source-binding accuracy and the exact-candidate release/transaction dry-run; resolve any failure without changing frozen policy.",
-      "Preserve current exact R4 and current preflight evidence; no live mutation until candidate-specific OFFLINE_COMPILED and LIVE_APPROVED admission plus fresh target/power/AUX/single-writer preflight pass.",
-      "If admitted, install the exact cachefix artifact once using the proven Opal-origin path, then run early kernel 0 and 13, the unchanged full 28-kernel sweep, combined-feature checks, and one contiguous 90-minute soak; restore exact R4 only on an objectively defined safety/performance/runtime failure.",
-      "After objective qualification, complete secure Owner/Guest control, Matrix/AUX physical review, and owner visual/audio/iPad acceptance; do not claim T4/T5 beforehand."
+      "Fresh-read exact R6 Matrix identity, AUX native DDP, Mac power/LAN, exact R4 recovery bytes/Opal ledger, and one-worker status immediately before the qualification transaction.",
+      "Run LIVE_QUALIFICATION admission, capsule validation, and exact-hash prelive proof. No device write before every guard passes.",
+      "If safe, use the qualification-only continuation on the already-installed exact R6: set frozen Matrix brightness 44, run early kernels 0/13, all frozen 28 kernels, combined checks and a contiguous 5400-second soak, then restore and verify captured renderer and brightness/persisted baseline.",
+      "No R6 re-install/restart, production cloud/backend change, threshold changes, or scope reduction. Complete physical/audio/visual and owner-app acceptance only after objective tests."
     ],
     "no_repeat": [
-      "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
-      "R4 fixed-point performance trial is closed and materially successful; do not rerun exploratory R1-R4 selection.",
-      "Observer-effect measurement on exact artifact SHA 6285f1...4338 is already PASS; do not rerun unless artifact/instrumentation changes.",
-      "Exact Release07 rollback path is proven; do not re-derive it.",
-      "Host-only failures do not consume a recovery install unless actual device/runtime safety evidence fails or becomes unknown.",
-      "Do not rebuild firmware or use GitHub Actions for a host-harness defect.",
-      "ANTI_STALL V2: the 30-minute clock is time since last measurable forward progress, not attempt duration; healthy advancing work continues.",
-      "ANTI_STALL V2: when stalled, stop only the stalled mechanism at a safe boundary and preserve install/session/snapshot/checkpoint whenever proven safe; no timer-based restart/reinstall/recovery/reboot.",
-      "ANTI_STALL V2: one retry maximum per failure class, only with a materially different mechanism supported by new evidence.",
-      "ANTI_STALL V2: after 60 minutes without lifecycle progress, activate noncontending offline-safe lanes in parallel; do not kill healthy critical-path work.",
-      "ANTI_STALL V2: no firmware rebuild or GitHub Actions for host/transport/harness/telemetry-reader defects unless the artifact itself is invalidated.",
-      "Do not create a replacement firmware candidate from seq45 isolated frame-max excursions unless corrected sustained-tail analysis proves a real renderer/runtime regression.",
-      "Do not rerun 28-kernel sweep or observer-effect A/B when reusing exact candidate SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
-      "Do not interpret the unanswered physical restore question as a failed restore or DDP failure; current WLED telemetry confirms DDP resumed.",
-      "Observer-effect measurement on exact R7 SHA-256 22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994 is complete in R7_OBSERVER_EFFECT_IDENTITY_RECEIPT.json; do not repeat the windows.",
-      "Attempt 1 failed on Mac-origin curl transport; attempt 2 used the distinct Opal path but its host identity/read-shape defect made capture inconclusive; exact R4 was verified afterward. Attempt 3 reuses the exact diagnostic bytes only under the current direct owner authorization, after offline harness correction and fresh per-attempt admission; never repeat without new evidence or alter the exact artifact."
+      "Do not repeat the exact R6 firmware installation or initiate a speculative rebuild.",
+      "Do not rerun completed R7/Packet20 diagnostics or rederive the exact R4 rollback.",
+      "Do not weaken frozen 28-kernel, combined-feature, 8-second safety polling, or 5400-second soak gates.",
+      "A host-only qualification failure preserves valid device state; never rollback unless objective device/runtime/safety/performance conditions require it.",
+      "No additional AUX/router/cloud/device diagnostics outside the minimum fresh read-only preflight and approved qualification sequence."
     ],
     "parallel_ready_during_foundation_soak": [
       "Mission Control/scoring source reconciliation and host tests",
@@ -2945,17 +2928,17 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-10T10:22:02Z",
+  "last_updated_utc": "2026-10-10T21:13:22Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
-    "authorization": "Current owner directive authorizes evidence-based further exact in-scope installations and exact R4 recovery, conditioned on per-attempt fail-closed admission and safety checks.",
-    "authorized": false,
+    "authorization": "Owner-authorized in-scope continuation; only the host observer-deadline failure was corrected.",
+    "authorized": true,
     "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
     "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
     "controller_package_sha256": null,
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "current_gate": "QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED",
-    "hardware_writes_permitted_now": false,
+    "current_gate": "Exact R6 installed; qualification-only continuation pending after proof-backed host harness correction.",
+    "hardware_writes_permitted_now": true,
     "live_admission_pending": false,
     "transaction_consumed": false,
     "candidate_install_limit": 1,
@@ -2969,7 +2952,7 @@
       "result": "Attempt-3 diagnostic failed frozen kernel-0 catastrophic gate; exact renderer snapshot restored; exact R4 verified; AUX DDP healthy."
     },
     "candidate_install_permitted": false,
-    "operation_scope": "CLOSED_AFTER_QUALIFICATION"
+    "operation_scope": "QUALIFICATION_ONLY"
   },
   "live_mutation_authorization_closed_at_utc": "2026-10-10T08:46:10Z",
   "live_mutation_authorization_closure": {
@@ -2977,7 +2960,7 @@
     "evidence_sha256": "a81fe0993144068206859041a010fad1ef7ed5cfa88f8c3a6edc7ff25e5ecaf0",
     "reason": "Attempt-3 exact diagnostic candidate hit catastrophic kernel-0 threshold failure for three consecutive scheduled samples. Renderer restore passed; exact R4 recovery and readback passed; AUX native DDP healthy. No live authority remains."
   },
-  "live_mutation_authorized": false,
+  "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",
@@ -3185,7 +3168,7 @@
   "previous_phase2_r4_install_authorization_consumed": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
     "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
-    "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: CART 2.0 — FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:10:00.723317+00:00",
@@ -3550,7 +3533,7 @@
       "one exact R4 return and read-only identity/health/AUX DDP verification",
       "no production acceptance, no firmware rebuild, no cloud/router/AUX firmware changes"
     ],
-    "source_message_ref": "Current owner message in this Codex task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; exact diagnostic SHA eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a and exact R4 SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
+    "source_message_ref": "Current owner message in this Codex task: CART 2.0 — ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; exact diagnostic SHA eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a and exact R4 SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
     "transport": "SSH-verified temporary artifact on Opal, then one Opal-origin multipart POST to Matrix WLED /update",
     "r4_return_attempts_used": 1,
     "recovery_install_limit": 1,
@@ -3563,7 +3546,7 @@
   },
   "live_authorization_binding": {
     "authorization_id": "OWNER-20261010-R6-AUDIO-CACHE-FULL-QUALIFICATION",
-    "source_message_ref": "Current owner instruction in this task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks.",
+    "source_message_ref": "Current owner instruction in this task: CART 2.0 — ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks.",
     "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
     "candidate_bin_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
     "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
@@ -3623,13 +3606,13 @@
       "offline_admission_sha256": "996ea788f49c6cabb6fd3fc33239fb0a20d1abb09263660a57f8e1bdc3139b61"
     },
     "conditional_authority": {
-      "source_message_ref": "Current owner instruction in this task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks.",
-      "status": "QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED",
+      "source_message_ref": "Current owner instruction in this task: CART 2.0 — ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks.",
+      "status": "CANDIDATE_INSTALLED_QUALIFICATION_PENDING",
       "candidate_install_limit": 1,
       "recovery_install_limit": 1,
       "requires_live_approved_admission": true,
       "requires_fresh_preflight": true,
-      "live_mutation_authorized": false,
+      "live_mutation_authorized": true,
       "authorization_id": "OWNER-20261010-R6-AUDIO-CACHE-FULL-QUALIFICATION",
       "candidate_attempts_used": 1,
       "recovery_attempts_used": 0,
@@ -3637,7 +3620,7 @@
       "runtime_reconciliation_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json",
       "runtime_reconciliation_sha256": "470992075259d5c4cc6e73e33ff4d51580f1f70d3ff9188743acc4b126ee2bbc"
     },
-    "status": "QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED",
+    "status": "CANDIDATE_INSTALLED_QUALIFICATION_PENDING",
     "artifact_drive_file_id": "1Ta0noTokPPxa8tBKsnfS83KIKbz2ZqS3",
     "artifact_drive_size_bytes": 1497984,
     "transaction_result": "evidence/cart2-r6-audio-cache-20261010/live-qualification/TRANSACTION_RESULT.json",
