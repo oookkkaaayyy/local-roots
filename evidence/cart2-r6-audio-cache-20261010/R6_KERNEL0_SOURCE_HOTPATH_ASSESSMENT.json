@@ -1,0 +1,58 @@
+{
+  "schema": "hbnf-r6-kernel0-source-hotpath-assessment-v1",
+  "status": "R6_GATE_FAILURE_CONFIRMED__SOURCE_HOTPATH_CORRECTION_HOST_VERIFIED__TARGET_EFFECT_UNMEASURED",
+  "branch": "hbnf-cart2-phase2-integration-20261006",
+  "parent_commit": "aea3350bd6e82bd5f92c4b2f3ca33fe0e464c90b",
+  "qualification": {
+    "candidate_release": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+    "gate": "kernel 0 FPS/p95/p99 failed; heap gates passed",
+    "installed_baseline": "exact Foundation R4",
+    "installed_r4_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "live_authority": "closed; this task performed no device or cloud operations"
+  },
+  "ranked_findings": [
+    {
+      "rank": 1,
+      "path": "firmware/phase2/integration-r6-cachefix/usermod/usermod_hbnf_foundation_v1.cpp:848-866",
+      "finding": "R6 calls composeVibeColor once per non-black rendered pixel after the palette timer ends but before the ANIMartRIX kernel returns. The frame metric computes kernelRender as kernelGross minus the separately timed audio and color intervals, so this newly integrated compositor work is attributed to kernel_ms_avg. The R4 integrated usermod renders the palette result directly and has no composeVibeColor call at its pixel-write site. This is the strongest source-backed explanation for some of the measured kernel-stage increase.",
+      "measurement": "R6 kernel_ms_avg median 19.24574 ms versus R4 14.64130 ms (+4.60444 ms). This does not quantify what fraction is the compositor or establish the entire performance regression cause.",
+      "confidence": "high that the extra per-pixel work exists and lands in the measured kernel stage; medium that it explains a material share of the delta"
+    },
+    {
+      "rank": 2,
+      "path": "firmware/phase2/integration-r6-cachefix/usermod/hbnf_animartrix_audio_bridge.h:68-69, 102-103, 110-145, 289-301",
+      "finding": "The R6 cachefix moves profileLane-derived audio values from each pixel's modulate() call to preparePixelModulation() at frame/control updates and retains the bounded 32x16 radial path. This change is an intended reduction in repeated work, not a demonstrated source regression. The R6 audio_ms_avg increase therefore remains unexplained by this bridge diff; captured Vibe/audio state and measurement conditions are not matched well enough to assign it to a path.",
+      "measurement": "R6 audio_ms_avg median 3.940373 ms versus R4 1.396445 ms (+2.543928 ms). R6 records Vibe 2 and response 50; the R4 kernel profile omitted its contemporaneous runtime controls."
+    },
+    {
+      "rank": 3,
+      "path": "firmware/phase2/integration-r6-cachefix/usermod/usermod_hbnf_foundation_v1.cpp:225-236, 857-862",
+      "finding": "The R6 kernel samples and available R4 preflight/resume state captures report palette mode legacy, but R4's contemporaneous controls were not preserved with its kernel samples. Both pixel paths time hue rotation before composition. The wrapper dispatch is similar, but the exact R4 Foundation core helper body is only represented locally by its preserved hash (9f4a63546bc42cef6ce71edfc6bb055fca40f1b28b8e7595fd09b6da9b5acf5c), not by an available source file. No palette-stage source defect is established.",
+      "measurement": "R6 palette_ms_avg median 2.046251 ms versus R4 0.413357 ms (+1.632894 ms)."
+    }
+  ],
+  "correction": {
+    "kind": "offline reversible source patch; no release candidate or firmware bytes changed",
+    "patch": "evidence/cart2-r6-audio-cache-20261010/R6_KERNEL0_COMPOSITION_HOIST.patch",
+    "behavior": "Compute the compositor's frame-invariant Vibe/audio factors once in beginFrame(), then pass the cached factors to each pixel composition call. Integer expressions and ordering are preserved.",
+    "base_source_sha256": {
+      "hbnf_vibe_runtime.h": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc",
+      "usermod_hbnf_foundation_v1.cpp": "622eae29173c4ba7ce12974e241bd1ad74f5b454f95b304aeb663351d359a40b"
+    },
+    "reversible": "Patch applies only to these hash-pinned source files; original R6 source closure and firmware remain unchanged."
+  },
+  "validation": {
+    "command": "python3 tests/test_hbnf_vibe_composition_hoist.py",
+    "result": "PASS",
+    "coverage": "The patch is applied to exact hash-pinned temporary copies; the host test checks a pre-hoist golden digest across five Vibes, 64 varied audio/axis states, eight phases, all 512 matrix coordinates, and black/pattern/white pixels. It also verifies frame-start preparation and cached per-pixel call sites.",
+    "golden_digest": "2b8f6486b2a37f11",
+    "firmware_build": "NOT RUN as directed",
+    "target_overhead": "NOT MEASURED; host correctness does not establish Xtensa cycle savings"
+  },
+  "remaining_measurement": "If R6 or a source-corrected successor is next authorized for hardware, keep the frozen gates and capture the same kernel-0 workload with fixed brightness, Vibe/audio controls, palette, and poll cadence; add per-stage correlation around the compositor only if the existing counters cannot separate its contribution. This patch itself requires a fresh reproducible build and full required qualification before any release use.",
+  "official_source_review": [
+    "Pinned WLED source commit 29b389df1c1aaec6ff53aea742d17063b985906c: https://github.com/wled/WLED/blob/29b389df1c1aaec6ff53aea742d17063b985906c/wled00/FX_fcn.cpp",
+    "WLED AudioReactive maintainer documentation: https://github.com/wled/WLED-Docs/blob/main/docs/advanced/audio-reactive.md"
+  ]
+}

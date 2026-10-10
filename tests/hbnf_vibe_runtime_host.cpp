@@ -13,7 +13,11 @@ static inline Rgb8 blend(Rgb8 a,Rgb8 b,uint8_t m){return Rgb8((uint16_t(a.r)*(25
 static inline Rgb8 scaleRgb(Rgb8 a,uint8_t m){return Rgb8((uint16_t(a.r)*m+127)/255,(uint16_t(a.g)*m+127)/255,(uint16_t(a.b)*m+127)/255);}
 }
 
+#ifdef HBNF_VIBE_RUNTIME_HEADER
+#include HBNF_VIBE_RUNTIME_HEADER
+#else
 #include "../firmware/phase2/integration-r6/usermod/hbnf_vibe_runtime.h"
+#endif
 
 using namespace hbnf_v1;
 
@@ -78,6 +82,34 @@ int main(){
   for(uint8_t i=0;i<5;i++){frame.vibe=(Vibe)i;out[i]=composeVibeColor(inputColor,frame,13,7);}
   for(uint8_t i=0;i<5;i++)for(uint8_t j=i+1;j<5;j++)
     require(out[i].r!=out[j].r||out[i].g!=out[j].g||out[i].b!=out[j].b,"Vibes have distinct composition output");
+
+#ifdef HBNF_VIBE_COMPOSITION_CACHE
+  // Golden output from the pre-hoist compositor. Production prepares these
+  // factors once per frame; preserve every pixel value across five Vibes,
+  // varied audio/axis inputs, eight phases, and the complete 32x16 matrix.
+  uint64_t compositionDigest=1469598103934665603ULL;
+  for(uint8_t vibe=0;vibe<5;vibe++)for(uint8_t signal=0;signal<64;signal++)for(uint8_t phase=0;phase<8;phase++){
+    CanonicalFrame candidate{};candidate.vibe=(Vibe)vibe;candidate.phaseQ16=0x12345678u*(phase+1u);
+    candidate.vibeAxes.structure=(uint8_t)(signal*17u);candidate.vibeAxes.flow=(uint8_t)(signal*41u);
+    candidate.vibeAxes.depth=(uint8_t)(signal*73u);candidate.vibeAxes.symmetry=(uint8_t)(signal*97u);
+    candidate.vibeAxes.detail=(uint8_t)(signal*113u);candidate.vibeAxes.paletteMotion=(uint8_t)(signal*151u);
+    candidate.vibeAxes.density=(uint8_t)(signal*199u);candidate.vibeAxes.negativeSpace=(uint8_t)(signal*227u);
+    candidate.vibeAxes.transitionEnergy=(uint8_t)(signal*31u);candidate.audio.bassPulse=(uint8_t)(signal*13u);
+    candidate.audio.midPulse=(uint8_t)(signal*29u);candidate.audio.treblePulse=(uint8_t)(signal*47u);
+    candidate.audio.highDetail=(uint8_t)(signal*61u);candidate.audio.spectralChange=(uint8_t)(signal*83u);
+    candidate.audio.slowEnergy=(uint8_t)(signal*101u);candidate.audio.highEnergy=(uint8_t)(signal*127u);
+    candidate.audio.transient=(uint8_t)(signal*157u);
+    const VibeCompositionFactors factors=prepareVibeComposition(candidate);
+    for(uint8_t y=0;y<16;y++)for(uint8_t x=0;x<32;x++){
+      const Rgb8 colors[]={{0,0,0},{(uint8_t)(x*7u+y*3u),(uint8_t)(x*2u+y*13u),(uint8_t)(255u-x*5u-y*2u)},{255,255,255}};
+      for(const Rgb8& color:colors){const Rgb8 rendered=composeVibeColor(color,candidate,x,y,factors);
+        compositionDigest=(compositionDigest^rendered.r)*1099511628211ULL;
+        compositionDigest=(compositionDigest^rendered.g)*1099511628211ULL;
+        compositionDigest=(compositionDigest^rendered.b)*1099511628211ULL;}
+    }
+  }
+  require(compositionDigest==0x2b8f6486b2a37f11ULL,"cached compositor remains pixel-identical to pre-hoist golden");
+#endif
 
   AutoVibeSelector automatic;automatic.reset(0);AudioFeatures heavyInput{};
   heavyInput.lowPressure=255;heavyInput.lowTransient=255;heavyInput.energyMedium=255;heavyInput.activity=255;
