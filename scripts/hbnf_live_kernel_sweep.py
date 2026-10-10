@@ -115,6 +115,16 @@ def atomic_write(path, data):
         except OSError:pass
         raise
 
+def prepare_output_dir(path):
+    """Create a run directory only when it cannot overwrite prior evidence."""
+    path=pathlib.Path(path).resolve()
+    if path.exists() and not path.is_dir():
+        raise RuntimeError(f"sweep output path is not a directory: {path}")
+    if path.exists() and any(path.iterdir()):
+        raise RuntimeError(f"sweep output directory is not empty; refusing to overwrite evidence: {path}")
+    path.mkdir(parents=True,exist_ok=True)
+    return path
+
 def require_disk_headroom(outdir, minimum=MIN_FREE_BYTES):
     free=shutil.disk_usage(pathlib.Path(outdir)).free
     if free<minimum:
@@ -402,7 +412,8 @@ def run_foundation_soak(adapter,inventory,outdir,timeout,release_id,restart_coun
     if interval_seconds<=0 or interval_seconds>=MAX_FOUNDATION_SOAK_SAMPLE_GAP_SECONDS:
         raise ValueError(f"soak interval must be positive and below {MAX_FOUNDATION_SOAK_SAMPLE_GAP_SECONDS}s")
     path=pathlib.Path(outdir)/"FOUNDATION_SOAK.jsonl"
-    path.unlink(missing_ok=True)
+    if path.exists():
+        raise RuntimeError(f"foundation soak evidence already exists; refusing to replace it: {path}")
     started=time.monotonic();end=started+duration_seconds;sample_index=0
     previous_sample_time=None;observed=set();catastrophic_streak=0
     entries=inventory["entries"]
@@ -608,7 +619,11 @@ def main():
         except (OSError,ValueError,KeyError,RuntimeError) as e:raise SystemExit(f"R4 comparison preflight failed before device access: {e}")
     try:validate_soak_options(args.contract,args.soak_seconds,args.soak_interval_seconds)
     except ValueError as e:raise SystemExit(str(e))
-    outdir=pathlib.Path(args.outdir).resolve(); outdir.mkdir(parents=True,exist_ok=True)
+    try:
+        outdir=prepare_output_dir(args.outdir)
+    except (OSError,RuntimeError) as e:
+        print(json.dumps({"status":"BLOCKED_BEFORE_DEVICE_PREFLIGHT","error":str(e)},indent=2))
+        return 2
     timeout=int(adapter.get("timeout_seconds",10))
 
     if args.dry_run:

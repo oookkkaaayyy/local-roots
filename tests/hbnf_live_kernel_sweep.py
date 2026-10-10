@@ -16,6 +16,78 @@ adapter={
  "expected_release_id":"r7"
 }
 m.validate_adapter(adapter)
+# Reusing a nonempty run directory must be rejected before preflight/device I/O;
+# fresh empty directories remain valid. This protects old failure and soak logs.
+with tempfile.TemporaryDirectory() as td:
+    root=pathlib.Path(td); occupied=root/"prior-run"; occupied.mkdir()
+    sentinel=occupied/"FOUNDATION_SOAK.jsonl"; sentinel.write_text("preserve-this-evidence\n")
+    try:m.prepare_output_dir(occupied);raise AssertionError("nonempty evidence directory accepted")
+    except RuntimeError as e:assert "refusing to overwrite evidence" in str(e)
+    assert sentinel.read_text()=="preserve-this-evidence\n"
+    fresh=m.prepare_output_dir(root/"fresh-run")
+    assert fresh.is_dir() and not any(fresh.iterdir())
+    try:
+        m.run_foundation_soak(adapter,{"entries":[]},occupied,5,
+                              "r7",0,0,5400,8,{})
+        raise AssertionError("existing soak evidence accepted for replacement")
+    except RuntimeError as e:assert "refusing to replace it" in str(e)
+    assert sentinel.read_text()=="preserve-this-evidence\n"
+
+with tempfile.TemporaryDirectory() as td:
+    occupied=pathlib.Path(td)/"occupied";occupied.mkdir();sentinel=occupied/"keep.txt";sentinel.write_text("keep\n")
+    original_argv=sys.argv
+    original_run_json=m.run_json
+    try:
+        sys.argv=["hbnf_live_kernel_sweep.py","--adapter",str(ROOT/"config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json"),
+          "--inventory",str(ROOT/"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"),"--outdir",str(occupied),"--contract","foundation","--dry-run"]
+        m.run_json=lambda *a,**k:(_ for _ in ()).throw(AssertionError("device/preflight call occurred"))
+        assert m.main()==2
+    finally:
+        sys.argv=original_argv;m.run_json=original_run_json
+    assert sentinel.read_text()=="keep\n"
+
+# A network failure after the renderer snapshot remains fail-closed. The runner
+# must attempt state restoration, persist both errors, and never emit a sweep
+# manifest or turn the failed window into a pass.
+with tempfile.TemporaryDirectory() as td:
+    out=pathlib.Path(td)/"interrupted-run"
+    original_argv=sys.argv; original_json=m.run_json; original_ok=m.run_ok; original_sleep=m.time.sleep
+    inv_for_test=json.loads((ROOT/"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json").read_text())
+    expected_kernel=inv_for_test["entries"][0]
+    fake_sample={"release_id":"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1","uptime_seconds":10,"fps":40,"frame_ms_p50":20,"frame_ms_p95":25,
+      "frame_ms_p99":30,"frame_ms_max":35,"kernel_id":0,"kernel_name":expected_kernel["kernel_name"],
+      "variant_id":1,"free_heap_bytes":90000,"minimum_free_heap_bytes":80000,"largest_free_block_bytes":70000,
+      "websocket_clients":0,"aux_projection_active":True,"aux_projection_age_ms":5,"aux_render_fps":40,
+      "wifi_rssi_dbm":-45,"restart_count":0,"kernel_ms_avg":8,"kernel_ms_p95":10,
+      "palette_ms_avg":1,"palette_ms_p95":2,"audio_ms_avg":2,"audio_ms_p95":3,
+      "scheduler_ms_avg":1,"scheduler_ms_p95":2,"overlay_ms_avg":0.1,"overlay_ms_p95":0.2,
+      "aux_prepare_send_ms_avg":1,"aux_prepare_send_ms_p95":2,"unaccounted_ms_avg":3,"unaccounted_ms_p95":4}
+    telemetry_reads={"count":0}; run_calls=[]
+    def fake_json(argv,timeout=10):
+        if "snapshot" in argv:return {"snapshotId":9,"snapshotHash":123,"foundationTelemetryEnabledBefore":False}
+        if "telemetry-mode" in argv:
+            enabled=argv[-1]=="true"
+            return {"HBNF":{"foundationTelemetry":{"enabled":enabled}}}
+        telemetry_reads["count"]+=1
+        if telemetry_reads["count"]==1:return fake_sample  # read-only preflight
+        raise RuntimeError("synthetic network interruption during first kernel sample")
+    def fake_ok(argv,timeout=15):
+        run_calls.append(list(argv))
+        if "restore" in argv:raise RuntimeError("synthetic network interruption during restore")
+        return "selected"
+    try:
+        sys.argv=["hbnf_live_kernel_sweep.py","--adapter",str(ROOT/"config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json"),
+          "--inventory",str(ROOT/"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"),"--outdir",str(out),"--contract","foundation"]
+        m.run_json=fake_json;m.run_ok=fake_ok;m.time.sleep=lambda *_:None
+        assert m.main()==2
+    finally:
+        sys.argv=original_argv;m.run_json=original_json;m.run_ok=original_ok;m.time.sleep=original_sleep
+    aborted=json.loads((out/"SWEEP_ABORT.json").read_text())
+    assert "synthetic network interruption during first kernel sample" in aborted["run_error"]
+    assert "synthetic network interruption during restore" in aborted["restore_error"]
+    assert aborted["profiles_completed"]==0 and not (out/"SWEEP_MANIFEST.json").exists()
+    assert any("restore" in call for call in run_calls)
+
 mode_calls=[]
 mode_adapter=dict(adapter,telemetry_mode_argv=["mode","{enabled}"])
 original_run_json=m.run_json
