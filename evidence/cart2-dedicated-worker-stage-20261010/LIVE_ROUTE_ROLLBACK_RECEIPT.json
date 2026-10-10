@@ -1,0 +1,39 @@
+{
+  "schema": "hbnf-cart2-live-route-rollback-v1",
+  "checked_at_utc": "2026-10-10T03:38:32.233458+00:00",
+  "removed_cart_route_ids": {
+    "e4ab79b474c24a0b92757969602a4665": "hbnightflyers.com/hbnf-cart*",
+    "ae5400eb6b96432ca5345678352c5b80": "hbnightflyers.com/guest/hbnf-cart/*"
+  },
+  "remaining_route_count": 5,
+  "remaining_routes": [
+    {
+      "id": "3ea4705c7d614f0bbf46e6c1f0d0358b",
+      "pattern": "hbnightflyers.com",
+      "script": "hbnf"
+    },
+    {
+      "id": "118db467a3f24c5ebebceaf3c98571f7",
+      "pattern": "hbnightflyers.com/firmware/opal-updater/*",
+      "script": "hbnf-opal-ipk-1-2-1"
+    },
+    {
+      "id": "9c3dd49ace304ab789f1c8fbea4a6161",
+      "pattern": "hbnightflyers.com/firmware/opal-updater/1.2.2/*",
+      "script": "hbnf-opal-ipk-1-2-2"
+    },
+    {
+      "id": "b0547e91d30b45c791f60df20c726464",
+      "pattern": "hbnightflyers.com/firmware/opal-updater/1.2.3/*",
+      "script": "hbnf-opal-ipk-1-2-3"
+    },
+    {
+      "id": "aa1198dbdaa74abeac38372343eefa82",
+      "pattern": "hbnightflyers.com/firmware/matrix/stable/*",
+      "script": "hbnf-matrix-firmware-stable"
+    }
+  ],
+  "route_rollback": "PASS: only the two newly added Cart routes are absent; all five pre-existing route IDs/patterns/scripts remain",
+  "http_restoration": "INCONCLUSIVE: all post-test requests received a common 403 response without Cart marker, including site and firmware paths; historical direct baseline was 200 for / and /favicon.ico. Do not attribute this response to the Cart routes without evidence.",
+  "release_admission": "STOPPED: live preservation/fallback gate not proven; do not deploy backend or firmware under this failed route test."
+}

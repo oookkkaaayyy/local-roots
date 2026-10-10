@@ -1,0 +1,33 @@
+{
+  "schema": "hbnf-cart2-live-route-attach-v1",
+  "started_at_utc": "2026-10-10T03:36:25.495328+00:00",
+  "zone_id": "f126298df13dcb1d8b58b62b47f52a20",
+  "worker": "hbnf-cart2-private-stage-20261010",
+  "new_routes": [
+    {
+      "id": "e4ab79b474c24a0b92757969602a4665",
+      "pattern": "hbnightflyers.com/hbnf-cart*",
+      "script": "hbnf-cart2-private-stage-20261010"
+    },
+    {
+      "id": "ae5400eb6b96432ca5345678352c5b80",
+      "pattern": "hbnightflyers.com/guest/hbnf-cart/*",
+      "script": "hbnf-cart2-private-stage-20261010"
+    }
+  ],
+  "existing_routes_before_count": 5,
+  "routes_after_count": 7,
+  "result": "ATTACHED_FOR_BOUNDED_VALIDATION_ONLY",
+  "final_state": "ROLLED_BACK_AFTER_PRESERVATION_GATE_FAILURE",
+  "rollback_receipt": "evidence/cart2-dedicated-worker-stage-20261010/LIVE_ROUTE_ROLLBACK_RECEIPT.json",
+  "route_test_result": "The candidate marker was observed on all mapped URLs, but only 14 of 17 responses matched approved bytes. The Guest HTML, canonical Owner HTML, and /hbnf-cart alias hashes/sizes differed. Real wildcard fallback and unrelated/firmware requests returned a common HTTP 403 without the Cart marker. Both new routes were removed.",
+  "new_routes_removed": [
+    "e4ab79b474c24a0b92757969602a4665",
+    "ae5400eb6b96432ca5345678352c5b80"
+  ],
+  "content_mismatch_paths": [
+    "/guest/hbnf-cart/",
+    "/hbnf-cart.html",
+    "/hbnf-cart"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "cart2-route-test-failed-state-reconciliation-20261010",
+  "summary": "Record the consumed, failed bounded Cart route test, route rollback receipt, and NOT_READY release-admission reason without changing release scope or mutation authority.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {}
+}

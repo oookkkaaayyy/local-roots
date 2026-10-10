@@ -1,0 +1,91 @@
+{
+  "schema": "hbnf-cart2-post-route-rollback-readback-v1",
+  "checked_at_utc": "2026-10-10T03:37:53.749604+00:00",
+  "routes": [
+    {
+      "path": "/",
+      "status": 403,
+      "bytes": 17,
+      "sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "location": null,
+      "marker": null,
+      "content_type": "text/plain; charset=UTF-8",
+      "cache_control": "private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0",
+      "cf_cache_status": null
+    },
+    {
+      "path": "/favicon.ico",
+      "status": 403,
+      "bytes": 17,
+      "sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "location": null,
+      "marker": null,
+      "content_type": "text/plain; charset=UTF-8",
+      "cache_control": "private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0",
+      "cf_cache_status": null
+    },
+    {
+      "path": "/manifest.webmanifest",
+      "status": 403,
+      "bytes": 17,
+      "sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "location": null,
+      "marker": null,
+      "content_type": "text/plain; charset=UTF-8",
+      "cache_control": "private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0",
+      "cf_cache_status": null
+    },
+    {
+      "path": "/hbnf-cart.html",
+      "status": 403,
+      "bytes": 17,
+      "sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "location": null,
+      "marker": null,
+      "content_type": "text/plain; charset=UTF-8",
+      "cache_control": "private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0",
+      "cf_cache_status": null
+    },
+    {
+      "path": "/hbnf-cart-not-a-file",
+      "status": 403,
+      "bytes": 17,
+      "sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "location": null,
+      "marker": null,
+      "content_type": "text/plain; charset=UTF-8",
+      "cache_control": "private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0",
+      "cf_cache_status": null
+    },
+    {
+      "path": "/firmware/matrix/stable/latest.json",
+      "status": 403,
+      "bytes": 17,
+      "sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "location": null,
+      "marker": null,
+      "content_type": "text/plain; charset=UTF-8",
+      "cache_control": "private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0",
+      "cf_cache_status": null
+    },
+    {
+      "path": "/firmware/matrix/stable/latest.json.sig",
+      "status": 403,
+      "bytes": 17,
+      "sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "location": null,
+      "marker": null,
+      "content_type": "text/plain; charset=UTF-8",
+      "cache_control": "private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0",
+      "cf_cache_status": null
+    },
+    {
+      "path": "/firmware/opal-updater/1.2.3/luci-app-hbnf-updater_1.2.3-1_all-090300853504e3e2bc6fe50c64cbb2b87c6688e38af9dc51dfcada2d87fbcdff.ipk",
+      "method": "HEAD",
+      "status": 403,
+      "content_length": "17",
+      "marker": null,
+      "content_type": "text/plain; charset=UTF-8"
+    }
+  ]
+}

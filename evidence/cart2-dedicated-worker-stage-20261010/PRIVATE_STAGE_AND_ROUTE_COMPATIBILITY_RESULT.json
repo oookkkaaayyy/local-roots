@@ -1,7 +1,7 @@
 {
   "schema": "hbnf-cart2-dedicated-worker-private-stage-result-v1",
   "observed_at_utc": "2026-10-10T03:29:40Z",
-  "result": "PRIVATE_STAGE_PASS_ROUTE_ATTACHMENT_NOT_AUTHORIZED",
+  "result": "PRIVATE_STAGE_PASS__LIVE_ROUTE_TEST_FAILED_AND_ROLLED_BACK",
   "worker": {
     "name": "hbnf-cart2-private-stage-20261010",
     "id": "4b3bdb41f43544f3976bed488e3941e3",
@@ -15,7 +15,11 @@
     "preview_urls_enabled": false,
     "custom_domains": [],
     "routes": [],
-    "binding": { "type": "service", "name": "ASSETS", "service": "hbnf" }
+    "binding": {
+      "type": "service",
+      "name": "ASSETS",
+      "service": "hbnf"
+    }
   },
   "approved_cart_package": {
     "release": "HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009",
@@ -29,15 +33,45 @@
     "hostname": "hbnightflyers.com",
     "zone_id": "f126298df13dcb1d8b58b62b47f52a20",
     "zone_status": "active",
-    "custom_domain": { "enabled": true, "service": "hbnf", "environment": "production" },
-    "public_dns_a": ["172.67.212.46", "104.21.67.44"],
-    "public_dns_aaaa": ["2606:4700:3031::6815:432c", "2606:4700:3037::ac43:d42e"],
+    "custom_domain": {
+      "enabled": true,
+      "service": "hbnf",
+      "environment": "production"
+    },
+    "public_dns_a": [
+      "172.67.212.46",
+      "104.21.67.44"
+    ],
+    "public_dns_aaaa": [
+      "2606:4700:3031::6815:432c",
+      "2606:4700:3037::ac43:d42e"
+    ],
     "current_routes": [
-      { "id": "3ea4705c7d614f0bbf46e6c1f0d0358b", "pattern": "hbnightflyers.com", "script": "hbnf" },
-      { "id": "118db467a3f24c5ebebceaf3c98571f7", "pattern": "hbnightflyers.com/firmware/opal-updater/*", "script": "hbnf-opal-ipk-1-2-1" },
-      { "id": "9c3dd49ace304ab789f1c8fbea4a6161", "pattern": "hbnightflyers.com/firmware/opal-updater/1.2.2/*", "script": "hbnf-opal-ipk-1-2-2" },
-      { "id": "b0547e91d30b45c791f60df20c726464", "pattern": "hbnightflyers.com/firmware/opal-updater/1.2.3/*", "script": "hbnf-opal-ipk-1-2-3" },
-      { "id": "aa1198dbdaa74abec38372343eefa82", "pattern": "hbnightflyers.com/firmware/matrix/stable/*", "script": "hbnf-matrix-firmware-stable" }
+      {
+        "id": "3ea4705c7d614f0bbf46e6c1f0d0358b",
+        "pattern": "hbnightflyers.com",
+        "script": "hbnf"
+      },
+      {
+        "id": "118db467a3f24c5ebebceaf3c98571f7",
+        "pattern": "hbnightflyers.com/firmware/opal-updater/*",
+        "script": "hbnf-opal-ipk-1-2-1"
+      },
+      {
+        "id": "9c3dd49ace304ab789f1c8fbea4a6161",
+        "pattern": "hbnightflyers.com/firmware/opal-updater/1.2.2/*",
+        "script": "hbnf-opal-ipk-1-2-2"
+      },
+      {
+        "id": "b0547e91d30b45c791f60df20c726464",
+        "pattern": "hbnightflyers.com/firmware/opal-updater/1.2.3/*",
+        "script": "hbnf-opal-ipk-1-2-3"
+      },
+      {
+        "id": "aa1198dbdaa74abec38372343eefa82",
+        "pattern": "hbnightflyers.com/firmware/matrix/stable/*",
+        "script": "hbnf-matrix-firmware-stable"
+      }
     ],
     "minimal_cart_routes": [
       "hbnightflyers.com/hbnf-cart*",
@@ -46,11 +80,39 @@
     "route_behavior": "Cloudflare route patterns include the query string and cannot specify query parameters, so trailing wildcards are needed. These two disjoint Cart namespace routes are the minimum set covering the 17 URL mappings. The module serves only exact allowlisted pathname matches; prefix wildcard extras delegate to hbnf through the service binding with the original Request. Paths outside those prefixes do not match either Cart route."
   },
   "site_preservation_baseline": [
-    { "path": "/", "status": 200, "bytes": 101554, "sha256": "96f9bdf7f0f998aeea40d8f76c8284449ebb1b32f69418f2d189b1e0c4b39805", "cache": "HIT" },
-    { "path": "/favicon.ico", "status": 200, "bytes": 7154, "sha256": "989834e2338b4414ff54d74ed1188f1160ea7071cb29e0f3862f7a2476956aca", "cache": "HIT" },
-    { "path": "/manifest.webmanifest", "status": 404, "bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" },
-    { "path": "/hbnf-cart.html", "status": 307, "location": "/hbnf-cart", "bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" },
-    { "path": "/hbnf-cart-not-a-file", "status": 404, "bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" }
+    {
+      "path": "/",
+      "status": 200,
+      "bytes": 101554,
+      "sha256": "96f9bdf7f0f998aeea40d8f76c8284449ebb1b32f69418f2d189b1e0c4b39805",
+      "cache": "HIT"
+    },
+    {
+      "path": "/favicon.ico",
+      "status": 200,
+      "bytes": 7154,
+      "sha256": "989834e2338b4414ff54d74ed1188f1160ea7071cb29e0f3862f7a2476956aca",
+      "cache": "HIT"
+    },
+    {
+      "path": "/manifest.webmanifest",
+      "status": 404,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/hbnf-cart.html",
+      "status": 307,
+      "location": "/hbnf-cart",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/hbnf-cart-not-a-file",
+      "status": 404,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
   ],
   "safety_and_rollback": {
     "existing_hbnf_script_modified": false,
@@ -60,7 +122,7 @@
     "public_routes_added": false,
     "public_route_rollback": "When separately authorized, record the two IDs returned by POST route creation. Roll back by DELETE /zones/{zone_id}/workers/routes/{route_id} for only those new Cart route IDs; preserve every pre-existing route listed above. No route IDs exist yet because no route change has been made.",
     "route_precedence": "Cloudflare's documented most-specific-route-wins rule means the two Cart routes take precedence over the existing hostname-level hbnf route; the route may take precedence over the custom domain on the same host. Provider runtime precedence was not exercised because public routes are not authorized yet.",
-    "site_preservation": "Current live baseline captured. The Worker fallback was exercised offline against a representative hbnf response and preserved request URL/headers, status, headers, and body. Live post-attachment unchanged-site comparison remains an acceptance check after route authorization, before firmware/backend mutation."
+    "site_preservation": "Live baseline was captured before route test. During routed checks, unrelated and firmware paths returned a common HTTP 403 without the Cart marker. Exact prior HTTP behavior could not be rechecked after rollback because the same 403 persisted from this egress."
   },
   "costs": {
     "new_subscription_or_plan_created": false,

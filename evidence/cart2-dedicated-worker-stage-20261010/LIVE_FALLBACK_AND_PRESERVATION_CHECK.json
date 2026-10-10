@@ -1,0 +1,110 @@
+{
+  "schema": "hbnf-cart2-live-route-fallback-preservation-v1",
+  "checked_at_utc": "2026-10-10T03:37:12.338917+00:00",
+  "checks": [
+    {
+      "path": "/hbnf-cart-not-a-file",
+      "status": 403,
+      "bytes": 17,
+      "sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "marker": null,
+      "content_type": "text/plain; charset=UTF-8",
+      "cache_control": "private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0",
+      "pass": false,
+      "expected_status": 404,
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/hbnf-cart.html/child",
+      "status": 403,
+      "bytes": 17,
+      "sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "marker": null,
+      "content_type": "text/plain; charset=UTF-8",
+      "cache_control": "private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0",
+      "pass": false,
+      "expected_status": 404,
+      "expected_sha256": null
+    },
+    {
+      "path": "/guest/hbnf-cart/unknown",
+      "status": 403,
+      "bytes": 17,
+      "sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "marker": null,
+      "content_type": "text/plain; charset=UTF-8",
+      "cache_control": "private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0",
+      "pass": false,
+      "expected_status": 404,
+      "expected_sha256": null
+    },
+    {
+      "path": "/",
+      "status": 403,
+      "bytes": 17,
+      "sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "marker": null,
+      "content_type": "text/plain; charset=UTF-8",
+      "cf_cache_status": null,
+      "pass": false,
+      "expected_status": 200,
+      "expected_sha256": "96f9bdf7f0f998aeea40d8f76c8284449ebb1b32f69418f2d189b1e0c4b39805"
+    },
+    {
+      "path": "/favicon.ico",
+      "status": 403,
+      "bytes": 17,
+      "sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "marker": null,
+      "content_type": "text/plain; charset=UTF-8",
+      "cf_cache_status": null,
+      "pass": false,
+      "expected_status": 200,
+      "expected_sha256": "989834e2338b4414ff54d74ed1188f1160ea7071cb29e0f3862f7a2476956aca"
+    },
+    {
+      "path": "/manifest.webmanifest",
+      "status": 403,
+      "bytes": 17,
+      "sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "marker": null,
+      "content_type": "text/plain; charset=UTF-8",
+      "cf_cache_status": null,
+      "pass": false,
+      "expected_status": 404,
+      "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/firmware/matrix/stable/latest.json",
+      "status": 403,
+      "bytes": 17,
+      "sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "marker": null,
+      "content_type": "text/plain; charset=UTF-8",
+      "cf_cache_status": null,
+      "pass": false
+    },
+    {
+      "path": "/firmware/matrix/stable/latest.json.sig",
+      "status": 403,
+      "bytes": 17,
+      "sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "marker": null,
+      "content_type": "text/plain; charset=UTF-8",
+      "cf_cache_status": null,
+      "pass": false
+    },
+    {
+      "path": "/firmware/opal-updater/1.2.3/luci-app-hbnf-updater_1.2.3-1_all-090300853504e3e2bc6fe50c64cbb2b87c6688e38af9dc51dfcada2d87fbcdff.ipk",
+      "method": "HEAD",
+      "status": 403,
+      "content_type": "text/plain; charset=UTF-8",
+      "content_length": "17",
+      "marker": null,
+      "pass": false
+    }
+  ],
+  "all_pass": false,
+  "failure_classification": "All paths returned the same HTTP 403 / 17-byte body during the preservation run, with no Cart marker. The same generic response continued after route rollback; the recorded evidence does not establish whether the block was Cloudflare edge policy or the test egress path.",
+  "rollback_action": "Both newly created Cart route IDs were deleted. Fresh routes API readback confirms only the five pre-existing routes remain; public HTTP restoration could not be confirmed because the egress requests received the same 403 response."
+}

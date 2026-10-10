@@ -229,7 +229,7 @@
   "bounded_phase2_r4_install_attempt2_authorization": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008-RETRY1",
     "authorized_at_utc": "2026-10-08T06:20:06.671131+00:00",
-    "authorized_by": "Current user instruction: URGENT — RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: URGENT \u2014 RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:21:47.880324+00:00",
@@ -347,7 +347,7 @@
   "bounded_phase2_r4_live_qualification_authorization": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
     "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
-    "authorized_by": "Current user instruction: CART 2.0 — FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:10:00.723317+00:00",
@@ -799,7 +799,7 @@
         "Prior 16:42/16:45 times are not automatic abort or rollback triggers for the currently active seq53 path.",
         "Continue the already-authorized seq53 install/targeted validation while commands are actively progressing and safety/identity evidence remains intact.",
         "Do not broaden scope or start new exploratory work.",
-        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop—not for elapsed wall-clock time alone.",
+        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop\u2014not for elapsed wall-clock time alone.",
         "Owner-device smoke remains mandatory before declaring field-ready."
       ],
       "schema": "hbnf-field-readiness-deadline-v1",
@@ -1685,7 +1685,7 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
+      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "live_mutation_authorization": "R7 install and exact R4 recovery are consumed and closed; R7 failed the frozen kernel13 p99 gate, exact R4 recovery is verified, and no live mutation authority remains.",
@@ -2935,7 +2935,7 @@
   "previous_phase2_r4_install_authorization_consumed": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
     "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
-    "authorized_by": "Current user instruction: CART 2.0 — FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:10:00.723317+00:00",
@@ -3228,7 +3228,7 @@
   "coordinated_r6_live_release_authorization": {
     "schema": "hbnf-cart2-coordinated-live-release-authorization-v1",
     "authorized_by": "Current user explicit coordinated R6 release authorization from commit fa3ae6bed518536ae59f225d942c1bcff0ca7a67; user confirmed this existing authorization remains unconsumed.",
-    "status": "OWNER_AUTHORIZED_NOT_CONSUMED__PREWRITE_NOT_READY_CLOUDFLARE_SOURCE_GATE_OPEN",
+    "status": "OWNER_AUTHORIZED_NOT_CONSUMED__PREWRITE_NOT_READY_ROUTE_PRESERVATION_GATE_FAILED",
     "candidate": {
       "release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
       "sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
@@ -3272,7 +3272,7 @@
       "status": "NOT_READY",
       "stage": "LIVE_APPROVED",
       "admission_path": null,
-      "reason": "Cloudflare complete-current-source and safe asset-preservation route not demonstrated; whole transaction not executable/recoverable yet."
+      "reason": "The bounded Cloudflare route test failed: 14 of 17 mapped URLs matched approved payloads, but the Guest HTML, Owner canonical HTML, and /hbnf-cart alias responses did not match their approved hashes/sizes. Real wildcard fallback, unrelated site, and firmware checks returned HTTP 403 without Cart markers; the same generic 403 persisted after deleting both Cart routes. All prior five route IDs remain and no backend or firmware release action was taken."
     },
     "prewrite_evidence": {
       "path": "evidence/cart2-r6-live-transaction-20261009/CLOUDFLARE_SOURCE_AND_AUTHORITY_RECONCILIATION.json",
@@ -3287,6 +3287,36 @@
         "hbnf-cart-reconcile v12",
         "hbnf-matrix-adapter-foundation v3"
       ]
+    },
+    "cloudflare_route_test": {
+      "schema": "hbnf-cart2-bounded-route-test-result-v1",
+      "status": "FAILED_PRESERVATION_GATE__ROUTES_REMOVED",
+      "completed_at_utc": "2026-10-10T03:39:35.661514+00:00",
+      "authorization_consumed": true,
+      "worker": "hbnf-cart2-private-stage-20261010",
+      "worker_version_id": "647c546a-d3b1-4bd2-8437-4edb4c6a3356",
+      "tested_route_ids": [
+        {
+          "id": "e4ab79b474c24a0b92757969602a4665",
+          "pattern": "hbnightflyers.com/hbnf-cart*",
+          "removed": true
+        },
+        {
+          "id": "ae5400eb6b96432ca5345678352c5b80",
+          "pattern": "hbnightflyers.com/guest/hbnf-cart/*",
+          "removed": true
+        }
+      ],
+      "cart_asset_check": "FAIL: 14/17 mappings matched exactly; /guest/hbnf-cart/ (3981 bytes vs 2676) and /hbnf-cart.html (18260 vs 16955) did not match approved payloads; /hbnf-cart alias also did not match and differed in hash from canonical despite same length. Candidate marker was present. No response body snapshot was preserved, so transformation source is unclassified.",
+      "fallback_preservation_check": "FAIL: unmatched namespace paths, unrelated website, and firmware requests returned a common HTTP 403 without Cart marker. Post-rollback requests remained 403; prior HTTP behavior could not be confirmed from this egress.",
+      "post_rollback": "The route API readback shows only the five pre-existing route IDs. Public HTTP restoration remains unverified because the same 403 response persisted after rollback.",
+      "evidence_path": "evidence/cart2-dedicated-worker-stage-20261010/LIVE_ROUTE_ROLLBACK_RECEIPT.json",
+      "evidence_sha256": "2e0e85e27b73d725521c1f1fae290e3aa078927126947e49b2c2f4c992987803",
+      "asset_check_path": "evidence/cart2-dedicated-worker-stage-20261010/LIVE_CART_CONTENT_CHECK.json",
+      "asset_check_sha256": "dbc6ca168e113d4831f695db04664e0ea46b2004db0fb6a83e9dcc4f79bd5bbc",
+      "preservation_check_path": "evidence/cart2-dedicated-worker-stage-20261010/LIVE_FALLBACK_AND_PRESERVATION_CHECK.json",
+      "preservation_check_sha256": "842c0cbb30bd23bf9bfdd662fdc4b5a823b9c0ef2318e5176663b210e900159e",
+      "release_actions_taken": []
     }
   }
 }
