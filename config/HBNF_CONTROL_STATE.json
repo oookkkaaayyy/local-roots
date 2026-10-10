@@ -714,6 +714,7 @@
       "worker": "hbnf-cart2-private-stage-20261010",
       "worker_version_id": "647c546a-d3b1-4bd2-8437-4edb4c6a3356"
     },
+    "command_ingress_pause_attempts": 0,
     "control_fence_prewrite_snapshot": {
       "active": true,
       "cart_id": "hbnf-cart",
@@ -727,6 +728,7 @@
       "path": "evidence/cart2-owner-guest-vibe-r2-20261009/HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009.zip",
       "sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc"
     },
+    "current_mutation_stage": "PAUSE_COMMAND_INGRESS_WITH_EXACT_CAS",
     "current_owner_authorization": {
       "exact_firmware_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
       "exact_owner_guest_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
@@ -787,6 +789,7 @@
       "status": "PASS__READY_TO_START_EXACT_TRANSACTION"
     },
     "live_mutation_authorized": true,
+    "no_retry_note": "Once the CAS pause request is sent, no blind retry; reconcile response/readback first.",
     "offline_test_receipt": {
       "path": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/OFFLINE_RELEASE_READINESS_TESTS.json",
       "result": "PASS_TARGETED_OFFLINE_CHECKS",
@@ -810,14 +813,16 @@
       "one exact R4 recovery only on authorized objective runtime/safety/performance/AUX failure",
       "unchanged 28-kernel sweep, combined-feature tests, contiguous 90-minute soak, physical and owner acceptance"
     ],
-    "status": "OWNER_AUTHORIZED__PREFLIGHT_AND_LIVE_ADMISSION_PASS__R6_NOT_YET_CONSUMED",
+    "status": "IN_PROGRESS__PAUSE_COMMAND_INGRESS_PENDING",
     "target": {
       "aux_ip": "192.168.77.11",
       "aux_mac": "8c:94:df:55:c3:4c",
       "matrix_ip": "192.168.77.10",
       "matrix_mac": "70:4b:ca:5b:34:5c",
       "opal_ip": "192.168.77.1"
-    }
+    },
+    "transaction_consumed": true,
+    "transaction_started_at_utc": "2026-10-10T05:20:44.781805+00:00"
   },
   "current_task": {
     "autonomous_completion_authorization": {
@@ -2855,10 +2860,10 @@
     "authorized": true,
     "candidate_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
     "controller_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
-    "current_gate": "Fresh LIVE_APPROVED admission PASS, branch aa557c00025fd91be51a59f58f58eb98c593168e equals origin, exact R6/package/R4 hashes verified, current Matrix is exact R4 and AUX DDP live, Opal reachable, current Supabase rollback identities verified; transaction has not yet been consumed.",
+    "current_gate": "Exact transaction consumed at 2026-10-10T05:20:44.781805+00:00; next authorized write is CAS pause of the active hbnf-cart actuator fence at revision 123 / epoch 2. No firmware install consumed yet.",
     "hardware_writes_permitted_now": true,
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "transaction_consumed": false
+    "transaction_consumed": true
   },
   "live_mutation_authorization_closed_at_utc": "2026-10-09T19:11:35.538409+00:00",
   "live_mutation_authorization_closure": {
