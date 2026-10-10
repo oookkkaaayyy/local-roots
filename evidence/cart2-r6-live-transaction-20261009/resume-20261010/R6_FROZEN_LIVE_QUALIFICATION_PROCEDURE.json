@@ -1,6 +1,6 @@
 {
-  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
-  "candidate_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
   "catastrophic_stop": "From frozen policy: 3 consecutive samples with FPS<20, p99>75ms, or AUX Matrix-origin projection inactive.",
   "combined_feature_checks": [
     "Vibe/audio runtime",
@@ -22,10 +22,10 @@
     "baseline_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "brightness": 44,
     "early_kernels": [
-      13,
-      9
+      0,
+      13
     ],
-    "source": "existing exact R4 matched early-gate plan and current sweep runner; no threshold changes"
+    "source": "kernel-0-first fast-fail request plus existing exact R4 matched early-gate runner; all 28 kernels and frozen thresholds remain unchanged"
   },
   "full_sweep": {
     "kernel_count": 28,

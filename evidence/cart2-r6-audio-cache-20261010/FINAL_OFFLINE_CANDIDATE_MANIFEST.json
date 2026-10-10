@@ -11,7 +11,7 @@
   },
   "source_binding": {
     "path": "firmware/phase2/integration-r6-cachefix/SOURCE_BINDING.json",
-    "sha256": "283b5c782aea4087deef1ebdc2d36dbbb2fa83df461a95b2390c738a17d1c760",
+    "sha256": "e41cc707e7c58a58eed6d8d5b425ac9bef20af796401fcf6d10cc413d8b09092",
     "runtime_files": {
       "hbnf_animartrix_audio_bridge.h": "edfe168658d548fe8e52e05b5b9d0cc3390cfe11092423a2c1c12de95884ae74",
       "hbnf_audio_expression.h": "f4825884dd53cba9bca698bd8b9b7d9d13a81e7ce381957d23790f13073dc4c3",
@@ -27,7 +27,8 @@
       "hbnf_vibe_runtime.h": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc",
       "library.json": "2dc685da45efe57fe1d199b5407a00a7bd42b2f473599f6f432df515b4b6c96a",
       "usermod_hbnf_foundation_v1.cpp": "622eae29173c4ba7ce12974e241bd1ad74f5b454f95b304aeb663351d359a40b"
-    }
+    },
+    "repository_source_commit": "2094c8dae4942f4a66a4462e729986fa7e73ad13"
   },
   "parent": {
     "release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",

@@ -1,0 +1,228 @@
+{
+  "assertions": "PASS",
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+  "cases": [
+    {
+      "candidate_install_attempts": 0,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "device_requests": 0,
+      "error": "RuntimeError: invalid-live-admission",
+      "recovery_attempts": 0,
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "schema": "hbnf-r6-audio-cache-qualification-transaction-v1",
+      "status": "BLOCKED_OR_FAILED"
+    },
+    {
+      "candidate_install_attempts": 0,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "device_requests": 7,
+      "error": "RuntimeError: stage-hash-mismatch",
+      "preflight": {
+        "pass": true
+      },
+      "recovery_attempts": 0,
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "schema": "hbnf-r6-audio-cache-qualification-transaction-v1",
+      "status": "BLOCKED_OR_FAILED"
+    },
+    {
+      "candidate_install_attempts": 1,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_runtime": {
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+      },
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "candidate_stage": {
+        "bytes": 1497984,
+        "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+      },
+      "device_requests": 8,
+      "preflight": {
+        "pass": true
+      },
+      "qualification": {
+        "passed": true,
+        "report": {
+          "status": "PASS"
+        }
+      },
+      "recovery_attempts": 0,
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "runtime_resolution": {
+        "installed": true,
+        "runtime": {
+          "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+        }
+      },
+      "schema": "hbnf-r6-audio-cache-qualification-transaction-v1",
+      "status": "QUALIFIED_OBJECTIVE_GATES_PASS",
+      "upload": {
+        "confirmed": true
+      }
+    },
+    {
+      "candidate_install_attempts": 1,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "candidate_stage": {
+        "bytes": 1497984,
+        "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+      },
+      "device_requests": 8,
+      "preflight": {
+        "pass": true
+      },
+      "recovery_attempts": 0,
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "runtime_resolution": {
+        "installed": false,
+        "runtime": {
+          "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+        }
+      },
+      "schema": "hbnf-r6-audio-cache-qualification-transaction-v1",
+      "status": "OTA_NOT_INSTALLED_R4_REMAINS_NO_RETRY",
+      "upload": {
+        "confirmed": false
+      }
+    },
+    {
+      "candidate_install_attempts": 1,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_runtime": {
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+      },
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "candidate_stage": {
+        "bytes": 1497984,
+        "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+      },
+      "device_requests": 11,
+      "preflight": {
+        "pass": true
+      },
+      "qualification": {
+        "abort": {
+          "run_error": "kernel-0-kernel-gate-failed"
+        },
+        "passed": false
+      },
+      "recovery": {
+        "runtime": {
+          "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+        },
+        "status": "R4_READBACK_VERIFIED"
+      },
+      "recovery_attempts": 1,
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "runtime_resolution": {
+        "installed": true,
+        "runtime": {
+          "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+        }
+      },
+      "schema": "hbnf-r6-audio-cache-qualification-transaction-v1",
+      "status": "QUALIFICATION_FAILED_R4_RECOVERED",
+      "upload": {
+        "confirmed": true
+      }
+    },
+    {
+      "candidate_install_attempts": 1,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_runtime": {
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+      },
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "candidate_stage": {
+        "bytes": 1497984,
+        "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+      },
+      "device_requests": 8,
+      "preflight": {
+        "pass": true
+      },
+      "qualification": {
+        "abort": {
+          "run_error": "collector timeout; no performance conclusion"
+        },
+        "passed": false
+      },
+      "recovery_attempts": 0,
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "runtime_resolution": {
+        "installed": true,
+        "runtime": {
+          "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+        }
+      },
+      "schema": "hbnf-r6-audio-cache-qualification-transaction-v1",
+      "status": "QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED",
+      "upload": {
+        "confirmed": true
+      }
+    },
+    {
+      "candidate_install_attempts": 1,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "candidate_stage": {
+        "bytes": 1497984,
+        "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+      },
+      "device_requests": 11,
+      "preflight": {
+        "pass": true
+      },
+      "recovery": {
+        "runtime": {
+          "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+        },
+        "status": "R4_READBACK_VERIFIED"
+      },
+      "recovery_attempts": 1,
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "runtime_resolution": {
+        "error": "readback-unavailable",
+        "installed": null
+      },
+      "schema": "hbnf-r6-audio-cache-qualification-transaction-v1",
+      "status": "RUNTIME_IDENTITY_UNRESOLVED_R4_RECOVERED",
+      "upload": {
+        "confirmed": null
+      }
+    },
+    {
+      "candidate_install_attempts": 1,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "candidate_stage": {
+        "bytes": 1497984,
+        "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+      },
+      "device_requests": 8,
+      "preflight": {
+        "pass": true
+      },
+      "recovery_attempts": 1,
+      "recovery_error": "RuntimeError: R4-readback-not-proven",
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "runtime_resolution": {
+        "error": "readback-unavailable",
+        "installed": null
+      },
+      "schema": "hbnf-r6-audio-cache-qualification-transaction-v1",
+      "status": "RECOVERY_UNVERIFIED_STOP",
+      "upload": {
+        "confirmed": null
+      }
+    }
+  ],
+  "device_or_cloud_mutation": false,
+  "invalid_admission_device_requests": 0,
+  "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "schema": "hbnf-r6-audio-cache-transaction-dryrun-v1"
+}

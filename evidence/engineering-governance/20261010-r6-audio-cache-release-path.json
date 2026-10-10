@@ -1,0 +1,30 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "R6_AUDIO_CACHE_CANDIDATE_RELEASE_PATH_20261010",
+  "summary": "Bind the existing Phase 2 qualification workflow and offline transaction dry-run to the exact R6 audio-cache candidate, preserving the frozen 28-kernel and 90-minute requirements and prioritizing kernel 0 before kernel 13.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "primary_source": "Current owner instruction authorizes evidence-based exact-candidate continuation and explicitly requires kernel-0-first qualification while retaining all 28 kernels and frozen thresholds. Existing runner already implements indices 0 and 13 first, full 28-kernel comparison, and contiguous 5400-second soak.",
+    "implementation": [
+      "platform/workflows/phase2-live-qualification.json",
+      "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_FROZEN_LIVE_QUALIFICATION_PROCEDURE.json",
+      "tests/test_r6_audio_cache_transaction_dryrun.py"
+    ],
+    "validation": [
+      "python3 tests/test_r6_audio_cache_transaction_dryrun.py: PASS; exact transaction coordinator simulated invalid admission (zero device requests), stage failure, successful sequence, identity uncertainty, host collector failure, frozen gate failure and bounded R4 recovery.",
+      "python3 tests/hbnf_live_kernel_sweep.py: PASS; retains all 28 kernels and orders kernels 0 and 13 first against exact R4 profile evidence.",
+      "python3 tests/hbnf_delivery_rail_host.py: PASS; expected invalid/fabricated evidence cases rejected and valid host fixture accepted.",
+      "python3 tests/hbnf_control.py: PASS; 23 tests.",
+      "python3 tests/hbnf_guarded_run.py: PASS; invalid or stale LIVE_APPROVED evidence is rejected before child execution.",
+      "python3 scripts/hbnf_architecture_fitness.py: PASS; linear lifecycle and one-authority constraints retained."
+    ],
+    "rollback": "Revert the workflow/procedure/test receipt change. No firmware bytes, device state, backend, router, or production service are changed by this source update."
+  }
+}

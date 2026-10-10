@@ -104,7 +104,7 @@
     "dependency_versions": "Exact dependencies and versions recorded in the pinned R5 clean-room manifest and build log; no dependency, LDF, or compiler setting changed."
   },
   "feature_scope": "R5 runtime feature/source closure, except radial arithmetic specialization and embedded R6 identity; no feature removals.",
-  "repository_source_commit": "198517a44b29846eee93008e15612de918213819 (exact source files are additionally bound by runtime_files SHA-256; source overlay checkpoint to follow)",
+  "repository_source_commit": "2094c8dae4942f4a66a4462e729986fa7e73ad13",
   "build_closure_status": "PASS: exact pinned WLED 16.0.1 / PlatformIO Core 6.1.18 / Python 3.9.6 / Xtensa 8.4.0+2021r2-patch5 / framework 2.0.18+sha.8ba0dc0; generated inputs and dependency/source closure verified; target candidate compiled successfully with no dependency, LDF, optimization, or compiler-flag changes.",
   "target_build": {
     "binary_path": "evidence/cart2-r6-audio-cache-20261010/artifact/hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010.bin",
@@ -177,5 +177,6 @@
       }
     ],
     "pixel_result_comparison": "old R6 reference vs candidate, exact RGB equality"
-  }
+  },
+  "repository_source_commit_note": "This checkpoint commits the exact runtime source overlay and diagnostic/offline evidence. Runtime source files remain independently SHA-256-bound below; the firmware bytes were built from those exact bytes before the commit."
 }
