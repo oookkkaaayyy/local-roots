@@ -1,0 +1,101 @@
+{
+  "schema": "hbnf-cart2-phase2-final-offline-candidate-v1",
+  "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "status": "OFFLINE_BUILD_VERIFIED__TARGETED_OFFLINE_TESTS_PASS__FULL_DELIVERY_RAIL_REPLAY_PENDING__NOT_LIVE_QUALIFIED__NOT_ACCEPTED",
+  "artifact": {
+    "path": "evidence/cart2-r6-audio-cache-20261010/artifact/hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010.bin",
+    "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+    "bytes": 1497984,
+    "embedded_candidate_and_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "target": "ESP32 / exact established WLED 16.0.1 PlatformIO environment"
+  },
+  "source_binding": {
+    "path": "firmware/phase2/integration-r6-cachefix/SOURCE_BINDING.json",
+    "sha256": "283b5c782aea4087deef1ebdc2d36dbbb2fa83df461a95b2390c738a17d1c760",
+    "runtime_files": {
+      "hbnf_animartrix_audio_bridge.h": "edfe168658d548fe8e52e05b5b9d0cc3390cfe11092423a2c1c12de95884ae74",
+      "hbnf_audio_expression.h": "f4825884dd53cba9bca698bd8b9b7d9d13a81e7ce381957d23790f13073dc4c3",
+      "hbnf_brightness_output.h": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a",
+      "hbnf_coordinated_contract.h": "e65399d2117f79d302bd8bd7474da955000e74689f6712a726a7e2759a477d25",
+      "hbnf_foundation_core.h": "d4646267f8fbc03cc4921368fc801e528e6a6cb92133a0c1fc74b48b211be0e4",
+      "hbnf_generative_v4.h": "13163419b6453d448a795a7580e784f54b23b7586c8317eff467863f648a6dfa",
+      "hbnf_home_screen_icon.h": "e272644675566a969f65e96b855b824109b8ae6fbcb168da8c6efdeb842097d6",
+      "hbnf_local_ui.h": "feed7e614cf43d7efe211b54bba5b37fb352e70646e887e3b0341c3f97b0068b",
+      "hbnf_native_text.h": "0633c5d31c1003f901ec6a71c8545319235200ad0deeb4866fe3753391841b69",
+      "hbnf_outlier_trace.h": "d97672e7f41ad3fc21a5ed453f49197d149d9533426a17d0e152d8ceba466a66",
+      "hbnf_vibe16.h": "f076acf0e5710bf5a9acffe63b31a95f2252230b5470bd362301caa73a743b0a",
+      "hbnf_vibe_runtime.h": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc",
+      "library.json": "2dc685da45efe57fe1d199b5407a00a7bd42b2f473599f6f432df515b4b6c96a",
+      "usermod_hbnf_foundation_v1.cpp": "622eae29173c4ba7ce12974e241bd1ad74f5b454f95b304aeb663351d359a40b"
+    }
+  },
+  "parent": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+    "sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb"
+  },
+  "build_closure": {
+    "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+    "animartrix_commit": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f",
+    "environment": "hbnf_matrix_wled16_packet20_diag",
+    "platformio_core": "6.1.18",
+    "python": "3.9.6",
+    "esp32_framework": "2.0.18+sha.8ba0dc0",
+    "xtensa_toolchain": "8.4.0+2021r2-patch5",
+    "platformio_ini_sha256": "99718bfd8614da297c94692bc41dea48c9af87dbe829ded2e4a7cad7f0368820",
+    "platformio_override_ini_sha256": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922",
+    "source_date_epoch": 1791450000,
+    "generated_inputs": {
+      "html_ui.h": "101f34fafc71b34adb50d5b649c8099767a5b625b43f2647b5f39416ab15389c",
+      "html_pixart.h": "7b1c9669606e157635f184d726ce0343d044f2a081b38615ed269a71117852ef",
+      "html_cpal.h": "9b338eb9ad416235224e485875af45d6c015187ad97c3a333218d8e29d3bafbb",
+      "html_edit.h": "50b3bdf9f26a77d2c226effe5c6d5953041e13d46ed36f32d45a2a8d37f1d73e",
+      "html_pxmagic.h": "cee8f86037992ac342a6e98617048ae5930256ee7af79ff4ae2e3e532fff1cba",
+      "html_pixelforge.h": "50804c5326437c7f0ba15841c9faefafafa88aee3b9ba62fde582db389e09250",
+      "html_settings.h": "bb46c944d5362becfb0feb52531ef0be6e9a8282f5fb608e044cc6ba800c197e",
+      "html_other.h": "eaf806122da30fa4b617379f2733fcfd578f4c7b14a4b290e55694923ec11946",
+      "js_iro.h": "595cd77f29776a8f3907c70eb82b838e72b49ca890b7ee0ed9a329f1b5888476",
+      "js_omggif.h": "7563b9037ddb8d52e2580d1d0992a8707bc5add437990e72fee3dfc1c4758306"
+    },
+    "dependency_set": "Exact inherited R6/R5 pinned dependency closure; existing local materialized sources/cache reused; no dependency, LDF, or compiler setting changed.",
+    "command": "PYTHONPATH=/private/tmp/hbnf-p2-build/pio-cli PLATFORMIO_CORE_DIR=/private/tmp/hbnf-p2-build/pio-local SOURCE_DATE_EPOCH=1791450000 python3 -m platformio run -d /private/tmp/hbnf-p2-build/WLED-r6-audio-cache-20261010 -e hbnf_matrix_wled16_packet20_diag -v",
+    "log_path": "evidence/cart2-r6-audio-cache-20261010/TARGET_BUILD.log",
+    "log_sha256": "181ef91e7ed27627c744d14975cff3de6416d4914c5224533bea9bde23834d60"
+  },
+  "resource_usage": {
+    "firmware_bin_bytes": 1497984,
+    "flash_used_bytes": 1491249,
+    "flash_partition_bytes": 1572864,
+    "flash_remaining_bytes": 81615,
+    "flash_used_percent": 94.8,
+    "ram_used_bytes": 112480,
+    "ram_available_bytes": 327680,
+    "ram_remaining_bytes": 215200,
+    "ram_used_percent": 34.3
+  },
+  "feature_scope": "All R6 features retained; change hoists frame-invariant Vibe profile computations before per-pixel rendering; no user-facing or visual/audio capability removed.",
+  "qualification": {
+    "host_pixel_equivalence": "PASS: 15,755,040 transforms, bit-identical across fixed 32x16 and generic fallback sizes; digest 75444567800b229d",
+    "target_build": "PASS",
+    "target_disassembly": "PASS: profile lane calculations moved to frame-preparation routine; spatial/color modulation remains per pixel",
+    "offline_integrated_tests": "TARGETED_PASS: bridge equivalence/fallback, candidate closure, Vibe/audio replay, Text/Moments (14), release-rail fail-closed checker, control plane, owner PWA/controller/scoring. Historical integrated manifests remain mismatched to current source tree; full release transaction replay/admission still pending.",
+    "live_kernel0_kernel13_28_kernel_combined_soak": "NOT_RUN",
+    "owner_physical_acceptance": "NOT_RUN",
+    "T4": "NOT_ACCEPTED",
+    "T5": "NOT_ACCEPTED"
+  },
+  "rollback": {
+    "release_id": "Foundation R4",
+    "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "bytes": 1489008,
+    "verified": true,
+    "drive_artifact_id": "1MepE3RCuEVErOHKLQ2FLZAj-fMPVWCt_"
+  },
+  "authority": {
+    "live_mutation_authorized": false,
+    "production_deployment_authorized": false,
+    "guest_mode_enable_authorized": false,
+    "uv_energization_authorized": false
+  }
+}

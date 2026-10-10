@@ -2690,21 +2690,19 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "R6_DIAGNOSTIC_ATTEMPT2_INCONCLUSIVE__HOST_HARNESS_FIXED__ATTEMPT3_AUTHORIZED_PREFLIGHT_PENDING",
+    "current_failure_domain": "R6_KERNEL0_REGRESSION_MEASURED__PER_PIXEL_INT64_RADIAL_DIVISION_AND_FRAME_INVARIANT_AUDIO_WORK_IDENTIFIED__CACHEFIX_CANDIDATE_BUILT__FULL_RELEASE_ADMISSION_PENDING",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
-      "release_id": "hbnf-cart2-r6-frame-context-diagnostic-20261010",
-      "artifact_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
-      "attempt_number": 3,
-      "status": "EXACT_BINDING_RECORDED__NO_LIVE_MUTATION_YET"
+      "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "artifact_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "status": "TARGET_BUILD_AND_TARGETED_OFFLINE_TESTS_PASS__LIVE_NOT_AUTHORIZED_UNTIL_EXACT_ADMISSION"
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Verify exact R6 diagnostic and R4 bytes, connected Mac/power/route, Matrix/AUX identity/health, Opal release ledger/tools/space, and single-worker status read-only.",
-      "Build and pass attempt-3 exact LIVE_APPROVED admission/capsule/prelive proof and guarded-run check with live authority still closed until prerequisites pass.",
-      "If every gate passes, execute one exact Opal-origin upload; require the exact diagnostic build identity before capture. Capture kernel 0 for the bounded window with 8-second safety samples; preserve any identity, timeout, and trace evidence.",
-      "Restore renderer state and perform the single bound exact R4 return; verify exact identity, Matrix health, and AUX native DDP; then close live authority.",
-      "Continue the offline integrated R6 product work and frozen 28-kernel/combined-feature/90-minute qualification path; no diagnostic evidence alone qualifies R6."
+      "Complete source-binding accuracy and the exact-candidate release/transaction dry-run; resolve any failure without changing frozen policy.",
+      "Preserve current exact R4 and current preflight evidence; no live mutation until candidate-specific OFFLINE_COMPILED and LIVE_APPROVED admission plus fresh target/power/AUX/single-writer preflight pass.",
+      "If admitted, install the exact cachefix artifact once using the proven Opal-origin path, then run early kernel 0 and 13, the unchanged full 28-kernel sweep, combined-feature checks, and one contiguous 90-minute soak; restore exact R4 only on an objectively defined safety/performance/runtime failure.",
+      "After objective qualification, complete secure Owner/Guest control, Matrix/AUX physical review, and owner visual/audio/iPad acceptance; do not claim T4/T5 beforehand."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -2806,13 +2804,13 @@
       "status": "REUSABLE"
     }
   ],
-  "installation_verification_note": "Last recorded exact Foundation R4 recovery verification remains in evidence/cart2-r7-performance-repair-20261009/R7_R4_RECOVERY_RESULT.json; no firmware install/reboot has occurred in this coordinated transaction. Fresh read-only Matrix/AUX identity checks are currently unavailable because this host is not associated with HBNF-Cart.",
+  "installation_verification_note": "Fresh read-only preflight: Matrix MAC 70:4b:ca:5b:34:5c reports exact Foundation R4 identity, WLED 16.0.1, health/heap and advancing uptime; AUX MAC 8c:94:df:55:c3:4c reports live=true, lm=DDP, lip=192.168.77.10; Mac is on AC; exact R4 rollback bytes hash verified. No mutation. House voltage is not independently monitored.",
   "installed_firmware_reconciliation": {
-    "basis": "Final post-attempt-2 read-only closure with exact Matrix build identity, health, and AUX native DDP; this supersedes ambiguous host transaction result status.",
+    "basis": "Fresh read-only Matrix build/info and AUX telemetry during 2026-10-10 R6 cache candidate preflight; Matrix exact R4 and AUX live DDP from Matrix; exact R4 artifact independently SHA-verified.",
     "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "evidence_path": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-02/FINAL_DEVICE_STATE_CLOSURE.json",
-    "evidence_sha256": "721f6a6b553d82177e88d07504b2160314feffd008396f18bbcacdf20849287f",
+    "evidence_path": "evidence/cart2-r6-audio-cache-20261010/FRESH_PRELIVE_READONLY_PREFLIGHT.json",
+    "evidence_sha256": "cc0a45fc4dfdfc3ff06dba6d21c752ccaa850edd4be5b0595531bc58c18e030b",
     "live_mutation_authorized": false
   },
   "installed_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
@@ -2947,25 +2945,25 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-10T08:20:08.627973+00:00",
+  "last_updated_utc": "2026-10-10T09:14:26.968674+00:00",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
-    "authorization": "Historical authorization for the exact R6 coordinated transaction; consumed after its one installation failed the frozen kernel-0 performance gate and exact R4 recovery completed. No live write is authorized by this record.",
+    "authorization": "Historical exact R6 release authorization consumed on candidate failure; its one exact R4 recovery completed and verified. Attempt-3 diagnostic authorization consumed; no live write authorized now.",
     "authorized": false,
     "candidate_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
     "controller_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
-    "current_gate": "Attempt 3 exact diagnostic binding is open under current owner authorization; no device write until LIVE_APPROVED admission, capsule/prelive validation, and fresh guarded preflight pass.",
+    "current_gate": "Attempt-3 diagnostic failed the frozen kernel-0 catastrophic performance gate; exact renderer restoration, exact R4 recovery, and AUX native DDP verification are complete. Attempt and recovery authority are consumed; live mutation is closed. Continue offline only.",
     "hardware_writes_permitted_now": false,
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "transaction_consumed": true
   },
-  "live_mutation_authorization_closed_at_utc": "2026-10-09T19:11:35.538409+00:00",
+  "live_mutation_authorization_closed_at_utc": "2026-10-10T08:46:10Z",
   "live_mutation_authorization_closure": {
-    "evidence": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R2_LIVE_TRANSACTION_FINAL_RECEIPT.json",
-    "evidence_sha256": "260599faa6704d49567c0a7633775c48be701366d8d18957260d657daab97d01",
-    "reason": "The one authorized R2 diagnostic and mandatory one exact R4 return are complete; R2 stage attribution is inconclusive due malformed trace records; exact R4 identity, Matrix health and AUX native DDP verified. Live mutation authority is closed."
+    "evidence": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-03/FINAL_DEVICE_STATE_CLOSURE.json",
+    "evidence_sha256": "a81fe0993144068206859041a010fad1ef7ed5cfa88f8c3a6edc7ff25e5ecaf0",
+    "reason": "Attempt-3 exact diagnostic candidate hit catastrophic kernel-0 threshold failure for three consecutive scheduled samples. Renderer restore passed; exact R4 recovery and readback passed; AUX native DDP healthy. No live authority remains."
   },
-  "live_mutation_authorized": true,
+  "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",
@@ -3462,7 +3460,7 @@
     "status": "OFFLINE_DESIGN_ONLY__OVERHEAD_AND_IMPLEMENTATION_PROOF_REQUIRED"
   },
   "schema": "hbnf-control-state-v2",
-  "status": "R6_DIAGNOSTIC_ATTEMPT3_EXACT_AUTHORIZATION_OPEN__PRELIVE_GATES_RUNNING",
+  "status": "R6_DIAGNOSTIC_ATTEMPT3_CATASTROPHIC_GATE_FAILED__EXACT_R4_RESTORED__LIVE_CLOSED",
   "live_mutation_authorization_reconciliation": {
     "schema": "hbnf-live-authorization-state-reconciliation-v1",
     "recorded_at_utc": "2026-10-10T06:34:15+00:00",
@@ -3487,12 +3485,12 @@
   },
   "r6_frame_context_diagnostic_authorization": {
     "schema": "hbnf-bounded-diagnostic-install-authorization-v1",
-    "status": "ATTEMPT3_EXACT_AUTHORIZATION_OPEN__LIVE_APPROVED_AND_PRELIVE_CHECKS_RUNNING",
+    "status": "CATASTROPHIC_GATE_FAILED__EXACT_R4_RESTORED__AUX_DDP_HEALTHY__LIVE_CLOSED",
     "candidate_release_id": "hbnf-cart2-r6-frame-context-diagnostic-20261010",
     "candidate_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
     "candidate_size_bytes": 1511456,
-    "authorization_consumed": false,
-    "live_mutation_authorized": true,
+    "authorization_consumed": true,
+    "live_mutation_authorized": false,
     "mandatory_return_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "mandatory_return_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "attempt_number": 3,
@@ -3502,7 +3500,7 @@
     "control_binding_recorded": true,
     "expected_installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "expected_installed_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "install_attempts_used": 0,
+    "install_attempts_used": 1,
     "matrix_mac": "70:4b:ca:5b:34:5c",
     "no_repeat_basis": "Current owner explicitly authorized the exact diagnostic and evidence-based continuation. This attempt reuses identical bytes but uses a source-corrected exact-identity waiter, normalized pinned-adapter response shapes, executable regression checks, a new control binding, and fresh per-attempt preflight.",
     "prior_attempts": [
@@ -3528,7 +3526,7 @@
     ],
     "prior_failed_method": "Attempt 2 Opal upload returned HTTP 200, but exact candidate runtime was never proven; host identity expectation and flattened telemetry access were defective. Exact R4 and AUX were subsequently read-back verified.",
     "r4_return_limit": 1,
-    "recovery_attempts_used": 0,
+    "recovery_attempts_used": 1,
     "scope": [
       "one exact R6 frame-context diagnostic install using the proven Opal-origin path",
       "require positive exact R6 build identity before starting capture",
@@ -3540,9 +3538,14 @@
     ],
     "source_message_ref": "Current owner message in this Codex task: CART 2.0 — ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; exact diagnostic SHA eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a and exact R4 SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
     "transport": "SSH-verified temporary artifact on Opal, then one Opal-origin multipart POST to Matrix WLED /update",
-    "r4_return_attempts_used": 0,
+    "r4_return_attempts_used": 1,
     "recovery_install_limit": 1,
-    "source_commit_for_candidate": "2219ade3db3e0c021b151fd1b3aec7d8360d4804; firmware artifact unchanged by host harness correction"
+    "source_commit_for_candidate": "2219ade3db3e0c021b151fd1b3aec7d8360d4804; firmware artifact unchanged by host harness correction",
+    "install_attempt_started_utc": "2026-10-10T08:44:19.515713+00:00",
+    "closed_at_utc": "2026-10-10T08:46:10.558856+00:00",
+    "transaction_result": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-03/TRANSACTION_RESULT.json",
+    "failure_classification_path": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_ATTEMPT3_FAILURE_CLASSIFICATION.json",
+    "failure_classification_sha256": "232ec819c64d203797e5d89fcd4f9a63a68db5033608306a1f968246f38a95da"
   },
   "live_authorization_binding": {
     "attempt_number": 3,
@@ -3576,5 +3579,39 @@
       "transaction_result": "/private/tmp/cart2-opal-local-20261009/evidence/cart2-execution-reset-20261010/live-diagnostic/TRANSACTION_RESULT.json",
       "transaction_result_sha256": "059267f0be9eac43a1871cbbf4002278f6ba9ab3682de969609ef5b7f6b5018b"
     }
-  ]
+  ],
+  "r6_audio_cache_successor": {
+    "schema": "hbnf-r6-successor-candidate-state-v1",
+    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+    "candidate_bytes": 1497984,
+    "parent_release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+    "parent_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
+    "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "root_cause_evidence": {
+      "trace": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-03/FRAME_CONTEXT_TRACE.json",
+      "classification": "R6 kernel-0 catastrophic frame-time regression is measured; audio stage about 50.6 ms elapsed for a worst frame; FreeRTOS task runtime statistics are disabled, so elapsed stage timing cannot be called CPU time. Exact R6 target disassembly shows a per-pixel int64 radial division; source review shows frame-invariant profile lane calculations repeated per pixel."
+    },
+    "correction": "Exact fixed 32x16 path uses bounded int32 radial arithmetic while preserving the original int64 fallback for other dimensions; frame-invariant profile lane values are prepared once per audio/control frame. No features removed.",
+    "offline_evidence": {
+      "manifest": "evidence/cart2-r6-audio-cache-20261010/FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
+      "manifest_sha256": "95c59e46782ee7c251ad003c6492f4d99e9ed755f96c835f42abfd78c510d5ea",
+      "source_binding": "firmware/phase2/integration-r6-cachefix/SOURCE_BINDING.json",
+      "source_binding_sha256": "283b5c782aea4087deef1ebdc2d36dbbb2fa83df461a95b2390c738a17d1c760",
+      "targeted_tests": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_AUDIO_CACHE_OFFLINE_TESTS.json",
+      "targeted_tests_sha256": "434c933262654003e7eaaf6d5a7226493dd301c86e12743f24c58fbc887a463f",
+      "pixel_equivalence": "15,755,040 bit-exact transforms across 32x16 optimized, 31x15 and 8x8 generic fallback, and 1x1 degenerate dimensions",
+      "target_build": "PASS pinned clean-room target; flash headroom 81,615 bytes; RAM headroom 215,200 bytes"
+    },
+    "conditional_authority": {
+      "source_message_ref": "Current owner message in this task, CART 2.0 — ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE: evidence-based further in-scope candidate installs and exact R4 recovery are conditionally authorized, each subject to exact per-attempt admission and fresh fail-closed safety preflight.",
+      "status": "CONDITIONAL__EXACT_CANDIDATE_IDENTIFIED__ADMISSION_NOT_COMPLETE",
+      "candidate_install_limit": 1,
+      "recovery_install_limit": 1,
+      "requires_live_approved_admission": true,
+      "requires_fresh_preflight": true,
+      "live_mutation_authorized": false
+    },
+    "status": "OFFLINE_TARGET_BUILD_AND_TARGETED_TESTS_PASS__FULL_RELEASE_ADMISSION_PENDING__NOT_LIVE_QUALIFIED"
+  }
 }

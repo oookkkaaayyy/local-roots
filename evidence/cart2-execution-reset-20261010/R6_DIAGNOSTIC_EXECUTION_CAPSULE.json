@@ -1,227 +1,274 @@
 {
-  "schema": "local-roots-execution-capsule-v1",
-  "run_id": "r6-frame-context-diagnostic-20261010-opal-attempt2-r4-return",
-  "trace_id": "R6-TRACE-DIAG-EB1EF395-OPAL-ATTEMPT2-338AFDF5",
-  "created_at": "2026-10-10T08:27:29.442943+00:00",
-  "system_id": "hbnf-cart",
-  "workflow_id": "live-device-diagnostic",
+  "created_at": "2026-10-10T08:43:51.445335+00:00",
+  "expected_terminal_outputs": [
+    "exact diagnostic identity confirmation or explicit inconclusive reason",
+    "every scheduled safety sample/read duration and trace record or overflow",
+    "renderer snapshot restore evidence if snapshot taken",
+    "exact R4 identity, Matrix health, AUX native DDP and post-transaction closure",
+    "live mutation authority closed"
+  ],
+  "owner_binding": {
+    "attempt_number": 3,
+    "authorization_id": "OWNER-20261010-R6-FRAME-CONTEXT-OPAL-ATTEMPT3-HOSTFIX",
+    "candidate_bin_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
+    "candidate_install_limit": 1,
+    "candidate_release_id": "hbnf-cart2-r6-frame-context-diagnostic-20261010",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "recovery_install_limit": 1,
+    "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "scope": [
+      "one exact R6 frame-context diagnostic install using the proven Opal-origin path",
+      "require positive exact R6 build identity before starting capture",
+      "bounded kernel-0 capture with 8-second safety polls and unchanged catastrophic rules",
+      "preserve trace and all scheduled/missing-sample evidence",
+      "restore renderer snapshot",
+      "one exact R4 return and read-only identity/health/AUX DDP verification",
+      "no production acceptance, no firmware rebuild, no cloud/router/AUX firmware changes"
+    ],
+    "source_message_ref": "Current owner message in this Codex task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; exact diagnostic SHA eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a and exact R4 SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
+    "transport": "SSH-verified temporary artifact on Opal, then one Opal-origin multipart POST to Matrix WLED /update"
+  },
   "repo_identity": {
-    "type": "git_commit",
-    "value": "53fb8436a1936c7e3bc180b69b82a6b3cd4cd428",
     "branch": "hbnf-cart2-phase2-integration-20261006",
-    "dirty": true
+    "dirty": true,
+    "type": "git_commit",
+    "value": "198517a44b29846eee93008e15612de918213819"
   },
   "repo_inputs": [
     {
+      "bytes": 14677,
       "path": "AGENTS.md",
-      "sha256": "1400198b652bc349ea032a1a2669e436987c60a5ada3fea92e52425f73737584",
-      "bytes": 14677
+      "sha256": "1400198b652bc349ea032a1a2669e436987c60a5ada3fea92e52425f73737584"
     },
     {
+      "bytes": 31590,
       "path": "config/HBNF_CONTROL_MODEL.json",
-      "sha256": "8d42f1fd540c95a01ae16857c286f6350b57ad8e3cd0c22befd1780fcb26d29c",
-      "bytes": 31590
+      "sha256": "8d42f1fd540c95a01ae16857c286f6350b57ad8e3cd0c22befd1780fcb26d29c"
     },
     {
+      "bytes": 242064,
       "path": "config/HBNF_CONTROL_STATE.json",
-      "sha256": "bc82c2aa6ab8f1d88cf440ae162ab76070cfff90ffc3124efe734506b054de4e",
-      "bytes": 239756
+      "sha256": "3b724fe9985f91406a807bfa73463744a7d1ab94a3a92d36740c5620b8834c8b"
     },
     {
-      "path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
-      "sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797",
-      "bytes": 3481
-    },
-    {
+      "bytes": 45282,
       "path": "scripts/hbnf_control.py",
-      "sha256": "5a6ea7152908b0a47737608553b58c520768f314b3649b750a2cc1c4c65e23de",
-      "bytes": 45282
+      "sha256": "5a6ea7152908b0a47737608553b58c520768f314b3649b750a2cc1c4c65e23de"
     },
     {
+      "bytes": 3435,
       "path": "scripts/hbnf_guarded_run.py",
-      "sha256": "4d65305bd7d6290c1ea377884ac051cef9c7492d49a0dcdf4439dd0f7489e91e",
-      "bytes": 3435
+      "sha256": "4d65305bd7d6290c1ea377884ac051cef9c7492d49a0dcdf4439dd0f7489e91e"
     },
     {
+      "bytes": 28824,
       "path": "scripts/platform.py",
-      "sha256": "632bb82f12461453241d407357fb8da555bb621877925b50329252c18d1f7c4f",
-      "bytes": 28824
+      "sha256": "632bb82f12461453241d407357fb8da555bb621877925b50329252c18d1f7c4f"
     },
     {
+      "bytes": 36189,
       "path": "scripts/hbnf_foundation_live_adapter.py",
-      "sha256": "00f44af477e2452b8f59b074e64e80bb052272e8c2bc6f9503c2725aea01c465",
-      "bytes": 36189
+      "sha256": "00f44af477e2452b8f59b074e64e80bb052272e8c2bc6f9503c2725aea01c465"
     },
     {
+      "bytes": 35096,
       "path": "scripts/hbnf_r6_frame_context_diagnostic_transaction.py",
-      "sha256": "fff85dce237facc88f36eef36858937e80f29187527971f364b5384e9154b0a7",
-      "bytes": 31473
+      "sha256": "ba88927df04245e5c0e3e01e87fda6d215f717b73fefc2e89bc0ad0a191855d7"
     },
     {
+      "bytes": 8944,
       "path": "tests/hbnf_guarded_run.py",
-      "sha256": "aefeee335891a52a93d6c97f038a1d4fe2e6e656e2482d77ba5c642222790485",
-      "bytes": 8944
+      "sha256": "aefeee335891a52a93d6c97f038a1d4fe2e6e656e2482d77ba5c642222790485"
     },
     {
-      "path": "firmware/phase2/integration-r6/SOURCE_BINDING.json",
-      "sha256": "991ec959a6ee178d0e1783861567e3b7605b0daf00c4179152a83799f79ed657",
-      "bytes": 5711
+      "bytes": 2930,
+      "path": "tests/r6_frame_context_trace/test_runtime_contract.py",
+      "sha256": "add389dad10c7c07f3ba21d4eacbf9439aeb0b116d26f5ec58478aab4cad20a1"
     },
     {
-      "path": "evidence/cart2-execution-reset-20261010/R6_FRAME_CONTEXT_DIAGNOSTIC_MANIFEST.json",
-      "sha256": "250bb74e4cd03f0c00df13debcc451b662a9db09e08455e309e2d8b259bc68b5",
-      "bytes": 5780
-    },
-    {
-      "path": "evidence/cart2-execution-reset-20261010/R6_FRAME_CONTEXT_DIAGNOSTIC_OFFLINE_TESTS.json",
-      "sha256": "07a8fb32d427f389e3a0a07385ffd7fab62883931e86c376b782142e857a7fdd",
-      "bytes": 602
-    },
-    {
-      "path": "evidence/cart2-execution-reset-20261010/R6_FRAME_CONTEXT_DIAGNOSTIC_BUILD_PREP.json",
-      "sha256": "e787b063ada6d78fca60c01de6efe1bb3bdbb58d8eb5bfc737fc4fed89d0a7bf",
-      "bytes": 3251
-    },
-    {
-      "path": "evidence/cart2-execution-reset-20261010/R6_FRAME_CONTEXT_DIAGNOSTIC_BUILD.log",
-      "sha256": "24bbca9479773ec646f226755dfaace999501c6a595fd667a8a10b7b6ed8e007",
-      "bytes": 6870292
-    },
-    {
-      "path": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_OWNER_AUTHORIZATION_RECORD.json",
-      "sha256": "ebef8746ca9b66731befc46d11632ad1230070a886f464db524990406cc29824",
-      "bytes": 1610
-    },
-    {
-      "path": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_OWNER_AUTHORIZATION_OPAL_ATTEMPT2.json",
-      "sha256": "47efd3b9782e6d1fbd8ba995a1cd2d9da3dfcecbb1963c4577cb7732dbb4a321",
-      "bytes": 2780
-    },
-    {
-      "path": "evidence/cart2-execution-reset-20261010/live-diagnostic/TRANSFER_FAILURE_CLASSIFICATION.json",
-      "sha256": "0ae3dbdfaa8da1fa4acd838c624f0886dcbc07b1270d6a73b9b17d17c3664ee5",
-      "bytes": 2285
-    },
-    {
-      "path": "evidence/cart2-execution-reset-20261010/live-diagnostic/MAC_TRANSFER_FAILURE_R4_VERIFICATION.json",
-      "sha256": "42a17d77729519754810993965ae706049ec9044484fc37b4de33ced6990d549",
-      "bytes": 3475
-    },
-    {
-      "path": "evidence/cart2-execution-reset-20261010/live-diagnostic/OPAL_READONLY_PREFLIGHT.json",
-      "sha256": "55a5c4d9d6ccacbe90f5538b0576d8512fc6f8e72c8d6d4064d803f303679b31",
-      "bytes": 810
-    },
-    {
-      "path": "evidence/cart2-execution-reset-20261010/live-diagnostic/ATTEMPT2_PREINSTALL_PREFLIGHT.json",
-      "sha256": "5f2122d5a11f896e51b70997e0d542dd2a1780721fe7e0bf04085367e1b3f19d",
-      "bytes": 3626
-    },
-    {
-      "path": "evidence/cart2-execution-reset-20261010/live-diagnostic/diagnostic-upload-response.json",
-      "sha256": "30fae2517370e327780b27a61e966298790ecfee5c13286a18d4d7c17d46de05",
-      "bytes": 419
-    },
-    {
-      "path": "evidence/cart2-execution-reset-20261010/live-diagnostic/TRANSACTION_RESULT.json",
-      "sha256": "059267f0be9eac43a1871cbbf4002278f6ba9ab3682de969609ef5b7f6b5018b",
-      "bytes": 3986
-    },
-    {
-      "path": "evidence/cart2-execution-reset-20261010/live-diagnostic/R6_DIAGNOSTIC_TRANSACTION_DRYRUN.json",
-      "sha256": "e4ee0253bc76cf08dd53a3d90611e185927aeb52b79fc908e6bcd69fd7ca9f2a",
-      "bytes": 3455
-    },
-    {
+      "bytes": 3314,
       "path": "tests/r6_frame_context_trace/test_opal_transport.py",
-      "sha256": "afaa0773ca674aa580ba335a2c76843393d9cfff9d653de818295c596a52da90",
-      "bytes": 3314
+      "sha256": "afaa0773ca674aa580ba335a2c76843393d9cfff9d653de818295c596a52da90"
     },
     {
-      "path": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_TRANSACTION_DRYRUN.json",
-      "sha256": "e4ee0253bc76cf08dd53a3d90611e185927aeb52b79fc908e6bcd69fd7ca9f2a",
-      "bytes": 3455
+      "bytes": 4394,
+      "path": "tests/r6_frame_context_trace/test_source_contract.py",
+      "sha256": "a00b25048e360b1c5eb9a20f442b2bfbb72d23058386bc336715ed0aa5ac2d8b"
     },
     {
-      "path": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_ATTEMPT2_OFFLINE_TESTS.txt",
-      "sha256": "1d0c636ef81d21f56e9333865ffa13d4e246fc3e13a959d64ad0e28a2b3c9c83",
-      "bytes": 6973
-    },
-    {
-      "path": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_ATTEMPT2_OFFLINE_REPLAY.json",
-      "sha256": "f53d297133ee3b2326404448e8d6477069ebec70364144f670febcb35eafa41d",
-      "bytes": 852
-    },
-    {
+      "bytes": 6678,
       "path": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_LIVE_APPROVED_ADMISSION.json",
-      "sha256": "92d2da6ff48fb648133f6b052f55a5e5d89ab65490370d30b29c08671aec39d4",
-      "bytes": 7891
+      "sha256": "31b4e41daad7418076bac20bdbdb033e506cb5a943fa5f192b3b40677c610ef3"
     },
     {
+      "bytes": 1918,
+      "path": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_OWNER_AUTHORIZATION_ATTEMPT3.json",
+      "sha256": "b56df2502a89b3a8f4d4b8474ff6b88b832ef6de834886445c58b7907947254a"
+    },
+    {
+      "bytes": 3556,
+      "path": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_ATTEMPT2_HOST_FAILURE_AND_FIX.json",
+      "sha256": "e98b31f446aba496706f50398ac018f3eaa047359ef91956ab72fa0b4a52243f"
+    },
+    {
+      "bytes": 3514,
+      "path": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_ATTEMPT3_ARTIFACT_IDENTITY.json",
+      "sha256": "8ea811d2da5d63b762293ad65a2afb145481077ab5c00e3ac7642271ef0db54b"
+    },
+    {
+      "bytes": 2475,
+      "path": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_ATTEMPT3_OFFLINE_REHEARSAL.json",
+      "sha256": "7ef9a01a71341a6315c09984cb803f70605bfa44026b15335f48a962fa9b2134"
+    },
+    {
+      "bytes": 5780,
+      "path": "evidence/cart2-execution-reset-20261010/R6_FRAME_CONTEXT_DIAGNOSTIC_MANIFEST.json",
+      "sha256": "250bb74e4cd03f0c00df13debcc451b662a9db09e08455e309e2d8b259bc68b5"
+    },
+    {
+      "bytes": 3251,
+      "path": "evidence/cart2-execution-reset-20261010/R6_FRAME_CONTEXT_DIAGNOSTIC_BUILD_PREP.json",
+      "sha256": "e787b063ada6d78fca60c01de6efe1bb3bdbb58d8eb5bfc737fc4fed89d0a7bf"
+    },
+    {
+      "bytes": 6870292,
+      "path": "evidence/cart2-execution-reset-20261010/R6_FRAME_CONTEXT_DIAGNOSTIC_BUILD.log",
+      "sha256": "24bbca9479773ec646f226755dfaace999501c6a595fd667a8a10b7b6ed8e007"
+    },
+    {
+      "bytes": 602,
+      "path": "evidence/cart2-execution-reset-20261010/R6_FRAME_CONTEXT_DIAGNOSTIC_OFFLINE_TESTS.json",
+      "sha256": "07a8fb32d427f389e3a0a07385ffd7fab62883931e86c376b782142e857a7fdd"
+    },
+    {
+      "bytes": 586,
+      "path": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_RESOURCE_HEADROOM.json",
+      "sha256": "090f2f02f78eb03390ac26763dc03069f77b8c1cbccc3fe969099b4da5eb168e"
+    },
+    {
+      "bytes": 562,
+      "path": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_LAUNCH_GUARD_TEST_RESULT.json",
+      "sha256": "44a550f3848ac4182e352222198fce1dc641d4b414479bb2017b9243448ac473"
+    },
+    {
+      "bytes": 84612,
+      "path": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-02/TRANSACTION_RESULT.json",
+      "sha256": "dd246390f11e555cfceb8346daa348eb8315bd7adcdfe7b05e7993d1c991fe69"
+    },
+    {
+      "bytes": 1407,
+      "path": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-02/FINAL_DEVICE_STATE_CLOSURE.json",
+      "sha256": "721f6a6b553d82177e88d07504b2160314feffd008396f18bbcacdf20849287f"
+    },
+    {
+      "bytes": 70748,
+      "path": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-02/FRAME_CONTEXT_TRACE.json",
+      "sha256": "16af11b71446ea682b45f392da5d8f29e2057071a4b3baade1d158375b449cc0"
+    },
+    {
+      "bytes": 3753,
+      "path": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-03/READONLY_PREFLIGHT.json",
+      "sha256": "4eff9c05c60cc7174a19152ec2bf363875678cf3f633bdbeba39236f60988193"
+    },
+    {
+      "bytes": 810,
+      "path": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-03/OPAL_READONLY_PREFLIGHT.json",
+      "sha256": "a7671dc0fc9b692e34ccd203a1b240730c1b0ae290e41cb61f661516b3b52936"
+    },
+    {
+      "bytes": 11590,
+      "path": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-03/OFFLINE_TESTS.txt",
+      "sha256": "f14a2369b0ecd8b7068d6be8f0de88f405f2ec557abb79ba4066085a48ebb805"
+    },
+    {
+      "bytes": 4176,
+      "path": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-03/R6_DIAGNOSTIC_TRANSACTION_DRYRUN.json",
+      "sha256": "c0bc30ea148cc0f82937d65019b626ab3855a5064373854f765616becf9935ce"
+    },
+    {
+      "bytes": 2751,
+      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_FROZEN_LIVE_QUALIFICATION_PROCEDURE.json",
+      "sha256": "fb13075edc2c9d132b1bcdd8c10e235e8c7ae34e049d71166f3ce6294d2c4a96"
+    },
+    {
+      "bytes": 2844,
+      "path": "evidence/cart2-r6-integrated-20261009/OFFLINE_TEST_RECEIPT.json",
+      "sha256": "575a6a5aa8a61d10bcf535a8ae146c489362fe906237011bac034196e8557110"
+    },
+    {
+      "bytes": 1511456,
       "path": "evidence/cart2-execution-reset-20261010/artifact/hbnf-cart2-r6-frame-context-diagnostic-20261010.bin",
-      "sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
-      "bytes": 1511456
+      "sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a"
     },
     {
+      "bytes": 1489008,
       "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
-      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-      "bytes": 1489008
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
     }
   ],
+  "run_id": "r6-frame-context-diagnostic-20261010-opal-attempt3-r4-return",
+  "schema": "local-roots-execution-capsule-v1",
   "stages": [
     {
+      "candidate_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
+      "exact_admission": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_LIVE_APPROVED_ADMISSION.json",
       "id": "release-admission",
       "kind": "preflight",
       "mutation": false,
-      "candidate_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
       "recovery_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
     },
     {
-      "id": "readonly-preflight",
+      "aux_live_ddp": true,
+      "fresh_preflight": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-03/READONLY_PREFLIGHT.json",
+      "id": "read-only-preflight",
       "kind": "preflight",
-      "mutation": false,
+      "mac_ac": true,
       "matrix_mac": "70:4b:ca:5b:34:5c",
-      "aux_mac": "8c:94:df:55:c3:4c"
+      "mutation": false,
+      "single_worker": true
     },
     {
+      "attempt_limit": 1,
       "id": "candidate-install",
       "kind": "live",
       "mutation": true,
-      "attempt_limit": 1,
-      "retry_policy": "never"
+      "retry_policy": "never",
+      "transport": "Opal-stage-hash-verify then one Opal-origin WLED /update request"
     },
     {
-      "id": "kernel0-capture",
+      "id": "identity-gated-capture",
       "kind": "live",
       "mutation": true,
-      "window_seconds_max": 60,
-      "safety_interval_seconds": 8
+      "no_trace_or_renderer_controls_before_exact_identity": true,
+      "require_exact_diag_release_id": true,
+      "safety_interval_seconds": 8,
+      "window_seconds_max": 60
     },
     {
       "id": "renderer-restore",
       "kind": "recovery",
-      "mutation": true
+      "mutation": true,
+      "only_after_exact_candidate_identity": true
     },
     {
-      "id": "r4-return",
+      "attempt_limit": 1,
+      "id": "exact-r4-return",
+      "if_r4_already_active": "verify and avoid unnecessary flash",
       "kind": "recovery",
       "mutation": true,
       "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-      "attempt_limit": 1
+      "upload_only_if_exact_diag_readback_active": true
     },
     {
+      "close_on_terminal_result": true,
       "id": "close-authority",
       "kind": "evidence",
       "mutation": false
     }
   ],
-  "expected_terminal_outputs": [
-    "Opal artifact staging SHA/size receipt",
-    "bounded frame-context trace or exact failure classification",
-    "renderer snapshot restore result",
-    "exact R4 identity and AUX native DDP result",
-    "live mutation authority closed"
-  ],
-  "transport": "one SSH-verified Opal staging copy plus one Opal-origin WLED /update request per exact artifact; no retry",
-  "terminal_recovery": "Stop on target identity uncertainty; never retry within this attempt. If exact diagnostic is confirmed installed, stop trace, restore snapshot, stage and send exact R4 once from Opal; verify R4 identity and AUX. Diagnostic is not production acceptance."
+  "system_id": "hbnf-cart",
+  "terminal_recovery": "Before any recovery write, reread Matrix IP/MAC/WLED and build identity. If exact diagnostic is active, upload exact R4 once and verify. If exact R4 is already active, verify health/AUX and do not reflash. If identity is neither exact release or target identity cannot be read, send no recovery write; close authority and preserve blocker evidence.",
+  "trace_id": "R6-TRACE-DIAG-EB1EF395-OPAL-ATTEMPT3-338AFDF5",
+  "transport": "one SSH-verified Opal staging transfer and at most one Opal-origin WLED /update request for diagnostic; exact R4 upload only if readback proves diagnostic currently active",
+  "workflow_id": "live-device-diagnostic"
 }

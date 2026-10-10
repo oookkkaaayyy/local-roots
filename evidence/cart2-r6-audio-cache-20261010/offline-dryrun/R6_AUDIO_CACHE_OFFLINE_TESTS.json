@@ -1,0 +1,216 @@
+{
+  "schema": "hbnf-r6-audio-cache-targeted-offline-tests-v1",
+  "captured_at_utc": "2026-10-10T09:12:50.016510+00:00",
+  "candidate_release": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+  "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "device_or_cloud_mutation": false,
+  "results": [
+    {
+      "command": [
+        "python3",
+        "tests/test_hbnf_audio_bridge_frame_cache.py"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: 15,755,040 RGB pixel transforms bit-identical across 28 scenes, 6 audio cases, 6 amounts, 5 response gains, and dimensions 32x16, 31x15, 8x8, 1x1 (including generic radial fallback)\noutput_digest=75444567800b229d\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "tests/test_r6_audio_cache_candidate.py"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010 exact SHA, source closure, target codegen, resource headroom and R4 recovery verified\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "tests/test_r5_audio_radial_fastpath.py"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: 512/512 production pixels \u00d7 8 transforms exact; numerator bound proven; alternate dimensions retain int64 fallback\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_vibe_audio_replay.py"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS hbnf_vibe_audio_replay: 13 AudioFeatures semantics, six synthetic traces, pairwise Vibe differentiation, AUTO hysteresis\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "tests/test_hbnf_text_moments_offline.py"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "..............\n----------------------------------------------------------------------\nRan 14 tests in 0.033s\n\nOK\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_delivery_rail_host.py"
+      ],
+      "exit_code": 0,
+      "stdout": "REJECT historical replay failed : failed/missing check: all_historical_host_failures_replayed\nREJECT fabricated dry-run evidence digest : missing/hash-mismatch evidence: entire_release_transaction_dryrun\nREJECT binary sha mismatch : candidate binary SHA mismatch\nREJECT generic test fixture used as release proof : test-only generic evidence is not release proof: device_and_source_authority_reconciled\nREJECT one generic artifact reused for unrelated checks : one evidence artifact is reused for more than three independent checks\nREJECT no live authorization : failed/missing check: launcher_rejects_invalid_manifest_before_device_access\nREJECT missing evidence files : missing/hash-mismatch evidence: device_and_source_authority_reconciled\nPASS: offline checker accepts complete host fixture and fails closed for invalid proofs; no hardware invoked\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_control.py"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: linear receipt control plane is acyclic, nonrecursive, exact-input, and fail-closed\n",
+      "stderr": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 0.199s\n\nOK\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_control_execution_system.py"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 0.145s\n\nOK\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_guarded_run.py"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: guarded execution blocks wrong-state/unauthorized mutation; exact LIVE_APPROVED admission rejects missing, malformed, and stale identities before child execution\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_release_engineering_static.py"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: HBNF release-engineering staging integrity\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_source_tree_identity.py"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: deterministic source-tree identity ignores build outputs and changes on source edits\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_runtime_qualify_static.py"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: diagnostic sweep can rank current firmware without tail metrics; foundation qualification remains fail-closed\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_phase2_r4_build_closure.py"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: Phase 2 source binding preserves R4 source and embeds unique WOW-r4 identity\nPASS: clean-room closure requires the exact R4 FastLED transformation, diagnostics environment, telemetry hook patch, and empty local object cache\nPASS: existing build gate fails closed unless the compiled binary, effective macro, and linked WLED hook references satisfy the telemetry contract\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_ui_package_validation.py"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: actual installer validator accepts exact package; rejects marker, asset, source-identity and installer tampering; validation-only made no deployment/network calls\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "tests/hbnf-coordinated-controller-contract.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "HBNF coordinated controller contract: PASS\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "tests/hbnf_owner_pwa_package.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "HBNF owner PWA package closure: PASS\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "tests/hbnf_owner_pwa_reliability.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: owner PWA deadline, pairing, versioned imports, offline shell cache, and cache isolation contracts\nPASS: owner mission hierarchy, Vibe controls, status truth, responsive layouts, Guest default, and PWA versioning\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "tests/hbnf_skins_scoring_owner_flow.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: owner Mission Control scoring covers authoritative F9 singles/B9 doubles, hole edits, pushes/carry, tiebreaker, ace winner/pot state, stale/concurrent protection, confirmed readback, paired-owner auth, and confirmed cart-control state\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "tests/hbnf_matrix_relay_contract.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "HBNF Matrix relay protocol: PASS\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/hbnf_live_kernel_sweep.py",
+        "--adapter",
+        "evidence/cart2-r6-audio-cache-20261010/R6_AUDIO_CACHE_LIVE_SWEEP_ADAPTER.json",
+        "--inventory",
+        "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+        "--outdir",
+        "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/runner",
+        "--contract",
+        "foundation",
+        "--qualify",
+        "--soak-seconds",
+        "5400",
+        "--soak-interval-seconds",
+        "8",
+        "--threshold-policy",
+        "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
+        "--threshold-baseline",
+        "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/runner/PRE_SOAK_BASELINE.json",
+        "--early-r4-profile-dir",
+        "evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep",
+        "--early-r4-baseline-manifest",
+        "evidence/hbnf-foundation-qualification-20261005/seq39/live/PRE_SOAK_BASELINE.json",
+        "--early-r4-release",
+        "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "--compare-all-r4",
+        "--dry-run"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"DRY_RUN_PASS\",\n  \"kernel_count\": 28,\n  \"first\": {\n    \"ordinal\": 0,\n    \"effect_id\": 220,\n    \"preset\": 61,\n    \"kernel_name\": \"Complex_Kaleido_3\",\n    \"runtime_kernel_index_expected\": 0,\n    \"variant_id\": \"DISCOVER_AND_CAPTURE\",\n    \"selection_method\": \"DISCOVER_FROM_RELEASE07_CONTROL_PATH\",\n    \"profile_path\": null\n  },\n  \"last\": {\n    \"ordinal\": 27,\n    \"effect_id\": 247,\n    \"preset\": 88,\n    \"kernel_name\": \"Module_Experiment10\",\n    \"runtime_kernel_index_expected\": 27,\n    \"variant_id\": \"DISCOVER_AND_CAPTURE\",\n    \"selection_method\": \"DISCOVER_FROM_RELEASE07_CONTROL_PATH\",\n    \"profile_path\": null\n  },\n  \"adapter_schema\": \"hbnf-live-sweep-adapter-v1\",\n  \"expected_release_id\": \"hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010\"\n}\n",
+      "stderr": ""
+    }
+  ],
+  "result": "PASS_TARGETED_TESTS_AND_FROZEN_QUALIFICATION_DRYRUN"
+}

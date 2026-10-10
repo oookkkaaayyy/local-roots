@@ -1,0 +1,78 @@
+{
+  "expected_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "notes": [
+    "Exact candidate-bound copy of the established Foundation sweep adapter. Only expected release identity and process environment prefix changed; all command argv, timing, selection, telemetry, snapshot, and restore behavior are inherited unchanged."
+  ],
+  "preflight_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "preflight",
+    "--session-id",
+    "{session_id}"
+  ],
+  "restore_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "restore",
+    "--snapshot-file",
+    "{snapshot_file}"
+  ],
+  "sample_interval_seconds": 1,
+  "sample_seconds": 30,
+  "schema": "hbnf-live-sweep-adapter-v1",
+  "select_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "select",
+    "--kernel",
+    "{runtime_kernel_index}"
+  ],
+  "settle_seconds": 5,
+  "snapshot_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "snapshot",
+    "--observer-output",
+    "{observer_output}",
+    "--inventory",
+    "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"
+  ],
+  "telemetry_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "telemetry",
+    "--inventory",
+    "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+    "--session-id",
+    "{session_id}"
+  ],
+  "telemetry_mode_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "telemetry-mode",
+    "--enabled",
+    "{enabled}"
+  ],
+  "timeout_seconds": 300,
+  "verify_restore_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "verify-restore",
+    "--snapshot-file",
+    "{snapshot_file}"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "schema": "hbnf-r6-audio-cache-target-build-prep-v1",
+  "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "started_at_utc": "2026-10-10T09:00:30.699815+00:00",
+  "source_binding_path": "firmware/phase2/integration-r6-cachefix/SOURCE_BINDING.json",
+  "source_binding_sha256": "7fd9fdcbdfbe1f6b18447e005ccaed337c2f4b19acc4c82e503cfb5b8ee61913",
+  "source_commit": "198517a44b29846eee93008e15612de918213819",
+  "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+  "platformio_core": "6.1.18",
+  "python": "3.9.6",
+  "environment": "hbnf_matrix_wled16_packet20_diag",
+  "platformio_ini_sha256": "99718bfd8614da297c94692bc41dea48c9af87dbe829ded2e4a7cad7f0368820",
+  "platformio_override_ini_sha256": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922",
+  "source_date_epoch": 1791450000,
+  "candidate_build_flags": "Existing R6 packet20 diagnostics flag only; frame-context trace macro removed. No other compiler/dependency/LDF changes.",
+  "workspace": "/private/tmp/hbnf-p2-build/WLED-r6-audio-cache-20261010",
+  "network_or_paid_service": "None; use materialized pinned source/dependencies and local PlatformIO package cache.",
+  "command": "PYTHONPATH=/private/tmp/hbnf-p2-build/pio-cli PLATFORMIO_CORE_DIR=/private/tmp/hbnf-p2-build/pio-local SOURCE_DATE_EPOCH=1791450000 python3 -m platformio run -d /private/tmp/hbnf-p2-build/WLED-r6-audio-cache-20261010 -e hbnf_matrix_wled16_packet20_diag -v"
+}

@@ -1,0 +1,26 @@
+{
+  "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "artifact_size_bytes": 1489008,
+  "at_utc": "2026-10-10T08:45:58.809029+00:00",
+  "curl_exit": 0,
+  "firmware_request_attempts": 1,
+  "http_status": "200",
+  "opal_staging": {
+    "at_utc": "2026-10-10T08:45:38.622040+00:00",
+    "firmware_requests": 0,
+    "local_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "local_size_bytes": 1489008,
+    "remote_mode": "0600",
+    "remote_path": "/tmp/hbnf-cart2-hbnf-r4-exact-return.bin",
+    "remote_verification_stdout": "OPAL_ARTIFACT_VERIFIED\n338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c  /tmp/hbnf-cart2-hbnf-r4-exact-return.bin\n1489008\n",
+    "ssh_attempts": 1,
+    "status": "PASS"
+  },
+  "response_bytes": 558,
+  "response_sha256": "f8b7a31a4224278b8d45bffc95d6829c592f70ef5fc99fa48dff46b5dc205af4",
+  "retry": false,
+  "ssh_exit": 0,
+  "stderr": "",
+  "transport": "SSH-verified staging then single Opal-origin curl multipart POST to Matrix WLED /update",
+  "update_successful_text": true
+}

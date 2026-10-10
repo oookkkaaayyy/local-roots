@@ -1,0 +1,61 @@
+{
+  "schema": "hbnf-r6-diagnostic-attempt3-failure-classification-v1",
+  "candidate": {
+    "release_id": "hbnf-cart2-r6-frame-context-diagnostic-20261010",
+    "sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a"
+  },
+  "rollback": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "outcome": "FROZEN_KERNEL0_CATASTROPHIC_PERFORMANCE_GATE_FAILED__EXACT_R4_RESTORED__AUX_DDP_VERIFIED__LIVE_CLOSED",
+  "evidence": {
+    "final_device_state_path": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-03/FINAL_DEVICE_STATE_CLOSURE.json",
+    "final_device_state_sha256": "a81fe0993144068206859041a010fad1ef7ed5cfa88f8c3a6edc7ff25e5ecaf0",
+    "trace_path": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-03/FRAME_CONTEXT_TRACE.json",
+    "trace_sha256": "01789ce140beacee0fa0c41c4e18bcea73d41623d495e0dffe31b43857fd0a72",
+    "post_attempt_readonly_path": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-03/POST_ATTEMPT_READONLY_R4_VERIFICATION.json"
+  },
+  "measured_facts": {
+    "scheduled_safety_samples": 3,
+    "fps": [
+      8,
+      8,
+      9
+    ],
+    "p99_ms": [
+      127.875,
+      127.875,
+      127.875
+    ],
+    "max_ms": [
+      148.058,
+      172.103,
+      177.857
+    ],
+    "kernel": 0,
+    "aux_native_ddp_active_all_samples": true,
+    "frames_seen": 178,
+    "outliers_above_42_03125ms": 177,
+    "retained_outliers": 16,
+    "overflow": 161,
+    "worst_frame_wall_elapsed_us": 187379,
+    "worst_frame_cpu_mhz": 240,
+    "same_core_and_frequency": true,
+    "task_runtime_stats_available": false,
+    "worst_frame_elapsed_cycles": {
+      "kernel_gross": 42668578,
+      "palette": 8014310,
+      "audio": 12141734,
+      "ddp_send": 1043722,
+      "unaccounted": 814918,
+      "trace_store_body": 48274
+    },
+    "audio_input_was_silent": true
+  },
+  "interpretation": {
+    "confirmed": "Sustained catastrophic wall-frame timing failure on the exact diagnostic runtime, not a single excursion. Safety rule correctly aborted after three consecutive bad 8-second samples. Renderer state restored and exact R4 was reinstalled and readback-verified; AUX DDP remained live.",
+    "not_proven": "Attribution of CCOUNT elapsed stage values to renderer CPU execution versus preemption/scheduling. Task runtime stats were unavailable. Trace was armed; no trace-disarmed comparison exists. Overflow limits distribution analysis.",
+    "next": "Offline compare the exact measured R6 per-pixel/audio/palette and kernel-0 paths against the installed R4 and pinned WLED/ANIMartRIX source, accounting for workload and instrumentation differences. Keep exact R4 installed; no new live operation until a demonstrated correction and fresh guarded admission."
+  }
+}

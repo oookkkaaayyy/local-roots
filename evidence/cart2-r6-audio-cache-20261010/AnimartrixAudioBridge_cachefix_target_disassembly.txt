@@ -1,0 +1,544 @@
+### hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const address=0x400db674 size=1090
+
+/private/tmp/hbnf-p2-build/WLED-r6-audio-cache-20261010/.pio/build/hbnf_matrix_wled16_packet20_diag/firmware.elf:     file format elf32-xtensa-le
+
+
+Disassembly of section .flash.text:
+
+400db674 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const>:
+400db674:	00a136        	entry	a1, 80
+400db677:	049d      	mov.n	a9, a4
+400db679:	840242        	l8ui	a4, a2, 132
+400db67c:	078d      	mov.n	a8, a7
+400db67e:	05ed      	mov.n	a14, a5
+400db680:	848c      	beqz.n	a4, 400db68c <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x18>
+400db682:	8d0242        	l8ui	a4, a2, 141
+400db685:	348c      	beqz.n	a4, 400db68c <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x18>
+400db687:	471242        	l16ui	a4, a2, 142
+400db68a:	f4cc      	bnez.n	a4, 400db69d <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x29>
+400db68c:	20d880        	or	a13, a8, a8
+400db68f:	20c660        	or	a12, a6, a6
+400db692:	20bee0        	or	a11, a14, a14
+400db695:	02ad      	mov.n	a10, a2
+400db697:	ffeee5        	call8	400db584 <hbnf::AnimartrixAudioBridge::applySceneTint(unsigned char&, unsigned char&, unsigned char&) const>
+400db69a:	f01d      	retw.n
+400db69c:	057200        	extui	a7, a0, 18, 1
+400db69f:	064200        	lsi	f0, a2, 24
+400db6a2:	085200        	lsx	f5, a2, a0
+400db6a5:	02f200        	andb	b15, b2, b0
+400db6a8:	50a9      	s32i.n	a10, a0, 20
+400db6aa:	707344        	lsi	f4, a3, 0x1c0
+400db6ad:	497344        	mula.da.hl.ldinc	m3, a3, m1, a4
+400db6b0:	024281        	l32r	a8, 4009bfb8 <_coredump_iram_end+0x8400>
+400db6b3:	0252a3        	lsi	f10, a2, 8
+400db6b6:	a149a4        	lsi	f10, a9, 0x284
+400db6b9:	a50242        	l8ui	a4, a2, 165
+400db6bc:	b159      	s32i.n	a5, a1, 44
+400db6be:	7149      	s32i.n	a4, a1, 28
+400db6c0:	a60242        	l8ui	a4, a2, 166
+400db6c3:	049416        	beqz	a4, 400db710 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x9c>
+400db6c6:	8158      	l32i.n	a5, a1, 32
+400db6c8:	044516        	beqz	a5, 400db710 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x9c>
+400db6cb:	c15740        	mul16u	a5, a7, a4
+400db6ce:	215850        	srai	a5, a5, 8
+400db6d1:	805570        	add	a5, a5, a7
+400db6d4:	ffa072        	movi	a7, 255
+400db6d7:	023757        	bltu	a7, a5, 400db6dd <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x69>
+400db6da:	747050        	extui	a7, a5, 0, 8
+400db6dd:	004e72        	s8i	a7, a14, 0
+400db6e0:	000672        	l8ui	a7, a6, 0
+400db6e3:	c15470        	mul16u	a5, a4, a7
+400db6e6:	215850        	srai	a5, a5, 8
+400db6e9:	805570        	add	a5, a5, a7
+400db6ec:	ffa072        	movi	a7, 255
+400db6ef:	023757        	bltu	a7, a5, 400db6f5 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x81>
+400db6f2:	747050        	extui	a7, a5, 0, 8
+400db6f5:	004672        	s8i	a7, a6, 0
+400db6f8:	000852        	l8ui	a5, a8, 0
+400db6fb:	c14450        	mul16u	a4, a4, a5
+400db6fe:	214840        	srai	a4, a4, 8
+400db701:	804450        	add	a4, a4, a5
+400db704:	ffa052        	movi	a5, 255
+400db707:	023547        	bltu	a5, a4, 400db70d <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x99>
+400db70a:	745040        	extui	a5, a4, 0, 8
+400db70d:	004852        	s8i	a5, a8, 0
+400db710:	8158      	l32i.n	a5, a1, 32
+400db712:	140c      	movi.n	a4, 1
+400db714:	0145f6        	bgeui	a5, 4, 400db719 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0xa5>
+400db717:	040c      	movi.n	a4, 0
+400db719:	744040        	extui	a4, a4, 0, 8
+400db71c:	9149      	s32i.n	a4, a1, 36
+400db71e:	a148      	l32i.n	a4, a1, 40
+400db720:	0bb416        	beqz	a4, 400db7df <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x16b>
+400db723:	9158      	l32i.n	a5, a1, 36
+400db725:	0b6516        	beqz	a5, 400db7df <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x16b>
+400db728:	431252        	l16ui	a5, a2, 134
+400db72b:	441272        	l16ui	a7, a2, 136
+400db72e:	b50b      	addi.n	a11, a5, -1
+400db730:	470b      	addi.n	a4, a7, -1
+400db732:	82abb0        	mull	a10, a11, a11
+400db735:	82d440        	mull	a13, a4, a4
+400db738:	ffa0c2        	movi	a12, 255
+400db73b:	dada      	add.n	a13, a10, a13
+400db73d:	451da6        	blti	a13, 1, 400db786 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x112>
+400db740:	11a9f0        	slli	a10, a9, 1
+400db743:	c0aa40        	sub	a10, a10, a4
+400db746:	1143f0        	slli	a4, a3, 1
+400db749:	c044b0        	sub	a4, a4, a11
+400db74c:	824440        	mull	a4, a4, a4
+400db74f:	82aaa0        	mull	a10, a10, a10
+400db752:	44aa      	add.n	a4, a4, a10
+400db754:	02b726        	beqi	a7, 16, 400db75a <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0xe6>
+400db757:	00ba46        	j	400dba44 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x3d0>
+400db75a:	02c526        	beqi	a5, 32, 400db760 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0xec>
+400db75d:	00b8c6        	j	400dba44 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x3d0>
+400db760:	11a4e0        	slli	a10, a4, 2
+400db763:	aa4a      	add.n	a10, a10, a4
+400db765:	11aab0        	slli	a10, a10, 5
+400db768:	c0aa40        	sub	a10, a10, a4
+400db76b:	d4de41        	l32r	a4, 400d0ae4 <_stext+0xac4>
+400db76e:	a2aa40        	muluh	a10, a10, a4
+400db771:	41a9a0        	srli	a10, a10, 9
+400db774:	74a0a0        	extui	a10, a10, 0, 8
+400db777:	ffa0c2        	movi	a12, 255
+400db77a:	30cac0        	xor	a12, a10, a12
+400db77d:	056f07        	bbci	a15, 0, 400db786 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x112>
+400db780:	60caa2        	addi	a10, a10, 96
+400db783:	74c0a0        	extui	a12, a10, 0, 8
+400db786:	a148      	l32i.n	a4, a1, 40
+400db788:	c1c4c0        	mul16u	a12, a4, a12
+400db78b:	68a042        	movi	a4, 104
+400db78e:	21c7c0        	srai	a12, a12, 7
+400db791:	43cc40        	min	a12, a12, a4
+400db794:	000e42        	l8ui	a4, a14, 0
+400db797:	8254c0        	mull	a5, a4, a12
+400db79a:	215750        	srai	a5, a5, 7
+400db79d:	445a      	add.n	a4, a4, a5
+400db79f:	ffa052        	movi	a5, 255
+400db7a2:	023547        	bltu	a5, a4, 400db7a8 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x134>
+400db7a5:	745040        	extui	a5, a4, 0, 8
+400db7a8:	004e52        	s8i	a5, a14, 0
+400db7ab:	000642        	l8ui	a4, a6, 0
+400db7ae:	8254c0        	mull	a5, a4, a12
+400db7b1:	215750        	srai	a5, a5, 7
+400db7b4:	445a      	add.n	a4, a4, a5
+400db7b6:	f47040        	extui	a7, a4, 0, 16
+400db7b9:	ffa052        	movi	a5, 255
+400db7bc:	023577        	bltu	a5, a7, 400db7c2 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x14e>
+400db7bf:	745040        	extui	a5, a4, 0, 8
+400db7c2:	004652        	s8i	a5, a6, 0
+400db7c5:	000842        	l8ui	a4, a8, 0
+400db7c8:	82c4c0        	mull	a12, a4, a12
+400db7cb:	21c7c0        	srai	a12, a12, 7
+400db7ce:	c4ca      	add.n	a12, a4, a12
+400db7d0:	f450c0        	extui	a5, a12, 0, 16
+400db7d3:	ffa042        	movi	a4, 255
+400db7d6:	023457        	bltu	a4, a5, 400db7dc <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x168>
+400db7d9:	7440c0        	extui	a4, a12, 0, 8
+400db7dc:	004842        	s8i	a4, a8, 0
+400db7df:	b158      	l32i.n	a5, a1, 44
+400db7e1:	09f516        	beqz	a5, 400db884 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x210>
+400db7e4:	9148      	l32i.n	a4, a1, 36
+400db7e6:	09a416        	beqz	a4, 400db884 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x210>
+400db7e9:	1153e0        	slli	a5, a3, 2
+400db7ec:	535a      	add.n	a5, a3, a5
+400db7ee:	1155f0        	slli	a5, a5, 1
+400db7f1:	1149d0        	slli	a4, a9, 3
+400db7f4:	c04490        	sub	a4, a4, a9
+400db7f7:	535a      	add.n	a5, a3, a5
+400db7f9:	554a      	add.n	a5, a5, a4
+400db7fb:	114ff0        	slli	a4, a15, 1
+400db7fe:	4f4a      	add.n	a4, a15, a4
+400db800:	1144e0        	slli	a4, a4, 2
+400db803:	4f4a      	add.n	a4, a15, a4
+400db805:	554a      	add.n	a5, a5, a4
+400db807:	202242        	l32i	a4, a2, 128
+400db80a:	414140        	srli	a4, a4, 1
+400db80d:	554a      	add.n	a5, a5, a4
+400db80f:	745050        	extui	a5, a5, 0, 8
+400db812:	444050        	extui	a4, a5, 0, 5
+400db815:	076547        	bbci	a5, 4, 400db820 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x1ac>
+400db818:	f51c      	movi.n	a5, 31
+400db81a:	c04540        	sub	a4, a5, a4
+400db81d:	744040        	extui	a4, a4, 0, 8
+400db820:	1174e0        	slli	a7, a4, 2
+400db823:	747a      	add.n	a7, a4, a7
+400db825:	1177f0        	slli	a7, a7, 1
+400db828:	60c772        	addi	a7, a7, 96
+400db82b:	b158      	l32i.n	a5, a1, 44
+400db82d:	747070        	extui	a7, a7, 0, 8
+400db830:	c17750        	mul16u	a7, a7, a5
+400db833:	217870        	srai	a7, a7, 8
+400db836:	04a716        	beqz	a7, 400db884 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x210>
+400db839:	000ed2        	l8ui	a13, a14, 0
+400db83c:	000652        	l8ui	a5, a6, 0
+400db83f:	000842        	l8ui	a4, a8, 0
+400db842:	07cd      	mov.n	a12, a7
+400db844:	02ef17        	bbsi	a15, 1, 400db84a <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x1d6>
+400db847:	008886        	j	400dba6d <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x3f9>
+400db84a:	04bd      	mov.n	a11, a4
+400db84c:	0dad      	mov.n	a10, a13
+400db84e:	2189      	s32i.n	a8, a1, 8
+400db850:	4199      	s32i.n	a9, a1, 16
+400db852:	51f9      	s32i.n	a15, a1, 20
+400db854:	61d9      	s32i.n	a13, a1, 24
+400db856:	31e9      	s32i.n	a14, a1, 12
+400db858:	ffbca5        	call8	400db424 <hbnf::AnimartrixAudioBridge::blend8(unsigned char, unsigned char, unsigned char)>
+400db85b:	31e8      	l32i.n	a14, a1, 12
+400db85d:	07cd      	mov.n	a12, a7
+400db85f:	004ea2        	s8i	a10, a14, 0
+400db862:	61d8      	l32i.n	a13, a1, 24
+400db864:	05ad      	mov.n	a10, a5
+400db866:	0dbd      	mov.n	a11, a13
+400db868:	31e9      	s32i.n	a14, a1, 12
+400db86a:	ffbba5        	call8	400db424 <hbnf::AnimartrixAudioBridge::blend8(unsigned char, unsigned char, unsigned char)>
+400db86d:	0046a2        	s8i	a10, a6, 0
+400db870:	07cd      	mov.n	a12, a7
+400db872:	05bd      	mov.n	a11, a5
+400db874:	04ad      	mov.n	a10, a4
+400db876:	ffbae5        	call8	400db424 <hbnf::AnimartrixAudioBridge::blend8(unsigned char, unsigned char, unsigned char)>
+400db879:	2188      	l32i.n	a8, a1, 8
+400db87b:	0048a2        	s8i	a10, a8, 0
+400db87e:	4198      	l32i.n	a9, a1, 16
+400db880:	31e8      	l32i.n	a14, a1, 12
+400db882:	51f8      	l32i.n	a15, a1, 20
+400db884:	7148      	l32i.n	a4, a1, 28
+400db886:	0ad416        	beqz	a4, 400db937 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x2c3>
+400db889:	8158      	l32i.n	a5, a1, 32
+400db88b:	241c      	movi.n	a4, 18
+400db88d:	023457        	bltu	a4, a5, 400db893 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x21f>
+400db890:	0028c6        	j	400db937 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x2c3>
+400db893:	1143d0        	slli	a4, a3, 3
+400db896:	1159f0        	slli	a5, a9, 1
+400db899:	c04430        	sub	a4, a4, a3
+400db89c:	595a      	add.n	a5, a9, a5
+400db89e:	1144e0        	slli	a4, a4, 2
+400db8a1:	1155c0        	slli	a5, a5, 4
+400db8a4:	c05590        	sub	a5, a5, a9
+400db8a7:	434a      	add.n	a4, a3, a4
+400db8a9:	445a      	add.n	a4, a4, a5
+400db8ab:	115fc0        	slli	a5, a15, 4
+400db8ae:	ff5a      	add.n	a15, a15, a5
+400db8b0:	f4fa      	add.n	a15, a4, a15
+400db8b2:	202242        	l32i	a4, a2, 128
+400db8b5:	1154f0        	slli	a5, a4, 1
+400db8b8:	445a      	add.n	a4, a4, a5
+400db8ba:	ff4a      	add.n	a15, a15, a4
+400db8bc:	7440f0        	extui	a4, a15, 0, 8
+400db8bf:	026f77        	bbci	a15, 7, 400db8c5 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x251>
+400db8c2:	007946        	j	400dbaab <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x437>
+400db8c5:	7158      	l32i.n	a5, a1, 28
+400db8c7:	1144f0        	slli	a4, a4, 1
+400db8ca:	71a8      	l32i.n	a10, a1, 28
+400db8cc:	744040        	extui	a4, a4, 0, 8
+400db8cf:	c14540        	mul16u	a4, a5, a4
+400db8d2:	1155d0        	slli	a5, a5, 3
+400db8d5:	c055a0        	sub	a5, a5, a10
+400db8d8:	215450        	srai	a5, a5, 4
+400db8db:	414940        	srli	a4, a4, 9
+400db8de:	445a      	add.n	a4, a4, a5
+400db8e0:	f44040        	extui	a4, a4, 0, 16
+400db8e3:	90a052        	movi	a5, 144
+400db8e6:	634450        	minu	a4, a4, a5
+400db8e9:	000e52        	l8ui	a5, a14, 0
+400db8ec:	c17540        	mul16u	a7, a5, a4
+400db8ef:	747770        	extui	a7, a7, 7, 8
+400db8f2:	557a      	add.n	a5, a5, a7
+400db8f4:	f4a050        	extui	a10, a5, 0, 16
+400db8f7:	ffa072        	movi	a7, 255
+400db8fa:	0237a7        	bltu	a7, a10, 400db900 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x28c>
+400db8fd:	747050        	extui	a7, a5, 0, 8
+400db900:	004e72        	s8i	a7, a14, 0
+400db903:	000652        	l8ui	a5, a6, 0
+400db906:	c17540        	mul16u	a7, a5, a4
+400db909:	747770        	extui	a7, a7, 7, 8
+400db90c:	557a      	add.n	a5, a5, a7
+400db90e:	f4a050        	extui	a10, a5, 0, 16
+400db911:	ffa072        	movi	a7, 255
+400db914:	0237a7        	bltu	a7, a10, 400db91a <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x2a6>
+400db917:	747050        	extui	a7, a5, 0, 8
+400db91a:	004672        	s8i	a7, a6, 0
+400db91d:	000852        	l8ui	a5, a8, 0
+400db920:	c14540        	mul16u	a4, a5, a4
+400db923:	744740        	extui	a4, a4, 7, 8
+400db926:	454a      	add.n	a4, a5, a4
+400db928:	f47040        	extui	a7, a4, 0, 16
+400db92b:	ffa052        	movi	a5, 255
+400db92e:	023577        	bltu	a5, a7, 400db934 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x2c0>
+400db931:	745040        	extui	a5, a4, 0, 8
+400db934:	004852        	s8i	a5, a8, 0
+400db937:	a80242        	l8ui	a4, a2, 168
+400db93a:	686437        	bbci	a4, 3, 400db9a6 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x332>
+400db93d:	9d0242        	l8ui	a4, a2, 157
+400db940:	062416        	beqz	a4, 400db9a6 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x332>
+400db943:	8158      	l32i.n	a5, a1, 32
+400db945:	840c      	movi.n	a4, 8
+400db947:	5bb457        	bgeu	a4, a5, 400db9a6 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x332>
+400db94a:	a70272        	l8ui	a7, a2, 167
+400db94d:	000e52        	l8ui	a5, a14, 0
+400db950:	1147e0        	slli	a4, a7, 2
+400db953:	447a      	add.n	a4, a4, a7
+400db955:	414440        	srli	a4, a4, 4
+400db958:	874c      	movi.n	a7, 72
+400db95a:	634470        	minu	a4, a4, a7
+400db95d:	827540        	mull	a7, a5, a4
+400db960:	217870        	srai	a7, a7, 8
+400db963:	557a      	add.n	a5, a5, a7
+400db965:	ffa072        	movi	a7, 255
+400db968:	023757        	bltu	a7, a5, 400db96e <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x2fa>
+400db96b:	747050        	extui	a7, a5, 0, 8
+400db96e:	004e72        	s8i	a7, a14, 0
+400db971:	000652        	l8ui	a5, a6, 0
+400db974:	827540        	mull	a7, a5, a4
+400db977:	217870        	srai	a7, a7, 8
+400db97a:	805570        	add	a5, a5, a7
+400db97d:	f4a050        	extui	a10, a5, 0, 16
+400db980:	ffa072        	movi	a7, 255
+400db983:	0237a7        	bltu	a7, a10, 400db989 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x315>
+400db986:	747050        	extui	a7, a5, 0, 8
+400db989:	004672        	s8i	a7, a6, 0
+400db98c:	000852        	l8ui	a5, a8, 0
+400db98f:	824540        	mull	a4, a5, a4
+400db992:	214840        	srai	a4, a4, 8
+400db995:	454a      	add.n	a4, a5, a4
+400db997:	f47040        	extui	a7, a4, 0, 16
+400db99a:	ffa052        	movi	a5, 255
+400db99d:	023577        	bltu	a5, a7, 400db9a3 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x32f>
+400db9a0:	745040        	extui	a5, a4, 0, 8
+400db9a3:	004852        	s8i	a5, a8, 0
+400db9a6:	000ea2        	l8ui	a10, a14, 0
+400db9a9:	000852        	l8ui	a5, a8, 0
+400db9ac:	30ca42        	addi	a4, a10, 48
+400db9af:	022457        	blt	a4, a5, 400db9b5 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x341>
+400db9b2:	ff3586        	j	400db68c <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x18>
+400db9b5:	000642        	l8ui	a4, a6, 0
+400db9b8:	24c442        	addi	a4, a4, 36
+400db9bb:	022457        	blt	a4, a5, 400db9c1 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x34d>
+400db9be:	ff3286        	j	400db68c <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x18>
+400db9c1:	1143c0        	slli	a4, a3, 4
+400db9c4:	1179b0        	slli	a7, a9, 5
+400db9c7:	c07790        	sub	a7, a7, a9
+400db9ca:	434a      	add.n	a4, a3, a4
+400db9cc:	447a      	add.n	a4, a4, a7
+400db9ce:	670c      	movi.n	a7, 6
+400db9d0:	020477        	bnone	a4, a7, 400db9d6 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x362>
+400db9d3:	ff2d46        	j	400db68c <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x18>
+400db9d6:	339a      	add.n	a3, a3, a9
+400db9d8:	043030        	extui	a3, a3, 0, 1
+400db9db:	d42c      	movi.n	a4, 45
+400db9dd:	a5a072        	movi	a7, 165
+400db9e0:	8c02b2        	l8ui	a11, a2, 140
+400db9e3:	837430        	moveqz	a7, a4, a3
+400db9e6:	87a092        	movi	a9, 135
+400db9e9:	644c      	movi.n	a4, 70
+400db9eb:	939430        	movnez	a9, a4, a3
+400db9ee:	fccb42        	addi	a4, a11, -4
+400db9f1:	744040        	extui	a4, a4, 0, 8
+400db9f4:	093d      	mov.n	a3, a9
+400db9f6:	892c      	movi.n	a9, 40
+400db9f8:	0624b6        	bltui	a4, 2, 400dba02 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x38e>
+400db9fb:	291c      	movi.n	a9, 18
+400db9fd:	c41c      	movi.n	a4, 28
+400db9ff:	9394b0        	movnez	a9, a4, a11
+400dba02:	9402b2        	l8ui	a11, a2, 148
+400dba05:	2189      	s32i.n	a8, a1, 8
+400dba07:	114bf0        	slli	a4, a11, 1
+400dba0a:	44ba      	add.n	a4, a4, a11
+400dba0c:	414540        	srli	a4, a4, 5
+400dba0f:	449a      	add.n	a4, a4, a9
+400dba11:	04cd      	mov.n	a12, a4
+400dba13:	ffa0b2        	movi	a11, 255
+400dba16:	31e9      	s32i.n	a14, a1, 12
+400dba18:	ffa0a5        	call8	400db424 <hbnf::AnimartrixAudioBridge::blend8(unsigned char, unsigned char, unsigned char)>
+400dba1b:	31e8      	l32i.n	a14, a1, 12
+400dba1d:	04cd      	mov.n	a12, a4
+400dba1f:	004ea2        	s8i	a10, a14, 0
+400dba22:	0006a2        	l8ui	a10, a6, 0
+400dba25:	03bd      	mov.n	a11, a3
+400dba27:	31e9      	s32i.n	a14, a1, 12
+400dba29:	ff9fa5        	call8	400db424 <hbnf::AnimartrixAudioBridge::blend8(unsigned char, unsigned char, unsigned char)>
+400dba2c:	0046a2        	s8i	a10, a6, 0
+400dba2f:	04cd      	mov.n	a12, a4
+400dba31:	07bd      	mov.n	a11, a7
+400dba33:	05ad      	mov.n	a10, a5
+400dba35:	ff9ee5        	call8	400db424 <hbnf::AnimartrixAudioBridge::blend8(unsigned char, unsigned char, unsigned char)>
+400dba38:	2188      	l32i.n	a8, a1, 8
+400dba3a:	0048a2        	s8i	a10, a8, 0
+400dba3d:	31e8      	l32i.n	a14, a1, 12
+400dba3f:	ff1246        	j	400db68c <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x18>
+400dba42:	a20000        	muluh	a0, a0, a0
+400dba45:	a09fa0        	addx4	a9, a15, a10
+400dba48:	a0b2b4        	lsi	f11, a2, 0x280
+400dba4b:	cd82a4        	lsi	f10, a2, 0x334
+400dba4e:	d00d      	lsi	f0, a0, 0
+400dba50:	df          	.byte 0xdf
+400dba51:	218931        	l32r	a3, 400a4078 <_coredump_iram_end+0x104c0>
+400dba54:	4199      	s32i.n	a9, a1, 16
+400dba56:	31e9      	s32i.n	a14, a1, 12
+400dba58:	51f9      	s32i.n	a15, a1, 20
+400dba5a:	d42381        	l32r	a8, 400d0ae8 <_stext+0xac8>
+400dba5d:	0008e0        	callx8	a8
+400dba60:	51f8      	l32i.n	a15, a1, 20
+400dba62:	31e8      	l32i.n	a14, a1, 12
+400dba64:	4198      	l32i.n	a9, a1, 16
+400dba66:	2188      	l32i.n	a8, a1, 8
+400dba68:	ff4206        	j	400db774 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x100>
+400dba6b:	d00000        	subx2	a0, a0, a0
+400dba6e:	20ad      	lsi	f10, a0, 0
+400dba70:	05bd      	mov.n	a11, a5
+400dba72:	2189      	s32i.n	a8, a1, 8
+400dba74:	4199      	s32i.n	a9, a1, 16
+400dba76:	51f9      	s32i.n	a15, a1, 20
+400dba78:	61d9      	s32i.n	a13, a1, 24
+400dba7a:	31e9      	s32i.n	a14, a1, 12
+400dba7c:	ff9a65        	call8	400db424 <hbnf::AnimartrixAudioBridge::blend8(unsigned char, unsigned char, unsigned char)>
+400dba7f:	31e8      	l32i.n	a14, a1, 12
+400dba81:	07cd      	mov.n	a12, a7
+400dba83:	004ea2        	s8i	a10, a14, 0
+400dba86:	04bd      	mov.n	a11, a4
+400dba88:	05ad      	mov.n	a10, a5
+400dba8a:	31e9      	s32i.n	a14, a1, 12
+400dba8c:	ff9965        	call8	400db424 <hbnf::AnimartrixAudioBridge::blend8(unsigned char, unsigned char, unsigned char)>
+400dba8f:	61d8      	l32i.n	a13, a1, 24
+400dba91:	0046a2        	s8i	a10, a6, 0
+400dba94:	07cd      	mov.n	a12, a7
+400dba96:	0dbd      	mov.n	a11, a13
+400dba98:	04ad      	mov.n	a10, a4
+400dba9a:	ff98a5        	call8	400db424 <hbnf::AnimartrixAudioBridge::blend8(unsigned char, unsigned char, unsigned char)>
+400dba9d:	2188      	l32i.n	a8, a1, 8
+400dba9f:	0048a2        	s8i	a10, a8, 0
+400dbaa2:	51f8      	l32i.n	a15, a1, 20
+400dbaa4:	31e8      	l32i.n	a14, a1, 12
+400dbaa6:	4198      	l32i.n	a9, a1, 16
+400dbaa8:	ff7606        	j	400db884 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x210>
+400dbaab:	541b      	addi.n	a5, a4, 1
+400dbaad:	114590        	slli	a4, a5, 7
+400dbab0:	c04450        	sub	a4, a4, a5
+400dbab3:	ff8386        	j	400db8c5 <hbnf::AnimartrixAudioBridge::modulate(int, int, unsigned char&, unsigned char&, unsigned char&) const+0x251>
+
+### hbnf::AnimartrixAudioBridge::preparePixelModulation() address=0x400db498 size=234
+
+/private/tmp/hbnf-p2-build/WLED-r6-audio-cache-20261010/.pio/build/hbnf_matrix_wled16_packet20_diag/firmware.elf:     file format elf32-xtensa-le
+
+
+Disassembly of section .flash.text:
+
+400db498 <hbnf::AnimartrixAudioBridge::preparePixelModulation()>:
+400db498:	004136        	entry	a1, 32
+400db49b:	8a0242        	l8ui	a4, a2, 138
+400db49e:	1ba052        	movi	a5, 27
+400db4a1:	24c432        	addi	a3, a4, 36
+400db4a4:	743030        	extui	a3, a3, 0, 8
+400db4a7:	023537        	bltu	a5, a3, 400db4ad <hbnf::AnimartrixAudioBridge::preparePixelModulation()+0x15>
+400db4aa:	204330        	or	a4, a3, a3
+400db4ad:	a94242        	s8i	a4, a2, 169
+400db4b0:	040c      	movi.n	a4, 0
+400db4b2:	a34242        	s8i	a4, a2, 163
+400db4b5:	840252        	l8ui	a5, a2, 132
+400db4b8:	040c      	movi.n	a4, 0
+400db4ba:	296242        	s32i	a4, a2, 164
+400db4bd:	a84242        	s8i	a4, a2, 168
+400db4c0:	029547        	bne	a5, a4, 400db4c6 <hbnf::AnimartrixAudioBridge::preparePixelModulation()+0x2e>
+400db4c3:	002e46        	j	400db580 <hbnf::AnimartrixAudioBridge::preparePixelModulation()+0xe8>
+400db4c6:	8d0262        	l8ui	a6, a2, 141
+400db4c9:	029647        	bne	a6, a4, 400db4cf <hbnf::AnimartrixAudioBridge::preparePixelModulation()+0x37>
+400db4cc:	002c06        	j	400db580 <hbnf::AnimartrixAudioBridge::preparePixelModulation()+0xe8>
+400db4cf:	471252        	l16ui	a5, a2, 142
+400db4d2:	029547        	bne	a5, a4, 400db4d8 <hbnf::AnimartrixAudioBridge::preparePixelModulation()+0x40>
+400db4d5:	0029c6        	j	400db580 <hbnf::AnimartrixAudioBridge::preparePixelModulation()+0xe8>
+400db4d8:	b51c      	movi.n	a5, 27
+400db4da:	02b537        	bgeu	a5, a3, 400db4e0 <hbnf::AnimartrixAudioBridge::preparePixelModulation()+0x48>
+400db4dd:	203440        	or	a3, a4, a4
+400db4e0:	d57f41        	l32r	a4, 400d0adc <_stext+0xabc>
+400db4e3:	1153d0        	slli	a5, a3, 3
+400db4e6:	c08530        	sub	a8, a5, a3
+400db4e9:	848a      	add.n	a8, a4, a8
+400db4eb:	060872        	l8ui	a7, a8, 6
+400db4ee:	a84272        	s8i	a7, a2, 168
+400db4f1:	136707        	bbci	a7, 0, 400db508 <hbnf::AnimartrixAudioBridge::preparePixelModulation()+0x70>
+400db4f4:	0508d2        	l8ui	a13, a8, 5
+400db4f7:	0008c2        	l8ui	a12, a8, 0
+400db4fa:	9f02b2        	l8ui	a11, a2, 159
+400db4fd:	06ed      	mov.n	a14, a6
+400db4ff:	20a220        	or	a10, a2, a2
+400db502:	fff4a5        	call8	400db44c <hbnf::AnimartrixAudioBridge::profileLane(unsigned char, unsigned char, unsigned char, unsigned char) const>
+400db505:	a342a2        	s8i	a10, a2, 163
+400db508:	186717        	bbci	a7, 1, 400db524 <hbnf::AnimartrixAudioBridge::preparePixelModulation()+0x8c>
+400db50b:	c08530        	sub	a8, a5, a3
+400db50e:	848a      	add.n	a8, a4, a8
+400db510:	0508d2        	l8ui	a13, a8, 5
+400db513:	0108c2        	l8ui	a12, a8, 1
+400db516:	a002b2        	l8ui	a11, a2, 160
+400db519:	06ed      	mov.n	a14, a6
+400db51b:	20a220        	or	a10, a2, a2
+400db51e:	fff2e5        	call8	400db44c <hbnf::AnimartrixAudioBridge::profileLane(unsigned char, unsigned char, unsigned char, unsigned char) const>
+400db521:	a442a2        	s8i	a10, a2, 164
+400db524:	186727        	bbci	a7, 2, 400db540 <hbnf::AnimartrixAudioBridge::preparePixelModulation()+0xa8>
+400db527:	c08530        	sub	a8, a5, a3
+400db52a:	848a      	add.n	a8, a4, a8
+400db52c:	0508d2        	l8ui	a13, a8, 5
+400db52f:	0208c2        	l8ui	a12, a8, 2
+400db532:	a102b2        	l8ui	a11, a2, 161
+400db535:	06ed      	mov.n	a14, a6
+400db537:	20a220        	or	a10, a2, a2
+400db53a:	fff125        	call8	400db44c <hbnf::AnimartrixAudioBridge::profileLane(unsigned char, unsigned char, unsigned char, unsigned char) const>
+400db53d:	a542a2        	s8i	a10, a2, 165
+400db540:	206747        	bbci	a7, 4, 400db564 <hbnf::AnimartrixAudioBridge::preparePixelModulation()+0xcc>
+400db543:	9e0292        	l8ui	a9, a2, 158
+400db546:	c08530        	sub	a8, a5, a3
+400db549:	848a      	add.n	a8, a4, a8
+400db54b:	11b9d0        	slli	a11, a9, 3
+400db54e:	bb9a      	add.n	a11, a11, a9
+400db550:	0508d2        	l8ui	a13, a8, 5
+400db553:	0408c2        	l8ui	a12, a8, 4
+400db556:	06ed      	mov.n	a14, a6
+400db558:	41b5b0        	srli	a11, a11, 5
+400db55b:	20a220        	or	a10, a2, a2
+400db55e:	ffeee5        	call8	400db44c <hbnf::AnimartrixAudioBridge::profileLane(unsigned char, unsigned char, unsigned char, unsigned char) const>
+400db561:	a642a2        	s8i	a10, a2, 166
+400db564:	186737        	bbci	a7, 3, 400db580 <hbnf::AnimartrixAudioBridge::preparePixelModulation()+0xe8>
+400db567:	c03530        	sub	a3, a5, a3
+400db56a:	443a      	add.n	a4, a4, a3
+400db56c:	0504d2        	l8ui	a13, a4, 5
+400db56f:	0304c2        	l8ui	a12, a4, 3
+400db572:	9d02b2        	l8ui	a11, a2, 157
+400db575:	06ed      	mov.n	a14, a6
+400db577:	20a220        	or	a10, a2, a2
+400db57a:	ffed25        	call8	400db44c <hbnf::AnimartrixAudioBridge::profileLane(unsigned char, unsigned char, unsigned char, unsigned char) const>
+400db57d:	a742a2        	s8i	a10, a2, 167
+400db580:	f01d      	retw.n
+
+### hbnf::AnimartrixAudioBridge::profileLane(unsigned char, unsigned char, unsigned char, unsigned char) const address=0x400db44c size=73
+
+/private/tmp/hbnf-p2-build/WLED-r6-audio-cache-20261010/.pio/build/hbnf_matrix_wled16_packet20_diag/firmware.elf:     file format elf32-xtensa-le
+
+
+Disassembly of section .flash.text:
+
+400db44c <hbnf::AnimartrixAudioBridge::profileLane(unsigned char, unsigned char, unsigned char, unsigned char) const>:
+400db44c:	004136        	entry	a1, 32
+400db44f:	743030        	extui	a3, a3, 0, 8
+400db452:	744040        	extui	a4, a4, 0, 8
+400db455:	c13340        	mul16u	a3, a3, a4
+400db458:	d46391        	l32r	a9, 400d05e4 <_stext+0x5c4>
+400db45b:	7fc332        	addi	a3, a3, 127
+400db45e:	a23390        	muluh	a3, a3, a9
+400db461:	748050        	extui	a8, a5, 0, 8
+400db464:	413730        	srli	a3, a3, 7
+400db467:	828380        	mull	a8, a3, a8
+400db46a:	471292        	l16ui	a9, a2, 142
+400db46d:	746060        	extui	a6, a6, 0, 8
+400db470:	40c882        	addi	a8, a8, 64
+400db473:	c19960        	mul16u	a9, a9, a6
+400db476:	418780        	srli	a8, a8, 7
+400db479:	ffa032        	movi	a3, 255
+400db47c:	638830        	minu	a8, a8, a3
+400db47f:	828890        	mull	a8, a8, a9
+400db482:	d59591        	l32r	a9, 400d0ad8 <_stext+0xab8>
+400db485:	889a      	add.n	a8, a8, a9
+400db487:	d54f91        	l32r	a9, 400d09c4 <_stext+0x9a4>
+400db48a:	023987        	bltu	a9, a8, 400db490 <hbnf::AnimartrixAudioBridge::profileLane(unsigned char, unsigned char, unsigned char, unsigned char) const+0x44>
+400db48d:	f53080        	extui	a3, a8, 16, 16
+400db490:	742030        	extui	a2, a3, 0, 8
+400db493:	f01d      	retw.n
+

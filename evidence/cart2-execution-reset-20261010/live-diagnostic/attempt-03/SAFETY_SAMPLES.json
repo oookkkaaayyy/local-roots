@@ -1,0 +1,161 @@
+[
+  {
+    "aux_native_ddp_active": true,
+    "aux_physical_output_status": "NOT_OBSERVABLE_FROM_WLED_JSON",
+    "batch_elapsed_seconds": 0.2961058329999986,
+    "endpoint_reads": {
+      "aux_info": {
+        "completed_monotonic_ns": 47806789625,
+        "elapsed_seconds": 0.201758,
+        "endpoint": "http://192.168.77.11/json/info",
+        "started_monotonic_ns": 47605031375,
+        "status": "PASS"
+      },
+      "aux_state": {
+        "completed_monotonic_ns": 47857135000,
+        "elapsed_seconds": 0.251856,
+        "endpoint": "http://192.168.77.11/json/state",
+        "started_monotonic_ns": 47605279125,
+        "status": "PASS"
+      },
+      "matrix_build": {
+        "completed_monotonic_ns": 47806907041,
+        "elapsed_seconds": 0.203404,
+        "endpoint": "http://192.168.77.10/hbnf/build.json",
+        "started_monotonic_ns": 47603503083,
+        "status": "PASS"
+      },
+      "matrix_info": {
+        "completed_monotonic_ns": 47847684875,
+        "elapsed_seconds": 0.244726,
+        "endpoint": "http://192.168.77.10/json/info",
+        "started_monotonic_ns": 47602959250,
+        "status": "PASS"
+      },
+      "matrix_state": {
+        "completed_monotonic_ns": 47893012583,
+        "elapsed_seconds": 0.288222,
+        "endpoint": "http://192.168.77.10/json/state",
+        "started_monotonic_ns": 47604790708,
+        "status": "PASS"
+      }
+    },
+    "fps": 8,
+    "frame_ms_max": 148.058,
+    "frame_ms_p99": 127.875,
+    "frame_tail_overflow": true,
+    "kernel": 0,
+    "matrix_brightness": 44,
+    "read_completed_monotonic_ns": 47897727541,
+    "read_started_monotonic_ns": 47599933958,
+    "scheduled_seconds": 4,
+    "uptime_seconds": 17,
+    "variant_signature": 1347100672
+  },
+  {
+    "aux_native_ddp_active": true,
+    "aux_physical_output_status": "NOT_OBSERVABLE_FROM_WLED_JSON",
+    "batch_elapsed_seconds": 0.16736816699999935,
+    "endpoint_reads": {
+      "aux_info": {
+        "completed_monotonic_ns": 55714313250,
+        "elapsed_seconds": 0.11071,
+        "endpoint": "http://192.168.77.11/json/info",
+        "started_monotonic_ns": 55603602875,
+        "status": "PASS"
+      },
+      "aux_state": {
+        "completed_monotonic_ns": 55731093833,
+        "elapsed_seconds": 0.127226,
+        "endpoint": "http://192.168.77.11/json/state",
+        "started_monotonic_ns": 55603867750,
+        "status": "PASS"
+      },
+      "matrix_build": {
+        "completed_monotonic_ns": 55714114625,
+        "elapsed_seconds": 0.110854,
+        "endpoint": "http://192.168.77.10/hbnf/build.json",
+        "started_monotonic_ns": 55603260291,
+        "status": "PASS"
+      },
+      "matrix_info": {
+        "completed_monotonic_ns": 55737173833,
+        "elapsed_seconds": 0.135016,
+        "endpoint": "http://192.168.77.10/json/info",
+        "started_monotonic_ns": 55602157541,
+        "status": "PASS"
+      },
+      "matrix_state": {
+        "completed_monotonic_ns": 55767219875,
+        "elapsed_seconds": 0.163774,
+        "endpoint": "http://192.168.77.10/json/state",
+        "started_monotonic_ns": 55603445541,
+        "status": "PASS"
+      }
+    },
+    "fps": 8,
+    "frame_ms_max": 172.103,
+    "frame_ms_p99": 127.875,
+    "frame_tail_overflow": true,
+    "kernel": 0,
+    "matrix_brightness": 44,
+    "read_completed_monotonic_ns": 55768063500,
+    "read_started_monotonic_ns": 55600098750,
+    "scheduled_seconds": 12,
+    "uptime_seconds": 25,
+    "variant_signature": 1347100672
+  },
+  {
+    "aux_native_ddp_active": true,
+    "aux_physical_output_status": "NOT_OBSERVABLE_FROM_WLED_JSON",
+    "batch_elapsed_seconds": 0.2302722920000022,
+    "endpoint_reads": {
+      "aux_info": {
+        "completed_monotonic_ns": 63814635125,
+        "elapsed_seconds": 0.211204,
+        "endpoint": "http://192.168.77.11/json/info",
+        "started_monotonic_ns": 63603431541,
+        "status": "PASS"
+      },
+      "aux_state": {
+        "completed_monotonic_ns": 63819617916,
+        "elapsed_seconds": 0.215935,
+        "endpoint": "http://192.168.77.11/json/state",
+        "started_monotonic_ns": 63603682458,
+        "status": "PASS"
+      },
+      "matrix_build": {
+        "completed_monotonic_ns": 63829896375,
+        "elapsed_seconds": 0.226969,
+        "endpoint": "http://192.168.77.10/hbnf/build.json",
+        "started_monotonic_ns": 63602927458,
+        "status": "PASS"
+      },
+      "matrix_info": {
+        "completed_monotonic_ns": 63830176625,
+        "elapsed_seconds": 0.228486,
+        "endpoint": "http://192.168.77.10/json/info",
+        "started_monotonic_ns": 63601690625,
+        "status": "PASS"
+      },
+      "matrix_state": {
+        "completed_monotonic_ns": 63829795125,
+        "elapsed_seconds": 0.22659,
+        "endpoint": "http://192.168.77.10/json/state",
+        "started_monotonic_ns": 63603205166,
+        "status": "PASS"
+      }
+    },
+    "fps": 9,
+    "frame_ms_max": 177.857,
+    "frame_ms_p99": 127.875,
+    "frame_tail_overflow": true,
+    "kernel": 0,
+    "matrix_brightness": 44,
+    "read_completed_monotonic_ns": 63830730666,
+    "read_started_monotonic_ns": 63600014208,
+    "scheduled_seconds": 20,
+    "uptime_seconds": 33,
+    "variant_signature": 1347100672
+  }
+]
