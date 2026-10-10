@@ -401,6 +401,18 @@ class LivePort:
         auth["status"] = "CONSUMED_BEFORE_WLED_POST"
         state["r6_audio_cache_successor"]["conditional_authority"] = auth
         state["live_mutation_authorized"] = True
+        current = state.setdefault("live_mutation_authorization", {})
+        current.update({
+            "authorized": True,
+            "candidate_release_id": RELEASE,
+            "candidate_sha256": CANDIDATE_SHA,
+            "rollback_sha256": R4_SHA,
+            "hardware_writes_permitted_now": True,
+            "transaction_consumed": True,
+            "candidate_attempts_used": 1,
+            "recovery_attempts_used": 0,
+            "current_gate": "Exact candidate attempt durably consumed before the one WLED /update request.",
+        })
         self.state_path.write_text(json.dumps(state, indent=2)+"\n")
         self.install_attempts = 1
         save(self.outdir/"AUTHORIZATION_CONSUMPTION.json", {
@@ -456,6 +468,15 @@ class LivePort:
         state = json.loads(self.state_path.read_text())
         state["live_mutation_authorized"] = False
         auth = state.get("r6_audio_cache_successor", {}).get("conditional_authority", {})
+        current = state.setdefault("live_mutation_authorization", {})
+        current.update({
+            "authorized": False,
+            "hardware_writes_permitted_now": False,
+            "transaction_consumed": self.install_attempts > 0,
+            "candidate_attempts_used": auth.get("candidate_attempts_used", 0),
+            "recovery_attempts_used": self.recovery_attempts,
+            "current_gate": result["status"],
+        })
         auth["live_mutation_authorized"] = False
         auth["status"] = result["status"]
         auth["recovery_attempts_used"] = self.recovery_attempts

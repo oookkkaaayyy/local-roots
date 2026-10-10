@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import pathlib
+import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts/hbnf_r6_audio_cache_live_transaction.py"
@@ -123,6 +124,45 @@ def main():
     recovery_fail = FakePort(installed=None, recovery=False)
     cases.append(run_case("failed recovery stops without retry", recovery_fail,
              "RECOVERY_UNVERIFIED_STOP", 1, 1, 8))
+
+    binding = {
+        "authorization_id": "OWNER-TEST-EXACT-R6",
+        "candidate_release_id": module.RELEASE,
+        "candidate_bin_sha256": module.CANDIDATE_SHA,
+        "rollback_bin_sha256": module.R4_SHA,
+        "matrix_mac": "70:4b:ca:5b:34:5c",
+    }
+    with tempfile.TemporaryDirectory(prefix="r6-state-replay-") as tmp:
+        root = pathlib.Path(tmp)
+        state_path = root / "state.json"
+        out = root / "out"
+        out.mkdir()
+        (out / "FRESH_PRELIVE_READONLY.json").write_text("{}\n")
+        state_path.write_text(json.dumps({
+            "live_mutation_authorized": True,
+            "live_authorization_binding": binding,
+            "live_mutation_authorization": {},
+            "r6_audio_cache_successor": {"conditional_authority": {
+                "candidate_attempts_used": 0,
+                "recovery_attempts_used": 0,
+            }},
+        }))
+        real = module.LivePort(root / "admission.json", root / "capsule.json", root / "proof.json")
+        real.admission = {"fresh_owner_authorization": binding}
+        real.state_path = state_path
+        real.outdir = out
+        real.consume_install_attempt()
+        consumed = json.loads(state_path.read_text())
+        assert consumed["live_mutation_authorization"]["transaction_consumed"] is True
+        assert consumed["live_mutation_authorization"]["hardware_writes_permitted_now"] is True
+        assert consumed["r6_audio_cache_successor"]["conditional_authority"]["candidate_attempts_used"] == 1
+        real.close({"status": "QUALIFIED_OBJECTIVE_GATES_PASS", "recovery": {}})
+        closed = json.loads(state_path.read_text())
+        assert closed["live_mutation_authorized"] is False
+        assert closed["live_mutation_authorization"]["hardware_writes_permitted_now"] is False
+        assert closed["live_mutation_authorization"]["transaction_consumed"] is True
+        assert closed["live_mutation_authorization"]["current_gate"] == "QUALIFIED_OBJECTIVE_GATES_PASS"
+        cases.append({"case": "exact authority durably consumed pre-request and closed post-transaction", "pass": True})
 
     receipt = {
         "schema": "hbnf-r6-audio-cache-transaction-dryrun-v1",

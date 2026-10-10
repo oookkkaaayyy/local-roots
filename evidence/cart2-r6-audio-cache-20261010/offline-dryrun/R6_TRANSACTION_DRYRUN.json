@@ -219,6 +219,10 @@
       "upload": {
         "confirmed": null
       }
+    },
+    {
+      "case": "exact authority durably consumed pre-request and closed post-transaction",
+      "pass": true
     }
   ],
   "device_or_cloud_mutation": false,

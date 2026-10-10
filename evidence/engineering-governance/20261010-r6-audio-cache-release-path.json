@@ -15,6 +15,7 @@
     "implementation": [
       "platform/workflows/phase2-live-qualification.json",
       "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_FROZEN_LIVE_QUALIFICATION_PROCEDURE.json",
+      "scripts/hbnf_r6_audio_cache_live_transaction.py",
       "tests/test_r6_audio_cache_transaction_dryrun.py"
     ],
     "validation": [
@@ -23,7 +24,8 @@
       "python3 tests/hbnf_delivery_rail_host.py: PASS; expected invalid/fabricated evidence cases rejected and valid host fixture accepted.",
       "python3 tests/hbnf_control.py: PASS; 23 tests.",
       "python3 tests/hbnf_guarded_run.py: PASS; invalid or stale LIVE_APPROVED evidence is rejected before child execution.",
-      "python3 scripts/hbnf_architecture_fitness.py: PASS; linear lifecycle and one-authority constraints retained."
+      "python3 scripts/hbnf_architecture_fitness.py: PASS; linear lifecycle and one-authority constraints retained.",
+      "The actual runner persists exact candidate-attempt consumption before its sole WLED request, and closes live mutation after transaction; the test exercises this state transition offline."
     ],
     "rollback": "Revert the workflow/procedure/test receipt change. No firmware bytes, device state, backend, router, or production service are changed by this source update."
   }
