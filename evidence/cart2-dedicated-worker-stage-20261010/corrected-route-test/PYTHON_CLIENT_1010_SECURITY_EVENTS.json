@@ -1,0 +1,143 @@
+{
+  "captured_at_utc": "2026-10-10T04:08:34.709Z",
+  "client_ip_redacted": true,
+  "events": [
+    {
+      "action": "block",
+      "clientRequestPath": "/firmware/opal-updater/1.2.3/luci-app-hbnf-updater_1.2.3-1_all-090300853504e3e2bc6fe50c64cbb2b87c6688e38af9dc51dfcada2d87fbcdff.ipk",
+      "datetime": "2026-10-10T03:37:53Z",
+      "source": "bic",
+      "userAgent": "Python-urllib/3.9"
+    },
+    {
+      "action": "block",
+      "clientRequestPath": "/hbnf-cart-not-a-file",
+      "datetime": "2026-10-10T03:37:53Z",
+      "source": "bic",
+      "userAgent": "Python-urllib/3.9"
+    },
+    {
+      "action": "block",
+      "clientRequestPath": "/manifest.webmanifest",
+      "datetime": "2026-10-10T03:37:53Z",
+      "source": "bic",
+      "userAgent": "Python-urllib/3.9"
+    },
+    {
+      "action": "block",
+      "clientRequestPath": "/favicon.ico",
+      "datetime": "2026-10-10T03:37:53Z",
+      "source": "bic",
+      "userAgent": "Python-urllib/3.9"
+    },
+    {
+      "action": "block",
+      "clientRequestPath": "/",
+      "datetime": "2026-10-10T03:37:53Z",
+      "source": "bic",
+      "userAgent": "Python-urllib/3.9"
+    },
+    {
+      "action": "block",
+      "clientRequestPath": "/firmware/matrix/stable/latest.json.sig",
+      "datetime": "2026-10-10T03:37:53Z",
+      "source": "bic",
+      "userAgent": "Python-urllib/3.9"
+    },
+    {
+      "action": "block",
+      "clientRequestPath": "/firmware/matrix/stable/latest.json",
+      "datetime": "2026-10-10T03:37:53Z",
+      "source": "bic",
+      "userAgent": "Python-urllib/3.9"
+    },
+    {
+      "action": "block",
+      "clientRequestPath": "/hbnf-cart.html",
+      "datetime": "2026-10-10T03:37:53Z",
+      "source": "bic",
+      "userAgent": "Python-urllib/3.9"
+    },
+    {
+      "action": "block",
+      "clientRequestPath": "/firmware/opal-updater/1.2.3/luci-app-hbnf-updater_1.2.3-1_all-090300853504e3e2bc6fe50c64cbb2b87c6688e38af9dc51dfcada2d87fbcdff.ipk",
+      "datetime": "2026-10-10T03:37:12Z",
+      "source": "bic",
+      "userAgent": "Python-urllib/3.9"
+    },
+    {
+      "action": "block",
+      "clientRequestPath": "/firmware/matrix/stable/latest.json.sig",
+      "datetime": "2026-10-10T03:37:12Z",
+      "source": "bic",
+      "userAgent": "Python-urllib/3.9"
+    },
+    {
+      "action": "block",
+      "clientRequestPath": "/favicon.ico",
+      "datetime": "2026-10-10T03:37:12Z",
+      "source": "bic",
+      "userAgent": "Python-urllib/3.9"
+    },
+    {
+      "action": "block",
+      "clientRequestPath": "/manifest.webmanifest",
+      "datetime": "2026-10-10T03:37:12Z",
+      "source": "bic",
+      "userAgent": "Python-urllib/3.9"
+    },
+    {
+      "action": "block",
+      "clientRequestPath": "/firmware/matrix/stable/latest.json",
+      "datetime": "2026-10-10T03:37:12Z",
+      "source": "bic",
+      "userAgent": "Python-urllib/3.9"
+    },
+    {
+      "action": "block",
+      "clientRequestPath": "/hbnf-cart.html/child",
+      "datetime": "2026-10-10T03:37:11Z",
+      "source": "bic",
+      "userAgent": "Python-urllib/3.9"
+    },
+    {
+      "action": "block",
+      "clientRequestPath": "/hbnf-cart-not-a-file",
+      "datetime": "2026-10-10T03:37:11Z",
+      "source": "bic",
+      "userAgent": "Python-urllib/3.9"
+    },
+    {
+      "action": "block",
+      "clientRequestPath": "/guest/hbnf-cart/unknown",
+      "datetime": "2026-10-10T03:37:11Z",
+      "source": "bic",
+      "userAgent": "Python-urllib/3.9"
+    },
+    {
+      "action": "block",
+      "clientRequestPath": "/",
+      "datetime": "2026-10-10T03:37:11Z",
+      "source": "bic",
+      "userAgent": "Python-urllib/3.9"
+    }
+  ],
+  "matching_event_count": 17,
+  "observed_error": {
+    "body_sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+    "body_text": "error code: 1010\\n",
+    "status": 403
+  },
+  "official_docs": [
+    "https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1010/",
+    "https://developers.cloudflare.com/waf/tools/browser-integrity-check/",
+    "https://developers.cloudflare.com/waf/analytics/security-events/",
+    "https://developers.cloudflare.com/analytics/graphql-api/tutorials/querying-firewall-events/"
+  ],
+  "schema": "hbnf-cloudflare-bic-test-client-evidence-v1",
+  "security_events_read_source": "Cloudflare GraphQL firewallEventsAdaptive",
+  "time_window": {
+    "end": "2026-10-10T03:40:00Z",
+    "start": "2026-10-10T03:30:00Z"
+  }
+}

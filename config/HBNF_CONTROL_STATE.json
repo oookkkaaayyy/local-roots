@@ -663,21 +663,147 @@
     "scope_exclusion": "No R8 or later installation without new user authorization.",
     "status": "R7_REJECTED__EXACT_R4_RESTORED__NO_R8_AUTHORITY"
   },
+  "coordinated_r6_live_release_authorization": {
+    "authorized_by": "The exact R6 transaction authorization remains unconsumed and is explicitly affirmed/extended by the current user directive: bounded Cart-only Cloudflare validation corrections, existing matching release deployment, exact R6 installation, authorized recovery, and qualification, only after all existing release gates pass.",
+    "candidate": {
+      "path": "evidence/cart2-r6-integrated-20261009/hbnf-cart2-phase2-offline-wow-r6-integrated-20261009.bin",
+      "release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+      "sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb"
+    },
+    "cloudflare_route_test": {
+      "asset_check_path": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/candidate-assets.json",
+      "asset_check_sha256": "962dd31b93a71433071661554a99e1ed99ad1045bd68c0e613b67806119ea856",
+      "authorization_consumed": true,
+      "cart_asset_check": "PASS: all 17 URL mappings matched exact approved package bytes after removing only the identified 938-byte Cloudflare JSD injection on HTML.",
+      "completed_at_utc": "2026-10-10T04:14:50.583249+00:00",
+      "evidence_path": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/CORRECTED_ROUTE_QUALIFICATION_RECEIPT.json",
+      "evidence_sha256": "60d88b342bebdc8f3295d8f4445a3759a4a9f5e5358c726d2a3a3e17286c212d",
+      "fallback_preservation_check": "PASS: real service-binding fallback, representative unrelated routes/assets, firmware metadata/signature, and updater IPK matched pre-route baseline; homepage differed only by volatile JSD, whose removal restored byte equality.",
+      "preservation_check_path": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/candidate-fallback.json",
+      "preservation_check_sha256": "a5b31c441a74441e32c3834f3ed442016ee78fcc9e8d39aba6a1f9fd2354d2c7",
+      "prior_route_ids_preserved": [
+        "118db467a3f24c5ebebceaf3c98571f7",
+        "3ea4705c7d614f0bbf46e6c1f0d0358b",
+        "9c3dd49ace304ab789f1c8fbea4a6161",
+        "aa1198dbdaa74abeac38372343eefa82",
+        "b0547e91d30b45c791f60df20c726464"
+      ],
+      "release_actions_taken": [],
+      "schema": "hbnf-cart2-bounded-route-test-result-v1",
+      "status": "PASS__TWO_CART_ROUTES_RETAINED",
+      "tested_route_ids": [
+        {
+          "id": "8dfb6cae8169437a91d7866a5043260d",
+          "pattern": "hbnightflyers.com/hbnf-cart*",
+          "request_limit_fail_open": false,
+          "script": "hbnf-cart2-private-stage-20261010"
+        },
+        {
+          "id": "8ef057ecce4a44ba98997b4f0dd2f20e",
+          "pattern": "hbnightflyers.com/guest/hbnf-cart/*",
+          "request_limit_fail_open": false,
+          "script": "hbnf-cart2-private-stage-20261010"
+        }
+      ],
+      "worker": "hbnf-cart2-private-stage-20261010",
+      "worker_version_id": "647c546a-d3b1-4bd2-8437-4edb4c6a3356"
+    },
+    "controller_package": {
+      "path": "evidence/cart2-owner-guest-vibe-r2-20261009/HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009.zip",
+      "sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc"
+    },
+    "current_owner_authorization": {
+      "exact_firmware_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
+      "exact_owner_guest_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
+      "exact_rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "not_granted": [
+        "new firmware variants",
+        "Guest Mode activation",
+        "UV energization",
+        "unrelated site/backend/device changes",
+        "GitHub Actions"
+      ],
+      "route_patterns": [
+        "hbnightflyers.com/hbnf-cart*",
+        "hbnightflyers.com/guest/hbnf-cart/*"
+      ],
+      "scope": [
+        "bounded reversible validation of the existing Cart-only routes",
+        "existing approved backend and Owner/Guest package deployment after admission",
+        "one exact R6 install and normal reboot after admission",
+        "one exact R4 recovery only when authorized objective gates require it",
+        "unchanged frozen qualification and field acceptance"
+      ],
+      "source": "Current user directive in this task, 2026-10-10 PDT; supersedes the prior no-live-mutation text for this exact coordinated release only."
+    },
+    "current_production": {
+      "cloudflare_deployment": "5d7f7a4a-87cf-4cc2-84bf-e67d11f8fa06",
+      "cloudflare_version": "4a675ee4-807d-4ab1-b7e6-e2f91e27e39c",
+      "cloudflare_worker": "hbnf",
+      "supabase_versions": [
+        "hbnf-cart-control v18",
+        "hbnf-cart-reconcile v12",
+        "hbnf-matrix-adapter-foundation v3"
+      ]
+    },
+    "install_attempts": 0,
+    "install_limit": 1,
+    "last_preflight_blocker": "Corrected public route test passed, but the execution host is not currently connected to HBNF-Cart: Wi-Fi is not associated, host IP is 192.168.68.91, the saved HBNF-Cart network could not be found in range, and bounded read-only requests to Matrix .10/AUX .11 timed out. The live Owner page reports Cart service reachable but Matrix command unconfirmed/failed; AUX confirmation is stale. Do not deploy the backend/frontend package or install R6 until actual device identity/health/power/recovery and revision-bound application evidence are safely established.",
+    "limits": [
+      "no candidate retry or different firmware",
+      "no router/Opal/AUX firmware or config changes",
+      "Guest Mode remains OFF; UV remains disabled",
+      "no production change outside this exact transaction",
+      "no threshold/acceptance weakening"
+    ],
+    "live_admission": {
+      "admission_path": null,
+      "reason": "Corrected Cart-only route, exact-byte, fallback, and browser checks passed, and authorized routes are retained. Current host is not connected to HBNF-Cart LAN; Matrix/AUX read-only preflight timed out, and Owner UI still reports Matrix application unconfirmed. No backend or firmware action until fresh device identity/health/power/recovery and command-contract checks pass.",
+      "stage": "LIVE_APPROVED",
+      "status": "NOT_READY"
+    },
+    "live_mutation_authorized": true,
+    "prewrite_evidence": {
+      "path": "evidence/cart2-r6-live-transaction-20261009/CLOUDFLARE_SOURCE_AND_AUTHORITY_RECONCILIATION.json",
+      "sha256": "9c27d79e83ea21dfa32b840bdc439e3ace78513af704d47c787a4ce331c210b4"
+    },
+    "rollback": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    },
+    "rollback_attempts": 0,
+    "rollback_limit": 1,
+    "schema": "hbnf-cart2-coordinated-live-release-authorization-v1",
+    "scope": [
+      "one exact R6 Matrix install and normal reboot after all gates pass",
+      "matching approved Owner/Guest and backend coordinated release under captured rollback identities",
+      "one exact R4 recovery only on authorized objective runtime/safety/performance/AUX failure",
+      "unchanged 28-kernel sweep, combined-feature tests, contiguous 90-minute soak, physical and owner acceptance"
+    ],
+    "status": "OWNER_AUTHORIZED__CART_ROUTES_PASS__DEVICE_PREFLIGHT_NOT_READY",
+    "target": {
+      "aux_ip": "192.168.77.11",
+      "aux_mac": "8c:94:df:55:c3:4c",
+      "matrix_ip": "192.168.77.10",
+      "matrix_mac": "70:4b:ca:5b:34:5c",
+      "opal_ip": "192.168.77.1"
+    }
+  },
   "current_task": {
     "autonomous_completion_authorization": {
       "allowed": [
-        "one exact coordinated R6 release transaction using the three recorded artifacts, only after every existing control-plane admission and prewrite gate passes",
-        "unlimited no-cost offline engineering, release-path repair, integration, testing, and private evidence preservation within current scope"
+        "Current owner-authorized bounded Cart-only route validation and retention of the two approved routes after all exact-byte/fallback checks pass.",
+        "Continue the exact R6 coordinated release transaction and its authorized recovery only after every existing control-plane admission, preflight, rollback, and qualification gate passes.",
+        "No-cost offline release integration, tests, and private evidence preservation within the committed Cart 2.0 scope."
       ],
       "forbidden": [
-        "candidate retries or firmware other than the exact recorded R6",
-        "live writes until the whole transaction is executable and recoverable",
-        "router/Opal/AUX firmware or configuration changes",
-        "production changes outside the exact coordinated transaction",
-        "Guest Mode activation, UV energization, weakened gates, spending, or external outreach"
+        "New firmware variants or installation outside the exact R6 and exact R4 recovery identities in the existing transaction.",
+        "Live backend/frontend/device writes while release admission is NOT_READY or current device identity/recovery is uncertain.",
+        "Router/Opal/AUX firmware or configuration changes outside the transaction, Guest Mode activation, UV energization, scope reduction, threshold changes, spending, or external outreach."
       ],
-      "scope": "The exact owner-approved R6 transaction remains authorized but unconsumed. Foundation R4 is currently installed. Live mutation stays closed until Cloudflare source/asset preservation and the complete transaction are proven safe.",
-      "user_permission": "Current user explicitly states the existing exact-artifact release authorization remains unconsumed and directs continuation; no routine approval needed."
+      "scope": "The exact R6 coordinated release remains owner-authorized and unconsumed. The two approved Cart-only routes passed and remain active. All further production/device writes remain conditional on the original admission and preflight gates.",
+      "user_permission": "Current user explicitly authorizes persistent continuation of this existing coordinated transaction, including bounded Cloudflare route corrections/deployment, exact firmware installation/recovery, and qualification; no routine approval needed."
     },
     "aux_blocker": {
       "historical_direct_output_failure": "Preserved; does not override the newer current owner observation.",
@@ -697,8 +823,9 @@
       "status": "OFFLINE_CORRECTION_TESTED__FRESH_PRELIVE_PASS"
     },
     "blockers": [
-      "R7 kernel-13 p99 exceeded the frozen 42.03125 ms ceiling; exact R4 SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c recovery passed at 2026-10-09T10:53:07.839125+00:00.",
-      "Causal attribution remains unresolved: the preserved R7 telemetry has once-per-second cumulative-tail snapshots and stage averages/p95, but no timestamped per-frame stage breakdown aligned to the long-frame samples. See evidence/cart2-r7-performance-repair-20261009/R7_KERNEL13_TAIL_ATTRIBUTION_20261009.json."
+      "Corrected public route test passed, but the execution host is not currently connected to HBNF-Cart: Wi-Fi is not associated, host IP is 192.168.68.91, the saved HBNF-Cart network could not be found in range, and bounded read-only requests to Matrix .10/AUX .11 timed out.",
+      "The live Owner page reports Cart service reachable but Matrix command unconfirmed/failed; AUX confirmation is stale. Do not deploy the backend/frontend package or install R6 until actual device identity/health/power/recovery and revision-bound application evidence are safely established.",
+      "R6 exact integrated firmware remains uninstalled and unqualified; current device identity is not freshly verified. Frozen gates remain unchanged."
     ],
     "brightness_field_target": {
       "field_observation": "At roughly <=20 brightness Matrix appears effectively off; roughly 20-60 visibly loses LED/pixel participation and scene structure, requiring uncomfortable brightness to obtain a full-looking animation.",
@@ -707,7 +834,7 @@
       "status": "PHASE2_COMMITTED_REQUIREMENT",
       "ui_requirement": "Provide useful low-night perceptual granularity while retaining true maximum."
     },
-    "checkpoint_at_utc": "2026-10-09T19:02:00.631686Z",
+    "checkpoint_at_utc": "2026-10-10T04:16:14.495271+00:00",
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "diagnostic_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
@@ -1688,11 +1815,11 @@
       "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
-    "live_mutation_authorization": "R7 install and exact R4 recovery are consumed and closed; R7 failed the frozen kernel13 p99 gate, exact R4 recovery is verified, and no live mutation authority remains.",
-    "live_mutation_authorized": false,
-    "name": "Foundation offline timeout and soak-harness checkpoint",
-    "next_action": "Continue independent offline Mission Control, scoring, PWA, Text/Moments and staged reconciliation work. Do not build R8 until the p99 cause is source-backed; no live mutation is authorized.",
-    "next_work": "Continue offline product lanes and source-bound R7 tail attribution. No R8 build until a targeted source correction is demonstrated; no live hardware or production deployment.",
+    "live_mutation_authorization": "Current user authorizes the exact coordinated R6 transaction; authority is conditional and remains admission-gated. No device/backend/firmware write is permitted while current preflight is NOT_READY.",
+    "live_mutation_authorized": true,
+    "name": "Cart 2.0 coordinated R6 release \u2014 Cart routes verified; device preflight pending",
+    "next_action": "Restore a verified Mac-to-HBNF-Cart LAN connection when the AP is in range; then perform one fresh read-only Matrix/AUX/Opal and rollback/power preflight. Proceed to backend/firmware writes only if the existing LIVE_APPROVED admission passes.",
+    "next_work": "Keep the two verified Cart-only Worker routes. Complete current backend command-confirmation audit and offline transaction rehearsal while device connectivity is unavailable. No R6 OTA or production backend change yet.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "overnight_priority": {
       "do_not_derail": [
@@ -2275,6 +2402,11 @@
       "3: only if neither local path is technically available, use a temporary cloud mechanism; do not spend more time on static-asset reconstruction",
       "after successful Release07 recovery, use the same direct-LAN exact-artifact mechanism as the pre-proven rollback path for future diagnostic/fix sessions"
     ],
+    "release_readiness": {
+      "next_gate": "Fresh read-only device identity/health/power/recovery checks and exact LIVE_APPROVED admission; only then execute the coordinated backend/frontend/R6 transaction.",
+      "primary_blocker": "The corrected two Cart routes and exact 17-URL package integrity/fallback checks pass. Current host cannot reach HBNF-Cart LAN; fresh Matrix/AUX identity, health, power, and recovery preflight is missing. Owner page also reports Matrix application unconfirmed and AUX stale.",
+      "status": "ROUTES_PASS__DEVICE_PREFLIGHT_NOT_READY"
+    },
     "rollback_verified": {
       "closure_evidence": "evidence/cart2-r6-live-qualification-20261009/R6_FAILURE_R4_RECOVERY_CLOSURE.json",
       "identity_evidence": "evidence/cart2-r6-live-qualification-20261009/R4_RECOVERY_RUNTIME_VERIFICATION.json",
@@ -2371,7 +2503,7 @@
       "status": "PASS"
     },
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "RECOVERY__EXACT_R4_RESTORED__R2_TRACE_OUTPUT_DEFECT_REQUIRES_OFFLINE_ANALYSIS__AUTHORITY_CLOSED",
+    "status": "OWNER_AUTHORIZED__CART_ROUTES_PASS__DEVICE_PREFLIGHT_NOT_READY",
     "t3_fast_path_preparation": {
       "human_approval_required": true,
       "human_packet": "work/cart2/27_T3_PHASE2_FAST_PATH_PREP_20261006.md",
@@ -2399,12 +2531,6 @@
       ],
       "observed_at": "2026-10-05T17:48:54Z",
       "status": "R3_CLOSED__R4_EXECUTION_REQUIRED"
-    },
-    "release_readiness": {
-      "status": "PREWRITE_BLOCKED__CLOUDFLARE_SOURCE_AND_ASSET_PRESERVATION_NOT_PROVEN",
-      "primary_blocker": "Current Cloudflare Worker version is asset-only with no Worker module; indexed evidence does not include a complete current site asset manifest. keep_assets alone cannot install the exact package bytes, and a partial manifest risks unobserved site assets.",
-      "next_gate": "Recover complete current deployed source/asset manifest or demonstrate a supported exact partial-update mechanism that preserves the full current namespace, then verify the candidate version at 0% using version override before any normal traffic or firmware install.",
-      "no_live_writes_performed": true
     }
   },
   "execution_budget_policy": {
@@ -2534,7 +2660,7 @@
       "status": "REUSABLE"
     }
   ],
-  "installation_verification_note": "R7 OTA HTTP 200 and exact /hbnf/build.json release/candidate, Matrix MAC/WLED 16.0.1/runtime health, and AUX native DDP live/source verified read-only; receipt evidence/cart2-r7-performance-repair-20261009/R7_POSTINSTALL_IDENTITY_HEALTH.json SHA-256 a4e79c75e7c7c1a9b3f868b6104bed14e8ec54f6e8cc64ac3f894f439fd3cb2b. R7 matched performance qualification not yet passed; physical sync owner confirmation and T4/T5 remain open. Subsequent matched kernel-13 p99 failed the frozen ceiling; exact Foundation R4 SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c recovery completed and was verified by receipt evidence/cart2-r7-performance-repair-20261009/R7_R4_RECOVERY_RESULT.json SHA-256 70bb779e8e94156cd120512a1b848442a0cf16683273e6bfd5a57a2eac80af9c. Live mutation authority is closed.",
+  "installation_verification_note": "Last recorded exact Foundation R4 recovery verification remains in evidence/cart2-r7-performance-repair-20261009/R7_R4_RECOVERY_RESULT.json; no firmware install/reboot has occurred in this coordinated transaction. Fresh read-only Matrix/AUX identity checks are currently unavailable because this host is not associated with HBNF-Cart.",
   "installed_firmware_reconciliation": {
     "basis": "PASS recovery receipt verifies exact Matrix IP/MAC, R4 identity, WLED 16.0.1, brightness 44, device on, AUX native DDP live from Matrix; no new device poll was made.",
     "evidence_path": "evidence/cart2-r7-performance-repair-20261009/R7_R4_RECOVERY_RESULT.json",
@@ -2678,48 +2804,17 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-10T01:16:07Z",
+  "last_updated_utc": "2026-10-10T04:17:21.583246+00:00",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
-    "admission_path": "evidence/cart2-r7-performance-repair-20261009/R2_DIAGNOSTIC_OWNER_AUTHORIZATION.json",
-    "admission_sha256": "90fb1fa29de1e3b6ac34ca61e9c48bc1f158a3d2441f50a16e3d47966d321b10",
-    "authorization": "Current user authorized exactly one diagnostic-only Matrix installation of hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009 SHA-256 9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b, followed after any completed diagnostic by one exact Foundation R4 return SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c. No retry, second diagnostic, AUX/router/cloud mutation, production release, R8, or threshold change. Fail closed if any prerequisite is unproven.",
-    "authorization_id": null,
-    "candidate_installed_receipt_path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R2_CANDIDATE_INSTALLED_RECEIPT.json",
-    "candidate_installed_receipt_sha256": "5457c178efd99e36bc9cb2a554017a4f7943ad8a91e0b4bd3c3ebb448d3a5bf0",
-    "candidate_release": "hbnf-cart2-r7-outlier-trace-diagnostic-r2-20261009",
-    "candidate_sha256": "9789d9f198699d48f7bf168d7c885d337547724716055e48824072c82c8dfd6b",
-    "closed_at_utc": "2026-10-09T19:11:35.538409+00:00",
-    "closure_receipt_path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R2_LIVE_TRANSACTION_FINAL_RECEIPT.json",
-    "closure_receipt_sha256": "260599faa6704d49567c0a7633775c48be701366d8d18957260d657daab97d01",
-    "consumed_at_utc": "2026-10-09T18:55:02.940394+00:00",
-    "consumed_before_network_request": true,
-    "consumed_rollback_at_utc": "2026-10-09T19:08:13.294970+00:00",
-    "dryrun_path": "evidence/cart2-r7-performance-repair-20261009/R2_DIAGNOSTIC_TRANSACTION_DRYRUN.json",
-    "dryrun_sha256": "8dc8fc5a5c99dc498e06338287bad3c845c45488b4de5861c42838d9deb349b7",
-    "exclusions": [
-      "any retry or additional diagnostic candidate",
-      "AUX or router mutation",
-      "cloud/production deployment",
-      "R8 or any other firmware",
-      "production acceptance claim",
-      "threshold weakening"
-    ],
-    "install_attempts": 1,
-    "install_limit": 1,
-    "live_worker_inventory_path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_WORKER_INVENTORY_CURRENT_20261009.json",
-    "live_worker_inventory_sha256": "bd851cc34c90f0410088ec63d101ef1139c71d2f71e73a3a7215a4acf72e62c4",
-    "preflight_path": "evidence/cart2-r7-performance-repair-20261009/R2_PREWRITE_READONLY_PREFLIGHT_CURRENT.json",
-    "preflight_sha256": "5b38a53871492668c676b30036ca58bf4654e788290f474e96444674789b0f36",
-    "prewrite_receipt_path": "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_GO_PREWRITE_RECEIPT.json",
-    "prewrite_receipt_sha256": "cc2d213502216176228ccd0768c5cdb3e95e9452bf3cbb788fbf6e97f36265d1",
-    "rollback_attempts": 1,
-    "rollback_limit": 1,
-    "rollback_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "authorization": "Current owner explicitly authorizes persistent continuation of the existing exact R6 coordinated release, including bounded Cart-only route validation, release deployment, one R6 installation and normal reboot, conditionally authorized exact R4 recovery, and qualification. All existing admission, security, rollback, and frozen gates remain mandatory.",
+    "authorized": true,
+    "candidate_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
+    "controller_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
+    "current_gate": "Release admission NOT_READY: the Mac is not connected to the Cart LAN; device identity/health/power and live application evidence are not freshly verified.",
+    "hardware_writes_permitted_now": false,
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "schema": "hbnf-r2-bounded-live-diagnostic-authorization-v1",
-    "status": "R2_DIAGNOSTIC_COMPLETE__ONE_EXACT_R4_RETURN_VERIFIED__LIVE_AUTHORITY_CLOSED",
-    "target": "192.168.77.10 / MAC 70:4b:ca:5b:34:5c only"
+    "transaction_consumed": false
   },
   "live_mutation_authorization_closed_at_utc": "2026-10-09T19:11:35.538409+00:00",
   "live_mutation_authorization_closure": {
@@ -2727,7 +2822,7 @@
     "evidence_sha256": "260599faa6704d49567c0a7633775c48be701366d8d18957260d657daab97d01",
     "reason": "The one authorized R2 diagnostic and mandatory one exact R4 return are complete; R2 stage attribution is inconclusive due malformed trace records; exact R4 identity, Matrix health and AUX native DDP verified. Live mutation authority is closed."
   },
-  "live_mutation_authorized": false,
+  "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",
@@ -3224,99 +3319,5 @@
     "status": "OFFLINE_DESIGN_ONLY__OVERHEAD_AND_IMPLEMENTATION_PROOF_REQUIRED"
   },
   "schema": "hbnf-control-state-v2",
-  "status": "R6_COORDINATED_RELEASE_AUTHORIZED__UNCONSUMED__CLOUDFLARE_PREWRITE_GATE_BLOCKED__R4_CURRENT",
-  "coordinated_r6_live_release_authorization": {
-    "schema": "hbnf-cart2-coordinated-live-release-authorization-v1",
-    "authorized_by": "Current user explicit coordinated R6 release authorization from commit fa3ae6bed518536ae59f225d942c1bcff0ca7a67; user confirmed this existing authorization remains unconsumed.",
-    "status": "OWNER_AUTHORIZED_NOT_CONSUMED__PREWRITE_NOT_READY_ROUTE_PRESERVATION_GATE_FAILED",
-    "candidate": {
-      "release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
-      "sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
-      "path": "evidence/cart2-r6-integrated-20261009/hbnf-cart2-phase2-offline-wow-r6-integrated-20261009.bin"
-    },
-    "controller_package": {
-      "sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
-      "path": "evidence/cart2-owner-guest-vibe-r2-20261009/HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009.zip"
-    },
-    "rollback": {
-      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-      "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin"
-    },
-    "target": {
-      "matrix_ip": "192.168.77.10",
-      "matrix_mac": "70:4b:ca:5b:34:5c",
-      "aux_ip": "192.168.77.11",
-      "aux_mac": "8c:94:df:55:c3:4c",
-      "opal_ip": "192.168.77.1"
-    },
-    "scope": [
-      "one exact R6 Matrix install and normal reboot after all gates pass",
-      "matching approved Owner/Guest and backend coordinated release under captured rollback identities",
-      "one exact R4 recovery only on authorized objective runtime/safety/performance/AUX failure",
-      "unchanged 28-kernel sweep, combined-feature tests, contiguous 90-minute soak, physical and owner acceptance"
-    ],
-    "limits": [
-      "no candidate retry or different firmware",
-      "no router/Opal/AUX firmware or config changes",
-      "Guest Mode remains OFF; UV remains disabled",
-      "no production change outside this exact transaction",
-      "no threshold/acceptance weakening"
-    ],
-    "install_attempts": 0,
-    "install_limit": 1,
-    "rollback_attempts": 0,
-    "rollback_limit": 1,
-    "live_mutation_authorized": false,
-    "live_admission": {
-      "status": "NOT_READY",
-      "stage": "LIVE_APPROVED",
-      "admission_path": null,
-      "reason": "The bounded Cloudflare route test failed: 14 of 17 mapped URLs matched approved payloads, but the Guest HTML, Owner canonical HTML, and /hbnf-cart alias responses did not match their approved hashes/sizes. Real wildcard fallback, unrelated site, and firmware checks returned HTTP 403 without Cart markers; the same generic 403 persisted after deleting both Cart routes. All prior five route IDs remain and no backend or firmware release action was taken."
-    },
-    "prewrite_evidence": {
-      "path": "evidence/cart2-r6-live-transaction-20261009/CLOUDFLARE_SOURCE_AND_AUTHORITY_RECONCILIATION.json",
-      "sha256": "9c27d79e83ea21dfa32b840bdc439e3ace78513af704d47c787a4ce331c210b4"
-    },
-    "current_production": {
-      "cloudflare_worker": "hbnf",
-      "cloudflare_version": "4a675ee4-807d-4ab1-b7e6-e2f91e27e39c",
-      "cloudflare_deployment": "157f592b-cee8-4f6b-a687-d079210c26c4",
-      "supabase_versions": [
-        "hbnf-cart-control v18",
-        "hbnf-cart-reconcile v12",
-        "hbnf-matrix-adapter-foundation v3"
-      ]
-    },
-    "cloudflare_route_test": {
-      "schema": "hbnf-cart2-bounded-route-test-result-v1",
-      "status": "FAILED_PRESERVATION_GATE__ROUTES_REMOVED",
-      "completed_at_utc": "2026-10-10T03:39:35.661514+00:00",
-      "authorization_consumed": true,
-      "worker": "hbnf-cart2-private-stage-20261010",
-      "worker_version_id": "647c546a-d3b1-4bd2-8437-4edb4c6a3356",
-      "tested_route_ids": [
-        {
-          "id": "e4ab79b474c24a0b92757969602a4665",
-          "pattern": "hbnightflyers.com/hbnf-cart*",
-          "removed": true
-        },
-        {
-          "id": "ae5400eb6b96432ca5345678352c5b80",
-          "pattern": "hbnightflyers.com/guest/hbnf-cart/*",
-          "removed": true
-        }
-      ],
-      "cart_asset_check": "FAIL: 14/17 mappings matched exactly; /guest/hbnf-cart/ (3981 bytes vs 2676) and /hbnf-cart.html (18260 vs 16955) did not match approved payloads; /hbnf-cart alias also did not match and differed in hash from canonical despite same length. Candidate marker was present. No response body snapshot was preserved, so transformation source is unclassified.",
-      "fallback_preservation_check": "FAIL: unmatched namespace paths, unrelated website, and firmware requests returned a common HTTP 403 without Cart marker. Post-rollback requests remained 403; prior HTTP behavior could not be confirmed from this egress.",
-      "post_rollback": "The route API readback shows only the five pre-existing route IDs. Public HTTP restoration remains unverified because the same 403 response persisted after rollback.",
-      "evidence_path": "evidence/cart2-dedicated-worker-stage-20261010/LIVE_ROUTE_ROLLBACK_RECEIPT.json",
-      "evidence_sha256": "2e0e85e27b73d725521c1f1fae290e3aa078927126947e49b2c2f4c992987803",
-      "asset_check_path": "evidence/cart2-dedicated-worker-stage-20261010/LIVE_CART_CONTENT_CHECK.json",
-      "asset_check_sha256": "dbc6ca168e113d4831f695db04664e0ea46b2004db0fb6a83e9dcc4f79bd5bbc",
-      "preservation_check_path": "evidence/cart2-dedicated-worker-stage-20261010/LIVE_FALLBACK_AND_PRESERVATION_CHECK.json",
-      "preservation_check_sha256": "842c0cbb30bd23bf9bfdd662fdc4b5a823b9c0ef2318e5176663b210e900159e",
-      "release_actions_taken": []
-    }
-  }
+  "status": "R6_COORDINATED_RELEASE_AUTHORIZED__UNCONSUMED__ROUTE_TEST_PASS__FRESH_DEVICE_PREFLIGHT_BLOCKED"
 }

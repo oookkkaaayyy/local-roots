@@ -1,0 +1,14 @@
+{
+  "change_class": "TRIVIAL_BOUNDED",
+  "change_id": "cart2-current-owner-live-authorization-reconciliation-20261010",
+  "evidence": {},
+  "impact": {
+    "architecture": false,
+    "bespoke": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "unknown": false
+  },
+  "schema": "hbnf-change-governance-v1",
+  "summary": "Reconcile the exact current user authorization with the delivery rail without changing release, security, recovery, or qualification gates."
+}

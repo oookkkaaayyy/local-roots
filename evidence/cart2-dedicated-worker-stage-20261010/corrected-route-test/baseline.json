@@ -1,0 +1,207 @@
+{
+  "approved_zip_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
+  "captured_at_utc": "2026-10-10T04:07:51.830832+00:00",
+  "client": {
+    "tool": "/usr/bin/curl",
+    "user_agent": "curl default; not spoofed",
+    "version": "curl 8.7.1 (x86_64-apple-darwin25.0) libcurl/8.7.1 (SecureTransport) LibreSSL/3.3.6 zlib/1.2.12 nghttp2/1.68.1"
+  },
+  "phase": "baseline",
+  "results": [
+    {
+      "body_path": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/baseline/01_root.body",
+      "bytes": 101554,
+      "headers": {
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cache-control": "no-store",
+        "cf-cache-status": "HIT",
+        "cf-ray": "a482c2b5e9392aed-LAX",
+        "content-type": "text/html",
+        "date": "Sat, 10 Oct 2026 04:07:52 GMT",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=GmAbmai9bRjrbcHSeyTMcZTIQbX0nAuK14EojNy4UhBUOGO896PML%2BiaPZ5tigBL9FFdKEfck4QUA6Fw%2ByknfuXqXXr%2FqNvb0jyF2zFTa2hYePPO%2BQ5vV2Lub3xiKTiGeoQufA%3D%3D\"}]}",
+        "server": "cloudflare"
+      },
+      "method": "GET",
+      "path": "/",
+      "sha256": "525de3f798d76372908d1293b74a894461fcd6a69ad8b9d4bc3dcc43626aec3d",
+      "status": 200
+    },
+    {
+      "body_path": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/baseline/02_favicon_ico.body",
+      "bytes": 7154,
+      "headers": {
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cache-control": "public, max-age=0, must-revalidate",
+        "cf-cache-status": "HIT",
+        "cf-ray": "a482c2b6b83929ab-LAX",
+        "content-length": "7154",
+        "content-type": "image/vnd.microsoft.icon",
+        "date": "Sat, 10 Oct 2026 04:07:52 GMT",
+        "etag": "\"0f2d6e361c144aedf97affb18eb40577\"",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=ZFdZtb%2F5d1bq05NfmZiJaH58wxPQxck8zM98SGbh34zscs3neHjixDPxYTPqam0PV3I9aZB6BSjDKRWOQCRvBdKh380t0BVL4r4hw0pgqMtzAO1WY2jVMmkwOuZzi60tryJ6vQ%3D%3D\"}]}",
+        "server": "cloudflare"
+      },
+      "method": "GET",
+      "path": "/favicon.ico",
+      "sha256": "989834e2338b4414ff54d74ed1188f1160ea7071cb29e0f3862f7a2476956aca",
+      "status": 200
+    },
+    {
+      "body_path": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/baseline/03_manifest_webmanifest.body",
+      "bytes": 0,
+      "headers": {
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cache-control": "no-cache, must-revalidate",
+        "cf-ray": "a482c2b73ec7efab-LAX",
+        "content-length": "0",
+        "date": "Sat, 10 Oct 2026 04:07:52 GMT",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=YPgRJ694i1XvScP00Um68A%2FyGsDQe1vAFjGCIsb32EabqUvH%2B2Wbma%2B4p%2BHCRcWIdDANy94jWyIn7pEXYfrLIoMeFJwVwvJT2uLAFK41d%2BtlOOwSiVHzSzhq9ScRjUDswt2dhw%3D%3D\"}]}",
+        "server": "cloudflare"
+      },
+      "method": "GET",
+      "path": "/manifest.webmanifest",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": 404
+    },
+    {
+      "body_path": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/baseline/04_hbnf_cart_html.body",
+      "bytes": 0,
+      "headers": {
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cache-control": "no-store",
+        "cf-ray": "a482c2b7be3db84e-LAX",
+        "content-length": "0",
+        "date": "Sat, 10 Oct 2026 04:07:52 GMT",
+        "location": "/hbnf-cart",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=Gtm6ASmwkOQT4YEoO5AHQDZ7HyPzy0tfNk7nA6bxaEtIgeEAPgOO1h3Vrt9%2BeY0WEOurrMaqYFpagsjiln5Mtp4WI0yawYtL3HloWtGzgoVUcu2ogp3ax1cP7cWWtWMxnjvJAQ%3D%3D\"}]}",
+        "server": "cloudflare"
+      },
+      "method": "GET",
+      "path": "/hbnf-cart.html",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": 307
+    },
+    {
+      "body_path": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/baseline/05_hbnf_cart_not_a_file.body",
+      "bytes": 0,
+      "headers": {
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cf-ray": "a482c2b828174896-LAX",
+        "content-length": "0",
+        "date": "Sat, 10 Oct 2026 04:07:52 GMT",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=mJ6%2B2TY4a1DHESVP6neBvNoPuIQtzsbLYMJyV0kVsrEaXzrHzSeyR0byLYVfVSHoXznSFkFUqHBS7Ob7T2np04CxBP8s0St9tk6%2B04rgOSRKFPIQ142Xdl%2FKq9OTTgAtkmIQPQ%3D%3D\"}]}",
+        "server": "cloudflare"
+      },
+      "method": "GET",
+      "path": "/hbnf-cart-not-a-file",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": 404
+    },
+    {
+      "body_path": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/baseline/06_hbnf_cart_html_child.body",
+      "bytes": 0,
+      "headers": {
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cf-ray": "a482c2b92bb7f959-LAX",
+        "content-length": "0",
+        "date": "Sat, 10 Oct 2026 04:07:52 GMT",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=mGs%2BmcoalaJKo2JWT5NPDUPUD3klOD9oXhjH8RcbQmNP3ulWuWUbBVjrqfJ4xsWwNS3AweIoAsn9ZQyFsUNYuDZxxbPXO03TZarGAppYl7UCiFTFXJWwnP%2FOHrcINuZHLpBUKw%3D%3D\"}]}",
+        "server": "cloudflare"
+      },
+      "method": "GET",
+      "path": "/hbnf-cart.html/child",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": 404
+    },
+    {
+      "body_path": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/baseline/07_guest_hbnf_cart_unknown.body",
+      "bytes": 0,
+      "headers": {
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cf-ray": "a482c2b99e27f7a5-LAX",
+        "content-length": "0",
+        "date": "Sat, 10 Oct 2026 04:07:52 GMT",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=YFVnSMZ8lobRbg6PZf4jsulWg2KH63QU4d3TpjMSuKWhuQdUiCZLHl1veRyqD6JxWF8CZLP3TO8WUepuVbCpnzyKQpjctwwUz2%2BJP510Nt8Cf%2FuLxcutj23WIz1cbiq7novlcQ%3D%3D\"}]}",
+        "server": "cloudflare"
+      },
+      "method": "GET",
+      "path": "/guest/hbnf-cart/unknown",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": 404
+    },
+    {
+      "body_path": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/baseline/08_firmware_matrix_stable_latest_json.body",
+      "bytes": 915,
+      "headers": {
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cache-control": "public, max-age=0, must-revalidate",
+        "cf-cache-status": "HIT",
+        "cf-ray": "a482c2ba0dbdc4f9-LAX",
+        "content-length": "915",
+        "content-type": "application/json",
+        "date": "Sat, 10 Oct 2026 04:07:52 GMT",
+        "etag": "\"fcf990a70490737d1a4aa37a934ec78c\"",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=Vf%2F3Wu%2B3IDd9E91cj4Hh9jRF9nuZtGxeb90q7yBzu%2FquSmc8OHOx5kZQcZU4rIh34xau9lUjXZ4tFYuVTT6U4Q0%2FY7nrDN%2FTQkqGlBy13aha85REtF9AKw2eNtzpqYk7p5HJdQ%3D%3D\"}]}",
+        "server": "cloudflare"
+      },
+      "method": "GET",
+      "path": "/firmware/matrix/stable/latest.json",
+      "sha256": "2bd86e011ff4e862bc0b8a5c9f490a8a8e2cdb5bf5abb1bb39156424341a6fce",
+      "status": 200
+    },
+    {
+      "body_path": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/baseline/09_firmware_matrix_stable_latest_json_sig.body",
+      "bytes": 384,
+      "headers": {
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cache-control": "public, max-age=0, must-revalidate",
+        "cf-cache-status": "HIT",
+        "cf-ray": "a482c2ba7e8c2c7d-LAX",
+        "content-length": "384",
+        "content-type": "application/pgp-signature",
+        "date": "Sat, 10 Oct 2026 04:07:52 GMT",
+        "etag": "\"c9fa2e3e52c6d79dfaeab8c0b6c6df3c\"",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=FIERURTqJzCIQWi9C5%2FdZ%2BzdqOMz9LeYrgnUI6l1rOFffTU4oC6EER2FpS0njram1WT2PFPTk%2FePt1VOtxvmyuP0htB%2BQemi57ClV8jFVWriSuk3H4jKSTs53NnPs3aUkJ%2BlQA%3D%3D\"}]}",
+        "server": "cloudflare"
+      },
+      "method": "GET",
+      "path": "/firmware/matrix/stable/latest.json.sig",
+      "sha256": "405faf1c60d8eacc91481fc21e258709105b3a84234c88f0f69f9893ed9a36d1",
+      "status": 200
+    },
+    {
+      "body_path": null,
+      "bytes": 0,
+      "headers": {
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cache-control": "public, max-age=31536000, immutable",
+        "cf-ray": "a482c2bb0f9bc4f6-LAX",
+        "content-disposition": "attachment; filename=\"luci-app-hbnf-updater_1.2.3-1_all.ipk\"",
+        "content-length": "15983",
+        "content-type": "application/vnd.debian.binary-package",
+        "date": "Sat, 10 Oct 2026 04:07:52 GMT",
+        "etag": "\"090300853504e3e2bc6fe50c64cbb2b87c6688e38af9dc51dfcada2d87fbcdff\"",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=0%2Brj3Z2ZClWzTpcwYHHFtVxEeTRSBD1Ahl6U7gZF5DYItgoebMON%2Bq9QpkJCwQ9raeufDoMV5SmlKIFEfJQC%2BpbByHHYYO66NjHV6okGVcgVogZ7WqmumBSte69FZqLHH2IZJg%3D%3D\"}]}",
+        "server": "cloudflare",
+        "x-content-type-options": "nosniff"
+      },
+      "method": "HEAD",
+      "path": "/firmware/opal-updater/1.2.3/luci-app-hbnf-updater_1.2.3-1_all-090300853504e3e2bc6fe50c64cbb2b87c6688e38af9dc51dfcada2d87fbcdff.ipk",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": 200
+    }
+  ],
+  "schema": "hbnf-cart2-corrected-route-validation-v1",
+  "worker_source_sha256": "5b7ab92560a9b7e568917427273e00d691e9e0bd38953fabc24d947c6f152d4f",
+  "worker_version_id": "647c546a-d3b1-4bd2-8437-4edb4c6a3356"
+}

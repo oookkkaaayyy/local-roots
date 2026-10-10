@@ -1,0 +1,17 @@
+{
+  "schema": "hbnf.matrix.firmware.v1",
+  "device": "matrix",
+  "channel": "stable",
+  "matrix_mac": "70:4b:ca:5b:34:5c",
+  "wled_version": "16.0.1",
+  "release_sequence": 19,
+  "release_role": "update",
+  "release_id": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
+  "expected_hbnf_candidate": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
+  "based_on_hbnf_candidate": "hbnf-matrix-packet20-safe-point-v1-20261004-37234856834",
+  "based_on_firmware_sha256": "c5961147d07614f5f78b0d521e4e03f3d993685c5f68ab9a61da47200afcae8f",
+  "based_on_release_id": "hbnf-matrix-packet20-safe-point-v1-20261004-37234856834",
+  "sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
+  "size_bytes": 1462480,
+  "artifact_url": "https://hbnightflyers.com/firmware/matrix/stable/hbnf-matrix-packet20-timing-hook-v1-20261004-r1-0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076.bin"
+}

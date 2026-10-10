@@ -1,0 +1,106 @@
+{
+  "approved_controller_package": {
+    "path": "evidence/cart2-owner-guest-vibe-r2-20261009/HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009.zip",
+    "sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc"
+  },
+  "asset_check": {
+    "content_integrity": "All 17 delivered URLs matched approved ZIP source bytes exactly after removing only the single Cloudflare JSD script when present. Candidate marker, status, MIME type, and cache policy matched.",
+    "count": 17,
+    "evidence": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/candidate-assets.json",
+    "outcome": "PASS",
+    "sha256": "962dd31b93a71433071661554a99e1ed99ad1045bd68c0e613b67806119ea856"
+  },
+  "authorization": "Current owner instruction authorizes bounded, reversible Cart-only route validation and continuation of the coordinated release when gates pass.",
+  "browser_smoke": {
+    "guest_result": "Guest page loaded and connected; Guest Mode closed; controls disabled.",
+    "guest_url": "https://hbnightflyers.com/guest/hbnf-cart/",
+    "owner_url": "https://hbnightflyers.com/hbnf-cart.html",
+    "result": "Candidate page loaded; Mission Control and Guest Mode visible. Owner status reports service reachable but Matrix command not confirmed/command failed; Vibes correctly disabled pending matching firmware qualification."
+  },
+  "candidate": {
+    "asset_binding": [
+      {
+        "environment": "production",
+        "name": "ASSETS",
+        "service": "hbnf",
+        "type": "service"
+      }
+    ],
+    "module_sha256": "5b7ab92560a9b7e568917427273e00d691e9e0bd38953fabc24d947c6f152d4f",
+    "version_etag": "34626f04bb398c732f387bbca36d126813e6f5f21bd60aa8e1da567958dad991",
+    "version_id": "647c546a-d3b1-4bd2-8437-4edb4c6a3356",
+    "worker": "hbnf-cart2-private-stage-20261010"
+  },
+  "captured_at_utc": "2026-10-10T04:14:50.583249+00:00",
+  "current_production_readback": {
+    "current_version_percentages": {
+      "0": "70e9a435-f3c9-4298-99f3-e4d2ac6f005a",
+      "100": "4a675ee4-807d-4ab1-b7e6-e2f91e27e39c"
+    },
+    "hbnf_deployment_id": "5d7f7a4a-87cf-4cc2-84bf-e67d11f8fa06",
+    "path": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/CURRENT_PRODUCTION_READONLY_SNAPSHOT.json",
+    "sha256": "10ef61f727addd63114dcb98a8063ae3f30e33d101a9b0771c552fa5b9b64483",
+    "supabase_versions": [
+      "hbnf-cart-control v18",
+      "hbnf-cart-reconcile v12",
+      "hbnf-matrix-adapter-foundation v3"
+    ]
+  },
+  "edge_html_transform": {
+    "canonical_bytes_equal_approved_source": true,
+    "current_script_bytes": 938,
+    "etag_behavior": "ETag absent only for HTML responses where JSD was injected; unchanged for non-HTML/untransformed content. The prior 1305-byte report was not reproduced; current body bytes are exactly reconciled by the 938-byte JSD injection.",
+    "identified": "Cloudflare JavaScript Detections script"
+  },
+  "fallback_and_site_preservation": {
+    "details": "Unmatched Cart wildcard paths, representative unrelated site paths/assets, stable firmware JSON/signature, and updater IPK matched the pre-route baseline. Homepage raw body differs by exactly one volatile Cloudflare JSD script; removing that script restores exact canonical byte equality. /hbnf-cart.html intentionally resolves to the approved Cart page instead of its previous redirect.",
+    "evidence": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/candidate-fallback.json",
+    "outcome": "PASS",
+    "sha256": "a5b31c441a74441e32c3834f3ed442016ee78fcc9e8d39aba6a1f9fd2354d2c7"
+  },
+  "live_device_preflight": {
+    "outcome": "BLOCKED_READ_ONLY",
+    "reason": "Execution host is not on HBNF-Cart LAN (en0 not associated; host address 192.168.68.91). Bounded read-only requests to Matrix .10 and AUX .11 timed out. No device write was made."
+  },
+  "production_deployment_state": "Existing hbnf deployment/version was not mutated; last readback remains 100% on version 4a675ee4-807d-4ab1-b7e6-e2f91e27e39c. Only the two authorized Cart routes were added.",
+  "release_transaction": {
+    "backend_deployments": 0,
+    "owner_guest_package_deployments": 0,
+    "r6_install_attempts": 0,
+    "release_admission": "NOT_READY pending current device identity/health/power/recovery preflight and truthful Matrix application-acknowledgement evidence."
+  },
+  "route_changes": {
+    "created": [
+      {
+        "id": "8dfb6cae8169437a91d7866a5043260d",
+        "pattern": "hbnightflyers.com/hbnf-cart*",
+        "request_limit_fail_open": false,
+        "script": "hbnf-cart2-private-stage-20261010"
+      },
+      {
+        "id": "8ef057ecce4a44ba98997b4f0dd2f20e",
+        "pattern": "hbnightflyers.com/guest/hbnf-cart/*",
+        "request_limit_fail_open": false,
+        "script": "hbnf-cart2-private-stage-20261010"
+      }
+    ],
+    "original_route_ids_preserved": [
+      "118db467a3f24c5ebebceaf3c98571f7",
+      "3ea4705c7d614f0bbf46e6c1f0d0358b",
+      "9c3dd49ace304ab789f1c8fbea4a6161",
+      "aa1198dbdaa74abeac38372343eefa82",
+      "b0547e91d30b45c791f60df20c726464"
+    ],
+    "retained_after_pass": true
+  },
+  "schema": "hbnf-cart2-corrected-cloudflare-route-qualification-v1",
+  "security_event_1010": {
+    "classification": "Cloudflare Browser Integrity Check blocked Python-urllib/3.9 test requests; current legitimate curl and browser clients pass. No exception was added.",
+    "evidence": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/PYTHON_CLIENT_1010_SECURITY_EVENTS.json",
+    "sha256": "b198b8b1bad664909d574f840a64de854908f36f0495e8d31fd5dfad4fe161ba"
+  },
+  "supporting_evidence": {
+    "baseline_sha256": "a4bc3ad1bd5166f0101e7c41d3251004c901b13b7ecb4c20e469cc9088b9fc19",
+    "route_write_readback_sha256": "4a1fd1ecdcc620d49b47f0f651cda1ea42e021d1d612f19cb80e5d9dd2be7cdc"
+  }
+}

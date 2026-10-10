@@ -1,0 +1,41 @@
+{
+  "artifact_sha256": {
+    "evidence/cart2-owner-guest-vibe-r2-20261009/HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009.zip": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
+    "evidence/cart2-r6-integrated-20261009/hbnf-cart2-phase2-offline-wow-r6-integrated-20261009.bin": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
+    "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "candidate_binding": [
+    {
+      "environment": "production",
+      "name": "ASSETS",
+      "service": "hbnf",
+      "type": "service"
+    }
+  ],
+  "candidate_script_etag": "34626f04bb398c732f387bbca36d126813e6f5f21bd60aa8e1da567958dad991",
+  "candidate_version_id": "647c546a-d3b1-4bd2-8437-4edb4c6a3356",
+  "candidate_worker": "hbnf-cart2-private-stage-20261010",
+  "created": [
+    {
+      "id": "8dfb6cae8169437a91d7866a5043260d",
+      "pattern": "hbnightflyers.com/hbnf-cart*",
+      "request_limit_fail_open": false,
+      "script": "hbnf-cart2-private-stage-20261010"
+    },
+    {
+      "id": "8ef057ecce4a44ba98997b4f0dd2f20e",
+      "pattern": "hbnightflyers.com/guest/hbnf-cart/*",
+      "request_limit_fail_open": false,
+      "script": "hbnf-cart2-private-stage-20261010"
+    }
+  ],
+  "previous_route_ids": [
+    "118db467a3f24c5ebebceaf3c98571f7",
+    "3ea4705c7d614f0bbf46e6c1f0d0358b",
+    "9c3dd49ace304ab789f1c8fbea4a6161",
+    "aa1198dbdaa74abeac38372343eefa82",
+    "b0547e91d30b45c791f60df20c726464"
+  ],
+  "schema": "hbnf-cart2-route-write-v1",
+  "verified_at_utc": "2026-10-10T04:11:24.807214+00:00"
+}
