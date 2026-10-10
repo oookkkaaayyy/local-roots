@@ -1,12 +1,13 @@
 {
   "approved_for_mutation": true,
-  "capsule_sha256": "d514a7da6b57180a7d13860cff3ba8bc73b44419966e60375fea9c9f9631058a",
+  "capsule_sha256": "7510c66516d06e171db42c4692822f1128b053b7db2ae6b534b7f22789a999ef",
   "consumer_contract": {
     "identity": "Exact candidate and recovery staged over SSH to Opal with SHA-256/size check, then one Opal-origin multipart WLED /update POST to Matrix .10; runtime readback requires build release/candidate identity and device MAC.",
     "verified": true
   },
   "pre_mutation_state": {
-    "device": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c, exact R4, uptime 3499 s; AUX 192.168.77.11 MAC 8c:94:df:55:c3:4c, live DDP from Matrix and 22 LEDs; Opal .1 updater ledger seq55 R4; Mac on AC and HBNF LAN; one worker; no house voltage sensor."
+    "device": "Fresh read-only capture at 2026-10-10T09:56:42Z: Matrix 192.168.77.10 / 70:4b:ca:5b:34:5c is exact Foundation R4, WLED 16.0.1, brightness 44, uptime 4211 s, FPS 38, heap 74476; diagnostic and telemetry off. AUX .11 / 8c:94:df:55:c3:4c is on, 22 LEDs, lor=0, live DDP from .10. Opal updater ledger seq55 verifies exact R4. Mac on AC and en0 Cart LAN; house-voltage sensor absent; single worker. See fresh preflight receipt.",
+    "fresh_preflight_sha256": "87347c3d6b35d363f2d6164e4e08d8a035246fd18f008be6c09abdcd6c012df9"
   },
   "recovery_identity": {
     "identity": "Foundation R4 SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c; Drive file 1MepE3RCuEVErOHKLQ2FLZAj-fMPVWCt_",
@@ -26,7 +27,8 @@
       "evidence": [
         "evidence/cart2-r6-audio-cache-20261010/FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
         "firmware/phase2/integration-r6-cachefix/SOURCE_BINDING.json",
-        "evidence/cart2-r6-audio-cache-20261010/R6_AUDIO_CACHE_LIVE_SWEEP_ADAPTER.json"
+        "evidence/cart2-r6-audio-cache-20261010/R6_AUDIO_CACHE_LIVE_SWEEP_ADAPTER.json",
+        "evidence/cart2-r6-audio-cache-20261010/COMBINED_FEATURE_OFFLINE_TESTS.json"
       ],
       "status": "PASS"
     },
@@ -42,7 +44,8 @@
       "evidence": [
         "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_TRANSACTION_DRYRUN.json",
         "tests/test_r6_audio_cache_transaction_dryrun.py",
-        "tests/hbnf_guarded_run.py"
+        "tests/hbnf_guarded_run.py",
+        "tests/test_hbnf_r6_combined_feature_check.py"
       ],
       "status": "PASS"
     }

@@ -4,7 +4,7 @@
     "remote_execution_for_source_archaeology": false,
     "retry_inherits_authorization": false
   },
-  "created_at": "2026-10-10T09:44:16.677738+00:00",
+  "created_at": "2026-10-10T09:56:28.855344+00:00",
   "expected_terminal_outputs": [
     "R4 runtime qualification or exact failure classification",
     "exact Matrix release identity",
@@ -22,9 +22,9 @@
   },
   "repo_identity": {
     "branch": "hbnf-cart2-phase2-integration-20261006",
-    "dirty": false,
+    "dirty": true,
     "type": "git_commit",
-    "value": "d01ed7fd7a9946a7f7bfeede2e96897421e8ff20"
+    "value": "5313580b80b8698d9b84c447f66e11e571a0d95e"
   },
   "repo_inputs": [
     {
@@ -98,6 +98,11 @@
       "sha256": "d4a4a7c120f1c9e01dea2f0546323df35107ea57d521f331a0f8ab949dd53d22"
     },
     {
+      "bytes": 7732,
+      "path": "evidence/cart2-r6-audio-cache-20261010/COMBINED_FEATURE_OFFLINE_TESTS.json",
+      "sha256": "4987b837e437a09c1b501b43d428f35488e09dc89af8f98915165fde9515681c"
+    },
+    {
       "bytes": 1497984,
       "path": "evidence/cart2-r6-audio-cache-20261010/artifact/hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010.bin",
       "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
@@ -123,9 +128,14 @@
       "sha256": "f250707c2e28549c264bd5372893466279d3f26cd2f9d204c1952b7b7a2ea86d"
     },
     {
-      "bytes": 29030,
+      "bytes": 29120,
       "path": "scripts/hbnf_r6_audio_cache_live_transaction.py",
-      "sha256": "a0e11ce9e2eeb431bfb54ba61b88dfc56606b1f3ec7517e2ce031f589d2d703a"
+      "sha256": "f2fdee068443312b4a34c6d6115fc4336e6ea7a1c80abeed8fdc93d23089c7be"
+    },
+    {
+      "bytes": 5424,
+      "path": "scripts/hbnf_r6_combined_feature_check.py",
+      "sha256": "12164ae4e462912c1affa758fbe4005c8571d406d6f57c8b419bd55a7b97a0d0"
     },
     {
       "bytes": 3850,
@@ -138,14 +148,19 @@
       "sha256": "89e0e6178a0b2478cda96f1212a6a919a36f59f5abd39cef612a1d5edb427399"
     },
     {
+      "bytes": 4341,
+      "path": "tests/test_hbnf_r6_combined_feature_check.py",
+      "sha256": "3dcfb342fb358f13d282aff73cb3005b6da8d7d6fc4db420c8bbe584372204fc"
+    },
+    {
       "bytes": 36189,
       "path": "scripts/hbnf_foundation_live_adapter.py",
       "sha256": "00f44af477e2452b8f59b074e64e80bb052272e8c2bc6f9503c2725aea01c465"
     },
     {
-      "bytes": 48955,
+      "bytes": 50511,
       "path": "scripts/hbnf_live_kernel_sweep.py",
-      "sha256": "b8ad260899afb40301882afed59013506e97ab7a458325e16d400773d0bfdd32"
+      "sha256": "18aa5413f11efdf058c273428abb89e95586612c5f657f506f32df8524c1cf84"
     },
     {
       "bytes": 17799,
@@ -295,7 +310,7 @@
   },
   "system_id": "hbnf-cart",
   "terminal_recovery": "If the exact R6 audio-cache candidate is unqualified or runtime safety/required AUX behavior fails, preserve the failure evidence, install only the exact R4 recovery within the authorized limit, verify exact R4 identity and health, then continue offline work; never stop solely because a soak failed.",
-  "trace_id": "7fe9f9d32de642ef8029fdc74877f5fb",
+  "trace_id": "8af6c165ede6453e8d1bf43e02675ca5",
   "user_interaction_policy": {
     "copy_paste_delivery": "one_single_fenced_block_per_action",
     "max_user_actions_per_blocker": 1,
@@ -312,6 +327,6 @@
   "workflow_id": "phase2-live-qualification",
   "workflow_source": {
     "path": "platform/workflows/phase2-live-qualification.json",
-    "sha256": "dd9f657e570ef2161bdd0bb558b6cbd93ec755ed44abaef0abd9737c77a6cf04"
+    "sha256": "ccc2d39424c2dd112720fb2ba9517f4b3b69a44f67fa8172848fb8ba502e8c69"
   }
 }

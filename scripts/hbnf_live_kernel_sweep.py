@@ -454,6 +454,19 @@ def validate_soak_options(contract,duration_seconds,interval_seconds):
     if interval_seconds<=0 or interval_seconds>=MAX_FOUNDATION_SOAK_SAMPLE_GAP_SECONDS:
         raise ValueError(f"--soak-interval-seconds must be positive and below {MAX_FOUNDATION_SOAK_SAMPLE_GAP_SECONDS}")
 
+def run_combined_feature_check(script,outdir,release_id,timeout):
+    """Run the exact candidate-bound combined check inside the open snapshot."""
+    argv=[sys.executable,str(pathlib.Path(script).resolve()),"--release-id",release_id,
+          "--out",str(pathlib.Path(outdir).resolve()/"COMBINED_FEATURE_CHECK.json")]
+    if not isinstance(argv,list) or not argv or not all(isinstance(x,str) and x for x in argv):
+        raise ValueError("combined feature check requires a nonempty argv")
+    values={"outdir":str(pathlib.Path(outdir).resolve()),"release_id":release_id}
+    result=run_json(subst(argv,values),timeout=timeout)
+    atomic_write(pathlib.Path(outdir)/"COMBINED_FEATURE_CHECK.json",json.dumps(result,indent=2,sort_keys=True)+"\n")
+    if result.get("status")!="PASS":
+        raise RuntimeError("combined-feature-check-failed:"+json.dumps(result,sort_keys=True))
+    return result
+
 def assert_same_snapshot(before, after):
     """Verify firmware's source-bound snapshot receipt, ignoring receipt-only fields."""
     expected_id=before.get("snapshotId"); expected_hash=before.get("snapshotHash")
@@ -557,6 +570,7 @@ def main():
     ap.add_argument("--soak-interval-seconds",type=float,default=8.0)
     ap.add_argument("--threshold-policy",help="fully frozen Foundation policy; required for an integrated soak")
     ap.add_argument("--threshold-baseline",help="output path for the baseline generated from this run's complete 28-kernel sweep")
+    ap.add_argument("--combined-check-script",help="candidate-bound combined-feature check run after all 28 kernels and before baseline freeze/soak inside the same renderer snapshot")
     ap.add_argument("--early-r4-profile-dir",help="exact R4 profile directory; when supplied, run historically failing kernel indices 0 and 13 first and stop before remaining kernels if frozen relative gates fail")
     ap.add_argument("--early-r4-baseline-manifest",default=str(ROOT/"evidence/hbnf-foundation-qualification-20261005/seq39/live/PRE_SOAK_BASELINE.json"),help="source-bound 28-kernel R4 baseline containing exact profile hashes")
     ap.add_argument("--early-r4-release",default="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1")
@@ -698,6 +712,9 @@ def main():
         soak_result=None
         if args.soak_seconds:
             if args.contract!="foundation":raise ValueError("--soak-seconds requires --contract foundation")
+            if not args.combined_check_script:
+                raise ValueError("integrated Foundation soak requires the frozen combined-feature check before baseline freeze")
+            combined_result=run_combined_feature_check(args.combined_check_script,outdir,expected_release_id,timeout)
             pre_soak_manifest={"schema":"hbnf-kernel-sweep-input-v1","release_id":expected_release_id,
                 "contract":"foundation","expected_kernel_count":28,"restore_verified":False,"kernels":profiles}
             pre_soak_path=outdir/"PRE_SOAK_SWEEP_MANIFEST.json"
@@ -719,6 +736,8 @@ def main():
                 load(args.threshold_policy)
             )
             soak_result["baseline_path"]=str(baseline_path)
+            soak_result["combined_feature_check_path"]=str(outdir/"COMBINED_FEATURE_CHECK.json")
+            soak_result["combined_feature_check_status"]=combined_result["status"]
             soak_result["pre_soak_manifest_path"]=str(pre_soak_path)
             soak_result["threshold_freeze_receipt_path"]=str(freeze_receipt)
             soak_result["threshold_freeze_receipt_sha256"]=__import__("hashlib").sha256(freeze_receipt.read_bytes()).hexdigest()

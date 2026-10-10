@@ -251,6 +251,7 @@ def qualification_command(outdir: pathlib.Path):
     sweep = [sys.executable, str(ROOT/"scripts/hbnf_live_kernel_sweep.py"),
         "--adapter", str(ADAPTER.relative_to(ROOT)), "--inventory", "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
         "--outdir", str(outdir/"sweep"), "--contract", "foundation", "--qualify", "--soak-seconds", "5400",
+        "--combined-check-script", str(ROOT/"scripts/hbnf_r6_combined_feature_check.py"),
         "--soak-interval-seconds", "8", "--threshold-policy", "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
         "--early-r4-profile-dir", "evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep",
         "--early-r4-baseline-manifest", "evidence/hbnf-foundation-qualification-20261005/seq39/live/PRE_SOAK_BASELINE.json",

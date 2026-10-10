@@ -1,0 +1,142 @@
+{
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+  "combined_gate_unit_tests": [
+    "test_combined_check_fails_closed_on_identity_or_aux_failure",
+    "test_combined_check_uses_one_coherent_native_state_update_and_readback",
+    "test_qualification_command_binds_combined_check_to_candidate",
+    "test_sweep_requires_combined_gate_and_records_failure_before_baseline"
+  ],
+  "commands": [
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+        "tests/hbnf_live_kernel_sweep.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "PASS: live sweep runner validates adapter/inventory/telemetry, cross-kernel continuity, failure evidence, kernel identity, and exact restore snapshots\n"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+        "tests/test_r6_audio_cache_candidate.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "PASS: hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010 exact SHA, source closure, target codegen, resource headroom and R4 recovery verified\n"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+        "tests/test_r6_audio_cache_transaction_dryrun.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "PASS: actual transaction coordinator replayed admission, stage, one install, readback, qualification, exact recovery, host failure, and recovery failure; invalid admission made zero device requests\n"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+        "tests/hbnf_control.py"
+      ],
+      "returncode": 0,
+      "stderr": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 0.181s\n\nOK\n",
+      "stdout": "PASS: linear receipt control plane is acyclic, nonrecursive, exact-input, and fail-closed\n"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+        "tests/hbnf_vibe_audio_replay.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "PASS hbnf_vibe_audio_replay: 13 AudioFeatures semantics, six synthetic traces, pairwise Vibe differentiation, AUTO hysteresis\n"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_hbnf_text_moments_offline.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "stderr": "test_acceptance_corpus (test_hbnf_text_moments_offline.TextMomentTests) ... ok\ntest_candidate_visualmoment_keys_without_new_schema (test_hbnf_text_moments_offline.TextMomentTests) ... ok\ntest_empty_is_deterministic (test_hbnf_text_moments_offline.TextMomentTests) ... ok\ntest_moment_exit_returns_exact_current_base_without_state_leak (test_hbnf_text_moments_offline.TextMomentTests) ... ok\ntest_native_font_index_patch_applies_to_exact_reconstructed_r4_source (test_hbnf_text_moments_offline.TextMomentTests) ... ok\ntest_native_font_index_patch_defaults_and_falls_back_to_slot_four (test_hbnf_text_moments_offline.TextMomentTests) ... ok\ntest_native_font_pixel_width_paging_and_oversized_word_fallback (test_hbnf_text_moments_offline.TextMomentTests) ... ok\ntest_no_text_fast_path_is_constant_reference_return (test_hbnf_text_moments_offline.TextMomentTests) ... ok\ntest_phrase_paging_precedes_scroll (test_hbnf_text_moments_offline.TextMomentTests) ... ok\ntest_text_compositor_does_not_own_or_advance_animation_clock (test_hbnf_text_moments_offline.TextMomentTests) ... ok\ntest_treatment_review_records_provisional_runtime_without_freezing_aesthetics (test_hbnf_text_moments_offline.TextMomentTests) ... ok\ntest_unknown_vibe_fails_to_auto_inherit (test_hbnf_text_moments_offline.TextMomentTests) ... ok\ntest_value_inference (test_hbnf_text_moments_offline.TextMomentTests) ... ok\ntest_vibe_changes_treatment_not_text_geometry (test_hbnf_text_moments_offline.TextMomentTests) ... ok\n\n----------------------------------------------------------------------\nRan 14 tests in 0.022s\n\nOK\n",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_hbnf_audio_trace_replay.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "stderr": "test_source_bound_trace_replays_all_features_and_manual_vibes (test_hbnf_audio_trace_replay.AudioTraceReplayTests) ... ok\ntest_unexpected_source_fails_closed (test_hbnf_audio_trace_replay.AudioTraceReplayTests) ... ok\n\n----------------------------------------------------------------------\nRan 2 tests in 0.004s\n\nOK\n",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "node",
+        "tests/hbnf_owner_pwa_reliability.mjs"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "PASS: owner PWA deadline, pairing, versioned imports, offline shell cache, and cache isolation contracts\nPASS: owner mission hierarchy, Vibe controls, status truth, responsive layouts, Guest default, and PWA versioning\n"
+    },
+    {
+      "argv": [
+        "node",
+        "tests/hbnf_skins_scoring_owner_flow.mjs"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "PASS: owner Mission Control scoring covers authoritative F9 singles/B9 doubles, hole edits, pushes/carry, tiebreaker, ace winner/pot state, stale/concurrent protection, confirmed readback, paired-owner auth, and confirmed cart-control state\n"
+    },
+    {
+      "argv": [
+        "node",
+        "tests/hbnf_owner_pwa_package.mjs"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "HBNF owner PWA package closure: PASS\n"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+        "scripts/platform.py",
+        "doctor"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\n  \"errors\": [],\n  \"ok\": true,\n  \"repo_identity\": {\n    \"branch\": \"hbnf-cart2-phase2-integration-20261006\",\n    \"dirty\": true,\n    \"type\": \"git_commit\",\n    \"value\": \"5313580b80b8698d9b84c447f66e11e571a0d95e\"\n  },\n  \"schema\": \"local-roots-platform-doctor-v1\",\n  \"system_count\": 6,\n  \"warnings\": [],\n  \"workflow_count\": 4\n}\n"
+    }
+  ],
+  "coverage": {
+    "device_combined_runtime_check": "implemented and fail-closed; executes after 28-kernel sweep and before baseline freeze/soak within open snapshot",
+    "owner_app_command_application": "not proven by local WLED; owner/backend acceptance remains required",
+    "physical_audio_visual_acceptance": "not claimed; owner session remains required"
+  },
+  "created_at_utc": "2026-10-10T09:56:05Z",
+  "no_live_device_requests": true,
+  "schema": "hbnf-r6-combined-feature-offline-tests-v1",
+  "source_sha256": {
+    "platform/workflows/phase2-live-qualification.json": "ccc2d39424c2dd112720fb2ba9517f4b3b69a44f67fa8172848fb8ba502e8c69",
+    "scripts/hbnf_live_kernel_sweep.py": "18aa5413f11efdf058c273428abb89e95586612c5f657f506f32df8524c1cf84",
+    "scripts/hbnf_r6_audio_cache_live_transaction.py": "f2fdee068443312b4a34c6d6115fc4336e6ea7a1c80abeed8fdc93d23089c7be",
+    "scripts/hbnf_r6_combined_feature_check.py": "12164ae4e462912c1affa758fbe4005c8571d406d6f57c8b419bd55a7b97a0d0",
+    "tests/test_hbnf_r6_combined_feature_check.py": "3dcfb342fb358f13d282aff73cb3005b6da8d7d6fc4db420c8bbe584372204fc"
+  },
+  "status": "PASS"
+}

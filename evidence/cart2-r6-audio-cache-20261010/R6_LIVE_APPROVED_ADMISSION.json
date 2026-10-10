@@ -5,6 +5,11 @@
       "pass": true,
       "sha256": "c6f641ceb4f8d35bdf0ed0b155229452b493b0d6b5955c58a6962c75dd8146f3"
     },
+    "combined_feature_check_sequence": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/COMBINED_FEATURE_OFFLINE_TESTS.json",
+      "pass": true,
+      "sha256": "4987b837e437a09c1b501b43d428f35488e09dc89af8f98915165fde9515681c"
+    },
     "committed_feature_scope_preserved": {
       "evidence_file": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_AUDIO_CACHE_OFFLINE_TESTS.json",
       "pass": true,
@@ -18,7 +23,7 @@
     "device_and_source_authority_reconciled": {
       "evidence_file": "evidence/cart2-r6-audio-cache-20261010/R6_LIVE_AUTHORIZATION_RECORD.json",
       "pass": true,
-      "sha256": "9aaceed965ac7bf0b07603961e259d3a7e9b8576a48994b0a5a7a99613ba8c7b"
+      "sha256": "dff4ef73f9fa53a3f0f0e5588a00c2442c30a901be8dc204d84742170ab1396f"
     },
     "entire_release_transaction_dryrun": {
       "evidence_file": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_TRANSACTION_DRYRUN.json",
@@ -63,7 +68,7 @@
     "preflight_read_only_hardware_state_and_identity": {
       "evidence_file": "evidence/cart2-r6-audio-cache-20261010/live-qualification/FRESH_PRELIVE_READONLY.json",
       "pass": true,
-      "sha256": "ef596cf7a928335eaa11d353e11b25d01fa6cb64ef7bf47d06ace305bf372792"
+      "sha256": "87347c3d6b35d363f2d6164e4e08d8a035246fd18f008be6c09abdcd6c012df9"
     },
     "rollback_artifact_hash_verified": {
       "evidence_file": "evidence/cart2-r6-audio-cache-20261010/R6_DRIVE_ARTIFACT_READBACK.json",
