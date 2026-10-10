@@ -1,0 +1,31 @@
+{
+  "candidate_install_attempts": 0,
+  "classification": "LOCAL_SUPERVISION_OR_LAUNCH_FAILURE; no firmware/safety conclusion; no evidence of brightness, renderer, AUX, or firmware change",
+  "device_write_outcome": "UNKNOWN_FROM_THIS_PROCESS; no preflight result or qualification receipt was produced",
+  "guard": "CONTROL_PLANE_PASS state=PHASE2_INTEGRATING mutation=True",
+  "immediate_readonly_reconciliation": {
+    "aux_brightness_persisted": 245,
+    "aux_live_ddp": true,
+    "aux_source": "192.168.77.10",
+    "evidence_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/preflight-readonly-baec0c5-20261010/QUALIFICATION_PRELIVE_READONLY.json",
+    "evidence_sha256": "29fae469068fceeb51aaca1ca07a97ab8c4f05e6153ecace17c0117a4fda39f6",
+    "matrix_brightness_runtime_persisted": 52,
+    "matrix_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "matrix_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+    "pass": true,
+    "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "single_worker": true,
+    "vibe_persisted": 2
+  },
+  "launch_method": "nohup-background guarded runner with separate caffeinate wait process",
+  "log_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/GUARDED_QUALIFICATION_CONTINUATION_BAEC0C5.log",
+  "log_sha256": "562aea276c1de67793a6c10726d70c6f9fa3b9e94b178ee889c03029d89be978",
+  "next_action": "Use a foreground supervised execution session with caffeinate attached; accept no implicit retry; fresh preflight again inside guarded transaction before any setting write.",
+  "observed_at_utc": "2026-10-10T21:25:08.948042+00:00",
+  "qualification_output_directory": "evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-baec0c5-20261010",
+  "qualification_output_empty": true,
+  "recovery_attempts": 0,
+  "restart_attempts": 0,
+  "result": "PROCESS_EXITED_BEFORE_TRANSACTION_RESULT",
+  "schema": "hbnf-r6-qualification-launch-interruption-reconciliation-v1"
+}

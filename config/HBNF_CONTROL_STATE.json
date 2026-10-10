@@ -229,7 +229,7 @@
   "bounded_phase2_r4_install_attempt2_authorization": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008-RETRY1",
     "authorized_at_utc": "2026-10-08T06:20:06.671131+00:00",
-    "authorized_by": "Current user instruction: URGENT — RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: URGENT \u2014 RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:21:47.880324+00:00",
@@ -347,7 +347,7 @@
   "bounded_phase2_r4_live_qualification_authorization": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
     "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
-    "authorized_by": "Current user instruction: CART 2.0 — FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:10:00.723317+00:00",
@@ -934,7 +934,7 @@
         "No qualification start unless exact installed R6 identity, power, LAN, AUX, rollback readiness, single worker, capsule, proof, and LIVE_QUALIFICATION admission all pass."
       ],
       "scope": "Current owner instruction: complete the exact installed R6 qualification-only continuation when safe, after verifying live Matrix/AUX identity, power, LAN, recovery readiness, and reconciling current controls. Do not reinstall firmware.",
-      "user_permission": "Current owner message: “AC — CART 2.0: START PARALLEL DEBUGGING NOW”; explicitly directs exact installed R6 qualification-only continuation, no firmware reinstall, all frozen gates unchanged, and no unnecessary approvals."
+      "user_permission": "Current owner message: \u201cAC \u2014 CART 2.0: START PARALLEL DEBUGGING NOW\u201d; explicitly directs exact installed R6 qualification-only continuation, no firmware reinstall, all frozen gates unchanged, and no unnecessary approvals."
     },
     "aux_blocker": {
       "historical_direct_output_failure": "Preserved; does not override the newer current owner observation.",
@@ -954,8 +954,7 @@
       "status": "OFFLINE_CORRECTION_TESTED__FRESH_PRELIVE_PASS"
     },
     "blockers": [
-      "Qualification has not started. Latest read-only reconnect receipt captured 2026-10-10T20:39:53Z reports exact R6 release/SHA on Matrix, Matrix on, AUX 22 LEDs/live DDP from Matrix, host on AC, and Opal read-only ledger. Repeat fresh preflight immediately before qualification.",
-      "Persisted and runtime Matrix HBNF brightness at that receipt was 52; frozen qualification requires 44. Corrected runner temporarily sets 44 and verifies exact restoration of prior Matrix/AUX/Vibe runtime and persisted values; it never weakens the threshold.",
+      "A detached guarded-runner attempt passed the control-plane check but exited before producing a transaction/preflight receipt. Its device-write outcome was unknown from that process; a fresh read-only preflight at 2026-10-10T21:23:51Z verified exact R6 runtime, brightness 52 in runtime and persisted config, AUX 245/Vibe2 unchanged, AUX live DDP from Matrix, exact R4 Opal ledger, AC power, en0 route, and one worker. No failure is attributed to firmware. Use foreground supervised launch and a new in-run preflight before any setting write.",
       "No corrected 28-kernel profiles or uninterrupted 90-minute soak have been collected. Owner physical/audio/visual acceptance and end-to-end Owner/Guest command application remain unverified."
     ],
     "brightness_field_target": {
@@ -965,7 +964,7 @@
       "status": "PHASE2_COMMITTED_REQUIREMENT",
       "ui_requirement": "Provide useful low-night perceptual granularity while retaining true maximum."
     },
-    "checkpoint_at_utc": "2026-10-10T21:13:22.464003+00:00",
+    "checkpoint_at_utc": "2026-10-10T21:25:23.173735+00:00",
     "cloud_publication_incident": "NO_LONGER_BLOCKS_DIRECT_LAN_RECOVERY",
     "diagnostic_firmware_sha256": "0e91d3f3fd15f7f117aff7fecaf6a03784a5cdc259557a7e0bf4ce12ca7d2076",
     "diagnostic_release": "hbnf-matrix-packet20-timing-hook-v1-20261004-r1",
@@ -995,11 +994,11 @@
       "zero_traffic_rehearsal_file_id": "1ZJOseh2J4ls9dGlF_SOH5DHAH9djd4xp"
     },
     "execution_cursor": {
-      "current_failure_domain": "R6_QUALIFICATION_HOST_DEADLINE_FIXED__FRESH_PREFLIGHT_28_KERNEL_SWEEP_AND_SOAK_PENDING",
+      "current_failure_domain": "QUALIFICATION_PREFLIGHT_PASS__FOREGROUND_GUARDED_RUN_PENDING",
       "current_lifecycle_state": "PHASE2_INTEGRATING",
       "current_subject": {
-        "artifact_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
         "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+        "artifact_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
         "installed_runtime_readback": "evidence/cart2-r6-audio-cache-20261010/live-qualification/CURRENT_READONLY_RECONNECT_20261010.json",
         "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
       },
@@ -1051,7 +1050,7 @@
         "Prior 16:42/16:45 times are not automatic abort or rollback triggers for the currently active seq53 path.",
         "Continue the already-authorized seq53 install/targeted validation while commands are actively progressing and safety/identity evidence remains intact.",
         "Do not broaden scope or start new exploratory work.",
-        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop—not for elapsed wall-clock time alone.",
+        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop\u2014not for elapsed wall-clock time alone.",
         "Owner-device smoke remains mandatory before declaring field-ready."
       ],
       "schema": "hbnf-field-readiness-deadline-v1",
@@ -1937,13 +1936,13 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
+      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "live_mutation_authorization": "Qualification-only continuation for the exact installed R6; no installation. Fresh fail-closed preflight/admission required; temporary brightness 44 must restore the captured baseline.",
     "live_mutation_authorized": true,
-    "name": "Cart 2.0 coordinated R6 release — Cart routes verified; device preflight pending",
-    "next_action": "Complete fresh read-only Matrix/AUX/Opal/power/rollback/single-worker preflight and exact admission; if all gates pass, run qualification-only continuation on installed R6 with frozen 28 kernels, combined checks, uninterrupted 5400-second soak, and verified renderer/brightness restoration. No firmware installation.",
+    "name": "Cart 2.0 coordinated R6 release \u2014 Cart routes verified; device preflight pending",
+    "next_action": "Start the exact guarded qualification-only continuation through a foreground supervised caffeinate session. The runner must again pass all exact checks and fresh read-only preflight before temporarily setting brightness 44; then run kernels 0/13, all 28 profiles, combined checks, uninterrupted 5400-second soak, and verified renderer/brightness restoration. No firmware installation.",
     "next_work": "Maintain the independent offline Owner app and backend/relay findings; after objective R6 qualification, complete owner physical/audio/visual acceptance and end-to-end command/scoring checks under existing authority.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "overnight_priority": {
@@ -2683,7 +2682,7 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "R6_QUALIFICATION_HOST_DEADLINE_FIXED__FRESH_PREFLIGHT_28_KERNEL_SWEEP_AND_SOAK_PENDING",
+    "current_failure_domain": "QUALIFICATION_PREFLIGHT_PASS__FOREGROUND_GUARDED_RUN_PENDING",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
       "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
@@ -2928,7 +2927,7 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-10T21:13:22Z",
+  "last_updated_utc": "2026-10-10T21:25:23Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "authorization": "Owner-authorized in-scope continuation; only the host observer-deadline failure was corrected.",
@@ -3168,7 +3167,7 @@
   "previous_phase2_r4_install_authorization_consumed": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
     "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
-    "authorized_by": "Current user instruction: CART 2.0 — FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:10:00.723317+00:00",
@@ -3533,7 +3532,7 @@
       "one exact R4 return and read-only identity/health/AUX DDP verification",
       "no production acceptance, no firmware rebuild, no cloud/router/AUX firmware changes"
     ],
-    "source_message_ref": "Current owner message in this Codex task: CART 2.0 — ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; exact diagnostic SHA eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a and exact R4 SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
+    "source_message_ref": "Current owner message in this Codex task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; exact diagnostic SHA eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a and exact R4 SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
     "transport": "SSH-verified temporary artifact on Opal, then one Opal-origin multipart POST to Matrix WLED /update",
     "r4_return_attempts_used": 1,
     "recovery_install_limit": 1,
@@ -3546,7 +3545,7 @@
   },
   "live_authorization_binding": {
     "authorization_id": "OWNER-20261010-R6-AUDIO-CACHE-FULL-QUALIFICATION",
-    "source_message_ref": "Current owner instruction in this task: CART 2.0 — ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks.",
+    "source_message_ref": "Current owner instruction in this task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks.",
     "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
     "candidate_bin_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
     "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
@@ -3606,7 +3605,7 @@
       "offline_admission_sha256": "996ea788f49c6cabb6fd3fc33239fb0a20d1abb09263660a57f8e1bdc3139b61"
     },
     "conditional_authority": {
-      "source_message_ref": "Current owner instruction in this task: CART 2.0 — ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks.",
+      "source_message_ref": "Current owner instruction in this task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks.",
       "status": "CANDIDATE_INSTALLED_QUALIFICATION_PENDING",
       "candidate_install_limit": 1,
       "recovery_install_limit": 1,
