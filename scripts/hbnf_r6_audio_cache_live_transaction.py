@@ -539,7 +539,8 @@ def coordinate_qualification(port):
     """Resume the remaining frozen gates for an already-installed exact R6; never uploads."""
     result={"schema":"hbnf-r6-audio-cache-qualification-continuation-v1",
         "candidate_release_id":RELEASE,"candidate_sha256":CANDIDATE_SHA,"rollback_sha256":R4_SHA,
-        "operation_scope":"QUALIFICATION_ONLY","candidate_install_attempts":0,"recovery_attempts":0,"device_requests":0}
+        "operation_scope":"QUALIFICATION_ONLY","candidate_install_attempts":0,"recovery_attempts":0,"device_requests":0,
+        "preflight_completed":False,"setup_started":False,"brightness_setup_started":False}
     preflight = None
     setup_started = False
     setup_error = None
@@ -551,9 +552,12 @@ def coordinate_qualification(port):
         port.verify_local_artifacts()
         preflight = port.preflight_candidate()
         result["preflight"] = preflight
+        result["preflight_completed"] = True
         result["device_requests"]=port.device_requests
         setup_started = True
+        result["setup_started"] = True
         try:
+            result["brightness_setup_started"] = True
             result["brightness_setup"] = port.apply_qualification_brightness(
                 preflight["brightness_baseline"]["runtime"])
             if not isinstance(result["brightness_setup"], dict) or result["brightness_setup"].get("verified") is not True:

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse, hashlib, json, pathlib, re
+import argparse, hashlib, json, pathlib, re, time, subprocess
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_MODEL=ROOT/"config/HBNF_CONTROL_MODEL.json"
@@ -761,6 +761,86 @@ def _validate_r6_qualification_host_failure(state, proof_path):
         raise ValueError("host failure incorrectly consumed candidate or recovery attempt")
     return proof
 
+def _validate_r6_qualification_preflight_failure(state, proof_path):
+    """Allow only a read-only preflight contention failure to resume the same R6 qualification."""
+    proof=load(proof_path)
+    expected_candidate="hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+    expected_sha="f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+    expected_rollback="338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    if proof.get("schema")!="hbnf-r6-qualification-preflight-retry-proof-v1" or proof.get("status")!="PASS":
+        raise ValueError("qualification preflight retry proof missing or not PASS")
+    if (proof.get("candidate_release_id")!=expected_candidate or proof.get("candidate_sha256")!=expected_sha
+        or proof.get("rollback_sha256")!=expected_rollback):
+        raise ValueError("qualification preflight retry identity mismatch")
+    if proof.get("failure_class")!="SINGLE_WORKER_PREFLIGHT_CONTENTION":
+        raise ValueError("only the exact preflight worker-contention failure can resume")
+    if any(proof.get(key) is not False for key in ("firmware_changed","setting_write_started","profiles_completed","frozen_thresholds_changed")):
+        raise ValueError("preflight retry must prove no firmware, setting, profile, or threshold mutation")
+    successor=state.get("r6_audio_cache_successor",{})
+    result_path=successor.get("qualification_result")
+    if proof.get("qualification_result_path")!=result_path or not isinstance(result_path,str):
+        raise ValueError("preflight retry proof does not bind the current result")
+    root=DEFAULT_STATE.parent.parent
+    qualification_root=root/"evidence/cart2-r6-audio-cache-20261010/live-qualification"
+    result_file=root/result_path
+    try: result_file.resolve().relative_to(qualification_root.resolve())
+    except ValueError: raise ValueError("preflight retry result is outside the exact R6 qualification evidence root")
+    if not result_file.is_file() or sha256_file(result_file)!=proof.get("qualification_result_sha256"):
+        raise ValueError("preflight retry result hash mismatch")
+    result=load(result_file)
+    if (result.get("schema")!="hbnf-r6-audio-cache-qualification-continuation-v1"
+        or result.get("status")!="QUALIFICATION_BLOCKED_OR_FAILED"
+        or result.get("candidate_release_id")!=expected_candidate or result.get("candidate_sha256")!=expected_sha
+        or result.get("operation_scope")!="QUALIFICATION_ONLY"
+        or result.get("candidate_install_attempts")!=0 or result.get("recovery_attempts")!=0
+        or result.get("error")!="RuntimeError: another-live-cart-worker-is-running"
+        or result.get("device_requests")!=8
+        or any(key in result for key in ("preflight","brightness_setup","qualification","recovery"))):
+        raise ValueError("result is not the exact pre-setup read-only worker-contention failure")
+    source_commit=proof.get("qualification_source_commit")
+    source_sha=proof.get("qualification_source_sha256")
+    if (source_commit!="48bdf20dcdecaf0a4ebb7f1af4068864f4b10b32"
+        or not isinstance(source_sha,str) or not re.fullmatch(r"[a-f0-9]{64}",source_sha)):
+        raise ValueError("qualification failure source binding missing or unexpected")
+    source=subprocess.run(["git","show",source_commit+":scripts/hbnf_r6_audio_cache_live_transaction.py"],
+        cwd=root,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=5,check=False)
+    if source.returncode or hashlib.sha256(source.stdout).hexdigest()!=source_sha:
+        raise ValueError("qualification failure source hash mismatch")
+    source_text=source.stdout.decode(errors="replace")
+    ordered=(source_text.find("preflight = port.preflight_candidate()"),
+        source_text.find("setup_started = True"),source_text.find("port.apply_qualification_brightness("))
+    if min(ordered)<0 or not (ordered[0]<ordered[1]<ordered[2]):
+        raise ValueError("bound source does not prove worker preflight precedes brightness setup")
+    pre=proof.get("post_failure_readonly_preflight",{})
+    pre_path=pre.get("path")
+    if not isinstance(pre_path,str) or not pre_path.strip():
+        raise ValueError("post-failure read-only preflight evidence missing")
+    pre_file=root/pre_path
+    try: pre_file.resolve().relative_to(qualification_root.resolve())
+    except ValueError: raise ValueError("post-failure preflight is outside qualification evidence root")
+    if not pre_file.is_file() or sha256_file(pre_file)!=pre.get("sha256"):
+        raise ValueError("post-failure preflight hash mismatch")
+    sample=load(pre_file)
+    captured=sample.get("captured_unix")
+    if (sample.get("schema")!="hbnf-r6-qualification-prelive-v1" or sample.get("pass") is not True
+        or sample.get("operation_scope")!="QUALIFICATION_ONLY" or not isinstance(captured,(int,float))
+        or captured>time.time()+5 or time.time()-captured>900):
+        raise ValueError("post-failure preflight is not fresh and passing")
+    matrix=sample.get("matrix",{}); baseline=sample.get("brightness_baseline",{}); aux=sample.get("aux",{}); rb=sample.get("rollback",{}); worker=sample.get("single_worker",{})
+    persisted=baseline.get("persisted",{}); runtime=baseline.get("runtime",{})
+    if (matrix.get("release_id")!=expected_candidate or matrix.get("candidate_sha256")!=expected_sha
+        or matrix.get("mac","").replace(":","").lower()!="704bca5b345c"
+        or matrix.get("brightness")!=52 or matrix.get("diagnostic_off") is not True or matrix.get("telemetry_off") is not True
+        or persisted.get("matrixBrightness")!=52 or runtime.get("matrixBrightness")!=52
+        or persisted.get("auxBrightness")!=245 or runtime.get("auxBrightness")!=245
+        or persisted.get("vibe")!=2 or runtime.get("vibe")!=2
+        or aux.get("live") is not True or aux.get("mode")!="DDP" or aux.get("source")!="192.168.77.10"
+        or aux.get("led_count")!=22 or aux.get("on") is not True
+        or rb.get("sha256")!=expected_rollback or worker.get("pass") is not True
+        or worker.get("worker_count")!=1 or worker.get("conflicting_pids")!=[]):
+        raise ValueError("post-failure preflight did not prove exact R6, unchanged baseline, AUX, recovery, and single worker")
+    return proof
+
 def reconcile_installed_r6(state, receipt_path, host_failure_proof_path=None):
     """Correct the post-OTA reboot-window misclassification, qualification only."""
     root=ROOT; receipt=load(receipt_path)
@@ -786,7 +866,16 @@ def reconcile_installed_r6(state, receipt_path, host_failure_proof_path=None):
             host_failure_resumable=(state.get("installed_release")==candidate and state.get("installed_firmware_sha256")==candidate_sha)
         except (ValueError,OSError,KeyError,TypeError) as exc:
             errors.append(str(exc))
-    if not (stale_readback or already_reconciled or host_failure_resumable): errors.append("reconciliation only accepts stale R4 readback, pending exact-R6 state, or a proof-backed pre-profile host failure")
+    preflight_retry_resumable=False
+    if host_failure_proof_path and auth.get("status") in ("QUALIFICATION_BLOCKED_OR_FAILED","CANDIDATE_INSTALLED_QUALIFICATION_PENDING"):
+        try:
+            retry_proof=load(host_failure_proof_path)
+            if retry_proof.get("schema")=="hbnf-r6-qualification-preflight-retry-proof-v1":
+                _validate_r6_qualification_preflight_failure(state,host_failure_proof_path)
+                preflight_retry_resumable=(state.get("installed_release")==candidate and state.get("installed_firmware_sha256")==candidate_sha)
+        except (ValueError,OSError,KeyError,TypeError) as exc:
+            errors.append(str(exc))
+    if not (stale_readback or already_reconciled or host_failure_resumable or preflight_retry_resumable): errors.append("reconciliation only accepts stale R4 readback, pending exact-R6 state, or proof-backed pre-profile host failure")
     if auth.get("candidate_attempts_used")!=1 or auth.get("candidate_install_limit")!=1: errors.append("single exact install is not consumed")
     if auth.get("recovery_attempts_used",0)!=0 or auth.get("recovery_install_limit")!=1: errors.append("exact R4 recovery is unavailable or consumed")
     c=receipt.get("candidate",{}); a=receipt.get("aux",{}); host=receipt.get("host",{}); rb=receipt.get("rollback",{}); ota=receipt.get("ota_receipt",{})
@@ -811,6 +900,7 @@ def reconcile_installed_r6(state, receipt_path, host_failure_proof_path=None):
     if not rollback_path.is_file() or sha256_file(rollback_path)!=rollback_sha: errors.append("exact rollback bytes unavailable")
     if errors: raise ValueError("installed R6 reconciliation rejected: "+"; ".join(errors))
     state["installed_release"]=candidate; state["installed_firmware_sha256"]=candidate_sha
+    state["status"]="R6_INSTALLED_QUALIFICATION_PENDING"
     state["live_mutation_authorized"]=True
     state.setdefault("live_mutation_authorization",{}).update({
         "authorized":True,"hardware_writes_permitted_now":True,"operation_scope":"QUALIFICATION_ONLY",
@@ -820,6 +910,19 @@ def reconcile_installed_r6(state, receipt_path, host_failure_proof_path=None):
     auth.update({"live_mutation_authorized":True,"status":"CANDIDATE_INSTALLED_QUALIFICATION_PENDING",
                  "runtime_reconciliation_receipt":str(pathlib.Path(receipt_path).resolve().relative_to(root)),
                  "runtime_reconciliation_sha256":sha256_file(pathlib.Path(receipt_path))})
+    if preflight_retry_resumable:
+        proof_file=pathlib.Path(host_failure_proof_path).resolve()
+        proof=load(proof_file)
+        proof_rel=str(proof_file.relative_to(root))
+        retry_record={"failure_class":"SINGLE_WORKER_PREFLIGHT_CONTENTION",
+            "proof_path":proof_rel,"proof_sha256":sha256_file(proof_file),
+            "qualification_result_path":proof["qualification_result_path"],
+            "qualification_result_sha256":proof["qualification_result_sha256"],
+            "post_failure_preflight_path":proof["post_failure_readonly_preflight"]["path"],
+            "post_failure_preflight_sha256":proof["post_failure_readonly_preflight"]["sha256"],
+            "setting_write_started":False,"profiles_completed":False,"firmware_changed":False}
+        state["r6_audio_cache_successor"]["preflight_retry_reconciliation"]=retry_record
+        auth["preflight_retry_reconciliation"]=retry_record
     state["r6_audio_cache_successor"]["conditional_authority"]=auth
     state["r6_audio_cache_successor"].update({"status":"CANDIDATE_INSTALLED_QUALIFICATION_PENDING",
         "runtime_reconciliation_receipt":str(pathlib.Path(receipt_path).resolve().relative_to(root)),

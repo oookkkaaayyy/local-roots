@@ -2927,7 +2927,7 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-10T21:25:23Z",
+  "last_updated_utc": "2026-10-10T21:34:56Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "authorization": "Owner-authorized in-scope continuation; only the host observer-deadline failure was corrected.",
@@ -3456,7 +3456,7 @@
     "status": "OFFLINE_DESIGN_ONLY__OVERHEAD_AND_IMPLEMENTATION_PROOF_REQUIRED"
   },
   "schema": "hbnf-control-state-v2",
-  "status": "R6_DIAGNOSTIC_ATTEMPT3_CATASTROPHIC_GATE_FAILED__EXACT_R4_RESTORED__LIVE_CLOSED",
+  "status": "R6_INSTALLED_QUALIFICATION_PENDING",
   "live_mutation_authorization_reconciliation": {
     "schema": "hbnf-live-authorization-state-reconciliation-v1",
     "recorded_at_utc": "2026-10-10T06:34:15+00:00",
@@ -3617,7 +3617,19 @@
       "recovery_attempts_used": 0,
       "candidate_attempt_started_unix": 1791626479.399928,
       "runtime_reconciliation_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json",
-      "runtime_reconciliation_sha256": "470992075259d5c4cc6e73e33ff4d51580f1f70d3ff9188743acc4b126ee2bbc"
+      "runtime_reconciliation_sha256": "470992075259d5c4cc6e73e33ff4d51580f1f70d3ff9188743acc4b126ee2bbc",
+      "preflight_retry_reconciliation": {
+        "failure_class": "SINGLE_WORKER_PREFLIGHT_CONTENTION",
+        "firmware_changed": false,
+        "post_failure_preflight_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/preflight-after-guard-block-20261010/QUALIFICATION_PRELIVE_READONLY.json",
+        "post_failure_preflight_sha256": "0d4f6d35ffbb41edbbf9a9213751143fbd98128e1e6cfee4cbcb151416912b76",
+        "profiles_completed": false,
+        "proof_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/QUALIFICATION_PREFLIGHT_RETRY_PROOF_20261010.json",
+        "proof_sha256": "45e38fd14e4146a4016a08f06276ad0da913faaf20d2d6fe23a917f399197400",
+        "qualification_result_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-48bdf20-20261010/QUALIFICATION_CONTINUATION_RESULT.json",
+        "qualification_result_sha256": "9be0299004ea14695d6e930f9b7442ddb94f9f6f0865707c4dc6b3be5886613d",
+        "setting_write_started": false
+      }
     },
     "status": "CANDIDATE_INSTALLED_QUALIFICATION_PENDING",
     "artifact_drive_file_id": "1Ta0noTokPPxa8tBKsnfS83KIKbz2ZqS3",
@@ -3626,6 +3638,18 @@
     "host_preflight_blocker_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/HOST_PREFLIGHT_BLOCKER_RECONCILIATION.json",
     "runtime_reconciliation_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json",
     "runtime_reconciliation_sha256": "470992075259d5c4cc6e73e33ff4d51580f1f70d3ff9188743acc4b126ee2bbc",
-    "qualification_result": "evidence/cart2-r6-audio-cache-20261010/live-qualification/QUALIFICATION_CONTINUATION_RESULT.json"
+    "qualification_result": "evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-48bdf20-20261010/QUALIFICATION_CONTINUATION_RESULT.json",
+    "preflight_retry_reconciliation": {
+      "failure_class": "SINGLE_WORKER_PREFLIGHT_CONTENTION",
+      "firmware_changed": false,
+      "post_failure_preflight_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/preflight-after-guard-block-20261010/QUALIFICATION_PRELIVE_READONLY.json",
+      "post_failure_preflight_sha256": "0d4f6d35ffbb41edbbf9a9213751143fbd98128e1e6cfee4cbcb151416912b76",
+      "profiles_completed": false,
+      "proof_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/QUALIFICATION_PREFLIGHT_RETRY_PROOF_20261010.json",
+      "proof_sha256": "45e38fd14e4146a4016a08f06276ad0da913faaf20d2d6fe23a917f399197400",
+      "qualification_result_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-48bdf20-20261010/QUALIFICATION_CONTINUATION_RESULT.json",
+      "qualification_result_sha256": "9be0299004ea14695d6e930f9b7442ddb94f9f6f0865707c4dc6b3be5886613d",
+      "setting_write_started": false
+    }
   }
 }
