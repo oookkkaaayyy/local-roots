@@ -148,3 +148,26 @@ This section governs every future implementation, build, deployment, release, di
 - Never use the user as a relay between tools/workers when the backend can perform or preserve the step directly.
 
 For HBNF/Cart 2.0 specifically, a diagnostic install is forbidden unless the exact recovery artifact **and the actual updater/publication/manifest path required to consume it** have already been proven end-to-end and the exact prior cloud deployment can be restored without reconstruction.
+
+## Cart 2.0 owner-facing release language (reporting only)
+
+Internal build labels (R4, R5, R6, R7), hashes, and release sequence numbers are **traceability identifiers**, not user-facing descriptions of functionality. Keep exact immutable IDs in manifests, OTA/rollback scripts, and evidence. Do not rename the binaries or change machine-readable contracts for presentation purposes.
+
+For every substantive Cart 2.0 status, installation, failure, acceptance result, or owner decision, lead with a short **human-readable name and observable impact**. Use this compact format, not another governance document:
+
+- **What it is:** descriptive subsystem/release name, then the exact internal ID in parentheses. Distinguish Matrix firmware, Owner/Guest app, backend/Opal relay, AUX firmware, and physical UV hardware.
+- **Compared with what is actually installed:** state the source-backed installed baseline and what *would visibly change*, separating expected behavior from effects already observed and accepted on real hardware.
+- **What remains unchanged or unavailable:** identify dependencies, disabled switches, omitted hardware, and committed features not yet delivered. Do not imply firmware alone ships the full app/backend experience.
+- **Proof and next milestone:** label **built**, **offline-tested**, **installed**, **observed working**, and **owner-accepted** separately; name only the next owner-relevant event or decision. Do not convert a compiled feature, passing host test, or artifact hash into an acceptance claim.
+
+Never ask the owner to infer product progress from an R-number, commit count, test count, manifest, or administrative checkpoint. Refer to the full Cart 2.0 goal when reporting partial updates. Read the actual installed state from `config/HBNF_CONTROL_STATE.json` and current live evidence; do not freeze an old runtime status into this explanation. This section is communication guidance only and changes **no** release gates, lifecycle authority, product scope, test thresholds, or running execution.
+
+**Example translation (historical candidate, not a live-status assertion):**
+
+- **Foundation R4 — Existing field lighting baseline:** Matrix animations and synchronized AUX/underglow already functioning; not the completed Cart 2.0 software.
+- **Integrated Cart 2.0 lighting/effects firmware (internal R6, SHA starting `340fe93b`):** candidate Matrix firmware introducing five manual Vibes plus Auto, differentiated audio-driven rendering, native text/score moments, and a bounded 32×16 rendering optimization while retaining Matrix-to-AUX DDP. These are *intended/implemented*, **not automatically proven smooth or visually accepted**. An earlier, different R6 binary failed live performance; the integrated binary requires its own live qualification.
+- **Owner/Guest control application (separate matching ZIP, SHA starting `7afae029`):** iPad/iPhone controls, scoring, pairing and Guest route; requires its corresponding frontend/backend deployment and real-device tests. Guest Mode stays OFF until authorized.
+- **Secure Cart command confirmation (separate Opal/Supabase relay):** intended to report a Matrix command applied only after current revision/fence-bound device readback, rather than MQTT liveness; it cannot prove visible light or physical AUX output.
+- **UV power and synchronized UV dimming:** separate hardware integration, **not** included in these software/firmware candidates.
+
+Keep user-facing summaries substantially shorter than technical receipts; link to exact artifact/commit only when useful.
