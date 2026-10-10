@@ -25,63 +25,35 @@ assert.equal(canCarryForwardObservation({ ...carried, reported: { cartRevision: 
 assert.equal(canCarryForwardObservation({ ...carried, fence_epoch: 3 }, 123, 4, "r4"), false);
 assert.equal(canCarryForwardObservation({ ...carried, release_id: "old-r4" }, 123, 4, "r4"), false);
 
-const missingStatus = await classifyFoundationInvocation({
+const pendingRelay = {
+  ok: false,
+  status: "pending_relay",
+  failureCode: "matrix_writer_moved_to_opal_relay",
+  httpStatus: 409,
+};
+const legacyTransportAck = {
+  transportConfirmed: true,
+  deviceId: "matrix",
+  cartRevision: 123,
+  fenceEpoch: 4,
+  requestedMatrixBrightness: 44,
+  requestedAuxBrightness: 52,
+  enabled: true,
+};
+
+assert.deepEqual(await classifyFoundationInvocation(null, legacyTransportAck, projection), pendingRelay,
+  "transport acknowledgement must not be accepted as application after the adapter became a non-writer");
+assert.deepEqual(await classifyFoundationInvocation({
   context: new Response(JSON.stringify({ failureCode: "mqtt_publish_accepted_status_not_observed" }), { status: 502 }),
-}, null, projection);
-assert.deepEqual(missingStatus, {
-  ok: false,
-  failureCode: "mqtt_publish_accepted_status_not_observed",
-  httpStatus: 502,
-});
-
-const retainedOnline = await classifyFoundationInvocation(null, {
-  transportConfirmed: true,
-  deviceId: "matrix",
-  cartRevision: 123,
-  fenceEpoch: 4,
-  requestedMatrixBrightness: 44,
-  requestedAuxBrightness: 52,
-  enabled: true,
-}, projection);
-assert.deepEqual(retainedOnline, { ok: true, status: "submitted", httpStatus: null });
-
-const disabledProjection = { ...projection, enabled: false };
-const disabledRequestStillSubmitted = await classifyFoundationInvocation(null, {
-  transportConfirmed: true,
-  deviceId: "matrix",
-  cartRevision: 123,
-  fenceEpoch: 4,
-  requestedMatrixBrightness: 44,
-  requestedAuxBrightness: 52,
-  enabled: false,
-}, disabledProjection);
-assert.deepEqual(disabledRequestStillSubmitted, { ok: true, status: "submitted", httpStatus: null });
-
-const disabledWithoutLiveness = await classifyFoundationInvocation(null, {
-  transportConfirmed: false,
-  failureCode: "mqtt_publish_accepted_status_not_observed",
-  deviceId: "matrix",
-  cartRevision: 123,
-  fenceEpoch: 4,
-  requestedMatrixBrightness: 44,
-  requestedAuxBrightness: 52,
-  enabled: false,
-}, disabledProjection);
-assert.deepEqual(disabledWithoutLiveness, {
-  ok: false,
-  failureCode: "mqtt_publish_accepted_status_not_observed",
-  httpStatus: null,
-});
-
-const mismatch = await classifyFoundationInvocation(null, {
-  transportConfirmed: true,
-  deviceId: "matrix",
-  cartRevision: 122,
-  fenceEpoch: 4,
-  requestedMatrixBrightness: 44,
-  requestedAuxBrightness: 52,
-  enabled: true,
-}, projection);
-assert.deepEqual(mismatch, { ok: false, failureCode: "foundation_ack_field_mismatch", httpStatus: null });
+}, null, projection), pendingRelay,
+  "legacy MQTT failure must remain pending until the authenticated relay observes Matrix state");
+assert.deepEqual(await classifyFoundationInvocation(null, {
+  ...legacyTransportAck, cartRevision: 122,
+}, projection), pendingRelay,
+  "mismatched legacy transport fields cannot become device confirmation");
+assert.deepEqual(await classifyFoundationInvocation(null, {
+  ...legacyTransportAck, enabled: false,
+}, { ...projection, enabled: false }), pendingRelay,
+  "off commands also remain pending until relay confirmation");
 
 console.log("HBNF Foundation reconciliation outcome: PASS");
