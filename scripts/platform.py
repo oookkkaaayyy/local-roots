@@ -711,6 +711,36 @@ def make_directive(args: argparse.Namespace) -> int:
     return 0
 
 
+def execute_command(args: argparse.Namespace) -> int:
+    guard = ROOT / "scripts/hbnf_guarded_run.py"
+    if not guard.is_file():
+        raise PlatformError(f"missing guarded execution entrypoint: {guard}")
+
+    command = list(args.command)
+    if command and command[0] == "--":
+        command = command[1:]
+    if not command:
+        raise PlatformError("execute requires a command after --")
+
+    guarded = [
+        sys.executable,
+        str(guard),
+        "--require-state",
+        args.require_state,
+    ]
+    if args.mutation:
+        guarded.append("--mutation")
+    for option, value in (
+        ("--capsule", args.capsule),
+        ("--prelive-proof", args.prelive_proof),
+        ("--admission", args.admission),
+    ):
+        if value:
+            guarded.extend([option, value])
+    guarded.extend(["--", *command])
+    return subprocess.call(guarded, cwd=ROOT)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(
         description=(
@@ -775,6 +805,17 @@ def main() -> int:
     pc.add_argument("--capsule", required=True)
     pc.add_argument("--proof", required=True)
 
+    ex = sub.add_parser(
+        "execute",
+        help="Run a command through the HBNF control and release guard",
+    )
+    ex.add_argument("--require-state", required=True)
+    ex.add_argument("--mutation", action="store_true")
+    ex.add_argument("--capsule")
+    ex.add_argument("--prelive-proof")
+    ex.add_argument("--admission")
+    ex.add_argument("command", nargs=argparse.REMAINDER)
+
     args = ap.parse_args()
     try:
         if args.cmd == "doctor":
@@ -791,6 +832,8 @@ def main() -> int:
             return make_directive(args)
         if args.cmd == "prelive-check":
             return prelive_check(args)
+        if args.cmd == "execute":
+            return execute_command(args)
     except PlatformError as exc:
         print(
             json.dumps(
