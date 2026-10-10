@@ -36,11 +36,11 @@ snapshot(){
  jsonfilter -i "$TMP/si.json" -e '@.state' > "$TMP/state.json"
  mac="$(jsonfilter -i "$TMP/info.json" -e '@.mac' | tr -d ':')"
  candidate="$(jsonfilter -i "$TMP/state.json" -e '@.HBNF.candidate')"
- [ "$mac" = "704bca5b345c" ] && [ "$candidate" = "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009" ]
+ [ "$mac" = "704bca5b345c" ] && [ "$candidate" = "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010" ]
 }
 while :; do
  if ! snapshot; then sleep 5; continue; fi
- printf '%s' '{"op":"next","relayId":"opal-hbnf-cart","matrixMac":"70:4b:ca:5b:34:5c","candidate":"hbnf-cart2-phase2-offline-wow-r6-integrated-20261009"}' > "$TMP/request.json"
+ printf '%s' '{"op":"next","relayId":"opal-hbnf-cart","matrixMac":"70:4b:ca:5b:34:5c","candidate":"hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"}' > "$TMP/request.json"
  if ! curl -fsS --connect-timeout 3 --max-time 8 --config "$TMP/curl-auth.conf" -H 'Content-Type: application/json' --data-binary @"$TMP/request.json" "$SUPABASE_RELAY_URL" -o "$TMP/next.json"; then sleep 5; continue; fi
  challenge="$(jsonfilter -i "$TMP/next.json" -e '@.challengeId' 2>/dev/null || true)"
  [ -n "$challenge" ] || { sleep 2; continue; }

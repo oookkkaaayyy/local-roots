@@ -1,0 +1,39 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "MATRIX_RELAY_R6_INSTALLED_IDENTITY_BINDING_20261010",
+  "summary": "Align the staged Matrix relay's accepted release ID with the installed R6 audio-cache candidate and check its artifact SHA against authoritative install reconciliation.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing single authenticated Opal relay and one-use revision/fence-bound challenge flow; only the pinned firmware release identity was stale.",
+      "affected_subsystem": "Offline staged relay, backend compatibility projection, SQL challenge gate, and their existing contract tests.",
+      "rollback_reference": "Revert the scoped release-ID and contract-test edits. No relay activation, device mutation, or cloud/backend deployment occurred.",
+      "evidence_sources": [
+        "config/HBNF_CONTROL_STATE.json installed_release and installed_firmware_sha256",
+        "evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json exact runtime release and artifact SHA",
+        "staging/coordinated-backend/opal/hbnf-matrix-relay and staging/coordinated-backend/migrations/20261009190000_hbnf_matrix_relay_confirmation.sql prior stale release pin"
+      ],
+      "tests": [
+        "node tests/hbnf_matrix_relay_contract.mjs: PASS, including lifecycle and installed-reconciliation release/SHA cross-check",
+        "node tests/hbnf-coordinated-backend-staging.mjs: PASS",
+        "node tests/matrix-relay-runtime/test.mjs: PASS; existing SQL negative and replay cases pass",
+        "node tests/matrix-relay-runtime/edge-handler-smoke.mjs: NOT RUN; Deno is unavailable in this host",
+        "node --test staging/coordinated-backend/hbnf-cart-control/*.test.mjs staging/coordinated-backend/hbnf-cart-control/runtime-vibe.test.mjs: PASS"
+      ],
+      "live_state": {
+        "device_mutation": false,
+        "production_deployment": false,
+        "live_mutation_authorized": false,
+        "installed_firmware": "R6 audio-cache runtime release ID verified by the existing reconciliation receipt; exact binary SHA cross-checked against lifecycle state",
+        "diagnostic_artifact_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+      }
+    }
+  }
+}

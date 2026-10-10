@@ -33,7 +33,13 @@ assert.throws(()=>normalizeReadback({...info,leds:{count:512}},state),/topology/
 const changed=structuredClone(context);changed.desired.state.overlays[0].payload.text="Changed";
 const second=await buildWledProjection(changed,51,7,1000);
 assert.notEqual(second.expectedState.hbnf.overlayId,built.expectedState.hbnf.overlayId);
-assert.equal(MATRIX_CANDIDATE,"hbnf-cart2-phase2-offline-wow-r6-integrated-20261009");
+assert.equal(MATRIX_CANDIDATE,"hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010");
+const controlState=JSON.parse(fs.readFileSync("config/HBNF_CONTROL_STATE.json","utf8"));
+const installed=JSON.parse(fs.readFileSync("evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json","utf8"));
+assert.equal(MATRIX_CANDIDATE,controlState.installed_release,"relay release must match lifecycle authority");
+assert.equal(MATRIX_CANDIDATE,installed.candidate.release_id,"relay release must match fresh installed runtime reconciliation");
+assert.equal(installed.candidate.sha256,"f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b");
+assert.equal(controlState.installed_firmware_sha256,installed.candidate.sha256,"exact installed artifact digest must match lifecycle authority");
 assert.equal(MATRIX_MAC,"70:4b:ca:5b:34:5c");
 // Simulate lost response after one authorized write: the same challenge cannot reapply,
 // but a fresh challenge can confirm a readback that now matches without resetting an overlay.
@@ -52,6 +58,8 @@ const relay=fs.readFileSync("staging/coordinated-backend/hbnf-cart-control/matri
 assert.ok(relay.includes("HBNF_MATRIX_RELAY_TOKEN"));assert.ok(relay.includes("X-HBNF-Relay-ID"));assert.ok(relay.includes("hbnf_cart_matrix_relay_confirm"));
 const opal=fs.readFileSync("staging/coordinated-backend/opal/hbnf-matrix-relay","utf8");
 assert.ok(!opal.includes("SUPABASE_SERVICE_ROLE_KEY"));assert.ok(opal.includes("704bca5b345c"));assert.ok(opal.includes("functions/v1/hbnf-cart-control"));assert.ok(opal.includes("X-HBNF-Relay-ID"));
+assert.ok(opal.includes(MATRIX_CANDIDATE),"Opal snapshot and request must pin the current installed R6 release");
+assert.ok(!opal.includes("hbnf-cart2-phase2-offline-wow-r6-integrated-20261009"),"stale integrated R6 pin remains in relay");
 assert.ok(opal.includes('--config "$TMP/curl-auth.conf"'),"credentials must stay out of curl argv");
 assert.ok(opal.includes('LC_ALL=C ls -ldn "$CONF"')&&opal.includes('$1 == "-rw-------"')&&opal.includes('$2 == "1"')&&opal.includes('$3 == "0"')&&opal.includes('$4 == "0"'),"relay secret config must fail closed unless it is a single-link root:root 0600 regular file using target BusyBox ls");
 assert.ok(!opal.includes("stat -c"),"relay must not depend on GNU stat absent from target OpenWrt");

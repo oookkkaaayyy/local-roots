@@ -17,7 +17,7 @@ as $$
 declare vr bigint;ve bigint;vl text;va boolean;cid uuid;
 begin
  if p_relay_id<>'opal-hbnf-cart' or p_cart_id<>'hbnf-cart' or p_matrix_mac<>'70:4b:ca:5b:34:5c' or
-    p_candidate<>'hbnf-cart2-phase2-offline-wow-r6-integrated-20261009' or p_ttl_seconds<5 or p_ttl_seconds>20 or
+    p_candidate<>'hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010' or p_ttl_seconds<5 or p_ttl_seconds>20 or
     jsonb_typeof(p_expected_state)<>'object' or jsonb_typeof(p_wled_payload)<>'object' or
     p_expected_state->>'matrixMac'<>p_matrix_mac or p_expected_state->>'candidate'<>p_candidate or
     p_expected_state#>>'{hbnf,candidate}'<>p_candidate then raise exception 'invalid_relay_challenge'; end if;
@@ -70,7 +70,7 @@ begin
  select d.revision,f.epoch,f.release_id,f.active into vr,ve,vl,va from hbnf_internal.cart_desired_state d
  join hbnf_internal.cart_actuator_fence f using(cart_id) where d.cart_id=c.cart_id for update of d,f;
  if not found or not va or vr<>c.desired_revision or ve<>c.fence_epoch or vl<>c.release_id or
- c.matrix_mac<>'70:4b:ca:5b:34:5c' or c.candidate<>'hbnf-cart2-phase2-offline-wow-r6-integrated-20261009' or
+ c.matrix_mac<>'70:4b:ca:5b:34:5c' or c.candidate<>'hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010' or
  p_verified_state is distinct from c.expected_state or p_verified_state->>'matrixMac' is distinct from c.matrix_mac or
  p_verified_state->>'candidate' is distinct from c.candidate then return false; end if;
  ison:=coalesce((p_verified_state->>'on')::boolean,false);

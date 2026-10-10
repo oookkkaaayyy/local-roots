@@ -16,12 +16,13 @@ INSERT INTO hbnf_internal.cart_desired_state VALUES('hbnf-cart',51,'{}');
 INSERT INTO hbnf_internal.cart_actuator_fence VALUES('hbnf-cart',7,'r6',true);
 `);
 await db.exec(migration);
-const expected = { matrixMac: '70:4b:ca:5b:34:5c', candidate: 'hbnf-cart2-phase2-offline-wow-r6-integrated-20261009', on: true, hbnf: { candidate: 'hbnf-cart2-phase2-offline-wow-r6-integrated-20261009' } };
+const expected = { matrixMac: '70:4b:ca:5b:34:5c', candidate: 'hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010', on: true, hbnf: { candidate: 'hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010' } };
 const payload = { on: true };
 async function issue(state = expected, rev = 51, fence = 7, candidate = expected.candidate) {
   return (await db.query(`select public.hbnf_cart_matrix_relay_issue($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10) as id`, ['opal-hbnf-cart','hbnf-cart',rev,fence,'r6','70:4b:ca:5b:34:5c',candidate,JSON.stringify(state),JSON.stringify(payload),20])).rows[0].id;
 }
 const challenge = await issue();
+await assert.rejects(issue(expected, 51, 7, 'hbnf-cart2-phase2-offline-wow-r6-integrated-20261009'), /invalid_relay_challenge/, 'stale R6 release must fail closed');
 assert.equal((await db.query(`select public.hbnf_cart_matrix_relay_get($1,'opal-hbnf-cart') as value`, [challenge])).rows[0].value.desired_revision, 51);
 assert.equal((await db.query(`select public.hbnf_cart_matrix_relay_authorize_apply($1,'opal-hbnf-cart') as ok`, [challenge])).rows[0].ok, true);
 assert.equal((await db.query(`select public.hbnf_cart_matrix_relay_authorize_apply($1,'opal-hbnf-cart') as ok`, [challenge])).rows[0].ok, false);
