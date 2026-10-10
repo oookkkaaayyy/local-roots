@@ -6,6 +6,8 @@ import json
 import pathlib
 import tempfile
 import hashlib
+import time
+import atexit
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location("hbnf_control",ROOT/"scripts/hbnf_control.py")
@@ -75,11 +77,17 @@ def main():
         # but it must not consume install/recovery authority or force a new firmware install.
         result_rel=state["r6_audio_cache_successor"]["qualification_result"]
         result_path=ROOT/result_rel
-        preflight_rel="evidence/cart2-r6-audio-cache-20261010/live-qualification/preflight-after-guard-block-20261010/QUALIFICATION_PRELIVE_READONLY.json"
-        preflight_path=ROOT/preflight_rel
-        assert result_path.is_file() and preflight_path.is_file()
+        preflight_source=ROOT/"evidence/cart2-r6-audio-cache-20261010/live-qualification/preflight-after-caffeinate-fix-20261010/QUALIFICATION_PRELIVE_READONLY.json"
+        assert result_path.is_file() and preflight_source.is_file()
+        preflight_temp=tempfile.TemporaryDirectory(prefix="r6-proof-preflight-",dir=ROOT/"evidence/cart2-r6-audio-cache-20261010/live-qualification")
+        atexit.register(preflight_temp.cleanup)
+        preflight_path=pathlib.Path(preflight_temp.name)/"QUALIFICATION_PRELIVE_READONLY.json"
+        preflight_data=json.loads(preflight_source.read_text());preflight_data["captured_unix"]=time.time()
+        preflight_path.write_text(json.dumps(preflight_data))
+        preflight_rel=str(preflight_path.relative_to(ROOT))
         def digest(p):return hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()
-        source_commit="48bdf20dcdecaf0a4ebb7f1af4068864f4b10b32"
+        source_commit=("3d5a0fdddf3b5c408cd162b67ef8b9e4e6e355c5"
+            if "continuation-live-3d5a0fd" in result_rel else "48bdf20dcdecaf0a4ebb7f1af4068864f4b10b32")
         source_bytes=__import__("subprocess").check_output(["git","show",source_commit+":scripts/hbnf_r6_audio_cache_live_transaction.py"],cwd=ROOT)
         proof={"schema":"hbnf-r6-qualification-preflight-retry-proof-v1","status":"PASS",
             "candidate_release_id":"hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",

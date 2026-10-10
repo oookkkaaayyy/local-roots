@@ -799,7 +799,11 @@ def _validate_r6_qualification_preflight_failure(state, proof_path):
         raise ValueError("result is not the exact pre-setup read-only worker-contention failure")
     source_commit=proof.get("qualification_source_commit")
     source_sha=proof.get("qualification_source_sha256")
-    if (source_commit!="48bdf20dcdecaf0a4ebb7f1af4068864f4b10b32"
+    allowed_sources={
+        "48bdf20dcdecaf0a4ebb7f1af4068864f4b10b32":"9cc5731cf2901b2acb26044b574c4587d42d64fae4b85c425f46eddaa77971a9",
+        "3d5a0fdddf3b5c408cd162b67ef8b9e4e6e355c5":"be0ca8d199c078b4a3225e219590f2cf96b89cc349f0182fa71fc360ca5893e1",
+    }
+    if (source_commit not in allowed_sources or source_sha!=allowed_sources.get(source_commit)
         or not isinstance(source_sha,str) or not re.fullmatch(r"[a-f0-9]{64}",source_sha)):
         raise ValueError("qualification failure source binding missing or unexpected")
     source=subprocess.run(["git","show",source_commit+":scripts/hbnf_r6_audio_cache_live_transaction.py"],
@@ -826,6 +830,16 @@ def _validate_r6_qualification_preflight_failure(state, proof_path):
         or sample.get("operation_scope")!="QUALIFICATION_ONLY" or not isinstance(captured,(int,float))
         or captured>time.time()+5 or time.time()-captured>900):
         raise ValueError("post-failure preflight is not fresh and passing")
+    root_cause=proof.get("root_cause_evidence")
+    if root_cause is not None:
+        cause_path=root_cause.get("path") if isinstance(root_cause,dict) else None
+        if not isinstance(cause_path,str) or not isinstance(root_cause.get("sha256"),str):
+            raise ValueError("preflight failure root-cause evidence binding malformed")
+        cause_file=root/cause_path
+        try: cause_file.resolve().relative_to(qualification_root.resolve())
+        except ValueError: raise ValueError("preflight root-cause evidence is outside the qualification evidence root")
+        if not cause_file.is_file() or sha256_file(cause_file)!=root_cause["sha256"]:
+            raise ValueError("preflight root-cause evidence hash mismatch")
     matrix=sample.get("matrix",{}); baseline=sample.get("brightness_baseline",{}); aux=sample.get("aux",{}); rb=sample.get("rollback",{}); worker=sample.get("single_worker",{})
     persisted=baseline.get("persisted",{}); runtime=baseline.get("runtime",{})
     if (matrix.get("release_id")!=expected_candidate or matrix.get("candidate_sha256")!=expected_sha
@@ -921,6 +935,8 @@ def reconcile_installed_r6(state, receipt_path, host_failure_proof_path=None):
             "post_failure_preflight_path":proof["post_failure_readonly_preflight"]["path"],
             "post_failure_preflight_sha256":proof["post_failure_readonly_preflight"]["sha256"],
             "setting_write_started":False,"profiles_completed":False,"firmware_changed":False}
+        if proof.get("root_cause_evidence"):
+            retry_record["root_cause_evidence"]=proof["root_cause_evidence"]
         state["r6_audio_cache_successor"]["preflight_retry_reconciliation"]=retry_record
         auth["preflight_retry_reconciliation"]=retry_record
     state["r6_audio_cache_successor"]["conditional_authority"]=auth

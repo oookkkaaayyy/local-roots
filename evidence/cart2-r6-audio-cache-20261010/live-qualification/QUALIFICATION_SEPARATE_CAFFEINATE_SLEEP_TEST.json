@@ -1,0 +1,40 @@
+{
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+  "captured_at_utc": "2026-10-10T21:52:18.928006+00:00",
+  "correction": "Run guarded transaction as its own process; then run caffeinate -dims -w <transaction-pid> as a separate sibling whose argv contains no worker path. Preserve the existing single_worker_check unchanged.",
+  "device_requests_for_offline_replay": 0,
+  "finding": "The prior worker false positive came from caffeinate running the guarded utility and its command line containing the worker path. Existing reconciliation already prescribes separating sleep prevention from worker launch.",
+  "firmware_changed": false,
+  "latest_blocked_result": {
+    "brightness_setup_started": false,
+    "device_requests": 8,
+    "path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-live-3d5a0fd-20261010/QUALIFICATION_CONTINUATION_RESULT.json",
+    "preflight_completed": false,
+    "setup_started": false,
+    "sha256": "8b4f97d2544eb8b6e807fea8c7d4627a1f5f5fca2d87a80f4b3607ca0ca9c51a"
+  },
+  "latest_postfailure_readonly_preflight": {
+    "pass": true,
+    "path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/preflight-after-caffeinate-fix-20261010/QUALIFICATION_PRELIVE_READONLY.json",
+    "sha256": "545ecf096e3882c198c73d066ce7548bf43497c0dcb39333a1010c7ab108c605"
+  },
+  "official_reference": "https://manp.gs/mac/8/caffeinate",
+  "prior_blocker_receipt": {
+    "path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/HOST_PREFLIGHT_BLOCKER_RECONCILIATION.json",
+    "sha256": "58ec901abbc38ecbb181f643c9ea4454fe746c84ced37b51dd0423d3a8d2bfe5"
+  },
+  "production_mutation": false,
+  "replay": {
+    "output_path": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/QUALIFICATION_SEPARATE_SLEEP_PROCESS_TEST_OUTPUT_20261010.txt",
+    "output_sha256": "d1286020aa259c6d1ffd094fd626086d8b4c6e660a0c8f78aedf9299194ff9d2",
+    "result": "PASS; exact single-worker check returned worker_count=1; mutation=False"
+  },
+  "schema": "hbnf-r6-separate-caffeinate-sleep-host-replay-v1",
+  "source_binding": {
+    "commit": "3d5a0fdddf3b5c408cd162b67ef8b9e4e6e355c5",
+    "path": "scripts/hbnf_r6_audio_cache_live_transaction.py",
+    "sha256": "be0ca8d199c078b4a3225e219590f2cf96b89cc349f0182fa71fc360ca5893e1"
+  },
+  "thresholds_changed": false
+}

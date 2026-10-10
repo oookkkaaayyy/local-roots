@@ -1,0 +1,25 @@
+{
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+  "captured_at_utc": "2026-10-10T21:52:27.920374+00:00",
+  "failure_class": "SINGLE_WORKER_PREFLIGHT_CONTENTION",
+  "firmware_changed": false,
+  "frozen_thresholds_changed": false,
+  "post_failure_readonly_preflight": {
+    "path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/preflight-after-caffeinate-fix-20261010/QUALIFICATION_PRELIVE_READONLY.json",
+    "sha256": "545ecf096e3882c198c73d066ce7548bf43497c0dcb39333a1010c7ab108c605"
+  },
+  "profiles_completed": false,
+  "qualification_result_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-live-3d5a0fd-20261010/QUALIFICATION_CONTINUATION_RESULT.json",
+  "qualification_result_sha256": "8b4f97d2544eb8b6e807fea8c7d4627a1f5f5fca2d87a80f4b3607ca0ca9c51a",
+  "qualification_source_commit": "3d5a0fdddf3b5c408cd162b67ef8b9e4e6e355c5",
+  "qualification_source_sha256": "be0ca8d199c078b4a3225e219590f2cf96b89cc349f0182fa71fc360ca5893e1",
+  "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "root_cause_evidence": {
+    "path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/QUALIFICATION_SEPARATE_CAFFEINATE_SLEEP_TEST.json",
+    "sha256": "7423da63f421049f41c049aea3efd45fb62aeb08a9436420737ffaa8eaf6aec6"
+  },
+  "schema": "hbnf-r6-qualification-preflight-retry-proof-v1",
+  "setting_write_started": false,
+  "status": "PASS"
+}

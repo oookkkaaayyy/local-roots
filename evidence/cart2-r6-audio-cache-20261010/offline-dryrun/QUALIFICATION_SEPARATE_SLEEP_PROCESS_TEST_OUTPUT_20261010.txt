@@ -1,0 +1,2 @@
+CONTROL_PLANE_PASS state=PHASE2_INTEGRATING mutation=False
+{'pass': True, 'conflicting_pids': [], 'worker_count': 1}

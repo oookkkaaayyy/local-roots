@@ -51,9 +51,9 @@
       "sha256": "d4a4a7c120f1c9e01dea2f0546323df35107ea57d521f331a0f8ab949dd53d22"
     },
     "fresh_installed_candidate_runtime_identity": {
-      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/live-qualification/preflight-after-guard-block-20261010/QUALIFICATION_PRELIVE_READONLY.json",
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/live-qualification/preflight-after-caffeinate-fix-20261010/QUALIFICATION_PRELIVE_READONLY.json",
       "pass": true,
-      "sha256": "0d4f6d35ffbb41edbbf9a9213751143fbd98128e1e6cfee4cbcb151416912b76"
+      "sha256": "545ecf096e3882c198c73d066ce7548bf43497c0dcb39333a1010c7ab108c605"
     },
     "frozen_performance_soak_and_restore_procedure": {
       "evidence_file": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_FROZEN_LIVE_QUALIFICATION_PROCEDURE.json",
@@ -86,23 +86,28 @@
       "sha256": "f566e9383b5be6a2d0aaf3e26cf8685e69158350637816c73fefd548740aa061"
     },
     "preflight_read_only_hardware_state_and_identity": {
-      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/live-qualification/preflight-after-guard-block-20261010/QUALIFICATION_PRELIVE_READONLY.json",
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/live-qualification/preflight-after-caffeinate-fix-20261010/QUALIFICATION_PRELIVE_READONLY.json",
       "pass": true,
-      "sha256": "0d4f6d35ffbb41edbbf9a9213751143fbd98128e1e6cfee4cbcb151416912b76"
+      "sha256": "545ecf096e3882c198c73d066ce7548bf43497c0dcb39333a1010c7ab108c605"
     },
     "qualification_preflight_retry_proof": {
-      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/live-qualification/QUALIFICATION_PREFLIGHT_RETRY_PROOF_20261010.json",
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/live-qualification/QUALIFICATION_PREFLIGHT_RETRY_PROOF_SEPARATE_SLEEP_20261010.json",
       "pass": true,
-      "sha256": "45e38fd14e4146a4016a08f06276ad0da913faaf20d2d6fe23a917f399197400"
+      "sha256": "c9e790643cb3664daf35eaea5195fcb001a774399b39fc993c84d614889ac7f9"
     },
     "rollback_artifact_hash_verified": {
       "evidence_file": "evidence/cart2-r6-audio-cache-20261010/R6_DRIVE_ARTIFACT_READBACK.json",
       "pass": true,
       "sha256": "3480239122dcf69e750ae193eff47401740ff26352542626648a740874d66846"
+    },
+    "separate_caffeinate_sleep_wrapper_replay": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/live-qualification/QUALIFICATION_SEPARATE_CAFFEINATE_SLEEP_TEST.json",
+      "pass": true,
+      "sha256": "7423da63f421049f41c049aea3efd45fb62aeb08a9436420737ffaa8eaf6aec6"
     }
   },
   "classification": "CONTINUE_EXISTING_EXACT_R6_TRANSACTION__QUALIFICATION_ONLY__NO_INSTALL",
-  "created_at_utc": "2026-10-10T21:36:25Z",
+  "created_at_utc": "2026-10-10T21:54:01Z",
   "fresh_owner_authorization": {
     "attempt_number": 1,
     "authorization_id": "OWNER-20261010-R6-AUDIO-CACHE-FULL-QUALIFICATION",
