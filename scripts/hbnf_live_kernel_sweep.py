@@ -21,7 +21,7 @@ No shell=True. No implicit WLED mutation endpoint. No auto-fix.
 """
 from __future__ import annotations
 
-import argparse, json, os, pathlib, shutil, subprocess, sys, tempfile, time
+import argparse, hashlib, json, os, pathlib, shutil, subprocess, sys, tempfile, time
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 QUAL=ROOT/"scripts/hbnf_runtime_qualify.py"
@@ -31,6 +31,8 @@ RECOVERY_RESERVE_BYTES=8*1024*1024
 MIN_FOUNDATION_SOAK_SECONDS=90*60
 MAX_FOUNDATION_SOAK_SAMPLE_GAP_SECONDS=15
 FOUNDATION_HARD_FRAME_INTERVAL_MS=1000.0
+R4_BASELINE_MANIFEST=ROOT/"evidence/hbnf-foundation-qualification-20261005/seq39/live/PRE_SOAK_BASELINE.json"
+R4_BASELINE_MANIFEST_SHA256="45c1562b92877a55048cc47bada00ecdac9dd23f2533dfdbad63da0e9f8476be"
 
 REQUIRED_ADAPTER={
     "schema",
@@ -303,15 +305,65 @@ def enforce_foundation_frame_interval(sample):
     if maximum>=FOUNDATION_HARD_FRAME_INTERVAL_MS:
         raise RuntimeError(f"foundation-steady-state-frame-interval-stop: frame_ms_max={maximum:g}ms threshold={FOUNDATION_HARD_FRAME_INTERVAL_MS:g}ms kernel={sample.get('kernel_name')} id={sample.get('kernel_id')}")
 
-def compare_profile_to_r4(candidate_path, r4_profile_dir, entry, frozen_policy, expected_r4_release):
+def validate_r4_profile_set(r4_profile_dir, baseline_manifest_path, inventory, expected_r4_release):
+    """Verify all 28 immutable R4 profiles against the committed baseline before device work."""
+    manifest_path=pathlib.Path(baseline_manifest_path).resolve()
+    if manifest_path!=R4_BASELINE_MANIFEST.resolve():
+        raise RuntimeError(f"early-R4-baseline-manifest-path-not-authoritative: {manifest_path}")
+    if hashlib.sha256(manifest_path.read_bytes()).hexdigest()!=R4_BASELINE_MANIFEST_SHA256:
+        raise RuntimeError(f"early-R4-baseline-manifest-hash-mismatch: {manifest_path}")
+    manifest=load(manifest_path)
+    if (manifest.get("schema")!="hbnf-foundation-28-kernel-baseline-v1"
+        or manifest.get("contract")!="foundation"
+        or manifest.get("release_id")!=expected_r4_release
+        or manifest.get("kernel_count")!=28
+        or set(manifest.get("kernels",{}))!={str(i) for i in range(28)}):
+        raise RuntimeError(f"early-R4-baseline-manifest-invalid: {manifest_path}")
+    profile_dir=pathlib.Path(r4_profile_dir).resolve()
+    for entry in inventory["entries"]:
+        i=int(entry["runtime_kernel_index_expected"]); key=str(i)
+        pinned=manifest["kernels"][key]
+        if pinned.get("kernel_name")!=entry["kernel_name"]:
+            raise RuntimeError(f"early-R4-baseline-kernel-unbound: index={i}")
+        profile_path=profile_dir/f"{i:02d}_{entry['kernel_name']}.profile.json"
+        if not profile_path.is_file() or hashlib.sha256(profile_path.read_bytes()).hexdigest()!=pinned.get("profile_sha256"):
+            raise RuntimeError(f"early-R4-baseline-profile-hash-mismatch: {profile_path}")
+        profile=load(profile_path).get("profile",{})
+        if (profile.get("release_id")!=expected_r4_release
+            or profile.get("kernel",{}).get("name")!=entry["kernel_name"]
+            or profile.get("kernel",{}).get("variant_id")!=pinned.get("variant_id")):
+            raise RuntimeError(f"early-R4-baseline-profile-identity-mismatch: {profile_path}")
+
+def order_entries_for_early_baseline(entries, early_indices=(0,13)):
+    """Check historically failing matched kernels first without dropping sweep entries."""
+    by_index={int(e["runtime_kernel_index_expected"]):e for e in entries}
+    if len(entries)!=28 or set(by_index)!=set(range(28)) or any(i not in by_index for i in early_indices):
+        raise ValueError("early-R4 ordering requires the exact 28-kernel inventory and all requested kernels")
+    return [by_index[i] for i in early_indices]+[e for e in entries if int(e["runtime_kernel_index_expected"]) not in early_indices]
+
+def compare_profile_to_r4(candidate_path, r4_profile_dir, entry, frozen_policy, expected_r4_release,
+                          r4_baseline_manifest=None):
     """Apply the unchanged frozen candidate/R4 distribution and resource ratios."""
     candidate=load(candidate_path).get("profile",{})
     slug=f"{int(entry['runtime_kernel_index_expected']):02d}_{entry['kernel_name']}.profile.json"
     baseline_path=pathlib.Path(r4_profile_dir)/slug
+    baseline_manifest_path=pathlib.Path(r4_baseline_manifest) if r4_baseline_manifest else R4_BASELINE_MANIFEST
+    baseline_manifest=load(baseline_manifest_path)
+    if (baseline_manifest.get("schema")!="hbnf-foundation-28-kernel-baseline-v1"
+        or baseline_manifest.get("contract")!="foundation"
+        or baseline_manifest.get("release_id")!=expected_r4_release
+        or baseline_manifest.get("kernel_count")!=28):
+        raise RuntimeError(f"early-R4-baseline-manifest-invalid: {baseline_manifest_path}")
     baseline_doc=load(baseline_path)
     baseline=baseline_doc.get("profile",{})
     if baseline_doc.get("status")!="PASS" or baseline.get("release_id")!=expected_r4_release:
         raise RuntimeError(f"early-R4-baseline-invalid: {baseline_path}")
+    kernel_index=str(int(entry["runtime_kernel_index_expected"]))
+    pinned=baseline_manifest.get("kernels",{}).get(kernel_index)
+    if not isinstance(pinned,dict) or pinned.get("kernel_name")!=entry["kernel_name"]:
+        raise RuntimeError(f"early-R4-baseline-kernel-unbound: {baseline_path}")
+    if hashlib.sha256(baseline_path.read_bytes()).hexdigest()!=pinned.get("profile_sha256"):
+        raise RuntimeError(f"early-R4-baseline-profile-hash-mismatch: {baseline_path}")
     if candidate.get("qualification_eligible") is not True:
         raise RuntimeError(f"candidate-profile-ineligible: {candidate_path}")
     if candidate.get("kernel",{}).get("name")!=entry["kernel_name"] or baseline.get("kernel",{}).get("name")!=entry["kernel_name"]:
@@ -505,9 +557,10 @@ def main():
     ap.add_argument("--soak-interval-seconds",type=float,default=8.0)
     ap.add_argument("--threshold-policy",help="fully frozen Foundation policy; required for an integrated soak")
     ap.add_argument("--threshold-baseline",help="output path for the baseline generated from this run's complete 28-kernel sweep")
-    ap.add_argument("--early-r4-profile-dir",help="exact R4 profile directory; when supplied, run kernel indices 13 and 9 first and stop before remaining kernels if frozen relative gates fail")
+    ap.add_argument("--early-r4-profile-dir",help="exact R4 profile directory; when supplied, run historically failing kernel indices 0 and 13 first and stop before remaining kernels if frozen relative gates fail")
+    ap.add_argument("--early-r4-baseline-manifest",default=str(ROOT/"evidence/hbnf-foundation-qualification-20261005/seq39/live/PRE_SOAK_BASELINE.json"),help="source-bound 28-kernel R4 baseline containing exact profile hashes")
     ap.add_argument("--early-r4-release",default="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1")
-    ap.add_argument("--compare-all-r4",action="store_true",help="after the early 13/9 gates, apply the same frozen relative profile/resource gates to every kernel against the exact R4 profile directory before starting any soak")
+    ap.add_argument("--compare-all-r4",action="store_true",help="after the early 0/13 gates, apply the same frozen relative profile/resource gates to every kernel against the exact R4 profile directory before starting any soak")
     ap.add_argument("--resume-snapshot-file",help="resume one exact previously captured, still-open Packet20 snapshot; never issues begin/snapshot")
     ap.add_argument("--resume-observer-proof",help="PASS observer-effect receipt for the exact expected release, required with --resume-snapshot-file")
     ap.add_argument("--dry-run",action="store_true")
@@ -536,6 +589,9 @@ def main():
         raise SystemExit("--qualify requires --contract foundation")
     if args.compare_all_r4 and not args.early_r4_profile_dir:
         raise SystemExit("--compare-all-r4 requires --early-r4-profile-dir")
+    if args.early_r4_profile_dir:
+        try:validate_r4_profile_set(args.early_r4_profile_dir,args.early_r4_baseline_manifest,inventory,args.early_r4_release)
+        except (OSError,ValueError,KeyError,RuntimeError) as e:raise SystemExit(f"R4 comparison preflight failed before device access: {e}")
     try:validate_soak_options(args.contract,args.soak_seconds,args.soak_interval_seconds)
     except ValueError as e:raise SystemExit(str(e))
     outdir=pathlib.Path(args.outdir).resolve(); outdir.mkdir(parents=True,exist_ok=True)
@@ -614,9 +670,7 @@ def main():
             set_foundation_telemetry(adapter,True,timeout)
         entries=inventory["entries"]
         if args.early_r4_profile_dir:
-            early_indices=(13,9)
-            by_index={int(e["runtime_kernel_index_expected"]):e for e in entries}
-            entries=[by_index[i] for i in early_indices]+[e for e in entries if int(e["runtime_kernel_index_expected"]) not in early_indices]
+            entries=order_entries_for_early_baseline(entries)
             frozen_policy=load(args.threshold_policy or str(ROOT/"config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json"))
         for entry in entries:
             profile,release_id,variant_id,restart_count,previous_uptime=collect_kernel(
@@ -633,13 +687,13 @@ def main():
             })
             kernel_index=int(entry["runtime_kernel_index_expected"])
             compare_this=(args.early_r4_profile_dir is not None and
-                (kernel_index in (13,9) or args.compare_all_r4))
+                (kernel_index in (0,13) or args.compare_all_r4))
             if compare_this:
-                comparison=compare_profile_to_r4(profile,args.early_r4_profile_dir,entry,frozen_policy,args.early_r4_release)
-                label="EARLY_R4" if kernel_index in (13,9) else "R4"
+                comparison=compare_profile_to_r4(profile,args.early_r4_profile_dir,entry,frozen_policy,args.early_r4_release,args.early_r4_baseline_manifest)
+                label="EARLY_R4" if kernel_index in (0,13) else "R4"
                 atomic_write(outdir/f"{label}_COMPARISON_KERNEL_{kernel_index}.json",json.dumps(comparison,indent=2,sort_keys=True)+"\n")
                 if comparison["status"]!="PASS":
-                    gate="early-matched-R4" if kernel_index in (13,9) else "frozen-R4"
+                    gate="early-matched-R4" if kernel_index in (0,13) else "frozen-R4"
                     raise RuntimeError(f"{gate}-kernel-gate-failed: {entry['kernel_name']}: {json.dumps(comparison['checks'],sort_keys=True)}")
         soak_result=None
         if args.soak_seconds:

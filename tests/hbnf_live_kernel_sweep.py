@@ -147,12 +147,48 @@ with tempfile.TemporaryDirectory() as td:
     frozen={"comparison":{"candidate_vs_baseline":{"fps_median_min_ratio":0.9,
       "frame_p95_max_ratio":1.25,"frame_p99_max_ratio":1.25,
       "minimum_free_heap_min_ratio":0.85,"largest_free_block_min_ratio":0.8}}}
-    result=m.compare_profile_to_r4(candidate,pathlib.Path(td),inv["entries"][9],frozen,r4_release)
+    import hashlib
+    baseline_manifest=pathlib.Path(td)/"r4-baseline.json"
+    baseline_manifest.write_text(json.dumps({"schema":"hbnf-foundation-28-kernel-baseline-v1",
+      "contract":"foundation","release_id":r4_release,"kernel_count":28,
+      "kernels":{"9":{"kernel_name":"RGB_Blobs4","profile_sha256":hashlib.sha256(base.read_bytes()).hexdigest()}}}))
+    result=m.compare_profile_to_r4(candidate,pathlib.Path(td),inv["entries"][9],frozen,r4_release,baseline_manifest)
     assert result["status"]=="PASS" and all(result["checks"].values())
     assert "frame_max" not in result["checks"]  # unchanged frozen policy treats it as diagnostic
+    base.write_text(base.read_text()+" ")
+    try:
+        m.compare_profile_to_r4(candidate,pathlib.Path(td),inv["entries"][9],frozen,r4_release,baseline_manifest)
+        raise AssertionError("modified R4 profile accepted despite source-bound hash")
+    except RuntimeError as e:assert "profile-hash-mismatch" in str(e)
+    base.write_text(json.dumps(base_doc))
     cand_doc["profile"]["fps"]["median"]=35.9;candidate.write_text(json.dumps(cand_doc))
-    failed=m.compare_profile_to_r4(candidate,pathlib.Path(td),inv["entries"][9],frozen,r4_release)
+    failed=m.compare_profile_to_r4(candidate,pathlib.Path(td),inv["entries"][9],frozen,r4_release,baseline_manifest)
     assert failed["status"]=="FAIL" and failed["checks"]["fps_median"] is False
+
+# Preserve the full sweep while checking the historically failing kernel first.
+assert "early_indices=(0,13)" in runner_source
+assert "(kernel_index in (0,13) or args.compare_all_r4)" in runner_source
+ordered=m.order_entries_for_early_baseline(inv["entries"])
+assert [e["runtime_kernel_index_expected"] for e in ordered[:2]]==[0,13]
+assert sorted(e["runtime_kernel_index_expected"] for e in ordered)==list(range(28))
+try:m.order_entries_for_early_baseline(inv["entries"][:-1]);raise AssertionError("missing sweep entry was accepted")
+except ValueError:pass
+
+# The committed 28-kernel R4 profile set is integrity-checked before any live
+# sweep; a single altered profile must fail closed.
+r4_baseline=ROOT/"evidence/hbnf-foundation-qualification-20261005/seq39/live/PRE_SOAK_BASELINE.json"
+r4_profiles=ROOT/"evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep"
+r4_release="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+m.validate_r4_profile_set(r4_profiles,r4_baseline,inv,r4_release)
+with tempfile.TemporaryDirectory() as td:
+    import shutil
+    copied=pathlib.Path(td)
+    for profile in r4_profiles.glob("*.profile.json"):
+        shutil.copy2(profile,copied/profile.name)
+    damaged=copied/"00_Complex_Kaleido_3.profile.json"
+    damaged.write_text(damaged.read_text()+" ")
+    try:m.validate_r4_profile_set(copied,r4_baseline,inv,r4_release);raise AssertionError("tampered R4 baseline profile accepted")
+    except RuntimeError as e:assert "profile-hash-mismatch" in str(e)
 
 foundation=dict(sample)
 foundation.update({
