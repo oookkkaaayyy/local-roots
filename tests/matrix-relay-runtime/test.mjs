@@ -5,6 +5,7 @@ import { PGlite } from '@electric-sql/pglite';
 const migrationPath = fileURLToPath(new URL('../../staging/coordinated-backend/migrations/20261009190000_hbnf_matrix_relay_confirmation.sql', import.meta.url));
 const db = new PGlite();
 const migration = fs.readFileSync(migrationPath, 'utf8');
+const controlState = JSON.parse(fs.readFileSync(fileURLToPath(new URL('../../config/HBNF_CONTROL_STATE.json', import.meta.url)), 'utf8'));
 await db.exec(`
 CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role;
 CREATE SCHEMA hbnf_internal;
@@ -18,8 +19,8 @@ INSERT INTO hbnf_internal.cart_actuator_fence VALUES('hbnf-cart',7,'r6',true);
 await db.exec(migration);
 const expected = { matrixMac: '70:4b:ca:5b:34:5c', candidate: 'hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010', on: true, hbnf: { candidate: 'hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010' } };
 const payload = { on: true };
-async function issue(state = expected, rev = 51, fence = 7, candidate = expected.candidate) {
-  return (await db.query(`select public.hbnf_cart_matrix_relay_issue($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10) as id`, ['opal-hbnf-cart','hbnf-cart',rev,fence,'r6','70:4b:ca:5b:34:5c',candidate,JSON.stringify(state),JSON.stringify(payload),20])).rows[0].id;
+async function issue(state = expected, rev = 51, fence = 7, candidate = expected.candidate, releaseId = 'r6') {
+  return (await db.query(`select public.hbnf_cart_matrix_relay_issue($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10) as id`, ['opal-hbnf-cart','hbnf-cart',rev,fence,releaseId,'70:4b:ca:5b:34:5c',candidate,JSON.stringify(state),JSON.stringify(payload),20])).rows[0].id;
 }
 const challenge = await issue();
 await assert.rejects(issue(expected, 51, 7, 'hbnf-cart2-phase2-offline-wow-r6-integrated-20261009'), /invalid_relay_challenge/, 'stale R6 release must fail closed');
@@ -42,5 +43,14 @@ let denied = false;
 try { await db.exec(`set role anon; select public.hbnf_cart_matrix_relay_issue('opal-hbnf-cart','hbnf-cart',52,7,'r6','70:4b:ca:5b:34:5c','${expected.candidate}','{}','{}',20);`); } catch { denied = true; }
 finally { await db.exec('reset role'); }
 assert.equal(denied, true, 'anon role must not execute challenge RPC');
-console.log('Matrix relay PostgreSQL migration tests PASS: issue/get, stale revision/fence, one-use apply, exact readback, mismatch, replay, expiry, wrong identity, anon execute denied');
+const recovered = controlState.installed_firmware_reconciliation;
+const releaseControl = controlState.coordinated_r6_live_release_authorization.backend_transaction_progress;
+assert.equal(controlState.live_mutation_authorized, false);
+assert.equal(releaseControl.command_fence_active, false);
+assert.equal(releaseControl.opal_relay_active, false);
+assert.equal(recovered.release_id, controlState.installed_release);
+assert.equal(recovered.sha256, controlState.installed_firmware_sha256);
+await db.query(`update hbnf_internal.cart_actuator_fence set release_id=$1,active=false where cart_id='hbnf-cart'`, [recovered.release_id]);
+await assert.rejects(issue(expected, 51, 7, expected.candidate, recovered.release_id), /stale_fence_or_state/, 'R6 challenge must be rejected against current closed R4 fence');
+console.log('Matrix relay PostgreSQL migration tests PASS: issue/get, stale revision/fence, one-use apply, exact readback, mismatch, replay, expiry, wrong identity, anon execute denied, closed R4 fence rejects failed R6');
 await db.close();

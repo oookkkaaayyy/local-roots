@@ -16,7 +16,7 @@
   },
   "source_binding": {
     "path": "firmware/phase2/integration-r6-cachefix/SOURCE_BINDING.json",
-    "sha256": "e41cc707e7c58a58eed6d8d5b425ac9bef20af796401fcf6d10cc413d8b09092",
+    "sha256": "766f4031bdef496a0e454c059f0c78b202197a3f765833d32c48ad41c15a0364",
     "runtime_files": {
       "hbnf_animartrix_audio_bridge.h": "edfe168658d548fe8e52e05b5b9d0cc3390cfe11092423a2c1c12de95884ae74",
       "hbnf_audio_expression.h": "f4825884dd53cba9bca698bd8b9b7d9d13a81e7ce381957d23790f13073dc4c3",
@@ -88,7 +88,8 @@
     "live_kernel0_kernel13_28_kernel_combined_soak": "NOT_RUN",
     "owner_physical_acceptance": "NOT_RUN",
     "T4": "NOT_ACCEPTED",
-    "T5": "NOT_ACCEPTED"
+    "T5": "NOT_ACCEPTED",
+    "performance_attribution": "Source review correction: cachefix only hoists frame-invariant profileLane calculations into preparePixelModulation. The exact 32x16 int32 radial path was already present in parent R6; generic int64 fallback is for other geometries. Live kernel-0 FPS/p95/p99 gate failed; no single remaining performance root cause is isolated."
   },
   "rollback": {
     "release_id": "Foundation R4",

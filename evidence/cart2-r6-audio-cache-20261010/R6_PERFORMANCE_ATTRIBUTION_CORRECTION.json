@@ -1,0 +1,69 @@
+{
+  "schema": "hbnf-r6-performance-attribution-correction-v1",
+  "recorded_at_utc": "2026-10-10T22:17:00Z",
+  "candidate": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "firmware_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+    "firmware_bytes_unchanged": true
+  },
+  "verified_source_comparison": {
+    "r5_bridge_sha256": "8748231ccf7733bd34c16dc0417933a46d3a5bdccfc47c2bd54ce2e3fa104535",
+    "r6_parent_bridge_sha256": "56a391336b72bc6f37d835bbe1a6eca1108f3819fd99f5af9816e671ada46351",
+    "r6_cachefix_bridge_sha256": "edfe168658d548fe8e52e05b5b9d0cc3390cfe11092423a2c1c12de95884ae74",
+    "r6_parent_binding": "firmware/phase2/integration-r6/SOURCE_BINDING.json",
+    "r6_cachefix_binding": "firmware/phase2/integration-r6-cachefix/SOURCE_BINDING.json",
+    "finding": "The parent R6 source already contains the bounded int32 branch for the configured 32x16 geometry and retains int64 division only as the fallback for other geometries. The cachefix bridge keeps that arithmetic; its runtime delta is to cache scene/profile lane values computed by profileLane() in preparePixelModulation() at frame/control updates instead of recalculating them inside modulate() for each pixel. The emitted generic fallback helper/relocation is not proof that the 32x16 runtime branch executes it.",
+    "prior_attribution": "The prior statement that fixed-grid R6 performed per-pixel int64 radial division and that __divdi3 relocation proved the cause is incorrect and is superseded by this source comparison.",
+    "source_root_cause": "NOT_ISOLATED"
+  },
+  "measured_live_result": {
+    "qualification_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-separate-sleep-20261010/QUALIFICATION_CONTINUATION_RESULT.json",
+    "analysis_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-separate-sleep-20261010/R6_KERNEL0_FAILURE_ANALYSIS.json",
+    "kernel": 0,
+    "gate": "FAILED_FROZEN_FPS_P95_P99; HEAP_GATES_PASSED",
+    "r4_median_fps": 32,
+    "r6_median_fps": 25,
+    "r4_median_frame_p95_ms": 27.875,
+    "r6_median_frame_p95_ms": 36.375,
+    "r4_median_frame_p99_ms": 41.375,
+    "r6_median_frame_p99_ms": 70.875,
+    "comparability_limits": [
+      "R6 device uptime was about 6699 seconds versus about 118 seconds for the preserved R4 profile.",
+      "The R4 profile does not preserve its tested brightness, so equal brightness 44 is not proven.",
+      "The R4 and R6 observer poll counts/cadence differed, and reported histograms are cumulative within the kernel run."
+    ],
+    "decision": "The frozen early performance gate failure is real; these measurements and source comparison do not isolate a single performance root cause. Do not claim cachefix passed live qualification or attribute remaining frame tails to the radial fallback."
+  },
+  "validation": {
+    "test": "python3 tests/test_hbnf_audio_bridge_frame_cache.py",
+    "result": "PASS",
+    "pixel_transforms": 15755040,
+    "digest": "75444567800b229d",
+    "runtime_source_hashes": "PASS",
+    "manifest_source_binding_reference": "PASS",
+    "build_or_device_action": "NONE"
+  },
+  "corrected_metadata": {
+    "source_binding_path": "firmware/phase2/integration-r6-cachefix/SOURCE_BINDING.json",
+    "source_binding_sha256": "766f4031bdef496a0e454c059f0c78b202197a3f765833d32c48ad41c15a0364",
+    "manifest_path": "evidence/cart2-r6-audio-cache-20261010/FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
+    "manifest_sha256": "3994860075064c43f16e98492ada92cc92afdf77ac2392f6beb53472752ccc76"
+  },
+  "historical_receipts": {
+    "policy": "Immutable evidence snapshots are retained as written; this correction supersedes their R6 attribution for current decisions.",
+    "preserved_historical_claims": [
+      {
+        "path": "evidence/cart2-r7-performance-repair-20261009/R7_PREAUTH_CONTROL_STATE.json",
+        "sha256": "9f19fb283a32e512d18bf1e07026149304f800a221ec9e933c5379e744bf97a6",
+        "reason": "Preauthorization snapshot includes the now-disproved R6 root-cause attribution."
+      },
+      {
+        "path": "evidence/cart2-r7-performance-repair-20261009/R7_FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
+        "sha256": "0974a69e17400e92958842b26b8f85ed363ea09e52c07a1ec4b7f438b97ec1d9",
+        "reason": "Historical R7 manifest includes the same attribution; preserved with original hash."
+      }
+    ],
+    "pre_run_admissions_and_capsules": "Their hashes are preserved as historical records; they are not silently rewritten."
+  },
+  "historical_receipts_note": "Pre-run admissions and capsule hashes are preserved as historical records; they are not silently rewritten. This correction supersedes their inaccurate performance attribution for future decisions."
+}

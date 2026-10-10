@@ -446,9 +446,11 @@
       "90_minute_soak": "NOT_RUN",
       "failure_evidence": "evidence/cart2-r7-performance-repair-20261009/R6_CLOSED_TRANSACTION/R6_PERFORMANCE_FAILURE_CLASSIFICATION.json",
       "full_28_kernel_sweep": "NOT_RUN",
-      "root_cause": "R6 AudioBridge::modulate performed per-pixel 64-bit radial division on 32x16 fixed grid; object relocation to __divdi3 and stage measurements support material runtime cost; instrumentation observer-effect comparison exonerates tails as primary cause. R7 specializes exact fixed grid with int32 path and preserves generic int64 fallback.",
+      "root_cause": "Superseded source review: exact R6 source for the configured 32x16 grid already selected bounded int32 radial arithmetic; generic int64 division exists for other geometries. A __divdi3 relocation alone does not prove fixed-grid runtime execution. The cachefix delta hoists frame-invariant profileLane calculations; the remaining kernel-0 failure has no isolated source root cause.",
       "stage": "EARLY_MATCHED_KERNEL_0_GATE",
-      "status": "FAILED_FROZEN_GATE__TRANSACTION_CLOSED"
+      "status": "FAILED_FROZEN_GATE__TRANSACTION_CLOSED",
+      "source_attribution_correction": "evidence/cart2-r6-audio-cache-20261010/R6_PERFORMANCE_ATTRIBUTION_CORRECTION.json",
+      "source_attribution_correction_sha256": "2fc6f2c009abe230a6f727b37b5277dd8e427e599a1b0d010388959e7578cbbe"
     },
     "rollback_attempt_receipt": "evidence/cart2-r6-live-qualification-20261009/R6_FAILURE_R4_RECOVERY_CLOSURE.json",
     "rollback_attempt_receipt_sha256": "dcbe9d642a09adb81f0c2d96684d9f8bf852aef512a6b5a6d44881759be71cc1",
@@ -594,8 +596,8 @@
     "drive_preservation_receipt": "evidence/cart2-r7-performance-repair-20261009/R7_DRIVE_PRESERVATION_RECEIPT.json",
     "drive_preservation_receipt_sha256": "91c1bae7220d3584c87a56c550ddbdde361444d61b55f7b3c057b852ea4f5da1",
     "failure_correction": {
-      "R6_root_cause": "Per-pixel 64-bit radial division in fixed 32x16 audio modulation generated __divdi3; matched tails-on/off proves observer overhead is not cause.",
-      "R7_correction": "Exact fixed-grid int32 path, exhaustive pixel/coordinate equivalence, generic int64 fallback preserved.",
+      "R6_root_cause": "Correction: R6 already contains the bounded int32 radial branch for 32x16; __divdi3 can be emitted for the non-32x16 fallback and is not proof of fixed-grid execution. Cachefix hoists frame-invariant profileLane calculations. No single remaining kernel-0 root cause is proven.",
+      "R7_correction": "R7 also uses the fixed-grid int32 branch, but this arithmetic was already present in R6; it is not a demonstrated correction of the measured R6 kernel-0 failure.",
       "preserves_features_and_frozen_gates": true
     },
     "install_attempt_started_utc": "2026-10-09T10:20:38.369981+00:00",
@@ -624,7 +626,7 @@
     "postboot_identity_receipt": "evidence/cart2-r7-performance-repair-20261009/R7_POSTINSTALL_IDENTITY_HEALTH.json",
     "postboot_identity_receipt_sha256": "a4e79c75e7c7c1a9b3f868b6104bed14e8ec54f6e8cc64ac3f894f439fd3cb2b",
     "preconditions": [
-      "R6 failed with proven root cause",
+      "Root-cause proof was not satisfied: later exact source comparison disproved the fixed-grid radial-division attribution; remaining cause is not isolated.",
       "targeted correction preserves functionality and frozen thresholds",
       "one exact R7 artifact verified",
       "all offline tests, historical replays and release admission pass",
@@ -661,7 +663,9 @@
     "rollback_status": "EXACT_R4_RECOVERY_PASS",
     "schema": "hbnf-conditional-r7-successor-v1",
     "scope_exclusion": "No R8 or later installation without new user authorization.",
-    "status": "R7_REJECTED__EXACT_R4_RESTORED__NO_R8_AUTHORITY"
+    "status": "R7_REJECTED__EXACT_R4_RESTORED__NO_R8_AUTHORITY",
+    "root_cause_attribution_correction": "evidence/cart2-r6-audio-cache-20261010/R6_PERFORMANCE_ATTRIBUTION_CORRECTION.json",
+    "root_cause_attribution_correction_sha256": "2fc6f2c009abe230a6f727b37b5277dd8e427e599a1b0d010388959e7578cbbe"
   },
   "coordinated_r6_live_release_authorization": {
     "authorized_by": "The owner-authorized exact R6 coordinated transaction was consumed: one R6 installation failed the frozen kernel-0 performance gate and the single exact R4 recovery completed. No further firmware installation is authorized without fresh exact-artifact owner authorization.",
@@ -2930,7 +2934,7 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-10T22:16:00Z",
+  "last_updated_utc": "2026-10-10T22:23:44Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "authorization": "Exact R6 qualification-only transaction executed and closed after frozen kernel-0 failure; exact R4 recovery verified.",
@@ -3602,14 +3606,16 @@
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "root_cause_evidence": {
       "trace": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-03/FRAME_CONTEXT_TRACE.json",
-      "classification": "R6 kernel-0 catastrophic frame-time regression is measured; audio stage about 50.6 ms elapsed for a worst frame; FreeRTOS task runtime statistics are disabled, so elapsed stage timing cannot be called CPU time. Exact R6 target disassembly shows a per-pixel int64 radial division; source review shows frame-invariant profile lane calculations repeated per pixel."
+      "classification": "R6 kernel-0 frozen performance failure is measured; audio stage timing is elapsed time, not CPU time, because FreeRTOS task runtime statistics are disabled. Source review: the 32x16 path already uses bounded int32 radial arithmetic, while the cachefix moves frame-invariant profile lane calculations out of per-pixel modulate(). Remaining performance root cause is not isolated; uptime, brightness, and sampling windows are not fully comparable.",
+      "source_attribution_correction": "evidence/cart2-r6-audio-cache-20261010/R6_PERFORMANCE_ATTRIBUTION_CORRECTION.json",
+      "source_attribution_correction_sha256": "2fc6f2c009abe230a6f727b37b5277dd8e427e599a1b0d010388959e7578cbbe"
     },
-    "correction": "Exact fixed 32x16 path uses bounded int32 radial arithmetic while preserving the original int64 fallback for other dimensions; frame-invariant profile lane values are prepared once per audio/control frame. No features removed.",
+    "correction": "Cachefix delta: hoist frame-invariant profileLane computations into preparePixelModulation(). The bounded int32 32x16 radial path and generic int64 fallback were already present in parent R6; radial arithmetic is not the cachefix delta. No feature removed.",
     "offline_evidence": {
       "manifest": "evidence/cart2-r6-audio-cache-20261010/FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
-      "manifest_sha256": "d4a4a7c120f1c9e01dea2f0546323df35107ea57d521f331a0f8ab949dd53d22",
+      "manifest_sha256": "3994860075064c43f16e98492ada92cc92afdf77ac2392f6beb53472752ccc76",
       "source_binding": "firmware/phase2/integration-r6-cachefix/SOURCE_BINDING.json",
-      "source_binding_sha256": "e41cc707e7c58a58eed6d8d5b425ac9bef20af796401fcf6d10cc413d8b09092",
+      "source_binding_sha256": "766f4031bdef496a0e454c059f0c78b202197a3f765833d32c48ad41c15a0364",
       "targeted_tests": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_AUDIO_CACHE_OFFLINE_TESTS.json",
       "targeted_tests_sha256": "434c933262654003e7eaaf6d5a7226493dd301c86e12743f24c58fbc887a463f",
       "pixel_equivalence": "15,755,040 bit-exact transforms across 32x16 optimized, 31x15 and 8x8 generic fallback, and 1x1 degenerate dimensions",
@@ -3619,7 +3625,9 @@
       "drive_readback": "evidence/cart2-r6-audio-cache-20261010/R6_DRIVE_ARTIFACT_READBACK.json",
       "drive_readback_sha256": "3480239122dcf69e750ae193eff47401740ff26352542626648a740874d66846",
       "offline_admission": "evidence/cart2-r6-audio-cache-20261010/R6_OFFLINE_COMPILED_ADMISSION.json",
-      "offline_admission_sha256": "996ea788f49c6cabb6fd3fc33239fb0a20d1abb09263660a57f8e1bdc3139b61"
+      "offline_admission_sha256": "996ea788f49c6cabb6fd3fc33239fb0a20d1abb09263660a57f8e1bdc3139b61",
+      "attribution_correction": "evidence/cart2-r6-audio-cache-20261010/R6_PERFORMANCE_ATTRIBUTION_CORRECTION.json",
+      "attribution_correction_sha256": "2fc6f2c009abe230a6f727b37b5277dd8e427e599a1b0d010388959e7578cbbe"
     },
     "conditional_authority": {
       "source_message_ref": "Current owner instruction in this task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks.",

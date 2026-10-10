@@ -28,7 +28,7 @@
     "hbnf_animartrix_audio_bridge.h": {
       "parent_sha256": "56a391336b72bc6f37d835bbe1a6eca1108f3819fd99f5af9816e671ada46351",
       "candidate_sha256": "edfe168658d548fe8e52e05b5b9d0cc3390cfe11092423a2c1c12de95884ae74",
-      "change": "Replace the fixed 32x16 per-pixel int64 radial division with an exactly equivalent bounded int32 constant-divisor path; preserve the original int64 fallback for other dimensions. Also precompute frame-invariant scene/profile lane values once per audio/control frame rather than recomputing them per pixel. No feature, pixel, color, scene, or audio behavior is removed; the combined delta is bit-identical in differential host replay.",
+      "change": "Cachefix delta: move frame-invariant scene/profile lane calculations from per-pixel modulate() into preparePixelModulation(), called once after each audio/control-frame update. The bounded int32 radial branch for the exact 32x16 Matrix grid and the generic int64 fallback were already present in parent R6 and are unchanged by cachefix; a generic __divdi3 relocation alone does not prove execution on the 32x16 runtime path. No feature, pixel, color, scene, or audio behavior is removed; the frame-cache delta is bit-identical in differential host replay.",
       "pixel_equivalence_test": "tests/test_hbnf_audio_bridge_frame_cache.py",
       "pixel_equivalence_output_digest": "75444567800b229d",
       "tested_rgb_transform_count": 15755040
@@ -149,7 +149,7 @@
     },
     "target_disassembly_path": "evidence/cart2-r6-audio-cache-20261010/AnimartrixAudioBridge_cachefix_target_disassembly.txt",
     "target_disassembly_sha256": "5af9e14be4833a3bdb4e012ab1f550ccb71e47a780393537157511315cef904d",
-    "target_hot_path_check": "PASS: fixed-grid radial arithmetic uses bounded int32 multiply/divide codegen; generic int64 radial fallback remains for non-32x16 dimensions; profileLane calls are frame-preparation-only."
+    "target_hot_path_check": "PASS: the exact 32x16 runtime condition selects bounded int32 radial arithmetic; generic int64 division remains only for other geometries; profileLane calls are frame-preparation-only. A __divdi3 relocation for the generic fallback alone is not proof of execution on the 32x16 path."
   },
   "fallback_validation": {
     "status": "PASS",
@@ -178,5 +178,12 @@
     ],
     "pixel_result_comparison": "old R6 reference vs candidate, exact RGB equality"
   },
-  "repository_source_commit_note": "This checkpoint commits the exact runtime source overlay and diagnostic/offline evidence. Runtime source files remain independently SHA-256-bound below; the firmware bytes were built from those exact bytes before the commit."
+  "repository_source_commit_note": "This checkpoint commits the exact runtime source overlay and diagnostic/offline evidence. Runtime source files remain independently SHA-256-bound below; the firmware bytes were built from those exact bytes before the commit.",
+  "attribution_correction": {
+    "status": "SOURCE_REVIEW_CORRECTS_PRIOR_RADIAL_DIVISION_ATTRIBUTION",
+    "parent_r6_source_sha256": "56a391336b72bc6f37d835bbe1a6eca1108f3819fd99f5af9816e671ada46351",
+    "cachefix_source_sha256": "edfe168658d548fe8e52e05b5b9d0cc3390cfe11092423a2c1c12de95884ae74",
+    "finding": "The exact parent R6 source already contains the bounded int32 32x16 radial branch and int64 fallback for other geometries. The cachefix source changes frame-invariant profile calculations only. Existing __divdi3 evidence can describe the generic fallback, not proof that the configured 32x16 path executes it.",
+    "performance_conclusion": "R6 kernel-0 failure remains a verified frozen-gate failure. The source comparison does not isolate the remaining performance cause; do not attribute it to the radial fallback or claim the cachefix passed live qualification."
+  }
 }

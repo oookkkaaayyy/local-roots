@@ -35,11 +35,24 @@ const second=await buildWledProjection(changed,51,7,1000);
 assert.notEqual(second.expectedState.hbnf.overlayId,built.expectedState.hbnf.overlayId);
 assert.equal(MATRIX_CANDIDATE,"hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010");
 const controlState=JSON.parse(fs.readFileSync("config/HBNF_CONTROL_STATE.json","utf8"));
-const installed=JSON.parse(fs.readFileSync("evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json","utf8"));
-assert.equal(MATRIX_CANDIDATE,controlState.installed_release,"relay release must match lifecycle authority");
-assert.equal(MATRIX_CANDIDATE,installed.candidate.release_id,"relay release must match fresh installed runtime reconciliation");
-assert.equal(installed.candidate.sha256,"f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b");
-assert.equal(controlState.installed_firmware_sha256,installed.candidate.sha256,"exact installed artifact digest must match lifecycle authority");
+const failedRun=JSON.parse(fs.readFileSync("evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-separate-sleep-20261010/QUALIFICATION_CONTINUATION_RESULT.json","utf8"));
+const currentR4=controlState.installed_firmware_reconciliation;
+const releaseControl=controlState.coordinated_r6_live_release_authorization.backend_transaction_progress;
+assert.equal(MATRIX_CANDIDATE,controlState.r6_audio_cache_successor.candidate_release_id,"relay stays bound to the failed R6 artifact");
+assert.equal(controlState.r6_audio_cache_successor.candidate_sha256,"f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b");
+assert.equal(failedRun.status,"QUALIFICATION_FAILED_R4_RECOVERED");
+assert.equal(failedRun.candidate_release_id,MATRIX_CANDIDATE);
+assert.equal(failedRun.candidate_sha256,controlState.r6_audio_cache_successor.candidate_sha256);
+assert.equal(failedRun.recovery.status,"R4_READBACK_VERIFIED");
+assert.equal(failedRun.recovery.runtime.matrix_build.release_id,currentR4.release_id);
+assert.equal(currentR4.release_id,controlState.installed_release);
+assert.equal(currentR4.sha256,controlState.installed_firmware_sha256);
+assert.notEqual(MATRIX_CANDIDATE,currentR4.release_id,"failed R6 relay identity must not match recovered R4");
+assert.equal(captured.state.HBNF.candidate,currentR4.release_id,"preserved Matrix readback must identify the recovered R4 release");
+assert.notEqual(normalizeReadback(captured.info,captured.state).candidate,MATRIX_CANDIDATE,"R4 readback must fail the relay's pinned R6 identity check");
+assert.equal(controlState.live_mutation_authorized,false);
+assert.equal(releaseControl.command_fence_active,false,"canonical command fence must remain closed after R6 failure");
+assert.equal(releaseControl.opal_relay_active,false,"staged relay must remain inactive");
 assert.equal(MATRIX_MAC,"70:4b:ca:5b:34:5c");
 // Simulate lost response after one authorized write: the same challenge cannot reapply,
 // but a fresh challenge can confirm a readback that now matches without resetting an overlay.
@@ -56,6 +69,7 @@ assert.ok(!/mqtt|broker\.emqx|publish\(/i.test(adapter),"legacy writer/public MQ
 assert.ok(adapter.includes("commandApplicationConfirmed:false"));
 const relay=fs.readFileSync("staging/coordinated-backend/hbnf-cart-control/matrix-relay.ts","utf8");
 assert.ok(relay.includes("HBNF_MATRIX_RELAY_TOKEN"));assert.ok(relay.includes("X-HBNF-Relay-ID"));assert.ok(relay.includes("hbnf_cart_matrix_relay_confirm"));
+assert.ok(relay.includes("actual.candidate!==MATRIX_CANDIDATE||actual.hbnf.candidate!==MATRIX_CANDIDATE"),"R4 readback must be rejected before apply authorization");
 const opal=fs.readFileSync("staging/coordinated-backend/opal/hbnf-matrix-relay","utf8");
 assert.ok(!opal.includes("SUPABASE_SERVICE_ROLE_KEY"));assert.ok(opal.includes("704bca5b345c"));assert.ok(opal.includes("functions/v1/hbnf-cart-control"));assert.ok(opal.includes("X-HBNF-Relay-ID"));
 assert.ok(opal.includes(MATRIX_CANDIDATE),"Opal snapshot and request must pin the current installed R6 release");
