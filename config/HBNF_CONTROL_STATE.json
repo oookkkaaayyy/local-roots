@@ -2690,12 +2690,12 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "R6_CACHEFIX_OFFLINE_ADMISSION_PASS__FRESH_R4_MATRIX_AUX_OPAL_PREFLIGHT_PASS__LIVE_ADMISSION_PENDING",
+    "current_failure_domain": "R6_AUDIO_CACHE_LIVE_APPROVED_PASS__GUARDED_LAUNCH_PENDING",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
       "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
       "artifact_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
-      "status": "EXACT_CANDIDATE_AUTHORIZED_CONDITIONALLY__DO_NOT_MUTATE_UNTIL_FINAL_LIVE_ADMISSION_AND_GUARD_PASS"
+      "status": "EXACT_CANDIDATE_AUTHORIZED__LIVE_APPROVED_PASS__NO_WRITE_YET"
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
@@ -2945,7 +2945,7 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-10T09:43:48Z",
+  "last_updated_utc": "2026-10-10T10:00:32Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "authorization": "Current owner directive authorizes evidence-based further exact in-scope installations and exact R4 recovery, conditioned on per-attempt fail-closed admission and safety checks.",
@@ -2954,9 +2954,9 @@
     "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
     "controller_package_sha256": null,
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "current_gate": "Offline admission and fresh read-only target/power/AUX/Opal/single-worker preflight pass. Final exact LIVE_APPROVED admission and guarded launch remain mandatory.",
+    "current_gate": "Fresh LIVE_APPROVED admission passes for exact R6 SHA and R4 recovery; guarded launch pending; no device write yet.",
     "hardware_writes_permitted_now": false,
-    "live_admission_pending": true,
+    "live_admission_pending": false,
     "transaction_consumed": false,
     "candidate_install_limit": 1,
     "candidate_attempts_used": 0,
@@ -3622,7 +3622,7 @@
     },
     "conditional_authority": {
       "source_message_ref": "Current owner instruction in this task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks.",
-      "status": "EXACT_OWNER_AUTHORITY_OPEN__OFFLINE_ADMISSION_AND_FRESH_READONLY_PREFLIGHT_PASS__LIVE_ADMISSION_PENDING",
+      "status": "LIVE_APPROVED_PASS__GUARDED_LAUNCH_PENDING__NO_DEVICE_WRITE_YET",
       "candidate_install_limit": 1,
       "recovery_install_limit": 1,
       "requires_live_approved_admission": true,
@@ -3632,8 +3632,10 @@
       "candidate_attempts_used": 0,
       "recovery_attempts_used": 0
     },
-    "status": "EXACT_CANDIDATE_CONDITIONALLY_AUTHORIZED__FRESH_READONLY_PREFLIGHT_PASS__FINAL_LIVE_ADMISSION_PENDING",
+    "status": "EXACT_R6_AUDIO_CACHE_AUTHORIZED__LIVE_APPROVED_PASS__GUARDED_LAUNCH_PENDING",
     "artifact_drive_file_id": "1Ta0noTokPPxa8tBKsnfS83KIKbz2ZqS3",
-    "artifact_drive_size_bytes": 1497984
+    "artifact_drive_size_bytes": 1497984,
+    "transaction_result": "evidence/cart2-r6-audio-cache-20261010/live-qualification/TRANSACTION_RESULT.json",
+    "host_preflight_blocker_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/HOST_PREFLIGHT_BLOCKER_RECONCILIATION.json"
   }
 }

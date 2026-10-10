@@ -23,7 +23,7 @@
     "device_and_source_authority_reconciled": {
       "evidence_file": "evidence/cart2-r6-audio-cache-20261010/R6_LIVE_AUTHORIZATION_RECORD.json",
       "pass": true,
-      "sha256": "dff4ef73f9fa53a3f0f0e5588a00c2442c30a901be8dc204d84742170ab1396f"
+      "sha256": "1cc341483f6f3efabde5efbcb871dcdba4bd350eb4727e17c257611f198ffa56"
     },
     "entire_release_transaction_dryrun": {
       "evidence_file": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_TRANSACTION_DRYRUN.json",
@@ -50,6 +50,11 @@
       "pass": true,
       "sha256": "e41cc707e7c58a58eed6d8d5b425ac9bef20af796401fcf6d10cc413d8b09092"
     },
+    "host_preflight_false_positive_reconciled": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/live-qualification/HOST_PREFLIGHT_BLOCKER_RECONCILIATION.json",
+      "pass": true,
+      "sha256": "58ec901abbc38ecbb181f643c9ea4454fe746c84ced37b51dd0423d3a8d2bfe5"
+    },
     "known_good_compiler_entry_smoke": {
       "evidence_file": "evidence/cart2-r6-audio-cache-20261010/TARGET_BUILD.log",
       "pass": true,
@@ -68,7 +73,7 @@
     "preflight_read_only_hardware_state_and_identity": {
       "evidence_file": "evidence/cart2-r6-audio-cache-20261010/live-qualification/FRESH_PRELIVE_READONLY.json",
       "pass": true,
-      "sha256": "87347c3d6b35d363f2d6164e4e08d8a035246fd18f008be6c09abdcd6c012df9"
+      "sha256": "4c4a8b81aaa47d5468c397cc825fe65e2930ef0bf7a0f23d090c2b74c6bd017e"
     },
     "rollback_artifact_hash_verified": {
       "evidence_file": "evidence/cart2-r6-audio-cache-20261010/R6_DRIVE_ARTIFACT_READBACK.json",

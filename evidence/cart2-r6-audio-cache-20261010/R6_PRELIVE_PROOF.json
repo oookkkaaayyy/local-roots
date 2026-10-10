@@ -1,13 +1,13 @@
 {
   "approved_for_mutation": true,
-  "capsule_sha256": "7510c66516d06e171db42c4692822f1128b053b7db2ae6b534b7f22789a999ef",
+  "capsule_sha256": "245549790661ddf49bf0b09daba84ca9ad5c2cc7fd05c14cd456e9a11eb8e4e4",
   "consumer_contract": {
     "identity": "Exact candidate and recovery staged over SSH to Opal with SHA-256/size check, then one Opal-origin multipart WLED /update POST to Matrix .10; runtime readback requires build release/candidate identity and device MAC.",
     "verified": true
   },
   "pre_mutation_state": {
-    "device": "Fresh read-only capture at 2026-10-10T09:56:42Z: Matrix 192.168.77.10 / 70:4b:ca:5b:34:5c is exact Foundation R4, WLED 16.0.1, brightness 44, uptime 4211 s, FPS 38, heap 74476; diagnostic and telemetry off. AUX .11 / 8c:94:df:55:c3:4c is on, 22 LEDs, lor=0, live DDP from .10. Opal updater ledger seq55 verifies exact R4. Mac on AC and en0 Cart LAN; house-voltage sensor absent; single worker. See fresh preflight receipt.",
-    "fresh_preflight_sha256": "87347c3d6b35d363f2d6164e4e08d8a035246fd18f008be6c09abdcd6c012df9"
+    "device": "Fresh read-only preflight at 2026-10-10T10:00:12Z: exact Foundation R4 installed on Matrix .10 / MAC 70:4b:ca:5b:34:5c, WLED 16.0.1, brightness 44, FPS 25, heap 74232, uptime 4439 seconds; Packet20/telemetry off. AUX .11 / MAC 8c:94:df:55:c3:4c on and receiving live DDP from Matrix, 22 LEDs, lor=0. Opal ledger sequence 55 contains exact R4 SHA. Mac AC, Cart LAN en0, no house voltage sensor, one worker.",
+    "fresh_preflight_sha256": "4c4a8b81aaa47d5468c397cc825fe65e2930ef0bf7a0f23d090c2b74c6bd017e"
   },
   "recovery_identity": {
     "identity": "Foundation R4 SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c; Drive file 1MepE3RCuEVErOHKLQ2FLZAj-fMPVWCt_",
@@ -45,7 +45,8 @@
         "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_TRANSACTION_DRYRUN.json",
         "tests/test_r6_audio_cache_transaction_dryrun.py",
         "tests/hbnf_guarded_run.py",
-        "tests/test_hbnf_r6_combined_feature_check.py"
+        "tests/test_hbnf_r6_combined_feature_check.py",
+        "evidence/cart2-r6-audio-cache-20261010/live-qualification/HOST_PREFLIGHT_BLOCKER_RECONCILIATION.json"
       ],
       "status": "PASS"
     }

@@ -1,0 +1,25 @@
+{
+  "authorization": {
+    "authorization_id": null,
+    "candidate_attempts_used": 0,
+    "candidate_install_limit": 1,
+    "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+    "reconciled": "Owner authorization remains exact and unconsumed; only the pending gate is reopened after evidence-based host launch correction.",
+    "recovery_attempts_used": 0,
+    "recovery_install_limit": 1
+  },
+  "captured_at_utc": "2026-10-10T09:59:53Z",
+  "cause": "The caffeinate wrapper command line itself included hbnf_r6_audio_cache_live_transaction.py; single_worker_check matched it as an unrelated worker because the wrapper was not in the transaction process ancestry. An equivalent isolated caffeinate process command does not contain the worker path and does not conflict.",
+  "classification": "HOST_LAUNCH_WRAPPER_FALSE_POSITIVE__NO_DEVICE_MUTATION",
+  "correction": "Run the guarded transaction as its own process and hold Mac sleep with a separate `caffeinate -dims -w <transaction-pid>` process; rerun admission, capsule, proof, target preflight, and single-worker checks unchanged.",
+  "device_state": "The failed preflight had already verified exact R4 identity and AUX DDP before running the worker check; no write path was called. New immediate preflight remains required before any future write.",
+  "failed_attempt": {
+    "candidate_install_attempts": 0,
+    "device_requests": 6,
+    "r4_recovery_attempts": 0,
+    "result": "transaction stopped at single-worker detector before artifact staging or WLED /update",
+    "stage": "read-only preflight only"
+  },
+  "no_threshold_or_scope_change": true,
+  "schema": "hbnf-r6-preflight-host-blocker-reconciliation-v1"
+}

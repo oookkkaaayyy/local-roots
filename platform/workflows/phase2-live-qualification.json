@@ -13,6 +13,7 @@
     "config/HBNF_RUNTIME_TELEMETRY_CONTRACT.json",
     "evidence/cart2-r6-audio-cache-20261010/FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
     "evidence/cart2-r6-audio-cache-20261010/COMBINED_FEATURE_OFFLINE_TESTS.json",
+    "evidence/cart2-r6-audio-cache-20261010/live-qualification/HOST_PREFLIGHT_BLOCKER_RECONCILIATION.json",
     "evidence/cart2-r6-audio-cache-20261010/artifact/hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010.bin",
     "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
     "firmware/phase2/integration-r6-cachefix/SOURCE_BINDING.json",

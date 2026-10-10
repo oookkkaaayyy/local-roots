@@ -4,7 +4,7 @@
     "remote_execution_for_source_archaeology": false,
     "retry_inherits_authorization": false
   },
-  "created_at": "2026-10-10T09:56:28.855344+00:00",
+  "created_at": "2026-10-10T10:00:32.504943+00:00",
   "expected_terminal_outputs": [
     "R4 runtime qualification or exact failure classification",
     "exact Matrix release identity",
@@ -24,7 +24,7 @@
     "branch": "hbnf-cart2-phase2-integration-20261006",
     "dirty": true,
     "type": "git_commit",
-    "value": "5313580b80b8698d9b84c447f66e11e571a0d95e"
+    "value": "55874c6a1e2602e6adfb19268d88b7ac8b22aace"
   },
   "repo_inputs": [
     {
@@ -33,9 +33,9 @@
       "sha256": "8d42f1fd540c95a01ae16857c286f6350b57ad8e3cd0c22befd1780fcb26d29c"
     },
     {
-      "bytes": 246895,
+      "bytes": 246957,
       "path": "config/HBNF_CONTROL_STATE.json",
-      "sha256": "101af807f8b88d16ac20fe5504aa19126cf74e3f23905feaef111847567a8a90"
+      "sha256": "b5d7b401e1d61b3b44aa1254e7b8b15610e3e38ba023c17bfedd28a028a67836"
     },
     {
       "bytes": 45282,
@@ -101,6 +101,11 @@
       "bytes": 7732,
       "path": "evidence/cart2-r6-audio-cache-20261010/COMBINED_FEATURE_OFFLINE_TESTS.json",
       "sha256": "4987b837e437a09c1b501b43d428f35488e09dc89af8f98915165fde9515681c"
+    },
+    {
+      "bytes": 1712,
+      "path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/HOST_PREFLIGHT_BLOCKER_RECONCILIATION.json",
+      "sha256": "58ec901abbc38ecbb181f643c9ea4454fe746c84ced37b51dd0423d3a8d2bfe5"
     },
     {
       "bytes": 1497984,
@@ -310,7 +315,7 @@
   },
   "system_id": "hbnf-cart",
   "terminal_recovery": "If the exact R6 audio-cache candidate is unqualified or runtime safety/required AUX behavior fails, preserve the failure evidence, install only the exact R4 recovery within the authorized limit, verify exact R4 identity and health, then continue offline work; never stop solely because a soak failed.",
-  "trace_id": "8af6c165ede6453e8d1bf43e02675ca5",
+  "trace_id": "cd7fdb2a2da148c0bd89d423ab9f901d",
   "user_interaction_policy": {
     "copy_paste_delivery": "one_single_fenced_block_per_action",
     "max_user_actions_per_blocker": 1,
@@ -327,6 +332,6 @@
   "workflow_id": "phase2-live-qualification",
   "workflow_source": {
     "path": "platform/workflows/phase2-live-qualification.json",
-    "sha256": "ccc2d39424c2dd112720fb2ba9517f4b3b69a44f67fa8172848fb8ba502e8c69"
+    "sha256": "a76bc9aa9fc1c171615a8bf3320fd6d30f5680332f01f8b862c9148a900942bb"
   }
 }
