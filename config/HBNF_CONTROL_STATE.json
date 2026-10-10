@@ -670,6 +670,12 @@
       "release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
       "sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb"
     },
+    "cloudflare_auth_session": {
+      "evidence_path": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/CLOUDFLARE_AUTH_SESSION_CLEANUP.json",
+      "evidence_sha256": "742c76f97d5c648b601dceb61440b208f65e99d6157026d392571b46ecb2a6cb",
+      "reauth_required_before_any_future_cloudflare_api_write": true,
+      "status": "INVALIDATED_AFTER_CREDENTIAL_EXPOSURE"
+    },
     "cloudflare_route_test": {
       "asset_check_path": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/candidate-assets.json",
       "asset_check_sha256": "962dd31b93a71433071661554a99e1ed99ad1045bd68c0e613b67806119ea856",
@@ -748,7 +754,7 @@
     },
     "install_attempts": 0,
     "install_limit": 1,
-    "last_preflight_blocker": "Corrected public route test passed, but the execution host is not currently connected to HBNF-Cart: Wi-Fi is not associated, host IP is 192.168.68.91, the saved HBNF-Cart network could not be found in range, and bounded read-only requests to Matrix .10/AUX .11 timed out. The live Owner page reports Cart service reachable but Matrix command unconfirmed/failed; AUX confirmation is stale. Do not deploy the backend/frontend package or install R6 until actual device identity/health/power/recovery and revision-bound application evidence are safely established.",
+    "last_preflight_blocker": "Fresh Matrix/AUX/Opal preflight remains blocked: the host is not on HBNF-Cart LAN. Cloudflare OAuth was invalidated as a security precaution; a fresh login is required before any future Cloudflare API write. Existing authorized Cart routes remain active and unchanged.",
     "limits": [
       "no candidate retry or different firmware",
       "no router/Opal/AUX firmware or config changes",
@@ -2408,6 +2414,11 @@
       "after successful Release07 recovery, use the same direct-LAN exact-artifact mechanism as the pre-proven rollback path for future diagnostic/fix sessions"
     ],
     "release_readiness": {
+      "cloudflare_authentication": {
+        "evidence_path": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/CLOUDFLARE_AUTH_SESSION_CLEANUP.json",
+        "sha256": "742c76f97d5c648b601dceb61440b208f65e99d6157026d392571b46ecb2a6cb",
+        "status": "REAUTH_REQUIRED_BEFORE_CLOUDFLARE_WRITES"
+      },
       "next_gate": "Fresh read-only device identity/health/power/recovery checks and exact LIVE_APPROVED admission; only then execute the coordinated backend/frontend/R6 transaction.",
       "offline_test_receipt": {
         "path": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/OFFLINE_RELEASE_READINESS_TESTS.json",
@@ -2814,7 +2825,7 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-10T04:19:23.253367+00:00",
+  "last_updated_utc": "2026-10-10T04:21:17.235602+00:00",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "authorization": "Current owner explicitly authorizes persistent continuation of the existing exact R6 coordinated release, including bounded Cart-only route validation, release deployment, one R6 installation and normal reboot, conditionally authorized exact R4 recovery, and qualification. All existing admission, security, rollback, and frozen gates remain mandatory.",

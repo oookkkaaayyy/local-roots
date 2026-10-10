@@ -1,0 +1,9 @@
+{
+  "action": "Ran the already-installed Wrangler logout command; Wrangler reported \u201cSuccessfully logged out.\u201d",
+  "captured_at_utc": "2026-10-10T04:21:17.235602+00:00",
+  "effect": "The exposed OAuth session is invalidated; any future Cloudflare API operation requires a fresh authenticated session.",
+  "official_reference": "https://developers.cloudflare.com/workers/wrangler/commands/general/",
+  "reason": "A Wrangler OAuth credential was exposed in an earlier tool output. No credential value is recorded here.",
+  "schema": "hbnf-cloudflare-oauth-cleanup-receipt-v1",
+  "verification": "The stored ~/.wrangler/config/default.toml credential file is absent. No Cloudflare Worker deployment, route, DNS, asset, binding, or backend configuration was changed during logout."
+}
