@@ -34,12 +34,19 @@ test("Vibe UI is fail-closed until backend qualification flag and never calls a 
   const guest = readFileSync(new URL("../../../hbnf-final-controller/guest/hbnf-cart/guest.js", import.meta.url), "utf8");
   const statusApi = readFileSync(new URL("./index.ts", import.meta.url), "utf8");
   const adapter = readFileSync(new URL("../hbnf-matrix-adapter-foundation/index.ts", import.meta.url), "utf8");
-  const reconcile = readFileSync(new URL("../hbnf-cart-reconcile/index.ts", import.meta.url), "utf8");
+  const projection = readFileSync(new URL("./matrix-relay-projection.ts", import.meta.url), "utf8");
+  const relay = readFileSync(new URL("./matrix-relay.ts", import.meta.url), "utf8");
+  const control = readFileSync(new URL("./index.ts", import.meta.url), "utf8");
   assert.match(owner, /canonicalCapabilities\.phase2VibeRuntimeV1 === true/);
   assert.match(guest, /snapshot\.capabilities\.phase2VibeRuntimeV1===true/);
   assert.match(statusApi, /HBNF_PHASE2_VIBE_RUNTIME_READY/);
-  assert.match(reconcile, /selectedVibe:\s*state\.selectedVibe/);
-  assert.match(adapter, /\.\.\.runtimeVibeField\(p\.selectedVibe\)/);
+  assert.match(control, /handleMatrixRelay\(req\)/, "authenticated relay remains the sole Matrix command writer");
+  assert.match(relay, /buildWledProjection\(c,d\.revision,f\.epoch\)/, "relay projects the canonical selected Vibe with revision and fence context");
+  assert.match(projection, /vibes\[String\(s\.selectedVibe\?\?""\)\]/, "Matrix projection reads canonical selectedVibe");
+  assert.match(projection, /hbnf:\{schema:"foundation-v1",candidate:MATRIX_CANDIDATE,scene:scenes\[sceneId\],vibe,/, "expected readback binds the selected Vibe");
+  assert.match(adapter, /Compatibility endpoint only\. It is no longer a command writer/);
+  assert.match(adapter, /confirmed:false,commandApplicationConfirmed:false,transportConfirmed:false/);
+  assert.match(adapter, /matrix_writer_moved_to_opal_relay/);
   assert.match(owner, /device application and underglow output are not confirmed/);
 });
 
