@@ -1,0 +1,42 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "R6_EARLY_KERNEL_AND_R4_BASELINE_INTEGRITY_20261010",
+  "summary": "Order the known R6 failing kernel 0 before kernel 13 and require the exact committed Foundation R4 baseline plus all 28 profile hashes before the live sweep can begin.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Execution Reset directs fast-fail on historical kernel 0 and preserves all unchanged qualification gates. The existing committed Foundation R4 baseline already contains exact per-profile SHA-256 values.",
+      "affected_subsystem": "Offline qualification runner and its host regression test. Frozen production thresholds and firmware are unchanged.",
+      "rollback_reference": "Revert this receipt and the two scoped runner/test changes. No live mutation occurred.",
+      "evidence_sources": [
+        "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
+        "evidence/hbnf-foundation-qualification-20261005/seq39/live/PRE_SOAK_BASELINE.json",
+        "R6 failure evidence: kernel 0 was the measured severe regression; R4 remains the exact Foundation baseline."
+      ],
+      "tests": [
+        "python3 tests/hbnf_live_kernel_sweep.py: PASS; full 28-kernel ordering retains all entries, puts 0 then 13 first, rejects a missing entry, and rejects tampered baseline profiles.",
+        "Committed R4 baseline profile-set integrity preflight: PASS for all 28 exact profile hashes.",
+        "python3 tests/hbnf_guarded_run.py: PASS.",
+        "python3 tests/hbnf_delivery_rail_host.py: PASS, including expected negative admission cases.",
+        "python3 tests/hbnf_packet20_live_entrypoint_guard.py: PASS.",
+        "python3 scripts/hbnf_architecture_fitness.py: PASS.",
+        "python3 scripts/hbnf_control.py status: PASS; live mutation remains closed.",
+        "git diff --check: PASS."
+      ],
+      "live_state": {
+        "device_mutation": false,
+        "production_deployment": false,
+        "live_mutation_authorized": false,
+        "installed_firmware": "exact Foundation R4; unchanged",
+        "diagnostic_artifact_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a"
+      }
+    }
+  }
+}
