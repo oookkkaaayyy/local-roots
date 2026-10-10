@@ -1,0 +1,141 @@
+{
+  "schema": "hbnf-cart2-release-admission-v1",
+  "stage": "LIVE_APPROVED",
+  "outcome": "PASS",
+  "classification": "BOUNDED_DIAGNOSTIC_ONLY_NOT_PRODUCTION_RELEASE",
+  "fresh_owner_authorization": {
+    "attempt_number": 2,
+    "authorization_id": "OWNER-20261010-R6-FRAME-CONTEXT-OPAL-ATTEMPT2",
+    "candidate_bin_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
+    "candidate_install_limit": 1,
+    "candidate_release_id": "hbnf-cart2-r6-frame-context-diagnostic-20261010",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "recovery_install_limit": 1,
+    "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "scope": [
+      "one additional evidence-based diagnostic install using a materially corrected transport",
+      "read-only matched kernel-0 frame-context capture with existing 8-second safety polling",
+      "restore and verify renderer snapshot",
+      "one mandatory exact Foundation R4 return and verify Matrix/AUX DDP",
+      "no firmware build, no cloud/router/AUX firmware changes, no production acceptance"
+    ],
+    "source_message_ref": "Current owner message in this Codex task, 2026-10-10: CART 2.0 — ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE",
+    "transport": "SSH-verified temporary artifact on Opal, then one Opal-origin multipart POST to Matrix WLED /update"
+  },
+  "identities": {
+    "candidate_release_id": "hbnf-cart2-r6-frame-context-diagnostic-20261010",
+    "source_commit": "Diagnostic build source commit 2219ade3db3e0c021b151fd1b3aec7d8360d4804; all 14 manifested firmware files hash-match the authoritative source closure. Transaction harness changes do not change firmware bytes.",
+    "candidate_bin_path": "evidence/cart2-execution-reset-20261010/artifact/hbnf-cart2-r6-frame-context-diagnostic-20261010.bin",
+    "candidate_bin_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
+    "candidate_bin_size_bytes": 1511456,
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "rollback_bin_path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "expected_installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "expected_installed_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "checks": {
+    "device_and_source_authority_reconciled": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_OWNER_AUTHORIZATION_OPAL_ATTEMPT2.json",
+      "sha256": "47efd3b9782e6d1fbd8ba995a1cd2d9da3dfcecbb1963c4577cb7732dbb4a321"
+    },
+    "prior_transport_failure_classified_and_retry_method_changed": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-execution-reset-20261010/live-diagnostic/TRANSFER_FAILURE_CLASSIFICATION.json",
+      "sha256": "0ae3dbdfaa8da1fa4acd838c624f0886dcbc07b1270d6a73b9b17d17c3664ee5"
+    },
+    "attempt1_device_state_reconciled_to_exact_r4": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-execution-reset-20261010/live-diagnostic/MAC_TRANSFER_FAILURE_R4_VERIFICATION.json",
+      "sha256": "42a17d77729519754810993965ae706049ec9044484fc37b4de33ced6990d549"
+    },
+    "opal_readonly_tools_space_ledger_and_matrix_reachability": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-execution-reset-20261010/live-diagnostic/OPAL_READONLY_PREFLIGHT.json",
+      "sha256": "55a5c4d9d6ccacbe90f5538b0576d8512fc6f8e72c8d6d4064d803f303679b31"
+    },
+    "fully_local_pinned_build_toolchain": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-execution-reset-20261010/R6_FRAME_CONTEXT_DIAGNOSTIC_MANIFEST.json",
+      "sha256": "250bb74e4cd03f0c00df13debcc451b662a9db09e08455e309e2d8b259bc68b5"
+    },
+    "known_good_compiler_entry_smoke": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-execution-reset-20261010/R6_FRAME_CONTEXT_DIAGNOSTIC_BUILD.log",
+      "sha256": "24bbca9479773ec646f226755dfaace999501c6a595fd667a8a10b7b6ed8e007"
+    },
+    "exact_source_dependency_generated_input_closure": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-execution-reset-20261010/R6_FRAME_CONTEXT_DIAGNOSTIC_MANIFEST.json",
+      "sha256": "250bb74e4cd03f0c00df13debcc451b662a9db09e08455e309e2d8b259bc68b5"
+    },
+    "compiled_embedded_candidate_id_and_sha": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-execution-reset-20261010/R6_FRAME_CONTEXT_DIAGNOSTIC_MANIFEST.json",
+      "sha256": "250bb74e4cd03f0c00df13debcc451b662a9db09e08455e309e2d8b259bc68b5"
+    },
+    "flash_and_ram_headroom": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_RESOURCE_HEADROOM.json",
+      "sha256": "090f2f02f78eb03390ac26763dc03069f77b8c1cbccc3fe969099b4da5eb168e"
+    },
+    "committed_feature_scope_preserved": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-r6-integrated-20261009/OFFLINE_TEST_RECEIPT.json",
+      "sha256": "575a6a5aa8a61d10bcf535a8ae146c489362fe906237011bac034196e8557110"
+    },
+    "all_historical_host_failures_replayed": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/OFFLINE_RELEASE_READINESS_TESTS.json",
+      "sha256": "6b8a3d047e671b34c3e184c79aa8bef72c09227b59c235d4c366fd0aa52c819d"
+    },
+    "entire_release_transaction_dryrun": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_TRANSACTION_DRYRUN.json",
+      "sha256": "e4ee0253bc76cf08dd53a3d90611e185927aeb52b79fc908e6bcd69fd7ca9f2a"
+    },
+    "attempt2_opal_transport_tests_and_offline_gates": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_ATTEMPT2_OFFLINE_REPLAY.json",
+      "sha256": "f53d297133ee3b2326404448e8d6477069ebec70364144f670febcb35eafa41d"
+    },
+    "frozen_performance_soak_and_restore_procedure": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_FROZEN_LIVE_QUALIFICATION_PROCEDURE.json",
+      "sha256": "fb13075edc2c9d132b1bcdd8c10e235e8c7ae34e049d71166f3ce6294d2c4a96"
+    },
+    "rollback_artifact_hash_verified": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    },
+    "launcher_rejects_invalid_manifest_before_device_access": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_LAUNCH_GUARD_TEST_RESULT.json",
+      "sha256": "0ea632822d35f1030c279c89b9f7b7d2a4f6c8aa5f19bf792a01248cd1c6bf59"
+    },
+    "matched_tails_off_test_plan": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_FROZEN_LIVE_QUALIFICATION_PROCEDURE.json",
+      "sha256": "fb13075edc2c9d132b1bcdd8c10e235e8c7ae34e049d71166f3ce6294d2c4a96"
+    },
+    "preflight_read_only_hardware_state_and_identity": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-execution-reset-20261010/live-diagnostic/ATTEMPT2_PREINSTALL_PREFLIGHT.json",
+      "sha256": "5f2122d5a11f896e51b70997e0d542dd2a1780721fe7e0bf04085367e1b3f19d"
+    },
+    "one_authorized_live_worker": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-execution-reset-20261010/live-diagnostic/ATTEMPT2_PREINSTALL_PREFLIGHT.json",
+      "sha256": "5f2122d5a11f896e51b70997e0d542dd2a1780721fe7e0bf04085367e1b3f19d"
+    }
+  },
+  "limits": {
+    "candidate_install_limit": 1,
+    "r4_return_limit": 1,
+    "diagnostic_window_seconds_max": 60,
+    "safety_poll_seconds": 8,
+    "production_qualification": "NOT_AUTHORIZED_BY_DIAGNOSTIC_ADMISSION"
+  }
+}

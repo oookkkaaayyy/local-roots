@@ -1,0 +1,122 @@
+PASS R6 trace source contract: compile-gated, bounded, named audio mappings, no hot-path I/O/allocation
+PASS Opal transport fallback exact-byte staging, single-request, and no-retry cases
+PASS: guarded execution blocks wrong-state/unauthorized mutation; exact LIVE_APPROVED admission rejects missing, malformed, and stale identities before child execution
+{
+  "current_state": "PHASE2_INTEGRATING",
+  "execution_cursor": {
+    "current_failure_domain": "R6_DIAGNOSTIC_MAC_TRANSPORT_FAILED__R4_VERIFIED__OPAL_ATTEMPT2_EXACTLY_BOUND",
+    "current_lifecycle_state": "PHASE2_INTEGRATING",
+    "current_subject": {
+      "artifact_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
+      "attempt_number": 2,
+      "release_id": "hbnf-cart2-r6-frame-context-diagnostic-20261010",
+      "status": "ONE_OPAL_ORIGIN_ATTEMPT_AUTHORIZED_PENDING_FRESH_GUARDED_ADMISSION"
+    },
+    "current_transition": "T4_PHASE2_INTEGRATION",
+    "exact_next_path": [
+      "Verify refreshed Matrix/AUX/R4, Mac power/route, Opal tool/space/ledger, exact candidate/rollback hashes, and single-worker preflight.",
+      "Run exact LIVE_APPROVED admission, capsule, prelive proof, and guarded-run checks for attempt 2.",
+      "Stage the exact diagnostic on Opal with remote SHA/size verification; issue one Opal-origin WLED /update request only.",
+      "If R4 remains after any failed/ambiguous upload, stop without retry and continue offline; if diagnostic is installed, capture kernel 0 with 8-second safety polling.",
+      "Restore renderer state, return to exact R4 once, verify Matrix/AUX, close authority, and continue product qualification work."
+    ],
+    "no_repeat": [
+      "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
+      "R4 fixed-point performance trial is closed and materially successful; do not rerun exploratory R1-R4 selection.",
+      "Observer-effect measurement on exact artifact SHA 6285f1...4338 is already PASS; do not rerun unless artifact/instrumentation changes.",
+      "Exact Release07 rollback path is proven; do not re-derive it.",
+      "Host-only failures do not consume a recovery install unless actual device/runtime safety evidence fails or becomes unknown.",
+      "Do not rebuild firmware or use GitHub Actions for a host-harness defect.",
+      "ANTI_STALL V2: the 30-minute clock is time since last measurable forward progress, not attempt duration; healthy advancing work continues.",
+      "ANTI_STALL V2: when stalled, stop only the stalled mechanism at a safe boundary and preserve install/session/snapshot/checkpoint whenever proven safe; no timer-based restart/reinstall/recovery/reboot.",
+      "ANTI_STALL V2: one retry maximum per failure class, only with a materially different mechanism supported by new evidence.",
+      "ANTI_STALL V2: after 60 minutes without lifecycle progress, activate noncontending offline-safe lanes in parallel; do not kill healthy critical-path work.",
+      "ANTI_STALL V2: no firmware rebuild or GitHub Actions for host/transport/harness/telemetry-reader defects unless the artifact itself is invalidated.",
+      "Do not create a replacement firmware candidate from seq45 isolated frame-max excursions unless corrected sustained-tail analysis proves a real renderer/runtime regression.",
+      "Do not rerun 28-kernel sweep or observer-effect A/B when reusing exact candidate SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
+      "Do not interpret the unanswered physical restore question as a failed restore or DDP failure; current WLED telemetry confirms DDP resumed.",
+      "Observer-effect measurement on exact R7 SHA-256 22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994 is complete in R7_OBSERVER_EFFECT_IDENTITY_RECEIPT.json; do not repeat the windows.",
+      "Attempt 1 for diagnostic eb1ef395...7b3a failed on Mac-origin curl transport and exact R4 was read-back healthy. Attempt 2 is separately bound to the previously proven Opal-origin path with one install and one R4 return; no unchanged transport retry is allowed."
+    ],
+    "parallel_ready_during_foundation_soak": [
+      "Mission Control/scoring source reconciliation and host tests",
+      "PWA/cache/versioning implementation and host tests",
+      "AudioFeatures/Vibe source-level implementation preparation that does not mutate live firmware",
+      "VisualMoment/text source-level implementation preparation that does not mutate live firmware"
+    ],
+    "schema": "hbnf-execution-cursor-v1"
+  },
+  "external_parallel_launch": {
+    "activation_event": "FOUNDATION_SOAK_RUNNING",
+    "failure_ownership": "Failure to spawn parallel workers is an orchestration/coordinator failure, never a failure of a worker that lacks spawn capability.",
+    "launch_owner": "COORDINATOR_EXTERNAL_TO_LIVE_WORKER",
+    "launch_status": "PHASE2_ACTIVE__HOST_OFFLINE_ONLY",
+    "required_live_worker_signal": "PARALLEL_LANES_READY",
+    "worker_can_spawn_workers": false
+  },
+  "inherited_evidence_ids": [
+    "PACKET20_DIAGNOSTIC_CLOSE",
+    "R4_RENDERER_PERFORMANCE",
+    "FOUNDATION_OBSERVER_EFFECT",
+    "RELEASE07_RECOVERY",
+    "HOST_DEADLINE_REGRESSION",
+    "HOST_HISTOGRAM_OVERFLOW_REGRESSION"
+  ],
+  "live_mutation_authorized": true,
+  "model_valid": true,
+  "next_state": "RELEASE_CANDIDATE",
+  "next_transition": "T4_PHASE2_INTEGRATION",
+  "observability": {
+    "authority_effect": "NONE",
+    "cadence_minutes": 15,
+    "current_worker": "P2_VIBE_AUDIO",
+    "note": "Telemetry only; never operational authority. Heartbeats must yield to critical-path work and may be delayed by blocking operations.",
+    "rows": {
+      "FOUNDATION_LIVE": 3,
+      "P2_MISSION_CONTROL_SCORING": 4,
+      "P2_PWA_RELIABILITY": 7,
+      "P2_TEXT_MOMENTS": 6,
+      "P2_VIBE_AUDIO": 5
+    },
+    "schema": "hbnf-worker-observability-state-v1",
+    "sheet_name": "Live Status",
+    "stale_after_minutes": 25,
+    "status_sheet_id": "1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko",
+    "status_sheet_url": "https://docs.google.com/spreadsheets/d/1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko/edit"
+  },
+  "parallelism": {
+    "core_lanes": [
+      "P2_MISSION_CONTROL_SCORING",
+      "P2_VIBE_AUDIO",
+      "P2_TEXT_MOMENTS",
+      "P2_PWA_RELIABILITY"
+    ],
+    "pass": true,
+    "required": true,
+    "tracked": [
+      "P2_MISSION_CONTROL_SCORING",
+      "P2_PWA_RELIABILITY",
+      "P2_TEXT_MOMENTS",
+      "P2_VIBE_AUDIO"
+    ],
+    "violations": []
+  },
+  "phase2_implementation_authorized": true,
+  "required_receipt_type": "phase2_integration",
+  "schema": "hbnf-control-status-v2",
+  "validation_errors": []
+}
+{
+  "errors": [],
+  "ok": true,
+  "repo_identity": {
+    "branch": "hbnf-cart2-phase2-integration-20261006",
+    "dirty": true,
+    "type": "git_commit",
+    "value": "53fb8436a1936c7e3bc180b69b82a6b3cd4cd428"
+  },
+  "schema": "local-roots-platform-doctor-v1",
+  "system_count": 6,
+  "warnings": [],
+  "workflow_count": 4
+}

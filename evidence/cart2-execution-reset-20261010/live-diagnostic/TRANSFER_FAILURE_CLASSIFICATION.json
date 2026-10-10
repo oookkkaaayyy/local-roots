@@ -1,0 +1,29 @@
+{
+  "classification": "MAC_ORIGIN_UPLOAD_TRANSPORT_FAILURE__NOT_FIRMWARE_FAILURE",
+  "curl_receipt": "/private/tmp/cart2-opal-local-20261009/evidence/cart2-execution-reset-20261010/live-diagnostic/diagnostic-upload-response.json",
+  "curl_receipt_sha256": "30fae2517370e327780b27a61e966298790ecfee5c13286a18d4d7c17d46de05",
+  "device_after_failure": "/private/tmp/cart2-opal-local-20261009/evidence/cart2-execution-reset-20261010/live-diagnostic/MAC_TRANSFER_FAILURE_R4_VERIFICATION.json",
+  "device_after_failure_sha256": "42a17d77729519754810993965ae706049ec9044484fc37b4de33ced6990d549",
+  "evidence_for_method": [
+    "evidence/hbnf-foundation-qualification-20261005/seq45/live/SEQ45_46_TRANSACTION_RESULT.json",
+    "evidence/hbnf-foundation-qualification-20261005/seq45/live/seq45-opal-copy-receipt.json",
+    "evidence/cart2-r7-performance-repair-20261009/R2_LIVE_DIAGNOSTIC_TRANSACTION/R2_OTA_TRANSFER_RESULT.json",
+    "https://curl.se/docs/faq.html",
+    "Pinned WLED source 29b389df1c1aaec6ff53aea742d17063b985906c, OTA handler paths in R6 manifest"
+  ],
+  "failed_attempt_receipt": "/private/tmp/cart2-opal-local-20261009/evidence/cart2-execution-reset-20261010/live-diagnostic/TRANSACTION_RESULT.json",
+  "failed_attempt_receipt_sha256": "059267f0be9eac43a1871cbbf4002278f6ba9ab3682de969609ef5b7f6b5018b",
+  "inference": "The Opal-origin mechanism isolates the previously failing Mac-to-Matrix upload path; success is not guaranteed.",
+  "materially_corrected_method": "Use the previously proven SSH-verified Opal staging followed by a single Opal-origin curl multipart POST to Matrix /update. Preserve exact artifact bytes, endpoint, multipart field, and timeout; no retry.",
+  "observed_failure": {
+    "curl_exit": 55,
+    "final_http_status": "000",
+    "request_count": 1,
+    "response_bytes": 0,
+    "stderr": "Send failure: Broken pipe"
+  },
+  "recorded_at_utc": "2026-10-10T08:20:08.626462+00:00",
+  "root_cause": "Unresolved below transport level; evidence does not establish the precise cause of the TCP send failure.",
+  "schema": "hbnf-r6-diagnostic-transfer-failure-classification-v1",
+  "verified_device_outcome": "Exact Foundation R4 remained installed; uptime increased; Matrix healthy; AUX native DDP remained true. No R4 rollback request was needed."
+}

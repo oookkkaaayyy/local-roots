@@ -1,0 +1,12 @@
+{
+  "artifact_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
+  "at_utc": "2026-10-10T08:11:08.597508+00:00",
+  "attempts": 1,
+  "curl_exit": 55,
+  "http_status": "000",
+  "response_bytes": 0,
+  "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "retry": false,
+  "stderr": "curl: (55) Send failure: Broken pipe\n",
+  "update_successful_text": false
+}

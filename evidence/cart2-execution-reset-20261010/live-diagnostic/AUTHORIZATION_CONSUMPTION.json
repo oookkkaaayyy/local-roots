@@ -1,0 +1,11 @@
+{
+  "at_utc": "2026-10-10T08:10:48.257266+00:00",
+  "candidate_attempt": 1,
+  "candidate_attempt_limit": 1,
+  "candidate_release_id": "hbnf-cart2-r6-frame-context-diagnostic-20261010",
+  "candidate_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
+  "control_state": "config/HBNF_CONTROL_STATE.json",
+  "r4_return_limit": 1,
+  "recorded_before_network_request": true,
+  "schema": "hbnf-r6-frame-context-diagnostic-consumption-v1"
+}

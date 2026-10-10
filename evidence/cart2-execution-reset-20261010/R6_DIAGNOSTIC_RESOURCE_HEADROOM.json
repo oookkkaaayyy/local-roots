@@ -1,0 +1,14 @@
+{
+  "schema": "hbnf-r6-frame-context-diagnostic-resource-headroom-v1",
+  "artifact_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
+  "bin_bytes": 1511456,
+  "flash_used_bytes": 1504717,
+  "flash_partition_bytes": 1572864,
+  "flash_headroom_bytes": 68147,
+  "ram_used_bytes": 118776,
+  "ram_limit_bytes": 327680,
+  "ram_headroom_bytes": 208904,
+  "trace_store_ram_bytes": 6224,
+  "source_manifest_sha256": "250bb74e4cd03f0c00df13debcc451b662a9db09e08455e309e2d8b259bc68b5",
+  "verified_from": "exact diagnostic target-build manifest; no rebuild performed"
+}

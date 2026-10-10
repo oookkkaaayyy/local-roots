@@ -1,0 +1,19 @@
+{
+  "captured_at_utc": "2026-10-10T08:27:08.037589+00:00",
+  "device_requests": 0,
+  "result": "PASS",
+  "schema": "hbnf-r6-diagnostic-attempt2-offline-replay-v1",
+  "test_log_path": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_ATTEMPT2_OFFLINE_TESTS.txt",
+  "test_log_sha256": "1d0c636ef81d21f56e9333865ffa13d4e246fc3e13a959d64ad0e28a2b3c9c83",
+  "tests": [
+    "python compile",
+    "trace source contract",
+    "Opal staging exact-hash/size/single-request mocked success",
+    "Opal broken-pipe no-retry mocked failure",
+    "full diagnostic sequence dry-run: success/catastrophic/collector timeout/identity mismatch/Opal hash mismatch/Opal curl55/renderer restore failure/R4 restore failure",
+    "guarded-run invalid admission fails before child device request",
+    "control status",
+    "platform doctor",
+    "git diff --check"
+  ]
+}

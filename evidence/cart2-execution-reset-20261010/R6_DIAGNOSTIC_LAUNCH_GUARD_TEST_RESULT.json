@@ -1,0 +1,10 @@
+{
+  "schema": "hbnf-r6-diagnostic-launch-guard-test-v1",
+  "recorded_at_utc": "2026-10-10T08:27:29.404537+00:00",
+  "command": "python3 tests/hbnf_guarded_run.py",
+  "exit_code": 0,
+  "result": "PASS: guarded execution blocks wrong-state/unauthorized mutation; exact LIVE_APPROVED admission rejects missing, malformed, and stale identities before child execution",
+  "source_sha256": "aefeee335891a52a93d6c97f038a1d4fe2e6e656e2482d77ba5c642222790485",
+  "device_requests": 0,
+  "result_class": "INVALID_OR_STALE_ADMISSION_REJECTED_BEFORE_CHILD_DEVICE_REQUEST"
+}

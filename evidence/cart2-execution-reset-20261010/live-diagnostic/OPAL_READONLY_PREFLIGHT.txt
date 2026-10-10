@@ -1,0 +1,10 @@
+READONLY_OPAL_PREFLIGHT
+ 01:12:57 up  6:08,  load average: 1.42, 1.37, 1.36
+Filesystem           1K-blocks      Used Available Use% Mounted on
+tmpfs                    59392      3332     56060   6% /tmp
+/usr/bin/curl
+/usr/bin/sha256sum
+/usr/bin/wc
+55 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c
+MATRIX_INFO_HTTP=200
+MATRIX_BUILD_HTTP=200
