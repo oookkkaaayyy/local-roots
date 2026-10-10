@@ -1,0 +1,64 @@
+{
+  "approved_for_mutation": true,
+  "capsule_sha256": "ebd42b01230d6508432330487349ec0899e670003e41e1022f9241741e2bb72b",
+  "consumer_contract": {
+    "identity": "scripts/hbnf_r6_audio_cache_live_transaction.py --resume-qualification; exact installed R6 only; no firmware upload/restart. Temporary Matrix brightness 44; run early kernels 0/13, all unchanged 28 profiles, combined feature checks, one uninterrupted 5400-second soak, and restore verified persisted/runtime Matrix/AUX/Vibe baseline 52/245/2.",
+    "verified": true
+  },
+  "pre_mutation_state": {
+    "aux_hbnf_brightness_persisted": 245,
+    "captured_at_utc": "2026-10-10T21:44:38Z",
+    "cloud_deployment": "No cloud/backend changes in qualification-only continuation.",
+    "device": "Fresh post-failure read-only check verifies exact R6 identity and Matrix/AUX healthy, baseline Matrix/AUX/Vibe 52/245/2 in runtime and persisted config, AUX live DDP from .10 with 22 LEDs/lor0, exact R4 recovery ledger, AC/en0, and exactly one worker. The guarded run MUST repeat checks immediately before any brightness write.",
+    "matrix_hbnf_brightness_persisted": 52,
+    "matrix_hbnf_brightness_runtime": 52,
+    "vibe_persisted": 2
+  },
+  "recovery_identity": {
+    "identity": "Foundation R4 SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "verification": "Exact local artifact bytes and current Opal release ledger verified in latest preflight; one existing authorized recovery remains available."
+  },
+  "run_id": "cart2-r6-qualification-continuation-20261010-228ea82",
+  "schema": "local-roots-prelive-proof-v1",
+  "stages": {
+    "capture-current-state": {
+      "evidence": [
+        "evidence/cart2-r6-audio-cache-20261010/live-qualification/preflight-after-caffeinate-fix-20261010/QUALIFICATION_PRELIVE_READONLY.json",
+        "evidence/cart2-r6-audio-cache-20261010/live-qualification/PERSISTED_BRIGHTNESS_READONLY_PRESTATE_20261010.json"
+      ],
+      "status": "PASS"
+    },
+    "contract-closure": {
+      "evidence": [
+        "evidence/cart2-r6-audio-cache-20261010/live-qualification/R6_QUALIFICATION_CONTINUATION_ADMISSION.json",
+        "evidence/cart2-r6-audio-cache-20261010/FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
+        "evidence/cart2-r6-audio-cache-20261010/live-qualification/QUALIFICATION_SEPARATE_CAFFEINATE_SLEEP_TEST.json"
+      ],
+      "status": "PASS"
+    },
+    "host-wrapper-failure-reconciliation": {
+      "evidence": [
+        "evidence/cart2-r6-audio-cache-20261010/live-qualification/HOST_PREFLIGHT_BLOCKER_RECONCILIATION.json",
+        "evidence/cart2-r6-audio-cache-20261010/live-qualification/QUALIFICATION_PREFLIGHT_RETRY_PROOF_SEPARATE_SLEEP_20261010.json"
+      ],
+      "status": "PASS"
+    },
+    "recovery-proof": {
+      "evidence": [
+        "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+        "evidence/cart2-r6-audio-cache-20261010/R6_DRIVE_ARTIFACT_READBACK.json"
+      ],
+      "status": "PASS"
+    },
+    "transaction-rehearsal": {
+      "evidence": [
+        "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_TRANSACTION_DRYRUN.json",
+        "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_QUALIFICATION_HARNESS_ADVERSARIAL_TESTS.json",
+        "tests/test_r6_qualification_continuation_control.py",
+        "tests/test_r6_reboot_window_resolution.py",
+        "evidence/cart2-r6-audio-cache-20261010/live-qualification/QUALIFICATION_SEPARATE_CAFFEINATE_SLEEP_TEST.json"
+      ],
+      "status": "PASS"
+    }
+  }
+}
