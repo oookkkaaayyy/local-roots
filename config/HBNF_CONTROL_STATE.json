@@ -788,7 +788,9 @@
         "one exact R4 recovery only when authorized objective gates require it",
         "unchanged frozen qualification and field acceptance"
       ],
-      "source": "Current user directive in this task, 2026-10-10 PDT; supersedes the prior no-live-mutation text for this exact coordinated release only."
+      "source": "Historical owner authorization for exact R6 package and coordinated transaction; consumed after one R6 installation and one exact R4 recovery.",
+      "status": "CONSUMED__R6_FAILED_FROZEN_PERFORMANCE_GATE__R4_RECOVERED",
+      "live_mutation_authorized": false
     },
     "current_production": {
       "cloudflare_deployment": "5d7f7a4a-87cf-4cc2-84bf-e67d11f8fa06",
@@ -2946,15 +2948,15 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-10T04:21:17.235602+00:00",
+  "last_updated_utc": "2026-10-10T06:34:34.267410+00:00",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
-    "authorization": "Current owner explicitly authorizes persistent continuation of the existing exact R6 coordinated release, including bounded Cart-only route validation, release deployment, one R6 installation and normal reboot, conditionally authorized exact R4 recovery, and qualification. All existing admission, security, rollback, and frozen gates remain mandatory.",
-    "authorized": true,
+    "authorization": "Historical authorization for the exact R6 coordinated transaction; consumed after its one installation failed the frozen kernel-0 performance gate and exact R4 recovery completed. No live write is authorized by this record.",
+    "authorized": false,
     "candidate_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
     "controller_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
-    "current_gate": "Exact coordinated R6 transaction consumed. Fresh LIVE_APPROVED admission passed; R4 remains installed and verified; current control function v20 is deployed with relay inert and command fence closed. Next allowed write is the single exact R6 OTA attempt; exact R4 recovery is available.",
-    "hardware_writes_permitted_now": true,
+    "current_gate": "CLOSED: exact R6 transaction consumed; frozen kernel-0 failure recorded; exact R4 restored and verified. No live mutation. Any future candidate requires fresh exact-artifact owner authorization and LIVE_APPROVED admission.",
+    "hardware_writes_permitted_now": false,
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "transaction_consumed": true
   },
@@ -3461,5 +3463,27 @@
     "status": "OFFLINE_DESIGN_ONLY__OVERHEAD_AND_IMPLEMENTATION_PROOF_REQUIRED"
   },
   "schema": "hbnf-control-state-v2",
-  "status": "R6_FAILED__EXACT_R4_RECOVERED__OFFLINE_REPAIR_ONLY__LIVE_MUTATION_CLOSED"
+  "status": "R6_FAILED__EXACT_R4_RECOVERED__OFFLINE_REPAIR_ONLY__LIVE_MUTATION_CLOSED",
+  "live_mutation_authorization_reconciliation": {
+    "schema": "hbnf-live-authorization-state-reconciliation-v1",
+    "recorded_at_utc": "2026-10-10T06:34:15+00:00",
+    "reason": "Removed contradictory current-write authority from the consumed exact R6 transaction record; fail-closed global authority and execution cursor already said no live mutation.",
+    "candidate_release": "hbnf-cart2-phase2-offline-wow-r6-20261009",
+    "candidate_sha256": "0a4b9563c7debfb5a01e9d36aeb8aac2583e105303064de3db0466b7dd9d89d6",
+    "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "failure_receipt": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/R6_CLOSED_TRANSACTION/R6_PERFORMANCE_FAILURE_CLASSIFICATION.json",
+      "sha256": "b2e14deeab3abbd907d4c063131a2edac937f0f97eb389e23dcb14658dbf5368"
+    },
+    "recovery_receipt": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/R6_CLOSED_TRANSACTION/R4_RECOVERY_RUNTIME_VERIFICATION.json",
+      "sha256": "9e32bb667c48bd961406fe811da6835aff7f68672f092216cb0ad41bf5192550"
+    },
+    "live_mutation_authorized": false,
+    "historical_transaction_record": {
+      "path": "coordinated_r6_live_release_authorization.current_owner_authorization",
+      "status": "CONSUMED__R6_FAILED_FROZEN_PERFORMANCE_GATE__R4_RECOVERED",
+      "live_mutation_authorized": false
+    }
+  }
 }
