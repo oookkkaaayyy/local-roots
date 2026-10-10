@@ -179,6 +179,12 @@ preflight={"schema":"hbnf-live-qualification-preflight-v1","release_id":"r7","ca
  "foundation_telemetry_enabled":False,"aux_ip":"192.168.77.11","aux_mac":"8c94df55c34c",
  "aux_on":True,"aux_live":True,"aux_live_mode":"DDP","aux_live_ip":"192.168.77.10","aux_led_count":22}
 m.validate_readonly_preflight(preflight,"r7")
+# A changed field baseline (the current Matrix baseline is 52) is a setup
+# mismatch, not permission to weaken the frozen 44 comparison condition.
+try:m.validate_readonly_preflight(dict(preflight,matrix_brightness=52),"r7");raise AssertionError("non-matched brightness accepted")
+except RuntimeError as e:assert "brightness-mismatch" in str(e)
+try:m.validate_readonly_preflight(dict(preflight,aux_live=False),"r7");raise AssertionError("offline AUX accepted")
+except RuntimeError as e:assert "aux-native-ddp-source-mismatch" in str(e)
 resume={"snapshotId":1,"snapshotHash":4051728214,"foundationTelemetryEnabledBefore":False}
 active_preflight=dict(preflight,packet20_enabled=True,packet20_snapshot_valid=True,
  packet20_snapshot_id=1,packet20_snapshot_hash=4051728214)
