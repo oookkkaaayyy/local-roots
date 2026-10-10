@@ -1,0 +1,77 @@
+{
+  "schema": "hbnf-cart2-dedicated-worker-stage-v1",
+  "purpose": "Private, no-route staging only; no changes to hbnf, DNS, static assets, backend, or public route table.",
+  "worker_name": "hbnf-cart2-private-stage-20261010",
+  "worker_id": "4b3bdb41f43544f3976bed488e3941e3",
+  "worker_version_id": "647c546a-d3b1-4bd2-8437-4edb4c6a3356",
+  "source_worker_module": "evidence/cart2-r6-live-transaction-20261009/cloudflare-zero-traffic-candidate/worker.mjs",
+  "worker_module_sha256": "5b7ab92560a9b7e568917427273e00d691e9e0bd38953fabc24d947c6f152d4f",
+  "approved_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
+  "approved_package_release": "HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009",
+  "approved_asset_count": 16,
+  "url_mapping_count": 17,
+  "url_paths": [
+    "/guest/hbnf-cart/guest.css",
+    "/guest/hbnf-cart/guest.js",
+    "/guest/hbnf-cart/",
+    "/hbnf-cart-features.mjs",
+    "/hbnf-cart-icon-180.png",
+    "/hbnf-cart-icon-192.png",
+    "/hbnf-cart-icon-512.png",
+    "/hbnf-cart-manifest.webmanifest",
+    "/hbnf-cart-net.mjs",
+    "/hbnf-cart-semantic.mjs",
+    "/hbnf-cart-skins-score.mjs",
+    "/hbnf-cart-sw.js",
+    "/hbnf-cart-ui-v6.css",
+    "/hbnf-cart-ui-v6.mjs",
+    "/hbnf-cart.html",
+    "/hbnf-cart",
+    "/hbnf-cart.js"
+  ],
+  "route_patterns": [
+    {
+      "pattern": "hbnightflyers.com/hbnf-cart*",
+      "worker": "hbnf-cart2-private-stage-20261010",
+      "url_mappings_served": [
+        "/hbnf-cart.html",
+        "/hbnf-cart",
+        "/hbnf-cart.js",
+        "/hbnf-cart-features.mjs",
+        "/hbnf-cart-icon-180.png",
+        "/hbnf-cart-icon-192.png",
+        "/hbnf-cart-icon-512.png",
+        "/hbnf-cart-manifest.webmanifest",
+        "/hbnf-cart-net.mjs",
+        "/hbnf-cart-semantic.mjs",
+        "/hbnf-cart-skins-score.mjs",
+        "/hbnf-cart-sw.js",
+        "/hbnf-cart-ui-v6.css",
+        "/hbnf-cart-ui-v6.mjs"
+      ]
+    },
+    {
+      "pattern": "hbnightflyers.com/guest/hbnf-cart/*",
+      "worker": "hbnf-cart2-private-stage-20261010",
+      "url_mappings_served": [
+        "/guest/hbnf-cart/",
+        "/guest/hbnf-cart/guest.css",
+        "/guest/hbnf-cart/guest.js"
+      ]
+    }
+  ],
+  "route_pattern_reason": "Two prefix routes are the minimum grouping by disjoint Cart namespaces. Cloudflare route matching includes the query string and patterns cannot include query parameters, so a terminal wildcard is required for cache/query URLs. The Worker serves only the exact 17-path allowlist; wildcard overmatches delegate through the ASSETS service binding to the existing hbnf Worker with the original Request unchanged.",
+  "service_binding": {
+    "name": "ASSETS",
+    "service": "hbnf",
+    "purpose": "Exact unchanged fallback behavior for paths matched only because trailing route wildcard extends beyond a mapped URL."
+  },
+  "public_access": {
+    "workers_dev": false,
+    "version_urls": false,
+    "routes": []
+  },
+  "compatibility_date": "2026-07-28",
+  "compatibility_flags": [],
+  "deployment_plan": "Create standalone Worker with subdomain/previews disabled, upload exact module and ASSETS->hbnf service binding, deploy with no routes, verify readback and exact package bytes. Attach only the two listed routes after separate explicit authorization. Rollback by deleting only route IDs created for these two patterns."
+}

@@ -1,0 +1,55 @@
+{
+  "captured_at_utc": "2026-10-10T03:27:00Z",
+  "account_id": "e3bc6b78f1104fa0c2a01245084594cf",
+  "zone": {
+    "id": "f126298df13dcb1d8b58b62b47f52a20",
+    "name": "hbnightflyers.com",
+    "status": "active",
+    "paused": false
+  },
+  "public_dns_observation": {
+    "a": ["172.67.212.46", "104.21.67.44"],
+    "aaaa": ["2606:4700:3031::6815:432c", "2606:4700:3037::ac43:d42e"],
+    "source": "dig read-only query"
+  },
+  "custom_domain": {
+    "hostname": "hbnightflyers.com",
+    "service": "hbnf",
+    "zone_id": "f126298df13dcb1d8b58b62b47f52a20",
+    "enabled": true,
+    "environment": "production"
+  },
+  "routes_after_private_stage": [
+    { "id": "3ea4705c7d614f0bbf46e6c1f0d0358b", "pattern": "hbnightflyers.com", "script": "hbnf" },
+    { "id": "118db467a3f24c5ebebceaf3c98571f7", "pattern": "hbnightflyers.com/firmware/opal-updater/*", "script": "hbnf-opal-ipk-1-2-1" },
+    { "id": "9c3dd49ace304ab789f1c8fbea4a6161", "pattern": "hbnightflyers.com/firmware/opal-updater/1.2.2/*", "script": "hbnf-opal-ipk-1-2-2" },
+    { "id": "b0547e91d30b45c791f60df20c726464", "pattern": "hbnightflyers.com/firmware/opal-updater/1.2.3/*", "script": "hbnf-opal-ipk-1-2-3" },
+    { "id": "aa1198dbdaa74abec38372343eefa82", "pattern": "hbnightflyers.com/firmware/matrix/stable/*", "script": "hbnf-matrix-firmware-stable" }
+  ],
+  "original_hbnf_script": {
+    "usage_model": "standard",
+    "compatibility_date": "2026-07-28",
+    "assets_binding_present": true,
+    "configuration_changed": false
+  },
+  "private_worker": {
+    "id": "4b3bdb41f43544f3976bed488e3941e3",
+    "name": "hbnf-cart2-private-stage-20261010",
+    "deployed_version": "647c546a-d3b1-4bd2-8437-4edb4c6a3356",
+    "routes": null,
+    "domains": null,
+    "workers_dev_enabled": false,
+    "preview_urls_enabled": false,
+    "bindings": [{ "name": "ASSETS", "type": "service", "service": "hbnf" }],
+    "module_sha256_readback": "5b7ab92560a9b7e568917427273e00d691e9e0bd38953fabc24d947c6f152d4f"
+  },
+  "billing_profile_api": { "http_status": 403, "usage_or_overage_verified": false },
+  "no_changes_made_to": [
+    "existing hbnf Worker or Worker deployment",
+    "existing DNS records or custom domain",
+    "existing public route table",
+    "existing site static assets",
+    "Supabase/backend",
+    "Matrix/AUX/Opal"
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "observed_at_utc": "2026-10-10T03:27:10.085248+00:00",
+  "worker_name": "hbnf-cart2-private-stage-20261010",
+  "worker_id": "4b3bdb41f43544f3976bed488e3941e3",
+  "module_sha256": "5b7ab92560a9b7e568917427273e00d691e9e0bd38953fabc24d947c6f152d4f",
+  "module_bytes": 152833,
+  "upload_request": {
+    "main_module": "worker.mjs",
+    "compatibility_date": "2026-07-28",
+    "compatibility_flags": [],
+    "bindings": [
+      {
+        "type": "service",
+        "name": "ASSETS",
+        "service": "hbnf"
+      }
+    ],
+    "annotations": {
+      "workers/message": "Private Cart package staging; no routes; public URLs disabled.",
+      "workers/tag": "cart2-private-r2-20261010"
+    },
+    "usage_model": "standard"
+  },
+  "result": {
+    "id": "647c546a-d3b1-4bd2-8437-4edb4c6a3356",
+    "number": 1,
+    "created_on": "2026-10-10T03:27:09.634605Z",
+    "annotations": {
+      "workers/message": "Private Cart package staging; no routes; public URLs disabled.",
+      "workers/tag": "cart2-private-r2-20261010",
+      "workers/triggered_by": "create_version_api"
+    },
+    "urls": [],
+    "bindings": [
+      {
+        "environment": "production",
+        "name": "ASSETS",
+        "service": "hbnf",
+        "type": "service"
+      }
+    ],
+    "compatibility_date": "2026-07-28",
+    "compatibility_flags": null,
+    "startup_time_ms": 0,
+    "usage_model": "standard"
+  }
+}
