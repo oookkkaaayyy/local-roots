@@ -1,0 +1,73 @@
+{
+  "deployed_source_matches_local_byte_for_byte": true,
+  "design": "Reuse the already custom-authenticated hbnf-cart-control function and its existing function slot. A request bearing X-HBNF-Relay-ID is routed to the revision-bound relay handler; handler requires exact configured ID and constant-time Bearer token before creating the service-role client or making an RPC. Requests without the header use the unchanged Owner/Guest flow.",
+  "endpoint": "https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-control",
+  "function_id": "95df7773-e888-48c9-84b3-ceb517c901c7",
+  "function_version": 20,
+  "inert_state": {
+    "Guest_Mode": false,
+    "Opal_relay_installed_or_started": false,
+    "R4_recovery_attempts": 0,
+    "UV_brightness_cap": 0,
+    "UV_hardware_available": false,
+    "command_fence_active": false,
+    "firmware_install_attempts": 0
+  },
+  "migration": {
+    "database_objects_read_back": true,
+    "down_sha256": "b510775c9081936d60ef0f99bc918b1e70eff8933ed804121b3660e70ca22f05",
+    "execute_privileges": {
+      "anon": false,
+      "authenticated": false,
+      "service_role": true
+    },
+    "name": "20261009190000_hbnf_matrix_relay_confirmation",
+    "up_sha256": "874f86c27457b081f2cdae6c24598091718c4643072460b131a26126c5248b7b"
+  },
+  "other_deployed_functions": {
+    "hbnf-cart-reconcile": {
+      "sha256": "4eba800c8d3f28d6feda3924172bf250c0720c9cd40449d8102eaa3a811cee23",
+      "verify_jwt": true,
+      "version": 13
+    },
+    "hbnf-matrix-adapter-foundation": {
+      "sha256": "ec39614b5ea91d32c72a18c609c065ba0f3983cb6064b44411e7121733d63c32",
+      "verify_jwt": true,
+      "version": 4
+    }
+  },
+  "provider_ezbr_sha256": "c6c1df195871c6b23cba718a96935015296375a87666e76b0461b15ad29a3c7c",
+  "reason": "Supabase rejected new hbnf-cart-relay deployment with function-slot cap (no function created); no paid upgrade, spend-cap change, or unrelated deletion was made.",
+  "recorded_at_utc": "2026-10-10T05:31:15.337010+00:00",
+  "relay_id_header": "X-HBNF-Relay-ID: opal-hbnf-cart",
+  "rollback": {
+    "Supabase_current_function_snapshots": "evidence/cart2-r6-live-transaction-20261009/current-supabase-rollback-snapshot/",
+    "migration_down_sha256": "b510775c9081936d60ef0f99bc918b1e70eff8933ed804121b3660e70ca22f05",
+    "predeployment_control_function": {
+      "sha256": "5881e1868bab61821d772dd5f69c7b561d49d943552ef58ef2afb6e284b8185d",
+      "version": 19
+    }
+  },
+  "schema": "hbnf-cart2-existing-function-relay-consolidation-v1",
+  "source_file_sha256": {
+    "staging/coordinated-backend/hbnf-cart-control/deno.json": "d4235a1ddf7735bdd0a73ae15e3b596b706c8b910d65d6b2f3c3b4583b902d29",
+    "staging/coordinated-backend/hbnf-cart-control/index.ts": "e7cee5102f096292268d121291b9c51a697398d43a554065d24caaee4d243e7f",
+    "staging/coordinated-backend/hbnf-cart-control/matrix-relay-auth.ts": "aae9ffd25cc31448b7ddf0c8f90539e9ad22ecdb2b4094f53ec829d6d4f2f248",
+    "staging/coordinated-backend/hbnf-cart-control/matrix-relay-projection.ts": "d7145886b431444f0543c2bdfed86b18384d95a6f83ec5acd715116f43e2fe79",
+    "staging/coordinated-backend/hbnf-cart-control/matrix-relay.ts": "826e729af54ddba32830cd2ab3c1e2ad640c00886565a2a15c3cda9da10b7cc9",
+    "staging/coordinated-backend/hbnf-matrix-adapter-foundation/confirmation.ts": "8c58ce01217cb1176c693fa3210888edf5b8531792ce5114969514759397e147",
+    "staging/coordinated-backend/opal/hbnf-matrix-relay": "256364a3450b1da3fc93aabb2159c10823e2842a43ca633f8b76d71acdaed09d",
+    "staging/coordinated-backend/opal/hbnf-matrix-relay.conf.example": "5cd2b0fbc1c2ca1112d2637b5eab761a241bb96277dfc14d83d42493f3484c6c"
+  },
+  "validation": {
+    "deno_local_runtime_smoke": "NOT RUN: Deno executable unavailable; provider deployment succeeded and live invalid-auth request returned 401",
+    "deployed_source_readback": "PASS",
+    "invalid_bearer_response": "HTTP 401 unauthorized",
+    "invalid_bearer_rpc_path": "code inspection confirms return precedes createClient/db/RPC",
+    "node_contract": "PASS",
+    "opal_shell_syntax": "PASS",
+    "provider_deployment": "PASS",
+    "staging_contract": "PASS"
+  },
+  "verify_jwt": false
+}

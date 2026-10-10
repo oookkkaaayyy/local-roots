@@ -1,10 +1,10 @@
 import {createClient} from "npm:@supabase/supabase-js@2.57.0";
-import {buildWledProjection,checkDecision,MATRIX_CANDIDATE,MATRIX_MAC,normalizeReadback} from "./projection.ts";
-import {relayTokenAuthorized} from "./relay-auth.ts";
+import {buildWledProjection,checkDecision,MATRIX_CANDIDATE,MATRIX_MAC,normalizeReadback} from "./matrix-relay-projection.ts";
+import {relayTokenAuthorized} from "./matrix-relay-auth.ts";
 const reply=(x:unknown,s=200)=>new Response(JSON.stringify(x),{status:s,headers:{"Content-Type":"application/json","Cache-Control":"no-store"}});
-function auth(req:Request){return relayTokenAuthorized(req.headers.get("Authorization"),Deno.env.get("HBNF_MATRIX_RELAY_TOKEN")??"",Deno.env.get("HBNF_MATRIX_RELAY_ID")??"");}
+function auth(req:Request){const relayId=Deno.env.get("HBNF_MATRIX_RELAY_ID")??"";return req.headers.get("X-HBNF-Relay-ID")===relayId&&relayTokenAuthorized(req.headers.get("Authorization"),Deno.env.get("HBNF_MATRIX_RELAY_TOKEN")??"",relayId);}
 function db(){const u=Deno.env.get("SUPABASE_URL"),k=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");if(!u||!k)throw Error("relay_backend_not_configured");return createClient(u,k,{auth:{persistSession:false,autoRefreshToken:false}});}
-Deno.serve(async(req:Request)=>{
+export async function handleMatrixRelay(req:Request){
  if(req.method!=="POST")return reply({error:"method_not_allowed"},405);
  if(!auth(req))return reply({error:"unauthorized"},401);
  const relayId=Deno.env.get("HBNF_MATRIX_RELAY_ID")!,client=db(),ct=req.headers.get("content-type")??"";
@@ -44,4 +44,4 @@ Deno.serve(async(req:Request)=>{
  const {data:allowed,error:ae}=await client.rpc("hbnf_cart_matrix_relay_authorize_apply",{p_challenge_id:id,p_relay_id:relayId});
  if(ae||allowed!==true)return reply({error:"apply_not_authorized_or_stale"},409);
  return reply({status:"apply_required",wledPayload:challenge.wled_payload},409);
-});
+}

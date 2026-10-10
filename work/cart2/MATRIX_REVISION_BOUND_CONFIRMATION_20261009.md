@@ -38,13 +38,13 @@ Offline tests cover projection/readback normalization, overlay content correlati
 
 Future one-transaction live sequence:
 1. Read current control authority; verify R6 SHA 340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb, exact R4 rollback SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743a2f3d8c, power, device identity, single worker, and network.
-2. Apply migration, set the generated relay token and fixed relay ID as Supabase secrets; deploy the relay Edge Function with JWT verification disabled only for this function and with custom token validation; deploy the no-write adapter and pending-only reconcile.
+2. Apply the exact migration and set the generated relay token and fixed relay ID as Supabase secrets. The project function-slot limit rejected a new `hbnf-cart-relay` function, so the same handler is bundled into the already custom-authenticated `hbnf-cart-control` function. Dispatch requires the fixed `X-HBNF-Relay-ID` plus constant-time bearer validation; Owner/Guest requests without that header follow the unchanged existing path. Update that function in place, and deploy the no-write adapter and pending-only reconcile.
 3. Verify Opal has curl, jsonfilter, procd and trusted CA already present. Install/enable the outbound relay only after the exact R6 candidate is live. Do not change router networking or install packages.
 4. Deploy the matching Owner/Guest package after verifying its build/source hash; keep Guest Mode OFF, UV OFF.
 5. Verify one owner command yields a current Matrix confirmed observation; force stale-revision, stale-fence, replay, and connection-loss cases in staging/test first. Report AUX as unverified until actual AUX read/physical gates pass.
 6. Complete existing 28-kernel, combined-feature, continuous 90-minute soak, owner PWA/scoring, physical AUX sync/recovery, and T4/T5 gates. Offline tests do not count as live acceptance.
 
-Supabase function deployment requires an exact project release authorization. Recommended command after secrets/preflight: supabase functions deploy hbnf-cart-relay --project-ref phcpbvuqibyarpfrftgx --no-verify-jwt. This instruction is not executed here. Anonymous calls must return 401.
+The relay handler shares the existing `hbnf-cart-control` URL to avoid consuming a new function slot. Supabase documents Edge Function deployment through its managed platform and per-function JWT configuration: https://supabase.com/docs/guides/functions. The deployed control function already has `verify_jwt=false`; the relay branch therefore enforces both the fixed relay identity header and its high-entropy bearer token before any privileged RPC. Calls without valid custom auth must return 401 with zero RPCs.
 
 
 ## Primary source references

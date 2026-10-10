@@ -58,14 +58,11 @@ const dbPort = db.address().port;
 const probe = net.createServer(); probe.listen(0, '127.0.0.1'); await once(probe, 'listening');
 const relayPort = probe.address().port; await new Promise(resolve => probe.close(resolve));
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'hbnf-edge-smoke-'));
-const fnDir = path.join(temp, 'hbnf-cart-relay'); fs.mkdirSync(fnDir, { recursive: true });
-for (const name of ['projection.ts', 'relay-auth.ts']) fs.copyFileSync(path.join(repo, 'staging/coordinated-backend/hbnf-cart-relay', name), path.join(fnDir, name));
-let entry = fs.readFileSync(path.join(repo, 'staging/coordinated-backend/hbnf-cart-relay/index.ts'), 'utf8');
-const anchor = 'Deno.serve(async(req:Request)=>{';
-assert.ok(entry.includes(anchor), 'test-only loopback bind anchor changed');
-entry = entry.replace(anchor, `Deno.serve({hostname:'127.0.0.1',port:${relayPort}},async(req:Request)=>{`);
-fs.writeFileSync(path.join(fnDir, 'index.ts'), entry);
-const child = spawn(deno, ['run', '--no-check', `--allow-net=127.0.0.1:${relayPort},127.0.0.1:${dbPort}`, '--allow-env=SUPABASE_URL,SUPABASE_SERVICE_ROLE_KEY,HBNF_MATRIX_RELAY_TOKEN,HBNF_MATRIX_RELAY_ID', path.join(fnDir, 'index.ts')], {
+const fnDir = path.join(temp, 'hbnf-cart-control'); fs.mkdirSync(fnDir, { recursive: true });
+const modulePath = path.join(repo, 'staging/coordinated-backend/hbnf-cart-control/matrix-relay.ts');
+const wrapper = path.join(fnDir, 'smoke.ts');
+fs.writeFileSync(wrapper, `import { handleMatrixRelay } from ${JSON.stringify(new URL(`file://${modulePath}`).href)};\nDeno.serve({hostname:'127.0.0.1',port:${relayPort}}, handleMatrixRelay);\n`);
+const child = spawn(deno, ['run', '--no-check', `--allow-net=127.0.0.1:${relayPort},127.0.0.1:${dbPort}`, '--allow-env=SUPABASE_URL,SUPABASE_SERVICE_ROLE_KEY,HBNF_MATRIX_RELAY_TOKEN,HBNF_MATRIX_RELAY_ID', wrapper], {
   env: { ...process.env, SUPABASE_URL: `http://127.0.0.1:${dbPort}`, SUPABASE_SERVICE_ROLE_KEY: 'test-only-service-role', HBNF_MATRIX_RELAY_TOKEN: token, HBNF_MATRIX_RELAY_ID: 'opal-hbnf-cart' }, stdio: ['ignore', 'pipe', 'pipe']
 });
 let logs = ''; child.stdout.on('data', b => logs += b.toString()); child.stderr.on('data', b => logs += b.toString());
@@ -77,9 +74,9 @@ try {
     await new Promise(r => setTimeout(r, 100));
   }
   assert.ok(ready, 'Deno Edge handler did not become ready');
-  const unauth = await fetch(`http://127.0.0.1:${relayPort}/`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ op: 'next' }) });
+  const unauth = await fetch(`http://127.0.0.1:${relayPort}/`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-hbnf-relay-id': 'opal-hbnf-cart' }, body: JSON.stringify({ op: 'next' }) });
   assert.equal(unauth.status, 401); assert.equal(rpcCalls.length, 0, 'unauthorized request reached PostgREST');
-  const next = await fetch(`http://127.0.0.1:${relayPort}/`, { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' }, body: JSON.stringify({ op: 'next', relayId: 'opal-hbnf-cart', matrixMac: mac, candidate }) });
+  const next = await fetch(`http://127.0.0.1:${relayPort}/`, { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json', 'x-hbnf-relay-id': 'opal-hbnf-cart' }, body: JSON.stringify({ op: 'next', relayId: 'opal-hbnf-cart', matrixMac: mac, candidate }) });
   assert.equal(next.status, 200);
   const issued = await next.json(); assert.equal(issued.challengeId, challengeId); assert.equal(issued.cartRevision, 51); assert.equal(issued.fenceEpoch, 7);
   const issueCall = rpcCalls.find(x => x.rpc === 'hbnf_cart_matrix_relay_issue');
@@ -91,11 +88,11 @@ try {
     form.append('info', new Blob([JSON.stringify(info)], { type: 'application/json' }), 'info.json');
     form.append('state', new Blob([JSON.stringify(state)], { type: 'application/json' }), 'state.json'); return form;
   };
-  const mismatch = await fetch(`http://127.0.0.1:${relayPort}/`, { method: 'POST', headers: { authorization: `Bearer ${token}` }, body: makeForm(0) });
+  const mismatch = await fetch(`http://127.0.0.1:${relayPort}/`, { method: 'POST', headers: { authorization: `Bearer ${token}`, 'x-hbnf-relay-id': 'opal-hbnf-cart' }, body: makeForm(0) });
   assert.equal(mismatch.status, 409); const apply = await mismatch.json();
   assert.equal(apply.status, 'apply_required'); assert.ok(apply.wledPayload);
   assert.equal(rpcCalls.filter(x => x.rpc === 'hbnf_cart_matrix_relay_authorize_apply').length, 1);
-  const match = await fetch(`http://127.0.0.1:${relayPort}/`, { method: 'POST', headers: { authorization: `Bearer ${token}` }, body: makeForm(expectedProjection.hbnf.vibe) });
+  const match = await fetch(`http://127.0.0.1:${relayPort}/`, { method: 'POST', headers: { authorization: `Bearer ${token}`, 'x-hbnf-relay-id': 'opal-hbnf-cart' }, body: makeForm(expectedProjection.hbnf.vibe) });
   assert.equal(match.status, 200); const confirmed = await match.json();
   assert.equal(confirmed.commandApplicationConfirmed, true); assert.equal(confirmed.cartRevision, 51); assert.equal(confirmed.fenceEpoch, 7);
   const confirmCall = rpcCalls.find(x => x.rpc === 'hbnf_cart_matrix_relay_confirm');

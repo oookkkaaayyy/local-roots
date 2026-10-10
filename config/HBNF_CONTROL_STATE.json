@@ -665,6 +665,43 @@
   },
   "coordinated_r6_live_release_authorization": {
     "authorized_by": "The exact R6 transaction authorization remains unconsumed and is explicitly affirmed/extended by the current user directive: bounded Cart-only Cloudflare validation corrections, existing matching release deployment, exact R6 installation, authorized recovery, and qualification, only after all existing release gates pass.",
+    "backend_transaction_progress": {
+      "candidate_install_attempts_used": 0,
+      "command_fence_active": false,
+      "deployed_functions": {
+        "hbnf-cart-control": {
+          "provider_ezbr_sha256": "c6c1df195871c6b23cba718a96935015296375a87666e76b0461b15ad29a3c7c",
+          "verify_jwt": false,
+          "version": 20
+        },
+        "hbnf-cart-reconcile": {
+          "sha256": "4eba800c8d3f28d6feda3924172bf250c0720c9cd40449d8102eaa3a811cee23",
+          "verify_jwt": true,
+          "version": 13
+        },
+        "hbnf-matrix-adapter-foundation": {
+          "sha256": "ec39614b5ea91d32c72a18c609c065ba0f3983cb6064b44411e7121733d63c32",
+          "verify_jwt": true,
+          "version": 4
+        }
+      },
+      "migration_applied": {
+        "database_objects_read_back": true,
+        "down_sha256": "b510775c9081936d60ef0f99bc918b1e70eff8933ed804121b3660e70ca22f05",
+        "execute_privileges": {
+          "anon": false,
+          "authenticated": false,
+          "service_role": true
+        },
+        "name": "20261009190000_hbnf_matrix_relay_confirmation",
+        "up_sha256": "874f86c27457b081f2cdae6c24598091718c4643072460b131a26126c5248b7b"
+      },
+      "new_function_creation": "Rejected by provider function-slot cap; avoided with in-place update; no function created or deleted.",
+      "opal_relay_active": false,
+      "receipt_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/EXISTING_FUNCTION_RELAY_CONSOLIDATION_RECEIPT.json",
+      "receipt_sha256": "c88eb9fe471b5cc4ed171f6eece03e2dbb48135e5d90d4e1c047e3feb1d0b742",
+      "rollback_attempts_used": 0
+    },
     "candidate": {
       "path": "evidence/cart2-r6-integrated-20261009/hbnf-cart2-phase2-offline-wow-r6-integrated-20261009.bin",
       "release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
@@ -714,7 +751,7 @@
       "worker": "hbnf-cart2-private-stage-20261010",
       "worker_version_id": "647c546a-d3b1-4bd2-8437-4edb4c6a3356"
     },
-    "command_ingress_pause_attempts": 0,
+    "command_ingress_pause_attempts": 1,
     "control_fence_prewrite_snapshot": {
       "active": true,
       "cart_id": "hbnf-cart",
@@ -728,7 +765,7 @@
       "path": "evidence/cart2-owner-guest-vibe-r2-20261009/HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009.zip",
       "sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc"
     },
-    "current_mutation_stage": "PAUSE_COMMAND_INGRESS_WITH_EXACT_CAS",
+    "current_mutation_stage": "LIVE_APPROVED__READY_TO_CONSUME_SINGLE_R6_INSTALL_ATTEMPT",
     "current_owner_authorization": {
       "exact_firmware_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
       "exact_owner_guest_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
@@ -764,6 +801,12 @@
       ]
     },
     "first_write_plan": "consume coordinated transaction in control state, then compare-and-set actuator fence active=false to block owner and guest commands during no-MQTT writer transition; restore only after exact R6 and relay runtime readiness.",
+    "fresh_install_preflight": {
+      "checked_at_utc": "2026-10-10T05:28:17.093811+00:00",
+      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/FRESH_INSTALL_PREFLIGHT.json",
+      "result": "PASS_FOR_EXACT_R6_INSTALL",
+      "sha256": "4b72e4cabc35594e4ba3d177368b75424842a000ce89c1b9dd8b559e6f18f1f1"
+    },
     "fresh_prewrite_evidence": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/FRESH_PREWRITE_PREFLIGHT.json",
     "fresh_prewrite_evidence_sha256": "c981371ed08d5f6eb1e626f48036b7e209bc12f2a0ecdbb04dfa8174c8596f41",
     "install_attempts": 0,
@@ -795,6 +838,10 @@
       "result": "PASS_TARGETED_OFFLINE_CHECKS",
       "sha256": "6b8a3d047e671b34c3e184c79aa8bef72c09227b59c235d4c366fd0aa52c819d"
     },
+    "post_backend_admission_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_POST_BACKEND_LIVE_ADMISSION.json",
+    "post_backend_admission_result_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_POST_BACKEND_LIVE_ADMISSION_RESULT.json",
+    "post_backend_admission_result_sha256": "bddbd58aef268d1a1f9216bf7699754b9a5bdd57f6938cebe40367b18b9cef2f",
+    "post_backend_admission_sha256": "31a72e402148e77498767f6429996f6f3e43dc7d4511b3dbc059fd44933ab766",
     "prewrite_evidence": {
       "path": "evidence/cart2-r6-live-transaction-20261009/CLOUDFLARE_SOURCE_AND_AUTHORITY_RECONCILIATION.json",
       "sha256": "9c27d79e83ea21dfa32b840bdc439e3ace78513af704d47c787a4ce331c210b4"
@@ -813,7 +860,7 @@
       "one exact R4 recovery only on authorized objective runtime/safety/performance/AUX failure",
       "unchanged 28-kernel sweep, combined-feature tests, contiguous 90-minute soak, physical and owner acceptance"
     ],
-    "status": "IN_PROGRESS__PAUSE_COMMAND_INGRESS_PENDING",
+    "status": "IN_PROGRESS__LIVE_APPROVED_R6_INSTALL_ATTEMPT_NOT_YET_USED",
     "target": {
       "aux_ip": "192.168.77.11",
       "aux_mac": "8c:94:df:55:c3:4c",
@@ -2592,23 +2639,20 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "NONE_PREWRITE_GATE_PASS__DATABASE_FENCE_RELEASE_ID_OLDER_THAN_DEVICE_BUILD_AND_RECONCILED_BY_REVISION_BOUND_RELAY_TRANSITION",
+    "current_failure_domain": "R6_INSTALL_READY; COORDINATED_TRANSACTION_CONSUMED; INSTALL_ATTEMPT_UNUSED; COMMAND_FENCE_CLOSED",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
       "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-      "status": "EXACT_FOUNDATION_R4_CURRENT__R6_TRANSACTION_ADMITTED_NOT_YET_CONSUMED"
+      "status": "EXACT_FOUNDATION_R4_CURRENT__COORDINATED_R6_TRANSACTION_CONSUMED__INSTALL_ATTEMPT_NOT_YET_USED"
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Before any command writer or firmware change, record one-time transaction consumption and deactivate the current command fence with a compare-and-set against the freshly observed revision/fence; this creates a short owner-control pause.",
-      "Apply the exact approved additive relay confirmation migration; deploy the pending-only reconcile and fail-closed compatibility adapter, then the matching owner control function. Keep relay service inactive.",
-      "Verify managed authentication, RPC grants, current source/version readback and rollback identities; preserve Guest Mode OFF and UV disabled.",
-      "Install exact integrated R6 BIN once through the proven WLED updater; immediately verify target MAC, embedded release identity, health, AUX DDP, uptime and heap.",
-      "Run frozen matched early gates and all 28 kernel profiles against the exact R4 profile; run combined-feature checks and the contiguous 5400-second soak only if gates pass.",
-      "Install/start one Opal relay only after R6 exact identity; open the command fence only after no-writer overlap is proven; issue one harmless controlled owner action and verify revision/fence-bound readback plus connection-loss recovery.",
-      "Verify current Owner and Guest URLs and iPad/iPhone operation, preserve Guest Mode OFF and UV disabled; complete physical Matrix/AUX and subjective owner acceptance.",
-      "If an objective runtime/performance/safety/AUX gate fails, capture evidence and execute only the single exact R4 recovery authorized by the transaction; do not retry R6."
+      "Run LIVE_APPROVED admission against the updated fresh preflight and v20 backend receipt.",
+      "Consume R6 install attempt in control state and durable checkpoint before the single OTA write.",
+      "Install exact R6 through the proven Opal-origin local WLED /update path, verify identity and health immediately.",
+      "Run frozen early gates (kernels 13 and 9 plus matched required early checks); on objectively defined runtime/performance failure restore exact R4 once.",
+      "Continue full 28-kernel sweep, combined feature validation, uninterrupted 5400-second soak; install relay and deploy no further sites unless exact transaction calls for it; complete physical owner acceptance."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -2860,7 +2904,7 @@
     "authorized": true,
     "candidate_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
     "controller_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
-    "current_gate": "Exact transaction consumed at 2026-10-10T05:20:44.781805+00:00; next authorized write is CAS pause of the active hbnf-cart actuator fence at revision 123 / epoch 2. No firmware install consumed yet.",
+    "current_gate": "Exact coordinated R6 transaction consumed. Fresh LIVE_APPROVED admission passed; R4 remains installed and verified; current control function v20 is deployed with relay inert and command fence closed. Next allowed write is the single exact R6 OTA attempt; exact R4 recovery is available.",
     "hardware_writes_permitted_now": true,
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "transaction_consumed": true

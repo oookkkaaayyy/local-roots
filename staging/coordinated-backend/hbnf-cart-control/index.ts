@@ -3,6 +3,7 @@ import { isMetadataOnlyCommand, reduceCartCommand, reconcileTargetsForCommand, r
 import { chooseLive } from "./live.ts";
 import { laDate, readSkinsScoreState, writeSkinsWinner, writeSkinsTiebreaker, writeSkinsAceWinner } from "./skins_scoring.ts";
 import { phase2VibeReady } from "./runtime-vibe.ts";
+import { handleMatrixRelay } from "./matrix-relay.ts";
 declare const EdgeRuntime:{waitUntil(p:Promise<unknown>):void};
 
 const cors = {
@@ -17,6 +18,7 @@ const required = (value: unknown, max = 128) => typeof value === "string" && val
 const devices = ["matrix", "aux"] as const;
 
 Deno.serve(async (req: Request) => {
+  if (req.headers.has("x-hbnf-relay-id")) return await handleMatrixRelay(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return response({ error: "method_not_allowed" }, 405);
   const url = Deno.env.get("SUPABASE_URL"), anon = Deno.env.get("SUPABASE_ANON_KEY"), serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");

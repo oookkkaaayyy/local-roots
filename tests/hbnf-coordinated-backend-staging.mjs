@@ -6,7 +6,7 @@ const stagedControl=fs.readFileSync("staging/coordinated-backend/hbnf-cart-contr
 const stagedReducer=fs.readFileSync("staging/coordinated-backend/hbnf-cart-control/guest-command.ts","utf8");
 const liveFoundation=fs.readFileSync("evidence/live-production-20261001/hbnf-matrix-adapter-foundation/index.ts","utf8");
 const stagedFoundation=fs.readFileSync("staging/coordinated-backend/hbnf-matrix-adapter-foundation/index.ts","utf8");
-const stagedProjection=fs.readFileSync("staging/coordinated-backend/hbnf-cart-relay/projection.ts","utf8");
+const stagedProjection=fs.readFileSync("staging/coordinated-backend/hbnf-cart-control/matrix-relay-projection.ts","utf8");
 
 const stagedReconcile=fs.readFileSync("staging/coordinated-backend/hbnf-cart-reconcile/index.ts","utf8");
 const reconcileOutcome=fs.readFileSync("staging/coordinated-backend/hbnf-cart-reconcile/foundation-result.ts","utf8");

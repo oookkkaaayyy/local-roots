@@ -25,11 +25,11 @@ need curl; need jsonfilter
 case "$RELAY_TOKEN" in *[!A-Za-z0-9_-]*|"") log "relay token format invalid"; exit 1;; esac
 [ "${#RELAY_TOKEN}" -ge 43 ] || { log "relay token too short"; exit 1; }
 case "$RELAY_API_KEY" in *[!A-Za-z0-9._-]*|"") log "API key format invalid"; exit 1;; esac
-printf 'header = "Authorization: Bearer %s"\nheader = "apikey: %s"\n' "$RELAY_TOKEN" "$RELAY_API_KEY" > "$TMP/curl-auth.conf"
+printf 'header = "Authorization: Bearer %s"\nheader = "apikey: %s"\nheader = "X-HBNF-Relay-ID: %s"\n' "$RELAY_TOKEN" "$RELAY_API_KEY" "$RELAY_ID" > "$TMP/curl-auth.conf"
 chmod 600 "$TMP/curl-auth.conf"
 unset RELAY_TOKEN RELAY_API_KEY
 [ "$RELAY_ID" = "opal-hbnf-cart" ] || { log "relay identity mismatch"; exit 1; }
-[ "$SUPABASE_RELAY_URL" = "https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-relay" ] || { log "relay endpoint mismatch"; exit 1; }
+[ "$SUPABASE_RELAY_URL" = "https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-control" ] || { log "relay endpoint mismatch"; exit 1; }
 snapshot(){
  curl -fsS --connect-timeout 2 --max-time 4 "$MATRIX_URL/json/si" -o "$TMP/si.json"
  jsonfilter -i "$TMP/si.json" -e '@.info' > "$TMP/info.json"

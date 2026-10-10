@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import {buildWledProjection,normalizeReadback,readbackMatches,checkDecision,MATRIX_CANDIDATE,MATRIX_MAC} from "../staging/coordinated-backend/hbnf-cart-relay/projection.ts";
-import {relayTokenAuthorized} from "../staging/coordinated-backend/hbnf-cart-relay/relay-auth.ts";
+import {buildWledProjection,normalizeReadback,readbackMatches,checkDecision,MATRIX_CANDIDATE,MATRIX_MAC} from "../staging/coordinated-backend/hbnf-cart-control/matrix-relay-projection.ts";
+import {relayTokenAuthorized} from "../staging/coordinated-backend/hbnf-cart-control/matrix-relay-auth.ts";
 const token="0123456789abcdef0123456789abcdef0123456789abcdef";
 assert.equal(relayTokenAuthorized("Bearer "+token,token,"opal-hbnf-cart"),true);
 assert.equal(relayTokenAuthorized("Bearer "+token.slice(1),token,"opal-hbnf-cart"),false);
@@ -48,10 +48,10 @@ for(const marker of ["for update","c.expires_at<=clock_timestamp()","c.consumed_
 const adapter=fs.readFileSync("staging/coordinated-backend/hbnf-matrix-adapter-foundation/index.ts","utf8");
 assert.ok(!/mqtt|broker\.emqx|publish\(/i.test(adapter),"legacy writer/public MQTT fallback remains");
 assert.ok(adapter.includes("commandApplicationConfirmed:false"));
-const relay=fs.readFileSync("staging/coordinated-backend/hbnf-cart-relay/index.ts","utf8");
-assert.ok(relay.includes("HBNF_MATRIX_RELAY_TOKEN"));assert.ok(relay.includes("hbnf_cart_matrix_relay_confirm"));
+const relay=fs.readFileSync("staging/coordinated-backend/hbnf-cart-control/matrix-relay.ts","utf8");
+assert.ok(relay.includes("HBNF_MATRIX_RELAY_TOKEN"));assert.ok(relay.includes("X-HBNF-Relay-ID"));assert.ok(relay.includes("hbnf_cart_matrix_relay_confirm"));
 const opal=fs.readFileSync("staging/coordinated-backend/opal/hbnf-matrix-relay","utf8");
-assert.ok(!opal.includes("SUPABASE_SERVICE_ROLE_KEY"));assert.ok(opal.includes("704bca5b345c"));
+assert.ok(!opal.includes("SUPABASE_SERVICE_ROLE_KEY"));assert.ok(opal.includes("704bca5b345c"));assert.ok(opal.includes("functions/v1/hbnf-cart-control"));assert.ok(opal.includes("X-HBNF-Relay-ID"));
 assert.ok(opal.includes('--config "$TMP/curl-auth.conf"'),"credentials must stay out of curl argv");
 assert.ok(opal.includes('LC_ALL=C ls -ldn "$CONF"')&&opal.includes('$1 == "-rw-------"')&&opal.includes('$2 == "1"')&&opal.includes('$3 == "0"')&&opal.includes('$4 == "0"'),"relay secret config must fail closed unless it is a single-link root:root 0600 regular file using target BusyBox ls");
 assert.ok(!opal.includes("stat -c"),"relay must not depend on GNU stat absent from target OpenWrt");
