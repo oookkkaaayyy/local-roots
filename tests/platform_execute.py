@@ -42,14 +42,13 @@ with tempfile.TemporaryDirectory(prefix="platform_execute_") as td:
         )
 
     # The same front door runs an explicitly read-only child.
-    p = run("--require-state", "PHASE2_INTEGRATING", "--", *child)
+    p = run("--require-state", "PHASE2_INTEGRATING", "--read-only", "--", *child)
     assert p.returncode == 0, (p.stdout, p.stderr)
     assert marker.read_text() == "ran"
 
     marker.unlink()
     mutation_args = [
         "--require-state", "PHASE2_INTEGRATING",
-        "--mutation",
         "--capsule", str(repo / "capsule.json"),
         "--prelive-proof", str(repo / "prelive.json"),
     ]
@@ -67,4 +66,4 @@ with tempfile.TemporaryDirectory(prefix="platform_execute_") as td:
     assert "LIVE_APPROVED release admission failed" in (p.stdout + p.stderr)
     assert not marker.exists(), "child ran with malformed LIVE_APPROVED admission"
 
-print("PASS: platform execute routes through the release guard; missing and malformed admission block before child execution")
+print("PASS: platform execute defaults to guarded mutation; missing and malformed admission block before child execution")
