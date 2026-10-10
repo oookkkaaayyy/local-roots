@@ -1,0 +1,65 @@
+{
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+  "candidate_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
+  "catastrophic_stop": "From frozen policy: 3 consecutive samples with FPS<20, p99>75ms, or AUX Matrix-origin projection inactive.",
+  "combined_feature_checks": [
+    "Vibe/audio runtime",
+    "Text/Moments overlay",
+    "palette/scene interaction",
+    "Matrix/AUX DDP projection",
+    "Owner controls/scoring"
+  ],
+  "contiguous_soak": {
+    "host_lost_samples_or_restart": "fail/restart soak only under existing supervisor rules; never call host gaps firmware defects without independent evidence",
+    "minimum_seconds": 5400,
+    "must_be_uninterrupted": true,
+    "sample_interval_seconds": 8
+  },
+  "current_installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "current_installed_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "early_match": {
+    "baseline_profile_dir": "evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep",
+    "baseline_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "brightness": 44,
+    "early_kernels": [
+      13,
+      9
+    ],
+    "source": "existing exact R4 matched early-gate plan and current sweep runner; no threshold changes"
+  },
+  "full_sweep": {
+    "kernel_count": 28,
+    "relative_thresholds": "Read directly from frozen policy; no overrides.",
+    "sample_seconds": 30,
+    "settle_seconds": 5,
+    "shared_path_audit_required": true,
+    "variant_comparison_required": true
+  },
+  "guest_mode_must_remain_off": true,
+  "no_other_firmware_or_router_mutation": true,
+  "no_scope_change": true,
+  "order": [
+    "candidate exact identity and health",
+    "matched early kernels against exact R4",
+    "complete unchanged 28-kernel sweep and common-path audit",
+    "combined-feature checks",
+    "one uninterrupted 90-minute soak",
+    "restore renderer snapshot",
+    "owner visual/audio/iPad acceptance"
+  ],
+  "physical_acceptance": [
+    "actual Matrix animation progresses",
+    "actual AUX follows scenes without loss/dark sections",
+    "recovery/reconnect behavior"
+  ],
+  "policy": {
+    "change_authorized": false,
+    "frozen": true,
+    "path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
+    "sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797"
+  },
+  "rollback_release_id": "Foundation R4",
+  "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "schema": "hbnf-cart2-r6-frozen-live-qualification-procedure-v1",
+  "uv_must_remain_disabled": true
+}

@@ -1,0 +1,12 @@
+{
+  "admission_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_LIVE_APPROVED_ADMISSION.json",
+  "admission_sha256": "c3fb41ccfcc50b87551d5c9765eec163538738cead2ab32ffb59fc57305718d1",
+  "device_mutation_or_backend_write": false,
+  "pass": true,
+  "preflight_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/FRESH_PREWRITE_PREFLIGHT.json",
+  "preflight_sha256": "c981371ed08d5f6eb1e626f48036b7e209bc12f2a0ecdbb04dfa8174c8596f41",
+  "schema": "hbnf-cart2-release-admission-result-v1",
+  "stage": "LIVE_APPROVED",
+  "validated_against": "config/HBNF_CONTROL_STATE.json and exact R6/R4/package identities",
+  "validated_at_utc": "2026-10-10T05:19:59.766981+00:00"
+}

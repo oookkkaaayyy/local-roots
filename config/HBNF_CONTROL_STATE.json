@@ -714,6 +714,15 @@
       "worker": "hbnf-cart2-private-stage-20261010",
       "worker_version_id": "647c546a-d3b1-4bd2-8437-4edb4c6a3356"
     },
+    "control_fence_prewrite_snapshot": {
+      "active": true,
+      "cart_id": "hbnf-cart",
+      "fence_epoch": 2,
+      "guest_mode": false,
+      "release_id": "hbnf-cart-foundation-v1-20260925",
+      "revision": 123,
+      "source": "fresh read-only Supabase SELECT 2026-10-10T05:13Z"
+    },
     "controller_package": {
       "path": "evidence/cart2-owner-guest-vibe-r2-20261009/HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009.zip",
       "sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc"
@@ -752,9 +761,12 @@
         "hbnf-matrix-adapter-foundation v3"
       ]
     },
+    "first_write_plan": "consume coordinated transaction in control state, then compare-and-set actuator fence active=false to block owner and guest commands during no-MQTT writer transition; restore only after exact R6 and relay runtime readiness.",
+    "fresh_prewrite_evidence": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/FRESH_PREWRITE_PREFLIGHT.json",
+    "fresh_prewrite_evidence_sha256": "c981371ed08d5f6eb1e626f48036b7e209bc12f2a0ecdbb04dfa8174c8596f41",
     "install_attempts": 0,
     "install_limit": 1,
-    "last_preflight_blocker": "Fresh Matrix/AUX/Opal preflight remains blocked: the host is not on HBNF-Cart LAN. Cloudflare OAuth was invalidated as a security precaution; a fresh login is required before any future Cloudflare API write. Existing authorized Cart routes remain active and unchanged.",
+    "last_preflight_blocker": null,
     "limits": [
       "no candidate retry or different firmware",
       "no router/Opal/AUX firmware or config changes",
@@ -763,10 +775,16 @@
       "no threshold/acceptance weakening"
     ],
     "live_admission": {
-      "admission_path": null,
-      "reason": "Corrected Cart-only route, exact-byte, fallback, and browser checks passed, and authorized routes are retained. Current host is not connected to HBNF-Cart LAN; Matrix/AUX read-only preflight timed out, and Owner UI still reports Matrix application unconfirmed. No backend or firmware action until fresh device identity/health/power/recovery and command-contract checks pass.",
+      "admission_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_LIVE_APPROVED_ADMISSION.json",
+      "admission_sha256": "c3fb41ccfcc50b87551d5c9765eec163538738cead2ab32ffb59fc57305718d1",
+      "checked_at_utc": "2026-10-10T05:19:59.766981+00:00",
+      "preflight_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/FRESH_PREWRITE_PREFLIGHT.json",
+      "preflight_sha256": "c981371ed08d5f6eb1e626f48036b7e209bc12f2a0ecdbb04dfa8174c8596f41",
+      "reason": "Fresh Matrix/AUX/Opal and Mac preflight passed. Existing Cloudflare route exact-byte/fallback receipt reused. Current Supabase v18/v12/v3 and rollback snapshot verified. Current Cart fence is active; ingress freeze and single-writer transition are the first authorized backend transaction action.",
+      "result_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_LIVE_APPROVED_ADMISSION_RESULT.json",
+      "result_sha256": "ceb552331097c22e40be6f866fe674937cbd024796459f26c6f15bfbde994ff6",
       "stage": "LIVE_APPROVED",
-      "status": "NOT_READY"
+      "status": "PASS__READY_TO_START_EXACT_TRANSACTION"
     },
     "live_mutation_authorized": true,
     "offline_test_receipt": {
@@ -792,7 +810,7 @@
       "one exact R4 recovery only on authorized objective runtime/safety/performance/AUX failure",
       "unchanged 28-kernel sweep, combined-feature tests, contiguous 90-minute soak, physical and owner acceptance"
     ],
-    "status": "OWNER_AUTHORIZED__CART_ROUTES_PASS__DEVICE_PREFLIGHT_NOT_READY",
+    "status": "OWNER_AUTHORIZED__PREFLIGHT_AND_LIVE_ADMISSION_PASS__R6_NOT_YET_CONSUMED",
     "target": {
       "aux_ip": "192.168.77.11",
       "aux_mac": "8c:94:df:55:c3:4c",
@@ -2569,18 +2587,23 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "CLOUDFLARE_ACTIVE_ASSET_ONLY_SOURCE_AND_FULL_SITE_ASSET_PRESERVATION_UNPROVEN__R6_AUTHORIZED_UNCONSUMED__R4_CURRENT",
+    "current_failure_domain": "NONE_PREWRITE_GATE_PASS__DATABASE_FENCE_RELEASE_ID_OLDER_THAN_DEVICE_BUILD_AND_RECONCILED_BY_REVISION_BOUND_RELAY_TRANSITION",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
       "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-      "status": "EXACT_R4_CURRENT__R6_OWNER_AUTHORIZED_NOT_CONSUMED"
+      "status": "EXACT_FOUNDATION_R4_CURRENT__R6_TRANSACTION_ADMITTED_NOT_YET_CONSUMED"
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Use only the captured current Cloudflare version and verified source/package evidence; do not deploy stale public directory.",
-      "Recover exact complete current site asset source/manifest or prove a supported exact overlay compatible with the asset-only active version, preserving all unrelated assets and the current serving behavior.",
-      "Only after a candidate is verified at 0% with version overrides and unchanged routes pass, regenerate fail-closed LIVE_APPROVED admission for exact R6/package/R4 and execute the pre-authorized coordinated release."
+      "Before any command writer or firmware change, record one-time transaction consumption and deactivate the current command fence with a compare-and-set against the freshly observed revision/fence; this creates a short owner-control pause.",
+      "Apply the exact approved additive relay confirmation migration; deploy the pending-only reconcile and fail-closed compatibility adapter, then the matching owner control function. Keep relay service inactive.",
+      "Verify managed authentication, RPC grants, current source/version readback and rollback identities; preserve Guest Mode OFF and UV disabled.",
+      "Install exact integrated R6 BIN once through the proven WLED updater; immediately verify target MAC, embedded release identity, health, AUX DDP, uptime and heap.",
+      "Run frozen matched early gates and all 28 kernel profiles against the exact R4 profile; run combined-feature checks and the contiguous 5400-second soak only if gates pass.",
+      "Install/start one Opal relay only after R6 exact identity; open the command fence only after no-writer overlap is proven; issue one harmless controlled owner action and verify revision/fence-bound readback plus connection-loss recovery.",
+      "Verify current Owner and Guest URLs and iPad/iPhone operation, preserve Guest Mode OFF and UV disabled; complete physical Matrix/AUX and subjective owner acceptance.",
+      "If an objective runtime/performance/safety/AUX gate fails, capture evidence and execute only the single exact R4 recovery authorized by the transaction; do not retry R6."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -2832,8 +2855,8 @@
     "authorized": true,
     "candidate_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
     "controller_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
-    "current_gate": "Release admission NOT_READY: the Mac is not connected to the Cart LAN; device identity/health/power and live application evidence are not freshly verified.",
-    "hardware_writes_permitted_now": false,
+    "current_gate": "Fresh LIVE_APPROVED admission PASS, branch aa557c00025fd91be51a59f58f58eb98c593168e equals origin, exact R6/package/R4 hashes verified, current Matrix is exact R4 and AUX DDP live, Opal reachable, current Supabase rollback identities verified; transaction has not yet been consumed.",
+    "hardware_writes_permitted_now": true,
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "transaction_consumed": false
   },

@@ -1,0 +1,619 @@
+{
+  "artifacts": {
+    "owner_guest": {
+      "bytes": 122754,
+      "expected_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
+      "pass": true,
+      "path": "evidence/cart2-owner-guest-vibe-r2-20261009/HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009.zip",
+      "sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc"
+    },
+    "r4": {
+      "bytes": 1489008,
+      "expected_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "pass": true,
+      "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    },
+    "r6": {
+      "bytes": 1497936,
+      "expected_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
+      "pass": true,
+      "path": "evidence/cart2-r6-integrated-20261009/hbnf-cart2-phase2-offline-wow-r6-integrated-20261009.bin",
+      "sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb"
+    }
+  },
+  "authorization": {
+    "controller_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
+    "firmware_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
+    "install_attempts_before": 0,
+    "install_limit": 1,
+    "live_mutation_authorized": true,
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+    "rollback_attempts_before": 0,
+    "rollback_limit": 1,
+    "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "source": "Current user instruction resumes the existing coordinated R6 transaction; exact hashes and limits are inherited from current control state, no new authorization requested."
+  },
+  "aux": {
+    "info_post": {
+      "freeheap": 105500,
+      "ip": "192.168.77.11",
+      "leds": {
+        "bootps": 0,
+        "cct": 0,
+        "count": 22,
+        "fps": 0,
+        "lc": 1,
+        "maxpwr": 900,
+        "maxseg": 32,
+        "pwr": 145,
+        "rgbw": false,
+        "seglc": [
+          1
+        ],
+        "wv": 0
+      },
+      "lip": "192.168.77.10",
+      "live": true,
+      "lm": "DDP",
+      "mac": "8c94df55c34c",
+      "uptime": 87083,
+      "ver": "16.0.1",
+      "wifi": {
+        "ap": false,
+        "bssid": "94:83:C4:98:78:94",
+        "channel": 4,
+        "rssi": -32,
+        "signal": 100
+      }
+    },
+    "info_pre": {
+      "freeheap": 105492,
+      "ip": "192.168.77.11",
+      "leds": {
+        "bootps": 0,
+        "cct": 0,
+        "count": 22,
+        "fps": 0,
+        "lc": 1,
+        "maxpwr": 900,
+        "maxseg": 32,
+        "pwr": 145,
+        "rgbw": false,
+        "seglc": [
+          1
+        ],
+        "wv": 0
+      },
+      "lip": "192.168.77.10",
+      "live": true,
+      "lm": "DDP",
+      "mac": "8c94df55c34c",
+      "uptime": 87077,
+      "ver": "16.0.1",
+      "wifi": {
+        "ap": false,
+        "bssid": "94:83:C4:98:78:94",
+        "channel": 4,
+        "rssi": -33,
+        "signal": 100
+      }
+    },
+    "state_post": {
+      "HBNFAUX": {
+        "amount": 0,
+        "audioActive": false,
+        "audioGeometry": "source-coupled-v4",
+        "bass": 0,
+        "buildWitness": "registry28-tempo-lock-1d-v6-network-no-starve",
+        "drop": 0,
+        "energy": 0,
+        "engine": "aux-r3-wow-1d",
+        "fxFailed": 0,
+        "fxFirst": 220,
+        "fxLast": 247,
+        "fxRegistered": 28,
+        "generator": "anti-repeat-v4",
+        "generatorDomain": 0,
+        "generatorEnabled": false,
+        "generatorLocked": false,
+        "impact": 0,
+        "lumaPolicy": "camera-bright-v1",
+        "mid": 0,
+        "modeCount": 248,
+        "profile": 0,
+        "projection": "fold2-1d-v1",
+        "projectionGeometry": "perimeter-5-6-5-6-v1",
+        "projectionHelloPackets": 115677,
+        "projectionLink": "frame-lock-v1",
+        "projectionPeerAgeMs": 4294967295,
+        "projectionPeerKnown": false,
+        "projectionQueuePolicy": "newest-frame-v1",
+        "projectionRole": "receiver",
+        "projectionRxActive": false,
+        "projectionRxAgeMs": 4294967295,
+        "projectionRxPackets": 0,
+        "projectionRxSeq": 0,
+        "projectionScheduler": "network-before-bus-guard-v1",
+        "projectionSeq": 0,
+        "projectionTransport": "udp-unicast-discovery-v1",
+        "projectionTxActive": false,
+        "projectionTxAgeMs": 4294967295,
+        "pulse": 0,
+        "release": "hbnf-wow-aux-r3-2026-09-22-v1",
+        "sceneParams": "profile-via-ix-style-amount-by-effect-id",
+        "style": 0,
+        "syncEffectContract": "ids220-247",
+        "treble": 0,
+        "variantDwellSeconds": 14,
+        "variantFamily": 0,
+        "variantSequence": 0,
+        "variantSignature": 0,
+        "variation": 85
+      },
+      "bri": 255,
+      "lor": 0,
+      "on": true,
+      "udpn": {
+        "recv": false,
+        "rgrp": 0,
+        "send": false,
+        "sgrp": 0
+      }
+    },
+    "state_pre": {
+      "HBNFAUX": {
+        "amount": 0,
+        "audioActive": false,
+        "audioGeometry": "source-coupled-v4",
+        "bass": 0,
+        "buildWitness": "registry28-tempo-lock-1d-v6-network-no-starve",
+        "drop": 0,
+        "energy": 0,
+        "engine": "aux-r3-wow-1d",
+        "fxFailed": 0,
+        "fxFirst": 220,
+        "fxLast": 247,
+        "fxRegistered": 28,
+        "generator": "anti-repeat-v4",
+        "generatorDomain": 0,
+        "generatorEnabled": false,
+        "generatorLocked": false,
+        "impact": 0,
+        "lumaPolicy": "camera-bright-v1",
+        "mid": 0,
+        "modeCount": 248,
+        "profile": 0,
+        "projection": "fold2-1d-v1",
+        "projectionGeometry": "perimeter-5-6-5-6-v1",
+        "projectionHelloPackets": 115669,
+        "projectionLink": "frame-lock-v1",
+        "projectionPeerAgeMs": 4294967295,
+        "projectionPeerKnown": false,
+        "projectionQueuePolicy": "newest-frame-v1",
+        "projectionRole": "receiver",
+        "projectionRxActive": false,
+        "projectionRxAgeMs": 4294967295,
+        "projectionRxPackets": 0,
+        "projectionRxSeq": 0,
+        "projectionScheduler": "network-before-bus-guard-v1",
+        "projectionSeq": 0,
+        "projectionTransport": "udp-unicast-discovery-v1",
+        "projectionTxActive": false,
+        "projectionTxAgeMs": 4294967295,
+        "pulse": 0,
+        "release": "hbnf-wow-aux-r3-2026-09-22-v1",
+        "sceneParams": "profile-via-ix-style-amount-by-effect-id",
+        "style": 0,
+        "syncEffectContract": "ids220-247",
+        "treble": 0,
+        "variantDwellSeconds": 14,
+        "variantFamily": 0,
+        "variantSequence": 0,
+        "variantSignature": 0,
+        "variation": 85
+      },
+      "bri": 255,
+      "lor": 0,
+      "on": true,
+      "udpn": {
+        "recv": false,
+        "rgrp": 0,
+        "send": false,
+        "sgrp": 0
+      }
+    }
+  },
+  "captured_utc": "2026-10-10T05:18:01.070624+00:00",
+  "cart_routes_current": {
+    "exact_17_mapping_and_fallback_preservation": "PASS per reused corrected route receipt 60d88b342bebdc8f3295d8f4445a3759a4a9f5e5358c726d2a3a3e17286c212d",
+    "guest": {
+      "curl_exit": 0,
+      "headers": {
+        "cache-control": "public, max-age=0, must-revalidate",
+        "content-type": "text/html",
+        "server": "cloudflare",
+        "x-hbnf-candidate": "cart2-owner-guest-r2-canonical-20261010"
+      },
+      "status": 200,
+      "stderr": ""
+    },
+    "owner": {
+      "curl_exit": 0,
+      "headers": {
+        "cache-control": "public, max-age=0, must-revalidate",
+        "content-type": "text/html",
+        "server": "cloudflare",
+        "x-hbnf-candidate": "cart2-owner-guest-r2-canonical-20261010"
+      },
+      "status": 200,
+      "stderr": ""
+    }
+  },
+  "cloudflare": {
+    "current_deployment_rollback_and_route_receipts_reused": true,
+    "no_new_cloudflare_api_write_required": true,
+    "route_receipt_path": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/CORRECTED_ROUTE_QUALIFICATION_RECEIPT.json",
+    "route_receipt_sha256": "60d88b342bebdc8f3295d8f4445a3759a4a9f5e5358c726d2a3a3e17286c212d",
+    "routes": [
+      {
+        "id": "8dfb6cae8169437a91d7866a5043260d",
+        "pattern": "hbnightflyers.com/hbnf-cart*",
+        "request_limit_fail_open": false,
+        "script": "hbnf-cart2-private-stage-20261010"
+      },
+      {
+        "id": "8ef057ecce4a44ba98997b4f0dd2f20e",
+        "pattern": "hbnightflyers.com/guest/hbnf-cart/*",
+        "request_limit_fail_open": false,
+        "script": "hbnf-cart2-private-stage-20261010"
+      }
+    ],
+    "wrangler_session_invalidated_receipt": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/CLOUDFLARE_AUTH_SESSION_CLEANUP.json"
+  },
+  "database_control_read": {
+    "cart_id": "hbnf-cart",
+    "fence_active": true,
+    "fence_epoch": 2,
+    "fence_release_id": "hbnf-cart-foundation-v1-20260925",
+    "guest_mode": false,
+    "note": "Observed fence release id is older than the actual R4 build release. Preserve and reconcile through the coordinated backend transaction before reopening command ingress.",
+    "revision": 123
+  },
+  "host": {
+    "connected_to_cart_subnet": true,
+    "power": "Now drawing from 'AC Power'\n -InternalBattery-0 (id=38600803)\t100%; charged; 0:00 remaining present: true\n",
+    "upstream_https": {
+      "curl_exit": 0,
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "text/html; charset=utf-8",
+        "server": "cloudflare"
+      },
+      "status": 200,
+      "stderr": ""
+    },
+    "uptime": "22:17  up 4 days,  6:27, 1 user, load averages: 4.73 11.03 11.67",
+    "wifi_service": "DHCP Configuration\nIP address: 192.168.77.180\nSubnet mask: 255.255.255.0\nRouter: 192.168.77.1\nClient ID: \nIPv6: Automatic\nIPv6 IP address: none\nIPv6 Router: none\nWi-Fi ID: 50:a6:d8:98:aa:96\n"
+  },
+  "integration_source": {
+    "branch": "hbnf-cart2-phase2-integration-20261006",
+    "local_head": "aa557c00025fd91be51a59f58f58eb98c593168e",
+    "remote_head": "aa557c00025fd91be51a59f58f58eb98c593168e",
+    "worktree_clean": true
+  },
+  "limitations": [
+    "No live mutation was performed in this preflight.",
+    "Power stability is supported by Mac uptime and present AC status; no household voltage monitor exists.",
+    "WLED API reports release identity and MAC; installed BIN SHA is mapped by verified release artifact record, not directly returned by device.",
+    "Python urllib received Cloudflare 1010 for the public Owner/Guest HEAD requests; the previously proven curl client was used successfully instead."
+  ],
+  "matrix": {
+    "build": {
+      "basedOnFirmwareSha256": "b9bb60dca1a9be8f7241670a7540810c604465c9adf7084b6efc90d5b4622886",
+      "basedOnReleaseId": "hbnf-matrix-coordinated-v1-20261002-06",
+      "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "features": [
+        "canonical-palette-v1",
+        "canonical-overlay-v1",
+        "coordinated-ui-v1"
+      ],
+      "ip": "192.168.77.10",
+      "mac": "70:4b:ca:5b:34:5c",
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "schema": "hbnf-build-v1",
+      "wled": "16.0.1"
+    },
+    "info_post": {
+      "freeheap": 75104,
+      "ip": "192.168.77.10",
+      "leds": {
+        "bootps": 60,
+        "cct": 0,
+        "count": 534,
+        "fps": 41,
+        "lc": 1,
+        "matrix": {
+          "h": 16,
+          "w": 32
+        },
+        "maxpwr": 1800,
+        "maxseg": 32,
+        "pwr": 700,
+        "rgbw": false,
+        "seglc": [
+          1,
+          0
+        ],
+        "wv": 0
+      },
+      "lip": "",
+      "live": false,
+      "lm": "",
+      "mac": "704bca5b345c",
+      "uptime": 36427,
+      "ver": "16.0.1",
+      "wifi": {
+        "ap": false,
+        "bssid": "94:83:C4:98:78:94",
+        "channel": 4,
+        "rssi": -51,
+        "signal": 98
+      }
+    },
+    "info_pre": {
+      "freeheap": 75084,
+      "ip": "192.168.77.10",
+      "leds": {
+        "bootps": 60,
+        "cct": 0,
+        "count": 534,
+        "fps": 41,
+        "lc": 1,
+        "matrix": {
+          "h": 16,
+          "w": 32
+        },
+        "maxpwr": 1800,
+        "maxseg": 32,
+        "pwr": 710,
+        "rgbw": false,
+        "seglc": [
+          1,
+          0
+        ],
+        "wv": 0
+      },
+      "lip": "",
+      "live": false,
+      "lm": "",
+      "mac": "704bca5b345c",
+      "uptime": 36422,
+      "ver": "16.0.1",
+      "wifi": {
+        "ap": false,
+        "bssid": "94:83:C4:98:78:94",
+        "channel": 4,
+        "rssi": -51,
+        "signal": 98
+      }
+    },
+    "state_post": {
+      "HBNF": {
+        "audio": {
+          "bass": 0,
+          "mid": 0,
+          "peak": false,
+          "treble": 0,
+          "volume": 0
+        },
+        "audioResponse": 50,
+        "auxBrightness": 245,
+        "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "companionLastNonzeroPixels": 22,
+        "companionRenderCount": 1489053,
+        "effectId": 142,
+        "foundationTelemetry": {
+          "enabled": false,
+          "frameMsAvg": null,
+          "frameMsMax": null,
+          "frameMsP50": null,
+          "frameMsP95": null,
+          "frameMsP99": null,
+          "kernelId": 255,
+          "largestFreeBlockBytes": 69620,
+          "minimumFreeHeapBytes": 51404,
+          "sampleCount": 0
+        },
+        "kernel": 3,
+        "liveAcePot": 0,
+        "liveActive": false,
+        "liveEntryCount": 0,
+        "liveLabel": "",
+        "matrixBrightness": 44,
+        "motion": 50,
+        "overlayId": null,
+        "packet20Diagnostic": {
+          "enabled": false,
+          "espResetReason": 3,
+          "lastCommand": "",
+          "lastCommandAccepted": false,
+          "resetReasonCore0": 12,
+          "resetReasonCore1": 12,
+          "restoreVerified": false,
+          "selectedKernel": 3,
+          "snapshotGeneration": 0,
+          "snapshotHash": 0,
+          "snapshotId": 0,
+          "snapshotState": "IDLE",
+          "snapshotValid": false
+        },
+        "palette": {
+          "mode": "legacy"
+        },
+        "scene": 0,
+        "schema": "foundation-v1",
+        "timing": {
+          "audioModulationUs": 1311,
+          "auxProjectionAgeMs": 36428135,
+          "companionDdpSendUs": 0,
+          "companionPrepUs": 121,
+          "companionRenderCount": 1489053,
+          "fps": 40,
+          "freeHeap": 120156,
+          "kernel": 3,
+          "kernelRenderUs": 8704,
+          "overlayUs": 30,
+          "paletteColorUs": 390,
+          "rssi": -52,
+          "schedulerVariantUs": 1173,
+          "unaccountedUs": 2848,
+          "uptimeSec": 36428,
+          "variantSignature": 3079452688,
+          "wholeFrameUs": 14580
+        },
+        "transport": "wled-native-ddp-unicast",
+        "variantDwellSeconds": 64,
+        "variantSignature": 3079452688
+      },
+      "bri": 255,
+      "lor": 0,
+      "on": true,
+      "udpn": {
+        "recv": false,
+        "rgrp": 0,
+        "send": false,
+        "sgrp": 1
+      }
+    },
+    "state_pre": {
+      "HBNF": {
+        "audio": {
+          "bass": 0,
+          "mid": 0,
+          "peak": false,
+          "treble": 0,
+          "volume": 0
+        },
+        "audioResponse": 50,
+        "auxBrightness": 245,
+        "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "companionLastNonzeroPixels": 21,
+        "companionRenderCount": 1488814,
+        "effectId": 142,
+        "foundationTelemetry": {
+          "enabled": false,
+          "frameMsAvg": null,
+          "frameMsMax": null,
+          "frameMsP50": null,
+          "frameMsP95": null,
+          "frameMsP99": null,
+          "kernelId": 255,
+          "largestFreeBlockBytes": 69620,
+          "minimumFreeHeapBytes": 51404,
+          "sampleCount": 0
+        },
+        "kernel": 3,
+        "liveAcePot": 0,
+        "liveActive": false,
+        "liveEntryCount": 0,
+        "liveLabel": "",
+        "matrixBrightness": 44,
+        "motion": 50,
+        "overlayId": null,
+        "packet20Diagnostic": {
+          "enabled": false,
+          "espResetReason": 3,
+          "lastCommand": "",
+          "lastCommandAccepted": false,
+          "resetReasonCore0": 12,
+          "resetReasonCore1": 12,
+          "restoreVerified": false,
+          "selectedKernel": 3,
+          "snapshotGeneration": 0,
+          "snapshotHash": 0,
+          "snapshotId": 0,
+          "snapshotState": "IDLE",
+          "snapshotValid": false
+        },
+        "palette": {
+          "mode": "legacy"
+        },
+        "scene": 0,
+        "schema": "foundation-v1",
+        "timing": {
+          "audioModulationUs": 1285,
+          "auxProjectionAgeMs": 36422403,
+          "companionDdpSendUs": 0,
+          "companionPrepUs": 165,
+          "companionRenderCount": 1488814,
+          "fps": 39,
+          "freeHeap": 120156,
+          "kernel": 3,
+          "kernelRenderUs": 8882,
+          "overlayUs": 35,
+          "paletteColorUs": 371,
+          "rssi": -51,
+          "schedulerVariantUs": 1282,
+          "unaccountedUs": 2925,
+          "uptimeSec": 36422,
+          "variantSignature": 3079452688,
+          "wholeFrameUs": 14947
+        },
+        "transport": "wled-native-ddp-unicast",
+        "variantDwellSeconds": 64,
+        "variantSignature": 3079452688
+      },
+      "bri": 255,
+      "lor": 0,
+      "on": true,
+      "udpn": {
+        "recv": false,
+        "rgrp": 0,
+        "send": false,
+        "sgrp": 1
+      }
+    }
+  },
+  "opal_read_only_ssh": {
+    "command_scoped_ssh_rsa_compatibility": true,
+    "exit_code": 0,
+    "no_package_or_config_change": true,
+    "stderr": "awk: cmd. line:1: Unexpected token",
+    "stdout": "uptime= 22:18:00 up  3:13,  load average: 1.23, 1.33, 1.35\nshell=ash\ninterfaces=\nrelay_init=absent\nrelay_process=0\nfree=Swap:            0          0          0\ndisk=/dev/ubi0_1              92.6M      1.6M     86.3M   2% /overlay"
+  },
+  "preflight_verdict": "PASS",
+  "schema": "hbnf-cart2-r6-fresh-prewrite-preflight-v1",
+  "single_live_worker": {
+    "active_codex_workers": [
+      "/root"
+    ],
+    "count": 1
+  },
+  "supabase": {
+    "functions": {
+      "hbnf-cart-control": {
+        "sha256": "8629c8484a7ce335bee9c14c613f0e1858c18d3f2fa041b71c6ac0492d691e37",
+        "version": 18
+      },
+      "hbnf-cart-reconcile": {
+        "sha256": "4f400b2ee1d733f07a90baa231c843990802a3a72aedb507e6963a78685a1d93",
+        "version": 12
+      },
+      "hbnf-matrix-adapter-foundation": {
+        "sha256": "4925765bdad4726e3eda85d1d781813c783c64d2d425f0aafe572bf918fbcdb1",
+        "version": 3
+      }
+    },
+    "project_id": "phcpbvuqibyarpfrftgx",
+    "relay_function_present": false,
+    "relay_migration_present": false,
+    "rollback_snapshot_manifest_sha256": "01aae83c2ffc8f38b016acb787f445cccb63d672e348bcfa03e1ff7059df3cd8",
+    "secret_names_previously_dashboard_verified": [
+      "HBNF_MATRIX_RELAY_TOKEN",
+      "HBNF_MATRIX_RELAY_ID"
+    ],
+    "secret_value_recorded": false,
+    "status": "ACTIVE_HEALTHY"
+  }
+}

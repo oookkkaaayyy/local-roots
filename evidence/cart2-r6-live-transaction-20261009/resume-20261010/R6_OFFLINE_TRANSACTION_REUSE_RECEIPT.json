@@ -1,0 +1,47 @@
+{
+  "component_evidence": {
+    "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/CORRECTED_ROUTE_QUALIFICATION_RECEIPT.json": "60d88b342bebdc8f3295d8f4445a3759a4a9f5e5358c726d2a3a3e17286c212d",
+    "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/OFFLINE_RELEASE_READINESS_TESTS.json": "6b8a3d047e671b34c3e184c79aa8bef72c09227b59c235d4c366fd0aa52c819d",
+    "evidence/cart2-matrix-relay-20261009/IMPLEMENTATION_RECEIPT.json": "5d3643eae57af5203cf1c86844c5ec952a840ca4b4894050c9d955a3e8549290",
+    "evidence/cart2-r6-integrated-20261009/OFFLINE_TEST_RECEIPT.json": "575a6a5aa8a61d10bcf535a8ae146c489362fe906237011bac034196e8557110",
+    "evidence/cart2-r6-live-transaction-20261009/resume-20261010/FRESH_PREWRITE_PREFLIGHT.json": "c981371ed08d5f6eb1e626f48036b7e209bc12f2a0ecdbb04dfa8174c8596f41"
+  },
+  "created_at_utc": "2026-10-10T05:19:37.585624+00:00",
+  "current_production_snapshot": {
+    "cloudflare_route_test": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/CORRECTED_ROUTE_QUALIFICATION_RECEIPT.json",
+    "migration_absent": true,
+    "relay_function_absent": true,
+    "router_relay_not_installed": true,
+    "supabase": "hbnf-cart-control v18 / hbnf-cart-reconcile v12 / hbnf-matrix-adapter-foundation v3; exact provider hashes and rollback files listed in fresh preflight and current snapshot manifest"
+  },
+  "exact_artifacts": {
+    "firmware": {
+      "bytes": 1497936,
+      "path": "evidence/cart2-r6-integrated-20261009/hbnf-cart2-phase2-offline-wow-r6-integrated-20261009.bin",
+      "sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb"
+    },
+    "owner_guest": {
+      "bytes": 122754,
+      "path": "evidence/cart2-owner-guest-vibe-r2-20261009/HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009.zip",
+      "sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc"
+    },
+    "r4_rollback": {
+      "bytes": 1489008,
+      "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    }
+  },
+  "limitations": [
+    "This receipt reuses prior exact artifact tests, staging relay tests and Cloudflare route proof. It does not claim live backend migration, relay runtime, R6 firmware qualification, physical output or owner acceptance."
+  ],
+  "order_and_safety": [
+    "read-only preflight fresh",
+    "inert migration/functions before relay activation",
+    "single command writer; legacy MQTT path removed by staged reconcile/adapter",
+    "exact R6 install once",
+    "conditional exact R4 recovery only under objective gate",
+    "unchanged frozen sweeps/soak/physical acceptance"
+  ],
+  "schema": "hbnf-cart2-r6-offline-release-transaction-reuse-receipt-v1",
+  "status": "PASS_OFFLINE_ADMISSION_PREPARATION__NO_PRODUCTION_WRITE"
+}
