@@ -1,0 +1,69 @@
+{
+  "artifact_sha256": {
+    "owner_guest_zip": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
+    "r4_rollback": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743a2f3d8c",
+    "r6": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb"
+  },
+  "captured_at_utc": "2026-10-10T04:19:23.253367+00:00",
+  "checks": [
+    {
+      "command": "python3 tests/hbnf_cart2_integrated_offline_rc.py",
+      "evidence": "Integrated R6 binary, exact R4 recovery, Owner/Guest package, source hashes, deterministic installer path.",
+      "name": "integrated_offline_rc",
+      "result": "PASS"
+    },
+    {
+      "command": "node --experimental-strip-types tests/hbnf_matrix_relay_contract.mjs",
+      "evidence": "Relay protocol contract.",
+      "name": "relay_contract",
+      "result": "PASS"
+    },
+    {
+      "command": "node tests/hbnf-guest-platform-static.mjs",
+      "evidence": "Guest static shell, PWA assets, owner-surface isolation, offline fallback.",
+      "name": "guest_static",
+      "result": "PASS"
+    },
+    {
+      "command": "node tests/hbnf_owner_pwa_reliability.mjs",
+      "evidence": "Deadline, pairing, versioned imports, offline cache, cache isolation, Mission Control hierarchy, Vibe controls, status truth, responsive layouts, Guest default.",
+      "name": "owner_pwa_reliability",
+      "result": "PASS"
+    },
+    {
+      "command": "node tests/hbnf_skins_scoring_owner_flow.mjs",
+      "evidence": "Authoritative F9/B9 scoring, edits, pushes/carry, tiebreaker, ace pot, stale/concurrent protection, confirmed readback, paired-owner auth.",
+      "name": "scoring_owner_flow",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/hbnf_vibe_audio_replay.py",
+      "evidence": "13 AudioFeatures semantics, six synthetic traces, pairwise Vibe differentiation, AUTO hysteresis; synthetic only, not live music acceptance.",
+      "name": "vibe_audio_replay",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/test_hbnf_text_moments_offline.py",
+      "evidence": "14 offline Text/Moments tests.",
+      "name": "text_moments",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/hbnf_delivery_rail_host.py",
+      "evidence": "Positive fixture accepted; invalid historical replay, fabricated dry-run digest, binary SHA mismatch, missing live authorization and evidence all rejected fail-closed without hardware access.",
+      "name": "delivery_rail",
+      "result": "PASS"
+    }
+  ],
+  "remaining_gates": [
+    "fresh read-only Matrix/AUX/Opal identity/health/power/recovery preflight",
+    "revision-bound application confirmation with current live device evidence",
+    "LIVE_APPROVED admission",
+    "exact R6 installation and early/full frozen performance qualification",
+    "combined-feature tests, physical Matrix/AUX, uninterrupted 90-minute soak, owner acceptance"
+  ],
+  "result": "PASS_TARGETED_OFFLINE_CHECKS",
+  "schema": "hbnf-cart2-offline-release-readiness-test-receipt-v1",
+  "scope": "Targeted offline release-readiness tests only; no live deployment, device access, OTA, or production mutation.",
+  "source_commit": "0de71aa125656f8014536b5edb5cdd73a4c91711"
+}

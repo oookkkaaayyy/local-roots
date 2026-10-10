@@ -763,6 +763,11 @@
       "status": "NOT_READY"
     },
     "live_mutation_authorized": true,
+    "offline_test_receipt": {
+      "path": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/OFFLINE_RELEASE_READINESS_TESTS.json",
+      "result": "PASS_TARGETED_OFFLINE_CHECKS",
+      "sha256": "6b8a3d047e671b34c3e184c79aa8bef72c09227b59c235d4c366fd0aa52c819d"
+    },
     "prewrite_evidence": {
       "path": "evidence/cart2-r6-live-transaction-20261009/CLOUDFLARE_SOURCE_AND_AUTHORITY_RECONCILIATION.json",
       "sha256": "9c27d79e83ea21dfa32b840bdc439e3ace78513af704d47c787a4ce331c210b4"
@@ -2404,6 +2409,11 @@
     ],
     "release_readiness": {
       "next_gate": "Fresh read-only device identity/health/power/recovery checks and exact LIVE_APPROVED admission; only then execute the coordinated backend/frontend/R6 transaction.",
+      "offline_test_receipt": {
+        "path": "evidence/cart2-dedicated-worker-stage-20261010/corrected-route-test/OFFLINE_RELEASE_READINESS_TESTS.json",
+        "result": "PASS_TARGETED_OFFLINE_CHECKS",
+        "sha256": "6b8a3d047e671b34c3e184c79aa8bef72c09227b59c235d4c366fd0aa52c819d"
+      },
       "primary_blocker": "The corrected two Cart routes and exact 17-URL package integrity/fallback checks pass. Current host cannot reach HBNF-Cart LAN; fresh Matrix/AUX identity, health, power, and recovery preflight is missing. Owner page also reports Matrix application unconfirmed and AUX stale.",
       "status": "ROUTES_PASS__DEVICE_PREFLIGHT_NOT_READY"
     },
@@ -2804,7 +2814,7 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-10T04:17:21.583246+00:00",
+  "last_updated_utc": "2026-10-10T04:19:23.253367+00:00",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "authorization": "Current owner explicitly authorizes persistent continuation of the existing exact R6 coordinated release, including bounded Cart-only route validation, release deployment, one R6 installation and normal reboot, conditionally authorized exact R4 recovery, and qualification. All existing admission, security, rollback, and frozen gates remain mandatory.",
