@@ -1,0 +1,27 @@
+{
+  "captured_unix": 1791650180.057748,
+  "commands": [
+    "python3 tests/hbnf_foundation_live_adapter.py",
+    "python3 tests/test_r6_audio_cache_transaction_dryrun.py",
+    "python3 tests/test_r6_qualification_continuation_control.py",
+    "python3 scripts/platform.py doctor",
+    "git diff --check"
+  ],
+  "firmware_rebuilt": false,
+  "live_device_requests": false,
+  "schema": "hbnf-r6-observer-deadline-host-fix-tests-v1",
+  "slow_nominal_boundary_retry": "PASS",
+  "source_hashes": {
+    "evidence/engineering-governance/20261010-r6-observer-deadline-host-harness-fix.json": "05ff2c73f629bad02b138570859135d12e082bae91b3bfc9c72603e13986af4a",
+    "scripts/hbnf_foundation_live_adapter.py": "78add0f89b359fc3c4ccef5486d12b3c662a35ea0e3858f334f6b26d87ab0d0f",
+    "tests/hbnf_foundation_live_adapter.py": "9f80c467e11e6465227f8dd99dbb5b50c9575493f28dd7bb1ba3d6a862f29ec4"
+  },
+  "status": "PASS",
+  "tests": {
+    "adapter_regression": "PASS",
+    "git_diff_check": "PASS",
+    "platform_doctor": "PASS",
+    "qualification_control_guard": "PASS",
+    "qualification_transaction_dryrun": "PASS"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+  "evidence": {
+    "adapter_source": {
+      "path": "scripts/hbnf_foundation_live_adapter.py",
+      "sha256": "78add0f89b359fc3c4ccef5486d12b3c662a35ea0e3858f334f6b26d87ab0d0f"
+    },
+    "post_restore_state": {
+      "path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/sweep/POST_RESTORE_STATE.json",
+      "sha256": "ad865037616440434199a6db6e2a21f2a43b32cd3ebb5d5cdf58fab55f70d7be"
+    },
+    "regression_test": {
+      "path": "tests/hbnf_foundation_live_adapter.py",
+      "sha256": "9f80c467e11e6465227f8dd99dbb5b50c9575493f28dd7bb1ba3d6a862f29ec4"
+    },
+    "restore_receipt": {
+      "path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/sweep/RESTORE_RECEIPT.json",
+      "sha256": "409cd163c859de14b481caa855f97b7b4c8d45f1af888464c5629eacdd558ad7"
+    },
+    "test_result": {
+      "path": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/OBSERVER_DEADLINE_FIX_TESTS.json",
+      "sha256": "3e6c14d4de3b99678d0fb2f935ea51a04738670a2d998a4a129738a1efde2404"
+    }
+  },
+  "failure_class": "HOST_OBSERVER_REQUEST_DEADLINE",
+  "firmware_changed": false,
+  "frozen_thresholds_changed": false,
+  "next_gate": "Fresh direct-LAN identity, device-health, power, AUX, rollback, and single-worker preflight followed by exact live admission.",
+  "profiles_completed": 0,
+  "proof_does_not_reopen_live_authority": true,
+  "qualification_result_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/QUALIFICATION_CONTINUATION_RESULT.json",
+  "qualification_result_sha256": "0f0fd98b5793c67fbb67688084463a4559db4ecec2f7b6ff7084b7b4232f310d",
+  "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743a2f3d8c",
+  "schema": "hbnf-r6-qualification-host-failure-retry-proof-v1",
+  "status": "PASS"
+}

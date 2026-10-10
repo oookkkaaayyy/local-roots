@@ -276,7 +276,7 @@ def validate_hbnf_coherence(
     if runtime_receipt and runtime_receipt_sha:
         receipt_path=ROOT/runtime_receipt
         reconciled_candidate_is_current=(
-            successor.get("status") in ("CANDIDATE_INSTALLED_QUALIFICATION_PENDING","QUALIFIED_OBJECTIVE_GATES_PASS","QUALIFICATION_FAILED_R4_RECOVERED")
+            successor.get("status") in ("CANDIDATE_INSTALLED_QUALIFICATION_PENDING","QUALIFIED_OBJECTIVE_GATES_PASS","QUALIFICATION_FAILED_R4_RECOVERED","QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED")
             and state.get("installed_release")==successor.get("candidate_release_id")==state.get("live_mutation_authorization",{}).get("candidate_release_id")
             and state.get("installed_firmware_sha256")==successor.get("candidate_sha256")==state.get("live_mutation_authorization",{}).get("candidate_sha256")
             and receipt_path.is_file() and sha256_file(receipt_path)==runtime_receipt_sha

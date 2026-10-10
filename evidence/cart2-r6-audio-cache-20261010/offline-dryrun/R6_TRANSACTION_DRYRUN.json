@@ -228,6 +228,10 @@
     {
       "case": "exact authority durably consumed pre-request and closed post-transaction",
       "pass": true
+    },
+    {
+      "case": "qualification retry requires a new empty in-root evidence directory",
+      "pass": true
     }
   ],
   "device_or_cloud_mutation": false,

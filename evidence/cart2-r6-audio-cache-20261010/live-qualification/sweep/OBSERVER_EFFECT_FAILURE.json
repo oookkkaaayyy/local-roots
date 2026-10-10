@@ -1,0 +1,13 @@
+{
+  "error": "RuntimeError: GET http://192.168.77.10/json/state failed after 2.74761s (attempts=2): RuntimeError: deadline leaves -0.265179s; below minimum HTTP request budget 1s; no request started",
+  "restore": {
+    "packet20Same": true,
+    "restoreVerified": true,
+    "snapshotHash": 3011626760,
+    "snapshotId": 1
+  },
+  "schema": "hbnf-observer-effect-failure-v1",
+  "snapshotHash": 3011626760,
+  "snapshotId": 1,
+  "status": "OBSERVER_FAILED__RENDERER_RESTORED"
+}

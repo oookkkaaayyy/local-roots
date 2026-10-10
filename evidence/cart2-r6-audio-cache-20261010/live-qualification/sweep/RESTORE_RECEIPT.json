@@ -1,0 +1,8 @@
+{
+  "evidence": "OBSERVER_EFFECT_FAILURE.json",
+  "packet20Same": true,
+  "restoreVerified": true,
+  "snapshotHash": 3011626760,
+  "snapshotId": 1,
+  "status": "RESTORE_VERIFIED_AFTER_PREQUAL_FAILURE"
+}

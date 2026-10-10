@@ -81,6 +81,12 @@ def observer_poll_budget_available(deadline, reserve_seconds=1.0):
     """Do not start a telemetry GET that can only receive a near-zero timeout."""
     return deadline-time.monotonic()>=reserve_seconds
 
+def observer_request_deadline(now, nominal_deadline, hard_deadline, request_timeout=HTTP_TIMEOUT_SECONDS):
+    """Use the bounded extension once the nominal window cannot fit one full GET."""
+    if nominal_deadline-now>=request_timeout:
+        return nominal_deadline
+    return hard_deadline
+
 def collect_frame_window(stage, window_seconds=30, reserve_seconds=1.0, minimum_samples=20,
                          max_extension_seconds=10):
     """Collect the full window; allow one bounded extension to reach the unchanged sample floor."""
@@ -94,10 +100,11 @@ def collect_frame_window(stage, window_seconds=30, reserve_seconds=1.0, minimum_
         if len(samples)>=minimum_samples and now+1>=deadline:
             time.sleep(max(0.0,deadline-now))
             break
-        # A request must have a full reserve even during the nominal window;
-        # otherwise switch to the already-bounded extension instead of failing
-        # before the extension logic can run.
-        active_deadline=deadline if deadline-now>=reserve_seconds else hard_deadline
+        # The JSON-state reader can retry one transient timeout. Keep a full
+        # HTTP timeout available; a short timeout against the nominal boundary
+        # can consume that boundary and leave the retry no time to start. The
+        # existing hard deadline bounds both attempts and any sample extension.
+        active_deadline=observer_request_deadline(now,deadline,hard_deadline)
         if hard_deadline-now<reserve_seconds:break
         state,_=p20_state(active_deadline,stage=stage)
         value=state.get("HBNF",{}).get("timing",{}).get("wholeFrameUs")

@@ -1,0 +1,41 @@
+{
+  "candidate_release": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "kernel_id": 0,
+  "schema": "hbnf-observer-prequal-windows-v1",
+  "status": "IN_PROGRESS",
+  "steady_state": {
+    "duration_seconds": 40,
+    "samples": [
+      79.189,
+      48.273,
+      48.417,
+      47.605,
+      50.666,
+      47.941,
+      48.305,
+      47.789,
+      51.062,
+      48.059,
+      51.473,
+      48.174,
+      48.043,
+      48.823,
+      48.898,
+      52.698,
+      52.715,
+      49.941,
+      50.863,
+      50.369,
+      51.618,
+      51.415,
+      50.787,
+      50.0,
+      53.837,
+      50.635,
+      50.706,
+      50.327,
+      50.397
+    ],
+    "tails_enabled": false
+  }
+}

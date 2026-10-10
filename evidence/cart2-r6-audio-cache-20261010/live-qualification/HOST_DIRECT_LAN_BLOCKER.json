@@ -1,0 +1,13 @@
+{
+  "association_attempt": "networksetup -setairportnetwork en0 HBNF-Cart",
+  "association_result": "Could not find network HBNF-Cart",
+  "captured_unix": 1791650191.962902,
+  "conclusion": "Fresh device preflight unavailable: target subnet routes through the home gateway; do not infer Matrix/AUX failure and do not issue further device requests until the direct HBNF-Cart LAN route is restored.",
+  "device_requests_after_failure": false,
+  "host_ipv4": "192.168.68.89",
+  "matrix_route": "   route to: 192.168.77.10\ndestination: default\n       mask: default\n    gateway: 192.168.68.1\n  interface: en0\n      flags: <UP,GATEWAY,DONE,STATIC,PRCLONING,GLOBAL>\n recvpipe  sendpipe  ssthresh  rtt,msec    rttvar  hopcount      mtu     expire\n       0         0         0         0         0         0      1500         0 \n",
+  "network_interface": "en0",
+  "saved_target_ssid": "HBNF-Cart",
+  "schema": "hbnf-r6-host-direct-lan-blocker-v1",
+  "wifi_association": "none"
+}

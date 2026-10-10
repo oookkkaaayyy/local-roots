@@ -72,6 +72,27 @@ with unittest.mock.patch.object(m.time,"monotonic",side_effect=clock.monotonic),
     extended=m.collect_frame_window("bounded-extension",window_seconds=2,reserve_seconds=1,minimum_samples=2,max_extension_seconds=3)
 assert len(extended)==2 and len(calls)==2 and all(d<=5 for d in request_deadlines), (extended,request_deadlines)
 
+# A slow /json/state read near the nominal window boundary must use the
+# existing hard deadline. The old nominal deadline gave the first request
+# only the remaining 2.7 seconds and left the bounded retry unable to start.
+assert m.observer_request_deadline(37.25,40.0,50.0)==50.0
+assert m.observer_request_deadline(29.0,40.0,50.0)==40.0
+clock=FakeClock();calls=[];request_deadlines=[]
+def slow_boundary_state(deadline,stage):
+    calls.append(stage);request_deadlines.append(deadline)
+    if len(calls)<3:
+        clock.now+=.1
+    else:
+        assert deadline==13.0, (deadline,clock.now)
+        clock.now+=2.75  # preserved failure's ~2.75 s boundary latency
+    return {"HBNF":{"timing":{"wholeFrameUs":20000}}},{ }
+with unittest.mock.patch.object(m.time,"monotonic",side_effect=clock.monotonic), \
+     unittest.mock.patch.object(m.time,"sleep",side_effect=clock.sleep), \
+     unittest.mock.patch.object(m,"p20_state",side_effect=slow_boundary_state):
+    boundary=m.collect_frame_window("slow-boundary",window_seconds=3,reserve_seconds=1,
+                                    minimum_samples=3,max_extension_seconds=10)
+assert len(boundary)==3 and len(calls)==3 and request_deadlines[-1]==13.0, (boundary,calls,request_deadlines)
+
 # Genuine early/mid-window transport failures still fail closed.
 clock=FakeClock();calls=[]
 def fail_early(deadline,stage):raise TimeoutError("early seq35-like HTTP failure")

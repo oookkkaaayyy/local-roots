@@ -1,0 +1,12 @@
+{
+  "admission_sha256": "e6f7b2217d061663b442dda22d344b9c3870146fe42fc1ffcf5dcbf394a993dc",
+  "caffeinate_pid": 9113,
+  "candidate_install_attempts_additional": 0,
+  "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+  "capsule_sha256": "b219a639173984c903c2e6d850a68c60a3704acd73f4b9acd6dc04aa0f686329",
+  "log": "evidence/cart2-r6-audio-cache-20261010/live-qualification/GUARDED_QUALIFICATION_CONTINUATION.log",
+  "operation_scope": "qualification-only",
+  "pid": 9112,
+  "schema": "hbnf-r6-qualification-continuation-launch-v1",
+  "started_utc": "2026-10-10T10:19:59.905758+00:00"
+}

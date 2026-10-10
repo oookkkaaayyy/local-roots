@@ -1,0 +1,42 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "R6_OBSERVER_DEADLINE_HOST_HARNESS_FIX_20261010",
+  "summary": "Use the existing bounded observer extension when the nominal window cannot accommodate one full JSON-state HTTP timeout, and require a distinct new evidence directory for each qualification-only continuation.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing R6 live qualification workflow, existing 10-second GET timeout, existing two-attempt /json/state retry, and existing bounded 10-second observer extension. The implementation changes only which already-defined deadline bounds a GET near the nominal window end.",
+      "affected_subsystem": "Read-only host telemetry collection and qualification evidence output. No firmware bytes, WLED state semantics, performance thresholds, or live device state changed by this correction.",
+      "root_cause": "A GET started with approximately 2.75 seconds remaining on the nominal 40-second window. Its timeout exhausted that nominal deadline; the existing retry then had no request budget, so the observer prequalification aborted before kernel profiles began. The renderer snapshot restore was verified.",
+      "rollback_reference": "Revert the host adapter, qualification output-path guard, control reconciliation proof check, platform identity recognition, this evidence record, and its regression tests. No firmware rebuild or device rollback is involved.",
+      "evidence_sources": [
+        "Python 3.11 urllib.request documentation: urlopen timeout bounds blocking operations: https://docs.python.org/3.11/library/urllib.request.html",
+        "Python time documentation: monotonic clock cannot move backward: https://docs.python.org/3/library/time.html",
+        "evidence/cart2-r6-audio-cache-20261010/live-qualification/sweep/OBSERVER_EFFECT_FAILURE.json",
+        "evidence/cart2-r6-audio-cache-20261010/live-qualification/sweep/RESTORE_RECEIPT.json",
+        "evidence/cart2-r6-audio-cache-20261010/live-qualification/sweep/POST_RESTORE_STATE.json"
+      ],
+      "tests": [
+        "python3 tests/hbnf_foundation_live_adapter.py: PASS; reproduces a slow request at the nominal boundary and confirms the existing hard deadline is used, while early/mid-window transport failures remain fail-closed.",
+        "python3 tests/test_r6_qualification_continuation_control.py: PASS; host-only resume requires exact R6/R4 identities, preserved renderer restore, zero completed profiles, zero install/recovery attempts, and hash-verified regression proof; install scope and tampered proof are rejected.",
+        "python3 tests/test_r6_audio_cache_transaction_dryrun.py: PASS; invalid admission still causes zero device requests, and qualification continuation requires a new empty in-root evidence directory.",
+        "python3 tests/hbnf_live_kernel_sweep.py: PASS; all 28 profiles and frozen gates remain intact.",
+        "python3 tests/hbnf_control.py, python3 tests/hbnf_guarded_run.py, python3 scripts/hbnf_architecture_fitness.py, and python3 scripts/platform.py doctor: PASS."
+      ],
+      "live_state": {
+        "device_mutation_during_fix": false,
+        "production_deployment": false,
+        "firmware_changed": false,
+        "thresholds_changed": false,
+        "current_candidate": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010 SHA-256 f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b remains installed and unqualified pending guarded continuation."
+      }
+    }
+  }
+}

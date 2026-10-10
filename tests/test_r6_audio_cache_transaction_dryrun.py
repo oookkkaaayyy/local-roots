@@ -180,6 +180,33 @@ def main():
         assert closed["live_mutation_authorization"]["current_gate"] == "QUALIFIED_OBJECTIVE_GATES_PASS"
         cases.append({"case": "exact authority durably consumed pre-request and closed post-transaction", "pass": True})
 
+    # A qualification retry must write into a new evidence directory under
+    # the exact run root and point control state at that run; it cannot reuse
+    # the failed run or write evidence elsewhere.
+    with tempfile.TemporaryDirectory(prefix="r6-qualification-output-") as tmp:
+        root=pathlib.Path(tmp); new=module.OUT/("unit-output-"+root.name)
+        try:
+            module.prepare_qualification_output(root/"outside")
+        except RuntimeError as exc:
+            assert "inside the exact R6 qualification evidence directory" in str(exc)
+        else:
+            raise AssertionError("qualification output outside the evidence root must be rejected")
+        old=module.OUT/"preserved-failure-fixture";old.mkdir(parents=True,exist_ok=True)
+        sentinel=old/"FAILURE.json";sentinel.write_text("preserve\n")
+        try:
+            module.prepare_qualification_output(old)
+        except RuntimeError as exc:
+            assert "not empty" in str(exc)
+        else:
+            raise AssertionError("nonempty qualification output must be rejected")
+        try:
+            output=module.prepare_qualification_output(new)
+            assert output==new.resolve() and sentinel.read_text()=="preserve\n"
+        finally:
+            import shutil
+            shutil.rmtree(old,ignore_errors=True);shutil.rmtree(new,ignore_errors=True)
+        cases.append({"case":"qualification retry requires a new empty in-root evidence directory","pass":True})
+
     receipt = {
         "schema": "hbnf-r6-audio-cache-transaction-dryrun-v1",
         "candidate_release_id": module.RELEASE,

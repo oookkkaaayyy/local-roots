@@ -696,7 +696,72 @@ def advance(model,state,receipt_path):
         cursor["current_transition"]=nt["id"] if nt else None
     return state
 
-def reconcile_installed_r6(state, receipt_path):
+def _validate_r6_qualification_host_failure(state, proof_path):
+    """Require durable, exact evidence before reopening qualification-only authority."""
+    proof_path=pathlib.Path(proof_path)
+    proof=load(proof_path)
+    expected_candidate="hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+    expected_sha="f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+    expected_rollback="338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743a2f3d8c"
+    if proof.get("schema")!="hbnf-r6-qualification-host-failure-retry-proof-v1" or proof.get("status")!="PASS":
+        raise ValueError("qualification retry proof is missing or not PASS")
+    if (proof.get("candidate_release_id")!=expected_candidate or proof.get("candidate_sha256")!=expected_sha
+        or proof.get("rollback_sha256")!=expected_rollback):
+        raise ValueError("qualification retry proof identity mismatch")
+    if proof.get("failure_class")!="HOST_OBSERVER_REQUEST_DEADLINE" or proof.get("profiles_completed")!=0:
+        raise ValueError("only the evidenced pre-profile host observer failure can be resumed")
+    if proof.get("firmware_changed") is not False or proof.get("frozen_thresholds_changed") is not False:
+        raise ValueError("qualification retry proof must preserve firmware and frozen thresholds")
+    successor=state.get("r6_audio_cache_successor",{})
+    result_path=successor.get("qualification_result")
+    if proof.get("qualification_result_path")!=result_path or not isinstance(result_path,str):
+        raise ValueError("qualification retry proof does not bind current failure receipt")
+    result_file=DEFAULT_STATE.parent.parent/result_path
+    if not result_file.is_file() or sha256_file(result_file)!=proof.get("qualification_result_sha256"):
+        raise ValueError("qualification failure receipt hash mismatch")
+    result=load(result_file)
+    abort=result.get("qualification",{}).get("abort",{})
+    run_error=str(abort.get("run_error", ""))
+    if (result.get("status")!="QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED"
+        or result.get("candidate_release_id")!=expected_candidate or result.get("candidate_sha256")!=expected_sha
+        or result.get("operation_scope")!="QUALIFICATION_ONLY" or result.get("candidate_install_attempts")!=0
+        or result.get("recovery_attempts")!=0 or abort.get("status")!="FAIL"
+        or abort.get("profiles_completed")!=0 or abort.get("restore_error") is not None
+        or "deadline leaves" not in run_error or "no request started" not in run_error):
+        raise ValueError("current qualification result is not the recorded host-only pre-profile failure")
+    checks=proof.get("evidence",{})
+    root=DEFAULT_STATE.parent.parent
+    qualification_root=root/"evidence/cart2-r6-audio-cache-20261010/live-qualification"
+    try: result_dir=result_file.parent.resolve(); result_dir.relative_to(qualification_root.resolve())
+    except ValueError: raise ValueError("qualification failure receipt is outside the R6 qualification evidence root")
+    required={
+        "restore_receipt":(str((result_dir/"sweep/RESTORE_RECEIPT.json").relative_to(root)),("restoreVerified",True)),
+        "post_restore_state":(str((result_dir/"sweep/POST_RESTORE_STATE.json").relative_to(root)),("restoreVerified",True)),
+        "adapter_source":("scripts/hbnf_foundation_live_adapter.py",None),
+        "regression_test":("tests/hbnf_foundation_live_adapter.py",None),
+        "test_result":(None,None),
+    }
+    for name,(expected_path,_) in required.items():
+        entry=checks.get(name,{})
+        path=entry.get("path")
+        if not isinstance(path,str) or (expected_path and path!=expected_path):
+            raise ValueError("qualification retry proof has invalid "+name+" path")
+        full=root/path
+        if not full.is_file() or sha256_file(full)!=entry.get("sha256"):
+            raise ValueError("qualification retry proof hash mismatch: "+name)
+        if name in ("restore_receipt","post_restore_state"):
+            evidence=load(full)
+            if evidence.get("restoreVerified") is not True or evidence.get("packet20Same") is not True:
+                raise ValueError("renderer snapshot restore is not verified")
+        elif name=="test_result":
+            test=load(full)
+            if test.get("status")!="PASS" or test.get("slow_nominal_boundary_retry")!="PASS":
+                raise ValueError("observer deadline regression tests are not PASS")
+    if result.get("candidate_install_attempts")!=0 or result.get("recovery_attempts")!=0:
+        raise ValueError("host failure incorrectly consumed candidate or recovery attempt")
+    return proof
+
+def reconcile_installed_r6(state, receipt_path, host_failure_proof_path=None):
     """Correct the post-OTA reboot-window misclassification, qualification only."""
     root=ROOT; receipt=load(receipt_path)
     candidate="hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
@@ -713,7 +778,15 @@ def reconcile_installed_r6(state, receipt_path):
         and state.get("installed_release")=="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1")
     already_reconciled=(auth.get("status")=="CANDIDATE_INSTALLED_QUALIFICATION_PENDING"
         and state.get("installed_release")==candidate and state.get("installed_firmware_sha256")==candidate_sha)
-    if not (stale_readback or already_reconciled): errors.append("reconciliation only accepts stale R4 readback or pending exact-R6 state")
+    host_failure_resumable=False
+    host_failure_proof=None
+    if auth.get("status")=="QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED" and host_failure_proof_path:
+        try:
+            host_failure_proof=_validate_r6_qualification_host_failure(state,host_failure_proof_path)
+            host_failure_resumable=(state.get("installed_release")==candidate and state.get("installed_firmware_sha256")==candidate_sha)
+        except (ValueError,OSError,KeyError,TypeError) as exc:
+            errors.append(str(exc))
+    if not (stale_readback or already_reconciled or host_failure_resumable): errors.append("reconciliation only accepts stale R4 readback, pending exact-R6 state, or a proof-backed pre-profile host failure")
     if auth.get("candidate_attempts_used")!=1 or auth.get("candidate_install_limit")!=1: errors.append("single exact install is not consumed")
     if auth.get("recovery_attempts_used",0)!=0 or auth.get("recovery_install_limit")!=1: errors.append("exact R4 recovery is unavailable or consumed")
     c=receipt.get("candidate",{}); a=receipt.get("aux",{}); host=receipt.get("host",{}); rb=receipt.get("rollback",{}); ota=receipt.get("ota_receipt",{})
@@ -742,7 +815,8 @@ def reconcile_installed_r6(state, receipt_path):
     state.setdefault("live_mutation_authorization",{}).update({
         "authorized":True,"hardware_writes_permitted_now":True,"operation_scope":"QUALIFICATION_ONLY",
         "candidate_install_permitted":False,"candidate_attempts_used":1,"recovery_attempts_used":0,
-        "current_gate":"Exact R6 installed; qualification-only continuation pending."})
+        "authorization":"Owner-authorized in-scope continuation; only the host observer-deadline failure was corrected.",
+        "current_gate":"Exact R6 installed; qualification-only continuation pending after proof-backed host harness correction."})
     auth.update({"live_mutation_authorized":True,"status":"CANDIDATE_INSTALLED_QUALIFICATION_PENDING",
                  "runtime_reconciliation_receipt":str(pathlib.Path(receipt_path).resolve().relative_to(root)),
                  "runtime_reconciliation_sha256":sha256_file(pathlib.Path(receipt_path))})
@@ -774,6 +848,7 @@ def main():
     rf.add_argument("--reference",required=True)
     ri=sub.add_parser("reconcile-installed-r6")
     ri.add_argument("--receipt",required=True)
+    ri.add_argument("--host-failure-proof",help="Required only to resume qualification after a hash-verified, pre-profile host-only failure")
     rf.add_argument("--live-attempt",action="store_true")
     args=ap.parse_args()
     model=load(args.model); state=load(args.state)
@@ -809,7 +884,7 @@ def main():
         print(json.dumps({"recorded":True,"policy":policy,"process_metrics":state["process_metrics"]},indent=2,sort_keys=True))
         return 0
     if args.cmd=="reconcile-installed-r6":
-        reconcile_installed_r6(state,args.receipt)
+        reconcile_installed_r6(state,args.receipt,args.host_failure_proof)
         errs=validate_state(model,state)
         if errs: raise SystemExit("refusing to save invalid state: "+"; ".join(errs))
         save(args.state,state)

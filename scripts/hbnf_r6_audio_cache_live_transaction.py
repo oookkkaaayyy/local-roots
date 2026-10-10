@@ -388,7 +388,7 @@ def coordinate_qualification(port):
 
 
 class LivePort:
-    def __init__(self, admission_path, capsule_path, proof_path):
+    def __init__(self, admission_path, capsule_path, proof_path, outdir=None):
         self.admission_path = admission_path
         self.capsule_path = capsule_path
         self.proof_path = proof_path
@@ -397,7 +397,7 @@ class LivePort:
         self.install_attempts = 0
         self.recovery_attempts = 0
         self.state_path = ROOT/"config/HBNF_CONTROL_STATE.json"
-        self.outdir = OUT
+        self.outdir = pathlib.Path(outdir).resolve() if outdir else OUT
 
     def admit(self, stage="LIVE_APPROVED"):
         self.admission = check_admission(self.admission_path, self.capsule_path, self.proof_path, stage)
@@ -563,7 +563,9 @@ class LivePort:
         state["r6_audio_cache_successor"]["conditional_authority"] = auth
         state["r6_audio_cache_successor"]["status"] = result["status"]
         if continuation:
-            state["r6_audio_cache_successor"]["qualification_result"] = "evidence/cart2-r6-audio-cache-20261010/live-qualification/QUALIFICATION_CONTINUATION_RESULT.json"
+            try: result_ref=str((self.outdir/target).resolve().relative_to(ROOT))
+            except ValueError: raise RuntimeError("qualification output must remain inside the repository")
+            state["r6_audio_cache_successor"]["qualification_result"] = result_ref
         else:
             state["r6_audio_cache_successor"]["transaction_result"] = "evidence/cart2-r6-audio-cache-20261010/live-qualification/TRANSACTION_RESULT.json"
         if result.get("recovery", {}).get("status") in ("R4_READBACK_VERIFIED", "R4_ALREADY_INSTALLED_NO_UPLOAD"):
@@ -596,10 +598,21 @@ def execute(admission_path, capsule_path, proof_path):
     return coordinate(port)
 
 
-def execute_qualification(admission_path,capsule_path,proof_path):
-    OUT.mkdir(parents=True,exist_ok=True)
-    port=LivePort(pathlib.Path(admission_path),pathlib.Path(capsule_path),pathlib.Path(proof_path))
+def execute_qualification(admission_path,capsule_path,proof_path,outdir=None):
+    output=prepare_qualification_output(outdir)
+    port=LivePort(pathlib.Path(admission_path),pathlib.Path(capsule_path),pathlib.Path(proof_path),output)
     return coordinate_qualification(port)
+
+def prepare_qualification_output(outdir):
+    if outdir is None: raise RuntimeError("qualification continuation requires a new --outdir")
+    output=pathlib.Path(outdir).resolve()
+    try: output.relative_to(OUT.resolve())
+    except ValueError: raise RuntimeError("qualification output must be inside the exact R6 qualification evidence directory")
+    if output==OUT.resolve(): raise RuntimeError("qualification continuation cannot reuse the original install transaction directory")
+    if output.exists() and any(output.iterdir()):
+        raise RuntimeError("qualification output directory is not empty; preserve prior evidence and choose a new run directory")
+    output.mkdir(parents=True,exist_ok=True)
+    return output
 
 
 def close_authority(status, result):
@@ -630,6 +643,7 @@ def main():
     ap.add_argument("--prelive-proof", required=True)
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--resume-qualification",action="store_true",help="Continue gates for the exact installed candidate; does not stage or upload firmware")
+    ap.add_argument("--outdir",help="New empty evidence directory under the exact R6 qualification directory; required for qualification continuation")
     args = ap.parse_args()
     if args.dry_run:
         exact_artifacts()
@@ -638,7 +652,8 @@ def main():
             "dry_run_does_not_authorize_mutation": True}, indent=2))
         return 0
     if args.resume_qualification:
-        result=execute_qualification(pathlib.Path(args.admission),pathlib.Path(args.capsule),pathlib.Path(args.prelive_proof))
+        if not args.outdir: raise SystemExit("--resume-qualification requires a new --outdir so prior failure receipts remain immutable")
+        result=execute_qualification(pathlib.Path(args.admission),pathlib.Path(args.capsule),pathlib.Path(args.prelive_proof),args.outdir)
     else:
         result = execute(pathlib.Path(args.admission), pathlib.Path(args.capsule), pathlib.Path(args.prelive_proof))
     print(json.dumps(result, indent=2))

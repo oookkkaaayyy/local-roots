@@ -4,6 +4,8 @@ import copy
 import importlib.util
 import json
 import pathlib
+import tempfile
+import hashlib
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location("hbnf_control",ROOT/"scripts/hbnf_control.py")
@@ -30,7 +32,44 @@ def base():
 
 def main():
     state,manifest=base()
-    assert control.release_admission_errors(control.load(control.DEFAULT_MODEL),state,manifest,"LIVE_QUALIFICATION")==[]
+    if state.get("r6_audio_cache_successor",{}).get("conditional_authority",{}).get("status")=="QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED":
+        assert control.release_admission_errors(control.load(control.DEFAULT_MODEL),state,manifest,"LIVE_QUALIFICATION")
+        root=ROOT
+        result_path=root/state["r6_audio_cache_successor"]["qualification_result"]
+        with tempfile.TemporaryDirectory(prefix="r6-host-failure-proof-",dir=ROOT) as td:
+            d=pathlib.Path(td)
+            test_result=d/"test-result.json"
+            test_result.write_text(json.dumps({"status":"PASS","slow_nominal_boundary_retry":"PASS"}))
+            def digest(p):return hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()
+            evidence={}
+            for name,path in {
+                "restore_receipt":"evidence/cart2-r6-audio-cache-20261010/live-qualification/sweep/RESTORE_RECEIPT.json",
+                "post_restore_state":"evidence/cart2-r6-audio-cache-20261010/live-qualification/sweep/POST_RESTORE_STATE.json",
+                "adapter_source":"scripts/hbnf_foundation_live_adapter.py",
+                "regression_test":"tests/hbnf_foundation_live_adapter.py",
+            }.items():evidence[name]={"path":path,"sha256":digest(root/path)}
+            evidence["test_result"]={"path":str(test_result.relative_to(root)),"sha256":digest(test_result)}
+            proof={"schema":"hbnf-r6-qualification-host-failure-retry-proof-v1","status":"PASS",
+                "candidate_release_id":"hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+                "candidate_sha256":"f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+                "rollback_sha256":"338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743a2f3d8c",
+                "failure_class":"HOST_OBSERVER_REQUEST_DEADLINE","profiles_completed":0,
+                "firmware_changed":False,"frozen_thresholds_changed":False,
+                "qualification_result_path":state["r6_audio_cache_successor"]["qualification_result"],
+                "qualification_result_sha256":digest(result_path),"evidence":evidence}
+            pp=d/"retry-proof.json";pp.write_text(json.dumps(proof))
+            resumed=control.reconcile_installed_r6(state,"evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json",pp)
+            assert resumed["live_mutation_authorized"] is True
+            assert resumed["live_mutation_authorization"]["operation_scope"]=="QUALIFICATION_ONLY"
+            assert resumed["live_mutation_authorization"]["candidate_install_permitted"] is False
+            assert control.release_admission_errors(control.load(control.DEFAULT_MODEL),resumed,manifest,"LIVE_QUALIFICATION")==[]
+            bad=copy.deepcopy(resumed);bad["r6_audio_cache_successor"]["conditional_authority"]["status"]="QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED"
+            tampered=copy.deepcopy(proof);tampered["profiles_completed"]=1;pp.write_text(json.dumps(tampered))
+            try:control.reconcile_installed_r6(bad,"evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json",pp)
+            except ValueError:pass
+            else:raise AssertionError("host-only resume must reject completed kernel profiles or tampered proof")
+    else:
+        assert control.release_admission_errors(control.load(control.DEFAULT_MODEL),state,manifest,"LIVE_QUALIFICATION")==[]
     stale=copy.deepcopy(state)
     stale["installed_release"]="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
     stale["installed_firmware_sha256"]="338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
@@ -40,7 +79,6 @@ def main():
     assert reconciled["live_mutation_authorization"]["operation_scope"]=="QUALIFICATION_ONLY"
     bad=copy.deepcopy(stale); badrec=json.loads((ROOT/"evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json").read_text()); badrec["candidate"]["release_id"]="R4"
     original_installed=bad["installed_release"]
-    import tempfile
     with tempfile.TemporaryDirectory(prefix="r6-bad-reconcile-") as tmp:
         rp=pathlib.Path(tmp)/"bad.json";rp.write_text(json.dumps(badrec))
         try: control.reconcile_installed_r6(bad,rp)
