@@ -16,7 +16,7 @@
     },
     {
       "case": "qualification-only continuation has zero firmware installs",
-      "device_requests": 5,
+      "device_requests": 7,
       "pass": true
     },
     {

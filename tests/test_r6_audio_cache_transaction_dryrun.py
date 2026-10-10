@@ -45,7 +45,19 @@ class FakePort:
 
     def preflight_candidate(self):
         self.device_requests += 5
-        return {"pass": True,"release_id":module.RELEASE}
+        return {"pass": True,"release_id":module.RELEASE,
+            "brightness_baseline":{"runtime":{"matrixBrightness":52,"auxBrightness":245,"vibe":0},
+                "config":{"matrixBrightness":52,"auxBrightness":245,"vibe":0}}}
+
+    def apply_qualification_brightness(self, baseline):
+        self.device_requests += 1
+        assert baseline["matrixBrightness"] == 52
+        return {"verified": True, "target_matrix_brightness": 44}
+
+    def restore_qualification_brightness(self, baseline):
+        self.device_requests += 1
+        assert baseline["matrixBrightness"] == 52
+        return {"verified": True, "target_matrix_brightness": 52}
 
     def stage_candidate(self):
         self.device_requests += 1  # Temporary Opal staging, not a Matrix request.
@@ -111,7 +123,7 @@ def main():
         result=module.coordinate_qualification(resume)
         assert result["status"]=="QUALIFIED_OBJECTIVE_GATES_PASS"
         assert result["candidate_install_attempts"]==0 and resume.install_attempts==0
-        assert resume.admission_stage=="LIVE_QUALIFICATION" and resume.device_requests==5
+        assert resume.admission_stage=="LIVE_QUALIFICATION" and resume.device_requests==7
         cases.append({"case":"qualification-only continuation has zero firmware installs","pass":True,"device_requests":resume.device_requests})
 
     stage_fail = FakePort(stage=False)
