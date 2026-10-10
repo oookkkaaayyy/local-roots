@@ -31,8 +31,12 @@ with tempfile.TemporaryDirectory(prefix="hbnf_admission_test_") as td:
     t=pathlib.Path(td)
     binary=t/"candidate.bin"; binary.write_bytes(b"test-only-candidate")
     rollback=t/"rollback.bin"; rollback.write_bytes(b"test-only-rollback")
-    evidence=t/"evidence.json"; evidence.write_text('{"schema":"host-only-proof-fixture"}\n')
     digest=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+    evidence_by_check={}
+    for key in required:
+        evidence=t/(key+".json")
+        evidence.write_text(json.dumps({"schema":"hbnf-host-test-evidence-v1","check":key,"result":"PASS"})+"\n")
+        evidence_by_check[key]=evidence
     receipt={
        "schema":"hbnf-cart2-release-admission-v1",
        "stage":"OFFLINE_COMPILED",
@@ -45,7 +49,7 @@ with tempfile.TemporaryDirectory(prefix="hbnf_admission_test_") as td:
            "rollback_bin_path":str(rollback),
            "rollback_bin_sha256":digest(rollback)
        },
-       "checks":{k:{"pass":True,"evidence_file":str(evidence),"sha256":digest(evidence)} for k in required}
+       "checks":{k:{"pass":True,"evidence_file":str(evidence_by_check[k]),"sha256":digest(evidence_by_check[k])} for k in required}
     }
     assert mod.release_admission_errors(model,state,receipt,"OFFLINE_COMPILED")==[]
     def must_reject(message,value,stage="OFFLINE_COMPILED"):
@@ -58,8 +62,15 @@ with tempfile.TemporaryDirectory(prefix="hbnf_admission_test_") as td:
     must_reject("fabricated dry-run evidence digest",bad)
     bad=json.loads(json.dumps(receipt));bad["identities"]["candidate_bin_sha256"]="0"*64
     must_reject("binary sha mismatch",bad)
+    generic=t/"generic.json"; generic.write_text('{"schema":"host-only-proof-fixture"}\n')
+    bad=json.loads(json.dumps(receipt))
+    bad["checks"][required[0]]={"pass":True,"evidence_file":str(generic),"sha256":digest(generic)}
+    must_reject("generic test fixture used as release proof",bad)
+    bad=json.loads(json.dumps(receipt))
+    bad["checks"]={k:{"pass":True,"evidence_file":str(evidence_by_check[required[0]]),"sha256":digest(evidence_by_check[required[0]])} for k in required}
+    must_reject("one generic artifact reused for unrelated checks",bad)
     bad=json.loads(json.dumps(receipt));bad["stage"]="LIVE_APPROVED"
     must_reject("no live authorization",bad,"LIVE_APPROVED")
-    evidence.unlink()
+    for evidence in evidence_by_check.values(): evidence.unlink()
     must_reject("missing evidence files",receipt)
 print("PASS: offline checker accepts complete host fixture and fails closed for invalid proofs; no hardware invoked")

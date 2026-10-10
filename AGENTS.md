@@ -16,8 +16,7 @@ The platform layer does not replace the HBNF lifecycle control model. It enforce
 
 For any task touching HBNF release engineering, firmware promotion, Cart 2.0 integration, deployment, or acceptance:
 
-1. Run:
-   `python3 scripts/hbnf_control.py status`
+1. `python3 scripts/platform.py doctor` already runs `python3 scripts/hbnf_control.py status`. Review that emitted status as the required control-state check; do not invoke the same status check a second time unless investigating a new state change.
 
 2. Treat only these files as operational lifecycle authority:
    - `config/HBNF_CONTROL_MODEL.json`

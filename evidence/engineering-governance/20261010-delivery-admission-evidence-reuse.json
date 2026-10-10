@@ -1,0 +1,28 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "CART2_DELIVERY_ADMISSION_EVIDENCE_REUSE_20261010",
+  "summary": "Prevent generic test-only JSON and one repeatedly reused artifact from satisfying unrelated release-admission evidence checks; remove redundant control-status invocation and mark the obsolete R7 golden path reference-only.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "primary_source": "Existing HBNF delivery rail requires actual launch-path admission and evidence-backed checks; current host test accepted one generic JSON artifact for every check. This change only rejects the exact generic fixture schema and excessive reuse while retaining bounded sharing for related evidence.",
+    "implementation": "scripts/hbnf_control.py; scripts/hbnf_packet20_r2_live_transaction.py; tests/hbnf_delivery_rail_host.py; tests/hbnf_guarded_run.py; tests/hbnf_packet20_live_entrypoint_guard.py; AGENTS.md; platform/workflows/phase2-live-qualification.json.",
+    "validation": [
+      "python3 tests/hbnf_delivery_rail_host.py PASS, including negative generic-proof and reused-proof cases.",
+      "python3 tests/hbnf_guarded_run.py PASS.",
+      "python3 tests/hbnf_packet20_live_entrypoint_guard.py PASS; concrete direct-OTA entrypoint rejects invalid admission before read-only device calls, OTA, or transaction output.",
+      "python3 tests/hbnf_control.py PASS (23/23).",
+      "python3 scripts/hbnf_architecture_fitness.py PASS.",
+      "python3 scripts/platform.py doctor PASS; control state remains PHASE2_INTEGRATING with live mutation closed.",
+      "git diff --check PASS."
+    ],
+    "rollback": "Revert this commit only; no firmware artifact, installed device, cloud deployment, or production configuration is changed.",
+    "deployment_status": "HOST_ONLY_NO_LIVE_MUTATION"
+  }
+}

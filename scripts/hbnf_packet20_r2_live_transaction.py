@@ -175,6 +175,8 @@ def verify_recovery(manifest: pathlib.Path, signature: pathlib.Path, pubkey: pat
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--candidate-bin", required=True)
+    ap.add_argument("--admission", required=True,
+                    help="Fresh LIVE_APPROVED admission checked before any device request")
     ap.add_argument("--candidate-provenance", required=True)
     ap.add_argument("--recovery-manifest", required=True)
     ap.add_argument("--recovery-signature", required=True)
@@ -184,6 +186,30 @@ def main() -> int:
     ap.add_argument("--inventory", required=True)
     ap.add_argument("--outdir", required=True)
     args = ap.parse_args()
+
+    # This transaction predates the common guard and contains direct WLED
+    # requests. Enforce current admission at this real entrypoint, before even
+    # read-only device traffic, and bind the approved byte paths to CLI inputs.
+    admission_path = pathlib.Path(args.admission).resolve()
+    admission = json.loads(admission_path.read_text())
+    control = ROOT / "scripts/hbnf_control.py"
+    check = subprocess.run(
+        [sys.executable, str(control), "check-admission", "--admission", str(admission_path), "--stage", "LIVE_APPROVED"],
+        cwd=ROOT, capture_output=True, text=True, timeout=20,
+    )
+    if check.returncode:
+        raise RuntimeError("live-admission-rejected-before-device-access:" + check.stdout[-1000:])
+    identities = admission.get("identities", {})
+    candidate_arg = pathlib.Path(args.candidate_bin).resolve()
+    recovery_arg = pathlib.Path(args.recovery_bin).resolve()
+    if pathlib.Path(identities.get("candidate_bin_path", "")).expanduser().resolve() != candidate_arg:
+        raise RuntimeError("admitted-candidate-path-does-not-match-transaction-argument")
+    if pathlib.Path(identities.get("rollback_bin_path", "")).expanduser().resolve() != recovery_arg:
+        raise RuntimeError("admitted-rollback-path-does-not-match-transaction-argument")
+    if sha(candidate_arg)[0] != identities.get("candidate_bin_sha256"):
+        raise RuntimeError("admitted-candidate-bytes-do-not-match-transaction-argument")
+    if sha(recovery_arg)[0] != identities.get("rollback_bin_sha256"):
+        raise RuntimeError("admitted-rollback-bytes-do-not-match-transaction-argument")
 
     out = pathlib.Path(args.outdir).resolve()
     out.mkdir(parents=True, exist_ok=True)

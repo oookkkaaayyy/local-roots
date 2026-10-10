@@ -54,7 +54,6 @@ with tempfile.TemporaryDirectory(prefix="hbnf_guard_admission_") as td:
     platform.write_text("import sys\nprint('STUB_PLATFORM_PASS')\nsys.exit(0)\n")
     artifact=tmp/"candidate.bin"; artifact.write_bytes(b"test candidate bytes")
     rollback=tmp/"rollback.bin"; rollback.write_bytes(b"test rollback bytes")
-    evidence=tmp/"proof.json"; evidence.write_text(json.dumps({"fixture":True})+"\n")
     digest=lambda path: __import__("hashlib").sha256(path.read_bytes()).hexdigest()
     required=(
         "device_and_source_authority_reconciled",
@@ -72,6 +71,11 @@ with tempfile.TemporaryDirectory(prefix="hbnf_guard_admission_") as td:
         "matched_tails_off_test_plan",
         "preflight_read_only_hardware_state_and_identity",
     )
+    evidence_by_check={}
+    for key in required:
+        evidence=tmp/(key+".json")
+        evidence.write_text(json.dumps({"schema":"hbnf-host-test-evidence-v1","check":key,"result":"PASS"})+"\n")
+        evidence_by_check[key]=evidence
     admission={
         "schema":"hbnf-cart2-release-admission-v1",
         "stage":"LIVE_APPROVED",
@@ -87,7 +91,7 @@ with tempfile.TemporaryDirectory(prefix="hbnf_guard_admission_") as td:
             "expected_installed_release":state["installed_release"],
             "expected_installed_bin_sha256":state["installed_firmware_sha256"],
         },
-        "checks":{key:{"pass":True,"evidence_file":str(evidence),"sha256":digest(evidence)} for key in required},
+        "checks":{key:{"pass":True,"evidence_file":str(evidence_by_check[key]),"sha256":digest(evidence_by_check[key])} for key in required},
     }
     admission_path=tmp/"admission.json"
     admission_path.write_text(json.dumps(admission))

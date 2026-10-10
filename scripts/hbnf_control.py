@@ -109,6 +109,7 @@ def release_admission_errors(model,state,manifest,stage):
         required+=("launcher_rejects_invalid_manifest_before_device_access",
                    "matched_tails_off_test_plan",
                    "preflight_read_only_hardware_state_and_identity")
+    evidence_hash_uses={}
     for key in required:
         item=checks.get(key)
         if not isinstance(item,dict) or item.get("pass") is not True:
@@ -120,8 +121,22 @@ def release_admission_errors(model,state,manifest,stage):
         try:
             if not path.is_file() or sha256_file(path)!=sha:
                 errors.append("missing/hash-mismatch evidence: "+key)
+            else:
+                evidence_hash_uses[sha]=evidence_hash_uses.get(sha,0)+1
+                # Reject the former test anti-pattern where one generic JSON
+                # blob was reused as proof for every unrelated release check.
+                # A small amount of reuse remains valid (e.g. a candidate
+                # manifest proves identity, compiler smoke, and resource use).
+                try:
+                    proof=json.loads(path.read_text())
+                except (UnicodeDecodeError, json.JSONDecodeError):
+                    proof=None
+                if isinstance(proof,dict) and proof.get("schema")=="host-only-proof-fixture":
+                    errors.append("test-only generic evidence is not release proof: "+key)
         except OSError:
             errors.append("unreadable evidence: "+key)
+    if any(count>3 for count in evidence_hash_uses.values()):
+        errors.append("one evidence artifact is reused for more than three independent checks")
     for prefix in ("candidate","rollback"):
         path=identities.get(prefix+"_bin_path")
         expected=identities.get(prefix+"_bin_sha256")

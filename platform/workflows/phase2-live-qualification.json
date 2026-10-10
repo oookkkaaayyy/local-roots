@@ -1,6 +1,8 @@
 {
   "schema": "local-roots-golden-path-v2",
   "id": "phase2-live-qualification",
+  "status": "SUPERSEDED_REFERENCE_ONLY",
+  "selection_warning": "Historical R7 workflow; do not execute. Current control state identifies the R6 frame-context diagnostic as awaiting fresh exact owner authorization, with live mutation closed.",
   "purpose": "One exact Phase 2 Matrix R7 candidate installation, objective runtime qualification, Matrix-to-AUX synchronization/recovery checks, and frozen soak without host deployment or peripheral firmware mutation.",
   "required_repo_inputs": [
     "AGENTS.md",
