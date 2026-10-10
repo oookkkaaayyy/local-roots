@@ -185,6 +185,12 @@ def main() -> int:
     ap.add_argument("--outdir", required=True)
     args = ap.parse_args()
 
+    # This historical transaction targets a superseded Foundation/R7 pair and
+    # has no current exact-artifact admission. Retire it before any device read
+    # or OTA request; current transactions must use a bound, admitted launcher.
+    print("BLOCKED: historical R4 live transaction is disabled before device access; use a current exact-artifact admitted entrypoint", file=sys.stderr)
+    return 2
+
     out = pathlib.Path(args.outdir).resolve()
     out.mkdir(parents=True, exist_ok=True)
     candidate_bin = pathlib.Path(args.candidate_bin).resolve()

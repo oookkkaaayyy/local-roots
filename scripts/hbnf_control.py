@@ -68,6 +68,8 @@ def validate_model(model):
     rail=es.get("delivery_rail",{})
     if rail.get("schema")!="hbnf-cart2-delivery-rail-v1":
         errors.append("owner-mandated delivery rail missing or incorrect")
+    if rail.get("owner_authorization_binding_schema")!="hbnf-exact-live-owner-authorization-v1":
+        errors.append("exact live owner-authorization binding contract missing")
     if rail.get("live_authority_starts_closed") is not True or rail.get("admission_entrypoints_must_fail_closed") is not True:
         errors.append("release admission must fail closed and cannot authorize hardware")
     if rail.get("active_release_candidate_limit")!=1 or rail.get("live_lane_limit")!=1:
@@ -150,8 +152,43 @@ def release_admission_errors(model,state,manifest,stage):
     if stage=="LIVE_APPROVED":
         if state.get("live_mutation_authorized") is not True:
             errors.append("primary control state has NO live mutation authorization")
-        if not isinstance(manifest.get("fresh_owner_authorization"),str) or not manifest["fresh_owner_authorization"].strip():
-            errors.append("fresh exact owner authorization missing")
+        # A free-form string can accidentally carry approval from a different
+        # artifact or scope. Require the state and admission to carry the same
+        # exact, structured owner-authorized transaction binding.
+        binding=manifest.get("fresh_owner_authorization")
+        state_binding=state.get("live_authorization_binding")
+        required_binding=("authorization_id","source_message_ref","candidate_release_id",
+                          "candidate_bin_sha256","rollback_bin_sha256","matrix_mac",
+                          "scope","candidate_install_limit","recovery_install_limit")
+        if not isinstance(binding,dict):
+            errors.append("fresh exact owner authorization binding missing")
+        else:
+            for key in required_binding:
+                if key not in binding or binding.get(key) in (None,"",[],{}):
+                    errors.append("owner authorization binding missing "+key)
+            if binding.get("candidate_bin_sha256") and not re.fullmatch(r"[a-f0-9]{64}",str(binding["candidate_bin_sha256"])):
+                errors.append("owner authorization candidate SHA invalid")
+            if binding.get("rollback_bin_sha256") and not re.fullmatch(r"[a-f0-9]{64}",str(binding["rollback_bin_sha256"])):
+                errors.append("owner authorization rollback SHA invalid")
+            if not re.fullmatch(r"[0-9a-f]{12}",str(binding.get("matrix_mac","" )).replace(":","" ).lower()):
+                errors.append("owner authorization Matrix MAC invalid")
+            if not isinstance(binding.get("scope"),list) or not binding.get("scope"):
+                errors.append("owner authorization scope must be a nonempty list")
+            for key in ("candidate_install_limit","recovery_install_limit"):
+                if not isinstance(binding.get(key),int) or binding[key] < 0:
+                    errors.append("owner authorization "+key+" invalid")
+            if isinstance(state_binding,dict) and binding!=state_binding:
+                errors.append("manifest owner authorization differs from primary control-state binding")
+            elif not isinstance(state_binding,dict):
+                errors.append("primary control-state exact authorization binding missing")
+            if binding.get("candidate_release_id")!=identities.get("candidate_release_id"):
+                errors.append("owner authorization candidate release differs from admission")
+            if binding.get("candidate_bin_sha256")!=identities.get("candidate_bin_sha256"):
+                errors.append("owner authorization candidate SHA differs from admission")
+            if binding.get("rollback_bin_sha256")!=identities.get("rollback_bin_sha256"):
+                errors.append("owner authorization rollback SHA differs from admission")
+            if str(binding.get("matrix_mac","" )).replace(":","" ).lower()!=str(identities.get("matrix_mac","" )).replace(":","" ).lower():
+                errors.append("owner authorization Matrix target differs from admission")
         if identities.get("expected_installed_release")!=state.get("installed_release"):
             errors.append("installed release differs from primary state")
         if identities.get("expected_installed_bin_sha256")!=state.get("installed_firmware_sha256"):

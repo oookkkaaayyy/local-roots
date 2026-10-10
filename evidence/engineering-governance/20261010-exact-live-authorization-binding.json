@@ -1,0 +1,28 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "CART2_EXACT_LIVE_AUTHORIZATION_BINDING_20261010",
+  "summary": "Bind live release admission to the same exact owner authorization, candidate, rollback, Matrix target, and installation limits recorded in primary control state; disable the superseded R4 live transaction before device access.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "primary_source": "The current release admission accepted any nonempty fresh_owner_authorization string, and the historical R4 entrypoint could issue direct WLED reads and upload without admission. The execution-reset owner directive requires exact-artifact authorization and fail-closed entrypoints. This change reuses the existing control plane and does not create a new release architecture.",
+    "implementation": "config/HBNF_CONTROL_MODEL.json; scripts/hbnf_control.py; scripts/hbnf_packet20_r4_live_transaction.py; tests/hbnf_guarded_run.py; tests/hbnf_packet20_r4_entrypoint_guard.py.",
+    "validation": [
+      "python3 tests/hbnf_guarded_run.py PASS; free-form and mismatched-artifact authorizations block the child before any request.",
+      "python3 tests/hbnf_packet20_r4_entrypoint_guard.py PASS; superseded direct transaction blocks before device reads, OTA, and output creation.",
+      "python3 tests/hbnf_packet20_live_entrypoint_guard.py PASS.",
+      "python3 tests/hbnf_delivery_rail_host.py PASS.",
+      "python3 tests/hbnf_control.py PASS (23/23).",
+      "python3 scripts/hbnf_control.py status PASS; live_mutation_authorized remains false and exact R4 remains installed baseline.",
+      "git diff --check PASS."
+    ],
+    "rollback": "Revert this source-only change; it changes no live device, cloud service, installed firmware, or release artifact.",
+    "deployment_status": "HOST_ONLY_NO_LIVE_MUTATION"
+  }
+}

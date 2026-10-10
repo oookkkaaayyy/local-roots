@@ -621,6 +621,7 @@
     },
     "delivery_rail": {
       "schema": "hbnf-cart2-delivery-rail-v1",
+      "owner_authorization_binding_schema": "hbnf-exact-live-owner-authorization-v1",
       "status": "MANDATORY_OWNER_DIRECTIVE_20261009",
       "owner_authorization_scope": "NO_LIVE_MUTATION_GRANT; NO_CHANGE_TO_PRODUCT_SCOPE",
       "guiding_principle": "Live release is the final step of a rehearsed system; a failed repeated mechanism stops at the entry gate, not after another device operation.",

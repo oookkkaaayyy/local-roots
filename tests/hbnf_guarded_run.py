@@ -47,6 +47,17 @@ with tempfile.TemporaryDirectory(prefix="hbnf_guard_admission_") as td:
     state=json.loads((ROOT/"config/HBNF_CONTROL_STATE.json").read_text())
     state["lifecycle_state"]="PHASE2_INTEGRATING"
     state["live_mutation_authorized"]=True
+    binding={
+        "authorization_id":"TEST-ONLY-EXACT-ADMISSION",
+        "source_message_ref":"TEST-FIXTURE-NOT-OWNER-AUTHORITY",
+        "candidate_release_id":"test-candidate-r1",
+        "candidate_bin_sha256":"",
+        "rollback_bin_sha256":"",
+        "matrix_mac":"70:4b:ca:5b:34:5c",
+        "scope":["test-only mutation-gate fixture"],
+        "candidate_install_limit":1,
+        "recovery_install_limit":1,
+    }
     (tmp/"config/HBNF_CONTROL_STATE.json").write_text(json.dumps(state))
     # The platform checks are isolated stubs: this test proves admission ordering
     # and command gating without accessing a device or external service.
@@ -86,6 +97,7 @@ with tempfile.TemporaryDirectory(prefix="hbnf_guard_admission_") as td:
             "source_commit":"0123456789abcdef0123456789abcdef01234567",
             "candidate_bin_path":str(artifact),
             "candidate_bin_sha256":digest(artifact),
+            "matrix_mac":"70:4b:ca:5b:34:5c",
             "rollback_bin_path":str(rollback),
             "rollback_bin_sha256":digest(rollback),
             "expected_installed_release":state["installed_release"],
@@ -93,6 +105,13 @@ with tempfile.TemporaryDirectory(prefix="hbnf_guard_admission_") as td:
         },
         "checks":{key:{"pass":True,"evidence_file":str(evidence_by_check[key]),"sha256":digest(evidence_by_check[key])} for key in required},
     }
+    binding["candidate_bin_sha256"]=digest(artifact)
+    binding["rollback_bin_sha256"]=digest(rollback)
+    state["live_authorization_binding"]=binding
+    (tmp/"config/HBNF_CONTROL_STATE.json").write_text(json.dumps(state))
+    # This is explicitly a test-only value; production state can only record
+    # an exact owner authorization for the same artifact/rollback/target/scope.
+    admission["fresh_owner_authorization"]=dict(binding)
     admission_path=tmp/"admission.json"
     admission_path.write_text(json.dumps(admission))
     marker=tmp/"device_request.marker"
@@ -124,5 +143,21 @@ with tempfile.TemporaryDirectory(prefix="hbnf_guard_admission_") as td:
     assert p.returncode==0,(p.stdout,p.stderr)
     assert "CONTROL_PLANE_PASS state=PHASE2_INTEGRATING mutation=True" in p.stdout
     assert marker.read_text()=="ran"
+
+    # An exact GO bound to one binary cannot be reused for replacement bytes.
+    mismatched=json.loads(json.dumps(admission))
+    mismatched["fresh_owner_authorization"]["candidate_bin_sha256"]="0"*64
+    mismatched_path=tmp/"mismatched-authorization.json"; mismatched_path.write_text(json.dumps(mismatched))
+    marker.unlink()
+    p=subprocess.run(base+["--admission",str(mismatched_path),"--",*child],capture_output=True,text=True)
+    assert p.returncode!=0 and "owner authorization candidate SHA differs" in (p.stdout+p.stderr)
+    assert not marker.exists(),"child ran with mismatched owner authorization binding"
+
+    freeform=json.loads(json.dumps(admission))
+    freeform["fresh_owner_authorization"]="synthetic host-test authorization"
+    freeform_path=tmp/"freeform-authorization.json"; freeform_path.write_text(json.dumps(freeform))
+    p=subprocess.run(base+["--admission",str(freeform_path),"--",*child],capture_output=True,text=True)
+    assert p.returncode!=0 and "fresh exact owner authorization binding missing" in (p.stdout+p.stderr)
+    assert not marker.exists(),"child ran with unbound free-form owner authorization"
 
 print("PASS: guarded execution blocks wrong-state/unauthorized mutation; exact LIVE_APPROVED admission rejects missing, malformed, and stale identities before child execution")
