@@ -18,12 +18,12 @@
     "device_and_source_authority_reconciled": {
       "evidence_file": "evidence/cart2-r6-audio-cache-20261010/R6_AUTHORITY_RECONCILIATION.json",
       "pass": true,
-      "sha256": "e51aee0ecdfb6fca949fa8150194e4c96ecb52355b2ae4c45880b5446e9d8e04"
+      "sha256": "1cacbe73aaf2cb0ccc63d990e2848e663e267fbdfbaf0cc5c89706dab922674d"
     },
     "entire_release_transaction_dryrun": {
       "evidence_file": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_TRANSACTION_DRYRUN.json",
       "pass": true,
-      "sha256": "114b1014cd0e35a13bb622d2eedab04ba0eeda94676625e4065693c40d07d454"
+      "sha256": "c6f641ceb4f8d35bdf0ed0b155229452b493b0d6b5955c58a6962c75dd8146f3"
     },
     "exact_source_dependency_generated_input_closure": {
       "evidence_file": "evidence/cart2-r6-audio-cache-20261010/FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
@@ -72,7 +72,7 @@
     "rollback_bin_path": "/private/tmp/cart2-opal-local-20261009/evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
     "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "source_commit": "2094c8dae4942f4a66a4462e729986fa7e73ad13",
-    "transaction_source_commit": "f280c32377925db015ae7214b8532f103c2140b8"
+    "transaction_source_commit": "7711c848b1dab3af2822403a6ce845ae07fa4744"
   },
   "limits": {
     "candidate_install_attempts_used": 0,

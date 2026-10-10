@@ -2945,7 +2945,7 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-10T09:41:42Z",
+  "last_updated_utc": "2026-10-10T09:43:48Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "authorization": "Current owner directive authorizes evidence-based further exact in-scope installations and exact R4 recovery, conditioned on per-attempt fail-closed admission and safety checks.",
@@ -3614,9 +3614,11 @@
       "pixel_equivalence": "15,755,040 bit-exact transforms across 32x16 optimized, 31x15 and 8x8 generic fallback, and 1x1 degenerate dimensions",
       "target_build": "PASS pinned clean-room target; flash headroom 81,615 bytes; RAM headroom 215,200 bytes",
       "transaction_dryrun": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_TRANSACTION_DRYRUN.json",
-      "transaction_dryrun_sha256": "114b1014cd0e35a13bb622d2eedab04ba0eeda94676625e4065693c40d07d454",
+      "transaction_dryrun_sha256": "c6f641ceb4f8d35bdf0ed0b155229452b493b0d6b5955c58a6962c75dd8146f3",
       "drive_readback": "evidence/cart2-r6-audio-cache-20261010/R6_DRIVE_ARTIFACT_READBACK.json",
-      "drive_readback_sha256": "3480239122dcf69e750ae193eff47401740ff26352542626648a740874d66846"
+      "drive_readback_sha256": "3480239122dcf69e750ae193eff47401740ff26352542626648a740874d66846",
+      "offline_admission": "evidence/cart2-r6-audio-cache-20261010/R6_OFFLINE_COMPILED_ADMISSION.json",
+      "offline_admission_sha256": "996ea788f49c6cabb6fd3fc33239fb0a20d1abb09263660a57f8e1bdc3139b61"
     },
     "conditional_authority": {
       "source_message_ref": "Current owner instruction in this task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks.",

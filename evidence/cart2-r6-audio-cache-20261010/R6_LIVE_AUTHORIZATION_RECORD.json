@@ -13,7 +13,7 @@
   "matrix_mac": "70:4b:ca:5b:34:5c",
   "no_cost_or_external_messages": true,
   "offline_compiled_admission_path": "evidence/cart2-r6-audio-cache-20261010/R6_OFFLINE_COMPILED_ADMISSION.json",
-  "offline_compiled_admission_sha256": "d26e05a241e89da2ad365215d12fb8d857a8815e19180eeba6d5288341ec142f",
+  "offline_compiled_admission_sha256": "996ea788f49c6cabb6fd3fc33239fb0a20d1abb09263660a57f8e1bdc3139b61",
   "recorded_at_utc": "2026-10-10T09:42:04Z",
   "recovery_attempts_used": 0,
   "recovery_install_limit": 1,

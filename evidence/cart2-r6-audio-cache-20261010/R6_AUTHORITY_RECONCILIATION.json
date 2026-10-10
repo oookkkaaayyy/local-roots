@@ -5,7 +5,7 @@
     "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
     "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
   },
-  "captured_at_utc": "2026-10-10T09:42:04Z",
+  "captured_at_utc": "2026-10-10T09:43:48Z",
   "current_state": {
     "diagnostic_attempt3_status": "CATASTROPHIC_GATE_FAILED__EXACT_R4_RESTORED__AUX_DDP_HEALTHY__LIVE_CLOSED",
     "hardware_writes_permitted_now": false,
