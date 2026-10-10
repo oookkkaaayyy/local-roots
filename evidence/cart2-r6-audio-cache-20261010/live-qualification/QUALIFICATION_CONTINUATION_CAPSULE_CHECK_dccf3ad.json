@@ -1,0 +1,12 @@
+{
+  "current_repo_identity": {
+    "branch": "hbnf-cart2-phase2-integration-20261006",
+    "dirty": true,
+    "type": "git_commit",
+    "value": "dccf3ad32780438205ca915527efe2ecdad2a954"
+  },
+  "errors": [],
+  "ok": true,
+  "run_id": "cart2-r6-qualification-continuation-20261010-dccf3ad",
+  "schema": "local-roots-capsule-check-v1"
+}
