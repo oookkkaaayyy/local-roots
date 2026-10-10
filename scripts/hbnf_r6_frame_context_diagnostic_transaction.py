@@ -164,6 +164,13 @@ def current_identity(adapter,seconds=150):
         except Exception as e:last=str(e)
         time.sleep(3)
     raise RuntimeError("read-only OTA outcome identity unresolved: "+str(last))
+def exact_recovery_release(info,build):
+    if info.get("ip")!="192.168.77.10" or info.get("mac","").replace(":","").lower()!=MATRIX_MAC or info.get("ver")!="16.0.1":
+        raise RuntimeError("Matrix recovery target identity/WLED mismatch")
+    release=build.get("release_id");candidate=build.get("candidate")
+    if release!=candidate or release not in (DIAG_ID,R4_ID):
+        raise RuntimeError(f"recovery readback is neither exact diagnostic nor exact R4: release={release} candidate={candidate}")
+    return release
 def consume_authorization_before_write():
     p=ROOT/"config/HBNF_CONTROL_STATE.json";state=json.loads(p.read_text());a=state.get("r6_frame_context_diagnostic_authorization",{})
     if state.get("live_mutation_authorized") is not True or state.get("live_authorization_binding",{}).get("candidate_bin_sha256")!=DIAG_SHA:
@@ -181,14 +188,16 @@ def close_authority_after_transaction(receipt):
     a["status"]=receipt.get("state","TRANSACTION_CLOSED_WITH_FAILURE")
     a["closed_at_utc"]=stamp();a["transaction_result"]=str((OUT/"TRANSACTION_RESULT.json").relative_to(ROOT))
     a["r4_return_attempts_used"]=receipt.get("r4_return_attempts",0)
-    if receipt.get("state")=="PASS_DIAGNOSTIC_CAPTURED__EXACT_R4_RESTORED__AUX_DDP_VERIFIED" or receipt.get("state")=="DIAGNOSTIC_NOT_CONFIRMED_INSTALLED__NO_RETRY":
+    a["recovery_attempts_used"]=receipt.get("r4_return_attempts",0)
+    exact_r4_verified=(receipt.get("r4_runtime",{}).get("release_id")==R4_ID and receipt.get("aux_return_verification",{}).get("status")=="PASS")
+    if exact_r4_verified or receipt.get("state")=="DIAGNOSTIC_NOT_CONFIRMED_INSTALLED__NO_RETRY":
         state["installed_release"]=R4_ID;state["installed_firmware_sha256"]=R4_SHA
-        state["installed_firmware_reconciliation"]={"basis":"Fresh post-transaction read-only Matrix build.json/info and AUX native DDP verification","release_id":R4_ID,"sha256":R4_SHA,"evidence_path":"evidence/cart2-execution-reset-20261010/live-diagnostic/TRANSACTION_RESULT.json","live_mutation_authorized":False}
+        state["installed_firmware_reconciliation"]={"basis":"Fresh post-transaction read-only Matrix build.json/info and AUX native DDP verification","release_id":R4_ID,"sha256":R4_SHA,"evidence_path":str((OUT/"TRANSACTION_RESULT.json").relative_to(ROOT)),"live_mutation_authorized":False}
     state["r6_frame_context_diagnostic_authorization"]=a
     state["status"]="R6_FRAME_CONTEXT_DIAGNOSTIC_TRANSACTION_CLOSED__LIVE_MUTATION_CLOSED"
     state["execution_cursor"]["current_failure_domain"]="R6_FRAME_CONTEXT_DIAGNOSTIC_TRANSACTION_CLOSED__R4_RETURN_STATUS_RECORDED__LIVE_MUTATION_CLOSED"
     state["execution_cursor"]["current_subject"]={"release_id":state.get("installed_release"),"artifact_sha256":state.get("installed_firmware_sha256"),"status":a["status"]}
-    state["execution_cursor"]["exact_next_path"]=["Analyze the preserved per-frame trace against exact R4 kernel-0 profile and R6 stage telemetry; do not infer causality beyond recorded context.","Continue offline R6 correction and full frozen 28-kernel/combined-feature/90-minute qualification preparation; no production acceptance from diagnostic evidence."]
+    state["execution_cursor"]["exact_next_path"]=["Analyze the preserved attempt-3 trace only if exact candidate runtime identity and complete scheduled safety samples are recorded; otherwise classify the diagnostic as inconclusive.","Continue the R6 performance correction and frozen full 28-kernel/combined-feature/90-minute qualification using only valid evidence; no production acceptance from diagnostic evidence."]
     write_control_state(state)
 
 def dry_run():
@@ -198,6 +207,8 @@ def dry_run():
       "catastrophic":["admission","preflight_r4_aux_ac_single_worker","opal_readonly_preflight","consume_exact_attempt","stage_hash_size_verified","install_diag_once_via_opal","verify_diag_identity","begin_snapshot","trace_start","third_consecutive_bad_sample_abort","trace_stop","persist_failure_evidence","restore_renderer_snapshot","stage_exact_r4_hash_size_verified","install_r4_once_via_opal","verify_r4_and_aux"],
       "collector_failure":["admission","preflight_r4_aux_ac_single_worker","opal_readonly_preflight","consume_exact_attempt","stage_hash_size_verified","install_diag_once_via_opal","verify_diag_identity","begin_snapshot","trace_start","timeout_recorded_no_sample_skipped","trace_stop","persist_failure_evidence","restore_renderer_snapshot","stage_exact_r4_hash_size_verified","install_r4_once_via_opal","verify_r4_and_aux"],
       "identity_mismatch":["admission","preflight_r4_aux_ac_single_worker","identity_mismatch_before_write","zero_device_writes"],
+      "http200_identity_mismatch_r4_still_installed":["admission","preflight_r4_aux_ac_single_worker","consume_exact_attempt","single_diag_upload_http200","exact_candidate_identity_wait_fails","no_trace_or_renderer_commands_without_exact_candidate_identity","read_only_recovery_identity_R4","no_unnecessary_r4_upload","verify_matrix_and_aux","close_inconclusive_r4_verified"],
+      "http200_identity_unknown":["admission","preflight_r4_aux_ac_single_worker","consume_exact_attempt","single_diag_upload_http200","exact_candidate_identity_wait_fails","no_trace_or_renderer_commands_without_exact_candidate_identity","recovery_identity_unavailable","zero_recovery_writes","close_live_authority_and_report_blocker"],
       "opal_stage_hash_mismatch":["admission","preflight_r4_aux_ac_single_worker","opal_readonly_preflight","consume_exact_attempt","stage_hash_mismatch","zero_wled_requests","R4_remains_installed"],
       "opal_upload_broken_pipe":["admission","preflight_r4_aux_ac_single_worker","opal_readonly_preflight","consume_exact_attempt","stage_hash_size_verified","single_opal_origin_upload_curl55","read_only_identity_R4","no_retry"],
       "renderer_restore_failure":["admission","preflight_r4_aux_ac_single_worker","opal_readonly_preflight","consume_exact_attempt","stage_hash_size_verified","install_diag_once_via_opal","verify_diag_identity","snapshot_restore_unverified","stage_exact_r4_hash_size_verified","install_exact_r4_once_via_opal","verify_r4_and_aux_or_stop"],
@@ -206,6 +217,9 @@ def dry_run():
         assert events.index("admission")<events.index("install_diag_once_via_opal") if "install_diag_once_via_opal" in events else True
         assert events.count("install_diag_once_via_opal")<=1 and events.count("install_r4_once_via_opal")<=1
     assert scenarios["identity_mismatch"].count("zero_device_writes")==1
+    assert all("no_trace_or_renderer_commands_without_exact_candidate_identity" in scenarios[k] for k in ("http200_identity_mismatch_r4_still_installed","http200_identity_unknown"))
+    assert "no_unnecessary_r4_upload" in scenarios["http200_identity_mismatch_r4_still_installed"]
+    assert "zero_recovery_writes" in scenarios["http200_identity_unknown"]
     receipt={"schema":"hbnf-r6-frame-context-diagnostic-transaction-dryrun-v1","candidate":{"release_id":DIAG_ID,"sha256":DIAG_SHA},
       "mandatory_return":{"release_id":R4_ID,"sha256":R4_SHA},"window_seconds_max":60,"safety_interval_seconds":8,
       "catastrophic_rule":{"consecutive_samples":3,"fps_floor":20,"frame_p99_ceiling_ms":75,"aux_native_ddp_required":True},
@@ -245,7 +259,7 @@ def execute():
         raise RuntimeError("competing Cart live runner detected")
     receipt["preflight"]={"pass":True,"at_utc":stamp(),"r4":pre,"mac_on_ac":True,"matrix_route_en0":True,"diagnostic_sha256":digest(DIAG_BIN),"rollback_sha256":digest(R4_BIN)}
     save(OUT/"TRANSACTION_STARTED.json",receipt)
-    diag_uploaded=False;snapshot=None;trace_started=False;failure=None
+    diag_uploaded=False;candidate_identity_verified=False;snapshot=None;trace_started=False;failure=None
     try:
         receipt["opal_preflight"]=opal_readonly_preflight()
         consume_authorization_before_write()
@@ -265,6 +279,7 @@ def execute():
                 raise RuntimeError("diagnostic upload was not confirmed and exact R4 remains installed") from upload_error
             else:raise RuntimeError("diagnostic upload outcome is unknown; stopped without another write") from upload_error
         receipt["candidate_runtime"]=wait_release(adapter,DIAG_ID)
+        candidate_identity_verified=True
         receipt["state"]="DIAGNOSTIC_INSTALLED";save(OUT/"TRANSACTION_STARTED.json",receipt)
         os.environ["HBNF_EXPECTED_RELEASE_ID"]=DIAG_ID
         snapshot=adapter.snapshot(None,"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json")
@@ -305,7 +320,7 @@ def execute():
     except Exception as e:
         failure=f"{type(e).__name__}: {e}";receipt["diagnostic_error"]=failure
     finally:
-        if diag_uploaded:
+        if candidate_identity_verified:
             try:
                 state,p20=adapter.p20_state();trace=p20.get("frameContextTrace",{})
                 if trace.get("enabled"):
@@ -323,7 +338,7 @@ def execute():
                 save(OUT/"FRAME_CONTEXT_TRACE.json",receipt["trace"])
             except Exception as e:
                 receipt["trace_readback_error"]=f"{type(e).__name__}: {e}";save(OUT/"FRAME_CONTEXT_TRACE.json",receipt["trace"])
-        if diag_uploaded and snapshot is None:
+        if candidate_identity_verified and snapshot is None:
             # Recover a snapshot that may have completed just before a host-side
             # acknowledgement failure.
             try:
@@ -331,7 +346,7 @@ def execute():
                 if p20.get("snapshotValid") is True and p20.get("snapshotState")=="READY":
                     snapshot={"snapshotId":sid,"snapshotHash":shash,"foundationTelemetryEnabledBefore":pre.get("foundation_telemetry_enabled",False)}
             except Exception:pass
-        if diag_uploaded and snapshot:
+        if candidate_identity_verified and snapshot:
             try:
                 receipt["renderer_restore"]=adapter._restore_snapshot(int(snapshot["snapshotId"]),int(snapshot["snapshotHash"]))
                 save(OUT/"RENDERER_RESTORE.json",receipt["renderer_restore"])
@@ -340,11 +355,19 @@ def execute():
         if diag_uploaded:
             # The exact R4 return is mandatory after the diagnostic; one request, no retry.
             try:
-                receipt["r4_return_attempts"]=1;receipt["r4_return_started_at_utc"]=stamp();save(OUT/"TRANSACTION_STARTED.json",receipt)
-                try:receipt["r4_upload"]=upload_once(R4_BIN,OUT/"r4-upload-response.html")
-                except Exception as upload_error:receipt["r4_upload_error"]=f"{type(upload_error).__name__}: {upload_error}"
-                os.environ["HBNF_EXPECTED_RELEASE_ID"]=R4_ID
-                receipt["r4_runtime"]=wait_release(adapter,R4_ID)
+                info,build=current_identity(adapter,seconds=30)
+                observed=exact_recovery_release(info,build)
+                receipt["recovery_preflight"]={"at_utc":stamp(),"release_id":observed,"candidate":build.get("candidate"),"matrix_mac":info.get("mac"),"wled":info.get("ver"),"read_only":True}
+                if observed==DIAG_ID:
+                    receipt["r4_return_attempts"]=1;receipt["r4_return_started_at_utc"]=stamp();save(OUT/"TRANSACTION_STARTED.json",receipt)
+                    try:receipt["r4_upload"]=upload_once(R4_BIN,OUT/"r4-upload-response.html")
+                    except Exception as upload_error:receipt["r4_upload_error"]=f"{type(upload_error).__name__}: {upload_error}"
+                    os.environ["HBNF_EXPECTED_RELEASE_ID"]=R4_ID
+                    receipt["r4_runtime"]=wait_release(adapter,R4_ID)
+                else:
+                    # R4 remained active: readback itself satisfies exact recovery,
+                    # so avoid an unnecessary second flash/reboot.
+                    receipt["r4_runtime"]={"release_id":R4_ID,"candidate":R4_ID,"mac":info.get("mac"),"uptime":info.get("uptime"),"heap":info.get("freeheap"),"at_utc":stamp(),"already_installed":True}
                 deadline=time.monotonic()+60;last=None
                 while time.monotonic()<deadline:
                     reads,_=adapter._parallel_soak_reads("r4-return-ddp-check")
@@ -355,7 +378,9 @@ def execute():
                 if final_state.get("on") is not True or final_state.get("HBNF",{}).get("matrixBrightness")!=44 or final_info.get("freeheap",0)<20000:
                     raise RuntimeError("exact R4 identity present but Matrix runtime health/brightness failed")
                 if not last or last.get("status")!="PASS":raise RuntimeError("R4 restored but AUX DDP not re-established within 60s")
-                receipt["aux_return_verification"]=last;receipt["state"]="PASS_DIAGNOSTIC_CAPTURED__EXACT_R4_RESTORED__AUX_DDP_VERIFIED"
+                receipt["aux_return_verification"]=last
+                complete_capture=(candidate_identity_verified and len(receipt.get("safety_samples",[]))==8 and not receipt.get("trace_readback_error"))
+                receipt["state"]=("PASS_DIAGNOSTIC_CAPTURED__EXACT_R4_RESTORED__AUX_DDP_VERIFIED" if complete_capture else "INCONCLUSIVE__EXACT_R4_RESTORED__AUX_DDP_VERIFIED")
             except Exception as e:
                 receipt["r4_restore_error"]=f"{type(e).__name__}: {e}";receipt["state"]="BLOCKED_R4_RETURN_NOT_VERIFIED"
         elif not diag_uploaded:

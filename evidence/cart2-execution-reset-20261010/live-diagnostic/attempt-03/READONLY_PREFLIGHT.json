@@ -1,4 +1,6 @@
 {
+  "candidate_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
+  "captured_at_utc": "2026-10-10T08:41:31.495510+00:00",
   "device_writes": 0,
   "mac_on_ac": true,
   "matrix": {
@@ -13,64 +15,64 @@
     "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "endpoint_reads": {
       "aux_info": {
-        "completed_monotonic_ns": 553655708,
-        "elapsed_seconds": 0.370623,
+        "completed_monotonic_ns": 264208125,
+        "elapsed_seconds": 0.094813,
         "endpoint": "http://192.168.77.11/json/info",
-        "started_monotonic_ns": 183033083,
+        "started_monotonic_ns": 169395541,
         "status": "PASS"
       },
       "aux_state": {
-        "completed_monotonic_ns": 565624583,
-        "elapsed_seconds": 0.382473,
+        "completed_monotonic_ns": 331398375,
+        "elapsed_seconds": 0.161809,
         "endpoint": "http://192.168.77.11/json/state",
-        "started_monotonic_ns": 183151958,
+        "started_monotonic_ns": 169589000,
         "status": "PASS"
       },
       "matrix_build": {
-        "completed_monotonic_ns": 621430291,
-        "elapsed_seconds": 0.43868,
+        "completed_monotonic_ns": 374529041,
+        "elapsed_seconds": 0.205455,
         "endpoint": "http://192.168.77.10/hbnf/build.json",
-        "started_monotonic_ns": 182750208,
+        "started_monotonic_ns": 169074416,
         "status": "PASS"
       },
       "matrix_info": {
-        "completed_monotonic_ns": 621200666,
-        "elapsed_seconds": 0.438685,
+        "completed_monotonic_ns": 338475666,
+        "elapsed_seconds": 0.169951,
         "endpoint": "http://192.168.77.10/json/info",
-        "started_monotonic_ns": 182515791,
+        "started_monotonic_ns": 168525125,
         "status": "PASS"
       },
       "matrix_state": {
-        "completed_monotonic_ns": 567082916,
-        "elapsed_seconds": 0.38419,
+        "completed_monotonic_ns": 374460041,
+        "elapsed_seconds": 0.205207,
         "endpoint": "http://192.168.77.10/json/state",
-        "started_monotonic_ns": 182892708,
+        "started_monotonic_ns": 169253250,
         "status": "PASS"
       }
     },
     "expected_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "expected_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "foundation_telemetry_enabled": false,
-    "fps": 39,
+    "fps": 41,
     "matrix_brightness": 44,
     "matrix_ip": "192.168.77.10",
     "matrix_mac": "704bca5b345c",
     "matrix_on": true,
-    "matrix_uptime_seconds": 431,
+    "matrix_uptime_seconds": 683,
     "packet20_enabled": false,
     "packet20_restore_verified": false,
     "packet20_snapshot_hash": 0,
     "packet20_snapshot_id": 0,
     "packet20_snapshot_valid": false,
-    "read_elapsed_seconds": 0.44075,
+    "read_elapsed_seconds": 0.208144,
     "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "restart_count": 0,
     "schema": "hbnf-live-qualification-preflight-v1",
-    "uptime_seconds": 431,
+    "uptime_seconds": 683,
     "wled": "16.0.1"
   },
   "opal": {
-    "at_utc": "2026-10-10T08:37:20.202545+00:00",
+    "at_utc": "2026-10-10T08:41:31.492192+00:00",
     "curl_and_sha256sum_available": true,
     "exact_r4_ledger": true,
     "matrix_readonly_endpoints_http_200": true,
@@ -79,11 +81,14 @@
     "opal_uptime_and_tmp_space_recorded": true,
     "status": "PASS",
     "stderr_tail": "",
-    "stdout": "OPAL_READONLY_PREFLIGHT\n 01:37:20 up  6:32,  load average: 1.33, 1.35, 1.35\nFilesystem           1K-blocks      Used Available Use% Mounted on\ntmpfs                    59392      6276     53116  11% /tmp\n/usr/bin/curl\n/usr/bin/sha256sum\n/usr/bin/wc\n55 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\nMATRIX_INFO_HTTP=200\nMATRIX_BUILD_HTTP=200\n",
+    "stdout": "OPAL_READONLY_PREFLIGHT\n 01:41:31 up  6:36,  load average: 1.50, 1.41, 1.37\nFilesystem           1K-blocks      Used Available Use% Mounted on\ntmpfs                    59392      6276     53116  11% /tmp\n/usr/bin/curl\n/usr/bin/sha256sum\n/usr/bin/wc\n55 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\nMATRIX_INFO_HTTP=200\nMATRIX_BUILD_HTTP=200\n",
     "tmp_available_kb": 53116
   },
+  "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
   "route_interface": "en0",
   "schema": "hbnf-r6-diagnostic-attempt3-readonly-preflight-v1",
   "single_worker": true,
+  "source_closure_match": true,
+  "source_file_count": 14,
   "status": "PASS"
 }

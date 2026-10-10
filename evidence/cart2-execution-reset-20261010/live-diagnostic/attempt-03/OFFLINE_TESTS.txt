@@ -1,0 +1,124 @@
+PASS exact runtime identity wait and flattened read contract
+PASS Opal transport fallback exact-byte staging, single-request, and no-retry cases
+PASS R6 trace source contract: compile-gated, bounded, named audio mappings, no hot-path I/O/allocation
+PASS: guarded execution blocks wrong-state/unauthorized mutation; exact LIVE_APPROVED admission rejects missing, malformed, and stale identities before child execution
+{"candidate": {"release_id": "hbnf-cart2-r6-frame-context-diagnostic-20261010", "sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a"}, "catastrophic_rule": {"aux_native_ddp_required": true, "consecutive_samples": 3, "fps_floor": 20, "frame_p99_ceiling_ms": 75}, "device_requests": 0, "firmware_source_changed": false, "mandatory_return": {"release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1", "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"}, "next_attempt_transport": "previously proven SSH-verified Opal staging plus one Opal-origin curl multipart upload; no Mac-origin firmware body transfer", "result": "PASS_OFFLINE_SEQUENCE_POLICY", "safety_interval_seconds": 8, "scenarios": {"catastrophic": ["admission", "preflight_r4_aux_ac_single_worker", "opal_readonly_preflight", "consume_exact_attempt", "stage_hash_size_verified", "install_diag_once_via_opal", "verify_diag_identity", "begin_snapshot", "trace_start", "third_consecutive_bad_sample_abort", "trace_stop", "persist_failure_evidence", "restore_renderer_snapshot", "stage_exact_r4_hash_size_verified", "install_r4_once_via_opal", "verify_r4_and_aux"], "collector_failure": ["admission", "preflight_r4_aux_ac_single_worker", "opal_readonly_preflight", "consume_exact_attempt", "stage_hash_size_verified", "install_diag_once_via_opal", "verify_diag_identity", "begin_snapshot", "trace_start", "timeout_recorded_no_sample_skipped", "trace_stop", "persist_failure_evidence", "restore_renderer_snapshot", "stage_exact_r4_hash_size_verified", "install_r4_once_via_opal", "verify_r4_and_aux"], "http200_identity_mismatch_r4_still_installed": ["admission", "preflight_r4_aux_ac_single_worker", "consume_exact_attempt", "single_diag_upload_http200", "exact_candidate_identity_wait_fails", "no_trace_or_renderer_commands_without_exact_candidate_identity", "read_only_recovery_identity_R4", "no_unnecessary_r4_upload", "verify_matrix_and_aux", "close_inconclusive_r4_verified"], "http200_identity_unknown": ["admission", "preflight_r4_aux_ac_single_worker", "consume_exact_attempt", "single_diag_upload_http200", "exact_candidate_identity_wait_fails", "no_trace_or_renderer_commands_without_exact_candidate_identity", "recovery_identity_unavailable", "zero_recovery_writes", "close_live_authority_and_report_blocker"], "identity_mismatch": ["admission", "preflight_r4_aux_ac_single_worker", "identity_mismatch_before_write", "zero_device_writes"], "opal_stage_hash_mismatch": ["admission", "preflight_r4_aux_ac_single_worker", "opal_readonly_preflight", "consume_exact_attempt", "stage_hash_mismatch", "zero_wled_requests", "R4_remains_installed"], "opal_upload_broken_pipe": ["admission", "preflight_r4_aux_ac_single_worker", "opal_readonly_preflight", "consume_exact_attempt", "stage_hash_size_verified", "single_opal_origin_upload_curl55", "read_only_identity_R4", "no_retry"], "r4_restore_failure": ["admission", "preflight_r4_aux_ac_single_worker", "opal_readonly_preflight", "consume_exact_attempt", "stage_hash_size_verified", "install_diag_once_via_opal", "verify_diag_identity", "capture_or_abort", "restore_renderer_snapshot", "stage_exact_r4_hash_size_verified", "install_r4_once_via_opal", "persist_recovery_failure_stop"], "renderer_restore_failure": ["admission", "preflight_r4_aux_ac_single_worker", "opal_readonly_preflight", "consume_exact_attempt", "stage_hash_size_verified", "install_diag_once_via_opal", "verify_diag_identity", "snapshot_restore_unverified", "stage_exact_r4_hash_size_verified", "install_exact_r4_once_via_opal", "verify_r4_and_aux_or_stop"], "success": ["admission", "preflight_r4_aux_ac_single_worker", "opal_readonly_preflight", "consume_exact_attempt", "stage_hash_size_verified", "install_diag_once_via_opal", "verify_diag_identity", "begin_snapshot", "select_kernel0_brightness44", "trace_start", "8_safety_samples_at_8s", "trace_stop", "persist_all_trace_records", "restore_renderer_snapshot", "stage_exact_r4_hash_size_verified", "install_r4_once_via_opal", "verify_r4_and_aux"]}, "schema": "hbnf-r6-frame-context-diagnostic-transaction-dryrun-v1", "window_seconds_max": 60}
+{
+  "current_state": "PHASE2_INTEGRATING",
+  "execution_cursor": {
+    "current_failure_domain": "R6_DIAGNOSTIC_ATTEMPT2_INCONCLUSIVE__HOST_HARNESS_FIXED__ATTEMPT3_AUTHORIZED_PREFLIGHT_PENDING",
+    "current_lifecycle_state": "PHASE2_INTEGRATING",
+    "current_subject": {
+      "artifact_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
+      "attempt_number": 3,
+      "release_id": "hbnf-cart2-r6-frame-context-diagnostic-20261010",
+      "status": "EXACT_BINDING_RECORDED__NO_LIVE_MUTATION_YET"
+    },
+    "current_transition": "T4_PHASE2_INTEGRATION",
+    "exact_next_path": [
+      "Verify exact R6 diagnostic and R4 bytes, connected Mac/power/route, Matrix/AUX identity/health, Opal release ledger/tools/space, and single-worker status read-only.",
+      "Build and pass attempt-3 exact LIVE_APPROVED admission/capsule/prelive proof and guarded-run check with live authority still closed until prerequisites pass.",
+      "If every gate passes, execute one exact Opal-origin upload; require the exact diagnostic build identity before capture. Capture kernel 0 for the bounded window with 8-second safety samples; preserve any identity, timeout, and trace evidence.",
+      "Restore renderer state and perform the single bound exact R4 return; verify exact identity, Matrix health, and AUX native DDP; then close live authority.",
+      "Continue the offline integrated R6 product work and frozen 28-kernel/combined-feature/90-minute qualification path; no diagnostic evidence alone qualifies R6."
+    ],
+    "no_repeat": [
+      "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
+      "R4 fixed-point performance trial is closed and materially successful; do not rerun exploratory R1-R4 selection.",
+      "Observer-effect measurement on exact artifact SHA 6285f1...4338 is already PASS; do not rerun unless artifact/instrumentation changes.",
+      "Exact Release07 rollback path is proven; do not re-derive it.",
+      "Host-only failures do not consume a recovery install unless actual device/runtime safety evidence fails or becomes unknown.",
+      "Do not rebuild firmware or use GitHub Actions for a host-harness defect.",
+      "ANTI_STALL V2: the 30-minute clock is time since last measurable forward progress, not attempt duration; healthy advancing work continues.",
+      "ANTI_STALL V2: when stalled, stop only the stalled mechanism at a safe boundary and preserve install/session/snapshot/checkpoint whenever proven safe; no timer-based restart/reinstall/recovery/reboot.",
+      "ANTI_STALL V2: one retry maximum per failure class, only with a materially different mechanism supported by new evidence.",
+      "ANTI_STALL V2: after 60 minutes without lifecycle progress, activate noncontending offline-safe lanes in parallel; do not kill healthy critical-path work.",
+      "ANTI_STALL V2: no firmware rebuild or GitHub Actions for host/transport/harness/telemetry-reader defects unless the artifact itself is invalidated.",
+      "Do not create a replacement firmware candidate from seq45 isolated frame-max excursions unless corrected sustained-tail analysis proves a real renderer/runtime regression.",
+      "Do not rerun 28-kernel sweep or observer-effect A/B when reusing exact candidate SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
+      "Do not interpret the unanswered physical restore question as a failed restore or DDP failure; current WLED telemetry confirms DDP resumed.",
+      "Observer-effect measurement on exact R7 SHA-256 22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994 is complete in R7_OBSERVER_EFFECT_IDENTITY_RECEIPT.json; do not repeat the windows.",
+      "Attempt 1 failed on Mac-origin curl transport; attempt 2 used the distinct Opal path but its host identity/read-shape defect made capture inconclusive; exact R4 was verified afterward. Attempt 3 reuses the exact diagnostic bytes only under the current direct owner authorization, after offline harness correction and fresh per-attempt admission; never repeat without new evidence or alter the exact artifact."
+    ],
+    "parallel_ready_during_foundation_soak": [
+      "Mission Control/scoring source reconciliation and host tests",
+      "PWA/cache/versioning implementation and host tests",
+      "AudioFeatures/Vibe source-level implementation preparation that does not mutate live firmware",
+      "VisualMoment/text source-level implementation preparation that does not mutate live firmware"
+    ],
+    "schema": "hbnf-execution-cursor-v1"
+  },
+  "external_parallel_launch": {
+    "activation_event": "FOUNDATION_SOAK_RUNNING",
+    "failure_ownership": "Failure to spawn parallel workers is an orchestration/coordinator failure, never a failure of a worker that lacks spawn capability.",
+    "launch_owner": "COORDINATOR_EXTERNAL_TO_LIVE_WORKER",
+    "launch_status": "PHASE2_ACTIVE__HOST_OFFLINE_ONLY",
+    "required_live_worker_signal": "PARALLEL_LANES_READY",
+    "worker_can_spawn_workers": false
+  },
+  "inherited_evidence_ids": [
+    "PACKET20_DIAGNOSTIC_CLOSE",
+    "R4_RENDERER_PERFORMANCE",
+    "FOUNDATION_OBSERVER_EFFECT",
+    "RELEASE07_RECOVERY",
+    "HOST_DEADLINE_REGRESSION",
+    "HOST_HISTOGRAM_OVERFLOW_REGRESSION"
+  ],
+  "live_mutation_authorized": false,
+  "model_valid": true,
+  "next_state": "RELEASE_CANDIDATE",
+  "next_transition": "T4_PHASE2_INTEGRATION",
+  "observability": {
+    "authority_effect": "NONE",
+    "cadence_minutes": 15,
+    "current_worker": "P2_VIBE_AUDIO",
+    "note": "Telemetry only; never operational authority. Heartbeats must yield to critical-path work and may be delayed by blocking operations.",
+    "rows": {
+      "FOUNDATION_LIVE": 3,
+      "P2_MISSION_CONTROL_SCORING": 4,
+      "P2_PWA_RELIABILITY": 7,
+      "P2_TEXT_MOMENTS": 6,
+      "P2_VIBE_AUDIO": 5
+    },
+    "schema": "hbnf-worker-observability-state-v1",
+    "sheet_name": "Live Status",
+    "stale_after_minutes": 25,
+    "status_sheet_id": "1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko",
+    "status_sheet_url": "https://docs.google.com/spreadsheets/d/1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko/edit"
+  },
+  "parallelism": {
+    "core_lanes": [
+      "P2_MISSION_CONTROL_SCORING",
+      "P2_VIBE_AUDIO",
+      "P2_TEXT_MOMENTS",
+      "P2_PWA_RELIABILITY"
+    ],
+    "pass": true,
+    "required": true,
+    "tracked": [
+      "P2_MISSION_CONTROL_SCORING",
+      "P2_PWA_RELIABILITY",
+      "P2_TEXT_MOMENTS",
+      "P2_VIBE_AUDIO"
+    ],
+    "violations": []
+  },
+  "phase2_implementation_authorized": true,
+  "required_receipt_type": "phase2_integration",
+  "schema": "hbnf-control-status-v2",
+  "validation_errors": []
+}
+{
+  "errors": [],
+  "ok": true,
+  "repo_identity": {
+    "branch": "hbnf-cart2-phase2-integration-20261006",
+    "dirty": true,
+    "type": "git_commit",
+    "value": "f0b2725da21ef7e510a0767b5773c2bac3ea3ba5"
+  },
+  "schema": "local-roots-platform-doctor-v1",
+  "system_count": 6,
+  "warnings": [],
+  "workflow_count": 4
+}

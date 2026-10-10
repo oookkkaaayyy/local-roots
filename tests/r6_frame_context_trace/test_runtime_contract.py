@@ -45,7 +45,25 @@ def test_flat_and_wrapped_parallel_read_shapes():
     assert tx.response_body(info) is info
 
 
+def test_recovery_requires_exact_target_identity():
+    info = {"ip": "192.168.77.10", "mac": "70:4b:ca:5b:34:5c", "ver": "16.0.1"}
+    for release in (tx.R4_ID, tx.DIAG_ID):
+        assert tx.exact_recovery_release(info, {"release_id": release, "candidate": release}) == release
+    for bad_info, bad_build in (
+        ({**info, "mac": "00:00:00:00:00:00"}, {"release_id": tx.DIAG_ID, "candidate": tx.DIAG_ID}),
+        (info, {"release_id": "unknown", "candidate": "unknown"}),
+        (info, {"release_id": tx.R4_ID, "candidate": tx.DIAG_ID}),
+    ):
+        try:
+            tx.exact_recovery_release(bad_info, bad_build)
+        except RuntimeError:
+            pass
+        else:
+            raise AssertionError("recovery must fail closed for unexpected device/build identity")
+
+
 if __name__ == "__main__":
     test_identity_wait_rejects_old_release_and_accepts_exact_candidate()
     test_flat_and_wrapped_parallel_read_shapes()
+    test_recovery_requires_exact_target_identity()
     print("PASS exact runtime identity wait and flattened read contract")

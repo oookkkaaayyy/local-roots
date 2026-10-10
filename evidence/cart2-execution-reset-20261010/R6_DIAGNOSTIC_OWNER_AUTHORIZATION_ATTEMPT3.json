@@ -1,0 +1,26 @@
+{
+  "attempt_number": 3,
+  "authorization_id": "OWNER-20261010-R6-FRAME-CONTEXT-OPAL-ATTEMPT3-HOSTFIX",
+  "candidate_bin_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
+  "candidate_install_limit": 1,
+  "candidate_release_id": "hbnf-cart2-r6-frame-context-diagnostic-20261010",
+  "candidate_size_bytes": 1511456,
+  "condition": "No live write until exact LIVE_APPROVED admission, capsule/prelive proof, fresh read-only preflight, and one-live-worker guard all pass. Reuse unchanged exact diagnostic bytes; no repeated attempt without material evidence-based correction.",
+  "cost_and_communications": "No paid/charged action; no external communications.",
+  "matrix_mac": "70:4b:ca:5b:34:5c",
+  "recorded_at_utc": "2026-10-10T08:39:59.943621+00:00",
+  "recovery_install_limit": 1,
+  "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "rollback_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "schema": "hbnf-exact-live-owner-authorization-v1",
+  "scope": [
+    "one exact R6 frame-context diagnostic install using the proven Opal-origin path",
+    "require positive exact R6 build identity before starting capture",
+    "bounded kernel-0 capture with 8-second safety polls and unchanged catastrophic rules",
+    "preserve trace and all scheduled/missing-sample evidence",
+    "restore renderer snapshot",
+    "one exact R4 return and read-only identity/health/AUX DDP verification",
+    "no production acceptance, no firmware rebuild, no cloud/router/AUX firmware changes"
+  ],
+  "source_message_ref": "Current owner message in this Codex task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; exact diagnostic SHA eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a and exact R4 SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c."
+}

@@ -1,14 +1,19 @@
 {
+  "additional_safety_correction": [
+    "No trace, snapshot, renderer or diagnostic controls are sent before exact diagnostic runtime identity is proven.",
+    "Before R4 recovery, reread and validate Matrix IP/MAC/WLED and release/candidate identity; do not flash an unknown target.",
+    "If exact R4 is already installed and healthy, record readback as restored and avoid an unnecessary flash/reboot."
+  ],
   "attempt2_failure_classification": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_ATTEMPT2_HOST_FAILURE_AND_FIX.json",
   "candidate_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
   "current_readonly_preflight": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-03/READONLY_PREFLIGHT.json",
-  "current_readonly_preflight_sha256": "939b9e84d8e7badd1c54a9997556ef59a1b1033d9fbed1a26744b432f0457729",
+  "current_readonly_preflight_sha256": "ce4c5bc422a0aa57319f684a879d6f36d0d8a5fbd65a8fb08a85dcceaf6f04ba",
   "device_requests": 0,
-  "dry_run_receipt_sha256": "e4ee0253bc76cf08dd53a3d90611e185927aeb52b79fc908e6bcd69fd7ca9f2a",
+  "dry_run_receipt_sha256": "c0bc30ea148cc0f82937d65019b626ab3855a5064373854f765616becf9935ce",
   "firmware_source_changed": false,
   "host_changes": {
-    "scripts/hbnf_r6_frame_context_diagnostic_transaction.py": "0114c952ae690859afdc19964b0f187708241f4a215f12e97f5a6b3524703f43",
-    "tests/r6_frame_context_trace/test_runtime_contract.py": "196130bf58194b670f4a4ce04584e7400e185aa37a53fb802205fd1e91a872be"
+    "scripts/hbnf_r6_frame_context_diagnostic_transaction.py": "ba88927df04245e5c0e3e01e87fda6d215f717b73fefc2e89bc0ad0a191855d7",
+    "tests/r6_frame_context_trace/test_runtime_contract.py": "add389dad10c7c07f3ba21d4eacbf9439aeb0b116d26f5ec58478aab4cad20a1"
   },
   "offline_gates": {
     "control_state_validation": "PASS",
@@ -21,8 +26,9 @@
     "trace_source_contract": "PASS",
     "transaction_sequence_dry_run": "PASS"
   },
+  "offline_test_log_sha256": "f14a2369b0ecd8b7068d6be8f0de88f405f2ec557abb79ba4066085a48ebb805",
   "r4_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-  "recorded_at_utc": "2026-10-10T08:38:49.822784+00:00",
+  "recorded_at_utc": "2026-10-10T08:41:56.610356+00:00",
   "schema": "hbnf-r6-diagnostic-attempt3-offline-rehearsal-v1",
   "status": "PASS_OFFLINE_HOST_CORRECTION__FRESH_PREFLIGHT_PASS__LIVE_ADMISSION_PENDING"
 }
