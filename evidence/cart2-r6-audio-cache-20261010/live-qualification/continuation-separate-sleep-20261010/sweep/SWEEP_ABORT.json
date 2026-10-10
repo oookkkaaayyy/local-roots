@@ -1,0 +1,8 @@
+{
+  "status": "FAIL",
+  "run_error": "early-matched-R4-kernel-gate-failed: Complex_Kaleido_3: {\"fps_median\": false, \"frame_p95_median\": false, \"frame_p99_median\": false, \"largest_free_block\": true, \"minimum_free_heap\": true}",
+  "restore_error": null,
+  "profiles_completed": 1,
+  "pre_sweep_state": "/private/tmp/cart2-opal-local-20261009/evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-separate-sleep-20261010/sweep/PRE_SWEEP_STATE.json",
+  "post_restore_state": "/private/tmp/cart2-opal-local-20261009/evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-separate-sleep-20261010/sweep/POST_RESTORE_STATE.json"
+}

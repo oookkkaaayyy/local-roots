@@ -1,0 +1,121 @@
+{
+  "candidate": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+  },
+  "comparability_limits": [
+    "Candidate test brightness 44 was positively read back and restored to the captured runtime/persisted baseline 52; R4 seq39 pre-install state records brightness 49, while its per-sample/profile contract does not preserve measurement brightness. Exact brightness matching to the R4 profile is therefore unproven.",
+    "R4 kernel-0 profile ran around uptime 118\u2013149 seconds; R6 profile around 6699\u20136730 seconds. Long-run scheduler/resource state differs and could contribute.",
+    "Profiles summarize cumulative per-kernel frame histograms through host polling; R4 has 15 poll samples and R6 24. Poll cadence differs, but comparing observations near 580 accumulated frames still shows worse R6 average/p95/p99.",
+    "R6 stage averages are higher for kernel, palette, and audio; sparse worst-frame timing lacks stage-correlated trace on the exact cachefix binary, so attribution of its p99 tail is not proven."
+  ],
+  "comparison": {
+    "frozen_gate": {
+      "fps_median": false,
+      "frame_p95_median": false,
+      "frame_p99_median": false,
+      "largest_free_block": true,
+      "minimum_free_heap": true
+    },
+    "kernel": {
+      "index": 0,
+      "name": "Complex_Kaleido_3",
+      "same_variant": true,
+      "variant_id_r4": 1347100672,
+      "variant_id_r6": 1347100672
+    },
+    "near_matched_cumulative_frame_count": {
+      "r4": {
+        "audio_ms_avg": 1.396445,
+        "fps": 33,
+        "frame_ms_avg": 24.84956,
+        "frame_ms_max": 48.197,
+        "frame_ms_p95": 27.625,
+        "frame_ms_p99": 41.875,
+        "frame_tail_sample_count": 613,
+        "kernel_ms_avg": 14.63918,
+        "palette_ms_avg": 0.413135,
+        "uptime_seconds": 136
+      },
+      "r6": {
+        "audio_ms_avg": 3.773148,
+        "fps": 33,
+        "frame_ms_avg": 29.50147,
+        "frame_ms_max": 91.192,
+        "frame_ms_p95": 36.375,
+        "frame_ms_p99": 70.875,
+        "frame_tail_sample_count": 574,
+        "kernel_ms_avg": 19.07004,
+        "palette_ms_avg": 1.916805,
+        "uptime_seconds": 6714
+      }
+    },
+    "r4_profile": {
+      "fps_median": 32.0,
+      "frame_avg_median_ms": 24.84956,
+      "frame_max_ms": 48.197,
+      "frame_p95_median_ms": 27.875,
+      "frame_p99_median_ms": 41.375,
+      "sample_count": 15,
+      "stage_avg_median_ms": {
+        "audio_ms_avg": 1.396445,
+        "kernel_ms_avg": 14.6413,
+        "palette_ms_avg": 0.413357,
+        "scheduler_ms_avg": 1.224663,
+        "unaccounted_ms_avg": 6.911267
+      },
+      "tail_frame_count_range": [
+        11,
+        1068
+      ],
+      "uptime_range_s": [
+        118,
+        149
+      ]
+    },
+    "r6_profile": {
+      "fps_median": 25.0,
+      "frame_avg_median_ms": 29.962885,
+      "frame_max_ms": 91.192,
+      "frame_p95_median_ms": 36.375,
+      "frame_p99_median_ms": 70.875,
+      "sample_count": 24,
+      "stage_avg_median_ms": {
+        "audio_ms_avg": 3.940373,
+        "kernel_ms_avg": 19.245739999999998,
+        "palette_ms_avg": 2.046251,
+        "scheduler_ms_avg": 1.4735205,
+        "unaccounted_ms_avg": 3.0178315
+      },
+      "tail_frame_count_range": [
+        176,
+        971
+      ],
+      "uptime_range_s": [
+        6699,
+        6730
+      ]
+    }
+  },
+  "evidence": {
+    "evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-separate-sleep-20261010/QUALIFICATION_CONTINUATION_RESULT.json": "0d54352411119b8c3f8932b2966301d5ca7b944aa987a7abdf5e9f6e2d05002d",
+    "evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-separate-sleep-20261010/sweep/00_Complex_Kaleido_3.jsonl": "eb3e09afb6af179a9fdb6c97036cdb156d1cf693b628a45fe0d08c5746ae0fdf",
+    "evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-separate-sleep-20261010/sweep/00_Complex_Kaleido_3.profile.json": "bc840211c7b654b0d62da659e19578683fa9130b27626950e332e554034e36c7",
+    "evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep/00_Complex_Kaleido_3.jsonl": "91c3dcf826140991575176db45a9ffd27373ac80128953e858bc6ec0079d7c80",
+    "evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep/00_Complex_Kaleido_3.profile.json": "c8851a74b1ef40bd6981c916c9beb4c3c079f1f9b83c03ed688c7ca311f67c7a"
+  },
+  "next_decision": "Keep R4 installed. Continue offline product work. Do not repeat R6 or infer one source cause from these profiles. Any successor should first prove a source-backed correction or fix the profile comparability setup without changing frozen gates, then pass exact build/admission before future live action.",
+  "rollback": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "schema": "hbnf-r6-kernel0-failure-analysis-v1",
+  "status": "EARLY_FROZEN_GATE_FAILED__ROOT_CAUSE_NOT_ISOLATED",
+  "verified_observations": [
+    "The exact R6 candidate failed the unchanged early kernel-0 comparison: FPS, frame p95, and frame p99 checks failed; heap checks passed.",
+    "Only kernel 0 completed; kernel 13, remaining 27 profiles, combined-feature check, and 90-minute soak did not run.",
+    "The harness restored the renderer snapshot and Matrix brightness 52; AUX brightness 245 and Vibe 2 remained at the captured values.",
+    "The authorized exact R4 image was uploaded once and exact R4 runtime identity/health read back; AUX reported live native DDP from Matrix with 22 LEDs.",
+    "AUX physical light output is not established by WLED telemetry and was not visually rechecked during this run."
+  ]
+}

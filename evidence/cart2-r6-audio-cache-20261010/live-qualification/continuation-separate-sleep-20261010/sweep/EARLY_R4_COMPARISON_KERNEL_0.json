@@ -1,0 +1,33 @@
+{
+  "candidate_metrics": {
+    "fps_median": 25.0,
+    "frame_p95_median": 36.375,
+    "frame_p99_median": 70.875,
+    "largest_free_block_min": 63476,
+    "minimum_free_heap": 51136
+  },
+  "candidate_profile": "/private/tmp/cart2-opal-local-20261009/evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-separate-sleep-20261010/sweep/00_Complex_Kaleido_3.profile.json",
+  "candidate_release": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "candidate_variant_id": 1347100672,
+  "checks": {
+    "fps_median": false,
+    "frame_p95_median": false,
+    "frame_p99_median": false,
+    "largest_free_block": true,
+    "minimum_free_heap": true
+  },
+  "kernel": "Complex_Kaleido_3",
+  "kernel_index": 0,
+  "r4_metrics": {
+    "fps_median": 32.0,
+    "frame_p95_median": 27.875,
+    "frame_p99_median": 41.375,
+    "largest_free_block_min": 69620,
+    "minimum_free_heap": 58636
+  },
+  "r4_profile": "evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep/00_Complex_Kaleido_3.profile.json",
+  "r4_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "r4_variant_id": 1347100672,
+  "schema": "hbnf-candidate-vs-r4-kernel-profile-v1",
+  "status": "FAIL"
+}
