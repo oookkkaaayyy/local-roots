@@ -739,7 +739,7 @@ def execute_command(args: argparse.Namespace) -> int:
         if value:
             guarded.extend([option, value])
     guarded.extend(["--", *command])
-    return subprocess.call(guarded, cwd=ROOT)
+    return subprocess.run(guarded, cwd=ROOT, check=False).returncode
 
 
 def main() -> int:
