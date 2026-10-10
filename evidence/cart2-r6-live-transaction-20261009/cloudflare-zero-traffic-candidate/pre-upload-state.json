@@ -1,0 +1,239 @@
+{
+  "schema": "hbnf-cloudflare-zero-traffic-candidate-preupload-v1",
+  "worker": "hbnf",
+  "current_deployment": {
+    "id": "157f592b-cee8-4f6b-a687-d079210c26c4",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "andrewzarnich@gmail.com",
+    "annotations": {
+      "workers/message": "Cart 2.0 Guest V1 and owner-compatible static assets; Guest Mode closed",
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "4a675ee4-807d-4ab1-b7e6-e2f91e27e39c",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-10-08T01:33:24.172686Z"
+  },
+  "current_version_view": {
+    "id": "4a675ee4-807d-4ab1-b7e6-e2f91e27e39c",
+    "number": 314,
+    "metadata": {
+      "created_on": "2026-10-08T01:31:16.258654Z",
+      "source": "wrangler",
+      "author_id": "87a47405491a6e3532f593c43bc18c30",
+      "author_email": "andrewzarnich@gmail.com",
+      "has_preview": true
+    },
+    "annotations": {
+      "workers/message": "Cart 2.0 Phase 2 Guest V1 host assets, Guest Mode default OFF",
+      "workers/triggered_by": "version_upload"
+    },
+    "resources": {
+      "script": {
+        "etag": "",
+        "handlers": null,
+        "last_deployed_from": ""
+      },
+      "script_runtime": {
+        "assets": {
+          "headers": {
+            "version": 2,
+            "rules": {
+              "/": {
+                "set": {
+                  "cache-control": "no-store"
+                },
+                "unset": []
+              },
+              "/*.html": {
+                "set": {
+                  "cache-control": "no-store"
+                },
+                "unset": []
+              },
+              "/*.js": {
+                "set": {
+                  "cache-control": "no-cache, must-revalidate"
+                },
+                "unset": []
+              },
+              "/*.mjs": {
+                "set": {
+                  "cache-control": "no-cache, must-revalidate"
+                },
+                "unset": []
+              },
+              "/*.webmanifest": {
+                "set": {
+                  "cache-control": "no-cache, must-revalidate"
+                },
+                "unset": []
+              }
+            }
+          },
+          "raw_headers": "/\n  Cache-Control: no-store\n/*.html\n  Cache-Control: no-store\n/*.webmanifest\n  Cache-Control: no-cache, must-revalidate\n/*.js\n  Cache-Control: no-cache, must-revalidate\n/*.mjs\n  Cache-Control: no-cache, must-revalidate\n",
+          "serve_directly": true,
+          "raw_run_worker_first": false,
+          "base_path": "/"
+        },
+        "compatibility_date": "2026-07-28",
+        "usage_model": "standard"
+      },
+      "bindings": []
+    }
+  },
+  "candidate_config_source_sha256": "e9e7cf80f8166d0ada63ff17bda639f3641715083700d4b87872fe36069ee64a",
+  "candidate_worker_sha256": "d9bec050c427fe50ef12f376d9f5e60a745764c44b0b53d74ea923b86b49bdcf",
+  "candidate_approved_zip_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
+  "current_cart_headers": [
+    {
+      "path": "https://hbnightflyers.com/guest/hbnf-cart/guest.css?preflight=1791593206",
+      "status": 200,
+      "content_type": "text/css",
+      "cache_control": "public, max-age=0, must-revalidate",
+      "etag": "\"09a4a72a8bfe5b7ea9c298350b879784\""
+    },
+    {
+      "path": "https://hbnightflyers.com/guest/hbnf-cart/guest.js?preflight=1791593206",
+      "status": 200,
+      "content_type": "text/javascript",
+      "cache_control": "no-cache, must-revalidate",
+      "etag": "\"7f196a1f5ee5d33d312301179d2739aa\""
+    },
+    {
+      "path": "https://hbnightflyers.com/guest/hbnf-cart/?preflight=1791593206",
+      "status": 200,
+      "content_type": "text/html",
+      "cache_control": "public, max-age=0, must-revalidate",
+      "etag": null
+    },
+    {
+      "path": "https://hbnightflyers.com/hbnf-cart-features.mjs?preflight=1791593206",
+      "status": 200,
+      "content_type": "text/javascript",
+      "cache_control": "no-cache, must-revalidate",
+      "etag": "\"8d9982017a382f921e3934d9d6003690\""
+    },
+    {
+      "path": "https://hbnightflyers.com/hbnf-cart-icon-180.png?preflight=1791593206",
+      "status": 200,
+      "content_type": "image/png",
+      "cache_control": "public, max-age=0, must-revalidate",
+      "etag": "\"e41b00cc9efb1cb0bade2da5e936051b\""
+    },
+    {
+      "path": "https://hbnightflyers.com/hbnf-cart-icon-192.png?preflight=1791593206",
+      "status": 200,
+      "content_type": "image/png",
+      "cache_control": "public, max-age=0, must-revalidate",
+      "etag": "\"e83b98a824662132a2d03480e30f54ae\""
+    },
+    {
+      "path": "https://hbnightflyers.com/hbnf-cart-icon-512.png?preflight=1791593206",
+      "status": 200,
+      "content_type": "image/png",
+      "cache_control": "public, max-age=0, must-revalidate",
+      "etag": "\"ba61ea699528f38bc0d25b75da4949ec\""
+    },
+    {
+      "path": "https://hbnightflyers.com/hbnf-cart-manifest.webmanifest?preflight=1791593206",
+      "status": 200,
+      "content_type": "application/manifest+json",
+      "cache_control": "no-cache, must-revalidate",
+      "etag": "\"c78b1673b1caeb341372db800539f19e\""
+    },
+    {
+      "path": "https://hbnightflyers.com/hbnf-cart-net.mjs?preflight=1791593206",
+      "status": 200,
+      "content_type": "text/javascript",
+      "cache_control": "no-cache, must-revalidate",
+      "etag": "\"209cee6688b4db8df22c24c198ed7a19\""
+    },
+    {
+      "path": "https://hbnightflyers.com/hbnf-cart-semantic.mjs?preflight=1791593206",
+      "status": 200,
+      "content_type": "text/javascript",
+      "cache_control": "no-cache, must-revalidate",
+      "etag": "\"c2043574667e4e83dc050fb342868e02\""
+    },
+    {
+      "path": "https://hbnightflyers.com/hbnf-cart-skins-score.mjs?preflight=1791593206",
+      "status": 200,
+      "content_type": "text/javascript",
+      "cache_control": "no-cache, must-revalidate",
+      "etag": "\"d839b70b7d98c995c98173bebec7cb94\""
+    },
+    {
+      "path": "https://hbnightflyers.com/hbnf-cart-sw.js?preflight=1791593206",
+      "status": 200,
+      "content_type": "text/javascript",
+      "cache_control": "no-cache, must-revalidate",
+      "etag": "\"41cd6af5f92660414f28ffc57ec5f08d\""
+    },
+    {
+      "path": "https://hbnightflyers.com/hbnf-cart-ui-v6.css?preflight=1791593206",
+      "status": 200,
+      "content_type": "text/css",
+      "cache_control": "public, max-age=0, must-revalidate",
+      "etag": "\"c22e539c74d959bf91056d5ef63a6904\""
+    },
+    {
+      "path": "https://hbnightflyers.com/hbnf-cart-ui-v6.mjs?preflight=1791593206",
+      "status": 200,
+      "content_type": "text/javascript",
+      "cache_control": "no-cache, must-revalidate",
+      "etag": "\"368556b454fdbb08826701edfc65b476\""
+    },
+    {
+      "path": "https://hbnightflyers.com/hbnf-cart?preflight=1791593206",
+      "status": 200,
+      "content_type": "text/html",
+      "cache_control": "public, max-age=0, must-revalidate",
+      "etag": null
+    },
+    {
+      "path": "https://hbnightflyers.com/hbnf-cart.js?preflight=1791593206",
+      "status": 200,
+      "content_type": "text/javascript",
+      "cache_control": "no-cache, must-revalidate",
+      "etag": "\"b1398ca3af8e0a54bacff3a421070f2a\""
+    }
+  ],
+  "unchanged_site_baselines": [
+    {
+      "path": "/",
+      "status": 200,
+      "content_type": "text/html",
+      "cache_control": "no-store",
+      "sha256": "20aa268c715ad9bbd1e6e622ce346561a6229c9af034a88b0116e3c6e1e9503d",
+      "bytes": 101921
+    },
+    {
+      "path": "/favicon-32.png?v=20260930-1",
+      "status": 200,
+      "content_type": "image/png",
+      "cache_control": "public, max-age=0, must-revalidate",
+      "sha256": "7969c7f55f4602068690e8558bab8bed0b1b30b8dc38a0ed797297ab29ccff79",
+      "bytes": 2154
+    },
+    {
+      "path": "/hbnf-main-manifest.webmanifest?v=20260930-1",
+      "status": 200,
+      "content_type": "application/manifest+json",
+      "cache_control": "no-cache, must-revalidate",
+      "sha256": "5e3ec344821acfd6c954e7bee79e383a6c483a9110544461b6f5445e7b45e24a",
+      "bytes": 883
+    }
+  ],
+  "checks": {
+    "old_version_100_percent": true,
+    "candidate_version_not_uploaded_yet": true,
+    "package_hash_verified": true,
+    "offline_all_16_response_contracts_passed": true,
+    "wrangler_dry_run_passed": true
+  }
+}

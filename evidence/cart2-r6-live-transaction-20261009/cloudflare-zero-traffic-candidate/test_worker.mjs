@@ -1,0 +1,34 @@
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { pathToFileURL } from 'node:url';
+import { resolve } from 'node:path';
+import fs from 'node:fs';
+const base = new URL('.', import.meta.url);
+const rec = JSON.parse(fs.readFileSync(new URL('candidate-source-manifest.json', base), 'utf8'));
+const config = JSON.parse(fs.readFileSync(new URL('wrangler.jsonc', base), 'utf8'));
+const mod = await import(pathToFileURL(resolve(new URL('worker.mjs', base).pathname)).href);
+const worker = mod.default;
+assert.equal(rec.approved_url_path_count, 16);
+assert.deepEqual(config.unsafe.metadata.assets.config.run_worker_first, rec.url_paths.map(x => x.url_path));
+const assets = new Map(rec.url_paths.map(x => [x.url_path, x]));
+for (const [path, expected] of assets) {
+  const request = new Request('https://hbnightflyers.com' + path + '?candidate-test=1');
+  const response = await worker.fetch(request, { ASSETS: { fetch: () => { throw new Error('candidate path fell through'); } } });
+  assert.equal(response.status, 200, path);
+  assert.equal(response.headers.get('content-type'), expected.mime, path);
+  assert.equal(response.headers.get('cache-control'), expected.cache_control, path);
+  assert.equal(response.headers.get('x-hbnf-candidate'), 'cart2-owner-guest-r2-' + rec.approved_package_sha256.slice(0,12), path);
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  assert.equal(bytes.length, expected.size, path);
+  assert.equal(createHash('sha256').update(bytes).digest('hex'), expected.sha256, path);
+  const conditional = await worker.fetch(new Request('https://hbnightflyers.com' + path, { headers: { 'If-None-Match': expected.etag } }), { ASSETS: { fetch: () => { throw new Error('candidate path fell through'); } } });
+  assert.equal(conditional.status, 304, path);
+  const head = await worker.fetch(new Request('https://hbnightflyers.com' + path, { method: 'HEAD' }), { ASSETS: { fetch: () => { throw new Error('candidate path fell through'); } } });
+  assert.equal(head.status, 200, path);
+  assert.equal((await head.arrayBuffer()).byteLength, 0, path);
+}
+let fallbackCalled = false;
+const fallback = await worker.fetch(new Request('https://hbnightflyers.com/'), { ASSETS: { fetch: (r) => { fallbackCalled = true; assert.equal(new URL(r.url).pathname, '/'); return new Response('existing asset response', {status: 200}); } } });
+assert.equal(fallbackCalled, true);
+assert.equal(await fallback.text(), 'existing asset response');
+console.log(JSON.stringify({result:'PASS',paths:assets.size,byte_hashes:true,content_types:true,cache_control:true,etag_304:true,head:true,assets_fallback:true}));

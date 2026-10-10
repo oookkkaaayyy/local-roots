@@ -1,0 +1,196 @@
+{
+  "schema": "hbnf-cloudflare-private-candidate-source-v1",
+  "worker": "hbnf",
+  "account_id": "e3bc6b78f1104fa0c2a01245084594cf",
+  "approved_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
+  "approved_package_release": "HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009",
+  "candidate_tag": "cart2-owner-guest-r2-7afae02912bb",
+  "approved_url_path_count": 16,
+  "url_paths": [
+    {
+      "package_path": "guest/hbnf-cart/guest.css",
+      "sha256": "bccb2a3179beb2116d953d083929fd97cdb13aa356742abfb45ce9a9919ce2ad",
+      "size": 2157,
+      "mime": "text/css",
+      "cache_control": "public, max-age=0, must-revalidate",
+      "etag": "\"sha256-bccb2a3179beb2116d953d083929fd97cdb13aa356742abfb45ce9a9919ce2ad\"",
+      "url_path": "/guest/hbnf-cart/guest.css"
+    },
+    {
+      "package_path": "guest/hbnf-cart/guest.js",
+      "sha256": "57ed9d21bd063e93225de14a5306525c21f8a3cecd7b2a4c7b756d33684e0f77",
+      "size": 5467,
+      "mime": "text/javascript",
+      "cache_control": "no-cache, must-revalidate",
+      "etag": "\"sha256-57ed9d21bd063e93225de14a5306525c21f8a3cecd7b2a4c7b756d33684e0f77\"",
+      "url_path": "/guest/hbnf-cart/guest.js"
+    },
+    {
+      "package_path": "guest/hbnf-cart/index.html",
+      "sha256": "5b1ddd97512a6606b61aeca78929fd645a86a32b10f62ad7547941018442cedf",
+      "size": 2676,
+      "mime": "text/html",
+      "cache_control": "public, max-age=0, must-revalidate",
+      "etag": "\"sha256-5b1ddd97512a6606b61aeca78929fd645a86a32b10f62ad7547941018442cedf\"",
+      "url_path": "/guest/hbnf-cart/"
+    },
+    {
+      "package_path": "hbnf-cart-features.mjs",
+      "sha256": "698406cb78565a05bc842b90c01928724cfabd553ed4af28d73178b6d725677d",
+      "size": 21258,
+      "mime": "text/javascript",
+      "cache_control": "no-cache, must-revalidate",
+      "etag": "\"sha256-698406cb78565a05bc842b90c01928724cfabd553ed4af28d73178b6d725677d\"",
+      "url_path": "/hbnf-cart-features.mjs"
+    },
+    {
+      "package_path": "hbnf-cart-icon-180.png",
+      "sha256": "02a42add542f156fb8cd32ff020d827fb139d70cce6e6c3564cc821c95aec3ed",
+      "size": 1999,
+      "mime": "image/png",
+      "cache_control": "public, max-age=0, must-revalidate",
+      "etag": "\"sha256-02a42add542f156fb8cd32ff020d827fb139d70cce6e6c3564cc821c95aec3ed\"",
+      "url_path": "/hbnf-cart-icon-180.png"
+    },
+    {
+      "package_path": "hbnf-cart-icon-192.png",
+      "sha256": "200dd4c1bb58dd1f3b6fe353404d29cae306673a4bc854b21049c475011b42ab",
+      "size": 2171,
+      "mime": "image/png",
+      "cache_control": "public, max-age=0, must-revalidate",
+      "etag": "\"sha256-200dd4c1bb58dd1f3b6fe353404d29cae306673a4bc854b21049c475011b42ab\"",
+      "url_path": "/hbnf-cart-icon-192.png"
+    },
+    {
+      "package_path": "hbnf-cart-icon-512.png",
+      "sha256": "05ecdcb818aaf9d1f23af59ca73c27d7a00b328705e62d0e9adf3954db6e5838",
+      "size": 5994,
+      "mime": "image/png",
+      "cache_control": "public, max-age=0, must-revalidate",
+      "etag": "\"sha256-05ecdcb818aaf9d1f23af59ca73c27d7a00b328705e62d0e9adf3954db6e5838\"",
+      "url_path": "/hbnf-cart-icon-512.png"
+    },
+    {
+      "package_path": "hbnf-cart-manifest.webmanifest",
+      "sha256": "a58f59a6f921f5104c61dc2e633e0015a5c4f34ba23475f57738ad785bf8251d",
+      "size": 493,
+      "mime": "application/manifest+json",
+      "cache_control": "no-cache, must-revalidate",
+      "etag": "\"sha256-a58f59a6f921f5104c61dc2e633e0015a5c4f34ba23475f57738ad785bf8251d\"",
+      "url_path": "/hbnf-cart-manifest.webmanifest"
+    },
+    {
+      "package_path": "hbnf-cart-net.mjs",
+      "sha256": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+      "size": 1511,
+      "mime": "text/javascript",
+      "cache_control": "no-cache, must-revalidate",
+      "etag": "\"sha256-0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b\"",
+      "url_path": "/hbnf-cart-net.mjs"
+    },
+    {
+      "package_path": "hbnf-cart-semantic.mjs",
+      "sha256": "c7eada1028dddd0321ffa34e894bcb5e7d5ff4cf13a084f72623adcbb963d5a1",
+      "size": 2611,
+      "mime": "text/javascript",
+      "cache_control": "no-cache, must-revalidate",
+      "etag": "\"sha256-c7eada1028dddd0321ffa34e894bcb5e7d5ff4cf13a084f72623adcbb963d5a1\"",
+      "url_path": "/hbnf-cart-semantic.mjs"
+    },
+    {
+      "package_path": "hbnf-cart-skins-score.mjs",
+      "sha256": "cf63ca5425210f9dbbe9666f623dc7b6324a2153d5bbfaa7522493eb085ea97f",
+      "size": 7277,
+      "mime": "text/javascript",
+      "cache_control": "no-cache, must-revalidate",
+      "etag": "\"sha256-cf63ca5425210f9dbbe9666f623dc7b6324a2153d5bbfaa7522493eb085ea97f\"",
+      "url_path": "/hbnf-cart-skins-score.mjs"
+    },
+    {
+      "package_path": "hbnf-cart-sw.js",
+      "sha256": "8c745075dda10ad676f4d54615b03100c813318f275b30106c79cf4f25399516",
+      "size": 2494,
+      "mime": "text/javascript",
+      "cache_control": "no-cache, must-revalidate",
+      "etag": "\"sha256-8c745075dda10ad676f4d54615b03100c813318f275b30106c79cf4f25399516\"",
+      "url_path": "/hbnf-cart-sw.js"
+    },
+    {
+      "package_path": "hbnf-cart-ui-v6.css",
+      "sha256": "7ec82e48648e662517b281ae5162c278f705521c29907d95112a2cca6e50c707",
+      "size": 9822,
+      "mime": "text/css",
+      "cache_control": "public, max-age=0, must-revalidate",
+      "etag": "\"sha256-7ec82e48648e662517b281ae5162c278f705521c29907d95112a2cca6e50c707\"",
+      "url_path": "/hbnf-cart-ui-v6.css"
+    },
+    {
+      "package_path": "hbnf-cart-ui-v6.mjs",
+      "sha256": "0e0f16ea7c6e573cc5d5180309d899732598c9b630c7732dfbe10326e542a6e0",
+      "size": 1053,
+      "mime": "text/javascript",
+      "cache_control": "no-cache, must-revalidate",
+      "etag": "\"sha256-0e0f16ea7c6e573cc5d5180309d899732598c9b630c7732dfbe10326e542a6e0\"",
+      "url_path": "/hbnf-cart-ui-v6.mjs"
+    },
+    {
+      "package_path": "hbnf-cart.html",
+      "sha256": "c4464e2304010da98ad30342b17452fda241c6670f9cbc667750c8f968d10244",
+      "size": 16955,
+      "mime": "text/html",
+      "cache_control": "public, max-age=0, must-revalidate",
+      "etag": "\"sha256-c4464e2304010da98ad30342b17452fda241c6670f9cbc667750c8f968d10244\"",
+      "url_path": "/hbnf-cart"
+    },
+    {
+      "package_path": "hbnf-cart.js",
+      "sha256": "799854d994964fd6c05fe78cb35147c1b9a569000b6d5e4377cc9cbeb37d28f3",
+      "size": 25819,
+      "mime": "text/javascript",
+      "cache_control": "no-cache, must-revalidate",
+      "etag": "\"sha256-799854d994964fd6c05fe78cb35147c1b9a569000b6d5e4377cc9cbeb37d28f3\"",
+      "url_path": "/hbnf-cart.js"
+    }
+  ],
+  "assets_binding": "ASSETS (existing asset collection, via keep_assets)",
+  "keep_assets": true,
+  "run_worker_first": [
+    "/guest/hbnf-cart/guest.css",
+    "/guest/hbnf-cart/guest.js",
+    "/guest/hbnf-cart/",
+    "/hbnf-cart-features.mjs",
+    "/hbnf-cart-icon-180.png",
+    "/hbnf-cart-icon-192.png",
+    "/hbnf-cart-icon-512.png",
+    "/hbnf-cart-manifest.webmanifest",
+    "/hbnf-cart-net.mjs",
+    "/hbnf-cart-semantic.mjs",
+    "/hbnf-cart-skins-score.mjs",
+    "/hbnf-cart-sw.js",
+    "/hbnf-cart-ui-v6.css",
+    "/hbnf-cart-ui-v6.mjs",
+    "/hbnf-cart",
+    "/hbnf-cart.js"
+  ],
+  "observed_current_static_cache_behavior": "HTML routes, CSS, PNG: public, max-age=0, must-revalidate; JS/MJS/webmanifest: no-cache, must-revalidate",
+  "worker_module_sha256": "d9bec050c427fe50ef12f376d9f5e60a745764c44b0b53d74ea923b86b49bdcf",
+  "worker_module_bytes": 152774,
+  "config_sha256": "8fde3ed8c85d7e8db28f4f29ae787cdce1505b9a84e19b23737afc3b9830e927",
+  "existing_headers_config_preserved": "/\n  Cache-Control: no-store\n/*.html\n  Cache-Control: no-store\n/*.webmanifest\n  Cache-Control: no-cache, must-revalidate\n/*.js\n  Cache-Control: no-cache, must-revalidate\n/*.mjs\n  Cache-Control: no-cache, must-revalidate\n",
+  "candidate_traffic_intent": {
+    "candidate": 0,
+    "current": 100
+  },
+  "candidate_versions": [
+    {
+      "id": "70e9a435-f3c9-4298-99f3-e4d2ac6f005a",
+      "number": 315,
+      "status": "deployed at 0 percent; override probe selected old cached asset, so rejected"
+    },
+    {
+      "id": "2b4cb0d7-16f9-45ae-814e-9fb86018b282",
+      "number": 316,
+      "status": "uploaded only, not in deployment"
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "schema": "hbnf-cloudflare-private-candidate-verification-v1",
+  "timestamp_utc": "2026-10-10T01:46:32Z",
+  "authorization": "Owner approved one private candidate with keep_assets=true, exact Cart package bytes, 16 approved run_worker_first paths, current version 100 percent, candidate 0 percent; no public promotion.",
+  "worker": "hbnf",
+  "account_id": "e3bc6b78f1104fa0c2a01245084594cf",
+  "approved_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
+  "original_active_deployment": "157f592b-cee8-4f6b-a687-d079210c26c4",
+  "current_active_deployment": "5d7f7a4a-87cf-4cc2-84bf-e67d11f8fa06",
+  "traffic_split": {
+    "current_version": "4a675ee4-807d-4ab1-b7e6-e2f91e27e39c",
+    "current_percent": 100,
+    "candidate_version": "70e9a435-f3c9-4298-99f3-e4d2ac6f005a",
+    "candidate_percent": 0
+  },
+  "private_candidate_versions": [
+    {
+      "id": "70e9a435-f3c9-4298-99f3-e4d2ac6f005a",
+      "number": 315,
+      "deployed_percent": 0
+    },
+    {
+      "id": "2b4cb0d7-16f9-45ae-814e-9fb86018b282",
+      "number": 316,
+      "deployed": false
+    }
+  ],
+  "checks": {
+    "package_bytes_embedded_exactly": {
+      "result": "PASS",
+      "detail": "Offline test verified all 16 package asset SHA-256 values, sizes, methods, ETags, MIME types, and cache directives."
+    },
+    "candidate_runtime_selection": {
+      "result": "FAIL",
+      "detail": "Version-override request for /hbnf-cart returned old asset body (no X-HBNF-Candidate marker; response cf-cache-status HIT). Cloudflare version readback for both candidate versions reports raw_run_worker_first=false. The required worker-first route behavior was not demonstrated."
+    },
+    "unchanged_assets": {
+      "result": "PARTIAL_PASS",
+      "detail": "/favicon-32.png?v=20260930-1 and /hbnf-main-manifest.webmanifest?v=20260930-1 exactly match pre-upload status, content-type, cache-control, byte length, and SHA-256. Homepage status/content-type/cache-control match but raw hash varies due injected Cloudflare challenge script/nonce; no stable baseline body was preserved."
+    },
+    "traffic_isolation": {
+      "result": "PASS",
+      "detail": "Latest deployment keeps the previous version at 100% and candidate 315 at 0%; version 316 is uploaded but not deployed. No assets were uploaded and no public traffic was promoted."
+    },
+    "rollback": {
+      "result": "PASS_CURRENT_BASELINE",
+      "detail": "Exact prior version 4a675ee4-807d-4ab1-b7e6-e2f91e27e39c remains active at 100%; no rollback was needed."
+    }
+  },
+  "decision": "NO-GO for production readiness. Stop private candidate validation because Worker-first override selection failed. Preserve website with prior version at 100%, candidate at 0%; do not promote or proceed with release transaction.",
+  "next_blocker": "The Cloudflare version upload/asset routing metadata did not activate the 16 selective Worker-first rules (readback raw_run_worker_first=false). A corrected supported configuration path is required before any further candidate deployment/testing.",
+  "evidence": {
+    "manifest": "candidate-source-manifest.json",
+    "preupload_state": "pre-upload-state.json",
+    "worker_module_sha256": "d9bec050c427fe50ef12f376d9f5e60a745764c44b0b53d74ea923b86b49bdcf",
+    "wrangler_config_sha256": "8fde3ed8c85d7e8db28f4f29ae787cdce1505b9a84e19b23737afc3b9830e927",
+    "offline_test": "test_worker.mjs"
+  }
+}
