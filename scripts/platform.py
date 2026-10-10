@@ -810,7 +810,13 @@ def main() -> int:
         help="Run a command through the HBNF control and release guard",
     )
     ex.add_argument("--require-state", required=True)
-    ex.add_argument("--mutation", action="store_true")
+    ex.add_argument(
+        "--read-only",
+        dest="mutation",
+        action="store_false",
+        help="Explicitly allow a non-mutating child without LIVE_APPROVED admission",
+    )
+    ex.set_defaults(mutation=True)
     ex.add_argument("--capsule")
     ex.add_argument("--prelive-proof")
     ex.add_argument("--admission")
