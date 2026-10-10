@@ -925,7 +925,7 @@
     "autonomous_completion_authorization": {
       "allowed": [
         "Offline qualification-harness, Owner app, and backend/relay work requested in the current owner directive.",
-        "Qualification-only continuation for the exact already-installed R6 artifact after fresh read-only preflight and fail-closed LIVE_QUALIFICATION admission.",
+        "Consumed: qualification-only continuation for the exact installed R6 was executed; kernel-0 FPS/p95/p99 failed, exact R4 was restored and verified, and no further live mutation authority remains.",
         "Temporary application of frozen brightness 44 inside the qualified harness, with captured persisted/runtime state restored and readback-verified on every exit path."
       ],
       "forbidden": [
@@ -2930,10 +2930,10 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-10T22:13:06Z",
+  "last_updated_utc": "2026-10-10T22:16:00Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
-    "authorization": "Owner-authorized in-scope continuation; only the host observer-deadline failure was corrected.",
+    "authorization": "Exact R6 qualification-only transaction executed and closed after frozen kernel-0 failure; exact R4 recovery verified.",
     "authorized": false,
     "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
     "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
@@ -2942,7 +2942,7 @@
     "current_gate": "R6 early matched kernel-0 performance gate failed; renderer restored and exact R4 recovery verified; live mutation closed.",
     "hardware_writes_permitted_now": false,
     "live_admission_pending": false,
-    "transaction_consumed": false,
+    "transaction_consumed": true,
     "candidate_install_limit": 1,
     "candidate_attempts_used": 1,
     "recovery_install_limit": 1,
