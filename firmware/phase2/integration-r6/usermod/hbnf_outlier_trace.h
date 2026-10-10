@@ -9,6 +9,20 @@ static inline bool exceeds(uint32_t wholeFrameCycles, uint32_t thresholdCycles) 
   return wholeFrameCycles > thresholdCycles;
 }
 
+// ArduinoJson's pinned WLED build disables long-long serialization. Preserve
+// the full monotonic microsecond timestamp as two exact supported uint32s.
+static inline uint32_t timestampHigh(uint64_t value) {
+  return static_cast<uint32_t>(value >> 32);
+}
+
+static inline uint32_t timestampLow(uint64_t value) {
+  return static_cast<uint32_t>(value);
+}
+
+static inline uint64_t timestampFromParts(uint32_t high, uint32_t low) {
+  return (static_cast<uint64_t>(high) << 32) | static_cast<uint64_t>(low);
+}
+
 // One record is copied only after an individual frame exceeds the frozen
 // diagnostic capture threshold. CCOUNT fields are elapsed core cycles and may
 // include preemption; they are not per-task CPU-time measurements.

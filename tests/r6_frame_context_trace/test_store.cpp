@@ -27,6 +27,11 @@ int main() {
   assert(refs.count()==4 && refs.total()==6 && refs.overflow()==2);
   assert(refs.chronological(0).frameSequence==512);
   assert(refs.chronological(3).frameSequence==1280);
+  const uint64_t timestamps[]={0u,1u,0xffffffffu,0x100000000ull,
+      0x12345678abcdef01ull,UINT64_MAX};
+  for(uint64_t timestamp:timestamps) {
+    assert(timestampFromParts(timestampHigh(timestamp),timestampLow(timestamp))==timestamp);
+  }
   printf("PASS R7-derived fixed retention: record=%lu store16=%lu refs4=%lu arraysPlusWorking=%lu\n",
     (unsigned long)sizeof(Record),(unsigned long)sizeof(Store<16>),
     (unsigned long)sizeof(ReferenceStore<4>),

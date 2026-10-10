@@ -1,0 +1,51 @@
+{
+  "schema": "hbnf-r6-frame-context-diagnostic-build-prep-v1",
+  "diagnostic_release_id": "hbnf-cart2-r6-frame-context-diagnostic-20261010",
+  "parent_release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+  "parent_firmware_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
+  "repository_source_commit": "2219ade3db3e0c021b151fd1b3aec7d8360d4804",
+  "r6_pre_trace_usermod_sha256": "a4c7aa07d990ee7f6abb453b1e6cf53d35df98b004e29b403794cfbf8cbb1ab0",
+  "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+  "build_environment": "hbnf_matrix_wled16_packet20_diag",
+  "compile_delta": "-DHBNF_R6_FRAME_CONTEXT_TRACE; retains HBNF_PACKET20_DIAGNOSTICS and all inherited compiler/dependency settings",
+  "transforms": [
+    {
+      "path": "usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp",
+      "post_trace_pre_label_sha256": "aa9d8f546677a568482f22e0f4f636eaedf3189601a415e7c55209a95c678a22",
+      "build_copy_sha256": "7c3e181fd668befaea2a0b8cd3f25e41a588fe2d76e290ad22a3d19ad9f93468",
+      "label_only_edit": {
+        "from": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+        "to": "hbnf-cart2-r6-frame-context-diagnostic-20261010",
+        "count": 3
+      }
+    },
+    {
+      "path": "usermods/hbnf_foundation_v1/hbnf_outlier_trace.h",
+      "sha256": "d97672e7f41ad3fc21a5ed453f49197d149d9533426a17d0e152d8ceba466a66"
+    },
+    {
+      "path": "platformio_override.ini",
+      "sha256_after_macro": "64c6eeac6c473fd356ad138a1f2fd7be76ed26087c8a77e3582a0758c98f1e07"
+    }
+  ],
+  "runtime_source_hashes": {
+    "hbnf_animartrix_audio_bridge.h": "56a391336b72bc6f37d835bbe1a6eca1108f3819fd99f5af9816e671ada46351",
+    "hbnf_audio_expression.h": "f4825884dd53cba9bca698bd8b9b7d9d13a81e7ce381957d23790f13073dc4c3",
+    "hbnf_brightness_output.h": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a",
+    "hbnf_coordinated_contract.h": "e65399d2117f79d302bd8bd7474da955000e74689f6712a726a7e2759a477d25",
+    "hbnf_foundation_core.h": "d4646267f8fbc03cc4921368fc801e528e6a6cb92133a0c1fc74b48b211be0e4",
+    "hbnf_generative_v4.h": "13163419b6453d448a795a7580e784f54b23b7586c8317eff467863f648a6dfa",
+    "hbnf_home_screen_icon.h": "e272644675566a969f65e96b855b824109b8ae6fbcb168da8c6efdeb842097d6",
+    "hbnf_local_ui.h": "feed7e614cf43d7efe211b54bba5b37fb352e70646e887e3b0341c3f97b0068b",
+    "hbnf_native_text.h": "0633c5d31c1003f901ec6a71c8545319235200ad0deeb4866fe3753391841b69",
+    "hbnf_vibe16.h": "f076acf0e5710bf5a9acffe63b31a95f2252230b5470bd362301caa73a743b0a",
+    "hbnf_vibe_runtime.h": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc",
+    "library.json": "2dc685da45efe57fe1d199b5407a00a7bd42b2f473599f6f432df515b4b6c96a"
+  },
+  "production_or_device_mutation": false,
+  "compile_failure_classification": {
+    "first_attempt": "ArduinoJson rejects uint64_t timestamp serialization because ARDUINOJSON_USE_LONG_LONG is disabled in the pinned WLED build.",
+    "source_backed_correction": "Preserve the uint64 monotonic timestamp internally and serialize exact high/low uint32 halves; this reuses the proven compatible representation principle from the existing R7 diagnostic.",
+    "thresholds_or_compiler_changed": false
+  }
+}

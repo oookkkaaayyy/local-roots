@@ -1010,7 +1010,9 @@ static void hbnfTraceVariantJson(JsonObject out,const hbnf_r6_outlier_trace::Rec
   out["salt"]=v.salt;out["dwellSeconds"]=v.dwellSeconds;
 }
 static void hbnfTraceRecordJson(JsonObject out,const hbnf_r6_outlier_trace::Record& r) {
-  out["frameSequence"]=r.frameSequence;out["frame"]=r.frame;out["monotonicStartUs"]=r.monotonicUs;
+  out["frameSequence"]=r.frameSequence;out["frame"]=r.frame;
+  out["monotonicStartUsHi"]=hbnf_r6_outlier_trace::timestampHigh(r.monotonicUs);
+  out["monotonicStartUsLo"]=hbnf_r6_outlier_trace::timestampLow(r.monotonicUs);
   out["wallElapsedUs"]=r.wallElapsedUs;out["traceCaptureBodyCycles"]=r.traceCaptureBodyCycles;
   out["freeHeapAtFrameEnd"]=r.freeHeap;
   JsonObject timing=out.createNestedObject("timing");

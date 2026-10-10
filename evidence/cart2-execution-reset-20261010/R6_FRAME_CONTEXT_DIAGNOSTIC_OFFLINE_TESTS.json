@@ -1,0 +1,12 @@
+{
+  "schema": "hbnf-r6-frame-context-diagnostic-offline-tests-v1",
+  "artifact_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
+  "results": {
+    "python3 tests/r6_frame_context_trace/test_source_contract.py": "PASS",
+    "c++ -std=c++11 -O2 -Wall -Wextra -Werror tests/r6_frame_context_trace/test_store.cpp": "PASS; bounded retention, overflow, worst-frame and timestamp split round-trip boundaries",
+    "python3 tests/hbnf_guarded_run.py": "PASS",
+    "python3 tests/hbnf_control.py": "PASS 23/23",
+    "pinned_target_build": "PASS",
+    "device_tests": "NOT RUN"
+  }
+}

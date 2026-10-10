@@ -16,6 +16,9 @@ assert 'hbnfTraceFrame=&f' in source
 assert '(outlier||reference)' in source
 assert 'framePreparationCcountElapsedCycles' in source
 assert 'schedulerCcountElapsedCycles' not in source
+assert 'monotonicStartUsHi' in source and 'monotonicStartUsLo' in source
+assert 'out["monotonicStartUs"]=r.monotonicUs' not in source
+assert 'timestampHigh(r.monotonicUs)' in source and 'timestampLow(r.monotonicUs)' in source
 assert 'taskRuntimeStatsAvailable' in source and 'false' in source
 context_fn = source.split('static void hbnfTraceContext(', 1)[1].split('\n}', 1)[0]
 assert 'if(!hbnfTraceFrameActive)' not in context_fn
