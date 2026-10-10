@@ -1,0 +1,23 @@
+{
+  "authorization_id": "OWNER-20261010-R6-AUDIO-CACHE-FULL-QUALIFICATION",
+  "candidate_attempts_used": 0,
+  "candidate_install_limit": 1,
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+  "final_live_admission_pending": true,
+  "fresh_readonly_preflight_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/FRESH_PRELIVE_READONLY.json",
+  "fresh_readonly_preflight_sha256": "ffcb355c7956d2d246545714934693cb0a2529174a21adfcc02ce4d09bd26ea3",
+  "hardware_writes_permitted_now": false,
+  "live_mutation_authorized": true,
+  "matrix_installed_before_write": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "matrix_mac": "70:4b:ca:5b:34:5c",
+  "no_cost_or_external_messages": true,
+  "offline_compiled_admission_path": "evidence/cart2-r6-audio-cache-20261010/R6_OFFLINE_COMPILED_ADMISSION.json",
+  "offline_compiled_admission_sha256": "d26e05a241e89da2ad365215d12fb8d857a8815e19180eeba6d5288341ec142f",
+  "recorded_at_utc": "2026-10-10T09:42:04Z",
+  "recovery_attempts_used": 0,
+  "recovery_install_limit": 1,
+  "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "schema": "hbnf-cart2-exact-live-authorization-record-v1",
+  "source_message_ref": "Current owner instruction in this task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks."
+}

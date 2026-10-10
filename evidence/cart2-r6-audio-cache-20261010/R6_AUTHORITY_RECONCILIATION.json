@@ -1,0 +1,46 @@
+{
+  "candidate": {
+    "bytes": 1497984,
+    "drive_file_id": "1Ta0noTokPPxa8tBKsnfS83KIKbz2ZqS3",
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+  },
+  "captured_at_utc": "2026-10-10T09:42:04Z",
+  "current_state": {
+    "diagnostic_attempt3_status": "CATASTROPHIC_GATE_FAILED__EXACT_R4_RESTORED__AUX_DDP_HEALTHY__LIVE_CLOSED",
+    "hardware_writes_permitted_now": false,
+    "installed_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "lifecycle_state": "PHASE2_INTEGRATING",
+    "live_authorization_binding": {
+      "attempt_number": 1,
+      "authorization_id": "OWNER-20261010-R6-AUDIO-CACHE-FULL-QUALIFICATION",
+      "candidate_bin_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "candidate_install_limit": 1,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "matrix_mac": "70:4b:ca:5b:34:5c",
+      "recovery_install_limit": 1,
+      "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "scope": [
+        "one exact R6 audio-cache candidate install using the proven Opal-origin WLED /update path",
+        "fresh read-only Matrix/AUX/Opal, power, rollback and single-worker preflight",
+        "early matched kernel 0 then 13 at brightness 44; complete all unchanged 28 kernels and combined-feature checks",
+        "one uninterrupted 5400-second soak with existing frozen thresholds",
+        "one exact R4 recovery only if objective device identity/runtime/safety/frozen performance/AUX gate requires it",
+        "no cloud/backend/host deployment, router changes, AUX firmware, Guest Mode enablement, or UV energization"
+      ],
+      "source_message_ref": "Current owner instruction in this task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks.",
+      "transport": "SSH-verified temporary artifact on Opal, then one Opal-origin multipart POST to Matrix WLED /update"
+    },
+    "live_mutation_authorized": true
+  },
+  "gate": "OFFLINE_COMPILED passes; fresh read-only preflight passes; no live write until LIVE_APPROVED admission and guarded runner pass.",
+  "rollback": {
+    "bytes": 1489008,
+    "drive_file_id": "1MepE3RCuEVErOHKLQ2FLZAj-fMPVWCt_",
+    "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "schema": "hbnf-r6-cachefix-authorization-reconciliation-v1",
+  "source_message": "Current owner instruction in this task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks."
+}

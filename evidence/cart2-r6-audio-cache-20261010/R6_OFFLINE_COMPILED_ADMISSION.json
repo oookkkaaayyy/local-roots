@@ -1,0 +1,87 @@
+{
+  "checks": {
+    "all_historical_host_failures_replayed": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_AUDIO_CACHE_OFFLINE_TESTS.json",
+      "pass": true,
+      "sha256": "434c933262654003e7eaaf6d5a7226493dd301c86e12743f24c58fbc887a463f"
+    },
+    "committed_feature_scope_preserved": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_AUDIO_CACHE_OFFLINE_TESTS.json",
+      "pass": true,
+      "sha256": "434c933262654003e7eaaf6d5a7226493dd301c86e12743f24c58fbc887a463f"
+    },
+    "compiled_embedded_candidate_id_and_sha": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
+      "pass": true,
+      "sha256": "d4a4a7c120f1c9e01dea2f0546323df35107ea57d521f331a0f8ab949dd53d22"
+    },
+    "device_and_source_authority_reconciled": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/R6_AUTHORITY_RECONCILIATION.json",
+      "pass": true,
+      "sha256": "e51aee0ecdfb6fca949fa8150194e4c96ecb52355b2ae4c45880b5446e9d8e04"
+    },
+    "entire_release_transaction_dryrun": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_TRANSACTION_DRYRUN.json",
+      "pass": true,
+      "sha256": "114b1014cd0e35a13bb622d2eedab04ba0eeda94676625e4065693c40d07d454"
+    },
+    "exact_source_dependency_generated_input_closure": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
+      "pass": true,
+      "sha256": "d4a4a7c120f1c9e01dea2f0546323df35107ea57d521f331a0f8ab949dd53d22"
+    },
+    "flash_and_ram_headroom": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
+      "pass": true,
+      "sha256": "d4a4a7c120f1c9e01dea2f0546323df35107ea57d521f331a0f8ab949dd53d22"
+    },
+    "frozen_performance_soak_and_restore_procedure": {
+      "evidence_file": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_FROZEN_LIVE_QUALIFICATION_PROCEDURE.json",
+      "pass": true,
+      "sha256": "f566e9383b5be6a2d0aaf3e26cf8685e69158350637816c73fefd548740aa061"
+    },
+    "fully_local_pinned_build_toolchain": {
+      "evidence_file": "firmware/phase2/integration-r6-cachefix/SOURCE_BINDING.json",
+      "pass": true,
+      "sha256": "e41cc707e7c58a58eed6d8d5b425ac9bef20af796401fcf6d10cc413d8b09092"
+    },
+    "known_good_compiler_entry_smoke": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/TARGET_BUILD.log",
+      "pass": true,
+      "sha256": "181ef91e7ed27627c744d14975cff3de6416d4914c5224533bea9bde23834d60"
+    },
+    "rollback_artifact_hash_verified": {
+      "evidence_file": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "pass": true,
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    }
+  },
+  "classification": "EXACT_R6_AUDIO_CACHE_CANDIDATE__OFFLINE_EVIDENCE_BOUND__LIVE_CLOSED",
+  "drive_readback_receipt": {
+    "evidence_file": "evidence/cart2-r6-audio-cache-20261010/R6_DRIVE_ARTIFACT_READBACK.json",
+    "sha256": "3480239122dcf69e750ae193eff47401740ff26352542626648a740874d66846"
+  },
+  "identities": {
+    "candidate_bin_path": "/private/tmp/cart2-opal-local-20261009/evidence/cart2-r6-audio-cache-20261010/artifact/hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010.bin",
+    "candidate_bin_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+    "candidate_bin_size_bytes": 1497984,
+    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "expected_installed_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "expected_installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "rollback_bin_path": "/private/tmp/cart2-opal-local-20261009/evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "source_commit": "2094c8dae4942f4a66a4462e729986fa7e73ad13",
+    "transaction_source_commit": "f280c32377925db015ae7214b8532f103c2140b8"
+  },
+  "limits": {
+    "candidate_install_attempts_used": 0,
+    "candidate_install_limit": 1,
+    "live_mutation_authorized": false,
+    "recovery_attempts_used": 0,
+    "recovery_install_limit": 1
+  },
+  "outcome": "PASS",
+  "schema": "hbnf-cart2-release-admission-v1",
+  "stage": "OFFLINE_COMPILED"
+}
