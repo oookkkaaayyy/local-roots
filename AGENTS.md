@@ -10,7 +10,9 @@ For substantial HBNF implementation, build, deployment, diagnostic, recovery, or
 3. Create a self-validating execution capsule with `python3 scripts/platform.py capsule ...`.
 4. Validate it with `python3 scripts/platform.py check-capsule ...`.
 5. For worker execution, compile the directive with `python3 scripts/platform.py directive ...`.
-6. Do not perform a paid or mutating step unless the capsule validates and every mandatory prelive stage is closed.
+6. Start release, deployment, diagnostic, and acceptance child commands with `python3 scripts/platform.py execute --require-state <current-state> --capsule <capsule.json> --prelive-proof <proof.json> --admission <admission.json> -- <command>`. The command delegates to `hbnf_guarded_run.py` and is mutation-gated by default; use `--read-only` only for a verified non-mutating command. `tests/platform_execute.py` covers the supported launch path.
+
+7. Do not perform a paid or mutating step unless the capsule validates and every mandatory prelive stage is closed.
 
 The platform layer does not replace the HBNF lifecycle control model. It enforces the engineering path used to reach the next lifecycle receipt.
 
