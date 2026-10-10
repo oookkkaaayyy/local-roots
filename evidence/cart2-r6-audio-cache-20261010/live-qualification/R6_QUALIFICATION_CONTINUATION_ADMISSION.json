@@ -1,0 +1,148 @@
+{
+  "checks": {
+    "all_historical_host_failures_replayed": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_TRANSACTION_DRYRUN.json",
+      "pass": true,
+      "sha256": "7cbea8d1d66779618fd31960b9617eb0bb1e27671596c320feb7851e89535114"
+    },
+    "combined_feature_check_sequence": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/COMBINED_FEATURE_OFFLINE_TESTS.json",
+      "pass": true,
+      "sha256": "4987b837e437a09c1b501b43d428f35488e09dc89af8f98915165fde9515681c"
+    },
+    "committed_feature_scope_preserved": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_AUDIO_CACHE_OFFLINE_TESTS.json",
+      "pass": true,
+      "sha256": "434c933262654003e7eaaf6d5a7226493dd301c86e12743f24c58fbc887a463f"
+    },
+    "compiled_embedded_candidate_id_and_sha": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
+      "pass": true,
+      "sha256": "d4a4a7c120f1c9e01dea2f0546323df35107ea57d521f331a0f8ab949dd53d22"
+    },
+    "consumed_exact_candidate_install_receipt": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/live-qualification/TRANSACTION_RESULT.json",
+      "pass": true,
+      "sha256": "5317e8ee40980fc0e51966d1cfe0ffeb9c694580b06ae682f3fcd4c880ac93af"
+    },
+    "device_and_source_authority_reconciled": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/R6_LIVE_AUTHORIZATION_RECORD.json",
+      "pass": true,
+      "sha256": "1cc341483f6f3efabde5efbcb871dcdba4bd350eb4727e17c257611f198ffa56"
+    },
+    "entire_release_transaction_dryrun": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_TRANSACTION_DRYRUN.json",
+      "pass": true,
+      "sha256": "7cbea8d1d66779618fd31960b9617eb0bb1e27671596c320feb7851e89535114"
+    },
+    "exact_recovery_bytes_available": {
+      "evidence_file": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "pass": true,
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    },
+    "exact_source_dependency_generated_input_closure": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
+      "pass": true,
+      "sha256": "d4a4a7c120f1c9e01dea2f0546323df35107ea57d521f331a0f8ab949dd53d22"
+    },
+    "flash_and_ram_headroom": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
+      "pass": true,
+      "sha256": "d4a4a7c120f1c9e01dea2f0546323df35107ea57d521f331a0f8ab949dd53d22"
+    },
+    "fresh_installed_candidate_runtime_identity": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json",
+      "pass": true,
+      "sha256": "470992075259d5c4cc6e73e33ff4d51580f1f70d3ff9188743acc4b126ee2bbc"
+    },
+    "frozen_performance_soak_and_restore_procedure": {
+      "evidence_file": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_FROZEN_LIVE_QUALIFICATION_PROCEDURE.json",
+      "pass": true,
+      "sha256": "f566e9383b5be6a2d0aaf3e26cf8685e69158350637816c73fefd548740aa061"
+    },
+    "fully_local_pinned_build_toolchain": {
+      "evidence_file": "firmware/phase2/integration-r6-cachefix/SOURCE_BINDING.json",
+      "pass": true,
+      "sha256": "e41cc707e7c58a58eed6d8d5b425ac9bef20af796401fcf6d10cc413d8b09092"
+    },
+    "host_preflight_false_positive_reconciled": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/live-qualification/HOST_PREFLIGHT_BLOCKER_RECONCILIATION.json",
+      "pass": true,
+      "sha256": "58ec901abbc38ecbb181f643c9ea4454fe746c84ced37b51dd0423d3a8d2bfe5"
+    },
+    "known_good_compiler_entry_smoke": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/TARGET_BUILD.log",
+      "pass": true,
+      "sha256": "181ef91e7ed27627c744d14975cff3de6416d4914c5224533bea9bde23834d60"
+    },
+    "launcher_rejects_invalid_manifest_before_device_access": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_TRANSACTION_DRYRUN.json",
+      "pass": true,
+      "sha256": "7cbea8d1d66779618fd31960b9617eb0bb1e27671596c320feb7851e89535114"
+    },
+    "matched_tails_off_test_plan": {
+      "evidence_file": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_FROZEN_LIVE_QUALIFICATION_PROCEDURE.json",
+      "pass": true,
+      "sha256": "f566e9383b5be6a2d0aaf3e26cf8685e69158350637816c73fefd548740aa061"
+    },
+    "preflight_read_only_hardware_state_and_identity": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json",
+      "pass": true,
+      "sha256": "470992075259d5c4cc6e73e33ff4d51580f1f70d3ff9188743acc4b126ee2bbc"
+    },
+    "rollback_artifact_hash_verified": {
+      "evidence_file": "evidence/cart2-r6-audio-cache-20261010/R6_DRIVE_ARTIFACT_READBACK.json",
+      "pass": true,
+      "sha256": "3480239122dcf69e750ae193eff47401740ff26352542626648a740874d66846"
+    }
+  },
+  "classification": "CONTINUE_EXISTING_EXACT_R6_TRANSACTION__QUALIFICATION_ONLY__NO_INSTALL",
+  "created_at_utc": "2026-10-10T10:19:02Z",
+  "fresh_owner_authorization": {
+    "attempt_number": 1,
+    "authorization_id": "OWNER-20261010-R6-AUDIO-CACHE-FULL-QUALIFICATION",
+    "candidate_bin_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+    "candidate_install_limit": 1,
+    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "recovery_install_limit": 1,
+    "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "scope": [
+      "one exact R6 audio-cache candidate install using the proven Opal-origin WLED /update path",
+      "fresh read-only Matrix/AUX/Opal, power, rollback and single-worker preflight",
+      "early matched kernel 0 then 13 at brightness 44; complete all unchanged 28 kernels and combined-feature checks",
+      "one uninterrupted 5400-second soak with existing frozen thresholds",
+      "one exact R4 recovery only if objective device identity/runtime/safety/frozen performance/AUX gate requires it",
+      "no cloud/backend/host deployment, router changes, AUX firmware, Guest Mode enablement, or UV energization"
+    ],
+    "source_message_ref": "Current owner instruction in this task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks.",
+    "transport": "SSH-verified temporary artifact on Opal, then one Opal-origin multipart POST to Matrix WLED /update"
+  },
+  "identities": {
+    "candidate_bin_path": "/private/tmp/cart2-opal-local-20261009/evidence/cart2-r6-audio-cache-20261010/artifact/hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010.bin",
+    "candidate_bin_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+    "candidate_bin_size_bytes": 1497984,
+    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "expected_installed_bin_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+    "expected_installed_release": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "rollback_bin_path": "/private/tmp/cart2-opal-local-20261009/evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "source_commit": "2094c8dae4942f4a66a4462e729986fa7e73ad13",
+    "transaction_source_commit": "7711c848b1dab3af2822403a6ce845ae07fa4744"
+  },
+  "limits": {
+    "attempt_number": 1,
+    "candidate_attempts_used": 1,
+    "candidate_install_limit": 1,
+    "no_cost_or_external_messages": true,
+    "production_deployment": "OUT_OF_SCOPE",
+    "qualification_only": true,
+    "recovery_attempts_used": 0,
+    "recovery_install_limit": 1,
+    "router_aux_cloud_changes": "PROHIBITED"
+  },
+  "outcome": "PASS",
+  "schema": "hbnf-cart2-release-admission-v1",
+  "stage": "LIVE_QUALIFICATION"
+}

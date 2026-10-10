@@ -1,11 +1,271 @@
 {
-  "candidate_install_attempts": 0,
+  "candidate_install_attempts": 1,
   "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
   "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
-  "device_requests": 6,
-  "error": "RuntimeError: another-live-cart-worker-is-running",
+  "candidate_stage": {
+    "bytes": 1497984,
+    "firmware_requests": 0,
+    "mode": "0600",
+    "remote_path": "/tmp/hbnf-r6-audio-cache-candidate.bin",
+    "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+  },
+  "device_requests": 10,
+  "preflight": {
+    "aux": {
+      "ip": "192.168.77.11",
+      "led_count": 22,
+      "live": true,
+      "lor": 0,
+      "mac": "8c94df55c34c",
+      "mode": "DDP",
+      "source": "192.168.77.10",
+      "wled": "16.0.1"
+    },
+    "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+    "captured_at_unix": 1791626474.060676,
+    "host_on_ac": true,
+    "matrix": {
+      "brightness": 44,
+      "diagnostic_off": true,
+      "fps": 42,
+      "free_heap": 74368,
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "telemetry_off": true,
+      "uptime_seconds": 4511,
+      "wled": "16.0.1"
+    },
+    "no_house_voltage_sensor": true,
+    "opal": {
+      "read_only": true,
+      "stdout": "OPAL_PREFLIGHT_OKn 03:01:14 up  7:56,  load average: 1.52, 1.39, 1.37\nFilesystem           1K-blocks      Used Available Use% Mounted on\ntmpfs                    59392      6276     53116  11% /tmp\n/usr/bin/curl\n/usr/bin/sha256sum\n55 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\n"
+    },
+    "pass": true,
+    "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "route": "en0/192.168.77.0/24",
+    "schema": "hbnf-r6-audio-cache-fresh-prelive-v1",
+    "single_worker": {
+      "conflicting_pids": [],
+      "pass": true,
+      "worker_count": 1
+    }
+  },
   "recovery_attempts": 0,
   "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "runtime_resolution": {
+    "http_response_ambiguous": false,
+    "installed": false,
+    "runtime": {
+      "aux_info": {
+        "arch": "esp32",
+        "bootloaderSHA256": "b97d154765ea69ca895a33de59adb4b322509aa2a3e2c7c8409b31cbc1bcc2cd",
+        "brand": "WLED",
+        "clock": 240,
+        "cn": "Niji",
+        "core": "4.4.8.240628",
+        "cpalcount": 0,
+        "cpalmax": 129,
+        "deviceId": "e3d28e871aade5e29da7fa368a6759ea368fc3572d",
+        "flash": 4,
+        "freeheap": 103920,
+        "fs": {
+          "pmt": 0,
+          "t": 983,
+          "u": 20
+        },
+        "fxcount": 248,
+        "ip": "192.168.77.11",
+        "leds": {
+          "bootps": 0,
+          "cct": 0,
+          "count": 22,
+          "fps": 0,
+          "lc": 1,
+          "maxpwr": 900,
+          "maxseg": 32,
+          "pwr": 290,
+          "rgbw": false,
+          "seglc": [
+            1
+          ],
+          "wv": 0
+        },
+        "lip": "192.168.77.10",
+        "live": true,
+        "liveseg": -1,
+        "lm": "DDP",
+        "lwip": 0,
+        "mac": "8c94df55c34c",
+        "maps": [
+          {
+            "id": 0
+          }
+        ],
+        "name": "WLED",
+        "ndc": 1,
+        "opt": 79,
+        "palcount": 72,
+        "product": "FOSS",
+        "release": "ESP32",
+        "repo": "wled/WLED",
+        "simplifiedui": false,
+        "str": false,
+        "time": "1970-1-2, 04:55:05",
+        "u": {
+          "Animartrix": [
+            "Animartrix requires the Creative Commons Attribution License CC BY-NC 3.0"
+          ],
+          "AudioReactive": [
+            "<button class=\"btn btn-xs\" onclick=\"requestJson({AudioReactive:{enabled:true}});\"><i class=\"icons off\">&#xe08f;</i></button>"
+          ]
+        },
+        "udpport": 21324,
+        "um": [
+          32,
+          45
+        ],
+        "umpalcount": 0,
+        "uptime": 104105,
+        "ver": "16.0.1",
+        "vid": 2605010,
+        "wifi": {
+          "ap": false,
+          "bssid": "94:83:C4:98:78:94",
+          "channel": 4,
+          "rssi": -16,
+          "signal": 100
+        },
+        "ws": 0
+      },
+      "matrix_build": {
+        "basedOnFirmwareSha256": "b9bb60dca1a9be8f7241670a7540810c604465c9adf7084b6efc90d5b4622886",
+        "basedOnReleaseId": "hbnf-matrix-coordinated-v1-20261002-06",
+        "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "features": [
+          "canonical-palette-v1",
+          "canonical-overlay-v1",
+          "coordinated-ui-v1"
+        ],
+        "ip": "192.168.77.10",
+        "mac": "70:4b:ca:5b:34:5c",
+        "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "schema": "hbnf-build-v1",
+        "wled": "16.0.1"
+      },
+      "matrix_info": {
+        "arch": "esp32",
+        "bootloaderSHA256": "b97d154765ea69ca895a33de59adb4b322509aa2a3e2c7c8409b31cbc1bcc2cd",
+        "brand": "WLED",
+        "clock": 240,
+        "cn": "Niji",
+        "core": "4.4.8.240628",
+        "cpalcount": 0,
+        "cpalmax": 129,
+        "deviceId": "52d5bc29d6bd3a4be1702e3b7393daae7d6581734d",
+        "flash": 4,
+        "freeheap": 75332,
+        "fs": {
+          "pmt": 0,
+          "t": 983,
+          "u": 364
+        },
+        "fxcount": 220,
+        "ip": "192.168.77.10",
+        "leds": {
+          "bootps": 60,
+          "cct": 0,
+          "count": 534,
+          "fps": 0,
+          "lc": 0,
+          "matrix": {
+            "h": 16,
+            "w": 32
+          },
+          "maxpwr": 1800,
+          "maxseg": 32,
+          "pwr": 640,
+          "rgbw": false,
+          "seglc": [
+            0,
+            0
+          ],
+          "wv": 0
+        },
+        "lip": "",
+        "live": false,
+        "liveseg": -1,
+        "lm": "",
+        "lwip": 0,
+        "mac": "704bca5b345c",
+        "maps": [
+          {
+            "id": 0
+          }
+        ],
+        "name": "WLED-Gledopto",
+        "ndc": 1,
+        "opt": 79,
+        "palcount": 72,
+        "product": "FOSS",
+        "release": "ESP32",
+        "repo": "wled/WLED",
+        "simplifiedui": false,
+        "str": false,
+        "time": "1970-1-1, 01:15:41",
+        "u": {
+          "AGC Gain": [
+            1,
+            "x"
+          ],
+          "Audio Source": [
+            "PDM digital",
+            " - quiet"
+          ],
+          "AudioReactive": [
+            "<button class=\"btn btn-xs\" onclick=\"requestJson({AudioReactive:{enabled:false}});\"><i class=\"icons on\">&#xe08f;</i></button>"
+          ],
+          "GEQ Input Level": [
+            "<div class=\"slider\"><div class=\"sliderwrap il\"><input class=\"noslide\" onchange=\"requestJson({AudioReactive:{inputLevel:parseInt(this.value)}});\" oninput=\"updateTrail(this);\" max=255 min=0 type=\"range\" value=128 /><div class=\"sliderdisplay\"></div></div></div>"
+          ],
+          "Sound Processing": [
+            "running"
+          ],
+          "UDP Sound Sync": [
+            "send mode",
+            " <i>(unconnected)</i>"
+          ]
+        },
+        "udpport": 21324,
+        "um": [
+          32,
+          58
+        ],
+        "umpalcount": 0,
+        "uptime": 4541,
+        "ver": "16.0.1",
+        "vid": 2605010,
+        "wifi": {
+          "ap": false,
+          "bssid": "94:83:C4:98:78:94",
+          "channel": 4,
+          "rssi": -51,
+          "signal": 98
+        },
+        "ws": 0
+      }
+    }
+  },
   "schema": "hbnf-r6-audio-cache-qualification-transaction-v1",
-  "status": "BLOCKED_OR_FAILED"
+  "status": "OTA_NOT_INSTALLED_R4_REMAINS_NO_RETRY",
+  "upload": {
+    "attempts": 1,
+    "confirmed": true,
+    "curl_exit": 0,
+    "http_status": "200",
+    "response_bytes": 540,
+    "response_sha256": "8ac836bbaf204b1341e2f7f03a4c49be782aa43443375f55ea9a2774ce4885ba",
+    "retry": false,
+    "ssh_exit": 0
+  }
 }

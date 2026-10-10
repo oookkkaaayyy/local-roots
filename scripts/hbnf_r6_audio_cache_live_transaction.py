@@ -70,12 +70,12 @@ def exact_artifacts():
         raise RuntimeError("r4-recovery-byte-identity-failed")
 
 
-def check_admission(admission_path: pathlib.Path, capsule_path: pathlib.Path, proof_path: pathlib.Path):
+def check_admission(admission_path: pathlib.Path, capsule_path: pathlib.Path, proof_path: pathlib.Path, stage="LIVE_APPROVED"):
     # This is deliberately before any LAN/router/device request.
     control = run([sys.executable, str(ROOT/"scripts/hbnf_control.py"), "check-admission",
-                   "--admission", str(admission_path), "--stage", "LIVE_APPROVED"], timeout=20)
+                   "--admission", str(admission_path), "--stage", stage], timeout=20)
     if control.returncode:
-        raise RuntimeError("live-admission-rejected-before-device-request:"+control.stdout.decode(errors="replace")[-1200:])
+        raise RuntimeError(stage.lower()+"-admission-rejected-before-device-request:"+control.stdout.decode(errors="replace")[-1200:])
     for argv in ([sys.executable, str(ROOT/"scripts/platform.py"), "check-capsule", "--capsule", str(capsule_path)],
                  [sys.executable, str(ROOT/"scripts/platform.py"), "prelive-check", "--capsule", str(capsule_path), "--proof", str(proof_path)]):
         result = run(list(argv), timeout=20)
@@ -357,6 +357,36 @@ def device_failure_requires_recovery(summary):
     return any(marker in text for marker in markers)
 
 
+def coordinate_qualification(port):
+    """Resume the remaining frozen gates for an already-installed exact R6; never uploads."""
+    result={"schema":"hbnf-r6-audio-cache-qualification-continuation-v1",
+        "candidate_release_id":RELEASE,"candidate_sha256":CANDIDATE_SHA,"rollback_sha256":R4_SHA,
+        "operation_scope":"QUALIFICATION_ONLY","candidate_install_attempts":0,"recovery_attempts":0,"device_requests":0}
+    try:
+        port.admit("LIVE_QUALIFICATION")
+        port.verify_local_artifacts()
+        result["preflight"]=port.preflight_candidate()
+        result["device_requests"]=port.device_requests
+        q=port.qualify(); result["qualification"]=q
+        if q.get("passed") is True:
+            result["status"]="QUALIFIED_OBJECTIVE_GATES_PASS"
+        elif device_failure_requires_recovery(q):
+            result["recovery"]=port.recover_r4(); result["recovery_attempts"]=1
+            result["status"]="QUALIFICATION_FAILED_R4_RECOVERED"
+        else:
+            result["status"]="QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED"
+    except Exception as exc:
+        result["status"]="QUALIFICATION_BLOCKED_OR_FAILED"
+        result["error"]=f"{type(exc).__name__}: {exc}"
+    finally:
+        result["device_requests"]=getattr(port,"device_requests",result["device_requests"])
+        result["recovery_attempts"]=getattr(port,"recovery_attempts",result["recovery_attempts"])
+        result["candidate_install_attempts"]=0
+        save(port.outdir/"QUALIFICATION_CONTINUATION_RESULT.json",result)
+        port.close(result)
+    return result
+
+
 class LivePort:
     def __init__(self, admission_path, capsule_path, proof_path):
         self.admission_path = admission_path
@@ -369,8 +399,8 @@ class LivePort:
         self.state_path = ROOT/"config/HBNF_CONTROL_STATE.json"
         self.outdir = OUT
 
-    def admit(self):
-        self.admission = check_admission(self.admission_path, self.capsule_path, self.proof_path)
+    def admit(self, stage="LIVE_APPROVED"):
+        self.admission = check_admission(self.admission_path, self.capsule_path, self.proof_path, stage)
 
     def verify_local_artifacts(self):
         exact_artifacts()
@@ -380,6 +410,42 @@ class LivePort:
     def preflight(self):
         self.device_requests += 6
         return preflight()
+
+    def preflight_candidate(self):
+        exact_artifacts()
+        power=run(["pmset","-g","batt"],timeout=5).stdout.decode(errors="replace")
+        route=run(["route","-n","get","192.168.77.10"],timeout=5).stdout.decode(errors="replace")
+        if "AC Power" not in power or "interface: en0" not in route:
+            raise RuntimeError("qualification-only host AC/LAN preflight failed")
+        mi=get_json(MATRIX+"/json/info")[2]; ms=get_json(MATRIX+"/json/state")[2]; mb=get_json(MATRIX+"/hbnf/build.json")[2]
+        ai=get_json(AUX+"/json/info")[2]; ast=get_json(AUX+"/json/state")[2]
+        self.device_requests+=5
+        h=ms.get("HBNF",{}); p20=h.get("packet20Diagnostic",{}); telem=h.get("foundationTelemetry",{})
+        if not (mi.get("ip")=="192.168.77.10" and mi.get("mac","").replace(":","").lower()==MATRIX_MAC
+                and mi.get("ver")=="16.0.1" and mb.get("release_id")==RELEASE and mb.get("candidate")==RELEASE
+                and mb.get("mac","").replace(":","").lower()==MATRIX_MAC and h.get("candidate")==RELEASE
+                and ms.get("on") is True and h.get("matrixBrightness")==44 and p20.get("enabled") is False and telem.get("enabled") is False):
+            raise RuntimeError("qualification preflight did not verify exact healthy R6 runtime")
+        if not (ai.get("ip")=="192.168.77.11" and ai.get("mac","").replace(":","").lower()==AUX_MAC
+                and ai.get("ver")=="16.0.1" and ai.get("live") is True and ai.get("lm")=="DDP"
+                and ai.get("lip")=="192.168.77.10" and ai.get("leds",{}).get("count")==22
+                and ast.get("on") is True and ast.get("lor")==0):
+            raise RuntimeError("qualification preflight AUX DDP/output checks failed")
+        worker=single_worker_check()
+        opal=("set -e; printf OPAL_QUALIFICATION_PREFLIGHT_OK\\n; command -v sha256sum; test -r /etc/hbnf-updater/release-state; cat /etc/hbnf-updater/release-state")
+        p=run(SSH+["-o","ConnectTimeout=4",OPAL,opal],timeout=15); out=p.stdout.decode(errors="replace")
+        if p.returncode or "OPAL_QUALIFICATION_PREFLIGHT_OK" not in out or f"55 {R4} {R4_SHA}" not in out:
+            raise RuntimeError("qualification preflight cannot prove exact Opal R4 recovery")
+        proof={"schema":"hbnf-r6-qualification-prelive-v1","captured_unix":time.time(),"pass":True,
+            "operation_scope":"QUALIFICATION_ONLY","host_on_ac":True,"cart_lan_interface":"en0",
+            "matrix":{"ip":mi["ip"],"mac":mi["mac"],"wled":mi["ver"],"release_id":mb["release_id"],
+                "candidate_sha256":CANDIDATE_SHA,"uptime_seconds":mi.get("uptime"),"fps":mi.get("leds",{}).get("fps"),
+                "free_heap":mi.get("freeheap"),"brightness":h.get("matrixBrightness"),"diagnostic_off":True,"telemetry_off":True},
+            "aux":{"ip":ai["ip"],"mac":ai["mac"],"live":ai["live"],"mode":ai["lm"],"source":ai["lip"],"led_count":ai["leds"]["count"],"on":ast["on"],"lor":ast["lor"]},
+            "rollback":{"sha256":R4_SHA,"opal_ledger":out},"single_worker":worker,
+            "candidate_attempts_used":1,"candidate_install_permitted":False}
+        save(self.outdir/"QUALIFICATION_PRELIVE_READONLY.json",proof)
+        return proof
 
     def stage_candidate(self):
         return stage_once(BIN, "/tmp/hbnf-r6-audio-cache-candidate.bin")
@@ -430,6 +496,8 @@ class LivePort:
     def resolve_runtime(self, upload):
         deadline = time.monotonic()+150
         last = None
+        exact_r4_seen = False
+        last_r4_runtime = None
         while time.monotonic() < deadline:
             try:
                 self.device_requests += 3
@@ -438,12 +506,19 @@ class LivePort:
                     return {"installed": True, "runtime": runtime,
                             "http_response_ambiguous": not upload.get("confirmed", False)}
                 if exact_runtime(runtime, R4):
-                    return {"installed": False, "runtime": runtime,
-                            "http_response_ambiguous": not upload.get("confirmed", False)}
+                    # WLED's success page is emitted before its delayed reboot.
+                    # A stale pre-reboot R4 readback must not close a confirmed
+                    # upload as failed; observe the full bounded identity window.
+                    exact_r4_seen = True
+                    last_r4_runtime = runtime
                 last = "readback is neither exact candidate nor exact R4"
             except Exception as exc:
                 last = str(exc)
             time.sleep(3)
+        if exact_r4_seen and upload.get("confirmed", False):
+            return {"installed": False, "runtime": last_r4_runtime,
+                    "http_response_ambiguous": False,
+                    "resolution_window_seconds": 150}
         return {"installed": None, "error": str(last), "http_response_ambiguous": True}
 
     def qualify(self):
@@ -465,7 +540,9 @@ class LivePort:
         return restore_r4_once(self.outdir)
 
     def close(self, result):
-        save(self.outdir/"TRANSACTION_RESULT.json", result)
+        continuation=result.get("operation_scope")=="QUALIFICATION_ONLY"
+        target="QUALIFICATION_CONTINUATION_RESULT.json" if continuation else "TRANSACTION_RESULT.json"
+        save(self.outdir/target, result)
         state = json.loads(self.state_path.read_text())
         state["live_mutation_authorized"] = False
         auth = state.get("r6_audio_cache_successor", {}).get("conditional_authority", {})
@@ -478,12 +555,17 @@ class LivePort:
             "recovery_attempts_used": self.recovery_attempts,
             "current_gate": result["status"],
         })
+        if continuation:
+            current.update({"operation_scope":"CLOSED_AFTER_QUALIFICATION","candidate_install_permitted":False})
         auth["live_mutation_authorized"] = False
         auth["status"] = result["status"]
         auth["recovery_attempts_used"] = self.recovery_attempts
         state["r6_audio_cache_successor"]["conditional_authority"] = auth
         state["r6_audio_cache_successor"]["status"] = result["status"]
-        state["r6_audio_cache_successor"]["transaction_result"] = "evidence/cart2-r6-audio-cache-20261010/live-qualification/TRANSACTION_RESULT.json"
+        if continuation:
+            state["r6_audio_cache_successor"]["qualification_result"] = "evidence/cart2-r6-audio-cache-20261010/live-qualification/QUALIFICATION_CONTINUATION_RESULT.json"
+        else:
+            state["r6_audio_cache_successor"]["transaction_result"] = "evidence/cart2-r6-audio-cache-20261010/live-qualification/TRANSACTION_RESULT.json"
         if result.get("recovery", {}).get("status") in ("R4_READBACK_VERIFIED", "R4_ALREADY_INSTALLED_NO_UPLOAD"):
             state["installed_release"] = R4
             state["installed_firmware_sha256"] = R4_SHA
@@ -500,6 +582,11 @@ class LivePort:
             state["installed_release"] = None
             state["installed_firmware_sha256"] = None
         state["last_updated_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        task=state.setdefault("current_task",{})
+        task["installed_release"]=state.get("installed_release")
+        task["installed_firmware_sha256"]=state.get("installed_firmware_sha256")
+        task["status"]=result["status"]
+        task["live_mutation_authorized"]=False
         self.state_path.write_text(json.dumps(state, indent=2)+"\n")
 
 
@@ -507,6 +594,12 @@ def execute(admission_path, capsule_path, proof_path):
     OUT.mkdir(parents=True, exist_ok=True)
     port = LivePort(pathlib.Path(admission_path), pathlib.Path(capsule_path), pathlib.Path(proof_path))
     return coordinate(port)
+
+
+def execute_qualification(admission_path,capsule_path,proof_path):
+    OUT.mkdir(parents=True,exist_ok=True)
+    port=LivePort(pathlib.Path(admission_path),pathlib.Path(capsule_path),pathlib.Path(proof_path))
+    return coordinate_qualification(port)
 
 
 def close_authority(status, result):
@@ -536,6 +629,7 @@ def main():
     ap.add_argument("--capsule", required=True)
     ap.add_argument("--prelive-proof", required=True)
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--resume-qualification",action="store_true",help="Continue gates for the exact installed candidate; does not stage or upload firmware")
     args = ap.parse_args()
     if args.dry_run:
         exact_artifacts()
@@ -543,7 +637,10 @@ def main():
             "candidate": RELEASE, "candidate_sha256": sha(BIN), "rollback_sha256": sha(R4_BIN),
             "dry_run_does_not_authorize_mutation": True}, indent=2))
         return 0
-    result = execute(pathlib.Path(args.admission), pathlib.Path(args.capsule), pathlib.Path(args.prelive_proof))
+    if args.resume_qualification:
+        result=execute_qualification(pathlib.Path(args.admission),pathlib.Path(args.capsule),pathlib.Path(args.prelive_proof))
+    else:
+        result = execute(pathlib.Path(args.admission), pathlib.Path(args.capsule), pathlib.Path(args.prelive_proof))
     print(json.dumps(result, indent=2))
     return 0 if result.get("status") == "QUALIFIED_OBJECTIVE_GATES_PASS" else 2
 

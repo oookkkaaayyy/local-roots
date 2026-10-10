@@ -1914,7 +1914,7 @@
       "observed_by": "USER_DIRECT_PHYSICAL_OBSERVATION",
       "status": "FAILED_PHYSICAL_SYNC__SOFTWARE_OR_LINK_ROOT_CAUSE_UNRESOLVED"
     },
-    "installed_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "installed_firmware_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
     "installed_r6_failure": {
       "evidence": "evidence/cart2-r6-live-qualification-20261009/R6_PERFORMANCE_FAILURE_CLASSIFICATION.json",
       "evidence_sha256": "b2e14deeab3abbd907d4c063131a2edac937f0f97eb389e23dcb14658dbf5368",
@@ -1923,7 +1923,7 @@
       "sha256": "0a4b9563c7debfb5a01e9d36aeb8aac2583e105303064de3db0466b7dd9d89d6",
       "status": "CLOSED__EXACT_R4_RESTORED"
     },
-    "installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "installed_release": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
     "installed_release_role": "FOUNDATION_R4_FIELD_BASELINE__R2_DIAGNOSTIC_COMPLETE__R4_RETURN_VERIFIED",
     "last_recovery": {
       "artifact_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
@@ -1948,7 +1948,7 @@
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "live_mutation_authorization": "Current user authorizes the exact coordinated R6 transaction; authority is conditional and remains admission-gated. No device/backend/firmware write is permitted while current preflight is NOT_READY.",
-    "live_mutation_authorized": false,
+    "live_mutation_authorized": true,
     "name": "Cart 2.0 coordinated R6 release \u2014 Cart routes verified; device preflight pending",
     "next_action": "Restore a verified Mac-to-HBNF-Cart LAN connection when the AP is in range; then perform one fresh read-only Matrix/AUX/Opal and rollback/power preflight. Proceed to backend/firmware writes only if the existing LIVE_APPROVED admission passes.",
     "next_work": "Keep the two verified Cart-only Worker routes. Complete current backend command-confirmation audit and offline transaction rehearsal while device connectivity is unavailable. No R6 OTA or production backend change yet.",
@@ -2645,7 +2645,7 @@
       "status": "PASS"
     },
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "R6_FAILED__EXACT_R4_RECOVERED_AND_VERIFIED__OFFLINE_REPAIR_ACTIVE",
+    "status": "R6_INSTALLED__QUALIFICATION_PENDING",
     "t3_fast_path_preparation": {
       "human_approval_required": true,
       "human_packet": "work/cart2/27_T3_PHASE2_FAST_PATH_PREP_20261006.md",
@@ -2813,8 +2813,8 @@
     "evidence_sha256": "cc0a45fc4dfdfc3ff06dba6d21c752ccaa850edd4be5b0595531bc58c18e030b",
     "live_mutation_authorized": false
   },
-  "installed_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-  "installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "installed_firmware_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+  "installed_release": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
   "installed_release_role": "FOUNDATION_R4_FIELD_BASELINE__R2_DIAGNOSTIC_COMPLETE__R4_RETURN_VERIFIED",
   "lane_execution": {
     "activation_rule": "Activate offline-safe core lanes at the earlier of: (a) clean Foundation soak/readiness signal, or (b) 60 minutes without lifecycle progress, provided parallel work is noncontending and cannot invalidate the healthy live critical path. Never restart/interrupt healthy critical-path work merely to satisfy this timer. live_mutation_limit remains 1.",
@@ -2945,7 +2945,7 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-10T10:00:32Z",
+  "last_updated_utc": "2026-10-10T10:17:14Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "authorization": "Current owner directive authorizes evidence-based further exact in-scope installations and exact R4 recovery, conditioned on per-attempt fail-closed admission and safety checks.",
@@ -2954,12 +2954,12 @@
     "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
     "controller_package_sha256": null,
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "current_gate": "Fresh LIVE_APPROVED admission passes for exact R6 SHA and R4 recovery; guarded launch pending; no device write yet.",
-    "hardware_writes_permitted_now": false,
+    "current_gate": "Exact R6 installed; qualification-only continuation pending.",
+    "hardware_writes_permitted_now": true,
     "live_admission_pending": false,
-    "transaction_consumed": false,
+    "transaction_consumed": true,
     "candidate_install_limit": 1,
-    "candidate_attempts_used": 0,
+    "candidate_attempts_used": 1,
     "recovery_install_limit": 1,
     "recovery_attempts_used": 0,
     "previous_transaction": {
@@ -2967,7 +2967,9 @@
       "candidate_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
       "transaction_consumed": true,
       "result": "Attempt-3 diagnostic failed frozen kernel-0 catastrophic gate; exact renderer snapshot restored; exact R4 verified; AUX DDP healthy."
-    }
+    },
+    "candidate_install_permitted": false,
+    "operation_scope": "QUALIFICATION_ONLY"
   },
   "live_mutation_authorization_closed_at_utc": "2026-10-10T08:46:10Z",
   "live_mutation_authorization_closure": {
@@ -3526,14 +3528,14 @@
         "root_cause_classification": "MAC_ORIGIN_UPLOAD_TRANSPORT_FAILURE__NOT_FIRMWARE_FAILURE"
       },
       {
-        "authorization_id": "OWNER-20261010-R6-FRAME-CONTEXT-OPAL-ATTEMPT2",
         "attempt_number": 2,
+        "authorization_id": "OWNER-20261010-R6-FRAME-CONTEXT-OPAL-ATTEMPT2",
         "candidate_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
-        "transaction_result": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-02/TRANSACTION_RESULT.json",
+        "evidence": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_ATTEMPT2_HOST_FAILURE_AND_FIX.json",
+        "final_device_closure": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-02/FINAL_DEVICE_STATE_CLOSURE.json",
         "r4_return_attempts_used": 1,
         "result": "INCONCLUSIVE_HOST_HARNESS_DEFECT__EXACT_R4_VERIFIED",
-        "evidence": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_ATTEMPT2_HOST_FAILURE_AND_FIX.json",
-        "final_device_closure": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-02/FINAL_DEVICE_STATE_CLOSURE.json"
+        "transaction_result": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-02/TRANSACTION_RESULT.json"
       }
     ],
     "prior_failed_method": "Attempt 2 Opal upload returned HTTP 200, but exact candidate runtime was never proven; host identity expectation and flattened telemetry access were defective. Exact R4 and AUX were subsequently read-back verified.",
@@ -3622,20 +3624,25 @@
     },
     "conditional_authority": {
       "source_message_ref": "Current owner instruction in this task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks.",
-      "status": "LIVE_APPROVED_PASS__GUARDED_LAUNCH_PENDING__NO_DEVICE_WRITE_YET",
+      "status": "CANDIDATE_INSTALLED_QUALIFICATION_PENDING",
       "candidate_install_limit": 1,
       "recovery_install_limit": 1,
       "requires_live_approved_admission": true,
       "requires_fresh_preflight": true,
       "live_mutation_authorized": true,
       "authorization_id": "OWNER-20261010-R6-AUDIO-CACHE-FULL-QUALIFICATION",
-      "candidate_attempts_used": 0,
-      "recovery_attempts_used": 0
+      "candidate_attempts_used": 1,
+      "recovery_attempts_used": 0,
+      "candidate_attempt_started_unix": 1791626479.399928,
+      "runtime_reconciliation_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json",
+      "runtime_reconciliation_sha256": "470992075259d5c4cc6e73e33ff4d51580f1f70d3ff9188743acc4b126ee2bbc"
     },
-    "status": "EXACT_R6_AUDIO_CACHE_AUTHORIZED__LIVE_APPROVED_PASS__GUARDED_LAUNCH_PENDING",
+    "status": "CANDIDATE_INSTALLED_QUALIFICATION_PENDING",
     "artifact_drive_file_id": "1Ta0noTokPPxa8tBKsnfS83KIKbz2ZqS3",
     "artifact_drive_size_bytes": 1497984,
     "transaction_result": "evidence/cart2-r6-audio-cache-20261010/live-qualification/TRANSACTION_RESULT.json",
-    "host_preflight_blocker_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/HOST_PREFLIGHT_BLOCKER_RECONCILIATION.json"
+    "host_preflight_blocker_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/HOST_PREFLIGHT_BLOCKER_RECONCILIATION.json",
+    "runtime_reconciliation_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json",
+    "runtime_reconciliation_sha256": "470992075259d5c4cc6e73e33ff4d51580f1f70d3ff9188743acc4b126ee2bbc"
   }
 }

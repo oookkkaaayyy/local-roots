@@ -266,11 +266,26 @@ def validate_hbnf_coherence(
             "rollback_sha256"
         )
     )
+    # The exact R6 successor can be reconciled as the installed candidate
+    # without changing the historical R7 adapter template. Accept that current
+    # identity only when its receipt-backed runtime proof still hashes exactly.
+    successor=state.get("r6_audio_cache_successor",{})
+    runtime_receipt=successor.get("runtime_reconciliation_receipt") if isinstance(successor,dict) else None
+    runtime_receipt_sha=successor.get("runtime_reconciliation_sha256") if isinstance(successor,dict) else None
+    reconciled_candidate_is_current=False
+    if runtime_receipt and runtime_receipt_sha:
+        receipt_path=ROOT/runtime_receipt
+        reconciled_candidate_is_current=(
+            successor.get("status") in ("CANDIDATE_INSTALLED_QUALIFICATION_PENDING","QUALIFIED_OBJECTIVE_GATES_PASS","QUALIFICATION_FAILED_R4_RECOVERED")
+            and state.get("installed_release")==successor.get("candidate_release_id")==state.get("live_mutation_authorization",{}).get("candidate_release_id")
+            and state.get("installed_firmware_sha256")==successor.get("candidate_sha256")==state.get("live_mutation_authorization",{}).get("candidate_sha256")
+            and receipt_path.is_file() and sha256_file(receipt_path)==runtime_receipt_sha
+        )
 
     if adapter_cfg.exists():
         cfg = load_json(adapter_cfg)
         expected = str(cfg.get("expected_release_id") or "")
-        if installed and expected and installed != expected and not recovery_is_current:
+        if installed and expected and installed != expected and not recovery_is_current and not reconciled_candidate_is_current:
             status = str(state.get("current_task", {}).get("status") or "")
             message = (
                 "HBNF live-tool identity mismatch: control state says "

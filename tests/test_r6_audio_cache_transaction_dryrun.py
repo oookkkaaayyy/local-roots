@@ -28,10 +28,13 @@ class FakePort:
         self.install_attempts = 0
         self.recovery_attempts = 0
         self.closed = False
+        self.admission_stage = None
+        self.outdir = None
 
-    def admit(self):
+    def admit(self, stage="LIVE_APPROVED"):
         if not self.admission:
             raise RuntimeError("invalid-live-admission")
+        self.admission_stage = stage
 
     def verify_local_artifacts(self):
         pass
@@ -39,6 +42,10 @@ class FakePort:
     def preflight(self):
         self.device_requests += 6
         return {"pass": True}
+
+    def preflight_candidate(self):
+        self.device_requests += 5
+        return {"pass": True,"release_id":module.RELEASE}
 
     def stage_candidate(self):
         self.device_requests += 1  # Temporary Opal staging, not a Matrix request.
@@ -97,6 +104,15 @@ def main():
     rejected = FakePort(admission=False)
     cases.append(run_case("invalid admission zero requests", rejected, "BLOCKED_OR_FAILED", 0, 0))
     assert rejected.device_requests == 0
+
+    # Continuation is a separate qualification-only path and never installs.
+    with tempfile.TemporaryDirectory(prefix="r6-qual-resume-") as tmp:
+        resume=FakePort(); resume.outdir=pathlib.Path(tmp)
+        result=module.coordinate_qualification(resume)
+        assert result["status"]=="QUALIFIED_OBJECTIVE_GATES_PASS"
+        assert result["candidate_install_attempts"]==0 and resume.install_attempts==0
+        assert resume.admission_stage=="LIVE_QUALIFICATION" and resume.device_requests==5
+        cases.append({"case":"qualification-only continuation has zero firmware installs","pass":True,"device_requests":resume.device_requests})
 
     stage_fail = FakePort(stage=False)
     cases.append(run_case("stage failure no Matrix post", stage_fail, "BLOCKED_OR_FAILED", 0, 0, 7))

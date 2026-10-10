@@ -19,7 +19,8 @@ def main():
     ap.add_argument("--mutation",action="store_true",help="Require live_mutation_authorized=true")
     ap.add_argument("--capsule",help="Validated execution capsule required for mutation")
     ap.add_argument("--prelive-proof",help="Evidence-backed prelive proof required for mutation")
-    ap.add_argument("--admission",help="Exact LIVE_APPROVED release admission required for mutation")
+    ap.add_argument("--admission",help="Exact release admission required for mutation")
+    ap.add_argument("--admission-stage",choices=["LIVE_APPROVED","LIVE_QUALIFICATION"],default="LIVE_APPROVED")
     ap.add_argument("command",nargs=argparse.REMAINDER)
     args=ap.parse_args()
 
@@ -39,11 +40,16 @@ def main():
     if args.mutation:
         if not args.admission:
             raise SystemExit("BLOCKED: mutation requires --admission")
+        if args.admission_stage=="LIVE_QUALIFICATION":
+            command_is_python=bool(command and (pathlib.Path(command[0]).name in ("python","python3") or pathlib.Path(command[0]).resolve()==pathlib.Path(sys.executable).resolve()))
+            target=command[1] if command_is_python and len(command)>1 else (command[0] if command else "")
+            if not command or pathlib.Path(target).resolve()!=(ROOT/"scripts/hbnf_r6_audio_cache_live_transaction.py").resolve() or "--resume-qualification" not in command:
+                raise SystemExit("BLOCKED: LIVE_QUALIFICATION may launch only the exact R6 qualification continuation")
         control=ROOT/"scripts/hbnf_control.py"
         if not control.is_file():
             raise SystemExit("BLOCKED: release admission validator is missing")
         admission_check=subprocess.run(
-            [sys.executable,str(control),"check-admission","--admission",args.admission,"--stage","LIVE_APPROVED"],
+            [sys.executable,str(control),"check-admission","--admission",args.admission,"--stage",args.admission_stage],
             cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT
         )
         if admission_check.returncode!=0:

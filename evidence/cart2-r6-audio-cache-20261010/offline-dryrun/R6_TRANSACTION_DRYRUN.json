@@ -15,6 +15,11 @@
       "status": "BLOCKED_OR_FAILED"
     },
     {
+      "case": "qualification-only continuation has zero firmware installs",
+      "device_requests": 5,
+      "pass": true
+    },
+    {
       "candidate_install_attempts": 0,
       "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
       "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",

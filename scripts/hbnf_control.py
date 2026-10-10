@@ -81,7 +81,7 @@ def release_admission_errors(model,state,manifest,stage):
     errors=[]
     if not isinstance(manifest,dict) or manifest.get("schema")!="hbnf-cart2-release-admission-v1":
         return ["wrong admission schema"]
-    if stage not in ("OFFLINE_COMPILED","LIVE_APPROVED") or manifest.get("stage")!=stage:
+    if stage not in ("OFFLINE_COMPILED","LIVE_APPROVED","LIVE_QUALIFICATION") or manifest.get("stage")!=stage:
         errors.append("wrong admission stage")
     if manifest.get("outcome")!="PASS": errors.append("manifest outcome is not PASS")
     identities=manifest.get("identities",{})
@@ -107,10 +107,14 @@ def release_admission_errors(model,state,manifest,stage):
         "frozen_performance_soak_and_restore_procedure",
         "rollback_artifact_hash_verified"
     )
-    if stage=="LIVE_APPROVED":
+    if stage in ("LIVE_APPROVED","LIVE_QUALIFICATION"):
         required+=("launcher_rejects_invalid_manifest_before_device_access",
                    "matched_tails_off_test_plan",
                    "preflight_read_only_hardware_state_and_identity")
+    if stage=="LIVE_QUALIFICATION":
+        required+=("consumed_exact_candidate_install_receipt",
+                   "fresh_installed_candidate_runtime_identity",
+                   "exact_recovery_bytes_available")
     evidence_hash_uses={}
     for key in required:
         item=checks.get(key)
@@ -149,7 +153,7 @@ def release_admission_errors(model,state,manifest,stage):
                 errors.append(prefix+" binary SHA mismatch")
         except OSError:
             errors.append(prefix+" binary unreadable")
-    if stage=="LIVE_APPROVED":
+    if stage in ("LIVE_APPROVED","LIVE_QUALIFICATION"):
         if state.get("live_mutation_authorized") is not True:
             errors.append("primary control state has NO live mutation authorization")
         # A free-form string can accidentally carry approval from a different
@@ -193,6 +197,25 @@ def release_admission_errors(model,state,manifest,stage):
             errors.append("installed release differs from primary state")
         if identities.get("expected_installed_bin_sha256")!=state.get("installed_firmware_sha256"):
             errors.append("installed BIN differs from primary state")
+        if stage=="LIVE_QUALIFICATION":
+            current=state.get("live_mutation_authorization",{})
+            successor=state.get("r6_audio_cache_successor",{})
+            auth=successor.get("conditional_authority",{}) if isinstance(successor,dict) else {}
+            if current.get("operation_scope")!="QUALIFICATION_ONLY" or current.get("candidate_install_permitted") is not False:
+                errors.append("qualification admission is not scoped to qualification-only")
+            if identities.get("expected_installed_release")!=identities.get("candidate_release_id") or identities.get("expected_installed_bin_sha256")!=identities.get("candidate_bin_sha256"):
+                errors.append("qualification admission must target the exact installed candidate")
+            if auth.get("candidate_attempts_used")!=1 or auth.get("candidate_install_limit")!=1:
+                errors.append("qualification requires the single exact candidate install to be consumed")
+            if auth.get("recovery_attempts_used",0)>=auth.get("recovery_install_limit",0):
+                errors.append("no exact recovery attempt remains for qualification")
+            if auth.get("status")!="CANDIDATE_INSTALLED_QUALIFICATION_PENDING":
+                errors.append("candidate is not recorded as qualification-pending")
+            scope=binding.get("scope",[]) if isinstance(binding,dict) else []
+            if not any("28" in str(x) and "kernel" in str(x).lower() for x in scope):
+                errors.append("owner authorization does not include the frozen 28-kernel qualification")
+            if not any("5400" in str(x) or "90-minute" in str(x) for x in scope):
+                errors.append("owner authorization does not include the uninterrupted 90-minute soak")
     return errors
 
 def parallelism_status(model,state):
@@ -673,6 +696,67 @@ def advance(model,state,receipt_path):
         cursor["current_transition"]=nt["id"] if nt else None
     return state
 
+def reconcile_installed_r6(state, receipt_path):
+    """Correct the post-OTA reboot-window misclassification, qualification only."""
+    root=ROOT; receipt=load(receipt_path)
+    candidate="hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+    candidate_sha="f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+    rollback_sha="338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    matrix_mac="704bca5b345c"; errors=[]
+    if receipt.get("schema")!="hbnf-r6-installed-runtime-reconciliation-v1": errors.append("wrong receipt schema")
+    binding=state.get("live_authorization_binding",{})
+    if (binding.get("candidate_release_id")!=candidate or binding.get("candidate_bin_sha256")!=candidate_sha
+        or binding.get("rollback_bin_sha256")!=rollback_sha or str(binding.get("matrix_mac","")).replace(":","").lower()!=matrix_mac):
+        errors.append("existing authorization is not bound to this exact R6/R4/Matrix")
+    auth=state.get("r6_audio_cache_successor",{}).get("conditional_authority",{})
+    stale_readback=(auth.get("status")=="OTA_NOT_INSTALLED_R4_REMAINS_NO_RETRY"
+        and state.get("installed_release")=="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1")
+    already_reconciled=(auth.get("status")=="CANDIDATE_INSTALLED_QUALIFICATION_PENDING"
+        and state.get("installed_release")==candidate and state.get("installed_firmware_sha256")==candidate_sha)
+    if not (stale_readback or already_reconciled): errors.append("reconciliation only accepts stale R4 readback or pending exact-R6 state")
+    if auth.get("candidate_attempts_used")!=1 or auth.get("candidate_install_limit")!=1: errors.append("single exact install is not consumed")
+    if auth.get("recovery_attempts_used",0)!=0 or auth.get("recovery_install_limit")!=1: errors.append("exact R4 recovery is unavailable or consumed")
+    c=receipt.get("candidate",{}); a=receipt.get("aux",{}); host=receipt.get("host",{}); rb=receipt.get("rollback",{}); ota=receipt.get("ota_receipt",{})
+    if c.get("release_id")!=candidate or c.get("runtime_candidate_label")!=candidate or c.get("matrix_mac","").replace(":","").lower()!=matrix_mac: errors.append("runtime candidate or Matrix identity mismatch")
+    if c.get("sha256")!=candidate_sha or c.get("diagnostic_enabled") is not False or c.get("telemetry_enabled") is not False or c.get("on") is not True or c.get("brightness")!=44: errors.append("candidate/runtime safety evidence mismatch")
+    if rb.get("sha256")!=rollback_sha or not (root/"evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin").is_file(): errors.append("exact R4 recovery bytes unavailable")
+    if not host.get("on_ac") or host.get("cart_lan_interface")!="en0": errors.append("host AC/LAN preflight missing")
+    if not (a.get("live") is True and a.get("mode")=="DDP" and a.get("source")=="192.168.77.10" and a.get("led_count")==22 and a.get("on") is True and a.get("lor")==0): errors.append("AUX DDP/output preflight failed")
+    result_path=root/"evidence/cart2-r6-audio-cache-20261010/live-qualification/TRANSACTION_RESULT.json"
+    ota_path=root/"evidence/cart2-r6-audio-cache-20261010/live-qualification/candidate-ota-response.txt"
+    if not result_path.is_file() or sha256_file(result_path)!=receipt.get("prior_transaction_result_sha256"): errors.append("prior transaction result identity mismatch")
+    else:
+        prior=load(result_path)
+        if prior.get("candidate_install_attempts")!=1 or prior.get("candidate_sha256")!=candidate_sha or prior.get("upload",{}).get("confirmed") is not True or prior.get("upload",{}).get("http_status")!="200": errors.append("prior exact OTA success evidence missing")
+        if prior.get("status")!="OTA_NOT_INSTALLED_R4_REMAINS_NO_RETRY": errors.append("prior transaction is not the observed reboot-window false negative")
+        if prior.get("preflight",{}).get("single_worker",{}).get("pass") is not True: errors.append("single-worker preflight missing")
+        if rollback_sha not in prior.get("preflight",{}).get("opal",{}).get("stdout",""): errors.append("Opal R4 recovery ledger was not verified")
+    if not ota_path.is_file() or sha256_file(ota_path)!=ota.get("sha256") or ota.get("confirmed") is not True or ota.get("http_status")!="200": errors.append("exact OTA response receipt mismatch")
+    candidate_path=root/"evidence/cart2-r6-audio-cache-20261010/artifact/hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010.bin"
+    rollback_path=root/"evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin"
+    if not candidate_path.is_file() or sha256_file(candidate_path)!=candidate_sha: errors.append("exact candidate bytes unavailable")
+    if not rollback_path.is_file() or sha256_file(rollback_path)!=rollback_sha: errors.append("exact rollback bytes unavailable")
+    if errors: raise ValueError("installed R6 reconciliation rejected: "+"; ".join(errors))
+    state["installed_release"]=candidate; state["installed_firmware_sha256"]=candidate_sha
+    state["live_mutation_authorized"]=True
+    state.setdefault("live_mutation_authorization",{}).update({
+        "authorized":True,"hardware_writes_permitted_now":True,"operation_scope":"QUALIFICATION_ONLY",
+        "candidate_install_permitted":False,"candidate_attempts_used":1,"recovery_attempts_used":0,
+        "current_gate":"Exact R6 installed; qualification-only continuation pending."})
+    auth.update({"live_mutation_authorized":True,"status":"CANDIDATE_INSTALLED_QUALIFICATION_PENDING",
+                 "runtime_reconciliation_receipt":str(pathlib.Path(receipt_path).resolve().relative_to(root)),
+                 "runtime_reconciliation_sha256":sha256_file(pathlib.Path(receipt_path))})
+    state["r6_audio_cache_successor"]["conditional_authority"]=auth
+    state["r6_audio_cache_successor"].update({"status":"CANDIDATE_INSTALLED_QUALIFICATION_PENDING",
+        "runtime_reconciliation_receipt":str(pathlib.Path(receipt_path).resolve().relative_to(root)),
+        "runtime_reconciliation_sha256":sha256_file(pathlib.Path(receipt_path))})
+    task=state.setdefault("current_task",{})
+    task["installed_release"]=candidate; task["installed_firmware_sha256"]=candidate_sha
+    task["status"]="R6_INSTALLED__QUALIFICATION_PENDING"; task["live_mutation_authorized"]=True
+    from datetime import datetime, timezone
+    state["last_updated_utc"]=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return state
+
 def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--model",default=str(DEFAULT_MODEL))
@@ -681,13 +765,15 @@ def main():
     sub.add_parser("status")
     cc=sub.add_parser("check-change"); cc.add_argument("--change",required=True)
     ra=sub.add_parser("check-admission"); ra.add_argument("--admission",required=True)
-    ra.add_argument("--stage",default="OFFLINE_COMPILED",choices=["OFFLINE_COMPILED","LIVE_APPROVED"])
+    ra.add_argument("--stage",default="OFFLINE_COMPILED",choices=["OFFLINE_COMPILED","LIVE_APPROVED","LIVE_QUALIFICATION"])
     a=sub.add_parser("advance"); a.add_argument("--receipt",required=True)
     i=sub.add_parser("impact"); i.add_argument("--change-type",required=True)
     fp=sub.add_parser("failure"); fp.add_argument("--domain",required=True)
     rf=sub.add_parser("record-failure")
     rf.add_argument("--domain",required=True)
     rf.add_argument("--reference",required=True)
+    ri=sub.add_parser("reconcile-installed-r6")
+    ri.add_argument("--receipt",required=True)
     rf.add_argument("--live-attempt",action="store_true")
     args=ap.parse_args()
     model=load(args.model); state=load(args.state)
@@ -721,6 +807,13 @@ def main():
         if errs: raise SystemExit("refusing to save invalid state: "+"; ".join(errs))
         save(args.state,state)
         print(json.dumps({"recorded":True,"policy":policy,"process_metrics":state["process_metrics"]},indent=2,sort_keys=True))
+        return 0
+    if args.cmd=="reconcile-installed-r6":
+        reconcile_installed_r6(state,args.receipt)
+        errs=validate_state(model,state)
+        if errs: raise SystemExit("refusing to save invalid state: "+"; ".join(errs))
+        save(args.state,state)
+        print(json.dumps({"reconciled":True,"installed_release":state["installed_release"],"operation_scope":"QUALIFICATION_ONLY","candidate_attempts_used":state["r6_audio_cache_successor"]["conditional_authority"]["candidate_attempts_used"]},indent=2,sort_keys=True))
         return 0
     if args.cmd=="advance":
         advance(model,state,args.receipt)
