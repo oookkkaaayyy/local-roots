@@ -686,6 +686,7 @@ def make_directive(args: argparse.Namespace) -> int:
         "",
         "MANDATORY OPERATING RULES:",
         "- Validate the capsule before any mutating or paid step.",
+        "- Launch every release/deployment/diagnostic/acceptance child command through `python3 scripts/platform.py execute`; mutation is the default and requires exact state, capsule, prelive proof, and LIVE_APPROVED admission.",
         "- Close every deterministic prerequisite offline before mutation.",
         "- Do not discover build, publication, consumer-contract, timeout, credential, or rollback prerequisites during live execution.",
         "- Live execution may discover only irreducible runtime/physical behavior.",
