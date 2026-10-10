@@ -765,7 +765,7 @@
       "path": "evidence/cart2-owner-guest-vibe-r2-20261009/HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009.zip",
       "sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc"
     },
-    "current_mutation_stage": "EXACT_R4_RECOVERY_ATTEMPT_CONSUMED__OTA_REQUEST_PENDING",
+    "current_mutation_stage": "R4_RESTORED_AND_VERIFIED__R6_INSTALL_AUTHORIZATION_CONSUMED",
     "current_owner_authorization": {
       "exact_firmware_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
       "exact_owner_guest_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
@@ -857,7 +857,7 @@
       "one exact R4 recovery only on authorized objective runtime/safety/performance/AUX failure",
       "unchanged 28-kernel sweep, combined-feature tests, contiguous 90-minute soak, physical and owner acceptance"
     ],
-    "status": "IN_PROGRESS__R6_PERFORMANCE_GATE_FAILED__EXACT_R4_RECOVERY_ATTEMPT_CONSUMED",
+    "status": "R6_FAILED__EXACT_R4_RECOVERY_PASS__OFFLINE_REPAIR_ONLY",
     "target": {
       "aux_ip": "192.168.77.11",
       "aux_mac": "8c:94:df:55:c3:4c",
@@ -867,7 +867,7 @@
     },
     "transaction_consumed": true,
     "transaction_started_at_utc": "2026-10-10T05:20:44.781805+00:00",
-    "current_gate": "R6 failed the unchanged kernel-0 frame-tail qualification before the 28-kernel sweep; renderer snapshot restore is verified. The one exact R4 recovery attempt is consumed and pending. Command fence remains closed, relay inactive, no route/backend rollback yet.",
+    "current_gate": "Exact R4 restored and verified after the single R6 attempt failed the frozen kernel-0 performance prequalification. R6 installation authorization is consumed. No new firmware install authorized. Command fence remains closed; Opal relay inactive.",
     "install_attempt_consumption": {
       "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_INSTALL_ATTEMPT_CONSUMPTION.json",
       "sha256": "0ab5f07fdac2acc2e84f8a67762740e9b86e83f16004f5d9bf3eb7733653e320",
@@ -906,7 +906,18 @@
     "qualification_restore_receipt_path": {
       "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_LIVE_QUALIFICATION/RESTORE_RECEIPT.json",
       "sha256": "cc4c37af969db080115e5196d4b295f6b781c39430eac34b6d23a440dfc13fee"
-    }
+    },
+    "rollback_completion": {
+      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R4_RECOVERY_COMPLETION.json",
+      "sha256": "ac4d953e8524b90444aa80dd1df0c04296eb24cbc93d8094a0a09a269f0c6159",
+      "transport_attempts": 1,
+      "readback_pass": true,
+      "completed_at_utc": "2026-10-10T05:43:18.757719+00:00",
+      "device_identity": "exact Foundation R4",
+      "matrix_aux_health": "PASS_NATIVE_DDP_LIVE"
+    },
+    "r4_recovery_completion_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R4_RECOVERY_COMPLETION.json",
+    "r4_recovery_completion_sha256": "ac4d953e8524b90444aa80dd1df0c04296eb24cbc93d8094a0a09a269f0c6159"
   },
   "current_task": {
     "autonomous_completion_authorization": {
@@ -2676,19 +2687,20 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "R6_FROZEN_PERFORMANCE_GATE_FAILED__KERNEL_0; EXACT_R4_RECOVERY_ATTEMPT_CONSUMED; COMMAND_FENCE_CLOSED",
+    "current_failure_domain": "R6_KERNEL0_FROZEN_PERFORMANCE_FAILURE; EXACT_R4_RECOVERY_PASS; R6_INSTALL_AUTHORIZATION_CONSUMED; OFFLINE_REPAIR_ONLY",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
-      "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-      "status": "EXACT_FOUNDATION_R4_CURRENT__COORDINATED_R6_TRANSACTION_CONSUMED__INSTALL_ATTEMPT_NOT_YET_USED"
+      "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743a2f3d8c",
+      "status": "EXACT_FOUNDATION_R4_RESTORED_AND_VERIFIED__HEALTHY__R6_INSTALL_ATTEMPT_CONSUMED"
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Perform the single exact R4 recovery using the existing Opal-origin local WLED /update method; no retry.",
-      "Verify exact R4 runtime identity, health, current uptime, and AUX native DDP.",
-      "Apply the existing failure rollback closure to captured backend and Cloudflare route versions without altering unrelated production state.",
-      "Continue safe offline product integration and preserve evidence; R6 live qualification remains failed and must not be reported accepted."
+      "Keep the verified exact R4 installed and preserve current device health.",
+      "Compare R6 integrated source/build hot paths against exact qualified R4 timing and source. Identify cause from measured ~66.7ms kernel, ~31.2ms palette, ~36.1ms audio-stage costs; do not speculate or weaken gates.",
+      "Implement the smallest offline correction and focused correctness/performance tests; preserve all functionality and exact R4 recovery.",
+      "Build one corrected candidate only after source-backed correction passes; no live installation without new exact owner authorization.",
+      "Complete independent offline release readiness; owner Cloudflare reauthentication is required before any Cloudflare API write, as recorded in the control model."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
