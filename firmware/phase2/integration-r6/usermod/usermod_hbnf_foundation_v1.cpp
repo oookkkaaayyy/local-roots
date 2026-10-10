@@ -13,6 +13,11 @@
 #include "fontmanager.h"
 #include <ANIMartRIX.h>
 #include <string.h>
+#if defined(HBNF_R6_FRAME_CONTEXT_TRACE)
+#include "hbnf_outlier_trace.h"
+#include <esp_timer.h>
+#include <freertos/task.h>
+#endif
 #if defined(HBNF_PACKET20_DIAGNOSTICS)
 #include <esp_system.h>
 #include <esp_heap_caps.h>
@@ -38,6 +43,46 @@ static bool canonicalMatrixValid=false;
 static uint32_t packed(const Rgb8& c);
 static uint32_t hbnfCycles() { return ESP.getCycleCount(); }
 static uint32_t hbnfCycleUs(uint32_t cycles) { const uint32_t mhz=ESP.getCpuFreqMHz(); return mhz?cycles/mhz:0; }
+#if defined(HBNF_R6_FRAME_CONTEXT_TRACE)
+static constexpr size_t HBNF_R6_OUTLIER_CAPACITY=16;
+static hbnf_r6_outlier_trace::Store<HBNF_R6_OUTLIER_CAPACITY> hbnfFrameTrace{};
+static hbnf_r6_outlier_trace::Record hbnfTraceWorking{};
+static constexpr size_t HBNF_R6_REFERENCE_CAPACITY=4;
+static hbnf_r6_outlier_trace::ReferenceStore<HBNF_R6_REFERENCE_CAPACITY> hbnfTraceReferences{};
+static uint32_t hbnfTraceFramesSeen=0;
+static constexpr uint16_t HBNF_R6_REFERENCE_INTERVAL=256;
+static const CanonicalFrame* hbnfTraceFrame=nullptr;
+static bool hbnfTraceFrameActive=false;
+static portMUX_TYPE hbnfFrameTraceMux=portMUX_INITIALIZER_UNLOCKED;
+static bool hbnfTraceEnabled() {
+  portENTER_CRITICAL(&hbnfFrameTraceMux);const bool armed=hbnfFrameTrace.armed();portEXIT_CRITICAL(&hbnfFrameTraceMux);return armed;
+}
+static uint32_t hbnfR6TraceThresholdCycles=0;
+static uint16_t hbnfR6TraceCpuMHz=0;
+static bool hbnfR6TraceStartConsumed=false;
+static void hbnfTraceVariant(hbnf_r6_outlier_trace::Record::Variant& out,const VisualVariant& v) {
+  out.signature=v.signature;out.salt=v.salt;out.dwellSeconds=v.dwellSeconds;
+  out.kernel=v.kernel;out.family=v.family;out.palette=v.palette;out.speed=v.speed;
+  out.profile=v.profile;out.style=v.style;out.amount=v.amount;out.hueOffset=v.hueOffset;
+  out.transform=v.transform;out.warp=v.warp;
+}
+static void hbnfTraceAudioFrame(uint8_t out[17],const AudioFrame& a) {
+  out[0]=a.bass;out[1]=a.mid;out[2]=a.treble;out[3]=a.volume;out[4]=a.peak;
+  out[5]=a.bassBody;out[6]=a.midBody;out[7]=a.trebleBody;
+  out[8]=a.bassPulse;out[9]=a.midPulse;out[10]=a.treblePulse;out[11]=a.energy;
+  out[12]=a.lowEnergy;out[13]=a.midEnergy;out[14]=a.highEnergy;out[15]=a.transient;out[16]=a.slowEnergy;
+}
+static void hbnfTraceAudioFeatures(uint8_t out[13],const AudioFeatures& a) {
+  out[0]=a.energyShort;out[1]=a.energyMedium;out[2]=a.energySlow;out[3]=a.lowPressure;
+  out[4]=a.lowTransient;out[5]=a.midBody;out[6]=a.midChange;out[7]=a.highDetail;
+  out[8]=a.highTransient;out[9]=a.spectralBrightness;out[10]=a.spectralChange;
+  out[11]=a.activity;out[12]=a.silenceConfidence;
+}
+static void hbnfTraceAxes(uint8_t out[9],const VibeAxes& a) {
+  out[0]=a.structure;out[1]=a.flow;out[2]=a.depth;out[3]=a.symmetry;out[4]=a.detail;
+  out[5]=a.paletteMotion;out[6]=a.density;out[7]=a.negativeSpace;out[8]=a.transitionEnergy;
+}
+#endif
 static volatile uint32_t hbnfLastDdpSendMs=0;
 struct HbnfPerfFrame {
   bool active=false; uint32_t start=0; uint32_t scheduler=0; uint32_t audio=0; uint32_t audioInKernel=0;
@@ -317,6 +362,10 @@ class FoundationRuntime {
     hasSelectedVariant_=false;
     configDirty_ = false; vibe_.reset(); expression_.reset();
     vibeFeatures_.reset(); autoVibe_.reset(); resolvedVibe_=VIBE_CHILL; audioFeatures_=AudioFeatures{};
+#if defined(HBNF_R6_FRAME_CONTEXT_TRACE)
+    memset(lastFft_,0,sizeof(lastFft_));memset(lastVibeAudioInputFloatBits_,0,sizeof(lastVibeAudioInputFloatBits_));
+    lastVibeAudioInputSilent_=true;lastVolumeFloatBits_=0;lastAudioSourcePresent_=false;
+#endif
   }
 
   void initialize(uint32_t seed,uint32_t now) { generator_.reset(seed); chooseVariant(now); previousVariant_=variant_; transitionActive_=false; }
@@ -372,6 +421,14 @@ class FoundationRuntime {
   Controls& controls() { return controls_; }
   const Controls& controls() const { return controls_; }
   const AudioFrame& lastAudio() const { return lastAudio_; }
+#if defined(HBNF_R6_FRAME_CONTEXT_TRACE)
+  const AudioFeatures& lastAudioFeatures() const { return audioFeatures_; }
+  const uint8_t* lastFft() const { return lastFft_; }
+  uint32_t lastVolumeFloatBits() const { return lastVolumeFloatBits_; }
+  const uint32_t* lastVibeAudioInputFloatBits() const { return lastVibeAudioInputFloatBits_; }
+  bool lastVibeAudioInputSilent() const { return lastVibeAudioInputSilent_; }
+  bool lastAudioSourcePresent() const { return lastAudioSourcePresent_; }
+#endif
   const VisualVariant& variant() const { return variant_; }
   void chooseSceneVariant(uint32_t now) { chooseVariant(now); }
 #if defined(HBNF_PACKET20_DIAGNOSTICS)
@@ -426,6 +483,13 @@ class FoundationRuntime {
   VibeAudioFeatures vibeFeatures_{};
   AutoVibeSelector autoVibe_{};
   AudioFeatures audioFeatures_{};
+#if defined(HBNF_R6_FRAME_CONTEXT_TRACE)
+  uint8_t lastFft_[16]{};
+  uint32_t lastVibeAudioInputFloatBits_[13]{};
+  bool lastVibeAudioInputSilent_=true;
+  uint32_t lastVolumeFloatBits_=0;
+  bool lastAudioSourcePresent_=false;
+#endif
   Vibe resolvedVibe_=VIBE_CHILL;
   uint32_t nextVariantAt_=0,transitionStartAt_=0,configDirtyAt_=0;
   uint16_t transitionDurationMs_=3000;
@@ -488,12 +552,19 @@ class FoundationRuntime {
     audioNow_=now;
     if (!UsermodManager::getUMData(&um, USERMOD_ID_AUDIOREACTIVE) ||
         !um || um->u_size < 4 || !um->u_data || !um->u_data[2]) {
+#if defined(HBNF_R6_FRAME_CONTEXT_TRACE)
+      memset(lastFft_,0,sizeof(lastFft_));memset(lastVibeAudioInputFloatBits_,0,sizeof(lastVibeAudioInputFloatBits_));
+      lastVibeAudioInputSilent_=true;lastVolumeFloatBits_=0;lastAudioSourcePresent_=false;
+#endif
       hbnf::VibeMetrics silent{};silent.silent=true;
       silent.bassAtt=silent.midAtt=silent.trebleAtt=0.0f;
       const hbnf::AudioExpressionSignals e=expression_.update(silent,dt);
       a.lowEnergy=unit8(e.lowEnergy);a.midEnergy=unit8(e.midEnergy);a.highEnergy=unit8(e.highEnergy);
       a.transient=unit8(e.transient);a.slowEnergy=unit8(e.slowEnergy);
       VibeAudioInput input{};input.silent=true;
+#if defined(HBNF_R6_FRAME_CONTEXT_TRACE)
+      lastVibeAudioInputSilent_=true;
+#endif
       audioFeatures_=vibeFeatures_.update(input,(uint32_t)(dt*1000.0f));
       return a;
     }
@@ -504,6 +575,9 @@ class FoundationRuntime {
     // bands as WLED's own three-channel Spectrum palette: 0 / 4 / 10.
     float volume=0.0f;
     if (um->u_data[0]) volume=*reinterpret_cast<const float*>(um->u_data[0]);
+#if defined(HBNF_R6_FRAME_CONTEXT_TRACE)
+    memcpy(lastFft_,fft,sizeof(lastFft_));memcpy(&lastVolumeFloatBits_,&volume,sizeof(volume));lastAudioSourcePresent_=true;
+#endif
     a.volume=(uint8_t)(volume<=0?0:(volume>=255?255:(uint8_t)(volume+0.5f)));
     const hbnf::VibeMetrics m=vibe_.update(fft,volume,dt);
     const hbnf::AudioExpressionSignals e=expression_.update(m,dt);
@@ -517,12 +591,87 @@ class FoundationRuntime {
     input.bassPulse=m.bassPulse;input.midPulse=m.midPulse;input.treblePulse=m.treblePulse;
     input.energy=m.energy;input.lowEnergy=e.lowEnergy;input.midEnergy=e.midEnergy;input.highEnergy=e.highEnergy;
     input.transient=e.transient;input.slowEnergy=e.slowEnergy;input.silent=m.silent;
+#if defined(HBNF_R6_FRAME_CONTEXT_TRACE)
+    const float traceAudioValues[13]={input.volume,input.bassAtt,input.midAtt,input.trebleAtt,
+      input.bassPulse,input.midPulse,input.treblePulse,input.energy,input.lowEnergy,
+      input.midEnergy,input.highEnergy,input.transient,input.slowEnergy};
+    for(uint8_t i=0;i<13;i++)memcpy(&lastVibeAudioInputFloatBits_[i],&traceAudioValues[i],sizeof(float));
+    lastVibeAudioInputSilent_=input.silent;
+#endif
     audioFeatures_=vibeFeatures_.update(input,(uint32_t)(dt*1000.0f));
     return a;
   }
 };
 
 static FoundationRuntime runtime;
+
+#if defined(HBNF_R6_FRAME_CONTEXT_TRACE)
+static void hbnfTraceStartFrame() {
+  portENTER_CRITICAL(&hbnfFrameTraceMux);
+  if(!hbnfFrameTrace.armed()){portEXIT_CRITICAL(&hbnfFrameTraceMux);return;}
+  hbnfTraceWorking.frameSequence=hbnfFrameTrace.nextFrameSequence();++hbnfTraceFramesSeen;
+  portEXIT_CRITICAL(&hbnfFrameTraceMux);
+  hbnfTraceWorking.monotonicUs=(uint64_t)esp_timer_get_time();
+  hbnfTraceWorking.taskHandle=(uintptr_t)xTaskGetCurrentTaskHandle();
+  hbnfTraceWorking.coreStart=(int8_t)xPortGetCoreID();hbnfTraceWorking.cpuMhzStart=(uint16_t)ESP.getCpuFreqMHz();
+  hbnfTraceFrame=nullptr;
+  hbnfTraceFrameActive=true;
+}
+
+static void hbnfTraceContext(const CanonicalFrame& f,const FoundationRuntime& r) {
+  hbnfTraceWorking.frame=f.frame;
+  hbnfTraceWorking.scene=(uint8_t)f.controls.scene;hbnfTraceWorking.vibe=(uint8_t)f.vibe;
+  hbnfTraceWorking.motion=f.controls.motion;hbnfTraceWorking.matrixBrightness=f.controls.matrixBrightness;
+  hbnfTraceWorking.auxBrightness=f.controls.auxBrightness;hbnfTraceWorking.audioResponse=f.controls.audioResponse;
+  hbnfTraceWorking.matrixWidth=(uint8_t)SEGMENT.virtualWidth();hbnfTraceWorking.matrixHeight=(uint8_t)SEGMENT.virtualHeight();
+  hbnfTraceWorking.audioSourcePresent=(uint8_t)r.lastAudioSourcePresent();
+  hbnfTraceWorking.paletteMode=(uint8_t)hbnfPalette.mode;hbnfTraceWorking.paletteIndex=hbnfPalette.index;
+  hbnfTraceWorking.variantMix=f.variantMix;hbnfTraceVariant(hbnfTraceWorking.current,f.variant);
+  hbnfTraceVariant(hbnfTraceWorking.previous,f.previousVariant);
+  hbnfTraceAudioFrame(hbnfTraceWorking.audioFrame,f.audio);
+  hbnfTraceAudioFeatures(hbnfTraceWorking.audioFeatures,r.lastAudioFeatures());
+  memcpy(hbnfTraceWorking.fft,r.lastFft(),sizeof(hbnfTraceWorking.fft));
+  memcpy(hbnfTraceWorking.vibeAudioInputFloatBits,r.lastVibeAudioInputFloatBits(),sizeof(hbnfTraceWorking.vibeAudioInputFloatBits));
+  hbnfTraceWorking.vibeAudioInputSilent=(uint8_t)r.lastVibeAudioInputSilent();
+  hbnfTraceWorking.volumeFloatBits=r.lastVolumeFloatBits();
+  hbnfTraceAxes(hbnfTraceWorking.vibeAxes,f.vibeAxes);
+}
+
+static void hbnfTraceEndFrame() {
+  if(!hbnfTraceFrameActive)return;
+  hbnfTraceFrameActive=false;
+  if(!hbnfTraceEnabled())return;
+  const uint64_t endUs=(uint64_t)esp_timer_get_time();
+  hbnfTraceWorking.wallElapsedUs=(uint32_t)(endUs-hbnfTraceWorking.monotonicUs);
+  hbnfTraceWorking.cpuMhzEnd=(uint16_t)ESP.getCpuFreqMHz();
+  hbnfTraceWorking.coreEnd=(int8_t)xPortGetCoreID();
+  hbnfTraceWorking.frameStartCycles=hbnfPerfWorking.start;hbnfTraceWorking.frameEndCycles=hbnfPerfWorking.start+hbnfPerfWorking.whole;
+  hbnfTraceWorking.wholeFrameCycles=hbnfPerfWorking.whole;hbnfTraceWorking.kernelGrossCycles=hbnfPerfWorking.kernelGross;
+  hbnfTraceWorking.audioCycles=hbnfPerfWorking.audio;hbnfTraceWorking.audioInKernelCycles=hbnfPerfWorking.audioInKernel;
+  hbnfTraceWorking.colorCycles=hbnfPerfWorking.color;hbnfTraceWorking.colorInKernelCycles=hbnfPerfWorking.colorInKernel;
+  hbnfTraceWorking.schedulerCycles=hbnfPerfWorking.scheduler;hbnfTraceWorking.overlayCycles=hbnfPerfWorking.overlay;
+  hbnfTraceWorking.companionPrepCycles=hbnfPerfWorking.companionPrep;hbnfTraceWorking.ddpSendCycles=hbnfPerfWorking.ddpSend;
+  hbnfTraceWorking.unaccountedCycles=hbnfPerfWorking.unaccounted;hbnfTraceWorking.variantSignature=hbnfPerfWorking.variant;
+  const bool outlier=hbnf_r6_outlier_trace::exceeds(hbnfTraceWorking.wholeFrameCycles,hbnfR6TraceThresholdCycles);
+  const bool reference=!outlier&&((hbnfTraceWorking.frameSequence%HBNF_R6_REFERENCE_INTERVAL)==0u);
+  if((outlier||reference)&&hbnfTraceFrame) {
+    const uint32_t traceStart=hbnfCycles();
+    hbnfTraceWorking.freeHeap=ESP.getFreeHeap();
+    hbnfTraceContext(*hbnfTraceFrame,runtime);
+    portENTER_CRITICAL(&hbnfFrameTraceMux);
+    if(!hbnfFrameTrace.armed()) {
+      portEXIT_CRITICAL(&hbnfFrameTraceMux);return;
+    } else if(outlier) {
+      hbnfFrameTrace.append(hbnfTraceWorking);
+      hbnfFrameTrace.setLastCaptureBodyCycles(hbnfCycles()-traceStart);
+    } else {
+      hbnfTraceReferences.append(hbnfTraceWorking);
+      hbnfTraceReferences.setLastCaptureBodyCycles(hbnfCycles()-traceStart);
+    }
+    portEXIT_CRITICAL(&hbnfFrameTraceMux);
+  }
+}
+#endif
 
 static bool hbnfApplyPalette(JsonVariantConst input) {
   JsonObjectConst obj=input.as<JsonObjectConst>();if(obj.isNull())return false;
@@ -829,6 +978,9 @@ static bool packet20Same(const Packet20Snapshot& a,const Packet20Snapshot& b) {
 }
 
 static void packet20Restore() {
+#if defined(HBNF_R6_FRAME_CONTEXT_TRACE)
+  portENTER_CRITICAL(&hbnfFrameTraceMux);hbnfFrameTrace.stop();portEXIT_CRITICAL(&hbnfFrameTraceMux);
+#endif
   memcpy(&runtime,&packet20Saved,sizeof(runtime));
   runtime.diagnosticEndAfterRestore(millis());
   foundationAnimartrix.diagnosticRestore(packet20Saved.renderer);
@@ -847,6 +999,82 @@ static void packet20Restore() {
   for(uint8_t i=0;i<23;i++)strip.setPixelColor(512u+i,packet20Saved.auxOutput[i]);
   packet20Selected=runtime.variant().kernel;
 }
+
+#if defined(HBNF_R6_FRAME_CONTEXT_TRACE)
+static uint8_t hbnfTraceReadKind=0; // 1 outlier, 2 normal reference, 3 worst
+static uint32_t hbnfTraceReadCursor=0;
+static void hbnfTraceVariantJson(JsonObject out,const hbnf_r6_outlier_trace::Record::Variant& v) {
+  out["signature"]=v.signature;out["kernel"]=v.kernel;out["family"]=v.family;out["palette"]=v.palette;
+  out["speed"]=v.speed;out["profileCode"]=v.profile;out["styleCode"]=v.style;out["amount"]=v.amount;
+  out["hueOffset"]=v.hueOffset;out["transform"]=v.transform;out["warp"]=v.warp;
+  out["salt"]=v.salt;out["dwellSeconds"]=v.dwellSeconds;
+}
+static void hbnfTraceRecordJson(JsonObject out,const hbnf_r6_outlier_trace::Record& r) {
+  out["frameSequence"]=r.frameSequence;out["frame"]=r.frame;out["monotonicStartUs"]=r.monotonicUs;
+  out["wallElapsedUs"]=r.wallElapsedUs;out["traceCaptureBodyCycles"]=r.traceCaptureBodyCycles;
+  out["freeHeapAtFrameEnd"]=r.freeHeap;
+  JsonObject timing=out.createNestedObject("timing");
+  timing["wholeCcountElapsedCycles"]=r.wholeFrameCycles;timing["framePreparationCcountElapsedCycles"]=r.schedulerCycles;
+  timing["kernelGrossCcountElapsedCycles"]=r.kernelGrossCycles;timing["audioCcountElapsedCycles"]=r.audioCycles;
+  timing["audioWithinKernelCcountElapsedCycles"]=r.audioInKernelCycles;
+  timing["paletteCcountElapsedCycles"]=r.colorCycles;timing["paletteWithinKernelCcountElapsedCycles"]=r.colorInKernelCycles;
+  timing["overlayCcountElapsedCycles"]=r.overlayCycles;
+  timing["companionPrepCcountElapsedCycles"]=r.companionPrepCycles;timing["ddpSendCcountElapsedCycles"]=r.ddpSendCycles;
+  timing["unaccountedCcountElapsedCycles"]=r.unaccountedCycles;
+  timing["basis"]="CCOUNT elapsed core cycles; can include interruption/preemption; not task CPU time";
+  JsonObject schedule=out.createNestedObject("executionContext");schedule["taskHandle"]=static_cast<uint32_t>(r.taskHandle);
+  schedule["coreStart"]=r.coreStart;schedule["coreEnd"]=r.coreEnd;schedule["cpuMhzStart"]=r.cpuMhzStart;schedule["cpuMhzEnd"]=r.cpuMhzEnd;
+  schedule["sameCore"]=r.coreStart==r.coreEnd;schedule["sameFrequency"]=r.cpuMhzStart==r.cpuMhzEnd;
+  schedule["taskRuntimeStatsAvailable"]=false;
+  JsonObject ctx=out.createNestedObject("runtime");ctx["scene"]=r.scene;ctx["vibe"]=r.vibe;ctx["motion"]=r.motion;
+  ctx["matrixBrightness"]=r.matrixBrightness;ctx["auxBrightness"]=r.auxBrightness;ctx["audioResponse"]=r.audioResponse;
+  ctx["matrixWidth"]=r.matrixWidth;ctx["matrixHeight"]=r.matrixHeight;ctx["paletteMode"]=r.paletteMode;
+  ctx["paletteIndex"]=r.paletteIndex;ctx["variantMix"]=r.variantMix;ctx["audioSourcePresent"]=r.audioSourcePresent;
+  JsonObject variant=out.createNestedObject("postVibeVariant");hbnfTraceVariantJson(variant,r.current);
+  JsonObject previous=out.createNestedObject("previousVariant");hbnfTraceVariantJson(previous,r.previous);
+  const char* afNames[17]={"bass","mid","treble","volume","peak","bassBody","midBody","trebleBody","bassPulse","midPulse","treblePulse","energy","lowEnergy","midEnergy","highEnergy","transient","slowEnergy"};
+  JsonObject af=out.createNestedObject("audioFrame");for(uint8_t i=0;i<17;i++)af[afNames[i]]=r.audioFrame[i];
+  const char* featureNames[13]={"energyShort","energyMedium","energySlow","lowPressure","lowTransient","midBody","midChange","highDetail","highTransient","spectralBrightness","spectralChange","activity","silenceConfidence"};
+  JsonObject feat=out.createNestedObject("audioFeatures");for(uint8_t i=0;i<13;i++)feat[featureNames[i]]=r.audioFeatures[i];
+  JsonArray fft=out.createNestedArray("fft16");for(uint8_t v:r.fft)fft.add(v);
+  const char* inputNames[13]={"volume","bassAtt","midAtt","trebleAtt","bassPulse","midPulse","treblePulse","energy","lowEnergy","midEnergy","highEnergy","transient","slowEnergy"};
+  JsonObject input=out.createNestedObject("vibeAudioInputFloatBits");for(uint8_t i=0;i<13;i++)input[inputNames[i]]=r.vibeAudioInputFloatBits[i];
+  out["vibeAudioInputSilent"]=r.vibeAudioInputSilent;out["wledAudioVolumeFloatBits"]=r.volumeFloatBits;
+  const char* axisNames[9]={"structure","flow","depth","symmetry","detail","paletteMotion","density","negativeSpace","transitionEnergy"};
+  JsonObject axes=out.createNestedObject("vibeAxes");for(uint8_t i=0;i<9;i++)axes[axisNames[i]]=r.vibeAxes[i];
+}
+static void hbnfTraceJson(JsonObject p20) {
+  JsonObject trace=p20.createNestedObject("frameContextTrace");
+  bool enabled,worstValid;uint32_t count,overflow,outliers,referenceCount,referenceTotal,referenceOverflow,framesSeen;
+  uint32_t thresholdCycles,readCursor;uint16_t traceCpuMHz;uint8_t readKind;
+  portENTER_CRITICAL(&hbnfFrameTraceMux);
+  enabled=hbnfFrameTrace.armed();count=hbnfFrameTrace.count();overflow=hbnfFrameTrace.overflowCount();
+  outliers=hbnfFrameTrace.outlierCount();worstValid=hbnfFrameTrace.worstValid();
+  referenceCount=(uint32_t)hbnfTraceReferences.count();referenceTotal=hbnfTraceReferences.total();referenceOverflow=hbnfTraceReferences.overflow();
+  framesSeen=hbnfTraceFramesSeen;thresholdCycles=hbnfR6TraceThresholdCycles;traceCpuMHz=hbnfR6TraceCpuMHz;
+  readKind=hbnfTraceReadKind;readCursor=hbnfTraceReadCursor;
+  portEXIT_CRITICAL(&hbnfFrameTraceMux);
+  trace["enabled"]=enabled;trace["outlierCapacity"]=HBNF_R6_OUTLIER_CAPACITY;trace["outlierRetainedCount"]=count;
+  trace["outlierCount"]=outliers;trace["outlierOverflowCount"]=overflow;trace["worstValid"]=worstValid;
+  trace["thresholdUs"]=42.03125;trace["thresholdCycles"]=thresholdCycles;
+  trace["cpuMHzAtTraceStart"]=traceCpuMHz;trace["cpuMHzAtReadback"]=ESP.getCpuFreqMHz();
+  trace["cpuTaskRuntimeStatsAvailable"]=false;
+  trace["timingBasis"]="esp_timer monotonic wall elapsed plus ESP32 CCOUNT elapsed core cycles; CCOUNT is not task CPU time";
+  trace["normalReferenceIntervalFrames"]=HBNF_R6_REFERENCE_INTERVAL;
+  trace["normalReferenceCapacity"]=HBNF_R6_REFERENCE_CAPACITY;trace["normalReferenceRetainedCount"]=referenceCount;
+  trace["normalReferenceTotalCount"]=referenceTotal;trace["normalReferenceOverwrittenCount"]=referenceOverflow;
+  trace["framesSeen"]=framesSeen;
+  if(enabled||!readKind)return;
+  JsonObject row=trace.createNestedObject("readback");row["kind"]=readKind==1?"outlier":(readKind==2?"reference":"worst");row["cursor"]=readCursor;
+  hbnf_r6_outlier_trace::Record r{};bool valid=false;
+  portENTER_CRITICAL(&hbnfFrameTraceMux);
+  if(readKind==1&&readCursor<count){r=hbnfFrameTrace.chronological(readCursor);valid=true;}
+  else if(readKind==2&&readCursor<referenceCount){r=hbnfTraceReferences.chronological(readCursor);valid=true;}
+  else if(readKind==3&&worstValid){r=hbnfFrameTrace.worst();valid=true;}
+  portEXIT_CRITICAL(&hbnfFrameTraceMux);
+  row["valid"]=valid;if(valid)hbnfTraceRecordJson(row,r);
+}
+#endif
 
 static void packet20ServiceAtRendererSafePoint() {
   bool restore=false;
@@ -888,6 +1116,41 @@ static void packet20ServiceAtRendererSafePoint() {
 
 static bool packet20Command(JsonObjectConst command) {
   const char* op=command["op"]|"";
+#if defined(HBNF_R6_FRAME_CONTEXT_TRACE)
+  if(!strcmp(op,"traceStart")) {
+    if(!runtime.diagnosticActive()||!packet20SavedValid||hbnfTraceEnabled()||hbnfR6TraceStartConsumed||!hbnfTailEnabled)return false;
+    portENTER_CRITICAL(&packet20SnapshotMux);const bool ready=packet20SnapshotState==Packet20SnapshotState::READY;portEXIT_CRITICAL(&packet20SnapshotMux);
+    const uint16_t mhz=(uint16_t)ESP.getCpuFreqMHz();
+    if(!ready||!mhz||mhz!=(F_CPU/1000000u))return false;
+    portENTER_CRITICAL(&hbnfFrameTraceMux);
+    hbnfR6TraceCpuMHz=mhz;
+    hbnfR6TraceThresholdCycles=(uint32_t)mhz*42031u+(uint32_t)mhz/4u;
+    hbnfTraceReferences.clear();hbnfTraceFramesSeen=0;hbnfTraceReadKind=0;hbnfTraceReadCursor=0;
+    hbnfFrameTrace.start();hbnfR6TraceStartConsumed=hbnfR6TraceThresholdCycles!=0;
+    if(!hbnfR6TraceStartConsumed)hbnfFrameTrace.stop();
+    portEXIT_CRITICAL(&hbnfFrameTraceMux);
+    if(!hbnfR6TraceStartConsumed)return false;
+    return true;
+  }
+  if(!strcmp(op,"traceStop")) {
+    if(!hbnfTraceEnabled())return false;
+    portENTER_CRITICAL(&hbnfFrameTraceMux);hbnfFrameTrace.stop();portEXIT_CRITICAL(&hbnfFrameTraceMux);
+    return true;
+  }
+  if(!strcmp(op,"traceRead")) {
+    if(hbnfTraceEnabled()||!hbnfR6TraceStartConsumed||!command["cursor"].is<uint32_t>())return false;
+    const char* kind=command["kind"]|"outlier";
+    if(strcmp(kind,"outlier")&&strcmp(kind,"reference")&&strcmp(kind,"worst"))return false;
+    const uint32_t cursor=command["cursor"].as<uint32_t>();
+    if(!strcmp(kind,"worst")&&cursor!=0)return false;
+    portENTER_CRITICAL(&hbnfFrameTraceMux);
+    const bool valid=(!strcmp(kind,"outlier")&&cursor<hbnfFrameTrace.count())||
+       (!strcmp(kind,"reference")&&cursor<hbnfTraceReferences.count())||(!strcmp(kind,"worst")&&hbnfFrameTrace.worstValid());
+    if(valid){hbnfTraceReadKind=!strcmp(kind,"outlier")?1:(!strcmp(kind,"reference")?2:3);hbnfTraceReadCursor=cursor;}
+    portEXIT_CRITICAL(&hbnfFrameTraceMux);
+    return valid;
+  }
+#endif
   if(!strcmp(op,"begin")) {
     if(packet20SavedValid)return false;
     runtime.diagnosticBegin();packet20RestoreVerified=false;packet20Selected=runtime.variant().kernel;
@@ -895,6 +1158,9 @@ static bool packet20Command(JsonObjectConst command) {
   }
   if(!runtime.diagnosticActive())return false;
   if(!strcmp(op,"select")) {
+#if defined(HBNF_R6_FRAME_CONTEXT_TRACE)
+    if(hbnfTraceEnabled())return false;
+#endif
     if(!command["kernel"].is<uint8_t>())return false;
     const uint8_t kernel=command["kernel"].as<uint8_t>();
     if(!runtime.diagnosticSelectKernel(kernel))return false;
@@ -963,10 +1229,18 @@ static uint32_t packed(const Rgb8& c) {
 
 static void mode_hbnf_foundation(void) {
   const bool matrixSegment=SEGMENT.start==0;
-  if(matrixSegment){hbnfPerfWorking=HbnfPerfFrame{};hbnfPerfWorking.active=true;hbnfPerfWorking.start=hbnfCycles();}
+  if(matrixSegment){hbnfPerfWorking=HbnfPerfFrame{};hbnfPerfWorking.active=true;hbnfPerfWorking.start=hbnfCycles();
+#if defined(HBNF_R6_FRAME_CONTEXT_TRACE)
+    hbnfTraceStartFrame();
+#endif
+  }
   const uint32_t schedulerStart=hbnfCycles();
   const CanonicalFrame& f=runtime.frame();
-  if(matrixSegment){hbnfPerfWorking.scheduler+=hbnfCycles()-schedulerStart;hbnfPerfWorking.kernel=f.variant.kernel;hbnfPerfWorking.variant=f.variant.signature;}
+  if(matrixSegment){hbnfPerfWorking.scheduler+=hbnfCycles()-schedulerStart;hbnfPerfWorking.kernel=f.variant.kernel;hbnfPerfWorking.variant=f.variant.signature;
+#if defined(HBNF_R6_FRAME_CONTEXT_TRACE)
+    if(hbnfTraceFrameActive)hbnfTraceFrame=&f;
+#endif
+  }
 
   // The virtual type-80 bus is Matrix segment 1. Handle it before asking WLED
   // whether the segment is 2D: mapped DDP segments can inherit 2D dimensions.
@@ -1184,6 +1458,9 @@ class HbnfFoundationV1Usermod : public Usermod {
     p20["resetReasonCore0"]=(int)rtc_get_reset_reason(0);
     p20["resetReasonCore1"]=(int)rtc_get_reset_reason(1);
     p20["espResetReason"]=(int)esp_reset_reason();
+#if defined(HBNF_R6_FRAME_CONTEXT_TRACE)
+    hbnfTraceJson(p20);
+#endif
 #endif
     h["companionRenderCount"]=(uint32_t)companionRenderCount;
     h["companionLastNonzeroPixels"]=companionLastNonzero;
@@ -1297,6 +1574,9 @@ extern "C" void hbnfPerfFrameEnd() {
   const uint32_t end=hbnfCycles(); hbnfPerfWorking.whole=end-hbnfPerfWorking.start;
   const uint64_t accounted=(uint64_t)hbnfPerfWorking.scheduler+(hbnfPerfWorking.kernelGross>hbnfPerfWorking.audioInKernel+hbnfPerfWorking.colorInKernel?hbnfPerfWorking.kernelGross-hbnfPerfWorking.audioInKernel-hbnfPerfWorking.colorInKernel:0)+hbnfPerfWorking.audio+hbnfPerfWorking.color+hbnfPerfWorking.overlay+hbnfPerfWorking.companionPrep+hbnfPerfWorking.ddpSend;
   hbnfPerfWorking.unaccounted=accounted<hbnfPerfWorking.whole?(uint32_t)(hbnfPerfWorking.whole-accounted):0;
+#if defined(HBNF_R6_FRAME_CONTEXT_TRACE)
+  hbnfTraceEndFrame();
+#endif
 #if defined(HBNF_PACKET20_DIAGNOSTICS)
   portENTER_CRITICAL(&hbnfTailMux);
   if(hbnfTailEnabled){
