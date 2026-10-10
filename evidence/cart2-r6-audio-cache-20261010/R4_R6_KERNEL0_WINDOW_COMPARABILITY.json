@@ -1,0 +1,61 @@
+{
+  "schema": "hbnf-r4-r6-kernel0-window-comparability-v1",
+  "status": "INCONCLUSIVE_CAUSAL_ATTRIBUTION",
+  "analysis_commit": "909416b6fdf2f2ac4ab438d5e7cc770d6c78ab8a",
+  "source_evidence": {
+    "r4_samples": {
+      "path": "evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep/00_Complex_Kaleido_3.jsonl",
+      "sha256": "91c3dcf826140991575176db45a9ffd27373ac80128953e858bc6ec0079d7c80",
+      "profile_path": "evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep/00_Complex_Kaleido_3.profile.json",
+      "profile_sha256": "c8851a74b1ef40bd6981c916c9beb4c3c079f1f9b83c03ed688c7ca311f67c7a"
+    },
+    "r6_samples": {
+      "path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-separate-sleep-20261010/sweep/00_Complex_Kaleido_3.jsonl",
+      "sha256": "eb3e09afb6af179a9fdb6c97036cdb156d1cf693b628a45fe0d08c5746ae0fdf",
+      "profile_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-separate-sleep-20261010/sweep/00_Complex_Kaleido_3.profile.json",
+      "profile_sha256": "bc840211c7b654b0d62da659e19578683fa9130b27626950e332e554034e36c7"
+    },
+    "runtime_source": {
+      "path": "firmware/phase2/integration-r6-cachefix/usermod/usermod_hbnf_foundation_v1.cpp",
+      "sha256": "622eae29173c4ba7ce12974e241bd1ad74f5b454f95b304aeb663351d359a40b",
+      "histogram_reset_lines": "104-109",
+      "per_kernel_reset_and_sample_lines": "1582-1589"
+    }
+  },
+  "verified": {
+    "workload": "Both records identify kernel 0 Complex_Kaleido_3, variant 1347100672, and show zero websocket clients. R6 records matrix brightness 44, Vibe 2, motion 50, audio response 50, and legacy palette; matching R4 controls were not preserved in its samples.",
+    "window": "Both captures span 31 seconds of uptime. R4 sampled 15 times, from uptime 118 to 149, and frame-tail sampleCount grew 11 to 1068. R6 sampled 24 times, uptime 6699 to 6730, and sampleCount grew 176 to 971. Restart count remained zero in both records.",
+    "histogram_semantics": "The pinned firmware clears frame/stage histogram sums, counts, maxima, and bins when telemetry mode is set and when the runtime kernel changes. Values read during one kernel run are cumulative snapshots since that reset, not independent per-poll windows. The profile summarizes those cumulative snapshots.",
+    "r4_profile": {
+      "fps_median": 32,
+      "frame_avg_median_ms": 24.84956,
+      "frame_p95_median_ms": 27.875,
+      "frame_p99_median_ms": 41.375,
+      "kernel_avg_median_ms": 14.6413,
+      "palette_avg_median_ms": 0.413357,
+      "audio_avg_median_ms": 1.396445
+    },
+    "r6_profile": {
+      "fps_median": 25,
+      "frame_avg_median_ms": 29.962885,
+      "frame_p95_median_ms": 36.375,
+      "frame_p99_median_ms": 70.875,
+      "kernel_avg_median_ms": 19.24574,
+      "palette_avg_median_ms": 2.046251,
+      "audio_avg_median_ms": 3.940373
+    },
+    "r6_within_window": "Across the 24 cumulative snapshots, frame average rose 27.19156 to 31.48047 ms, kernel average 18.04636 to 19.74115 ms, palette 1.432898 to 2.47515 ms, audio 3.041881 to 4.481194 ms, while FPS ended lower. Rank correlation with sample order is high for those increasing cumulative metrics, but the snapshots are nested/cumulative and therefore are not independent observations.",
+    "polling": "R6 records five read-only HTTP endpoint timings per sample; total observed read duration ranged 0.135877 to 0.528395 seconds. Stage/frame metrics have weak rank association with that per-sample read duration in this 24-row record (absolute rho <= 0.157), which does not rule out effects from poll cadence or device-side request handling. R4 has no equivalent request timing or absolute sample timestamps, so cadence and observer load cannot be matched retrospectively.",
+    "auxiliary": "R6 AUX projection-age evidence is invalid/sentinel throughout this capture even though WLED reports a live DDP source. This differs from the R4 profile's legacy projection-age values; it is not evidence that Matrix render cost was caused by AUX."
+  },
+  "assessment": {
+    "measurement_comparability": "The p99 comparison is valid evidence of a gate failure in the observed R6 run, but the capture conditions are not sufficiently matched to assign cause: brightness/runtime controls are absent for R4; uptime differs substantially; polling count/cadence differs; and histogram percentiles are cumulative snapshots.",
+    "polling_causality": "Not demonstrated. The short R6 record does not show a strong contemporaneous relationship between endpoint-read duration and renderer costs; however, no matched-cadence R4 capture exists and polling may affect device scheduling independently of wall-clock request duration.",
+    "source_causality": "Not isolated. R6 stage means are higher in kernel, palette, and audio, but current artifacts do not separate feature-path cost from different controls, runtime state, measurement load, or temporal drift.",
+    "decision": "Keep exact Foundation R4 as the qualified baseline. Do not claim R6 regression resolved or attribute it to one source path from these records."
+  },
+  "minimum_discriminating_measurement": {
+    "required": "At a future authorized hardware session, collect one matched R4/R6 kernel-0 comparison with identical brightness and runtime controls, identical endpoint set and poll cadence, same histogram reset/warm-up boundary, per-request start/end monotonic timestamps, and the same 31-second measured interval; preserve each cumulative snapshot plus a final frame/stage trace. Keep the existing frozen thresholds and catastrophic abort rules.",
+    "purpose": "This separates candidate/runtime-path differences from polling/cadence and control-state differences. The already-closed live authority is not renewed by this recommendation."
+  }
+}
