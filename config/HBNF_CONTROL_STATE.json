@@ -229,7 +229,7 @@
   "bounded_phase2_r4_install_attempt2_authorization": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008-RETRY1",
     "authorized_at_utc": "2026-10-08T06:20:06.671131+00:00",
-    "authorized_by": "Current user instruction: URGENT — RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: URGENT \u2014 RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:21:47.880324+00:00",
@@ -347,7 +347,7 @@
   "bounded_phase2_r4_live_qualification_authorization": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
     "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
-    "authorized_by": "Current user instruction: CART 2.0 — FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:10:00.723317+00:00",
@@ -495,7 +495,7 @@
     "target": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c",
     "transaction_start_evidence": "/tmp/hbnf-p2-build/r6-live-validation/evidence/R6_INSTALL_TRANSACTION_START.json"
   },
-  "checkpoint_at_utc": "2026-10-10T01:16:07Z",
+  "checkpoint_at_utc": "2026-10-10T07:01:00+00:00",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -925,17 +925,17 @@
     "autonomous_completion_authorization": {
       "allowed": [
         "Current owner-authorized bounded Cart-only route validation and retention of the two approved routes after all exact-byte/fallback checks pass.",
-        "Continue the exact R6 coordinated release transaction and its authorized recovery only after every existing control-plane admission, preflight, rollback, and qualification gate passes.",
-        "No-cost offline release integration, tests, and private evidence preservation within the committed Cart 2.0 scope."
+        "No-cost offline release integration, tests, and private evidence preservation within the committed Cart 2.0 scope.",
+        "Prepare and request fresh exact owner authorization for the bounded R6 frame-context diagnostic; this does not authorize installation."
       ],
       "forbidden": [
-        "New firmware variants or installation outside the exact R6 and exact R4 recovery identities in the existing transaction.",
         "Router/Opal/AUX firmware or configuration changes outside the transaction, Guest Mode activation, UV energization, scope reduction, threshold changes, spending, or external outreach.",
         "Any further Matrix firmware installation without fresh exact-artifact owner authorization.",
-        "Cloudflare API writes until the authenticated Cloudflare session is re-established."
+        "Cloudflare API writes until the authenticated Cloudflare session is re-established.",
+        "No diagnostic or production firmware installation until its own exact-artifact authorization and required fail-closed preflight pass."
       ],
-      "scope": "The exact coordinated R6 transaction is consumed. Exact Foundation R4 remains installed and verified. Offline correction and candidate preparation are authorized; any additional firmware installation, backend mutation, or Cloudflare API write is not authorized by this state.",
-      "user_permission": "Current user explicitly authorizes persistent continuation of this existing coordinated transaction, including bounded Cloudflare route corrections/deployment, exact firmware installation/recovery, and qualification; no routine approval needed."
+      "scope": "The previous R6 production install and its exact R4 recovery are consumed. Exact Foundation R4 remains verified. Offline work may prepare a bounded diagnostic artifact, but its installation requires fresh exact-artifact owner authorization and preflight; no live mutation is currently authorized.",
+      "user_permission": "The current execution-reset directive authorizes offline diagnostic preparation. It explicitly requires fresh owner authorization for the exact diagnostic image before any install. No new production firmware, cloud, backend, router, Opal, AUX, or other live mutation is authorized here."
     },
     "aux_blocker": {
       "historical_direct_output_failure": "Preserved; does not override the newer current owner observation.",
@@ -1058,7 +1058,7 @@
         "Prior 16:42/16:45 times are not automatic abort or rollback triggers for the currently active seq53 path.",
         "Continue the already-authorized seq53 install/targeted validation while commands are actively progressing and safety/identity evidence remains intact.",
         "Do not broaden scope or start new exploratory work.",
-        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop—not for elapsed wall-clock time alone.",
+        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop\u2014not for elapsed wall-clock time alone.",
         "Owner-device smoke remains mandatory before declaring field-ready."
       ],
       "schema": "hbnf-field-readiness-deadline-v1",
@@ -1944,12 +1944,12 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
+      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "live_mutation_authorization": "Current user authorizes the exact coordinated R6 transaction; authority is conditional and remains admission-gated. No device/backend/firmware write is permitted while current preflight is NOT_READY.",
     "live_mutation_authorized": false,
-    "name": "Cart 2.0 coordinated R6 release — Cart routes verified; device preflight pending",
+    "name": "Cart 2.0 coordinated R6 release \u2014 Cart routes verified; device preflight pending",
     "next_action": "Restore a verified Mac-to-HBNF-Cart LAN connection when the AP is in range; then perform one fresh read-only Matrix/AUX/Opal and rollback/power preflight. Proceed to backend/firmware writes only if the existing LIVE_APPROVED admission passes.",
     "next_work": "Keep the two verified Cart-only Worker routes. Complete current backend command-confirmation audit and offline transaction rehearsal while device connectivity is unavailable. No R6 OTA or production backend change yet.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
@@ -2690,7 +2690,7 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "R6_KERNEL0_FROZEN_PERFORMANCE_FAILURE; EXACT_R4_RECOVERY_PASS; R6_INSTALL_AUTHORIZATION_CONSUMED; OFFLINE_REPAIR_ONLY",
+    "current_failure_domain": "R6_KERNEL0_FROZEN_PERFORMANCE_FAILURE; EXACT_R4_RECOVERY_PASS; BOUNDED_FRAME_CONTEXT_DIAGNOSTIC_BUILT; AWAITING_FRESH_EXACT_OWNER_AUTHORIZATION; LIVE_MUTATION_CLOSED",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
@@ -2699,11 +2699,11 @@
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Keep the verified exact R4 installed and preserve current device health.",
-      "Compare R6 integrated source/build hot paths against exact qualified R4 timing and source. Identify cause from measured ~66.7ms kernel, ~31.2ms palette, ~36.1ms audio-stage costs; do not speculate or weaken gates.",
-      "Implement the smallest offline correction and focused correctness/performance tests; preserve all functionality and exact R4 recovery.",
-      "Build one corrected candidate only after source-backed correction passes; no live installation without new exact owner authorization.",
-      "Complete independent offline release readiness; owner Cloudflare reauthentication is required before any Cloudflare API write, as recorded in the control model."
+      "Preserve exact Foundation R4; current live mutation authority remains closed.",
+      "Obtain one fresh explicit owner authorization naming diagnostic release hbnf-cart2-r6-frame-context-diagnostic-20261010 SHA-256 eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a and mandatory return to exact Foundation R4 SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
+      "After authorization only, run the fresh read-only device identity, health, power, AUX, rollback, and single-worker preflight; fail closed if any check is not proven.",
+      "If preflight passes, perform one diagnostic-only install and one bounded matched kernel-0 capture with the trace and existing safety telemetry; stop collection, preserve evidence, restore renderer snapshot, then restore and verify exact R4.",
+      "Do not install production R6 or any successor without a separate fresh exact-artifact authorization and all unchanged production admission gates."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -2720,7 +2720,8 @@
       "Do not create a replacement firmware candidate from seq45 isolated frame-max excursions unless corrected sustained-tail analysis proves a real renderer/runtime regression.",
       "Do not rerun 28-kernel sweep or observer-effect A/B when reusing exact candidate SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
       "Do not interpret the unanswered physical restore question as a failed restore or DDP failure; current WLED telemetry confirms DDP resumed.",
-      "Observer-effect measurement on exact R7 SHA-256 22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994 is complete in R7_OBSERVER_EFFECT_IDENTITY_RECEIPT.json; do not repeat the windows."
+      "Observer-effect measurement on exact R7 SHA-256 22305354031b5ecf83e6da4459a775143c34cb19c156b64f68232d887cb16994 is complete in R7_OBSERVER_EFFECT_IDENTITY_RECEIPT.json; do not repeat the windows.",
+      "R6 frame-context trace diagnostic artifact eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a is built and locally preserved; do not rebuild it. Its installation requires a fresh exact owner authorization; no live authority is open."
     ],
     "parallel_ready_during_foundation_soak": [
       "Mission Control/scoring source reconciliation and host tests",
@@ -2948,14 +2949,14 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-10T06:34:34.267410+00:00",
+  "last_updated_utc": "2026-10-10T07:01:00+00:00",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "authorization": "Historical authorization for the exact R6 coordinated transaction; consumed after its one installation failed the frozen kernel-0 performance gate and exact R4 recovery completed. No live write is authorized by this record.",
     "authorized": false,
     "candidate_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
     "controller_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
-    "current_gate": "CLOSED: exact R6 transaction consumed; frozen kernel-0 failure recorded; exact R4 restored and verified. No live mutation. Any future candidate requires fresh exact-artifact owner authorization and LIVE_APPROVED admission.",
+    "current_gate": "CLOSED: the prior exact R6 production transaction and recovery were consumed. A diagnostic-only R6 frame-context artifact is prepared; it is not authorized for installation. Fresh exact owner authorization and fresh fail-closed preflight are required. The exact R4 baseline remains the verified installed configuration.",
     "hardware_writes_permitted_now": false,
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "transaction_consumed": true
@@ -3174,7 +3175,7 @@
   "previous_phase2_r4_install_authorization_consumed": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
     "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
-    "authorized_by": "Current user instruction: CART 2.0 — FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:10:00.723317+00:00",
@@ -3463,7 +3464,7 @@
     "status": "OFFLINE_DESIGN_ONLY__OVERHEAD_AND_IMPLEMENTATION_PROOF_REQUIRED"
   },
   "schema": "hbnf-control-state-v2",
-  "status": "R6_FAILED__EXACT_R4_RECOVERED__OFFLINE_REPAIR_ONLY__LIVE_MUTATION_CLOSED",
+  "status": "R6_FRAME_CONTEXT_DIAGNOSTIC_BUILT__AWAITING_FRESH_EXACT_OWNER_AUTHORIZATION__LIVE_MUTATION_CLOSED",
   "live_mutation_authorization_reconciliation": {
     "schema": "hbnf-live-authorization-state-reconciliation-v1",
     "recorded_at_utc": "2026-10-10T06:34:15+00:00",
@@ -3485,5 +3486,27 @@
       "status": "CONSUMED__R6_FAILED_FROZEN_PERFORMANCE_GATE__R4_RECOVERED",
       "live_mutation_authorized": false
     }
+  },
+  "r6_frame_context_diagnostic_authorization": {
+    "schema": "hbnf-bounded-diagnostic-install-authorization-v1",
+    "status": "ARTIFACT_BUILT__AWAITING_FRESH_EXPLICIT_EXACT_OWNER_AUTHORIZATION__NO_LIVE_MUTATION",
+    "candidate_release_id": "hbnf-cart2-r6-frame-context-diagnostic-20261010",
+    "candidate_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
+    "candidate_size_bytes": 1511456,
+    "candidate_manifest": "evidence/cart2-execution-reset-20261010/R6_FRAME_CONTEXT_DIAGNOSTIC_MANIFEST.json",
+    "offline_tests": "evidence/cart2-execution-reset-20261010/R6_FRAME_CONTEXT_DIAGNOSTIC_OFFLINE_TESTS.json",
+    "maximum_diagnostic_installs": 1,
+    "diagnostic_only_not_production": true,
+    "authorization_consumed": false,
+    "live_mutation_authorized": false,
+    "mandatory_return_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "mandatory_return_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "authority_source": "Current owner execution-reset directive requires fresh explicit authorization for the exact diagnostic artifact and verified rollback before install.",
+    "note": "No install, restart, or device access performed.",
+    "drive_artifact_id": "1bhnr4mxbX7hLLBYzpwYyiczDuk1uKnsO",
+    "drive_manifest_id": "1ztBisNBJBIC5DSHwvXaVzY8W79UKnDCb",
+    "drive_tests_id": "1pWJW00W7DaP31O-M-bwdjTch2vwljjT7",
+    "drive_metadata_readback_size_bytes": 1511456,
+    "drive_metadata_readback_verified": true
   }
 }

@@ -7,7 +7,13 @@
     "size_bytes": 1511456,
     "path": "evidence/cart2-execution-reset-20261010/artifact/hbnf-cart2-r6-frame-context-diagnostic-20261010.bin",
     "embedded_release_id": "hbnf-cart2-r6-frame-context-diagnostic-20261010",
-    "binary_matches_build_copy": true
+    "binary_matches_build_copy": true,
+    "drive_file_id": "1bhnr4mxbX7hLLBYzpwYyiczDuk1uKnsO",
+    "drive_readback": {
+      "size_bytes": 1511456,
+      "metadata_readback_verified": true,
+      "provider_sha256_field": "unavailable"
+    }
   },
   "parent": {
     "release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
@@ -95,5 +101,7 @@
     "live_mutation_authorized": false,
     "diagnostic_install_requires_fresh_exact_owner_authorization": true,
     "device_state": "Foundation R4 per last authoritative state check; perform fresh read-only preflight before any install"
-  }
+  },
+  "drive_manifest_id": "1ztBisNBJBIC5DSHwvXaVzY8W79UKnDCb",
+  "drive_test_results_id": "1pWJW00W7DaP31O-M-bwdjTch2vwljjT7"
 }
