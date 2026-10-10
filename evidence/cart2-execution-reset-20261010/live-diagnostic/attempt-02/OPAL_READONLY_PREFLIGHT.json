@@ -1,0 +1,13 @@
+{
+  "at_utc": "2026-10-10T08:28:39.380305+00:00",
+  "curl_and_sha256sum_available": true,
+  "exact_r4_ledger": true,
+  "matrix_readonly_endpoints_http_200": true,
+  "minimum_tmp_available_kb": 16384,
+  "mutations": 0,
+  "opal_uptime_and_tmp_space_recorded": true,
+  "status": "PASS",
+  "stderr_tail": "",
+  "stdout": "OPAL_READONLY_PREFLIGHT\n 01:28:38 up  6:23,  load average: 1.29, 1.35, 1.35\nFilesystem           1K-blocks      Used Available Use% Mounted on\ntmpfs                    59392      3332     56060   6% /tmp\n/usr/bin/curl\n/usr/bin/sha256sum\n/usr/bin/wc\n55 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\nMATRIX_INFO_HTTP=200\nMATRIX_BUILD_HTTP=200\n",
+  "tmp_available_kb": 56060
+}

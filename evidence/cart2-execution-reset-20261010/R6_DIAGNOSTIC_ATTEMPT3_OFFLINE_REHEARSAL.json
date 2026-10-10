@@ -1,0 +1,28 @@
+{
+  "attempt2_failure_classification": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_ATTEMPT2_HOST_FAILURE_AND_FIX.json",
+  "candidate_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
+  "current_readonly_preflight": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-03/READONLY_PREFLIGHT.json",
+  "current_readonly_preflight_sha256": "939b9e84d8e7badd1c54a9997556ef59a1b1033d9fbed1a26744b432f0457729",
+  "device_requests": 0,
+  "dry_run_receipt_sha256": "e4ee0253bc76cf08dd53a3d90611e185927aeb52b79fc908e6bcd69fd7ca9f2a",
+  "firmware_source_changed": false,
+  "host_changes": {
+    "scripts/hbnf_r6_frame_context_diagnostic_transaction.py": "0114c952ae690859afdc19964b0f187708241f4a215f12e97f5a6b3524703f43",
+    "tests/r6_frame_context_trace/test_runtime_contract.py": "196130bf58194b670f4a4ce04584e7400e185aa37a53fb802205fd1e91a872be"
+  },
+  "offline_gates": {
+    "control_state_validation": "PASS",
+    "git_diff_check": "PASS",
+    "launch_guard_historical_failures": "PASS: invalid/stale/mismatched admission blocks before child/device request",
+    "opal_exact_transfer": "PASS: exact bytes staged, one request, curl55 no retry",
+    "platform_doctor": "PASS",
+    "py_compile": "PASS",
+    "runtime_contract": "PASS: old release rejected; exact candidate accepted; flat/wrapped AUX read semantics normalized",
+    "trace_source_contract": "PASS",
+    "transaction_sequence_dry_run": "PASS"
+  },
+  "r4_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "recorded_at_utc": "2026-10-10T08:38:49.822784+00:00",
+  "schema": "hbnf-r6-diagnostic-attempt3-offline-rehearsal-v1",
+  "status": "PASS_OFFLINE_HOST_CORRECTION__FRESH_PREFLIGHT_PASS__LIVE_ADMISSION_PENDING"
+}

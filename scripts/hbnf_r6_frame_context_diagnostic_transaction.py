@@ -53,15 +53,29 @@ def load_adapter():
     mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod);return mod
 def identity(adapter,release):
     os.environ["HBNF_EXPECTED_RELEASE_ID"]=release
+    # The pinned adapter captures EXPECTED at import time. Set the module's
+    # contract explicitly before its identity/parallel-reader helpers run.
+    adapter.EXPECTED=release
     info,build=adapter.identity()
     if info.get("ip")!="192.168.77.10" or info.get("mac","").replace(":","").lower()!=MATRIX_MAC or info.get("ver")!="16.0.1":
         raise RuntimeError("matrix target/WLED identity mismatch")
+    if build.get("release_id")!=release or build.get("candidate")!=release:
+        raise RuntimeError(f"exact runtime release identity mismatch: expected {release}; got release={build.get('release_id')} candidate={build.get('candidate')}")
     return info,build
+def response_body(value):
+    # Current pinned adapter returns flattened JSON bodies; accept its older
+    # {body, sha256} wrapper shape too, without mistaking a device JSON field.
+    if isinstance(value,dict) and "body" in value and "sha256" in value:
+        return value["body"]
+    return value
 def aux_ok(reads):
-    ai=reads["aux_info"]["body"]; ast=reads["aux_state"]["body"]
+    ai=response_body(reads["aux_info"]); ast=response_body(reads["aux_state"])
     return (ai.get("ip")=="192.168.77.11" and ai.get("mac","").replace(":","").lower()==AUX_MAC
       and ai.get("live") is True and ai.get("lm")=="DDP" and ai.get("lip")=="192.168.77.10"
       and ai.get("leds",{}).get("count")==22 and ast.get("on") is True)
+def aux_summary(reads):
+    ai=response_body(reads["aux_info"])
+    return {"aux_mac":ai.get("mac"),"aux_source":ai.get("lip"),"aux_led_count":ai.get("leds",{}).get("count")}
 def expected_artifact(path):
     p=pathlib.Path(path)
     return (DIAG_SHA,1511456,"hbnf-r6-frame-context-diagnostic") if p==DIAG_BIN else (R4_SHA,1489008,"hbnf-r4-exact-return")
@@ -269,10 +283,10 @@ def execute():
             if delay>0:time.sleep(delay)
             sample_start=time.monotonic_ns()
             reads,elapsed=adapter._parallel_soak_reads("r6-diagnostic-sample")
-            rows={k:v for k,v in reads.items() if not k.startswith("_")}
-            timing=rows["matrix_state"]["body"].get("HBNF",{}).get("timing",{})
-            ft=rows["matrix_state"]["body"].get("HBNF",{}).get("foundationTelemetry",{})
-            mi=rows["matrix_info"]["body"]; build=rows["matrix_build"]["body"]; st=rows["matrix_state"]["body"]
+            rows={k:response_body(v) for k,v in reads.items() if not k.startswith("_")}
+            timing=rows["matrix_state"].get("HBNF",{}).get("timing",{})
+            ft=rows["matrix_state"].get("HBNF",{}).get("foundationTelemetry",{})
+            mi=rows["matrix_info"]; build=rows["matrix_build"]; st=rows["matrix_state"]
             if build.get("release_id")!=DIAG_ID or mi.get("mac","").replace(":","").lower()!=MATRIX_MAC or mi.get("ip")!="192.168.77.10":raise RuntimeError("identity mismatch during capture")
             if st.get("on") is not True or st.get("HBNF",{}).get("matrixBrightness")!=44 or timing.get("kernel")!=0:raise RuntimeError("runtime state mismatch during capture")
             uptime=int(mi.get("uptime",0));restarted=last_uptime is not None and uptime<last_uptime;last_uptime=uptime
@@ -334,7 +348,7 @@ def execute():
                 deadline=time.monotonic()+60;last=None
                 while time.monotonic()<deadline:
                     reads,_=adapter._parallel_soak_reads("r4-return-ddp-check")
-                    if aux_ok(reads):last={"status":"PASS","at_utc":stamp(),"aux_mac":reads["aux_info"]["body"].get("mac"),"aux_source":reads["aux_info"]["body"].get("lip"),"aux_led_count":reads["aux_info"]["body"].get("leds",{}).get("count")};break
+                    if aux_ok(reads):last={"status":"PASS","at_utc":stamp(),**aux_summary(reads)};break
                     last={"status":"WAITING_FOR_AUX_DDP","at_utc":stamp()};time.sleep(3)
                 final_state=adapter.get(MATRIX+"/json/state")
                 final_info=adapter.get(MATRIX+"/json/info")

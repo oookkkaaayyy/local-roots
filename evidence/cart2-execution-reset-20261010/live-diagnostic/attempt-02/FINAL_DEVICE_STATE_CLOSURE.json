@@ -1,0 +1,29 @@
+{
+  "captured_at_utc": "2026-10-10T08:31:11.643525+00:00",
+  "device_mutations_after_return": 0,
+  "diagnostic_capture": "INCONCLUSIVE: trace was collected on a runtime that remained R4; no valid R6 diagnostic sample was taken.",
+  "post_return_device": {
+    "aux_led_count": 22,
+    "aux_live": true,
+    "aux_live_ip": "192.168.77.10",
+    "aux_live_mode": "DDP",
+    "aux_on": true,
+    "fps": 38,
+    "matrix_brightness": 44,
+    "matrix_mac": "704bca5b345c",
+    "matrix_on": true,
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "uptime_seconds": 64,
+    "wled": "16.0.1"
+  },
+  "preflight_path": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-02/POST_ATTEMPT_READONLY_R4_VERIFICATION.json",
+  "preflight_sha256": "75c6212f0509926a59aecc747f71665f66bd7b7837a6ab71b14cd026df332c4a",
+  "r4_return_attempts": 1,
+  "r4_runtime_identity": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "r4_upload_http": "200",
+  "renderer_restore_verified": true,
+  "result": "PASS_EXACT_R4_HEALTHY_AUX_NATIVE_DDP",
+  "schema": "hbnf-r6-diagnostic-attempt2-final-device-state-v1",
+  "transaction_path": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-02/TRANSACTION_RESULT.json",
+  "transaction_sha256": "dd246390f11e555cfceb8346daa348eb8315bd7adcdfe7b05e7993d1c991fe69"
+}

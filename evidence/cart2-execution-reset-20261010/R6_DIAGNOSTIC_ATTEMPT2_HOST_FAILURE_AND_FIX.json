@@ -1,0 +1,49 @@
+{
+  "attempt3_basis": "The new bounded diagnostic is authorized by the current owner message; the corrected harness addresses a demonstrated false-identity and telemetry-shape defect. Same exact image, new guarded binding, fresh preflight, one install plus one mandatory exact R4 return; no unchanged transaction retry.",
+  "attempt_number": 2,
+  "candidate_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
+  "classification": "INCONCLUSIVE_HOST_HARNESS_DEFECT__R4_VERIFIED",
+  "correction": [
+    "Force exact expected release in the loaded adapter before every identity/read phase.",
+    "Require both build.release_id and build.candidate equal the exact candidate before capture.",
+    "Normalize flattened and wrapped response shapes and use the normalizer in AUX final readback."
+  ],
+  "evidence": {
+    "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-02/FINAL_DEVICE_STATE_CLOSURE.json": "721f6a6b553d82177e88d07504b2160314feffd008396f18bbcacdf20849287f",
+    "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-02/FRAME_CONTEXT_TRACE.json": "16af11b71446ea682b45f392da5d8f29e2057071a4b3baade1d158375b449cc0",
+    "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-02/RENDERER_RESTORE.json": "1973a100dc56d0a437e80829f00a19df1207b881eeb1da8e85bcab37b2f0a1e8",
+    "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-02/TRANSACTION_RESULT.json": "dd246390f11e555cfceb8346daa348eb8315bd7adcdfe7b05e7993d1c991fe69",
+    "scripts/hbnf_r6_frame_context_diagnostic_transaction.py": "0114c952ae690859afdc19964b0f187708241f4a215f12e97f5a6b3524703f43",
+    "tests/r6_frame_context_trace/test_opal_transport.py": "afaa0773ca674aa580ba335a2c76843393d9cfff9d653de818295c596a52da90",
+    "tests/r6_frame_context_trace/test_runtime_contract.py": "196130bf58194b670f4a4ce04584e7400e185aa37a53fb802205fd1e91a872be",
+    "tests/r6_frame_context_trace/test_source_contract.py": "a00b25048e360b1c5eb9a20f442b2bfbb72d23058386bc336715ed0aa5ac2d8b"
+  },
+  "firmware_source_changed": false,
+  "offline_validation": [
+    "test_runtime_contract.py PASS",
+    "test_opal_transport.py PASS",
+    "test_source_contract.py PASS",
+    "hbnf_guarded_run.py PASS",
+    "transaction --dry-run PASS",
+    "hbnf_control status PASS",
+    "platform doctor PASS",
+    "git diff --check PASS"
+  ],
+  "r4_after_attempt2": {
+    "aux_ddp_live": true,
+    "matrix_healthy": true,
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "renderer_restored": true,
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "recorded_at_utc": "2026-10-10T08:36:36.134736+00:00",
+  "schema": "hbnf-r6-diagnostic-attempt2-host-failure-and-fix-v1",
+  "verified_facts": [
+    "Opal staged exact candidate bytes and reported one /update HTTP 200 response.",
+    "The immediate identity waiter returned the already-installed R4 identity without enforcing candidate identity.",
+    "The pinned telemetry adapter captured EXPECTED=R4 at module import and rejected the post-install telemetry because it did not receive an updated expectation.",
+    "The adapter return structure required flattening but the transaction attempted wrapped body access during R4 AUX verification.",
+    "The attempt-2 trace has no exact bound candidate identity and is not attributable to R6.",
+    "Final read-only closure verified exact R4 SHA/runtime, Matrix health, AUX native DDP, renderer restoration, and zero mutations after return."
+  ]
+}
