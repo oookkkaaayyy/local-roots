@@ -140,7 +140,10 @@
       "mime": "text/html",
       "cache_control": "public, max-age=0, must-revalidate",
       "etag": "\"sha256-c4464e2304010da98ad30342b17452fda241c6670f9cbc667750c8f968d10244\"",
-      "url_path": "/hbnf-cart"
+      "url_path": "/hbnf-cart.html",
+      "alias_paths": [
+        "/hbnf-cart"
+      ]
     },
     {
       "package_path": "hbnf-cart.js",
@@ -169,13 +172,14 @@
     "/hbnf-cart-sw.js",
     "/hbnf-cart-ui-v6.css",
     "/hbnf-cart-ui-v6.mjs",
-    "/hbnf-cart",
-    "/hbnf-cart.js"
+    "/hbnf-cart.html",
+    "/hbnf-cart.js",
+    "/hbnf-cart"
   ],
   "observed_current_static_cache_behavior": "HTML routes, CSS, PNG: public, max-age=0, must-revalidate; JS/MJS/webmanifest: no-cache, must-revalidate",
-  "worker_module_sha256": "d9bec050c427fe50ef12f376d9f5e60a745764c44b0b53d74ea923b86b49bdcf",
-  "worker_module_bytes": 152774,
-  "config_sha256": "8fde3ed8c85d7e8db28f4f29ae787cdce1505b9a84e19b23737afc3b9830e927",
+  "worker_module_sha256": "5b7ab92560a9b7e568917427273e00d691e9e0bd38953fabc24d947c6f152d4f",
+  "worker_module_bytes": 152833,
+  "config_sha256": "3dc363c39d5c6163de965ac124638466e2eed60e30aebbcf19b49923c091f2f9",
   "existing_headers_config_preserved": "/\n  Cache-Control: no-store\n/*.html\n  Cache-Control: no-store\n/*.webmanifest\n  Cache-Control: no-cache, must-revalidate\n/*.js\n  Cache-Control: no-cache, must-revalidate\n/*.mjs\n  Cache-Control: no-cache, must-revalidate\n",
   "candidate_traffic_intent": {
     "candidate": 0,
@@ -185,12 +189,32 @@
     {
       "id": "70e9a435-f3c9-4298-99f3-e4d2ac6f005a",
       "number": 315,
-      "status": "deployed at 0 percent; override probe selected old cached asset, so rejected"
+      "status": "in active deployment at 0%; previous config did not select candidate through override"
     },
     {
       "id": "2b4cb0d7-16f9-45ae-814e-9fb86018b282",
       "number": 316,
-      "status": "uploaded only, not in deployment"
+      "status": "uploaded only; provider readback run_worker_first=false and canonical route missing"
+    },
+    {
+      "id": "ec26627b-8f95-4b68-a637-01a88bd93807",
+      "number": 317,
+      "status": "uploaded only; canonical route source fixed; provider accepted version but readback run_worker_first=false; not deployed"
     }
-  ]
+  ],
+  "candidate_route_count": 17,
+  "owner_url_contract": {
+    "canonical": "/hbnf-cart.html",
+    "aliases": [
+      "/hbnf-cart"
+    ],
+    "same_package_bytes": true
+  },
+  "config_file": "version-upload-metadata.json",
+  "uploaded_version_metadata_contract": "multipart Version Upload API metadata: keep_assets=true; assets.config.run_worker_first; explicit ASSETS binding; no asset file parts",
+  "active_deployment_readback": "post-attempt-deployment-readback.json",
+  "provider_readback": "provider-version-readback.json",
+  "provider_create_error_receipt": "beta-version-create-response-sanitized.json",
+  "version_upload_response_receipt": "version-upload-response-sanitized.json",
+  "provider_api_blocker": "Legacy version upload preserves assets with keep_assets=true but provider readback leaves run_worker_first=false. Documented beta JSON version create accepts assets.config.run_worker_first but returns error 10224 when asked to retain assets with keep_assets=true; it requires explicit asset upload. No complete current site asset set was uploaded or available for safe replacement."
 }

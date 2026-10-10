@@ -1,0 +1,41 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "CART2_CLOUDFLARE_CANONICAL_OWNER_ROUTE_PRIVATE_TEST_20261010",
+  "summary": "Correct the private Cart Worker owner-page mapping to serve the approved unchanged package at /hbnf-cart.html and its /hbnf-cart alias; use exact provider metadata readback to validate selective Worker-first routing without public promotion.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Owner authorized one corrected private 0%-traffic candidate only, with the existing version held at 100%, keep_assets=true, unchanged approved package bytes, selective Worker-first paths, and no public promotion.",
+      "affected_subsystem": "Offline candidate Worker route map and Cloudflare version-upload metadata; no static package contents, active public deployment, backend, firmware, or devices changed.",
+      "rollback_reference": "No active deployment was changed. Preserve current deployment 5d7f7a4a-87cf-4cc2-84bf-e67d11f8fa06 (version 4a675ee4-807d-4ab1-b7e6-e2f91e27e39c at 100%) and leave candidate 315 at 0%. Uploaded candidate 317 remains outside the active deployment.",
+      "evidence_sources": [
+        "https://developers.cloudflare.com/workers/configuration/multipart-upload-metadata/",
+        "https://developers.cloudflare.com/api/resources/workers/subresources/beta/subresources/workers/subresources/versions/methods/create/",
+        "https://developers.cloudflare.com/workers/static-assets/binding/",
+        "https://developers.cloudflare.com/workers/versions-and-deployments/version-overrides/"
+      ],
+      "tests": [
+        "Approved package ZIP SHA-256 and all 16 package file sizes/SHA-256 values verified against the Worker payload.",
+        "tests/worker candidate test: PASS for all 16 package files, canonical Owner URL, /hbnf-cart alias, exact bytes, content types, cache controls, ETag/304, HEAD, and ASSETS fallback.",
+        "Cloudflare provider version readback: candidate 317 retains existing ASSETS binding and header rules but reports assets.config.run_worker_first=false; not deployed.",
+        "Cloudflare beta version API returned error 10224 when keep_assets=true; no version created. Active deployment readback remains previous version at 100%, candidate at 0%."
+      ],
+      "live_state": {
+        "active_deployment_mutated": false,
+        "public_traffic_promoted": false,
+        "replacement_assets_uploaded": false,
+        "firmware_backend_devices_mutated": false,
+        "release_readiness": "NO_GO_CLOUDFLARE_ROUTE_METADATA_NOT_APPLIED",
+        "t4": "NOT_ACCEPTED",
+        "t5": "NOT_ACCEPTED"
+      }
+    }
+  }
+}

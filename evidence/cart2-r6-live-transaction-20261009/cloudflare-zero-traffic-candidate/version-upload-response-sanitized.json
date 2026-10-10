@@ -1,0 +1,86 @@
+{
+  "http_status": 200,
+  "provider_response": {
+    "result": {
+      "id": "ec26627b-8f95-4b68-a637-01a88bd93807",
+      "number": 317,
+      "metadata": {
+        "created_on": "2026-10-10T03:03:59.138994Z",
+        "modified_on": "2026-10-10T03:03:59.138994Z",
+        "source": "api",
+        "author_id": "87a47405491a6e3532f593c43bc18c30",
+        "author_email": "andrewzarnich@gmail.com",
+        "has_preview": true
+      },
+      "annotations": {
+        "workers/message": "HBNF Cart 2.0 private 0%-traffic candidate; canonical Owner route and alias verified; existing assets retained",
+        "workers/tag": "cart2-owner-guest-r2-canonical-20261010",
+        "workers/triggered_by": "version_upload"
+      },
+      "resources": {
+        "script": {
+          "etag": "34626f04bb398c732f387bbca36d126813e6f5f21bd60aa8e1da567958dad991",
+          "handlers": [
+            "fetch"
+          ],
+          "last_deployed_from": "api"
+        },
+        "script_runtime": {
+          "assets": {
+            "headers": {
+              "version": 2,
+              "rules": {
+                "/": {
+                  "set": {
+                    "cache-control": "no-store"
+                  },
+                  "unset": []
+                },
+                "/*.html": {
+                  "set": {
+                    "cache-control": "no-store"
+                  },
+                  "unset": []
+                },
+                "/*.js": {
+                  "set": {
+                    "cache-control": "no-cache, must-revalidate"
+                  },
+                  "unset": []
+                },
+                "/*.mjs": {
+                  "set": {
+                    "cache-control": "no-cache, must-revalidate"
+                  },
+                  "unset": []
+                },
+                "/*.webmanifest": {
+                  "set": {
+                    "cache-control": "no-cache, must-revalidate"
+                  },
+                  "unset": []
+                }
+              }
+            },
+            "raw_headers": "/\n  Cache-Control: no-store\n/*.html\n  Cache-Control: no-store\n/*.webmanifest\n  Cache-Control: no-cache, must-revalidate\n/*.js\n  Cache-Control: no-cache, must-revalidate\n/*.mjs\n  Cache-Control: no-cache, must-revalidate\n",
+            "serve_directly": true,
+            "raw_run_worker_first": false,
+            "base_path": "/"
+          },
+          "compatibility_date": "2026-07-28",
+          "usage_model": "standard"
+        },
+        "bindings": [
+          {
+            "name": "ASSETS",
+            "type": "assets"
+          }
+        ]
+      },
+      "startup_time_ms": 0
+    },
+    "success": true,
+    "errors": [],
+    "messages": []
+  }
+}

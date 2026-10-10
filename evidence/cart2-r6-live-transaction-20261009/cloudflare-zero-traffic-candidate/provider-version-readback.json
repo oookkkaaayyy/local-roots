@@ -1,0 +1,80 @@
+[
+  {
+    "path": "/workers/workers/hbnf/versions/ec26627b-8f95-4b68-a637-01a88bd93807",
+    "http_status": 200,
+    "success": true,
+    "id": "ec26627b-8f95-4b68-a637-01a88bd93807",
+    "number": 317,
+    "assets": {
+      "config": {
+        "html_handling": "auto-trailing-slash",
+        "not_found_handling": "none",
+        "run_worker_first": false,
+        "base_path": "/"
+      },
+      "jwt_present": false
+    },
+    "bindings": [
+      {
+        "name": "ASSETS",
+        "type": "assets"
+      }
+    ],
+    "script_runtime_assets": {},
+    "script_etag": null
+  },
+  {
+    "path": "/workers/scripts/hbnf/versions/ec26627b-8f95-4b68-a637-01a88bd93807",
+    "http_status": 200,
+    "success": true,
+    "id": "ec26627b-8f95-4b68-a637-01a88bd93807",
+    "number": 317,
+    "assets": {
+      "config": null,
+      "jwt_present": false
+    },
+    "bindings": null,
+    "script_runtime_assets": {
+      "headers": {
+        "version": 2,
+        "rules": {
+          "/": {
+            "set": {
+              "cache-control": "no-store"
+            },
+            "unset": []
+          },
+          "/*.html": {
+            "set": {
+              "cache-control": "no-store"
+            },
+            "unset": []
+          },
+          "/*.js": {
+            "set": {
+              "cache-control": "no-cache, must-revalidate"
+            },
+            "unset": []
+          },
+          "/*.mjs": {
+            "set": {
+              "cache-control": "no-cache, must-revalidate"
+            },
+            "unset": []
+          },
+          "/*.webmanifest": {
+            "set": {
+              "cache-control": "no-cache, must-revalidate"
+            },
+            "unset": []
+          }
+        }
+      },
+      "raw_headers": "/\n  Cache-Control: no-store\n/*.html\n  Cache-Control: no-store\n/*.webmanifest\n  Cache-Control: no-cache, must-revalidate\n/*.js\n  Cache-Control: no-cache, must-revalidate\n/*.mjs\n  Cache-Control: no-cache, must-revalidate\n",
+      "serve_directly": true,
+      "raw_run_worker_first": false,
+      "base_path": "/"
+    },
+    "script_etag": "34626f04bb398c732f387bbca36d126813e6f5f21bd60aa8e1da567958dad991"
+  }
+]

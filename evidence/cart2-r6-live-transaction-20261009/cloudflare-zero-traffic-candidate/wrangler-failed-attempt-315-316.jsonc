@@ -1,0 +1,29 @@
+{
+  "$schema": "https://unpkg.com/wrangler@4.148.0/config-schema.json",
+  "name": "hbnf",
+  "account_id": "e3bc6b78f1104fa0c2a01245084594cf",
+  "main": "./worker.mjs",
+  "compatibility_date": "2026-07-28",
+  "assets": {
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/guest/hbnf-cart/guest.css",
+      "/guest/hbnf-cart/guest.js",
+      "/guest/hbnf-cart/",
+      "/hbnf-cart-features.mjs",
+      "/hbnf-cart-icon-180.png",
+      "/hbnf-cart-icon-192.png",
+      "/hbnf-cart-icon-512.png",
+      "/hbnf-cart-manifest.webmanifest",
+      "/hbnf-cart-net.mjs",
+      "/hbnf-cart-semantic.mjs",
+      "/hbnf-cart-skins-score.mjs",
+      "/hbnf-cart-sw.js",
+      "/hbnf-cart-ui-v6.css",
+      "/hbnf-cart-ui-v6.mjs",
+      "/hbnf-cart.html",
+      "/hbnf-cart.js",
+      "/hbnf-cart"
+    ]
+  }
+}

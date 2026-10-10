@@ -1,0 +1,82 @@
+{
+  "schema": "hbnf-cloudflare-corrected-private-candidate-result-v1",
+  "observed_at_utc": "2026-10-10T03:04:38Z",
+  "authorization": "One corrected private 0%-traffic candidate test; current version must stay 100%; no public promotion or replacement assets.",
+  "worker": "hbnf",
+  "account_id": "e3bc6b78f1104fa0c2a01245084594cf",
+  "approved_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
+  "source_correction": {
+    "canonical_owner_url": "/hbnf-cart.html",
+    "alias": "/hbnf-cart",
+    "same_exact_package_bytes": true,
+    "worker_module_sha256": "5b7ab92560a9b7e568917427273e00d691e9e0bd38953fabc24d947c6f152d4f",
+    "worker_module_bytes": 152833,
+    "package_files": 16,
+    "candidate_url_paths": 17,
+    "offline_test": "PASS: all 16 zip entries hash/size match the approved package; 17 routes including canonical and alias return exact expected bytes, MIME, cache-control, ETag/304, HEAD, and fallback behavior."
+  },
+  "provider_attempts": [
+    {
+      "endpoint": "POST /accounts/{account_id}/workers/scripts/hbnf/versions",
+      "result": "HTTP 400; no version created",
+      "provider_error": {
+        "code": 10021,
+        "message": "annotations not allowed: workers/triggered_by"
+      },
+      "correction": "Removed unsupported workers/triggered_by; no feature/config/source changed."
+    },
+    {
+      "endpoint": "POST /accounts/{account_id}/workers/scripts/hbnf/versions",
+      "result": "HTTP 200; version created only, not deployed",
+      "version_id": "ec26627b-8f95-4b68-a637-01a88bd93807",
+      "version_number": 317,
+      "provider_readback": {
+        "beta_assets_config": {
+          "base_path": "/",
+          "html_handling": "auto-trailing-slash",
+          "not_found_handling": "none",
+          "run_worker_first": false
+        },
+        "runtime_assets": {
+          "raw_run_worker_first": false,
+          "serve_directly": true,
+          "base_path": "/",
+          "existing_header_rules_preserved": true
+        },
+        "ASSETS_binding_present": true
+      },
+      "decision": "Invalid for testing: Cloudflare accepted the version but did not accept/apply assets.config.run_worker_first in this legacy Version Upload API."
+    },
+    {
+      "endpoint": "POST /accounts/{account_id}/workers/workers/hbnf/versions",
+      "result": "HTTP 400; version not created",
+      "provider_error": {
+        "code": 10224,
+        "message": "Assets cannot be inherited between versions using keep_assets. Provide an explicit assets upload to attach assets to the new version instead."
+      },
+      "decision": "Documented API accepts assets.config.run_worker_first, but explicitly rejects keep_assets asset inheritance. An explicit asset upload would replace/reconstruct the current site asset set, which is not authorized and cannot be proven safe from available complete source."
+    }
+  ],
+  "deployment_readback": {
+    "id": "5d7f7a4a-87cf-4cc2-84bf-e67d11f8fa06",
+    "current_version_id": "4a675ee4-807d-4ab1-b7e6-e2f91e27e39c",
+    "current_percent": 100,
+    "existing_candidate_0_version": "70e9a435-f3c9-4298-99f3-e4d2ac6f005a",
+    "existing_candidate_percent": 0
+  },
+  "public_site_mutation": "NONE; deployment remains unchanged; no static assets uploaded; no production traffic promoted.",
+  "candidate_selection": "NOT TESTED: no candidate version has both provider-confirmed selective Worker-first routing and the required preserved existing asset set. A version override here would not prove the intended path.",
+  "unrelated_assets": "Active deployment remains the same 100% version. Previously verified favicon and main manifest hashes remain baseline evidence; this task performed no asset/deployment mutation.",
+  "result": "NO_GO_PRIVATE_CANDIDATE_NOT_DEPLOYED",
+  "precise_blocker": "The existing legacy upload endpoint preserves assets with keep_assets=true but provider readback leaves run_worker_first=false. The documented newer JSON version endpoint can set run_worker_first but returns error 10224 when keep_assets=true, requiring an explicit upload of the whole asset set. No authorized, complete current-site asset set is available to satisfy that requirement without risk of replacing unrelated site assets.",
+  "evidence_files": [
+    "candidate-source-manifest.json",
+    "version-upload-metadata.json",
+    "worker.mjs",
+    "test_worker.mjs",
+    "version-upload-response-sanitized.json",
+    "provider-version-readback.json",
+    "beta-version-create-response-sanitized.json",
+    "post-attempt-deployment-readback.json"
+  ]
+}

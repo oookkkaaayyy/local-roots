@@ -1,0 +1,41 @@
+{
+  "main_module": "worker.mjs",
+  "compatibility_date": "2026-07-28",
+  "bindings": [
+    {
+      "name": "ASSETS",
+      "type": "assets"
+    }
+  ],
+  "keep_assets": true,
+  "assets": {
+    "config": {
+      "base_path": "/",
+      "html_handling": "auto-trailing-slash",
+      "not_found_handling": "none",
+      "run_worker_first": [
+        "/guest/hbnf-cart/guest.css",
+        "/guest/hbnf-cart/guest.js",
+        "/guest/hbnf-cart/",
+        "/hbnf-cart-features.mjs",
+        "/hbnf-cart-icon-180.png",
+        "/hbnf-cart-icon-192.png",
+        "/hbnf-cart-icon-512.png",
+        "/hbnf-cart-manifest.webmanifest",
+        "/hbnf-cart-net.mjs",
+        "/hbnf-cart-semantic.mjs",
+        "/hbnf-cart-skins-score.mjs",
+        "/hbnf-cart-sw.js",
+        "/hbnf-cart-ui-v6.css",
+        "/hbnf-cart-ui-v6.mjs",
+        "/hbnf-cart.html",
+        "/hbnf-cart.js",
+        "/hbnf-cart"
+      ]
+    }
+  },
+  "annotations": {
+    "workers/message": "HBNF Cart 2.0 private 0%-traffic candidate; canonical Owner route and alias verified; existing assets retained",
+    "workers/tag": "cart2-owner-guest-r2-canonical-20261010"
+  }
+}

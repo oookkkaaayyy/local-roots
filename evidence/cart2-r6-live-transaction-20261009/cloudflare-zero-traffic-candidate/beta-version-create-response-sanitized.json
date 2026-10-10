@@ -1,0 +1,17 @@
+{
+  "http_status": 400,
+  "request_sha256": "1fc127dc4fea8f198d24437315a24ba00a5190f9a4f8b8be4461163941b53b3e",
+  "module_sha256": "5b7ab92560a9b7e568917427273e00d691e9e0bd38953fabc24d947c6f152d4f",
+  "keep_assets_requested": true,
+  "provider_response": {
+    "result": null,
+    "success": false,
+    "errors": [
+      {
+        "code": 10224,
+        "message": "Assets cannot be inherited between versions using keep_assets. Provide an explicit assets upload to attach assets to the new version instead."
+      }
+    ],
+    "messages": []
+  }
+}

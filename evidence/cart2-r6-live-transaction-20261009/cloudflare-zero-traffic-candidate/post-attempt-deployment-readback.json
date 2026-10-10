@@ -1,0 +1,19 @@
+{
+  "http_status": 200,
+  "success": true,
+  "active": {
+    "id": "5d7f7a4a-87cf-4cc2-84bf-e67d11f8fa06",
+    "versions": [
+      {
+        "version_id": "70e9a435-f3c9-4298-99f3-e4d2ac6f005a",
+        "percentage": 0
+      },
+      {
+        "version_id": "4a675ee4-807d-4ab1-b7e6-e2f91e27e39c",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-10-10T01:45:11.389028Z"
+  },
+  "observed_at_utc": "2026-10-10T03:04:38.565873+00:00"
+}
