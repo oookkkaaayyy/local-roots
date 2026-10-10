@@ -47,7 +47,7 @@ class FakePort:
         self.device_requests += 5
         return {"pass": True,"release_id":module.RELEASE,
             "brightness_baseline":{"runtime":{"matrixBrightness":52,"auxBrightness":245,"vibe":0},
-                "config":{"matrixBrightness":52,"auxBrightness":245,"vibe":0}}}
+                "persisted":{"matrixBrightness":52,"auxBrightness":245,"vibe":0}}}
 
     def apply_qualification_brightness(self, baseline):
         self.device_requests += 1

@@ -53,17 +53,21 @@ def run(argv, timeout=30, input_bytes=None):
     return subprocess.run(argv, input=input_bytes, capture_output=True, timeout=timeout)
 
 
-def get_json(url: str, timeout: float = 4):
+def get_json(url: str, timeout: float = 4, request_counter=None):
     import urllib.request
+    if request_counter is not None:
+        request_counter()
     req = urllib.request.Request(url, headers={"Cache-Control": "no-store"})
     with urllib.request.urlopen(req, timeout=timeout) as response:
         raw = response.read()
         return response.status, raw, json.loads(raw)
 
 
-def post_json(url: str, payload: dict, timeout: float = 10):
+def post_json(url: str, payload: dict, timeout: float = 10, request_counter=None):
     """Issue one JSON mutation. Callers must resolve timeouts by readback, never resend blindly."""
     import urllib.request
+    if request_counter is not None:
+        request_counter()
     req = urllib.request.Request(url, data=json.dumps(payload, separators=(",", ":")).encode(),
         headers={"Content-Type": "application/json", "Cache-Control": "no-store"}, method="POST")
     with urllib.request.urlopen(req, timeout=timeout) as response:
@@ -76,41 +80,94 @@ def post_json(url: str, payload: dict, timeout: float = 10):
             raise RuntimeError(f"POST {url} returned invalid JSON: {type(exc).__name__}: {exc}") from exc
 
 
-def brightness_readback(state: dict, config: dict) -> dict:
-    """Return only the HBNF settings needed for safe baseline matching; never retain full cfg secrets."""
+PERSISTED_CONFIG_URL = MATRIX+"/edit?func=download&path=%2Fcfg.json"
+
+
+def _get_json_counted(url, timeout, request_counter):
+    if request_counter is None:
+        return get_json(url, timeout=timeout)
+    return get_json(url, timeout=timeout, request_counter=request_counter)
+
+
+def _post_json_counted(url, payload, request_counter):
+    if request_counter is None:
+        return post_json(url, payload)
+    return post_json(url, payload, request_counter=request_counter)
+
+
+def read_matrix_identity(request_counter=None):
+    """Read and validate the exact R6 Matrix identity without retaining unrelated config data."""
+    info = _get_json_counted(MATRIX+"/json/info", 4, request_counter)[2]
+    build = _get_json_counted(MATRIX+"/hbnf/build.json", 4, request_counter)[2]
+    identity = {"ip": info.get("ip"), "mac": str(info.get("mac", "")).replace(":", "").lower(),
+        "wled": info.get("ver"), "release_id": build.get("release_id"),
+        "candidate": build.get("candidate"), "build_mac": str(build.get("mac", "")).replace(":", "").lower()}
+    if (identity["ip"] != "192.168.77.10" or identity["mac"] != MATRIX_MAC or identity["wled"] != "16.0.1"
+            or identity["release_id"] != RELEASE or identity["candidate"] != RELEASE or identity["build_mac"] != MATRIX_MAC):
+        raise RuntimeError("qualification-matrix-identity-binding-failed")
+    return identity, info, build
+
+
+def sanitized_persisted_hbnf(config: dict) -> dict:
+    """Extract only the three HBNF fields; raw cfg may contain credentials and is never logged or written."""
+    um = config.get("um") if isinstance(config, dict) else None
+    hbnf = um.get("hbnfFoundationV1") if isinstance(um, dict) else None
+    if not isinstance(hbnf, dict):
+        raise RuntimeError("persisted-config-missing-HBNF-settings")
+    values = {key: hbnf.get(key) for key in ("matrixBrightness", "auxBrightness", "vibe")}
+    if any(type(value) is not int for value in values.values()):
+        raise RuntimeError("persisted-config-HBNF-settings-partial-or-invalid")
+    return values
+
+
+def brightness_readback(state: dict, persisted: dict) -> dict:
+    """Return only runtime and persisted HBNF settings; never retain full cfg secrets."""
     h = state.get("HBNF") if isinstance(state, dict) else None
-    cfg_um = config.get("um") if isinstance(config, dict) else None
-    cfg_h = cfg_um.get("hbnfFoundationV1") if isinstance(cfg_um, dict) else None
-    if not isinstance(h, dict) or not isinstance(cfg_h, dict):
-        raise RuntimeError("brightness-readback-missing-HBNF-runtime-or-config")
+    if not isinstance(h, dict) or not isinstance(persisted, dict):
+        raise RuntimeError("brightness-readback-missing-HBNF-runtime-or-persisted-config")
     runtime = {key: h.get(key) for key in ("matrixBrightness", "auxBrightness", "vibe")}
-    stored = {key: cfg_h.get(key) for key in ("matrixBrightness", "auxBrightness", "vibe")}
+    stored = dict(persisted)
     if any(type(v) is not int for v in runtime.values()) or any(type(v) is not int for v in stored.values()):
         raise RuntimeError("brightness-readback-partial-or-invalid-HBNF-values")
-    return {"matrix_on": state.get("on") is True, "runtime": runtime, "config": stored}
+    return {"matrix_on": state.get("on") is True, "runtime": runtime, "persisted": stored}
 
 
-def validate_brightness_baseline(state: dict, config: dict) -> dict:
-    values = brightness_readback(state, config)
+def validate_brightness_baseline(state: dict, persisted: dict) -> dict:
+    values = brightness_readback(state, persisted)
     if values["matrix_on"] is not True:
         raise RuntimeError("qualification-baseline-matrix-output-off")
     if values["runtime"]["matrixBrightness"] != QUALIFICATION_BASELINE_BRIGHTNESS:
         raise RuntimeError("qualification-baseline-runtime-brightness-mismatch")
-    if values["config"]["matrixBrightness"] != QUALIFICATION_BASELINE_BRIGHTNESS:
+    if values["persisted"]["matrixBrightness"] != QUALIFICATION_BASELINE_BRIGHTNESS:
         raise RuntimeError("qualification-baseline-config-brightness-mismatch")
-    if values["runtime"] != values["config"]:
+    if values["runtime"] != values["persisted"]:
         raise RuntimeError("qualification-baseline-runtime-config-mismatch")
     return values
 
 
-def read_matrix_brightness_pair():
-    state = get_json(MATRIX+"/json/state")[2]
-    config = get_json(MATRIX+"/json/cfg")[2]
-    return brightness_readback(state, config)
+def read_matrix_context(request_counter=None):
+    identity_before, info, build = read_matrix_identity(request_counter) if request_counter is not None else read_matrix_identity()
+    state = _get_json_counted(MATRIX+"/json/state", 4, request_counter)[2]
+    # The read-only file API is parsed in memory; only HBNF brightness/AUX/vibe
+    # fields survive extraction, regardless of whether the target requires a PIN.
+    persisted_raw = _get_json_counted(PERSISTED_CONFIG_URL, 6, request_counter)[2]
+    persisted = sanitized_persisted_hbnf(persisted_raw)
+    identity_after, _, _ = read_matrix_identity(request_counter) if request_counter is not None else read_matrix_identity()
+    if identity_before != identity_after:
+        raise RuntimeError("qualification-matrix-identity-changed-during-readback")
+    return {"identity": identity_after, "info": info, "build": build, "state": state,
+        "persisted": persisted, "brightness": brightness_readback(state, persisted)}
+
+
+def read_matrix_brightness_pair(request_counter=None):
+    context = read_matrix_context(request_counter)
+    result = context["brightness"]
+    result["identity"] = context["identity"]
+    return result
 
 
 def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep,
-                             monotonic=time.monotonic) -> dict:
+                             monotonic=time.monotonic, request_counter=None) -> dict:
     """Set the frozen test brightness or restore captured HBNF settings, resolving uncertain POSTs by readback."""
     if operation == "measure":
         if not isinstance(target, dict) or set(target) != {"matrixBrightness", "auxBrightness", "vibe"}:
@@ -119,21 +176,25 @@ def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep
             raise RuntimeError("qualification-baseline-receipt-invalid")
         requested = {"matrixBrightness": FROZEN_MATRIX_BRIGHTNESS}
         target_brightness = FROZEN_MATRIX_BRIGHTNESS
+        expected_settings = {**target, "matrixBrightness": target_brightness}
     elif operation == "restore":
         if not isinstance(target, dict) or set(target) != {"matrixBrightness", "auxBrightness", "vibe"}:
             raise RuntimeError("qualification-baseline-receipt-invalid")
         if any(type(v) is not int for v in target.values()):
             raise RuntimeError("qualification-baseline-receipt-invalid")
-        requested = target.copy()
+        requested = {"matrixBrightness": target["matrixBrightness"]}
         target_brightness = target["matrixBrightness"]
+        expected_settings = dict(target)
     else:
         raise RuntimeError("unknown-qualification-brightness-operation")
 
-    payload = {"on": True, "HBNF": requested}
+    # Rebind the target immediately before every write; never set power, AUX, or Vibe.
+    identity_before_post, _, _ = read_matrix_identity(request_counter) if request_counter is not None else read_matrix_identity()
+    payload = {"HBNF": requested}
     post_error = None
     try:
         # Exactly one POST. A timeout has an unknown outcome; resolve only with readback.
-        post_json(MATRIX+"/json/state", payload)
+        _post_json_counted(MATRIX+"/json/state", payload, request_counter)
     except Exception as exc:
         post_error = f"{type(exc).__name__}: {exc}"
 
@@ -141,28 +202,29 @@ def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep
     last_error = None
     while monotonic() <= deadline:
         try:
-            values = read_matrix_brightness_pair()
-            if operation == "measure":
-                expected_runtime = {**target, "matrixBrightness": target_brightness}
-                expected_config = {**target, "matrixBrightness": target_brightness}
-            else:
-                expected_runtime = dict(requested)
-                expected_config = dict(requested)
+            values = read_matrix_brightness_pair(request_counter) if request_counter is not None else read_matrix_brightness_pair()
+            if values.get("identity") != identity_before_post:
+                raise RuntimeError("qualification-matrix-identity-changed-before-readback")
+            expected_runtime = dict(expected_settings)
+            expected_persisted = dict(expected_settings)
             if values["matrix_on"] is True and all(values["runtime"].get(k) == v for k, v in expected_runtime.items()) and all(
-                    values["config"].get(k) == v for k, v in expected_config.items()):
+                    values["persisted"].get(k) == v for k, v in expected_persisted.items()):
                 # HBNF defers dirty marking for 850 ms after /json/state; wait beyond it,
                 # then take a second readback before starting profiles or closing restore.
                 sleeper(CONFIG_SAVE_SETTLE_SECONDS)
-                final = read_matrix_brightness_pair()
+                final = read_matrix_brightness_pair(request_counter) if request_counter is not None else read_matrix_brightness_pair()
+                if final.get("identity") != identity_before_post:
+                    raise RuntimeError("qualification-matrix-identity-changed-before-final-readback")
                 if not (final["matrix_on"] is True and all(final["runtime"].get(k) == v for k, v in expected_runtime.items()) and all(
-                        final["config"].get(k) == v for k, v in expected_config.items())):
+                        final["persisted"].get(k) == v for k, v in expected_persisted.items())):
                     raise RuntimeError("qualification-brightness-post-settle-readback-mismatch")
                 return {"operation": operation, "target_matrix_brightness": target_brightness,
                     "requested_hbnf": requested, "post_outcome": "UNKNOWN_RESOLVED_BY_READBACK" if post_error else "RESPONSE_RECEIVED",
                     "post_error": post_error, "save_settle_seconds": CONFIG_SAVE_SETTLE_SECONDS,
                     "readback": final, "verified": True,
-                    "readback_endpoint": "GET /json/state plus GET /json/cfg",
-                    "config_readback_semantics": "WLED 16.0.1 serializes active configuration; no raw filesystem-write acknowledgement is exposed by this API"}
+                    "identity_before_post": identity_before_post,
+                    "readback_endpoints": ["GET /json/info", "GET /hbnf/build.json", "GET /json/state", PERSISTED_CONFIG_URL],
+                    "persisted_readback_semantics": "Raw /cfg.json is parsed in memory; only HBNF brightness/AUX/vibe fields are retained; raw config is not logged or saved"}
             last_error = "qualification-brightness-readback-mismatch"
         except Exception as exc:
             last_error = f"{type(exc).__name__}: {exc}"
@@ -494,6 +556,8 @@ def coordinate_qualification(port):
         try:
             result["brightness_setup"] = port.apply_qualification_brightness(
                 preflight["brightness_baseline"]["runtime"])
+            if not isinstance(result["brightness_setup"], dict) or result["brightness_setup"].get("verified") is not True:
+                raise RuntimeError("qualification-brightness-setup-did-not-verify")
         except Exception as exc:
             setup_error = f"{type(exc).__name__}: {exc}"
         else:
@@ -511,6 +575,8 @@ def coordinate_qualification(port):
             try:
                 result["brightness_restore"] = port.restore_qualification_brightness(
                     preflight["brightness_baseline"]["runtime"])
+                if not isinstance(result["brightness_restore"], dict) or result["brightness_restore"].get("verified") is not True:
+                    raise RuntimeError("qualification-brightness-restore-did-not-verify")
             except Exception as exc:
                 restore_error = f"{type(exc).__name__}: {exc}"
                 result["brightness_restore"] = {"verified": False, "error": restore_error}
@@ -566,6 +632,9 @@ class LivePort:
     def admit(self, stage="LIVE_APPROVED"):
         self.admission = check_admission(self.admission_path, self.capsule_path, self.proof_path, stage)
 
+    def _record_device_request(self):
+        self.device_requests += 1
+
     def verify_local_artifacts(self):
         exact_artifacts()
         if self.admission is None:
@@ -581,9 +650,10 @@ class LivePort:
         route=run(["route","-n","get","192.168.77.10"],timeout=5).stdout.decode(errors="replace")
         if "AC Power" not in power or "interface: en0" not in route:
             raise RuntimeError("qualification-only host AC/LAN preflight failed")
-        mi=get_json(MATRIX+"/json/info")[2]; ms=get_json(MATRIX+"/json/state")[2]; mc=get_json(MATRIX+"/json/cfg")[2]; mb=get_json(MATRIX+"/hbnf/build.json")[2]
-        ai=get_json(AUX+"/json/info")[2]; ast=get_json(AUX+"/json/state")[2]
-        self.device_requests+=6
+        matrix_context=read_matrix_context(self._record_device_request)
+        mi=matrix_context["info"]; ms=matrix_context["state"]; mb=matrix_context["build"]
+        ai=_get_json_counted(AUX+"/json/info", 4, self._record_device_request)[2]
+        ast=_get_json_counted(AUX+"/json/state", 4, self._record_device_request)[2]
         h=ms.get("HBNF",{}); p20=h.get("packet20Diagnostic",{}); telem=h.get("foundationTelemetry",{})
         if not (mi.get("ip")=="192.168.77.10" and mi.get("mac","").replace(":","").lower()==MATRIX_MAC
                 and mi.get("ver")=="16.0.1" and mb.get("release_id")==RELEASE and mb.get("candidate")==RELEASE
@@ -595,9 +665,12 @@ class LivePort:
                 and ai.get("lip")=="192.168.77.10" and ai.get("leds",{}).get("count")==22
                 and ast.get("on") is True and ast.get("lor")==0):
             raise RuntimeError("qualification preflight AUX DDP/output checks failed")
-        brightness_baseline=validate_brightness_baseline(ms,mc)
+        brightness_baseline=validate_brightness_baseline(ms,matrix_context["persisted"])
+        if matrix_context["identity"]["release_id"] != RELEASE:
+            raise RuntimeError("qualification-matrix-identity-binding-failed")
         worker=single_worker_check()
         opal=("set -e; printf OPAL_QUALIFICATION_PREFLIGHT_OK\\n; command -v sha256sum; test -r /etc/hbnf-updater/release-state; cat /etc/hbnf-updater/release-state")
+        self._record_device_request()
         p=run(SSH+["-o","ConnectTimeout=4",OPAL,opal],timeout=15); out=p.stdout.decode(errors="replace")
         if p.returncode or "OPAL_QUALIFICATION_PREFLIGHT_OK" not in out or f"55 {R4} {R4_SHA}" not in out:
             raise RuntimeError("qualification preflight cannot prove exact Opal R4 recovery")
@@ -616,12 +689,12 @@ class LivePort:
     def apply_qualification_brightness(self, baseline):
         if not isinstance(baseline, dict) or baseline.get("matrixBrightness") != QUALIFICATION_BASELINE_BRIGHTNESS:
             raise RuntimeError("qualification-brightness-baseline-not-admitted")
-        return change_matrix_brightness(baseline, operation="measure")
+        return change_matrix_brightness(baseline, operation="measure", request_counter=self._record_device_request)
 
     def restore_qualification_brightness(self, baseline):
         if not isinstance(baseline, dict) or baseline.get("matrixBrightness") != QUALIFICATION_BASELINE_BRIGHTNESS:
             raise RuntimeError("qualification-brightness-baseline-receipt-invalid")
-        return change_matrix_brightness(baseline, operation="restore")
+        return change_matrix_brightness(baseline, operation="restore", request_counter=self._record_device_request)
 
     def stage_candidate(self):
         return stage_once(BIN, "/tmp/hbnf-r6-audio-cache-candidate.bin")

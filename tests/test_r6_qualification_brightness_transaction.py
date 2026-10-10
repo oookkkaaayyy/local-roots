@@ -13,23 +13,30 @@ spec.loader.exec_module(module)
 BASELINE = {"matrixBrightness": 52, "auxBrightness": 245, "vibe": 3}
 
 
-def pair(matrix, *, aux=245, vibe=3, config_matrix=None, partial=False):
-    config = {"matrixBrightness": matrix if config_matrix is None else config_matrix,
+def pair(matrix, *, aux=245, vibe=3, persisted_matrix=None, partial=False):
+    persisted = {"matrixBrightness": matrix if persisted_matrix is None else persisted_matrix,
         "auxBrightness": aux, "vibe": vibe}
     if partial:
-        config.pop("vibe")
-    return {"matrix_on": True, "runtime": {"matrixBrightness": matrix, "auxBrightness": aux, "vibe": vibe}, "config": config}
+        persisted.pop("vibe")
+    return {"identity": exact_identity()[0], "matrix_on": True,
+        "runtime": {"matrixBrightness": matrix, "auxBrightness": aux, "vibe": vibe}, "persisted": persisted}
+
+
+def exact_identity(_request_counter=None):
+    return ({"ip": "192.168.77.10", "mac": module.MATRIX_MAC, "wled": "16.0.1",
+        "release_id": module.RELEASE, "candidate": module.RELEASE, "build_mac": module.MATRIX_MAC}, {}, {})
 
 
 class FakePort:
     def __init__(self, *, admitted=True, baseline=BASELINE, setup_error=None,
-                 worker_error=None, restore_error=None, setup_readback=None):
+                 worker_error=None, restore_error=None, setup_readback=None, restore_readback=None):
         self.admitted = admitted
         self.baseline = dict(baseline)
         self.setup_error = setup_error
         self.worker_error = worker_error
         self.restore_error = restore_error
         self.setup_readback = setup_readback
+        self.restore_readback = restore_readback
         self.events = []
         self.device_requests = 0
         self.recovery_attempts = 0
@@ -50,7 +57,7 @@ class FakePort:
         if self.baseline["matrixBrightness"] != 52:
             raise RuntimeError("qualification-baseline-runtime-brightness-mismatch")
         return {"pass": True, "release_id": module.RELEASE,
-            "brightness_baseline": {"runtime": dict(self.baseline), "config": dict(self.baseline)}}
+            "brightness_baseline": {"runtime": dict(self.baseline), "persisted": dict(self.baseline)}}
 
     def apply_qualification_brightness(self, baseline):
         self.events.append(("set", dict(baseline)))
@@ -72,6 +79,8 @@ class FakePort:
         self.device_requests += 1
         if self.restore_error:
             raise RuntimeError(self.restore_error)
+        if self.restore_readback is not None:
+            return self.restore_readback
         return {"verified": True, "target_matrix_brightness": 52, "readback": pair(52)}
 
     def close(self, result):
@@ -89,6 +98,7 @@ def run(port):
 def test_post_timeout_is_resolved_by_readback_without_retry():
     original_post = module.post_json
     original_read = module.read_matrix_brightness_pair
+    original_identity = module.read_matrix_identity
     writes = []
     current = pair(52)
 
@@ -96,26 +106,32 @@ def test_post_timeout_is_resolved_by_readback_without_retry():
         writes.append(payload)
         target = payload["HBNF"]["matrixBrightness"]
         current["runtime"]["matrixBrightness"] = target
-        current["config"]["matrixBrightness"] = target
+        current["persisted"]["matrixBrightness"] = target
         raise TimeoutError("response lost after server applied POST")
 
     module.post_json = post
-    module.read_matrix_brightness_pair = lambda: {"matrix_on": True, "runtime": dict(current["runtime"]), "config": dict(current["config"])}
+    module.read_matrix_brightness_pair = lambda: {"identity": exact_identity()[0], "matrix_on": True,
+        "runtime": dict(current["runtime"]), "persisted": dict(current["persisted"])}
+    module.read_matrix_identity = exact_identity
     try:
         now = [0.0]
         receipt = module.change_matrix_brightness(BASELINE, operation="measure",
             sleeper=lambda seconds: now.__setitem__(0, now[0] + seconds), monotonic=lambda: now[0])
         assert receipt["verified"] and receipt["post_outcome"] == "UNKNOWN_RESOLVED_BY_READBACK"
         assert receipt["readback"]["runtime"] == {"matrixBrightness": 44, "auxBrightness": 245, "vibe": 3}
+        assert writes == [{"HBNF": {"matrixBrightness": 44}}]
+        assert module.PERSISTED_CONFIG_URL.endswith("/edit?func=download&path=%2Fcfg.json")
         assert len(writes) == 1
     finally:
         module.post_json = original_post
         module.read_matrix_brightness_pair = original_read
+        module.read_matrix_identity = original_identity
 
 
 def test_unknown_post_outcome_without_matching_readback_fails_once():
     original_post = module.post_json
     original_read = module.read_matrix_brightness_pair
+    original_identity = module.read_matrix_identity
     writes = []
     now = [0.0]
 
@@ -125,6 +141,7 @@ def test_unknown_post_outcome_without_matching_readback_fails_once():
 
     module.post_json = post
     module.read_matrix_brightness_pair = lambda: pair(52)
+    module.read_matrix_identity = exact_identity
     try:
         try:
             module.change_matrix_brightness(BASELINE, operation="measure",
@@ -137,22 +154,26 @@ def test_unknown_post_outcome_without_matching_readback_fails_once():
     finally:
         module.post_json = original_post
         module.read_matrix_brightness_pair = original_read
+        module.read_matrix_identity = original_identity
 
 
-def test_restore_config_mismatch_fails_even_when_runtime_restored():
+def test_restore_persisted_mismatch_fails_even_when_runtime_restored():
     original_post = module.post_json
     original_read = module.read_matrix_brightness_pair
+    original_identity = module.read_matrix_identity
     writes = []
-    current = pair(44, config_matrix=44)
+    current = pair(44, persisted_matrix=44)
     now = [0.0]
 
     def post(_url, payload):
         writes.append(payload)
         current["runtime"].update(payload["HBNF"])
-        raise TimeoutError("restore response lost; disk/config view remains at 44")
+        raise TimeoutError("restore response lost; persisted file remains at 44")
 
     module.post_json = post
-    module.read_matrix_brightness_pair = lambda: {"matrix_on": True, "runtime": dict(current["runtime"]), "config": dict(current["config"])}
+    module.read_matrix_brightness_pair = lambda: {"identity": exact_identity()[0], "matrix_on": True,
+        "runtime": dict(current["runtime"]), "persisted": dict(current["persisted"])}
+    module.read_matrix_identity = exact_identity
     try:
         try:
             module.change_matrix_brightness(BASELINE, operation="restore",
@@ -161,20 +182,24 @@ def test_restore_config_mismatch_fails_even_when_runtime_restored():
             assert "brightness-restore-unverified" in str(exc)
             assert "readback-mismatch" in str(exc)
         else:
-            raise AssertionError("config-side restore mismatch must fail closed")
+            raise AssertionError("persisted-side restore mismatch must fail closed")
         assert len(writes) == 1
+        assert writes[0] == {"HBNF": {"matrixBrightness": 52}}
     finally:
         module.post_json = original_post
         module.read_matrix_brightness_pair = original_read
+        module.read_matrix_identity = original_identity
 
 
 def test_partial_readback_fails_and_does_not_create_profiles():
     original_post = module.post_json
     original_read = module.read_matrix_brightness_pair
+    original_identity = module.read_matrix_identity
     writes = []
     now = [0.0]
     module.post_json = lambda _url, payload: writes.append(payload)
     module.read_matrix_brightness_pair = lambda: pair(44, partial=True)
+    module.read_matrix_identity = exact_identity
     try:
         try:
             module.change_matrix_brightness(BASELINE, operation="measure",
@@ -187,6 +212,7 @@ def test_partial_readback_fails_and_does_not_create_profiles():
     finally:
         module.post_json = original_post
         module.read_matrix_brightness_pair = original_read
+        module.read_matrix_identity = original_identity
 
     port = FakePort(setup_error="partial-readback")
     result = run(port)
@@ -204,21 +230,98 @@ def test_invalid_baseline_rejected_after_admission_before_any_write():
     assert "set" not in names and "worker" not in names and "restore" not in names
 
 
-def test_live_and_config_baseline_must_match_at_52():
+def test_live_and_persisted_baseline_must_match_at_52():
     state = {"on": True, "HBNF": dict(BASELINE)}
-    good = {"um": {"hbnfFoundationV1": dict(BASELINE)}}
-    assert module.validate_brightness_baseline(state, good) == {"matrix_on": True, "runtime": BASELINE, "config": BASELINE}
-    for bad_config in (
-        {"um": {"hbnfFoundationV1": {**BASELINE, "matrixBrightness": 44}}},
-        {"um": {"hbnfFoundationV1": {**BASELINE, "auxBrightness": 200}}},
-        {"um": {"hbnfFoundationV1": {"matrixBrightness": 52, "auxBrightness": 245}}},
+    config_with_secret = {"wifi": {"psk": "never-log-this"}, "um": {"hbnfFoundationV1": dict(BASELINE)}}
+    good = module.sanitized_persisted_hbnf(config_with_secret)
+    assert set(good) == {"matrixBrightness", "auxBrightness", "vibe"}
+    assert module.validate_brightness_baseline(state, good) == {"matrix_on": True, "runtime": BASELINE, "persisted": BASELINE}
+    for bad_persisted in (
+        {**BASELINE, "matrixBrightness": 44},
+        {**BASELINE, "auxBrightness": 200},
+        {"matrixBrightness": 52, "auxBrightness": 245},
     ):
         try:
-            module.validate_brightness_baseline(state, bad_config)
+            module.validate_brightness_baseline(state, bad_persisted)
         except RuntimeError as exc:
-            assert "baseline" in str(exc) or "readback" in str(exc)
+            assert "baseline" in str(exc) or "readback" in str(exc) or "persisted" in str(exc)
         else:
-            raise AssertionError("runtime/config baseline mismatch must fail before writes")
+            raise AssertionError("runtime/persisted baseline mismatch must fail before writes")
+
+
+def test_context_reads_persisted_cfg_and_retains_only_hbnf_fields():
+    original_get = module.get_json
+    original_identity = module.read_matrix_identity
+    requests = []
+    identity = exact_identity()
+    state = {"on": True, "HBNF": dict(BASELINE)}
+    raw_cfg = {"wifi": {"psk": "never-retain-this"},
+        "um": {"hbnfFoundationV1": dict(BASELINE)}}
+
+    def get(url, timeout=4):
+        requests.append(url)
+        if url.endswith("/json/state"):
+            return 200, b"{}", state
+        if url == module.PERSISTED_CONFIG_URL:
+            return 200, b"{}", raw_cfg
+        raise AssertionError(f"unexpected GET endpoint: {url}")
+
+    module.get_json = get
+    module.read_matrix_identity = lambda _request_counter=None: identity
+    try:
+        context = module.read_matrix_context()
+        assert context["persisted"] == BASELINE
+        assert context["brightness"]["persisted"] == BASELINE
+        assert "never-retain-this" not in repr(context)
+        assert requests == [module.MATRIX+"/json/state", module.PERSISTED_CONFIG_URL]
+    finally:
+        module.get_json = original_get
+        module.read_matrix_identity = original_identity
+
+
+def test_identity_change_after_unknown_post_blocks_readback_acceptance():
+    original_post = module.post_json
+    original_get = module.get_json
+    original_identity = module.read_matrix_identity
+    calls = [0]
+    posts = []
+    good = exact_identity()
+
+    def identity(_request_counter=None):
+        calls[0] += 1
+        if calls[0] <= 2:
+            return good
+        raise RuntimeError("qualification-matrix-identity-binding-failed")
+
+    state = {"on": True, "HBNF": dict(BASELINE, matrixBrightness=44)}
+    cfg = {"um": {"hbnfFoundationV1": dict(BASELINE, matrixBrightness=44)}}
+
+    def get(url, timeout=4):
+        if url.endswith("/json/state"):
+            return 200, b"{}", state
+        return 200, b"{}", cfg
+
+    module.read_matrix_identity = identity
+    def post(*args, **kwargs):
+        posts.append((args, kwargs))
+        raise TimeoutError("unknown POST")
+    module.post_json = post
+    module.get_json = get
+    try:
+        now = [0.0]
+        try:
+            module.change_matrix_brightness(BASELINE, operation="measure",
+                sleeper=lambda seconds: now.__setitem__(0, now[0] + seconds), monotonic=lambda: now[0])
+        except RuntimeError as exc:
+            assert "brightness-measure-unverified" in str(exc)
+            assert "identity-" in str(exc)
+        else:
+            raise AssertionError("identity change after uncertain POST must reject readback")
+        assert len(posts) == 1 and calls[0] >= 3
+    finally:
+        module.post_json = original_post
+        module.get_json = original_get
+        module.read_matrix_identity = original_identity
 
 
 def test_invalid_admission_causes_zero_device_requests_and_writes():
@@ -247,17 +350,58 @@ def test_restore_failure_invalidates_captured_profiles_and_never_passes():
     assert result["brightness_restore"]["verified"] is False
 
 
+def test_unverified_false_setup_and_restore_receipts_fail_closed():
+    setup = FakePort(setup_readback={"verified": False})
+    setup_result = run(setup)
+    assert setup_result["status"] == "QUALIFICATION_BRIGHTNESS_SETUP_FAILED_NO_PROFILES"
+    assert "worker" not in [event[0] for event in setup.events]
+    assert "restore" in [event[0] for event in setup.events]
+
+    restore = FakePort(restore_readback={"verified": False})
+    restore_result = run(restore)
+    assert restore_result["status"] == "QUALIFICATION_BRIGHTNESS_RESTORE_FAILED"
+    assert "qualification" not in restore_result
+    assert restore_result["captured_qualification_invalidated"]["profiles_not_accepted"] is True
+
+
+def test_identity_mismatch_immediately_before_setup_and_restore_means_zero_posts():
+    original_identity = module.read_matrix_identity
+    original_post = module.post_json
+    posts = []
+
+    def identity_mismatch():
+        raise RuntimeError("qualification-matrix-identity-binding-failed")
+
+    module.read_matrix_identity = identity_mismatch
+    module.post_json = lambda *args, **kwargs: posts.append((args, kwargs))
+    try:
+        for operation, target in (("measure", BASELINE), ("restore", BASELINE)):
+            try:
+                module.change_matrix_brightness(target, operation=operation)
+            except RuntimeError as exc:
+                assert "identity-binding-failed" in str(exc)
+            else:
+                raise AssertionError(f"{operation} must reject mismatched target identity")
+        assert posts == []
+    finally:
+        module.read_matrix_identity = original_identity
+        module.post_json = original_post
+
+
 def main():
     for test in (
         test_post_timeout_is_resolved_by_readback_without_retry,
         test_unknown_post_outcome_without_matching_readback_fails_once,
-        test_restore_config_mismatch_fails_even_when_runtime_restored,
+        test_restore_persisted_mismatch_fails_even_when_runtime_restored,
         test_partial_readback_fails_and_does_not_create_profiles,
         test_invalid_baseline_rejected_after_admission_before_any_write,
-        test_live_and_config_baseline_must_match_at_52,
+        test_live_and_persisted_baseline_must_match_at_52,
+        test_context_reads_persisted_cfg_and_retains_only_hbnf_fields,
         test_invalid_admission_causes_zero_device_requests_and_writes,
         test_worker_exception_restores_baseline,
         test_restore_failure_invalidates_captured_profiles_and_never_passes,
+        test_unverified_false_setup_and_restore_receipts_fail_closed,
+        test_identity_mismatch_immediately_before_setup_and_restore_means_zero_posts,
     ):
         test()
     print("PASS: baseline/setup/restore transaction fails closed across admission, timeout, partial-readback, worker, and restoration faults")
