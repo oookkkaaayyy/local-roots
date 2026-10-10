@@ -19,7 +19,7 @@ For substantial implementation, build, deployment, diagnostic, recovery, or acce
 7. Generate the worker directive rather than improvising it:
    `python3 scripts/platform.py directive --capsule <CAPSULE.json> --out <WORKER_DIRECTIVE.txt>`
 
-For HBNF live mutation, `scripts/hbnf_guarded_run.py` also requires the validated capsule and prelive proof.
+For HBNF live mutation, `scripts/hbnf_guarded_run.py` requires the current `LIVE_APPROVED` release admission, validated capsule, and prelive proof before launching the child command.
 
 ## Non-negotiable rule
 

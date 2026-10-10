@@ -19,6 +19,7 @@ def main():
     ap.add_argument("--mutation",action="store_true",help="Require live_mutation_authorized=true")
     ap.add_argument("--capsule",help="Validated execution capsule required for mutation")
     ap.add_argument("--prelive-proof",help="Evidence-backed prelive proof required for mutation")
+    ap.add_argument("--admission",help="Exact LIVE_APPROVED release admission required for mutation")
     ap.add_argument("command",nargs=argparse.REMAINDER)
     args=ap.parse_args()
 
@@ -36,6 +37,18 @@ def main():
     if args.mutation and state.get("live_mutation_authorized") is not True:
         raise SystemExit("BLOCKED: live mutation is not authorized")
     if args.mutation:
+        if not args.admission:
+            raise SystemExit("BLOCKED: mutation requires --admission")
+        control=ROOT/"scripts/hbnf_control.py"
+        if not control.is_file():
+            raise SystemExit("BLOCKED: release admission validator is missing")
+        admission_check=subprocess.run(
+            [sys.executable,str(control),"check-admission","--admission",args.admission,"--stage","LIVE_APPROVED"],
+            cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT
+        )
+        if admission_check.returncode!=0:
+            sys.stdout.write(admission_check.stdout)
+            raise SystemExit("BLOCKED: exact LIVE_APPROVED release admission failed")
         if not args.capsule or not args.prelive_proof:
             raise SystemExit("BLOCKED: mutation requires --capsule and --prelive-proof")
         platform=ROOT/"scripts/platform.py"
