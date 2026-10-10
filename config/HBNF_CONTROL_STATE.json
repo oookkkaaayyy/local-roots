@@ -229,7 +229,7 @@
   "bounded_phase2_r4_install_attempt2_authorization": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008-RETRY1",
     "authorized_at_utc": "2026-10-08T06:20:06.671131+00:00",
-    "authorized_by": "Current user instruction: URGENT \u2014 RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: URGENT — RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:21:47.880324+00:00",
@@ -347,7 +347,7 @@
   "bounded_phase2_r4_live_qualification_authorization": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
     "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
-    "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: CART 2.0 — FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:10:00.723317+00:00",
@@ -495,7 +495,7 @@
     "target": "Matrix 192.168.77.10 MAC 70:4b:ca:5b:34:5c",
     "transaction_start_evidence": "/tmp/hbnf-p2-build/r6-live-validation/evidence/R6_INSTALL_TRANSACTION_START.json"
   },
-  "checkpoint_at_utc": "2026-10-09T10:33:35Z",
+  "checkpoint_at_utc": "2026-10-10T01:16:07Z",
   "completed_receipts": [
     {
       "receipt_sha256": "2fbea7b32007aa79ab29649c476d58874098fa6d12b26c5b05c59310bb422129",
@@ -666,19 +666,18 @@
   "current_task": {
     "autonomous_completion_authorization": {
       "allowed": [
-        "unlimited no-cost offline engineering, integration, corrections, builds, tests, private evidence preservation and project state reconciliation",
-        "one exact R7 installation and full qualification only after every recorded LIVE_APPROVED precondition passes; exact R4 recovery only on an objectively defined candidate gate failure",
-        "one exact R2 diagnostic installation and one exact R4 return, only within current top-level authorization and all conditions"
+        "one exact coordinated R6 release transaction using the three recorded artifacts, only after every existing control-plane admission and prewrite gate passes",
+        "unlimited no-cost offline engineering, release-path repair, integration, testing, and private evidence preservation within current scope"
       ],
       "forbidden": [
-        "R8 or subsequent firmware installation without new authorization",
-        "additional R6 install or retry",
-        "unapproved hardware, router, AUX, cloud or production deployment changes",
-        "weakened quality/performance/acceptance gates",
-        "spending, quotas, external outreach or communications"
+        "candidate retries or firmware other than the exact recorded R6",
+        "live writes until the whole transaction is executable and recoverable",
+        "router/Opal/AUX firmware or configuration changes",
+        "production changes outside the exact coordinated transaction",
+        "Guest Mode activation, UV energization, weakened gates, spending, or external outreach"
       ],
-      "scope": "Continue Cart 2.0 autonomously; R6 is closed and exact R4 is current; one conditionally authorized R7 may proceed after exact offline/live admission; no R8+.",
-      "user_permission": "Current user authorization plus latest safety clarification; no routine owner questions."
+      "scope": "The exact owner-approved R6 transaction remains authorized but unconsumed. Foundation R4 is currently installed. Live mutation stays closed until Cloudflare source/asset preservation and the complete transaction are proven safe.",
+      "user_permission": "Current user explicitly states the existing exact-artifact release authorization remains unconsumed and directs continuation; no routine approval needed."
     },
     "aux_blocker": {
       "historical_direct_output_failure": "Preserved; does not override the newer current owner observation.",
@@ -800,7 +799,7 @@
         "Prior 16:42/16:45 times are not automatic abort or rollback triggers for the currently active seq53 path.",
         "Continue the already-authorized seq53 install/targeted validation while commands are actively progressing and safety/identity evidence remains intact.",
         "Do not broaden scope or start new exploratory work.",
-        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop\u2014not for elapsed wall-clock time alone.",
+        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop—not for elapsed wall-clock time alone.",
         "Owner-device smoke remains mandatory before declaring field-ready."
       ],
       "schema": "hbnf-field-readiness-deadline-v1",
@@ -1686,7 +1685,7 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
+      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "live_mutation_authorization": "R7 install and exact R4 recovery are consumed and closed; R7 failed the frozen kernel13 p99 gate, exact R4 recovery is verified, and no live mutation authority remains.",
@@ -2400,6 +2399,12 @@
       ],
       "observed_at": "2026-10-05T17:48:54Z",
       "status": "R3_CLOSED__R4_EXECUTION_REQUIRED"
+    },
+    "release_readiness": {
+      "status": "PREWRITE_BLOCKED__CLOUDFLARE_SOURCE_AND_ASSET_PRESERVATION_NOT_PROVEN",
+      "primary_blocker": "Current Cloudflare Worker version is asset-only with no Worker module; indexed evidence does not include a complete current site asset manifest. keep_assets alone cannot install the exact package bytes, and a partial manifest risks unobserved site assets.",
+      "next_gate": "Recover complete current deployed source/asset manifest or demonstrate a supported exact partial-update mechanism that preserves the full current namespace, then verify the candidate version at 0% using version override before any normal traffic or firmware install.",
+      "no_live_writes_performed": true
     }
   },
   "execution_budget_policy": {
@@ -2417,17 +2422,18 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "R2_TRACE_FORMATTER_FIX_TARGET_BUILT_AND_OFFLINE_VERIFIED__R7_P99_CAUSALITY_INCONCLUSIVE__R4_BASELINE_INSTALLED__LIVE_AUTHORITY_CLOSED",
+    "current_failure_domain": "CLOUDFLARE_ACTIVE_ASSET_ONLY_SOURCE_AND_FULL_SITE_ASSET_PRESERVATION_UNPROVEN__R6_AUTHORIZED_UNCONSUMED__R4_CURRENT",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
       "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-      "status": "R4_BASELINE_RESTORED__R2_DIAGNOSTIC_INCONCLUSIVE__AUTHORITY_CLOSED"
+      "status": "EXACT_R4_CURRENT__R6_OWNER_AUTHORIZED_NOT_CONSUMED"
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Corrected the diagnostic-only R2 trace readback formatter for pinned ESP32 Newlib nano, built with the exact pinned PlatformIO/WLED closure, verified BIN SHA dfefa17a3b57dc2fd971dd4af1149bf5cf174acbfd738a3f31d9e970c323a8b2, target identity, 16-field format tests, flash/RAM headroom, and existing offline regression gates. Artifact and manifest are evidence/cart2-r7-performance-repair-20261009/R2_U64FIX_OFFLINE_MANIFEST.json; not installed and not production-qualified.",
-      "Original R7 kernel-13 p99 failure remains valid (55.625 ms vs 42.03125 ms; 20/25 snapshots above gate). R2 did not reproduce it in shorter windows at much lower uptime; its five trace records were malformed. Root cause remains unproven. No device access, installation, restart, R8, AUX/router change, or production deployment is authorized in this task. Exact Foundation R4 remains the restored baseline. A further diagnostic requires a new exact live transaction; T4/T5 remain unaccepted."
+      "Use only the captured current Cloudflare version and verified source/package evidence; do not deploy stale public directory.",
+      "Recover exact complete current site asset source/manifest or prove a supported exact overlay compatible with the asset-only active version, preserving all unrelated assets and the current serving behavior.",
+      "Only after a candidate is verified at 0% with version overrides and unchanged routes pass, regenerate fail-closed LIVE_APPROVED admission for exact R6/package/R4 and execute the pre-authorized coordinated release."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",
@@ -2672,7 +2678,7 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-09T19:11:35.538409+00:00",
+  "last_updated_utc": "2026-10-10T01:16:07Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "admission_path": "evidence/cart2-r7-performance-repair-20261009/R2_DIAGNOSTIC_OWNER_AUTHORIZATION.json",
@@ -2929,7 +2935,7 @@
   "previous_phase2_r4_install_authorization_consumed": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
     "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
-    "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: CART 2.0 — FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:10:00.723317+00:00",
@@ -3218,5 +3224,69 @@
     "status": "OFFLINE_DESIGN_ONLY__OVERHEAD_AND_IMPLEMENTATION_PROOF_REQUIRED"
   },
   "schema": "hbnf-control-state-v2",
-  "status": "R7_REJECTED__EXACT_R4_RECOVERED__OFFLINE_TAIL_CAUSE_UNRESOLVED"
+  "status": "R6_COORDINATED_RELEASE_AUTHORIZED__UNCONSUMED__CLOUDFLARE_PREWRITE_GATE_BLOCKED__R4_CURRENT",
+  "coordinated_r6_live_release_authorization": {
+    "schema": "hbnf-cart2-coordinated-live-release-authorization-v1",
+    "authorized_by": "Current user explicit coordinated R6 release authorization from commit fa3ae6bed518536ae59f225d942c1bcff0ca7a67; user confirmed this existing authorization remains unconsumed.",
+    "status": "OWNER_AUTHORIZED_NOT_CONSUMED__PREWRITE_NOT_READY_CLOUDFLARE_SOURCE_GATE_OPEN",
+    "candidate": {
+      "release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+      "sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
+      "path": "evidence/cart2-r6-integrated-20261009/hbnf-cart2-phase2-offline-wow-r6-integrated-20261009.bin"
+    },
+    "controller_package": {
+      "sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
+      "path": "evidence/cart2-owner-guest-vibe-r2-20261009/HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009.zip"
+    },
+    "rollback": {
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin"
+    },
+    "target": {
+      "matrix_ip": "192.168.77.10",
+      "matrix_mac": "70:4b:ca:5b:34:5c",
+      "aux_ip": "192.168.77.11",
+      "aux_mac": "8c:94:df:55:c3:4c",
+      "opal_ip": "192.168.77.1"
+    },
+    "scope": [
+      "one exact R6 Matrix install and normal reboot after all gates pass",
+      "matching approved Owner/Guest and backend coordinated release under captured rollback identities",
+      "one exact R4 recovery only on authorized objective runtime/safety/performance/AUX failure",
+      "unchanged 28-kernel sweep, combined-feature tests, contiguous 90-minute soak, physical and owner acceptance"
+    ],
+    "limits": [
+      "no candidate retry or different firmware",
+      "no router/Opal/AUX firmware or config changes",
+      "Guest Mode remains OFF; UV remains disabled",
+      "no production change outside this exact transaction",
+      "no threshold/acceptance weakening"
+    ],
+    "install_attempts": 0,
+    "install_limit": 1,
+    "rollback_attempts": 0,
+    "rollback_limit": 1,
+    "live_mutation_authorized": false,
+    "live_admission": {
+      "status": "NOT_READY",
+      "stage": "LIVE_APPROVED",
+      "admission_path": null,
+      "reason": "Cloudflare complete-current-source and safe asset-preservation route not demonstrated; whole transaction not executable/recoverable yet."
+    },
+    "prewrite_evidence": {
+      "path": "evidence/cart2-r6-live-transaction-20261009/CLOUDFLARE_SOURCE_AND_AUTHORITY_RECONCILIATION.json",
+      "sha256": "9c27d79e83ea21dfa32b840bdc439e3ace78513af704d47c787a4ce331c210b4"
+    },
+    "current_production": {
+      "cloudflare_worker": "hbnf",
+      "cloudflare_version": "4a675ee4-807d-4ab1-b7e6-e2f91e27e39c",
+      "cloudflare_deployment": "157f592b-cee8-4f6b-a687-d079210c26c4",
+      "supabase_versions": [
+        "hbnf-cart-control v18",
+        "hbnf-cart-reconcile v12",
+        "hbnf-matrix-adapter-foundation v3"
+      ]
+    }
+  }
 }

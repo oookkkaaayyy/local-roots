@@ -1,0 +1,45 @@
+{
+  "record_type": "coordinated_live_transaction_prewrite_preflight",
+  "timestamp_utc": "2026-10-09",
+  "authorized_checkpoint": "fa3ae6bed518536ae59f225d942c1bcff0ca7a67",
+  "transaction_status": "PREWRITE_BLOCKED__AUTHORIZATION_UNCONSUMED",
+  "user_authorized_exact_artifacts": {
+    "r6_release": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+    "r6_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
+    "owner_guest_zip_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
+    "conditional_r4_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "verified_prewrite_checks": {
+    "source_checkpoint_and_worktree": "PASS: local materialized checkout at exact authorized checkpoint; clean at inspection",
+    "r6_binary": "PASS: exact authorized SHA-256; 1497936 bytes",
+    "r4_recovery_binary": "PASS: exact authorized SHA-256; 1489008 bytes",
+    "owner_guest_package": "PASS: exact authorized SHA-256; 122754 bytes",
+    "cloudflare_rollback": "PASS: active deployment 157f592b-cee8-4f6b-a687-d079210c26c4 on version 4a675ee4-807d-4ab1-b7e6-e2f91e27e39c",
+    "supabase_rollback_snapshot": "PASS: hbnf-cart-control v17, hbnf-cart-reconcile v11, hbnf-matrix-adapter-foundation v2; relay and relay migration absent",
+    "matrix": "PASS read-only: 192.168.77.10, MAC 70:4b:ca:5b:34:5c, WLED 16.0.1, exact Foundation R4 identity, healthy; uptime advancing",
+    "aux": "PASS read-only: 192.168.77.11, MAC 8c:94:df:55:c3:4c, WLED 16.0.1, live=true, lm=DDP, lip=192.168.77.10; uptime advancing",
+    "opal": "PASS read-only SSH: GL-SFT1200 reachable, resources healthy, AP state unchanged; relay not installed or running",
+    "host_network_power": "PASS observed: Mac on HBNF-Cart LAN and upstream HTTPS; AC power 100%; no device/router settings changed"
+  },
+  "blocker": {
+    "classification": "external_secret_provisioning_capability_unavailable",
+    "detail": "The coordinated plan requires a server-side HBNF_MATRIX_RELAY_TOKEN and matching relay identity to be provisioned in managed Supabase Edge Function secrets before the relay can be safely deployed. Available connected Supabase tools expose function deployment and migrations but no Edge Function secret write operation. No Supabase CLI or local Supabase access token is available. The dashboard authorization surface could not be opened because the host Mac is locked and browser attachment timed out.",
+    "security_boundary": "Do not place the service-role key on Opal, expose relay/admin endpoints, embed the relay token in source, or deploy an inert/nonfunctional relay."
+  },
+  "writes_performed": [],
+  "not_performed": [
+    "Supabase migration or function deployment",
+    "command-ingress suspension or writer changes",
+    "R6 OTA or restart",
+    "Opal relay installation or service start",
+    "Cloudflare deployment",
+    "Guest Mode activation"
+  ],
+  "live_authorization_consumed": false,
+  "installed_firmware": "Foundation R4",
+  "acceptance": {
+    "T4": "NOT_ACCEPTED",
+    "T5": "NOT_ACCEPTED"
+  },
+  "minimum_unblock": "Provide an authenticated, supported path to provision the single managed Supabase Edge Function relay token (prefer unlocking the already-authorized host so the official dashboard can be used). Then repeat fail-closed release admission and continue the exact authorized transaction; no new artifact authorization is implied."
+}

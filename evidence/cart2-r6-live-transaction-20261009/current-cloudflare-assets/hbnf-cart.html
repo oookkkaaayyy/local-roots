@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071018">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="HBNF Cart">
+  <meta name="hbnf-access" content="guest-zero-pair">
+  <meta name="hbnf-build" content="hbnf-cart2-phase2-wow-r2-20261007">
+  <link rel="manifest" href="./hbnf-cart-manifest.webmanifest?v=20261007-wow-r2">
+  <link rel="apple-touch-icon" sizes="180x180" href="./hbnf-cart-icon-180.png?v=20261007-wow-r2">
+  <link rel="stylesheet" href="./hbnf-cart-ui-v6.css?v=20261007-wow-r2">
+  <title>HBNF Cart Control</title>
+  <style>
+    :root{color-scheme:dark;font:16px/1.4 system-ui,sans-serif;background:#071018;color:#eaf4f7}*{box-sizing:border-box}body{margin:0;padding:20px;max-width:680px;margin-inline:auto}h1{font-size:1.55rem}main{display:grid;gap:18px}.panel{border:1px solid #24414c;border-radius:14px;padding:16px;background:#0d1d25}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}button,select,input,textarea{font:inherit;color:inherit;background:#142c36;border:1px solid #35606b;border-radius:9px;padding:10px}button{min-width:74px;cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #57e0c0;outline-offset:2px}.danger{border-color:#c94c61}.device{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;margin-top:12px}input[type=range]{grid-column:1/-1;width:100%;padding:0}.muted{color:#a4bec6}.status{white-space:pre-wrap;min-height:3em}label{display:flex;align-items:center;gap:8px}select{max-width:100%}.pair-link{width:100%;min-height:78px;word-break:break-all}.good{color:#8ce3ad}.warn{color:#f2ca75}
+    .control-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:14px}
+    .control-grid label,.tune-grid label{display:grid;gap:6px;align-items:stretch}
+    .tune-grid{display:grid;gap:14px}
+    .range-head{display:flex;justify-content:space-between;gap:12px;align-items:center;font-weight:700}
+    .toggle-line{display:flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important}
+    .toggle-line input{width:20px;height:20px;padding:0}
+    .apply-note{margin:.6rem 0 0;font-size:.88rem;color:#a4bec6}
+    .fine-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .fine-grid .wide{grid-column:1/-1}
+    @media(max-width:540px){.control-grid,.fine-grid{grid-template-columns:1fr}.fine-grid .wide{grid-column:auto}}
+    summary{cursor:pointer;font-weight:800;font-size:1.05rem}
+    .advanced-body{margin-top:14px}
+    .health-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+    .health-grid div{border:1px solid #24414c;border-radius:10px;padding:10px;background:#09171e}
+    .health-grid span{display:block;color:#a4bec6;font-size:.75rem;text-transform:uppercase;letter-spacing:.07em}
+    .health-grid strong{display:block;margin-top:3px;font-size:.9rem}
+    .ok{color:#8ce3ad}.degraded{color:#f2ca75}.bad{color:#ff9b9b}
+  </style>
+</head>
+<body><main>
+  <header class="hero-v6">
+    <div><p class="eyebrow">HBNF CART</p><h1>Live Control</h1></div>
+    <div id="truthBadge" class="truth-badge warn">CHECKING HARDWARE</div>
+  </header>
+
+  <section class="panel truth-panel" aria-label="Hardware truth">
+    <div class="truth-grid">
+      <div class="truth-cell"><span>Matrix</span><strong id="matrixTruth">—</strong></div>
+      <div class="truth-cell"><span>Underglow</span><strong id="auxTruth">—</strong></div>
+    </div>
+  </section>
+
+  <section id="pairAcceptPanel" class="panel" hidden aria-label="Pair this device">
+    <h2>Pair this device</h2>
+    <p class="muted">This private link authorizes this browser for approximately 180 days. The credential stays on this device and is removed from the URL after pairing.</p>
+    <button id="acceptPair">Pair this device</button>
+    <div id="pairAcceptStatus" class="muted" role="status" aria-live="polite"></div>
+  </section>
+
+  <section id="authPanel" class="panel" hidden aria-label="Device authorization">
+    <h2>This device is not paired</h2>
+    <p class="muted">Open HBNF Cart on a device that is already authorized and use <strong>Pair another device</strong>. No email or magic-link sign-in is required.</p>
+  </section>
+
+  <section id="managePairPanel" class="panel" hidden aria-label="Pair another device">
+    <h2>Pair another device</h2>
+    <p class="muted">Create a private pairing link, then AirDrop, text, or copy it to the new phone/iPad. Pairing lasts about 180 days.</p>
+    <div class="row"><button id="createPair">Create pairing link</button><button id="sharePair" hidden>Share link</button><button id="copyPair" hidden>Copy link</button></div>
+    <textarea id="pairLink" class="pair-link" hidden readonly aria-label="Pairing link"></textarea>
+    <div id="pairCreateStatus" class="muted" role="status" aria-live="polite"></div>
+  </section>
+
+  <section class="panel" aria-label="Cart commands">
+    <div class="row">
+      <button class="danger" data-command="OFF">OFF</button>
+      <button data-command="ON">ON</button>
+      <button data-command="NEXT">NEXT</button>
+      <button data-command="AUTO">AUTO</button>
+      <button data-command="LOCK">LOCK</button>
+    </div>
+    <div class="control-grid">
+      <div id="sceneButtons" class="scene-buttons" aria-label="Scene"></div>
+      <label class="scene-native-wrap">Scene
+        <select id="scene">
+          <option value="course-flow">Course Flow</option>
+          <option value="field-mix">Field Mix</option>
+          <option value="hbnf-signature">HBNF Signature</option>
+          <option value="quiet-cosmos">Quiet Cosmos</option>
+        </select>
+      </label>
+    </div>
+    <p class="apply-note">Selections apply immediately. No Set/Apply button.</p>
+  </section>
+
+  <section class="panel" aria-label="Guest access">
+    <h2>Guest Mode</h2>
+    <label class="toggle-line">
+      <input id="guestMode" type="checkbox" disabled>
+      <span>Allow trusted guests to choose a Vibe or advance the Cart look</span>
+    </label>
+    <p id="guestModeStatus" class="apply-note" role="status" aria-live="polite">Guest Mode is off unless the owner opens it.</p>
+    <a href="/guest/hbnf-cart/">Open the Guest page</a>
+  </section>
+
+  <section class="panel">
+    <h2>Visual direction</h2>
+    <div class="tune-grid">
+      <label>
+        <span class="range-head"><span>Energy</span><output id="energyValue">65</output></span>
+        <input id="energy" type="range" min="0" max="100" step="1" value="65">
+      </label>
+      <label>
+        <span class="range-head"><span>Audio response</span><output id="audioResponseValue">75</output></span>
+        <input id="audioResponse" type="range" min="0" max="100" step="1" value="75">
+      </label>
+      <label>
+        <span class="range-head"><span>Motion</span><output id="motionValue">60</output></span>
+        <input id="motion" type="range" min="0" max="100" step="1" value="60">
+      </label>
+      <label>
+        <span class="range-head"><span>Variation</span><output id="variationValue">85</output></span>
+        <input id="variation" type="range" min="0" max="100" step="1" value="85">
+      </label>
+    </div>
+    <p class="apply-note">All scenes use the same source-coupled audio engine. Variation changes evolution rate; anti-repeat remains enforced.</p>
+  </section>
+
+  <section class="panel" aria-label="Looks and color">
+    <h2>Shows + color</h2>
+    <div class="fine-grid">
+      <label class="wide">Show
+        <select id="featureLook"></select>
+      </label>
+      <label>Color
+        <input id="featureColor" type="color" value="#ffffff" aria-label="Look color">
+      </label>
+      <label>Palette
+        <select id="featurePalette"><option value="">Current palette</option></select>
+      </label>
+      <label>Name saved look
+        <input id="featureLookName" type="text" maxlength="24" placeholder="e.g. Green course">
+      </label>
+      <label>Saved looks
+        <select id="featureSavedLooks"><option value="">None saved</option></select>
+      </label>
+      <div class="row">
+        <button id="featureApplyLook" type="button">Apply look</button>
+        <button id="featureSaveLook" type="button">Save</button>
+        <button id="featureApplySaved" type="button">Apply saved</button>
+        <button id="featureDeleteSaved" type="button">Delete saved</button>
+      </div>
+    </div>
+    <div id="featureStatus" class="status">Feature controls staged.</div>
+    <p class="apply-note">Show/palette changes use canonical cart state; palette names are discovered read-only from the local Matrix.</p>
+  </section>
+
+  <section class="panel" aria-label="Matrix message">
+    <h2>Text</h2>
+    <div class="row">
+      <input id="featureText" type="text" maxlength="63" placeholder="Type Matrix message" style="flex:1;min-width:180px">
+      <button id="featureSendText" type="button">Send</button>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Skins and Glow live data">
+    <h2>Skins + Glow</h2>
+    <div id="featureLive" class="status">Live round not checked yet.</div>
+    <div class="row">
+      <button id="featureRefreshLive" type="button">Refresh live</button>
+      <button id="featureScoreboard" type="button">Show scoreboard</button>
+      <button id="featureAcePot" type="button">Show ace pot</button>
+    </div>
+    <details class="score-entry">
+      <summary>Record Skins scoring</summary>
+      <p class="muted">Scores save to the current authoritative Skins card. A blank hole winner carries the skin. Tiebreakers and ace state use the same authoritative round data.</p>
+      <div class="score-grid">
+        <label>Section<select id="skinsSection"><option value="front">Front 9 · Singles</option><option value="back">Back 9 · Doubles</option></select></label>
+        <label>Card<select id="skinsCard"></select></label>
+        <label>Hole<select id="skinsHole"></select></label>
+        <label>Winner<select id="skinsWinner"></select></label>
+      </div>
+      <div class="row"><button id="skinsRefresh" type="button">Refresh scorecard</button><button id="skinsSave" type="button">Save hole</button></div>
+      <div class="score-grid">
+        <label class="wide">Ace winner<select id="skinsAceWinner"><option value="">No ace</option></select></label>
+      </div>
+      <div class="row"><button id="skinsAceSave" type="button">Save ace</button><span id="skinsAceSummary" class="muted">Ace pot not loaded.</span></div>
+      <div id="skinsScoreStatus" class="status" role="status" aria-live="polite">Scorecard not loaded.</div>
+    </details>
+  </section>
+
+  <section class="panel" aria-label="Firmware update">
+    <h2>Firmware</h2>
+    <div id="featureOtaStatus" class="status">Signed update not checked yet.</div>
+    <div class="row">
+      <button id="featureOtaCheck" type="button">Check signed update</button>
+      <button id="featureOtaInstall" type="button" hidden>Open trusted installer</button>
+      <button id="featureOtaResult" type="button">Refresh install result</button>
+      <button id="featurePreflight" type="button">Run rollout preflight</button>
+    </div>
+    <div id="featurePreflightResult" class="status">Preflight not run.</div>
+  </section>
+
+  <details class="panel">
+    <summary>Advanced audio</summary>
+    <div class="fine-grid advanced-body">
+      <label class="wide">
+        <span class="range-head"><span>Mic sensitivity</span><output id="micSensitivityValue">255</output></span>
+        <input id="micSensitivity" type="range" min="64" max="255" step="1" value="255">
+      </label>
+      <label>Audio emphasis
+        <select id="audioProfile">
+          <option value="scene">Scene default</option>
+          <option value="bass">Bass</option>
+          <option value="mid">Mid</option>
+          <option value="balanced">Balanced</option>
+          <option value="treble">Treble</option>
+          <option value="full">Full</option>
+          <option value="impact">Impact</option>
+        </select>
+      </label>
+      <label>Reaction style
+        <select id="audioStyle">
+          <option value="scene">Scene default</option>
+          <option value="clean">Clean</option>
+          <option value="punch">Punch</option>
+          <option value="ring">Ring</option>
+          <option value="spark">Spark</option>
+          <option value="chroma">Chroma</option>
+          <option value="hybrid">Hybrid</option>
+        </select>
+      </label>
+    </div>
+  </details>
+
+  <section class="panel">
+    <h2>Persistent device brightness</h2>
+    <p class="muted">Release a slider and the new value is applied immediately.</p>
+    <div class="device">
+      <strong>Matrix</strong><output id="matrixValue">8</output>
+      <input aria-label="Matrix brightness" id="matrixBrightness" type="range" min="0" max="255" value="8">
+    </div>
+    <div class="device">
+      <strong>Underglow (AUX)</strong><output id="auxValue">64</output>
+      <input aria-label="Underglow brightness" id="auxBrightness" type="range" min="0" max="255" value="64">
+    </div>
+  </section>
+  <section class="panel">
+    <h2>Cart state</h2>
+    <div id="status" class="status" role="status" aria-live="polite">Connecting…</div>
+    <button id="refresh">Refresh status</button>
+  </section>
+</main><script>if("serviceWorker" in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("./hbnf-cart-sw.js?v=20261007-wow-r2",{scope:"/hbnf-cart.html"}).catch(function(){});}</script><script type="module" src="./hbnf-cart.js?v=20261007-wow-r2"></script><script type="module" src="./hbnf-cart-ui-v6.mjs?v=20261007-wow-r2"></script><script type="module" src="./hbnf-cart-features.mjs?v=20261007-wow-r2"></script><script type="module" src="./hbnf-cart-skins-score.mjs?v=20261007-wow-r2"></script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4819c4728f5cb7a',t:'MTc5MTU5MzIxMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body></html>

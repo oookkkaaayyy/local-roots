@@ -1,0 +1,250 @@
+{
+  "approved_artifacts": {
+    "owner_guest_actual_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
+    "owner_guest_asset_entries": [
+      {
+        "current_http_snapshot_sha256": "bccb2a3179beb2116d953d083929fd97cdb13aa356742abfb45ce9a9919ce2ad",
+        "manifest_sha256": "bccb2a3179beb2116d953d083929fd97cdb13aa356742abfb45ce9a9919ce2ad",
+        "matches_current_live_capture": true,
+        "package_hash_matches_manifest": true,
+        "package_sha256": "bccb2a3179beb2116d953d083929fd97cdb13aa356742abfb45ce9a9919ce2ad",
+        "path": "/guest/hbnf-cart/guest.css"
+      },
+      {
+        "current_http_snapshot_sha256": "9a51e6c67514a711585e5c044bb6407728a112ba48fef160c44800f17335133d",
+        "manifest_sha256": "57ed9d21bd063e93225de14a5306525c21f8a3cecd7b2a4c7b756d33684e0f77",
+        "matches_current_live_capture": false,
+        "package_hash_matches_manifest": true,
+        "package_sha256": "57ed9d21bd063e93225de14a5306525c21f8a3cecd7b2a4c7b756d33684e0f77",
+        "path": "/guest/hbnf-cart/guest.js"
+      },
+      {
+        "current_http_snapshot_sha256": "945f50709da9056a2f46225cde3a0f4ab4dac1398d83dbee90f248c5058ae6f6",
+        "manifest_sha256": "5b1ddd97512a6606b61aeca78929fd645a86a32b10f62ad7547941018442cedf",
+        "matches_current_live_capture": false,
+        "package_hash_matches_manifest": true,
+        "package_sha256": "5b1ddd97512a6606b61aeca78929fd645a86a32b10f62ad7547941018442cedf",
+        "path": "/guest/hbnf-cart/index.html"
+      },
+      {
+        "current_http_snapshot_sha256": "5aa1b63a7aaf8a033176989e96f024e1227d5f48743bdefd9c36a76b1cefbe84",
+        "manifest_sha256": "698406cb78565a05bc842b90c01928724cfabd553ed4af28d73178b6d725677d",
+        "matches_current_live_capture": false,
+        "package_hash_matches_manifest": true,
+        "package_sha256": "698406cb78565a05bc842b90c01928724cfabd553ed4af28d73178b6d725677d",
+        "path": "/hbnf-cart-features.mjs"
+      },
+      {
+        "current_http_snapshot_sha256": "02a42add542f156fb8cd32ff020d827fb139d70cce6e6c3564cc821c95aec3ed",
+        "manifest_sha256": "02a42add542f156fb8cd32ff020d827fb139d70cce6e6c3564cc821c95aec3ed",
+        "matches_current_live_capture": true,
+        "package_hash_matches_manifest": true,
+        "package_sha256": "02a42add542f156fb8cd32ff020d827fb139d70cce6e6c3564cc821c95aec3ed",
+        "path": "/hbnf-cart-icon-180.png"
+      },
+      {
+        "current_http_snapshot_sha256": "200dd4c1bb58dd1f3b6fe353404d29cae306673a4bc854b21049c475011b42ab",
+        "manifest_sha256": "200dd4c1bb58dd1f3b6fe353404d29cae306673a4bc854b21049c475011b42ab",
+        "matches_current_live_capture": true,
+        "package_hash_matches_manifest": true,
+        "package_sha256": "200dd4c1bb58dd1f3b6fe353404d29cae306673a4bc854b21049c475011b42ab",
+        "path": "/hbnf-cart-icon-192.png"
+      },
+      {
+        "current_http_snapshot_sha256": "05ecdcb818aaf9d1f23af59ca73c27d7a00b328705e62d0e9adf3954db6e5838",
+        "manifest_sha256": "05ecdcb818aaf9d1f23af59ca73c27d7a00b328705e62d0e9adf3954db6e5838",
+        "matches_current_live_capture": true,
+        "package_hash_matches_manifest": true,
+        "package_sha256": "05ecdcb818aaf9d1f23af59ca73c27d7a00b328705e62d0e9adf3954db6e5838",
+        "path": "/hbnf-cart-icon-512.png"
+      },
+      {
+        "current_http_snapshot_sha256": "895f4c579594dcd7789a2a7f7cb69a21dad3c02975a2ae829825a2ad0e05e627",
+        "manifest_sha256": "a58f59a6f921f5104c61dc2e633e0015a5c4f34ba23475f57738ad785bf8251d",
+        "matches_current_live_capture": false,
+        "package_hash_matches_manifest": true,
+        "package_sha256": "a58f59a6f921f5104c61dc2e633e0015a5c4f34ba23475f57738ad785bf8251d",
+        "path": "/hbnf-cart-manifest.webmanifest"
+      },
+      {
+        "current_http_snapshot_sha256": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+        "manifest_sha256": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+        "matches_current_live_capture": true,
+        "package_hash_matches_manifest": true,
+        "package_sha256": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+        "path": "/hbnf-cart-net.mjs"
+      },
+      {
+        "current_http_snapshot_sha256": "c7eada1028dddd0321ffa34e894bcb5e7d5ff4cf13a084f72623adcbb963d5a1",
+        "manifest_sha256": "c7eada1028dddd0321ffa34e894bcb5e7d5ff4cf13a084f72623adcbb963d5a1",
+        "matches_current_live_capture": true,
+        "package_hash_matches_manifest": true,
+        "package_sha256": "c7eada1028dddd0321ffa34e894bcb5e7d5ff4cf13a084f72623adcbb963d5a1",
+        "path": "/hbnf-cart-semantic.mjs"
+      },
+      {
+        "current_http_snapshot_sha256": "29e4a53144f6c0adc501d80425bad7f9aa8f9f681d711d0ea24f6ca179475316",
+        "manifest_sha256": "cf63ca5425210f9dbbe9666f623dc7b6324a2153d5bbfaa7522493eb085ea97f",
+        "matches_current_live_capture": false,
+        "package_hash_matches_manifest": true,
+        "package_sha256": "cf63ca5425210f9dbbe9666f623dc7b6324a2153d5bbfaa7522493eb085ea97f",
+        "path": "/hbnf-cart-skins-score.mjs"
+      },
+      {
+        "current_http_snapshot_sha256": "55cfd341e609c972ebb1ac463cf394f065e83fe383a1ee32b9872d3efbc8e716",
+        "manifest_sha256": "8c745075dda10ad676f4d54615b03100c813318f275b30106c79cf4f25399516",
+        "matches_current_live_capture": false,
+        "package_hash_matches_manifest": true,
+        "package_sha256": "8c745075dda10ad676f4d54615b03100c813318f275b30106c79cf4f25399516",
+        "path": "/hbnf-cart-sw.js"
+      },
+      {
+        "current_http_snapshot_sha256": "e7e30733df824864d415a69d4dcc0b297718fa414938d4d54ff158b408b93672",
+        "manifest_sha256": "7ec82e48648e662517b281ae5162c278f705521c29907d95112a2cca6e50c707",
+        "matches_current_live_capture": false,
+        "package_hash_matches_manifest": true,
+        "package_sha256": "7ec82e48648e662517b281ae5162c278f705521c29907d95112a2cca6e50c707",
+        "path": "/hbnf-cart-ui-v6.css"
+      },
+      {
+        "current_http_snapshot_sha256": "0e0f16ea7c6e573cc5d5180309d899732598c9b630c7732dfbe10326e542a6e0",
+        "manifest_sha256": "0e0f16ea7c6e573cc5d5180309d899732598c9b630c7732dfbe10326e542a6e0",
+        "matches_current_live_capture": true,
+        "package_hash_matches_manifest": true,
+        "package_sha256": "0e0f16ea7c6e573cc5d5180309d899732598c9b630c7732dfbe10326e542a6e0",
+        "path": "/hbnf-cart-ui-v6.mjs"
+      },
+      {
+        "current_http_snapshot_sha256": "aa1eda8a0cab3cc539622736be1cbc8e979cff606c304bc1da5f55f112cb7189",
+        "manifest_sha256": "c4464e2304010da98ad30342b17452fda241c6670f9cbc667750c8f968d10244",
+        "matches_current_live_capture": false,
+        "package_hash_matches_manifest": true,
+        "package_sha256": "c4464e2304010da98ad30342b17452fda241c6670f9cbc667750c8f968d10244",
+        "path": "/hbnf-cart.html"
+      },
+      {
+        "current_http_snapshot_sha256": "bf40263a375aa4150d7afc9ff0466a4db05ef33ed9ad95f035300c8d6742e2fe",
+        "manifest_sha256": "799854d994964fd6c05fe78cb35147c1b9a569000b6d5e4377cc9cbeb37d28f3",
+        "matches_current_live_capture": false,
+        "package_hash_matches_manifest": true,
+        "package_sha256": "799854d994964fd6c05fe78cb35147c1b9a569000b6d5e4377cc9cbeb37d28f3",
+        "path": "/hbnf-cart.js"
+      }
+    ],
+    "owner_guest_expected_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
+    "owner_guest_matches": true,
+    "owner_guest_path": "/tmp/cart2-opal-local-20261009/evidence/cart2-owner-guest-vibe-r2-20261009/HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009.zip",
+    "r4_matches": true,
+    "r4_rollback_actual_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "r4_rollback_expected_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "r4_rollback_path": "/tmp/cart2-opal-local-20261009/evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "r6_actual_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
+    "r6_expected_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
+    "r6_matches": true,
+    "r6_path": "/tmp/cart2-opal-local-20261009/evidence/cart2-r6-integrated-20261009/hbnf-cart2-phase2-offline-wow-r6-integrated-20261009.bin",
+    "r6_release": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009"
+  },
+  "captured_branch": "hbnf-cart2-phase2-integration-20261006",
+  "captured_head": "fa3ae6bed518536ae59f225d942c1bcff0ca7a67",
+  "cloudflare": {
+    "account_id": "e3bc6b78f1104fa0c2a01245084594cf",
+    "active_deployment": "157f592b-cee8-4f6b-a687-d079210c26c4",
+    "active_percent": 100,
+    "active_version": "4a675ee4-807d-4ab1-b7e6-e2f91e27e39c",
+    "asset_only": true,
+    "bindings": [],
+    "captured_cart_assets_are_complete_site_manifest": false,
+    "cart_assets_captured": 16,
+    "has_asset_namespace": true,
+    "local_public_directory_used": false,
+    "official_docs": {
+      "direct_upload": "https://developers.cloudflare.com/workers/static-assets/direct-upload/",
+      "script_content_api": "https://developers.cloudflare.com/api/resources/workers/subresources/scripts/subresources/content/methods/get/",
+      "static_asset_worker_routing": "https://developers.cloudflare.com/workers/static-assets/routing/worker-script/",
+      "version_overrides": "https://developers.cloudflare.com/workers/versions-and-deployments/version-overrides/"
+    },
+    "safety_conclusion": "NO_GO__active_version_has_no_custom_worker_module_for_selective_run_worker_first; keep_assets=true reuses the current asset set but does not attach the exact new ZIP bytes; explicit asset upload requires complete current site manifest to preserve unobserved site assets; only Cart paths are captured; exact candidate content therefore cannot be verified via 0% override without risking unrelated site asset loss.",
+    "script_content_endpoint_http_status": 204,
+    "source_discovery": {
+      "complete_current_site_source_in_branch_or_release_artifacts": false,
+      "complete_static_asset_manifest": "not present in current indexed release/deployment evidence",
+      "deployed_artifact": "Cloudflare API active version metadata and 16 live Cart asset captures",
+      "github_authority": "oookkkaaayyy/local-roots",
+      "indexed_current_site_record": "Artifact Registry and HBNF Website Release & Operations Tracker; available source record dated Aug 2026 and Worker backup material dated July 2026 are stale relative to current deployment",
+      "integration_branch": "hbnf-cart2-phase2-integration-20261006"
+    },
+    "version_number": 314,
+    "worker": "hbnf",
+    "worker_module_or_handlers": false
+  },
+  "live_writes_performed": [],
+  "schema": "hbnf-cart2-cloudflare-source-and-r6-authority-reconciliation-v1",
+  "supabase_current_rollback_snapshot": {
+    "all_snapshot_hashes_match": true,
+    "function_versions": [
+      "hbnf-cart-control v18",
+      "hbnf-cart-reconcile v12",
+      "hbnf-matrix-adapter-foundation v3"
+    ],
+    "relay_migration_or_deployed_function": false,
+    "snapshot_manifest_sha256": "01aae83c2ffc8f38b016acb787f445cccb63d672e348bcfa03e1ff7059df3cd8",
+    "verified_files": [
+      {
+        "file": "index.ts",
+        "function": "hbnf-cart-control",
+        "matches_snapshot": true,
+        "sha256": "10a31c36c95df8ea1fc6a292fc7aa7570e8a63703f592037fae2adba7f6ce253",
+        "version": 18
+      },
+      {
+        "file": "guest-command.ts",
+        "function": "hbnf-cart-control",
+        "matches_snapshot": true,
+        "sha256": "6d60d8e92bce1705042c01bb200759abdac368b7bec6952179f1bf85baed5b8b",
+        "version": 18
+      },
+      {
+        "file": "live.ts",
+        "function": "hbnf-cart-control",
+        "matches_snapshot": true,
+        "sha256": "7844a5057f11f82344e3ff49c5f9062ba73019c62bfaab52636e93c897b69323",
+        "version": 18
+      },
+      {
+        "file": "skins_scoring.ts",
+        "function": "hbnf-cart-control",
+        "matches_snapshot": true,
+        "sha256": "aa7d74bbd10bff41111411d7b07b895e1c82a7f7d8d075cb04aec4cf35ba16d6",
+        "version": 18
+      },
+      {
+        "file": "deno.json",
+        "function": "hbnf-cart-control",
+        "matches_snapshot": true,
+        "sha256": "d4235a1ddf7735bdd0a73ae15e3b596b706c8b910d65d6b2f3c3b4583b902d29",
+        "version": 18
+      },
+      {
+        "file": "index.ts",
+        "function": "hbnf-cart-reconcile",
+        "matches_snapshot": true,
+        "sha256": "e43965dc08f91c2f89050ff83d8524e6052529dce63c8f66886bf37bdc362312",
+        "version": 12
+      },
+      {
+        "file": "deno.json",
+        "function": "hbnf-cart-reconcile",
+        "matches_snapshot": true,
+        "sha256": "0b40469f61ee92e94408f060cab99d00f1dcf4ae0d2ed183343f635c67f5febc",
+        "version": 12
+      },
+      {
+        "file": "index.ts",
+        "function": "hbnf-matrix-adapter-foundation",
+        "matches_snapshot": true,
+        "sha256": "6f83d04f90a86c0921bad46bed7270f6847855411246d7b4b4216626af7cf6a1",
+        "version": 3
+      }
+    ]
+  }
+}

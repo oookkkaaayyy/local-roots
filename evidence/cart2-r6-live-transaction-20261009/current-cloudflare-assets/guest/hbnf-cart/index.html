@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071018">
+  <title>HBNF Cart Guest</title>
+  <link rel="stylesheet" href="./guest.css?v=20261007-wow-r2">
+</head>
+<body>
+  <main class="guest-shell">
+    <header class="guest-hero">
+      <div><p class="eyebrow">CART GUEST</p><h1>Pick the Cart vibe</h1></div>
+      <span id="connectionBadge" class="badge">CHECKING</span>
+    </header>
+    <section class="boot-card" aria-live="polite">
+      <strong id="primaryStatus">Checking Guest Mode…</strong>
+      <p id="secondaryStatus" class="muted">No account or login is needed. The owner can close Guest Mode at any time.</p>
+      <div class="action-row"><button id="retry" type="button">Check again</button></div>
+    </section>
+    <section class="boot-card" aria-label="Vibe controls">
+      <div class="section-head"><div><p class="eyebrow">GUEST CONTROLS</p><h2>Vibe</h2></div><span id="guestBadge" class="badge closed">CLOSED</span></div>
+      <div class="vibe-grid">
+        <button data-guest-action="vibe" data-value="mellow" disabled><strong>Mellow</strong><span>Soft energy</span></button>
+        <button data-guest-action="vibe" data-value="moderate" disabled><strong>Moderate</strong><span>Easy flow</span></button>
+        <button data-guest-action="vibe" data-value="energetic" disabled><strong>Energetic</strong><span>More movement</span></button>
+        <button data-guest-action="vibe" data-value="peak" disabled><strong>Peak</strong><span>Full energy</span></button>
+        <button data-guest-action="vibe_auto" disabled><strong>Auto Vibe</strong><span>Let the Cart follow its current music behavior</span></button>
+      </div>
+    </section>
+    <section class="boot-card" aria-label="Cart actions">
+      <h2>Play</h2>
+      <div class="feature-grid">
+        <button data-guest-action="next" disabled><strong>Next look</strong><span>Advance the Cart sequence</span></button>
+        <button data-guest-action="auto" disabled><strong>Cart Auto</strong><span>Let the Cart choose its program</span></button>
+      </div>
+    </section>
+    <p id="live" class="sr" aria-live="polite"></p>
+    <footer class="guest-footer"><span>HBNF Cart Guest</span><span>Owner controlled</span></footer>
+  </main>
+  <script src="./guest.js?v=20261007-wow-r2" defer></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4819c2cbe5e1b49',t:'MTc5MTU5MzIwNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

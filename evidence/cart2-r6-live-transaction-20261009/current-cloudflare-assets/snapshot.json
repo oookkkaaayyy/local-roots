@@ -1,0 +1,152 @@
+{
+  "schema": "hbnf-cloudflare-static-current-snapshot-v1",
+  "captured_epoch": 1791593206,
+  "active_deployment": "157f592b-cee8-4f6b-a687-d079210c26c4",
+  "active_version": "4a675ee4-807d-4ab1-b7e6-e2f91e27e39c",
+  "assets": [
+    {
+      "path": "/guest/hbnf-cart/guest.css",
+      "url": "https://hbnightflyers.com/guest/hbnf-cart/guest.css",
+      "effective_url": "https://hbnightflyers.com/guest/hbnf-cart/guest.css?preflight=1791593206",
+      "http_status": 200,
+      "bytes": 2157,
+      "sha256": "bccb2a3179beb2116d953d083929fd97cdb13aa356742abfb45ce9a9919ce2ad",
+      "matches_previous_receipt": true
+    },
+    {
+      "path": "/guest/hbnf-cart/guest.js",
+      "url": "https://hbnightflyers.com/guest/hbnf-cart/guest.js",
+      "effective_url": "https://hbnightflyers.com/guest/hbnf-cart/guest.js?preflight=1791593206",
+      "http_status": 200,
+      "bytes": 5107,
+      "sha256": "9a51e6c67514a711585e5c044bb6407728a112ba48fef160c44800f17335133d",
+      "matches_previous_receipt": true
+    },
+    {
+      "path": "/guest/hbnf-cart/index.html",
+      "url": "https://hbnightflyers.com/guest/hbnf-cart/",
+      "effective_url": "https://hbnightflyers.com/guest/hbnf-cart/?preflight=1791593206",
+      "http_status": 200,
+      "bytes": 3378,
+      "sha256": "945f50709da9056a2f46225cde3a0f4ab4dac1398d83dbee90f248c5058ae6f6",
+      "matches_previous_receipt": false
+    },
+    {
+      "path": "/hbnf-cart-features.mjs",
+      "url": "https://hbnightflyers.com/hbnf-cart-features.mjs",
+      "effective_url": "https://hbnightflyers.com/hbnf-cart-features.mjs?preflight=1791593206",
+      "http_status": 200,
+      "bytes": 20970,
+      "sha256": "5aa1b63a7aaf8a033176989e96f024e1227d5f48743bdefd9c36a76b1cefbe84",
+      "matches_previous_receipt": true
+    },
+    {
+      "path": "/hbnf-cart-icon-180.png",
+      "url": "https://hbnightflyers.com/hbnf-cart-icon-180.png",
+      "effective_url": "https://hbnightflyers.com/hbnf-cart-icon-180.png?preflight=1791593206",
+      "http_status": 200,
+      "bytes": 1999,
+      "sha256": "02a42add542f156fb8cd32ff020d827fb139d70cce6e6c3564cc821c95aec3ed",
+      "matches_previous_receipt": true
+    },
+    {
+      "path": "/hbnf-cart-icon-192.png",
+      "url": "https://hbnightflyers.com/hbnf-cart-icon-192.png",
+      "effective_url": "https://hbnightflyers.com/hbnf-cart-icon-192.png?preflight=1791593206",
+      "http_status": 200,
+      "bytes": 2171,
+      "sha256": "200dd4c1bb58dd1f3b6fe353404d29cae306673a4bc854b21049c475011b42ab",
+      "matches_previous_receipt": true
+    },
+    {
+      "path": "/hbnf-cart-icon-512.png",
+      "url": "https://hbnightflyers.com/hbnf-cart-icon-512.png",
+      "effective_url": "https://hbnightflyers.com/hbnf-cart-icon-512.png?preflight=1791593206",
+      "http_status": 200,
+      "bytes": 5994,
+      "sha256": "05ecdcb818aaf9d1f23af59ca73c27d7a00b328705e62d0e9adf3954db6e5838",
+      "matches_previous_receipt": true
+    },
+    {
+      "path": "/hbnf-cart-manifest.webmanifest",
+      "url": "https://hbnightflyers.com/hbnf-cart-manifest.webmanifest",
+      "effective_url": "https://hbnightflyers.com/hbnf-cart-manifest.webmanifest?preflight=1791593206",
+      "http_status": 200,
+      "bytes": 486,
+      "sha256": "895f4c579594dcd7789a2a7f7cb69a21dad3c02975a2ae829825a2ad0e05e627",
+      "matches_previous_receipt": true
+    },
+    {
+      "path": "/hbnf-cart-net.mjs",
+      "url": "https://hbnightflyers.com/hbnf-cart-net.mjs",
+      "effective_url": "https://hbnightflyers.com/hbnf-cart-net.mjs?preflight=1791593206",
+      "http_status": 200,
+      "bytes": 1511,
+      "sha256": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+      "matches_previous_receipt": true
+    },
+    {
+      "path": "/hbnf-cart-semantic.mjs",
+      "url": "https://hbnightflyers.com/hbnf-cart-semantic.mjs",
+      "effective_url": "https://hbnightflyers.com/hbnf-cart-semantic.mjs?preflight=1791593206",
+      "http_status": 200,
+      "bytes": 2611,
+      "sha256": "c7eada1028dddd0321ffa34e894bcb5e7d5ff4cf13a084f72623adcbb963d5a1",
+      "matches_previous_receipt": true
+    },
+    {
+      "path": "/hbnf-cart-skins-score.mjs",
+      "url": "https://hbnightflyers.com/hbnf-cart-skins-score.mjs",
+      "effective_url": "https://hbnightflyers.com/hbnf-cart-skins-score.mjs?preflight=1791593206",
+      "http_status": 200,
+      "bytes": 6933,
+      "sha256": "29e4a53144f6c0adc501d80425bad7f9aa8f9f681d711d0ea24f6ca179475316",
+      "matches_previous_receipt": true
+    },
+    {
+      "path": "/hbnf-cart-sw.js",
+      "url": "https://hbnightflyers.com/hbnf-cart-sw.js",
+      "effective_url": "https://hbnightflyers.com/hbnf-cart-sw.js?preflight=1791593206",
+      "http_status": 200,
+      "bytes": 2489,
+      "sha256": "55cfd341e609c972ebb1ac463cf394f065e83fe383a1ee32b9872d3efbc8e716",
+      "matches_previous_receipt": true
+    },
+    {
+      "path": "/hbnf-cart-ui-v6.css",
+      "url": "https://hbnightflyers.com/hbnf-cart-ui-v6.css",
+      "effective_url": "https://hbnightflyers.com/hbnf-cart-ui-v6.css?preflight=1791593206",
+      "http_status": 200,
+      "bytes": 4731,
+      "sha256": "e7e30733df824864d415a69d4dcc0b297718fa414938d4d54ff158b408b93672",
+      "matches_previous_receipt": true
+    },
+    {
+      "path": "/hbnf-cart-ui-v6.mjs",
+      "url": "https://hbnightflyers.com/hbnf-cart-ui-v6.mjs",
+      "effective_url": "https://hbnightflyers.com/hbnf-cart-ui-v6.mjs?preflight=1791593206",
+      "http_status": 200,
+      "bytes": 1053,
+      "sha256": "0e0f16ea7c6e573cc5d5180309d899732598c9b630c7732dfbe10326e542a6e0",
+      "matches_previous_receipt": true
+    },
+    {
+      "path": "/hbnf-cart.html",
+      "url": "https://hbnightflyers.com/hbnf-cart.html",
+      "effective_url": "https://hbnightflyers.com/hbnf-cart?preflight=1791593206",
+      "http_status": 200,
+      "bytes": 14935,
+      "sha256": "aa1eda8a0cab3cc539622736be1cbc8e979cff606c304bc1da5f55f112cb7189",
+      "matches_previous_receipt": false
+    },
+    {
+      "path": "/hbnf-cart.js",
+      "url": "https://hbnightflyers.com/hbnf-cart.js",
+      "effective_url": "https://hbnightflyers.com/hbnf-cart.js?preflight=1791593206",
+      "http_status": 200,
+      "bytes": 18894,
+      "sha256": "bf40263a375aa4150d7afc9ff0466a4db05ef33ed9ad95f035300c8d6742e2fe",
+      "matches_previous_receipt": true
+    }
+  ]
+}

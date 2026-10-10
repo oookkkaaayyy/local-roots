@@ -1,0 +1,66 @@
+{
+  "hbnf-cart-control": {
+    "version": 18,
+    "verify_jwt": false,
+    "import_map": true,
+    "ezbr_sha256": "8629c8484a7ce335bee9c14c613f0e1858c18d3f2fa041b71c6ac0492d691e37",
+    "files": [
+      {
+        "name": "index.ts",
+        "bytes": 13752,
+        "sha256": "10a31c36c95df8ea1fc6a292fc7aa7570e8a63703f592037fae2adba7f6ce253"
+      },
+      {
+        "name": "guest-command.ts",
+        "bytes": 14556,
+        "sha256": "6d60d8e92bce1705042c01bb200759abdac368b7bec6952179f1bf85baed5b8b"
+      },
+      {
+        "name": "live.ts",
+        "bytes": 5548,
+        "sha256": "7844a5057f11f82344e3ff49c5f9062ba73019c62bfaab52636e93c897b69323"
+      },
+      {
+        "name": "skins_scoring.ts",
+        "bytes": 9680,
+        "sha256": "aa7d74bbd10bff41111411d7b07b895e1c82a7f7d8d075cb04aec4cf35ba16d6"
+      },
+      {
+        "name": "deno.json",
+        "bytes": 174,
+        "sha256": "d4235a1ddf7735bdd0a73ae15e3b596b706c8b910d65d6b2f3c3b4583b902d29"
+      }
+    ]
+  },
+  "hbnf-cart-reconcile": {
+    "version": 12,
+    "verify_jwt": true,
+    "import_map": true,
+    "ezbr_sha256": "4f400b2ee1d733f07a90baa231c843990802a3a72aedb507e6963a78685a1d93",
+    "files": [
+      {
+        "name": "index.ts",
+        "bytes": 9160,
+        "sha256": "e43965dc08f91c2f89050ff83d8524e6052529dce63c8f66886bf37bdc362312"
+      },
+      {
+        "name": "deno.json",
+        "bytes": 154,
+        "sha256": "0b40469f61ee92e94408f060cab99d00f1dcf4ae0d2ed183343f635c67f5febc"
+      }
+    ]
+  },
+  "hbnf-matrix-adapter-foundation": {
+    "version": 3,
+    "verify_jwt": true,
+    "import_map": false,
+    "ezbr_sha256": "4925765bdad4726e3eda85d1d781813c783c64d2d425f0aafe572bf918fbcdb1",
+    "files": [
+      {
+        "name": "index.ts",
+        "bytes": 5066,
+        "sha256": "6f83d04f90a86c0921bad46bed7270f6847855411246d7b4b4216626af7cf6a1"
+      }
+    ]
+  }
+}\n
