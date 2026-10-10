@@ -1,0 +1,337 @@
+{
+  "cost_policy": {
+    "paid_or_quota_limited_execution": "explicit_authorization_per_bounded_run",
+    "remote_execution_for_source_archaeology": false,
+    "retry_inherits_authorization": false
+  },
+  "created_at": "2026-10-10T21:26:15.996494+00:00",
+  "expected_terminal_outputs": [
+    "R4 runtime qualification or exact failure classification",
+    "exact Matrix release identity",
+    "R4 recovery evidence if used",
+    "AUX physical synchronization/recovery evidence",
+    "soak audit",
+    "T4/T5 lifecycle state",
+    "durable evidence pointers"
+  ],
+  "external_authorities": {
+    "artifact_registry_drive_id": "18VsUYIYr62fYVaEqynM1kbMmfQpei-3H3rBgrw8S96k",
+    "delta_inbox_sheet_id": "1tJIcKRfWFdHVYVo4G6mgySB46p6xwsseGON3JdnEnzY",
+    "file_authority_drive_id": "1GwvPv_nihqoIj83WsO6VcvyujRkt8HnnULvLv717OHc",
+    "release_engineering_drive_id": "1bw_VUNt2mEZ4JdKuRsQq7ZS1Bc4KeC8kMVABVK2OdgE"
+  },
+  "repo_identity": {
+    "branch": "hbnf-cart2-phase2-integration-20261006",
+    "dirty": false,
+    "type": "git_commit",
+    "value": "188b724d5b1083ce67deacfaabbf0cfff3545a86"
+  },
+  "repo_inputs": [
+    {
+      "bytes": 31590,
+      "path": "config/HBNF_CONTROL_MODEL.json",
+      "sha256": "8d42f1fd540c95a01ae16857c286f6350b57ad8e3cd0c22befd1780fcb26d29c"
+    },
+    {
+      "bytes": 244798,
+      "path": "config/HBNF_CONTROL_STATE.json",
+      "sha256": "3534bd23ea6440c71fc9b5bb8321f588befdf577a2fdd07d364d2e40ae7b5d07"
+    },
+    {
+      "bytes": 60094,
+      "path": "scripts/hbnf_control.py",
+      "sha256": "3029e783460ca947f6962d9e1fb2b9f1186189a1bfa32bbdd18b657d57adf9e8"
+    },
+    {
+      "bytes": 4175,
+      "path": "scripts/hbnf_guarded_run.py",
+      "sha256": "1684260f70c85f72262a2b6c84a9f6c8a180fb3bb39fce6720ac3e46b67b7053"
+    },
+    {
+      "bytes": 5404,
+      "path": "platform/policies.json",
+      "sha256": "16b80bafcb81002885164ba3799e1401d5007addb38ebb1e9a5336fdfa9bc37a"
+    },
+    {
+      "bytes": 7843,
+      "path": "platform/workflows/live-device-diagnostic.json",
+      "sha256": "2954ee3c24963e637632419049463e7d6b589300bb4d5519a3b6249d3638e849"
+    },
+    {
+      "bytes": 10967,
+      "path": "platform/cart2-critical-path-v1.json",
+      "sha256": "f19ef4feea2528c47a919d2deac967746690a2b9ead9a33db191b4b02cbe237b"
+    },
+    {
+      "bytes": 30176,
+      "path": "scripts/platform.py",
+      "sha256": "1efe8f1b9dadbc4f3423ae3fcadfaaf80dcb5f3305296cfbb87a2ddbde7592e0"
+    },
+    {
+      "bytes": 8202,
+      "path": "platform/providers/cloudflare-workers.json",
+      "sha256": "67c0c79c310b780d2934fbf7ef12b06562d014adafac2105822a4c2d79ff74da"
+    },
+    {
+      "bytes": 14677,
+      "path": "AGENTS.md",
+      "sha256": "1400198b652bc349ea032a1a2669e436987c60a5ada3fea92e52425f73737584"
+    },
+    {
+      "bytes": 3481,
+      "path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
+      "sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797"
+    },
+    {
+      "bytes": 8881,
+      "path": "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+      "sha256": "44f62cf31e5efa57a360117d96d437d6f504fd93704b28a069661b2da64a49f0"
+    },
+    {
+      "bytes": 5514,
+      "path": "config/HBNF_RUNTIME_TELEMETRY_CONTRACT.json",
+      "sha256": "9aca17e2339c5230b82997bbc5080f6cb3955558ad17ae8469a0a5f5a8aafa39"
+    },
+    {
+      "bytes": 7134,
+      "path": "evidence/cart2-r6-audio-cache-20261010/FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
+      "sha256": "d4a4a7c120f1c9e01dea2f0546323df35107ea57d521f331a0f8ab949dd53d22"
+    },
+    {
+      "bytes": 7732,
+      "path": "evidence/cart2-r6-audio-cache-20261010/COMBINED_FEATURE_OFFLINE_TESTS.json",
+      "sha256": "4987b837e437a09c1b501b43d428f35488e09dc89af8f98915165fde9515681c"
+    },
+    {
+      "bytes": 1712,
+      "path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/HOST_PREFLIGHT_BLOCKER_RECONCILIATION.json",
+      "sha256": "58ec901abbc38ecbb181f643c9ea4454fe746c84ced37b51dd0423d3a8d2bfe5"
+    },
+    {
+      "bytes": 1497984,
+      "path": "evidence/cart2-r6-audio-cache-20261010/artifact/hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010.bin",
+      "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+    },
+    {
+      "bytes": 1489008,
+      "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    },
+    {
+      "bytes": 10713,
+      "path": "firmware/phase2/integration-r6-cachefix/SOURCE_BINDING.json",
+      "sha256": "e41cc707e7c58a58eed6d8d5b425ac9bef20af796401fcf6d10cc413d8b09092"
+    },
+    {
+      "bytes": 2800,
+      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_FROZEN_LIVE_QUALIFICATION_PROCEDURE.json",
+      "sha256": "f566e9383b5be6a2d0aaf3e26cf8685e69158350637816c73fefd548740aa061"
+    },
+    {
+      "bytes": 2377,
+      "path": "evidence/cart2-r6-audio-cache-20261010/R6_AUDIO_CACHE_LIVE_SWEEP_ADAPTER.json",
+      "sha256": "f250707c2e28549c264bd5372893466279d3f26cd2f9d204c1952b7b7a2ea86d"
+    },
+    {
+      "bytes": 51929,
+      "path": "scripts/hbnf_r6_audio_cache_live_transaction.py",
+      "sha256": "9cc5731cf2901b2acb26044b574c4587d42d64fae4b85c425f46eddaa77971a9"
+    },
+    {
+      "bytes": 5424,
+      "path": "scripts/hbnf_r6_combined_feature_check.py",
+      "sha256": "12164ae4e462912c1affa758fbe4005c8571d406d6f57c8b419bd55a7b97a0d0"
+    },
+    {
+      "bytes": 3850,
+      "path": "tests/test_r6_audio_cache_candidate.py",
+      "sha256": "0b1c66896d48d9392ef258998f3c25d1b66182ff61a7c3fddc0dc4852e7d0520"
+    },
+    {
+      "bytes": 12183,
+      "path": "tests/test_r6_audio_cache_transaction_dryrun.py",
+      "sha256": "30933ddee0181be51cc5c1b2f7f3092c83e0fe9643109cd7a9f255282a36aa7d"
+    },
+    {
+      "bytes": 4341,
+      "path": "tests/test_hbnf_r6_combined_feature_check.py",
+      "sha256": "3dcfb342fb358f13d282aff73cb3005b6da8d7d6fc4db420c8bbe584372204fc"
+    },
+    {
+      "bytes": 36590,
+      "path": "scripts/hbnf_foundation_live_adapter.py",
+      "sha256": "78add0f89b359fc3c4ccef5486d12b3c662a35ea0e3858f334f6b26d87ab0d0f"
+    },
+    {
+      "bytes": 51493,
+      "path": "scripts/hbnf_live_kernel_sweep.py",
+      "sha256": "1647837aabd56fd9a39615a84190a6a0a67bd9ac3cda617e092131527ca23c33"
+    },
+    {
+      "bytes": 17799,
+      "path": "scripts/hbnf_foundation_soak_audit.py",
+      "sha256": "e9ccfd5bcc494c354472939b378faf3400a5f9c238f0912119887c13fc07f62d"
+    },
+    {
+      "bytes": 15979,
+      "path": "scripts/hbnf_packet20_r4_live_transaction.py",
+      "sha256": "6042fe80aa22ef8eedf5d6ea346f5f853e96a23d6e0dcdc409fd882ae01d28e4"
+    }
+  ],
+  "run_id": "cart2-r6-qualification-continuation-20261010-188b724",
+  "schema": "local-roots-execution-capsule-v1",
+  "stages": [
+    {
+      "id": "package-doctor",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "platform doctor and HBNF control state pass; pushed branch is clean"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "contract-closure",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "exact candidate SHA/size/embedded identity and compiled telemetry manifest verified",
+        "Matrix WLED 16.0.1 /update consumer path and target identity verified"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "recovery-proof",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "exact R4 local recovery SHA/size and runtime ledger verified",
+        "same /update recovery path already proven end-to-end"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "transaction-rehearsal",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "one multipart install and exact recovery transaction mechanically rehearsed from prior receipts; no live change"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "capture-current-state",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "fresh Matrix/AUX/Opal state, exact identities, health, and renderer baseline captured"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "read-only-preflight",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "immediate pre-mutation identities and continuity pass"
+      ],
+      "retry_policy": "idempotent",
+      "timeout_budget": {
+        "inner_calls_max": 5,
+        "inner_timeout_seconds": 5,
+        "margin_seconds": 15,
+        "outer_seconds": 40
+      }
+    },
+    {
+      "id": "candidate-install",
+      "kind": "live",
+      "mutation": true,
+      "outputs": [
+        "one multipart install attempt only for hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010 SHA-256 f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b; immediately capture HTTP response, exact runtime identity, Matrix/AUX health"
+      ],
+      "retry_policy": "never",
+      "rollback": {
+        "strategy": "one exact SHA-verified R4 Matrix /update recovery only if candidate identity/runtime/safety/frozen performance or required AUX synchronization fails"
+      },
+      "timeout_budget": {
+        "inner_calls_max": 1,
+        "inner_timeout_seconds": 190,
+        "margin_seconds": 50,
+        "outer_seconds": 240
+      }
+    },
+    {
+      "id": "runtime-smoke-and-physical-sync",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "matched kernel0 and kernel13 at brightness44 versus exact R4 baselines; advancing renderer; exact telemetry fields; heap/restarts; actual Matrix-to-AUX output and owner-observed physical sync"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "all-kernel-sweep-and-soak",
+      "kind": "live",
+      "mutation": true,
+      "outputs": [
+        "28-kernel sweep and uninterrupted >=5400-second soak audited against the unchanged frozen policy; no threshold weakening"
+      ],
+      "retry_policy": "explicit_only",
+      "rollback": {
+        "strategy": "restore exact renderer snapshot; if frozen device/safety/AUX gate fails, use only the exact pre-proven R4 recovery; preserve evidence before continuing offline"
+      },
+      "timeout_budget": {
+        "inner_calls_max": 1,
+        "inner_timeout_seconds": 5670,
+        "margin_seconds": 330,
+        "outer_seconds": 6000
+      }
+    },
+    {
+      "id": "owner-acceptance",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "one consolidated owner session records physical AUX sync/recovery, text/Vibe/audio, iPad/PWA/Guest behavior, and final acceptance decisions; T5 not inferred"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "record",
+      "kind": "evidence",
+      "mutation": false,
+      "outputs": [
+        "terminal Phase 2 R4 qualification receipt, candidate/recovery identities, GitHub/Drive/AKS pointers, and control state reconciled"
+      ],
+      "retry_policy": "idempotent"
+    }
+  ],
+  "storage_policy": {
+    "aks": "searchable routing, current-state pointers, acceptance/supersession metadata, and external artifact identities",
+    "github": "canonical/buildable source, scripts, configs, workflow definitions, and small machine-readable provenance",
+    "google_drive": "durable binaries, recovery artifacts, decisive evidence, and large immutable run outputs",
+    "local_workspace": "ephemeral execution only; never sole authority after a result becomes meaningful"
+  },
+  "system_id": "hbnf-cart",
+  "terminal_recovery": "If the exact R6 audio-cache candidate is unqualified or runtime safety/required AUX behavior fails, preserve the failure evidence, install only the exact R4 recovery within the authorized limit, verify exact R4 identity and health, then continue offline work; never stop solely because a soak failed.",
+  "trace_id": "247445fa360f461ca699245e6f5f9f83",
+  "user_interaction_policy": {
+    "copy_paste_delivery": "one_single_fenced_block_per_action",
+    "max_user_actions_per_blocker": 1,
+    "required_user_action_fields": [
+      "prerequisite",
+      "action",
+      "expected_result",
+      "stop_condition"
+    ],
+    "resource_instruction_requires_direct_link_or_exact_path": true,
+    "terminal_app": "macOS Terminal",
+    "terminal_relay": false
+  },
+  "workflow_id": "phase2-live-qualification",
+  "workflow_source": {
+    "path": "platform/workflows/phase2-live-qualification.json",
+    "sha256": "a76bc9aa9fc1c171615a8bf3320fd6d30f5680332f01f8b862c9148a900942bb"
+  }
+}
