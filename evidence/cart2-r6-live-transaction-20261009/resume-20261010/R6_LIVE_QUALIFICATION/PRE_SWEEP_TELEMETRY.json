@@ -1,0 +1,68 @@
+{
+  "aux_ip": "192.168.77.11",
+  "aux_led_count": 22,
+  "aux_live": true,
+  "aux_live_ip": "192.168.77.10",
+  "aux_live_mode": "DDP",
+  "aux_mac": "8c94df55c34c",
+  "aux_on": true,
+  "aux_physical_output_status": "NOT_OBSERVABLE_FROM_WLED_JSON",
+  "candidate": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+  "endpoint_reads": {
+    "aux_info": {
+      "completed_monotonic_ns": 477573041,
+      "elapsed_seconds": 0.40309,
+      "endpoint": "http://192.168.77.11/json/info",
+      "started_monotonic_ns": 74482833,
+      "status": "PASS"
+    },
+    "aux_state": {
+      "completed_monotonic_ns": 477441125,
+      "elapsed_seconds": 0.402838,
+      "endpoint": "http://192.168.77.11/json/state",
+      "started_monotonic_ns": 74603333,
+      "status": "PASS"
+    },
+    "matrix_build": {
+      "completed_monotonic_ns": 232909625,
+      "elapsed_seconds": 0.158704,
+      "endpoint": "http://192.168.77.10/hbnf/build.json",
+      "started_monotonic_ns": 74205375,
+      "status": "PASS"
+    },
+    "matrix_info": {
+      "completed_monotonic_ns": 272808166,
+      "elapsed_seconds": 0.198862,
+      "endpoint": "http://192.168.77.10/json/info",
+      "started_monotonic_ns": 73946208,
+      "status": "PASS"
+    },
+    "matrix_state": {
+      "completed_monotonic_ns": 272870708,
+      "elapsed_seconds": 0.198535,
+      "endpoint": "http://192.168.77.10/json/state",
+      "started_monotonic_ns": 74336083,
+      "status": "PASS"
+    }
+  },
+  "expected_firmware_sha256": null,
+  "expected_release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+  "foundation_telemetry_enabled": false,
+  "fps": 43,
+  "matrix_brightness": 44,
+  "matrix_ip": "192.168.77.10",
+  "matrix_mac": "704bca5b345c",
+  "matrix_on": true,
+  "matrix_uptime_seconds": 163,
+  "packet20_enabled": false,
+  "packet20_restore_verified": false,
+  "packet20_snapshot_hash": 0,
+  "packet20_snapshot_id": 0,
+  "packet20_snapshot_valid": false,
+  "read_elapsed_seconds": 0.406823,
+  "release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+  "restart_count": 0,
+  "schema": "hbnf-live-qualification-preflight-v1",
+  "uptime_seconds": 163,
+  "wled": "16.0.1"
+}

@@ -1,0 +1,8 @@
+{
+  "status": "FAIL",
+  "run_error": "command failed rc=2: ['env', 'HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-integrated-20261009', 'python3', 'scripts/hbnf_foundation_live_adapter.py', 'snapshot', '--observer-output', '/private/tmp/cart2-opal-local-20261009/evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_LIVE_QUALIFICATION/OBSERVER_EFFECT.json', '--inventory', 'config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json']\nfoundation adapter error: RuntimeError: foundation-prequal-failed; snapshot=1 hash=3639678278; sidecar=/private/tmp/cart2-opal-local-20261009/evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_LIVE_QUALIFICATION/OBSERVER_EFFECT_FAILURE.json; restore=OBSERVER_FAILED__RENDERER_RESTORED; cause=RuntimeError: foundation-frame-tail-quantile-saturated-at-127.875ms fields=frameMsP95,frameMsP99 raw=/private/tmp/cart2-opal-local-20261009/evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_LIVE_QUALIFICATION/OBSERVER_EFFECT.json/SATURATED_TELEMETRY_RAW.json\n",
+  "restore_error": null,
+  "profiles_completed": 0,
+  "pre_sweep_state": "/private/tmp/cart2-opal-local-20261009/evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_LIVE_QUALIFICATION/PRE_SWEEP_STATE.json",
+  "post_restore_state": "/private/tmp/cart2-opal-local-20261009/evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_LIVE_QUALIFICATION/POST_RESTORE_STATE.json"
+}

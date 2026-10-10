@@ -1,0 +1,13 @@
+{
+  "error": "RuntimeError: foundation-frame-tail-quantile-saturated-at-127.875ms fields=frameMsP95,frameMsP99 raw=/private/tmp/cart2-opal-local-20261009/evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_LIVE_QUALIFICATION/OBSERVER_EFFECT.json/SATURATED_TELEMETRY_RAW.json",
+  "restore": {
+    "packet20Same": true,
+    "restoreVerified": true,
+    "snapshotHash": 3639678278,
+    "snapshotId": 1
+  },
+  "schema": "hbnf-observer-effect-failure-v1",
+  "snapshotHash": 3639678278,
+  "snapshotId": 1,
+  "status": "OBSERVER_FAILED__RENDERER_RESTORED"
+}

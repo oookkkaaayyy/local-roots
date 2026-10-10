@@ -1,0 +1,79 @@
+{
+  "schema": "hbnf-live-sweep-adapter-v1",
+  "snapshot_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "snapshot",
+    "--observer-output",
+    "{observer_output}",
+    "--inventory",
+    "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"
+  ],
+  "select_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "select",
+    "--kernel",
+    "{runtime_kernel_index}"
+  ],
+  "telemetry_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "telemetry",
+    "--inventory",
+    "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+    "--session-id",
+    "{session_id}"
+  ],
+  "restore_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "restore",
+    "--snapshot-file",
+    "{snapshot_file}"
+  ],
+  "verify_restore_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "verify-restore",
+    "--snapshot-file",
+    "{snapshot_file}"
+  ],
+  "telemetry_mode_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "telemetry-mode",
+    "--enabled",
+    "{enabled}"
+  ],
+  "preflight_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "preflight",
+    "--session-id",
+    "{session_id}"
+  ],
+  "settle_seconds": 5,
+  "sample_seconds": 30,
+  "sample_interval_seconds": 1,
+  "timeout_seconds": 240,
+  "expected_release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+  "notes": [
+    "R7 exact candidate adapter. The environment variable is command-scoped and sets only the expected firmware identity; no device request occurs until the normal runner invokes preflight/snapshot.",
+    "Preserves the single Packet20 snapshot, tails-off/tails-on observer comparison, tails-on histograms for the full Foundation sweep/soak, exact prior telemetry-mode restoration, and snapshot hash verification."
+  ]
+}

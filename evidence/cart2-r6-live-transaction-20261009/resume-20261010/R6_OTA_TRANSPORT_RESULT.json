@@ -1,0 +1,19 @@
+{
+  "schema": "hbnf-cart2-r6-ota-transport-result-v1",
+  "started_at_utc": "2026-10-10T05:36:03.675569+00:00",
+  "finished_at_utc": "2026-10-10T05:36:34.791884+00:00",
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+  "candidate_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
+  "candidate_size_bytes": 1497936,
+  "remote_target": "root@192.168.77.1",
+  "matrix_target": "192.168.77.10 / 70:4b:ca:5b:34:5c",
+  "transport": "single SSH stdin copy to Opal; remote size+SHA verified; one Opal-origin multipart POST to local WLED /update",
+  "ssh_returncode": 0,
+  "stdout": "HTTP_200_UPDATE_OK\ne989fc00de0b0d87a74771439a95cb6b231dac0ede16865104c2251612c6a128  /tmp/hbnf-cart2-r6-ota-response.html\n<!DOCTYPE html> <html lang=en> <head> <meta content=\"width=device-width\" name=viewport> <title>WLED Message</title> <script>function B(){window.history.back()}function RS(){window.location=\"../settings\"}function RP(){top.location.href=\"../\"}</script> <style> @import url(\"style.css\"); </style> </head> <body> <h2>Update successful!</h2>Rebooting now...<script>setTimeout(RP,11000)</script></body> </html>",
+  "stderr": "",
+  "http_200_update_successful": true,
+  "attempts": 1,
+  "automatic_retry": false,
+  "remote_temp_path": "/tmp/hbnf-cart2-r6-integrated-20261009.bin",
+  "remote_response_path": "/tmp/hbnf-cart2-r6-ota-response.html"
+}

@@ -700,7 +700,7 @@
       "opal_relay_active": false,
       "receipt_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/EXISTING_FUNCTION_RELAY_CONSOLIDATION_RECEIPT.json",
       "receipt_sha256": "c88eb9fe471b5cc4ed171f6eece03e2dbb48135e5d90d4e1c047e3feb1d0b742",
-      "rollback_attempts_used": 0
+      "rollback_attempts_used": 1
     },
     "candidate": {
       "path": "evidence/cart2-r6-integrated-20261009/hbnf-cart2-phase2-offline-wow-r6-integrated-20261009.bin",
@@ -765,7 +765,7 @@
       "path": "evidence/cart2-owner-guest-vibe-r2-20261009/HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009.zip",
       "sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc"
     },
-    "current_mutation_stage": "R6_INSTALL_ATTEMPT_CONSUMED__EXACT_OTA_REQUEST_PENDING",
+    "current_mutation_stage": "EXACT_R4_RECOVERY_ATTEMPT_CONSUMED__OTA_REQUEST_PENDING",
     "current_owner_authorization": {
       "exact_firmware_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
       "exact_owner_guest_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
@@ -848,7 +848,7 @@
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
       "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
     },
-    "rollback_attempts": 0,
+    "rollback_attempts": 1,
     "rollback_limit": 1,
     "schema": "hbnf-cart2-coordinated-live-release-authorization-v1",
     "scope": [
@@ -857,7 +857,7 @@
       "one exact R4 recovery only on authorized objective runtime/safety/performance/AUX failure",
       "unchanged 28-kernel sweep, combined-feature tests, contiguous 90-minute soak, physical and owner acceptance"
     ],
-    "status": "IN_PROGRESS__R6_INSTALL_ATTEMPT_CONSUMED_OTA_REQUEST_PENDING",
+    "status": "IN_PROGRESS__R6_PERFORMANCE_GATE_FAILED__EXACT_R4_RECOVERY_ATTEMPT_CONSUMED",
     "target": {
       "aux_ip": "192.168.77.11",
       "aux_mac": "8c:94:df:55:c3:4c",
@@ -867,13 +867,45 @@
     },
     "transaction_consumed": true,
     "transaction_started_at_utc": "2026-10-10T05:20:44.781805+00:00",
-    "current_gate": "Single exact R6 attempt consumed in durable control state. Next action is its one OTA request; no retry is authorized. Exact R4 recovery remains unused and available only for objective device/runtime/safety/performance/AUX failure.",
+    "current_gate": "R6 failed the unchanged kernel-0 frame-tail qualification before the 28-kernel sweep; renderer snapshot restore is verified. The one exact R4 recovery attempt is consumed and pending. Command fence remains closed, relay inactive, no route/backend rollback yet.",
     "install_attempt_consumption": {
       "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_INSTALL_ATTEMPT_CONSUMPTION.json",
       "sha256": "0ab5f07fdac2acc2e84f8a67762740e9b86e83f16004f5d9bf3eb7733653e320",
       "consumed_at_utc": "2026-10-10T05:35:32.619999+00:00",
       "candidate_install_attempts_used": 1,
       "rollback_attempts_used": 0
+    },
+    "rollback_consumption": {
+      "consumed_at_utc": "2026-10-10T05:42:05.965145+00:00",
+      "attempt_number": 1,
+      "attempt_limit": 1,
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "failure_receipt_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_FAILURE_CLASSIFICATION.json",
+      "failure_receipt_sha256": "9373421d744fa7847d7720f6ffb0f84f8959bb7b6c8a8282787c432339b00180",
+      "attempts_used": 1,
+      "reason": "R6 observer prequalification showed tails-off frame average median 123.637 ms; tails-on telemetry p95/p99 saturated at 127.875 ms, overflow=true, max 153.968 ms and 7 FPS on kernel 0. Exact R4 profile gates imply p95 max 34.844 ms, p99 max 51.719 ms, max 72.296 ms. Required gate failed; renderer snapshot itself was verified restored."
+    },
+    "ota_receipt_path": {
+      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_OTA_TRANSPORT_RESULT.json",
+      "sha256": "a796d5df4c239611e588767825e213df30924d703315c0c3dc2f4108bdb45ed3"
+    },
+    "postinstall_readonly_path": {
+      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_POST_INSTALL_READONLY_VERIFICATION.json",
+      "sha256": "c627634cfb44d4bee928de2dcd627fe9e9aa04ee93533a0f0f558dd9e0793e61"
+    },
+    "qualification_failure_path": {
+      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_FAILURE_CLASSIFICATION.json",
+      "sha256": "9373421d744fa7847d7720f6ffb0f84f8959bb7b6c8a8282787c432339b00180"
+    },
+    "qualification_failure_raw_path": {
+      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_LIVE_QUALIFICATION/OBSERVER_EFFECT.json/SATURATED_TELEMETRY_RAW.json",
+      "sha256": "26d6036a786b5fa03b5044c9000debac7e289e7d2fd0cac245b0423225575d37"
+    },
+    "qualification_restore_receipt_path": {
+      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_LIVE_QUALIFICATION/RESTORE_RECEIPT.json",
+      "sha256": "cc4c37af969db080115e5196d4b295f6b781c39430eac34b6d23a440dfc13fee"
     }
   },
   "current_task": {
@@ -2644,7 +2676,7 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "R6_INSTALL_ATTEMPT_CONSUMED; EXACT_OTA_REQUEST_PENDING; R4_ROLLBACK_UNUSED; COMMAND_FENCE_CLOSED",
+    "current_failure_domain": "R6_FROZEN_PERFORMANCE_GATE_FAILED__KERNEL_0; EXACT_R4_RECOVERY_ATTEMPT_CONSUMED; COMMAND_FENCE_CLOSED",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
       "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
@@ -2653,10 +2685,10 @@
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Issue exactly one R6 upload through verified Opal-origin local WLED /update path; never retry.",
-      "Immediately verify exact R6 runtime identity, health, and native Matrix-to-AUX DDP.",
-      "Run frozen early kernel 13 and 9 matched gates; use exact R4 recovery once only if objective failure requires it.",
-      "On early pass, run unchanged 28-kernel comparison, combined-feature checks, one uninterrupted 5400-second soak, restore the exact renderer snapshot, then obtain owner physical/iPad/audio acceptance."
+      "Perform the single exact R4 recovery using the existing Opal-origin local WLED /update method; no retry.",
+      "Verify exact R4 runtime identity, health, current uptime, and AUX native DDP.",
+      "Apply the existing failure rollback closure to captured backend and Cloudflare route versions without altering unrelated production state.",
+      "Continue safe offline product integration and preserve evidence; R6 live qualification remains failed and must not be reported accepted."
     ],
     "no_repeat": [
       "Packet20 diagnostic/root-cause work is closed; do not reopen without an explicit invalidator.",

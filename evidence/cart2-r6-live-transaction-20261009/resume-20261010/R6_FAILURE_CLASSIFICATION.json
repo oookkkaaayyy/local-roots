@@ -1,0 +1,79 @@
+{
+  "schema": "hbnf-cart2-r6-live-performance-failure-v1",
+  "classified_at_utc": "2026-10-10T05:42:05.954604+00:00",
+  "candidate_release": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+  "candidate_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
+  "failure_class": "DEVICE_RENDERING_PERFORMANCE_GATE_FAIL__KERNEL_0_WARMUP_TAILS_ON_HISTOGRAM_SATURATED",
+  "not_attributed_to": [
+    "Mac-to-Cart outage",
+    "host collector failure",
+    "network transfer failure",
+    "AUX DDP failure"
+  ],
+  "evidence": {
+    "observer_windows_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_LIVE_QUALIFICATION/OBSERVER_PREQUAL_WINDOWS.json",
+    "observer_windows_sha256": "a00e5ff3b43239a529e2390201336bf54628970568d936b074e2ddbc58bf2246",
+    "raw_telemetry_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_LIVE_QUALIFICATION/OBSERVER_EFFECT.json/SATURATED_TELEMETRY_RAW.json",
+    "raw_telemetry_sha256": "26d6036a786b5fa03b5044c9000debac7e289e7d2fd0cac245b0423225575d37",
+    "observer_failure_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_LIVE_QUALIFICATION/OBSERVER_EFFECT_FAILURE.json",
+    "observer_failure_sha256": "1a9ab9fe9d89122da7d1b3c195ea88afe26edd294461a340f89f0c1ecec26774",
+    "renderer_restore_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_LIVE_QUALIFICATION/POST_RESTORE_STATE.json",
+    "renderer_restore_sha256": "0c978ea7a6e5afab523e6a60f749b14dff6f6e69518d2e1b603af4fb78985e41",
+    "current_readback_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_FAILURE_CURRENT_READONLY.json",
+    "current_readback_sha256": "1ecf6a952ea1c48704d1df9d796a83611c314e791fcdbb998e216abac6b1b771",
+    "R4_exact_baseline_profile": "evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep/00_Complex_Kaleido_3.profile.json",
+    "R4_baseline_profile_sha256": "c8851a74b1ef40bd6981c916c9beb4c3c079f1f9b83c03ed688c7ca311f67c7a"
+  },
+  "measured": {
+    "tails_off_window_seconds": 40,
+    "tails_off_n": 28,
+    "tails_off_frame_average_median_ms": 123.637,
+    "tails_off_frame_average_max_ms": 128.099,
+    "tails_on_window_seconds": 40,
+    "tails_on_n": 29,
+    "tails_on_frame_average_median_ms": 115.865,
+    "tails_on_frame_average_max_ms": 126.83,
+    "observer_median_delta_pct": -6.286144115434704,
+    "instrumented_quantile_status": "SATURATED",
+    "instrumented_frame_p50_ms": 116.625,
+    "instrumented_frame_p95_ms": 127.875,
+    "instrumented_frame_p99_ms": 127.875,
+    "instrumented_frame_max_ms": 153.968,
+    "histogram_overflow": true,
+    "histogram_count": 336,
+    "instrumented_fps": 7,
+    "whole_frame_us": 142015,
+    "kernel_render_us": 66658,
+    "palette_color_us": 31177,
+    "audio_modulation_us": 36066
+  },
+  "exact_R4_kernel0_reference": {
+    "frame_p95_median_ms": 27.875,
+    "frame_p99_median_ms": 41.375,
+    "frame_max_ms": 48.197,
+    "fps_median": 32.0
+  },
+  "frozen_limits_derived_without_change": {
+    "frame_p95_max_ms": 34.84375,
+    "frame_p99_max_ms": 51.71875,
+    "frame_max_max_ms": 72.2955,
+    "formula": "exact R4 profile \u00d7 existing frozen ratios"
+  },
+  "gate_result": {
+    "frame_p95": "FAIL: saturated at 127.875ms; frozen maximum 34.844ms",
+    "frame_p99": "FAIL: saturated at 127.875ms; frozen maximum 51.719ms",
+    "frame_max": "FAIL: 153.968ms > 72.296ms",
+    "status": "FAIL"
+  },
+  "diagnostic_limit": "The required qualification stopped before the 28-kernel sweep; this does not identify a root cause or establish performance for other kernels. Preserve full raw evidence.",
+  "renderer_restoration": {
+    "restoreVerified": true,
+    "packet20Same": true,
+    "snapshotId": 1,
+    "snapshotHash": 3639678278,
+    "status": "OBSERVER_FAILED__RENDERER_RESTORED"
+  },
+  "current_device": "R6_IDENTITY_CONFIRMED_AND_AUX_NATIVE_DDP_LIVE",
+  "rollback_decision": "Use the exact R4 recovery once under the existing conditional authorization. Do not retry R6.",
+  "thresholds_changed": false
+}
