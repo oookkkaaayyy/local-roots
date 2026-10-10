@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import pathlib
+import subprocess
 import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -112,6 +113,30 @@ def run_case(name, port, expected_status, installs, recoveries, min_requests=0):
 
 
 def main():
+    # The outer supervisor must not kill the sweep before its restore finally;
+    # the full 5400-second soak remains part of the exact command.
+    port = module.LivePort("unused-admission", "unused-capsule", "unused-proof")
+    with tempfile.TemporaryDirectory() as td:
+        port.outdir = pathlib.Path(td)
+        original_command = module.qualification_command
+        original_subprocess_run = module.subprocess.run
+        calls = []
+        def qualification_command(_outdir):
+            return ["qualification-runner", "--soak-seconds", "5400"]
+        def subprocess_run(argv, **kwargs):
+            calls.append((list(argv), dict(kwargs)))
+            return subprocess.CompletedProcess(argv, 0, stdout="done", stderr="")
+        try:
+            module.qualification_command = qualification_command
+            module.subprocess.run = subprocess_run
+            result = port.qualify()
+        finally:
+            module.qualification_command = original_command
+            module.subprocess.run = original_subprocess_run
+        assert result["passed"] is True
+        assert calls[0][0][-1] == "5400"
+        assert "timeout" not in calls[0][1], "outer timeout can kill the child before renderer restoration"
+
     cases = []
     rejected = FakePort(admission=False)
     cases.append(run_case("invalid admission zero requests", rejected, "BLOCKED_OR_FAILED", 0, 0))

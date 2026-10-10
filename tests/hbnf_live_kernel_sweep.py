@@ -88,6 +88,57 @@ with tempfile.TemporaryDirectory() as td:
     assert aborted["profiles_completed"]==0 and not (out/"SWEEP_MANIFEST.json").exists()
     assert any("restore" in call for call in run_calls)
 
+# An interrupt during qualification is recorded as failure only after the
+# snapshot's finally path restores telemetry and renderer state.
+with tempfile.TemporaryDirectory() as td:
+    out=pathlib.Path(td)/"cancelled-run"
+    original_argv=sys.argv; original_json=m.run_json; original_ok=m.run_ok; original_sleep=m.time.sleep
+    inv_for_test=json.loads((ROOT/"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json").read_text())
+    first_kernel=inv_for_test["entries"][0]
+    expected_release=json.loads((ROOT/"config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json").read_text())["expected_release_id"]
+    sample={"release_id":expected_release,"uptime_seconds":100,"fps":40,"frame_ms_p50":20,
+      "frame_ms_p95":25,"frame_ms_p99":30,"frame_ms_max":35,"kernel_id":0,
+      "kernel_name":first_kernel["kernel_name"],"variant_id":1,"free_heap_bytes":90000,
+      "minimum_free_heap_bytes":80000,"largest_free_block_bytes":70000,"websocket_clients":0,
+      "aux_projection_active":True,"aux_projection_age_ms":5,"aux_render_fps":40,"wifi_rssi_dbm":-45,
+      "restart_count":0,"kernel_ms_avg":8,"kernel_ms_p95":10,"palette_ms_avg":1,"palette_ms_p95":2,
+      "audio_ms_avg":2,"audio_ms_p95":3,"scheduler_ms_avg":1,"scheduler_ms_p95":2,
+      "overlay_ms_avg":0.1,"overlay_ms_p95":0.2,"aux_prepare_send_ms_avg":1,"aux_prepare_send_ms_p95":2,
+      "unaccounted_ms_avg":3,"unaccounted_ms_p95":4}
+    snapshot={"snapshotId":91,"snapshotHash":456,"foundationTelemetryEnabledBefore":False}
+    restored={"snapshotId":91,"snapshotHash":456,"foundationTelemetryEnabled":False,
+      "restoreVerified":True,"packet20Same":True}
+    calls=[]; kernel_reads=[0]
+    def cancel_json(argv,timeout=10):
+        calls.append(("json",list(argv)))
+        if "preflight" in argv:return sample
+        if "snapshot" in argv:return snapshot
+        if "telemetry-mode" in argv:
+            return {"HBNF":{"foundationTelemetry":{"enabled":argv[-1]=="true"}}}
+        if "verify-restore" in argv:return restored
+        if "telemetry" in argv:
+            kernel_reads[0]+=1
+            if kernel_reads[0]==1:return sample  # bounded read-only preflight
+            raise KeyboardInterrupt()
+        raise AssertionError(f"unexpected JSON adapter command: {argv}")
+    def cancel_ok(argv,timeout=15):
+        calls.append(("ok",list(argv)))
+        return "restore-complete" if "restore" in argv else "selected"
+    try:
+        sys.argv=["hbnf_live_kernel_sweep.py","--adapter",str(ROOT/"config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json"),
+          "--inventory",str(ROOT/"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"),"--outdir",str(out),"--contract","foundation"]
+        m.run_json=cancel_json;m.run_ok=cancel_ok;m.time.sleep=lambda *_:None
+        assert m.main()==2
+    finally:
+        sys.argv=original_argv;m.run_json=original_json;m.run_ok=original_ok;m.time.sleep=original_sleep
+    aborted=json.loads((out/"SWEEP_ABORT.json").read_text())
+    assert aborted["run_error"]=="qualification-cancelled-by-interrupt"
+    assert aborted["restore_error"] is None
+    restored_state=json.loads((out/"POST_RESTORE_STATE.json").read_text())
+    assert restored_state["restoreVerified"] is True and restored_state["packet20Same"] is True
+    assert kernel_reads[0]==2 and aborted["profiles_completed"]==0
+    assert any(kind=="ok" and "restore" in argv for kind,argv in calls)
+
 mode_calls=[]
 mode_adapter=dict(adapter,telemetry_mode_argv=["mode","{enabled}"])
 original_run_json=m.run_json

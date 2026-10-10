@@ -773,6 +773,11 @@ def main():
             soak_result["audit_status"]=audit_result.get("status")
             if audit_proc.returncode!=0 or audit_result.get("status")!="PASS" or (audit_result.get("foundation_qualification") or {}).get("status")!="PASS":
                 raise RuntimeError("foundation-soak-audit-failed: "+json.dumps(audit_result.get("errors",[]),sort_keys=True))
+    except KeyboardInterrupt:
+        # Treat cancellation as a failed qualification, but enter the normal
+        # renderer/telemetry restoration finally block and preserve an abort
+        # receipt after restoration is verified.
+        run_error="qualification-cancelled-by-interrupt"
     except Exception as e:
         run_error=str(e)
         if snapshot is None and reserve is not None:

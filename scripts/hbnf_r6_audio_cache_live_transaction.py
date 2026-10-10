@@ -772,7 +772,12 @@ class LivePort:
 
     def qualify(self):
         cmd = qualification_command(self.outdir)
-        p = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, timeout=6000)
+        # The inner sweep has bounded adapter/request operations and owns the
+        # renderer snapshot `finally` that restores device state. An outer
+        # subprocess timeout would terminate it before that cleanup can run;
+        # do not impose a shorter wall-clock limit than the 90-minute soak plus
+        # 28 profiles and observer/setup/restore work.
+        p = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
         (self.outdir/"SWEEP_STDOUT.json.txt").write_text(p.stdout)
         (self.outdir/"SWEEP_STDERR.txt").write_text(p.stderr)
         report_path = self.outdir/"sweep/ALL_KERNEL_SWEEP_REPORT.json"
