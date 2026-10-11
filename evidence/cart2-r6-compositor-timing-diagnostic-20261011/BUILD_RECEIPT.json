@@ -1,0 +1,61 @@
+{
+  "schema": "hbnf-compositor-timing-diagnostic-build-v1",
+  "status": "OFFLINE_BUILD_VERIFIED__NOT_LIVE_QUALIFIED__NOT_ACCEPTED",
+  "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+  "source_commit": "911b791d814ed50440567433b17f04da83b700da",
+  "source_branch": "codex/cart2-compositor-timing-20261011",
+  "runtime_source_tree_sha256": "07934d33568cee440daa43205ceaa2641fe8e2c69ee47bbad8590b1233668659",
+  "parent_failed_candidate": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011",
+    "sha256": "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2"
+  },
+  "recovery_baseline": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "artifact": {
+    "path": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/artifact/hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011.bin",
+    "bytes": 1499344,
+    "sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
+    "embedded_release_id_occurrences": 3,
+    "failed_r6_release_id_occurrences": 0
+  },
+  "build": {
+    "environment": "hbnf_matrix_wled16_packet20_diag",
+    "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "platformio_core": "6.1.18",
+    "esp32_platform": "2024.6.0",
+    "framework": "2.0.18+sha.8ba0dc0",
+    "xtensa_toolchain": "8.4.0+2021r2-patch5",
+    "platformio_ini_sha256": "99718bfd8614da297c94692bc41dea48c9af87dbe829ded2e4a7cad7f0368820",
+    "platformio_override_ini_sha256": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922",
+    "source_date_epoch": 1791450000,
+    "build_command": "PYTHONPATH=/private/tmp/hbnf-p2-build/pio-cli PLATFORMIO_CORE_DIR=/private/tmp/hbnf-p2-build/pio-local SOURCE_DATE_EPOCH=1791450000 python3 -m platformio run -d /private/tmp/hbnf-p2-build/WLED-compositor-diagnostic-20261011 -e hbnf_matrix_wled16_packet20_diag",
+    "result": "SUCCESS; local cached toolchain and dependencies; exact copied runtime source hashes verified before build",
+    "build_log_sha256": "fe90dd2e1c3937a81280026eb374375dda4d15d5ccd0d84664bdb8f9a15aeea9",
+    "elf_sha256": "9f0c3d68e9c8e1ce30f55e3916b30e165bbe46f138b9fc0ca6bab7fb5c31955c",
+    "map_sha256": "248ebaccf69f0d826690e59c6f3d24b94603fe70735643b9516d973049045613",
+    "ram_used_bytes": 114640,
+    "ram_available_bytes": 327680,
+    "flash_used_bytes": 1492605,
+    "flash_partition_bytes": 1572864,
+    "flash_remaining_bytes": 80259,
+    "performance_gate": "NOT RUN",
+    "device_or_cloud": "NOT RUN"
+  },
+  "qualification": {
+    "host_contract_test": "PASS",
+    "foundation_adapter_test": "PASS",
+    "live_sweep_runner_mock_tests": "PASS",
+    "frozen_performance_gates": "UNCHANGED",
+    "target_performance": "NOT RUN",
+    "device_or_cloud": "NOT RUN",
+    "28_kernel_sweep": "NOT RUN",
+    "soak": "NOT RUN",
+    "owner_visual_acceptance": "NOT RUN"
+  },
+  "limitations": [
+    "Local target compilation confirms diagnostic code compiles and exact release identity is embedded; it does not prove runtime correctness, observer-effect acceptability, cause attribution, performance, installation readiness, or acceptance.",
+    "Control state prohibits resuming qualification under the consumed R6 authorization; this artifact has no candidate-specific live authorization."
+  ]
+}

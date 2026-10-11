@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Prove the compositor diagnostic is bound into existing timing telemetry."""
 from pathlib import Path
+import hashlib
+import json
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "firmware/phase2/integration-r6-compositor-timing/usermod/usermod_hbnf_foundation_v1.cpp"
@@ -25,4 +27,12 @@ assert 'timing["kernelRenderUs"]=hbnfCycleUs(perf.kernelGross>perf.audioInKernel
 # Subtract in-kernel compositor cycles before adding the measured component to
 # accounting, so the new stage does not double-count in the unaccounted metric.
 assert "kernelResidual>hbnfPerfWorking.compositorInKernel?kernelResidual-hbnfPerfWorking.compositorInKernel:0" in source
+receipt_path = ROOT / "evidence/cart2-r6-compositor-timing-diagnostic-20261011/BUILD_RECEIPT.json"
+receipt = json.loads(receipt_path.read_text())
+artifact = ROOT / "evidence/cart2-r6-compositor-timing-diagnostic-20261011/artifact" / f"{release}.bin"
+binary = artifact.read_bytes()
+assert hashlib.sha256(binary).hexdigest() == receipt["artifact"]["sha256"]
+assert binary.count(release.encode()) == 3
+assert b"hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011" not in binary
+assert receipt["status"] == "OFFLINE_BUILD_VERIFIED__NOT_LIVE_QUALIFIED__NOT_ACCEPTED"
 print("PASS: compositor timing runs only during tail capture, separates the exclusive kernel residual, and preserves the frozen gate metric")

@@ -1,6 +1,6 @@
 {
   "schema": "hbnf-compositor-timing-diagnostic-source-v1",
-  "status": "SOURCE_ONLY_OFFLINE_TESTED_NOT_BUILT_NOT_LIVE_QUALIFIED_NOT_ACCEPTED",
+  "status": "OFFLINE_TARGET_BUILD_VERIFIED__NOT_LIVE_QUALIFIED__NOT_ACCEPTED",
   "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
   "parent_failed_artifact": {
     "release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011",
@@ -29,6 +29,36 @@
   },
   "runtime_source_tree_sha256": "07934d33568cee440daa43205ceaa2641fe8e2c69ee47bbad8590b1233668659",
   "source_scope": "Copies the exact failed R6 source closure and adds diagnostic-only cycle timing for vibe compositor plus per-frame kernel residual excluding that measured stage. Timing is enabled only while the existing Foundation tail capture is enabled. Frozen acceptance gates and existing kernelRenderUs metric are unchanged.",
-  "build": "NOT RUN; no firmware artifact exists for this release id.",
-  "device_or_cloud": "NOT ACCESSED; no install or qualification occurred."
+  "build": "SUCCESS; offline local target build verified. This is diagnostic source only and has no live qualification or acceptance.",
+  "device_or_cloud": "NOT ACCESSED; no install or qualification occurred.",
+  "artifact": {
+    "path": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/artifact/hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011.bin",
+    "bytes": 1499344,
+    "sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
+    "embedded_release_id_occurrences": 3,
+    "failed_r6_release_id_occurrences": 0
+  },
+  "target_build": {
+    "environment": "hbnf_matrix_wled16_packet20_diag",
+    "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "platformio_core": "6.1.18",
+    "esp32_platform": "2024.6.0",
+    "framework": "2.0.18+sha.8ba0dc0",
+    "xtensa_toolchain": "8.4.0+2021r2-patch5",
+    "platformio_ini_sha256": "99718bfd8614da297c94692bc41dea48c9af87dbe829ded2e4a7cad7f0368820",
+    "platformio_override_ini_sha256": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922",
+    "source_date_epoch": 1791450000,
+    "build_command": "PYTHONPATH=/private/tmp/hbnf-p2-build/pio-cli PLATFORMIO_CORE_DIR=/private/tmp/hbnf-p2-build/pio-local SOURCE_DATE_EPOCH=1791450000 python3 -m platformio run -d /private/tmp/hbnf-p2-build/WLED-compositor-diagnostic-20261011 -e hbnf_matrix_wled16_packet20_diag",
+    "result": "SUCCESS; local cached toolchain and dependencies; exact copied runtime source hashes verified before build",
+    "build_log_sha256": "fe90dd2e1c3937a81280026eb374375dda4d15d5ccd0d84664bdb8f9a15aeea9",
+    "elf_sha256": "9f0c3d68e9c8e1ce30f55e3916b30e165bbe46f138b9fc0ca6bab7fb5c31955c",
+    "map_sha256": "248ebaccf69f0d826690e59c6f3d24b94603fe70735643b9516d973049045613",
+    "ram_used_bytes": 114640,
+    "ram_available_bytes": 327680,
+    "flash_used_bytes": 1492605,
+    "flash_partition_bytes": 1572864,
+    "flash_remaining_bytes": 80259,
+    "performance_gate": "NOT RUN",
+    "device_or_cloud": "NOT RUN"
+  }
 }

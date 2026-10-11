@@ -1,7 +1,7 @@
 {
   "schema": "hbnf-change-governance-v1",
   "change_id": "R6_COMPOSITOR_TIMING_DIAGNOSTIC_20261011",
-  "summary": "Prepare a bounded diagnostic source variant that separately measures Vibe compositor time and the kernel residual excluding that measured component, only during the existing tail capture.",
+  "summary": "Prepare a bounded diagnostic variant that separately measures Vibe compositor time and the kernel residual excluding that measured component, only during the existing tail capture.",
   "change_class": "TRIVIAL_BOUNDED",
   "impact": {
     "architecture": false,
@@ -13,7 +13,7 @@
   "evidence": {
     "scoped_evidence": {
       "approved_architecture_reference": "Existing Foundation timing and tail-capture telemetry; no new control path, thresholds, acceptance rule, dependency, or live authority.",
-      "affected_subsystem": "Diagnostic-only timing instrumentation and adapter reporting. Existing kernelRenderUs and qualification gates remain unchanged; per-pixel compositor timing runs only while tail capture is enabled.",
+  "affected_subsystem": "Diagnostic-only timing instrumentation and adapter reporting. Existing kernelRenderUs and qualification gates remain unchanged; per-pixel compositor timing runs only while tail capture is enabled. The exact local target build succeeded; no device or performance qualification was run.",
       "root_cause": "The failed R6 capture reports kernel work inclusive of per-pixel Vibe composition and does not separately expose the compositor distribution, so current evidence cannot attribute the kernel-0 regression.",
       "rollback_reference": "Discard the isolated diagnostic source branch and use the exact verified R4 recovery baseline. No product state or device was changed.",
       "evidence_sources": [
@@ -21,17 +21,19 @@
         "evidence/cart2-r6-audio-cache-20261010/R4_R6_KERNEL0_WINDOW_COMPARABILITY.json",
         "https://docs.espressif.com/projects/esp-idf/en/release-v4.4/esp32/api-guides/performance/speed.html"
       ],
-      "tests": [
-        "python3 tests/hbnf_compositor_timing_diagnostic.py: PASS",
-        "python3 tests/hbnf_foundation_live_adapter.py: PASS",
-        "python3 tests/hbnf_live_kernel_sweep.py: PASS; mocked host-only runner",
-    "python3 scripts/platform.py doctor: PASS; 6 systems and 4 workflows, no warnings"
-      ],
+  "tests": [
+   "python3 tests/hbnf_compositor_timing_diagnostic.py: PASS",
+   "python3 tests/hbnf_foundation_live_adapter.py: PASS",
+   "python3 tests/hbnf_live_kernel_sweep.py: PASS; mocked host-only runner",
+   "python3 scripts/platform.py doctor: PASS; 6 systems and 4 workflows, no warnings",
+   "python3 scripts/hbnf_control.py check-change --change evidence/engineering-governance/20261011-r6-compositor-timing-diagnostic.json: PASS",
+   "Local PlatformIO hbnf_matrix_wled16_packet20_diag target build: SUCCESS; artifact release identity and partition size verified"
+  ],
       "expected_efficiency_effect": "One matched diagnostic can report per-frame compositor and compositor-excluded kernel distributions in the same existing tail-capture session, avoiding a second instrumentation change solely to separate these components. No elapsed-time or usage reduction is yet measured.",
       "live_state": {
         "device_mutation": false,
         "production_deployment": false,
-        "firmware_built": false,
+    "firmware_built": true,
         "thresholds_changed": false,
         "candidate_install_attempts_used": 1,
         "exact_r4_recovery_attempts_used": 1,
