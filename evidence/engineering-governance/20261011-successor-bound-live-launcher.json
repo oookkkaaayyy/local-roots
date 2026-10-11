@@ -1,0 +1,33 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "CART2_SUCCESSOR_BOUND_EXISTING_LIVE_LAUNCHER_20261011",
+  "summary": "Bind the existing Phase 2 live transaction path to the exact compositor successor while preserving the consumed audio-cache R6 attempt, exact R4 recovery, frozen gates, and single lifecycle/control authority.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "The current control model and delivery rail already require one integrated candidate, exact admission, exact owner binding, offline transaction rehearsal, fixed qualification gates, and exact rollback. This change only routes the existing workflow/launcher through the selected candidate identity; it adds no lifecycle state or authority source.",
+      "affected_subsystem": "Existing phase2-live-qualification workflow, scripts/hbnf_r6_audio_cache_live_transaction.py, scripts/hbnf_control.py candidate-specific LIVE_QUALIFICATION validation, and their regression tests. The prior R6 attempt remains preserved in config/HBNF_CONTROL_STATE.json; no live action or state edit is in scope.",
+      "rollback_reference": "Revert this isolated branch commit. The previous workflow/launcher source remains in Git history, and the exact Foundation R4 recovery artifact remains at evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin. No device or production mutation occurs during this change.",
+      "evidence_sources": [
+        "config/HBNF_CONTROL_MODEL.json: execution_system.delivery_rail and release_admission_errors contract",
+        "evidence/cart2-r6-compositor-hoist-20261011/OFFLINE_COMPILED_ADMISSION.json: exact successor and R4 identities; live authority closed",
+        "evidence/cart2-r6-compositor-hoist-20261011/SUCCESSOR_END_TO_END_REHEARSAL_STATUS.json: capsule-bound runner selects the successor; exact LIVE_APPROVED authorization and all target qualification remain absent",
+        "https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/ota.html",
+        "https://csrc.nist.gov/pubs/sp/800/218/final"
+      ],
+      "tests": [
+        "tests/test_r6_audio_cache_transaction_dryrun.py: exact candidate profile and fail-before-device request behavior",
+        "tests/hbnf_successor_offline_admission.py: candidate/rollback identity and immutable old attempt history",
+        "tests/hbnf_control.py: exact candidate LIVE_QUALIFICATION record and wrong-candidate rejection",
+        "Full repository-mandated control/release regression suite"
+      ]
+    }
+  }
+}

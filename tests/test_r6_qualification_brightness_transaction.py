@@ -249,6 +249,24 @@ def test_live_and_persisted_baseline_must_match_at_52():
             raise AssertionError("runtime/persisted baseline mismatch must fail before writes")
 
 
+def test_r4_preinstall_baseline_uses_persisted_vibe_when_runtime_omits_it():
+    state={"on":True,"HBNF":{"matrixBrightness":52,"auxBrightness":245}}
+    persisted={"matrixBrightness":52,"auxBrightness":245,"vibe":0}
+    result=module.validate_preinstall_brightness_baseline(state,persisted)
+    assert result["runtime"]==persisted and result["persisted"]==persisted
+    assert result["runtime_observation"]["vibe_source"]=="persisted_config_only_on_exact_R4"
+    for bad_state,bad_persisted in (
+        ({"on":True,"HBNF":{"matrixBrightness":44,"auxBrightness":245}},persisted),
+        (state,{"matrixBrightness":52,"auxBrightness":245}),
+    ):
+        try:
+            module.validate_preinstall_brightness_baseline(bad_state,bad_persisted)
+        except RuntimeError:
+            pass
+        else:
+            raise AssertionError("preinstall baseline must reject changed brightness or missing persisted Vibe")
+
+
 def test_context_reads_persisted_cfg_and_retains_only_hbnf_fields():
     original_get = module.get_json
     original_identity = module.read_matrix_identity

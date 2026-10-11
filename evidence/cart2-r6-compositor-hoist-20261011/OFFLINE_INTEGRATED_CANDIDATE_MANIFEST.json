@@ -35,7 +35,7 @@
     "package_reproducibility": "PASS_BYTE_IDENTICAL",
     "source_hash_binding": "PASS",
     "source_tree_identity_test": "PASS",
-    "successor_bound_live_admission": "NOT_PRESENT",
+    "successor_bound_live_admission": "OFFLINE_COMPILED_ONLY__LIVE_APPROVAL_NOT_PRESENT",
     "successor_bound_transaction_fake_replay": "PASS; exact successor fake-port success and gate-failure/exact-R4 recovery; no physical I/O",
     "successor_sweep_adapter_dry_run": "PASS; exact candidate release/SHA bound, 28-entry Foundation runner configuration accepted; dry-run issued no adapter/device calls",
     "sweep_runner_host_regressions": "PASS_COMPONENT_AND_FAILURE_RESTORE_PATHS_ONLY",
@@ -73,9 +73,9 @@
   ],
   "offline_test_source_hashes": {
     "scripts/hbnf_live_kernel_sweep.py": "e5ed7b44543440141ee0b57ba55368c4351a3ffbdf1add5da0eaec96e3bd2477",
-    "tests/hbnf_cart2_offline_integrated_candidate.py": "19275cab9b726622aca703ae48841904c2e9f8d80d839227d33c0339ce6ba311",
+    "tests/hbnf_cart2_offline_integrated_candidate.py": "40c2935845fde7e2ae043fcc2c6e1d3024efef84df28cd722c35b18207ae3145",
     "tests/hbnf_live_kernel_sweep.py": "5f5c5b99c262145cb52a61703277c649eb002fe71afec207d379b031fc34a242",
-    "tests/test_r6_audio_cache_transaction_dryrun.py": "6a38c98cda19deadd951f2be182833e67e73024f0703c46f522e0c35cbf741b6"
+    "tests/test_r6_audio_cache_transaction_dryrun.py": "3d4648d9e8e4ccd0ed0a8a16e4ab2af0763c6c1af285f74e6ba1438b7c5ba3c2"
   },
   "owner_guest_package": {
     "build_marker": "hbnf-cart2-owner-guest-compositor-hoist-20261011",
@@ -135,7 +135,7 @@
     "staging/coordinated-backend/opal/hbnf-matrix-relay.init": "1572ddc3b9dc278d141a6e9cf65891c684e09efc793f7822c3738f98e4e6122a",
     "tests/hbnf_live_kernel_sweep.py": "5f5c5b99c262145cb52a61703277c649eb002fe71afec207d379b031fc34a242",
     "tests/hbnf_matrix_relay_contract.mjs": "34c34c57f7bb054394177ba4f64a9a5946fabecc4c7bc3649cbc14f880dbda59",
-    "tests/test_r6_audio_cache_transaction_dryrun.py": "6a38c98cda19deadd951f2be182833e67e73024f0703c46f522e0c35cbf741b6"
+    "tests/test_r6_audio_cache_transaction_dryrun.py": "3d4648d9e8e4ccd0ed0a8a16e4ab2af0763c6c1af285f74e6ba1438b7c5ba3c2"
   },
   "status": "OFFLINE_INTEGRATION_CANDIDATE__NOT_DEPLOYED__NOT_LIVE_QUALIFIED__NOT_ACCEPTED",
   "superseded_sources": {

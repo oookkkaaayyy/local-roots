@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Single exact R6 audio-cache install + frozen qualification coordinator.
+"""Single exact candidate install + frozen qualification coordinator.
 
 The only live transport is the previously proven SSH-to-Opal staging followed
 by Opal-origin WLED /update. The generic sweep/adapter remain authoritative
@@ -17,6 +17,7 @@ import shlex
 import subprocess
 import sys
 import time
+from typing import NamedTuple
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 RELEASE = "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
@@ -44,12 +45,98 @@ R4_BIN = ROOT/"evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matri
 ADAPTER = ROOT/"evidence/cart2-r6-audio-cache-20261010/R6_AUDIO_CACHE_LIVE_SWEEP_ADAPTER.json"
 OUT = ROOT/"evidence/cart2-r6-audio-cache-20261010/live-qualification"
 
-# Offline-only successor binding used by host rehearsal tests. The live
-# coordinator above remains pinned to the consumed 2026-10-10 attempt.
+# Explicit successor fixture used by the offline transaction rehearsal. Live
+# execution resolves the selected profile only from the checked workflow capsule.
 SUCCESSOR_RELEASE = "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011"
 SUCCESSOR_SHA = "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2"
 SUCCESSOR_SIZE = 1498672
 SUCCESSOR_BIN = ROOT/"evidence/cart2-r6-compositor-hoist-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011.bin"
+
+
+class CandidateProfile(NamedTuple):
+    release_id: str
+    sha256: str
+    size_bytes: int
+    binary: pathlib.Path
+    adapter: pathlib.Path
+    output: pathlib.Path
+    rollback_binary: pathlib.Path = R4_BIN
+    rollback_sha256: str = R4_SHA
+    rollback_size_bytes: int = R4_SIZE
+
+
+LEGACY_R6_PROFILE = CandidateProfile(RELEASE,CANDIDATE_SHA,CANDIDATE_SIZE,BIN,ADAPTER,OUT)
+SUCCESSOR_PROFILE = CandidateProfile(
+    SUCCESSOR_RELEASE,SUCCESSOR_SHA,SUCCESSOR_SIZE,SUCCESSOR_BIN,
+    ROOT/"config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_COMPOSITOR_HOIST_20261011.json",
+    ROOT/"evidence/cart2-r6-compositor-hoist-20261011/live-qualification")
+
+
+def load_candidate_profile(capsule_path: pathlib.Path) -> CandidateProfile:
+    """Resolve the candidate pinned by the checked Phase 2 workflow capsule."""
+    capsule=json.loads(pathlib.Path(capsule_path).read_text())
+    if capsule.get("schema")!="local-roots-execution-capsule-v1" or capsule.get("workflow_id")!="phase2-live-qualification":
+        raise RuntimeError("phase2-candidate-capsule-required")
+    source=capsule.get("workflow_source",{})
+    workflow_path=ROOT/"platform/workflows/phase2-live-qualification.json"
+    if (source.get("path")!="platform/workflows/phase2-live-qualification.json"
+        or source.get("sha256")!=sha(workflow_path)):
+        raise RuntimeError("phase2-workflow-capsule-binding-mismatch")
+    workflow=json.loads(workflow_path.read_text())
+    contract=workflow.get("qualification_contract",{})
+    release=contract.get("candidate_release")
+    candidate_sha=contract.get("candidate_sha256")
+    candidate_size=contract.get("candidate_size_bytes")
+    candidate_path=contract.get("candidate_bin_path")
+    adapter_path=contract.get("foundation_adapter_path")
+    output_path=contract.get("qualification_output_path")
+    if (not isinstance(release,str) or not re.fullmatch(r"[A-Za-z0-9._-]+",release)
+        or not isinstance(candidate_sha,str) or not re.fullmatch(r"[a-f0-9]{64}",candidate_sha)
+        or not isinstance(candidate_size,int) or candidate_size<=0
+        or not isinstance(candidate_path,str) or not isinstance(adapter_path,str) or not isinstance(output_path,str)):
+        raise RuntimeError("phase2-workflow-candidate-profile-invalid")
+    if (contract.get("recovery_release")!=R4 or contract.get("install_limit")!=1
+        or contract.get("rollback_limit")!=1 or contract.get("thresholds_may_be_weakened") is not False):
+        raise RuntimeError("phase2-workflow-frozen-transaction-contract-invalid")
+    candidate_bin=(ROOT/candidate_path).resolve()
+    adapter=(ROOT/adapter_path).resolve()
+    output=(ROOT/output_path).resolve()
+    try:
+        candidate_bin.relative_to(ROOT.resolve()); adapter.relative_to(ROOT.resolve()); output.relative_to(ROOT.resolve())
+    except ValueError as exc:
+        raise RuntimeError("phase2-workflow-candidate-path-escapes-repository") from exc
+    profile=CandidateProfile(release,candidate_sha,candidate_size,candidate_bin,adapter,
+        output)
+    expected_recovery=contract.get("recovery_sha256")
+    expected_recovery_path=contract.get("recovery_bin_path")
+    if (expected_recovery!=profile.rollback_sha256
+        or expected_recovery_path!=str(profile.rollback_binary.relative_to(ROOT))):
+        raise RuntimeError("phase2-workflow-recovery-profile-mismatch")
+    adapter_doc=json.loads(adapter.read_text())
+    if adapter_doc.get("schema")!="hbnf-live-sweep-adapter-v1":
+        raise RuntimeError("phase2-workflow-adapter-schema-mismatch")
+    argv_lists=[value for key,value in adapter_doc.items() if key.endswith("_argv") and isinstance(value,list)]
+    expected_id=f"HBNF_EXPECTED_RELEASE_ID={profile.release_id}"
+    expected_sha=f"HBNF_EXPECTED_FIRMWARE_SHA256={profile.sha256}"
+    if (not argv_lists or any(expected_id not in argv or expected_sha not in argv for argv in argv_lists)):
+        raise RuntimeError("phase2-workflow-adapter-candidate-mismatch")
+    return profile
+
+
+def verify_candidate_binding(admission: dict, profile: CandidateProfile) -> None:
+    ids=admission.get("identities",{})
+    if (ids.get("candidate_release_id")!=profile.release_id
+        or ids.get("candidate_bin_sha256")!=profile.sha256
+        or pathlib.Path(ids.get("candidate_bin_path","")).resolve()!=profile.binary.resolve()
+        or ids.get("candidate_bin_size_bytes")!=profile.size_bytes
+        or ids.get("rollback_bin_sha256")!=profile.rollback_sha256
+        or pathlib.Path(ids.get("rollback_bin_path","")).resolve()!=profile.rollback_binary.resolve()
+        or str(ids.get("matrix_mac","")).replace(":","").lower()!=MATRIX_MAC):
+        raise RuntimeError("admission-artifact-target-binding-mismatch")
+    if (sha(profile.binary)!=profile.sha256 or profile.binary.stat().st_size!=profile.size_bytes
+        or sha(profile.rollback_binary)!=profile.rollback_sha256
+        or profile.rollback_binary.stat().st_size!=profile.rollback_size_bytes):
+        raise RuntimeError("candidate-or-recovery-artifact-bytes-mismatch")
 
 
 def sha(path: pathlib.Path) -> str:
@@ -102,7 +189,7 @@ def _post_json_counted(url, payload, request_counter):
     return post_json(url, payload, request_counter=request_counter)
 
 
-def read_matrix_identity(request_counter=None):
+def read_matrix_identity(request_counter=None, expected_release=RELEASE):
     """Read and validate the exact R6 Matrix identity without retaining unrelated config data."""
     info = _get_json_counted(MATRIX+"/json/info", 4, request_counter)[2]
     build = _get_json_counted(MATRIX+"/hbnf/build.json", 4, request_counter)[2]
@@ -110,9 +197,17 @@ def read_matrix_identity(request_counter=None):
         "wled": info.get("ver"), "release_id": build.get("release_id"),
         "candidate": build.get("candidate"), "build_mac": str(build.get("mac", "")).replace(":", "").lower()}
     if (identity["ip"] != "192.168.77.10" or identity["mac"] != MATRIX_MAC or identity["wled"] != "16.0.1"
-            or identity["release_id"] != RELEASE or identity["candidate"] != RELEASE or identity["build_mac"] != MATRIX_MAC):
+            or identity["release_id"] != expected_release or identity["candidate"] != expected_release or identity["build_mac"] != MATRIX_MAC):
         raise RuntimeError("qualification-matrix-identity-binding-failed")
     return identity, info, build
+
+
+def _read_expected_matrix_identity(request_counter, expected_release):
+    # Keep the legacy default call shape stable for existing adapters/tests
+    # that wrap read_matrix_identity with its original one-argument contract.
+    if expected_release == RELEASE:
+        return read_matrix_identity(request_counter) if request_counter is not None else read_matrix_identity()
+    return read_matrix_identity(request_counter, expected_release) if request_counter is not None else read_matrix_identity(expected_release=expected_release)
 
 
 def sanitized_persisted_hbnf(config: dict) -> dict:
@@ -152,29 +247,65 @@ def validate_brightness_baseline(state: dict, persisted: dict) -> dict:
     return values
 
 
-def read_matrix_context(request_counter=None):
-    identity_before, info, build = read_matrix_identity(request_counter) if request_counter is not None else read_matrix_identity()
+def validate_preinstall_brightness_baseline(state: dict, persisted: dict) -> dict:
+    """Capture R4's owner settings when its runtime omits the Vibe field.
+
+    R4 exposes Matrix/AUX brightness at runtime, while persisted HBNF config is
+    authoritative for Vibe until the successor exposes all three runtime
+    values. The qualification runner later verifies the full runtime/config
+    equality on the candidate before accepting any profile.
+    """
+    runtime_state=state.get("HBNF",{}) if isinstance(state,dict) else {}
+    runtime={"matrixBrightness":runtime_state.get("matrixBrightness"),
+        "auxBrightness":runtime_state.get("auxBrightness"),"vibe":persisted.get("vibe")}
+    stored=dict(persisted)
+    if any(type(value) is not int for value in runtime.values()) or any(type(value) is not int for value in stored.values()):
+        raise RuntimeError("preinstall-brightness-baseline-partial-or-invalid")
+    for key in ("matrixBrightness","auxBrightness"):
+        if runtime[key]!=stored.get(key):
+            raise RuntimeError("preinstall-brightness-runtime-config-mismatch:"+key)
+    values={"matrix_on":state.get("on") is True,"runtime":runtime,"persisted":stored}
+    if values["matrix_on"] is not True:
+        raise RuntimeError("preinstall-matrix-output-off")
+    if values["runtime"]["matrixBrightness"]!=QUALIFICATION_BASELINE_BRIGHTNESS:
+        raise RuntimeError("preinstall-owner-brightness-baseline-mismatch")
+    values["runtime_observation"]={"runtime_fields":["matrixBrightness","auxBrightness"],
+        "vibe_source":"persisted_config_only_on_exact_R4"}
+    return values
+
+
+def read_matrix_context(request_counter=None, expected_release=RELEASE):
+    identity_before, info, build = _read_expected_matrix_identity(request_counter,expected_release)
     state = _get_json_counted(MATRIX+"/json/state", 4, request_counter)[2]
     # The read-only file API is parsed in memory; only HBNF brightness/AUX/vibe
     # fields survive extraction, regardless of whether the target requires a PIN.
     persisted_raw = _get_json_counted(PERSISTED_CONFIG_URL, 6, request_counter)[2]
     persisted = sanitized_persisted_hbnf(persisted_raw)
-    identity_after, _, _ = read_matrix_identity(request_counter) if request_counter is not None else read_matrix_identity()
+    identity_after, _, _ = _read_expected_matrix_identity(request_counter,expected_release)
     if identity_before != identity_after:
         raise RuntimeError("qualification-matrix-identity-changed-during-readback")
+    brightness=(validate_preinstall_brightness_baseline(state,persisted)
+        if expected_release==R4 else brightness_readback(state,persisted))
     return {"identity": identity_after, "info": info, "build": build, "state": state,
-        "persisted": persisted, "brightness": brightness_readback(state, persisted)}
+        "persisted": persisted, "brightness": brightness}
 
 
-def read_matrix_brightness_pair(request_counter=None):
-    context = read_matrix_context(request_counter)
+def read_matrix_brightness_pair(request_counter=None, expected_release=RELEASE):
+    context = read_matrix_context(request_counter,expected_release)
     result = context["brightness"]
     result["identity"] = context["identity"]
     return result
 
 
+def _read_expected_matrix_brightness_pair(request_counter, expected_release):
+    if expected_release == RELEASE:
+        return read_matrix_brightness_pair(request_counter) if request_counter is not None else read_matrix_brightness_pair()
+    return read_matrix_brightness_pair(request_counter,expected_release) if request_counter is not None else read_matrix_brightness_pair(expected_release=expected_release)
+
+
 def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep,
-                             monotonic=time.monotonic, request_counter=None) -> dict:
+                             monotonic=time.monotonic, request_counter=None,
+                             expected_release=RELEASE) -> dict:
     """Set the frozen test brightness or restore captured HBNF settings, resolving uncertain POSTs by readback."""
     if operation == "measure":
         if not isinstance(target, dict) or set(target) != {"matrixBrightness", "auxBrightness", "vibe"}:
@@ -196,7 +327,7 @@ def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep
         raise RuntimeError("unknown-qualification-brightness-operation")
 
     # Rebind the target immediately before every write; never set power, AUX, or Vibe.
-    identity_before_post, _, _ = read_matrix_identity(request_counter) if request_counter is not None else read_matrix_identity()
+    identity_before_post, _, _ = _read_expected_matrix_identity(request_counter,expected_release)
     payload = {"HBNF": requested}
     post_error = None
     try:
@@ -209,7 +340,7 @@ def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep
     last_error = None
     while monotonic() <= deadline:
         try:
-            values = read_matrix_brightness_pair(request_counter) if request_counter is not None else read_matrix_brightness_pair()
+            values = _read_expected_matrix_brightness_pair(request_counter,expected_release)
             if values.get("identity") != identity_before_post:
                 raise RuntimeError("qualification-matrix-identity-changed-before-readback")
             expected_runtime = dict(expected_settings)
@@ -219,7 +350,7 @@ def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep
                 # HBNF defers dirty marking for 850 ms after /json/state; wait beyond it,
                 # then take a second readback before starting profiles or closing restore.
                 sleeper(CONFIG_SAVE_SETTLE_SECONDS)
-                final = read_matrix_brightness_pair(request_counter) if request_counter is not None else read_matrix_brightness_pair()
+                final = _read_expected_matrix_brightness_pair(request_counter,expected_release)
                 if final.get("identity") != identity_before_post:
                     raise RuntimeError("qualification-matrix-identity-changed-before-final-readback")
                 if not (final["matrix_on"] is True and all(final["runtime"].get(k) == v for k, v in expected_runtime.items()) and all(
@@ -248,39 +379,14 @@ def save(path: pathlib.Path, value):
     os.replace(tmp, path)
 
 
-def exact_artifacts():
-    if sha(BIN) != CANDIDATE_SHA or BIN.stat().st_size != CANDIDATE_SIZE:
+def exact_artifacts(profile=LEGACY_R6_PROFILE):
+    if sha(profile.binary) != profile.sha256 or profile.binary.stat().st_size != profile.size_bytes:
         raise RuntimeError("candidate-byte-identity-failed")
-    if sha(R4_BIN) != R4_SHA or R4_BIN.stat().st_size != R4_SIZE:
+    if sha(profile.rollback_binary) != profile.rollback_sha256 or profile.rollback_binary.stat().st_size != profile.rollback_size_bytes:
         raise RuntimeError("r4-recovery-byte-identity-failed")
 
 
-def verify_offline_successor_binding(admission_path: pathlib.Path) -> dict:
-    """Validate successor artifact binding for offline fake-port rehearsal only.
-
-    This intentionally does not call the live admission authority or authorize
-    any device operation; the historical live path remains bound to RELEASE.
-    """
-    if not SUCCESSOR_BIN.is_file() or sha(SUCCESSOR_BIN) != SUCCESSOR_SHA or SUCCESSOR_BIN.stat().st_size != SUCCESSOR_SIZE:
-        raise RuntimeError("successor-byte-identity-failed")
-    if not admission_path.is_file():
-        raise RuntimeError("successor-admission-missing")
-    try:
-        admission = json.loads(admission_path.read_text())
-        ids = admission["identities"]
-    except (OSError, ValueError, KeyError, TypeError) as exc:
-        raise RuntimeError("successor-admission-invalid") from exc
-    if (ids.get("candidate_release_id") != SUCCESSOR_RELEASE
-        or ids.get("candidate_bin_sha256") != SUCCESSOR_SHA
-        or pathlib.Path(ids.get("candidate_bin_path", "")).resolve() != SUCCESSOR_BIN.resolve()
-        or ids.get("rollback_bin_sha256") != R4_SHA
-        or pathlib.Path(ids.get("rollback_bin_path", "")).resolve() != R4_BIN.resolve()
-        or str(ids.get("matrix_mac", "")).replace(":", "").lower() != MATRIX_MAC):
-        raise RuntimeError("successor-admission-artifact-binding-mismatch")
-    return admission
-
-
-def check_admission(admission_path: pathlib.Path, capsule_path: pathlib.Path, proof_path: pathlib.Path, stage="LIVE_APPROVED"):
+def check_admission(admission_path: pathlib.Path, capsule_path: pathlib.Path, proof_path: pathlib.Path, stage="LIVE_APPROVED", profile=None):
     # This is deliberately before any LAN/router/device request.
     control = run([sys.executable, str(ROOT/"scripts/hbnf_control.py"), "check-admission",
                    "--admission", str(admission_path), "--stage", stage], timeout=20)
@@ -292,13 +398,8 @@ def check_admission(admission_path: pathlib.Path, capsule_path: pathlib.Path, pr
         if result.returncode:
             raise RuntimeError("capsule-or-prelive-proof-rejected-before-device-request:"+result.stdout.decode(errors="replace")[-1200:])
     admission = json.loads(admission_path.read_text())
-    ids = admission["identities"]
-    if (ids.get("candidate_release_id") != RELEASE or ids.get("candidate_bin_sha256") != CANDIDATE_SHA
-        or pathlib.Path(ids.get("candidate_bin_path", "")).resolve() != BIN.resolve()
-        or ids.get("rollback_bin_sha256") != R4_SHA
-        or pathlib.Path(ids.get("rollback_bin_path", "")).resolve() != R4_BIN.resolve()
-        or str(ids.get("matrix_mac", "")).replace(":", "").lower() != MATRIX_MAC):
-        raise RuntimeError("admission-artifact-target-binding-mismatch")
+    selected=profile or load_candidate_profile(capsule_path)
+    verify_candidate_binding(admission,selected)
     return admission
 
 
@@ -324,23 +425,22 @@ def single_worker_check():
     return {"pass": True, "conflicting_pids": [], "worker_count": 1}
 
 
-def preflight():
-    exact_artifacts()
+def preflight(profile=LEGACY_R6_PROFILE, request_counter=None):
+    exact_artifacts(profile)
     power = run(["pmset", "-g", "batt"], timeout=5).stdout.decode(errors="replace")
     route = run(["route", "-n", "get", "192.168.77.10"], timeout=5).stdout.decode(errors="replace")
     if "AC Power" not in power or "interface: en0" not in route:
         raise RuntimeError("host-power-or-cart-lan-preflight-failed")
-    mi = get_json(MATRIX+"/json/info")[2]
-    ms = get_json(MATRIX+"/json/state")[2]
-    mb = get_json(MATRIX+"/hbnf/build.json")[2]
-    ai = get_json(AUX+"/json/info")[2]
-    ast = get_json(AUX+"/json/state")[2]
+    matrix_context=read_matrix_context(request_counter,expected_release=R4)
+    mi=matrix_context["info"]; ms=matrix_context["state"]; mb=matrix_context["build"]
+    ai = _get_json_counted(AUX+"/json/info",4,request_counter)[2]
+    ast = _get_json_counted(AUX+"/json/state",4,request_counter)[2]
     h = ms.get("HBNF", {})
     p20 = h.get("packet20Diagnostic", {})
     telem = h.get("foundationTelemetry", {})
     expected = (mi.get("ip") == "192.168.77.10" and mi.get("mac", "").replace(":", "").lower() == MATRIX_MAC
                 and mi.get("ver") == "16.0.1" and mb.get("release_id") == R4 and mb.get("candidate") == R4
-                and h.get("candidate") == R4 and ms.get("on") is True and h.get("matrixBrightness") == 44
+                and h.get("candidate") == R4 and ms.get("on") is True
                 and p20.get("enabled") is False and telem.get("enabled") is False)
     aux_ok = (ai.get("ip") == "192.168.77.11" and ai.get("mac", "").replace(":", "").lower() == AUX_MAC
               and ai.get("ver") == "16.0.1" and ai.get("live") is True and ai.get("lm") == "DDP"
@@ -348,14 +448,16 @@ def preflight():
               and ast.get("on") is True and ast.get("lor") == 0)
     if not expected or not aux_ok:
         raise RuntimeError("fresh-matrix-r4-or-aux-ddp-preflight-failed")
+    brightness_baseline=matrix_context["brightness"]
     worker = single_worker_check()
     opal = ("set -e; printf OPAL_PREFLIGHT_OK\\n; uptime; df -k /tmp; command -v curl; command -v sha256sum; "
             "test -r /etc/hbnf-updater/release-state; cat /etc/hbnf-updater/release-state")
+    if request_counter is not None: request_counter()
     op = run(SSH+["-o", "ConnectTimeout=4", OPAL, opal], timeout=15)
     opal_out = op.stdout.decode(errors="replace")
     if op.returncode or "OPAL_PREFLIGHT_OK" not in opal_out or f"55 {R4} {R4_SHA}" not in opal_out or "curl" not in opal_out or "sha256sum" not in opal_out:
         raise RuntimeError("opal-readonly-release-ledger-or-transfer-preflight-failed")
-    receipt = {"schema": "hbnf-r6-audio-cache-fresh-prelive-v1", "captured_at_unix": time.time(),
+    receipt = {"schema": "hbnf-cart2-candidate-fresh-prelive-v1", "captured_at_unix": time.time(),
                "pass": True, "host_on_ac": True, "route": "en0/192.168.77.0/24",
                "matrix": {"ip": mi["ip"], "mac": mi["mac"], "wled": mi["ver"], "release": mb["release_id"],
                           "uptime_seconds": mi.get("uptime"), "free_heap": mi.get("freeheap"),
@@ -364,9 +466,11 @@ def preflight():
                "aux": {"ip": ai["ip"], "mac": ai["mac"], "wled": ai["ver"], "live": ai["live"],
                        "mode": ai["lm"], "source": ai["lip"], "led_count": ai["leds"]["count"], "lor": ast.get("lor")},
                "opal": {"read_only": True, "stdout": opal_out}, "single_worker": worker,
-               "candidate_sha256": CANDIDATE_SHA, "rollback_sha256": R4_SHA,
+               "candidate_release_id": profile.release_id,
+               "candidate_sha256": profile.sha256, "rollback_sha256": profile.rollback_sha256,
+               "brightness_baseline":brightness_baseline,
                "no_house_voltage_sensor": True}
-    save(OUT/"FRESH_PRELIVE_READONLY.json", receipt)
+    save(profile.output/"FRESH_PRELIVE_READONLY.json", receipt)
     return receipt
 
 
@@ -457,9 +561,9 @@ def restore_r4_once(outdir: pathlib.Path):
     return {"upload": receipt, "runtime": state, "status": "R4_READBACK_VERIFIED"}
 
 
-def qualification_command(outdir: pathlib.Path):
+def qualification_command(outdir: pathlib.Path, profile=LEGACY_R6_PROFILE):
     sweep = [sys.executable, str(ROOT/"scripts/hbnf_live_kernel_sweep.py"),
-        "--adapter", str(ADAPTER.relative_to(ROOT)), "--inventory", "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+        "--adapter", str(profile.adapter.relative_to(ROOT)), "--inventory", "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
         "--outdir", str(outdir/"sweep"), "--contract", "foundation", "--qualify", "--soak-seconds", "5400",
         "--combined-check-script", str(ROOT/"scripts/hbnf_r6_combined_feature_check.py"),
         "--soak-interval-seconds", "8", "--threshold-policy", "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
@@ -469,11 +573,42 @@ def qualification_command(outdir: pathlib.Path):
     return sweep
 
 
+def qualify_with_brightness_guard(port, baseline):
+    """Run the frozen test at brightness 44, then restore captured owner settings."""
+    outcome={"setup_started":False,"qualification":None,"setup_error":None,"worker_error":None,"restore_error":None}
+    if not isinstance(baseline,dict) or baseline.get("matrixBrightness")!=QUALIFICATION_BASELINE_BRIGHTNESS:
+        outcome["setup_error"]="RuntimeError: qualification-baseline-receipt-invalid"
+        return outcome
+    try:
+        # Mark before the single POST because a timeout may mean the device
+        # applied it; the finally path must still attempt exact readback/restore.
+        outcome["setup_started"]=True
+        outcome["brightness_setup"]=port.apply_qualification_brightness(baseline)
+        if not isinstance(outcome["brightness_setup"],dict) or outcome["brightness_setup"].get("verified") is not True:
+            raise RuntimeError("qualification-brightness-setup-did-not-verify")
+        try:
+            outcome["qualification"]=port.qualify()
+        except Exception as exc:
+            outcome["worker_error"]=f"{type(exc).__name__}: {exc}"
+    except Exception as exc:
+        outcome["setup_error"]=f"{type(exc).__name__}: {exc}"
+    finally:
+        if outcome["setup_started"]:
+            try:
+                outcome["brightness_restore"]=port.restore_qualification_brightness(baseline)
+                if not isinstance(outcome["brightness_restore"],dict) or outcome["brightness_restore"].get("verified") is not True:
+                    raise RuntimeError("qualification-brightness-restore-did-not-verify")
+            except Exception as exc:
+                outcome["restore_error"]=f"{type(exc).__name__}: {exc}"
+    return outcome
+
+
 def coordinate(port):
     """One-attempt transaction state machine shared by live and fake ports."""
-    result = {"schema": "hbnf-r6-audio-cache-qualification-transaction-v1",
-              "candidate_release_id": RELEASE, "candidate_sha256": CANDIDATE_SHA,
-              "rollback_sha256": R4_SHA, "candidate_install_attempts": 0,
+    profile = getattr(port, "candidate", LEGACY_R6_PROFILE)
+    result = {"schema": "hbnf-cart2-candidate-qualification-transaction-v1",
+              "candidate_release_id": profile.release_id, "candidate_sha256": profile.sha256,
+              "rollback_sha256": profile.rollback_sha256, "candidate_install_attempts": 0,
               "recovery_attempts": 0, "device_requests": 0}
     try:
         # Port admission is local-only and must precede every read/write request.
@@ -503,9 +638,27 @@ def coordinate(port):
                 result["status"] = "RECOVERY_UNVERIFIED_STOP"
         else:
             result["candidate_runtime"] = resolved["runtime"]
-            q = port.qualify()
-            result["qualification"] = q
-            if q.get("passed") is True:
+            brightness=qualify_with_brightness_guard(port,pre.get("brightness_baseline",{}).get("runtime"))
+            result["brightness_setup_started"]=brightness["setup_started"]
+            if "brightness_setup" in brightness: result["brightness_setup"]=brightness["brightness_setup"]
+            if "brightness_restore" in brightness: result["brightness_restore"]=brightness["brightness_restore"]
+            if brightness["restore_error"]:
+                result["status"]="QUALIFICATION_BRIGHTNESS_RESTORE_FAILED"
+                result["error"]=brightness["restore_error"]
+                if brightness["qualification"] is not None:
+                    result["captured_qualification_invalidated"]={"passed":brightness["qualification"].get("passed"),"profiles_not_accepted":True}
+            elif brightness["setup_error"]:
+                result["status"]="QUALIFICATION_BRIGHTNESS_SETUP_FAILED_NO_PROFILES"
+                result["error"]=brightness["setup_error"]
+            elif brightness["worker_error"]:
+                result["status"]="QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED"
+                result["error"]=brightness["worker_error"]
+            else:
+                q=brightness["qualification"]
+                result["qualification"] = q
+            if result.get("status") in ("QUALIFICATION_BRIGHTNESS_RESTORE_FAILED","QUALIFICATION_BRIGHTNESS_SETUP_FAILED_NO_PROFILES","QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED"):
+                pass
+            elif q.get("passed") is True:
                 result["status"] = "QUALIFIED_OBJECTIVE_GATES_PASS"
             elif device_failure_requires_recovery(q):
                 try:
@@ -568,9 +721,10 @@ def device_failure_requires_recovery(summary):
 
 
 def coordinate_qualification(port):
-    """Resume the remaining frozen gates for an already-installed exact R6; never uploads."""
-    result={"schema":"hbnf-r6-audio-cache-qualification-continuation-v1",
-        "candidate_release_id":RELEASE,"candidate_sha256":CANDIDATE_SHA,"rollback_sha256":R4_SHA,
+    """Resume frozen gates for the exact installed profile; never uploads."""
+    profile = getattr(port, "candidate", LEGACY_R6_PROFILE)
+    result={"schema":"hbnf-cart2-candidate-qualification-continuation-v1",
+        "candidate_release_id":profile.release_id,"candidate_sha256":profile.sha256,"rollback_sha256":profile.rollback_sha256,
         "operation_scope":"QUALIFICATION_ONLY","candidate_install_attempts":0,"recovery_attempts":0,"device_requests":0,
         "preflight_completed":False,"setup_started":False,"brightness_setup_started":False}
     preflight = None
@@ -654,55 +808,59 @@ def coordinate_qualification(port):
 
 
 class LivePort:
-    def __init__(self, admission_path, capsule_path, proof_path, outdir=None):
+    def __init__(self, admission_path, capsule_path, proof_path, outdir=None, candidate=LEGACY_R6_PROFILE):
         self.admission_path = admission_path
         self.capsule_path = capsule_path
         self.proof_path = proof_path
         self.admission = None
+        self.candidate = candidate
         self.device_requests = 0
         self.install_attempts = 0
         self.recovery_attempts = 0
         self.state_path = ROOT/"config/HBNF_CONTROL_STATE.json"
-        self.outdir = pathlib.Path(outdir).resolve() if outdir else OUT
+        self._explicit_outdir = outdir is not None
+        self.outdir = pathlib.Path(outdir).resolve() if outdir else candidate.output
 
     def admit(self, stage="LIVE_APPROVED"):
-        self.admission = check_admission(self.admission_path, self.capsule_path, self.proof_path, stage)
+        self.candidate=load_candidate_profile(self.capsule_path)
+        if not self._explicit_outdir:
+            self.outdir=self.candidate.output
+        self.admission = check_admission(self.admission_path, self.capsule_path, self.proof_path, stage,self.candidate)
 
     def _record_device_request(self):
         self.device_requests += 1
 
     def verify_local_artifacts(self):
-        exact_artifacts()
+        exact_artifacts(self.candidate)
         if self.admission is None:
             raise RuntimeError("admission-not-passed")
 
     def preflight(self):
-        self.device_requests += 6
-        return preflight()
+        return preflight(self.candidate,request_counter=self._record_device_request)
 
     def preflight_candidate(self):
-        exact_artifacts()
+        exact_artifacts(self.candidate)
         power=run(["pmset","-g","batt"],timeout=5).stdout.decode(errors="replace")
         route=run(["route","-n","get","192.168.77.10"],timeout=5).stdout.decode(errors="replace")
         if "AC Power" not in power or "interface: en0" not in route:
             raise RuntimeError("qualification-only host AC/LAN preflight failed")
-        matrix_context=read_matrix_context(self._record_device_request)
+        matrix_context=read_matrix_context(self._record_device_request,self.candidate.release_id)
         mi=matrix_context["info"]; ms=matrix_context["state"]; mb=matrix_context["build"]
         ai=_get_json_counted(AUX+"/json/info", 4, self._record_device_request)[2]
         ast=_get_json_counted(AUX+"/json/state", 4, self._record_device_request)[2]
         h=ms.get("HBNF",{}); p20=h.get("packet20Diagnostic",{}); telem=h.get("foundationTelemetry",{})
         if not (mi.get("ip")=="192.168.77.10" and mi.get("mac","").replace(":","").lower()==MATRIX_MAC
-                and mi.get("ver")=="16.0.1" and mb.get("release_id")==RELEASE and mb.get("candidate")==RELEASE
-                and mb.get("mac","").replace(":","").lower()==MATRIX_MAC and h.get("candidate")==RELEASE
+                and mi.get("ver")=="16.0.1" and mb.get("release_id")==self.candidate.release_id and mb.get("candidate")==self.candidate.release_id
+                and mb.get("mac","").replace(":","").lower()==MATRIX_MAC and h.get("candidate")==self.candidate.release_id
                 and ms.get("on") is True and p20.get("enabled") is False and telem.get("enabled") is False):
-            raise RuntimeError("qualification preflight did not verify exact healthy R6 runtime")
+            raise RuntimeError("qualification preflight did not verify exact healthy candidate runtime")
         if not (ai.get("ip")=="192.168.77.11" and ai.get("mac","").replace(":","").lower()==AUX_MAC
                 and ai.get("ver")=="16.0.1" and ai.get("live") is True and ai.get("lm")=="DDP"
                 and ai.get("lip")=="192.168.77.10" and ai.get("leds",{}).get("count")==22
                 and ast.get("on") is True and ast.get("lor")==0):
             raise RuntimeError("qualification preflight AUX DDP/output checks failed")
         brightness_baseline=validate_brightness_baseline(ms,matrix_context["persisted"])
-        if matrix_context["identity"]["release_id"] != RELEASE:
+        if matrix_context["identity"]["release_id"] != self.candidate.release_id:
             raise RuntimeError("qualification-matrix-identity-binding-failed")
         worker=single_worker_check()
         opal=("set -e; printf OPAL_QUALIFICATION_PREFLIGHT_OK\\n; command -v sha256sum; test -r /etc/hbnf-updater/release-state; cat /etc/hbnf-updater/release-state")
@@ -710,14 +868,14 @@ class LivePort:
         p=run(SSH+["-o","ConnectTimeout=4",OPAL,opal],timeout=15); out=p.stdout.decode(errors="replace")
         if p.returncode or "OPAL_QUALIFICATION_PREFLIGHT_OK" not in out or f"55 {R4} {R4_SHA}" not in out:
             raise RuntimeError("qualification preflight cannot prove exact Opal R4 recovery")
-        proof={"schema":"hbnf-r6-qualification-prelive-v1","captured_unix":time.time(),"pass":True,
+        proof={"schema":"hbnf-cart2-qualification-prelive-v1","captured_unix":time.time(),"pass":True,
             "operation_scope":"QUALIFICATION_ONLY","host_on_ac":True,"cart_lan_interface":"en0",
             "matrix":{"ip":mi["ip"],"mac":mi["mac"],"wled":mi["ver"],"release_id":mb["release_id"],
-                "candidate_sha256":CANDIDATE_SHA,"uptime_seconds":mi.get("uptime"),"fps":mi.get("leds",{}).get("fps"),
+                "candidate_sha256":self.candidate.sha256,"uptime_seconds":mi.get("uptime"),"fps":mi.get("leds",{}).get("fps"),
                 "free_heap":mi.get("freeheap"),"brightness":h.get("matrixBrightness"),"diagnostic_off":True,"telemetry_off":True},
             "brightness_baseline":brightness_baseline,
             "aux":{"ip":ai["ip"],"mac":ai["mac"],"live":ai["live"],"mode":ai["lm"],"source":ai["lip"],"led_count":ai["leds"]["count"],"on":ast["on"],"lor":ast["lor"]},
-            "rollback":{"sha256":R4_SHA,"opal_ledger":out},"single_worker":worker,
+            "rollback":{"sha256":self.candidate.rollback_sha256,"opal_ledger":out},"single_worker":worker,
             "candidate_attempts_used":1,"candidate_install_permitted":False}
         save(self.outdir/"QUALIFICATION_PRELIVE_READONLY.json",proof)
         return proof
@@ -725,43 +883,47 @@ class LivePort:
     def apply_qualification_brightness(self, baseline):
         if not isinstance(baseline, dict) or baseline.get("matrixBrightness") != QUALIFICATION_BASELINE_BRIGHTNESS:
             raise RuntimeError("qualification-brightness-baseline-not-admitted")
-        return change_matrix_brightness(baseline, operation="measure", request_counter=self._record_device_request)
+        return change_matrix_brightness(baseline, operation="measure", request_counter=self._record_device_request,
+                                        expected_release=self.candidate.release_id)
 
     def restore_qualification_brightness(self, baseline):
         if not isinstance(baseline, dict) or baseline.get("matrixBrightness") != QUALIFICATION_BASELINE_BRIGHTNESS:
             raise RuntimeError("qualification-brightness-baseline-receipt-invalid")
-        return change_matrix_brightness(baseline, operation="restore", request_counter=self._record_device_request)
+        return change_matrix_brightness(baseline, operation="restore", request_counter=self._record_device_request,
+                                        expected_release=self.candidate.release_id)
 
     def stage_candidate(self):
-        return stage_once(BIN, "/tmp/hbnf-r6-audio-cache-candidate.bin")
+        self.staged_remote_path=f"/tmp/{self.candidate.release_id}.bin"
+        return stage_once(self.candidate.binary, self.staged_remote_path)
 
     def consume_install_attempt(self):
         state = json.loads(self.state_path.read_text())
         binding = self.admission.get("fresh_owner_authorization") if self.admission else None
-        auth = state.get("r6_audio_cache_successor", {}).get("conditional_authority", {})
+        current = state.get("live_mutation_authorization", {})
         if (not isinstance(binding, dict) or state.get("live_mutation_authorized") is not True
             or state.get("live_authorization_binding") != binding
-            or binding.get("candidate_release_id") != RELEASE
-            or binding.get("candidate_bin_sha256") != CANDIDATE_SHA
-            or binding.get("rollback_bin_sha256") != R4_SHA
+            or binding.get("candidate_release_id") != self.candidate.release_id
+            or binding.get("candidate_bin_sha256") != self.candidate.sha256
+            or binding.get("rollback_bin_sha256") != self.candidate.rollback_sha256
+            or binding.get("candidate_install_limit") != 1
+            or binding.get("recovery_install_limit") != 1
             or str(binding.get("matrix_mac", "")).replace(":", "").lower() != MATRIX_MAC):
             raise RuntimeError("exact-owner-authorization-state-binding-changed-before-install")
-        if auth.get("candidate_attempts_used", 0) != 0:
+        if current.get("candidate_attempts_used", 0) != 0:
             raise RuntimeError("candidate-attempt-already-consumed")
-        auth["candidate_attempts_used"] = 1
-        auth["candidate_attempt_started_unix"] = time.time()
-        auth["status"] = "CONSUMED_BEFORE_WLED_POST"
-        state["r6_audio_cache_successor"]["conditional_authority"] = auth
+        current["candidate_attempts_used"] = 1
+        current["candidate_attempt_started_unix"] = time.time()
+        current["status"] = "CONSUMED_BEFORE_WLED_POST"
         state["live_mutation_authorized"] = True
-        current = state.setdefault("live_mutation_authorization", {})
         current.update({
             "authorized": True,
-            "candidate_release_id": RELEASE,
-            "candidate_sha256": CANDIDATE_SHA,
-            "rollback_sha256": R4_SHA,
+            "candidate_release_id": self.candidate.release_id,
+            "candidate_sha256": self.candidate.sha256,
+            "rollback_sha256": self.candidate.rollback_sha256,
+            "candidate_install_limit": binding["candidate_install_limit"],
+            "recovery_install_limit": binding["recovery_install_limit"],
             "hardware_writes_permitted_now": True,
             "transaction_consumed": True,
-            "candidate_attempts_used": 1,
             "recovery_attempts_used": 0,
             "current_gate": "Exact candidate attempt durably consumed before the one WLED /update request.",
         })
@@ -769,14 +931,17 @@ class LivePort:
         self.install_attempts = 1
         save(self.outdir/"AUTHORIZATION_CONSUMPTION.json", {
             "authorization_id": self.admission["fresh_owner_authorization"]["authorization_id"],
-            "candidate_release_id": RELEASE, "candidate_sha256": CANDIDATE_SHA,
+            "candidate_release_id": self.candidate.release_id, "candidate_sha256": self.candidate.sha256,
             "candidate_attempt": 1, "candidate_attempt_limit": 1, "r4_recovery_limit": 1,
             "recorded_before_wled_post": True,
             "preflight_sha256": sha(self.outdir/"FRESH_PRELIVE_READONLY.json")})
 
     def upload_candidate(self):
         self.device_requests += 1
-        return upload_once("/tmp/hbnf-r6-audio-cache-candidate.bin", self.outdir/"candidate-ota-response.txt")
+        remote=getattr(self,"staged_remote_path",None)
+        if remote!=f"/tmp/{self.candidate.release_id}.bin":
+            raise RuntimeError("exact-candidate-staging-path-not-proven")
+        return upload_once(remote, self.outdir/"candidate-ota-response.txt")
 
     def resolve_runtime(self, upload):
         deadline = time.monotonic()+150
@@ -787,7 +952,7 @@ class LivePort:
             try:
                 self.device_requests += 3
                 runtime = read_runtime()
-                if exact_runtime(runtime, RELEASE):
+                if exact_runtime(runtime, self.candidate.release_id):
                     return {"installed": True, "runtime": runtime,
                             "http_response_ambiguous": not upload.get("confirmed", False)}
                 if exact_runtime(runtime, R4):
@@ -807,7 +972,7 @@ class LivePort:
         return {"installed": None, "error": str(last), "http_response_ambiguous": True}
 
     def qualify(self):
-        cmd = qualification_command(self.outdir)
+        cmd = qualification_command(self.outdir,self.candidate)
         # The inner sweep has bounded adapter/request operations and owns the
         # renderer snapshot `finally` that restores device state. An outer
         # subprocess timeout would terminate it before that cleanup can run;
@@ -823,53 +988,70 @@ class LivePort:
         return {"passed": p.returncode == 0, "returncode": p.returncode, "report": report, "abort": abort}
 
     def recover_r4(self):
-        self.recovery_attempts += 1
-        if self.recovery_attempts > 1:
+        if self.recovery_attempts > 0:
             raise RuntimeError("exact-r4-recovery-attempt-limit-exceeded")
+        state=json.loads(self.state_path.read_text())
+        binding=self.admission.get("fresh_owner_authorization") if self.admission else None
+        current=state.get("live_mutation_authorization",{})
+        if (not isinstance(binding,dict) or state.get("live_mutation_authorized") is not True
+            or state.get("live_authorization_binding")!=binding
+            or binding.get("candidate_release_id")!=self.candidate.release_id
+            or binding.get("candidate_bin_sha256")!=self.candidate.sha256
+            or binding.get("rollback_bin_sha256")!=self.candidate.rollback_sha256
+            or binding.get("recovery_install_limit")!=1
+            or current.get("candidate_attempts_used")!=1
+            or int(current.get("recovery_attempts_used",0))>=1):
+            raise RuntimeError("exact-r4-recovery-authorization-or-attempt-binding-failed")
+        # Durably consume recovery before any R4 transfer/OTA request so a host
+        # interruption cannot silently create a second rollback attempt.
+        current["recovery_attempts_used"]=1
+        current["status"]="EXACT_R4_RECOVERY_ATTEMPT_CONSUMED"
+        current["current_gate"]="Exact R4 recovery attempt durably consumed before recovery transfer."
+        self.state_path.write_text(json.dumps(state,indent=2)+"\n")
+        self.recovery_attempts = 1
         self.device_requests += 3
         return restore_r4_once(self.outdir)
 
     def close(self, result):
         continuation=result.get("operation_scope")=="QUALIFICATION_ONLY"
         target="QUALIFICATION_CONTINUATION_RESULT.json" if continuation else "TRANSACTION_RESULT.json"
+        # Admission rejection is a read-only stop. Do not rewrite the control
+        # state merely because the coordinator records its zero-request result.
+        if self.admission is None:
+            return
         save(self.outdir/target, result)
         state = json.loads(self.state_path.read_text())
         state["live_mutation_authorized"] = False
-        auth = state.get("r6_audio_cache_successor", {}).get("conditional_authority", {})
         current = state.setdefault("live_mutation_authorization", {})
         current.update({
             "authorized": False,
             "hardware_writes_permitted_now": False,
-            "transaction_consumed": self.install_attempts > 0,
-            "candidate_attempts_used": auth.get("candidate_attempts_used", 0),
-            "recovery_attempts_used": self.recovery_attempts,
+            "transaction_consumed": bool(current.get("transaction_consumed") or self.install_attempts > 0),
+            "candidate_attempts_used": max(int(current.get("candidate_attempts_used", 0)),self.install_attempts),
+            "recovery_attempts_used": max(int(current.get("recovery_attempts_used", 0)),self.recovery_attempts),
+            "candidate_release_id": self.candidate.release_id,
+            "candidate_sha256": self.candidate.sha256,
+            "rollback_sha256": self.candidate.rollback_sha256,
+            "status": result["status"],
             "current_gate": result["status"],
         })
         if continuation:
             current.update({"operation_scope":"CLOSED_AFTER_QUALIFICATION","candidate_install_permitted":False})
-        auth["live_mutation_authorized"] = False
-        auth["status"] = result["status"]
-        auth["recovery_attempts_used"] = self.recovery_attempts
-        state["r6_audio_cache_successor"]["conditional_authority"] = auth
-        state["r6_audio_cache_successor"]["status"] = result["status"]
-        if continuation:
-            try: result_ref=str((self.outdir/target).resolve().relative_to(ROOT))
-            except ValueError: raise RuntimeError("qualification output must remain inside the repository")
-            state["r6_audio_cache_successor"]["qualification_result"] = result_ref
-        else:
-            state["r6_audio_cache_successor"]["transaction_result"] = "evidence/cart2-r6-audio-cache-20261010/live-qualification/TRANSACTION_RESULT.json"
+        try: result_ref=str((self.outdir/target).resolve().relative_to(ROOT))
+        except ValueError: raise RuntimeError("qualification output must remain inside the repository")
+        current["transaction_result"] = result_ref
         if result.get("recovery", {}).get("status") in ("R4_READBACK_VERIFIED", "R4_ALREADY_INSTALLED_NO_UPLOAD"):
-            state["installed_release"] = R4
-            state["installed_firmware_sha256"] = R4_SHA
+            state["installed_release"] = self.candidate.release_id if result.get("recovery",{}).get("runtime",{}).get("release_id")==self.candidate.release_id else R4
+            state["installed_firmware_sha256"] = self.candidate.sha256 if state["installed_release"]==self.candidate.release_id else self.candidate.rollback_sha256
         elif result.get("status") == "QUALIFIED_OBJECTIVE_GATES_PASS":
-            state["installed_release"] = RELEASE
-            state["installed_firmware_sha256"] = CANDIDATE_SHA
+            state["installed_release"] = self.candidate.release_id
+            state["installed_firmware_sha256"] = self.candidate.sha256
         elif result.get("status") in ("OTA_NOT_INSTALLED_R4_REMAINS_NO_RETRY", "CANDIDATE_STAGE_FAILED_NO_WLED_REQUEST"):
             state["installed_release"] = R4
-            state["installed_firmware_sha256"] = R4_SHA
+            state["installed_firmware_sha256"] = self.candidate.rollback_sha256
         elif result.get("candidate_runtime"):
-            state["installed_release"] = RELEASE
-            state["installed_firmware_sha256"] = CANDIDATE_SHA
+            state["installed_release"] = self.candidate.release_id
+            state["installed_firmware_sha256"] = self.candidate.sha256
         elif result.get("status") == "RECOVERY_UNVERIFIED_STOP":
             state["installed_release"] = None
             state["installed_firmware_sha256"] = None
@@ -883,47 +1065,28 @@ class LivePort:
 
 
 def execute(admission_path, capsule_path, proof_path):
-    OUT.mkdir(parents=True, exist_ok=True)
-    port = LivePort(pathlib.Path(admission_path), pathlib.Path(capsule_path), pathlib.Path(proof_path))
+    profile=load_candidate_profile(pathlib.Path(capsule_path))
+    profile.output.mkdir(parents=True, exist_ok=True)
+    port = LivePort(pathlib.Path(admission_path), pathlib.Path(capsule_path), pathlib.Path(proof_path),candidate=profile)
     return coordinate(port)
 
 
 def execute_qualification(admission_path,capsule_path,proof_path,outdir=None):
-    output=prepare_qualification_output(outdir)
-    port=LivePort(pathlib.Path(admission_path),pathlib.Path(capsule_path),pathlib.Path(proof_path),output)
+    profile=load_candidate_profile(pathlib.Path(capsule_path))
+    output=prepare_qualification_output(outdir,profile)
+    port=LivePort(pathlib.Path(admission_path),pathlib.Path(capsule_path),pathlib.Path(proof_path),output,profile)
     return coordinate_qualification(port)
 
-def prepare_qualification_output(outdir):
+def prepare_qualification_output(outdir,profile=LEGACY_R6_PROFILE):
     if outdir is None: raise RuntimeError("qualification continuation requires a new --outdir")
     output=pathlib.Path(outdir).resolve()
-    try: output.relative_to(OUT.resolve())
-    except ValueError: raise RuntimeError("qualification output must be inside the exact R6 qualification evidence directory")
-    if output==OUT.resolve(): raise RuntimeError("qualification continuation cannot reuse the original install transaction directory")
+    try: output.relative_to(profile.output.resolve())
+    except ValueError: raise RuntimeError("qualification output must be inside the exact candidate qualification evidence directory")
+    if output==profile.output.resolve(): raise RuntimeError("qualification continuation cannot reuse the original install transaction directory")
     if output.exists() and any(output.iterdir()):
         raise RuntimeError("qualification output directory is not empty; preserve prior evidence and choose a new run directory")
     output.mkdir(parents=True,exist_ok=True)
     return output
-
-
-def close_authority(status, result):
-    path = ROOT/"config/HBNF_CONTROL_STATE.json"
-    state = json.loads(path.read_text())
-    state["live_mutation_authorized"] = False
-    state["r6_audio_cache_successor"]["conditional_authority"]["live_mutation_authorized"] = False
-    state["r6_audio_cache_successor"]["conditional_authority"]["status"] = status
-    state["r6_audio_cache_successor"]["status"] = status
-    state["r6_audio_cache_successor"]["transaction_result"] = "evidence/cart2-r6-audio-cache-20261010/live-qualification/TRANSACTION_RESULT.json"
-    if status in ("QUALIFIED_OBJECTIVE_GATES_PASS", "QUALIFICATION_FAILED_OR_INCOMPLETE"):
-        # Preserve the read-back runtime, which may be candidate or known R4.
-        observed = result.get("recovery", {}).get("runtime", {}).get("matrix_build", {})
-        if observed.get("release_id") == R4:
-            state["installed_release"] = R4
-            state["installed_firmware_sha256"] = R4_SHA
-    elif result.get("recovery", {}).get("status") == "R4_READBACK_VERIFIED":
-        state["installed_release"] = R4
-        state["installed_firmware_sha256"] = R4_SHA
-    state["last_updated_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-    path.write_text(json.dumps(state, indent=2)+"\n")
 
 
 def main():
@@ -936,9 +1099,10 @@ def main():
     ap.add_argument("--outdir",help="New empty evidence directory under the exact R6 qualification directory; required for qualification continuation")
     args = ap.parse_args()
     if args.dry_run:
-        exact_artifacts()
+        profile=load_candidate_profile(pathlib.Path(args.capsule))
+        exact_artifacts(profile)
         print(json.dumps({"status": "EXACT_ARTIFACTS_VALID_NO_DEVICE_REQUESTS", "device_requests": 0,
-            "candidate": RELEASE, "candidate_sha256": sha(BIN), "rollback_sha256": sha(R4_BIN),
+            "candidate": profile.release_id, "candidate_sha256": sha(profile.binary), "rollback_sha256": sha(profile.rollback_binary),
             "dry_run_does_not_authorize_mutation": True}, indent=2))
         return 0
     if args.resume_qualification:

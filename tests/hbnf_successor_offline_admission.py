@@ -19,6 +19,7 @@ EVIDENCE = ROOT / "evidence/cart2-r6-compositor-hoist-20261011"
 ADMISSION = EVIDENCE / "OFFLINE_COMPILED_ADMISSION.json"
 CONTROL = ROOT / "scripts/hbnf_control.py"
 GUARD = ROOT / "scripts/hbnf_guarded_run.py"
+LIVE_RUNNER = ROOT / "scripts/hbnf_r6_audio_cache_live_transaction.py"
 EXPECTED_RELEASE = "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011"
 EXPECTED_SHA = "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2"
 EXPECTED_R4 = "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
@@ -66,7 +67,8 @@ def main() -> None:
     # alone cannot turn a rehearsal of the prior R6 image into successor proof.
     assert transaction["candidate_release_id"] == EXPECTED_RELEASE
     assert transaction["candidate_sha256"] == EXPECTED_SHA
-    assert transaction["historical_launcher_default"]["candidate_release_id"] != EXPECTED_RELEASE
+    assert transaction["launcher_candidate_selection"]["candidate_release_id"] == EXPECTED_RELEASE
+    assert transaction["launcher_candidate_selection"]["candidate_sha256"] == EXPECTED_SHA
     successor_cases = [case for case in transaction["cases"]
                        if case.get("case", "").startswith("exact successor fake-port")]
     assert len(successor_cases) == 2
@@ -92,6 +94,44 @@ def main() -> None:
     valid = check(ADMISSION)
     assert valid.returncode == 0, valid.stdout + valid.stderr
     assert json.loads(valid.stdout)["pass"] is True
+
+    # Exercise the supported transaction entrypoint itself against the real
+    # current closed control state. OFFLINE_COMPILED evidence cannot advance
+    # to live preflight/staging; the launcher must reject before any device I/O.
+    with tempfile.TemporaryDirectory(prefix="hbnf-successor-live-entrypoint-") as td:
+        state_path = ROOT / "config/HBNF_CONTROL_STATE.json"
+        prior_r6_result = ROOT / "evidence/cart2-r6-audio-cache-20261010/live-qualification/TRANSACTION_RESULT.json"
+        before_state_sha = sha(state_path)
+        before_r6_result_sha = sha(prior_r6_result)
+        capsule = pathlib.Path(td) / "capsule.json"
+        made = subprocess.run(
+            [sys.executable, str(ROOT / "scripts/platform.py"), "capsule",
+             "--system", "hbnf-cart", "--workflow", "phase2-live-qualification",
+             "--out", str(capsule), "--run-id", "successor-closed-gate-test"],
+            cwd=ROOT, capture_output=True, text=True, check=False,
+        )
+        assert made.returncode == 0, made.stdout + made.stderr
+        verified_dry_run = subprocess.run(
+            [sys.executable, str(LIVE_RUNNER), "--admission", str(ADMISSION),
+             "--capsule", str(capsule), "--prelive-proof", str(pathlib.Path(td) / "unused-proof.json"),
+             "--dry-run"],
+            cwd=ROOT, capture_output=True, text=True, check=False,
+        )
+        assert verified_dry_run.returncode == 0, verified_dry_run.stdout + verified_dry_run.stderr
+        dry_receipt = json.loads(verified_dry_run.stdout)
+        assert dry_receipt["candidate"] == EXPECTED_RELEASE
+        assert dry_receipt["candidate_sha256"] == EXPECTED_SHA
+        assert dry_receipt["device_requests"] == 0
+        rejected_live = subprocess.run(
+            [sys.executable, str(LIVE_RUNNER), "--admission", str(ADMISSION),
+             "--capsule", str(capsule), "--prelive-proof", str(pathlib.Path(td) / "missing-proof.json")],
+            cwd=ROOT, capture_output=True, text=True, check=False,
+        )
+        assert rejected_live.returncode != 0
+        assert "live_approved-admission-rejected-before-device-request" in rejected_live.stdout
+        assert "primary control state has NO live mutation authorization" in rejected_live.stdout
+        assert sha(state_path) == before_state_sha
+        assert sha(prior_r6_result) == before_r6_result_sha
 
     # Candidate or recovery byte substitutions are rejected by the actual
     # release-admission checker before any execution entrypoint is reached.

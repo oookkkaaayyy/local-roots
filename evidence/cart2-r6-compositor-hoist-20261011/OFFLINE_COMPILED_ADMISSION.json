@@ -3,12 +3,12 @@
     "all_historical_host_failures_replayed": {
       "evidence_file": "evidence/cart2-r6-compositor-hoist-20261011/SUCCESSOR_TRANSACTION_DRYRUN.json",
       "pass": true,
-      "sha256": "0954ba4ddfefea7121dfb270c40b5d50795fb714c65d25b098a4876f26037761"
+      "sha256": "68f6a8bce22f474bac027829e696ed7df6fc02f42f5760c471da84c7a6219d3a"
     },
     "committed_feature_scope_preserved": {
       "evidence_file": "evidence/cart2-r6-compositor-hoist-20261011/OFFLINE_INTEGRATED_CANDIDATE_MANIFEST.json",
       "pass": true,
-      "sha256": "9385bc763230750c2fa22bdc17a2fb0867cf8fa085cda6dc31c1be5838d0c2a2"
+      "sha256": "7f89662749347d7c2d8bbab0cb78a6dba6435c626d11cdde33ddf29a202d1a3e"
     },
     "compiled_embedded_candidate_id_and_sha": {
       "evidence_file": "evidence/cart2-r6-compositor-hoist-20261011/SUCCESSOR_BUILD_RECEIPT.json",
@@ -23,7 +23,7 @@
     "entire_release_transaction_dryrun": {
       "evidence_file": "evidence/cart2-r6-compositor-hoist-20261011/SUCCESSOR_TRANSACTION_DRYRUN.json",
       "pass": true,
-      "sha256": "0954ba4ddfefea7121dfb270c40b5d50795fb714c65d25b098a4876f26037761"
+      "sha256": "68f6a8bce22f474bac027829e696ed7df6fc02f42f5760c471da84c7a6219d3a"
     },
     "exact_source_dependency_generated_input_closure": {
       "evidence_file": "evidence/cart2-r6-compositor-hoist-20261011/SUCCESSOR_SOURCE_BINDING.json",

@@ -1,9 +1,9 @@
 {
   "schema": "local-roots-golden-path-v2",
   "id": "phase2-live-qualification",
-  "status": "CURRENT_EXACT_R6_AUDIO_CACHE_CANDIDATE",
-  "selection_warning": "Use only with a candidate-specific LIVE_APPROVED admission and fresh read-only preflight. Never substitute a binary or weaken the frozen Foundation policy.",
-  "purpose": "One exact Matrix R6 audio-cache candidate installation, objective runtime qualification, Matrix-to-AUX synchronization/recovery checks, and frozen soak without host deployment or peripheral firmware mutation.",
+  "status": "CURRENT_EXACT_COMPOSITOR_HOIST_SUCCESSOR_CANDIDATE_OFFLINE_ONLY",
+  "selection_warning": "The successor is currently OFFLINE_COMPILED only. Do not use the live runner until a fresh exact-candidate LIVE_APPROVED admission and preflight proof pass. Never reuse the consumed audio-cache authorization or weaken the frozen Foundation policy.",
+  "purpose": "One exact Matrix compositor-hoist successor installation, objective runtime qualification, Matrix-to-AUX synchronization/recovery checks, and frozen soak without host deployment or peripheral firmware mutation.",
   "required_repo_inputs": [
     "AGENTS.md",
     "config/HBNF_CONTROL_MODEL.json",
@@ -11,14 +11,14 @@
     "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
     "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
     "config/HBNF_RUNTIME_TELEMETRY_CONTRACT.json",
-    "evidence/cart2-r6-audio-cache-20261010/FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
-    "evidence/cart2-r6-audio-cache-20261010/COMBINED_FEATURE_OFFLINE_TESTS.json",
-    "evidence/cart2-r6-audio-cache-20261010/live-qualification/HOST_PREFLIGHT_BLOCKER_RECONCILIATION.json",
-    "evidence/cart2-r6-audio-cache-20261010/artifact/hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010.bin",
+    "evidence/cart2-r6-compositor-hoist-20261011/OFFLINE_INTEGRATED_CANDIDATE_MANIFEST.json",
+    "evidence/cart2-r6-compositor-hoist-20261011/OFFLINE_COMPILED_ADMISSION.json",
+    "evidence/cart2-r6-compositor-hoist-20261011/OFFLINE_FROZEN_QUALIFICATION_PROCEDURE.json",
+    "evidence/cart2-r6-compositor-hoist-20261011/SUCCESSOR_SOURCE_BINDING.json",
+    "evidence/cart2-r6-compositor-hoist-20261011/SUCCESSOR_END_TO_END_REHEARSAL_STATUS.json",
+    "evidence/cart2-r6-compositor-hoist-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011.bin",
     "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
-    "firmware/phase2/integration-r6-cachefix/SOURCE_BINDING.json",
-    "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_FROZEN_LIVE_QUALIFICATION_PROCEDURE.json",
-    "evidence/cart2-r6-audio-cache-20261010/R6_AUDIO_CACHE_LIVE_SWEEP_ADAPTER.json",
+    "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_COMPOSITOR_HOIST_20261011.json",
     "scripts/hbnf_r6_audio_cache_live_transaction.py",
     "scripts/hbnf_r6_combined_feature_check.py",
     "tests/test_r6_audio_cache_candidate.py",
@@ -53,11 +53,11 @@
     "production_install_forbidden_until_recovery_transaction_is_proven": true
   },
   "qualification_contract": {
-    "candidate_release": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
-    "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
-    "candidate_size_bytes": 1497984,
+    "candidate_release": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011",
+    "candidate_sha256": "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2",
+    "candidate_size_bytes": 1498672,
     "recovery_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-    "recovery_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743a2f3d8c",
+    "recovery_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "target": "Matrix 192.168.77.10 / 70:4b:ca:5b:34:5c only",
     "install_limit": 1,
     "rollback_limit": 1,
@@ -76,7 +76,11 @@
     "unattended_soak_seconds_minimum": 5400,
     "kernel_sweep_count": 28,
     "combined_check": "Run inside the same open Packet20 snapshot after all 28 kernels and before threshold freeze/soak; verifies local candidate Vibe/audio controls, native palette/scene/text-scoreboard composition, and Matrix-to-AUX DDP. Owner PWA command application/scoring remains a distinct owner/backend acceptance gate and is never inferred from local WLED readback.",
-    "thresholds_may_be_weakened": false
+    "thresholds_may_be_weakened": false,
+    "candidate_bin_path": "evidence/cart2-r6-compositor-hoist-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011.bin",
+    "foundation_adapter_path": "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_COMPOSITOR_HOIST_20261011.json",
+    "recovery_bin_path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "qualification_output_path": "evidence/cart2-r6-compositor-hoist-20261011/live-qualification"
   },
   "stages": [
     {
@@ -156,7 +160,7 @@
         "margin_seconds": 50
       },
       "outputs": [
-        "one multipart install attempt only for hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010 SHA-256 f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b; immediately capture HTTP response, exact runtime identity, Matrix/AUX health"
+        "one multipart install attempt only for hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011 SHA-256 bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2; immediately capture HTTP response, exact runtime identity, Matrix/AUX health"
       ]
     },
     {
@@ -205,7 +209,7 @@
       ]
     }
   ],
-  "terminal_recovery": "If the exact R6 audio-cache candidate is unqualified or runtime safety/required AUX behavior fails, preserve the failure evidence, install only the exact R4 recovery within the authorized limit, verify exact R4 identity and health, then continue offline work; never stop solely because a soak failed.",
+  "terminal_recovery": "If the exact compositor-hoist candidate is unqualified or runtime safety/required AUX behavior fails, preserve the failure evidence, install only the exact R4 recovery within the fresh candidate-specific authorized limit, verify exact R4 identity and health, then continue offline work; never stop solely because a soak failed.",
   "expected_terminal_outputs": [
     "R4 runtime qualification or exact failure classification",
     "exact Matrix release identity",

@@ -200,7 +200,15 @@ def release_admission_errors(model,state,manifest,stage):
         if stage=="LIVE_QUALIFICATION":
             current=state.get("live_mutation_authorization",{})
             successor=state.get("r6_audio_cache_successor",{})
-            auth=successor.get("conditional_authority",{}) if isinstance(successor,dict) else {}
+            legacy_auth=successor.get("conditional_authority",{}) if isinstance(successor,dict) else {}
+            # The existing top-level transaction record is the common authority
+            # for successor candidates. Fall back to the legacy R6 receipt only
+            # when it is explicitly bound to the same candidate identity.
+            generic_bound=(current.get("candidate_release_id")==identities.get("candidate_release_id")
+                and current.get("candidate_sha256")==identities.get("candidate_bin_sha256")
+                and current.get("rollback_sha256")==identities.get("rollback_bin_sha256"))
+            auth=current if generic_bound else legacy_auth
+            auth_status=(current.get("candidate_status") or current.get("status")) if generic_bound else legacy_auth.get("status")
             if current.get("operation_scope")!="QUALIFICATION_ONLY" or current.get("candidate_install_permitted") is not False:
                 errors.append("qualification admission is not scoped to qualification-only")
             if identities.get("expected_installed_release")!=identities.get("candidate_release_id") or identities.get("expected_installed_bin_sha256")!=identities.get("candidate_bin_sha256"):
@@ -209,7 +217,7 @@ def release_admission_errors(model,state,manifest,stage):
                 errors.append("qualification requires the single exact candidate install to be consumed")
             if auth.get("recovery_attempts_used",0)>=auth.get("recovery_install_limit",0):
                 errors.append("no exact recovery attempt remains for qualification")
-            if auth.get("status")!="CANDIDATE_INSTALLED_QUALIFICATION_PENDING":
+            if auth_status!="CANDIDATE_INSTALLED_QUALIFICATION_PENDING":
                 errors.append("candidate is not recorded as qualification-pending")
             scope=binding.get("scope",[]) if isinstance(binding,dict) else []
             if not any("28" in str(x) and "kernel" in str(x).lower() for x in scope):

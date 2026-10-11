@@ -69,5 +69,5 @@ with tempfile.TemporaryDirectory(prefix="cart2-compositor-owner-guest-repro-") a
     assert rebuilt.read_bytes() == package_path.read_bytes()
 
 assert manifest["offline_checks"]["matched_kernel0_performance"] == "NOT_RUN"
-assert manifest["offline_checks"]["successor_bound_live_admission"] == "NOT_PRESENT"
+assert manifest["offline_checks"]["successor_bound_live_admission"] == "OFFLINE_COMPILED_ONLY__LIVE_APPROVAL_NOT_PRESENT"
 print(f"PASS: current offline firmware/package/source bindings and deterministic Owner/Guest rebuild ({package_sha})")
