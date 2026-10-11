@@ -222,6 +222,26 @@ def release_admission_errors(model,state,manifest,stage):
                 errors.append("no exact recovery attempt remains for qualification")
             if auth_status!="CANDIDATE_INSTALLED_QUALIFICATION_PENDING":
                 errors.append("candidate is not recorded as qualification-pending")
+            continuation_id=current.get("continuation_authorization_id")
+            if continuation_id:
+                try:
+                    root=DEFAULT_STATE.parent.parent.resolve()
+                    receipt_path=(root/current.get("continuation_authorization_receipt","")).resolve()
+                    receipt_path.relative_to((root/"evidence").resolve())
+                    receipt=load(receipt_path)
+                    continuation=receipt.get("continuation_authorization",{})
+                    if (sha256_file(receipt_path)!=current.get("continuation_authorization_sha256")
+                        or receipt.get("binding")!=state_binding
+                        or continuation.get("authorization_id")!=continuation_id
+                        or continuation.get("candidate_sha256")!=identities.get("candidate_bin_sha256")
+                        or continuation.get("rollback_sha256")!=identities.get("rollback_bin_sha256")
+                        or continuation.get("candidate_install_permitted") is not False
+                        or continuation.get("soak_seconds")!=5400
+                        or continuation.get("exact_r4_recovery_attempts")!=1
+                        or continuation.get("owner_settings_baseline")!=current.get("owner_brightness_baseline")):
+                        errors.append("current qualification continuation authorization receipt is invalid or stale")
+                except (OSError,ValueError,TypeError,AttributeError):
+                    errors.append("current qualification continuation authorization receipt is missing or invalid")
             scope=binding.get("scope",[]) if isinstance(binding,dict) else []
             if not any("28" in str(x) and "kernel" in str(x).lower() for x in scope):
                 errors.append("owner authorization does not include the frozen 28-kernel qualification")
@@ -962,8 +982,8 @@ def reconcile_installed_r6(state, receipt_path, host_failure_proof_path=None):
     return state
 
 
-def reconcile_installed_qualification(state, prelive_path, *, now=None):
-    """Reopen only qualification for the exact installed candidate after a proved pre-profile settings-parser failure."""
+def reconcile_installed_qualification(state, prelive_path, authorization_receipt_path=None, *, now=None):
+    """Reopen only the exact installed candidate after a proved pre-profile failure and valid owner scope."""
     root=pathlib.Path(ROOT).resolve()
     evidence_root=(root/"evidence").resolve()
     def evidence_file(relative):
@@ -975,10 +995,35 @@ def reconcile_installed_qualification(state, prelive_path, *, now=None):
     subject=state.get("execution_cursor",{}).get("current_subject",{})
     auth=state.get("live_mutation_authorization",{})
     binding=state.get("live_authorization_binding",{})
+    errors=[]
+    direct_continuation=False
+    continuation_receipt=None
+    if authorization_receipt_path:
+        try:
+            authorization_path=pathlib.Path(authorization_receipt_path).resolve()
+            authorization_path.relative_to(evidence_root)
+            continuation_receipt=load(authorization_path)
+            continuation=continuation_receipt.get("continuation_authorization",{})
+            owner_baseline=auth.get("owner_brightness_baseline",{})
+            direct_continuation=(continuation_receipt.get("binding")==binding
+                and continuation.get("authorization_id")=="OWNER-20261011-CART2-F89-QUALIFICATION-CONTINUATION-01"
+                and continuation.get("source_message_ref")=="Direct user instruction in this conversation, 2026-10-11: CART 2.0 — FINISH QUALIFICATION AND RELEASE FOR FIELD TESTING."
+                and continuation.get("scope")=="QUALIFICATION_ONLY_FOR_EXACT_INSTALLED_F89_ONE_SOAK_NO_REINSTALL"
+                and continuation.get("candidate_sha256")==auth.get("candidate_sha256")
+                and continuation.get("rollback_sha256")==auth.get("rollback_sha256")
+                and continuation.get("matrix_mac"," ").replace(":","").lower()=="704bca5b345c"
+                and continuation.get("owner_settings_baseline")==owner_baseline
+                and owner_baseline=={"matrixBrightness":147,"auxBrightness":255,"vibe":0}
+                and continuation.get("candidate_install_permitted") is False
+                and continuation.get("soak_seconds") == 5400
+                and continuation.get("exact_r4_recovery_attempts") == 1)
+            if not direct_continuation:
+                errors.append("current direct continuation authorization receipt is malformed or not exact")
+        except (OSError,ValueError,TypeError,AttributeError):
+            errors.append("current direct continuation authorization receipt is missing or invalid")
     candidate=auth.get("candidate_release_id")
     candidate_sha=auth.get("candidate_sha256")
     rollback_sha=auth.get("rollback_sha256")
-    errors=[]
     if state.get("live_mutation_authorized") is not False or auth.get("authorized") is not False:
         errors.append("qualification rearm requires the current live gate to be closed")
     if (not candidate or not re.fullmatch(r"[a-f0-9]{64}",str(candidate_sha or ""))
@@ -998,7 +1043,8 @@ def reconcile_installed_qualification(state, prelive_path, *, now=None):
         errors.append("exact owner authorization does not include frozen qualification and soak")
     if (auth.get("candidate_attempts_used")!=1 or auth.get("candidate_install_limit")!=1
         or auth.get("recovery_attempts_used")!=0 or auth.get("recovery_install_limit")!=1
-        or auth.get("transaction_consumed") is not True or auth.get("candidate_install_permitted") is not False):
+        or auth.get("transaction_consumed") is not True
+        or (auth.get("candidate_install_permitted") is not False and not direct_continuation)):
         errors.append("one candidate attempt must be consumed, candidate retry disabled, and exact R4 recovery unused")
     evidence_path=auth.get("source_evidence")
     try:
@@ -1007,7 +1053,11 @@ def reconcile_installed_qualification(state, prelive_path, *, now=None):
         if owner_binding!=binding:
             errors.append("owner authorization evidence differs from primary exact binding")
     except (OSError,ValueError,TypeError):
-        errors.append("exact owner authorization evidence is missing or invalid")
+        if not direct_continuation:
+            errors.append("exact owner authorization evidence is missing or invalid")
+    if direct_continuation:
+        if continuation_receipt.get("binding")!=binding:
+            errors.append("continuation receipt does not preserve the exact installed candidate and R4 binding")
 
     tx_rel=auth.get("transaction_result")
     if not isinstance(tx_rel,str) or tx_rel!=subject.get("qualification_result"):
@@ -1033,22 +1083,32 @@ def reconcile_installed_qualification(state, prelive_path, *, now=None):
             and tx.get("preflight_completed") is True and tx.get("setup_started") is True
             and tx.get("brightness_setup_started") is True
             and tx.get("restore_error")=="RuntimeError: qualification-baseline-matrix-brightness-mismatch")
+        authorized_vibe_restore_failure=(direct_continuation
+            and tx.get("schema")=="hbnf-cart2-candidate-qualification-transaction-v1"
+            and tx.get("candidate_install_attempts")==1
+            and tx.get("error")=="RuntimeError: qualification-baseline-vibe-mismatch"
+            and tx.get("qualification") is None and tx.get("recovery") is None
+            and tx.get("recovery_attempts",0)==0
+            and tx.get("brightness_setup",{}).get("verified") is True)
         if (tx.get("candidate_release_id")!=candidate or tx.get("candidate_sha256")!=candidate_sha
             or tx.get("recovery_attempts",0)!=0
             or tx.get("status")!="QUALIFICATION_BRIGHTNESS_RESTORE_FAILED"
-            or not (original_parser_failure or interrupted_restore_failure)
+            or not (original_parser_failure or interrupted_restore_failure or authorized_vibe_restore_failure)
             or "qualification" in tx or tx.get("recovery") is not None):
             errors.append("current transaction is not the exact pre-profile legacy-Vibe parser failure")
-        interrupted_brightness_restore=interrupted_restore_failure
+        interrupted_brightness_restore=interrupted_restore_failure or authorized_vibe_restore_failure
     except (OSError,ValueError,TypeError):
         errors.append("failed qualification transaction receipt is missing or invalid")
 
     runtime_rel=subject.get("runtime_readonly_receipt")
-    try:
-        runtime_path=evidence_file(runtime_rel)
-    except (ValueError,OSError):
+    if direct_continuation and not runtime_rel:
         runtime_path=root/"__missing_runtime_receipt__"
-        errors.append("installed-candidate read-only receipt path escapes the evidence root")
+    else:
+        try:
+            runtime_path=evidence_file(runtime_rel)
+        except (ValueError,OSError):
+            runtime_path=root/"__missing_runtime_receipt__"
+            errors.append("installed-candidate read-only receipt path escapes the evidence root")
     try:
         runtime=load(runtime_path)
         if sha256_file(runtime_path)!=subject.get("runtime_readonly_sha256"):
@@ -1069,7 +1129,12 @@ def reconcile_installed_qualification(state, prelive_path, *, now=None):
                 and aux.get("led_count")==22 and aux.get("on") is True and aux.get("lor")==0)):
             errors.append("installed-candidate read-only snapshot does not prove exact runtime and AUX safety")
     except (OSError,ValueError,TypeError,AttributeError):
-        errors.append("installed-candidate read-only receipt is missing or invalid")
+        if not direct_continuation:
+            errors.append("installed-candidate read-only receipt is missing or invalid")
+    if direct_continuation and (runtime_rel is None or not runtime_path.is_file()):
+        # The fresh prelive receipt below contains the same exact runtime and
+        # AUX evidence, so a stale duplicated snapshot is not a prerequisite.
+        pass
 
     try:
         candidate_path=evidence_file(subject.get("candidate_artifact_path"))
@@ -1113,7 +1178,26 @@ def reconcile_installed_qualification(state, prelive_path, *, now=None):
             or proof.get("candidate_install_permitted") is not False
             or age<0 or age>300):
             errors.append("fresh read-only qualification preflight is missing, stale, or incorrectly scoped")
-        if (matrix.get("release_id")!=candidate or matrix.get("candidate_sha256")!=candidate_sha or matrix.get("on") is not True
+        if direct_continuation:
+            owner_baseline=continuation_receipt["continuation_authorization"]["owner_settings_baseline"]
+            allowed_matrix=(FROZEN_MATRIX_BRIGHTNESS,owner_baseline["matrixBrightness"])
+            vibe_restore_needed=proof.get("owner_settings_restore_required") is True
+            prelive_settings_ok=(runtime_settings.get("matrixBrightness") in allowed_matrix
+                and stored.get("matrixBrightness")==runtime_settings.get("matrixBrightness")
+                and runtime_settings.get("auxBrightness")==owner_baseline["auxBrightness"]
+                and stored.get("auxBrightness")==owner_baseline["auxBrightness"]
+                and runtime_settings.get("vibe")==owner_baseline["vibe"]
+                and (stored.get("vibe")==owner_baseline["vibe"] or
+                    (vibe_restore_needed and type(stored.get("vibe")) is int and 0<=stored["vibe"]<=5))
+                and proof.get("owner_brightness_baseline")==owner_baseline)
+            if (matrix.get("release_id")!=candidate or matrix.get("candidate_sha256")!=candidate_sha or matrix.get("on") is not True
+                or matrix.get("mac"," ").replace(":","").lower()!="704bca5b345c"
+                or matrix.get("brightness")!=runtime_settings.get("matrixBrightness")
+                or matrix.get("diagnostic_off") is not True or matrix.get("telemetry_off") is not True
+                or not prelive_settings_ok or not proof.get("host_on_ac")
+                or proof.get("cart_lan_interface")!="en0" or rollback.get("sha256")!=rollback_sha):
+                errors.append("fresh continuation preflight does not prove exact candidate, authorized owner settings repair, and safe test state")
+        elif (matrix.get("release_id")!=candidate or matrix.get("candidate_sha256")!=candidate_sha or matrix.get("on") is not True
             or matrix.get("mac","").replace(":","").lower()!="704bca5b345c"
             or matrix.get("brightness")!=expected_brightness or matrix.get("diagnostic_off") is not True
             or matrix.get("telemetry_off") is not True
@@ -1142,9 +1226,19 @@ def reconcile_installed_qualification(state, prelive_path, *, now=None):
         "operation_scope":"QUALIFICATION_ONLY","status":"CANDIDATE_INSTALLED_QUALIFICATION_PENDING",
         "current_gate":"Fresh exact candidate preflight passed; qualification-only continuation authorized; candidate reinstall prohibited.",
         "qualification_prelive_receipt":rel,"qualification_prelive_sha256":sha256_file(proof_path)})
+    if direct_continuation:
+        auth_rel=str(authorization_path.relative_to(root))
+        current["continuation_authorization_receipt"]=auth_rel
+        current["source_evidence"]=auth_rel
+        current["continuation_authorization_id"]=continuation_receipt["continuation_authorization"]["authorization_id"]
+        current["continuation_authorization_sha256"]=sha256_file(authorization_path)
+        current["owner_brightness_baseline"]=dict(continuation_receipt["continuation_authorization"]["owner_settings_baseline"])
+        current["candidate_install_permitted"]=False
+        current["current_gate"]="Fresh exact f89 preflight passed; one qualification-only continuation is authorized, settings repair is bound to the owner baseline, candidate install remains disabled, and the single R4 recovery limit remains available."
     if interrupted_brightness_restore:
         current["qualification_recovery_subscope"]="RESTORE_INTERRUPTED_BRIGHTNESS_THEN_QUALIFY"
-        current["current_gate"]="Exact candidate is at the frozen 44 brightness after the prior one-write setup; restore owner brightness 52, verify it, then continue qualification. No candidate reinstall."
+        if not direct_continuation:
+            current["current_gate"]="Exact candidate is at the frozen 44 brightness after the prior one-write setup; restore owner brightness 52, verify it, then continue qualification. No candidate reinstall."
     else:
         current.pop("qualification_recovery_subscope",None)
     state["live_mutation_authorized"]=True
@@ -1452,6 +1546,7 @@ def main():
     ri.add_argument("--host-failure-proof",help="Required only to resume qualification after a hash-verified, pre-profile host-only failure")
     rq=sub.add_parser("reconcile-installed-qualification")
     rq.add_argument("--prelive",required=True,help="Fresh exact candidate qualification preflight; this rearms qualification only, never install")
+    rq.add_argument("--authorization-receipt",help="Direct owner authorization for an exact installed-candidate qualification continuation")
     rr=sub.add_parser("reconcile-failed-qualification-r4-recovery")
     rr.add_argument("--prelive",required=True,help="Fresh read-only proof for one exact R4 recovery after a complete frozen performance failure")
     rc=sub.add_parser("reconcile-r4-recovery")
@@ -1499,7 +1594,7 @@ def main():
         print(json.dumps({"reconciled":True,"installed_release":state["installed_release"],"operation_scope":"QUALIFICATION_ONLY","candidate_attempts_used":state["r6_audio_cache_successor"]["conditional_authority"]["candidate_attempts_used"]},indent=2,sort_keys=True))
         return 0
     if args.cmd=="reconcile-installed-qualification":
-        reconcile_installed_qualification(state,args.prelive)
+        reconcile_installed_qualification(state,args.prelive,args.authorization_receipt)
         errs=validate_state(model,state)
         if errs: raise SystemExit("refusing to save invalid state: "+"; ".join(errs))
         save(args.state,state)

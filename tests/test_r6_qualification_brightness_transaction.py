@@ -31,7 +31,8 @@ def exact_identity(_request_counter=None):
 class FakePort:
     def __init__(self, *, admitted=True, baseline=BASELINE, setup_error=None,
                  worker_error=None, restore_error=None, setup_readback=None, restore_readback=None,
-                 qualification_recovery_subscope=None):
+                 qualification_recovery_subscope=None, owner_brightness_baseline=None,
+                 persisted_baseline=None):
         self.admitted = admitted
         self.baseline = dict(baseline)
         self.setup_error = setup_error
@@ -40,6 +41,8 @@ class FakePort:
         self.setup_readback = setup_readback
         self.restore_readback = restore_readback
         self.qualification_recovery_subscope = qualification_recovery_subscope
+        self.owner_brightness_baseline = dict(owner_brightness_baseline or {})
+        self.persisted_baseline = dict(persisted_baseline or baseline)
         self.events = []
         self.device_requests = 0
         self.recovery_attempts = 0
@@ -63,7 +66,7 @@ class FakePort:
             raise RuntimeError("qualification-baseline-runtime-brightness-mismatch")
         return {"pass": True, "release_id": module.RELEASE,
             "qualification_recovery_subscope": self.qualification_recovery_subscope,
-            "brightness_baseline": {"runtime": dict(self.baseline), "persisted": dict(self.baseline)}}
+            "brightness_baseline": {"runtime": dict(self.baseline), "persisted": dict(self.persisted_baseline)}}
 
     def apply_qualification_brightness(self, baseline):
         self.events.append(("set", dict(baseline)))
@@ -71,6 +74,7 @@ class FakePort:
         if self.setup_error:
             raise RuntimeError(self.setup_error)
         self.baseline["matrixBrightness"] = 44
+        self.persisted_baseline["matrixBrightness"] = 44
         if self.setup_readback:
             return self.setup_readback
         return {"verified": True, "target_matrix_brightness": 44}
@@ -89,7 +93,10 @@ class FakePort:
         if self.restore_readback is not None:
             return self.restore_readback
         self.baseline = dict(baseline)
-        return {"verified": True, "target_matrix_brightness": 52, "readback": pair(52, vibe=baseline.get("vibe",3))}
+        self.persisted_baseline = dict(baseline)
+        return {"verified": True, "target_matrix_brightness": baseline["matrixBrightness"],
+            "readback": pair(baseline["matrixBrightness"], aux=baseline.get("auxBrightness",245),
+                vibe=baseline.get("vibe",3))}
 
     def close(self, result):
         self.events.append(("close", result["status"]))
@@ -784,6 +791,39 @@ def test_identity_mismatch_immediately_before_setup_and_restore_means_zero_posts
         module.post_json = original_post
 
 
+def test_authorized_persisted_vibe_mismatch_is_repaired_before_soak_and_owner_settings_restored():
+    owner={"matrixBrightness":147,"auxBrightness":255,"vibe":0}
+    runtime={"matrixBrightness":44,"auxBrightness":255,"vibe":0}
+    persisted={"matrixBrightness":44,"auxBrightness":255,"vibe":1}
+    port=FakePort(baseline=runtime,owner_brightness_baseline=owner,persisted_baseline=persisted,
+        qualification_recovery_subscope="RESTORE_INTERRUPTED_BRIGHTNESS_THEN_QUALIFY")
+    result=run(port)
+    assert result["status"]=="QUALIFIED_OBJECTIVE_GATES_PASS"
+    names=[event[0] for event in port.events]
+    assert names.index("restore") < names.index("set") < names.index("worker")
+    assert names.count("restore")==2
+    assert port.events[names.index("restore")]==("restore",owner)
+    assert port.events[names.index("restore",names.index("worker"))]==("restore",owner)
+    assert result["owner_settings_repair"]["verified"] is True
+    assert result["brightness_restore"]["verified"] is True
+    assert port.baseline==owner and port.persisted_baseline==owner
+
+
+def test_preflight_accepts_only_owner_bound_runtime_vibe_repair():
+    runtime={"matrixBrightness":44,"auxBrightness":255,"vibe":0}
+    persisted={"matrixBrightness":44,"auxBrightness":255,"vibe":1}
+    state={"on":True,"HBNF":runtime}
+    accepted=module.validate_candidate_brightness_baseline(
+        state,persisted,expected_matrix_brightness=44,authorized_runtime_vibe=0)
+    assert accepted["vibe_persistence"]=="authorized_restore_required"
+    try:
+        module.validate_candidate_brightness_baseline(state,persisted,expected_matrix_brightness=44)
+    except RuntimeError as exc:
+        assert str(exc)=="qualification-baseline-vibe-mismatch"
+    else:
+        raise AssertionError("unbound persisted Vibe mismatch must remain fail-closed")
+
+
 def main():
     for test in (
         test_post_timeout_is_resolved_by_readback_without_retry,
@@ -805,6 +845,8 @@ def main():
         test_identity_mismatch_immediately_before_setup_and_restore_means_zero_posts,
         test_exact_r4_owner_settings_restore_is_one_matrix_brightness_write,
         test_full_owner_settings_restore_repairs_runtime_persisted_vibe_mismatch_once,
+        test_authorized_persisted_vibe_mismatch_is_repaired_before_soak_and_owner_settings_restored,
+        test_preflight_accepts_only_owner_bound_runtime_vibe_repair,
     ):
         test()
     print("PASS: qualification restores the exact candidate owner settings in one verified write and preserves fail-closed checks")

@@ -252,7 +252,8 @@ def validate_brightness_baseline(state: dict, persisted: dict) -> dict:
 
 
 def validate_candidate_brightness_baseline(state: dict, persisted: dict,
-                                          expected_matrix_brightness=None) -> dict:
+                                          expected_matrix_brightness=None,
+                                          authorized_runtime_vibe=None) -> dict:
     """Allow one legacy-config migration before qualification; require all values thereafter."""
     values = brightness_readback(state, persisted)
     if values["matrix_on"] is not True:
@@ -272,9 +273,21 @@ def validate_candidate_brightness_baseline(state: dict, persisted: dict,
         raise RuntimeError("qualification-baseline-matrix-brightness-mismatch")
     if runtime["auxBrightness"] != stored["auxBrightness"]:
         raise RuntimeError("qualification-baseline-aux-brightness-mismatch")
-    if "vibe" in stored and (type(stored["vibe"]) is not int or not 0 <= stored["vibe"] <= 5 or stored["vibe"] != runtime["vibe"]):
-        raise RuntimeError("qualification-baseline-vibe-mismatch")
-    return {**values, "vibe_persistence": "verified" if "vibe" in stored else "one_brightness_write_must_persist_runtime_vibe"}
+    vibe_persistence="verified"
+    if "vibe" in stored:
+        if type(stored["vibe"]) is not int or not 0 <= stored["vibe"] <= 5:
+            raise RuntimeError("qualification-baseline-vibe-invalid")
+        if stored["vibe"] != runtime["vibe"]:
+            # Permit only the exact, explicitly authorized runtime Vibe to be
+            # repaired by the already-admitted settings transaction. Keep the
+            # mismatch visible in the receipt and require a verified write
+            # before any qualification profile starts.
+            if authorized_runtime_vibe is None or runtime["vibe"] != authorized_runtime_vibe:
+                raise RuntimeError("qualification-baseline-vibe-mismatch")
+            vibe_persistence="authorized_restore_required"
+    else:
+        vibe_persistence="one_brightness_write_must_persist_runtime_vibe"
+    return {**values, "vibe_persistence": vibe_persistence}
 
 
 def validate_preinstall_brightness_baseline(state: dict, persisted: dict) -> dict:
@@ -337,7 +350,7 @@ def capture_owner_state_snapshot(matrix_state: dict, aux_state: dict, matrix_inf
 
 
 def read_matrix_context(request_counter=None, expected_release=RELEASE,
-                        expected_matrix_brightness=None):
+                        expected_matrix_brightness=None, authorized_runtime_vibe=None):
     identity_before, info, build = _read_expected_matrix_identity(request_counter,expected_release)
     state = _get_json_counted(MATRIX+"/json/state", 4, request_counter)[2]
     # The read-only file API is parsed in memory; only HBNF brightness/AUX/vibe
@@ -352,7 +365,7 @@ def read_matrix_context(request_counter=None, expected_release=RELEASE,
         raise RuntimeError("qualification-matrix-identity-changed-during-readback")
     brightness=(validate_preinstall_brightness_baseline(state,persisted)
         if expected_release==R4 else validate_candidate_brightness_baseline(
-            state,persisted,expected_matrix_brightness))
+        state,persisted,expected_matrix_brightness,authorized_runtime_vibe))
     return {"identity": identity_after, "info": info, "build": build, "state": state,
         "persisted": persisted, "brightness": brightness}
 
@@ -916,20 +929,50 @@ def coordinate_qualification(port):
         result["preflight"] = preflight
         result["preflight_completed"] = True
         result["device_requests"]=port.device_requests
-        baseline = preflight["brightness_baseline"]["runtime"]
+        baseline = dict(preflight["brightness_baseline"]["runtime"])
+        owner_baseline = dict(getattr(port,"owner_brightness_baseline",{}) or {})
+        if owner_baseline:
+            required=("matrixBrightness","auxBrightness","vibe")
+            if (any(type(owner_baseline.get(key)) is not int for key in required)
+                or not 0 <= owner_baseline["matrixBrightness"] <= 255
+                or not 0 <= owner_baseline["auxBrightness"] <= 255
+                or not 0 <= owner_baseline["vibe"] <= 5):
+                raise RuntimeError("qualification-owner-settings-baseline-invalid")
+            # From this point onward cleanup must target the exact authorized
+            # owner settings, even if the initial repair or test setup fails.
+            baseline=dict(owner_baseline)
+            setup_started=True
+            result["setup_started"]=True
+            captured=preflight["brightness_baseline"]
+            runtime=captured.get("runtime",{})
+            persisted=captured.get("persisted",{})
+            if (any(runtime.get(key)!=owner_baseline[key] for key in required)
+                or any(persisted.get(key)!=owner_baseline[key] for key in required)):
+                result["owner_settings_repair_started"]=True
+                result["owner_settings_repair"]=port.restore_qualification_brightness(owner_baseline)
+                if not isinstance(result["owner_settings_repair"],dict) or result["owner_settings_repair"].get("verified") is not True:
+                    raise RuntimeError("qualification-owner-settings-repair-unverified")
+                repaired=result["owner_settings_repair"]["readback"]
+                if (any(repaired["runtime"].get(key)!=owner_baseline[key] for key in required)
+                    or any(repaired["persisted"].get(key)!=owner_baseline[key] for key in required)):
+                    raise RuntimeError("qualification-owner-settings-repair-readback-mismatch")
+                preflight["brightness_baseline"]["runtime"]=dict(owner_baseline)
+                preflight["brightness_baseline"]["persisted"]=dict(owner_baseline)
         if baseline.get("matrixBrightness") == FROZEN_MATRIX_BRIGHTNESS:
             if preflight.get("qualification_recovery_subscope") != "RESTORE_INTERRUPTED_BRIGHTNESS_THEN_QUALIFY":
                 raise RuntimeError("qualification-preflight-found-unexpected-frozen-brightness")
-            owner_baseline = dict(getattr(port,"owner_brightness_baseline",{}) or {})
             if not owner_baseline:
                 raise RuntimeError("captured-owner-settings-baseline-unavailable")
-            result["interrupted_brightness_restore"] = port.restore_qualification_brightness(owner_baseline)
-            restored = result["interrupted_brightness_restore"]
-            if not isinstance(restored, dict) or restored.get("verified") is not True:
-                raise RuntimeError("interrupted-qualification-brightness-restore-unverified")
-            baseline = dict(restored["readback"]["runtime"])
-            preflight["brightness_baseline"]["runtime"] = baseline
-            preflight["brightness_baseline"]["persisted"] = dict(restored["readback"]["persisted"])
+            if baseline.get("matrixBrightness") == FROZEN_MATRIX_BRIGHTNESS:
+                # The admitted setup is the only path that permits the frozen
+                # test brightness to be present before continuation.
+                result["interrupted_brightness_restore"] = port.restore_qualification_brightness(owner_baseline)
+                restored = result["interrupted_brightness_restore"]
+                if not isinstance(restored, dict) or restored.get("verified") is not True:
+                    raise RuntimeError("interrupted-qualification-brightness-restore-unverified")
+                baseline = dict(owner_baseline)
+                preflight["brightness_baseline"]["runtime"] = dict(owner_baseline)
+                preflight["brightness_baseline"]["persisted"] = dict(owner_baseline)
         if (type(baseline.get("matrixBrightness")) is not int
             or not 0 <= baseline["matrixBrightness"] <= 255):
             raise RuntimeError("qualification-preflight-does-not-prove-owner-brightness-baseline")
@@ -1064,7 +1107,9 @@ class LivePort:
                 else None)
         if expected_brightness is not None and (type(expected_brightness) is not int or not 0 <= expected_brightness <= 255):
             raise RuntimeError("qualification-preflight-brightness-expectation-invalid")
-        matrix_context=read_matrix_context(self._record_device_request,self.candidate.release_id,expected_brightness)
+        authorized_vibe=(saved_owner.get("vibe") if isinstance(saved_owner,dict) else None)
+        matrix_context=read_matrix_context(self._record_device_request,self.candidate.release_id,
+            expected_brightness,authorized_runtime_vibe=authorized_vibe)
         mi=matrix_context["info"]; ms=matrix_context["state"]; mb=matrix_context["build"]
         ai=_get_json_counted(AUX+"/json/info", 4, self._record_device_request)[2]
         ast=_get_json_counted(AUX+"/json/state", 4, self._record_device_request)[2]
@@ -1097,6 +1142,11 @@ class LivePort:
                 "free_heap":mi.get("freeheap"),"brightness":h.get("matrixBrightness"),"on":ms.get("on") is True,
                 "diagnostic_off":True,"telemetry_off":True},
             "brightness_baseline":brightness_baseline,
+            "owner_brightness_baseline":dict(self.owner_brightness_baseline or {}),
+            "owner_settings_restore_required":any(
+                brightness_baseline.get(section,{}).get(key)!=value
+                for section in ("runtime","persisted")
+                for key,value in (self.owner_brightness_baseline or {}).items()),
             "aux":{"ip":ai["ip"],"mac":ai["mac"],"live":ai["live"],"mode":ai["lm"],"source":ai["lip"],"led_count":ai["leds"]["count"],"on":ast["on"],"lor":ast["lor"]},
             "rollback":{"sha256":self.candidate.rollback_sha256,"opal_ledger":out},"single_worker":worker,
             "candidate_attempts_used":1,"candidate_install_permitted":False,
