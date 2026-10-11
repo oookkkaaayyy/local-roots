@@ -51,7 +51,7 @@
   },
   "limits": [
     "The original hash-pinned patch regression intentionally rejects modified base files; the new combined-candidate regression checks the exact patch hash and current candidate hashes instead.",
-    "No full firmware rebuild or fresh linked image was produced for the combined candidate.",
+    "No fresh full firmware rebuild, installable firmware BIN, or complete partition/headroom proof was produced; the isolated link reused preserved R6 object/library inputs.",
     "Host pixel equivalence does not establish Xtensa cycle savings or explain the full R6 performance failure.",
     "No firmware BIN, partition-headroom proof, device operation, live qualification, visual readability acceptance, or release acceptance is claimed.",
     "Exact Foundation R4 remains installed; live mutation authority remains closed."
