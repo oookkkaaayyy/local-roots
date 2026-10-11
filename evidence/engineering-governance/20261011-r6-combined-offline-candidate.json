@@ -1,0 +1,34 @@
+{
+  "schema": "hbnf-offline-candidate-evidence-v1",
+  "candidate": "codex/cart2-p2-offline-candidate-20261011",
+  "base_integration_commit": "2a85e4d341057de870ed1f36ee250f14bebd31d7",
+  "status": "HOST_GOLDEN_AND_PINNED_XTENSA_TRANSLATION_UNIT_PASS__TARGET_PERFORMANCE_UNMEASURED",
+  "changes": {
+    "vibe_composition_hoist_patch_sha256": "f26af5644dd39cede71d873d1023057d0934b563b81016b3a54f280d72747e0b",
+    "candidate_runtime_sha256": "290e979980af3ebb69b6a9c7c5e0147680055ce005c5c51eb3ece8965e12f1ca",
+    "candidate_usermod_sha256": "950670efbe2e4aa31c364aeeedc308726975a13e5de4a3746f6902a6c8d56f93",
+    "compact_text_owner_policy": "All oversized text may use native WLED slot 0 only when every word fits the 32-pixel canvas; otherwise existing behavior remains.",
+    "performance_change": "Compute frame-invariant compositor factors once in beginFrame and reuse them for pixel composition."
+  },
+  "validation": {
+    "combined_source_bound_host_test": "python3 tests/test_hbnf_r6_combined_candidate.py",
+    "combined_source_bound_host_test_result": "PASS; verifies both candidate source hashes, exact compositor patch hash, frame-start preparation, cached renderer call site, compact-font resolver presence, and the bit-exact golden over five Vibes, 64 input states, eight phases, and all 512 coordinates.",
+    "text_layout_suite": "python3 -m unittest -v tests.test_hbnf_text_moments_offline; 15 passed",
+    "compact_font_smoke": "c++ -std=c++17 -Wall -Wextra -Werror tests/native_text_compact_font_smoke.cpp -o /tmp/native_text_compact_font_smoke && /tmp/native_text_compact_font_smoke; PASS",
+    "governance": "python3 scripts/hbnf_control.py check-change --change evidence/engineering-governance/20261011-oversized-text-compact-font.json; valid",
+    "target_compiler": {
+      "method": "Replayed the preserved R6 Xtensa translation-unit compile command against the isolated combined-candidate source file; output redirected to /tmp.",
+      "result": "PASS",
+      "object_bytes": 3453080,
+      "object_sha256": "a20fe5cd3dae75ab7836cf8ae7b6d2068a3e254cb282e1e428645168e9c30d3b",
+      "source_build_log": "/tmp/cart2-opal-local-20261009/evidence/cart2-r6-audio-cache-20261010/TARGET_BUILD.log"
+    }
+  },
+  "limits": [
+    "The original hash-pinned patch regression intentionally rejects modified base files; the new combined-candidate regression checks the exact patch hash and current candidate hashes instead.",
+    "No full firmware rebuild or fresh linked image was produced for the combined candidate.",
+    "Host pixel equivalence does not establish Xtensa cycle savings or explain the full R6 performance failure.",
+    "No firmware BIN, partition-headroom proof, device operation, live qualification, visual readability acceptance, or release acceptance is claimed.",
+    "Exact Foundation R4 remains installed; live mutation authority remains closed."
+  ]
+}

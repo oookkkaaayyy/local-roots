@@ -124,46 +124,70 @@ inline VibeAxes vibeResponse(Vibe vibe,const AudioFeatures& f) {
   return out;
 }
 
+// Values shared by every pixel in a frame are prepared once before the
+// renderer enters ANIMartRIX's per-pixel callback. Keep the original integer
+// operation order so this is a computation-hoist, not a visual change.
+struct VibeCompositionFactors {
+  uint8_t grooveLift=188;
+  uint8_t heavyPressure=168,heavyAccent=0;
+  uint8_t psychedelicMix=24;
+  uint8_t cosmicShade=174,cosmicTint=0;
+  uint8_t chillShade=184,chillTint=0;
+};
+
+inline VibeCompositionFactors prepareVibeComposition(const CanonicalFrame& f) {
+  const VibeAxes& a=f.vibeAxes;
+  VibeCompositionFactors out{};
+  const uint8_t groovePulse=f.audio.midPulse>f.audio.bassPulse?f.audio.midPulse:f.audio.bassPulse;
+  out.grooveLift=(uint8_t)(188u+(uint16_t)a.flow*45u/255u+(uint16_t)groovePulse*22u/255u);
+  out.heavyPressure=(uint8_t)(168u+(uint16_t)a.structure*55u/255u+(uint16_t)f.audio.bassPulse*32u/255u);
+  out.heavyAccent=(uint8_t)(a.density/6u);
+  out.psychedelicMix=(uint8_t)(24u+(uint16_t)a.paletteMotion/4u+(uint16_t)f.audio.highEnergy/5u);
+  out.cosmicShade=(uint8_t)(174u+(uint16_t)a.depth*42u/255u+(uint16_t)f.audio.slowEnergy*23u/255u);
+  out.cosmicTint=(uint8_t)(a.negativeSpace/7u);
+  out.chillShade=(uint8_t)(184u+(uint16_t)a.depth*45u/255u+(uint16_t)f.audio.slowEnergy*18u/255u);
+  out.chillTint=(uint8_t)(a.paletteMotion/8u);
+  return out;
+}
+
 // Reversible palette/composition defaults over the existing donor frame.
 // This bounded integer pass keeps the native renderer and continuous motion.
-inline Rgb8 composeVibeColor(Rgb8 c,const CanonicalFrame& f,uint16_t x,uint16_t y) {
+inline Rgb8 composeVibeColor(Rgb8 c,const CanonicalFrame& f,uint16_t x,uint16_t y,
+                            const VibeCompositionFactors& factors) {
   if(!(c.r|c.g|c.b))return c;
-  const VibeAxes& a=f.vibeAxes;
   const uint8_t t=(uint8_t)(f.phaseQ16>>8);
   switch(f.vibe){
     case VIBE_GROOVE: {
       const uint8_t pulse=f.audio.midPulse>f.audio.bassPulse?f.audio.midPulse:f.audio.bassPulse;
       const uint8_t weave=(uint8_t)((x*11u+y*7u+t/3u)&63u);
       c=blend(c,Rgb8(c.g,c.b,c.r),(uint8_t)(30u+weave/3u+pulse/5u));
-      const uint8_t lift=(uint8_t)(188u+(uint16_t)a.flow*45u/255u+(uint16_t)pulse*22u/255u);
-      return scaleRgb(c,lift);
+      return scaleRgb(c,factors.grooveLift);
     }
     case VIBE_HEAVY: {
-      const uint8_t pulse=f.audio.bassPulse;
-      const uint8_t pressure=(uint8_t)(168u+(uint16_t)a.structure*55u/255u+(uint16_t)pulse*32u/255u);
-      c=scaleRgb(c,pressure);
-      if(((x+y+(t>>4))&7u)==0)c=blend(c,Rgb8(255,74,26),(uint8_t)(a.density/6u));
+      c=scaleRgb(c,factors.heavyPressure);
+      if(((x+y+(t>>4))&7u)==0)c=blend(c,Rgb8(255,74,26),factors.heavyAccent);
       return c;
     }
     case VIBE_PSYCHEDELIC: {
       const uint8_t wave=(uint8_t)((x*17u+y*29u+t+(uint16_t)f.audio.transient/2u)&255u);
-      const uint8_t mix=(uint8_t)(24u+(uint16_t)a.paletteMotion/4u+(uint16_t)f.audio.highEnergy/5u);
       const Rgb8 shifted=(wave&128u)?Rgb8(c.g,c.b,c.r):Rgb8(c.b,c.r,c.g);
-      return blend(c,shifted,mix);
+      return blend(c,shifted,factors.psychedelicMix);
     }
     case VIBE_COSMIC: {
       const uint8_t drift=(uint8_t)((t/24u)+(uint16_t)f.audio.slowEnergy/5u+(x*3u+y*5u)/4u);
       if(drift&32u)c=blend(c,Rgb8(c.g,c.r,c.b),32u);
-      const uint8_t shade=(uint8_t)(174u+(uint16_t)a.depth*42u/255u+(uint16_t)f.audio.slowEnergy*23u/255u);
-      c=scaleRgb(c,shade);
-      return blend(c,Rgb8(44,72,190),(uint8_t)(a.negativeSpace/7u));
+      c=scaleRgb(c,factors.cosmicShade);
+      return blend(c,Rgb8(44,72,190),factors.cosmicTint);
     }
     case VIBE_CHILL:
     default: {
-      const uint8_t shade=(uint8_t)(184u+(uint16_t)a.depth*45u/255u+(uint16_t)f.audio.slowEnergy*18u/255u);
-      return scaleRgb(blend(c,Rgb8(c.g,c.b,c.r),a.paletteMotion/8u),shade);
+      return scaleRgb(blend(c,Rgb8(c.g,c.b,c.r),factors.chillTint),factors.chillShade);
     }
   }
+}
+
+inline Rgb8 composeVibeColor(Rgb8 c,const CanonicalFrame& f,uint16_t x,uint16_t y) {
+  return composeVibeColor(c,f,x,y,prepareVibeComposition(f));
 }
 
 class AutoVibeSelector {

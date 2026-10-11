@@ -775,6 +775,7 @@ class FoundationAnimartrix : public ANIMartRIX {
 
   void beginFrame(const CanonicalFrame& f,uint32_t now) {
     frame_=&f;
+    vibeComposition_=prepareVibeComposition(f);
     outputScale_=hbnf_brightness::outputScale(f.controls.matrixBrightness);
     const uint16_t responseQ8=audioGainQ8(f.controls.audioResponse);
     const uint32_t audioStart=hbnfCycles();
@@ -859,6 +860,7 @@ class FoundationAnimartrix : public ANIMartRIX {
   }
 
   hbnf::AnimartrixAudioBridge audio_{};
+  VibeCompositionFactors vibeComposition_{};
   const CanonicalFrame* frame_=nullptr;
   uint8_t lastKernel_=255;
   uint16_t lastWidth_=0,lastHeight_=0;
@@ -878,7 +880,7 @@ class FoundationAnimartrix : public ANIMartRIX {
     const Rgb8 colored=hbnfPalette.mode==PALETTE_LEGACY?hueRotate(Rgb8(r,g,b),hue):hbnfPaletteColor(r,g,b,hue);
     const uint32_t colorCycles=hbnfCycles()-colorStart; hbnfPerfWorking.color+=colorCycles;
     if(hbnfPerfWorking.inKernel)hbnfPerfWorking.colorInKernel+=colorCycles;
-    const Rgb8 rendered=composeVibeColor(colored,*frame_,tx,ty);
+    const Rgb8 rendered=composeVibeColor(colored,*frame_,tx,ty,vibeComposition_);
     if(x>=0&&x<32&&y>=0&&y<16&&tx<32&&ty<16) canonicalMatrixPixels[ty*32u+tx]=rendered;
     if(deferOutput_) return;
     const Rgb8 matrix=hbnfScaleMatrixOutput(rendered,outputScale_);
