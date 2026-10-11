@@ -329,6 +329,120 @@
         "bytes": 1497984,
         "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
       },
+      "device_requests": 13,
+      "preflight": {
+        "brightness_baseline": {
+          "runtime": {
+            "auxBrightness": 245,
+            "matrixBrightness": 52,
+            "vibe": 0
+          }
+        },
+        "pass": true
+      },
+      "qualification": {
+        "abort": {
+          "run_error": "RuntimeError: foundation-frame-tail-quantile-saturated-at-127.875ms"
+        },
+        "passed": false
+      },
+      "recovery": {
+        "runtime": {
+          "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+        },
+        "status": "R4_READBACK_VERIFIED"
+      },
+      "recovery_attempts": 1,
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "runtime_resolution": {
+        "installed": true,
+        "runtime": {
+          "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+        }
+      },
+      "schema": "hbnf-cart2-candidate-qualification-transaction-v1",
+      "status": "QUALIFICATION_FAILED_R4_RECOVERED",
+      "upload": {
+        "confirmed": true
+      }
+    },
+    {
+      "brightness_restore": {
+        "target_matrix_brightness": 52,
+        "verified": true
+      },
+      "brightness_setup": {
+        "target_matrix_brightness": 44,
+        "verified": true
+      },
+      "brightness_setup_started": true,
+      "candidate_install_attempts": 1,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_runtime": {
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+      },
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "candidate_stage": {
+        "bytes": 1497984,
+        "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+      },
+      "device_requests": 13,
+      "preflight": {
+        "brightness_baseline": {
+          "runtime": {
+            "auxBrightness": 245,
+            "matrixBrightness": 52,
+            "vibe": 0
+          }
+        },
+        "pass": true
+      },
+      "qualification": {
+        "abort": {
+          "run_error": "DIAGNOSTICS_COMPLETE__PERFORMANCE_GATE_FAILED: 28 kernels captured; soak suppressed"
+        },
+        "passed": false
+      },
+      "recovery": {
+        "runtime": {
+          "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+        },
+        "status": "R4_READBACK_VERIFIED"
+      },
+      "recovery_attempts": 1,
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "runtime_resolution": {
+        "installed": true,
+        "runtime": {
+          "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+        }
+      },
+      "schema": "hbnf-cart2-candidate-qualification-transaction-v1",
+      "status": "QUALIFICATION_FAILED_R4_RECOVERED",
+      "upload": {
+        "confirmed": true
+      }
+    },
+    {
+      "brightness_restore": {
+        "target_matrix_brightness": 52,
+        "verified": true
+      },
+      "brightness_setup": {
+        "target_matrix_brightness": 44,
+        "verified": true
+      },
+      "brightness_setup_started": true,
+      "candidate_install_attempts": 1,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_runtime": {
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+      },
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "candidate_stage": {
+        "bytes": 1497984,
+        "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+      },
       "device_requests": 10,
       "preflight": {
         "brightness_baseline": {
