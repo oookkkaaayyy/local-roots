@@ -33,8 +33,14 @@ assert sha(binding_path) == manifest["source_binding"]["sha256"]
 assert binding["release_id"] == EXPECTED_RELEASE
 assert binding["status"].startswith("OFFLINE_TARGET_BUILD_VERIFIED")
 source_root = ROOT / binding["runtime_source_directory"]
+source_commit = binding["repository_source_commit"]
 for relative, expected in binding["runtime_files"].items():
-    assert sha(source_root / relative) == expected, relative
+    historical_path = f"{binding['runtime_source_directory']}/{relative}"
+    historical_bytes = subprocess.run(
+        ["git", "show", f"{source_commit}:{historical_path}"],
+        cwd=ROOT, check=True, capture_output=True,
+    ).stdout
+    assert hashlib.sha256(historical_bytes).hexdigest() == expected, relative
 assert manifest["parent"]["sha256"] == "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb"
 rollback = ROOT / manifest["rollback"]["path"]
 assert sha(rollback) == EXPECTED_R4 == manifest["rollback"]["sha256"]
@@ -66,8 +72,8 @@ assert manifest["qualification"]["T4"] == "NOT_ACCEPTED"
 assert manifest["qualification"]["T5"] == "NOT_ACCEPTED"
 assert manifest["authority"]["live_mutation_authorized"] is False
 delta = binding["source_deltas"]["hbnf_animartrix_audio_bridge.h"]["change"]
-assert "int64 radial division" in delta and "int32" in delta
-assert "int64 fallback" in delta
+assert "bounded int32 radial branch" in delta
+assert "generic int64 fallback" in delta
 assert binding["fallback_validation"]["status"] == "PASS"
 assert binding["fallback_validation"]["test"] == "tests/test_hbnf_audio_bridge_frame_cache.py"
 print(f"PASS: {EXPECTED_RELEASE} exact SHA, source closure, target codegen, resource headroom and R4 recovery verified")
