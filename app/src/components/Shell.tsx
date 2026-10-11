@@ -22,6 +22,6 @@ export function Shell({children,admin=false}:{children:ReactNode;admin?:boolean}
       </nav>
     </header>
     <div id="main-content" tabIndex={-1}>{children}</div>
-    {!admin?<footer className="site-footer"><nav className="footer-nav" aria-label="Footer"><a href="https://hbnightflyers.com/">HB Night Flyers</a></nav></footer>:null}
+    {!admin?<footer className="site-footer"><nav className="footer-nav" aria-label="Footer"><a href="https://hbnightflyers.com/">HB Night Flyers</a>{path==='/dyed-and-unattached'?<a href="https://localrootsdg.com/admin/dyed-and-unattached" style={{fontSize:'.85rem'}}>Admin</a>:null}</nav></footer>:null}
   </div>;
 }
