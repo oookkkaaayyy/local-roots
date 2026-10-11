@@ -1,0 +1,79 @@
+{
+  "approved_for_mutation": true,
+  "capsule_sha256": "0f9e28200bc9c3b2099a9941a76d569cc6da391cd678c79980d76336bd857a96",
+  "consumer_contract": {
+    "identity": "Existing Matrix WLED /json/state settings consumer on the exact Matrix MAC and R4 release. The existing settings transaction sends only HBNF.matrixBrightness=52, preserves AUX brightness and Vibe, then verifies runtime/persisted settings. No firmware, cloud or AUX configuration consumer is invoked.",
+    "verified": true
+  },
+  "pre_mutation_state": {
+    "aux": {
+      "live_mode": "DDP",
+      "mac": "8c94df55c34c",
+      "on": true,
+      "source": "192.168.77.10"
+    },
+    "host": {
+      "cart_lan_interface": "en0",
+      "on_ac": true
+    },
+    "matrix": {
+      "brightness": 44,
+      "mac": "70:4b:ca:5b:34:5c",
+      "on": true,
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+    },
+    "settings": {
+      "persisted": {
+        "auxBrightness": 245,
+        "matrixBrightness": 44,
+        "vibe": 2
+      },
+      "runtime": {
+        "auxBrightness": 245,
+        "matrixBrightness": 44,
+        "vibe": null
+      }
+    },
+    "target_settings": {
+      "auxBrightness": 245,
+      "matrixBrightness": 52,
+      "vibe": 2
+    }
+  },
+  "recovery_identity": {
+    "identity": "Exact Foundation R4 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1; SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "verification": "Installed R4 build identity, Matrix MAC, Opal exact release ledger and local R4 binary SHA/size all match; no firmware upload is in this operation."
+  },
+  "run_id": "hbnf-r4-settings-restore-20261011-run01",
+  "schema": "local-roots-prelive-proof-v1",
+  "stages": {
+    "capture-current-state": {
+      "evidence": [
+        "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/R4_SETTINGS_RESTORE_READONLY_PREFLIGHT.json"
+      ],
+      "status": "PASS"
+    },
+    "contract-closure": {
+      "evidence": [
+        "evidence/cart2-r6-compositor-timing-diagnostic-20261011/LIVE_APPROVED_ADMISSION.json",
+        "evidence/cart2-r6-compositor-timing-diagnostic-20261011/OFFLINE_AUTHORITY_RECONCILIATION.json"
+      ],
+      "status": "PASS"
+    },
+    "recovery-proof": {
+      "evidence": [
+        "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+        "evidence/cart2-r6-compositor-timing-diagnostic-20261011/BUILD_RECEIPT.json"
+      ],
+      "status": "PASS"
+    },
+    "transaction-rehearsal": {
+      "evidence": [
+        "evidence/cart2-r6-compositor-timing-diagnostic-20261011/R4_SETTINGS_RESTORE_PLAN.json",
+        "evidence/cart2-r6-compositor-timing-diagnostic-20261011/LIVE_ADMISSION_GUARD_NEGATIVE_TEST.json",
+        "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/COMPOSITOR_TIMING_DIAGNOSTIC_DRYRUN.json"
+      ],
+      "status": "PASS"
+    }
+  }
+}

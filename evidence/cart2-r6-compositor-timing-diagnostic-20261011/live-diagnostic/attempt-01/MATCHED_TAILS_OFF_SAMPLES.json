@@ -1,0 +1,140 @@
+[
+  {
+    "aux_native_ddp_active": true,
+    "batch_elapsed_seconds": 0.09629645900000128,
+    "control_signature": {
+      "audio_response": 50,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2
+    },
+    "instrumentation": "tails_off",
+    "runtime_context": {
+      "active_vibe": 2,
+      "audio_input": {
+        "bass": 0,
+        "mid": 0,
+        "peak": false,
+        "treble": 0,
+        "volume": 0
+      },
+      "audio_response": 50,
+      "fps": 13,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2,
+      "whole_frame_us": 67770
+    },
+    "scheduled_seconds": 4
+  },
+  {
+    "aux_native_ddp_active": true,
+    "batch_elapsed_seconds": 0.11892645900000076,
+    "control_signature": {
+      "audio_response": 50,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2
+    },
+    "instrumentation": "tails_off",
+    "runtime_context": {
+      "active_vibe": 2,
+      "audio_input": {
+        "bass": 0,
+        "mid": 0,
+        "peak": false,
+        "treble": 0,
+        "volume": 0
+      },
+      "audio_response": 50,
+      "fps": 11,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2,
+      "whole_frame_us": 78193
+    },
+    "scheduled_seconds": 12
+  },
+  {
+    "aux_native_ddp_active": true,
+    "batch_elapsed_seconds": 0.10503874999999852,
+    "control_signature": {
+      "audio_response": 50,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2
+    },
+    "instrumentation": "tails_off",
+    "runtime_context": {
+      "active_vibe": 2,
+      "audio_input": {
+        "bass": 0,
+        "mid": 0,
+        "peak": false,
+        "treble": 0,
+        "volume": 0
+      },
+      "audio_response": 50,
+      "fps": 13,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2,
+      "whole_frame_us": 71882
+    },
+    "scheduled_seconds": 20
+  }
+]

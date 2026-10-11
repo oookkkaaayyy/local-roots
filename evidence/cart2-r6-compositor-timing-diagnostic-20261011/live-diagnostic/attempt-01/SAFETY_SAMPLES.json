@@ -1,0 +1,938 @@
+[
+  {
+    "aux_native_ddp_active": true,
+    "aux_physical_output_status": "NOT_OBSERVABLE_FROM_WLED_JSON",
+    "batch_elapsed_seconds": 0.11110887499999933,
+    "component_timing": {
+      "audioMsAvg": 16.50923,
+      "audioMsP95": 17.125,
+      "frameTailBinResolutionUs": 250,
+      "frameTailOverflow": true,
+      "kernelMsAvg": 31.84437,
+      "kernelMsP95": 32.125,
+      "kernelWithoutCompositorMsAvg": 30.7639,
+      "kernelWithoutCompositorMsP95": 30.875,
+      "kernelWithoutCompositorMsP99": 69.125,
+      "paletteMsAvg": 15.43585,
+      "paletteMsP95": 15.875,
+      "sampleCount": 52,
+      "vibeCompositorMsAvg": 1.080154,
+      "vibeCompositorMsP95": 1.125,
+      "vibeCompositorMsP99": 1.125
+    },
+    "control_signature": {
+      "audio_response": 50,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2
+    },
+    "diagnostic_stop_reasons": [],
+    "endpoint_reads": {
+      "aux_info": {
+        "completed_monotonic_ns": 58899936250,
+        "elapsed_seconds": 0.039716,
+        "endpoint": "http://192.168.77.11/json/info",
+        "started_monotonic_ns": 58860220250,
+        "status": "PASS"
+      },
+      "aux_state": {
+        "completed_monotonic_ns": 58918628708,
+        "elapsed_seconds": 0.057568,
+        "endpoint": "http://192.168.77.11/json/state",
+        "started_monotonic_ns": 58861061125,
+        "status": "PASS"
+      },
+      "matrix_build": {
+        "completed_monotonic_ns": 58908838083,
+        "elapsed_seconds": 0.049837,
+        "endpoint": "http://192.168.77.10/hbnf/build.json",
+        "started_monotonic_ns": 58859001125,
+        "status": "PASS"
+      },
+      "matrix_info": {
+        "completed_monotonic_ns": 58968143791,
+        "elapsed_seconds": 0.109969,
+        "endpoint": "http://192.168.77.10/json/info",
+        "started_monotonic_ns": 58858174708,
+        "status": "PASS"
+      },
+      "matrix_state": {
+        "completed_monotonic_ns": 58935027750,
+        "elapsed_seconds": 0.075386,
+        "endpoint": "http://192.168.77.10/json/state",
+        "started_monotonic_ns": 58859641291,
+        "status": "PASS"
+      }
+    },
+    "fps": 12,
+    "frame_ms_max": 148.643,
+    "frame_ms_p99": 127.875,
+    "frame_tail_overflow": true,
+    "instrumentation": "tails_on",
+    "kernel": 0,
+    "matrix_brightness": 44,
+    "performance_gate_failure_reasons": [
+      "fps_below_20_or_missing",
+      "frame_p99_above_75_or_missing"
+    ],
+    "performance_gate_pass": false,
+    "read_completed_monotonic_ns": 58968967125,
+    "read_started_monotonic_ns": 58857560583,
+    "runtime_context": {
+      "active_vibe": 2,
+      "audio_input": {
+        "bass": 0,
+        "mid": 0,
+        "peak": false,
+        "treble": 0,
+        "volume": 0
+      },
+      "audio_response": 50,
+      "fps": 12,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2,
+      "whole_frame_us": 72506
+    },
+    "scheduled_seconds": 4,
+    "uptime_seconds": 36,
+    "variant_signature": 1347100672
+  },
+  {
+    "aux_native_ddp_active": true,
+    "aux_physical_output_status": "NOT_OBSERVABLE_FROM_WLED_JSON",
+    "batch_elapsed_seconds": 0.12099141699999905,
+    "component_timing": {
+      "audioMsAvg": 17.70252,
+      "audioMsP95": 18.875,
+      "frameTailBinResolutionUs": 250,
+      "frameTailOverflow": true,
+      "kernelMsAvg": 32.95297,
+      "kernelMsP95": 33.875,
+      "kernelWithoutCompositorMsAvg": 31.94414,
+      "kernelWithoutCompositorMsP95": 32.875,
+      "kernelWithoutCompositorMsP99": 69.125,
+      "paletteMsAvg": 16.72858,
+      "paletteMsP95": 17.875,
+      "sampleCount": 147,
+      "vibeCompositorMsAvg": 1.008401,
+      "vibeCompositorMsP95": 1.125,
+      "vibeCompositorMsP99": 1.125
+    },
+    "control_signature": {
+      "audio_response": 50,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2
+    },
+    "diagnostic_stop_reasons": [],
+    "endpoint_reads": {
+      "aux_info": {
+        "completed_monotonic_ns": 66908092625,
+        "elapsed_seconds": 0.047057,
+        "endpoint": "http://192.168.77.11/json/info",
+        "started_monotonic_ns": 66861035416,
+        "status": "PASS"
+      },
+      "aux_state": {
+        "completed_monotonic_ns": 66943671625,
+        "elapsed_seconds": 0.082259,
+        "endpoint": "http://192.168.77.11/json/state",
+        "started_monotonic_ns": 66861412833,
+        "status": "PASS"
+      },
+      "matrix_build": {
+        "completed_monotonic_ns": 66915518333,
+        "elapsed_seconds": 0.055639,
+        "endpoint": "http://192.168.77.10/hbnf/build.json",
+        "started_monotonic_ns": 66859879541,
+        "status": "PASS"
+      },
+      "matrix_info": {
+        "completed_monotonic_ns": 66940508666,
+        "elapsed_seconds": 0.081436,
+        "endpoint": "http://192.168.77.10/json/info",
+        "started_monotonic_ns": 66859072916,
+        "status": "PASS"
+      },
+      "matrix_state": {
+        "completed_monotonic_ns": 66978913500,
+        "elapsed_seconds": 0.118314,
+        "endpoint": "http://192.168.77.10/json/state",
+        "started_monotonic_ns": 66860599208,
+        "status": "PASS"
+      }
+    },
+    "fps": 12,
+    "frame_ms_max": 148.855,
+    "frame_ms_p99": 127.875,
+    "frame_tail_overflow": true,
+    "instrumentation": "tails_on",
+    "kernel": 0,
+    "matrix_brightness": 44,
+    "performance_gate_failure_reasons": [
+      "fps_below_20_or_missing",
+      "frame_p99_above_75_or_missing"
+    ],
+    "performance_gate_pass": false,
+    "read_completed_monotonic_ns": 66979769875,
+    "read_started_monotonic_ns": 66858516208,
+    "runtime_context": {
+      "active_vibe": 2,
+      "audio_input": {
+        "bass": 0,
+        "mid": 0,
+        "peak": false,
+        "treble": 0,
+        "volume": 0
+      },
+      "audio_response": 50,
+      "fps": 12,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2,
+      "whole_frame_us": 72689
+    },
+    "scheduled_seconds": 12,
+    "uptime_seconds": 44,
+    "variant_signature": 1347100672
+  },
+  {
+    "aux_native_ddp_active": true,
+    "aux_physical_output_status": "NOT_OBSERVABLE_FROM_WLED_JSON",
+    "batch_elapsed_seconds": 0.09778470799999184,
+    "component_timing": {
+      "audioMsAvg": 16.8775,
+      "audioMsP95": 18.875,
+      "frameTailBinResolutionUs": 250,
+      "frameTailOverflow": true,
+      "kernelMsAvg": 32.15023,
+      "kernelMsP95": 33.625,
+      "kernelWithoutCompositorMsAvg": 31.12062,
+      "kernelWithoutCompositorMsP95": 32.625,
+      "kernelWithoutCompositorMsP99": 69.125,
+      "paletteMsAvg": 15.87654,
+      "paletteMsP95": 17.875,
+      "sampleCount": 252,
+      "vibeCompositorMsAvg": 1.029103,
+      "vibeCompositorMsP95": 1.125,
+      "vibeCompositorMsP99": 1.125
+    },
+    "control_signature": {
+      "audio_response": 50,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2
+    },
+    "diagnostic_stop_reasons": [],
+    "endpoint_reads": {
+      "aux_info": {
+        "completed_monotonic_ns": 74903163166,
+        "elapsed_seconds": 0.042002,
+        "endpoint": "http://192.168.77.11/json/info",
+        "started_monotonic_ns": 74861161333,
+        "status": "PASS"
+      },
+      "aux_state": {
+        "completed_monotonic_ns": 74922908541,
+        "elapsed_seconds": 0.061081,
+        "endpoint": "http://192.168.77.11/json/state",
+        "started_monotonic_ns": 74861828000,
+        "status": "PASS"
+      },
+      "matrix_build": {
+        "completed_monotonic_ns": 74955468000,
+        "elapsed_seconds": 0.095492,
+        "endpoint": "http://192.168.77.10/hbnf/build.json",
+        "started_monotonic_ns": 74859976375,
+        "status": "PASS"
+      },
+      "matrix_info": {
+        "completed_monotonic_ns": 74919734958,
+        "elapsed_seconds": 0.060641,
+        "endpoint": "http://192.168.77.10/json/info",
+        "started_monotonic_ns": 74859093666,
+        "status": "PASS"
+      },
+      "matrix_state": {
+        "completed_monotonic_ns": 74945778750,
+        "elapsed_seconds": 0.085179,
+        "endpoint": "http://192.168.77.10/json/state",
+        "started_monotonic_ns": 74860599375,
+        "status": "PASS"
+      }
+    },
+    "fps": 12,
+    "frame_ms_max": 148.855,
+    "frame_ms_p99": 127.875,
+    "frame_tail_overflow": true,
+    "instrumentation": "tails_on",
+    "kernel": 0,
+    "matrix_brightness": 44,
+    "performance_gate_failure_reasons": [
+      "fps_below_20_or_missing",
+      "frame_p99_above_75_or_missing"
+    ],
+    "performance_gate_pass": false,
+    "read_completed_monotonic_ns": 74956562125,
+    "read_started_monotonic_ns": 74858518458,
+    "runtime_context": {
+      "active_vibe": 2,
+      "audio_input": {
+        "bass": 0,
+        "mid": 0,
+        "peak": false,
+        "treble": 0,
+        "volume": 0
+      },
+      "audio_response": 50,
+      "fps": 12,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2,
+      "whole_frame_us": 73210
+    },
+    "scheduled_seconds": 20,
+    "uptime_seconds": 52,
+    "variant_signature": 1347100672
+  },
+  {
+    "aux_native_ddp_active": true,
+    "aux_physical_output_status": "NOT_OBSERVABLE_FROM_WLED_JSON",
+    "batch_elapsed_seconds": 0.10248541699999691,
+    "component_timing": {
+      "audioMsAvg": 16.76981,
+      "audioMsP95": 18.875,
+      "frameTailBinResolutionUs": 250,
+      "frameTailOverflow": true,
+      "kernelMsAvg": 32.04649,
+      "kernelMsP95": 33.625,
+      "kernelWithoutCompositorMsAvg": 31.00499,
+      "kernelWithoutCompositorMsP95": 32.625,
+      "kernelWithoutCompositorMsP99": 69.125,
+      "paletteMsAvg": 15.75522,
+      "paletteMsP95": 17.625,
+      "sampleCount": 354,
+      "vibeCompositorMsAvg": 1.040983,
+      "vibeCompositorMsP95": 1.125,
+      "vibeCompositorMsP99": 1.125
+    },
+    "control_signature": {
+      "audio_response": 50,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2
+    },
+    "diagnostic_stop_reasons": [],
+    "endpoint_reads": {
+      "aux_info": {
+        "completed_monotonic_ns": 82899545250,
+        "elapsed_seconds": 0.039105,
+        "endpoint": "http://192.168.77.11/json/info",
+        "started_monotonic_ns": 82860439958,
+        "status": "PASS"
+      },
+      "aux_state": {
+        "completed_monotonic_ns": 82917736291,
+        "elapsed_seconds": 0.056843,
+        "endpoint": "http://192.168.77.11/json/state",
+        "started_monotonic_ns": 82860893458,
+        "status": "PASS"
+      },
+      "matrix_build": {
+        "completed_monotonic_ns": 82930258166,
+        "elapsed_seconds": 0.070634,
+        "endpoint": "http://192.168.77.10/hbnf/build.json",
+        "started_monotonic_ns": 82859624375,
+        "status": "PASS"
+      },
+      "matrix_info": {
+        "completed_monotonic_ns": 82917898666,
+        "elapsed_seconds": 0.058889,
+        "endpoint": "http://192.168.77.10/json/info",
+        "started_monotonic_ns": 82859009250,
+        "status": "PASS"
+      },
+      "matrix_state": {
+        "completed_monotonic_ns": 82960552291,
+        "elapsed_seconds": 0.100504,
+        "endpoint": "http://192.168.77.10/json/state",
+        "started_monotonic_ns": 82860048208,
+        "status": "PASS"
+      }
+    },
+    "fps": 12,
+    "frame_ms_max": 148.855,
+    "frame_ms_p99": 127.875,
+    "frame_tail_overflow": true,
+    "instrumentation": "tails_on",
+    "kernel": 0,
+    "matrix_brightness": 44,
+    "performance_gate_failure_reasons": [
+      "fps_below_20_or_missing",
+      "frame_p99_above_75_or_missing"
+    ],
+    "performance_gate_pass": false,
+    "read_completed_monotonic_ns": 82961285083,
+    "read_started_monotonic_ns": 82858526750,
+    "runtime_context": {
+      "active_vibe": 2,
+      "audio_input": {
+        "bass": 0,
+        "mid": 0,
+        "peak": false,
+        "treble": 0,
+        "volume": 0
+      },
+      "audio_response": 50,
+      "fps": 12,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2,
+      "whole_frame_us": 73842
+    },
+    "scheduled_seconds": 28,
+    "uptime_seconds": 60,
+    "variant_signature": 1347100672
+  },
+  {
+    "aux_native_ddp_active": true,
+    "aux_physical_output_status": "NOT_OBSERVABLE_FROM_WLED_JSON",
+    "batch_elapsed_seconds": 0.11888520799999469,
+    "component_timing": {
+      "audioMsAvg": 16.93037,
+      "audioMsP95": 18.625,
+      "frameTailBinResolutionUs": 250,
+      "frameTailOverflow": true,
+      "kernelMsAvg": 32.20495,
+      "kernelMsP95": 33.625,
+      "kernelWithoutCompositorMsAvg": 31.16985,
+      "kernelWithoutCompositorMsP95": 32.625,
+      "kernelWithoutCompositorMsP99": 69.125,
+      "paletteMsAvg": 15.90429,
+      "paletteMsP95": 17.625,
+      "sampleCount": 452,
+      "vibeCompositorMsAvg": 1.034577,
+      "vibeCompositorMsP95": 1.125,
+      "vibeCompositorMsP99": 1.125
+    },
+    "control_signature": {
+      "audio_response": 50,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2
+    },
+    "diagnostic_stop_reasons": [],
+    "endpoint_reads": {
+      "aux_info": {
+        "completed_monotonic_ns": 90919619708,
+        "elapsed_seconds": 0.06041,
+        "endpoint": "http://192.168.77.11/json/info",
+        "started_monotonic_ns": 90859210125,
+        "status": "PASS"
+      },
+      "aux_state": {
+        "completed_monotonic_ns": 90896752791,
+        "elapsed_seconds": 0.037034,
+        "endpoint": "http://192.168.77.11/json/state",
+        "started_monotonic_ns": 90859719166,
+        "status": "PASS"
+      },
+      "matrix_build": {
+        "completed_monotonic_ns": 90952066625,
+        "elapsed_seconds": 0.094058,
+        "endpoint": "http://192.168.77.10/hbnf/build.json",
+        "started_monotonic_ns": 90858008625,
+        "status": "PASS"
+      },
+      "matrix_info": {
+        "completed_monotonic_ns": 90925823458,
+        "elapsed_seconds": 0.068582,
+        "endpoint": "http://192.168.77.10/json/info",
+        "started_monotonic_ns": 90857241000,
+        "status": "PASS"
+      },
+      "matrix_state": {
+        "completed_monotonic_ns": 90975127583,
+        "elapsed_seconds": 0.116524,
+        "endpoint": "http://192.168.77.10/json/state",
+        "started_monotonic_ns": 90858603333,
+        "status": "PASS"
+      }
+    },
+    "fps": 12,
+    "frame_ms_max": 148.855,
+    "frame_ms_p99": 127.875,
+    "frame_tail_overflow": true,
+    "instrumentation": "tails_on",
+    "kernel": 0,
+    "matrix_brightness": 44,
+    "performance_gate_failure_reasons": [
+      "fps_below_20_or_missing",
+      "frame_p99_above_75_or_missing"
+    ],
+    "performance_gate_pass": false,
+    "read_completed_monotonic_ns": 90975848000,
+    "read_started_monotonic_ns": 90856697125,
+    "runtime_context": {
+      "active_vibe": 2,
+      "audio_input": {
+        "bass": 0,
+        "mid": 0,
+        "peak": false,
+        "treble": 0,
+        "volume": 0
+      },
+      "audio_response": 50,
+      "fps": 12,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2,
+      "whole_frame_us": 72952
+    },
+    "scheduled_seconds": 36,
+    "uptime_seconds": 68,
+    "variant_signature": 1347100672
+  },
+  {
+    "aux_native_ddp_active": true,
+    "aux_physical_output_status": "NOT_OBSERVABLE_FROM_WLED_JSON",
+    "batch_elapsed_seconds": 0.09861912499999903,
+    "component_timing": {
+      "audioMsAvg": 16.68908,
+      "audioMsP95": 18.625,
+      "frameTailBinResolutionUs": 250,
+      "frameTailOverflow": true,
+      "kernelMsAvg": 31.9176,
+      "kernelMsP95": 33.625,
+      "kernelWithoutCompositorMsAvg": 30.91358,
+      "kernelWithoutCompositorMsP95": 32.625,
+      "kernelWithoutCompositorMsP99": 65.375,
+      "paletteMsAvg": 15.66983,
+      "paletteMsP95": 17.625,
+      "sampleCount": 558,
+      "vibeCompositorMsAvg": 1.003514,
+      "vibeCompositorMsP95": 1.125,
+      "vibeCompositorMsP99": 1.125
+    },
+    "control_signature": {
+      "audio_response": 50,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2
+    },
+    "diagnostic_stop_reasons": [],
+    "endpoint_reads": {
+      "aux_info": {
+        "completed_monotonic_ns": 98903576833,
+        "elapsed_seconds": 0.042561,
+        "endpoint": "http://192.168.77.11/json/info",
+        "started_monotonic_ns": 98861016083,
+        "status": "PASS"
+      },
+      "aux_state": {
+        "completed_monotonic_ns": 98917187958,
+        "elapsed_seconds": 0.055727,
+        "endpoint": "http://192.168.77.11/json/state",
+        "started_monotonic_ns": 98861461333,
+        "status": "PASS"
+      },
+      "matrix_build": {
+        "completed_monotonic_ns": 98956732791,
+        "elapsed_seconds": 0.096853,
+        "endpoint": "http://192.168.77.10/hbnf/build.json",
+        "started_monotonic_ns": 98859879916,
+        "status": "PASS"
+      },
+      "matrix_info": {
+        "completed_monotonic_ns": 98913782000,
+        "elapsed_seconds": 0.0547,
+        "endpoint": "http://192.168.77.10/json/info",
+        "started_monotonic_ns": 98859081708,
+        "status": "PASS"
+      },
+      "matrix_state": {
+        "completed_monotonic_ns": 98944206708,
+        "elapsed_seconds": 0.083674,
+        "endpoint": "http://192.168.77.10/json/state",
+        "started_monotonic_ns": 98860532666,
+        "status": "PASS"
+      }
+    },
+    "fps": 12,
+    "frame_ms_max": 148.855,
+    "frame_ms_p99": 127.875,
+    "frame_tail_overflow": true,
+    "instrumentation": "tails_on",
+    "kernel": 0,
+    "matrix_brightness": 44,
+    "performance_gate_failure_reasons": [
+      "fps_below_20_or_missing",
+      "frame_p99_above_75_or_missing"
+    ],
+    "performance_gate_pass": false,
+    "read_completed_monotonic_ns": 98957408750,
+    "read_started_monotonic_ns": 98858532375,
+    "runtime_context": {
+      "active_vibe": 2,
+      "audio_input": {
+        "bass": 0,
+        "mid": 0,
+        "peak": false,
+        "treble": 0,
+        "volume": 0
+      },
+      "audio_response": 50,
+      "fps": 12,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2,
+      "whole_frame_us": 100918
+    },
+    "scheduled_seconds": 44,
+    "uptime_seconds": 76,
+    "variant_signature": 1347100672
+  },
+  {
+    "aux_native_ddp_active": true,
+    "aux_physical_output_status": "NOT_OBSERVABLE_FROM_WLED_JSON",
+    "batch_elapsed_seconds": 0.10372679199998913,
+    "component_timing": {
+      "audioMsAvg": 16.77804,
+      "audioMsP95": 18.625,
+      "frameTailBinResolutionUs": 250,
+      "frameTailOverflow": true,
+      "kernelMsAvg": 31.99063,
+      "kernelMsP95": 33.375,
+      "kernelWithoutCompositorMsAvg": 30.98773,
+      "kernelWithoutCompositorMsP95": 32.625,
+      "kernelWithoutCompositorMsP99": 43.375,
+      "paletteMsAvg": 15.75257,
+      "paletteMsP95": 17.625,
+      "sampleCount": 656,
+      "vibeCompositorMsAvg": 1.002416,
+      "vibeCompositorMsP95": 1.125,
+      "vibeCompositorMsP99": 1.125
+    },
+    "control_signature": {
+      "audio_response": 50,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2
+    },
+    "diagnostic_stop_reasons": [],
+    "endpoint_reads": {
+      "aux_info": {
+        "completed_monotonic_ns": 106898185375,
+        "elapsed_seconds": 0.044486,
+        "endpoint": "http://192.168.77.11/json/info",
+        "started_monotonic_ns": 106853699166,
+        "status": "PASS"
+      },
+      "aux_state": {
+        "completed_monotonic_ns": 106913941125,
+        "elapsed_seconds": 0.059903,
+        "endpoint": "http://192.168.77.11/json/state",
+        "started_monotonic_ns": 106854037958,
+        "status": "PASS"
+      },
+      "matrix_build": {
+        "completed_monotonic_ns": 106955910708,
+        "elapsed_seconds": 0.102786,
+        "endpoint": "http://192.168.77.10/hbnf/build.json",
+        "started_monotonic_ns": 106853124833,
+        "status": "PASS"
+      },
+      "matrix_info": {
+        "completed_monotonic_ns": 106922954958,
+        "elapsed_seconds": 0.070119,
+        "endpoint": "http://192.168.77.10/json/info",
+        "started_monotonic_ns": 106852836166,
+        "status": "PASS"
+      },
+      "matrix_state": {
+        "completed_monotonic_ns": 106946250916,
+        "elapsed_seconds": 0.09281,
+        "endpoint": "http://192.168.77.10/json/state",
+        "started_monotonic_ns": 106853440583,
+        "status": "PASS"
+      }
+    },
+    "fps": 12,
+    "frame_ms_max": 148.855,
+    "frame_ms_p99": 100.875,
+    "frame_tail_overflow": true,
+    "instrumentation": "tails_on",
+    "kernel": 0,
+    "matrix_brightness": 44,
+    "performance_gate_failure_reasons": [
+      "fps_below_20_or_missing",
+      "frame_p99_above_75_or_missing"
+    ],
+    "performance_gate_pass": false,
+    "read_completed_monotonic_ns": 106956602583,
+    "read_started_monotonic_ns": 106852617083,
+    "runtime_context": {
+      "active_vibe": 2,
+      "audio_input": {
+        "bass": 0,
+        "mid": 0,
+        "peak": false,
+        "treble": 0,
+        "volume": 0
+      },
+      "audio_response": 50,
+      "fps": 12,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2,
+      "whole_frame_us": 77888
+    },
+    "scheduled_seconds": 52,
+    "uptime_seconds": 84,
+    "variant_signature": 1347100672
+  },
+  {
+    "aux_native_ddp_active": true,
+    "aux_physical_output_status": "NOT_OBSERVABLE_FROM_WLED_JSON",
+    "batch_elapsed_seconds": 0.40635308299999906,
+    "component_timing": {
+      "audioMsAvg": 16.99487,
+      "audioMsP95": 18.875,
+      "frameTailBinResolutionUs": 250,
+      "frameTailOverflow": true,
+      "kernelMsAvg": 32.21398,
+      "kernelMsP95": 33.875,
+      "kernelWithoutCompositorMsAvg": 31.22116,
+      "kernelWithoutCompositorMsP95": 32.875,
+      "kernelWithoutCompositorMsP99": 43.375,
+      "paletteMsAvg": 15.98948,
+      "paletteMsP95": 17.875,
+      "sampleCount": 754,
+      "vibeCompositorMsAvg": 0.992333,
+      "vibeCompositorMsP95": 1.125,
+      "vibeCompositorMsP99": 1.125
+    },
+    "control_signature": {
+      "audio_response": 50,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2
+    },
+    "diagnostic_stop_reasons": [],
+    "endpoint_reads": {
+      "aux_info": {
+        "completed_monotonic_ns": 114905587500,
+        "elapsed_seconds": 0.047167,
+        "endpoint": "http://192.168.77.11/json/info",
+        "started_monotonic_ns": 114858421000,
+        "status": "PASS"
+      },
+      "aux_state": {
+        "completed_monotonic_ns": 114936252291,
+        "elapsed_seconds": 0.077482,
+        "endpoint": "http://192.168.77.11/json/state",
+        "started_monotonic_ns": 114858769833,
+        "status": "PASS"
+      },
+      "matrix_build": {
+        "completed_monotonic_ns": 115212305291,
+        "elapsed_seconds": 0.35497,
+        "endpoint": "http://192.168.77.10/hbnf/build.json",
+        "started_monotonic_ns": 114857335416,
+        "status": "PASS"
+      },
+      "matrix_info": {
+        "completed_monotonic_ns": 115237545833,
+        "elapsed_seconds": 0.380994,
+        "endpoint": "http://192.168.77.10/json/info",
+        "started_monotonic_ns": 114856552041,
+        "status": "PASS"
+      },
+      "matrix_state": {
+        "completed_monotonic_ns": 115261878750,
+        "elapsed_seconds": 0.403935,
+        "endpoint": "http://192.168.77.10/json/state",
+        "started_monotonic_ns": 114857944041,
+        "status": "PASS"
+      }
+    },
+    "fps": 12,
+    "frame_ms_max": 148.855,
+    "frame_ms_p99": 100.875,
+    "frame_tail_overflow": true,
+    "instrumentation": "tails_on",
+    "kernel": 0,
+    "matrix_brightness": 44,
+    "performance_gate_failure_reasons": [
+      "fps_below_20_or_missing",
+      "frame_p99_above_75_or_missing"
+    ],
+    "performance_gate_pass": false,
+    "read_completed_monotonic_ns": 115262616291,
+    "read_started_monotonic_ns": 114856002583,
+    "runtime_context": {
+      "active_vibe": 2,
+      "audio_input": {
+        "bass": 0,
+        "mid": 0,
+        "peak": false,
+        "treble": 0,
+        "volume": 0
+      },
+      "audio_response": 50,
+      "fps": 12,
+      "kernel": 0,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "scene": 0,
+      "variant_signature": 1347100672,
+      "vibe": 2,
+      "whole_frame_us": 75576
+    },
+    "scheduled_seconds": 60,
+    "uptime_seconds": 93,
+    "variant_signature": 1347100672
+  }
+]

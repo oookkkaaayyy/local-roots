@@ -61,9 +61,9 @@
       "sha256": "aa9b255d96d0242f6efa82d547b5a4c36779d001fe95028a446738d2beadd961"
     },
     "preflight_read_only_hardware_state_and_identity": {
-      "evidence_file": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/LIVE_APPROVED_READONLY_PREFLIGHT.json",
+      "evidence_file": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/R4_SETTINGS_RESTORE_READONLY_PREFLIGHT.json",
       "pass": true,
-      "sha256": "2c405bbd6e18c991bf9ab55f6f36e34fe0e3424173325191925b30348ae1addf"
+      "sha256": "23f29e0ed93a49d6ba88371a717053cec812cfd8535b9fc51fe6c84b2e80ac66"
     },
     "rollback_artifact_hash_verified": {
       "evidence_file": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
@@ -71,7 +71,7 @@
       "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
     }
   },
-  "classification": "EXACT_COMPOSITOR_TIMING_DIAGNOSTIC_LIVE_APPROVED__CURRENT_PREFLIGHT_AND_EXACT_AUTH",
+  "classification": "EXACT_R6_DIAGNOSTIC_CLOSED__EXACT_R4_SETTINGS_ONLY_RESTORE_AUTHORIZED",
   "fresh_owner_authorization": {
     "attempt_number": 1,
     "authorization_id": "OWNER-20261011-COMPOSITOR-TIMING-DIAGNOSTIC-01",
@@ -82,14 +82,12 @@
     "recovery_install_limit": 1,
     "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "scope": [
-      "One install of the exact compositor-timing diagnostic SHA only after its exact LIVE_APPROVED admission, capsule, prelive proof, and immediate fresh read-only preflight pass.",
-      "Capture the R4 Matrix/AUX identity and current Matrix/AUX/Vibe settings; run the diagnostic at kernel 0 and Matrix brightness 44, including three tails-off samples and eight tails-on component samples with unchanged controls and saved audio-input context.",
-      "Restore the exact captured HBNF settings on the diagnostic image, then return to and verify exact R4; one R4 recovery install maximum if the diagnostic was confirmed installed.",
-      "Continue with offline cause analysis and frozen release qualification; this diagnostic does not qualify or accept Cart 2.0.",
-      "No paid/remote builds, external communications, cloud deployment, Guest Mode, UV, router/AUX firmware or configuration change, threshold changes, retries, or reuse of the failed bbf9 candidate authorization."
+      "The exact compositor-timing diagnostic install and one exact R4 return are consumed; no repeat firmware upload is authorized by this record.",
+      "Complete one exact Matrix settings-only restoration on verified R4: set matrixBrightness=52 and preserve auxBrightness=245 and vibe=2; verify Matrix remains on, runtime and persisted brightness values match, exact R4 identity remains, and AUX native DDP remains healthy.",
+      "No firmware install, retry, cloud deployment, external communication, paid/remote build, Guest Mode, UV, router/AUX firmware or settings change, or threshold/scope change."
     ],
     "source_message_ref": "Direct user standing authorization in this chat: \u201cI authorize UNLIMITED install and anything else, so long as they don\u2019t send communication or cost money\u201d and \u201cThis and all future similar requests are blanket-approved \u2026 without extra cost or external communication.\u201d",
-    "transport": "SSH-verified exact artifact staging on Opal followed by one Opal-origin multipart request to Matrix WLED /update; no retry."
+    "transport": "No firmware transport; one POST /json/state through the existing exact settings transaction, followed by persisted/runtime and identity readback."
   },
   "identities": {
     "candidate_bin_path": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/artifact/hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011.bin",
@@ -105,12 +103,14 @@
     "source_commit": "911b791d814ed50440567433b17f04da83b700da"
   },
   "limits": {
-    "candidate_install_attempts_used": 0,
+    "candidate_install_attempts_used": 1,
     "candidate_install_limit": 1,
     "fresh_live_preflight_performed": true,
     "live_mutation_authorized": true,
-    "recovery_attempts_used": 0,
-    "recovery_install_limit": 1
+    "recovery_attempts_used": 1,
+    "recovery_install_limit": 1,
+    "settings_write_limit": 1,
+    "settings_writes_used": 0
   },
   "not_established": [
     "LIVE_QUALIFICATION",

@@ -1,0 +1,26 @@
+{
+  "artifact_sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
+  "artifact_size_bytes": 1499344,
+  "at_utc": "2026-10-11T09:42:49.464814+00:00",
+  "curl_exit": 0,
+  "firmware_request_attempts": 1,
+  "http_status": "200",
+  "opal_staging": {
+    "at_utc": "2026-10-11T09:42:33.236785+00:00",
+    "firmware_requests": 0,
+    "local_sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
+    "local_size_bytes": 1499344,
+    "remote_mode": "0600",
+    "remote_path": "/tmp/hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011.bin",
+    "remote_verification_stdout": "OPAL_ARTIFACT_VERIFIED\ne2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e  /tmp/hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011.bin\n1499344\n",
+    "ssh_attempts": 1,
+    "status": "PASS"
+  },
+  "response_bytes": 591,
+  "response_sha256": "90ad9709ed0c17592e5fb6e55e1369f05431c45d545db64e557f4e9b0b43213b",
+  "retry": false,
+  "ssh_exit": 0,
+  "stderr": "",
+  "transport": "SSH-verified staging then single Opal-origin curl multipart POST to Matrix WLED /update",
+  "update_successful_text": true
+}

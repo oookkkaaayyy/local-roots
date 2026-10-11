@@ -1,0 +1,70 @@
+{
+  "approved_for_mutation": true,
+  "capsule_sha256": "ac0331b9276fd67c7c3575c81ad174da32d6124a179d1676e32a7ad350e4ede4",
+  "consumer_contract": {
+    "identity": "Direct LAN Matrix WLED 16.0.1 exact /update consumer via Opal staging and one Opal-origin multipart request; exact release SHA/readback required. Diagnostic touches Matrix only; cloud deployment and AUX configuration are out of scope.",
+    "verified": true
+  },
+  "pre_mutation_state": {
+    "aux": {
+      "ip": "192.168.77.11",
+      "led_count": 22,
+      "live_mode": "DDP",
+      "live_source": "192.168.77.10",
+      "mac": "8c94df55c34c",
+      "on": true
+    },
+    "hbnf_settings": {
+      "runtime_and_persisted": {
+        "auxBrightness": 245,
+        "matrixBrightness": 52,
+        "vibe": 2
+      }
+    },
+    "matrix": {
+      "brightness": 52,
+      "ip": "192.168.77.10",
+      "mac": "70:4b:ca:5b:34:5c",
+      "on": true,
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+    },
+    "opal": {
+      "release_ledger": "55 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    }
+  },
+  "recovery_identity": {
+    "identity": "Foundation R4 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1; SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "verification": "Exact local rollback BIN SHA and size verified; Opal release ledger and Matrix live build identity both report the same exact R4 SHA/release."
+  },
+  "run_id": "hbnf-compositor-timing-20261011-run01",
+  "schema": "local-roots-prelive-proof-v1",
+  "stages": {
+    "capture-current-state": {
+      "evidence": [
+        "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/LIVE_APPROVED_READONLY_PREFLIGHT.json"
+      ],
+      "status": "PASS"
+    },
+    "contract-closure": {
+      "evidence": [
+        "evidence/cart2-r6-compositor-timing-diagnostic-20261011/OFFLINE_AUTHORITY_RECONCILIATION.json",
+        "evidence/cart2-r6-compositor-timing-diagnostic-20261011/OFFLINE_HOST_VERIFICATION.json"
+      ],
+      "status": "PASS"
+    },
+    "recovery-proof": {
+      "evidence": [
+        "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+        "evidence/cart2-r6-compositor-timing-diagnostic-20261011/BUILD_RECEIPT.json"
+      ],
+      "status": "PASS"
+    },
+    "transaction-rehearsal": {
+      "evidence": [
+        "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/COMPOSITOR_TIMING_DIAGNOSTIC_DRYRUN.json",
+        "evidence/cart2-r6-compositor-timing-diagnostic-20261011/LIVE_ADMISSION_GUARD_NEGATIVE_TEST.json"
+      ],
+      "status": "PASS"
+    }
+  }
+}

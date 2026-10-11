@@ -1,0 +1,13 @@
+{
+  "current_state": "exact R4; Matrix 44; AUX 245; persisted Vibe 2; Matrix and AUX on; AUX native DDP from Matrix",
+  "failure_behavior": "record exact outcome; no repeat write under the same one-use setting authorization",
+  "firmware_uploads": 0,
+  "operation": "one settings-only POST through existing change_matrix_brightness(operation=restore, expected_release=R4); read back exact runtime/persisted brightness and exact R4 identity; verify AUX native DDP",
+  "retry": false,
+  "schema": "hbnf-r4-owner-settings-restore-plan-v1",
+  "target": {
+    "auxBrightness": 245,
+    "matrixBrightness": 52,
+    "vibe": 2
+  }
+}

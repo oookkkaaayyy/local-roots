@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Adversarial offline tests for the R6 qualification brightness transaction."""
 import importlib.util
+import json
 import pathlib
 import tempfile
 
@@ -126,6 +127,49 @@ def test_post_timeout_is_resolved_by_readback_without_retry():
         module.post_json = original_post
         module.read_matrix_brightness_pair = original_read
         module.read_matrix_identity = original_identity
+
+
+def test_exact_r4_owner_settings_restore_is_one_matrix_brightness_write():
+    original_identity = module._read_expected_matrix_identity
+    original_pair = module._read_expected_matrix_brightness_pair
+    original_post = module._post_json_counted
+    owner = {"matrixBrightness": 52, "auxBrightness": 245, "vibe": 2}
+    identity = {"ip": "192.168.77.10", "mac": module.MATRIX_MAC,
+        "wled": "16.0.1", "release_id": module.R4, "candidate": module.R4,
+        "build_mac": module.MATRIX_MAC}
+    current = {"identity": identity, "matrix_on": True,
+        "runtime": {"matrixBrightness": 44, "auxBrightness": 245, "vibe": 2},
+        "persisted": {"matrixBrightness": 44, "auxBrightness": 245, "vibe": 2}}
+    writes = []
+
+    def read_identity(_request_counter, expected_release):
+        assert expected_release == module.R4
+        return identity, {}, {}
+
+    def read_pair(_request_counter, expected_release):
+        assert expected_release == module.R4
+        return json.loads(json.dumps(current))
+
+    def post(_url, payload, _request_counter):
+        writes.append(payload)
+        current["runtime"]["matrixBrightness"] = payload["HBNF"]["matrixBrightness"]
+        current["persisted"]["matrixBrightness"] = payload["HBNF"]["matrixBrightness"]
+
+    module._read_expected_matrix_identity = read_identity
+    module._read_expected_matrix_brightness_pair = read_pair
+    module._post_json_counted = post
+    try:
+        receipt = module.change_matrix_brightness(owner, operation="restore",
+            expected_release=module.R4, sleeper=lambda _seconds: None,
+            monotonic=lambda: 0.0)
+        assert receipt["verified"] is True
+        assert receipt["readback"]["runtime"] == owner
+        assert receipt["readback"]["persisted"] == owner
+        assert writes == [{"HBNF": {"matrixBrightness": 52}}]
+    finally:
+        module._read_expected_matrix_identity = original_identity
+        module._read_expected_matrix_brightness_pair = original_pair
+        module._post_json_counted = original_post
 
 
 def test_unknown_post_outcome_without_matching_readback_fails_once():
@@ -420,9 +464,10 @@ def main():
         test_restore_failure_invalidates_captured_profiles_and_never_passes,
         test_unverified_false_setup_and_restore_receipts_fail_closed,
         test_identity_mismatch_immediately_before_setup_and_restore_means_zero_posts,
+        test_exact_r4_owner_settings_restore_is_one_matrix_brightness_write,
     ):
         test()
-    print("PASS: baseline/setup/restore transaction fails closed across admission, timeout, partial-readback, worker, and restoration faults")
+    print("PASS: baseline/setup/restore transaction fails closed across admission, timeout, partial-readback, worker, restoration faults, and exact R4 owner-settings restore")
 
 
 if __name__ == "__main__":

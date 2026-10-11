@@ -1,5 +1,5 @@
 {
-  "at_utc": "2026-10-11T09:41:32.146916+00:00",
+  "at_utc": "2026-10-11T09:49:07.406907+00:00",
   "curl_and_sha256sum_available": true,
   "exact_r4_ledger": true,
   "matrix_readonly_endpoints_http_200": true,
@@ -8,6 +8,6 @@
   "opal_uptime_and_tmp_space_recorded": true,
   "status": "PASS",
   "stderr_tail": "",
-  "stdout": "OPAL_READONLY_PREFLIGHT\n 02:41:31 up 13:30,  load average: 1.46, 1.37, 1.36\nFilesystem           1K-blocks      Used Available Use% Mounted on\ntmpfs                    59392      4800     54592   8% /tmp\n/usr/bin/curl\n/usr/bin/sha256sum\n/usr/bin/wc\n55 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\nMATRIX_INFO_HTTP=200\nMATRIX_BUILD_HTTP=200\n",
-  "tmp_available_kb": 54592
+  "stdout": "OPAL_READONLY_PREFLIGHT\n 02:49:07 up 13:37,  load average: 1.31, 1.40, 1.37\nFilesystem           1K-blocks      Used Available Use% Mounted on\ntmpfs                    59392      7732     51660  13% /tmp\n/usr/bin/curl\n/usr/bin/sha256sum\n/usr/bin/wc\n55 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\nMATRIX_INFO_HTTP=200\nMATRIX_BUILD_HTTP=200\n",
+  "tmp_available_kb": 51660
 }
