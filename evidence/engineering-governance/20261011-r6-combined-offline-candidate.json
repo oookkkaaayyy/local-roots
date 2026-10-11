@@ -22,6 +22,31 @@
       "object_bytes": 3453080,
       "object_sha256": "a20fe5cd3dae75ab7836cf8ae7b6d2068a3e254cb282e1e428645168e9c30d3b",
       "source_build_log": "/tmp/cart2-opal-local-20261009/evidence/cart2-r6-audio-cache-20261010/TARGET_BUILD.log"
+    },
+    "isolated_exact_r6_link": {
+      "method": "Replayed the exact preserved R6 link command against the combined-candidate Xtensa usermod object; original object/library inputs were read-only and ELF/map outputs redirected to /tmp.",
+      "result": "PASS_LINKED",
+      "baseline_elf_sha256": "8823b86d650b920e309e25d76edb287bbaecef7b69987af5677082f0257050a3",
+      "candidate_elf_sha256": "cd5f12fe994c7fe68bc23c3a8ae39214393a5258af219cecb4e26b449315d8bf",
+      "candidate_map_sha256": "27cd4f73e7e86595b13ac07873dc37f952c853d8a9a99d9a51ba8510f05034ae",
+      "sections_bytes": {
+        "baseline": {
+          "text": 1208453,
+          "data": 310160,
+          "bss": 89865
+        },
+        "candidate": {
+          "text": 1209145,
+          "data": 310160,
+          "bss": 89873
+        },
+        "delta": {
+          "text": 692,
+          "data": 0,
+          "bss": 8
+        }
+      },
+      "limitations": "Reuses preserved R6 object/library inputs; not a fresh full firmware build, installable BIN, complete partition/headroom proof, or target performance qualification."
     }
   },
   "limits": [
