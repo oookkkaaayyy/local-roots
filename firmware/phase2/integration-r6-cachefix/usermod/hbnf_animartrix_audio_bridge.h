@@ -122,14 +122,13 @@ class AnimartrixAudioBridge {
         b=satAdd(b,(uint8_t)(((uint16_t)b*breath)>>8));
       }
 
-      const int cx2=(int)width_-1, cy2=(int)height_-1;
-      const int dx2=2*x-cx2, dy2=2*y-cy2;
-      const int d2=dx2*dx2+dy2*dy2;
-      const int maxd2=cx2*cx2+cy2*cy2;
-
       // LOW lane: pressure/thump by scaling the existing image. No new glyph is painted.
       // Scene seed varies whether the pressure blooms from the center or compresses from edges.
       if(bass && srcPeak>3){
+        const int cx2=(int)width_-1, cy2=(int)height_-1;
+        const int dx2=2*x-cx2, dy2=2*y-cy2;
+        const int d2=dx2*dx2+dy2*dy2;
+        const int maxd2=cx2*cx2+cy2*cy2;
         uint8_t mask=255;
         if(maxd2>0){
           // The installed Matrix is a fixed 32x16 grid. This exact bounded

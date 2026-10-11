@@ -26,13 +26,13 @@ int main() {
   const uint16_t responses[]={0,1,128,256,512};
   const uint8_t bands[][5]={
     {0,0,0,0,0}, {255,0,0,0,0}, {0,255,0,0,0}, {0,0,255,0,0},
-    {96,144,208,64,176}, {20,40,60,80,100}
+    {96,144,208,64,176}, {20,40,60,80,100}, {0,0,0,49,0}
   };
   uint64_t digest=1469598103934665603ULL;
   const uint8_t dimensions[][2]={{32,16},{31,15},{8,8},{1,1}};
   for(const auto &dimension:dimensions)
     for(uint8_t scene=220;scene<248;scene++)
-      for(uint8_t audioCase=0;audioCase<6;audioCase++)
+      for(uint8_t audioCase=0;audioCase<7;audioCase++)
         for(uint8_t amount:amounts)
           for(uint16_t response:responses) {
             const int width=dimension[0],height=dimension[1];
@@ -84,11 +84,11 @@ def main() -> None:
     old_digest = hashlib.sha256(OLD.read_bytes()).hexdigest()
     new_digest = hashlib.sha256(NEW.read_bytes()).hexdigest()
     assert old_digest == "56a391336b72bc6f37d835bbe1a6eca1108f3819fd99f5af9816e671ada46351"
-    assert new_digest == "b8481f91600e638e2f50f5517206d8f5df5616f83703070e3dea57ea432ca9dc"
+    assert new_digest == "e84c60333fd27426cc22a0e6d8703d46bd395584c9ec54c06b70d54b54b1c5b9"
     old_pixels = run(OLD, VIBE16)
     new_pixels = run(NEW, VIBE16)
     assert old_pixels == new_pixels, (old_pixels, new_pixels)
-    print("PASS: 15,755,040 RGB pixel transforms bit-identical across 28 scenes, 6 audio cases, 6 amounts, 5 response gains, and dimensions 32x16, 31x15, 8x8, 1x1 (including generic radial fallback)")
+    print("PASS: RGB transforms bit-identical across 28 scenes, 7 audio cases (including slow energy with bass/mid/high/transient zero), 6 amounts, 5 response gains, and dimensions 32x16, 31x15, 8x8, 1x1 (including generic radial fallback)")
     print(f"output_digest={new_pixels}")
 
 

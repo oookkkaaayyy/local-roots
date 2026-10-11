@@ -31,8 +31,8 @@ using namespace hbnf_v1;
 namespace {
 
 static const char HBNF_FX_DATA[] PROGMEM = "HBNF Foundation@;;;2";
-static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-cache-20261011";
-static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-cache-20261011\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-cache-20261011\",\"basedOnReleaseId\":\"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1\",\"basedOnFirmwareSha256\":\"338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r5-unfrozen\",\"native-text-moments-r5-unfrozen\",\"silent-audio-pixel-fastpath-v1\",\"frame-hue-cache-v1\"]}";
+static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011";
+static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011\",\"basedOnReleaseId\":\"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1\",\"basedOnFirmwareSha256\":\"338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r5-unfrozen\",\"native-text-moments-r5-unfrozen\",\"silent-audio-pixel-fastpath-v1\",\"frame-hue-cache-v1\",\"lazy-bass-radial-v1\"]}";
 static PaletteSelection hbnfPalette{};
 static OverlayState hbnfCommandOverlay{};
 static portMUX_TYPE hbnfOverlayMux=portMUX_INITIALIZER_UNLOCKED;
