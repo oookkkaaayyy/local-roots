@@ -322,6 +322,19 @@ def test_r4_preinstall_baseline_uses_persisted_vibe_when_runtime_omits_it():
             raise AssertionError("preinstall baseline must reject changed or missing brightness settings")
 
 
+def test_r4_preinstall_preserves_fresh_nondefault_owner_brightness():
+    state={"on":True,"HBNF":{"matrixBrightness":147,"auxBrightness":245}}
+    persisted={"matrixBrightness":147,"auxBrightness":245,"vibe":0}
+    result=module.validate_preinstall_brightness_baseline(state,persisted)
+    assert result["runtime"]==persisted and result["persisted"]==persisted
+    try:
+        module.validate_preinstall_brightness_baseline(state,{**persisted,"matrixBrightness":52})
+    except RuntimeError as exc:
+        assert "runtime-config-mismatch" in str(exc)
+    else:
+        raise AssertionError("fresh owner brightness must be captured only when runtime and persisted values agree")
+
+
 def test_r4_context_accepts_missing_vibe_only_for_exact_r4():
     original_get = module.get_json
     original_identity = module.read_matrix_identity
@@ -740,6 +753,7 @@ def main():
         test_live_and_persisted_baseline_must_match_at_52,
         test_context_reads_persisted_cfg_and_retains_only_hbnf_fields,
         test_r4_context_accepts_missing_vibe_only_for_exact_r4,
+        test_r4_preinstall_preserves_fresh_nondefault_owner_brightness,
         test_candidate_brightness_guard_preserves_postinstall_vibe,
         test_r4_missing_vibe_fails_before_any_brightness_write,
         test_preinstall_snapshot_captures_exact_renderer_and_ddp_state_without_secrets,

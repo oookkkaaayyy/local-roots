@@ -252,7 +252,7 @@ def validate_brightness_baseline(state: dict, persisted: dict) -> dict:
 
 
 def validate_candidate_brightness_baseline(state: dict, persisted: dict,
-                                          expected_matrix_brightness=QUALIFICATION_BASELINE_BRIGHTNESS) -> dict:
+                                          expected_matrix_brightness=None) -> dict:
     """Allow one legacy-config migration before qualification; require all values thereafter."""
     values = brightness_readback(state, persisted)
     if values["matrix_on"] is not True:
@@ -265,8 +265,10 @@ def validate_candidate_brightness_baseline(state: dict, persisted: dict,
         raise RuntimeError("qualification-baseline-runtime-vibe-invalid")
     if any(type(stored.get(key)) is not int for key in ("matrixBrightness", "auxBrightness")):
         raise RuntimeError("qualification-baseline-config-settings-partial-or-invalid")
-    if (runtime["matrixBrightness"] != expected_matrix_brightness
-        or stored["matrixBrightness"] != expected_matrix_brightness):
+    if (runtime["matrixBrightness"] != stored["matrixBrightness"] or
+        (expected_matrix_brightness is not None and
+        (runtime["matrixBrightness"] != expected_matrix_brightness
+         or stored["matrixBrightness"] != expected_matrix_brightness))):
         raise RuntimeError("qualification-baseline-matrix-brightness-mismatch")
     if runtime["auxBrightness"] != stored["auxBrightness"]:
         raise RuntimeError("qualification-baseline-aux-brightness-mismatch")
@@ -294,11 +296,11 @@ def validate_preinstall_brightness_baseline(state: dict, persisted: dict) -> dic
     for key in ("matrixBrightness","auxBrightness"):
         if runtime[key]!=stored.get(key):
             raise RuntimeError("preinstall-brightness-runtime-config-mismatch:"+key)
+    if not 0 <= runtime["matrixBrightness"] <= 255 or not 0 <= runtime["auxBrightness"] <= 255:
+        raise RuntimeError("preinstall-owner-brightness-out-of-range")
     values={"matrix_on":state.get("on") is True,"runtime":runtime,"persisted":stored}
     if values["matrix_on"] is not True:
         raise RuntimeError("preinstall-matrix-output-off")
-    if values["runtime"]["matrixBrightness"]!=QUALIFICATION_BASELINE_BRIGHTNESS:
-        raise RuntimeError("preinstall-owner-brightness-baseline-mismatch")
     values["runtime_observation"]={"runtime_fields":["matrixBrightness","auxBrightness"],
         "vibe_source":"persisted_config_only_on_exact_R4" if "vibe" in stored else "unavailable_on_exact_R4"}
     return values
@@ -335,7 +337,7 @@ def capture_owner_state_snapshot(matrix_state: dict, aux_state: dict, matrix_inf
 
 
 def read_matrix_context(request_counter=None, expected_release=RELEASE,
-                        expected_matrix_brightness=QUALIFICATION_BASELINE_BRIGHTNESS):
+                        expected_matrix_brightness=None):
     identity_before, info, build = _read_expected_matrix_identity(request_counter,expected_release)
     state = _get_json_counted(MATRIX+"/json/state", 4, request_counter)[2]
     # The read-only file API is parsed in memory; only HBNF brightness/AUX/vibe
@@ -401,14 +403,16 @@ def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep
                              expected_release=RELEASE) -> dict:
     """Set the frozen test brightness or restore captured HBNF settings, resolving uncertain POSTs by readback."""
     if operation == "measure":
-        if not isinstance(target, dict) or target.get("matrixBrightness") != QUALIFICATION_BASELINE_BRIGHTNESS:
+        if (not isinstance(target, dict) or type(target.get("matrixBrightness")) is not int
+            or not 0 <= target["matrixBrightness"] <= 255):
             raise RuntimeError("qualification-baseline-receipt-invalid")
         if any(type(v) is not int for v in target.values()):
             raise RuntimeError("qualification-baseline-receipt-invalid")
         requested = {"matrixBrightness": FROZEN_MATRIX_BRIGHTNESS}
         target_brightness = FROZEN_MATRIX_BRIGHTNESS
     elif operation == "restore":
-        if not isinstance(target, dict) or target.get("matrixBrightness") != QUALIFICATION_BASELINE_BRIGHTNESS:
+        if (not isinstance(target, dict) or type(target.get("matrixBrightness")) is not int
+            or not 0 <= target["matrixBrightness"] <= 255):
             raise RuntimeError("qualification-baseline-receipt-invalid")
         if any(type(v) is not int for v in target.values()):
             raise RuntimeError("qualification-baseline-receipt-invalid")
@@ -421,7 +425,7 @@ def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep
     # the brightness-only write. R4 does not persist Vibe, so preserve the exact
     # installed candidate's Vibe instead of inferring it from the R4 baseline.
     identity_before_post, _, _ = _read_expected_matrix_identity(request_counter,expected_release)
-    expected_before = QUALIFICATION_BASELINE_BRIGHTNESS if operation == "measure" else FROZEN_MATRIX_BRIGHTNESS
+    expected_before = target["matrixBrightness"] if operation == "measure" else None
     before = _read_expected_matrix_brightness_pair(request_counter,expected_release,expected_before)
     if before.get("identity") != identity_before_post or before.get("matrix_on") is not True:
         raise RuntimeError("qualification-brightness-prewrite-identity-or-output-mismatch")
@@ -436,7 +440,7 @@ def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep
             or ("vibe" in persisted and not 0 <= persisted["vibe"] <= 5)
             or ("vibe" not in persisted and not missing_vibe_migration)):
         raise RuntimeError("qualification-brightness-prewrite-settings-incomplete-or-mismatched")
-    if runtime["matrixBrightness"] != expected_before:
+    if expected_before is not None and runtime["matrixBrightness"] != expected_before:
         raise RuntimeError("qualification-brightness-prewrite-level-mismatch")
     expected_settings = dict(runtime)
     expected_settings["matrixBrightness"] = target_brightness
@@ -694,7 +698,8 @@ def qualification_command(outdir: pathlib.Path, profile=LEGACY_R6_PROFILE):
 def qualify_with_brightness_guard(port, baseline):
     """Run the frozen test at brightness 44, then restore captured owner settings."""
     outcome={"setup_started":False,"qualification":None,"setup_error":None,"worker_error":None,"restore_error":None}
-    if not isinstance(baseline,dict) or baseline.get("matrixBrightness")!=QUALIFICATION_BASELINE_BRIGHTNESS:
+    if (not isinstance(baseline,dict) or type(baseline.get("matrixBrightness")) is not int
+        or not 0 <= baseline["matrixBrightness"] <= 255):
         outcome["setup_error"]="RuntimeError: qualification-baseline-receipt-invalid"
         return outcome
     try:
@@ -869,8 +874,9 @@ def coordinate_qualification(port):
         if baseline.get("matrixBrightness") == FROZEN_MATRIX_BRIGHTNESS:
             if preflight.get("qualification_recovery_subscope") != "RESTORE_INTERRUPTED_BRIGHTNESS_THEN_QUALIFY":
                 raise RuntimeError("qualification-preflight-found-unexpected-frozen-brightness")
-            owner_baseline = dict(baseline)
-            owner_baseline["matrixBrightness"] = QUALIFICATION_BASELINE_BRIGHTNESS
+            owner_baseline = dict(getattr(port,"owner_brightness_baseline",{}) or {})
+            if not owner_baseline:
+                raise RuntimeError("captured-owner-settings-baseline-unavailable")
             result["interrupted_brightness_restore"] = port.restore_qualification_brightness(owner_baseline)
             restored = result["interrupted_brightness_restore"]
             if not isinstance(restored, dict) or restored.get("verified") is not True:
@@ -878,7 +884,8 @@ def coordinate_qualification(port):
             baseline = dict(restored["readback"]["runtime"])
             preflight["brightness_baseline"]["runtime"] = baseline
             preflight["brightness_baseline"]["persisted"] = dict(restored["readback"]["persisted"])
-        if baseline.get("matrixBrightness") != QUALIFICATION_BASELINE_BRIGHTNESS:
+        if (type(baseline.get("matrixBrightness")) is not int
+            or not 0 <= baseline["matrixBrightness"] <= 255):
             raise RuntimeError("qualification-preflight-does-not-prove-owner-brightness-baseline")
         setup_started = True
         result["setup_started"] = True
@@ -959,6 +966,7 @@ class LivePort:
         self.device_requests = 0
         self.install_attempts = 0
         self.recovery_attempts = 0
+        self.owner_brightness_baseline = None
         self.state_path = ROOT/"config/HBNF_CONTROL_STATE.json"
         self._explicit_outdir = outdir is not None
         self.outdir = pathlib.Path(outdir).resolve() if outdir else candidate.output
@@ -978,7 +986,9 @@ class LivePort:
             raise RuntimeError("admission-not-passed")
 
     def preflight(self):
-        return preflight(self.candidate,request_counter=self._record_device_request)
+        result=preflight(self.candidate,request_counter=self._record_device_request)
+        self.owner_brightness_baseline=dict(result["brightness_baseline"]["runtime"])
+        return result
 
     def preflight_candidate(self, expected_matrix_brightness=None):
         exact_artifacts(self.candidate)
@@ -988,13 +998,16 @@ class LivePort:
             raise RuntimeError("qualification-only host AC/LAN preflight failed")
         live_state=json.loads(self.state_path.read_text())
         qualification_auth=live_state.get("live_mutation_authorization",{})
+        saved_owner=qualification_auth.get("owner_brightness_baseline")
+        if isinstance(saved_owner,dict):
+            self.owner_brightness_baseline=dict(saved_owner)
         recovery_subscope=qualification_auth.get("qualification_recovery_subscope")
         expected_brightness=expected_matrix_brightness
         if expected_brightness is None:
             expected_brightness=(FROZEN_MATRIX_BRIGHTNESS
                 if recovery_subscope=="RESTORE_INTERRUPTED_BRIGHTNESS_THEN_QUALIFY"
-                else QUALIFICATION_BASELINE_BRIGHTNESS)
-        if expected_brightness not in (QUALIFICATION_BASELINE_BRIGHTNESS,FROZEN_MATRIX_BRIGHTNESS):
+                else None)
+        if expected_brightness is not None and (type(expected_brightness) is not int or not 0 <= expected_brightness <= 255):
             raise RuntimeError("qualification-preflight-brightness-expectation-invalid")
         matrix_context=read_matrix_context(self._record_device_request,self.candidate.release_id,expected_brightness)
         mi=matrix_context["info"]; ms=matrix_context["state"]; mb=matrix_context["build"]
@@ -1077,32 +1090,27 @@ class LivePort:
         return proof
 
     def restore_failed_candidate_owner_settings(self):
-        """Restore the captured R4 brightness and default Vibe before the exact rollback."""
+        """Verify the captured owner settings before rollback; never substitute stale defaults."""
+        baseline=getattr(self,"owner_brightness_baseline",None)
+        if not isinstance(baseline,dict):
+            raise RuntimeError("captured-owner-settings-baseline-unavailable")
         identity, _, _ = read_matrix_identity(self._record_device_request,self.candidate.release_id)
-        payload={"HBNF":{"matrixBrightness":QUALIFICATION_BASELINE_BRIGHTNESS,
-            "auxBrightness":245,"vibe":"chill"}}
-        post_error=None
-        try:
-            post_json(MATRIX+"/json/state",payload,request_counter=self._record_device_request)
-        except Exception as exc:
-            post_error=f"{type(exc).__name__}: {exc}"
-        time.sleep(CONFIG_SAVE_SETTLE_SECONDS)
-        context=read_matrix_context(self._record_device_request,self.candidate.release_id,
-            QUALIFICATION_BASELINE_BRIGHTNESS)
+        context=read_matrix_context(self._record_device_request,self.candidate.release_id)
         values=context["brightness"]
-        if (context["identity"]!=identity or values["runtime"]!={"matrixBrightness":52,"auxBrightness":245,"vibe":0}
-            or values["persisted"]!={"matrixBrightness":52,"auxBrightness":245,"vibe":0}):
-            raise RuntimeError("failed-candidate-owner-settings-restore-unverified")
-        return {"post_error":post_error,"readback":values,"verified":True}
+        if context["identity"]!=identity or any(values["runtime"].get(k)!=v for k,v in baseline.items()):
+            raise RuntimeError("failed-candidate-owner-settings-no-longer-match-captured-baseline")
+        if any(values["persisted"].get(k)!=v for k,v in baseline.items()):
+            raise RuntimeError("failed-candidate-persisted-owner-settings-no-longer-match-captured-baseline")
+        return {"readback":values,"verified":True,"device_write":False}
 
     def apply_qualification_brightness(self, baseline):
-        if not isinstance(baseline, dict) or baseline.get("matrixBrightness") != QUALIFICATION_BASELINE_BRIGHTNESS:
+        if not isinstance(baseline, dict) or type(baseline.get("matrixBrightness")) is not int:
             raise RuntimeError("qualification-brightness-baseline-not-admitted")
         return change_matrix_brightness(baseline, operation="measure", request_counter=self._record_device_request,
                                         expected_release=self.candidate.release_id)
 
     def restore_qualification_brightness(self, baseline):
-        if not isinstance(baseline, dict) or baseline.get("matrixBrightness") != QUALIFICATION_BASELINE_BRIGHTNESS:
+        if not isinstance(baseline, dict) or type(baseline.get("matrixBrightness")) is not int:
             raise RuntimeError("qualification-brightness-baseline-receipt-invalid")
         return change_matrix_brightness(baseline, operation="restore", request_counter=self._record_device_request,
                                         expected_release=self.candidate.release_id)
@@ -1142,6 +1150,8 @@ class LivePort:
             "recovery_attempts_used": 0,
             "current_gate": "Exact candidate attempt durably consumed before the one WLED /update request.",
         })
+        if isinstance(self.owner_brightness_baseline,dict):
+            current["owner_brightness_baseline"]=dict(self.owner_brightness_baseline)
         self.state_path.write_text(json.dumps(state, indent=2)+"\n")
         self.install_attempts = 1
         save(self.outdir/"AUTHORIZATION_CONSUMPTION.json", {
@@ -1274,18 +1284,20 @@ class LivePort:
             result["recovery_attempts"]=1
             if result["recovery"].get("status") not in ("R4_READBACK_VERIFIED","R4_ALREADY_INSTALLED_NO_UPLOAD"):
                 raise RuntimeError("exact-r4-runtime-readback-not-verified")
-            r4=read_matrix_context(self._record_device_request,R4,QUALIFICATION_BASELINE_BRIGHTNESS)
+            r4=read_matrix_context(self._record_device_request,R4)
             ai=_get_json_counted(AUX+"/json/info",4,self._record_device_request)[2]
             ast=_get_json_counted(AUX+"/json/state",4,self._record_device_request)[2]
             if not (r4["brightness"]["matrix_on"] is True
-                and r4["brightness"]["runtime"].get("matrixBrightness")==52
-                and r4["brightness"]["runtime"].get("auxBrightness")==245
+                and isinstance(self.owner_brightness_baseline,dict)
+                and r4["brightness"]["runtime"]==self.owner_brightness_baseline
+                and r4["brightness"]["persisted"]==self.owner_brightness_baseline
                 and ai.get("mac","").replace(":","").lower()==AUX_MAC and ai.get("live") is True
                 and ai.get("lm")=="DDP" and ai.get("lip")=="192.168.77.10"
                 and ai.get("leds",{}).get("count")==22 and ast.get("on") is True and ast.get("lor")==0):
                 raise RuntimeError("exact-r4-post-recovery-health-or-owner-settings-check-failed")
             result["post_recovery_readonly"]={"status":"PASS","release_id":R4,
-                "matrix_brightness":52,"aux_brightness":245,"aux_ddp_live":True,
+                "matrix_brightness":self.owner_brightness_baseline["matrixBrightness"],
+                "aux_brightness":self.owner_brightness_baseline["auxBrightness"],"aux_ddp_live":True,
                 "runtime_identity":r4["identity"]}
             result["status"]=("EXACT_R4_RECOVERED_AFTER_FAILED_QUALIFICATION" if result["owner_settings_restore"].get("verified")
                 else "EXACT_R4_RECOVERED_OWNER_SETTINGS_RESTORE_UNVERIFIED")
@@ -1437,8 +1449,8 @@ def main():
     ap.add_argument("--recovery-proof",help="Fresh read-only exact post-failure R4 recovery proof")
     ap.add_argument("--readonly-preflight-only",action="store_true",help="Refresh host/Matrix/AUX/Opal evidence without device writes or live authorization")
     ap.add_argument("--readonly-recovery-preflight-only",action="store_true",help="Refresh exact post-failure state for an R4-only recovery; performs no device writes")
-    ap.add_argument("--expected-matrix-brightness",type=int,choices=[44,52],default=None,
-        help="For read-only preflight, assert the current exact candidate brightness (52 normal; 44 only after a consumed setup write)")
+    ap.add_argument("--expected-matrix-brightness",type=int,choices=range(0,256),default=None,
+        help="For read-only preflight, assert the freshly captured current candidate brightness")
     ap.add_argument("--outdir",help="New empty evidence directory under the exact R6 qualification directory; required for qualification continuation")
     args = ap.parse_args()
     if args.recover_r4_only and (args.dry_run or args.resume_qualification or args.readonly_preflight_only or args.readonly_recovery_preflight_only):

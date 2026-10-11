@@ -1,0 +1,30 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "R6_LIVE_BRIGHTNESS_CAPTURE_20261011",
+  "summary": "Use fresh Matrix brightness as the captured owner setting during the exact R6 qualification transaction, preserving it through qualification and exact R4 recovery.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Reuse the existing single-candidate transaction, Platform golden path, release admission, prelive proof, and exact R4 rollback; preserve the frozen test brightness and all acceptance thresholds.",
+      "affected_subsystem": "scripts/hbnf_r6_audio_cache_live_transaction.py; platform/workflows/phase2-live-qualification.json; tests/test_r6_qualification_brightness_transaction.py.",
+      "rollback_reference": "Revert the runner, test, and candidate-specific workflow edits. No firmware binary changes. Exact Foundation R4 recovery remains SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
+      "evidence_sources": [
+        "Current live read-only preflight captured Matrix brightness 147 and persisted HBNF Matrix/AUX brightness 147/255, with runtime and persisted values matching.",
+        "https://github.com/wled/WLED-Docs/blob/main/docs/interfaces/json-api.md — WLED documents partial POSTs to /json/state, allowing the existing narrow brightness write to leave other state fields untouched.",
+        "Direct user authorization for exact firmware e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2 and exact R4 recovery."
+      ],
+      "tests": [
+        "python3 tests/test_r6_qualification_brightness_transaction.py",
+        "python3 tests/test_r6_audio_cache_transaction_dryrun.py",
+        "Repository-mandated control, guard, architecture, runtime, sweep, and Packet20 checks."
+      ]
+    }
+  }
+}
