@@ -1,0 +1,56 @@
+{
+  "blocking_inputs": [
+    "The current phase2-live-qualification workflow still declares candidate release hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010, SHA-256 f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b, and size 1497984; it does not bind the successor BIN.",
+    "No successor-specific Foundation sweep adapter exists; available adapters are pinned to R4 or another candidate.",
+    "A real capsule/prelive proof for the successor must bind the successor workflow and truthful PASS evidence for contract closure, exact R4 recovery, transaction rehearsal and fresh current-state capture. The required current-state capture would touch devices/network and was expressly excluded.",
+    "The existing sweep host tests are component/failure-path tests, not a full successful fake-port sweep, soak and restore rehearsal for this exact successor. The runner --dry-run validates configuration but intentionally executes none of those phases."
+  ],
+  "candidate": {
+    "bin_sha256": "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2",
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011"
+  },
+  "checks": [
+    {
+      "name": "tests/hbnf_live_kernel_sweep.py",
+      "scope": "Existing host tests cover adapter/telemetry contracts, injected failure and restore paths, snapshot equality, soak-sample validation and dry-run guards; they do not execute a complete successful 28-kernel plus 90-minute soak through one fake transaction.",
+      "status": "PASS"
+    },
+    {
+      "name": "tests/platform_static.py",
+      "scope": "Capsule and prelive validator structure and fail-closed checks.",
+      "status": "PASS"
+    },
+    {
+      "name": "tests/hbnf_guarded_run.py",
+      "scope": "Admission rejection before child execution.",
+      "status": "PASS"
+    },
+    {
+      "name": "scripts/platform.py capsule --system hbnf-cart --workflow phase2-live-qualification",
+      "scope": "Existing capsule authority resolves the phase2 workflow, but that workflow still binds the consumed 2026-10-10 audio-cache candidate.",
+      "status": "CREATED_TEMPORARILY_AND_CHECKED"
+    },
+    {
+      "name": "scripts/platform.py check-capsule",
+      "scope": "Confirms current repo input hashes; does not bind the new successor BIN because the phase2 workflow lists the old candidate.",
+      "status": "PASS_FOR_EXISTING_WORKFLOW_INPUTS_ONLY"
+    },
+    {
+      "name": "scripts/platform.py prelive-check with unmodified PRELIVE_PROOF template",
+      "scope": "Template has placeholder run/hash, approved_for_mutation=false, blocked stages and no current-state evidence; no synthetic passing proof was created.",
+      "status": "REJECTED_AS_EXPECTED"
+    }
+  ],
+  "network_device_cloud_calls": 0,
+  "next_safe_step": "Do not claim end-to-end rehearsal complete. To continue entirely offline, first select an authorized successor-specific workflow/adapter and add a fake-port successful full transaction case to the existing test harness; actual capture-current-state and live qualification remain separate gated work.",
+  "offline_only": true,
+  "safety": {
+    "consumed_attempt_history_changed": false,
+    "control_or_state_changed": false,
+    "live_authorization_requested": false,
+    "live_execution_path_changed": false,
+    "passing_prelive_proof_fabricated": false
+  },
+  "schema": "hbnf-cart2-successor-host-rehearsal-assessment-v1",
+  "status": "BLOCKED_BEFORE_SUCCESSOR_BOUND_END_TO_END_REHEARSAL"
+}
