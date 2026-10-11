@@ -1,0 +1,61 @@
+{
+  "schema": "hbnf-r6-compositor-timing-offline-verification-v1",
+  "results": [
+    {
+      "command": [
+        "python3",
+        "tests/r6_frame_context_trace/test_compositor_timing_contract.py"
+      ],
+      "exit_code": 0,
+      "output_sha256": "b4e499d8dde8f1d7a44a5db1b3d81326248825aa5ffd49f54638e08625cf65b5",
+      "output_tail": "PASS exact binding, complete timing contract, performance-failure capture, and safety stops\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/r6_frame_context_trace/test_opal_transport.py"
+      ],
+      "exit_code": 0,
+      "output_sha256": "bcf8b005829efa8679b817cc5d0cb74d96f818b0d6bd8dbd9dad8a10b71009a8",
+      "output_tail": "PASS Opal transport fallback exact-byte staging, single-request, and no-retry cases\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/r6_frame_context_trace/test_runtime_contract.py"
+      ],
+      "exit_code": 0,
+      "output_sha256": "400b7732abd3336e051892eea6dcee3448a50925dc64ec7397fe56c47cf14e99",
+      "output_tail": "PASS exact runtime identity wait and flattened read contract\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/r6_frame_context_trace/test_source_contract.py"
+      ],
+      "exit_code": 0,
+      "output_sha256": "a7bf4161efc08a8072365544a70cf0fe107c65ae6de1b9d14f21628e97ce8692",
+      "output_tail": "PASS R6 trace source contract: compile-gated, bounded, named audio mappings, no hot-path I/O/allocation\n"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/hbnf_guarded_run.py"
+      ],
+      "exit_code": 0,
+      "output_sha256": "47f9ccd062c834756b10b07ac1de9f2e89b8ac931ec72e3f74bb09910ebf4b23",
+      "output_tail": "PASS: guarded execution blocks wrong-state/unauthorized mutation; exact LIVE_APPROVED admission rejects missing, malformed, and stale identities before child execution\n"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/hbnf_r6_frame_context_diagnostic_transaction.py",
+        "--dry-run"
+      ],
+      "exit_code": 0,
+      "output_sha256": "c3a72f6d00501a5e60819610568245d6a481119a636c86285245bb482815c9d6",
+      "output_tail": "single_worker\", \"opal_readonly_preflight\", \"consume_exact_attempt\", \"stage_hash_size_verified\", \"install_diag_once_via_opal\", \"verify_diag_identity\", \"capture_or_abort\", \"restore_renderer_snapshot\", \"stage_exact_r4_hash_size_verified\", \"install_r4_once_via_opal\", \"persist_recovery_failure_stop\"], \"renderer_restore_failure\": [\"admission\", \"preflight_r4_aux_ac_single_worker\", \"opal_readonly_preflight\", \"consume_exact_attempt\", \"stage_hash_size_verified\", \"install_diag_once_via_opal\", \"verify_diag_identity\", \"snapshot_restore_unverified\", \"stage_exact_r4_hash_size_verified\", \"install_exact_r4_once_via_opal\", \"verify_r4_and_aux_or_stop\"], \"success\": [\"admission\", \"preflight_r4_aux_ac_single_worker\", \"opal_readonly_preflight\", \"consume_exact_attempt\", \"stage_hash_size_verified\", \"install_diag_once_via_opal\", \"verify_diag_identity\", \"begin_snapshot\", \"select_kernel0_brightness44\", \"enable_builtin_timing_tails\", \"capture_component_samples_at_8s\", \"persist_metrics_and_context\", \"restore_renderer_snapshot\", \"stage_exact_r4_hash_size_verified\", \"install_r4_once_via_opal\", \"verify_r4_and_aux\"]}, \"schema\": \"hbnf-r6-compositor-timing-diagnostic-transaction-dryrun-v2\", \"window_seconds_max\": 60}\n"
+    }
+  ],
+  "status": "PASS"
+}

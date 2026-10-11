@@ -1,0 +1,12 @@
+{
+  "schema": "hbnf-cart2-diagnostic-source-binding-v1",
+  "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+  "source_commit": "911b791d814ed50440567433b17f04da83b700da",
+  "source_branch": "codex/cart2-compositor-timing-20261011",
+  "runtime_source_tree_sha256": "07934d33568cee440daa43205ceaa2641fe8e2c69ee47bbad8590b1233668659",
+  "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+  "platformio_ini_sha256": "99718bfd8614da297c94692bc41dea48c9af87dbe829ded2e4a7cad7f0368820",
+  "platformio_override_ini_sha256": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922",
+  "build_receipt_sha256": "aedef57067326bcb2da226ab5f6a71f6fe2487898230cc034761ca1349c34629",
+  "statement": "Exact source/dependency identity recorded by the verified local cached-toolchain build receipt; source tree copied to build tree and hash-checked before compilation."
+}

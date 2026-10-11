@@ -1,0 +1,29 @@
+{
+  "schema": "hbnf-cart2-diagnostic-offline-authority-v1",
+  "control_state": {
+    "path": "config/HBNF_CONTROL_STATE.json",
+    "sha256": "30806a1e27e309fbe41b6003184a98db883ad718ada21848e4f8b3aa380e74e8",
+    "live_mutation_authorized": false,
+    "installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "installed_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "last_read_only_device_evidence": {
+    "basis": "Fresh read-only Matrix build/info and AUX telemetry during 2026-10-10 R6 cache candidate preflight; Matrix exact R4 and AUX live DDP from Matrix; exact R4 artifact independently SHA-verified.",
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "evidence_path": "evidence/cart2-r6-audio-cache-20261010/FRESH_PRELIVE_READONLY_PREFLIGHT.json",
+    "evidence_sha256": "cc0a45fc4dfdfc3ff06dba6d21c752ccaa850edd4be5b0595531bc58c18e030b",
+    "live_mutation_authorized": false
+  },
+  "candidate": {
+    "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+    "source_commit": "911b791d814ed50440567433b17f04da83b700da",
+    "artifact_sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e"
+  },
+  "rollback": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "artifact_path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin"
+  },
+  "scope": "offline compiled diagnostic admission only; current live identity/preflight remains required before any installation"
+}
