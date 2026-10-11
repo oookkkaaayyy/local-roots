@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import pathlib
 import shutil
 import subprocess
@@ -44,6 +45,40 @@ def main() -> None:
         raise SystemExit("FAIL: compact-font resolver is absent from command overlay")
     if source.count(EXPECTED_RELEASE_ID) != 3:
         raise SystemExit("FAIL: successor release identity is missing or inconsistent")
+
+    receipt_path = ROOT / "evidence/cart2-r6-compositor-hoist-20261011/SUCCESSOR_BUILD_RECEIPT.json"
+    receipt = json.loads(receipt_path.read_text())
+    if receipt["release_id"] != EXPECTED_RELEASE_ID or receipt["status"] != "OFFLINE_BUILD_VERIFIED__NOT_LIVE_QUALIFIED__NOT_ACCEPTED":
+        raise SystemExit("FAIL: offline build receipt identity/status mismatch")
+    for name, expected in receipt["source_files_sha256"].items():
+        path = USERMOD / name
+        if sha256(path) != expected:
+            raise SystemExit(f"FAIL: successor source binding mismatch: {name}")
+        historic = subprocess.run(
+            ["git", "show", f"{receipt['source_commit']}:{receipt['source_tree']}/{name}"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+        ).stdout
+        if hashlib.sha256(historic).hexdigest() != expected:
+            raise SystemExit(f"FAIL: receipt source commit mismatch: {name}")
+    artifact = ROOT / "evidence/cart2-r6-compositor-hoist-20261011" / receipt["artifact"]["path"]
+    if sha256(artifact) != receipt["artifact"]["sha256"] or artifact.stat().st_size != receipt["artifact"]["bytes"]:
+        raise SystemExit("FAIL: built successor BIN hash/size mismatch")
+    image = artifact.read_bytes()
+    if image.count(EXPECTED_RELEASE_ID.encode()) != 3:
+        raise SystemExit("FAIL: generated BIN does not carry its successor identity")
+    if image.count(b"hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"):
+        raise SystemExit("FAIL: generated BIN still carries the consumed R6 identity")
+    binding = json.loads(
+        (ROOT / "evidence/cart2-r6-compositor-hoist-20261011/SUCCESSOR_SOURCE_BINDING.json").read_text()
+    )
+    if (
+        binding["release_id"] != EXPECTED_RELEASE_ID
+        or binding["repository_source_commit"] != receipt["source_commit"]
+        or binding["artifact_sha256"] != receipt["artifact"]["sha256"]
+    ):
+        raise SystemExit("FAIL: successor source-binding receipt mismatch")
 
     compiler = shutil.which("c++")
     if not compiler:

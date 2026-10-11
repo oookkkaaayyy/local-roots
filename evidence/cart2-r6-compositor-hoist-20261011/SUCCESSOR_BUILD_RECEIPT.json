@@ -1,0 +1,79 @@
+{
+  "schema": "hbnf-offline-successor-build-receipt-v1",
+  "status": "OFFLINE_BUILD_VERIFIED__NOT_LIVE_QUALIFIED__NOT_ACCEPTED",
+  "release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011",
+  "source_branch": "codex/cart2-p2-offline-candidate-20261011",
+  "source_commit": "1b32c07c7a9e5f4ad25f6e9cf7f02e4e0c1d060b",
+  "source_tree": "firmware/phase2/integration-r6-cachefix/usermod",
+  "source_files_sha256": {
+    "hbnf_animartrix_audio_bridge.h": "edfe168658d548fe8e52e05b5b9d0cc3390cfe11092423a2c1c12de95884ae74",
+    "hbnf_audio_expression.h": "f4825884dd53cba9bca698bd8b9b7d9d13a81e7ce381957d23790f13073dc4c3",
+    "hbnf_brightness_output.h": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a",
+    "hbnf_coordinated_contract.h": "7380a3ab41924d0fc58ca83202ad04e28762ac8fb2e85ae1f8ddfb88719f8882",
+    "hbnf_foundation_core.h": "d4646267f8fbc03cc4921368fc801e528e6a6cb92133a0c1fc74b48b211be0e4",
+    "hbnf_generative_v4.h": "13163419b6453d448a795a7580e784f54b23b7586c8317eff467863f648a6dfa",
+    "hbnf_home_screen_icon.h": "e272644675566a969f65e96b855b824109b8ae6fbcb168da8c6efdeb842097d6",
+    "hbnf_local_ui.h": "feed7e614cf43d7efe211b54bba5b37fb352e70646e887e3b0341c3f97b0068b",
+    "hbnf_native_text.h": "f00d00d9a53d3f6ffe4175e4af809c222f6ea5888fcb9b2a366c2076a311e98f",
+    "hbnf_outlier_trace.h": "d97672e7f41ad3fc21a5ed453f49197d149d9533426a17d0e152d8ceba466a66",
+    "hbnf_vibe16.h": "f076acf0e5710bf5a9acffe63b31a95f2252230b5470bd362301caa73a743b0a",
+    "hbnf_vibe_runtime.h": "290e979980af3ebb69b6a9c7c5e0147680055ce005c5c51eb3ece8965e12f1ca",
+    "library.json": "2dc685da45efe57fe1d199b5407a00a7bd42b2f473599f6f432df515b4b6c96a",
+    "usermod_hbnf_foundation_v1.cpp": "995ed44a5a626acf20e4c254c3f1d51aa68b191bb5cac807a5e309bff1c4bb7c"
+  },
+  "parent_failed_candidate": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+  },
+  "recovery_baseline": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "build": {
+    "command": "pio run -e hbnf_matrix_wled16_packet20_diag",
+    "network": "OS network access denied; build used local cached packages and source only",
+    "result": "SUCCESS",
+    "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "platformio_core": "6.1.18",
+    "esp32_platform": "2024.6.0",
+    "framework": "2.0.18+sha.8ba0dc0",
+    "xtensa_toolchain": "8.4.0+2021r2-patch5",
+    "esptool": "4.7.4",
+    "platformio_ini_sha256": "99718bfd8614da297c94692bc41dea48c9af87dbe829ded2e4a7cad7f0368820",
+    "platformio_override_ini_sha256": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922",
+    "build_log_sha256": "d4cb8d23ed9b7fdc2da15d1fd23235caf285ecee7e8ff08b30e7bd776c3b9cca"
+  },
+  "artifact": {
+    "path": "artifact/hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011.bin",
+    "bytes": 1498672,
+    "sha256": "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2"
+  },
+  "image": {
+    "elf_sha256": "43bf250ffd8384cea5e9198dd64f44b4d5e2851fdeae4569d2929b244642d3c3",
+    "map_sha256": "1d748ce7505a79e22a868224fb0588a8a7f1f5385cc5ab47940cb00c9561fc08",
+    "embedded_release_id_occurrences": 3,
+    "failed_r6_release_id_occurrences": 0,
+    "partition_bytes": 1572864,
+    "binary_remaining_bytes": 74192,
+    "program_bytes": 1491941,
+    "program_remaining_bytes": 80923,
+    "ram_bytes": 112488,
+    "ram_remaining_bytes": 215192
+  },
+  "qualification": {
+    "host_golden": "PASS; five Vibes, 64 varied input states, eight phases, complete 32x16 pixel grid; bit-exact output",
+    "text_layout_tests": "PASS 15/15",
+    "compact_font_smoke": "PASS",
+    "pwa_reliability_and_package": "PASS",
+    "historical_failed_r6_artifact_source_and_recovery": "PASS",
+    "device_or_cloud": "NOT RUN",
+    "performance_gate": "NOT RUN; no target cycle/frame-time claim",
+    "28_kernel_sweep_combined_tests_and_soak": "NOT RUN",
+    "owner_visual_acceptance": "NOT RUN"
+  },
+  "limits": [
+    "Full local target image built successfully; unchanged object/library inputs were reused from the exact pinned local cache.",
+    "Build success and partition fit do not establish R6 runtime performance, device safety admission, rollback readiness, visual quality, or release acceptance.",
+    "The active control model still closes live mutation authority; exact R4 remains installed."
+  ]
+}

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -28,8 +29,8 @@ assert sha(artifact) == EXPECTED_SHA == manifest["artifact"]["sha256"]
 assert artifact.stat().st_size == manifest["artifact"]["bytes"] == 1_497_984
 assert manifest["artifact"]["embedded_candidate_and_release_id"] == EXPECTED_RELEASE
 binding_path = ROOT / manifest["source_binding"]["path"]
-binding = json.loads(binding_path.read_text())
 assert sha(binding_path) == manifest["source_binding"]["sha256"]
+binding = json.loads(binding_path.read_text())
 assert binding["release_id"] == EXPECTED_RELEASE
 assert binding["status"].startswith("OFFLINE_TARGET_BUILD_VERIFIED")
 source_root = ROOT / binding["runtime_source_directory"]
@@ -56,7 +57,8 @@ assert "foundation-vibe-audio-r5-unfrozen" in strings
 assert "native-text-moments-r5-unfrozen" in strings
 assert "hbnf-cart2-r6-frame-context-diagnostic-20261010" not in strings
 
-build_log = (EVIDENCE / "TARGET_BUILD.log").read_text(errors="replace")
+build_log_path = Path(os.environ.get("HBNF_R6_AUDIO_CACHE_BUILD_LOG", EVIDENCE / "TARGET_BUILD.log"))
+build_log = build_log_path.read_text(errors="replace")
 assert "-DHBNF_PACKET20_DIAGNOSTICS" in build_log
 assert "-DHBNF_R6_FRAME_CONTEXT_TRACE" not in build_log
 
