@@ -159,5 +159,25 @@
       "No matched R4 capture exists for this diagnostic run; the compositor result cannot establish the cause of the failed R6 release."
     ],
     "decision": "Do not spend another live attempt or rebuild on compositor removal/hoisting alone; the measured compositor cost is too small to explain the failure. Continue offline attribution against the exact failed 36881ca6 source and preserve the frozen gates."
+  },
+  "variant_id_interpretation": {
+    "status": "26_OF_26_IDS_ARE_DIAGNOSTIC_KERNEL_MARKERS__NOT_GENERATED_VARIANT_MATCHES",
+    "pairs_checked": 26,
+    "marker_formula": "0x504b2000 | kernel_index",
+    "all_candidate_and_r4_receipt_and_profile_ids_match_marker": true,
+    "candidate_source": {
+      "path": "firmware/phase2/integration-r6-cachefix/usermod/usermod_hbnf_foundation_v1.cpp",
+      "sha256": "7c5e391e86982daf8dd8f9a366a5950f8701837616d800f1aa715942a4b3b8d6",
+      "diagnostic_selector": "diagnosticSelectKernel() sets variant_.kernel=kernel and variant_.signature=0x504b2000u | kernel",
+      "generated_variant_behavior": "chooseVariant() first stores generator signature and base fields, then maps profile/style/speed/amount/hueOffset/transform from current Vibe/audio axes; diagnosticSelectKernel() replaces the signature field with the fixed kernel marker."
+    },
+    "profile_set": {
+      "file_count": 52,
+      "sha256_of_sorted_path_and_file_sha256_lines": "ff41a4ef6c378c1f8a99b6b82515259169aaea85212d095f8380f73e980f85b4",
+      "captured_fields": "kernel id/name and variant_id marker; per-frame generated base signature and final mapped variant parameters are absent from these profile summaries."
+    },
+    "interpretation": "The 26/26 equality proves that each candidate/R4 pair was assigned the same requested kernel in the diagnostic sweep. Because variant_id is overwritten with the fixed marker, it does not prove equal randomly generated base settings, equal Vibe/audio-mapped settings, or equal runtime work. The R4 field is a recorded profile value; exact R4 source was not used to assert implementation semantics.",
+    "decision": "Do not use equal variant_id values to rule out variant/settings mismatch as a cause. Existing evidence still does not isolate why the failed candidate has higher kernel cost.",
+    "next_discriminator": "For any future authorized diagnostic, capture the actual generated base signature, final mapped speed/profile/style/amount/hueOffset/transform, Vibe/audio feature inputs, and per-frame timing together. The current profile IDs cannot supply those fields. No live action is authorized by the current control state."
   }
 }
