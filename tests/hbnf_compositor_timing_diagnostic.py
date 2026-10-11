@@ -29,6 +29,14 @@ assert 'timing["kernelRenderUs"]=hbnfCycleUs(perf.kernelGross>perf.audioInKernel
 assert "kernelResidual>hbnfPerfWorking.compositorInKernel?kernelResidual-hbnfPerfWorking.compositorInKernel:0" in source
 receipt_path = ROOT / "evidence/cart2-r6-compositor-timing-diagnostic-20261011/BUILD_RECEIPT.json"
 receipt = json.loads(receipt_path.read_text())
+binding_path = ROOT / "firmware/phase2/integration-r6-compositor-timing/SOURCE_BINDING.json"
+binding = json.loads(binding_path.read_text())
+analysis_path = ROOT / "evidence/cart2-r6-compositor-timing-diagnostic-20261011/COMPOSITOR_TIMING_OFFLINE_ANALYSIS.json"
+analysis = json.loads(analysis_path.read_text())
+assert analysis["candidate"]["source_commit"] == receipt["source_commit"]
+assert analysis["source_binding"]["measured_source_tree_sha256"] == receipt["runtime_source_tree_sha256"] == binding["runtime_source_tree_sha256"]
+assert analysis["source_binding"]["source_sha256"]["usermod_hbnf_foundation_v1.cpp"] == binding["runtime_files_sha256"]["usermod_hbnf_foundation_v1.cpp"]
+assert analysis["source_binding"]["later_failed_candidate"]["directly_measured_by_this_artifact"] is False
 artifact = ROOT / "evidence/cart2-r6-compositor-timing-diagnostic-20261011/artifact" / f"{release}.bin"
 binary = artifact.read_bytes()
 assert hashlib.sha256(binary).hexdigest() == receipt["artifact"]["sha256"]

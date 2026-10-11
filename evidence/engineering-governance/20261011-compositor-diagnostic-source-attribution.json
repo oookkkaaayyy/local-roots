@@ -1,0 +1,37 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "COMPOSITOR_DIAGNOSTIC_SOURCE_ATTRIBUTION_20261011",
+  "summary": "Bind compositor timing conclusions to the exact diagnostic source/build and mark that the measurements do not directly describe the later R6 candidate.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing diagnostic source binding and build receipt; no firmware, lifecycle authority, or measurement method changed.",
+      "affected_subsystem": "Local diagnostic interpretation JSON and its source-identity regression test only.",
+      "root_cause": "The analysis named the later mutable integration-r6-cachefix source hash 7c5e391e even though the captured diagnostic build is bound to source commit 911b791 and source hash bd1c5305. This could make diagnostic measurements appear to describe the later 36881ca6 candidate.",
+      "rollback_reference": "Revert the analysis source attribution and assertions in tests/hbnf_compositor_timing_diagnostic.py. No firmware rebuild, device request, or cloud mutation is required.",
+      "evidence_sources": [
+        "evidence/cart2-r6-compositor-timing-diagnostic-20261011/BUILD_RECEIPT.json",
+        "firmware/phase2/integration-r6-compositor-timing/SOURCE_BINDING.json",
+        "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/attempt-01/TRANSACTION_RESULT.json",
+        "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/SUCCESSOR_SOURCE_BINDING.json"
+      ],
+      "tests": [
+        "python3 tests/hbnf_compositor_timing_diagnostic.py verifies that analysis source commit, source tree hash, and measured source hash match the exact build receipt and source binding, and labels the later candidate as not directly measured."
+      ],
+      "live_state": {
+        "new_device_requests": false,
+        "device_mutation": false,
+        "firmware_changed": false,
+        "thresholds_changed": false,
+        "remote_or_paid_build": false
+      }
+    }
+  }
+}

@@ -52,14 +52,23 @@
     "gate": "FAILED; frozen FPS floor is 20 and p99 ceiling is 75 ms."
   },
   "source_binding": {
-    "component_timer_site": "firmware/phase2/integration-r6-cachefix/usermod/usermod_hbnf_foundation_v1.cpp:880-886",
+    "measured_source_commit": "911b791d814ed50440567433b17f04da83b700da",
+    "measured_source_tree_sha256": "07934d33568cee440daa43205ceaa2641fe8e2c69ee47bbad8590b1233668659",
+    "component_timer_site": "firmware/phase2/integration-r6-compositor-timing/usermod/usermod_hbnf_foundation_v1.cpp:880-886",
     "palette_path": "The measured palette interval wraps the per-pixel legacy hueRotate() call.",
-    "hue_rotate_source": "firmware/phase2/integration-r6-cachefix/usermod/hbnf_foundation_core.h:188-204",
+    "hue_rotate_source": "firmware/phase2/integration-r6-compositor-timing/usermod/hbnf_foundation_core.h:188-204",
     "kernel_residual": "The remaining kernel interval after subtracting the compositor is still about 31.2 ms in this cumulative snapshot.",
     "source_sha256": {
       "hbnf_foundation_core.h": "d4646267f8fbc03cc4921368fc801e528e6a6cb92133a0c1fc74b48b211be0e4",
-      "usermod_hbnf_foundation_v1.cpp": "7c5e391e86982daf8dd8f9a366a5950f8701837616d800f1aa715942a4b3b8d6"
-    }
+      "usermod_hbnf_foundation_v1.cpp": "bd1c530533333dccc8ab92c45dec7aea339244dc2db282cd3057a5125f9f6507"
+    },
+    "later_failed_candidate": {
+      "release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+      "sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+      "source_commit": "7645dae3806c1e352a1063ac22d1482ddb5713ff",
+      "directly_measured_by_this_artifact": false
+    },
+    "scope_note": "The compositor measurements belong to this exact diagnostic image and its 911b791 source. They must not be treated as measurements of the later 36881ca6 candidate, whose source changed afterward."
   },
   "measurement_capability": {
     "build_config": {
