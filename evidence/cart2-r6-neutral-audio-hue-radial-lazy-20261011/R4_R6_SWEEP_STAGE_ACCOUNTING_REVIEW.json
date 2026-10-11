@@ -1,0 +1,141 @@
+{
+  "schema": "hbnf-r4-r6-sweep-stage-accounting-review-v1",
+  "status": "AUX_BUCKET_SHIFT_CLARIFIED__KERNEL_REGRESSION_UNRESOLVED",
+  "generated_at_utc": "2026-10-11T16:54:47Z",
+  "worktree": {
+    "branch": "codex/cart2-compositor-timing-20261011",
+    "head_before_review": "e38d0d5095569a908406bfd6ca7a502bad9c3c0c"
+  },
+  "candidate": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+    "sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187"
+  },
+  "recovery": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "inputs": {
+    "directory": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep",
+    "pair_count": 26,
+    "comparison_json_sha256": {
+      "R4_COMPARISON_KERNEL_1.json": "1b832ee42cb56b272a87de87ef98fb7b065387b8b8e43642690ea262ee9459b2",
+      "R4_COMPARISON_KERNEL_10.json": "27ce7bde5bc9c815ef53c236c41b6e44cbed1d441784e4ab270207f379dbbaa3",
+      "R4_COMPARISON_KERNEL_11.json": "42dbb6435b04bcdc2f862a52695a68b1ddfc66cce744491a45104f3ca642aef5",
+      "R4_COMPARISON_KERNEL_12.json": "947836041eea168c583b7b09a38c79f0f2c53f4d88b552214f47e2be4ea0a810",
+      "R4_COMPARISON_KERNEL_14.json": "ca016075ae841aaf305939c04e91940cf4f651af0f769be3e2fa5cc61a4321a8",
+      "R4_COMPARISON_KERNEL_15.json": "e2560cf9b586c6cff726da6053eb184158ff3bb03aea5b8898627ce89dc9bbd3",
+      "R4_COMPARISON_KERNEL_16.json": "7885def9b768ea6355f2cf60158720965b881cce55add4712d68c7b425e7d3f5",
+      "R4_COMPARISON_KERNEL_17.json": "93f74b81968cadd86662848cb8966aec7215c3d162aca9491de14d880467a7f7",
+      "R4_COMPARISON_KERNEL_18.json": "4d4c7546ccaf3a4642c8d7684898b2d5b6cabc93e18ec1b639b546e03d5c7b2f",
+      "R4_COMPARISON_KERNEL_19.json": "010f70e4ea4adfb6ddb5a8105cc171192ee6178acf04633832d3a5009befc4b1",
+      "R4_COMPARISON_KERNEL_2.json": "c219913ec230bc80c414cd3d9a5e9f04778c7b0de7f4a6764c076df4614c6a08",
+      "R4_COMPARISON_KERNEL_20.json": "87bc2ad216c1ccbb24b2a5826d14ccb0f27ad4188f2a8f32c5906b610efb76ba",
+      "R4_COMPARISON_KERNEL_21.json": "d633ab0445f1e95e24036b7d4518b4a07871b5ff22f3d8ece309d8b40a4a95ff",
+      "R4_COMPARISON_KERNEL_23.json": "35939a70f3e7730545f5545ce5b3da3ef7ad7a1aa99d35993ff2b138b5eece8d",
+      "R4_COMPARISON_KERNEL_24.json": "c19f914c44f818f63173cb8d7d0ab33a4a74d2f7006ca7d266d19e1ad882f2fd",
+      "R4_COMPARISON_KERNEL_25.json": "78cb53d660bd0fd0425976816383dde3aaa213480a3d95b47db215eaa7f133df",
+      "R4_COMPARISON_KERNEL_26.json": "d7cb3e6abbdf0ad859ebe39f7c18e4b33430bc64532b33d14558dbc70979a7d0",
+      "R4_COMPARISON_KERNEL_27.json": "7099213a6b29a900c2ea400448da9f512b0ce72cd3259d8a1650291b24287d48",
+      "R4_COMPARISON_KERNEL_3.json": "d29fa2766bce04876bd7e6cfe7fc5be3c67aae40a5e6e188dd604eb167ea971a",
+      "R4_COMPARISON_KERNEL_4.json": "0f270b35336660bd56013a32f785645075e9dea69c06a101034753ae80526f37",
+      "R4_COMPARISON_KERNEL_5.json": "558bd9e53888d7826f6cb4e839d29535f8b7dc97a9c47b8f64db73f6c644638b",
+      "R4_COMPARISON_KERNEL_6.json": "66e8aaa739d6fafc825fd603c0411eed1beb01c1977c93306107262d7620a75b",
+      "R4_COMPARISON_KERNEL_7.json": "242df85dc26faeb58098ba86363fc7aa2f76b3c64e3ca9509325a5b6db78f6e4",
+      "R4_COMPARISON_KERNEL_8.json": "2d7e9751af6cbfb2fb7398f73b5366cc39725115aae050287dfe49f2fb60fc93",
+      "R4_COMPARISON_KERNEL_9.json": "a13bcbb650ac2b4be0fd8f4c5bb30d877fc9489bd87751ffe1f2462cb8ca6464",
+      "EARLY_R4_COMPARISON_KERNEL_13.json": "cdc8c89844f7ba51232c6efac36890e912e986b361f297cc94a7677e7675b58c"
+    }
+  },
+  "stage_deltas": {
+    "aux_prepare_send": {
+      "median_ms": 4.123332,
+      "min_ms": 3.937768,
+      "max_ms": 4.474943
+    },
+    "unaccounted": {
+      "median_ms": -3.704607,
+      "min_ms": -3.862828,
+      "max_ms": -3.453452
+    },
+    "aux_plus_unaccounted": {
+      "median_ms": 0.426351,
+      "min_ms": 0.101808,
+      "max_ms": 0.72369
+    },
+    "kernel": {
+      "median_ms": 7.501284,
+      "min_ms": -4.119802,
+      "max_ms": 39.700918
+    }
+  },
+  "interpretation": {
+    "fact": "Across 26 usable R4/R6 profile pairs (including early kernel-13 comparison), the median AUX stage change is +4.132 ms and the median unaccounted change is -3.694 ms; their combined median change is +0.430 ms.",
+    "inference": "The apparent ~4 ms AUX increase is chiefly a stage-accounting redistribution and should not be reported as a separate ~4 ms frame regression.",
+    "limit": "This arithmetic does not establish equal physical AUX delivery. The R4 captures are from a different run and lack candidate-equivalent runtime controls; timing can include preemption.",
+    "remaining_signal": "The median kernel-stage change is +7.380 ms with range -4.120 to +39.701 ms. Complex_Kaleido_5 profile medians are 17 FPS / 43.923 ms kernel on R6 versus 41 FPS / 4.222 ms on R4. Cause is not isolated."
+  },
+  "largest_kernel_stage_deltas": [
+    {
+      "kernel_index": 10,
+      "kernel": "Complex_Kaleido_5",
+      "candidate_profile_sha256": "313806a5aabaa38788ab6a5c8398ed4969a27d0cf7fd419e9ef73ca57e01f473",
+      "r4_profile_sha256": "5fcd33de3011d3effa1e5c7f4252d030c5d6af8d300752578ee923bebbbd61cf",
+      "candidate_raw_samples_sha256": "492860e150892215cde69094fd908a03eb8e528c0915ede1e0c4c58f8aa56b3d",
+      "r4_raw_samples_sha256": "a1054ec9fdbea19fa085de2e7ceef349184d399f44bf157973890f55e891b8e4",
+      "aux_prepare_send_delta_ms": 4.424896,
+      "unaccounted_delta_ms": -3.725475,
+      "aux_plus_unaccounted_delta_ms": 0.699422,
+      "kernel_delta_ms": 39.700918
+    },
+    {
+      "kernel_index": 12,
+      "kernel": "Hot_Blob",
+      "candidate_profile_sha256": "55a2203a131a22bbc208dbf7855c5d6ebe0a10646ee9b9725f61ebcd6fc96b8b",
+      "r4_profile_sha256": "760b075557fc3c406635eee202614cefcf62998f145f23756ed373cb4cf20a1c",
+      "candidate_raw_samples_sha256": "9dbf0536876691f1c9a3ba1a75b6f6abaf8532e1153c6613b4f383129f1d022a",
+      "r4_raw_samples_sha256": "8ac937ff747ba22eaf2be2bbeda32cfe14d9b3bffec5c48f5a1bbe6a72bc699c",
+      "aux_prepare_send_delta_ms": 4.32343,
+      "unaccounted_delta_ms": -3.693169,
+      "aux_plus_unaccounted_delta_ms": 0.630261,
+      "kernel_delta_ms": 24.005117
+    },
+    {
+      "kernel_index": 27,
+      "kernel": "Module_Experiment10",
+      "candidate_profile_sha256": "d1f3bb9ed655bf2fe75be076e5938f7b784c64bb2a93861ad00a605292bafcbc",
+      "r4_profile_sha256": "80478828fcf936be7e112eda25b14b22e7dad26d0bf284cc0577037d2dcd6f63",
+      "candidate_raw_samples_sha256": "ba26fdbe3da75ac6932dcf0b2e7305dded15dd808fef46d81fb5c704ad0cb3af",
+      "r4_raw_samples_sha256": "79d7d12342318c5020597b8405d83089f52c190143e8af7f0358796103b61019",
+      "aux_prepare_send_delta_ms": 4.474943,
+      "unaccounted_delta_ms": -3.754874,
+      "aux_plus_unaccounted_delta_ms": 0.720069,
+      "kernel_delta_ms": 21.41928
+    },
+    {
+      "kernel_index": 6,
+      "kernel": "Complex_Kaleido_4",
+      "candidate_profile_sha256": "e14431b40f9a6249f6a11c8c6c137bdf2424b9c0ae8dc2ce214af5549e11a2b6",
+      "r4_profile_sha256": "91157b488468510a1e5c31d42cf242bba66cc602c27f5bb701b27c11dadfbe57",
+      "candidate_raw_samples_sha256": "eab1c4d5a06693a4add24bcb85798fd68f3c1651eef7b652558cfb620e337965",
+      "r4_raw_samples_sha256": "55cdb85a3b440f0155f65fd611ec0534606e621bd4a68b75e64374b008f5efa2",
+      "aux_prepare_send_delta_ms": 4.247146,
+      "unaccounted_delta_ms": -3.862828,
+      "aux_plus_unaccounted_delta_ms": 0.384319,
+      "kernel_delta_ms": 15.21246
+    },
+    {
+      "kernel_index": 26,
+      "kernel": "SM5",
+      "candidate_profile_sha256": "a0d6522d5e4f11823f5b4b24f207721677d3967668457b191ec4be755a30be13",
+      "r4_profile_sha256": "831bb8fcf575880417599583a8dd34a7c4915f0e01f242bec893df966e6c4e6d",
+      "candidate_raw_samples_sha256": "ecdaa145f7e8334d32375864b957495b63028493b5f6ebea434e85866c61782b",
+      "r4_raw_samples_sha256": "919f553e41498690664b56b3e415273a4c5382f9ed61a129dd13b79229e65c2f",
+      "aux_prepare_send_delta_ms": 4.132135,
+      "unaccounted_delta_ms": -3.546968,
+      "aux_plus_unaccounted_delta_ms": 0.585167,
+      "kernel_delta_ms": 14.939245
+    }
+  ],
+  "next_discriminator": "Use one exact-artifact, controlled comparison for kernel 0 and the worst kernels with identical runtime controls, reset/warm-up boundary and poll cadence, recording per-frame settings and timestamps. Do not repeat the existing 28-kernel sweep for this candidate.",
+  "live_state": "The current control model records exact R4 installed and live_mutation_authorized=false; the candidate failed. No soak or acceptance."
+}
