@@ -1,0 +1,51 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "F89_QUALIFICATION_OWNER_SETTINGS_RESTORE_20261011",
+  "summary": "Restore the captured Matrix brightness, AUX brightness, and Vibe together after qualification so a runtime/persisted Vibe mismatch cannot prevent owner-setting recovery.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing f89 qualification transaction and HBNF /json/state settings API; no lifecycle or firmware change.",
+      "affected_subsystem": "Host qualification settings cleanup. Firmware identity, release thresholds, candidate/recovery attempt counts, and live authority are unchanged.",
+      "root_cause": "After the combined-feature check changed Vibe, the candidate runner required runtime and persisted Vibe to already match before any restore write. A mismatch therefore blocked restoring the captured owner baseline. The pinned f89 usermod accepts matrixBrightness, auxBrightness, and vibe in one HBNF state update and marks changed settings for persistence.",
+      "rollback_reference": "Revert the qualification runner helper and focused tests. No firmware rebuild, candidate installation, recovery attempt, or lifecycle-state change is involved.",
+      "evidence_sources": [
+        "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/TRANSACTION_RESULT.json",
+        "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/sweep/SWEEP_ABORT.json",
+        "../hbnf-p2-build/WLED-r6-audio-cache-20261010/usermods/hbnf_foundation_v1/usermod_hbnf_foundation_v1.cpp:1560-1577",
+        "scripts/hbnf_r6_audio_cache_live_transaction.py: change_matrix_brightness()"
+      ],
+      "tests": [
+        "python3 tests/test_r6_qualification_brightness_transaction.py: PASS; full owner settings restore repairs a valid runtime/persisted Vibe mismatch with one write and exact readback.",
+        "python3 tests/test_r6_failed_qualification_recovery_runner.py: PASS.",
+        "python3 tests/hbnf_control.py: PASS (23 tests).",
+        "python3 tests/hbnf_guarded_run.py: PASS.",
+        "python3 scripts/hbnf_architecture_fitness.py: PASS.",
+        "python3 tests/hbnf_runtime_qualify_static.py: PASS.",
+        "python3 tests/hbnf_kernel_sweep_report.py: PASS.",
+        "python3 tests/hbnf_source_tree_identity.py: PASS.",
+        "python3 tests/hbnf_live_kernel_sweep.py: PASS (host-only mocked cases).",
+        "python3 tests/hbnf_packet20_http_adapter.py: PASS.",
+        "python3 tests/hbnf_packet20_build_validate.py: PASS.",
+        "python3 scripts/platform.py doctor: PASS."
+      ],
+      "live_state": {
+        "device_mutation_during_fix": false,
+        "firmware_changed": false,
+        "thresholds_changed": false,
+        "candidate_install_attempts_used": 1,
+        "exact_r4_recovery_attempts_used": 0,
+        "live_mutation_authorized": false
+      },
+      "expected_efficiency_effect": "Prevents a completed qualification cycle from stopping at settings cleanup solely because the test changed Vibe; one validated settings update restores all captured HBNF controls without another firmware build.",
+      "limits": "Host tests do not prove a future device write or the 90-minute soak. f89 performance remains unqualified, and no live writes were performed."
+    }
+  }
+}

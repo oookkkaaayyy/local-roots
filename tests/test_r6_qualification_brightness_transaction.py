@@ -211,6 +211,7 @@ def test_unknown_post_outcome_without_matching_readback_fails_once():
 def test_restore_persisted_mismatch_fails_even_when_runtime_restored():
     original_post = module.post_json
     original_read = module.read_matrix_brightness_pair
+    original_restore_read = module._read_candidate_settings_for_restore
     original_identity = module.read_matrix_identity
     writes = []
     current = pair(44, persisted_matrix=44)
@@ -222,7 +223,7 @@ def test_restore_persisted_mismatch_fails_even_when_runtime_restored():
         raise TimeoutError("restore response lost; persisted file remains at 44")
 
     module.post_json = post
-    module.read_matrix_brightness_pair = lambda _counter=None, expected_release=module.RELEASE, expected_matrix_brightness=52: {"identity": exact_identity()[0], "matrix_on": True,
+    module._read_candidate_settings_for_restore = lambda _counter=None, expected_release=module.RELEASE: {"identity": exact_identity()[0], "matrix_on": True,
         "runtime": dict(current["runtime"]), "persisted": dict(current["persisted"])}
     module.read_matrix_identity = exact_identity
     try:
@@ -235,10 +236,11 @@ def test_restore_persisted_mismatch_fails_even_when_runtime_restored():
         else:
             raise AssertionError("persisted-side restore mismatch must fail closed")
         assert len(writes) == 1
-        assert writes[0] == {"HBNF": {"matrixBrightness": 52}}
+        assert writes[0] == {"HBNF": dict(BASELINE)}
     finally:
         module.post_json = original_post
         module.read_matrix_brightness_pair = original_read
+        module._read_candidate_settings_for_restore = original_restore_read
         module.read_matrix_identity = original_identity
 
 
@@ -501,6 +503,7 @@ def test_candidate_brightness_guard_preserves_postinstall_vibe():
 def test_interrupted_measurement_readback_and_owner_restore_use_their_expected_levels():
     original_identity = module._read_expected_matrix_identity
     original_pair = module._read_expected_matrix_brightness_pair
+    original_restore_read = module._read_candidate_settings_for_restore
     original_post = module._post_json_counted
     current = pair(52, vibe=0, partial=True)
     writes = []
@@ -522,6 +525,9 @@ def test_interrupted_measurement_readback_and_owner_restore_use_their_expected_l
 
     module._read_expected_matrix_identity = lambda _counter, _release: (exact_identity()[0], {}, {})
     module._read_expected_matrix_brightness_pair = read_pair
+    module._read_candidate_settings_for_restore = lambda _counter, _release: {
+        "identity": exact_identity()[0], "matrix_on": True,
+        "runtime": dict(current["runtime"]), "persisted": dict(current["persisted"])}
     module._post_json_counted = post
     try:
         owner = {"matrixBrightness":52,"auxBrightness":245,"vibe":0}
@@ -529,11 +535,46 @@ def test_interrupted_measurement_readback_and_owner_restore_use_their_expected_l
         restored = module.change_matrix_brightness(owner,operation="restore",sleeper=lambda _s:None,monotonic=lambda:0.0)
         assert measured["verified"] is True and measured["readback"]["runtime"]["matrixBrightness"]==44
         assert restored["verified"] is True and restored["readback"]["runtime"]==owner
-        assert expected_levels==[52,44,44,44,52,52]
-        assert writes==[{"HBNF":{"matrixBrightness":44}},{"HBNF":{"matrixBrightness":52}}]
+        assert expected_levels==[52,44,44,44]
+        assert writes==[{"HBNF":{"matrixBrightness":44}},{"HBNF":owner}]
     finally:
         module._read_expected_matrix_identity = original_identity
         module._read_expected_matrix_brightness_pair = original_pair
+        module._read_candidate_settings_for_restore = original_restore_read
+        module._post_json_counted = original_post
+
+
+def test_full_owner_settings_restore_repairs_runtime_persisted_vibe_mismatch_once():
+    original_identity = module._read_expected_matrix_identity
+    original_restore_read = module._read_candidate_settings_for_restore
+    original_post = module._post_json_counted
+    owner = {"matrixBrightness": 147, "auxBrightness": 255, "vibe": 0}
+    current = {"identity": exact_identity()[0], "matrix_on": True,
+        "runtime": {"matrixBrightness": 44, "auxBrightness": 255, "vibe": 1},
+        "persisted": {"matrixBrightness": 44, "auxBrightness": 255, "vibe": 0}}
+    writes = []
+
+    def read_restore(_counter, _release):
+        return json.loads(json.dumps(current))
+
+    def post(_url, payload, _counter):
+        writes.append(payload)
+        current["runtime"].update(payload["HBNF"])
+        current["persisted"].update(payload["HBNF"])
+
+    module._read_expected_matrix_identity = lambda _counter, _release: (exact_identity()[0], {}, {})
+    module._read_candidate_settings_for_restore = read_restore
+    module._post_json_counted = post
+    try:
+        receipt = module.change_matrix_brightness(owner, operation="restore",
+            sleeper=lambda _seconds: None, monotonic=lambda: 0.0)
+        assert receipt["verified"] is True
+        assert receipt["readback"]["runtime"] == owner
+        assert receipt["readback"]["persisted"] == owner
+        assert writes == [{"HBNF": owner}]
+    finally:
+        module._read_expected_matrix_identity = original_identity
+        module._read_candidate_settings_for_restore = original_restore_read
         module._post_json_counted = original_post
 
 
@@ -763,9 +804,10 @@ def main():
         test_unverified_false_setup_and_restore_receipts_fail_closed,
         test_identity_mismatch_immediately_before_setup_and_restore_means_zero_posts,
         test_exact_r4_owner_settings_restore_is_one_matrix_brightness_write,
+        test_full_owner_settings_restore_repairs_runtime_persisted_vibe_mismatch_once,
     ):
         test()
-    print("PASS: brightness transaction preserves candidate Vibe, accepts the documented R4 missing-Vibe baseline, and fails closed before writes on incomplete candidate state")
+    print("PASS: qualification restores the exact candidate owner settings in one verified write and preserves fail-closed checks")
 
 
 if __name__ == "__main__":

@@ -399,6 +399,20 @@ def _read_expected_matrix_brightness_pair(request_counter, expected_release,
             expected_matrix_brightness=expected_matrix_brightness))
 
 
+def _read_candidate_settings_for_restore(request_counter, expected_release):
+    """Read candidate HBNF settings without rejecting the mismatch restoration must repair."""
+    identity_before, _, _ = _read_expected_matrix_identity(request_counter, expected_release)
+    state = _get_json_counted(MATRIX+"/json/state", 4, request_counter)[2]
+    persisted_raw = _get_json_counted(PERSISTED_CONFIG_URL, 6, request_counter)[2]
+    persisted = sanitized_persisted_hbnf(persisted_raw)
+    identity_after, _, _ = _read_expected_matrix_identity(request_counter, expected_release)
+    if identity_before != identity_after:
+        raise RuntimeError("qualification-matrix-identity-changed-during-restore-readback")
+    values = brightness_readback(state, persisted)
+    values["identity"] = identity_after
+    return values
+
+
 def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep,
                              monotonic=time.monotonic, request_counter=None,
                              expected_release=RELEASE) -> dict:
@@ -417,7 +431,16 @@ def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep
             raise RuntimeError("qualification-baseline-receipt-invalid")
         if any(type(v) is not int for v in target.values()):
             raise RuntimeError("qualification-baseline-receipt-invalid")
-        requested = {"matrixBrightness": target["matrixBrightness"]}
+        if ("auxBrightness" in target and not 0 <= target["auxBrightness"] <= 255) or (
+            "vibe" in target and not 0 <= target["vibe"] <= 5):
+            raise RuntimeError("qualification-baseline-receipt-invalid")
+        # Full captured owner baselines include AUX brightness and Vibe. Restore
+        # those fields together because qualification intentionally changes Vibe;
+        # requiring runtime/config Vibe equality before this write made the exact
+        # mismatch the restore is meant to repair impossible to recover from.
+        requested = ({key: target[key] for key in ("matrixBrightness", "auxBrightness", "vibe")}
+            if expected_release != R4 and all(key in target for key in ("matrixBrightness", "auxBrightness", "vibe"))
+            else {"matrixBrightness": target["matrixBrightness"]})
         target_brightness = target["matrixBrightness"]
     else:
         raise RuntimeError("unknown-qualification-brightness-operation")
@@ -427,14 +450,26 @@ def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep
     # installed candidate's Vibe instead of inferring it from the R4 baseline.
     identity_before_post, _, _ = _read_expected_matrix_identity(request_counter,expected_release)
     expected_before = target["matrixBrightness"] if operation == "measure" else None
-    before = _read_expected_matrix_brightness_pair(request_counter,expected_release,expected_before)
+    full_candidate_restore = operation == "restore" and expected_release != R4 and "vibe" in requested
+    before = (_read_candidate_settings_for_restore(request_counter, expected_release)
+        if full_candidate_restore else
+        _read_expected_matrix_brightness_pair(request_counter,expected_release,expected_before))
     if before.get("identity") != identity_before_post or before.get("matrix_on") is not True:
         raise RuntimeError("qualification-brightness-prewrite-identity-or-output-mismatch")
     runtime = before.get("runtime", {})
     persisted = before.get("persisted", {})
     required_settings = ("matrixBrightness", "auxBrightness", "vibe")
+    if full_candidate_restore:
+        if (any(type(runtime.get(key)) is not int for key in required_settings)
+            or any(type(persisted.get(key)) is not int for key in required_settings)
+            or not 0 <= runtime["vibe"] <= 5 or not 0 <= persisted["vibe"] <= 5
+            or runtime["auxBrightness"] != target["auxBrightness"]
+            or persisted["auxBrightness"] != target["auxBrightness"]
+            or runtime["matrixBrightness"] != persisted["matrixBrightness"]
+            or runtime["matrixBrightness"] not in (target_brightness, FROZEN_MATRIX_BRIGHTNESS)):
+            raise RuntimeError("qualification-owner-settings-restore-prewrite-state-unsafe")
     missing_vibe_migration = "vibe" not in persisted and operation == "measure"
-    if (any(type(runtime.get(key)) is not int for key in required_settings)
+    if not full_candidate_restore and (any(type(runtime.get(key)) is not int for key in required_settings)
             or not 0 <= runtime.get("vibe", -1) <= 5
             or any(type(persisted.get(key)) is not int for key in required_settings if key in persisted)
             or any(runtime.get(key) != persisted.get(key) for key in required_settings if key in persisted)
@@ -443,7 +478,7 @@ def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep
         raise RuntimeError("qualification-brightness-prewrite-settings-incomplete-or-mismatched")
     if expected_before is not None and runtime["matrixBrightness"] != expected_before:
         raise RuntimeError("qualification-brightness-prewrite-level-mismatch")
-    expected_settings = dict(runtime)
+    expected_settings = dict(requested) if full_candidate_restore else dict(runtime)
     expected_settings["matrixBrightness"] = target_brightness
     payload = {"HBNF": requested}
     post_error = None
@@ -457,7 +492,9 @@ def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep
     last_error = None
     while monotonic() <= deadline:
         try:
-            values = _read_expected_matrix_brightness_pair(request_counter,expected_release,target_brightness)
+            values = (_read_candidate_settings_for_restore(request_counter, expected_release)
+                if full_candidate_restore else
+                _read_expected_matrix_brightness_pair(request_counter,expected_release,target_brightness))
             if values.get("identity") != identity_before_post:
                 raise RuntimeError("qualification-matrix-identity-changed-before-readback")
             expected_runtime = dict(expected_settings)
@@ -467,7 +504,9 @@ def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep
                 # HBNF defers dirty marking for 850 ms after /json/state; wait beyond it,
                 # then take a second readback before starting profiles or closing restore.
                 sleeper(CONFIG_SAVE_SETTLE_SECONDS)
-                final = _read_expected_matrix_brightness_pair(request_counter,expected_release,target_brightness)
+                final = (_read_candidate_settings_for_restore(request_counter, expected_release)
+                    if full_candidate_restore else
+                    _read_expected_matrix_brightness_pair(request_counter,expected_release,target_brightness))
                 if final.get("identity") != identity_before_post:
                     raise RuntimeError("qualification-matrix-identity-changed-before-final-readback")
                 if not (final["matrix_on"] is True and all(final["runtime"].get(k) == v for k, v in expected_runtime.items()) and all(
