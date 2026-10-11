@@ -2675,6 +2675,15 @@
       ],
       "observed_at": "2026-10-05T17:48:54Z",
       "status": "R3_CLOSED__R4_EXECUTION_REQUIRED"
+    },
+    "field_f89_urgent_transaction": {
+      "authorization_id": "OWNER-20261011-CART2-F89-FIELD-QUALIFICATION-01",
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "scope": "One exact f89 install + qualification; one exact R4 recovery if required; no other live mutation.",
+      "status": "AUTHORIZED_PENDING_FRESH_ADMISSION",
+      "previous_e414_transaction": "Preserved as failed and recovered; no repeat."
     }
   },
   "execution_budget_policy": {
@@ -2692,49 +2701,35 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "R6_FROZEN_PERFORMANCE_GATE_FAILED__EXACT_R4_RECOVERED__OFFLINE_REPAIR_ONLY",
+    "schema": "hbnf-execution-cursor-v1",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
+    "current_transition": "T4_PHASE2_INTEGRATION",
+    "current_failure_domain": "F89_FIELD_QUALIFICATION_NEW_EXACT_OWNER_AUTHORIZATION",
     "current_subject": {
-      "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-      "authorization_id": "OWNER-20261011-CART2-R6-COMPACT-FONT-QUALIFICATION-01",
-      "aux_brightness": 255,
-      "aux_ddp": "live from Matrix",
-      "candidate_artifact_path": "evidence/cart2-r6-f89-compact-font-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011.bin",
-      "candidate_install_attempts_used": 1,
-      "candidate_install_receipt": "evidence/cart2-r6-f89-compact-font-20261011/live-qualification/TRANSACTION_RESULT.json",
-      "candidate_install_receipt_sha256": "4265d6c3a3077a7fb300248926e11ec98aaa34e4b0e5049b84e8a14531294b78",
-      "exact_r4_recovery_attempts_used": 1,
-      "failed_candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
-      "failed_candidate_sha256": "e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2",
+      "authorization_id": "OWNER-20261011-CART2-F89-FIELD-QUALIFICATION-01",
+      "artifact_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_artifact_path": "evidence/cart2-r6-audio-cache-20261010/artifact/hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010.bin",
+      "rollback_artifact_path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
       "installed_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
       "installed_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-      "matrix_brightness": 147,
       "owner_brightness_baseline": {
-        "auxBrightness": 255,
-        "matrixBrightness": 147
+        "matrixBrightness": 147,
+        "auxBrightness": 255
       },
-      "qualification_result": "evidence/cart2-r6-f89-compact-font-20261011/live-qualification/r4-recovery-20261011T/recovery-transaction/RECOVERY_RECONCILIATION_RESULT.json",
-      "qualification_result_sha256": "a5b9fb83afbb21d9d948be98762d5522a55e33420569b6b40f128bffa63bd2b4",
-      "recovery_result": "evidence/cart2-r6-f89-compact-font-20261011/live-qualification/r4-recovery-20261011T/recovery-transaction/RECOVERY_RECONCILIATION_RESULT.json",
-      "recovery_result_sha256": "a5b9fb83afbb21d9d948be98762d5522a55e33420569b6b40f128bffa63bd2b4",
-      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-      "rollback_artifact_path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
-      "runtime_readonly_receipt": "evidence/cart2-r6-f89-compact-font-20261011/live-qualification/r4-recovery-20261011T/recovery-transaction/POST_RECOVERY_CONTROL_SNAPSHOT.json",
-      "runtime_readonly_sha256": "458255d8358d47a6330f33aeabedbf5e9566cea2dd4f77c0cbfca52274e2eb42",
-      "runtime_vibe": 0
+      "candidate_install_attempts_used": 0,
+      "exact_r4_recovery_attempts_used": 0
     },
-    "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "R6 failed the kernel-0 performance gate; the sweep then stopped on an AUX/DDP integrity failure after 8 of 28 profiles. The remaining 20 profiles and 90-minute soak did not run.",
-      "Exact Foundation R4 is installed and read-only verified at the captured Matrix/AUX brightness 147/255, with persisted/runtime Vibe 0 and live Matrix-origin AUX DDP.",
-      "The one candidate attempt and one exact R4 recovery are consumed. Continue with offline source analysis and host qualification; any future live candidate requires a new exact owner authorization."
+      "Fresh f89-bound capsule, LIVE_APPROVED admission, and read-only preflight.",
+      "Run the one guarded f89 transaction only if all admission, identity, connectivity, power, and rollback checks pass.",
+      "Fast-fail qualification on the first mandatory ineligible gate; use only the one authorized R4 recovery if required."
     ],
     "no_repeat": [
-      "Do not reinstall the failed candidate or repeat its completed 28-kernel diagnostic sweep.",
-      "Do not claim qualification, soak completion, or owner acceptance.",
-      "Do not perform further live mutation under the consumed exact owner authorization."
-    ],
-    "schema": "hbnf-execution-cursor-v1"
+      "Do not install e414 or any other firmware.",
+      "Do not repeat f89 if this transaction fails.",
+      "Do not change thresholds or unrelated production services."
+    ]
   },
   "inherited_evidence": [
     {
@@ -2956,52 +2951,44 @@
   "last_updated_utc": "2026-10-11T20:10:05Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_authorization_binding": {
-    "authorization_id": "OWNER-20261011-CART2-R6-COMPACT-FONT-QUALIFICATION-01",
-    "candidate_bin_sha256": "e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2",
-    "candidate_install_limit": 1,
-    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
-    "matrix_mac": "70:4b:ca:5b:34:5c",
-    "recovery_install_limit": 1,
+    "authorization_id": "OWNER-20261011-CART2-F89-FIELD-QUALIFICATION-01",
+    "source_message_ref": "Direct user message in this conversation, 2026-10-11: CART 2.0 \u2014 URGENT FIELD-READY RECOVERY.",
+    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "candidate_bin_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
     "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "candidate_install_limit": 1,
+    "recovery_install_limit": 1,
     "scope": [
-      "Install the exact named R6 candidate once on Matrix 70:4b:ca:5b:34:5c after fresh candidate-specific admission and passing immediate preflight.",
-      "Run initial health and synchronization checks, all 28 frozen kernel performance qualification profiles, combined-feature verification, and one uninterrupted 5400-second reliability soak, subject to existing gates.",
-      "If a mandatory gate fails, make at most one exact Foundation R4 recovery attempt using the specified SHA and established recovery path.",
-      "Capture and restore the exact fresh owner settings; the fresh Matrix brightness and persisted Matrix/AUX brightness values are authoritative.",
-      "No router/network changes, paid or remote builds, cloud/backend/Owner/Guest/game deployments, repeated candidate installs, threshold changes, or unrelated mutations."
-    ],
-    "source_message_ref": "Direct user message in this conversation, 2026-10-11: CART 2.0 \u2014 AUTHORIZE R6 INSTALLATION AND QUALIFICATION."
+      "Install the exact f89 October 10 R6 artifact once on Matrix 70:4b:ca:5b:34:5c after fresh exact admission and passing live preflight.",
+      "Run initial health and synchronization checks, the existing 28-kernel performance qualification, combined-feature verification, one uninterrupted 5400-second reliability soak, and post-install identity/health checks, subject to all existing gates.",
+      "If a genuine mandatory safety, identity, performance, AUX, or reliability gate fails, make at most one exact Foundation R4 recovery attempt using the specified SHA and established recovery path.",
+      "Capture and preserve fresh owner settings, including current brightness 147/255; restore them after qualification or recovery.",
+      "No e414 install, repeated f89 attempt, router/network changes, paid/remote builds, cloud/backend/Owner/Guest/game deployments, threshold changes, or unrelated live mutations."
+    ]
   },
   "live_mutation_authorization": {
-    "authorization": "Direct owner message authorizes this exact candidate and one exact R4 recovery subject to all existing gates.",
-    "authorization_id": "OWNER-20261011-CART2-R6-COMPACT-FONT-QUALIFICATION-01",
-    "authorized": false,
-    "candidate_attempt_started_unix": 1791748094.269436,
-    "candidate_attempts_used": 1,
-    "candidate_install_limit": 1,
-    "candidate_install_permitted": false,
-    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
-    "candidate_sha256": "e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2",
-    "current_gate": "Exact R4 recovery verified; candidate and recovery attempts consumed; live gate closed.",
-    "hardware_writes_permitted_now": false,
-    "operation_scope": "CLOSED_AFTER_QUALIFICATION",
-    "owner_brightness_baseline": {
-      "auxBrightness": 255,
-      "matrixBrightness": 147
-    },
-    "qualification_prelive_receipt": "evidence/cart2-r6-f89-compact-font-20261011/live-qualification/r4-recovery-20261011T/current-preflight/RECOVERY_PRELIVE_READONLY.json",
-    "qualification_prelive_sha256": "ac87b8011d53f5ff9ace885f879d45efe73accfa8f70f50b671448ef4ef1ae0a",
-    "qualification_recovery_diagnostic_receipt": "evidence/cart2-r6-f89-compact-font-20261011/live-qualification/sweep/SWEEP_ABORT.json",
-    "qualification_recovery_diagnostic_sha256": "f154ff4d1b8095b3fb62dc827b9ff03cd5864b08aa850f657d83a0671e36ad8e",
-    "qualification_recovery_subscope": "EXACT_R4_RECOVERY_CONSUMED",
-    "recovery_attempts_used": 1,
-    "recovery_install_limit": 1,
+    "authorization": "Direct owner message authorizes exactly one fresh f89 installation and qualification transaction and, if required, one exact R4 recovery, under all existing admission and safety gates.",
+    "authorization_id": "OWNER-20261011-CART2-F89-FIELD-QUALIFICATION-01",
+    "source_message_ref": "Direct user message in this conversation, 2026-10-11: CART 2.0 \u2014 URGENT FIELD-READY RECOVERY.",
+    "authorized": true,
+    "hardware_writes_permitted_now": true,
+    "operation_scope": "INSTALL_AND_QUALIFICATION",
+    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "source_evidence": "evidence/cart2-r6-f89-compact-font-20261011/EXACT_OWNER_AUTHORIZATION_BINDING.json",
-    "source_message_ref": "Direct user message in this conversation, 2026-10-11: CART 2.0 \u2014 AUTHORIZE R6 INSTALLATION AND QUALIFICATION.",
-    "status": "EXACT_R4_RECOVERED_AFTER_FAILED_QUALIFICATION",
-    "transaction_consumed": true,
-    "transaction_result": "evidence/cart2-r6-f89-compact-font-20261011/live-qualification/r4-recovery-20261011T/recovery-transaction/RECOVERY_RECONCILIATION_RESULT.json"
+    "candidate_install_limit": 1,
+    "candidate_attempts_used": 0,
+    "candidate_install_permitted": true,
+    "recovery_install_limit": 1,
+    "recovery_attempts_used": 0,
+    "owner_brightness_baseline": {
+      "matrixBrightness": 147,
+      "auxBrightness": 255
+    },
+    "status": "AUTHORIZED_EXACT_F89_NEW_TRANSACTION",
+    "transaction_consumed": false,
+    "current_gate": "Fresh exact-artifact admission and read-only preflight must pass before the single f89 installation."
   },
   "live_mutation_authorization_closed_at_utc": null,
   "live_mutation_authorization_closure": {
@@ -3031,7 +3018,7 @@
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "schema": "hbnf-live-authorization-state-reconciliation-v1"
   },
-  "live_mutation_authorized": false,
+  "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",

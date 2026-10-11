@@ -638,6 +638,8 @@ def main():
     ap.add_argument("--compare-all-r4",action="store_true",help="record provisional frozen-ratio comparisons against exact R4 profiles for every comparable kernel")
     ap.add_argument("--complete-diagnostics-on-performance-gate-failure",action="store_true",
                     help="collect remaining kernels after saturated-telemetry failures; restore once and report findings, but suppress qualification soak when a kernel profile is not qualification-eligible; integrity, transport, continuity, unsafe-frame, and restore failures still stop immediately")
+    ap.add_argument("--stop-on-first-gate-failure",action="store_true",
+                    help="stop the kernel sweep after the first qualification-ineligible profile, restore the snapshot, and skip combined checks and soak")
     ap.add_argument("--resume-snapshot-file",help="resume one exact previously captured, still-open Packet20 snapshot; never issues begin/snapshot")
     ap.add_argument("--resume-observer-proof",help="PASS observer-effect receipt for the exact expected release, required with --resume-snapshot-file")
     ap.add_argument("--dry-run",action="store_true")
@@ -668,6 +670,8 @@ def main():
         raise SystemExit("--compare-all-r4 requires --early-r4-profile-dir")
     if args.complete_diagnostics_on_performance_gate_failure and (args.contract!="foundation" or not args.early_r4_profile_dir or not args.compare_all_r4):
         raise SystemExit("complete diagnostic continuation requires Foundation contract, exact R4 profiles, and all-kernel comparison")
+    if args.complete_diagnostics_on_performance_gate_failure and args.stop_on_first_gate_failure:
+        raise SystemExit("complete-diagnostics and stop-on-first-gate-failure are mutually exclusive")
     if args.early_r4_profile_dir:
         try:validate_r4_profile_set(args.early_r4_profile_dir,args.early_r4_baseline_manifest,inventory,args.early_r4_release)
         except (OSError,ValueError,KeyError,RuntimeError) as e:raise SystemExit(f"R4 comparison preflight failed before device access: {e}")
@@ -767,6 +771,8 @@ def main():
                     "failure_class":"SATURATED_TELEMETRY",
                     "diagnostic_path":str(outdir/f"{int(entry['runtime_kernel_index_expected']):02d}_{entry['kernel_name']}.diagnostic-only.json")
                 })
+                if args.stop_on_first_gate_failure:
+                    break
                 continue
             profiles.append({
               "kernel_id":entry["runtime_kernel_index_expected"],
@@ -788,7 +794,8 @@ def main():
                 atomic_write(outdir/f"{label}_COMPARISON_KERNEL_{kernel_index}.json",json.dumps(comparison,indent=2,sort_keys=True)+"\n")
         soak_result=None
         combined_result=None
-        if args.combined_check_script and (args.soak_seconds or args.complete_diagnostics_on_performance_gate_failure):
+        should_run_combined=(not performance_gate_failures and args.soak_seconds) or args.complete_diagnostics_on_performance_gate_failure
+        if args.combined_check_script and should_run_combined:
             try:
                 combined_result=run_combined_feature_check(args.combined_check_script,outdir,expected_release_id,timeout)
             except RuntimeError as exc:
@@ -910,7 +917,8 @@ def main():
     if performance_gate_failures:
         diagnostic_result={
           "schema":"hbnf-foundation-complete-diagnostic-result-v1",
-          "status":"DIAGNOSTICS_COMPLETE__PERFORMANCE_GATE_FAILED",
+          "status":("QUALIFICATION_STOPPED_AT_FIRST_GATE_FAILURE" if args.stop_on_first_gate_failure
+                    else "DIAGNOSTICS_COMPLETE__PERFORMANCE_GATE_FAILED"),
           "qualification_eligible":False,
           "candidate_release_id":next(iter(release_ids)),
           "expected_kernel_count":28,

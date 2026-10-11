@@ -141,11 +141,12 @@ def main():
     # the full 5400-second soak remains part of the exact command.
     port = module.LivePort("unused-admission", "unused-capsule", "unused-proof")
     built_command=module.qualification_command(pathlib.Path("/tmp/qualification"),module.SUCCESSOR_PROFILE)
-    assert "--complete-diagnostics-on-performance-gate-failure" in built_command
+    assert "--stop-on-first-gate-failure" in built_command
+    assert "--complete-diagnostics-on-performance-gate-failure" not in built_command
     with tempfile.TemporaryDirectory(prefix="complete-gate-readback-") as td:
         outdir=pathlib.Path(td);(outdir/"sweep").mkdir()
         (outdir/"sweep/DIAGNOSTIC_COMPLETE_RESULT.json").write_text(json.dumps({
-          "status":"DIAGNOSTICS_COMPLETE__PERFORMANCE_GATE_FAILED","kernels_completed":28,"soak_started":False}))
+          "status":"QUALIFICATION_STOPPED_AT_FIRST_GATE_FAILURE","kernels_completed":1,"soak_started":False}))
         actual_port=module.LivePort("unused-admission","unused-capsule","unused-proof",outdir=outdir,
                                     candidate=module.SUCCESSOR_PROFILE)
         original_command=module.qualification_command;original_subprocess_run=module.subprocess.run
@@ -155,7 +156,7 @@ def main():
             actual_result=actual_port.qualify()
         finally:
             module.qualification_command=original_command;module.subprocess.run=original_subprocess_run
-        assert actual_result["diagnostic_complete"]["kernels_completed"]==28
+        assert actual_result["diagnostic_complete"]["kernels_completed"]==1
         assert module.device_failure_requires_recovery(actual_result)
     with tempfile.TemporaryDirectory() as td:
         port.outdir = pathlib.Path(td)

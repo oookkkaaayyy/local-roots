@@ -599,6 +599,28 @@ with tempfile.TemporaryDirectory() as td:
         assert len(diagnostic["preliminary_r4_comparisons"])==27
         assert any(x["status"]=="FAIL" and x["gate_effect"]=="DIAGNOSTIC_ONLY__DOES_NOT_BLOCK_SWEEP_OR_SOAK"
                    for x in diagnostic["preliminary_r4_comparisons"])
+        # The field transaction opts into fail-fast after a qualification-
+        # ineligible telemetry profile: no remaining kernels, combined check,
+        # or soak are run, and the renderer snapshot is still restored.
+        calls.clear();uptime[0]=100;saturated[0]=True
+        fast_out=out.parent/"stop-on-first-gate-failure"
+        sys.argv=["hbnf_live_kernel_sweep.py","--adapter",str(ROOT/"config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json"),
+          "--inventory",str(ROOT/"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"),"--outdir",str(fast_out),
+          "--contract","foundation","--soak-seconds","5400","--threshold-policy",
+          str(ROOT/"config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json"),
+          "--combined-check-script",str(ROOT/"scripts/hbnf_r6_combined_feature_check.py"),
+          "--early-r4-profile-dir",str(ROOT/"evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep"),
+          "--early-r4-baseline-manifest",str(ROOT/"evidence/hbnf-foundation-qualification-20261005/seq39/live/PRE_SOAK_BASELINE.json"),
+          "--early-r4-release","hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+          "--compare-all-r4","--stop-on-first-gate-failure"]
+        assert m.main()==2
+        fast=json.loads((fast_out/"DIAGNOSTIC_COMPLETE_RESULT.json").read_text())
+        assert fast["status"]=="QUALIFICATION_STOPPED_AT_FIRST_GATE_FAILURE"
+        assert fast["kernels_completed"]==1 and fast["soak_started"] is False
+        assert calls==[m.order_entries_for_early_baseline(inv["entries"])[0]["runtime_kernel_index_expected"]]
+        assert (fast_out/"RESTORE_RECEIPT.json").is_file()
+        assert not (fast_out/"SWEEP_MANIFEST.json").exists()
+        assert not (fast_out/"FOUNDATION_SOAK.jsonl").exists()
         # With the same provisional R4 miss but qualification-eligible profiles,
         # the runner path reaches the soak and records the result.
         saturated[0]=False;calls.clear();uptime[0]=100

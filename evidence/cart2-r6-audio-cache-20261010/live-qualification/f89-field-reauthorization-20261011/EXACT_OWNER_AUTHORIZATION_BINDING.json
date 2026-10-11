@@ -1,0 +1,17 @@
+{
+  "authorization_id": "OWNER-20261011-CART2-F89-FIELD-QUALIFICATION-01",
+  "source_message_ref": "Direct user message in this conversation, 2026-10-11: CART 2.0 \u2014 URGENT FIELD-READY RECOVERY.",
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "candidate_bin_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+  "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "matrix_mac": "70:4b:ca:5b:34:5c",
+  "candidate_install_limit": 1,
+  "recovery_install_limit": 1,
+  "scope": [
+    "Install the exact f89 October 10 R6 artifact once on Matrix 70:4b:ca:5b:34:5c after fresh exact admission and passing live preflight.",
+    "Run initial health and synchronization checks, the existing 28-kernel performance qualification, combined-feature verification, one uninterrupted 5400-second reliability soak, and post-install identity/health checks, subject to all existing gates.",
+    "If a genuine mandatory safety, identity, performance, AUX, or reliability gate fails, make at most one exact Foundation R4 recovery attempt using the specified SHA and established recovery path.",
+    "Capture and preserve fresh owner settings, including current brightness 147/255; restore them after qualification or recovery.",
+    "No e414 install, repeated f89 attempt, router/network changes, paid/remote builds, cloud/backend/Owner/Guest/game deployments, threshold changes, or unrelated live mutations."
+  ]
+}

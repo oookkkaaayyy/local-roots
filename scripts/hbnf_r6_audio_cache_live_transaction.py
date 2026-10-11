@@ -692,7 +692,7 @@ def qualification_command(outdir: pathlib.Path, profile=LEGACY_R6_PROFILE):
         "--soak-interval-seconds", "8", "--threshold-policy", "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
         "--early-r4-profile-dir", "evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep",
         "--early-r4-baseline-manifest", "evidence/hbnf-foundation-qualification-20261005/seq39/live/PRE_SOAK_BASELINE.json",
-        "--early-r4-release", R4, "--compare-all-r4", "--complete-diagnostics-on-performance-gate-failure"]
+        "--early-r4-release", R4, "--compare-all-r4", "--stop-on-first-gate-failure"]
     return sweep
 
 
@@ -847,6 +847,7 @@ def device_failure_requires_recovery(summary):
         # already-authorized recovery path.
         "foundation-frame-tail-quantile-saturated",
         "diagnostics_complete__performance_gate_failed",
+        "qualification_stopped_at_first_gate_failure",
         # The frozen sweep's continuation guard records this condition when
         # Matrix-to-AUX DDP projection drops during qualification. The release
         # contract classifies AUX/runtime integrity as an immediate stop and

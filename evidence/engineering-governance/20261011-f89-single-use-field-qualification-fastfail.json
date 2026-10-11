@@ -1,0 +1,37 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "F89_SINGLE_USE_FIELD_QUALIFICATION_FAIL_FAST_20261011",
+  "summary": "Bind the newly authorized exact f89 field candidate to one guarded transaction and stop a failing qualification at its first mandatory ineligible profile.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Direct owner authorization in this task names exact f89 and exact R4, permits one installation/qualification/recovery transaction, and preserves all existing gates.",
+      "affected_subsystem": "Existing release workflow, primary control state, transaction runner, and host regression tests; no firmware bytes, thresholds, or product features changed.",
+      "rollback_reference": "Revert this branch to base commit f48767723ca7e22268e391696863929d088aa64a before device mutation. The preserved exact R4 recovery artifact remains unchanged.",
+      "evidence_sources": [
+        "evidence/cart2-r6-audio-cache-20261010/FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
+        "evidence/cart2-r6-audio-cache-20261010/R6_AUDIO_CACHE_LIVE_SWEEP_ADAPTER.json",
+        "Direct owner authorization, 2026-10-11."
+      ],
+      "tests": [
+        "python3 tests/hbnf_live_kernel_sweep.py",
+        "python3 tests/test_r6_audio_cache_transaction_dryrun.py",
+        "python3 tests/hbnf_control.py",
+        "python3 tests/hbnf_guarded_run.py"
+      ],
+      "live_state": {
+        "device_mutation": false,
+        "production_deployment": false,
+        "live_mutation_authorized": true,
+        "installed_firmware": "exact Foundation R4; unchanged until the fresh guarded transaction passes admission and preflight."
+      }
+    }
+  }
+}

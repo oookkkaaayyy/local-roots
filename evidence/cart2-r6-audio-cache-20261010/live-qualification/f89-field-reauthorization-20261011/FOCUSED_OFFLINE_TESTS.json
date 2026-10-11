@@ -1,0 +1,119 @@
+{
+  "schema": "hbnf-cart2-f89-focused-offline-tests-v1",
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+  "run_at_unix": 1791751486.2434502,
+  "all_pass": true,
+  "tests": [
+    {
+      "command": "python3 tests/hbnf_control.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/HOST_TEST_01.log",
+      "log_sha256": "37d1c0840e012019eca02e3004134e6f291165fab164ab7c051ad2eaee4eca67",
+      "summary": [
+        "PASS: linear receipt control plane is acyclic, nonrecursive, exact-input, and fail-closed"
+      ]
+    },
+    {
+      "command": "python3 tests/hbnf_guarded_run.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/HOST_TEST_02.log",
+      "log_sha256": "47f9ccd062c834756b10b07ac1de9f2e89b8ac931ec72e3f74bb09910ebf4b23",
+      "summary": [
+        "PASS: guarded execution blocks wrong-state/unauthorized mutation; exact LIVE_APPROVED admission rejects missing, malformed, and stale identities before child execution"
+      ]
+    },
+    {
+      "command": "python3 scripts/hbnf_architecture_fitness.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/HOST_TEST_03.log",
+      "log_sha256": "4265139d7ffdc8d1e2d98e584560e03809bd92b1a06a4801f3308f2a0617edf8",
+      "summary": [
+        "states<=6 transitions<=5 linear_chain=true single_authority=true receipts_nonrecursive=true"
+      ]
+    },
+    {
+      "command": "python3 tests/hbnf_runtime_qualify_static.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/HOST_TEST_04.log",
+      "log_sha256": "d64340209a688aa36111a299c834c7d445d44ffd98642210939ff43ada1cc681",
+      "summary": [
+        "PASS: diagnostic sweep can rank current firmware without tail metrics; foundation qualification remains fail-closed"
+      ]
+    },
+    {
+      "command": "python3 tests/hbnf_kernel_sweep_report.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/HOST_TEST_05.log",
+      "log_sha256": "896def2ff27a32ec09e06772d85e6302c41082ade0575af2452b1550d7f2b964",
+      "summary": [
+        "PASS: diagnostic sweep ranks all kernels without overclaiming; foundation sweep remains fail-closed"
+      ]
+    },
+    {
+      "command": "python3 tests/hbnf_source_tree_identity.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/HOST_TEST_06.log",
+      "log_sha256": "7a0b9d8d35ccb133bf810b69a9102839f18beac74fa4c631e00f5f2a1648e06c",
+      "summary": [
+        "PASS: deterministic source-tree identity ignores build outputs and changes on source edits"
+      ]
+    },
+    {
+      "command": "python3 tests/hbnf_live_kernel_sweep.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/HOST_TEST_07.log",
+      "log_sha256": "6063510ac83a062291d834cc1e8c4d085d6855f5995e5e657d467d9463051a4c",
+      "summary": [
+        "PASS: live sweep runner validates adapter/inventory/telemetry, cross-kernel continuity, failure evidence, kernel identity, and exact restore snapshots"
+      ]
+    },
+    {
+      "command": "python3 tests/hbnf_packet20_http_adapter.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/HOST_TEST_08.log",
+      "log_sha256": "16c875ade2d20d4c4b9306afdfdb7e972122778e0d9f1d68ca2908e9fffa6165",
+      "summary": [
+        "PASS: Packet20 adapter mapping, diagnostic telemetry normalization, one-snapshot post-restore semantics, exact config, and 28-kernel inventory"
+      ]
+    },
+    {
+      "command": "python3 tests/hbnf_packet20_build_validate.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/HOST_TEST_09.log",
+      "log_sha256": "b8381fa940f2ce62605a63df0259fc0f858c1a49c3f0b3d2d9d1e1d5571e568d",
+      "summary": [
+        "PASS: Packet20 cloud build validator accepts exact provenance, vendor-patch/generated-UI evidence, and fails closed on source drift"
+      ]
+    },
+    {
+      "command": "python3 tests/test_r6_audio_cache_transaction_dryrun.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/HOST_TEST_10.log",
+      "log_sha256": "1b58a2f5427c456e0cbc5eccf191d134e59c85e3c310d1a92f2307ff58527ab7",
+      "summary": [
+        "PASS: actual transaction coordinator replayed admission, stage, one install, readback, qualification, exact recovery, host failure, and recovery failure; invalid admission made zero device requests"
+      ]
+    },
+    {
+      "command": "python3 scripts/platform.py doctor",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/HOST_TEST_11.log",
+      "log_sha256": "5e4e204edf3945996d9c010998a7726d0107ffce0618ff0dfc8851dcc57cb14b",
+      "summary": [
+        "}"
+      ]
+    }
+  ]
+}
