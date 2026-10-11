@@ -35,7 +35,7 @@
     "command": "PYTHONPATH=/private/tmp/hbnf-p2-build/pio-cli PLATFORMIO_CORE_DIR=/private/tmp/hbnf-p2-build/pio-local SOURCE_DATE_EPOCH=1791450000 PLATFORMIO_SETTING_ENABLE_TELEMETRY=no python3 -m platformio run -d /private/tmp/hbnf-p2-build/WLED-r6-audio-cache-20261010 -e hbnf_matrix_wled16_packet20_diag_trace",
     "config_restore": "The temporary environment stanza was removed after build; the original platformio_override.ini SHA-256 was restored and verified as 044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922."
   },
-  "measurement_capability": "Existing trace code captures wall elapsed time, cycle-stage counters, CPU MHz/core at frame boundaries, mapped variant, and audio/Vibe context on slow frames and periodic references. This supports separating high measured execution cycles from frames where wall time is high relative to cycle time; observer cost must still be measured.",
+  "measurement_capability": "Maps slow frames to mapped variant, audio/Vibe inputs, CPU MHz/core, wall elapsed time, and stage cycle deltas. The WLED effect executes inside Arduino loopTask, configured on core 1 for this ESP32 build; this keeps the per-core cycle source stable. The CCOUNT deltas still include cycles while other tasks preempt loopTask, so this trace alone does not separate renderer CPU work from scheduler delay.",
   "limits": {
     "device_or_cloud": "NOT RUN",
     "tests": "NOT RUN",
@@ -44,7 +44,10 @@
     "qualification": "NOT RUN",
     "soak": "NOT RUN",
     "acceptance": false,
-    "release_use": "DO NOT INSTALL OR TREAT AS RELEASE ARTIFACT; exact owner admission/authorization required before any live diagnostic"
+    "release_use": "DO NOT INSTALL OR TREAT AS RELEASE ARTIFACT; exact owner admission/authorization required before any live diagnostic",
+    "per_task_cpu_runtime": "NOT CAPTURED; CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS is not enabled in the pinned build. Stage cycle times may include scheduler preemption.",
+    "task_affinity_basis": "Pinned local Arduino core config sets CONFIG_ARDUINO_RUNNING_CORE=1; framework creates loopTask on that core, and WLED::loop invokes strip.service where the HBNF effect runs. Trace samples also record coreStart/coreEnd and cpuMhzStart/cpuMhzEnd.",
+    "diagnostic_scope": "Useful for context mapping and comparable stage measurements; not sufficient alone to attribute the performance regression to kernel computation versus other-task preemption."
   },
   "related_artifacts": {
     "failed_candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
