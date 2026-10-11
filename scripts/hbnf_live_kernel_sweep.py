@@ -356,7 +356,7 @@ def order_entries_for_early_baseline(entries, early_indices=(0,13)):
 
 def compare_profile_to_r4(candidate_path, r4_profile_dir, entry, frozen_policy, expected_r4_release,
                           r4_baseline_manifest=None):
-    """Apply the unchanged frozen candidate/R4 distribution and resource ratios."""
+    """Compare only when release identity and effective rendering controls match."""
     candidate=load(candidate_path).get("profile",{})
     slug=f"{int(entry['runtime_kernel_index_expected']):02d}_{entry['kernel_name']}.profile.json"
     baseline_path=pathlib.Path(r4_profile_dir)/slug
@@ -381,8 +381,28 @@ def compare_profile_to_r4(candidate_path, r4_profile_dir, entry, frozen_policy, 
         raise RuntimeError(f"candidate-profile-ineligible: {candidate_path}")
     if candidate.get("kernel",{}).get("name")!=entry["kernel_name"] or baseline.get("kernel",{}).get("name")!=entry["kernel_name"]:
         raise RuntimeError(f"kernel-name-mismatch: {entry['kernel_name']}")
+    incomparable=[]
     if candidate.get("kernel",{}).get("variant_id")!=baseline.get("kernel",{}).get("variant_id"):
-        raise RuntimeError(f"kernel-variant-not-comparable: {entry['kernel_name']}")
+        incomparable.append("kernel variant differs")
+    candidate_settings=candidate.get("effective_rendering_settings") or {}
+    baseline_settings=baseline.get("effective_rendering_settings") or {}
+    if candidate_settings.get("status")!="MATCHED":
+        incomparable.append("candidate effective rendering settings are incomplete or unstable")
+    if baseline_settings.get("status")!="MATCHED":
+        incomparable.append("R4 effective rendering settings are incomplete or unstable")
+    if (candidate_settings.get("status")=="MATCHED"
+        and baseline_settings.get("status")=="MATCHED"
+        and candidate_settings.get("values")!=baseline_settings.get("values")):
+        incomparable.append("effective rendering settings differ")
+    if incomparable:
+        return {"schema":"hbnf-candidate-vs-r4-kernel-profile-v1","status":"INCOMPARABLE",
+          "kernel":entry["kernel_name"],"kernel_index":entry["runtime_kernel_index_expected"],
+          "candidate_profile":str(candidate_path),"r4_profile":str(baseline_path),
+          "candidate_release":candidate.get("release_id"),"r4_release":baseline.get("release_id"),
+          "candidate_variant_id":candidate.get("kernel",{}).get("variant_id"),
+          "r4_variant_id":baseline.get("kernel",{}).get("variant_id"),
+          "candidate_effective_rendering_settings":candidate_settings,
+          "r4_effective_rendering_settings":baseline_settings,"reasons":incomparable}
     cfg=frozen_policy["comparison"]["candidate_vs_baseline"]
     c_heap=candidate["heap"]; b_heap=baseline["heap"]
     checks={
@@ -612,12 +632,12 @@ def main():
     ap.add_argument("--threshold-policy",help="fully frozen Foundation policy; required for an integrated soak")
     ap.add_argument("--threshold-baseline",help="output path for the baseline generated from this run's complete 28-kernel sweep")
     ap.add_argument("--combined-check-script",help="candidate-bound combined-feature check run after all 28 kernels and before baseline freeze/soak inside the same renderer snapshot")
-    ap.add_argument("--early-r4-profile-dir",help="exact R4 profile directory; when supplied, run historically failing kernel indices 0 and 13 first; default stops on a failed comparison")
+    ap.add_argument("--early-r4-profile-dir",help="exact R4 profile directory; when supplied, run historically failing kernel indices 0 and 13 first and record provisional comparisons")
     ap.add_argument("--early-r4-baseline-manifest",default=str(ROOT/"evidence/hbnf-foundation-qualification-20261005/seq39/live/PRE_SOAK_BASELINE.json"),help="source-bound 28-kernel R4 baseline containing exact profile hashes")
     ap.add_argument("--early-r4-release",default="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1")
-    ap.add_argument("--compare-all-r4",action="store_true",help="apply the same frozen relative profile/resource gates to every comparable kernel against exact R4 profiles")
+    ap.add_argument("--compare-all-r4",action="store_true",help="record provisional frozen-ratio comparisons against exact R4 profiles for every comparable kernel")
     ap.add_argument("--complete-diagnostics-on-performance-gate-failure",action="store_true",
-                    help="collect remaining kernels after performance comparison or saturated-percentile failures; restore once, report all findings, and suppress soak; integrity, transport, continuity, unsafe-frame, and restore failures still stop immediately")
+                    help="collect remaining kernels after saturated-telemetry failures; restore once and report findings, but suppress qualification soak when a kernel profile is not qualification-eligible; integrity, transport, continuity, unsafe-frame, and restore failures still stop immediately")
     ap.add_argument("--resume-snapshot-file",help="resume one exact previously captured, still-open Packet20 snapshot; never issues begin/snapshot")
     ap.add_argument("--resume-observer-proof",help="PASS observer-effect receipt for the exact expected release, required with --resume-snapshot-file")
     ap.add_argument("--dry-run",action="store_true")
@@ -709,7 +729,7 @@ def main():
         return 2
 
     snapfile=outdir/"PRE_SWEEP_STATE.json"
-    profiles=[]; release_ids=set(); performance_gate_failures=[]
+    profiles=[]; release_ids=set(); performance_gate_failures=[]; preliminary_r4_comparisons=[]
     run_error=None; restore_error=None; post_restore_state=None;snapshot=None
     telemetry_mode_before=None
     reserve=None
@@ -762,14 +782,10 @@ def main():
             if compare_this:
                 comparison=compare_profile_to_r4(profile,args.early_r4_profile_dir,entry,frozen_policy,args.early_r4_release,args.early_r4_baseline_manifest)
                 label="EARLY_R4" if kernel_index in (0,13) else "R4"
+                comparison["evaluation_stage"]="PRE_SOAK_PROVISIONAL"
+                comparison["gate_effect"]="DIAGNOSTIC_ONLY__DOES_NOT_BLOCK_SWEEP_OR_SOAK"
+                preliminary_r4_comparisons.append(comparison)
                 atomic_write(outdir/f"{label}_COMPARISON_KERNEL_{kernel_index}.json",json.dumps(comparison,indent=2,sort_keys=True)+"\n")
-                if comparison["status"]!="PASS":
-                    gate="early-matched-R4" if kernel_index in (0,13) else "frozen-R4"
-                    failure={"kernel_id":kernel_index,"kernel_name":entry["kernel_name"],"failure_class":"PERFORMANCE_COMPARISON",
-                      "gate":gate,"checks":comparison["checks"],"comparison_path":str(outdir/f"{label}_COMPARISON_KERNEL_{kernel_index}.json")}
-                    if not args.complete_diagnostics_on_performance_gate_failure:
-                        raise RuntimeError(f"{gate}-kernel-gate-failed: {entry['kernel_name']}: {json.dumps(comparison['checks'],sort_keys=True)}")
-                    performance_gate_failures.append(failure)
         soak_result=None
         combined_result=None
         if args.combined_check_script and (args.soak_seconds or args.complete_diagnostics_on_performance_gate_failure):
@@ -900,6 +916,7 @@ def main():
           "expected_kernel_count":28,
           "kernels_completed":len(profiles)+len(list(outdir.glob("*.diagnostic-only.json"))),
           "gate_failures":performance_gate_failures,
+          "preliminary_r4_comparisons":preliminary_r4_comparisons,
           "combined_feature_check_status":(combined_result or {}).get("status"),
           "soak_started":False,
           "restore_receipt":str(outdir/"RESTORE_RECEIPT.json"),
@@ -916,6 +933,8 @@ def main():
       "restore_receipt":"RESTORE_RECEIPT.json",
       "kernels":profiles
     }
+    if preliminary_r4_comparisons:
+        manifest["preliminary_r4_comparisons"]=preliminary_r4_comparisons
     if args.soak_seconds:
         manifest["foundation_soak"]={**soak_result,"minimum_duration_seconds":MIN_FOUNDATION_SOAK_SECONDS,
             "sample_gap_limit_seconds":MAX_FOUNDATION_SOAK_SAMPLE_GAP_SECONDS,

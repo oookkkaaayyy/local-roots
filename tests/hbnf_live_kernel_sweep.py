@@ -3,6 +3,8 @@ import importlib.util, json, pathlib, tempfile, types, unittest.mock, subprocess
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location("runner",ROOT/"scripts/hbnf_live_kernel_sweep.py")
 m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+qual_spec=importlib.util.spec_from_file_location("runtime_qualify",ROOT/"scripts/hbnf_runtime_qualify.py")
+qual=importlib.util.module_from_spec(qual_spec); qual_spec.loader.exec_module(qual)
 
 adapter={
  "schema":"hbnf-live-sweep-adapter-v1",
@@ -257,20 +259,24 @@ for altered_preflight in (
     try:m.validate_readonly_preflight(altered_preflight,"r7",resume);raise AssertionError("invalid active snapshot resume accepted")
     except RuntimeError:pass
 
-# The exact frozen relative ratios can be applied to all comparable R4 kernel
-# profiles before a long soak begins. Subjective frame-max remains diagnostic
-# per the unchanged policy.
+# Early ratios are provisional under the frozen timing rule; cross-release
+# comparisons require complete, stable, identical effective rendering controls.
 with tempfile.TemporaryDirectory() as td:
     base=pathlib.Path(td)/"09_RGB_Blobs4.profile.json"
     candidate=pathlib.Path(td)/"candidate.profile.json"
     r4_release="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+    controls={"matrix_on":True,"wled_brightness":120,"matrix_brightness":44,"aux_brightness":38,
+      "scene":"FIELD","vibe":"GROOVE","motion":61,"audio_response":73,"palette":"SOLID",
+      "overlay_id":None}
     base_doc={"status":"PASS","profile":{"release_id":r4_release,"qualification_eligible":True,
       "kernel":{"name":"RGB_Blobs4","variant_id":9},"fps":{"median":40},
       "frame_ms":{"p95_median":20,"p99_median":30},
+      "effective_rendering_settings":{"status":"MATCHED","values":controls},
       "heap":{"minimum_free_min":60000,"largest_block_start":70000,"largest_block_end":69000}}}
     cand_doc={"status":"PASS","profile":{"release_id":"r7","qualification_eligible":True,
       "kernel":{"name":"RGB_Blobs4","variant_id":9},"fps":{"median":37},
       "frame_ms":{"p95_median":24.9,"p99_median":37.3,"max":1000},
+      "effective_rendering_settings":{"status":"MATCHED","values":dict(controls)},
       "heap":{"minimum_free_min":52000,"largest_block_start":57000,"largest_block_end":56000}}}
     base.write_text(json.dumps(base_doc));candidate.write_text(json.dumps(cand_doc))
     frozen={"comparison":{"candidate_vs_baseline":{"fps_median_min_ratio":0.9,
@@ -284,6 +290,19 @@ with tempfile.TemporaryDirectory() as td:
     result=m.compare_profile_to_r4(candidate,pathlib.Path(td),inv["entries"][9],frozen,r4_release,baseline_manifest)
     assert result["status"]=="PASS" and all(result["checks"].values())
     assert "frame_max" not in result["checks"]  # unchanged frozen policy treats it as diagnostic
+    cand_doc["profile"]["effective_rendering_settings"]={"status":"INCOMPLETE","missing_keys":["vibe"]}
+    candidate.write_text(json.dumps(cand_doc))
+    result=m.compare_profile_to_r4(candidate,pathlib.Path(td),inv["entries"][9],frozen,r4_release,baseline_manifest)
+    assert result["status"]=="INCOMPARABLE" and "checks" not in result
+    cand_doc["profile"]["effective_rendering_settings"]={"status":"MATCHED","values":dict(controls, vibe="CALM")}
+    candidate.write_text(json.dumps(cand_doc))
+    result=m.compare_profile_to_r4(candidate,pathlib.Path(td),inv["entries"][9],frozen,r4_release,baseline_manifest)
+    assert result["status"]=="INCOMPARABLE" and "effective rendering settings differ" in result["reasons"]
+    cand_doc["profile"]["effective_rendering_settings"]={"status":"MATCHED","values":dict(controls)}
+    cand_doc["profile"]["kernel"]["variant_id"]=10;candidate.write_text(json.dumps(cand_doc))
+    result=m.compare_profile_to_r4(candidate,pathlib.Path(td),inv["entries"][9],frozen,r4_release,baseline_manifest)
+    assert result["status"]=="INCOMPARABLE" and "kernel variant differs" in result["reasons"]
+    cand_doc["profile"]["kernel"]["variant_id"]=9
     base.write_text(base.read_text()+" ")
     try:
         m.compare_profile_to_r4(candidate,pathlib.Path(td),inv["entries"][9],frozen,r4_release,baseline_manifest)
@@ -293,6 +312,20 @@ with tempfile.TemporaryDirectory() as td:
     cand_doc["profile"]["fps"]["median"]=35.9;candidate.write_text(json.dumps(cand_doc))
     failed=m.compare_profile_to_r4(candidate,pathlib.Path(td),inv["entries"][9],frozen,r4_release,baseline_manifest)
     assert failed["status"]=="FAIL" and failed["checks"]["fps_median"] is False
+
+# Runtime summaries preserve effective controls only when every sample has the
+# same complete set. Missing and changing controls cannot become a false match.
+base_sample={"release_id":"r7","uptime_seconds":1,"fps":40,"frame_ms_p50":20,"frame_ms_p95":25,
+  "frame_ms_p99":30,"frame_ms_max":35,"kernel_id":0,"kernel_name":"RGB_Blobs4","variant_id":9,
+  "free_heap_bytes":90000,"minimum_free_heap_bytes":80000,"largest_free_block_bytes":70000,
+  "websocket_clients":0,"aux_projection_active":True,"aux_projection_age_ms":5,"aux_render_fps":40,
+  "wifi_rssi_dbm":-45,"restart_count":0,"runtime_controls":dict(controls)}
+summary=qual.summarize([dict(base_sample),dict(base_sample)],"foundation")
+assert summary["effective_rendering_settings"]=={"status":"MATCHED","values":controls}
+changed=dict(base_sample);changed["runtime_controls"]=dict(controls,vibe="CALM")
+assert qual.summarize([dict(base_sample),changed],"foundation")["effective_rendering_settings"]["status"]=="UNSTABLE"
+missing=dict(base_sample);missing.pop("runtime_controls")
+assert qual.summarize([missing],"foundation")["effective_rendering_settings"]["status"]=="INCOMPLETE"
 
 # Preserve the full sweep while checking the historically failing kernel first.
 assert "early_indices=(0,13)" in runner_source
@@ -497,10 +530,12 @@ with tempfile.TemporaryDirectory() as td:
 with tempfile.TemporaryDirectory() as td:
     out=pathlib.Path(td)/"complete-diagnostics"
     original_argv=sys.argv
-    original=(m.run_json,m.run_ok,m.collect_kernel,m.compare_profile_to_r4,m.run_combined_feature_check,
+    original=(m.run_json,m.run_ok,m.collect_kernel,m.compare_profile_to_r4,m.run_combined_feature_check,m.run_foundation_soak,
               m.require_disk_headroom,m.set_foundation_telemetry,m.validate_readonly_preflight,
               m.validate_sample,m.validate_continuity,m.persist_restore_evidence)
+    original_subprocess_run=subprocess.run
     calls=[];uptime=[100]
+    saturated=[True]
     snapshot={"snapshotId":77,"snapshotHash":888,"foundationTelemetryEnabledBefore":False}
     restored={"snapshotId":77,"snapshotHash":888,"foundationTelemetryEnabled":False,
               "restoreVerified":True,"packet20Same":True}
@@ -512,10 +547,16 @@ with tempfile.TemporaryDirectory() as td:
         if "snapshot" in words:return snapshot
         if "verify-restore" in words:return restored
         if "telemetry-mode" in words:return {"HBNF":{"foundationTelemetry":{"enabled":argv[-1]=="true"}}}
+        if "hbnf_foundation_baseline.py" in words:
+            pathlib.Path(argv[argv.index("--output")+1]).write_text("{}")
+            return {"status":"PASS"}
+        if "hbnf_foundation_threshold_freeze.py" in words:
+            pathlib.Path(argv[argv.index("--output")+1]).write_text(json.dumps({"status":"FROZEN_BEFORE_SOAK"}))
+            return {"status":"FROZEN_BEFORE_SOAK","soak_started":False}
         raise AssertionError("unexpected subprocess in isolated sweep test: "+words)
     def fake_collect(_adapter,entry,_outdir,_timeout,_contract,*_args,**_kwargs):
         index=int(entry["runtime_kernel_index_expected"]);calls.append(index);uptime[0]+=1
-        if index==0:
+        if index==0 and saturated[0]:
             sidecar=pathlib.Path(_outdir)/f"{index:02d}_{entry['kernel_name']}.diagnostic-only.json"
             sidecar.write_text(json.dumps({"status":"SATURATED_TELEMETRY_DIAGNOSTIC_ONLY","qualification_eligible":False}))
             return None,"r7",1,0,uptime[0]
@@ -525,6 +566,15 @@ with tempfile.TemporaryDirectory() as td:
     def fake_compare(profile,*args,**kwargs):
         index=int(pathlib.Path(profile).name[:2])
         return {"status":"FAIL" if index==13 else "PASS","checks":{"fps_median":index!=13}}
+    def fake_soak(_adapter,_inventory,_outdir,*_args,**_kwargs):
+        pathlib.Path(_outdir,"FOUNDATION_SOAK.jsonl").write_text("mocked contiguous soak evidence\n")
+        return {"status":"PASS","jsonl_path":str(pathlib.Path(_outdir,"FOUNDATION_SOAK.jsonl"))}
+    def fake_subprocess_run(argv,**kwargs):
+        words=" ".join(map(str,argv))
+        if "hbnf_foundation_soak_audit.py" in words:
+            pathlib.Path(argv[argv.index("--output")+1]).write_text(json.dumps({
+              "status":"PASS","foundation_qualification":{"status":"PASS"},"errors":[]}))
+        return subprocess.CompletedProcess(argv,0,stdout="PASS\n",stderr="")
     try:
         sys.argv=["hbnf_live_kernel_sweep.py","--adapter",str(ROOT/"config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json"),
           "--inventory",str(ROOT/"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"),"--outdir",str(out),
@@ -538,20 +588,46 @@ with tempfile.TemporaryDirectory() as td:
         m.run_json=fake_runner_json;m.run_ok=lambda *a,**k:"restored"
         m.collect_kernel=fake_collect;m.compare_profile_to_r4=fake_compare
         m.run_combined_feature_check=lambda *a,**k:{"status":"PASS"}
+        m.run_foundation_soak=fake_soak;m.subprocess.run=fake_subprocess_run
         m.require_disk_headroom=lambda *_a,**_k:10**9;m.set_foundation_telemetry=lambda *_a,**_k:True
         m.validate_readonly_preflight=lambda *_a,**_k:None;m.validate_sample=lambda *_a,**_k:None
         m.validate_continuity=lambda *_a,**_k:("r7",0,100.0)
         m.persist_restore_evidence=lambda *_a,**_k:None
         assert m.main()==2
+        diagnostic=json.loads((out/"DIAGNOSTIC_COMPLETE_RESULT.json").read_text())
+        assert diagnostic["soak_started"] is False and len(diagnostic["gate_failures"])==1
+        assert len(diagnostic["preliminary_r4_comparisons"])==27
+        assert any(x["status"]=="FAIL" and x["gate_effect"]=="DIAGNOSTIC_ONLY__DOES_NOT_BLOCK_SWEEP_OR_SOAK"
+                   for x in diagnostic["preliminary_r4_comparisons"])
+        # With the same provisional R4 miss but qualification-eligible profiles,
+        # the runner path reaches the soak and records the result.
+        saturated[0]=False;calls.clear();uptime[0]=100
+        soak_out=out.parent/"provisional-r4-does-not-block-soak"
+        sys.argv=["hbnf_live_kernel_sweep.py","--adapter",str(ROOT/"config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json"),
+          "--inventory",str(ROOT/"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"),"--outdir",str(soak_out),
+          "--contract","foundation","--soak-seconds","5400","--threshold-policy",
+          str(ROOT/"config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json"),
+          "--combined-check-script",str(ROOT/"scripts/hbnf_r6_combined_feature_check.py"),
+          "--early-r4-profile-dir",str(ROOT/"evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep"),
+          "--early-r4-baseline-manifest",str(ROOT/"evidence/hbnf-foundation-qualification-20261005/seq39/live/PRE_SOAK_BASELINE.json"),
+          "--early-r4-release","hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+          "--compare-all-r4","--complete-diagnostics-on-performance-gate-failure"]
+        assert m.main()==0
+        manifest=json.loads((soak_out/"SWEEP_MANIFEST.json").read_text())
+        assert manifest["foundation_soak"]["audit_status"]=="PASS"
+        assert len(manifest["preliminary_r4_comparisons"])==28
+        assert any(x["status"]=="FAIL" for x in manifest["preliminary_r4_comparisons"])
     finally:
         sys.argv=original_argv
         (m.run_json,m.run_ok,m.collect_kernel,m.compare_profile_to_r4,m.run_combined_feature_check,
-         m.require_disk_headroom,m.set_foundation_telemetry,m.validate_readonly_preflight,
+         m.run_foundation_soak,m.require_disk_headroom,m.set_foundation_telemetry,m.validate_readonly_preflight,
          m.validate_sample,m.validate_continuity,m.persist_restore_evidence)=original
+        m.subprocess.run=original_subprocess_run
     result=json.loads((out/"DIAGNOSTIC_COMPLETE_RESULT.json").read_text())
     assert calls==[int(x["runtime_kernel_index_expected"]) for x in m.order_entries_for_early_baseline(inv["entries"])]
     assert len(calls)==28 and set(calls)==set(range(28)) and result["kernels_completed"]==28
-    assert result["soak_started"] is False and len(result["gate_failures"])==2
+    assert result["soak_started"] is False and len(result["gate_failures"])==1
+    assert len(result["preliminary_r4_comparisons"])==27
     assert (out/"RESTORE_RECEIPT.json").is_file()
     assert not (out/"SWEEP_MANIFEST.json").exists() and not (out/"FOUNDATION_SOAK.jsonl").exists()
 wrong=dict(sample); wrong["kernel_name"]="RGB_Blobs5"

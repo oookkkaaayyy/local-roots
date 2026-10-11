@@ -39,6 +39,14 @@ STAGE_KEYS = [
     "unaccounted_ms_avg","unaccounted_ms_p95","frame_over_budget_count","frame_sample_count",
 ]
 
+# Cross-release comparisons are meaningful only when these effective controls
+# are present and stable throughout each profile. Keep this list aligned with
+# hbnf_foundation_live_adapter.py's runtime_controls object.
+RENDERING_CONTROL_KEYS = (
+    "matrix_on", "wled_brightness", "matrix_brightness", "aux_brightness",
+    "scene", "vibe", "motion", "audio_response", "palette", "overlay_id",
+)
+
 def pct(values, q):
     vals=sorted(float(x) for x in values)
     if not vals: return None
@@ -69,6 +77,27 @@ def dotted(obj, path):
 def normalize(raw, mapping):
     if not mapping: return raw
     return {key:dotted(raw,path) for key,path in mapping.items()}
+
+def effective_rendering_settings(samples):
+    """Describe whether a profile has complete, stable effective controls."""
+    good=[s for s in samples if not s.get("collector_error")]
+    controls=[s.get("runtime_controls") for s in good]
+    if not controls:
+        return {"status":"INCOMPLETE","missing_keys":list(RENDERING_CONTROL_KEYS)}
+    missing=sorted({key for value in controls if not isinstance(value,dict)
+                    for key in RENDERING_CONTROL_KEYS})
+    for value in controls:
+        if isinstance(value,dict):
+            missing.extend(key for key in RENDERING_CONTROL_KEYS if key not in value)
+    missing=sorted(set(missing))
+    if missing:
+        return {"status":"INCOMPLETE","missing_keys":missing}
+    first={key:controls[0][key] for key in RENDERING_CONTROL_KEYS} if controls else {}
+    changed=sorted(key for key in RENDERING_CONTROL_KEYS
+                   if any(value[key]!=first[key] for value in controls[1:]))
+    if changed:
+        return {"status":"UNSTABLE","changed_keys":changed}
+    return {"status":"MATCHED","values":first}
 
 def fetch_json(url, timeout=3.5):
     req=urllib.request.Request(url,headers={"Accept":"application/json","Cache-Control":"no-cache"})
@@ -136,6 +165,7 @@ def summarize(samples, contract="foundation"):
         "name":first.get("kernel_name"),
         "variant_id":first.get("variant_id")
       },
+      "effective_rendering_settings":effective_rendering_settings(good),
       "fps":{"median":pct(fps,.5),"p05":pct(fps,.05),"min":min(fps) if fps else None},
       "frame_ms":{
         "avg_median":pct(favg,.5),
