@@ -133,6 +133,7 @@ with tempfile.TemporaryDirectory() as td:
     t=pathlib.Path(td); m.CACHE=t/"restart-cache.json"
     inventory=ROOT/"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"
     state={"HBNF":{"timing":{"kernel":0,"uptimeSec":100,"fps":42,"variantSignature":7,
+      "companionPrepUs":123,"companionDdpSendUs":456,
       "freeHeap":88000,"rssi":-45,"wholeFrameUs":19000,"auxProjectionAgeMs":2},
       "foundationTelemetry":{"enabled":True,"frameMsAvg":19,"frameMsP50":18,
       "frameMsP95":21,"frameMsP99":23,"frameMsMax":25,"minimumFreeHeapBytes":80000,
@@ -163,6 +164,8 @@ with tempfile.TemporaryDirectory() as td:
     assert sample["aux_projection_age_ms"]==4294967295
     assert sample["trace_armed"] is True and sample["trace_retained_count"]==4
     assert sample["trace_records_serialized"] is False
+    assert sample["last_frame_companion_prep_us"]==123
+    assert sample["last_frame_ddp_send_us"]==456
     assert set(sample["telemetry_endpoint_reads"])=={"matrix_info","matrix_build","matrix_state","aux_info","aux_state"}
     assert sample["expected_firmware_sha256"] is None # WLED does not attest installed bytes.
     required={"release_id","cpu_clock_mhz","uptime_seconds","fps","frame_ms_p50","frame_ms_p95",
@@ -172,6 +175,7 @@ with tempfile.TemporaryDirectory() as td:
       "wifi_rssi_dbm","restart_count","kernel_ms_avg","kernel_ms_p95","palette_ms_avg",
       "palette_ms_p95","audio_ms_avg","audio_ms_p95","scheduler_ms_avg","scheduler_ms_p95",
       "overlay_ms_avg","overlay_ms_p95","aux_prepare_send_ms_avg","aux_prepare_send_ms_p95",
+      "last_frame_companion_prep_us","last_frame_ddp_send_us",
       "unaccounted_ms_avg","unaccounted_ms_p95"}
     assert required <= sample.keys(), required-sample.keys()
     assert sample["release_id"]==m.EXPECTED and sample["kernel_name"]=="Complex_Kaleido_3"

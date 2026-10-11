@@ -495,6 +495,10 @@ def telemetry(inventory,session_id,emit=True):
       "trace_cpu_mhz_start":ft.get("outlierTrace",{}).get("cpuMHzAtTraceStart"),
       "trace_cpu_mhz_readback":ft.get("outlierTrace",{}).get("cpuMHzAtReadback"),
       "trace_records_serialized":isinstance(ft.get("outlierTrace",{}).get("records"),list),
+      # These are latest-frame snapshots from timing, kept beside the
+      # cumulative companionPrep+ddpSend histograms below for diagnosis.
+      "last_frame_companion_prep_us":timing.get("companionPrepUs"),
+      "last_frame_ddp_send_us":timing.get("companionDdpSendUs"),
       "kernel_ms_avg":ft.get("kernelMsAvg"),"kernel_ms_p95":ft.get("kernelMsP95"),"palette_ms_avg":ft.get("paletteMsAvg"),"palette_ms_p95":ft.get("paletteMsP95"),
       "vibe_compositor_ms_avg":ft.get("vibeCompositorMsAvg"),"vibe_compositor_ms_p95":ft.get("vibeCompositorMsP95"),"vibe_compositor_ms_p99":ft.get("vibeCompositorMsP99"),
       "kernel_without_compositor_ms_avg":ft.get("kernelWithoutCompositorMsAvg"),"kernel_without_compositor_ms_p95":ft.get("kernelWithoutCompositorMsP95"),"kernel_without_compositor_ms_p99":ft.get("kernelWithoutCompositorMsP99"),
