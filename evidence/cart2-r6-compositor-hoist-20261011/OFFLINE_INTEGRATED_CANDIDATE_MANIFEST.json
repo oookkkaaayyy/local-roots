@@ -1,0 +1,115 @@
+{
+  "authorization": {
+    "guest_mode_enable_authorized": false,
+    "live_mutation_authorized": false,
+    "production_deployment_authorized": false,
+    "uv_energization_authorized": false
+  },
+  "firmware": {
+    "build_receipt_path": "evidence/cart2-r6-compositor-hoist-20261011/SUCCESSOR_BUILD_RECEIPT.json",
+    "build_receipt_sha256": "98558a1b20ed1a1799e30e1349971bd8a3a84caa9fa16af86332b3f8aaf987df",
+    "bytes": 1498672,
+    "path": "evidence/cart2-r6-compositor-hoist-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011.bin",
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011",
+    "sha256": "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2",
+    "source_binding_path": "evidence/cart2-r6-compositor-hoist-20261011/SUCCESSOR_SOURCE_BINDING.json",
+    "source_binding_sha256": "0772e725a7d0a408bfdabaca9be31dcd50e826b3d073c686697b7ea15ad544ce",
+    "source_commit": "1b32c07c7a9e5f4ad25f6e9cf7f02e4e0c1d060b"
+  },
+  "integration_source_commit": "c9f05424b5e88aad837a1ab4aab5a4c6fa5e22d6",
+  "limits": [
+    "This receipt binds exact offline software artifacts and source hashes only.",
+    "It does not constitute release admission, fresh preflight, runtime qualification, owner acceptance, or authorization for device/cloud mutation.",
+    "The Oct. 9 historical integration manifest and package remain unchanged."
+  ],
+  "offline_checks": {
+    "90_minute_soak": "NOT_RUN",
+    "all_28_kernel_sweep": "NOT_RUN",
+    "combined_feature_check": "NOT_RUN",
+    "firmware_build": "PASS_PER_BUILD_RECEIPT",
+    "focused_candidate_binding_test": "PASS",
+    "matched_kernel0_performance": "NOT_RUN",
+    "owner_guest_package_build": "PASS",
+    "owner_visual_acceptance": "NOT_RUN",
+    "package_reproducibility": "PASS_BYTE_IDENTICAL",
+    "source_hash_binding": "PASS",
+    "source_tree_identity_test": "PASS",
+    "successor_bound_live_admission": "NOT_PRESENT",
+    "sweep_runner_host_regressions": "PASS_COMPONENT_AND_FAILURE_RESTORE_PATHS_ONLY",
+    "text_layout_tests": "PASS_16_OF_16"
+  },
+  "offline_test_receipts": [
+    {
+      "path": "tests/hbnf_cart2_offline_integrated_candidate.py",
+      "result": "PASS; exact source/artifact/package hashes and reproducible Owner/Guest package"
+    },
+    {
+      "path": "tests/test_hbnf_text_moments_offline.py",
+      "result": "PASS; 16/16"
+    },
+    {
+      "path": "tests/hbnf_source_tree_identity.py",
+      "result": "PASS"
+    },
+    {
+      "path": "tests/hbnf_live_kernel_sweep.py",
+      "result": "PASS; adapter/telemetry contracts, component/failure paths, restore validation; not a complete successful sweep/soak"
+    }
+  ],
+  "owner_guest_package": {
+    "build_marker": "hbnf-cart2-owner-guest-compositor-hoist-20261011",
+    "bytes": 123517,
+    "file": "evidence/cart2-r6-compositor-hoist-20261011/owner-guest/HBNF_CART2_OWNER_GUEST_COMPOSITOR_HOIST_20261011.zip",
+    "scope": "controller-only-no-firmware-no-phase2-hardware",
+    "sha256": "131b19ac2d1b799b346156b4ffddbd0e20742a34487e268470df99362cc2d3e2",
+    "sidecar": "evidence/cart2-r6-compositor-hoist-20261011/owner-guest/HBNF_CART2_OWNER_GUEST_COMPOSITOR_HOIST_20261011.zip.sha256",
+    "source_commit": "c9f05424b5e88aad837a1ab4aab5a4c6fa5e22d6"
+  },
+  "release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011",
+  "rollback": {
+    "bytes": 1489008,
+    "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "release_id": "Foundation R4",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "verified": true
+  },
+  "schema": "hbnf-cart2-offline-integrated-candidate-v1",
+  "source_hashes": {
+    "hbnf-final-controller/guest/hbnf-cart/guest.css": "bccb2a3179beb2116d953d083929fd97cdb13aa356742abfb45ce9a9919ce2ad",
+    "hbnf-final-controller/guest/hbnf-cart/guest.js": "57ed9d21bd063e93225de14a5306525c21f8a3cecd7b2a4c7b756d33684e0f77",
+    "hbnf-final-controller/guest/hbnf-cart/index.html": "5b1ddd97512a6606b61aeca78929fd645a86a32b10f62ad7547941018442cedf",
+    "hbnf-final-controller/hbnf-cart-features.mjs": "698406cb78565a05bc842b90c01928724cfabd553ed4af28d73178b6d725677d",
+    "hbnf-final-controller/hbnf-cart-icon-180.png": "02a42add542f156fb8cd32ff020d827fb139d70cce6e6c3564cc821c95aec3ed",
+    "hbnf-final-controller/hbnf-cart-icon-192.png": "200dd4c1bb58dd1f3b6fe353404d29cae306673a4bc854b21049c475011b42ab",
+    "hbnf-final-controller/hbnf-cart-icon-512.png": "05ecdcb818aaf9d1f23af59ca73c27d7a00b328705e62d0e9adf3954db6e5838",
+    "hbnf-final-controller/hbnf-cart-manifest.webmanifest": "a58f59a6f921f5104c61dc2e633e0015a5c4f34ba23475f57738ad785bf8251d",
+    "hbnf-final-controller/hbnf-cart-net.mjs": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+    "hbnf-final-controller/hbnf-cart-semantic.mjs": "c7eada1028dddd0321ffa34e894bcb5e7d5ff4cf13a084f72623adcbb963d5a1",
+    "hbnf-final-controller/hbnf-cart-skins-score.mjs": "cf63ca5425210f9dbbe9666f623dc7b6324a2153d5bbfaa7522493eb085ea97f",
+    "hbnf-final-controller/hbnf-cart-sw.js": "eb66b86c98aae95b62019fe07e86ac8d4de014ca08b2034be388a257cd60b4aa",
+    "hbnf-final-controller/hbnf-cart-ui-v6.css": "7ec82e48648e662517b281ae5162c278f705521c29907d95112a2cca6e50c707",
+    "hbnf-final-controller/hbnf-cart-ui-v6.mjs": "0e0f16ea7c6e573cc5d5180309d899732598c9b630c7732dfbe10326e542a6e0",
+    "hbnf-final-controller/hbnf-cart.html": "c4464e2304010da98ad30342b17452fda241c6670f9cbc667750c8f968d10244",
+    "hbnf-final-controller/hbnf-cart.js": "799854d994964fd6c05fe78cb35147c1b9a569000b6d5e4377cc9cbeb37d28f3",
+    "staging/coordinated-backend/hbnf-cart-control/guest-command.ts": "09d181d27e6beeec7a9b9727bce404c0e5621a26ddc85895d68d7419f60f918d",
+    "staging/coordinated-backend/hbnf-cart-control/index.ts": "e7cee5102f096292268d121291b9c51a697398d43a554065d24caaee4d243e7f",
+    "staging/coordinated-backend/hbnf-cart-control/live.ts": "7844a5057f11f82344e3ff49c5f9062ba73019c62bfaab52636e93c897b69323",
+    "staging/coordinated-backend/hbnf-cart-control/skins_scoring.ts": "aa7d74bbd10bff41111411d7b07b895e1c82a7f7d8d075cb04aec4cf35ba16d6",
+    "staging/coordinated-backend/hbnf-cart-reconcile/foundation-result.ts": "9379c8ca7d76e0b4e34b6af8ad7085a215c94693d375226fd7f789c3533b074f",
+    "staging/coordinated-backend/hbnf-cart-reconcile/index.ts": "8a31f1da25a70f8005117c00b488115895925a86df3e60f59153660984dad534",
+    "staging/coordinated-backend/hbnf-matrix-adapter-foundation/confirmation.ts": "8c58ce01217cb1176c693fa3210888edf5b8531792ce5114969514759397e147",
+    "staging/coordinated-backend/hbnf-matrix-adapter-foundation/index.ts": "947e5de072498feec0780eeba9f08fcff503c56d7bb1390b8aef353c09f4205e",
+    "staging/coordinated-backend/migrations/20261009190000_hbnf_matrix_relay_confirmation.down.sql": "b510775c9081936d60ef0f99bc918b1e70eff8933ed804121b3660e70ca22f05",
+    "staging/coordinated-backend/migrations/20261009190000_hbnf_matrix_relay_confirmation.sql": "5fbf00ed0382bd624d4415361d72cc9527adc761b8ba9750ecd5238e604ef617",
+    "staging/coordinated-backend/opal/hbnf-matrix-relay": "6a8e3e02b5fda1afbae2c1270a1309450970ef3e9ebd3b62a0baf04671dd350e",
+    "staging/coordinated-backend/opal/hbnf-matrix-relay.conf.example": "5cd2b0fbc1c2ca1112d2637b5eab761a241bb96277dfc14d83d42493f3484c6c",
+    "staging/coordinated-backend/opal/hbnf-matrix-relay.init": "1572ddc3b9dc278d141a6e9cf65891c684e09efc793f7822c3738f98e4e6122a",
+    "tests/hbnf_matrix_relay_contract.mjs": "34c34c57f7bb054394177ba4f64a9a5946fabecc4c7bc3649cbc14f880dbda59"
+  },
+  "status": "OFFLINE_INTEGRATION_CANDIDATE__NOT_DEPLOYED__NOT_LIVE_QUALIFIED__NOT_ACCEPTED",
+  "superseded_sources": {
+    "staging/coordinated-backend/hbnf-cart-relay/index.ts": "Consolidated into staging/coordinated-backend/hbnf-cart-control/index.ts; historical source remains in the Oct. 9 release record.",
+    "staging/coordinated-backend/hbnf-cart-relay/projection.ts": "Consolidated into current cart-control source.",
+    "staging/coordinated-backend/hbnf-cart-relay/relay-auth.ts": "Consolidated into current cart-control source."
+  }
+}
