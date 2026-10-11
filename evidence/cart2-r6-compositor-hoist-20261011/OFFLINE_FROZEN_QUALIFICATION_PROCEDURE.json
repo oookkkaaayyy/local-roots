@@ -1,0 +1,86 @@
+{
+  "candidate": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011",
+    "sha256": "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2",
+    "size_bytes": 1498672
+  },
+  "frozen_policy": {
+    "path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
+    "schema": "hbnf-runtime-qualification-policy-v1",
+    "sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797",
+    "status": "FROZEN",
+    "thresholds_changed": false
+  },
+  "kernel_inventory": {
+    "entry_count": 28,
+    "path": "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+    "runtime_kernel_indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27
+    ],
+    "sha256": "44f62cf31e5efa57a360117d96d437d6f504fd93704b28a069661b2da64a49f0"
+  },
+  "performance_or_physical_acceptance": "NOT_ESTABLISHED_BY_THIS_PROCEDURE",
+  "rollback": {
+    "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "release_id": "Foundation R4",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008
+  },
+  "schema": "hbnf-cart2-candidate-frozen-qualification-procedure-v1",
+  "scope": "OFFLINE_PROCEDURE_ONLY__DOES_NOT_AUTHORIZE_INSTALL_OR_MUTATION",
+  "sequence": [
+    "Before any live admission: freshly verify target identity/health, current Foundation R4 identity, exact candidate and R4 bytes, power, AUX DDP and single worker; fail closed if any item is uncertain.",
+    "After separate exact LIVE_APPROVED admission: run matched tails-off early profiles for kernel 0 and kernel 13 at Matrix brightness 44 against comparable R4 baselines; preserve frame distributions and stage metrics.",
+    "If early gates pass, execute the full frozen 28-kernel inventory and unchanged combined-feature checks; no kernel or feature is skipped.",
+    "If all pre-soak gates pass, run one uninterrupted 5400-second soak at the frozen 8-second sample interval, with no restart or continuity gap.",
+    "Preserve and verify the renderer snapshot. On objective device safety/runtime/performance/AUX failure, use only exact R4 recovery if a separate live authority binding permits it; verify R4 identity and health."
+  ],
+  "status": "PROCEDURE_BOUND_OFFLINE__NOT_RUN",
+  "unchanged_frozen_values": {
+    "catastrophic_consecutive_samples": 3,
+    "catastrophic_fps_floor": 20,
+    "catastrophic_frame_p99_ceiling_ms": 75,
+    "kernel_count": 28,
+    "sample_interval_seconds": 8,
+    "sample_seconds_per_kernel": 30,
+    "settle_seconds_per_kernel": 5,
+    "soak_seconds_minimum": 5400,
+    "threshold_policy": {
+      "aux_stale_sample_max_fraction": 0.01,
+      "fps_median_min_ratio": 0.9,
+      "frame_max_max_ratio": 1.5,
+      "frame_p95_max_ratio": 1.25,
+      "frame_p99_max_ratio": 1.25,
+      "largest_free_block_min_ratio": 0.8,
+      "minimum_free_heap_min_ratio": 0.85
+    },
+    "thresholds_may_be_weakened": false
+  }
+}

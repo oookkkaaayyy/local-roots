@@ -1,0 +1,9 @@
+{
+  "admission_path": "evidence/cart2-r6-compositor-hoist-20261011/OFFLINE_COMPILED_ADMISSION.json",
+  "admission_sha256": "90b90e6a3981fe333c8218bbae0bdff176533a0287cb3e8cd3957872504954f2",
+  "control_state_sha256": "f0faa244314fa52c1e76d4ab695e27eb4604a5562675f206e21c8128bdc42b6d",
+  "errors": [],
+  "pass": true,
+  "schema": "hbnf-cart2-release-admission-result-v1",
+  "stage": "OFFLINE_COMPILED"
+}

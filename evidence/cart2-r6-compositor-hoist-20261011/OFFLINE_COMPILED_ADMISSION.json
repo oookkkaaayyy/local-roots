@@ -1,0 +1,94 @@
+{
+  "checks": {
+    "all_historical_host_failures_replayed": {
+      "evidence_file": "evidence/cart2-r6-compositor-hoist-20261011/SUCCESSOR_TRANSACTION_DRYRUN.json",
+      "pass": true,
+      "sha256": "2338cc39592344939bee5943f3fe741449fbadc626165349aa85434fee1776ff"
+    },
+    "committed_feature_scope_preserved": {
+      "evidence_file": "evidence/cart2-r6-compositor-hoist-20261011/OFFLINE_INTEGRATED_CANDIDATE_MANIFEST.json",
+      "pass": true,
+      "sha256": "fd1830752a3d7aa3a256d213772967f29acc6e74bf2125c6b7ce7d74c917d7d2"
+    },
+    "compiled_embedded_candidate_id_and_sha": {
+      "evidence_file": "evidence/cart2-r6-compositor-hoist-20261011/SUCCESSOR_BUILD_RECEIPT.json",
+      "pass": true,
+      "sha256": "98558a1b20ed1a1799e30e1349971bd8a3a84caa9fa16af86332b3f8aaf987df"
+    },
+    "device_and_source_authority_reconciled": {
+      "evidence_file": "evidence/cart2-r6-compositor-hoist-20261011/OFFLINE_AUTHORITY_RECONCILIATION.json",
+      "pass": true,
+      "sha256": "06e148226a808f9552a9df8bd324b2d31140188df955a7ca3dba394d10cf27bd"
+    },
+    "entire_release_transaction_dryrun": {
+      "evidence_file": "evidence/cart2-r6-compositor-hoist-20261011/SUCCESSOR_TRANSACTION_DRYRUN.json",
+      "pass": true,
+      "sha256": "2338cc39592344939bee5943f3fe741449fbadc626165349aa85434fee1776ff"
+    },
+    "exact_source_dependency_generated_input_closure": {
+      "evidence_file": "evidence/cart2-r6-compositor-hoist-20261011/SUCCESSOR_SOURCE_BINDING.json",
+      "pass": true,
+      "sha256": "0772e725a7d0a408bfdabaca9be31dcd50e826b3d073c686697b7ea15ad544ce"
+    },
+    "flash_and_ram_headroom": {
+      "evidence_file": "evidence/cart2-r6-compositor-hoist-20261011/SUCCESSOR_BUILD_RECEIPT.json",
+      "pass": true,
+      "sha256": "98558a1b20ed1a1799e30e1349971bd8a3a84caa9fa16af86332b3f8aaf987df"
+    },
+    "frozen_performance_soak_and_restore_procedure": {
+      "evidence_file": "evidence/cart2-r6-compositor-hoist-20261011/OFFLINE_FROZEN_QUALIFICATION_PROCEDURE.json",
+      "pass": true,
+      "sha256": "a3b70d689e714883f27bc96d2abe7a9560936630b9cfb31a3bf01ef122628bc0"
+    },
+    "fully_local_pinned_build_toolchain": {
+      "evidence_file": "evidence/cart2-r6-compositor-hoist-20261011/SUCCESSOR_BUILD_RECEIPT.json",
+      "pass": true,
+      "sha256": "98558a1b20ed1a1799e30e1349971bd8a3a84caa9fa16af86332b3f8aaf987df"
+    },
+    "known_good_compiler_entry_smoke": {
+      "evidence_file": "evidence/cart2-r6-compositor-hoist-20261011/PIO_BUILD.log",
+      "pass": true,
+      "sha256": "d4cb8d23ed9b7fdc2da15d1fd23235caf285ecee7e8ff08b30e7bd776c3b9cca"
+    },
+    "rollback_artifact_hash_verified": {
+      "evidence_file": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "pass": true,
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    }
+  },
+  "classification": "EXACT_SUCCESSOR_OFFLINE_COMPILED__LIVE_AUTHORITY_CLOSED",
+  "fresh_owner_authorization": null,
+  "identities": {
+    "candidate_bin_path": "evidence/cart2-r6-compositor-hoist-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011.bin",
+    "candidate_bin_sha256": "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2",
+    "candidate_bin_size_bytes": 1498672,
+    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011",
+    "expected_installed_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "expected_installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "rollback_bin_path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "rollback_bin_size_bytes": 1489008,
+    "source_commit": "1b32c07c7a9e5f4ad25f6e9cf7f02e4e0c1d060b"
+  },
+  "limits": {
+    "candidate_install_attempts_used": 0,
+    "candidate_install_limit": 1,
+    "fresh_live_preflight_performed": false,
+    "live_mutation_authorized": false,
+    "recovery_attempts_used": 0,
+    "recovery_install_limit": 1
+  },
+  "not_established": [
+    "LIVE_APPROVED",
+    "LIVE_QUALIFICATION",
+    "target performance",
+    "28-kernel runtime sweep",
+    "combined-feature live qualification",
+    "90-minute soak",
+    "owner visual/audio acceptance"
+  ],
+  "outcome": "PASS",
+  "schema": "hbnf-cart2-release-admission-v1",
+  "stage": "OFFLINE_COMPILED"
+}

@@ -1,0 +1,36 @@
+{
+  "candidate": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011",
+    "sha256": "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2",
+    "source_commit": "1b32c07c7a9e5f4ad25f6e9cf7f02e4e0c1d060b"
+  },
+  "device_network_or_cloud_access_performed": false,
+  "fresh_device_preflight_required_before_any_live_admission": true,
+  "live_authorization_created": false,
+  "reconciliation": "The current staged control state records Foundation R4 as installed, with live_mutation_authorized=false. Its prior exact binding is for the failed 2026-10-10 R6 artifact and is not reused. This successor is bound only for OFFLINE_COMPILED admission.",
+  "recorded_control_state": {
+    "control_model_sha256": "8d42f1fd540c95a01ae16857c286f6350b57ad8e3cd0c22befd1780fcb26d29c",
+    "control_state_sha256": "f0faa244314fa52c1e76d4ab695e27eb4604a5562675f206e21c8128bdc42b6d",
+    "installed_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "lifecycle_state": "PHASE2_INTEGRATING",
+    "live_mutation_authorized": false,
+    "prior_live_authorization_candidate": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "prior_live_authorization_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+  },
+  "rollback": {
+    "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "release_id": "Foundation R4",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "schema": "hbnf-cart2-successor-offline-authority-reconciliation-v1",
+  "scope": "OFFLINE_COMPILED_ONLY",
+  "source_authority": {
+    "runtime_source_hashes_match_build_receipt": true,
+    "source_binding_path": "evidence/cart2-r6-compositor-hoist-20261011/SUCCESSOR_SOURCE_BINDING.json",
+    "source_binding_sha256": "0772e725a7d0a408bfdabaca9be31dcd50e826b3d073c686697b7ea15ad544ce",
+    "source_branch": "codex/cart2-p2-offline-candidate-20261011",
+    "source_commit": "1b32c07c7a9e5f4ad25f6e9cf7f02e4e0c1d060b"
+  },
+  "status": "PASS_OFFLINE_SOURCE_AND_RECORDED_CONTROL_STATE_RECONCILED__NO_FRESH_DEVICE_READ"
+}
