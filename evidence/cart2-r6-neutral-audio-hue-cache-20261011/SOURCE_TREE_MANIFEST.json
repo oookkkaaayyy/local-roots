@@ -1,0 +1,124 @@
+{
+  "excluded_dirs": [
+    ".DS_Store",
+    ".cache",
+    ".git",
+    ".mypy_cache",
+    ".pio",
+    ".pioenvs",
+    ".piolibdeps",
+    ".pytest_cache",
+    "__pycache__",
+    "node_modules"
+  ],
+  "excluded_suffixes": [
+    ".pyc",
+    ".pyo"
+  ],
+  "file_count": 14,
+  "files": [
+    {
+      "mode": "0o644",
+      "path": "hbnf_animartrix_audio_bridge.h",
+      "sha256": "b8481f91600e638e2f50f5517206d8f5df5616f83703070e3dea57ea432ca9dc",
+      "size": 18911,
+      "type": "file"
+    },
+    {
+      "mode": "0o644",
+      "path": "hbnf_audio_expression.h",
+      "sha256": "f4825884dd53cba9bca698bd8b9b7d9d13a81e7ce381957d23790f13073dc4c3",
+      "size": 3171,
+      "type": "file"
+    },
+    {
+      "mode": "0o644",
+      "path": "hbnf_brightness_output.h",
+      "sha256": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a",
+      "size": 1549,
+      "type": "file"
+    },
+    {
+      "mode": "0o644",
+      "path": "hbnf_coordinated_contract.h",
+      "sha256": "7380a3ab41924d0fc58ca83202ad04e28762ac8fb2e85ae1f8ddfb88719f8882",
+      "size": 2276,
+      "type": "file"
+    },
+    {
+      "mode": "0o644",
+      "path": "hbnf_foundation_core.h",
+      "sha256": "d4646267f8fbc03cc4921368fc801e528e6a6cb92133a0c1fc74b48b211be0e4",
+      "size": 25270,
+      "type": "file"
+    },
+    {
+      "mode": "0o644",
+      "path": "hbnf_generative_v4.h",
+      "sha256": "13163419b6453d448a795a7580e784f54b23b7586c8317eff467863f648a6dfa",
+      "size": 10031,
+      "type": "file"
+    },
+    {
+      "mode": "0o644",
+      "path": "hbnf_home_screen_icon.h",
+      "sha256": "e272644675566a969f65e96b855b824109b8ae6fbcb168da8c6efdeb842097d6",
+      "size": 350552,
+      "type": "file"
+    },
+    {
+      "mode": "0o644",
+      "path": "hbnf_local_ui.h",
+      "sha256": "feed7e614cf43d7efe211b54bba5b37fb352e70646e887e3b0341c3f97b0068b",
+      "size": 34401,
+      "type": "file"
+    },
+    {
+      "mode": "0o644",
+      "path": "hbnf_native_text.h",
+      "sha256": "f00d00d9a53d3f6ffe4175e4af809c222f6ea5888fcb9b2a366c2076a311e98f",
+      "size": 5924,
+      "type": "file"
+    },
+    {
+      "mode": "0o644",
+      "path": "hbnf_outlier_trace.h",
+      "sha256": "d97672e7f41ad3fc21a5ed453f49197d149d9533426a17d0e152d8ceba466a66",
+      "size": 5993,
+      "type": "file"
+    },
+    {
+      "mode": "0o644",
+      "path": "hbnf_vibe16.h",
+      "sha256": "f076acf0e5710bf5a9acffe63b31a95f2252230b5470bd362301caa73a743b0a",
+      "size": 6422,
+      "type": "file"
+    },
+    {
+      "mode": "0o644",
+      "path": "hbnf_vibe_runtime.h",
+      "sha256": "290e979980af3ebb69b6a9c7c5e0147680055ce005c5c51eb3ece8965e12f1ca",
+      "size": 11577,
+      "type": "file"
+    },
+    {
+      "mode": "0o644",
+      "path": "library.json",
+      "sha256": "2dc685da45efe57fe1d199b5407a00a7bd42b2f473599f6f432df515b4b6c96a",
+      "size": 128,
+      "type": "file"
+    },
+    {
+      "mode": "0o644",
+      "path": "usermod_hbnf_foundation_v1.cpp",
+      "sha256": "1154995b3c1c1792660dceb4c92b73875a1ca6f88d7ec0bfbf3a086bccd48018",
+      "size": 88283,
+      "type": "file"
+    }
+  ],
+  "label": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-cache-20261011",
+  "root_name": "usermod",
+  "schema": "hbnf-source-tree-manifest-v1",
+  "source_tree_sha256": "6f244607c23be6ada3e25a97e0322a75324337b664414341f2c4d8b2db527fae",
+  "symlink_count": 0
+}
