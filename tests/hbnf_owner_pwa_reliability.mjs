@@ -63,7 +63,7 @@ const listeners = new Map();
 const cachedShell = { fromCache: true };
 const cache = { put: async () => {}, match: async () => cachedShell };
 let timeoutCallback;
-let requestSignal;
+const requestSignals = [];
 const serviceWorkerContext = {
   self: {
     location: { origin: "https://cart.example" },
@@ -76,7 +76,8 @@ const serviceWorkerContext = {
   AbortController,
   Response,
   fetch: (_request, init) => {
-    requestSignal = init?.signal;
+    const requestSignal = init?.signal;
+    requestSignals.push(requestSignal);
     return new Promise((_resolve, reject) => {
       requestSignal.addEventListener("abort", () => {
         const error = new Error("aborted");
@@ -97,8 +98,27 @@ listeners.get("fetch")({
 for (let turn = 0; turn < 8 && typeof timeoutCallback !== "function"; turn++) await Promise.resolve();
 assert.equal(typeof timeoutCallback, "function");
 timeoutCallback();
-assert.equal(requestSignal.aborted, true);
+assert.equal(requestSignals[0].aborted, true);
 assert.equal(await shellResponse, cachedShell);
+
+// A navigation cancelled by its caller must also cancel the underlying fetch.
+const clientController = new AbortController();
+let cancelledShellResponse;
+listeners.get("fetch")({
+  request: {
+    method: "GET",
+    mode: "navigate",
+    url: "https://cart.example/hbnf-cart.html",
+    signal: clientController.signal,
+  },
+  respondWith: promise => { cancelledShellResponse = promise; },
+});
+for (let turn = 0; turn < 8 && requestSignals.length < 2; turn++) await Promise.resolve();
+assert.equal(requestSignals.length, 2);
+assert.equal(requestSignals[1].aborted, false);
+clientController.abort();
+assert.equal(requestSignals[1].aborted, true);
+assert.equal(await cancelledShellResponse, cachedShell);
 
 for (const name of ["hbnf-cart-net.mjs", "hbnf-cart-sw.js"]) {
   assert.ok(installer.includes(`"${name}"`), `installer omits ${name}`);

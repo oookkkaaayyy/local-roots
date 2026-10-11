@@ -1,0 +1,25 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OWNER_PWA_CLIENT_ABORT_REGRESSION_20261010",
+  "summary": "Cover client cancellation in the existing owner PWA service-worker timeout regression test.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "failure": "The timeout test verified timer-driven fetch cancellation but did not verify that an incoming navigation abort signal also cancels the service-worker fetch.",
+    "implementation": [
+      "tests/hbnf_owner_pwa_reliability.mjs"
+    ],
+    "validation": [
+      "The existing test invokes the actual service-worker fetch handler with a controlled pending fetch.",
+      "The added case aborts the caller signal and verifies that the underlying request aborts and the cached shell fallback is returned.",
+      "The existing owner PWA reliability test passes."
+    ],
+    "rollback": "Revert the added client-abort scenario and this test-only change record. No service-worker implementation, package, deployment, endpoint, firmware, or control state changed."
+  }
+}
