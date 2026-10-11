@@ -50,15 +50,22 @@
     ],
     "expert_basis": {
       "pinned_upstream": "WLED 16.0.1 FontManager at commit 29b389df1c1aaec6ff53aea742d17063b985906c; built-in slot 0 is Tom Thumb 6px.",
+      "font_data_identity": {
+        "path": "/tmp/WLED-v16.0.1/wled00/src/font/font_tom_thumb_6px.h",
+        "sha256": "c043656bbb4ed1fdffaca69bfc3a84779826c19d83a00621206a212a03e323a4",
+        "header_bytes": "57 06 03 01 00 20 7e 00 00 00 00 00",
+        "metric_source": "Pinned font array header declares fixed glyph width 3 and spacing 1; FontManager fills fixed-width glyph records from this header. Ignore the contradictory generic 4px packing example earlier in the same header file."
+      },
       "measured_wbf_widths_px": {
         "ANDREW_slot_4_5x12": 35,
         "ANDREW_slot_0_tom_thumb_6px": 23,
         "SUPERCALIFRAGILISTIC_slot_0_tom_thumb_6px": 79
       },
-      "compatibility": "No command schema or new dependency. The firmware resolves the font once on the first render and stores the selected slot in the active overlay state, avoiding per-frame FontManager cache alternation."
+      "compatibility": "No command schema or new dependency. The firmware resolves the font once on the first render and stores the selected slot in the active overlay state, avoiding per-frame FontManager cache alternation.",
+      "known_existing_limitation": "The native text wrapper processes non-ASCII UTF-8 bytes individually and draws fallback question marks; this compact-font change does not correct UTF-8 rendering. The current candidate is only qualified for its existing ASCII text path."
     },
     "validation": [
-      "A host C++ regression exercises the actual compact-fit helper against native-font metrics and confirms fitting text remains unchanged, ANDREW uses slot 0, paged phrases remain paged, and words too long for slot 0 retain the selected face/scroll path.",
+      "A host C++ regression exercises the actual compact-fit helper with mock FontManager metrics matching the pinned WBF header (3px glyphs + 1px spacing) and confirms fitting text remains unchanged, ANDREW uses slot 0, paged phrases remain paged, and words too long for slot 0 retain the selected face/scroll path.",
       "The offline planner mirrors the same overflow decision and has a regression for ANDREW.",
       "Historical R6 artifact verification reads source files from its recorded repository_source_commit, so later source-candidate edits cannot invalidate the old artifact's source proof."
     ],
