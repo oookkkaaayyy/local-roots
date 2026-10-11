@@ -1,0 +1,117 @@
+{
+  "authorization_id": "OWNER-20261011-COMPOSITOR-TIMING-DIAGNOSTIC-01",
+  "completed_at_utc": "2026-10-11T09:51:39.335066+00:00",
+  "error": "RuntimeError: qualification-brightness-restore-unverified; post_error=None; readback=RuntimeError: persisted-config-HBNF-settings-partial-or-invalid",
+  "firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "firmware_uploads": 0,
+  "matrix_mac": "70:4b:ca:5b:34:5c",
+  "preflight": {
+    "aux_ddp_verified": true,
+    "device_mutations_before_post": 0,
+    "lan_interface": "en0",
+    "matrix_aux": {
+      "aux_ip": "192.168.77.11",
+      "aux_led_count": 22,
+      "aux_live": true,
+      "aux_live_ip": "192.168.77.10",
+      "aux_live_mode": "DDP",
+      "aux_mac": "8c94df55c34c",
+      "aux_on": true,
+      "aux_physical_output_status": "NOT_OBSERVABLE_FROM_WLED_JSON",
+      "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "endpoint_reads": {
+        "aux_info": {
+          "completed_monotonic_ns": 219703333,
+          "elapsed_seconds": 0.169859,
+          "endpoint": "http://192.168.77.11/json/info",
+          "started_monotonic_ns": 49844666,
+          "status": "PASS"
+        },
+        "aux_state": {
+          "completed_monotonic_ns": 240354333,
+          "elapsed_seconds": 0.190401,
+          "endpoint": "http://192.168.77.11/json/state",
+          "started_monotonic_ns": 49953333,
+          "status": "PASS"
+        },
+        "matrix_build": {
+          "completed_monotonic_ns": 408130625,
+          "elapsed_seconds": 0.358548,
+          "endpoint": "http://192.168.77.10/hbnf/build.json",
+          "started_monotonic_ns": 49582833,
+          "status": "PASS"
+        },
+        "matrix_info": {
+          "completed_monotonic_ns": 376148833,
+          "elapsed_seconds": 0.326781,
+          "endpoint": "http://192.168.77.10/json/info",
+          "started_monotonic_ns": 49367791,
+          "status": "PASS"
+        },
+        "matrix_state": {
+          "completed_monotonic_ns": 408514833,
+          "elapsed_seconds": 0.358782,
+          "endpoint": "http://192.168.77.10/json/state",
+          "started_monotonic_ns": 49732458,
+          "status": "PASS"
+        }
+      },
+      "expected_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "expected_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "foundation_telemetry_enabled": false,
+      "fps": 41,
+      "matrix_brightness": 44,
+      "matrix_ip": "192.168.77.10",
+      "matrix_mac": "704bca5b345c",
+      "matrix_on": true,
+      "matrix_uptime_seconds": 400,
+      "packet20_enabled": false,
+      "packet20_restore_verified": false,
+      "packet20_snapshot_hash": 0,
+      "packet20_snapshot_id": 0,
+      "packet20_snapshot_valid": false,
+      "read_elapsed_seconds": 0.360859,
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "restart_count": 0,
+      "schema": "hbnf-live-qualification-preflight-v1",
+      "uptime_seconds": 400,
+      "wled": "16.0.1"
+    },
+    "on_ac": true,
+    "opal": {
+      "at_utc": "2026-10-11T09:51:33.181767+00:00",
+      "curl_and_sha256sum_available": true,
+      "exact_r4_ledger": true,
+      "matrix_readonly_endpoints_http_200": true,
+      "minimum_tmp_available_kb": 16384,
+      "mutations": 0,
+      "opal_uptime_and_tmp_space_recorded": true,
+      "status": "PASS",
+      "stderr_tail": "",
+      "stdout": "OPAL_READONLY_PREFLIGHT\n 02:51:33 up 13:40,  load average: 1.49, 1.42, 1.38\nFilesystem           1K-blocks      Used Available Use% Mounted on\ntmpfs                    59392      7732     51660  13% /tmp\n/usr/bin/curl\n/usr/bin/sha256sum\n/usr/bin/wc\n55 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\nMATRIX_INFO_HTTP=200\nMATRIX_BUILD_HTTP=200\n",
+      "tmp_available_kb": 51660
+    },
+    "persisted_settings": {
+      "auxBrightness": 245,
+      "matrixBrightness": 44,
+      "vibe": 2
+    },
+    "runtime_settings": {
+      "auxBrightness": 245,
+      "matrixBrightness": 44,
+      "vibe": null
+    }
+  },
+  "preflight_brightness": 44,
+  "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "schema": "hbnf-r4-settings-restore-attempt-v1",
+  "settings_write_attempt": 1,
+  "settings_write_limit": 1,
+  "started_at_utc": "2026-10-11T09:51:33.203390+00:00",
+  "status": "FAILED_NO_RETRY__EXACT_R4_REMAINS_INSTALLED",
+  "target_settings": {
+    "auxBrightness": 245,
+    "matrixBrightness": 52,
+    "vibe": 2
+  }
+}

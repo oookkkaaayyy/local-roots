@@ -955,9 +955,9 @@
       "status": "OFFLINE_CORRECTION_TESTED__FRESH_PRELIVE_PASS"
     },
     "blockers": [
-      "The exact compositor diagnostic completed: 8/8 samples captured; performance gate failed at 12 FPS with p99 saturated at 127.875 ms and frame max about 149 ms. The same low FPS appeared with tails off. Measured compositor averaged about 1 ms while kernel without compositor averaged about 31 ms; audio inputs were all zero, so source cause is not fully isolated.",
-      "Exact R4 firmware is installed and verified. The original Matrix brightness is 52; current brightness is 44 because restoration on the diagnostic image did not verify. One settings-only restore remains, with no firmware upload authorized by this step.",
-      "The 28-kernel sweep, combined-feature checks, uninterrupted 90-minute soak, and owner acceptance remain undone."
+      "The exact R6 diagnostic failed performance: 12 FPS with the frame p99 saturated at 127.875 ms; the tails-off check also remained slow. The compositor averaged about 1 ms, while the kernel residual averaged about 31 ms; audio and palette paths also measured high. All recorded audio inputs were zero, limiting representative audio attribution.",
+      "Read-only post-write confirmation verifies exact R4, Matrix brightness 52 and AUX brightness 245. R4 runtime and saved config omit Vibe; exact R4 source serializes only the brightness fields. The single authorized settings write is consumed; no retry or firmware write is authorized by that transaction. Evidence: evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/R4_POST_RESTORE_READONLY_CONFIRMATION.json.",
+      "The 28-kernel sweep, combined-feature checks, uninterrupted 90-minute soak, rollback proof for any successor, and owner acceptance remain undone."
     ],
     "brightness_field_target": {
       "field_observation": "At roughly <=20 brightness Matrix appears effectively off; roughly 20-60 visibly loses LED/pixel participation and scene structure, requiring uncomfortable brightness to obtain a full-looking animation.",
@@ -2633,7 +2633,7 @@
       "status": "PASS"
     },
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "R4_CONFIRMED__SETTINGS_RESTORE_PENDING",
+    "status": "R6_PERFORMANCE_FAILED__EXACT_R4_INSTALLED__SETTINGS_PARTIAL_NO_RETRY",
     "t3_fast_path_preparation": {
       "human_approval_required": true,
       "human_packet": "work/cart2/27_T3_PHASE2_FAST_PATH_PREP_20261006.md",
@@ -2681,7 +2681,7 @@
     "schema": "hbnf-execution-cursor-v1",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_transition": "T4_PHASE2_INTEGRATION",
-    "current_failure_domain": "DIAGNOSTIC_CAPTURED__R6_PERFORMANCE_FAILED__R4_SETTINGS_RESTORE_PENDING",
+    "current_failure_domain": "R6_PERFORMANCE_FAILED__R4_SETTINGS_RESTORE_FAILED_NO_RETRY__EXACT_R4_INSTALLED",
     "current_subject": {
       "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
       "artifact_sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
@@ -2695,8 +2695,8 @@
       "diagnostic_result": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/attempt-01/TRANSACTION_RESULT.json"
     },
     "exact_next_path": [
-      "Complete one exact R4 settings-only restore with the existing tested brightness transaction under the same one-use exact diagnostic authorization; do not upload firmware.",
-      "Analyze raw compositor timing and offline source to isolate kernel/palette/audio costs; build no candidate until correction is evidence-backed.",
+      "Do not retry the consumed R4 settings write. Read-only confirmation verifies exact R4, Matrix 52, AUX 245, and no Vibe field in runtime or saved R4 settings; R4 source only serializes the two brightness fields.",
+      "Use captured component timings and matched tails-off samples to isolate the kernel, palette, and audio costs offline; build no candidate until a correctable source cause is evidence-backed.",
       "Then run frozen 28-kernel, combined-feature, uninterrupted 90-minute soak, exact rollback and owner acceptance gates."
     ],
     "no_repeat": [
@@ -2920,12 +2920,12 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-11T09:49:24.879043+00:00",
+  "last_updated_utc": "2026-10-11T10:05:34.359716+00:00",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
     "authorization_id": "OWNER-20261011-COMPOSITOR-TIMING-DIAGNOSTIC-01",
     "authorization": "Standing direct owner authorization; only the incomplete captured-settings restoration is open.",
-    "authorized": true,
+    "authorized": false,
     "candidate_release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
     "candidate_sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
@@ -2934,11 +2934,11 @@
     "recovery_install_limit": 1,
     "recovery_attempts_used": 1,
     "candidate_install_permitted": false,
-    "operation_scope": "EXACT_R4_OWNER_SETTINGS_RESTORE_ONLY",
-    "transaction_consumed": false,
-    "live_admission_pending": true,
+    "operation_scope": "NO_LIVE_MUTATION__OFFLINE_ANALYSIS_ONLY",
+    "transaction_consumed": true,
+    "live_admission_pending": false,
     "hardware_writes_permitted_now": false,
-    "current_gate": "Exact LIVE_APPROVED admission, capsule, prelive proof, and immediate fresh read-only preflight required."
+    "current_gate": "R4_SETTINGS_ATTEMPT_CONSUMED__NO_RETRY__EXACT_R4_INSTALLED"
   },
   "live_mutation_authorization_closed_at_utc": null,
   "live_mutation_authorization_closure": {
@@ -2946,7 +2946,7 @@
     "evidence_sha256": "a81fe0993144068206859041a010fad1ef7ed5cfa88f8c3a6edc7ff25e5ecaf0",
     "reason": "Attempt-3 exact diagnostic candidate hit catastrophic kernel-0 threshold failure for three consecutive scheduled samples. Renderer restore passed; exact R4 recovery and readback passed; AUX native DDP healthy. No live authority remains."
   },
-  "live_mutation_authorized": true,
+  "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",
@@ -3506,7 +3506,7 @@
     "status": "OFFLINE_DESIGN_ONLY__OVERHEAD_AND_IMPLEMENTATION_PROOF_REQUIRED"
   },
   "schema": "hbnf-control-state-v2",
-  "status": "R4_CONFIRMED__EXACT_SETTINGS_RESTORE_PENDING",
+  "status": "R6_PERFORMANCE_FAILED__EXACT_R4_INSTALLED__SETTINGS_PARTIAL_NO_RETRY",
   "live_mutation_authorization_reconciliation": {
     "schema": "hbnf-live-authorization-state-reconciliation-v1",
     "recorded_at_utc": "2026-10-10T06:34:15+00:00",
@@ -3748,10 +3748,24 @@
       "vibe": 2
     },
     "one_settings_write_limit": 1,
-    "settings_writes_used": 0,
+    "settings_writes_used": 1,
     "firmware_writes_permitted": false,
-    "authorization_consumed": false,
-    "status": "EXACT_R4_SETTINGS_RESTORE__LIVE_ADMISSION_PENDING",
-    "source_message_ref": "Direct user standing authorization in this chat: “I authorize UNLIMITED install and anything else, so long as they don’t send communication or cost money” and “This and all future similar requests are blanket-approved … without extra cost or external communication.”"
+    "authorization_consumed": true,
+    "status": "MATRIX_AUX_RESTORED__R4_DOES_NOT_PERSIST_VIBE__NO_RETRY",
+    "source_message_ref": "Direct user standing authorization in this chat: “I authorize UNLIMITED install and anything else, so long as they don’t send communication or cost money” and “This and all future similar requests are blanket-approved … without extra cost or external communication.”",
+    "attempt_started_at_utc": "2026-10-11T09:51:33.203390+00:00",
+    "completed_at_utc": "2026-10-11T09:51:39.335066+00:00",
+    "result_path": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/R4_SETTINGS_RESTORE_RESULT.json",
+    "post_attempt_readback": {
+      "auxBrightness": 245,
+      "matrixBrightness": 52,
+      "persisted_hbnf_fields": [
+        "matrixBrightness",
+        "auxBrightness"
+      ],
+      "vibe": null
+    },
+    "post_attempt_readback_evidence": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/R4_POST_RESTORE_READONLY_CONFIRMATION.json",
+    "post_attempt_readback_evidence_sha256": "bfd0c885c4c4f2c50155639d6c5374bed92a447fac8a3cea0820f2e9380657d1"
   }
 }
