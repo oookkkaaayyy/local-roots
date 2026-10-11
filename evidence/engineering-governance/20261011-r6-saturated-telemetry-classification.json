@@ -1,0 +1,49 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "R6_SATURATED_TELEMETRY_CLASSIFICATION_20261011",
+  "summary": "Classify saturated Foundation frame-tail percentile telemetry as a required runtime qualification gate so the existing exact-recovery branch runs instead of mislabeling it as a host failure.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing R6 transaction coordinator and frozen Foundation telemetry contract; no new execution path or policy.",
+      "affected_subsystem": "Host-side classification of an existing telemetry gate result. No firmware bytes, qualification thresholds, installation authority, or live state changed.",
+      "root_cause": "The adapter raises foundation-frame-tail-quantile-saturated-at-127.875ms when a percentile reaches the saturated histogram bucket. The coordinator's objective-failure marker list omitted that marker, so it classified a required runtime telemetry failure as a host failure and skipped the already-authorized exact R4 recovery branch.",
+      "rollback_reference": "Revert the one marker and its regression case. No firmware rebuild, candidate install, device rollback, dependency, or lifecycle-model revision is involved.",
+      "evidence_sources": [
+        "scripts/hbnf_r6_audio_cache_live_transaction.py: device_failure_requires_recovery()",
+        "tests/hbnf_foundation_live_adapter.py: saturated-percentile telemetry contract",
+        "evidence/cart2-r6-compositor-hoist-20261011/live-qualification/sweep/SATURATED_TELEMETRY_RAW.json",
+        "evidence/cart2-r6-compositor-hoist-20261011/live-qualification/r4-recovery-after-tail-overflow-20261011/TRANSACTION_RESULT.json"
+      ],
+      "tests": [
+        "python3 tests/test_r6_audio_cache_transaction_dryrun.py: PASS; saturated telemetry marker invokes exact R4 recovery once in the fake-port coordinator, while unrelated collector failure remains non-recovery.",
+        "python3 tests/hbnf_control.py: PASS (23 tests).",
+        "python3 tests/hbnf_guarded_run.py: PASS.",
+        "python3 scripts/hbnf_architecture_fitness.py: PASS.",
+        "python3 tests/hbnf_runtime_qualify_static.py: PASS.",
+        "python3 tests/hbnf_kernel_sweep_report.py: PASS.",
+        "python3 tests/hbnf_source_tree_identity.py: PASS.",
+        "python3 tests/hbnf_live_kernel_sweep.py: PASS.",
+        "python3 tests/hbnf_packet20_http_adapter.py: PASS.",
+        "python3 tests/hbnf_packet20_build_validate.py: PASS."
+      ],
+      "live_state": {
+        "device_mutation_during_fix": false,
+        "production_deployment": false,
+        "firmware_changed": false,
+        "thresholds_changed": false,
+        "candidate_install_attempts_used": 1,
+        "exact_r4_recovery_attempts_used": 1,
+        "exact_r4_readback_verified": true,
+        "full_sweep_and_soak_completed": false
+      }
+    }
+  }
+}

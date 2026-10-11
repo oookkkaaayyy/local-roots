@@ -19,7 +19,8 @@ spec.loader.exec_module(module)
 class FakePort:
     def __init__(self, *, admission=True, stage=True, installed=True,
                  qualification=True, recovery=True, device_failure=False,
-                 candidate=None, brightness_setup=True, brightness_restore=True):
+                 candidate=None, brightness_setup=True, brightness_restore=True,
+                 qualification_error=None):
         self.candidate = candidate or module.LEGACY_R6_PROFILE
         self.admission = admission
         self.stage = stage
@@ -27,6 +28,7 @@ class FakePort:
         self.qualification = qualification
         self.recovery_ok = recovery
         self.device_failure = device_failure
+        self.qualification_error = qualification_error
         self.brightness_setup_ok=brightness_setup
         self.brightness_restore_ok=brightness_restore
         self.device_requests = 0
@@ -89,6 +91,8 @@ class FakePort:
 
     def qualify(self):
         self.events.append("qualify")
+        if self.qualification_error:
+            return {"passed": False, "abort": {"run_error": self.qualification_error}}
         if self.qualification:
             return {"passed": True, "report": {"status": "PASS"}}
         if self.device_failure:
@@ -247,6 +251,12 @@ def main():
     gate_fail = FakePort(qualification=False, device_failure=True)
     cases.append(run_case("frozen device gate failure", gate_fail,
              "QUALIFICATION_FAILED_R4_RECOVERED", 1, 1, 13))
+
+    saturated_tail = FakePort(qualification_error=(
+        "RuntimeError: foundation-frame-tail-quantile-saturated-at-127.875ms"))
+    assert module.device_failure_requires_recovery(saturated_tail.qualify())
+    cases.append(run_case("saturated frame-tail telemetry is a required runtime gate failure",
+             saturated_tail, "QUALIFICATION_FAILED_R4_RECOVERED", 1, 1, 13))
 
     collector_fail = FakePort(qualification=False, device_failure=False)
     cases.append(run_case("host collector failure does not consume recovery", collector_fail,

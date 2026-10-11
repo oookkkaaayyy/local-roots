@@ -716,6 +716,12 @@ def device_failure_requires_recovery(summary):
         "restart-count",
         "matrix-runtime-identity-mismatch",
         "candidate-runtime-identity-mismatch",
+        # The telemetry adapter fails closed when a percentile reaches the
+        # histogram's saturated terminal bucket. That is a runtime evidence
+        # gate failure, not a collector/host failure: the candidate cannot be
+        # qualified from that sample and the transaction must follow its
+        # already-authorized recovery path.
+        "foundation-frame-tail-quantile-saturated",
     )
     return any(marker in text for marker in markers)
 
