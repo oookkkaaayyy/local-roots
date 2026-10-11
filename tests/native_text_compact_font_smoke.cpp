@@ -1,8 +1,8 @@
 #include <cassert>
 #include <cstring>
 
-#include "../firmware/phase2/integration-r6-cachefix/usermod/hbnf_native_text.h"
-#include "../firmware/phase2/integration-r6-cachefix/usermod/hbnf_coordinated_contract.h"
+#include "../firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_native_text.h"
+#include "../firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_coordinated_contract.h"
 
 struct MockFontManager {
   uint8_t slot=4;
