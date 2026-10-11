@@ -5,13 +5,16 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import argparse
 import tempfile
 import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-EVIDENCE = ROOT / "evidence/cart2-r6-compositor-hoist-20261011"
-manifest = json.loads((EVIDENCE / "OFFLINE_INTEGRATED_CANDIDATE_MANIFEST.json").read_text())
+parser = argparse.ArgumentParser()
+parser.add_argument("--manifest", default="evidence/cart2-r6-compositor-hoist-20261011/OFFLINE_INTEGRATED_CANDIDATE_MANIFEST.json")
+args = parser.parse_args()
+manifest = json.loads((ROOT / args.manifest).read_text())
 
 
 def sha(path: Path) -> str:
@@ -42,7 +45,7 @@ assert package_sha == manifest["owner_guest_package"]["sha256"]
 assert package_path.stat().st_size == manifest["owner_guest_package"]["bytes"]
 assert sidecar_path.read_text() == f"{package_sha}  {package_path.name}\n"
 
-package_root = "HBNF_CART2_OWNER_GUEST_COMPOSITOR_HOIST_20261011/"
+package_root = package_path.stem + "/"
 with zipfile.ZipFile(package_path) as archive:
     embedded = json.loads(archive.read(package_root + "MANIFEST.json"))
     assert embedded["sourceCommit"] == manifest["owner_guest_package"]["source_commit"]
@@ -60,8 +63,8 @@ with tempfile.TemporaryDirectory(prefix="cart2-compositor-owner-guest-repro-") a
         ROOT,
         Path(temp),
         manifest["owner_guest_package"]["source_commit"],
-        package_name="HBNF_CART2_OWNER_GUEST_COMPOSITOR_HOIST_20261011",
-        manifest_schema="hbnf-cart2-owner-guest-vibe-package-v2",
+        package_name=package_path.stem,
+        manifest_schema=manifest["owner_guest_package"].get("manifest_schema", "hbnf-cart2-owner-guest-vibe-package-v2"),
         build_marker=manifest["owner_guest_package"]["build_marker"],
         scope=manifest["owner_guest_package"]["scope"],
     )
