@@ -44,6 +44,13 @@ R4_BIN = ROOT/"evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matri
 ADAPTER = ROOT/"evidence/cart2-r6-audio-cache-20261010/R6_AUDIO_CACHE_LIVE_SWEEP_ADAPTER.json"
 OUT = ROOT/"evidence/cart2-r6-audio-cache-20261010/live-qualification"
 
+# Offline-only successor binding used by host rehearsal tests. The live
+# coordinator above remains pinned to the consumed 2026-10-10 attempt.
+SUCCESSOR_RELEASE = "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011"
+SUCCESSOR_SHA = "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2"
+SUCCESSOR_SIZE = 1498672
+SUCCESSOR_BIN = ROOT/"evidence/cart2-r6-compositor-hoist-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011.bin"
+
 
 def sha(path: pathlib.Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -246,6 +253,31 @@ def exact_artifacts():
         raise RuntimeError("candidate-byte-identity-failed")
     if sha(R4_BIN) != R4_SHA or R4_BIN.stat().st_size != R4_SIZE:
         raise RuntimeError("r4-recovery-byte-identity-failed")
+
+
+def verify_offline_successor_binding(admission_path: pathlib.Path) -> dict:
+    """Validate successor artifact binding for offline fake-port rehearsal only.
+
+    This intentionally does not call the live admission authority or authorize
+    any device operation; the historical live path remains bound to RELEASE.
+    """
+    if not SUCCESSOR_BIN.is_file() or sha(SUCCESSOR_BIN) != SUCCESSOR_SHA or SUCCESSOR_BIN.stat().st_size != SUCCESSOR_SIZE:
+        raise RuntimeError("successor-byte-identity-failed")
+    if not admission_path.is_file():
+        raise RuntimeError("successor-admission-missing")
+    try:
+        admission = json.loads(admission_path.read_text())
+        ids = admission["identities"]
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise RuntimeError("successor-admission-invalid") from exc
+    if (ids.get("candidate_release_id") != SUCCESSOR_RELEASE
+        or ids.get("candidate_bin_sha256") != SUCCESSOR_SHA
+        or pathlib.Path(ids.get("candidate_bin_path", "")).resolve() != SUCCESSOR_BIN.resolve()
+        or ids.get("rollback_bin_sha256") != R4_SHA
+        or pathlib.Path(ids.get("rollback_bin_path", "")).resolve() != R4_BIN.resolve()
+        or str(ids.get("matrix_mac", "")).replace(":", "").lower() != MATRIX_MAC):
+        raise RuntimeError("successor-admission-artifact-binding-mismatch")
+    return admission
 
 
 def check_admission(admission_path: pathlib.Path, capsule_path: pathlib.Path, proof_path: pathlib.Path, stage="LIVE_APPROVED"):

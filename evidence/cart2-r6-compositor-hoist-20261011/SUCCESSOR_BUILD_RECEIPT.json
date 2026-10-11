@@ -76,7 +76,7 @@
         "tests/hbnf_packet20_live_entrypoint_guard.py": "PASS; rejects invalid admission before device request/upload/output",
         "tests/hbnf_packet20_r4_entrypoint_guard.py": "PASS; superseded R4 entrypoint blocks before device access",
         "tests/hbnf_packet20_r2_transaction_static.py": "PASS; exact candidate/recovery identity and one-shot transaction boundaries",
-        "tests/test_r6_audio_cache_transaction_dryrun.py": "PASS; full mocked transaction and exact recovery; invalid admission makes zero device requests",
+        "tests/test_r6_audio_cache_transaction_dryrun.py": "PASS; historical mocked R6 transaction remains unchanged; exact successor identity rehearsal rejects missing/prior-artifact admission before fake-port I/O (0 requests); this is offline-only and not LIVE_APPROVED admission",
         "tests/hbnf_r7_diagnostic_transaction_dryrun.py": "PASS; success/failure/recovery branches with zero device requests",
         "tests/hbnf_packet20_http_adapter.py": "PASS; snapshot/restore adapter semantics and 28-kernel inventory",
         "tests/hbnf_packet20_build_validate.py": "PASS; source drift fails closed",

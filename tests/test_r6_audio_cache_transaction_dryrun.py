@@ -100,6 +100,17 @@ class FakePort:
         self.closed = True
 
 
+class SuccessorAdmissionFakePort(FakePort):
+    """Route candidate-specific offline identity checks through the real coordinator."""
+    def __init__(self, admission_path):
+        super().__init__()
+        self.admission_path = pathlib.Path(admission_path)
+
+    def admit(self, stage="LIVE_APPROVED"):
+        module.verify_offline_successor_binding(self.admission_path)
+        self.admission_stage = stage
+
+
 def run_case(name, port, expected_status, installs, recoveries, min_requests=0):
     result = module.coordinate(port)
     assert result["status"] == expected_status, (name, result)
@@ -138,6 +149,41 @@ def main():
         assert "timeout" not in calls[0][1], "outer timeout can kill the child before renderer restoration"
 
     cases = []
+
+    # Candidate successor binding is rehearsed through the same transaction
+    # coordinator with a fake port. Missing or mismatched admissions fail
+    # before preflight/staging, so the fake observes zero device requests.
+    successor_ids = {
+        "candidate_release_id": module.SUCCESSOR_RELEASE,
+        "candidate_bin_sha256": module.SUCCESSOR_SHA,
+        "candidate_bin_path": str(module.SUCCESSOR_BIN),
+        "rollback_bin_sha256": module.R4_SHA,
+        "rollback_bin_path": str(module.R4_BIN),
+        "matrix_mac": "70:4b:ca:5b:34:5c",
+    }
+    with tempfile.TemporaryDirectory(prefix="r6-successor-admission-") as tmp:
+        root = pathlib.Path(tmp)
+        valid_path = root / "candidate-bound.json"
+        valid_path.write_text(json.dumps({"identities": successor_ids}) + "\n")
+        assert module.verify_offline_successor_binding(valid_path)["identities"] == successor_ids
+
+        missing = SuccessorAdmissionFakePort(root / "missing.json")
+        result = run_case("successor admission missing zero requests", missing,
+                          "BLOCKED_OR_FAILED", 0, 0)
+        assert missing.device_requests == 0
+        cases.append({"case": "successor admission missing rejected before fake-port I/O",
+                      "pass": True, "device_requests": 0})
+
+        tampered_ids = dict(successor_ids, candidate_bin_sha256=module.CANDIDATE_SHA)
+        tampered_path = root / "wrong-candidate.json"
+        tampered_path.write_text(json.dumps({"identities": tampered_ids}) + "\n")
+        wrong = SuccessorAdmissionFakePort(tampered_path)
+        run_case("successor admission wrong artifact zero requests", wrong,
+                 "BLOCKED_OR_FAILED", 0, 0)
+        assert wrong.device_requests == 0
+        cases.append({"case": "successor admission for prior artifact rejected before fake-port I/O",
+                      "pass": True, "device_requests": 0})
+
     rejected = FakePort(admission=False)
     cases.append(run_case("invalid admission zero requests", rejected, "BLOCKED_OR_FAILED", 0, 0))
     assert rejected.device_requests == 0
@@ -245,16 +291,19 @@ def main():
         cases.append({"case":"qualification retry requires a new empty in-root evidence directory","pass":True})
 
     receipt = {
-        "schema": "hbnf-r6-audio-cache-transaction-dryrun-v1",
+        "schema": "hbnf-r6-successor-transaction-rehearsal-v1",
         "candidate_release_id": module.RELEASE,
         "candidate_sha256": module.CANDIDATE_SHA,
+        "offline_successor_release_id": module.SUCCESSOR_RELEASE,
+        "offline_successor_sha256": module.SUCCESSOR_SHA,
+        "successor_fake_port_device_requests": 0,
         "rollback_sha256": module.R4_SHA,
         "device_or_cloud_mutation": False,
         "cases": cases,
         "invalid_admission_device_requests": rejected.device_requests,
         "assertions": "PASS",
     }
-    evidence = ROOT / "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_TRANSACTION_DRYRUN.json"
+    evidence = ROOT / "evidence/cart2-r6-compositor-hoist-20261011/SUCCESSOR_TRANSACTION_DRYRUN.json"
     evidence.parent.mkdir(parents=True, exist_ok=True)
     evidence.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
 
