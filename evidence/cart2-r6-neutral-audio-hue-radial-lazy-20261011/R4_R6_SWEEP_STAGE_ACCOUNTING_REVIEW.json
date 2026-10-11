@@ -209,5 +209,28 @@
       "The candidate main source changed extensively and the sweep does not capture final mapped variant settings. The unchanged helper hash therefore rules against treating a compositor rewrite alone as a proven fix; it does not identify the kernel-stage cause."
     ],
     "decision": "Do not spend another candidate attempt removing/hoisting composeVibeColor alone. The remaining performance attribution is in the animation kernel under unrecorded final settings, other main-source changes, or execution/preemption; current evidence does not distinguish them."
+  },
+  "trace_build_coverage": {
+    "status": "SOURCE_TRACE_SCHEMA_PRESENT__CANDIDATE_BUILD_DID_NOT_ENABLE_IT",
+    "build_config": {
+      "path": "/private/tmp/hbnf-p2-build/WLED-r6-audio-cache-20261010/platformio_override.ini",
+      "sha256": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922",
+      "matches_candidate_build_receipt": true,
+      "diagnostic_define_present": true,
+      "frame_context_trace_define_present": false
+    },
+    "sweep_sample_count": 743,
+    "trace_armed_false_count": 743,
+    "trace_records_serialized_false_count": 743,
+    "trace_payload_field_nonnull_counts": {
+      "trace_retained_count": 0,
+      "trace_outlier_count": 0,
+      "trace_overflow_count": 0,
+      "trace_cpu_mhz_start": 0,
+      "trace_cpu_mhz_readback": 0
+    },
+    "source_capability": "The source-guarded HBNF_R6_FRAME_CONTEXT_TRACE path records current/previous VisualVariant fields, audio frames/features, Vibe axes, frame timestamps, CPU/core context, and stage counters.",
+    "decision": "The full sweep validly rejected this candidate on its frozen performance gates, but its samples could not explain mapped settings because trace capture was not enabled. A future targeted diagnostic can reuse the existing trace implementation; enable the compile define and verify the returned payload before starting measurements. Trace-enabled timing must not be used for acceptance unless observer effect is characterized.",
+    "limit": "This records a build-configuration gap; it does not prove trace omission caused the performance failure."
   }
 }
