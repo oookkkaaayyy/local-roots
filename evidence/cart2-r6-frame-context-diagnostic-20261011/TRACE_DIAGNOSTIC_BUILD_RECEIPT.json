@@ -1,0 +1,53 @@
+{
+  "schema": "hbnf-r6-frame-context-diagnostic-build-receipt-v1",
+  "status": "OFFLINE_BUILD_SUCCESS__DIAGNOSTIC_ONLY__NOT_AUTHORIZED_FOR_INSTALL__NOT_RELEASE_ACCEPTED",
+  "artifact": {
+    "file": "hbnf-cart2-r6-frame-context-diagnostic-20261011.bin",
+    "bytes": 1512384,
+    "sha256": "6e058ec735a5c47f04cbb80b8baabc9d9c0872da646bfcb7ae90d580b6298cd4",
+    "embedded_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011"
+  },
+  "source": {
+    "branch": "codex/cart2-compositor-timing-20261011",
+    "source_commit": "7645dae3806c1e352a1063ac22d1482ddb5713ff",
+    "source_tree_sha256": "1547f8d4d575e793309f64ec10ae79f3a93a7976b21f68bbb3d89023751a5c6c",
+    "source_file_count": 14
+  },
+  "build": {
+    "environment": "hbnf_matrix_wled16_packet20_diag_trace",
+    "base_environment": "hbnf_matrix_wled16_packet20_diag",
+    "additional_define": "HBNF_R6_FRAME_CONTEXT_TRACE",
+    "base_override_sha256": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922",
+    "trace_environment_override_sha256": "173837be4b12467c29b50ca4b43f90e2c3c98e2764fbbea5c9cbbd5b32e81cd2",
+    "network": "DENIED_BY_LOCAL_SANDBOX; cached local PlatformIO/toolchain/dependencies only",
+    "platformio_core": "6.1.18",
+    "esp32_platform": "2024.6.0",
+    "framework": "2.0.18+sha.8ba0dc0",
+    "xtensa_toolchain": "8.4.0+2021r2-patch5",
+    "result": "SUCCESS",
+    "flash_program_bytes": 1505641,
+    "flash_partition_bytes": 1572864,
+    "flash_remaining_bytes": 67223,
+    "ram_bytes": 118808,
+    "ram_total_bytes": 327680,
+    "fragment_file": "TRACE_PLATFORMIO_ENVIRONMENT.ini",
+    "fragment_sha256": "0b1a9b2e97db4771477117e844edbe03ecf664588abd01c548da275b5b8186e3",
+    "command": "PYTHONPATH=/private/tmp/hbnf-p2-build/pio-cli PLATFORMIO_CORE_DIR=/private/tmp/hbnf-p2-build/pio-local SOURCE_DATE_EPOCH=1791450000 PLATFORMIO_SETTING_ENABLE_TELEMETRY=no python3 -m platformio run -d /private/tmp/hbnf-p2-build/WLED-r6-audio-cache-20261010 -e hbnf_matrix_wled16_packet20_diag_trace",
+    "config_restore": "The temporary environment stanza was removed after build; the original platformio_override.ini SHA-256 was restored and verified as 044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922."
+  },
+  "measurement_capability": "Existing trace code captures wall elapsed time, cycle-stage counters, CPU MHz/core at frame boundaries, mapped variant, and audio/Vibe context on slow frames and periodic references. This supports separating high measured execution cycles from frames where wall time is high relative to cycle time; observer cost must still be measured.",
+  "limits": {
+    "device_or_cloud": "NOT RUN",
+    "tests": "NOT RUN",
+    "live_mutation_authorized": false,
+    "performance_cause": "UNRESOLVED",
+    "qualification": "NOT RUN",
+    "soak": "NOT RUN",
+    "acceptance": false,
+    "release_use": "DO NOT INSTALL OR TREAT AS RELEASE ARTIFACT; exact owner admission/authorization required before any live diagnostic"
+  },
+  "related_artifacts": {
+    "failed_candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+    "exact_r4_recovery_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  }
+}
