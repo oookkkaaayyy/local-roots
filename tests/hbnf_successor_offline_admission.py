@@ -42,6 +42,7 @@ def main() -> None:
     build = json.loads((EVIDENCE / "SUCCESSOR_BUILD_RECEIPT.json").read_text())
     binding = json.loads((EVIDENCE / "SUCCESSOR_SOURCE_BINDING.json").read_text())
     admission = json.loads(ADMISSION.read_text())
+    transaction = json.loads((EVIDENCE / "SUCCESSOR_TRANSACTION_DRYRUN.json").read_text())
     identity = admission["identities"]
 
     candidate_bin = ROOT / manifest["firmware"]["path"]
@@ -59,6 +60,23 @@ def main() -> None:
     assert identity["candidate_bin_size_bytes"] == candidate_bin.stat().st_size == manifest["firmware"]["bytes"]
     assert identity["rollback_bin_sha256"] == EXPECTED_R4 == sha(rollback_bin)
     assert identity["matrix_mac"] == EXPECTED_MAC
+
+    # The transaction evidence must identify the successor as its subject and
+    # include exact-candidate success and R4-recovery replays. A valid file hash
+    # alone cannot turn a rehearsal of the prior R6 image into successor proof.
+    assert transaction["candidate_release_id"] == EXPECTED_RELEASE
+    assert transaction["candidate_sha256"] == EXPECTED_SHA
+    assert transaction["historical_launcher_default"]["candidate_release_id"] != EXPECTED_RELEASE
+    successor_cases = [case for case in transaction["cases"]
+                       if case.get("case", "").startswith("exact successor fake-port")]
+    assert len(successor_cases) == 2
+    assert transaction["successor_fake_port_cases"] == [case["case"] for case in successor_cases]
+    for case in successor_cases:
+        result = case["result"]
+        assert case["pass"] is True
+        assert result["candidate_release_id"] == EXPECTED_RELEASE
+        assert result["candidate_sha256"] == EXPECTED_SHA
+    assert transaction["successor_fake_port_actual_device_calls"] == 0
 
     # Every PASS assertion is tied to a readable, exact-hash evidence file.
     hash_uses: dict[str, int] = {}

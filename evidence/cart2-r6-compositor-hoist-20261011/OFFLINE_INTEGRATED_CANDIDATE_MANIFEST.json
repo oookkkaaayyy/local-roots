@@ -75,7 +75,7 @@
     "scripts/hbnf_live_kernel_sweep.py": "e5ed7b44543440141ee0b57ba55368c4351a3ffbdf1add5da0eaec96e3bd2477",
     "tests/hbnf_cart2_offline_integrated_candidate.py": "19275cab9b726622aca703ae48841904c2e9f8d80d839227d33c0339ce6ba311",
     "tests/hbnf_live_kernel_sweep.py": "5f5c5b99c262145cb52a61703277c649eb002fe71afec207d379b031fc34a242",
-    "tests/test_r6_audio_cache_transaction_dryrun.py": "647fb4597a88adec76cdece5e2b861c4a6026d4256a3b1748b548d8b7c74580a"
+    "tests/test_r6_audio_cache_transaction_dryrun.py": "6a38c98cda19deadd951f2be182833e67e73024f0703c46f522e0c35cbf741b6"
   },
   "owner_guest_package": {
     "build_marker": "hbnf-cart2-owner-guest-compositor-hoist-20261011",
@@ -135,7 +135,7 @@
     "staging/coordinated-backend/opal/hbnf-matrix-relay.init": "1572ddc3b9dc278d141a6e9cf65891c684e09efc793f7822c3738f98e4e6122a",
     "tests/hbnf_live_kernel_sweep.py": "5f5c5b99c262145cb52a61703277c649eb002fe71afec207d379b031fc34a242",
     "tests/hbnf_matrix_relay_contract.mjs": "34c34c57f7bb054394177ba4f64a9a5946fabecc4c7bc3649cbc14f880dbda59",
-    "tests/test_r6_audio_cache_transaction_dryrun.py": "647fb4597a88adec76cdece5e2b861c4a6026d4256a3b1748b548d8b7c74580a"
+    "tests/test_r6_audio_cache_transaction_dryrun.py": "6a38c98cda19deadd951f2be182833e67e73024f0703c46f522e0c35cbf741b6"
   },
   "status": "OFFLINE_INTEGRATION_CANDIDATE__NOT_DEPLOYED__NOT_LIVE_QUALIFIED__NOT_ACCEPTED",
   "superseded_sources": {

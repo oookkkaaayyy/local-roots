@@ -325,12 +325,24 @@ def main():
             shutil.rmtree(old,ignore_errors=True);shutil.rmtree(new,ignore_errors=True)
         cases.append({"case":"qualification retry requires a new empty in-root evidence directory","pass":True})
 
+    successor_cases = [case for case in cases if case.get("case", "").startswith("exact successor fake-port")]
+    assert len(successor_cases) == 2, "both exact-success and exact-R4-recovery successor replays are required"
+    for case in successor_cases:
+        result = case["result"]
+        assert result["candidate_release_id"] == module.SUCCESSOR_RELEASE
+        assert result["candidate_sha256"] == module.SUCCESSOR_SHA
+        assert case["pass"] is True
+
     receipt = {
         "schema": "hbnf-r6-successor-transaction-rehearsal-v1",
-        "candidate_release_id": module.RELEASE,
-        "candidate_sha256": module.CANDIDATE_SHA,
-        "offline_successor_release_id": module.SUCCESSOR_RELEASE,
-        "offline_successor_sha256": module.SUCCESSOR_SHA,
+        "candidate_release_id": module.SUCCESSOR_RELEASE,
+        "candidate_sha256": module.SUCCESSOR_SHA,
+        "historical_launcher_default": {
+            "candidate_release_id": module.RELEASE,
+            "candidate_sha256": module.CANDIDATE_SHA,
+            "note": "Legacy live launcher remains pinned to this consumed artifact; these fields identify the tested default, not the successor replay."
+        },
+        "successor_fake_port_cases": [case["case"] for case in successor_cases],
         "successor_fake_port_actual_device_calls": 0,
         "successor_fake_port_simulated_requests": (
             successor_success.device_requests + successor_gate_fail.device_requests

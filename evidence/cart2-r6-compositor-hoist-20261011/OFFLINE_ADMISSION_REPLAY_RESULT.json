@@ -2,8 +2,8 @@
   "admission": {
     "path": "evidence/cart2-r6-compositor-hoist-20261011/OFFLINE_COMPILED_ADMISSION.json",
     "result_path": "evidence/cart2-r6-compositor-hoist-20261011/OFFLINE_COMPILED_ADMISSION_RESULT.json",
-    "result_sha256": "c2d6cea809ae11b59f1476578aa4068d7127e7c3a036c678b23154a32b37a393",
-    "sha256": "90b90e6a3981fe333c8218bbae0bdff176533a0287cb3e8cd3957872504954f2"
+    "result_sha256": "c796c5a555f75ee7d81c24dc38c3c497f803fa0e720a8d4cc102a414875b6092",
+    "sha256": "89056d613b6c5c21a84e19c11133559bb81d2aeeb853b67f19f9ba397f56f76a"
   },
   "candidate": {
     "bytes": 1498672,
@@ -12,7 +12,7 @@
   },
   "candidate_test_source": {
     "path": "tests/hbnf_successor_offline_admission.py",
-    "sha256": "0799f9395abba2c8ffee791e3a6403e2cc3e91a62efa11fc45359914068e1bdf"
+    "sha256": "22e786425ddd9911a549dc37757ca2909e282dd2d5e41b5265f167c7fa2f485c"
   },
   "current_recorded_control_state": {
     "installed_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
@@ -40,12 +40,12 @@
     {
       "command": "python3 tests/test_r6_audio_cache_transaction_dryrun.py",
       "result": "PASS",
-      "scope": "Candidate fake-port success/failure/recovery replay; missing/prior-artifact admission produced zero fake-port requests."
+      "scope": "Exact successor fake-port success and exact R4-recovery cases bind release ID and BIN SHA in the replay receipt; legacy launcher default is separately labeled. No live admission/device I/O."
     },
     {
       "command": "python3 tests/hbnf_successor_offline_admission.py",
       "result": "PASS",
-      "scope": "Exact OFFLINE_COMPILED admission, candidate/R4 hash rejection, forged LIVE stage rejection, closed guarded runner; zero child/device calls."
+      "scope": "Exact OFFLINE_COMPILED admission and semantic transaction identity checks; bad candidate/R4 hashes and forged LIVE stage rejected; closed guarded runner made zero child/device calls."
     },
     {
       "command": "python3 tests/hbnf_control.py",
