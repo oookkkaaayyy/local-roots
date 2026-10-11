@@ -68,10 +68,10 @@
       "A host C++ regression exercises the actual compact-fit helper with mock FontManager metrics matching the pinned WBF header (3px glyphs + 1px spacing) and confirms fitting text remains unchanged, ANDREW uses slot 0, paged phrases remain paged, and words too long for slot 0 retain the selected face/scroll path.",
       "The offline planner mirrors the same overflow decision and has a regression for ANDREW.",
       "Historical R6 artifact verification reads source files from its recorded repository_source_commit, so later source-candidate edits cannot invalidate the old artifact's source proof.",
-      "Pinned Xtensa 8.4.0 target-compiler translation-unit check passed for the preserved R6 baseline and compact-font candidate using the same compiler flags/includes from the recorded R6 build command. The preserved WLED workspace was read-only; object outputs were written to /private/tmp/hbnf-p2-build/text-compact-target-compile-20261011."
+      "Pinned Xtensa 8.4.0 target-compiler translation-unit check passed for the preserved R6 baseline and compact-font candidate. Then the exact R6 audio-cache link command was replayed with only the HBNF usermod object replaced and ELF/map outputs redirected to /private/tmp/hbnf-p2-build/text-compact-target-compile-20261011. The preserved WLED workspace and prior artifact were read-only."
     ],
     "target_compile_only": {
-      "status": "PASS_TRANSLATION_UNIT_ONLY",
+      "status": "PASS_TRANSLATION_UNIT_AND_ISOLATED_RELINK",
       "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
       "platformio_core": "6.1.18",
       "xtensa_toolchain": "8.4.0+2021r2-patch5",
@@ -81,13 +81,23 @@
       "candidate_source_sha256": "e4b926d781d71068be846b453ae107fba47de173a4e4848175dba05b7f8d8309",
       "base_object_sha256": "419f265d41207de11888a0aa6ce32ac8f5337e87cbdce669acbb64d080b66370",
       "candidate_object_sha256": "0c12f389800518e8fec38fcccdcdd4580f4b4841f6dd1db2d901cfc17287d90e",
+      "relink_command_source": "/tmp/cart2-opal-local-20261009/evidence/cart2-r6-audio-cache-20261010/TARGET_BUILD.log",
+      "relink_command_source_sha256": "181ef91e7ed27627c744d14975cff3de6416d4914c5224533bea9bde23834d60",
+      "baseline_elf_sha256": "8823b86d650b920e309e25d76edb287bbaecef7b69987af5677082f0257050a3",
+      "candidate_elf_sha256": "e5ffbdb4f907850aa597cd94aeba23b738360d294e13683c00504e85f6ec1a9b",
+      "candidate_map_sha256": "bc0f020f37445dfdd77cfcf7f5a7ddd1e04191d43d7ca604e375b8979441d2c8",
       "sections_bytes": {
         "base": {"text": 207160, "data": 1087, "bss": 29830},
         "candidate": {"text": 207855, "data": 1087, "bss": 29830},
         "delta": {"text": 695, "data": 0, "bss": 0}
       },
-      "limitation": "This only compiles the changed usermod translation unit; it does not link the firmware, measure final flash/RAM usage, produce a release artifact, or qualify R6 performance."
+      "linked_sections_bytes": {
+        "base": {"text": 1208453, "data": 310160, "bss": 89865},
+        "candidate": {"text": 1209069, "data": 310160, "bss": 89865},
+        "delta": {"text": 616, "data": 0, "bss": 0}
+      },
+      "limitation": "The isolated relink reused all preexisting R6 object/library inputs and replaced only the HBNF usermod object. It is not a fresh full firmware build, did not produce an installable firmware BIN or establish final partition headroom, and does not qualify R6 performance or visual acceptance."
     },
-    "qualification_boundary": "Source candidate with host regression and target translation-unit compile only. No full firmware build, device action, deployment, physical readability test, or release acceptance is claimed. Preserve the current failed R6 artifact and exact R4 installed baseline."
+    "qualification_boundary": "Source candidate with host regression, target translation-unit compile, and isolated relink only. No fresh full firmware build, installable BIN, device action, deployment, physical readability test, or release acceptance is claimed. Preserve the current failed R6 artifact and exact R4 installed baseline."
   }
 }
