@@ -1,0 +1,27 @@
+{
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+  "candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+  "checks": [
+    {
+      "command": "python3 tests/test_hbnf_audio_bridge_frame_cache.py",
+      "coverage": "28 scenes; 7 audio cases incl. slow-only and zero bass/mid/high/transient; 6 amounts; 5 response gains; 4 geometries",
+      "output_digest": "42690c313cc1d92d",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/test_hbnf_audio_bridge_neutral_fastpath.py",
+      "coverage": "silent, energy-only, active audio; 5 Vibe profiles; 32 scenes; 512 pixels; 6 RGB inputs",
+      "output_digest": "5761340127adfa63",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/test_hbnf_vibe_composition_hoist.py",
+      "coverage": "hash-pinned historical replay and bit-exact per-frame compositor behavior",
+      "result": "PASS"
+    }
+  ],
+  "completed_at_utc": "2026-10-11T10:49:11Z",
+  "schema": "hbnf-r6-offline-host-validation-v1",
+  "scope_limit": "Host-side source and behavior checks only. These results do not establish ESP32 target speed, kernel-0 performance, qualification, installation safety, soak acceptance, or owner approval.",
+  "source_commit": "7645dae3806c1e352a1063ac22d1482ddb5713ff"
+}
