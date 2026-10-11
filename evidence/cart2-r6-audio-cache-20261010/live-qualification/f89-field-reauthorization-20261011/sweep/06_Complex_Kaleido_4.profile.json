@@ -1,0 +1,143 @@
+{
+  "failures": [],
+  "profile": {
+    "aux": {
+      "age_p99_ms": 4294967295.0,
+      "inactive_samples": 0,
+      "render_fps_median": 32.0
+    },
+    "collection_errors": 0,
+    "contract": "foundation",
+    "effective_rendering_settings": {
+      "status": "MATCHED",
+      "values": {
+        "audio_response": 50,
+        "aux_brightness": 255,
+        "matrix_brightness": 44,
+        "matrix_on": true,
+        "motion": 50,
+        "overlay_id": null,
+        "palette": {
+          "mode": "legacy"
+        },
+        "scene": 0,
+        "vibe": 0,
+        "wled_brightness": 255
+      }
+    },
+    "fps": {
+      "median": 31.0,
+      "min": 31,
+      "p05": 31.0
+    },
+    "frame_ms": {
+      "avg_median": 27.28752,
+      "max": 84.085,
+      "p50_median": 25.875,
+      "p95_median": 28.625,
+      "p99_median": 71.875
+    },
+    "heap": {
+      "free_end": 112484,
+      "free_start": 109372,
+      "largest_block_end": 63476,
+      "largest_block_start": 59380,
+      "minimum_free_min": 51700
+    },
+    "kernel": {
+      "id": 6,
+      "name": "Complex_Kaleido_4",
+      "variant_id": 1347100678
+    },
+    "qualification_eligible": true,
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "restart_count_end": 0,
+    "restart_count_start": 0,
+    "sample_count": 26,
+    "schema": "hbnf-runtime-profile-v2",
+    "stages": {
+      "audio_ms_avg": {
+        "max": 0.871756,
+        "median": 0.8556985,
+        "p95": 0.870741
+      },
+      "audio_ms_p95": {
+        "max": 0.875,
+        "median": 0.875,
+        "p95": 0.875
+      },
+      "aux_prepare_send_ms_avg": {
+        "max": 4.321486,
+        "median": 4.273308999999999,
+        "p95": 4.32073425
+      },
+      "aux_prepare_send_ms_p95": {
+        "max": 6.125,
+        "median": 6.125,
+        "p95": 6.125
+      },
+      "frame_ms_avg": {
+        "max": 27.38559,
+        "median": 27.28752,
+        "p95": 27.3735
+      },
+      "kernel_ms_avg": {
+        "max": 17.08566,
+        "median": 17.047415,
+        "p95": 17.0834125
+      },
+      "kernel_ms_p95": {
+        "max": 17.125,
+        "median": 17.125,
+        "p95": 17.125
+      },
+      "overlay_ms_avg": {
+        "max": 0.031789,
+        "median": 0.031490000000000004,
+        "p95": 0.031717749999999996
+      },
+      "overlay_ms_p95": {
+        "max": 0.125,
+        "median": 0.125,
+        "p95": 0.125
+      },
+      "palette_ms_avg": {
+        "max": 0.424077,
+        "median": 0.4175645,
+        "p95": 0.4238445
+      },
+      "palette_ms_p95": {
+        "max": 0.375,
+        "median": 0.375,
+        "p95": 0.375
+      },
+      "scheduler_ms_avg": {
+        "max": 1.645332,
+        "median": 1.6373495,
+        "p95": 1.6448687499999999
+      },
+      "scheduler_ms_p95": {
+        "max": 2.375,
+        "median": 2.125,
+        "p95": 2.125
+      },
+      "unaccounted_ms_avg": {
+        "max": 3.096312,
+        "median": 3.022645,
+        "p95": 3.0921255
+      },
+      "unaccounted_ms_p95": {
+        "max": 3.125,
+        "median": 3.125,
+        "p95": 3.125
+      }
+    },
+    "valid_sample_count": 26,
+    "validation_errors": [],
+    "wifi": {
+      "rssi_dbm_median": -46.0,
+      "rssi_dbm_min": -53
+    }
+  },
+  "status": "PASS"
+}

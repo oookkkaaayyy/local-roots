@@ -1916,7 +1916,7 @@
       "observed_by": "USER_DIRECT_PHYSICAL_OBSERVATION",
       "status": "FAILED_PHYSICAL_SYNC__SOFTWARE_OR_LINK_ROOT_CAUSE_UNRESOLVED"
     },
-    "installed_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "installed_firmware_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
     "installed_r6_failure": {
       "evidence": "evidence/cart2-r6-live-qualification-20261009/R6_PERFORMANCE_FAILURE_CLASSIFICATION.json",
       "evidence_sha256": "b2e14deeab3abbd907d4c063131a2edac937f0f97eb389e23dcb14658dbf5368",
@@ -1925,7 +1925,7 @@
       "sha256": "0a4b9563c7debfb5a01e9d36aeb8aac2583e105303064de3db0466b7dd9d89d6",
       "status": "CLOSED__EXACT_R4_RESTORED"
     },
-    "installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "installed_release": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
     "installed_release_role": "UNQUALIFIED_SUCCESSOR_INSTALLED__ONE_CANDIDATE_ATTEMPT_USED__EXACT_R4_RECOVERY_UNUSED",
     "last_recovery": {
       "artifact_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
@@ -2647,7 +2647,7 @@
       "status": "PASS"
     },
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "R6_PERFORMANCE_FAILED__EXACT_R4_RECOVERED__OFFLINE_REPAIR_ONLY",
+    "status": "QUALIFICATION_BRIGHTNESS_RESTORE_FAILED",
     "t3_fast_path_preparation": {
       "human_approval_required": true,
       "human_packet": "work/cart2/27_T3_PHASE2_FAST_PATH_PREP_20261006.md",
@@ -2704,31 +2704,34 @@
     "schema": "hbnf-execution-cursor-v1",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_transition": "T4_PHASE2_INTEGRATION",
-    "current_failure_domain": "F89_FIELD_QUALIFICATION_NEW_EXACT_OWNER_AUTHORIZATION",
+    "current_failure_domain": "F89_QUALIFICATION_SOAK_TELEMETRY_FAILED__OWNER_SETTINGS_RESTORE_FAILED__R4_PREFLIGHT_BLOCKED",
     "current_subject": {
       "authorization_id": "OWNER-20261011-CART2-F89-FIELD-QUALIFICATION-01",
       "artifact_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
       "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
       "candidate_artifact_path": "evidence/cart2-r6-audio-cache-20261010/artifact/hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010.bin",
       "rollback_artifact_path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
-      "installed_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-      "installed_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "installed_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "installed_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
       "owner_brightness_baseline": {
         "matrixBrightness": 147,
-        "auxBrightness": 255
+        "auxBrightness": 255,
+        "vibe": 0
       },
-      "candidate_install_attempts_used": 0,
-      "exact_r4_recovery_attempts_used": 0
+      "candidate_install_attempts_used": 1,
+      "exact_r4_recovery_attempts_used": 0,
+      "qualification_result": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/TRANSACTION_RESULT.json",
+      "qualification_result_sha256": "36da99b31e7c159cc1baaedd2076c62621624e6481e3e0d61c7f10d2115cf62c"
     },
     "exact_next_path": [
-      "Fresh f89-bound capsule, LIVE_APPROVED admission, and read-only preflight.",
-      "Run the one guarded f89 transaction only if all admission, identity, connectivity, power, and rollback checks pass.",
-      "Fast-fail qualification on the first mandatory ineligible gate; use only the one authorized R4 recovery if required."
+      "Exact f89 was installed once. All 28 profiles and combined-feature checks completed, but soak telemetry failed after 9 samples when Matrix and AUX reads reset; the 90-minute reliability gate did not pass.",
+      "Owner settings were not restored: Matrix brightness remains 44/255 and persisted Vibe is 1 while runtime Vibe is 0; captured owner baseline is 147/255 and Vibe 0.",
+      "The exact R4 recovery attempt remains unused. Fresh recovery preflight failed on AUX connectivity timeout; live authority is closed. Do not disconnect or take the cart as an accepted R6 candidate."
     ],
     "no_repeat": [
-      "Do not install e414 or any other firmware.",
-      "Do not repeat f89 if this transaction fails.",
-      "Do not change thresholds or unrelated production services."
+      "Do not reinstall f89 or e414.",
+      "Do not start another live firmware transaction under this authorization.",
+      "Do not claim reliability qualification or owner acceptance."
     ]
   },
   "inherited_evidence": [
@@ -2814,8 +2817,8 @@
     "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
   },
-  "installed_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-  "installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "installed_firmware_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+  "installed_release": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
   "installed_release_role": "UNQUALIFIED_SUCCESSOR_INSTALLED__ONE_CANDIDATE_ATTEMPT_USED__EXACT_R4_RECOVERY_UNUSED",
   "lane_execution": {
     "activation_rule": "Activate offline-safe core lanes at the earlier of: (a) clean Foundation soak/readiness signal, or (b) 60 minutes without lifecycle progress, provided parallel work is noncontending and cannot invalidate the healthy live critical path. Never restart/interrupt healthy critical-path work merely to satisfy this timer. live_mutation_limit remains 1.",
@@ -2948,7 +2951,7 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-11T20:10:05Z",
+  "last_updated_utc": "2026-10-11T21:36:59Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_authorization_binding": {
     "authorization_id": "OWNER-20261011-CART2-F89-FIELD-QUALIFICATION-01",
@@ -2971,24 +2974,27 @@
     "authorization": "Direct owner message authorizes exactly one fresh f89 installation and qualification transaction and, if required, one exact R4 recovery, under all existing admission and safety gates.",
     "authorization_id": "OWNER-20261011-CART2-F89-FIELD-QUALIFICATION-01",
     "source_message_ref": "Direct user message in this conversation, 2026-10-11: CART 2.0 \u2014 URGENT FIELD-READY RECOVERY.",
-    "authorized": true,
-    "hardware_writes_permitted_now": true,
+    "authorized": false,
+    "hardware_writes_permitted_now": false,
     "operation_scope": "INSTALL_AND_QUALIFICATION",
     "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
     "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "candidate_install_limit": 1,
-    "candidate_attempts_used": 0,
+    "candidate_attempts_used": 1,
     "candidate_install_permitted": true,
     "recovery_install_limit": 1,
     "recovery_attempts_used": 0,
     "owner_brightness_baseline": {
       "matrixBrightness": 147,
-      "auxBrightness": 255
+      "auxBrightness": 255,
+      "vibe": 0
     },
-    "status": "AUTHORIZED_EXACT_F89_NEW_TRANSACTION",
-    "transaction_consumed": false,
-    "current_gate": "Fresh exact-artifact admission and read-only preflight must pass before the single f89 installation."
+    "status": "QUALIFICATION_BRIGHTNESS_RESTORE_FAILED",
+    "transaction_consumed": true,
+    "current_gate": "QUALIFICATION_BRIGHTNESS_RESTORE_FAILED",
+    "candidate_attempt_started_unix": 1791751980.558401,
+    "transaction_result": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/TRANSACTION_RESULT.json"
   },
   "live_mutation_authorization_closed_at_utc": null,
   "live_mutation_authorization_closure": {
@@ -3018,7 +3024,7 @@
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "schema": "hbnf-live-authorization-state-reconciliation-v1"
   },
-  "live_mutation_authorized": true,
+  "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",

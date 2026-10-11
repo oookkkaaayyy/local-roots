@@ -1,0 +1,143 @@
+{
+  "failures": [],
+  "profile": {
+    "aux": {
+      "age_p99_ms": 4294967295.0,
+      "inactive_samples": 0,
+      "render_fps_median": 16.0
+    },
+    "collection_errors": 0,
+    "contract": "foundation",
+    "effective_rendering_settings": {
+      "status": "MATCHED",
+      "values": {
+        "audio_response": 50,
+        "aux_brightness": 255,
+        "matrix_brightness": 44,
+        "matrix_on": true,
+        "motion": 50,
+        "overlay_id": null,
+        "palette": {
+          "mode": "legacy"
+        },
+        "scene": 0,
+        "vibe": 0,
+        "wled_brightness": 255
+      }
+    },
+    "fps": {
+      "median": 16.0,
+      "min": 15,
+      "p05": 16.0
+    },
+    "frame_ms": {
+      "avg_median": 56.384029999999996,
+      "max": 127.835,
+      "p50_median": 54.75,
+      "p95_median": 69.125,
+      "p99_median": 120.375
+    },
+    "heap": {
+      "free_end": 109336,
+      "free_start": 112168,
+      "largest_block_end": 61428,
+      "largest_block_start": 65524,
+      "minimum_free_min": 51700
+    },
+    "kernel": {
+      "id": 8,
+      "name": "Water",
+      "variant_id": 1347100680
+    },
+    "qualification_eligible": true,
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "restart_count_end": 0,
+    "restart_count_start": 0,
+    "sample_count": 26,
+    "schema": "hbnf-runtime-profile-v2",
+    "stages": {
+      "audio_ms_avg": {
+        "max": 7.842869,
+        "median": 7.59067,
+        "p95": 7.69306775
+      },
+      "audio_ms_p95": {
+        "max": 9.125,
+        "median": 8.875,
+        "p95": 8.875
+      },
+      "aux_prepare_send_ms_avg": {
+        "max": 4.766701,
+        "median": 4.653256000000001,
+        "p95": 4.744527
+      },
+      "aux_prepare_send_ms_p95": {
+        "max": 5.625,
+        "median": 5.125,
+        "p95": 5.625
+      },
+      "frame_ms_avg": {
+        "max": 56.92982,
+        "median": 56.384029999999996,
+        "p95": 56.9179
+      },
+      "kernel_ms_avg": {
+        "max": 39.47563,
+        "median": 38.992415,
+        "p95": 39.424890000000005
+      },
+      "kernel_ms_p95": {
+        "max": 46.625,
+        "median": 42.0,
+        "p95": 46.625
+      },
+      "overlay_ms_avg": {
+        "max": 0.0375,
+        "median": 0.036951,
+        "p95": 0.037261749999999996
+      },
+      "overlay_ms_p95": {
+        "max": 0.125,
+        "median": 0.125,
+        "p95": 0.125
+      },
+      "palette_ms_avg": {
+        "max": 0.404702,
+        "median": 0.400973,
+        "p95": 0.40435750000000004
+      },
+      "palette_ms_p95": {
+        "max": 0.375,
+        "median": 0.375,
+        "p95": 0.375
+      },
+      "scheduler_ms_avg": {
+        "max": 1.739833,
+        "median": 1.662055,
+        "p95": 1.7169987500000001
+      },
+      "scheduler_ms_p95": {
+        "max": 2.125,
+        "median": 2.125,
+        "p95": 2.125
+      },
+      "unaccounted_ms_avg": {
+        "max": 3.092028,
+        "median": 3.0133314999999996,
+        "p95": 3.07268475
+      },
+      "unaccounted_ms_p95": {
+        "max": 3.375,
+        "median": 3.375,
+        "p95": 3.375
+      }
+    },
+    "valid_sample_count": 26,
+    "validation_errors": [],
+    "wifi": {
+      "rssi_dbm_median": -45.0,
+      "rssi_dbm_min": -54
+    }
+  },
+  "status": "PASS"
+}

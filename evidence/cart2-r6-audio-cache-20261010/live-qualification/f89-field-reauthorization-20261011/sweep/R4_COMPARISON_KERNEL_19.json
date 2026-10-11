@@ -1,0 +1,35 @@
+{
+  "candidate_effective_rendering_settings": {
+    "status": "MATCHED",
+    "values": {
+      "audio_response": 50,
+      "aux_brightness": 255,
+      "matrix_brightness": 44,
+      "matrix_on": true,
+      "motion": 50,
+      "overlay_id": null,
+      "palette": {
+        "mode": "legacy"
+      },
+      "scene": 0,
+      "vibe": 0,
+      "wled_brightness": 255
+    }
+  },
+  "candidate_profile": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/sweep/19_Lava1.profile.json",
+  "candidate_release": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "candidate_variant_id": 1347100691,
+  "evaluation_stage": "PRE_SOAK_PROVISIONAL",
+  "gate_effect": "DIAGNOSTIC_ONLY__DOES_NOT_BLOCK_SWEEP_OR_SOAK",
+  "kernel": "Lava1",
+  "kernel_index": 19,
+  "r4_effective_rendering_settings": {},
+  "r4_profile": "evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep/19_Lava1.profile.json",
+  "r4_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "r4_variant_id": 1347100691,
+  "reasons": [
+    "R4 effective rendering settings are incomplete or unstable"
+  ],
+  "schema": "hbnf-candidate-vs-r4-kernel-profile-v1",
+  "status": "INCOMPARABLE"
+}

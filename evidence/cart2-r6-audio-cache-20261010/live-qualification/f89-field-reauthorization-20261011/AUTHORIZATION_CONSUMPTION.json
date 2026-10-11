@@ -1,0 +1,10 @@
+{
+  "authorization_id": "OWNER-20261011-CART2-F89-FIELD-QUALIFICATION-01",
+  "candidate_attempt": 1,
+  "candidate_attempt_limit": 1,
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+  "preflight_sha256": "0cd7b7277ee5df7b6812834edea37551d326bc855f32626e0cf78db4d5fdac8c",
+  "r4_recovery_limit": 1,
+  "recorded_before_wled_post": true
+}

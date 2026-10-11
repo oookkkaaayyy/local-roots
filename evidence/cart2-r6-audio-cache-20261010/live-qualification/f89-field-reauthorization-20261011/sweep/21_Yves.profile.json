@@ -1,0 +1,143 @@
+{
+  "failures": [],
+  "profile": {
+    "aux": {
+      "age_p99_ms": 4294967295.0,
+      "inactive_samples": 0,
+      "render_fps_median": 43.0
+    },
+    "collection_errors": 0,
+    "contract": "foundation",
+    "effective_rendering_settings": {
+      "status": "MATCHED",
+      "values": {
+        "audio_response": 50,
+        "aux_brightness": 255,
+        "matrix_brightness": 44,
+        "matrix_on": true,
+        "motion": 50,
+        "overlay_id": null,
+        "palette": {
+          "mode": "legacy"
+        },
+        "scene": 0,
+        "vibe": 0,
+        "wled_brightness": 255
+      }
+    },
+    "fps": {
+      "median": 42.0,
+      "min": 42,
+      "p05": 42.0
+    },
+    "frame_ms": {
+      "avg_median": 17.61146,
+      "max": 72.361,
+      "p50_median": 16.625,
+      "p95_median": 19.375,
+      "p99_median": 43.375
+    },
+    "heap": {
+      "free_end": 113348,
+      "free_start": 112176,
+      "largest_block_end": 65524,
+      "largest_block_start": 63476,
+      "minimum_free_min": 51656
+    },
+    "kernel": {
+      "id": 21,
+      "name": "Yves",
+      "variant_id": 1347100693
+    },
+    "qualification_eligible": true,
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "restart_count_end": 0,
+    "restart_count_start": 0,
+    "sample_count": 26,
+    "schema": "hbnf-runtime-profile-v2",
+    "stages": {
+      "audio_ms_avg": {
+        "max": 0.735733,
+        "median": 0.7274255000000001,
+        "p95": 0.732807
+      },
+      "audio_ms_p95": {
+        "max": 0.875,
+        "median": 0.875,
+        "p95": 0.875
+      },
+      "aux_prepare_send_ms_avg": {
+        "max": 4.188194,
+        "median": 4.146761,
+        "p95": 4.18246175
+      },
+      "aux_prepare_send_ms_p95": {
+        "max": 6.125,
+        "median": 5.875,
+        "p95": 6.0625
+      },
+      "frame_ms_avg": {
+        "max": 17.67028,
+        "median": 17.61146,
+        "p95": 17.669245
+      },
+      "kernel_ms_avg": {
+        "max": 7.807645,
+        "median": 7.774652,
+        "p95": 7.806146
+      },
+      "kernel_ms_p95": {
+        "max": 8.125,
+        "median": 8.125,
+        "p95": 8.125
+      },
+      "overlay_ms_avg": {
+        "max": 0.031976,
+        "median": 0.031804,
+        "p95": 0.0319165
+      },
+      "overlay_ms_p95": {
+        "max": 0.125,
+        "median": 0.125,
+        "p95": 0.125
+      },
+      "palette_ms_avg": {
+        "max": 0.328262,
+        "median": 0.321704,
+        "p95": 0.328149
+      },
+      "palette_ms_p95": {
+        "max": 0.375,
+        "median": 0.375,
+        "p95": 0.375
+      },
+      "scheduler_ms_avg": {
+        "max": 1.636338,
+        "median": 1.6228305,
+        "p95": 1.63231375
+      },
+      "scheduler_ms_p95": {
+        "max": 2.125,
+        "median": 2.0,
+        "p95": 2.125
+      },
+      "unaccounted_ms_avg": {
+        "max": 3.003598,
+        "median": 2.977744,
+        "p95": 2.9958650000000002
+      },
+      "unaccounted_ms_p95": {
+        "max": 3.375,
+        "median": 3.375,
+        "p95": 3.375
+      }
+    },
+    "valid_sample_count": 26,
+    "validation_errors": [],
+    "wifi": {
+      "rssi_dbm_median": -46.0,
+      "rssi_dbm_min": -55
+    }
+  },
+  "status": "PASS"
+}

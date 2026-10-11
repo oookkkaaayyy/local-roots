@@ -1,0 +1,15 @@
+{
+  "audio_semantics": "runtime audio fields were read; this is not labeled music or owner audio acceptance",
+  "checks": {
+    "candidate_identity": true,
+    "matrix_aux_ddp_projection": true,
+    "native_text_scoreboard_overlay": true,
+    "palette_scene_interaction": true,
+    "vibe_audio_controls": true
+  },
+  "expected_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "owner_controls_scoring_status": "NOT_PROVEN_BY_LOCAL_WLED_CHECK; retain existing owner/backend acceptance gate",
+  "restore": "outer Packet20 snapshot must verify before transaction close",
+  "schema": "hbnf-r6-combined-feature-check-v1",
+  "status": "PASS"
+}

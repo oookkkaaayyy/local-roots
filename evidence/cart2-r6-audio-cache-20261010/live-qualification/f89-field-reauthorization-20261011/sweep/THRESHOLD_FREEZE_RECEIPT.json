@@ -1,0 +1,21 @@
+{
+  "baseline": {
+    "path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/sweep/PRE_SOAK_BASELINE.json",
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "sha256": "8d4f816316b979bd4a3a989789890241eb4cf7d861d6cb68f0a112cf0d71223d"
+  },
+  "expected_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "frozen_at_utc": "2026-10-11T21:11:50.463360+00:00",
+  "policy": {
+    "path": "/private/tmp/cart2-compositor-timing-20261011/config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
+    "sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797"
+  },
+  "pre_soak_sweep": {
+    "kernel_count": 28,
+    "path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/sweep/PRE_SOAK_SWEEP_MANIFEST.json",
+    "sha256": "ae9cc6aebb53affc7286653169a61a7e2f0f2e486f98a3b666c17880797b7cf2"
+  },
+  "schema": "hbnf-foundation-threshold-freeze-v1",
+  "soak_started": false,
+  "status": "FROZEN_BEFORE_SOAK"
+}

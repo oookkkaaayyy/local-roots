@@ -1,0 +1,110 @@
+{
+  "aux": {
+    "info": {
+      "ip": "192.168.77.11",
+      "leds": {
+        "bootps": 0,
+        "cct": 0,
+        "count": 22,
+        "fps": 32,
+        "lc": 1,
+        "maxpwr": 900,
+        "maxseg": 32,
+        "pwr": 205,
+        "rgbw": false,
+        "seglc": [
+          1
+        ],
+        "wv": 0
+      },
+      "lip": "192.168.77.10",
+      "live": true,
+      "lm": "DDP",
+      "mac": "8c94df55c34c",
+      "ver": "16.0.1"
+    },
+    "state": {
+      "lor": 0,
+      "on": true
+    }
+  },
+  "captured_unix": 1791754007.9782321,
+  "device_mutations": 0,
+  "host_on_ac": true,
+  "matrix": {
+    "build": {
+      "basedOnFirmwareSha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "basedOnReleaseId": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "candidate": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "features": [
+        "phase2-brightness-output-v1",
+        "wled-native-fontmanager-text-v1",
+        "foundation-vibe-audio-r5-unfrozen",
+        "native-text-moments-r5-unfrozen"
+      ],
+      "ip": "192.168.77.10",
+      "mac": "70:4b:ca:5b:34:5c",
+      "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "schema": "hbnf-build-v1",
+      "wled": "16.0.1"
+    },
+    "hbnf": {
+      "auxBrightness": 255,
+      "foundationTelemetry": {
+        "enabled": false,
+        "frameMsAvg": null,
+        "frameMsMax": null,
+        "frameMsP50": null,
+        "frameMsP95": null,
+        "frameMsP99": null,
+        "kernelId": 255,
+        "largestFreeBlockBytes": 65524,
+        "minimumFreeHeapBytes": 48692,
+        "sampleCount": 0
+      },
+      "matrixBrightness": 44,
+      "packet20Diagnostic": {
+        "enabled": false,
+        "espResetReason": 3,
+        "lastCommand": "restore",
+        "lastCommandAccepted": true,
+        "resetReasonCore0": 12,
+        "resetReasonCore1": 12,
+        "restoreVerified": true,
+        "selectedKernel": 25,
+        "snapshotGeneration": 1,
+        "snapshotHash": 3679017460,
+        "snapshotId": 1,
+        "snapshotState": "READY",
+        "snapshotValid": true
+      },
+      "vibe": 0
+    },
+    "identity": {
+      "build_mac": "704bca5b345c",
+      "candidate": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "wled": "16.0.1"
+    },
+    "info": {
+      "freeheap": 73468,
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "restart": null,
+      "uptime": 2006,
+      "ver": "16.0.1"
+    },
+    "on": true,
+    "persisted_hbnf": {
+      "auxBrightness": 255,
+      "matrixBrightness": 44,
+      "vibe": 1
+    }
+  },
+  "matrix_route_en0": true,
+  "r4_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "read_only": true,
+  "schema": "hbnf-f89-recovery-blocker-readonly-v1"
+}
