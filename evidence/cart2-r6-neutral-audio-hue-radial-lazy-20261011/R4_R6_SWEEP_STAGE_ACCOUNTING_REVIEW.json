@@ -179,5 +179,35 @@
     "interpretation": "The 26/26 equality proves that each candidate/R4 pair was assigned the same requested kernel in the diagnostic sweep. Because variant_id is overwritten with the fixed marker, it does not prove equal randomly generated base settings, equal Vibe/audio-mapped settings, or equal runtime work. The R4 field is a recorded profile value; exact R4 source was not used to assert implementation semantics.",
     "decision": "Do not use equal variant_id values to rule out variant/settings mismatch as a cause. Existing evidence still does not isolate why the failed candidate has higher kernel cost.",
     "next_discriminator": "For any future authorized diagnostic, capture the actual generated base signature, final mapped speed/profile/style/amount/hueOffset/transform, Vibe/audio feature inputs, and per-frame timing together. The current profile IDs cannot supply those fields. No live action is authorized by the current control state."
+  },
+  "compositor_source_comparability": {
+    "status": "SAME_COMPOSITOR_IMPLEMENTATION__NO_DIRECT_FAILED_CANDIDATE_TIMING",
+    "diagnostic_source_commit": "911b791d814ed50440567433b17f04da83b700da",
+    "failed_candidate_source_commit": "7645dae3806c1e352a1063ac22d1482ddb5713ff",
+    "files_compared": {
+      "hbnf_vibe_runtime.h": {
+        "compositor_diagnostic_sha256": "290e979980af3ebb69b6a9c7c5e0147680055ce005c5c51eb3ece8965e12f1ca",
+        "failed_candidate_sha256": "290e979980af3ebb69b6a9c7c5e0147680055ce005c5c51eb3ece8965e12f1ca",
+        "identical": true
+      },
+      "hbnf_animartrix_audio_bridge.h": {
+        "compositor_diagnostic_sha256": "edfe168658d548fe8e52e05b5b9d0cc3390cfe11092423a2c1c12de95884ae74",
+        "failed_candidate_sha256": "e84c60333fd27426cc22a0e6d8703d46bd395584c9ec54c06b70d54b54b1c5b9",
+        "identical": false
+      },
+      "usermod_hbnf_foundation_v1.cpp": {
+        "compositor_diagnostic_sha256": "bd1c530533333dccc8ab92c45dec7aea339244dc2db282cd3057a5125f9f6507",
+        "failed_candidate_sha256": "7c5e391e86982daf8dd8f9a366a5950f8701837616d800f1aa715942a4b3b8d6",
+        "identical": false
+      }
+    },
+    "diagnostic_timer": "The 911b791 diagnostic timer wraps the composeVibeColor() call in FoundationAnimartrix::writePixel().",
+    "candidate_call": "The failed candidate calls the same composeVibeColor() helper from FoundationAnimartrix::writePixel(); the hbnf_vibe_runtime.h implementation is byte-identical.",
+    "other_module_differences": "Among the 14 usermod files, only the main usermod source and hbnf_animartrix_audio_bridge.h differ between these two source trees. The bridge change adds a per-pixel inactive fast-path guard and moves radial-coordinate work inside the bass-only branch. It reduces work on inactive/non-bass pixels, while adding a small branch check on active pixels; it does not add a new expensive per-pixel calculation.",
+    "limits": [
+      "The 0.992 ms measurement is direct for the diagnostic artifact and identical helper implementation, but not a direct timing of the failed candidate. Input Vibe/audio axes, selected generated parameters, and scheduler interruption may differ.",
+      "The candidate main source changed extensively and the sweep does not capture final mapped variant settings. The unchanged helper hash therefore rules against treating a compositor rewrite alone as a proven fix; it does not identify the kernel-stage cause."
+    ],
+    "decision": "Do not spend another candidate attempt removing/hoisting composeVibeColor alone. The remaining performance attribution is in the animation kernel under unrecorded final settings, other main-source changes, or execution/preemption; current evidence does not distinguish them."
   }
 }
