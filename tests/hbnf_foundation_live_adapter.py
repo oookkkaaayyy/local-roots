@@ -114,7 +114,7 @@ with unittest.mock.patch.object(m.time,"monotonic",side_effect=clock.monotonic),
     except TimeoutError as exc:assert "seq35-style" in str(exc)
 assert len(calls)==3
 
-info={"ip":"192.168.77.10","mac":"70:4b:ca:5b:34:5c","uptime":100,"ws":0,
+info={"ip":"192.168.77.10","mac":"70:4b:ca:5b:34:5c","uptime":100,"ws":0,"clock":240,
       "deviceId":"matrix-device","freeheap":90000,"wifi":{"rssi":-45}}
 build={"release_id":m.EXPECTED,"candidate":m.EXPECTED,"wled":"16.0.1"}
 aux={"ip":"192.168.77.11","mac":"8c94df55c34c","live":True,"lm":"DDP",
@@ -154,6 +154,7 @@ with tempfile.TemporaryDirectory() as td:
     with contextlib.redirect_stdout(io.StringIO()) as output:
         m.telemetry(str(inventory),isolated_run)
     sample=json.loads(output.getvalue())
+    assert sample["cpu_clock_mhz"]==240
     assert sample["aux_projection_active"] is True
     assert sample["aux_frame_lock_rx_active"] is False
     assert sample["aux_projection_age_valid"] is False
@@ -162,7 +163,7 @@ with tempfile.TemporaryDirectory() as td:
     assert sample["trace_records_serialized"] is False
     assert set(sample["telemetry_endpoint_reads"])=={"matrix_info","matrix_build","matrix_state","aux_info","aux_state"}
     assert sample["expected_firmware_sha256"] is None # WLED does not attest installed bytes.
-    required={"release_id","uptime_seconds","fps","frame_ms_p50","frame_ms_p95",
+    required={"release_id","cpu_clock_mhz","uptime_seconds","fps","frame_ms_p50","frame_ms_p95",
       "frame_ms_p99","frame_ms_max","kernel_id","kernel_name","variant_id",
       "free_heap_bytes","minimum_free_heap_bytes","largest_free_block_bytes",
       "websocket_clients","aux_projection_active","aux_projection_age_ms","aux_render_fps",
@@ -214,6 +215,14 @@ with tempfile.TemporaryDirectory() as td:
         raw=json.loads(raw_path.read_text())
         assert raw["status"]=="SATURATED" and raw["frame_ms_max"]==12559.93
         assert raw["saturated_fields"]==["frameMsP99"]
+        assert raw["runtime_context"]["cpu_clock_mhz"]==240
+    with unittest.mock.patch.dict(m.os.environ,{"HBNF_ALLOW_SATURATED_DIAGNOSTIC":"1"}):
+        with contextlib.redirect_stdout(io.StringIO()) as output:m.telemetry(str(inventory),isolated_run)
+    diagnostic_only=json.loads(output.getvalue())
+    assert diagnostic_only["telemetry_quality"]=="SATURATED_DIAGNOSTIC_ONLY"
+    assert diagnostic_only["frame_ms_p99"]==127.875
+    per_kernel_raw=pathlib.Path(isolated_run)/"SATURATED_TELEMETRY_KERNEL_00.json"
+    assert json.loads(per_kernel_raw.read_text())["saturated_fields"]==["frameMsP99"]
     ft["frameMsP99"]=36.65
     state["HBNF"]["timing"]["uptimeSec"]=90
     with contextlib.redirect_stdout(io.StringIO()) as output:m.telemetry(str(inventory),isolated_run)

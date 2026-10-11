@@ -1,0 +1,38 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "FOUNDATION_CPU_CLOCK_TELEMETRY_20261011",
+  "summary": "Preserve WLED's already-read CPU-clock field in each Foundation sample and saturated-telemetry record so cycle-based timing comparisons retain their frequency context.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Reuse the existing Foundation adapter's parallel Matrix /json/info response; no additional endpoint, request, firmware field, or diagnostic path.",
+      "affected_subsystem": "Read-only host-side timing evidence serialization. Frozen thresholds, runtime behavior, device writes, and candidate firmware are unchanged.",
+      "root_cause": "The firmware converts ESP cycle-counter deltas to microseconds using ESP.getCpuFreqMHz(), but the adapter discarded WLED /json/info clock from both normal samples and the saturated-telemetry raw record. This prevents a later reviewer from checking the timing context against the frequency reported at the same sample.",
+      "rollback_reference": "Revert the cpu_clock_mhz output fields and their adapter fixture assertions. No firmware rebuild or device change is needed.",
+      "evidence_sources": [
+        "Espressif Arduino-ESP32 Esp.h: ESP.getCpuFreqMHz() delegates to getCpuFrequencyMhz() and getCycleCount() to esp_cpu_get_cycle_count(): https://github.com/espressif/arduino-esp32/blob/master/cores/esp32/Esp.h",
+        "WLED json.cpp: /json/info clock is populated from ESP.getCpuFreqMHz(): https://github.com/wled/WLED/blob/main/wled00/json.cpp",
+        "ESP-IDF v4.4 performance guidance: cycle counters are per-core and flash-cache/binary-layout effects can vary short microbenchmarks: https://docs.espressif.com/projects/esp-idf/en/release-v4.4/esp32/api-guides/performance/speed.html",
+        "firmware/phase2/integration-r6-cachefix/usermod/usermod_hbnf_foundation_v1.cpp: hbnfCycleUs() and Foundation telemetry conversion",
+        "evidence/cart2-r6-compositor-hoist-20261011/live-qualification/sweep/SATURATED_TELEMETRY_RAW.json"
+      ],
+      "tests": [
+        "python3 tests/hbnf_foundation_live_adapter.py: PASS; verifies clock appears in regular samples and saturated raw evidence using the same mocked /json/info read."
+      ],
+      "live_state": {
+        "new_device_requests": false,
+        "device_mutation": false,
+        "firmware_changed": false,
+        "thresholds_changed": false,
+        "remote_or_paid_build": false
+      }
+    }
+  }
+}

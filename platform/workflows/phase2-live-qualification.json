@@ -75,6 +75,22 @@
     ],
     "unattended_soak_seconds_minimum": 5400,
     "kernel_sweep_count": 28,
+    "performance_failure_diagnostics": {
+      "same_candidate_install": true,
+      "collect_remaining_kernels_after_performance_or_saturated_percentile_failure": true,
+      "record_unqualified_saturated_samples_without_using_them_as_profiles": true,
+      "run_combined_feature_checks_for_diagnostics": true,
+      "skip_soak_if_any_required_gate_fails": true,
+      "immediate_stop_classes": [
+        "firmware identity mismatch",
+        "restart or uptime continuity failure",
+        "telemetry transport or required-field failure",
+        "frame interval at or above the existing 1000 ms hard stop",
+        "AUX/runtime integrity failure",
+        "renderer restore failure"
+      ],
+      "thresholds_may_be_weakened": false
+    },
     "combined_check": "Run inside the same open Packet20 snapshot after all 28 kernels and before threshold freeze/soak; verifies local candidate Vibe/audio controls, native palette/scene/text-scoreboard composition, and Matrix-to-AUX DDP. Owner PWA command application/scoring remains a distinct owner/backend acceptance gate and is never inferred from local WLED readback.",
     "thresholds_may_be_weakened": false,
     "candidate_bin_path": "evidence/cart2-r6-compositor-hoist-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011.bin",

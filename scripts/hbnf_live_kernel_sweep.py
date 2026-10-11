@@ -81,8 +81,11 @@ def _run_error(argv, timeout, exc):
         f"stdout_tail={stdout!r}; stderr_tail={stderr!r}"
     )
 
-def run_json(argv, timeout=10):
-    try:p=subprocess.run(argv,cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=timeout)
+def run_json(argv, timeout=10, env_overrides=None):
+    env=None
+    if env_overrides:
+        env=os.environ.copy();env.update(env_overrides)
+    try:p=subprocess.run(argv,cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=timeout,env=env)
     except subprocess.TimeoutExpired as e:raise _run_error(argv,timeout,e) from e
     if p.returncode:
         raise RuntimeError(f"command failed rc={p.returncode}: {argv!r}\n{p.stderr[-2000:]}")
@@ -523,7 +526,8 @@ def persist_failure_sample(outdir, entry, phase, sample, error):
     },indent=2,sort_keys=True)+"\n")
     return path
 
-def collect_kernel(adapter, entry, outdir, timeout, contract, expected_release_id=None, expected_restart_count=None, previous_uptime=None):
+def collect_kernel(adapter, entry, outdir, timeout, contract, expected_release_id=None, expected_restart_count=None, previous_uptime=None,
+                   allow_saturated_diagnostic=False):
     vals={
         "effect_id":entry["effect_id"],
         "kernel_name":entry["kernel_name"],
@@ -534,11 +538,18 @@ def collect_kernel(adapter, entry, outdir, timeout, contract, expected_release_i
     run_ok(subst(adapter["select_argv"],vals),timeout=timeout)
     time.sleep(float(adapter["settle_seconds"]))
 
-    first=run_json(subst(adapter["telemetry_argv"],vals),timeout=timeout)
+    def read_telemetry():
+        argv=subst(adapter["telemetry_argv"],vals)
+        if allow_saturated_diagnostic:
+            return run_json(argv,timeout=timeout,env_overrides={"HBNF_ALLOW_SATURATED_DIAGNOSTIC":"1"})
+        return run_json(argv,timeout=timeout)
+    first=read_telemetry()
     try:
         validate_sample(first,contract)
         verify_selected(first,entry)
         if contract=="foundation":enforce_foundation_frame_interval(first)
+        if allow_saturated_diagnostic and contract=="foundation" and first.get("aux_projection_active") is not True:
+            raise RuntimeError("diagnostic-continuation-aux-projection-inactive")
         release_id,restart_count,previous_uptime=validate_continuity(
             first,expected_release_id,expected_restart_count,previous_uptime
         )
@@ -547,24 +558,37 @@ def collect_kernel(adapter, entry, outdir, timeout, contract, expected_release_i
         raise
 
     lines=[first]
+    saturated_diagnostic=first.get("telemetry_quality")=="SATURATED_DIAGNOSTIC_ONLY"
     deadline=time.monotonic()+float(adapter["sample_seconds"])
     interval=float(adapter["sample_interval_seconds"])
     while time.monotonic()<deadline:
         time.sleep(interval)
-        sample=run_json(subst(adapter["telemetry_argv"],vals),timeout=timeout)
+        sample=read_telemetry()
         try:
             validate_sample(sample,contract)
             verify_selected(sample,entry)
             if contract=="foundation":enforce_foundation_frame_interval(sample)
+            if allow_saturated_diagnostic and contract=="foundation" and sample.get("aux_projection_active") is not True:
+                raise RuntimeError("diagnostic-continuation-aux-projection-inactive")
             _,_,previous_uptime=validate_continuity(sample,release_id,restart_count,previous_uptime)
         except Exception as e:
             persist_failure_sample(outdir,entry,"sample",sample,e)
             raise
         lines.append(sample)
+        saturated_diagnostic |= sample.get("telemetry_quality")=="SATURATED_DIAGNOSTIC_ONLY"
 
     slug=f"{int(entry['runtime_kernel_index_expected']):02d}_{entry['kernel_name']}"
     jsonl=outdir/(slug+".jsonl")
     atomic_write(jsonl,"\n".join(json.dumps(x,separators=(",",":")) for x in lines)+"\n")
+    if saturated_diagnostic:
+        diagnostic=outdir/(slug+".diagnostic-only.json")
+        atomic_write(diagnostic,json.dumps({
+          "status":"SATURATED_TELEMETRY_DIAGNOSTIC_ONLY","qualification_eligible":False,
+          "kernel_index":int(entry["runtime_kernel_index_expected"]),"kernel_name":entry["kernel_name"],
+          "sample_count":len(lines),"sample_path":str(jsonl),
+          "saturated_sample_count":sum(x.get("telemetry_quality")=="SATURATED_DIAGNOSTIC_ONLY" for x in lines),
+        },indent=2,sort_keys=True)+"\n")
+        return None,release_id,first.get("variant_id"),restart_count,previous_uptime
     profile=outdir/(slug+".profile.json")
     p=subprocess.run(
         [sys.executable,str(QUAL),"--input",str(jsonl),"--contract",contract,"--profile-only","--output",str(profile)],
@@ -588,10 +612,12 @@ def main():
     ap.add_argument("--threshold-policy",help="fully frozen Foundation policy; required for an integrated soak")
     ap.add_argument("--threshold-baseline",help="output path for the baseline generated from this run's complete 28-kernel sweep")
     ap.add_argument("--combined-check-script",help="candidate-bound combined-feature check run after all 28 kernels and before baseline freeze/soak inside the same renderer snapshot")
-    ap.add_argument("--early-r4-profile-dir",help="exact R4 profile directory; when supplied, run historically failing kernel indices 0 and 13 first and stop before remaining kernels if frozen relative gates fail")
+    ap.add_argument("--early-r4-profile-dir",help="exact R4 profile directory; when supplied, run historically failing kernel indices 0 and 13 first; default stops on a failed comparison")
     ap.add_argument("--early-r4-baseline-manifest",default=str(ROOT/"evidence/hbnf-foundation-qualification-20261005/seq39/live/PRE_SOAK_BASELINE.json"),help="source-bound 28-kernel R4 baseline containing exact profile hashes")
     ap.add_argument("--early-r4-release",default="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1")
-    ap.add_argument("--compare-all-r4",action="store_true",help="after the early 0/13 gates, apply the same frozen relative profile/resource gates to every kernel against the exact R4 profile directory before starting any soak")
+    ap.add_argument("--compare-all-r4",action="store_true",help="apply the same frozen relative profile/resource gates to every comparable kernel against exact R4 profiles")
+    ap.add_argument("--complete-diagnostics-on-performance-gate-failure",action="store_true",
+                    help="collect remaining kernels after performance comparison or saturated-percentile failures; restore once, report all findings, and suppress soak; integrity, transport, continuity, unsafe-frame, and restore failures still stop immediately")
     ap.add_argument("--resume-snapshot-file",help="resume one exact previously captured, still-open Packet20 snapshot; never issues begin/snapshot")
     ap.add_argument("--resume-observer-proof",help="PASS observer-effect receipt for the exact expected release, required with --resume-snapshot-file")
     ap.add_argument("--dry-run",action="store_true")
@@ -620,6 +646,8 @@ def main():
         raise SystemExit("--qualify requires --contract foundation")
     if args.compare_all_r4 and not args.early_r4_profile_dir:
         raise SystemExit("--compare-all-r4 requires --early-r4-profile-dir")
+    if args.complete_diagnostics_on_performance_gate_failure and (args.contract!="foundation" or not args.early_r4_profile_dir or not args.compare_all_r4):
+        raise SystemExit("complete diagnostic continuation requires Foundation contract, exact R4 profiles, and all-kernel comparison")
     if args.early_r4_profile_dir:
         try:validate_r4_profile_set(args.early_r4_profile_dir,args.early_r4_baseline_manifest,inventory,args.early_r4_release)
         except (OSError,ValueError,KeyError,RuntimeError) as e:raise SystemExit(f"R4 comparison preflight failed before device access: {e}")
@@ -681,7 +709,7 @@ def main():
         return 2
 
     snapfile=outdir/"PRE_SWEEP_STATE.json"
-    profiles=[]; release_ids=set()
+    profiles=[]; release_ids=set(); performance_gate_failures=[]
     run_error=None; restore_error=None; post_restore_state=None;snapshot=None
     telemetry_mode_before=None
     reserve=None
@@ -709,9 +737,17 @@ def main():
             frozen_policy=load(args.threshold_policy or str(ROOT/"config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json"))
         for entry in entries:
             profile,release_id,variant_id,restart_count,previous_uptime=collect_kernel(
-                adapter,entry,outdir,timeout,args.contract,expected_release_id,expected_restart_count,previous_uptime
+                adapter,entry,outdir,timeout,args.contract,expected_release_id,expected_restart_count,previous_uptime,
+                allow_saturated_diagnostic=args.complete_diagnostics_on_performance_gate_failure
             )
             release_ids.add(str(release_id))
+            if profile is None:
+                performance_gate_failures.append({
+                    "kernel_id":entry["runtime_kernel_index_expected"],"kernel_name":entry["kernel_name"],
+                    "failure_class":"SATURATED_TELEMETRY",
+                    "diagnostic_path":str(outdir/f"{int(entry['runtime_kernel_index_expected']):02d}_{entry['kernel_name']}.diagnostic-only.json")
+                })
+                continue
             profiles.append({
               "kernel_id":entry["runtime_kernel_index_expected"],
               "kernel_name":entry["kernel_name"],
@@ -729,13 +765,27 @@ def main():
                 atomic_write(outdir/f"{label}_COMPARISON_KERNEL_{kernel_index}.json",json.dumps(comparison,indent=2,sort_keys=True)+"\n")
                 if comparison["status"]!="PASS":
                     gate="early-matched-R4" if kernel_index in (0,13) else "frozen-R4"
-                    raise RuntimeError(f"{gate}-kernel-gate-failed: {entry['kernel_name']}: {json.dumps(comparison['checks'],sort_keys=True)}")
+                    failure={"kernel_id":kernel_index,"kernel_name":entry["kernel_name"],"failure_class":"PERFORMANCE_COMPARISON",
+                      "gate":gate,"checks":comparison["checks"],"comparison_path":str(outdir/f"{label}_COMPARISON_KERNEL_{kernel_index}.json")}
+                    if not args.complete_diagnostics_on_performance_gate_failure:
+                        raise RuntimeError(f"{gate}-kernel-gate-failed: {entry['kernel_name']}: {json.dumps(comparison['checks'],sort_keys=True)}")
+                    performance_gate_failures.append(failure)
         soak_result=None
-        if args.soak_seconds:
+        combined_result=None
+        if args.combined_check_script and (args.soak_seconds or args.complete_diagnostics_on_performance_gate_failure):
+            try:
+                combined_result=run_combined_feature_check(args.combined_check_script,outdir,expected_release_id,timeout)
+            except RuntimeError as exc:
+                if not args.complete_diagnostics_on_performance_gate_failure or not str(exc).startswith("combined-feature-check-failed:"):
+                    raise
+                performance_gate_failures.append({"failure_class":"COMBINED_FEATURE_GATE","error":str(exc),
+                  "result_path":str(outdir/"COMBINED_FEATURE_CHECK.json")})
+        if args.soak_seconds and not performance_gate_failures:
             if args.contract!="foundation":raise ValueError("--soak-seconds requires --contract foundation")
             if not args.combined_check_script:
                 raise ValueError("integrated Foundation soak requires the frozen combined-feature check before baseline freeze")
-            combined_result=run_combined_feature_check(args.combined_check_script,outdir,expected_release_id,timeout)
+            if combined_result is None:
+                combined_result=run_combined_feature_check(args.combined_check_script,outdir,expected_release_id,timeout)
             pre_soak_manifest={"schema":"hbnf-kernel-sweep-input-v1","release_id":expected_release_id,
                 "contract":"foundation","expected_kernel_count":28,"restore_verified":False,"kernels":profiles}
             pre_soak_path=outdir/"PRE_SOAK_SWEEP_MANIFEST.json"
@@ -841,6 +891,22 @@ def main():
       "post_restore_state":str(outdir/"POST_RESTORE_STATE.json")
     }
     atomic_write(outdir/"RESTORE_RECEIPT.json",json.dumps(restore_receipt,indent=2)+"\n")
+    if performance_gate_failures:
+        diagnostic_result={
+          "schema":"hbnf-foundation-complete-diagnostic-result-v1",
+          "status":"DIAGNOSTICS_COMPLETE__PERFORMANCE_GATE_FAILED",
+          "qualification_eligible":False,
+          "candidate_release_id":next(iter(release_ids)),
+          "expected_kernel_count":28,
+          "kernels_completed":len(profiles)+len(list(outdir.glob("*.diagnostic-only.json"))),
+          "gate_failures":performance_gate_failures,
+          "combined_feature_check_status":(combined_result or {}).get("status"),
+          "soak_started":False,
+          "restore_receipt":str(outdir/"RESTORE_RECEIPT.json"),
+        }
+        atomic_write(outdir/"DIAGNOSTIC_COMPLETE_RESULT.json",json.dumps(diagnostic_result,indent=2,sort_keys=True)+"\n")
+        print(json.dumps(diagnostic_result,indent=2,sort_keys=True))
+        return 2
     manifest={
       "schema":"hbnf-kernel-sweep-input-v1",
       "release_id":next(iter(release_ids)),

@@ -489,6 +489,71 @@ with tempfile.TemporaryDirectory() as td:
       "--outdir",str(pathlib.Path(td)/"run"),"--contract","foundation","--soak-seconds","5400"],
       text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     assert blocked.returncode!=0 and "refuses before device preflight" in blocked.stderr
+
+# With the explicit complete-diagnostics option, a saturated kernel and a
+# frozen performance-comparison failure do not consume the remaining 28-kernel
+# evidence opportunity. The exact snapshot is restored, but no soak or
+# qualification manifest is emitted.
+with tempfile.TemporaryDirectory() as td:
+    out=pathlib.Path(td)/"complete-diagnostics"
+    original_argv=sys.argv
+    original=(m.run_json,m.run_ok,m.collect_kernel,m.compare_profile_to_r4,m.run_combined_feature_check,
+              m.require_disk_headroom,m.set_foundation_telemetry,m.validate_readonly_preflight,
+              m.validate_sample,m.validate_continuity,m.persist_restore_evidence)
+    calls=[];uptime=[100]
+    snapshot={"snapshotId":77,"snapshotHash":888,"foundationTelemetryEnabledBefore":False}
+    restored={"snapshotId":77,"snapshotHash":888,"foundationTelemetryEnabled":False,
+              "restoreVerified":True,"packet20Same":True}
+    def fake_runner_json(argv,timeout=10,env_overrides=None):
+        words=" ".join(map(str,argv))
+        if "validate-policy-only" in words:return {"status":"PASS"}
+        if "preflight" in words:return {"schema":"hbnf-live-qualification-preflight-v1"}
+        if "telemetry" in words:return {"release_id":"r7","uptime_seconds":100,"restart_count":0}
+        if "snapshot" in words:return snapshot
+        if "verify-restore" in words:return restored
+        if "telemetry-mode" in words:return {"HBNF":{"foundationTelemetry":{"enabled":argv[-1]=="true"}}}
+        raise AssertionError("unexpected subprocess in isolated sweep test: "+words)
+    def fake_collect(_adapter,entry,_outdir,_timeout,_contract,*_args,**_kwargs):
+        index=int(entry["runtime_kernel_index_expected"]);calls.append(index);uptime[0]+=1
+        if index==0:
+            sidecar=pathlib.Path(_outdir)/f"{index:02d}_{entry['kernel_name']}.diagnostic-only.json"
+            sidecar.write_text(json.dumps({"status":"SATURATED_TELEMETRY_DIAGNOSTIC_ONLY","qualification_eligible":False}))
+            return None,"r7",1,0,uptime[0]
+        profile=pathlib.Path(_outdir)/f"{index:02d}_{entry['kernel_name']}.profile.json"
+        profile.write_text("{}")
+        return profile,"r7",1,0,uptime[0]
+    def fake_compare(profile,*args,**kwargs):
+        index=int(pathlib.Path(profile).name[:2])
+        return {"status":"FAIL" if index==13 else "PASS","checks":{"fps_median":index!=13}}
+    try:
+        sys.argv=["hbnf_live_kernel_sweep.py","--adapter",str(ROOT/"config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json"),
+          "--inventory",str(ROOT/"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"),"--outdir",str(out),
+          "--contract","foundation","--soak-seconds","5400","--threshold-policy",
+          str(ROOT/"config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json"),
+          "--combined-check-script",str(ROOT/"scripts/hbnf_r6_combined_feature_check.py"),
+          "--early-r4-profile-dir",str(ROOT/"evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep"),
+          "--early-r4-baseline-manifest",str(ROOT/"evidence/hbnf-foundation-qualification-20261005/seq39/live/PRE_SOAK_BASELINE.json"),
+          "--early-r4-release","hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+          "--compare-all-r4","--complete-diagnostics-on-performance-gate-failure"]
+        m.run_json=fake_runner_json;m.run_ok=lambda *a,**k:"restored"
+        m.collect_kernel=fake_collect;m.compare_profile_to_r4=fake_compare
+        m.run_combined_feature_check=lambda *a,**k:{"status":"PASS"}
+        m.require_disk_headroom=lambda *_a,**_k:10**9;m.set_foundation_telemetry=lambda *_a,**_k:True
+        m.validate_readonly_preflight=lambda *_a,**_k:None;m.validate_sample=lambda *_a,**_k:None
+        m.validate_continuity=lambda *_a,**_k:("r7",0,100.0)
+        m.persist_restore_evidence=lambda *_a,**_k:None
+        assert m.main()==2
+    finally:
+        sys.argv=original_argv
+        (m.run_json,m.run_ok,m.collect_kernel,m.compare_profile_to_r4,m.run_combined_feature_check,
+         m.require_disk_headroom,m.set_foundation_telemetry,m.validate_readonly_preflight,
+         m.validate_sample,m.validate_continuity,m.persist_restore_evidence)=original
+    result=json.loads((out/"DIAGNOSTIC_COMPLETE_RESULT.json").read_text())
+    assert calls==[int(x["runtime_kernel_index_expected"]) for x in m.order_entries_for_early_baseline(inv["entries"])]
+    assert len(calls)==28 and set(calls)==set(range(28)) and result["kernels_completed"]==28
+    assert result["soak_started"] is False and len(result["gate_failures"])==2
+    assert (out/"RESTORE_RECEIPT.json").is_file()
+    assert not (out/"SWEEP_MANIFEST.json").exists() and not (out/"FOUNDATION_SOAK.jsonl").exists()
 wrong=dict(sample); wrong["kernel_name"]="RGB_Blobs5"
 try: m.verify_selected(wrong,inv["entries"][2]); raise AssertionError("wrong kernel accepted")
 except RuntimeError: pass
@@ -528,6 +593,33 @@ with tempfile.TemporaryDirectory() as td:
         assert failure["sample"]["frame_ms_max"]==1000.0
     finally:
         m.run_ok,m.run_json,m.time.sleep=original
+
+# Saturated percentiles may be retained for diagnosis only. Such samples are
+# never converted into a qualification profile, while an exact maximum below
+# the independent 1000ms hard stop permits collection to move to later kernels.
+with tempfile.TemporaryDirectory() as td:
+    original=(m.run_ok,m.run_json,m.time.sleep)
+    calls=[0]
+    saturated=dict(foundation);saturated.update(
+      kernel_id=2,kernel_name="Parametric_Water",release_id="r7",uptime_seconds=100,
+      frame_ms_max=120,frame_ms_p99=127.875,telemetry_quality="SATURATED_DIAGNOSTIC_ONLY")
+    try:
+        m.run_ok=lambda *args,**kwargs:None
+        def saturated_read(argv,timeout=10,env_overrides=None):
+            assert env_overrides=={"HBNF_ALLOW_SATURATED_DIAGNOSTIC":"1"}
+            calls[0]+=1
+            value=dict(saturated,uptime_seconds=100+calls[0])
+            return value
+        m.run_json=saturated_read;m.time.sleep=lambda *args,**kwargs:None
+        profile,*_=m.collect_kernel(adapter,inv["entries"][2],pathlib.Path(td),10,"foundation",
+                                    expected_release_id="r7",expected_restart_count=0,
+                                    previous_uptime=99,allow_saturated_diagnostic=True)
+        assert profile is None
+        result=json.loads((pathlib.Path(td)/"02_Parametric_Water.diagnostic-only.json").read_text())
+        assert result["qualification_eligible"] is False and result["saturated_sample_count"]>=1
+        assert (pathlib.Path(td)/"02_Parametric_Water.jsonl").is_file()
+        assert not (pathlib.Path(td)/"02_Parametric_Water.profile.json").exists()
+    finally:m.run_ok,m.run_json,m.time.sleep=original
 
 # A restore mismatch must leave both raw observations on disk before raising.
 with tempfile.TemporaryDirectory() as td:

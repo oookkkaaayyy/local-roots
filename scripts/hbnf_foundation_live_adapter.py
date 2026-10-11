@@ -406,6 +406,7 @@ def telemetry(inventory,session_id,emit=True):
       "audioMsP95","schedulerMsP95","overlayMsP95","auxPrepareSendMsP95","unaccountedMsP95")}
     if any(v is None for v in quantiles.values()):raise RuntimeError("foundation-frame-tail-quantile-contract-missing")
     saturated_fields=[k for k,v in quantiles.items() if float(v)>=saturated_quantile_ms]
+    telemetry_quality="PASS"
     if saturated_fields:
       raw={
         "status":"SATURATED",
@@ -423,6 +424,7 @@ def telemetry(inventory,session_id,emit=True):
         "runtime_context":{
           "release_id":build.get("release_id"),
           "wled":info.get("ver"),
+          "cpu_clock_mhz":info.get("clock"),
           "matrix_on":state.get("on"),
           "matrix_brightness":state.get("bri"),
           "scene":h.get("scene"),
@@ -439,10 +441,17 @@ def telemetry(inventory,session_id,emit=True):
           "segment0":({k:state.get("seg",[{}])[0].get(k) for k in ("id","start","stop","on","bri","fx","pal","col","sel","rev")} if isinstance(state.get("seg"),list) and state.get("seg") else None),
         },
       }
-      raw_path=pathlib.Path(str(session_id))/"SATURATED_TELEMETRY_RAW.json"
+      raw_name=(f"SATURATED_TELEMETRY_KERNEL_{int(timing.get('kernel',-1)):02d}.json"
+                if os.environ.get("HBNF_ALLOW_SATURATED_DIAGNOSTIC")=="1"
+                else "SATURATED_TELEMETRY_RAW.json")
+      raw_path=pathlib.Path(str(session_id))/raw_name
       raw_path.parent.mkdir(parents=True,exist_ok=True)
       raw_path.write_text(json.dumps(raw,indent=2,sort_keys=True)+"\n")
-      raise RuntimeError(f"foundation-frame-tail-quantile-saturated-at-{saturated_quantile_ms:g}ms fields={','.join(saturated_fields)} raw={raw_path}")
+      if os.environ.get("HBNF_ALLOW_SATURATED_DIAGNOSTIC")!="1":
+        raise RuntimeError(f"foundation-frame-tail-quantile-saturated-at-{saturated_quantile_ms:g}ms fields={','.join(saturated_fields)} raw={raw_path}")
+      # Diagnosis only: the sweep excludes these samples from qualification
+      # profiles and suppresses the soak if any are observed.
+      telemetry_quality="SATURATED_DIAGNOSTIC_ONLY"
     leds=aux.get("leds",{})
     aux_rx=aux_projection_health(aux,aux_state)
     inv=json.loads(pathlib.Path(inventory).read_text())
@@ -458,7 +467,7 @@ def telemetry(inventory,session_id,emit=True):
     else:cache["restart_count"]=0
     CACHE.write_text(json.dumps(cache))
     sample={
-      "release_id":build["release_id"],"uptime_seconds":timing["uptimeSec"],"fps":timing["fps"],
+      "release_id":build["release_id"],"cpu_clock_mhz":info.get("clock"),"telemetry_quality":telemetry_quality,"uptime_seconds":timing["uptimeSec"],"fps":timing["fps"],
       "frame_ms_avg":ft.get("frameMsAvg"),"frame_ms_p50":ft.get("frameMsP50"),"frame_ms_p95":ft.get("frameMsP95"),"frame_ms_p99":ft.get("frameMsP99"),"frame_ms_max":ft.get("frameMsMax"),
       "kernel_id":kid,"kernel_name":entry["kernel_name"],"variant_id":timing["variantSignature"],
       "free_heap_bytes":timing["freeHeap"],"minimum_free_heap_bytes":ft.get("minimumFreeHeapBytes"),"largest_free_block_bytes":ft.get("largestFreeBlockBytes"),

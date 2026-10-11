@@ -1,0 +1,40 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "COMPLETE_KERNEL_DIAGNOSTICS_AFTER_PERFORMANCE_FAILURE_20261011",
+  "summary": "Use the existing one-install Foundation qualification session to collect all remaining kernel and combined-feature diagnostics after a performance-only gate failure; keep every acceptance gate unchanged and suppress the soak when any gate fails.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "The existing Foundation sweep, exact R4 profiles, frozen thresholds, single candidate install, one exact recovery, and renderer snapshot are reused; no lifecycle state or authority is added.",
+      "affected_subsystem": "Host-side qualification orchestration and evidence output only. Saturated-percentile data is marked diagnostic-only and excluded from qualification profiles. The fixed policy, hard 1000ms frame stop, identity/restart/uptime/AUX checks, rollback, and acceptance gates remain fail-closed.",
+      "root_cause": "The latest one-use R6 session stopped at its first saturated kernel-0 percentile, returning zero kernel profiles and no combined-feature results even though the exact maximum frame interval was 144.813ms, below the existing 1000ms hard stop, and exact R4 recovery verified. This forced any other independent performance finding to wait for another candidate build/install cycle.",
+      "rollback_reference": "Revert the diagnostic-continuation option, sample quality label, workflow binding, and regression test. No firmware rebuild or device change is required.",
+      "expert_sources": [
+        "ESP-IDF v4.4 performance guide recommends repeatable measurement and comparison after code changes, and notes context-switch/measurement overhead and binary-layout effects: https://docs.espressif.com/projects/esp-idf/en/release-v4.4/esp32/api-guides/performance/speed.html",
+        "Google SRE Workbook, Canarying Releases: release-pipeline monitoring and automation reduce repetitive manual toil while preserving rollback and release evaluation: https://sre.google/workbook/canarying-releases/"
+      ],
+      "tests": [
+        "tests/hbnf_foundation_live_adapter.py: saturated percentiles remain fail-closed by default and are explicitly labeled diagnostic-only only under the sweep's scoped environment flag.",
+        "tests/hbnf_live_kernel_sweep.py: saturated data creates no qualification profile; mocked actual runner completes all 28 kernels after one saturated sample and one failed R4 comparison, runs combined diagnostics, verifies exact restore, and proves no soak or pass manifest is emitted.",
+        "tests/test_r6_audio_cache_transaction_dryrun.py: the existing candidate-bound transaction command includes the diagnostic-completion option; the production LivePort reads the diagnostic-only result and the existing coordinator routes to exact R4 recovery once."
+      ],
+      "expected_efficiency_effect": "The prior failed transaction completed 0/28 kernel profiles and no combined-feature check. Future sessions with performance-only failures can return the full 28-kernel diagnostic matrix plus combined-check outcome from the same candidate install, avoiding separate candidate/build/install cycles merely to discover failures in later kernels. No time/build reduction is yet measured; actual reduction depends on whether the wider matrix identifies multiple actionable failures before the next firmware build.",
+      "live_state": {
+        "new_device_requests": false,
+        "device_mutation": false,
+        "firmware_changed": false,
+        "thresholds_changed": false,
+        "current_candidate_install_attempts_used": 1,
+        "current_exact_r4_recovery_attempts_used": 1,
+        "live_gate_for_current_candidate": "CLOSED"
+      }
+    }
+  }
+}

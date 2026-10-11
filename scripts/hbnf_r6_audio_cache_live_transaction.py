@@ -569,7 +569,7 @@ def qualification_command(outdir: pathlib.Path, profile=LEGACY_R6_PROFILE):
         "--soak-interval-seconds", "8", "--threshold-policy", "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
         "--early-r4-profile-dir", "evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep",
         "--early-r4-baseline-manifest", "evidence/hbnf-foundation-qualification-20261005/seq39/live/PRE_SOAK_BASELINE.json",
-        "--early-r4-release", R4, "--compare-all-r4"]
+        "--early-r4-release", R4, "--compare-all-r4", "--complete-diagnostics-on-performance-gate-failure"]
     return sweep
 
 
@@ -722,6 +722,7 @@ def device_failure_requires_recovery(summary):
         # qualified from that sample and the transaction must follow its
         # already-authorized recovery path.
         "foundation-frame-tail-quantile-saturated",
+        "diagnostics_complete__performance_gate_failed",
     )
     return any(marker in text for marker in markers)
 
@@ -989,9 +990,12 @@ class LivePort:
         (self.outdir/"SWEEP_STDERR.txt").write_text(p.stderr)
         report_path = self.outdir/"sweep/ALL_KERNEL_SWEEP_REPORT.json"
         report = json.loads(report_path.read_text()) if report_path.is_file() else {}
+        diagnostic_path = self.outdir/"sweep/DIAGNOSTIC_COMPLETE_RESULT.json"
+        diagnostics = json.loads(diagnostic_path.read_text()) if diagnostic_path.is_file() else {}
         abort_path = self.outdir/"sweep/SWEEP_ABORT.json"
         abort = json.loads(abort_path.read_text()) if abort_path.is_file() else {}
-        return {"passed": p.returncode == 0, "returncode": p.returncode, "report": report, "abort": abort}
+        return {"passed": p.returncode == 0, "returncode": p.returncode, "report": report,
+                "diagnostic_complete": diagnostics, "abort": abort}
 
     def recover_r4(self):
         if self.recovery_attempts > 0:

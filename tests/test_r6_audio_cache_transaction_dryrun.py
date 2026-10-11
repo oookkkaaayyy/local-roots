@@ -140,6 +140,23 @@ def main():
     # The outer supervisor must not kill the sweep before its restore finally;
     # the full 5400-second soak remains part of the exact command.
     port = module.LivePort("unused-admission", "unused-capsule", "unused-proof")
+    built_command=module.qualification_command(pathlib.Path("/tmp/qualification"),module.SUCCESSOR_PROFILE)
+    assert "--complete-diagnostics-on-performance-gate-failure" in built_command
+    with tempfile.TemporaryDirectory(prefix="complete-gate-readback-") as td:
+        outdir=pathlib.Path(td);(outdir/"sweep").mkdir()
+        (outdir/"sweep/DIAGNOSTIC_COMPLETE_RESULT.json").write_text(json.dumps({
+          "status":"DIAGNOSTICS_COMPLETE__PERFORMANCE_GATE_FAILED","kernels_completed":28,"soak_started":False}))
+        actual_port=module.LivePort("unused-admission","unused-capsule","unused-proof",outdir=outdir,
+                                    candidate=module.SUCCESSOR_PROFILE)
+        original_command=module.qualification_command;original_subprocess_run=module.subprocess.run
+        try:
+            module.qualification_command=lambda *_a,**_k:["fake-complete-diagnostic-runner"]
+            module.subprocess.run=lambda argv,**kwargs:subprocess.CompletedProcess(argv,2,stdout="failed gate",stderr="")
+            actual_result=actual_port.qualify()
+        finally:
+            module.qualification_command=original_command;module.subprocess.run=original_subprocess_run
+        assert actual_result["diagnostic_complete"]["kernels_completed"]==28
+        assert module.device_failure_requires_recovery(actual_result)
     with tempfile.TemporaryDirectory() as td:
         port.outdir = pathlib.Path(td)
         original_command = module.qualification_command
@@ -257,6 +274,12 @@ def main():
     assert module.device_failure_requires_recovery(saturated_tail.qualify())
     cases.append(run_case("saturated frame-tail telemetry is a required runtime gate failure",
              saturated_tail, "QUALIFICATION_FAILED_R4_RECOVERED", 1, 1, 13))
+
+    complete_diagnostics = FakePort(qualification_error=(
+        "DIAGNOSTICS_COMPLETE__PERFORMANCE_GATE_FAILED: 28 kernels captured; soak suppressed"))
+    assert module.device_failure_requires_recovery(complete_diagnostics.qualify())
+    cases.append(run_case("complete diagnostic matrix is a measured candidate gate failure and returns to exact R4",
+             complete_diagnostics, "QUALIFICATION_FAILED_R4_RECOVERED", 1, 1, 13))
 
     collector_fail = FakePort(qualification=False, device_failure=False)
     cases.append(run_case("host collector failure does not consume recovery", collector_fail,
