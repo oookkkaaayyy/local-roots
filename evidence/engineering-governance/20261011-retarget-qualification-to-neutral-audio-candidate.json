@@ -1,0 +1,34 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "CART2_RETARGET_QUALIFICATION_TO_NEUTRAL_AUDIO_CANDIDATE_20261011",
+  "summary": "Retarget the existing Phase 2 qualification workflow and transaction fixtures from the failed compositor-hoist candidate to the exact offline-compiled neutral-audio/hue/radial-lazy candidate, preserving the same lifecycle authority, fixed gates, one-attempt policy, and exact R4 rollback.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "The current control model, delivery rail, and existing transaction coordinator already define exact candidate binding, offline admission, a single live lane, fixed qualification gates, and exact R4 recovery. This change only points those existing mechanisms at the newer offline candidate.",
+      "affected_subsystem": "platform/workflows/phase2-live-qualification.json, scripts/hbnf_r6_audio_cache_live_transaction.py, the candidate identity tests, the transaction rehearsal path, and the candidate-specific evidence capsule. The firmware source and binary are unchanged by this workflow retarget.",
+      "rollback_reference": "Revert this isolated branch commit to restore the prior compositor-hoist profile. No device or cloud mutation is part of this source/configuration change; the exact R4 rollback binary remains SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
+      "evidence_sources": [
+        "config/HBNF_CONTROL_MODEL.json: delivery rail and exact admission contract",
+        "config/HBNF_CONTROL_STATE.json: current lifecycle state and closed live-mutation authority",
+        "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/OFFLINE_COMPILED_ADMISSION.json: exact candidate and rollback identities",
+        "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/OFFLINE_HOST_QUALIFICATION_20261011.json: offline candidate checks and scope limits",
+        "https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/ota.html",
+        "https://csrc.nist.gov/pubs/sp/800/218/final"
+      ],
+      "tests": [
+        "tests/test_r6_audio_cache_candidate.py: exact candidate source tree, firmware SHA, feature markers, and R4 hash",
+        "tests/test_hbnf_r6_combined_candidate.py: current source binding and bit-exact host golden",
+        "tests/test_r6_audio_cache_transaction_dryrun.py: full fake-port transaction rehearsal and zero-request invalid-admission rejection",
+        "Full repository-mandated control/release suite"
+      ]
+    }
+  }
+}

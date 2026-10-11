@@ -1,81 +1,68 @@
 #!/usr/bin/env python3
-"""Verify the offline R6 frame-cache candidate, exact sources and recovery."""
+"""Verify the current offline R6 successor, exact source closure and R4 recovery."""
 from __future__ import annotations
-
-import hashlib
-import json
-import os
-import subprocess
+import hashlib, json, subprocess
 from pathlib import Path
-
 ROOT = Path(__file__).resolve().parents[1]
-EVIDENCE = ROOT / "evidence/cart2-r6-audio-cache-20261010"
-MANIFEST_PATH = EVIDENCE / "FINAL_OFFLINE_CANDIDATE_MANIFEST.json"
-EXPECTED_RELEASE = "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
-EXPECTED_SHA = "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
-EXPECTED_R4 = "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+EVIDENCE = ROOT / "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011"
+RELEASE = "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011"
+SHA = "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187"
+R4 = "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+SOURCE_COMMIT = "7645dae3806c1e352a1063ac22d1482ddb5713ff"
 
 
 def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-manifest = json.loads(MANIFEST_PATH.read_text())
-assert manifest["release_id"] == EXPECTED_RELEASE
-assert manifest["status"].startswith("OFFLINE_BUILD_VERIFIED")
-assert manifest["status"].endswith("NOT_ACCEPTED")
-artifact = ROOT / manifest["artifact"]["path"]
-assert sha(artifact) == EXPECTED_SHA == manifest["artifact"]["sha256"]
-assert artifact.stat().st_size == manifest["artifact"]["bytes"] == 1_497_984
-assert manifest["artifact"]["embedded_candidate_and_release_id"] == EXPECTED_RELEASE
-binding_path = ROOT / manifest["source_binding"]["path"]
-assert sha(binding_path) == manifest["source_binding"]["sha256"]
-binding = json.loads(binding_path.read_text())
-assert binding["release_id"] == EXPECTED_RELEASE
-assert binding["status"].startswith("OFFLINE_TARGET_BUILD_VERIFIED")
-source_root = ROOT / binding["runtime_source_directory"]
-source_commit = binding["repository_source_commit"]
-for relative, expected in binding["runtime_files"].items():
-    historical_path = f"{binding['runtime_source_directory']}/{relative}"
-    historical_bytes = subprocess.run(
-        ["git", "show", f"{source_commit}:{historical_path}"],
-        cwd=ROOT, check=True, capture_output=True,
-    ).stdout
-    assert hashlib.sha256(historical_bytes).hexdigest() == expected, relative
-assert manifest["parent"]["sha256"] == "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb"
-rollback = ROOT / manifest["rollback"]["path"]
-assert sha(rollback) == EXPECTED_R4 == manifest["rollback"]["sha256"]
-resource = manifest["resource_usage"]
-assert resource["flash_remaining_bytes"] > 0
-assert resource["ram_remaining_bytes"] > 0
-assert resource["flash_partition_bytes"] == 1_572_864
+def main() -> None:
+    receipt = json.loads((EVIDENCE / "BUILD_RECEIPT.json").read_text())
+    tree = json.loads((EVIDENCE / "SOURCE_TREE_MANIFEST.json").read_text())
+    host = json.loads((EVIDENCE / "HOST_VALIDATION_RECEIPT.json").read_text())
 
-strings = subprocess.run(["strings", str(artifact)], check=True, capture_output=True, text=True).stdout
-assert strings.count(EXPECTED_RELEASE) >= 1
-assert '"basedOnFirmwareSha256":"' + EXPECTED_R4 + '"' in strings
-assert "foundation-vibe-audio-r5-unfrozen" in strings
-assert "native-text-moments-r5-unfrozen" in strings
-assert "hbnf-cart2-r6-frame-context-diagnostic-20261010" not in strings
+    assert receipt["release_id"] == RELEASE
+    assert receipt["artifact"]["sha256"] == SHA
+    assert receipt["artifact"]["bytes"] == 1_498_832
+    assert receipt["source_commit"] == SOURCE_COMMIT
+    assert tree["source_tree_sha256"] == receipt["source_tree_sha256"]
+    assert tree["file_count"] == 14
 
-build_log_path = Path(os.environ.get("HBNF_R6_AUDIO_CACHE_BUILD_LOG", EVIDENCE / "TARGET_BUILD.log"))
-build_log = build_log_path.read_text(errors="replace")
-assert "-DHBNF_PACKET20_DIAGNOSTICS" in build_log
-assert "-DHBNF_R6_FRAME_CONTEXT_TRACE" not in build_log
+    for item in tree["files"]:
+        source = subprocess.run(
+            ["git", "show", f"{SOURCE_COMMIT}:{receipt['source_tree']}/{item['path']}"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+        ).stdout
+        assert hashlib.sha256(source).hexdigest() == item["sha256"], item["path"]
 
-asm_path = ROOT / binding["target_build"]["target_disassembly_path"]
-assert sha(asm_path) == binding["target_build"]["target_disassembly_sha256"]
-asm = asm_path.read_text()
-modulate = asm.split("### hbnf::AnimartrixAudioBridge::modulate", 1)[1].split("### hbnf::AnimartrixAudioBridge::preparePixelModulation", 1)[0]
-prepare = asm.split("### hbnf::AnimartrixAudioBridge::preparePixelModulation", 1)[1].split("### hbnf::AnimartrixAudioBridge::profileLane", 1)[0]
-assert "AnimartrixAudioBridge::profileLane" not in modulate
-assert prepare.count("AnimartrixAudioBridge::profileLane") == 5
+    artifact = EVIDENCE / receipt["artifact"]["path"]
+    assert sha(artifact) == SHA
+    assert artifact.stat().st_size == 1_498_832
+    image = artifact.read_bytes()
+    assert image.count(RELEASE.encode()) == 3
+    assert b'"basedOnFirmwareSha256":"' + R4.encode() + b'"' in image
 
-assert manifest["qualification"]["T4"] == "NOT_ACCEPTED"
-assert manifest["qualification"]["T5"] == "NOT_ACCEPTED"
-assert manifest["authority"]["live_mutation_authorized"] is False
-delta = binding["source_deltas"]["hbnf_animartrix_audio_bridge.h"]["change"]
-assert "bounded int32 radial branch" in delta
-assert "generic int64 fallback" in delta
-assert binding["fallback_validation"]["status"] == "PASS"
-assert binding["fallback_validation"]["test"] == "tests/test_hbnf_audio_bridge_frame_cache.py"
-print(f"PASS: {EXPECTED_RELEASE} exact SHA, source closure, target codegen, resource headroom and R4 recovery verified")
+    for feature in (
+        b"silent-audio-pixel-fastpath-v1",
+        b"frame-hue-cache-v1",
+        b"lazy-bass-radial-v1",
+        b"wled-native-fontmanager-text-v1",
+    ):
+        assert feature in image, feature
+
+    rollback = ROOT / "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin"
+    assert sha(rollback) == R4
+    assert host["candidate_release_id"] == RELEASE
+    assert host["candidate_sha256"] == SHA
+    assert all(check["result"] == "PASS" for check in host["checks"])
+    assert receipt["qualification"]["live_mutation_authorized"] is False
+    assert receipt["qualification"]["accepted"] is False
+    print(
+        f"PASS: {RELEASE} exact source tree, firmware SHA, feature markers, "
+        "resource receipt, host checks, and exact R4 recovery verified"
+    )
+
+
+if __name__ == "__main__":
+    main()

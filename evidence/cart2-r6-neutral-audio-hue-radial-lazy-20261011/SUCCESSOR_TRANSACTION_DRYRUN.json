@@ -1,0 +1,583 @@
+{
+  "assertions": "PASS",
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+  "candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+  "cases": [
+    {
+      "case": "exact successor fake-port transaction reaches qualification pass",
+      "pass": true,
+      "result": {
+        "brightness_restore": {
+          "target_matrix_brightness": 52,
+          "verified": true
+        },
+        "brightness_setup": {
+          "target_matrix_brightness": 44,
+          "verified": true
+        },
+        "brightness_setup_started": true,
+        "candidate_install_attempts": 1,
+        "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+        "candidate_runtime": {
+          "release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011"
+        },
+        "candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+        "candidate_stage": {
+          "bytes": 1498832,
+          "sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187"
+        },
+        "device_requests": 10,
+        "preflight": {
+          "brightness_baseline": {
+            "runtime": {
+              "auxBrightness": 245,
+              "matrixBrightness": 52,
+              "vibe": 0
+            }
+          },
+          "pass": true
+        },
+        "qualification": {
+          "passed": true,
+          "report": {
+            "status": "PASS"
+          }
+        },
+        "recovery_attempts": 0,
+        "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+        "runtime_resolution": {
+          "installed": true,
+          "runtime": {
+            "release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011"
+          }
+        },
+        "schema": "hbnf-cart2-candidate-qualification-transaction-v1",
+        "status": "QUALIFIED_OBJECTIVE_GATES_PASS",
+        "upload": {
+          "confirmed": true
+        }
+      },
+      "simulated_port_requests": 10
+    },
+    {
+      "case": "exact successor fake-port gate failure invokes exact R4 recovery once",
+      "pass": true,
+      "result": {
+        "brightness_restore": {
+          "target_matrix_brightness": 52,
+          "verified": true
+        },
+        "brightness_setup": {
+          "target_matrix_brightness": 44,
+          "verified": true
+        },
+        "brightness_setup_started": true,
+        "candidate_install_attempts": 1,
+        "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+        "candidate_runtime": {
+          "release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011"
+        },
+        "candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+        "candidate_stage": {
+          "bytes": 1498832,
+          "sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187"
+        },
+        "device_requests": 13,
+        "preflight": {
+          "brightness_baseline": {
+            "runtime": {
+              "auxBrightness": 245,
+              "matrixBrightness": 52,
+              "vibe": 0
+            }
+          },
+          "pass": true
+        },
+        "qualification": {
+          "abort": {
+            "run_error": "kernel-0-kernel-gate-failed"
+          },
+          "passed": false
+        },
+        "recovery": {
+          "runtime": {
+            "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+          },
+          "status": "R4_READBACK_VERIFIED"
+        },
+        "recovery_attempts": 1,
+        "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+        "runtime_resolution": {
+          "installed": true,
+          "runtime": {
+            "release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011"
+          }
+        },
+        "schema": "hbnf-cart2-candidate-qualification-transaction-v1",
+        "status": "QUALIFICATION_FAILED_R4_RECOVERED",
+        "upload": {
+          "confirmed": true
+        }
+      },
+      "simulated_port_requests": 13
+    },
+    {
+      "case": "successor admission missing rejected before fake-port I/O",
+      "device_requests": 0,
+      "pass": true
+    },
+    {
+      "case": "successor admission for prior artifact rejected before fake-port I/O",
+      "device_requests": 0,
+      "pass": true
+    },
+    {
+      "candidate_install_attempts": 0,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "device_requests": 0,
+      "error": "RuntimeError: invalid-live-admission",
+      "recovery_attempts": 0,
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "schema": "hbnf-cart2-candidate-qualification-transaction-v1",
+      "status": "BLOCKED_OR_FAILED"
+    },
+    {
+      "case": "qualification-only continuation has zero firmware installs",
+      "device_requests": 7,
+      "pass": true
+    },
+    {
+      "candidate_install_attempts": 0,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "device_requests": 7,
+      "error": "RuntimeError: stage-hash-mismatch",
+      "preflight": {
+        "brightness_baseline": {
+          "runtime": {
+            "auxBrightness": 245,
+            "matrixBrightness": 52,
+            "vibe": 0
+          }
+        },
+        "pass": true
+      },
+      "recovery_attempts": 0,
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "schema": "hbnf-cart2-candidate-qualification-transaction-v1",
+      "status": "BLOCKED_OR_FAILED"
+    },
+    {
+      "brightness_restore": {
+        "target_matrix_brightness": 52,
+        "verified": true
+      },
+      "brightness_setup": {
+        "target_matrix_brightness": 44,
+        "verified": true
+      },
+      "brightness_setup_started": true,
+      "candidate_install_attempts": 1,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_runtime": {
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+      },
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "candidate_stage": {
+        "bytes": 1497984,
+        "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+      },
+      "device_requests": 10,
+      "preflight": {
+        "brightness_baseline": {
+          "runtime": {
+            "auxBrightness": 245,
+            "matrixBrightness": 52,
+            "vibe": 0
+          }
+        },
+        "pass": true
+      },
+      "qualification": {
+        "passed": true,
+        "report": {
+          "status": "PASS"
+        }
+      },
+      "recovery_attempts": 0,
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "runtime_resolution": {
+        "installed": true,
+        "runtime": {
+          "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+        }
+      },
+      "schema": "hbnf-cart2-candidate-qualification-transaction-v1",
+      "status": "QUALIFIED_OBJECTIVE_GATES_PASS",
+      "upload": {
+        "confirmed": true
+      }
+    },
+    {
+      "candidate_install_attempts": 1,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "candidate_stage": {
+        "bytes": 1497984,
+        "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+      },
+      "device_requests": 8,
+      "preflight": {
+        "brightness_baseline": {
+          "runtime": {
+            "auxBrightness": 245,
+            "matrixBrightness": 52,
+            "vibe": 0
+          }
+        },
+        "pass": true
+      },
+      "recovery_attempts": 0,
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "runtime_resolution": {
+        "installed": false,
+        "runtime": {
+          "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+        }
+      },
+      "schema": "hbnf-cart2-candidate-qualification-transaction-v1",
+      "status": "OTA_NOT_INSTALLED_R4_REMAINS_NO_RETRY",
+      "upload": {
+        "confirmed": false
+      }
+    },
+    {
+      "brightness_restore": {
+        "target_matrix_brightness": 52,
+        "verified": true
+      },
+      "brightness_setup": {
+        "target_matrix_brightness": 44,
+        "verified": true
+      },
+      "brightness_setup_started": true,
+      "candidate_install_attempts": 1,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_runtime": {
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+      },
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "candidate_stage": {
+        "bytes": 1497984,
+        "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+      },
+      "device_requests": 13,
+      "preflight": {
+        "brightness_baseline": {
+          "runtime": {
+            "auxBrightness": 245,
+            "matrixBrightness": 52,
+            "vibe": 0
+          }
+        },
+        "pass": true
+      },
+      "qualification": {
+        "abort": {
+          "run_error": "kernel-0-kernel-gate-failed"
+        },
+        "passed": false
+      },
+      "recovery": {
+        "runtime": {
+          "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+        },
+        "status": "R4_READBACK_VERIFIED"
+      },
+      "recovery_attempts": 1,
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "runtime_resolution": {
+        "installed": true,
+        "runtime": {
+          "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+        }
+      },
+      "schema": "hbnf-cart2-candidate-qualification-transaction-v1",
+      "status": "QUALIFICATION_FAILED_R4_RECOVERED",
+      "upload": {
+        "confirmed": true
+      }
+    },
+    {
+      "brightness_restore": {
+        "target_matrix_brightness": 52,
+        "verified": true
+      },
+      "brightness_setup": {
+        "target_matrix_brightness": 44,
+        "verified": true
+      },
+      "brightness_setup_started": true,
+      "candidate_install_attempts": 1,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_runtime": {
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+      },
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "candidate_stage": {
+        "bytes": 1497984,
+        "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+      },
+      "device_requests": 13,
+      "preflight": {
+        "brightness_baseline": {
+          "runtime": {
+            "auxBrightness": 245,
+            "matrixBrightness": 52,
+            "vibe": 0
+          }
+        },
+        "pass": true
+      },
+      "qualification": {
+        "abort": {
+          "run_error": "RuntimeError: foundation-frame-tail-quantile-saturated-at-127.875ms"
+        },
+        "passed": false
+      },
+      "recovery": {
+        "runtime": {
+          "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+        },
+        "status": "R4_READBACK_VERIFIED"
+      },
+      "recovery_attempts": 1,
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "runtime_resolution": {
+        "installed": true,
+        "runtime": {
+          "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+        }
+      },
+      "schema": "hbnf-cart2-candidate-qualification-transaction-v1",
+      "status": "QUALIFICATION_FAILED_R4_RECOVERED",
+      "upload": {
+        "confirmed": true
+      }
+    },
+    {
+      "brightness_restore": {
+        "target_matrix_brightness": 52,
+        "verified": true
+      },
+      "brightness_setup": {
+        "target_matrix_brightness": 44,
+        "verified": true
+      },
+      "brightness_setup_started": true,
+      "candidate_install_attempts": 1,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_runtime": {
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+      },
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "candidate_stage": {
+        "bytes": 1497984,
+        "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+      },
+      "device_requests": 13,
+      "preflight": {
+        "brightness_baseline": {
+          "runtime": {
+            "auxBrightness": 245,
+            "matrixBrightness": 52,
+            "vibe": 0
+          }
+        },
+        "pass": true
+      },
+      "qualification": {
+        "abort": {
+          "run_error": "DIAGNOSTICS_COMPLETE__PERFORMANCE_GATE_FAILED: 28 kernels captured; soak suppressed"
+        },
+        "passed": false
+      },
+      "recovery": {
+        "runtime": {
+          "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+        },
+        "status": "R4_READBACK_VERIFIED"
+      },
+      "recovery_attempts": 1,
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "runtime_resolution": {
+        "installed": true,
+        "runtime": {
+          "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+        }
+      },
+      "schema": "hbnf-cart2-candidate-qualification-transaction-v1",
+      "status": "QUALIFICATION_FAILED_R4_RECOVERED",
+      "upload": {
+        "confirmed": true
+      }
+    },
+    {
+      "brightness_restore": {
+        "target_matrix_brightness": 52,
+        "verified": true
+      },
+      "brightness_setup": {
+        "target_matrix_brightness": 44,
+        "verified": true
+      },
+      "brightness_setup_started": true,
+      "candidate_install_attempts": 1,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_runtime": {
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+      },
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "candidate_stage": {
+        "bytes": 1497984,
+        "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+      },
+      "device_requests": 10,
+      "preflight": {
+        "brightness_baseline": {
+          "runtime": {
+            "auxBrightness": 245,
+            "matrixBrightness": 52,
+            "vibe": 0
+          }
+        },
+        "pass": true
+      },
+      "qualification": {
+        "abort": {
+          "run_error": "collector timeout; no performance conclusion"
+        },
+        "passed": false
+      },
+      "recovery_attempts": 0,
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "runtime_resolution": {
+        "installed": true,
+        "runtime": {
+          "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"
+        }
+      },
+      "schema": "hbnf-cart2-candidate-qualification-transaction-v1",
+      "status": "QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED",
+      "upload": {
+        "confirmed": true
+      }
+    },
+    {
+      "case": "candidate qualification rejected until exact owner brightness baseline restores",
+      "pass": true
+    },
+    {
+      "case": "uncertain brightness setup is restored and no profile is accepted",
+      "pass": true
+    },
+    {
+      "candidate_install_attempts": 1,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "candidate_stage": {
+        "bytes": 1497984,
+        "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+      },
+      "device_requests": 11,
+      "preflight": {
+        "brightness_baseline": {
+          "runtime": {
+            "auxBrightness": 245,
+            "matrixBrightness": 52,
+            "vibe": 0
+          }
+        },
+        "pass": true
+      },
+      "recovery": {
+        "runtime": {
+          "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+        },
+        "status": "R4_READBACK_VERIFIED"
+      },
+      "recovery_attempts": 1,
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "runtime_resolution": {
+        "error": "readback-unavailable",
+        "installed": null
+      },
+      "schema": "hbnf-cart2-candidate-qualification-transaction-v1",
+      "status": "RUNTIME_IDENTITY_UNRESOLVED_R4_RECOVERED",
+      "upload": {
+        "confirmed": null
+      }
+    },
+    {
+      "candidate_install_attempts": 1,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "candidate_stage": {
+        "bytes": 1497984,
+        "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+      },
+      "device_requests": 8,
+      "preflight": {
+        "brightness_baseline": {
+          "runtime": {
+            "auxBrightness": 245,
+            "matrixBrightness": 52,
+            "vibe": 0
+          }
+        },
+        "pass": true
+      },
+      "recovery_attempts": 1,
+      "recovery_error": "RuntimeError: R4-readback-not-proven",
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "runtime_resolution": {
+        "error": "readback-unavailable",
+        "installed": null
+      },
+      "schema": "hbnf-cart2-candidate-qualification-transaction-v1",
+      "status": "RECOVERY_UNVERIFIED_STOP",
+      "upload": {
+        "confirmed": null
+      }
+    },
+    {
+      "case": "exact authority durably consumed pre-request and closed post-transaction",
+      "pass": true
+    },
+    {
+      "case": "successor recovery attempt durably consumed before transport; historical R6 record unchanged",
+      "pass": true
+    },
+    {
+      "case": "qualification retry requires a new empty in-root evidence directory",
+      "pass": true
+    }
+  ],
+  "device_or_cloud_mutation": false,
+  "invalid_admission_device_requests": 0,
+  "launcher_candidate_selection": {
+    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+    "candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+    "note": "The supported transaction launcher resolves candidate identity and adapter from the capsule-bound current workflow.",
+    "source": "checked phase2-live-qualification workflow capsule"
+  },
+  "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "schema": "hbnf-r6-successor-transaction-rehearsal-v1",
+  "successor_fake_port_actual_device_calls": 0,
+  "successor_fake_port_cases": [
+    "exact successor fake-port transaction reaches qualification pass",
+    "exact successor fake-port gate failure invokes exact R4 recovery once"
+  ],
+  "successor_fake_port_simulated_requests": 23
+}

@@ -446,7 +446,7 @@ def main():
         "invalid_admission_device_requests": rejected.device_requests,
         "assertions": "PASS",
     }
-    evidence = ROOT / "evidence/cart2-r6-compositor-hoist-20261011/SUCCESSOR_TRANSACTION_DRYRUN.json"
+    evidence = ROOT / "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/SUCCESSOR_TRANSACTION_DRYRUN.json"
     evidence.parent.mkdir(parents=True, exist_ok=True)
     evidence.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
 

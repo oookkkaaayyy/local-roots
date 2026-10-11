@@ -47,10 +47,10 @@ OUT = ROOT/"evidence/cart2-r6-audio-cache-20261010/live-qualification"
 
 # Explicit successor fixture used by the offline transaction rehearsal. Live
 # execution resolves the selected profile only from the checked workflow capsule.
-SUCCESSOR_RELEASE = "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011"
-SUCCESSOR_SHA = "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2"
-SUCCESSOR_SIZE = 1498672
-SUCCESSOR_BIN = ROOT/"evidence/cart2-r6-compositor-hoist-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011.bin"
+SUCCESSOR_RELEASE = "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011"
+SUCCESSOR_SHA = "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187"
+SUCCESSOR_SIZE = 1498832
+SUCCESSOR_BIN = ROOT/"evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011.bin"
 
 
 class CandidateProfile(NamedTuple):
@@ -68,8 +68,8 @@ class CandidateProfile(NamedTuple):
 LEGACY_R6_PROFILE = CandidateProfile(RELEASE,CANDIDATE_SHA,CANDIDATE_SIZE,BIN,ADAPTER,OUT)
 SUCCESSOR_PROFILE = CandidateProfile(
     SUCCESSOR_RELEASE,SUCCESSOR_SHA,SUCCESSOR_SIZE,SUCCESSOR_BIN,
-    ROOT/"config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_COMPOSITOR_HOIST_20261011.json",
-    ROOT/"evidence/cart2-r6-compositor-hoist-20261011/live-qualification")
+    ROOT/"config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_NEUTRAL_AUDIO_HUE_RADIAL_LAZY_20261011.json",
+    ROOT/"evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification")
 
 
 def load_candidate_profile(capsule_path: pathlib.Path) -> CandidateProfile:

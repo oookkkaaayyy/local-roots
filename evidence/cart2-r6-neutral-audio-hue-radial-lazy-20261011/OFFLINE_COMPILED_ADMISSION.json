@@ -1,0 +1,95 @@
+{
+  "schema": "hbnf-cart2-release-admission-v1",
+  "stage": "OFFLINE_COMPILED",
+  "outcome": "PASS",
+  "classification": "EXACT_NEUTRAL_AUDIO_HUE_RADIAL_LAZY_SUCCESSOR_OFFLINE_COMPILED__LIVE_AUTHORITY_CLOSED",
+  "identities": {
+    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+    "source_commit": "7645dae3806c1e352a1063ac22d1482ddb5713ff",
+    "candidate_bin_path": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011.bin",
+    "candidate_bin_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+    "candidate_bin_size_bytes": 1498832,
+    "expected_installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "expected_installed_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "rollback_bin_path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "rollback_bin_size_bytes": 1489008
+  },
+  "checks": {
+    "device_and_source_authority_reconciled": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/OFFLINE_AUTHORITY_RECONCILIATION.json",
+      "sha256": "09a15a8831faa9a0d7987e523ce852f0a8d4b5521de2a3220cd845e20f055f96"
+    },
+    "fully_local_pinned_build_toolchain": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/BUILD_RECEIPT.json",
+      "sha256": "15008be3d119d7a34ab35a497bbaf49cdb35ccf9b5a65f7e8467f169bd5fb7e6"
+    },
+    "known_good_compiler_entry_smoke": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/BUILD.log",
+      "sha256": "ec0601072b9a232a81d2e0bd581b57c1b0104c08a6ed1552bc9d273551d21cbd"
+    },
+    "exact_source_dependency_generated_input_closure": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/SUCCESSOR_SOURCE_BINDING.json",
+      "sha256": "349a7706c29537488f80e86f1870cdc3d664ec32f4973abe25569d85f89bce00"
+    },
+    "compiled_embedded_candidate_id_and_sha": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/BUILD_RECEIPT.json",
+      "sha256": "15008be3d119d7a34ab35a497bbaf49cdb35ccf9b5a65f7e8467f169bd5fb7e6"
+    },
+    "flash_and_ram_headroom": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/BUILD_RECEIPT.json",
+      "sha256": "15008be3d119d7a34ab35a497bbaf49cdb35ccf9b5a65f7e8467f169bd5fb7e6"
+    },
+    "committed_feature_scope_preserved": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/OFFLINE_INTEGRATED_CANDIDATE_MANIFEST.json",
+      "sha256": "34b967d28216e2d3eb5a2414687e1caa5956909cdda8d9aed99542c8104d2a58"
+    },
+    "all_historical_host_failures_replayed": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/OFFLINE_HOST_QUALIFICATION_20261011.json",
+      "sha256": "a79a1af028f4d20f09e5940d1a92d688366d5a3cbda03e3437113aeb09f29726"
+    },
+    "entire_release_transaction_dryrun": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/SUCCESSOR_TRANSACTION_DRYRUN.json",
+      "sha256": "77e29d04de5a0767b2f65adbc78f16abcf5ee2a4fb734d6635d5a8668d0b9f04"
+    },
+    "frozen_performance_soak_and_restore_procedure": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/OFFLINE_FROZEN_QUALIFICATION_PROCEDURE.json",
+      "sha256": "1ee01f1fe1a1bc4d0dd1fb70a6fc7ba49247f24a9994e37eb473b61bc1f28bdb"
+    },
+    "rollback_artifact_hash_verified": {
+      "pass": true,
+      "evidence_file": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    }
+  },
+  "fresh_owner_authorization": null,
+  "limits": {
+    "candidate_install_attempts_used": 0,
+    "candidate_install_limit": 1,
+    "recovery_attempts_used": 0,
+    "recovery_install_limit": 1,
+    "fresh_live_preflight_performed": false,
+    "live_mutation_authorized": false
+  },
+  "not_established": [
+    "LIVE_APPROVED",
+    "LIVE_QUALIFICATION",
+    "target performance",
+    "28-kernel runtime sweep",
+    "combined-feature live qualification",
+    "90-minute soak",
+    "physical Matrix/AUX acceptance",
+    "owner acceptance"
+  ]
+}

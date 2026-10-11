@@ -1,0 +1,36 @@
+{
+  "schema": "hbnf-cart2-offline-authority-reconciliation-v1",
+  "status": "OFFLINE_ONLY__EXACT_R4_READBACK_VERIFIED__LIVE_AUTHORITY_CLOSED",
+  "control_state": {
+    "path": "config/HBNF_CONTROL_STATE.json",
+    "sha256": "50e06251ea64e60d063d8e382b7d8540b937e0239a925b8e03d9be17fa9f810e",
+    "lifecycle": "PHASE2_INTEGRATING",
+    "live_mutation_authorized": false,
+    "failure_domain": "R6_PERFORMANCE_FAILED__R4_SETTINGS_RESTORE_FAILED_NO_RETRY__EXACT_R4_INSTALLED"
+  },
+  "installed_baseline": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "runtime_brightness": {
+      "matrix": 52,
+      "aux": 245
+    },
+    "persisted_brightness": {
+      "matrix": 52,
+      "aux": 245
+    },
+    "evidence_file": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/R4_POST_RESTORE_READONLY_CONFIRMATION.json",
+    "evidence_sha256": "bfd0c885c4c4f2c50155639d6c5374bed92a447fac8a3cea0820f2e9380657d1"
+  },
+  "candidate": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+    "sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+    "source_commit": "7645dae3806c1e352a1063ac22d1482ddb5713ff",
+    "installed": false
+  },
+  "restrictions": [
+    "No device requests, setting writes, firmware uploads, cloud mutation, paid/remote builds or external communication during offline candidate preparation.",
+    "Prior diagnostic attempt remains consumed; do not repeat it."
+  ],
+  "scope_limit": "R4 identity and reported settings are read-only evidence; physical LEDs and acceptance are not proven."
+}
