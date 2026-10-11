@@ -1959,7 +1959,7 @@
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "live_mutation_authorization": "Qualification-only for the exact already-installed candidate after fresh read-only preflight; no reinstall. One exact R4 recovery remains available.",
-    "live_mutation_authorized": true,
+    "live_mutation_authorized": false,
     "name": "Cart 2.0 qualification \u2014 exact R6 candidate installed; settings readback blocked",
     "next_action": "Run the fresh LIVE_QUALIFICATION guarded continuation; it is qualification-only, reruns the existing 28-kernel and combined gates, then performs one uninterrupted 90-minute soak.",
     "next_work": "Continue with the installed exact candidate only after fresh admission/control checks. Preserve frozen 28-kernel, combined-feature, 5400-second soak, exact R4 recovery, physical synchronization, and owner acceptance gates.",
@@ -2656,7 +2656,7 @@
       "status": "PASS"
     },
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "CANDIDATE_INSTALLED_QUALIFICATION_PENDING",
+    "status": "QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED",
     "t3_fast_path_preparation": {
       "human_approval_required": true,
       "human_packet": "work/cart2/27_T3_PHASE2_FAST_PATH_PREP_20261006.md",
@@ -2701,7 +2701,7 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "F89_QUALIFICATION_CONTINUATION_AUTHORIZED__OWNER_SETTINGS_REPAIR_PENDING",
+    "current_failure_domain": "F89_QUALIFICATION_RUNNER_REENTRY_BLOCKED__NO_PROFILES_OR_SOAK",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
       "artifact_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
@@ -2717,16 +2717,19 @@
         "matrixBrightness": 147,
         "vibe": 0
       },
-      "qualification_result": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/TRANSACTION_RESULT.json",
-      "qualification_result_sha256": "36da99b31e7c159cc1baaedd2076c62621624e6481e3e0d61c7f10d2115cf62c",
-      "rollback_artifact_path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin"
+      "qualification_result": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/continuation-20261011/qualification-run/QUALIFICATION_CONTINUATION_RESULT.json",
+      "qualification_result_sha256": "b38c4a3d1518f95e458934cc000d7f9025b0c2340c26a6713a22c3a2aeb26c44",
+      "rollback_artifact_path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "candidate_install_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/TRANSACTION_RESULT.json",
+      "candidate_install_receipt_sha256": "36da99b31e7c159cc1baaedd2076c62621624e6481e3e0d61c7f10d2115cf62c"
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Exact installed f89 SHA f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b remains installed; its sole candidate installation is consumed and reinstallation is disabled.",
-      "Fresh read-only preflight passed: Matrix 70:4b:ca:5b:34:5c is on f89 at brightness 44; AUX 8c:94:df:55:c3:4c is live DDP from Matrix with 22 LEDs; AC/en0 and exact R4 SHA are verified. Runtime Vibe is 0 while saved Vibe is 1.",
-      "Current direct authorization permits exactly one qualification-only continuation, repair/restore of owner settings 147/255/Vibe 0, one existing full qualification run, and at most one exact R4 recovery if a mandatory gate requires it.",
-      "The existing runner has no soak-only continuation; it will rerun the 28-kernel sweep and combined check before the uninterrupted 5400-second soak. It restores owner settings before test setup when mismatched and restores them after qualification. An interrupted soak will not be repeated automatically."
+      "Exact installed f89 SHA f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b remains installed; no reinstall or recovery occurred during the qualification-only continuation.",
+      "Continuation result evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/continuation-20261011/qualification-run/QUALIFICATION_CONTINUATION_RESULT.json (SHA-256 b38c4a3d1518f95e458934cc000d7f9025b0c2340c26a6713a22c3a2aeb26c44): existing Packet20 diagnostic snapshot was already restored; the one-shot session refused re-entry before profile 0. No 28-kernel profiles or soak samples were produced.",
+      "Read-only post-abort proof evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/continuation-20261011/post-abort-readonly/QUALIFICATION_PRELIVE_READONLY.json (SHA-256 1e389aa2b8c18f6b9cdff4ab085c08ff8062bbcfb8caae27c7ae3a37f25717ac) confirms Matrix identity/runtime, AUX DDP source/status, and owner settings Matrix 147/AUX 255/Vibe 0. Exact previous Packet20 renderer restore verified for snapshot 1/hash 3679017460; telemetry is disabled.",
+      "The bounded qualification continuation is consumed and live mutation authority is closed. Do not repeat qualification or reboot under this transaction. The build remains unqualified; next qualification requires a fresh owner-authorized transaction after establishing the supported diagnostic-session lifecycle.",
+      "Exact R4 recovery artifact remains SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c; no recovery attempt was required or used."
     ],
     "no_repeat": [
       "Do not install or rebuild firmware; candidate attempt is consumed.",
@@ -2952,7 +2955,7 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-11T22:23:20Z",
+  "last_updated_utc": "2026-10-11T22:27:00Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_authorization_binding": {
     "authorization_id": "OWNER-20261011-CART2-F89-FIELD-QUALIFICATION-01",
@@ -2974,7 +2977,7 @@
   "live_mutation_authorization": {
     "authorization": "Direct owner message authorizes exactly one fresh f89 installation and qualification transaction and, if required, one exact R4 recovery, under all existing admission and safety gates.",
     "authorization_id": "OWNER-20261011-CART2-F89-FIELD-QUALIFICATION-01",
-    "authorized": true,
+    "authorized": false,
     "candidate_attempt_started_unix": 1791751980.558401,
     "candidate_attempts_used": 1,
     "candidate_install_limit": 1,
@@ -2984,9 +2987,9 @@
     "continuation_authorization_id": "OWNER-20261011-CART2-F89-QUALIFICATION-CONTINUATION-01",
     "continuation_authorization_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/continuation-20261011/CONTINUATION_AUTHORIZATION.json",
     "continuation_authorization_sha256": "c38ef2318483eb201764387181c26cdcbb14f75479af1295d4c4b1e392181bb7",
-    "current_gate": "Fresh exact f89 preflight passed; one qualification-only continuation is authorized, settings repair is bound to the owner baseline, candidate install remains disabled, and the single R4 recovery limit remains available.",
-    "hardware_writes_permitted_now": true,
-    "operation_scope": "QUALIFICATION_ONLY",
+    "current_gate": "QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED",
+    "hardware_writes_permitted_now": false,
+    "operation_scope": "CLOSED_AFTER_QUALIFICATION",
     "owner_brightness_baseline": {
       "auxBrightness": 255,
       "matrixBrightness": 147,
@@ -3000,9 +3003,9 @@
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "source_evidence": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/continuation-20261011/CONTINUATION_AUTHORIZATION.json",
     "source_message_ref": "Direct user message in this conversation, 2026-10-11: CART 2.0 \u2014 URGENT FIELD-READY RECOVERY.",
-    "status": "CANDIDATE_INSTALLED_QUALIFICATION_PENDING",
+    "status": "QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED",
     "transaction_consumed": true,
-    "transaction_result": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/TRANSACTION_RESULT.json"
+    "transaction_result": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/continuation-20261011/qualification-run/QUALIFICATION_CONTINUATION_RESULT.json"
   },
   "live_mutation_authorization_closed_at_utc": null,
   "live_mutation_authorization_closure": {
@@ -3032,7 +3035,7 @@
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "schema": "hbnf-live-authorization-state-reconciliation-v1"
   },
-  "live_mutation_authorized": true,
+  "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",

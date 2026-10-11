@@ -1,0 +1,60 @@
+{
+  "schema": "hbnf-cart2-f89-field-evaluation-checkpoint-v1",
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+  "qualification_status": "UNQUALIFIED_HOST_FAILURE_BEFORE_PROFILE_0",
+  "failure": "Existing Packet20 diagnostic snapshot was already restored; the one-shot session refuses to re-enter without a fresh boot. No profiles ran and no soak sample was collected.",
+  "candidate_install_attempts_this_continuation": 0,
+  "recovery_attempts": 0,
+  "owner_settings": {
+    "auxBrightness": 255,
+    "matrixBrightness": 147,
+    "vibe": 0
+  },
+  "owner_settings_verified_persisted": {
+    "auxBrightness": 255,
+    "matrixBrightness": 147,
+    "vibe": 0
+  },
+  "post_abort_readonly_preflight_pass": true,
+  "post_abort_device_mutations": 0,
+  "matrix": {
+    "brightness": 147,
+    "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+    "diagnostic_off": true,
+    "fps": 27,
+    "free_heap": 72928,
+    "ip": "192.168.77.10",
+    "mac": "704bca5b345c",
+    "on": true,
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "telemetry_off": true,
+    "uptime_seconds": 5555,
+    "wled": "16.0.1"
+  },
+  "aux": {
+    "ip": "192.168.77.11",
+    "led_count": 22,
+    "live": true,
+    "lor": 0,
+    "mac": "8c94df55c34c",
+    "mode": "DDP",
+    "on": true,
+    "source": "192.168.77.10"
+  },
+  "host_on_ac": true,
+  "renderer_restore_verification": {
+    "result": "PASS",
+    "snapshot_id": 1,
+    "snapshot_hash": 3679017460,
+    "packet20_same": true,
+    "foundation_telemetry_enabled": false,
+    "evidence_file": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/sweep/PRE_SWEEP_STATE.json"
+  },
+  "qualification_result_file": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/continuation-20261011/qualification-run/QUALIFICATION_CONTINUATION_RESULT.json",
+  "qualification_result_sha256": "b38c4a3d1518f95e458934cc000d7f9025b0c2340c26a6713a22c3a2aeb26c44",
+  "post_abort_readonly_file": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/continuation-20261011/post-abort-readonly/QUALIFICATION_PRELIVE_READONLY.json",
+  "post_abort_readonly_sha256": "1e389aa2b8c18f6b9cdff4ab085c08ff8062bbcfb8caae27c7ae3a37f25717ac",
+  "field_review": "Unqualified development build. Device identity, runtime health, exact owner settings, DDP source state, and prior renderer restoration verified read-only. Cart battery/portable power capacity and physical LED output were not measured; physical evaluation must remain supervised and use known-good independent course power.",
+  "control_authority": "Closed automatically after host failure; no further live work is authorized by this transaction."
+}

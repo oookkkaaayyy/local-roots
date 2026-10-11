@@ -1,0 +1,68 @@
+{
+  "aux_ip": "192.168.77.11",
+  "aux_led_count": 22,
+  "aux_live": true,
+  "aux_live_ip": "192.168.77.10",
+  "aux_live_mode": "DDP",
+  "aux_mac": "8c94df55c34c",
+  "aux_on": true,
+  "aux_physical_output_status": "NOT_OBSERVABLE_FROM_WLED_JSON",
+  "candidate": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "endpoint_reads": {
+    "aux_info": {
+      "completed_monotonic_ns": 121345583,
+      "elapsed_seconds": 0.070168,
+      "endpoint": "http://192.168.77.11/json/info",
+      "started_monotonic_ns": 51178041,
+      "status": "PASS"
+    },
+    "aux_state": {
+      "completed_monotonic_ns": 118091958,
+      "elapsed_seconds": 0.06676,
+      "endpoint": "http://192.168.77.11/json/state",
+      "started_monotonic_ns": 51332291,
+      "status": "PASS"
+    },
+    "matrix_build": {
+      "completed_monotonic_ns": 159255208,
+      "elapsed_seconds": 0.108387,
+      "endpoint": "http://192.168.77.10/hbnf/build.json",
+      "started_monotonic_ns": 50868500,
+      "status": "PASS"
+    },
+    "matrix_info": {
+      "completed_monotonic_ns": 116071708,
+      "elapsed_seconds": 0.065477,
+      "endpoint": "http://192.168.77.10/json/info",
+      "started_monotonic_ns": 50594625,
+      "status": "PASS"
+    },
+    "matrix_state": {
+      "completed_monotonic_ns": 156239791,
+      "elapsed_seconds": 0.105218,
+      "endpoint": "http://192.168.77.10/json/state",
+      "started_monotonic_ns": 51021708,
+      "status": "PASS"
+    }
+  },
+  "expected_firmware_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+  "expected_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "foundation_telemetry_enabled": false,
+  "fps": 20,
+  "matrix_brightness": 44,
+  "matrix_ip": "192.168.77.10",
+  "matrix_mac": "704bca5b345c",
+  "matrix_on": true,
+  "matrix_uptime_seconds": 5532,
+  "packet20_enabled": false,
+  "packet20_restore_verified": true,
+  "packet20_snapshot_hash": 3679017460,
+  "packet20_snapshot_id": 1,
+  "packet20_snapshot_valid": true,
+  "read_elapsed_seconds": 0.11188,
+  "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "restart_count": 0,
+  "schema": "hbnf-live-qualification-preflight-v1",
+  "uptime_seconds": 5532,
+  "wled": "16.0.1"
+}

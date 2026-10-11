@@ -1,0 +1,248 @@
+{
+  "brightness_restore": {
+    "identity_before_post": {
+      "build_mac": "704bca5b345c",
+      "candidate": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "wled": "16.0.1"
+    },
+    "operation": "restore",
+    "persisted_readback_semantics": "Raw /cfg.json is parsed in memory; only HBNF brightness/AUX/vibe fields are retained; raw config is not logged or saved",
+    "post_error": null,
+    "post_outcome": "RESPONSE_RECEIVED",
+    "readback": {
+      "identity": {
+        "build_mac": "704bca5b345c",
+        "candidate": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+        "ip": "192.168.77.10",
+        "mac": "704bca5b345c",
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+        "wled": "16.0.1"
+      },
+      "matrix_on": true,
+      "persisted": {
+        "auxBrightness": 255,
+        "matrixBrightness": 147,
+        "vibe": 0
+      },
+      "runtime": {
+        "auxBrightness": 255,
+        "matrixBrightness": 147,
+        "vibe": 0
+      }
+    },
+    "readback_endpoints": [
+      "GET /json/info",
+      "GET /hbnf/build.json",
+      "GET /json/state",
+      "http://192.168.77.10/edit?func=download&path=%2Fcfg.json"
+    ],
+    "requested_hbnf": {
+      "auxBrightness": 255,
+      "matrixBrightness": 147,
+      "vibe": 0
+    },
+    "save_settle_seconds": 1.25,
+    "target_matrix_brightness": 147,
+    "verified": true,
+    "vibe_config_migration": "not_needed"
+  },
+  "brightness_setup": {
+    "identity_before_post": {
+      "build_mac": "704bca5b345c",
+      "candidate": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "wled": "16.0.1"
+    },
+    "operation": "measure",
+    "persisted_readback_semantics": "Raw /cfg.json is parsed in memory; only HBNF brightness/AUX/vibe fields are retained; raw config is not logged or saved",
+    "post_error": null,
+    "post_outcome": "RESPONSE_RECEIVED",
+    "readback": {
+      "identity": {
+        "build_mac": "704bca5b345c",
+        "candidate": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+        "ip": "192.168.77.10",
+        "mac": "704bca5b345c",
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+        "wled": "16.0.1"
+      },
+      "matrix_on": true,
+      "persisted": {
+        "auxBrightness": 255,
+        "matrixBrightness": 44,
+        "vibe": 0
+      },
+      "runtime": {
+        "auxBrightness": 255,
+        "matrixBrightness": 44,
+        "vibe": 0
+      },
+      "vibe_persistence": "verified"
+    },
+    "readback_endpoints": [
+      "GET /json/info",
+      "GET /hbnf/build.json",
+      "GET /json/state",
+      "http://192.168.77.10/edit?func=download&path=%2Fcfg.json"
+    ],
+    "requested_hbnf": {
+      "matrixBrightness": 44
+    },
+    "save_settle_seconds": 1.25,
+    "target_matrix_brightness": 44,
+    "verified": true,
+    "vibe_config_migration": "not_needed"
+  },
+  "brightness_setup_started": true,
+  "candidate_install_attempts": 0,
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+  "device_requests": 102,
+  "operation_scope": "QUALIFICATION_ONLY",
+  "owner_settings_repair": {
+    "identity_before_post": {
+      "build_mac": "704bca5b345c",
+      "candidate": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "wled": "16.0.1"
+    },
+    "operation": "restore",
+    "persisted_readback_semantics": "Raw /cfg.json is parsed in memory; only HBNF brightness/AUX/vibe fields are retained; raw config is not logged or saved",
+    "post_error": null,
+    "post_outcome": "RESPONSE_RECEIVED",
+    "readback": {
+      "identity": {
+        "build_mac": "704bca5b345c",
+        "candidate": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+        "ip": "192.168.77.10",
+        "mac": "704bca5b345c",
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+        "wled": "16.0.1"
+      },
+      "matrix_on": true,
+      "persisted": {
+        "auxBrightness": 255,
+        "matrixBrightness": 147,
+        "vibe": 0
+      },
+      "runtime": {
+        "auxBrightness": 255,
+        "matrixBrightness": 147,
+        "vibe": 0
+      }
+    },
+    "readback_endpoints": [
+      "GET /json/info",
+      "GET /hbnf/build.json",
+      "GET /json/state",
+      "http://192.168.77.10/edit?func=download&path=%2Fcfg.json"
+    ],
+    "requested_hbnf": {
+      "auxBrightness": 255,
+      "matrixBrightness": 147,
+      "vibe": 0
+    },
+    "save_settle_seconds": 1.25,
+    "target_matrix_brightness": 147,
+    "verified": true,
+    "vibe_config_migration": "not_needed"
+  },
+  "owner_settings_repair_started": true,
+  "preflight": {
+    "aux": {
+      "ip": "192.168.77.11",
+      "led_count": 22,
+      "live": true,
+      "lor": 0,
+      "mac": "8c94df55c34c",
+      "mode": "DDP",
+      "on": true,
+      "source": "192.168.77.10"
+    },
+    "brightness_baseline": {
+      "matrix_on": true,
+      "persisted": {
+        "auxBrightness": 255,
+        "matrixBrightness": 147,
+        "vibe": 0
+      },
+      "runtime": {
+        "auxBrightness": 255,
+        "matrixBrightness": 147,
+        "vibe": 0
+      },
+      "vibe_persistence": "authorized_restore_required"
+    },
+    "candidate_attempts_used": 1,
+    "candidate_install_permitted": false,
+    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+    "captured_unix": 1791757523.003901,
+    "cart_lan_interface": "en0",
+    "device_mutations": 0,
+    "device_requests": 9,
+    "host_on_ac": true,
+    "matrix": {
+      "brightness": 44,
+      "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "diagnostic_off": true,
+      "fps": 22,
+      "free_heap": 73592,
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "on": true,
+      "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "telemetry_off": true,
+      "uptime_seconds": 5521,
+      "wled": "16.0.1"
+    },
+    "operation_scope": "QUALIFICATION_ONLY",
+    "owner_brightness_baseline": {
+      "auxBrightness": 255,
+      "matrixBrightness": 147,
+      "vibe": 0
+    },
+    "owner_settings_restore_required": true,
+    "pass": true,
+    "qualification_recovery_subscope": "RESTORE_INTERRUPTED_BRIGHTNESS_THEN_QUALIFY",
+    "read_only": true,
+    "recovery_attempts_used": 0,
+    "rollback": {
+      "opal_ledger": "OPAL_QUALIFICATION_PREFLIGHT_OKn/usr/bin/sha256sum\n55 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\n",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    },
+    "schema": "hbnf-cart2-qualification-prelive-v1",
+    "single_worker": {
+      "conflicting_pids": [],
+      "pass": true,
+      "worker_count": 1
+    }
+  },
+  "preflight_completed": true,
+  "qualification": {
+    "abort": {
+      "post_restore_state": null,
+      "pre_sweep_state": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/continuation-20261011/qualification-run/sweep/PRE_SWEEP_STATE.json",
+      "profiles_completed": 0,
+      "restore_error": "snapshot command did not return a verifiable snapshot and no matching verified observer-sidecar restore exists; renderer state is uncertain; stop live testing and preserve exact recovery path",
+      "run_error": "command failed rc=2: ['env', 'HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010', 'HBNF_EXPECTED_FIRMWARE_SHA256=f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b', 'python3', 'scripts/hbnf_foundation_live_adapter.py', 'snapshot', '--observer-output', '/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/continuation-20261011/qualification-run/sweep/OBSERVER_EFFECT.json', '--inventory', 'config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json']\nfoundation adapter error: RuntimeError: packet20-diagnostic-session-already-restored; one-shot session cannot re-enter before a fresh boot\n",
+      "status": "FAIL"
+    },
+    "diagnostic_complete": {},
+    "passed": false,
+    "report": {},
+    "returncode": 2
+  },
+  "recovery_attempts": 0,
+  "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "schema": "hbnf-cart2-candidate-qualification-continuation-v1",
+  "setup_started": true,
+  "status": "QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED"
+}
