@@ -1,0 +1,132 @@
+{
+  "schema": "hbnf-cart2-offline-integrated-candidate-v1",
+  "status": "OFFLINE_INTEGRATION_CANDIDATE__NOT_DEPLOYED__NOT_LIVE_QUALIFIED__NOT_ACCEPTED",
+  "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+  "integration_source_commit": "411a3e926c25c353564b85d5d533f83b40e80f4c",
+  "field_used_foundation": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+  },
+  "authorization": {
+    "guest_mode_enable_authorized": false,
+    "live_mutation_authorized": false,
+    "production_deployment_authorized": false,
+    "uv_energization_authorized": false
+  },
+  "firmware": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+    "path": "evidence/cart2-r6-f89-compact-font-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011.bin",
+    "sha256": "e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2",
+    "bytes": 1498672,
+    "source_commit": "ae4eafd3fff3d81ea5927daa742cf5c73b75cb36",
+    "source_binding_path": "evidence/cart2-r6-f89-compact-font-20261011/SOURCE_BINDING.json",
+    "source_binding_sha256": "f11a3925769443253ea8deb516beb813ed32c8d84cd171c5c88f292c8ae8c7a9",
+    "build_receipt_path": "evidence/cart2-r6-f89-compact-font-20261011/BUILD_RECEIPT.json",
+    "build_receipt_sha256": "e385f31bfd44f9aa8bda86b6bb43083df2748457be581363cc8d0c26faccccf4",
+    "sha256_sidecar": "evidence/cart2-r6-f89-compact-font-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011.bin.sha256"
+  },
+  "owner_guest_package": {
+    "build_marker": "hbnf-cart2-owner-guest-f89-compact-font-20261011",
+    "bytes": 123517,
+    "file": "evidence/cart2-r6-f89-compact-font-20261011/owner-guest/HBNF_CART2_OWNER_GUEST_F89_COMPACT_FONT_20261011.zip",
+    "sha256": "3a7da884eba8be6c58cc0b3d278fb1bd7d474693165eed30e93ae2c6d1d9a589",
+    "sidecar": "evidence/cart2-r6-f89-compact-font-20261011/owner-guest/HBNF_CART2_OWNER_GUEST_F89_COMPACT_FONT_20261011.zip.sha256",
+    "source_commit": "411a3e926c25c353564b85d5d533f83b40e80f4c",
+    "scope": "controller-only-no-firmware-no-phase2-hardware",
+    "manifest_schema": "hbnf-cart2-owner-guest-vibe-package-v2"
+  },
+  "rollback": {
+    "release_id": "Foundation R4",
+    "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "verified": true
+  },
+  "source_hashes": {
+    "hbnf-final-controller/guest/hbnf-cart/guest.css": "bccb2a3179beb2116d953d083929fd97cdb13aa356742abfb45ce9a9919ce2ad",
+    "hbnf-final-controller/guest/hbnf-cart/guest.js": "57ed9d21bd063e93225de14a5306525c21f8a3cecd7b2a4c7b756d33684e0f77",
+    "hbnf-final-controller/guest/hbnf-cart/index.html": "5b1ddd97512a6606b61aeca78929fd645a86a32b10f62ad7547941018442cedf",
+    "hbnf-final-controller/hbnf-cart-features.mjs": "698406cb78565a05bc842b90c01928724cfabd553ed4af28d73178b6d725677d",
+    "hbnf-final-controller/hbnf-cart-icon-180.png": "02a42add542f156fb8cd32ff020d827fb139d70cce6e6c3564cc821c95aec3ed",
+    "hbnf-final-controller/hbnf-cart-icon-192.png": "200dd4c1bb58dd1f3b6fe353404d29cae306673a4bc854b21049c475011b42ab",
+    "hbnf-final-controller/hbnf-cart-icon-512.png": "05ecdcb818aaf9d1f23af59ca73c27d7a00b328705e62d0e9adf3954db6e5838",
+    "hbnf-final-controller/hbnf-cart-manifest.webmanifest": "a58f59a6f921f5104c61dc2e633e0015a5c4f34ba23475f57738ad785bf8251d",
+    "hbnf-final-controller/hbnf-cart-net.mjs": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+    "hbnf-final-controller/hbnf-cart-semantic.mjs": "c7eada1028dddd0321ffa34e894bcb5e7d5ff4cf13a084f72623adcbb963d5a1",
+    "hbnf-final-controller/hbnf-cart-skins-score.mjs": "cf63ca5425210f9dbbe9666f623dc7b6324a2153d5bbfaa7522493eb085ea97f",
+    "hbnf-final-controller/hbnf-cart-sw.js": "eb66b86c98aae95b62019fe07e86ac8d4de014ca08b2034be388a257cd60b4aa",
+    "hbnf-final-controller/hbnf-cart-ui-v6.css": "7ec82e48648e662517b281ae5162c278f705521c29907d95112a2cca6e50c707",
+    "hbnf-final-controller/hbnf-cart-ui-v6.mjs": "0e0f16ea7c6e573cc5d5180309d899732598c9b630c7732dfbe10326e542a6e0",
+    "hbnf-final-controller/hbnf-cart.html": "c4464e2304010da98ad30342b17452fda241c6670f9cbc667750c8f968d10244",
+    "hbnf-final-controller/hbnf-cart.js": "799854d994964fd6c05fe78cb35147c1b9a569000b6d5e4377cc9cbeb37d28f3",
+    "scripts/hbnf_live_kernel_sweep.py": "f6d13e662717c31c7bbc78bc627163e2d5ddbbfdd413e6ee663a92c671378cb0",
+    "staging/coordinated-backend/hbnf-cart-control/guest-command.ts": "09d181d27e6beeec7a9b9727bce404c0e5621a26ddc85895d68d7419f60f918d",
+    "staging/coordinated-backend/hbnf-cart-control/index.ts": "e7cee5102f096292268d121291b9c51a697398d43a554065d24caaee4d243e7f",
+    "staging/coordinated-backend/hbnf-cart-control/live.ts": "7844a5057f11f82344e3ff49c5f9062ba73019c62bfaab52636e93c897b69323",
+    "staging/coordinated-backend/hbnf-cart-control/skins_scoring.ts": "aa7d74bbd10bff41111411d7b07b895e1c82a7f7d8d075cb04aec4cf35ba16d6",
+    "staging/coordinated-backend/hbnf-cart-reconcile/foundation-result.ts": "9379c8ca7d76e0b4e34b6af8ad7085a215c94693d375226fd7f789c3533b074f",
+    "staging/coordinated-backend/hbnf-cart-reconcile/index.ts": "8a31f1da25a70f8005117c00b488115895925a86df3e60f59153660984dad534",
+    "staging/coordinated-backend/hbnf-matrix-adapter-foundation/confirmation.ts": "8c58ce01217cb1176c693fa3210888edf5b8531792ce5114969514759397e147",
+    "staging/coordinated-backend/hbnf-matrix-adapter-foundation/index.ts": "947e5de072498feec0780eeba9f08fcff503c56d7bb1390b8aef353c09f4205e",
+    "staging/coordinated-backend/migrations/20261009190000_hbnf_matrix_relay_confirmation.down.sql": "b510775c9081936d60ef0f99bc918b1e70eff8933ed804121b3660e70ca22f05",
+    "staging/coordinated-backend/migrations/20261009190000_hbnf_matrix_relay_confirmation.sql": "5fbf00ed0382bd624d4415361d72cc9527adc761b8ba9750ecd5238e604ef617",
+    "staging/coordinated-backend/opal/hbnf-matrix-relay": "6a8e3e02b5fda1afbae2c1270a1309450970ef3e9ebd3b62a0baf04671dd350e",
+    "staging/coordinated-backend/opal/hbnf-matrix-relay.conf.example": "5cd2b0fbc1c2ca1112d2637b5eab761a241bb96277dfc14d83d42493f3484c6c",
+    "staging/coordinated-backend/opal/hbnf-matrix-relay.init": "1572ddc3b9dc278d141a6e9cf65891c684e09efc793f7822c3738f98e4e6122a",
+    "tests/hbnf_live_kernel_sweep.py": "86d36bb1f4a81f6bb859d03aa9ab3a10648328183d847df0e2c3f6a0741a0173",
+    "tests/hbnf_matrix_relay_contract.mjs": "34c34c57f7bb054394177ba4f64a9a5946fabecc4c7bc3649cbc14f880dbda59",
+    "tests/test_r6_audio_cache_transaction_dryrun.py": "8b96562841a4f27c3a084a55f5cca6ff05e3beefda5ea3a2d4469f3d807719be"
+  },
+  "firmware_source_hashes": {
+    "hbnf_animartrix_audio_bridge.h": "edfe168658d548fe8e52e05b5b9d0cc3390cfe11092423a2c1c12de95884ae74",
+    "hbnf_audio_expression.h": "f4825884dd53cba9bca698bd8b9b7d9d13a81e7ce381957d23790f13073dc4c3",
+    "hbnf_brightness_output.h": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a",
+    "hbnf_coordinated_contract.h": "7380a3ab41924d0fc58ca83202ad04e28762ac8fb2e85ae1f8ddfb88719f8882",
+    "hbnf_foundation_core.h": "d4646267f8fbc03cc4921368fc801e528e6a6cb92133a0c1fc74b48b211be0e4",
+    "hbnf_generative_v4.h": "13163419b6453d448a795a7580e784f54b23b7586c8317eff467863f648a6dfa",
+    "hbnf_home_screen_icon.h": "e272644675566a969f65e96b855b824109b8ae6fbcb168da8c6efdeb842097d6",
+    "hbnf_local_ui.h": "feed7e614cf43d7efe211b54bba5b37fb352e70646e887e3b0341c3f97b0068b",
+    "hbnf_native_text.h": "f00d00d9a53d3f6ffe4175e4af809c222f6ea5888fcb9b2a366c2076a311e98f",
+    "hbnf_outlier_trace.h": "d97672e7f41ad3fc21a5ed453f49197d149d9533426a17d0e152d8ceba466a66",
+    "hbnf_vibe16.h": "f076acf0e5710bf5a9acffe63b31a95f2252230b5470bd362301caa73a743b0a",
+    "hbnf_vibe_runtime.h": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc",
+    "library.json": "2dc685da45efe57fe1d199b5407a00a7bd42b2f473599f6f432df515b4b6c96a",
+    "usermod_hbnf_foundation_v1.cpp": "32fe267cd065bff98ae1ff23d22ff43fed8a6ba6664776c76216ab3c0cbedce1"
+  },
+  "qualification_adapter": {
+    "path": "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_F89_COMPACT_FONT_20261011.json",
+    "sha256": "46a11e2d34453fa1c84941f9c188d0317c7383c21dd1c6484c1f1a176af725cc",
+    "expected_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+    "expected_firmware_sha256": "e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2"
+  },
+  "offline_test_source_hashes": {
+    "scripts/hbnf_live_kernel_sweep.py": "f6d13e662717c31c7bbc78bc627163e2d5ddbbfdd413e6ee663a92c671378cb0",
+    "tests/hbnf_cart2_offline_integrated_candidate.py": "d3c1ffb5986edd3efd18ac0d69c0ff908301ada53ba47e55ede0f063792ab8ed",
+    "tests/hbnf_live_kernel_sweep.py": "86d36bb1f4a81f6bb859d03aa9ab3a10648328183d847df0e2c3f6a0741a0173",
+    "tests/test_r6_audio_cache_transaction_dryrun.py": "8b96562841a4f27c3a084a55f5cca6ff05e3beefda5ea3a2d4469f3d807719be",
+    "tests/native_text_compact_font_smoke.cpp": "9a65fb5349a1334d895381743df54ff62710d51d55993d91fb5abb41568b2303"
+  },
+  "offline_checks": {
+    "firmware_build": "PASS_LOCAL_PINNED_PLATFORMIO_TARGET_BUILD",
+    "compact_text_smoke": "PASS",
+    "text_layout_tests": "PASS_16_OF_16",
+    "owner_pwa_package": "PASS",
+    "owner_scoring": "PASS",
+    "backend_staging": "PASS",
+    "guest_command_tests": "PASS_10_OF_10",
+    "runtime_vibe_tests": "PASS_5_OF_5",
+    "runner_provisional_r4_gate": "PASS_DIAGNOSTIC_ONLY__NOT_BLOCKING",
+    "candidate_28_kernel_sweep": "NOT_RUN",
+    "combined_feature_check": "NOT_RUN",
+    "90_minute_soak": "NOT_RUN",
+    "matched_kernel0_performance": "NOT_RUN",
+    "owner_visual_acceptance": "NOT_RUN",
+    "successor_bound_live_admission": "OFFLINE_COMPILED_ONLY__LIVE_APPROVAL_NOT_PRESENT"
+  },
+  "limits": [
+    "This exact firmware is derived from field-used f89 source with only the approved compact-font source delta and a new release identity; no compositor-hoist performance delta is included.",
+    "The Owner/Guest package and backend source identities are bound; production endpoint deployment/session authorization is not performed or verified.",
+    "No digital arcade game runtime source is present in this repository; the seven arcade acceptance-corpus entries remain unimplemented/unintegrated.",
+    "October 11 AUX live=false/solid-yellow after power cycle remains an unresolved physical reliability defect; owner is testing unchanged LED Preferences Save. No hardware was changed.",
+    "This manifest is not live admission, performance qualification, soak, physical acceptance, or permission to install/deploy."
+  ]
+}

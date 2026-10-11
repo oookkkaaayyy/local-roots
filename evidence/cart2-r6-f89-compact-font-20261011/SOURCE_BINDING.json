@@ -1,0 +1,35 @@
+{
+  "schema": "hbnf-phase2-f89-compact-font-source-binding-v1",
+  "status": "OFFLINE_TARGET_BUILD_VERIFIED__NOT_LIVE_QUALIFIED__NOT_ACCEPTED",
+  "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+  "repository_source_commit": "ae4eafd3fff3d81ea5927daa742cf5c73b75cb36",
+  "source_parent_commit": "76ff35262cf252fddf5ae87b251d8f9d17465c23",
+  "field_used_parent": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+  },
+  "runtime_source_directory": "firmware/phase2/integration-r6-f89-compact-font/usermod",
+  "runtime_files_sha256": {
+    "hbnf_animartrix_audio_bridge.h": "edfe168658d548fe8e52e05b5b9d0cc3390cfe11092423a2c1c12de95884ae74",
+    "hbnf_audio_expression.h": "f4825884dd53cba9bca698bd8b9b7d9d13a81e7ce381957d23790f13073dc4c3",
+    "hbnf_brightness_output.h": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a",
+    "hbnf_coordinated_contract.h": "7380a3ab41924d0fc58ca83202ad04e28762ac8fb2e85ae1f8ddfb88719f8882",
+    "hbnf_foundation_core.h": "d4646267f8fbc03cc4921368fc801e528e6a6cb92133a0c1fc74b48b211be0e4",
+    "hbnf_generative_v4.h": "13163419b6453d448a795a7580e784f54b23b7586c8317eff467863f648a6dfa",
+    "hbnf_home_screen_icon.h": "e272644675566a969f65e96b855b824109b8ae6fbcb168da8c6efdeb842097d6",
+    "hbnf_local_ui.h": "feed7e614cf43d7efe211b54bba5b37fb352e70646e887e3b0341c3f97b0068b",
+    "hbnf_native_text.h": "f00d00d9a53d3f6ffe4175e4af809c222f6ea5888fcb9b2a366c2076a311e98f",
+    "hbnf_outlier_trace.h": "d97672e7f41ad3fc21a5ed453f49197d149d9533426a17d0e152d8ceba466a66",
+    "hbnf_vibe16.h": "f076acf0e5710bf5a9acffe63b31a95f2252230b5470bd362301caa73a743b0a",
+    "hbnf_vibe_runtime.h": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc",
+    "library.json": "2dc685da45efe57fe1d199b5407a00a7bd42b2f473599f6f432df515b4b6c96a",
+    "usermod_hbnf_foundation_v1.cpp": "32fe267cd065bff98ae1ff23d22ff43fed8a6ba6664776c76216ab3c0cbedce1"
+  },
+  "change": "Exact f89 source plus the previously accepted compact-font resolver and overlay-lifetime font caching; no compositor-hoist or other rendering/performance source delta.",
+  "artifact_path": "evidence/cart2-r6-f89-compact-font-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011.bin",
+  "artifact_sha256": "e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2",
+  "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+  "platformio_ini_sha256": "99718bfd8614da297c94692bc41dea48c9af87dbe829ded2e4a7cad7f0368820",
+  "platformio_override_ini_sha256": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922",
+  "authority": "offline build and adapter binding only; no live admission or device permission"
+}

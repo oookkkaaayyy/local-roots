@@ -1,0 +1,32 @@
+{
+  "schema": "hbnf-offline-target-build-receipt-v1",
+  "status": "PASS_TARGET_BUILD_AND_BIN_GENERATION",
+  "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+  "source_commit": "ae4eafd3fff3d81ea5927daa742cf5c73b75cb36",
+  "source_binding_path": "evidence/cart2-r6-f89-compact-font-20261011/SOURCE_BINDING.json",
+  "artifact_path": "evidence/cart2-r6-f89-compact-font-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011.bin",
+  "artifact_sha256": "e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2",
+  "artifact_bytes": 1498672,
+  "build_environment": "WLED 16.0.1 / hbnf_matrix_wled16_packet20_diag",
+  "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+  "platformio_core": "6.1.18",
+  "esp32_platform": "2024.6.0",
+  "framework": "2.0.18+sha.8ba0dc0",
+  "xtensa_toolchain": "8.4.0+2021r2-patch5",
+  "esptool": "4.7.4",
+  "command": "PYTHONPATH=/private/tmp/hbnf-p2-build/pio-cli PLATFORMIO_CORE_DIR=/private/tmp/hbnf-p2-build/pio-local SOURCE_DATE_EPOCH=1791450000 python3 -m platformio run -d /private/tmp/hbnf-p2-build/WLED-r6-audio-cache-20261010 -e hbnf_matrix_wled16_packet20_diag -v",
+  "build_seconds": 10.96,
+  "elf_sha256": "307522d164d12c2be5f25280ea261771cab7b6d869420942d8aebcea1bcbaa40",
+  "map_sha256": "77875e90c8965efc04ab13fe86878c290fdaf444a7b9afcc51ff9fc3c781e864",
+  "resources": {
+    "flash_program_bytes": 1491929,
+    "flash_partition_bytes": 1572864,
+    "flash_remaining_bytes": 80935,
+    "firmware_bin_bytes": 1498672,
+    "ram_bytes": 112480,
+    "ram_limit_bytes": 327680,
+    "ram_remaining_bytes": 215200
+  },
+  "dependency_policy": "Pinned dependencies resolved from preserved local PlatformIO cache paths; no paid or remote build service used.",
+  "qualification_boundary": "Build/image only; no installation, live performance, physical readability, combined feature run, 28-kernel sweep, soak, or owner acceptance."
+}

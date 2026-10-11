@@ -1,0 +1,87 @@
+{
+  "schema": "hbnf-live-sweep-adapter-v1",
+  "snapshot_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+    "HBNF_EXPECTED_FIRMWARE_SHA256=e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "snapshot",
+    "--observer-output",
+    "{observer_output}",
+    "--inventory",
+    "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"
+  ],
+  "select_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+    "HBNF_EXPECTED_FIRMWARE_SHA256=e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "select",
+    "--kernel",
+    "{runtime_kernel_index}"
+  ],
+  "telemetry_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+    "HBNF_EXPECTED_FIRMWARE_SHA256=e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "telemetry",
+    "--inventory",
+    "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+    "--session-id",
+    "{session_id}"
+  ],
+  "restore_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+    "HBNF_EXPECTED_FIRMWARE_SHA256=e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "restore",
+    "--snapshot-file",
+    "{snapshot_file}"
+  ],
+  "verify_restore_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+    "HBNF_EXPECTED_FIRMWARE_SHA256=e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "verify-restore",
+    "--snapshot-file",
+    "{snapshot_file}"
+  ],
+  "telemetry_mode_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+    "HBNF_EXPECTED_FIRMWARE_SHA256=e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "telemetry-mode",
+    "--enabled",
+    "{enabled}"
+  ],
+  "preflight_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+    "HBNF_EXPECTED_FIRMWARE_SHA256=e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "preflight",
+    "--session-id",
+    "{session_id}"
+  ],
+  "settle_seconds": 5,
+  "sample_seconds": 30,
+  "sample_interval_seconds": 1,
+  "timeout_seconds": 240,
+  "expected_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+  "notes": [
+    "Successor-specific binding of the existing Foundation adapter. Each command receives command-scoped HBNF_EXPECTED_RELEASE_ID and HBNF_EXPECTED_FIRMWARE_SHA256; the runner still verifies candidate identity on every sample.",
+    "Preserves the single Packet20 snapshot, candidate-specific tails-off/tails-on observer comparison, complete frozen 28-kernel sweep, combined-feature check, uninterrupted 5400-second soak, exact telemetry-mode restoration, and snapshot hash verification.",
+    "Configuration-only offline artifact. It creates no owner authorization, admission, prelive evidence, or permission to issue device requests. All future device use requires fresh exact-artifact authorization and current control-plane admission."
+  ]
+}
