@@ -35,6 +35,8 @@
     "source_hash_binding": "PASS",
     "source_tree_identity_test": "PASS",
     "successor_bound_live_admission": "NOT_PRESENT",
+    "successor_bound_transaction_fake_replay": "PASS; exact successor fake-port success and gate-failure/exact-R4 recovery; no physical I/O",
+    "successor_sweep_adapter_dry_run": "PASS; exact candidate release/SHA bound, 28-entry Foundation runner configuration accepted; dry-run issued no adapter/device calls",
     "sweep_runner_host_regressions": "PASS_COMPONENT_AND_FAILURE_RESTORE_PATHS_ONLY",
     "text_layout_tests": "PASS_16_OF_16"
   },
@@ -54,8 +56,21 @@
     {
       "path": "tests/hbnf_live_kernel_sweep.py",
       "result": "PASS; adapter/telemetry contracts, component/failure paths, restore validation; not a complete successful sweep/soak"
+    },
+    {
+      "path": "tests/test_r6_audio_cache_transaction_dryrun.py",
+      "result": "PASS; existing transaction coordinator exercised with exact successor identity through fake port; simulated failure recovers exact R4; no live admission/device I/O"
+    },
+    {
+      "path": "tests/hbnf_live_kernel_sweep.py",
+      "result": "PASS; validates successor adapter release/SHA bindings and 28-kernel Foundation dry-run; suite still covers only component/failure/restore paths, not successful full sweep/soak"
     }
   ],
+  "offline_test_source_hashes": {
+    "tests/hbnf_cart2_offline_integrated_candidate.py": "19275cab9b726622aca703ae48841904c2e9f8d80d839227d33c0339ce6ba311",
+    "tests/hbnf_live_kernel_sweep.py": "ad92a7eea60b70c47629c65f785df5041ddecc9715aff831a38338946845be7f",
+    "tests/test_r6_audio_cache_transaction_dryrun.py": "92f90f83f37119c96b922ea26eeee55f1bd9530c6a42f239526b391bc5c0b897"
+  },
   "owner_guest_package": {
     "build_marker": "hbnf-cart2-owner-guest-compositor-hoist-20261011",
     "bytes": 123517,
@@ -64,6 +79,13 @@
     "sha256": "131b19ac2d1b799b346156b4ffddbd0e20742a34487e268470df99362cc2d3e2",
     "sidecar": "evidence/cart2-r6-compositor-hoist-20261011/owner-guest/HBNF_CART2_OWNER_GUEST_COMPOSITOR_HOIST_20261011.zip.sha256",
     "source_commit": "c9f05424b5e88aad837a1ab4aab5a4c6fa5e22d6"
+  },
+  "qualification_adapter": {
+    "expected_firmware_sha256": "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2",
+    "expected_release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011",
+    "path": "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_COMPOSITOR_HOIST_20261011.json",
+    "purpose": "reuses existing Foundation adapter and exact frozen runner with candidate-specific command-scoped identity; config dry-run only",
+    "sha256": "d97828f61289bb0dd1280b1e9604650fecde04c87d8a0906e7f6bc0829a98546"
   },
   "release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011",
   "rollback": {
@@ -104,7 +126,8 @@
     "staging/coordinated-backend/opal/hbnf-matrix-relay": "6a8e3e02b5fda1afbae2c1270a1309450970ef3e9ebd3b62a0baf04671dd350e",
     "staging/coordinated-backend/opal/hbnf-matrix-relay.conf.example": "5cd2b0fbc1c2ca1112d2637b5eab761a241bb96277dfc14d83d42493f3484c6c",
     "staging/coordinated-backend/opal/hbnf-matrix-relay.init": "1572ddc3b9dc278d141a6e9cf65891c684e09efc793f7822c3738f98e4e6122a",
-    "tests/hbnf_matrix_relay_contract.mjs": "34c34c57f7bb054394177ba4f64a9a5946fabecc4c7bc3649cbc14f880dbda59"
+    "tests/hbnf_matrix_relay_contract.mjs": "34c34c57f7bb054394177ba4f64a9a5946fabecc4c7bc3649cbc14f880dbda59",
+    "tests/test_r6_audio_cache_transaction_dryrun.py": "92f90f83f37119c96b922ea26eeee55f1bd9530c6a42f239526b391bc5c0b897"
   },
   "status": "OFFLINE_INTEGRATION_CANDIDATE__NOT_DEPLOYED__NOT_LIVE_QUALIFIED__NOT_ACCEPTED",
   "superseded_sources": {

@@ -375,6 +375,34 @@ restore_worst_case=(
 assert snapshot_worst_case==226 and foundation_adapter["timeout_seconds"]>=snapshot_worst_case+14
 assert restore_worst_case==175 and foundation_adapter["timeout_seconds"]>=restore_worst_case
 
+# The compositor-hoist candidate uses the same maintained Foundation adapter,
+# bound command-by-command to its exact release ID and binary SHA. Its runner
+# configuration is exercised only in dry-run mode: no adapter/device command.
+successor_id="hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011"
+successor_sha="bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2"
+successor_adapter_path=ROOT/"config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_COMPOSITOR_HOIST_20261011.json"
+successor_adapter=json.loads(successor_adapter_path.read_text())
+m.validate_adapter(successor_adapter,"foundation")
+assert successor_adapter["expected_release_id"]==successor_id
+for command in ("snapshot_argv","select_argv","telemetry_argv","restore_argv",
+                "verify_restore_argv","telemetry_mode_argv","preflight_argv"):
+    argv=successor_adapter[command]
+    assert "HBNF_EXPECTED_RELEASE_ID="+successor_id in argv, command
+    assert "HBNF_EXPECTED_FIRMWARE_SHA256="+successor_sha in argv, command
+assert successor_adapter["timeout_seconds"]==foundation_adapter["timeout_seconds"]
+with tempfile.TemporaryDirectory(prefix="cart2-successor-sweep-config-") as td:
+    dry=subprocess.run([sys.executable,str(ROOT/"scripts/hbnf_live_kernel_sweep.py"),
+        "--adapter",str(successor_adapter_path),"--inventory",
+        str(ROOT/"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"),
+        "--outdir",str(pathlib.Path(td)/"dry-run"),"--contract","foundation",
+        "--qualify","--soak-seconds","5400","--dry-run"],
+        text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    assert dry.returncode==0,dry.stdout+dry.stderr
+    dry_result=json.loads(dry.stdout)
+    assert dry_result["status"]=="DRY_RUN_PASS"
+    assert dry_result["expected_release_id"]==successor_id
+    assert dry_result["kernel_count"]==28
+
 r7_adapter=json.loads((ROOT/"config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_R7_20261009.json").read_text())
 m.validate_adapter(r7_adapter,"foundation")
 assert r7_adapter["expected_release_id"]=="hbnf-cart2-phase2-offline-wow-r7-20261009"

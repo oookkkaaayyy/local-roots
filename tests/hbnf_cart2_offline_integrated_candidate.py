@@ -28,6 +28,12 @@ assert sha(ROOT / manifest["firmware"]["build_receipt_path"]) == manifest["firmw
 
 for relative, expected in manifest["source_hashes"].items():
     assert sha(ROOT / relative) == expected, relative
+adapter = manifest["qualification_adapter"]
+assert sha(ROOT / adapter["path"]) == adapter["sha256"]
+assert adapter["expected_release_id"] == manifest["release_id"]
+assert adapter["expected_firmware_sha256"] == manifest["firmware"]["sha256"]
+for relative, expected in manifest["offline_test_source_hashes"].items():
+    assert sha(ROOT / relative) == expected, relative
 
 package_path = ROOT / manifest["owner_guest_package"]["file"]
 sidecar_path = ROOT / manifest["owner_guest_package"]["sidecar"]

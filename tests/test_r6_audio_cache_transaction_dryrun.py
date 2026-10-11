@@ -167,6 +167,35 @@ def main():
         valid_path.write_text(json.dumps({"identities": successor_ids}) + "\n")
         assert module.verify_offline_successor_binding(valid_path)["identities"] == successor_ids
 
+        # Exercise the existing transaction coordinator's complete fake-port
+        # candidate path with the successor's exact identity. This verifies
+        # only local orchestration; the port never performs real I/O and this
+        # does not create LIVE_APPROVED admission or qualify the firmware.
+        original_candidate = (module.RELEASE, module.CANDIDATE_SHA,
+                              module.CANDIDATE_SIZE, module.BIN)
+        module.RELEASE = module.SUCCESSOR_RELEASE
+        module.CANDIDATE_SHA = module.SUCCESSOR_SHA
+        module.CANDIDATE_SIZE = module.SUCCESSOR_SIZE
+        module.BIN = module.SUCCESSOR_BIN
+        try:
+            successor_success = SuccessorAdmissionFakePort(valid_path)
+            passed = run_case("successor fake-port coordinator pass", successor_success,
+                              "QUALIFIED_OBJECTIVE_GATES_PASS", 1, 0, 8)
+            assert passed["candidate_release_id"] == module.SUCCESSOR_RELEASE
+            assert passed["candidate_sha256"] == module.SUCCESSOR_SHA
+            assert successor_success.install_attempts == 1
+
+            successor_gate_fail = SuccessorAdmissionFakePort(valid_path)
+            successor_gate_fail.qualification = False
+            successor_gate_fail.device_failure = True
+            recovered = run_case("successor fake-port gate failure recovers exact R4",
+                                 successor_gate_fail, "QUALIFICATION_FAILED_R4_RECOVERED", 1, 1, 11)
+            assert recovered["candidate_sha256"] == module.SUCCESSOR_SHA
+            assert recovered["recovery"]["runtime"]["release_id"] == module.R4
+        finally:
+            (module.RELEASE, module.CANDIDATE_SHA,
+             module.CANDIDATE_SIZE, module.BIN) = original_candidate
+
         missing = SuccessorAdmissionFakePort(root / "missing.json")
         result = run_case("successor admission missing zero requests", missing,
                           "BLOCKED_OR_FAILED", 0, 0)

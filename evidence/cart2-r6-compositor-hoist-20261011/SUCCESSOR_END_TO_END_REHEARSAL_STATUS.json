@@ -1,9 +1,9 @@
 {
   "blocking_inputs": [
     "The current phase2-live-qualification workflow still declares candidate release hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010, SHA-256 f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b, and size 1497984; it does not bind the successor BIN.",
-    "No successor-specific Foundation sweep adapter exists; available adapters are pinned to R4 or another candidate.",
     "A real capsule/prelive proof for the successor must bind the successor workflow and truthful PASS evidence for contract closure, exact R4 recovery, transaction rehearsal and fresh current-state capture. The required current-state capture would touch devices/network and was expressly excluded.",
-    "The existing sweep host tests are component/failure-path tests, not a full successful fake-port sweep, soak and restore rehearsal for this exact successor. The runner --dry-run validates configuration but intentionally executes none of those phases."
+    "The current host suite now replays the successor transaction coordinator success/failure paths, but still does not execute one successful candidate-bound 28-kernel sweep, combined feature check, 90-minute soak and renderer restore. Fresh device state/performance is necessarily unobserved offline.",
+    "The candidate-specific Foundation adapter and runner dry-run now bind the exact successor, but no successful end-to-end 28-kernel sweep, combined-feature check, 90-minute soak and restore has run. The live coordinator remains bound to the consumed prior R6 artifact, so a successor live launcher/admission must be prepared and rejected safely when authorization is missing."
   ],
   "candidate": {
     "bin_sha256": "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2",
@@ -39,10 +39,20 @@
       "name": "scripts/platform.py prelive-check with unmodified PRELIVE_PROOF template",
       "scope": "Template has placeholder run/hash, approved_for_mutation=false, blocked stages and no current-state evidence; no synthetic passing proof was created.",
       "status": "REJECTED_AS_EXPECTED"
+    },
+    {
+      "name": "tests/test_r6_audio_cache_transaction_dryrun.py",
+      "scope": "Successor-bound fake-port coordinator success and exact-R4 recovery on simulated device-gate failure; does not execute the 28-kernel sweep or 90-minute soak.",
+      "status": "PASS"
+    },
+    {
+      "name": "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_COMPOSITOR_HOIST_20261011.json",
+      "scope": "Existing Foundation adapter pinned to successor release ID and BIN SHA; runner dry-run accepts the exact 28-kernel qualification configuration without executing an adapter command.",
+      "status": "PASS"
     }
   ],
   "network_device_cloud_calls": 0,
-  "next_safe_step": "Do not claim end-to-end rehearsal complete. To continue entirely offline, first select an authorized successor-specific workflow/adapter and add a fake-port successful full transaction case to the existing test harness; actual capture-current-state and live qualification remain separate gated work.",
+  "next_safe_step": "Prepare the exact successor release admission and route the existing guarded transaction through the candidate-bound Foundation adapter. Preserve consumed prior R6 state. Before any device access, the successor launcher must reject absent/mismatched exact authorization, and all actual live gates must remain closed until control admission passes.",
   "offline_only": true,
   "safety": {
     "consumed_attempt_history_changed": false,
@@ -52,5 +62,5 @@
     "passing_prelive_proof_fabricated": false
   },
   "schema": "hbnf-cart2-successor-host-rehearsal-assessment-v1",
-  "status": "BLOCKED_BEFORE_SUCCESSOR_BOUND_END_TO_END_REHEARSAL"
+  "status": "BLOCKED_BEFORE_SUCCESSOR_BOUND_RELEASE_LAUNCHER_AND_FULL_QUALIFICATION"
 }
