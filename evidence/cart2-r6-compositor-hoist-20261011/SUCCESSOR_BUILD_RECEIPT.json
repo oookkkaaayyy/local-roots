@@ -65,11 +65,25 @@
     "text_layout_tests": "PASS 15/15",
     "compact_font_smoke": "PASS",
     "pwa_reliability_and_package": "PASS",
-    "historical_failed_r6_artifact_source_and_recovery": "PASS",
+    "historical_failed_r6_artifact_source_and_recovery": "PASS; verifies preserved exact R6 bin/source/build and R4 rollback. Canonical build log supplied through HBNF_R6_AUDIO_CACHE_BUILD_LOG.",
     "device_or_cloud": "NOT RUN",
     "performance_gate": "NOT RUN; no target cycle/frame-time claim",
     "28_kernel_sweep_combined_tests_and_soak": "NOT RUN",
-    "owner_visual_acceptance": "NOT RUN"
+    "owner_visual_acceptance": "NOT RUN",
+    "host_transaction_and_entrypoint_replays": {
+      "tests": {
+        "tests/hbnf_guarded_run.py": "PASS; rejects wrong-state/unauthorized mutation and invalid exact admissions before child execution",
+        "tests/hbnf_packet20_live_entrypoint_guard.py": "PASS; rejects invalid admission before device request/upload/output",
+        "tests/hbnf_packet20_r4_entrypoint_guard.py": "PASS; superseded R4 entrypoint blocks before device access",
+        "tests/hbnf_packet20_r2_transaction_static.py": "PASS; exact candidate/recovery identity and one-shot transaction boundaries",
+        "tests/test_r6_audio_cache_transaction_dryrun.py": "PASS; full mocked transaction and exact recovery; invalid admission makes zero device requests",
+        "tests/hbnf_r7_diagnostic_transaction_dryrun.py": "PASS; success/failure/recovery branches with zero device requests",
+        "tests/hbnf_packet20_http_adapter.py": "PASS; snapshot/restore adapter semantics and 28-kernel inventory",
+        "tests/hbnf_packet20_build_validate.py": "PASS; source drift fails closed",
+        "tests/hbnf_source_tree_identity.py": "PASS; deterministic source identity changes on edits"
+      },
+      "device_calls": 0
+    }
   },
   "limits": [
     "Full local target image built successfully; unchanged object/library inputs were reused from the exact pinned local cache.",

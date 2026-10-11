@@ -88,7 +88,23 @@
         "ram_remaining_bytes": 215192
       },
       "qualification_boundary": "Compile and image generation only. No device flash, live performance, rollback transaction, production admission, 28-kernel/combined/soak gate, or visual acceptance."
-    }
+    },
+    "host_transaction_and_entrypoint_replays": {
+      "result": "PASS; 9 existing tests from the supported release entrypoint/transaction path",
+      "tests": [
+        "tests/hbnf_guarded_run.py",
+        "tests/hbnf_packet20_live_entrypoint_guard.py",
+        "tests/hbnf_packet20_r4_entrypoint_guard.py",
+        "tests/hbnf_packet20_r2_transaction_static.py",
+        "tests/test_r6_audio_cache_transaction_dryrun.py",
+        "tests/hbnf_r7_diagnostic_transaction_dryrun.py",
+        "tests/hbnf_packet20_http_adapter.py",
+        "tests/hbnf_packet20_build_validate.py",
+        "tests/hbnf_source_tree_identity.py"
+      ],
+      "device_calls": 0
+    },
+    "historical_failed_r6_artifact_test": "PASS with preserved build log supplied read-only via HBNF_R6_AUDIO_CACHE_BUILD_LOG"
   },
   "limits": [
     "The full pinned local target build and BIN were produced, but unchanged inputs reused local objects. PlatformIO partition/RAM checks passed at link time; final release acceptance, live performance, rollback/admission, and physical readability remain unverified.",
@@ -97,5 +113,6 @@
     "Exact Foundation R4 remains installed; live mutation authority remains closed.",
     "The old R6 release identity was replaced with a unique successor identity before this final build; the previous isolated-link ELF with the consumed ID is historical evidence only and is not the current candidate."
   ],
-  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011"
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011",
+  "flash_delta_vs_failed_r6_bytes": 688
 }
