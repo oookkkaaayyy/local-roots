@@ -184,6 +184,9 @@ def main():
             assert passed["candidate_release_id"] == module.SUCCESSOR_RELEASE
             assert passed["candidate_sha256"] == module.SUCCESSOR_SHA
             assert successor_success.install_attempts == 1
+            cases.append({"case": "exact successor fake-port transaction reaches qualification pass",
+                          "pass": True, "result": passed,
+                          "simulated_port_requests": successor_success.device_requests})
 
             successor_gate_fail = SuccessorAdmissionFakePort(valid_path)
             successor_gate_fail.qualification = False
@@ -192,6 +195,9 @@ def main():
                                  successor_gate_fail, "QUALIFICATION_FAILED_R4_RECOVERED", 1, 1, 11)
             assert recovered["candidate_sha256"] == module.SUCCESSOR_SHA
             assert recovered["recovery"]["runtime"]["release_id"] == module.R4
+            cases.append({"case": "exact successor fake-port gate failure invokes exact R4 recovery once",
+                          "pass": True, "result": recovered,
+                          "simulated_port_requests": successor_gate_fail.device_requests})
         finally:
             (module.RELEASE, module.CANDIDATE_SHA,
              module.CANDIDATE_SIZE, module.BIN) = original_candidate
@@ -325,7 +331,10 @@ def main():
         "candidate_sha256": module.CANDIDATE_SHA,
         "offline_successor_release_id": module.SUCCESSOR_RELEASE,
         "offline_successor_sha256": module.SUCCESSOR_SHA,
-        "successor_fake_port_device_requests": 0,
+        "successor_fake_port_actual_device_calls": 0,
+        "successor_fake_port_simulated_requests": (
+            successor_success.device_requests + successor_gate_fail.device_requests
+        ),
         "rollback_sha256": module.R4_SHA,
         "device_or_cloud_mutation": False,
         "cases": cases,

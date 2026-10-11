@@ -414,7 +414,13 @@ def run_foundation_soak(adapter,inventory,outdir,timeout,release_id,restart_coun
     path=pathlib.Path(outdir)/"FOUNDATION_SOAK.jsonl"
     if path.exists():
         raise RuntimeError(f"foundation soak evidence already exists; refusing to replace it: {path}")
-    started=time.monotonic();end=started+duration_seconds;sample_index=0
+    started=time.monotonic()
+    # The first qualified sample is taken after one cadence interval, so a
+    # duration measured from transaction start would under-cover the audited
+    # sample-to-sample window by one interval (5400s request => 5392s of
+    # samples at the default 8s cadence). Include that initial interval so the
+    # persisted samples span at least the required contiguous duration.
+    end=started+duration_seconds+interval_seconds;sample_index=0
     previous_sample_time=None;observed=set();catastrophic_streak=0
     entries=inventory["entries"]
     while True:

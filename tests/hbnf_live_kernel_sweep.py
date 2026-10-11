@@ -353,6 +353,45 @@ with tempfile.TemporaryDirectory() as td:
     assert len(p.read_text().splitlines())==2
     assert json.loads(p.read_text().splitlines()[0])["sample_time"]==100.0
 
+# The audited soak window is measured between persisted sample timestamps, not
+# from the pre-sample transaction start. The first sample arrives after one
+# cadence interval, so the runner must keep collecting through duration+one
+# interval. Use a virtual clock and fake adapter; this performs no device I/O.
+class VirtualClock:
+    def __init__(self):self.now=0.0
+    def monotonic(self):return self.now
+    def sleep(self,seconds):self.now+=seconds
+
+with tempfile.TemporaryDirectory(prefix="hbnf-soak-window-coverage-") as td:
+    clock=VirtualClock();selected={"kernel":0};uptime={"value":100}
+    original=(m.run_ok,m.run_json,m.time)
+    def fake_select(argv,timeout=15):
+        selected["kernel"]=int(argv[-1]);return "selected\n"
+    def fake_telemetry(argv,timeout=10):
+        entry=inv["entries"][selected["kernel"]]
+        uptime["value"]+=1
+        row=dict(foundation)
+        row.update(release_id="r7",kernel_id=selected["kernel"],
+            kernel_name=entry["kernel_name"],variant_id=selected["kernel"]+1000,
+            uptime_seconds=uptime["value"],restart_count=0)
+        return row
+    try:
+        m.run_ok=fake_select;m.run_json=fake_telemetry;m.time=clock
+        out=pathlib.Path(td)
+        result=m.run_foundation_soak(
+            {"select_argv":["fake","select","{runtime_kernel_index}"],
+             "telemetry_argv":["fake","telemetry"]},
+            inv,out,10,"r7",0,100,5400,8,
+            {"catastrophic_early_stop":{"fps_floor_absolute":1,
+             "frame_ms_p99_ceiling_absolute":1000,
+             "aux_projection_active_required":True,"consecutive_samples":3}})
+        rows=[json.loads(line) for line in (out/"FOUNDATION_SOAK.jsonl").read_text().splitlines()]
+        sample_span=rows[-1]["sample_time"]-rows[0]["sample_time"]
+        assert result["duration_seconds"]>=5400
+        assert sample_span>=5400,(len(rows),sample_span)
+        assert len({row["kernel_id"] for row in rows})==28
+    finally:m.run_ok,m.run_json,m.time=original
+
 foundation_adapter=json.loads((ROOT/"config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_20261005.json").read_text())
 m.validate_adapter(foundation_adapter)
 assert foundation_adapter["expected_release_id"]=="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1"

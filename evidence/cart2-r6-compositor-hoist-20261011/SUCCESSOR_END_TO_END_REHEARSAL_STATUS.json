@@ -49,11 +49,23 @@
       "name": "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_COMPOSITOR_HOIST_20261011.json",
       "scope": "Existing Foundation adapter pinned to successor release ID and BIN SHA; runner dry-run accepts the exact 28-kernel qualification configuration without executing an adapter command.",
       "status": "PASS"
+    },
+    {
+      "name": "90-minute soak sample coverage boundary",
+      "scope": "Existing runner now keeps collecting through duration plus one initial cadence interval; virtual clock verifies actual persisted sample timestamps cover at least 5400s.",
+      "status": "PASS"
     }
   ],
   "network_device_cloud_calls": 0,
   "next_safe_step": "Prepare the exact successor release admission and route the existing guarded transaction through the candidate-bound Foundation adapter. Preserve consumed prior R6 state. Before any device access, the successor launcher must reject absent/mismatched exact authorization, and all actual live gates must remain closed until control admission passes.",
   "offline_only": true,
+  "resolved_findings": [
+    {
+      "correction": "Extend loop through one initial sample interval; frozen 90-minute threshold unchanged.",
+      "finding": "Previous soak loop timed 5400s from before its first 8s-spaced sample, so the final audit could see only 5392s of sample coverage.",
+      "validation": "tests/hbnf_live_kernel_sweep.py virtual-clock regression; no hardware or wall-clock soak."
+    }
+  ],
   "safety": {
     "consumed_attempt_history_changed": false,
     "control_or_state_changed": false,

@@ -28,6 +28,7 @@
     "combined_feature_check": "NOT_RUN",
     "firmware_build": "PASS_PER_BUILD_RECEIPT",
     "focused_candidate_binding_test": "PASS",
+    "foundation_soak_sample_coverage_regression": "PASS; virtual-clock regression verifies persisted sample span >=5400 seconds at the unchanged 8-second cadence",
     "matched_kernel0_performance": "NOT_RUN",
     "owner_guest_package_build": "PASS",
     "owner_visual_acceptance": "NOT_RUN",
@@ -64,12 +65,17 @@
     {
       "path": "tests/hbnf_live_kernel_sweep.py",
       "result": "PASS; validates successor adapter release/SHA bindings and 28-kernel Foundation dry-run; suite still covers only component/failure/restore paths, not successful full sweep/soak"
+    },
+    {
+      "path": "tests/hbnf_live_kernel_sweep.py",
+      "result": "PASS; prevents a 90-minute soak request from persisting only 89m52s of samples; runner includes one initial cadence interval so audited sample span reaches >=5400s"
     }
   ],
   "offline_test_source_hashes": {
+    "scripts/hbnf_live_kernel_sweep.py": "e5ed7b44543440141ee0b57ba55368c4351a3ffbdf1add5da0eaec96e3bd2477",
     "tests/hbnf_cart2_offline_integrated_candidate.py": "19275cab9b726622aca703ae48841904c2e9f8d80d839227d33c0339ce6ba311",
-    "tests/hbnf_live_kernel_sweep.py": "ad92a7eea60b70c47629c65f785df5041ddecc9715aff831a38338946845be7f",
-    "tests/test_r6_audio_cache_transaction_dryrun.py": "92f90f83f37119c96b922ea26eeee55f1bd9530c6a42f239526b391bc5c0b897"
+    "tests/hbnf_live_kernel_sweep.py": "5f5c5b99c262145cb52a61703277c649eb002fe71afec207d379b031fc34a242",
+    "tests/test_r6_audio_cache_transaction_dryrun.py": "647fb4597a88adec76cdece5e2b861c4a6026d4256a3b1748b548d8b7c74580a"
   },
   "owner_guest_package": {
     "build_marker": "hbnf-cart2-owner-guest-compositor-hoist-20261011",
@@ -113,6 +119,7 @@
     "hbnf-final-controller/hbnf-cart-ui-v6.mjs": "0e0f16ea7c6e573cc5d5180309d899732598c9b630c7732dfbe10326e542a6e0",
     "hbnf-final-controller/hbnf-cart.html": "c4464e2304010da98ad30342b17452fda241c6670f9cbc667750c8f968d10244",
     "hbnf-final-controller/hbnf-cart.js": "799854d994964fd6c05fe78cb35147c1b9a569000b6d5e4377cc9cbeb37d28f3",
+    "scripts/hbnf_live_kernel_sweep.py": "e5ed7b44543440141ee0b57ba55368c4351a3ffbdf1add5da0eaec96e3bd2477",
     "staging/coordinated-backend/hbnf-cart-control/guest-command.ts": "09d181d27e6beeec7a9b9727bce404c0e5621a26ddc85895d68d7419f60f918d",
     "staging/coordinated-backend/hbnf-cart-control/index.ts": "e7cee5102f096292268d121291b9c51a697398d43a554065d24caaee4d243e7f",
     "staging/coordinated-backend/hbnf-cart-control/live.ts": "7844a5057f11f82344e3ff49c5f9062ba73019c62bfaab52636e93c897b69323",
@@ -126,8 +133,9 @@
     "staging/coordinated-backend/opal/hbnf-matrix-relay": "6a8e3e02b5fda1afbae2c1270a1309450970ef3e9ebd3b62a0baf04671dd350e",
     "staging/coordinated-backend/opal/hbnf-matrix-relay.conf.example": "5cd2b0fbc1c2ca1112d2637b5eab761a241bb96277dfc14d83d42493f3484c6c",
     "staging/coordinated-backend/opal/hbnf-matrix-relay.init": "1572ddc3b9dc278d141a6e9cf65891c684e09efc793f7822c3738f98e4e6122a",
+    "tests/hbnf_live_kernel_sweep.py": "5f5c5b99c262145cb52a61703277c649eb002fe71afec207d379b031fc34a242",
     "tests/hbnf_matrix_relay_contract.mjs": "34c34c57f7bb054394177ba4f64a9a5946fabecc4c7bc3649cbc14f880dbda59",
-    "tests/test_r6_audio_cache_transaction_dryrun.py": "92f90f83f37119c96b922ea26eeee55f1bd9530c6a42f239526b391bc5c0b897"
+    "tests/test_r6_audio_cache_transaction_dryrun.py": "647fb4597a88adec76cdece5e2b861c4a6026d4256a3b1748b548d8b7c74580a"
   },
   "status": "OFFLINE_INTEGRATION_CANDIDATE__NOT_DEPLOYED__NOT_LIVE_QUALIFIED__NOT_ACCEPTED",
   "superseded_sources": {
