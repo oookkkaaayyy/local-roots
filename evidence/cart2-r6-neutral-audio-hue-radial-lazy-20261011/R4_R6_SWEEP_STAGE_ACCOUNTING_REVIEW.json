@@ -137,5 +137,27 @@
     }
   ],
   "next_discriminator": "Use one exact-artifact, controlled comparison for kernel 0 and the worst kernels with identical runtime controls, reset/warm-up boundary and poll cadence, recording per-frame settings and timestamps. Do not repeat the existing 28-kernel sweep for this candidate.",
-  "live_state": "The current control model records exact R4 installed and live_mutation_authorized=false; the candidate failed. No soak or acceptance."
+  "live_state": "The current control model records exact R4 installed and live_mutation_authorized=false; the candidate failed. No soak or acceptance.",
+  "follow_on_diagnostic": {
+    "status": "COMPOSITOR_COST_MEASURED__PERFORMANCE_CAUSE_STILL_UNRESOLVED",
+    "artifact_sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
+    "source_commit": "911b791d814ed50440567433b17f04da83b700da",
+    "parent_candidate_sha256": "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2",
+    "measurement_summary_path": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/COMPOSITOR_TIMING_OFFLINE_ANALYSIS.json",
+    "measurement_summary_sha256": "518cc6e9b8e72fd07fce87cf5aea69ca0d8344c20d8086018df8c2285a5b2d70",
+    "transaction_result_sha256": "987360340fca5cec269fecbe1ef0159fe940dafee08cfc9f11b3a29c13436fd3",
+    "post_return_r4_readonly_sha256": "261d5084143ac8aac2e331a562f27dca1b87d6ab9303b7587e207b9137081776",
+    "facts": [
+      "This was a separate authorized diagnostic on source commit 911b791, not the later failed 36881ca6 candidate; do not treat it as a matched R4/R6 comparison or direct measurement of 36881ca6.",
+      "In the final cumulative 754-sample snapshot, compositor average was 0.992 ms versus 32.214 ms kernel residual; the compositor is about 3.08% of that kernel interval.",
+      "With tail capture off, three same-candidate samples still measured 11–13 FPS and 67.8–78.2 ms per frame. Tail capture alone does not explain the low rate, though three samples are too few for a full distribution.",
+      "The candidate failed its frozen kernel-0 gate and exact R4 was subsequently read-only confirmed at Matrix brightness 52, AUX brightness 245, with live Matrix-origin AUX DDP. The first settings restore readback reported a mismatch; a later restore/readback verified the R4 identity and brightness values."
+    ],
+    "limits": [
+      "Cycle-counter stage timings can include task preemption; the build had FreeRTOS task runtime statistics disabled.",
+      "The diagnostic's per-poll audio context omitted slowEnergy, so zero reported audio bands do not prove the audio modulation path was inactive.",
+      "No matched R4 capture exists for this diagnostic run; the compositor result cannot establish the cause of the failed R6 release."
+    ],
+    "decision": "Do not spend another live attempt or rebuild on compositor removal/hoisting alone; the measured compositor cost is too small to explain the failure. Continue offline attribution against the exact failed 36881ca6 source and preserve the frozen gates."
+  }
 }
