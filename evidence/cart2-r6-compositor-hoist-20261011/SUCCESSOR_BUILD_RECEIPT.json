@@ -62,7 +62,7 @@
   },
   "qualification": {
     "host_golden": "PASS; five Vibes, 64 varied input states, eight phases, complete 32x16 pixel grid; bit-exact output",
-    "text_layout_tests": "PASS 15/15",
+    "text_layout_tests": "PASS 16/16; compact-font fallback covered for NAME and SHORT_ANNOUNCEMENT oversized words",
     "compact_font_smoke": "PASS",
     "pwa_reliability_and_package": "PASS",
     "historical_failed_r6_artifact_source_and_recovery": "PASS; verifies preserved exact R6 bin/source/build and R4 rollback. Canonical build log supplied through HBNF_R6_AUDIO_CACHE_BUILD_LOG.",
