@@ -1,0 +1,32 @@
+{
+  "brightness_baseline": {
+    "matrix_on": true,
+    "persisted": {
+      "auxBrightness": 245,
+      "matrixBrightness": 52,
+      "vibe": 2
+    },
+    "runtime": {
+      "auxBrightness": 245,
+      "matrixBrightness": 52,
+      "vibe": 2
+    },
+    "runtime_observation": {
+      "runtime_fields": [
+        "matrixBrightness",
+        "auxBrightness"
+      ],
+      "vibe_source": "persisted_config_only_on_exact_R4"
+    }
+  },
+  "device_mutations": 0,
+  "matrix": {
+    "ip": "192.168.77.10",
+    "mac": "704bca5b345c",
+    "uptime": 7096,
+    "wled": "16.0.1"
+  },
+  "read_only": true,
+  "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "schema": "hbnf-cart2-compositor-diagnostic-owner-settings-preflight-v1"
+}

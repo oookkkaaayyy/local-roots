@@ -505,7 +505,7 @@ def telemetry(inventory,session_id,emit=True):
     if emit:print(json.dumps(sample,separators=(",",":")))
     return sample
 
-def readonly_preflight(session_id):
+def readonly_preflight(session_id, expected_brightness=44):
     """Check identity and safety inputs before enabling diagnostic telemetry."""
     expected_sha=os.environ.get("HBNF_EXPECTED_FIRMWARE_SHA256")
     if expected_sha is not None and (len(expected_sha)!=64 or any(c not in "0123456789abcdef" for c in expected_sha.lower())):
@@ -535,7 +535,11 @@ def readonly_preflight(session_id):
       "expected_firmware_sha256":expected_sha}
     if result["release_id"]!=EXPECTED or result["candidate"]!=EXPECTED:raise RuntimeError("preflight-release-identity-mismatch")
     if result["wled"]!="16.0.1" or result["matrix_ip"]!="192.168.77.10" or result["matrix_mac"]!=MAC:raise RuntimeError("preflight-matrix-target-mismatch")
-    if result["matrix_on"] is not True or result["matrix_brightness"]!=44:raise RuntimeError("preflight-matrix-output-or-brightness-mismatch")
+    brightness=result["matrix_brightness"]
+    if result["matrix_on"] is not True or type(brightness) is not int or not 0<=brightness<=255:
+        raise RuntimeError("preflight-matrix-output-or-brightness-invalid")
+    if expected_brightness is not None and brightness!=expected_brightness:
+        raise RuntimeError("preflight-matrix-output-or-brightness-mismatch")
     if result["aux_ip"]!="192.168.77.11" or result["aux_mac"]!="8c94df55c34c" or result["aux_on"] is not True:raise RuntimeError("preflight-aux-target-or-output-mismatch")
     if not (result["aux_live"] is True and result["aux_live_mode"]=="DDP" and result["aux_live_ip"]=="192.168.77.10" and result["aux_led_count"]==22):raise RuntimeError("preflight-aux-native-ddp-source-mismatch")
     return result

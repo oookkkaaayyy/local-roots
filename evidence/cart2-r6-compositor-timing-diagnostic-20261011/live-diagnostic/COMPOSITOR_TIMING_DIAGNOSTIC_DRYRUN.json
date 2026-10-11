@@ -14,6 +14,15 @@
     "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
   },
+  "matched_tails_off_test_plan": {
+    "observer_effect_conclusions": "report measurements without attributing causality from nested percentiles",
+    "raw_audio_input_context_saved_each_poll": true,
+    "same_candidate_kernel0_brightness44_and_runtime_controls": true,
+    "sample_interval_seconds": 8,
+    "tails_off_samples": 3,
+    "then_enable_tails_and_capture_component_metrics": true,
+    "variant_signature_and_control_changes_abort": true
+  },
   "measurement_metrics": [
     "kernelMsAvg",
     "kernelMsP95",
@@ -37,41 +46,57 @@
     "on_failure": "record the failure and continue all eight scheduled diagnostic samples"
   },
   "result": "PASS_OFFLINE_SEQUENCE_POLICY",
+  "runtime_brightness_policy": {
+    "capture_r4_runtime_and_persisted_settings": true,
+    "measure_at": 44,
+    "restore_exact_captured_hbnf_settings_on_diagnostic_before_r4_return": true,
+    "verify_r4_returns_at_original_brightness": true
+  },
   "safety_interval_seconds": 8,
   "scenarios": {
     "catastrophic": [
       "admission",
       "preflight_r4_aux_ac_single_worker",
       "opal_readonly_preflight",
+      "capture_r4_hbnf_settings",
       "consume_exact_attempt",
       "stage_hash_size_verified",
       "install_diag_once_via_opal",
       "verify_diag_identity",
       "begin_snapshot",
+      "select_kernel0",
+      "set_brightness44_with_existing_exact_settings_transaction",
+      "capture_matched_tails_off_samples",
       "enable_builtin_timing_tails",
       "unsafe_frame_or_aux_loss_stop",
       "persist_metrics_and_failure",
       "restore_renderer_snapshot",
+      "restore_captured_hbnf_settings",
       "stage_exact_r4_hash_size_verified",
       "install_r4_once_via_opal",
-      "verify_r4_and_aux"
+      "verify_r4_and_aux_and_original_brightness"
     ],
     "collector_failure": [
       "admission",
       "preflight_r4_aux_ac_single_worker",
       "opal_readonly_preflight",
+      "capture_r4_hbnf_settings",
       "consume_exact_attempt",
       "stage_hash_size_verified",
       "install_diag_once_via_opal",
       "verify_diag_identity",
       "begin_snapshot",
+      "select_kernel0",
+      "set_brightness44_with_existing_exact_settings_transaction",
+      "capture_matched_tails_off_samples",
       "enable_builtin_timing_tails",
       "timeout_recorded_no_sample_skipped",
       "persist_failure_evidence",
       "restore_renderer_snapshot",
+      "restore_captured_hbnf_settings",
       "stage_exact_r4_hash_size_verified",
       "install_r4_once_via_opal",
-      "verify_r4_and_aux"
+      "verify_r4_and_aux_and_original_brightness"
     ],
     "http200_identity_mismatch_r4_still_installed": [
       "admission",
@@ -125,19 +150,24 @@
       "admission",
       "preflight_r4_aux_ac_single_worker",
       "opal_readonly_preflight",
+      "capture_r4_hbnf_settings",
       "consume_exact_attempt",
       "stage_hash_size_verified",
       "install_diag_once_via_opal",
       "verify_diag_identity",
       "begin_snapshot",
+      "select_kernel0",
+      "set_brightness44_with_existing_exact_settings_transaction",
+      "capture_matched_tails_off_samples",
       "enable_builtin_timing_tails",
       "record_fps_p99_failure",
       "capture_remaining_component_samples",
       "persist_gate_failure_and_component_metrics",
       "restore_renderer_snapshot",
+      "restore_captured_hbnf_settings",
       "stage_exact_r4_hash_size_verified",
       "install_r4_once_via_opal",
-      "verify_r4_and_aux"
+      "verify_r4_and_aux_and_original_brightness"
     ],
     "r4_restore_failure": [
       "admission",
@@ -170,19 +200,23 @@
       "admission",
       "preflight_r4_aux_ac_single_worker",
       "opal_readonly_preflight",
+      "capture_r4_hbnf_settings",
       "consume_exact_attempt",
       "stage_hash_size_verified",
       "install_diag_once_via_opal",
       "verify_diag_identity",
       "begin_snapshot",
-      "select_kernel0_brightness44",
+      "select_kernel0",
+      "set_brightness44_with_existing_exact_settings_transaction",
+      "capture_matched_tails_off_samples",
       "enable_builtin_timing_tails",
       "capture_component_samples_at_8s",
       "persist_metrics_and_context",
       "restore_renderer_snapshot",
+      "restore_captured_hbnf_settings",
       "stage_exact_r4_hash_size_verified",
       "install_r4_once_via_opal",
-      "verify_r4_and_aux"
+      "verify_r4_and_aux_and_original_brightness"
     ]
   },
   "schema": "hbnf-r6-compositor-timing-diagnostic-transaction-dryrun-v2",

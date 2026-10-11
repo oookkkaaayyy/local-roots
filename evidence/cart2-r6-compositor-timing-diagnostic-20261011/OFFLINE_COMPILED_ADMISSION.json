@@ -1,14 +1,14 @@
 {
   "checks": {
     "all_historical_host_failures_replayed": {
-      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-compositor-timing-diagnostic-20261011/OFFLINE_HOST_VERIFICATION.json",
+      "evidence_file": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/OFFLINE_HOST_VERIFICATION.json",
       "pass": true,
-      "sha256": "ae1bbcf1768d05f3cceab35f886ab72ebe2475ce3d3ca0c050b102b6bd6cc9ee"
+      "sha256": "b79cf3068fb40590977ebfd3388ef761a1236eb56d1394d8085c1ef1fd460cc3"
     },
     "committed_feature_scope_preserved": {
-      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/COMPOSITOR_TIMING_DIAGNOSTIC_DRYRUN.json",
+      "evidence_file": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/COMPOSITOR_TIMING_DIAGNOSTIC_DRYRUN.json",
       "pass": true,
-      "sha256": "4a1a45325776271aea55a0af5b4d55be05bf61aaaee9a0bad5618a55121df249"
+      "sha256": "fcf07421de548dee7c6afde8f7d2ec82598467736001dbd3ea83f9d33d132f36"
     },
     "compiled_embedded_candidate_id_and_sha": {
       "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-compositor-timing-diagnostic-20261011/BUILD_RECEIPT.json",
@@ -21,9 +21,9 @@
       "sha256": "51389fe162de0103915020fc96542cb0d496baa6729003fb54237696c9a46ccb"
     },
     "entire_release_transaction_dryrun": {
-      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/COMPOSITOR_TIMING_DIAGNOSTIC_DRYRUN.json",
+      "evidence_file": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/COMPOSITOR_TIMING_DIAGNOSTIC_DRYRUN.json",
       "pass": true,
-      "sha256": "4a1a45325776271aea55a0af5b4d55be05bf61aaaee9a0bad5618a55121df249"
+      "sha256": "fcf07421de548dee7c6afde8f7d2ec82598467736001dbd3ea83f9d33d132f36"
     },
     "exact_source_dependency_generated_input_closure": {
       "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-compositor-timing-diagnostic-20261011/SOURCE_BINDING.json",
@@ -36,9 +36,9 @@
       "sha256": "aedef57067326bcb2da226ab5f6a71f6fe2487898230cc034761ca1349c34629"
     },
     "frozen_performance_soak_and_restore_procedure": {
-      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/COMPOSITOR_TIMING_DIAGNOSTIC_DRYRUN.json",
+      "evidence_file": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/COMPOSITOR_TIMING_DIAGNOSTIC_DRYRUN.json",
       "pass": true,
-      "sha256": "4a1a45325776271aea55a0af5b4d55be05bf61aaaee9a0bad5618a55121df249"
+      "sha256": "fcf07421de548dee7c6afde8f7d2ec82598467736001dbd3ea83f9d33d132f36"
     },
     "fully_local_pinned_build_toolchain": {
       "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-compositor-timing-diagnostic-20261011/BUILD_RECEIPT.json",

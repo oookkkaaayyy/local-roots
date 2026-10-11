@@ -1,0 +1,108 @@
+{
+  "captured_at_utc": "2026-10-11T09:41:32.151396+00:00",
+  "captured_hbnf_settings": {
+    "matrix_on": true,
+    "persisted": {
+      "auxBrightness": 245,
+      "matrixBrightness": 52,
+      "vibe": 2
+    },
+    "runtime": {
+      "auxBrightness": 245,
+      "matrixBrightness": 52,
+      "vibe": 2
+    },
+    "runtime_observation": {
+      "runtime_fields": [
+        "matrixBrightness",
+        "auxBrightness"
+      ],
+      "vibe_source": "persisted_config_only_on_exact_R4"
+    }
+  },
+  "device_mutations": 0,
+  "matrix_aux_readonly": {
+    "aux_ip": "192.168.77.11",
+    "aux_led_count": 22,
+    "aux_live": true,
+    "aux_live_ip": "192.168.77.10",
+    "aux_live_mode": "DDP",
+    "aux_mac": "8c94df55c34c",
+    "aux_on": true,
+    "aux_physical_output_status": "NOT_OBSERVABLE_FROM_WLED_JSON",
+    "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "endpoint_reads": {
+      "aux_info": {
+        "completed_monotonic_ns": 167383166,
+        "elapsed_seconds": 0.121973,
+        "endpoint": "http://192.168.77.11/json/info",
+        "started_monotonic_ns": 45410083,
+        "status": "PASS"
+      },
+      "aux_state": {
+        "completed_monotonic_ns": 187110166,
+        "elapsed_seconds": 0.141584,
+        "endpoint": "http://192.168.77.11/json/state",
+        "started_monotonic_ns": 45526083,
+        "status": "PASS"
+      },
+      "matrix_build": {
+        "completed_monotonic_ns": 96028375,
+        "elapsed_seconds": 0.05088,
+        "endpoint": "http://192.168.77.10/hbnf/build.json",
+        "started_monotonic_ns": 45148041,
+        "status": "PASS"
+      },
+      "matrix_info": {
+        "completed_monotonic_ns": 130122625,
+        "elapsed_seconds": 0.085265,
+        "endpoint": "http://192.168.77.10/json/info",
+        "started_monotonic_ns": 44857958,
+        "status": "PASS"
+      },
+      "matrix_state": {
+        "completed_monotonic_ns": 137055750,
+        "elapsed_seconds": 0.091763,
+        "endpoint": "http://192.168.77.10/json/state",
+        "started_monotonic_ns": 45292666,
+        "status": "PASS"
+      }
+    },
+    "expected_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "expected_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "foundation_telemetry_enabled": false,
+    "fps": 43,
+    "matrix_brightness": 52,
+    "matrix_ip": "192.168.77.10",
+    "matrix_mac": "704bca5b345c",
+    "matrix_on": true,
+    "matrix_uptime_seconds": 7353,
+    "packet20_enabled": false,
+    "packet20_restore_verified": false,
+    "packet20_snapshot_hash": 0,
+    "packet20_snapshot_id": 0,
+    "packet20_snapshot_valid": false,
+    "read_elapsed_seconds": 0.144015,
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "restart_count": 0,
+    "schema": "hbnf-live-qualification-preflight-v1",
+    "uptime_seconds": 7353,
+    "wled": "16.0.1"
+  },
+  "opal_readonly": {
+    "at_utc": "2026-10-11T09:41:32.146916+00:00",
+    "curl_and_sha256sum_available": true,
+    "exact_r4_ledger": true,
+    "matrix_readonly_endpoints_http_200": true,
+    "minimum_tmp_available_kb": 16384,
+    "mutations": 0,
+    "opal_uptime_and_tmp_space_recorded": true,
+    "status": "PASS",
+    "stderr_tail": "",
+    "stdout": "OPAL_READONLY_PREFLIGHT\n 02:41:31 up 13:30,  load average: 1.46, 1.37, 1.36\nFilesystem           1K-blocks      Used Available Use% Mounted on\ntmpfs                    59392      4800     54592   8% /tmp\n/usr/bin/curl\n/usr/bin/sha256sum\n/usr/bin/wc\n55 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\nMATRIX_INFO_HTTP=200\nMATRIX_BUILD_HTTP=200\n",
+    "tmp_available_kb": 54592
+  },
+  "schema": "hbnf-cart2-compositor-diagnostic-live-approved-readonly-preflight-v1",
+  "scope": "Exact diagnostic install prelive only; no cloud or production mutation.",
+  "settings_match_runtime": true
+}

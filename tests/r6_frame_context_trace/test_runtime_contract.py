@@ -6,6 +6,9 @@ ROOT = Path(__file__).resolve().parents[2]
 spec = importlib.util.spec_from_file_location("diag_transaction", ROOT / "scripts/hbnf_r6_frame_context_diagnostic_transaction.py")
 tx = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(tx)
+adapter_spec = importlib.util.spec_from_file_location("foundation_adapter", ROOT / "scripts/hbnf_foundation_live_adapter.py")
+foundation_adapter = importlib.util.module_from_spec(adapter_spec)
+adapter_spec.loader.exec_module(foundation_adapter)
 
 
 class FakeAdapter:
@@ -62,8 +65,32 @@ def test_recovery_requires_exact_target_identity():
             raise AssertionError("recovery must fail closed for unexpected device/build identity")
 
 
+def test_readonly_preflight_can_capture_owner_brightness_without_weakening_default():
+    original = foundation_adapter._parallel_soak_reads
+    original_expected = foundation_adapter.EXPECTED
+    foundation_adapter.EXPECTED = tx.R4_ID
+    foundation_adapter._parallel_soak_reads = lambda _session: ({
+        "matrix_info": {"ip": "192.168.77.10", "mac": "70:4b:ca:5b:34:5c", "ver": "16.0.1", "uptime": 100, "freeheap": 50000},
+        "matrix_build": {"release_id": tx.R4_ID, "candidate": tx.R4_ID},
+        "matrix_state": {"on": True, "HBNF": {"matrixBrightness": 52, "timing": {"fps": 60}, "packet20Diagnostic": {"enabled": False, "snapshotValid": False}, "foundationTelemetry": {"enabled": False}}},
+        "aux_info": {"ip": "192.168.77.11", "mac": "8c94df55c34c", "live": True, "lm": "DDP", "lip": "192.168.77.10", "leds": {"count": 22}},
+        "aux_state": {"on": True}, "_endpoint_timing": {}}, 0.01)
+    try:
+        assert foundation_adapter.readonly_preflight("capture-owner-brightness", expected_brightness=None)["matrix_brightness"] == 52
+        try:
+            foundation_adapter.readonly_preflight("default-matched-brightness")
+        except RuntimeError as exc:
+            assert "brightness-mismatch" in str(exc)
+        else:
+            raise AssertionError("other callers must retain the default exact-44 contract")
+    finally:
+        foundation_adapter._parallel_soak_reads = original
+        foundation_adapter.EXPECTED = original_expected
+
+
 if __name__ == "__main__":
     test_identity_wait_rejects_old_release_and_accepts_exact_candidate()
     test_flat_and_wrapped_parallel_read_shapes()
     test_recovery_requires_exact_target_identity()
+    test_readonly_preflight_can_capture_owner_brightness_without_weakening_default()
     print("PASS exact runtime identity wait and flattened read contract")

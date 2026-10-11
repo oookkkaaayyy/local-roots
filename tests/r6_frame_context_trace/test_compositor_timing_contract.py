@@ -41,11 +41,13 @@ sample.update({key:float(i+1) for i,key in enumerate(tx.COMPOSITOR_METRICS)})
 captured=tx.compositor_timing_sample(sample)
 assert captured["sampleCount"]==78 and captured["vibeCompositorMsP99"]>0
 rows=[{key:1.0 for key in tx.COMPOSITOR_METRICS} for _ in range(8)]
-assert tx.complete_timing_capture(rows,True,None)
-assert tx.complete_timing_capture([{**row,"performance_gate_pass":False} for row in rows],True,None)
-assert not tx.complete_timing_capture(rows[:3],True,None)
-assert not tx.complete_timing_capture(rows,True,"RuntimeError: CATASTROPHIC_ABORT")
-assert not tx.complete_timing_capture(rows,False,None)
+tails_off=[{"instrumentation":"tails_off"} for _ in range(3)]
+assert tx.complete_timing_capture(rows,True,None,tails_off)
+assert tx.complete_timing_capture([{**row,"performance_gate_pass":False} for row in rows],True,None,tails_off)
+assert not tx.complete_timing_capture(rows,True,None,tails_off[:2])
+assert not tx.complete_timing_capture(rows[:3],True,None,tails_off)
+assert not tx.complete_timing_capture(rows,True,"RuntimeError: CATASTROPHIC_ABORT",tails_off)
+assert not tx.complete_timing_capture(rows,False,None,tails_off)
 for invalid in ({**sample,"vibeCompositorMsP99":None},{**sample,"enabled":False},{**sample,"sampleCount":0}):
     try:tx.compositor_timing_sample(invalid)
     except RuntimeError:pass
@@ -76,4 +78,13 @@ source=(ROOT/"scripts/hbnf_r6_frame_context_diagnostic_transaction.py").read_tex
 assert '"traceStart"' not in source and '"traceStop"' not in source and '"traceRead"' not in source
 assert "third_consecutive_bad_sample_abort" not in source and 'if decision["stop"]' in source
 assert "one exact r6 compositor-timing diagnostic" in source.lower()
+
+# Reuse the already-tested owner-setting transaction to preserve Matrix/AUX/Vibe
+# baseline around diagnostic brightness normalization.
+assert "read_matrix_context(expected_release=R4_ID)" in source
+assert 'operation="measure",expected_release=DIAG_ID' in source
+assert 'operation="restore",expected_release=DIAG_ID' in source
+assert "starting_hbnf_settings" in source and "baseline_settings_restore" in source
+assert '"matched_tails_off_samples"' in source and "capture_matched_tails_off_samples" in dryrun["scenarios"]["success"]
+assert "diagnostic_control_signature" in source and "audio_input" in source
 print("PASS exact binding, complete timing contract, performance-failure capture, and safety stops")

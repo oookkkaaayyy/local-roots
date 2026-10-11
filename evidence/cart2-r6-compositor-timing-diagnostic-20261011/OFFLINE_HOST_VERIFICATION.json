@@ -40,6 +40,15 @@
     {
       "command": [
         "python3",
+        "tests/test_r6_qualification_brightness_transaction.py"
+      ],
+      "exit_code": 0,
+      "output_sha256": "5c2761c822d27dd955bf9a0abf8d0eb94d2c83b9989222da20dcf73c14064b53",
+      "output_tail": "PASS: baseline/setup/restore transaction fails closed across admission, timeout, partial-readback, worker, and restoration faults\n"
+    },
+    {
+      "command": [
+        "python3",
         "tests/hbnf_guarded_run.py"
       ],
       "exit_code": 0,
@@ -53,8 +62,8 @@
         "--dry-run"
       ],
       "exit_code": 0,
-      "output_sha256": "c3a72f6d00501a5e60819610568245d6a481119a636c86285245bb482815c9d6",
-      "output_tail": "single_worker\", \"opal_readonly_preflight\", \"consume_exact_attempt\", \"stage_hash_size_verified\", \"install_diag_once_via_opal\", \"verify_diag_identity\", \"capture_or_abort\", \"restore_renderer_snapshot\", \"stage_exact_r4_hash_size_verified\", \"install_r4_once_via_opal\", \"persist_recovery_failure_stop\"], \"renderer_restore_failure\": [\"admission\", \"preflight_r4_aux_ac_single_worker\", \"opal_readonly_preflight\", \"consume_exact_attempt\", \"stage_hash_size_verified\", \"install_diag_once_via_opal\", \"verify_diag_identity\", \"snapshot_restore_unverified\", \"stage_exact_r4_hash_size_verified\", \"install_exact_r4_once_via_opal\", \"verify_r4_and_aux_or_stop\"], \"success\": [\"admission\", \"preflight_r4_aux_ac_single_worker\", \"opal_readonly_preflight\", \"consume_exact_attempt\", \"stage_hash_size_verified\", \"install_diag_once_via_opal\", \"verify_diag_identity\", \"begin_snapshot\", \"select_kernel0_brightness44\", \"enable_builtin_timing_tails\", \"capture_component_samples_at_8s\", \"persist_metrics_and_context\", \"restore_renderer_snapshot\", \"stage_exact_r4_hash_size_verified\", \"install_r4_once_via_opal\", \"verify_r4_and_aux\"]}, \"schema\": \"hbnf-r6-compositor-timing-diagnostic-transaction-dryrun-v2\", \"window_seconds_max\": 60}\n"
+      "output_sha256": "26202083f6a2f37e5af572c73ad6cbf890d5838ada325fa0e46ae81a969c9c19",
+      "output_tail": "ssion\", \"preflight_r4_aux_ac_single_worker\", \"opal_readonly_preflight\", \"consume_exact_attempt\", \"stage_hash_size_verified\", \"install_diag_once_via_opal\", \"verify_diag_identity\", \"capture_or_abort\", \"restore_renderer_snapshot\", \"stage_exact_r4_hash_size_verified\", \"install_r4_once_via_opal\", \"persist_recovery_failure_stop\"], \"renderer_restore_failure\": [\"admission\", \"preflight_r4_aux_ac_single_worker\", \"opal_readonly_preflight\", \"consume_exact_attempt\", \"stage_hash_size_verified\", \"install_diag_once_via_opal\", \"verify_diag_identity\", \"snapshot_restore_unverified\", \"stage_exact_r4_hash_size_verified\", \"install_exact_r4_once_via_opal\", \"verify_r4_and_aux_or_stop\"], \"success\": [\"admission\", \"preflight_r4_aux_ac_single_worker\", \"opal_readonly_preflight\", \"capture_r4_hbnf_settings\", \"consume_exact_attempt\", \"stage_hash_size_verified\", \"install_diag_once_via_opal\", \"verify_diag_identity\", \"begin_snapshot\", \"select_kernel0\", \"set_brightness44_with_existing_exact_settings_transaction\", \"capture_matched_tails_off_samples\", \"enable_builtin_timing_tails\", \"capture_component_samples_at_8s\", \"persist_metrics_and_context\", \"restore_renderer_snapshot\", \"restore_captured_hbnf_settings\", \"stage_exact_r4_hash_size_verified\", \"install_r4_once_via_opal\", \"verify_r4_and_aux_and_original_brightness\"]}, \"schema\": \"hbnf-r6-compositor-timing-diagnostic-transaction-dryrun-v2\", \"window_seconds_max\": 60}\n"
     }
   ],
   "status": "PASS"

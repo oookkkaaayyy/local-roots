@@ -1,0 +1,126 @@
+{
+  "checks": {
+    "all_historical_host_failures_replayed": {
+      "evidence_file": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/OFFLINE_HOST_VERIFICATION.json",
+      "pass": true,
+      "sha256": "b79cf3068fb40590977ebfd3388ef761a1236eb56d1394d8085c1ef1fd460cc3"
+    },
+    "committed_feature_scope_preserved": {
+      "evidence_file": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/COMPOSITOR_TIMING_DIAGNOSTIC_DRYRUN.json",
+      "pass": true,
+      "sha256": "fcf07421de548dee7c6afde8f7d2ec82598467736001dbd3ea83f9d33d132f36"
+    },
+    "compiled_embedded_candidate_id_and_sha": {
+      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-compositor-timing-diagnostic-20261011/BUILD_RECEIPT.json",
+      "pass": true,
+      "sha256": "aedef57067326bcb2da226ab5f6a71f6fe2487898230cc034761ca1349c34629"
+    },
+    "device_and_source_authority_reconciled": {
+      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-compositor-timing-diagnostic-20261011/OFFLINE_AUTHORITY_RECONCILIATION.json",
+      "pass": true,
+      "sha256": "51389fe162de0103915020fc96542cb0d496baa6729003fb54237696c9a46ccb"
+    },
+    "entire_release_transaction_dryrun": {
+      "evidence_file": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/COMPOSITOR_TIMING_DIAGNOSTIC_DRYRUN.json",
+      "pass": true,
+      "sha256": "fcf07421de548dee7c6afde8f7d2ec82598467736001dbd3ea83f9d33d132f36"
+    },
+    "exact_source_dependency_generated_input_closure": {
+      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-compositor-timing-diagnostic-20261011/SOURCE_BINDING.json",
+      "pass": true,
+      "sha256": "aa405a4b3c32147c2236ce5ad2f8b45123b8334c0a24def4d64d074bc6282c7c"
+    },
+    "flash_and_ram_headroom": {
+      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-compositor-timing-diagnostic-20261011/BUILD_RECEIPT.json",
+      "pass": true,
+      "sha256": "aedef57067326bcb2da226ab5f6a71f6fe2487898230cc034761ca1349c34629"
+    },
+    "frozen_performance_soak_and_restore_procedure": {
+      "evidence_file": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/COMPOSITOR_TIMING_DIAGNOSTIC_DRYRUN.json",
+      "pass": true,
+      "sha256": "fcf07421de548dee7c6afde8f7d2ec82598467736001dbd3ea83f9d33d132f36"
+    },
+    "fully_local_pinned_build_toolchain": {
+      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-compositor-timing-diagnostic-20261011/BUILD_RECEIPT.json",
+      "pass": true,
+      "sha256": "aedef57067326bcb2da226ab5f6a71f6fe2487898230cc034761ca1349c34629"
+    },
+    "known_good_compiler_entry_smoke": {
+      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-compositor-timing-diagnostic-20261011/PIO_BUILD.log",
+      "pass": true,
+      "sha256": "fe90dd2e1c3937a81280026eb374375dda4d15d5ccd0d84664bdb8f9a15aeea9"
+    },
+    "launcher_rejects_invalid_manifest_before_device_access": {
+      "evidence_file": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/LIVE_ADMISSION_GUARD_NEGATIVE_TEST.json",
+      "pass": true,
+      "sha256": "2ff5755348add8ae278e0911bda91f946b1eeb0bc386f5aca025264dc2e8c0ab"
+    },
+    "matched_tails_off_test_plan": {
+      "evidence_file": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/MATCHED_TAILS_OFF_TEST_PLAN.json",
+      "pass": true,
+      "sha256": "aa9b255d96d0242f6efa82d547b5a4c36779d001fe95028a446738d2beadd961"
+    },
+    "preflight_read_only_hardware_state_and_identity": {
+      "evidence_file": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/LIVE_APPROVED_READONLY_PREFLIGHT.json",
+      "pass": true,
+      "sha256": "2c405bbd6e18c991bf9ab55f6f36e34fe0e3424173325191925b30348ae1addf"
+    },
+    "rollback_artifact_hash_verified": {
+      "evidence_file": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "pass": true,
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    }
+  },
+  "classification": "EXACT_COMPOSITOR_TIMING_DIAGNOSTIC_LIVE_APPROVED__CURRENT_PREFLIGHT_AND_EXACT_AUTH",
+  "fresh_owner_authorization": {
+    "attempt_number": 1,
+    "authorization_id": "OWNER-20261011-COMPOSITOR-TIMING-DIAGNOSTIC-01",
+    "candidate_bin_sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
+    "candidate_install_limit": 1,
+    "candidate_release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "recovery_install_limit": 1,
+    "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "scope": [
+      "One install of the exact compositor-timing diagnostic SHA only after its exact LIVE_APPROVED admission, capsule, prelive proof, and immediate fresh read-only preflight pass.",
+      "Capture the R4 Matrix/AUX identity and current Matrix/AUX/Vibe settings; run the diagnostic at kernel 0 and Matrix brightness 44, including three tails-off samples and eight tails-on component samples with unchanged controls and saved audio-input context.",
+      "Restore the exact captured HBNF settings on the diagnostic image, then return to and verify exact R4; one R4 recovery install maximum if the diagnostic was confirmed installed.",
+      "Continue with offline cause analysis and frozen release qualification; this diagnostic does not qualify or accept Cart 2.0.",
+      "No paid/remote builds, external communications, cloud deployment, Guest Mode, UV, router/AUX firmware or configuration change, threshold changes, retries, or reuse of the failed bbf9 candidate authorization."
+    ],
+    "source_message_ref": "Direct user standing authorization in this chat: \u201cI authorize UNLIMITED install and anything else, so long as they don\u2019t send communication or cost money\u201d and \u201cThis and all future similar requests are blanket-approved \u2026 without extra cost or external communication.\u201d",
+    "transport": "SSH-verified exact artifact staging on Opal followed by one Opal-origin multipart request to Matrix WLED /update; no retry."
+  },
+  "identities": {
+    "candidate_bin_path": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/artifact/hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011.bin",
+    "candidate_bin_sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
+    "candidate_bin_size_bytes": 1499344,
+    "candidate_release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+    "expected_installed_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "expected_installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "rollback_bin_path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "rollback_bin_size_bytes": 1489008,
+    "source_commit": "911b791d814ed50440567433b17f04da83b700da"
+  },
+  "limits": {
+    "candidate_install_attempts_used": 0,
+    "candidate_install_limit": 1,
+    "fresh_live_preflight_performed": true,
+    "live_mutation_authorized": true,
+    "recovery_attempts_used": 0,
+    "recovery_install_limit": 1
+  },
+  "not_established": [
+    "LIVE_QUALIFICATION",
+    "performance acceptance",
+    "28-kernel sweep",
+    "combined-feature qualification",
+    "90-minute soak",
+    "owner acceptance"
+  ],
+  "outcome": "PASS",
+  "schema": "hbnf-cart2-release-admission-v1",
+  "stage": "LIVE_APPROVED"
+}

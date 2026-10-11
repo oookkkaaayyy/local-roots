@@ -53,6 +53,10 @@ def stamp(): return datetime.now(timezone.utc).isoformat()
 def load_adapter():
     spec=importlib.util.spec_from_file_location("hbnf_live_adapter",ADAPTER_PATH)
     mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod);return mod
+def load_brightness_transaction():
+    path=ROOT/"scripts/hbnf_r6_audio_cache_live_transaction.py"
+    spec=importlib.util.spec_from_file_location("hbnf_r6_brightness_transaction",path)
+    mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod);return mod
 def identity(adapter,release):
     os.environ["HBNF_EXPECTED_RELEASE_ID"]=release
     # The pinned adapter captures EXPECTED at import time. Set the module's
@@ -105,12 +109,43 @@ def compositor_timing_sample(telemetry):
     values["frameTailBinResolutionUs"]=telemetry.get("frameTailBinResolutionUs")
     return values
 
-def complete_timing_capture(samples,candidate_identity_verified,failure):
-    """Only all eight scheduled samples without an abort count as a full capture."""
-    return (candidate_identity_verified and failure is None and len(samples)==8
+def diagnostic_runtime_context(state, build):
+    h=state.get("HBNF",{}) if isinstance(state,dict) else {}
+    timing=h.get("timing",{}) if isinstance(h,dict) else {}
+    variant=timing.get("variantSignature")
+    if variant is None:variant=h.get("variantSignature")
+    audio=h.get("audio",{}) if isinstance(h.get("audio",{}),dict) else {}
+    return {
+      "release_id":build.get("release_id"),"matrix_on":state.get("on"),
+      "kernel":timing.get("kernel"),"matrix_brightness":h.get("matrixBrightness"),
+      "variant_signature":variant,"vibe":h.get("vibe"),"audio_response":h.get("audioResponse"),
+      "motion":h.get("motion"),"palette":h.get("palette"),"scene":h.get("scene"),
+      "overlay_id":h.get("overlayId"),"active_vibe":h.get("activeVibe"),
+      "audio_input":{k:audio.get(k) for k in ("bass","mid","treble","volume","peak") if k in audio},
+      "fps":timing.get("fps"),"whole_frame_us":timing.get("wholeFrameUs")}
+
+def diagnostic_control_signature(context):
+    keys=("release_id","matrix_on","kernel","matrix_brightness","variant_signature",
+          "vibe","audio_response","motion","palette","scene","overlay_id")
+    signature={key:context.get(key) for key in keys}
+    if any(signature.get(key) is None for key in keys if key!="overlay_id"):
+        raise RuntimeError("matched diagnostic control context is incomplete")
+    return signature
+
+def verify_matched_control_signature(expected, current):
+    actual=diagnostic_control_signature(current)
+    if actual!=expected:
+        raise RuntimeError("diagnostic runtime controls or variant changed between tails-off/on samples")
+    return actual
+
+def complete_timing_capture(samples,candidate_identity_verified,failure,tails_off_samples):
+    """Require three matched tails-off polls and all eight tails-on samples."""
+    return (candidate_identity_verified and failure is None and len(tails_off_samples)==3 and len(samples)==8
         and all(isinstance(sample,dict)
             and all(type(sample.get(key)) in (int,float) for key in COMPOSITOR_METRICS)
-            for sample in samples))
+            for sample in samples)
+        and all(isinstance(sample,dict) and sample.get("instrumentation")=="tails_off"
+            for sample in tails_off_samples))
 
 def diagnostic_sample_decision(fps,p99,max_frame_ms,aux_active):
     """Record qualification failures; stop only when diagnostic safety is lost."""
@@ -261,10 +296,10 @@ def close_authority_after_transaction(receipt):
 def dry_run():
     # Pure simulation uses exact identity and bounded operation counts; no sockets or subprocesses.
     scenarios={
-      "success":["admission","preflight_r4_aux_ac_single_worker","opal_readonly_preflight","consume_exact_attempt","stage_hash_size_verified","install_diag_once_via_opal","verify_diag_identity","begin_snapshot","select_kernel0_brightness44","enable_builtin_timing_tails","capture_component_samples_at_8s","persist_metrics_and_context","restore_renderer_snapshot","stage_exact_r4_hash_size_verified","install_r4_once_via_opal","verify_r4_and_aux"],
-      "performance_gate_failure":["admission","preflight_r4_aux_ac_single_worker","opal_readonly_preflight","consume_exact_attempt","stage_hash_size_verified","install_diag_once_via_opal","verify_diag_identity","begin_snapshot","enable_builtin_timing_tails","record_fps_p99_failure","capture_remaining_component_samples","persist_gate_failure_and_component_metrics","restore_renderer_snapshot","stage_exact_r4_hash_size_verified","install_r4_once_via_opal","verify_r4_and_aux"],
-      "catastrophic":["admission","preflight_r4_aux_ac_single_worker","opal_readonly_preflight","consume_exact_attempt","stage_hash_size_verified","install_diag_once_via_opal","verify_diag_identity","begin_snapshot","enable_builtin_timing_tails","unsafe_frame_or_aux_loss_stop","persist_metrics_and_failure","restore_renderer_snapshot","stage_exact_r4_hash_size_verified","install_r4_once_via_opal","verify_r4_and_aux"],
-      "collector_failure":["admission","preflight_r4_aux_ac_single_worker","opal_readonly_preflight","consume_exact_attempt","stage_hash_size_verified","install_diag_once_via_opal","verify_diag_identity","begin_snapshot","enable_builtin_timing_tails","timeout_recorded_no_sample_skipped","persist_failure_evidence","restore_renderer_snapshot","stage_exact_r4_hash_size_verified","install_r4_once_via_opal","verify_r4_and_aux"],
+      "success":["admission","preflight_r4_aux_ac_single_worker","opal_readonly_preflight","capture_r4_hbnf_settings","consume_exact_attempt","stage_hash_size_verified","install_diag_once_via_opal","verify_diag_identity","begin_snapshot","select_kernel0","set_brightness44_with_existing_exact_settings_transaction","capture_matched_tails_off_samples","enable_builtin_timing_tails","capture_component_samples_at_8s","persist_metrics_and_context","restore_renderer_snapshot","restore_captured_hbnf_settings","stage_exact_r4_hash_size_verified","install_r4_once_via_opal","verify_r4_and_aux_and_original_brightness"],
+      "performance_gate_failure":["admission","preflight_r4_aux_ac_single_worker","opal_readonly_preflight","capture_r4_hbnf_settings","consume_exact_attempt","stage_hash_size_verified","install_diag_once_via_opal","verify_diag_identity","begin_snapshot","select_kernel0","set_brightness44_with_existing_exact_settings_transaction","capture_matched_tails_off_samples","enable_builtin_timing_tails","record_fps_p99_failure","capture_remaining_component_samples","persist_gate_failure_and_component_metrics","restore_renderer_snapshot","restore_captured_hbnf_settings","stage_exact_r4_hash_size_verified","install_r4_once_via_opal","verify_r4_and_aux_and_original_brightness"],
+      "catastrophic":["admission","preflight_r4_aux_ac_single_worker","opal_readonly_preflight","capture_r4_hbnf_settings","consume_exact_attempt","stage_hash_size_verified","install_diag_once_via_opal","verify_diag_identity","begin_snapshot","select_kernel0","set_brightness44_with_existing_exact_settings_transaction","capture_matched_tails_off_samples","enable_builtin_timing_tails","unsafe_frame_or_aux_loss_stop","persist_metrics_and_failure","restore_renderer_snapshot","restore_captured_hbnf_settings","stage_exact_r4_hash_size_verified","install_r4_once_via_opal","verify_r4_and_aux_and_original_brightness"],
+      "collector_failure":["admission","preflight_r4_aux_ac_single_worker","opal_readonly_preflight","capture_r4_hbnf_settings","consume_exact_attempt","stage_hash_size_verified","install_diag_once_via_opal","verify_diag_identity","begin_snapshot","select_kernel0","set_brightness44_with_existing_exact_settings_transaction","capture_matched_tails_off_samples","enable_builtin_timing_tails","timeout_recorded_no_sample_skipped","persist_failure_evidence","restore_renderer_snapshot","restore_captured_hbnf_settings","stage_exact_r4_hash_size_verified","install_r4_once_via_opal","verify_r4_and_aux_and_original_brightness"],
       "identity_mismatch":["admission","preflight_r4_aux_ac_single_worker","identity_mismatch_before_write","zero_device_writes"],
       "http200_identity_mismatch_r4_still_installed":["admission","preflight_r4_aux_ac_single_worker","consume_exact_attempt","single_diag_upload_http200","exact_candidate_identity_wait_fails","no_capture_or_renderer_commands_without_exact_candidate_identity","read_only_recovery_identity_R4","no_unnecessary_r4_upload","verify_matrix_and_aux","close_inconclusive_r4_verified"],
       "http200_identity_unknown":["admission","preflight_r4_aux_ac_single_worker","consume_exact_attempt","single_diag_upload_http200","exact_candidate_identity_wait_fails","no_capture_or_renderer_commands_without_exact_candidate_identity","recovery_identity_unavailable","zero_recovery_writes","close_live_authority_and_report_blocker"],
@@ -283,6 +318,8 @@ def dry_run():
       "mandatory_return":{"release_id":R4_ID,"sha256":R4_SHA},"window_seconds_max":60,"safety_interval_seconds":8,
       "performance_gate":{"fps_floor":20,"frame_p99_ceiling_ms":75,"on_failure":"record the failure and continue all eight scheduled diagnostic samples"},
       "diagnostic_stop_rule":{"stop_on":"invalid/missing frame max, frame max >=1000ms, AUX native DDP loss, identity/runtime mismatch, or Matrix restart","preserves_exact_r4_return":True},
+      "runtime_brightness_policy":{"capture_r4_runtime_and_persisted_settings":True,"measure_at":44,"restore_exact_captured_hbnf_settings_on_diagnostic_before_r4_return":True,"verify_r4_returns_at_original_brightness":True},
+      "matched_tails_off_test_plan":{"same_candidate_kernel0_brightness44_and_runtime_controls":True,"tails_off_samples":3,"sample_interval_seconds":8,"then_enable_tails_and_capture_component_metrics":True,"variant_signature_and_control_changes_abort":True,"raw_audio_input_context_saved_each_poll":True,"observer_effect_conclusions":"report measurements without attributing causality from nested percentiles"},
       "measurement_metrics":list(COMPOSITOR_METRICS),"observer_instrumentation":"Built-in cycle timing only while tail collection is enabled; no separate frame-context trace commands.",
       "percentile_semantics":"Every read is a cumulative snapshot since tail collection was enabled or kernel changed; snapshots are not independent polling windows.",
       "firmware_source_changed":False,"device_requests":0,"next_attempt_transport":"previously proven SSH-verified Opal staging plus one Opal-origin curl multipart upload; no Mac-origin firmware body transfer","scenarios":scenarios,"result":"PASS_OFFLINE_SEQUENCE_POLICY"}
@@ -293,7 +330,7 @@ def execute():
     adapter=load_adapter();binding=json.loads((ROOT/"config/HBNF_CONTROL_STATE.json").read_text()).get("live_authorization_binding",{});attempt=int(binding.get("attempt_number",0))
     if attempt<1:raise RuntimeError("attempt number missing from exact authorization binding")
     OUT=ATTEMPT_ROOT/f"attempt-{attempt:02d}";OUT.mkdir(parents=True,exist_ok=True)
-    receipt={"schema":"hbnf-r6-compositor-timing-diagnostic-live-transaction-v1","candidate":{"release_id":DIAG_ID,"sha256":DIAG_SHA,"size_bytes":DIAG_SIZE},"mandatory_return":{"release_id":R4_ID,"sha256":R4_SHA},"attempt_number":attempt,"authorization_id":binding.get("authorization_id"),"transport":binding.get("transport"),"state":"STARTED","started_at_utc":stamp(),"percentile_semantics":"Cumulative snapshots since tails were enabled or kernel changed; not independent polling windows.","candidate_install_attempts":0,"r4_return_attempts":0,"safety_samples":[],"compositor_timing_samples":[]}
+    receipt={"schema":"hbnf-r6-compositor-timing-diagnostic-live-transaction-v1","candidate":{"release_id":DIAG_ID,"sha256":DIAG_SHA,"size_bytes":DIAG_SIZE},"mandatory_return":{"release_id":R4_ID,"sha256":R4_SHA},"attempt_number":attempt,"authorization_id":binding.get("authorization_id"),"transport":binding.get("transport"),"state":"STARTED","started_at_utc":stamp(),"percentile_semantics":"Cumulative snapshots since tails were enabled or kernel changed; not independent polling windows.","candidate_install_attempts":0,"r4_return_attempts":0,"starting_matrix_brightness":None,"matched_tails_off_samples":[],"safety_samples":[],"compositor_timing_samples":[]}
     save(OUT/"TRANSACTION_STARTED.json",receipt)
     # Repeat all necessary prewrite checks immediately before the first write.
     if digest(DIAG_BIN)!=DIAG_SHA or digest(R4_BIN)!=R4_SHA:raise RuntimeError("exact artifact/rollback SHA mismatch")
@@ -306,8 +343,16 @@ def execute():
     route=subprocess.run(["route","-n","get","192.168.77.10"],capture_output=True,text=True,timeout=5).stdout
     if "AC Power" not in power or "interface: en0" not in route:raise RuntimeError("Mac power/LAN preflight failed")
     os.environ["HBNF_EXPECTED_RELEASE_ID"]=R4_ID;os.environ["HBNF_EXPECTED_FIRMWARE_SHA256"]=R4_SHA
-    pre=adapter.readonly_preflight("r6-diagnostic-immediate-preflight")
-    if pre.get("release_id")!=R4_ID or pre.get("matrix_brightness")!=44 or pre.get("matrix_on") is not True:raise RuntimeError("R4 preflight mismatch")
+    pre=adapter.readonly_preflight("r6-diagnostic-immediate-preflight",expected_brightness=None)
+    if pre.get("release_id")!=R4_ID or pre.get("matrix_on") is not True:raise RuntimeError("R4 preflight mismatch")
+    baseline_brightness=pre.get("matrix_brightness")
+    receipt["starting_matrix_brightness"]=baseline_brightness
+    brightness_tx=load_brightness_transaction()
+    baseline_context=brightness_tx.read_matrix_context(expected_release=R4_ID)["brightness"]
+    brightness_baseline=baseline_context.get("persisted")
+    if baseline_context.get("runtime",{}).get("matrixBrightness")!=baseline_brightness:
+        raise RuntimeError("R4 runtime/persisted brightness reconciliation failed")
+    receipt["starting_hbnf_settings"]={"runtime":baseline_context.get("runtime"),"persisted":brightness_baseline}
     # Confirm no concurrent Cart live worker. Ignore only this process and its
     # supervisor ancestry; command lines are inspected in memory, never emitted.
     ps=subprocess.run(["ps","-axo","pid=,ppid=,command="],capture_output=True,text=True,timeout=5).stdout
@@ -322,7 +367,7 @@ def execute():
     competing=[pid for pid,(_,cmdline) in rows.items() if pid not in ancestors and any(name in cmdline for name in live_names)]
     if competing:
         raise RuntimeError("competing Cart live runner detected")
-    receipt["preflight"]={"pass":True,"at_utc":stamp(),"r4":pre,"mac_on_ac":True,"matrix_route_en0":True,"diagnostic_sha256":digest(DIAG_BIN),"rollback_sha256":digest(R4_BIN)}
+    receipt["preflight"]={"pass":True,"at_utc":stamp(),"r4":pre,"mac_on_ac":True,"matrix_route_en0":True,"diagnostic_sha256":digest(DIAG_BIN),"rollback_sha256":digest(R4_BIN),"starting_matrix_brightness":baseline_brightness,"measurement_matrix_brightness":44}
     save(OUT/"TRANSACTION_STARTED.json",receipt)
     diag_uploaded=False;candidate_identity_verified=False;snapshot=None;failure=None
     try:
@@ -350,9 +395,31 @@ def execute():
         snapshot=adapter.snapshot(None,"config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json")
         receipt["renderer_snapshot"]=snapshot;save(OUT/"RENDERER_SNAPSHOT.json",snapshot)
         adapter.select(0)
+        receipt["measurement_brightness_setup"]=brightness_tx.change_matrix_brightness(
+            brightness_baseline,operation="measure",expected_release=DIAG_ID)
         state,p20=adapter.p20_state()
         if state.get("HBNF",{}).get("timing",{}).get("kernel")!=0 or state.get("HBNF",{}).get("matrixBrightness")!=44:
             raise RuntimeError("kernel-0 / matrix brightness 44 setup not verified")
+        if state.get("HBNF",{}).get("foundationTelemetry",{}).get("enabled") is not False:
+            raise RuntimeError("matched tails-off baseline is unavailable")
+        matched_signature=None;tails_off_start=time.monotonic()
+        for scheduled in (4,12,20):
+            target=tails_off_start+scheduled;delay=target-time.monotonic()
+            if delay>0:time.sleep(delay)
+            reads,elapsed=adapter._parallel_soak_reads("r6-diagnostic-tails-off")
+            rows={k:response_body(v) for k,v in reads.items() if not k.startswith("_")}
+            info,build,st=rows["matrix_info"],rows["matrix_build"],rows["matrix_state"]
+            if build.get("release_id")!=DIAG_ID or info.get("mac","").replace(":","").lower()!=MATRIX_MAC or info.get("ip")!="192.168.77.10":raise RuntimeError("identity mismatch during tails-off baseline")
+            if st.get("HBNF",{}).get("foundationTelemetry",{}).get("enabled") is not False:raise RuntimeError("tails-off baseline instrumentation unexpectedly enabled")
+            context=diagnostic_runtime_context(st,build)
+            signature=diagnostic_control_signature(context)
+            if matched_signature is None:matched_signature=signature
+            else:verify_matched_control_signature(matched_signature,context)
+            if context["matrix_on"] is not True or context["kernel"]!=0 or context["matrix_brightness"]!=44:raise RuntimeError("tails-off runtime control mismatch")
+            if type(context["whole_frame_us"]) not in (int,float) or context["whole_frame_us"]>=1000000:raise RuntimeError("unsafe tails-off frame interval")
+            if not aux_ok(rows):raise RuntimeError("AUX native DDP loss during tails-off baseline")
+            row={"scheduled_seconds":scheduled,"batch_elapsed_seconds":elapsed,"instrumentation":"tails_off","runtime_context":context,"control_signature":signature,"aux_native_ddp_active":True}
+            receipt["matched_tails_off_samples"].append(row);save(OUT/"MATCHED_TAILS_OFF_SAMPLES.json",receipt["matched_tails_off_samples"])
         adapter.enable_tails(True)
         capture_start=time.monotonic();receipt["capture_start_utc"]=stamp();receipt["state"]="CAPTURING_KERNEL0";save(OUT/"TRANSACTION_STARTED.json",receipt)
         last_uptime=None;performance_gate_failures=[]
@@ -366,7 +433,9 @@ def execute():
             ft=rows["matrix_state"].get("HBNF",{}).get("foundationTelemetry",{})
             mi=rows["matrix_info"]; build=rows["matrix_build"]; st=rows["matrix_state"]
             if build.get("release_id")!=DIAG_ID or mi.get("mac","").replace(":","").lower()!=MATRIX_MAC or mi.get("ip")!="192.168.77.10":raise RuntimeError("identity mismatch during capture")
+            context=diagnostic_runtime_context(st,build);verify_matched_control_signature(matched_signature,context)
             if st.get("on") is not True or st.get("HBNF",{}).get("matrixBrightness")!=44 or timing.get("kernel")!=0:raise RuntimeError("runtime state mismatch during capture")
+            if ft.get("enabled") is not True:raise RuntimeError("tails-on component capture is not enabled")
             uptime=int(mi.get("uptime",0));restarted=last_uptime is not None and uptime<last_uptime;last_uptime=uptime
             if restarted:raise RuntimeError("Matrix restart during diagnostic capture")
             aux=aux_ok(rows);fps=timing.get("fps");p99=ft.get("frameMsP99")
@@ -375,7 +444,7 @@ def execute():
             row={"scheduled_seconds":scheduled,"read_started_monotonic_ns":sample_start,"read_completed_monotonic_ns":time.monotonic_ns(),"batch_elapsed_seconds":elapsed,
               "endpoint_reads":reads.get("_endpoint_timing",{}),"uptime_seconds":uptime,"fps":fps,"frame_ms_p99":p99,
               "frame_ms_max":ft.get("frameMsMax"),"frame_tail_overflow":ft.get("frameTailOverflow"),"kernel":timing.get("kernel"),
-              "variant_signature":timing.get("variantSignature"),"matrix_brightness":st.get("HBNF",{}).get("matrixBrightness"),"aux_native_ddp_active":aux,
+              "variant_signature":timing.get("variantSignature"),"matrix_brightness":st.get("HBNF",{}).get("matrixBrightness"),"runtime_context":context,"control_signature":matched_signature,"instrumentation":"tails_on","aux_native_ddp_active":aux,
               "aux_physical_output_status":"NOT_OBSERVABLE_FROM_WLED_JSON","component_timing":component_timing,
               "performance_gate_pass":decision["performance_gate_pass"],
               "performance_gate_failure_reasons":decision["performance_gate_failure_reasons"],
@@ -388,6 +457,10 @@ def execute():
             receipt["kernel0_performance_gate"]={"pass":not performance_gate_failures,"failures":performance_gate_failures}
             if decision["stop"]:raise RuntimeError("CATASTROPHIC_ABORT: "+",".join(decision["stop_reasons"]))
         receipt["capture_seconds"]=round(time.monotonic()-capture_start,3)
+        receipt["matched_tails_off_comparison"]={"control_signature":matched_signature,
+          "tails_off":[{"scheduled_seconds":x["scheduled_seconds"],"fps":x["runtime_context"].get("fps"),"whole_frame_us":x["runtime_context"].get("whole_frame_us")} for x in receipt["matched_tails_off_samples"]],
+          "tails_on":[{"scheduled_seconds":x["scheduled_seconds"],"fps":x.get("fps"),"frame_ms_avg":x.get("component_timing",{}).get("frameMsAvg")} for x in receipt["safety_samples"]],
+          "interpretation":"Raw same-candidate measurements under matched runtime controls; no causal conclusion from cumulative tail percentiles."}
     except Exception as e:
         failure=f"{type(e).__name__}: {e}";receipt["diagnostic_error"]=failure
     finally:
@@ -405,6 +478,18 @@ def execute():
                 save(OUT/"RENDERER_RESTORE.json",receipt["renderer_restore"])
             except Exception as e:
                 receipt["renderer_restore_error"]=f"{type(e).__name__}: {e}";save(OUT/"RENDERER_RESTORE.json",receipt["renderer_restore"])
+        if candidate_identity_verified and baseline_context:
+            try:
+                current_brightness=brightness_tx.read_matrix_context(expected_release=DIAG_ID)["brightness"]
+                if current_brightness.get("runtime")==brightness_baseline and current_brightness.get("persisted")==brightness_baseline:
+                    receipt["baseline_settings_restore"]={"verified":True,"write_performed":False,"settings":brightness_baseline}
+                else:
+                    receipt["baseline_settings_restore"]=brightness_tx.change_matrix_brightness(
+                        brightness_baseline,operation="restore",expected_release=DIAG_ID)
+                save(OUT/"BASELINE_SETTINGS_RESTORE.json",receipt["baseline_settings_restore"])
+            except Exception as e:
+                receipt["baseline_settings_restore_error"]=f"{type(e).__name__}: {e}"
+                save(OUT/"BASELINE_SETTINGS_RESTORE.json",receipt["baseline_settings_restore_error"])
         if diag_uploaded:
             # The exact R4 return is mandatory after the diagnostic; one request, no retry.
             try:
@@ -428,12 +513,12 @@ def execute():
                     last={"status":"WAITING_FOR_AUX_DDP","at_utc":stamp()};time.sleep(3)
                 final_state=adapter.get(MATRIX+"/json/state")
                 final_info=adapter.get(MATRIX+"/json/info")
-                if final_state.get("on") is not True or final_state.get("HBNF",{}).get("matrixBrightness")!=44 or final_info.get("freeheap",0)<20000:
-                    raise RuntimeError("exact R4 identity present but Matrix runtime health/brightness failed")
+                if final_state.get("on") is not True or final_state.get("HBNF",{}).get("matrixBrightness")!=baseline_brightness or final_info.get("freeheap",0)<20000:
+                    raise RuntimeError("exact R4 identity present but Matrix runtime health/prior brightness restore failed")
                 if not last or last.get("status")!="PASS":raise RuntimeError("R4 restored but AUX DDP not re-established within 60s")
                 receipt["aux_return_verification"]=last
                 captured=receipt.get("compositor_timing_samples",[])
-                complete_capture=complete_timing_capture(captured,candidate_identity_verified,failure)
+                complete_capture=complete_timing_capture(captured,candidate_identity_verified,failure,receipt.get("matched_tails_off_samples",[]))
                 receipt["state"]=("COMPOSITOR_TIMING_CAPTURED__EXACT_R4_RESTORED__AUX_DDP_VERIFIED" if complete_capture else "INCONCLUSIVE__EXACT_R4_RESTORED__AUX_DDP_VERIFIED")
             except Exception as e:
                 receipt["r4_restore_error"]=f"{type(e).__name__}: {e}";receipt["state"]="BLOCKED_R4_RETURN_NOT_VERIFIED"

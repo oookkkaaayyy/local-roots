@@ -1,0 +1,12 @@
+{
+  "command": [
+    "python3",
+    "tests/hbnf_guarded_run.py"
+  ],
+  "output_file": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/LIVE_ADMISSION_GUARD_NEGATIVE_TEST.txt",
+  "output_sha256": "47f9ccd062c834756b10b07ac1de9f2e89b8ac931ec72e3f74bb09910ebf4b23",
+  "result": "PASS: missing, malformed, and stale exact LIVE_APPROVED admissions block the guarded entrypoint before child/device-request marker creation. Test uses isolated host fixtures; no device access.",
+  "schema": "hbnf-live-admission-entrypoint-negative-test-v1",
+  "source_test": "tests/hbnf_guarded_run.py",
+  "source_test_sha256": "aefeee335891a52a93d6c97f038a1d4fe2e6e656e2482d77ba5c642222790485"
+}

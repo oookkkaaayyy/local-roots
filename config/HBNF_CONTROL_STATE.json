@@ -229,7 +229,7 @@
   "bounded_phase2_r4_install_attempt2_authorization": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008-RETRY1",
     "authorized_at_utc": "2026-10-08T06:20:06.671131+00:00",
-    "authorized_by": "Current user instruction: URGENT \u2014 RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: URGENT — RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:21:47.880324+00:00",
@@ -347,7 +347,7 @@
   "bounded_phase2_r4_live_qualification_authorization": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
     "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
-    "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: CART 2.0 — FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:10:00.723317+00:00",
@@ -928,17 +928,14 @@
   "current_task": {
     "autonomous_completion_authorization": {
       "allowed": [
-        "The exact candidate attempt and exact R4 recovery are complete; continue offline work only."
+        "One attempt using only the exact compositor timing diagnostic SHA and exact R4 return after all current exact LIVE_APPROVED admission, capsule, prelive proof, and immediate read-only preflight gates pass.",
+        "Continue offline cause analysis and prepare later exact candidates under the user’s standing no-cost/no-external-communication blanket authorization; do not stop merely because a diagnostic or qualification attempt fails."
       ],
       "forbidden": [
-        "Any other firmware installation, OTA, speculative rebuild, router/Opal/AUX firmware or configuration change, cloud production deployment, Guest Mode activation, or UV energization.",
-        "Any retry or alternate candidate after this one attempt, weakening frozen thresholds, paid/remote builds, external communications, or unapproved production changes.",
-        "Starting a device write unless the exact candidate LIVE_APPROVED admission and immediate fresh preflight pass.",
-        "Any second candidate install, candidate retry, or alternate artifact after the consumed one attempt.",
-        "Any mutation beyond the exact R4 recovery already authorized."
+        "Paid or remote builds, external communications, cloud deployment, Guest Mode, UV energization, router/AUX firmware or configuration changes, threshold/scope changes, reusing the failed bbf9 candidate authorization, or any live write before all exact gates pass."
       ],
-      "scope": "Exact candidate hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011, SHA-256 bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2; one install; one exact R4 recovery only on required post-install gate failure; frozen qualification sequence and thresholds unchanged.",
-      "user_permission": "Direct owner user message 01a129c9-8495-7af3-9ca4-1610a66ef123 authorizes exactly one live qualification attempt for the identified candidate and exact R4 recovery, conditional on passing fresh read-only preflight and exact-artifact admission. No paid/remote builds, cloud, external messages, Guest Mode, UV, retries, or threshold changes."
+      "scope": "Exact diagnostic hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011, SHA-256 e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e, Matrix MAC 70:4b:ca:5b:34:5c; one diagnostic install and exact R4 return with captured HBNF settings restored. Full 28-kernel, combined-feature, 90-minute soak, rollback and owner acceptance gates remain required for Cart 2.0 acceptance.",
+      "user_permission": "Direct user standing authorization in this chat: “I authorize UNLIMITED install and anything else, so long as they don’t send communication or cost money” and “This and all future similar requests are blanket-approved … without extra cost or external communication.”"
     },
     "aux_blocker": {
       "historical_direct_output_failure": "Preserved; does not override the newer current owner observation.",
@@ -958,8 +955,9 @@
       "status": "OFFLINE_CORRECTION_TESTED__FRESH_PRELIVE_PASS"
     },
     "blockers": [
-      "The exact compositor-hoist candidate failed its required frame-tail telemetry validity gate before any kernel profile completed: frameTailOverflow=true and frameMsP99 saturated at 127.875ms. Exact R4 was restored and verified under the one-use owner authorization.",
-      "No 28-kernel sweep, combined-feature checks, 90-minute soak, physical/audio/visual acceptance, or Owner/Guest end-to-end acceptance completed. The current one-use candidate and recovery limits are consumed; no retry or alternate candidate is authorized."
+      "R6 compositor-hoist failed kernel-0 performance telemetry (11 FPS, p99 saturated at 127.875 ms); exact R4 is installed. Cause remains unisolated.",
+      "The exact compositor-timing diagnostic is offline-compiled and passes OFFLINE_COMPILED admission; current LIVE_APPROVED admission, capsule/prelive gate, and immediate preflight remain to complete.",
+      "No 28-kernel sweep, combined-feature checks, uninterrupted 90-minute soak, or owner acceptance has completed."
     ],
     "brightness_field_target": {
       "field_observation": "At roughly <=20 brightness Matrix appears effectively off; roughly 20-60 visibly loses LED/pixel participation and scene structure, requiring uncomfortable brightness to obtain a full-looking animation.",
@@ -1048,7 +1046,7 @@
         "Prior 16:42/16:45 times are not automatic abort or rollback triggers for the currently active seq53 path.",
         "Continue the already-authorized seq53 install/targeted validation while commands are actively progressing and safety/identity evidence remains intact.",
         "Do not broaden scope or start new exploratory work.",
-        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop\u2014not for elapsed wall-clock time alone.",
+        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop—not for elapsed wall-clock time alone.",
         "Owner-device smoke remains mandatory before declaring field-ready."
       ],
       "schema": "hbnf-field-readiness-deadline-v1",
@@ -1934,12 +1932,12 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
+      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "live_mutation_authorization": "Closed: candidate attempt and exact R4 recovery are consumed; exact R4 restored and verified; no further live writes authorized.",
     "live_mutation_authorized": false,
-    "name": "Cart 2.0 coordinated R6 release \u2014 Cart routes verified; device preflight pending",
+    "name": "Cart 2.0 coordinated R6 release — Cart routes verified; device preflight pending",
     "next_action": "Offline: preserve the R6 kernel-0 early-gate failure and exact R4 recovery; compare matched R4/R6 stage and frame-tail evidence, audit polling/histogram comparability, and continue independent Owner app/backend/relay work. No live mutation or candidate retry until a source-backed correction, exact artifact admission, and the applicable authority gates are satisfied.",
     "next_work": "Maintain the independent offline Owner app and backend/relay findings; after objective R6 qualification, complete owner physical/audio/visual acceptance and end-to-end command/scoring checks under existing authority.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
@@ -2635,7 +2633,7 @@
       "status": "PASS"
     },
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "QUALIFICATION_FAILED_R4_RECOVERED",
+    "status": "R6_DIAGNOSTIC_OFFLINE_COMPILED__CAUSE_OPEN__LIVE_ADMISSION_PENDING",
     "t3_fast_path_preparation": {
       "human_approval_required": true,
       "human_packet": "work/cart2/27_T3_PHASE2_FAST_PATH_PREP_20261006.md",
@@ -2680,22 +2678,22 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "current_failure_domain": "R6_FRAME_TAIL_TELEMETRY_GATE_FAILED__R4_RECOVERED__OFFLINE_CLASSIFICATION_FIX",
+    "current_failure_domain": "R6_COMPOSITOR_TIMING_DIAGNOSTIC_OFFLINE_COMPILED__MATCHED_TAILS_OFF_READY__LIVE_ADMISSION_PENDING",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
     "current_subject": {
-      "release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011",
-      "artifact_sha256": "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2",
+      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+      "artifact_sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
       "installed_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
       "installed_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-      "qualification_result": "evidence/cart2-r6-compositor-hoist-20261011/live-qualification/r4-recovery-after-tail-overflow-20261011/TRANSACTION_RESULT.json",
-      "failure_evidence": "evidence/cart2-r6-compositor-hoist-20261011/live-qualification/sweep/SATURATED_TELEMETRY_RAW.json"
+      "parent_failed_release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011",
+      "parent_failed_sha256": "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2",
+      "diagnostic_status": "OFFLINE_COMPILED__LIVE_ADMISSION_PENDING"
     },
     "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Finish the offline runner classification regression, verify the control state/evidence, and preserve the change on the isolated branch.",
-      "Do not resume qualification: the required runtime telemetry gate failed; the candidate install and R4 recovery limits are both consumed.",
-      "Any future candidate must first address the actual saturated-tail runtime failure offline, pass the complete frozen host qualification path, and receive a new exact candidate-specific owner authorization before live qualification."
+      "Complete exact LIVE_APPROVED admission, existing platform capsule/prelive gate, and immediate read-only Matrix/AUX/Opal preflight for the exact diagnostic and current captured settings.",
+      "If all gates pass, use one guarded diagnostic attempt: three matched tails-off samples, eight tails-on component samples, then restore captured settings and exact R4.",
+      "Use measured component data to make the smallest evidence-based offline performance correction; then complete the frozen 28-kernel, combined-feature, uninterrupted 90-minute soak, rollback verification, and owner acceptance."
     ],
     "no_repeat": [
       "Do not repeat this candidate installation or exact R4 recovery; both one-use limits are consumed.",
@@ -2919,36 +2917,32 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-11T07:41:29Z",
+  "last_updated_utc": "2026-10-11T09:39:15.454989+00:00",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
-    "authorization": "One exact R6 compositor-hoist qualification attempt, directly authorized by the owner and bound to the exact candidate, Matrix, and R4 recovery.",
-    "authorized": false,
-    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011",
-    "candidate_sha256": "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2",
+    "authorization": "Standing direct owner blanket authorization, bound to this exact diagnostic and R4 return.",
+    "authorized": true,
+    "candidate_release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+    "candidate_sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "current_gate": "QUALIFICATION_FAILED_R4_RECOVERED",
-    "hardware_writes_permitted_now": false,
-    "live_admission_pending": false,
-    "transaction_consumed": true,
+    "candidate_attempts_used": 0,
     "candidate_install_limit": 1,
-    "candidate_attempts_used": 1,
+    "recovery_attempts_used": 0,
     "recovery_install_limit": 1,
-    "recovery_attempts_used": 1,
-    "candidate_install_permitted": false,
-    "operation_scope": "EXACT_R4_RECOVERY_ONLY",
-    "candidate_attempt_started_unix": 1791703938.393527,
-    "status": "QUALIFICATION_FAILED_R4_RECOVERED",
-    "transaction_result": "evidence/cart2-r6-compositor-hoist-20261011/live-qualification/r4-recovery-after-tail-overflow-20261011/TRANSACTION_RESULT.json",
-    "recovery_reason": "Required telemetry validity gate failed: frameTailOverflow=true; frameMsP99 saturated at 127.875ms. No kernel profile completed; candidate remains unqualified."
+    "candidate_install_permitted": true,
+    "operation_scope": "EXACT_COMPOSITOR_TIMING_DIAGNOSTIC_ONLY",
+    "current_gate": "LIVE_APPROVED_ADMISSION_AND_PRELIVE_PENDING",
+    "live_admission_pending": true,
+    "transaction_consumed": false,
+    "status": "EXACT_DIAGNOSTIC_AUTHORIZED__NOT_EXECUTABLE_UNTIL_GUARDED_GATES_PASS"
   },
-  "live_mutation_authorization_closed_at_utc": "2026-10-10T08:46:10Z",
+  "live_mutation_authorization_closed_at_utc": null,
   "live_mutation_authorization_closure": {
     "evidence": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-03/FINAL_DEVICE_STATE_CLOSURE.json",
     "evidence_sha256": "a81fe0993144068206859041a010fad1ef7ed5cfa88f8c3a6edc7ff25e5ecaf0",
     "reason": "Attempt-3 exact diagnostic candidate hit catastrophic kernel-0 threshold failure for three consecutive scheduled samples. Renderer restore passed; exact R4 recovery and readback passed; AUX native DDP healthy. No live authority remains."
   },
-  "live_mutation_authorized": false,
+  "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",
@@ -3151,12 +3145,37 @@
       "status": "CLOSED__CURRENT_TRANSACTION_AUTHORITIES_CONSUMED",
       "target": "Have exact fast candidate installed and machine-qualified, ready for OWNER SMOKE NOW within the user's ~10-minute dog walk.",
       "user_authorization": "At 16:43 PDT user requested immediate salvage while away for ~10 minutes and explicitly directed that this false blocker not prevent completion; target is ready for owner smoke on return."
+    },
+    {
+      "archived_at_utc": "2026-10-11T09:39:15.454989+00:00",
+      "reason": "Prior exact candidate R6 performance gate failed and R4 recovery completed; new user blanket authorization is bound to a distinct diagnostic artifact.",
+      "authorization": {
+        "authorization": "One exact R6 compositor-hoist qualification attempt, directly authorized by the owner and bound to the exact candidate, Matrix, and R4 recovery.",
+        "authorized": false,
+        "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011",
+        "candidate_sha256": "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2",
+        "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+        "current_gate": "QUALIFICATION_FAILED_R4_RECOVERED",
+        "hardware_writes_permitted_now": false,
+        "live_admission_pending": false,
+        "transaction_consumed": true,
+        "candidate_install_limit": 1,
+        "candidate_attempts_used": 1,
+        "recovery_install_limit": 1,
+        "recovery_attempts_used": 1,
+        "candidate_install_permitted": false,
+        "operation_scope": "EXACT_R4_RECOVERY_ONLY",
+        "candidate_attempt_started_unix": 1791703938.393527,
+        "status": "QUALIFICATION_FAILED_R4_RECOVERED",
+        "transaction_result": "evidence/cart2-r6-compositor-hoist-20261011/live-qualification/r4-recovery-after-tail-overflow-20261011/TRANSACTION_RESULT.json",
+        "recovery_reason": "Required telemetry validity gate failed: frameTailOverflow=true; frameMsP99 saturated at 127.875ms. No kernel profile completed; candidate remains unqualified."
+      }
     }
   ],
   "previous_phase2_r4_install_authorization_consumed": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
     "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
-    "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: CART 2.0 — FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:10:00.723317+00:00",
@@ -3459,7 +3478,7 @@
     "status": "OFFLINE_DESIGN_ONLY__OVERHEAD_AND_IMPLEMENTATION_PROOF_REQUIRED"
   },
   "schema": "hbnf-control-state-v2",
-  "status": "R4_RECOVERY_ONLY_AUTHORIZED",
+  "status": "R6_COMPOSITOR_TIMING_DIAGNOSTIC_AUTHORIZED__LIVE_ADMISSION_PENDING",
   "live_mutation_authorization_reconciliation": {
     "schema": "hbnf-live-authorization-state-reconciliation-v1",
     "recorded_at_utc": "2026-10-10T06:34:15+00:00",
@@ -3535,7 +3554,7 @@
       "one exact R4 return and read-only identity/health/AUX DDP verification",
       "no production acceptance, no firmware rebuild, no cloud/router/AUX firmware changes"
     ],
-    "source_message_ref": "Current owner message in this Codex task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; exact diagnostic SHA eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a and exact R4 SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
+    "source_message_ref": "Current owner message in this Codex task: CART 2.0 — ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; exact diagnostic SHA eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a and exact R4 SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
     "transport": "SSH-verified temporary artifact on Opal, then one Opal-origin multipart POST to Matrix WLED /update",
     "r4_return_attempts_used": 1,
     "recovery_install_limit": 1,
@@ -3547,20 +3566,23 @@
     "failure_classification_sha256": "232ec819c64d203797e5d89fcd4f9a63a68db5033608306a1f968246f38a95da"
   },
   "live_authorization_binding": {
-    "authorization_id": "OWNER-20261011-01a129c9",
-    "source_message_ref": "Codex worker task 01a11540-171f-7392-bde9-b45b21294be6; direct owner user message 01a129c9-8495-7af3-9ca4-1610a66ef123 (turn 01a129c9-7ef5-7cb3-98aa-3e6625bf1831)",
-    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011",
-    "candidate_bin_sha256": "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2",
+    "authorization_id": "OWNER-20261011-COMPOSITOR-TIMING-DIAGNOSTIC-01",
+    "source_message_ref": "Direct user standing authorization in this chat: “I authorize UNLIMITED install and anything else, so long as they don’t send communication or cost money” and “This and all future similar requests are blanket-approved … without extra cost or external communication.”",
+    "candidate_release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+    "candidate_bin_sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
     "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "matrix_mac": "70:4b:ca:5b:34:5c",
     "scope": [
-      "One exact candidate installation only, after this candidate-specific LIVE_APPROVED admission and fresh read-only preflight pass.",
-      "Run early matched tails-off kernel 0 and kernel 13 checks at brightness 44, then all 28 kernels, combined-feature checks, and one uninterrupted 5400-second soak under the unchanged frozen policy.",
-      "If a required gate fails after installation, stop qualification, restore and verify exact R4 once; no retry or alternate candidate.",
-      "No paid or remote builds, cloud deployment, external messages, Guest Mode activation, UV energization, router/AUX changes, or threshold/scope changes."
+      "One install of the exact compositor-timing diagnostic SHA only after its exact LIVE_APPROVED admission, capsule, prelive proof, and immediate fresh read-only preflight pass.",
+      "Capture the R4 Matrix/AUX identity and current Matrix/AUX/Vibe settings; run the diagnostic at kernel 0 and Matrix brightness 44, including three tails-off samples and eight tails-on component samples with unchanged controls and saved audio-input context.",
+      "Restore the exact captured HBNF settings on the diagnostic image, then return to and verify exact R4; one R4 recovery install maximum if the diagnostic was confirmed installed.",
+      "Continue with offline cause analysis and frozen release qualification; this diagnostic does not qualify or accept Cart 2.0.",
+      "No paid/remote builds, external communications, cloud deployment, Guest Mode, UV, router/AUX firmware or configuration change, threshold changes, retries, or reuse of the failed bbf9 candidate authorization."
     ],
     "candidate_install_limit": 1,
-    "recovery_install_limit": 1
+    "recovery_install_limit": 1,
+    "attempt_number": 1,
+    "transport": "SSH-verified exact artifact staging on Opal followed by one Opal-origin multipart request to Matrix WLED /update; no retry."
   },
   "r6_frame_context_diagnostic_previous_attempts": [
     {
@@ -3608,7 +3630,7 @@
       "attribution_correction_sha256": "2fc6f2c009abe230a6f727b37b5277dd8e427e599a1b0d010388959e7578cbbe"
     },
     "conditional_authority": {
-      "source_message_ref": "Current owner instruction in this task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks.",
+      "source_message_ref": "Current owner instruction in this task: CART 2.0 — ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks.",
       "status": "QUALIFICATION_FAILED_R4_RECOVERED",
       "candidate_install_limit": 1,
       "recovery_install_limit": 1,
@@ -3662,5 +3684,21 @@
       },
       "setting_write_started": false
     }
+  },
+  "r6_compositor_timing_diagnostic_authorization": {
+    "candidate_release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+    "candidate_sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
+    "artifact_size_bytes": 1499344,
+    "mandatory_return_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "mandatory_return_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "authorization_id": "OWNER-20261011-COMPOSITOR-TIMING-DIAGNOSTIC-01",
+    "authorization_source": "Direct user standing authorization in this chat: “I authorize UNLIMITED install and anything else, so long as they don’t send communication or cost money” and “This and all future similar requests are blanket-approved … without extra cost or external communication.”",
+    "authorization_consumed": false,
+    "install_attempts_used": 0,
+    "install_attempt_limit": 1,
+    "recovery_attempts_used": 0,
+    "recovery_attempt_limit": 1,
+    "status": "EXACT_DIAGNOSTIC_AUTHORIZED__LIVE_ADMISSION_AND_PRELIVE_PENDING",
+    "live_mutation_authorized": true
   }
 }

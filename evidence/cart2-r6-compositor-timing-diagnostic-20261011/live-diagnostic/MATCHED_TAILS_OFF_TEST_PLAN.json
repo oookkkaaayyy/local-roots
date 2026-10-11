@@ -1,0 +1,18 @@
+{
+  "candidate": {
+    "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+    "sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
+    "size_bytes": 1499344
+  },
+  "plan": {
+    "observer_effect_conclusions": "report measurements without attributing causality from nested percentiles",
+    "raw_audio_input_context_saved_each_poll": true,
+    "same_candidate_kernel0_brightness44_and_runtime_controls": true,
+    "sample_interval_seconds": 8,
+    "tails_off_samples": 3,
+    "then_enable_tails_and_capture_component_metrics": true,
+    "variant_signature_and_control_changes_abort": true
+  },
+  "schema": "hbnf-r6-matched-tails-off-test-plan-v1",
+  "source_dryrun_sha256": "fcf07421de548dee7c6afde8f7d2ec82598467736001dbd3ea83f9d33d132f36"
+}
