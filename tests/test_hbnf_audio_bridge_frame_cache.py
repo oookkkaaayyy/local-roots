@@ -84,7 +84,7 @@ def main() -> None:
     old_digest = hashlib.sha256(OLD.read_bytes()).hexdigest()
     new_digest = hashlib.sha256(NEW.read_bytes()).hexdigest()
     assert old_digest == "56a391336b72bc6f37d835bbe1a6eca1108f3819fd99f5af9816e671ada46351"
-    assert new_digest == "edfe168658d548fe8e52e05b5b9d0cc3390cfe11092423a2c1c12de95884ae74"
+    assert new_digest == "b8481f91600e638e2f50f5517206d8f5df5616f83703070e3dea57ea432ca9dc"
     old_pixels = run(OLD, VIBE16)
     new_pixels = run(NEW, VIBE16)
     assert old_pixels == new_pixels, (old_pixels, new_pixels)

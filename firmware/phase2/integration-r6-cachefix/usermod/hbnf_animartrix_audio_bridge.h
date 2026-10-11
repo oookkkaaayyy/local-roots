@@ -21,6 +21,7 @@ class AnimartrixAudioBridge {
     bassLane8_=midLane8_=trebleLane8_=budget8_=0;
     pixelBass_=pixelMids_=pixelTreble_=pixelBreath_=pixelTransient_=0;
     pixelTargets_=sceneKey_=0;
+    pixelModulationActive_=false;
     responseQ8_=256;
     focusBand_=255; focusLifeMs_=0; prevImpact8_=0;
     vibe_.reset();
@@ -109,80 +110,82 @@ class AnimartrixAudioBridge {
       return;
     }
 
-    const uint8_t srcPeak=max8(r,max8(g,b));
-    const uint8_t sceneKey=sceneKey_;
-    // These values depend only on the audio/control frame, not pixel coordinates.
-    const uint8_t bass=pixelBass_,mids=pixelMids_,treble=pixelTreble_;
-    const uint8_t breath=pixelBreath_;
-    if(breath && srcPeak){
-      r=satAdd(r,(uint8_t)(((uint16_t)r*breath)>>8));
-      g=satAdd(g,(uint8_t)(((uint16_t)g*breath)>>8));
-      b=satAdd(b,(uint8_t)(((uint16_t)b*breath)>>8));
-    }
-
-    const int cx2=(int)width_-1, cy2=(int)height_-1;
-    const int dx2=2*x-cx2, dy2=2*y-cy2;
-    const int d2=dx2*dx2+dy2*dy2;
-    const int maxd2=cx2*cx2+cy2*cy2;
-
-    // LOW lane: pressure/thump by scaling the existing image. No new glyph is painted.
-    // Scene seed varies whether the pressure blooms from the center or compresses from edges.
-    if(bass && srcPeak>3){
-      uint8_t mask=255;
-      if(maxd2>0){
-        // The installed Matrix is a fixed 32x16 grid. This exact bounded
-        // fast path lets the pinned Xtensa compiler fold division by 1186;
-        // preserve the original wide arithmetic for other grid dimensions.
-        const int radial=(width_==32u && height_==16u)
-          ? (int)(((int32_t)d2*159)/1186)
-          : (int)(((int64_t)d2*159)/maxd2);
-        mask=(sceneKey&1u)?(uint8_t)(96+radial):(uint8_t)(255-radial);
+    if(pixelModulationActive_){
+      const uint8_t srcPeak=max8(r,max8(g,b));
+      const uint8_t sceneKey=sceneKey_;
+      // These values depend only on the audio/control frame, not pixel coordinates.
+      const uint8_t bass=pixelBass_,mids=pixelMids_,treble=pixelTreble_;
+      const uint8_t breath=pixelBreath_;
+      if(breath && srcPeak){
+        r=satAdd(r,(uint8_t)(((uint16_t)r*breath)>>8));
+        g=satAdd(g,(uint8_t)(((uint16_t)g*breath)>>8));
+        b=satAdd(b,(uint8_t)(((uint16_t)b*breath)>>8));
       }
-      const uint8_t gain=(uint8_t)min16(104u,((uint16_t)bass*mask)>>7);
-      r=satAdd(r,(uint8_t)(((uint16_t)r*gain)>>7));
-      g=satAdd(g,(uint8_t)(((uint16_t)g*gain)>>7));
-      b=satAdd(b,(uint8_t)(((uint16_t)b*gain)>>7));
-    }
 
-    // MID lane: morph the colors already present in the animation with a moving,
-    // scene-seeded field. This changes the animation's body instead of drawing an impulse.
-    if(mids && srcPeak>3){
-      const uint8_t phase=(uint8_t)((x*11+y*7+(int)(frame_>>1)+sceneKey*13u)&31);
-      const uint8_t tri=phase<16?phase:(uint8_t)(31-phase);
-      const uint8_t field=(uint8_t)(96+tri*10); // 96..246
-      const uint8_t mm=(uint8_t)(((uint16_t)mids*field)>>8); // stronger bounded source-coupled morph
-      if(mm){
-        const uint8_t rr=r,gg=g,bb=b;
-        if(sceneKey&2u){
-          r=blend8(rr,bb,mm); g=blend8(gg,rr,mm); b=blend8(bb,gg,mm);
-        } else {
-          r=blend8(rr,gg,mm); g=blend8(gg,bb,mm); b=blend8(bb,rr,mm);
+      const int cx2=(int)width_-1, cy2=(int)height_-1;
+      const int dx2=2*x-cx2, dy2=2*y-cy2;
+      const int d2=dx2*dx2+dy2*dy2;
+      const int maxd2=cx2*cx2+cy2*cy2;
+
+      // LOW lane: pressure/thump by scaling the existing image. No new glyph is painted.
+      // Scene seed varies whether the pressure blooms from the center or compresses from edges.
+      if(bass && srcPeak>3){
+        uint8_t mask=255;
+        if(maxd2>0){
+          // The installed Matrix is a fixed 32x16 grid. This exact bounded
+          // fast path lets the pinned Xtensa compiler fold division by 1186;
+          // preserve the original wide arithmetic for other grid dimensions.
+          const int radial=(width_==32u && height_==16u)
+            ? (int)(((int32_t)d2*159)/1186)
+            : (int)(((int64_t)d2*159)/maxd2);
+          mask=(sceneKey&1u)?(uint8_t)(96+radial):(uint8_t)(255-radial);
+        }
+        const uint8_t gain=(uint8_t)min16(104u,((uint16_t)bass*mask)>>7);
+        r=satAdd(r,(uint8_t)(((uint16_t)r*gain)>>7));
+        g=satAdd(g,(uint8_t)(((uint16_t)g*gain)>>7));
+        b=satAdd(b,(uint8_t)(((uint16_t)b*gain)>>7));
+      }
+
+      // MID lane: morph the colors already present in the animation with a moving,
+      // scene-seeded field. This changes the animation's body instead of drawing an impulse.
+      if(mids && srcPeak>3){
+        const uint8_t phase=(uint8_t)((x*11+y*7+(int)(frame_>>1)+sceneKey*13u)&31);
+        const uint8_t tri=phase<16?phase:(uint8_t)(31-phase);
+        const uint8_t field=(uint8_t)(96+tri*10); // 96..246
+        const uint8_t mm=(uint8_t)(((uint16_t)mids*field)>>8); // stronger bounded source-coupled morph
+        if(mm){
+          const uint8_t rr=r,gg=g,bb=b;
+          if(sceneKey&2u){
+            r=blend8(rr,bb,mm); g=blend8(gg,rr,mm); b=blend8(bb,gg,mm);
+          } else {
+            r=blend8(rr,gg,mm); g=blend8(gg,bb,mm); b=blend8(bb,rr,mm);
+          }
         }
       }
-    }
 
-    // HIGH lane: make existing bright detail dance. Dark/background pixels stay dark,
-    // so treble cannot become a competing overlay on top of the base animation.
-    if(treble && srcPeak>18){
-      // Continuous source-coupled texture replaces the old frame-varying binary gate.
-      const uint8_t phase=(uint8_t)((x*29+y*47+(int)(frame_&255u)*3+sceneKey*17u)&255);
-      const uint8_t tri=phase<128u?(uint8_t)(phase*2u):(uint8_t)((255u-phase)*2u);
-      const uint8_t gain=scaledMix(treble,112);
-      const uint8_t accent=(uint8_t)(((uint16_t)treble*tri)>>8);
-      const uint8_t total=(uint8_t)min16(144u,(uint16_t)gain+accent/2u);
-      r=satAdd(r,(uint8_t)(((uint16_t)r*total)>>7));
-      g=satAdd(g,(uint8_t)(((uint16_t)g*total)>>7));
-      b=satAdd(b,(uint8_t)(((uint16_t)b*total)>>7));
-    }
+      // HIGH lane: make existing bright detail dance. Dark/background pixels stay dark,
+      // so treble cannot become a competing overlay on top of the base animation.
+      if(treble && srcPeak>18){
+        // Continuous source-coupled texture replaces the old frame-varying binary gate.
+        const uint8_t phase=(uint8_t)((x*29+y*47+(int)(frame_&255u)*3+sceneKey*17u)&255);
+        const uint8_t tri=phase<128u?(uint8_t)(phase*2u):(uint8_t)((255u-phase)*2u);
+        const uint8_t gain=scaledMix(treble,112);
+        const uint8_t accent=(uint8_t)(((uint16_t)treble*tri)>>8);
+        const uint8_t total=(uint8_t)min16(144u,(uint16_t)gain+accent/2u);
+        r=satAdd(r,(uint8_t)(((uint16_t)r*total)>>7));
+        g=satAdd(g,(uint8_t)(((uint16_t)g*total)>>7));
+        b=satAdd(b,(uint8_t)(((uint16_t)b*total)>>7));
+      }
 
-    // Onsets are a small source-coupled accent. The smoothed envelope and per-profile
-    // depth keep accents from interrupting or replacing the running effect.
-    if((pixelTargets_&TARGET_TRANSIENT) && transientExpr8_ && srcPeak>8){
-      const uint8_t accent=pixelTransient_;
-      const uint8_t gain=(uint8_t)min16(72u,((uint16_t)accent*80u)>>8);
-      r=satAdd(r,(uint8_t)(((uint16_t)r*gain)>>8));
-      g=satAdd(g,(uint8_t)(((uint16_t)g*gain)>>8));
-      b=satAdd(b,(uint8_t)(((uint16_t)b*gain)>>8));
+      // Onsets are a small source-coupled accent. The smoothed envelope and per-profile
+      // depth keep accents from interrupting or replacing the running effect.
+      if((pixelTargets_&TARGET_TRANSIENT) && transientExpr8_ && srcPeak>8){
+        const uint8_t accent=pixelTransient_;
+        const uint8_t gain=(uint8_t)min16(72u,((uint16_t)accent*80u)>>8);
+        r=satAdd(r,(uint8_t)(((uint16_t)r*gain)>>8));
+        g=satAdd(g,(uint8_t)(((uint16_t)g*gain)>>8));
+        b=satAdd(b,(uint8_t)(((uint16_t)b*gain)>>8));
+      }
     }
 
     // Static chromatic diversity guard from the accepted baseline. Audio may strengthen
@@ -232,6 +235,7 @@ class AnimartrixAudioBridge {
   uint8_t bassLane8_=0,midLane8_=0,trebleLane8_=0,budget8_=0;
   uint8_t pixelBass_=0,pixelMids_=0,pixelTreble_=0,pixelBreath_=0,pixelTransient_=0;
   uint8_t pixelTargets_=0,sceneKey_=0;
+  bool pixelModulationActive_=false;
   uint8_t focusBand_=255,prevImpact8_=0;
   uint16_t focusLifeMs_=0;
 
@@ -292,6 +296,7 @@ class AnimartrixAudioBridge {
   void preparePixelModulation(){
     sceneKey_=(sceneId_>=220&&sceneId_<=247)?(uint8_t)(sceneId_-220):sceneId_;
     pixelBass_=pixelMids_=pixelTreble_=pixelBreath_=pixelTransient_=pixelTargets_=0;
+    pixelModulationActive_=false;
     if(!active_||amount_==0||responseQ8_==0)return;
     const EffectProfile& profile=effectProfile(sceneId_);
     pixelTargets_=profile.targets;
@@ -300,6 +305,7 @@ class AnimartrixAudioBridge {
     if(profile.targets&TARGET_HIGH)pixelTreble_=profileLane(trebleLane8_,profile.high,profile.depth,amount_);
     if(profile.targets&TARGET_SLOW)pixelBreath_=profileLane(scaledMix(slowEnergy8_,72),profile.slow,profile.depth,amount_);
     if(profile.targets&TARGET_TRANSIENT)pixelTransient_=profileLane(transientExpr8_,profile.transient,profile.depth,amount_);
+    pixelModulationActive_=pixelBass_||pixelMids_||pixelTreble_||pixelBreath_||pixelTransient_;
   }
 
   void applySceneTint(uint8_t &r,uint8_t &g,uint8_t &b) const {

@@ -31,8 +31,8 @@ using namespace hbnf_v1;
 namespace {
 
 static const char HBNF_FX_DATA[] PROGMEM = "HBNF Foundation@;;;2";
-static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011";
-static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011\",\"basedOnReleaseId\":\"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1\",\"basedOnFirmwareSha256\":\"338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r5-unfrozen\",\"native-text-moments-r5-unfrozen\"]}";
+static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-cache-20261011";
+static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-cache-20261011\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-cache-20261011\",\"basedOnReleaseId\":\"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1\",\"basedOnFirmwareSha256\":\"338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r5-unfrozen\",\"native-text-moments-r5-unfrozen\",\"silent-audio-pixel-fastpath-v1\",\"frame-hue-cache-v1\"]}";
 static PaletteSelection hbnfPalette{};
 static OverlayState hbnfCommandOverlay{};
 static portMUX_TYPE hbnfOverlayMux=portMUX_INITIALIZER_UNLOCKED;
@@ -734,6 +734,7 @@ class FoundationAnimartrix : public ANIMartRIX {
     uint8_t lastKernel=255;
     uint16_t lastWidth=0,lastHeight=0;
     bool deferOutput=false;
+    uint8_t frameHue=0;
   };
 
   DiagnosticState diagnosticCapture() const {
@@ -747,6 +748,7 @@ class FoundationAnimartrix : public ANIMartRIX {
     s.show[5]=show5;s.show[6]=show6;s.show[7]=show7;s.show[8]=show8;s.show[9]=show9;
     s.audio=audio_;s.frame=frame_;s.lastKernel=lastKernel_;s.lastWidth=lastWidth_;
     s.lastHeight=lastHeight_;s.deferOutput=deferOutput_;
+    s.frameHue=frameHue_;
     return s;
   }
 
@@ -760,6 +762,7 @@ class FoundationAnimartrix : public ANIMartRIX {
     show5=s.show[5];show6=s.show[6];show7=s.show[7];show8=s.show[8];show9=s.show[9];
     audio_=s.audio;frame_=s.frame;lastKernel_=s.lastKernel;lastWidth_=s.lastWidth;
     lastHeight_=s.lastHeight;deferOutput_=s.deferOutput;
+    frameHue_=s.frameHue;
   }
   static bool diagnosticSame(const DiagnosticState& a,const DiagnosticState& b) {
     return a.numX==b.numX&&a.numY==b.numY&&a.speedFactor==b.speedFactor&&
@@ -769,12 +772,13 @@ class FoundationAnimartrix : public ANIMartRIX {
       a.a==b.a&&a.b==b.b&&a.c==b.c&&memcmp(a.show,b.show,sizeof(a.show))==0&&
       memcmp(&a.audio,&b.audio,sizeof(a.audio))==0&&a.frame==b.frame&&
       a.lastKernel==b.lastKernel&&a.lastWidth==b.lastWidth&&a.lastHeight==b.lastHeight&&
-      a.deferOutput==b.deferOutput;
+      a.deferOutput==b.deferOutput&&a.frameHue==b.frameHue;
   }
 #endif
 
   void beginFrame(const CanonicalFrame& f,uint32_t now) {
     frame_=&f;
+    frameHue_=(uint8_t)(f.variant.palette*37u+f.variant.salt%31u+(int16_t)f.variant.hueOffset);
     vibeComposition_=prepareVibeComposition(f);
     outputScale_=hbnf_brightness::outputScale(f.controls.matrixBrightness);
     const uint16_t responseQ8=audioGainQ8(f.controls.audioResponse);
@@ -854,6 +858,7 @@ class FoundationAnimartrix : public ANIMartRIX {
 
  private:
   uint8_t outputScale_=255;
+  uint8_t frameHue_=0;
   static Rgb8 hbnfScaleMatrixOutput(const Rgb8& canonical,uint8_t scale) {
     const Rgb8 gammaCorrected=SEGMENT.check2?Rgb8(gamma8(canonical.r),gamma8(canonical.g),gamma8(canonical.b)):canonical;
     return hbnf_brightness::scaleOutputPixel(gammaCorrected,canonical,scale);
@@ -876,8 +881,7 @@ class FoundationAnimartrix : public ANIMartRIX {
     const uint32_t audioCycles=hbnfCycles()-audioStart; hbnfPerfWorking.audio+=audioCycles;
     if(hbnfPerfWorking.inKernel)hbnfPerfWorking.audioInKernel+=audioCycles;
     const uint32_t colorStart=hbnfCycles();
-    const uint8_t hue=(uint8_t)(frame_->variant.palette*37u+frame_->variant.salt%31u+(int16_t)frame_->variant.hueOffset);
-    const Rgb8 colored=hbnfPalette.mode==PALETTE_LEGACY?hueRotate(Rgb8(r,g,b),hue):hbnfPaletteColor(r,g,b,hue);
+    const Rgb8 colored=hbnfPalette.mode==PALETTE_LEGACY?hueRotate(Rgb8(r,g,b),frameHue_):hbnfPaletteColor(r,g,b,frameHue_);
     const uint32_t colorCycles=hbnfCycles()-colorStart; hbnfPerfWorking.color+=colorCycles;
     if(hbnfPerfWorking.inKernel)hbnfPerfWorking.colorInKernel+=colorCycles;
     const Rgb8 rendered=composeVibeColor(colored,*frame_,tx,ty,vibeComposition_);
