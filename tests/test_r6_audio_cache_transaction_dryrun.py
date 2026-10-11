@@ -137,6 +137,31 @@ def run_case(name, port, expected_status, installs, recoveries, min_requests=0):
 
 
 def main():
+    # Exercise the actual capsule-bound f89 workflow resolver before any live
+    # transaction. This catches release/firmware-SHA adapter mismatches offline.
+    workflow_path = ROOT / "platform/workflows/phase2-live-qualification.json"
+    workflow = json.loads(workflow_path.read_text())
+    adapter_path = ROOT / workflow["qualification_contract"]["foundation_adapter_path"]
+    adapter = json.loads(adapter_path.read_text())
+    workflow_candidate = workflow["qualification_contract"]["candidate_release"]
+    workflow_sha = workflow["qualification_contract"]["candidate_sha256"]
+    expected_release = "HBNF_EXPECTED_RELEASE_ID=" + workflow_candidate
+    expected_sha = "HBNF_EXPECTED_FIRMWARE_SHA256=" + workflow_sha
+    argv_lists = [value for key, value in adapter.items()
+                  if key.endswith("_argv") and isinstance(value, list)]
+    assert argv_lists and all(expected_release in argv and expected_sha in argv for argv in argv_lists)
+    with tempfile.TemporaryDirectory(prefix="r6-profile-capsule-") as td:
+        capsule_path = pathlib.Path(td) / "capsule.json"
+        capsule_path.write_text(json.dumps({
+            "schema": "local-roots-execution-capsule-v1",
+            "workflow_id": "phase2-live-qualification",
+            "workflow_source": {"path": "platform/workflows/phase2-live-qualification.json",
+                                "sha256": module.sha(workflow_path)},
+        }))
+        profile = module.load_candidate_profile(capsule_path)
+        assert profile.release_id == workflow_candidate
+        assert profile.sha256 == workflow_sha
+
     # The outer supervisor must not kill the sweep before its restore finally;
     # the full 5400-second soak remains part of the exact command.
     port = module.LivePort("unused-admission", "unused-capsule", "unused-proof")

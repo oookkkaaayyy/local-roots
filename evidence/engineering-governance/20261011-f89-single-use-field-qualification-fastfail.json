@@ -1,7 +1,7 @@
 {
   "schema": "hbnf-change-governance-v1",
   "change_id": "F89_SINGLE_USE_FIELD_QUALIFICATION_FAIL_FAST_20261011",
-  "summary": "Bind the newly authorized exact f89 field candidate to one guarded transaction and stop a failing qualification at its first mandatory ineligible profile.",
+  "summary": "Bind the newly authorized exact f89 field candidate and adapter to one guarded transaction, validate release and firmware SHA in the real workflow resolver, and stop qualification at its first mandatory ineligible profile.",
   "change_class": "TRIVIAL_BOUNDED",
   "impact": {
     "architecture": false,
@@ -13,7 +13,7 @@
   "evidence": {
     "scoped_evidence": {
       "approved_architecture_reference": "Direct owner authorization in this task names exact f89 and exact R4, permits one installation/qualification/recovery transaction, and preserves all existing gates.",
-      "affected_subsystem": "Existing release workflow, primary control state, transaction runner, and host regression tests; no firmware bytes, thresholds, or product features changed.",
+      "affected_subsystem": "Existing release workflow and candidate-bound sweep adapter, primary control state, transaction runner, and host regression tests; no firmware bytes, thresholds, or product features changed.",
       "rollback_reference": "Revert this branch to base commit f48767723ca7e22268e391696863929d088aa64a before device mutation. The preserved exact R4 recovery artifact remains unchanged.",
       "evidence_sources": [
         "evidence/cart2-r6-audio-cache-20261010/FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
@@ -21,10 +21,12 @@
         "Direct owner authorization, 2026-10-11."
       ],
       "tests": [
-        "python3 tests/hbnf_live_kernel_sweep.py",
-        "python3 tests/test_r6_audio_cache_transaction_dryrun.py",
-        "python3 tests/hbnf_control.py",
-        "python3 tests/hbnf_guarded_run.py"
+        "python3 tests/hbnf_live_kernel_sweep.py: PASS; stop-on-first path restores state and skips combined checks and soak after a saturated profile.",
+        "python3 tests/test_r6_audio_cache_transaction_dryrun.py: PASS; actual workflow resolver binds f89 release ID and SHA, transaction replay enforces one install/recovery, and invalid admission makes zero device requests.",
+        "python3 tests/hbnf_control.py: PASS (23 tests).",
+        "python3 tests/hbnf_guarded_run.py: PASS.",
+        "python3 scripts/hbnf_architecture_fitness.py: PASS.",
+        "python3 scripts/platform.py doctor: PASS."
       ],
       "live_state": {
         "device_mutation": false,
