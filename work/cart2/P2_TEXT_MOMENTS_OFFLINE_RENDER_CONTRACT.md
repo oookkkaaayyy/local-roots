@@ -13,7 +13,7 @@ This lane consumes the existing candidate `VisualMoment` and `VibeSelection` sha
 5. Entry/exit inherit Vibe language.
 6. Phrase paging precedes marquee behavior.
 7. Marquee is never the normal path for HERO_WORD, NAME, NUMBER_VALUE, DIRECTIVE, or SHORT_ANNOUNCEMENT.
-8. When a word exceeds the selected native face's width, try the existing WLED Tom Thumb 6px face; use it only when every word then fits. Preserve the selected face for fitting text and retain marquee only when the word still cannot fit in the compact face. Owner selected this overflow rule on 2026-10-11; target readability remains to be qualified.
+8. When any text word exceeds the selected native face's width, try the existing WLED Tom Thumb 6px face; use it only when every word then fits. Preserve the selected face for fitting text and retain marquee only when the word still cannot fit in the compact face. Owner approved applying this generic fallback to avoid adding a name/type marker to the current command format on 2026-10-11; target readability remains to be qualified.
 9. Return behavior is explicit and must restore the required base state at integration.
 10. A technically legible treatment still fails if it looks materially cheaper/jankier than the active visual system.
 

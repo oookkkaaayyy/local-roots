@@ -1,7 +1,7 @@
 {
   "schema": "hbnf-change-governance-v1",
   "change_id": "OVERSIZED_TEXT_COMPACT_FONT_20261011",
-  "summary": "Use the built-in compact WLED face for over-width words only when all words then fit, and retain the resolved font for the overlay lifetime.",
+  "summary": "Use the built-in compact WLED face for any over-width text word only when all words then fit, and retain the resolved font for the overlay lifetime.",
   "change_class": "SUBJECTIVE_DESIGN",
   "impact": {
     "architecture": false,
@@ -14,9 +14,9 @@
     "owner_design_gate": {
       "decision_status": "APPROVED",
       "approved_by_owner": true,
-      "selected_option": "Use a smaller font for oversized names; use native slot 0 only when it fits the canvas.",
+      "selected_option": "Use a smaller font for all oversized text; use native slot 0 only when it fits the canvas.",
       "approval_reference": "User response in current Cart Upgrades project chat on 2026-10-11",
-      "note": "Font-size fallback policy is approved. Visual readability and aesthetic acceptance on the physical Matrix remain unverified."
+      "note": "General oversized-text font fallback is approved to avoid a new command schema marker. Visual readability and aesthetic acceptance on the physical Matrix remain unverified."
     },
     "scoped_evidence": {
       "approved_architecture_reference": "Existing HBNF native text overlay and pinned WLED 16.0.1 FontManager; no new abstraction, schema, dependency, or lifecycle authority.",
@@ -33,10 +33,10 @@
         "c++ -std=c++17 -Wall -Wextra -Werror tests/native_text_compact_font_smoke.cpp -o /tmp/native_text_compact_font_smoke && /tmp/native_text_compact_font_smoke"
       ]
     },
-    "failure": "The accepted NAME fixture ANDREW measures 35 px in the default WLED 5x12 face on a 32 px canvas and falls through to scrolling, contrary to the Text/Moments contract that marquee is not the normal NAME treatment.",
+    "failure": "The accepted NAME fixture ANDREW measures 35 px in the default WLED 5x12 face on a 32 px canvas and falls through to scrolling, contrary to the Text/Moments contract that marquee is not the normal path for short names and announcements.",
     "owner_decision": {
       "status": "APPROVED_POLICY__TARGET_READABILITY_PENDING",
-      "statement": "Use a smaller font for oversized names.",
+      "statement": "Use a smaller font for oversized names; the owner confirmed the existing command format supports no name/type marker, so the fallback applies to all oversized text words.",
       "selected_native_face": "WLED slot 0 Tom Thumb 6px, used only if every word then fits the 32 px canvas",
       "source": "User response in current Cart Upgrades project chat on 2026-10-11"
     },
