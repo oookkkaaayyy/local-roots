@@ -137,7 +137,9 @@ with tempfile.TemporaryDirectory() as td:
       "foundationTelemetry":{"enabled":True,"frameMsAvg":19,"frameMsP50":18,
       "frameMsP95":21,"frameMsP99":23,"frameMsMax":25,"minimumFreeHeapBytes":80000,
       "largestFreeBlockBytes":60000,"sampleCount":300,"frameTailBinResolutionUs":250,
-      "frameTailOverflow":False,"kernelMsAvg":8,"kernelMsP95":10,"paletteMsAvg":3,
+      "frameTailOverflow":False,"kernelMsAvg":8,"kernelMsP95":10,"vibeCompositorMsAvg":0.42,
+      "vibeCompositorMsP95":0.5,"vibeCompositorMsP99":0.75,"paletteMsAvg":3,
+      "kernelWithoutCompositorMsAvg":7.5,"kernelWithoutCompositorMsP95":9.5,"kernelWithoutCompositorMsP99":11.5,
       "paletteMsP95":4,"audioMsAvg":1,"audioMsP95":2,"schedulerMsAvg":1,
       "schedulerMsP95":2,"overlayMsAvg":0.1,"overlayMsP95":0.2,
       "auxPrepareSendMsAvg":0.5,"auxPrepareSendMsP95":0.8,"unaccountedMsAvg":5,
@@ -174,6 +176,10 @@ with tempfile.TemporaryDirectory() as td:
     assert required <= sample.keys(), required-sample.keys()
     assert sample["release_id"]==m.EXPECTED and sample["kernel_name"]=="Complex_Kaleido_3"
     assert sample["frame_ms_p99"]==23 and sample["minimum_free_heap_bytes"]==80000
+    assert sample["vibe_compositor_ms_avg"]==0.42
+    assert sample["vibe_compositor_ms_p95"]==0.5 and sample["vibe_compositor_ms_p99"]==0.75
+    assert sample["kernel_without_compositor_ms_avg"]==7.5
+    assert sample["kernel_without_compositor_ms_p95"]==9.5 and sample["kernel_without_compositor_ms_p99"]==11.5
     assert sample["largest_free_block_bytes"]==60000 and sample["restart_count"]==0
     # Native WLED DDP and optional HBNF frame-lock counters are distinct paths.
     # The expected Matrix-origin DDP is healthy while custom frame-lock is idle.

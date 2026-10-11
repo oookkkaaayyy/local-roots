@@ -396,7 +396,7 @@ def telemetry(inventory,session_id,emit=True):
     resolution_us=ft.get("frameTailBinResolutionUs")
     if not isinstance(resolution_us,(int,float)) or resolution_us<=0:raise RuntimeError("foundation-frame-tail-bin-resolution-invalid")
     if int(resolution_us)!=EXPECTED_TAIL_BIN_US:raise RuntimeError(f"foundation-telemetry-resolution-mismatch:{resolution_us}!={EXPECTED_TAIL_BIN_US}")
-    # The firmware overflow bit is global across eight metrics. A rare max can
+    # The firmware overflow bit is global across nine metrics. A rare max can
     # occupy the final histogram bin while every reported percentile remains
     # below it; frameMsMax is maintained exactly outside the histogram. Reject
     # only when a percentile itself is represented by the saturated final bin.
@@ -496,6 +496,8 @@ def telemetry(inventory,session_id,emit=True):
       "trace_cpu_mhz_readback":ft.get("outlierTrace",{}).get("cpuMHzAtReadback"),
       "trace_records_serialized":isinstance(ft.get("outlierTrace",{}).get("records"),list),
       "kernel_ms_avg":ft.get("kernelMsAvg"),"kernel_ms_p95":ft.get("kernelMsP95"),"palette_ms_avg":ft.get("paletteMsAvg"),"palette_ms_p95":ft.get("paletteMsP95"),
+      "vibe_compositor_ms_avg":ft.get("vibeCompositorMsAvg"),"vibe_compositor_ms_p95":ft.get("vibeCompositorMsP95"),"vibe_compositor_ms_p99":ft.get("vibeCompositorMsP99"),
+      "kernel_without_compositor_ms_avg":ft.get("kernelWithoutCompositorMsAvg"),"kernel_without_compositor_ms_p95":ft.get("kernelWithoutCompositorMsP95"),"kernel_without_compositor_ms_p99":ft.get("kernelWithoutCompositorMsP99"),
       "audio_ms_avg":ft.get("audioMsAvg"),"audio_ms_p95":ft.get("audioMsP95"),"scheduler_ms_avg":ft.get("schedulerMsAvg"),"scheduler_ms_p95":ft.get("schedulerMsP95"),
       "overlay_ms_avg":ft.get("overlayMsAvg"),"overlay_ms_p95":ft.get("overlayMsP95"),"aux_prepare_send_ms_avg":ft.get("auxPrepareSendMsAvg"),"aux_prepare_send_ms_p95":ft.get("auxPrepareSendMsP95"),
       "unaccounted_ms_avg":ft.get("unaccountedMsAvg"),"unaccounted_ms_p95":ft.get("unaccountedMsP95"),
