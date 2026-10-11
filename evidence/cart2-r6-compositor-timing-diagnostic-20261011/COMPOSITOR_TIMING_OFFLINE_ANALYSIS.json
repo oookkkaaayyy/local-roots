@@ -1,0 +1,83 @@
+{
+  "schema": "hbnf-r6-compositor-timing-offline-analysis-v1",
+  "status": "COMPOSITOR_COST_QUANTIFIED__PRIMARY_PERFORMANCE_CAUSE_NOT_ISOLATED",
+  "candidate": {
+    "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+    "sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
+    "source_commit": "911b791d814ed50440567433b17f04da83b700da"
+  },
+  "recovery": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "read_only_confirmation_sha256": "261d5084143ac8aac2e331a562f27dca1b87d6ab9303b7587e207b9137081776",
+    "confirmed": true,
+    "runtime_brightness": {"matrix": 52, "aux": 245},
+    "vibe_field_present": false,
+    "scope_limit": "Firmware identity and reported settings only; not physical LED output or Cart 2.0 acceptance."
+  },
+  "measured_component_snapshot": {
+    "source": "live-diagnostic/attempt-01/COMPOSITOR_TIMING_SAMPLES.json",
+    "sha256": "133f8ef8f778b32463695ef0f1de36b9a325f6c48c10bbf0510142bff964e98d",
+    "semantics": "Eight cumulative snapshots; the final snapshot covers 754 samples. Values below are from that final snapshot, not an average of snapshots.",
+    "sample_count": 754,
+    "kernel_ms_avg": 32.21398,
+    "kernel_without_compositor_ms_avg": 31.22116,
+    "vibe_compositor_ms_avg": 0.992333,
+    "audio_ms_avg": 16.99487,
+    "palette_ms_avg": 15.98948,
+    "compositor_share_of_kernel_percent": 3.08,
+    "limitations": [
+      "Cycle-counter stage timings may include task preemption; they are not isolated CPU execution time.",
+      "The per-poll audio context records bass/mid/treble/volume but omits slowEnergy, which can still activate the pixel breath path; the zero reported bands do not prove the audio modulation fast path was inactive.",
+      "The R4 historical measurements were not captured in this same run with identical controls, so they do not prove a causal R4-to-R6 comparison."
+    ]
+  },
+  "matched_tails_off": {
+    "source": "live-diagnostic/attempt-01/MATCHED_TAILS_OFF_SAMPLES.json",
+    "sha256": "a0ec663e597af25f0902b8595d434ac5a7b4bfcc092ba58fc8369df98e0f3306",
+    "same_candidate_and_controls": true,
+    "sample_count": 3,
+    "fps": [13, 11, 13],
+    "whole_frame_us": [67770, 78193, 71882],
+    "reported_audio_bands_zero_each_sample": true,
+    "interpretation": "Low reported frame rate and 67.8–78.2 ms whole-frame readings persisted with tail collection off. Tail collection alone therefore does not explain the low rate. Three samples do not establish a full performance distribution or cause."
+  },
+  "tail_collection_on": {
+    "source": "live-diagnostic/attempt-01/SAFETY_SAMPLES.json",
+    "sha256": "b83c8e119223ea05ab7902437a1a37929c87f688aaa7dbaf1aa9e0e6bad799e4",
+    "scheduled_samples": 8,
+    "fps_each_sample": 12,
+    "frame_p99_ms": [127.875, 127.875, 127.875, 127.875, 127.875, 127.875, 100.875, 100.875],
+    "overflow_each_sample": true,
+    "gate": "FAILED; frozen FPS floor is 20 and p99 ceiling is 75 ms."
+  },
+  "source_binding": {
+    "component_timer_site": "firmware/phase2/integration-r6-cachefix/usermod/usermod_hbnf_foundation_v1.cpp:880-886",
+    "palette_path": "The measured palette interval wraps the per-pixel legacy hueRotate() call.",
+    "hue_rotate_source": "firmware/phase2/integration-r6-cachefix/usermod/hbnf_foundation_core.h:188-204",
+    "kernel_residual": "The remaining kernel interval after subtracting the compositor is still about 31.2 ms in this cumulative snapshot.",
+    "source_sha256": {
+      "hbnf_foundation_core.h": "d4646267f8fbc03cc4921368fc801e528e6a6cb92133a0c1fc74b48b211be0e4",
+      "usermod_hbnf_foundation_v1.cpp": "7c5e391e86982daf8dd8f9a366a5950f8701837616d800f1aa715942a4b3b8d6"
+    }
+  },
+  "measurement_capability": {
+    "build_config": {
+      "CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS": false,
+      "CONFIG_FREERTOS_USE_TRACE_FACILITY": false
+    },
+    "historical_same_renderer_trace": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-03/FRAME_CONTEXT_TRACE.json records taskRuntimeStatsAvailable=false and labels CCOUNT intervals as including interruption/preemption; the current renderer uses the same ESP.getCycleCount() source.",
+    "official_guidance": [
+      "https://docs.espressif.com/projects/esp-idf/en/v4.4.4/esp32/api-reference/kconfig.html (run-time stats are disabled by default; enabling CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS enables task CPU-use accounting; formatted stats also require trace support).",
+      "https://github.com/espressif/xtensa-isa-doc (Xtensa ISA reference source; compiled diagnostic binary uses QUOS/QUOU division instructions in hueRotate, but this reference does not establish their latency on the pinned ESP32 configuration)."
+    ],
+    "implication": "Current data measures elapsed cycle counts in code regions, not per-task CPU execution. A source optimization may help, but the captured stage totals cannot separate renderer work from preemption."
+  },
+  "decision": {
+    "compositor_hoist": "The measured compositor is about 0.99 ms average; that optimization alone cannot explain or remedy the observed failure.",
+    "cause": "Not isolated. Audio, palette, and kernel-residual intervals are all large, but cycle-counter timing does not distinguish execution from preemption and the tails-off sample set is small.",
+    "next": "Continue offline source-level attribution against the exact bound source and saved target map/disassembly. Do not build or install a new candidate until a source correction has a credible, testable link to these measured costs. Preserve all frozen gates."
+  },
+  "transaction_result_sha256": "987360340fca5cec269fecbe1ef0159fe940dafee08cfc9f11b3a29c13436fd3",
+  "build_receipt_sha256": "aedef57067326bcb2da226ab5f6a71f6fe2487898230cc034761ca1349c34629"
+}
