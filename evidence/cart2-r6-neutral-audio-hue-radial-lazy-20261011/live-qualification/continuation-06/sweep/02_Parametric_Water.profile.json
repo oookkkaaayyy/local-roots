@@ -1,0 +1,126 @@
+{
+  "failures": [],
+  "profile": {
+    "aux": {
+      "age_p99_ms": 4294967295.0,
+      "inactive_samples": 0,
+      "render_fps_median": 24.5
+    },
+    "collection_errors": 0,
+    "contract": "foundation",
+    "fps": {
+      "median": 24.0,
+      "min": 24,
+      "p05": 24.0
+    },
+    "frame_ms": {
+      "avg_median": 36.07706,
+      "max": 94.295,
+      "p50_median": 34.375,
+      "p95_median": 38.375,
+      "p99_median": 86.125
+    },
+    "heap": {
+      "free_end": 116632,
+      "free_start": 114668,
+      "largest_block_end": 69620,
+      "largest_block_start": 65524,
+      "minimum_free_min": 51712
+    },
+    "kernel": {
+      "id": 2,
+      "name": "Parametric_Water",
+      "variant_id": 1347100674
+    },
+    "qualification_eligible": true,
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+    "restart_count_end": 0,
+    "restart_count_start": 0,
+    "sample_count": 26,
+    "schema": "hbnf-runtime-profile-v2",
+    "stages": {
+      "audio_ms_avg": {
+        "max": 0.773323,
+        "median": 0.7557715,
+        "p95": 0.7674397500000001
+      },
+      "audio_ms_p95": {
+        "max": 0.875,
+        "median": 0.875,
+        "p95": 0.875
+      },
+      "aux_prepare_send_ms_avg": {
+        "max": 4.544827,
+        "median": 4.4031210000000005,
+        "p95": 4.5370225
+      },
+      "aux_prepare_send_ms_p95": {
+        "max": 6.125,
+        "median": 5.875,
+        "p95": 6.125
+      },
+      "frame_ms_avg": {
+        "max": 36.24437,
+        "median": 36.07706,
+        "p95": 36.23343
+      },
+      "kernel_ms_avg": {
+        "max": 25.81175,
+        "median": 25.772005,
+        "p95": 25.80304
+      },
+      "kernel_ms_p95": {
+        "max": 26.625,
+        "median": 26.375,
+        "p95": 26.5625
+      },
+      "overlay_ms_avg": {
+        "max": 0.033324,
+        "median": 0.0325235,
+        "p95": 0.03300625
+      },
+      "overlay_ms_p95": {
+        "max": 0.125,
+        "median": 0.125,
+        "p95": 0.125
+      },
+      "palette_ms_avg": {
+        "max": 0.399154,
+        "median": 0.3916695,
+        "p95": 0.39835425
+      },
+      "palette_ms_p95": {
+        "max": 0.375,
+        "median": 0.375,
+        "p95": 0.375
+      },
+      "scheduler_ms_avg": {
+        "max": 1.5984,
+        "median": 1.5724434999999999,
+        "p95": 1.591713
+      },
+      "scheduler_ms_p95": {
+        "max": 2.125,
+        "median": 1.875,
+        "p95": 2.125
+      },
+      "unaccounted_ms_avg": {
+        "max": 3.181844,
+        "median": 3.1357815,
+        "p95": 3.17384925
+      },
+      "unaccounted_ms_p95": {
+        "max": 3.625,
+        "median": 3.375,
+        "p95": 3.625
+      }
+    },
+    "valid_sample_count": 26,
+    "validation_errors": [],
+    "wifi": {
+      "rssi_dbm_median": -46.0,
+      "rssi_dbm_min": -51
+    }
+  },
+  "status": "PASS"
+}

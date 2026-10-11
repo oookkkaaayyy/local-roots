@@ -1,0 +1,33 @@
+{
+  "candidate_metrics": {
+    "fps_median": 26.0,
+    "frame_p95_median": 35.125,
+    "frame_p99_median": 68.375,
+    "largest_free_block_min": 65524,
+    "minimum_free_heap": 48472
+  },
+  "candidate_profile": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/09_RGB_Blobs4.profile.json",
+  "candidate_release": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+  "candidate_variant_id": 1347100681,
+  "checks": {
+    "fps_median": false,
+    "frame_p95_median": false,
+    "frame_p99_median": false,
+    "largest_free_block": true,
+    "minimum_free_heap": false
+  },
+  "kernel": "RGB_Blobs4",
+  "kernel_index": 9,
+  "r4_metrics": {
+    "fps_median": 39.0,
+    "frame_p95_median": 21.625,
+    "frame_p99_median": 34.75,
+    "largest_free_block_min": 69620,
+    "minimum_free_heap": 57416
+  },
+  "r4_profile": "evidence/hbnf-foundation-qualification-20261005/seq39/live/foundation-sweep/09_RGB_Blobs4.profile.json",
+  "r4_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "r4_variant_id": 1347100681,
+  "schema": "hbnf-candidate-vs-r4-kernel-profile-v1",
+  "status": "FAIL"
+}

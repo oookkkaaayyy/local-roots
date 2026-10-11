@@ -1,0 +1,126 @@
+{
+  "failures": [],
+  "profile": {
+    "aux": {
+      "age_p99_ms": 4294967295.0,
+      "inactive_samples": 0,
+      "render_fps_median": 43.0
+    },
+    "collection_errors": 0,
+    "contract": "foundation",
+    "fps": {
+      "median": 42.0,
+      "min": 40,
+      "p05": 40.3
+    },
+    "frame_ms": {
+      "avg_median": 19.20478,
+      "max": 72.939,
+      "p50_median": 18.125,
+      "p95_median": 20.875,
+      "p99_median": 46.375
+    },
+    "heap": {
+      "free_end": 117528,
+      "free_start": 113040,
+      "largest_block_end": 69620,
+      "largest_block_start": 63476,
+      "minimum_free_min": 48472
+    },
+    "kernel": {
+      "id": 16,
+      "name": "Rotating_Blob",
+      "variant_id": 1347100688
+    },
+    "qualification_eligible": true,
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+    "restart_count_end": 0,
+    "restart_count_start": 0,
+    "sample_count": 27,
+    "schema": "hbnf-runtime-profile-v2",
+    "stages": {
+      "audio_ms_avg": {
+        "max": 0.563952,
+        "median": 0.548121,
+        "p95": 0.5579859
+      },
+      "audio_ms_p95": {
+        "max": 0.625,
+        "median": 0.625,
+        "p95": 0.625
+      },
+      "aux_prepare_send_ms_avg": {
+        "max": 4.14393,
+        "median": 4.113378,
+        "p95": 4.1429182
+      },
+      "aux_prepare_send_ms_p95": {
+        "max": 5.875,
+        "median": 5.625,
+        "p95": 5.875
+      },
+      "frame_ms_avg": {
+        "max": 19.35148,
+        "median": 19.20478,
+        "p95": 19.336928
+      },
+      "kernel_ms_avg": {
+        "max": 9.695178,
+        "median": 9.606527,
+        "p95": 9.6922339
+      },
+      "kernel_ms_p95": {
+        "max": 9.875,
+        "median": 9.875,
+        "p95": 9.875
+      },
+      "overlay_ms_avg": {
+        "max": 0.039013,
+        "median": 0.038003,
+        "p95": 0.0389457
+      },
+      "overlay_ms_p95": {
+        "max": 0.125,
+        "median": 0.125,
+        "p95": 0.125
+      },
+      "palette_ms_avg": {
+        "max": 0.281877,
+        "median": 0.273706,
+        "p95": 0.2798329
+      },
+      "palette_ms_p95": {
+        "max": 0.375,
+        "median": 0.375,
+        "p95": 0.375
+      },
+      "scheduler_ms_avg": {
+        "max": 1.592564,
+        "median": 1.575936,
+        "p95": 1.5899151
+      },
+      "scheduler_ms_p95": {
+        "max": 1.875,
+        "median": 1.875,
+        "p95": 1.875
+      },
+      "unaccounted_ms_avg": {
+        "max": 3.051542,
+        "median": 3.033764,
+        "p95": 3.0431984
+      },
+      "unaccounted_ms_p95": {
+        "max": 3.375,
+        "median": 3.125,
+        "p95": 3.375
+      }
+    },
+    "valid_sample_count": 27,
+    "validation_errors": [],
+    "wifi": {
+      "rssi_dbm_median": -46.0,
+      "rssi_dbm_min": -52
+    }
+  },
+  "status": "PASS"
+}

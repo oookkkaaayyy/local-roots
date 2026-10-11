@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "snapshot_equal": true,
+  "pre_sweep_state": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/PRE_SWEEP_STATE.json",
+  "post_restore_state": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/POST_RESTORE_STATE.json"
+}

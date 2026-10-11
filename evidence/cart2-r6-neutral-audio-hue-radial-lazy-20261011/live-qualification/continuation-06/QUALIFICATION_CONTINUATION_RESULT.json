@@ -1,0 +1,185 @@
+{
+  "brightness_restore": {
+    "error": "RuntimeError: qualification-baseline-vibe-mismatch",
+    "verified": false
+  },
+  "brightness_setup": {
+    "identity_before_post": {
+      "build_mac": "704bca5b345c",
+      "candidate": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+      "wled": "16.0.1"
+    },
+    "operation": "measure",
+    "persisted_readback_semantics": "Raw /cfg.json is parsed in memory; only HBNF brightness/AUX/vibe fields are retained; raw config is not logged or saved",
+    "post_error": null,
+    "post_outcome": "RESPONSE_RECEIVED",
+    "readback": {
+      "identity": {
+        "build_mac": "704bca5b345c",
+        "candidate": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+        "ip": "192.168.77.10",
+        "mac": "704bca5b345c",
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+        "wled": "16.0.1"
+      },
+      "matrix_on": true,
+      "persisted": {
+        "auxBrightness": 245,
+        "matrixBrightness": 44,
+        "vibe": 0
+      },
+      "runtime": {
+        "auxBrightness": 245,
+        "matrixBrightness": 44,
+        "vibe": 0
+      },
+      "vibe_persistence": "verified"
+    },
+    "readback_endpoints": [
+      "GET /json/info",
+      "GET /hbnf/build.json",
+      "GET /json/state",
+      "http://192.168.77.10/edit?func=download&path=%2Fcfg.json"
+    ],
+    "requested_hbnf": {
+      "matrixBrightness": 44
+    },
+    "save_settle_seconds": 1.25,
+    "target_matrix_brightness": 44,
+    "verified": true,
+    "vibe_config_migration": "not_needed"
+  },
+  "brightness_setup_started": true,
+  "candidate_install_attempts": 0,
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+  "candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+  "captured_qualification_invalidated": {
+    "passed": false,
+    "profiles_not_accepted": true
+  },
+  "device_requests": 83,
+  "interrupted_brightness_restore": {
+    "identity_before_post": {
+      "build_mac": "704bca5b345c",
+      "candidate": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+      "wled": "16.0.1"
+    },
+    "operation": "restore",
+    "persisted_readback_semantics": "Raw /cfg.json is parsed in memory; only HBNF brightness/AUX/vibe fields are retained; raw config is not logged or saved",
+    "post_error": null,
+    "post_outcome": "RESPONSE_RECEIVED",
+    "readback": {
+      "identity": {
+        "build_mac": "704bca5b345c",
+        "candidate": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+        "ip": "192.168.77.10",
+        "mac": "704bca5b345c",
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+        "wled": "16.0.1"
+      },
+      "matrix_on": true,
+      "persisted": {
+        "auxBrightness": 245,
+        "matrixBrightness": 52,
+        "vibe": 0
+      },
+      "runtime": {
+        "auxBrightness": 245,
+        "matrixBrightness": 52,
+        "vibe": 0
+      },
+      "vibe_persistence": "verified"
+    },
+    "readback_endpoints": [
+      "GET /json/info",
+      "GET /hbnf/build.json",
+      "GET /json/state",
+      "http://192.168.77.10/edit?func=download&path=%2Fcfg.json"
+    ],
+    "requested_hbnf": {
+      "matrixBrightness": 52
+    },
+    "save_settle_seconds": 1.25,
+    "target_matrix_brightness": 52,
+    "verified": true,
+    "vibe_config_migration": "not_needed"
+  },
+  "operation_scope": "QUALIFICATION_ONLY",
+  "preflight": {
+    "aux": {
+      "ip": "192.168.77.11",
+      "led_count": 22,
+      "live": true,
+      "lor": 0,
+      "mac": "8c94df55c34c",
+      "mode": "DDP",
+      "on": true,
+      "source": "192.168.77.10"
+    },
+    "brightness_baseline": {
+      "matrix_on": true,
+      "persisted": {
+        "auxBrightness": 245,
+        "matrixBrightness": 52,
+        "vibe": 0
+      },
+      "runtime": {
+        "auxBrightness": 245,
+        "matrixBrightness": 52,
+        "vibe": 0
+      },
+      "vibe_persistence": "verified"
+    },
+    "candidate_attempts_used": 1,
+    "candidate_install_permitted": false,
+    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+    "candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+    "captured_unix": 1791729939.1792471,
+    "cart_lan_interface": "en0",
+    "device_mutations": 0,
+    "device_requests": 9,
+    "host_on_ac": true,
+    "matrix": {
+      "brightness": 44,
+      "candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+      "diagnostic_off": true,
+      "fps": 42,
+      "free_heap": 73348,
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "on": true,
+      "release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+      "telemetry_off": true,
+      "uptime_seconds": 8131,
+      "wled": "16.0.1"
+    },
+    "operation_scope": "QUALIFICATION_ONLY",
+    "pass": true,
+    "qualification_recovery_subscope": "RESTORE_INTERRUPTED_BRIGHTNESS_THEN_QUALIFY",
+    "read_only": true,
+    "recovery_attempts_used": 0,
+    "rollback": {
+      "opal_ledger": "OPAL_QUALIFICATION_PREFLIGHT_OKn/usr/bin/sha256sum\n55 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\n",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    },
+    "schema": "hbnf-cart2-qualification-prelive-v1",
+    "single_worker": {
+      "conflicting_pids": [],
+      "pass": true,
+      "worker_count": 1
+    }
+  },
+  "preflight_completed": true,
+  "recovery_attempts": 0,
+  "restore_error": "RuntimeError: qualification-baseline-vibe-mismatch",
+  "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "schema": "hbnf-cart2-candidate-qualification-continuation-v1",
+  "setup_started": true,
+  "status": "QUALIFICATION_BRIGHTNESS_RESTORE_FAILED"
+}

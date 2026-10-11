@@ -1,0 +1,300 @@
+{
+  "aux": {
+    "ip": "192.168.77.11",
+    "led_count": 22,
+    "live": true,
+    "lor": 0,
+    "mac": "8c94df55c34c",
+    "mode": "DDP",
+    "source": "192.168.77.10",
+    "wled": "16.0.1"
+  },
+  "brightness_baseline": {
+    "matrix_on": true,
+    "persisted": {
+      "auxBrightness": 245,
+      "matrixBrightness": 52
+    },
+    "runtime": {
+      "auxBrightness": 245,
+      "matrixBrightness": 52
+    },
+    "runtime_observation": {
+      "runtime_fields": [
+        "matrixBrightness",
+        "auxBrightness"
+      ],
+      "vibe_source": "unavailable_on_exact_R4"
+    }
+  },
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+  "candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+  "captured_at_unix": 1791721786.308435,
+  "host_on_ac": true,
+  "matrix": {
+    "brightness": 52,
+    "diagnostic_off": true,
+    "fps": 28,
+    "free_heap": 73524,
+    "ip": "192.168.77.10",
+    "mac": "704bca5b345c",
+    "release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "telemetry_off": true,
+    "uptime_seconds": 9893,
+    "wled": "16.0.1"
+  },
+  "no_house_voltage_sensor": true,
+  "opal": {
+    "read_only": true,
+    "stdout": "OPAL_PREFLIGHT_OKn 05:29:46 up 16:18,  load average: 1.44, 1.37, 1.36\nFilesystem           1K-blocks      Used Available Use% Mounted on\ntmpfs                    59392      7732     51660  13% /tmp\n/usr/bin/curl\n/usr/bin/sha256sum\n55 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\n"
+  },
+  "pass": true,
+  "pre_mutation_state": {
+    "aux": {
+      "ddp": {
+        "leds": {
+          "bootps": 0,
+          "cct": 0,
+          "count": 22,
+          "fps": 22,
+          "lc": 1,
+          "maxpwr": 900,
+          "maxseg": 32,
+          "pwr": 383,
+          "rgbw": false,
+          "seglc": [
+            1
+          ],
+          "wv": 0
+        },
+        "lip": "192.168.77.10",
+        "live": true,
+        "lm": "DDP"
+      },
+      "identity": {
+        "ip": "192.168.77.11",
+        "mac": "8c94df55c34c",
+        "wled": "16.0.1"
+      },
+      "runtime": {
+        "bri": 255,
+        "lor": 0,
+        "mainseg": 0,
+        "nl": {
+          "dur": 60,
+          "mode": 1,
+          "on": false,
+          "rem": -1,
+          "tbri": 0
+        },
+        "on": true,
+        "pl": -1,
+        "ps": -1,
+        "seg": [
+          {
+            "bm": 0,
+            "bri": 255,
+            "c1": 128,
+            "c2": 128,
+            "c3": 16,
+            "cct": 127,
+            "col": [
+              [
+                255,
+                160,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            "frz": false,
+            "fx": 0,
+            "grp": 1,
+            "id": 0,
+            "ix": 128,
+            "lc": 1,
+            "len": 22,
+            "m12": 0,
+            "mi": false,
+            "o1": false,
+            "o2": false,
+            "o3": false,
+            "of": 0,
+            "on": true,
+            "pal": 0,
+            "rev": false,
+            "sel": true,
+            "set": 0,
+            "si": 0,
+            "spc": 0,
+            "start": 0,
+            "stop": 22,
+            "sx": 128
+          }
+        ],
+        "transition": 7
+      }
+    },
+    "matrix": {
+      "fps": 28,
+      "free_heap": 73524,
+      "hbnf_brightness": {
+        "auxBrightness": 245,
+        "matrixBrightness": 52
+      },
+      "identity": {
+        "build_mac": "704bca5b345c",
+        "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "ip": "192.168.77.10",
+        "mac": "704bca5b345c",
+        "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "wled": "16.0.1"
+      },
+      "persisted_hbnf_brightness": {
+        "auxBrightness": 245,
+        "matrixBrightness": 52
+      },
+      "runtime": {
+        "bri": 255,
+        "lor": 0,
+        "mainseg": 0,
+        "nl": {
+          "dur": 60,
+          "mode": 1,
+          "on": false,
+          "rem": -1,
+          "tbri": 0
+        },
+        "on": true,
+        "pl": -1,
+        "ps": -1,
+        "seg": [
+          {
+            "bm": 0,
+            "bri": 255,
+            "c1": 128,
+            "c2": 128,
+            "c3": 16,
+            "cct": 127,
+            "col": [
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            "frz": false,
+            "fx": 142,
+            "grp": 1,
+            "id": 0,
+            "ix": 128,
+            "lc": 1,
+            "len": 32,
+            "m12": 0,
+            "mY": false,
+            "mi": false,
+            "o1": false,
+            "o2": false,
+            "o3": false,
+            "of": 0,
+            "on": true,
+            "pal": 7,
+            "rY": false,
+            "rev": false,
+            "sel": true,
+            "set": 0,
+            "si": 0,
+            "spc": 0,
+            "start": 0,
+            "startY": 0,
+            "stop": 32,
+            "stopY": 16,
+            "sx": 128,
+            "tp": false
+          },
+          {
+            "bm": 0,
+            "bri": 255,
+            "c1": 128,
+            "c2": 128,
+            "c3": 16,
+            "cct": 127,
+            "col": [
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            "frz": false,
+            "fx": 142,
+            "grp": 1,
+            "id": 1,
+            "ix": 128,
+            "lc": 0,
+            "len": 22,
+            "m12": 0,
+            "mY": false,
+            "mi": false,
+            "o1": false,
+            "o2": false,
+            "o3": false,
+            "of": 0,
+            "on": true,
+            "pal": 0,
+            "rY": false,
+            "rev": false,
+            "sel": true,
+            "set": 0,
+            "si": 0,
+            "spc": 0,
+            "start": 512,
+            "startY": 0,
+            "stop": 534,
+            "stopY": 1,
+            "sx": 128,
+            "tp": false
+          }
+        ],
+        "transition": 7
+      },
+      "uptime_seconds": 9893
+    }
+  },
+  "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "route": "en0/192.168.77.0/24",
+  "schema": "hbnf-cart2-candidate-fresh-prelive-v1",
+  "single_worker": {
+    "conflicting_pids": [],
+    "pass": true,
+    "worker_count": 1
+  }
+}

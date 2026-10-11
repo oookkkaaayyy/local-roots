@@ -30,7 +30,8 @@ def exact_identity(_request_counter=None):
 
 class FakePort:
     def __init__(self, *, admitted=True, baseline=BASELINE, setup_error=None,
-                 worker_error=None, restore_error=None, setup_readback=None, restore_readback=None):
+                 worker_error=None, restore_error=None, setup_readback=None, restore_readback=None,
+                 qualification_recovery_subscope=None):
         self.admitted = admitted
         self.baseline = dict(baseline)
         self.setup_error = setup_error
@@ -38,6 +39,7 @@ class FakePort:
         self.restore_error = restore_error
         self.setup_readback = setup_readback
         self.restore_readback = restore_readback
+        self.qualification_recovery_subscope = qualification_recovery_subscope
         self.events = []
         self.device_requests = 0
         self.recovery_attempts = 0
@@ -55,9 +57,12 @@ class FakePort:
     def preflight_candidate(self):
         self.events.append(("preflight",))
         self.device_requests += 6
-        if self.baseline["matrixBrightness"] != 52:
+        if self.baseline["matrixBrightness"] == 44 and self.qualification_recovery_subscope != "RESTORE_INTERRUPTED_BRIGHTNESS_THEN_QUALIFY":
+            raise RuntimeError("qualification-baseline-runtime-brightness-mismatch")
+        if self.baseline["matrixBrightness"] not in (44,52):
             raise RuntimeError("qualification-baseline-runtime-brightness-mismatch")
         return {"pass": True, "release_id": module.RELEASE,
+            "qualification_recovery_subscope": self.qualification_recovery_subscope,
             "brightness_baseline": {"runtime": dict(self.baseline), "persisted": dict(self.baseline)}}
 
     def apply_qualification_brightness(self, baseline):
@@ -65,6 +70,7 @@ class FakePort:
         self.device_requests += 1
         if self.setup_error:
             raise RuntimeError(self.setup_error)
+        self.baseline["matrixBrightness"] = 44
         if self.setup_readback:
             return self.setup_readback
         return {"verified": True, "target_matrix_brightness": 44}
@@ -82,7 +88,8 @@ class FakePort:
             raise RuntimeError(self.restore_error)
         if self.restore_readback is not None:
             return self.restore_readback
-        return {"verified": True, "target_matrix_brightness": 52, "readback": pair(52)}
+        self.baseline = dict(baseline)
+        return {"verified": True, "target_matrix_brightness": 52, "readback": pair(52, vibe=baseline.get("vibe",3))}
 
     def close(self, result):
         self.events.append(("close", result["status"]))
@@ -111,7 +118,7 @@ def test_post_timeout_is_resolved_by_readback_without_retry():
         raise TimeoutError("response lost after server applied POST")
 
     module.post_json = post
-    module.read_matrix_brightness_pair = lambda: {"identity": exact_identity()[0], "matrix_on": True,
+    module.read_matrix_brightness_pair = lambda _counter=None, expected_release=module.RELEASE, expected_matrix_brightness=52: {"identity": exact_identity()[0], "matrix_on": True,
         "runtime": dict(current["runtime"]), "persisted": dict(current["persisted"])}
     module.read_matrix_identity = exact_identity
     try:
@@ -146,7 +153,7 @@ def test_exact_r4_owner_settings_restore_is_one_matrix_brightness_write():
         assert expected_release == module.R4
         return identity, {}, {}
 
-    def read_pair(_request_counter, expected_release):
+    def read_pair(_request_counter, expected_release, _expected_matrix_brightness=52):
         assert expected_release == module.R4
         return json.loads(json.dumps(current))
 
@@ -184,7 +191,7 @@ def test_unknown_post_outcome_without_matching_readback_fails_once():
         raise TimeoutError("unknown outcome; no state change visible")
 
     module.post_json = post
-    module.read_matrix_brightness_pair = lambda: pair(52)
+    module.read_matrix_brightness_pair = lambda _counter=None, expected_release=module.RELEASE, expected_matrix_brightness=52: pair(52)
     module.read_matrix_identity = exact_identity
     try:
         try:
@@ -215,7 +222,7 @@ def test_restore_persisted_mismatch_fails_even_when_runtime_restored():
         raise TimeoutError("restore response lost; persisted file remains at 44")
 
     module.post_json = post
-    module.read_matrix_brightness_pair = lambda: {"identity": exact_identity()[0], "matrix_on": True,
+    module.read_matrix_brightness_pair = lambda _counter=None, expected_release=module.RELEASE, expected_matrix_brightness=52: {"identity": exact_identity()[0], "matrix_on": True,
         "runtime": dict(current["runtime"]), "persisted": dict(current["persisted"])}
     module.read_matrix_identity = exact_identity
     try:
@@ -242,7 +249,9 @@ def test_partial_readback_fails_and_does_not_create_profiles():
     writes = []
     now = [0.0]
     module._post_json_counted = lambda _url, payload, _counter: writes.append(payload)
-    module.read_matrix_brightness_pair = lambda: pair(44, partial=True)
+    incomplete_runtime = pair(52)
+    incomplete_runtime["runtime"].pop("vibe")
+    module.read_matrix_brightness_pair = lambda _counter=None, expected_release=module.RELEASE, expected_matrix_brightness=52: incomplete_runtime
     module.read_matrix_identity = exact_identity
     try:
         try:
@@ -358,6 +367,88 @@ def test_r4_context_accepts_missing_vibe_only_for_exact_r4():
         module.read_matrix_identity = original_identity
 
 
+def test_candidate_missing_persisted_vibe_is_a_bounded_migration_precondition():
+    original_get = module.get_json
+    original_identity = module.read_matrix_identity
+    identity = exact_identity()
+    state = {"on": True, "HBNF": {"matrixBrightness": 52, "auxBrightness": 245, "vibe": 0}}
+    raw_cfg = {"wifi": {"psk": "must-not-be-retained"},
+        "um": {"hbnfFoundationV1": {"matrixBrightness": 52, "auxBrightness": 245}}}
+
+    def get(url, timeout=4):
+        if url.endswith("/json/state"):
+            return 200, b"{}", state
+        if url == module.PERSISTED_CONFIG_URL:
+            return 200, b"{}", raw_cfg
+        raise AssertionError(f"unexpected GET endpoint: {url}")
+
+    module.get_json = get
+    module.read_matrix_identity = lambda _request_counter=None: identity
+    try:
+        context = module.read_matrix_context()
+        assert context["persisted"] == {"matrixBrightness": 52, "auxBrightness": 245}
+        assert context["brightness"]["runtime"]["vibe"] == 0
+        assert context["brightness"]["vibe_persistence"] == "one_brightness_write_must_persist_runtime_vibe"
+        assert "must-not-be-retained" not in repr(context)
+    finally:
+        module.get_json = original_get
+        module.read_matrix_identity = original_identity
+
+
+def test_missing_candidate_vibe_is_migrated_by_one_brightness_write_and_readback():
+    original_post = module._post_json_counted
+    original_read = module.read_matrix_brightness_pair
+    original_identity = module.read_matrix_identity
+    before = pair(52, vibe=0, partial=True)
+    after = pair(44, vibe=0)
+    reads = iter((before, after, after))
+    writes = []
+
+    module._post_json_counted = lambda _url, payload, _counter: writes.append(payload)
+    module.read_matrix_brightness_pair = lambda _counter=None, expected_release=module.RELEASE, expected_matrix_brightness=52: next(reads)
+    module.read_matrix_identity = lambda _counter=None, expected_release=module.RELEASE: (exact_identity()[0], {}, {})
+    try:
+        result = module.change_matrix_brightness(BASELINE, operation="measure",
+            sleeper=lambda _seconds: None, monotonic=lambda: 0.0)
+        assert result["verified"] is True
+        assert result["vibe_config_migration"] == "verified_by_post_write_readback"
+        assert result["readback"]["persisted"] == {"matrixBrightness": 44, "auxBrightness": 245, "vibe": 0}
+        assert writes == [{"HBNF": {"matrixBrightness": 44}}]
+    finally:
+        module._post_json_counted = original_post
+        module.read_matrix_brightness_pair = original_read
+        module.read_matrix_identity = original_identity
+
+
+def test_missing_candidate_vibe_cannot_be_accepted_for_restore_or_mismatched_values():
+    for persisted, runtime, operation in (
+        ({"matrixBrightness": 44, "auxBrightness": 245}, {"matrixBrightness": 44, "auxBrightness": 245, "vibe": 0}, "restore"),
+        ({"matrixBrightness": 52, "auxBrightness": 200}, {"matrixBrightness": 52, "auxBrightness": 245, "vibe": 0}, "measure"),
+    ):
+        original_post = module._post_json_counted
+        original_read = module.read_matrix_brightness_pair
+        original_identity = module.read_matrix_identity
+        pair_value = {"identity": exact_identity()[0], "matrix_on": True, "runtime": runtime, "persisted": persisted}
+        writes = []
+        module._post_json_counted = lambda *args, **kwargs: writes.append((args, kwargs))
+        module.read_matrix_brightness_pair = lambda _counter=None, expected_release=module.RELEASE, expected_matrix_brightness=52: pair_value
+        module.read_matrix_identity = lambda _counter=None, expected_release=module.RELEASE: (exact_identity()[0], {}, {})
+        try:
+            target = {"matrixBrightness": 52}
+            try:
+                module.change_matrix_brightness(target, operation=operation,
+                    sleeper=lambda _seconds: None, monotonic=lambda: 0.0)
+            except RuntimeError:
+                pass
+            else:
+                raise AssertionError("missing-Vibe exception must not accept restore or mismatched baseline")
+            assert writes == []
+        finally:
+            module._post_json_counted = original_post
+            module.read_matrix_brightness_pair = original_read
+            module.read_matrix_identity = original_identity
+
+
 def test_candidate_brightness_guard_preserves_postinstall_vibe():
     original_post = module._post_json_counted
     original_read = module.read_matrix_brightness_pair
@@ -372,7 +463,7 @@ def test_candidate_brightness_guard_preserves_postinstall_vibe():
         current["persisted"]["matrixBrightness"] = target
 
     module._post_json_counted = post
-    module.read_matrix_brightness_pair = lambda: json.loads(json.dumps(current))
+    module.read_matrix_brightness_pair = lambda _counter=None, expected_release=module.RELEASE, expected_matrix_brightness=52: json.loads(json.dumps(current))
     module.read_matrix_identity = exact_identity
     try:
         r4_baseline = {"matrixBrightness": 52, "auxBrightness": 245}
@@ -394,6 +485,55 @@ def test_candidate_brightness_guard_preserves_postinstall_vibe():
         module.read_matrix_identity = original_identity
 
 
+def test_interrupted_measurement_readback_and_owner_restore_use_their_expected_levels():
+    original_identity = module._read_expected_matrix_identity
+    original_pair = module._read_expected_matrix_brightness_pair
+    original_post = module._post_json_counted
+    current = pair(52, vibe=0, partial=True)
+    writes = []
+    expected_levels = []
+
+    def read_pair(_counter, expected_release, expected_matrix_brightness):
+        expected_levels.append(expected_matrix_brightness)
+        assert expected_release == module.RELEASE
+        assert current["runtime"]["matrixBrightness"] == expected_matrix_brightness
+        return json.loads(json.dumps(current))
+
+    def post(_url, payload, _counter):
+        writes.append(payload)
+        target = payload["HBNF"]["matrixBrightness"]
+        current["runtime"]["matrixBrightness"] = target
+        current["persisted"]["matrixBrightness"] = target
+        if "vibe" not in current["persisted"]:
+            current["persisted"]["vibe"] = current["runtime"]["vibe"]
+
+    module._read_expected_matrix_identity = lambda _counter, _release: (exact_identity()[0], {}, {})
+    module._read_expected_matrix_brightness_pair = read_pair
+    module._post_json_counted = post
+    try:
+        owner = {"matrixBrightness":52,"auxBrightness":245,"vibe":0}
+        measured = module.change_matrix_brightness(owner,operation="measure",sleeper=lambda _s:None,monotonic=lambda:0.0)
+        restored = module.change_matrix_brightness(owner,operation="restore",sleeper=lambda _s:None,monotonic=lambda:0.0)
+        assert measured["verified"] is True and measured["readback"]["runtime"]["matrixBrightness"]==44
+        assert restored["verified"] is True and restored["readback"]["runtime"]==owner
+        assert expected_levels==[52,44,44,44,52,52]
+        assert writes==[{"HBNF":{"matrixBrightness":44}},{"HBNF":{"matrixBrightness":52}}]
+    finally:
+        module._read_expected_matrix_identity = original_identity
+        module._read_expected_matrix_brightness_pair = original_pair
+        module._post_json_counted = original_post
+
+
+def test_coordinator_restores_an_interrupted_brightness_write_before_qualification():
+    port=FakePort(baseline={"matrixBrightness":44,"auxBrightness":245,"vibe":0},
+        qualification_recovery_subscope="RESTORE_INTERRUPTED_BRIGHTNESS_THEN_QUALIFY")
+    result=run(port)
+    assert result["status"]=="QUALIFIED_OBJECTIVE_GATES_PASS"
+    assert result["interrupted_brightness_restore"]["verified"] is True
+    assert [event[0] for event in port.events]==["admit","local","preflight","restore","set","worker","restore","close"]
+    assert port.events[3][1]["matrixBrightness"]==52
+
+
 def test_r4_missing_vibe_fails_before_any_brightness_write():
     original_post = module._post_json_counted
     original_read = module.read_matrix_brightness_pair
@@ -405,7 +545,7 @@ def test_r4_missing_vibe_fails_before_any_brightness_write():
         "persisted": {"matrixBrightness": 52, "auxBrightness": 245}}
     writes = []
     module._post_json_counted = lambda *args, **kwargs: writes.append((args, kwargs))
-    module.read_matrix_brightness_pair = lambda _request_counter=None, expected_release=module.RELEASE: pair_without_vibe
+    module.read_matrix_brightness_pair = lambda _request_counter=None, expected_release=module.RELEASE, expected_matrix_brightness=52: pair_without_vibe
     module.read_matrix_identity = lambda _request_counter=None, expected_release=module.RELEASE: (identity, {}, {})
     try:
         try:

@@ -1,0 +1,10 @@
+{
+  "authorization_id": "OWNER-20261011-CART2-NEUTRAL-AUDIO-HUE-RADIAL-LAZY-QUALIFICATION-01",
+  "candidate_attempt": 1,
+  "candidate_attempt_limit": 1,
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+  "candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+  "preflight_sha256": "e371a385ef32a2805903ee76107d3ab59e32464ef3c7ef80e03508e05c8d8dae",
+  "r4_recovery_limit": 1,
+  "recorded_before_wled_post": true
+}

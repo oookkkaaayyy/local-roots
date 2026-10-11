@@ -1,0 +1,10 @@
+{
+  "attempts": 1,
+  "confirmed": true,
+  "curl_exit": 0,
+  "http_status": "200",
+  "response_bytes": 540,
+  "response_sha256": "8ac836bbaf204b1341e2f7f03a4c49be782aa43443375f55ea9a2774ce4885ba",
+  "retry": false,
+  "ssh_exit": 0
+}

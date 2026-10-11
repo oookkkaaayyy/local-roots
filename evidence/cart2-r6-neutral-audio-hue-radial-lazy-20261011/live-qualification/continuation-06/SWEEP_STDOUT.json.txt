@@ -1,0 +1,389 @@
+{
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+  "combined_feature_check_status": "PASS",
+  "expected_kernel_count": 28,
+  "gate_failures": [
+    {
+      "diagnostic_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/00_Complex_Kaleido_3.diagnostic-only.json",
+      "failure_class": "SATURATED_TELEMETRY",
+      "kernel_id": 0,
+      "kernel_name": "Complex_Kaleido_3"
+    },
+    {
+      "checks": {
+        "fps_median": false,
+        "frame_p95_median": false,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": true
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/EARLY_R4_COMPARISON_KERNEL_13.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "early-matched-R4",
+      "kernel_id": 13,
+      "kernel_name": "Caleido3"
+    },
+    {
+      "checks": {
+        "fps_median": true,
+        "frame_p95_median": true,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": true
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_1.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 1,
+      "kernel_name": "Big_Caleido"
+    },
+    {
+      "checks": {
+        "fps_median": false,
+        "frame_p95_median": false,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": true
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_2.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 2,
+      "kernel_name": "Parametric_Water"
+    },
+    {
+      "checks": {
+        "fps_median": false,
+        "frame_p95_median": false,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": true
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_3.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 3,
+      "kernel_name": "RGB_Blobs5"
+    },
+    {
+      "checks": {
+        "fps_median": false,
+        "frame_p95_median": false,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": true
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_4.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 4,
+      "kernel_name": "Polar_Waves"
+    },
+    {
+      "checks": {
+        "fps_median": true,
+        "frame_p95_median": true,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": true
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_5.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 5,
+      "kernel_name": "Zoom2"
+    },
+    {
+      "checks": {
+        "fps_median": false,
+        "frame_p95_median": false,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": false
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_6.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 6,
+      "kernel_name": "Complex_Kaleido_4"
+    },
+    {
+      "checks": {
+        "fps_median": true,
+        "frame_p95_median": false,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": false
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_7.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 7,
+      "kernel_name": "Complex_Kaleido_6"
+    },
+    {
+      "checks": {
+        "fps_median": false,
+        "frame_p95_median": true,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": false
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_8.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 8,
+      "kernel_name": "Water"
+    },
+    {
+      "checks": {
+        "fps_median": false,
+        "frame_p95_median": false,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": false
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_9.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 9,
+      "kernel_name": "RGB_Blobs4"
+    },
+    {
+      "checks": {
+        "fps_median": false,
+        "frame_p95_median": false,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": false
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_10.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 10,
+      "kernel_name": "Complex_Kaleido_5"
+    },
+    {
+      "checks": {
+        "fps_median": true,
+        "frame_p95_median": true,
+        "frame_p99_median": true,
+        "largest_free_block": true,
+        "minimum_free_heap": false
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_11.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 11,
+      "kernel_name": "Spiralus2"
+    },
+    {
+      "checks": {
+        "fps_median": false,
+        "frame_p95_median": false,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": false
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_12.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 12,
+      "kernel_name": "Hot_Blob"
+    },
+    {
+      "checks": {
+        "fps_median": true,
+        "frame_p95_median": true,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": false
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_14.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 14,
+      "kernel_name": "Waves"
+    },
+    {
+      "checks": {
+        "fps_median": true,
+        "frame_p95_median": true,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": false
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_15.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 15,
+      "kernel_name": "Chasing_Spirals"
+    },
+    {
+      "checks": {
+        "fps_median": true,
+        "frame_p95_median": true,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": false
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_16.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 16,
+      "kernel_name": "Rotating_Blob"
+    },
+    {
+      "checks": {
+        "fps_median": true,
+        "frame_p95_median": true,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": false
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_17.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 17,
+      "kernel_name": "Center_Field"
+    },
+    {
+      "checks": {
+        "fps_median": false,
+        "frame_p95_median": false,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": false
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_18.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 18,
+      "kernel_name": "Distance_Experiment"
+    },
+    {
+      "checks": {
+        "fps_median": false,
+        "frame_p95_median": false,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": true
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_19.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 19,
+      "kernel_name": "Lava1"
+    },
+    {
+      "checks": {
+        "fps_median": true,
+        "frame_p95_median": true,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": true
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_20.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 20,
+      "kernel_name": "Caleido2"
+    },
+    {
+      "checks": {
+        "fps_median": true,
+        "frame_p95_median": true,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": true
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_21.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 21,
+      "kernel_name": "Yves"
+    },
+    {
+      "diagnostic_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/22_Scaledemo1.diagnostic-only.json",
+      "failure_class": "SATURATED_TELEMETRY",
+      "kernel_id": 22,
+      "kernel_name": "Scaledemo1"
+    },
+    {
+      "checks": {
+        "fps_median": true,
+        "frame_p95_median": true,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": true
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_23.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 23,
+      "kernel_name": "Zoom"
+    },
+    {
+      "checks": {
+        "fps_median": false,
+        "frame_p95_median": false,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": true
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_24.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 24,
+      "kernel_name": "Complex_Kaleido"
+    },
+    {
+      "checks": {
+        "fps_median": false,
+        "frame_p95_median": false,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": true
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_25.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 25,
+      "kernel_name": "RGB_Blobs3"
+    },
+    {
+      "checks": {
+        "fps_median": false,
+        "frame_p95_median": false,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": true
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_26.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 26,
+      "kernel_name": "SM5"
+    },
+    {
+      "checks": {
+        "fps_median": false,
+        "frame_p95_median": false,
+        "frame_p99_median": false,
+        "largest_free_block": true,
+        "minimum_free_heap": true
+      },
+      "comparison_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/R4_COMPARISON_KERNEL_27.json",
+      "failure_class": "PERFORMANCE_COMPARISON",
+      "gate": "frozen-R4",
+      "kernel_id": 27,
+      "kernel_name": "Module_Experiment10"
+    }
+  ],
+  "kernels_completed": 28,
+  "qualification_eligible": false,
+  "restore_receipt": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/RESTORE_RECEIPT.json",
+  "schema": "hbnf-foundation-complete-diagnostic-result-v1",
+  "soak_started": false,
+  "status": "DIAGNOSTICS_COMPLETE__PERFORMANCE_GATE_FAILED"
+}

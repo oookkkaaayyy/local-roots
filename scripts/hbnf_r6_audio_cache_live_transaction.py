@@ -251,6 +251,30 @@ def validate_brightness_baseline(state: dict, persisted: dict) -> dict:
     return values
 
 
+def validate_candidate_brightness_baseline(state: dict, persisted: dict,
+                                          expected_matrix_brightness=QUALIFICATION_BASELINE_BRIGHTNESS) -> dict:
+    """Allow one legacy-config migration before qualification; require all values thereafter."""
+    values = brightness_readback(state, persisted)
+    if values["matrix_on"] is not True:
+        raise RuntimeError("qualification-baseline-matrix-output-off")
+    runtime = values["runtime"]
+    stored = values["persisted"]
+    if any(type(runtime.get(key)) is not int for key in ("matrixBrightness", "auxBrightness", "vibe")):
+        raise RuntimeError("qualification-baseline-runtime-settings-partial-or-invalid")
+    if not 0 <= runtime["vibe"] <= 5:
+        raise RuntimeError("qualification-baseline-runtime-vibe-invalid")
+    if any(type(stored.get(key)) is not int for key in ("matrixBrightness", "auxBrightness")):
+        raise RuntimeError("qualification-baseline-config-settings-partial-or-invalid")
+    if (runtime["matrixBrightness"] != expected_matrix_brightness
+        or stored["matrixBrightness"] != expected_matrix_brightness):
+        raise RuntimeError("qualification-baseline-matrix-brightness-mismatch")
+    if runtime["auxBrightness"] != stored["auxBrightness"]:
+        raise RuntimeError("qualification-baseline-aux-brightness-mismatch")
+    if "vibe" in stored and (type(stored["vibe"]) is not int or not 0 <= stored["vibe"] <= 5 or stored["vibe"] != runtime["vibe"]):
+        raise RuntimeError("qualification-baseline-vibe-mismatch")
+    return {**values, "vibe_persistence": "verified" if "vibe" in stored else "one_brightness_write_must_persist_runtime_vibe"}
+
+
 def validate_preinstall_brightness_baseline(state: dict, persisted: dict) -> dict:
     """Capture R4's owner settings when its runtime omits the Vibe field.
 
@@ -310,33 +334,66 @@ def capture_owner_state_snapshot(matrix_state: dict, aux_state: dict, matrix_inf
     }
 
 
-def read_matrix_context(request_counter=None, expected_release=RELEASE):
+def read_matrix_context(request_counter=None, expected_release=RELEASE,
+                        expected_matrix_brightness=QUALIFICATION_BASELINE_BRIGHTNESS):
     identity_before, info, build = _read_expected_matrix_identity(request_counter,expected_release)
     state = _get_json_counted(MATRIX+"/json/state", 4, request_counter)[2]
     # The read-only file API is parsed in memory; only HBNF brightness/AUX/vibe
     # fields survive extraction, regardless of whether the target requires a PIN.
     persisted_raw = _get_json_counted(PERSISTED_CONFIG_URL, 6, request_counter)[2]
-    persisted = sanitized_persisted_hbnf(persisted_raw, allow_missing_vibe=expected_release == R4)
+    # R4 never serialized Vibe; a new candidate can also inherit that config.
+    # Candidate qualification accepts this only as a migration precondition,
+    # then requires the brightness write to persist and verify the runtime Vibe.
+    persisted = sanitized_persisted_hbnf(persisted_raw, allow_missing_vibe=True)
     identity_after, _, _ = _read_expected_matrix_identity(request_counter,expected_release)
     if identity_before != identity_after:
         raise RuntimeError("qualification-matrix-identity-changed-during-readback")
     brightness=(validate_preinstall_brightness_baseline(state,persisted)
-        if expected_release==R4 else brightness_readback(state,persisted))
+        if expected_release==R4 else validate_candidate_brightness_baseline(
+            state,persisted,expected_matrix_brightness))
     return {"identity": identity_after, "info": info, "build": build, "state": state,
         "persisted": persisted, "brightness": brightness}
 
 
-def read_matrix_brightness_pair(request_counter=None, expected_release=RELEASE):
-    context = read_matrix_context(request_counter,expected_release)
+def read_failed_candidate_recovery_context(request_counter, candidate):
+    """Read the one known post-sweep settings state before exact R4 recovery."""
+    identity_before, info, build = _read_expected_matrix_identity(request_counter, candidate.release_id)
+    state = _get_json_counted(MATRIX+"/json/state", 4, request_counter)[2]
+    persisted_raw = _get_json_counted(PERSISTED_CONFIG_URL, 6, request_counter)[2]
+    persisted = sanitized_persisted_hbnf(persisted_raw, allow_missing_vibe=True)
+    identity_after, _, _ = _read_expected_matrix_identity(request_counter, candidate.release_id)
+    h = state.get("HBNF", {})
+    runtime = {key: h.get(key) for key in ("matrixBrightness", "auxBrightness", "vibe")}
+    expected_runtime = {"matrixBrightness": FROZEN_MATRIX_BRIGHTNESS, "auxBrightness": 245, "vibe": 0}
+    expected_persisted = {"matrixBrightness": FROZEN_MATRIX_BRIGHTNESS, "auxBrightness": 245, "vibe": 1}
+    if (identity_before != identity_after or state.get("on") is not True
+        or identity_after.get("mac") != MATRIX_MAC or info.get("ver") != "16.0.1"
+        or build.get("release_id") != candidate.release_id or build.get("candidate") != candidate.release_id
+        or h.get("candidate") != candidate.release_id or runtime != expected_runtime
+        or persisted != expected_persisted
+        or h.get("packet20Diagnostic", {}).get("enabled") is not False
+        or h.get("foundationTelemetry", {}).get("enabled") is not False):
+        raise RuntimeError("failed-candidate-recovery-state-differs-from-recorded-post-sweep-state")
+    return {"identity": identity_after, "info": info, "build": build, "state": state,
+        "runtime": runtime, "persisted": persisted}
+
+
+def read_matrix_brightness_pair(request_counter=None, expected_release=RELEASE,
+                                expected_matrix_brightness=QUALIFICATION_BASELINE_BRIGHTNESS):
+    context = read_matrix_context(request_counter,expected_release,expected_matrix_brightness)
     result = context["brightness"]
     result["identity"] = context["identity"]
     return result
 
 
-def _read_expected_matrix_brightness_pair(request_counter, expected_release):
+def _read_expected_matrix_brightness_pair(request_counter, expected_release,
+                                          expected_matrix_brightness=QUALIFICATION_BASELINE_BRIGHTNESS):
     if expected_release == RELEASE:
-        return read_matrix_brightness_pair(request_counter) if request_counter is not None else read_matrix_brightness_pair()
-    return read_matrix_brightness_pair(request_counter,expected_release) if request_counter is not None else read_matrix_brightness_pair(expected_release=expected_release)
+        return (read_matrix_brightness_pair(request_counter,expected_matrix_brightness=expected_matrix_brightness)
+            if request_counter is not None else read_matrix_brightness_pair(expected_matrix_brightness=expected_matrix_brightness))
+    return (read_matrix_brightness_pair(request_counter,expected_release,expected_matrix_brightness)
+        if request_counter is not None else read_matrix_brightness_pair(expected_release=expected_release,
+            expected_matrix_brightness=expected_matrix_brightness))
 
 
 def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep,
@@ -364,16 +421,21 @@ def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep
     # the brightness-only write. R4 does not persist Vibe, so preserve the exact
     # installed candidate's Vibe instead of inferring it from the R4 baseline.
     identity_before_post, _, _ = _read_expected_matrix_identity(request_counter,expected_release)
-    before = _read_expected_matrix_brightness_pair(request_counter,expected_release)
+    expected_before = QUALIFICATION_BASELINE_BRIGHTNESS if operation == "measure" else FROZEN_MATRIX_BRIGHTNESS
+    before = _read_expected_matrix_brightness_pair(request_counter,expected_release,expected_before)
     if before.get("identity") != identity_before_post or before.get("matrix_on") is not True:
         raise RuntimeError("qualification-brightness-prewrite-identity-or-output-mismatch")
     runtime = before.get("runtime", {})
     persisted = before.get("persisted", {})
     required_settings = ("matrixBrightness", "auxBrightness", "vibe")
-    if (any(type(runtime.get(key)) is not int or type(persisted.get(key)) is not int for key in required_settings)
-            or any(runtime.get(key) != persisted.get(key) for key in required_settings)):
+    missing_vibe_migration = "vibe" not in persisted and operation == "measure"
+    if (any(type(runtime.get(key)) is not int for key in required_settings)
+            or not 0 <= runtime.get("vibe", -1) <= 5
+            or any(type(persisted.get(key)) is not int for key in required_settings if key in persisted)
+            or any(runtime.get(key) != persisted.get(key) for key in required_settings if key in persisted)
+            or ("vibe" in persisted and not 0 <= persisted["vibe"] <= 5)
+            or ("vibe" not in persisted and not missing_vibe_migration)):
         raise RuntimeError("qualification-brightness-prewrite-settings-incomplete-or-mismatched")
-    expected_before = QUALIFICATION_BASELINE_BRIGHTNESS if operation == "measure" else FROZEN_MATRIX_BRIGHTNESS
     if runtime["matrixBrightness"] != expected_before:
         raise RuntimeError("qualification-brightness-prewrite-level-mismatch")
     expected_settings = dict(runtime)
@@ -390,7 +452,7 @@ def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep
     last_error = None
     while monotonic() <= deadline:
         try:
-            values = _read_expected_matrix_brightness_pair(request_counter,expected_release)
+            values = _read_expected_matrix_brightness_pair(request_counter,expected_release,target_brightness)
             if values.get("identity") != identity_before_post:
                 raise RuntimeError("qualification-matrix-identity-changed-before-readback")
             expected_runtime = dict(expected_settings)
@@ -400,7 +462,7 @@ def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep
                 # HBNF defers dirty marking for 850 ms after /json/state; wait beyond it,
                 # then take a second readback before starting profiles or closing restore.
                 sleeper(CONFIG_SAVE_SETTLE_SECONDS)
-                final = _read_expected_matrix_brightness_pair(request_counter,expected_release)
+                final = _read_expected_matrix_brightness_pair(request_counter,expected_release,target_brightness)
                 if final.get("identity") != identity_before_post:
                     raise RuntimeError("qualification-matrix-identity-changed-before-final-readback")
                 if not (final["matrix_on"] is True and all(final["runtime"].get(k) == v for k, v in expected_runtime.items()) and all(
@@ -412,7 +474,8 @@ def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep
                     "readback": final, "verified": True,
                     "identity_before_post": identity_before_post,
                     "readback_endpoints": ["GET /json/info", "GET /hbnf/build.json", "GET /json/state", PERSISTED_CONFIG_URL],
-                    "persisted_readback_semantics": "Raw /cfg.json is parsed in memory; only HBNF brightness/AUX/vibe fields are retained; raw config is not logged or saved"}
+                    "persisted_readback_semantics": "Raw /cfg.json is parsed in memory; only HBNF brightness/AUX/vibe fields are retained; raw config is not logged or saved",
+                    "vibe_config_migration": "verified_by_post_write_readback" if missing_vibe_migration else "not_needed"}
             last_error = "qualification-brightness-readback-mismatch"
         except Exception as exc:
             last_error = f"{type(exc).__name__}: {exc}"
@@ -802,12 +865,27 @@ def coordinate_qualification(port):
         result["preflight"] = preflight
         result["preflight_completed"] = True
         result["device_requests"]=port.device_requests
+        baseline = preflight["brightness_baseline"]["runtime"]
+        if baseline.get("matrixBrightness") == FROZEN_MATRIX_BRIGHTNESS:
+            if preflight.get("qualification_recovery_subscope") != "RESTORE_INTERRUPTED_BRIGHTNESS_THEN_QUALIFY":
+                raise RuntimeError("qualification-preflight-found-unexpected-frozen-brightness")
+            owner_baseline = dict(baseline)
+            owner_baseline["matrixBrightness"] = QUALIFICATION_BASELINE_BRIGHTNESS
+            result["interrupted_brightness_restore"] = port.restore_qualification_brightness(owner_baseline)
+            restored = result["interrupted_brightness_restore"]
+            if not isinstance(restored, dict) or restored.get("verified") is not True:
+                raise RuntimeError("interrupted-qualification-brightness-restore-unverified")
+            baseline = dict(restored["readback"]["runtime"])
+            preflight["brightness_baseline"]["runtime"] = baseline
+            preflight["brightness_baseline"]["persisted"] = dict(restored["readback"]["persisted"])
+        if baseline.get("matrixBrightness") != QUALIFICATION_BASELINE_BRIGHTNESS:
+            raise RuntimeError("qualification-preflight-does-not-prove-owner-brightness-baseline")
         setup_started = True
         result["setup_started"] = True
         try:
             result["brightness_setup_started"] = True
             result["brightness_setup"] = port.apply_qualification_brightness(
-                preflight["brightness_baseline"]["runtime"])
+                baseline)
             if not isinstance(result["brightness_setup"], dict) or result["brightness_setup"].get("verified") is not True:
                 raise RuntimeError("qualification-brightness-setup-did-not-verify")
         except Exception as exc:
@@ -826,7 +904,7 @@ def coordinate_qualification(port):
         if setup_started and preflight is not None:
             try:
                 result["brightness_restore"] = port.restore_qualification_brightness(
-                    preflight["brightness_baseline"]["runtime"])
+                    baseline)
                 if not isinstance(result["brightness_restore"], dict) or result["brightness_restore"].get("verified") is not True:
                     raise RuntimeError("qualification-brightness-restore-did-not-verify")
             except Exception as exc:
@@ -840,6 +918,8 @@ def coordinate_qualification(port):
                 }
             result["status"] = "QUALIFICATION_BRIGHTNESS_RESTORE_FAILED"
             result["restore_error"] = restore_error
+            if setup_error:
+                result["setup_error"] = setup_error
         elif setup_error:
             result["status"] = "QUALIFICATION_BRIGHTNESS_SETUP_FAILED_NO_PROFILES"
             result["error"] = setup_error
@@ -900,13 +980,23 @@ class LivePort:
     def preflight(self):
         return preflight(self.candidate,request_counter=self._record_device_request)
 
-    def preflight_candidate(self):
+    def preflight_candidate(self, expected_matrix_brightness=None):
         exact_artifacts(self.candidate)
         power=run(["pmset","-g","batt"],timeout=5).stdout.decode(errors="replace")
         route=run(["route","-n","get","192.168.77.10"],timeout=5).stdout.decode(errors="replace")
         if "AC Power" not in power or "interface: en0" not in route:
             raise RuntimeError("qualification-only host AC/LAN preflight failed")
-        matrix_context=read_matrix_context(self._record_device_request,self.candidate.release_id)
+        live_state=json.loads(self.state_path.read_text())
+        qualification_auth=live_state.get("live_mutation_authorization",{})
+        recovery_subscope=qualification_auth.get("qualification_recovery_subscope")
+        expected_brightness=expected_matrix_brightness
+        if expected_brightness is None:
+            expected_brightness=(FROZEN_MATRIX_BRIGHTNESS
+                if recovery_subscope=="RESTORE_INTERRUPTED_BRIGHTNESS_THEN_QUALIFY"
+                else QUALIFICATION_BASELINE_BRIGHTNESS)
+        if expected_brightness not in (QUALIFICATION_BASELINE_BRIGHTNESS,FROZEN_MATRIX_BRIGHTNESS):
+            raise RuntimeError("qualification-preflight-brightness-expectation-invalid")
+        matrix_context=read_matrix_context(self._record_device_request,self.candidate.release_id,expected_brightness)
         mi=matrix_context["info"]; ms=matrix_context["state"]; mb=matrix_context["build"]
         ai=_get_json_counted(AUX+"/json/info", 4, self._record_device_request)[2]
         ast=_get_json_counted(AUX+"/json/state", 4, self._record_device_request)[2]
@@ -921,7 +1011,7 @@ class LivePort:
                 and ai.get("lip")=="192.168.77.10" and ai.get("leds",{}).get("count")==22
                 and ast.get("on") is True and ast.get("lor")==0):
             raise RuntimeError("qualification preflight AUX DDP/output checks failed")
-        brightness_baseline=validate_brightness_baseline(ms,matrix_context["persisted"])
+        brightness_baseline=matrix_context["brightness"]
         if matrix_context["identity"]["release_id"] != self.candidate.release_id:
             raise RuntimeError("qualification-matrix-identity-binding-failed")
         worker=single_worker_check()
@@ -932,15 +1022,78 @@ class LivePort:
             raise RuntimeError("qualification preflight cannot prove exact Opal R4 recovery")
         proof={"schema":"hbnf-cart2-qualification-prelive-v1","captured_unix":time.time(),"pass":True,
             "operation_scope":"QUALIFICATION_ONLY","host_on_ac":True,"cart_lan_interface":"en0",
+            "qualification_recovery_subscope":recovery_subscope,
+            "candidate_release_id":self.candidate.release_id,"candidate_sha256":self.candidate.sha256,
             "matrix":{"ip":mi["ip"],"mac":mi["mac"],"wled":mi["ver"],"release_id":mb["release_id"],
                 "candidate_sha256":self.candidate.sha256,"uptime_seconds":mi.get("uptime"),"fps":mi.get("leds",{}).get("fps"),
-                "free_heap":mi.get("freeheap"),"brightness":h.get("matrixBrightness"),"diagnostic_off":True,"telemetry_off":True},
+                "free_heap":mi.get("freeheap"),"brightness":h.get("matrixBrightness"),"on":ms.get("on") is True,
+                "diagnostic_off":True,"telemetry_off":True},
             "brightness_baseline":brightness_baseline,
             "aux":{"ip":ai["ip"],"mac":ai["mac"],"live":ai["live"],"mode":ai["lm"],"source":ai["lip"],"led_count":ai["leds"]["count"],"on":ast["on"],"lor":ast["lor"]},
             "rollback":{"sha256":self.candidate.rollback_sha256,"opal_ledger":out},"single_worker":worker,
-            "candidate_attempts_used":1,"candidate_install_permitted":False}
+            "candidate_attempts_used":1,"candidate_install_permitted":False,
+            "recovery_attempts_used":0,
+            "read_only":True,"device_mutations":0,"device_requests":self.device_requests}
         save(self.outdir/"QUALIFICATION_PRELIVE_READONLY.json",proof)
         return proof
+
+    def preflight_failed_candidate_recovery(self):
+        """Capture fresh read-only proof for recovery after the completed failed sweep."""
+        exact_artifacts(self.candidate)
+        power=run(["pmset","-g","batt"],timeout=5).stdout.decode(errors="replace")
+        route=run(["route","-n","get","192.168.77.10"],timeout=5).stdout.decode(errors="replace")
+        if "AC Power" not in power or "interface: en0" not in route:
+            raise RuntimeError("recovery-only host AC/LAN preflight failed")
+        context=read_failed_candidate_recovery_context(self._record_device_request,self.candidate)
+        ai=_get_json_counted(AUX+"/json/info",4,self._record_device_request)[2]
+        ast=_get_json_counted(AUX+"/json/state",4,self._record_device_request)[2]
+        if not (ai.get("ip")=="192.168.77.11" and ai.get("mac","").replace(":","").lower()==AUX_MAC
+            and ai.get("ver")=="16.0.1" and ai.get("live") is True and ai.get("lm")=="DDP"
+            and ai.get("lip")=="192.168.77.10" and ai.get("leds",{}).get("count")==22
+            and ast.get("on") is True and ast.get("lor")==0):
+            raise RuntimeError("recovery-only preflight AUX DDP/output checks failed")
+        worker=single_worker_check()
+        opal=("set -e; printf OPAL_QUALIFICATION_PREFLIGHT_OK\\n; command -v sha256sum; "
+            "test -r /etc/hbnf-updater/release-state; cat /etc/hbnf-updater/release-state")
+        self._record_device_request()
+        p=run(SSH+["-o","ConnectTimeout=4",OPAL,opal],timeout=15)
+        out=p.stdout.decode(errors="replace")
+        if p.returncode or "OPAL_QUALIFICATION_PREFLIGHT_OK" not in out or f"55 {R4} {R4_SHA}" not in out:
+            raise RuntimeError("recovery-only preflight cannot prove exact Opal R4 recovery")
+        proof={"schema":"hbnf-cart2-qualification-recovery-prelive-v1","captured_unix":time.time(),
+            "pass":True,"read_only":True,"device_mutations":0,"operation_scope":"EXACT_R4_RECOVERY_ONLY",
+            "host_on_ac":True,"cart_lan_interface":"en0",
+            "candidate_release_id":self.candidate.release_id,"candidate_sha256":self.candidate.sha256,
+            "matrix":{"ip":"192.168.77.10","mac":MATRIX_MAC,"wled":"16.0.1",
+                "release_id":self.candidate.release_id,"candidate_sha256":self.candidate.sha256,
+                "on":True,"brightness":FROZEN_MATRIX_BRIGHTNESS,"diagnostic_off":True,"telemetry_off":True},
+            "brightness_baseline":{"runtime":context["runtime"],"persisted":context["persisted"]},
+            "aux":{"ip":ai["ip"],"mac":ai["mac"],"live":ai["live"],"mode":ai["lm"],
+                "source":ai["lip"],"led_count":ai["leds"]["count"],"on":ast["on"],"lor":ast["lor"]},
+            "rollback":{"sha256":R4_SHA,"opal_ledger":out},"single_worker":worker,
+            "candidate_attempts_used":1,"candidate_install_permitted":False,"recovery_attempts_used":0,
+            "device_requests":self.device_requests}
+        save(self.outdir/"RECOVERY_PRELIVE_READONLY.json",proof)
+        return proof
+
+    def restore_failed_candidate_owner_settings(self):
+        """Restore the captured R4 brightness and default Vibe before the exact rollback."""
+        identity, _, _ = read_matrix_identity(self._record_device_request,self.candidate.release_id)
+        payload={"HBNF":{"matrixBrightness":QUALIFICATION_BASELINE_BRIGHTNESS,
+            "auxBrightness":245,"vibe":"chill"}}
+        post_error=None
+        try:
+            post_json(MATRIX+"/json/state",payload,request_counter=self._record_device_request)
+        except Exception as exc:
+            post_error=f"{type(exc).__name__}: {exc}"
+        time.sleep(CONFIG_SAVE_SETTLE_SECONDS)
+        context=read_matrix_context(self._record_device_request,self.candidate.release_id,
+            QUALIFICATION_BASELINE_BRIGHTNESS)
+        values=context["brightness"]
+        if (context["identity"]!=identity or values["runtime"]!={"matrixBrightness":52,"auxBrightness":245,"vibe":0}
+            or values["persisted"]!={"matrixBrightness":52,"auxBrightness":245,"vibe":0}):
+            raise RuntimeError("failed-candidate-owner-settings-restore-unverified")
+        return {"post_error":post_error,"readback":values,"verified":True}
 
     def apply_qualification_brightness(self, baseline):
         if not isinstance(baseline, dict) or baseline.get("matrixBrightness") != QUALIFICATION_BASELINE_BRIGHTNESS:
@@ -1053,6 +1206,11 @@ class LivePort:
                 "diagnostic_complete": diagnostics, "abort": abort}
 
     def recover_r4(self):
+        self.consume_recovery_attempt()
+        self.device_requests += 3
+        return restore_r4_once(self.outdir)
+
+    def consume_recovery_attempt(self):
         if self.recovery_attempts > 0:
             raise RuntimeError("exact-r4-recovery-attempt-limit-exceeded")
         state=json.loads(self.state_path.read_text())
@@ -1074,8 +1232,72 @@ class LivePort:
         current["current_gate"]="Exact R4 recovery attempt durably consumed before recovery transfer."
         self.state_path.write_text(json.dumps(state,indent=2)+"\n")
         self.recovery_attempts = 1
-        self.device_requests += 3
-        return restore_r4_once(self.outdir)
+
+    def recover_r4_after_failed_qualification(self, recovery_proof_path):
+        """Use the single authorized recovery without reinstalling or requalifying R6."""
+        result={"schema":"hbnf-cart2-candidate-qualification-continuation-v1",
+            "operation_scope":"QUALIFICATION_ONLY","candidate_release_id":self.candidate.release_id,
+            "candidate_sha256":self.candidate.sha256,"rollback_sha256":self.candidate.rollback_sha256,
+            "candidate_install_attempts":0,"recovery_attempts":0,"device_requests":0}
+        try:
+            self.admit("LIVE_QUALIFICATION")
+            self.verify_local_artifacts()
+            state=json.loads(self.state_path.read_text())
+            auth=state.get("live_mutation_authorization",{})
+            recovery_path=pathlib.Path(recovery_proof_path).resolve()
+            recovery_path.relative_to((ROOT/"evidence").resolve())
+            proof=json.loads(recovery_path.read_text())
+            diagnostic=ROOT/auth.get("qualification_recovery_diagnostic_receipt","")
+            if (auth.get("qualification_recovery_subscope")!="EXACT_R4_RECOVERY_ONLY"
+                or auth.get("candidate_install_permitted") is not False
+                or auth.get("candidate_attempts_used")!=1 or auth.get("recovery_attempts_used")!=0
+                or auth.get("qualification_prelive_receipt")!=str(recovery_path.relative_to(ROOT))
+                or auth.get("qualification_prelive_sha256")!=sha(recovery_path)
+                or not diagnostic.is_file()
+                or auth.get("qualification_recovery_diagnostic_sha256")!=sha(diagnostic)):
+                raise RuntimeError("exact-r4-recovery-only-control-binding-changed")
+            age=time.time()-float(proof.get("captured_unix",0))
+            if (proof.get("schema")!="hbnf-cart2-qualification-recovery-prelive-v1"
+                or proof.get("pass") is not True or proof.get("read_only") is not True
+                or proof.get("device_mutations")!=0 or proof.get("operation_scope")!="EXACT_R4_RECOVERY_ONLY"
+                or proof.get("candidate_release_id")!=self.candidate.release_id
+                or proof.get("candidate_sha256")!=self.candidate.sha256 or age<0 or age>300):
+                raise RuntimeError("fresh-exact-r4-recovery-prelive-proof-invalid-or-stale")
+            # Consume before the first device write. A settings restore problem must not block rollback.
+            self.consume_recovery_attempt()
+            try:
+                result["owner_settings_restore"]=self.restore_failed_candidate_owner_settings()
+            except Exception as exc:
+                result["owner_settings_restore"]={"verified":False,"error":f"{type(exc).__name__}: {exc}"}
+            self.device_requests += 3
+            result["recovery"]=restore_r4_once(self.outdir)
+            result["recovery_attempts"]=1
+            if result["recovery"].get("status") not in ("R4_READBACK_VERIFIED","R4_ALREADY_INSTALLED_NO_UPLOAD"):
+                raise RuntimeError("exact-r4-runtime-readback-not-verified")
+            r4=read_matrix_context(self._record_device_request,R4,QUALIFICATION_BASELINE_BRIGHTNESS)
+            ai=_get_json_counted(AUX+"/json/info",4,self._record_device_request)[2]
+            ast=_get_json_counted(AUX+"/json/state",4,self._record_device_request)[2]
+            if not (r4["brightness"]["matrix_on"] is True
+                and r4["brightness"]["runtime"].get("matrixBrightness")==52
+                and r4["brightness"]["runtime"].get("auxBrightness")==245
+                and ai.get("mac","").replace(":","").lower()==AUX_MAC and ai.get("live") is True
+                and ai.get("lm")=="DDP" and ai.get("lip")=="192.168.77.10"
+                and ai.get("leds",{}).get("count")==22 and ast.get("on") is True and ast.get("lor")==0):
+                raise RuntimeError("exact-r4-post-recovery-health-or-owner-settings-check-failed")
+            result["post_recovery_readonly"]={"status":"PASS","release_id":R4,
+                "matrix_brightness":52,"aux_brightness":245,"aux_ddp_live":True,
+                "runtime_identity":r4["identity"]}
+            result["status"]=("EXACT_R4_RECOVERED_AFTER_FAILED_QUALIFICATION" if result["owner_settings_restore"].get("verified")
+                else "EXACT_R4_RECOVERED_OWNER_SETTINGS_RESTORE_UNVERIFIED")
+        except Exception as exc:
+            result["error"]=f"{type(exc).__name__}: {exc}"
+            result["status"]="EXACT_R4_RECOVERY_UNVERIFIED_STOP" if self.recovery_attempts else "RECOVERY_ADMISSION_BLOCKED_NO_WRITE"
+        finally:
+            result["device_requests"]=self.device_requests
+            result["recovery_attempts"]=self.recovery_attempts
+            result["candidate_install_attempts"]=0
+            self.close(result)
+        return result
 
     def close(self, result):
         continuation=result.get("operation_scope")=="QUALIFICATION_ONLY"
@@ -1105,6 +1327,24 @@ class LivePort:
         try: result_ref=str((self.outdir/target).resolve().relative_to(ROOT))
         except ValueError: raise RuntimeError("qualification output must remain inside the repository")
         current["transaction_result"] = result_ref
+        subject=state.setdefault("execution_cursor",{}).setdefault("current_subject",{})
+        result_file=self.outdir/target
+        prior_result=subject.get("qualification_result")
+        if (continuation and not subject.get("candidate_install_receipt")
+            and isinstance(prior_result,str) and prior_result!=result_ref):
+            prior_path=ROOT/prior_result
+            try:
+                prior=json.loads(prior_path.read_text())
+                if (prior.get("schema")=="hbnf-cart2-candidate-qualification-transaction-v1"
+                    and prior.get("candidate_release_id")==self.candidate.release_id
+                    and prior.get("candidate_sha256")==self.candidate.sha256
+                    and prior.get("candidate_install_attempts")==1):
+                    subject["candidate_install_receipt"]=prior_result
+                    subject["candidate_install_receipt_sha256"]=sha(prior_path)
+            except (OSError,ValueError,TypeError):
+                pass
+        subject["qualification_result"]=result_ref
+        subject["qualification_result_sha256"]=sha(result_file)
         if result.get("recovery", {}).get("status") in ("R4_READBACK_VERIFIED", "R4_ALREADY_INSTALLED_NO_UPLOAD"):
             state["installed_release"] = self.candidate.release_id if result.get("recovery",{}).get("runtime",{}).get("release_id")==self.candidate.release_id else R4
             state["installed_firmware_sha256"] = self.candidate.sha256 if state["installed_release"]==self.candidate.release_id else self.candidate.rollback_sha256
@@ -1142,6 +1382,38 @@ def execute_qualification(admission_path,capsule_path,proof_path,outdir=None):
     port=LivePort(pathlib.Path(admission_path),pathlib.Path(capsule_path),pathlib.Path(proof_path),output,profile)
     return coordinate_qualification(port)
 
+def execute_r4_recovery_only(admission_path,capsule_path,proof_path,recovery_proof_path,outdir):
+    profile=load_candidate_profile(pathlib.Path(capsule_path))
+    output=prepare_qualification_output(outdir,profile)
+    port=LivePort(pathlib.Path(admission_path),pathlib.Path(capsule_path),pathlib.Path(proof_path),output,profile)
+    return port.recover_r4_after_failed_qualification(recovery_proof_path)
+
+
+def execute_readonly_qualification_preflight(capsule_path,outdir,expected_matrix_brightness=None):
+    """Refresh exact current-device evidence without opening the mutation path."""
+    profile=load_candidate_profile(pathlib.Path(capsule_path))
+    exact_artifacts(profile)
+    output=prepare_qualification_output(outdir,profile)
+    port=LivePort(None,capsule_path,None,output,profile)
+    proof=port.preflight_candidate(expected_matrix_brightness)
+    print(json.dumps({"status":"READONLY_QUALIFICATION_PREFLIGHT_PASS",
+        "candidate_release_id":profile.release_id,"candidate_sha256":profile.sha256,
+        "device_requests":port.device_requests,"device_mutations":0,
+        "receipt":str((output/"QUALIFICATION_PRELIVE_READONLY.json").relative_to(ROOT))},indent=2))
+    return proof
+
+def execute_readonly_recovery_preflight(capsule_path,outdir):
+    """Refresh current read-only evidence for the one exact R4 recovery path."""
+    profile=load_candidate_profile(pathlib.Path(capsule_path))
+    output=prepare_qualification_output(outdir,profile)
+    port=LivePort(None,capsule_path,None,output,profile)
+    proof=port.preflight_failed_candidate_recovery()
+    print(json.dumps({"status":"READONLY_EXACT_R4_RECOVERY_PREFLIGHT_PASS",
+        "candidate_release_id":profile.release_id,"candidate_sha256":profile.sha256,
+        "recovery_sha256":profile.rollback_sha256,"device_requests":port.device_requests,
+        "device_mutations":0,"receipt":str((output/"RECOVERY_PRELIVE_READONLY.json").relative_to(ROOT))},indent=2))
+    return proof
+
 def prepare_qualification_output(outdir,profile=LEGACY_R6_PROFILE):
     if outdir is None: raise RuntimeError("qualification continuation requires a new --outdir")
     output=pathlib.Path(outdir).resolve()
@@ -1161,8 +1433,16 @@ def main():
     ap.add_argument("--prelive-proof", required=True)
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--resume-qualification",action="store_true",help="Continue gates for the exact installed candidate; does not stage or upload firmware")
+    ap.add_argument("--recover-r4-only",action="store_true",help="Use the one exact owner-authorized R4 recovery after a completed performance failure; never installs or qualifies the candidate")
+    ap.add_argument("--recovery-proof",help="Fresh read-only exact post-failure R4 recovery proof")
+    ap.add_argument("--readonly-preflight-only",action="store_true",help="Refresh host/Matrix/AUX/Opal evidence without device writes or live authorization")
+    ap.add_argument("--readonly-recovery-preflight-only",action="store_true",help="Refresh exact post-failure state for an R4-only recovery; performs no device writes")
+    ap.add_argument("--expected-matrix-brightness",type=int,choices=[44,52],default=None,
+        help="For read-only preflight, assert the current exact candidate brightness (52 normal; 44 only after a consumed setup write)")
     ap.add_argument("--outdir",help="New empty evidence directory under the exact R6 qualification directory; required for qualification continuation")
     args = ap.parse_args()
+    if args.recover_r4_only and (args.dry_run or args.resume_qualification or args.readonly_preflight_only or args.readonly_recovery_preflight_only):
+        raise SystemExit("--recover-r4-only cannot be combined with another execution mode")
     if args.dry_run:
         profile=load_candidate_profile(pathlib.Path(args.capsule))
         exact_artifacts(profile)
@@ -1170,6 +1450,27 @@ def main():
             "candidate": profile.release_id, "candidate_sha256": sha(profile.binary), "rollback_sha256": sha(profile.rollback_binary),
             "dry_run_does_not_authorize_mutation": True}, indent=2))
         return 0
+    if args.readonly_preflight_only:
+        if args.resume_qualification or args.readonly_recovery_preflight_only:
+            raise SystemExit("read-only qualification preflight cannot be combined with another execution mode")
+        if not args.outdir:
+            raise SystemExit("--readonly-preflight-only requires a new --outdir so prior evidence remains immutable")
+        execute_readonly_qualification_preflight(pathlib.Path(args.capsule),args.outdir,args.expected_matrix_brightness)
+        return 0
+    if args.readonly_recovery_preflight_only:
+        if args.resume_qualification:
+            raise SystemExit("--readonly-recovery-preflight-only cannot be combined with --resume-qualification")
+        if not args.outdir:
+            raise SystemExit("--readonly-recovery-preflight-only requires a new --outdir")
+        execute_readonly_recovery_preflight(pathlib.Path(args.capsule),args.outdir)
+        return 0
+    if args.recover_r4_only:
+        if not args.outdir or not args.recovery_proof:
+            raise SystemExit("--recover-r4-only requires --recovery-proof and a new --outdir")
+        result=execute_r4_recovery_only(pathlib.Path(args.admission),pathlib.Path(args.capsule),
+            pathlib.Path(args.prelive_proof),pathlib.Path(args.recovery_proof),args.outdir)
+        print(json.dumps(result,indent=2))
+        return 0 if result.get("status")=="EXACT_R4_RECOVERED_AFTER_FAILED_QUALIFICATION" else 2
     if args.resume_qualification:
         if not args.outdir: raise SystemExit("--resume-qualification requires a new --outdir so prior failure receipts remain immutable")
         result=execute_qualification(pathlib.Path(args.admission),pathlib.Path(args.capsule),pathlib.Path(args.prelive_proof),args.outdir)

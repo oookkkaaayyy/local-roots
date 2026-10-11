@@ -5,6 +5,9 @@ import argparse, hashlib, json, pathlib, re, time, subprocess
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_MODEL=ROOT/"config/HBNF_CONTROL_MODEL.json"
 DEFAULT_STATE=ROOT/"config/HBNF_CONTROL_STATE.json"
+QUALIFICATION_BASELINE_BRIGHTNESS=52
+FROZEN_MATRIX_BRIGHTNESS=44
+R4_RELEASE="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
 
 def load(path):
     return json.loads(pathlib.Path(path).read_text())
@@ -958,6 +961,446 @@ def reconcile_installed_r6(state, receipt_path, host_failure_proof_path=None):
     state["last_updated_utc"]=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     return state
 
+
+def reconcile_installed_qualification(state, prelive_path, *, now=None):
+    """Reopen only qualification for the exact installed candidate after a proved pre-profile settings-parser failure."""
+    root=pathlib.Path(ROOT).resolve()
+    evidence_root=(root/"evidence").resolve()
+    def evidence_file(relative):
+        if not isinstance(relative,str) or not relative:
+            raise ValueError("missing evidence path")
+        path=(root/relative).resolve()
+        path.relative_to(evidence_root)
+        return path
+    subject=state.get("execution_cursor",{}).get("current_subject",{})
+    auth=state.get("live_mutation_authorization",{})
+    binding=state.get("live_authorization_binding",{})
+    candidate=auth.get("candidate_release_id")
+    candidate_sha=auth.get("candidate_sha256")
+    rollback_sha=auth.get("rollback_sha256")
+    errors=[]
+    if state.get("live_mutation_authorized") is not False or auth.get("authorized") is not False:
+        errors.append("qualification rearm requires the current live gate to be closed")
+    if (not candidate or not re.fullmatch(r"[a-f0-9]{64}",str(candidate_sha or ""))
+        or not re.fullmatch(r"[a-f0-9]{64}",str(rollback_sha or ""))):
+        errors.append("current exact candidate/recovery binding is incomplete")
+    if (state.get("installed_release")!=candidate or state.get("installed_firmware_sha256")!=candidate_sha
+        or subject.get("installed_release_id")!=candidate or subject.get("installed_sha256")!=candidate_sha):
+        errors.append("primary state does not identify the exact installed candidate")
+    if (binding.get("candidate_release_id")!=candidate or binding.get("candidate_bin_sha256")!=candidate_sha
+        or binding.get("rollback_bin_sha256")!=rollback_sha
+        or str(binding.get("matrix_mac","")).replace(":","").lower()!="704bca5b345c"
+        or binding.get("authorization_id")!=auth.get("authorization_id")):
+        errors.append("current owner authorization is not bound to the exact candidate, R4 recovery, and Matrix")
+    scope=binding.get("scope",[])
+    if (not isinstance(scope,list) or not any("28" in str(item) and "kernel" in str(item).lower() for item in scope)
+        or not any("5400" in str(item) or "90-minute" in str(item) for item in scope)):
+        errors.append("exact owner authorization does not include frozen qualification and soak")
+    if (auth.get("candidate_attempts_used")!=1 or auth.get("candidate_install_limit")!=1
+        or auth.get("recovery_attempts_used")!=0 or auth.get("recovery_install_limit")!=1
+        or auth.get("transaction_consumed") is not True or auth.get("candidate_install_permitted") is not False):
+        errors.append("one candidate attempt must be consumed, candidate retry disabled, and exact R4 recovery unused")
+    evidence_path=auth.get("source_evidence")
+    try:
+        owner_doc=load(evidence_file(evidence_path))
+        owner_binding=owner_doc.get("binding",{})
+        if owner_binding!=binding:
+            errors.append("owner authorization evidence differs from primary exact binding")
+    except (OSError,ValueError,TypeError):
+        errors.append("exact owner authorization evidence is missing or invalid")
+
+    tx_rel=auth.get("transaction_result")
+    if not isinstance(tx_rel,str) or tx_rel!=subject.get("qualification_result"):
+        errors.append("primary state transaction result pointer mismatch")
+        tx_path=root/"__missing_transaction_result__"
+    else:
+        try:
+            tx_path=evidence_file(tx_rel)
+        except (ValueError,OSError):
+            tx_path=root/"__missing_transaction_result__"
+            errors.append("transaction result path escapes the evidence root")
+    tx_sha=subject.get("qualification_result_sha256")
+    interrupted_brightness_restore=False
+    try:
+        tx=load(tx_path)
+        if sha256_file(tx_path)!=tx_sha:
+            errors.append("failed qualification transaction hash mismatch")
+        original_parser_failure=(tx.get("schema")=="hbnf-cart2-candidate-qualification-transaction-v1"
+            and tx.get("candidate_install_attempts")==1
+            and tx.get("error")=="RuntimeError: persisted-config-HBNF-settings-partial-or-invalid")
+        interrupted_restore_failure=(tx.get("schema")=="hbnf-cart2-candidate-qualification-continuation-v1"
+            and tx.get("candidate_install_attempts")==0
+            and tx.get("preflight_completed") is True and tx.get("setup_started") is True
+            and tx.get("brightness_setup_started") is True
+            and tx.get("restore_error")=="RuntimeError: qualification-baseline-matrix-brightness-mismatch")
+        if (tx.get("candidate_release_id")!=candidate or tx.get("candidate_sha256")!=candidate_sha
+            or tx.get("recovery_attempts",0)!=0
+            or tx.get("status")!="QUALIFICATION_BRIGHTNESS_RESTORE_FAILED"
+            or not (original_parser_failure or interrupted_restore_failure)
+            or "qualification" in tx or tx.get("recovery") is not None):
+            errors.append("current transaction is not the exact pre-profile legacy-Vibe parser failure")
+        interrupted_brightness_restore=interrupted_restore_failure
+    except (OSError,ValueError,TypeError):
+        errors.append("failed qualification transaction receipt is missing or invalid")
+
+    runtime_rel=subject.get("runtime_readonly_receipt")
+    try:
+        runtime_path=evidence_file(runtime_rel)
+    except (ValueError,OSError):
+        runtime_path=root/"__missing_runtime_receipt__"
+        errors.append("installed-candidate read-only receipt path escapes the evidence root")
+    try:
+        runtime=load(runtime_path)
+        if sha256_file(runtime_path)!=subject.get("runtime_readonly_sha256"):
+            errors.append("installed-candidate read-only receipt hash mismatch")
+        matrix=runtime.get("matrix",{})
+        identity=matrix.get("identity",{})
+        h=matrix.get("hbnf",{})
+        aux=runtime.get("aux",{})
+        if (runtime.get("schema")!="cart2-current-matrix-readonly-snapshot-v1"
+            or runtime.get("read_only") is not True or runtime.get("device_mutations")!=0
+            or identity.get("release_id")!=candidate or identity.get("candidate")!=candidate
+            or identity.get("mac","").replace(":","").lower()!="704bca5b345c"
+            or matrix.get("identity",{}).get("on") is not True
+            or h.get("matrixBrightness")!=52 or h.get("auxBrightness")!=245
+            or h.get("packet20DiagnosticEnabled") is not False
+            or h.get("foundationTelemetryEnabled") is not False
+            or not (aux.get("live") is True and aux.get("mode")=="DDP" and aux.get("source")=="192.168.77.10"
+                and aux.get("led_count")==22 and aux.get("on") is True and aux.get("lor")==0)):
+            errors.append("installed-candidate read-only snapshot does not prove exact runtime and AUX safety")
+    except (OSError,ValueError,TypeError,AttributeError):
+        errors.append("installed-candidate read-only receipt is missing or invalid")
+
+    try:
+        candidate_path=evidence_file(subject.get("candidate_artifact_path"))
+    except (ValueError,OSError):
+        candidate_path=root/"__missing_candidate_artifact__"
+        errors.append("installed-candidate artifact path escapes the evidence root")
+    try:
+        rollback_path=evidence_file(subject.get("rollback_artifact_path"))
+    except (ValueError,OSError):
+        rollback_path=root/"__missing_rollback_artifact__"
+        errors.append("exact R4 recovery artifact path escapes the evidence root")
+    if not candidate_path.is_file() or sha256_file(candidate_path)!=candidate_sha:
+        errors.append("exact installed-candidate artifact bytes are unavailable")
+    if not rollback_path.is_file() or sha256_file(rollback_path)!=rollback_sha:
+        errors.append("exact R4 recovery bytes are unavailable")
+
+    proof_path=pathlib.Path(prelive_path)
+    try:
+        proof_path=proof_path.resolve()
+        proof_path.relative_to(evidence_root)
+        qualification_root=tx_path.parent.parent.resolve()
+        qualification_root.relative_to(evidence_root)
+        if qualification_root.name!="live-qualification":
+            raise ValueError("wrong qualification evidence directory")
+        proof_path.relative_to(qualification_root)
+        proof=load(proof_path)
+        age=(time.time() if now is None else now)-float(proof.get("captured_unix",0))
+        matrix=proof.get("matrix",{})
+        baseline=proof.get("brightness_baseline",{})
+        runtime_settings=baseline.get("runtime",{})
+        stored=baseline.get("persisted",{})
+        aux=proof.get("aux",{})
+        rollback=proof.get("rollback",{})
+        worker=proof.get("single_worker",{})
+        expected_brightness=FROZEN_MATRIX_BRIGHTNESS if interrupted_brightness_restore else QUALIFICATION_BASELINE_BRIGHTNESS
+        if (proof.get("schema")!="hbnf-cart2-qualification-prelive-v1" or proof.get("pass") is not True
+            or proof.get("read_only") is not True or proof.get("device_mutations")!=0
+            or proof.get("operation_scope")!="QUALIFICATION_ONLY"
+            or proof.get("candidate_release_id")!=candidate or proof.get("candidate_sha256")!=candidate_sha
+            or proof.get("candidate_attempts_used")!=1 or proof.get("recovery_attempts_used")!=0
+            or proof.get("candidate_install_permitted") is not False
+            or age<0 or age>300):
+            errors.append("fresh read-only qualification preflight is missing, stale, or incorrectly scoped")
+        if (matrix.get("release_id")!=candidate or matrix.get("candidate_sha256")!=candidate_sha or matrix.get("on") is not True
+            or matrix.get("mac","").replace(":","").lower()!="704bca5b345c"
+            or matrix.get("brightness")!=expected_brightness or matrix.get("diagnostic_off") is not True
+            or matrix.get("telemetry_off") is not True
+            or runtime_settings.get("matrixBrightness")!=expected_brightness or runtime_settings.get("auxBrightness")!=245
+            or type(runtime_settings.get("vibe")) is not int or not 0<=runtime_settings["vibe"]<=5
+            or stored.get("matrixBrightness")!=expected_brightness or stored.get("auxBrightness")!=245
+            or ("vibe" in stored and stored.get("vibe")!=runtime_settings.get("vibe"))
+            or not proof.get("host_on_ac") or proof.get("cart_lan_interface")!="en0"
+            or proof.get("rollback_sha256") not in (None,rollback_sha)):
+            errors.append("fresh qualification preflight does not prove the exact candidate baseline")
+        if (not (aux.get("live") is True and aux.get("mode")=="DDP" and aux.get("source")=="192.168.77.10"
+                and aux.get("led_count")==22 and aux.get("on") is True and aux.get("lor")==0)
+            or rollback.get("sha256")!=rollback_sha or rollback_sha not in str(rollback.get("opal_ledger",""))
+            or worker.get("pass") is not True or worker.get("worker_count")!=1
+            or worker.get("conflicting_pids")!=[]):
+            errors.append("fresh preflight does not prove AUX, exact R4 recovery, and single-worker readiness")
+    except (OSError,ValueError,TypeError,AttributeError):
+        errors.append("fresh qualification preflight receipt is missing, malformed, or outside the evidence root")
+    if errors:
+        raise ValueError("installed qualification rearm rejected: "+"; ".join(errors))
+
+    rel=str(proof_path.relative_to(root))
+    current=state["live_mutation_authorization"]
+    current.update({"authorized":True,"hardware_writes_permitted_now":True,
+        "candidate_install_permitted":False,"candidate_attempts_used":1,"recovery_attempts_used":0,
+        "operation_scope":"QUALIFICATION_ONLY","status":"CANDIDATE_INSTALLED_QUALIFICATION_PENDING",
+        "current_gate":"Fresh exact candidate preflight passed; qualification-only continuation authorized; candidate reinstall prohibited.",
+        "qualification_prelive_receipt":rel,"qualification_prelive_sha256":sha256_file(proof_path)})
+    if interrupted_brightness_restore:
+        current["qualification_recovery_subscope"]="RESTORE_INTERRUPTED_BRIGHTNESS_THEN_QUALIFY"
+        current["current_gate"]="Exact candidate is at the frozen 44 brightness after the prior one-write setup; restore owner brightness 52, verify it, then continue qualification. No candidate reinstall."
+    else:
+        current.pop("qualification_recovery_subscope",None)
+    state["live_mutation_authorized"]=True
+    state["status"]="CANDIDATE_INSTALLED_QUALIFICATION_PENDING"
+    state["live_mutation_authorization_closed_at_utc"]=None
+    task=state.setdefault("current_task",{})
+    task.update({"status":"CANDIDATE_INSTALLED_QUALIFICATION_PENDING","live_mutation_authorized":True,
+        "live_mutation_authorization":"Qualification-only for the exact already-installed candidate after fresh read-only preflight; no reinstall. One exact R4 recovery remains available.",
+        "next_action":"Run exact LIVE_QUALIFICATION admission through the guarded continuation entrypoint; candidate installation remains disabled."})
+    state["last_updated_utc"]=time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime())
+    return state
+
+
+def reconcile_failed_qualification_for_r4_recovery(state, prelive_path, *, now=None):
+    """Open only the already-authorized exact R4 return after a complete failed sweep."""
+    root=pathlib.Path(ROOT).resolve()
+    evidence_root=(root/"evidence").resolve()
+    def evidence_file(relative):
+        if not isinstance(relative,str) or not relative:
+            raise ValueError("missing evidence path")
+        path=(root/relative).resolve()
+        path.relative_to(evidence_root)
+        return path
+    subject=state.get("execution_cursor",{}).get("current_subject",{})
+    auth=state.get("live_mutation_authorization",{})
+    binding=state.get("live_authorization_binding",{})
+    candidate=auth.get("candidate_release_id")
+    candidate_sha=auth.get("candidate_sha256")
+    rollback_sha=auth.get("rollback_sha256")
+    errors=[]
+    if state.get("live_mutation_authorized") is not False or auth.get("authorized") is not False:
+        errors.append("R4 recovery rearm requires the current live gate to be closed")
+    if (not candidate or not re.fullmatch(r"[a-f0-9]{64}",str(candidate_sha or ""))
+        or not re.fullmatch(r"[a-f0-9]{64}",str(rollback_sha or ""))):
+        errors.append("exact candidate and owner-bound recovery hashes are required")
+    if (state.get("installed_release")!=candidate or state.get("installed_firmware_sha256")!=candidate_sha
+        or subject.get("installed_release_id")!=candidate or subject.get("installed_sha256")!=candidate_sha):
+        errors.append("primary state does not identify the exact failed candidate as installed")
+    if (binding.get("candidate_release_id")!=candidate or binding.get("candidate_bin_sha256")!=candidate_sha
+        or binding.get("rollback_bin_sha256")!=rollback_sha
+        or str(binding.get("matrix_mac","")).replace(":","").lower()!="704bca5b345c"
+        or binding.get("authorization_id")!=auth.get("authorization_id")):
+        errors.append("owner authorization is not bound to the exact candidate, R4, and Matrix")
+    scope=binding.get("scope",[])
+    if (not isinstance(scope,list) or not any("r4 recovery" in str(item).lower() for item in scope)
+        or not any("28" in str(item) and "kernel" in str(item).lower() for item in scope)):
+        errors.append("owner authorization does not include exact R4 recovery after the frozen kernel gate")
+    if (auth.get("candidate_attempts_used")!=1 or auth.get("candidate_install_limit")!=1
+        or auth.get("candidate_install_permitted") is not False
+        or auth.get("recovery_attempts_used")!=0 or auth.get("recovery_install_limit")!=1
+        or auth.get("transaction_consumed") is not True):
+        errors.append("candidate attempt must be consumed, retry disabled, and exact R4 recovery unused")
+    try:
+        owner_doc=load(evidence_file(auth.get("source_evidence")))
+        if owner_doc.get("binding")!=binding:
+            errors.append("owner authorization evidence differs from primary exact binding")
+    except (OSError,ValueError,TypeError):
+        errors.append("exact owner authorization evidence is missing or invalid")
+
+    tx_rel=auth.get("transaction_result")
+    if not isinstance(tx_rel,str) or tx_rel!=subject.get("qualification_result"):
+        errors.append("failed qualification transaction pointer mismatch")
+        tx_path=root/"__missing_transaction__"
+    else:
+        try: tx_path=evidence_file(tx_rel)
+        except (OSError,ValueError):
+            tx_path=root/"__missing_transaction__"
+            errors.append("failed transaction path escapes evidence root")
+    try:
+        tx=load(tx_path)
+        if sha256_file(tx_path)!=subject.get("qualification_result_sha256"):
+            errors.append("failed qualification transaction hash mismatch")
+        if (tx.get("schema")!="hbnf-cart2-candidate-qualification-continuation-v1"
+            or tx.get("candidate_release_id")!=candidate or tx.get("candidate_sha256")!=candidate_sha
+            or tx.get("status")!="QUALIFICATION_BRIGHTNESS_RESTORE_FAILED"
+            or tx.get("restore_error")!="RuntimeError: qualification-baseline-vibe-mismatch"
+            or tx.get("candidate_install_attempts")!=0 or tx.get("recovery_attempts")!=0
+            or tx.get("brightness_restore",{}).get("verified") is not False):
+            errors.append("current transaction is not the exact completed failed-qualification cleanup result")
+        diag_path=tx_path.parent/"sweep"/"DIAGNOSTIC_COMPLETE_RESULT.json"
+        restore_path=tx_path.parent/"sweep"/"RESTORE_RECEIPT.json"
+        diag=load(diag_path); restore=load(restore_path)
+        if (diag.get("schema")!="hbnf-foundation-complete-diagnostic-result-v1"
+            or diag.get("candidate_release_id")!=candidate or diag.get("expected_kernel_count")!=28
+            or diag.get("kernels_completed")!=28 or diag.get("qualification_eligible") is not False
+            or diag.get("soak_started") is not False or diag.get("combined_feature_check_status")!="PASS"
+            or not any(item.get("failure_class")=="PERFORMANCE_COMPARISON" for item in diag.get("gate_failures",[]))
+            or restore.get("status")!="PASS" or restore.get("snapshot_equal") is not True):
+            errors.append("complete 28-kernel performance failure and renderer restore are not proven")
+    except (OSError,ValueError,TypeError,AttributeError):
+        errors.append("failed-qualification diagnostic or restore evidence is missing or malformed")
+
+    try:
+        candidate_path=evidence_file(subject.get("candidate_artifact_path"))
+        rollback_path=evidence_file(subject.get("rollback_artifact_path"))
+        if not candidate_path.is_file() or sha256_file(candidate_path)!=candidate_sha:
+            errors.append("exact installed candidate bytes are unavailable")
+        if not rollback_path.is_file() or sha256_file(rollback_path)!=rollback_sha:
+            errors.append("exact Foundation R4 recovery bytes are unavailable")
+    except (OSError,ValueError,TypeError):
+        errors.append("candidate or R4 recovery artifact path is invalid")
+
+    try:
+        proof_path=pathlib.Path(prelive_path).resolve()
+        proof_path.relative_to(evidence_root)
+        proof=load(proof_path)
+        age=(time.time() if now is None else now)-float(proof.get("captured_unix",0))
+        matrix=proof.get("matrix",{}); baseline=proof.get("brightness_baseline",{})
+        aux=proof.get("aux",{}); rollback=proof.get("rollback",{}); worker=proof.get("single_worker",{})
+        if (proof.get("schema")!="hbnf-cart2-qualification-recovery-prelive-v1"
+            or proof.get("pass") is not True or proof.get("read_only") is not True
+            or proof.get("device_mutations")!=0 or proof.get("operation_scope")!="EXACT_R4_RECOVERY_ONLY"
+            or proof.get("candidate_release_id")!=candidate or proof.get("candidate_sha256")!=candidate_sha
+            or proof.get("candidate_attempts_used")!=1 or proof.get("candidate_install_permitted") is not False
+            or proof.get("recovery_attempts_used")!=0 or age<0 or age>300):
+            errors.append("fresh recovery-only read-only proof is missing, stale, or incorrectly scoped")
+        if (matrix.get("release_id")!=candidate or matrix.get("candidate_sha256")!=candidate_sha
+            or matrix.get("mac"," ").replace(":","").lower()!="704bca5b345c" or matrix.get("on") is not True
+            or matrix.get("brightness")!=44 or matrix.get("diagnostic_off") is not True or matrix.get("telemetry_off") is not True
+            or baseline.get("runtime")!={"matrixBrightness":44,"auxBrightness":245,"vibe":0}
+            or baseline.get("persisted")!={"matrixBrightness":44,"auxBrightness":245,"vibe":1}
+            or not proof.get("host_on_ac") or proof.get("cart_lan_interface")!="en0"):
+            errors.append("fresh read-only proof differs from the known exact post-sweep settings state")
+        if (not (aux.get("live") is True and aux.get("mode")=="DDP" and aux.get("source")=="192.168.77.10"
+                and aux.get("led_count")==22 and aux.get("on") is True and aux.get("lor")==0)
+            or rollback.get("sha256")!=rollback_sha or rollback_sha not in str(rollback.get("opal_ledger",""))
+            or worker.get("pass") is not True or worker.get("worker_count")!=1 or worker.get("conflicting_pids")!=[]):
+            errors.append("fresh recovery preflight does not prove AUX, exact R4 path, and single-worker readiness")
+    except (OSError,ValueError,TypeError,AttributeError):
+        errors.append("fresh recovery-only read-only proof is malformed or outside evidence root")
+    if errors:
+        raise ValueError("exact R4 recovery rearm rejected: "+"; ".join(errors))
+
+    current=state["live_mutation_authorization"]
+    rel=str(proof_path.relative_to(root))
+    diag_rel=str(diag_path.relative_to(root))
+    current.update({"authorized":True,"hardware_writes_permitted_now":True,
+        "candidate_install_permitted":False,"candidate_attempts_used":1,"recovery_attempts_used":0,
+        "operation_scope":"QUALIFICATION_ONLY","qualification_recovery_subscope":"EXACT_R4_RECOVERY_ONLY",
+        "status":"CANDIDATE_INSTALLED_QUALIFICATION_PENDING",
+        "current_gate":"Frozen 28-kernel performance gate failed; only the owner-authorized exact R4 recovery is open.",
+        "qualification_prelive_receipt":rel,"qualification_prelive_sha256":sha256_file(proof_path),
+        "qualification_recovery_diagnostic_receipt":diag_rel,
+        "qualification_recovery_diagnostic_sha256":sha256_file(diag_path)})
+    state["live_mutation_authorized"]=True
+    state["status"]="CANDIDATE_INSTALLED_QUALIFICATION_PENDING"
+    state["live_mutation_authorization_closed_at_utc"]=None
+    state.setdefault("execution_cursor",{})["current_failure_domain"]="R6_FROZEN_PERFORMANCE_GATE_FAILED__EXACT_R4_RECOVERY_ONLY"
+    task=state.setdefault("current_task",{})
+    task.update({"status":"CANDIDATE_INSTALLED_QUALIFICATION_PENDING","live_mutation_authorized":True,
+        "live_mutation_authorization":"Exact R4 recovery only after the completed frozen performance failure; candidate install and qualification rerun disabled.",
+        "next_action":"Use the guarded recovery-only runner once, then verify exact R4 identity and health."})
+    state["last_updated_utc"]=time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime())
+    return state
+
+
+def reconcile_verified_r4_recovery(state, receipt_path, readonly_path):
+    """Reconcile the installed identity and cursor after a completed exact R4 return."""
+    root=pathlib.Path(ROOT).resolve(); evidence_root=(root/"evidence").resolve()
+    def evidence_file(value):
+        path=pathlib.Path(value)
+        if not path.is_absolute(): path=root/path
+        path=path.resolve(); path.relative_to(evidence_root); return path
+    auth=state.get("live_mutation_authorization",{})
+    subject=state.get("execution_cursor",{}).get("current_subject",{})
+    result_path=evidence_file(receipt_path); readonly=evidence_file(readonly_path)
+    result=load(result_path); snap=load(readonly)
+    candidate=auth.get("candidate_release_id"); candidate_sha=auth.get("candidate_sha256")
+    recovery_sha=auth.get("rollback_sha256")
+    errors=[]
+    try: recovery_artifact=evidence_file(subject.get("rollback_artifact_path"))
+    except (ValueError,TypeError): recovery_artifact=root/"__missing_r4__"; errors.append("exact R4 recovery artifact path is invalid")
+    if state.get("live_mutation_authorized") is not False or auth.get("authorized") is not False:
+        errors.append("R4 recovery reconciliation requires the live gate closed")
+    if (candidate!=subject.get("failed_candidate_release_id",candidate)
+        or not re.fullmatch(r"[a-f0-9]{64}",str(candidate_sha or ""))
+        or auth.get("candidate_attempts_used")!=1 or auth.get("recovery_attempts_used")!=1
+        or auth.get("candidate_install_permitted") is not False or auth.get("transaction_consumed") is not True):
+        errors.append("exact candidate and one-use recovery counters are inconsistent")
+    rel=str(result_path.relative_to(root))
+    if (auth.get("transaction_result")!=rel or subject.get("qualification_result")!=rel
+        or subject.get("qualification_result_sha256")!=sha256_file(result_path)):
+        errors.append("recovery result is not the hash-bound current transaction")
+    if (result.get("schema")!="hbnf-cart2-candidate-qualification-continuation-v1"
+        or result.get("candidate_release_id")!=candidate or result.get("candidate_sha256")!=candidate_sha
+        or result.get("candidate_install_attempts")!=0 or result.get("recovery_attempts")!=1
+        or result.get("status")!="EXACT_R4_RECOVERED_AFTER_FAILED_QUALIFICATION"
+        or result.get("owner_settings_restore",{}).get("verified") is not True
+        or result.get("recovery",{}).get("status")!="R4_READBACK_VERIFIED"
+        or result.get("recovery",{}).get("upload",{}).get("confirmed") is not True
+        or result.get("recovery",{}).get("upload",{}).get("http_status")!="200"
+        or result.get("recovery",{}).get("upload",{}).get("attempts")!=1
+        or result.get("recovery",{}).get("upload",{}).get("retry") is not False
+        or result.get("post_recovery_readonly",{}).get("status")!="PASS"
+        or result.get("post_recovery_readonly",{}).get("release_id")!=R4_RELEASE
+        or result.get("post_recovery_readonly",{}).get("matrix_brightness")!=52
+        or result.get("post_recovery_readonly",{}).get("aux_brightness")!=245
+        or result.get("post_recovery_readonly",{}).get("aux_ddp_live") is not True):
+        errors.append("transaction does not prove the exact one-attempt R4 recovery and restored owner settings")
+    if not recovery_artifact.is_file() or sha256_file(recovery_artifact)!=recovery_sha:
+        errors.append("exact R4 recovery bytes are missing or changed")
+    matrix=snap.get("matrix",{}); identity=matrix.get("identity",{}); h=matrix.get("hbnf",{})
+    persisted=matrix.get("persistedHbnf",{}); aux=snap.get("aux",{}); auxid=aux.get("identity",{}); ddp=aux.get("ddp",{})
+    if (snap.get("schema")!="cart2-current-matrix-readonly-snapshot-v1"
+        or snap.get("read_only") is not True or snap.get("device_mutations")!=0
+        or identity.get("release_id")!=R4_RELEASE or identity.get("candidate")!=R4_RELEASE
+        or identity.get("mac","").replace(":","").lower()!="704bca5b345c"
+        or h.get("matrixBrightness")!=52 or h.get("auxBrightness")!=245 or h.get("vibe")!=0
+        or persisted!={"matrixBrightness":52,"auxBrightness":245,"vibe":0}
+        or h.get("packet20DiagnosticEnabled") is not False or h.get("foundationTelemetryEnabled") is not False
+        or auxid.get("mac","").replace(":","").lower()!="8c94df55c34c"
+        or aux.get("runtime",{}).get("on") is not True or aux.get("runtime",{}).get("lor")!=0
+        or ddp.get("live") is not True or ddp.get("mode")!="DDP"
+        or ddp.get("source")!="192.168.77.10" or ddp.get("led_count")!=22):
+        errors.append("fresh post-recovery read-only receipt does not prove exact R4, settings, and AUX health")
+    if errors: raise ValueError("R4 recovery reconciliation rejected: "+"; ".join(errors))
+
+    receipt_rel=str(result_path.relative_to(root)); readonly_rel=str(readonly.relative_to(root))
+    old_release=state.get("installed_release"); old_sha=state.get("installed_firmware_sha256")
+    state["installed_release"]=R4_RELEASE; state["installed_firmware_sha256"]=recovery_sha
+    cursor=state.setdefault("execution_cursor",{})
+    cursor["current_failure_domain"]="R6_FROZEN_PERFORMANCE_GATE_FAILED__EXACT_R4_RECOVERED__OFFLINE_REPAIR_ONLY"
+    cursor["current_lifecycle_state"]="PHASE2_INTEGRATING"
+    cursor["current_transition"]="T4_PHASE2_INTEGRATION"
+    cursor["exact_next_path"]=[
+        "The exact R6 successor failed its frozen performance gate across the completed 28-kernel diagnostic sweep; the 90-minute soak did not start.",
+        "Exact Foundation R4 is installed and read-only verified at Matrix brightness 52, AUX brightness 245, persisted/runtime Vibe 0, and live Matrix-origin AUX DDP.",
+        "The one candidate attempt and one exact R4 recovery are consumed. Continue with offline source analysis and host qualification; any future live candidate requires a new exact owner authorization."]
+    cursor["no_repeat"]=["Do not reinstall the failed candidate or repeat its completed 28-kernel diagnostic sweep.",
+        "Do not claim qualification, soak completion, or owner acceptance.",
+        "Do not perform further live mutation under the consumed exact owner authorization."]
+    subject.update({"failed_candidate_release_id":candidate,"failed_candidate_sha256":candidate_sha,
+        "release_id":R4_RELEASE,"artifact_sha256":recovery_sha,"installed_release_id":R4_RELEASE,"installed_sha256":recovery_sha,
+        "exact_r4_recovery_attempts_used":1,"qualification_result":receipt_rel,
+        "qualification_result_sha256":sha256_file(result_path),
+        "recovery_result":receipt_rel,"recovery_result_sha256":sha256_file(result_path),
+        "runtime_readonly_receipt":readonly_rel,"runtime_readonly_sha256":sha256_file(readonly),
+        "matrix_brightness":52,"aux_brightness":245,"runtime_vibe":0})
+    auth["qualification_recovery_subscope"]="EXACT_R4_RECOVERY_CONSUMED"
+    state["current_task"].update({"installed_release":R4_RELEASE,"installed_firmware_sha256":recovery_sha,
+        "status":"R6_PERFORMANCE_FAILED__EXACT_R4_RECOVERED__OFFLINE_REPAIR_ONLY",
+        "live_mutation_authorized":False,
+        "next_action":"Continue offline analysis of the preserved 28-kernel failure evidence; any new live candidate requires a new exact owner authorization."})
+    state["current_task"]["exact_r4_recovery_reconciliation"]={
+        "schema":"hbnf-cart2-exact-r4-recovery-reconciliation-v1",
+        "status":"PASS__EXACT_R4_RECOVERY_VERIFIED","r4_rollback_sha256":recovery_sha,
+        "recovery_result":receipt_rel,"recovery_result_sha256":sha256_file(result_path),
+        "readonly_receipt":readonly_rel,"readonly_receipt_sha256":sha256_file(readonly),
+        "previous_installed_release":old_release,"previous_installed_sha256":old_sha}
+    auth.update({"authorized":False,"hardware_writes_permitted_now":False,
+        "operation_scope":"CLOSED_AFTER_QUALIFICATION","status":"EXACT_R4_RECOVERED_AFTER_FAILED_QUALIFICATION",
+        "current_gate":"Exact R4 recovery verified; candidate and recovery attempts consumed; live gate closed."})
+    state["live_mutation_authorized"]=False
+    state["last_updated_utc"]=time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime())
+    return state
+
 def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--model",default=str(DEFAULT_MODEL))
@@ -976,6 +1419,13 @@ def main():
     ri=sub.add_parser("reconcile-installed-r6")
     ri.add_argument("--receipt",required=True)
     ri.add_argument("--host-failure-proof",help="Required only to resume qualification after a hash-verified, pre-profile host-only failure")
+    rq=sub.add_parser("reconcile-installed-qualification")
+    rq.add_argument("--prelive",required=True,help="Fresh exact candidate qualification preflight; this rearms qualification only, never install")
+    rr=sub.add_parser("reconcile-failed-qualification-r4-recovery")
+    rr.add_argument("--prelive",required=True,help="Fresh read-only proof for one exact R4 recovery after a complete frozen performance failure")
+    rc=sub.add_parser("reconcile-r4-recovery")
+    rc.add_argument("--receipt",required=True,help="Hash-bound result from the exact one-use R4 recovery transaction")
+    rc.add_argument("--readonly",required=True,help="Post-recovery read-only Matrix/AUX identity and settings receipt")
     rf.add_argument("--live-attempt",action="store_true")
     args=ap.parse_args()
     model=load(args.model); state=load(args.state)
@@ -1016,6 +1466,41 @@ def main():
         if errs: raise SystemExit("refusing to save invalid state: "+"; ".join(errs))
         save(args.state,state)
         print(json.dumps({"reconciled":True,"installed_release":state["installed_release"],"operation_scope":"QUALIFICATION_ONLY","candidate_attempts_used":state["r6_audio_cache_successor"]["conditional_authority"]["candidate_attempts_used"]},indent=2,sort_keys=True))
+        return 0
+    if args.cmd=="reconcile-installed-qualification":
+        reconcile_installed_qualification(state,args.prelive)
+        errs=validate_state(model,state)
+        if errs: raise SystemExit("refusing to save invalid state: "+"; ".join(errs))
+        save(args.state,state)
+        current=state["live_mutation_authorization"]
+        print(json.dumps({"reconciled":True,"installed_release":state["installed_release"],
+            "operation_scope":current["operation_scope"],"candidate_install_permitted":current["candidate_install_permitted"],
+            "candidate_attempts_used":current["candidate_attempts_used"],
+            "recovery_attempts_used":current["recovery_attempts_used"],
+            "live_mutation_authorized":state["live_mutation_authorized"]},indent=2,sort_keys=True))
+        return 0
+    if args.cmd=="reconcile-failed-qualification-r4-recovery":
+        reconcile_failed_qualification_for_r4_recovery(state,args.prelive)
+        errs=validate_state(model,state)
+        if errs: raise SystemExit("refusing to save invalid state: "+"; ".join(errs))
+        save(args.state,state)
+        current=state["live_mutation_authorization"]
+        print(json.dumps({"reconciled":True,"operation_scope":current["operation_scope"],
+            "qualification_recovery_subscope":current["qualification_recovery_subscope"],
+            "candidate_install_permitted":current["candidate_install_permitted"],
+            "candidate_attempts_used":current["candidate_attempts_used"],
+            "recovery_attempts_used":current["recovery_attempts_used"],
+            "live_mutation_authorized":state["live_mutation_authorized"]},indent=2,sort_keys=True))
+        return 0
+    if args.cmd=="reconcile-r4-recovery":
+        reconcile_verified_r4_recovery(state,args.receipt,args.readonly)
+        errs=validate_state(model,state)
+        if errs: raise SystemExit("refusing to save invalid state: "+"; ".join(errs))
+        save(args.state,state)
+        print(json.dumps({"reconciled":True,"installed_release":state["installed_release"],
+            "installed_firmware_sha256":state["installed_firmware_sha256"],
+            "recovery_attempts_used":state["live_mutation_authorization"]["recovery_attempts_used"],
+            "live_mutation_authorized":state["live_mutation_authorized"]},indent=2,sort_keys=True))
         return 0
     if args.cmd=="advance":
         advance(model,state,args.receipt)

@@ -1,0 +1,9 @@
+{
+  "kernel_index": 22,
+  "kernel_name": "Scaledemo1",
+  "qualification_eligible": false,
+  "sample_count": 26,
+  "sample_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/22_Scaledemo1.jsonl",
+  "saturated_sample_count": 10,
+  "status": "SATURATED_TELEMETRY_DIAGNOSTIC_ONLY"
+}

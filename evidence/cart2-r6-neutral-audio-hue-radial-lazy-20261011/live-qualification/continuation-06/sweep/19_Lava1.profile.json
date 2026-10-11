@@ -1,0 +1,126 @@
+{
+  "failures": [],
+  "profile": {
+    "aux": {
+      "age_p99_ms": 4294967295.0,
+      "inactive_samples": 0,
+      "render_fps_median": 30.5
+    },
+    "collection_errors": 0,
+    "contract": "foundation",
+    "fps": {
+      "median": 30.0,
+      "min": 27,
+      "p05": 28.25
+    },
+    "frame_ms": {
+      "avg_median": 28.22168,
+      "max": 85.21,
+      "p50_median": 26.625,
+      "p95_median": 31.375,
+      "p99_median": 59.125
+    },
+    "heap": {
+      "free_end": 113504,
+      "free_start": 114848,
+      "largest_block_end": 65524,
+      "largest_block_start": 65524,
+      "minimum_free_min": 48472
+    },
+    "kernel": {
+      "id": 19,
+      "name": "Lava1",
+      "variant_id": 1347100691
+    },
+    "qualification_eligible": true,
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+    "restart_count_end": 0,
+    "restart_count_start": 0,
+    "sample_count": 26,
+    "schema": "hbnf-runtime-profile-v2",
+    "stages": {
+      "audio_ms_avg": {
+        "max": 0.522165,
+        "median": 0.4999635,
+        "p95": 0.5214814999999999
+      },
+      "audio_ms_p95": {
+        "max": 0.625,
+        "median": 0.625,
+        "p95": 0.625
+      },
+      "aux_prepare_send_ms_avg": {
+        "max": 4.381966,
+        "median": 4.294448,
+        "p95": 4.368240500000001
+      },
+      "aux_prepare_send_ms_p95": {
+        "max": 6.125,
+        "median": 5.875,
+        "p95": 5.875
+      },
+      "frame_ms_avg": {
+        "max": 28.62471,
+        "median": 28.22168,
+        "p95": 28.5536675
+      },
+      "kernel_ms_avg": {
+        "max": 18.77055,
+        "median": 18.562545,
+        "p95": 18.7575375
+      },
+      "kernel_ms_p95": {
+        "max": 21.625,
+        "median": 21.125,
+        "p95": 21.625
+      },
+      "overlay_ms_avg": {
+        "max": 0.032765,
+        "median": 0.031923,
+        "p95": 0.03272525
+      },
+      "overlay_ms_p95": {
+        "max": 0.125,
+        "median": 0.125,
+        "p95": 0.125
+      },
+      "palette_ms_avg": {
+        "max": 0.228266,
+        "median": 0.218051,
+        "p95": 0.22668525
+      },
+      "palette_ms_p95": {
+        "max": 0.375,
+        "median": 0.125,
+        "p95": 0.375
+      },
+      "scheduler_ms_avg": {
+        "max": 1.671104,
+        "median": 1.619552,
+        "p95": 1.6663015
+      },
+      "scheduler_ms_p95": {
+        "max": 2.125,
+        "median": 1.875,
+        "p95": 2.125
+      },
+      "unaccounted_ms_avg": {
+        "max": 3.01885,
+        "median": 2.9963625,
+        "p95": 3.011975
+      },
+      "unaccounted_ms_p95": {
+        "max": 3.375,
+        "median": 3.375,
+        "p95": 3.375
+      }
+    },
+    "valid_sample_count": 26,
+    "validation_errors": [],
+    "wifi": {
+      "rssi_dbm_median": -45.0,
+      "rssi_dbm_min": -53
+    }
+  },
+  "status": "PASS"
+}

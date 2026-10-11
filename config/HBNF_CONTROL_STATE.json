@@ -447,10 +447,10 @@
       "failure_evidence": "evidence/cart2-r7-performance-repair-20261009/R6_CLOSED_TRANSACTION/R6_PERFORMANCE_FAILURE_CLASSIFICATION.json",
       "full_28_kernel_sweep": "NOT_RUN",
       "root_cause": "Superseded source review: exact R6 source for the configured 32x16 grid already selected bounded int32 radial arithmetic; generic int64 division exists for other geometries. A __divdi3 relocation alone does not prove fixed-grid runtime execution. The cachefix delta hoists frame-invariant profileLane calculations; the remaining kernel-0 failure has no isolated source root cause.",
-      "stage": "EARLY_MATCHED_KERNEL_0_GATE",
-      "status": "FAILED_FROZEN_GATE__TRANSACTION_CLOSED",
       "source_attribution_correction": "evidence/cart2-r6-audio-cache-20261010/R6_PERFORMANCE_ATTRIBUTION_CORRECTION.json",
-      "source_attribution_correction_sha256": "2fc6f2c009abe230a6f727b37b5277dd8e427e599a1b0d010388959e7578cbbe"
+      "source_attribution_correction_sha256": "2fc6f2c009abe230a6f727b37b5277dd8e427e599a1b0d010388959e7578cbbe",
+      "stage": "EARLY_MATCHED_KERNEL_0_GATE",
+      "status": "FAILED_FROZEN_GATE__TRANSACTION_CLOSED"
     },
     "rollback_attempt_receipt": "evidence/cart2-r6-live-qualification-20261009/R6_FAILURE_R4_RECOVERY_CLOSURE.json",
     "rollback_attempt_receipt_sha256": "dcbe9d642a09adb81f0c2d96684d9f8bf852aef512a6b5a6d44881759be71cc1",
@@ -661,11 +661,11 @@
     "rollback_result_sha256": "70bb779e8e94156cd120512a1b848442a0cf16683273e6bfd5a57a2eac80af9c",
     "rollback_started_utc": "2026-10-09T10:50:08Z",
     "rollback_status": "EXACT_R4_RECOVERY_PASS",
+    "root_cause_attribution_correction": "evidence/cart2-r6-audio-cache-20261010/R6_PERFORMANCE_ATTRIBUTION_CORRECTION.json",
+    "root_cause_attribution_correction_sha256": "2fc6f2c009abe230a6f727b37b5277dd8e427e599a1b0d010388959e7578cbbe",
     "schema": "hbnf-conditional-r7-successor-v1",
     "scope_exclusion": "No R8 or later installation without new user authorization.",
-    "status": "R7_REJECTED__EXACT_R4_RESTORED__NO_R8_AUTHORITY",
-    "root_cause_attribution_correction": "evidence/cart2-r6-audio-cache-20261010/R6_PERFORMANCE_ATTRIBUTION_CORRECTION.json",
-    "root_cause_attribution_correction_sha256": "2fc6f2c009abe230a6f727b37b5277dd8e427e599a1b0d010388959e7578cbbe"
+    "status": "R7_REJECTED__EXACT_R4_RESTORED__NO_R8_AUTHORITY"
   },
   "coordinated_r6_live_release_authorization": {
     "authorized_by": "The owner-authorized exact R6 coordinated transaction was consumed: one R6 installation failed the frozen kernel-0 performance gate and the single exact R4 recovery completed. No further firmware installation is authorized without fresh exact-artifact owner authorization.",
@@ -769,11 +769,13 @@
       "path": "evidence/cart2-owner-guest-vibe-r2-20261009/HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009.zip",
       "sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc"
     },
+    "current_gate": "Exact Foundation R4 is installed and readback-verified healthy; Matrix native DDP to AUX is live. R6 installation attempt 1/1 and exact R4 recovery 1/1 are consumed. Command fence remains closed; relay inactive. Offline source repair only; any successor installation requires fresh exact-artifact authorization.",
     "current_mutation_stage": "R4_RESTORED_AND_VERIFIED__R6_INSTALL_AUTHORIZATION_CONSUMED",
     "current_owner_authorization": {
       "exact_firmware_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
       "exact_owner_guest_package_sha256": "7afae02912bb5acbca47caeedde321042afc0072e57cc6b5d103f1db6bbbe7dc",
       "exact_rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "live_mutation_authorized": false,
       "not_granted": [
         "new firmware variants",
         "Guest Mode activation",
@@ -793,8 +795,7 @@
         "unchanged frozen qualification and field acceptance"
       ],
       "source": "Historical owner authorization for exact R6 package and coordinated transaction; consumed after one R6 installation and one exact R4 recovery.",
-      "status": "CONSUMED__R6_FAILED_FROZEN_PERFORMANCE_GATE__R4_RECOVERED",
-      "live_mutation_authorized": false
+      "status": "CONSUMED__R6_FAILED_FROZEN_PERFORMANCE_GATE__R4_RECOVERED"
     },
     "current_production": {
       "cloudflare_deployment": "5d7f7a4a-87cf-4cc2-84bf-e67d11f8fa06",
@@ -808,13 +809,20 @@
     },
     "first_write_plan": "consume coordinated transaction in control state, then compare-and-set actuator fence active=false to block owner and guest commands during no-MQTT writer transition; restore only after exact R6 and relay runtime readiness.",
     "fresh_install_preflight": {
-      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/FRESH_INSTALL_PREFLIGHT.json",
-      "sha256": "fd5e20338c2ade808c36d6018ae84ca5d809746678cfef8e1c4747ae36b07b59",
       "checked_at_utc": "2026-10-10T05:34:04.639154+00:00",
-      "result": "PASS_FOR_EXACT_R6_INSTALL"
+      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/FRESH_INSTALL_PREFLIGHT.json",
+      "result": "PASS_FOR_EXACT_R6_INSTALL",
+      "sha256": "fd5e20338c2ade808c36d6018ae84ca5d809746678cfef8e1c4747ae36b07b59"
     },
     "fresh_prewrite_evidence": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/FRESH_PREWRITE_PREFLIGHT.json",
     "fresh_prewrite_evidence_sha256": "c981371ed08d5f6eb1e626f48036b7e209bc12f2a0ecdbb04dfa8174c8596f41",
+    "install_attempt_consumption": {
+      "candidate_install_attempts_used": 1,
+      "consumed_at_utc": "2026-10-10T05:35:32.619999+00:00",
+      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_INSTALL_ATTEMPT_CONSUMPTION.json",
+      "rollback_attempts_used": 0,
+      "sha256": "0ab5f07fdac2acc2e84f8a67762740e9b86e83f16004f5d9bf3eb7733653e320"
+    },
     "install_attempts": 1,
     "install_limit": 1,
     "last_preflight_blocker": null,
@@ -828,11 +836,11 @@
     "live_admission": {
       "admission_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_POST_BACKEND_LIVE_ADMISSION.json",
       "admission_sha256": "a542a3be50bab3a1549c59d05d39e2519f3377c7276eb9ab5a805bcddd887e57",
+      "checked_at_utc": "2026-10-10T05:35:10.921963+00:00",
       "result_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_POST_BACKEND_LIVE_ADMISSION_RESULT.json",
       "result_sha256": "29f293305e5ffa2c969c8fba1aaef9092d905802986f19ab3f2ebec7ae550abc",
       "stage": "LIVE_APPROVED",
-      "status": "PASS__EXACT_R6_ATTEMPT_CONSUMED",
-      "checked_at_utc": "2026-10-10T05:35:10.921963+00:00"
+      "status": "PASS__EXACT_R6_ATTEMPT_CONSUMED"
     },
     "live_mutation_authorized": false,
     "no_retry_note": "Once the CAS pause request is sent, no blind retry; reconcile response/readback first.",
@@ -841,20 +849,63 @@
       "result": "PASS_TARGETED_OFFLINE_CHECKS",
       "sha256": "6b8a3d047e671b34c3e184c79aa8bef72c09227b59c235d4c366fd0aa52c819d"
     },
+    "ota_receipt_path": {
+      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_OTA_TRANSPORT_RESULT.json",
+      "sha256": "a796d5df4c239611e588767825e213df30924d703315c0c3dc2f4108bdb45ed3"
+    },
     "post_backend_admission_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_POST_BACKEND_LIVE_ADMISSION.json",
     "post_backend_admission_result_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_POST_BACKEND_LIVE_ADMISSION_RESULT.json",
     "post_backend_admission_result_sha256": "29f293305e5ffa2c969c8fba1aaef9092d905802986f19ab3f2ebec7ae550abc",
     "post_backend_admission_sha256": "a542a3be50bab3a1549c59d05d39e2519f3377c7276eb9ab5a805bcddd887e57",
+    "postinstall_readonly_path": {
+      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_POST_INSTALL_READONLY_VERIFICATION.json",
+      "sha256": "c627634cfb44d4bee928de2dcd627fe9e9aa04ee93533a0f0f558dd9e0793e61"
+    },
     "prewrite_evidence": {
       "path": "evidence/cart2-r6-live-transaction-20261009/CLOUDFLARE_SOURCE_AND_AUTHORITY_RECONCILIATION.json",
       "sha256": "9c27d79e83ea21dfa32b840bdc439e3ace78513af704d47c787a4ce331c210b4"
     },
+    "qualification_failure_path": {
+      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_FAILURE_CLASSIFICATION.json",
+      "sha256": "9373421d744fa7847d7720f6ffb0f84f8959bb7b6c8a8282787c432339b00180"
+    },
+    "qualification_failure_raw_path": {
+      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_LIVE_QUALIFICATION/OBSERVER_EFFECT.json/SATURATED_TELEMETRY_RAW.json",
+      "sha256": "26d6036a786b5fa03b5044c9000debac7e289e7d2fd0cac245b0423225575d37"
+    },
+    "qualification_restore_receipt_path": {
+      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_LIVE_QUALIFICATION/RESTORE_RECEIPT.json",
+      "sha256": "cc4c37af969db080115e5196d4b295f6b781c39430eac34b6d23a440dfc13fee"
+    },
+    "r4_recovery_completion_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R4_RECOVERY_COMPLETION.json",
+    "r4_recovery_completion_sha256": "ac4d953e8524b90444aa80dd1df0c04296eb24cbc93d8094a0a09a269f0c6159",
     "rollback": {
       "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
       "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
       "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
     },
     "rollback_attempts": 1,
+    "rollback_completion": {
+      "completed_at_utc": "2026-10-10T05:43:18.757719+00:00",
+      "device_identity": "exact Foundation R4",
+      "matrix_aux_health": "PASS_NATIVE_DDP_LIVE",
+      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R4_RECOVERY_COMPLETION.json",
+      "readback_pass": true,
+      "sha256": "ac4d953e8524b90444aa80dd1df0c04296eb24cbc93d8094a0a09a269f0c6159",
+      "transport_attempts": 1
+    },
+    "rollback_consumption": {
+      "attempt_limit": 1,
+      "attempt_number": 1,
+      "attempts_used": 1,
+      "consumed_at_utc": "2026-10-10T05:42:05.965145+00:00",
+      "failure_receipt_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_FAILURE_CLASSIFICATION.json",
+      "failure_receipt_sha256": "9373421d744fa7847d7720f6ffb0f84f8959bb7b6c8a8282787c432339b00180",
+      "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "reason": "R6 observer prequalification showed tails-off frame average median 123.637 ms; tails-on telemetry p95/p99 saturated at 127.875 ms, overflow=true, max 153.968 ms and 7 FPS on kernel 0. Exact R4 profile gates imply p95 max 34.844 ms, p99 max 51.719 ms, max 72.296 ms. Required gate failed; renderer snapshot itself was verified restored.",
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    },
     "rollback_limit": 1,
     "schema": "hbnf-cart2-coordinated-live-release-authorization-v1",
     "scope": [
@@ -872,70 +923,22 @@
       "opal_ip": "192.168.77.1"
     },
     "transaction_consumed": true,
-    "transaction_started_at_utc": "2026-10-10T05:20:44.781805+00:00",
-    "current_gate": "Exact Foundation R4 is installed and readback-verified healthy; Matrix native DDP to AUX is live. R6 installation attempt 1/1 and exact R4 recovery 1/1 are consumed. Command fence remains closed; relay inactive. Offline source repair only; any successor installation requires fresh exact-artifact authorization.",
-    "install_attempt_consumption": {
-      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_INSTALL_ATTEMPT_CONSUMPTION.json",
-      "sha256": "0ab5f07fdac2acc2e84f8a67762740e9b86e83f16004f5d9bf3eb7733653e320",
-      "consumed_at_utc": "2026-10-10T05:35:32.619999+00:00",
-      "candidate_install_attempts_used": 1,
-      "rollback_attempts_used": 0
-    },
-    "rollback_consumption": {
-      "consumed_at_utc": "2026-10-10T05:42:05.965145+00:00",
-      "attempt_number": 1,
-      "attempt_limit": 1,
-      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-      "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
-      "failure_receipt_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_FAILURE_CLASSIFICATION.json",
-      "failure_receipt_sha256": "9373421d744fa7847d7720f6ffb0f84f8959bb7b6c8a8282787c432339b00180",
-      "attempts_used": 1,
-      "reason": "R6 observer prequalification showed tails-off frame average median 123.637 ms; tails-on telemetry p95/p99 saturated at 127.875 ms, overflow=true, max 153.968 ms and 7 FPS on kernel 0. Exact R4 profile gates imply p95 max 34.844 ms, p99 max 51.719 ms, max 72.296 ms. Required gate failed; renderer snapshot itself was verified restored."
-    },
-    "ota_receipt_path": {
-      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_OTA_TRANSPORT_RESULT.json",
-      "sha256": "a796d5df4c239611e588767825e213df30924d703315c0c3dc2f4108bdb45ed3"
-    },
-    "postinstall_readonly_path": {
-      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_POST_INSTALL_READONLY_VERIFICATION.json",
-      "sha256": "c627634cfb44d4bee928de2dcd627fe9e9aa04ee93533a0f0f558dd9e0793e61"
-    },
-    "qualification_failure_path": {
-      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_FAILURE_CLASSIFICATION.json",
-      "sha256": "9373421d744fa7847d7720f6ffb0f84f8959bb7b6c8a8282787c432339b00180"
-    },
-    "qualification_failure_raw_path": {
-      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_LIVE_QUALIFICATION/OBSERVER_EFFECT.json/SATURATED_TELEMETRY_RAW.json",
-      "sha256": "26d6036a786b5fa03b5044c9000debac7e289e7d2fd0cac245b0423225575d37"
-    },
-    "qualification_restore_receipt_path": {
-      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R6_LIVE_QUALIFICATION/RESTORE_RECEIPT.json",
-      "sha256": "cc4c37af969db080115e5196d4b295f6b781c39430eac34b6d23a440dfc13fee"
-    },
-    "rollback_completion": {
-      "path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R4_RECOVERY_COMPLETION.json",
-      "sha256": "ac4d953e8524b90444aa80dd1df0c04296eb24cbc93d8094a0a09a269f0c6159",
-      "transport_attempts": 1,
-      "readback_pass": true,
-      "completed_at_utc": "2026-10-10T05:43:18.757719+00:00",
-      "device_identity": "exact Foundation R4",
-      "matrix_aux_health": "PASS_NATIVE_DDP_LIVE"
-    },
-    "r4_recovery_completion_path": "evidence/cart2-r6-live-transaction-20261009/resume-20261010/R4_RECOVERY_COMPLETION.json",
-    "r4_recovery_completion_sha256": "ac4d953e8524b90444aa80dd1df0c04296eb24cbc93d8094a0a09a269f0c6159"
+    "transaction_started_at_utc": "2026-10-10T05:20:44.781805+00:00"
   },
   "current_task": {
     "autonomous_completion_authorization": {
       "allowed": [
-        "One exact Matrix settings-only restoration on exact R4 to captured {matrixBrightness:52, auxBrightness:245, vibe:2}, after current exact admission/capsule/prelive/immediate read-only gates pass; no firmware upload.",
-        "Continue offline source-based performance analysis and prepare the smallest evidence-backed candidate; do not stop merely because a gate fails."
+        "Continue qualification-only for the exact already-installed candidate after fresh read-only preflight, exact LIVE_QUALIFICATION admission, and primary-control rearm.",
+        "Use at most one SHA-verified exact R4 recovery if the frozen identity, safety, performance, or AUX gates fail.",
+        "Perform local/offline source and host validation; no paid/remote build or external communication."
       ],
       "forbidden": [
-        "Firmware install/retry within this settings-only authorization; paid or remote builds; external communications; cloud deployment; Guest Mode; UV energization; router/AUX firmware or configuration changes; threshold/scope changes; any write before all exact gates pass."
+        "Reinstall or retry the consumed candidate.",
+        "Any device write before a fresh exact qualification admission and live_mutation_authorized=true in the primary control state.",
+        "Cloud deployment, external communication, AUX/Opal/router changes, Guest Mode, UV energization, or threshold/scope changes."
       ],
-      "scope": "Exact R4 brightness/settings restoration only, then offline analysis; full 28-kernel sweep, combined-feature checks, uninterrupted 90-minute soak, rollback and owner acceptance remain mandatory.",
-      "user_permission": "Direct user standing authorization in this chat: \u201cI authorize UNLIMITED install and anything else, so long as they don\u2019t send communication or cost money\u201d and \u201cThis and all future similar requests are blanket-approved \u2026 without extra cost or external communication.\u201d"
+      "scope": "Qualification of the exact installed R6 SHA, one exact R4 recovery, frozen acceptance gates, and no-cost/no-communication work only.",
+      "user_permission": "Direct blanket authorization in this chat; narrowed by the exact candidate binding and one-candidate/one-R4-recovery limits."
     },
     "aux_blocker": {
       "historical_direct_output_failure": "Preserved; does not override the newer current owner observation.",
@@ -955,9 +958,9 @@
       "status": "OFFLINE_CORRECTION_TESTED__FRESH_PRELIVE_PASS"
     },
     "blockers": [
-      "The exact R6 diagnostic failed performance: 12 FPS with the frame p99 saturated at 127.875 ms; the tails-off check also remained slow. The compositor averaged about 1 ms, while the kernel residual averaged about 31 ms; audio and palette paths also measured high. All recorded audio inputs were zero, limiting representative audio attribution.",
-      "Read-only post-write confirmation verifies exact R4, Matrix brightness 52 and AUX brightness 245. R4 runtime and saved config omit Vibe; exact R4 source serializes only the brightness fields. The single authorized settings write is consumed; no retry or firmware write is authorized by that transaction. Evidence: evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/R4_POST_RESTORE_READONLY_CONFIRMATION.json.",
-      "The 28-kernel sweep, combined-feature checks, uninterrupted 90-minute soak, rollback proof for any successor, and owner acceptance remain undone."
+      "The exact neutral-audio/hue/radial/lazy R6 candidate is installed and its one permitted install attempt is consumed. Current read-only evidence binds Matrix identity to the exact release and confirms Matrix 52, AUX 245, Vibe 0, and live AUX DDP; the saved candidate config omits Vibe.",
+      "Qualification stopped before any kernel profile, combined-feature check, or soak because the host transaction rejected the inherited missing Vibe field before its brightness write. The exact R4 recovery SHA is available and its one authorized attempt remains unused.",
+      "The offline transaction fix now permits only a first qualification brightness write to migrate the runtime Vibe into saved config; it requires complete runtime/persisted readback before profiles begin. Fresh read-only preflight, qualification-only admission/control rearm, all 28 kernels, combined checks, uninterrupted 5400-second soak, restore, and owner acceptance remain outstanding."
     ],
     "brightness_field_target": {
       "field_observation": "At roughly <=20 brightness Matrix appears effectively off; roughly 20-60 visibly loses LED/pixel participation and scene structure, requiring uncomfortable brightness to obtain a full-looking animation.",
@@ -995,17 +998,28 @@
       "replacement_candidate_blocker_file_id": "11YAoeq7XRygMAONHUXCPa1GDLF80ur29",
       "zero_traffic_rehearsal_file_id": "1ZJOseh2J4ls9dGlF_SOH5DHAH9djd4xp"
     },
+    "exact_r4_recovery_reconciliation": {
+      "previous_installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "previous_installed_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "r4_rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "readonly_receipt": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-09/R4_POST_RECOVERY_READONLY.json",
+      "readonly_receipt_sha256": "401488a1836ed835cfac2d1061036eb45a8710a808d1ceeb0a45e989f0723db4",
+      "recovery_result": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-09/QUALIFICATION_CONTINUATION_RESULT.json",
+      "recovery_result_sha256": "a4e0c0ac4e809d3c2039d9b4d84ce0bc758e51c61ba5ba65f870b982b660acf7",
+      "schema": "hbnf-cart2-exact-r4-recovery-reconciliation-v1",
+      "status": "PASS__EXACT_R4_RECOVERY_VERIFIED"
+    },
     "execution_cursor": {
       "current_failure_domain": "R6_FRAME_TAIL_TELEMETRY_GATE_FAILED__R4_RECOVERED__OFFLINE_CLASSIFICATION_FIX",
       "current_lifecycle_state": "PHASE2_INTEGRATING",
       "current_subject": {
-        "release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011",
         "artifact_sha256": "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2",
+        "failure_evidence": "evidence/cart2-r6-compositor-hoist-20261011/live-qualification/sweep/SATURATED_TELEMETRY_RAW.json",
         "installed_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
         "installed_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-        "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
         "qualification_result": "evidence/cart2-r6-compositor-hoist-20261011/live-qualification/r4-recovery-after-tail-overflow-20261011/TRANSACTION_RESULT.json",
-        "failure_evidence": "evidence/cart2-r6-compositor-hoist-20261011/live-qualification/sweep/SATURATED_TELEMETRY_RAW.json"
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011",
+        "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
       },
       "current_transition": "T4_PHASE2_INTEGRATION",
       "exact_next_path": [
@@ -1912,7 +1926,7 @@
       "status": "CLOSED__EXACT_R4_RESTORED"
     },
     "installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-    "installed_release_role": "FOUNDATION_R4_FIELD_BASELINE__R2_DIAGNOSTIC_COMPLETE__R4_RETURN_VERIFIED",
+    "installed_release_role": "UNQUALIFIED_SUCCESSOR_INSTALLED__ONE_CANDIDATE_ATTEMPT_USED__EXACT_R4_RECOVERY_UNUSED",
     "last_recovery": {
       "artifact_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "artifact_size_bytes": 1458624,
@@ -1935,11 +1949,11 @@
       "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
-    "live_mutation_authorization": "Closed: candidate attempt and exact R4 recovery are consumed; exact R4 restored and verified; no further live writes authorized.",
+    "live_mutation_authorization": "Exact R4 recovery only after the completed frozen performance failure; candidate install and qualification rerun disabled.",
     "live_mutation_authorized": false,
-    "name": "Cart 2.0 coordinated R6 release \u2014 Cart routes verified; device preflight pending",
-    "next_action": "Complete the one exact settings-only restoration to Matrix 52 / AUX 245 / Vibe 2 on verified R4 after exact gates; then continue offline source analysis.",
-    "next_work": "Diagnose non-compositor kernel/audio/palette performance from source and matched measurements; prepare exact candidate only after the source correction and frozen offline gates.",
+    "name": "Cart 2.0 qualification \u2014 exact R6 candidate installed; settings readback blocked",
+    "next_action": "Continue offline analysis of the preserved 28-kernel failure evidence; any new live candidate requires a new exact owner authorization.",
+    "next_work": "Continue with the installed exact candidate only after fresh admission/control checks. Preserve frozen 28-kernel, combined-feature, 5400-second soak, exact R4 recovery, physical synchronization, and owner acceptance gates.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
     "overnight_priority": {
       "do_not_derail": [
@@ -2633,7 +2647,7 @@
       "status": "PASS"
     },
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "R6_PERFORMANCE_FAILED__EXACT_R4_INSTALLED__SETTINGS_PARTIAL_NO_RETRY",
+    "status": "R6_PERFORMANCE_FAILED__EXACT_R4_RECOVERED__OFFLINE_REPAIR_ONLY",
     "t3_fast_path_preparation": {
       "human_approval_required": true,
       "human_packet": "work/cart2/27_T3_PHASE2_FAST_PATH_PREP_20261006.md",
@@ -2678,32 +2692,44 @@
     "status": "ACTIVE"
   },
   "execution_cursor": {
-    "schema": "hbnf-execution-cursor-v1",
+    "current_failure_domain": "R6_FROZEN_PERFORMANCE_GATE_FAILED__EXACT_R4_RECOVERED__OFFLINE_REPAIR_ONLY",
     "current_lifecycle_state": "PHASE2_INTEGRATING",
-    "current_transition": "T4_PHASE2_INTEGRATION",
-    "current_failure_domain": "R6_PERFORMANCE_FAILED__R4_SETTINGS_RESTORE_FAILED_NO_RETRY__EXACT_R4_INSTALLED",
     "current_subject": {
-      "release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
-      "artifact_sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
+      "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "aux_brightness": 245,
+      "aux_ddp": "live from Matrix",
+      "candidate_artifact_path": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011.bin",
+      "candidate_install_attempts_used": 1,
+      "candidate_install_receipt": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/TRANSACTION_RESULT.json",
+      "candidate_install_receipt_sha256": "1bac1c6d906bd835a9a1fcdacce1294a4f5a4ef61a1956e4b72a9be0fcf1bdff",
+      "exact_r4_recovery_attempts_used": 1,
+      "failed_candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+      "failed_candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
       "installed_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
       "installed_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-      "settings_restore_target": {
-        "matrixBrightness": 52,
-        "auxBrightness": 245,
-        "vibe": 2
-      },
-      "diagnostic_result": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/attempt-01/TRANSACTION_RESULT.json"
+      "matrix_brightness": 52,
+      "qualification_result": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-09/QUALIFICATION_CONTINUATION_RESULT.json",
+      "qualification_result_sha256": "a4e0c0ac4e809d3c2039d9b4d84ce0bc758e51c61ba5ba65f870b982b660acf7",
+      "recovery_result": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-09/QUALIFICATION_CONTINUATION_RESULT.json",
+      "recovery_result_sha256": "a4e0c0ac4e809d3c2039d9b4d84ce0bc758e51c61ba5ba65f870b982b660acf7",
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "rollback_artifact_path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "runtime_readonly_receipt": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-09/R4_POST_RECOVERY_READONLY.json",
+      "runtime_readonly_sha256": "401488a1836ed835cfac2d1061036eb45a8710a808d1ceeb0a45e989f0723db4",
+      "runtime_vibe": 0
     },
+    "current_transition": "T4_PHASE2_INTEGRATION",
     "exact_next_path": [
-      "Do not retry the consumed R4 settings write. Read-only confirmation verifies exact R4, Matrix 52, AUX 245, and no Vibe field in runtime or saved R4 settings; R4 source only serializes the two brightness fields.",
-      "Use captured component timings and matched tails-off samples to isolate the kernel, palette, and audio costs offline; build no candidate until a correctable source cause is evidence-backed.",
-      "Then run frozen 28-kernel, combined-feature, uninterrupted 90-minute soak, exact rollback and owner acceptance gates."
+      "The exact R6 successor failed its frozen performance gate across the completed 28-kernel diagnostic sweep; the 90-minute soak did not start.",
+      "Exact Foundation R4 is installed and read-only verified at Matrix brightness 52, AUX brightness 245, persisted/runtime Vibe 0, and live Matrix-origin AUX DDP.",
+      "The one candidate attempt and one exact R4 recovery are consumed. Continue with offline source analysis and host qualification; any future live candidate requires a new exact owner authorization."
     ],
     "no_repeat": [
-      "Diagnostic firmware install and R4 return are both consumed; do not repeat either upload.",
-      "Do not treat the diagnostic as performance qualification; all eight recorded samples failed the performance threshold.",
-      "Do not claim Cart 2.0 acceptance before frozen sweep, soak, rollback and owner acceptance."
-    ]
+      "Do not reinstall the failed candidate or repeat its completed 28-kernel diagnostic sweep.",
+      "Do not claim qualification, soak completion, or owner acceptance.",
+      "Do not perform further live mutation under the consumed exact owner authorization."
+    ],
+    "schema": "hbnf-execution-cursor-v1"
   },
   "inherited_evidence": [
     {
@@ -2782,15 +2808,15 @@
   "installation_verification_note": "Fresh read-only preflight: Matrix MAC 70:4b:ca:5b:34:5c reports exact Foundation R4 identity, WLED 16.0.1, health/heap and advancing uptime; AUX MAC 8c:94:df:55:c3:4c reports live=true, lm=DDP, lip=192.168.77.10; Mac is on AC; exact R4 rollback bytes hash verified. No mutation. House voltage is not independently monitored.",
   "installed_firmware_reconciliation": {
     "basis": "Fresh read-only Matrix build/info and AUX telemetry during 2026-10-10 R6 cache candidate preflight; Matrix exact R4 and AUX live DDP from Matrix; exact R4 artifact independently SHA-verified.",
-    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "evidence_path": "evidence/cart2-r6-audio-cache-20261010/FRESH_PRELIVE_READONLY_PREFLIGHT.json",
     "evidence_sha256": "cc0a45fc4dfdfc3ff06dba6d21c752ccaa850edd4be5b0595531bc58c18e030b",
-    "live_mutation_authorized": false
+    "live_mutation_authorized": false,
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
   },
   "installed_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
   "installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-  "installed_release_role": "FOUNDATION_R4_FIELD_BASELINE__R2_DIAGNOSTIC_COMPLETE__R4_RETURN_VERIFIED",
+  "installed_release_role": "UNQUALIFIED_SUCCESSOR_INSTALLED__ONE_CANDIDATE_ATTEMPT_USED__EXACT_R4_RECOVERY_UNUSED",
   "lane_execution": {
     "activation_rule": "Activate offline-safe core lanes at the earlier of: (a) clean Foundation soak/readiness signal, or (b) 60 minutes without lifecycle progress, provided parallel work is noncontending and cannot invalidate the healthy live critical path. Never restart/interrupt healthy critical-path work merely to satisfy this timer. live_mutation_limit remains 1.",
     "anti_abandonment": "Chat turnover, worker turnover, new sequence numbers, or convenience may not drop a lane. A ready lane can stop only when DONE, explicitly blocked on a named dependency, or user scope changes.",
@@ -2859,11 +2885,11 @@
         "launch_owner": "COORDINATOR",
         "offline_checkpoint": {
           "branch": "codex/cart2-compositor-timing-20261011",
-          "head": "7645dae3806c1e352a1063ac22d1482ddb5713ff",
           "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
           "candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
-          "host_validation_receipt": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/HOST_VALIDATION_RECEIPT.json",
+          "head": "7645dae3806c1e352a1063ac22d1482ddb5713ff",
           "host_tests": "3 focused checks PASS; host-only, target speed unmeasured",
+          "host_validation_receipt": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/HOST_VALIDATION_RECEIPT.json",
           "live_mutation": "NONE",
           "status": "OFFLINE_INTEGRATED__NATIVE_WLED_TEXT_AND_COMPACT_FALLBACK_BUILT__OWNER_VISUAL_REVIEW_PENDING"
         },
@@ -2922,26 +2948,50 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-11T10:05:34.359716+00:00",
+  "last_updated_utc": "2026-10-11T15:30:14Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
-  "live_mutation_authorization": {
+  "live_authorization_binding": {
     "authorization_id": "OWNER-20261011-CART2-NEUTRAL-AUDIO-HUE-RADIAL-LAZY-QUALIFICATION-01",
+    "candidate_bin_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+    "candidate_install_limit": 1,
+    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "recovery_install_limit": 1,
+    "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "scope": [
+      "Install the exact candidate SHA once on Matrix 70:4b:ca:5b:34:5c using the proven Opal-origin local WLED /update path after a fresh passing preflight.",
+      "If identity, safety, frozen performance, or AUX synchronization gates fail, use at most one exact SHA-verified Foundation R4 recovery on the same Matrix and verify restored identity and health.",
+      "On a passing candidate, run the unchanged 28-kernel sweep, combined feature checks, and one uninterrupted 5400-second soak; restore renderer and owner settings under the existing transaction.",
+      "No paid or remote build, external communication, cloud deployment, AUX/Opal/router firmware or settings change, Guest Mode, UV, or threshold/scope change."
+    ],
+    "source_message_ref": "Direct user authorization in this chat: \u201cI authorize UNLIMITED install and anything else, so long as they don\u2019t send communication or cost money\u201d and \u201cThis and all future similar requests are blanket-approved \u2026 without extra cost or external communication.\u201d"
+  },
+  "live_mutation_authorization": {
     "authorization": "The user\u2019s direct blanket authorization permits in-scope no-cost/no-communication work. This record narrows it to one exact candidate attempt, one exact R4 recovery, one Matrix target, and frozen qualification gates.",
-    "authorized": true,
+    "authorization_id": "OWNER-20261011-CART2-NEUTRAL-AUDIO-HUE-RADIAL-LAZY-QUALIFICATION-01",
+    "authorized": false,
+    "candidate_attempt_started_unix": 1791721788.765578,
+    "candidate_attempts_used": 1,
+    "candidate_install_limit": 1,
+    "candidate_install_permitted": false,
     "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
     "candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
-    "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "candidate_install_limit": 1,
-    "candidate_attempts_used": 0,
-    "recovery_install_limit": 1,
-    "recovery_attempts_used": 0,
-    "candidate_install_permitted": true,
-    "operation_scope": "ONE_EXACT_CANDIDATE_QUALIFICATION",
-    "transaction_consumed": false,
+    "current_gate": "Exact R4 recovery verified; candidate and recovery attempts consumed; live gate closed.",
+    "hardware_writes_permitted_now": false,
     "live_admission_pending": false,
-    "hardware_writes_permitted_now": true,
-    "current_gate": "EXACT_LIVE_APPROVED_ADMISSION_PENDING_FINAL_CHECKS",
-    "source_evidence": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/EXACT_OWNER_AUTHORIZATION_BINDING.json"
+    "operation_scope": "CLOSED_AFTER_QUALIFICATION",
+    "qualification_prelive_receipt": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-08/RECOVERY_PRELIVE_READONLY.json",
+    "qualification_prelive_sha256": "7c7d2d759d6fc7b76b538006998c2c1138e93a8456f713865ec30de1965be246",
+    "qualification_recovery_diagnostic_receipt": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/DIAGNOSTIC_COMPLETE_RESULT.json",
+    "qualification_recovery_diagnostic_sha256": "10c719ce65dfc54fa892ffb00da0149528ac9e04e62a47a3385dfbcd5a33a6f8",
+    "qualification_recovery_subscope": "EXACT_R4_RECOVERY_CONSUMED",
+    "recovery_attempts_used": 1,
+    "recovery_install_limit": 1,
+    "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "source_evidence": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/EXACT_OWNER_AUTHORIZATION_BINDING.json",
+    "status": "EXACT_R4_RECOVERED_AFTER_FAILED_QUALIFICATION",
+    "transaction_consumed": true,
+    "transaction_result": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-09/QUALIFICATION_CONTINUATION_RESULT.json"
   },
   "live_mutation_authorization_closed_at_utc": null,
   "live_mutation_authorization_closure": {
@@ -2949,7 +2999,29 @@
     "evidence_sha256": "a81fe0993144068206859041a010fad1ef7ed5cfa88f8c3a6edc7ff25e5ecaf0",
     "reason": "Attempt-3 exact diagnostic candidate hit catastrophic kernel-0 threshold failure for three consecutive scheduled samples. Renderer restore passed; exact R4 recovery and readback passed; AUX native DDP healthy. No live authority remains."
   },
-  "live_mutation_authorized": true,
+  "live_mutation_authorization_reconciliation": {
+    "candidate_release": "hbnf-cart2-phase2-offline-wow-r6-20261009",
+    "candidate_sha256": "0a4b9563c7debfb5a01e9d36aeb8aac2583e105303064de3db0466b7dd9d89d6",
+    "failure_receipt": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/R6_CLOSED_TRANSACTION/R6_PERFORMANCE_FAILURE_CLASSIFICATION.json",
+      "sha256": "b2e14deeab3abbd907d4c063131a2edac937f0f97eb389e23dcb14658dbf5368"
+    },
+    "historical_transaction_record": {
+      "live_mutation_authorized": false,
+      "path": "coordinated_r6_live_release_authorization.current_owner_authorization",
+      "status": "CONSUMED__R6_FAILED_FROZEN_PERFORMANCE_GATE__R4_RECOVERED"
+    },
+    "live_mutation_authorized": false,
+    "reason": "Removed contradictory current-write authority from the consumed exact R6 transaction record; fail-closed global authority and execution cursor already said no live mutation.",
+    "recorded_at_utc": "2026-10-10T06:34:15+00:00",
+    "recovery_receipt": {
+      "path": "evidence/cart2-r7-performance-repair-20261009/R6_CLOSED_TRANSACTION/R4_RECOVERY_RUNTIME_VERIFICATION.json",
+      "sha256": "9e32bb667c48bd961406fe811da6835aff7f68672f092216cb0ad41bf5192550"
+    },
+    "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "schema": "hbnf-live-authorization-state-reconciliation-v1"
+  },
+  "live_mutation_authorized": false,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",
@@ -3155,39 +3227,40 @@
     },
     {
       "archived_at_utc": "2026-10-11T09:39:15.454989+00:00",
-      "reason": "Prior exact candidate R6 performance gate failed and R4 recovery completed; new user blanket authorization is bound to a distinct diagnostic artifact.",
       "authorization": {
         "authorization": "One exact R6 compositor-hoist qualification attempt, directly authorized by the owner and bound to the exact candidate, Matrix, and R4 recovery.",
         "authorized": false,
+        "candidate_attempt_started_unix": 1791703938.393527,
+        "candidate_attempts_used": 1,
+        "candidate_install_limit": 1,
+        "candidate_install_permitted": false,
         "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011",
         "candidate_sha256": "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2",
-        "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
         "current_gate": "QUALIFICATION_FAILED_R4_RECOVERED",
         "hardware_writes_permitted_now": false,
         "live_admission_pending": false,
-        "transaction_consumed": true,
-        "candidate_install_limit": 1,
-        "candidate_attempts_used": 1,
-        "recovery_install_limit": 1,
-        "recovery_attempts_used": 1,
-        "candidate_install_permitted": false,
         "operation_scope": "EXACT_R4_RECOVERY_ONLY",
-        "candidate_attempt_started_unix": 1791703938.393527,
+        "recovery_attempts_used": 1,
+        "recovery_install_limit": 1,
+        "recovery_reason": "Required telemetry validity gate failed: frameTailOverflow=true; frameMsP99 saturated at 127.875ms. No kernel profile completed; candidate remains unqualified.",
+        "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
         "status": "QUALIFICATION_FAILED_R4_RECOVERED",
-        "transaction_result": "evidence/cart2-r6-compositor-hoist-20261011/live-qualification/r4-recovery-after-tail-overflow-20261011/TRANSACTION_RESULT.json",
-        "recovery_reason": "Required telemetry validity gate failed: frameTailOverflow=true; frameMsP99 saturated at 127.875ms. No kernel profile completed; candidate remains unqualified."
-      }
+        "transaction_consumed": true,
+        "transaction_result": "evidence/cart2-r6-compositor-hoist-20261011/live-qualification/r4-recovery-after-tail-overflow-20261011/TRANSACTION_RESULT.json"
+      },
+      "reason": "Prior exact candidate R6 performance gate failed and R4 recovery completed; new user blanket authorization is bound to a distinct diagnostic artifact."
     },
     {
       "archived_at_utc": "2026-10-11T09:49:24.879043+00:00",
-      "reason": "The exact diagnostic and one R4 return completed; the transaction did not restore saved brightness 52. Preserve its consumed one-install/one-recovery record while completing only the already-authorized settings restore on exact R4.",
       "authorization": {
+        "attempt_number": 1,
         "authorization_id": "OWNER-20261011-COMPOSITOR-TIMING-DIAGNOSTIC-01",
-        "source_message_ref": "Direct user standing authorization in this chat: \u201cI authorize UNLIMITED install and anything else, so long as they don\u2019t send communication or cost money\u201d and \u201cThis and all future similar requests are blanket-approved \u2026 without extra cost or external communication.\u201d",
-        "candidate_release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
         "candidate_bin_sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
-        "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+        "candidate_install_limit": 1,
+        "candidate_release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
         "matrix_mac": "70:4b:ca:5b:34:5c",
+        "recovery_install_limit": 1,
+        "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
         "scope": [
           "One install of the exact compositor-timing diagnostic SHA only after its exact LIVE_APPROVED admission, capsule, prelive proof, and immediate fresh read-only preflight pass.",
           "Capture the R4 Matrix/AUX identity and current Matrix/AUX/Vibe settings; run the diagnostic at kernel 0 and Matrix brightness 44, including three tails-off samples and eight tails-on component samples with unchanged controls and saved audio-input context.",
@@ -3195,11 +3268,10 @@
           "Continue with offline cause analysis and frozen release qualification; this diagnostic does not qualify or accept Cart 2.0.",
           "No paid/remote builds, external communications, cloud deployment, Guest Mode, UV, router/AUX firmware or configuration change, threshold changes, retries, or reuse of the failed bbf9 candidate authorization."
         ],
-        "candidate_install_limit": 1,
-        "recovery_install_limit": 1,
-        "attempt_number": 1,
+        "source_message_ref": "Direct user standing authorization in this chat: \u201cI authorize UNLIMITED install and anything else, so long as they don\u2019t send communication or cost money\u201d and \u201cThis and all future similar requests are blanket-approved \u2026 without extra cost or external communication.\u201d",
         "transport": "SSH-verified exact artifact staging on Opal followed by one Opal-origin multipart request to Matrix WLED /update; no retry."
       },
+      "reason": "The exact diagnostic and one R4 return completed; the transaction did not restore saved brightness 52. Preserve its consumed one-install/one-recovery record while completing only the already-authorized settings restore on exact R4.",
       "transaction_result": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/attempt-01/TRANSACTION_RESULT.json"
     }
   ],
@@ -3481,6 +3553,228 @@
     "result": "PASS_R4_MATRIX_HEALTH_AUX_DDP_DIAGNOSTIC_IDLE",
     "sha256": "6d1a344d243be5c3a39cc1c152a502d333ca6611f22dc2ec4a7d0ec41119724f"
   },
+  "r4_owner_settings_restore_authorization": {
+    "attempt_started_at_utc": "2026-10-11T09:51:33.203390+00:00",
+    "authorization_consumed": true,
+    "authorization_id": "OWNER-20261011-COMPOSITOR-TIMING-DIAGNOSTIC-01",
+    "completed_at_utc": "2026-10-11T09:51:39.335066+00:00",
+    "current_settings": {
+      "auxBrightness": 245,
+      "matrixBrightness": 44,
+      "vibe": 2
+    },
+    "firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "firmware_writes_permitted": false,
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "one_settings_write_limit": 1,
+    "post_attempt_readback": {
+      "auxBrightness": 245,
+      "matrixBrightness": 52,
+      "persisted_hbnf_fields": [
+        "matrixBrightness",
+        "auxBrightness"
+      ],
+      "vibe": null
+    },
+    "post_attempt_readback_evidence": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/R4_POST_RESTORE_READONLY_CONFIRMATION.json",
+    "post_attempt_readback_evidence_sha256": "bfd0c885c4c4f2c50155639d6c5374bed92a447fac8a3cea0820f2e9380657d1",
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "result_path": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/R4_SETTINGS_RESTORE_RESULT.json",
+    "settings_writes_used": 1,
+    "source_message_ref": "Direct user standing authorization in this chat: \u201cI authorize UNLIMITED install and anything else, so long as they don\u2019t send communication or cost money\u201d and \u201cThis and all future similar requests are blanket-approved \u2026 without extra cost or external communication.\u201d",
+    "status": "MATRIX_AUX_RESTORED__R4_DOES_NOT_PERSIST_VIBE__NO_RETRY",
+    "target_settings": {
+      "auxBrightness": 245,
+      "matrixBrightness": 52,
+      "vibe": 2
+    }
+  },
+  "r6_audio_cache_successor": {
+    "artifact_drive_file_id": "1Ta0noTokPPxa8tBKsnfS83KIKbz2ZqS3",
+    "artifact_drive_size_bytes": 1497984,
+    "candidate_bytes": 1497984,
+    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+    "conditional_authority": {
+      "authorization_id": "OWNER-20261010-R6-AUDIO-CACHE-FULL-QUALIFICATION",
+      "candidate_attempt_started_unix": 1791626479.399928,
+      "candidate_attempts_used": 1,
+      "candidate_install_limit": 1,
+      "live_mutation_authorized": false,
+      "preflight_retry_reconciliation": {
+        "failure_class": "SINGLE_WORKER_PREFLIGHT_CONTENTION",
+        "firmware_changed": false,
+        "post_failure_preflight_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/preflight-after-caffeinate-fix-20261010/QUALIFICATION_PRELIVE_READONLY.json",
+        "post_failure_preflight_sha256": "545ecf096e3882c198c73d066ce7548bf43497c0dcb39333a1010c7ab108c605",
+        "profiles_completed": false,
+        "proof_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/QUALIFICATION_PREFLIGHT_RETRY_PROOF_SEPARATE_SLEEP_20261010.json",
+        "proof_sha256": "c9e790643cb3664daf35eaea5195fcb001a774399b39fc993c84d614889ac7f9",
+        "qualification_result_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-live-3d5a0fd-20261010/QUALIFICATION_CONTINUATION_RESULT.json",
+        "qualification_result_sha256": "8b4f97d2544eb8b6e807fea8c7d4627a1f5f5fca2d87a80f4b3607ca0ca9c51a",
+        "root_cause_evidence": {
+          "path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/QUALIFICATION_SEPARATE_CAFFEINATE_SLEEP_TEST.json",
+          "sha256": "7423da63f421049f41c049aea3efd45fb62aeb08a9436420737ffaa8eaf6aec6"
+        },
+        "setting_write_started": false
+      },
+      "recovery_attempts_used": 1,
+      "recovery_install_limit": 1,
+      "requires_fresh_preflight": true,
+      "requires_live_approved_admission": true,
+      "runtime_reconciliation_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json",
+      "runtime_reconciliation_sha256": "470992075259d5c4cc6e73e33ff4d51580f1f70d3ff9188743acc4b126ee2bbc",
+      "source_message_ref": "Current owner instruction in this task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks.",
+      "status": "QUALIFICATION_FAILED_R4_RECOVERED"
+    },
+    "correction": "Cachefix delta: hoist frame-invariant profileLane computations into preparePixelModulation(). The bounded int32 32x16 radial path and generic int64 fallback were already present in parent R6; radial arithmetic is not the cachefix delta. No feature removed.",
+    "host_preflight_blocker_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/HOST_PREFLIGHT_BLOCKER_RECONCILIATION.json",
+    "offline_evidence": {
+      "attribution_correction": "evidence/cart2-r6-audio-cache-20261010/R6_PERFORMANCE_ATTRIBUTION_CORRECTION.json",
+      "attribution_correction_sha256": "2fc6f2c009abe230a6f727b37b5277dd8e427e599a1b0d010388959e7578cbbe",
+      "drive_readback": "evidence/cart2-r6-audio-cache-20261010/R6_DRIVE_ARTIFACT_READBACK.json",
+      "drive_readback_sha256": "3480239122dcf69e750ae193eff47401740ff26352542626648a740874d66846",
+      "manifest": "evidence/cart2-r6-audio-cache-20261010/FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
+      "manifest_sha256": "3994860075064c43f16e98492ada92cc92afdf77ac2392f6beb53472752ccc76",
+      "offline_admission": "evidence/cart2-r6-audio-cache-20261010/R6_OFFLINE_COMPILED_ADMISSION.json",
+      "offline_admission_sha256": "996ea788f49c6cabb6fd3fc33239fb0a20d1abb09263660a57f8e1bdc3139b61",
+      "pixel_equivalence": "15,755,040 bit-exact transforms across 32x16 optimized, 31x15 and 8x8 generic fallback, and 1x1 degenerate dimensions",
+      "source_binding": "firmware/phase2/integration-r6-cachefix/SOURCE_BINDING.json",
+      "source_binding_sha256": "766f4031bdef496a0e454c059f0c78b202197a3f765833d32c48ad41c15a0364",
+      "target_build": "PASS pinned clean-room target; flash headroom 81,615 bytes; RAM headroom 215,200 bytes",
+      "targeted_tests": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_AUDIO_CACHE_OFFLINE_TESTS.json",
+      "targeted_tests_sha256": "434c933262654003e7eaaf6d5a7226493dd301c86e12743f24c58fbc887a463f",
+      "transaction_dryrun": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_TRANSACTION_DRYRUN.json",
+      "transaction_dryrun_sha256": "c6f641ceb4f8d35bdf0ed0b155229452b493b0d6b5955c58a6962c75dd8146f3"
+    },
+    "parent_release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
+    "parent_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
+    "preflight_retry_reconciliation": {
+      "failure_class": "SINGLE_WORKER_PREFLIGHT_CONTENTION",
+      "firmware_changed": false,
+      "post_failure_preflight_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/preflight-after-caffeinate-fix-20261010/QUALIFICATION_PRELIVE_READONLY.json",
+      "post_failure_preflight_sha256": "545ecf096e3882c198c73d066ce7548bf43497c0dcb39333a1010c7ab108c605",
+      "profiles_completed": false,
+      "proof_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/QUALIFICATION_PREFLIGHT_RETRY_PROOF_SEPARATE_SLEEP_20261010.json",
+      "proof_sha256": "c9e790643cb3664daf35eaea5195fcb001a774399b39fc993c84d614889ac7f9",
+      "qualification_result_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-live-3d5a0fd-20261010/QUALIFICATION_CONTINUATION_RESULT.json",
+      "qualification_result_sha256": "8b4f97d2544eb8b6e807fea8c7d4627a1f5f5fca2d87a80f4b3607ca0ca9c51a",
+      "root_cause_evidence": {
+        "path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/QUALIFICATION_SEPARATE_CAFFEINATE_SLEEP_TEST.json",
+        "sha256": "7423da63f421049f41c049aea3efd45fb62aeb08a9436420737ffaa8eaf6aec6"
+      },
+      "setting_write_started": false
+    },
+    "qualification_result": "evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-separate-sleep-20261010/QUALIFICATION_CONTINUATION_RESULT.json",
+    "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "root_cause_evidence": {
+      "classification": "R6 kernel-0 frozen performance failure is measured; audio stage timing is elapsed time, not CPU time, because FreeRTOS task runtime statistics are disabled. Source review: the 32x16 path already uses bounded int32 radial arithmetic, while the cachefix moves frame-invariant profile lane calculations out of per-pixel modulate(). Remaining performance root cause is not isolated; uptime, brightness, and sampling windows are not fully comparable.",
+      "source_attribution_correction": "evidence/cart2-r6-audio-cache-20261010/R6_PERFORMANCE_ATTRIBUTION_CORRECTION.json",
+      "source_attribution_correction_sha256": "2fc6f2c009abe230a6f727b37b5277dd8e427e599a1b0d010388959e7578cbbe",
+      "trace": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-03/FRAME_CONTEXT_TRACE.json"
+    },
+    "runtime_reconciliation_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json",
+    "runtime_reconciliation_sha256": "470992075259d5c4cc6e73e33ff4d51580f1f70d3ff9188743acc4b126ee2bbc",
+    "schema": "hbnf-r6-successor-candidate-state-v1",
+    "status": "QUALIFICATION_FAILED_R4_RECOVERED",
+    "transaction_result": "evidence/cart2-r6-audio-cache-20261010/live-qualification/TRANSACTION_RESULT.json"
+  },
+  "r6_compositor_timing_diagnostic_authorization": {
+    "artifact_size_bytes": 1499344,
+    "authorization_consumed": true,
+    "authorization_id": "OWNER-20261011-COMPOSITOR-TIMING-DIAGNOSTIC-01",
+    "authorization_source": "Direct user standing authorization in this chat: \u201cI authorize UNLIMITED install and anything else, so long as they don\u2019t send communication or cost money\u201d and \u201cThis and all future similar requests are blanket-approved \u2026 without extra cost or external communication.\u201d",
+    "candidate_release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
+    "candidate_sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
+    "closed_at_utc": "2026-10-11T09:44:58.859272+00:00",
+    "install_attempt_limit": 1,
+    "install_attempt_started_utc": "2026-10-11T09:42:30.059248+00:00",
+    "install_attempts_used": 1,
+    "live_mutation_authorized": false,
+    "mandatory_return_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "mandatory_return_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "r4_return_attempts_used": 1,
+    "recovery_attempt_limit": 1,
+    "recovery_attempts_used": 1,
+    "settings_restore_on_r4_required": true,
+    "status": "DIAGNOSTIC_CAPTURED__R4_CONFIRMED__OWNER_SETTINGS_RESTORE_PENDING",
+    "transaction_result": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/attempt-01/TRANSACTION_RESULT.json"
+  },
+  "r6_frame_context_diagnostic_authorization": {
+    "attempt_number": 3,
+    "authorization_consumed": true,
+    "authorization_id": "OWNER-20261010-R6-FRAME-CONTEXT-OPAL-ATTEMPT3-HOSTFIX",
+    "authorized_at_utc": "2026-10-10T08:37:02.409727+00:00",
+    "candidate_install_limit": 1,
+    "candidate_release_id": "hbnf-cart2-r6-frame-context-diagnostic-20261010",
+    "candidate_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
+    "candidate_size_bytes": 1511456,
+    "closed_at_utc": "2026-10-10T08:46:10.558856+00:00",
+    "control_binding_recorded": true,
+    "expected_installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "expected_installed_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "failure_classification_path": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_ATTEMPT3_FAILURE_CLASSIFICATION.json",
+    "failure_classification_sha256": "232ec819c64d203797e5d89fcd4f9a63a68db5033608306a1f968246f38a95da",
+    "install_attempt_started_utc": "2026-10-10T08:44:19.515713+00:00",
+    "install_attempts_used": 1,
+    "live_mutation_authorized": false,
+    "mandatory_return_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "mandatory_return_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "no_repeat_basis": "Current owner explicitly authorized the exact diagnostic and evidence-based continuation. This attempt reuses identical bytes but uses a source-corrected exact-identity waiter, normalized pinned-adapter response shapes, executable regression checks, a new control binding, and fresh per-attempt preflight.",
+    "prior_attempts": [
+      {
+        "authorization_id": "OWNER-20261010-R6-FRAME-CONTEXT-DIAGNOSTIC-EB1EF395",
+        "candidate_attempts_used": 1,
+        "candidate_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
+        "device_recovery_needed": false,
+        "evidence": "/private/tmp/cart2-opal-local-20261009/evidence/cart2-execution-reset-20261010/live-diagnostic/TRANSACTION_RESULT.json",
+        "result": "DIAGNOSTIC_NOT_CONFIRMED_INSTALLED__NO_RETRY",
+        "root_cause_classification": "MAC_ORIGIN_UPLOAD_TRANSPORT_FAILURE__NOT_FIRMWARE_FAILURE"
+      },
+      {
+        "attempt_number": 2,
+        "authorization_id": "OWNER-20261010-R6-FRAME-CONTEXT-OPAL-ATTEMPT2",
+        "candidate_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
+        "evidence": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_ATTEMPT2_HOST_FAILURE_AND_FIX.json",
+        "final_device_closure": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-02/FINAL_DEVICE_STATE_CLOSURE.json",
+        "r4_return_attempts_used": 1,
+        "result": "INCONCLUSIVE_HOST_HARNESS_DEFECT__EXACT_R4_VERIFIED",
+        "transaction_result": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-02/TRANSACTION_RESULT.json"
+      }
+    ],
+    "prior_failed_method": "Attempt 2 Opal upload returned HTTP 200, but exact candidate runtime was never proven; host identity expectation and flattened telemetry access were defective. Exact R4 and AUX were subsequently read-back verified.",
+    "r4_return_attempts_used": 1,
+    "r4_return_limit": 1,
+    "recovery_attempts_used": 1,
+    "recovery_install_limit": 1,
+    "schema": "hbnf-bounded-diagnostic-install-authorization-v1",
+    "scope": [
+      "one exact R6 frame-context diagnostic install using the proven Opal-origin path",
+      "require positive exact R6 build identity before starting capture",
+      "bounded kernel-0 capture with 8-second safety polls and unchanged catastrophic rules",
+      "preserve trace and all scheduled/missing-sample evidence",
+      "restore renderer snapshot",
+      "one exact R4 return and read-only identity/health/AUX DDP verification",
+      "no production acceptance, no firmware rebuild, no cloud/router/AUX firmware changes"
+    ],
+    "source_commit_for_candidate": "2219ade3db3e0c021b151fd1b3aec7d8360d4804; firmware artifact unchanged by host harness correction",
+    "source_message_ref": "Current owner message in this Codex task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; exact diagnostic SHA eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a and exact R4 SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
+    "status": "CATASTROPHIC_GATE_FAILED__EXACT_R4_RESTORED__AUX_DDP_HEALTHY__LIVE_CLOSED",
+    "transaction_result": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-03/TRANSACTION_RESULT.json",
+    "transport": "SSH-verified temporary artifact on Opal, then one Opal-origin multipart POST to Matrix WLED /update"
+  },
+  "r6_frame_context_diagnostic_previous_attempts": [
+    {
+      "authorization_id": "OWNER-20261010-R6-FRAME-CONTEXT-DIAGNOSTIC-EB1EF395",
+      "candidate_attempts_used": 1,
+      "candidate_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
+      "post_failure_verification": "/private/tmp/cart2-opal-local-20261009/evidence/cart2-execution-reset-20261010/live-diagnostic/MAC_TRANSFER_FAILURE_R4_VERIFICATION.json",
+      "post_failure_verification_sha256": "42a17d77729519754810993965ae706049ec9044484fc37b4de33ced6990d549",
+      "result": "DIAGNOSTIC_NOT_CONFIRMED_INSTALLED__NO_RETRY",
+      "transaction_result": "/private/tmp/cart2-opal-local-20261009/evidence/cart2-execution-reset-20261010/live-diagnostic/TRANSACTION_RESULT.json",
+      "transaction_result_sha256": "059267f0be9eac43a1871cbbf4002278f6ba9ab3682de969609ef5b7f6b5018b"
+    }
+  ],
   "r7_failure_gate": {
     "captured_at_utc": "2026-10-09T10:50:08.535089+00:00",
     "path": "evidence/cart2-r7-performance-repair-20261009/R7_KERNEL13_FROZEN_GATE_FAILURE.json",
@@ -3509,265 +3803,5 @@
     "status": "OFFLINE_DESIGN_ONLY__OVERHEAD_AND_IMPLEMENTATION_PROOF_REQUIRED"
   },
   "schema": "hbnf-control-state-v2",
-  "status": "R6_PERFORMANCE_FAILED__EXACT_R4_INSTALLED__SETTINGS_PARTIAL_NO_RETRY",
-  "live_mutation_authorization_reconciliation": {
-    "schema": "hbnf-live-authorization-state-reconciliation-v1",
-    "recorded_at_utc": "2026-10-10T06:34:15+00:00",
-    "reason": "Removed contradictory current-write authority from the consumed exact R6 transaction record; fail-closed global authority and execution cursor already said no live mutation.",
-    "candidate_release": "hbnf-cart2-phase2-offline-wow-r6-20261009",
-    "candidate_sha256": "0a4b9563c7debfb5a01e9d36aeb8aac2583e105303064de3db0466b7dd9d89d6",
-    "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "failure_receipt": {
-      "path": "evidence/cart2-r7-performance-repair-20261009/R6_CLOSED_TRANSACTION/R6_PERFORMANCE_FAILURE_CLASSIFICATION.json",
-      "sha256": "b2e14deeab3abbd907d4c063131a2edac937f0f97eb389e23dcb14658dbf5368"
-    },
-    "recovery_receipt": {
-      "path": "evidence/cart2-r7-performance-repair-20261009/R6_CLOSED_TRANSACTION/R4_RECOVERY_RUNTIME_VERIFICATION.json",
-      "sha256": "9e32bb667c48bd961406fe811da6835aff7f68672f092216cb0ad41bf5192550"
-    },
-    "live_mutation_authorized": false,
-    "historical_transaction_record": {
-      "path": "coordinated_r6_live_release_authorization.current_owner_authorization",
-      "status": "CONSUMED__R6_FAILED_FROZEN_PERFORMANCE_GATE__R4_RECOVERED",
-      "live_mutation_authorized": false
-    }
-  },
-  "r6_frame_context_diagnostic_authorization": {
-    "schema": "hbnf-bounded-diagnostic-install-authorization-v1",
-    "status": "CATASTROPHIC_GATE_FAILED__EXACT_R4_RESTORED__AUX_DDP_HEALTHY__LIVE_CLOSED",
-    "candidate_release_id": "hbnf-cart2-r6-frame-context-diagnostic-20261010",
-    "candidate_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
-    "candidate_size_bytes": 1511456,
-    "authorization_consumed": true,
-    "live_mutation_authorized": false,
-    "mandatory_return_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-    "mandatory_return_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "attempt_number": 3,
-    "authorization_id": "OWNER-20261010-R6-FRAME-CONTEXT-OPAL-ATTEMPT3-HOSTFIX",
-    "authorized_at_utc": "2026-10-10T08:37:02.409727+00:00",
-    "candidate_install_limit": 1,
-    "control_binding_recorded": true,
-    "expected_installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-    "expected_installed_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "install_attempts_used": 1,
-    "matrix_mac": "70:4b:ca:5b:34:5c",
-    "no_repeat_basis": "Current owner explicitly authorized the exact diagnostic and evidence-based continuation. This attempt reuses identical bytes but uses a source-corrected exact-identity waiter, normalized pinned-adapter response shapes, executable regression checks, a new control binding, and fresh per-attempt preflight.",
-    "prior_attempts": [
-      {
-        "authorization_id": "OWNER-20261010-R6-FRAME-CONTEXT-DIAGNOSTIC-EB1EF395",
-        "candidate_attempts_used": 1,
-        "candidate_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
-        "device_recovery_needed": false,
-        "evidence": "/private/tmp/cart2-opal-local-20261009/evidence/cart2-execution-reset-20261010/live-diagnostic/TRANSACTION_RESULT.json",
-        "result": "DIAGNOSTIC_NOT_CONFIRMED_INSTALLED__NO_RETRY",
-        "root_cause_classification": "MAC_ORIGIN_UPLOAD_TRANSPORT_FAILURE__NOT_FIRMWARE_FAILURE"
-      },
-      {
-        "attempt_number": 2,
-        "authorization_id": "OWNER-20261010-R6-FRAME-CONTEXT-OPAL-ATTEMPT2",
-        "candidate_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
-        "evidence": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_ATTEMPT2_HOST_FAILURE_AND_FIX.json",
-        "final_device_closure": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-02/FINAL_DEVICE_STATE_CLOSURE.json",
-        "r4_return_attempts_used": 1,
-        "result": "INCONCLUSIVE_HOST_HARNESS_DEFECT__EXACT_R4_VERIFIED",
-        "transaction_result": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-02/TRANSACTION_RESULT.json"
-      }
-    ],
-    "prior_failed_method": "Attempt 2 Opal upload returned HTTP 200, but exact candidate runtime was never proven; host identity expectation and flattened telemetry access were defective. Exact R4 and AUX were subsequently read-back verified.",
-    "r4_return_limit": 1,
-    "recovery_attempts_used": 1,
-    "scope": [
-      "one exact R6 frame-context diagnostic install using the proven Opal-origin path",
-      "require positive exact R6 build identity before starting capture",
-      "bounded kernel-0 capture with 8-second safety polls and unchanged catastrophic rules",
-      "preserve trace and all scheduled/missing-sample evidence",
-      "restore renderer snapshot",
-      "one exact R4 return and read-only identity/health/AUX DDP verification",
-      "no production acceptance, no firmware rebuild, no cloud/router/AUX firmware changes"
-    ],
-    "source_message_ref": "Current owner message in this Codex task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; exact diagnostic SHA eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a and exact R4 SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
-    "transport": "SSH-verified temporary artifact on Opal, then one Opal-origin multipart POST to Matrix WLED /update",
-    "r4_return_attempts_used": 1,
-    "recovery_install_limit": 1,
-    "source_commit_for_candidate": "2219ade3db3e0c021b151fd1b3aec7d8360d4804; firmware artifact unchanged by host harness correction",
-    "install_attempt_started_utc": "2026-10-10T08:44:19.515713+00:00",
-    "closed_at_utc": "2026-10-10T08:46:10.558856+00:00",
-    "transaction_result": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-03/TRANSACTION_RESULT.json",
-    "failure_classification_path": "evidence/cart2-execution-reset-20261010/R6_DIAGNOSTIC_ATTEMPT3_FAILURE_CLASSIFICATION.json",
-    "failure_classification_sha256": "232ec819c64d203797e5d89fcd4f9a63a68db5033608306a1f968246f38a95da"
-  },
-  "live_authorization_binding": {
-    "authorization_id": "OWNER-20261011-CART2-NEUTRAL-AUDIO-HUE-RADIAL-LAZY-QUALIFICATION-01",
-    "candidate_bin_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
-    "candidate_install_limit": 1,
-    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
-    "matrix_mac": "70:4b:ca:5b:34:5c",
-    "recovery_install_limit": 1,
-    "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "scope": [
-      "Install the exact candidate SHA once on Matrix 70:4b:ca:5b:34:5c using the proven Opal-origin local WLED /update path after a fresh passing preflight.",
-      "If identity, safety, frozen performance, or AUX synchronization gates fail, use at most one exact SHA-verified Foundation R4 recovery on the same Matrix and verify restored identity and health.",
-      "On a passing candidate, run the unchanged 28-kernel sweep, combined feature checks, and one uninterrupted 5400-second soak; restore renderer and owner settings under the existing transaction.",
-      "No paid or remote build, external communication, cloud deployment, AUX/Opal/router firmware or settings change, Guest Mode, UV, or threshold/scope change."
-    ],
-    "source_message_ref": "Direct user authorization in this chat: \u201cI authorize UNLIMITED install and anything else, so long as they don\u2019t send communication or cost money\u201d and \u201cThis and all future similar requests are blanket-approved \u2026 without extra cost or external communication.\u201d"
-  },
-  "r6_frame_context_diagnostic_previous_attempts": [
-    {
-      "authorization_id": "OWNER-20261010-R6-FRAME-CONTEXT-DIAGNOSTIC-EB1EF395",
-      "candidate_attempts_used": 1,
-      "candidate_sha256": "eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a",
-      "post_failure_verification": "/private/tmp/cart2-opal-local-20261009/evidence/cart2-execution-reset-20261010/live-diagnostic/MAC_TRANSFER_FAILURE_R4_VERIFICATION.json",
-      "post_failure_verification_sha256": "42a17d77729519754810993965ae706049ec9044484fc37b4de33ced6990d549",
-      "result": "DIAGNOSTIC_NOT_CONFIRMED_INSTALLED__NO_RETRY",
-      "transaction_result": "/private/tmp/cart2-opal-local-20261009/evidence/cart2-execution-reset-20261010/live-diagnostic/TRANSACTION_RESULT.json",
-      "transaction_result_sha256": "059267f0be9eac43a1871cbbf4002278f6ba9ab3682de969609ef5b7f6b5018b"
-    }
-  ],
-  "r6_audio_cache_successor": {
-    "schema": "hbnf-r6-successor-candidate-state-v1",
-    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
-    "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
-    "candidate_bytes": 1497984,
-    "parent_release_id": "hbnf-cart2-phase2-offline-wow-r6-integrated-20261009",
-    "parent_sha256": "340fe93b2eae35518fc588fa194c097b1d44d34050d54933fd97e552762becfb",
-    "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "root_cause_evidence": {
-      "trace": "evidence/cart2-execution-reset-20261010/live-diagnostic/attempt-03/FRAME_CONTEXT_TRACE.json",
-      "classification": "R6 kernel-0 frozen performance failure is measured; audio stage timing is elapsed time, not CPU time, because FreeRTOS task runtime statistics are disabled. Source review: the 32x16 path already uses bounded int32 radial arithmetic, while the cachefix moves frame-invariant profile lane calculations out of per-pixel modulate(). Remaining performance root cause is not isolated; uptime, brightness, and sampling windows are not fully comparable.",
-      "source_attribution_correction": "evidence/cart2-r6-audio-cache-20261010/R6_PERFORMANCE_ATTRIBUTION_CORRECTION.json",
-      "source_attribution_correction_sha256": "2fc6f2c009abe230a6f727b37b5277dd8e427e599a1b0d010388959e7578cbbe"
-    },
-    "correction": "Cachefix delta: hoist frame-invariant profileLane computations into preparePixelModulation(). The bounded int32 32x16 radial path and generic int64 fallback were already present in parent R6; radial arithmetic is not the cachefix delta. No feature removed.",
-    "offline_evidence": {
-      "manifest": "evidence/cart2-r6-audio-cache-20261010/FINAL_OFFLINE_CANDIDATE_MANIFEST.json",
-      "manifest_sha256": "3994860075064c43f16e98492ada92cc92afdf77ac2392f6beb53472752ccc76",
-      "source_binding": "firmware/phase2/integration-r6-cachefix/SOURCE_BINDING.json",
-      "source_binding_sha256": "766f4031bdef496a0e454c059f0c78b202197a3f765833d32c48ad41c15a0364",
-      "targeted_tests": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_AUDIO_CACHE_OFFLINE_TESTS.json",
-      "targeted_tests_sha256": "434c933262654003e7eaaf6d5a7226493dd301c86e12743f24c58fbc887a463f",
-      "pixel_equivalence": "15,755,040 bit-exact transforms across 32x16 optimized, 31x15 and 8x8 generic fallback, and 1x1 degenerate dimensions",
-      "target_build": "PASS pinned clean-room target; flash headroom 81,615 bytes; RAM headroom 215,200 bytes",
-      "transaction_dryrun": "evidence/cart2-r6-audio-cache-20261010/offline-dryrun/R6_TRANSACTION_DRYRUN.json",
-      "transaction_dryrun_sha256": "c6f641ceb4f8d35bdf0ed0b155229452b493b0d6b5955c58a6962c75dd8146f3",
-      "drive_readback": "evidence/cart2-r6-audio-cache-20261010/R6_DRIVE_ARTIFACT_READBACK.json",
-      "drive_readback_sha256": "3480239122dcf69e750ae193eff47401740ff26352542626648a740874d66846",
-      "offline_admission": "evidence/cart2-r6-audio-cache-20261010/R6_OFFLINE_COMPILED_ADMISSION.json",
-      "offline_admission_sha256": "996ea788f49c6cabb6fd3fc33239fb0a20d1abb09263660a57f8e1bdc3139b61",
-      "attribution_correction": "evidence/cart2-r6-audio-cache-20261010/R6_PERFORMANCE_ATTRIBUTION_CORRECTION.json",
-      "attribution_correction_sha256": "2fc6f2c009abe230a6f727b37b5277dd8e427e599a1b0d010388959e7578cbbe"
-    },
-    "conditional_authority": {
-      "source_message_ref": "Current owner instruction in this task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks.",
-      "status": "QUALIFICATION_FAILED_R4_RECOVERED",
-      "candidate_install_limit": 1,
-      "recovery_install_limit": 1,
-      "requires_live_approved_admission": true,
-      "requires_fresh_preflight": true,
-      "live_mutation_authorized": false,
-      "authorization_id": "OWNER-20261010-R6-AUDIO-CACHE-FULL-QUALIFICATION",
-      "candidate_attempts_used": 1,
-      "recovery_attempts_used": 1,
-      "candidate_attempt_started_unix": 1791626479.399928,
-      "runtime_reconciliation_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json",
-      "runtime_reconciliation_sha256": "470992075259d5c4cc6e73e33ff4d51580f1f70d3ff9188743acc4b126ee2bbc",
-      "preflight_retry_reconciliation": {
-        "failure_class": "SINGLE_WORKER_PREFLIGHT_CONTENTION",
-        "firmware_changed": false,
-        "post_failure_preflight_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/preflight-after-caffeinate-fix-20261010/QUALIFICATION_PRELIVE_READONLY.json",
-        "post_failure_preflight_sha256": "545ecf096e3882c198c73d066ce7548bf43497c0dcb39333a1010c7ab108c605",
-        "profiles_completed": false,
-        "proof_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/QUALIFICATION_PREFLIGHT_RETRY_PROOF_SEPARATE_SLEEP_20261010.json",
-        "proof_sha256": "c9e790643cb3664daf35eaea5195fcb001a774399b39fc993c84d614889ac7f9",
-        "qualification_result_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-live-3d5a0fd-20261010/QUALIFICATION_CONTINUATION_RESULT.json",
-        "qualification_result_sha256": "8b4f97d2544eb8b6e807fea8c7d4627a1f5f5fca2d87a80f4b3607ca0ca9c51a",
-        "root_cause_evidence": {
-          "path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/QUALIFICATION_SEPARATE_CAFFEINATE_SLEEP_TEST.json",
-          "sha256": "7423da63f421049f41c049aea3efd45fb62aeb08a9436420737ffaa8eaf6aec6"
-        },
-        "setting_write_started": false
-      }
-    },
-    "status": "QUALIFICATION_FAILED_R4_RECOVERED",
-    "artifact_drive_file_id": "1Ta0noTokPPxa8tBKsnfS83KIKbz2ZqS3",
-    "artifact_drive_size_bytes": 1497984,
-    "transaction_result": "evidence/cart2-r6-audio-cache-20261010/live-qualification/TRANSACTION_RESULT.json",
-    "host_preflight_blocker_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/HOST_PREFLIGHT_BLOCKER_RECONCILIATION.json",
-    "runtime_reconciliation_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json",
-    "runtime_reconciliation_sha256": "470992075259d5c4cc6e73e33ff4d51580f1f70d3ff9188743acc4b126ee2bbc",
-    "qualification_result": "evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-separate-sleep-20261010/QUALIFICATION_CONTINUATION_RESULT.json",
-    "preflight_retry_reconciliation": {
-      "failure_class": "SINGLE_WORKER_PREFLIGHT_CONTENTION",
-      "firmware_changed": false,
-      "post_failure_preflight_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/preflight-after-caffeinate-fix-20261010/QUALIFICATION_PRELIVE_READONLY.json",
-      "post_failure_preflight_sha256": "545ecf096e3882c198c73d066ce7548bf43497c0dcb39333a1010c7ab108c605",
-      "profiles_completed": false,
-      "proof_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/QUALIFICATION_PREFLIGHT_RETRY_PROOF_SEPARATE_SLEEP_20261010.json",
-      "proof_sha256": "c9e790643cb3664daf35eaea5195fcb001a774399b39fc993c84d614889ac7f9",
-      "qualification_result_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-live-3d5a0fd-20261010/QUALIFICATION_CONTINUATION_RESULT.json",
-      "qualification_result_sha256": "8b4f97d2544eb8b6e807fea8c7d4627a1f5f5fca2d87a80f4b3607ca0ca9c51a",
-      "root_cause_evidence": {
-        "path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/QUALIFICATION_SEPARATE_CAFFEINATE_SLEEP_TEST.json",
-        "sha256": "7423da63f421049f41c049aea3efd45fb62aeb08a9436420737ffaa8eaf6aec6"
-      },
-      "setting_write_started": false
-    }
-  },
-  "r6_compositor_timing_diagnostic_authorization": {
-    "candidate_release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
-    "candidate_sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
-    "artifact_size_bytes": 1499344,
-    "mandatory_return_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-    "mandatory_return_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "authorization_id": "OWNER-20261011-COMPOSITOR-TIMING-DIAGNOSTIC-01",
-    "authorization_source": "Direct user standing authorization in this chat: \u201cI authorize UNLIMITED install and anything else, so long as they don\u2019t send communication or cost money\u201d and \u201cThis and all future similar requests are blanket-approved \u2026 without extra cost or external communication.\u201d",
-    "authorization_consumed": true,
-    "install_attempts_used": 1,
-    "install_attempt_limit": 1,
-    "recovery_attempts_used": 1,
-    "recovery_attempt_limit": 1,
-    "status": "DIAGNOSTIC_CAPTURED__R4_CONFIRMED__OWNER_SETTINGS_RESTORE_PENDING",
-    "live_mutation_authorized": false,
-    "install_attempt_started_utc": "2026-10-11T09:42:30.059248+00:00",
-    "closed_at_utc": "2026-10-11T09:44:58.859272+00:00",
-    "transaction_result": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/attempt-01/TRANSACTION_RESULT.json",
-    "r4_return_attempts_used": 1,
-    "settings_restore_on_r4_required": true
-  },
-  "r4_owner_settings_restore_authorization": {
-    "authorization_id": "OWNER-20261011-COMPOSITOR-TIMING-DIAGNOSTIC-01",
-    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-    "firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "matrix_mac": "70:4b:ca:5b:34:5c",
-    "target_settings": {
-      "matrixBrightness": 52,
-      "auxBrightness": 245,
-      "vibe": 2
-    },
-    "current_settings": {
-      "matrixBrightness": 44,
-      "auxBrightness": 245,
-      "vibe": 2
-    },
-    "one_settings_write_limit": 1,
-    "settings_writes_used": 1,
-    "firmware_writes_permitted": false,
-    "authorization_consumed": true,
-    "status": "MATRIX_AUX_RESTORED__R4_DOES_NOT_PERSIST_VIBE__NO_RETRY",
-    "source_message_ref": "Direct user standing authorization in this chat: \u201cI authorize UNLIMITED install and anything else, so long as they don\u2019t send communication or cost money\u201d and \u201cThis and all future similar requests are blanket-approved \u2026 without extra cost or external communication.\u201d",
-    "attempt_started_at_utc": "2026-10-11T09:51:33.203390+00:00",
-    "completed_at_utc": "2026-10-11T09:51:39.335066+00:00",
-    "result_path": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/R4_SETTINGS_RESTORE_RESULT.json",
-    "post_attempt_readback": {
-      "auxBrightness": 245,
-      "matrixBrightness": 52,
-      "persisted_hbnf_fields": [
-        "matrixBrightness",
-        "auxBrightness"
-      ],
-      "vibe": null
-    },
-    "post_attempt_readback_evidence": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/R4_POST_RESTORE_READONLY_CONFIRMATION.json",
-    "post_attempt_readback_evidence_sha256": "bfd0c885c4c4f2c50155639d6c5374bed92a447fac8a3cea0820f2e9380657d1"
-  }
+  "status": "CANDIDATE_INSTALLED_QUALIFICATION_PENDING"
 }

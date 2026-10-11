@@ -1,0 +1,62 @@
+{
+  "schema": "cart2-current-matrix-readonly-snapshot-v1",
+  "captured_at_utc": "2026-10-11T12:35:44.700859+00:00",
+  "read_only": true,
+  "device_mutations": 0,
+  "matrix": {
+    "http_status": {
+      "matrix_info": 200,
+      "matrix_build": 200,
+      "matrix_state": 200,
+      "matrix_config": 200
+    },
+    "identity": {
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "wled": "16.0.1",
+      "release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+      "candidate": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+      "build_mac": "70:4b:ca:5b:34:5c",
+      "uptime_seconds": 336,
+      "fps": 25,
+      "on": true
+    },
+    "hbnf": {
+      "candidate": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+      "matrixBrightness": 52,
+      "auxBrightness": 245,
+      "vibe": 0,
+      "packet20DiagnosticEnabled": false,
+      "foundationTelemetryEnabled": false
+    },
+    "vibeFieldPresentRuntime": true,
+    "persistedHbnf": {
+      "matrixBrightness": 52,
+      "auxBrightness": 245
+    }
+  },
+  "aux": {
+    "http_status": {
+      "info": 200,
+      "state": 200
+    },
+    "ip": "192.168.77.11",
+    "mac": "8c94df55c34c",
+    "wled": "16.0.1",
+    "live": true,
+    "mode": "DDP",
+    "source": "192.168.77.10",
+    "led_count": 22,
+    "on": true,
+    "lor": 0
+  },
+  "response_sha256": {
+    "matrix_info": "8b7f303b2a106c753f29857c88be77ba9b969744e37f7b63e3f72338b6d21075",
+    "matrix_build": "63b4f88b1cb32639fa25f9257a82ef603df0f76c3636930faffcaed340d6e4b0",
+    "matrix_state": "fe875ebea552a692afa8d95a092f33ecffac63fb214a61b7d1b9a2502595e97a",
+    "matrix_config": "01b38da0f3f0d65af134fb06f100adf2bd4870cf3a71c4ab6d3c146993f80980",
+    "aux_info": "2041caaa28c8691256fccc3fd8dec0bae18e962823ccc7fbaca98a067c07f9ca",
+    "aux_state": "4763d506652c43be5a35b00529f17993fe3742d4efb53343a3fade323be441a6"
+  },
+  "scope_limit": "Reported Matrix/AUX state only; does not establish physical LED output or acceptance."
+}

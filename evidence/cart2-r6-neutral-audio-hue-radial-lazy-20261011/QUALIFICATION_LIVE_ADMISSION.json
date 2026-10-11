@@ -1,0 +1,151 @@
+{
+  "checks": {
+    "all_historical_host_failures_replayed": {
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/OFFLINE_HOST_QUALIFICATION_20261011.json",
+      "pass": true,
+      "sha256": "e226c384da3177e402bb8c22bcee8e81f64a67ef6f0d9b89f082a036b5b76f7b"
+    },
+    "committed_feature_scope_preserved": {
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/OFFLINE_INTEGRATED_CANDIDATE_MANIFEST.json",
+      "pass": true,
+      "sha256": "34b967d28216e2d3eb5a2414687e1caa5956909cdda8d9aed99542c8104d2a58"
+    },
+    "compiled_embedded_candidate_id_and_sha": {
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/BUILD_RECEIPT.json",
+      "pass": true,
+      "sha256": "15008be3d119d7a34ab35a497bbaf49cdb35ccf9b5a65f7e8467f169bd5fb7e6"
+    },
+    "consumed_exact_candidate_install_receipt": {
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/TRANSACTION_RESULT.json",
+      "pass": true,
+      "sha256": "1bac1c6d906bd835a9a1fcdacce1294a4f5a4ef61a1956e4b72a9be0fcf1bdff"
+    },
+    "device_and_source_authority_reconciled": {
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/OFFLINE_AUTHORITY_RECONCILIATION.json",
+      "pass": true,
+      "sha256": "09a15a8831faa9a0d7987e523ce852f0a8d4b5521de2a3220cd845e20f055f96"
+    },
+    "durable_artifact_promoted_and_readback_verified": {
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/DRIVE_PROMOTION_READBACK.json",
+      "pass": true,
+      "sha256": "430c253d0575d139eebc92d8f8efc24b47e7abad9b48c3c775239a86b91cd0d1"
+    },
+    "entire_release_transaction_dryrun": {
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/SUCCESSOR_TRANSACTION_DRYRUN.json",
+      "pass": true,
+      "sha256": "77e29d04de5a0767b2f65adbc78f16abcf5ee2a4fb734d6635d5a8668d0b9f04"
+    },
+    "exact_owner_authorization_binding": {
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/EXACT_OWNER_AUTHORIZATION_BINDING.json",
+      "pass": true,
+      "sha256": "cf11220f487a3c21dd883fde4e061391ee321d7638c8c86c0681cbb3e52e7d61"
+    },
+    "exact_recovery_bytes_available": {
+      "evidence_file": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "pass": true,
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    },
+    "exact_source_dependency_generated_input_closure": {
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/SUCCESSOR_SOURCE_BINDING.json",
+      "pass": true,
+      "sha256": "349a7706c29537488f80e86f1870cdc3d664ec32f4973abe25569d85f89bce00"
+    },
+    "flash_and_ram_headroom": {
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/BUILD_RECEIPT.json",
+      "pass": true,
+      "sha256": "15008be3d119d7a34ab35a497bbaf49cdb35ccf9b5a65f7e8467f169bd5fb7e6"
+    },
+    "fresh_installed_candidate_runtime_identity": {
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-02/QUALIFICATION_PRELIVE_READONLY.json",
+      "pass": true,
+      "sha256": "b57257bdfac3f6b5666b10565cad95933fafd8db1b493bd661225a9751614c9a"
+    },
+    "frozen_performance_soak_and_restore_procedure": {
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/OFFLINE_FROZEN_QUALIFICATION_PROCEDURE.json",
+      "pass": true,
+      "sha256": "076b7008c7fe7d088bbdebd9c9afde669d68455b636291004319f489b72bc394"
+    },
+    "fully_local_pinned_build_toolchain": {
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/BUILD_RECEIPT.json",
+      "pass": true,
+      "sha256": "15008be3d119d7a34ab35a497bbaf49cdb35ccf9b5a65f7e8467f169bd5fb7e6"
+    },
+    "known_good_compiler_entry_smoke": {
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/BUILD.log",
+      "pass": true,
+      "sha256": "ec0601072b9a232a81d2e0bd581b57c1b0104c08a6ed1552bc9d273551d21cbd"
+    },
+    "launcher_rejects_invalid_manifest_before_device_access": {
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/LIVE_ENTRYPOINT_NEGATIVE_PROOF.json",
+      "pass": true,
+      "sha256": "29a51dc92f923f55ecc43b03372a50a3ee3136990f71343a457faec0ba30096c"
+    },
+    "matched_tails_off_test_plan": {
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/OFFLINE_FROZEN_QUALIFICATION_PROCEDURE.json",
+      "pass": true,
+      "sha256": "076b7008c7fe7d088bbdebd9c9afde669d68455b636291004319f489b72bc394"
+    },
+    "preflight_read_only_hardware_state_and_identity": {
+      "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-02/QUALIFICATION_PRELIVE_READONLY.json",
+      "pass": true,
+      "sha256": "b57257bdfac3f6b5666b10565cad95933fafd8db1b493bd661225a9751614c9a"
+    },
+    "rollback_artifact_hash_verified": {
+      "evidence_file": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "pass": true,
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    }
+  },
+  "classification": "EXACT_INSTALLED_CANDIDATE_QUALIFICATION_ONLY__ONE_R4_RECOVERY_REMAINS__FROZEN_QUALIFICATION",
+  "fresh_owner_authorization": {
+    "authorization_id": "OWNER-20261011-CART2-NEUTRAL-AUDIO-HUE-RADIAL-LAZY-QUALIFICATION-01",
+    "candidate_bin_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+    "candidate_install_limit": 1,
+    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "recovery_install_limit": 1,
+    "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "scope": [
+      "Install the exact candidate SHA once on Matrix 70:4b:ca:5b:34:5c using the proven Opal-origin local WLED /update path after a fresh passing preflight.",
+      "If identity, safety, frozen performance, or AUX synchronization gates fail, use at most one exact SHA-verified Foundation R4 recovery on the same Matrix and verify restored identity and health.",
+      "On a passing candidate, run the unchanged 28-kernel sweep, combined feature checks, and one uninterrupted 5400-second soak; restore renderer and owner settings under the existing transaction.",
+      "No paid or remote build, external communication, cloud deployment, AUX/Opal/router firmware or settings change, Guest Mode, UV, or threshold/scope change."
+    ],
+    "source_message_ref": "Direct user authorization in this chat: \u201cI authorize UNLIMITED install and anything else, so long as they don\u2019t send communication or cost money\u201d and \u201cThis and all future similar requests are blanket-approved \u2026 without extra cost or external communication.\u201d"
+  },
+  "identities": {
+    "candidate_bin_path": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011.bin",
+    "candidate_bin_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+    "candidate_bin_size_bytes": 1498832,
+    "candidate_drive_file_id": "1Xl0anIREdAaugHDq2b_IkyKgvVKWH0HJ",
+    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+    "expected_installed_bin_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+    "expected_installed_release": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "rollback_bin_path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "rollback_bin_size_bytes": 1489008,
+    "source_commit": "7645dae3806c1e352a1063ac22d1482ddb5713ff"
+  },
+  "limits": {
+    "candidate_install_attempts_used": 1,
+    "candidate_install_limit": 1,
+    "candidate_install_permitted": false,
+    "fresh_installed_candidate_readonly_preflight": true,
+    "live_mutation_authorized": true,
+    "operation_scope": "QUALIFICATION_ONLY",
+    "recovery_attempts_used": 0,
+    "recovery_install_limit": 1
+  },
+  "not_established": [
+    "target performance",
+    "28-kernel runtime sweep",
+    "combined-feature live qualification",
+    "90-minute soak",
+    "physical Matrix/AUX acceptance",
+    "owner acceptance"
+  ],
+  "outcome": "PASS",
+  "schema": "hbnf-cart2-release-admission-v1",
+  "stage": "LIVE_QUALIFICATION"
+}

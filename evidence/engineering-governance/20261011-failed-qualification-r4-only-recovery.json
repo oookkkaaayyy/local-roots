@@ -1,0 +1,32 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "CART2_FAILED_QUALIFICATION_R4_ONLY_RECOVERY_20261011",
+  "summary": "Extend the existing Phase 2 transaction and control entrypoints with an R4-only continuation when a complete frozen 28-kernel sweep fails but cleanup closes the live gate before the already-authorized R4 recovery can run.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Reuse config/HBNF_CONTROL_MODEL.json, the existing exact live-authorization binding, phase2-live-qualification capsule, transaction runner, Opal-origin /update recovery path, and one-use recovery counter. No lifecycle states, acceptance thresholds, product scope, or transport are added.",
+      "affected_subsystem": "scripts/hbnf_control.py recovery rearm entrypoint; scripts/hbnf_r6_audio_cache_live_transaction.py read-only post-failure preflight and recovery-only runner; focused negative tests.",
+      "rollback_reference": "Revert this host-only control and runner change. It changes no firmware source or binary and performs no cloud or paid operation. The exact recovery remains Foundation R4 SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
+      "evidence_sources": [
+        "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/DIAGNOSTIC_COMPLETE_RESULT.json: all 28 kernels completed; frozen performance comparisons failed; soak skipped",
+        "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/RESTORE_RECEIPT.json: renderer snapshot restoration passed",
+        "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/EXACT_OWNER_AUTHORIZATION_BINDING.json: one exact R4 recovery is authorized on a frozen safety/performance/AUX failure",
+        "https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/ota.html",
+        "https://csrc.nist.gov/pubs/sp/800/218/final"
+      ],
+      "tests": [
+        "tests/test_failed_qualification_r4_recovery.py: the control path rearms only when exact complete-failure, rollback, owner-binding, and fresh preflight evidence match; stale or mutated evidence leaves control state unchanged",
+        "tests/test_r6_failed_qualification_recovery_runner.py: the supported recovery runner rejects stale read-only proof before a settings write or R4 transfer",
+        "tests/test_r6_audio_cache_transaction_dryrun.py: existing transaction rehearsal confirms one-use exact recovery consumption and no retry"
+      ]
+    }
+  }
+}

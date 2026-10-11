@@ -1,0 +1,39 @@
+{
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+  "candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+  "checks": [
+    {
+      "command": "python3 tests/test_r6_qualification_brightness_transaction.py",
+      "name": "one-write migration and restored-level readback at both frozen brightness levels; candidate Vibe preserved",
+      "status": "PASS",
+      "test_source": "tests/test_r6_qualification_brightness_transaction.py",
+      "test_source_sha256": "20fcf865cc6773af68c1a77e005ee4364387836020360c8acfddf045c5b1b0bf"
+    },
+    {
+      "command": "python3 tests/test_hbnf_installed_qualification_rearm.py",
+      "name": "rearm rejects stale or mismatched evidence and only authorizes exact brightness44 recovery after consumed setup failure",
+      "status": "PASS",
+      "test_source": "tests/test_hbnf_installed_qualification_rearm.py",
+      "test_source_sha256": "0e662fd52ea8457509915b2623518403a36ccdaec4e14ce480e522969b0d20dd"
+    },
+    {
+      "command": "python3 tests/test_platform_candidate_reconciliation.py",
+      "name": "platform recognizes continuation only with hash-bound exact consumed install receipt and current device evidence",
+      "status": "PASS",
+      "test_source": "tests/test_platform_candidate_reconciliation.py",
+      "test_source_sha256": "787fc9c1d43a205802103e00d570e4b14fb355ef8e87f9a48c86a517442e45cd"
+    }
+  ],
+  "fresh_readonly_preflight": {
+    "brightness": 44,
+    "device_mutations": 0,
+    "path": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-05/QUALIFICATION_PRELIVE_READONLY.json",
+    "sha256": "e28ae4b3fadfd2976862181a74ec3096f3691fec35559c61a7f2f2b302c31575"
+  },
+  "full_required_release_regressions": "All nine repository-required control/release tests passed; platform doctor passed.",
+  "limits": [
+    "This does not establish firmware performance or complete the 28-kernel sweep, combined-feature gate, soak, physical synchronization, or owner acceptance."
+  ],
+  "schema": "hbnf-qualification-continuation-offline-evidence-v1",
+  "scope": "Host-only evidence for interrupted brightness recovery and exact installed-candidate qualification continuation; no device mutation."
+}

@@ -1,0 +1,9 @@
+{
+  "kernel_index": 0,
+  "kernel_name": "Complex_Kaleido_3",
+  "qualification_eligible": false,
+  "sample_count": 26,
+  "sample_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-06/sweep/00_Complex_Kaleido_3.jsonl",
+  "saturated_sample_count": 25,
+  "status": "SATURATED_TELEMETRY_DIAGNOSTIC_ONLY"
+}

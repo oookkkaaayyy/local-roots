@@ -1,0 +1,131 @@
+{
+  "approved_for_mutation": true,
+  "authorization_id": "OWNER-20261011-CART2-NEUTRAL-AUDIO-HUE-RADIAL-LAZY-QUALIFICATION-01",
+  "capsule_sha256": "73cd314662648378ad754b31570410c000bf3aac0d1d7ccd30d5d564c0e075fc",
+  "consumer_contract": {
+    "consumer": "Matrix WLED 16.0.1 /update via Opal-origin multipart upload; exact R4 release ledger and local recovery bytes verified.",
+    "evidence": [
+      "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/FRESH_PRELIVE_READONLY.json",
+      "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/SUCCESSOR_TRANSACTION_DRYRUN.json",
+      "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-05/QUALIFICATION_CONTINUATION_OFFLINE_EVIDENCE.json"
+    ],
+    "verified": true
+  },
+  "pre_mutation_state": {
+    "primary_control_state": "live_mutation_authorized=true; candidate_attempts_used=1; candidate_install_permitted=false; recovery_attempts_used=0",
+    "qualification_recovery_subscope": "RESTORE_INTERRUPTED_BRIGHTNESS_THEN_QUALIFY",
+    "read_only_device_receipt": {
+      "aux": {
+        "ip": "192.168.77.11",
+        "led_count": 22,
+        "live": true,
+        "lor": 0,
+        "mac": "8c94df55c34c",
+        "mode": "DDP",
+        "on": true,
+        "source": "192.168.77.10"
+      },
+      "brightness_baseline": {
+        "matrix_on": true,
+        "persisted": {
+          "auxBrightness": 245,
+          "matrixBrightness": 44,
+          "vibe": 0
+        },
+        "runtime": {
+          "auxBrightness": 245,
+          "matrixBrightness": 44,
+          "vibe": 0
+        },
+        "vibe_persistence": "verified"
+      },
+      "candidate_attempts_used": 1,
+      "candidate_install_permitted": false,
+      "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+      "candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+      "captured_unix": 1791729808.968152,
+      "cart_lan_interface": "en0",
+      "device_mutations": 0,
+      "device_requests": 9,
+      "host_on_ac": true,
+      "matrix": {
+        "brightness": 44,
+        "candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+        "diagnostic_off": true,
+        "fps": 20,
+        "free_heap": 73344,
+        "ip": "192.168.77.10",
+        "mac": "704bca5b345c",
+        "on": true,
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+        "telemetry_off": true,
+        "uptime_seconds": 8000,
+        "wled": "16.0.1"
+      },
+      "operation_scope": "QUALIFICATION_ONLY",
+      "pass": true,
+      "qualification_recovery_subscope": null,
+      "read_only": true,
+      "recovery_attempts_used": 0,
+      "rollback": {
+        "opal_ledger": "OPAL_QUALIFICATION_PREFLIGHT_OKn/usr/bin/sha256sum\n55 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\n",
+        "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+      },
+      "schema": "hbnf-cart2-qualification-prelive-v1",
+      "single_worker": {
+        "conflicting_pids": [],
+        "pass": true,
+        "worker_count": 1
+      }
+    }
+  },
+  "recovery_identity": {
+    "identity": {
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "size_bytes": 1489008,
+      "target_matrix_mac": "70:4b:ca:5b:34:5c"
+    },
+    "verification": {
+      "evidence": [
+        "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/R4_POST_RESTORE_READONLY_CONFIRMATION.json",
+        "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin"
+      ],
+      "method": "Local exact binary SHA/size plus current Matrix readback on the same release and SHA in the saved R4 return receipt."
+    }
+  },
+  "run_id": "cart2-r6-neutral-audio-hue-radial-lazy-20261011-qualification-continuation-05",
+  "schema": "local-roots-prelive-proof-v1",
+  "stages": {
+    "capture-current-state": {
+      "evidence": [
+        "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-05/QUALIFICATION_PRELIVE_READONLY.json"
+      ],
+      "status": "PASS"
+    },
+    "contract-closure": {
+      "evidence": [
+        "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/SUCCESSOR_SOURCE_BINDING.json",
+        "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/BUILD_RECEIPT.json",
+        "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/OFFLINE_INTEGRATED_CANDIDATE_MANIFEST.json",
+        "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/DRIVE_PROMOTION_READBACK.json",
+        "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-05/QUALIFICATION_CONTINUATION_OFFLINE_EVIDENCE.json"
+      ],
+      "status": "PASS"
+    },
+    "recovery-proof": {
+      "evidence": [
+        "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/R4_POST_RESTORE_READONLY_CONFIRMATION.json",
+        "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin"
+      ],
+      "status": "PASS"
+    },
+    "transaction-rehearsal": {
+      "evidence": [
+        "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-05/QUALIFICATION_CONTINUATION_OFFLINE_EVIDENCE.json",
+        "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/SUCCESSOR_TRANSACTION_DRYRUN.json"
+      ],
+      "status": "PASS"
+    }
+  }
+}

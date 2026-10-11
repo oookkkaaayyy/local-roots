@@ -1,0 +1,68 @@
+{
+  "aux_ip": "192.168.77.11",
+  "aux_led_count": 22,
+  "aux_live": true,
+  "aux_live_ip": "192.168.77.10",
+  "aux_live_mode": "DDP",
+  "aux_mac": "8c94df55c34c",
+  "aux_on": true,
+  "aux_physical_output_status": "NOT_OBSERVABLE_FROM_WLED_JSON",
+  "candidate": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+  "endpoint_reads": {
+    "aux_info": {
+      "completed_monotonic_ns": 90313416,
+      "elapsed_seconds": 0.047849,
+      "endpoint": "http://192.168.77.11/json/info",
+      "started_monotonic_ns": 42463958,
+      "status": "PASS"
+    },
+    "aux_state": {
+      "completed_monotonic_ns": 108472541,
+      "elapsed_seconds": 0.065894,
+      "endpoint": "http://192.168.77.11/json/state",
+      "started_monotonic_ns": 42578166,
+      "status": "PASS"
+    },
+    "matrix_build": {
+      "completed_monotonic_ns": 92920166,
+      "elapsed_seconds": 0.050725,
+      "endpoint": "http://192.168.77.10/hbnf/build.json",
+      "started_monotonic_ns": 42195500,
+      "status": "PASS"
+    },
+    "matrix_info": {
+      "completed_monotonic_ns": 108769250,
+      "elapsed_seconds": 0.066792,
+      "endpoint": "http://192.168.77.10/json/info",
+      "started_monotonic_ns": 41977708,
+      "status": "PASS"
+    },
+    "matrix_state": {
+      "completed_monotonic_ns": 137283791,
+      "elapsed_seconds": 0.094938,
+      "endpoint": "http://192.168.77.10/json/state",
+      "started_monotonic_ns": 42346000,
+      "status": "PASS"
+    }
+  },
+  "expected_firmware_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+  "expected_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+  "foundation_telemetry_enabled": false,
+  "fps": 39,
+  "matrix_brightness": 44,
+  "matrix_ip": "192.168.77.10",
+  "matrix_mac": "704bca5b345c",
+  "matrix_on": true,
+  "matrix_uptime_seconds": 8140,
+  "packet20_enabled": false,
+  "packet20_restore_verified": false,
+  "packet20_snapshot_hash": 0,
+  "packet20_snapshot_id": 0,
+  "packet20_snapshot_valid": false,
+  "read_elapsed_seconds": 0.097566,
+  "release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+  "restart_count": 0,
+  "schema": "hbnf-live-qualification-preflight-v1",
+  "uptime_seconds": 8140,
+  "wled": "16.0.1"
+}

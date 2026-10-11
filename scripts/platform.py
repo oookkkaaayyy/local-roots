@@ -282,10 +282,76 @@ def validate_hbnf_coherence(
             and receipt_path.is_file() and sha256_file(receipt_path)==runtime_receipt_sha
         )
 
+    # General current-task reconciliation: the execution cursor is the primary
+    # operational checkpoint for exact successor candidates. Validate its
+    # hash-bound runtime and transaction receipts instead of teaching the
+    # platform about each candidate's historical release label.
+    cursor=state.get("execution_cursor",{})
+    subject=cursor.get("current_subject",{}) if isinstance(cursor,dict) else {}
+    cursor_runtime=subject.get("runtime_readonly_receipt") if isinstance(subject,dict) else None
+    cursor_runtime_sha=subject.get("runtime_readonly_sha256") if isinstance(subject,dict) else None
+    cursor_tx=subject.get("qualification_result") if isinstance(subject,dict) else None
+    cursor_tx_sha=subject.get("qualification_result_sha256") if isinstance(subject,dict) else None
+    current_candidate_is_proven=False
+    if cursor_runtime and cursor_runtime_sha and cursor_tx and cursor_tx_sha:
+        runtime_path=ROOT/cursor_runtime
+        tx_path=ROOT/cursor_tx
+        try:
+            runtime=load_json(runtime_path) if runtime_path.is_file() else {}
+            tx=load_json(tx_path) if tx_path.is_file() else {}
+            matrix=runtime.get("matrix",{}).get("identity",{})
+            candidate_install_receipt_path=subject.get("candidate_install_receipt")
+            candidate_install_receipt=ROOT/candidate_install_receipt_path if isinstance(candidate_install_receipt_path,str) else None
+            if candidate_install_receipt is not None:
+                try:
+                    candidate_install_receipt.resolve().relative_to((ROOT/"evidence").resolve())
+                except ValueError:
+                    candidate_install_receipt=None
+            install_receipt=load_json(candidate_install_receipt) if candidate_install_receipt and candidate_install_receipt.is_file() else {}
+            install_receipt_proven=(
+                install_receipt.get("schema")=="hbnf-cart2-candidate-qualification-transaction-v1"
+                and install_receipt.get("candidate_release_id")==installed
+                and install_receipt.get("candidate_sha256")==subject.get("installed_sha256")
+                and install_receipt.get("candidate_install_attempts")==1
+                and install_receipt.get("upload",{}).get("confirmed") is True
+                and install_receipt.get("upload",{}).get("http_status")=="200"
+                and subject.get("candidate_install_receipt_sha256")
+                and sha256_file(candidate_install_receipt)==subject.get("candidate_install_receipt_sha256")
+            )
+            current_tx_proven=(
+                tx.get("candidate_install_attempts")==1
+                or (tx.get("schema")=="hbnf-cart2-candidate-qualification-continuation-v1"
+                    and tx.get("candidate_install_attempts")==0
+                    and tx.get("operation_scope")=="QUALIFICATION_ONLY"
+                    and state.get("live_mutation_authorization",{}).get("candidate_attempts_used")==1
+                    and state.get("live_mutation_authorization",{}).get("transaction_consumed") is True
+                    and install_receipt_proven)
+            )
+            current_candidate_is_proven=(
+                runtime.get("schema")=="cart2-current-matrix-readonly-snapshot-v1"
+                and runtime.get("read_only") is True and runtime.get("device_mutations")==0
+                and sha256_file(runtime_path)==cursor_runtime_sha
+                and sha256_file(tx_path)==cursor_tx_sha
+                and subject.get("installed_release_id")==installed
+                and subject.get("installed_sha256")==state.get("installed_firmware_sha256")
+                and matrix.get("release_id")==installed
+                and matrix.get("candidate")==installed
+                and matrix.get("mac","").replace(":","").lower()=="704bca5b345c"
+                and tx.get("candidate_release_id")==installed
+                and tx.get("candidate_sha256")==subject.get("installed_sha256")
+                and current_tx_proven
+                and tx.get("status") in ("QUALIFICATION_BRIGHTNESS_RESTORE_FAILED",
+                    "QUALIFICATION_BRIGHTNESS_SETUP_FAILED_NO_PROFILES",
+                    "QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED")
+            )
+        except (OSError, ValueError, TypeError, AttributeError):
+            current_candidate_is_proven=False
+
     if adapter_cfg.exists():
         cfg = load_json(adapter_cfg)
         expected = str(cfg.get("expected_release_id") or "")
-        if installed and expected and installed != expected and not recovery_is_current and not reconciled_candidate_is_current:
+        if (installed and expected and installed != expected and not recovery_is_current
+                and not reconciled_candidate_is_current and not current_candidate_is_proven):
             status = str(state.get("current_task", {}).get("status") or "")
             message = (
                 "HBNF live-tool identity mismatch: control state says "

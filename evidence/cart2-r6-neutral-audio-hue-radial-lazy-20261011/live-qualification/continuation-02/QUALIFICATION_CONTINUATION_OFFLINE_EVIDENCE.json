@@ -1,0 +1,37 @@
+{
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+  "candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+  "checks": [
+    {
+      "command": "python3 tests/test_r6_qualification_brightness_transaction.py",
+      "name": "one-write migration from inherited missing persisted Vibe; full runtime/persisted readback required",
+      "status": "PASS",
+      "test_source": "tests/test_r6_qualification_brightness_transaction.py",
+      "test_source_sha256": "4af123de9ee72f459d783bebf6a3c3423ac848b6390b43c96aaa5b35efd86e6e"
+    },
+    {
+      "command": "python3 tests/test_hbnf_installed_qualification_rearm.py",
+      "name": "qualification-only authority rearm validates exact candidate, exact R4, fresh preflight and one-worker state; rejects stale or mismatched evidence",
+      "status": "PASS",
+      "test_source": "tests/test_hbnf_installed_qualification_rearm.py",
+      "test_source_sha256": "ee3a201792f527e25ea0bee2b0324df0e185d3d9c217b7571dec2d03f452b276"
+    },
+    {
+      "command": "python3 tests/test_platform_candidate_reconciliation.py",
+      "name": "platform candidate reconciliation requires hash-bound runtime and transaction receipts",
+      "status": "PASS",
+      "test_source": "tests/test_platform_candidate_reconciliation.py",
+      "test_source_sha256": "aa7bd5ae8d2352120d956e8b268890c5aac0c75bf218c1e16b5e25d6b25604b8"
+    }
+  ],
+  "fresh_readonly_preflight": {
+    "device_mutations": 0,
+    "path": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/live-qualification/continuation-02/QUALIFICATION_PRELIVE_READONLY.json",
+    "sha256": "b57257bdfac3f6b5666b10565cad95933fafd8db1b493bd661225a9751614c9a"
+  },
+  "limitations": [
+    "This is host-only transaction-path coverage; it does not establish candidate performance or qualify the 28-kernel sweep, combined features, soak, physical synchronization, or owner acceptance."
+  ],
+  "schema": "hbnf-qualification-continuation-offline-evidence-v1",
+  "scope": "Host-only evidence for the exact installed candidate qualification continuation; no device mutation."
+}
