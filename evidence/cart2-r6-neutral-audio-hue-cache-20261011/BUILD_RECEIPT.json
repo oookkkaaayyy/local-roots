@@ -41,7 +41,7 @@
   "host_checks": {
     "neutral_audio_fast_path": "PASS; bit-identical across silent, energy-only, active audio, five Vibes, 32 scenes, 512 pixels, and six colors; digest 5761340127adfa63",
     "frame_hue_cache": "PASS; bit-identical over 15,755,040 RGB transforms, 28 scenes, 6 audio cases, 6 amounts, 5 response gains, and four dimensions; digest 75444567800b229d",
-    "vibe_composition_hoist": "NOT PASSING; existing test rejects stale R6 source base hash for unchanged vibe runtime file; not hidden or waived",
+    "vibe_composition_hoist": "PASS after repairing the historical replay to read its exact pre-hoist sources from pinned commit aea3350bd6e82bd5f92c4b2f3ca33fe0e464c90b; current integration source is no longer misused as the old patch base",
     "diff_check": "PASS before commit"
   },
   "target_object_comparison": {

@@ -13,6 +13,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 SOURCE_DIR = pathlib.Path("firmware/phase2/integration-r6-cachefix/usermod")
 RUNTIME = SOURCE_DIR / "hbnf_vibe_runtime.h"
 USERMOD = SOURCE_DIR / "usermod_hbnf_foundation_v1.cpp"
+BASE_COMMIT = "aea3350bd6e82bd5f92c4b2f3ca33fe0e464c90b"
 PATCH = ROOT / "evidence/cart2-r6-audio-cache-20261010/R6_KERNEL0_COMPOSITION_HOIST.patch"
 HOST_TEST = ROOT / "tests/hbnf_vibe_runtime_host.cpp"
 EXPECTED = {
@@ -30,16 +31,26 @@ def main() -> None:
     patcher = shutil.which("patch")
     if not compiler or not patcher:
         raise SystemExit("FAIL: local C++ compiler and patch utility are required")
+    # This is a historical patch replay. Read its exact pre-hoist source from
+    # the pinned parent commit instead of the current integration tree, which
+    # has since incorporated the hoist and subsequent unrelated changes.
+    base_sources: dict[pathlib.Path, bytes] = {}
     for path in (RUNTIME, USERMOD):
-        if sha256(ROOT / path) != EXPECTED[path.name]:
-            raise SystemExit(f"FAIL: unexpected R6 source base hash: {path}")
+        result = subprocess.run(
+            ["git", "show", f"{BASE_COMMIT}:{path.as_posix()}"],
+            cwd=ROOT, check=True, capture_output=True,
+        )
+        base_sources[path] = result.stdout
+        digest = hashlib.sha256(result.stdout).hexdigest()
+        if digest != EXPECTED[path.name]:
+            raise SystemExit(f"FAIL: unexpected pinned historical source hash: {path}")
 
     with tempfile.TemporaryDirectory(prefix="hbnf-r6-k0-hoist-") as temp_name:
         temp = pathlib.Path(temp_name)
         target = temp / SOURCE_DIR
         target.mkdir(parents=True)
         for path in (RUNTIME, USERMOD):
-            shutil.copy2(ROOT / path, target / path.name)
+            (target / path.name).write_bytes(base_sources[path])
         subprocess.run([patcher, "-p1", "-i", str(PATCH)], cwd=temp, check=True,
                        capture_output=True, text=True)
 
