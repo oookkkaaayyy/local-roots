@@ -70,6 +70,23 @@ def main():
             try:control.reconcile_installed_r6(bad,"evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json",pp)
             except ValueError:pass
             else:raise AssertionError("host-only resume must reject completed kernel profiles or tampered proof")
+    elif (state.get("r6_audio_cache_successor",{}).get("conditional_authority",{}).get("status")=="QUALIFICATION_FAILED_R4_RECOVERED"
+            and state.get("r6_audio_cache_successor",{}).get("conditional_authority",{}).get("recovery_attempts_used")==1):
+        # Preserve the consumed state; retry proofs may not reopen it.
+        auth=state["r6_audio_cache_successor"]["conditional_authority"]
+        assert auth.get("candidate_attempts_used")==auth.get("candidate_install_limit")==1
+        assert auth.get("recovery_attempts_used")==auth.get("recovery_install_limit")==1
+        assert state.get("live_mutation_authorized") is False
+        assert control.release_admission_errors(control.load(control.DEFAULT_MODEL),state,manifest,"LIVE_QUALIFICATION")
+        with tempfile.TemporaryDirectory(prefix="r6-consumed-retry-proof-") as td:
+            proof=pathlib.Path(td)/"retry-proof.json"
+            proof.write_text(json.dumps({"schema":"hbnf-r6-qualification-preflight-retry-proof-v1","status":"PASS"}))
+            try:
+                control.reconcile_installed_r6(copy.deepcopy(state),"evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json",proof)
+            except ValueError as exc:
+                assert "exact R4 recovery is unavailable or consumed" in str(exc)
+            else:
+                raise AssertionError("consumed R4 recovery must reject every retry proof")
     elif state.get("r6_audio_cache_successor",{}).get("qualification_result") and (
             state.get("r6_audio_cache_successor",{}).get("conditional_authority",{}).get("status")=="QUALIFICATION_BLOCKED_OR_FAILED"
             or (ROOT/state["r6_audio_cache_successor"]["qualification_result"]).is_file()):
@@ -119,8 +136,31 @@ def main():
                 try:control.reconcile_installed_r6(copy.deepcopy(closed_state),"evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json",pp)
                 except ValueError:pass
                 else:raise AssertionError("preflight-only resume must reject mutated/tampered proof: "+field)
+    elif state.get("r6_audio_cache_successor",{}).get("conditional_authority",{}).get("status")=="QUALIFICATION_FAILED_R4_RECOVERED":
+        # The real primary state has consumed both the failed candidate attempt and
+        # its exact R4 recovery. It must never be reconciled or admitted as resumable.
+        auth=state["r6_audio_cache_successor"]["conditional_authority"]
+        assert auth.get("candidate_attempts_used")==auth.get("candidate_install_limit")==1
+        assert auth.get("recovery_attempts_used")==auth.get("recovery_install_limit")==1
+        assert state.get("live_mutation_authorized") is False
+        assert control.release_admission_errors(control.load(control.DEFAULT_MODEL),state,manifest,"LIVE_QUALIFICATION")
+        try:
+            control.reconcile_installed_r6(copy.deepcopy(state),"evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json")
+        except ValueError as exc:
+            assert "exact R4 recovery is unavailable or consumed" in str(exc)
+        else:
+            raise AssertionError("consumed R6 and R4 attempts must not be reconciled or reopened")
     else:
         assert control.release_admission_errors(control.load(control.DEFAULT_MODEL),state,manifest,"LIVE_QUALIFICATION")==[]
+    if state.get("r6_audio_cache_successor",{}).get("conditional_authority",{}).get("status")=="QUALIFICATION_FAILED_R4_RECOVERED":
+        stale=copy.deepcopy(state)
+        stale["installed_release"]="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
+        stale["installed_firmware_sha256"]="338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+        try: control.reconcile_installed_r6(stale,"evidence/cart2-r6-audio-cache-20261010/live-qualification/INSTALLED_RUNTIME_RECONCILIATION.json")
+        except ValueError as exc: assert "exact R4 recovery is unavailable or consumed" in str(exc)
+        else: raise AssertionError("consumed R4 recovery must reject stale readback reconciliation")
+        print("PASS: consumed R6 and R4 attempts remain closed; stale continuation and retry proofs cannot reopen live authority")
+        return
     stale=copy.deepcopy(state)
     stale["installed_release"]="hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
     stale["installed_firmware_sha256"]="338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
