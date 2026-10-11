@@ -2,11 +2,11 @@
   "schema": "hbnf-offline-candidate-evidence-v1",
   "candidate": "codex/cart2-p2-offline-candidate-20261011",
   "base_integration_commit": "2a85e4d341057de870ed1f36ee250f14bebd31d7",
-  "status": "HOST_GOLDEN_AND_PINNED_XTENSA_TRANSLATION_UNIT_PASS__TARGET_PERFORMANCE_UNMEASURED",
+  "status": "PINNED_OFFLINE_TARGET_BUILD_PASS__RUNTIME_PERFORMANCE_AND_RELEASE_ACCEPTANCE_UNMEASURED",
   "changes": {
     "vibe_composition_hoist_patch_sha256": "f26af5644dd39cede71d873d1023057d0934b563b81016b3a54f280d72747e0b",
     "candidate_runtime_sha256": "290e979980af3ebb69b6a9c7c5e0147680055ce005c5c51eb3ece8965e12f1ca",
-    "candidate_usermod_sha256": "950670efbe2e4aa31c364aeeedc308726975a13e5de4a3746f6902a6c8d56f93",
+    "candidate_usermod_sha256": "995ed44a5a626acf20e4c254c3f1d51aa68b191bb5cac807a5e309bff1c4bb7c",
     "compact_text_owner_policy": "All oversized text may use native WLED slot 0 only when every word fits the 32-pixel canvas; otherwise existing behavior remains.",
     "performance_change": "Compute frame-invariant compositor factors once in beginFrame and reuse them for pixel composition."
   },
@@ -46,14 +46,56 @@
           "bss": 8
         }
       },
-      "limitations": "Reuses preserved R6 object/library inputs; not a fresh full firmware build, installable BIN, complete partition/headroom proof, or target performance qualification."
+      "limitations": "Reuses preserved R6 object/library inputs; not a fresh full firmware build, installable BIN, complete partition/headroom proof, or target performance qualification.",
+      "superseded_by": "validation.full_pinned_local_target_build"
+    },
+    "full_pinned_local_target_build": {
+      "method": "PlatformIO target hbnf_matrix_wled16_packet20_diag in a disposable copy of the cached WLED build workspace, with OS-level network access denied; unchanged objects reused from cache, changed firmware usermod recompiled, final ELF/map/BIN linked/generated.",
+      "result": "PASS_TARGET_BUILD_AND_BIN_GENERATION",
+      "network": "Denied by sandbox; no remote or paid build used.",
+      "source_wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+      "platformio_core": "6.1.18",
+      "esp32_platform": "2024.6.0",
+      "framework": "2.0.18+sha.8ba0dc0",
+      "xtensa_toolchain": "8.4.0+2021r2-patch5",
+      "esptool": "4.7.4",
+      "configuration_sha256": {
+        "platformio.ini": "99718bfd8614da297c94692bc41dea48c9af87dbe829ded2e4a7cad7f0368820",
+        "platformio_override.ini": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922"
+      },
+      "artifact": {
+        "path": "/private/tmp/hbnf-p2-build/WLED-r6-combined-candidate-20261011/.pio/build/hbnf_matrix_wled16_packet20_diag/firmware.bin",
+        "bytes": 1498672,
+        "sha256": "bbf9d12f703e37ed47e1705802436b835bb54c966d540291375001d4a93dc5c2"
+      },
+      "elf_sha256": "43bf250ffd8384cea5e9198dd64f44b4d5e2851fdeae4569d2929b244642d3c3",
+      "map_sha256": "1d748ce7505a79e22a868224fb0588a8a7f1f5385cc5ab47940cb00c9561fc08",
+      "embedded_identity": {
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011",
+        "candidate_id_occurrences_in_bin": 3,
+        "consumed_failed_r6_id_occurrences_in_bin": 0,
+        "based_on_firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+      },
+      "size_check": {
+        "program_bytes": 1491941,
+        "program_limit_bytes": 1572864,
+        "program_remaining_bytes": 80923,
+        "bin_bytes": 1498672,
+        "partition_bytes": 1572864,
+        "bin_remaining_bytes": 74192,
+        "ram_bytes": 112488,
+        "ram_limit_bytes": 327680,
+        "ram_remaining_bytes": 215192
+      },
+      "qualification_boundary": "Compile and image generation only. No device flash, live performance, rollback transaction, production admission, 28-kernel/combined/soak gate, or visual acceptance."
     }
   },
   "limits": [
-    "The original hash-pinned patch regression intentionally rejects modified base files; the new combined-candidate regression checks the exact patch hash and current candidate hashes instead.",
-    "No fresh full firmware rebuild, installable firmware BIN, or complete partition/headroom proof was produced; the isolated link reused preserved R6 object/library inputs.",
+    "The full pinned local target build and BIN were produced, but unchanged inputs reused local objects. PlatformIO partition/RAM checks passed at link time; final release acceptance, live performance, rollback/admission, and physical readability remain unverified.",
     "Host pixel equivalence does not establish Xtensa cycle savings or explain the full R6 performance failure.",
     "No firmware BIN, partition-headroom proof, device operation, live qualification, visual readability acceptance, or release acceptance is claimed.",
-    "Exact Foundation R4 remains installed; live mutation authority remains closed."
-  ]
+    "Exact Foundation R4 remains installed; live mutation authority remains closed.",
+    "The old R6 release identity was replaced with a unique successor identity before this final build; the previous isolated-link ELF with the consumed ID is historical evidence only and is not the current candidate."
+  ],
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011"
 }

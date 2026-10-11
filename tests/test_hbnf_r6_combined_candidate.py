@@ -16,8 +16,9 @@ PATCH = pathlib.Path(
     "R6_KERNEL0_COMPOSITION_HOIST.patch"
 )
 EXPECTED_RUNTIME_SHA256 = "290e979980af3ebb69b6a9c7c5e0147680055ce005c5c51eb3ece8965e12f1ca"
-EXPECTED_USERMOD_SHA256 = "950670efbe2e4aa31c364aeeedc308726975a13e5de4a3746f6902a6c8d56f93"
+EXPECTED_USERMOD_SHA256 = "995ed44a5a626acf20e4c254c3f1d51aa68b191bb5cac807a5e309bff1c4bb7c"
 EXPECTED_PATCH_SHA256 = "f26af5644dd39cede71d873d1023057d0934b563b81016b3a54f280d72747e0b"
+EXPECTED_RELEASE_ID = "hbnf-cart2-phase2-offline-wow-r6-compositor-hoist-20261011"
 
 
 def sha256(path: pathlib.Path) -> str:
@@ -41,6 +42,8 @@ def main() -> None:
         raise SystemExit("FAIL: per-pixel renderer is not using cached factors")
     if "HbnfNativeText::resolveFontIndex(font,overlay.fontIndex,overlay.text,32)" not in source:
         raise SystemExit("FAIL: compact-font resolver is absent from command overlay")
+    if source.count(EXPECTED_RELEASE_ID) != 3:
+        raise SystemExit("FAIL: successor release identity is missing or inconsistent")
 
     compiler = shutil.which("c++")
     if not compiler:
