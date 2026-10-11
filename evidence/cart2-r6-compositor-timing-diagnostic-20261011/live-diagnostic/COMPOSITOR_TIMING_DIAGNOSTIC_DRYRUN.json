@@ -4,13 +4,11 @@
     "sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
     "size_bytes": 1499344
   },
-  "catastrophic_rule": {
-    "aux_native_ddp_required": true,
-    "consecutive_samples": 3,
-    "fps_floor": 20,
-    "frame_p99_ceiling_ms": 75
-  },
   "device_requests": 0,
+  "diagnostic_stop_rule": {
+    "preserves_exact_r4_return": true,
+    "stop_on": "invalid/missing frame max, frame max >=1000ms, AUX native DDP loss, identity/runtime mismatch, or Matrix restart"
+  },
   "firmware_source_changed": false,
   "mandatory_return": {
     "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
@@ -33,6 +31,11 @@
   "next_attempt_transport": "previously proven SSH-verified Opal staging plus one Opal-origin curl multipart upload; no Mac-origin firmware body transfer",
   "observer_instrumentation": "Built-in cycle timing only while tail collection is enabled; no separate frame-context trace commands.",
   "percentile_semantics": "Every read is a cumulative snapshot since tail collection was enabled or kernel changed; snapshots are not independent polling windows.",
+  "performance_gate": {
+    "fps_floor": 20,
+    "frame_p99_ceiling_ms": 75,
+    "on_failure": "record the failure and continue all eight scheduled diagnostic samples"
+  },
   "result": "PASS_OFFLINE_SEQUENCE_POLICY",
   "safety_interval_seconds": 8,
   "scenarios": {
@@ -46,7 +49,7 @@
       "verify_diag_identity",
       "begin_snapshot",
       "enable_builtin_timing_tails",
-      "third_consecutive_bad_sample_abort",
+      "unsafe_frame_or_aux_loss_stop",
       "persist_metrics_and_failure",
       "restore_renderer_snapshot",
       "stage_exact_r4_hash_size_verified",
@@ -118,6 +121,24 @@
       "read_only_identity_R4",
       "no_retry"
     ],
+    "performance_gate_failure": [
+      "admission",
+      "preflight_r4_aux_ac_single_worker",
+      "opal_readonly_preflight",
+      "consume_exact_attempt",
+      "stage_hash_size_verified",
+      "install_diag_once_via_opal",
+      "verify_diag_identity",
+      "begin_snapshot",
+      "enable_builtin_timing_tails",
+      "record_fps_p99_failure",
+      "capture_remaining_component_samples",
+      "persist_gate_failure_and_component_metrics",
+      "restore_renderer_snapshot",
+      "stage_exact_r4_hash_size_verified",
+      "install_r4_once_via_opal",
+      "verify_r4_and_aux"
+    ],
     "r4_restore_failure": [
       "admission",
       "preflight_r4_aux_ac_single_worker",
@@ -164,6 +185,6 @@
       "verify_r4_and_aux"
     ]
   },
-  "schema": "hbnf-r6-compositor-timing-diagnostic-transaction-dryrun-v1",
+  "schema": "hbnf-r6-compositor-timing-diagnostic-transaction-dryrun-v2",
   "window_seconds_max": 60
 }

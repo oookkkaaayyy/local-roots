@@ -5,7 +5,7 @@ No retries, restarts, or alternate artifacts. Run --execute only beneath
 hbnf_guarded_run with the matching LIVE_APPROVED admission/capsule/proof.
 """
 from __future__ import annotations
-import argparse, hashlib, importlib.util, json, os, pathlib, shlex, subprocess, sys, time
+import argparse, hashlib, importlib.util, json, math, os, pathlib, shlex, subprocess, sys, time
 from datetime import datetime, timezone
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
@@ -111,6 +111,24 @@ def complete_timing_capture(samples,candidate_identity_verified,failure):
         and all(isinstance(sample,dict)
             and all(type(sample.get(key)) in (int,float) for key in COMPOSITOR_METRICS)
             for sample in samples))
+
+def diagnostic_sample_decision(fps,p99,max_frame_ms,aux_active):
+    """Record qualification failures; stop only when diagnostic safety is lost."""
+    performance_failures=[]
+    if type(fps) not in (int,float) or not math.isfinite(fps) or fps<20:
+        performance_failures.append("fps_below_20_or_missing")
+    if type(p99) not in (int,float) or not math.isfinite(p99) or p99>75:
+        performance_failures.append("frame_p99_above_75_or_missing")
+    stop_reasons=[]
+    if type(max_frame_ms) not in (int,float) or not math.isfinite(max_frame_ms):
+        stop_reasons.append("frame_max_missing_or_invalid")
+    elif max_frame_ms>=1000:
+        stop_reasons.append("steady_state_frame_interval_at_least_1000ms")
+    if aux_active is not True:
+        stop_reasons.append("aux_native_ddp_inactive")
+    return {"performance_gate_pass":not performance_failures,
+            "performance_gate_failure_reasons":performance_failures,
+            "stop":bool(stop_reasons),"stop_reasons":stop_reasons}
 
 def opal_readonly_preflight():
     remote=("set -e; printf 'OPAL_READONLY_PREFLIGHT\\n'; uptime; df -k /tmp; command -v curl; "
@@ -244,7 +262,8 @@ def dry_run():
     # Pure simulation uses exact identity and bounded operation counts; no sockets or subprocesses.
     scenarios={
       "success":["admission","preflight_r4_aux_ac_single_worker","opal_readonly_preflight","consume_exact_attempt","stage_hash_size_verified","install_diag_once_via_opal","verify_diag_identity","begin_snapshot","select_kernel0_brightness44","enable_builtin_timing_tails","capture_component_samples_at_8s","persist_metrics_and_context","restore_renderer_snapshot","stage_exact_r4_hash_size_verified","install_r4_once_via_opal","verify_r4_and_aux"],
-      "catastrophic":["admission","preflight_r4_aux_ac_single_worker","opal_readonly_preflight","consume_exact_attempt","stage_hash_size_verified","install_diag_once_via_opal","verify_diag_identity","begin_snapshot","enable_builtin_timing_tails","third_consecutive_bad_sample_abort","persist_metrics_and_failure","restore_renderer_snapshot","stage_exact_r4_hash_size_verified","install_r4_once_via_opal","verify_r4_and_aux"],
+      "performance_gate_failure":["admission","preflight_r4_aux_ac_single_worker","opal_readonly_preflight","consume_exact_attempt","stage_hash_size_verified","install_diag_once_via_opal","verify_diag_identity","begin_snapshot","enable_builtin_timing_tails","record_fps_p99_failure","capture_remaining_component_samples","persist_gate_failure_and_component_metrics","restore_renderer_snapshot","stage_exact_r4_hash_size_verified","install_r4_once_via_opal","verify_r4_and_aux"],
+      "catastrophic":["admission","preflight_r4_aux_ac_single_worker","opal_readonly_preflight","consume_exact_attempt","stage_hash_size_verified","install_diag_once_via_opal","verify_diag_identity","begin_snapshot","enable_builtin_timing_tails","unsafe_frame_or_aux_loss_stop","persist_metrics_and_failure","restore_renderer_snapshot","stage_exact_r4_hash_size_verified","install_r4_once_via_opal","verify_r4_and_aux"],
       "collector_failure":["admission","preflight_r4_aux_ac_single_worker","opal_readonly_preflight","consume_exact_attempt","stage_hash_size_verified","install_diag_once_via_opal","verify_diag_identity","begin_snapshot","enable_builtin_timing_tails","timeout_recorded_no_sample_skipped","persist_failure_evidence","restore_renderer_snapshot","stage_exact_r4_hash_size_verified","install_r4_once_via_opal","verify_r4_and_aux"],
       "identity_mismatch":["admission","preflight_r4_aux_ac_single_worker","identity_mismatch_before_write","zero_device_writes"],
       "http200_identity_mismatch_r4_still_installed":["admission","preflight_r4_aux_ac_single_worker","consume_exact_attempt","single_diag_upload_http200","exact_candidate_identity_wait_fails","no_capture_or_renderer_commands_without_exact_candidate_identity","read_only_recovery_identity_R4","no_unnecessary_r4_upload","verify_matrix_and_aux","close_inconclusive_r4_verified"],
@@ -260,9 +279,10 @@ def dry_run():
     assert all("no_capture_or_renderer_commands_without_exact_candidate_identity" in scenarios[k] for k in ("http200_identity_mismatch_r4_still_installed","http200_identity_unknown"))
     assert "no_unnecessary_r4_upload" in scenarios["http200_identity_mismatch_r4_still_installed"]
     assert "zero_recovery_writes" in scenarios["http200_identity_unknown"]
-    receipt={"schema":"hbnf-r6-compositor-timing-diagnostic-transaction-dryrun-v1","candidate":{"release_id":DIAG_ID,"sha256":DIAG_SHA,"size_bytes":DIAG_SIZE},
+    receipt={"schema":"hbnf-r6-compositor-timing-diagnostic-transaction-dryrun-v2","candidate":{"release_id":DIAG_ID,"sha256":DIAG_SHA,"size_bytes":DIAG_SIZE},
       "mandatory_return":{"release_id":R4_ID,"sha256":R4_SHA},"window_seconds_max":60,"safety_interval_seconds":8,
-      "catastrophic_rule":{"consecutive_samples":3,"fps_floor":20,"frame_p99_ceiling_ms":75,"aux_native_ddp_required":True},
+      "performance_gate":{"fps_floor":20,"frame_p99_ceiling_ms":75,"on_failure":"record the failure and continue all eight scheduled diagnostic samples"},
+      "diagnostic_stop_rule":{"stop_on":"invalid/missing frame max, frame max >=1000ms, AUX native DDP loss, identity/runtime mismatch, or Matrix restart","preserves_exact_r4_return":True},
       "measurement_metrics":list(COMPOSITOR_METRICS),"observer_instrumentation":"Built-in cycle timing only while tail collection is enabled; no separate frame-context trace commands.",
       "percentile_semantics":"Every read is a cumulative snapshot since tail collection was enabled or kernel changed; snapshots are not independent polling windows.",
       "firmware_source_changed":False,"device_requests":0,"next_attempt_transport":"previously proven SSH-verified Opal staging plus one Opal-origin curl multipart upload; no Mac-origin firmware body transfer","scenarios":scenarios,"result":"PASS_OFFLINE_SEQUENCE_POLICY"}
@@ -335,7 +355,7 @@ def execute():
             raise RuntimeError("kernel-0 / matrix brightness 44 setup not verified")
         adapter.enable_tails(True)
         capture_start=time.monotonic();receipt["capture_start_utc"]=stamp();receipt["state"]="CAPTURING_KERNEL0";save(OUT/"TRANSACTION_STARTED.json",receipt)
-        consecutive_bad=0;last_uptime=None
+        last_uptime=None;performance_gate_failures=[]
         for scheduled in range(4,61,8):
             target=capture_start+scheduled;delay=target-time.monotonic()
             if delay>0:time.sleep(delay)
@@ -351,17 +371,22 @@ def execute():
             if restarted:raise RuntimeError("Matrix restart during diagnostic capture")
             aux=aux_ok(rows);fps=timing.get("fps");p99=ft.get("frameMsP99")
             component_timing=compositor_timing_sample(ft)
+            decision=diagnostic_sample_decision(fps,p99,ft.get("frameMsMax"),aux)
             row={"scheduled_seconds":scheduled,"read_started_monotonic_ns":sample_start,"read_completed_monotonic_ns":time.monotonic_ns(),"batch_elapsed_seconds":elapsed,
               "endpoint_reads":reads.get("_endpoint_timing",{}),"uptime_seconds":uptime,"fps":fps,"frame_ms_p99":p99,
               "frame_ms_max":ft.get("frameMsMax"),"frame_tail_overflow":ft.get("frameTailOverflow"),"kernel":timing.get("kernel"),
               "variant_signature":timing.get("variantSignature"),"matrix_brightness":st.get("HBNF",{}).get("matrixBrightness"),"aux_native_ddp_active":aux,
-              "aux_physical_output_status":"NOT_OBSERVABLE_FROM_WLED_JSON","component_timing":component_timing}
+              "aux_physical_output_status":"NOT_OBSERVABLE_FROM_WLED_JSON","component_timing":component_timing,
+              "performance_gate_pass":decision["performance_gate_pass"],
+              "performance_gate_failure_reasons":decision["performance_gate_failure_reasons"],
+              "diagnostic_stop_reasons":decision["stop_reasons"]}
             receipt["safety_samples"].append(row);receipt["compositor_timing_samples"].append(component_timing)
+            if not decision["performance_gate_pass"]:
+                performance_gate_failures.append({"scheduled_seconds":scheduled,"reasons":decision["performance_gate_failure_reasons"]})
             save(OUT/"SAFETY_SAMPLES.json",receipt["safety_samples"])
             save(OUT/"COMPOSITOR_TIMING_SAMPLES.json",receipt["compositor_timing_samples"])
-            bad=(not isinstance(fps,(int,float)) or fps<20 or not isinstance(p99,(int,float)) or p99>75 or not aux)
-            consecutive_bad=consecutive_bad+1 if bad else 0
-            if consecutive_bad>=3:raise RuntimeError("CATASTROPHIC_ABORT: three consecutive bad 8-second samples")
+            receipt["kernel0_performance_gate"]={"pass":not performance_gate_failures,"failures":performance_gate_failures}
+            if decision["stop"]:raise RuntimeError("CATASTROPHIC_ABORT: "+",".join(decision["stop_reasons"]))
         receipt["capture_seconds"]=round(time.monotonic()-capture_start,3)
     except Exception as e:
         failure=f"{type(e).__name__}: {e}";receipt["diagnostic_error"]=failure

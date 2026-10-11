@@ -42,6 +42,7 @@ captured=tx.compositor_timing_sample(sample)
 assert captured["sampleCount"]==78 and captured["vibeCompositorMsP99"]>0
 rows=[{key:1.0 for key in tx.COMPOSITOR_METRICS} for _ in range(8)]
 assert tx.complete_timing_capture(rows,True,None)
+assert tx.complete_timing_capture([{**row,"performance_gate_pass":False} for row in rows],True,None)
 assert not tx.complete_timing_capture(rows[:3],True,None)
 assert not tx.complete_timing_capture(rows,True,"RuntimeError: CATASTROPHIC_ABORT")
 assert not tx.complete_timing_capture(rows,False,None)
@@ -54,9 +55,25 @@ for invalid in ({**sample,"sampleCount":"78"},{**sample,"sampleCount":True},{**s
     except RuntimeError:pass
     else:raise AssertionError("malformed numeric evidence must fail closed")
 
+# A diagnostic must retain all scheduled component samples when the release
+# performance gate fails; only unsafe frame intervals or AUX loss stop capture.
+perf_failure=tx.diagnostic_sample_decision(11,127.875,144.813,True)
+assert not perf_failure["performance_gate_pass"] and not perf_failure["stop"]
+assert perf_failure["performance_gate_failure_reasons"]==["fps_below_20_or_missing","frame_p99_above_75_or_missing"]
+assert tx.diagnostic_sample_decision(30,30,999.9,True)["stop"] is False
+assert "steady_state_frame_interval_at_least_1000ms" in tx.diagnostic_sample_decision(11,127.875,1000,True)["stop_reasons"]
+assert "aux_native_ddp_inactive" in tx.diagnostic_sample_decision(30,30,20,False)["stop_reasons"]
+assert "frame_max_missing_or_invalid" in tx.diagnostic_sample_decision(30,30,None,True)["stop_reasons"]
+
 assert "not independent polling windows" in json.loads((ROOT/"evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/COMPOSITOR_TIMING_DIAGNOSTIC_DRYRUN.json").read_text())["percentile_semantics"]
+dryrun=json.loads((ROOT/"evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/COMPOSITOR_TIMING_DIAGNOSTIC_DRYRUN.json").read_text())
+assert "performance_gate_failure" in dryrun["scenarios"]
+assert "capture_remaining_component_samples" in dryrun["scenarios"]["performance_gate_failure"]
+assert "unsafe_frame_or_aux_loss_stop" in dryrun["scenarios"]["catastrophic"]
+assert dryrun["performance_gate"]["on_failure"]=="record the failure and continue all eight scheduled diagnostic samples"
 
 source=(ROOT/"scripts/hbnf_r6_frame_context_diagnostic_transaction.py").read_text()
 assert '"traceStart"' not in source and '"traceStop"' not in source and '"traceRead"' not in source
+assert "third_consecutive_bad_sample_abort" not in source and 'if decision["stop"]' in source
 assert "one exact r6 compositor-timing diagnostic" in source.lower()
-print("PASS exact diagnostic/rollback binding, complete timing contract, and no extra frame-trace observer")
+print("PASS exact binding, complete timing contract, performance-failure capture, and safety stops")
