@@ -1,0 +1,304 @@
+{
+  "cost_policy": {
+    "paid_or_quota_limited_execution": "explicit_authorization_per_bounded_run",
+    "remote_execution_for_source_archaeology": false,
+    "retry_inherits_authorization": false
+  },
+  "created_at": "2026-10-11T19:47:42.608325+00:00",
+  "expected_terminal_outputs": [
+    "R4 runtime qualification or exact failure classification",
+    "exact Matrix release identity",
+    "R4 recovery evidence if used",
+    "AUX physical synchronization/recovery evidence",
+    "soak audit",
+    "T4/T5 lifecycle state",
+    "durable evidence pointers"
+  ],
+  "external_authorities": {
+    "network_identity": "192.168.77.10"
+  },
+  "repo_identity": {
+    "branch": "codex/cart2-compositor-timing-20261011",
+    "dirty": true,
+    "type": "git_commit",
+    "value": "07cf5049ed703dea379cec5d46b73f1621e1cdb0"
+  },
+  "repo_inputs": [
+    {
+      "bytes": 256646,
+      "path": "config/HBNF_CONTROL_STATE.json",
+      "sha256": "3e86f9bd1baeef49c524353989d437190b3c17e7db6b47fbe9cb5f6ae7f8faab"
+    },
+    {
+      "bytes": 14677,
+      "path": "AGENTS.md",
+      "sha256": "1400198b652bc349ea032a1a2669e436987c60a5ada3fea92e52425f73737584"
+    },
+    {
+      "bytes": 31590,
+      "path": "config/HBNF_CONTROL_MODEL.json",
+      "sha256": "8d42f1fd540c95a01ae16857c286f6350b57ad8e3cd0c22befd1780fcb26d29c"
+    },
+    {
+      "bytes": 3481,
+      "path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
+      "sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797"
+    },
+    {
+      "bytes": 8881,
+      "path": "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+      "sha256": "44f62cf31e5efa57a360117d96d437d6f504fd93704b28a069661b2da64a49f0"
+    },
+    {
+      "bytes": 5514,
+      "path": "config/HBNF_RUNTIME_TELEMETRY_CONTRACT.json",
+      "sha256": "9aca17e2339c5230b82997bbc5080f6cb3955558ad17ae8469a0a5f5a8aafa39"
+    },
+    {
+      "bytes": 1489008,
+      "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    },
+    {
+      "bytes": 92075,
+      "path": "scripts/hbnf_r6_audio_cache_live_transaction.py",
+      "sha256": "e58da105dfb0291da1d9ce32bd368e26960ac375474e262cf79b7ed94884da12"
+    },
+    {
+      "bytes": 5424,
+      "path": "scripts/hbnf_r6_combined_feature_check.py",
+      "sha256": "12164ae4e462912c1affa758fbe4005c8571d406d6f57c8b419bd55a7b97a0d0"
+    },
+    {
+      "bytes": 2736,
+      "path": "tests/test_r6_audio_cache_candidate.py",
+      "sha256": "96fe99e45092d29bd6ba959bc746592ca00d9b2900b460c4ba49225bc54f927c"
+    },
+    {
+      "bytes": 37192,
+      "path": "tests/test_r6_qualification_brightness_transaction.py",
+      "sha256": "934ca830f2442ba958173b7e18babfa995d079dfb309578b1b322db23087da81"
+    },
+    {
+      "bytes": 24696,
+      "path": "tests/test_r6_audio_cache_transaction_dryrun.py",
+      "sha256": "8b96562841a4f27c3a084a55f5cca6ff05e3beefda5ea3a2d4469f3d807719be"
+    },
+    {
+      "bytes": 4341,
+      "path": "tests/test_hbnf_r6_combined_feature_check.py",
+      "sha256": "3dcfb342fb358f13d282aff73cb3005b6da8d7d6fc4db420c8bbe584372204fc"
+    },
+    {
+      "bytes": 38110,
+      "path": "scripts/hbnf_foundation_live_adapter.py",
+      "sha256": "c3e0ec091ffdfa07f39725b2b38b7cd9c16de62273f125c1a1456f9e1c7d31da"
+    },
+    {
+      "bytes": 57766,
+      "path": "scripts/hbnf_live_kernel_sweep.py",
+      "sha256": "f6d13e662717c31c7bbc78bc627163e2d5ddbbfdd413e6ee663a92c671378cb0"
+    },
+    {
+      "bytes": 17799,
+      "path": "scripts/hbnf_foundation_soak_audit.py",
+      "sha256": "e9ccfd5bcc494c354472939b378faf3400a5f9c238f0912119887c13fc07f62d"
+    },
+    {
+      "bytes": 15979,
+      "path": "scripts/hbnf_packet20_r4_live_transaction.py",
+      "sha256": "6042fe80aa22ef8eedf5d6ea346f5f853e96a23d6e0dcdc409fd882ae01d28e4"
+    },
+    {
+      "bytes": 4175,
+      "path": "scripts/hbnf_guarded_run.py",
+      "sha256": "1684260f70c85f72262a2b6c84a9f6c8a180fb3bb39fce6720ac3e46b67b7053"
+    },
+    {
+      "bytes": 34592,
+      "path": "scripts/platform.py",
+      "sha256": "318a88b1fc105456f8eae598561429cfbefdfce4526913427c8f387575f88f4d"
+    },
+    {
+      "bytes": 1946,
+      "path": "evidence/cart2-r6-f89-compact-font-20261011/BUILD_RECEIPT.json",
+      "sha256": "e385f31bfd44f9aa8bda86b6bb43083df2748457be581363cc8d0c26faccccf4"
+    },
+    {
+      "bytes": 2816,
+      "path": "evidence/cart2-r6-f89-compact-font-20261011/SOURCE_BINDING.json",
+      "sha256": "f11a3925769443253ea8deb516beb813ed32c8d84cd171c5c88f292c8ae8c7a9"
+    },
+    {
+      "bytes": 10752,
+      "path": "evidence/cart2-r6-f89-compact-font-20261011/OFFLINE_INTEGRATED_CANDIDATE_MANIFEST.json",
+      "sha256": "38a530a9adb94c38722f706160363ee3416d23d4af6ab8fdb98933c83acff7f3"
+    },
+    {
+      "bytes": 1498672,
+      "path": "evidence/cart2-r6-f89-compact-font-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011.bin",
+      "sha256": "e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2"
+    },
+    {
+      "bytes": 3682,
+      "path": "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_F89_COMPACT_FONT_20261011.json",
+      "sha256": "46a11e2d34453fa1c84941f9c188d0317c7383c21dd1c6484c1f1a176af725cc"
+    }
+  ],
+  "run_id": "hbnf-matrix-20261011T194742Z-8b264d43",
+  "schema": "local-roots-execution-capsule-v1",
+  "stages": [
+    {
+      "id": "package-doctor",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "platform doctor and HBNF control state pass; pushed branch is clean"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "contract-closure",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "exact candidate SHA/size/embedded identity and compiled telemetry manifest verified",
+        "Matrix WLED 16.0.1 /update consumer path and target identity verified"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "recovery-proof",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "exact R4 local recovery SHA/size and runtime ledger verified",
+        "same /update recovery path already proven end-to-end"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "transaction-rehearsal",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "one multipart install and exact recovery transaction mechanically rehearsed from prior receipts; no live change"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "capture-current-state",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "fresh Matrix/AUX/Opal state, exact identities, health, and renderer baseline captured"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "read-only-preflight",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "immediate pre-mutation identities and continuity pass"
+      ],
+      "retry_policy": "idempotent",
+      "timeout_budget": {
+        "inner_calls_max": 5,
+        "inner_timeout_seconds": 5,
+        "margin_seconds": 15,
+        "outer_seconds": 40
+      }
+    },
+    {
+      "id": "candidate-install",
+      "kind": "live",
+      "mutation": true,
+      "outputs": [
+        "one multipart install attempt only for hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011 SHA-256 e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2; immediately capture HTTP response, exact runtime identity, Matrix/AUX health"
+      ],
+      "retry_policy": "never",
+      "rollback": {
+        "strategy": "one exact SHA-verified R4 Matrix /update recovery only if candidate identity/runtime/safety/frozen performance or required AUX synchronization fails"
+      },
+      "timeout_budget": {
+        "inner_calls_max": 1,
+        "inner_timeout_seconds": 190,
+        "margin_seconds": 50,
+        "outer_seconds": 240
+      }
+    },
+    {
+      "id": "runtime-smoke-and-physical-sync",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "matched kernel0 and kernel13 at brightness44 versus exact R4 baselines; advancing renderer; exact telemetry fields; heap/restarts; actual Matrix-to-AUX output and owner-observed physical sync"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "all-kernel-sweep-and-soak",
+      "kind": "live",
+      "mutation": true,
+      "outputs": [
+        "28-kernel sweep and uninterrupted >=5400-second soak audited against the unchanged frozen policy; no threshold weakening"
+      ],
+      "retry_policy": "explicit_only",
+      "rollback": {
+        "strategy": "restore exact renderer snapshot; if frozen device/safety/AUX gate fails, use only the exact pre-proven R4 recovery; preserve evidence before continuing offline"
+      },
+      "timeout_budget": {
+        "inner_calls_max": 1,
+        "inner_timeout_seconds": 5670,
+        "margin_seconds": 330,
+        "outer_seconds": 6000
+      }
+    },
+    {
+      "id": "owner-acceptance",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "one consolidated owner session records physical AUX sync/recovery, text/Vibe/audio, iPad/PWA/Guest behavior, and final acceptance decisions; T5 not inferred"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "record",
+      "kind": "evidence",
+      "mutation": false,
+      "outputs": [
+        "terminal Phase 2 R4 qualification receipt, candidate/recovery identities, GitHub/Drive/AKS pointers, and control state reconciled"
+      ],
+      "retry_policy": "idempotent"
+    }
+  ],
+  "storage_policy": {
+    "aks": "searchable routing, current-state pointers, acceptance/supersession metadata, and external artifact identities",
+    "github": "canonical/buildable source, scripts, configs, workflow definitions, and small machine-readable provenance",
+    "google_drive": "durable binaries, recovery artifacts, decisive evidence, and large immutable run outputs",
+    "local_workspace": "ephemeral execution only; never sole authority after a result becomes meaningful"
+  },
+  "system_id": "hbnf-matrix",
+  "terminal_recovery": "If the exact compositor-hoist candidate is unqualified or runtime safety/required AUX behavior fails, preserve the failure evidence, install only the exact R4 recovery within the fresh candidate-specific authorized limit, verify exact R4 identity and health, then continue offline work; never stop solely because a soak failed.",
+  "trace_id": "7382b0af3fb540aa9b7ab5b7ede0090a",
+  "user_interaction_policy": {
+    "copy_paste_delivery": "one_single_fenced_block_per_action",
+    "max_user_actions_per_blocker": 1,
+    "required_user_action_fields": [
+      "prerequisite",
+      "action",
+      "expected_result",
+      "stop_condition"
+    ],
+    "resource_instruction_requires_direct_link_or_exact_path": true,
+    "terminal_app": "macOS Terminal",
+    "terminal_relay": false
+  },
+  "workflow_id": "phase2-live-qualification",
+  "workflow_source": {
+    "path": "platform/workflows/phase2-live-qualification.json",
+    "sha256": "3c4df670dab53a1caf8f4fb4040601ec9b69f5db27359146abd58800005243c1"
+  }
+}

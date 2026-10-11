@@ -1,0 +1,60 @@
+{
+  "captured_unix": 1791749118.37639,
+  "matrix_identity": {
+    "ip": "192.168.77.10",
+    "mac": "704bca5b345c",
+    "wled": "16.0.1",
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "build_mac": "704bca5b345c"
+  },
+  "brightness": {
+    "matrix_on": true,
+    "runtime": {
+      "matrixBrightness": 147,
+      "auxBrightness": 255,
+      "vibe": 0
+    },
+    "persisted": {
+      "matrixBrightness": 147,
+      "auxBrightness": 255,
+      "vibe": 0
+    },
+    "runtime_observation": {
+      "runtime_fields": [
+        "matrixBrightness",
+        "auxBrightness"
+      ],
+      "vibe_source": "persisted_config_only_on_exact_R4"
+    }
+  },
+  "aux": {
+    "ip": "192.168.77.11",
+    "mac": "8c94df55c34c",
+    "ver": "16.0.1",
+    "live": true,
+    "lm": "DDP",
+    "lip": "192.168.77.10",
+    "leds": {
+      "count": 22,
+      "pwr": 261,
+      "fps": 45,
+      "maxpwr": 900,
+      "maxseg": 32,
+      "bootps": 0,
+      "seglc": [
+        1
+      ],
+      "lc": 1,
+      "rgbw": false,
+      "wv": 0,
+      "cct": 0
+    }
+  },
+  "aux_state": {
+    "on": true,
+    "lor": 0
+  },
+  "read_only": true,
+  "device_requests": 8
+}

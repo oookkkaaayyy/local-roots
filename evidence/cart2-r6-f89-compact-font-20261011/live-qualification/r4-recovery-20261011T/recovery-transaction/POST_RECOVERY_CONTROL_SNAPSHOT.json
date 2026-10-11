@@ -1,0 +1,42 @@
+{
+  "aux": {
+    "ddp": {
+      "led_count": 22,
+      "live": true,
+      "mode": "DDP",
+      "source": "192.168.77.10"
+    },
+    "identity": {
+      "mac": "8c94df55c34c",
+      "wled": "16.0.1"
+    },
+    "runtime": {
+      "lor": 0,
+      "on": true
+    }
+  },
+  "captured_unix": 1791749118.37639,
+  "device_mutations": 0,
+  "matrix": {
+    "hbnf": {
+      "auxBrightness": 255,
+      "foundationTelemetryEnabled": false,
+      "matrixBrightness": 147,
+      "packet20DiagnosticEnabled": false,
+      "vibe": 0
+    },
+    "identity": {
+      "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "mac": "704bca5b345c",
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "wled": "16.0.1"
+    },
+    "persistedHbnf": {
+      "auxBrightness": 255,
+      "matrixBrightness": 147,
+      "vibe": 0
+    }
+  },
+  "read_only": true,
+  "schema": "cart2-current-matrix-readonly-snapshot-v1"
+}

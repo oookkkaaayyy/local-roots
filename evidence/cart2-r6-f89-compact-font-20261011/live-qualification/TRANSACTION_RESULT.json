@@ -1,0 +1,844 @@
+{
+  "brightness_restore": {
+    "identity_before_post": {
+      "build_mac": "704bca5b345c",
+      "candidate": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+      "wled": "16.0.1"
+    },
+    "operation": "restore",
+    "persisted_readback_semantics": "Raw /cfg.json is parsed in memory; only HBNF brightness/AUX/vibe fields are retained; raw config is not logged or saved",
+    "post_error": null,
+    "post_outcome": "RESPONSE_RECEIVED",
+    "readback": {
+      "identity": {
+        "build_mac": "704bca5b345c",
+        "candidate": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+        "ip": "192.168.77.10",
+        "mac": "704bca5b345c",
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+        "wled": "16.0.1"
+      },
+      "matrix_on": true,
+      "persisted": {
+        "auxBrightness": 255,
+        "matrixBrightness": 147,
+        "vibe": 0
+      },
+      "runtime": {
+        "auxBrightness": 255,
+        "matrixBrightness": 147,
+        "vibe": 0
+      },
+      "vibe_persistence": "verified"
+    },
+    "readback_endpoints": [
+      "GET /json/info",
+      "GET /hbnf/build.json",
+      "GET /json/state",
+      "http://192.168.77.10/edit?func=download&path=%2Fcfg.json"
+    ],
+    "requested_hbnf": {
+      "matrixBrightness": 147
+    },
+    "save_settle_seconds": 1.25,
+    "target_matrix_brightness": 147,
+    "verified": true,
+    "vibe_config_migration": "not_needed"
+  },
+  "brightness_setup": {
+    "identity_before_post": {
+      "build_mac": "704bca5b345c",
+      "candidate": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+      "wled": "16.0.1"
+    },
+    "operation": "measure",
+    "persisted_readback_semantics": "Raw /cfg.json is parsed in memory; only HBNF brightness/AUX/vibe fields are retained; raw config is not logged or saved",
+    "post_error": null,
+    "post_outcome": "RESPONSE_RECEIVED",
+    "readback": {
+      "identity": {
+        "build_mac": "704bca5b345c",
+        "candidate": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+        "ip": "192.168.77.10",
+        "mac": "704bca5b345c",
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+        "wled": "16.0.1"
+      },
+      "matrix_on": true,
+      "persisted": {
+        "auxBrightness": 255,
+        "matrixBrightness": 44,
+        "vibe": 0
+      },
+      "runtime": {
+        "auxBrightness": 255,
+        "matrixBrightness": 44,
+        "vibe": 0
+      },
+      "vibe_persistence": "verified"
+    },
+    "readback_endpoints": [
+      "GET /json/info",
+      "GET /hbnf/build.json",
+      "GET /json/state",
+      "http://192.168.77.10/edit?func=download&path=%2Fcfg.json"
+    ],
+    "requested_hbnf": {
+      "matrixBrightness": 44
+    },
+    "save_settle_seconds": 1.25,
+    "target_matrix_brightness": 44,
+    "verified": true,
+    "vibe_config_migration": "verified_by_post_write_readback"
+  },
+  "brightness_setup_started": true,
+  "candidate_install_attempts": 1,
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+  "candidate_runtime": {
+    "aux_info": {
+      "arch": "esp32",
+      "bootloaderSHA256": "b97d154765ea69ca895a33de59adb4b322509aa2a3e2c7c8409b31cbc1bcc2cd",
+      "brand": "WLED",
+      "clock": 240,
+      "cn": "Niji",
+      "core": "4.4.8.240628",
+      "cpalcount": 0,
+      "cpalmax": 129,
+      "deviceId": "e3d28e871aade5e29da7fa368a6759ea368fc3572d",
+      "flash": 4,
+      "freeheap": 103240,
+      "fs": {
+        "pmt": 0,
+        "t": 983,
+        "u": 20
+      },
+      "fxcount": 248,
+      "ip": "192.168.77.11",
+      "leds": {
+        "bootps": 0,
+        "cct": 0,
+        "count": 22,
+        "fps": 23,
+        "lc": 1,
+        "maxpwr": 900,
+        "maxseg": 32,
+        "pwr": 326,
+        "rgbw": false,
+        "seglc": [
+          1
+        ],
+        "wv": 0
+      },
+      "lip": "192.168.77.10",
+      "live": true,
+      "liveseg": -1,
+      "lm": "DDP",
+      "lwip": 0,
+      "mac": "8c94df55c34c",
+      "maps": [
+        {
+          "id": 0
+        }
+      ],
+      "name": "WLED",
+      "ndc": 1,
+      "opt": 79,
+      "palcount": 72,
+      "product": "FOSS",
+      "release": "ESP32",
+      "repo": "wled/WLED",
+      "simplifiedui": false,
+      "str": false,
+      "time": "1970-1-1, 00:44:25",
+      "u": {
+        "Animartrix": [
+          "Animartrix requires the Creative Commons Attribution License CC BY-NC 3.0"
+        ],
+        "AudioReactive": [
+          "<button class=\"btn btn-xs\" onclick=\"requestJson({AudioReactive:{enabled:true}});\"><i class=\"icons off\">&#xe08f;</i></button>"
+        ]
+      },
+      "udpport": 21324,
+      "um": [
+        32,
+        45
+      ],
+      "umpalcount": 0,
+      "uptime": 2665,
+      "ver": "16.0.1",
+      "vid": 2605010,
+      "wifi": {
+        "ap": false,
+        "bssid": "94:83:C4:98:78:94",
+        "channel": 4,
+        "rssi": -12,
+        "signal": 100
+      },
+      "ws": 0
+    },
+    "matrix_build": {
+      "basedOnFirmwareSha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "basedOnReleaseId": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "candidate": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+      "features": [
+        "phase2-brightness-output-v1",
+        "wled-native-fontmanager-text-v1",
+        "foundation-vibe-audio-r5-unfrozen",
+        "native-text-moments-r5-unfrozen"
+      ],
+      "ip": "192.168.77.10",
+      "mac": "70:4b:ca:5b:34:5c",
+      "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+      "schema": "hbnf-build-v1",
+      "wled": "16.0.1"
+    },
+    "matrix_info": {
+      "arch": "esp32",
+      "bootloaderSHA256": "b97d154765ea69ca895a33de59adb4b322509aa2a3e2c7c8409b31cbc1bcc2cd",
+      "brand": "WLED",
+      "clock": 240,
+      "cn": "Niji",
+      "core": "4.4.8.240628",
+      "cpalcount": 0,
+      "cpalmax": 129,
+      "deviceId": "52d5bc29d6bd3a4be1702e3b7393daae7d6581734d",
+      "flash": 4,
+      "freeheap": 73780,
+      "fs": {
+        "pmt": 0,
+        "t": 983,
+        "u": 364
+      },
+      "fxcount": 220,
+      "ip": "192.168.77.10",
+      "leds": {
+        "bootps": 60,
+        "cct": 0,
+        "count": 534,
+        "fps": 24,
+        "lc": 1,
+        "matrix": {
+          "h": 16,
+          "w": 32
+        },
+        "maxpwr": 1800,
+        "maxseg": 32,
+        "pwr": 1800,
+        "rgbw": false,
+        "seglc": [
+          1,
+          0
+        ],
+        "wv": 0
+      },
+      "lip": "",
+      "live": false,
+      "liveseg": -1,
+      "lm": "",
+      "lwip": 0,
+      "mac": "704bca5b345c",
+      "maps": [
+        {
+          "id": 0
+        }
+      ],
+      "name": "WLED-Gledopto",
+      "ndc": 0,
+      "opt": 79,
+      "palcount": 72,
+      "product": "FOSS",
+      "release": "ESP32",
+      "repo": "wled/WLED",
+      "simplifiedui": false,
+      "str": false,
+      "time": "1970-1-1, 00:00:09",
+      "u": {
+        "AGC Gain": [
+          7.27,
+          "x"
+        ],
+        "Audio Source": [
+          "PDM digital",
+          " - peak  41%"
+        ],
+        "AudioReactive": [
+          "<button class=\"btn btn-xs\" onclick=\"requestJson({AudioReactive:{enabled:false}});\"><i class=\"icons on\">&#xe08f;</i></button>"
+        ],
+        "GEQ Input Level": [
+          "<div class=\"slider\"><div class=\"sliderwrap il\"><input class=\"noslide\" onchange=\"requestJson({AudioReactive:{inputLevel:parseInt(this.value)}});\" oninput=\"updateTrail(this);\" max=255 min=0 type=\"range\" value=255 /><div class=\"sliderdisplay\"></div></div></div>"
+        ],
+        "Sound Processing": [
+          "running"
+        ],
+        "UDP Sound Sync": [
+          "send mode",
+          " v2"
+        ]
+      },
+      "udpport": 21324,
+      "um": [
+        32,
+        58
+      ],
+      "umpalcount": 0,
+      "uptime": 9,
+      "ver": "16.0.1",
+      "vid": 2605010,
+      "wifi": {
+        "ap": false,
+        "bssid": "94:83:C4:98:78:94",
+        "channel": 4,
+        "rssi": -44,
+        "signal": 100
+      },
+      "ws": 0
+    }
+  },
+  "candidate_sha256": "e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2",
+  "candidate_stage": {
+    "bytes": 1498672,
+    "firmware_requests": 0,
+    "mode": "0600",
+    "remote_path": "/tmp/hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011.bin",
+    "sha256": "e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2"
+  },
+  "device_requests": 79,
+  "preflight": {
+    "aux": {
+      "ip": "192.168.77.11",
+      "led_count": 22,
+      "live": true,
+      "lor": 0,
+      "mac": "8c94df55c34c",
+      "mode": "DDP",
+      "source": "192.168.77.10",
+      "wled": "16.0.1"
+    },
+    "brightness_baseline": {
+      "matrix_on": true,
+      "persisted": {
+        "auxBrightness": 255,
+        "matrixBrightness": 147
+      },
+      "runtime": {
+        "auxBrightness": 255,
+        "matrixBrightness": 147
+      },
+      "runtime_observation": {
+        "runtime_fields": [
+          "matrixBrightness",
+          "auxBrightness"
+        ],
+        "vibe_source": "unavailable_on_exact_R4"
+      }
+    },
+    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+    "candidate_sha256": "e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2",
+    "captured_at_unix": 1791748091.000492,
+    "host_on_ac": true,
+    "matrix": {
+      "brightness": 147,
+      "diagnostic_off": true,
+      "fps": 41,
+      "free_heap": 73612,
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "telemetry_off": true,
+      "uptime_seconds": 1892,
+      "wled": "16.0.1"
+    },
+    "no_house_voltage_sensor": true,
+    "opal": {
+      "read_only": true,
+      "stdout": "OPAL_PREFLIGHT_OKn 12:48:11 up  4:12,  load average: 1.24, 1.22, 1.20\nFilesystem           1K-blocks      Used Available Use% Mounted on\ntmpfs                    59392       432     58960   1% /tmp\n/usr/bin/curl\n/usr/bin/sha256sum\n55 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\n"
+    },
+    "pass": true,
+    "pre_mutation_state": {
+      "aux": {
+        "ddp": {
+          "leds": {
+            "bootps": 0,
+            "cct": 0,
+            "count": 22,
+            "fps": 34,
+            "lc": 1,
+            "maxpwr": 900,
+            "maxseg": 32,
+            "pwr": 146,
+            "rgbw": false,
+            "seglc": [
+              1
+            ],
+            "wv": 0
+          },
+          "lip": "192.168.77.10",
+          "live": true,
+          "lm": "DDP"
+        },
+        "identity": {
+          "ip": "192.168.77.11",
+          "mac": "8c94df55c34c",
+          "wled": "16.0.1"
+        },
+        "runtime": {
+          "bri": 255,
+          "lor": 0,
+          "mainseg": 0,
+          "nl": {
+            "dur": 60,
+            "mode": 1,
+            "on": false,
+            "rem": -1,
+            "tbri": 0
+          },
+          "on": true,
+          "pl": -1,
+          "ps": -1,
+          "seg": [
+            {
+              "bm": 0,
+              "bri": 255,
+              "c1": 128,
+              "c2": 128,
+              "c3": 16,
+              "cct": 127,
+              "col": [
+                [
+                  255,
+                  160,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ]
+              ],
+              "frz": false,
+              "fx": 0,
+              "grp": 1,
+              "id": 0,
+              "ix": 128,
+              "lc": 1,
+              "len": 22,
+              "m12": 0,
+              "mi": false,
+              "o1": false,
+              "o2": false,
+              "o3": false,
+              "of": 0,
+              "on": true,
+              "pal": 0,
+              "rev": false,
+              "sel": true,
+              "set": 0,
+              "si": 0,
+              "spc": 0,
+              "start": 0,
+              "stop": 22,
+              "sx": 128
+            }
+          ],
+          "transition": 7
+        }
+      },
+      "matrix": {
+        "fps": 41,
+        "free_heap": 73612,
+        "hbnf_brightness": {
+          "auxBrightness": 255,
+          "matrixBrightness": 147
+        },
+        "identity": {
+          "build_mac": "704bca5b345c",
+          "candidate": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+          "ip": "192.168.77.10",
+          "mac": "704bca5b345c",
+          "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+          "wled": "16.0.1"
+        },
+        "persisted_hbnf_brightness": {
+          "auxBrightness": 255,
+          "matrixBrightness": 147
+        },
+        "runtime": {
+          "bri": 255,
+          "lor": 0,
+          "mainseg": 0,
+          "nl": {
+            "dur": 60,
+            "mode": 1,
+            "on": false,
+            "rem": -1,
+            "tbri": 0
+          },
+          "on": true,
+          "pl": -1,
+          "ps": -1,
+          "seg": [
+            {
+              "bm": 0,
+              "bri": 255,
+              "c1": 128,
+              "c2": 128,
+              "c3": 16,
+              "cct": 127,
+              "col": [
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ]
+              ],
+              "frz": false,
+              "fx": 142,
+              "grp": 1,
+              "id": 0,
+              "ix": 128,
+              "lc": 1,
+              "len": 32,
+              "m12": 0,
+              "mY": false,
+              "mi": false,
+              "o1": false,
+              "o2": false,
+              "o3": false,
+              "of": 0,
+              "on": true,
+              "pal": 22,
+              "rY": false,
+              "rev": false,
+              "sel": true,
+              "set": 0,
+              "si": 0,
+              "spc": 0,
+              "start": 0,
+              "startY": 0,
+              "stop": 32,
+              "stopY": 16,
+              "sx": 128,
+              "tp": false
+            },
+            {
+              "bm": 0,
+              "bri": 255,
+              "c1": 128,
+              "c2": 128,
+              "c3": 16,
+              "cct": 127,
+              "col": [
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ]
+              ],
+              "frz": false,
+              "fx": 142,
+              "grp": 1,
+              "id": 1,
+              "ix": 128,
+              "lc": 0,
+              "len": 22,
+              "m12": 0,
+              "mY": false,
+              "mi": false,
+              "o1": false,
+              "o2": false,
+              "o3": false,
+              "of": 0,
+              "on": true,
+              "pal": 0,
+              "rY": false,
+              "rev": false,
+              "sel": true,
+              "set": 0,
+              "si": 0,
+              "spc": 0,
+              "start": 512,
+              "startY": 0,
+              "stop": 534,
+              "stopY": 1,
+              "sx": 128,
+              "tp": false
+            }
+          ],
+          "transition": 7
+        },
+        "uptime_seconds": 1892
+      }
+    },
+    "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "route": "en0/192.168.77.0/24",
+    "schema": "hbnf-cart2-candidate-fresh-prelive-v1",
+    "single_worker": {
+      "conflicting_pids": [],
+      "pass": true,
+      "worker_count": 1
+    }
+  },
+  "qualification": {
+    "abort": {
+      "post_restore_state": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-f89-compact-font-20261011/live-qualification/sweep/POST_RESTORE_STATE.json",
+      "pre_sweep_state": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-f89-compact-font-20261011/live-qualification/sweep/PRE_SWEEP_STATE.json",
+      "profiles_completed": 8,
+      "restore_error": null,
+      "run_error": "diagnostic-continuation-aux-projection-inactive",
+      "status": "FAIL"
+    },
+    "diagnostic_complete": {},
+    "passed": false,
+    "report": {},
+    "returncode": 2
+  },
+  "recovery_attempts": 0,
+  "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "runtime_resolution": {
+    "http_response_ambiguous": false,
+    "installed": true,
+    "runtime": {
+      "aux_info": {
+        "arch": "esp32",
+        "bootloaderSHA256": "b97d154765ea69ca895a33de59adb4b322509aa2a3e2c7c8409b31cbc1bcc2cd",
+        "brand": "WLED",
+        "clock": 240,
+        "cn": "Niji",
+        "core": "4.4.8.240628",
+        "cpalcount": 0,
+        "cpalmax": 129,
+        "deviceId": "e3d28e871aade5e29da7fa368a6759ea368fc3572d",
+        "flash": 4,
+        "freeheap": 103240,
+        "fs": {
+          "pmt": 0,
+          "t": 983,
+          "u": 20
+        },
+        "fxcount": 248,
+        "ip": "192.168.77.11",
+        "leds": {
+          "bootps": 0,
+          "cct": 0,
+          "count": 22,
+          "fps": 23,
+          "lc": 1,
+          "maxpwr": 900,
+          "maxseg": 32,
+          "pwr": 326,
+          "rgbw": false,
+          "seglc": [
+            1
+          ],
+          "wv": 0
+        },
+        "lip": "192.168.77.10",
+        "live": true,
+        "liveseg": -1,
+        "lm": "DDP",
+        "lwip": 0,
+        "mac": "8c94df55c34c",
+        "maps": [
+          {
+            "id": 0
+          }
+        ],
+        "name": "WLED",
+        "ndc": 1,
+        "opt": 79,
+        "palcount": 72,
+        "product": "FOSS",
+        "release": "ESP32",
+        "repo": "wled/WLED",
+        "simplifiedui": false,
+        "str": false,
+        "time": "1970-1-1, 00:44:25",
+        "u": {
+          "Animartrix": [
+            "Animartrix requires the Creative Commons Attribution License CC BY-NC 3.0"
+          ],
+          "AudioReactive": [
+            "<button class=\"btn btn-xs\" onclick=\"requestJson({AudioReactive:{enabled:true}});\"><i class=\"icons off\">&#xe08f;</i></button>"
+          ]
+        },
+        "udpport": 21324,
+        "um": [
+          32,
+          45
+        ],
+        "umpalcount": 0,
+        "uptime": 2665,
+        "ver": "16.0.1",
+        "vid": 2605010,
+        "wifi": {
+          "ap": false,
+          "bssid": "94:83:C4:98:78:94",
+          "channel": 4,
+          "rssi": -12,
+          "signal": 100
+        },
+        "ws": 0
+      },
+      "matrix_build": {
+        "basedOnFirmwareSha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+        "basedOnReleaseId": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+        "candidate": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+        "features": [
+          "phase2-brightness-output-v1",
+          "wled-native-fontmanager-text-v1",
+          "foundation-vibe-audio-r5-unfrozen",
+          "native-text-moments-r5-unfrozen"
+        ],
+        "ip": "192.168.77.10",
+        "mac": "70:4b:ca:5b:34:5c",
+        "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+        "schema": "hbnf-build-v1",
+        "wled": "16.0.1"
+      },
+      "matrix_info": {
+        "arch": "esp32",
+        "bootloaderSHA256": "b97d154765ea69ca895a33de59adb4b322509aa2a3e2c7c8409b31cbc1bcc2cd",
+        "brand": "WLED",
+        "clock": 240,
+        "cn": "Niji",
+        "core": "4.4.8.240628",
+        "cpalcount": 0,
+        "cpalmax": 129,
+        "deviceId": "52d5bc29d6bd3a4be1702e3b7393daae7d6581734d",
+        "flash": 4,
+        "freeheap": 73780,
+        "fs": {
+          "pmt": 0,
+          "t": 983,
+          "u": 364
+        },
+        "fxcount": 220,
+        "ip": "192.168.77.10",
+        "leds": {
+          "bootps": 60,
+          "cct": 0,
+          "count": 534,
+          "fps": 24,
+          "lc": 1,
+          "matrix": {
+            "h": 16,
+            "w": 32
+          },
+          "maxpwr": 1800,
+          "maxseg": 32,
+          "pwr": 1800,
+          "rgbw": false,
+          "seglc": [
+            1,
+            0
+          ],
+          "wv": 0
+        },
+        "lip": "",
+        "live": false,
+        "liveseg": -1,
+        "lm": "",
+        "lwip": 0,
+        "mac": "704bca5b345c",
+        "maps": [
+          {
+            "id": 0
+          }
+        ],
+        "name": "WLED-Gledopto",
+        "ndc": 0,
+        "opt": 79,
+        "palcount": 72,
+        "product": "FOSS",
+        "release": "ESP32",
+        "repo": "wled/WLED",
+        "simplifiedui": false,
+        "str": false,
+        "time": "1970-1-1, 00:00:09",
+        "u": {
+          "AGC Gain": [
+            7.27,
+            "x"
+          ],
+          "Audio Source": [
+            "PDM digital",
+            " - peak  41%"
+          ],
+          "AudioReactive": [
+            "<button class=\"btn btn-xs\" onclick=\"requestJson({AudioReactive:{enabled:false}});\"><i class=\"icons on\">&#xe08f;</i></button>"
+          ],
+          "GEQ Input Level": [
+            "<div class=\"slider\"><div class=\"sliderwrap il\"><input class=\"noslide\" onchange=\"requestJson({AudioReactive:{inputLevel:parseInt(this.value)}});\" oninput=\"updateTrail(this);\" max=255 min=0 type=\"range\" value=255 /><div class=\"sliderdisplay\"></div></div></div>"
+          ],
+          "Sound Processing": [
+            "running"
+          ],
+          "UDP Sound Sync": [
+            "send mode",
+            " v2"
+          ]
+        },
+        "udpport": 21324,
+        "um": [
+          32,
+          58
+        ],
+        "umpalcount": 0,
+        "uptime": 9,
+        "ver": "16.0.1",
+        "vid": 2605010,
+        "wifi": {
+          "ap": false,
+          "bssid": "94:83:C4:98:78:94",
+          "channel": 4,
+          "rssi": -44,
+          "signal": 100
+        },
+        "ws": 0
+      }
+    }
+  },
+  "schema": "hbnf-cart2-candidate-qualification-transaction-v1",
+  "status": "QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED",
+  "upload": {
+    "attempts": 1,
+    "confirmed": true,
+    "curl_exit": 0,
+    "http_status": "200",
+    "response_bytes": 540,
+    "response_sha256": "8ac836bbaf204b1341e2f7f03a4c49be782aa43443375f55ea9a2774ce4885ba",
+    "retry": false,
+    "ssh_exit": 0
+  }
+}

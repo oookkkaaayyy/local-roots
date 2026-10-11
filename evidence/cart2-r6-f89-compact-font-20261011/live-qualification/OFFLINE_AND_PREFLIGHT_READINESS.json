@@ -1,0 +1,70 @@
+{
+  "schema": "hbnf-r6-exact-candidate-offline-readiness-v1",
+  "captured_utc": "2026-10-11T19:47:29.489701+00:00",
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+  "candidate_sha256": "e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2",
+  "result": "PASS",
+  "commands": [
+    {
+      "command": "python3 tests/hbnf_control.py",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/hbnf_guarded_run.py",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 scripts/hbnf_architecture_fitness.py",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/hbnf_runtime_qualify_static.py",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/hbnf_kernel_sweep_report.py",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/hbnf_source_tree_identity.py",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/hbnf_live_kernel_sweep.py",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/hbnf_packet20_http_adapter.py",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/hbnf_packet20_build_validate.py",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/test_r6_qualification_brightness_transaction.py",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/test_r6_audio_cache_transaction_dryrun.py",
+      "exit_code": 0,
+      "result": "PASS"
+    }
+  ],
+  "network_mutations": 0,
+  "device_mutations": 0,
+  "notes": [
+    "All commands were executed in this checkout after the bounded runner/workflow correction.",
+    "Firmware was not rebuilt; exact existing binary and exact R4 rollback hashes were verified."
+  ]
+}

@@ -357,8 +357,8 @@ def read_matrix_context(request_counter=None, expected_release=RELEASE,
         "persisted": persisted, "brightness": brightness}
 
 
-def read_failed_candidate_recovery_context(request_counter, candidate):
-    """Read the one known post-sweep settings state before exact R4 recovery."""
+def read_failed_candidate_recovery_context(request_counter, candidate, owner_brightness_baseline):
+    """Read the exact current candidate state and bind recovery to captured owner brightness."""
     identity_before, info, build = _read_expected_matrix_identity(request_counter, candidate.release_id)
     state = _get_json_counted(MATRIX+"/json/state", 4, request_counter)[2]
     persisted_raw = _get_json_counted(PERSISTED_CONFIG_URL, 6, request_counter)[2]
@@ -366,16 +366,17 @@ def read_failed_candidate_recovery_context(request_counter, candidate):
     identity_after, _, _ = _read_expected_matrix_identity(request_counter, candidate.release_id)
     h = state.get("HBNF", {})
     runtime = {key: h.get(key) for key in ("matrixBrightness", "auxBrightness", "vibe")}
-    expected_runtime = {"matrixBrightness": FROZEN_MATRIX_BRIGHTNESS, "auxBrightness": 245, "vibe": 0}
-    expected_persisted = {"matrixBrightness": FROZEN_MATRIX_BRIGHTNESS, "auxBrightness": 245, "vibe": 1}
+    expected_runtime = dict(owner_brightness_baseline or {})
+    expected_persisted = dict(owner_brightness_baseline or {})
     if (identity_before != identity_after or state.get("on") is not True
         or identity_after.get("mac") != MATRIX_MAC or info.get("ver") != "16.0.1"
         or build.get("release_id") != candidate.release_id or build.get("candidate") != candidate.release_id
-        or h.get("candidate") != candidate.release_id or runtime != expected_runtime
-        or persisted != expected_persisted
+        or h.get("candidate") != candidate.release_id or not expected_runtime
+        or any(runtime.get(key) != value for key, value in expected_runtime.items())
+        or any(persisted.get(key) != value for key, value in expected_persisted.items())
         or h.get("packet20Diagnostic", {}).get("enabled") is not False
         or h.get("foundationTelemetry", {}).get("enabled") is not False):
-        raise RuntimeError("failed-candidate-recovery-state-differs-from-recorded-post-sweep-state")
+        raise RuntimeError("failed-candidate-recovery-state-or-owner-brightness-differs-from-captured-baseline")
     return {"identity": identity_after, "info": info, "build": build, "state": state,
         "runtime": runtime, "persisted": persisted}
 
@@ -846,6 +847,11 @@ def device_failure_requires_recovery(summary):
         # already-authorized recovery path.
         "foundation-frame-tail-quantile-saturated",
         "diagnostics_complete__performance_gate_failed",
+        # The frozen sweep's continuation guard records this condition when
+        # Matrix-to-AUX DDP projection drops during qualification. The release
+        # contract classifies AUX/runtime integrity as an immediate stop and
+        # requires the already-authorized exact R4 recovery.
+        "diagnostic-continuation-aux-projection-inactive",
     )
     return any(marker in text for marker in markers)
 
@@ -968,6 +974,15 @@ class LivePort:
         self.recovery_attempts = 0
         self.owner_brightness_baseline = None
         self.state_path = ROOT/"config/HBNF_CONTROL_STATE.json"
+        # Recovery-only invocations are new processes. Reload the original
+        # owner's captured brightness so the exact R4 readback can verify it.
+        try:
+            state=json.loads(self.state_path.read_text())
+            baseline=state.get("live_mutation_authorization",{}).get("owner_brightness_baseline")
+            if isinstance(baseline,dict):
+                self.owner_brightness_baseline=dict(baseline)
+        except (OSError,ValueError,TypeError):
+            pass
         self._explicit_outdir = outdir is not None
         self.outdir = pathlib.Path(outdir).resolve() if outdir else candidate.output
 
@@ -1057,7 +1072,13 @@ class LivePort:
         route=run(["route","-n","get","192.168.77.10"],timeout=5).stdout.decode(errors="replace")
         if "AC Power" not in power or "interface: en0" not in route:
             raise RuntimeError("recovery-only host AC/LAN preflight failed")
-        context=read_failed_candidate_recovery_context(self._record_device_request,self.candidate)
+        live_state=json.loads(self.state_path.read_text())
+        saved_owner=live_state.get("live_mutation_authorization",{}).get("owner_brightness_baseline")
+        if not isinstance(saved_owner,dict) or not saved_owner:
+            raise RuntimeError("captured-owner-settings-baseline-unavailable")
+        self.owner_brightness_baseline=dict(saved_owner)
+        context=read_failed_candidate_recovery_context(
+            self._record_device_request,self.candidate,self.owner_brightness_baseline)
         ai=_get_json_counted(AUX+"/json/info",4,self._record_device_request)[2]
         ast=_get_json_counted(AUX+"/json/state",4,self._record_device_request)[2]
         if not (ai.get("ip")=="192.168.77.11" and ai.get("mac","").replace(":","").lower()==AUX_MAC
@@ -1079,7 +1100,8 @@ class LivePort:
             "candidate_release_id":self.candidate.release_id,"candidate_sha256":self.candidate.sha256,
             "matrix":{"ip":"192.168.77.10","mac":MATRIX_MAC,"wled":"16.0.1",
                 "release_id":self.candidate.release_id,"candidate_sha256":self.candidate.sha256,
-                "on":True,"brightness":FROZEN_MATRIX_BRIGHTNESS,"diagnostic_off":True,"telemetry_off":True},
+                "on":True,"brightness":context["runtime"].get("matrixBrightness"),
+                "diagnostic_off":True,"telemetry_off":True},
             "brightness_baseline":{"runtime":context["runtime"],"persisted":context["persisted"]},
             "aux":{"ip":ai["ip"],"mac":ai["mac"],"live":ai["live"],"mode":ai["lm"],
                 "source":ai["lip"],"led_count":ai["leds"]["count"],"on":ast["on"],"lor":ast["lor"]},
@@ -1289,8 +1311,8 @@ class LivePort:
             ast=_get_json_counted(AUX+"/json/state",4,self._record_device_request)[2]
             if not (r4["brightness"]["matrix_on"] is True
                 and isinstance(self.owner_brightness_baseline,dict)
-                and r4["brightness"]["runtime"]==self.owner_brightness_baseline
-                and r4["brightness"]["persisted"]==self.owner_brightness_baseline
+                and all(r4["brightness"]["runtime"].get(k)==v for k,v in self.owner_brightness_baseline.items())
+                and all(r4["brightness"]["persisted"].get(k)==v for k,v in self.owner_brightness_baseline.items())
                 and ai.get("mac","").replace(":","").lower()==AUX_MAC and ai.get("live") is True
                 and ai.get("lm")=="DDP" and ai.get("lip")=="192.168.77.10"
                 and ai.get("leds",{}).get("count")==22 and ast.get("on") is True and ast.get("lor")==0):

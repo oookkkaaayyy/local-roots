@@ -1,0 +1,117 @@
+{
+  "foundationTelemetry": {
+    "audioMsAvg": 2.451358,
+    "audioMsP95": 4.375,
+    "auxPrepareSendMsAvg": 4.934382,
+    "auxPrepareSendMsP95": 6.125,
+    "enabled": true,
+    "frameMsAvg": 72.82124,
+    "frameMsMax": 144.796,
+    "frameMsP50": 69.375,
+    "frameMsP95": 102.125,
+    "frameMsP99": 127.875,
+    "frameTailBinResolutionUs": 250,
+    "frameTailOverflow": true,
+    "kernelId": 2,
+    "kernelMsAvg": 60.07396,
+    "kernelMsP95": 74.375,
+    "largestFreeBlockBytes": 65524,
+    "minimumFreeHeapBytes": 46904,
+    "overlayMsAvg": 0.056181,
+    "overlayMsP95": 0.125,
+    "paletteMsAvg": 0.41794,
+    "paletteMsP95": 0.375,
+    "sampleCount": 464,
+    "schedulerMsAvg": 1.733254,
+    "schedulerMsP95": 2.375,
+    "unaccountedMsAvg": 3.151375,
+    "unaccountedMsP95": 3.625
+  },
+  "frame_ms_max": 144.796,
+  "frame_tail_overflow": true,
+  "frame_tail_sample_count": 464,
+  "quantiles": {
+    "audioMsP95": 4.375,
+    "auxPrepareSendMsP95": 6.125,
+    "frameMsP50": 69.375,
+    "frameMsP95": 102.125,
+    "frameMsP99": 127.875,
+    "kernelMsP95": 74.375,
+    "overlayMsP95": 0.125,
+    "paletteMsP95": 0.375,
+    "schedulerMsP95": 2.375,
+    "unaccountedMsP95": 3.625
+  },
+  "runtime_context": {
+    "active_vibe": 0,
+    "audio_response": 50,
+    "aux_output_brightness": 255,
+    "cpu_clock_mhz": 240,
+    "kernel": 2,
+    "matrix_brightness": 255,
+    "matrix_on": true,
+    "matrix_output_brightness": 44,
+    "motion": 50,
+    "overlay_id": null,
+    "palette": {
+      "mode": "legacy"
+    },
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+    "scene": 0,
+    "segment0": {
+      "bri": 255,
+      "col": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "fx": 142,
+      "id": 0,
+      "on": true,
+      "pal": 13,
+      "rev": false,
+      "sel": true,
+      "start": 0,
+      "stop": 32
+    },
+    "variant_signature": 1347100674,
+    "vibe": 0,
+    "wled": "16.0.1"
+  },
+  "saturated_fields": [
+    "frameMsP99"
+  ],
+  "saturated_quantile_ms": 127.875,
+  "status": "SATURATED",
+  "timing": {
+    "audioModulationUs": 2275,
+    "auxProjectionAgeMs": 62,
+    "companionDdpSendUs": 9346,
+    "companionPrepUs": 272,
+    "companionRenderCount": 4247,
+    "fps": 13,
+    "freeHeap": 115220,
+    "kernel": 2,
+    "kernelRenderUs": 63204,
+    "overlayUs": 79,
+    "paletteColorUs": 376,
+    "rssi": -44,
+    "schedulerVariantUs": 1676,
+    "unaccountedUs": 16203,
+    "uptimeSec": 248,
+    "variantSignature": 1347100674,
+    "wholeFrameUs": 93435
+  }
+}

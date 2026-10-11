@@ -1,0 +1,9 @@
+{
+  "kernel_index": 2,
+  "kernel_name": "Parametric_Water",
+  "qualification_eligible": false,
+  "sample_count": 25,
+  "sample_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-f89-compact-font-20261011/live-qualification/sweep/02_Parametric_Water.jsonl",
+  "saturated_sample_count": 20,
+  "status": "SATURATED_TELEMETRY_DIAGNOSTIC_ONLY"
+}

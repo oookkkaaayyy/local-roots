@@ -1,0 +1,10 @@
+{
+  "authorization_id": "OWNER-20261011-CART2-R6-COMPACT-FONT-QUALIFICATION-01",
+  "candidate_attempt": 1,
+  "candidate_attempt_limit": 1,
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+  "candidate_sha256": "e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2",
+  "preflight_sha256": "b03815806d74f10e455ce2a35b7be7a68b2cc574ea8251a339d3090c6d1101da",
+  "r4_recovery_limit": 1,
+  "recorded_before_wled_post": true
+}

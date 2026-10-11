@@ -1,0 +1,111 @@
+{
+  "schema": "local-roots-prelive-proof-v1",
+  "run_id": "hbnf-matrix-20261011T194742Z-8b264d43",
+  "capsule_sha256": "78a86a188a5792583f16d81e8bf1497ecfb4dcd09dbdbc78f9ac91b997f37669",
+  "created_at_utc": "2026-10-11T19:47:50.915618+00:00",
+  "approved_for_mutation": true,
+  "stages": {
+    "contract-closure": {
+      "status": "PASS",
+      "evidence": [
+        "evidence/cart2-r6-f89-compact-font-20261011/SOURCE_BINDING.json",
+        "evidence/cart2-r6-f89-compact-font-20261011/BUILD_RECEIPT.json",
+        "evidence/cart2-r6-f89-compact-font-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011.bin"
+      ]
+    },
+    "recovery-proof": {
+      "status": "PASS",
+      "evidence": [
+        "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+        "evidence/cart2-r6-f89-compact-font-20261011/live-qualification/FRESH_PRELIVE_READONLY.json",
+        "evidence/cart2-r6-f89-compact-font-20261011/live-qualification/SUCCESSOR_TRANSACTION_DRYRUN.json"
+      ]
+    },
+    "transaction-rehearsal": {
+      "status": "PASS",
+      "evidence": [
+        "evidence/cart2-r6-f89-compact-font-20261011/live-qualification/SUCCESSOR_TRANSACTION_DRYRUN.json",
+        "evidence/cart2-r6-f89-compact-font-20261011/live-qualification/OFFLINE_AND_PREFLIGHT_READINESS.json"
+      ]
+    },
+    "capture-current-state": {
+      "status": "PASS",
+      "evidence": [
+        "evidence/cart2-r6-f89-compact-font-20261011/live-qualification/FRESH_PRELIVE_READONLY.json"
+      ]
+    }
+  },
+  "recovery_identity": {
+    "identity": {
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "bytes": 1489008,
+      "path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin"
+    },
+    "verification": "Exact local R4 bytes SHA-verified; fresh read-only Opal release ledger reports sequence 55 and the exact R4 release/SHA; existing Opal-origin WLED /update recovery path is exercised by the current single-transaction runner and dry run."
+  },
+  "pre_mutation_state": {
+    "matrix": {
+      "brightness": 147,
+      "diagnostic_off": true,
+      "fps": 42,
+      "free_heap": 73720,
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "telemetry_off": true,
+      "uptime_seconds": 1750,
+      "wled": "16.0.1"
+    },
+    "aux": {
+      "ip": "192.168.77.11",
+      "led_count": 22,
+      "live": true,
+      "lor": 0,
+      "mac": "8c94df55c34c",
+      "mode": "DDP",
+      "source": "192.168.77.10",
+      "wled": "16.0.1"
+    },
+    "brightness_baseline": {
+      "matrix_on": true,
+      "persisted": {
+        "auxBrightness": 255,
+        "matrixBrightness": 147
+      },
+      "runtime": {
+        "auxBrightness": 255,
+        "matrixBrightness": 147
+      },
+      "runtime_observation": {
+        "runtime_fields": [
+          "matrixBrightness",
+          "auxBrightness"
+        ],
+        "vibe_source": "unavailable_on_exact_R4"
+      }
+    },
+    "host_on_ac": true,
+    "route": "en0/192.168.77.0/24",
+    "opal": {
+      "read_only": true,
+      "stdout": "OPAL_PREFLIGHT_OKn 12:45:48 up  4:09,  load average: 1.15, 1.22, 1.20\nFilesystem           1K-blocks      Used Available Use% Mounted on\ntmpfs                    59392       432     58960   1% /tmp\n/usr/bin/curl\n/usr/bin/sha256sum\n55 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\n"
+    },
+    "single_worker": {
+      "conflicting_pids": [],
+      "pass": true,
+      "worker_count": 1
+    },
+    "captured_at_unix": 1791747948.588355
+  },
+  "consumer_contract": {
+    "verified": true,
+    "consumer": "Matrix WLED 16.0.1 /update",
+    "transport": "Opal-origin local multipart upload; one request only",
+    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+    "candidate_sha256": "e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2",
+    "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "no_cloud_or_router_mutation": true
+  }
+}

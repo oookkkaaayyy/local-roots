@@ -269,6 +269,10 @@ def main():
     cases.append(run_case("frozen device gate failure", gate_fail,
              "QUALIFICATION_FAILED_R4_RECOVERED", 1, 1, 13))
 
+    aux_projection_failure = {"abort":{"run_error":"diagnostic-continuation-aux-projection-inactive"}}
+    assert module.device_failure_requires_recovery(aux_projection_failure)
+    cases.append({"case":"AUX projection integrity failure triggers the authorized exact recovery path","pass":True})
+
     saturated_tail = FakePort(qualification_error=(
         "RuntimeError: foundation-frame-tail-quantile-saturated-at-127.875ms"))
     assert module.device_failure_requires_recovery(saturated_tail.qualify())

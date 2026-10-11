@@ -1,0 +1,107 @@
+{
+  "current_state": "PHASE2_INTEGRATING",
+  "execution_cursor": {
+    "current_failure_domain": "R6_FROZEN_PERFORMANCE_GATE_FAILED__EXACT_R4_RECOVERED__OFFLINE_REPAIR_ONLY",
+    "current_lifecycle_state": "PHASE2_INTEGRATING",
+    "current_subject": {
+      "artifact_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "authorization_id": "OWNER-20261011-CART2-R6-COMPACT-FONT-QUALIFICATION-01",
+      "aux_brightness": 255,
+      "aux_ddp": "live from Matrix",
+      "candidate_artifact_path": "evidence/cart2-r6-f89-compact-font-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011.bin",
+      "candidate_install_attempts_used": 1,
+      "candidate_install_receipt": "evidence/cart2-r6-f89-compact-font-20261011/live-qualification/TRANSACTION_RESULT.json",
+      "candidate_install_receipt_sha256": "4265d6c3a3077a7fb300248926e11ec98aaa34e4b0e5049b84e8a14531294b78",
+      "exact_r4_recovery_attempts_used": 1,
+      "failed_candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+      "failed_candidate_sha256": "e4149f3c1ed8a5577c55707123b829364cdd2d77e1f0e800d53cc8b655d0fcd2",
+      "installed_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "installed_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "matrix_brightness": 147,
+      "owner_brightness_baseline": {
+        "auxBrightness": 255,
+        "matrixBrightness": 147
+      },
+      "qualification_result": "evidence/cart2-r6-f89-compact-font-20261011/live-qualification/r4-recovery-20261011T/recovery-transaction/RECOVERY_RECONCILIATION_RESULT.json",
+      "qualification_result_sha256": "a5b9fb83afbb21d9d948be98762d5522a55e33420569b6b40f128bffa63bd2b4",
+      "recovery_result": "evidence/cart2-r6-f89-compact-font-20261011/live-qualification/r4-recovery-20261011T/recovery-transaction/RECOVERY_RECONCILIATION_RESULT.json",
+      "recovery_result_sha256": "a5b9fb83afbb21d9d948be98762d5522a55e33420569b6b40f128bffa63bd2b4",
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "rollback_artifact_path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "runtime_readonly_receipt": "evidence/cart2-r6-f89-compact-font-20261011/live-qualification/r4-recovery-20261011T/recovery-transaction/POST_RECOVERY_CONTROL_SNAPSHOT.json",
+      "runtime_readonly_sha256": "458255d8358d47a6330f33aeabedbf5e9566cea2dd4f77c0cbfca52274e2eb42",
+      "runtime_vibe": 0
+    },
+    "current_transition": "T4_PHASE2_INTEGRATION",
+    "exact_next_path": [
+      "R6 failed the kernel-0 performance gate; the sweep then stopped on an AUX/DDP integrity failure after 8 of 28 profiles. The remaining 20 profiles and 90-minute soak did not run.",
+      "Exact Foundation R4 is installed and read-only verified at the captured Matrix/AUX brightness 147/255, with persisted/runtime Vibe 0 and live Matrix-origin AUX DDP.",
+      "The one candidate attempt and one exact R4 recovery are consumed. Continue with offline source analysis and host qualification; any future live candidate requires a new exact owner authorization."
+    ],
+    "no_repeat": [
+      "Do not reinstall the failed candidate or repeat its completed 28-kernel diagnostic sweep.",
+      "Do not claim qualification, soak completion, or owner acceptance.",
+      "Do not perform further live mutation under the consumed exact owner authorization."
+    ],
+    "schema": "hbnf-execution-cursor-v1"
+  },
+  "external_parallel_launch": {
+    "activation_event": "FOUNDATION_SOAK_RUNNING",
+    "failure_ownership": "Failure to spawn parallel workers is an orchestration/coordinator failure, never a failure of a worker that lacks spawn capability.",
+    "launch_owner": "COORDINATOR_EXTERNAL_TO_LIVE_WORKER",
+    "launch_status": "PHASE2_ACTIVE__HOST_OFFLINE_ONLY",
+    "required_live_worker_signal": "PARALLEL_LANES_READY",
+    "worker_can_spawn_workers": false
+  },
+  "inherited_evidence_ids": [
+    "PACKET20_DIAGNOSTIC_CLOSE",
+    "R4_RENDERER_PERFORMANCE",
+    "FOUNDATION_OBSERVER_EFFECT",
+    "RELEASE07_RECOVERY",
+    "HOST_DEADLINE_REGRESSION",
+    "HOST_HISTOGRAM_OVERFLOW_REGRESSION"
+  ],
+  "live_mutation_authorized": false,
+  "model_valid": true,
+  "next_state": "RELEASE_CANDIDATE",
+  "next_transition": "T4_PHASE2_INTEGRATION",
+  "observability": {
+    "authority_effect": "NONE",
+    "cadence_minutes": 15,
+    "current_worker": "P2_VIBE_AUDIO",
+    "note": "Telemetry only; never operational authority. Heartbeats must yield to critical-path work and may be delayed by blocking operations.",
+    "rows": {
+      "FOUNDATION_LIVE": 3,
+      "P2_MISSION_CONTROL_SCORING": 4,
+      "P2_PWA_RELIABILITY": 7,
+      "P2_TEXT_MOMENTS": 6,
+      "P2_VIBE_AUDIO": 5
+    },
+    "schema": "hbnf-worker-observability-state-v1",
+    "sheet_name": "Live Status",
+    "stale_after_minutes": 25,
+    "status_sheet_id": "1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko",
+    "status_sheet_url": "https://docs.google.com/spreadsheets/d/1NYbhh7G-HC1yPtFzU98Rtg93HGKoQamCychNUY8CQko/edit"
+  },
+  "parallelism": {
+    "core_lanes": [
+      "P2_MISSION_CONTROL_SCORING",
+      "P2_VIBE_AUDIO",
+      "P2_TEXT_MOMENTS",
+      "P2_PWA_RELIABILITY"
+    ],
+    "pass": true,
+    "required": true,
+    "tracked": [
+      "P2_MISSION_CONTROL_SCORING",
+      "P2_PWA_RELIABILITY",
+      "P2_TEXT_MOMENTS",
+      "P2_VIBE_AUDIO"
+    ],
+    "violations": []
+  },
+  "phase2_implementation_authorized": true,
+  "required_receipt_type": "phase2_integration",
+  "schema": "hbnf-control-status-v2",
+  "validation_errors": []
+}

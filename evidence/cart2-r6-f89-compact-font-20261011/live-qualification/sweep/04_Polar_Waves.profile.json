@@ -1,0 +1,143 @@
+{
+  "failures": [],
+  "profile": {
+    "aux": {
+      "age_p99_ms": 4294967295.0,
+      "inactive_samples": 0,
+      "render_fps_median": 23.0
+    },
+    "collection_errors": 0,
+    "contract": "foundation",
+    "effective_rendering_settings": {
+      "status": "MATCHED",
+      "values": {
+        "audio_response": 50,
+        "aux_brightness": 255,
+        "matrix_brightness": 44,
+        "matrix_on": true,
+        "motion": 50,
+        "overlay_id": null,
+        "palette": {
+          "mode": "legacy"
+        },
+        "scene": 0,
+        "vibe": 0,
+        "wled_brightness": 255
+      }
+    },
+    "fps": {
+      "median": 23.0,
+      "min": 22,
+      "p05": 22.0
+    },
+    "frame_ms": {
+      "avg_median": 39.399625,
+      "max": 121.305,
+      "p50_median": 37.5,
+      "p95_median": 45.625,
+      "p99_median": 91.125
+    },
+    "heap": {
+      "free_end": 115904,
+      "free_start": 116224,
+      "largest_block_end": 69620,
+      "largest_block_start": 61428,
+      "minimum_free_min": 42748
+    },
+    "kernel": {
+      "id": 4,
+      "name": "Polar_Waves",
+      "variant_id": 1347100676
+    },
+    "qualification_eligible": true,
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-compact-font-20261011",
+    "restart_count_end": 0,
+    "restart_count_start": 0,
+    "sample_count": 24,
+    "schema": "hbnf-runtime-profile-v2",
+    "stages": {
+      "audio_ms_avg": {
+        "max": 3.320158,
+        "median": 3.2271165,
+        "p95": 3.31851465
+      },
+      "audio_ms_p95": {
+        "max": 3.875,
+        "median": 3.875,
+        "p95": 3.875
+      },
+      "aux_prepare_send_ms_avg": {
+        "max": 4.835613,
+        "median": 4.735707,
+        "p95": 4.8082481
+      },
+      "aux_prepare_send_ms_p95": {
+        "max": 6.375,
+        "median": 6.125,
+        "p95": 6.375
+      },
+      "frame_ms_avg": {
+        "max": 39.59708,
+        "median": 39.399625,
+        "p95": 39.579797
+      },
+      "kernel_ms_avg": {
+        "max": 26.33042,
+        "median": 26.172995,
+        "p95": 26.311209
+      },
+      "kernel_ms_p95": {
+        "max": 29.375,
+        "median": 29.0,
+        "p95": 29.375
+      },
+      "overlay_ms_avg": {
+        "max": 0.047788,
+        "median": 0.0473465,
+        "p95": 0.04767845
+      },
+      "overlay_ms_p95": {
+        "max": 0.125,
+        "median": 0.125,
+        "p95": 0.125
+      },
+      "palette_ms_avg": {
+        "max": 0.401013,
+        "median": 0.38753099999999996,
+        "p95": 0.39846010000000004
+      },
+      "palette_ms_p95": {
+        "max": 0.375,
+        "median": 0.375,
+        "p95": 0.375
+      },
+      "scheduler_ms_avg": {
+        "max": 1.691719,
+        "median": 1.6805984999999999,
+        "p95": 1.6907926
+      },
+      "scheduler_ms_p95": {
+        "max": 2.125,
+        "median": 2.125,
+        "p95": 2.125
+      },
+      "unaccounted_ms_avg": {
+        "max": 3.123433,
+        "median": 3.097041,
+        "p95": 3.11855345
+      },
+      "unaccounted_ms_p95": {
+        "max": 3.625,
+        "median": 3.625,
+        "p95": 3.625
+      }
+    },
+    "valid_sample_count": 24,
+    "validation_errors": [],
+    "wifi": {
+      "rssi_dbm_median": -46.0,
+      "rssi_dbm_min": -54
+    }
+  },
+  "status": "PASS"
+}

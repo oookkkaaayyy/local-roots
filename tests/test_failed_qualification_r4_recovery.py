@@ -92,10 +92,45 @@ def main():
         finally:
             CONTROL.ROOT=old_root
 
+    # Immediate AUX/runtime-integrity stop uses the bounded abort receipt and
+    # verified renderer restoration; no full sweep is required after a stop gate.
+    with tempfile.TemporaryDirectory(prefix="r4-recovery-aux-stop-") as td:
+        old_root=CONTROL.ROOT; CONTROL.ROOT=Path(td)
+        try:
+            state,proof,_=fixture(Path(td))
+            auth=state["live_mutation_authorization"]
+            auth["owner_brightness_baseline"]={"matrixBrightness":147,"auxBrightness":255}
+            proof_data=json.loads(proof.read_text())
+            proof_data["matrix"]["brightness"]=147
+            proof_data["brightness_baseline"]={"runtime":{"matrixBrightness":147,"auxBrightness":255,"vibe":0},
+                "persisted":{"matrixBrightness":147,"auxBrightness":255,"vibe":1}}
+            proof.write_text(json.dumps(proof_data)+"\n")
+            tx_path=Path(td)/auth["transaction_result"]
+            tx=json.loads(tx_path.read_text())
+            tx.update({"schema":"hbnf-cart2-candidate-qualification-transaction-v1",
+                "status":"QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED",
+                "candidate_install_attempts":1,"qualification":{"passed":False,"abort":{"status":"FAIL",
+                    "run_error":"diagnostic-continuation-aux-projection-inactive"}}})
+            tx_sha=write(tx_path,tx)
+            subject=state["execution_cursor"]["current_subject"]
+            subject["qualification_result_sha256"]=tx_sha
+            diag_path=tx_path.parent/"sweep/SWEEP_ABORT.json"
+            write(diag_path,{"status":"FAIL","run_error":"diagnostic-continuation-aux-projection-inactive",
+                "restore_error":None,"profiles_completed":8})
+            write(tx_path.parent/"sweep/POST_RESTORE_STATE.json",{"restoreVerified":True,"packet20Same":True})
+            complete=tx_path.parent/"sweep/DIAGNOSTIC_COMPLETE_RESULT.json"
+            complete_doc=json.loads(complete.read_text()); complete_doc["kernels_completed"]=8; write(complete,complete_doc)
+            result=CONTROL.reconcile_failed_qualification_for_r4_recovery(state,proof)
+            assert result["live_mutation_authorized"] is True
+            assert result["live_mutation_authorization"]["qualification_recovery_subscope"]=="EXACT_R4_RECOVERY_ONLY"
+            assert result["live_mutation_authorization"]["owner_brightness_baseline"]=={"matrixBrightness":147,"auxBrightness":255}
+        finally:
+            CONTROL.ROOT=old_root
+
     for mutate in (
         lambda proof,diag: proof.update(captured_unix=time.time()-301),
         lambda proof,diag: proof["matrix"].update(brightness=52),
-        lambda proof,diag: proof["brightness_baseline"]["persisted"].update(vibe=0),
+        lambda proof,diag: proof["brightness_baseline"]["persisted"].update(auxBrightness=246),
         lambda proof,diag: proof["single_worker"].update(worker_count=2),
         lambda proof,diag: diag.update(kernels_completed=27),
         lambda proof,diag: diag.update(soak_started=True),

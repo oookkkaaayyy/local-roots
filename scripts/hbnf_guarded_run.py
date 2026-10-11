@@ -43,8 +43,10 @@ def main():
         if args.admission_stage=="LIVE_QUALIFICATION":
             command_is_python=bool(command and (pathlib.Path(command[0]).name in ("python","python3") or pathlib.Path(command[0]).resolve()==pathlib.Path(sys.executable).resolve()))
             target=command[1] if command_is_python and len(command)>1 else (command[0] if command else "")
-            if not command or pathlib.Path(target).resolve()!=(ROOT/"scripts/hbnf_r6_audio_cache_live_transaction.py").resolve() or "--resume-qualification" not in command:
-                raise SystemExit("BLOCKED: LIVE_QUALIFICATION may launch only the exact R6 qualification continuation")
+            recovery_only=("--recover-r4-only" in command and "--recovery-proof" in command and "--outdir" in command)
+            qualification_only=("--resume-qualification" in command and not recovery_only)
+            if not command or pathlib.Path(target).resolve()!=(ROOT/"scripts/hbnf_r6_audio_cache_live_transaction.py").resolve() or not (qualification_only or recovery_only):
+                raise SystemExit("BLOCKED: LIVE_QUALIFICATION may launch only the exact R6 continuation or one proof-bound R4 recovery")
         control=ROOT/"scripts/hbnf_control.py"
         if not control.is_file():
             raise SystemExit("BLOCKED: release admission validator is missing")

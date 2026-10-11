@@ -310,6 +310,10 @@
       }
     },
     {
+      "case": "AUX projection integrity failure triggers the authorized exact recovery path",
+      "pass": true
+    },
+    {
       "brightness_restore": {
         "target_matrix_brightness": 52,
         "verified": true
