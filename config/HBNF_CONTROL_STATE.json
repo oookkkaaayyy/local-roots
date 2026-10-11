@@ -2853,17 +2853,19 @@
         "status_sheet_row": 7
       },
       "P2_TEXT_MOMENTS": {
-        "blocker": "Exact qualified 12px WBF/font asset bytes not yet recovered; firmware compositor cannot be source-bound.",
-        "dependency": "RECOVER_EXACT_WBF_ASSET_FROM_PRESERVED_SOURCE_OR_REQUEST_EXPLICIT_SCOPE_CHANGE",
+        "blocker": "Native WLED text integration and compact-font fallback are built in the current offline candidate; owner visual review remains pending after release qualification.",
+        "dependency": "OWNER_VISUAL_REVIEW_AFTER_RELEASE_QUALIFICATION",
         "execution_context": "LUNA_WORKER_BOUNDED_TASKS",
         "launch_owner": "COORDINATOR",
         "offline_checkpoint": {
-          "branch": "hbnf-p2-text-moments-offline-20261006",
-          "head": "2bbe7ca5c244986c57d4d6f054ebcdfe6337b362",
-          "host_tests": "7/7 PASS",
+          "branch": "codex/cart2-compositor-timing-20261011",
+          "head": "7645dae3806c1e352a1063ac22d1482ddb5713ff",
+          "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+          "candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+          "host_validation_receipt": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/HOST_VALIDATION_RECEIPT.json",
+          "host_tests": "3 focused checks PASS; host-only, target speed unmeasured",
           "live_mutation": "NONE",
-          "receipt": "evidence/hbnf-phase2-text-moments-20261006/OFFLINE_COMPLETION_RECEIPT.json",
-          "status": "OFFLINE_PREP_COMPLETE__NOT_RENDERER_INTEGRATED"
+          "status": "OFFLINE_INTEGRATED__NATIVE_WLED_TEXT_AND_COMPACT_FALLBACK_BUILT__OWNER_VISUAL_REVIEW_PENDING"
         },
         "status": "BLOCKED_WITH_EXACT_DEPENDENCY",
         "status_sheet_row": 6
