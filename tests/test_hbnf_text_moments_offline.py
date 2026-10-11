@@ -117,6 +117,13 @@ class TextMomentTests(unittest.TestCase):
         self.assertEqual(p.pages,("ANDREW",))
         self.assertFalse(p.marquee_fallback)
         self.assertLessEqual(_width("ANDREW",p.font),TEXT_WIDTH_PX)
+    def test_compact_font_fallback_applies_to_oversized_non_name_text(self):
+        from tools.hbnf_text_moments_offline import _width, TEXT_WIDTH_PX
+        p=plan({"class":"SHORT_ANNOUNCEMENT","primary_text":"WWWWWW"},{"vibe":"CHILL"})
+        self.assertEqual(p.font,"WLED_NATIVE_TOM_THUMB_6PX")
+        self.assertEqual(p.pages,("WWWWWW",))
+        self.assertFalse(p.marquee_fallback)
+        self.assertLessEqual(_width("WWWWWW",p.font),TEXT_WIDTH_PX)
     def test_vibe_changes_treatment_not_text_geometry(self):
         a=plan({"class":"HERO_WORD","primary_text":"ACE"},{"vibe":"CHILL"}); b=plan({"class":"HERO_WORD","primary_text":"ACE"},{"vibe":"HEAVY"}); self.assertEqual(a.pages,b.pages); self.assertNotEqual(a.entry,b.entry); self.assertTrue(a.glyph_geometry_stable and b.glyph_geometry_stable)
     def test_unknown_vibe_fails_to_auto_inherit(self):
