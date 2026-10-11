@@ -39,7 +39,32 @@
     "source_date_epoch": 1791450000,
     "command": "PYTHONPATH=/private/tmp/hbnf-p2-build/pio-cli PLATFORMIO_CORE_DIR=/private/tmp/hbnf-p2-build/pio-local SOURCE_DATE_EPOCH=1791450000 python3 -m platformio run -d /private/tmp/hbnf-p2-build/WLED-r6-audio-cache-20261010 -e hbnf_matrix_wled16_packet20_diag -v",
     "build_log_sha256": "ec0601072b9a232a81d2e0bd581b57c1b0104c08a6ed1552bc9d273551d21cbd",
-    "embedded_release_id_occurrences": 3
+    "embedded_release_id_occurrences": 3,
+    "source_revalidation": {
+      "result": "PASS",
+      "completed_at_utc": "2026-10-11T10:55:00Z",
+      "build_workspace": "/private/tmp/hbnf-p2-build/WLED-r6-audio-cache-20261010",
+      "candidate_source_directory": "firmware/phase2/integration-r6-cachefix/usermod",
+      "build_source_directory": "usermods/hbnf_foundation_v1",
+      "source_tree_sha256": "1547f8d4d575e793309f64ec10ae79f3a93a7976b21f68bbb3d89023751a5c6c",
+      "source_files_verified": 14,
+      "source_files_total": 14,
+      "resulting_firmware_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+      "resulting_firmware_bytes": 1498832,
+      "embedded_release_id_occurrences": 3,
+      "log_path": "BUILD_SOURCE_REVALIDATION.txt",
+      "log_sha256": "1eb88fb570d0ae435b995f047ddcf6807500a4bd8a9a1fe4c1e89255dc14494e",
+      "local_build_elapsed_seconds": 5.059,
+      "network_or_paid_build": "NOT USED"
+    },
+    "verified_input_hashes": {
+      "wled_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+      "fastled_commit": "adedfc40e73fb80f8e930318781036d8fe1dbd9f",
+      "platformio_ini_sha256": "99718bfd8614da297c94692bc41dea48c9af87dbe829ded2e4a7cad7f0368820",
+      "platformio_override_ini_sha256": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922",
+      "animartrix_dependency_header_sha256": "a2bc03b5196dbaacb39e56885ed9301106b15c4916e0b906f86c02db1601ec1b",
+      "note": "The build log records the selected environment, dependency graph, include path, and tool versions. This binds the relevant local source/config inputs for this candidate; it does not assert a fully hashed closure of every framework and dependency file."
+    }
   },
   "artifact": {
     "path": "artifact/hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011.bin",
