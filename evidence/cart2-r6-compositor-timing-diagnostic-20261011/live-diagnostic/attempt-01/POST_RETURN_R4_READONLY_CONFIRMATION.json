@@ -1,0 +1,36 @@
+{
+  "aux": {
+    "ddp_live": true,
+    "ip": "192.168.77.11",
+    "led_count": 22,
+    "mac": "8c94df55c34c",
+    "on": true,
+    "physical_output_status": "not observable from WLED JSON",
+    "source_ip": "192.168.77.10"
+  },
+  "device_mutation": false,
+  "matrix": {
+    "firmware_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "foundation_telemetry_enabled": false,
+    "fps_at_readback": 41,
+    "ip": "192.168.77.10",
+    "mac": "704bca5b345c",
+    "on": true,
+    "packet20_diagnostic_enabled": false,
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "runtime_aux_brightness": 245,
+    "runtime_matrix_brightness": 52,
+    "runtime_vibe_field_present": false,
+    "wled": "16.0.1"
+  },
+  "observed_at_utc": "2026-10-11T10:43:23Z",
+  "read_only": true,
+  "saved_r4_settings": {
+    "aux_brightness": 245,
+    "matrix_brightness": 52,
+    "source": "GET /edit?func=download&path=/cfg.json; parsed in memory; only selected field values retained",
+    "vibe_field_present": false
+  },
+  "schema": "hbnf-post-return-r4-readonly-confirmation-v1",
+  "scope_limit": "Confirms firmware identity and reported runtime/saved settings only; does not establish physical LED output or Cart 2.0 acceptance."
+}
