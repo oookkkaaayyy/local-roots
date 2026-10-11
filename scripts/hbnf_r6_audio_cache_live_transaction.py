@@ -210,14 +210,18 @@ def _read_expected_matrix_identity(request_counter, expected_release):
     return read_matrix_identity(request_counter, expected_release) if request_counter is not None else read_matrix_identity(expected_release=expected_release)
 
 
-def sanitized_persisted_hbnf(config: dict) -> dict:
-    """Extract only the three HBNF fields; raw cfg may contain credentials and is never logged or written."""
+def sanitized_persisted_hbnf(config: dict, *, allow_missing_vibe: bool = False) -> dict:
+    """Retain HBNF settings only; R4 may legitimately omit Vibe from saved config."""
     um = config.get("um") if isinstance(config, dict) else None
     hbnf = um.get("hbnfFoundationV1") if isinstance(um, dict) else None
     if not isinstance(hbnf, dict):
         raise RuntimeError("persisted-config-missing-HBNF-settings")
-    values = {key: hbnf.get(key) for key in ("matrixBrightness", "auxBrightness", "vibe")}
+    values = {key: hbnf.get(key) for key in ("matrixBrightness", "auxBrightness")}
+    if "vibe" in hbnf:
+        values["vibe"] = hbnf.get("vibe")
     if any(type(value) is not int for value in values.values()):
+        raise RuntimeError("persisted-config-HBNF-settings-partial-or-invalid")
+    if not allow_missing_vibe and "vibe" not in values:
         raise RuntimeError("persisted-config-HBNF-settings-partial-or-invalid")
     return values
 
@@ -257,8 +261,10 @@ def validate_preinstall_brightness_baseline(state: dict, persisted: dict) -> dic
     """
     runtime_state=state.get("HBNF",{}) if isinstance(state,dict) else {}
     runtime={"matrixBrightness":runtime_state.get("matrixBrightness"),
-        "auxBrightness":runtime_state.get("auxBrightness"),"vibe":persisted.get("vibe")}
+        "auxBrightness":runtime_state.get("auxBrightness")}
     stored=dict(persisted)
+    if "vibe" in stored:
+        runtime["vibe"] = stored["vibe"]
     if any(type(value) is not int for value in runtime.values()) or any(type(value) is not int for value in stored.values()):
         raise RuntimeError("preinstall-brightness-baseline-partial-or-invalid")
     for key in ("matrixBrightness","auxBrightness"):
@@ -270,8 +276,38 @@ def validate_preinstall_brightness_baseline(state: dict, persisted: dict) -> dic
     if values["runtime"]["matrixBrightness"]!=QUALIFICATION_BASELINE_BRIGHTNESS:
         raise RuntimeError("preinstall-owner-brightness-baseline-mismatch")
     values["runtime_observation"]={"runtime_fields":["matrixBrightness","auxBrightness"],
-        "vibe_source":"persisted_config_only_on_exact_R4"}
+        "vibe_source":"persisted_config_only_on_exact_R4" if "vibe" in stored else "unavailable_on_exact_R4"}
     return values
+
+
+def capture_owner_state_snapshot(matrix_state: dict, aux_state: dict, matrix_info: dict,
+                                 aux_info: dict, matrix_identity: dict,
+                                 aux_identity: dict, brightness_baseline: dict) -> dict:
+    """Retain the exact pre-install renderer/output state without config secrets."""
+    matrix_fields = ("on", "bri", "transition", "ps", "pl", "mainseg", "seg", "nl", "lor")
+    aux_fields = ("on", "bri", "transition", "ps", "pl", "mainseg", "seg", "nl", "lor")
+    matrix_runtime = {key: matrix_state[key] for key in matrix_fields if key in matrix_state}
+    aux_runtime = {key: aux_state[key] for key in aux_fields if key in aux_state}
+    if type(matrix_runtime.get("on")) is not bool or type(aux_runtime.get("on")) is not bool:
+        raise RuntimeError("preinstall-renderer-snapshot-missing-output-state")
+    if not isinstance(matrix_runtime.get("seg"), list) or not isinstance(aux_runtime.get("seg"), list):
+        raise RuntimeError("preinstall-renderer-snapshot-missing-segments")
+    return {
+        "matrix": {
+            "identity": matrix_identity,
+            "uptime_seconds": matrix_info.get("uptime"),
+            "free_heap": matrix_info.get("freeheap"),
+            "fps": matrix_info.get("leds", {}).get("fps"),
+            "runtime": matrix_runtime,
+            "hbnf_brightness": brightness_baseline["runtime"],
+            "persisted_hbnf_brightness": brightness_baseline["persisted"],
+        },
+        "aux": {
+            "identity": aux_identity,
+            "runtime": aux_runtime,
+            "ddp": {key: aux_info.get(key) for key in ("live", "lm", "lip", "leds") if key in aux_info},
+        },
+    }
 
 
 def read_matrix_context(request_counter=None, expected_release=RELEASE):
@@ -280,7 +316,7 @@ def read_matrix_context(request_counter=None, expected_release=RELEASE):
     # The read-only file API is parsed in memory; only HBNF brightness/AUX/vibe
     # fields survive extraction, regardless of whether the target requires a PIN.
     persisted_raw = _get_json_counted(PERSISTED_CONFIG_URL, 6, request_counter)[2]
-    persisted = sanitized_persisted_hbnf(persisted_raw)
+    persisted = sanitized_persisted_hbnf(persisted_raw, allow_missing_vibe=expected_release == R4)
     identity_after, _, _ = _read_expected_matrix_identity(request_counter,expected_release)
     if identity_before != identity_after:
         raise RuntimeError("qualification-matrix-identity-changed-during-readback")
@@ -308,26 +344,40 @@ def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep
                              expected_release=RELEASE) -> dict:
     """Set the frozen test brightness or restore captured HBNF settings, resolving uncertain POSTs by readback."""
     if operation == "measure":
-        if not isinstance(target, dict) or set(target) != {"matrixBrightness", "auxBrightness", "vibe"}:
+        if not isinstance(target, dict) or target.get("matrixBrightness") != QUALIFICATION_BASELINE_BRIGHTNESS:
             raise RuntimeError("qualification-baseline-receipt-invalid")
-        if any(type(v) is not int for v in target.values()) or target["matrixBrightness"] != QUALIFICATION_BASELINE_BRIGHTNESS:
+        if any(type(v) is not int for v in target.values()):
             raise RuntimeError("qualification-baseline-receipt-invalid")
         requested = {"matrixBrightness": FROZEN_MATRIX_BRIGHTNESS}
         target_brightness = FROZEN_MATRIX_BRIGHTNESS
-        expected_settings = {**target, "matrixBrightness": target_brightness}
     elif operation == "restore":
-        if not isinstance(target, dict) or set(target) != {"matrixBrightness", "auxBrightness", "vibe"}:
+        if not isinstance(target, dict) or target.get("matrixBrightness") != QUALIFICATION_BASELINE_BRIGHTNESS:
             raise RuntimeError("qualification-baseline-receipt-invalid")
         if any(type(v) is not int for v in target.values()):
             raise RuntimeError("qualification-baseline-receipt-invalid")
         requested = {"matrixBrightness": target["matrixBrightness"]}
         target_brightness = target["matrixBrightness"]
-        expected_settings = dict(target)
     else:
         raise RuntimeError("unknown-qualification-brightness-operation")
 
-    # Rebind the target immediately before every write; never set power, AUX, or Vibe.
+    # Rebind both candidate identity and all current persisted HBNF settings before
+    # the brightness-only write. R4 does not persist Vibe, so preserve the exact
+    # installed candidate's Vibe instead of inferring it from the R4 baseline.
     identity_before_post, _, _ = _read_expected_matrix_identity(request_counter,expected_release)
+    before = _read_expected_matrix_brightness_pair(request_counter,expected_release)
+    if before.get("identity") != identity_before_post or before.get("matrix_on") is not True:
+        raise RuntimeError("qualification-brightness-prewrite-identity-or-output-mismatch")
+    runtime = before.get("runtime", {})
+    persisted = before.get("persisted", {})
+    required_settings = ("matrixBrightness", "auxBrightness", "vibe")
+    if (any(type(runtime.get(key)) is not int or type(persisted.get(key)) is not int for key in required_settings)
+            or any(runtime.get(key) != persisted.get(key) for key in required_settings)):
+        raise RuntimeError("qualification-brightness-prewrite-settings-incomplete-or-mismatched")
+    expected_before = QUALIFICATION_BASELINE_BRIGHTNESS if operation == "measure" else FROZEN_MATRIX_BRIGHTNESS
+    if runtime["matrixBrightness"] != expected_before:
+        raise RuntimeError("qualification-brightness-prewrite-level-mismatch")
+    expected_settings = dict(runtime)
+    expected_settings["matrixBrightness"] = target_brightness
     payload = {"HBNF": requested}
     post_error = None
     try:
@@ -457,6 +507,10 @@ def preflight(profile=LEGACY_R6_PROFILE, request_counter=None):
     opal_out = op.stdout.decode(errors="replace")
     if op.returncode or "OPAL_PREFLIGHT_OK" not in opal_out or f"55 {R4} {R4_SHA}" not in opal_out or "curl" not in opal_out or "sha256sum" not in opal_out:
         raise RuntimeError("opal-readonly-release-ledger-or-transfer-preflight-failed")
+    owner_state = capture_owner_state_snapshot(
+        ms, ast, mi, ai, matrix_context["identity"],
+        {"ip": ai.get("ip"), "mac": ai.get("mac"), "wled": ai.get("ver")},
+        brightness_baseline)
     receipt = {"schema": "hbnf-cart2-candidate-fresh-prelive-v1", "captured_at_unix": time.time(),
                "pass": True, "host_on_ac": True, "route": "en0/192.168.77.0/24",
                "matrix": {"ip": mi["ip"], "mac": mi["mac"], "wled": mi["ver"], "release": mb["release_id"],
@@ -469,6 +523,7 @@ def preflight(profile=LEGACY_R6_PROFILE, request_counter=None):
                "candidate_release_id": profile.release_id,
                "candidate_sha256": profile.sha256, "rollback_sha256": profile.rollback_sha256,
                "brightness_baseline":brightness_baseline,
+               "pre_mutation_state": owner_state,
                "no_house_voltage_sensor": True}
     save(profile.output/"FRESH_PRELIVE_READONLY.json", receipt)
     return receipt

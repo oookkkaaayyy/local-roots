@@ -1,139 +1,147 @@
 {
-  "schema": "hbnf-cart2-offline-host-qualification-v1",
   "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
   "candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
-  "source_commit": "7645dae3806c1e352a1063ac22d1482ddb5713ff",
-  "started_at_utc": "2026-10-11T11:58:41Z",
   "checks": [
     {
       "command": "python3 tests/hbnf_control.py",
+      "elapsed_seconds": 0.274,
+      "output_sha256": "2dd54944d29a49d4a1f16a980601fbcfddecd60661e5d48125e3d6066d5ae3dd",
+      "output_tail": "PASS: linear receipt control plane is acyclic, nonrecursive, exact-input, and fail-closed\n.......................\n----------------------------------------------------------------------\nRan 23 tests in 0.183s\n\nOK\n",
       "result": "PASS",
-      "returncode": 0,
-      "elapsed_seconds": 0.271,
-      "output_sha256": "f7657f08930b7eb8bd0588dcc2a6902d006f2562c6a1e582972251cd2076ca0b",
-      "output_tail": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 0.178s\n\nOK\nPASS: linear receipt control plane is acyclic, nonrecursive, exact-input, and fail-closed\n"
+      "returncode": 0
     },
     {
       "command": "python3 tests/hbnf_guarded_run.py",
-      "result": "PASS",
-      "returncode": 0,
-      "elapsed_seconds": 0.489,
+      "elapsed_seconds": 0.479,
       "output_sha256": "47f9ccd062c834756b10b07ac1de9f2e89b8ac931ec72e3f74bb09910ebf4b23",
-      "output_tail": "PASS: guarded execution blocks wrong-state/unauthorized mutation; exact LIVE_APPROVED admission rejects missing, malformed, and stale identities before child execution\n"
+      "output_tail": "PASS: guarded execution blocks wrong-state/unauthorized mutation; exact LIVE_APPROVED admission rejects missing, malformed, and stale identities before child execution\n",
+      "result": "PASS",
+      "returncode": 0
     },
     {
       "command": "python3 scripts/hbnf_architecture_fitness.py",
-      "result": "PASS",
-      "returncode": 0,
-      "elapsed_seconds": 0.044,
+      "elapsed_seconds": 0.048,
       "output_sha256": "4265139d7ffdc8d1e2d98e584560e03809bd92b1a06a4801f3308f2a0617edf8",
-      "output_tail": "HBNF_ARCHITECTURE_FITNESS=PASS\nstates<=6 transitions<=5 linear_chain=true single_authority=true receipts_nonrecursive=true\n"
+      "output_tail": "HBNF_ARCHITECTURE_FITNESS=PASS\nstates<=6 transitions<=5 linear_chain=true single_authority=true receipts_nonrecursive=true\n",
+      "result": "PASS",
+      "returncode": 0
     },
     {
       "command": "python3 tests/hbnf_runtime_qualify_static.py",
-      "result": "PASS",
-      "returncode": 0,
-      "elapsed_seconds": 0.055,
+      "elapsed_seconds": 0.054,
       "output_sha256": "d64340209a688aa36111a299c834c7d445d44ffd98642210939ff43ada1cc681",
-      "output_tail": "PASS: diagnostic sweep can rank current firmware without tail metrics; foundation qualification remains fail-closed\n"
+      "output_tail": "PASS: diagnostic sweep can rank current firmware without tail metrics; foundation qualification remains fail-closed\n",
+      "result": "PASS",
+      "returncode": 0
     },
     {
       "command": "python3 tests/hbnf_kernel_sweep_report.py",
-      "result": "PASS",
-      "returncode": 0,
-      "elapsed_seconds": 0.164,
+      "elapsed_seconds": 0.148,
       "output_sha256": "896def2ff27a32ec09e06772d85e6302c41082ade0575af2452b1550d7f2b964",
-      "output_tail": "PASS: diagnostic sweep ranks all kernels without overclaiming; foundation sweep remains fail-closed\n"
+      "output_tail": "PASS: diagnostic sweep ranks all kernels without overclaiming; foundation sweep remains fail-closed\n",
+      "result": "PASS",
+      "returncode": 0
     },
     {
       "command": "python3 tests/hbnf_source_tree_identity.py",
-      "result": "PASS",
-      "returncode": 0,
       "elapsed_seconds": 0.034,
       "output_sha256": "7a0b9d8d35ccb133bf810b69a9102839f18beac74fa4c631e00f5f2a1648e06c",
-      "output_tail": "PASS: deterministic source-tree identity ignores build outputs and changes on source edits\n"
+      "output_tail": "PASS: deterministic source-tree identity ignores build outputs and changes on source edits\n",
+      "result": "PASS",
+      "returncode": 0
     },
     {
       "command": "python3 tests/hbnf_live_kernel_sweep.py",
+      "elapsed_seconds": 5.471,
+      "output_sha256": "178b0be251ee90cf25ab8597462ea9a8ca975d10328d61e59e5ee64da1645ca9",
+      "output_tail": "PASS\",\n  \"expected_kernel_count\": 28,\n  \"gate_failures\": [\n    {\n      \"diagnostic_path\": \"/private/var/folders/jh/8st70glj6gl2jy341s4d36k40000gn/T/tmpkxok17kr/complete-diagnostics/00_Complex_Kaleido_3.diagnostic-only.json\",\n      \"failure_class\": \"SATURATED_TELEMETRY\",\n      \"kernel_id\": 0,\n      \"kernel_name\": \"Complex_Kaleido_3\"\n    },\n    {\n      \"checks\": {\n        \"fps_median\": false\n      },\n      \"comparison_path\": \"/private/var/folders/jh/8st70glj6gl2jy341s4d36k40000gn/T/tmpkxok17kr/complete-diagnostics/EARLY_R4_COMPARISON_KERNEL_13.json\",\n      \"failure_class\": \"PERFORMANCE_COMPARISON\",\n      \"gate\": \"early-matched-R4\",\n      \"kernel_id\": 13,\n      \"kernel_name\": \"Caleido3\"\n    }\n  ],\n  \"kernels_completed\": 28,\n  \"qualification_eligible\": false,\n  \"restore_receipt\": \"/private/var/folders/jh/8st70glj6gl2jy341s4d36k40000gn/T/tmpkxok17kr/complete-diagnostics/RESTORE_RECEIPT.json\",\n  \"schema\": \"hbnf-foundation-complete-diagnostic-result-v1\",\n  \"soak_started\": false,\n  \"status\": \"DIAGNOSTICS_COMPLETE__PERFORMANCE_GATE_FAILED\"\n}\nPASS: live sweep runner validates adapter/inventory/telemetry, cross-kernel continuity, failure evidence, kernel identity, and exact restore snapshots\n",
       "result": "PASS",
-      "returncode": 0,
-      "elapsed_seconds": 5.203,
-      "output_sha256": "d091c863bd77614d0f4b0e6921802981e0bd20fdf851090f459854632bcb5687",
-      "output_tail": "      \"kernel_id\": 13,\n      \"kernel_name\": \"Caleido3\"\n    }\n  ],\n  \"kernels_completed\": 28,\n  \"qualification_eligible\": false,\n  \"restore_receipt\": \"/private/var/folders/jh/8st70glj6gl2jy341s4d36k40000gn/T/tmpd5a8i2kp/complete-diagnostics/RESTORE_RECEIPT.json\",\n  \"schema\": \"hbnf-foundation-complete-diagnostic-result-v1\",\n  \"soak_started\": false,\n  \"status\": \"DIAGNOSTICS_COMPLETE__PERFORMANCE_GATE_FAILED\"\n}\nPASS: live sweep runner validates adapter/inventory/telemetry, cross-kernel continuity, failure evidence, kernel identity, and exact restore snapshots\n"
+      "returncode": 0
     },
     {
       "command": "python3 tests/hbnf_packet20_http_adapter.py",
-      "result": "PASS",
-      "returncode": 0,
-      "elapsed_seconds": 0.058,
+      "elapsed_seconds": 0.063,
       "output_sha256": "16c875ade2d20d4c4b9306afdfdb7e972122778e0d9f1d68ca2908e9fffa6165",
-      "output_tail": "PASS: Packet20 adapter mapping, diagnostic telemetry normalization, one-snapshot post-restore semantics, exact config, and 28-kernel inventory\n"
+      "output_tail": "PASS: Packet20 adapter mapping, diagnostic telemetry normalization, one-snapshot post-restore semantics, exact config, and 28-kernel inventory\n",
+      "result": "PASS",
+      "returncode": 0
     },
     {
       "command": "python3 tests/hbnf_packet20_build_validate.py",
-      "result": "PASS",
-      "returncode": 0,
-      "elapsed_seconds": 0.034,
+      "elapsed_seconds": 0.037,
       "output_sha256": "b8381fa940f2ce62605a63df0259fc0f858c1a49c3f0b3d2d9d1e1d5571e568d",
-      "output_tail": "PASS: Packet20 cloud build validator accepts exact provenance, vendor-patch/generated-UI evidence, and fails closed on source drift\n"
+      "output_tail": "PASS: Packet20 cloud build validator accepts exact provenance, vendor-patch/generated-UI evidence, and fails closed on source drift\n",
+      "result": "PASS",
+      "returncode": 0
     },
     {
       "command": "python3 tests/test_r6_audio_cache_candidate.py",
-      "result": "PASS",
-      "returncode": 0,
-      "elapsed_seconds": 0.148,
+      "elapsed_seconds": 0.145,
       "output_sha256": "ac8b653e2090d62ac6f5ab6ac72c4d1c75101c34ffaeed90b012c8159dfb4df0",
-      "output_tail": "PASS: hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011 exact source tree, firmware SHA, feature markers, resource receipt, host checks, and exact R4 recovery verified\n"
+      "output_tail": "PASS: hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011 exact source tree, firmware SHA, feature markers, resource receipt, host checks, and exact R4 recovery verified\n",
+      "result": "PASS",
+      "returncode": 0
     },
     {
       "command": "python3 tests/test_hbnf_r6_combined_candidate.py",
-      "result": "PASS",
-      "returncode": 0,
-      "elapsed_seconds": 0.93,
+      "elapsed_seconds": 0.907,
       "output_sha256": "531f4aa9022d886c1570800806c40f6db6c5bdea69289f252a854eccae0c839e",
-      "output_tail": "PASS hbnf_vibe_runtime_host: WLED-derived features, five distinct renderer grammars, AUTO dwell, style/profile\nPASS: current candidate identity, native text/Vibe integration, exact source binding, and bit-exact host golden\n"
+      "output_tail": "PASS hbnf_vibe_runtime_host: WLED-derived features, five distinct renderer grammars, AUTO dwell, style/profile\nPASS: current candidate identity, native text/Vibe integration, exact source binding, and bit-exact host golden\n",
+      "result": "PASS",
+      "returncode": 0
+    },
+    {
+      "command": "python3 tests/test_r6_qualification_brightness_transaction.py",
+      "elapsed_seconds": 0.051,
+      "output_sha256": "7a8caa31e7987e887ca3509bcaee5eb9f5d3d6fb76ca45310aecc7cdbf11c0e0",
+      "output_tail": "PASS: brightness transaction preserves candidate Vibe, accepts the documented R4 missing-Vibe baseline, and fails closed before writes on incomplete candidate state\n",
+      "result": "PASS",
+      "returncode": 0
     },
     {
       "command": "python3 tests/test_r6_audio_cache_transaction_dryrun.py",
-      "result": "PASS",
-      "returncode": 0,
-      "elapsed_seconds": 0.052,
+      "elapsed_seconds": 0.046,
       "output_sha256": "1b58a2f5427c456e0cbc5eccf191d134e59c85e3c310d1a92f2307ff58527ab7",
-      "output_tail": "PASS: actual transaction coordinator replayed admission, stage, one install, readback, qualification, exact recovery, host failure, and recovery failure; invalid admission made zero device requests\n"
+      "output_tail": "PASS: actual transaction coordinator replayed admission, stage, one install, readback, qualification, exact recovery, host failure, and recovery failure; invalid admission made zero device requests\n",
+      "result": "PASS",
+      "returncode": 0
     },
     {
       "command": "python3 tests/test_hbnf_r6_combined_feature_check.py",
-      "result": "PASS",
-      "returncode": 0,
-      "elapsed_seconds": 0.046,
+      "elapsed_seconds": 0.047,
       "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "output_tail": ""
+      "output_tail": "",
+      "result": "PASS",
+      "returncode": 0
     },
     {
       "command": "python3 tests/test_hbnf_audio_bridge_frame_cache.py",
-      "result": "PASS",
-      "returncode": 0,
-      "elapsed_seconds": 0.923,
+      "elapsed_seconds": 0.982,
       "output_sha256": "34e0e640032c0130aca03764ef45a6c03293643594772e04f562f1b0258420c1",
-      "output_tail": "PASS: RGB transforms bit-identical across 28 scenes, 7 audio cases (including slow energy with bass/mid/high/transient zero), 6 amounts, 5 response gains, and dimensions 32x16, 31x15, 8x8, 1x1 (including generic radial fallback)\noutput_digest=42690c313cc1d92d\n"
+      "output_tail": "PASS: RGB transforms bit-identical across 28 scenes, 7 audio cases (including slow energy with bass/mid/high/transient zero), 6 amounts, 5 response gains, and dimensions 32x16, 31x15, 8x8, 1x1 (including generic radial fallback)\noutput_digest=42690c313cc1d92d\n",
+      "result": "PASS",
+      "returncode": 0
     },
     {
       "command": "python3 tests/test_hbnf_audio_bridge_neutral_fastpath.py",
-      "result": "PASS",
-      "returncode": 0,
-      "elapsed_seconds": 0.953,
+      "elapsed_seconds": 0.722,
       "output_sha256": "2d3be61baeec9acb0ef7ffe258abbbf5c4a3a12e2f3c72eb6cc4a806c68b329e",
-      "output_tail": "PASS: baseline and candidate are bit-identical for silent and energy-only fast-path states plus active audio, across 5 Vibe profiles, 32 scene IDs, all 512 pixels, and 6 RGB inputs\noutput_digest=5761340127adfa63\n"
+      "output_tail": "PASS: baseline and candidate are bit-identical for silent and energy-only fast-path states plus active audio, across 5 Vibe profiles, 32 scene IDs, all 512 pixels, and 6 RGB inputs\noutput_digest=5761340127adfa63\n",
+      "result": "PASS",
+      "returncode": 0
     },
     {
       "command": "python3 tests/test_hbnf_vibe_composition_hoist.py",
-      "result": "PASS",
-      "returncode": 0,
-      "elapsed_seconds": 0.518,
+      "elapsed_seconds": 0.501,
       "output_sha256": "48869303a9d298f30188fb2f77aeff9a5f6d011adc9a27b6b7f388593837f87e",
-      "output_tail": "PASS hbnf_vibe_runtime_host: WLED-derived features, five distinct renderer grammars, AUTO dwell, style/profile\nPASS: hash-pinned patch applies; production call site caches once per frame; host golden output is bit-exact\n"
+      "output_tail": "PASS hbnf_vibe_runtime_host: WLED-derived features, five distinct renderer grammars, AUTO dwell, style/profile\nPASS: hash-pinned patch applies; production call site caches once per frame; host golden output is bit-exact\n",
+      "result": "PASS",
+      "returncode": 0
     }
   ],
   "result": "PASS",
-  "scope_limit": "Host-only checks. No device request, live mutation, paid/remote build, target performance, physical acceptance or soak was performed."
+  "schema": "hbnf-cart2-offline-host-qualification-v1",
+  "scope_limit": "Host-only checks. No firmware upload, device mutation, paid/remote build, target performance, physical acceptance, or soak was performed.",
+  "source_commit": "7645dae3806c1e352a1063ac22d1482ddb5713ff",
+  "started_at_utc": "2026-10-11T12:17:59Z"
 }

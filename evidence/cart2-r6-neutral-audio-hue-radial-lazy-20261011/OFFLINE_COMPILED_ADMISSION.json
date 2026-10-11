@@ -55,7 +55,7 @@
     "all_historical_host_failures_replayed": {
       "pass": true,
       "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/OFFLINE_HOST_QUALIFICATION_20261011.json",
-      "sha256": "a79a1af028f4d20f09e5940d1a92d688366d5a3cbda03e3437113aeb09f29726"
+      "sha256": "e226c384da3177e402bb8c22bcee8e81f64a67ef6f0d9b89f082a036b5b76f7b"
     },
     "entire_release_transaction_dryrun": {
       "pass": true,
@@ -65,7 +65,7 @@
     "frozen_performance_soak_and_restore_procedure": {
       "pass": true,
       "evidence_file": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/OFFLINE_FROZEN_QUALIFICATION_PROCEDURE.json",
-      "sha256": "1ee01f1fe1a1bc4d0dd1fb70a6fc7ba49247f24a9994e37eb473b61bc1f28bdb"
+      "sha256": "076b7008c7fe7d088bbdebd9c9afde669d68455b636291004319f489b72bc394"
     },
     "rollback_artifact_hash_verified": {
       "pass": true,

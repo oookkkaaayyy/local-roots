@@ -236,12 +236,12 @@ def test_restore_persisted_mismatch_fails_even_when_runtime_restored():
 
 
 def test_partial_readback_fails_and_does_not_create_profiles():
-    original_post = module.post_json
+    original_post = module._post_json_counted
     original_read = module.read_matrix_brightness_pair
     original_identity = module.read_matrix_identity
     writes = []
     now = [0.0]
-    module.post_json = lambda _url, payload: writes.append(payload)
+    module._post_json_counted = lambda _url, payload, _counter: writes.append(payload)
     module.read_matrix_brightness_pair = lambda: pair(44, partial=True)
     module.read_matrix_identity = exact_identity
     try:
@@ -249,12 +249,12 @@ def test_partial_readback_fails_and_does_not_create_profiles():
             module.change_matrix_brightness(BASELINE, operation="measure",
                 sleeper=lambda seconds: now.__setitem__(0, now[0] + seconds), monotonic=lambda: now[0])
         except RuntimeError as exc:
-            assert "brightness-measure-unverified" in str(exc)
+            assert "prewrite-settings-incomplete-or-mismatched" in str(exc)
         else:
             raise AssertionError("partial config readback must fail closed")
-        assert len(writes) == 1
+        assert writes == []
     finally:
-        module.post_json = original_post
+        module._post_json_counted = original_post
         module.read_matrix_brightness_pair = original_read
         module.read_matrix_identity = original_identity
 
@@ -299,16 +299,156 @@ def test_r4_preinstall_baseline_uses_persisted_vibe_when_runtime_omits_it():
     result=module.validate_preinstall_brightness_baseline(state,persisted)
     assert result["runtime"]==persisted and result["persisted"]==persisted
     assert result["runtime_observation"]["vibe_source"]=="persisted_config_only_on_exact_R4"
-    for bad_state,bad_persisted in (
-        ({"on":True,"HBNF":{"matrixBrightness":44,"auxBrightness":245}},persisted),
-        (state,{"matrixBrightness":52,"auxBrightness":245}),
-    ):
+    no_vibe={"matrixBrightness":52,"auxBrightness":245}
+    result=module.validate_preinstall_brightness_baseline(state,no_vibe)
+    assert result["runtime"]==no_vibe and result["persisted"]==no_vibe
+    assert result["runtime_observation"]["vibe_source"]=="unavailable_on_exact_R4"
+    for bad_state,bad_persisted in (({"on":True,"HBNF":{"matrixBrightness":44,"auxBrightness":245}},persisted),
+                                    ({"on":True,"HBNF":{"matrixBrightness":52}},no_vibe)):
         try:
             module.validate_preinstall_brightness_baseline(bad_state,bad_persisted)
         except RuntimeError:
             pass
         else:
-            raise AssertionError("preinstall baseline must reject changed brightness or missing persisted Vibe")
+            raise AssertionError("preinstall baseline must reject changed or missing brightness settings")
+
+
+def test_r4_context_accepts_missing_vibe_only_for_exact_r4():
+    original_get = module.get_json
+    original_identity = module.read_matrix_identity
+    requests = []
+    identity = {"ip": "192.168.77.10", "mac": module.MATRIX_MAC, "wled": "16.0.1",
+        "release_id": module.R4, "candidate": module.R4, "build_mac": module.MATRIX_MAC}
+    info = {"ip": "192.168.77.10", "mac": "70:4b:ca:5b:34:5c", "ver": "16.0.1", "uptime": 500}
+    build = {"release_id": module.R4, "candidate": module.R4, "mac": "70:4b:ca:5b:34:5c"}
+    state = {"on": True, "HBNF": {"matrixBrightness": 52, "auxBrightness": 245}}
+    raw_cfg = {"wifi": {"psk": "must-not-be-retained"},
+        "um": {"hbnfFoundationV1": {"matrixBrightness": 52, "auxBrightness": 245}}}
+
+    def get(url, timeout=4):
+        requests.append(url)
+        if url.endswith("/json/state"):
+            return 200, b"{}", state
+        if url == module.PERSISTED_CONFIG_URL:
+            return 200, b"{}", raw_cfg
+        raise AssertionError(f"unexpected GET endpoint: {url}")
+
+    def read_identity(_request_counter=None, expected_release=module.RELEASE):
+        assert expected_release == module.R4
+        return identity, info, build
+
+    module.get_json = get
+    module.read_matrix_identity = read_identity
+    try:
+        context = module.read_matrix_context(expected_release=module.R4)
+        assert context["persisted"] == {"matrixBrightness": 52, "auxBrightness": 245}
+        assert context["brightness"]["runtime"] == {"matrixBrightness": 52, "auxBrightness": 245}
+        assert context["brightness"]["persisted"] == {"matrixBrightness": 52, "auxBrightness": 245}
+        assert context["brightness"]["runtime_observation"]["vibe_source"] == "unavailable_on_exact_R4"
+        assert "must-not-be-retained" not in repr(context)
+        assert requests == [module.MATRIX+"/json/state", module.PERSISTED_CONFIG_URL]
+        try:
+            module.sanitized_persisted_hbnf(raw_cfg)
+        except RuntimeError as exc:
+            assert "partial-or-invalid" in str(exc)
+        else:
+            raise AssertionError("candidate/default parser must remain strict when Vibe is absent")
+    finally:
+        module.get_json = original_get
+        module.read_matrix_identity = original_identity
+
+
+def test_candidate_brightness_guard_preserves_postinstall_vibe():
+    original_post = module._post_json_counted
+    original_read = module.read_matrix_brightness_pair
+    original_identity = module.read_matrix_identity
+    current = pair(52, vibe=4)
+    writes = []
+
+    def post(_url, payload, _request_counter):
+        writes.append(payload)
+        target = payload["HBNF"]["matrixBrightness"]
+        current["runtime"]["matrixBrightness"] = target
+        current["persisted"]["matrixBrightness"] = target
+
+    module._post_json_counted = post
+    module.read_matrix_brightness_pair = lambda: json.loads(json.dumps(current))
+    module.read_matrix_identity = exact_identity
+    try:
+        r4_baseline = {"matrixBrightness": 52, "auxBrightness": 245}
+        measured = module.change_matrix_brightness(r4_baseline, operation="measure",
+            sleeper=lambda _seconds: None, monotonic=lambda: 0.0)
+        assert measured["verified"] is True
+        assert measured["readback"]["runtime"] == {"matrixBrightness": 44, "auxBrightness": 245, "vibe": 4}
+        restored = module.change_matrix_brightness(r4_baseline, operation="restore",
+            sleeper=lambda _seconds: None, monotonic=lambda: 0.0)
+        assert restored["verified"] is True
+        assert restored["readback"]["runtime"] == {"matrixBrightness": 52, "auxBrightness": 245, "vibe": 4}
+        assert writes == [
+            {"HBNF": {"matrixBrightness": 44}},
+            {"HBNF": {"matrixBrightness": 52}},
+        ]
+    finally:
+        module._post_json_counted = original_post
+        module.read_matrix_brightness_pair = original_read
+        module.read_matrix_identity = original_identity
+
+
+def test_r4_missing_vibe_fails_before_any_brightness_write():
+    original_post = module._post_json_counted
+    original_read = module.read_matrix_brightness_pair
+    original_identity = module.read_matrix_identity
+    identity = {"ip": "192.168.77.10", "mac": module.MATRIX_MAC, "wled": "16.0.1",
+        "release_id": module.R4, "candidate": module.R4, "build_mac": module.MATRIX_MAC}
+    pair_without_vibe = {"identity": identity, "matrix_on": True,
+        "runtime": {"matrixBrightness": 52, "auxBrightness": 245},
+        "persisted": {"matrixBrightness": 52, "auxBrightness": 245}}
+    writes = []
+    module._post_json_counted = lambda *args, **kwargs: writes.append((args, kwargs))
+    module.read_matrix_brightness_pair = lambda _request_counter=None, expected_release=module.RELEASE: pair_without_vibe
+    module.read_matrix_identity = lambda _request_counter=None, expected_release=module.RELEASE: (identity, {}, {})
+    try:
+        try:
+            module.change_matrix_brightness({"matrixBrightness": 52}, operation="restore",
+                expected_release=module.R4)
+        except RuntimeError as exc:
+            assert "settings-incomplete" in str(exc)
+        else:
+            raise AssertionError("R4 without Vibe must fail closed before a write")
+        assert writes == []
+    finally:
+        module._post_json_counted = original_post
+        module.read_matrix_brightness_pair = original_read
+        module.read_matrix_identity = original_identity
+
+
+def test_preinstall_snapshot_captures_exact_renderer_and_ddp_state_without_secrets():
+    matrix_state = {"on": True, "bri": 128, "transition": 7, "ps": -1, "pl": -1,
+        "mainseg": 0, "seg": [{"id": 0, "fx": 3, "sx": 128, "ix": 96, "col": [[1, 2, 3]]}],
+        "wifi": {"psk": "must-not-be-retained"}, "HBNF": {"candidate": "private-runtime"}}
+    aux_state = {"on": True, "bri": 255, "lor": 0, "seg": [{"id": 0, "fx": 0}],
+        "wifi": {"psk": "must-not-be-retained"}}
+    snapshot = module.capture_owner_state_snapshot(
+        matrix_state, aux_state, {"uptime": 1234, "freeheap": 70000, "leds": {"fps": 42}},
+        {"live": True, "lm": "DDP", "lip": "192.168.77.10", "leds": {"count": 22}},
+        {"ip": "192.168.77.10", "mac": module.MATRIX_MAC, "release_id": module.R4},
+        {"ip": "192.168.77.11", "mac": module.AUX_MAC, "wled": "16.0.1"},
+        {"runtime": {"matrixBrightness": 52, "auxBrightness": 245},
+         "persisted": {"matrixBrightness": 52, "auxBrightness": 245}})
+    assert snapshot["matrix"]["runtime"]["seg"] == matrix_state["seg"]
+    assert snapshot["matrix"]["hbnf_brightness"] == {"matrixBrightness": 52, "auxBrightness": 245}
+    assert snapshot["aux"]["runtime"] == {"on": True, "bri": 255, "lor": 0,
+        "seg": [{"id": 0, "fx": 0}]}
+    assert "wifi" not in repr(snapshot) and "private-runtime" not in repr(snapshot)
+    for bad_matrix, bad_aux in (({**matrix_state, "seg": None}, aux_state),
+                                (matrix_state, {**aux_state, "on": 1})):
+        try:
+            module.capture_owner_state_snapshot(bad_matrix, bad_aux, {}, {}, {}, {},
+                {"runtime": {}, "persisted": {}})
+        except RuntimeError:
+            pass
+        else:
+            raise AssertionError("incomplete pre-install state must fail closed")
 
 
 def test_context_reads_persisted_cfg_and_retains_only_hbnf_fields():
@@ -459,6 +599,10 @@ def main():
         test_invalid_baseline_rejected_after_admission_before_any_write,
         test_live_and_persisted_baseline_must_match_at_52,
         test_context_reads_persisted_cfg_and_retains_only_hbnf_fields,
+        test_r4_context_accepts_missing_vibe_only_for_exact_r4,
+        test_candidate_brightness_guard_preserves_postinstall_vibe,
+        test_r4_missing_vibe_fails_before_any_brightness_write,
+        test_preinstall_snapshot_captures_exact_renderer_and_ddp_state_without_secrets,
         test_invalid_admission_causes_zero_device_requests_and_writes,
         test_worker_exception_restores_baseline,
         test_restore_failure_invalidates_captured_profiles_and_never_passes,
@@ -467,7 +611,7 @@ def main():
         test_exact_r4_owner_settings_restore_is_one_matrix_brightness_write,
     ):
         test()
-    print("PASS: baseline/setup/restore transaction fails closed across admission, timeout, partial-readback, worker, restoration faults, and exact R4 owner-settings restore")
+    print("PASS: brightness transaction preserves candidate Vibe, accepts the documented R4 missing-Vibe baseline, and fails closed before writes on incomplete candidate state")
 
 
 if __name__ == "__main__":

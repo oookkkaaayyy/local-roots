@@ -56,7 +56,7 @@
   "schema": "hbnf-cart2-candidate-frozen-qualification-procedure-v1",
   "scope": "OFFLINE_PROCEDURE_ONLY__DOES_NOT_AUTHORIZE_INSTALL_OR_MUTATION",
   "sequence": [
-    "Before any live admission: freshly verify target identity/health, current Foundation R4 identity, exact candidate and R4 bytes, power, AUX DDP and single worker; fail closed if any item is uncertain.",
+    "Before any live admission: freshly verify target identity/health, current Foundation R4 identity, exact candidate and R4 bytes, power, AUX DDP and single worker; fail closed if any item is uncertain. Exact R4 may omit Vibe from runtime and saved config; bind only Matrix/AUX brightness on R4, then after exact candidate identity is verified capture its complete runtime/persisted HBNF settings before the brightness-only qualification adjustment.",
     "After separate exact LIVE_APPROVED admission: run matched tails-off early profiles for kernel 0 and kernel 13 at Matrix brightness 44 against comparable R4 baselines; preserve frame distributions and stage metrics.",
     "If early gates pass, execute the full frozen 28-kernel inventory and unchanged combined-feature checks; no kernel or feature is skipped.",
     "If all pre-soak gates pass, run one uninterrupted 5400-second soak at the frozen 8-second sample interval, with no restart or continuity gap.",

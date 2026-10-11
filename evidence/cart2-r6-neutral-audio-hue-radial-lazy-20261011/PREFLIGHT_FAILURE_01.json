@@ -1,0 +1,18 @@
+{
+  "schema": "hbnf-cart2-readonly-preflight-failure-v1",
+  "captured_at_utc": "2026-10-11T12:08:04Z",
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+  "candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+  "expected_installed_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+  "operation": "Read-only Matrix R4 preflight before live candidate admission",
+  "result": "STOPPED_BEFORE_SETTINGS_OR_FIRMWARE_WRITE",
+  "failure": "RuntimeError: persisted-config-HBNF-settings-partial-or-invalid",
+  "classification": "Host parser required a persisted Vibe field that exact R4 does not serialize; prior R4 read-only evidence records only Matrix/AUX brightness fields.",
+  "device_effects": {
+    "Matrix": "Read-only GETs for identity/runtime/persisted config occurred; no settings POST or firmware upload.",
+    "AUX": "Not reached.",
+    "Opal": "Not reached.",
+    "cloud_or_paid_build": "None."
+  },
+  "related_exact_r4_evidence": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/R4_POST_RESTORE_READONLY_CONFIRMATION.json"
+}

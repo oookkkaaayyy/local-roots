@@ -1,0 +1,18 @@
+{
+  "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+  "captured_at_utc": "2026-10-11T12:25:23Z",
+  "drive_file_id": "1Xl0anIREdAaugHDq2b_IkyKgvVKWH0HJ",
+  "drive_file_url": "https://drive.google.com/file/d/1Xl0anIREdAaugHDq2b_IkyKgvVKWH0HJ/view?usp=drivesdk",
+  "folder_id": "17B-XkjyK92FS7dT8TWDRqcTxozZRjTFV",
+  "folder_role": "20 \u2014 RELEASE CAPSULES",
+  "readback": {
+    "result": "PASS",
+    "sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+    "size_bytes": 1498832
+  },
+  "registry_document_id": "18VsUYIYr62fYVaEqynM1kbMmfQpei-3H3rBgrw8S96k",
+  "registry_row": "PROMOTED_AND_READBACK_SHA_VERIFIED",
+  "schema": "hbnf-cart2-drive-promotion-readback-v1",
+  "sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
+  "size_bytes": 1498832
+}

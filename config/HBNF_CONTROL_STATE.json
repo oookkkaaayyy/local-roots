@@ -229,7 +229,7 @@
   "bounded_phase2_r4_install_attempt2_authorization": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008-RETRY1",
     "authorized_at_utc": "2026-10-08T06:20:06.671131+00:00",
-    "authorized_by": "Current user instruction: URGENT — RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: URGENT \u2014 RECOVER THE CART 2.0 INSTALLATION CRITICAL PATH; exactly one new conditional installation attempt for the same exact candidate and rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:21:47.880324+00:00",
@@ -347,7 +347,7 @@
   "bounded_phase2_r4_live_qualification_authorization": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
     "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
-    "authorized_by": "Current user instruction: CART 2.0 — FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:10:00.723317+00:00",
@@ -935,7 +935,7 @@
         "Firmware install/retry within this settings-only authorization; paid or remote builds; external communications; cloud deployment; Guest Mode; UV energization; router/AUX firmware or configuration changes; threshold/scope changes; any write before all exact gates pass."
       ],
       "scope": "Exact R4 brightness/settings restoration only, then offline analysis; full 28-kernel sweep, combined-feature checks, uninterrupted 90-minute soak, rollback and owner acceptance remain mandatory.",
-      "user_permission": "Direct user standing authorization in this chat: “I authorize UNLIMITED install and anything else, so long as they don’t send communication or cost money” and “This and all future similar requests are blanket-approved … without extra cost or external communication.”"
+      "user_permission": "Direct user standing authorization in this chat: \u201cI authorize UNLIMITED install and anything else, so long as they don\u2019t send communication or cost money\u201d and \u201cThis and all future similar requests are blanket-approved \u2026 without extra cost or external communication.\u201d"
     },
     "aux_blocker": {
       "historical_direct_output_failure": "Preserved; does not override the newer current owner observation.",
@@ -1046,7 +1046,7 @@
         "Prior 16:42/16:45 times are not automatic abort or rollback triggers for the currently active seq53 path.",
         "Continue the already-authorized seq53 install/targeted validation while commands are actively progressing and safety/identity evidence remains intact.",
         "Do not broaden scope or start new exploratory work.",
-        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop—not for elapsed wall-clock time alone.",
+        "Release07 fallback is for a genuine measured failure, a real no-progress stall, or an explicit user stop\u2014not for elapsed wall-clock time alone.",
         "Owner-device smoke remains mandatory before declaring field-ready."
       ],
       "schema": "hbnf-field-readiness-deadline-v1",
@@ -1932,12 +1932,12 @@
     "length_limit_handoff": {
       "document_id": "1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I",
       "purpose": "Authoritative chat-migration handoff preserving coordinator role, R1/R2/R3 chronology, R4 implementation/build progress, user constraints, and exact continuation instructions.",
-      "title": "AKS — HBNF CART 2.0 — LENGTH-LIMIT HANDOFF — 2026-10-05 PM3 — R4 IN PROGRESS",
+      "title": "AKS \u2014 HBNF CART 2.0 \u2014 LENGTH-LIMIT HANDOFF \u2014 2026-10-05 PM3 \u2014 R4 IN PROGRESS",
       "url": "https://docs.google.com/document/d/1Iwl-6ysmu74-96J9xSWt22N-PcAKQ-q1olEZL8Yc77I/edit?usp=drivesdk"
     },
     "live_mutation_authorization": "Closed: candidate attempt and exact R4 recovery are consumed; exact R4 restored and verified; no further live writes authorized.",
     "live_mutation_authorized": false,
-    "name": "Cart 2.0 coordinated R6 release — Cart routes verified; device preflight pending",
+    "name": "Cart 2.0 coordinated R6 release \u2014 Cart routes verified; device preflight pending",
     "next_action": "Complete the one exact settings-only restoration to Matrix 52 / AUX 245 / Vibe 2 on verified R4 after exact gates; then continue offline source analysis.",
     "next_work": "Diagnose non-compositor kernel/audio/palette performance from source and matched measurements; prepare exact candidate only after the source correction and frozen offline gates.",
     "old_packet20_partial_sweep": "INVALID_NON_RESUMABLE",
@@ -2925,22 +2925,23 @@
   "last_updated_utc": "2026-10-11T10:05:34.359716+00:00",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_mutation_authorization": {
-    "authorization_id": "OWNER-20261011-COMPOSITOR-TIMING-DIAGNOSTIC-01",
-    "authorization": "Standing direct owner authorization; only the incomplete captured-settings restoration is open.",
-    "authorized": false,
-    "candidate_release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
-    "candidate_sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
+    "authorization_id": "OWNER-20261011-CART2-NEUTRAL-AUDIO-HUE-RADIAL-LAZY-QUALIFICATION-01",
+    "authorization": "The user\u2019s direct blanket authorization permits in-scope no-cost/no-communication work. This record narrows it to one exact candidate attempt, one exact R4 recovery, one Matrix target, and frozen qualification gates.",
+    "authorized": true,
+    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+    "candidate_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "candidate_install_limit": 1,
-    "candidate_attempts_used": 1,
+    "candidate_attempts_used": 0,
     "recovery_install_limit": 1,
-    "recovery_attempts_used": 1,
-    "candidate_install_permitted": false,
-    "operation_scope": "NO_LIVE_MUTATION__OFFLINE_ANALYSIS_ONLY",
-    "transaction_consumed": true,
+    "recovery_attempts_used": 0,
+    "candidate_install_permitted": true,
+    "operation_scope": "ONE_EXACT_CANDIDATE_QUALIFICATION",
+    "transaction_consumed": false,
     "live_admission_pending": false,
-    "hardware_writes_permitted_now": false,
-    "current_gate": "R4_SETTINGS_ATTEMPT_CONSUMED__NO_RETRY__EXACT_R4_INSTALLED"
+    "hardware_writes_permitted_now": true,
+    "current_gate": "EXACT_LIVE_APPROVED_ADMISSION_PENDING_FINAL_CHECKS",
+    "source_evidence": "evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/EXACT_OWNER_AUTHORIZATION_BINDING.json"
   },
   "live_mutation_authorization_closed_at_utc": null,
   "live_mutation_authorization_closure": {
@@ -2948,7 +2949,7 @@
     "evidence_sha256": "a81fe0993144068206859041a010fad1ef7ed5cfa88f8c3a6edc7ff25e5ecaf0",
     "reason": "Attempt-3 exact diagnostic candidate hit catastrophic kernel-0 threshold failure for three consecutive scheduled samples. Renderer restore passed; exact R4 recovery and readback passed; AUX native DDP healthy. No live authority remains."
   },
-  "live_mutation_authorized": false,
+  "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",
@@ -3182,7 +3183,7 @@
       "reason": "The exact diagnostic and one R4 return completed; the transaction did not restore saved brightness 52. Preserve its consumed one-install/one-recovery record while completing only the already-authorized settings restore on exact R4.",
       "authorization": {
         "authorization_id": "OWNER-20261011-COMPOSITOR-TIMING-DIAGNOSTIC-01",
-        "source_message_ref": "Direct user standing authorization in this chat: “I authorize UNLIMITED install and anything else, so long as they don’t send communication or cost money” and “This and all future similar requests are blanket-approved … without extra cost or external communication.”",
+        "source_message_ref": "Direct user standing authorization in this chat: \u201cI authorize UNLIMITED install and anything else, so long as they don\u2019t send communication or cost money\u201d and \u201cThis and all future similar requests are blanket-approved \u2026 without extra cost or external communication.\u201d",
         "candidate_release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
         "candidate_bin_sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
         "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
@@ -3205,7 +3206,7 @@
   "previous_phase2_r4_install_authorization_consumed": {
     "authorization_id": "HBNF-P2-R4-ONE-MATRIX-INSTALL-20261008",
     "authorized_at_utc": "2026-10-08T06:02:31.885038+00:00",
-    "authorized_by": "Current user instruction: CART 2.0 — FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
+    "authorized_by": "Current user instruction: CART 2.0 \u2014 FINAL NIGHTTIME EXECUTION DIRECTION; exact artifact SHA and exact conditional rollback explicitly authorized.",
     "candidate": {
       "consumed_before_network_request": true,
       "consumption_recorded_at_utc": "2026-10-08T06:10:00.723317+00:00",
@@ -3584,7 +3585,7 @@
       "one exact R4 return and read-only identity/health/AUX DDP verification",
       "no production acceptance, no firmware rebuild, no cloud/router/AUX firmware changes"
     ],
-    "source_message_ref": "Current owner message in this Codex task: CART 2.0 — ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; exact diagnostic SHA eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a and exact R4 SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
+    "source_message_ref": "Current owner message in this Codex task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; exact diagnostic SHA eb1ef3957ae35620cef45425640fa92bf751fee3be31d1d2f66039c69b337b3a and exact R4 SHA 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c.",
     "transport": "SSH-verified temporary artifact on Opal, then one Opal-origin multipart POST to Matrix WLED /update",
     "r4_return_attempts_used": 1,
     "recovery_install_limit": 1,
@@ -3596,21 +3597,20 @@
     "failure_classification_sha256": "232ec819c64d203797e5d89fcd4f9a63a68db5033608306a1f968246f38a95da"
   },
   "live_authorization_binding": {
-    "authorization_id": "OWNER-20261011-COMPOSITOR-TIMING-DIAGNOSTIC-01",
-    "source_message_ref": "Direct user standing authorization in this chat: “I authorize UNLIMITED install and anything else, so long as they don’t send communication or cost money” and “This and all future similar requests are blanket-approved … without extra cost or external communication.”",
-    "candidate_release_id": "hbnf-cart2-phase2-vibe-compositor-timing-diagnostic-20261011",
-    "candidate_bin_sha256": "e2e7d2d99e91715509e655117bdbc595b238782706e18ab88c47e64539ed705e",
-    "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "matrix_mac": "70:4b:ca:5b:34:5c",
-    "scope": [
-      "The exact compositor-timing diagnostic install and one exact R4 return are consumed; no repeat firmware upload is authorized by this record.",
-      "Complete one exact Matrix settings-only restoration on verified R4: set matrixBrightness=52 and preserve auxBrightness=245 and vibe=2; verify Matrix remains on, runtime and persisted brightness values match, exact R4 identity remains, and AUX native DDP remains healthy.",
-      "No firmware install, retry, cloud deployment, external communication, paid/remote build, Guest Mode, UV, router/AUX firmware or settings change, or threshold/scope change."
-    ],
+    "authorization_id": "OWNER-20261011-CART2-NEUTRAL-AUDIO-HUE-RADIAL-LAZY-QUALIFICATION-01",
+    "candidate_bin_sha256": "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187",
     "candidate_install_limit": 1,
+    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
     "recovery_install_limit": 1,
-    "attempt_number": 1,
-    "transport": "No firmware transport; one POST /json/state through the existing exact settings transaction, followed by persisted/runtime and identity readback."
+    "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "scope": [
+      "Install the exact candidate SHA once on Matrix 70:4b:ca:5b:34:5c using the proven Opal-origin local WLED /update path after a fresh passing preflight.",
+      "If identity, safety, frozen performance, or AUX synchronization gates fail, use at most one exact SHA-verified Foundation R4 recovery on the same Matrix and verify restored identity and health.",
+      "On a passing candidate, run the unchanged 28-kernel sweep, combined feature checks, and one uninterrupted 5400-second soak; restore renderer and owner settings under the existing transaction.",
+      "No paid or remote build, external communication, cloud deployment, AUX/Opal/router firmware or settings change, Guest Mode, UV, or threshold/scope change."
+    ],
+    "source_message_ref": "Direct user authorization in this chat: \u201cI authorize UNLIMITED install and anything else, so long as they don\u2019t send communication or cost money\u201d and \u201cThis and all future similar requests are blanket-approved \u2026 without extra cost or external communication.\u201d"
   },
   "r6_frame_context_diagnostic_previous_attempts": [
     {
@@ -3658,7 +3658,7 @@
       "attribution_correction_sha256": "2fc6f2c009abe230a6f727b37b5277dd8e427e599a1b0d010388959e7578cbbe"
     },
     "conditional_authority": {
-      "source_message_ref": "Current owner instruction in this task: CART 2.0 — ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks.",
+      "source_message_ref": "Current owner instruction in this task: CART 2.0 \u2014 ACT ON OWNER AUTHORIZATION AND CONTINUE TO ACCEPTANCE; evidence-based further in-scope installations/recovery are conditionally authorized after exact per-attempt safety/admission/rollback checks.",
       "status": "QUALIFICATION_FAILED_R4_RECOVERED",
       "candidate_install_limit": 1,
       "recovery_install_limit": 1,
@@ -3720,7 +3720,7 @@
     "mandatory_return_release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "mandatory_return_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "authorization_id": "OWNER-20261011-COMPOSITOR-TIMING-DIAGNOSTIC-01",
-    "authorization_source": "Direct user standing authorization in this chat: “I authorize UNLIMITED install and anything else, so long as they don’t send communication or cost money” and “This and all future similar requests are blanket-approved … without extra cost or external communication.”",
+    "authorization_source": "Direct user standing authorization in this chat: \u201cI authorize UNLIMITED install and anything else, so long as they don\u2019t send communication or cost money\u201d and \u201cThis and all future similar requests are blanket-approved \u2026 without extra cost or external communication.\u201d",
     "authorization_consumed": true,
     "install_attempts_used": 1,
     "install_attempt_limit": 1,
@@ -3754,7 +3754,7 @@
     "firmware_writes_permitted": false,
     "authorization_consumed": true,
     "status": "MATRIX_AUX_RESTORED__R4_DOES_NOT_PERSIST_VIBE__NO_RETRY",
-    "source_message_ref": "Direct user standing authorization in this chat: “I authorize UNLIMITED install and anything else, so long as they don’t send communication or cost money” and “This and all future similar requests are blanket-approved … without extra cost or external communication.”",
+    "source_message_ref": "Direct user standing authorization in this chat: \u201cI authorize UNLIMITED install and anything else, so long as they don\u2019t send communication or cost money\u201d and \u201cThis and all future similar requests are blanket-approved \u2026 without extra cost or external communication.\u201d",
     "attempt_started_at_utc": "2026-10-11T09:51:33.203390+00:00",
     "completed_at_utc": "2026-10-11T09:51:39.335066+00:00",
     "result_path": "evidence/cart2-r6-compositor-timing-diagnostic-20261011/live-diagnostic/R4_SETTINGS_RESTORE_RESULT.json",
