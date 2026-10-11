@@ -253,8 +253,27 @@ static bool hbnfRenderCommandOverlay(uint8_t matrixBrightness,Vibe activeVibe) {
   const uint32_t fg=packed(hbnf_brightness::scaleOutputPixel(overlayColor,overlayColor,scale));
   if(overlay.kind==OVERLAY_TEXT) {
     FontManager font(&SEGMENT);
-    bool fontLoaded=font.loadFont(overlay.fontIndex,overlay.text,false);
-    if(!fontLoaded&&overlay.fontIndex!=4)fontLoaded=font.loadFont(4,overlay.text,false);
+    bool fontLoaded=false;
+    if(!overlay.fontFitResolved) {
+      const uint8_t requestedFontIndex=overlay.fontIndex;
+      const uint8_t selected=HbnfNativeText::resolveFontIndex(font,overlay.fontIndex,overlay.text,32);
+      if(selected!=255){overlay.fontIndex=selected;fontLoaded=true;}
+      overlay.fontFitResolved=true;
+      portENTER_CRITICAL(&hbnfOverlayMux);
+      if(hbnfCommandOverlay.kind==OVERLAY_TEXT &&
+         hbnfCommandOverlay.startedAt==overlay.startedAt &&
+         !hbnfCommandOverlay.fontFitResolved &&
+         hbnfCommandOverlay.fontIndex==requestedFontIndex &&
+         strcmp(hbnfCommandOverlay.id,overlay.id)==0 &&
+         strcmp(hbnfCommandOverlay.text,overlay.text)==0) {
+        hbnfCommandOverlay.fontIndex=overlay.fontIndex;
+        hbnfCommandOverlay.fontFitResolved=true;
+      }
+      portEXIT_CRITICAL(&hbnfOverlayMux);
+    } else {
+      fontLoaded=font.loadFont(overlay.fontIndex,overlay.text,false);
+      if(!fontLoaded&&overlay.fontIndex!=4)fontLoaded=font.loadFont(4,overlay.text,false);
+    }
     const uint32_t elapsed=(uint32_t)(now-overlay.startedAt);
     const uint32_t remaining=overlay.ttlMs>elapsed?overlay.ttlMs-elapsed:0;
     uint8_t alpha=255;

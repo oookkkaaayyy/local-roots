@@ -21,6 +21,7 @@ struct OverlayState {
   char entries[12][64]{};
   uint8_t entryCount=0;
   uint8_t fontIndex=4;
+  bool fontFitResolved=false;
   uint8_t r=255,g=255,b=255;
   uint32_t startedAt=0,ttlMs=0;
 };

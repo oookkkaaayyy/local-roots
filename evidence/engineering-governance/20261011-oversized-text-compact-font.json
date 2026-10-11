@@ -1,0 +1,67 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OVERSIZED_TEXT_COMPACT_FONT_20261011",
+  "summary": "Use the built-in compact WLED face for over-width words only when all words then fit, and retain the resolved font for the overlay lifetime.",
+  "change_class": "SUBJECTIVE_DESIGN",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": true,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "owner_design_gate": {
+      "decision_status": "APPROVED",
+      "approved_by_owner": true,
+      "selected_option": "Use a smaller font for oversized names; use native slot 0 only when it fits the canvas.",
+      "approval_reference": "User response in current Cart Upgrades project chat on 2026-10-11",
+      "note": "Font-size fallback policy is approved. Visual readability and aesthetic acceptance on the physical Matrix remain unverified."
+    },
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing HBNF native text overlay and pinned WLED 16.0.1 FontManager; no new abstraction, schema, dependency, or lifecycle authority.",
+      "affected_subsystem": "Firmware text overlay font selection and offline text layout fixtures only.",
+      "rollback_reference": "Revert the compact-font resolver, overlay cache field, planner mirror, focused tests, render contract note, and this evidence record. No live rollback is involved because no firmware was built or installed.",
+      "evidence_sources": [
+        "https://github.com/wled/WLED/blob/29b389df1c1aaec6ff53aea742d17063b985906c/wled00/fontmanager.cpp",
+        "https://kno.wled.ge/features/custom-fonts/",
+        "WLED 16.0.1 pinned font WBF measurements recorded below",
+        "User response in current Cart Upgrades project chat on 2026-10-11"
+      ],
+      "tests": [
+        "python3 -m unittest -v tests.test_hbnf_text_moments_offline",
+        "c++ -std=c++17 -Wall -Wextra -Werror tests/native_text_compact_font_smoke.cpp -o /tmp/native_text_compact_font_smoke && /tmp/native_text_compact_font_smoke"
+      ]
+    },
+    "failure": "The accepted NAME fixture ANDREW measures 35 px in the default WLED 5x12 face on a 32 px canvas and falls through to scrolling, contrary to the Text/Moments contract that marquee is not the normal NAME treatment.",
+    "owner_decision": {
+      "status": "APPROVED_POLICY__TARGET_READABILITY_PENDING",
+      "statement": "Use a smaller font for oversized names.",
+      "selected_native_face": "WLED slot 0 Tom Thumb 6px, used only if every word then fits the 32 px canvas",
+      "source": "User response in current Cart Upgrades project chat on 2026-10-11"
+    },
+    "implementation": [
+      "firmware/phase2/integration-r6-cachefix/usermod/hbnf_native_text.h",
+      "firmware/phase2/integration-r6-cachefix/usermod/hbnf_coordinated_contract.h",
+      "firmware/phase2/integration-r6-cachefix/usermod/usermod_hbnf_foundation_v1.cpp",
+      "tools/hbnf_text_moments_offline.py",
+      "tests/native_text_compact_font_smoke.cpp",
+      "tests/test_hbnf_text_moments_offline.py"
+    ],
+    "expert_basis": {
+      "pinned_upstream": "WLED 16.0.1 FontManager at commit 29b389df1c1aaec6ff53aea742d17063b985906c; built-in slot 0 is Tom Thumb 6px.",
+      "measured_wbf_widths_px": {
+        "ANDREW_slot_4_5x12": 35,
+        "ANDREW_slot_0_tom_thumb_6px": 23,
+        "SUPERCALIFRAGILISTIC_slot_0_tom_thumb_6px": 79
+      },
+      "compatibility": "No command schema or new dependency. The firmware resolves the font once on the first render and stores the selected slot in the active overlay state, avoiding per-frame FontManager cache alternation."
+    },
+    "validation": [
+      "A host C++ regression exercises the actual compact-fit helper against native-font metrics and confirms fitting text remains unchanged, ANDREW uses slot 0, paged phrases remain paged, and words too long for slot 0 retain the selected face/scroll path.",
+      "The offline planner mirrors the same overflow decision and has a regression for ANDREW.",
+      "Historical R6 artifact verification reads source files from its recorded repository_source_commit, so later source-candidate edits cannot invalidate the old artifact's source proof."
+    ],
+    "qualification_boundary": "Source-only candidate. No firmware build, device action, deployment, physical readability test, or release acceptance is claimed. Preserve the current failed R6 artifact and exact R4 installed baseline."
+  }
+}

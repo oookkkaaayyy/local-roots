@@ -102,7 +102,7 @@ class TextMomentTests(unittest.TestCase):
     def test_candidate_visualmoment_keys_without_new_schema(self):
         self.assertEqual(plan({"type":"ACE","primary_text":"ACE","duration":2000,"urgency":"high","allow_audio_accent":True,"return_behavior":"RESTORE_BASE"},{"name":"COSMIC"}).moment_class,"HERO_WORD")
     def test_phrase_paging_precedes_scroll(self):
-        p=plan({"class":"SHORT_ANNOUNCEMENT","primary_text":"NEXT PLAYER UP"},{"vibe":"CHILL"}); self.assertGreater(len(p.pages),1); self.assertTrue(p.marquee_fallback); self.assertEqual(p.font,"WLED_NATIVE_5X12"); self.assertTrue(p.pages.index("PLAYER")>0)
+        p=plan({"class":"SHORT_ANNOUNCEMENT","primary_text":"NEXT PLAYER UP"},{"vibe":"CHILL"}); self.assertGreater(len(p.pages),1); self.assertFalse(p.marquee_fallback); self.assertEqual(p.font,"WLED_NATIVE_TOM_THUMB_6PX"); self.assertTrue(p.pages.index("PLAYER")>0)
     def test_native_font_pixel_width_paging_and_oversized_word_fallback(self):
         from tools.hbnf_text_moments_offline import _width, TEXT_WIDTH_PX
         p=plan({"class":"SHORT_ANNOUNCEMENT","primary_text":"NEXT PLAYER UP"},{"vibe":"CHILL"})
@@ -110,6 +110,13 @@ class TextMomentTests(unittest.TestCase):
         q=plan({"class":"NAME","primary_text":"SUPERCALIFRAGILISTIC"},{"vibe":"CHILL"})
         self.assertTrue(q.marquee_fallback)
         self.assertEqual(q.pages,("SUPERCALIFRAGILISTIC",))
+    def test_oversized_name_uses_compact_native_font_when_it_fits(self):
+        from tools.hbnf_text_moments_offline import _width, TEXT_WIDTH_PX
+        p=plan({"class":"NAME","primary_text":"ANDREW"},{"vibe":"CHILL"})
+        self.assertEqual(p.font,"WLED_NATIVE_TOM_THUMB_6PX")
+        self.assertEqual(p.pages,("ANDREW",))
+        self.assertFalse(p.marquee_fallback)
+        self.assertLessEqual(_width("ANDREW",p.font),TEXT_WIDTH_PX)
     def test_vibe_changes_treatment_not_text_geometry(self):
         a=plan({"class":"HERO_WORD","primary_text":"ACE"},{"vibe":"CHILL"}); b=plan({"class":"HERO_WORD","primary_text":"ACE"},{"vibe":"HEAVY"}); self.assertEqual(a.pages,b.pages); self.assertNotEqual(a.entry,b.entry); self.assertTrue(a.glyph_geometry_stable and b.glyph_geometry_stable)
     def test_unknown_vibe_fails_to_auto_inherit(self):

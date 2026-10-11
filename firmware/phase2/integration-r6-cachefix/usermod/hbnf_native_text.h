@@ -24,6 +24,42 @@ static inline uint16_t textWidth(FontT& font, const char* text) {
   return width;
 }
 
+template<class FontT>
+static inline bool hasWordOverWidth(FontT& font, const char* text, uint8_t maxWidth) {
+  if (!text || !*text) return false;
+  const uint8_t* p = reinterpret_cast<const uint8_t*>(text);
+  while (*p) {
+    while (*p == ' ' || *p == '\n' || *p == '\r' || *p == '\t') ++p;
+    if (!*p) break;
+    char word[64]{};
+    size_t n = 0;
+    while (*p && *p != ' ' && *p != '\n' && *p != '\r' && *p != '\t') {
+      if (n + 1 < sizeof(word)) word[n++] = static_cast<char>(*p);
+      ++p;
+    }
+    word[n] = '\0';
+    if (textWidth(font, word) > maxWidth) return true;
+  }
+  return false;
+}
+
+// Use WLED's built-in compact face only when it removes word overflow.
+// The caller persists the returned slot for the lifetime of the overlay so
+// FontManager does not alternate caches on every render frame.
+template<class FontT>
+static inline uint8_t resolveFontIndex(FontT& font, uint8_t requested,
+                                       const char* text, uint8_t canvasWidth) {
+  uint8_t active = requested;
+  if (!font.loadFont(active, text, false)) {
+    if (active == 4 || !font.loadFont(4, text, false)) return 255;
+    active = 4;
+  }
+  if (active == 0 || !hasWordOverWidth(font, text, canvasWidth)) return active;
+  if (font.loadFont(0, text, false) &&
+      !hasWordOverWidth(font, text, canvasWidth)) return 0;
+  return font.loadFont(active, text, false) ? active : 255;
+}
+
 static inline void copyText(char* out, const char* in, size_t capacity) {
   if (!capacity) return;
   size_t i = 0;

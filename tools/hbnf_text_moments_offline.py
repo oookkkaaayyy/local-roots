@@ -17,6 +17,7 @@ VIBES = {"CHILL","GROOVE","HEAVY","PSYCHEDELIC","COSMIC","AUTO"}
 NATIVE_5X12_WIDTHS = (2,1,3,5,5,5,5,1,3,3,5,5,3,5,2,5,5,5,5,5,5,5,5,5,5,5,2,3,5,5,5,5,5,5,5,5,5,5,5,5,5,3,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,3,5,3,5,5,2,5,5,5,5,5,5,5,5,3,4,5,3,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,1,5,5)
 TEXT_WIDTH_PX = 32
 GLYPH_SPACING_PX = 1
+TOM_THUMB_GLYPH_WIDTH_PX = 3
 
 @dataclass(frozen=True)
 class RenderIntent:
@@ -70,23 +71,25 @@ def classify(moment: Mapping[str, Any]) -> str:
     if t in {"ACE","WINNER","SKINS","GLOW"}: return "HERO_WORD"
     return "SHORT_ANNOUNCEMENT" if len(t)<=18 else "LONG_FREE_TEXT"
 
-def _width(text: str) -> int:
+def _width(text: str, font: str = "WLED_NATIVE_5X12") -> int:
     if not text: return 0
+    if font == "WLED_NATIVE_TOM_THUMB_6PX":
+        return len(text) * (TOM_THUMB_GLYPH_WIDTH_PX + GLYPH_SPACING_PX) - GLYPH_SPACING_PX
     widths=[]
     for c in text:
         code=ord(c)
         widths.append(NATIVE_5X12_WIDTHS[code-32] if 32 <= code <= 126 else NATIVE_5X12_WIDTHS[ord('?')-32])
     return sum(widths) + GLYPH_SPACING_PX * max(0, len(widths)-1)
 
-def _pack(words:list[str], limit:int)->tuple[tuple[str,...],bool]:
+def _pack(words:list[str], limit:int, font:str="WLED_NATIVE_5X12")->tuple[tuple[str,...],bool]:
     pages=[]; cur=""
     oversized=False
     for w in words:
-        if _width(w)>TEXT_WIDTH_PX:
+        if _width(w,font)>TEXT_WIDTH_PX:
             if cur: pages.append(cur); cur=""
             pages.append(w); oversized=True; continue
         nxt=w if not cur else f"{cur} {w}"
-        if _width(nxt)<=TEXT_WIDTH_PX and len(nxt)<=limit: cur=nxt
+        if _width(nxt,font)<=TEXT_WIDTH_PX and len(nxt)<=limit: cur=nxt
         else: pages.append(cur); cur=w
     if cur: pages.append(cur)
     return tuple(pages or [""]),oversized
@@ -96,9 +99,14 @@ def plan(moment: Mapping[str, Any], vibe_selection: Mapping[str, Any]|None=None)
     vibe=str((vibe_selection or {}).get("vibe") or (vibe_selection or {}).get("name") or "AUTO").upper()
     if vibe not in VIBES: vibe="AUTO"
     pages,oversized=_pack(t.split(),CLASS_LIMITS[cls])
+    font="WLED_NATIVE_5X12"
+    if oversized:
+        compact_pages,compact_oversized=_pack(t.split(),CLASS_LIMITS[cls],"WLED_NATIVE_TOM_THUMB_6PX")
+        if not compact_oversized:
+            pages,oversized,font=compact_pages,False,"WLED_NATIVE_TOM_THUMB_6PX"
     treatments={"CHILL":("SOFT_REVEAL","CALM_HALO","DISSOLVE"),"GROOVE":("RHYTHMIC_REVEAL","BOUNDED_HALO","PHASE_DISSOLVE"),"HEAVY":("CARVE_IN","EDGE_PRESSURE","IMPACT_DISSOLVE"),"PSYCHEDELIC":("FIELD_CONVERGE","COLOR_FIELD_HALO","FIELD_RELEASE"),"COSMIC":("STAR_REVEAL","DEPTH_HALO","STAR_DISSOLVE"),"AUTO":("VIBE_INHERIT","VIBE_INHERIT","VIBE_INHERIT")}
     entry,hold,exit=treatments[vibe]
-    return RenderIntent(cls,pages,vibe,entry,hold,exit,marquee_fallback=oversized,return_behavior=str(moment.get("return_behavior") or "RESTORE_BASE"),oversized_word_marquee=oversized)
+    return RenderIntent(cls,pages,vibe,entry,hold,exit,marquee_fallback=oversized,return_behavior=str(moment.get("return_behavior") or "RESTORE_BASE"),font=font,oversized_word_marquee=oversized)
 
 def to_dict(intent:RenderIntent)->dict[str,Any]:
     d=asdict(intent); d["pages"]=list(intent.pages); return d
