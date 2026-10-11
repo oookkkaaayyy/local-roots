@@ -34,11 +34,28 @@ self.addEventListener("activate", event => {
 
 async function fetchWithTimeout(request, timeoutMs) {
   let timer;
+  const controller = typeof AbortController === "function" ? new AbortController() : null;
+  const abortFromRequest = () => { if (controller) controller.abort(); };
+  if (controller && request.signal) {
+    if (request.signal.aborted) controller.abort();
+    else request.signal.addEventListener("abort", abortFromRequest, { once: true });
+  }
   const timeout = new Promise((_, reject) => {
-    timer = setTimeout(() => reject(new Error("network-timeout")), timeoutMs);
+    timer = setTimeout(() => {
+      if (controller) controller.abort();
+      reject(new Error("network-timeout"));
+    }, timeoutMs);
   });
-  try { return await Promise.race([fetch(request), timeout]); }
-  finally { if (timer) clearTimeout(timer); }
+  try {
+    return await Promise.race([
+      controller ? fetch(request, { signal: controller.signal }) : fetch(request),
+      timeout,
+    ]);
+  }
+  finally {
+    if (timer) clearTimeout(timer);
+    if (controller && request.signal) request.signal.removeEventListener("abort", abortFromRequest);
+  }
 }
 
 async function networkFirst(request, fallbackKey) {

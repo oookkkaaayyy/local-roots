@@ -1,0 +1,26 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OWNER_PWA_TIMEOUT_FETCH_ABORT_20261010",
+  "summary": "Cancel the underlying service-worker request when its response deadline expires, while retaining the existing cached-shell fallback.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "failure": "The service worker returned cached content after its 3.5-second timeout but left the original fetch running. Repeated slow requests could continue consuming resources after the caller had received fallback content.",
+    "implementation": [
+      "hbnf-final-controller/hbnf-cart-sw.js",
+      "tests/hbnf_owner_pwa_reliability.mjs"
+    ],
+    "validation": [
+      "The test invokes the actual service-worker fetch handler with a controlled pending fetch and verifies timeout abort plus cached-shell fallback.",
+      "Owner PWA reliability and package-closure tests pass.",
+      "iOS 12 compatibility audit reports zero incompatible application source files."
+    ],
+    "rollback": "Revert the service-worker abort controller and its regression test. No deployed package, service worker registration, live endpoint, firmware, control state, or production service is changed."
+  }
+}

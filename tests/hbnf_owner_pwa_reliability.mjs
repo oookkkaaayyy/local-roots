@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import vm from "node:vm";
 import { fetchWithDeadline, parsePairFragment } from "../hbnf-final-controller/hbnf-cart-net.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
@@ -55,6 +56,50 @@ assert.match(sw, /self\.clients\.claim\(\)/);
 assert.match(sw, /url\.origin !== self\.location\.origin/);
 assert.match(sw, /request\.method !== "GET"/);
 assert.doesNotMatch(sw, /supabase\.co|functions\/v1|192\.168\.77\./i);
+
+// Exercise the real service-worker fetch handler with a controllable timeout.
+// A response timeout must also cancel the underlying app-shell request.
+const listeners = new Map();
+const cachedShell = { fromCache: true };
+const cache = { put: async () => {}, match: async () => cachedShell };
+let timeoutCallback;
+let requestSignal;
+const serviceWorkerContext = {
+  self: {
+    location: { origin: "https://cart.example" },
+    addEventListener: (name, callback) => listeners.set(name, callback),
+  },
+  caches: { open: async () => cache, keys: async () => [], delete: async () => {} },
+  URL,
+  Set,
+  Promise,
+  AbortController,
+  Response,
+  fetch: (_request, init) => {
+    requestSignal = init?.signal;
+    return new Promise((_resolve, reject) => {
+      requestSignal.addEventListener("abort", () => {
+        const error = new Error("aborted");
+        error.name = "AbortError";
+        reject(error);
+      }, { once: true });
+    });
+  },
+  setTimeout: callback => { timeoutCallback = callback; return 1; },
+  clearTimeout: () => {},
+};
+vm.runInNewContext(sw, serviceWorkerContext);
+let shellResponse;
+listeners.get("fetch")({
+  request: { method: "GET", mode: "navigate", url: "https://cart.example/hbnf-cart.html" },
+  respondWith: promise => { shellResponse = promise; },
+});
+for (let turn = 0; turn < 8 && typeof timeoutCallback !== "function"; turn++) await Promise.resolve();
+assert.equal(typeof timeoutCallback, "function");
+timeoutCallback();
+assert.equal(requestSignal.aborted, true);
+assert.equal(await shellResponse, cachedShell);
+
 for (const name of ["hbnf-cart-net.mjs", "hbnf-cart-sw.js"]) {
   assert.ok(installer.includes(`"${name}"`), `installer omits ${name}`);
 }
