@@ -886,19 +886,30 @@ def provisional_reference_controls_payload():
     return {"on":True,"bri":c["wled_brightness"],"HBNF":{
         "scene":c["scene"],"vibe":c["vibe"],"motion":c["motion"],
         "audioResponse":c["audio_response"],"matrixBrightness":c["matrix_brightness"],
-        "auxBrightness":c["aux_brightness"],"palette":dict(c["palette"])}}
+        "auxBrightness":c["aux_brightness"],
+        # The candidate's live API requires an accepted legacy palette id.
+        # The recorded effective profile normalizes this to mode=legacy.
+        "palette":{"mode":"legacy","id":"hbnf-balanced"}}}
 
 
 def validate_provisional_reference_context(context):
     state=context.get("state",{})
     h=state.get("HBNF",{})
-    if (h.get("kernel")!=PROVISIONAL_REFERENCE_KERNEL_ID
-        or h.get("variantSignature")!=PROVISIONAL_REFERENCE_VARIANT_SIGNATURE
-        or h.get("scene")!=0 or h.get("vibe")!=0 or h.get("motion")!=50
-        or h.get("audioResponse")!=50 or h.get("matrixBrightness")!=44
-        or h.get("auxBrightness")!=255 or h.get("palette")!={"mode":"legacy"}
-        or state.get("bri")!=255):
-        raise RuntimeError("provisional-smoke-reference-workload-controls-not-matched")
+    actual={"kernel_id":h.get("kernel"),"variant_signature":h.get("variantSignature"),
+        "scene":h.get("scene"),"vibe":h.get("vibe"),"motion":h.get("motion"),
+        "audio_response":h.get("audioResponse"),"matrix_brightness":h.get("matrixBrightness"),
+        "aux_brightness":h.get("auxBrightness"),"palette_mode":h.get("palette",{}).get("mode"),
+        "wled_brightness":state.get("bri")}
+    expected={"kernel_id":PROVISIONAL_REFERENCE_KERNEL_ID,
+        "variant_signature":PROVISIONAL_REFERENCE_VARIANT_SIGNATURE,
+        **PROVISIONAL_REFERENCE_CONTROLS}
+    expected.pop("matrix_on",None);expected.pop("overlay_id",None)
+    expected["palette_mode"]=expected.pop("palette")["mode"]
+    mismatches={key:{"expected":expected[key],"actual":actual.get(key)}
+        for key in expected if actual.get(key)!=expected[key]}
+    if mismatches:
+        raise RuntimeError("provisional-smoke-reference-workload-controls-not-matched:"+
+            json.dumps({"mismatches":mismatches,"expected":expected,"actual":actual},sort_keys=True))
     return True
 
 
@@ -1327,7 +1338,7 @@ class LivePort:
         self.owner_brightness_baseline=dict(actual)
         return result
 
-    def preflight_candidate(self, expected_matrix_brightness=None):
+    def preflight_candidate(self, expected_matrix_brightness=None, capture_fresh_owner_settings=False):
         exact_artifacts(self.candidate)
         power=run(["pmset","-g","batt"],timeout=5).stdout.decode(errors="replace")
         route=run(["route","-n","get","192.168.77.10"],timeout=5).stdout.decode(errors="replace")
@@ -1335,7 +1346,8 @@ class LivePort:
             raise RuntimeError("qualification-only host AC/LAN preflight failed")
         live_state=json.loads(self.state_path.read_text())
         qualification_auth=live_state.get("live_mutation_authorization",{})
-        saved_owner=qualification_auth.get("owner_brightness_baseline")
+        saved_owner=(None if capture_fresh_owner_settings else
+            qualification_auth.get("owner_brightness_baseline"))
         if isinstance(saved_owner,dict):
             self.owner_brightness_baseline=dict(saved_owner)
         recovery_subscope=qualification_auth.get("qualification_recovery_subscope")
@@ -1533,6 +1545,64 @@ class LivePort:
             result["status"]="PROVISIONAL_CLEANUP_FAILED_STOP"
         finally:
             result["device_requests"]=self.device_requests
+            self.close(result)
+        return result
+
+    def provisional_smoke_only(self):
+        """Run the authorized smoke on an already-installed exact candidate; never install firmware."""
+        self.admit("LIVE_APPROVED")
+        self.verify_local_artifacts()
+        if self.candidate.transaction_mode!="provisional":
+            raise RuntimeError("provisional-smoke-continuation-requires-provisional-candidate")
+        state=json.loads(self.state_path.read_text())
+        pending=state.get("execution_cursor",{}).get("pending_provisional_candidate",{})
+        if (state.get("live_mutation_authorized") is not True
+            or state.get("live_authorization_binding")!=self.admission.get("fresh_owner_authorization")
+            or pending.get("candidate_release_id")!=self.candidate.release_id
+            or pending.get("candidate_sha256")!=self.candidate.sha256
+            or pending.get("candidate_install_attempts_used")!=1
+            or pending.get("recovery_attempts_used")!=0
+            or pending.get("status")!="PROVISIONAL_CLEANUP_PASS_R6_RETAINED_UNQUALIFIED"
+            or state.get("installed_release")!=self.candidate.release_id
+            or state.get("installed_firmware_sha256")!=self.candidate.sha256):
+            raise RuntimeError("provisional-smoke-continuation-state-not-exact-installed-candidate")
+        result={"schema":"hbnf-cart2-provisional-smoke-continuation-v1",
+            "operation_scope":"PROVISIONAL_SMOKE_ONLY","candidate_release_id":self.candidate.release_id,
+            "candidate_sha256":self.candidate.sha256,"candidate_install_attempts":0,
+            "candidate_install_permitted":False,"recovery_attempts":0,"device_requests":0,
+            "preflight":None,"provisional_smoke":None}
+        try:
+            pre=self.preflight_candidate(capture_fresh_owner_settings=True)
+            result["preflight"]=pre
+            baseline=dict(pre.get("brightness_baseline",{}).get("runtime",{}))
+            keys=("matrixBrightness","auxBrightness","vibe")
+            if (set(baseline)!=set(keys)
+                or any(pre["brightness_baseline"].get("persisted",{}).get(k)!=baseline[k] for k in keys)):
+                raise RuntimeError("smoke-continuation-fresh-owner-settings-not-persisted")
+            self.owner_brightness_baseline=baseline
+            live_auth=state.setdefault("live_mutation_authorization",{})
+            live_auth["owner_brightness_baseline"]=dict(baseline)
+            state["execution_cursor"]["pending_provisional_candidate"]["owner_settings_baseline"]=dict(baseline)
+            self.state_path.write_text(json.dumps(state,indent=2)+"\n")
+            smoke=self.provisional_smoke(baseline)
+            result["provisional_smoke"]=smoke
+            if smoke.get("passed") is True:
+                result["status"]="PROVISIONAL_SMOKE_PASS_NOT_FULLY_QUALIFIED"
+            elif device_failure_requires_recovery(smoke):
+                recovery_preflight=self.preflight_failed_candidate_recovery()
+                result["recovery_preflight"]=recovery_preflight
+                recovery=self.recover_r4()
+                result["recovery"]=recovery
+                result["recovery_attempts"]=self.recovery_attempts
+                result["status"]="PROVISIONAL_SMOKE_DEVICE_GATE_FAILED_R4_RECOVERED"
+            else:
+                result["status"]="PROVISIONAL_SMOKE_INCOMPLETE_CANDIDATE_UNQUALIFIED"
+        except Exception as exc:
+            result["error"]=f"{type(exc).__name__}: {exc}"
+            result["status"]="PROVISIONAL_SMOKE_CONTINUATION_BLOCKED_OR_FAILED"
+        finally:
+            result["device_requests"]=self.device_requests
+            result["recovery_attempts"]=self.recovery_attempts
             self.close(result)
         return result
 
@@ -1892,7 +1962,9 @@ class LivePort:
     def close(self, result):
         continuation=result.get("operation_scope")=="QUALIFICATION_ONLY"
         cleanup=result.get("operation_scope")=="PROVISIONAL_SETTINGS_RESTORE_ONLY"
+        smoke_only=result.get("operation_scope")=="PROVISIONAL_SMOKE_ONLY"
         target=("PROVISIONAL_SETTINGS_RESTORE_RESULT.json" if cleanup else
+            "PROVISIONAL_SMOKE_CONTINUATION_RESULT.json" if smoke_only else
             "QUALIFICATION_CONTINUATION_RESULT.json" if continuation else "TRANSACTION_RESULT.json")
         # Admission rejection is a read-only stop. Do not rewrite the control
         # state merely because the coordinator records its zero-request result.
@@ -1917,6 +1989,15 @@ class LivePort:
                 pending["cleanup_result"]=result_ref
                 pending["cleanup_result_sha256"]=sha(result_file)
                 pending["owner_settings_baseline"]=dict(self.owner_brightness_baseline or {})
+            elif smoke_only:
+                # Smoke-only continuation is not another candidate-install attempt.
+                # Preserve the consumed install count and the original install receipt.
+                pending["status"]=result["status"]
+                pending["smoke_continuation_result"]=result_ref
+                pending["smoke_continuation_result_sha256"]=sha(result_file)
+                pending["owner_settings_baseline"]=dict(self.owner_brightness_baseline or {})
+                pending["candidate_install_attempts_used"]=1
+                pending["recovery_attempts_used"]=self.recovery_attempts
             else:
                 pending.update({
                     "candidate_install_attempts_used": self.install_attempts,
@@ -1968,6 +2049,9 @@ class LivePort:
         elif result.get("status") == "PROVISIONAL_INSTALL_SMOKE_PASS_NOT_FULLY_QUALIFIED":
             state["installed_release"] = self.candidate.release_id
             state["installed_firmware_sha256"] = self.candidate.sha256
+        elif smoke_only and result.get("recovery", {}).get("status") in ("R4_READBACK_VERIFIED", "R4_ALREADY_INSTALLED_NO_UPLOAD"):
+            state["installed_release"] = R4
+            state["installed_firmware_sha256"] = self.candidate.rollback_sha256
         elif result.get("status") in ("OTA_NOT_INSTALLED_STARTING_RELEASE_REMAINS_NO_RETRY", "TRANSACTION_EXCEPTION_STARTING_RELEASE_REMAINS", "CANDIDATE_STAGE_FAILED_NO_WLED_REQUEST"):
             state["installed_release"] = self.candidate.starting_release_id
             if self.candidate.starting_release_id==R4:
@@ -2019,6 +2103,13 @@ def execute_provisional_settings_restore_only(admission_path,capsule_path,proof_
     return port.restore_provisional_settings_only()
 
 
+def execute_provisional_smoke_only(admission_path,capsule_path,proof_path,outdir):
+    profile=load_candidate_profile(pathlib.Path(capsule_path))
+    output=prepare_qualification_output(outdir,profile)
+    port=LivePort(pathlib.Path(admission_path),pathlib.Path(capsule_path),pathlib.Path(proof_path),output,profile)
+    return port.provisional_smoke_only()
+
+
 def execute_readonly_qualification_preflight(capsule_path,outdir,expected_matrix_brightness=None):
     """Refresh exact current-device evidence without opening the mutation path."""
     profile=load_candidate_profile(pathlib.Path(capsule_path))
@@ -2065,6 +2156,7 @@ def main():
     ap.add_argument("--resume-qualification",action="store_true",help="Continue gates for the exact installed candidate; does not stage or upload firmware")
     ap.add_argument("--recover-r4-only",action="store_true",help="Use the one exact owner-authorized R4 recovery after a completed performance failure; never installs or qualifies the candidate")
     ap.add_argument("--restore-provisional-settings-only",action="store_true",help="Restore the captured owner settings and disable diagnostics for an already-installed exact provisional candidate; never installs firmware")
+    ap.add_argument("--provisional-smoke-only",action="store_true",help="Run one bounded smoke against the exact already-installed provisional candidate; never installs firmware")
     ap.add_argument("--recovery-proof",help="Fresh read-only exact post-failure R4 recovery proof")
     ap.add_argument("--readonly-preflight-only",action="store_true",help="Refresh host/Matrix/AUX/Opal evidence without device writes or live authorization")
     ap.add_argument("--readonly-recovery-preflight-only",action="store_true",help="Refresh exact post-failure state for an R4-only recovery; performs no device writes")
@@ -2109,6 +2201,13 @@ def main():
             pathlib.Path(args.capsule),pathlib.Path(args.prelive_proof))
         print(json.dumps(result,indent=2))
         return 0 if result.get("status")=="PROVISIONAL_CLEANUP_PASS_R6_RETAINED_UNQUALIFIED" else 2
+    if args.provisional_smoke_only:
+        if not args.outdir or args.dry_run or args.resume_qualification or args.readonly_preflight_only or args.readonly_recovery_preflight_only or args.recover_r4_only or args.restore_provisional_settings_only:
+            raise SystemExit("--provisional-smoke-only requires a new --outdir and cannot be combined with another execution mode")
+        result=execute_provisional_smoke_only(pathlib.Path(args.admission),pathlib.Path(args.capsule),
+            pathlib.Path(args.prelive_proof),args.outdir)
+        print(json.dumps(result,indent=2))
+        return 0 if result.get("status")=="PROVISIONAL_SMOKE_PASS_NOT_FULLY_QUALIFIED" else 2
     if args.resume_qualification:
         if not args.outdir: raise SystemExit("--resume-qualification requires a new --outdir so prior failure receipts remain immutable")
         result=execute_qualification(pathlib.Path(args.admission),pathlib.Path(args.capsule),pathlib.Path(args.prelive_proof),args.outdir)

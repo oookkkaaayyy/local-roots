@@ -171,15 +171,33 @@ def test_known_slow_animation_is_never_misclassified_as_reference_workload():
 def test_reference_workload_controls_match_saved_f89_profile():
     payload=txn.provisional_reference_controls_payload()
     assert payload=={"on":True,"bri":255,"HBNF":{"scene":0,"vibe":0,"motion":50,
-        "audioResponse":50,"matrixBrightness":44,"auxBrightness":255,"palette":{"mode":"legacy"}}}
+        "audioResponse":50,"matrixBrightness":44,"auxBrightness":255,
+        "palette":{"mode":"legacy","id":"hbnf-balanced"}}}
+    firmware_source=(ROOT/"firmware/phase2/integration-r6-compositor-timing/usermod/usermod_hbnf_foundation_v1.cpp").read_text()
+    assert 'const char* id=obj["id"]|""' in firmware_source
+    assert 'strcmp(id,"hbnf-balanced")&&strcmp(id,"copper")&&strcmp(id,"ocean")' in firmware_source
     state={"bri":255,"HBNF":{"kernel":17,"variantSignature":1347100689,
         "scene":0,"vibe":0,"motion":50,"audioResponse":50,
         "matrixBrightness":44,"auxBrightness":255,"palette":{"mode":"legacy"}}}
     assert txn.validate_provisional_reference_context({"state":state}) is True
     state["HBNF"]["kernel"]=8
     try:txn.validate_provisional_reference_context({"state":state})
-    except RuntimeError as exc:assert "reference-workload-controls-not-matched" in str(exc)
+    except RuntimeError as exc:
+        assert "reference-workload-controls-not-matched" in str(exc)
+        assert '"actual":' in str(exc) and '"mismatches"' in str(exc)
     else:raise AssertionError("unmatched kernel passed reference smoke setup")
+
+
+def test_smoke_continuation_is_distinct_from_install_and_preserves_consumed_attempt():
+    source=(ROOT/"scripts/hbnf_r6_audio_cache_live_transaction.py").read_text()
+    guarded=(ROOT/"scripts/hbnf_guarded_run.py").read_text()
+    smoke=source.split("    def provisional_smoke_only(self):",1)[1].split("\n    def stage_candidate",1)[0]
+    close=source.split("    def close(self, result):",1)[1].split("\n\ndef execute(",1)[0]
+    assert "self.provisional_smoke(baseline)" in smoke
+    assert "self.stage_candidate(" not in smoke and "self.consume_install_attempt(" not in smoke
+    assert 'pending["candidate_install_attempts_used"]=1' in close
+    assert '"PROVISIONAL_SMOKE_CONTINUATION_RESULT.json"' in close
+    assert "--provisional-smoke-only" in guarded
 
 
 def test_feature_failure_does_not_spend_r4_recovery_but_system_health_failure_does():
