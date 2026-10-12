@@ -9,6 +9,8 @@ import tempfile
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location("transaction",ROOT/"scripts/hbnf_r6_audio_cache_live_transaction.py")
 txn=importlib.util.module_from_spec(spec);spec.loader.exec_module(txn)
+platform_spec=importlib.util.spec_from_file_location("hbnf_platform",ROOT/"scripts/platform.py")
+platform=importlib.util.module_from_spec(platform_spec);platform_spec.loader.exec_module(platform)
 
 
 def test_candidate_workflow_and_artifact_are_exact_and_start_from_f89():
@@ -52,11 +54,44 @@ def test_wrong_artifact_or_matrix_target_rejected_before_port_execution():
     exact_auth={"candidate_release_id":profile.release_id,"candidate_bin_sha256":profile.sha256,
         "rollback_bin_sha256":profile.rollback_sha256,"candidate_install_limit":1,"recovery_install_limit":1}
     txn.verify_candidate_binding({"identities":ids,"fresh_owner_authorization":exact_auth},profile)
+    smoke_auth=dict(exact_auth,recovery_install_limit=0)
+    txn.verify_candidate_binding({"identities":ids,"fresh_owner_authorization":smoke_auth},profile)
     for changes in ({"candidate_bin_sha256":"0"*64},{"matrix_mac":"001122334455"}):
         wrong={"identities":dict(ids,**changes)}
         try:txn.verify_candidate_binding(wrong,profile)
         except RuntimeError as exc:assert "admission-artifact-target-binding-mismatch" in str(exc)
         else:raise AssertionError("wrong candidate or target accepted")
+
+
+def test_installed_r6_accepts_new_smoke_authorization_without_repinning_r7_adapter():
+    state=json.loads((ROOT/"config/HBNF_CONTROL_STATE.json").read_text())
+    pending=state["execution_cursor"]["pending_provisional_candidate"]
+    contract=json.loads((ROOT/"platform/workflows/phase2-provisional-release.json").read_text())["provisional_release_contract"]
+    auth=state["live_authorization_binding"]
+    assert auth["authorization_id"] != pending["authorization_id"]
+    assert platform.provisional_pending_authorization_matches(auth,pending,state["installed_release"],contract)
+    adapter=json.loads((ROOT/"config/HBNF_PACKET20_LIVE_SWEEP_ADAPTER_20261004.json").read_text())
+    assert adapter["expected_release_id"] == "hbnf-cart2-phase2-offline-wow-r7-20261009"
+
+
+def test_installed_r6_exception_rejects_wrong_candidate_or_rollback():
+    state=json.loads((ROOT/"config/HBNF_CONTROL_STATE.json").read_text())
+    pending=state["execution_cursor"]["pending_provisional_candidate"]
+    contract=json.loads((ROOT/"platform/workflows/phase2-provisional-release.json").read_text())["provisional_release_contract"]
+    auth=state["live_authorization_binding"]
+    installed=state["installed_release"]
+    assert not platform.provisional_pending_authorization_matches(dict(auth,candidate_bin_sha256="0"*64),pending,installed,contract)
+    assert not platform.provisional_pending_authorization_matches(dict(auth,rollback_bin_sha256="0"*64),pending,installed,contract)
+    assert not platform.provisional_pending_authorization_matches(dict(auth,candidate_release_id="other"),pending,installed,contract)
+
+
+def test_smoke_runner_never_rolls_back_without_new_owner_authorization():
+    source=(ROOT/"scripts/hbnf_r6_audio_cache_live_transaction.py").read_text()
+    smoke=source.split("    def provisional_smoke_only(self):",1)[1].split("\n    def stage_candidate",1)[0]
+    assert "self.recover_r4()" not in smoke
+    assert "self.preflight_failed_candidate_recovery()" not in smoke
+    assert 'binding.get("recovery_install_limit")!=0' in smoke
+    assert "PROVISIONAL_SMOKE_CRITICAL_DEVICE_HEALTH_FAILURE_RECOVERY_AUTH_REQUIRED" in smoke
 
 
 class FakePort:

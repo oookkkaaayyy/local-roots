@@ -1,0 +1,39 @@
+{
+  "canonical_r7_adapter_sha256": "e1fe90deb9b98be1396177fb001cc5a5d8458725104feaa80549bac34da77fe9",
+  "changes": [
+    "Installed-candidate reconciliation now binds exact candidate SHA and rollback SHA while permitting a distinct current continuation authorization ID; pre-install path still requires the install authorization ID.",
+    "Smoke-only runner no longer performs automatic R4 recovery; critical device-health failure records recovery authorization required and stops.",
+    "Smoke-only authorization requires recovery limit 0; firmware install remains prohibited."
+  ],
+  "device_mutations": 0,
+  "failure_classification": "Genuine provisional-release path defect: identity exception bound installed R6 to the consumed install authorization ID; a fresh smoke-continuation authorization necessarily has a different ID. Historical R7 Packet20 adapter remains correctly pinned and unchanged.",
+  "firmware_build_or_install": false,
+  "fresh_readonly_preflight": {
+    "aux_mac": "8c94df55c34c",
+    "candidate_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+    "conflicting_workers": [],
+    "ddp_live": true,
+    "diagnostic_off": true,
+    "host_on_ac": true,
+    "lan": "en0",
+    "matrix_mac": "704bca5b345c",
+    "pass": true,
+    "path": "evidence/cart2-r6-incremental-controls-20261011/live-provisional/smoke-continuation-20261012/preflight/QUALIFICATION_PRELIVE_READONLY.json",
+    "settings": {
+      "aux": 68,
+      "matrix": 66,
+      "vibe": 5
+    },
+    "sha256": "f606988bc59fb4e69b3c45306cc3ee78b3fabbf08ee15e70b98111eb0a2681ba",
+    "telemetry_off": true
+  },
+  "recorded_utc": "2026-10-12T06:06:13.508126+00:00",
+  "recovery_authorized": false,
+  "schema": "hbnf-provisional-smoke-runner-offline-correction-v1",
+  "tests": {
+    "hbnf_control": "23 tests passed",
+    "hbnf_guarded_run": "passed exact admission / fail-closed checks",
+    "platform_doctor": "PASS",
+    "provisional_release_path": "18 focused tests passed"
+  }
+}

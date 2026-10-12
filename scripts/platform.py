@@ -49,6 +49,22 @@ def sha256_file(path: pathlib.Path) -> str:
     return h.hexdigest()
 
 
+def provisional_pending_authorization_matches(
+    auth: dict[str, Any], pending: dict[str, Any], installed: str, contract: dict[str, Any]
+) -> bool:
+    """Bind current authority to the exact candidate; install authority remains ID-bound before OTA."""
+    if not (
+        auth.get("candidate_release_id") == pending.get("candidate_release_id")
+        and auth.get("candidate_bin_sha256") == pending.get("candidate_sha256")
+        and auth.get("rollback_bin_sha256") == contract.get("recovery_sha256")
+    ):
+        return False
+    if installed == pending.get("candidate_release_id"):
+        # Continuation authority is distinct from the consumed installation authorization.
+        return True
+    return auth.get("authorization_id") == pending.get("authorization_id")
+
+
 def git(args: list[str]) -> str | None:
     try:
         p = subprocess.run(
@@ -384,14 +400,12 @@ def validate_hbnf_coherence(
                 and preflight.get("aux", {}).get("live") is True
                 and preflight.get("aux", {}).get("mode") == "DDP"
                 and preflight.get("aux", {}).get("source") == "192.168.77.10"
-                and auth.get("authorization_id") == pending.get("authorization_id")
-                and auth.get("candidate_release_id") == pending.get("candidate_release_id")
-                and auth.get("candidate_bin_sha256") == pending.get("candidate_sha256")
-                and auth.get("rollback_bin_sha256") == contract.get("recovery_sha256")
+                and provisional_pending_authorization_matches(auth, pending, installed, contract)
             )
             if exact_pending and installed == contract.get("starting_release_id"):
                 pending_provisional_candidate_is_current = (
-                    state.get("installed_firmware_sha256") == contract.get("starting_sha256")
+                    auth.get("authorization_id") == pending.get("authorization_id")
+                    and state.get("installed_firmware_sha256") == contract.get("starting_sha256")
                     and pending.get("candidate_install_attempts_used") in (0, 1)
                     and pending.get("status") in (
                         "LIVE_APPROVED_PENDING_INSTALL", "CANDIDATE_ATTEMPT_CONSUMED",

@@ -163,7 +163,7 @@ def verify_candidate_binding(admission: dict, profile: CandidateProfile) -> None
             or binding.get("candidate_bin_sha256")!=profile.sha256
             or binding.get("rollback_bin_sha256")!=profile.rollback_sha256
             or binding.get("candidate_install_limit")!=1
-            or binding.get("recovery_install_limit")!=1):
+            or binding.get("recovery_install_limit") not in (0,1)):
             raise RuntimeError("provisional-exact-owner-authorization-binding-mismatch")
 
 
@@ -1493,8 +1493,10 @@ class LivePort:
             raise RuntimeError("provisional-smoke-continuation-requires-provisional-candidate")
         state=json.loads(self.state_path.read_text())
         pending=state.get("execution_cursor",{}).get("pending_provisional_candidate",{})
+        binding=state.get("live_authorization_binding",{})
         if (state.get("live_mutation_authorized") is not True
-            or state.get("live_authorization_binding")!=self.admission.get("fresh_owner_authorization")
+            or binding!=self.admission.get("fresh_owner_authorization")
+            or binding.get("candidate_install_limit")!=1 or binding.get("recovery_install_limit")!=0
             or pending.get("candidate_release_id")!=self.candidate.release_id
             or pending.get("candidate_sha256")!=self.candidate.sha256
             or pending.get("candidate_install_attempts_used")!=1
@@ -1527,12 +1529,9 @@ class LivePort:
             if smoke.get("passed") is True:
                 result["status"]="PROVISIONAL_SMOKE_PASS_NOT_FULLY_QUALIFIED"
             elif provisional_device_failure_requires_recovery(smoke):
-                recovery_preflight=self.preflight_failed_candidate_recovery()
-                result["recovery_preflight"]=recovery_preflight
-                recovery=self.recover_r4()
-                result["recovery"]=recovery
-                result["recovery_attempts"]=self.recovery_attempts
-                result["status"]="PROVISIONAL_SMOKE_DEVICE_GATE_FAILED_R4_RECOVERED"
+                result["status"]="PROVISIONAL_SMOKE_CRITICAL_DEVICE_HEALTH_FAILURE_RECOVERY_AUTH_REQUIRED"
+                result["recovery_required"] = True
+                result["recovery_attempts"] = 0
             else:
                 result["status"]="PROVISIONAL_SMOKE_INCOMPLETE_CANDIDATE_UNQUALIFIED"
         except Exception as exc:
