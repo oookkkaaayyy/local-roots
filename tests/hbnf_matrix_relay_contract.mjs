@@ -45,8 +45,13 @@ assert.equal(failedRun.candidate_release_id,MATRIX_CANDIDATE);
 assert.equal(failedRun.candidate_sha256,controlState.r6_audio_cache_successor.candidate_sha256);
 assert.equal(failedRun.recovery.status,"R4_READBACK_VERIFIED");
 assert.equal(failedRun.recovery.runtime.matrix_build.release_id,currentR4.release_id);
-assert.equal(currentR4.release_id,controlState.installed_release);
-assert.equal(currentR4.sha256,controlState.installed_firmware_sha256);
+// The control state's installed_* fields now identify the owner-reported f89
+// field candidate; installed_firmware_reconciliation is the preserved earlier
+// R4 readback receipt. Keep those distinct instead of asserting stale equality.
+assert.equal(controlState.installed_release,MATRIX_CANDIDATE);
+assert.equal(controlState.installed_firmware_sha256,"f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b");
+assert.equal(currentR4.release_id,"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1");
+assert.equal(currentR4.sha256,"338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c");
 assert.notEqual(MATRIX_CANDIDATE,currentR4.release_id,"failed R6 relay identity must not match recovered R4");
 assert.equal(captured.state.HBNF.candidate,currentR4.release_id,"preserved Matrix readback must identify the recovered R4 release");
 assert.notEqual(normalizeReadback(captured.info,captured.state).candidate,MATRIX_CANDIDATE,"R4 readback must fail the relay's pinned R6 identity check");

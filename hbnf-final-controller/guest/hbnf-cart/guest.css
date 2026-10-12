@@ -4,6 +4,7 @@ body{margin:0;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
 .guest-shell{max-width:720px;margin:auto;padding:18px 0 36px}
 .boot-card{margin-top:14px;padding:18px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
 .guest-hero,.section-head,.action-row,.guest-footer{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.connection-summary{display:grid;justify-items:end;gap:5px}.device-status{color:var(--muted);font-size:.75rem;text-align:right}
 .badge{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:.72rem;font-weight:800;letter-spacing:.08em;background:#0a161c}
 .badge.ready{color:#8ce3ad;border-color:#2c715a}.badge.closed{color:var(--warn);border-color:#766233}.badge.offline{color:var(--bad);border-color:#753d46}
 .eyebrow{margin:0;color:var(--muted);font-size:.72rem;letter-spacing:.12em;font-weight:800}h1{margin:.25rem 0;font-size:1.8rem}h2{margin:.1rem 0 .45rem;font-size:1.15rem}.muted,.vibe-grid span,.feature-grid span{color:var(--muted)}

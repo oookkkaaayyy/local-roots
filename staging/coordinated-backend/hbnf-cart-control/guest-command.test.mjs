@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import vm from "node:vm";
 import { readFileSync } from "node:fs";
 import { isMetadataOnlyCommand, planGuestCommand, reconcileTargetsForCommand, reduceCartCommand, requiresOwnerAuthorization, runGuestCommand } from "./guest-command.ts";
 
@@ -169,4 +170,57 @@ test("Static Guest route calls only the existing endpoint without browser sessio
   assert.match(script, /credentials:"omit"/);
   assert.doesNotMatch(script, /localStorage|sessionStorage|document\.cookie|guest_token|ticket/i);
   assert.doesNotMatch(page, /release|firmware|deploy|pairing/i);
+});
+
+test("Guest UI reports backend reachability separately from Matrix/AUX confirmation", async () => {
+  const script = readFileSync(new URL("../../../hbnf-final-controller/guest/hbnf-cart/guest.js", import.meta.url), "utf8");
+  const nodes = new Map();
+  for (const id of ["primaryStatus", "secondaryStatus", "live", "deviceStatus", "connectionBadge", "guestBadge", "retry"]) nodes.set(id, { textContent: "", className: "", addEventListener() {} });
+  const action = {
+    disabled: true,
+    addEventListener(_type, listener) { this.click = listener; },
+    hasAttribute() { return false; },
+    getAttribute(name) { return name === "data-guest-action" ? "next" : ""; },
+  };
+  const snapshots = [
+    { desired: { revision: 17, state: { guestMode: true } }, observed: [
+      { device_id: "matrix", desired_revision: 17, status: "online", reported: { confirmed: true } },
+      { device_id: "aux", desired_revision: 16, status: "offline", reported: { confirmed: false } },
+    ] },
+    { desired: { revision: 18, state: { guestMode: true } }, observed: [
+      { device_id: "matrix", desired_revision: 17, status: "online", reported: { confirmed: true } },
+      { device_id: "aux", desired_revision: 16, status: "offline", reported: { confirmed: false } },
+    ] },
+  ];
+  let fetchCount = 0;
+  const context = {
+    document: {
+      querySelectorAll() { return [action]; },
+      getElementById(id) { return nodes.get(id); },
+    },
+    window: {
+      location: { pathname: "/guest/hbnf-cart/" },
+      crypto: { getRandomValues(bytes) { bytes.fill(1); } },
+      addEventListener() {},
+    },
+    fetch: async (_url, options) => {
+      fetchCount++;
+      const body = JSON.parse(options.body);
+      const result = body.action === "status" ? snapshots.shift() : { revision: 18, reconciliation: { status: "queued" } };
+      return { ok: true, status: 200, json: async () => result };
+    },
+  };
+  vm.runInNewContext(script, context);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(nodes.get("connectionBadge").textContent, "BACKEND ONLINE");
+  assert.match(nodes.get("deviceStatus").textContent, /Matrix CONFIRMED · AUX OFFLINE/);
+  assert.doesNotMatch(nodes.get("deviceStatus").textContent, /AUX CONFIRMED/);
+
+  action.click();
+  await new Promise(resolve => setImmediate(resolve));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(fetchCount, 3);
+  assert.match(nodes.get("primaryStatus").textContent, /queued; device confirmation pending/i);
+  assert.match(nodes.get("secondaryStatus").textContent, /not yet confirmed/i);
+  assert.doesNotMatch(nodes.get("primaryStatus").textContent, /applied/i);
 });
