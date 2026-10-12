@@ -8,12 +8,12 @@ const dAndU = read('../src/pages/DyedUnattachedPage.tsx');
 const shell = read('../src/components/Shell.tsx');
 const studio = read('../public/dye-studio/index.html');
 
-test('nested route stays inside the existing Local Roots and D&U shell', () => {
+test('nested route preserves D&U navigation and forwards to the same-origin studio app', () => {
   assert.match(app, /\/dyed-and-unattached\/dye-studio.*canonical:'\/dyed-and-unattached\/dye-studio'/);
   assert.match(app, /path==='\/dyed-and-unattached\/dye-studio'\)return <DyeStudioPage\/>/);
   assert.match(dAndU, /href="\/dyed-and-unattached\/dye-studio">Dye Studio<\/a>/);
   assert.match(shell, /path\.startsWith\(`\$\{href\}\/`\)/);
-  assert.match(read('../src/pages/DyeStudioPage.tsx'), /<Shell>/);
+  assert.match(read('../src/pages/DyeStudioPage.tsx'), /window\.location\.replace\('\/dye-studio\/index\.html'\)/);
 });
 
 test('candidate retains designer controls and evidence limits', () => {
