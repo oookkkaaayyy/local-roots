@@ -205,7 +205,7 @@ test('beta launch copy and PNG export include physical recipe limitations', () =
       hex:'#B62068',share:.5,key:'1',label:'Onyx',plateHex:'#111111',shoulderHex:'#222222',rimHex:'#333333'
     }],layers:[{name:'ProChem Onyx',hex:'#101010',strength:100,passes:3,method:'floetrol-stencil',shape:'full'}],
     profile:()=>({name:'Innova Star'}),currentTransmissionHex:()=> '#FFFFFF',
-    viewMode:'daylight',daylightScene:'outdoor',drawDisc(){},drawLegendRow:(ctx,x,y,w,hex,title,subtitle)=>output.push(title+' '+subtitle),
+    viewMode:'daylight',daylightScene:'outdoor',clamp:(x,a,b)=>Math.max(a,Math.min(b,x)),methodForDyeLayer:l=>l.method,drawDisc(){},drawLegendRow:(ctx,x,y,w,hex,title,subtitle)=>output.push(title+' '+subtitle),
     shapeLabel:x=>x,confidenceForActive:()=> 'estimate',statusLabel:()=> 'Model estimate',toast(){}};
   Function('env','with(env){'+studio.slice(start,end)+';return $("exportPng").onclick;}')(env)();
   assert.ok(output.some(x=>x.includes('3 coat(s)')&&x.includes('floetrol-stencil')));
