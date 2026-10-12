@@ -197,6 +197,8 @@ def test_smoke_continuation_is_distinct_from_install_and_preserves_consumed_atte
     assert "self.stage_candidate(" not in smoke and "self.consume_install_attempt(" not in smoke
     assert 'pending["candidate_install_attempts_used"]=1' in close
     assert '"PROVISIONAL_SMOKE_CONTINUATION_RESULT.json"' in close
+    assert '"CLOSED_AFTER_PROVISIONAL_SMOKE"' in close
+    assert '"hardware_writes_permitted_now": False' in close
     assert "--provisional-smoke-only" in guarded
     preflight=source.split("    def preflight_candidate(",1)[1].split("\n    def ",1)[0]
     assert "capture_fresh_owner_settings" in preflight

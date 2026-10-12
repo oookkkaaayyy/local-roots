@@ -2040,6 +2040,19 @@ class LivePort:
                     pass
             subject["qualification_result"]=result_ref
             subject["qualification_result_sha256"]=sha(result_file)
+        if smoke_only:
+            current.update({
+                "authorized": False,
+                "hardware_writes_permitted_now": False,
+                "candidate_install_permitted": False,
+                "transaction_consumed": True,
+                "operation_scope": "CLOSED_AFTER_PROVISIONAL_SMOKE",
+                "candidate_attempts_used": 1,
+                "recovery_attempts_used": self.recovery_attempts,
+                "status": result["status"],
+                "current_gate": result["status"],
+                "transaction_result": result_ref,
+            })
         if result.get("recovery", {}).get("status") in ("R4_READBACK_VERIFIED", "R4_ALREADY_INSTALLED_NO_UPLOAD"):
             state["installed_release"] = self.candidate.release_id if result.get("recovery",{}).get("runtime",{}).get("release_id")==self.candidate.release_id else R4
             state["installed_firmware_sha256"] = self.candidate.sha256 if state["installed_release"]==self.candidate.release_id else self.candidate.rollback_sha256
