@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dyed & Unattached — Disc Dye Studio v9.3 — Integration Candidate</title>
+<title>Dye Studio · Dyed & Unattached · Local Roots — Experimental Beta</title>
 <style>
 :root{
   --bg:#0b1016;--panel:#151c24;--panel2:#1d2732;--panel3:#10171f;
@@ -224,6 +224,10 @@ canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
 .evidence-info{font-size:12px;color:#cad9e1;line-height:1.5;margin:8px 0}.evidence-record{padding:9px 0;border-top:1px solid #284251;font-size:12px;line-height:1.45}.evidence-record a{color:#bceeff;word-break:break-all}.evidence-meta{color:#a8bbc8}.evidence-tag{display:inline-block;border:1px solid #425965;border-radius:6px;padding:1px 5px;font-size:10px;color:#d3e6ed;margin-right:5px}
 </style>
 
+<style id="beta-studio-notice">
+.beta-status{max-width:1536px;margin:0 auto;padding:10px 22px;color:#5b3a24;border-top:1px solid #d7c2a3;border-bottom:1px solid #d7c2a3;background:#fff3df;line-height:1.45}
+.beta-status strong{color:#713c25}
+</style>
 <style id="du-brand-integration-theme">
 /* Reference theme from the actual Local Roots/D&U app/src/styles.css.
    Functional prediction code remains independent of this style layer. */
@@ -287,7 +291,7 @@ button.danger{color:#8d3129}
   <div class="header-row">
     <div>
       <h1>Disc Dye Studio</h1>
-      <div class="sub">Geometry-aware disc previews and source-linked dye evidence. Finished color accuracy is not yet validated.</div>
+      <div class="sub">Experimental beta: design dye regions and compare source-linked evidence. Predicted colors are illustrative and have not been independently validated against physical results. Do not promise an exact finished shade.</div>
     </div>
     <div class="top-actions"><div class="mode-switch"><button id="clientModeBtn" class="active">Client Designer</button><button id="calibrationModeBtn">Calibration Studio</button></div>
       <div class="action-with-help">
@@ -297,8 +301,7 @@ button.danger{color:#8d3129}
     </div>
   </div>
 </header>
-
-
+<div class="beta-status" role="note"><strong>Experimental beta</strong> — Geometry and recipe planning are available. Predicted hue, saturation, UV behavior, and dye uptake remain unvalidated estimates, not a guarantee of actual disc color.</div>
 <main>
 <aside class="panel controls">
   <div class="onboarding client-only"><h2>Design from the research library</h2><ol><li>Choose the closest Innova plastic reference and the actual blank color.</li><li>Add only HBNF-available dyes and arrange the blocks.</li><li>Treat all unvalidated preview hues as model estimates; consult source-linked real-world examples and limitations.</li></ol></div><div class="onboarding calibration-only"><h2>Improve the model—not rebuild it</h2><ol><li>Start with the built-in Innova and community-research priors.</li><li>Add local measurements only for important gaps or exact customer blanks.</li><li>Only sufficiently documented records matching the exact starting disc and process can override compatible opaque daylight previews.</li></ol></div>
@@ -316,7 +319,7 @@ button.danger{color:#8d3129}
     <span class="spacer"></span>
     <div class="action-with-help">
       <button id="actualTestBtn">Load actual HBNF test</button>
-      <button class="help-dot" data-help-title="Actual HBNF test" data-help="Loads the exact green Champion disc and UV Blast Green / Blaze Orange split shown in the built-in before-and-after photos. The daylight outdoor preview is anchored to colors sampled from the finished photo.">?</button>
+      <button class="help-dot" data-help-title="Actual HBNF test" data-help="Loads the historical HBNF green Champion and UV Blast Green / Blaze Orange layout. Its photographs are qualitative references only; the preview does not apply source-photo RGB as calibrated color targets.">?</button>
     </div>
     <div class="action-with-help">
       <button id="exampleBtn">Load four-color example</button>
@@ -1474,7 +1477,7 @@ $("exportPng").onclick=()=>{
   let y=70;c.fillStyle="#f4f7f9";c.font="800 30px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";c.fillText("Dyes used",rightX,y);y+=28;
   c.fillStyle="#aeb8c4";c.font="15px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";c.fillText("Listed in application order; later layers are lower in this section.",rightX,y);y+=24;
   if(!layers.length){drawLegendRow(c,rightX,y,rightW,$("baseHex").value,"No dye blocks","Only the original disc color is shown.",rowH);y+=rowH}
-  else layers.forEach((l,i)=>{drawLegendRow(c,rightX,y,rightW,l.hex,`${i+1}. ${l.name} — ${l.hex}`,`${shapeLabel(l.shape)} · application ${l.strength}%`,rowH);y+=rowH});
+  else layers.forEach((l,i)=>{drawLegendRow(c,rightX,y,rightW,l.hex,`${i+1}. ${l.name} — ${l.hex}`,`${shapeLabel(l.shape)} · nominal intensity ${l.strength}% · ${clamp(Math.round(+l.passes||1),1,12)} coat(s) · ${methodForDyeLayer(l)}`,rowH);y+=rowH});
   y+=45;c.fillStyle="#f4f7f9";c.font="800 30px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";c.fillText("Preview colors (not calibrated)",rightX,y);y+=28;
   c.fillStyle="#aeb8c4";c.font="15px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";c.fillText(`${regions.length} distinct visible region${regions.length===1?"":"s"} detected`,rightX,y);y+=24;
   regions.forEach((r,i)=>{drawLegendRow(c,rightX,y,rightW,r.hex,`${r.hex} overall · ${Math.round(r.share*1000)/10}% · ${statusLabel(confidenceForActive(layers.filter((_,i)=>r.key[i]==="1")))}`,`${r.label} · plate ${r.plateHex} · shoulder ${r.shoulderHex} · rim ${r.rimHex}`,rowH);y+=rowH});
