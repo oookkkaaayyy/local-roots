@@ -1,0 +1,34 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "R6_VIBE_FIRST_UI_CANDIDATE_20261012",
+  "summary": "Package the already owner-approved embedded Vibe-first UI into a uniquely identified R6 candidate based on the currently installed incremental-controls R6; preserve renderer behavior and exclude games.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scope": "Only the existing firmware-embedded local UI source and candidate identity change. The 28 animation kernels, rendering/audio logic, controls, DDP, diagnostics behavior, security gates, and rollback path remain as in the installed R6.",
+    "source": {
+      "ui_implementation_commit": "1b7bf8e47fce3a073e7f96470a96d98ccb455d6c",
+      "integration_head": "0fa2a5114882198ca683272c41cabe985217398f",
+      "installed_base_release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+      "installed_base_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+      "candidate_release_id": "hbnf-cart2-phase2-r6-vibe-first-ui-20261012"
+    },
+    "rollback": {
+      "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    },
+    "tests": [
+      "node tests/hbnf_local_ui_palette_contract.mjs",
+      "node tests/hbnf_owner_pwa_reliability.mjs",
+      "node tests/hbnf_owner_pwa_package.mjs",
+      "node tests/hbnf_r6_vibe_ui_identity.mjs"
+    ],
+    "release_boundary": "Source/package preparation only. Do not install without a new exact candidate authorization and passing release preflight. Full 28-kernel, soak, and owner acceptance gates remain unchanged."
+  }
+}

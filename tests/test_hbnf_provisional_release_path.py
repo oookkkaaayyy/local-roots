@@ -39,6 +39,60 @@ def test_candidate_workflow_and_artifact_are_exact_and_start_from_f89():
     assert "no threshold" in smoke and "self-contained" in smoke
 
 
+def test_ui_candidate_is_exactly_bound_to_current_r6_and_read_only_smoke():
+    workflow_path=ROOT/"platform/workflows/phase2-ui-provisional-release.json"
+    selected_path,selected=platform.workflow_by_id("phase2-ui-provisional-release")
+    assert selected_path==workflow_path and selected["id"]=="phase2-ui-provisional-release"
+    workflow=json.loads(workflow_path.read_text())
+    contract=workflow["provisional_release_contract"]
+    capsule=pathlib.Path(tempfile.mkdtemp())/"capsule.json"
+    capsule.write_text(json.dumps({"schema":"local-roots-execution-capsule-v1",
+        "workflow_id":"phase2-ui-provisional-release",
+        "workflow_source":{"path":"platform/workflows/phase2-ui-provisional-release.json",
+            "sha256":txn.sha(workflow_path)}}))
+    profile=txn.load_candidate_profile(capsule)
+    txn.exact_artifacts(profile)
+    assert profile.release_id=="hbnf-cart2-phase2-r6-vibe-first-ui-20261012"
+    assert profile.sha256=="43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3"
+    assert profile.size_bytes==1481344
+    assert profile.starting_release_id==txn.PROVISIONAL_RELEASE
+    assert profile.starting_sha256==txn.PROVISIONAL_SHA
+    assert profile.smoke_mode=="readonly_ui"
+    assert contract["recovery_sha256"]==txn.R4_SHA
+
+
+def test_ui_smoke_checks_embedded_page_without_any_device_mutation():
+    candidate=txn.CandidateProfile("hbnf-cart2-phase2-r6-vibe-first-ui-20261012","a"*64,10,
+        ROOT/"fake.bin",ROOT/"fake-adapter.json",ROOT/"fake-out",transaction_mode="provisional",
+        starting_release_id=txn.PROVISIONAL_RELEASE,starting_sha256=txn.PROVISIONAL_SHA,smoke_mode="readonly_ui")
+    with tempfile.TemporaryDirectory() as td:
+        port=object.__new__(txn.LivePort)
+        port.candidate=candidate;port.outdir=pathlib.Path(td);port.device_requests=0
+        baseline={"matrixBrightness":66,"auxBrightness":68,"vibe":5}
+        html=b"HBNF Cart Animation Mix Balanced Upbeat Signature Ambient System Info"
+        old=(txn.get_bytes,txn.get_json,txn.run_provisional_health_window,txn.read_matrix_context,txn.post_json)
+        seen={}
+        try:
+            def read_ui(url,timeout,request_counter):
+                request_counter();return 200,html
+            txn.get_bytes=read_ui
+            txn.get_json=lambda *a,**k:(_ for _ in ()).throw(AssertionError("health sampling is supplied by health-window implementation"))
+            def health(sample_fn,expected_release):
+                seen["expected_release"]=expected_release
+                return {"status":"PASS","duration_seconds":300,"sample_count":11}
+            txn.run_provisional_health_window=health
+            txn.read_matrix_context=lambda *a,**k:{"brightness":{"runtime":baseline,"persisted":baseline}}
+            txn.post_json=lambda *a,**k:(_ for _ in ()).throw(AssertionError("read-only smoke issued a mutation"))
+            result=port.provisional_smoke(baseline)
+            assert result["passed"] is True
+            assert result["ui_readback"]["missing_markers"]==[]
+            assert result["owner_settings_restore"]["verified"] is True
+            assert seen["expected_release"]==candidate.release_id
+            assert port.device_requests==1
+        finally:
+            txn.get_bytes,txn.get_json,txn.run_provisional_health_window,txn.read_matrix_context,txn.post_json=old
+
+
 def test_wrong_artifact_or_matrix_target_rejected_before_port_execution():
     workflow_path=ROOT/"platform/workflows/phase2-provisional-release.json"
     capsule=pathlib.Path(tempfile.mkdtemp())/"capsule.json"
@@ -208,7 +262,7 @@ def test_provisional_runner_does_not_start_packet20_or_select_a_benchmark_kernel
     assert '"packet20_instrumentation":"NOT_USED"' in smoke
     assert '"--require-normal-mode"' in smoke
     assert '"snapshot"' not in smoke and '"telemetry-mode"' not in smoke and '"select"' not in smoke
-    assert "run_provisional_health_window(health_sample)" in smoke
+    assert "run_provisional_health_window(health_sample,expected_release=self.candidate.release_id)" in smoke
 
 
 def test_smoke_continuation_is_distinct_from_install_and_preserves_consumed_attempt():

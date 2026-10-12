@@ -52,6 +52,7 @@ SUCCESSOR_RELEASE = "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-l
 SUCCESSOR_SHA = "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187"
 SUCCESSOR_SIZE = 1498832
 PROVISIONAL_RELEASE = "hbnf-cart2-phase2-r6-incremental-controls-20261011"
+PROVISIONAL_SHA = "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d"
 SUCCESSOR_BIN = ROOT/"evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011.bin"
 
 
@@ -68,6 +69,7 @@ class CandidateProfile(NamedTuple):
     transaction_mode: str = "full"
     starting_release_id: str = R4
     starting_sha256: str = ""
+    smoke_mode: str = "combined_feature"
 
 
 LEGACY_R6_PROFILE = CandidateProfile(RELEASE,CANDIDATE_SHA,CANDIDATE_SIZE,BIN,ADAPTER,OUT)
@@ -82,7 +84,7 @@ def load_candidate_profile(capsule_path: pathlib.Path) -> CandidateProfile:
     capsule=json.loads(pathlib.Path(capsule_path).read_text())
     workflow_id=capsule.get("workflow_id")
     if capsule.get("schema")!="local-roots-execution-capsule-v1" or workflow_id not in (
-        "phase2-live-qualification","phase2-provisional-release"):
+        "phase2-live-qualification","phase2-provisional-release","phase2-ui-provisional-release"):
         raise RuntimeError("supported-phase2-candidate-capsule-required")
     source=capsule.get("workflow_source",{})
     workflow_rel=f"platform/workflows/{workflow_id}.json"
@@ -93,7 +95,7 @@ def load_candidate_profile(capsule_path: pathlib.Path) -> CandidateProfile:
     workflow=json.loads(workflow_path.read_text())
     if workflow.get("id")!=workflow_id:
         raise RuntimeError("phase2-workflow-id-mismatch")
-    is_provisional=workflow_id=="phase2-provisional-release"
+    is_provisional=workflow_id in ("phase2-provisional-release","phase2-ui-provisional-release")
     contract=workflow.get("provisional_release_contract" if is_provisional else "qualification_contract",{})
     release=contract.get("candidate_release")
     candidate_sha=contract.get("candidate_sha256")
@@ -118,15 +120,19 @@ def load_candidate_profile(capsule_path: pathlib.Path) -> CandidateProfile:
         raise RuntimeError("phase2-workflow-candidate-path-escapes-repository") from exc
     transaction_mode="provisional" if is_provisional else "full"
     starting_release=contract.get("starting_release_id",R4)
+    smoke_mode=contract.get("smoke_mode","combined_feature")
+    if smoke_mode not in ("combined_feature","readonly_ui"):
+        raise RuntimeError("provisional-workflow-smoke-mode-invalid")
     starting_sha=contract.get("starting_sha256")
     if (transaction_mode=="provisional" and
-        (contract.get("smoke_seconds")!=300 or starting_release!=RELEASE
-         or starting_sha!=CANDIDATE_SHA or not isinstance(starting_release,str)
+        (contract.get("smoke_seconds")!=300
+         or (starting_release,starting_sha) not in ((RELEASE,CANDIDATE_SHA),(PROVISIONAL_RELEASE,PROVISIONAL_SHA))
+         or not isinstance(starting_release,str)
          or not re.fullmatch(r"[A-Za-z0-9._-]+",starting_release))):
         raise RuntimeError("provisional-workflow-smoke-or-starting-identity-invalid")
     profile=CandidateProfile(release,candidate_sha,candidate_size,candidate_bin,adapter,
         output,transaction_mode=transaction_mode,starting_release_id=starting_release,
-        starting_sha256=starting_sha or (R4_SHA if starting_release==R4 else ""))
+        starting_sha256=starting_sha or (R4_SHA if starting_release==R4 else ""),smoke_mode=smoke_mode)
     expected_recovery=contract.get("recovery_sha256")
     expected_recovery_path=contract.get("recovery_bin_path")
     if (expected_recovery!=profile.rollback_sha256
@@ -183,6 +189,16 @@ def get_json(url: str, timeout: float = 4, request_counter=None):
     with urllib.request.urlopen(req, timeout=timeout) as response:
         raw = response.read()
         return response.status, raw, json.loads(raw)
+
+
+def get_bytes(url: str, timeout: float = 8, request_counter=None):
+    """Read a bounded non-mutating HTTP body, used for embedded UI verification."""
+    import urllib.request
+    if request_counter is not None:
+        request_counter()
+    req=urllib.request.Request(url,headers={"Cache-Control":"no-store"})
+    with urllib.request.urlopen(req,timeout=timeout) as response:
+        return response.status,response.read()
 
 
 def post_json(url: str, payload: dict, timeout: float = 10, request_counter=None):
@@ -815,6 +831,7 @@ def validate_provisional_health_sample(sample, expected_release, previous_uptime
 
 
 def run_provisional_health_window(sample_fn, duration_seconds=300, interval_seconds=30,
+                                  expected_release=PROVISIONAL_RELEASE,
                                   clock=time.monotonic, sleep=time.sleep):
     """Run a five-minute read-only health window without Packet20 instrumentation."""
     if duration_seconds != 300 or interval_seconds != 30:
@@ -823,7 +840,7 @@ def run_provisional_health_window(sample_fn, duration_seconds=300, interval_seco
     fps_values=[]; sample_count=0; previous_render_count=None
     while True:
         sample=sample_fn()
-        previous_uptime,fps,render_count=validate_provisional_health_sample(sample,PROVISIONAL_RELEASE,previous_uptime)
+        previous_uptime,fps,render_count=validate_provisional_health_sample(sample,expected_release,previous_uptime)
         if previous_render_count is not None and render_count<=previous_render_count:
             raise RuntimeError("provisional-smoke-renderer-stalled")
         previous_render_count=render_count
@@ -1697,22 +1714,32 @@ class LivePort:
                 "aux_on":ast.get("on"),"aux_live":ai.get("live"),"aux_mode":ai.get("lm"),
                 "aux_source":ai.get("lip"),"aux_led_count":ai.get("leds",{}).get("count")}
         try:
-            # Feature controls are a distinct bounded transaction with their
-            # own snapshot/restore. The five-minute health window itself only
-            # reads ordinary Matrix/AUX endpoints and never enters Packet20.
-            feature_check_started=True
-            combined_path=self.outdir/"COMBINED_FEATURE_CHECK.json"
-            p=run([sys.executable,str(ROOT/"scripts/hbnf_r6_combined_feature_check.py"),
-                "--release-id",self.candidate.release_id,"--out",str(combined_path),
-                "--require-normal-mode"],timeout=90)
-            combined=json.loads(combined_path.read_text()) if combined_path.is_file() else {}
-            result["feature_check"]=combined
-            result["combined_feature_check"]=combined
-            if p.returncode or combined.get("status")!="PASS":
-                if combined.get("checks",{}).get("matrix_aux_ddp_projection") is False:
-                    raise RuntimeError("provisional-smoke-aux-ddp-health-failure")
-                raise RuntimeError("provisional-smoke-combined-feature-check-failed")
-            result["health_window"]=run_provisional_health_window(health_sample)
+            # UI-only releases do not replay the mutating combined controls
+            # check: that path writes WLED segment state and has a demonstrated
+            # exact-restore failure. Verify the embedded page read-only, then
+            # use the existing five-minute Matrix/AUX health window.
+            if self.candidate.smoke_mode=="readonly_ui":
+                status,raw=get_bytes(MATRIX+"/hbnf",timeout=8,request_counter=self._record_device_request)
+                page=raw.decode("utf-8","replace")
+                required=("HBNF Cart","Animation Mix","Balanced","Upbeat","Signature","Ambient","System Info")
+                missing=[marker for marker in required if marker not in page]
+                result["ui_readback"]={"http_status":status,"bytes":len(raw),"required_markers":list(required),"missing_markers":missing}
+                if status!=200 or missing:
+                    raise RuntimeError("provisional-smoke-ui-page-readback-failed")
+            else:
+                feature_check_started=True
+                combined_path=self.outdir/"COMBINED_FEATURE_CHECK.json"
+                p=run([sys.executable,str(ROOT/"scripts/hbnf_r6_combined_feature_check.py"),
+                    "--release-id",self.candidate.release_id,"--out",str(combined_path),
+                    "--require-normal-mode"],timeout=90)
+                combined=json.loads(combined_path.read_text()) if combined_path.is_file() else {}
+                result["feature_check"]=combined
+                result["combined_feature_check"]=combined
+                if p.returncode or combined.get("status")!="PASS":
+                    if combined.get("checks",{}).get("matrix_aux_ddp_projection") is False:
+                        raise RuntimeError("provisional-smoke-aux-ddp-health-failure")
+                    raise RuntimeError("provisional-smoke-combined-feature-check-failed")
+            result["health_window"]=run_provisional_health_window(health_sample,expected_release=self.candidate.release_id)
         except Exception as exc:
             failure=f"{type(exc).__name__}: {exc}"
         finally:
@@ -1752,6 +1779,10 @@ class LivePort:
                 or any(final["brightness"]["persisted"].get(k)!=owner_baseline.get(k) for k in keys)):
                 raise RuntimeError("provisional-smoke-final-owner-settings-readback-mismatch")
             result["final_matrix_aux_settings_verified"]=True
+            if result.get("owner_settings_restore") is None:
+                result["owner_settings_restore"]={"verified":True,
+                    "runtime":final["brightness"]["runtime"],"persisted":final["brightness"]["persisted"],
+                    "writes_performed":False}
             result["passed"]=True
             result["owner_physical_text_centering_review"]="required; cannot be proven by controller/API telemetry"
             result["final_qualification"]="NOT_PERFORMED; all frozen 28-kernel, 90-minute, and owner-acceptance gates remain required"

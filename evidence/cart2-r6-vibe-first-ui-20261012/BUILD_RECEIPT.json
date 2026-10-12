@@ -1,0 +1,41 @@
+{
+  "schema": "hbnf-cart2-ui-candidate-build-receipt-v1",
+  "status": "LOCAL_BUILD_PASS__NO_HARDWARE_ACCEPTANCE",
+  "candidate_release_id": "hbnf-cart2-phase2-r6-vibe-first-ui-20261012",
+  "source_commit": "d01a2f6f5ae02deb0901dc48490de0cd777ee9fa",
+  "artifact": {
+    "path": "evidence/cart2-r6-vibe-first-ui-20261012/artifact/hbnf-cart2-phase2-r6-vibe-first-ui-20261012.bin",
+    "sha256": "43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3",
+    "size_bytes": 1481344,
+    "ota_partition_bytes": 1572864,
+    "ota_headroom_bytes": 91520,
+    "ota_partition_fit": true,
+    "ram_used_bytes": 111440,
+    "ram_available_bytes": 327680
+  },
+  "build_duration_seconds": 52.736,
+  "build_result": "SUCCESS",
+  "flash_reported_bytes": 1474661,
+  "flash_partition_bytes": 1572864,
+  "partition_fit": true,
+  "ram_used_bytes": 111440,
+  "ram_total_bytes": 327680,
+  "embedded_ui_strings_verified": [
+    "HBNF Cart",
+    "Animation Mix",
+    "Balanced",
+    "Upbeat",
+    "Signature",
+    "Ambient",
+    "System Info",
+    "Color options"
+  ],
+  "game_markers_absent": [
+    "hbnf-arcade-runtime-v1",
+    "maze-chase-session",
+    "snakeGameSession"
+  ],
+  "device_or_production_mutations": false,
+  "install_authorized": false,
+  "qualification": "NOT_PERFORMED"
+}

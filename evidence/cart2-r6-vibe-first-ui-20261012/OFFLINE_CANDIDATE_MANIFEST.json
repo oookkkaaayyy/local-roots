@@ -1,0 +1,64 @@
+{
+  "schema": "hbnf-cart2-ui-candidate-manifest-v1",
+  "status": "OFFLINE_CANDIDATE_READY_FOR_GUARDED_INSTALL_REVIEW__NOT_INSTALLED",
+  "candidate_release_id": "hbnf-cart2-phase2-r6-vibe-first-ui-20261012",
+  "candidate_sha256": "43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3",
+  "candidate_size_bytes": 1481344,
+  "source_commit": "d01a2f6f5ae02deb0901dc48490de0cd777ee9fa",
+  "previous_installed_base": {
+    "release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d"
+  },
+  "exact_recovery": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008
+  },
+  "included": [
+    "Vibe-first embedded UI",
+    "collapsed descriptive Animation Mix",
+    "collapsed System Info",
+    "advanced palettes collapsed by default",
+    "existing mixed-case centered text",
+    "all existing 28 kernels, Vibe/audio, brightness, playback, and Matrix/AUX synchronization retained from exact R6 base"
+  ],
+  "excluded_from_binary": [
+    "game-runtime integration from uncommitted arcade worktree",
+    "game-rendering changes",
+    "new experimental optimization",
+    "backend/relay activation"
+  ],
+  "verification": {
+    "offline_tests": [
+      "tests/test_hbnf_provisional_release_path.py",
+      "tests/test_hbnf_r6_combined_feature_check.py",
+      "tests/hbnf_local_ui_palette_contract.mjs",
+      "tests/hbnf_owner_pwa_reliability.mjs",
+      "tests/hbnf_owner_pwa_package.mjs",
+      "tests/hbnf-coordinated-controller-contract.mjs",
+      "tests/hbnf-canonical-palette-projection.mjs",
+      "tests/hbnf_r6_vibe_ui_identity.mjs",
+      "tests.test_hbnf_text_moments_offline (16 tests)"
+    ],
+    "governance_change_check": "PASS",
+    "platform_doctor": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "live_status": {
+    "installation": "NOT_AUTHORIZED_OR_ATTEMPTED",
+    "current_baseline": "Exact previously installed R6 retained; no device changes made",
+    "fresh_preflight_required_after_authorization": true,
+    "physical_ui_touch_review": "Not performed",
+    "physical_aux_illumination": "Not inferable from DDP telemetry",
+    "full_qualification": "All 28-kernel, 90-minute, and owner acceptance gates retained"
+  },
+  "known_runner_correction": "The prior smoke failed in a segment-mutating combined controls/restore step before health sampling. This UI-only candidate uses read-only /hbnf page readback and five-minute health sampling; no segment writes.",
+  "durable_artifact_storage": {
+    "drive_folder_id": "17B-XkjyK92FS7dT8TWDRqcTxozZRjTFV",
+    "firmware_file_id": "12Y6a-NPePg-Xv5neo_83cS5YbvnWKNUz",
+    "firmware_url": "https://drive.google.com/file/d/12Y6a-NPePg-Xv5neo_83cS5YbvnWKNUz/view",
+    "uploaded_size_bytes": 1481344,
+    "upload_readback": "Drive metadata returned exact file name, MIME type, parent folder and size; SHA-256 is independently verified from local artifact bytes."
+  }
+}

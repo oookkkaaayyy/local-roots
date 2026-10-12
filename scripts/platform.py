@@ -367,7 +367,10 @@ def validate_hbnf_coherence(
     pending = state.get("execution_cursor", {}).get("pending_provisional_candidate", {})
     if isinstance(pending, dict) and pending.get("schema") == "hbnf-pending-provisional-candidate-v1":
         try:
-            workflow_path = ROOT / "platform/workflows/phase2-provisional-release.json"
+            pending_workflow_id = pending.get("workflow_id")
+            if pending_workflow_id not in ("phase2-provisional-release","phase2-ui-provisional-release"):
+                raise ValueError("unsupported pending provisional workflow")
+            workflow_path = ROOT / "platform/workflows" / (pending_workflow_id+".json")
             workflow = load_json(workflow_path)
             contract = workflow.get("provisional_release_contract", {})
             auth = state.get("live_authorization_binding", {})
@@ -376,7 +379,7 @@ def validate_hbnf_coherence(
             preflight_path = ROOT / str(pending.get("preflight_receipt", ""))
             preflight = load_json(preflight_path) if preflight_path.is_file() else {}
             exact_pending = (
-                pending.get("workflow_id") == "phase2-provisional-release"
+                pending.get("workflow_id") == pending_workflow_id
                 and pending.get("workflow_sha256") == sha256_file(workflow_path)
                 and pending.get("candidate_release_id") == contract.get("candidate_release")
                 and pending.get("candidate_sha256") == contract.get("candidate_sha256")

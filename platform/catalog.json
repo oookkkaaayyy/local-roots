@@ -58,6 +58,7 @@
         "scripts/hbnf_guarded_run.py",
         "platform/policies.json",
         "platform/workflows/live-device-diagnostic.json",
+        "platform/workflows/phase2-ui-provisional-release.json",
         "platform/cart2-critical-path-v1.json",
         "scripts/platform.py",
         "platform/providers/cloudflare-workers.json"
@@ -73,7 +74,8 @@
         "artifact-release",
         "live-device-diagnostic",
         "phase2-live-qualification",
-        "phase2-provisional-release"
+        "phase2-provisional-release",
+        "phase2-ui-provisional-release"
       ],
       "depends_on": [
         "hbnf-matrix",

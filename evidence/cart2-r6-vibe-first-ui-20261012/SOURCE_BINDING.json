@@ -1,0 +1,118 @@
+{
+  "schema": "hbnf-cart2-ui-candidate-source-binding-v1",
+  "status": "EXACT_FIRMWARE_SOURCE_AND_BUILD_INPUTS_HASH_BOUND__NOT_INSTALLED_OR_QUALIFIED",
+  "candidate_release_id": "hbnf-cart2-phase2-r6-vibe-first-ui-20261012",
+  "repository": "oookkkaaayyy/local-roots",
+  "branch": "codex/cart2-ui-only-release-20261012",
+  "source_commit": "d01a2f6f5ae02deb0901dc48490de0cd777ee9fa",
+  "source_base_commit": "0fa2a5114882198ca683272c41cabe985217398f",
+  "runtime_source_directory": "firmware/phase2/integration-r6-f89-compact-font/usermod",
+  "runtime_source_files": {
+    "firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_animartrix_audio_bridge.h": {
+      "bytes": 18532,
+      "sha256": "edfe168658d548fe8e52e05b5b9d0cc3390cfe11092423a2c1c12de95884ae74"
+    },
+    "firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_audio_expression.h": {
+      "bytes": 3171,
+      "sha256": "f4825884dd53cba9bca698bd8b9b7d9d13a81e7ce381957d23790f13073dc4c3"
+    },
+    "firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_brightness_output.h": {
+      "bytes": 1549,
+      "sha256": "bb89a7a22c62216e0e3836dd5075db834ce05281eb422431c539c705895dce8a"
+    },
+    "firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_coordinated_contract.h": {
+      "bytes": 2276,
+      "sha256": "7380a3ab41924d0fc58ca83202ad04e28762ac8fb2e85ae1f8ddfb88719f8882"
+    },
+    "firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_foundation_core.h": {
+      "bytes": 25270,
+      "sha256": "d4646267f8fbc03cc4921368fc801e528e6a6cb92133a0c1fc74b48b211be0e4"
+    },
+    "firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_generative_v4.h": {
+      "bytes": 10031,
+      "sha256": "13163419b6453d448a795a7580e784f54b23b7586c8317eff467863f648a6dfa"
+    },
+    "firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_home_screen_icon.h": {
+      "bytes": 350552,
+      "sha256": "e272644675566a969f65e96b855b824109b8ae6fbcb168da8c6efdeb842097d6"
+    },
+    "firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_local_ui.h": {
+      "bytes": 40751,
+      "sha256": "a43b16ab1c73bb2ae00ea0e2cfcae9691c0a573ed3442a67dce63bd324d438c1"
+    },
+    "firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_native_text.h": {
+      "bytes": 6241,
+      "sha256": "8d7cc6ce7eacef1553b7a9730486805652d2db9f53e03e0561b1d7c3468562cf"
+    },
+    "firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_outlier_trace.h": {
+      "bytes": 5993,
+      "sha256": "d97672e7f41ad3fc21a5ed453f49197d149d9533426a17d0e152d8ceba466a66"
+    },
+    "firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_vibe16.h": {
+      "bytes": 6422,
+      "sha256": "f076acf0e5710bf5a9acffe63b31a95f2252230b5470bd362301caa73a743b0a"
+    },
+    "firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_vibe_runtime.h": {
+      "bytes": 10567,
+      "sha256": "76a5b711daabef14ca67b1dcd18a4ddcb5e2ebfd43dbf771eac396d6351d26dc"
+    },
+    "firmware/phase2/integration-r6-f89-compact-font/usermod/library.json": {
+      "bytes": 128,
+      "sha256": "2dc685da45efe57fe1d199b5407a00a7bd42b2f473599f6f432df515b4b6c96a"
+    },
+    "firmware/phase2/integration-r6-f89-compact-font/usermod/usermod_hbnf_foundation_v1.cpp": {
+      "bytes": 88540,
+      "sha256": "619cfc0202ba6c29153c7110e6dab5ba05f4c321d9a794fc43cf5251f77012f7"
+    }
+  },
+  "build_project": {
+    "upstream": "WLED 16.0.1",
+    "upstream_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "environment": "hbnf_matrix_wled16_packet20_diag",
+    "platformio_ini_sha256": "99718bfd8614da297c94692bc41dea48c9af87dbe829ded2e4a7cad7f0368820",
+    "platformio_override_ini_sha256": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922",
+    "local_wled_patch": {
+      "path": "evidence/cart2-r6-vibe-first-ui-20261012/WLED_BUILD_INPUT_PATCH.diff",
+      "sha256": "7ac5512dbf3be709e5ca7252e710a66ca99652b337b068e3e2e57bee4970b232",
+      "size_bytes": 5352,
+      "file_count": 7
+    },
+    "vendor_animartrix_clock_patch": {
+      "path": "evidence/cart2-r6-vibe-first-ui-20261012/ANIMARTRIX_CLOCK_PATCH.patch",
+      "sha256": "f38d260d0f1f50644f24166fa92377d48ac0ffbe292b57f8ec5db39579af10c4",
+      "size_bytes": 2648,
+      "upstream_commit": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f"
+    },
+    "toolchain": {
+      "platformio_core": "6.1.18",
+      "esp32_platform": "2024.6.0",
+      "framework": "2.0.18+sha.8ba0dc0",
+      "xtensa_toolchain": "8.4.0+2021r2-patch5",
+      "esptool": "4.7.4"
+    },
+    "command": "env PYTHONPATH=/private/tmp/cart2-pio-6.1.18 PLATFORMIO_CORE_DIR=/private/tmp/hbnf-p2-build/pio-local SOURCE_DATE_EPOCH=1791450000 PLATFORMIO_SETTING_ENABLE_TELEMETRY=no python3 -m platformio run -d /private/tmp/cart2-ui-build-20261012 -e hbnf_matrix_wled16_packet20_diag -v -j 1",
+    "execution": "local offline build; no paid or hosted build"
+  },
+  "candidate_artifact": {
+    "path": "evidence/cart2-r6-vibe-first-ui-20261012/artifact/hbnf-cart2-phase2-r6-vibe-first-ui-20261012.bin",
+    "sha256": "43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3",
+    "size_bytes": 1481344,
+    "ota_partition_bytes": 1572864,
+    "ota_headroom_bytes": 91520,
+    "ota_partition_fit": true,
+    "ram_used_bytes": 111440,
+    "ram_available_bytes": 327680
+  },
+  "base_artifact": {
+    "release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d"
+  },
+  "recovery_artifact": {
+    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
+    "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008
+  },
+  "firmware_delta": "Embedded HBNF local UI plus candidate identity only; no animation renderer, kernel, DDP, Vibe/audio runtime, settings schema, game, backend, relay, or experimental optimization changes.",
+  "game_code_in_firmware_overlay": false
+}
