@@ -3,8 +3,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
+// Tests execute from dist/tests after tsc (rootDir ".", outDir "dist").
 const migration = readFileSync(
-  new URL("../supabase/migrations/20261009000100_preserve_public_event_status.sql", import.meta.url),
+  new URL("../../supabase/migrations/20261009000100_preserve_public_event_status.sql", import.meta.url),
   "utf8",
 );
 
