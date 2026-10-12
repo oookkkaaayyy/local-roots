@@ -48,8 +48,12 @@ const releaseControl = controlState.coordinated_r6_live_release_authorization.ba
 assert.equal(controlState.live_mutation_authorized, false);
 assert.equal(releaseControl.command_fence_active, false);
 assert.equal(releaseControl.opal_relay_active, false);
-assert.equal(recovered.release_id, controlState.installed_release);
-assert.equal(recovered.sha256, controlState.installed_firmware_sha256);
+// installed_* describes the owner-reported f89 field candidate; this separate
+// reconciliation object is the earlier exact-R4 safety readback.
+assert.equal(controlState.installed_release, expected.candidate);
+assert.equal(controlState.installed_firmware_sha256, "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b");
+assert.equal(recovered.release_id, "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1");
+assert.equal(recovered.sha256, "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c");
 await db.query(`update hbnf_internal.cart_actuator_fence set release_id=$1,active=false where cart_id='hbnf-cart'`, [recovered.release_id]);
 await assert.rejects(issue(expected, 51, 7, expected.candidate, recovered.release_id), /stale_fence_or_state/, 'R6 challenge must be rejected against current closed R4 fence');
 console.log('Matrix relay PostgreSQL migration tests PASS: issue/get, stale revision/fence, one-use apply, exact readback, mismatch, replay, expiry, wrong identity, anon execute denied, closed R4 fence rejects failed R6');
