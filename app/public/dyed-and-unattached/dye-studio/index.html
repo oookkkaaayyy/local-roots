@@ -1618,13 +1618,15 @@ function classifyObservedProcess(description){
  return "unknown";
 }
 function evidenceScore(obs,dyes,plastic,baseFamily){
- const exactDye=dyes.some(d=>evidenceDyeFamilyMatches(d,obs.dyes));
+ const matchingLayers=layers.filter(l=>evidenceDyeFamilyMatches(l.name,obs.dyes));
+ const exactDye=matchingLayers.length>0;
  const material=materialClass(plastic),obsMaterial=materialClass(obs.plastic);
  const samePlastic=plastic&&obs.plastic&&obs.plastic.toLowerCase().includes(plastic.toLowerCase());
  const sameFamily=material!=="unknown"&&obsMaterial===material;
  const baseMatch=baseFamily!=="unknown"&&obs.baseColor.toLowerCase().includes(baseFamily);
  const observedMethod=classifyObservedProcess(obs.medium||"");
- const methodMatch=observedMethod===activeMethod();
+ const comparableLayers=matchingLayers.length?matchingLayers:layers;
+ const methodMatch=observedMethod!=="unknown"&&comparableLayers.some(l=>methodForDyeLayer(l)===observedMethod);
  const methodAnalog=observedMethod!=="unknown"&&!methodMatch;
  let score=(exactDye?8:0)+(samePlastic?5:sameFamily?2:0)+(baseMatch?3:0)+(methodMatch?5:methodAnalog?-3:0);
  // Method-only evidence informs technique, not a specific finished hue.
@@ -1638,18 +1640,20 @@ function renderEvidenceAdvisory(){
  const selected=[...new Set(layers.map(l=>l.name))],p=profile(),baseFamily=evidenceColorFamily($("baseHex").value);
  if(!selected.length){warningNode.innerHTML='<div class="evidence-info">Add dyes to see source-linked warnings. Evidence remains qualitative until physically verified.</div>';linksNode.innerHTML="";return;}
  const warnings=[];
- const method=activeMethod();
- if(method==="acetone-direct"){
+ const allMethods=[...new Set(layers.map(methodForDyeLayer))];
+ const method=allMethods.length===1?allMethods[0]:"mixed";
+ if(method==="mixed")warnings.push("MIXED APPLICATION METHODS: each dye block has its own physical carrier and passes; no single-method photo is a complete recipe match.");
+ if(allMethods.includes("acetone-direct")){
  warnings.push("PRIMARY: direct acetone/dye onto the disc, NOT an acetone-dye glue bed. Published glue-bed photographs are different-process analogies. Solvent loading, absorption and resulting hue are not calibrated. Keep acetone away from heat and ignition sources.");
  if(layers.every(l=>clamp(Math.round(+l.passes||1),1,12)===1))warnings.push("One brush pass can leave visible streaks; a complete solid color may require more careful passes. Do not extrapolate darkness numerically from one pass.");
  else warnings.push("Multiple direct-acetone passes may deepen color but are NOT a validated linear multiplier. Coverage and boundary bleeding remain uncertain. Per-block counts: "+layers.map(l=>l.name+" "+clamp(Math.round(+l.passes||1),1,12)).join("; ")+".");
 }
- else if(method==="floetrol-stencil")warnings.push("SECONDARY: dye premixed with hot water, then Floetrol, painted onto a stencil. Floetrol dye-bed photos are not exact-process stencil evidence. A black-looking mixture can still produce pale transferred dye.");
- else if(method==="acetone-glue-bed")warnings.push("Acetone dye in a glue bed is a different method from direct acetone color-block painting. Do not transfer exact-color predictions between them.");
- else if(method==="floetrol-bed")warnings.push("A Floetrol dye bed differs from painting a premixed Floetrol dye onto a stencil. Do not assume the same depth or edge fidelity.");
- else if(method==="worm-dip")warnings.push("Commercial UV Blast worm dip is its own formulation; it is not interchangeable with ProChem powder dissolved in acetone.");
- else warnings.push("Method is not fully specified; do not match finished color to another recipe.");
- warnings.push("Selected method changes warnings and evidence ranking, NOT the numerical preview. Hue/saturation and UV/glow colors are still unvalidated for the physical process. Under-specified or mixed-method posts are never exact calibration.");
+ if(allMethods.includes("floetrol-stencil"))warnings.push("SECONDARY: dye premixed with hot water, then Floetrol, painted onto a stencil. Floetrol dye-bed photos are not exact-process stencil evidence. A black-looking mixture can still produce pale transferred dye.");
+ if(allMethods.includes("acetone-glue-bed"))warnings.push("Acetone dye in a glue bed is a different method from direct acetone color-block painting. Do not transfer exact-color predictions between them.");
+ if(allMethods.includes("floetrol-bed"))warnings.push("A Floetrol dye bed differs from painting a premixed Floetrol dye onto a stencil. Do not assume the same depth or edge fidelity.");
+ if(allMethods.includes("worm-dip"))warnings.push("Commercial UV Blast worm dip is its own formulation; it is not interchangeable with ProChem powder dissolved in acetone.");
+ if(allMethods.includes("other"))warnings.push("One or more blocks have unknown methods; treat their process matches as unverified.");
+ warnings.push("Per-block methods change warnings and evidence ranking, NOT the numerical preview. Hue/saturation and UV/glow colors are still unvalidated for the physical process. Under-specified or mixed-method posts are never exact calibration.");
  const lower=selected.map(s=>s.toLowerCase());
  const has=term=>lower.some(n=>n.includes(term));
  const cool=baseFamily==="blue"||baseFamily==="aqua"||baseFamily==="green";
@@ -1665,10 +1669,10 @@ function renderEvidenceAdvisory(){
  const hotDye=lower.some(n=>/(orange|red|crimson)/.test(n));
  const usesCommercialDip=selected.some(n=>/uv blast|quick.coat|worm dip/i.test(n));
  const usesPowderDye=selected.some(n=>/prochem|idye poly/i.test(n));
- if(usesCommercialDip&&method!=="worm-dip")warnings.push("FORMULATION MISMATCH: UV Blast/Quick-Coat is a commercial worm-dip preparation, not ProChem powder dissolved in acetone. Your selected method is not an exact match for those blocks.");
- if(usesCommercialDip&&usesPowderDye)warnings.push("MIXED-FORMULATION DESIGN: commercial worm dip and powdered dye occur on the same disc. This global process selector cannot characterize both simultaneously; do not use any source as a full-recipe match or assume equivalent uptake.");
+ if(layers.some(l=>/uv blast|quick.coat|worm dip/i.test(l.name)&&methodForDyeLayer(l)!=="worm-dip"))warnings.push("FORMULATION MISMATCH: UV Blast/Quick-Coat is commercially prepared worm dip. Correct this block's method to commercial worm dip; it is NOT ProChem powder in acetone.");
+ if(usesCommercialDip&&usesPowderDye)warnings.push("MIXED-FORMULATION DESIGN: commercial worm dip and powdered dye occur on the same disc. Per-block methods are recorded, but no published single-recipe color calibration covers the combined applications.");
  if(has("idye poly blue"))warnings.push("Jacquard iDye Poly Blue can shift toward violet/purple even on white discs, and reported dye batches differ. Do not assume a clean blue.");
- if(method==="floetrol-stencil"&&selected.some(n=>n.toLowerCase()==="prochem onyx"))warnings.push("FIRST-PARTY: one Onyx/Floetrol painted-stencil batch looked black in its mix but dyed pale gray. Mechanism is unknown, not a general quantitative Onyx response.");
+ if(layers.some(l=>l.name.toLowerCase()==="prochem onyx"&&methodForDyeLayer(l)==="floetrol-stencil"))warnings.push("FIRST-PARTY: one Onyx/Floetrol painted-stencil batch looked black in its mix but dyed pale gray. Mechanism is unknown, not a general quantitative Onyx response.");
  if(has("idye poly onyx"))warnings.push("Unsupported historical product: iDye Poly Onyx is not an owned Jacquard product. Replace this saved dye with ProChem Onyx; do not reuse its calibration or evidence.");
  if(lower.some(n=>n.includes("neon")))warnings.push("Neon dyes are method-dependent. Documented clear-glue/acetone transfer failures must not be treated as proof of failure in Floetrol, or vice versa.");
  if(cool&&hotDye)warnings.push("Warm red/orange/crimson over a cool aqua, blue or green blank can become muted or muddy. Exact color on this base is not verified; preserve original plastic for reliable highlights.");
