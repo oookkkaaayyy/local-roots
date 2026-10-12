@@ -72,7 +72,8 @@
         "software-change",
         "artifact-release",
         "live-device-diagnostic",
-        "phase2-live-qualification"
+        "phase2-live-qualification",
+        "phase2-provisional-release"
       ],
       "depends_on": [
         "hbnf-matrix",

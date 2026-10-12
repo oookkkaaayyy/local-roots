@@ -289,7 +289,7 @@ def main():
 
     unchanged = FakePort(installed=False)
     cases.append(run_case("upload response but R4 remains", unchanged,
-             "OTA_NOT_INSTALLED_R4_REMAINS_NO_RETRY", 1, 0, 8))
+             "OTA_NOT_INSTALLED_STARTING_RELEASE_REMAINS_NO_RETRY", 1, 0, 8))
 
     gate_fail = FakePort(qualification=False, device_failure=True)
     cases.append(run_case("frozen device gate failure", gate_fail,

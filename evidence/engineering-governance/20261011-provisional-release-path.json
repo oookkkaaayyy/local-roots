@@ -1,0 +1,38 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "CART2_R6_PROVISIONAL_RELEASE_PATH_20261011",
+  "summary": "Add a candidate-bound provisional release profile to the existing guarded OTA transaction, reusing exact admission, artifact/target binding, R4 recovery, Packet20 snapshot/restore, settings restoration, and combined feature checks while retaining frozen full qualification.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "primary_source": "Current owner instruction authorizes one exact provisional candidate path using existing lifecycle controls, requires 5-minute smoke where applicable, preserves full acceptance, and prohibits installation until separate exact authorization.",
+    "expert_basis": "Google SRE Canarying Releases recommends small, time-limited exposure with version-specific health observation and rapid rollback; applied here as one exact device candidate with a bounded smoke and exact R4 recovery. Espressif OTA documentation describes bootloader rollback only when the relevant rollback configuration and state are active; this project therefore keeps its proven manual exact-R4 recovery and makes no automatic rollback assumption.",
+    "sources": [
+      "https://sre.google/workbook/canarying-releases/",
+      "https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/ota.html"
+    ],
+    "implementation": [
+      "platform/workflows/phase2-provisional-release.json",
+      "platform/catalog.json",
+      "scripts/hbnf_r6_audio_cache_live_transaction.py",
+      "scripts/hbnf_r6_combined_feature_check.py",
+      "tests/test_hbnf_provisional_release_path.py",
+      "tests/test_hbnf_r6_combined_feature_check.py",
+      "tests/test_r6_audio_cache_transaction_dryrun.py"
+    ],
+    "validation": [
+      "python3 tests/test_hbnf_provisional_release_path.py: PASS; exact binding, wrong artifact/target rejection, one install limit, ambiguous interrupted upload with starting-release readback, one exact R4 recovery, failed recovery stop, and bounded health floor.",
+      "python3 tests/test_r6_audio_cache_transaction_dryrun.py: PASS; existing transaction replay remains compatible.",
+      "tests/test_hbnf_r6_combined_feature_check.py: 4 focused tests PASS, including named palette and mixed-case text request/readback.",
+      "Nine mandatory release-control scripts passed: HBNF control (23 tests), guarded runner, architecture fitness, runtime qualification static, kernel sweep report, source identity, live kernel sweep (synthetic failure/restore cases), Packet20 HTTP adapter, and Packet20 build validator.",
+      "platform doctor and exact provisional capsule creation/check passed; no live requests or firmware build/install performed."
+    ],
+    "rollback": "Revert this profile, runner branch, and combined-check additions. No firmware bytes, hardware, router, backend, or production service are modified by these source changes."
+  }
+}

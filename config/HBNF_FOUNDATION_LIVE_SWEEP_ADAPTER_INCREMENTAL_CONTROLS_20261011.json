@@ -1,0 +1,85 @@
+{
+  "expected_release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+  "notes": [
+    "Exact candidate-bound copy of the established Foundation adapter. Command semantics and timing are reused unchanged; only exact release ID and firmware SHA bindings differ."
+  ],
+  "preflight_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "HBNF_EXPECTED_FIRMWARE_SHA256=8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "preflight",
+    "--session-id",
+    "{session_id}"
+  ],
+  "restore_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "HBNF_EXPECTED_FIRMWARE_SHA256=8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "restore",
+    "--snapshot-file",
+    "{snapshot_file}"
+  ],
+  "sample_interval_seconds": 1,
+  "sample_seconds": 30,
+  "schema": "hbnf-live-sweep-adapter-v1",
+  "select_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "HBNF_EXPECTED_FIRMWARE_SHA256=8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "select",
+    "--kernel",
+    "{runtime_kernel_index}"
+  ],
+  "settle_seconds": 5,
+  "snapshot_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "HBNF_EXPECTED_FIRMWARE_SHA256=8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "snapshot",
+    "--observer-output",
+    "{observer_output}",
+    "--inventory",
+    "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"
+  ],
+  "telemetry_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "HBNF_EXPECTED_FIRMWARE_SHA256=8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "telemetry",
+    "--inventory",
+    "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+    "--session-id",
+    "{session_id}"
+  ],
+  "telemetry_mode_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "HBNF_EXPECTED_FIRMWARE_SHA256=8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "telemetry-mode",
+    "--enabled",
+    "{enabled}"
+  ],
+  "timeout_seconds": 300,
+  "verify_restore_argv": [
+    "env",
+    "HBNF_EXPECTED_RELEASE_ID=hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "HBNF_EXPECTED_FIRMWARE_SHA256=8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+    "python3",
+    "scripts/hbnf_foundation_live_adapter.py",
+    "verify-restore",
+    "--snapshot-file",
+    "{snapshot_file}"
+  ]
+}

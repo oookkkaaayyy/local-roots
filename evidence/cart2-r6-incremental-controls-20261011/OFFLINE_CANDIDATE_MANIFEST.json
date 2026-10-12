@@ -1,6 +1,6 @@
 {
   "schema": "hbnf-cart2-offline-incremental-candidate-v1",
-  "status": "BUILT_AND_FOCUSED_HOST_CHECKS_PASS__NOT_INSTALL_READY",
+  "status": "PROVISIONAL_INSTALL_PATH_OFFLINE_VALIDATED__FRESH_LIVE_PREFLIGHT_AND_EXACT_AUTHORIZATION_PENDING",
   "candidate": {
     "release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
     "sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
@@ -47,6 +47,23 @@
     },
     "owner_settings_restore": "not attempted; preserve actual current values"
   },
-  "release_path_blocker": "The existing HBNF transaction runner is pinned to the f89/R4 full-qualification path and has no provisional short-smoke mode for a successor installed over f89. Current control state is PHASE2_INTEGRATING with live mutation closed. No T4/T5 gate is changed.",
-  "qualification_boundary": "This artifact has not had a live smoke, a 28-kernel sweep, a 30-minute milestone soak, a 90-minute soak, or owner physical acceptance."
+  "release_path_blocker": "Original phase2 full-qualification workflow remains unchanged. A candidate-bound provisional profile now uses the existing guarded transaction; it has not been live-admitted or authorized, and no installation occurred.",
+  "qualification_boundary": "This artifact has not had a live smoke, a 28-kernel sweep, a 30-minute milestone soak, a 90-minute soak, or owner physical acceptance.",
+  "provisional_release_path": {
+    "workflow": "platform/workflows/phase2-provisional-release.json",
+    "capsule": "evidence/cart2-r6-incremental-controls-20261011/PROVISIONAL_EXECUTION_CAPSULE.json",
+    "source_checkpoint": "aa13434203b11d054aaa89aa0258434c20b5e58d",
+    "starting_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "starting_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+    "recovery_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "smoke_seconds": 300,
+    "full_qualification_still_required": true,
+    "physical_aesthetic_review_required": [
+      "mixed-case text legibility and optical centering",
+      "named palette appearance",
+      "animation quality",
+      "audio/Vibe behavior"
+    ],
+    "live_mutation": false
+  }
 }

@@ -21,25 +21,29 @@ def test_combined_check_uses_one_coherent_native_state_update_and_readback():
       {"ip":"192.168.77.10","mac":"70:4b:ca:5b:34:5c"},fixture_state(),
       {"ip":"192.168.77.11","mac":"8c:94:df:55:c3:4c","live":True,"lm":"DDP","lip":"192.168.77.10","leds":{"count":22}},
       {"lor":0},
+      ["Ocean","RSVD","Party"],
       {"on":True,"HBNF":{"candidate":"r6","vibe":1,"motion":70,"audioResponse":75,
-        "scene":1,"palette":{"mode":"legacy"},"overlayId":"r6-combined-check",
+        "scene":1,"palette":{"mode":"wled","index":0},"overlayId":"r6-combined-check",
         "audio":{"bass":0.1,"mid":0.2,"treble":0.3,"volume":0.1,"peak":0.2}}},
       {"ip":"192.168.77.11","mac":"8c:94:df:55:c3:4c","live":True,"lm":"DDP","lip":"192.168.77.10","leds":{"count":22}},
       {"lor":0},
+      {"HBNF":{"overlayId":"r6-mixed-case-check"}},
     ]
     def get(url):calls.append(("GET",url));return responses.pop(0)
     def post(url,payload):calls.append(("POST",url,payload));return {"success":True}
     result=checkmod.check("r6",{"get":get,"post":post},sleep=lambda _:None)
     assert result["status"]=="PASS"
-    assert result["checks"]=={"candidate_identity":True,"vibe_audio_controls":True,
-      "palette_scene_interaction":True,"native_text_scoreboard_overlay":True,"matrix_aux_ddp_projection":True}
+    assert all(result["checks"].values())
+    assert result["named_palette"]=={"index":0,"name":"Ocean"}
+    assert result["text_input"]=="HeLLo"
     updates=[c for c in calls if c[0]=="POST"]
-    assert len(updates)==1
+    assert len(updates)==2
     payload=updates[0][2]["HBNF"]
     assert payload["vibe"]=="groove" and payload["audioResponse"]==75
-    assert payload["palette"]=={"mode":"legacy","id":"ocean"}
+    assert payload["palette"]=={"mode":"wled","index":0}
     assert payload["overlay"]["ttlMs"]==12000 and payload["overlay"]["label"]=="SCORES"
     assert payload["matrixBrightness"]==44 and payload["auxBrightness"]==44
+    assert updates[1][2]["HBNF"]["overlay"]["text"]=="HeLLo"
     assert result["owner_controls_scoring_status"].startswith("NOT_PROVEN")
 
 def test_combined_check_fails_closed_on_identity_or_aux_failure():

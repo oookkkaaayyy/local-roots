@@ -39,3 +39,6 @@ evidence/hbnf-foundation-qualification-20261005/seq39/build/*.bin
 evidence/hbnf-foundation-qualification-20261005/seq39/build/*.elf
 evidence/hbnf-foundation-qualification-20261005/seq39/build/*.map
 evidence/hbnf-foundation-qualification-20261005/seq39/build/*.log
+
+# Incremental-controls firmware is a Drive-canonical immutable artifact.
+evidence/cart2-r6-incremental-controls-20261011/artifact/hbnf-cart2-phase2-r6-incremental-controls-20261011.bin

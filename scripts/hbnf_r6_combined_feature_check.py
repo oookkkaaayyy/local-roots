@@ -58,10 +58,18 @@ def check(expected_release,api=None,sleep=time.sleep):
 
     # One bounded native WLED JSON update exercises the paths concurrently.
     # The short-lived overlay expires on its own if the host is interrupted.
+    palettes=get(MATRIX+"/json/pal")
+    if not isinstance(palettes,list):
+        raise RuntimeError("combined-check-named-palette-list-unavailable")
+    named=next(((i,name) for i,name in enumerate(palettes)
+                if isinstance(name,str) and name.strip() not in ("","RSVD","-")),None)
+    if named is None:
+        raise RuntimeError("combined-check-no-named-palette-available")
+    palette_index,palette_name=named
     payload={"on":True,"HBNF":{
         "vibe":"groove","scene":"field-mix","motion":70,"audioResponse":75,
         "matrixBrightness":h.get("matrixBrightness"),"auxBrightness":h.get("auxBrightness"),
-        "palette":{"mode":"legacy","id":"ocean"},
+        "palette":{"mode":"wled","index":palette_index},
         "overlay":{"id":"r6-combined-check","kind":"scoreboard","label":"SCORES",
                     "entries":["TEAM A 2","TEAM B 1"],"ttlMs":12000}
     }}
@@ -76,14 +84,24 @@ def check(expected_release,api=None,sleep=time.sleep):
         "candidate_identity":oh.get("candidate")==expected_release,
         "vibe_audio_controls":(oh.get("vibe")==1 and oh.get("motion")==70 and oh.get("audioResponse")==75
                                and all(isinstance(audio.get(k),(int,float)) for k in ("bass","mid","treble","volume","peak"))),
-        "palette_scene_interaction":(oh.get("scene")==1 and oh.get("palette",{}).get("mode")=="legacy"),
+        "named_palette_applied_and_read_back":(oh.get("scene")==1 and oh.get("palette",{}).get("mode")=="wled"
+            and oh.get("palette",{}).get("index")==palette_index),
         "native_text_scoreboard_overlay":oh.get("overlayId")=="r6-combined-check",
         "matrix_aux_ddp_projection":(aux_info_after.get("live") is True and aux_info_after.get("lm")=="DDP"
                                       and aux_info_after.get("lip")=="192.168.77.10" and aux_state_after.get("lor")==0),
     }
+    text_payload={"on":True,"HBNF":{"overlay":{"id":"r6-mixed-case-check","kind":"text",
+        "text":"HeLLo","color":"#FFFFFF","ttlMs":12000}}}
+    post(MATRIX+"/json/state",text_payload)
+    sleep(1.0)
+    text_observed=get(MATRIX+"/json/state").get("HBNF",{})
+    checks["mixed_case_text_command_applied"]=(text_observed.get("overlayId")=="r6-mixed-case-check")
     return {"schema":"hbnf-r6-combined-feature-check-v1",
             "status":"PASS" if all(checks.values()) else "FAIL",
             "expected_release_id":expected_release,"checks":checks,
+            "named_palette":{"index":palette_index,"name":palette_name},
+            "text_input":"HeLLo",
+            "text_centering":"requires final visual owner review; API readback cannot measure optical centering",
             "owner_controls_scoring_status":"NOT_PROVEN_BY_LOCAL_WLED_CHECK; retain existing owner/backend acceptance gate",
             "restore":"outer Packet20 snapshot must verify before transaction close",
             "audio_semantics":"runtime audio fields were read; this is not labeled music or owner audio acceptance"}

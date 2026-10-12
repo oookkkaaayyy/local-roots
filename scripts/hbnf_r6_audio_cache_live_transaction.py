@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Single exact candidate install + frozen qualification coordinator.
+"""Single exact candidate install with provisional smoke or frozen qualification.
 
 The only live transport is the previously proven SSH-to-Opal staging followed
-by Opal-origin WLED /update. The generic sweep/adapter remain authoritative
-for renderer selection, telemetry, 28-kernel comparisons, soak, and restore.
+by Opal-origin WLED /update. The candidate capsule selects either the frozen
+full qualification or the bounded provisional smoke; both share exact
+admission, artifact, target, settings, and recovery controls.
 """
 from __future__ import annotations
 
@@ -50,6 +51,7 @@ OUT = ROOT/"evidence/cart2-r6-audio-cache-20261010/live-qualification"
 SUCCESSOR_RELEASE = "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011"
 SUCCESSOR_SHA = "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187"
 SUCCESSOR_SIZE = 1498832
+PROVISIONAL_RELEASE = "hbnf-cart2-phase2-r6-incremental-controls-20261011"
 SUCCESSOR_BIN = ROOT/"evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011.bin"
 
 
@@ -63,6 +65,8 @@ class CandidateProfile(NamedTuple):
     rollback_binary: pathlib.Path = R4_BIN
     rollback_sha256: str = R4_SHA
     rollback_size_bytes: int = R4_SIZE
+    transaction_mode: str = "full"
+    starting_release_id: str = R4
 
 
 LEGACY_R6_PROFILE = CandidateProfile(RELEASE,CANDIDATE_SHA,CANDIDATE_SIZE,BIN,ADAPTER,OUT)
@@ -73,17 +77,23 @@ SUCCESSOR_PROFILE = CandidateProfile(
 
 
 def load_candidate_profile(capsule_path: pathlib.Path) -> CandidateProfile:
-    """Resolve the candidate pinned by the checked Phase 2 workflow capsule."""
+    """Resolve an exact candidate only from its checked workflow capsule."""
     capsule=json.loads(pathlib.Path(capsule_path).read_text())
-    if capsule.get("schema")!="local-roots-execution-capsule-v1" or capsule.get("workflow_id")!="phase2-live-qualification":
-        raise RuntimeError("phase2-candidate-capsule-required")
+    workflow_id=capsule.get("workflow_id")
+    if capsule.get("schema")!="local-roots-execution-capsule-v1" or workflow_id not in (
+        "phase2-live-qualification","phase2-provisional-release"):
+        raise RuntimeError("supported-phase2-candidate-capsule-required")
     source=capsule.get("workflow_source",{})
-    workflow_path=ROOT/"platform/workflows/phase2-live-qualification.json"
-    if (source.get("path")!="platform/workflows/phase2-live-qualification.json"
+    workflow_rel=f"platform/workflows/{workflow_id}.json"
+    workflow_path=ROOT/workflow_rel
+    if (source.get("path")!=workflow_rel
         or source.get("sha256")!=sha(workflow_path)):
         raise RuntimeError("phase2-workflow-capsule-binding-mismatch")
     workflow=json.loads(workflow_path.read_text())
-    contract=workflow.get("qualification_contract",{})
+    if workflow.get("id")!=workflow_id:
+        raise RuntimeError("phase2-workflow-id-mismatch")
+    is_provisional=workflow_id=="phase2-provisional-release"
+    contract=workflow.get("provisional_release_contract" if is_provisional else "qualification_contract",{})
     release=contract.get("candidate_release")
     candidate_sha=contract.get("candidate_sha256")
     candidate_size=contract.get("candidate_size_bytes")
@@ -105,8 +115,15 @@ def load_candidate_profile(capsule_path: pathlib.Path) -> CandidateProfile:
         candidate_bin.relative_to(ROOT.resolve()); adapter.relative_to(ROOT.resolve()); output.relative_to(ROOT.resolve())
     except ValueError as exc:
         raise RuntimeError("phase2-workflow-candidate-path-escapes-repository") from exc
+    transaction_mode="provisional" if is_provisional else "full"
+    starting_release=contract.get("starting_release_id",R4)
+    if (transaction_mode=="provisional" and
+        (contract.get("smoke_seconds")!=300 or starting_release!=RELEASE
+         or contract.get("starting_sha256")!=CANDIDATE_SHA or not isinstance(starting_release,str)
+         or not re.fullmatch(r"[A-Za-z0-9._-]+",starting_release))):
+        raise RuntimeError("provisional-workflow-smoke-or-starting-identity-invalid")
     profile=CandidateProfile(release,candidate_sha,candidate_size,candidate_bin,adapter,
-        output)
+        output,transaction_mode=transaction_mode,starting_release_id=starting_release)
     expected_recovery=contract.get("recovery_sha256")
     expected_recovery_path=contract.get("recovery_bin_path")
     if (expected_recovery!=profile.rollback_sha256
@@ -601,7 +618,7 @@ def preflight(profile=LEGACY_R6_PROFILE, request_counter=None):
     route = run(["route", "-n", "get", "192.168.77.10"], timeout=5).stdout.decode(errors="replace")
     if "AC Power" not in power or "interface: en0" not in route:
         raise RuntimeError("host-power-or-cart-lan-preflight-failed")
-    matrix_context=read_matrix_context(request_counter,expected_release=R4)
+    matrix_context=read_matrix_context(request_counter,expected_release=profile.starting_release_id)
     mi=matrix_context["info"]; ms=matrix_context["state"]; mb=matrix_context["build"]
     ai = _get_json_counted(AUX+"/json/info",4,request_counter)[2]
     ast = _get_json_counted(AUX+"/json/state",4,request_counter)[2]
@@ -609,15 +626,15 @@ def preflight(profile=LEGACY_R6_PROFILE, request_counter=None):
     p20 = h.get("packet20Diagnostic", {})
     telem = h.get("foundationTelemetry", {})
     expected = (mi.get("ip") == "192.168.77.10" and mi.get("mac", "").replace(":", "").lower() == MATRIX_MAC
-                and mi.get("ver") == "16.0.1" and mb.get("release_id") == R4 and mb.get("candidate") == R4
-                and h.get("candidate") == R4 and ms.get("on") is True
+                and mi.get("ver") == "16.0.1" and mb.get("release_id") == profile.starting_release_id and mb.get("candidate") == profile.starting_release_id
+                and h.get("candidate") == profile.starting_release_id and ms.get("on") is True
                 and p20.get("enabled") is False and telem.get("enabled") is False)
     aux_ok = (ai.get("ip") == "192.168.77.11" and ai.get("mac", "").replace(":", "").lower() == AUX_MAC
               and ai.get("ver") == "16.0.1" and ai.get("live") is True and ai.get("lm") == "DDP"
               and ai.get("lip") == "192.168.77.10" and ai.get("leds", {}).get("count") == 22
               and ast.get("on") is True and ast.get("lor") == 0)
     if not expected or not aux_ok:
-        raise RuntimeError("fresh-matrix-r4-or-aux-ddp-preflight-failed")
+        raise RuntimeError("fresh-starting-runtime-or-aux-ddp-preflight-failed")
     brightness_baseline=matrix_context["brightness"]
     worker = single_worker_check()
     opal = ("set -e; printf OPAL_PREFLIGHT_OK\\n; uptime; df -k /tmp; command -v curl; command -v sha256sum; "
@@ -697,6 +714,51 @@ def exact_runtime(result, release):
             and mi.get("ver") == "16.0.1" and b.get("release_id") == release and b.get("candidate") == release
             and ai.get("mac", "").replace(":", "").lower() == AUX_MAC and ai.get("live") is True
             and ai.get("lm") == "DDP" and ai.get("lip") == "192.168.77.10")
+
+
+def validate_provisional_health_sample(sample, expected_release, previous_uptime=None):
+    """Validate only low-overhead, user-visible smoke invariants; never full qualification."""
+    if sample.get("release_id") != expected_release:
+        raise RuntimeError("provisional-smoke-release-identity-mismatch")
+    if (sample.get("matrix_ip") != "192.168.77.10" or sample.get("matrix_mac") != MATRIX_MAC
+        or sample.get("wled") != "16.0.1" or sample.get("matrix_on") is not True):
+        raise RuntimeError("provisional-smoke-matrix-identity-or-output-failure")
+    if (sample.get("aux_ip") != "192.168.77.11" or sample.get("aux_mac") != AUX_MAC
+        or sample.get("aux_on") is not True or sample.get("aux_live") is not True
+        or sample.get("aux_mode") != "DDP" or sample.get("aux_source") != "192.168.77.10"
+        or sample.get("aux_led_count") != 22):
+        raise RuntimeError("provisional-smoke-aux-ddp-health-failure")
+    uptime=sample.get("uptime_seconds")
+    if not isinstance(uptime,(int,float)) or uptime<0 or (previous_uptime is not None and uptime<previous_uptime):
+        raise RuntimeError("provisional-smoke-uptime-continuity-failure")
+    fps=sample.get("fps")
+    if not isinstance(fps,(int,float)) or fps<0:
+        raise RuntimeError("provisional-smoke-fps-missing")
+    return float(uptime),float(fps)
+
+
+def run_provisional_health_window(sample_fn, duration_seconds=300, interval_seconds=30,
+                                  clock=time.monotonic, sleep=time.sleep):
+    """Run the policy's 5-minute smoke at low read cadence with no diagnostic mode."""
+    if duration_seconds != 300 or interval_seconds != 30:
+        raise ValueError("provisional-smoke-duration-and-cadence-are-policy-bound")
+    started=clock(); deadline=started+duration_seconds; previous_uptime=None
+    fps_values=[]; sample_count=0; low_fps_streak=0
+    while True:
+        sample=sample_fn()
+        previous_uptime,fps=validate_provisional_health_sample(sample,PROVISIONAL_RELEASE,previous_uptime)
+        fps_values.append(fps); sample_count+=1
+        low_fps_streak=low_fps_streak+1 if fps<20 else 0
+        if low_fps_streak>=3:
+            raise RuntimeError("provisional-smoke-catastrophic-fps-floor-failed")
+        now=clock()
+        if now>=deadline:
+            break
+        sleep(min(interval_seconds,deadline-now))
+    return {"status":"PASS","duration_seconds":round(clock()-started,3),
+        "sample_interval_seconds":interval_seconds,"sample_count":sample_count,
+        "fps_min":min(fps_values),"fps_median":sorted(fps_values)[len(fps_values)//2],
+        "performance_scope":"low-overhead smoke only; frozen full performance qualification remains required"}
 
 
 def wait_runtime(release, timeout=150):
@@ -802,7 +864,7 @@ def coordinate(port):
         resolved = port.resolve_runtime(upload)
         result["runtime_resolution"] = resolved
         if resolved.get("installed") is False:
-            result["status"] = "OTA_NOT_INSTALLED_R4_REMAINS_NO_RETRY"
+            result["status"] = "OTA_NOT_INSTALLED_STARTING_RELEASE_REMAINS_NO_RETRY"
         elif resolved.get("installed") is not True:
             try:
                 result["recovery"] = port.recover_r4()
@@ -814,39 +876,56 @@ def coordinate(port):
                 result["status"] = "RECOVERY_UNVERIFIED_STOP"
         else:
             result["candidate_runtime"] = resolved["runtime"]
-            brightness=qualify_with_brightness_guard(port,pre.get("brightness_baseline",{}).get("runtime"))
-            result["brightness_setup_started"]=brightness["setup_started"]
-            if "brightness_setup" in brightness: result["brightness_setup"]=brightness["brightness_setup"]
-            if "brightness_restore" in brightness: result["brightness_restore"]=brightness["brightness_restore"]
-            if brightness["restore_error"]:
-                result["status"]="QUALIFICATION_BRIGHTNESS_RESTORE_FAILED"
-                result["error"]=brightness["restore_error"]
-                if brightness["qualification"] is not None:
-                    result["captured_qualification_invalidated"]={"passed":brightness["qualification"].get("passed"),"profiles_not_accepted":True}
-            elif brightness["setup_error"]:
-                result["status"]="QUALIFICATION_BRIGHTNESS_SETUP_FAILED_NO_PROFILES"
-                result["error"]=brightness["setup_error"]
-            elif brightness["worker_error"]:
-                result["status"]="QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED"
-                result["error"]=brightness["worker_error"]
+            if profile.transaction_mode=="provisional":
+                smoke=port.provisional_smoke(pre.get("brightness_baseline",{}).get("runtime",{}))
+                result["provisional_smoke"]=smoke
+                if smoke.get("passed") is True:
+                    result["status"]="PROVISIONAL_INSTALL_SMOKE_PASS_NOT_FULLY_QUALIFIED"
+                elif device_failure_requires_recovery(smoke):
+                    try:
+                        result["recovery"]=port.recover_r4()
+                        result["recovery_attempts"]=1
+                        result["status"]="PROVISIONAL_SMOKE_FAILED_R4_RECOVERED"
+                    except Exception as recovery_exc:
+                        result["recovery_error"]=f"{type(recovery_exc).__name__}: {recovery_exc}"
+                        result["recovery_attempts"]=getattr(port,"recovery_attempts",1)
+                        result["status"]="RECOVERY_UNVERIFIED_STOP"
+                else:
+                    result["status"]="PROVISIONAL_SMOKE_INCOMPLETE_CANDIDATE_UNQUALIFIED"
             else:
-                q=brightness["qualification"]
-                result["qualification"] = q
-            if result.get("status") in ("QUALIFICATION_BRIGHTNESS_RESTORE_FAILED","QUALIFICATION_BRIGHTNESS_SETUP_FAILED_NO_PROFILES","QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED"):
-                pass
-            elif q.get("passed") is True:
-                result["status"] = "QUALIFIED_OBJECTIVE_GATES_PASS"
-            elif device_failure_requires_recovery(q):
-                try:
-                    result["recovery"] = port.recover_r4()
-                    result["recovery_attempts"] = 1
-                    result["status"] = "QUALIFICATION_FAILED_R4_RECOVERED"
-                except Exception as recovery_exc:
-                    result["recovery_error"] = f"{type(recovery_exc).__name__}: {recovery_exc}"
-                    result["recovery_attempts"] = getattr(port, "recovery_attempts", 1)
-                    result["status"] = "RECOVERY_UNVERIFIED_STOP"
-            else:
-                result["status"] = "QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED"
+                brightness=qualify_with_brightness_guard(port,pre.get("brightness_baseline",{}).get("runtime"))
+                result["brightness_setup_started"]=brightness["setup_started"]
+                if "brightness_setup" in brightness: result["brightness_setup"]=brightness["brightness_setup"]
+                if "brightness_restore" in brightness: result["brightness_restore"]=brightness["brightness_restore"]
+                if brightness["restore_error"]:
+                    result["status"]="QUALIFICATION_BRIGHTNESS_RESTORE_FAILED"
+                    result["error"]=brightness["restore_error"]
+                    if brightness["qualification"] is not None:
+                        result["captured_qualification_invalidated"]={"passed":brightness["qualification"].get("passed"),"profiles_not_accepted":True}
+                elif brightness["setup_error"]:
+                    result["status"]="QUALIFICATION_BRIGHTNESS_SETUP_FAILED_NO_PROFILES"
+                    result["error"]=brightness["setup_error"]
+                elif brightness["worker_error"]:
+                    result["status"]="QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED"
+                    result["error"]=brightness["worker_error"]
+                else:
+                    q=brightness["qualification"]
+                    result["qualification"] = q
+                if result.get("status") in ("QUALIFICATION_BRIGHTNESS_RESTORE_FAILED","QUALIFICATION_BRIGHTNESS_SETUP_FAILED_NO_PROFILES","QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED"):
+                    pass
+                elif q.get("passed") is True:
+                    result["status"] = "QUALIFIED_OBJECTIVE_GATES_PASS"
+                elif device_failure_requires_recovery(q):
+                    try:
+                        result["recovery"] = port.recover_r4()
+                        result["recovery_attempts"] = 1
+                        result["status"] = "QUALIFICATION_FAILED_R4_RECOVERED"
+                    except Exception as recovery_exc:
+                        result["recovery_error"] = f"{type(recovery_exc).__name__}: {recovery_exc}"
+                        result["recovery_attempts"] = getattr(port, "recovery_attempts", 1)
+                        result["status"] = "RECOVERY_UNVERIFIED_STOP"
+                else:
+                    result["status"] = "QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED"
     except Exception as exc:
         result["status"] = "BLOCKED_OR_FAILED"
         result["error"] = f"{type(exc).__name__}: {exc}"
@@ -857,7 +936,7 @@ def coordinate(port):
                 resolved = port.resolve_runtime({"confirmed": False})
                 result["runtime_resolution"] = resolved
                 if resolved.get("installed") is False:
-                    result["status"] = "TRANSACTION_EXCEPTION_R4_REMAINS"
+                    result["status"] = "TRANSACTION_EXCEPTION_STARTING_RELEASE_REMAINS"
                 elif resolved.get("installed") is True:
                     result["candidate_runtime"] = resolved.get("runtime")
                     result["status"] = "TRANSACTION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED"
@@ -881,6 +960,7 @@ def device_failure_requires_recovery(summary):
     """Only objective frozen device/runtime failures consume the R4 recovery."""
     text = json.dumps(summary, sort_keys=True).lower()
     markers = (
+        "provisional-smoke-",
         "catastrophic foundation threshold crossed",
         "foundation-steady-state-frame-interval-stop",
         "-kernel-gate-failed",
@@ -1285,6 +1365,7 @@ class LivePort:
         last = None
         exact_r4_seen = False
         last_r4_runtime = None
+        exact_starting_runtime = None
         while time.monotonic() < deadline:
             try:
                 self.device_requests += 3
@@ -1292,6 +1373,8 @@ class LivePort:
                 if exact_runtime(runtime, self.candidate.release_id):
                     return {"installed": True, "runtime": runtime,
                             "http_response_ambiguous": not upload.get("confirmed", False)}
+                if self.candidate.starting_release_id!=R4 and exact_runtime(runtime,self.candidate.starting_release_id):
+                    exact_starting_runtime=runtime
                 if exact_runtime(runtime, R4):
                     # WLED's success page is emitted before its delayed reboot.
                     # A stale pre-reboot R4 readback must not close a confirmed
@@ -1306,6 +1389,10 @@ class LivePort:
             return {"installed": False, "runtime": last_r4_runtime,
                     "http_response_ambiguous": False,
                     "resolution_window_seconds": 150}
+        if exact_starting_runtime is not None:
+            return {"installed":False,"runtime":exact_starting_runtime,
+                    "http_response_ambiguous":not upload.get("confirmed",False),
+                    "resolution_window_seconds":150}
         return {"installed": None, "error": str(last), "http_response_ambiguous": True}
 
     def qualify(self):
@@ -1326,6 +1413,102 @@ class LivePort:
         abort = json.loads(abort_path.read_text()) if abort_path.is_file() else {}
         return {"passed": p.returncode == 0, "returncode": p.returncode, "report": report,
                 "diagnostic_complete": diagnostics, "abort": abort}
+
+    def provisional_smoke(self, owner_baseline):
+        """Reuse Packet20 snapshot/restore and combined check, then run the policy's 5-minute smoke."""
+        if self.candidate.transaction_mode!="provisional":
+            raise RuntimeError("provisional-smoke-requires-provisional-capsule")
+        result={"passed":False,"duration_seconds":300,"candidate_release_id":self.candidate.release_id,
+            "candidate_sha256":self.candidate.sha256,"snapshot_restore":None,"owner_settings_restore":None}
+        adapter_script=ROOT/"scripts/hbnf_foundation_live_adapter.py"
+        env_prefix=["env",f"HBNF_EXPECTED_RELEASE_ID={self.candidate.release_id}",
+            f"HBNF_EXPECTED_FIRMWARE_SHA256={self.candidate.sha256}",sys.executable,str(adapter_script)]
+        snapshot_path=self.outdir/"PROVISIONAL_PACKET20_SNAPSHOT.json"
+        self.outdir.mkdir(parents=True,exist_ok=True)
+        failure=None
+        snapshot=None
+        try:
+            p=run(env_prefix+["snapshot","--inventory","config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"],timeout=60)
+            if p.returncode:raise RuntimeError("provisional-smoke-packet20-snapshot-failed:"+p.stderr.decode(errors="replace")[-700:])
+            snapshot=json.loads(p.stdout.decode().strip().splitlines()[-1])
+            if not isinstance(snapshot.get("snapshotId"),int) or not isinstance(snapshot.get("snapshotHash"),int):
+                raise RuntimeError("provisional-smoke-packet20-snapshot-identity-invalid")
+            save(snapshot_path,snapshot)
+            p=run(env_prefix+["telemetry-mode","--enabled","true"],timeout=35)
+            if p.returncode:raise RuntimeError("provisional-smoke-telemetry-enable-failed:"+p.stderr.decode(errors="replace")[-500:])
+            combined_path=self.outdir/"COMBINED_FEATURE_CHECK.json"
+            p=run([sys.executable,str(ROOT/"scripts/hbnf_r6_combined_feature_check.py"),
+                "--release-id",self.candidate.release_id,"--out",str(combined_path)],timeout=60)
+            combined=json.loads(combined_path.read_text()) if combined_path.is_file() else {}
+            result["combined_feature_check"]=combined
+            if p.returncode or combined.get("status")!="PASS":
+                raise RuntimeError("provisional-smoke-combined-feature-check-failed")
+        except Exception as exc:
+            failure=f"{type(exc).__name__}: {exc}"
+        finally:
+            if snapshot is not None:
+                try:
+                    p=run(env_prefix+["restore","--snapshot-file",str(snapshot_path)],timeout=110)
+                    if p.returncode:raise RuntimeError("packet20-restore-command-failed:"+p.stderr.decode(errors="replace")[-500:])
+                    restored=json.loads(p.stdout.decode().strip().splitlines()[-1])
+                    p=run(env_prefix+["verify-restore","--snapshot-file",str(snapshot_path)],timeout=35)
+                    if p.returncode:raise RuntimeError("packet20-restore-readback-failed:"+p.stderr.decode(errors="replace")[-500:])
+                    verified=json.loads(p.stdout.decode().strip().splitlines()[-1])
+                    result["snapshot_restore"]={"restore":restored,"verification":verified,"verified":verified.get("restoreVerified") is True}
+                    if result["snapshot_restore"]["verified"] is not True:
+                        raise RuntimeError("provisional-smoke-packet20-restore-not-verified")
+                except Exception as exc:
+                    failure=failure or f"{type(exc).__name__}: {exc}"
+            try:
+                restored=self.restore_qualification_brightness(owner_baseline)
+                result["owner_settings_restore"]=restored
+                if not isinstance(restored,dict) or restored.get("verified") is not True:
+                    raise RuntimeError("provisional-smoke-owner-settings-restore-failed")
+                context=read_matrix_context(self._record_device_request,self.candidate.release_id,
+                    authorized_runtime_vibe=owner_baseline.get("vibe"))
+                keys=("matrixBrightness","auxBrightness","vibe")
+                if (any(context["brightness"]["runtime"].get(k)!=owner_baseline.get(k) for k in keys)
+                    or any(context["brightness"]["persisted"].get(k)!=owner_baseline.get(k) for k in keys)):
+                    raise RuntimeError("provisional-smoke-owner-settings-readback-mismatch")
+                result["owner_settings_restore"]["verified"]=True
+            except Exception as exc:
+                result["owner_settings_restore"]={"verified":False,"error":f"{type(exc).__name__}: {exc}"}
+                failure=failure or f"{type(exc).__name__}: {exc}"
+        if failure:
+            result["failure"]=failure
+            result["abort"]={"run_error":"provisional-smoke-"+failure}
+            return result
+
+        def health_sample():
+            self.device_requests+=5
+            mi=get_json(MATRIX+"/json/info")[2]
+            build=get_json(MATRIX+"/hbnf/build.json")[2]
+            ms=get_json(MATRIX+"/json/state")[2]
+            ai=get_json(AUX+"/json/info")[2]
+            ast=get_json(AUX+"/json/state")[2]
+            return {"release_id":build.get("release_id"),"matrix_ip":mi.get("ip"),
+                "matrix_mac":str(mi.get("mac","")).replace(":","").lower(),"wled":mi.get("ver"),
+                "matrix_on":ms.get("on"),"uptime_seconds":ms.get("HBNF",{}).get("timing",{}).get("uptimeSec"),
+                "fps":mi.get("leds",{}).get("fps"),"aux_ip":ai.get("ip"),
+                "aux_mac":str(ai.get("mac","")).replace(":","").lower(),"aux_on":ast.get("on"),
+                "aux_live":ai.get("live"),"aux_mode":ai.get("lm"),"aux_source":ai.get("lip"),
+                "aux_led_count":ai.get("leds",{}).get("count")}
+        try:
+            result["health_window"]=run_provisional_health_window(health_sample)
+            final=read_matrix_context(self._record_device_request,self.candidate.release_id,
+                authorized_runtime_vibe=owner_baseline.get("vibe"))
+            keys=("matrixBrightness","auxBrightness","vibe")
+            if (any(final["brightness"]["runtime"].get(k)!=owner_baseline.get(k) for k in keys)
+                or any(final["brightness"]["persisted"].get(k)!=owner_baseline.get(k) for k in keys)):
+                raise RuntimeError("provisional-smoke-final-owner-settings-readback-mismatch")
+            result["final_matrix_aux_settings_verified"]=True
+            result["passed"]=True
+            result["owner_physical_text_centering_review"]="required; cannot be proven by controller/API telemetry"
+            result["final_qualification"]="NOT_PERFORMED; all frozen 28-kernel, 90-minute, and owner-acceptance gates remain required"
+        except Exception as exc:
+            result["failure"]=f"{type(exc).__name__}: {exc}"
+            result["abort"]={"run_error":"provisional-smoke-"+result["failure"]}
+        return result
 
     def recover_r4(self):
         self.consume_recovery_attempt()
@@ -1475,9 +1658,13 @@ class LivePort:
         elif result.get("status") == "QUALIFIED_OBJECTIVE_GATES_PASS":
             state["installed_release"] = self.candidate.release_id
             state["installed_firmware_sha256"] = self.candidate.sha256
-        elif result.get("status") in ("OTA_NOT_INSTALLED_R4_REMAINS_NO_RETRY", "CANDIDATE_STAGE_FAILED_NO_WLED_REQUEST"):
-            state["installed_release"] = R4
-            state["installed_firmware_sha256"] = self.candidate.rollback_sha256
+        elif result.get("status") == "PROVISIONAL_INSTALL_SMOKE_PASS_NOT_FULLY_QUALIFIED":
+            state["installed_release"] = self.candidate.release_id
+            state["installed_firmware_sha256"] = self.candidate.sha256
+        elif result.get("status") in ("OTA_NOT_INSTALLED_STARTING_RELEASE_REMAINS_NO_RETRY", "TRANSACTION_EXCEPTION_STARTING_RELEASE_REMAINS", "CANDIDATE_STAGE_FAILED_NO_WLED_REQUEST"):
+            state["installed_release"] = self.candidate.starting_release_id
+            if self.candidate.starting_release_id==R4:
+                state["installed_firmware_sha256"] = self.candidate.rollback_sha256
         elif result.get("candidate_runtime"):
             state["installed_release"] = self.candidate.release_id
             state["installed_firmware_sha256"] = self.candidate.sha256
@@ -1601,7 +1788,7 @@ def main():
     else:
         result = execute(pathlib.Path(args.admission), pathlib.Path(args.capsule), pathlib.Path(args.prelive_proof))
     print(json.dumps(result, indent=2))
-    return 0 if result.get("status") == "QUALIFIED_OBJECTIVE_GATES_PASS" else 2
+    return 0 if result.get("status") in ("QUALIFIED_OBJECTIVE_GATES_PASS","PROVISIONAL_INSTALL_SMOKE_PASS_NOT_FULLY_QUALIFIED") else 2
 
 
 if __name__ == "__main__":
