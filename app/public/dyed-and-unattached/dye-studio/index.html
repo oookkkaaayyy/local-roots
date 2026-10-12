@@ -1644,7 +1644,7 @@ function renderEvidenceAdvisory(){
  const method=allMethods.length===1?allMethods[0]:"mixed";
  if(method==="mixed")warnings.push("MIXED APPLICATION METHODS: each dye block has its own physical carrier and passes; no single-method photo is a complete recipe match.");
  if(allMethods.includes("acetone-direct")){
- warnings.push("PRIMARY: direct acetone/dye onto the disc, NOT an acetone-dye glue bed. Published glue-bed photographs are different-process analogies. Solvent loading, absorption and resulting hue are not calibrated. Keep acetone away from heat and ignition sources.");
+ warnings.push("PRIMARY: direct acetone/dye onto the disc, NOT an acetone-dye glue bed. Published glue-bed photographs are different-process analogies. Solvent loading, absorption and resulting hue are not calibrated. Manufacturer starting guidance is 1/2 tsp powder mixed with 2 oz acetone, not a validated saturation target. Keep acetone away from heat and ignition sources. If applying through vinyl masking, practitioners report potential adhesive softening and blurred edges.");
  if(layers.every(l=>clamp(Math.round(+l.passes||1),1,12)===1))warnings.push("One brush pass can leave visible streaks; a complete solid color may require more careful passes. Do not extrapolate darkness numerically from one pass.");
  else warnings.push("Multiple direct-acetone passes may deepen color but are NOT a validated linear multiplier. Coverage and boundary bleeding remain uncertain. Per-block counts: "+layers.map(l=>l.name+" "+clamp(Math.round(+l.passes||1),1,12)).join("; ")+".");
 }
