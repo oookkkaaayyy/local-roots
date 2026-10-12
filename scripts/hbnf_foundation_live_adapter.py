@@ -262,8 +262,25 @@ def snapshot(observer_output=None, inventory=None):
     identity(); state,p20=p20_state()
     telemetry_before=state.get("HBNF",{}).get("foundationTelemetry",{}).get("enabled")
     if not isinstance(telemetry_before,bool):raise RuntimeError("snapshot-missing-foundation-telemetry-enabled-state")
-    if p20.get("restoreVerified") is True and p20.get("enabled") is not True:
-        raise RuntimeError("packet20-diagnostic-session-already-restored; one-shot session cannot re-enter before a fresh boot")
+    restored_session=(p20.get("restoreVerified") is True and p20.get("enabled") is not True)
+    if restored_session:
+        # A verified restore closes the prior session. New firmware advertises
+        # RESTORED with no live snapshot and explicitly accepts a fresh begin.
+        # Older one-shot firmware remains fail-closed without issuing commands.
+        if p20.get("snapshotState")!="RESTORED" or p20.get("snapshotValid") is not False:
+            raise RuntimeError("packet20-diagnostic-session-closed; installed firmware does not support verified same-boot reuse")
+        receipt=command("begin").get("HBNF",{}).get("packet20Diagnostic",{})
+        if receipt.get("lastCommand")!="begin" or receipt.get("lastCommandAccepted") is not True:
+            raise RuntimeError("packet20-fresh-session-begin-rejected")
+        deadline=time.monotonic()+SNAPSHOT_READY_TIMEOUT_SECONDS
+        while time.monotonic()<deadline:
+            state,p20=p20_state(deadline,stage="fresh-session-begin")
+            if p20.get("enabled") is True and p20.get("snapshotState")=="IDLE" and p20.get("snapshotValid") is False:
+                break
+            if p20.get("snapshotState")=="FAILED":raise RuntimeError("packet20-fresh-session-begin-failed")
+            time.sleep(.25)
+        else:
+            raise RuntimeError("packet20-fresh-session-not-ready-after-begin")
     new_snapshot=not p20.get("snapshotValid")
     if not p20.get("enabled"):
         command("begin"); time.sleep(1); state,p20=p20_state()

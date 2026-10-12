@@ -39,6 +39,10 @@ int main() {
   assert(std::strcmp(page,"NEXT")==0);
   assert(HbnfNativeText::packPage(font,"NEXT PLAYER UP",1,page)==3);
   assert(std::strcmp(page,"PLAYER")==0);
+  assert(HbnfNativeText::packPage(font,"HeLLo",0,page)==1);
+  assert(std::strcmp(page,"HeLLo")==0);
+  assert(HbnfNativeText::centeredTextX(32,28)==2); // round the half-pixel tie right
+  assert(HbnfNativeText::centeredTextX(32,27)==3);
 
   assert(HbnfNativeText::resolveFontIndex(font,4,"SUPERCALIFRAGILISTIC",32)==4);
   assert(font.slot==4); // retain the selected face if even the compact face overflows

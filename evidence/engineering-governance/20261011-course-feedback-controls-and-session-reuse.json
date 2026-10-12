@@ -1,0 +1,49 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "COURSE_FEEDBACK_CONTROLS_AND_SESSION_REUSE_20261011",
+  "summary": "Allow a verified Packet20 restore to start a fresh session, preserve text capitalization and center text on integer pixels, and replace numeric palette entry with WLED named palette previews and confirmed Matrix readback.",
+  "change_class": "SUBJECTIVE_DESIGN",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": true,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing Packet20 snapshot/restore state machine, WLED 16.0.1 palette JSON API, native text overlay, and Matrix local controller; no new subsystem or dependency.",
+      "affected_subsystem": "Offline diagnostic-session lifecycle, native text raster placement, and existing Matrix palette/touch controls.",
+      "rollback_reference": "Revert this branch's Packet20 RESTORED transition and adapter reuse path, native text helper edits, local UI palette control changes, tests, and this record; installed f89 is not changed.",
+      "evidence_sources": [
+        "https://github.com/wled/WLED-Docs/blob/main/docs/interfaces/json-api.md",
+        "https://raw.githubusercontent.com/wled/WLED/v16.0.1/wled00/json.cpp",
+        "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/continuation-20261011/qualification-run/QUALIFICATION_CONTINUATION_RESULT.json",
+        "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/sweep"
+      ],
+      "tests": [
+        "node --check /tmp/hbnf_local_ui_inline_check.js",
+        "node tests/hbnf_local_ui_palette_contract.mjs",
+        "python3 tests/test_packet20_verified_restore_reuse.py",
+        "c++ -std=c++17 -Wall -Wextra -Werror tests/native_text_compact_font_smoke.cpp -o /tmp/hbnf_native_text_compact_font_smoke && /tmp/hbnf_native_text_compact_font_smoke",
+        "python3 -m unittest -v tests.test_hbnf_text_moments_offline",
+        "The nine HBNF control/release suites required by AGENTS.md"
+      ]
+    },
+    "owner_design_gate": {
+      "decision_status": "APPROVED",
+      "approved_by_owner": true,
+      "selected_option": "Support normal capitalization and centered text; use descriptive named WLED palettes with visual previews and report whether Matrix state confirms application; provide touch controls at least 44 pixels high.",
+      "approval_reference": "Direct owner instruction in Cart Upgrades project chat on 2026-10-11"
+    },
+    "implementation_limits": {
+      "device_mutation": false,
+      "qualification_run": false,
+      "firmware_build": false,
+      "production_deployment": false,
+      "performance_threshold_changes": false
+    },
+    "performance_basis": "Existing 28-profile f89 evidence reports high measured kernel work for Water (~39 ms), Distance_Experiment (~42 ms), and Complex_Kaleido_3 (~31 ms), with materially higher audio time for Water (~7.6 ms) and Complex_Kaleido_3 (~9.2 ms). Those mixed stage costs do not establish a safe visual-preserving code correction; no animation/audio code was changed.",
+    "qualification_boundary": "Host/source tests only. The currently installed f89 image predates this lifecycle correction and still cannot be safely requalified without a new firmware candidate. No firmware was built or installed, and palette behavior, physical text placement, touch usability, DDP, Owner/Guest backend readiness, games integration, and final acceptance remain unverified."
+  }
+}

@@ -24,6 +24,13 @@ static inline uint16_t textWidth(FontT& font, const char* text) {
   return width;
 }
 
+// Integer pixel origins cannot represent half-pixel centering. Round ties
+// toward the right so odd-width strings do not consistently appear left-shifted.
+static inline int16_t centeredTextX(uint8_t canvasWidth, uint16_t width) {
+  const int16_t remaining = static_cast<int16_t>(canvasWidth) - static_cast<int16_t>(width);
+  return static_cast<int16_t>(remaining >= 0 ? (remaining + 1) / 2 : remaining / 2);
+}
+
 template<class FontT>
 static inline bool hasWordOverWidth(FontT& font, const char* text, uint8_t maxWidth) {
   if (!text || !*text) return false;
@@ -95,8 +102,7 @@ static inline uint8_t packPage(FontT& font, const char* text,
     size_t n = 0;
     while (pos < length && text[pos] != ' ' && text[pos] != '\n' &&
            text[pos] != '\r' && text[pos] != '\t' && n < sizeof(word)-1) {
-      const char c = text[pos++];
-      word[n++] = (c >= 'a' && c <= 'z') ? static_cast<char>(c - 'a' + 'A') : c;
+      word[n++] = text[pos++];
     }
     while (pos < length && text[pos] != ' ' && text[pos] != '\n' &&
            text[pos] != '\r' && text[pos] != '\t') ++pos;
@@ -131,7 +137,7 @@ static inline void drawPaged(FontT& font, const char* text,
   const uint8_t page = static_cast<uint8_t>((elapsedMs / pageHoldMs) % count);
   packPage(font, text, page, pageText);
   const uint16_t width = textWidth(font, pageText);
-  int16_t x = static_cast<int16_t>(canvasWidth - width) / 2;
+  int16_t x = centeredTextX(canvasWidth, width);
   const int16_t y = static_cast<int16_t>((canvasHeight - font.getFontHeight()) / 2)+yOffset;
   if (width > canvasWidth) {
     const uint16_t travel = static_cast<uint16_t>(width - canvasWidth);

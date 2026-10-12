@@ -918,7 +918,7 @@ struct Packet20Snapshot {
 };
 static_assert(std::is_trivially_copyable<FoundationRuntime>::value,"Packet20 runtime snapshot must be byte-copyable");
 static_assert(std::is_trivially_copyable<FoundationAnimartrix::DiagnosticState>::value,"Packet20 renderer snapshot must be byte-copyable");
-enum class Packet20SnapshotState : uint8_t { IDLE, REQUESTED, CAPTURING, READY, FAILED };
+enum class Packet20SnapshotState : uint8_t { IDLE, REQUESTED, CAPTURING, READY, RESTORED, FAILED };
 static Packet20Snapshot packet20Saved{};
 static Packet20Snapshot packet20Verify{};
 static bool packet20SavedValid=false,packet20RestoreVerified=false;
@@ -937,6 +937,7 @@ static const char* packet20SnapshotStateName(Packet20SnapshotState state) {
     case Packet20SnapshotState::REQUESTED:return "REQUESTED";
     case Packet20SnapshotState::CAPTURING:return "CAPTURING";
     case Packet20SnapshotState::READY:return "READY";
+    case Packet20SnapshotState::RESTORED:return "RESTORED";
     default:return "FAILED";
   }
 }
@@ -1114,7 +1115,10 @@ static void packet20ServiceAtRendererSafePoint() {
     const bool verified=packet20Same(packet20Saved,packet20Verify);
     portENTER_CRITICAL(&packet20SnapshotMux);
     packet20RestoreVerified=verified;
-    if(!verified)packet20SnapshotState=Packet20SnapshotState::FAILED;
+    if(verified) {
+      packet20SavedValid=false;
+      packet20SnapshotState=Packet20SnapshotState::RESTORED;
+    } else packet20SnapshotState=Packet20SnapshotState::FAILED;
     portEXIT_CRITICAL(&packet20SnapshotMux);
     return;
   }
@@ -1173,7 +1177,14 @@ static bool packet20Command(JsonObjectConst command) {
   }
 #endif
   if(!strcmp(op,"begin")) {
-    if(packet20SavedValid)return false;
+    bool allowed=false;
+    portENTER_CRITICAL(&packet20SnapshotMux);
+    const bool restored=packet20SnapshotState==Packet20SnapshotState::RESTORED&&packet20RestoreVerified&&!packet20SavedValid;
+    const bool initial=packet20SnapshotState==Packet20SnapshotState::IDLE&&!packet20SavedValid;
+    allowed=(initial||restored)&&!runtime.diagnosticActive();
+    if(allowed)packet20RestoreVerified=false;
+    portEXIT_CRITICAL(&packet20SnapshotMux);
+    if(!allowed)return false;
     runtime.diagnosticBegin();packet20RestoreVerified=false;packet20Selected=runtime.variant().kernel;
     return true;
   }
