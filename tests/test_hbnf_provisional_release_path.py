@@ -198,6 +198,9 @@ def test_smoke_continuation_is_distinct_from_install_and_preserves_consumed_atte
     assert 'pending["candidate_install_attempts_used"]=1' in close
     assert '"PROVISIONAL_SMOKE_CONTINUATION_RESULT.json"' in close
     assert "--provisional-smoke-only" in guarded
+    preflight=source.split("    def preflight_candidate(",1)[1].split("\n    def ",1)[0]
+    assert "capture_fresh_owner_settings" in preflight
+    assert "if expected_brightness is None and not capture_fresh_owner_settings" in preflight
 
 
 def test_feature_failure_does_not_spend_r4_recovery_but_system_health_failure_does():

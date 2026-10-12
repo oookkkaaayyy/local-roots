@@ -1351,8 +1351,8 @@ class LivePort:
         if isinstance(saved_owner,dict):
             self.owner_brightness_baseline=dict(saved_owner)
         recovery_subscope=qualification_auth.get("qualification_recovery_subscope")
-        expected_brightness=expected_matrix_brightness
-        if expected_brightness is None:
+        expected_brightness=(None if capture_fresh_owner_settings else expected_matrix_brightness)
+        if expected_brightness is None and not capture_fresh_owner_settings:
             expected_brightness=(FROZEN_MATRIX_BRIGHTNESS
                 if recovery_subscope=="RESTORE_INTERRUPTED_BRIGHTNESS_THEN_QUALIFY"
                 else None)
@@ -2110,13 +2110,14 @@ def execute_provisional_smoke_only(admission_path,capsule_path,proof_path,outdir
     return port.provisional_smoke_only()
 
 
-def execute_readonly_qualification_preflight(capsule_path,outdir,expected_matrix_brightness=None):
+def execute_readonly_qualification_preflight(capsule_path,outdir,expected_matrix_brightness=None,
+        capture_fresh_owner_settings=False):
     """Refresh exact current-device evidence without opening the mutation path."""
     profile=load_candidate_profile(pathlib.Path(capsule_path))
     exact_artifacts(profile)
     output=prepare_qualification_output(outdir,profile)
     port=LivePort(None,capsule_path,None,output,profile)
-    proof=port.preflight_candidate(expected_matrix_brightness)
+    proof=port.preflight_candidate(expected_matrix_brightness,capture_fresh_owner_settings)
     print(json.dumps({"status":"READONLY_QUALIFICATION_PREFLIGHT_PASS",
         "candidate_release_id":profile.release_id,"candidate_sha256":profile.sha256,
         "device_requests":port.device_requests,"device_mutations":0,
@@ -2162,6 +2163,8 @@ def main():
     ap.add_argument("--readonly-recovery-preflight-only",action="store_true",help="Refresh exact post-failure state for an R4-only recovery; performs no device writes")
     ap.add_argument("--expected-matrix-brightness",type=int,choices=range(0,256),default=None,
         help="For read-only preflight, assert the freshly captured current candidate brightness")
+    ap.add_argument("--capture-fresh-owner-settings",action="store_true",
+        help="For read-only preflight, ignore older saved settings and record current runtime/persisted owner controls")
     ap.add_argument("--outdir",help="New empty evidence directory under the exact R6 qualification directory; required for qualification continuation")
     args = ap.parse_args()
     if args.recover_r4_only and (args.dry_run or args.resume_qualification or args.readonly_preflight_only or args.readonly_recovery_preflight_only):
@@ -2178,7 +2181,8 @@ def main():
             raise SystemExit("read-only qualification preflight cannot be combined with another execution mode")
         if not args.outdir:
             raise SystemExit("--readonly-preflight-only requires a new --outdir so prior evidence remains immutable")
-        execute_readonly_qualification_preflight(pathlib.Path(args.capsule),args.outdir,args.expected_matrix_brightness)
+        execute_readonly_qualification_preflight(pathlib.Path(args.capsule),args.outdir,args.expected_matrix_brightness,
+            args.capture_fresh_owner_settings)
         return 0
     if args.readonly_recovery_preflight_only:
         if args.resume_qualification:
