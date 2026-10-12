@@ -1,0 +1,56 @@
+{
+  "blocker": "The combined feature check applied mixed-case text/named palette/Vibe checks, but its cleanup readback says the original WLED segments did not match. No firmware rollback or further live retry occurred. Exact affected segment values and post-run normal animation were not independently verified.",
+  "candidate_release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+  "candidate_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+  "changes_during_transaction": {
+    "candidate_install_attempts": 0,
+    "firmware_install": false,
+    "packet20_activation": false,
+    "r4_recovery": false,
+    "reboot": false,
+    "recovery_attempts": 0
+  },
+  "cleanup": {
+    "checks": {
+      "overlay_cleared": true,
+      "palette": true,
+      "persisted_owner_settings": true,
+      "runtime_controls": true,
+      "segments": false,
+      "wled_output": true
+    },
+    "owner_settings_restore_verified": true,
+    "segments_restored": false,
+    "verified": false
+  },
+  "feature_checks": {
+    "candidate_identity": true,
+    "matrix_aux_ddp_projection": true,
+    "mixed_case_text_command_applied": true,
+    "named_palette_applied_and_read_back": true,
+    "native_text_scoreboard_overlay": true,
+    "vibe_audio_controls": true
+  },
+  "next_live_action": "None under the exhausted one-attempt smoke authorization; any restoration or new smoke needs new exact owner authority.",
+  "ordinary_five_minute_health_window": "NOT RUN: feature-check cleanup failed before health-window invocation; duration_seconds=300 is a nominal report field, not an observed health window.",
+  "preflight": {
+    "aux_ddp_live": true,
+    "aux_mac": "8c94df55c34c",
+    "host_on_ac": true,
+    "lan": "en0",
+    "matrix_mac": "704bca5b345c",
+    "packet20_off": true,
+    "pass": true,
+    "settings": {
+      "auxBrightness": 68,
+      "matrixBrightness": 66,
+      "vibe": 5
+    },
+    "single_worker": true,
+    "telemetry_off": true
+  },
+  "recorded_utc": "2026-10-12T06:08:33.601942+00:00",
+  "schema": "hbnf-provisional-smoke-outcome-v1",
+  "smoke": "INCOMPLETE",
+  "source_correction_commit": "76fa4ba25d572e6d4a8fcb1c5fc39d7575e2920b"
+}

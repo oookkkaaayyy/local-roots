@@ -1,0 +1,70 @@
+{
+  "aux": {
+    "ip": "192.168.77.11",
+    "led_count": 22,
+    "live": true,
+    "lor": 0,
+    "mac": "8c94df55c34c",
+    "mode": "DDP",
+    "on": true,
+    "source": "192.168.77.10"
+  },
+  "brightness_baseline": {
+    "matrix_on": true,
+    "persisted": {
+      "auxBrightness": 68,
+      "matrixBrightness": 66,
+      "vibe": 5
+    },
+    "runtime": {
+      "auxBrightness": 68,
+      "matrixBrightness": 66,
+      "vibe": 5
+    },
+    "vibe_persistence": "verified"
+  },
+  "candidate_attempts_used": 1,
+  "candidate_install_permitted": false,
+  "candidate_release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+  "candidate_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+  "captured_unix": 1791785228.405327,
+  "cart_lan_interface": "en0",
+  "device_mutations": 0,
+  "device_requests": 9,
+  "host_on_ac": true,
+  "matrix": {
+    "brightness": 66,
+    "candidate_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+    "diagnostic_off": true,
+    "fps": 18,
+    "free_heap": 74176,
+    "ip": "192.168.77.10",
+    "mac": "704bca5b345c",
+    "on": true,
+    "release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "telemetry_off": true,
+    "uptime_seconds": 1407,
+    "wled": "16.0.1"
+  },
+  "operation_scope": "QUALIFICATION_ONLY",
+  "owner_brightness_baseline": {
+    "auxBrightness": 68,
+    "matrixBrightness": 66,
+    "vibe": 5
+  },
+  "owner_settings_restore_required": false,
+  "pass": true,
+  "qualification_recovery_subscope": null,
+  "read_only": true,
+  "recovery_attempts_used": 0,
+  "rollback": {
+    "opal_ledger": "OPAL_QUALIFICATION_PREFLIGHT_OKn/usr/bin/sha256sum\n55 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\n",
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+  },
+  "schema": "hbnf-cart2-qualification-prelive-v1",
+  "single_worker": {
+    "conflicting_pids": [],
+    "pass": true,
+    "worker_count": 1
+  }
+}
