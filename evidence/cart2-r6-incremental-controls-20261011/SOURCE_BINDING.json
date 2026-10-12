@@ -1,0 +1,41 @@
+{
+  "schema": "hbnf-cart2-r6-incremental-controls-source-binding-v1",
+  "status": "SOURCE_AND_BUILD_INPUTS_HASH_BOUND__NO_LIVE_QUALIFICATION",
+  "candidate_release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+  "repository": "oookkkaaayyy/local-roots",
+  "branch": "codex/cart2-course-feedback-integration-20261011",
+  "source_commit": "37593376c35e467ec15825ccc7713cf3928316c8",
+  "field_used_base": {
+    "release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b"
+  },
+  "runtime_source_directory": "firmware/phase2/integration-r6-f89-compact-font/usermod",
+  "build_project": {
+    "upstream": "WLED 16.0.1",
+    "upstream_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+    "environment": "hbnf_matrix_wled16_packet20_diag",
+    "platformio_ini_sha256": "99718bfd8614da297c94692bc41dea48c9af87dbe829ded2e4a7cad7f0368820",
+    "platformio_override_ini_sha256": "044f631af814c0c7ce9c3ad992451daf40bd4e50bc9882e22bd8dc7781f0e922",
+    "local_wled_source_changes": {
+      "path": "evidence/cart2-r6-incremental-controls-20261011/BUILD_INPUT_PATCH.diff",
+      "sha256": "7ac5512dbf3be709e5ca7252e710a66ca99652b337b068e3e2e57bee4970b232",
+      "description": "Exact seven-file WLED build patch from the previously verified f89 build project; the active 14-file HBNF usermod overlay is source-controlled at runtime_source_directory."
+    }
+  },
+  "toolchain": {
+    "platformio_core": "6.1.18",
+    "esp32_platform": "2024.6.0",
+    "framework": "2.0.18+sha.8ba0dc0",
+    "xtensa_toolchain": "8.4.0+2021r2-patch5",
+    "esptool": "4.7.4"
+  },
+  "artifact": {
+    "path": "evidence/cart2-r6-incremental-controls-20261011/artifact/hbnf-cart2-phase2-r6-incremental-controls-20261011.bin",
+    "sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+    "size_bytes": 1502864,
+    "ota_partition_bytes": 1572864,
+    "ota_headroom_bytes": 70000
+  },
+  "water_cosine_optimization": "NOT_APPLIED__no target timing evidence",
+  "authority": "Build/source identity only. Does not authorize installation or qualify the candidate."
+}
