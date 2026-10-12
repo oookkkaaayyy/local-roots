@@ -78,10 +78,13 @@ export function reconcileTargetsForCommand(type: string, defaultTargets: readonl
   return isMetadataOnlyCommand(type) ? [] : [...defaultTargets];
 }
 
-export function requiresOwnerAuthorization(action: string, commandType: unknown): boolean {
-  return action === "create_install_handoff" || action === "pair_device" ||
-    ["skins_score_state", "skins_score_set", "skins_tiebreaker_set", "skins_ace_set"].includes(action) ||
-    (action === "command" && commandType === "GUEST_MODE");
+export function requiresOwnerAuthorization(action: string, _commandType: unknown): boolean {
+  // The generic command route can mutate power, scenes, palettes, tuning,
+  // overlays, and device profiles. It must therefore require an authenticated
+  // operator or a valid paired-device session for every command type. Guest
+  // writes use the separate guest_command route and its bounded reducer.
+  return action === "command" || action === "create_install_handoff" || action === "pair_device" ||
+    ["skins_score_state", "skins_score_set", "skins_tiebreaker_set", "skins_ace_set"].includes(action);
 }
 
 export async function runGuestCommand(

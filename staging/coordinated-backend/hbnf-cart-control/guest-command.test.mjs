@@ -140,7 +140,16 @@ test("Guest Mode is a metadata-only canonical command", () => {
   assert.equal(reduceCartCommand(before, "GUEST_MODE", { enabled: "yes" }, commandId, before.revision), null);
   assert.equal(requiresOwnerAuthorization("command", "GUEST_MODE"), true);
   assert.equal(requiresOwnerAuthorization("guest_command", "GUEST_MODE"), false);
-  assert.equal(requiresOwnerAuthorization("command", "VIBE"), false);
+  assert.equal(requiresOwnerAuthorization("command", "VIBE"), true);
+});
+
+test("all generic device mutations require operator or paired-device authorization", () => {
+  for (const type of ["OFF", "ON", "NEXT", "AUTO", "LOCK", "SCENE", "PALETTE", "TUNE", "OVERLAY_START", "OVERLAY_EXPIRE", "GUEST_MODE"]) {
+    assert.equal(requiresOwnerAuthorization("command", type), true, `${type} must be protected on the generic command route`);
+  }
+  assert.equal(requiresOwnerAuthorization("status", undefined), false, "status reads remain available to unpaired clients");
+  assert.equal(requiresOwnerAuthorization("live_status", undefined), false, "live status reads remain available to unpaired clients");
+  assert.equal(requiresOwnerAuthorization("guest_command", undefined), false, "Guest uses its separate restricted command route");
 });
 
 test("text overlays default to native font slot 4 and accept only reviewable ASCII slots", () => {
