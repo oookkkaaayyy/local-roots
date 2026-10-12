@@ -2,7 +2,7 @@ export const MATRIX_MAC="70:4b:ca:5b:34:5c";
 // Runtime readback can prove this embedded release ID. The installed binary SHA is
 // independently bound by the control-state reconciliation receipt and is not
 // exposed by WLED as a runtime measurement.
-export const MATRIX_CANDIDATE="hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010";
+export const MATRIX_CANDIDATE="hbnf-cart2-phase2-r6-incremental-controls-20261011";
 const vibes:Record<string,number>={chill:0,groove:1,heavy:2,psychedelic:3,cosmic:4,auto:5};
 const scenes:Record<string,number>={"course-flow":0,"field-mix":1,"hbnf-signature":2,"quiet-cosmos":3};
 const clamp=(v:any,a:number,b:number,d:number)=>{const n=Number(v);return Math.max(a,Math.min(b,Math.round(Number.isFinite(n)?n:d)));};

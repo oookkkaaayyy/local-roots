@@ -1,0 +1,41 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OWNER_GUEST_RELAY_CURRENT_INSTALLED_RELEASE_PIN_20261011",
+  "summary": "Align the existing inactive Matrix relay and its exact-release SQL authorization with the installed incremental-controls candidate while retaining all device, fence, and one-use challenge checks.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Reuse the existing authenticated Opal relay, candidate and Matrix identity pin, one-use revision/fence-bound challenge, and exact readback gates. Only the stale embedded release ID was mismatched.",
+      "affected_subsystem": "Offline Owner/Guest Matrix relay source, existing PostgreSQL migration path, and contract tests.",
+      "rollback_reference": "Revert the new follow-up SQL migration and scoped source/test edits. No relay activation, command-fence change, device mutation, or cloud/backend deployment occurred.",
+      "evidence_sources": [
+        "config/HBNF_CONTROL_STATE.json installed_release, installed_firmware_sha256, and pending_provisional_candidate",
+        "Existing provisional candidate artifact receipt for SHA-256 8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+        "Existing relay projections, Opal script, SQL challenge migration, and failing tests/hbnf_matrix_relay_contract.mjs assertion"
+      ],
+      "tests": [
+        "node tests/hbnf_matrix_relay_contract.mjs",
+        "node tests/matrix-relay-runtime/test.mjs",
+        "node tests/hbnf-coordinated-backend-staging.mjs",
+        "node --test staging/coordinated-backend/hbnf-cart-control/*.test.mjs staging/coordinated-backend/hbnf-cart-control/runtime-vibe.test.mjs",
+        "Deno loopback edge-handler smoke, if Deno is installed"
+      ],
+      "live_state": {
+        "device_mutation": false,
+        "production_deployment": false,
+        "live_mutation_authorized": false,
+        "relay_active": false,
+        "command_fence_active": false,
+        "runtime_candidate": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+        "artifact_sha256_from_control_state": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d"
+      }
+    }
+  }
+}

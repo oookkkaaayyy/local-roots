@@ -47,7 +47,7 @@ test("Vibe UI is fail-closed until backend qualification flag and never calls a 
   assert.match(adapter, /Compatibility endpoint only\. It is no longer a command writer/);
   assert.match(adapter, /confirmed:false,commandApplicationConfirmed:false,transportConfirmed:false/);
   assert.match(adapter, /matrix_writer_moved_to_opal_relay/);
-  assert.match(owner, /device application and underglow output are not confirmed/);
+  assert.match(owner, /device application and physical AUX illumination are not confirmed/);
 });
 
 test("owner canonical reducer preserves legacy vibe and stores runtime selection separately", () => {

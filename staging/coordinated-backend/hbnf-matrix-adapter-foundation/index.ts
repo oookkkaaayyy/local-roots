@@ -1,4 +1,4 @@
-const MATRIX_CANDIDATE="hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010";
+const MATRIX_CANDIDATE="hbnf-cart2-phase2-r6-incremental-controls-20261011";
 const MATRIX_MAC="70:4b:ca:5b:34:5c";
 const json=(x:unknown,s=200)=>new Response(JSON.stringify(x),{status:s,headers:{"Content-Type":"application/json","Cache-Control":"no-store"}});
 function service(req:Request){const k=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")??"";return !!k&&req.headers.get("Authorization")===`Bearer ${k}`;}

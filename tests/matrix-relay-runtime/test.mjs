@@ -2,9 +2,11 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { PGlite } from '@electric-sql/pglite';
-const migrationPath = fileURLToPath(new URL('../../staging/coordinated-backend/migrations/20261009190000_hbnf_matrix_relay_confirmation.sql', import.meta.url));
+const migrationPaths = [
+  '../../staging/coordinated-backend/migrations/20261009190000_hbnf_matrix_relay_confirmation.sql',
+  '../../staging/coordinated-backend/migrations/20261011235000_hbnf_matrix_relay_incremental_controls_pin.sql'
+].map(path => fileURLToPath(new URL(path, import.meta.url)));
 const db = new PGlite();
-const migration = fs.readFileSync(migrationPath, 'utf8');
 const controlState = JSON.parse(fs.readFileSync(fileURLToPath(new URL('../../config/HBNF_CONTROL_STATE.json', import.meta.url)), 'utf8'));
 await db.exec(`
 CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role;
@@ -16,14 +18,15 @@ CREATE FUNCTION public.hbnf_cart_upsert_observed(text,text,boolean,text,bigint,b
 INSERT INTO hbnf_internal.cart_desired_state VALUES('hbnf-cart',51,'{}');
 INSERT INTO hbnf_internal.cart_actuator_fence VALUES('hbnf-cart',7,'r6',true);
 `);
-await db.exec(migration);
-const expected = { matrixMac: '70:4b:ca:5b:34:5c', candidate: 'hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010', on: true, hbnf: { candidate: 'hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010' } };
+for (const migrationPath of migrationPaths) await db.exec(fs.readFileSync(migrationPath, 'utf8'));
+const expected = { matrixMac: '70:4b:ca:5b:34:5c', candidate: 'hbnf-cart2-phase2-r6-incremental-controls-20261011', on: true, hbnf: { candidate: 'hbnf-cart2-phase2-r6-incremental-controls-20261011' } };
 const payload = { on: true };
 async function issue(state = expected, rev = 51, fence = 7, candidate = expected.candidate, releaseId = 'r6') {
   return (await db.query(`select public.hbnf_cart_matrix_relay_issue($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10) as id`, ['opal-hbnf-cart','hbnf-cart',rev,fence,releaseId,'70:4b:ca:5b:34:5c',candidate,JSON.stringify(state),JSON.stringify(payload),20])).rows[0].id;
 }
 const challenge = await issue();
-await assert.rejects(issue(expected, 51, 7, 'hbnf-cart2-phase2-offline-wow-r6-integrated-20261009'), /invalid_relay_challenge/, 'stale R6 release must fail closed');
+await assert.rejects(issue(expected, 51, 7, 'hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010'), /invalid_relay_challenge/, 'previous R6 release must fail closed');
+await assert.rejects(issue(expected, 51, 7, 'hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1'), /invalid_relay_challenge/, 'R4 release must fail the R6 candidate pin');
 assert.equal((await db.query(`select public.hbnf_cart_matrix_relay_get($1,'opal-hbnf-cart') as value`, [challenge])).rows[0].value.desired_revision, 51);
 assert.equal((await db.query(`select public.hbnf_cart_matrix_relay_authorize_apply($1,'opal-hbnf-cart') as ok`, [challenge])).rows[0].ok, true);
 assert.equal((await db.query(`select public.hbnf_cart_matrix_relay_authorize_apply($1,'opal-hbnf-cart') as ok`, [challenge])).rows[0].ok, false);
@@ -45,13 +48,14 @@ finally { await db.exec('reset role'); }
 assert.equal(denied, true, 'anon role must not execute challenge RPC');
 const recovered = controlState.installed_firmware_reconciliation;
 const releaseControl = controlState.coordinated_r6_live_release_authorization.backend_transaction_progress;
+const installed = controlState.execution_cursor.pending_provisional_candidate;
 assert.equal(controlState.live_mutation_authorized, false);
 assert.equal(releaseControl.command_fence_active, false);
 assert.equal(releaseControl.opal_relay_active, false);
-// installed_* describes the owner-reported f89 field candidate; this separate
-// reconciliation object is the earlier exact-R4 safety readback.
+assert.equal(installed.candidate_release_id, expected.candidate);
+assert.equal(installed.candidate_sha256, '8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d');
 assert.equal(controlState.installed_release, expected.candidate);
-assert.equal(controlState.installed_firmware_sha256, "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b");
+assert.equal(controlState.installed_firmware_sha256, "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d");
 assert.equal(recovered.release_id, "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1");
 assert.equal(recovered.sha256, "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c");
 await db.query(`update hbnf_internal.cart_actuator_fence set release_id=$1,active=false where cart_id='hbnf-cart'`, [recovered.release_id]);

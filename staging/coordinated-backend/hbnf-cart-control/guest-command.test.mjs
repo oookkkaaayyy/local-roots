@@ -222,14 +222,14 @@ test("Guest UI reports backend reachability separately from Matrix/AUX confirmat
   vm.runInNewContext(script, context);
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(nodes.get("connectionBadge").textContent, "BACKEND ONLINE");
-  assert.match(nodes.get("deviceStatus").textContent, /Matrix CONFIRMED · AUX OFFLINE/);
+  assert.match(nodes.get("deviceStatus").textContent, /Matrix command ACKNOWLEDGED · AUX command OFFLINE/);
   assert.doesNotMatch(nodes.get("deviceStatus").textContent, /AUX CONFIRMED/);
 
   action.click();
   await new Promise(resolve => setImmediate(resolve));
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(fetchCount, 3);
-  assert.match(nodes.get("primaryStatus").textContent, /queued; device confirmation pending/i);
+  assert.match(nodes.get("primaryStatus").textContent, /queued; device acknowledgement pending/i);
   assert.match(nodes.get("secondaryStatus").textContent, /not yet confirmed/i);
   assert.doesNotMatch(nodes.get("primaryStatus").textContent, /applied/i);
 });

@@ -33,26 +33,19 @@ assert.throws(()=>normalizeReadback({...info,leds:{count:512}},state),/topology/
 const changed=structuredClone(context);changed.desired.state.overlays[0].payload.text="Changed";
 const second=await buildWledProjection(changed,51,7,1000);
 assert.notEqual(second.expectedState.hbnf.overlayId,built.expectedState.hbnf.overlayId);
-assert.equal(MATRIX_CANDIDATE,"hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010");
+assert.equal(MATRIX_CANDIDATE,"hbnf-cart2-phase2-r6-incremental-controls-20261011");
 const controlState=JSON.parse(fs.readFileSync("config/HBNF_CONTROL_STATE.json","utf8"));
-const failedRun=JSON.parse(fs.readFileSync("evidence/cart2-r6-audio-cache-20261010/live-qualification/continuation-separate-sleep-20261010/QUALIFICATION_CONTINUATION_RESULT.json","utf8"));
 const currentR4=controlState.installed_firmware_reconciliation;
 const releaseControl=controlState.coordinated_r6_live_release_authorization.backend_transaction_progress;
-assert.equal(MATRIX_CANDIDATE,controlState.r6_audio_cache_successor.candidate_release_id,"relay stays bound to the failed R6 artifact");
-assert.equal(controlState.r6_audio_cache_successor.candidate_sha256,"f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b");
-assert.equal(failedRun.status,"QUALIFICATION_FAILED_R4_RECOVERED");
-assert.equal(failedRun.candidate_release_id,MATRIX_CANDIDATE);
-assert.equal(failedRun.candidate_sha256,controlState.r6_audio_cache_successor.candidate_sha256);
-assert.equal(failedRun.recovery.status,"R4_READBACK_VERIFIED");
-assert.equal(failedRun.recovery.runtime.matrix_build.release_id,currentR4.release_id);
-// The control state's installed_* fields now identify the owner-reported f89
-// field candidate; installed_firmware_reconciliation is the preserved earlier
-// R4 readback receipt. Keep those distinct instead of asserting stale equality.
+const installed=controlState.execution_cursor.pending_provisional_candidate;
+assert.equal(MATRIX_CANDIDATE,installed.candidate_release_id,"relay must target the exact current candidate identity");
+assert.equal(installed.installed_release_id,MATRIX_CANDIDATE);
+assert.equal(installed.installed_sha256,controlState.installed_firmware_sha256);
 assert.equal(controlState.installed_release,MATRIX_CANDIDATE);
-assert.equal(controlState.installed_firmware_sha256,"f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b");
+assert.equal(controlState.installed_firmware_sha256,"8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d");
 assert.equal(currentR4.release_id,"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1");
 assert.equal(currentR4.sha256,"338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c");
-assert.notEqual(MATRIX_CANDIDATE,currentR4.release_id,"failed R6 relay identity must not match recovered R4");
+assert.notEqual(MATRIX_CANDIDATE,currentR4.release_id,"R4 release identity must fail the pinned R6 check");
 assert.equal(captured.state.HBNF.candidate,currentR4.release_id,"preserved Matrix readback must identify the recovered R4 release");
 assert.notEqual(normalizeReadback(captured.info,captured.state).candidate,MATRIX_CANDIDATE,"R4 readback must fail the relay's pinned R6 identity check");
 assert.equal(controlState.live_mutation_authorized,false);
@@ -67,7 +60,11 @@ lost.apply_authorized_at="now";
 assert.equal(checkDecision(lost,actual,1000),"mismatch_after_apply");
 const resumed={expires_at:new Date(9000).toISOString(),expected_state:built.expectedState};
 assert.equal(checkDecision(resumed,actual,1000),"confirm");
-const sql=fs.readFileSync("staging/coordinated-backend/migrations/20261009190000_hbnf_matrix_relay_confirmation.sql","utf8");
+const priorSql=fs.readFileSync("staging/coordinated-backend/migrations/20261009190000_hbnf_matrix_relay_confirmation.sql","utf8");
+assert.ok(priorSql.includes("hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010"),"historical migration remains unchanged");
+const pinMigration=fs.readFileSync("staging/coordinated-backend/migrations/20261011235000_hbnf_matrix_relay_incremental_controls_pin.sql","utf8");
+const sql=priorSql+"\n"+pinMigration;
+assert.ok(sql.includes(MATRIX_CANDIDATE),"follow-up migration must bind both RPC gates to the installed candidate");
 for(const marker of ["for update","c.expires_at<=clock_timestamp()","c.consumed_at is not null","p_verified_state is distinct from c.expected_state","d.revision=c.desired_revision","f.epoch=c.fence_epoch","f.active","p_expected_state->>","hbnf_cart_upsert_observed"])assert.ok(sql.includes(marker),"missing SQL gate: "+marker);
 const adapter=fs.readFileSync("staging/coordinated-backend/hbnf-matrix-adapter-foundation/index.ts","utf8");
 assert.ok(!/mqtt|broker\.emqx|publish\(/i.test(adapter),"legacy writer/public MQTT fallback remains");
