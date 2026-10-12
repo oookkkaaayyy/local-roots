@@ -4,7 +4,7 @@ import {validateArcadeInput} from "../hbnf-cart-core/domain/arcade-input.mjs";
 import {arcadeExitRestore,createArcadeSession,transitionArcadeSession} from "../hbnf-cart-core/domain/arcade-runtime.mjs";
 import {createMazeChaseGame,mazeChaseFrame,steerMazeChase,tickMazeChase} from "../hbnf-cart-core/domain/maze-chase-runtime.mjs";
 import {createSnakeGame,snakeFrame,steerSnake,tickSnake} from "../hbnf-cart-core/domain/snake-runtime.mjs";
-import {applyArcadeControllerInput,createAuthorizedArcadeGame,tickArcadeGame} from "../hbnf-cart-core/domain/arcade-controller.mjs";
+import {applyArcadeControllerInput,applyAuthenticatedArcadeAction,createAuthorizedArcadeGame,rgb888ToRgb565LE,tickArcadeGame} from "../hbnf-cart-core/domain/arcade-controller.mjs";
 
 test("input gate rejects unpaired/guest, wrong-session, stale, and replayed commands",()=>{
   const context={active:true,sessionId:"s1",controllerId:"c1",paired:true,role:"owner",lastSequence:7};
@@ -103,4 +103,29 @@ test("Maze Chase controller path renders wall, pellet, player, and enemy RGB cel
   assert.notDeepEqual(Array.from(state.frame),before);
   const colors=new Set(Array.from({length:512},(_,i)=>Array.from(state.frame.slice(i*3,i*3+3)).join(",")));
   assert.ok(colors.has("18,36,150"));assert.ok(colors.has("82,108,166"));
+});
+
+test("device-authenticated guest events are direction-only, session-bound, replay-safe, and share the real renderer",()=>{
+  const owner={active:true,paired:true,role:"owner",controllerId:"owner-ipad"};
+  let state=createAuthorizedArcadeGame({gameId:"snake",sessionId:"device-session",controller:owner,snapshot:{vibe:2},seed:11,now:1});
+  const apply=(event)=>applyAuthenticatedArcadeAction(state,{sessionId:"device-session",...event},10);
+  let result=apply({role:"guest",controllerId:"guest-phone",sequence:1,action:"LEFT"});
+  assert.equal(result.ok,true);state=result.state;
+  assert.equal(state.frame.length,1536);
+  assert.equal(apply({role:"guest",controllerId:"guest-phone",sequence:1,action:"RIGHT"}).reason,"replayed_or_invalid_sequence");
+  assert.equal(apply({role:"guest",controllerId:"guest-phone",sequence:2,action:"EXIT"}).reason,"guest_action_forbidden");
+  assert.equal(apply({role:"owner",controllerId:"not-owner",sequence:1,action:"PAUSE"}).reason,"owner_controller_mismatch");
+  assert.equal(apply({role:"owner",controllerId:"owner-ipad",sequence:1,action:"START"}).ok,true);
+});
+
+test("rendered phone-controlled frame encodes to the exact 1024-byte little-endian Matrix payload",()=>{
+  const owner={active:true,paired:true,role:"owner",controllerId:"owner-ipad"};
+  let state=createAuthorizedArcadeGame({gameId:"snake",sessionId:"frame-session",controller:owner,snapshot:{},seed:11,now:1});
+  const frame=rgb888ToRgb565LE(state.frame);
+  assert.equal(frame.length,32*16*2);
+  const snakeHead=(8*32+8)*2;
+  const expected=((30>>3)<<11)|((220>>2)<<5)|(150>>3);
+  assert.equal(frame[snakeHead],expected&255);
+  assert.equal(frame[snakeHead+1],expected>>8);
+  assert.throws(()=>rgb888ToRgb565LE(new Uint8Array(12)),/invalid_32x16_rgb_frame/);
 });

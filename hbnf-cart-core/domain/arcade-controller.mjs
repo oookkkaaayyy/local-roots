@@ -28,11 +28,38 @@ export function applyArcadeControllerInput(state,envelope,now=Date.now()){
   if(!state||state.session.phase==="EXIT")return {ok:false,reason:"session_inactive"};
   const checked=validateArcadeInput(envelope,{...state.controller,sessionId:state.session.sessionId,active:true},now);
   if(!checked.ok)return checked;
-  const action=checked.action;
+  return applyAction(state,checked.action,now,{...state.controller,...checked.context});
+}
+
+/** Applies an action already authenticated by the device session receiver.
+ * This is only for the local browser renderer after the ESP32 has verified
+ * session, controller, role, sequence, replay window, and rate limit.
+ */
+export function applyAuthenticatedArcadeAction(state,event,now=Date.now()){
+  if(!state||state.session.phase==="EXIT")return {ok:false,reason:"session_inactive"};
+  if(!event||event.sessionId!==state.session.sessionId||!Number.isSafeInteger(event.sequence)||event.sequence<1||
+     !["owner","guest"].includes(event.role)||!event.controllerId||
+     !["UP","DOWN","LEFT","RIGHT","START","PAUSE","RESTART","EXIT"].includes(event.action))
+    return {ok:false,reason:"unauthorized_device_event"};
+  if(event.role==="guest"&&! ["UP","DOWN","LEFT","RIGHT"].includes(event.action))
+    return {ok:false,reason:"guest_action_forbidden"};
+  const previous=event.role==="owner"?state.ownerSequence||0:state.guestSequence||0;
+  if(event.sequence<=previous)return {ok:false,reason:"replayed_or_invalid_sequence"};
+  if(event.role==="owner"&&event.controllerId!==state.controller.controllerId)
+    return {ok:false,reason:"owner_controller_mismatch"};
+  const nextState={...state,[event.role==="owner"?"ownerSequence":"guestSequence"]:event.sequence};
+  return applyAction(nextState,event.action,now,event.role==="owner"
+    ?{...state.controller,lastSequence:event.sequence}
+    :{...state.controller,lastSequence:event.sequence});
+}
+
+function applyAction(state,action,now,controller){
+  if(action==="START")action="PRIMARY";
+  if(action==="RESTART")action="SECONDARY";
   let session=state.session,game=state.game;
   if(action==="EXIT"){
     session=transitionArcadeSession(session,"EXIT",now);
-    return {ok:true,state:{...state,session,controller:checked.context},restoredSnapshot:arcadeExitRestore(session),frame:null};
+    return {ok:true,state:{...state,session,controller},restoredSnapshot:arcadeExitRestore(session),frame:null};
   }
   if(action==="PRIMARY"){
     if(session.phase==="READY"||session.phase==="GAME_OVER"){
@@ -52,7 +79,7 @@ export function applyArcadeControllerInput(state,envelope,now=Date.now()){
     if(!["READY","PLAY"].includes(session.phase))return {ok:false,reason:"game_not_playing"};
     game=session.gameId==="snake"?steerSnake(game,action):steerMazeChase(game,action);
   }
-  const next={...state,session,controller:checked.context,game};
+  const next={...state,session,controller,game};
   return {ok:true,state:withFrame(next),frame:withFrame(next).frame};
 }
 
@@ -75,6 +102,17 @@ export function renderGameFrame(gameId,game){
     rgb.set(color,i*3);
   }
   return rgb;
+}
+
+/** Encodes the actual row-major 32x16 RGB frame expected by the device. */
+export function rgb888ToRgb565LE(rgb){
+  if(!(rgb instanceof Uint8Array)||rgb.length!==32*16*3)throw new Error("invalid_32x16_rgb_frame");
+  const out=new Uint8Array(32*16*2);
+  for(let i=0;i<32*16;i++){
+    const value=((rgb[i*3]>>3)<<11)|((rgb[i*3+1]>>2)<<5)|(rgb[i*3+2]>>3);
+    out[i*2]=value&255;out[i*2+1]=value>>8;
+  }
+  return out;
 }
 
 function withFrame(state){return {...state,frame:renderGameFrame(state.session.gameId,state.game)};}

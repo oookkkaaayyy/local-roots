@@ -79,6 +79,12 @@ details.panel{padding:0;overflow:hidden}details.panel>summary{min-height:48px;di
 <button id="clearOverlay" type="button">Clear overlay</button>
 </section>
 
+<details class="panel games-panel">
+<summary>Arcade games</summary>
+<div class="details-body"><p class="sub">Play Snake or Maze Chase on the cart display. The game page works on the local cart network.</p>
+<a href="/hbnf/arcade/" style="display:inline-flex;align-items:center;min-height:46px;padding:10px 14px;border:1px solid #35606b;border-radius:10px;color:#8ce3ad;text-decoration:none">Open local games</a></div>
+</details>
+
 <details class="panel palette-panel">
 <summary>Color options</summary>
 <div class="details-body">

@@ -1,0 +1,169 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "CART2_LOCAL_ARCADE_FRAME_BRIDGE_20261012",
+  "summary": "Add an offline-only local game session endpoint and browser frame bridge for Snake and Maze Chase, using the pinned WLED AsyncWebServer and existing Matrix-to-AUX renderer.",
+  "change_class": "BESPOKE_REPLACEMENT",
+  "impact": {
+    "architecture": true,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": true,
+    "unknown": false
+  },
+  "evidence": {
+    "expert_basis": {
+      "sources": [
+        {
+          "title": "Pinned WLED 16.0.1 source: Async Web Server and JSON handlers",
+          "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+          "locator": "https://github.com/wled/WLED/tree/29b389df1c1aaec6ff53aea742d17063b985906c",
+          "relevance": "Confirms the existing ESP32 AsyncWebServer and bundled JSON-handler infrastructure used for a local endpoint."
+        },
+        {
+          "title": "Pinned WLED 16.0.1 DDP/WebSocket receiver",
+          "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+          "locator": "https://github.com/wled/WLED/blob/29b389df1c1aaec6ff53aea742d17063b985906c/wled00/ws.cpp",
+          "relevance": "Shows DDP routing through realtime packet handling rather than the HBNF canonical Matrix-to-AUX frame."
+        },
+        {
+          "title": "Pinned WLED 16.0.1 E1.31/realtime output implementation",
+          "authority_type": "UPSTREAM_MAINTAINER_GUIDANCE",
+          "locator": "https://github.com/wled/WLED/blob/29b389df1c1aaec6ff53aea742d17063b985906c/wled00/e131.cpp",
+          "relevance": "Shows received pixels are applied via setRealtimePixel and do not enter the HBNF game session receiver."
+        },
+        {
+          "title": "Existing HBNF deterministic JS runtimes and canonical Matrix/AUX renderer",
+          "authority_type": "PROJECT_SOURCE_AUTHORITY",
+          "locator": "hbnf-cart-core/domain/{snake-runtime,maze-chase-runtime,arcade-controller}.mjs; firmware/phase2/integration-r6-f89-compact-font/usermod/usermod_hbnf_foundation_v1.cpp",
+          "relevance": "Identifies reusable game logic, controller path, Matrix frame buffer, and AUX projection."
+        }
+      ],
+      "findings": [
+        {
+          "kind": "ESTABLISHED_FACT",
+          "statement": "Pinned WLED DDP handling routes realtime pixel data through setRealtimePixel, outside the project canonical Matrix frame consumed by its AUX projection.",
+          "source_ref": "Pinned WLED 16.0.1 E1.31/realtime output implementation"
+        },
+        {
+          "kind": "ESTABLISHED_FACT",
+          "statement": "The project already contains deterministic JavaScript Snake and Maze Chase engines and a canonical Matrix-to-AUX renderer.",
+          "source_ref": "Existing HBNF deterministic JS runtimes and canonical Matrix/AUX renderer"
+        },
+        {
+          "kind": "INFERENCE",
+          "statement": "Keeping game logic in the existing browser-side JavaScript and sending bounded RGB565 frames to the existing local firmware server minimizes duplicated game logic while preserving the canonical renderer path.",
+          "source_ref": "Existing HBNF deterministic JS runtimes and canonical Matrix/AUX renderer"
+        }
+      ]
+    },
+    "native_capability_check": {
+      "evaluated": true,
+      "capability": "Pinned WLED local AsyncWebServer, JSON handlers, Matrix usermod and canonical Matrix/AUX frame renderer.",
+      "result": "INSUFFICIENT",
+      "rationale": "Native DDP/WebSocket pixel streaming has no session-bound owner/guest input authorization and bypasses the project canonical Matrix-to-AUX game frame. Existing server and renderer are reused, but a game-scoped endpoint/frame adapter is necessary.",
+      "source_refs": [
+        "Pinned WLED 16.0.1 DDP/WebSocket receiver",
+        "Pinned WLED 16.0.1 E1.31/realtime output implementation",
+        "Existing HBNF deterministic JS runtimes and canonical Matrix/AUX renderer"
+      ]
+    },
+    "mature_external_component_check": {
+      "relevant": true,
+      "alternatives": [
+        {
+          "name": "Existing WLED DDP/WebSocket realtime streaming",
+          "maturity": "Mature upstream WLED feature",
+          "maintenance": "Maintained by WLED project",
+          "compatibility": "Does not enter HBNF session authorization or canonical Matrix-to-AUX output path.",
+          "provenance": "Pinned WLED 16.0.1 DDP/WebSocket receiver",
+          "license": "Upstream WLED license; no code copied or added as dependency.",
+          "documentation_support": "Pinned upstream implementation reviewed.",
+          "dependency_burden": "Zero added dependency.",
+          "disposition": "REJECTED",
+          "rationale": "Does not satisfy owner/guest session authorization and synchronized Matrix/AUX output."
+        },
+        {
+          "name": "Port deterministic game engines to ESP32 and receive controller actions",
+          "maturity": "Existing project engines are deterministic JS; a C++ port would be new bespoke code.",
+          "maintenance": "Would require maintaining duplicate engines and conformance tests.",
+          "compatibility": "Could use the renderer but duplicates runtime and input behavior without measured need.",
+          "provenance": "Existing HBNF deterministic JS runtimes and canonical Matrix/AUX renderer",
+          "license": "No new third-party code.",
+          "documentation_support": "Project source and tests are available.",
+          "dependency_burden": "No external dependency, but duplicated implementation cost.",
+          "disposition": "REJECTED",
+          "rationale": "The existing browser JS engines are reusable and 32x16 RGB565 frames are small; there is no evidence a port is necessary."
+        },
+        {
+          "name": "Browser JS game logic with bounded local session/frame adapter",
+          "maturity": "Uses existing project engines and WLED server/renderer; adapter is bespoke glue.",
+          "maintenance": "One small adapter; no duplicated game engines or new runtime package.",
+          "compatibility": "Uses existing local Wi-Fi, 32x16 Matrix and canonical Matrix/AUX renderer.",
+          "provenance": "Existing HBNF deterministic JS runtimes and canonical Matrix/AUX renderer",
+          "license": "Existing project code; no added package.",
+          "documentation_support": "Existing project source, pinned WLED handler APIs, and focused host checks.",
+          "dependency_burden": "No new dependency.",
+          "disposition": "SELECTED",
+          "rationale": "Smallest viable path meeting local phone input, session-bound actions, and shared Matrix/AUX frame output."
+        }
+      ]
+    },
+    "decision_rationale": {
+      "selected_path": "Browser-side existing JS engines send authenticated bounded 32x16 RGB565 frames to a local game endpoint in the Matrix usermod; that endpoint feeds the existing canonical Matrix frame, then AUX projection.",
+      "challenger_analysis": "Native WLED realtime pixel paths bypass the session authorization and canonical Matrix/AUX bridge. Porting engines to ESP32 duplicates logic and tests. The selected adapter still cannot provide global WLED API isolation or confidentiality on plain HTTP, so claims stay scoped to game endpoint and physical use is unverified.",
+      "tradeoffs": "Adds one firmware endpoint and generated PROGMEM browser assets; frame transport is about 10 KiB/s at 10 fps. It adds no external dependency. Plain HTTP exposes credentials to same-LAN observers and other WLED APIs remain separate.",
+      "simplest_robust_solution": "Reuse the pinned AsyncWebServer, existing game engines, and canonical renderer with fixed-size RGB565 frames and explicit session checks.",
+      "critical_path_reason": "Both games need one shared authenticated phone-input-to-renderer path; this adapter is the smallest reusable integration.",
+      "alternatives_considered": [
+        "Native WLED DDP/WebSocket realtime pixel stream",
+        "Port game logic to ESP32",
+        "Browser-side JS engines plus local authenticated frame endpoint"
+      ]
+    },
+    "reproducibility": {
+      "source_inputs": [
+        "Current branch source commit 782894ae6d0b406c97b518df92b2f8de36b1f9db plus this change set.",
+        "Pinned WLED source commit 29b389df1c1aaec6ff53aea742d17063b985906c."
+      ],
+      "version_pins": [
+        "WLED 16.0.1 source commit 29b389df1c1aaec6ff53aea742d17063b985906c.",
+        "Existing PlatformIO environment hbnf_matrix_wled16_packet20_diag."
+      ],
+      "configuration_inputs": [
+        "32x16 Matrix",
+        "22-pixel AUX projection",
+        "fixed local Matrix host 192.168.77.10",
+        "1024-byte RGB565 frames at maximum 10 fps."
+      ],
+      "build_inputs": [
+        "Pinned local PlatformIO environment and cached dependencies.",
+        "scripts/hbnf_generate_arcade_assets.py generated PROGMEM assets."
+      ],
+      "tooling_identity": [
+        "PlatformIO Core 6.1.18",
+        "ESP32 compiler/toolchain from pinned project environment."
+      ]
+    },
+    "rollback_or_exit_path": {
+      "rollback_path": "Do not alter installed baseline; candidate is separate. Revert the source commit to restore baseline source.",
+      "uninstall_or_removal_path": "Remove arcade usermod includes, handler registration, generated assets and UI link, then rebuild if a future candidate requires removal.",
+      "replacement_path": "Retain installed Vibe-first UI firmware SHA 43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3 as known provisional baseline.",
+      "recovery_method": "No live update performed; preserve exact baseline binary identity and use existing guarded recovery only under separately authorized workflow.",
+      "prior_known_good_state": "Installed UI release hbnf-cart2-phase2-r6-vibe-first-ui-20261012 SHA-256 43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3; five-minute smoke PASS."
+    },
+    "bespoke_exception": {
+      "unmet_requirement": "Secure local phone/iPad play of Snake and Maze Chase with 32x16 Matrix rendering and shared AUX output, offline and without a development computer.",
+      "why_minimal_glue_is_insufficient": "Native WLED DDP/WebSocket does not bind frame writes to this project game-session owner/guest permissions and bypasses the canonical Matrix/AUX output path.",
+      "required_custom_scope": "Session-bound game commands, random per-session owner/guest tokens and controller IDs, input sequence checks, guest direction-only permissions, fixed frame size/rate, timeout and owner revocation, plus bridge to existing renderer.",
+      "maintenance_burden": "Small source adapter and asset generator; existing JS game logic remains the single source; no new dependency.",
+      "dependency_burden": "No new external dependency.",
+      "technical_debt_implications": "Plain HTTP exposes game credentials to same-LAN observers; other WLED endpoints are outside this game-specific authorization; physical performance and coexistence remain unverified.",
+      "test_plan": "Focused native C++ session tests; JS controller/runtime and source wiring tests; generated asset parity; pinned ESP32 firmware compile and OTA slot check; supervised hardware validation still required.",
+      "rollback_exit_path": "Keep installed baseline unchanged; remove arcade routes/assets/link and revert source commit.",
+      "owner_approval_reference": "Direct user authorization in CART 2.0 \u2014 APPROVE BOUNDED ARCADE EXCEPTION, 2026-10-12.",
+      "native_option_evaluated": true,
+      "external_alternatives_evaluated": true,
+      "owner_approved": true
+    }
+  }
+}

@@ -10,9 +10,13 @@
 #include "hbnf_home_screen_icon.h"
 #include "hbnf_brightness_output.h"
 #include "hbnf_native_text.h"
+#include "hbnf_arcade_session_protocol.h"
+#include "hbnf_arcade_assets.h"
 #include "fontmanager.h"
 #include <ANIMartRIX.h>
 #include <string.h>
+#include <mbedtls/base64.h>
+#include <esp_system.h>
 #if defined(HBNF_R6_FRAME_CONTEXT_TRACE)
 #include "hbnf_outlier_trace.h"
 #include <esp_timer.h>
@@ -31,8 +35,8 @@ using namespace hbnf_v1;
 namespace {
 
 static const char HBNF_FX_DATA[] PROGMEM = "HBNF Foundation@;;;2";
-static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-phase2-r6-incremental-controls-20261011";
-static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-phase2-r6-incremental-controls-20261011\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-phase2-r6-incremental-controls-20261011\",\"basedOnReleaseId\":\"hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1\",\"basedOnFirmwareSha256\":\"338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r5-unfrozen\",\"native-text-moments-r5-unfrozen\"]}";
+static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-phase2-r6-local-arcade-20261012";
+static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-phase2-r6-local-arcade-20261012\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-phase2-r6-local-arcade-20261012\",\"basedOnReleaseId\":\"hbnf-cart2-phase2-r6-vibe-first-ui-20261012\",\"basedOnFirmwareSha256\":\"43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r5-unfrozen\",\"native-text-moments-r5-unfrozen\",\"vibe-first-local-ui-v1\",\"arcade-session-frame-v1\"]}";
 static PaletteSelection hbnfPalette{};
 static OverlayState hbnfCommandOverlay{};
 static portMUX_TYPE hbnfOverlayMux=portMUX_INITIALIZER_UNLOCKED;
@@ -40,6 +44,14 @@ static Rgb8 canonicalMatrixPixels[32*16]{};
 static Rgb8 transitionFromPixels[32*16]{};
 static uint32_t canonicalMatrixFrame=0;
 static bool canonicalMatrixValid=false;
+static hbnf_arcade::Session hbnfArcadeSession{};
+static portMUX_TYPE hbnfArcadeMux=portMUX_INITIALIZER_UNLOCKED;
+static constexpr uint8_t HBNF_ARCADE_START_LIMIT=5;
+static constexpr uint32_t HBNF_ARCADE_AUTH_WINDOW_MS=60000;
+static constexpr uint32_t HBNF_ARCADE_AUTH_LOCKOUT_MS=60000;
+struct HbnfArcadePinAttempt { bool used=false; IPAddress address{}; uint32_t windowStart=0; uint32_t lockedUntil=0; uint8_t failures=0; };
+static HbnfArcadePinAttempt hbnfArcadePinAttempts[4]{};
+static uint8_t hbnfArcadePinVictim=0;
 static uint32_t packed(const Rgb8& c);
 static uint32_t hbnfCycles() { return ESP.getCycleCount(); }
 static uint32_t hbnfCycleUs(uint32_t cycles) { const uint32_t mhz=ESP.getCpuFreqMHz(); return mhz?cycles/mhz:0; }
@@ -1259,6 +1271,230 @@ static uint32_t packed(const Rgb8& c) {
   return RGBW32(c.r,c.g,c.b,0);
 }
 
+static bool hbnfArcadeSameOrigin(AsyncWebServerRequest* request) {
+  AsyncWebHeader* origin=request->getHeader("Origin");
+  AsyncWebHeader* host=request->getHeader("Host");
+  if(!origin||!host) return false;
+  String hostValue=host->value();
+  if(hostValue.endsWith(":80")) hostValue.remove(hostValue.length()-3);
+  return hostValue=="192.168.77.10" && origin->value()=="http://192.168.77.10";
+}
+
+static HbnfArcadePinAttempt* hbnfArcadePinSlot(IPAddress address,uint32_t now) {
+  HbnfArcadePinAttempt* empty=nullptr;
+  for(size_t i=0;i<4;i++) {
+    HbnfArcadePinAttempt& slot=hbnfArcadePinAttempts[i];
+    if(slot.used&&slot.address==address) return &slot;
+    if(!slot.used&&!empty) empty=&slot;
+  }
+  if(empty) return empty;
+  HbnfArcadePinAttempt* victim=&hbnfArcadePinAttempts[hbnfArcadePinVictim++%4];
+  victim->used=false; victim->windowStart=now; victim->lockedUntil=0; victim->failures=0;
+  return victim;
+}
+
+static bool hbnfArcadePinAllowed(IPAddress address,uint32_t now) {
+  portENTER_CRITICAL(&hbnfArcadeMux);
+  HbnfArcadePinAttempt* slot=hbnfArcadePinSlot(address,now);
+  const bool allowed=!slot->used||!slot->lockedUntil||(int32_t)(now-slot->lockedUntil)>=0;
+  if(allowed&&slot->used&&(now-slot->windowStart)>HBNF_ARCADE_AUTH_WINDOW_MS) {
+    slot->windowStart=now;slot->failures=0;slot->lockedUntil=0;
+  }
+  portEXIT_CRITICAL(&hbnfArcadeMux);
+  return allowed;
+}
+
+static void hbnfArcadePinFailure(IPAddress address,uint32_t now,bool success) {
+  portENTER_CRITICAL(&hbnfArcadeMux);
+  HbnfArcadePinAttempt* slot=hbnfArcadePinSlot(address,now);
+  if(success) { *slot=HbnfArcadePinAttempt{}; }
+  else {
+    if(!slot->used||(now-slot->windowStart)>HBNF_ARCADE_AUTH_WINDOW_MS) {
+      slot->used=true;slot->address=address;slot->windowStart=now;slot->failures=0;slot->lockedUntil=0;
+    }
+    if(slot->failures<255) ++slot->failures;
+    if(slot->failures>=HBNF_ARCADE_START_LIMIT) slot->lockedUntil=now+HBNF_ARCADE_AUTH_LOCKOUT_MS;
+  }
+  portEXIT_CRITICAL(&hbnfArcadeMux);
+}
+
+static void hbnfArcadeRandomHex(char* out,size_t bytes) {
+  static const char hex[]="0123456789abcdef";
+  for(size_t i=0;i<bytes;i++) {
+    const uint8_t value=(uint8_t)esp_random();
+    out[i*2]=hex[value>>4];out[i*2+1]=hex[value&15u];
+  }
+  out[bytes*2]=0;
+}
+
+static bool hbnfArcadeAction(const char* text,hbnf_arcade::Action& out) {
+  if(!text)return false;
+  if(!strcmp(text,"UP"))out=hbnf_arcade::Action::UP;
+  else if(!strcmp(text,"DOWN"))out=hbnf_arcade::Action::DOWN;
+  else if(!strcmp(text,"LEFT"))out=hbnf_arcade::Action::LEFT;
+  else if(!strcmp(text,"RIGHT"))out=hbnf_arcade::Action::RIGHT;
+  else if(!strcmp(text,"START"))out=hbnf_arcade::Action::START;
+  else if(!strcmp(text,"PAUSE"))out=hbnf_arcade::Action::PAUSE;
+  else if(!strcmp(text,"RESTART"))out=hbnf_arcade::Action::RESTART;
+  else if(!strcmp(text,"EXIT"))out=hbnf_arcade::Action::EXIT;
+  else return false;
+  return true;
+}
+
+static const char* hbnfArcadeActionName(hbnf_arcade::Action action) {
+  switch(action) {
+    case hbnf_arcade::Action::UP:return "UP";
+    case hbnf_arcade::Action::DOWN:return "DOWN";
+    case hbnf_arcade::Action::LEFT:return "LEFT";
+    case hbnf_arcade::Action::RIGHT:return "RIGHT";
+    case hbnf_arcade::Action::START:return "START";
+    case hbnf_arcade::Action::PAUSE:return "PAUSE";
+    case hbnf_arcade::Action::RESTART:return "RESTART";
+    case hbnf_arcade::Action::EXIT:return "EXIT";
+    default:return "";
+  }
+}
+
+static const char* hbnfArcadeRoleName(hbnf_arcade::Role role) {
+  return role==hbnf_arcade::Role::OWNER?"owner":role==hbnf_arcade::Role::GUEST?"guest":"none";
+}
+
+static const char* hbnfArcadeGameName(uint8_t game) { return game==2?"maze-chase":"snake"; }
+
+static void hbnfArcadeSend(AsyncWebServerRequest* request,int status,const JsonDocument& doc) {
+  String body;serializeJson(doc,body);
+  request->send(status,"application/json",body);
+}
+
+static void hbnfArcadeSendAsset(AsyncWebServerRequest* request,const char* asset) {
+  AsyncWebServerResponse* response=request->beginResponse_P(200,"application/javascript",asset);
+  response->addHeader("Cache-Control","no-store, no-cache, must-revalidate, max-age=0");
+  request->send(response);
+}
+
+static void hbnfArcadeHandler(AsyncWebServerRequest* request) {
+  if(!request->_tempObject) { request->send(400,"application/json","{\"ok\":false,\"error\":\"missing_json_body\"}");return; }
+  DynamicJsonDocument body(2048);
+  const DeserializationError bodyError=deserializeJson(body,(const uint8_t*)request->_tempObject);
+  if(bodyError||!body.is<JsonObject>()) { request->send(400,"application/json","{\"ok\":false,\"error\":\"invalid_json_body\"}");return; }
+  JsonObjectConst json=body.as<JsonObjectConst>();
+  if(!hbnfArcadeSameOrigin(request)) { request->send(403,"application/json","{\"ok\":false,\"error\":\"same_origin_required\"}");return; }
+  const char* op=json["op"]|"";
+  const char* sid=json["sid"]|"";
+  const char* token=json["token"]|"";
+  const char* controller=json["controller"]|"";
+  const uint32_t now=millis();
+  DynamicJsonDocument response(1024);response["ok"]=false;
+
+  if(!strcmp(op,"start")) {
+    IPAddress address=request->client()->remoteIP();
+    if(!hbnfArcadePinAllowed(address,now)) { response["error"]="pin_rate_limited";hbnfArcadeSend(request,429,response);return; }
+    const char* pin=json["pin"]|"";
+    const char* gameText=json["game"]|"";
+    const char* ownerController=json["controller"]|"";
+    const uint8_t game=!strcmp(gameText,"snake")?1:!strcmp(gameText,"maze-chase")?2:0;
+    if(strnlen(settingsPIN,5)!=4||strnlen(pin,5)!=4||!hbnf_arcade::constantTimeEqual(pin,settingsPIN,4)) {
+      hbnfArcadePinFailure(address,now,false);response["error"]="owner_pin_required_or_invalid";hbnfArcadeSend(request,403,response);return;
+    }
+    hbnfArcadePinFailure(address,now,true);
+    char newSession[17]{},newToken[33]{};hbnfArcadeRandomHex(newSession,8);hbnfArcadeRandomHex(newToken,16);
+    portENTER_CRITICAL(&hbnfArcadeMux);
+    const bool started=hbnf_arcade::start(hbnfArcadeSession,game,newSession,newToken,ownerController,pin,settingsPIN,now);
+    portEXIT_CRITICAL(&hbnfArcadeMux);
+    if(!started) { response["error"]="invalid_or_active_session";hbnfArcadeSend(request,409,response);return; }
+    response["ok"]=true;response["sid"]=newSession;response["token"]=newToken;response["game"]=gameText;
+    hbnfArcadeSend(request,200,response);return;
+  }
+
+  if(!strcmp(op,"guest_check")) {
+    uint8_t game=0;hbnf_arcade::Role role=hbnf_arcade::Role::NONE;
+    portENTER_CRITICAL(&hbnfArcadeMux);const bool joined=hbnf_arcade::touchGuest(hbnfArcadeSession,sid,token,controller,now);role=joined?hbnf_arcade::Role::GUEST:hbnf_arcade::Role::NONE;game=hbnfArcadeSession.game;portEXIT_CRITICAL(&hbnfArcadeMux);
+    if(role!=hbnf_arcade::Role::GUEST) { response["error"]="guest_invite_invalid";hbnfArcadeSend(request,403,response);return; }
+    response["ok"]=true;response["game"]=hbnfArcadeGameName(game);hbnfArcadeSend(request,200,response);return;
+  }
+
+  if(!strcmp(op,"input")) {
+    const char* actionText=json["action"]|"";hbnf_arcade::Action action;
+    if(!json["seq"].is<uint32_t>()) { response["error"]="invalid_sequence";hbnfArcadeSend(request,400,response);return; }
+    const uint32_t seq=json["seq"].as<uint32_t>();
+    if(!hbnfArcadeAction(actionText,action)) { response["error"]="invalid_action";hbnfArcadeSend(request,400,response);return; }
+    portENTER_CRITICAL(&hbnfArcadeMux);
+    const bool accepted=hbnf_arcade::pushAction(hbnfArcadeSession,sid,token,controller,seq,action,now);
+    portEXIT_CRITICAL(&hbnfArcadeMux);
+    if(!accepted) { response["error"]="unauthorized_replayed_or_rate_limited";hbnfArcadeSend(request,403,response);return; }
+    response["ok"]=true;hbnfArcadeSend(request,200,response);return;
+  }
+
+  if(!strcmp(op,"heartbeat")) {
+    portENTER_CRITICAL(&hbnfArcadeMux);const bool accepted=hbnf_arcade::heartbeat(hbnfArcadeSession,sid,token,controller,now);portEXIT_CRITICAL(&hbnfArcadeMux);
+    if(!accepted) { response["error"]="owner_session_required";hbnfArcadeSend(request,403,response);return; }
+    response["ok"]=true;hbnfArcadeSend(request,200,response);return;
+  }
+
+  if(!strcmp(op,"poll")) {
+    DynamicJsonDocument pollResponse(1536);pollResponse["ok"]=false;JsonArray actions=pollResponse.createNestedArray("actions");
+    bool accepted=false;uint8_t game=0;hbnf_arcade::QueuedAction queuedActions[hbnf_arcade::kActionQueueCapacity]{};uint8_t queuedCount=0;char ownerId[33]{},guestId[33]{};
+    portENTER_CRITICAL(&hbnfArcadeMux);
+    accepted=hbnf_arcade::pollAllowed(hbnfArcadeSession,sid,token,controller,now);
+    game=hbnfArcadeSession.game;
+    if(accepted) {
+      memcpy(ownerId,hbnfArcadeSession.ownerController,sizeof(ownerId));
+      memcpy(guestId,hbnfArcadeSession.guestController,sizeof(guestId));
+      hbnf_arcade::QueuedAction queued{};while(queuedCount<hbnf_arcade::kActionQueueCapacity&&hbnf_arcade::popAction(hbnfArcadeSession,queued))queuedActions[queuedCount++]=queued;
+    }
+    portEXIT_CRITICAL(&hbnfArcadeMux);
+    if(!accepted) { pollResponse["error"]="owner_session_required";hbnfArcadeSend(request,403,pollResponse);return; }
+    for(uint8_t i=0;i<queuedCount;i++) { JsonObject item=actions.createNestedObject();item["action"]=hbnfArcadeActionName(queuedActions[i].value);item["role"]=hbnfArcadeRoleName(queuedActions[i].role);item["sequence"]=queuedActions[i].sequence;item["controllerId"]=queuedActions[i].role==hbnf_arcade::Role::OWNER?ownerId:guestId; }
+    pollResponse["ok"]=true;pollResponse["game"]=hbnfArcadeGameName(game);hbnfArcadeSend(request,200,pollResponse);return;
+  }
+
+  if(!strcmp(op,"grant_guest")) {
+    char guestToken[33]{},guestController[33]{};hbnfArcadeRandomHex(guestToken,16);hbnfArcadeRandomHex(guestController,16);
+    portENTER_CRITICAL(&hbnfArcadeMux);const bool granted=hbnf_arcade::grantGuest(hbnfArcadeSession,sid,token,controller,guestToken,guestController,now);portEXIT_CRITICAL(&hbnfArcadeMux);
+    if(!granted) { response["error"]="owner_session_required";hbnfArcadeSend(request,403,response);return; }
+    response["ok"]=true;response["guestToken"]=guestToken;response["guestController"]=guestController;hbnfArcadeSend(request,200,response);return;
+  }
+
+  if(!strcmp(op,"revoke_guest")) {
+    portENTER_CRITICAL(&hbnfArcadeMux);const bool revoked=hbnf_arcade::revokeGuest(hbnfArcadeSession,sid,token,controller,now);portEXIT_CRITICAL(&hbnfArcadeMux);
+    if(!revoked) { response["error"]="owner_session_required";hbnfArcadeSend(request,403,response);return; }
+    response["ok"]=true;hbnfArcadeSend(request,200,response);return;
+  }
+
+  if(!strcmp(op,"exit")) {
+    portENTER_CRITICAL(&hbnfArcadeMux);
+    const bool owner=hbnf_arcade::authenticate(hbnfArcadeSession,sid,token,controller)==hbnf_arcade::Role::OWNER;
+    if(owner) hbnf_arcade::exit(hbnfArcadeSession);
+    portEXIT_CRITICAL(&hbnfArcadeMux);
+    if(!owner) { response["error"]="owner_session_required";hbnfArcadeSend(request,403,response);return; }
+    response["ok"]=true;hbnfArcadeSend(request,200,response);return;
+  }
+
+  if(!strcmp(op,"frame")) {
+    const char* encoded=json["frame"]|"";uint8_t decoded[hbnf_arcade::kFrameBytes]{};size_t length=0;
+    const size_t encodedLength=strlen(encoded);
+    const int decode=encodedLength>0?mbedtls_base64_decode(decoded,sizeof(decoded),&length,(const unsigned char*)encoded,encodedLength):-1;
+    const uint32_t sequence=json["seq"].is<uint32_t>()?json["seq"].as<uint32_t>():0;
+    bool accepted=false;
+    if(decode==0&&length==sizeof(decoded)) {
+      portENTER_CRITICAL(&hbnfArcadeMux);accepted=hbnf_arcade::acceptFrame(hbnfArcadeSession,sid,token,controller,sequence,decoded,length,now);portEXIT_CRITICAL(&hbnfArcadeMux);
+    }
+    if(!accepted) { response["error"]="invalid_frame_or_owner_session";hbnfArcadeSend(request,400,response);return; }
+    response["ok"]=true;hbnfArcadeSend(request,200,response);return;
+  }
+
+  response["error"]="unknown_operation";hbnfArcadeSend(request,400,response);
+}
+
+static bool hbnfArcadeCopyFrame(uint8_t* out) {
+  portENTER_CRITICAL(&hbnfArcadeMux);const bool copied=hbnf_arcade::copyFrame(hbnfArcadeSession,out,hbnf_arcade::kFrameBytes);portEXIT_CRITICAL(&hbnfArcadeMux);
+  return copied;
+}
+
+static void hbnfArcadeExpire(uint32_t now) {
+  portENTER_CRITICAL(&hbnfArcadeMux);hbnf_arcade::expire(hbnfArcadeSession,now);portEXIT_CRITICAL(&hbnfArcadeMux);
+}
+
 static void mode_hbnf_foundation(void) {
   const bool matrixSegment=SEGMENT.start==0;
   if(matrixSegment){hbnfPerfWorking=HbnfPerfFrame{};hbnfPerfWorking.active=true;hbnfPerfWorking.start=hbnfCycles();
@@ -1294,6 +1530,25 @@ static void mode_hbnf_foundation(void) {
   }
 
   if (SEGMENT.is2D()) {
+    if(matrixSegment) {
+      uint8_t gameFrame[hbnf_arcade::kFrameBytes]{};
+      if(hbnfArcadeCopyFrame(gameFrame)) {
+        const uint8_t outputScale=hbnf_brightness::outputScale(f.controls.matrixBrightness);
+        for(uint16_t y=0;y<16;y++) for(uint16_t x=0;x<32;x++) {
+          const uint16_t i=y*32u+x;
+          const uint16_t rgb565=(uint16_t)gameFrame[i*2u]|((uint16_t)gameFrame[i*2u+1u]<<8);
+          const Rgb8 canonical((uint8_t)(((rgb565>>11)&31u)*255u/31u),
+                               (uint8_t)(((rgb565>>5)&63u)*255u/63u),
+                               (uint8_t)((rgb565&31u)*255u/31u));
+          canonicalMatrixPixels[i]=canonical;
+          const Rgb8 gammaCorrected=SEGMENT.check2?Rgb8(gamma8(canonical.r),gamma8(canonical.g),gamma8(canonical.b)):canonical;
+          const Rgb8 output=hbnf_brightness::scaleOutputPixel(gammaCorrected,canonical,outputScale);
+          SEGMENT.setPixelColorXY(x,y,RGBW32(output.r,output.g,output.b,0));
+        }
+        canonicalMatrixFrame=f.frame;canonicalMatrixValid=true;
+        return;
+      }
+    }
     foundationAnimartrix.beginFrame(f,millis());
     foundationAnimartrix.render(f.variant.kernel,f.variant.speed);
     const uint32_t overlayStart=hbnfCycles();
@@ -1417,6 +1672,19 @@ class HbnfFoundationV1Usermod : public Usermod {
       response->addHeader("Expires","0");
       request->send(response);
     });
+    server.on("/hbnf/arcade/",HTTP_GET,[](AsyncWebServerRequest* request){
+      AsyncWebServerResponse* response=request->beginResponse_P(200,"text/html",HBNF_ARCADE_INDEX);
+      response->addHeader("Cache-Control","no-store, no-cache, must-revalidate, max-age=0");
+      request->send(response);
+    });
+    server.on("/hbnf/arcade/app.mjs",HTTP_GET,[](AsyncWebServerRequest* request){hbnfArcadeSendAsset(request,HBNF_ARCADE_APP);});
+    server.on("/hbnf/arcade/modules/arcade-input.mjs",HTTP_GET,[](AsyncWebServerRequest* request){hbnfArcadeSendAsset(request,HBNF_ARCADE_INPUT);});
+    server.on("/hbnf/arcade/modules/arcade-runtime.mjs",HTTP_GET,[](AsyncWebServerRequest* request){hbnfArcadeSendAsset(request,HBNF_ARCADE_RUNTIME);});
+    server.on("/hbnf/arcade/modules/arcade-controller.mjs",HTTP_GET,[](AsyncWebServerRequest* request){hbnfArcadeSendAsset(request,HBNF_ARCADE_CONTROLLER);});
+    server.on("/hbnf/arcade/modules/snake-runtime.mjs",HTTP_GET,[](AsyncWebServerRequest* request){hbnfArcadeSendAsset(request,HBNF_ARCADE_SNAKE);});
+    server.on("/hbnf/arcade/modules/maze-chase-runtime.mjs",HTTP_GET,[](AsyncWebServerRequest* request){hbnfArcadeSendAsset(request,HBNF_ARCADE_MAZE);});
+    AsyncCallbackJsonWebHandler* arcadeHandler=new AsyncCallbackJsonWebHandler("/hbnf/game",&hbnfArcadeHandler,2048);
+    arcadeHandler->setMethod(HTTP_POST);arcadeHandler->setMaxContentLength(2048);server.addHandler(arcadeHandler);
     AsyncCallbackJsonWebHandler* liveHandler=new AsyncCallbackJsonWebHandler("/hbnf/live",[](AsyncWebServerRequest* request){
       AsyncWebHeader* origin=request->getHeader("Origin");
       AsyncWebHeader* host=request->getHeader("Host");
@@ -1440,6 +1708,7 @@ class HbnfFoundationV1Usermod : public Usermod {
   }
 
   void loop() override {
+    hbnfArcadeExpire(millis());
     runtime.tick(millis());
     ensureFoundationMatrixSegment();
     ensureCompanionSegment();
