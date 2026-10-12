@@ -1620,6 +1620,10 @@ function renderEvidenceAdvisory(){
   return false;
  })();
  const hotDye=lower.some(n=>/(orange|red|crimson)/.test(n));
+ const usesCommercialDip=selected.some(n=>/uv blast|quick.coat|worm dip/i.test(n));
+ const usesPowderDye=selected.some(n=>/prochem|idye poly/i.test(n));
+ if(usesCommercialDip&&method!=="worm-dip")warnings.push("FORMULATION MISMATCH: UV Blast/Quick-Coat is a commercial worm-dip preparation, not ProChem powder dissolved in acetone. Your selected method is not an exact match for those blocks.");
+ if(usesCommercialDip&&usesPowderDye)warnings.push("MIXED-FORMULATION DESIGN: commercial worm dip and powdered dye occur on the same disc. This global process selector cannot characterize both simultaneously; do not use any source as a full-recipe match or assume equivalent uptake.");
  if(has("idye poly blue"))warnings.push("Jacquard iDye Poly Blue can shift toward violet/purple even on white discs, and reported dye batches differ. Do not assume a clean blue.");
  if(method==="floetrol-stencil"&&selected.some(n=>n.toLowerCase()==="prochem onyx"))warnings.push("FIRST-PARTY: one Onyx/Floetrol painted-stencil batch looked black in its mix but dyed pale gray. Mechanism is unknown, not a general quantitative Onyx response.");
  if(has("idye poly onyx"))warnings.push("Unsupported historical product: iDye Poly Onyx is not an owned Jacquard product. Replace this saved dye with ProChem Onyx; do not reuse its calibration or evidence.");
