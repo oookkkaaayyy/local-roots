@@ -166,3 +166,22 @@ test('studio uses the existing Local Roots palette without duplicate conflicting
   assert.match(studio,/\.canvas-shell\{background:linear-gradient\(145deg,#eadac5,#f7f0e4\)\}/);
   assert.doesNotMatch(studio,/id="local-roots-studio-visual-integration"/);
 });
+
+test('historical photo color anchor cannot silently calibrate an unverified process', () => {
+  assert.match(studio,/numericEligible:false/);
+  const i=studio.indexOf('function isExactHbnfAnchor(');
+  const j=studio.indexOf('function photoAnchorFor(',i);
+  assert.ok(i>=0 && j>i,'exact-anchor predicate must be present');
+  const anchor={
+    numericEligible:false,surfaceBase:'#38906F',transmissionBase:'#A6C5B5',
+    observed:{'UV Blast Blaze Orange':{outdoor:'#890507'}}
+  };
+  const check=Function('hbnfPhotoAnchor','currentTransmissionHex','profile',
+    studio.slice(i,j)+';return isExactHbnfAnchor;')(
+    anchor,()=> '#A6C5B5',()=>({id:'innova_champion'}));
+  assert.equal(check('#38906F',[{name:'UV Blast Blaze Orange',strength:100}],{id:'innova_champion'}),false);
+  assert.doesNotMatch(studio,/"UV Blast Blaze Orange":\{surface:"#741013"/);
+  assert.doesNotMatch(studio,/"UV Blast Blaze Orange":"#850307"/);
+  assert.match(studio,/No unverified special dye-to-red overrides/);
+  assert.match(studio,/valuable qualitative region-specific evidence/);
+});
