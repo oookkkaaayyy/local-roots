@@ -1557,11 +1557,16 @@ function evidenceDyeFamilyMatches(userDye, reportDye){
 function classifyObservedProcess(description){
  const s=String(description||"").toLowerCase();
  if(!s||s==="nr"||s==="na")return "unknown";
- if(/worm dip|quick coat|uv blast/.test(s))return "worm-dip";
+ // An observation involving several carriers or products cannot validate one exact method.
+ if(/worm dip|quick coat|uv blast/.test(s)){
+  if(/floetrol|glue|lotion|acetone/.test(s))return "mixed-or-compound-process";
+  return "worm-dip";
+ }
  if(/glue/.test(s)&&/acetone/.test(s))return "acetone-glue-bed";
  if(/glue/.test(s))return "glue-bed-unknown-carrier";
  if(/floetrol/.test(s)&&/paint|brush|stencil/.test(s))return "floetrol-stencil";
- if(/floetrol/.test(s))return "floetrol-bed";
+ if(/floetrol/.test(s)&&/bed|cell|float|poured|pour/.test(s))return "floetrol-bed";
+ if(/floetrol/.test(s))return "floetrol-unspecified";
  if(/acetone/.test(s)&&/paint|brush|swab|direct|color block/.test(s))return "acetone-direct";
  if(/acetone/.test(s))return "acetone-unspecified";
  return "unknown";
@@ -1593,7 +1598,7 @@ function renderEvidenceAdvisory(){
  else if(method==="floetrol-bed")warnings.push("A Floetrol dye bed differs from painting a premixed Floetrol dye onto a stencil. Do not assume the same depth or edge fidelity.");
  else if(method==="worm-dip")warnings.push("Commercial UV Blast worm dip is its own formulation; it is not interchangeable with ProChem powder dissolved in acetone.");
  else warnings.push("Method is not fully specified; do not match finished color to another recipe.");
- warnings.push("Selected method changes warnings and evidence ranking, NOT the numerical preview. Hue/saturation and UV/glow colors are still unvalidated for the physical process.");
+ warnings.push("Selected method changes warnings and evidence ranking, NOT the numerical preview. Hue/saturation and UV/glow colors are still unvalidated for the physical process. Under-specified or mixed-method posts are never exact calibration.");
  const lower=selected.map(s=>s.toLowerCase());
  const has=term=>lower.some(n=>n.includes(term));
  const cool=baseFamily==="blue"||baseFamily==="aqua"||baseFamily==="green";
