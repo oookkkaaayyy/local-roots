@@ -185,3 +185,61 @@ test('historical photo color anchor cannot silently calibrate an unverified proc
   assert.match(studio,/No unverified special dye-to-red overrides/);
   assert.match(studio,/valuable qualitative region-specific evidence/);
 });
+
+test('beta launch copy and PNG export include physical recipe limitations', () => {
+  assert.match(studio,/Experimental beta: design dye regions/);
+  assert.match(studio,/class="beta-status" role="note"/);
+  assert.match(studio,/Predicted colors are illustrative/);
+  assert.doesNotMatch(studio,/Integration Candidate<\/title>/);
+  assert.match(studio,/Historical HBNF green Champion/);
+  assert.match(studio,/nominal intensity \$\{l.strength\}% · \$\{clamp\(Math.round\(\+l.passes\|\|1\),1,12\)\} coat\(s\) · \$\{methodForDyeLayer\(l\)\}/);
+  const start=studio.indexOf('$("exportPng").onclick=()=>{');
+  const end=studio.indexOf('\n};',start)+3;
+  assert.ok(start>0&&end>start);
+  const output=[];
+  const elements={baseHex:{value:'#FFFFFF'}};
+  const $=id=>elements[id]||({textContent:'#abcdef'});
+  const fakeCanvas={getContext:()=>({fillRect(){},fillText:txt=>output.push(txt)}),toDataURL:()=>'data:image/png;base64,AA'};
+  const env={ $,document:{createElement:tag=>tag==='canvas'?fakeCanvas:{download:'',href:'',click(){output.push(this.download)}}},
+    regionColorCache:{clear(){}},makePaintImage(){},collectRegions:()=>[{
+      hex:'#B62068',share:.5,key:'1',label:'Onyx',plateHex:'#111111',shoulderHex:'#222222',rimHex:'#333333'
+    }],layers:[{name:'ProChem Onyx',hex:'#101010',strength:100,passes:3,method:'floetrol-stencil',shape:'full'}],
+    profile:()=>({name:'Innova Star'}),currentTransmissionHex:()=> '#FFFFFF',
+    viewMode:'daylight',daylightScene:'outdoor',drawDisc(){},drawLegendRow:(ctx,x,y,w,hex,title,subtitle)=>output.push(title+' '+subtitle),
+    shapeLabel:x=>x,confidenceForActive:()=> 'estimate',statusLabel:()=> 'Model estimate',toast(){}};
+  Function('env','with(env){'+studio.slice(start,end)+';return $("exportPng").onclick;}')(env)();
+  assert.ok(output.some(x=>x.includes('3 coat(s)')&&x.includes('floetrol-stencil')));
+  assert.ok(output.some(x=>x.includes('dyed-and-unattached-disc-dye-plan')&&x.endsWith('.png')));
+});
+
+test('editor state roundtrip and undo-redo preserve block identities and physical methods', () => {
+  const start=studio.indexOf('function stateObject(){'),end=studio.indexOf('function layerCovers(',start);
+  assert.ok(start>=0&&end>start);
+  const controls=new Map();
+  const $=id=>{if(!controls.has(id))controls.set(id,{value:'',checked:true,disabled:false,textContent:'',classList:{toggle(){}},open:false});return controls.get(id)};
+  $('baseHex').value='#FFFFFF';$('transmissionHex').value='#FFFFFF';
+  $('blendMode').value='research';$('methodSelect').value='acetone-direct';
+  $('passCount').value='1';$('productionRecipeKey').value='acetone-v1';
+  const env={ $,viewMode:'daylight',daylightScene:'outdoor',activeProfileId:'innova_star',
+    layers:[],selected:-1,sample:{x:0,y:0},history:[],historyIndex:-1,isRestoring:false,
+    clamp:(x,a,b)=>Math.max(a,Math.min(b,x)),deepCopy:x=>JSON.parse(JSON.stringify(x)),
+    activeRecipeKey:()=> $('productionRecipeKey').value,activeMethod:()=> $('methodSelect').value,
+    activePassCount:()=> +$('passCount').value,normAngle:x=>x,profile:()=>({base:'#FFFFFF'}),
+    autoTransmissionHex:()=> '#FFFFFF',profiles:[{id:'innova_star'}],
+    renderProfiles(){},renderLayerList(){},syncEditor(){},setModeHelp(){},
+    updateConditionButtons(){},updateSceneButtons(){},requestRender(){},toast(){}};
+  const fns=Function('env','with(env){'+studio.slice(start,end)+';return {stateObject,stateString,applyState,commitHistory,undo,redo,mutate,newLayer};}')(env);
+  fns.commitHistory();
+  fns.mutate(()=>{env.layers.push(fns.newLayer('ProChem Onyx','#101010'));env.selected=0;});
+  assert.equal(env.layers[0].method,'acetone-direct');
+  env.layers[0].method='floetrol-stencil';env.layers[0].passes=3;fns.commitHistory();
+  env.layers.push(fns.newLayer('UV Blast Green','#50ff16'));env.selected=1;fns.commitHistory();
+  assert.equal(env.layers[1].method,'worm-dip');
+  fns.undo();assert.equal(env.layers.length,1);assert.equal(env.layers[0].passes,3);
+  fns.redo();assert.equal(env.layers.length,2);assert.equal(env.layers[1].method,'worm-dip');
+  const snap=JSON.parse(fns.stateString());env.layers=[];fns.applyState(snap);
+  assert.equal(env.layers[0].method,'floetrol-stencil');assert.equal(env.layers[0].passes,3);
+  assert.equal(env.layers[1].method,'worm-dip');
+  fns.applyState({base:'#FFFFFF',passCount:2,layers:[{name:'UV Blast Red',hex:'#FF0022',strength:100,shape:'edge',angle:0,offset:0,side:1,width:.42}]});
+  assert.equal(env.layers[0].passes,2);assert.equal(env.layers[0].method,'worm-dip');
+});
