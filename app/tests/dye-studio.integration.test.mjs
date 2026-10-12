@@ -93,7 +93,7 @@ test('recordFor refuses mismatched per-dye carrier, pass count, base or schema',
     schemaVersion:6,profileId:'innova_star',comboKey:'1',methodsKey:'["acetone-direct"]',
     baseHex:'#FFFFFF',transmissionHex:'#FFFFFF',daylightScene:'outdoor',
     processKey:'specific-recipe',method:'acetone-direct',region:'opaque-overall',
-    measuredHex:'#123456',status:'verified'
+    measuredHex:'#123456',status:'verified',repeatCount:2
   }];
   const env={calibrationRecords:records,activeProfileId:'innova_star',viewMode:'daylight',
     profile:()=>({id:'innova_star'}),isTranslucentProfile:()=>false,
@@ -108,7 +108,11 @@ test('recordFor refuses mismatched per-dye carrier, pass count, base or schema',
   defaultPasses=2;
   assert.equal(recordFor([{passes:1,method:'acetone-direct'}])?.measuredHex,'#123456');
   base='#FEFFFF';assert.equal(recordFor([{passes:1,method:'acetone-direct'}]),null);
-  base='#FFFFFF';records[0].schemaVersion=5;
+  base='#FFFFFF';records[0].repeatCount=1;
+  assert.equal(recordFor([{passes:1,method:'acetone-direct'}]),null);
+  records[0].repeatCount=2;records[0].status='experimental';
+  assert.equal(recordFor([{passes:1,method:'acetone-direct'}]),null);
+  records[0].status='verified';records[0].schemaVersion=5;
   assert.equal(recordFor([{passes:1,method:'acetone-direct'}]),null);
 });
 
