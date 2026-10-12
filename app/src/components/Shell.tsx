@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 export function Shell({children,admin=false}:{children:ReactNode;admin?:boolean}) {
   const raw=window.location.pathname.replace(/\/+$/,'')||'/';
   const path=raw==='/hbnf'?'/hb-night-flyers':raw==='/du'?'/dyed-and-unattached':raw;
-  const current=(href:string)=>path===href?'page' as const:undefined;
+  const current=(href:string)=>path===href||path.startsWith(`${href}/`)?'page' as const:undefined;
   const eventsCurrent=path==='/'||path==='/events'||path.startsWith('/events/')?'page' as const:undefined;
 
   return <div className={`site-shell ${admin?'admin-shell':'public-brand-shell'}`}>
