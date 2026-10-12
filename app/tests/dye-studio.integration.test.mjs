@@ -99,7 +99,7 @@ test('recordFor refuses mismatched per-dye carrier, pass count, base or schema',
     profile:()=>({id:'innova_star'}),isTranslucentProfile:()=>false,
     activeRecipeKey:()=> 'specific-recipe',$:()=>({get value(){return base}}),
     currentTransmissionHex:()=> '#FFFFFF',daylightScene:'outdoor',
-    comboKey:a=>String(a[0].passes),methodKey:a=>JSON.stringify(a.map(l=>l.method)),
+    comboKey:a=>String(a[0].passes),methodKey:a=>JSON.stringify(a.map(l=>l.method)),validHex:s=>s.length===7,
     activeMethod:()=> 'acetone-direct',activePassCount:()=>defaultPasses};
   const recordFor=Function('env','with(env){'+snippet+';return recordFor;}')(env);
   assert.equal(recordFor([{passes:1,method:'acetone-direct'}])?.measuredHex,'#123456');
