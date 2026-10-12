@@ -6,7 +6,7 @@ body{margin:0;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
 .guest-hero,.section-head,.action-row,.guest-footer{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .connection-summary{display:grid;justify-items:end;gap:5px}.device-status{color:var(--muted);font-size:.75rem;text-align:right}
 .badge{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:.72rem;font-weight:800;letter-spacing:.08em;background:#0a161c}
-.badge.ready{color:#8ce3ad;border-color:#2c715a}.badge.closed{color:var(--warn);border-color:#766233}.badge.offline{color:var(--bad);border-color:#753d46}
+.badge.ready{color:#8ce3ad;border-color:#2c715a}.badge.closed{color:var(--warn);border-color:#766233}.badge.offline{color:var(--bad);border-color:#753d46}.device-status.acknowledged{color:#8ce3ad}
 .eyebrow{margin:0;color:var(--muted);font-size:.72rem;letter-spacing:.12em;font-weight:800}h1{margin:.25rem 0;font-size:1.8rem}h2{margin:.1rem 0 .45rem;font-size:1.15rem}.muted,.vibe-grid span,.feature-grid span{color:var(--muted)}
 button{font:inherit;color:inherit;background:#142c36;border:1px solid #35606b;border-radius:12px;padding:12px;min-height:52px;touch-action:manipulation}
 button:not(:disabled){cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}

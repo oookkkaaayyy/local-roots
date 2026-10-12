@@ -37,26 +37,18 @@
 <body><main>
   <header class="hero-v6">
     <div><p class="eyebrow">HBNF CART</p><h1>Mission Control</h1></div>
-    <div id="truthBadge" class="truth-badge warn">CHECKING HARDWARE</div>
+    <div id="truthBadge" class="truth-badge warn">CHECKING DEVICE STATUS</div>
   </header>
 
-  <section class="panel truth-panel" aria-label="Hardware truth">
+  <details class="panel truth-panel" aria-label="System Info">
+    <summary>System Info</summary>
     <div class="truth-grid">
       <div class="truth-cell"><span>Cart service</span><strong id="backendTruth">Checking…</strong></div>
-      <div class="truth-cell"><span>Matrix</span><strong id="matrixTruth">—</strong></div>
-      <div class="truth-cell"><span>Underglow</span><strong id="auxTruth">—</strong></div>
+      <div class="truth-cell"><span>Matrix command acknowledgement</span><strong id="matrixTruth">—</strong></div>
+      <div class="truth-cell"><span>AUX command acknowledgement</span><strong id="auxTruth">—</strong></div>
     </div>
-    <p class="hardware-note">The cached page does not provide local control; commands require the Cart service.</p>
-  </section>
-
-  <section class="panel quick-brightness" aria-label="Brightness">
-    <h2>Brightness</h2>
-    <div class="quick-brightness-grid">
-      <label class="device"><span class="range-head"><strong>Matrix</strong><output id="matrixValue">8</output></span><input aria-label="Matrix brightness" id="matrixBrightness" type="range" min="0" max="255" value="8"></label>
-      <label class="device"><span class="range-head"><strong>Underglow</strong><output id="auxValue">64</output></span><input aria-label="Underglow brightness" id="auxBrightness" type="range" min="0" max="255" value="64"></label>
-    </div>
-    <p class="apply-note">Release a slider to apply its brightness.</p>
-  </section>
+    <p class="hardware-note">Owner commands require the Cart service. Device acknowledgements report command state; they do not prove physical AUX illumination.</p>
+  </details>
 
   <section class="panel quick-vibe" aria-label="Vibe">
     <div class="section-heading"><div><p class="eyebrow">SET THE FEEL</p><h2>Vibe</h2></div><span id="vibeModeLabel" class="muted">—</span></div>
@@ -68,7 +60,16 @@
       <button type="button" class="vibe-option" data-vibe="cosmic" aria-pressed="false" disabled><strong>COSMIC</strong><span>Manual Vibe</span></button>
       <button id="vibeAuto" type="button" class="vibe-auto" aria-pressed="false" disabled>Auto Vibe <span>Not qualified</span></button>
     </div>
-    <p class="apply-note" id="vibeAvailability" role="status">Manual Vibes and Auto Vibe remain unavailable until the approved runtime and replay gates are qualified. Energy tuning is available under Fine-tune visual response.</p>
+    <p class="apply-note" id="vibeAvailability" role="status">Manual Vibes and Auto Vibe remain unavailable here until the approved runtime and replay gates are qualified. Use the local Matrix Vibe controls when available.</p>
+  </section>
+
+  <section class="panel quick-brightness" aria-label="Brightness">
+    <h2>Brightness</h2>
+    <div class="quick-brightness-grid">
+      <label class="device"><span class="range-head"><strong>Matrix</strong><output id="matrixValue">8</output></span><input aria-label="Matrix brightness" id="matrixBrightness" type="range" min="0" max="255" value="8"></label>
+      <label class="device"><span class="range-head"><strong>Underglow</strong><output id="auxValue">64</output></span><input aria-label="Underglow brightness" id="auxBrightness" type="range" min="0" max="255" value="64"></label>
+    </div>
+    <p class="apply-note">Release a slider to apply its brightness.</p>
   </section>
 
   <section class="panel cart-commands" aria-label="Power and show sequence">
@@ -79,25 +80,54 @@
       <button data-command="NEXT">NEXT</button>
       <button data-command="AUTO">SHOW AUTO</button>
     </div>
-    <details class="sub-controls"><summary>Scenes and program</summary>
+    <details class="sub-controls"><summary>Animation Mix</summary>
     <button data-command="LOCK">LOCK</button>
     <div class="control-grid">
       <div id="sceneButtons" class="scene-buttons" aria-label="Scene"></div>
       <label class="scene-native-wrap">Scene
         <select id="scene">
-          <option value="course-flow">Course Flow</option>
-          <option value="field-mix">Field Mix</option>
-          <option value="hbnf-signature">HBNF Signature</option>
-          <option value="quiet-cosmos">Quiet Cosmos</option>
+          <option value="course-flow">Balanced (Course Flow)</option>
+          <option value="field-mix">Upbeat (Field Mix)</option>
+          <option value="hbnf-signature">Signature (HBNF Signature)</option>
+          <option value="quiet-cosmos">Ambient (Quiet Cosmos)</option>
         </select>
       </label>
     </div>
-    <p class="apply-note">Scenes and Shows are separate choices. NEXT advances the sequence; Show Auto lets the Cart choose its program.</p>
+    <p class="apply-note">These mixes use the same 28 animation kernels with different pace, profile, and variation distributions. Next advances the sequence; Show Auto lets the Cart choose its program.</p>
     </details>
   </section>
 
+  <section id="textPanel" class="panel" aria-label="Matrix message">
+    <h2>Text</h2>
+    <div class="row">
+      <input id="featureText" type="text" maxlength="63" placeholder="Type Matrix message" style="flex:1;min-width:180px">
+      <label for="featureFontIndex">Native WLED font</label>
+      <select id="featureFontIndex" aria-label="Native WLED font review option" disabled>
+        <option value="4" selected>Slot 4 · 5×12 (current default)</option>
+        <option value="0">Slot 0 · Tom Thumb 6px</option>
+        <option value="2">Slot 2 · Console 6×8</option>
+        <option value="3">Slot 3 · C64-esque 9px</option>
+      </select>
+      <button id="featureSendText" type="button">Send</button>
+    </div>
+    <p class="muted">Font options are not frozen. They unlock only when the installed Matrix reports the matching native-font capability; slot 4 remains the current default.</p>
+  </section>
+
+  <section class="panel quick-tuning" aria-label="Motion and audio response">
+    <h2>Motion &amp; audio response</h2>
+    <div class="tune-grid">
+      <label>
+        <span class="range-head"><span>Audio response</span><output id="audioResponseValue">75</output></span>
+        <input id="audioResponse" type="range" min="0" max="100" step="1" value="75">
+      </label>
+      <label>
+        <span class="range-head"><span>Motion</span><output id="motionValue">60</output></span>
+        <input id="motion" type="range" min="0" max="100" step="1" value="60">
+      </label>
+    </div>
+  </section>
+
   <nav class="quick-links" aria-label="Everyday tools">
-    <a href="#textPanel">Text / Moments</a>
     <a href="#scoresPanel">Scores</a>
   </nav>
 
@@ -133,30 +163,22 @@
   </section>
 
   <details class="panel sub-controls">
-    <summary>Fine-tune visual response</summary>
+    <summary>More visual tuning</summary>
     <div class="tune-grid">
       <label>
         <span class="range-head"><span>Energy</span><output id="energyValue">65</output></span>
         <input id="energy" type="range" min="0" max="100" step="1" value="65">
       </label>
       <label>
-        <span class="range-head"><span>Audio response</span><output id="audioResponseValue">75</output></span>
-        <input id="audioResponse" type="range" min="0" max="100" step="1" value="75">
-      </label>
-      <label>
-        <span class="range-head"><span>Motion</span><output id="motionValue">60</output></span>
-        <input id="motion" type="range" min="0" max="100" step="1" value="60">
-      </label>
-      <label>
         <span class="range-head"><span>Variation</span><output id="variationValue">85</output></span>
         <input id="variation" type="range" min="0" max="100" step="1" value="85">
       </label>
     </div>
-    <p class="apply-note">These controls refine the selected Vibe. All scenes use the same source-coupled audio engine; anti-repeat remains enforced.</p>
+    <p class="apply-note">Energy and variation refine the selected Vibe. All Animation Mixes draw from the same kernels; the existing audio engine and anti-repeat behavior are unchanged.</p>
   </details>
 
-  <details class="panel sub-controls" aria-label="Shows, color, and saved looks">
-    <summary>Shows, color, and saved looks</summary>
+  <details class="panel sub-controls" aria-label="Saved looks and advanced color">
+    <summary>Saved looks and advanced color</summary>
     <div class="fine-grid">
       <label class="wide">Show
         <select id="featureLook"></select>
@@ -164,7 +186,7 @@
       <label>Color
         <input id="featureColor" type="color" value="#ffffff" aria-label="Look color">
       </label>
-      <label>Palette
+      <label>Palette · optional
         <select id="featurePalette"><option value="">Current palette</option></select>
       </label>
       <label>Name saved look
@@ -183,22 +205,6 @@
     <div id="featureStatus" class="status">Feature controls staged.</div>
     <p class="apply-note">Show/palette changes use canonical cart state; palette names are discovered read-only from the local Matrix.</p>
   </details>
-
-  <section id="textPanel" class="panel" aria-label="Matrix message">
-    <h2>Text</h2>
-    <div class="row">
-      <input id="featureText" type="text" maxlength="63" placeholder="Type Matrix message" style="flex:1;min-width:180px">
-      <label for="featureFontIndex">Native WLED font</label>
-      <select id="featureFontIndex" aria-label="Native WLED font review option" disabled>
-        <option value="4" selected>Slot 4 · 5×12 (current default)</option>
-        <option value="0">Slot 0 · Tom Thumb 6px</option>
-        <option value="2">Slot 2 · Console 6×8</option>
-        <option value="3">Slot 3 · C64-esque 9px</option>
-      </select>
-      <button id="featureSendText" type="button">Send</button>
-    </div>
-    <p class="muted">Font options are not frozen. They unlock only when the installed Matrix reports the matching native-font capability; slot 4 remains the current default.</p>
-  </section>
 
   <section id="scoresPanel" class="panel" aria-label="Skins and Glow live data">
     <h2>Skins + Glow</h2>

@@ -1,0 +1,54 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "UX_SIMPLIFICATION_ANIMATION_MIX_20261011",
+  "summary": "Reorder the existing local and Owner/Guest interfaces around Vibe and everyday controls, demote palette/status/live-data details, and clarify Animation Mix labels without changing scene IDs or runtime behavior.",
+  "change_class": "SUBJECTIVE_DESIGN",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": true,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "owner_design_gate": {
+      "decision_status": "APPROVED",
+      "approved_by_owner": true,
+      "selected_option": "Vibe primary; scenes secondary under Animation Mix; collapsed color selector and System Info; compact local status; internet availability stays with live data.",
+      "approval_reference": "Direct owner instructions in current Cart Upgrades task on 2026-10-11",
+      "note": "Existing saved scene and color selections remain authoritative. No physical installation or visual acceptance is claimed."
+    },
+    "expert_basis": {
+      "native_capability": "Use existing HTML details/summary disclosures, existing embedded Matrix page, Owner PWA, Guest page, and existing control handlers. No new frontend or component framework.",
+      "platform_guidance": "Apple Human Interface Guidelines recommend 44×44 pt hit regions for iOS/iPadOS controls; WCAG 2.2 AA target-size minimum is 24×24 CSS px subject to spacing exceptions. Existing controls retain at least 44 px/pt-oriented hit areas and visible focus treatment.",
+      "sources": [
+        "https://developer.apple.com/design/human-interface-guidelines/accessibility?changes=latest_maj_6_3&language=objc",
+        "https://developer.apple.com/design/human-interface-guidelines/buttons?changes=latest_1",
+        "https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum"
+      ]
+    },
+    "scoped_evidence": {
+      "approved_architecture_reference": "Direct owner approval to adapt the existing embedded Matrix page, Owner PWA, and Guest page; no new framework, UI surface, command, dependency, or runtime architecture.",
+      "affected_subsystem": "Firmware-embedded local Matrix control HTML, existing Owner PWA, existing Guest page.",
+      "evidence_sources": [
+        "Existing firmware source: firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_local_ui.h",
+        "Existing Owner/Guest source: hbnf-final-controller/hbnf-cart.html, hbnf-cart-ui-v6.css, hbnf-cart-ui-v6.mjs, hbnf-cart-features.mjs, guest/hbnf-cart/index.html, guest/hbnf-cart/guest.js",
+        "Existing generative profile settings: firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_generative_v4.h"
+      ],
+      "compatibility": "Retains all four existing scene IDs (course-flow, field-mix, hbnf-signature, quiet-cosmos), all 28-kernel behavior, Vibe and tune handlers, brightness, text/scoreboard overlays, pairing, guest authorization, command gates, and palette application/readback code. Scene default remains course-flow only when no saved selection exists. Palette palette-name reads are deferred until the Color options disclosure opens.",
+      "truth_boundary": "The compact local badge indicates Matrix-local connectivity only. DDP or backend command acknowledgement is not presented as proof of physical AUX illumination. Guest service status is explicitly separate from local Matrix control status.",
+      "rollback_reference": "Revert this scoped source change. No installed firmware, production service, router, device setting, pairing/security boundary, or release gate was changed.",
+      "tests": [
+        "node tests/hbnf_local_ui_palette_contract.mjs",
+        "node tests/hbnf_owner_pwa_reliability.mjs",
+        "node tests/hbnf_owner_pwa_package.mjs",
+        "node tests/hbnf-coordinated-controller-contract.mjs",
+        "node tests/hbnf-canonical-palette-projection.mjs",
+        "node --check hbnf-final-controller/guest/hbnf-cart/guest.js",
+        "node --check hbnf-final-controller/hbnf-cart-ui-v6.mjs",
+        "node --check hbnf-final-controller/hbnf-cart-features.mjs"
+      ],
+      "limitation": "This is source-only UX preparation. The currently installed R6 does not contain the embedded UI edits; no new firmware or Owner/Guest package was built or deployed. Screenshot-based physical owner acceptance remains outstanding."
+    }
+  }
+}

@@ -123,6 +123,10 @@ try {
 
 const guestHtml = fs.readFileSync(path.join(guestRoute, "index.html"), "utf8");
 const guestJs = fs.readFileSync(path.join(guestRoute, "guest.js"), "utf8");
+assert.match(guestHtml, /Guest access uses the Cart service; this status is separate from local Matrix controls/);
+assert.match(guestHtml, /Matrix\/AUX command acknowledgements not confirmed/);
+assert.match(guestJs, /AUX illumination is not verified by this acknowledgement/);
+assert.match(guestJs, /GUEST SERVICE OFFLINE/);
 for (const vibe of ["chill", "groove", "heavy", "psychedelic", "cosmic"]) {
   assert.match(guestHtml, new RegExp(`data-value="${vibe}"`), `Guest page exposes approved ${vibe} name`);
 }

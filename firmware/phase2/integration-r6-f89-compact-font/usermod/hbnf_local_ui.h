@@ -19,12 +19,13 @@ static const char HBNF_LOCAL_UI[] PROGMEM = R"HBNFHTML(
 <title>HBNF Matrix Controller</title>
 <style>
 :root{color-scheme:dark;font:16px/1.35 system-ui,sans-serif;background:#071018;color:#eef6f7}
-*{box-sizing:border-box}html{min-height:100%;background:#071018}body{margin:0 auto;max-width:620px;min-height:100vh;min-height:100svh;padding:calc(18px + env(safe-area-inset-top,0px)) calc(18px + env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) calc(18px + env(safe-area-inset-left,0px))}
-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+*{box-sizing:border-box}html{min-height:100%;background:#071018}body{margin:0 auto;max-width:960px;min-height:100vh;min-height:100svh;padding:calc(14px + env(safe-area-inset-top,0px)) calc(14px + env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) calc(14px + env(safe-area-inset-left,0px))}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:12px}
 h1{font-size:1.35rem;margin:0}.badge{font-size:.75rem;font-weight:800;padding:6px 9px;border:1px solid #365967;border-radius:999px}
 .ok{color:#8ce3ad}.bad{color:#ff9b9b}
 .panel{background:#0d1d25;border:1px solid #24414c;border-radius:14px;padding:15px;margin:12px 0}
-.status-grid{display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center}.status-value{font-size:.78rem;font-weight:800;text-align:right}.status-value.ok{color:#8ce3ad}.status-value.bad{color:#ff9b9b}.status-value.unknown{color:#f2ce78}
+.controller-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:0;align-items:start}
+.status-grid{display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center}.status-value{font-size:.78rem;font-weight:800;text-align:right}.status-value.ok{color:#8ce3ad}.status-value.bad{color:#ff9b9b}.status-value.unknown{color:#9bb5bd}
 .scene{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 button{font:inherit;color:inherit;background:#142c36;border:1px solid #35606b;border-radius:10px;padding:12px}
 button.active{outline:2px solid #65e2c1;background:#173b3b}
@@ -32,39 +33,17 @@ button,input,select,textarea{min-height:44px;touch-action:manipulation}
 label{display:grid;gap:7px;margin:15px 0}.head{display:flex;justify-content:space-between;font-weight:750}
 input[type=range]{width:100%;height:44px}.sub{color:#9bb5bd;font-size:.82rem;margin:3px 0 0}
 .palette-preview{height:28px;border:1px solid #365967;border-radius:8px;background:repeating-conic-gradient(#24343a 0% 25%,#132128 0% 50%) 50%/14px 14px}
+details.panel{padding:0;overflow:hidden}details.panel>summary{min-height:48px;display:flex;align-items:center;padding:12px 15px;font-weight:800;cursor:pointer;touch-action:manipulation}details.panel[open]>summary{border-bottom:1px solid #24414c}details.panel>.details-body{padding:0 15px 15px}details.panel>summary:focus-visible{outline:3px solid #65e2c1;outline-offset:-3px;border-radius:14px}
+.vibe-panel{border-color:#35606b;background:linear-gradient(145deg,#10262d,#0d1d25)}.details-title{font-size:1rem}
+@media(min-width:760px){body{padding-left:22px;padding-right:22px}.controller-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}.controller-grid>.panel{margin:8px 0}.controller-grid>.wide-panel{grid-column:1/-1}}
+@media(max-width:420px){body{padding-left:12px;padding-right:12px}.panel{padding:13px}.scene{gap:7px}button{padding:11px 9px}header{flex-wrap:wrap}.badge{font-size:.68rem}}
 </style>
 </head>
 <body>
-<header><h1>HBNF Matrix</h1><span id="conn" class="badge bad">CONNECTING</span></header>
+<header><h1>HBNF Cart</h1><span id="conn" class="badge bad">MATRIX LOCAL · CONNECTING</span></header>
 
-<section class="panel" id="cartStatus">
-<div class="head"><span>Cart status</span><span id="statusUpdated" class="sub">Waiting for Matrix</span></div>
-<div class="status-grid">
-<span>Cart LAN · Matrix local link</span><span id="localTruth" class="status-value unknown">CONNECTING</span>
-<span>Matrix reachability</span><span id="matrixTruth" class="status-value unknown">CHECKING</span>
-<span>AUX reachability</span><span id="auxTruth" class="status-value unknown">NOT REPORTED</span>
-<span>WAN · live data</span><span id="wanTruth" class="status-value unknown">CHECKING</span>
-</div>
-<p class="sub">AUX reachability is not reported by the current Matrix state source. AUX brightness below is the Matrix command value.</p>
-</section>
-
-<section class="panel" id="livePanel" aria-live="polite">
-<div class="head"><span>Skins Live Data</span><span id="liveStatus" class="sub">Checking</span></div>
-<p class="sub" id="liveRound">No current Skins round</p>
-<div class="sub" id="livePlayers"></div>
-<p class="sub" id="livePot"></p>
-</section>
-
-<section class="panel">
-<div class="scene">
-<button data-scene="course-flow">Course Flow</button>
-<button data-scene="field-mix">Field Mix</button>
-<button data-scene="hbnf-signature">HBNF Signature</button>
-<button data-scene="quiet-cosmos">Quiet Cosmos</button>
-</div>
-</section>
-
-<section class="panel" aria-label="Vibe selection">
+<main class="controller-grid">
+<section class="panel vibe-panel" aria-label="Vibe selection">
 <div class="head"><span>Vibe</span><span id="activeVibe" class="sub">CHILL</span></div>
 <div class="scene">
 <button data-vibe="chill">Chill</button><button data-vibe="groove">Groove</button>
@@ -75,29 +54,18 @@ input[type=range]{width:100%;height:44px}.sub{color:#9bb5bd;font-size:.82rem;mar
 </section>
 
 <section class="panel">
-<label><span class="head"><span>Motion</span><output id="motionOut">50</output></span>
-<input id="motion" type="range" min="0" max="100" value="50"></label>
-<label><span class="head"><span>Audio response</span><output id="audioOut">50</output></span>
-<input id="audio" type="range" min="0" max="100" value="50"></label>
-<p class="sub">Direct local controls. No cloud command path.</p>
-</section>
-
-<section class="panel">
 <label><span class="head"><span>Matrix brightness</span><output id="matrixOut">24</output></span>
 <input id="matrix" type="range" min="0" max="255" value="24"></label>
 <label><span class="head"><span>Underglow brightness</span><output id="auxOut">24</output></span>
 <input id="aux" type="range" min="0" max="255" value="24"></label>
 </section>
 
-<section class="panel" aria-label="Palette and color">
-<div class="head"><span>Palette / color</span><a href="/hbnf/build.json">Build identity</a></div>
-<label>Color source<select id="paletteMode"><option value="legacy">Accepted legacy color</option><option value="wled">WLED palette index</option><option value="solid">Solid RGB</option></select></label>
-<label>WLED palette<select id="paletteSelect" disabled><option value="">Loading named palettes…</option></select></label>
-<div id="palettePreview" class="palette-preview" role="img" aria-label="Palette preview unavailable"></div>
-<p id="paletteStatus" class="sub" role="status" aria-live="polite">Choose a named palette; application is confirmed by Matrix state.</p>
-<label>Solid color<input id="solidColor" type="color" value="#ffffff"></label>
-<button id="applyPalette" type="button">Apply color source</button>
-<p class="sub">Color source only. Motion, audio response, effects, phase, and independent brightness stay unchanged.</p>
+<section class="panel">
+<label><span class="head"><span>Motion</span><output id="motionOut">50</output></span>
+<input id="motion" type="range" min="0" max="100" value="50"></label>
+<label><span class="head"><span>Audio response</span><output id="audioOut">50</output></span>
+<input id="audio" type="range" min="0" max="100" value="50"></label>
+<p class="sub">Direct local controls. No cloud command path.</p>
 </section>
 
 <section class="panel" aria-label="Matrix overlay">
@@ -111,12 +79,64 @@ input[type=range]{width:100%;height:44px}.sub{color:#9bb5bd;font-size:.82rem;mar
 <button id="clearOverlay" type="button">Clear overlay</button>
 </section>
 
+<details class="panel palette-panel">
+<summary>Color options</summary>
+<div class="details-body">
+<p class="sub">Automatic cart color is the default for new selections. Existing saved color settings are preserved. Palette and solid-color controls remain available here.</p>
+<label>Color source<select id="paletteMode"><option value="legacy">Automatic · cart color</option><option value="wled">WLED palette</option><option value="solid">Solid color</option></select></label>
+<label>WLED palette<select id="paletteSelect" disabled><option value="">Loading named palettes…</option></select></label>
+<div id="palettePreview" class="palette-preview" role="img" aria-label="Palette preview unavailable"></div>
+<p id="paletteStatus" class="sub" role="status" aria-live="polite">Choose a named palette; application is confirmed by Matrix state.</p>
+<label>Solid color<input id="solidColor" type="color" value="#ffffff"></label>
+<button id="applyPalette" type="button">Apply color source</button>
+<p class="sub">Color source only. Motion, audio response, effects, phase, and independent brightness stay unchanged.</p>
+</div>
+</details>
+
+<details class="panel scene-panel">
+<summary><span class="details-title">Animation Mix</span></summary>
+<div class="details-body">
+<p class="sub">All mixes draw from the same 28 animation kernels. They change pacing and variation, not the kernel family. Vibe is the main appearance control.</p>
+<div class="scene">
+<button data-scene="course-flow">Balanced <span class="sub">Course Flow · 45–90s between variants; broad speed range.</span></button>
+<button data-scene="field-mix">Upbeat <span class="sub">Field Mix · faster speed range; 40–80s holds.</span></button>
+<button data-scene="hbnf-signature">Signature <span class="sub">HBNF Signature · mid-to-fast range; 50–100s holds.</span></button>
+<button data-scene="quiet-cosmos">Ambient <span class="sub">Quiet Cosmos · slower range; 60–120s holds.</span></button>
+</div>
+</div>
+</details>
+
+<details class="panel wide-panel system-panel" id="cartStatus">
+<summary>System Info</summary>
+<div class="details-body">
+<div class="head"><span>Local device status</span><span id="statusUpdated" class="sub">Waiting for Matrix</span></div>
+<div class="status-grid">
+<span>Matrix local link</span><span id="localTruth" class="status-value unknown">CONNECTING</span>
+<span>Matrix response</span><span id="matrixTruth" class="status-value unknown">CHECKING</span>
+<span>AUX physical illumination</span><span id="auxTruth" class="status-value unknown">Not verified here</span>
+<span>Firmware build</span><a href="/hbnf/build.json">View identity</a>
+</div>
+<p class="sub">This page can confirm its Matrix connection. AUX brightness is a command value; DDP or a command acknowledgement does not confirm physical AUX illumination.</p>
+</div>
+</details>
+
+<details class="panel live-panel" id="livePanel">
+<summary>Skins Live Data <span id="liveAvailability" class="sub">Requires internet</span></summary>
+<div class="details-body" aria-live="polite">
+<div class="head"><span>Current round</span><span id="liveStatus" class="sub">Checking</span></div>
+<p class="sub" id="liveRound">No current Skins round</p>
+<div class="sub" id="livePlayers"></div>
+<p class="sub" id="livePot"></p>
+</div>
+</details>
+</main>
+
 <script>
 const $=s=>document.querySelector(s);
 const defaults={scene:"course-flow",vibe:"chill",motion:50,audio:50,matrixBrightness:24,auxBrightness:24};
 const stored=(()=>{try{return JSON.parse(localStorage.getItem("hbnf.foundation.v1")||"{}")}catch(_){return {}}})();
 const state=Object.assign({},defaults,stored),pending={};
-let ws=null,fx=null,retry=null,retryDelay=500,fxInitSent=false,brightnessTimers={},everConnected=false,connectStarted=0,lastPongAt=0,pendingAt={},wledPaletteNames=[];
+let ws=null,fx=null,retry=null,retryDelay=500,fxInitSent=false,brightnessTimers={},everConnected=false,connectStarted=0,lastPongAt=0,pendingAt={},wledPaletteNames=[],palettesLoaded=false;
 let canonicalDeviceState=null,canonicalRevision=0,canonicalWaiters=[];
 // AI: below section was generated by an AI
 const LIVE_CONFIG_URL="https://hbnightflyers.com/config.js";
@@ -149,8 +169,8 @@ const vibeNames=["chill","groove","heavy","psychedelic","cosmic","auto"];
 const vibeIndex=v=>typeof v==="number"?((v>=0&&v<6)?v:0):Math.max(0,vibeNames.indexOf(String(v).toLowerCase()));
 function saveLocal(){try{localStorage.setItem("hbnf.foundation.v1",JSON.stringify(state))}catch(_){}}
 function setStatus(id,text,kind){const el=$(id);if(el){el.textContent=text;el.className="status-value "+kind}}
-function setWanStatus(value){if(value==="online")setStatus("#wanTruth","LIVE DATA REACHABLE","ok");else if(value==="offline")setStatus("#wanTruth",liveSnapshot&&freshLiveSnapshot()?"WAN UNAVAILABLE · CACHED":"WAN / LIVE DATA UNAVAILABLE","bad");else setStatus("#wanTruth","CHECKING","unknown")}
-function renderLocalStatus(matrixOnline,label){const local=matrixOnline?"LOCAL LINK · MATRIX REACHABLE":label||"LOCAL MATRIX LINK UNAVAILABLE";const badge=$("#conn");badge.textContent=matrixOnline?"LOCAL · CONNECTED":(label||"LOCAL · CONNECTING");badge.className="badge "+(matrixOnline?"ok":"bad");setStatus("#localTruth",local,matrixOnline?"ok":"bad");setStatus("#matrixTruth",matrixOnline?"REACHABLE":"NO RESPONSE",matrixOnline?"ok":"bad");setStatus("#auxTruth","NOT REPORTED","unknown");$("#statusUpdated").textContent=matrixOnline?(label||"Matrix link verified"):"Waiting for Matrix"}
+function setWanStatus(value){const status=$("#liveStatus"),summary=$("#liveAvailability");if(!status)return;const label=value==="online"?"Connected":value==="offline"?(liveSnapshot&&freshLiveSnapshot()?"Cached":"Unavailable"):"Checking";status.textContent=label; if(summary)summary.textContent="Internet · "+label.toLowerCase()}
+function renderLocalStatus(matrixOnline,label){const local=matrixOnline?"Connected":label||"Not connected";const badge=$("#conn");badge.textContent=matrixOnline?"MATRIX LOCAL · CONNECTED":(label||"MATRIX LOCAL · CONNECTING");badge.className="badge "+(matrixOnline?"ok":"bad");setStatus("#localTruth",local,matrixOnline?"ok":"bad");setStatus("#matrixTruth",matrixOnline?"Responding":"No response",matrixOnline?"ok":"bad");setStatus("#auxTruth","Not verified by this page","unknown");$("#statusUpdated").textContent=matrixOnline?(label||"Matrix connection checked"):"Waiting for Matrix"}
 function send(obj){if(ws&&ws.readyState===1){try{ws.send(JSON.stringify(obj));return true}catch(_){return false}}return false}
 function newOverlayId(){return "local-"+Date.now().toString(36)+"-"+Math.floor(Math.random()*1000000000).toString(36)}
 function hexRgb(hex){const s=String(hex||"").replace(/^#/ ,"");if(!/^[0-9a-f]{6}$/i.test(s))return[255,255,255];return[parseInt(s.slice(0,2),16),parseInt(s.slice(2,4),16),parseInt(s.slice(4,6),16)]}
@@ -226,11 +246,11 @@ liveRange("#matrix","#matrixOut","matrixBrightness");liveRange("#aux","#auxOut",
 function paletteSegmentsMatch(state,index){const segs=Array.isArray(state.seg)?state.seg:[],matrix=segs.find(x=>Number(x.id)===0);return !!matrix&&Number(matrix.pal)===Number(index)}
 async function applyPaletteSelection(){const mode=$("#paletteMode").value;let id="hbnf-balanced",name="Accepted legacy color";if(mode==="wled"){const index=Number($("#paletteSelect").value);if(!Number.isInteger(index)||index<0||index>=wledPaletteNames.length)throw new Error("Choose a named WLED palette.");id="wled-"+index;name=wledPaletteNames[index]}else if(mode==="solid"){id="solid-"+cleanPaletteHex($("#solidColor").value);name="Solid color"}$("#applyPalette").disabled=true;$("#paletteStatus").textContent="Applying "+name+"…";try{const result=await canonicalCommand("PALETTE",{paletteId:id}),state=result.state.localState;if(mode==="wled"&&!paletteSegmentsMatch(state,Number($("#paletteSelect").value)))throw new Error("Matrix did not report the selected WLED segment palette.");$("#paletteStatus").textContent="Applied: "+name+" · Matrix state confirmed"}catch(error){$("#paletteStatus").textContent="Not confirmed: "+(error.message||String(error));throw error}finally{$("#applyPalette").disabled=false}}
 function cleanPaletteHex(value){const hex=String(value||"").replace("#","").toUpperCase();if(!/^[0-9A-F]{6}$/.test(hex))throw new Error("Choose a valid solid color.");return hex}
-async function loadNamedPalettes(){const select=$("#paletteSelect");try{const names=await (await fetch("/json/pal",{cache:"no-store"})).json();if(!Array.isArray(names))throw new Error("Palette names unavailable.");wledPaletteNames=names;while(select.options.length)select.remove(0);names.forEach((name,index)=>{if(!name||name==="RSVD"||name==="-")return;const option=document.createElement("option");option.value=String(index);option.textContent=String(name);select.appendChild(option)});select.disabled=false;if(select.options.length)select.value=String(canonicalDeviceState&&canonicalDeviceState.HBNF&&canonicalDeviceState.HBNF.palette&&canonicalDeviceState.HBNF.palette.mode==="wled"?canonicalDeviceState.HBNF.palette.index:0);showPalettePreview(Number(select.value))}catch(error){select.disabled=true;select.innerHTML="<option value=\"\">Named palettes unavailable</option>";$("#paletteStatus").textContent="Could not load palette names: "+(error.message||String(error))}}
-async function showPalettePreview(index){const preview=$("#palettePreview"),name=wledPaletteNames[index];if(!Number.isInteger(index)||index<0||!name){preview.style.background="";preview.setAttribute("aria-label","Palette preview unavailable");return}preview.setAttribute("aria-label",name+" palette preview");try{const page=Math.floor(index/8),data=await (await fetch("/json/palx?page="+page,{cache:"no-store"})).json(),stops=data&&data.p&&data.p[String(index)];if(!Array.isArray(stops))throw new Error("palette preview unavailable");const colors=stops.map(stop=>{if(!Array.isArray(stop)||stop.length<4||!stop.slice(1,4).every(Number.isFinite))return null;return "rgb("+stop.slice(1,4).map(Number).join(",")+") "+Math.max(0,Math.min(100,Number(stop[0])/255*100))+"%"}).filter(Boolean);if(!colors.length)throw new Error("dynamic palette preview unavailable");preview.style.background="linear-gradient(90deg,"+colors.join(",")+")"}catch(_){preview.style.background="repeating-conic-gradient(#24343a 0% 25%,#132128 0% 50%) 50%/14px 14px"}}
+async function loadNamedPalettes(){const select=$("#paletteSelect");if(palettesLoaded)return;try{const names=await (await fetch("/json/pal",{cache:"no-store"})).json();if(!Array.isArray(names))throw new Error("Palette names unavailable.");wledPaletteNames=names;while(select.options.length)select.remove(0);names.forEach((name,index)=>{if(!name||name==="RSVD"||name==="-")return;const option=document.createElement("option");option.value=String(index);option.textContent=String(name);select.appendChild(option)});select.disabled=false;palettesLoaded=true;if(select.options.length)select.value=String(canonicalDeviceState&&canonicalDeviceState.HBNF&&canonicalDeviceState.HBNF.palette&&canonicalDeviceState.HBNF.palette.mode==="wled"?canonicalDeviceState.HBNF.palette.index:0);showPalettePreview(Number(select.value))}catch(error){select.disabled=true;select.innerHTML="<option value=\"\">Named palettes unavailable</option>";$("#paletteStatus").textContent="Could not load palette names: "+(error.message||String(error))}}
+async function showPalettePreview(index){const preview=$("#palettePreview"),name=wledPaletteNames[index];if(!$(".palette-panel").open)return;if(!Number.isInteger(index)||index<0||!name){preview.style.background="";preview.setAttribute("aria-label","Palette preview unavailable");return}preview.setAttribute("aria-label",name+" palette preview");try{const page=Math.floor(index/8),data=await (await fetch("/json/palx?page="+page,{cache:"no-store"})).json(),stops=data&&data.p&&data.p[String(index)];if(!Array.isArray(stops))throw new Error("palette preview unavailable");const colors=stops.map(stop=>{if(!Array.isArray(stop)||stop.length<4||!stop.slice(1,4).every(Number.isFinite))return null;return "rgb("+stop.slice(1,4).map(Number).join(",")+") "+Math.max(0,Math.min(100,Number(stop[0])/255*100))+"%"}).filter(Boolean);if(!colors.length)throw new Error("dynamic palette preview unavailable");preview.style.background="linear-gradient(90deg,"+colors.join(",")+")"}catch(_){preview.style.background="repeating-conic-gradient(#24343a 0% 25%,#132128 0% 50%) 50%/14px 14px"}}
 $("#paletteSelect").addEventListener("change",()=>showPalettePreview(Number($("#paletteSelect").value)));
 $("#applyPalette").onclick=()=>applyPaletteSelection().catch(()=>{});
-loadNamedPalettes();
+$(".palette-panel").addEventListener("toggle",()=>{if($(".palette-panel").open)loadNamedPalettes()});
 $("#sendOverlayText").onclick=()=>{const text=$("#overlayText").value;if(!text||text.length>63)return;send({HBNF:{overlay:{id:newOverlayId(),kind:"text",ttlMs:8000,text:text,color:$("#overlayColor").value}}})};
 $("#sendScoreboard").onclick=()=>{const entries=$("#scoreEntries").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);if(!entries.length||entries.length>12||entries.some(x=>x.length>63))return;send({HBNF:{overlay:{id:newOverlayId(),kind:"scoreboard",ttlMs:22000,label:$("#scoreLabel").value,entries:entries}}})};
 $("#clearOverlay").onclick=()=>send({HBNF:{overlay:null}});

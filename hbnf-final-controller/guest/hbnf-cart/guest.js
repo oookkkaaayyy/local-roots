@@ -17,16 +17,16 @@
     var observed=snapshot&&Array.isArray(snapshot.observed)?snapshot.observed:[];
     var report=observed.find(function(item){return item&&item.device_id===id;});
     if(!report)return "UNKNOWN";
-    if(Number(report.desired_revision)===wantedRevision&&["online","off"].indexOf(String(report.status))!==-1&&report.reported&&report.reported.confirmed===true)return "CONFIRMED";
+    if(Number(report.desired_revision)===wantedRevision&&["online","off"].indexOf(String(report.status))!==-1&&report.reported&&report.reported.confirmed===true)return "ACKNOWLEDGED";
     if(report.status==="off"||report.status==="offline"||report.online===false)return "OFFLINE";
     if(report.status==="failed"||(report.reported&&report.reported.confirmed===false&&report.reported.error))return "FAILED";
     return Number.isFinite(Number(report.desired_revision))?"PENDING r"+report.desired_revision:"NO RECENT ACK";
   }
   function updateDeviceStatus(snapshot,wantedRevision){
     var matrix=deviceState(snapshot,"matrix",wantedRevision),aux=deviceState(snapshot,"aux",wantedRevision);
-    deviceStatus.textContent="Matrix "+matrix+" · AUX "+aux+" · desired r"+wantedRevision;
-    deviceStatus.className="device-status "+(matrix==="CONFIRMED"&&aux==="CONFIRMED"?"confirmed":"unconfirmed");
-    return matrix==="CONFIRMED"&&aux==="CONFIRMED";
+    deviceStatus.textContent="Matrix command "+matrix+" · AUX command "+aux+" · r"+wantedRevision;
+    deviceStatus.className="device-status "+(matrix==="ACKNOWLEDGED"&&aux==="ACKNOWLEDGED"?"acknowledged":"unconfirmed");
+    return matrix==="ACKNOWLEDGED"&&aux==="ACKNOWLEDGED";
   }
   function controls(on){buttons.forEach(function(button){button.disabled=!on||(button.hasAttribute("data-vibe-control")&&!vibeRuntimeReady);});}
   function id(){
@@ -63,15 +63,15 @@
       controls(enabled);
       if(pendingRevision!==null){
         if(revision>pendingRevision){pendingRevision=null;announce("Cart state changed before device confirmation.","Refresh and retry only if Guest Mode remains open.");}
-        else if(revision===pendingRevision&&devicesConfirmed){pendingRevision=null;announce("Guest action applied on Matrix and AUX.","Both devices confirmed revision "+revision+".");}
-        else announce("Guest action queued; device confirmation pending.","Backend accepted revision "+pendingRevision+". Matrix/AUX application is not yet confirmed.");
+        else if(revision===pendingRevision&&devicesConfirmed){pendingRevision=null;announce("Matrix and AUX command paths acknowledged the Guest action.","Both devices acknowledged revision "+revision+". AUX illumination is not verified by this acknowledgement.");}
+        else announce("Guest action queued; device acknowledgement pending.","Backend accepted revision "+pendingRevision+". Matrix/AUX command application is not yet confirmed.");
       }else if(enabled)announce("Guest Mode is open.",vibeRuntimeReady?"Choose a Vibe or use Next look and Cart Auto. The owner can close Guest Mode at any time.":"Vibe selection is unavailable until the matching Cart runtime is qualified. Use Next look or Cart Auto.");
       else announce("Guest Mode is closed.","Ask the Cart owner to switch Guest Mode on.");
     }).catch(function(error){
       enabled=false;revision=null;controls(false);
-      document.getElementById("connectionBadge").textContent="OFFLINE";
+      document.getElementById("connectionBadge").textContent="GUEST SERVICE OFFLINE";
       document.getElementById("connectionBadge").className="badge offline";
-      deviceStatus.textContent="Matrix/AUX status unavailable";
+      deviceStatus.textContent="Guest service offline; device command status unavailable";
       deviceStatus.className="device-status unconfirmed";
       document.getElementById("guestBadge").textContent="CLOSED";
       document.getElementById("guestBadge").className="badge closed";
@@ -87,7 +87,7 @@
     lastAction[action]=now;
     busy=true;controls(false);detail.textContent="Sending through the Cart command path…";
     post({action:"guest_command",commandId:id(),expectedRevision:revision,guestAction:action,value:value})
-      .then(function(result){pendingRevision=Number.isSafeInteger(Number(result&&result.revision))?Number(result.revision):revision;announce("Guest action queued; device confirmation pending.","Backend accepted revision "+pendingRevision+". Matrix/AUX application is not yet confirmed.");})
+      .then(function(result){pendingRevision=Number.isSafeInteger(Number(result&&result.revision))?Number(result.revision):revision;announce("Guest action queued; device acknowledgement pending.","Backend accepted revision "+pendingRevision+". Matrix/AUX command application is not yet confirmed.");})
       .catch(function(error){
         if(error.status===409&&error.data&&error.data.error==="stale_revision"){
           announce("The Cart changed before that tap landed.","State refreshed. Try again if Guest Mode is still open.");
@@ -103,6 +103,6 @@
   buttons.forEach(function(button){button.addEventListener("click",function(){act(button);});});
   document.getElementById("retry").addEventListener("click",refresh);
   window.addEventListener("online",refresh);
-  window.addEventListener("offline",function(){enabled=false;revision=null;controls(false);document.getElementById("connectionBadge").textContent="BACKEND OFFLINE";document.getElementById("connectionBadge").className="badge offline";deviceStatus.textContent="Matrix/AUX status unavailable";deviceStatus.className="device-status unconfirmed";announce("Offline. Guest controls are paused.","Reconnect and check Guest Mode again.");});
+  window.addEventListener("offline",function(){enabled=false;revision=null;controls(false);document.getElementById("connectionBadge").textContent="GUEST SERVICE OFFLINE";document.getElementById("connectionBadge").className="badge offline";deviceStatus.textContent="Guest service offline; device command status unavailable";deviceStatus.className="device-status unconfirmed";announce("Guest controls are paused while the service is offline.","Local Matrix controls use a separate connection.");});
   refresh();
 })();

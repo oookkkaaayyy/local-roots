@@ -243,9 +243,9 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
     auxHealth.className = auxOk ? "ok" : (shortDeviceFailure(auxReport) ? "bad" : "degraded");
   }
   if (badge) {
-    if (matrixOk && auxOk) { badge.textContent = "Both devices confirmed"; badge.className = "truth-badge good"; }
+    if (matrixOk && auxOk) { badge.textContent = "COMMANDS ACKNOWLEDGED"; badge.className = "truth-badge good"; }
     else if (shortDeviceFailure(matrixReport) || shortDeviceFailure(auxReport)) { badge.textContent = "Device command failed"; badge.className = "truth-badge bad"; }
-    else { badge.textContent = "Device state not confirmed"; badge.className = "truth-badge warn"; }
+    else { badge.textContent = "AWAITING DEVICE ACK"; badge.className = "truth-badge warn"; }
   }
 }
 
@@ -338,14 +338,14 @@ async function refresh({ hydrate = true } = {}) {
     const submitted = observed.some(x => Number(x.desired_revision) === Number(revision) && x.status === "submitted");
     if (fullyApplied || failed) pendingRevision = null;
     statusNode.textContent = fullyApplied
-      ? `Connected and synchronized · revision ${revision} · Matrix ${matrixBri} · Underglow ${auxBri}`
+      ? `Commands acknowledged · revision ${revision} · Matrix ${matrixBri} · AUX command ${auxBri}`
       : failed
-        ? `Command failed at revision ${revision} · Matrix ${matrixBri} · Underglow ${auxBri}. See the device error above.`
+        ? `Command failed at revision ${revision} · Matrix ${matrixBri} · AUX command ${auxBri}. See System Info.`
         : submitted
-          ? `Command submitted · revision ${revision} · device application and underglow output are not confirmed · Matrix ${matrixBri} · Underglow ${auxBri}.`
+          ? `Command submitted · revision ${revision} · device application and physical AUX illumination are not confirmed · Matrix ${matrixBri} · AUX command ${auxBri}.`
         : pendingRevision === revision
           ? `Command accepted · revision ${revision} pending device confirmation · Matrix ${matrixBri} · Underglow ${auxBri}.`
-          : `Not synchronized · revision ${revision} is not confirmed on both devices · Matrix ${matrixBri} · Underglow ${auxBri}. See device status above.`;
+          : `Device command not acknowledged · revision ${revision} is not confirmed on both devices · Matrix ${matrixBri} · AUX command ${auxBri}. See System Info.`;
   } else {
     statusNode.textContent = "Cart is not initialized; no control was sent.";
   }

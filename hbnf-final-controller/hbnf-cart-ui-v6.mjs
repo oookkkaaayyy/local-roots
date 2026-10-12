@@ -6,15 +6,18 @@ function sceneButtons(){
   const select=$("scene"),host=$("sceneButtons");
   if(!select||!host||host.dataset.ready==="1")return;
   host.dataset.ready="1";
-  const labels={
-    "course-flow":"Course Flow",
-    "field-mix":"Field Mix",
-    "hbnf-signature":"HBNF Signature",
-    "quiet-cosmos":"Quiet Cosmos"
-  };
-  for(const [value,label] of Object.entries(labels)){
+  const labels=[
+    ["course-flow","Balanced (Course Flow)","45–90 seconds between variants; broad speed range."],
+    ["field-mix","Upbeat (Field Mix)","Faster speed range; 40–80 second holds."],
+    ["hbnf-signature","Signature (HBNF Signature)","Mid-to-fast speed range; 50–100 second holds."],
+    ["quiet-cosmos","Ambient (Quiet Cosmos)","Slower speed range; 60–120 second holds."]
+  ];
+  for(const [value,label,description] of labels){
     const b=document.createElement("button");
-    b.type="button";b.className="scene-button";b.dataset.scene=value;b.textContent=label;
+    b.type="button";b.className="scene-button";b.dataset.scene=value;
+    const name=document.createElement("strong");name.className="scene-name";name.textContent=label;
+    const detail=document.createElement("span");detail.className="scene-description";detail.textContent=description;
+    b.append(name,detail);
     b.addEventListener("click",()=>{
       if(select.value!==value){
         select.value=value;

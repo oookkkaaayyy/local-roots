@@ -5,10 +5,10 @@ const OPAL_INSTALLER = "https://console.gl-inet.com/cgi-bin/luci/hbnf-installer"
 const EXPECTED_MATRIX_MAC = "704bca5b345c";
 const ACCEPTED_BASE_SHA256 = "0aeb668e58cad3bae5b636fdc79573a263c3d0e911903ed48af0bbc2e5681f61";
 const SHOWS = [
-  ["course-flow","Course Flow"],
-  ["field-mix","Field Mix"],
-  ["hbnf-signature","HBNF Signature"],
-  ["quiet-cosmos","Quiet Cosmos"]
+  ["course-flow","Balanced (Course Flow)"],
+  ["field-mix","Upbeat (Field Mix)"],
+  ["hbnf-signature","Signature (HBNF Signature)"],
+  ["quiet-cosmos","Ambient (Quiet Cosmos)"]
 ];
 const SAVED_LOOKS_KEY = "hbnf_cart_saved_looks_v1";
 const LEGACY_SAVED_LOOK_KEY = "hbnf_cart_saved_look_v2";
