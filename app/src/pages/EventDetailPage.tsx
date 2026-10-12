@@ -135,7 +135,7 @@ export function EventDetailPage({slug}:{slug:string}) {
   const effectiveStatus=eventDisplayStatus(event,today);
   const canShowRegistration=Boolean(event.registration_url&&event.end_date>=today&&event.registration_status!=='closed'&&!['canceled','completed'].includes(effectiveStatus));
   const canAddCalendar=event.end_date>=today&&!['canceled','completed'].includes(effectiveStatus);
-  const canSubmitResults=event.status==='completed'||(event.end_date<today&&!['canceled','postponed'].includes(event.status));
+  const canSubmitResults=event.end_date<today&&!['canceled','postponed'].includes(event.status);
   const stale=Boolean(event.last_verified_at&&Date.now()-new Date(event.last_verified_at).getTime()>14*86400000);
   const resultLabel=event.results_url?resultsLinkLabel(event.results_url):'';
   const tdNames=event.td_names??[];
