@@ -198,7 +198,7 @@ test('beta launch copy and PNG export include physical recipe limitations', () =
   assert.ok(start>0&&end>start);
   const output=[];
   const elements={baseHex:{value:'#FFFFFF'}};
-  const $=id=>elements[id]||({textContent:'#abcdef'});
+  const $=id=>elements[id]||(elements[id]={textContent:'#abcdef'});
   const fakeCanvas={getContext:()=>({fillRect(){},fillText:txt=>output.push(txt)}),toDataURL:()=>'data:image/png;base64,AA'};
   const env={ $,document:{createElement:tag=>tag==='canvas'?fakeCanvas:{download:'',href:'',click(){output.push(this.download)}}},
     regionColorCache:{clear(){}},makePaintImage(){},collectRegions:()=>[{
