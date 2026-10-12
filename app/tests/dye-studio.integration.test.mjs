@@ -25,7 +25,8 @@ test('candidate retains designer controls and evidence limits', () => {
   assert.match(studio, /Two or more dye blocks physically overlap/);
   assert.match(studio, /Primary workflow: dye applied directly in acetone-based color blocks/);
   assert.match(studio, /Secondary workflow: dye first mixed with hot water, then Floetrol/);
-  assert.match(studio, /do not falsely boost Floetrol evidence/);
+  assert.match(studio, /classifyObservedProcess/);
+  assert.match(studio, /methodAnalog/);
   assert.doesNotMatch(studio, /HBNF full-strength Floetrol application with controlled heat/);
   assert.doesNotMatch(studio, /Photo-calibrated modeling for opaque and translucent discs/);
 });
@@ -34,4 +35,36 @@ test('owned Onyx remains distinct and mobile zoom remains available', () => {
   assert.match(studio, /"ProChem Onyx"/);
   assert.match(studio, /Unsupported historical product: iDye Poly Onyx/);
   assert.doesNotMatch(studio, /maximum-scale\s*=/i);
+});
+
+test('method classification does not confuse direct acetone with glue beds or painted stencil with beds', () => {
+  assert.match(studio, /<option value="acetone-direct" selected>/);
+  assert.match(studio, /<option value="floetrol-stencil">/);
+  assert.match(studio, /<option value="acetone-glue-bed">/);
+  assert.match(studio, /<option value="floetrol-bed">/);
+  const start=studio.indexOf('function classifyObservedProcess(description){');
+  const end=studio.indexOf('function evidenceScore(',start);
+  assert.ok(start>=0 && end>start, 'method classifier missing');
+  const classify=Function(studio.slice(start,end)+';return classifyObservedProcess')();
+  const examples=[
+    ['Clear glue; acetone','acetone-glue-bed'],
+    ['Clear glue bed with acetone dye','acetone-glue-bed'],
+    ['Floetrol painted on stencil','floetrol-stencil'],
+    ['Floetrol with silicone','floetrol-bed'],
+    ['Direct acetone brush painting','acetone-direct'],
+    ['Quick Coat UV Blast worm dip','worm-dip'],
+    ['Acetone','acetone-unspecified'],
+    ['NR','unknown']
+  ];
+  for (const [description,expected] of examples) assert.equal(classify(description),expected,description);
+});
+
+test('recipe, history and calibrated records identify the selected application method', () => {
+  assert.match(studio,/method:activeMethod\(\)/);
+  assert.match(studio,/"methodSelect"\)\.value=s\.method\|\|"acetone-direct"/);
+  assert.match(studio,/schemaVersion:3,method:activeMethod\(\)/);
+  assert.match(studio,/r\.schemaVersion===3&&r\.method===activeMethod\(\)/);
+  assert.match(studio,/Method: \$\{\$\("methodSelect"\)/);
+  assert.doesNotMatch(studio,/r\.schemaVersion===2/);
+  assert.match(studio,/Selected method changes warnings and evidence ranking, NOT the numerical preview/);
 });
