@@ -1,0 +1,95 @@
+{
+  "candidate_install_attempts": 1,
+  "candidate_release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+  "candidate_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+  "device_requests": 48,
+  "operation_scope": "PROVISIONAL_SETTINGS_RESTORE_ONLY",
+  "owner_settings_restore": {
+    "identity_before_post": {
+      "build_mac": "704bca5b345c",
+      "candidate": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+      "wled": "16.0.1"
+    },
+    "operation": "restore",
+    "persisted_readback_semantics": "Raw /cfg.json is parsed in memory; only HBNF brightness/AUX/vibe fields are retained; raw config is not logged or saved",
+    "post_error": null,
+    "post_outcome": "RESPONSE_RECEIVED",
+    "readback": {
+      "identity": {
+        "build_mac": "704bca5b345c",
+        "candidate": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+        "ip": "192.168.77.10",
+        "mac": "704bca5b345c",
+        "release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+        "wled": "16.0.1"
+      },
+      "matrix_on": true,
+      "persisted": {
+        "auxBrightness": 68,
+        "matrixBrightness": 66,
+        "vibe": 5
+      },
+      "runtime": {
+        "auxBrightness": 68,
+        "matrixBrightness": 66,
+        "vibe": 5
+      }
+    },
+    "readback_endpoints": [
+      "GET /json/info",
+      "GET /hbnf/build.json",
+      "GET /json/state",
+      "http://192.168.77.10/edit?func=download&path=%2Fcfg.json"
+    ],
+    "requested_hbnf": {
+      "auxBrightness": 68,
+      "matrixBrightness": 66,
+      "vibe": 5
+    },
+    "save_settle_seconds": 1.25,
+    "target_matrix_brightness": 66,
+    "verified": true,
+    "vibe_config_migration": "not_needed"
+  },
+  "post_cleanup_readonly": {
+    "aux_ddp_live": true,
+    "aux_led_count": 22,
+    "aux_source": "192.168.77.10",
+    "matrix_identity": {
+      "build_mac": "704bca5b345c",
+      "candidate": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+      "wled": "16.0.1"
+    },
+    "owner_settings": {
+      "matrix_on": true,
+      "persisted": {
+        "auxBrightness": 68,
+        "matrixBrightness": 66,
+        "vibe": 5
+      },
+      "runtime": {
+        "auxBrightness": 68,
+        "matrixBrightness": 66,
+        "vibe": 5
+      },
+      "vibe_persistence": "verified"
+    },
+    "packet20_diagnostic_off": true,
+    "telemetry_off": true
+  },
+  "recovery_attempts": 0,
+  "schema": "hbnf-cart2-provisional-cleanup-v1",
+  "settings_restore_attempts": 1,
+  "status": "PROVISIONAL_CLEANUP_PASS_R6_RETAINED_UNQUALIFIED",
+  "telemetry_disable": {
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "{\"HBNF\":{\"foundationTelemetry\":{\"enabled\":false}}}\n"
+  }
+}

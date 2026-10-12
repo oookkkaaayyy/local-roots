@@ -1,0 +1,10 @@
+{
+  "authorization_id": "OWNER-20261011-CART2-INCREMENTAL-CONTROLS-PROVISIONAL-01",
+  "candidate_attempt": 1,
+  "candidate_attempt_limit": 1,
+  "candidate_release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+  "candidate_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+  "preflight_sha256": "73a68affc3bc688be6b026423e55c29cf68cc14112a988c14c26d49abe9115dd",
+  "r4_recovery_limit": 1,
+  "recorded_before_wled_post": true
+}

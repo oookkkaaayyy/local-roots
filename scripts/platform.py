@@ -347,11 +347,100 @@ def validate_hbnf_coherence(
         except (OSError, ValueError, TypeError, AttributeError):
             current_candidate_is_proven=False
 
+    pending_provisional_candidate_is_current = False
+    pending = state.get("execution_cursor", {}).get("pending_provisional_candidate", {})
+    if isinstance(pending, dict) and pending.get("schema") == "hbnf-pending-provisional-candidate-v1":
+        try:
+            workflow_path = ROOT / "platform/workflows/phase2-provisional-release.json"
+            workflow = load_json(workflow_path)
+            contract = workflow.get("provisional_release_contract", {})
+            auth = state.get("live_authorization_binding", {})
+            candidate_path = ROOT / str(contract.get("candidate_bin_path", ""))
+            recovery_path = ROOT / str(contract.get("recovery_bin_path", ""))
+            preflight_path = ROOT / str(pending.get("preflight_receipt", ""))
+            preflight = load_json(preflight_path) if preflight_path.is_file() else {}
+            exact_pending = (
+                pending.get("workflow_id") == "phase2-provisional-release"
+                and pending.get("workflow_sha256") == sha256_file(workflow_path)
+                and pending.get("candidate_release_id") == contract.get("candidate_release")
+                and pending.get("candidate_sha256") == contract.get("candidate_sha256")
+                and pending.get("candidate_bin_path") == contract.get("candidate_bin_path")
+                and pending.get("candidate_size_bytes") == contract.get("candidate_size_bytes")
+                and candidate_path.is_file()
+                and candidate_path.stat().st_size == pending.get("candidate_size_bytes")
+                and sha256_file(candidate_path) == pending.get("candidate_sha256")
+                and recovery_path.is_file()
+                and sha256_file(recovery_path) == contract.get("recovery_sha256")
+                and pending.get("preflight_sha256")
+                and sha256_file(preflight_path) == pending.get("preflight_sha256")
+                and preflight.get("pass") is True
+                and preflight.get("candidate_release_id") == pending.get("candidate_release_id")
+                and preflight.get("candidate_sha256") == pending.get("candidate_sha256")
+                and preflight.get("rollback_sha256") == contract.get("recovery_sha256")
+                and preflight.get("host_on_ac") is True
+                and preflight.get("route") == "en0/192.168.77.0/24"
+                and preflight.get("matrix", {}).get("release") == contract.get("starting_release_id")
+                and preflight.get("matrix", {}).get("mac", "").replace(":", "").lower() == "704bca5b345c"
+                and preflight.get("aux", {}).get("live") is True
+                and preflight.get("aux", {}).get("mode") == "DDP"
+                and preflight.get("aux", {}).get("source") == "192.168.77.10"
+                and auth.get("authorization_id") == pending.get("authorization_id")
+                and auth.get("candidate_release_id") == pending.get("candidate_release_id")
+                and auth.get("candidate_bin_sha256") == pending.get("candidate_sha256")
+                and auth.get("rollback_bin_sha256") == contract.get("recovery_sha256")
+            )
+            if exact_pending and installed == contract.get("starting_release_id"):
+                pending_provisional_candidate_is_current = (
+                    state.get("installed_firmware_sha256") == contract.get("starting_sha256")
+                    and pending.get("candidate_install_attempts_used") in (0, 1)
+                    and pending.get("status") in (
+                        "LIVE_APPROVED_PENDING_INSTALL", "CANDIDATE_ATTEMPT_CONSUMED",
+                        "OTA_NOT_INSTALLED_STARTING_RELEASE_REMAINS_NO_RETRY",
+                        "TRANSACTION_EXCEPTION_STARTING_RELEASE_REMAINS",
+                    )
+                )
+            elif exact_pending and installed == pending.get("candidate_release_id"):
+                tx_path = ROOT / str(pending.get("transaction_result", ""))
+                tx = load_json(tx_path) if tx_path.is_file() else {}
+                tx_ok = (
+                    pending.get("transaction_result_sha256")
+                    and sha256_file(tx_path) == pending.get("transaction_result_sha256")
+                    and tx.get("candidate_release_id") == pending.get("candidate_release_id")
+                    and tx.get("candidate_sha256") == pending.get("candidate_sha256")
+                    and tx.get("candidate_install_attempts") == 1
+                )
+                pending_provisional_candidate_is_current = bool(
+                    tx_ok
+                    and state.get("installed_firmware_sha256") == pending.get("candidate_sha256")
+                    and tx.get("candidate_runtime", {}).get("matrix_build", {}).get("release_id") == pending.get("candidate_release_id")
+                    and tx.get("status") in (
+                        "PROVISIONAL_INSTALL_SMOKE_PASS_NOT_FULLY_QUALIFIED",
+                        "PROVISIONAL_SMOKE_INCOMPLETE_CANDIDATE_UNQUALIFIED",
+                    )
+                )
+            elif exact_pending and installed == contract.get("recovery_release"):
+                tx_path = ROOT / str(pending.get("transaction_result", ""))
+                tx = load_json(tx_path) if tx_path.is_file() else {}
+                tx_ok = (
+                    pending.get("transaction_result_sha256")
+                    and sha256_file(tx_path) == pending.get("transaction_result_sha256")
+                    and tx.get("candidate_release_id") == pending.get("candidate_release_id")
+                    and tx.get("candidate_sha256") == pending.get("candidate_sha256")
+                    and tx.get("candidate_install_attempts") == 1
+                    and tx.get("recovery", {}).get("status") == "R4_READBACK_VERIFIED"
+                )
+                pending_provisional_candidate_is_current = bool(
+                    tx_ok and state.get("installed_firmware_sha256") == contract.get("recovery_sha256")
+                )
+        except (OSError, ValueError, TypeError, AttributeError):
+            pending_provisional_candidate_is_current = False
+
     if adapter_cfg.exists():
         cfg = load_json(adapter_cfg)
         expected = str(cfg.get("expected_release_id") or "")
         if (installed and expected and installed != expected and not recovery_is_current
-                and not reconciled_candidate_is_current and not current_candidate_is_proven):
+                and not reconciled_candidate_is_current and not current_candidate_is_proven
+                and not pending_provisional_candidate_is_current):
             status = str(state.get("current_task", {}).get("status") or "")
             message = (
                 "HBNF live-tool identity mismatch: control state says "

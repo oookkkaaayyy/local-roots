@@ -77,6 +77,7 @@ class CandidateProfile(NamedTuple):
     rollback_size_bytes: int = R4_SIZE
     transaction_mode: str = "full"
     starting_release_id: str = R4
+    starting_sha256: str = ""
 
 
 LEGACY_R6_PROFILE = CandidateProfile(RELEASE,CANDIDATE_SHA,CANDIDATE_SIZE,BIN,ADAPTER,OUT)
@@ -127,9 +128,10 @@ def load_candidate_profile(capsule_path: pathlib.Path) -> CandidateProfile:
         raise RuntimeError("phase2-workflow-candidate-path-escapes-repository") from exc
     transaction_mode="provisional" if is_provisional else "full"
     starting_release=contract.get("starting_release_id",R4)
+    starting_sha=contract.get("starting_sha256")
     if (transaction_mode=="provisional" and
         (contract.get("smoke_seconds")!=300 or starting_release!=RELEASE
-         or contract.get("starting_sha256")!=CANDIDATE_SHA or not isinstance(starting_release,str)
+         or starting_sha!=CANDIDATE_SHA or not isinstance(starting_release,str)
          or not re.fullmatch(r"[A-Za-z0-9._-]+",starting_release))):
         raise RuntimeError("provisional-workflow-smoke-or-starting-identity-invalid")
     if transaction_mode=="provisional":
@@ -155,7 +157,8 @@ def load_candidate_profile(capsule_path: pathlib.Path) -> CandidateProfile:
             or baseline.get("fps",{}).get("min")!=ref.get("baseline_fps_min")):
             raise RuntimeError("provisional-reference-profile-content-mismatch")
     profile=CandidateProfile(release,candidate_sha,candidate_size,candidate_bin,adapter,
-        output,transaction_mode=transaction_mode,starting_release_id=starting_release)
+        output,transaction_mode=transaction_mode,starting_release_id=starting_release,
+        starting_sha256=starting_sha or (R4_SHA if starting_release==R4 else ""))
     expected_recovery=contract.get("recovery_sha256")
     expected_recovery_path=contract.get("recovery_bin_path")
     if (expected_recovery!=profile.rollback_sha256
@@ -186,6 +189,14 @@ def verify_candidate_binding(admission: dict, profile: CandidateProfile) -> None
         or sha(profile.rollback_binary)!=profile.rollback_sha256
         or profile.rollback_binary.stat().st_size!=profile.rollback_size_bytes):
         raise RuntimeError("candidate-or-recovery-artifact-bytes-mismatch")
+    if profile.transaction_mode=="provisional":
+        binding=admission.get("fresh_owner_authorization",{})
+        if (binding.get("candidate_release_id")!=profile.release_id
+            or binding.get("candidate_bin_sha256")!=profile.sha256
+            or binding.get("rollback_bin_sha256")!=profile.rollback_sha256
+            or binding.get("candidate_install_limit")!=1
+            or binding.get("recovery_install_limit")!=1):
+            raise RuntimeError("provisional-exact-owner-authorization-binding-mismatch")
 
 
 def sha(path: pathlib.Path) -> str:
@@ -475,9 +486,43 @@ def _read_candidate_settings_for_restore(request_counter, expected_release):
     return values
 
 
+def provisional_smoke_restore_state_safe(values, owner_baseline):
+    """Accept only the captured owner values or exact controls used by the provisional smoke."""
+    runtime=values.get("runtime",{}) if isinstance(values,dict) else {}
+    persisted=values.get("persisted",{}) if isinstance(values,dict) else {}
+    allowed={
+        "matrixBrightness":{owner_baseline.get("matrixBrightness"),FROZEN_MATRIX_BRIGHTNESS},
+        "auxBrightness":{owner_baseline.get("auxBrightness"),255},
+        "vibe":{owner_baseline.get("vibe"),0},
+    }
+    if any(type(owner_baseline.get(k)) is not int for k in allowed):
+        return False
+    return all(type(source.get(k)) is int and source.get(k) in choices
+        for source in (runtime,persisted) for k,choices in allowed.items())
+
+
+def provisional_restore_requires_persist_nudge(values, owner_baseline):
+    runtime=values.get("runtime",{}) if isinstance(values,dict) else {}
+    persisted=values.get("persisted",{}) if isinstance(values,dict) else {}
+    keys=("matrixBrightness","auxBrightness","vibe")
+    return (all(type(owner_baseline.get(k)) is int for k in keys)
+        and all(runtime.get(k)==owner_baseline[k] for k in keys)
+        and any(persisted.get(k)!=owner_baseline[k] for k in keys))
+
+
+def provisional_cleanup_retry_allowed(pending):
+    return (isinstance(pending,dict)
+        and pending.get("status") in ("PROVISIONAL_CLEANUP_FAILED_STOP","PROVISIONAL_CLEANUP_AUTHORIZED_PENDING")
+        and pending.get("settings_restore_attempts_used")==1
+        and pending.get("candidate_install_attempts_used")==1
+        and pending.get("recovery_attempts_used")==0
+        and isinstance(pending.get("cleanup_result_sha256"),str)
+        and re.fullmatch(r"[a-f0-9]{64}",pending.get("cleanup_result_sha256")) is not None)
+
+
 def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep,
                              monotonic=time.monotonic, request_counter=None,
-                             expected_release=RELEASE) -> dict:
+                             expected_release=RELEASE, allow_provisional_smoke_mismatch=False) -> dict:
     """Set the frozen test brightness or restore captured HBNF settings, resolving uncertain POSTs by readback."""
     if operation == "measure":
         if (not isinstance(target, dict) or type(target.get("matrixBrightness")) is not int
@@ -513,6 +558,8 @@ def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep
     identity_before_post, _, _ = _read_expected_matrix_identity(request_counter,expected_release)
     expected_before = target["matrixBrightness"] if operation == "measure" else None
     full_candidate_restore = operation == "restore" and expected_release != R4 and "vibe" in requested
+    if allow_provisional_smoke_mismatch and (not full_candidate_restore or expected_release!=PROVISIONAL_RELEASE):
+        raise RuntimeError("provisional-smoke-restore-mode-requires-exact-candidate")
     before = (_read_candidate_settings_for_restore(request_counter, expected_release)
         if full_candidate_restore else
         _read_expected_matrix_brightness_pair(request_counter,expected_release,expected_before))
@@ -522,7 +569,34 @@ def change_matrix_brightness(target: dict, *, operation: str, sleeper=time.sleep
     persisted = before.get("persisted", {})
     required_settings = ("matrixBrightness", "auxBrightness", "vibe")
     if full_candidate_restore:
-        if (any(type(runtime.get(key)) is not int for key in required_settings)
+        if allow_provisional_smoke_mismatch:
+            if not provisional_smoke_restore_state_safe(before,target):
+                raise RuntimeError("provisional-owner-settings-not-in-known-smoke-or-captured-state")
+            if provisional_restore_requires_persist_nudge(before,target):
+                owner=dict(target)
+                nudge=(owner["matrixBrightness"]+1 if owner["matrixBrightness"]<255
+                    else owner["matrixBrightness"]-1)
+                if not 0<=nudge<=255 or nudge==owner["matrixBrightness"]:
+                    raise RuntimeError("provisional-owner-settings-persistence-nudge-invalid")
+                _post_json_counted(MATRIX+"/json/state",{"HBNF":{"matrixBrightness":nudge}},request_counter)
+                deadline=time.monotonic()+BRIGHTNESS_READBACK_TIMEOUT_SECONDS
+                repaired=None
+                while time.monotonic()<=deadline:
+                    try:
+                        sample=_read_candidate_settings_for_restore(request_counter,expected_release)
+                        if (sample.get("identity")==identity_before_post and sample.get("matrix_on") is True
+                            and sample["runtime"].get("matrixBrightness")==nudge
+                            and sample["persisted"].get("matrixBrightness")==nudge
+                            and all(sample["runtime"].get(k)==owner[k] and sample["persisted"].get(k)==owner[k]
+                                for k in ("auxBrightness","vibe"))):
+                            repaired=sample;break
+                    except Exception:
+                        pass
+                    time.sleep(min(BRIGHTNESS_READBACK_POLL_SECONDS,max(0.0,deadline-time.monotonic())))
+                if repaired is None:
+                    raise RuntimeError("provisional-owner-settings-persist-nudge-not-verified")
+                before=repaired
+        elif (any(type(runtime.get(key)) is not int for key in required_settings)
             or any(type(persisted.get(key)) is not int for key in required_settings)
             or not 0 <= runtime["vibe"] <= 5 or not 0 <= persisted["vibe"] <= 5
             or runtime["auxBrightness"] != target["auxBrightness"]
@@ -644,7 +718,7 @@ def single_worker_check():
     return {"pass": True, "conflicting_pids": [], "worker_count": 1}
 
 
-def preflight(profile=LEGACY_R6_PROFILE, request_counter=None):
+def preflight(profile=LEGACY_R6_PROFILE, request_counter=None, receipt_name="FRESH_PRELIVE_READONLY.json"):
     exact_artifacts(profile)
     power = run(["pmset", "-g", "batt"], timeout=5).stdout.decode(errors="replace")
     route = run(["route", "-n", "get", "192.168.77.10"], timeout=5).stdout.decode(errors="replace")
@@ -694,7 +768,7 @@ def preflight(profile=LEGACY_R6_PROFILE, request_counter=None):
                "brightness_baseline":brightness_baseline,
                "pre_mutation_state": owner_state,
                "no_house_voltage_sensor": True}
-    save(profile.output/"FRESH_PRELIVE_READONLY.json", receipt)
+    save(profile.output/receipt_name, receipt)
     return receipt
 
 
@@ -1243,8 +1317,14 @@ class LivePort:
             raise RuntimeError("admission-not-passed")
 
     def preflight(self):
-        result=preflight(self.candidate,request_counter=self._record_device_request)
-        self.owner_brightness_baseline=dict(result["brightness_baseline"]["runtime"])
+        receipt_name=("PREINSTALL_FINAL_READONLY.json" if self.candidate.transaction_mode=="provisional"
+            else "FRESH_PRELIVE_READONLY.json")
+        result=preflight(self.candidate,request_counter=self._record_device_request,receipt_name=receipt_name)
+        actual=result.get("brightness_baseline",{}).get("runtime",{})
+        if set(actual)!={"matrixBrightness","auxBrightness","vibe"} or any(
+            type(actual.get(key)) is not int or not 0<=actual[key]<=255 for key in actual):
+            raise RuntimeError("fresh-owner-settings-capture-incomplete-or-out-of-range")
+        self.owner_brightness_baseline=dict(actual)
         return result
 
     def preflight_candidate(self, expected_matrix_brightness=None):
@@ -1386,6 +1466,76 @@ class LivePort:
         return change_matrix_brightness(baseline, operation="restore", request_counter=self._record_device_request,
                                         expected_release=self.candidate.release_id)
 
+    def restore_provisional_settings_only(self):
+        """Complete the already-authorized cleanup after a smoke left its exact test settings persisted."""
+        self.admit("LIVE_APPROVED")
+        self.verify_local_artifacts()
+        if self.candidate.transaction_mode!="provisional":
+            raise RuntimeError("provisional-cleanup-requires-exact-provisional-candidate")
+        state=json.loads(self.state_path.read_text())
+        binding=self.admission.get("fresh_owner_authorization",{})
+        pending=state.get("execution_cursor",{}).get("pending_provisional_candidate",{})
+        baseline=pending.get("owner_settings_baseline",{})
+        if (state.get("live_mutation_authorized") is not True
+            or state.get("live_authorization_binding")!=binding
+            or pending.get("candidate_release_id")!=self.candidate.release_id
+            or pending.get("candidate_sha256")!=self.candidate.sha256
+            or pending.get("candidate_install_attempts_used")!=1
+            or pending.get("recovery_attempts_used")!=0
+            or pending.get("settings_restore_attempts_used",0)>1
+            or (pending.get("settings_restore_attempts_used",0)==1
+                and (not provisional_cleanup_retry_allowed(pending)
+                    or sha(ROOT/pending.get("cleanup_result",""))!=pending.get("cleanup_result_sha256")))
+            or state.get("installed_firmware_sha256")!=self.candidate.sha256
+            or not isinstance(baseline,dict)):
+            raise RuntimeError("provisional-cleanup-authorization-or-transaction-state-mismatch")
+        if set(baseline)!={"matrixBrightness","auxBrightness","vibe"}:
+            raise RuntimeError("provisional-cleanup-owner-settings-baseline-incomplete")
+        pending["settings_restore_attempts_used"]=int(pending.get("settings_restore_attempts_used",0))+1
+        pending["status"]="PROVISIONAL_CLEANUP_ATTEMPT_CONSUMED"
+        self.state_path.write_text(json.dumps(state,indent=2)+"\n")
+        self.owner_brightness_baseline=dict(baseline)
+        result={"schema":"hbnf-cart2-provisional-cleanup-v1","operation_scope":"PROVISIONAL_SETTINGS_RESTORE_ONLY",
+            "candidate_release_id":self.candidate.release_id,"candidate_sha256":self.candidate.sha256,
+            "candidate_install_attempts":1,"recovery_attempts":0,"settings_restore_attempts":1,
+            "telemetry_disable":None,"owner_settings_restore":None,"post_cleanup_readonly":None}
+        try:
+            env=["env",f"HBNF_EXPECTED_RELEASE_ID={self.candidate.release_id}",
+                f"HBNF_EXPECTED_FIRMWARE_SHA256={self.candidate.sha256}",sys.executable,
+                str(ROOT/"scripts/hbnf_foundation_live_adapter.py")]
+            p=run(env+["telemetry-mode","--enabled","false"],timeout=35)
+            result["telemetry_disable"]={"returncode":p.returncode,
+                "stdout":p.stdout.decode(errors="replace")[-1000:],"stderr":p.stderr.decode(errors="replace")[-1000:]}
+            if p.returncode:raise RuntimeError("provisional-cleanup-telemetry-disable-failed")
+            restored=change_matrix_brightness(self.owner_brightness_baseline,operation="restore",
+                request_counter=self._record_device_request,expected_release=self.candidate.release_id,
+                allow_provisional_smoke_mismatch=True)
+            result["owner_settings_restore"]=restored
+            context=read_matrix_context(self._record_device_request,self.candidate.release_id,
+                authorized_runtime_vibe=self.owner_brightness_baseline["vibe"])
+            ai=_get_json_counted(AUX+"/json/info",4,self._record_device_request)[2]
+            ast=_get_json_counted(AUX+"/json/state",4,self._record_device_request)[2]
+            h=context["state"].get("HBNF",{})
+            keys=("matrixBrightness","auxBrightness","vibe")
+            if (any(context["brightness"]["runtime"].get(k)!=baseline[k] for k in keys)
+                or any(context["brightness"]["persisted"].get(k)!=baseline[k] for k in keys)
+                or h.get("foundationTelemetry",{}).get("enabled") is not False
+                or h.get("packet20Diagnostic",{}).get("enabled") is not False
+                or ai.get("live") is not True or ai.get("lm")!="DDP" or ai.get("lip")!="192.168.77.10"
+                or ai.get("leds",{}).get("count")!=22 or ast.get("on") is not True or ast.get("lor")!=0):
+                raise RuntimeError("provisional-cleanup-final-settings-diagnostic-or-aux-readback-failed")
+            result["post_cleanup_readonly"]={"matrix_identity":context["identity"],
+                "owner_settings":context["brightness"],"telemetry_off":True,"packet20_diagnostic_off":True,
+                "aux_ddp_live":True,"aux_source":"192.168.77.10","aux_led_count":22}
+            result["status"]="PROVISIONAL_CLEANUP_PASS_R6_RETAINED_UNQUALIFIED"
+        except Exception as exc:
+            result["error"]=f"{type(exc).__name__}: {exc}"
+            result["status"]="PROVISIONAL_CLEANUP_FAILED_STOP"
+        finally:
+            result["device_requests"]=self.device_requests
+            self.close(result)
+        return result
+
     def stage_candidate(self):
         self.staged_remote_path=f"/tmp/{self.candidate.release_id}.bin"
         return stage_once(self.candidate.binary, self.staged_remote_path)
@@ -1393,7 +1543,33 @@ class LivePort:
     def consume_install_attempt(self):
         state = json.loads(self.state_path.read_text())
         binding = self.admission.get("fresh_owner_authorization") if self.admission else None
-        current = state.get("live_mutation_authorization", {})
+        pending = state.get("execution_cursor", {}).get("pending_provisional_candidate", {})
+        if self.candidate.transaction_mode != "provisional":
+            current=state.get("live_mutation_authorization",{})
+            if (not isinstance(binding,dict) or state.get("live_mutation_authorized") is not True
+                or state.get("live_authorization_binding")!=binding
+                or binding.get("candidate_release_id")!=self.candidate.release_id
+                or binding.get("candidate_bin_sha256")!=self.candidate.sha256
+                or binding.get("rollback_bin_sha256")!=self.candidate.rollback_sha256
+                or binding.get("candidate_install_limit")!=1 or binding.get("recovery_install_limit")!=1
+                or str(binding.get("matrix_mac","")).replace(":","").lower()!=MATRIX_MAC):
+                raise RuntimeError("exact-owner-authorization-state-binding-changed-before-install")
+            if current.get("candidate_attempts_used",0)!=0:raise RuntimeError("candidate-attempt-already-consumed")
+            current.update({"candidate_attempts_used":1,"candidate_attempt_started_unix":time.time(),
+                "status":"CONSUMED_BEFORE_WLED_POST","authorized":True,
+                "candidate_release_id":self.candidate.release_id,"candidate_sha256":self.candidate.sha256,
+                "rollback_sha256":self.candidate.rollback_sha256,"candidate_install_limit":1,
+                "recovery_install_limit":1,"hardware_writes_permitted_now":True,
+                "transaction_consumed":True,"recovery_attempts_used":0})
+            state["live_mutation_authorized"]=True
+            if isinstance(self.owner_brightness_baseline,dict):current["owner_brightness_baseline"]=dict(self.owner_brightness_baseline)
+            self.state_path.write_text(json.dumps(state,indent=2)+"\n")
+            self.install_attempts=1
+            save(self.outdir/"AUTHORIZATION_CONSUMPTION.json",{"authorization_id":binding["authorization_id"],
+                "candidate_release_id":self.candidate.release_id,"candidate_sha256":self.candidate.sha256,
+                "candidate_attempt":1,"candidate_attempt_limit":1,"r4_recovery_limit":1,
+                "recorded_before_wled_post":True,"preflight_sha256":sha(self.outdir/"FRESH_PRELIVE_READONLY.json")})
+            return
         if (not isinstance(binding, dict) or state.get("live_mutation_authorized") is not True
             or state.get("live_authorization_binding") != binding
             or binding.get("candidate_release_id") != self.candidate.release_id
@@ -1401,28 +1577,21 @@ class LivePort:
             or binding.get("rollback_bin_sha256") != self.candidate.rollback_sha256
             or binding.get("candidate_install_limit") != 1
             or binding.get("recovery_install_limit") != 1
-            or str(binding.get("matrix_mac", "")).replace(":", "").lower() != MATRIX_MAC):
+            or str(binding.get("matrix_mac", "")).replace(":", "").lower() != MATRIX_MAC
+            or self.candidate.transaction_mode != "provisional"
+            or pending.get("schema") != "hbnf-pending-provisional-candidate-v1"
+            or pending.get("candidate_release_id") != self.candidate.release_id
+            or pending.get("candidate_sha256") != self.candidate.sha256
+            or pending.get("authorization_id") != binding.get("authorization_id")
+            or pending.get("candidate_install_attempts_used") != 0
+            or pending.get("preflight_sha256") != sha(self.outdir/"FRESH_PRELIVE_READONLY.json")):
             raise RuntimeError("exact-owner-authorization-state-binding-changed-before-install")
-        if current.get("candidate_attempts_used", 0) != 0:
-            raise RuntimeError("candidate-attempt-already-consumed")
-        current["candidate_attempts_used"] = 1
-        current["candidate_attempt_started_unix"] = time.time()
-        current["status"] = "CONSUMED_BEFORE_WLED_POST"
+        pending["candidate_install_attempts_used"] = 1
+        pending["candidate_attempt_started_unix"] = time.time()
+        pending["status"] = "CANDIDATE_ATTEMPT_CONSUMED"
         state["live_mutation_authorized"] = True
-        current.update({
-            "authorized": True,
-            "candidate_release_id": self.candidate.release_id,
-            "candidate_sha256": self.candidate.sha256,
-            "rollback_sha256": self.candidate.rollback_sha256,
-            "candidate_install_limit": binding["candidate_install_limit"],
-            "recovery_install_limit": binding["recovery_install_limit"],
-            "hardware_writes_permitted_now": True,
-            "transaction_consumed": True,
-            "recovery_attempts_used": 0,
-            "current_gate": "Exact candidate attempt durably consumed before the one WLED /update request.",
-        })
         if isinstance(self.owner_brightness_baseline,dict):
-            current["owner_brightness_baseline"]=dict(self.owner_brightness_baseline)
+            pending["owner_brightness_baseline"]=dict(self.owner_brightness_baseline)
         self.state_path.write_text(json.dumps(state, indent=2)+"\n")
         self.install_attempts = 1
         save(self.outdir/"AUTHORIZATION_CONSUMPTION.json", {
@@ -1621,21 +1790,34 @@ class LivePort:
             raise RuntimeError("exact-r4-recovery-attempt-limit-exceeded")
         state=json.loads(self.state_path.read_text())
         binding=self.admission.get("fresh_owner_authorization") if self.admission else None
-        current=state.get("live_mutation_authorization",{})
+        pending=state.get("execution_cursor",{}).get("pending_provisional_candidate",{})
+        if self.candidate.transaction_mode != "provisional":
+            current=state.get("live_mutation_authorization",{})
+            if (not isinstance(binding,dict) or state.get("live_mutation_authorized") is not True
+                or state.get("live_authorization_binding")!=binding
+                or binding.get("candidate_release_id")!=self.candidate.release_id
+                or binding.get("candidate_bin_sha256")!=self.candidate.sha256
+                or binding.get("rollback_bin_sha256")!=self.candidate.rollback_sha256
+                or binding.get("recovery_install_limit")!=1 or current.get("candidate_attempts_used")!=1
+                or int(current.get("recovery_attempts_used",0))>=1):
+                raise RuntimeError("exact-r4-recovery-authorization-or-attempt-binding-failed")
+            current["recovery_attempts_used"]=1;current["status"]="EXACT_R4_RECOVERY_ATTEMPT_CONSUMED"
+            self.state_path.write_text(json.dumps(state,indent=2)+"\n");self.recovery_attempts=1
+            return
         if (not isinstance(binding,dict) or state.get("live_mutation_authorized") is not True
             or state.get("live_authorization_binding")!=binding
             or binding.get("candidate_release_id")!=self.candidate.release_id
             or binding.get("candidate_bin_sha256")!=self.candidate.sha256
             or binding.get("rollback_bin_sha256")!=self.candidate.rollback_sha256
             or binding.get("recovery_install_limit")!=1
-            or current.get("candidate_attempts_used")!=1
-            or int(current.get("recovery_attempts_used",0))>=1):
+            or pending.get("candidate_release_id")!=self.candidate.release_id
+            or pending.get("candidate_install_attempts_used")!=1
+            or int(pending.get("recovery_attempts_used",0))>=1):
             raise RuntimeError("exact-r4-recovery-authorization-or-attempt-binding-failed")
         # Durably consume recovery before any R4 transfer/OTA request so a host
         # interruption cannot silently create a second rollback attempt.
-        current["recovery_attempts_used"]=1
-        current["status"]="EXACT_R4_RECOVERY_ATTEMPT_CONSUMED"
-        current["current_gate"]="Exact R4 recovery attempt durably consumed before recovery transfer."
+        pending["recovery_attempts_used"]=1
+        pending["status"]="EXACT_R4_RECOVERY_ATTEMPT_CONSUMED"
         self.state_path.write_text(json.dumps(state,indent=2)+"\n")
         self.recovery_attempts = 1
 
@@ -1709,7 +1891,9 @@ class LivePort:
 
     def close(self, result):
         continuation=result.get("operation_scope")=="QUALIFICATION_ONLY"
-        target="QUALIFICATION_CONTINUATION_RESULT.json" if continuation else "TRANSACTION_RESULT.json"
+        cleanup=result.get("operation_scope")=="PROVISIONAL_SETTINGS_RESTORE_ONLY"
+        target=("PROVISIONAL_SETTINGS_RESTORE_RESULT.json" if cleanup else
+            "QUALIFICATION_CONTINUATION_RESULT.json" if continuation else "TRANSACTION_RESULT.json")
         # Admission rejection is a read-only stop. Do not rewrite the control
         # state merely because the coordinator records its zero-request result.
         if self.admission is None:
@@ -1717,42 +1901,64 @@ class LivePort:
         save(self.outdir/target, result)
         state = json.loads(self.state_path.read_text())
         state["live_mutation_authorized"] = False
+        cursor=state.setdefault("execution_cursor",{})
+        pending=cursor.get("pending_provisional_candidate",{})
+        provisional_pending=(self.candidate.transaction_mode=="provisional"
+            and isinstance(pending,dict)
+            and pending.get("candidate_release_id")==self.candidate.release_id
+            and pending.get("candidate_sha256")==self.candidate.sha256)
         current = state.setdefault("live_mutation_authorization", {})
-        current.update({
-            "authorized": False,
-            "hardware_writes_permitted_now": False,
-            "transaction_consumed": bool(current.get("transaction_consumed") or self.install_attempts > 0),
-            "candidate_attempts_used": max(int(current.get("candidate_attempts_used", 0)),self.install_attempts),
-            "recovery_attempts_used": max(int(current.get("recovery_attempts_used", 0)),self.recovery_attempts),
-            "candidate_release_id": self.candidate.release_id,
-            "candidate_sha256": self.candidate.sha256,
-            "rollback_sha256": self.candidate.rollback_sha256,
-            "status": result["status"],
-            "current_gate": result["status"],
-        })
-        if continuation:
-            current.update({"operation_scope":"CLOSED_AFTER_QUALIFICATION","candidate_install_permitted":False})
         try: result_ref=str((self.outdir/target).resolve().relative_to(ROOT))
         except ValueError: raise RuntimeError("qualification output must remain inside the repository")
-        current["transaction_result"] = result_ref
-        subject=state.setdefault("execution_cursor",{}).setdefault("current_subject",{})
         result_file=self.outdir/target
-        prior_result=subject.get("qualification_result")
-        if (continuation and not subject.get("candidate_install_receipt")
-            and isinstance(prior_result,str) and prior_result!=result_ref):
-            prior_path=ROOT/prior_result
-            try:
-                prior=json.loads(prior_path.read_text())
-                if (prior.get("schema")=="hbnf-cart2-candidate-qualification-transaction-v1"
-                    and prior.get("candidate_release_id")==self.candidate.release_id
-                    and prior.get("candidate_sha256")==self.candidate.sha256
-                    and prior.get("candidate_install_attempts")==1):
-                    subject["candidate_install_receipt"]=prior_result
-                    subject["candidate_install_receipt_sha256"]=sha(prior_path)
-            except (OSError,ValueError,TypeError):
-                pass
-        subject["qualification_result"]=result_ref
-        subject["qualification_result_sha256"]=sha(result_file)
+        if provisional_pending:
+            if cleanup:
+                pending["status"]=result["status"]
+                pending["cleanup_result"]=result_ref
+                pending["cleanup_result_sha256"]=sha(result_file)
+                pending["owner_settings_baseline"]=dict(self.owner_brightness_baseline or {})
+            else:
+                pending.update({
+                    "candidate_install_attempts_used": self.install_attempts,
+                    "recovery_attempts_used": self.recovery_attempts,
+                    "status": result["status"],
+                    "transaction_result": result_ref,
+                    "transaction_result_sha256": sha(result_file),
+                    "owner_brightness_baseline": dict(self.owner_brightness_baseline or {}),
+                })
+        else:
+            current.update({
+                "authorized": False,
+                "hardware_writes_permitted_now": False,
+                "transaction_consumed": bool(current.get("transaction_consumed") or self.install_attempts > 0),
+                "candidate_attempts_used": max(int(current.get("candidate_attempts_used", 0)),self.install_attempts),
+                "recovery_attempts_used": max(int(current.get("recovery_attempts_used", 0)),self.recovery_attempts),
+                "candidate_release_id": self.candidate.release_id,
+                "candidate_sha256": self.candidate.sha256,
+                "rollback_sha256": self.candidate.rollback_sha256,
+                "status": result["status"],
+                "current_gate": result["status"],
+            })
+            if continuation:
+                current.update({"operation_scope":"CLOSED_AFTER_QUALIFICATION","candidate_install_permitted":False})
+            current["transaction_result"] = result_ref
+            subject=cursor.setdefault("current_subject",{})
+            prior_result=subject.get("qualification_result")
+            if (continuation and not subject.get("candidate_install_receipt")
+                and isinstance(prior_result,str) and prior_result!=result_ref):
+                prior_path=ROOT/prior_result
+                try:
+                    prior=json.loads(prior_path.read_text())
+                    if (prior.get("schema")=="hbnf-cart2-candidate-qualification-transaction-v1"
+                        and prior.get("candidate_release_id")==self.candidate.release_id
+                        and prior.get("candidate_sha256")==self.candidate.sha256
+                        and prior.get("candidate_install_attempts")==1):
+                        subject["candidate_install_receipt"]=prior_result
+                        subject["candidate_install_receipt_sha256"]=sha(prior_path)
+                except (OSError,ValueError,TypeError):
+                    pass
+            subject["qualification_result"]=result_ref
+            subject["qualification_result_sha256"]=sha(result_file)
         if result.get("recovery", {}).get("status") in ("R4_READBACK_VERIFIED", "R4_ALREADY_INSTALLED_NO_UPLOAD"):
             state["installed_release"] = self.candidate.release_id if result.get("recovery",{}).get("runtime",{}).get("release_id")==self.candidate.release_id else R4
             state["installed_firmware_sha256"] = self.candidate.sha256 if state["installed_release"]==self.candidate.release_id else self.candidate.rollback_sha256
@@ -1769,9 +1975,16 @@ class LivePort:
         elif result.get("candidate_runtime"):
             state["installed_release"] = self.candidate.release_id
             state["installed_firmware_sha256"] = self.candidate.sha256
+        if provisional_pending:
+            # Preserve the previous installed-candidate receipt history. The
+            # separate pending record carries this transaction's outcome.
+            pass
         elif result.get("status") == "RECOVERY_UNVERIFIED_STOP":
             state["installed_release"] = None
             state["installed_firmware_sha256"] = None
+        if provisional_pending:
+            pending["installed_release_id"]=state.get("installed_release")
+            pending["installed_sha256"]=state.get("installed_firmware_sha256")
         state["last_updated_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         task=state.setdefault("current_task",{})
         task["installed_release"]=state.get("installed_release")
@@ -1799,6 +2012,11 @@ def execute_r4_recovery_only(admission_path,capsule_path,proof_path,recovery_pro
     output=prepare_qualification_output(outdir,profile)
     port=LivePort(pathlib.Path(admission_path),pathlib.Path(capsule_path),pathlib.Path(proof_path),output,profile)
     return port.recover_r4_after_failed_qualification(recovery_proof_path)
+
+def execute_provisional_settings_restore_only(admission_path,capsule_path,proof_path):
+    profile=load_candidate_profile(pathlib.Path(capsule_path))
+    port=LivePort(pathlib.Path(admission_path),pathlib.Path(capsule_path),pathlib.Path(proof_path),candidate=profile)
+    return port.restore_provisional_settings_only()
 
 
 def execute_readonly_qualification_preflight(capsule_path,outdir,expected_matrix_brightness=None):
@@ -1846,6 +2064,7 @@ def main():
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--resume-qualification",action="store_true",help="Continue gates for the exact installed candidate; does not stage or upload firmware")
     ap.add_argument("--recover-r4-only",action="store_true",help="Use the one exact owner-authorized R4 recovery after a completed performance failure; never installs or qualifies the candidate")
+    ap.add_argument("--restore-provisional-settings-only",action="store_true",help="Restore the captured owner settings and disable diagnostics for an already-installed exact provisional candidate; never installs firmware")
     ap.add_argument("--recovery-proof",help="Fresh read-only exact post-failure R4 recovery proof")
     ap.add_argument("--readonly-preflight-only",action="store_true",help="Refresh host/Matrix/AUX/Opal evidence without device writes or live authorization")
     ap.add_argument("--readonly-recovery-preflight-only",action="store_true",help="Refresh exact post-failure state for an R4-only recovery; performs no device writes")
@@ -1883,6 +2102,13 @@ def main():
             pathlib.Path(args.prelive_proof),pathlib.Path(args.recovery_proof),args.outdir)
         print(json.dumps(result,indent=2))
         return 0 if result.get("status")=="EXACT_R4_RECOVERED_AFTER_FAILED_QUALIFICATION" else 2
+    if args.restore_provisional_settings_only:
+        if args.dry_run or args.resume_qualification or args.readonly_preflight_only or args.readonly_recovery_preflight_only or args.recover_r4_only or args.outdir:
+            raise SystemExit("--restore-provisional-settings-only cannot be combined with other execution modes")
+        result=execute_provisional_settings_restore_only(pathlib.Path(args.admission),
+            pathlib.Path(args.capsule),pathlib.Path(args.prelive_proof))
+        print(json.dumps(result,indent=2))
+        return 0 if result.get("status")=="PROVISIONAL_CLEANUP_PASS_R6_RETAINED_UNQUALIFIED" else 2
     if args.resume_qualification:
         if not args.outdir: raise SystemExit("--resume-qualification requires a new --outdir so prior failure receipts remain immutable")
         result=execute_qualification(pathlib.Path(args.admission),pathlib.Path(args.capsule),pathlib.Path(args.prelive_proof),args.outdir)

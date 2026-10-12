@@ -1,0 +1,63 @@
+{
+  "schema": "hbnf-cart2-incremental-controls-provisional-offline-verification-v1",
+  "status": "PASS_OFFLINE_CLEANUP_REPAIR_VALIDATED",
+  "candidate": {
+    "release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+    "size_bytes": 1502864,
+    "source_checkpoint": "aa13434203b11d054aaa89aa0258434c20b5e58d"
+  },
+  "rollback": {
+    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "size_bytes": 1489008
+  },
+  "checks": [
+    {
+      "name": "provisional path exact SHA/target and controlled-reference smoke negative/positive tests",
+      "command": "python3 tests/test_hbnf_provisional_release_path.py",
+      "status": "PASS"
+    },
+    {
+      "name": "transaction coordinator install/readback/recovery failure replay",
+      "command": "python3 tests/test_r6_audio_cache_transaction_dryrun.py",
+      "status": "PASS"
+    },
+    {
+      "name": "combined feature host checks",
+      "command": "host import harness for tests/test_hbnf_r6_combined_feature_check.py",
+      "status": "PASS"
+    },
+    {
+      "name": "Packet20 adapter mapping and inventory checks",
+      "command": "python3 tests/hbnf_packet20_http_adapter.py",
+      "status": "PASS"
+    },
+    {
+      "name": "governance manifest validation",
+      "command": "python3 scripts/hbnf_control.py check-change --change evidence/engineering-governance/20261011-provisional-release-path.json",
+      "status": "PASS"
+    },
+    {
+      "name": "transaction runner syntax compilation",
+      "command": "python3 -m py_compile scripts/hbnf_r6_audio_cache_live_transaction.py",
+      "status": "PASS"
+    }
+  ],
+  "fresh_preflight_path": "evidence/cart2-r6-incremental-controls-20261011/live-provisional/FRESH_PRELIVE_READONLY.json",
+  "fresh_preflight_sha256": "73a68affc3bc688be6b026423e55c29cf68cc14112a988c14c26d49abe9115dd",
+  "device_mutations": 1,
+  "firmware_rebuilds": 0,
+  "limits": "Offline verification and exact installation evidence do not establish a passed five-minute smoke, full 28-kernel qualification, 90-minute reliability, or physical owner acceptance.",
+  "post_installation_status": "EXACT_CANDIDATE_INSTALLED_ONCE__SMOKE_INCOMPLETE__CLEANUP_VERIFIED_UNQUALIFIED",
+  "live_transaction": {
+    "result_path": "evidence/cart2-r6-incremental-controls-20261011/live-provisional/TRANSACTION_RESULT.json",
+    "result_sha256": "753bc9716474dda70d3dc380a3c9487deccbed2a0f9d729ea334f3b7cabcd3b1",
+    "candidate_installed_once": true,
+    "five_minute_smoke": "INCOMPLETE; aborted before five-minute window because reference workload controls were not matched.",
+    "cleanup_result_path": "evidence/cart2-r6-incremental-controls-20261011/live-provisional/PROVISIONAL_SETTINGS_RESTORE_RESULT.json",
+    "cleanup_result_sha256": "8e23ea48325e4c9d9a423a31cded4398de22a08478f1ac56b7cf5c792cb2b50f",
+    "cleanup": "PASS; runtime and persisted owner settings 66/68/5, telemetry off, Packet20 diagnostic off, AUX DDP live from Matrix with 22 pixels.",
+    "recovery_attempts": 0,
+    "qualification": "NOT QUALIFIED; smoke incomplete; no 90-minute soak attempted."
+  }
+}

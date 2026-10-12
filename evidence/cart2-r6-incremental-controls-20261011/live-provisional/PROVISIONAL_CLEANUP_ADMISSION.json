@@ -1,0 +1,117 @@
+{
+  "checks": {
+    "all_historical_host_failures_replayed": {
+      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-incremental-controls-20261011/live-provisional/FOCUSED_OFFLINE_TESTS.json",
+      "pass": true,
+      "sha256": "410c892b976282b325abac53958fbffe9f9ab49c5b7639383b29959229eb9fa4"
+    },
+    "committed_feature_scope_preserved": {
+      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-incremental-controls-20261011/PROVISIONAL_OFFLINE_VERIFICATION.json",
+      "pass": true,
+      "sha256": "e83cf8cbc463775072ea4882f9212d8351bdedef803283061f4a9aa009140e94"
+    },
+    "compiled_embedded_candidate_id_and_sha": {
+      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-incremental-controls-20261011/OFFLINE_CANDIDATE_MANIFEST.json",
+      "pass": true,
+      "sha256": "48203ba8c79c27954d376f6c4ae592b4e14d0fe5a78e961acc316657410833d5"
+    },
+    "device_and_source_authority_reconciled": {
+      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-incremental-controls-20261011/SOURCE_BINDING.json",
+      "pass": true,
+      "sha256": "7847acabba6a9c1e47e584aabb44feefcc77fabb81a7ba1ef12736c5b564c592"
+    },
+    "entire_release_transaction_dryrun": {
+      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-incremental-controls-20261011/live-provisional/FOCUSED_OFFLINE_TESTS.json",
+      "pass": true,
+      "sha256": "410c892b976282b325abac53958fbffe9f9ab49c5b7639383b29959229eb9fa4"
+    },
+    "exact_source_dependency_generated_input_closure": {
+      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-incremental-controls-20261011/BUILD_INPUT_PATCH.diff",
+      "pass": true,
+      "sha256": "7ac5512dbf3be709e5ca7252e710a66ca99652b337b068e3e2e57bee4970b232"
+    },
+    "flash_and_ram_headroom": {
+      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-incremental-controls-20261011/BUILD_RECEIPT.json",
+      "pass": true,
+      "sha256": "857357bee3af49a11da0797982ce72c92fc10cf37ae15d7054907b92b2df5efb"
+    },
+    "frozen_performance_soak_and_restore_procedure": {
+      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/platform/workflows/phase2-provisional-release.json",
+      "pass": true,
+      "sha256": "603c91f188e944f18978a49b8bb56d6b629ce102d0374fdca875f9b57d015a7d"
+    },
+    "fully_local_pinned_build_toolchain": {
+      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-incremental-controls-20261011/SOURCE_BINDING.json",
+      "pass": true,
+      "sha256": "7847acabba6a9c1e47e584aabb44feefcc77fabb81a7ba1ef12736c5b564c592"
+    },
+    "known_good_compiler_entry_smoke": {
+      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-incremental-controls-20261011/BUILD_RECEIPT.json",
+      "pass": true,
+      "sha256": "857357bee3af49a11da0797982ce72c92fc10cf37ae15d7054907b92b2df5efb"
+    },
+    "launcher_rejects_invalid_manifest_before_device_access": {
+      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-incremental-controls-20261011/live-provisional/FOCUSED_OFFLINE_TESTS.json",
+      "pass": true,
+      "sha256": "410c892b976282b325abac53958fbffe9f9ab49c5b7639383b29959229eb9fa4"
+    },
+    "matched_tails_off_test_plan": {
+      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/platform/workflows/phase2-provisional-release.json",
+      "pass": true,
+      "sha256": "603c91f188e944f18978a49b8bb56d6b629ce102d0374fdca875f9b57d015a7d"
+    },
+    "preflight_read_only_hardware_state_and_identity": {
+      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-incremental-controls-20261011/live-provisional/CLEANUP_PRELIVE_READONLY.json",
+      "pass": true,
+      "sha256": "0ad0a69559fbd6fcb428359bc867543bb0aaafcba49edae848d99cbdac1cf4a6"
+    },
+    "rollback_artifact_hash_verified": {
+      "evidence_file": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-audio-cache-20261010/R6_DRIVE_ARTIFACT_READBACK.json",
+      "pass": true,
+      "sha256": "3480239122dcf69e750ae193eff47401740ff26352542626648a740874d66846"
+    }
+  },
+  "classification": "ONE_INSTALL_ALREADY_CONSUMED__ONE_SETTINGS_PERSISTENCE_REPAIR__NO_OTA",
+  "fresh_owner_authorization": {
+    "authorization_id": "OWNER-20261011-CART2-INCREMENTAL-CONTROLS-PROVISIONAL-01",
+    "candidate_bin_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+    "candidate_install_limit": 1,
+    "candidate_release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "recovery_install_limit": 1,
+    "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "scope": [
+      "Install exactly one candidate hbnf-cart2-phase2-r6-incremental-controls-20261011 SHA-256 8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d on Matrix 70:4b:ca:5b:34:5c after candidate-specific LIVE_APPROVED admission and fresh preflight.",
+      "Run the existing 5-minute smoke on matched Center_Field kernel 17, variant 1347100689; preserve frozen full-qualification thresholds and do not run the 90-minute soak.",
+      "Capture and restore fresh owner settings Matrix 66, AUX 68, Vibe 5 as recorded in preflight receipt evidence/cart2-r6-incremental-controls-20261011/live-provisional/FRESH_PRELIVE_READONLY.json.",
+      "If a mandatory safety, exact identity, Matrix/AUX DDP health, controlled catastrophic performance, or settings-restoration failure requires recovery, make at most one exact R4 recovery using SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c."
+    ],
+    "source_message_ref": "Direct user message in current conversation: CART 2.0 \u2014 CONDITIONAL AUTHORIZATION TO INSTALL."
+  },
+  "identities": {
+    "candidate_bin_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r6-incremental-controls-20261011/artifact/hbnf-cart2-phase2-r6-incremental-controls-20261011.bin",
+    "candidate_bin_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+    "candidate_bin_size_bytes": 1502864,
+    "candidate_release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "expected_installed_bin_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+    "expected_installed_release": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "rollback_bin_path": "/private/tmp/cart2-compositor-timing-20261011/evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "source_commit": "37593376c35e467ec15825ccc7713cf3928316c8"
+  },
+  "limits": {
+    "attempt_number": 1,
+    "candidate_attempts_used": 1,
+    "candidate_install_limit": 1,
+    "no_cost_or_external_messages": true,
+    "production_deployment": "OUT_OF_SCOPE",
+    "recovery_attempts_used": 0,
+    "recovery_install_limit": 1,
+    "router_aux_cloud_changes": "PROHIBITED"
+  },
+  "outcome": "PASS",
+  "path_scope": "Settings persistence repair only; candidate install count remains consumed and no OTA is permitted",
+  "schema": "hbnf-cart2-release-admission-v1",
+  "stage": "LIVE_APPROVED"
+}

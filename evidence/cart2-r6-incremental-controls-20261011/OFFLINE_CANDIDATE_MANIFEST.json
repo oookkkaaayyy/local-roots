@@ -1,6 +1,6 @@
 {
   "schema": "hbnf-cart2-offline-incremental-candidate-v1",
-  "status": "PROVISIONAL_INSTALL_PATH_OFFLINE_VALIDATED__FRESH_LIVE_PREFLIGHT_AND_EXACT_AUTHORIZATION_PENDING",
+  "status": "EXACT_CANDIDATE_INSTALLED__SMOKE_INCOMPLETE__CLEANUP_VERIFIED_UNQUALIFIED",
   "candidate": {
     "release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
     "sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
@@ -37,18 +37,22 @@
     "git_diff_check": "PASS"
   },
   "live_status": {
-    "installation": "NOT_RUN",
-    "matrix_runtime": "f89 still installed at last read-only check",
-    "aux": "live DDP from Matrix at last read-only check",
+    "installation": "Exact SHA installed once; candidate runtime identity verified after installation.",
+    "matrix_runtime": "Exact candidate identity confirmed in install transaction and cleanup readback; Matrix responsive and healthy during checks.",
+    "aux": "DDP live from Matrix; 22-pixel output verified after cleanup.",
     "current_owner_settings_readback": {
       "matrix_brightness": 66,
       "aux_brightness": 68,
-      "vibe": 5
+      "vibe": 5,
+      "runtime_and_persisted": "verified"
     },
-    "owner_settings_restore": "not attempted; preserve actual current values"
+    "owner_settings_restore": "PASS; settings captured before install were restored in runtime and persisted config.",
+    "diagnostics": "telemetry disabled and Packet20 diagnostic mode off after cleanup.",
+    "smoke": "INCOMPLETE/FAIL: runner aborted before the five-minute window because controlled reference workload controls could not be matched; no matched smoke result exists.",
+    "recovery": "none; no mandatory device-health failure remained."
   },
-  "release_path_blocker": "Original phase2 full-qualification workflow remains unchanged. A candidate-bound provisional profile now uses the existing guarded transaction; it has not been live-admitted or authorized, and no installation occurred.",
-  "qualification_boundary": "This artifact has not had a live smoke, a 28-kernel sweep, a 30-minute milestone soak, a 90-minute soak, or owner physical acceptance.",
+  "release_path_blocker": "The five-minute smoke did not complete: reference workload settings were not matched, so no valid provisional smoke pass exists. Do not claim provisional qualification or ordinary-use readiness.",
+  "qualification_boundary": "Candidate is unqualified; smoke incomplete; full 28-kernel, 90-minute, and physical owner acceptance remain open",
   "provisional_release_path": {
     "workflow": "platform/workflows/phase2-provisional-release.json",
     "capsule": "evidence/cart2-r6-incremental-controls-20261011/PROVISIONAL_EXECUTION_CAPSULE.json",
@@ -64,6 +68,15 @@
       "animation quality",
       "audio/Vibe behavior"
     ],
-    "live_mutation": false
+    "live_mutation": true,
+    "fresh_read_only_preflight": {
+      "path": "evidence/cart2-r6-incremental-controls-20261011/live-provisional/FRESH_PRELIVE_READONLY.json",
+      "sha256": "73a68affc3bc688be6b026423e55c29cf68cc14112a988c14c26d49abe9115dd",
+      "captured_at_unix": 1791780964.667215
+    },
+    "transaction_result": "evidence/cart2-r6-incremental-controls-20261011/live-provisional/TRANSACTION_RESULT.json",
+    "settings_cleanup_result": "evidence/cart2-r6-incremental-controls-20261011/live-provisional/PROVISIONAL_SETTINGS_RESTORE_RESULT.json",
+    "settings_cleanup_sha256": "8e23ea48325e4c9d9a423a31cded4398de22a08478f1ac56b7cf5c792cb2b50f",
+    "qualification_boundary": "Candidate installed once and normal settings/diagnostic state restored. Five-minute smoke incomplete; candidate remains unqualified. Full 28-kernel, 90-minute soak, and physical owner acceptance remain open."
   }
 }

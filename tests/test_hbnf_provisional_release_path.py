@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Offline guards and failure replays for the candidate-bound provisional OTA path."""
 import importlib.util
+import hashlib
 import json
 import pathlib
 import tempfile
@@ -48,7 +49,9 @@ def test_wrong_artifact_or_matrix_target_rejected_before_port_execution():
         "candidate_bin_path":str(profile.binary),"candidate_bin_size_bytes":profile.size_bytes,
         "rollback_bin_sha256":profile.rollback_sha256,"rollback_bin_path":str(profile.rollback_binary),
         "matrix_mac":txn.MATRIX_MAC}
-    txn.verify_candidate_binding({"identities":ids},profile)
+    exact_auth={"candidate_release_id":profile.release_id,"candidate_bin_sha256":profile.sha256,
+        "rollback_bin_sha256":profile.rollback_sha256,"candidate_install_limit":1,"recovery_install_limit":1}
+    txn.verify_candidate_binding({"identities":ids,"fresh_owner_authorization":exact_auth},profile)
     for changes in ({"candidate_bin_sha256":"0"*64},{"matrix_mac":"001122334455"}):
         wrong={"identities":dict(ids,**changes)}
         try:txn.verify_candidate_binding(wrong,profile)
@@ -185,7 +188,94 @@ def test_feature_failure_does_not_spend_r4_recovery_but_system_health_failure_do
     assert txn.device_failure_requires_recovery({"error":"provisional-smoke-reference-catastrophic-fps-floor-failed"}) is True
 
 
+def test_new_candidate_attempt_does_not_reuse_consumed_f89_attempt_counter():
+    workflow_path=ROOT/"platform/workflows/phase2-provisional-release.json"
+    capsule=pathlib.Path(tempfile.mkdtemp())/"capsule.json"
+    capsule.write_text(json.dumps({"schema":"local-roots-execution-capsule-v1",
+        "workflow_id":"phase2-provisional-release",
+        "workflow_source":{"path":"platform/workflows/phase2-provisional-release.json",
+            "sha256":txn.sha(workflow_path)}}))
+    profile=txn.load_candidate_profile(capsule)
+    auth={"authorization_id":"OWNER-TEST-INCREMENTAL-PROVISIONAL",
+        "source_message_ref":"test-only exact authorization binding",
+        "candidate_release_id":profile.release_id,"candidate_bin_sha256":profile.sha256,
+        "rollback_bin_sha256":profile.rollback_sha256,"matrix_mac":"70:4b:ca:5b:34:5c",
+        "scope":["exact provisional candidate one install"],
+        "candidate_install_limit":1,"recovery_install_limit":1}
+    with tempfile.TemporaryDirectory(prefix="provisional-attempt-rebind-",dir=ROOT) as td:
+        root=pathlib.Path(td); out=root/"out";out.mkdir()
+        preflight=out/"FRESH_PRELIVE_READONLY.json";preflight.write_text('{"read_only":true}\n')
+        state_path=root/"state.json"
+        pending={"schema":"hbnf-pending-provisional-candidate-v1",
+            "candidate_release_id":profile.release_id,"candidate_sha256":profile.sha256,
+            "authorization_id":auth["authorization_id"],"candidate_install_attempts_used":0,
+            "recovery_attempts_used":0,"preflight_sha256":hashlib.sha256(preflight.read_bytes()).hexdigest()}
+        old={"candidate_release_id":txn.RELEASE,"candidate_sha256":txn.CANDIDATE_SHA,
+            "candidate_attempts_used":1,"recovery_attempts_used":0,"status":"OLD_F89_CONSUMED"}
+        state_path.write_text(json.dumps({"live_mutation_authorized":True,
+            "live_authorization_binding":auth,"live_mutation_authorization":old,
+            "execution_cursor":{"pending_provisional_candidate":pending}}))
+        port=txn.LivePort(root/"admission.json",capsule,root/"proof.json",out,profile)
+        port.admission={"fresh_owner_authorization":auth};port.state_path=state_path
+        port.owner_brightness_baseline={"matrixBrightness":66,"auxBrightness":68,"vibe":5}
+        port.consume_install_attempt()
+        after=json.loads(state_path.read_text())
+        assert after["execution_cursor"]["pending_provisional_candidate"]["candidate_install_attempts_used"]==1
+        assert after["live_mutation_authorization"]==old
+        port.consume_recovery_attempt()
+        after=json.loads(state_path.read_text())
+        assert after["execution_cursor"]["pending_provisional_candidate"]["recovery_attempts_used"]==1
+        assert after["live_mutation_authorization"]==old
+
+
+def test_final_readonly_preflight_does_not_invalidate_admitted_receipt():
+    workflow_path=ROOT/"platform/workflows/phase2-provisional-release.json"
+    capsule=pathlib.Path(tempfile.mkdtemp())/"capsule.json"
+    capsule.write_text(json.dumps({"schema":"local-roots-execution-capsule-v1",
+        "workflow_id":"phase2-provisional-release",
+        "workflow_source":{"path":"platform/workflows/phase2-provisional-release.json",
+            "sha256":txn.sha(workflow_path)}}))
+    profile=txn.load_candidate_profile(capsule)
+    with tempfile.TemporaryDirectory(prefix="provisional-final-preflight-",dir=ROOT) as td:
+        out=pathlib.Path(td); admitted=out/"FRESH_PRELIVE_READONLY.json"
+        original=b'{"admission_bound_receipt":true}\n';admitted.write_bytes(original)
+        port=txn.LivePort(out/"admission.json",capsule,out/"proof.json",out,profile)
+        port.admission={"fresh_owner_authorization":{}}
+        previous=txn.preflight
+        captured={"pass":True,"brightness_baseline":{"runtime":{"matrixBrightness":66,"auxBrightness":68,"vibe":5}}}
+        def fake_preflight(candidate,request_counter=None,receipt_name="FRESH_PRELIVE_READONLY.json"):
+            assert receipt_name=="PREINSTALL_FINAL_READONLY.json"
+            (out/receipt_name).write_text(json.dumps(captured)+"\n")
+            return captured
+        txn.preflight=fake_preflight
+        try: result=port.preflight()
+        finally: txn.preflight=previous
+        assert result==captured and admitted.read_bytes()==original
+        assert json.loads((out/"PREINSTALL_FINAL_READONLY.json").read_text())==captured
+        assert port.owner_brightness_baseline==captured["brightness_baseline"]["runtime"]
+
+
+def test_cleanup_accepts_only_exact_owner_or_smoke_settings():
+    owner={"matrixBrightness":66,"auxBrightness":68,"vibe":5}
+    assert txn.provisional_smoke_restore_state_safe({"runtime":owner,
+        "persisted":{"matrixBrightness":44,"auxBrightness":255,"vibe":0}},owner)
+    assert txn.provisional_smoke_restore_state_safe({"runtime":{"matrixBrightness":44,"auxBrightness":68,"vibe":0},
+        "persisted":owner},owner)
+    assert not txn.provisional_smoke_restore_state_safe({"runtime":{"matrixBrightness":255,"auxBrightness":68,"vibe":5},
+        "persisted":owner},owner)
+    assert not txn.provisional_smoke_restore_state_safe({"runtime":owner,
+        "persisted":{"matrixBrightness":44,"auxBrightness":200,"vibe":0}},owner)
+    assert txn.provisional_restore_requires_persist_nudge({"runtime":owner,
+        "persisted":{"matrixBrightness":44,"auxBrightness":255,"vibe":0}},owner)
+    assert not txn.provisional_restore_requires_persist_nudge({"runtime":owner,"persisted":owner},owner)
+    retry={"status":"PROVISIONAL_CLEANUP_AUTHORIZED_PENDING","settings_restore_attempts_used":1,
+        "candidate_install_attempts_used":1,"recovery_attempts_used":0,"cleanup_result_sha256":"a"*64}
+    assert txn.provisional_cleanup_retry_allowed(retry)
+    retry["candidate_install_attempts_used"]=2
+    assert not txn.provisional_cleanup_retry_allowed(retry)
+
+
 if __name__=="__main__":
     for name,value in sorted(globals().copy().items()):
         if name.startswith("test_") and callable(value):value()
-    print("PASS: exact candidate/target binding, one-attempt install, interruption/readback resolution, one R4 recovery, and 5-minute smoke fail closed")
+    print("PASS: exact candidate/target binding, one-attempt install, fresh settings capture, interruption/readback resolution, one R4 recovery, and 5-minute smoke fail closed")

@@ -1925,7 +1925,7 @@
       "observed_by": "USER_DIRECT_PHYSICAL_OBSERVATION",
       "status": "FAILED_PHYSICAL_SYNC__SOFTWARE_OR_LINK_ROOT_CAUSE_UNRESOLVED"
     },
-    "installed_firmware_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+    "installed_firmware_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
     "installed_r6_failure": {
       "evidence": "evidence/cart2-r6-live-qualification-20261009/R6_PERFORMANCE_FAILURE_CLASSIFICATION.json",
       "evidence_sha256": "b2e14deeab3abbd907d4c063131a2edac937f0f97eb389e23dcb14658dbf5368",
@@ -1934,7 +1934,7 @@
       "sha256": "0a4b9563c7debfb5a01e9d36aeb8aac2583e105303064de3db0466b7dd9d89d6",
       "status": "CLOSED__EXACT_R4_RESTORED"
     },
-    "installed_release": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+    "installed_release": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
     "installed_release_role": "UNQUALIFIED_SUCCESSOR_INSTALLED__ONE_CANDIDATE_ATTEMPT_USED__EXACT_R4_RECOVERY_UNUSED",
     "last_recovery": {
       "artifact_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
@@ -2656,7 +2656,7 @@
       "status": "PASS"
     },
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED",
+    "status": "PROVISIONAL_CLEANUP_PASS_R6_RETAINED_UNQUALIFIED",
     "t3_fast_path_preparation": {
       "human_approval_required": true,
       "human_packet": "work/cart2/27_T3_PHASE2_FAST_PATH_PREP_20261006.md",
@@ -2736,7 +2736,50 @@
       "Do not automatically repeat an interrupted or failed soak.",
       "Do not change router, cloud, thresholds, or unrelated Cart 2.0 components."
     ],
-    "schema": "hbnf-execution-cursor-v1"
+    "schema": "hbnf-execution-cursor-v1",
+    "pending_provisional_candidate": {
+      "schema": "hbnf-pending-provisional-candidate-v1",
+      "workflow_id": "phase2-provisional-release",
+      "workflow_sha256": "603c91f188e944f18978a49b8bb56d6b629ce102d0374fdca875f9b57d015a7d",
+      "candidate_release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+      "candidate_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+      "candidate_bin_path": "evidence/cart2-r6-incremental-controls-20261011/artifact/hbnf-cart2-phase2-r6-incremental-controls-20261011.bin",
+      "candidate_size_bytes": 1502864,
+      "candidate_source_commit": "37593376c35e467ec15825ccc7713cf3928316c8",
+      "source_checkpoint": "aa13434203b11d054aaa89aa0258434c20b5e58d",
+      "authorization_id": "OWNER-20261011-CART2-INCREMENTAL-CONTROLS-PROVISIONAL-01",
+      "candidate_install_limit": 1,
+      "candidate_install_attempts_used": 1,
+      "recovery_install_limit": 1,
+      "recovery_attempts_used": 0,
+      "status": "PROVISIONAL_CLEANUP_PASS_R6_RETAINED_UNQUALIFIED",
+      "starting_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "starting_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "rollback_path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "preflight_receipt": "evidence/cart2-r6-incremental-controls-20261011/live-provisional/FRESH_PRELIVE_READONLY.json",
+      "preflight_sha256": "73a68affc3bc688be6b026423e55c29cf68cc14112a988c14c26d49abe9115dd",
+      "owner_settings_baseline": {
+        "auxBrightness": 68,
+        "matrixBrightness": 66,
+        "vibe": 5
+      },
+      "candidate_attempt_started_unix": 1791781096.712597,
+      "owner_brightness_baseline": {
+        "matrixBrightness": 66,
+        "auxBrightness": 68,
+        "vibe": 5
+      },
+      "transaction_result": "evidence/cart2-r6-incremental-controls-20261011/live-provisional/TRANSACTION_RESULT.json",
+      "transaction_result_sha256": "753bc9716474dda70d3dc380a3c9487deccbed2a0f9d729ea334f3b7cabcd3b1",
+      "installed_release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+      "installed_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+      "cleanup_prelive_receipt": "evidence/cart2-r6-incremental-controls-20261011/live-provisional/CLEANUP_PRELIVE_READONLY.json",
+      "cleanup_prelive_sha256": "0ad0a69559fbd6fcb428359bc867543bb0aaafcba49edae848d99cbdac1cf4a6",
+      "settings_restore_attempts_used": 2,
+      "cleanup_result": "evidence/cart2-r6-incremental-controls-20261011/live-provisional/PROVISIONAL_SETTINGS_RESTORE_RESULT.json",
+      "cleanup_result_sha256": "8e23ea48325e4c9d9a423a31cded4398de22a08478f1ac56b7cf5c792cb2b50f"
+    }
   },
   "inherited_evidence": [
     {
@@ -2821,8 +2864,8 @@
     "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
   },
-  "installed_firmware_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
-  "installed_release": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+  "installed_firmware_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+  "installed_release": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
   "installed_release_role": "UNQUALIFIED_SUCCESSOR_INSTALLED__ONE_CANDIDATE_ATTEMPT_USED__EXACT_R4_RECOVERY_UNUSED",
   "lane_execution": {
     "activation_rule": "Activate offline-safe core lanes at the earlier of: (a) clean Foundation soak/readiness signal, or (b) 60 minutes without lifecycle progress, provided parallel work is noncontending and cannot invalidate the healthy live critical path. Never restart/interrupt healthy critical-path work merely to satisfy this timer. live_mutation_limit remains 1.",
@@ -2955,24 +2998,23 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-11T22:27:00Z",
+  "last_updated_utc": "2026-10-12T05:04:51Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_authorization_binding": {
-    "authorization_id": "OWNER-20261011-CART2-F89-FIELD-QUALIFICATION-01",
-    "candidate_bin_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
-    "candidate_install_limit": 1,
-    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
-    "matrix_mac": "70:4b:ca:5b:34:5c",
-    "recovery_install_limit": 1,
+    "authorization_id": "OWNER-20261011-CART2-INCREMENTAL-CONTROLS-PROVISIONAL-01",
+    "source_message_ref": "Direct user message in current conversation: CART 2.0 \u2014 CONDITIONAL AUTHORIZATION TO INSTALL.",
+    "candidate_release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "candidate_bin_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
     "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
     "scope": [
-      "Install the exact f89 October 10 R6 artifact once on Matrix 70:4b:ca:5b:34:5c after fresh exact admission and passing live preflight.",
-      "Run initial health and synchronization checks, the existing 28-kernel performance qualification, combined-feature verification, one uninterrupted 5400-second reliability soak, and post-install identity/health checks, subject to all existing gates.",
-      "If a genuine mandatory safety, identity, performance, AUX, or reliability gate fails, make at most one exact Foundation R4 recovery attempt using the specified SHA and established recovery path.",
-      "Capture and preserve fresh owner settings, including current brightness 147/255; restore them after qualification or recovery.",
-      "No e414 install, repeated f89 attempt, router/network changes, paid/remote builds, cloud/backend/Owner/Guest/game deployments, threshold changes, or unrelated live mutations."
+      "Install exactly one candidate hbnf-cart2-phase2-r6-incremental-controls-20261011 SHA-256 8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d on Matrix 70:4b:ca:5b:34:5c after candidate-specific LIVE_APPROVED admission and fresh preflight.",
+      "Run the existing 5-minute smoke on matched Center_Field kernel 17, variant 1347100689; preserve frozen full-qualification thresholds and do not run the 90-minute soak.",
+      "Capture and restore fresh owner settings Matrix 66, AUX 68, Vibe 5 as recorded in preflight receipt evidence/cart2-r6-incremental-controls-20261011/live-provisional/FRESH_PRELIVE_READONLY.json.",
+      "If a mandatory safety, exact identity, Matrix/AUX DDP health, controlled catastrophic performance, or settings-restoration failure requires recovery, make at most one exact R4 recovery using SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c."
     ],
-    "source_message_ref": "Direct user message in this conversation, 2026-10-11: CART 2.0 \u2014 URGENT FIELD-READY RECOVERY."
+    "candidate_install_limit": 1,
+    "recovery_install_limit": 1
   },
   "live_mutation_authorization": {
     "authorization": "Direct owner message authorizes exactly one fresh f89 installation and qualification transaction and, if required, one exact R4 recovery, under all existing admission and safety gates.",

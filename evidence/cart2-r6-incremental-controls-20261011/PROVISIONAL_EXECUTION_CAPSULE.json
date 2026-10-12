@@ -1,0 +1,291 @@
+{
+  "cost_policy": {
+    "paid_or_quota_limited_execution": "explicit_authorization_per_bounded_run",
+    "remote_execution_for_source_archaeology": false,
+    "retry_inherits_authorization": false
+  },
+  "created_at": "2026-10-12T04:57:48.196244+00:00",
+  "expected_terminal_outputs": [
+    "exact installed firmware identity or exact R4 recovery identity",
+    "5-minute smoke receipt and captured owner-settings restore verification",
+    "Matrix/AUX/DDP health and decisive performance samples",
+    "qualification remains provisional; frozen 28-kernel and uninterrupted 90-minute gates remain open"
+  ],
+  "external_authorities": {
+    "artifact_registry_drive_id": "18VsUYIYr62fYVaEqynM1kbMmfQpei-3H3rBgrw8S96k",
+    "delta_inbox_sheet_id": "1tJIcKRfWFdHVYVo4G6mgySB46p6xwsseGON3JdnEnzY",
+    "file_authority_drive_id": "1GwvPv_nihqoIj83WsO6VcvyujRkt8HnnULvLv717OHc",
+    "release_engineering_drive_id": "1bw_VUNt2mEZ4JdKuRsQq7ZS1Bc4KeC8kMVABVK2OdgE"
+  },
+  "repo_identity": {
+    "branch": "codex/cart2-course-feedback-integration-20261011",
+    "dirty": true,
+    "type": "git_commit",
+    "value": "89a7531d806959c38c728ac3d72660f094059603"
+  },
+  "repo_inputs": [
+    {
+      "bytes": 31590,
+      "path": "config/HBNF_CONTROL_MODEL.json",
+      "sha256": "8d42f1fd540c95a01ae16857c286f6350b57ad8e3cd0c22befd1780fcb26d29c"
+    },
+    {
+      "bytes": 262035,
+      "path": "config/HBNF_CONTROL_STATE.json",
+      "sha256": "c0cc288f05bec76afd498a255e18988d4c575283b07a19e9fbcaca03c20d9bf0"
+    },
+    {
+      "bytes": 114557,
+      "path": "scripts/hbnf_control.py",
+      "sha256": "e081c85fec428ff55661f8eb1848d8b2e89c2c4c31878cd63aa1932da28b239d"
+    },
+    {
+      "bytes": 4404,
+      "path": "scripts/hbnf_guarded_run.py",
+      "sha256": "8e0f6242412937a46cb3da3c75485ecaede3a39988fc635d926216c82e1656fc"
+    },
+    {
+      "bytes": 5404,
+      "path": "platform/policies.json",
+      "sha256": "16b80bafcb81002885164ba3799e1401d5007addb38ebb1e9a5336fdfa9bc37a"
+    },
+    {
+      "bytes": 7843,
+      "path": "platform/workflows/live-device-diagnostic.json",
+      "sha256": "2954ee3c24963e637632419049463e7d6b589300bb4d5519a3b6249d3638e849"
+    },
+    {
+      "bytes": 10967,
+      "path": "platform/cart2-critical-path-v1.json",
+      "sha256": "f19ef4feea2528c47a919d2deac967746690a2b9ead9a33db191b4b02cbe237b"
+    },
+    {
+      "bytes": 40727,
+      "path": "scripts/platform.py",
+      "sha256": "3c1141e8c139d5cc5113d4f030d6f88e908b2834ca49192f1315dd25c38f23aa"
+    },
+    {
+      "bytes": 8202,
+      "path": "platform/providers/cloudflare-workers.json",
+      "sha256": "67c0c79c310b780d2934fbf7ef12b06562d014adafac2105822a4c2d79ff74da"
+    },
+    {
+      "bytes": 14677,
+      "path": "AGENTS.md",
+      "sha256": "1400198b652bc349ea032a1a2669e436987c60a5ada3fea92e52425f73737584"
+    },
+    {
+      "bytes": 3091,
+      "path": "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_F89_20261011.json",
+      "sha256": "f509af35948f5262910cf484054c749c9231452a530dcc952a0d4731177c9145"
+    },
+    {
+      "bytes": 3481,
+      "path": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
+      "sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797"
+    },
+    {
+      "bytes": 8881,
+      "path": "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
+      "sha256": "44f62cf31e5efa57a360117d96d437d6f504fd93704b28a069661b2da64a49f0"
+    },
+    {
+      "bytes": 5514,
+      "path": "config/HBNF_RUNTIME_TELEMETRY_CONTRACT.json",
+      "sha256": "9aca17e2339c5230b82997bbc5080f6cb3955558ad17ae8469a0a5f5a8aafa39"
+    },
+    {
+      "bytes": 1489008,
+      "path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    },
+    {
+      "bytes": 39272,
+      "path": "scripts/hbnf_foundation_live_adapter.py",
+      "sha256": "5434ff06fcbbe72b0f77c79e3bce51ccb3ea76cf60fc288dff72c89170e22642"
+    },
+    {
+      "bytes": 17799,
+      "path": "scripts/hbnf_foundation_soak_audit.py",
+      "sha256": "e9ccfd5bcc494c354472939b378faf3400a5f9c238f0912119887c13fc07f62d"
+    },
+    {
+      "bytes": 58463,
+      "path": "scripts/hbnf_live_kernel_sweep.py",
+      "sha256": "198ce9b5d1276bbb13cf28eb3403015cb97a56a7f46fcf732a0fc9a659ce67cb"
+    },
+    {
+      "bytes": 3228,
+      "path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/sweep/17_Center_Field.profile.json",
+      "sha256": "6dc805960340634177ddb8227e3de5a15356ebe96e7cbd54162889a0dfcdc5c0"
+    },
+    {
+      "bytes": 15979,
+      "path": "scripts/hbnf_packet20_r4_live_transaction.py",
+      "sha256": "6042fe80aa22ef8eedf5d6ea346f5f853e96a23d6e0dcdc409fd882ae01d28e4"
+    },
+    {
+      "bytes": 124965,
+      "path": "scripts/hbnf_r6_audio_cache_live_transaction.py",
+      "sha256": "ca7afe4074808a3d21f13e5627ff77efdf9f9e325b127d30ab87416f7eb45e25"
+    },
+    {
+      "bytes": 6520,
+      "path": "scripts/hbnf_r6_combined_feature_check.py",
+      "sha256": "aebf65286fb22c94d408882434654319c333c339ab31b375c910ba76d1c867d0"
+    },
+    {
+      "bytes": 3702,
+      "path": "evidence/cart2-r6-incremental-controls-20261011/OFFLINE_CANDIDATE_MANIFEST.json",
+      "sha256": "36969de6b35590063c81f0d1a81e99aca8dddda9ffbbae751b6159c942a7eefe"
+    },
+    {
+      "bytes": 1622,
+      "path": "evidence/cart2-r6-incremental-controls-20261011/BUILD_RECEIPT.json",
+      "sha256": "857357bee3af49a11da0797982ce72c92fc10cf37ae15d7054907b92b2df5efb"
+    },
+    {
+      "bytes": 2158,
+      "path": "evidence/cart2-r6-incremental-controls-20261011/SOURCE_BINDING.json",
+      "sha256": "7847acabba6a9c1e47e584aabb44feefcc77fabb81a7ba1ef12736c5b564c592"
+    },
+    {
+      "bytes": 1502864,
+      "path": "evidence/cart2-r6-incremental-controls-20261011/artifact/hbnf-cart2-phase2-r6-incremental-controls-20261011.bin",
+      "sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d"
+    },
+    {
+      "bytes": 2993,
+      "path": "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_INCREMENTAL_CONTROLS_20261011.json",
+      "sha256": "81455bd7440aa553ffb5adf74f7f7115ee1ba152efec2d0dece390bc3fe0362a"
+    }
+  ],
+  "run_id": "cart2-provisional-8afb21b9-20261011",
+  "schema": "local-roots-execution-capsule-v1",
+  "stages": [
+    {
+      "id": "package-doctor",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "platform doctor and HBNF control state pass; pushed branch is clean"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "contract-closure",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "exact candidate SHA/size/embedded identity and compiled telemetry manifest verified",
+        "Matrix WLED 16.0.1 /update consumer path and target identity verified"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "recovery-proof",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "exact R4 local recovery SHA/size and runtime ledger verified",
+        "same /update recovery path already proven end-to-end"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "transaction-rehearsal",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "one multipart install and exact recovery transaction mechanically rehearsed from prior receipts; no live change"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "capture-current-state",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "fresh Matrix/AUX/Opal state, exact identities, health, and renderer baseline captured"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "read-only-preflight",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "immediate pre-mutation identities and continuity pass"
+      ],
+      "retry_policy": "idempotent",
+      "timeout_budget": {
+        "inner_calls_max": 5,
+        "inner_timeout_seconds": 5,
+        "margin_seconds": 15,
+        "outer_seconds": 40
+      }
+    },
+    {
+      "id": "candidate-install",
+      "kind": "live",
+      "mutation": true,
+      "outputs": [
+        "one multipart install attempt only for hbnf-cart2-phase2-r6-incremental-controls-20261011 SHA-256 8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d (1,502,864 bytes); immediately capture HTTP response, exact runtime identity, Matrix/AUX health"
+      ],
+      "retry_policy": "never",
+      "rollback": {
+        "strategy": "one exact SHA-verified R4 Matrix /update recovery only if candidate identity/runtime/safety/frozen performance or required AUX synchronization fails"
+      },
+      "timeout_budget": {
+        "inner_calls_max": 1,
+        "inner_timeout_seconds": 190,
+        "margin_seconds": 50,
+        "outer_seconds": 240
+      }
+    },
+    {
+      "id": "runtime-smoke-and-physical-sync",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "5-minute low-overhead health window at 30-second intervals on the fixed Center_Field reference workload (kernel 17, variant 1347100689), using the same rendering controls as the hash-bound f89 profile; verify kernel/variant identity, renderer progress, device identity, uptime, Matrix/AUX health, and DDP source. Apply the existing 20 FPS/three-sample catastrophic stop only to this controlled reference workload; do not use arbitrary user-selected animation FPS as a release stop.",
+        "Existing combined feature check inside a Packet20 snapshot; verify restore and all captured owner settings.",
+        "No full qualification implied; retain all 28-kernel, 90-minute, and owner-acceptance gates for later."
+      ],
+      "retry_policy": "idempotent",
+      "timeout_budget": {
+        "inner_calls_max": 25,
+        "inner_timeout_seconds": 15,
+        "margin_seconds": 105,
+        "outer_seconds": 480
+      }
+    }
+  ],
+  "storage_policy": {
+    "aks": "searchable routing, current-state pointers, acceptance/supersession metadata, and external artifact identities",
+    "github": "canonical/buildable source, scripts, configs, workflow definitions, and small machine-readable provenance",
+    "google_drive": "durable binaries, recovery artifacts, decisive evidence, and large immutable run outputs",
+    "local_workspace": "ephemeral execution only; never sole authority after a result becomes meaningful"
+  },
+  "system_id": "hbnf-cart",
+  "terminal_recovery": "If candidate identity, startup, Matrix/AUX health, DDP, critical performance, Packet20 restore, or owner-settings restoration fails, stop and use only one exact SHA-verified R4 recovery if the fresh exact authorization covers it; verify R4 identity/health and captured settings. Never retry installation or claim full qualification.",
+  "trace_id": "2917f4908cf84bd499d4b6e5764e81aa",
+  "user_interaction_policy": {
+    "copy_paste_delivery": "one_single_fenced_block_per_action",
+    "max_user_actions_per_blocker": 1,
+    "required_user_action_fields": [
+      "prerequisite",
+      "action",
+      "expected_result",
+      "stop_condition"
+    ],
+    "resource_instruction_requires_direct_link_or_exact_path": true,
+    "terminal_app": "macOS Terminal",
+    "terminal_relay": false
+  },
+  "workflow_id": "phase2-provisional-release",
+  "workflow_source": {
+    "path": "platform/workflows/phase2-provisional-release.json",
+    "sha256": "603c91f188e944f18978a49b8bb56d6b629ce102d0374fdca875f9b57d015a7d"
+  }
+}

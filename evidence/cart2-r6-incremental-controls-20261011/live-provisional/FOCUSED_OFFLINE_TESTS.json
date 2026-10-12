@@ -1,0 +1,53 @@
+{
+  "schema": "hbnf-cart2-provisional-offline-gate-tests-v1",
+  "candidate_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+  "candidate_release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+  "results": [
+    {
+      "command": "python3 tests/test_hbnf_provisional_release_path.py",
+      "status": "PASS"
+    },
+    {
+      "command": "python3 tests/test_r6_audio_cache_transaction_dryrun.py",
+      "status": "PASS"
+    },
+    {
+      "command": "python3 tests/hbnf_guarded_run.py",
+      "status": "PASS"
+    },
+    {
+      "command": "python3 tests/hbnf_packet20_http_adapter.py",
+      "status": "PASS"
+    },
+    {
+      "command": "python3 tests/hbnf_control.py",
+      "status": "PASS"
+    },
+    {
+      "command": "python3 scripts/platform.py doctor",
+      "status": "PASS"
+    },
+    {
+      "command": "python3 -m py_compile scripts/hbnf_r6_audio_cache_live_transaction.py scripts/platform.py",
+      "status": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "status": "PASS"
+    },
+    {
+      "command": "python3 tests/test_hbnf_provisional_release_path.py (candidate-bound cleanup allowlist and admitted receipt preservation)",
+      "status": "PASS"
+    },
+    {
+      "command": "python3 tests/test_hbnf_provisional_release_path.py (exact smoke-state restore and persisted-state nudge guard)",
+      "status": "PASS"
+    },
+    {
+      "command": "python3 tests/test_hbnf_provisional_release_path.py (persistence nudge and bounded same-authorization cleanup retry limits)",
+      "status": "PASS"
+    }
+  ],
+  "device_mutations": 0,
+  "firmware_rebuilds": 0
+}
