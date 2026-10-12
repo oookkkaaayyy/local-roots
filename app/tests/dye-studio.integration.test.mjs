@@ -29,6 +29,9 @@ test('candidate retains designer controls and evidence limits', () => {
   assert.match(studio, /methodAnalog/);
   assert.doesNotMatch(studio, /HBNF full-strength Floetrol application with controlled heat/);
   assert.doesNotMatch(studio, /Photo-calibrated modeling for opaque and translucent discs/);
+  assert.match(studio, /100% nominal model input/);
+  assert.match(studio, /NOT a measured dye concentration or validated physical recipe/);
+  assert.doesNotMatch(studio, /100% full-strength HBNF production recipe/);
 });
 
 test('owned Onyx remains distinct and mobile zoom remains available', () => {
