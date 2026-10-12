@@ -1,0 +1,55 @@
+{
+  "artifact_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+  "aux": {
+    "live": true,
+    "mode": "DDP",
+    "pixels": 22,
+    "source": "192.168.77.10"
+  },
+  "competing_live_processes": [],
+  "foundationTelemetry": {
+    "enabled": false,
+    "frameMsAvg": null,
+    "frameMsMax": null,
+    "frameMsP50": null,
+    "frameMsP95": null,
+    "frameMsP99": null,
+    "kernelId": 255,
+    "largestFreeBlockBytes": 69620,
+    "minimumFreeHeapBytes": 54724,
+    "sampleCount": 0
+  },
+  "fresh_read_elapsed_interval_s": 3,
+  "identity_note": "device build endpoint exposes release/candidate labels, not the BIN hash; exact label-to-SHA binding is established by the pushed transaction receipt and local artifact hash",
+  "installed_candidate_label": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+  "installed_release_label": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+  "network": "Matrix and AUX direct LAN reads passed; ping loss 0/3 each in prior check",
+  "packet20": {
+    "enabled": true,
+    "espResetReason": 3,
+    "lastCommand": "begin",
+    "lastCommandAccepted": true,
+    "resetReasonCore0": 12,
+    "resetReasonCore1": 12,
+    "restoreVerified": false,
+    "selectedKernel": 12,
+    "snapshotGeneration": 1,
+    "snapshotHash": 2172446802,
+    "snapshotId": 1,
+    "snapshotState": "RESTORED",
+    "snapshotValid": false
+  },
+  "power": "Mac on AC; Matrix and AUX both responding; uptime and render count advanced across 3-second interval",
+  "preconditions": "PASS",
+  "read_only": true,
+  "settings_persisted": {
+    "auxBrightness": 68,
+    "matrixBrightness": 66,
+    "vibe": 5
+  },
+  "settings_runtime": {
+    "auxBrightness": 68,
+    "matrixBrightness": 66,
+    "vibe": 5
+  }
+}

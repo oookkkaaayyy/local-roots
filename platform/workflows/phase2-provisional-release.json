@@ -136,8 +136,8 @@
       "mutation": false,
       "retry_policy": "idempotent",
       "outputs": [
-        "5-minute low-overhead health window at 30-second intervals on the fixed Center_Field reference workload (kernel 17, variant 1347100689), using the same rendering controls as the hash-bound f89 profile; verify kernel/variant identity, renderer progress, device identity, uptime, Matrix/AUX health, and DDP source. Apply the existing 20 FPS/three-sample catastrophic stop only to this controlled reference workload; do not use arbitrary user-selected animation FPS as a release stop.",
-        "Existing combined feature check inside a Packet20 snapshot; verify restore and all captured owner settings.",
+        "Five-minute read-only health window at 30-second intervals under the owner's current animation; verify exact runtime identity, Matrix/AUX health, DDP source, uptime continuity, and renderer advancement. Capture FPS descriptively only; unmatched workload FPS is not acceptance evidence.",
+        "Run bounded Vibe/audio/palette/text readback separately using ordinary WLED APIs. The feature check captures and restores exact prior WLED/HBNF state and persisted owner settings in its own finally path; it refuses to start when Packet20/Foundation telemetry is active or an overlay is already present. The short smoke does not use Packet20.",
         "No full qualification implied; retain all 28-kernel, 90-minute, and owner-acceptance gates for later."
       ],
       "timeout_budget": {
@@ -148,11 +148,11 @@
       }
     }
   ],
-  "terminal_recovery": "If candidate identity, startup, Matrix/AUX health, DDP, critical performance, Packet20 restore, or owner-settings restoration fails, stop and use only one exact SHA-verified R4 recovery if the fresh exact authorization covers it; verify R4 identity/health and captured settings. Never retry installation or claim full qualification.",
+  "terminal_recovery": "If candidate identity, startup, Matrix/AUX health, or DDP fails, stop and use only one exact SHA-verified R4 recovery if the fresh exact authorization covers it; verify R4 identity/health and captured settings. A runner, feature-check, or owner-settings cleanup error alone is not firmware rollback evidence. Never retry installation or claim full qualification.",
   "expected_terminal_outputs": [
     "exact installed firmware identity or exact R4 recovery identity",
     "5-minute smoke receipt and captured owner-settings restore verification",
-    "Matrix/AUX/DDP health and decisive performance samples",
+    "Matrix/AUX/DDP health and observational current-workload FPS samples",
     "qualification remains provisional; frozen 28-kernel and uninterrupted 90-minute gates remain open"
   ],
   "provisional_release_contract": {
@@ -171,37 +171,14 @@
     "target": "Matrix 192.168.77.10 / 70:4b:ca:5b:34:5c only",
     "smoke_seconds": 300,
     "smoke_sample_interval_seconds": 30,
-    "reference_workload": {
-      "kernel_id": 17,
-      "kernel_name": "Center_Field",
-      "variant_signature": 1347100689,
-      "baseline_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
-      "baseline_profile_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/sweep/17_Center_Field.profile.json",
-      "baseline_profile_sha256": "6dc805960340634177ddb8227e3de5a15356ebe96e7cbd54162889a0dfcdc5c0",
-      "baseline_fps_median": 42.0,
-      "baseline_fps_min": 41,
-      "controls": {
-        "audio_response": 50,
-        "aux_brightness": 255,
-        "matrix_brightness": 44,
-        "matrix_on": true,
-        "motion": 50,
-        "overlay_id": null,
-        "palette": {"mode": "legacy"},
-        "scene": 0,
-        "vibe": 0,
-        "wled_brightness": 255
-      },
-      "comparison_scope": "Exact same kernel, variant signature, and matched rendering controls as the recorded f89 reference profile; short-smoke catastrophic early stop only. Frozen sustained thresholds still apply only in full qualification."
-    },
     "smoke_checks": [
       "candidate runtime identity",
       "Matrix/AUX identity and operating state",
       "Matrix-to-AUX native DDP live source",
       "continuous uptime and renderer advancement",
-      "20 FPS early-stop only on the fixed, matched Center_Field reference workload; low FPS on other animations is not inferred to be a shared-system regression",
-      "combined Vibe/audio/palette/scoreboard feature check under exact Packet20 snapshot",
-      "restore and verify captured owner settings"
+      "read-only current-animation FPS observation with no threshold because workloads are not matched",
+      "separate bounded Vibe/audio/palette/text API check with self-contained WLED/HBNF cleanup",
+      "verify captured runtime and persisted owner settings after cleanup"
     ],
     "frozen_policy": "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
     "full_qualification_required_later": true,

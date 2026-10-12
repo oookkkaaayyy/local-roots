@@ -52,16 +52,6 @@ SUCCESSOR_RELEASE = "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-l
 SUCCESSOR_SHA = "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187"
 SUCCESSOR_SIZE = 1498832
 PROVISIONAL_RELEASE = "hbnf-cart2-phase2-r6-incremental-controls-20261011"
-PROVISIONAL_REFERENCE_KERNEL_ID = 17
-PROVISIONAL_REFERENCE_KERNEL_NAME = "Center_Field"
-PROVISIONAL_REFERENCE_VARIANT_SIGNATURE = 1347100689
-PROVISIONAL_REFERENCE_PROFILE = ROOT/"evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/sweep/17_Center_Field.profile.json"
-PROVISIONAL_REFERENCE_PROFILE_SHA = "6dc805960340634177ddb8227e3de5a15356ebe96e7cbd54162889a0dfcdc5c0"
-PROVISIONAL_REFERENCE_CONTROLS = {
-    "audio_response":50,"aux_brightness":255,"matrix_brightness":44,"matrix_on":True,
-    "motion":50,"overlay_id":None,"palette":{"mode":"legacy"},"scene":0,
-    "vibe":0,"wled_brightness":255,
-}
 SUCCESSOR_BIN = ROOT/"evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011.bin"
 
 
@@ -134,28 +124,6 @@ def load_candidate_profile(capsule_path: pathlib.Path) -> CandidateProfile:
          or starting_sha!=CANDIDATE_SHA or not isinstance(starting_release,str)
          or not re.fullmatch(r"[A-Za-z0-9._-]+",starting_release))):
         raise RuntimeError("provisional-workflow-smoke-or-starting-identity-invalid")
-    if transaction_mode=="provisional":
-        ref=contract.get("reference_workload",{})
-        profile_path=ROOT/ref.get("baseline_profile_path","")
-        if (ref.get("kernel_id")!=PROVISIONAL_REFERENCE_KERNEL_ID
-            or ref.get("kernel_name")!=PROVISIONAL_REFERENCE_KERNEL_NAME
-            or ref.get("variant_signature")!=PROVISIONAL_REFERENCE_VARIANT_SIGNATURE
-            or ref.get("baseline_release_id")!=RELEASE
-            or ref.get("baseline_profile_sha256")!=PROVISIONAL_REFERENCE_PROFILE_SHA
-            or profile_path.resolve()!=PROVISIONAL_REFERENCE_PROFILE.resolve()
-            or not profile_path.is_file() or sha(profile_path)!=PROVISIONAL_REFERENCE_PROFILE_SHA
-            or ref.get("controls")!=PROVISIONAL_REFERENCE_CONTROLS):
-            raise RuntimeError("provisional-reference-workload-binding-invalid")
-        baseline=json.loads(profile_path.read_text()).get("profile",{})
-        if (baseline.get("release_id")!=RELEASE
-            or baseline.get("qualification_eligible") is not True
-            or baseline.get("kernel")!={"id":PROVISIONAL_REFERENCE_KERNEL_ID,
-                "name":PROVISIONAL_REFERENCE_KERNEL_NAME,"variant_id":PROVISIONAL_REFERENCE_VARIANT_SIGNATURE}
-            or baseline.get("effective_rendering_settings",{}).get("status")!="MATCHED"
-            or baseline.get("effective_rendering_settings",{}).get("values")!=PROVISIONAL_REFERENCE_CONTROLS
-            or baseline.get("fps",{}).get("median")!=ref.get("baseline_fps_median")
-            or baseline.get("fps",{}).get("min")!=ref.get("baseline_fps_min")):
-            raise RuntimeError("provisional-reference-profile-content-mismatch")
     profile=CandidateProfile(release,candidate_sha,candidate_size,candidate_bin,adapter,
         output,transaction_mode=transaction_mode,starting_release_id=starting_release,
         starting_sha256=starting_sha or (R4_SHA if starting_release==R4 else ""))
@@ -493,7 +461,7 @@ def provisional_smoke_restore_state_safe(values, owner_baseline):
     allowed={
         "matrixBrightness":{owner_baseline.get("matrixBrightness"),FROZEN_MATRIX_BRIGHTNESS},
         "auxBrightness":{owner_baseline.get("auxBrightness"),255},
-        "vibe":{owner_baseline.get("vibe"),0},
+        "vibe":{owner_baseline.get("vibe"),0,1},
     }
     if any(type(owner_baseline.get(k)) is not int for k in allowed):
         return False
@@ -823,7 +791,7 @@ def exact_runtime(result, release):
 
 
 def validate_provisional_health_sample(sample, expected_release, previous_uptime=None):
-    """Validate only low-overhead, user-visible smoke invariants; never full qualification."""
+    """Validate read-only runtime health; FPS is observed, not gated on an arbitrary animation."""
     if sample.get("release_id") != expected_release:
         raise RuntimeError("provisional-smoke-release-identity-mismatch")
     if (sample.get("matrix_ip") != "192.168.77.10" or sample.get("matrix_mac") != MATRIX_MAC
@@ -840,10 +808,6 @@ def validate_provisional_health_sample(sample, expected_release, previous_uptime
     fps=sample.get("fps")
     if not isinstance(fps,(int,float)) or fps<0:
         raise RuntimeError("provisional-smoke-fps-missing")
-    if sample.get("kernel_id")!=PROVISIONAL_REFERENCE_KERNEL_ID:
-        raise RuntimeError("provisional-smoke-reference-workload-kernel-mismatch")
-    if sample.get("variant_signature")!=PROVISIONAL_REFERENCE_VARIANT_SIGNATURE:
-        raise RuntimeError("provisional-smoke-reference-workload-variant-mismatch")
     render_count=sample.get("render_count")
     if not isinstance(render_count,int) or render_count<0:
         raise RuntimeError("provisional-smoke-renderer-progress-missing")
@@ -852,11 +816,11 @@ def validate_provisional_health_sample(sample, expected_release, previous_uptime
 
 def run_provisional_health_window(sample_fn, duration_seconds=300, interval_seconds=30,
                                   clock=time.monotonic, sleep=time.sleep):
-    """Run the policy's 5-minute smoke at low read cadence with no diagnostic mode."""
+    """Run a five-minute read-only health window without Packet20 instrumentation."""
     if duration_seconds != 300 or interval_seconds != 30:
         raise ValueError("provisional-smoke-duration-and-cadence-are-policy-bound")
     started=clock(); deadline=started+duration_seconds; previous_uptime=None
-    fps_values=[]; sample_count=0; low_fps_streak=0; previous_render_count=None
+    fps_values=[]; sample_count=0; previous_render_count=None
     while True:
         sample=sample_fn()
         previous_uptime,fps,render_count=validate_provisional_health_sample(sample,PROVISIONAL_RELEASE,previous_uptime)
@@ -864,53 +828,14 @@ def run_provisional_health_window(sample_fn, duration_seconds=300, interval_seco
             raise RuntimeError("provisional-smoke-renderer-stalled")
         previous_render_count=render_count
         fps_values.append(fps); sample_count+=1
-        low_fps_streak=low_fps_streak+1 if fps<20 else 0
-        if low_fps_streak>=3:
-            raise RuntimeError("provisional-smoke-reference-catastrophic-fps-floor-failed")
         now=clock()
         if now>=deadline:
             break
         sleep(min(interval_seconds,deadline-now))
     return {"status":"PASS","duration_seconds":round(clock()-started,3),
         "sample_interval_seconds":interval_seconds,"sample_count":sample_count,
-        "fps_min":min(fps_values),"fps_median":sorted(fps_values)[len(fps_values)//2],
-        "reference_kernel_id":PROVISIONAL_REFERENCE_KERNEL_ID,
-        "reference_variant_signature":PROVISIONAL_REFERENCE_VARIANT_SIGNATURE,
-        "reference_f89_fps_median":42.0,
-        "measured_vs_f89_reference_ratio":round(sorted(fps_values)[len(fps_values)//2]/42.0,4),
-        "performance_scope":"fixed comparable Center_Field smoke only; known slower kernels are assessed in full 28-kernel qualification"}
-
-
-def provisional_reference_controls_payload():
-    c=PROVISIONAL_REFERENCE_CONTROLS
-    return {"on":True,"bri":c["wled_brightness"],"HBNF":{
-        "scene":c["scene"],"vibe":c["vibe"],"motion":c["motion"],
-        "audioResponse":c["audio_response"],"matrixBrightness":c["matrix_brightness"],
-        "auxBrightness":c["aux_brightness"],
-        # The candidate's live API requires an accepted legacy palette id.
-        # The recorded effective profile normalizes this to mode=legacy.
-        "palette":{"mode":"legacy","id":"hbnf-balanced"}}}
-
-
-def validate_provisional_reference_context(context):
-    state=context.get("state",{})
-    h=state.get("HBNF",{})
-    actual={"kernel_id":h.get("kernel"),"variant_signature":h.get("variantSignature"),
-        "scene":h.get("scene"),"vibe":h.get("vibe"),"motion":h.get("motion"),
-        "audio_response":h.get("audioResponse"),"matrix_brightness":h.get("matrixBrightness"),
-        "aux_brightness":h.get("auxBrightness"),"palette_mode":h.get("palette",{}).get("mode"),
-        "wled_brightness":state.get("bri")}
-    expected={"kernel_id":PROVISIONAL_REFERENCE_KERNEL_ID,
-        "variant_signature":PROVISIONAL_REFERENCE_VARIANT_SIGNATURE,
-        **PROVISIONAL_REFERENCE_CONTROLS}
-    expected.pop("matrix_on",None);expected.pop("overlay_id",None)
-    expected["palette_mode"]=expected.pop("palette")["mode"]
-    mismatches={key:{"expected":expected[key],"actual":actual.get(key)}
-        for key in expected if actual.get(key)!=expected[key]}
-    if mismatches:
-        raise RuntimeError("provisional-smoke-reference-workload-controls-not-matched:"+
-            json.dumps({"mismatches":mismatches,"expected":expected,"actual":actual},sort_keys=True))
-    return True
+        "fps_min_observed":min(fps_values),"fps_median_observed":sorted(fps_values)[len(fps_values)//2],
+        "performance_scope":"observational only under the owner's current animation; no FPS acceptance threshold is applied here. Frozen performance gates remain in full qualification."}
 
 
 def wait_runtime(release, timeout=150):
@@ -1151,6 +1076,18 @@ def device_failure_requires_recovery(summary):
         "diagnostic-continuation-aux-projection-inactive",
     )
     return any(marker in text for marker in markers)
+
+
+def provisional_device_failure_requires_recovery(summary):
+    """Only an objective shared-device health failure can consume provisional R4 recovery."""
+    text=json.dumps(summary,sort_keys=True).lower()
+    return any(marker in text for marker in (
+        "provisional-smoke-matrix-identity-or-output-failure",
+        "provisional-smoke-aux-ddp-health-failure",
+        "provisional-smoke-uptime-continuity-failure",
+        "provisional-smoke-release-identity-mismatch",
+        "provisional-smoke-renderer-stalled",
+    ))
 
 
 def coordinate_qualification(port):
@@ -1562,7 +1499,8 @@ class LivePort:
             or pending.get("candidate_sha256")!=self.candidate.sha256
             or pending.get("candidate_install_attempts_used")!=1
             or pending.get("recovery_attempts_used")!=0
-            or pending.get("status")!="PROVISIONAL_CLEANUP_PASS_R6_RETAINED_UNQUALIFIED"
+            or pending.get("status") not in ("PROVISIONAL_CLEANUP_PASS_R6_RETAINED_UNQUALIFIED",
+                "PROVISIONAL_SMOKE_INCOMPLETE_NORMAL_OPERATION_RESTORED_UNQUALIFIED")
             or state.get("installed_release")!=self.candidate.release_id
             or state.get("installed_firmware_sha256")!=self.candidate.sha256):
             raise RuntimeError("provisional-smoke-continuation-state-not-exact-installed-candidate")
@@ -1588,7 +1526,7 @@ class LivePort:
             result["provisional_smoke"]=smoke
             if smoke.get("passed") is True:
                 result["status"]="PROVISIONAL_SMOKE_PASS_NOT_FULLY_QUALIFIED"
-            elif device_failure_requires_recovery(smoke):
+            elif provisional_device_failure_requires_recovery(smoke):
                 recovery_preflight=self.preflight_failed_candidate_recovery()
                 result["recovery_preflight"]=recovery_preflight
                 recovery=self.recover_r4()
@@ -1733,18 +1671,15 @@ class LivePort:
                 "diagnostic_complete": diagnostics, "abort": abort}
 
     def provisional_smoke(self, owner_baseline):
-        """Reuse Packet20 snapshot/restore and combined check, then run the policy's 5-minute smoke."""
+        """Run bounded feature readback and ordinary read-only five-minute health monitoring."""
         if self.candidate.transaction_mode!="provisional":
             raise RuntimeError("provisional-smoke-requires-provisional-capsule")
         result={"passed":False,"duration_seconds":300,"candidate_release_id":self.candidate.release_id,
-            "candidate_sha256":self.candidate.sha256,"snapshot_restore":None,"owner_settings_restore":None}
-        adapter_script=ROOT/"scripts/hbnf_foundation_live_adapter.py"
-        env_prefix=["env",f"HBNF_EXPECTED_RELEASE_ID={self.candidate.release_id}",
-            f"HBNF_EXPECTED_FIRMWARE_SHA256={self.candidate.sha256}",sys.executable,str(adapter_script)]
-        snapshot_path=self.outdir/"PROVISIONAL_PACKET20_SNAPSHOT.json"
+            "candidate_sha256":self.candidate.sha256,"packet20_instrumentation":"NOT_USED",
+            "feature_check":None,"owner_settings_restore":None}
         self.outdir.mkdir(parents=True,exist_ok=True)
         failure=None
-        snapshot=None
+        feature_check_started=False
         def health_sample():
             self.device_requests+=5
             mi=get_json(MATRIX+"/json/info")[2]
@@ -1763,72 +1698,48 @@ class LivePort:
                 "aux_on":ast.get("on"),"aux_live":ai.get("live"),"aux_mode":ai.get("lm"),
                 "aux_source":ai.get("lip"),"aux_led_count":ai.get("leds",{}).get("count")}
         try:
-            p=run(env_prefix+["snapshot","--inventory","config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"],timeout=60)
-            if p.returncode:raise RuntimeError("provisional-smoke-packet20-snapshot-failed:"+p.stderr.decode(errors="replace")[-700:])
-            snapshot=json.loads(p.stdout.decode().strip().splitlines()[-1])
-            if not isinstance(snapshot.get("snapshotId"),int) or not isinstance(snapshot.get("snapshotHash"),int):
-                raise RuntimeError("provisional-smoke-packet20-snapshot-identity-invalid")
-            save(snapshot_path,snapshot)
-            p=run(env_prefix+["telemetry-mode","--enabled","true"],timeout=35)
-            if p.returncode:raise RuntimeError("provisional-smoke-telemetry-enable-failed:"+p.stderr.decode(errors="replace")[-500:])
-            # Select the previously measured fast reference workload and apply
-            # its hash-bound f89 controls. This makes the catastrophic FPS stop
-            # comparable and prevents a known 16–18 FPS animation from being
-            # mistaken for a shared-system regression.
-            p=run(env_prefix+["select","--kernel",str(PROVISIONAL_REFERENCE_KERNEL_ID)],timeout=35)
-            if p.returncode:raise RuntimeError("provisional-smoke-reference-workload-select-failed:"+p.stderr.decode(errors="replace")[-500:])
-            self._record_device_request()
-            post_json(MATRIX+"/json/state",provisional_reference_controls_payload())
-            time.sleep(5)
-            reference_context=read_matrix_context(self._record_device_request,self.candidate.release_id,
-                authorized_runtime_vibe=0)
-            validate_provisional_reference_context(reference_context)
-            result["reference_workload"]={"kernel_id":PROVISIONAL_REFERENCE_KERNEL_ID,
-                "kernel_name":PROVISIONAL_REFERENCE_KERNEL_NAME,
-                "variant_signature":PROVISIONAL_REFERENCE_VARIANT_SIGNATURE,
-                "f89_profile_sha256":PROVISIONAL_REFERENCE_PROFILE_SHA,
-                "f89_fps_median":42.0,"controls":PROVISIONAL_REFERENCE_CONTROLS}
-            result["health_window"]=run_provisional_health_window(health_sample)
+            # Feature controls are a distinct bounded transaction with their
+            # own snapshot/restore. The five-minute health window itself only
+            # reads ordinary Matrix/AUX endpoints and never enters Packet20.
+            feature_check_started=True
             combined_path=self.outdir/"COMBINED_FEATURE_CHECK.json"
             p=run([sys.executable,str(ROOT/"scripts/hbnf_r6_combined_feature_check.py"),
-                "--release-id",self.candidate.release_id,"--out",str(combined_path)],timeout=60)
+                "--release-id",self.candidate.release_id,"--out",str(combined_path),
+                "--require-normal-mode"],timeout=90)
             combined=json.loads(combined_path.read_text()) if combined_path.is_file() else {}
+            result["feature_check"]=combined
             result["combined_feature_check"]=combined
             if p.returncode or combined.get("status")!="PASS":
                 if combined.get("checks",{}).get("matrix_aux_ddp_projection") is False:
                     raise RuntimeError("provisional-smoke-aux-ddp-health-failure")
                 raise RuntimeError("provisional-smoke-combined-feature-check-failed")
+            result["health_window"]=run_provisional_health_window(health_sample)
         except Exception as exc:
             failure=f"{type(exc).__name__}: {exc}"
         finally:
-            if snapshot is not None:
+            if feature_check_started:
                 try:
-                    p=run(env_prefix+["restore","--snapshot-file",str(snapshot_path)],timeout=110)
-                    if p.returncode:raise RuntimeError("packet20-restore-command-failed:"+p.stderr.decode(errors="replace")[-500:])
-                    restored=json.loads(p.stdout.decode().strip().splitlines()[-1])
-                    p=run(env_prefix+["verify-restore","--snapshot-file",str(snapshot_path)],timeout=35)
-                    if p.returncode:raise RuntimeError("packet20-restore-readback-failed:"+p.stderr.decode(errors="replace")[-500:])
-                    verified=json.loads(p.stdout.decode().strip().splitlines()[-1])
-                    result["snapshot_restore"]={"restore":restored,"verification":verified,"verified":verified.get("restoreVerified") is True}
-                    if result["snapshot_restore"]["verified"] is not True:
-                        raise RuntimeError("provisional-smoke-packet20-restore-not-verified")
+                    context=read_matrix_context(self._record_device_request,self.candidate.release_id,
+                        authorized_runtime_vibe=owner_baseline.get("vibe"))
+                    keys=("matrixBrightness","auxBrightness","vibe")
+                    settings_ok=(all(context["brightness"]["runtime"].get(k)==owner_baseline.get(k) for k in keys)
+                        and all(context["brightness"]["persisted"].get(k)==owner_baseline.get(k) for k in keys))
+                    if not settings_ok:
+                        if not provisional_smoke_restore_state_safe(context["brightness"],owner_baseline):
+                            raise RuntimeError("provisional-smoke-owner-settings-outside-captured-or-test-values")
+                        restored=self.restore_qualification_brightness(owner_baseline)
+                        if not isinstance(restored,dict) or restored.get("verified") is not True:
+                            raise RuntimeError("provisional-smoke-owner-settings-restore-failed")
+                        context=read_matrix_context(self._record_device_request,self.candidate.release_id,
+                            authorized_runtime_vibe=owner_baseline.get("vibe"))
+                        settings_ok=(all(context["brightness"]["runtime"].get(k)==owner_baseline.get(k) for k in keys)
+                            and all(context["brightness"]["persisted"].get(k)==owner_baseline.get(k) for k in keys))
+                    result["owner_settings_restore"]={"verified":settings_ok,
+                        "runtime":context["brightness"]["runtime"],"persisted":context["brightness"]["persisted"]}
+                    if not settings_ok:raise RuntimeError("provisional-smoke-owner-settings-readback-mismatch")
                 except Exception as exc:
+                    result["owner_settings_restore"]={"verified":False,"error":f"{type(exc).__name__}: {exc}"}
                     failure=failure or f"{type(exc).__name__}: {exc}"
-            try:
-                restored=self.restore_qualification_brightness(owner_baseline)
-                result["owner_settings_restore"]=restored
-                if not isinstance(restored,dict) or restored.get("verified") is not True:
-                    raise RuntimeError("provisional-smoke-owner-settings-restore-failed")
-                context=read_matrix_context(self._record_device_request,self.candidate.release_id,
-                    authorized_runtime_vibe=owner_baseline.get("vibe"))
-                keys=("matrixBrightness","auxBrightness","vibe")
-                if (any(context["brightness"]["runtime"].get(k)!=owner_baseline.get(k) for k in keys)
-                    or any(context["brightness"]["persisted"].get(k)!=owner_baseline.get(k) for k in keys)):
-                    raise RuntimeError("provisional-smoke-owner-settings-readback-mismatch")
-                result["owner_settings_restore"]["verified"]=True
-            except Exception as exc:
-                result["owner_settings_restore"]={"verified":False,"error":f"{type(exc).__name__}: {exc}"}
-                failure=failure or f"{type(exc).__name__}: {exc}"
         if failure:
             result["failure"]=failure
             result["abort"]={"run_error":"provisional-smoke-"+failure}

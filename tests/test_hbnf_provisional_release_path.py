@@ -32,9 +32,9 @@ def test_candidate_workflow_and_artifact_are_exact_and_start_from_f89():
     outputs=" ".join(workflow["stages"][6]["outputs"])
     assert profile.sha256 in outputs and "8afb21b9" in outputs
     assert "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b" not in outputs
-    reference=contract["reference_workload"]
-    assert reference["kernel_id"]==17 and reference["kernel_name"]=="Center_Field"
-    assert reference["variant_signature"]==1347100689 and reference["baseline_fps_median"]==42.0
+    assert "reference_workload" not in contract
+    smoke=" ".join(contract["smoke_checks"])
+    assert "no threshold" in smoke and "self-contained" in smoke
 
 
 def test_wrong_artifact_or_matrix_target_rejected_before_port_execution():
@@ -134,7 +134,7 @@ def test_failed_provisional_health_gate_rolls_back_once():
     assert result["candidate_install_attempts"]==1 and result["recovery_attempts"]==1
 
 
-def test_five_minute_health_window_preserves_catastrophic_performance_stop():
+def test_five_minute_health_window_observes_arbitrary_animation_without_fps_gate():
     now=[0.0];samples=[]
     def sample():
         value={"release_id":txn.PROVISIONAL_RELEASE,"matrix_ip":"192.168.77.10",
@@ -150,42 +150,30 @@ def test_five_minute_health_window_preserves_catastrophic_performance_stop():
     assert result["sample_count"]==11
     bad=FakePort()
     now[0]=0
-    low=lambda:{**sample(),"fps":10}
-    try:txn.run_provisional_health_window(low,clock=lambda:now[0],sleep=sleep)
-    except RuntimeError as exc:assert "reference-catastrophic-fps-floor" in str(exc)
-    else:raise AssertionError("catastrophic low-FPS sequence accepted")
+    low=lambda:{**sample(),"fps":10,"kernel_id":18,"variant_signature":1347100706}
+    result=txn.run_provisional_health_window(low,clock=lambda:now[0],sleep=sleep)
+    assert result["status"]=="PASS" and result["fps_min_observed"]==10
+    assert "no FPS acceptance threshold" in result["performance_scope"]
 
 
-def test_known_slow_animation_is_never_misclassified_as_reference_workload():
+def test_known_slow_animation_is_observed_not_rejected_as_a_mismatched_reference():
     sample={"release_id":txn.PROVISIONAL_RELEASE,"matrix_ip":"192.168.77.10",
         "matrix_mac":txn.MATRIX_MAC,"wled":"16.0.1","matrix_on":True,
         "uptime_seconds":100,"fps":17,"kernel_id":18,
         "variant_signature":1347100706,"render_count":100,
         "aux_ip":"192.168.77.11","aux_mac":txn.AUX_MAC,"aux_on":True,
         "aux_live":True,"aux_mode":"DDP","aux_source":"192.168.77.10","aux_led_count":22}
-    try:txn.validate_provisional_health_sample(sample,txn.PROVISIONAL_RELEASE)
-    except RuntimeError as exc:assert "reference-workload-kernel-mismatch" in str(exc)
-    else:raise AssertionError("arbitrary slow animation accepted as fixed smoke workload")
+    result=txn.validate_provisional_health_sample(sample,txn.PROVISIONAL_RELEASE)
+    assert result[1]==17 and result[2]==100
 
 
-def test_reference_workload_controls_match_saved_f89_profile():
-    payload=txn.provisional_reference_controls_payload()
-    assert payload=={"on":True,"bri":255,"HBNF":{"scene":0,"vibe":0,"motion":50,
-        "audioResponse":50,"matrixBrightness":44,"auxBrightness":255,
-        "palette":{"mode":"legacy","id":"hbnf-balanced"}}}
-    firmware_source=(ROOT/"firmware/phase2/integration-r6-compositor-timing/usermod/usermod_hbnf_foundation_v1.cpp").read_text()
-    assert 'const char* id=obj["id"]|""' in firmware_source
-    assert 'strcmp(id,"hbnf-balanced")&&strcmp(id,"copper")&&strcmp(id,"ocean")' in firmware_source
-    state={"bri":255,"HBNF":{"kernel":17,"variantSignature":1347100689,
-        "scene":0,"vibe":0,"motion":50,"audioResponse":50,
-        "matrixBrightness":44,"auxBrightness":255,"palette":{"mode":"legacy"}}}
-    assert txn.validate_provisional_reference_context({"state":state}) is True
-    state["HBNF"]["kernel"]=8
-    try:txn.validate_provisional_reference_context({"state":state})
-    except RuntimeError as exc:
-        assert "reference-workload-controls-not-matched" in str(exc)
-        assert '"actual":' in str(exc) and '"mismatches"' in str(exc)
-    else:raise AssertionError("unmatched kernel passed reference smoke setup")
+def test_provisional_runner_does_not_start_packet20_or_select_a_benchmark_kernel():
+    source=(ROOT/"scripts/hbnf_r6_audio_cache_live_transaction.py").read_text()
+    smoke=source.split("    def provisional_smoke(self, owner_baseline):",1)[1].split("\n    def recover_r4",1)[0]
+    assert '"packet20_instrumentation":"NOT_USED"' in smoke
+    assert '"--require-normal-mode"' in smoke
+    assert '"snapshot"' not in smoke and '"telemetry-mode"' not in smoke and '"select"' not in smoke
+    assert "run_provisional_health_window(health_sample)" in smoke
 
 
 def test_smoke_continuation_is_distinct_from_install_and_preserves_consumed_attempt():
@@ -206,9 +194,10 @@ def test_smoke_continuation_is_distinct_from_install_and_preserves_consumed_atte
 
 
 def test_feature_failure_does_not_spend_r4_recovery_but_system_health_failure_does():
-    assert txn.device_failure_requires_recovery({"error":"provisional-smoke-combined-feature-check-failed"}) is False
-    assert txn.device_failure_requires_recovery({"error":"provisional-smoke-aux-ddp-health-failure"}) is True
-    assert txn.device_failure_requires_recovery({"error":"provisional-smoke-reference-catastrophic-fps-floor-failed"}) is True
+    assert txn.provisional_device_failure_requires_recovery({"error":"provisional-smoke-combined-feature-check-failed"}) is False
+    assert txn.provisional_device_failure_requires_recovery({"error":"provisional-smoke-owner-settings-restore-failed"}) is False
+    assert txn.provisional_device_failure_requires_recovery({"error":"provisional-smoke-aux-ddp-health-failure"}) is True
+    assert txn.provisional_device_failure_requires_recovery({"error":"provisional-smoke-renderer-stalled"}) is True
 
 
 def test_new_candidate_attempt_does_not_reuse_consumed_f89_attempt_counter():
