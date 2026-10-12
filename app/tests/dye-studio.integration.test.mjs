@@ -159,9 +159,10 @@ test('source method matching evaluates the actual dye block rather than the proj
   assert.match(studio,/Per-block methods change warnings and evidence ranking/);
 });
 
-test('standalone studio follows Local Roots design tokens with distinct dark disc canvas', () => {
-  assert.match(studio,/id="local-roots-studio-visual-integration"/);
+test('studio uses the existing Local Roots palette without duplicate conflicting theme overrides', () => {
+  assert.match(studio,/id="du-brand-integration-theme"/);
   assert.match(studio,/--panel:#fff8ee/);
   assert.match(studio,/--accent:#a7623a/);
-  assert.match(studio,/\.canvas-shell\{background:radial-gradient/);
+  assert.match(studio,/\.canvas-shell\{background:linear-gradient\(145deg,#eadac5,#f7f0e4\)\}/);
+  assert.doesNotMatch(studio,/id="local-roots-studio-visual-integration"/);
 });
