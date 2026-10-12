@@ -1,0 +1,21 @@
+--- a/ANIMartRIX.h
++++ b/ANIMartRIX.h
+@@ -3251,10 +3251,17 @@
+   calculate_oscillators(timings); 
+ 
+ 
++  // This effect runs on the fixed 32x16 HBNF matrix. The cosine term depends
++  // only on row y, so compute its exact original float expression once per row.
++  float waterRowCosine[16];
++  for (int y = 0; y < num_y; y++) {
++    waterRowCosine[y] = 4 * cosf(move.directional[6]*PI+float(y)/2);
++  }
++
+   for (int x = 0; x < num_x; x++) {
+     for (int y = 0; y < num_y; y++) {
+ 
+-      animation.dist       = distance[x][y] + 4*sinf(move.directional[5]*PI+(float)x/2) + 4 * cosf(move.directional[6]*PI+float(y)/2);
++      animation.dist       = distance[x][y] + 4*sinf(move.directional[5]*PI+(float)x/2) + waterRowCosine[y];
+       animation.angle      = 1 * polar_theta[x][y];
+       animation.z          = 5;
+       animation.scale_x    = 0.06 ;

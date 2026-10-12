@@ -1,0 +1,28 @@
+{
+  "schema": "hbnf-animartrix-water-row-cosine-candidate-v1",
+  "status": "OFFLINE_PATCH_AND_HOST_EQUIVALENCE_PASS__TARGET_BUILD_AND_RUNTIME_TIMING_NOT_RUN",
+  "upstream": {
+    "repository": "https://github.com/netmindz/animartrix",
+    "commit": "81eb09b91c8c9c8c01f8ea442787f8127d56c72f",
+    "file": "ANIMartRIX.h",
+    "git_blob": "db640748175cfdd70dc103fc23c830e646fa5ab6"
+  },
+  "target": {
+    "effect": "Water",
+    "matrix": "32x16",
+    "operation_change": "512 row-invariant cosf calls per frame to 16"
+  },
+  "change": "Precompute the exact existing y-dependent cosine expression once per row and reuse it for each x. Pixel arithmetic order and float expression are preserved.",
+  "patch": "firmware/phase2/performance/animartrix-water-row-cosine.patch",
+  "patch_sha256": "415a1167119e77bdaecb2182a8117bca6c88dc3a7a31e0a85870c7bf93be51de",
+  "host_test": {
+    "file": "tests/animartrix_water_row_cosine_equivalence.cpp",
+    "sha256": "e999122eb27dbfda2b4dca68d7d2f2f60319f85ef3927ff57e3c6625bae671df",
+    "result": "PASS; bit-identical float outputs for 10,000 deterministic direction pairs across all 512 pixels"
+  },
+  "limits": [
+    "Patch dry-run passed against the exact pinned upstream file.",
+    "No Xtensa build, target cycle timing, full animation-output comparison, live profile, or physical visual acceptance has been run.",
+    "This patch does not address Distance Experiment or Complex Kaleido 3."
+  ]
+}
