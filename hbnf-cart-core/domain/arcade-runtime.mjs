@@ -9,7 +9,7 @@ export function createArcadeSession({gameId,sessionId,snapshot,now=Date.now()}){
 
 export function transitionArcadeSession(session,phase,now=Date.now()){
   if(!session||!FLOW.has(phase))throw new Error("invalid arcade lifecycle transition");
-  const allowed={ATTRACT:["MENU"],MENU:["READY","EXIT"],READY:["PLAY","EXIT"],PLAY:["PAUSE","GAME_OVER","EXIT"],PAUSE:["PLAY","GAME_OVER","EXIT"],GAME_OVER:["READY","EXIT"],EXIT:[]};
+  const allowed={ATTRACT:["MENU"],MENU:["READY","EXIT"],READY:["PLAY","EXIT"],PLAY:["PAUSE","GAME_OVER","EXIT","READY"],PAUSE:["PLAY","GAME_OVER","EXIT","READY"],GAME_OVER:["READY","EXIT"],EXIT:[]};
   if(!allowed[session.phase]?.includes(phase))throw new Error(`invalid arcade transition ${session.phase} -> ${phase}`);
   return {...session,phase,endedAt:phase==="EXIT"?now:session.endedAt};
 }

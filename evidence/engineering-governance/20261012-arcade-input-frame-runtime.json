@@ -1,0 +1,28 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "ARCADE_INPUT_FRAME_RUNTIME_20261012",
+  "summary": "Connect reusable Snake and Maze Chase logic to host-side trusted-owner session actions and generate row-major 32x16 RGB frames for future Matrix integration.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "User request in the Cart Upgrades project on 2026-10-12 explicitly requires integrating existing deterministic Snake/Maze runtimes, secure session-bound phone input, and 32x16 rendering; work remains offline.",
+      "affected_subsystem": "Host arcade session/input/frame orchestration only. Caller-supplied owner/pair context is trusted input, not authentication. This does not add a transport, firmware frame receiver, backend deployment, or live device action; it does not establish a playable integrated game.",
+      "rollback_reference": "Revert hbnf-cart-core/domain/arcade-controller.mjs, tests/hbnf-arcade-runtime.mjs changes, and this record. Existing firmware and installed R6 remain untouched.",
+      "evidence_sources": [
+        "work/cart2/14_DIGITAL_ARCADE_CANDIDATE_SPEC.md",
+        "Pinned WLED 16.0.1 source commit 29b389df1c1aaec6ff53aea742d17063b985906c: wled00/ws.cpp binary DDP WebSocket handler and wled00/e131.cpp DDP realtime pixel handling."
+      ],
+      "tests": [
+        "node --test tests/hbnf-arcade-runtime.mjs",
+        "node --test staging/coordinated-backend/hbnf-cart-control/guest-command.test.mjs staging/coordinated-backend/hbnf-cart-control/runtime-vibe.test.mjs tests/hbnf_matrix_relay_contract.mjs"
+      ]
+    }
+  }
+}

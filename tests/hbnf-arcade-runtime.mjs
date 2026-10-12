@@ -4,6 +4,7 @@ import {validateArcadeInput} from "../hbnf-cart-core/domain/arcade-input.mjs";
 import {arcadeExitRestore,createArcadeSession,transitionArcadeSession} from "../hbnf-cart-core/domain/arcade-runtime.mjs";
 import {createMazeChaseGame,mazeChaseFrame,steerMazeChase,tickMazeChase} from "../hbnf-cart-core/domain/maze-chase-runtime.mjs";
 import {createSnakeGame,snakeFrame,steerSnake,tickSnake} from "../hbnf-cart-core/domain/snake-runtime.mjs";
+import {applyArcadeControllerInput,createAuthorizedArcadeGame,tickArcadeGame} from "../hbnf-cart-core/domain/arcade-controller.mjs";
 
 test("input gate rejects unpaired/guest, wrong-session, stale, and replayed commands",()=>{
   const context={active:true,sessionId:"s1",controllerId:"c1",paired:true,role:"owner",lastSequence:7};
@@ -63,4 +64,43 @@ test("Maze Chase has a deterministic 32x16 board, pellets, movement, and no wall
   for(let i=0;i<500&&["READY","PLAY"].includes(game.status);i++)game=tickMazeChase(game);
   assert.equal(game.walls.length,512);
   assert.equal(game.player.x>0&&game.player.x<31&&game.player.y>0&&game.player.y<15,true);
+});
+
+test("authorized Snake controller input advances through a real 32x16 RGB frame and restores on exit",()=>{
+  const controller={active:true,paired:true,role:"owner",controllerId:"owner-ipad"};
+  const snapshot={brightness:66,auxBrightness:68,vibe:5,motion:42};
+  let state=createAuthorizedArcadeGame({gameId:"snake",sessionId:"snake-session",controller,snapshot,seed:7,now:1000});
+  const original=Array.from(state.frame);
+  assert.equal(state.frame.length,32*16*3);
+  assert.throws(()=>createAuthorizedArcadeGame({gameId:"snake",sessionId:"bad",controller:{...controller,role:"guest"},snapshot}),/authorized_paired_owner_controller_required/);
+  const send=(sequence,action,at=1100)=>applyArcadeControllerInput(state,{sessionId:"snake-session",controllerId:"owner-ipad",sequence,action,issuedAt:at},at);
+  let result=send(1,"PRIMARY");assert.equal(result.ok,true);state=result.state;
+  result=send(2,"UP",1200);assert.equal(result.ok,true);state=result.state;
+  state=tickArcadeGame(state);
+  assert.notDeepEqual(Array.from(state.frame),original,"accepted input and game tick must change the rendered pixels");
+  assert.equal(state.frame.length,1536);
+  assert.equal(send(2,"LEFT",1201).reason,"replayed_or_invalid_sequence");
+  result=send(3,"PAUSE",1300);assert.equal(result.ok,true);state=result.state;
+  assert.equal(tickArcadeGame(state),state,"paused games do not advance");
+  result=send(4,"PAUSE",1400);assert.equal(result.ok,true);state=result.state;
+  result=send(5,"SECONDARY",1500);assert.equal(result.ok,true);state=result.state;
+  result=send(6,"EXIT",1600);assert.equal(result.ok,true);
+  assert.deepEqual(result.restoredSnapshot,snapshot);
+  assert.equal(result.frame,null);
+  assert.equal(applyArcadeControllerInput(result.state,{sessionId:"snake-session",controllerId:"owner-ipad",sequence:7,action:"UP",issuedAt:1700},1700).reason,"session_inactive");
+});
+
+test("Maze Chase controller path renders wall, pellet, player, and enemy RGB cells",()=>{
+  const controller={active:true,paired:true,role:"owner",controllerId:"phone-1"};
+  let state=createAuthorizedArcadeGame({gameId:"maze-chase",sessionId:"maze-session",controller,snapshot:{vibe:3},now:1});
+  assert.equal(state.frame.length,1536);
+  const before=Array.from(state.frame);
+  let result=applyArcadeControllerInput(state,{sessionId:"maze-session",controllerId:"phone-1",sequence:1,action:"PRIMARY",issuedAt:2},2);
+  state=result.state;
+  result=applyArcadeControllerInput(state,{sessionId:"maze-session",controllerId:"phone-1",sequence:2,action:"RIGHT",issuedAt:3},3);
+  state=tickArcadeGame(result.state);
+  assert.equal(state.frame.length,1536);
+  assert.notDeepEqual(Array.from(state.frame),before);
+  const colors=new Set(Array.from({length:512},(_,i)=>Array.from(state.frame.slice(i*3,i*3+3)).join(",")));
+  assert.ok(colors.has("18,36,150"));assert.ok(colors.has("82,108,166"));
 });
