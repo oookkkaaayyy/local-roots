@@ -399,7 +399,7 @@ button.danger{color:#8d3129}
       <details class="client-hide" style="margin-top:10px;margin-bottom:0">
         <summary><span class="summary-left">Prediction model details</span></summary>
         <div class="detail-body">
-          <div class="control-label">Model <button class="help-dot" data-help-title="Advanced models" data-help="The client tool uses one locked HBNF research model so users are not asked to choose between arbitrary digital blend modes. Local measurements automatically override its daylight estimate.">?</button></div>
+          <div class="control-label">Model <button class="help-dot" data-help-title="Advanced models" data-help="The client tool uses one locked HBNF research model so users are not asked to choose between arbitrary digital blend modes. Only compatible exact-method, color, pass-count, plastic, dose-ID and viewing-condition records can override opaque daylight estimates; legacy and uncontrolled observations cannot.">?</button></div>
           <select id="blendMode" class="model-select" disabled><option value="research" selected>HBNF research model — locked</option></select>
           <div id="modeHelp" class="small" style="margin-top:7px"></div>
         </div>
@@ -439,8 +439,8 @@ button.danger{color:#8d3129}
             </select>
           </div>
           <div>
-            <div class="client-only locked-method"><b>Application:</b> 100% full-strength HBNF production recipe</div>
-            <div class="calibration-only"><div class="control-label">Application intensity <button class="help-dot" data-help-title="Application intensity" data-help="Client designs are locked to 100%. Lower this only in Calibration Studio when recording an intentionally diluted or lighter experimental application.">?</button></div><input id="strength" type="range" min="1" max="100" value="100"><div class="readout"><span>Light</span><strong id="strengthOut">100%</strong></div></div>
+            <div class="client-only locked-method"><b>Preview intensity:</b> 100% nominal model input. This is NOT a measured dye concentration or validated physical recipe.</div>
+            <div class="calibration-only"><div class="control-label">Application intensity <button class="help-dot" data-help-title="Application intensity" data-help="The 100% model intensity is a nominal scale, NOT full-strength chemical concentration. Reduce only for a documented, intentionally different physical application. Numerical uptake is not yet calibrated.">?</button></div><input id="strength" type="range" min="1" max="100" value="100"><div class="readout"><span>Light</span><strong id="strengthOut">100%</strong></div></div>
           </div>
           <div class="wide" id="layerPassesBox"><label class="control-label" for="layerPasses">Passes / coats for selected dye block</label><input id="layerPasses" type="number" min="1" max="12" step="1" value="1" inputmode="numeric"><div class="small">Physically applied passes on this specific color; affects recipe records and evidence warnings, not the uncalibrated preview.</div></div>
           <div id="angleBox">
