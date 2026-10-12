@@ -139,8 +139,13 @@ test('direct-application research is source labeled without pretending measured 
   assert.match(studio,/QA-AC-02/);
   assert.match(studio,/QA-AC-03/);
   assert.match(studio,/QA-WD-04/);
-  assert.match(studio,/Of 55 provisional records/);
+  assert.match(studio,/QA-AC-05/);
+  assert.match(studio,/QA-AC-06/);
+  assert.match(studio,/QA-AC-07/);
+  assert.match(studio,/Of 58 provisional records/);
   assert.match(studio,/no measured numeric color data/);
+  assert.match(studio,/Manufacturer starting guidance is 1\/2 tsp powder/);
+  assert.match(studio,/potential adhesive softening and blurred edges/);
   assert.match(studio,/One brush pass can leave visible streaks/);
   assert.match(studio,/Multiple direct-acetone passes may deepen color but are NOT a validated linear multiplier/);
 });
