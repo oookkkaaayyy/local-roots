@@ -2656,7 +2656,7 @@
       "status": "PASS"
     },
     "ssh_auth": "KEY_AUTH_VERIFIED__~/.ssh/hbnf_opal_rsa",
-    "status": "PROVISIONAL_CLEANUP_PASS_R6_RETAINED_UNQUALIFIED",
+    "status": "PROVISIONAL_SMOKE_INCOMPLETE_DIAGNOSTIC_MODE_REQUIRES_RESET",
     "t3_fast_path_preparation": {
       "human_approval_required": true,
       "human_packet": "work/cart2/27_T3_PHASE2_FAST_PATH_PREP_20261006.md",
@@ -2752,7 +2752,7 @@
       "candidate_install_attempts_used": 1,
       "recovery_install_limit": 1,
       "recovery_attempts_used": 0,
-      "status": "PROVISIONAL_CLEANUP_PASS_R6_RETAINED_UNQUALIFIED",
+      "status": "PROVISIONAL_SMOKE_INCOMPLETE_DIAGNOSTIC_MODE_REQUIRES_RESET",
       "starting_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
       "starting_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
       "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
@@ -2760,8 +2760,8 @@
       "preflight_receipt": "evidence/cart2-r6-incremental-controls-20261011/live-provisional/FRESH_PRELIVE_READONLY.json",
       "preflight_sha256": "73a68affc3bc688be6b026423e55c29cf68cc14112a988c14c26d49abe9115dd",
       "owner_settings_baseline": {
-        "auxBrightness": 68,
         "matrixBrightness": 66,
+        "auxBrightness": 68,
         "vibe": 5
       },
       "candidate_attempt_started_unix": 1791781096.712597,
@@ -2778,7 +2778,9 @@
       "cleanup_prelive_sha256": "0ad0a69559fbd6fcb428359bc867543bb0aaafcba49edae848d99cbdac1cf4a6",
       "settings_restore_attempts_used": 2,
       "cleanup_result": "evidence/cart2-r6-incremental-controls-20261011/live-provisional/PROVISIONAL_SETTINGS_RESTORE_RESULT.json",
-      "cleanup_result_sha256": "8e23ea48325e4c9d9a423a31cded4398de22a08478f1ac56b7cf5c792cb2b50f"
+      "cleanup_result_sha256": "8e23ea48325e4c9d9a423a31cded4398de22a08478f1ac56b7cf5c792cb2b50f",
+      "smoke_continuation_result": "evidence/cart2-r6-incremental-controls-20261011/live-provisional/smoke-continuation-20261011/run/PROVISIONAL_SMOKE_CONTINUATION_RESULT.json",
+      "smoke_continuation_result_sha256": "6e7db42aad1018d61e4d37812cc52792f9bd14aeb7c5477d4d965a0a957f0249"
     }
   },
   "inherited_evidence": [
@@ -2998,56 +3000,57 @@
     "snapshot_hash": 4051728214,
     "snapshot_id": 1
   },
-  "last_updated_utc": "2026-10-12T05:04:51Z",
+  "last_updated_utc": "2026-10-12T05:29:52Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_authorization_binding": {
-    "authorization_id": "OWNER-20261011-CART2-INCREMENTAL-CONTROLS-PROVISIONAL-01",
-    "source_message_ref": "Direct user message in current conversation: CART 2.0 \u2014 CONDITIONAL AUTHORIZATION TO INSTALL.",
+    "authorization_id": "OWNER-20261011-CART2-PROVISIONAL-SMOKE-CONTINUATION-01",
+    "source_message_ref": "Direct user message in this conversation: CART 2.0 \u2014 COMPLETE INSTALLED R6 SMOKE.",
     "candidate_release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
     "candidate_bin_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
     "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "matrix_mac": "70:4b:ca:5b:34:5c",
     "scope": [
-      "Install exactly one candidate hbnf-cart2-phase2-r6-incremental-controls-20261011 SHA-256 8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d on Matrix 70:4b:ca:5b:34:5c after candidate-specific LIVE_APPROVED admission and fresh preflight.",
-      "Run the existing 5-minute smoke on matched Center_Field kernel 17, variant 1347100689; preserve frozen full-qualification thresholds and do not run the 90-minute soak.",
-      "Capture and restore fresh owner settings Matrix 66, AUX 68, Vibe 5 as recorded in preflight receipt evidence/cart2-r6-incremental-controls-20261011/live-provisional/FRESH_PRELIVE_READONLY.json.",
-      "If a mandatory safety, exact identity, Matrix/AUX DDP health, controlled catastrophic performance, or settings-restoration failure requires recovery, make at most one exact R4 recovery using SHA-256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c."
+      "Run exactly one guarded five-minute provisional integration smoke on the already-installed exact candidate; do not install/reinstall/rebuild firmware.",
+      "Temporarily select matched Center_Field kernel 17 and controls, capture live owner settings first, then restore and read back all captured settings.",
+      "No 28-kernel sweep and no 90-minute soak; preserve all final-qualification gates.",
+      "At most one exact R4 recovery only after a genuine mandatory device-health or safety failure and a fresh exact recovery preflight."
     ],
     "candidate_install_limit": 1,
     "recovery_install_limit": 1
   },
   "live_mutation_authorization": {
-    "authorization": "Direct owner message authorizes exactly one fresh f89 installation and qualification transaction and, if required, one exact R4 recovery, under all existing admission and safety gates.",
-    "authorization_id": "OWNER-20261011-CART2-F89-FIELD-QUALIFICATION-01",
+    "authorization": "Direct owner authorization for one exact installed-candidate smoke-only continuation; no firmware install or rebuild.",
+    "authorization_id": "OWNER-20261011-CART2-PROVISIONAL-SMOKE-CONTINUATION-01",
     "authorized": false,
     "candidate_attempt_started_unix": 1791751980.558401,
     "candidate_attempts_used": 1,
     "candidate_install_limit": 1,
     "candidate_install_permitted": false,
-    "candidate_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
-    "candidate_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
-    "continuation_authorization_id": "OWNER-20261011-CART2-F89-QUALIFICATION-CONTINUATION-01",
+    "candidate_release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "candidate_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+    "continuation_authorization_id": null,
     "continuation_authorization_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/continuation-20261011/CONTINUATION_AUTHORIZATION.json",
     "continuation_authorization_sha256": "c38ef2318483eb201764387181c26cdcbb14f75479af1295d4c4b1e392181bb7",
-    "current_gate": "QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED",
+    "current_gate": "PROVISIONAL_SMOKE_INCOMPLETE_CANDIDATE_UNQUALIFIED",
     "hardware_writes_permitted_now": false,
-    "operation_scope": "CLOSED_AFTER_QUALIFICATION",
+    "operation_scope": "CLOSED_AFTER_PROVISIONAL_SMOKE",
     "owner_brightness_baseline": {
-      "auxBrightness": 255,
-      "matrixBrightness": 147,
-      "vibe": 0
+      "matrixBrightness": 66,
+      "auxBrightness": 68,
+      "vibe": 5
     },
     "qualification_prelive_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/continuation-20261011/preflight-03/QUALIFICATION_PRELIVE_READONLY.json",
     "qualification_prelive_sha256": "0805f2b5274b6155601afe4387ce2a8909c8f74e65901485f674ce48fec25ff6",
-    "qualification_recovery_subscope": "RESTORE_INTERRUPTED_BRIGHTNESS_THEN_QUALIFY",
+    "qualification_recovery_subscope": null,
     "recovery_attempts_used": 0,
     "recovery_install_limit": 1,
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "source_evidence": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/continuation-20261011/CONTINUATION_AUTHORIZATION.json",
-    "source_message_ref": "Direct user message in this conversation, 2026-10-11: CART 2.0 \u2014 URGENT FIELD-READY RECOVERY.",
-    "status": "QUALIFICATION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED",
+    "source_evidence": "evidence/cart2-r6-incremental-controls-20261011/live-provisional/smoke-continuation-20261011/SMOKE_CONTINUATION_AUTHORIZATION.json",
+    "source_message_ref": "Direct user message in this conversation: CART 2.0 \u2014 COMPLETE INSTALLED R6 SMOKE.",
+    "status": "PROVISIONAL_SMOKE_INCOMPLETE_DIAGNOSTIC_MODE_REQUIRES_RESET",
     "transaction_consumed": true,
-    "transaction_result": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/continuation-20261011/qualification-run/QUALIFICATION_CONTINUATION_RESULT.json"
+    "transaction_result": "evidence/cart2-r6-incremental-controls-20261011/live-provisional/smoke-continuation-20261011/run/PROVISIONAL_SMOKE_CONTINUATION_RESULT.json",
+    "source_evidence_sha256": "43bfc5b7d7c273bfa7584a8926f561100ebec408036a2ce583a17303561a57af"
   },
   "live_mutation_authorization_closed_at_utc": null,
   "live_mutation_authorization_closure": {

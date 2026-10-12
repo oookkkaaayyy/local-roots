@@ -1,0 +1,30 @@
+{
+  "schema": "hbnf-cart2-exact-owner-smoke-continuation-authorization-v1",
+  "binding": {
+    "authorization_id": "OWNER-20261011-CART2-PROVISIONAL-SMOKE-CONTINUATION-01",
+    "source_message_ref": "Direct user message in this conversation: CART 2.0 \u2014 COMPLETE INSTALLED R6 SMOKE.",
+    "candidate_release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "candidate_bin_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+    "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "scope": [
+      "Run exactly one guarded five-minute provisional integration smoke on the already-installed exact candidate; do not install/reinstall/rebuild firmware.",
+      "Temporarily select matched Center_Field kernel 17 and controls, capture live owner settings first, then restore and read back all captured settings.",
+      "No 28-kernel sweep and no 90-minute soak; preserve all final-qualification gates.",
+      "At most one exact R4 recovery only after a genuine mandatory device-health or safety failure and a fresh exact recovery preflight."
+    ],
+    "candidate_install_limit": 1,
+    "recovery_install_limit": 1
+  },
+  "current_firmware_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+  "candidate_install_permitted": false,
+  "owner_settings_fresh_readonly_receipt": "evidence/cart2-r6-incremental-controls-20261011/live-provisional/smoke-continuation-20261011/final-readonly-preflight-2/QUALIFICATION_PRELIVE_READONLY.json",
+  "owner_settings_fresh_readonly_receipt_sha256": "e256f2ffb0c40083b151a85e722e6ce7d15d84f69def4ea994738c86d06e465d",
+  "owner_settings_baseline": {
+    "auxBrightness": 68,
+    "matrixBrightness": 66,
+    "vibe": 5
+  },
+  "recovery_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "authorized_at_utc": "2026-10-12T05:26:16Z"
+}

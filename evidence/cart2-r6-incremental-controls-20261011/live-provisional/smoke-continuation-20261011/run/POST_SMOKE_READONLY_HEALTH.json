@@ -1,0 +1,51 @@
+{
+  "schema": "hbnf-cart2-post-smoke-readonly-health-v1",
+  "captured_unix": 1791783067.0524428,
+  "read_only": true,
+  "device_mutations": 0,
+  "matrix": {
+    "ip": "192.168.77.10",
+    "mac": "704bca5b345c",
+    "release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "candidate": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "expected_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+    "wled": "16.0.1",
+    "on": true,
+    "fps": 15,
+    "uptime_seconds": 1950,
+    "kernel": 18,
+    "whole_frame_us": 91290,
+    "packet20": {
+      "enabled": true,
+      "snapshotState": "RESTORED",
+      "snapshotValid": false,
+      "restoreVerified": false,
+      "lastCommand": "begin",
+      "lastCommandAccepted": true
+    },
+    "foundation_telemetry_enabled": false,
+    "owner_settings": {
+      "matrixBrightness": 66,
+      "auxBrightness": 68,
+      "vibe": 5
+    }
+  },
+  "aux": {
+    "ip": "192.168.77.11",
+    "mac": "8c94df55c34c",
+    "live": true,
+    "mode": "DDP",
+    "source": "192.168.77.10",
+    "led_count": 22,
+    "on": true,
+    "lor": 0
+  },
+  "assessment": {
+    "exact_candidate_identity": true,
+    "matrix_powered": true,
+    "aux_ddp_live": true,
+    "owner_settings_match_fresh_baseline": true,
+    "diagnostic_mode_off": false,
+    "normal_automatic_mode_restored": false
+  }
+}

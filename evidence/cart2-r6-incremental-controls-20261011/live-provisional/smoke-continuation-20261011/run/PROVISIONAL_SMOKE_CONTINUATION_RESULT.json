@@ -1,0 +1,203 @@
+{
+  "candidate_install_attempts": 0,
+  "candidate_install_permitted": false,
+  "candidate_release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+  "candidate_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+  "device_requests": 36,
+  "operation_scope": "PROVISIONAL_SMOKE_ONLY",
+  "preflight": {
+    "aux": {
+      "ip": "192.168.77.11",
+      "led_count": 22,
+      "live": true,
+      "lor": 0,
+      "mac": "8c94df55c34c",
+      "mode": "DDP",
+      "on": true,
+      "source": "192.168.77.10"
+    },
+    "brightness_baseline": {
+      "matrix_on": true,
+      "persisted": {
+        "auxBrightness": 68,
+        "matrixBrightness": 66,
+        "vibe": 5
+      },
+      "runtime": {
+        "auxBrightness": 68,
+        "matrixBrightness": 66,
+        "vibe": 5
+      },
+      "vibe_persistence": "verified"
+    },
+    "candidate_attempts_used": 1,
+    "candidate_install_permitted": false,
+    "candidate_release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "candidate_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+    "captured_unix": 1791782944.055722,
+    "cart_lan_interface": "en0",
+    "device_mutations": 0,
+    "device_requests": 9,
+    "host_on_ac": true,
+    "matrix": {
+      "brightness": 66,
+      "candidate_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+      "diagnostic_off": true,
+      "fps": 39,
+      "free_heap": 73700,
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "on": true,
+      "release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+      "telemetry_off": true,
+      "uptime_seconds": 1825,
+      "wled": "16.0.1"
+    },
+    "operation_scope": "QUALIFICATION_ONLY",
+    "owner_brightness_baseline": {
+      "auxBrightness": 68,
+      "matrixBrightness": 66,
+      "vibe": 5
+    },
+    "owner_settings_restore_required": false,
+    "pass": true,
+    "qualification_recovery_subscope": null,
+    "read_only": true,
+    "recovery_attempts_used": 0,
+    "rollback": {
+      "opal_ledger": "OPAL_QUALIFICATION_PREFLIGHT_OKn/usr/bin/sha256sum\n55 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\n",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    },
+    "schema": "hbnf-cart2-qualification-prelive-v1",
+    "single_worker": {
+      "conflicting_pids": [],
+      "pass": true,
+      "worker_count": 1
+    }
+  },
+  "provisional_smoke": {
+    "abort": {
+      "run_error": "provisional-smoke-RuntimeError: provisional-smoke-packet20-snapshot-failed:foundation adapter error: RuntimeError: fresh-session-begin deadline leaves 0.794344s; below minimum HTTP request budget 1s; no GET started for http://192.168.77.10/json/state\n"
+    },
+    "candidate_release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "candidate_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+    "duration_seconds": 300,
+    "failure": "RuntimeError: provisional-smoke-packet20-snapshot-failed:foundation adapter error: RuntimeError: fresh-session-begin deadline leaves 0.794344s; below minimum HTTP request budget 1s; no GET started for http://192.168.77.10/json/state\n",
+    "owner_settings_restore": {
+      "identity_before_post": {
+        "build_mac": "704bca5b345c",
+        "candidate": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+        "ip": "192.168.77.10",
+        "mac": "704bca5b345c",
+        "release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+        "wled": "16.0.1"
+      },
+      "operation": "restore",
+      "persisted_readback_semantics": "Raw /cfg.json is parsed in memory; only HBNF brightness/AUX/vibe fields are retained; raw config is not logged or saved",
+      "post_error": null,
+      "post_outcome": "RESPONSE_RECEIVED",
+      "readback": {
+        "identity": {
+          "build_mac": "704bca5b345c",
+          "candidate": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+          "ip": "192.168.77.10",
+          "mac": "704bca5b345c",
+          "release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+          "wled": "16.0.1"
+        },
+        "matrix_on": true,
+        "persisted": {
+          "auxBrightness": 68,
+          "matrixBrightness": 66,
+          "vibe": 5
+        },
+        "runtime": {
+          "auxBrightness": 68,
+          "matrixBrightness": 66,
+          "vibe": 5
+        }
+      },
+      "readback_endpoints": [
+        "GET /json/info",
+        "GET /hbnf/build.json",
+        "GET /json/state",
+        "http://192.168.77.10/edit?func=download&path=%2Fcfg.json"
+      ],
+      "requested_hbnf": {
+        "auxBrightness": 68,
+        "matrixBrightness": 66,
+        "vibe": 5
+      },
+      "save_settle_seconds": 1.25,
+      "target_matrix_brightness": 66,
+      "verified": true,
+      "vibe_config_migration": "not_needed"
+    },
+    "passed": false,
+    "snapshot_restore": null
+  },
+  "recovery_attempts": 0,
+  "schema": "hbnf-cart2-provisional-smoke-continuation-v1",
+  "status": "PROVISIONAL_SMOKE_INCOMPLETE_CANDIDATE_UNQUALIFIED",
+  "post_smoke_readonly_health": {
+    "schema": "hbnf-cart2-post-smoke-readonly-health-v1",
+    "captured_unix": 1791783067.0524428,
+    "read_only": true,
+    "device_mutations": 0,
+    "matrix": {
+      "ip": "192.168.77.10",
+      "mac": "704bca5b345c",
+      "release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+      "candidate": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+      "expected_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+      "wled": "16.0.1",
+      "on": true,
+      "fps": 15,
+      "uptime_seconds": 1950,
+      "kernel": 18,
+      "whole_frame_us": 91290,
+      "packet20": {
+        "enabled": true,
+        "snapshotState": "RESTORED",
+        "snapshotValid": false,
+        "restoreVerified": false,
+        "lastCommand": "begin",
+        "lastCommandAccepted": true
+      },
+      "foundation_telemetry_enabled": false,
+      "owner_settings": {
+        "matrixBrightness": 66,
+        "auxBrightness": 68,
+        "vibe": 5
+      }
+    },
+    "aux": {
+      "ip": "192.168.77.11",
+      "mac": "8c94df55c34c",
+      "live": true,
+      "mode": "DDP",
+      "source": "192.168.77.10",
+      "led_count": 22,
+      "on": true,
+      "lor": 0
+    },
+    "assessment": {
+      "exact_candidate_identity": true,
+      "matrix_powered": true,
+      "aux_ddp_live": true,
+      "owner_settings_match_fresh_baseline": true,
+      "diagnostic_mode_off": false,
+      "normal_automatic_mode_restored": false
+    }
+  },
+  "failure_classification": {
+    "category": "HOST_QUALIFICATION_RUNNER_INITIALIZATION_FAILURE",
+    "detail": "RuntimeError: provisional-smoke-packet20-snapshot-failed:foundation adapter error: RuntimeError: fresh-session-begin deadline leaves 0.794344s; below minimum HTTP request budget 1s; no GET started for http://192.168.77.10/json/state\n",
+    "five_minute_health_window_started": false,
+    "candidate_firmware_failure_proven": false,
+    "recovery_performed": false,
+    "reason_no_recovery": "Failure occurred before the smoke health window and was an adapter deadline failure; read-only identity, Matrix power, owner settings, and AUX DDP remain verified."
+  },
+  "ready_for_supervised_field_use": false,
+  "field_use_blocker": "Packet20 diagnostic mode remains enabled with snapshotState RESTORED and snapshotValid false; current adapter has no supported abort/stop operation for this state. A reboot may be required to return to ordinary automatic playback, but none was authorized or performed."
+}

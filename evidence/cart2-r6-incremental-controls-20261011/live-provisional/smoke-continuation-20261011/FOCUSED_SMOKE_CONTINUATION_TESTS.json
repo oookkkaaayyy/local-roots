@@ -1,0 +1,22 @@
+{
+  "schema": "hbnf-cart2-provisional-smoke-offline-tests-v1",
+  "candidate_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+  "source_commit": "a6adb1184c0397d8f796ab9ff6af7fcf987e2241",
+  "checks": {
+    "py_compile": true,
+    "focused_test": true,
+    "control_state_valid": true,
+    "git_diff_check": true
+  },
+  "nonblocking_diagnostic": {
+    "platform_doctor": "FAILS_STALE_CANONICAL_ADAPTER_IDENTITY",
+    "detail": "Existing doctor compares the currently installed provisional candidate in primary state with the unrelated canonical Packet20 adapter release id; candidate-specific capsule/admission and read-only candidate preflight are used for this continuation."
+  },
+  "evidence_inputs": {
+    "scripts/hbnf_r6_audio_cache_live_transaction.py": "c6af5e49b9ca8be0cf2279fbc378c1041a44735030715047aadb2eb44bcae3f8",
+    "scripts/hbnf_guarded_run.py": "1ac0a58793292d02cf5ec898714861811bc416d5e9670134a11b40acc70ad299",
+    "tests/test_hbnf_provisional_release_path.py": "0c56dc9564cae12fbc10c6777015df0ce5068fea09b8804cd9e6e374ca36718e",
+    "firmware/phase2/integration-r6-compositor-timing/usermod/usermod_hbnf_foundation_v1.cpp": "bd1c530533333dccc8ab92c45dec7aea339244dc2db282cd3057a5125f9f6507"
+  },
+  "captured_at_utc": "2026-10-12T05:28:07Z"
+}

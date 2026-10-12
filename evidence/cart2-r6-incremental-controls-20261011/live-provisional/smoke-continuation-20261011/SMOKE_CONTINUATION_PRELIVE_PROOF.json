@@ -1,0 +1,58 @@
+{
+  "schema": "local-roots-prelive-proof-v1",
+  "run_id": "cart2-r6-smoke-continuation-20261011",
+  "capsule_sha256": "bbef0c93b4e582ba79982215080fe34500f16a1295399519ba7e36a9fcfec871",
+  "approved_for_mutation": true,
+  "stages": {
+    "contract-closure": {
+      "status": "PASS",
+      "evidence": [
+        "evidence/cart2-r6-incremental-controls-20261011/BUILD_RECEIPT.json",
+        "evidence/cart2-r6-incremental-controls-20261011/SOURCE_BINDING.json",
+        "evidence/cart2-r6-incremental-controls-20261011/OFFLINE_CANDIDATE_MANIFEST.json"
+      ]
+    },
+    "recovery-proof": {
+      "status": "PASS",
+      "evidence": [
+        "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+        "evidence/cart2-r6-audio-cache-20261010/R6_DRIVE_ARTIFACT_READBACK.json",
+        "evidence/cart2-r6-incremental-controls-20261011/live-provisional/smoke-continuation-20261011/final-readonly-preflight-3/QUALIFICATION_PRELIVE_READONLY.json"
+      ]
+    },
+    "transaction-rehearsal": {
+      "status": "PASS",
+      "evidence": [
+        "evidence/cart2-r6-incremental-controls-20261011/live-provisional/smoke-continuation-20261011/FOCUSED_SMOKE_CONTINUATION_TESTS.json",
+        "scripts/hbnf_r6_audio_cache_live_transaction.py",
+        "scripts/hbnf_guarded_run.py"
+      ]
+    },
+    "capture-current-state": {
+      "status": "PASS",
+      "evidence": [
+        "evidence/cart2-r6-incremental-controls-20261011/live-provisional/smoke-continuation-20261011/final-readonly-preflight-3/QUALIFICATION_PRELIVE_READONLY.json"
+      ]
+    }
+  },
+  "recovery_identity": {
+    "identity": "R4 sha256 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c (1489008 bytes)",
+    "verification": "local recovery binary SHA/size verified; fresh Opal ledger reports exact R4; no recovery operation has been performed"
+  },
+  "pre_mutation_state": {
+    "matrix_release": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
+    "matrix_mac": "704bca5b345c",
+    "aux_mac": "8c94df55c34c",
+    "owner_settings": {
+      "auxBrightness": 68,
+      "matrixBrightness": 66,
+      "vibe": 5
+    },
+    "preflight_path": "evidence/cart2-r6-incremental-controls-20261011/live-provisional/smoke-continuation-20261011/final-readonly-preflight-3/QUALIFICATION_PRELIVE_READONLY.json",
+    "preflight_sha256": "d01ec1ac3f13bc0f54e51689c8dba4535b3e5ee2b49b9e267f3599d07a0568d2"
+  },
+  "consumer_contract": {
+    "verified": true,
+    "identity": "Existing guarded candidate-specific transaction entrypoint; smoke-only mode binds the exact installed release, candidate SHA, capsule, prelive proof, and LIVE_APPROVED admission; no OTA stage is invoked."
+  }
+}
