@@ -27,6 +27,9 @@ CANDIDATE_SIZE = 1497984
 R4 = "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1"
 R4_SHA = "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
 R4_SIZE = 1489008
+UI_BASELINE_RELEASE = "hbnf-cart2-phase2-r6-vibe-first-ui-20261012"
+UI_BASELINE_SHA = "43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3"
+UI_BASELINE_SIZE = 1481344
 MATRIX = "http://192.168.77.10"
 AUX = "http://192.168.77.11"
 MATRIX_MAC = "704bca5b345c"
@@ -43,6 +46,7 @@ SSH = ["ssh", "-i", str(pathlib.Path.home()/".ssh/hbnf_opal_rsa"),
        "-o", "BatchMode=yes"]
 BIN = ROOT/"evidence/cart2-r6-audio-cache-20261010/artifact/hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010.bin"
 R4_BIN = ROOT/"evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin"
+UI_BASELINE_BIN = ROOT/"evidence/cart2-arcade-release-prep-20261012/artifact/hbnf-cart2-phase2-r6-vibe-first-ui-20261012-recovery.bin"
 ADAPTER = ROOT/"evidence/cart2-r6-audio-cache-20261010/R6_AUDIO_CACHE_LIVE_SWEEP_ADAPTER.json"
 OUT = ROOT/"evidence/cart2-r6-audio-cache-20261010/live-qualification"
 
@@ -51,7 +55,10 @@ OUT = ROOT/"evidence/cart2-r6-audio-cache-20261010/live-qualification"
 SUCCESSOR_RELEASE = "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011"
 SUCCESSOR_SHA = "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187"
 SUCCESSOR_SIZE = 1498832
-PROVISIONAL_RELEASE = "hbnf-cart2-phase2-r6-incremental-controls-20261011"
+PROVISIONAL_RELEASE = "hbnf-cart2-phase2-r6-local-arcade-owner-only-20261012"
+PROVISIONAL_SHA = ""
+PROVISIONAL_SIZE = 0
+PROVISIONAL_BIN = ROOT/"evidence/cart2-arcade-release-prep-20261012/artifact/hbnf-cart2-phase2-r6-local-arcade-owner-only-20261012.bin"
 SUCCESSOR_BIN = ROOT/"evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011.bin"
 
 
@@ -68,6 +75,7 @@ class CandidateProfile(NamedTuple):
     transaction_mode: str = "full"
     starting_release_id: str = R4
     starting_sha256: str = ""
+    rollback_release_id: str = R4
 
 
 LEGACY_R6_PROFILE = CandidateProfile(RELEASE,CANDIDATE_SHA,CANDIDATE_SIZE,BIN,ADAPTER,OUT)
@@ -102,13 +110,26 @@ def load_candidate_profile(capsule_path: pathlib.Path) -> CandidateProfile:
     adapter_path=contract.get("foundation_adapter_path")
     output_path=contract.get("qualification_output_path")
     if (not isinstance(release,str) or not re.fullmatch(r"[A-Za-z0-9._-]+",release)
-        or not isinstance(candidate_sha,str) or not re.fullmatch(r"[a-f0-9]{64}",candidate_sha)
-        or not isinstance(candidate_size,int) or candidate_size<=0
+        or not isinstance(candidate_sha,str) or (candidate_sha and not re.fullmatch(r"[a-f0-9]{64}",candidate_sha))
+        or (not candidate_sha and is_provisional and candidate_size!=0)
+        or not isinstance(candidate_size,int) or (candidate_size<=0 and is_provisional and candidate_sha)
         or not isinstance(candidate_path,str) or not isinstance(adapter_path,str) or not isinstance(output_path,str)):
         raise RuntimeError("phase2-workflow-candidate-profile-invalid")
-    if (contract.get("recovery_release")!=R4 or contract.get("install_limit")!=1
+    if is_provisional and (not candidate_sha or candidate_size<=0):
+        raise RuntimeError("provisional-candidate-not-installable-without-verified-binary-identity")
+    recovery_release=contract.get("recovery_release")
+    recovery_sha=contract.get("recovery_sha256")
+    recovery_path=contract.get("recovery_bin_path")
+    recovery_size=contract.get("recovery_size_bytes")
+    known_recoveries={R4:(R4_SHA,R4_SIZE,"evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin"),
+        UI_BASELINE_RELEASE:(UI_BASELINE_SHA,UI_BASELINE_SIZE,str(UI_BASELINE_BIN.relative_to(ROOT)))}
+    if (recovery_release not in known_recoveries
+        or known_recoveries[recovery_release]!=(recovery_sha,recovery_size,recovery_path)
+        or contract.get("install_limit")!=1
         or contract.get("rollback_limit")!=1 or contract.get("thresholds_may_be_weakened") is not False):
-        raise RuntimeError("phase2-workflow-frozen-transaction-contract-invalid")
+        raise RuntimeError("phase2-workflow-frozen-transaction-or-recovery-contract-invalid")
+    if not is_provisional and recovery_release != R4:
+        raise RuntimeError("full-qualification-recovery-must-remain-exact-r4")
     candidate_bin=(ROOT/candidate_path).resolve()
     adapter=(ROOT/adapter_path).resolve()
     output=(ROOT/output_path).resolve()
@@ -120,17 +141,19 @@ def load_candidate_profile(capsule_path: pathlib.Path) -> CandidateProfile:
     starting_release=contract.get("starting_release_id",R4)
     starting_sha=contract.get("starting_sha256")
     if (transaction_mode=="provisional" and
-        (contract.get("smoke_seconds")!=300 or starting_release!=RELEASE
-         or starting_sha!=CANDIDATE_SHA or not isinstance(starting_release,str)
+        (contract.get("smoke_seconds")!=300 or starting_release!=recovery_release
+         or starting_sha!=recovery_sha or not isinstance(starting_release,str)
          or not re.fullmatch(r"[A-Za-z0-9._-]+",starting_release))):
         raise RuntimeError("provisional-workflow-smoke-or-starting-identity-invalid")
+    rollback_binary=ROOT/recovery_path
     profile=CandidateProfile(release,candidate_sha,candidate_size,candidate_bin,adapter,
-        output,transaction_mode=transaction_mode,starting_release_id=starting_release,
-        starting_sha256=starting_sha or (R4_SHA if starting_release==R4 else ""))
+        output,rollback_binary,recovery_sha,recovery_size,transaction_mode,starting_release,
+        starting_sha or (R4_SHA if starting_release==R4 else ""),recovery_release)
     expected_recovery=contract.get("recovery_sha256")
     expected_recovery_path=contract.get("recovery_bin_path")
     if (expected_recovery!=profile.rollback_sha256
-        or expected_recovery_path!=str(profile.rollback_binary.relative_to(ROOT))):
+        or expected_recovery_path!=str(profile.rollback_binary.relative_to(ROOT))
+        or profile.rollback_release_id!=recovery_release):
         raise RuntimeError("phase2-workflow-recovery-profile-mismatch")
     adapter_doc=json.loads(adapter.read_text())
     if adapter_doc.get("schema")!="hbnf-live-sweep-adapter-v1":
@@ -138,7 +161,7 @@ def load_candidate_profile(capsule_path: pathlib.Path) -> CandidateProfile:
     argv_lists=[value for key,value in adapter_doc.items() if key.endswith("_argv") and isinstance(value,list)]
     expected_id=f"HBNF_EXPECTED_RELEASE_ID={profile.release_id}"
     expected_sha=f"HBNF_EXPECTED_FIRMWARE_SHA256={profile.sha256}"
-    if (not argv_lists or any(expected_id not in argv or expected_sha not in argv for argv in argv_lists)):
+    if (not argv_lists or any(expected_id not in argv or (expected_sha and expected_sha not in argv) for argv in argv_lists)):
         raise RuntimeError("phase2-workflow-adapter-candidate-mismatch")
     return profile
 
@@ -644,7 +667,16 @@ def exact_artifacts(profile=LEGACY_R6_PROFILE):
     if sha(profile.binary) != profile.sha256 or profile.binary.stat().st_size != profile.size_bytes:
         raise RuntimeError("candidate-byte-identity-failed")
     if sha(profile.rollback_binary) != profile.rollback_sha256 or profile.rollback_binary.stat().st_size != profile.rollback_size_bytes:
-        raise RuntimeError("r4-recovery-byte-identity-failed")
+        raise RuntimeError("exact-recovery-byte-identity-failed")
+
+
+def recovery_is_registered(ledger_text: str, release_id: str, digest: str) -> bool:
+    """Match a release-state ledger row without assuming a sequence number."""
+    for line in ledger_text.splitlines():
+        fields=line.strip().split()
+        if len(fields)>=3 and fields[1]==release_id and fields[2]==digest:
+            return True
+    return False
 
 
 def check_admission(admission_path: pathlib.Path, capsule_path: pathlib.Path, proof_path: pathlib.Path, stage="LIVE_APPROVED", profile=None):
@@ -716,8 +748,10 @@ def preflight(profile=LEGACY_R6_PROFILE, request_counter=None, receipt_name="FRE
     if request_counter is not None: request_counter()
     op = run(SSH+["-o", "ConnectTimeout=4", OPAL, opal], timeout=15)
     opal_out = op.stdout.decode(errors="replace")
-    if op.returncode or "OPAL_PREFLIGHT_OK" not in opal_out or f"55 {R4} {R4_SHA}" not in opal_out or "curl" not in opal_out or "sha256sum" not in opal_out:
-        raise RuntimeError("opal-readonly-release-ledger-or-transfer-preflight-failed")
+    if (op.returncode or "OPAL_PREFLIGHT_OK" not in opal_out
+        or not recovery_is_registered(opal_out,profile.rollback_release_id,profile.rollback_sha256)
+        or "curl" not in opal_out or "sha256sum" not in opal_out):
+        raise RuntimeError("opal-readonly-exact-recovery-ledger-or-transfer-preflight-failed")
     owner_state = capture_owner_state_snapshot(
         ms, ast, mi, ai, matrix_context["identity"],
         {"ip": ai.get("ip"), "mac": ai.get("mac"), "wled": ai.get("ver")},
@@ -855,24 +889,26 @@ def wait_runtime(release, timeout=150):
     raise RuntimeError("runtime-identity-timeout:"+str(last))
 
 
-def restore_r4_once(outdir: pathlib.Path):
+def restore_r4_once(outdir: pathlib.Path, profile=LEGACY_R6_PROFILE):
     current = read_runtime()
     info = current.get("matrix_info", {})
     if (info.get("ip") != "192.168.77.10" or info.get("mac", "").replace(":", "").lower() != MATRIX_MAC
         or info.get("ver") != "16.0.1"):
         raise RuntimeError("refusing-r4-recovery-without-exact-matrix-target-identity")
-    if exact_runtime(current, R4):
-        return {"status": "R4_ALREADY_INSTALLED_NO_UPLOAD", "runtime": current}
-    stage = stage_once(R4_BIN, "/tmp/hbnf-r6-cache-exact-r4.bin")
-    save(outdir/"R4_STAGE.json", stage)
-    receipt = upload_once("/tmp/hbnf-r6-cache-exact-r4.bin", outdir/"r4-ota-response.txt")
-    save(outdir/"R4_UPLOAD.json", receipt)
+    label="R4" if profile.rollback_release_id==R4 else "BASELINE"
+    if exact_runtime(current, profile.rollback_release_id):
+        return {"status": f"{label}_ALREADY_INSTALLED_NO_UPLOAD", "runtime": current}
+    remote=f"/tmp/hbnf-cart2-exact-{label.lower()}-recovery.bin"
+    stage = stage_once(profile.rollback_binary, remote)
+    save(outdir/f"{label}_STAGE.json", stage)
+    receipt = upload_once(remote, outdir/f"{label.lower()}-ota-response.txt")
+    save(outdir/f"{label}_UPLOAD.json", receipt)
     if not receipt["confirmed"]:
         # Resolve an ambiguous response only through read-only identity; never retry.
-        state = wait_runtime(R4, timeout=150)
-        return {"upload": receipt, "runtime": state, "status": "R4_READBACK_VERIFIED"}
-    state = wait_runtime(R4, timeout=150)
-    return {"upload": receipt, "runtime": state, "status": "R4_READBACK_VERIFIED"}
+        state = wait_runtime(profile.rollback_release_id, timeout=150)
+        return {"upload": receipt, "runtime": state, "status": f"{label}_READBACK_VERIFIED"}
+    state = wait_runtime(profile.rollback_release_id, timeout=150)
+    return {"upload": receipt, "runtime": state, "status": f"{label}_READBACK_VERIFIED"}
 
 
 def qualification_command(outdir: pathlib.Path, profile=LEGACY_R6_PROFILE):
@@ -921,6 +957,7 @@ def qualify_with_brightness_guard(port, baseline):
 def coordinate(port):
     """One-attempt transaction state machine shared by live and fake ports."""
     profile = getattr(port, "candidate", LEGACY_R6_PROFILE)
+    rollback_label="R4" if profile.rollback_release_id==R4 else "BASELINE"
     result = {"schema": "hbnf-cart2-candidate-qualification-transaction-v1",
               "candidate_release_id": profile.release_id, "candidate_sha256": profile.sha256,
               "rollback_sha256": profile.rollback_sha256, "candidate_install_attempts": 0,
@@ -944,9 +981,9 @@ def coordinate(port):
             result["status"] = "OTA_NOT_INSTALLED_STARTING_RELEASE_REMAINS_NO_RETRY"
         elif resolved.get("installed") is not True:
             try:
-                result["recovery"] = port.recover_r4()
+                result["recovery"] = port.recover_exact_baseline()
                 result["recovery_attempts"] = 1
-                result["status"] = "RUNTIME_IDENTITY_UNRESOLVED_R4_RECOVERED"
+                result["status"] = f"RUNTIME_IDENTITY_UNRESOLVED_{rollback_label}_RECOVERED"
             except Exception as recovery_exc:
                 result["recovery_error"] = f"{type(recovery_exc).__name__}: {recovery_exc}"
                 result["recovery_attempts"] = getattr(port, "recovery_attempts", 1)
@@ -960,9 +997,9 @@ def coordinate(port):
                     result["status"]="PROVISIONAL_INSTALL_SMOKE_PASS_NOT_FULLY_QUALIFIED"
                 elif device_failure_requires_recovery(smoke):
                     try:
-                        result["recovery"]=port.recover_r4()
+                        result["recovery"]=port.recover_exact_baseline()
                         result["recovery_attempts"]=1
-                        result["status"]="PROVISIONAL_SMOKE_FAILED_R4_RECOVERED"
+                        result["status"]=f"PROVISIONAL_SMOKE_FAILED_{rollback_label}_RECOVERED"
                     except Exception as recovery_exc:
                         result["recovery_error"]=f"{type(recovery_exc).__name__}: {recovery_exc}"
                         result["recovery_attempts"]=getattr(port,"recovery_attempts",1)
@@ -994,9 +1031,9 @@ def coordinate(port):
                     result["status"] = "QUALIFIED_OBJECTIVE_GATES_PASS"
                 elif device_failure_requires_recovery(q):
                     try:
-                        result["recovery"] = port.recover_r4()
+                        result["recovery"] = port.recover_exact_baseline()
                         result["recovery_attempts"] = 1
-                        result["status"] = "QUALIFICATION_FAILED_R4_RECOVERED"
+                        result["status"] = f"QUALIFICATION_FAILED_{rollback_label}_RECOVERED"
                     except Exception as recovery_exc:
                         result["recovery_error"] = f"{type(recovery_exc).__name__}: {recovery_exc}"
                         result["recovery_attempts"] = getattr(port, "recovery_attempts", 1)
@@ -1018,10 +1055,10 @@ def coordinate(port):
                     result["candidate_runtime"] = resolved.get("runtime")
                     result["status"] = "TRANSACTION_HOST_FAILURE_CANDIDATE_REMAINS_UNQUALIFIED"
                 else:
-                    recovery = port.recover_r4()
+                    recovery = port.recover_exact_baseline()
                     result["recovery"] = recovery
                     result["recovery_attempts"] = 1
-                    result["status"] = "TRANSACTION_EXCEPTION_R4_RECOVERED"
+                    result["status"] = f"TRANSACTION_EXCEPTION_{rollback_label}_RECOVERED"
             except Exception as recovery_exc:
                 result["recovery_error"] = f"{type(recovery_exc).__name__}: {recovery_exc}"
                 result["status"] = "RECOVERY_UNVERIFIED_STOP"
@@ -1618,8 +1655,8 @@ class LivePort:
     def resolve_runtime(self, upload):
         deadline = time.monotonic()+150
         last = None
-        exact_r4_seen = False
-        last_r4_runtime = None
+        exact_rollback_seen = False
+        last_rollback_runtime = None
         exact_starting_runtime = None
         while time.monotonic() < deadline:
             try:
@@ -1630,18 +1667,18 @@ class LivePort:
                             "http_response_ambiguous": not upload.get("confirmed", False)}
                 if self.candidate.starting_release_id!=R4 and exact_runtime(runtime,self.candidate.starting_release_id):
                     exact_starting_runtime=runtime
-                if exact_runtime(runtime, R4):
-                    # WLED's success page is emitted before its delayed reboot.
-                    # A stale pre-reboot R4 readback must not close a confirmed
-                    # upload as failed; observe the full bounded identity window.
-                    exact_r4_seen = True
-                    last_r4_runtime = runtime
-                last = "readback is neither exact candidate nor exact R4"
+                if exact_runtime(runtime, self.candidate.rollback_release_id):
+                    # WLED's success page precedes its delayed reboot. Resolve
+                    # by waiting for the exact candidate or rollback baseline;
+                    # never repeat the upload.
+                    exact_rollback_seen = True
+                    last_rollback_runtime = runtime
+                last = "readback is neither exact candidate nor exact rollback baseline"
             except Exception as exc:
                 last = str(exc)
             time.sleep(3)
-        if exact_r4_seen and upload.get("confirmed", False):
-            return {"installed": False, "runtime": last_r4_runtime,
+        if exact_rollback_seen and upload.get("confirmed", False):
+            return {"installed": False, "runtime": last_rollback_runtime,
                     "http_response_ambiguous": False,
                     "resolution_window_seconds": 150}
         if exact_starting_runtime is not None:
@@ -1760,10 +1797,10 @@ class LivePort:
             result["abort"]={"run_error":"provisional-smoke-"+result["failure"]}
         return result
 
-    def recover_r4(self):
+    def recover_exact_baseline(self):
         self.consume_recovery_attempt()
         self.device_requests += 3
-        return restore_r4_once(self.outdir)
+        return restore_r4_once(self.outdir,self.candidate)
 
     def consume_recovery_attempt(self):
         if self.recovery_attempts > 0:
@@ -1963,17 +2000,21 @@ class LivePort:
                 "current_gate": result["status"],
                 "transaction_result": result_ref,
             })
-        if result.get("recovery", {}).get("status") in ("R4_READBACK_VERIFIED", "R4_ALREADY_INSTALLED_NO_UPLOAD"):
-            state["installed_release"] = self.candidate.release_id if result.get("recovery",{}).get("runtime",{}).get("release_id")==self.candidate.release_id else R4
-            state["installed_firmware_sha256"] = self.candidate.sha256 if state["installed_release"]==self.candidate.release_id else self.candidate.rollback_sha256
+        recovery=result.get("recovery",{})
+        recovery_is_current=(recovery.get("status") in (
+            "R4_READBACK_VERIFIED","R4_ALREADY_INSTALLED_NO_UPLOAD",
+            "BASELINE_READBACK_VERIFIED","BASELINE_ALREADY_INSTALLED_NO_UPLOAD"))
+        if recovery_is_current:
+            state["installed_release"] = self.candidate.rollback_release_id
+            state["installed_firmware_sha256"] = self.candidate.rollback_sha256
         elif result.get("status") == "QUALIFIED_OBJECTIVE_GATES_PASS":
             state["installed_release"] = self.candidate.release_id
             state["installed_firmware_sha256"] = self.candidate.sha256
         elif result.get("status") == "PROVISIONAL_INSTALL_SMOKE_PASS_NOT_FULLY_QUALIFIED":
             state["installed_release"] = self.candidate.release_id
             state["installed_firmware_sha256"] = self.candidate.sha256
-        elif smoke_only and result.get("recovery", {}).get("status") in ("R4_READBACK_VERIFIED", "R4_ALREADY_INSTALLED_NO_UPLOAD"):
-            state["installed_release"] = R4
+        elif smoke_only and recovery_is_current:
+            state["installed_release"] = self.candidate.rollback_release_id
             state["installed_firmware_sha256"] = self.candidate.rollback_sha256
         elif result.get("status") in ("OTA_NOT_INSTALLED_STARTING_RELEASE_REMAINS_NO_RETRY", "TRANSACTION_EXCEPTION_STARTING_RELEASE_REMAINS", "CANDIDATE_STAGE_FAILED_NO_WLED_REQUEST"):
             state["installed_release"] = self.candidate.starting_release_id

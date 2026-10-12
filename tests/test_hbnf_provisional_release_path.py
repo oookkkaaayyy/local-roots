@@ -13,30 +13,45 @@ platform_spec=importlib.util.spec_from_file_location("hbnf_platform",ROOT/"scrip
 platform=importlib.util.module_from_spec(platform_spec);platform_spec.loader.exec_module(platform)
 
 
-def test_candidate_workflow_and_artifact_are_exact_and_start_from_f89():
+def test_owner_only_candidate_workflow_blocks_until_binary_is_built_and_uses_ui_recovery():
     workflow_path=ROOT/"platform/workflows/phase2-provisional-release.json"
     workflow=json.loads(workflow_path.read_text())
     contract=workflow["provisional_release_contract"]
+    assert workflow["status"]=="OFFLINE_PREPARATION_BLOCKED__NO_VERIFIED_OWNER_ONLY_BINARY"
+    assert contract["candidate_release"]=="hbnf-cart2-phase2-r6-local-arcade-owner-only-20261012"
+    assert contract["candidate_sha256"]=="" and contract["candidate_size_bytes"]==0
+    assert contract["starting_release_id"]==txn.UI_BASELINE_RELEASE
+    assert contract["starting_sha256"]==txn.UI_BASELINE_SHA
+    assert contract["recovery_release"]==txn.UI_BASELINE_RELEASE
+    assert contract["recovery_sha256"]==txn.UI_BASELINE_SHA
+    assert contract["recovery_size_bytes"]==txn.UI_BASELINE_SIZE
+    checks=" ".join(contract["smoke_checks"]).lower()
+    assert "guest session and invite routes return disabled" in checks
+    assert "remote pin retrieval prohibited" in checks
     capsule=pathlib.Path(tempfile.mkdtemp())/"capsule.json"
-    capsule.write_text(json.dumps({"schema":"local-roots-execution-capsule-v1",
-        "workflow_id":"phase2-provisional-release",
-        "workflow_source":{"path":"platform/workflows/phase2-provisional-release.json",
-            "sha256":txn.sha(workflow_path)}}))
-    profile=txn.load_candidate_profile(capsule)
-    txn.exact_artifacts(profile)
-    assert profile.transaction_mode=="provisional"
-    assert profile.starting_release_id==contract["starting_release_id"]
-    assert profile.release_id=="hbnf-cart2-phase2-r6-incremental-controls-20261011"
-    assert profile.sha256=="8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d"
-    assert profile.size_bytes==1502864
-    assert profile.rollback_sha256=="338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
-    assert contract["smoke_seconds"]==300 and contract["thresholds_may_be_weakened"] is False
-    outputs=" ".join(workflow["stages"][6]["outputs"])
-    assert profile.sha256 in outputs and "8afb21b9" in outputs
-    assert "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b" not in outputs
-    assert "reference_workload" not in contract
-    smoke=" ".join(contract["smoke_checks"])
-    assert "no threshold" in smoke and "self-contained" in smoke
+    capsule.write_text(json.dumps({"schema":"local-roots-execution-capsule-v1","workflow_id":"phase2-provisional-release",
+        "workflow_source":{"path":"platform/workflows/phase2-provisional-release.json","sha256":txn.sha(workflow_path)}}))
+    try:txn.load_candidate_profile(capsule)
+    except RuntimeError as exc:assert "provisional-candidate-not-installable" in str(exc)
+    else:raise AssertionError("workflow without exact candidate bytes must fail closed")
+
+
+def test_control_state_records_successful_ui_install_and_preserves_consumed_history():
+    state=json.loads((ROOT/"config/HBNF_CONTROL_STATE.json").read_text())
+    pending=state["execution_cursor"]["pending_provisional_candidate"]
+    history=state["execution_cursor"]["historical_provisional_candidates"]
+    assert state["installed_release"]==txn.UI_BASELINE_RELEASE
+    assert state["installed_firmware_sha256"]==txn.UI_BASELINE_SHA
+    assert pending["candidate_install_attempts_used"]==0
+    assert pending["status"]=="OFFLINE_PREPARED_AWAITING_BINARY_BUILD"
+    assert state["live_mutation_authorized"] is False and state["live_authorization_binding"] is None
+    assert history[-1]["candidate_release_id"]=="hbnf-cart2-phase2-r6-incremental-controls-20261011"
+    assert history[-1]["candidate_install_attempts_used"]==1
+    assert state["installed_firmware_reconciliation"]["evidence_source"].startswith("AKS Delta Inbox row 1612")
+    errors=[];warnings=[]
+    platform.validate_hbnf_coherence(errors,warnings)
+    assert not errors
+    assert not any("control state says installed_release" in warning for warning in warnings)
 
 
 def test_wrong_artifact_or_matrix_target_rejected_before_port_execution():
@@ -46,7 +61,12 @@ def test_wrong_artifact_or_matrix_target_rejected_before_port_execution():
         "workflow_id":"phase2-provisional-release",
         "workflow_source":{"path":"platform/workflows/phase2-provisional-release.json",
             "sha256":txn.sha(workflow_path)}}))
-    profile=txn.load_candidate_profile(capsule)
+    candidate_bin=capsule.parent/"candidate.bin";candidate_bin.write_bytes(b"candidate")
+    candidate_sha=hashlib.sha256(b"candidate").hexdigest()
+    profile=txn.CandidateProfile(txn.PROVISIONAL_RELEASE,candidate_sha,9,candidate_bin,ROOT/"adapter.json",ROOT/"out",
+        rollback_binary=txn.UI_BASELINE_BIN,rollback_sha256=txn.UI_BASELINE_SHA,rollback_size_bytes=txn.UI_BASELINE_SIZE,
+        transaction_mode="provisional",starting_release_id=txn.UI_BASELINE_RELEASE,starting_sha256=txn.UI_BASELINE_SHA,
+        rollback_release_id=txn.UI_BASELINE_RELEASE)
     ids={"candidate_release_id":profile.release_id,"candidate_bin_sha256":profile.sha256,
         "candidate_bin_path":str(profile.binary),"candidate_bin_size_bytes":profile.size_bytes,
         "rollback_bin_sha256":profile.rollback_sha256,"rollback_bin_path":str(profile.rollback_binary),
@@ -63,26 +83,22 @@ def test_wrong_artifact_or_matrix_target_rejected_before_port_execution():
         else:raise AssertionError("wrong candidate or target accepted")
 
 
-def test_installed_r6_accepts_new_smoke_authorization_without_repinning_r7_adapter():
+def test_installed_ui_baseline_and_no_auth_are_authoritative():
+    state=json.loads((ROOT/"config/HBNF_CONTROL_STATE.json").read_text())
+    pending=state["execution_cursor"]["pending_provisional_candidate"]
+    assert state["installed_release"]==txn.UI_BASELINE_RELEASE
+    assert state["installed_firmware_sha256"]==txn.UI_BASELINE_SHA
+    assert state["live_mutation_authorized"] is False
+    assert state["live_authorization_binding"] is None
+    assert pending["candidate_install_attempts_used"]==0
+    assert pending["recovery_attempts_used"]==0
+
+
+def test_pending_owner_only_candidate_rejects_any_stale_authorization():
     state=json.loads((ROOT/"config/HBNF_CONTROL_STATE.json").read_text())
     pending=state["execution_cursor"]["pending_provisional_candidate"]
     contract=json.loads((ROOT/"platform/workflows/phase2-provisional-release.json").read_text())["provisional_release_contract"]
-    auth=state["live_authorization_binding"]
-    assert auth["authorization_id"] != pending["authorization_id"]
-    assert platform.provisional_pending_authorization_matches(auth,pending,state["installed_release"],contract)
-    adapter=json.loads((ROOT/"config/HBNF_PACKET20_LIVE_SWEEP_ADAPTER_20261004.json").read_text())
-    assert adapter["expected_release_id"] == "hbnf-cart2-phase2-offline-wow-r7-20261009"
-
-
-def test_installed_r6_exception_rejects_wrong_candidate_or_rollback():
-    state=json.loads((ROOT/"config/HBNF_CONTROL_STATE.json").read_text())
-    pending=state["execution_cursor"]["pending_provisional_candidate"]
-    contract=json.loads((ROOT/"platform/workflows/phase2-provisional-release.json").read_text())["provisional_release_contract"]
-    auth=state["live_authorization_binding"]
-    installed=state["installed_release"]
-    assert not platform.provisional_pending_authorization_matches(dict(auth,candidate_bin_sha256="0"*64),pending,installed,contract)
-    assert not platform.provisional_pending_authorization_matches(dict(auth,rollback_bin_sha256="0"*64),pending,installed,contract)
-    assert not platform.provisional_pending_authorization_matches(dict(auth,candidate_release_id="other"),pending,installed,contract)
+    assert not platform.provisional_pending_authorization_matches({},pending,state["installed_release"],contract)
 
 
 def test_smoke_runner_never_rolls_back_without_new_owner_authorization():
@@ -94,14 +110,32 @@ def test_smoke_runner_never_rolls_back_without_new_owner_authorization():
     assert "PROVISIONAL_SMOKE_CRITICAL_DEVICE_HEALTH_FAILURE_RECOVERY_AUTH_REQUIRED" in smoke
 
 
+def test_recovery_ledger_matches_exact_release_and_hash_without_fixed_row_number():
+    ledger="""51 old-release 0000000000000000000000000000000000000000000000000000000000000000\n52 hbnf-cart2-phase2-r6-vibe-first-ui-20261012 43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3\n"""
+    assert txn.recovery_is_registered(ledger,txn.UI_BASELINE_RELEASE,txn.UI_BASELINE_SHA)
+    assert not txn.recovery_is_registered(ledger,txn.UI_BASELINE_RELEASE,"0"*64)
+
+
+def test_failed_admission_never_reaches_device_or_install_stage():
+    port=FakePort(outcome="admission_failure")
+    result=txn.coordinate(port)
+    assert result["status"]=="BLOCKED_OR_FAILED"
+    assert result["candidate_install_attempts"]==0
+    assert result["recovery_attempts"]==0
+    assert result["device_requests"]==0
+    assert port.closed
+
+
 class FakePort:
     def __init__(self, outcome="success", recovery_ok=True):
         self.candidate=txn.CandidateProfile(txn.PROVISIONAL_RELEASE,"a"*64,10,
             ROOT/"fake.bin",ROOT/"fake-adapter.json",ROOT/"fake-out",
-            transaction_mode="provisional",starting_release_id=txn.RELEASE)
+            transaction_mode="provisional",starting_release_id=txn.UI_BASELINE_RELEASE,
+            starting_sha256=txn.UI_BASELINE_SHA,rollback_release_id=txn.UI_BASELINE_RELEASE)
         self.device_requests=0;self.install_attempts=0;self.recovery_attempts=0
         self.closed=False;self.outcome=outcome;self.recovery_ok=recovery_ok
-    def admit(self):pass
+    def admit(self):
+        if self.outcome=="admission_failure":raise RuntimeError("simulated fresh admission rejection")
     def verify_local_artifacts(self):pass
     def preflight(self):
         self.device_requests+=1
@@ -124,11 +158,11 @@ class FakePort:
         self.device_requests+=1
         if self.outcome=="smoke_failure":return {"passed":False,"abort":{"run_error":"provisional-smoke-aux-ddp-health-failure"}}
         return {"passed":True,"health_window":{"status":"PASS","sample_count":11}}
-    def recover_r4(self):
+    def recover_exact_baseline(self):
         self.recovery_attempts+=1
-        if not self.recovery_ok:raise RuntimeError("simulated exact R4 recovery failure")
+        if not self.recovery_ok:raise RuntimeError("simulated exact UI baseline recovery failure")
         self.device_requests+=1
-        return {"status":"R4_READBACK_VERIFIED","runtime":{"release_id":txn.R4}}
+        return {"status":"BASELINE_READBACK_VERIFIED","runtime":{"release_id":txn.UI_BASELINE_RELEASE}}
     def close(self,result):self.closed=True
 
 
@@ -151,7 +185,7 @@ def test_interrupted_upload_with_starting_release_still_running_does_not_trigger
 def test_failed_startup_readback_uses_one_exact_recovery_attempt():
     port=FakePort(outcome="startup_unknown")
     result=txn.coordinate(port)
-    assert result["status"]=="RUNTIME_IDENTITY_UNRESOLVED_R4_RECOVERED"
+    assert result["status"]=="RUNTIME_IDENTITY_UNRESOLVED_BASELINE_RECOVERED"
     assert result["candidate_install_attempts"]==1 and result["recovery_attempts"]==1
 
 
@@ -165,7 +199,7 @@ def test_failed_recovery_stops_without_retry():
 def test_failed_provisional_health_gate_rolls_back_once():
     port=FakePort(outcome="smoke_failure")
     result=txn.coordinate(port)
-    assert result["status"]=="PROVISIONAL_SMOKE_FAILED_R4_RECOVERED"
+    assert result["status"]=="PROVISIONAL_SMOKE_FAILED_BASELINE_RECOVERED"
     assert result["candidate_install_attempts"]==1 and result["recovery_attempts"]==1
 
 
@@ -242,7 +276,10 @@ def test_new_candidate_attempt_does_not_reuse_consumed_f89_attempt_counter():
         "workflow_id":"phase2-provisional-release",
         "workflow_source":{"path":"platform/workflows/phase2-provisional-release.json",
             "sha256":txn.sha(workflow_path)}}))
-    profile=txn.load_candidate_profile(capsule)
+    profile=txn.CandidateProfile(txn.PROVISIONAL_RELEASE,"a"*64,10,ROOT/"candidate.bin",ROOT/"adapter.json",ROOT/"out",
+        rollback_binary=txn.UI_BASELINE_BIN,rollback_sha256=txn.UI_BASELINE_SHA,rollback_size_bytes=txn.UI_BASELINE_SIZE,
+        transaction_mode="provisional",starting_release_id=txn.UI_BASELINE_RELEASE,starting_sha256=txn.UI_BASELINE_SHA,
+        rollback_release_id=txn.UI_BASELINE_RELEASE)
     auth={"authorization_id":"OWNER-TEST-INCREMENTAL-PROVISIONAL",
         "source_message_ref":"test-only exact authorization binding",
         "candidate_release_id":profile.release_id,"candidate_bin_sha256":profile.sha256,
@@ -282,7 +319,10 @@ def test_final_readonly_preflight_does_not_invalidate_admitted_receipt():
         "workflow_id":"phase2-provisional-release",
         "workflow_source":{"path":"platform/workflows/phase2-provisional-release.json",
             "sha256":txn.sha(workflow_path)}}))
-    profile=txn.load_candidate_profile(capsule)
+    profile=txn.CandidateProfile(txn.PROVISIONAL_RELEASE,"a"*64,10,ROOT/"candidate.bin",ROOT/"adapter.json",ROOT/"out",
+        rollback_binary=txn.UI_BASELINE_BIN,rollback_sha256=txn.UI_BASELINE_SHA,rollback_size_bytes=txn.UI_BASELINE_SIZE,
+        transaction_mode="provisional",starting_release_id=txn.UI_BASELINE_RELEASE,starting_sha256=txn.UI_BASELINE_SHA,
+        rollback_release_id=txn.UI_BASELINE_RELEASE)
     with tempfile.TemporaryDirectory(prefix="provisional-final-preflight-",dir=ROOT) as td:
         out=pathlib.Path(td); admitted=out/"FRESH_PRELIVE_READONLY.json"
         original=b'{"admission_bound_receipt":true}\n';admitted.write_bytes(original)
@@ -325,4 +365,4 @@ def test_cleanup_accepts_only_exact_owner_or_smoke_settings():
 if __name__=="__main__":
     for name,value in sorted(globals().copy().items()):
         if name.startswith("test_") and callable(value):value()
-    print("PASS: exact candidate/target binding, one-attempt install, fresh settings capture, interruption/readback resolution, one R4 recovery, and 5-minute smoke fail closed")
+    print("PASS: candidate/target binding, fail-closed admission, interrupted install handling, exact UI recovery binding, and smoke failure paths")

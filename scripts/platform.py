@@ -363,6 +363,22 @@ def validate_hbnf_coherence(
         except (OSError, ValueError, TypeError, AttributeError):
             current_candidate_is_proven=False
 
+    # A successfully installed provisional baseline can be newer than the
+    # diagnostic adapter's pinned R7 release. Suppress only the stale-template
+    # warning when the control state's explicit reconciliation names the exact
+    # release/hash and the matching local recovery image is byte-verified.
+    installed_reconciliation=state.get("installed_firmware_reconciliation",{})
+    ui_recovery=ROOT/"evidence/cart2-arcade-release-prep-20261012/artifact/hbnf-cart2-phase2-r6-vibe-first-ui-20261012-recovery.bin"
+    reconciled_installed_baseline_is_current=(
+        installed=="hbnf-cart2-phase2-r6-vibe-first-ui-20261012"
+        and state.get("installed_firmware_sha256")=="43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3"
+        and installed_reconciliation.get("release_id")==installed
+        and installed_reconciliation.get("sha256")==state.get("installed_firmware_sha256")
+        and str(installed_reconciliation.get("evidence_source","")).startswith("AKS Delta Inbox row 1612")
+        and ui_recovery.is_file() and ui_recovery.stat().st_size==1481344
+        and sha256_file(ui_recovery)==state.get("installed_firmware_sha256")
+    )
+
     pending_provisional_candidate_is_current = False
     pending = state.get("execution_cursor", {}).get("pending_provisional_candidate", {})
     if isinstance(pending, dict) and pending.get("schema") == "hbnf-pending-provisional-candidate-v1":
@@ -454,7 +470,8 @@ def validate_hbnf_coherence(
         expected = str(cfg.get("expected_release_id") or "")
         if (installed and expected and installed != expected and not recovery_is_current
                 and not reconciled_candidate_is_current and not current_candidate_is_proven
-                and not pending_provisional_candidate_is_current):
+                and not pending_provisional_candidate_is_current
+                and not reconciled_installed_baseline_is_current):
             status = str(state.get("current_task", {}).get("status") or "")
             message = (
                 "HBNF live-tool identity mismatch: control state says "

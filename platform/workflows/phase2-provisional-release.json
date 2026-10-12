@@ -1,9 +1,9 @@
 {
   "schema": "local-roots-golden-path-v2",
   "id": "phase2-provisional-release",
-  "status": "PROVISIONAL_EXACT_ARTIFACT__FULL_GATES_RETAINED",
-  "selection_warning": "Only the exact incremental-controls candidate SHA is eligible. Provisional use does not imply final qualification; full 28-kernel and uninterrupted 90-minute gates remain unchanged.",
-  "purpose": "One exact candidate-bound guarded installation with existing admission, exact R4 recovery, a 5-minute low-overhead integration smoke, settings restoration, and post-install health checks. This is provisional field review only; it does not qualify or replace full release requirements.",
+  "status": "OFFLINE_PREPARATION_BLOCKED__NO_VERIFIED_OWNER_ONLY_BINARY",
+  "selection_warning": "No candidate is currently installable. The prior local-arcade binary lacks the required owner-only guest-disable source change; the revised source did not produce a verified firmware image. Do not install either image.",
+  "purpose": "Prepare one candidate-bound guarded installation reusing existing admission and transaction controls. No install is authorized by this workflow state; exact candidate and installed UI-baseline recovery bytes must be verified before fresh owner authorization and live preflight.",
   "required_repo_inputs": [
     "AGENTS.md",
     "config/HBNF_CONTROL_MODEL.json",
@@ -22,11 +22,10 @@
     "scripts/hbnf_r6_audio_cache_live_transaction.py",
     "scripts/hbnf_r6_combined_feature_check.py",
     "scripts/platform.py",
-    "evidence/cart2-r6-incremental-controls-20261011/OFFLINE_CANDIDATE_MANIFEST.json",
-    "evidence/cart2-r6-incremental-controls-20261011/BUILD_RECEIPT.json",
-    "evidence/cart2-r6-incremental-controls-20261011/SOURCE_BINDING.json",
-    "evidence/cart2-r6-incremental-controls-20261011/artifact/hbnf-cart2-phase2-r6-incremental-controls-20261011.bin",
-    "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_INCREMENTAL_CONTROLS_20261011.json"
+    "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_INCREMENTAL_CONTROLS_20261011.json",
+    "evidence/cart2-arcade-release-prep-20261012/RECONCILIATION.json",
+    "evidence/cart2-arcade-release-prep-20261012/artifact/hbnf-cart2-phase2-r6-local-arcade-20261012.bin (superseded, guest-enabled; never install)",
+    "evidence/cart2-arcade-release-prep-20261012/artifact/hbnf-cart2-phase2-r6-vibe-first-ui-20261012-recovery.bin"
   ],
   "prelive_contract": {
     "closure_stage_id": "contract-closure",
@@ -75,8 +74,8 @@
       "mutation": false,
       "retry_policy": "idempotent",
       "outputs": [
-        "exact R4 local recovery SHA/size and runtime ledger verified",
-        "same /update recovery path already proven end-to-end"
+        "exact installed Vibe-first UI recovery SHA/size and runtime release-ledger proof verified at fresh preflight",
+        "same /update recovery path already proven end-to-end for the installed UI binary"
       ]
     },
     {
@@ -94,7 +93,8 @@
       "mutation": false,
       "retry_policy": "idempotent",
       "outputs": [
-        "fresh Matrix/AUX/Opal state, exact identities, health, and renderer baseline captured"
+        "Exact installed Vibe-first UI recovery SHA/size and runtime release-ledger proof are verified at fresh live preflight.",
+        "Recovery reuses the existing Matrix /update path; recovery binary is the exact installed UI firmware, not R4."
       ]
     },
     {
@@ -109,7 +109,7 @@
         "margin_seconds": 15
       },
       "outputs": [
-        "immediate pre-mutation identities and continuity pass"
+        "No install until the owner-only candidate binary has verified exact SHA/size/source binding, the UI recovery bytes pass exact verification, fresh candidate-bound owner authorization exists, and live admission passes."
       ]
     },
     {
@@ -127,7 +127,10 @@
         "margin_seconds": 50
       },
       "outputs": [
-        "one multipart install attempt only for hbnf-cart2-phase2-r6-incremental-controls-20261011 SHA-256 8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d (1,502,864 bytes); immediately capture HTTP response, exact runtime identity, Matrix/AUX health"
+        "Five-minute ordinary health window after a future authorized installation; no install or testing is authorized by current offline-preparation state.",
+        "Owner-only game access requires local WLED Settings PIN entry; never fetch WLED configuration JSON to inspect PIN.",
+        "Guest sessions and invite routes are disabled in the provisional owner-only candidate; other WLED APIs are not represented as guest-isolated.",
+        "Full 28-kernel, 90-minute, and owner-acceptance gates remain unchanged."
       ]
     },
     {
@@ -148,24 +151,25 @@
       }
     }
   ],
-  "terminal_recovery": "If candidate identity, startup, Matrix/AUX health, or DDP fails, stop and use only one exact SHA-verified R4 recovery if the fresh exact authorization covers it; verify R4 identity/health and captured settings. A runner, feature-check, or owner-settings cleanup error alone is not firmware rollback evidence. Never retry installation or claim full qualification.",
+  "terminal_recovery": "If candidate identity, startup, Matrix/AUX health, or DDP fails, stop and use only one exact SHA-verified installed Vibe-first UI recovery if fresh exact authorization covers it; verify runtime identity/health and captured settings. A runner or owner-settings cleanup error alone is not firmware rollback evidence. Never retry installation or claim full qualification.",
   "expected_terminal_outputs": [
-    "exact installed firmware identity or exact R4 recovery identity",
-    "5-minute smoke receipt and captured owner-settings restore verification",
-    "Matrix/AUX/DDP health and observational current-workload FPS samples",
-    "qualification remains provisional; frozen 28-kernel and uninterrupted 90-minute gates remain open"
+    "exact installed owner-only arcade firmware identity or exact installed Vibe-first UI recovery identity",
+    "five-minute health receipt, if separately authorized and completed",
+    "Matrix/AUX/DDP health and captured settings verification",
+    "full qualification remains outstanding"
   ],
   "provisional_release_contract": {
-    "candidate_release": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
-    "candidate_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
-    "candidate_size_bytes": 1502864,
-    "candidate_bin_path": "evidence/cart2-r6-incremental-controls-20261011/artifact/hbnf-cart2-phase2-r6-incremental-controls-20261011.bin",
-    "source_commit": "aa13434203b11d054aaa89aa0258434c20b5e58d",
-    "starting_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
-    "starting_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
-    "recovery_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-    "recovery_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "recovery_bin_path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "candidate_release": "hbnf-cart2-phase2-r6-local-arcade-owner-only-20261012",
+    "candidate_sha256": "",
+    "candidate_size_bytes": 0,
+    "candidate_bin_path": "evidence/cart2-arcade-release-prep-20261012/artifact/hbnf-cart2-phase2-r6-local-arcade-owner-only-20261012.bin",
+    "source_commit": "",
+    "starting_release_id": "hbnf-cart2-phase2-r6-vibe-first-ui-20261012",
+    "starting_sha256": "43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3",
+    "recovery_release": "hbnf-cart2-phase2-r6-vibe-first-ui-20261012",
+    "recovery_sha256": "43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3",
+    "recovery_size_bytes": 1481344,
+    "recovery_bin_path": "evidence/cart2-arcade-release-prep-20261012/artifact/hbnf-cart2-phase2-r6-vibe-first-ui-20261012-recovery.bin",
     "install_limit": 1,
     "rollback_limit": 1,
     "target": "Matrix 192.168.77.10 / 70:4b:ca:5b:34:5c only",
@@ -177,6 +181,9 @@
       "Matrix-to-AUX native DDP live source",
       "continuous uptime and renderer advancement",
       "read-only current-animation FPS observation with no threshold because workloads are not matched",
+      "owner-only arcade: guest session and invite routes return disabled; never claim general WLED API guest isolation",
+      "read-only future preflight: owner visually confirms a Settings PIN is configured without retrieving or logging its value",
+      "remote PIN retrieval prohibited; do not fetch WLED configuration JSON for PIN presence",
       "separate bounded Vibe/audio/palette/text API check with self-contained WLED/HBNF cleanup",
       "verify captured runtime and persisted owner settings after cleanup"
     ],
@@ -185,9 +192,9 @@
     "full_kernel_sweep_count": 28,
     "full_soak_seconds_minimum": 5400,
     "thresholds_may_be_weakened": false,
-    "foundation_adapter_path": "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_INCREMENTAL_CONTROLS_20261011.json",
-    "qualification_output_path": "evidence/cart2-r6-incremental-controls-20261011/live-provisional",
-    "release_classification": "incremental provisional controls candidate",
+    "foundation_adapter_path": "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_ARCADE_OWNER_ONLY_20261012.json",
+    "qualification_output_path": "evidence/cart2-arcade-release-prep-20261012/live-provisional",
+    "release_classification": "owner-only local arcade provisional candidate",
     "applicable_policy_smoke_minutes": 5,
     "major_milestone_soak_minutes": 30,
     "major_milestone_soak_applicable": false,

@@ -31,10 +31,7 @@
     <p class="sub">The existing local WLED PIN is required. Games stay disabled if no PIN is configured.</p>
   </section>
   <section id="guestSetup" class="panel">
-    <h2>Join as a guest</h2>
-    <label>Owner invite code<input id="guestCode" autocomplete="off" autocapitalize="off"></label>
-    <button id="join">Join game</button>
-    <p class="sub">Guests can steer only. The owner starts, pauses, restarts, and ends the game.</p>
+    <p class="sub">Owner-only provisional test. Guest play is disabled.</p>
   </section>
   <section id="play" class="panel hidden">
     <div class="row"><strong id="gameName">Game</strong><span id="score" class="sub"></span></div>
@@ -44,8 +41,6 @@
       <button data-dir="DOWN" aria-label="Down">▼</button><button data-dir="RIGHT" aria-label="Right">▶</button>
     </div>
     <div id="ownerControls" class="controls"><button data-action="START">Start / resume</button><button data-action="PAUSE">Pause</button><button data-action="RESTART">Restart</button><button data-action="EXIT">End game</button></div>
-    <div id="guestControls" class="hidden"><button id="leaveGuest">Leave</button></div>
-    <div id="invitePanel" class="hidden"><p class="sub">Share a direction-only invite with a player on the cart Wi-Fi:</p><button id="grant">Create guest invite</button><code id="invite" class="hidden"></code><div class="row"><button id="copyInvite" class="hidden">Copy invite</button><button id="revoke" class="hidden">Revoke guest</button></div></div>
     <p class="sub">If the owner browser disconnects, the game frame expires and normal animation resumes.</p>
   </section>
   <p><a href="/hbnf" style="color:#8ce3ad">← Cart controls</a></p>

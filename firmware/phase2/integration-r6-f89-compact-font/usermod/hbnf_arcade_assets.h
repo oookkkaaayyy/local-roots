@@ -34,10 +34,7 @@ static const char HBNF_ARCADE_INDEX[] PROGMEM = R"HBNFHTML(
     <p class="sub">The existing local WLED PIN is required. Games stay disabled if no PIN is configured.</p>
   </section>
   <section id="guestSetup" class="panel">
-    <h2>Join as a guest</h2>
-    <label>Owner invite code<input id="guestCode" autocomplete="off" autocapitalize="off"></label>
-    <button id="join">Join game</button>
-    <p class="sub">Guests can steer only. The owner starts, pauses, restarts, and ends the game.</p>
+    <p class="sub">Owner-only provisional test. Guest play is disabled.</p>
   </section>
   <section id="play" class="panel hidden">
     <div class="row"><strong id="gameName">Game</strong><span id="score" class="sub"></span></div>
@@ -47,8 +44,6 @@ static const char HBNF_ARCADE_INDEX[] PROGMEM = R"HBNFHTML(
       <button data-dir="DOWN" aria-label="Down">▼</button><button data-dir="RIGHT" aria-label="Right">▶</button>
     </div>
     <div id="ownerControls" class="controls"><button data-action="START">Start / resume</button><button data-action="PAUSE">Pause</button><button data-action="RESTART">Restart</button><button data-action="EXIT">End game</button></div>
-    <div id="guestControls" class="hidden"><button id="leaveGuest">Leave</button></div>
-    <div id="invitePanel" class="hidden"><p class="sub">Share a direction-only invite with a player on the cart Wi-Fi:</p><button id="grant">Create guest invite</button><code id="invite" class="hidden"></code><div class="row"><button id="copyInvite" class="hidden">Copy invite</button><button id="revoke" class="hidden">Revoke guest</button></div></div>
     <p class="sub">If the owner browser disconnects, the game frame expires and normal animation resumes.</p>
   </section>
   <p><a href="/hbnf" style="color:#8ce3ad">← Cart controls</a></p>
@@ -69,7 +64,7 @@ const randomHex=(n)=>{const bytes=crypto.getRandomValues(new Uint8Array(n));retu
 let role="",session=null,client=null,sequence=0,frameSequence=0,pollTimer=0,tickTimer=0,frameTimer=0,heartbeatTimer=0;
 let tickRemainder=0,lastTick=0,ownerState=null,frameBusy=false;
 function status(message,error=false){byId("status").textContent=message;byId("status").style.color=error?"#ff9b9b":"#8ce3ad"}
-function showPlay(){byId("ownerSetup").classList.add("hidden");byId("guestSetup").classList.add("hidden");byId("play").classList.remove("hidden");byId("ownerControls").classList.toggle("hidden",role!=="owner");byId("guestControls").classList.toggle("hidden",role!=="guest");byId("invitePanel").classList.toggle("hidden",role!=="owner")}
+function showPlay(){byId("ownerSetup").classList.add("hidden");byId("guestSetup").classList.add("hidden");byId("play").classList.remove("hidden");byId("ownerControls").classList.remove("hidden")}
 function setGameName(name){byId("gameName").textContent=name==="maze-chase"?"Maze Chase":"Snake"}
 function stopLoops(){for(const id of [pollTimer,tickTimer,frameTimer,heartbeatTimer])clearInterval(id);pollTimer=tickTimer=frameTimer=heartbeatTimer=0}
 function finish(message){stopLoops();role="";session=client=null;ownerState=null;byId("play").classList.add("hidden");byId("ownerSetup").classList.remove("hidden");byId("guestSetup").classList.remove("hidden");status(message)}
@@ -80,13 +75,8 @@ async function ownerStart(){
   const result=await $( {op:"start",game,pin:byId("pin").value,controller:ownerController} );
   byId("pin").value="";role="owner";session={id:result.sid,game};client={token:result.token,controller:ownerController};sequence=0;frameSequence=0;
   ownerState=createAuthorizedArcadeGame({gameId:game,sessionId:session.id,controller:{active:true,paired:true,role:"owner",controllerId:ownerController},snapshot:{},seed:Date.now()>>>0});
-  setGameName(game);showPlay();status("Owner session active. Use touch arrows, or share a guest invite.");await publishFrame();
+  setGameName(game);showPlay();status("Owner-only session active. Guest play is disabled.");await publishFrame();
   pollTimer=setInterval(pollActions,90);tickTimer=setInterval(tick,50);frameTimer=setInterval(publishFrame,100);heartbeatTimer=setInterval(()=>$( {op:"heartbeat",sid:session.id,token:client.token,controller:client.controller} ).catch(()=>status("Owner connection lost; game will time out",true)),500);
-}
-async function joinGuest(){
-  const parts=byId("guestCode").value.trim().split(".");if(parts.length!==4||parts[0]!=="G2")throw new Error("Invalid invite code");
-  const [_,sid,token,controller]=parts;const result=await $( {op:"guest_check",sid,token,controller} );
-  role="guest";session={id:sid,game:result.game};client={token,controller};sequence=0;setGameName(result.game);showPlay();status("Connected as guest. Direction controls only.");
 }
 async function pollActions(){
   try{const result=await $( {op:"poll",sid:session.id,token:client.token,controller:client.controller} );
@@ -100,15 +90,10 @@ async function publishFrame(){if(role!=="owner"||!ownerState||frameBusy)return;f
 }catch(e){status(`Frame delivery stopped: ${e.message}`,true);stopLoops()}finally{frameBusy=false}}
 function padAction(action){if(role==="owner")sendAction(action).catch(e=>status(e.message,true));else if(role==="guest")$( {op:"input",sid:session.id,token:client.token,controller:client.controller,seq:++sequence,action} ).catch(e=>status(e.message,true))}
 byId("start").addEventListener("click",()=>ownerStart().catch(e=>status(e.message,true)));
-byId("join").addEventListener("click",()=>joinGuest().catch(e=>status(e.message,true)));
 document.querySelectorAll("[data-dir]").forEach(button=>{
   const action=button.dataset.dir;button.addEventListener("pointerdown",event=>{event.preventDefault();padAction(action)});button.addEventListener("keydown",event=>{if(event.key===" "){event.preventDefault();padAction(action)}});
 });
 document.querySelectorAll("[data-action]").forEach(button=>button.addEventListener("click",async()=>{const action=button.dataset.action;if(action==="EXIT"){try{await sendAction(action);await $( {op:"exit",sid:session.id,token:client.token,controller:client.controller} );finish("Game ended. Normal animation is active.")}catch(e){status(e.message,true)}}else padAction(action)}));
-byId("leaveGuest").addEventListener("click",()=>finish("Left game session."));
-byId("grant").addEventListener("click",async()=>{try{const result=await $( {op:"grant_guest",sid:session.id,token:client.token,controller:client.controller} );byId("invite").textContent=`G2.${session.id}.${result.guestToken}.${result.guestController}`;byId("invite").classList.remove("hidden");byId("copyInvite").classList.remove("hidden");byId("revoke").classList.remove("hidden");status("One guest invited; their controls are direction-only") }catch(e){status(e.message,true)}});
-byId("copyInvite").addEventListener("click",async()=>{try{await navigator.clipboard.writeText(byId("invite").textContent);status("Guest invite copied") }catch(_){status("Select and copy the invite code",true)}});
-byId("revoke").addEventListener("click",async()=>{try{await $( {op:"revoke_guest",sid:session.id,token:client.token,controller:client.controller} );byId("invite").textContent="Guest access revoked";status("Guest access revoked") }catch(e){status(e.message,true)}});
 document.addEventListener("keydown",event=>{const key={ArrowUp:"UP",ArrowDown:"DOWN",ArrowLeft:"LEFT",ArrowRight:"RIGHT"}[event.key];if(key){event.preventDefault();padAction(key)}});
 window.addEventListener("pagehide",()=>{if(role==="owner"&&session&&client){const body=JSON.stringify({op:"exit",sid:session.id,token:client.token,controller:client.controller});navigator.sendBeacon("/hbnf/game",new Blob([body],{type:"application/json"}))}stopLoops()});
 )HBNFJS";
