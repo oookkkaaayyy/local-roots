@@ -52,6 +52,16 @@ SUCCESSOR_RELEASE = "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-l
 SUCCESSOR_SHA = "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187"
 SUCCESSOR_SIZE = 1498832
 PROVISIONAL_RELEASE = "hbnf-cart2-phase2-r6-incremental-controls-20261011"
+PROVISIONAL_REFERENCE_KERNEL_ID = 17
+PROVISIONAL_REFERENCE_KERNEL_NAME = "Center_Field"
+PROVISIONAL_REFERENCE_VARIANT_SIGNATURE = 1347100689
+PROVISIONAL_REFERENCE_PROFILE = ROOT/"evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/sweep/17_Center_Field.profile.json"
+PROVISIONAL_REFERENCE_PROFILE_SHA = "6dc805960340634177ddb8227e3de5a15356ebe96e7cbd54162889a0dfcdc5c0"
+PROVISIONAL_REFERENCE_CONTROLS = {
+    "audio_response":50,"aux_brightness":255,"matrix_brightness":44,"matrix_on":True,
+    "motion":50,"overlay_id":None,"palette":{"mode":"legacy"},"scene":0,
+    "vibe":0,"wled_brightness":255,
+}
 SUCCESSOR_BIN = ROOT/"evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011.bin"
 
 
@@ -122,6 +132,28 @@ def load_candidate_profile(capsule_path: pathlib.Path) -> CandidateProfile:
          or contract.get("starting_sha256")!=CANDIDATE_SHA or not isinstance(starting_release,str)
          or not re.fullmatch(r"[A-Za-z0-9._-]+",starting_release))):
         raise RuntimeError("provisional-workflow-smoke-or-starting-identity-invalid")
+    if transaction_mode=="provisional":
+        ref=contract.get("reference_workload",{})
+        profile_path=ROOT/ref.get("baseline_profile_path","")
+        if (ref.get("kernel_id")!=PROVISIONAL_REFERENCE_KERNEL_ID
+            or ref.get("kernel_name")!=PROVISIONAL_REFERENCE_KERNEL_NAME
+            or ref.get("variant_signature")!=PROVISIONAL_REFERENCE_VARIANT_SIGNATURE
+            or ref.get("baseline_release_id")!=RELEASE
+            or ref.get("baseline_profile_sha256")!=PROVISIONAL_REFERENCE_PROFILE_SHA
+            or profile_path.resolve()!=PROVISIONAL_REFERENCE_PROFILE.resolve()
+            or not profile_path.is_file() or sha(profile_path)!=PROVISIONAL_REFERENCE_PROFILE_SHA
+            or ref.get("controls")!=PROVISIONAL_REFERENCE_CONTROLS):
+            raise RuntimeError("provisional-reference-workload-binding-invalid")
+        baseline=json.loads(profile_path.read_text()).get("profile",{})
+        if (baseline.get("release_id")!=RELEASE
+            or baseline.get("qualification_eligible") is not True
+            or baseline.get("kernel")!={"id":PROVISIONAL_REFERENCE_KERNEL_ID,
+                "name":PROVISIONAL_REFERENCE_KERNEL_NAME,"variant_id":PROVISIONAL_REFERENCE_VARIANT_SIGNATURE}
+            or baseline.get("effective_rendering_settings",{}).get("status")!="MATCHED"
+            or baseline.get("effective_rendering_settings",{}).get("values")!=PROVISIONAL_REFERENCE_CONTROLS
+            or baseline.get("fps",{}).get("median")!=ref.get("baseline_fps_median")
+            or baseline.get("fps",{}).get("min")!=ref.get("baseline_fps_min")):
+            raise RuntimeError("provisional-reference-profile-content-mismatch")
     profile=CandidateProfile(release,candidate_sha,candidate_size,candidate_bin,adapter,
         output,transaction_mode=transaction_mode,starting_release_id=starting_release)
     expected_recovery=contract.get("recovery_sha256")
@@ -734,7 +766,14 @@ def validate_provisional_health_sample(sample, expected_release, previous_uptime
     fps=sample.get("fps")
     if not isinstance(fps,(int,float)) or fps<0:
         raise RuntimeError("provisional-smoke-fps-missing")
-    return float(uptime),float(fps)
+    if sample.get("kernel_id")!=PROVISIONAL_REFERENCE_KERNEL_ID:
+        raise RuntimeError("provisional-smoke-reference-workload-kernel-mismatch")
+    if sample.get("variant_signature")!=PROVISIONAL_REFERENCE_VARIANT_SIGNATURE:
+        raise RuntimeError("provisional-smoke-reference-workload-variant-mismatch")
+    render_count=sample.get("render_count")
+    if not isinstance(render_count,int) or render_count<0:
+        raise RuntimeError("provisional-smoke-renderer-progress-missing")
+    return float(uptime),float(fps),render_count
 
 
 def run_provisional_health_window(sample_fn, duration_seconds=300, interval_seconds=30,
@@ -743,14 +782,17 @@ def run_provisional_health_window(sample_fn, duration_seconds=300, interval_seco
     if duration_seconds != 300 or interval_seconds != 30:
         raise ValueError("provisional-smoke-duration-and-cadence-are-policy-bound")
     started=clock(); deadline=started+duration_seconds; previous_uptime=None
-    fps_values=[]; sample_count=0; low_fps_streak=0
+    fps_values=[]; sample_count=0; low_fps_streak=0; previous_render_count=None
     while True:
         sample=sample_fn()
-        previous_uptime,fps=validate_provisional_health_sample(sample,PROVISIONAL_RELEASE,previous_uptime)
+        previous_uptime,fps,render_count=validate_provisional_health_sample(sample,PROVISIONAL_RELEASE,previous_uptime)
+        if previous_render_count is not None and render_count<=previous_render_count:
+            raise RuntimeError("provisional-smoke-renderer-stalled")
+        previous_render_count=render_count
         fps_values.append(fps); sample_count+=1
         low_fps_streak=low_fps_streak+1 if fps<20 else 0
         if low_fps_streak>=3:
-            raise RuntimeError("provisional-smoke-catastrophic-fps-floor-failed")
+            raise RuntimeError("provisional-smoke-reference-catastrophic-fps-floor-failed")
         now=clock()
         if now>=deadline:
             break
@@ -758,7 +800,32 @@ def run_provisional_health_window(sample_fn, duration_seconds=300, interval_seco
     return {"status":"PASS","duration_seconds":round(clock()-started,3),
         "sample_interval_seconds":interval_seconds,"sample_count":sample_count,
         "fps_min":min(fps_values),"fps_median":sorted(fps_values)[len(fps_values)//2],
-        "performance_scope":"low-overhead smoke only; frozen full performance qualification remains required"}
+        "reference_kernel_id":PROVISIONAL_REFERENCE_KERNEL_ID,
+        "reference_variant_signature":PROVISIONAL_REFERENCE_VARIANT_SIGNATURE,
+        "reference_f89_fps_median":42.0,
+        "measured_vs_f89_reference_ratio":round(sorted(fps_values)[len(fps_values)//2]/42.0,4),
+        "performance_scope":"fixed comparable Center_Field smoke only; known slower kernels are assessed in full 28-kernel qualification"}
+
+
+def provisional_reference_controls_payload():
+    c=PROVISIONAL_REFERENCE_CONTROLS
+    return {"on":True,"bri":c["wled_brightness"],"HBNF":{
+        "scene":c["scene"],"vibe":c["vibe"],"motion":c["motion"],
+        "audioResponse":c["audio_response"],"matrixBrightness":c["matrix_brightness"],
+        "auxBrightness":c["aux_brightness"],"palette":dict(c["palette"])}}
+
+
+def validate_provisional_reference_context(context):
+    state=context.get("state",{})
+    h=state.get("HBNF",{})
+    if (h.get("kernel")!=PROVISIONAL_REFERENCE_KERNEL_ID
+        or h.get("variantSignature")!=PROVISIONAL_REFERENCE_VARIANT_SIGNATURE
+        or h.get("scene")!=0 or h.get("vibe")!=0 or h.get("motion")!=50
+        or h.get("audioResponse")!=50 or h.get("matrixBrightness")!=44
+        or h.get("auxBrightness")!=255 or h.get("palette")!={"mode":"legacy"}
+        or state.get("bri")!=255):
+        raise RuntimeError("provisional-smoke-reference-workload-controls-not-matched")
+    return True
 
 
 def wait_runtime(release, timeout=150):
@@ -960,7 +1027,19 @@ def device_failure_requires_recovery(summary):
     """Only objective frozen device/runtime failures consume the R4 recovery."""
     text = json.dumps(summary, sort_keys=True).lower()
     markers = (
-        "provisional-smoke-",
+        "provisional-smoke-matrix-identity-or-output-failure",
+        "provisional-smoke-aux-ddp-health-failure",
+        "provisional-smoke-uptime-continuity-failure",
+        "provisional-smoke-release-identity-mismatch",
+        "provisional-smoke-reference-catastrophic-fps-floor-failed",
+        "provisional-smoke-renderer-stalled",
+        "provisional-smoke-packet20-restore-",
+        "packet20-restore-command-failed",
+        "packet20-restore-readback-failed",
+        "provisional-smoke-packet20-restore-not-verified",
+        "provisional-smoke-owner-settings-restore-failed",
+        "provisional-smoke-owner-settings-readback-mismatch",
+        "provisional-smoke-final-owner-settings-readback-mismatch",
         "catastrophic foundation threshold crossed",
         "foundation-steady-state-frame-interval-stop",
         "-kernel-gate-failed",
@@ -1427,6 +1506,23 @@ class LivePort:
         self.outdir.mkdir(parents=True,exist_ok=True)
         failure=None
         snapshot=None
+        def health_sample():
+            self.device_requests+=5
+            mi=get_json(MATRIX+"/json/info")[2]
+            build=get_json(MATRIX+"/hbnf/build.json")[2]
+            ms=get_json(MATRIX+"/json/state")[2]
+            ai=get_json(AUX+"/json/info")[2]
+            ast=get_json(AUX+"/json/state")[2]
+            h=ms.get("HBNF",{});timing=h.get("timing",{})
+            return {"release_id":build.get("release_id"),"matrix_ip":mi.get("ip"),
+                "matrix_mac":str(mi.get("mac","")).replace(":","").lower(),"wled":mi.get("ver"),
+                "matrix_on":ms.get("on"),"uptime_seconds":timing.get("uptimeSec"),
+                "fps":mi.get("leds",{}).get("fps"),"kernel_id":h.get("kernel"),
+                "variant_signature":h.get("variantSignature"),
+                "render_count":timing.get("companionRenderCount",h.get("companionRenderCount")),
+                "aux_ip":ai.get("ip"),"aux_mac":str(ai.get("mac","")).replace(":","").lower(),
+                "aux_on":ast.get("on"),"aux_live":ai.get("live"),"aux_mode":ai.get("lm"),
+                "aux_source":ai.get("lip"),"aux_led_count":ai.get("leds",{}).get("count")}
         try:
             p=run(env_prefix+["snapshot","--inventory","config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json"],timeout=60)
             if p.returncode:raise RuntimeError("provisional-smoke-packet20-snapshot-failed:"+p.stderr.decode(errors="replace")[-700:])
@@ -1436,12 +1532,32 @@ class LivePort:
             save(snapshot_path,snapshot)
             p=run(env_prefix+["telemetry-mode","--enabled","true"],timeout=35)
             if p.returncode:raise RuntimeError("provisional-smoke-telemetry-enable-failed:"+p.stderr.decode(errors="replace")[-500:])
+            # Select the previously measured fast reference workload and apply
+            # its hash-bound f89 controls. This makes the catastrophic FPS stop
+            # comparable and prevents a known 16–18 FPS animation from being
+            # mistaken for a shared-system regression.
+            p=run(env_prefix+["select","--kernel",str(PROVISIONAL_REFERENCE_KERNEL_ID)],timeout=35)
+            if p.returncode:raise RuntimeError("provisional-smoke-reference-workload-select-failed:"+p.stderr.decode(errors="replace")[-500:])
+            self._record_device_request()
+            post_json(MATRIX+"/json/state",provisional_reference_controls_payload())
+            time.sleep(5)
+            reference_context=read_matrix_context(self._record_device_request,self.candidate.release_id,
+                authorized_runtime_vibe=0)
+            validate_provisional_reference_context(reference_context)
+            result["reference_workload"]={"kernel_id":PROVISIONAL_REFERENCE_KERNEL_ID,
+                "kernel_name":PROVISIONAL_REFERENCE_KERNEL_NAME,
+                "variant_signature":PROVISIONAL_REFERENCE_VARIANT_SIGNATURE,
+                "f89_profile_sha256":PROVISIONAL_REFERENCE_PROFILE_SHA,
+                "f89_fps_median":42.0,"controls":PROVISIONAL_REFERENCE_CONTROLS}
+            result["health_window"]=run_provisional_health_window(health_sample)
             combined_path=self.outdir/"COMBINED_FEATURE_CHECK.json"
             p=run([sys.executable,str(ROOT/"scripts/hbnf_r6_combined_feature_check.py"),
                 "--release-id",self.candidate.release_id,"--out",str(combined_path)],timeout=60)
             combined=json.loads(combined_path.read_text()) if combined_path.is_file() else {}
             result["combined_feature_check"]=combined
             if p.returncode or combined.get("status")!="PASS":
+                if combined.get("checks",{}).get("matrix_aux_ddp_projection") is False:
+                    raise RuntimeError("provisional-smoke-aux-ddp-health-failure")
                 raise RuntimeError("provisional-smoke-combined-feature-check-failed")
         except Exception as exc:
             failure=f"{type(exc).__name__}: {exc}"
@@ -1479,22 +1595,7 @@ class LivePort:
             result["abort"]={"run_error":"provisional-smoke-"+failure}
             return result
 
-        def health_sample():
-            self.device_requests+=5
-            mi=get_json(MATRIX+"/json/info")[2]
-            build=get_json(MATRIX+"/hbnf/build.json")[2]
-            ms=get_json(MATRIX+"/json/state")[2]
-            ai=get_json(AUX+"/json/info")[2]
-            ast=get_json(AUX+"/json/state")[2]
-            return {"release_id":build.get("release_id"),"matrix_ip":mi.get("ip"),
-                "matrix_mac":str(mi.get("mac","")).replace(":","").lower(),"wled":mi.get("ver"),
-                "matrix_on":ms.get("on"),"uptime_seconds":ms.get("HBNF",{}).get("timing",{}).get("uptimeSec"),
-                "fps":mi.get("leds",{}).get("fps"),"aux_ip":ai.get("ip"),
-                "aux_mac":str(ai.get("mac","")).replace(":","").lower(),"aux_on":ast.get("on"),
-                "aux_live":ai.get("live"),"aux_mode":ai.get("lm"),"aux_source":ai.get("lip"),
-                "aux_led_count":ai.get("leds",{}).get("count")}
         try:
-            result["health_window"]=run_provisional_health_window(health_sample)
             final=read_matrix_context(self._record_device_request,self.candidate.release_id,
                 authorized_runtime_vibe=owner_baseline.get("vibe"))
             keys=("matrixBrightness","auxBrightness","vibe")

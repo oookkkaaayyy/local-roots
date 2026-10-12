@@ -28,6 +28,12 @@ def test_candidate_workflow_and_artifact_are_exact_and_start_from_f89():
     assert profile.size_bytes==1502864
     assert profile.rollback_sha256=="338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
     assert contract["smoke_seconds"]==300 and contract["thresholds_may_be_weakened"] is False
+    outputs=" ".join(workflow["stages"][6]["outputs"])
+    assert profile.sha256 in outputs and "8afb21b9" in outputs
+    assert "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b" not in outputs
+    reference=contract["reference_workload"]
+    assert reference["kernel_id"]==17 and reference["kernel_name"]=="Center_Field"
+    assert reference["variant_signature"]==1347100689 and reference["baseline_fps_median"]==42.0
 
 
 def test_wrong_artifact_or_matrix_target_rejected_before_port_execution():
@@ -130,7 +136,8 @@ def test_five_minute_health_window_preserves_catastrophic_performance_stop():
     def sample():
         value={"release_id":txn.PROVISIONAL_RELEASE,"matrix_ip":"192.168.77.10",
             "matrix_mac":txn.MATRIX_MAC,"wled":"16.0.1","matrix_on":True,
-            "uptime_seconds":100+now[0],"fps":25,"aux_ip":"192.168.77.11",
+            "uptime_seconds":100+now[0],"fps":25,"kernel_id":17,
+            "variant_signature":1347100689,"render_count":int(now[0]*42),"aux_ip":"192.168.77.11",
             "aux_mac":txn.AUX_MAC,"aux_on":True,"aux_live":True,"aux_mode":"DDP",
             "aux_source":"192.168.77.10","aux_led_count":22}
         samples.append(value);return value
@@ -139,10 +146,43 @@ def test_five_minute_health_window_preserves_catastrophic_performance_stop():
     assert result["status"]=="PASS" and result["duration_seconds"]==300
     assert result["sample_count"]==11
     bad=FakePort()
+    now[0]=0
     low=lambda:{**sample(),"fps":10}
     try:txn.run_provisional_health_window(low,clock=lambda:now[0],sleep=sleep)
-    except RuntimeError as exc:assert "catastrophic-fps-floor" in str(exc)
+    except RuntimeError as exc:assert "reference-catastrophic-fps-floor" in str(exc)
     else:raise AssertionError("catastrophic low-FPS sequence accepted")
+
+
+def test_known_slow_animation_is_never_misclassified_as_reference_workload():
+    sample={"release_id":txn.PROVISIONAL_RELEASE,"matrix_ip":"192.168.77.10",
+        "matrix_mac":txn.MATRIX_MAC,"wled":"16.0.1","matrix_on":True,
+        "uptime_seconds":100,"fps":17,"kernel_id":18,
+        "variant_signature":1347100706,"render_count":100,
+        "aux_ip":"192.168.77.11","aux_mac":txn.AUX_MAC,"aux_on":True,
+        "aux_live":True,"aux_mode":"DDP","aux_source":"192.168.77.10","aux_led_count":22}
+    try:txn.validate_provisional_health_sample(sample,txn.PROVISIONAL_RELEASE)
+    except RuntimeError as exc:assert "reference-workload-kernel-mismatch" in str(exc)
+    else:raise AssertionError("arbitrary slow animation accepted as fixed smoke workload")
+
+
+def test_reference_workload_controls_match_saved_f89_profile():
+    payload=txn.provisional_reference_controls_payload()
+    assert payload=={"on":True,"bri":255,"HBNF":{"scene":0,"vibe":0,"motion":50,
+        "audioResponse":50,"matrixBrightness":44,"auxBrightness":255,"palette":{"mode":"legacy"}}}
+    state={"bri":255,"HBNF":{"kernel":17,"variantSignature":1347100689,
+        "scene":0,"vibe":0,"motion":50,"audioResponse":50,
+        "matrixBrightness":44,"auxBrightness":255,"palette":{"mode":"legacy"}}}
+    assert txn.validate_provisional_reference_context({"state":state}) is True
+    state["HBNF"]["kernel"]=8
+    try:txn.validate_provisional_reference_context({"state":state})
+    except RuntimeError as exc:assert "reference-workload-controls-not-matched" in str(exc)
+    else:raise AssertionError("unmatched kernel passed reference smoke setup")
+
+
+def test_feature_failure_does_not_spend_r4_recovery_but_system_health_failure_does():
+    assert txn.device_failure_requires_recovery({"error":"provisional-smoke-combined-feature-check-failed"}) is False
+    assert txn.device_failure_requires_recovery({"error":"provisional-smoke-aux-ddp-health-failure"}) is True
+    assert txn.device_failure_requires_recovery({"error":"provisional-smoke-reference-catastrophic-fps-floor-failed"}) is True
 
 
 if __name__=="__main__":

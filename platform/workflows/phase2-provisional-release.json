@@ -17,6 +17,7 @@
     "scripts/hbnf_foundation_soak_audit.py",
     "scripts/hbnf_guarded_run.py",
     "scripts/hbnf_live_kernel_sweep.py",
+    "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/sweep/17_Center_Field.profile.json",
     "scripts/hbnf_packet20_r4_live_transaction.py",
     "scripts/hbnf_r6_audio_cache_live_transaction.py",
     "scripts/hbnf_r6_combined_feature_check.py",
@@ -126,7 +127,7 @@
         "margin_seconds": 50
       },
       "outputs": [
-        "one multipart install attempt only for hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010 SHA-256 f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b; immediately capture HTTP response, exact runtime identity, Matrix/AUX health"
+        "one multipart install attempt only for hbnf-cart2-phase2-r6-incremental-controls-20261011 SHA-256 8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d (1,502,864 bytes); immediately capture HTTP response, exact runtime identity, Matrix/AUX health"
       ]
     },
     {
@@ -135,7 +136,7 @@
       "mutation": false,
       "retry_policy": "idempotent",
       "outputs": [
-        "5-minute low-overhead health window at 30-second intervals: exact release and device identities, uptime continuity, renderer progress, Matrix/AUX health, DDP source; fail immediately on existing catastrophic floor.",
+        "5-minute low-overhead health window at 30-second intervals on the fixed Center_Field reference workload (kernel 17, variant 1347100689), using the same rendering controls as the hash-bound f89 profile; verify kernel/variant identity, renderer progress, device identity, uptime, Matrix/AUX health, and DDP source. Apply the existing 20 FPS/three-sample catastrophic stop only to this controlled reference workload; do not use arbitrary user-selected animation FPS as a release stop.",
         "Existing combined feature check inside a Packet20 snapshot; verify restore and all captured owner settings.",
         "No full qualification implied; retain all 28-kernel, 90-minute, and owner-acceptance gates for later."
       ],
@@ -170,12 +171,35 @@
     "target": "Matrix 192.168.77.10 / 70:4b:ca:5b:34:5c only",
     "smoke_seconds": 300,
     "smoke_sample_interval_seconds": 30,
+    "reference_workload": {
+      "kernel_id": 17,
+      "kernel_name": "Center_Field",
+      "variant_signature": 1347100689,
+      "baseline_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
+      "baseline_profile_path": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/sweep/17_Center_Field.profile.json",
+      "baseline_profile_sha256": "6dc805960340634177ddb8227e3de5a15356ebe96e7cbd54162889a0dfcdc5c0",
+      "baseline_fps_median": 42.0,
+      "baseline_fps_min": 41,
+      "controls": {
+        "audio_response": 50,
+        "aux_brightness": 255,
+        "matrix_brightness": 44,
+        "matrix_on": true,
+        "motion": 50,
+        "overlay_id": null,
+        "palette": {"mode": "legacy"},
+        "scene": 0,
+        "vibe": 0,
+        "wled_brightness": 255
+      },
+      "comparison_scope": "Exact same kernel, variant signature, and matched rendering controls as the recorded f89 reference profile; short-smoke catastrophic early stop only. Frozen sustained thresholds still apply only in full qualification."
+    },
     "smoke_checks": [
       "candidate runtime identity",
       "Matrix/AUX identity and operating state",
       "Matrix-to-AUX native DDP live source",
       "continuous uptime and renderer advancement",
-      "catastrophic performance floor using existing 20 FPS early-stop",
+      "20 FPS early-stop only on the fixed, matched Center_Field reference workload; low FPS on other animations is not inferred to be a shared-system regression",
       "combined Vibe/audio/palette/scoreboard feature check under exact Packet20 snapshot",
       "restore and verify captured owner settings"
     ],
