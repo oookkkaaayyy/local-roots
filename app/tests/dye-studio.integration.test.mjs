@@ -68,11 +68,11 @@ test('method classification does not confuse direct acetone with glue beds or pa
 test('recipe, history and calibrated records identify the selected application method', () => {
   assert.match(studio,/method:activeMethod\(\)/);
   assert.match(studio,/"methodSelect"\)\.value=s\.method\|\|"acetone-direct"/);
-  assert.match(studio,/schemaVersion:5,method:activeMethod\(\),defaultPassCount:activePassCount\(\)/);
-  assert.match(studio,/r\.schemaVersion===5&&r\.method===activeMethod\(\)/);
+  assert.match(studio,/schemaVersion:6,method:activeMethod\(\),methodsKey:methodKey\(a\),defaultPassCount:activePassCount\(\)/);
+  assert.match(studio,/r\.schemaVersion===6&&r\.methodsKey===methodKey\(a\)/);
   assert.match(studio,/Method: \$\{\$\("methodSelect"\)/);
   assert.doesNotMatch(studio,/r\.schemaVersion===2/);
-  assert.match(studio,/Selected method changes warnings and evidence ranking, NOT the numerical preview/);
+  assert.match(studio,/Per-block methods change warnings and evidence ranking, NOT the numerical preview/);
 });
 
 test('direct-paint pass count is persisted and does not silently reuse old calibration', () => {
@@ -81,41 +81,51 @@ test('direct-paint pass count is persisted and does not silently reuse old calib
   assert.match(studio,/"passCount"\)\.value=String\(clamp\(Math\.round\(\+s\.passCount\|\|1\),1,12\)\)/);
   assert.match(studio,/Default passes for new blocks: \$\{activePassCount\(\)\}/);
   assert.match(studio,/clamp\(Math\.round\(\+l\.passes\|\|1\),1,12\)/);
-  assert.match(studio,/schemaVersion:5,method:activeMethod\(\),defaultPassCount:activePassCount\(\)/);
+  assert.match(studio,/schemaVersion:6,method:activeMethod\(\),methodsKey:methodKey\(a\),defaultPassCount:activePassCount\(\)/);
 });
 
-test('recordFor refuses mismatched per-block passes, method, base or schema', () => {
+test('recordFor refuses mismatched per-dye carrier, pass count, base or schema', () => {
   const start=studio.indexOf('function recordFor(a){'),end=studio.indexOf('\n\nlet viewMode=',start);
-  assert.ok(start>=0 && end>start, 'recordFor extractable');
+  assert.ok(start>=0 && end>start,'recordFor extraction');
   const snippet=studio.slice(start,end);
-  let method='acetone-direct',base='#FFFFFF',defaultPasses=1;
+  let base='#FFFFFF',defaultPasses=1;
   const records=[{
-    schemaVersion:5,profileId:'innova_star',comboKey:'1',baseHex:'#FFFFFF',
-    transmissionHex:'#FFFFFF',daylightScene:'outdoor',processKey:'specific-recipe',
-    method:'acetone-direct',region:'opaque-overall',measuredHex:'#123456',status:'verified'
+    schemaVersion:6,profileId:'innova_star',comboKey:'1',methodsKey:'["acetone-direct"]',
+    baseHex:'#FFFFFF',transmissionHex:'#FFFFFF',daylightScene:'outdoor',
+    processKey:'specific-recipe',method:'acetone-direct',region:'opaque-overall',
+    measuredHex:'#123456',status:'verified'
   }];
   const env={calibrationRecords:records,activeProfileId:'innova_star',viewMode:'daylight',
     profile:()=>({id:'innova_star'}),isTranslucentProfile:()=>false,
     activeRecipeKey:()=> 'specific-recipe',$:()=>({get value(){return base}}),
     currentTransmissionHex:()=> '#FFFFFF',daylightScene:'outdoor',
-    comboKey:a=>String(a[0].passes),activeMethod:()=>method,activePassCount:()=>defaultPasses};
+    comboKey:a=>String(a[0].passes),methodKey:a=>JSON.stringify(a.map(l=>l.method)),
+    activeMethod:()=> 'acetone-direct',activePassCount:()=>defaultPasses};
   const recordFor=Function('env','with(env){'+snippet+';return recordFor;}')(env);
-  assert.equal(recordFor([{passes:1}])?.measuredHex,'#123456');
-  method='floetrol-stencil';assert.equal(recordFor([{passes:1}]),null);
-  method='acetone-direct';assert.equal(recordFor([{passes:2}]),null);
-  defaultPasses=2;assert.equal(recordFor([{passes:1}])?.measuredHex,'#123456');
-  base='#FEFFFF';assert.equal(recordFor([{passes:1}]),null);
-  base='#FFFFFF';records[0].schemaVersion=4;assert.equal(recordFor([{passes:1}]),null);
+  assert.equal(recordFor([{passes:1,method:'acetone-direct'}])?.measuredHex,'#123456');
+  assert.equal(recordFor([{passes:1,method:'floetrol-stencil'}]),null);
+  assert.equal(recordFor([{passes:2,method:'acetone-direct'}]),null);
+  defaultPasses=2;
+  assert.equal(recordFor([{passes:1,method:'acetone-direct'}])?.measuredHex,'#123456');
+  base='#FEFFFF';assert.equal(recordFor([{passes:1,method:'acetone-direct'}]),null);
+  base='#FFFFFF';records[0].schemaVersion=5;
+  assert.equal(recordFor([{passes:1,method:'acetone-direct'}]),null);
 });
 
-test('different color-block passes produce distinct recipe calibration keys', () => {
-  const start=studio.indexOf('function comboKey(a){'),end=studio.indexOf('function activeMethod()',start);
-  assert.ok(start>=0 && end>start);
-  const comboKey=Function('clamp',studio.slice(start,end)+';return comboKey')((x,lo,hi)=>Math.max(lo,Math.min(hi,x)));
-  const a=[{name:'ProChem Onyx',hex:'#101010',strength:100,passes:1}];
-  assert.ok(comboKey(a)!==comboKey([{...a[0],passes:3}]));
+test('independent dye-block method and pass count change calibration identity', () => {
+  const start=studio.indexOf('function methodForDyeLayer(l){');
+  const end=studio.indexOf('function activeMethod()',start);
+  assert.ok(start>=0&&end>start,'method and combo key extractable');
+  const fns=Function('clamp','activeMethod',studio.slice(start,end)+';return {comboKey,methodKey,methodForDyeLayer}')(
+    (x,lo,hi)=>Math.max(lo,Math.min(hi,x)),()=> 'acetone-direct');
+  const a=[{name:'ProChem Onyx',hex:'#101010',strength:100,passes:1,method:'acetone-direct'}];
+  assert.ok(fns.comboKey(a)!==fns.comboKey([{...a[0],passes:3}]));
+  assert.ok(fns.comboKey(a)!==fns.comboKey([{...a[0],method:'floetrol-stencil'}]));
+  assert.ok(fns.methodKey(a)!==fns.methodKey([{...a[0],method:'worm-dip'}]));
+  assert.equal(fns.methodForDyeLayer({name:'UV Blast Green'}),'worm-dip');
   assert.match(studio,/id="layerPasses" type="number" min="1" max="12"/);
-  assert.match(studio,/l\.passes=clamp\(/);
+  assert.match(studio,/id="layerMethod" class="model-select"/);
+  assert.match(studio,/l\.method=\$\("layerMethod"\)\.value/);
   assert.match(studio,/layers=deepCopy\(s\.layers\|\|\[\]\)\.map/);
   assert.match(studio,/Per-block counts:/);
 });
@@ -129,4 +139,20 @@ test('direct-application research is source labeled without pretending measured 
   assert.match(studio,/no measured numeric color data/);
   assert.match(studio,/One brush pass can leave visible streaks/);
   assert.match(studio,/Multiple direct-acetone passes may deepen color but are NOT a validated linear multiplier/);
+});
+
+test('source method matching evaluates the actual dye block rather than the project default', () => {
+  assert.match(studio,/const matchingLayers=layers\.filter\(l=>evidenceDyeFamilyMatches/);
+  assert.match(studio,/const comparableLayers=matchingLayers\.length\?matchingLayers:layers/);
+  assert.match(studio,/comparableLayers\.some\(l=>methodForDyeLayer\(l\)===observedMethod\)/);
+  assert.match(studio,/MIXED APPLICATION METHODS/);
+  assert.match(studio,/FORMULATION MISMATCH/);
+  assert.match(studio,/Per-block methods change warnings and evidence ranking/);
+});
+
+test('standalone studio follows Local Roots design tokens with distinct dark disc canvas', () => {
+  assert.match(studio,/id="local-roots-studio-visual-integration"/);
+  assert.match(studio,/--panel:#fff8ee/);
+  assert.match(studio,/--accent:#a7623a/);
+  assert.match(studio,/\.canvas-shell\{background:radial-gradient/);
 });
