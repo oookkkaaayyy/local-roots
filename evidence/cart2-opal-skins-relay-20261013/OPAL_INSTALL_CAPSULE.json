@@ -1,0 +1,162 @@
+{
+  "cost_policy": {
+    "paid_or_quota_limited_execution": "explicit_authorization_per_bounded_run",
+    "remote_execution_for_source_archaeology": false,
+    "retry_inherits_authorization": false
+  },
+  "created_at": "2026-10-13T23:05:42.436974+00:00",
+  "expected_terminal_outputs": [
+    "accepted change or exact failed stage",
+    "deployed/source identity",
+    "test and integration-contract result",
+    "rollback identity",
+    "durable evidence pointer"
+  ],
+  "external_authorities": {
+    "network_identity": "192.168.77.1"
+  },
+  "repo_identity": {
+    "branch": "codex/matrix-autonomous-skins-poll-20261013",
+    "dirty": false,
+    "type": "git_commit",
+    "value": "308dd0b3cd20dae9c3171a64e03d506758b2e462"
+  },
+  "repo_inputs": [
+    {
+      "bytes": 264213,
+      "path": "config/HBNF_CONTROL_STATE.json",
+      "sha256": "d9218e2e7a15402ffa8b8235ede890ed5d91e1eac3586c13fe8b2cdf623b8fc0"
+    },
+    {
+      "bytes": 14677,
+      "path": "AGENTS.md",
+      "sha256": "1400198b652bc349ea032a1a2669e436987c60a5ada3fea92e52425f73737584"
+    }
+  ],
+  "run_id": "hbnf-opal-install-20261013T2130Z-308dd0b",
+  "schema": "local-roots-execution-capsule-v1",
+  "stages": [
+    {
+      "id": "scope",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "explicit acceptance condition"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "implement",
+      "kind": "work",
+      "mutation": false,
+      "outputs": [
+        "small code/config delta"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "test",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "deterministic local test result"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "contract-closure",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "producer/consumer integration contract PASS",
+        "no deterministic unknown deferred to production"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "recovery-proof",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "exact last-known-good revision and rollback procedure PASS"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "transaction-rehearsal",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "preview/staging/simulation transaction PASS",
+        "rollback rehearsal PASS"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "capture-current-state",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "exact current deployed revision captured"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "deploy",
+      "kind": "deployment",
+      "mutation": true,
+      "outputs": [
+        "deployment identity"
+      ],
+      "retry_policy": "explicit_only",
+      "rollback": {
+        "strategy": "restore exact captured last-known-good revision"
+      }
+    },
+    {
+      "id": "verify",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "user-visible/runtime verification"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "record",
+      "kind": "evidence",
+      "mutation": false,
+      "outputs": [
+        "terminal run summary and durable delta"
+      ],
+      "retry_policy": "idempotent"
+    }
+  ],
+  "storage_policy": {
+    "aks": "searchable routing, current-state pointers, acceptance/supersession metadata, and external artifact identities",
+    "github": "canonical/buildable source, scripts, configs, workflow definitions, and small machine-readable provenance",
+    "google_drive": "durable binaries, recovery artifacts, decisive evidence, and large immutable run outputs",
+    "local_workspace": "ephemeral execution only; never sole authority after a result becomes meaningful"
+  },
+  "system_id": "hbnf-opal",
+  "terminal_recovery": "If deploy or verify fails, restore the exact captured last-known-good revision and record the failed stage before any further work.",
+  "trace_id": "38a181f813c14152b990ea977738981f",
+  "user_interaction_policy": {
+    "copy_paste_delivery": "one_single_fenced_block_per_action",
+    "max_user_actions_per_blocker": 1,
+    "required_user_action_fields": [
+      "prerequisite",
+      "action",
+      "expected_result",
+      "stop_condition"
+    ],
+    "resource_instruction_requires_direct_link_or_exact_path": true,
+    "terminal_app": "macOS Terminal",
+    "terminal_relay": false
+  },
+  "workflow_id": "software-change",
+  "workflow_source": {
+    "path": "platform/workflows/software-change.json",
+    "sha256": "a4ff8633bef2657b4eb2aab892a287c97ac9268c5a245ae29714db760c1b2c9f"
+  }
+}
