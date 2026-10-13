@@ -301,7 +301,6 @@ button.danger{color:#8d3129}
 <main>
 <aside id="consumerDisc" class="consumer-panel panel consumer-disc" aria-label="Choose your disc">
  <h2>Your disc</h2><label for="profileSelect">Plastic</label><div id="consumerProfileSlot"></div>
- <label for="baseColor">Starting color</label><div id="consumerBaseSlot" class="consumer-base-row"></div>
  <div class="photo-picker" aria-label="Match starting disc color from photo">
    <div class="photo-picker-actions"><button type="button" id="takeDiscPhoto" class="primary">Take photo</button>
      <button type="button" id="chooseDiscPhoto">Choose photo</button><span id="photoColorChip" class="photo-chip" hidden aria-hidden="true"></span></div>
@@ -309,6 +308,7 @@ button.danger{color:#8d3129}
    <input id="discPhotoInput" type="file" accept="image/*" class="hidden">
    <p id="photoColorStatus" class="photo-status" role="status" aria-live="polite">Auto-match disc color. Keep the full disc in even light.</p>
  </div>
+ <label for="baseColor">Or choose color</label><div id="consumerBaseSlot" class="consumer-base-row"></div>
  <div id="consumerPresetSlot"></div>
 </aside>
 <aside class="panel controls" id="technicalControls">
