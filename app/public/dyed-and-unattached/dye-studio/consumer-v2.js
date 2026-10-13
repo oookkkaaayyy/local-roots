@@ -44,7 +44,7 @@ g("du-palette-close").onclick=close;shade.onclick=close;
 document.addEventListener("keydown",e=>{
  if(e.key==="Escape"&&document.body.classList.contains("du-palette-open")){e.preventDefault();close()}
  if(e.key==="Tab"&&document.body.classList.contains("du-palette-open")){
-  const a=Array.from(p.querySelectorAll("button:not([disabled]),input:not([disabled]),select:not([disabled])")).filter(x=>x.getClientRects().length);
+  const a=Array.from(p.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),[role="button"][tabindex="0"]')).filter(x=>x.getClientRects().length);
   if(a.length){if(e.shiftKey&&document.activeElement===a[0]){e.preventDefault();a[a.length-1].focus()}else if(!e.shiftKey&&document.activeElement===a[a.length-1]){e.preventDefault();a[0].focus()}}
  }
 });
