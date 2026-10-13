@@ -6,7 +6,9 @@ const read = path => readFileSync(new URL(path, import.meta.url), 'utf8');
 const app = read('../src/App.tsx');
 const dAndU = read('../src/pages/DyedUnattachedPage.tsx');
 const shell = read('../src/components/Shell.tsx');
-const studio = read('../public/dyed-and-unattached/dye-studio/index.html');
+const studioHtml = read('../public/dyed-and-unattached/dye-studio/index.html');
+const studioScript = read('../public/dyed-and-unattached/dye-studio/studio.js');
+const studio = studioHtml + '\n' + studioScript;
 
 test('nested route preserves D&U navigation and forwards to the same-origin studio app', () => {
   assert.match(app, /\/dyed-and-unattached\/dye-studio.*canonical:'\/dyed-and-unattached\/dye-studio'/);
@@ -242,4 +244,12 @@ test('editor state roundtrip and undo-redo preserve block identities and physica
   assert.equal(env.layers[1].method,'worm-dip');
   fns.applyState({base:'#FFFFFF',passCount:2,layers:[{name:'UV Blast Red',hex:'#FF0022',strength:100,shape:'edge',angle:0,offset:0,side:1,width:.42}]});
   assert.equal(env.layers[0].passes,2);assert.equal(env.layers[0].method,'worm-dip');
+});
+
+test('external studio script complies with shared CSP without loosening site headers', () => {
+  const headers = read('../public/_headers');
+  assert.match(headers, /script-src 'self'/);
+  assert.match(studioHtml, /<script src="\.\/studio\.js" defer><\/script>/);
+  assert.doesNotMatch(studioHtml, /<script>[^]*?<\/script>/);
+  assert.match(studioScript, /"use strict";/);
 });
