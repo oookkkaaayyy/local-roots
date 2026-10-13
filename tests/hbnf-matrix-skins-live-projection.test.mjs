@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
-import {projectSkinsForMatrix,chooseLive,laDate,skinsAcePot} from "../staging/coordinated-backend/hbnf-cart-control/live.ts";
+import {projectSkinsForMatrix,chooseLive,laDate,skinsAcePot,isMatrixLiveReadPath,MATRIX_LIVE_READ_PATH} from "../staging/coordinated-backend/hbnf-cart-control/live.ts";
 const ui=fs.readFileSync(new URL("../firmware/phase2/integration-r6-compositor-timing/usermod/hbnf_local_ui.h",import.meta.url),"utf8");
 const start=ui.indexOf("const laDate=()=>");
 const end=ui.indexOf("function liveDisplayKey",start);
@@ -49,7 +49,7 @@ assert.equal(parsed.label,"F9");
 
 const functionSource=fs.readFileSync(new URL("../staging/coordinated-backend/hbnf-cart-control/index.ts",import.meta.url),"utf8");
 for(const [pattern,message] of [
-  [/const matrixLivePath\s*=\s*"\/rest\/v1\/league_state"/,"function subpath matches the existing reader URL after Supabase function routing"],
+  [/isMatrixLiveReadPath\(requestUrl\.pathname\)/,"the actual request handler uses the tested Matrix route matcher"],
   [/Access-Control-Allow-Methods":"GET, OPTIONS"/,"Matrix dashboard GET/OPTIONS preflight is allowed"],
   [/"http:\/\/192\.168\.77\.10"/,"Matrix local origin is explicitly allowed"],
   [/select\("skins:state_json->skins,updated_at"\)/,"Postgres JSON path selects only Skins at source"],
@@ -69,5 +69,14 @@ assert.equal(allowedCors["Access-Control-Allow-Methods"],"GET, OPTIONS");
 assert.match(allowedCors["Access-Control-Allow-Headers"],/apikey, authorization, accept/);
 const deniedCors=corsContext.matrixLiveCors({headers:new Headers({Origin:"https://untrusted.example"})});
 assert.equal(deniedCors["Access-Control-Allow-Origin"],undefined,"untrusted web origins are not allowed");
+
+// Exercise the real Supabase URL and the function path delivered to its handler.
+// Supabase removes /functions/v1 at the gateway but retains the function-name prefix.
+const matrixSpecificBase="https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-control";
+const browserRequestUrl=new URL(`${matrixSpecificBase}/rest/v1/league_state?select=state_json,updated_at&id=eq.1`);
+const handlerPath=browserRequestUrl.pathname.replace(/^\/functions\/v1/,"");
+assert.equal(handlerPath,MATRIX_LIVE_READ_PATH,"Supabase gateway route retains the function-name prefix for the Edge handler");
+assert.equal(isMatrixLiveReadPath(handlerPath),true,"correctly prefixed request reaches the Matrix projection handler");
+assert.equal(isMatrixLiveReadPath("/rest/v1/league_state"),false,"old unprefixed subpath is rejected");
 
 console.log(`Matrix live projection PASS: full=${fullBytes}B, skins=${skinsBytes}B, returned=${projectedBytes}B; embedded parser, Front/Back gate, ace-pot, CORS PASS`);

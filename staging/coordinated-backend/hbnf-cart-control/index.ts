@@ -1,6 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.0";
 import { isMetadataOnlyCommand, reduceCartCommand, reconcileTargetsForCommand, requiresOwnerAuthorization, runGuestCommand } from "./guest-command.ts";
-import { chooseLive, projectSkinsForMatrix } from "./live.ts";
+import { chooseLive, isMatrixLiveReadPath, projectSkinsForMatrix } from "./live.ts";
 import { laDate, readSkinsScoreState, writeSkinsWinner, writeSkinsTiebreaker, writeSkinsAceWinner } from "./skins_scoring.ts";
 import { phase2VibeReady } from "./runtime-vibe.ts";
 import { handleMatrixRelay } from "./matrix-relay.ts";
@@ -13,8 +13,6 @@ const cors = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Cache-Control": "no-store",
 };
-// Supabase routes the function-name prefix; Deno receives only this suffix path.
-const matrixLivePath = "/rest/v1/league_state";
 function matrixLiveCors(req:Request){
   const origin=req.headers.get("Origin")??"";
   const allowed=new Set([Deno.env.get("HBNF_CART_ALLOWED_ORIGIN")??"https://hbnightflyers.com","http://192.168.77.10"]);
@@ -29,7 +27,7 @@ const devices = ["matrix", "aux"] as const;
 
 Deno.serve(async (req: Request) => {
   if (req.headers.has("x-hbnf-relay-id")) return await handleMatrixRelay(req);
-  const requestUrl=new URL(req.url),matrixLiveRead=requestUrl.pathname===matrixLivePath;
+  const requestUrl=new URL(req.url),matrixLiveRead=isMatrixLiveReadPath(requestUrl.pathname);
   if(matrixLiveRead&&req.method==="OPTIONS")return new Response("ok",{status:204,headers:matrixLiveCors(req)});
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST"&&!(matrixLiveRead&&req.method==="GET")) return response({ error: "method_not_allowed" }, 405);

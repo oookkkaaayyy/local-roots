@@ -2,6 +2,9 @@
 const clean=(s:any)=>String(s??"").trim().replace(/\s*\/\s*/g,"/").replace(/\s+/g," ");
 const cards=(s:any)=>Array.isArray(s?.cards)?s.cards:[];
 export function laDate(){return new Intl.DateTimeFormat("en-CA",{timeZone:"America/Los_Angeles",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());}
+// Supabase Edge Function handlers receive the function-name prefix in the URL path.
+export const MATRIX_LIVE_READ_PATH="/hbnf-cart-control/rest/v1/league_state";
+export function isMatrixLiveReadPath(pathname:string){return pathname===MATRIX_LIVE_READ_PATH;}
 function hasNames(s:any,team:boolean){return cards(s).some((c:any)=>String(team?c?.teamsText??"":c?.playersText??"").trim());}
 export function skinsSectionLocked(section:any){const list=cards(section);return !!section?.scoresLocked||(list.length>0&&list.every(card=>!!(card?.scoresLocked||card?.finalized)));}
 export function projectSkinsForMatrix(skins:any,today=laDate()){
