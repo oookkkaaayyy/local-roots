@@ -253,3 +253,15 @@ test('external studio script complies with shared CSP without loosening site hea
   assert.doesNotMatch(studioHtml, /<script>[^]*?<\/script>/);
   assert.match(studioScript, /"use strict";/);
 });
+
+test('consumer interface keeps functionality, warnings and evidence reachable',()=>{
+ const ui=read('../public/dyed-and-unattached/dye-studio/consumer.css');
+ assert.match(studioHtml,/id="projectActions" class="project-actions"/);
+ assert.match(studioHtml,/id="researchDrawer" class="consumer-research"/);
+ assert.match(studioHtml,/class="mobile-quicknav"/);
+ assert.match(studioHtml,/Preview colors are estimates, not verified dye results/);
+ assert.match(ui,/@media\(max-width:900px\)/);
+ assert.match(ui,/\.workspace\{order:0\}/);
+ for(const id of ['saveProject','loadProject','copyRecipe','exportPng','clientModeBtn','calibrationModeBtn','referenceGrid','evidencePanel','layerList','editDetails','swatchGrid','actualTestBtn']){
+ assert.equal(studioHtml.split('id="'+id+'"').length-1,1,'exactly one control '+id);}
+});
