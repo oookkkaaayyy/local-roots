@@ -588,7 +588,7 @@ button.danger{color:#8d3129}
 <script src="./disc-photo.js" defer></script>
 <style id="du-consumer-redesign-v2">
 /* Simple consumer composer: all original technical controls remain intact. */
-body.client-mode main{max-width:1260px;display:grid;grid-template-columns:minmax(0,1fr) minmax(285px,350px);grid-template-areas:"stage layers" "stage disc";grid-template-rows:auto auto;align-items:start;gap:14px}
+body.client-mode main{max-width:1260px;display:grid;grid-template-columns:minmax(0,1fr) minmax(285px,350px);grid-template-areas:"stage disc" "stage layers";grid-template-rows:auto auto;align-items:start;gap:14px}
 body.client-mode #canvasSection{grid-area:stage;position:sticky;top:10px}
 body.client-mode #consumerLayers{grid-area:layers;max-height:none;overflow:visible}
 body.client-mode #consumerDisc{grid-area:disc}
@@ -639,13 +639,23 @@ body.client-mode #consumerPalette .swatch-code{display:none}
 @media(max-width:900px){body.client-mode main{grid-template-columns:minmax(0,1fr) minmax(260px,310px)}body.client-mode #canvasSection{position:static}body.client-mode #canvasSection .canvas-shell{width:100%}}
 @media(max-width:680px){
 body.client-mode main{display:flex;flex-direction:column;gap:10px}
-body.client-mode #canvasSection{order:0;width:100%}body.client-mode #consumerLayers{order:1;width:100%}body.client-mode #consumerDisc{order:2;width:100%}
+body.client-mode #consumerDisc{order:0;width:100%}body.client-mode #canvasSection{order:1;width:100%}body.client-mode #consumerLayers{order:2;width:100%}
 body.client-mode #canvasSection .canvas-shell{width:min(100%,520px)}
 body.client-mode #consumerPalette{left:0;right:0;top:auto;bottom:0;width:100%;height:min(80dvh,750px);padding:14px 14px max(24px,env(safe-area-inset-bottom));border-radius:18px 18px 0 0}
 body.client-mode #du-palette-head{top:-14px}
 body.client-mode #du-color-trigger{flex:1}
 body.client-mode #consumerViewSlot{margin-left:0}
 body.client-mode .mobile-quicknav{display:none}
+}
+
+body.client-mode #du-lighting{margin:0;border:1px solid #ddcdb6;background:#fffdf9;border-radius:10px;position:relative;overflow:visible}
+body.client-mode #du-lighting>summary{font-size:12px;min-height:40px;display:flex;align-items:center;padding:8px 10px;cursor:pointer;color:#63462f;background:transparent}
+body.client-mode #du-lighting #consumerViewSlot{padding:8px;min-width:210px}
+body.client-mode #du-lighting .condition-switch{justify-content:flex-end}
+body.calibration-mode #du-lighting{display:none!important}
+@media(max-width:680px){
+ body.client-mode #du-lighting #consumerViewSlot{min-width:0}
+ body.client-mode #du-lighting .condition-switch{justify-content:start}
 }
 </style>
 <script src="./consumer-v2.js" defer></script>
