@@ -19,7 +19,6 @@ const dyes = [
 
   ["iDye Poly","Blue","#1B1866"],
   ["iDye Poly","Crimson","#972738"],
-  ["iDye Poly","Onyx","#050607"],
   
 
 
@@ -56,7 +55,6 @@ const dyes = [
   ["My Inventory","UV Blast Clear","#F7FFF4",true],
   ["My Inventory","iDye Poly Blue","#1B1866"],
   ["My Inventory","iDye Poly Crimson","#972738"],
-  ["My Inventory","iDye Poly Onyx","#050607"],
   ["My Inventory","ProChem Onyx","#101010"],
   ["My Inventory","ProChem Neon Lemon Zest","#DEFD02"],
   ["My Inventory","ProChem Neon Hot Orange","#E75001"],
@@ -124,7 +122,7 @@ const dyeResearch={
  "Hot Pink UV Blast":{factor:.92,fluor:.92,uvColor:"#FF2AAE",reliability:.66},
  "Purple UV Blast":{factor:.88,fluor:.55,uvColor:"#A83BFF",reliability:.62},
  "Chartreuse / Yellow":{factor:.94,fluor:1.0,uvColor:"#DFFF00",reliability:.74},
- "ProChem Onyx":{factor:1.28,fluor:0,reliability:.70},"Onyx":{factor:1.28,fluor:0,reliability:.88},"iDye Poly Onyx":{factor:1.28,fluor:0,reliability:.88},
+ "ProChem Onyx":{factor:1.28,fluor:0,reliability:.70},"Onyx":{factor:1.28,fluor:0,reliability:.88},
  "iDye Poly Blue":{factor:1.05,fluor:0,reliability:.86},"Blue":{factor:1.05,fluor:0,reliability:.78},
  "iDye Poly Crimson":{factor:1.04,fluor:0,reliability:.82},"Crimson":{factor:1.04,fluor:0,reliability:.80},
  "ProChem Neon Lemon Zest":{factor:.84,fluor:.88,uvColor:"#E8FF00",reliability:.76,champion:.82},
@@ -178,7 +176,6 @@ const dyeOpticalProfiles={
  "Crimson":{surface:"#79152D",filter:"#990D29",density:1.08,fluor:0,uv:"#990D29"},
  "ProChem Onyx":{surface:"#101010",filter:"#111214",density:1.38,fluor:0,uv:"#101010"},
  "Onyx":{surface:"#050607",filter:"#111214",density:1.38,fluor:0,uv:"#050607"},
- "iDye Poly Onyx":{surface:"#050607",filter:"#111214",density:1.38,fluor:0,uv:"#050607"},
 
 
  "ProChem Neon Lemon Zest":{surface:"#A4C416",filter:"#D5E526",density:.75,fluor:.22,uv:"#E8FF00"},
@@ -402,7 +399,7 @@ const transmissionTargets={
  "UV Blast Green":"#61C126","Green UV Blast":"#61C126",
  "UV Blast Red":"#A90013","Flo Red UV Blast":"#A90013",
  "Blue UV Blast":"#003D93","Hot Pink UV Blast":"#C60072","Purple UV Blast":"#560074","Chartreuse / Yellow":"#C9DE00",
- "ProChem Onyx":"#101010","Onyx":"#050607","iDye Poly Onyx":"#050607","iDye Poly Blue":"#071B70","Blue":"#071B70","iDye Poly Crimson":"#790018","Crimson":"#790018",
+ "ProChem Onyx":"#101010","Onyx":"#050607","iDye Poly Blue":"#071B70","Blue":"#071B70","iDye Poly Crimson":"#790018","Crimson":"#790018",
  "ProChem Neon Lemon Zest":"#C4D900","Neon Lemon Zest":"#C4D900","ProChem Neon Hot Orange":"#D71900","Neon Hot Orange":"#D71900",
  "ProChem Fluorescent Pink":"#C41567","Fluorescent Pink":"#C41567","ProChem Neon Cerise Pink":"#B00070","Neon Cerise Pink":"#B00070",
  "ProChem Neon Key Lime":"#58C900","Neon Key Lime":"#58C900","ProChem Neon Royal Purple":"#45005D","Neon Royal Purple":"#45005D"
