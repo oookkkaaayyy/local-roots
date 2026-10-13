@@ -87,6 +87,7 @@ g("du-copy").onclick=()=>g("duplicateLayer").click();g("du-flip").onclick=()=>g(
 let pending=false;
 function refresh(){
  pending=false;const l=selected>=0?layers[selected]:null;
+ if(tip)tip.textContent=layers.length?"Drag the selected line to move • drag its ends to rotate":"Tap + Add dye color to begin.";
  const inConsumer=document.body.classList.contains("client-mode");
  quick.classList.toggle("du-active",!!l&&inConsumer);
  // Keep edit actions directly beneath their selected color, not above the entire list.
