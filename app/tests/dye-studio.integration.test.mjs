@@ -393,7 +393,7 @@ test('consumer v2 keeps dye selection atomic and color edits contextual', () => 
  assert.match(v2,/visibleLabels=\["↑ Move up","↓ Move down","Delete"\]/);
  assert.match(v2,/\[role="button"\]\[tabindex="0"\]/);
  assert.match(v2,/du-lighting/);
- assert.match(ui,/grid-template-areas:"stage disc" "stage layers"/);
+ assert.match(ui,/grid-template-areas:"stage side"/);
  assert.match(ui,/#consumerDisc\{order:0;width:100%\}/);
  assert.match(ui,/#consumerLayers \.layer #du-quick\{grid-column:1\/-1/);
  assert.doesNotMatch(v2,/function translucentPointPredict|function opaquePointPredict/);
