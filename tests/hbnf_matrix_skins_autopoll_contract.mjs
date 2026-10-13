@@ -36,6 +36,8 @@ selected = chooseLive(state);
 assert.equal(selected.label, "F9", "removing back-side names returns the selector to Front 9");
 
 const source = readFileSync("firmware/phase2/integration-r6-f89-compact-font/usermod/usermod_hbnf_foundation_v1.cpp", "utf8");
+const edge = readFileSync("staging/coordinated-backend/hbnf-cart-control/index.ts", "utf8");
+assert.match(edge, /selectorVersion:\s*"skins-front-lock-v1"/, "the relay requires the exact staged front-lock selector version");
 assert.match(source, /functions\/v1\/hbnf-cart-control"/);
 assert.ok(source.includes('"{\\"action\\":\\"live_status\\"}"'), "firmware request is not the read-only live_status action");
 assert.match(source, /HBNF_MATRIX_ANON_KEY/);

@@ -1,0 +1,9 @@
+{
+  "baseFunctionId": "95df7773-e888-48c9-84b3-ceb517c901c7",
+  "baseSha256": "716fff594b9de64aee2c3e3448bd1b683f42223ad32a17d7f24b82a458edfe45",
+  "baseVersion": 23,
+  "function": "hbnf-cart-control",
+  "import_map": true,
+  "project": "phcpbvuqibyarpfrftgx",
+  "verify_jwt": false
+}

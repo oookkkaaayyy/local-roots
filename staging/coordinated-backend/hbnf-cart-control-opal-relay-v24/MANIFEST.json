@@ -1,0 +1,25 @@
+{
+  "base_ezbr_sha256": "716fff594b9de64aee2c3e3448bd1b683f42223ad32a17d7f24b82a458edfe45",
+  "base_function_id": "95df7773-e888-48c9-84b3-ceb517c901c7",
+  "base_version": 23,
+  "changes": {
+    "index.ts": "Adds selectorVersion marker to existing live_status response.",
+    "live.ts": "Adds Front-9 lock helper and corrected F9/B9 selection."
+  },
+  "files": {
+    "deno.json": "d4235a1ddf7735bdd0a73ae15e3b596b706c8b910d65d6b2f3c3b4583b902d29",
+    "guest-command.ts": "09d181d27e6beeec7a9b9727bce404c0e5621a26ddc85895d68d7419f60f918d",
+    "index.ts": "9052fb71eecfa393de47053e5c4ace87dd5ca9a194ec24f5cd0949ebed39b341",
+    "live.ts": "1c79960bf00cd7b4d05a22914ab71bb8d3ffd16f22ac436501a924f03a621544",
+    "matrix-relay-auth.ts": "aae9ffd25cc31448b7ddf0c8f90539e9ad22ecdb2b4094f53ec829d6d4f2f248",
+    "matrix-relay-projection.ts": "d7145886b431444f0543c2bdfed86b18384d95a6f83ec5acd715116f43e2fe79",
+    "matrix-relay.ts": "826e729af54ddba32830cd2ab3c1e2ad640c00886565a2a15c3cda9da10b7cc9",
+    "runtime-vibe.ts": "711a9bd8a933b02dd6696cf2166338363128688b0257f8a1cb14c3935d31f1f7",
+    "skins_scoring.ts": "aa7d74bbd10bff41111411d7b07b895e1c82a7f7d8d075cb04aec4cf35ba16d6"
+  },
+  "function": "hbnf-cart-control",
+  "import_map": true,
+  "project": "phcpbvuqibyarpfrftgx",
+  "schema": "hbnf-supabase-function-release-source-v1",
+  "verify_jwt": false
+}

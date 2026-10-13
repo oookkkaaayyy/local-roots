@@ -142,7 +142,7 @@ Deno.serve(async (req: Request) => {
   if (action === "live_status") {
     const { data: league, error: liveError } = await service.from("league_state").select("state_json").eq("id", 1).single();
     if (liveError) return response({ error: "live_state_read_failed" }, 500);
-    return response({ live: chooseLive(league?.state_json ?? {}) });
+    return response({ live: chooseLive(league?.state_json ?? {}), selectorVersion: "skins-front-lock-v1" });
   }
 
   if (action === "status") {

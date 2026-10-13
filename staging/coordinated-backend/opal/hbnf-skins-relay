@@ -1,0 +1,102 @@
+#!/bin/ash
+# Outbound-only, read-only Skins poller for the trusted cart LAN.
+set -eu
+umask 077
+
+CONF=/etc/hbnf-skins-relay.conf
+CORE=/usr/lib/hbnf-skins-relay-core.sh
+TMP=/tmp/hbnf-skins-relay
+URL='https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-control'
+MATRIX='192.168.77.10'
+MATRIX_MAC='704bca5b345c'
+CANDIDATE='hbnf-cart2-phase2-r6-vibe-first-ui-20261012'
+POLL_SECONDS=15
+REDISPLAY_SECONDS=240
+FRESH_SECONDS=45
+
+[ -r "$CONF" ] && [ -r "$CORE" ] || exit 1
+. "$CORE"
+secure_conf() {
+	[ -f "$CONF" ] && [ ! -L "$CONF" ] || return 1
+	meta="$(LC_ALL=C ls -ldn "$CONF" 2>/dev/null)" || return 1
+	printf '%s\n' "$meta" | awk 'NR == 1 && NF >= 4 && $1 == "-rw-------" && $2 == "1" && $3 == "0" && $4 == "0" { ok=1 } END { exit (ok ? 0 : 1) }'
+}
+secure_conf || exit 1
+. "$CONF"
+: "${SUPABASE_ANON_KEY:?missing public anon/publishable key}"
+case "$SUPABASE_ANON_KEY" in ''|*[!A-Za-z0-9._-]*) exit 1;; esac
+command -v curl >/dev/null 2>&1 && command -v jsonfilter >/dev/null 2>&1 || exit 1
+mkdir -p "$TMP" && chmod 700 "$TMP"
+AUTH="$TMP/curl-auth.conf"
+printf 'header = "apikey: %s"\nheader = "Authorization: Bearer %s"\n' "$SUPABASE_ANON_KEY" "$SUPABASE_ANON_KEY" > "$AUTH"
+chmod 600 "$AUTH"
+unset SUPABASE_ANON_KEY
+log() { logger -t hbnf-skins-relay "$1"; }
+log_once() { [ "${LAST_LOG:-}" = "$1" ] || { log "$1"; LAST_LOG="$1"; }; }
+
+matrix_snapshot() {
+	curl -fsS --connect-timeout 2 --max-time 4 --max-filesize 32768 "http://$MATRIX/json/si" -o "$TMP/matrix.json" >/dev/null 2>&1 || return 1
+	local mac candidate
+	mac="$(skins_jf "$TMP/matrix.json" '@.info.mac' | tr -d ':')"
+	candidate="$(skins_jf "$TMP/matrix.json" '@.state.HBNF.candidate')"
+	skins_target_matches "$mac" "$candidate" || return 1
+	MATRIX_LIVE_ACTIVE="$(skins_jf "$TMP/matrix.json" '@.state.HBNF.liveActive')"
+	MATRIX_UPTIME="$(skins_jf "$TMP/matrix.json" '@.state.HBNF.timing.uptimeSec')"
+	case "$MATRIX_UPTIME" in ''|*[!0-9]*) MATRIX_UPTIME=0;; esac
+}
+
+post_matrix() {
+	local snapshot="$1"
+	curl -fsS --connect-timeout 2 --max-time 4 --max-filesize 1024 \
+		-H "Host: $MATRIX" -H "Origin: http://$MATRIX" \
+		-H 'Content-Type: application/json' -H 'Cache-Control: no-store' \
+		--data-binary "$snapshot" "http://$MATRIX/hbnf/live" -o "$TMP/matrix-post.json" >/dev/null 2>&1 || return 1
+	[ "$(skins_jf "$TMP/matrix-post.json" '@.ok')" = 'true' ]
+}
+
+fetch_scores() {
+	curl -fsS --connect-timeout 4 --max-time 8 --max-filesize 32768 \
+		--config "$AUTH" -H 'Accept: application/json' -H 'Cache-Control: no-cache, no-store' \
+		-H 'Content-Type: application/json' --data-binary '{"action":"live_status"}' \
+		"$URL" -o "$TMP/live.json" >/dev/null 2>&1 || return 1
+	skins_build_snapshot "$TMP/live.json" > "$TMP/snapshot.json" || return 1
+	SNAPSHOT="$(cat "$TMP/snapshot.json")"
+}
+
+inactive='{"schema":"hbnf-live-v1","active":false,"label":"","acePot":0,"entries":[]}'
+last_snapshot=''
+last_display=0
+last_success=0
+last_uptime=0
+MATRIX_LIVE_ACTIVE=false
+MATRIX_UPTIME=0
+
+while :; do
+	now="$(date +%s)"
+	if ! matrix_snapshot; then log_once 'waiting for the pinned Matrix identity'; sleep 5; continue; fi
+	if [ "$last_uptime" -gt 0 ] && [ "$MATRIX_UPTIME" -lt "$last_uptime" ]; then last_display=0; fi
+	last_uptime=$MATRIX_UPTIME
+	if ! fetch_scores; then
+		log_once 'Supabase read failed or selector/score payload was invalid; no score was posted'
+		sleep "$POLL_SECONDS"; continue
+	fi
+	last_success=$now
+	LAST_LOG=''
+	if [ "$SNAPSHOT" = "$inactive" ]; then
+		if [ -n "$last_snapshot" ] && post_matrix "$inactive"; then last_snapshot=''; last_display=0; fi
+		sleep "$POLL_SECONDS"; continue
+	fi
+	if [ "$SNAPSHOT" != "$last_snapshot" ]; then
+		if post_matrix "$SNAPSHOT"; then last_snapshot=$SNAPSHOT; last_display=$now; log_once 'fresh Skins snapshot accepted by Matrix'; fi
+		sleep "$POLL_SECONDS"; continue
+	fi
+	if [ "$MATRIX_LIVE_ACTIVE" != 'true' ]; then last_display=0; fi
+	blocked=false
+	if skins_overlay_blocked "$TMP/matrix.json"; then blocked=true; fi
+	if skins_redisplay_due "$last_display" "$now" "$last_success" "$blocked" "$REDISPLAY_SECONDS" "$FRESH_SECONDS"; then
+		# Toggle only the Matrix's local live snapshot to retrigger its native renderer.
+		# If the active post fails, last_display remains due and the next fresh poll retries.
+		if post_matrix "$inactive" && post_matrix "$SNAPSHOT"; then last_display=$now; log_once 'fresh Skins standings redisplayed'; fi
+	fi
+	sleep "$POLL_SECONDS"
+done
