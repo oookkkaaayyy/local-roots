@@ -265,3 +265,66 @@ test('consumer interface keeps functionality, warnings and evidence reachable',(
  for(const id of ['saveProject','loadProject','copyRecipe','exportPng','clientModeBtn','calibrationModeBtn','referenceGrid','evidencePanel','layerList','editDetails','swatchGrid','actualTestBtn']){
  assert.equal(studioHtml.split('id="'+id+'"').length-1,1,'exactly one control '+id);}
 });
+
+test('consumer and technical modes reuse and restore the same DOM controls', () => {
+ const layout=read('../public/dyed-and-unattached/dye-studio/consumer-layout.js');
+ const mappings=[...layout.matchAll(/\["([^"]+)",\s*"([^"]+)"\]/g)].map(m=>({selector:m[1],slot:m[2]}));
+ assert.equal(mappings.length,14);
+ const all=new Map(),dest=new Map();
+ function element(name){return {name,parentNode:null,style:{},dataset:{},textContent:name,setAttribute(){}};}
+ function parent(name){
+   return {name,children:[],
+     appendChild(child){
+       if(child.parentNode){const a=child.parentNode.children;a.splice(a.indexOf(child),1);}
+       this.children.push(child);child.parentNode=this;
+     },
+     insertBefore(child,anchor){
+       if(child.parentNode){const a=child.parentNode.children;a.splice(a.indexOf(child),1);}
+       const ix=this.children.indexOf(anchor);
+       if(ix<0)throw Error('missing anchor '+name);
+       this.children.splice(ix,0,child);child.parentNode=this;
+     }
+   };
+ }
+ for(const entry of mappings){
+   const node=element(entry.selector),origin=parent('origin '+entry.selector);
+   origin.appendChild(node);all.set(entry.selector,{node,origin});
+   if(!dest.has(entry.slot))dest.set(entry.slot,parent(entry.slot));
+ }
+ const preset=element('warm white');preset.dataset.basePreset='#F4F2E8';
+ const doc={
+   querySelector:selector=>all.get(selector)?.node||null,
+   getElementById:id=>dest.get(id)||null,
+   createComment:name=>element('marker '+name),
+   querySelectorAll:selector=>selector==='[data-base-preset]'?[preset]:[]
+ };
+ const win={};Function('window','document',layout)(win,doc);
+ win.DUConsumerLayout.init();
+ assert.equal(preset.style.backgroundColor,'#F4F2E8');
+ win.DUConsumerLayout.setView('client');
+ for(const {selector,slot} of mappings)assert.equal(all.get(selector).node.parentNode,dest.get(slot),selector+' moved');
+ win.DUConsumerLayout.setView('calibration');
+ for(const {selector} of mappings)assert.equal(all.get(selector).node.parentNode,all.get(selector).origin,selector+' restored');
+ win.DUConsumerLayout.setView('client');
+ for(const {selector,slot} of mappings)assert.equal(all.get(selector).node.parentNode,dest.get(slot),selector+' reused');
+});
+test('consumer split keeps color engine and technical controls available', () => {
+ const layout=read('../public/dyed-and-unattached/dye-studio/consumer-layout.js');
+ const css=read('../public/dyed-and-unattached/dye-studio/consumer.css');
+ for(const id of ['consumerDisc','consumerLayers','consumerPalette','consumerProfileSlot','consumerViewSlot','consumerSwatchesSlot','technicalControls']){
+   assert.match(studioHtml,new RegExp('id="'+id+'"'));
+ }
+ for(const id of ['profileSelect','baseColor','baseHex','layerMethod','layerPasses','canvas','swatchGrid','editDetails','dyesDetails','researchDrawer','exportPng']){
+   assert.equal(studioHtml.split('id="'+id+'"').length-1,1,'unique '+id);
+ }
+ assert.match(studioHtml,/<script src="\.\/consumer-layout\.js" defer><\/script>/);
+ assert.match(studioHtml,/<script src="\.\/studio\.js" defer><\/script>/);
+ assert.match(studioScript,/window\.DUConsumerLayout\.init\(\);loadDb\(\)/);
+ assert.match(studioScript,/window\.DUConsumerLayout\.setView\(m\)/);
+ assert.doesNotMatch(studioScript,/layers\.forEach\(l=>l\.strength=100\)/);
+ assert.match(css,/body\.client-mode #layerMethodBox/);
+ assert.match(css,/body\.client-mode #layerPassesBox/);
+ assert.match(css,/body\.calibration-mode #evidencePanel/);
+ assert.match(studioHtml,/Preview colors are estimates, not verified dye results/);
+ assert.match(layout,/document\.querySelectorAll\("\[data-base-preset\]"\)/);
+});
