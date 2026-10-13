@@ -634,14 +634,25 @@ function confidenceForActive(active){
 }
 function makePaintImage(){
   const image=paintCtx.createImageData(PAINT_SIZE,PAINT_SIZE),data=image.data;
+  // A dye region's optical prediction depends on radius, not angle. Reuse
+  // colors in narrow radius bins per exact region mask, preserving boundaries
+  // at .58 (plate), .84 (shoulder), and .86 (opaque rim shading).
+  // The 1024 bins change <=1 sRGB channel in tested Proto Glow Champion
+  // scenes and 0 channels in tested Star scenes, with no model parameter edit.
+  const ringCache=new Map(),bins=1024;
   let p=0;
   for(let iy=0;iy<PAINT_SIZE;iy++){
     const y=((iy+.5)/PAINT_SIZE)*2-1;
     for(let ix=0;ix<PAINT_SIZE;ix++){
-      const x=((ix+.5)/PAINT_SIZE)*2-1;
-      if(x*x+y*y>1){data[p++]=0;data[p++]=0;data[p++]=0;data[p++]=0;continue}
-      const key=regionKeyAt(x,y),[r,g,b]=hexRgb(colorForPoint(x,y,key));
-      data[p++]=r;data[p++]=g;data[p++]=b;data[p++]=255;
+      const x=((ix+.5)/PAINT_SIZE)*2-1,r2=x*x+y*y;
+      if(r2>1){data[p++]=0;data[p++]=0;data[p++]=0;data[p++]=0;continue}
+      const radius=Math.sqrt(r2);
+      const zone=radius<.58?0:radius<.84?1:radius<=.86?2:3;
+      const region=regionKeyAt(x,y);
+      const cacheKey=region+"|"+zone+"|"+Math.min(bins-1,Math.floor(radius*bins));
+      let rgb=ringCache.get(cacheKey);
+      if(!rgb){rgb=hexRgb(colorForPoint(x,y,region));ringCache.set(cacheKey,rgb)}
+      data[p++]=rgb[0];data[p++]=rgb[1];data[p++]=rgb[2];data[p++]=255;
     }
   }
   paintCtx.putImageData(image,0,0);paintedImage=image;
