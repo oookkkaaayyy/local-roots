@@ -39,6 +39,9 @@ test('candidate retains designer controls and evidence limits', () => {
 test('owned Onyx remains distinct and mobile zoom remains available', () => {
   assert.match(studio, /"ProChem Onyx"/);
   assert.match(studio, /Unsupported historical product: iDye Poly Onyx/);
+  assert.match(studioScript, /\["My Inventory","ProChem Onyx","#101010"\]/);
+  assert.doesNotMatch(studioScript, /\["My Inventory","iDye Poly Onyx"/);
+  assert.doesNotMatch(studioScript, /\["iDye Poly","Onyx"/);
   assert.doesNotMatch(studio, /maximum-scale\s*=/i);
 });
 
