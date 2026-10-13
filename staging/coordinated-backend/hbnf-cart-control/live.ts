@@ -2,10 +2,9 @@
 const clean=(s:any)=>String(s??"").trim().replace(/\s*\/\s*/g,"/").replace(/\s+/g," ");
 const cards=(s:any)=>Array.isArray(s?.cards)?s.cards:[];
 export function laDate(){return new Intl.DateTimeFormat("en-CA",{timeZone:"America/Los_Angeles",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());}
-// Supabase Edge Function handlers receive the function-name prefix in the URL path.
+// Supabase keeps the function name in the Edge Function request pathname.
 export const MATRIX_LIVE_READ_PATH="/hbnf-cart-control/rest/v1/league_state";
 export function isMatrixLiveReadPath(pathname:string){return pathname===MATRIX_LIVE_READ_PATH;}
-function hasNames(s:any,team:boolean){return cards(s).some((c:any)=>String(team?c?.teamsText??"":c?.playersText??"").trim());}
 export function skinsSectionLocked(section:any){const list=cards(section);return !!section?.scoresLocked||(list.length>0&&list.every(card=>!!(card?.scoresLocked||card?.finalized)));}
 export function projectSkinsForMatrix(skins:any,today=laDate()){
   const weeks=skins?.weeks;
@@ -45,6 +44,7 @@ export function projectSkinsForMatrix(skins:any,today=laDate()){
   }
   return {skins:{weeks:projectedWeeks}};
 }
+function hasNames(s:any,team:boolean){return cards(s).some((c:any)=>String(team?c?.teamsText??"":c?.playersText??"").trim());}
 function winnerIdx(card:any,hole:number,team:boolean){const m=String(card?.winners?.[String(hole)]??"").match(team?/_team_(\d+)$/ : /_p_(\d+)$/);return m?Number(m[1]):null;}
 function skinsEntries(section:any,team:boolean,start:number){const out:string[]=[];for(const c of cards(section)){const names=String(team?c?.teamsText??"":c?.playersText??"").split(/\r?\n/).map(clean).filter(Boolean),counts=new Array(names.length).fill(0);let carry=1;for(let h=start;h<start+9;h++){const i=winnerIdx(c,h,team);if(i!==null&&i>=0&&i<names.length){counts[i]+=carry;carry=1;}else carry++;}const tb=String(c?.winners?.tb??"");if(carry>1&&tb){const m=tb.match(team?/_team_(\d+)$/ : /_p_(\d+)$/);if(m){const i=Number(m[1]);if(i>=0&&i<names.length)counts[i]+=carry-1;}}names.forEach((n:string,i:number)=>out.push(`${n} ${counts[i]??0}`));}return out;}
 function glowEntries(w:any){const pars=w?.scorecardText?.holePars??{},out:string[]=[];for(const p of(Array.isArray(w?.players)?w.players:[])){if(p?.removed)continue;const name=clean((p?.partner1&&p?.partner2)?`${p.partner1}/${p.partner2}`:(p?.name||p?.partner1));if(!name)continue;let raw=0,par=0,done=0;for(let i=0;i<(Array.isArray(p?.scores)?p.scores:[]).length;i++){const sv=String(p.scores[i]??"").trim();if(!sv)continue;const s=Number(sv);if(!Number.isFinite(s))continue;raw+=s;done++;const pv=Number(pars[String(i+1)]);par+=(Number.isFinite(pv)&&pv>0)?pv:3;}const rel=raw-par,v=done===0?"E":rel===0?"E":rel>0?`+${rel}`:String(rel);out.push(`${name} ${v}`);}return out;}

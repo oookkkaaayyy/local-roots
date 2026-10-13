@@ -1,0 +1,44 @@
+{
+  "function": "hbnf-cart-control",
+  "provider_version": 20,
+  "verify_jwt": false,
+  "provider_ezbr_sha256": "c6c1df195871c6b23cba718a96935015296375a87666e76b0461b15ad29a3c7c",
+  "files": {
+    "index.ts": {
+      "bytes": 14025,
+      "sha256": "e7cee5102f096292268d121291b9c51a697398d43a554065d24caaee4d243e7f"
+    },
+    "guest-command.ts": {
+      "bytes": 15405,
+      "sha256": "09d181d27e6beeec7a9b9727bce404c0e5621a26ddc85895d68d7419f60f918d"
+    },
+    "runtime-vibe.ts": {
+      "bytes": 1360,
+      "sha256": "711a9bd8a933b02dd6696cf2166338363128688b0257f8a1cb14c3935d31f1f7"
+    },
+    "live.ts": {
+      "bytes": 5548,
+      "sha256": "7844a5057f11f82344e3ff49c5f9062ba73019c62bfaab52636e93c897b69323"
+    },
+    "skins_scoring.ts": {
+      "bytes": 9680,
+      "sha256": "aa7d74bbd10bff41111411d7b07b895e1c82a7f7d8d075cb04aec4cf35ba16d6"
+    },
+    "matrix-relay.ts": {
+      "bytes": 4979,
+      "sha256": "826e729af54ddba32830cd2ab3c1e2ad640c00886565a2a15c3cda9da10b7cc9"
+    },
+    "matrix-relay-projection.ts": {
+      "bytes": 6027,
+      "sha256": "d7145886b431444f0543c2bdfed86b18384d95a6f83ec5acd715116f43e2fe79"
+    },
+    "matrix-relay-auth.ts": {
+      "bytes": 362,
+      "sha256": "aae9ffd25cc31448b7ddf0c8f90539e9ad22ecdb2b4094f53ec829d6d4f2f248"
+    },
+    "deno.json": {
+      "bytes": 174,
+      "sha256": "d4235a1ddf7735bdd0a73ae15e3b596b706c8b910d65d6b2f3c3b4583b902d29"
+    }
+  }
+}

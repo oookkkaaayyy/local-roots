@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
+import {createHash} from "node:crypto";
 import {projectSkinsForMatrix,chooseLive,laDate,skinsAcePot,isMatrixLiveReadPath,MATRIX_LIVE_READ_PATH} from "../staging/coordinated-backend/hbnf-cart-control/live.ts";
 const ui=fs.readFileSync(new URL("../firmware/phase2/integration-r6-compositor-timing/usermod/hbnf_local_ui.h",import.meta.url),"utf8");
 const start=ui.indexOf("const laDate=()=>");
@@ -78,5 +79,13 @@ const handlerPath=browserRequestUrl.pathname.replace(/^\/functions\/v1/,"");
 assert.equal(handlerPath,MATRIX_LIVE_READ_PATH,"Supabase gateway route retains the function-name prefix for the Edge handler");
 assert.equal(isMatrixLiveReadPath(handlerPath),true,"correctly prefixed request reaches the Matrix projection handler");
 assert.equal(isMatrixLiveReadPath("/rest/v1/league_state"),false,"old unprefixed subpath is rejected");
+
+const rollbackDir=new URL("../evidence/cart2-matrix-live-projection-20261012/rollback/hbnf-cart-control-v20/",import.meta.url);
+const rollbackManifest=JSON.parse(fs.readFileSync(new URL("SNAPSHOT_MANIFEST.json",rollbackDir),"utf8"));
+const sourceDelta=Object.keys(rollbackManifest.files).filter(name=>{
+  const current=fs.readFileSync(new URL(`../staging/coordinated-backend/hbnf-cart-control/${name}`,import.meta.url));
+  return current.length!==rollbackManifest.files[name].bytes||createHash("sha256").update(current).digest("hex")!==rollbackManifest.files[name].sha256;
+}).sort();
+assert.deepEqual(sourceDelta,["index.ts","live.ts"],"candidate differs from the captured live v20 source only in its route handler and projection logic");
 
 console.log(`Matrix live projection PASS: full=${fullBytes}B, skins=${skinsBytes}B, returned=${projectedBytes}B; embedded parser, Front/Back gate, ace-pot, CORS PASS`);

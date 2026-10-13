@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
+import {createServer} from "node:http";
+import {once} from "node:events";
 import {isMatrixLiveReadPath,MATRIX_LIVE_READ_PATH} from "../staging/coordinated-backend/hbnf-cart-control/live.ts";
 
 const path=process.env.HBNF_MATRIX_CONFIG_PATH;
@@ -26,4 +28,20 @@ const edgeHandlerPath=browserUrl.pathname.replace(/^\/functions\/v1/,"");
 assert.equal(edgeHandlerPath,MATRIX_LIVE_READ_PATH);
 assert.equal(isMatrixLiveReadPath(edgeHandlerPath),true);
 assert.equal(isMatrixLiveReadPath("/rest/v1/league_state"),false);
+
+const server=createServer((req,res)=>{
+  const routed=new URL(req.url,"http://127.0.0.1");
+  if(req.method!=="GET"||!isMatrixLiveReadPath(routed.pathname)){res.writeHead(404).end();return;}
+  res.writeHead(200,{"content-type":"application/json"}).end(JSON.stringify({handlerPath:routed.pathname,query:routed.search}));
+});
+server.listen(0,"127.0.0.1");
+await once(server,"listening");
+try{
+  const address=server.address();
+  const routed=await fetch(`http://127.0.0.1:${address.port}${edgeHandlerPath}${browserUrl.search}`);
+  assert.equal(routed.status,200,"the HTTP router dispatches the complete function-prefixed path");
+  assert.deepEqual(await routed.json(),{handlerPath:MATRIX_LIVE_READ_PATH,query:browserUrl.search});
+  const oldPath=await fetch(`http://127.0.0.1:${address.port}/rest/v1/league_state${browserUrl.search}`);
+  assert.equal(oldPath.status,404,"the previous unprefixed route no longer dispatches");
+}finally{server.close();}
 console.log("Matrix live config/routing PASS: website base preserved; Matrix URL resolves to the function-prefixed Edge handler route.");
