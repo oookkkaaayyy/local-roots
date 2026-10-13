@@ -513,3 +513,25 @@ test('color grip reorders without losing selected identity; mobile buttons remai
  assert.match(studioHtml,/@media\(pointer:coarse\)/);
  assert.match(studioHtml,/\.layer\.selected \.layer-actions\{display:flex\}/);
 });
+
+
+test('radial region cache accelerates disc paint without crossing optical boundaries',()=>{
+ const a=studioScript.indexOf('function makePaintImage(){');
+ const b=studioScript.indexOf('function resizeCanvas(){',a);
+ assert.ok(a>=0&&b>a);
+ const source=studioScript.slice(a,b);
+ for(const rule of ['const ringCache=new Map(),bins=1024','radius<.58?0:radius<.84?1:radius<=.86?2:3','const region=regionKeyAt(x,y)','ringCache.set(cacheKey,rgb)'])assert.ok(source.includes(rule),rule);
+ const size=16,rows=size*size,ctx={createImageData:(w,h)=>({data:new Uint8ClampedArray(w*h*4)}),putImageData(){}};
+ let calls=0;
+ const env={PAINT_SIZE:size,paintCtx:ctx,paintedImage:null,regionKeyAt:(x)=>x>0?'1':'0',
+   colorForPoint:(x,y,key)=>{calls++;return key==='1'?'#A51020':'#208010'},
+   hexRgb:h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16))};
+ const fn=Function('env','with(env){'+source+';return makePaintImage;}')(env);
+ fn();
+ assert.ok(calls<rows*.6,'region+radius caching should cut expensive color calculations');
+ const px=env.paintedImage.data;
+ assert.ok(px.some((v,i)=>i%4===3&&v===255),'drawn pixels must be opaque');
+ assert.ok(px.some((v,i)=>i%4===3&&v===0),'outside-disc pixels must stay transparent');
+ assert.ok(px.some((v,i)=>i%4===0&&v===165),'right-region channel value');
+ assert.ok(px.some((v,i)=>i%4===0&&v===32),'left-region channel value');
+});
