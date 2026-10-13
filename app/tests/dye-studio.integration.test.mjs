@@ -375,3 +375,26 @@ test('photo matcher ignores minority stamp colors in synthetic test images',()=>
  for(let i=0;i<blank.length;i+=4){blank[i]=30;blank[i+1]=30;blank[i+2]=30;blank[i+3]=255}
  assert.equal(estimate({data:blank,width:280,height:280}).edgeDetected,false,'reject background-only shot');
 });
+
+
+test('consumer v2 keeps dye selection atomic and color edits contextual', () => {
+ const v2=read('../public/dyed-and-unattached/dye-studio/consumer-v2.js');
+ const ui=studioHtml;
+ assert.match(ui,/<script src="\.\/consumer-v2\.js" defer><\/script>/);
+ assert.doesNotMatch(ui,/<script id="du-consumer-redesign-v2-js">/);
+ assert.match(ui,/<style id="du-consumer-redesign-v2">/);
+ assert.ok(ui.indexOf('id="du-consumer-redesign-v2"')<ui.indexOf('</head>'));
+ assert.match(v2,/addDye\(dye\[1\],dye\[2\],dye\[3\]===true\)/);
+ assert.match(v2,/e\.stopImmediatePropagation\(\)/);
+ assert.match(v2,/mode==="replace"&&selected>=0/);
+ assert.match(v2,/l\.name=dye\[1\];l\.hex=dye\[2\]\.toUpperCase\(\)/);
+ assert.match(v2,/list\.querySelector\("\.layer\.selected"\)/);
+ assert.match(v2,/activeRow\.appendChild\(quick\)/);
+ assert.match(v2,/visibleLabels=\["↑ Move up","↓ Move down","Delete"\]/);
+ assert.match(v2,/\[role="button"\]\[tabindex="0"\]/);
+ assert.match(v2,/du-lighting/);
+ assert.match(ui,/grid-template-areas:"stage disc" "stage layers"/);
+ assert.match(ui,/#consumerDisc\{order:0;width:100%\}/);
+ assert.match(ui,/#consumerLayers \.layer #du-quick\{grid-column:1\/-1/);
+ assert.doesNotMatch(v2,/function translucentPointPredict|function opaquePointPredict/);
+});
