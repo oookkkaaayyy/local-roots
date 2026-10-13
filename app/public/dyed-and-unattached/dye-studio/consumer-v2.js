@@ -11,6 +11,10 @@ const add=document.createElement("button");add.id="du-color-trigger";add.type="b
 add.className="primary";add.textContent="+ Add dye color";
 add.setAttribute("aria-controls","consumerPalette");add.setAttribute("aria-expanded","false");
 stage.querySelector(".consumer-preview-head").insertBefore(add,g("consumerViewSlot"));
+const lighting=document.createElement("details");lighting.id="du-lighting";
+const lightingSummary=document.createElement("summary");lightingSummary.textContent="Lighting";
+lighting.append(lightingSummary,g("consumerViewSlot"));
+stage.querySelector(".consumer-preview-head").append(lighting);
 const quick=document.createElement("div");quick.id="du-quick";
 quick.innerHTML='<strong id="du-color-name">Selected color</strong>'+
 '<div class="du-quick-row" role="group" aria-label="Color region"><button data-shape="edge">One side</button><button data-shape="stripe">Band</button><button data-shape="full">Entire disc</button></div>'+
@@ -46,15 +50,16 @@ document.addEventListener("keydown",e=>{
 });
 p.addEventListener("click",e=>{
  const sw=e.target.closest(".swatch");if(!sw||!document.body.classList.contains("client-mode"))return;
- if(mode==="replace"){
-  e.preventDefault();e.stopImmediatePropagation();
-  const name=sw.querySelector(".swatch-name")?.textContent?.trim();
-  const dye=dyes.find(d=>d[0]===activeGroup&&d[1]===name);
-  if(dye&&selected>=0)mutate(()=>{
+ const name=sw.querySelector(".swatch-name")?.textContent?.trim();
+ const dye=dyes.find(d=>d[0]===activeGroup&&d[1]===name);
+ if(!dye)return;
+ e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+ if(mode==="replace"&&selected>=0){
+  mutate(()=>{
    const l=layers[selected];l.name=dye[1];l.hex=dye[2].toUpperCase();
    l.method=/uv blast|quick.coat|worm dip/i.test(l.name)?"worm-dip":activeMethod();
   },"Dye color changed");
- }
+ }else addDye(dye[1],dye[2],dye[3]===true);
  close();
 },true);
 function input(id,value){const el=g(id);el.value=value;el.dispatchEvent(new Event("input",{bubbles:true}));el.dispatchEvent(new Event("change",{bubbles:true}))}
@@ -81,6 +86,25 @@ function refresh(){
 }
 function schedule(){if(!pending){pending=true;requestAnimationFrame(refresh)}}
 new MutationObserver(schedule).observe(list,{childList:true});
+// Original catalog uses clickable divs. Supply keyboard access to every swatch.
+const swatches=g("swatchGrid");
+function accessibleSwatches(){
+ if(!swatches)return;
+ swatches.querySelectorAll(".swatch").forEach(sw=>{
+  if(sw.dataset.duAccessible)return;
+  sw.dataset.duAccessible="true";sw.tabIndex=0;
+  sw.setAttribute("role","button");
+  const name=sw.querySelector(".swatch-name")?.textContent?.trim()||"dye";
+  sw.setAttribute("aria-label","Select "+name);
+  sw.addEventListener("keydown",e=>{
+   if(e.target===sw&&(e.key==="Enter"||e.key===" ")){e.preventDefault();sw.click()}
+  });
+ });
+}
+if(swatches){
+ new MutationObserver(accessibleSwatches).observe(swatches,{childList:true});
+ accessibleSwatches();
+}
 new MutationObserver(()=>{if(document.body.classList.contains("calibration-mode")&&document.body.classList.contains("du-palette-open"))close();schedule()}).observe(document.body,{attributes:true,attributeFilter:["class"]});
 g("dyesDetails").open=true;
 schedule();
