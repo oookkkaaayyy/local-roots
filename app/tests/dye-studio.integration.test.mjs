@@ -485,3 +485,28 @@ test('optional photographed-disc corrections alter the blank, not the prediction
  assert.match(v2,/new MutationObserver\(\(\)=>\{\n  if\(!photoStatus\.textContent\.startsWith\("Estimated "\)\)/);
  assert.match(studioHtml,/#du-photo-adjust\[hidden\]\{display:none!important\}/);
 });
+
+
+test('color grip reorders without losing selected identity; mobile buttons remain',()=>{
+ const v2=read('../public/dyed-and-unattached/dye-studio/consumer-v2.js');
+ const a=v2.indexOf('function reorderColors(from,to){');
+ const b=v2.indexOf('function clearDropTargets(){',a);
+ assert.ok(a>=0&&b>a);
+ const code=v2.slice(a,b);
+ const A={name:'A'},B={name:'B'},C={name:'C'};
+ const env={layers:[A,B,C],selected:1,mutate:fn=>fn()};
+ const reorder=Function('env','with(env){'+code+';return reorderColors;}')(env);
+ reorder(0,2);
+ assert.equal(env.layers.map(x=>x.name).join(','),'B,C,A');
+ assert.equal(env.layers[env.selected],B);
+ reorder(2,0);
+ assert.equal(env.layers.map(x=>x.name).join(','),'A,B,C');
+ assert.equal(env.layers[env.selected],B);
+ reorder(4,0);
+ assert.equal(env.layers.length,3);
+ assert.match(v2,/grip\.draggable=true/);
+ assert.match(v2,/row\.addEventListener\("dragover"/);
+ assert.match(v2,/row\.addEventListener\("drop"/);
+ assert.match(studioHtml,/@media\(pointer:coarse\)/);
+ assert.match(studioHtml,/\.layer\.selected \.layer-actions\{display:flex\}/);
+});
