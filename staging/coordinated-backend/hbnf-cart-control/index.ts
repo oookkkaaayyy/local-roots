@@ -1,6 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.0";
 import { isMetadataOnlyCommand, reduceCartCommand, reconcileTargetsForCommand, requiresOwnerAuthorization, runGuestCommand } from "./guest-command.ts";
-import { chooseLive } from "./live.ts";
+import { chooseLive, isMatrixLiveReadPath, projectSkinsForMatrix } from "./live.ts";
 import { laDate, readSkinsScoreState, writeSkinsWinner, writeSkinsTiebreaker, writeSkinsAceWinner } from "./skins_scoring.ts";
 import { phase2VibeReady } from "./runtime-vibe.ts";
 import { handleMatrixRelay } from "./matrix-relay.ts";
@@ -13,17 +13,39 @@ const cors = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Cache-Control": "no-store",
 };
+function matrixLiveCors(req:Request){
+  const origin=req.headers.get("Origin")??"";
+  const allowed=new Set([Deno.env.get("HBNF_CART_ALLOWED_ORIGIN")??"https://hbnightflyers.com","http://192.168.77.10"]);
+  const headers:Record<string,string>={"Access-Control-Allow-Methods":"GET, OPTIONS","Access-Control-Allow-Headers":"apikey, authorization, accept","Access-Control-Max-Age":"300","Cache-Control":"no-store","Vary":"Origin"};
+  if(allowed.has(origin))headers["Access-Control-Allow-Origin"]=origin;
+  return headers;
+}
+const matrixLiveResponse=(req:Request,body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...matrixLiveCors(req),"Content-Type":"application/json; charset=utf-8"}});
 const response = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json; charset=utf-8" } });
 const required = (value: unknown, max = 128) => typeof value === "string" && value.trim().length > 0 && value.trim().length <= max;
 const devices = ["matrix", "aux"] as const;
 
 Deno.serve(async (req: Request) => {
   if (req.headers.has("x-hbnf-relay-id")) return await handleMatrixRelay(req);
+  const requestUrl=new URL(req.url),matrixLiveRead=isMatrixLiveReadPath(requestUrl.pathname);
+  if(matrixLiveRead&&req.method==="OPTIONS")return new Response(null,{status:204,headers:matrixLiveCors(req)});
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
-  if (req.method !== "POST") return response({ error: "method_not_allowed" }, 405);
+  if (req.method !== "POST"&&!(matrixLiveRead&&req.method==="GET")) return response({ error: "method_not_allowed" }, 405);
   const url = Deno.env.get("SUPABASE_URL"), anon = Deno.env.get("SUPABASE_ANON_KEY"), serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!url || !anon || !serviceKey) return response({ error: "server_config_missing" }, 500);
   const service = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+
+  if(matrixLiveRead&&req.method==="GET"){
+    if(requestUrl.searchParams.get("select")!=="state_json,updated_at"||requestUrl.searchParams.get("id")!=="eq.1"||[...requestUrl.searchParams.keys()].some(key=>key!=="select"&&key!=="id"))return matrixLiveResponse(req,{error:"invalid_live_projection_query"},400);
+    if(req.headers.get("apikey")!==anon||req.headers.get("Authorization")!==`Bearer ${anon}`)return matrixLiveResponse(req,{error:"unauthorized"},401);
+    const {data:league,error:liveError}=await service.from("league_state").select("skins:state_json->skins,updated_at").eq("id",1).single();
+    if(liveError||!league)return matrixLiveResponse(req,{error:"live_state_read_failed"},500);
+    const projected=projectSkinsForMatrix(league.skins,laDate());
+    if(!projected)return matrixLiveResponse(req,{error:"skins_projection_missing"},503);
+    const body=JSON.stringify([{state_json:projected,updated_at:league.updated_at}]);
+    if(new TextEncoder().encode(body).byteLength>524288)return matrixLiveResponse(req,{error:"skins_projection_too_large"},413);
+    return new Response(body,{headers:{...matrixLiveCors(req),"Content-Type":"application/json; charset=utf-8"}});
+  }
 
   let request: Record<string, unknown>;
   try { request = await req.json(); } catch { return response({ error: "invalid_json" }, 400); }
