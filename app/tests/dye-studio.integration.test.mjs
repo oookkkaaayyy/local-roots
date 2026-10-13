@@ -410,3 +410,27 @@ test('consumer shows selected boundary even when technical guide preference is o
  assert.match(source,/hitSelected\(q,e\.pointerType\)/);
  assert.match(source,/findBoundary\(q,e\.pointerType\)/);
 });
+
+
+test('consumer adds first two dyes on complementary halves while technical geometry stays unchanged',()=>{
+ const start=studioScript.indexOf('function newLayer(name,hex,clear=false){');
+ const end=studioScript.indexOf('function layerCovers(',start);
+ assert.ok(start>=0&&end>start);
+ const code=studioScript.slice(start,end);
+ const env={layers:[],appMode:'client',activePassCount:()=>1,activeMethod:()=> 'acetone-direct',normAngle:x=>x};
+ const build=Function('env','with(env){'+code+';return newLayer;}')(env);
+ const first=build('ProChem Onyx','#101010');
+ env.layers.push(first);
+ const second=build('iDye Poly Blue','#1B1866');
+ assert.equal(first.angle,0);
+ assert.equal(first.offset,0);
+ assert.equal(first.side,1);
+ assert.equal(second.angle,0);
+ assert.equal(second.offset,0);
+ assert.equal(second.side,-1);
+ assert.equal(second.method,'acetone-direct');
+ env.appMode='calibration';env.layers.length=0;
+ const technical=build('ProChem Onyx','#101010');
+ assert.equal(technical.angle,-25);
+ assert.equal(technical.offset,-.12);
+});
