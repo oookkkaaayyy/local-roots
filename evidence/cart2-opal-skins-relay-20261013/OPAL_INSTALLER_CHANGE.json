@@ -1,0 +1,22 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "cart2-opal-relay-one-shot-installer-20261013",
+  "summary": "Add one fail-closed macOS installer for the exact previously authorized Opal relay package; it validates package and identities, uses the existing public website config without echoing its key, and removes relay files if installation/runtime or physical receiver confirmation fails.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "exact_package_sha256": "00d99d160b19830c12b38697997343e914231a0998a9c9b25a779fd149a30549",
+    "rollback": "Stop/disable the newly added procd service and remove only its exact destinations; no preexisting destinations are overwritten.",
+    "tests": [
+      "scripts/install_opal_skins_relay_once.py --self-test",
+      "tests/opal-skins-relay-contract.mjs"
+    ],
+    "live_execution": "Not performed because the Mac route currently uses the home gateway and Opal/Matrix addresses time out."
+  }
+}
