@@ -140,7 +140,8 @@ test('optical zones vary on translucent plastic; uncovered shapes retain blank c
 
 test('calibration provenance: nominal intensity is not physical carrier/pass calibration', () => {
   assert.match(source,/Per-block methods change warnings and evidence ranking, NOT the numerical preview/);
-  assert.match(source,/100% nominal model input/);
-  assert.match(source,/NOT a measured dye concentration or validated physical recipe/);
+  const html = readFileSync(new URL('../public/dyed-and-unattached/dye-studio/index.html', import.meta.url), 'utf8');
+  assert.match(html,/100% nominal model input/);
+  assert.match(html,/NOT a measured dye concentration or validated physical recipe/);
   assert.doesNotMatch(source,/photo RGB.*certified physical reflectance/i);
 });
