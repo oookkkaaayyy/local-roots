@@ -13,14 +13,15 @@
   "evidence": {
     "scoped_evidence": {
       "approved_architecture_reference": "Current owner instruction authorizes a minimal firmware-side read-only polling integration; implementation stays in the existing WLED usermod, existing ESP-IDF HTTP client and FreeRTOS, existing live_status selector and existing Matrix overlay renderer.",
-      "affected_subsystem": "firmware/phase2/integration-r6-f89-compact-font/usermod/usermod_hbnf_foundation_v1.cpp",
+      "affected_subsystem": "firmware/phase2/integration-r6-f89-compact-font/usermod/usermod_hbnf_foundation_v1.cpp; staging/coordinated-backend/hbnf-cart-control/live.ts (F9/B9 selection guard only)",
       "rollback_reference": "Installed Vibe-first firmware hbnf-cart2-phase2-r6-vibe-first-ui-20261012, SHA-256 43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3; no live installation is authorized.",
       "evidence_sources": [
         "WLED 16.0.1 installed source d01a2f6f5ae02deb0901dc48490de0cd777ee9fa and its existing hbnf-live-v1 receiver, renderer, manual-overlay precedence, and local UI.",
         "staging/coordinated-backend/hbnf-cart-control/index.ts live_status action performs a league_state SELECT and calls chooseLive; it does not write scoring data.",
         "ESP-IDF 4.4.8 esp_http_client and esp_crt_bundle documentation; HTTPS certificate bundle verification and bounded client timeout are used.",
         "Read-only call to deployed hbnf-cart-control live_status returned HTTP 200 and a compact 75-byte inactive-state response; credentials and score contents were not logged.",
-        "Read-only Matrix identity confirms the installed Vibe-first release and expected Matrix identity; no device state was changed."
+        "Read-only Matrix identity confirms the installed Vibe-first release and expected Matrix identity; no device state was changed.",
+        "staging/coordinated-backend/hbnf-cart-control/skins_scoring.ts section lock semantics; the live selector now defers B9 until Front 9 is locked."
       ],
       "tests": [
         "node tests/hbnf_matrix_skins_autopoll_contract.mjs",

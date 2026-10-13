@@ -21,12 +21,15 @@ state.skins.weeks[date].front.cards[0].winners["1"] = "front_p_0";
 
 state.skins.weeks[date].back.cards.push({ teamsText: "Ava / Bo\nCy / Dee", winners: { "10": "back_team_1" } });
 selected = chooseLive(state);
+assert.equal(selected.label, "F9", "a populated Back 9 stays suppressed until Front 9 is locked");
+state.skins.weeks[date].front.scoresLocked = true;
+selected = chooseLive(state);
 assert.equal(selected.label, "B9");
 assert.deepEqual(selected.entries, ["Ava/Bo 0", "Cy/Dee 1"]);
 
 state.skins.weeks[date].front.cards[0].winners["1"] = "front_p_1";
 selected = chooseLive(state);
-assert.equal(selected.label, "B9", "Back 9 is selected once back-side names exist, matching the current selector contract");
+assert.equal(selected.label, "B9", "a locked Front 9 keeps the selector on Back 9");
 
 state.skins.weeks[date].back.cards = [];
 selected = chooseLive(state);
@@ -47,4 +50,4 @@ assert.match(source, /hbnfRenderCommandOverlay\(f\.controls\.matrixBrightness,f\
 assert.match(source, /xTaskCreatePinnedToCore\(hbnfMatrixSkinsPollTask/);
 const loop = source.slice(source.indexOf("  void loop() override {"), source.indexOf("  void addToJsonState(JsonObject& root) override {"));
 assert.doesNotMatch(loop, /esp_http_client|hbnfFetchMatrixSkins/);
-console.log("PASS: canonical live_status selection returns the current F9/B9 projection; firmware source binds read-only HTTPS polling to that contract, public key, bounded timeout/body, stale expiry, overlay precedence, and 15s/4min schedules");
+console.log("PASS: canonical live_status selector keeps B9 hidden until Front 9 lock, projects F9/B9 score changes, and firmware source binds bounded TLS polling, stale expiry, overlay precedence, and 15s/4min schedules");
