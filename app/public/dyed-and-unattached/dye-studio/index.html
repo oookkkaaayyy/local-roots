@@ -286,7 +286,7 @@ button.danger{color:#8d3129}
 
 <link rel="stylesheet" href="./consumer.css">
 </head>
-<body>
+<body class="client-mode">
 <header>
   <nav class="studio-breadcrumb" aria-label="Site path"><a href="/">Local Roots</a><span aria-hidden="true"> / </span><a href="/dyed-and-unattached">Dyed &amp; Unattached</a><span aria-hidden="true"> / </span><span aria-current="page">Dye Studio</span></nav>
   <div class="header-row">
@@ -294,12 +294,17 @@ button.danger{color:#8d3129}
       <h1>Disc Dye Studio</h1>
       <div class="sub legacy-context">Experimental beta: design dye regions and compare source-linked evidence. Predicted colors are illustrative and have not been independently validated against physical results. Do not promise an exact finished shade.</div>
     </div>
-    <div class="top-actions"><button id="globalHelp" class="ghost">Help</button><details class="advanced-menu"><summary>Advanced</summary><div class="mode-switch"><button id="clientModeBtn" class="active">Designer</button><button id="calibrationModeBtn">Calibration</button></div></details></div></div>
+    <div class="top-actions"><div class="mode-switch" aria-label="Studio view"><button id="clientModeBtn" class="active" aria-pressed="true">Design</button><button id="calibrationModeBtn" aria-pressed="false">Technical Studio</button></div><button id="globalHelp" class="ghost">Help</button></div></div>
 </header>
-<div class="beta-status" role="note"><strong>Experimental beta.</strong> Preview colors are estimates, not verified dye results. <a href="#researchDrawer">Evidence & limitations</a></div>
+<div class="beta-status" role="note"><strong>Experimental beta.</strong> Preview colors are estimates, not verified dye results.</div>
 <div id="projectActions" class="project-actions" role="group" aria-label="Project actions"><button id="saveProject">Save</button><button id="loadProject">Load</button><button id="copyRecipe">Copy recipe</button><button id="exportPng" class="primary">Export PNG</button></div>
 <main>
-<aside class="panel controls">
+<aside id="consumerDisc" class="consumer-panel panel consumer-disc" aria-label="Choose your disc">
+ <h2>Your disc</h2><label for="profileSelect">Plastic</label><div id="consumerProfileSlot"></div>
+ <label for="baseColor">Starting color</label><div id="consumerBaseSlot" class="consumer-base-row"></div>
+ <div id="consumerPresetSlot"></div>
+</aside>
+<aside class="panel controls" id="technicalControls">
   <div class="onboarding client-only"><h2>Design from the research library</h2><ol><li>Choose the closest Innova plastic reference and the actual blank color.</li><li>Add only HBNF-available dyes and arrange the blocks.</li><li>Treat all unvalidated preview hues as model estimates; consult source-linked real-world examples and limitations.</li></ol></div><div class="onboarding calibration-only"><h2>Improve the model—not rebuild it</h2><ol><li>Start with the built-in Innova and community-research priors.</li><li>Add local measurements only for important gaps or exact customer blanks.</li><li>Only sufficiently documented records matching the exact starting disc and process can override compatible opaque daylight previews.</li></ol></div>
 
 
@@ -499,9 +504,11 @@ button.danger{color:#8d3129}
     </div>
   </details>
 </aside>
-
-
+<aside id="consumerLayers" class="consumer-panel panel consumer-layers" aria-label="Edit your dye blocks">
+ <h2>Your color blocks</h2><div id="consumerDyesSlot"></div><div id="consumerEditorSlot"></div>
+</aside>
 <section class="panel workspace" id="canvasSection">
+ <div class="consumer-preview-head"><strong>Preview</strong><div id="consumerViewSlot"></div></div>
   <div class="canvas-shell">
     <canvas id="canvas"></canvas>
     <div class="canvas-tip">Drag handles to edit · Tap to sample</div>
@@ -554,7 +561,10 @@ button.danger{color:#8d3129}
   </div>
 </div></details>
 </section>
-</main><nav class="mobile-quicknav" aria-label="Studio sections"><a href="#canvasSection">Preview</a><a href="#swatchGrid">Colors</a><a href="#dyesDetails">Blocks</a><a href="#plasticDetails">Disc</a><a href="#projectActions">Save</a></nav>
+<aside id="consumerPalette" class="consumer-panel panel consumer-palette" aria-label="Choose dye colors">
+ <div id="consumerCatalogHeadSlot"></div><div id="consumerTabsSlot"></div><div id="consumerSwatchesSlot"></div>
+</aside>
+</main><nav class="mobile-quicknav" aria-label="Studio sections"><a href="#consumerDisc">Disc</a><a href="#canvasSection">Preview</a><a href="#consumerPalette">Colors</a><a href="#consumerLayers">Blocks</a><a href="#projectActions">Save</a></nav>
 
 
 <div id="backdrop" class="popover-backdrop"></div>
@@ -566,6 +576,7 @@ button.danger{color:#8d3129}
 <div id="toast" class="toast"></div>
 
 
+<script src="./consumer-layout.js" defer></script>
 <script src="./studio.js" defer></script>
 </body>
 </html>
