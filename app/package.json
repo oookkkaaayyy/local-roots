@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit --pretty false",
     "check:du-handoff": "node scripts/check-du-handoff.mjs",
-    "test:studio": "node --test tests/dye-studio.integration.test.mjs"
+    "test:studio": "node --test tests/dye-studio.integration.test.mjs tests/dye-studio.model.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",
