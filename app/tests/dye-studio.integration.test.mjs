@@ -547,4 +547,5 @@ test('single selected consumer dye keeps adequate name width without a reorder g
  assert.match(v2,/if\(inConsumer&&layers\.length>1\)addReorderGrip/);
  assert.match(studioHtml,/@media\(pointer:coarse\)\{body\.client-mode #consumerLayers \.du-layer-grip\{display:none\}body\.client-mode #consumerLayers \.layer\{grid-template-columns:37px minmax\(0,1fr\)\}\}/);
  assert.match(studioHtml,/\.layer-name\{font-size:13px;overflow-wrap:break-word;word-break:normal;hyphens:none\}/);
+ assert.match(studioHtml,/@media\(pointer:coarse\)\{body\.client-mode #consumerLayers \.layer\.du-has-grip\{grid-template-columns:37px minmax\(0,1fr\)\}\}/);
 });
