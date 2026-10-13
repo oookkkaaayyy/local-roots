@@ -28,7 +28,7 @@ const devices = ["matrix", "aux"] as const;
 Deno.serve(async (req: Request) => {
   if (req.headers.has("x-hbnf-relay-id")) return await handleMatrixRelay(req);
   const requestUrl=new URL(req.url),matrixLiveRead=isMatrixLiveReadPath(requestUrl.pathname);
-  if(matrixLiveRead&&req.method==="OPTIONS")return new Response("ok",{status:204,headers:matrixLiveCors(req)});
+  if(matrixLiveRead&&req.method==="OPTIONS")return new Response(null,{status:204,headers:matrixLiveCors(req)});
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST"&&!(matrixLiveRead&&req.method==="GET")) return response({ error: "method_not_allowed" }, 405);
   const url = Deno.env.get("SUPABASE_URL"), anon = Deno.env.get("SUPABASE_ANON_KEY"), serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
