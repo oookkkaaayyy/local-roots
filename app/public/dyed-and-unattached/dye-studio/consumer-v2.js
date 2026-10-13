@@ -16,6 +16,51 @@ function syncPlasticLabels(){
  });
 }
 syncPlasticLabels();
+// Physical-color correction is optional. The photo reader returns image RGB,
+// not a color-chart-calibrated measurement of the actual plastic.
+const photoStatus=g("photoColorStatus");
+const photoControls=document.createElement("div");photoControls.id="du-photo-adjust";
+photoControls.hidden=true;
+photoControls.innerHTML='<span class="du-photo-adjust-label">Photo looks different from your disc?</span>'+
+'<div class="du-photo-adjust-buttons"><button type="button" data-photo-adjust="lighter">Lighter</button>'+
+'<button type="button" data-photo-adjust="vivid">More colorful</button>'+
+'<button type="button" data-photo-adjust="reset">Use photo color</button></div>';
+if(photoStatus)photoStatus.after(photoControls);
+let originalPhotoHex=null;
+function rgbChannels(hex){return [1,3,5].map(i=>parseInt(hex.slice(i,i+2),16))}
+function channelsHex(rgb){return "#"+rgb.map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,"0")).join("").toUpperCase()}
+function setPhotoCorrection(hex){
+ const color=g("baseColor"),field=g("baseHex");
+ if(!color||!field)return;
+ color.value=hex;field.value=hex;
+ const transmission=autoTransmissionHex(hex,profile());
+ g("transmissionHex").value=transmission;g("transmissionColor").value=transmission;
+ color.dispatchEvent(new Event("input",{bubbles:true}));
+ color.dispatchEvent(new Event("change",{bubbles:true}));
+}
+photoControls.querySelectorAll("[data-photo-adjust]").forEach(button=>{
+ button.onclick=()=>{
+  if(!originalPhotoHex)return;
+  const kind=button.dataset.photoAdjust;
+  if(kind==="reset"){setPhotoCorrection(originalPhotoHex);return}
+  const rgb=rgbChannels(g("baseHex").value);
+  if(kind==="lighter")setPhotoCorrection(channelsHex(rgb.map(v=>v+(255-v)*.10)));
+  else if(kind==="vivid"){
+   const mean=rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;
+   setPhotoCorrection(channelsHex(rgb.map(v=>mean+(v-mean)*1.18)));
+  }
+ };
+});
+if(photoStatus){
+ new MutationObserver(()=>{
+  if(!photoStatus.textContent.startsWith("Estimated ")){
+   if(photoStatus.textContent.startsWith("Reading ")){originalPhotoHex=null;photoControls.hidden=true}
+   return;
+  }
+  const match=/^Estimated (#[0-9a-f]{6})/i.exec(photoStatus.textContent);
+  if(match){originalPhotoHex=match[1].toUpperCase();photoControls.hidden=false}
+ }).observe(photoStatus,{childList:true,characterData:true,subtree:true});
+}
 // Group the starter-disc and color-list cards in one compact desktop sidebar.
 // On mobile, display:contents lets these cards surround the main disc editor.
 const right=document.createElement("div");right.id="du-side";
