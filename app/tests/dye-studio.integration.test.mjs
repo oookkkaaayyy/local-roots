@@ -446,3 +446,13 @@ test('consumer desktop sidebar and touch toast are safe',()=>{
  assert.match(studioHtml,/@media\(max-width:680px\)\{body\.client-mode #du-side\{display:contents\}\}/);
  assert.match(studioHtml,/body\.client-mode #toast\{pointer-events:none\}/);
 });
+
+
+test('consumer plastic labels remain concise while the technical descriptions are preserved',()=>{
+ const v2=read('../public/dyed-and-unattached/dye-studio/consumer-v2.js');
+ assert.match(v2,/function syncPlasticLabels\(\)/);
+ assert.match(v2,/option\.dataset\.duFullLabel=option\.textContent/);
+ assert.match(v2,/option\.textContent=consumer\?full\.split\(" — "\)\[0\]:full/);
+ assert.match(v2,/new MutationObserver\(\(\)=>\{if\(document\.body\.classList/);
+ assert.match(studioHtml,/body\.client-mode #consumerLayers \.layer-meta\{display:none\}/);
+});
