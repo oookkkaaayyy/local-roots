@@ -557,7 +557,7 @@ function mutate(fn,message=""){
 
 
 function newLayer(name,hex,clear=false){
-  const count=layers.length,consumer=appMode==="client";
+  const count=layers.length,consumer=typeof appMode!=="undefined"&&appMode==="client";
   // A consumer's first two blocks form predictable complementary halves.
   // Additional blocks may overlap, but never start at arbitrary-looking
   // rotations for the first two dyes. Technical Studio retains its defaults.
