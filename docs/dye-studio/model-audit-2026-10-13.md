@@ -1,0 +1,42 @@
+# D&U Dye Studio — Evidence Quality and Model Regression (2026-10-13)
+
+## Authority / scope
+Source: `oookkkaaayyy/local-roots` main at `69823aef0e319e1a52f009d1d20d9e69f807ee7c`. Candidate branch: `dye-studio/accuracy-regression-20261013` (DRAFT only). Controlling accuracy tracker: [issue #62](https://github.com/oookkkaaayyy/local-roots/issues/62). Current Studio remains an unvalidated experimental color visualization. No merge, deployment, expense, CI, sample photos or calibration measurements.
+
+## Evidence matrix
+[CSV quality matrix](./evidence-quality-matrix.csv) classifies **58 existing provisional entries from 40 source URLs**, plus three separate case references (61 rows total). Matching URL is a **source group, not proof of an independent experiment**. Two first-party same-frame photographs are grouped as ONE dye job, not two replications. The private photos themselves, their pixels and EXIF are NOT included in the CSV or new tests.
+
+Classifications directly extracted from the existing source-description strings for the 58 original entries: 23 unknown method, 13 Floetrol unspecified, 10 acetone glue bed, 5 direct acetone, 3 glue bed unspecified carrier, 2 compound/mixed process, 1 Floetrol bed and 1 worm dip. These broad tags should not silently reinterpret a vague 'Floetrol' entry as a stencil-painted recipe. Source verification and missing information are preserved per row, including entries still pending original-post verification.
+
+**Quantitatively qualified training samples: 0. Independently recipe-matched colorimetric holdouts: 0.** Some examples document names and process, others show finished disc photos or within-author comparisons; none of the catalogued cases establishes calibrated original substrate + isolated single dyes A and B + measured A→B overlap + reliably recorded amounts/passes/order + controlled lighting. This is a gate, not evidence that posted outcomes are unhelpful. Source-linked qualitative observations remain useful for **warning, hypothesis generation and falsification**, not fitting dye response coefficients.
+
+Best process-matched external qualitative reference already tracked in #62: [named ProChem direct-acetone painting](https://www.reddit.com/r/discdyeing/comments/z3hyyr) (Sonic Blue / Fluorescent Pink / Neon Royal Purple); missing before-color, substrate and isolated overlaps. [11-shade brush case](https://www.reddit.com/r/discdyeing/comments/n9zdxd) is confounded by solvent plus amount/pooling, not a method coefficient. Owner's Proto Glow Champion Wraith/Tern paired-frame example has a valuable plum/purple overlap from blue/pink but UNKNOWN exact dye identities or dose; reserve it as a qualitative diagnostic, never pretend it is a recipe-specific numeric target. Both views are the same experiment. Do not request product names again.
+
+Manufacturer [ProChem dye page](https://prochemicalanddye.com/disc-golf-disc-dyes/) explicitly warns its displayed swatches derive from **lotion or fabric**, and physical shades depend on medium, heat and dye amount. Product swatches are NOT disc reflectance standards.
+
+## Actual current-source predictor tests
+New `app/tests/dye-studio.model.test.mjs` loads actual production `studio.js` predictor declarations into an isolated JS realm (no replacement optics). It checks opaque Star/GStar versus translucent Champion/Proto Glow Champion; seven starting colors including black/white/gray/cool/warm/pink; 13 inventory dye entries (including Clear); 0/1/25/50/100 nominal strengths where relevant; 1 vs 4 passes; acetone versus Floetrol method; daylight, 365 nm UV and charged glow; plate/shoulder/rim radii; isolated singles; pair reversals; neutral/uncovered regions; repeatability; pinned previously released 100% snapshots; and numerical validity of HSL-related extremes and linear-sRGB luminance. Nothing in these tests estimates physical ΔE or real pigment uptake.
+
+**Offline execution in connector-hosted isolated V8 of the nine committed test bodies (using the exact candidate source): 9 PASS, 0 FAIL.** Native `node --test`, GitHub Actions, hosted browser and photo ingestion were **not executed**. The previously existing 29 UI/source integration bodies were not rerun because no UI fields/controls changed.
+
+Additional exact-predictor differential battery: **3,276 single-dye × substrate × viewing × radial test cases** against current production source. On the original model, **2,626** nominal 0%-intensity simulations differed from the corresponding no-dye scene (sometimes by one channel, sometimes substantially under UV/glow). Candidate reduces this to **0/3,276**. All **3,276 full-100%-intensity outputs are bit-identical to the released predictor**, not artificially brightened. Method and passes remained numerically invariant for all 3,276 comparisons, as expected without qualifying physical calibration. 2,184 50%-versus-100% comparisons show different candidate outputs, while 1,092 remain equal (including nonfluorescent dyes viewed under 365 nm UV and other insensitive cases). This is **nominal software sensitivity**, NOT a measured chemical dose curve.
+
+At one representative Proto Glow Champion photographed-base scenario, the existing 12-colored-dye 100%-intensity A→B sweep still has **6/66** simulated pairs with overlap linear luminance below 50% of the dimmer simulated single. Example: UV Blast Red → iDye Poly Blue `#29163E` (0.214 relative ratio), Blue → Crimson `#391638` (0.265). Exact values vary with radius and optical scene. These model-only dark mixtures are **neither confirmed physically correct nor proven erroneous**; no bright-purple or RGB-addition patch is justified. Pair reversals remain modeled and testable, but cannot validate real application-order response without known recipes.
+
+## Candidate corrective implementation
+1. Filter out layers at exactly **zero nominal intensity** in the point and region prediction paths. This is an input-semantics correctness fix, not physical calibration.
+2. Apply the existing nominal `strength/100` to the existing UV fluorescence and glow absorption / excitation terms so the intensity control does not entirely ignore nonzero user values for those pathways. Original coefficients and all 100% predictions are preserved; no method/pass-specific multiplier, additive RGB mixing, hue override or global saturation boost is added.
+3. Preserve existing clear Technical Studio disclosures: method and coat count are saved/matched for evidence and calibrated recipe identity, NOT ordinary numerical color drivers. Consumer view remains unchanged.
+
+## Rejected / open
+- Rejected: fitting physical brightness, saturation, absorption, batch variation, carrier multipliers, or overlap colors to uncontrolled JPEGs or one unlabelled first-party pair. Rejected: considering two camera views independent holdouts.
+- Open: exact named-dye direct-acetone same-disc matched A/B/AB cases with starting color and process; independent repeat observations; physical white balance/reflectance; dose/pass/time/temperature; method-specific Floetrol stencil outcomes; long-term fade and UV/glow accuracy.
+- Known limitation: at very low but nonzero intensities, glow can still have a **branch transition** relative to the zero-dye baseline; nonfluorescent dyes may be invariant under UV365 because the model lacks validated UV-absorptive response. Do not invent a transition/dose-response curve without measurements.
+- The released JS also contains **two pre-existing inline HBNF sample JPEG payloads** (no Wraith/Tern photos). The candidate does not create, extract or publish additional first-party images; separate authorization/privacy provenance for those already shipped samples is outside this numerical audit.
+- Gate before production: user review of DRAFT, native free Node execution when a normal checkout is available, basic targeted smoke of affected intensity/UV/glow only. No need to repeat completed consumer mobile, upload, PNG or layout QA.
+
+## Source identities
+- `app/public/dyed-and-unattached/dye-studio/studio.js`: five surgical edits to zero-intensity handling and existing UV/glow nominal intensity.
+- `app/tests/dye-studio.model.test.mjs`: executable current-predictor regression tests.
+- `docs/dye-studio/evidence-quality-matrix.csv`: method/identity/substrate/dose/order/photo-controls/holdout quality with source-linked rows.
+- This report. Physical calibration remains OPEN in issue #62.
