@@ -728,7 +728,7 @@ function updateSample(){
 function selectLayer(i){
   selected=i;renderLayerList();syncEditor();if(i>=0)$("editDetails").open=true;requestRender()
 }
-function addDye(name,hex,clear=false){mutate(()=>{layers.push(newLayer(name,hex,clear));selected=layers.length-1},`${name} added`)}
+function addDye(name,hex,clear=false){mutate(()=>{layers.push(newLayer(name,hex,clear));selected=layers.length-1},`${name} added`);if(appMode==="client")$("editDetails").open=true}
 function renderLayerList(){
   const box=$("layerList");box.innerHTML="";$("emptyLayers").classList.toggle("hidden",layers.length>0);
   [...layers].reverse().forEach((l,reverseIndex)=>{
@@ -908,7 +908,19 @@ $("exportPng").onclick=()=>{
 
 function renderProfiles(){const s=$("profileSelect");s.innerHTML="";profiles.forEach(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=`${p.name} — ${statusLabel(p.status)}`;s.appendChild(o)});if(!profiles.some(p=>p.id===activeProfileId))activeProfileId=profiles[0]?.id||"";s.value=activeProfileId;renderProfile();renderRecords()}
 function renderProfile(){const p=profile();if(!p)return;$("profileSummary").innerHTML=`<div class="profile-badges"><span class="confidence ${p.status}">${statusLabel(p.status)}</span><span class="confidence base-only">${Math.round(p.translucency)}% translucent</span></div><strong style="display:block;margin-top:5px">${escapeHtml(p.name)}</strong><div class="small">${escapeHtml(p.plastic)} · uptake heuristic · prediction accuracy unvalidated</div><div class="small" style="margin-top:5px">${escapeHtml(p.note||"")}</div>`;$("profileNotice").innerHTML=p.status==="unavailable"?`<b>Not recommended:</b> this family lacks enough predictable uptake for precision client work without exact local testing.`:`<b>Research starting point:</b> this family uses published manufacturer traits and documented dyer outcomes. Actual surface and held-to-light colors remain selectable below.`;$("profileName").value=p.name;$("profilePlastic").value=p.plastic;$("profileOptical").value=p.optical;$("profileStatus").value=p.status;$("profileBaseColor").value=p.base;$("profileBaseHex").value=p.base;$("profileTranslucency").value=p.translucency;requestRender()}
-function setMode(m){appMode=m;document.body.classList.toggle("client-mode",m==="client");document.body.classList.toggle("calibration-mode",m==="calibration");$("clientModeBtn").classList.toggle("active",m==="client");$("calibrationModeBtn").classList.toggle("active",m==="calibration");if(m==="client"){$("blendMode").value="research";layers.forEach(l=>l.strength=100);renderLayerList();syncEditor();requestRender()}}
+function setMode(m){
+ appMode=m;
+ document.body.classList.toggle("client-mode",m==="client");
+ document.body.classList.toggle("calibration-mode",m==="calibration");
+ $("clientModeBtn").classList.toggle("active",m==="client");
+ $("calibrationModeBtn").classList.toggle("active",m==="calibration");
+ $("clientModeBtn").setAttribute("aria-pressed",String(m==="client"));
+ $("calibrationModeBtn").setAttribute("aria-pressed",String(m==="calibration"));
+ window.DUConsumerLayout.setView(m);
+ // Do not overwrite calibrated layer strength or recipe state when switching views.
+ if(m==="client")$("blendMode").value="research";
+ renderLayerList();syncEditor();requestAnimationFrame(resizeCanvas);
+}
 function updateGuard(){if(!layers.length){$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="Add at least one dye block to evaluate design confidence.";return}const rs=collectRegions(),states=rs.filter(r=>r.key.includes("1")).map(r=>confidenceForActive(layers.filter((_,i)=>r.key[i]==="1"))),hasUnavailable=states.includes("unavailable"),hasEstimate=states.includes("estimate"),hasPhoto=states.includes("photo-anchor"),allMeasured=states.length&&states.every(s=>s==="verified"||s==="validated"),allPhotoSupported=states.length&&states.every(s=>s==="verified"||s==="validated"||s==="photo-anchor");if(hasUnavailable){$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="<b>Do not promise this result:</b> the selected plastic family is not recommended without exact local validation."}else if(allMeasured){$("clientGuard").className="client-only ok-box";$("clientGuard").innerHTML="<b>Locally supported:</b> every visible dyed region has a measured or validated HBNF record."}else if(allPhotoSupported&&hasPhoto){$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="<b>Matched to the actual HBNF photo test:</b> this qualitative example follows the observed green and dark-red direction. The photos were not captured under identical controlled lighting, so repeat testing is still required before an exact color guarantee."}else if(hasEstimate){$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="<b>Model gaps remain:</b> at least one region relies on a low-confidence estimate, an unmeasured translucent overlap, or an undocumented custom dye."}else{$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="<b>Research-informed preview—not a guarantee:</b> the model uses Innova-family and dye-specific evidence, but exact paid-client reproduction still requires local validation of important combinations."}}
 function renderRecords(){const b=$("recordsBody");b.innerHTML="";calibrationRecords.filter(r=>r.profileId===activeProfileId).forEach(r=>{const tr=document.createElement("tr");tr.innerHTML=`<td>${escapeHtml(r.comboLabel)}</td><td>${r.measuredHex}</td><td><span class="confidence ${r.status}">${statusLabel(r.status)}</span></td><td>${r.boundarySpread} mm</td><td><button class="danger" data-r="${r.id}">×</button></td>`;b.appendChild(tr)});b.querySelectorAll("[data-r]").forEach(x=>x.onclick=()=>{calibrationRecords=calibrationRecords.filter(r=>r.id!==x.dataset.r);saveDb();renderRecords();requestRender()})}
 function setModeHelp(){
@@ -1083,4 +1095,4 @@ function renderEvidenceAdvisory(){
 const previousUpdateGuard=updateGuard;
 updateGuard=function(){previousUpdateGuard();renderEvidenceAdvisory();};
 
-loadDb();renderProfiles();if(profile()){$("baseHex").value=profile().base;$("baseColor").value=profile().base;const th=autoTransmissionHex(profile().base,profile());$("transmissionHex").value=th;$("transmissionColor").value=th}setMode("client");setModeHelp();updateConditionButtons();updateSceneButtons();renderSwatches();renderReferences();renderSourceList();renderLayerList();syncEditor();resizeCanvas();commitHistory();
+window.DUConsumerLayout.init();loadDb();renderProfiles();if(profile()){$("baseHex").value=profile().base;$("baseColor").value=profile().base;const th=autoTransmissionHex(profile().base,profile());$("transmissionHex").value=th;$("transmissionColor").value=th}setMode("client");setModeHelp();updateConditionButtons();updateSceneButtons();renderSwatches();renderReferences();renderSourceList();renderLayerList();syncEditor();resizeCanvas();commitHistory();
