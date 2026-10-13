@@ -1122,7 +1122,16 @@ function renderEvidenceAdvisory(){
  warningNode.innerHTML=warnings.map(t=>`<div class="evidence-warning">${escapeHtml(t)}</div>`).join("");
  const related=ALL_DYE_EVIDENCE.map(obs=>{const match=evidenceScore(obs,selected,p?.plastic||"",baseFamily);return match?{obs,...match}:null;}).filter(Boolean).sort((a,b)=>b.score-a.score);
  const distinct=[],seen=new Set();
- for(const r of related){if(seen.has(r.obs.sourceUrl))continue;seen.add(r.obs.sourceUrl);distinct.push(r);if(distinct.length>=6)break;}
+ // Display diverse evidence: favor the actual application method, then give
+ // named-shade analogs visibly marked as DIFFERENT METHOD. Never imply calibration.
+ const take=(pool,limit)=>{for(const r of pool){
+  if(distinct.length>=limit)break;
+  if(seen.has(r.obs.sourceUrl))continue;
+  seen.add(r.obs.sourceUrl);distinct.push(r);
+ }};
+ take(related.filter(r=>r.methodMatch),3);
+ take(related.filter(r=>r.exactDye&&!r.methodMatch),5);
+ take(related,6);
  const applicable=distinct.filter(r=>r.methodMatch&&!r.obs.evidenceType.includes('GUIDANCE'));
  const namedApplicable=applicable.filter(r=>r.exactDye);
  linksNode.innerHTML=`<div class="evidence-info"><b>Closest practitioner / source examples:</b> ${distinct.length} linked sources shown; ${applicable.length} are same-method field reports and ${namedApplicable.length} also mention a selected dye shade. ${!applicable.length?"No matching physical method report is shown; other-method photographs cannot predict this carrier.":""} These are qualitative case reports, not measured target colors. Exact carrier, plastic, dye, dose, coating and lighting must be established for calibration. Of 58 provisional records, ${EVIDENCE_OBSERVATIONS.filter(o=>selected.some(d=>evidenceDyeFamilyMatches(d,o.dyes))).length} mention one of the selected exact dyes. ${related.length?"Only controlled identical-condition results can justify calibrated color targets.":"No close documented observation found for this combination."}</div>`+
