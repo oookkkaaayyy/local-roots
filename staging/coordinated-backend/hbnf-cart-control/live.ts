@@ -3,6 +3,45 @@ const clean=(s:any)=>String(s??"").trim().replace(/\s*\/\s*/g,"/").replace(/\s+/
 const cards=(s:any)=>Array.isArray(s?.cards)?s.cards:[];
 export function laDate(){return new Intl.DateTimeFormat("en-CA",{timeZone:"America/Los_Angeles",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());}
 function hasNames(s:any,team:boolean){return cards(s).some((c:any)=>String(team?c?.teamsText??"":c?.playersText??"").trim());}
+export function skinsSectionLocked(section:any){const list=cards(section);return !!section?.scoresLocked||(list.length>0&&list.every(card=>!!(card?.scoresLocked||card?.finalized)));}
+export function projectSkinsForMatrix(skins:any,today=laDate()){
+  const weeks=skins?.weeks;
+  if(!weeks||typeof weeks!=="object"||Array.isArray(weeks))return null;
+  const projectedWeeks:Record<string,any>={};
+  for(const [date,week] of Object.entries(weeks)){
+    if(!week||typeof week!=="object"||Array.isArray(week))continue;
+    const current=date===today;
+    const projectSection=(section:any,team:boolean,includeScores:boolean,includeAceWinner=true)=>{
+      if(!section||typeof section!=="object"||Array.isArray(section))return undefined;
+      const projected:any={};
+      const participantField=team?"teamsText":"playersText";
+      if(Array.isArray(section.cards))projected.cards=section.cards.map((card:any)=>{
+        const out:any={};
+        if(typeof card?.[participantField]==="string")out[participantField]=card[participantField];
+        if(includeScores&&card?.winners&&typeof card.winners==="object")out.winners=card.winners;
+        if(includeScores&&card?.id!=null)out.id=card.id;
+        if(includeScores&&card?.scoresLocked===true)out.scoresLocked=true;
+        if(includeScores&&card?.finalized===true)out.finalized=true;
+        return out;
+      });
+      if(includeAceWinner&&typeof section.aceWinner==="string")projected.aceWinner=section.aceWinner;
+      if(includeScores&&section.scoresLocked===true)projected.scoresLocked=true;
+      return projected;
+    };
+    const front=projectSection(week.front,false,current),back=projectSection(week.back,true,current);
+    const projectedWeek:any={};
+    if(front)projectedWeek.front=front;
+    const deferBack=current&&hasNames(week.back,true)&&!skinsSectionLocked(week.front);
+    if(back&&!deferBack)projectedWeek.back=back;
+    if(deferBack){
+      // Preserve Back 9's ace-pot participant count without letting the
+      // installed selector mistake its preloaded team names for the active nine.
+      projectedWeeks[`${today}~pending-back-ace`]={back:projectSection(week.back,true,false,false)};
+    }
+    projectedWeeks[date]=projectedWeek;
+  }
+  return {skins:{weeks:projectedWeeks}};
+}
 function winnerIdx(card:any,hole:number,team:boolean){const m=String(card?.winners?.[String(hole)]??"").match(team?/_team_(\d+)$/ : /_p_(\d+)$/);return m?Number(m[1]):null;}
 function skinsEntries(section:any,team:boolean,start:number){const out:string[]=[];for(const c of cards(section)){const names=String(team?c?.teamsText??"":c?.playersText??"").split(/\r?\n/).map(clean).filter(Boolean),counts=new Array(names.length).fill(0);let carry=1;for(let h=start;h<start+9;h++){const i=winnerIdx(c,h,team);if(i!==null&&i>=0&&i<names.length){counts[i]+=carry;carry=1;}else carry++;}const tb=String(c?.winners?.tb??"");if(carry>1&&tb){const m=tb.match(team?/_team_(\d+)$/ : /_p_(\d+)$/);if(m){const i=Number(m[1]);if(i>=0&&i<names.length)counts[i]+=carry-1;}}names.forEach((n:string,i:number)=>out.push(`${n} ${counts[i]??0}`));}return out;}
 function glowEntries(w:any){const pars=w?.scorecardText?.holePars??{},out:string[]=[];for(const p of(Array.isArray(w?.players)?w.players:[])){if(p?.removed)continue;const name=clean((p?.partner1&&p?.partner2)?`${p.partner1}/${p.partner2}`:(p?.name||p?.partner1));if(!name)continue;let raw=0,par=0,done=0;for(let i=0;i<(Array.isArray(p?.scores)?p.scores:[]).length;i++){const sv=String(p.scores[i]??"").trim();if(!sv)continue;const s=Number(sv);if(!Number.isFinite(s))continue;raw+=s;done++;const pv=Number(pars[String(i+1)]);par+=(Number.isFinite(pv)&&pv>0)?pv:3;}const rel=raw-par,v=done===0?"E":rel===0?"E":rel>0?`+${rel}`:String(rel);out.push(`${name} ${v}`);}return out;}
