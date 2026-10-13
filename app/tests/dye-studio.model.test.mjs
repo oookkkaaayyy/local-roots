@@ -169,6 +169,42 @@ test('channel, hue, saturation and linear-luminance extremes remain numerical', 
   });
 });
 
+test('real-world source matching prioritizes actual direct-acetone process over glue-bed analogies', () => {
+  const start=source.indexOf('// v9.2 reusable evidence layer.');
+  const end=source.indexOf('function renderEvidenceAdvisory()',start);
+  assert.ok(start>0 && end>start, 'source evidence section missing');
+  vm.runInContext(source.slice(start,end) +
+    '\nglobalThis.fieldAudit={FIELD_CASES,ALL_DYE_EVIDENCE,evidenceScore,classifyObservedProcess};',
+    realm, {timeout:10000});
+  const evidence=realm.fieldAudit;
+  assert.equal(evidence.FIELD_CASES.length,13);
+  assert.equal(evidence.ALL_DYE_EVIDENCE.length,71);
+  const byId=id=>evidence.FIELD_CASES.find(x=>x.id===id);
+  const expectedProcesses = [
+    ['FIELD-AC-01','acetone-direct'],['FIELD-AC-02','acetone-direct'],
+    ['FIELD-AC-03','acetone-direct'],['FIELD-AC-04','acetone-direct'],
+    ['FIELD-AC-05','acetone-direct'],['FIELD-ANALOG-01','acetone-spin'],
+    ['FIELD-GLUE-01','acetone-glue-bed'],['FIELD-GLUE-02','acetone-glue-bed'],
+    ['FIELD-FLO-01','floetrol-bed'],['FIELD-FLO-02','floetrol-bed'],
+    ['FIELD-OTHER-01','water-dip'],['FIELD-PHOTO-01','unknown'],
+    ['FIELD-COMPARE-01','acetone-unspecified']
+  ];
+  for(const [id,category] of expectedProcesses)
+    assert.equal(evidence.classifyObservedProcess(byId(id).medium),category,id);
+  setLayers([{...dye('ProChem Neon Cerise Pink'),method:'acetone-direct'}]);
+  const directlyPainted=evidence.evidenceScore(byId('FIELD-AC-01'),[],'Innova Star','white');
+  const unlikeGlueBed=evidence.evidenceScore(byId('FIELD-GLUE-02'),[],'Innova Star','white');
+  assert.ok(directlyPainted && unlikeGlueBed);
+  assert.ok(directlyPainted.methodMatch && !unlikeGlueBed.methodMatch);
+  assert.ok(directlyPainted.score > unlikeGlueBed.score,
+    'a single glue-bed result cannot outrank process-matched direct painting');
+  setLayers([]);
+  for(const item of evidence.FIELD_CASES){
+    assert.ok(item.sourceUrl.startsWith('https://'), item.id);
+    assert.ok(item.limitations && item.verification,item.id);
+  }
+});
+
 test('calibration provenance: nominal intensity is not physical carrier/pass calibration', () => {
   assert.match(source,/Per-block methods change warnings and evidence ranking, NOT the numerical preview/);
   const html = readFileSync(new URL('../public/dyed-and-unattached/dye-studio/index.html', import.meta.url), 'utf8');
