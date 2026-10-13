@@ -434,3 +434,15 @@ test('consumer adds first two dyes on complementary halves while technical geome
  assert.equal(technical.angle,-25);
  assert.equal(technical.offset,-.12);
 });
+
+
+test('consumer desktop sidebar and touch toast are safe',()=>{
+ const v2=read('../public/dyed-and-unattached/dye-studio/consumer-v2.js');
+ assert.match(v2,/right\.id="du-side"/);
+ assert.match(v2,/stage\.parentNode\.insertBefore\(right,stage\.nextSibling\)/);
+ assert.match(v2,/right\.append\(g\("consumerDisc"\),g\("consumerLayers"\)\)/);
+ assert.match(studioHtml,/body\.client-mode #du-side\{grid-area:side;display:flex;flex-direction:column/);
+ assert.match(studioHtml,/body\.calibration-mode #du-side\{display:none!important\}/);
+ assert.match(studioHtml,/@media\(max-width:680px\)\{body\.client-mode #du-side\{display:contents\}\}/);
+ assert.match(studioHtml,/body\.client-mode #toast\{pointer-events:none\}/);
+});
