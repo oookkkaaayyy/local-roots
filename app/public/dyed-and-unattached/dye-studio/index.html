@@ -286,9 +286,14 @@ button.danger{color:#8d3129}
 
 <link rel="stylesheet" href="./consumer.css">
 <style id="du-consumer-redesign-v2">
+body.client-mode #du-side{grid-area:side;display:flex;flex-direction:column;gap:12px;align-self:start;min-width:0}
+body.calibration-mode #du-side{display:none!important}
+body.client-mode #du-side #consumerDisc,body.client-mode #du-side #consumerLayers{grid-area:auto;width:100%}
+@media(max-width:680px){body.client-mode #du-side{display:contents}}
+
 body.client-mode .du-order-tip{font-size:12px;color:#6c5b4c;line-height:1.35;margin:-4px 0 13px}
 /* Simple consumer composer: all original technical controls remain intact. */
-body.client-mode main{max-width:1260px;display:grid;grid-template-columns:minmax(0,1fr) minmax(285px,350px);grid-template-areas:"stage disc" "stage layers";grid-template-rows:auto auto;align-items:start;gap:14px}
+body.client-mode main{max-width:1260px;display:grid;grid-template-columns:minmax(0,1fr) minmax(285px,350px);grid-template-areas:"stage side";grid-template-rows:auto;align-items:start;gap:14px}
 body.client-mode #canvasSection{grid-area:stage;position:sticky;top:10px}
 body.client-mode #consumerLayers{grid-area:layers;max-height:none;overflow:visible}
 body.client-mode #consumerDisc{grid-area:disc}
