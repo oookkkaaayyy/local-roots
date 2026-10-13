@@ -69,7 +69,12 @@ g("du-copy").onclick=()=>g("duplicateLayer").click();g("du-flip").onclick=()=>g(
 let pending=false;
 function refresh(){
  pending=false;const l=selected>=0?layers[selected]:null;
- quick.classList.toggle("du-active",!!l&&document.body.classList.contains("client-mode"));
+ const inConsumer=document.body.classList.contains("client-mode");
+ quick.classList.toggle("du-active",!!l&&inConsumer);
+ // Keep edit actions directly beneath their selected color, not above the entire list.
+ const activeRow=inConsumer?list.querySelector(".layer.selected"):null;
+ if(activeRow){if(quick.parentNode!==activeRow)activeRow.appendChild(quick)}
+ else if(quick.parentNode!==g("consumerLayers"))g("consumerLayers").insertBefore(quick,g("consumerDyesSlot"));
  if(l){
   g("du-color-name").textContent="Editing: "+l.name;
   quick.querySelectorAll("[data-shape]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.shape===l.shape)));
@@ -81,7 +86,10 @@ function refresh(){
   if(!row.dataset.duKeyboard){row.dataset.duKeyboard="1";row.addEventListener("keydown",e=>{if(e.target===row&&(e.key==="Enter"||e.key===" ")){e.preventDefault();row.click()}})}
   const name=row.querySelector(".layer-name")?.textContent?.trim()||"color";
   const labels=["Move up","Move down","Delete"];
-  row.querySelectorAll(".layer-actions button").forEach((b,i)=>{b.setAttribute("aria-label",labels[i]+" "+name);b.title=labels[i]});
+  const visibleLabels=["↑ Move up","↓ Move down","Delete"];
+  row.querySelectorAll(".layer-actions button").forEach((b,i)=>{
+   b.textContent=visibleLabels[i];b.setAttribute("aria-label",labels[i]+" "+name);b.title=labels[i]
+  });
  });
 }
 function schedule(){if(!pending){pending=true;requestAnimationFrame(refresh)}}
