@@ -464,7 +464,7 @@ test('optional photographed-disc corrections alter the blank, not the prediction
  const end=v2.indexOf('if(photoStatus){\n new MutationObserver(',begin);
  assert.ok(begin>=0&&end>begin,'extract actual shipped correction functions');
  const code=v2.slice(begin,end);
- const fields=Object.fromEntries(['baseColor','baseHex','transmissionHex','transmissionColor'].map(id=>[id,{value:'#000000',events:[],dispatchEvent(e){this.events.push(e.type)}}]));
+ const fields=Object.fromEntries(['baseColor','baseHex','transmissionHex','transmissionColor'].map(id=>[id,{value:id==='baseColor'||id==='baseHex'?'#B0AB8B':'#000000',events:[],dispatchEvent(e){this.events.push(e.type)}}]));
  const buttons=['lighter','vivid','reset'].map(x=>({dataset:{photoAdjust:x}}));
  const env={fields,buttons,g:id=>fields[id],photoControls:{querySelectorAll:()=>buttons},autoTransmissionHex:()=> '#ECECEC',profile:()=>({}),Event:class {constructor(type){this.type=type}}};
  const fn=Function('env','with(env){let originalPhotoHex="#B0AB8B";'+code+';return {fields,buttons};}');
