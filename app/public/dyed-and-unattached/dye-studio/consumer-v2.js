@@ -3,6 +3,19 @@
 window.addEventListener("DOMContentLoaded",function(){
 const g=id=>document.getElementById(id),p=g("consumerPalette"),list=g("layerList"),stage=g("canvasSection");
 if(!p||!list||!stage||g("du-color-trigger"))return;
+// Keep model IDs untouched; remove technical descriptors from the plastic picker
+// in Consumer, and restore full labels when returning to Technical Studio.
+const plasticSelect=g("profileSelect");
+function syncPlasticLabels(){
+ if(!plasticSelect)return;
+ const consumer=document.body.classList.contains("client-mode");
+ Array.from(plasticSelect.options).forEach(option=>{
+  if(!option.dataset.duFullLabel)option.dataset.duFullLabel=option.textContent;
+  const full=option.dataset.duFullLabel;
+  option.textContent=consumer?full.split(" — ")[0]:full;
+ });
+}
+syncPlasticLabels();
 // Group the starter-disc and color-list cards in one compact desktop sidebar.
 // On mobile, display:contents lets these cards surround the main disc editor.
 const right=document.createElement("div");right.id="du-side";
@@ -118,7 +131,7 @@ if(swatches){
  new MutationObserver(accessibleSwatches).observe(swatches,{childList:true});
  accessibleSwatches();
 }
-new MutationObserver(()=>{if(document.body.classList.contains("calibration-mode")&&document.body.classList.contains("du-palette-open"))close();schedule()}).observe(document.body,{attributes:true,attributeFilter:["class"]});
+new MutationObserver(()=>{if(document.body.classList.contains("calibration-mode")&&document.body.classList.contains("du-palette-open"))close();syncPlasticLabels();schedule()}).observe(document.body,{attributes:true,attributeFilter:["class"]});
 g("dyesDetails").open=true;
 schedule();
 },{once:true});
