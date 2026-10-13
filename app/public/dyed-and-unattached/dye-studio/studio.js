@@ -373,6 +373,8 @@ function opaquePointPredict(baseHex,active,p,radius){
  return out
 }
 function researchPredictPoint(baseHex,active,mode,p,x,y){
+  // A zero-intensity layer cannot change the physical-region preview.
+  active=active.filter(l=>Number(l.strength)>0);
  const radius=Math.sqrt(x*x+y*y);
  if(mode==="daylight"){
    return opticalClassFor(p)==="translucent"
@@ -599,19 +601,20 @@ function opaqueDaylightPredict(baseHex,active,profileObj=profile()){
  return rgbHex(hslToRgb(hsl))
 }
 function researchPredict(baseHex,active,p=viewMode,profileObj=profile()){
+  active=active.filter(l=>Number(l.strength)>0);
   if(p==="daylight"){
     return isTranslucentProfile(profileObj)?championDaylightPredict(baseHex,active,daylightScene,profileObj):(active.length?opaqueDaylightPredict(baseHex,active,profileObj):baseHex)
   }
   if(!active.length){if(p==="glow")return profileObj?.glow?(profileObj.optical.includes("champion")?"#B7F47A":"#C8FF8A"):"#080A0D";if(p==="uv365")return profileObj?.glow?"#9ED766":"#171C25";return baseHex}
   if(p==="glow"){
     let emission=profileObj?.glow||0,clearBoost=0,absorb=0;
-    active.forEach(l=>{const m=metaForDye(l);clearBoost+=l.name.toLowerCase().includes("clear")?m.fluor*.22:0;absorb+=Math.max(.12,m.factor)*profileFactorForDye(profileObj,m)*.27});
+    active.forEach(l=>{const m=metaForDye(l),intensity=clamp(Number(l.strength)/100,0,1);clearBoost+=(l.name.toLowerCase().includes("clear")?m.fluor*.22:0)*intensity;absorb+=Math.max(.12,m.factor)*profileFactorForDye(profileObj,m)*.27*intensity});
     const brightness=clamp(emission*(1-absorb)+clearBoost,.015,1.15),baseGlow=profileObj?.optical?.includes("champion")?[.58,1,.35]:[.68,1,.42];
-    let tint=[0,0,0],tw=0;active.forEach(l=>{const m=metaForDye(l);if(m.fluor){const c=hexRgb(m.uvColor||l.hex);tint=tint.map((v,i)=>v+c[i]*m.fluor);tw+=m.fluor}});
+    let tint=[0,0,0],tw=0;active.forEach(l=>{const m=metaForDye(l),f=(m.fluor||0)*clamp(Number(l.strength)/100,0,1);if(f){const c=hexRgb(m.uvColor||l.hex);tint=tint.map((v,i)=>v+c[i]*f);tw+=f}});
     const rgb=baseGlow.map((v,i)=>255*v*brightness);if(tw)for(let i=0;i<3;i++)rgb[i]=rgb[i]*.72+(tint[i]/tw)*brightness*.28;return rgbHex(rgb)
   }
   if(p==="uv365"){
-    let rgb=[8,10,18],weight=0;active.forEach(l=>{const m=metaForDye(l),f=m.fluor||0;if(f){const c=hexRgb(m.uvColor||l.hex);const k=f*profileFactorForDye(profileObj,m);rgb=rgb.map((v,i)=>v+c[i]*k);weight+=k}});
+    let rgb=[8,10,18],weight=0;active.forEach(l=>{const m=metaForDye(l),f=m.fluor||0;if(f){const c=hexRgb(m.uvColor||l.hex);const k=f*profileFactorForDye(profileObj,m)*clamp(Number(l.strength)/100,0,1);rgb=rgb.map((v,i)=>v+c[i]*k);weight+=k}});
     if(profileObj?.glow){rgb[1]+=70*profileObj.glow;rgb[0]+=35*profileObj.glow;rgb[2]+=25*profileObj.glow;weight+=.35}
     const scale=weight?1/(.55+weight*.55):1;return rgbHex(rgb.map(v=>v*scale*1.55))
   }
