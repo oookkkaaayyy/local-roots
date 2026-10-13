@@ -678,7 +678,7 @@ function drawLineForLayer(layer,isSelected){
   }
   ctx.restore();
   if(isSelected){
-    drawCircleHandle(geo.p1,layer.hex,10);drawCircleHandle(geo.p2,layer.hex,10);
+    drawCircleHandle(geo.p1,layer.hex,appMode==="client"?13:10);drawCircleHandle(geo.p2,layer.hex,appMode==="client"?13:10);
     const c=toScreen(geo.center);ctx.fillStyle=layer.hex;ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.beginPath();ctx.rect(c.x-7,c.y-7,14,14);ctx.fill();ctx.stroke();
     if(layer.shape==="edge"){
       const f=toScreen({x:geo.n.x*(layer.offset+layer.side*.22),y:geo.n.y*(layer.offset+layer.side*.22)});drawDiamond(f.x,f.y,13,layer.hex,"F")
@@ -706,9 +706,13 @@ function drawDisc(targetCtx,targetCx,targetCy,targetR,showGuides=false){
 }
 function render(){
   renderQueued=false;regionColorCache.clear();makePaintImage();ctx.clearRect(0,0,W,H);drawDisc(ctx,cx,cy,R);
-  if($("showGuides").checked)layers.forEach((l,i)=>drawLineForLayer(l,i===selected));
+  // Consumer editing must always show the active boundary, even when a saved
+  // Technical Studio project has disabled guide visibility. Do not alter the
+  // saved guide preference; Technical mode keeps its original behavior.
+  if(appMode==="client"){if(selected>=0&&layers[selected])drawLineForLayer(layers[selected],true)}
+  else if($("showGuides").checked)layers.forEach((l,i)=>drawLineForLayer(l,i===selected));
   const ss=toScreen(sample);
-  if(sample.x*sample.x+sample.y*sample.y<=1){
+  if(appMode!=="client"&&sample.x*sample.x+sample.y*sample.y<=1){
     ctx.save();ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.beginPath();ctx.arc(ss.x,ss.y,6,0,Math.PI*2);ctx.stroke();
     ctx.beginPath();ctx.moveTo(ss.x-10,ss.y);ctx.lineTo(ss.x+10,ss.y);ctx.moveTo(ss.x,ss.y-10);ctx.lineTo(ss.x,ss.y+10);ctx.stroke();ctx.restore()
   }
@@ -763,23 +767,26 @@ function renderSwatches(){
 }
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function pointerNorm(e){const rect=canvas.getBoundingClientRect();return toNorm(e.clientX-rect.left,e.clientY-rect.top)}
-function hitSelected(q){
-  if(selected<0)return null;const l=layers[selected];if(l.shape==="full")return null;const geo=lineGeometry(l),threshold=15/R;
+function hitSelected(q,pointerType="mouse"){
+  if(selected<0)return null;const l=layers[selected];if(l.shape==="full")return null;
+  const geo=lineGeometry(l),touch=appMode==="client"&&(pointerType==="touch"||pointerType==="pen");
+  const threshold=(touch?24:15)/R;
   if(dist(q,geo.p1)<threshold)return{type:"endpoint",other:geo.p2,oldN:geo.n};
   if(dist(q,geo.p2)<threshold)return{type:"endpoint",other:geo.p1,oldN:geo.n};
   if(dist(q,geo.center)<threshold)return{type:"move",start:q,startOffset:l.offset,normal:geo.n};
   if(l.shape==="edge"){const f={x:geo.n.x*(l.offset+l.side*.22),y:geo.n.y*(l.offset+l.side*.22)};if(dist(q,f)<threshold){mutate(()=>l.side*=-1,"Colored side flipped");return{type:"flip"}}}
   if(l.shape==="stripe"){for(const sign of[-1,1]){const p={x:geo.n.x*(l.offset+sign*l.width/2),y:geo.n.y*(l.offset+sign*l.width/2)};if(dist(q,p)<threshold)return{type:"width",normal:geo.n}}}
-  if(pointLineDistance(q,geo.p1,geo.p2)<10/R)return{type:"move",start:q,startOffset:l.offset,normal:geo.n};return null
+  if(pointLineDistance(q,geo.p1,geo.p2)<(touch?19:10)/R)return{type:"move",start:q,startOffset:l.offset,normal:geo.n};return null
 }
-function findBoundary(q){
-  let best=null,bestD=12/R;for(let i=layers.length-1;i>=0;i--){const l=layers[i];if(l.shape==="full")continue;const g=lineGeometry(l),d=pointLineDistance(q,g.p1,g.p2);if(d<bestD){bestD=d;best=i}}return best
+function findBoundary(q,pointerType="mouse"){
+  const touch=appMode==="client"&&(pointerType==="touch"||pointerType==="pen");
+  let best=null,bestD=(touch?18:12)/R;for(let i=layers.length-1;i>=0;i--){const l=layers[i];if(l.shape==="full")continue;const g=lineGeometry(l),d=pointLineDistance(q,g.p1,g.p2);if(d<bestD){bestD=d;best=i}}return best
 }
 function projectGuide(q){const len=Math.hypot(q.x,q.y)||1;return{x:q.x/len*GUIDE_RADIUS,y:q.y/len*GUIDE_RADIUS}}
 canvas.addEventListener("pointerdown",e=>{
-  canvas.setPointerCapture(e.pointerId);const q=pointerNorm(e);dragChanged=false;let hit=hitSelected(q);if(hit?.type==="flip"){drag=null;return}
+  canvas.setPointerCapture(e.pointerId);const q=pointerNorm(e);dragChanged=false;let hit=hitSelected(q,e.pointerType);if(hit?.type==="flip"){drag=null;return}
   if(hit){drag={...hit,pointer:e.pointerId};return}
-  const boundary=findBoundary(q);if(boundary!==null){selectLayer(boundary);const l=layers[selected],g=lineGeometry(l);drag={type:"move",start:q,startOffset:l.offset,normal:g.n,pointer:e.pointerId};return}
+  const boundary=findBoundary(q,e.pointerType);if(boundary!==null){selectLayer(boundary);const l=layers[selected],g=lineGeometry(l);drag={type:"move",start:q,startOffset:l.offset,normal:g.n,pointer:e.pointerId};return}
   if(q.x*q.x+q.y*q.y<=1){sample=q;requestRender()}
 });
 canvas.addEventListener("pointermove",e=>{
