@@ -1925,7 +1925,7 @@
       "observed_by": "USER_DIRECT_PHYSICAL_OBSERVATION",
       "status": "FAILED_PHYSICAL_SYNC__SOFTWARE_OR_LINK_ROOT_CAUSE_UNRESOLVED"
     },
-    "installed_firmware_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
+    "installed_firmware_sha256": "43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3",
     "installed_r6_failure": {
       "evidence": "evidence/cart2-r6-live-qualification-20261009/R6_PERFORMANCE_FAILURE_CLASSIFICATION.json",
       "evidence_sha256": "b2e14deeab3abbd907d4c063131a2edac937f0f97eb389e23dcb14658dbf5368",
@@ -1934,8 +1934,8 @@
       "sha256": "0a4b9563c7debfb5a01e9d36aeb8aac2583e105303064de3db0466b7dd9d89d6",
       "status": "CLOSED__EXACT_R4_RESTORED"
     },
-    "installed_release": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
-    "installed_release_role": "UNQUALIFIED_SUCCESSOR_INSTALLED__ONE_CANDIDATE_ATTEMPT_USED__EXACT_R4_RECOVERY_UNUSED",
+    "installed_release": "hbnf-cart2-phase2-r6-vibe-first-ui-20261012",
+    "installed_release_role": "PROVISIONAL_BASELINE_INSTALLED__FIVE_MINUTE_READ_ONLY_SMOKE_PASS__FULL_ACCEPTANCE_OPEN",
     "last_recovery": {
       "artifact_sha256": "8e8db17786b178fc8fcd2cdf8a21512681ec7158941ee49ea255509970b1bcab",
       "artifact_size_bytes": 1458624,
@@ -2684,6 +2684,13 @@
       ],
       "observed_at": "2026-10-05T17:48:54Z",
       "status": "R3_CLOSED__R4_EXECUTION_REQUIRED"
+    },
+    "installed_firmware_reconciliation": {
+      "release_id": "hbnf-cart2-phase2-r6-vibe-first-ui-20261012",
+      "sha256": "43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3",
+      "evidence_path": "evidence/engineering-governance/20261013-installed-baseline-readonly-reconciliation.json",
+      "evidence_sha256": "254a6dc84d8d43bda845da94b81aba681b125ed7e0d65fe4b27821027b56ebfb",
+      "basis": "Read-only Matrix build identity and verified Matrix/AUX installation record; no device mutation."
     }
   },
   "execution_budget_policy": {
@@ -2865,18 +2872,17 @@
       "status": "REUSABLE"
     }
   ],
-  "installation_verification_note": "Fresh read-only preflight: Matrix MAC 70:4b:ca:5b:34:5c reports exact Foundation R4 identity, WLED 16.0.1, health/heap and advancing uptime; AUX MAC 8c:94:df:55:c3:4c reports live=true, lm=DDP, lip=192.168.77.10; Mac is on AC; exact R4 rollback bytes hash verified. No mutation. House voltage is not independently monitored.",
+  "installation_verification_note": "Latest verified baseline: Matrix /hbnf/build.json reports hbnf-cart2-phase2-r6-vibe-first-ui-20261012 (WLED 16.0.1); AKS Delta Inbox row 1612 and the verified Drive artifact bind SHA-256 43a33dfa\u2026e105c5f3, 1,481,344 bytes, a passing 300.751-second read-only smoke, AUX DDP readback, and installation-time settings 185/255/Vibe 2. No mutation in this reconciliation. Full qualification and owner acceptance remain open; historical R4 preflight evidence is preserved.",
   "installed_firmware_reconciliation": {
-    "basis": "Fresh read-only Matrix build/info and AUX telemetry during 2026-10-10 R6 cache candidate preflight; Matrix exact R4 and AUX live DDP from Matrix; exact R4 artifact independently SHA-verified.",
-    "evidence_path": "evidence/cart2-r6-audio-cache-20261010/FRESH_PRELIVE_READONLY_PREFLIGHT.json",
-    "evidence_sha256": "cc0a45fc4dfdfc3ff06dba6d21c752ccaa850edd4be5b0595531bc58c18e030b",
-    "live_mutation_authorized": false,
-    "release_id": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
-    "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    "release_id": "hbnf-cart2-phase2-r6-vibe-first-ui-20261012",
+    "sha256": "43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3",
+    "evidence_path": "evidence/engineering-governance/20261013-installed-baseline-readonly-reconciliation.json",
+    "evidence_sha256": "254a6dc84d8d43bda845da94b81aba681b125ed7e0d65fe4b27821027b56ebfb",
+    "basis": "Read-only Matrix build identity and verified Matrix/AUX installation record; no device mutation."
   },
-  "installed_firmware_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
-  "installed_release": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
-  "installed_release_role": "UNQUALIFIED_SUCCESSOR_INSTALLED__ONE_CANDIDATE_ATTEMPT_USED__EXACT_R4_RECOVERY_UNUSED",
+  "installed_firmware_sha256": "43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3",
+  "installed_release": "hbnf-cart2-phase2-r6-vibe-first-ui-20261012",
+  "installed_release_role": "PROVISIONAL_BASELINE_INSTALLED__FIVE_MINUTE_READ_ONLY_SMOKE_PASS__FULL_ACCEPTANCE_OPEN",
   "lane_execution": {
     "activation_rule": "Activate offline-safe core lanes at the earlier of: (a) clean Foundation soak/readiness signal, or (b) 60 minutes without lifecycle progress, provided parallel work is noncontending and cannot invalidate the healthy live critical path. Never restart/interrupt healthy critical-path work merely to satisfy this timer. live_mutation_limit remains 1.",
     "anti_abandonment": "Chat turnover, worker turnover, new sequence numbers, or convenience may not drop a lane. A ready lane can stop only when DONE, explicitly blocked on a named dependency, or user scope changes.",

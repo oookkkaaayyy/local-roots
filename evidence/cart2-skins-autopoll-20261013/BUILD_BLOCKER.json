@@ -1,0 +1,56 @@
+{
+  "assessment": "Exact pinned framework archives were compared with the upstream release and are identical; no already-pinned ESP32 SSL client library exports the unresolved symbols. Reinstalling the same package cannot fix this. A new compatible TLS library/package or different supported transport would require a deliberate dependency/build-path decision; no unpinned alternative was introduced.",
+  "build_log": {
+    "exit_code": 1,
+    "path": "evidence/cart2-skins-autopoll-20261013/BUILD_FINAL_STDOUT_STDERR.log",
+    "sha256": "0f3215b4ed12f96380d229e939b429fe246c3706ffee4e93947c9c63b94b0488"
+  },
+  "build_outcome": "FAILED_AT_LINK",
+  "build_target": "hbnf_matrix_wled16_packet20_diag",
+  "candidate_binary": null,
+  "candidate_parent_commit": "a4671f232f2b1d2cbe4c4079af91bae86f2e5673",
+  "compile_enum_collision_fix": "Applied scoped preprocessor prefixes to ESP-IDF http_parser HTTP_* enumerators while including esp_http_client.h; the current build passed this translation unit and reached final link.",
+  "first_linker_symbol": "mbedtls_ssl_conf_ca_chain",
+  "installed_framework_archives": {
+    "libmbedtls.a_sha256": "e62e88fb6b5aea62a2ab7501ccd4fad5064dde76b380bcc3461fe2eab766c277",
+    "libmbedtls_2.a_sha256": "eb94da928f335f7806563e731a7aeeaf958291d156f0e37779bf6df6170ec3b9"
+  },
+  "link_command_contains_mbedtls_archives": true,
+  "live_changes": [],
+  "schema": "hbnf-skins-autopoll-build-blocker-v1",
+  "source_path": "firmware/phase2/integration-r6-f89-compact-font/usermod/usermod_hbnf_foundation_v1.cpp",
+  "source_sha256": "c5473f0aa55d187c27b84b64dd786fc7923af0938fd12036e526fafa22ed4bda",
+  "toolchain": {
+    "compiler": "Xtensa GCC 8.4.0+2021r2-patch5",
+    "framework": "Arduino-ESP32 2.0.18+sha.8ba0dc0",
+    "platform": "espressif32 2024.06.00",
+    "platformio_core": "6.1.18"
+  },
+  "unresolved_symbols": [
+    "mbedtls_ssl_conf_ca_chain",
+    "mbedtls_ssl_conf_verify",
+    "mbedtls_ssl_read",
+    "mbedtls_ssl_write",
+    "mbedtls_ssl_get_verify_result",
+    "mbedtls_ssl_handshake",
+    "mbedtls_ssl_get_bytes_avail",
+    "mbedtls_ssl_config_free",
+    "mbedtls_ssl_free",
+    "mbedtls_ssl_set_hostname",
+    "mbedtls_ssl_config_defaults",
+    "mbedtls_ssl_conf_authmode",
+    "mbedtls_ssl_conf_own_cert",
+    "mbedtls_ssl_init",
+    "mbedtls_ssl_config_init",
+    "mbedtls_ssl_conf_rng",
+    "mbedtls_ssl_setup",
+    "mbedtls_ssl_set_bio"
+  ],
+  "upstream_framework_archive": {
+    "installed_and_upstream_mbedtls_archive_hashes_match": true,
+    "package": "framework-arduinoespressif32 2.0.18+sha.8ba0dc0",
+    "sha256": "6413d86f1b53d6d6c45fd20393fe22c322e80a9217414639a243d31135bd0661",
+    "ssl_client_symbols_present_in_esp32_archives": false,
+    "url": "https://github.com/tasmota/arduino-esp32/releases/download/2.0.18/framework-arduinoespressif32.zip"
+  }
+}

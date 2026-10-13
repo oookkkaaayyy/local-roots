@@ -1,0 +1,5 @@
+PWD=/Users/andrew/Documents/Codex/2026-10-07/reconcile-the-current-authoritative-staging-branch/work/WLED-cart2-r5-build-20261008b
+PLATFORMIO_CORE_VERSION=6.1.18 (existing pinned Python 3.9 runtime)
+SOURCE_DATE_EPOCH=1791850000
+COMMAND=pio run -v -j 1 -e hbnf_matrix_wled16_packet20_diag
+SOURCE=codex/matrix-autonomous-skins-poll-20261013

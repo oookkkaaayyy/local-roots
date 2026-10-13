@@ -1,0 +1,41 @@
+{
+  "artifact_identity": {
+    "installed_evidence": "AKS Delta Inbox row 1612; exact Drive artifact record",
+    "sha256": "43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3",
+    "size_bytes": 1481344
+  },
+  "aux_runtime_identity": {
+    "live": true,
+    "mac": "8c:94:df:55:c3:4c",
+    "output_mode": "DDP",
+    "source": "AKS Delta Inbox row 1612 installation evidence"
+  },
+  "live_mutation_authorized": false,
+  "mutations_performed": [],
+  "read_only": true,
+  "recorded_at_utc": "2026-10-13T09:57:43Z",
+  "runtime_identity": {
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "release_id": "hbnf-cart2-phase2-r6-vibe-first-ui-20261012",
+    "source": "http://192.168.77.10/hbnf/build.json",
+    "wled": "16.0.1"
+  },
+  "schema": "hbnf-installed-baseline-readonly-reconciliation-v1",
+  "scope": "Reconciles current installed baseline only; full qualification and owner acceptance remain open.",
+  "settings": {
+    "aux_brightness": 255,
+    "basis": "verified installation receipt",
+    "matrix_brightness": 185,
+    "vibe": 2
+  },
+  "smoke": {
+    "elapsed_seconds": 300.751,
+    "result": "PASS",
+    "samples": 11,
+    "type": "read-only five-minute smoke"
+  },
+  "source_identity": {
+    "basis": "recorded installed firmware source",
+    "commit": "d01a2f6f5ae02deb0901dc48490de0cd777ee9fa"
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "expected_release_id": "hbnf-cart2-phase2-offline-wow-r7-20261009",
+  "expected_release_id": "hbnf-cart2-phase2-r6-vibe-first-ui-20261012",
   "notes": [
     "CANDIDATE SUPPORT TOOLING. Host-side pure tests are required before live use.",
     "Packet20 firmware accepts runtime kernel indices 0..27; this adapter maps exact retained effect IDs 220..247 to those indices.",

@@ -13,7 +13,24 @@
 #include "fontmanager.h"
 #include <ANIMartRIX.h>
 #include <string.h>
+// ESP-IDF's http_parser and WLED's ESPAsyncWebServer both declare
+// global HTTP_* method enumerators. Prefix the parser's names while including
+// the ESP-IDF HTTP client; the parser's numeric method values are unchanged.
+#define HTTP_DELETE HBNF_HTTP_PARSER_DELETE
+#define HTTP_GET HBNF_HTTP_PARSER_GET
+#define HTTP_HEAD HBNF_HTTP_PARSER_HEAD
+#define HTTP_POST HBNF_HTTP_PARSER_POST
+#define HTTP_PUT HBNF_HTTP_PARSER_PUT
+#define HTTP_OPTIONS HBNF_HTTP_PARSER_OPTIONS
+#define HTTP_PATCH HBNF_HTTP_PARSER_PATCH
 #include <esp_http_client.h>
+#undef HTTP_DELETE
+#undef HTTP_GET
+#undef HTTP_HEAD
+#undef HTTP_POST
+#undef HTTP_PUT
+#undef HTTP_OPTIONS
+#undef HTTP_PATCH
 #include <esp_crt_bundle.h>
 #include <freertos/task.h>
 #include <ctype.h>
