@@ -100,11 +100,13 @@ function bind(){
    status.textContent="Reading disc color…";status.className="photo-status";
    try{
      const result=await analyzeImage(file);
+     if(!result.edgeDetected)throw Error("Disc edge not found. Retake with the entire disc on a contrasting background.");
      const color=document.getElementById("baseColor"),field=document.getElementById("baseHex");
      color.value=result.hex;field.value=result.hex;
      // Same existing UI color handlers; automatically refresh model and undo history.
      color.dispatchEvent(new Event("input",{bubbles:true}));
-     color.dispatchEvent(new Event("change",{bubbles:true}));
+     // Reuse the existing optical-profile transmission estimate and single undo/history commit.
+     document.getElementById("autoTransmission").click();
      const summary=result.confidence==="good"?
        "Estimated "+result.hex+" from the disc. Check against the real disc; lighting can shift color.":
        "Estimated "+result.hex+". Photo is uncertain—try even light, with the full disc on a contrasting surface.";
