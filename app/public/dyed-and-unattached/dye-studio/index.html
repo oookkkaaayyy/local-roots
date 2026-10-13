@@ -284,6 +284,7 @@ button.danger{color:#8d3129}
 
 
 
+<link rel="stylesheet" href="./consumer.css">
 </head>
 <body>
 <header>
@@ -291,17 +292,12 @@ button.danger{color:#8d3129}
   <div class="header-row">
     <div>
       <h1>Disc Dye Studio</h1>
-      <div class="sub">Experimental beta: design dye regions and compare source-linked evidence. Predicted colors are illustrative and have not been independently validated against physical results. Do not promise an exact finished shade.</div>
+      <div class="sub legacy-context">Experimental beta: design dye regions and compare source-linked evidence. Predicted colors are illustrative and have not been independently validated against physical results. Do not promise an exact finished shade.</div>
     </div>
-    <div class="top-actions"><div class="mode-switch"><button id="clientModeBtn" class="active">Client Designer</button><button id="calibrationModeBtn">Calibration Studio</button></div>
-      <div class="action-with-help">
-        <button id="globalHelp" class="ghost">Quick guide</button>
-        <button class="help-dot" data-help-title="Quick guide" data-help="Opens a simple overview of the full workflow, from choosing the disc color through exporting the finished plan.">?</button>
-      </div>
-    </div>
-  </div>
+    <div class="top-actions"><button id="globalHelp" class="ghost">Help</button><details class="advanced-menu"><summary>Advanced</summary><div class="mode-switch"><button id="clientModeBtn" class="active">Designer</button><button id="calibrationModeBtn">Calibration</button></div></details></div></div>
 </header>
-<div class="beta-status" role="note"><strong>Experimental beta</strong> — Geometry and recipe planning are available. Predicted hue, saturation, UV behavior, and dye uptake remain unvalidated estimates, not a guarantee of actual disc color.</div>
+<div class="beta-status" role="note"><strong>Experimental beta.</strong> Preview colors are estimates, not verified dye results. <a href="#researchDrawer">Evidence & limitations</a></div>
+<div id="projectActions" class="project-actions" role="group" aria-label="Project actions"><button id="saveProject">Save</button><button id="loadProject">Load</button><button id="copyRecipe">Copy recipe</button><button id="exportPng" class="primary">Export PNG</button></div>
 <main>
 <aside class="panel controls">
   <div class="onboarding client-only"><h2>Design from the research library</h2><ol><li>Choose the closest Innova plastic reference and the actual blank color.</li><li>Add only HBNF-available dyes and arrange the blocks.</li><li>Treat all unvalidated preview hues as model estimates; consult source-linked real-world examples and limitations.</li></ol></div><div class="onboarding calibration-only"><h2>Improve the model—not rebuild it</h2><ol><li>Start with the built-in Innova and community-research priors.</li><li>Add local measurements only for important gaps or exact customer blanks.</li><li>Only sufficiently documented records matching the exact starting disc and process can override compatible opaque daylight previews.</li></ol></div>
@@ -317,6 +313,7 @@ button.danger{color:#8d3129}
       <button class="help-dot" data-help-title="Redo" data-help="Restores the most recently undone change. Shortcut: Command-Shift-Z on Mac, or Control-Shift-Z on Windows.">?</button>
     </div>
     <span class="spacer"></span>
+<details class="examples-menu"><summary>Examples</summary><div class="examples-menu-body">
     <div class="action-with-help">
       <button id="actualTestBtn">Load actual HBNF test</button>
       <button class="help-dot" data-help-title="Actual HBNF test" data-help="Loads the historical HBNF green Champion and UV Blast Green / Blaze Orange layout. Its photographs are qualitative references only; the preview does not apply source-photo RGB as calibrated color targets.">?</button>
@@ -325,11 +322,12 @@ button.danger{color:#8d3129}
       <button id="exampleBtn">Load four-color example</button>
       <button class="help-dot" data-help-title="Load example" data-help="Creates a four-color layout so you can immediately see how boundaries, overlaps, and handles work. It replaces the current layout, but you can Undo afterward.">?</button>
     </div>
+</div></details>
   </div>
 
 
-  <details open>
-    <summary><span class="summary-left"><span class="step">1</span>Plastic reference</span></summary>
+  <details id="plasticDetails" open>
+    <summary><span class="summary-left">Plastic & method</span></summary>
     <div class="detail-body">
       <div class="control-label">Innova reference family <button class="help-dot" data-help-title="Innova reference families" data-help="Use Innova names as broad optical and dye-uptake references: Star for solid/opaque premium plastic, Champion for clear/translucent premium plastic, GStar for flexible opaque premium, and separate Proto Glow Star and Proto Glow Champion profiles. Other brands can later be mapped to the closest family and locally refined.">?</button></div>
       <select id="profileSelect" class="model-select"></select>
@@ -359,8 +357,8 @@ button.danger{color:#8d3129}
       </div>
     </div>
   </details>
-<details open>
-    <summary><span class="summary-left"><span class="step">2</span>Actual blank and lighting</span></summary>
+<details id="blankDetails">
+    <summary><span class="summary-left">Disc color & lighting</span></summary>
     <div class="detail-body">
       <div class="field">
         <div class="control-label">Surface / reflected starting color <button class="help-dot" data-help-title="Surface starting color" data-help="For opaque Star-style plastic, this is usually enough. For translucent Champion-style plastic, this is only the reflected appearance; the held-to-light transmission color below is also required because the dye is viewed partly through the plastic.">?</button></div>
@@ -414,8 +412,8 @@ button.danger{color:#8d3129}
   </details>
 
 
-  <details open>
-    <summary><span class="summary-left"><span class="step">3</span>Dye blocks</span></summary>
+  <details id="dyesDetails" open>
+    <summary><span class="summary-left">Dye blocks</span></summary>
     <div class="detail-body">
       <div class="row spread" style="margin-bottom:9px">
         <span class="small">Top item is applied last.</span>
@@ -431,7 +429,7 @@ button.danger{color:#8d3129}
 
 
   <details id="editDetails">
-    <summary><span class="summary-left"><span class="step">4</span>Adjust selected block</span></summary>
+    <summary><span class="summary-left">Edit selected block</span></summary>
     <div id="layerEditor" class="detail-body">
       <div id="noSelection" class="notice">Select a dye block from the list or tap one of its boundary lines on the disc.</div>
       <div id="editorControls" class="hidden">
@@ -484,17 +482,7 @@ button.danger{color:#8d3129}
 
 
   <details class="calibration-only" open><summary><span class="summary-left"><span class="step">5</span>Measured calibration records</span></summary><div class="detail-body"><div class="notice">Place the sample crosshair inside the measured dyed region and keep dye blocks in application order; then enter a controlled local measurement. Only v6 controlled measurements matching each dye, method, pass count, plastic, starting color, process and view, with two or more repeats, may override the preview. Experimental observations remain advisory. Legacy records remain archived/inactive. Online photographs are qualitative evidence.</div><div class="research-notes"><div class="research-note"><b>Opaque prior:</b> Star/GStar-style premium plastic is modeled with stronger visible uptake and chroma retention.</div><div class="research-note"><b>Translucent prior:</b> Champion-style plastic is modeled with slower/weaker uptake, stronger dependence on the original blank and viewing background, and reduced pink/neon reliability.</div><div class="research-note"><b>Glow prior:</b> Proto Glow Star and Proto Glow Champion are separate families. Daylight dye color and charged-glow visibility are evaluated separately.</div><div class="research-note"><b>Fluorescent prior:</b> UV Blast Clear is treated as a UV enhancer, not a pale visible dye. Neon colors can appear brighter under UV than their daylight absorption alone predicts.</div></div><div class="profile-grid" style="margin-top:10px"><div><div class="control-label">Measured daylight HEX (controlled only)</div><div class="row"><input id="measuredColor" type="color" value="#808080"><input id="measuredHex" type="text" value="#808080"></div></div><div><div class="control-label">Status</div><select id="recordStatus"><option value="experimental">Experimental</option><option value="validated">Validated</option><option value="verified">Verified</option></select></div><div><div class="control-label">Independent repeat count (2+ for preview override)</div><input id="repeatCount" type="number" min="1" value="1" style="width:100%"></div><div><div class="control-label">Boundary spread (mm)</div><input id="boundarySpread" type="number" min="0" step="0.1" value="0" style="width:100%"></div><div><div class="control-label">Recipe version</div><input id="recipeVersion" type="text" value="Measured process v1" style="width:100%;text-transform:none"></div><div><div class="control-label">Notes</div><input id="recordNotes" type="text" style="width:100%;text-transform:none"></div></div><div class="field" style="margin-top:10px"><div class="control-label">Exact process ID (medium, concentration, temperature and duration). Blank disables record overrides.</div><input id="productionRecipeKey" type="text" style="width:100%;text-transform:none" placeholder="acetone-direct-star-white-two-passes-v1"><div class="small">Use identical IDs only for identical physical processes, and select the actual application method. Translucent measurements require zone-specific records and cannot replace a whole-disc preview here.</div></div><div class="row" style="margin-top:10px"><button id="addCalibrationRecord" class="primary">Save current combination</button><button id="exportCalibration">Export JSON</button><button id="importCalibration">Import JSON</button><input id="importCalibrationFile" type="file" accept=".json" class="hidden"></div><div class="scroll-table" style="margin-top:10px"><table class="data-table"><thead><tr><th>Combination</th><th>Measured</th><th>Status</th><th>Spread</th><th></th></tr></thead><tbody id="recordsBody"></tbody></table></div></div></details>
-<details>
-    <summary><span class="summary-left"><span class="step">6</span>Save and export</span></summary>
-    <div class="detail-body">
-      <div class="row">
-        <button id="saveProject">Save</button><button class="help-dot" data-help-title="Save project" data-help="Stores the current design inside this browser on this device. It does not upload the design anywhere.">?</button>
-        <button id="loadProject">Load</button><button class="help-dot" data-help-title="Load project" data-help="Restores the most recently saved project from this browser. Loading can be reversed with Undo.">?</button>
-        <button id="copyRecipe">Copy recipe</button><button class="help-dot" data-help-title="Copy recipe" data-help="Copies a text summary containing the disc color, dye order, dye hex codes, application intensities, block geometry, and sampled result.">?</button>
-        <button id="exportPng" class="primary">Export PNG</button><button class="help-dot" data-help-title="Export PNG report" data-help="Downloads a labeled planning image. It includes the disc preview, every dye used with its source hex code and application intensity, and every distinct blended region detected on the disc with its predicted hex code.">?</button>
-      </div>
-    </div>
-  </details>
+
 
 
   <details>
@@ -513,10 +501,10 @@ button.danger{color:#8d3129}
 </aside>
 
 
-<section class="panel workspace">
+<section class="panel workspace" id="canvasSection">
   <div class="canvas-shell">
     <canvas id="canvas"></canvas>
-    <div class="canvas-tip">Drag round handles to rotate · drag the square handle to move · tap the disc to sample a predicted color</div>
+    <div class="canvas-tip">Drag handles to edit · Tap to sample</div>
   </div>
 
 
@@ -525,14 +513,6 @@ button.danger{color:#8d3129}
     <div class="stat"><span class="small">Sample location</span><strong id="samplePos">Center</strong></div>
     <div class="stat"><span class="small">Dye blocks</span><strong id="layerCount">0</strong></div><div class="stat"><span class="small">Prediction basis</span><strong id="sampleConfidence">Experimental</strong></div>
   </div><div id="clientGuard" class="client-only warning-box" style="margin-bottom:12px"></div>
-  <details id="evidencePanel" class="evidence-panel client-only" open>
-    <summary>Real-world evidence and dyeing cautions — 51 observations</summary>
-    <div class="evidence-info">Provisional source-linked evidence: 51 extracted rows from 34 URLs; many lack controlled photographs, exact recipes or quantified outcomes. These are not 51 independent studies or measured RGB targets. Links open the original sources.</div>
-    <div id="evidenceWarnings"></div>
-    <div id="evidenceLinks"></div>
-  </details>
-
-
   <div class="catalog-head">
     <div>
       <div class="row"><strong>Dye catalog</strong><button class="help-dot" data-help-title="Dye catalog" data-help="Tap a swatch to add that dye as a new movable Edge Block. The new block is placed above the existing layers, meaning it is applied later in the simulated dye order.">?</button></div>
@@ -549,7 +529,14 @@ button.danger{color:#8d3129}
   <div id="swatchGrid" class="swatches"></div>
 
 
-  <div class="reference-head">
+  <details id="researchDrawer" class="consumer-research"><summary>Evidence & limitations</summary><div class="research-drawer-body">
+<details id="evidencePanel" class="evidence-panel client-only">
+    <summary>Real-world evidence and dyeing cautions — 51 observations</summary>
+    <div class="evidence-info">Provisional source-linked evidence: 51 extracted rows from 34 URLs; many lack controlled photographs, exact recipes or quantified outcomes. These are not 51 independent studies or measured RGB targets. Links open the original sources.</div>
+    <div id="evidenceWarnings"></div>
+    <div id="evidenceLinks"></div>
+  </details>
+<div class="reference-head">
     <div><div class="row"><strong>Research reference library</strong><button class="help-dot" data-help-title="Research library" data-help="Most cards are illustrative research analogs, not physically matched recipes. The HBNF green/orange card is different: it includes the user-provided before/after photos and photo-sampled dominant output colors. Photo anchors are stronger than generic research but still weaker than controlled color-chart measurements.">?</button></div><div class="small">Community research plus the first HBNF before/after photo anchor.</div></div>
     <select id="referenceFilter"><option value="all">All references</option><option value="inventory">Uses only my dyes</option><option value="star">Star / opaque</option><option value="champion">Champion / translucent</option><option value="glow">Glow</option></select>
   </div>
@@ -565,8 +552,9 @@ button.danger{color:#8d3129}
   <div class="notice" style="margin-top:12px">
     Evidence hierarchy: controlled measurement → independently replicated result → documented same-recipe case → comparable real-world analog → model-only estimate. Current online results do not establish quantitative accuracy. The supplied Champion test now anchors Green and Blaze Orange using whole-region appearance plus separate rim and bright-center behavior, but its before/after photos used different lighting, so controlled capture remains necessary before guaranteeing exact client color.
   </div>
+</div></details>
 </section>
-</main>
+</main><nav class="mobile-quicknav" aria-label="Studio sections"><a href="#canvasSection">Preview</a><a href="#swatchGrid">Colors</a><a href="#dyesDetails">Blocks</a><a href="#plasticDetails">Disc</a><a href="#projectActions">Save</a></nav>
 
 
 <div id="backdrop" class="popover-backdrop"></div>
