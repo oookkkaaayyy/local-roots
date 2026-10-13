@@ -284,26 +284,128 @@ button.danger{color:#8d3129}
 
 
 
+<link rel="stylesheet" href="./consumer.css">
+<style id="du-consumer-redesign-v2">
+body.client-mode #consumerLayers .du-layer-grip{color:#977d64;cursor:grab;align-self:center;text-align:center;user-select:none;font-size:20px;touch-action:pan-y}
+body.client-mode #consumerLayers .du-layer-grip:active{cursor:grabbing}
+body.client-mode #consumerLayers .layer.du-drag-target{border:2px dashed #a7623a;background:#f0dfcd}
+@media(pointer:coarse){body.client-mode #consumerLayers .du-layer-grip{display:none}body.client-mode #consumerLayers .layer{grid-template-columns:37px minmax(0,1fr)}}
+
+body.client-mode #du-photo-adjust{border-top:1px solid #e2cfb6;padding-top:9px;margin-top:8px}
+body.client-mode #du-photo-adjust[hidden]{display:none!important}
+body.client-mode .du-photo-adjust-label{font-size:12px;color:#6e5844;display:block;margin-bottom:7px}
+body.client-mode .du-photo-adjust-buttons{display:flex;flex-wrap:wrap;gap:6px}
+body.client-mode .du-photo-adjust-buttons button{flex:1 1 85px;font-size:12px;min-height:42px;line-height:1.2;padding:7px;background:#fffdf8}
+body.calibration-mode #du-photo-adjust{display:none!important}
+
+body.client-mode #toast{pointer-events:none}
+body.client-mode #du-side{grid-area:side;display:flex;flex-direction:column;gap:12px;align-self:start;min-width:0}
+body.calibration-mode #du-side{display:none!important}
+body.client-mode #du-side #consumerDisc,body.client-mode #du-side #consumerLayers{grid-area:auto;width:100%}
+@media(max-width:680px){body.client-mode #du-side{display:contents}}
+
+body.client-mode .du-order-tip{font-size:12px;color:#6c5b4c;line-height:1.35;margin:-4px 0 13px}
+/* Simple consumer composer: all original technical controls remain intact. */
+body.client-mode main{max-width:1260px;display:grid;grid-template-columns:minmax(0,1fr) minmax(285px,350px);grid-template-areas:"stage side";grid-template-rows:auto;align-items:start;gap:14px}
+body.client-mode #canvasSection{grid-area:stage;position:sticky;top:10px}
+body.client-mode #consumerLayers{grid-area:layers;max-height:none;overflow:visible}
+body.client-mode #consumerDisc{grid-area:disc}
+body.client-mode #consumerPalette{display:none!important;position:fixed;right:0;top:0;bottom:0;z-index:111;width:min(440px,100vw);padding:19px;max-height:none;overflow:auto;background:#fffaf3;border-radius:17px 0 0 17px;box-shadow:-18px 0 70px #27170d3d}
+body.client-mode.du-palette-open #consumerPalette{display:block!important}
+body.client-mode.du-palette-open{overflow:hidden}
+#du-shade{display:none}
+body.client-mode.du-palette-open #du-shade{display:block;position:fixed;inset:0;background:#18110c99;z-index:110}
+body.client-mode #du-color-trigger{min-height:44px;padding:10px 17px;font-size:15px;border-radius:13px}
+body.client-mode .consumer-preview-head{align-items:center}
+body.client-mode #consumerViewSlot{margin-left:auto}
+body.client-mode #canvasSection .stats{display:none}
+body.client-mode #canvasSection .canvas-shell{width:min(100%,calc(100dvh - 220px),720px);min-width:0}
+body.client-mode #canvasSection .canvas-tip{display:block;color:#604b39;text-shadow:none;font-size:11px}
+body.client-mode #consumerLayers #dyesDetails{border:0;background:none}
+body.client-mode #consumerLayers #dyesDetails>summary,body.client-mode #consumerLayers #dyesDetails .row.spread{display:none}
+body.client-mode #consumerLayers #dyesDetails .detail-body{padding:0}
+body.client-mode #consumerLayers #editDetails{display:none!important}
+body.client-mode #consumerLayers #emptyLayers{padding:15px;border:1px dashed #d3bda3;background:#fffdf9;font-size:13px;line-height:1.5}
+body.client-mode #consumerLayers .layers{gap:8px}
+body.client-mode #consumerLayers .layer{display:grid;grid-template-columns:37px minmax(0,1fr);gap:9px;padding:11px;min-height:62px;background:#fffdf9;border:1px solid #dfcdb8;border-radius:13px}
+body.client-mode #consumerLayers .layer.du-has-grip{grid-template-columns:22px 37px minmax(0,1fr)}
+@media(pointer:coarse){body.client-mode #consumerLayers .layer.du-has-grip{grid-template-columns:37px minmax(0,1fr)}}
+body.client-mode #consumerLayers .layer.selected{background:#f7ebdf;border:2px solid #a7623a}
+body.client-mode #consumerLayers .chip{width:37px;height:37px;border-radius:9px}
+body.client-mode #consumerLayers .layer-name{font-size:13px;overflow-wrap:break-word;word-break:normal;hyphens:none}
+body.client-mode #consumerLayers .layer-meta{display:none}
+body.client-mode #consumerLayers .layer-actions{grid-column:1/-1;display:none;gap:6px}
+body.client-mode #consumerLayers .layer.selected .layer-actions{display:flex}
+body.client-mode #consumerLayers .layer-actions button{flex:1;min-height:43px;font-size:13px}
+body.client-mode #consumerPresetSlot,body.client-mode #consumerBaseSlot input[type=text],body.client-mode #consumerBaseSlot #whiteDisc,body.client-mode #consumerBaseSlot #glowDisc{display:none!important}
+body.client-mode #consumerBaseSlot input[type=color]{width:62px;height:44px;cursor:pointer}
+body.client-mode #du-quick{display:none;margin:9px 0 14px;padding:12px;border:1px solid #d8b996;border-radius:13px;background:#f8ecdd}
+body.client-mode #consumerLayers .layer #du-quick{grid-column:1/-1;width:100%;min-width:0;margin:3px 0 0;padding:12px}
+body.client-mode #du-quick.du-active{display:block}
+body.client-mode #du-quick strong{display:block;font-size:13px;margin-bottom:9px}
+body.client-mode .du-quick-row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+body.client-mode .du-quick-row button{flex:1;min-height:41px;font-size:12px;padding:8px 7px;background:#fffdf9}
+body.client-mode .du-quick-row button[aria-pressed=true]{color:white;background:#a7623a;border-color:#a7623a}
+body.client-mode #du-widths,body.client-mode #du-flip{display:none}
+body.client-mode #du-widths.du-show,body.client-mode #du-flip.du-show{display:flex}
+body.client-mode #du-quick p{font-size:11px;color:#695b4b;line-height:1.4;margin:7px 0 0}
+body.client-mode #du-palette-head{position:sticky;top:-19px;background:#fffaf3;padding:14px 0 10px;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px}
+body.client-mode #du-palette-head button{min-height:42px}
+body.client-mode #consumerPalette .catalog-head strong{display:none}
+body.client-mode #consumerPalette .swatches{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+body.client-mode #consumerPalette .swatch{display:flex;flex-direction:column;align-items:start;min-height:78px;gap:5px}
+body.client-mode #consumerPalette .swatch-color{width:100%;height:30px}
+body.client-mode #consumerPalette .swatch-name{font-size:12px}
+body.client-mode #consumerPalette .swatch-code{display:none}
+@media(max-width:900px){body.client-mode main{grid-template-columns:minmax(0,1fr) minmax(260px,310px)}body.client-mode #canvasSection{position:static}body.client-mode #canvasSection .canvas-shell{width:100%}}
+@media(max-width:680px){
+body.client-mode main{display:flex;flex-direction:column;gap:10px}
+body.client-mode #consumerDisc{order:0;width:100%}body.client-mode #canvasSection{order:1;width:100%}body.client-mode #consumerLayers{order:2;width:100%}
+body.client-mode #canvasSection .canvas-shell{width:min(100%,520px)}
+body.client-mode #consumerPalette{left:0;right:0;top:auto;bottom:0;width:100%;height:min(80dvh,750px);padding:14px 14px max(24px,env(safe-area-inset-bottom));border-radius:18px 18px 0 0}
+body.client-mode #du-palette-head{top:-14px}
+body.client-mode #du-color-trigger{flex:1}
+body.client-mode #consumerViewSlot{margin-left:0}
+body.client-mode .mobile-quicknav{display:none}
+}
+
+body.client-mode #du-lighting{margin:0;border:1px solid #ddcdb6;background:#fffdf9;border-radius:10px;position:relative;overflow:visible}
+body.client-mode #du-lighting>summary{font-size:12px;min-height:40px;display:flex;align-items:center;padding:8px 10px;cursor:pointer;color:#63462f;background:transparent}
+body.client-mode #du-lighting #consumerViewSlot{padding:8px;min-width:210px}
+body.client-mode #du-lighting .condition-switch{justify-content:flex-end}
+body.calibration-mode #du-lighting{display:none!important}
+@media(max-width:680px){
+ body.client-mode #du-lighting #consumerViewSlot{min-width:0}
+ body.client-mode #du-lighting .condition-switch{justify-content:start}
+}
+</style>
 </head>
-<body>
+<body class="client-mode">
 <header>
   <nav class="studio-breadcrumb" aria-label="Site path"><a href="/">Local Roots</a><span aria-hidden="true"> / </span><a href="/dyed-and-unattached">Dyed &amp; Unattached</a><span aria-hidden="true"> / </span><span aria-current="page">Dye Studio</span></nav>
   <div class="header-row">
     <div>
       <h1>Disc Dye Studio</h1>
-      <div class="sub">Experimental beta: design dye regions and compare source-linked evidence. Predicted colors are illustrative and have not been independently validated against physical results. Do not promise an exact finished shade.</div>
+      <div class="sub legacy-context">Experimental beta: design dye regions and compare source-linked evidence. Predicted colors are illustrative and have not been independently validated against physical results. Do not promise an exact finished shade.</div>
     </div>
-    <div class="top-actions"><div class="mode-switch"><button id="clientModeBtn" class="active">Client Designer</button><button id="calibrationModeBtn">Calibration Studio</button></div>
-      <div class="action-with-help">
-        <button id="globalHelp" class="ghost">Quick guide</button>
-        <button class="help-dot" data-help-title="Quick guide" data-help="Opens a simple overview of the full workflow, from choosing the disc color through exporting the finished plan.">?</button>
-      </div>
-    </div>
-  </div>
+    <div class="top-actions"><div class="mode-switch" aria-label="Studio view"><button id="clientModeBtn" class="active" aria-pressed="true">Design</button><button id="calibrationModeBtn" aria-pressed="false">Technical Studio</button></div><button id="globalHelp" class="ghost">Help</button></div></div>
 </header>
-<div class="beta-status" role="note"><strong>Experimental beta</strong> — Geometry and recipe planning are available. Predicted hue, saturation, UV behavior, and dye uptake remain unvalidated estimates, not a guarantee of actual disc color.</div>
+<div class="beta-status" role="note"><strong>Experimental beta.</strong> Preview colors are estimates, not verified dye results.</div>
+<div id="projectActions" class="project-actions" role="group" aria-label="Project actions"><button id="saveProject">Save</button><button id="loadProject">Load</button><button id="copyRecipe">Copy recipe</button><button id="exportPng" class="primary">Export PNG</button></div>
 <main>
-<aside class="panel controls">
+<aside id="consumerDisc" class="consumer-panel panel consumer-disc" aria-label="Choose your disc">
+ <h2>Your disc</h2><label for="profileSelect">Plastic</label><div id="consumerProfileSlot"></div>
+ <div class="photo-picker" aria-label="Match starting disc color from photo">
+   <div class="photo-picker-actions"><button type="button" id="takeDiscPhoto" class="primary">Take photo</button>
+     <button type="button" id="chooseDiscPhoto">Choose photo</button><span id="photoColorChip" class="photo-chip" hidden aria-hidden="true"></span></div>
+   <input id="discCameraInput" type="file" accept="image/*" capture="environment" class="hidden">
+   <input id="discPhotoInput" type="file" accept="image/*" class="hidden">
+   <p id="photoColorStatus" class="photo-status" role="status" aria-live="polite">Auto-match disc color. Keep the full disc in even light.</p>
+ </div>
+ <label for="baseColor">Or choose color</label><div id="consumerBaseSlot" class="consumer-base-row"></div>
+ <div id="consumerPresetSlot"></div>
+</aside>
+<aside class="panel controls" id="technicalControls">
   <div class="onboarding client-only"><h2>Design from the research library</h2><ol><li>Choose the closest Innova plastic reference and the actual blank color.</li><li>Add only HBNF-available dyes and arrange the blocks.</li><li>Treat all unvalidated preview hues as model estimates; consult source-linked real-world examples and limitations.</li></ol></div><div class="onboarding calibration-only"><h2>Improve the model—not rebuild it</h2><ol><li>Start with the built-in Innova and community-research priors.</li><li>Add local measurements only for important gaps or exact customer blanks.</li><li>Only sufficiently documented records matching the exact starting disc and process can override compatible opaque daylight previews.</li></ol></div>
 
 
@@ -317,6 +419,7 @@ button.danger{color:#8d3129}
       <button class="help-dot" data-help-title="Redo" data-help="Restores the most recently undone change. Shortcut: Command-Shift-Z on Mac, or Control-Shift-Z on Windows.">?</button>
     </div>
     <span class="spacer"></span>
+<details class="examples-menu"><summary>Examples</summary><div class="examples-menu-body">
     <div class="action-with-help">
       <button id="actualTestBtn">Load actual HBNF test</button>
       <button class="help-dot" data-help-title="Actual HBNF test" data-help="Loads the historical HBNF green Champion and UV Blast Green / Blaze Orange layout. Its photographs are qualitative references only; the preview does not apply source-photo RGB as calibrated color targets.">?</button>
@@ -325,11 +428,12 @@ button.danger{color:#8d3129}
       <button id="exampleBtn">Load four-color example</button>
       <button class="help-dot" data-help-title="Load example" data-help="Creates a four-color layout so you can immediately see how boundaries, overlaps, and handles work. It replaces the current layout, but you can Undo afterward.">?</button>
     </div>
+</div></details>
   </div>
 
 
-  <details open>
-    <summary><span class="summary-left"><span class="step">1</span>Plastic reference</span></summary>
+  <details id="plasticDetails" open>
+    <summary><span class="summary-left">Plastic & method</span></summary>
     <div class="detail-body">
       <div class="control-label">Innova reference family <button class="help-dot" data-help-title="Innova reference families" data-help="Use Innova names as broad optical and dye-uptake references: Star for solid/opaque premium plastic, Champion for clear/translucent premium plastic, GStar for flexible opaque premium, and separate Proto Glow Star and Proto Glow Champion profiles. Other brands can later be mapped to the closest family and locally refined.">?</button></div>
       <select id="profileSelect" class="model-select"></select>
@@ -359,8 +463,8 @@ button.danger{color:#8d3129}
       </div>
     </div>
   </details>
-<details open>
-    <summary><span class="summary-left"><span class="step">2</span>Actual blank and lighting</span></summary>
+<details id="blankDetails">
+    <summary><span class="summary-left">Disc color & lighting</span></summary>
     <div class="detail-body">
       <div class="field">
         <div class="control-label">Surface / reflected starting color <button class="help-dot" data-help-title="Surface starting color" data-help="For opaque Star-style plastic, this is usually enough. For translucent Champion-style plastic, this is only the reflected appearance; the held-to-light transmission color below is also required because the dye is viewed partly through the plastic.">?</button></div>
@@ -414,8 +518,8 @@ button.danger{color:#8d3129}
   </details>
 
 
-  <details open>
-    <summary><span class="summary-left"><span class="step">3</span>Dye blocks</span></summary>
+  <details id="dyesDetails" open>
+    <summary><span class="summary-left">Dye blocks</span></summary>
     <div class="detail-body">
       <div class="row spread" style="margin-bottom:9px">
         <span class="small">Top item is applied last.</span>
@@ -431,7 +535,7 @@ button.danger{color:#8d3129}
 
 
   <details id="editDetails">
-    <summary><span class="summary-left"><span class="step">4</span>Adjust selected block</span></summary>
+    <summary><span class="summary-left">Edit selected block</span></summary>
     <div id="layerEditor" class="detail-body">
       <div id="noSelection" class="notice">Select a dye block from the list or tap one of its boundary lines on the disc.</div>
       <div id="editorControls" class="hidden">
@@ -484,17 +588,7 @@ button.danger{color:#8d3129}
 
 
   <details class="calibration-only" open><summary><span class="summary-left"><span class="step">5</span>Measured calibration records</span></summary><div class="detail-body"><div class="notice">Place the sample crosshair inside the measured dyed region and keep dye blocks in application order; then enter a controlled local measurement. Only v6 controlled measurements matching each dye, method, pass count, plastic, starting color, process and view, with two or more repeats, may override the preview. Experimental observations remain advisory. Legacy records remain archived/inactive. Online photographs are qualitative evidence.</div><div class="research-notes"><div class="research-note"><b>Opaque prior:</b> Star/GStar-style premium plastic is modeled with stronger visible uptake and chroma retention.</div><div class="research-note"><b>Translucent prior:</b> Champion-style plastic is modeled with slower/weaker uptake, stronger dependence on the original blank and viewing background, and reduced pink/neon reliability.</div><div class="research-note"><b>Glow prior:</b> Proto Glow Star and Proto Glow Champion are separate families. Daylight dye color and charged-glow visibility are evaluated separately.</div><div class="research-note"><b>Fluorescent prior:</b> UV Blast Clear is treated as a UV enhancer, not a pale visible dye. Neon colors can appear brighter under UV than their daylight absorption alone predicts.</div></div><div class="profile-grid" style="margin-top:10px"><div><div class="control-label">Measured daylight HEX (controlled only)</div><div class="row"><input id="measuredColor" type="color" value="#808080"><input id="measuredHex" type="text" value="#808080"></div></div><div><div class="control-label">Status</div><select id="recordStatus"><option value="experimental">Experimental</option><option value="validated">Validated</option><option value="verified">Verified</option></select></div><div><div class="control-label">Independent repeat count (2+ for preview override)</div><input id="repeatCount" type="number" min="1" value="1" style="width:100%"></div><div><div class="control-label">Boundary spread (mm)</div><input id="boundarySpread" type="number" min="0" step="0.1" value="0" style="width:100%"></div><div><div class="control-label">Recipe version</div><input id="recipeVersion" type="text" value="Measured process v1" style="width:100%;text-transform:none"></div><div><div class="control-label">Notes</div><input id="recordNotes" type="text" style="width:100%;text-transform:none"></div></div><div class="field" style="margin-top:10px"><div class="control-label">Exact process ID (medium, concentration, temperature and duration). Blank disables record overrides.</div><input id="productionRecipeKey" type="text" style="width:100%;text-transform:none" placeholder="acetone-direct-star-white-two-passes-v1"><div class="small">Use identical IDs only for identical physical processes, and select the actual application method. Translucent measurements require zone-specific records and cannot replace a whole-disc preview here.</div></div><div class="row" style="margin-top:10px"><button id="addCalibrationRecord" class="primary">Save current combination</button><button id="exportCalibration">Export JSON</button><button id="importCalibration">Import JSON</button><input id="importCalibrationFile" type="file" accept=".json" class="hidden"></div><div class="scroll-table" style="margin-top:10px"><table class="data-table"><thead><tr><th>Combination</th><th>Measured</th><th>Status</th><th>Spread</th><th></th></tr></thead><tbody id="recordsBody"></tbody></table></div></div></details>
-<details>
-    <summary><span class="summary-left"><span class="step">6</span>Save and export</span></summary>
-    <div class="detail-body">
-      <div class="row">
-        <button id="saveProject">Save</button><button class="help-dot" data-help-title="Save project" data-help="Stores the current design inside this browser on this device. It does not upload the design anywhere.">?</button>
-        <button id="loadProject">Load</button><button class="help-dot" data-help-title="Load project" data-help="Restores the most recently saved project from this browser. Loading can be reversed with Undo.">?</button>
-        <button id="copyRecipe">Copy recipe</button><button class="help-dot" data-help-title="Copy recipe" data-help="Copies a text summary containing the disc color, dye order, dye hex codes, application intensities, block geometry, and sampled result.">?</button>
-        <button id="exportPng" class="primary">Export PNG</button><button class="help-dot" data-help-title="Export PNG report" data-help="Downloads a labeled planning image. It includes the disc preview, every dye used with its source hex code and application intensity, and every distinct blended region detected on the disc with its predicted hex code.">?</button>
-      </div>
-    </div>
-  </details>
+
 
 
   <details>
@@ -511,12 +605,14 @@ button.danger{color:#8d3129}
     </div>
   </details>
 </aside>
-
-
-<section class="panel workspace">
+<aside id="consumerLayers" class="consumer-panel panel consumer-layers" aria-label="Edit your dye blocks">
+ <h2>Your colors</h2><p class="du-order-tip">Top color goes on last. Select a color to edit it.</p><div id="consumerDyesSlot"></div><div id="consumerEditorSlot"></div>
+</aside>
+<section class="panel workspace" id="canvasSection">
+ <div class="consumer-preview-head"><strong>Preview</strong><div id="consumerViewSlot"></div></div>
   <div class="canvas-shell">
     <canvas id="canvas"></canvas>
-    <div class="canvas-tip">Drag round handles to rotate · drag the square handle to move · tap the disc to sample a predicted color</div>
+    <div class="canvas-tip">Drag handles to edit · Tap to sample</div>
   </div>
 
 
@@ -525,14 +621,6 @@ button.danger{color:#8d3129}
     <div class="stat"><span class="small">Sample location</span><strong id="samplePos">Center</strong></div>
     <div class="stat"><span class="small">Dye blocks</span><strong id="layerCount">0</strong></div><div class="stat"><span class="small">Prediction basis</span><strong id="sampleConfidence">Experimental</strong></div>
   </div><div id="clientGuard" class="client-only warning-box" style="margin-bottom:12px"></div>
-  <details id="evidencePanel" class="evidence-panel client-only" open>
-    <summary>Real-world evidence and dyeing cautions — 51 observations</summary>
-    <div class="evidence-info">Provisional source-linked evidence: 51 extracted rows from 34 URLs; many lack controlled photographs, exact recipes or quantified outcomes. These are not 51 independent studies or measured RGB targets. Links open the original sources.</div>
-    <div id="evidenceWarnings"></div>
-    <div id="evidenceLinks"></div>
-  </details>
-
-
   <div class="catalog-head">
     <div>
       <div class="row"><strong>Dye catalog</strong><button class="help-dot" data-help-title="Dye catalog" data-help="Tap a swatch to add that dye as a new movable Edge Block. The new block is placed above the existing layers, meaning it is applied later in the simulated dye order.">?</button></div>
@@ -549,7 +637,14 @@ button.danger{color:#8d3129}
   <div id="swatchGrid" class="swatches"></div>
 
 
-  <div class="reference-head">
+  <details id="researchDrawer" class="consumer-research"><summary>Evidence & limitations</summary><div class="research-drawer-body">
+<details id="evidencePanel" class="evidence-panel client-only">
+    <summary>Real-world evidence and dyeing cautions — 51 observations</summary>
+    <div class="evidence-info">Provisional source-linked evidence: 51 extracted rows from 34 URLs; many lack controlled photographs, exact recipes or quantified outcomes. These are not 51 independent studies or measured RGB targets. Links open the original sources.</div>
+    <div id="evidenceWarnings"></div>
+    <div id="evidenceLinks"></div>
+  </details>
+<div class="reference-head">
     <div><div class="row"><strong>Research reference library</strong><button class="help-dot" data-help-title="Research library" data-help="Most cards are illustrative research analogs, not physically matched recipes. The HBNF green/orange card is different: it includes the user-provided before/after photos and photo-sampled dominant output colors. Photo anchors are stronger than generic research but still weaker than controlled color-chart measurements.">?</button></div><div class="small">Community research plus the first HBNF before/after photo anchor.</div></div>
     <select id="referenceFilter"><option value="all">All references</option><option value="inventory">Uses only my dyes</option><option value="star">Star / opaque</option><option value="champion">Champion / translucent</option><option value="glow">Glow</option></select>
   </div>
@@ -563,10 +658,14 @@ button.danger{color:#8d3129}
 
 
   <div class="notice" style="margin-top:12px">
-    Evidence hierarchy: controlled measurement → independently replicated result → documented same-recipe case → comparable real-world analog → model-only estimate. Current online results do not establish quantitative accuracy. The supplied Champion test now anchors Green and Blaze Orange using whole-region appearance plus separate rim and bright-center behavior, but its before/after photos used different lighting, so controlled capture remains necessary before guaranteeing exact client color.
+    Evidence hierarchy: controlled measurement → independently replicated result → documented same-recipe case → comparable real-world analog → model-only estimate. Current online results do not establish quantitative accuracy. The supplied Champion test now anchors Green and Blaze Orange using whole-region appearance plus separate rim and bright-center behavior, and both discs share the same photographic lighting and exposure; controlled color-chart capture is still needed to guarantee absolute client color.
   </div>
+</div></details>
 </section>
-</main>
+<aside id="consumerPalette" class="consumer-panel panel consumer-palette" aria-label="Choose dye colors">
+ <div id="consumerCatalogHeadSlot"></div><div id="consumerTabsSlot"></div><div id="consumerSwatchesSlot"></div>
+</aside>
+</main><nav class="mobile-quicknav" aria-label="Studio sections"><a href="#consumerDisc">Disc</a><a href="#canvasSection">Preview</a><a href="#consumerPalette">Colors</a><a href="#consumerLayers">Blocks</a><a href="#projectActions">Save</a></nav>
 
 
 <div id="backdrop" class="popover-backdrop"></div>
@@ -578,6 +677,10 @@ button.danger{color:#8d3129}
 <div id="toast" class="toast"></div>
 
 
+<script src="./consumer-layout.js" defer></script>
 <script src="./studio.js" defer></script>
+<script src="./disc-photo.js" defer></script>
+
+<script src="./consumer-v2.js" defer></script>
 </body>
 </html>

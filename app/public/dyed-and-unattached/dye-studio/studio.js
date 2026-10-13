@@ -557,8 +557,13 @@ function mutate(fn,message=""){
 
 
 function newLayer(name,hex,clear=false){
-  const count=layers.length;
-  return{name,hex:hex.toUpperCase(),strength:100,passes:activePassCount(),method:/uv blast|quick.coat|worm dip/i.test(name)?"worm-dip":activeMethod(),shape:"edge",angle:normAngle(count*47-25),offset:(count%3-1)*.12,side:count%2===0?1:-1,width:.42}
+  const count=layers.length,consumer=typeof appMode!=="undefined"&&appMode==="client";
+  // A consumer's first two blocks form predictable complementary halves.
+  // Additional blocks may overlap, but never start at arbitrary-looking
+  // rotations for the first two dyes. Technical Studio retains its defaults.
+  const angle=consumer&&count<2?0:normAngle(count*47-25);
+  const offset=consumer&&count<2?0:(count%3-1)*.12;
+  return{name,hex:hex.toUpperCase(),strength:100,passes:activePassCount(),method:/uv blast|quick.coat|worm dip/i.test(name)?"worm-dip":activeMethod(),shape:"edge",angle,offset,side:count%2===0?1:-1,width:.42}
 }
 function layerCovers(layer,x,y){
   if(layer.shape==="full")return true;
@@ -629,14 +634,25 @@ function confidenceForActive(active){
 }
 function makePaintImage(){
   const image=paintCtx.createImageData(PAINT_SIZE,PAINT_SIZE),data=image.data;
+  // A dye region's optical prediction depends on radius, not angle. Reuse
+  // colors in narrow radius bins per exact region mask, preserving boundaries
+  // at .58 (plate), .84 (shoulder), and .86 (opaque rim shading).
+  // The 1024 bins change <=1 sRGB channel in tested Proto Glow Champion
+  // scenes and 0 channels in tested Star scenes, with no model parameter edit.
+  const ringCache=new Map(),bins=1024;
   let p=0;
   for(let iy=0;iy<PAINT_SIZE;iy++){
     const y=((iy+.5)/PAINT_SIZE)*2-1;
     for(let ix=0;ix<PAINT_SIZE;ix++){
-      const x=((ix+.5)/PAINT_SIZE)*2-1;
-      if(x*x+y*y>1){data[p++]=0;data[p++]=0;data[p++]=0;data[p++]=0;continue}
-      const key=regionKeyAt(x,y),[r,g,b]=hexRgb(colorForPoint(x,y,key));
-      data[p++]=r;data[p++]=g;data[p++]=b;data[p++]=255;
+      const x=((ix+.5)/PAINT_SIZE)*2-1,r2=x*x+y*y;
+      if(r2>1){data[p++]=0;data[p++]=0;data[p++]=0;data[p++]=0;continue}
+      const radius=Math.sqrt(r2);
+      const zone=radius<.58?0:radius<.84?1:radius<=.86?2:3;
+      const region=regionKeyAt(x,y);
+      const cacheKey=region+"|"+zone+"|"+Math.min(bins-1,Math.floor(radius*bins));
+      let rgb=ringCache.get(cacheKey);
+      if(!rgb){rgb=hexRgb(colorForPoint(x,y,region));ringCache.set(cacheKey,rgb)}
+      data[p++]=rgb[0];data[p++]=rgb[1];data[p++]=rgb[2];data[p++]=255;
     }
   }
   paintCtx.putImageData(image,0,0);paintedImage=image;
@@ -678,7 +694,7 @@ function drawLineForLayer(layer,isSelected){
   }
   ctx.restore();
   if(isSelected){
-    drawCircleHandle(geo.p1,layer.hex,10);drawCircleHandle(geo.p2,layer.hex,10);
+    drawCircleHandle(geo.p1,layer.hex,appMode==="client"?13:10);drawCircleHandle(geo.p2,layer.hex,appMode==="client"?13:10);
     const c=toScreen(geo.center);ctx.fillStyle=layer.hex;ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.beginPath();ctx.rect(c.x-7,c.y-7,14,14);ctx.fill();ctx.stroke();
     if(layer.shape==="edge"){
       const f=toScreen({x:geo.n.x*(layer.offset+layer.side*.22),y:geo.n.y*(layer.offset+layer.side*.22)});drawDiamond(f.x,f.y,13,layer.hex,"F")
@@ -706,9 +722,13 @@ function drawDisc(targetCtx,targetCx,targetCy,targetR,showGuides=false){
 }
 function render(){
   renderQueued=false;regionColorCache.clear();makePaintImage();ctx.clearRect(0,0,W,H);drawDisc(ctx,cx,cy,R);
-  if($("showGuides").checked)layers.forEach((l,i)=>drawLineForLayer(l,i===selected));
+  // Consumer editing must always show the active boundary, even when a saved
+  // Technical Studio project has disabled guide visibility. Do not alter the
+  // saved guide preference; Technical mode keeps its original behavior.
+  if(appMode==="client"){if(selected>=0&&layers[selected])drawLineForLayer(layers[selected],true)}
+  else if($("showGuides").checked)layers.forEach((l,i)=>drawLineForLayer(l,i===selected));
   const ss=toScreen(sample);
-  if(sample.x*sample.x+sample.y*sample.y<=1){
+  if(appMode!=="client"&&sample.x*sample.x+sample.y*sample.y<=1){
     ctx.save();ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.beginPath();ctx.arc(ss.x,ss.y,6,0,Math.PI*2);ctx.stroke();
     ctx.beginPath();ctx.moveTo(ss.x-10,ss.y);ctx.lineTo(ss.x+10,ss.y);ctx.moveTo(ss.x,ss.y-10);ctx.lineTo(ss.x,ss.y+10);ctx.stroke();ctx.restore()
   }
@@ -728,7 +748,7 @@ function updateSample(){
 function selectLayer(i){
   selected=i;renderLayerList();syncEditor();if(i>=0)$("editDetails").open=true;requestRender()
 }
-function addDye(name,hex,clear=false){mutate(()=>{layers.push(newLayer(name,hex,clear));selected=layers.length-1},`${name} added`)}
+function addDye(name,hex,clear=false){mutate(()=>{layers.push(newLayer(name,hex,clear));selected=layers.length-1},`${name} added`);if(appMode==="client")$("editDetails").open=true}
 function renderLayerList(){
   const box=$("layerList");box.innerHTML="";$("emptyLayers").classList.toggle("hidden",layers.length>0);
   [...layers].reverse().forEach((l,reverseIndex)=>{
@@ -763,23 +783,26 @@ function renderSwatches(){
 }
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function pointerNorm(e){const rect=canvas.getBoundingClientRect();return toNorm(e.clientX-rect.left,e.clientY-rect.top)}
-function hitSelected(q){
-  if(selected<0)return null;const l=layers[selected];if(l.shape==="full")return null;const geo=lineGeometry(l),threshold=15/R;
+function hitSelected(q,pointerType="mouse"){
+  if(selected<0)return null;const l=layers[selected];if(l.shape==="full")return null;
+  const geo=lineGeometry(l),touch=appMode==="client"&&(pointerType==="touch"||pointerType==="pen");
+  const threshold=(touch?24:15)/R;
   if(dist(q,geo.p1)<threshold)return{type:"endpoint",other:geo.p2,oldN:geo.n};
   if(dist(q,geo.p2)<threshold)return{type:"endpoint",other:geo.p1,oldN:geo.n};
   if(dist(q,geo.center)<threshold)return{type:"move",start:q,startOffset:l.offset,normal:geo.n};
   if(l.shape==="edge"){const f={x:geo.n.x*(l.offset+l.side*.22),y:geo.n.y*(l.offset+l.side*.22)};if(dist(q,f)<threshold){mutate(()=>l.side*=-1,"Colored side flipped");return{type:"flip"}}}
   if(l.shape==="stripe"){for(const sign of[-1,1]){const p={x:geo.n.x*(l.offset+sign*l.width/2),y:geo.n.y*(l.offset+sign*l.width/2)};if(dist(q,p)<threshold)return{type:"width",normal:geo.n}}}
-  if(pointLineDistance(q,geo.p1,geo.p2)<10/R)return{type:"move",start:q,startOffset:l.offset,normal:geo.n};return null
+  if(pointLineDistance(q,geo.p1,geo.p2)<(touch?19:10)/R)return{type:"move",start:q,startOffset:l.offset,normal:geo.n};return null
 }
-function findBoundary(q){
-  let best=null,bestD=12/R;for(let i=layers.length-1;i>=0;i--){const l=layers[i];if(l.shape==="full")continue;const g=lineGeometry(l),d=pointLineDistance(q,g.p1,g.p2);if(d<bestD){bestD=d;best=i}}return best
+function findBoundary(q,pointerType="mouse"){
+  const touch=appMode==="client"&&(pointerType==="touch"||pointerType==="pen");
+  let best=null,bestD=(touch?18:12)/R;for(let i=layers.length-1;i>=0;i--){const l=layers[i];if(l.shape==="full")continue;const g=lineGeometry(l),d=pointLineDistance(q,g.p1,g.p2);if(d<bestD){bestD=d;best=i}}return best
 }
 function projectGuide(q){const len=Math.hypot(q.x,q.y)||1;return{x:q.x/len*GUIDE_RADIUS,y:q.y/len*GUIDE_RADIUS}}
 canvas.addEventListener("pointerdown",e=>{
-  canvas.setPointerCapture(e.pointerId);const q=pointerNorm(e);dragChanged=false;let hit=hitSelected(q);if(hit?.type==="flip"){drag=null;return}
+  canvas.setPointerCapture(e.pointerId);const q=pointerNorm(e);dragChanged=false;let hit=hitSelected(q,e.pointerType);if(hit?.type==="flip"){drag=null;return}
   if(hit){drag={...hit,pointer:e.pointerId};return}
-  const boundary=findBoundary(q);if(boundary!==null){selectLayer(boundary);const l=layers[selected],g=lineGeometry(l);drag={type:"move",start:q,startOffset:l.offset,normal:g.n,pointer:e.pointerId};return}
+  const boundary=findBoundary(q,e.pointerType);if(boundary!==null){selectLayer(boundary);const l=layers[selected],g=lineGeometry(l);drag={type:"move",start:q,startOffset:l.offset,normal:g.n,pointer:e.pointerId};return}
   if(q.x*q.x+q.y*q.y<=1){sample=q;requestRender()}
 });
 canvas.addEventListener("pointermove",e=>{
@@ -908,8 +931,19 @@ $("exportPng").onclick=()=>{
 
 function renderProfiles(){const s=$("profileSelect");s.innerHTML="";profiles.forEach(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=`${p.name} — ${statusLabel(p.status)}`;s.appendChild(o)});if(!profiles.some(p=>p.id===activeProfileId))activeProfileId=profiles[0]?.id||"";s.value=activeProfileId;renderProfile();renderRecords()}
 function renderProfile(){const p=profile();if(!p)return;$("profileSummary").innerHTML=`<div class="profile-badges"><span class="confidence ${p.status}">${statusLabel(p.status)}</span><span class="confidence base-only">${Math.round(p.translucency)}% translucent</span></div><strong style="display:block;margin-top:5px">${escapeHtml(p.name)}</strong><div class="small">${escapeHtml(p.plastic)} · uptake heuristic · prediction accuracy unvalidated</div><div class="small" style="margin-top:5px">${escapeHtml(p.note||"")}</div>`;$("profileNotice").innerHTML=p.status==="unavailable"?`<b>Not recommended:</b> this family lacks enough predictable uptake for precision client work without exact local testing.`:`<b>Research starting point:</b> this family uses published manufacturer traits and documented dyer outcomes. Actual surface and held-to-light colors remain selectable below.`;$("profileName").value=p.name;$("profilePlastic").value=p.plastic;$("profileOptical").value=p.optical;$("profileStatus").value=p.status;$("profileBaseColor").value=p.base;$("profileBaseHex").value=p.base;$("profileTranslucency").value=p.translucency;requestRender()}
-function setMode(m){appMode=m;document.body.classList.toggle("client-mode",m==="client");document.body.classList.toggle("calibration-mode",m==="calibration");$("clientModeBtn").classList.toggle("active",m==="client");$("calibrationModeBtn").classList.toggle("active",m==="calibration");if(m==="client"){$("blendMode").value="research";layers.forEach(l=>l.strength=100);renderLayerList();syncEditor();requestRender()}}
-function updateGuard(){if(!layers.length){$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="Add at least one dye block to evaluate design confidence.";return}const rs=collectRegions(),states=rs.filter(r=>r.key.includes("1")).map(r=>confidenceForActive(layers.filter((_,i)=>r.key[i]==="1"))),hasUnavailable=states.includes("unavailable"),hasEstimate=states.includes("estimate"),hasPhoto=states.includes("photo-anchor"),allMeasured=states.length&&states.every(s=>s==="verified"||s==="validated"),allPhotoSupported=states.length&&states.every(s=>s==="verified"||s==="validated"||s==="photo-anchor");if(hasUnavailable){$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="<b>Do not promise this result:</b> the selected plastic family is not recommended without exact local validation."}else if(allMeasured){$("clientGuard").className="client-only ok-box";$("clientGuard").innerHTML="<b>Locally supported:</b> every visible dyed region has a measured or validated HBNF record."}else if(allPhotoSupported&&hasPhoto){$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="<b>Matched to the actual HBNF photo test:</b> this qualitative example follows the observed green and dark-red direction. The photos were not captured under identical controlled lighting, so repeat testing is still required before an exact color guarantee."}else if(hasEstimate){$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="<b>Model gaps remain:</b> at least one region relies on a low-confidence estimate, an unmeasured translucent overlap, or an undocumented custom dye."}else{$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="<b>Research-informed preview—not a guarantee:</b> the model uses Innova-family and dye-specific evidence, but exact paid-client reproduction still requires local validation of important combinations."}}
+function setMode(m){
+ appMode=m;
+ document.body.classList.toggle("client-mode",m==="client");
+ document.body.classList.toggle("calibration-mode",m==="calibration");
+ $("clientModeBtn").classList.toggle("active",m==="client");
+ $("calibrationModeBtn").classList.toggle("active",m==="calibration");
+ $("clientModeBtn").setAttribute("aria-pressed",String(m==="client"));
+ $("calibrationModeBtn").setAttribute("aria-pressed",String(m==="calibration"));
+ window.DUConsumerLayout.setView(m);
+ // Both views share the same model, recipe, and layer state without resetting settings.
+ renderLayerList();syncEditor();requestAnimationFrame(resizeCanvas);
+}
+function updateGuard(){if(!layers.length){$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="Add at least one dye block to evaluate design confidence.";return}const rs=collectRegions(),states=rs.filter(r=>r.key.includes("1")).map(r=>confidenceForActive(layers.filter((_,i)=>r.key[i]==="1"))),hasUnavailable=states.includes("unavailable"),hasEstimate=states.includes("estimate"),hasPhoto=states.includes("photo-anchor"),allMeasured=states.length&&states.every(s=>s==="verified"||s==="validated"),allPhotoSupported=states.length&&states.every(s=>s==="verified"||s==="validated"||s==="photo-anchor");if(hasUnavailable){$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="<b>Do not promise this result:</b> the selected plastic family is not recommended without exact local validation."}else if(allMeasured){$("clientGuard").className="client-only ok-box";$("clientGuard").innerHTML="<b>Locally supported:</b> every visible dyed region has a measured or validated HBNF record."}else if(allPhotoSupported&&hasPhoto){$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="<b>Matched to the actual HBNF photo test:</b> this qualitative example follows the observed green and dark-red direction. The undyed and dyed comparison discs were photographed together in each frame under the same conditions. Their absolute color still lacks color-chart calibration, so an exact match cannot be guaranteed."}else if(hasEstimate){$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="<b>Model gaps remain:</b> at least one region relies on a low-confidence estimate, an unmeasured translucent overlap, or an undocumented custom dye."}else{$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="<b>Research-informed preview—not a guarantee:</b> the model uses Innova-family and dye-specific evidence, but exact paid-client reproduction still requires local validation of important combinations."}}
 function renderRecords(){const b=$("recordsBody");b.innerHTML="";calibrationRecords.filter(r=>r.profileId===activeProfileId).forEach(r=>{const tr=document.createElement("tr");tr.innerHTML=`<td>${escapeHtml(r.comboLabel)}</td><td>${r.measuredHex}</td><td><span class="confidence ${r.status}">${statusLabel(r.status)}</span></td><td>${r.boundarySpread} mm</td><td><button class="danger" data-r="${r.id}">×</button></td>`;b.appendChild(tr)});b.querySelectorAll("[data-r]").forEach(x=>x.onclick=()=>{calibrationRecords=calibrationRecords.filter(r=>r.id!==x.dataset.r);saveDb();renderRecords();requestRender()})}
 function setModeHelp(){
  const helps={research:"Recommended. Version 9 uses a universal per-dye optical profile, material-specific uptake, separate reflection and transmission, per-pixel flight-plate/shoulder/rim optical paths, HBNF photo anchors, fluorescence, glow blocking, and exact local-record overrides.",spectral:"Legacy spectral-style comparison retained only for older saved projects.",darken:"Original Dyers Guild-style Darken comparison.",multiply:"Transparent digital-layer comparison.",subtractive:"Aggressive subtractive comparison.",normal:"Ordinary digital opacity; not recommended."};
@@ -1083,4 +1117,4 @@ function renderEvidenceAdvisory(){
 const previousUpdateGuard=updateGuard;
 updateGuard=function(){previousUpdateGuard();renderEvidenceAdvisory();};
 
-loadDb();renderProfiles();if(profile()){$("baseHex").value=profile().base;$("baseColor").value=profile().base;const th=autoTransmissionHex(profile().base,profile());$("transmissionHex").value=th;$("transmissionColor").value=th}setMode("client");setModeHelp();updateConditionButtons();updateSceneButtons();renderSwatches();renderReferences();renderSourceList();renderLayerList();syncEditor();resizeCanvas();commitHistory();
+window.DUConsumerLayout.init();loadDb();renderProfiles();if(profile()){$("baseHex").value=profile().base;$("baseColor").value=profile().base;const th=autoTransmissionHex(profile().base,profile());$("transmissionHex").value=th;$("transmissionColor").value=th}setMode("client");setModeHelp();updateConditionButtons();updateSceneButtons();renderSwatches();renderReferences();renderSourceList();renderLayerList();syncEditor();resizeCanvas();commitHistory();
