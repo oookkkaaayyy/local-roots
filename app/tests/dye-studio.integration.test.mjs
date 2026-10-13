@@ -328,3 +328,50 @@ test('consumer split keeps color engine and technical controls available', () =>
  assert.match(studioHtml,/Preview colors are estimates, not verified dye results/);
  assert.match(layout,/document\.querySelectorAll\("\[data-base-preset\]"\)/);
 });
+
+test('photo match is local-only and applies the existing model/color controls',()=>{
+ const photo=read('../public/dyed-and-unattached/dye-studio/disc-photo.js');
+ assert.match(studioHtml,/id="takeDiscPhoto"/);
+ assert.match(studioHtml,/id="chooseDiscPhoto"/);
+ assert.match(studioHtml,/id="discCameraInput" type="file" accept="image\/\*" capture="environment"/);
+ assert.match(studioHtml,/id="discPhotoInput" type="file" accept="image\/\*"/);
+ assert.match(studioHtml,/id="photoColorStatus"/);
+ assert.match(studioHtml,/<script src="\.\/disc-photo\.js" defer><\/script>/);
+ assert.match(photo,/window\.DUDiscPhoto=\{estimatePixels,analyzeImage,bind\}/);
+ assert.match(photo,/document\.getElementById\("autoTransmission"\)\.click\(\)/);
+ assert.match(photo,/Disc edge not found/);
+ assert.doesNotMatch(photo,/fetch\(|XMLHttpRequest|sendBeacon|\.upload\(|FileReader/);
+ assert.doesNotMatch(studioScript,/if\(m==="client"\)\$\("blendMode"\)\.value="research"/);
+});
+test('photo matcher ignores minority stamp colors in synthetic test images',()=>{
+ const photo=read('../public/dyed-and-unattached/dye-studio/disc-photo.js');
+ const win={},doc={readyState:'loading',addEventListener(){}};
+ Function('window','document',photo)(win,doc);
+ const estimate=win.DUDiscPhoto.estimatePixels;
+ function sample(base,mark,opts={}){
+  const w=280,h=280,data=new Uint8ClampedArray(w*h*4),radius=110,cx=140,cy=140;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+    const dist=Math.hypot(x-cx,y-cy),isDisc=dist<radius;
+    const marked=mark&&Math.hypot(x-cx-(opts.x||0),y-cy)<(opts.r||34);
+    const rgb=isDisc?(marked?mark:base):[24,26,30];
+    const i=(y*w+x)*4;data[i]=rgb[0];data[i+1]=rgb[1];data[i+2]=rgb[2];data[i+3]=255;
+  }
+  return {data,width:w,height:h};
+ }
+ const cases=[
+  {base:[89,169,222],mark:[15,15,20],options:{},color:'#59A9DE'},
+  {base:[235,232,220],mark:[5,5,5],options:{x:50,r:34},color:'#EBE8DC'},
+  {base:[216,70,88],mark:null,options:{},color:'#D84658'},
+  {base:[65,172,118],mark:[245,244,230],options:{x:44,r:31},color:'#41AC76'},
+  {base:[240,212,48],mark:[8,9,10],options:{x:35,r:41},color:'#F0D430'}
+ ];
+ for(const c of cases){
+  const result=estimate(sample(c.base,c.mark,c.options));
+  assert.equal(result.hex,c.color,'auto-color estimate '+c.color);
+  assert.equal(result.edgeDetected,true,'disc boundary detected');
+  assert.equal(result.confidence,'good','synthetic input should be consistent');
+ }
+ const blank=new Uint8ClampedArray(280*280*4);
+ for(let i=0;i<blank.length;i+=4){blank[i]=30;blank[i+1]=30;blank[i+2]=30;blank[i+3]=255}
+ assert.equal(estimate({data:blank,width:280,height:280}).edgeDetected,false,'reject background-only shot');
+});
