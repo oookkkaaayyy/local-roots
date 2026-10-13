@@ -138,6 +138,31 @@ test('optical zones vary on translucent plastic; uncovered shapes retain blank c
   setLayers([]);
 });
 
+test('channel, hue, saturation and linear-luminance extremes remain numerical', () => {
+  const linear = c => {
+    c/=255;
+    return c<=.04045 ? c/12.92 : ((c+.055)/1.055)**2.4;
+  };
+  const batches=[[],[dye('iDye Poly Blue')],[dye('ProChem Neon Cerise Pink')],
+    [dye('ProChem Onyx')],[dye('UV Blast Green'),dye('iDye Poly Crimson')],
+    [dye('iDye Poly Blue'),dye('ProChem Neon Cerise Pink')]];
+  eachScene(({profile,base,mode,radius}) => {
+    for (const batch of batches) {
+      const output=color(base,batch,mode,profile,radius);
+      const rgb=[1,3,5].map(i=>parseInt(output.slice(i,i+2),16));
+      assert.ok(rgb.every(v=>Number.isInteger(v)&&v>=0&&v<=255));
+      const max=Math.max(...rgb),min=Math.min(...rgb),delta=max-min;
+      const chroma=delta/255,lightness=(max+min)/510;
+      const saturation=delta===0?0:delta/(255*(1-Math.abs(2*lightness-1)));
+      const luminance=.2126*linear(rgb[0])+.7152*linear(rgb[1])+.0722*linear(rgb[2]);
+      assert.ok([chroma,lightness,saturation,luminance].every(Number.isFinite));
+      assert.ok(chroma>=0&&chroma<=1&&lightness>=0&&lightness<=1);
+      assert.ok(saturation>=0&&saturation<=1+1e-8);
+      assert.ok(luminance>=0&&luminance<=1);
+    }
+  });
+});
+
 test('calibration provenance: nominal intensity is not physical carrier/pass calibration', () => {
   assert.match(source,/Per-block methods change warnings and evidence ranking, NOT the numerical preview/);
   const html = readFileSync(new URL('../public/dyed-and-unattached/dye-studio/index.html', import.meta.url), 'utf8');
