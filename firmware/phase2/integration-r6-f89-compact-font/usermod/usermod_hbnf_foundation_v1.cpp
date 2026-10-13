@@ -13,6 +13,11 @@
 #include "fontmanager.h"
 #include <ANIMartRIX.h>
 #include <string.h>
+#include <esp_http_client.h>
+#include <esp_crt_bundle.h>
+#include <freertos/task.h>
+#include <ctype.h>
+#include <stdlib.h>
 #if defined(HBNF_R6_FRAME_CONTEXT_TRACE)
 #include "hbnf_outlier_trace.h"
 #include <esp_timer.h>
@@ -31,8 +36,8 @@ using namespace hbnf_v1;
 namespace {
 
 static const char HBNF_FX_DATA[] PROGMEM = "HBNF Foundation@;;;2";
-static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-phase2-r6-vibe-first-ui-20261012";
-static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-phase2-r6-vibe-first-ui-20261012\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-phase2-r6-vibe-first-ui-20261012\",\"basedOnReleaseId\":\"hbnf-cart2-phase2-r6-incremental-controls-20261011\",\"basedOnFirmwareSha256\":\"8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r5-unfrozen\",\"native-text-moments-r5-unfrozen\",\"vibe-first-local-ui-v1\"]}";
+static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-phase2-r6-skins-auto-20261013";
+static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-phase2-r6-skins-auto-20261013\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-phase2-r6-skins-auto-20261013\",\"basedOnReleaseId\":\"hbnf-cart2-phase2-r6-vibe-first-ui-20261012\",\"basedOnFirmwareSha256\":\"43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r5-unfrozen\",\"native-text-moments-r5-unfrozen\",\"vibe-first-local-ui-v1\",\"read-only-matrix-skins-poll-v1\"]}";
 static PaletteSelection hbnfPalette{};
 static OverlayState hbnfCommandOverlay{};
 static portMUX_TYPE hbnfOverlayMux=portMUX_INITIALIZER_UNLOCKED;
@@ -126,9 +131,140 @@ struct HbnfLiveSnapshot {
   uint32_t lastSeenMs=0;
   uint32_t overlayStartMs=0;
   uint32_t overlayDurationMs=0;
+  uint32_t lastDisplayedMs=0;
+  bool displayPending=false;
 };
 static HbnfLiveSnapshot hbnfLive{};
 static portMUX_TYPE hbnfLiveMux=portMUX_INITIALIZER_UNLOCKED;
+static bool hbnfAcceptLiveSnapshot(JsonObjectConst root,bool scheduleRedisplay=false);
+static constexpr uint32_t HBNF_LIVE_POLL_MS=15000u;
+static constexpr uint32_t HBNF_LIVE_REDISPLAY_MS=240000u;
+static constexpr size_t HBNF_LIVE_HTTP_MAX=4096u;
+static char hbnfLiveHttpBody[HBNF_LIVE_HTTP_MAX+1u]{};
+static const char HBNF_MATRIX_ANON_KEY[] PROGMEM = "sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC";
+
+struct HbnfLiveHttpBody { size_t size=0; bool overflow=false; };
+static esp_err_t hbnfLiveHttpEvent(esp_http_client_event_t* event) {
+  if(!event||!event->user_data)return ESP_OK;
+  HbnfLiveHttpBody* body=(HbnfLiveHttpBody*)event->user_data;
+  if(event->event_id==HTTP_EVENT_ON_DATA&&event->data&&event->data_len>0) {
+    const size_t bytes=(size_t)event->data_len;
+    if(body->size+bytes>HBNF_LIVE_HTTP_MAX) {body->overflow=true;return ESP_FAIL;}
+    memcpy(hbnfLiveHttpBody+body->size,event->data,bytes);body->size+=bytes;
+  }
+  return ESP_OK;
+}
+
+static bool hbnfCleanLiveName(const char* input,char out[64]) {
+  if(!input)return false;
+  size_t n=0;bool pendingSpace=false,haveChar=false;
+  for(const unsigned char* p=(const unsigned char*)input;*p&&*p!='\r'&&*p!='\n';++p) {
+    if(isspace(*p)) {if(haveChar)pendingSpace=true;continue;}
+    if(*p=='/') {
+      if(n&&out[n-1]==' ')n--;
+      if(n<63)out[n++]='/';
+      pendingSpace=false;haveChar=true;continue;
+    }
+    if(pendingSpace&&n&&out[n-1]!='/'&&n<63)out[n++]=' ';
+    pendingSpace=false;
+    if(*p=='/'&&n&&out[n-1]==' ')n--;
+    if(n<63)out[n++]=(char)*p;
+    haveChar=true;
+  }
+  while(n&&out[n-1]==' ')n--;
+  out[n]='\0';return n>0;
+}
+
+static bool hbnfCompactSkinsEntry(const char* input,char out[13]) {
+  if(!input)return false;
+  const char* split=strrchr(input,' ');
+  if(!split||split==input||!split[1])return false;
+  for(const char* digit=split+1;*digit;++digit)if(!isdigit((unsigned char)*digit))return false;
+  char* end=nullptr;const unsigned long score=strtoul(split+1,&end,10);
+  if(!end||*end||score>9999)return false;
+  char rawName[64]{};const size_t sourceLen=(size_t)(split-input);
+  const size_t copyLen=sourceLen<sizeof(rawName)-1u?sourceLen:sizeof(rawName)-1u;
+  memcpy(rawName,input,copyLen);rawName[copyLen]='\0';
+  char clean[64]{};if(!hbnfCleanLiveName(rawName,clean))return false;
+  char shortName[6]{};uint8_t nShort=0;
+  for(const unsigned char* p=(const unsigned char*)clean;*p&&nShort<5;++p) {
+    const unsigned char c=*p;
+    if(isalnum(c)||c==' '||c=='/'||c=='-'||c=='.')shortName[nShort++]=(char)toupper(c);
+  }
+  while(nShort&&shortName[nShort-1]==' ')nShort--;shortName[nShort]='\0';
+  return nShort&&snprintf(out,13,"%s %lu",shortName,score)>0;
+}
+
+static bool hbnfBuildLiveSnapshot(JsonObjectConst response,JsonDocument& snapshotDoc) {
+  JsonObjectConst live=response["live"].as<JsonObjectConst>();
+  if(live.isNull())return false;
+  const bool active=live["active"]|false;
+  const char* event=live["event"]|"";
+  const char* label=live["label"]|"";
+  const uint32_t acePot=live["acePot"]|0;
+  if(acePot>9999)return false;
+  JsonObject snapshot=snapshotDoc.to<JsonObject>();snapshot["schema"]="hbnf-live-v1";
+  JsonArray entries=snapshot.createNestedArray("entries");
+  const bool skins=active&&strcmp(event,"skins")==0&&
+    (strcmp(label,"F9")==0||strcmp(label,"B9")==0);
+  snapshot["active"]=skins;
+  snapshot["label"]=skins?label:"";snapshot["acePot"]=acePot;
+  if(skins) {
+    JsonArrayConst input=live["entries"].as<JsonArrayConst>();
+    if(input.isNull()||input.size()==0)return false;
+    for(JsonVariantConst item:input) {
+      if(entries.size()>=20)break;
+      if(!item.is<const char*>())return false;
+      char compact[13]{};if(!hbnfCompactSkinsEntry(item.as<const char*>(),compact))return false;
+      entries.add(compact);
+    }
+    if(entries.size()==0)return false;
+  }
+  return true;
+}
+
+static bool hbnfFetchMatrixSkins(JsonDocument& snapshotDoc) {
+  if(WiFi.status()!=WL_CONNECTED)return false;
+  HbnfLiveHttpBody body{};hbnfLiveHttpBody[0]='\0';
+  esp_http_client_config_t config{};
+  config.url="https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-control";
+  config.method=HTTP_METHOD_POST;config.timeout_ms=3500;config.buffer_size=1024;config.buffer_size_tx=512;
+  config.event_handler=hbnfLiveHttpEvent;
+  config.user_data=&body;config.crt_bundle_attach=esp_crt_bundle_attach;
+  esp_http_client_handle_t client=esp_http_client_init(&config);if(!client)return false;
+  char authorization[320];snprintf(authorization,sizeof(authorization),"Bearer %s",HBNF_MATRIX_ANON_KEY);
+  const bool headersOk=esp_http_client_set_header(client,"apikey",HBNF_MATRIX_ANON_KEY)==ESP_OK&&
+    esp_http_client_set_header(client,"Authorization",authorization)==ESP_OK&&
+    esp_http_client_set_header(client,"Accept","application/json")==ESP_OK&&
+    esp_http_client_set_header(client,"Cache-Control","no-cache")==ESP_OK&&
+    esp_http_client_set_header(client,"Content-Type","application/json")==ESP_OK&&
+    esp_http_client_set_post_field(client,"{\"action\":\"live_status\"}",24)==ESP_OK;
+  const esp_err_t result=headersOk?esp_http_client_perform(client):ESP_FAIL;
+  const int status=esp_http_client_get_status_code(client);esp_http_client_cleanup(client);
+  if(result!=ESP_OK||status!=200||body.overflow||!body.size)return false;
+  hbnfLiveHttpBody[body.size]='\0';
+  DynamicJsonDocument sourceDoc(4096);
+  if(deserializeJson(sourceDoc,hbnfLiveHttpBody,body.size))return false;
+  return hbnfBuildLiveSnapshot(sourceDoc.as<JsonObjectConst>(),snapshotDoc);
+}
+
+static void hbnfMatrixSkinsPollTask(void*) {
+  TickType_t lastWake=xTaskGetTickCount();
+  while(true) {
+    if(WiFi.status()==WL_CONNECTED) {
+      DynamicJsonDocument snapshotDoc(2048);
+      if(hbnfFetchMatrixSkins(snapshotDoc)) {
+        bool redisplay=false;const uint32_t now=millis();
+        portENTER_CRITICAL(&hbnfLiveMux);
+        redisplay=hbnfLive.active&&hbnfLive.lastDisplayedMs&&
+          (uint32_t)(now-hbnfLive.lastDisplayedMs)>=HBNF_LIVE_REDISPLAY_MS;
+        portEXIT_CRITICAL(&hbnfLiveMux);
+        hbnfAcceptLiveSnapshot(snapshotDoc.as<JsonObjectConst>(),redisplay);
+      }
+    }
+    vTaskDelayUntil(&lastWake,pdMS_TO_TICKS(HBNF_LIVE_POLL_MS));
+  }
+}
 
 static uint8_t hbnfGlyphRow(char c,uint8_t row) {
   static const uint8_t blank[5]={0,0,0,0,0};
@@ -304,8 +440,19 @@ static bool hbnfRenderCommandOverlay(uint8_t matrixBrightness,Vibe activeVibe) {
 
 static void hbnfRenderLiveOverlay(uint8_t matrixBrightness) {
   HbnfLiveSnapshot live;
-  portENTER_CRITICAL(&hbnfLiveMux); live=hbnfLive; portEXIT_CRITICAL(&hbnfLiveMux);
   const uint32_t now=millis();
+  // Live scores have lower priority than manual overlays. They become visible
+  // on the first normal render after a manual overlay has ended.
+  portENTER_CRITICAL(&hbnfLiveMux);
+  if(hbnfLive.displayPending&&hbnfLive.active&&hbnfLive.count&&
+     (uint32_t)(now-hbnfLive.lastSeenMs)<120000u) {
+    hbnfLive.overlayStartMs=now;
+    hbnfLive.overlayDurationMs=15000u;
+    hbnfLive.lastDisplayedMs=now;
+    hbnfLive.displayPending=false;
+  }
+  live=hbnfLive;
+  portEXIT_CRITICAL(&hbnfLiveMux);
   if(!live.active||!live.count||(uint32_t)(now-live.lastSeenMs)>=120000u||!live.overlayDurationMs||(uint32_t)(now-live.overlayStartMs)>=live.overlayDurationMs)return;
   const uint32_t elapsed=(uint32_t)(now-live.overlayStartMs);
   const uint32_t fadeIn=350u,fadeOut=450u;
@@ -317,7 +464,8 @@ static void hbnfRenderLiveOverlay(uint8_t matrixBrightness) {
   const uint8_t outputScale=hbnf_brightness::outputScale(matrixBrightness);
 
   const uint8_t pages=(uint8_t)((live.count+1u)/2u);
-  const uint8_t page=(uint8_t)(((elapsed/1900u)%pages));
+  const uint32_t pageHoldMs=live.overlayDurationMs/pages;
+  const uint8_t page=(uint8_t)((elapsed/(pageHoldMs?pageHoldMs:1u))%pages);
   char header[12];
   snprintf(header,sizeof(header),"%s $%u",live.label,(unsigned)live.acePot);
   const Rgb8 headerColor(176,224,132), entryColor(255,255,255);
@@ -326,7 +474,7 @@ static void hbnfRenderLiveOverlay(uint8_t matrixBrightness) {
   if((uint8_t)(page*2u+1u)<live.count)hbnfDrawText(live.entries[page*2u+1u],10,packed(scaleRgb(hbnf_brightness::scaleOutputPixel(entryColor,entryColor,outputScale),fade)));
 }
 
-static bool hbnfAcceptLiveSnapshot(JsonObjectConst root) {
+static bool hbnfAcceptLiveSnapshot(JsonObjectConst root,bool scheduleRedisplay) {
   const char* schema=root["schema"]|"";
   if(strcmp(schema,"hbnf-live-v1")!=0)return false;
   const bool active=root["active"]|false;
@@ -351,8 +499,7 @@ static bool hbnfAcceptLiveSnapshot(JsonObjectConst root) {
       }
       strlcpy(next.entries[next.count++],text,sizeof(next.entries[0]));
     }
-    const uint32_t pages=(next.count+1u)/2u;
-    next.overlayDurationMs=constrain(pages*1900u+900u,2800u,20000u);
+    next.overlayDurationMs=15000u;
   } else {
     if(!input.isNull()&&input.size()>0)return false;
   }
@@ -361,8 +508,16 @@ static bool hbnfAcceptLiveSnapshot(JsonObjectConst root) {
   portENTER_CRITICAL(&hbnfLiveMux);old=hbnfLive;portEXIT_CRITICAL(&hbnfLiveMux);
   bool changed=old.active!=next.active||old.acePot!=next.acePot||strcmp(old.label,next.label)!=0||old.count!=next.count;
   if(!changed)for(uint8_t i=0;i<next.count;i++)if(strcmp(old.entries[i],next.entries[i])!=0){changed=true;break;}
-  next.overlayStartMs=changed?millis():old.overlayStartMs;
-  if(!changed)next.overlayDurationMs=old.overlayDurationMs;
+  const uint32_t now=millis();
+  const bool recovered=old.active&&(uint32_t)(now-old.lastSeenMs)>=120000u;
+  next.displayPending=active&&(changed||recovered||scheduleRedisplay||old.displayPending);
+  next.overlayStartMs=old.overlayStartMs;
+  next.lastDisplayedMs=old.lastDisplayedMs;
+  if(!active) {
+    next.displayPending=false;
+    next.lastDisplayedMs=0;
+    next.overlayDurationMs=0;
+  }
   portENTER_CRITICAL(&hbnfLiveMux);hbnfLive=next;portEXIT_CRITICAL(&hbnfLiveMux);
   return true;
 }
@@ -1363,6 +1518,10 @@ class HbnfFoundationV1Usermod : public Usermod {
     foundationEffectId=strip.addEffect(255,&mode_hbnf_foundation,HBNF_FX_DATA);
     ensureFoundationMatrixSegment();
     ensureCompanionSegment();
+    static TaskHandle_t livePollTask=nullptr;
+    if(!livePollTask) {
+      xTaskCreatePinnedToCore(hbnfMatrixSkinsPollTask,"hbnf_skins_poll",12288,nullptr,1,&livePollTask,0);
+    }
   }
 
   void addToConfig(JsonObject& root) override {
