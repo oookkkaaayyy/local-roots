@@ -144,6 +144,7 @@ function addReorderGrip(row,index){
  const grip=document.createElement("span");grip.className="du-layer-grip";
  grip.textContent="⠿";grip.draggable=true;grip.setAttribute("aria-hidden","true");
  grip.title="Drag to change color order (mouse or trackpad)";
+ row.classList.add("du-has-grip");
  row.prepend(grip);
  row.addEventListener("dragstart",e=>{
   if(!e.target.closest(".du-layer-grip")){e.preventDefault();return}
