@@ -510,3 +510,16 @@ test('color grip reorders without losing selected identity; mobile buttons remai
  assert.match(studioHtml,/@media\(pointer:coarse\)/);
  assert.match(studioHtml,/\.layer\.selected \.layer-actions\{display:flex\}/);
 });
+
+
+test('owned iDye Poly Onyx is selectable with the established Onyx optical prior',()=>{
+ const start=studioScript.indexOf('const dyes = [');
+ const end=studioScript.indexOf('const $=id=>',start);
+ assert.ok(start>=0&&end>start);
+ const catalog=Function(studioScript.slice(start,end)+'; return dyes;')();
+ assert.equal(catalog.filter(x=>x[0]==='My Inventory'&&x[1]==='iDye Poly Onyx').length,1);
+ assert.equal(catalog.filter(x=>x[0]==='iDye Poly'&&x[1]==='Onyx').length,1);
+ assert.match(studioScript,/"iDye Poly Onyx":\{factor:1\.28,fluor:0,reliability:\.88\}/);
+ assert.match(studioScript,/"iDye Poly Onyx":\{surface:"#050607",filter:"#111214",density:1\.38,fluor:0,uv:"#050607"\}/);
+ assert.match(studioScript,/"iDye Poly Onyx":"#050607"/);
+});
