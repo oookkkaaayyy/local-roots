@@ -3,6 +3,11 @@
 window.addEventListener("DOMContentLoaded",function(){
 const g=id=>document.getElementById(id),p=g("consumerPalette"),list=g("layerList"),stage=g("canvasSection");
 if(!p||!list||!stage||g("du-color-trigger"))return;
+// Group the starter-disc and color-list cards in one compact desktop sidebar.
+// On mobile, display:contents lets these cards surround the main disc editor.
+const right=document.createElement("div");right.id="du-side";
+stage.parentNode.insertBefore(right,stage.nextSibling);
+right.append(g("consumerDisc"),g("consumerLayers"));
 const shade=document.createElement("div");shade.id="du-shade";document.body.appendChild(shade);
 const head=document.createElement("div");head.id="du-palette-head";
 head.innerHTML='<strong id="du-palette-title">Choose color</strong><button id="du-palette-close" type="button">Close ✕</button>';
