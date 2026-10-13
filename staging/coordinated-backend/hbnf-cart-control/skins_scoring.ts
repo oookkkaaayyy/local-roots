@@ -1,6 +1,6 @@
 // Owner-only edits to the existing authoritative league_state Skins cards.
 // @ts-nocheck
-import { skinsAcePot, skinsSectionLocked } from "./live.ts";
+import { skinsAcePot } from "./live.ts";
 
 const clean=(value)=>String(value??"").trim().replace(/\s*\/\s*/g," / ").replace(/\s+/g," ");
 const lines=(value)=>String(value??"").split(/\r?\n/).map(clean).filter(Boolean);
@@ -28,7 +28,10 @@ function unresolvedCarry(card,sectionName){
   }
   return Math.max(0,carry-1);
 }
-const sectionLocked=skinsSectionLocked;
+function sectionLocked(section){
+  const list=cards(section);
+  return !!section?.scoresLocked||(list.length>0&&list.every(card=>!!(card?.scoresLocked||card?.finalized)));
+}
 function aceParticipants(section,sectionName){
   const seen=new Set(),out=[];
   for(const card of cards(section)){
