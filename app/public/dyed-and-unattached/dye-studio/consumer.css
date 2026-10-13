@@ -170,3 +170,15 @@ body.client-mode .mobile-quicknav{display:none}
  .top-actions{width:100%;justify-content:space-between}
 }
 @media(max-width:375px){body.client-mode .consumer-palette .swatches{grid-template-columns:1fr}}
+
+/* Camera / gallery color match. Photographs remain local and are not saved. */
+.photo-picker{margin:12px 0 10px;border-top:1px solid #e2d2bf;padding-top:12px}
+.photo-picker-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.photo-picker-actions>button{flex:1 1 92px;min-height:42px;font-size:12px;padding:8px 10px}
+.photo-picker .primary{background:#a7623a;color:#fff;border:1px solid #a7623a}
+.photo-chip{width:22px;height:22px;border:1px solid #987c64;border-radius:50%;box-shadow:0 0 0 2px #fff;flex-shrink:0}
+.photo-chip[hidden]{display:none}
+.photo-status{margin:7px 0 0;font-size:11px;line-height:1.4;color:#665443}
+.photo-status.photo-check{color:#8a4a13;font-weight:650}
+.photo-status.photo-ok{color:#486c45}
+@media(max-width:680px){.photo-picker{margin-top:8px;padding-top:8px}.photo-picker-actions>button{flex:0 1 auto;min-width:112px}}
