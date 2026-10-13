@@ -564,7 +564,7 @@ button.danger{color:#8d3129}
 
 
   <div class="notice" style="margin-top:12px">
-    Evidence hierarchy: controlled measurement → independently replicated result → documented same-recipe case → comparable real-world analog → model-only estimate. Current online results do not establish quantitative accuracy. The supplied Champion test now anchors Green and Blaze Orange using whole-region appearance plus separate rim and bright-center behavior, but its before/after photos used different lighting, so controlled capture remains necessary before guaranteeing exact client color.
+    Evidence hierarchy: controlled measurement → independently replicated result → documented same-recipe case → comparable real-world analog → model-only estimate. Current online results do not establish quantitative accuracy. The supplied Champion test now anchors Green and Blaze Orange using whole-region appearance plus separate rim and bright-center behavior, and both discs share the same photographic lighting and exposure; controlled color-chart capture is still needed to guarantee absolute client color.
   </div>
 </div></details>
 </section>
@@ -586,5 +586,157 @@ button.danger{color:#8d3129}
 <script src="./consumer-layout.js" defer></script>
 <script src="./studio.js" defer></script>
 <script src="./disc-photo.js" defer></script>
+<style id="du-consumer-redesign-v2">
+/* Simple consumer composer: all original technical controls remain intact. */
+body.client-mode main{max-width:1260px;display:grid;grid-template-columns:minmax(0,1fr) minmax(285px,350px);grid-template-areas:"stage layers" "stage disc";grid-template-rows:auto auto;align-items:start;gap:14px}
+body.client-mode #canvasSection{grid-area:stage;position:sticky;top:10px}
+body.client-mode #consumerLayers{grid-area:layers;max-height:none;overflow:visible}
+body.client-mode #consumerDisc{grid-area:disc}
+body.client-mode #consumerPalette{display:none!important;position:fixed;right:0;top:0;bottom:0;z-index:111;width:min(440px,100vw);padding:19px;max-height:none;overflow:auto;background:#fffaf3;border-radius:17px 0 0 17px;box-shadow:-18px 0 70px #27170d3d}
+body.client-mode.du-palette-open #consumerPalette{display:block!important}
+body.client-mode.du-palette-open{overflow:hidden}
+#du-shade{display:none}
+body.client-mode.du-palette-open #du-shade{display:block;position:fixed;inset:0;background:#18110c99;z-index:110}
+body.client-mode #du-color-trigger{min-height:44px;padding:10px 17px;font-size:15px;border-radius:13px}
+body.client-mode .consumer-preview-head{align-items:center}
+body.client-mode #consumerViewSlot{margin-left:auto}
+body.client-mode #canvasSection .stats{display:none}
+body.client-mode #canvasSection .canvas-shell{width:min(100%,calc(100dvh - 220px),720px);min-width:0}
+body.client-mode #canvasSection .canvas-tip{display:block;color:#604b39;text-shadow:none;font-size:11px}
+body.client-mode #consumerLayers #dyesDetails{border:0;background:none}
+body.client-mode #consumerLayers #dyesDetails>summary,body.client-mode #consumerLayers #dyesDetails .row.spread{display:none}
+body.client-mode #consumerLayers #dyesDetails .detail-body{padding:0}
+body.client-mode #consumerLayers #editDetails{display:none!important}
+body.client-mode #consumerLayers #emptyLayers{padding:15px;border:1px dashed #d3bda3;background:#fffdf9;font-size:13px;line-height:1.5}
+body.client-mode #consumerLayers .layers{gap:8px}
+body.client-mode #consumerLayers .layer{display:grid;grid-template-columns:37px minmax(0,1fr);gap:9px;padding:11px;min-height:62px;background:#fffdf9;border:1px solid #dfcdb8;border-radius:13px}
+body.client-mode #consumerLayers .layer.selected{background:#f7ebdf;border:2px solid #a7623a}
+body.client-mode #consumerLayers .chip{width:37px;height:37px;border-radius:9px}
+body.client-mode #consumerLayers .layer-name{font-size:13px}
+body.client-mode #consumerLayers .layer-meta{display:block;font-size:10px}
+body.client-mode #consumerLayers .layer-actions{grid-column:1/-1;display:none;gap:6px}
+body.client-mode #consumerLayers .layer.selected .layer-actions{display:flex}
+body.client-mode #consumerLayers .layer-actions button{flex:1;min-height:43px;font-size:13px}
+body.client-mode #consumerPresetSlot,body.client-mode #consumerBaseSlot input[type=text],body.client-mode #consumerBaseSlot #whiteDisc,body.client-mode #consumerBaseSlot #glowDisc{display:none!important}
+body.client-mode #consumerBaseSlot input[type=color]{width:62px;height:44px;cursor:pointer}
+body.client-mode #du-quick{display:none;margin:9px 0 14px;padding:12px;border:1px solid #d8b996;border-radius:13px;background:#f8ecdd}
+body.client-mode #du-quick.du-active{display:block}
+body.client-mode #du-quick strong{display:block;font-size:13px;margin-bottom:9px}
+body.client-mode .du-quick-row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+body.client-mode .du-quick-row button{flex:1;min-height:41px;font-size:12px;padding:8px 7px;background:#fffdf9}
+body.client-mode .du-quick-row button[aria-pressed=true]{color:white;background:#a7623a;border-color:#a7623a}
+body.client-mode #du-widths,body.client-mode #du-flip{display:none}
+body.client-mode #du-widths.du-show,body.client-mode #du-flip.du-show{display:flex}
+body.client-mode #du-quick p{font-size:11px;color:#695b4b;line-height:1.4;margin:7px 0 0}
+body.client-mode #du-palette-head{position:sticky;top:-19px;background:#fffaf3;padding:14px 0 10px;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px}
+body.client-mode #du-palette-head button{min-height:42px}
+body.client-mode #consumerPalette .catalog-head strong{display:none}
+body.client-mode #consumerPalette .swatches{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+body.client-mode #consumerPalette .swatch{display:flex;flex-direction:column;align-items:start;min-height:78px;gap:5px}
+body.client-mode #consumerPalette .swatch-color{width:100%;height:30px}
+body.client-mode #consumerPalette .swatch-name{font-size:12px}
+body.client-mode #consumerPalette .swatch-code{display:none}
+@media(max-width:900px){body.client-mode main{grid-template-columns:minmax(0,1fr) minmax(260px,310px)}body.client-mode #canvasSection{position:static}body.client-mode #canvasSection .canvas-shell{width:100%}}
+@media(max-width:680px){
+body.client-mode main{display:flex;flex-direction:column;gap:10px}
+body.client-mode #canvasSection{order:0;width:100%}body.client-mode #consumerLayers{order:1;width:100%}body.client-mode #consumerDisc{order:2;width:100%}
+body.client-mode #canvasSection .canvas-shell{width:min(100%,520px)}
+body.client-mode #consumerPalette{left:0;right:0;top:auto;bottom:0;width:100%;height:min(80dvh,750px);padding:14px 14px max(24px,env(safe-area-inset-bottom));border-radius:18px 18px 0 0}
+body.client-mode #du-palette-head{top:-14px}
+body.client-mode #du-color-trigger{flex:1}
+body.client-mode #consumerViewSlot{margin-left:0}
+body.client-mode .mobile-quicknav{display:none}
+}
+</style>
+<script id="du-consumer-redesign-v2-js">
+(function(){
+"use strict";
+window.addEventListener("DOMContentLoaded",function(){
+const g=id=>document.getElementById(id),p=g("consumerPalette"),list=g("layerList"),stage=g("canvasSection");
+if(!p||!list||!stage||g("du-color-trigger"))return;
+const shade=document.createElement("div");shade.id="du-shade";document.body.appendChild(shade);
+const head=document.createElement("div");head.id="du-palette-head";
+head.innerHTML='<strong id="du-palette-title">Choose color</strong><button id="du-palette-close" type="button">Close ✕</button>';
+p.prepend(head);
+const add=document.createElement("button");add.id="du-color-trigger";add.type="button";
+add.className="primary";add.textContent="+ Add dye color";
+add.setAttribute("aria-controls","consumerPalette");add.setAttribute("aria-expanded","false");
+stage.querySelector(".consumer-preview-head").insertBefore(add,g("consumerViewSlot"));
+const quick=document.createElement("div");quick.id="du-quick";
+quick.innerHTML='<strong id="du-color-name">Selected color</strong>'+
+'<div class="du-quick-row" role="group" aria-label="Color region"><button data-shape="edge">One side</button><button data-shape="stripe">Band</button><button data-shape="full">Entire disc</button></div>'+
+'<div id="du-widths" class="du-quick-row" role="group" aria-label="Band width"><button data-width="20">Narrow</button><button data-width="45">Medium</button><button data-width="85">Wide</button></div>'+
+'<div class="du-quick-row"><button id="du-replace">Change color</button><button id="du-copy">Duplicate</button><button id="du-flip">Flip side</button></div>'+
+'<p>Drag a line on the disc to move its color. Drag its end handles to rotate. Use the arrows below the selected color to change its order.</p>';
+g("consumerLayers").insertBefore(quick,g("consumerDyesSlot"));
+g("emptyLayers").textContent="No colors yet. Tap Add dye color above the disc.";
+const tip=stage.querySelector(".canvas-tip");if(tip)tip.textContent="Drag line to move • drag ends to rotate";
+let mode="add",focusReturn=null;
+function open(kind){
+ if(!document.body.classList.contains("client-mode"))return;
+ mode=kind==="replace"&&selected>=0?"replace":"add";
+ focusReturn=document.activeElement;
+ g("du-palette-title").textContent=mode==="replace"?"Change selected color":"Choose a dye color";
+ document.body.classList.add("du-palette-open");add.setAttribute("aria-expanded","true");
+ p.setAttribute("role","dialog");p.setAttribute("aria-modal","true");
+ g("du-palette-close").focus();
+}
+function close(){
+ document.body.classList.remove("du-palette-open");add.setAttribute("aria-expanded","false");
+ p.removeAttribute("role");p.removeAttribute("aria-modal");
+ if(focusReturn&&focusReturn.isConnected)focusReturn.focus();else add.focus();
+}
+add.onclick=()=>open("add");g("du-replace").onclick=()=>open("replace");
+g("du-palette-close").onclick=close;shade.onclick=close;
+document.addEventListener("keydown",e=>{
+ if(e.key==="Escape"&&document.body.classList.contains("du-palette-open")){e.preventDefault();close()}
+ if(e.key==="Tab"&&document.body.classList.contains("du-palette-open")){
+  const a=Array.from(p.querySelectorAll("button:not([disabled]),input:not([disabled]),select:not([disabled])")).filter(x=>x.getClientRects().length);
+  if(a.length){if(e.shiftKey&&document.activeElement===a[0]){e.preventDefault();a[a.length-1].focus()}else if(!e.shiftKey&&document.activeElement===a[a.length-1]){e.preventDefault();a[0].focus()}}
+ }
+});
+p.addEventListener("click",e=>{
+ const sw=e.target.closest(".swatch");if(!sw||!document.body.classList.contains("client-mode"))return;
+ if(mode==="replace"){
+  e.preventDefault();e.stopImmediatePropagation();
+  const name=sw.querySelector(".swatch-name")?.textContent?.trim();
+  const dye=dyes.find(d=>d[0]===activeGroup&&d[1]===name);
+  if(dye&&selected>=0)mutate(()=>{
+   const l=layers[selected];l.name=dye[1];l.hex=dye[2].toUpperCase();
+   l.method=/uv blast|quick.coat|worm dip/i.test(l.name)?"worm-dip":activeMethod();
+  },"Dye color changed");
+ }
+ close();
+},true);
+function input(id,value){const el=g(id);el.value=value;el.dispatchEvent(new Event("input",{bubbles:true}));el.dispatchEvent(new Event("change",{bubbles:true}))}
+quick.querySelectorAll("[data-shape]").forEach(b=>b.onclick=()=>input("shape",b.dataset.shape));
+quick.querySelectorAll("[data-width]").forEach(b=>b.onclick=()=>input("stripeWidth",b.dataset.width));
+g("du-copy").onclick=()=>g("duplicateLayer").click();g("du-flip").onclick=()=>g("flipSide").click();
+let pending=false;
+function refresh(){
+ pending=false;const l=selected>=0?layers[selected]:null;
+ quick.classList.toggle("du-active",!!l&&document.body.classList.contains("client-mode"));
+ if(l){
+  g("du-color-name").textContent="Editing: "+l.name;
+  quick.querySelectorAll("[data-shape]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.shape===l.shape)));
+  g("du-widths").classList.toggle("du-show",l.shape==="stripe");
+  g("du-flip").classList.toggle("du-show",l.shape==="edge");
+ }
+ list.querySelectorAll(".layer").forEach(row=>{
+  row.tabIndex=0;row.setAttribute("role","button");
+  if(!row.dataset.duKeyboard){row.dataset.duKeyboard="1";row.addEventListener("keydown",e=>{if(e.target===row&&(e.key==="Enter"||e.key===" ")){e.preventDefault();row.click()}})}
+  const name=row.querySelector(".layer-name")?.textContent?.trim()||"color";
+  const labels=["Move up","Move down","Delete"];
+  row.querySelectorAll(".layer-actions button").forEach((b,i)=>{b.setAttribute("aria-label",labels[i]+" "+name);b.title=labels[i]});
+ });
+}
+function schedule(){if(!pending){pending=true;requestAnimationFrame(refresh)}}
+new MutationObserver(schedule).observe(list,{childList:true});
+new MutationObserver(()=>{if(document.body.classList.contains("calibration-mode")&&document.body.classList.contains("du-palette-open"))close();schedule()}).observe(document.body,{attributes:true,attributeFilter:["class"]});
+g("dyesDetails").open=true;
+schedule();
+},{once:true});
+})();
+</script>
 </body>
 </html>
