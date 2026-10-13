@@ -398,3 +398,15 @@ test('consumer v2 keeps dye selection atomic and color edits contextual', () => 
  assert.match(ui,/#consumerLayers \.layer #du-quick\{grid-column:1\/-1/);
  assert.doesNotMatch(v2,/function translucentPointPredict|function opaquePointPredict/);
 });
+
+test('consumer shows selected boundary even when technical guide preference is off',()=>{
+ const source=read('../public/dyed-and-unattached/dye-studio/studio.js');
+ assert.match(source,/if\(appMode==="client"\)\{if\(selected>=0&&layers\[selected\]\)drawLineForLayer\(layers\[selected\],true\)\}/);
+ assert.match(source,/else if\(\$\("showGuides"\)\.checked\)layers\.forEach/);
+ assert.match(source,/if\(appMode!=="client"&&sample\.x\*sample\.x/);
+ assert.match(source,/drawCircleHandle\(geo\.p1,layer\.hex,appMode==="client"\?13:10\)/);
+ assert.match(source,/const threshold=\(touch\?24:15\)\/R/);
+ assert.match(source,/let best=null,bestD=\(touch\?18:12\)\/R/);
+ assert.match(source,/hitSelected\(q,e\.pointerType\)/);
+ assert.match(source,/findBoundary\(q,e\.pointerType\)/);
+});
