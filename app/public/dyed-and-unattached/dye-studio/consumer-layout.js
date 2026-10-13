@@ -26,6 +26,11 @@ function init(){
    return {node,slot,marker:document.createComment("original "+selector)};
  });
  entries.forEach(({node,marker})=>node.parentNode.insertBefore(marker,node));
+ document.querySelectorAll("[data-base-preset]").forEach(button=>{
+   button.style.backgroundColor=button.dataset.basePreset;
+   button.title=button.textContent.trim();
+   button.setAttribute("aria-label",button.textContent.trim());
+ });
  moves=entries;
 }
 function setView(mode){
