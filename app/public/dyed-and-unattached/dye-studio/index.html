@@ -286,6 +286,11 @@ button.danger{color:#8d3129}
 
 <link rel="stylesheet" href="./consumer.css">
 <style id="du-consumer-redesign-v2">
+body.client-mode #consumerLayers .du-layer-grip{color:#977d64;cursor:grab;align-self:center;text-align:center;user-select:none;font-size:20px;touch-action:pan-y}
+body.client-mode #consumerLayers .du-layer-grip:active{cursor:grabbing}
+body.client-mode #consumerLayers .layer.du-drag-target{border:2px dashed #a7623a;background:#f0dfcd}
+@media(pointer:coarse){body.client-mode #consumerLayers .du-layer-grip{display:none}body.client-mode #consumerLayers .layer{grid-template-columns:37px minmax(0,1fr)}}
+
 body.client-mode #du-photo-adjust{border-top:1px solid #e2cfb6;padding-top:9px;margin-top:8px}
 body.client-mode #du-photo-adjust[hidden]{display:none!important}
 body.client-mode .du-photo-adjust-label{font-size:12px;color:#6e5844;display:block;margin-bottom:7px}
@@ -322,7 +327,7 @@ body.client-mode #consumerLayers #dyesDetails .detail-body{padding:0}
 body.client-mode #consumerLayers #editDetails{display:none!important}
 body.client-mode #consumerLayers #emptyLayers{padding:15px;border:1px dashed #d3bda3;background:#fffdf9;font-size:13px;line-height:1.5}
 body.client-mode #consumerLayers .layers{gap:8px}
-body.client-mode #consumerLayers .layer{display:grid;grid-template-columns:37px minmax(0,1fr);gap:9px;padding:11px;min-height:62px;background:#fffdf9;border:1px solid #dfcdb8;border-radius:13px}
+body.client-mode #consumerLayers .layer{display:grid;grid-template-columns:22px 37px minmax(0,1fr);gap:9px;padding:11px;min-height:62px;background:#fffdf9;border:1px solid #dfcdb8;border-radius:13px}
 body.client-mode #consumerLayers .layer.selected{background:#f7ebdf;border:2px solid #a7623a}
 body.client-mode #consumerLayers .chip{width:37px;height:37px;border-radius:9px}
 body.client-mode #consumerLayers .layer-name{font-size:13px}
