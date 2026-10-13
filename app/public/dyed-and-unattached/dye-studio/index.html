@@ -285,6 +285,78 @@ button.danger{color:#8d3129}
 
 
 <link rel="stylesheet" href="./consumer.css">
+<style id="du-consumer-redesign-v2">
+/* Simple consumer composer: all original technical controls remain intact. */
+body.client-mode main{max-width:1260px;display:grid;grid-template-columns:minmax(0,1fr) minmax(285px,350px);grid-template-areas:"stage disc" "stage layers";grid-template-rows:auto auto;align-items:start;gap:14px}
+body.client-mode #canvasSection{grid-area:stage;position:sticky;top:10px}
+body.client-mode #consumerLayers{grid-area:layers;max-height:none;overflow:visible}
+body.client-mode #consumerDisc{grid-area:disc}
+body.client-mode #consumerPalette{display:none!important;position:fixed;right:0;top:0;bottom:0;z-index:111;width:min(440px,100vw);padding:19px;max-height:none;overflow:auto;background:#fffaf3;border-radius:17px 0 0 17px;box-shadow:-18px 0 70px #27170d3d}
+body.client-mode.du-palette-open #consumerPalette{display:block!important}
+body.client-mode.du-palette-open{overflow:hidden}
+#du-shade{display:none}
+body.client-mode.du-palette-open #du-shade{display:block;position:fixed;inset:0;background:#18110c99;z-index:110}
+body.client-mode #du-color-trigger{min-height:44px;padding:10px 17px;font-size:15px;border-radius:13px}
+body.client-mode .consumer-preview-head{align-items:center}
+body.client-mode #consumerViewSlot{margin-left:auto}
+body.client-mode #canvasSection .stats{display:none}
+body.client-mode #canvasSection .canvas-shell{width:min(100%,calc(100dvh - 220px),720px);min-width:0}
+body.client-mode #canvasSection .canvas-tip{display:block;color:#604b39;text-shadow:none;font-size:11px}
+body.client-mode #consumerLayers #dyesDetails{border:0;background:none}
+body.client-mode #consumerLayers #dyesDetails>summary,body.client-mode #consumerLayers #dyesDetails .row.spread{display:none}
+body.client-mode #consumerLayers #dyesDetails .detail-body{padding:0}
+body.client-mode #consumerLayers #editDetails{display:none!important}
+body.client-mode #consumerLayers #emptyLayers{padding:15px;border:1px dashed #d3bda3;background:#fffdf9;font-size:13px;line-height:1.5}
+body.client-mode #consumerLayers .layers{gap:8px}
+body.client-mode #consumerLayers .layer{display:grid;grid-template-columns:37px minmax(0,1fr);gap:9px;padding:11px;min-height:62px;background:#fffdf9;border:1px solid #dfcdb8;border-radius:13px}
+body.client-mode #consumerLayers .layer.selected{background:#f7ebdf;border:2px solid #a7623a}
+body.client-mode #consumerLayers .chip{width:37px;height:37px;border-radius:9px}
+body.client-mode #consumerLayers .layer-name{font-size:13px}
+body.client-mode #consumerLayers .layer-meta{display:block;font-size:10px}
+body.client-mode #consumerLayers .layer-actions{grid-column:1/-1;display:none;gap:6px}
+body.client-mode #consumerLayers .layer.selected .layer-actions{display:flex}
+body.client-mode #consumerLayers .layer-actions button{flex:1;min-height:43px;font-size:13px}
+body.client-mode #consumerPresetSlot,body.client-mode #consumerBaseSlot input[type=text],body.client-mode #consumerBaseSlot #whiteDisc,body.client-mode #consumerBaseSlot #glowDisc{display:none!important}
+body.client-mode #consumerBaseSlot input[type=color]{width:62px;height:44px;cursor:pointer}
+body.client-mode #du-quick{display:none;margin:9px 0 14px;padding:12px;border:1px solid #d8b996;border-radius:13px;background:#f8ecdd}
+body.client-mode #du-quick.du-active{display:block}
+body.client-mode #du-quick strong{display:block;font-size:13px;margin-bottom:9px}
+body.client-mode .du-quick-row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+body.client-mode .du-quick-row button{flex:1;min-height:41px;font-size:12px;padding:8px 7px;background:#fffdf9}
+body.client-mode .du-quick-row button[aria-pressed=true]{color:white;background:#a7623a;border-color:#a7623a}
+body.client-mode #du-widths,body.client-mode #du-flip{display:none}
+body.client-mode #du-widths.du-show,body.client-mode #du-flip.du-show{display:flex}
+body.client-mode #du-quick p{font-size:11px;color:#695b4b;line-height:1.4;margin:7px 0 0}
+body.client-mode #du-palette-head{position:sticky;top:-19px;background:#fffaf3;padding:14px 0 10px;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px}
+body.client-mode #du-palette-head button{min-height:42px}
+body.client-mode #consumerPalette .catalog-head strong{display:none}
+body.client-mode #consumerPalette .swatches{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+body.client-mode #consumerPalette .swatch{display:flex;flex-direction:column;align-items:start;min-height:78px;gap:5px}
+body.client-mode #consumerPalette .swatch-color{width:100%;height:30px}
+body.client-mode #consumerPalette .swatch-name{font-size:12px}
+body.client-mode #consumerPalette .swatch-code{display:none}
+@media(max-width:900px){body.client-mode main{grid-template-columns:minmax(0,1fr) minmax(260px,310px)}body.client-mode #canvasSection{position:static}body.client-mode #canvasSection .canvas-shell{width:100%}}
+@media(max-width:680px){
+body.client-mode main{display:flex;flex-direction:column;gap:10px}
+body.client-mode #consumerDisc{order:0;width:100%}body.client-mode #canvasSection{order:1;width:100%}body.client-mode #consumerLayers{order:2;width:100%}
+body.client-mode #canvasSection .canvas-shell{width:min(100%,520px)}
+body.client-mode #consumerPalette{left:0;right:0;top:auto;bottom:0;width:100%;height:min(80dvh,750px);padding:14px 14px max(24px,env(safe-area-inset-bottom));border-radius:18px 18px 0 0}
+body.client-mode #du-palette-head{top:-14px}
+body.client-mode #du-color-trigger{flex:1}
+body.client-mode #consumerViewSlot{margin-left:0}
+body.client-mode .mobile-quicknav{display:none}
+}
+
+body.client-mode #du-lighting{margin:0;border:1px solid #ddcdb6;background:#fffdf9;border-radius:10px;position:relative;overflow:visible}
+body.client-mode #du-lighting>summary{font-size:12px;min-height:40px;display:flex;align-items:center;padding:8px 10px;cursor:pointer;color:#63462f;background:transparent}
+body.client-mode #du-lighting #consumerViewSlot{padding:8px;min-width:210px}
+body.client-mode #du-lighting .condition-switch{justify-content:flex-end}
+body.calibration-mode #du-lighting{display:none!important}
+@media(max-width:680px){
+ body.client-mode #du-lighting #consumerViewSlot{min-width:0}
+ body.client-mode #du-lighting .condition-switch{justify-content:start}
+}
+</style>
 </head>
 <body class="client-mode">
 <header>
@@ -586,78 +658,7 @@ button.danger{color:#8d3129}
 <script src="./consumer-layout.js" defer></script>
 <script src="./studio.js" defer></script>
 <script src="./disc-photo.js" defer></script>
-<style id="du-consumer-redesign-v2">
-/* Simple consumer composer: all original technical controls remain intact. */
-body.client-mode main{max-width:1260px;display:grid;grid-template-columns:minmax(0,1fr) minmax(285px,350px);grid-template-areas:"stage disc" "stage layers";grid-template-rows:auto auto;align-items:start;gap:14px}
-body.client-mode #canvasSection{grid-area:stage;position:sticky;top:10px}
-body.client-mode #consumerLayers{grid-area:layers;max-height:none;overflow:visible}
-body.client-mode #consumerDisc{grid-area:disc}
-body.client-mode #consumerPalette{display:none!important;position:fixed;right:0;top:0;bottom:0;z-index:111;width:min(440px,100vw);padding:19px;max-height:none;overflow:auto;background:#fffaf3;border-radius:17px 0 0 17px;box-shadow:-18px 0 70px #27170d3d}
-body.client-mode.du-palette-open #consumerPalette{display:block!important}
-body.client-mode.du-palette-open{overflow:hidden}
-#du-shade{display:none}
-body.client-mode.du-palette-open #du-shade{display:block;position:fixed;inset:0;background:#18110c99;z-index:110}
-body.client-mode #du-color-trigger{min-height:44px;padding:10px 17px;font-size:15px;border-radius:13px}
-body.client-mode .consumer-preview-head{align-items:center}
-body.client-mode #consumerViewSlot{margin-left:auto}
-body.client-mode #canvasSection .stats{display:none}
-body.client-mode #canvasSection .canvas-shell{width:min(100%,calc(100dvh - 220px),720px);min-width:0}
-body.client-mode #canvasSection .canvas-tip{display:block;color:#604b39;text-shadow:none;font-size:11px}
-body.client-mode #consumerLayers #dyesDetails{border:0;background:none}
-body.client-mode #consumerLayers #dyesDetails>summary,body.client-mode #consumerLayers #dyesDetails .row.spread{display:none}
-body.client-mode #consumerLayers #dyesDetails .detail-body{padding:0}
-body.client-mode #consumerLayers #editDetails{display:none!important}
-body.client-mode #consumerLayers #emptyLayers{padding:15px;border:1px dashed #d3bda3;background:#fffdf9;font-size:13px;line-height:1.5}
-body.client-mode #consumerLayers .layers{gap:8px}
-body.client-mode #consumerLayers .layer{display:grid;grid-template-columns:37px minmax(0,1fr);gap:9px;padding:11px;min-height:62px;background:#fffdf9;border:1px solid #dfcdb8;border-radius:13px}
-body.client-mode #consumerLayers .layer.selected{background:#f7ebdf;border:2px solid #a7623a}
-body.client-mode #consumerLayers .chip{width:37px;height:37px;border-radius:9px}
-body.client-mode #consumerLayers .layer-name{font-size:13px}
-body.client-mode #consumerLayers .layer-meta{display:block;font-size:10px}
-body.client-mode #consumerLayers .layer-actions{grid-column:1/-1;display:none;gap:6px}
-body.client-mode #consumerLayers .layer.selected .layer-actions{display:flex}
-body.client-mode #consumerLayers .layer-actions button{flex:1;min-height:43px;font-size:13px}
-body.client-mode #consumerPresetSlot,body.client-mode #consumerBaseSlot input[type=text],body.client-mode #consumerBaseSlot #whiteDisc,body.client-mode #consumerBaseSlot #glowDisc{display:none!important}
-body.client-mode #consumerBaseSlot input[type=color]{width:62px;height:44px;cursor:pointer}
-body.client-mode #du-quick{display:none;margin:9px 0 14px;padding:12px;border:1px solid #d8b996;border-radius:13px;background:#f8ecdd}
-body.client-mode #du-quick.du-active{display:block}
-body.client-mode #du-quick strong{display:block;font-size:13px;margin-bottom:9px}
-body.client-mode .du-quick-row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
-body.client-mode .du-quick-row button{flex:1;min-height:41px;font-size:12px;padding:8px 7px;background:#fffdf9}
-body.client-mode .du-quick-row button[aria-pressed=true]{color:white;background:#a7623a;border-color:#a7623a}
-body.client-mode #du-widths,body.client-mode #du-flip{display:none}
-body.client-mode #du-widths.du-show,body.client-mode #du-flip.du-show{display:flex}
-body.client-mode #du-quick p{font-size:11px;color:#695b4b;line-height:1.4;margin:7px 0 0}
-body.client-mode #du-palette-head{position:sticky;top:-19px;background:#fffaf3;padding:14px 0 10px;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px}
-body.client-mode #du-palette-head button{min-height:42px}
-body.client-mode #consumerPalette .catalog-head strong{display:none}
-body.client-mode #consumerPalette .swatches{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
-body.client-mode #consumerPalette .swatch{display:flex;flex-direction:column;align-items:start;min-height:78px;gap:5px}
-body.client-mode #consumerPalette .swatch-color{width:100%;height:30px}
-body.client-mode #consumerPalette .swatch-name{font-size:12px}
-body.client-mode #consumerPalette .swatch-code{display:none}
-@media(max-width:900px){body.client-mode main{grid-template-columns:minmax(0,1fr) minmax(260px,310px)}body.client-mode #canvasSection{position:static}body.client-mode #canvasSection .canvas-shell{width:100%}}
-@media(max-width:680px){
-body.client-mode main{display:flex;flex-direction:column;gap:10px}
-body.client-mode #consumerDisc{order:0;width:100%}body.client-mode #canvasSection{order:1;width:100%}body.client-mode #consumerLayers{order:2;width:100%}
-body.client-mode #canvasSection .canvas-shell{width:min(100%,520px)}
-body.client-mode #consumerPalette{left:0;right:0;top:auto;bottom:0;width:100%;height:min(80dvh,750px);padding:14px 14px max(24px,env(safe-area-inset-bottom));border-radius:18px 18px 0 0}
-body.client-mode #du-palette-head{top:-14px}
-body.client-mode #du-color-trigger{flex:1}
-body.client-mode #consumerViewSlot{margin-left:0}
-body.client-mode .mobile-quicknav{display:none}
-}
 
-body.client-mode #du-lighting{margin:0;border:1px solid #ddcdb6;background:#fffdf9;border-radius:10px;position:relative;overflow:visible}
-body.client-mode #du-lighting>summary{font-size:12px;min-height:40px;display:flex;align-items:center;padding:8px 10px;cursor:pointer;color:#63462f;background:transparent}
-body.client-mode #du-lighting #consumerViewSlot{padding:8px;min-width:210px}
-body.client-mode #du-lighting .condition-switch{justify-content:flex-end}
-body.calibration-mode #du-lighting{display:none!important}
-@media(max-width:680px){
- body.client-mode #du-lighting #consumerViewSlot{min-width:0}
- body.client-mode #du-lighting .condition-switch{justify-content:start}
-}
-</style>
 <script src="./consumer-v2.js" defer></script>
 </body>
 </html>
