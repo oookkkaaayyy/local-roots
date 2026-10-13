@@ -535,3 +535,16 @@ test('radial region cache accelerates disc paint without crossing optical bounda
  assert.ok(px.some((v,i)=>i%4===0&&v===165),'right-region channel value');
  assert.ok(px.some((v,i)=>i%4===0&&v===32),'left-region channel value');
 });
+
+
+test('single selected consumer dye keeps adequate name width without a reorder grip',()=>{
+ const v2=read('../public/dyed-and-unattached/dye-studio/consumer-v2.js');
+ const rule='body.client-mode #consumerLayers .layer{display:grid;grid-template-columns:37px minmax(0,1fr)';
+ const withGrip='body.client-mode #consumerLayers .layer.du-has-grip{grid-template-columns:22px 37px minmax(0,1fr)}';
+ assert.ok(studioHtml.includes(rule),'single-block row should be a two-column layout');
+ assert.ok(studioHtml.includes(withGrip),'reorder handle should have an explicit third column');
+ assert.match(v2,/row\.classList\.add\("du-has-grip"\)/);
+ assert.match(v2,/if\(inConsumer&&layers\.length>1\)addReorderGrip/);
+ assert.match(studioHtml,/@media\(pointer:coarse\)\{body\.client-mode #consumerLayers \.du-layer-grip\{display:none\}body\.client-mode #consumerLayers \.layer\{grid-template-columns:37px minmax\(0,1fr\)\}\}/);
+ assert.match(studioHtml,/\.layer-name\{font-size:13px;overflow-wrap:break-word;word-break:normal;hyphens:none\}/);
+});
