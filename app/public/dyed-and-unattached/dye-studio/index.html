@@ -286,6 +286,7 @@ button.danger{color:#8d3129}
 
 <link rel="stylesheet" href="./consumer.css">
 <style id="du-consumer-redesign-v2">
+body.client-mode .du-order-tip{font-size:12px;color:#6c5b4c;line-height:1.35;margin:-4px 0 13px}
 /* Simple consumer composer: all original technical controls remain intact. */
 body.client-mode main{max-width:1260px;display:grid;grid-template-columns:minmax(0,1fr) minmax(285px,350px);grid-template-areas:"stage disc" "stage layers";grid-template-rows:auto auto;align-items:start;gap:14px}
 body.client-mode #canvasSection{grid-area:stage;position:sticky;top:10px}
@@ -585,7 +586,7 @@ body.calibration-mode #du-lighting{display:none!important}
   </details>
 </aside>
 <aside id="consumerLayers" class="consumer-panel panel consumer-layers" aria-label="Edit your dye blocks">
- <h2>Your color blocks</h2><div id="consumerDyesSlot"></div><div id="consumerEditorSlot"></div>
+ <h2>Your colors</h2><p class="du-order-tip">Top color goes on last. Select a color to edit it.</p><div id="consumerDyesSlot"></div><div id="consumerEditorSlot"></div>
 </aside>
 <section class="panel workspace" id="canvasSection">
  <div class="consumer-preview-head"><strong>Preview</strong><div id="consumerViewSlot"></div></div>
