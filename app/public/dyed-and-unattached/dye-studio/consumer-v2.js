@@ -129,6 +129,39 @@ function input(id,value){const el=g(id);el.value=value;el.dispatchEvent(new Even
 quick.querySelectorAll("[data-shape]").forEach(b=>b.onclick=()=>input("shape",b.dataset.shape));
 quick.querySelectorAll("[data-width]").forEach(b=>b.onclick=()=>input("stripeWidth",b.dataset.width));
 g("du-copy").onclick=()=>g("duplicateLayer").click();g("du-flip").onclick=()=>g("flipSide").click();
+let draggingFrom=null;
+function reorderColors(from,to){
+ if(from===to||from<0||to<0||from>=layers.length||to>=layers.length)return;
+ mutate(()=>{
+  const selectedColor=layers[selected],moving=layers.splice(from,1)[0];
+  layers.splice(to,0,moving);
+  selected=selectedColor?layers.indexOf(selectedColor):-1;
+ },"Color order changed");
+}
+function clearDropTargets(){list.querySelectorAll(".du-drag-target").forEach(row=>row.classList.remove("du-drag-target"))}
+function addReorderGrip(row,index){
+ if(row.querySelector(".du-layer-grip"))return;
+ const grip=document.createElement("span");grip.className="du-layer-grip";
+ grip.textContent="⠿";grip.draggable=true;grip.setAttribute("aria-hidden","true");
+ grip.title="Drag to change color order (mouse or trackpad)";
+ row.prepend(grip);
+ row.addEventListener("dragstart",e=>{
+  if(!e.target.closest(".du-layer-grip")){e.preventDefault();return}
+  draggingFrom=index;
+  if(e.dataTransfer){e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain","du-color")}
+ });
+ row.addEventListener("dragover",e=>{
+  if(draggingFrom===null||draggingFrom===index)return;
+  e.preventDefault();if(e.dataTransfer)e.dataTransfer.dropEffect="move";
+  clearDropTargets();row.classList.add("du-drag-target");
+ });
+ row.addEventListener("drop",e=>{
+  if(draggingFrom===null)return;
+  e.preventDefault();const from=draggingFrom;draggingFrom=null;
+  clearDropTargets();reorderColors(from,index);
+ });
+ row.addEventListener("dragend",()=>{draggingFrom=null;clearDropTargets()});
+}
 let pending=false;
 function refresh(){
  pending=false;const l=selected>=0?layers[selected]:null;
@@ -145,7 +178,8 @@ function refresh(){
   g("du-widths").classList.toggle("du-show",l.shape==="stripe");
   g("du-flip").classList.toggle("du-show",l.shape==="edge");
  }
- list.querySelectorAll(".layer").forEach(row=>{
+ list.querySelectorAll(".layer").forEach((row,visualIndex)=>{
+  if(inConsumer&&layers.length>1)addReorderGrip(row,layers.length-1-visualIndex);
   row.tabIndex=0;row.setAttribute("role","button");
   if(!row.dataset.duKeyboard){row.dataset.duKeyboard="1";row.addEventListener("keydown",e=>{if(e.target===row&&(e.key==="Enter"||e.key===" ")){e.preventDefault();row.click()}})}
   const name=row.querySelector(".layer-name")?.textContent?.trim()||"color";
