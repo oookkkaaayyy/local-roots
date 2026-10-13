@@ -152,6 +152,12 @@ test('channel, hue, saturation and linear-luminance extremes remain numerical', 
       const rgb=[1,3,5].map(i=>parseInt(output.slice(i,i+2),16));
       assert.ok(rgb.every(v=>Number.isInteger(v)&&v>=0&&v<=255));
       const max=Math.max(...rgb),min=Math.min(...rgb),delta=max-min;
+      const hueRaw = delta === 0 ? 0
+        : max === rgb[0] ? 60*(((rgb[1]-rgb[2])/delta)%6)
+        : max === rgb[1] ? 60*((rgb[2]-rgb[0])/delta+2)
+        : 60*((rgb[0]-rgb[1])/delta+4);
+      const hue = (hueRaw+360)%360;
+      assert.ok(Number.isFinite(hue)&&hue>=0&&hue<360);
       const chroma=delta/255,lightness=(max+min)/510;
       const saturation=delta===0?0:delta/(255*(1-Math.abs(2*lightness-1)));
       const luminance=.2126*linear(rgb[0])+.7152*linear(rgb[1])+.0722*linear(rgb[2]);
