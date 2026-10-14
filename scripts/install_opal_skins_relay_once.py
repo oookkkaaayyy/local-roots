@@ -29,6 +29,7 @@ V24_URL = "https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-contr
 PROJECT_HOST = "phcpbvuqibyarpfrftgx.supabase.co"
 CONFIG_URL = "https://hbnightflyers.com/config.js"
 OPAL = "root@192.168.77.1"
+OPAL_IDENTITY = Path.home() / ".ssh" / "hbnf_opal_ed25519"
 MATRIX = "http://192.168.77.10"
 AUX = "http://192.168.77.11"
 MATRIX_MAC = "704bca5b345c"
@@ -229,6 +230,8 @@ def main() -> int:
         if self_test:
             installer_text = Path(__file__).read_text(encoding="utf-8")
             assert "StrictHostKeyChecking=yes" in installer_text
+            assert "hbnf_opal_ed25519" in installer_text
+            assert "IdentitiesOnly=yes" in installer_text and "BatchMode=yes" in installer_text
             assert "hbnf-skins-relay-1.0.0-attempted" in installer_text
             assert "--max-time 10" in installer_text and "--max-filesize 32768" in installer_text
             dummy = "sb_publishable_" + "x" * 24
@@ -246,6 +249,8 @@ def main() -> int:
         required = ("ssh", "curl", "python3")
         if sys.platform != "darwin" or any(shutil.which(item) is None for item in required):
             raise Stop("run this on the authorized macOS checkout with ssh, curl and python3")
+        if not OPAL_IDENTITY.is_file():
+            raise Stop("the existing Opal SSH identity is missing at ~/.ssh/hbnf_opal_ed25519")
         say("PASS: exact approved relay archive SHA-256 and member hashes")
         base_url, key = get_config()
         if base_url != "https://" + PROJECT_HOST:
@@ -260,7 +265,7 @@ def main() -> int:
         master = False
         installed = False
         stage = REMOTE_ROOT + "-" + os.urandom(4).hex()
-        ssh_common = ["-S", socket, "-o", "ControlMaster=auto", "-o", "ControlPersist=600", "-o", "ControlPath=" + socket, "-o", "StrictHostKeyChecking=yes", "-o", "HostKeyAlgorithms=+ssh-rsa", "-o", "PubkeyAcceptedAlgorithms=+ssh-rsa", "-o", "ConnectTimeout=6"]
+        ssh_common = ["-S", socket, "-o", "ControlMaster=auto", "-o", "ControlPersist=600", "-o", "ControlPath=" + socket, "-o", "StrictHostKeyChecking=yes", "-o", "HostKeyAlgorithms=+ssh-rsa", "-o", "PubkeyAcceptedAlgorithms=+ssh-rsa", "-o", "IdentitiesOnly=yes", "-o", "BatchMode=yes", "-i", str(OPAL_IDENTITY), "-o", "ConnectTimeout=6"]
         ssh_base = ["ssh", *ssh_common, OPAL]
 
         def remote(command: str, *, data: bytes | None = None, timeout: int = 30, interactive: bool = False) -> str:
@@ -294,8 +299,8 @@ def main() -> int:
             remote("chmod " + mode + " " + shlex.quote(remote_path))
 
         try:
-            # Require an already-known router host key. Any SSH password prompt is handled by OpenSSH in Terminal only.
-            first = run(["ssh", "-M", "-N", "-f", "-S", socket, "-o", "ControlMaster=yes", "-o", "ControlPersist=600", "-o", "ControlPath=" + socket, "-o", "StrictHostKeyChecking=yes", "-o", "HostKeyAlgorithms=+ssh-rsa", "-o", "PubkeyAcceptedAlgorithms=+ssh-rsa", "-o", "ConnectTimeout=6", OPAL], prompt=True, timeout=30)
+            # Use only the existing key and known host. BatchMode prevents hidden password prompts.
+            first = run(["ssh", "-M", "-N", "-f", "-S", socket, "-o", "ControlMaster=yes", "-o", "ControlPersist=600", "-o", "ControlPath=" + socket, "-o", "StrictHostKeyChecking=yes", "-o", "HostKeyAlgorithms=+ssh-rsa", "-o", "PubkeyAcceptedAlgorithms=+ssh-rsa", "-o", "IdentitiesOnly=yes", "-o", "BatchMode=yes", "-i", str(OPAL_IDENTITY), "-o", "ConnectTimeout=6", OPAL], prompt=True, timeout=30)
             if first.returncode != 0:
                 raise Stop("authenticated, host-key-verified Opal SSH access is unavailable")
             master = True
