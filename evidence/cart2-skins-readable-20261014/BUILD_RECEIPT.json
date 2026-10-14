@@ -1,0 +1,46 @@
+{
+  "schema": "hbnf-cart2-build-receipt-v1",
+  "candidate": "hbnf-cart2-phase2-r6-skins-readable-20261014",
+  "source_repository": "oookkkaaayyy/local-roots",
+  "source_branch": "codex/matrix-autonomous-skins-poll-20261013",
+  "source_commit": "00e6552ffe65a3dbd6768b0e017fd22226c5b86f",
+  "base_release": "hbnf-cart2-phase2-r6-vibe-first-ui-20261012",
+  "base_firmware_sha256": "43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3",
+  "base_wled_source_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+  "build_environment": "PlatformIO Core 6.1.18; hbnf_matrix_wled16_packet20_diag; Arduino-ESP32 2.0.18+sha.8ba0dc0; esptool 4.7.4",
+  "build_command": "PLATFORMIO_CORE_DIR=/Users/andrew/.platformio SOURCE_DATE_EPOCH=1791850000 /Users/andrew/.codex/tool-runtimes/cart2-platformio-6.1.18/bin/pio run -v -j 1 -d /Users/andrew/.codex/builds/cart2-skins-readable-20261014/WLED-build -e hbnf_matrix_wled16_packet20_diag",
+  "build_exit_status": 0,
+  "build_log_path": "evidence/cart2-skins-readable-20261014/BUILD_FINAL_FULL.log",
+  "build_log_sha256": "36f24788a81f182105af14e455d57d19b857900aaaeae0574381b62cb3b0a0b4",
+  "artifact_path": "evidence/cart2-skins-readable-20261014/artifact/hbnf-cart2-phase2-r6-skins-readable-20261014.bin",
+  "artifact_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+  "artifact_size_bytes": 1506032,
+  "ota_slot_bytes": 1572864,
+  "ota_headroom_bytes": 66832,
+  "image_info_path": "evidence/cart2-skins-readable-20261014/IMAGE_INFO_FINAL.txt",
+  "image_info_sha256": "1fccdb34d8cf1c05b3539acc6539ba75184e6ba8180115de2a0bb655d1701a8e",
+  "image_info_valid": true,
+  "source_files": {
+    "firmware/phase2/integration-r6-f89-compact-font/usermod/usermod_hbnf_foundation_v1.cpp": "87bdbd9a68425e97cd5b97641768c4e4a16a527c3dfadfca3d0cb4e3ea5c5559",
+    "firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_local_ui.h": "7c68f0ab9ffc8f02d404d3b842c758c863384971bec6c1130363a9bc09d38888"
+  },
+  "offline_test_receipt_path": "evidence/cart2-skins-readable-20261014/TEST_MATRIX_SCOREBOARD.txt",
+  "offline_test_receipt_sha256": "850e4d6b1702c105cae18adabe16d68b62b50e5d72cf1aeefb534f5602871f0a",
+  "included_features": [
+    "Two separated text rows; round and ace-pot information on separate screens",
+    "Two player entries per standings page; all entries in the validated 1\u201320 contract emitted exactly once",
+    "5.5-second minimum dwell; explicit 16-pixel/second horizontal overflow scroll with pauses",
+    "No 20-second total playback cutoff",
+    "Smooth dark background fade-in/out with manual overlay precedence preserved",
+    "Full player names preserved; unsupported names fail closed; >20 roster fails closed instead of truncating",
+    "Front 9 remains selected until scoring section is locked",
+    "Relay source keeps 240-second redisplay fix and 15-second lease heartbeat"
+  ],
+  "limits": [
+    "Current live data contract does not provide winner events or dollars remaining; winner/payout screens are deferred",
+    "acePot is a contribution count, not currency; displays AMOUNT N/A",
+    "20 entries is the existing receiver/relay limit; larger rosters are rejected as a whole, not displayed partially",
+    "Non-ASCII names are rejected because the installed 3x5 font is bounded to supported ASCII glyphs",
+    "No OTA or physical acceptance performed"
+  ]
+}

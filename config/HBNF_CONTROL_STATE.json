@@ -2744,6 +2744,28 @@
       "Do not change router, cloud, thresholds, or unrelated Cart 2.0 components."
     ],
     "pending_provisional_candidate": {
+      "schema": "hbnf-pending-provisional-candidate-v1",
+      "authorization_id": "OWNER-20261014-CART2-SCOREBOARD-RELEASE-01",
+      "candidate_release_id": "hbnf-cart2-phase2-r6-skins-readable-20261014",
+      "candidate_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+      "candidate_bin_path": "evidence/cart2-skins-readable-20261014/artifact/hbnf-cart2-phase2-r6-skins-readable-20261014.bin",
+      "candidate_size_bytes": 1506032,
+      "candidate_install_attempts_used": 0,
+      "candidate_install_limit": 1,
+      "candidate_source_commit": "00e6552ffe65a3dbd6768b0e017fd22226c5b86f",
+      "starting_release_id": "hbnf-cart2-phase2-r6-vibe-first-ui-20261012",
+      "starting_sha256": "43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3",
+      "owner_settings_baseline": null,
+      "preflight_sha256": null,
+      "recovery_attempts_used": 0,
+      "recovery_install_limit": 1,
+      "rollback_path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+      "workflow_id": "phase2-provisional-release",
+      "status": "LIVE_APPROVED_PENDING_FRESH_PREFLIGHT"
+    },
+    "schema": "hbnf-execution-cursor-v1",
+    "archived_pending_provisional_candidate_20261014": {
       "authorization_id": "OWNER-20261011-CART2-INCREMENTAL-CONTROLS-PROVISIONAL-01",
       "candidate_attempt_started_unix": 1791781096.712597,
       "candidate_bin_path": "evidence/cart2-r6-incremental-controls-20261011/artifact/hbnf-cart2-phase2-r6-incremental-controls-20261011.bin",
@@ -2795,8 +2817,7 @@
       "transaction_result_sha256": "753bc9716474dda70d3dc380a3c9487deccbed2a0f9d729ea334f3b7cabcd3b1",
       "workflow_id": "phase2-provisional-release",
       "workflow_sha256": "141a74cf8dc51cf6dd83564d800f9c7d8aaef8e141504a34e95f4ea8272ad26e"
-    },
-    "schema": "hbnf-execution-cursor-v1"
+    }
   },
   "inherited_evidence": [
     {
@@ -3017,53 +3038,38 @@
   "last_updated_utc": "2026-10-12T06:07:11Z",
   "lifecycle_state": "PHASE2_INTEGRATING",
   "live_authorization_binding": {
-    "authorization_id": "OWNER-20261012-CART2-R6-SMOKE-ONLY-01",
-    "candidate_bin_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
-    "candidate_install_limit": 1,
-    "candidate_release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
-    "matrix_mac": "70:4b:ca:5b:34:5c",
-    "recovery_install_limit": 0,
+    "authorization_id": "OWNER-20261014-CART2-SCOREBOARD-RELEASE-01",
+    "source_message_ref": "Direct owner message in this conversation: CART 2.0 \u2014 URGENT SCOREBOARD RELEASE; authorizes one guarded build and OTA subject to existing release gates.",
+    "candidate_release_id": "hbnf-cart2-phase2-r6-skins-readable-20261014",
+    "candidate_bin_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
     "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "candidate_install_limit": 1,
+    "recovery_install_limit": 1,
     "scope": [
-      "One guarded five-minute smoke only on exact already-installed R6; no install, rebuild, Matrix/AUX reboot, Packet20 activation, 28-kernel sweep, or 90-minute soak.",
-      "Capture actual Matrix/AUX/Vibe settings before controls; test existing controls; restore and verify all captured settings; monitor ordinary device health for five minutes.",
-      "No R4 recovery authorized in this transaction; stop after a critical device-health failure and request fresh owner authorization. A runner-only failure ends live testing."
-    ],
-    "source_message_ref": "Direct owner message: CART 2.0 \u2014 CLOSE PROVISIONAL RELEASE, RESUME PRODUCT WORK"
+      "One guarded install of this exact candidate after fresh admission, exact identity, power, connectivity, and rollback checks.",
+      "Capture and restore fresh Matrix/AUX/Vibe settings.",
+      "Run the existing five-minute read-only health smoke; retain all frozen 28-kernel and 90-minute final gates.",
+      "One exact R4 recovery only if an established mandatory safety/health gate requires it.",
+      "One Opal relay 1.0.1 update to the already installed 1.0.0 package, after device preflight, to correct the demonstrated 240-second redisplay timer; no scoring data mutation.",
+      "Do not trigger scoreboard display until owner replies LOOKING; do not infer any unprovided winner or payout data."
+    ]
   },
   "live_mutation_authorization": {
-    "authorization": "Direct owner message: CART 2.0 \u2014 CLOSE PROVISIONAL RELEASE, RESUME PRODUCT WORK",
-    "authorization_id": "OWNER-20261011-CART2-PROVISIONAL-SMOKE-CONTINUATION-01",
-    "authorized": false,
-    "candidate_attempt_started_unix": 1791751980.558401,
-    "candidate_attempts_used": 1,
-    "candidate_install_limit": 1,
-    "candidate_install_permitted": false,
-    "candidate_release_id": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
-    "candidate_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
-    "continuation_authorization_id": null,
-    "continuation_authorization_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/continuation-20261011/CONTINUATION_AUTHORIZATION.json",
-    "continuation_authorization_sha256": "c38ef2318483eb201764387181c26cdcbb14f75479af1295d4c4b1e392181bb7",
-    "current_gate": "PROVISIONAL_SMOKE_INCOMPLETE_CANDIDATE_UNQUALIFIED",
-    "hardware_writes_permitted_now": false,
-    "operation_scope": "CLOSED_AFTER_PROVISIONAL_SMOKE",
-    "owner_brightness_baseline": {
-      "matrixBrightness": 66,
-      "auxBrightness": 68,
-      "vibe": 5
-    },
-    "qualification_prelive_receipt": "evidence/cart2-r6-audio-cache-20261010/live-qualification/f89-field-reauthorization-20261011/continuation-20261011/preflight-03/QUALIFICATION_PRELIVE_READONLY.json",
-    "qualification_prelive_sha256": "0805f2b5274b6155601afe4387ce2a8909c8f74e65901485f674ce48fec25ff6",
-    "qualification_recovery_subscope": null,
-    "recovery_attempts_used": 0,
-    "recovery_install_limit": 0,
+    "authorization": "Direct owner message in this conversation: CART 2.0 \u2014 URGENT SCOREBOARD RELEASE; authorizes one guarded build and OTA subject to existing release gates.",
+    "authorization_id": "OWNER-20261014-CART2-SCOREBOARD-RELEASE-01",
+    "authorized": true,
+    "candidate_release_id": "hbnf-cart2-phase2-r6-skins-readable-20261014",
+    "candidate_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
-    "source_evidence": "evidence/cart2-r6-incremental-controls-20261011/live-provisional/smoke-continuation-20261011/SMOKE_CONTINUATION_AUTHORIZATION.json",
-    "source_evidence_sha256": "43bfc5b7d7c273bfa7584a8926f561100ebec408036a2ce583a17303561a57af",
-    "source_message_ref": "Direct user message in this conversation: CART 2.0 \u2014 COMPLETE INSTALLED R6 SMOKE.",
-    "status": "PROVISIONAL_SMOKE_INCOMPLETE_CANDIDATE_UNQUALIFIED",
-    "transaction_consumed": true,
-    "transaction_result": "evidence/cart2-r6-incremental-controls-20261011/live-provisional/smoke-continuation-20261012/run/PROVISIONAL_SMOKE_CONTINUATION_RESULT.json"
+    "candidate_attempts_used": 0,
+    "candidate_install_limit": 1,
+    "candidate_install_permitted": true,
+    "recovery_attempts_used": 0,
+    "recovery_install_limit": 1,
+    "operation_scope": "ONE_EXACT_GUARDED_PROVISIONAL_INSTALL_AND_ONE_OPAL_RELAY_UPDATE",
+    "hardware_writes_permitted_now": true,
+    "current_gate": "LIVE_APPROVED_PENDING_FRESH_PREFLIGHT"
   },
   "live_mutation_authorization_closed_at_utc": null,
   "live_mutation_authorization_closure": {
@@ -3093,7 +3099,7 @@
     "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "schema": "hbnf-live-authorization-state-reconciliation-v1"
   },
-  "live_mutation_authorized": false,
+  "live_mutation_authorized": true,
   "model_schema": "hbnf-control-model-v2",
   "observability": {
     "authority_effect": "NONE",

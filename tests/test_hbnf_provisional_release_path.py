@@ -13,7 +13,7 @@ platform_spec=importlib.util.spec_from_file_location("hbnf_platform",ROOT/"scrip
 platform=importlib.util.module_from_spec(platform_spec);platform_spec.loader.exec_module(platform)
 
 
-def test_candidate_workflow_and_artifact_are_exact_and_start_from_f89():
+def test_candidate_workflow_and_artifact_are_exact_and_start_from_installed_vibe_ui():
     workflow_path=ROOT/"platform/workflows/phase2-provisional-release.json"
     workflow=json.loads(workflow_path.read_text())
     contract=workflow["provisional_release_contract"]
@@ -26,14 +26,16 @@ def test_candidate_workflow_and_artifact_are_exact_and_start_from_f89():
     txn.exact_artifacts(profile)
     assert profile.transaction_mode=="provisional"
     assert profile.starting_release_id==contract["starting_release_id"]
-    assert profile.release_id=="hbnf-cart2-phase2-r6-incremental-controls-20261011"
-    assert profile.sha256=="8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d"
-    assert profile.size_bytes==1502864
+    assert profile.release_id=="hbnf-cart2-phase2-r6-skins-readable-20261014"
+    assert profile.sha256=="de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d"
+    assert profile.size_bytes==1506032
     assert profile.rollback_sha256=="338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
     assert contract["smoke_seconds"]==300 and contract["thresholds_may_be_weakened"] is False
     outputs=" ".join(workflow["stages"][6]["outputs"])
-    assert profile.sha256 in outputs and "8afb21b9" in outputs
+    assert profile.sha256 in outputs and "de38221f" in outputs
     assert "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b" not in outputs
+    assert contract["starting_release_id"]=="hbnf-cart2-phase2-r6-vibe-first-ui-20261012"
+    assert contract["starting_sha256"]=="43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3"
     assert "reference_workload" not in contract
     smoke=" ".join(contract["smoke_checks"])
     assert "no threshold" in smoke and "self-contained" in smoke
@@ -63,15 +65,14 @@ def test_wrong_artifact_or_matrix_target_rejected_before_port_execution():
         else:raise AssertionError("wrong candidate or target accepted")
 
 
-def test_installed_r6_accepts_new_smoke_authorization_without_repinning_r7_adapter():
-    state=json.loads((ROOT/"config/HBNF_CONTROL_STATE.json").read_text())
-    pending=state["execution_cursor"]["pending_provisional_candidate"]
+def test_new_exact_candidate_authorization_binds_to_installed_vibe_ui_baseline():
     contract=json.loads((ROOT/"platform/workflows/phase2-provisional-release.json").read_text())["provisional_release_contract"]
-    auth=state["live_authorization_binding"]
-    assert auth["authorization_id"] != pending["authorization_id"]
-    assert platform.provisional_pending_authorization_matches(auth,pending,state["installed_release"],contract)
-    adapter=json.loads((ROOT/"config/HBNF_PACKET20_LIVE_SWEEP_ADAPTER_20261004.json").read_text())
-    assert adapter["expected_release_id"] == "hbnf-cart2-phase2-offline-wow-r7-20261009"
+    pending={"authorization_id":"OWNER-20261014-CART2-SCOREBOARD-PROVISIONAL-01",
+        "candidate_release_id":contract["candidate_release"],"candidate_sha256":contract["candidate_sha256"]}
+    auth={"authorization_id":pending["authorization_id"],"candidate_release_id":contract["candidate_release"],
+        "candidate_bin_sha256":contract["candidate_sha256"],"rollback_bin_sha256":contract["recovery_sha256"]}
+    assert platform.provisional_pending_authorization_matches(auth,pending,contract["starting_release_id"],contract)
+    assert not platform.provisional_pending_authorization_matches(dict(auth,candidate_bin_sha256="0"*64),pending,contract["starting_release_id"],contract)
 
 
 def test_installed_r6_exception_rejects_wrong_candidate_or_rollback():
@@ -206,9 +207,10 @@ def test_provisional_runner_does_not_start_packet20_or_select_a_benchmark_kernel
     source=(ROOT/"scripts/hbnf_r6_audio_cache_live_transaction.py").read_text()
     smoke=source.split("    def provisional_smoke(self, owner_baseline):",1)[1].split("\n    def recover_r4",1)[0]
     assert '"packet20_instrumentation":"NOT_USED"' in smoke
-    assert '"--require-normal-mode"' in smoke
+    assert "combined_feature_check.py" not in smoke
+    assert "run_provisional_health_window(lambda:self._provisional_health_sample())" in smoke
+    assert "DEFERRED_TO_OWNER_OBSERVED_LIVE_SCOREBOARD" in smoke
     assert '"snapshot"' not in smoke and '"telemetry-mode"' not in smoke and '"select"' not in smoke
-    assert "run_provisional_health_window(health_sample)" in smoke
 
 
 def test_smoke_continuation_is_distinct_from_install_and_preserves_consumed_attempt():
@@ -251,7 +253,7 @@ def test_new_candidate_attempt_does_not_reuse_consumed_f89_attempt_counter():
         "candidate_install_limit":1,"recovery_install_limit":1}
     with tempfile.TemporaryDirectory(prefix="provisional-attempt-rebind-",dir=ROOT) as td:
         root=pathlib.Path(td); out=root/"out";out.mkdir()
-        preflight=out/"FRESH_PRELIVE_READONLY.json";preflight.write_text('{"read_only":true}\n')
+        preflight=out/"PREINSTALL_FINAL_READONLY.json";preflight.write_text('{"read_only":true}\n')
         state_path=root/"state.json"
         pending={"schema":"hbnf-pending-provisional-candidate-v1",
             "candidate_release_id":profile.release_id,"candidate_sha256":profile.sha256,
@@ -287,7 +289,16 @@ def test_final_readonly_preflight_does_not_invalidate_admitted_receipt():
         out=pathlib.Path(td); admitted=out/"FRESH_PRELIVE_READONLY.json"
         original=b'{"admission_bound_receipt":true}\n';admitted.write_bytes(original)
         port=txn.LivePort(out/"admission.json",capsule,out/"proof.json",out,profile)
-        port.admission={"fresh_owner_authorization":{}}
+        auth={"authorization_id":"OWNER-TEST-PREFLIGHT","candidate_release_id":profile.release_id,
+            "candidate_bin_sha256":profile.sha256}
+        port.admission={"fresh_owner_authorization":auth}
+        pending={"schema":"hbnf-pending-provisional-candidate-v1",
+            "candidate_release_id":profile.release_id,"candidate_sha256":profile.sha256,
+            "authorization_id":auth["authorization_id"],"candidate_install_attempts_used":0}
+        state_path=out/"state.json"
+        state_path.write_text(json.dumps({"live_mutation_authorized":True,
+            "live_authorization_binding":auth,"execution_cursor":{"pending_provisional_candidate":pending}}))
+        port.state_path=state_path
         previous=txn.preflight
         captured={"pass":True,"brightness_baseline":{"runtime":{"matrixBrightness":66,"auxBrightness":68,"vibe":5}}}
         def fake_preflight(candidate,request_counter=None,receipt_name="FRESH_PRELIVE_READONLY.json"):
@@ -300,6 +311,9 @@ def test_final_readonly_preflight_does_not_invalidate_admitted_receipt():
         assert result==captured and admitted.read_bytes()==original
         assert json.loads((out/"PREINSTALL_FINAL_READONLY.json").read_text())==captured
         assert port.owner_brightness_baseline==captured["brightness_baseline"]["runtime"]
+        updated=json.loads(state_path.read_text())["execution_cursor"]["pending_provisional_candidate"]
+        assert updated["preflight_sha256"]==hashlib.sha256((out/"PREINSTALL_FINAL_READONLY.json").read_bytes()).hexdigest()
+        assert updated["owner_settings_baseline"]==captured["brightness_baseline"]["runtime"]
 
 
 def test_cleanup_accepts_only_exact_owner_or_smoke_settings():

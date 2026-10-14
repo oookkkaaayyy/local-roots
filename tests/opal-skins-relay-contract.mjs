@@ -71,6 +71,8 @@ try {
   assert.equal(shell(`skins_overlay_blocked "$RELAY_FIXTURE"; echo $?`, manual), "0");
   assert.equal(shell(`skins_overlay_blocked "$RELAY_FIXTURE"; echo $?`, game), "0");
   assert.equal(shell(`skins_target_matches 704bca5b345c hbnf-cart2-phase2-r6-vibe-first-ui-20261012; echo $?`, base), "0");
+  assert.equal(shell(`skins_target_matches 704bca5b345c hbnf-cart2-phase2-r6-skins-readable-20261014; echo $?`, base), "0", "relay recognizes the exact next firmware candidate");
+  assert.equal(shell(`skins_target_matches 704bca5b345c unapproved-candidate; echo $?`, base), "1", "unknown firmware identity is rejected");
   assert.equal(shell(`skins_target_matches 704bca5b345d hbnf-cart2-phase2-r6-vibe-first-ui-20261012; echo $?`, base), "1", "wrong Matrix identity is rejected");
   assert.equal(shell(`skins_redisplay_due 100 340 339 false 240 45; echo $?`, base), "0", "four-minute redisplay is due for a fresh snapshot");
   assert.equal(shell(`skins_redisplay_due 100 339 338 false 240 45; echo $?`, base), "1", "redisplay is not early");

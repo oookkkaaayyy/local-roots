@@ -1,0 +1,18 @@
+{
+  "schema": "hbnf-cart2-source-binding-v1",
+  "candidate": "hbnf-cart2-phase2-r6-skins-readable-20261014",
+  "repository": "oookkkaaayyy/local-roots",
+  "branch": "codex/matrix-autonomous-skins-poll-20261013",
+  "commit": "00e6552ffe65a3dbd6768b0e017fd22226c5b86f",
+  "firmware_source": "firmware/phase2/integration-r6-f89-compact-font/usermod/usermod_hbnf_foundation_v1.cpp",
+  "firmware_source_sha256": "87bdbd9a68425e97cd5b97641768c4e4a16a527c3dfadfca3d0cb4e3ea5c5559",
+  "embedded_ui_source": "firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_local_ui.h",
+  "embedded_ui_source_sha256": "7c68f0ab9ffc8f02d404d3b842c758c863384971bec6c1130363a9bc09d38888",
+  "base_firmware_release": "hbnf-cart2-phase2-r6-vibe-first-ui-20261012",
+  "base_firmware_sha256": "43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3",
+  "wled_source_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+  "platformio_environment": "hbnf_matrix_wled16_packet20_diag",
+  "toolchain": "PlatformIO Core 6.1.18",
+  "artifact_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+  "artifact_size_bytes": 1506032
+}

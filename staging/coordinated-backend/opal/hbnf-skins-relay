@@ -9,7 +9,6 @@ TMP=/tmp/hbnf-skins-relay
 URL='https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-control'
 MATRIX='192.168.77.10'
 MATRIX_MAC='704bca5b345c'
-CANDIDATE='hbnf-cart2-phase2-r6-vibe-first-ui-20261012'
 POLL_SECONDS=15
 REDISPLAY_SECONDS=240
 FRESH_SECONDS=45

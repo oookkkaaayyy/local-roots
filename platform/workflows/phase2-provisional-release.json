@@ -2,13 +2,13 @@
   "schema": "local-roots-golden-path-v2",
   "id": "phase2-provisional-release",
   "status": "PROVISIONAL_EXACT_ARTIFACT__FULL_GATES_RETAINED",
-  "selection_warning": "Only the exact incremental-controls candidate SHA is eligible. Provisional use does not imply final qualification; full 28-kernel and uninterrupted 90-minute gates remain unchanged.",
-  "purpose": "One exact candidate-bound guarded installation with existing admission, exact R4 recovery, a 5-minute low-overhead integration smoke, settings restoration, and post-install health checks. This is provisional field review only; it does not qualify or replace full release requirements.",
+  "selection_warning": "Only exact hbnf-cart2-phase2-r6-skins-readable-20261014 SHA de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d is eligible. Provisional use does not imply final qualification; full 28-kernel and uninterrupted 90-minute gates remain unchanged.",
+  "purpose": "One exact candidate-bound guarded installation with existing admission, exact R4 recovery, five-minute health smoke, fresh settings preservation, and owner-observed scoreboard verification. Provisional use does not qualify or replace full release requirements.",
   "required_repo_inputs": [
     "AGENTS.md",
     "config/HBNF_CONTROL_MODEL.json",
     "config/HBNF_CONTROL_STATE.json",
-    "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_F89_20261011.json",
+    "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_SKINS_READABLE_20261014.json",
     "config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
     "config/HBNF_KERNEL_SWEEP_INVENTORY_20261003.json",
     "config/HBNF_RUNTIME_TELEMETRY_CONTRACT.json",
@@ -22,11 +22,12 @@
     "scripts/hbnf_r6_audio_cache_live_transaction.py",
     "scripts/hbnf_r6_combined_feature_check.py",
     "scripts/platform.py",
-    "evidence/cart2-r6-incremental-controls-20261011/OFFLINE_CANDIDATE_MANIFEST.json",
-    "evidence/cart2-r6-incremental-controls-20261011/BUILD_RECEIPT.json",
-    "evidence/cart2-r6-incremental-controls-20261011/SOURCE_BINDING.json",
-    "evidence/cart2-r6-incremental-controls-20261011/artifact/hbnf-cart2-phase2-r6-incremental-controls-20261011.bin",
-    "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_INCREMENTAL_CONTROLS_20261011.json"
+    "evidence/cart2-skins-readable-20261014/BUILD_RECEIPT.json",
+    "evidence/cart2-skins-readable-20261014/SOURCE_BINDING.json",
+    "evidence/cart2-skins-readable-20261014/TEST_MATRIX_SCOREBOARD.txt",
+    "evidence/cart2-skins-readable-20261014/IMAGE_INFO_FINAL.txt",
+    "evidence/cart2-skins-readable-20261014/BUILD_FINAL_FULL.log",
+    "evidence/cart2-skins-readable-20261014/artifact/hbnf-cart2-phase2-r6-skins-readable-20261014.bin"
   ],
   "prelive_contract": {
     "closure_stage_id": "contract-closure",
@@ -56,7 +57,7 @@
       "mutation": false,
       "retry_policy": "idempotent",
       "outputs": [
-        "platform doctor and HBNF control state pass; pushed branch is clean"
+        "platform doctor and HBNF control state pass; exact candidate and release inputs are pinned"
       ]
     },
     {
@@ -65,7 +66,7 @@
       "mutation": false,
       "retry_policy": "idempotent",
       "outputs": [
-        "exact candidate SHA/size/embedded identity and compiled telemetry manifest verified",
+        "exact candidate SHA/size/embedded identity and compiled scoreboard contract verified",
         "Matrix WLED 16.0.1 /update consumer path and target identity verified"
       ]
     },
@@ -127,7 +128,7 @@
         "margin_seconds": 50
       },
       "outputs": [
-        "one multipart install attempt only for hbnf-cart2-phase2-r6-incremental-controls-20261011 SHA-256 8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d (1,502,864 bytes); immediately capture HTTP response, exact runtime identity, Matrix/AUX health"
+        "one multipart install attempt only for hbnf-cart2-phase2-r6-skins-readable-20261014 SHA-256 de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d (1,506,032 bytes); immediately capture HTTP response, exact runtime identity, Matrix/AUX health"
       ]
     },
     {
@@ -136,8 +137,8 @@
       "mutation": false,
       "retry_policy": "idempotent",
       "outputs": [
-        "Five-minute read-only health window at 30-second intervals under the owner's current animation; verify exact runtime identity, Matrix/AUX health, DDP source, uptime continuity, and renderer advancement. Capture FPS descriptively only; unmatched workload FPS is not acceptance evidence.",
-        "Run bounded Vibe/audio/palette/text readback separately using ordinary WLED APIs. The feature check captures and restores exact prior WLED/HBNF state and persisted owner settings in its own finally path; it refuses to start when Packet20/Foundation telemetry is active or an overlay is already present. The short smoke does not use Packet20.",
+        "Five-minute read-only health window; verify exact runtime identity, Matrix/AUX health, DDP source, uptime continuity, and renderer advancement. Capture FPS descriptively only; unmatched workload FPS is not acceptance evidence.",
+        "Owner-observed scoreboard verification after explicit LOOKING coordination: exactly two rows, no persistent header, readable full names, 5.5-second dwell and normal Vibe return. Do not inject synthetic score data or change scoring.",
         "No full qualification implied; retain all 28-kernel, 90-minute, and owner-acceptance gates for later."
       ],
       "timeout_budget": {
@@ -156,13 +157,13 @@
     "qualification remains provisional; frozen 28-kernel and uninterrupted 90-minute gates remain open"
   ],
   "provisional_release_contract": {
-    "candidate_release": "hbnf-cart2-phase2-r6-incremental-controls-20261011",
-    "candidate_sha256": "8afb21b9db6a03420fd6683507ee192168d8f6a13384e308f117911b5bdc6c5d",
-    "candidate_size_bytes": 1502864,
-    "candidate_bin_path": "evidence/cart2-r6-incremental-controls-20261011/artifact/hbnf-cart2-phase2-r6-incremental-controls-20261011.bin",
-    "source_commit": "aa13434203b11d054aaa89aa0258434c20b5e58d",
-    "starting_release_id": "hbnf-cart2-phase2-offline-wow-r6-audio-cache-20261010",
-    "starting_sha256": "f89a55fbc85b8ffda90390c18eb9b09e934e9e73db96884d712c033d4684a35b",
+    "candidate_release": "hbnf-cart2-phase2-r6-skins-readable-20261014",
+    "candidate_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+    "candidate_size_bytes": 1506032,
+    "candidate_bin_path": "evidence/cart2-skins-readable-20261014/artifact/hbnf-cart2-phase2-r6-skins-readable-20261014.bin",
+    "source_commit": "00e6552ffe65a3dbd6768b0e017fd22226c5b86f",
+    "starting_release_id": "hbnf-cart2-phase2-r6-vibe-first-ui-20261012",
+    "starting_sha256": "43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3",
     "recovery_release": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1",
     "recovery_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
     "recovery_bin_path": "evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
@@ -185,12 +186,12 @@
     "full_kernel_sweep_count": 28,
     "full_soak_seconds_minimum": 5400,
     "thresholds_may_be_weakened": false,
-    "foundation_adapter_path": "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_INCREMENTAL_CONTROLS_20261011.json",
-    "qualification_output_path": "evidence/cart2-r6-incremental-controls-20261011/live-provisional",
-    "release_classification": "incremental provisional controls candidate",
+    "foundation_adapter_path": "config/HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_SKINS_READABLE_20261014.json",
+    "qualification_output_path": "evidence/cart2-skins-readable-20261014/live-provisional",
+    "release_classification": "readability and display reliability improvement on existing provisional UI baseline",
     "applicable_policy_smoke_minutes": 5,
     "major_milestone_soak_minutes": 30,
     "major_milestone_soak_applicable": false,
-    "major_milestone_rationale": "This is a bounded update to existing text, palette, touch-control, and diagnostic-session behavior; it does not promote a new foundation or complete the Cart 2.0 major milestone. The 5-minute integration smoke applies. The frozen 90-minute qualification and owner acceptance remain required for final acceptance."
+    "major_milestone_rationale": "This changes only the existing scoreboard presentation path and relay redisplay cadence. It does not change rendering kernels, scoring, audio, AUX output, or system architecture. The existing 5-minute integration smoke plus owner-observed screen validation applies; 28-kernel and uninterrupted 90-minute qualification remain mandatory for final acceptance."
   }
 }

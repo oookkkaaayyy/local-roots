@@ -6,7 +6,11 @@ skins_jf() {
 }
 
 skins_target_matches() {
-	[ "$1" = '704bca5b345c' ] && [ "$2" = 'hbnf-cart2-phase2-r6-vibe-first-ui-20261012' ]
+	[ "$1" = '704bca5b345c' ] || return 1
+	case "$2" in
+		hbnf-cart2-phase2-r6-vibe-first-ui-20261012|hbnf-cart2-phase2-r6-skins-readable-20261014) return 0 ;;
+		*) return 1 ;;
+	esac
 }
 
 skins_full_entry() {

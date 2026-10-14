@@ -1,20 +1,20 @@
 # Opal unattended Matrix Skins relay — staged package
 
-This is an outbound-only relay for the GL-SFT1200. It reads `live_status` from the existing Supabase Edge Function with the existing **public** anon/publishable key, then posts a validated `hbnf-live-v1` snapshot to the already-installed Matrix API. It never writes website scoring data. It is deliberately not enabled or installed by this change.
+This is an outbound-only relay for the GL-SFT1200. It reads `live_status` from the existing Supabase Edge Function with the existing **public** anon/publishable key, then posts a validated `hbnf-live-v1` snapshot to the already-installed Matrix API. It never writes website scoring data. It is version 1.0.1 updates the already-installed 1.0.0 relay and is not yet installed.
 
 ## Why this path
 
-The exact installed source `d01a2f6f5ae02deb0901dc48490de0cd777ee9fa` has the native `/hbnf/live` receiver and renderer, but no autonomous Supabase poll task. The polling code in source commit `914beba0f79d8bd2aa0685b820d1463163334087` belongs to an uninstalled build that does not link. The Opal preflight recorded on October 9 found OpenWrt/BusyBox, curl with TLS verification and CA bundle, jsonfilter, and procd already present, so this avoids another Matrix build/OTA. A fresh identity, package, CA, and route check remains mandatory before installation.
+The installed Vibe-first firmware and the readable-scoreboard candidate both use the existing `/hbnf/live` receiver; the relay remains the autonomous Supabase poller. The Opal preflight recorded on October 9 found OpenWrt/BusyBox, curl with TLS verification and CA bundle, jsonfilter, and procd already present, so this avoids another Matrix build/OTA. A fresh identity, package, CA, and route check remains mandatory before installation.
 
 ## Fail-closed requirements
 
-* The relay accepts only the pinned Matrix MAC, candidate release ID, Supabase function URL, and `selectorVersion=skins-front-lock-v1`.
+* The relay accepts only the pinned Matrix MAC and one of the two exact compatible release IDs, Supabase function URL, and `selectorVersion=skins-front-lock-v1`.
 * Until the staged selector correction is deployed, the current endpoint response has no selector marker and this relay sends **no Matrix writes**. This protects against the demonstrated premature B9 selection in v23.
 * HTTPS uses curl's normal CA/hostname verification; there is no `-k`/insecure mode. Requests are bounded to 8 seconds and 32 KiB.
 * Only fresh successful reads are posted. On read failures, the relay does not replay cached scores; the Matrix's existing live snapshot expires after 120 seconds.
-* Score names are compacted to the installed receiver's 12-byte ASCII format; invalid, empty, over-20-entry, malformed, or oversized values are rejected rather than truncated silently.
+* Full bounded player names are preserved for the readable scoreboard candidate; invalid, unsupported, over-58-character, over-20-entry, malformed, or oversized values are rejected rather than truncated silently.
 * Changed snapshots use `/hbnf/live`, with `Host: 192.168.77.10` and `Origin: http://192.168.77.10`, matching the installed receiver. Native command overlays keep precedence.
-* Four-minute redisplay pulses the same receiver with inactive then active data only after a fresh poll, while no manual overlay or game is active. This is intentionally not a second scoreboard implementation.
+* Four-minute redisplay uses the validated 240-second timer fix and pulses the same receiver with inactive then active data only after a fresh poll, while no manual overlay or game is active. This is intentionally not a second scoreboard implementation.
 * Current installed firmware has no game runtime. The relay checks the optional `HBNF.gameActive` flag and suppresses periodic redisplay if a later compatible build reports a game active.
 
 ## Package files
@@ -35,4 +35,4 @@ Run `sh /etc/init.d/hbnf-skins-relay stop` then `disable`; remove the two servic
 
 Offline tests establish formatting, selector-version fail-closed behavior, F9/B9 routing expectations, refresh scheduling, and request contracts only. They do not prove router installation, real HTTPS, Matrix HTTP acceptance, or visible pixels. Physical acceptance must confirm one changed-score overlay, a four-minute redisplay, ordinary animations between overlays, manual-overlay precedence, and recovery after a brief WAN interruption.
 
-The Matrix live renderer duration is computed by the installed firmware as `constrain(ceil(entries/2) * 1900 + 900, 2800, 20000)` ms; therefore a small roster may display for less than the nominal 15 seconds. This package does not alter the renderer to force exactly 15 seconds.
+The readable-scoreboard firmware controls display duration and scrolling; all 1–20 entries are visited in bounded two-entry screens. Win/payout amounts are not in the existing live contract and are never derived by this relay.

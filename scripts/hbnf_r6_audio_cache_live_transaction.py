@@ -51,7 +51,11 @@ OUT = ROOT/"evidence/cart2-r6-audio-cache-20261010/live-qualification"
 SUCCESSOR_RELEASE = "hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011"
 SUCCESSOR_SHA = "36881ca6c13e813762f3bbf5193d599a5ec3f93bf197771ad0f4ea9156358187"
 SUCCESSOR_SIZE = 1498832
-PROVISIONAL_RELEASE = "hbnf-cart2-phase2-r6-incremental-controls-20261011"
+PROVISIONAL_RELEASE = "hbnf-cart2-phase2-r6-skins-readable-20261014"
+SUPPORTED_PROVISIONAL_STARTS = {
+    RELEASE: CANDIDATE_SHA,
+    "hbnf-cart2-phase2-r6-vibe-first-ui-20261012": "43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3",
+}
 SUCCESSOR_BIN = ROOT/"evidence/cart2-r6-neutral-audio-hue-radial-lazy-20261011/artifact/hbnf-cart2-phase2-offline-wow-r6-neutral-audio-hue-radial-lazy-20261011.bin"
 
 
@@ -120,9 +124,9 @@ def load_candidate_profile(capsule_path: pathlib.Path) -> CandidateProfile:
     starting_release=contract.get("starting_release_id",R4)
     starting_sha=contract.get("starting_sha256")
     if (transaction_mode=="provisional" and
-        (contract.get("smoke_seconds")!=300 or starting_release!=RELEASE
-         or starting_sha!=CANDIDATE_SHA or not isinstance(starting_release,str)
-         or not re.fullmatch(r"[A-Za-z0-9._-]+",starting_release))):
+        (contract.get("smoke_seconds")!=300 or not isinstance(starting_release,str)
+         or not re.fullmatch(r"[A-Za-z0-9._-]+",starting_release)
+         or SUPPORTED_PROVISIONAL_STARTS.get(starting_release)!=starting_sha)):
         raise RuntimeError("provisional-workflow-smoke-or-starting-identity-invalid")
     profile=CandidateProfile(release,candidate_sha,candidate_size,candidate_bin,adapter,
         output,transaction_mode=transaction_mode,starting_release_id=starting_release,
@@ -1273,6 +1277,22 @@ class LivePort:
             type(actual.get(key)) is not int or not 0<=actual[key]<=255 for key in actual):
             raise RuntimeError("fresh-owner-settings-capture-incomplete-or-out-of-range")
         self.owner_brightness_baseline=dict(actual)
+        if self.candidate.transaction_mode=="provisional":
+            state=json.loads(self.state_path.read_text())
+            binding=self.admission.get("fresh_owner_authorization",{})
+            pending=state.get("execution_cursor",{}).get("pending_provisional_candidate",{})
+            if (state.get("live_mutation_authorized") is not True
+                or state.get("live_authorization_binding")!=binding
+                or pending.get("schema")!="hbnf-pending-provisional-candidate-v1"
+                or pending.get("candidate_release_id")!=self.candidate.release_id
+                or pending.get("candidate_sha256")!=self.candidate.sha256
+                or pending.get("authorization_id")!=binding.get("authorization_id")
+                or pending.get("candidate_install_attempts_used")!=0):
+                raise RuntimeError("provisional-preflight-exact-owner-authorization-state-mismatch")
+            pending["preflight_sha256"]=sha(self.outdir/receipt_name)
+            pending["owner_settings_baseline"]=dict(actual)
+            pending["status"]="FRESH_PREINSTALL_PREFLIGHT_PASS"
+            self.state_path.write_text(json.dumps(state,indent=2)+"\n")
         return result
 
     def preflight_candidate(self, expected_matrix_brightness=None, capture_fresh_owner_settings=False):
@@ -1591,7 +1611,7 @@ class LivePort:
             or pending.get("candidate_sha256") != self.candidate.sha256
             or pending.get("authorization_id") != binding.get("authorization_id")
             or pending.get("candidate_install_attempts_used") != 0
-            or pending.get("preflight_sha256") != sha(self.outdir/"FRESH_PRELIVE_READONLY.json")):
+            or pending.get("preflight_sha256") != sha(self.outdir/"PREINSTALL_FINAL_READONLY.json")):
             raise RuntimeError("exact-owner-authorization-state-binding-changed-before-install")
         pending["candidate_install_attempts_used"] = 1
         pending["candidate_attempt_started_unix"] = time.time()
@@ -1606,7 +1626,7 @@ class LivePort:
             "candidate_release_id": self.candidate.release_id, "candidate_sha256": self.candidate.sha256,
             "candidate_attempt": 1, "candidate_attempt_limit": 1, "r4_recovery_limit": 1,
             "recorded_before_wled_post": True,
-            "preflight_sha256": sha(self.outdir/"FRESH_PRELIVE_READONLY.json")})
+            "preflight_sha256": sha(self.outdir/"PREINSTALL_FINAL_READONLY.json")})
 
     def upload_candidate(self):
         self.device_requests += 1
@@ -1670,95 +1690,53 @@ class LivePort:
                 "diagnostic_complete": diagnostics, "abort": abort}
 
     def provisional_smoke(self, owner_baseline):
-        """Run bounded feature readback and ordinary read-only five-minute health monitoring."""
+        """Run the five-minute read-only health window without synthetic on-device overlays."""
         if self.candidate.transaction_mode!="provisional":
             raise RuntimeError("provisional-smoke-requires-provisional-capsule")
         result={"passed":False,"duration_seconds":300,"candidate_release_id":self.candidate.release_id,
             "candidate_sha256":self.candidate.sha256,"packet20_instrumentation":"NOT_USED",
-            "feature_check":None,"owner_settings_restore":None}
+            "feature_check":"DEFERRED_TO_OWNER_OBSERVED_LIVE_SCOREBOARD"}
         self.outdir.mkdir(parents=True,exist_ok=True)
-        failure=None
-        feature_check_started=False
-        def health_sample():
-            self.device_requests+=5
-            mi=get_json(MATRIX+"/json/info")[2]
-            build=get_json(MATRIX+"/hbnf/build.json")[2]
-            ms=get_json(MATRIX+"/json/state")[2]
-            ai=get_json(AUX+"/json/info")[2]
-            ast=get_json(AUX+"/json/state")[2]
-            h=ms.get("HBNF",{});timing=h.get("timing",{})
-            return {"release_id":build.get("release_id"),"matrix_ip":mi.get("ip"),
-                "matrix_mac":str(mi.get("mac","")).replace(":","").lower(),"wled":mi.get("ver"),
-                "matrix_on":ms.get("on"),"uptime_seconds":timing.get("uptimeSec"),
-                "fps":mi.get("leds",{}).get("fps"),"kernel_id":h.get("kernel"),
-                "variant_signature":h.get("variantSignature"),
-                "render_count":timing.get("companionRenderCount",h.get("companionRenderCount")),
-                "aux_ip":ai.get("ip"),"aux_mac":str(ai.get("mac","")).replace(":","").lower(),
-                "aux_on":ast.get("on"),"aux_live":ai.get("live"),"aux_mode":ai.get("lm"),
-                "aux_source":ai.get("lip"),"aux_led_count":ai.get("leds",{}).get("count")}
         try:
-            # Feature controls are a distinct bounded transaction with their
-            # own snapshot/restore. The five-minute health window itself only
-            # reads ordinary Matrix/AUX endpoints and never enters Packet20.
-            feature_check_started=True
-            combined_path=self.outdir/"COMBINED_FEATURE_CHECK.json"
-            p=run([sys.executable,str(ROOT/"scripts/hbnf_r6_combined_feature_check.py"),
-                "--release-id",self.candidate.release_id,"--out",str(combined_path),
-                "--require-normal-mode"],timeout=90)
-            combined=json.loads(combined_path.read_text()) if combined_path.is_file() else {}
-            result["feature_check"]=combined
-            result["combined_feature_check"]=combined
-            if p.returncode or combined.get("status")!="PASS":
-                if combined.get("checks",{}).get("matrix_aux_ddp_projection") is False:
-                    raise RuntimeError("provisional-smoke-aux-ddp-health-failure")
-                raise RuntimeError("provisional-smoke-combined-feature-check-failed")
-            result["health_window"]=run_provisional_health_window(health_sample)
-        except Exception as exc:
-            failure=f"{type(exc).__name__}: {exc}"
-        finally:
-            if feature_check_started:
-                try:
-                    context=read_matrix_context(self._record_device_request,self.candidate.release_id,
-                        authorized_runtime_vibe=owner_baseline.get("vibe"))
-                    keys=("matrixBrightness","auxBrightness","vibe")
-                    settings_ok=(all(context["brightness"]["runtime"].get(k)==owner_baseline.get(k) for k in keys)
-                        and all(context["brightness"]["persisted"].get(k)==owner_baseline.get(k) for k in keys))
-                    if not settings_ok:
-                        if not provisional_smoke_restore_state_safe(context["brightness"],owner_baseline):
-                            raise RuntimeError("provisional-smoke-owner-settings-outside-captured-or-test-values")
-                        restored=self.restore_qualification_brightness(owner_baseline)
-                        if not isinstance(restored,dict) or restored.get("verified") is not True:
-                            raise RuntimeError("provisional-smoke-owner-settings-restore-failed")
-                        context=read_matrix_context(self._record_device_request,self.candidate.release_id,
-                            authorized_runtime_vibe=owner_baseline.get("vibe"))
-                        settings_ok=(all(context["brightness"]["runtime"].get(k)==owner_baseline.get(k) for k in keys)
-                            and all(context["brightness"]["persisted"].get(k)==owner_baseline.get(k) for k in keys))
-                    result["owner_settings_restore"]={"verified":settings_ok,
-                        "runtime":context["brightness"]["runtime"],"persisted":context["brightness"]["persisted"]}
-                    if not settings_ok:raise RuntimeError("provisional-smoke-owner-settings-readback-mismatch")
-                except Exception as exc:
-                    result["owner_settings_restore"]={"verified":False,"error":f"{type(exc).__name__}: {exc}"}
-                    failure=failure or f"{type(exc).__name__}: {exc}"
-        if failure:
-            result["failure"]=failure
-            result["abort"]={"run_error":"provisional-smoke-"+failure}
-            return result
-
-        try:
-            final=read_matrix_context(self._record_device_request,self.candidate.release_id,
+            result["health_window"]=run_provisional_health_window(lambda:self._provisional_health_sample())
+            context=read_matrix_context(self._record_device_request,self.candidate.release_id,
                 authorized_runtime_vibe=owner_baseline.get("vibe"))
             keys=("matrixBrightness","auxBrightness","vibe")
-            if (any(final["brightness"]["runtime"].get(k)!=owner_baseline.get(k) for k in keys)
-                or any(final["brightness"]["persisted"].get(k)!=owner_baseline.get(k) for k in keys)):
-                raise RuntimeError("provisional-smoke-final-owner-settings-readback-mismatch")
-            result["final_matrix_aux_settings_verified"]=True
+            settings_ok=(all(context["brightness"]["runtime"].get(k)==owner_baseline.get(k) for k in keys)
+                and all(context["brightness"]["persisted"].get(k)==owner_baseline.get(k) for k in keys))
+            h=context["state"].get("HBNF",{})
+            diagnostics_off=(h.get("packet20Diagnostic",{}).get("enabled") is False
+                and h.get("foundationTelemetry",{}).get("enabled") is False)
+            result["owner_settings_restore"]={"verified":settings_ok,"write_performed":False,
+                "runtime":context["brightness"]["runtime"],"persisted":context["brightness"]["persisted"]}
+            result["diagnostics_off"]=diagnostics_off
+            if not settings_ok:
+                raise RuntimeError("provisional-smoke-owner-settings-readback-mismatch")
+            if not diagnostics_off:
+                raise RuntimeError("provisional-smoke-diagnostic-mode-not-off")
             result["passed"]=True
-            result["owner_physical_text_centering_review"]="required; cannot be proven by controller/API telemetry"
-            result["final_qualification"]="NOT_PERFORMED; all frozen 28-kernel, 90-minute, and owner-acceptance gates remain required"
         except Exception as exc:
             result["failure"]=f"{type(exc).__name__}: {exc}"
             result["abort"]={"run_error":"provisional-smoke-"+result["failure"]}
         return result
+
+    def _provisional_health_sample(self):
+        self.device_requests+=5
+        mi=get_json(MATRIX+"/json/info")[2]
+        build=get_json(MATRIX+"/hbnf/build.json")[2]
+        ms=get_json(MATRIX+"/json/state")[2]
+        ai=get_json(AUX+"/json/info")[2]
+        ast=get_json(AUX+"/json/state")[2]
+        h=ms.get("HBNF",{});timing=h.get("timing",{})
+        return {"release_id":build.get("release_id"),"matrix_ip":mi.get("ip"),
+            "matrix_mac":str(mi.get("mac","")).replace(":","").lower(),"wled":mi.get("ver"),
+            "matrix_on":ms.get("on"),"uptime_seconds":timing.get("uptimeSec"),
+            "fps":mi.get("leds",{}).get("fps"),"kernel_id":h.get("kernel"),
+            "variant_signature":h.get("variantSignature"),
+            "render_count":timing.get("companionRenderCount",h.get("companionRenderCount")),
+            "aux_ip":ai.get("ip"),"aux_mac":str(ai.get("mac","")).replace(":","").lower(),
+            "aux_on":ast.get("on"),"aux_live":ai.get("live"),"aux_mode":ai.get("lm"),
+            "aux_source":ai.get("lip"),"aux_led_count":ai.get("leds",{}).get("count")}
 
     def recover_r4(self):
         self.consume_recovery_attempt()

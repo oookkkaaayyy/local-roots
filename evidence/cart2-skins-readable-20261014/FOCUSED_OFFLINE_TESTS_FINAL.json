@@ -1,0 +1,107 @@
+{
+  "schema": "hbnf-cart2-skins-readable-focused-offline-tests-v1",
+  "candidate": "hbnf-cart2-phase2-r6-skins-readable-20261014",
+  "candidate_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+  "relay_package_sha256": "88512f4a7e6540161e4f32beaed1373c51c54eeadc9b406bc3dbfb7fd549e135",
+  "result": "PASS",
+  "tests": [
+    {
+      "command": [
+        "python3",
+        "-m",
+        "py_compile",
+        "scripts/hbnf_r6_audio_cache_live_transaction.py",
+        "scripts/update_opal_skins_relay_1_0_1.py"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "tests/test_hbnf_provisional_release_path.py"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: exact candidate/target binding, one-attempt install, fresh settings capture, interruption/readback resolution, one R4 recovery, and 5-minute smoke fail closed\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "tests/test_r6_audio_cache_transaction_dryrun.py"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: actual transaction coordinator replayed admission, stage, one install, readback, qualification, exact recovery, host failure, and recovery failure; invalid admission made zero device requests\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "tests/opal-skins-relay-contract.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: full-name relay projection, fail-closed unsupported names, changed/unchanged snapshots, stale suppression, exact 240s schedule, overlay suppression, installed receiver contract, two-row cycle rendering and reproducible key-free package assembly\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "tests/hbnf_matrix_skins_autopoll_contract.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: F9/B9 data selection, existing Opal polling/redisplay authority, full bounded names, readable two-row schedule and no unsupported currency output\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "sh",
+        "-n",
+        "staging/coordinated-backend/opal/hbnf-skins-relay",
+        "staging/coordinated-backend/opal/hbnf-skins-relay-core.sh"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/update_opal_skins_relay_1_0_1.py",
+        "--package",
+        "evidence/cart2-skins-readable-20261014/opal-relay-v1.0.1/hbnf-opal-skins-relay-1.0.1.tar.gz",
+        "--self-test"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"status\": \"PASS\", \"package_sha256\": \"88512f4a7e6540161e4f32beaed1373c51c54eeadc9b406bc3dbfb7fd549e135\", \"version\": \"1.0.1\", \"members\": [\"README-skins-relay.md\", \"hbnf-skins-relay\", \"hbnf-skins-relay-core.sh\", \"hbnf-skins-relay.conf.example\", \"hbnf-skins-relay.init\"], \"install_attempt_limit\": 1, \"recovery\": \"persistent exact 1.0.0 backups\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/platform.py",
+        "doctor"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"errors\": [],\n  \"ok\": true,\n  \"repo_identity\": {\n    \"branch\": \"codex/matrix-autonomous-skins-poll-20261013\",\n    \"dirty\": true,\n    \"type\": \"git_commit\",\n    \"value\": \"00e6552ffe65a3dbd6768b0e017fd22226c5b86f\"\n  },\n  \"schema\": \"local-roots-platform-doctor-v1\",\n  \"system_count\": 6,\n  \"warnings\": [],\n  \"workflow_count\": 5\n}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/hbnf_r6_audio_cache_live_transaction.py",
+        "--admission",
+        "evidence/cart2-r6-incremental-controls-20261011/live-provisional/LIVE_APPROVED_ADMISSION.json",
+        "--capsule",
+        "evidence/cart2-skins-readable-20261014/live-provisional/execution-capsule.json",
+        "--prelive-proof",
+        "evidence/cart2-r6-incremental-controls-20261011/live-provisional/PRELIVE_PROOF.json",
+        "--dry-run"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"EXACT_ARTIFACTS_VALID_NO_DEVICE_REQUESTS\",\n  \"device_requests\": 0,\n  \"candidate\": \"hbnf-cart2-phase2-r6-skins-readable-20261014\",\n  \"candidate_sha256\": \"de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d\",\n  \"rollback_sha256\": \"338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\",\n  \"dry_run_does_not_authorize_mutation\": true\n}\n",
+      "stderr": ""
+    }
+  ],
+  "physical_acceptance": "PENDING_OWNER_OBSERVED_DISPLAY"
+}

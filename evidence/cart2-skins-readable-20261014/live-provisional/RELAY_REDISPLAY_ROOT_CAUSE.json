@@ -1,0 +1,28 @@
+{
+  "schema": "hbnf-opal-redisplay-interval-root-cause-v1",
+  "observed_utc": "2026-10-14",
+  "installed_relay_version": "1.0.0",
+  "installed_files_sha256": {
+    "service": "2837340b73e50c34b3f8502b134ea09e911ff367332fb243fb9589d3c30c769e",
+    "core": "b0cbd0a8afcbe69ce06dad5e822590b5d84c6af1862282b06687ce6a2ce6d086",
+    "init": "4dd9ad2e3105dcd3a8b87e9369a6806d736b14839a17b3edb1d59eccd09b1e60"
+  },
+  "read_only_live_logs": [
+    "23:30:56 fresh Skins standings redisplayed",
+    "23:33:18 fresh Skins standings redisplayed",
+    "23:35:21 fresh Skins standings redisplayed",
+    "23:37:39 fresh Skins standings redisplayed",
+    "23:39:56 fresh Skins standings redisplayed",
+    "23:42:17 fresh Skins standings redisplayed",
+    "23:44:20 fresh Skins standings redisplayed",
+    "23:46:38 fresh Skins standings redisplayed"
+  ],
+  "source_cause": "The installed relay cleared its redisplay clock whenever Matrix liveActive became false. The Matrix receiver reports liveActive false after the 120000ms live-score lease expires. This restarted the intended 240-second timer at approximately 120 seconds.",
+  "source_evidence": {
+    "matrix_lease_file": "firmware/phase2/integration-r6-f89-compact-font/usermod/usermod_hbnf_foundation_v1.cpp",
+    "matrix_lease_lines": "358, 1600",
+    "relay_core": "staging/coordinated-backend/opal/hbnf-skins-relay-core.sh",
+    "corrected_behavior": "Relay heartbeats refresh the receiver lease without injecting a new display; the independent redisplay clock is not reset by lease expiry. Package 1.0.1 SHA 88512f4a7e6540161e4f32beaed1373c51c54eeadc9b406bc3dbfb7fd549e135.",
+    "basis": "Measured live logs plus exact installed source hash and local receiver implementation; no inferential network-only explanation."
+  }
+}

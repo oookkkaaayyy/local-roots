@@ -1,0 +1,2 @@
+PASS: F9/B9 data selection, existing Opal polling/redisplay authority, full bounded names, readable two-row schedule and no unsupported currency output
+PASS: full-name relay projection, fail-closed unsupported names, changed/unchanged snapshots, stale suppression, exact 240s schedule, overlay suppression, installed receiver contract, two-row cycle rendering and reproducible key-free package assembly

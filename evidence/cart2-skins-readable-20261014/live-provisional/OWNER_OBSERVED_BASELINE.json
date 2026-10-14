@@ -1,0 +1,17 @@
+{
+  "schema": "hbnf-owner-observed-scoreboard-v1",
+  "observed_utc": "2026-10-14",
+  "owner_report": "The live standings finally appeared on the Matrix.",
+  "confirmed": [
+    "visible live standings appeared on Matrix"
+  ],
+  "not_confirmed": [
+    "two-row readability",
+    "full-name readability",
+    "5.5-second dwell",
+    "normal Vibe animation resumed",
+    "AUX illumination"
+  ],
+  "source": "Direct owner message in current conversation",
+  "limits": "This observation does not establish the new candidate's visual acceptance."
+}
