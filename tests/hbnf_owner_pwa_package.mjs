@@ -95,7 +95,7 @@ for (const [filename, expectedSize] of [["hbnf-cart-icon-180.png",180],["hbnf-ca
   assert.equal(icon.readUInt32BE(16),expectedSize,`${filename} width`);
   assert.equal(icon.readUInt32BE(20),expectedSize,`${filename} height`);
 }
-const baseIcon=execFileSync("git",["-C",root,"show","HEAD:hbnf-final-controller/hbnf-cart-icon-512.png"]);
+const baseIcon=execFileSync("git",["-C",root,"show","d01a2f6f5ae02deb0901dc48490de0cd777ee9fa:hbnf-final-controller/hbnf-cart-icon-512.png"]);
 assert.notEqual(crypto.createHash("sha256").update(baseIcon).digest("hex"),crypto.createHash("sha256").update(fs.readFileSync(path.join(controller,"hbnf-cart-icon-512.png"))).digest("hex"),"Cart Control identity has a new icon design rather than a renamed copy");
 assert.ok(fs.existsSync(path.join(controller, "hbnf-cart-sw.js")), "owner PWA service worker missing");
 assert.match(uiWorkflow, /HBNF-CART-OWNER-CONTROL-V3-20261014/);
