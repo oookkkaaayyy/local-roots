@@ -1,5 +1,5 @@
 #!/bin/ash
-# Shared validation/formatting helpers for the read-only Skins relay.
+# Shared validation/formatting helpers for the read-only HBNF standings relay.
 
 skins_jf() {
 	jsonfilter -q -i "$1" -e "$2" 2>/dev/null | head -n 1
@@ -8,7 +8,7 @@ skins_jf() {
 skins_target_matches() {
 	[ "$1" = '704bca5b345c' ] || return 1
 	case "$2" in
-		hbnf-cart2-phase2-r6-vibe-first-ui-20261012|hbnf-cart2-phase2-r6-skins-readable-20261014) return 0 ;;
+		hbnf-cart2-phase2-r6-vibe-first-ui-20261012|hbnf-cart2-phase2-r6-skins-readable-20261014|hbnf-cart2-phase2-r6-glow-live-20261014) return 0 ;;
 		*) return 1 ;;
 	esac
 }
@@ -95,6 +95,79 @@ skins_compact_entries() {
 	}' "$input"
 }
 
+glow_full_entry() {
+	local raw="$1" score name clean_name
+	case "$raw" in *'"'*|*'\\'*) return 1;; esac
+	score=${raw##* }
+	name=${raw% *}
+	[ "$name" != "$raw" ] || return 1
+	case "$score" in
+		E) ;;
+		+*|-*) digits=${score#?}; case "$digits" in ''|*[!0-9]*) return 1;; esac; [ "${#digits}" -le 2 ] || return 1 ;;
+		*) return 1 ;;
+	esac
+	[ "${#name}" -le 58 ] || return 1
+	clean_name="$(printf '%s' "$name" | LC_ALL=C tr -cd "A-Za-z0-9 /.'?$-")"
+	[ "$clean_name" = "$name" ] && [ -n "$name" ] || return 1
+	printf '%s %s\n' "$name" "$score"
+}
+
+# Preserve HBNF's full team/player identity in the source payload, but make
+# Matrix labels fit its eight-character static line. Collisions use stable
+# roster-order suffixes; invalid/over-width rosters fail closed as a whole.
+glow_compact_entries() {
+	local input="$1"
+	awk '
+	function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s); return s }
+	function firstword(s, a, n) { n=split(trim(s), a, /[ \t]+/); return a[1] }
+	function letters(s) { gsub(/[^A-Za-z0-9]/, "", s); return toupper(s) }
+	function ordinal(n, chars) { chars="123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; return substr(chars,n,1) }
+	{
+		line=$0; score=line; sub(/^.* /, "", score)
+		name=line; sub(/ [^ ]+$/, "", name)
+		if (score != "E" && score !~ /^[+-][0-9][0-9]?$/) { bad=1; next }
+		n=NR; scores[n]=score; names[n]=name
+		if (split(name, pair, /[\/]/) == 2) {
+			left=letters(firstword(pair[1])); right=letters(firstword(pair[2]))
+			if (left == "" || right == "") { bad=1; next }
+			baseLeft[n]=substr(left,1,1); baseRight[n]=substr(right,1,1)
+			if (baseLeft[n] == baseRight[n]) baseRight[n]=baseRight[n] "2"
+			kind[n]="team"
+		} else {
+			baseSingle[n]=substr(letters(firstword(name)),1,3)
+			if (baseSingle[n] == "") { bad=1; next }
+			kind[n]="single"
+		}
+	}
+	END {
+		if (bad || NR == 0) exit 1
+		for (i=1; i<=NR; i++) {
+			if (kind[i] == "single") {
+				for (j=1; j<=NR; j++) if (kind[j] == "single" && baseSingle[j] == baseSingle[i]) seen["s" baseSingle[i]]++
+				if (seen["s" baseSingle[i]] > 1) {
+					occ=0; for (j=1; j<=i; j++) if (kind[j] == "single" && baseSingle[j] == baseSingle[i]) occ++
+					if (occ > 35) exit 1
+					id=baseSingle[i] ordinal(occ)
+				} else id=baseSingle[i]
+				out=id " " scores[i]
+			} else {
+				key=baseLeft[i] SUBSEP baseRight[i]
+				for (j=1; j<=NR; j++) if (kind[j] == "team" && baseLeft[j] == baseLeft[i] && baseRight[j] == baseRight[i]) seen["t" key]++
+				if (seen["t" key] > 1) {
+					occ=0; for (j=1; j<=i; j++) if (kind[j] == "team" && baseLeft[j] == baseLeft[i] && baseRight[j] == baseRight[i]) occ++
+					if (occ > 35) exit 1
+					left=baseLeft[i] ordinal(occ)
+				} else left=baseLeft[i]
+				out=left " / " baseRight[i] " " scores[i]
+				if (length(out) > 8) out=left "/" baseRight[i] " " scores[i]
+			}
+			if (length(out) > 8) exit 1
+			for (j=1; j<i; j++) if (labels[j] == out) exit 1
+			labels[i]=out; print out
+		}
+	}' "$input"
+}
+
 # Read a compact live_status response and emit a bounded hbnf-live-v1 snapshot.
 # Fails closed until the staged front-lock selector version is deployed.
 skins_build_snapshot() {
@@ -108,24 +181,38 @@ skins_build_snapshot() {
 	case "$active" in true|false) ;; *) return 1;; esac
 	case "$pot" in ''|*[!0-9]*) [ "$active" = false ] && pot=0 || return 1;; esac
 	[ "$pot" -le 9999 ] 2>/dev/null || return 1
-	if [ "$active" != 'true' ] || [ "$event" != 'skins' ]; then
+	if [ "$active" != 'true' ]; then
 		printf '%s\n' '{"schema":"hbnf-live-v1","active":false,"label":"","acePot":0,"entries":[]}'
 		return 0
 	fi
-	[ "$label" = 'F9' ] || [ "$label" = 'B9' ] || return 1
+	if [ "$event" = 'skins' ]; then
+		[ "$label" = 'F9' ] || [ "$label" = 'B9' ] || return 1
+	elif [ "$event" = 'glow' ]; then
+		[ "$label" = 'GLOW' ] || return 1
+	else
+		return 1
+	fi
 	entries="$(mktemp /tmp/hbnf-skins-entries.XXXXXX)" || return 1
 	if ! jsonfilter -q -i "$input" -e '@.live.entries[*]' > "$entries" 2>/dev/null; then rm -f "$entries"; return 1; fi
 	count=0
 	: > "$entries.validated"
 	while IFS= read -r entry || [ -n "$entry" ]; do
 		[ -n "$entry" ] || { rm -f "$entries" "$entries.validated"; return 1; }
-		full="$(skins_full_entry "$entry")" || { rm -f "$entries" "$entries.validated"; return 1; }
+		if [ "$event" = 'glow' ]; then
+			full="$(glow_full_entry "$entry")" || { rm -f "$entries" "$entries.validated"; return 1; }
+		else
+			full="$(skins_full_entry "$entry")" || { rm -f "$entries" "$entries.validated"; return 1; }
+		fi
 		[ "$count" -lt 20 ] || { rm -f "$entries" "$entries.validated"; return 1; }
 		printf '%s\n' "$full" >> "$entries.validated"
 		count=$((count + 1))
 	done < "$entries"
 	[ "$count" -gt 0 ] || { rm -f "$entries" "$entries.validated"; return 1; }
-	compact="$(skins_compact_entries "$entries.validated" "$label")" || { rm -f "$entries" "$entries.validated"; return 1; }
+	if [ "$event" = 'glow' ]; then
+		compact="$(glow_compact_entries "$entries.validated")" || { rm -f "$entries" "$entries.validated"; return 1; }
+	else
+		compact="$(skins_compact_entries "$entries.validated" "$label")" || { rm -f "$entries" "$entries.validated"; return 1; }
+	fi
 	rm -f "$entries" "$entries.validated"
 	{
 		printf '{"schema":"hbnf-live-v1","active":true,"label":"%s","acePot":%s,"entries":[' "$label" "$pot"

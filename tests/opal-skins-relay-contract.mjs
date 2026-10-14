@@ -55,6 +55,22 @@ try {
   duplicateB9.live.entries = ["Alex/Jordan 3", "Avery/Jules 2", "Avery/Jordan 1", "Ava/Adam 4"];
   assert.deepEqual(JSON.parse(shell(`skins_build_snapshot "$RELAY_FIXTURE"`, duplicateB9)).entries, ["A1 / J 3", "A2 / J 2", "A3 / J 1", "A / A2 4"], "duplicate team initials and same-initial partners are distinguishable");
 
+  const glow = structuredClone(base);
+  glow.live.event = "glow";
+  glow.live.label = "GLOW";
+  glow.live.acePot = 0;
+  glow.live.entries = ["Alex/Jordan +1", "Avery/Jules E", "Avery/Jordan -12", "Casey Smith +2"];
+  const glowSnapshot = JSON.parse(shell(`skins_build_snapshot "$RELAY_FIXTURE"`, glow));
+  assert.deepEqual(glowSnapshot, { schema: "hbnf-live-v1", active: true, label: "GLOW", acePot: 0, entries: ["A1/J +1", "A2 / J E", "A3/J -12", "CAS +2"] });
+  assert.ok(glowSnapshot.entries.every((entry) => entry.length <= 8), "Glow labels fit the same static Matrix width without scrolling");
+  const sameInitials = structuredClone(glow);
+  sameInitials.live.entries = ["Ash/Amy +1"];
+  assert.deepEqual(JSON.parse(shell(`skins_build_snapshot "$RELAY_FIXTURE"`, sameInitials)).entries, ["A/A2 +1"], "same-initial Glow partners remain distinguishable");
+  const badGlowScore = structuredClone(glow); badGlowScore.live.entries[0] = "Alex/Jordan +100";
+  shell(`skins_build_snapshot "$RELAY_FIXTURE"`, badGlowScore, false);
+  const wrongGlowLabel = structuredClone(glow); wrongGlowLabel.live.label = "B9";
+  shell(`skins_build_snapshot "$RELAY_FIXTURE"`, wrongGlowLabel, false);
+
   const inactive = { selectorVersion: "skins-front-lock-v1", live: { active: false, event: null, label: "", acePot: 0, entries: [] } };
   assert.equal(JSON.parse(shell(`skins_build_snapshot "$RELAY_FIXTURE"`, inactive)).active, false);
   assert.equal(shell(`skins_snapshot_changed one two; echo $?`, base), "0", "changed snapshots trigger a post");
@@ -81,6 +97,7 @@ try {
   assert.equal(shell(`skins_overlay_blocked "$RELAY_FIXTURE"; echo $?`, game), "0");
   assert.equal(shell(`skins_target_matches 704bca5b345c hbnf-cart2-phase2-r6-vibe-first-ui-20261012; echo $?`, base), "0");
   assert.equal(shell(`skins_target_matches 704bca5b345c hbnf-cart2-phase2-r6-skins-readable-20261014; echo $?`, base), "0", "relay recognizes the exact next firmware candidate");
+  assert.equal(shell(`skins_target_matches 704bca5b345c hbnf-cart2-phase2-r6-glow-live-20261014; echo $?`, base), "0", "relay recognizes the separate Glow firmware candidate");
   assert.equal(shell(`skins_target_matches 704bca5b345c unapproved-candidate; echo $?`, base), "1", "unknown firmware identity is rejected");
   assert.equal(shell(`skins_target_matches 704bca5b345d hbnf-cart2-phase2-r6-vibe-first-ui-20261012; echo $?`, base), "1", "wrong Matrix identity is rejected");
   assert.equal(shell(`skins_redisplay_due 100 340 339 false 240 45; echo $?`, base), "0", "four-minute redisplay is due for a fresh snapshot");
@@ -120,6 +137,10 @@ try {
   const liveRenderer = installedSource.slice(installedSource.indexOf("static void hbnfRenderLiveOverlay"), installedSource.indexOf("static bool hbnfAcceptLiveSnapshot"));
   const liveAcceptor = installedSource.slice(installedSource.indexOf("static bool hbnfAcceptLiveSnapshot"), installedSource.indexOf("// AI: end", installedSource.indexOf("static bool hbnfAcceptLiveSnapshot")));
   assert.match(installedSource, /char entries\[20\]\[64\]/, "Matrix receiver keeps full bounded player text");
+  assert.match(installedSource, /char label\[5\]/, "Matrix receiver stores the four-character GLOW label without truncation");
+  assert.match(installedSource, /strcmp\(label,"GLOW"\)!=0\)return false/, "Matrix accepts GLOW only as an explicit event label");
+  assert.match(installedSource, /ch=='\\+'/ , "Matrix entry validator permits the existing signed Glow score-to-par values");
+  assert.match(installedSource, /strcmp\(label,"GLOW"\)==0\)\{strlcpy\(first,"GLOW"/, "Glow receives a non-Skins round heading");
   assert.match(installedSource, /if\(!n\|\|n>63\)return false/);
   assert.match(installedSource, /hbnfLivePageDwellMs/);
   assert.match(installedSource, /next\.pageCount=\(uint8_t\)\(2u\+\(next\.count\+1u\)\/2u\)/);
@@ -137,7 +158,7 @@ try {
   assert.doesNotMatch(liveAcceptor, /(?:^|[^0-9])20000u|constrain\(pages/, "overlay duration includes every screen in the cycle");
   assert.match(installedSource, /if\(!hbnfRenderCommandOverlay\(f\.controls\.matrixBrightness,f\.vibe\)\)hbnfRenderLiveOverlay/);
   assert.doesNotMatch(installedSource, /hbnfMatrixSkinsPollTask/, "candidate reuses the installed external relay path");
-  console.log("PASS: static-width F9/B9 abbreviations, stable duplicate disambiguation, fail-closed unsupported names, changed/unchanged snapshots, stale suppression, exact 240s schedule, overlay suppression, installed receiver contract, two-row cycle rendering and reproducible key-free package assembly");
+  console.log("PASS: static-width F9/B9/Glow labels, stable duplicate disambiguation, fail-closed unsupported names/scores, changed/unchanged snapshots, stale suppression, exact 240s schedule, overlay suppression, installed receiver contract, two-row cycle rendering and reproducible key-free package assembly");
 } finally {
   rmSync(temp, { recursive: true, force: true });
 }

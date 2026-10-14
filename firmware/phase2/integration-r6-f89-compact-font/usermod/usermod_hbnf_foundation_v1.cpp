@@ -31,8 +31,8 @@ using namespace hbnf_v1;
 namespace {
 
 static const char HBNF_FX_DATA[] PROGMEM = "HBNF Foundation@;;;2";
-static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-phase2-r6-skins-readable-20261014";
-static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-phase2-r6-skins-readable-20261014\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-phase2-r6-skins-readable-20261014\",\"basedOnReleaseId\":\"hbnf-cart2-phase2-r6-vibe-first-ui-20261012\",\"basedOnFirmwareSha256\":\"43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r5-unfrozen\",\"native-text-moments-r5-unfrozen\",\"vibe-first-local-ui-v1\",\"matrix-live-skins-readable-v2\"]}";
+static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-phase2-r6-glow-live-20261014";
+static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-phase2-r6-glow-live-20261014\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-phase2-r6-glow-live-20261014\",\"basedOnReleaseId\":\"hbnf-cart2-phase2-r6-skins-readable-20261014\",\"basedOnFirmwareSha256\":\"de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r5-unfrozen\",\"native-text-moments-r5-unfrozen\",\"vibe-first-local-ui-v1\",\"matrix-live-skins-readable-v2\",\"matrix-live-glow-v1\"]}";
 static PaletteSelection hbnfPalette{};
 static OverlayState hbnfCommandOverlay{};
 static portMUX_TYPE hbnfOverlayMux=portMUX_INITIALIZER_UNLOCKED;
@@ -121,7 +121,7 @@ struct HbnfLiveSnapshot {
   bool active=false;
   uint8_t count=0;
   uint16_t acePot=0;
-  char label[3]{};
+  char label[5]{};
   char entries[20][64]{};
   uint16_t pageDwellMs[12]{};
   uint8_t pageCount=0;
@@ -335,7 +335,7 @@ static bool hbnfRenderCommandOverlay(uint8_t matrixBrightness,Vibe activeVibe) {
 
 static void hbnfRenderLiveOverlay(uint8_t matrixBrightness) {
   const uint32_t now=millis();
-  bool active;uint8_t count,pageCount;char label[3]{},first[64]{},second[64]{};uint16_t pageDwell=0;uint32_t lastSeen,start,duration;uint8_t page=0;uint32_t pageElapsed=0;
+  bool active;uint8_t count,pageCount;char label[5]{},first[64]{},second[64]{};uint16_t pageDwell=0;uint32_t lastSeen,start,duration;uint8_t page=0;uint32_t pageElapsed=0;
   portENTER_CRITICAL(&hbnfLiveMux);
   if(hbnfLive.displayPending&&hbnfLive.active&&hbnfLive.count&&(uint32_t)(now-hbnfLive.lastSeenMs)<120000u) {
     hbnfLive.overlayStartMs=now;hbnfLive.displayPending=false;
@@ -346,7 +346,7 @@ static void hbnfRenderLiveOverlay(uint8_t matrixBrightness) {
     pageElapsed=(uint32_t)(now-start);
     while(page+1u<pageCount&&pageElapsed>=hbnfLive.pageDwellMs[page]){pageElapsed-=hbnfLive.pageDwellMs[page];page++;}
     pageDwell=hbnfLive.pageDwellMs[page];
-    if(page==0){strlcpy(first,"ROUND",sizeof(first));strlcpy(second,label[0]=='F'?"FRONT 9":"BACK 9",sizeof(second));}
+    if(page==0){if(strcmp(label,"GLOW")==0){strlcpy(first,"GLOW",sizeof(first));strlcpy(second,"ROUND",sizeof(second));}else{strlcpy(first,"ROUND",sizeof(first));strlcpy(second,label[0]=='F'?"FRONT 9":"BACK 9",sizeof(second));}}
     else if(page+1u==pageCount){strlcpy(first,"ACE POT",sizeof(first));strlcpy(second,"AMOUNT N/A",sizeof(second));}
     else {
       const uint8_t playerPage=page-1u;const uint8_t firstIndex=(uint8_t)(playerPage*2u);
@@ -382,7 +382,7 @@ static bool hbnfAcceptLiveSnapshot(JsonObjectConst root) {
   HbnfLiveSnapshot next{};
   next.active=active;next.acePot=acePot;
   if(active) {
-    if(strcmp(label,"F9")!=0&&strcmp(label,"B9")!=0)return false;
+    if(strcmp(label,"F9")!=0&&strcmp(label,"B9")!=0&&strcmp(label,"GLOW")!=0)return false;
     if(input.isNull()||input.size()==0||input.size()>20)return false;
     strlcpy(next.label,label,sizeof(next.label));
     for(JsonVariantConst entry:input) {
@@ -391,7 +391,7 @@ static bool hbnfAcceptLiveSnapshot(JsonObjectConst root) {
       if(!n||n>63)return false;
       for(size_t i=0;i<n;i++) {
         const char ch=text[i];
-        if(!((ch>='A'&&ch<='Z')||(ch>='a'&&ch<='z')||(ch>='0'&&ch<='9')||ch==' '||ch=='/'||ch=='-'||ch=='.'||ch=='?'||ch=='$'||ch=='\''))return false;
+        if(!((ch>='A'&&ch<='Z')||(ch>='a'&&ch<='z')||(ch>='0'&&ch<='9')||ch==' '||ch=='/'||ch=='-'||ch=='+'||ch=='.'||ch=='?'||ch=='$'||ch=='\''))return false;
       }
       strlcpy(next.entries[next.count++],text,sizeof(next.entries[0]));
     }
@@ -1595,7 +1595,7 @@ class HbnfFoundationV1Usermod : public Usermod {
       foundationTelemetry["frameTailOverflow"]=tailOverflow;
     }else{foundationTelemetry["frameMsAvg"]=nullptr;foundationTelemetry["frameMsP50"]=nullptr;foundationTelemetry["frameMsP95"]=nullptr;foundationTelemetry["frameMsP99"]=nullptr;foundationTelemetry["frameMsMax"]=nullptr;}
 #endif
-    bool liveActive;uint32_t liveSeen;uint16_t liveAcePot;uint8_t liveCount;char liveLabel[3]{};
+    bool liveActive;uint32_t liveSeen;uint16_t liveAcePot;uint8_t liveCount;char liveLabel[5]{};
     portENTER_CRITICAL(&hbnfLiveMux);liveActive=hbnfLive.active;liveSeen=hbnfLive.lastSeenMs;liveAcePot=hbnfLive.acePot;liveCount=hbnfLive.count;strlcpy(liveLabel,hbnfLive.label,sizeof(liveLabel));portEXIT_CRITICAL(&hbnfLiveMux);
     h["liveActive"]=liveActive&&(uint32_t)(millis()-liveSeen)<120000u;
     h["liveLabel"]=liveLabel;
