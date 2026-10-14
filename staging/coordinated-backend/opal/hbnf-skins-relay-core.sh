@@ -22,7 +22,7 @@ skins_full_entry() {
 	# Reject unsupported bytes rather than silently shortening or changing identity.
 	[ "${#name}" -le 58 ] || return 1
 	local clean_name
-	clean_name="$(printf '%s' "$name" | LC_ALL=C tr -cd "A-Za-z0-9 /.'-")"
+	clean_name="$(printf '%s' "$name" | LC_ALL=C tr -cd "A-Za-z0-9 /.'?$-")"
 	[ "$clean_name" = "$name" ] || return 1
 	[ -n "$name" ] || return 1
 	printf '%s %s\n' "$name" "$score"
