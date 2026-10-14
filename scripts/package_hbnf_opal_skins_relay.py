@@ -35,7 +35,7 @@ def main() -> None:
         "schema": "hbnf-opal-skins-relay-package-v1",
         "package": "hbnf-opal-skins-relay",
         "version": VERSION,
-        "source_base_commit": "e5179739d0c046de56e310e02a8ca486370a2dda",
+        "source_base_commit": "129fe9b52c298eee2577b1b4d4e66790c1381102",
         "installed_matrix_source_commit": "e5179739d0c046de56e310e02a8ca486370a2dda",
         "compatible_matrix_releases": {
             "hbnf-cart2-phase2-r6-vibe-first-ui-20261012": "43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3",

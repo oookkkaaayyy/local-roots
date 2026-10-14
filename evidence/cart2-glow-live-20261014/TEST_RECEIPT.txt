@@ -1,0 +1,14 @@
+HBNF Glow live-to-Matrix offline verification — 2026-10-14
+
+Passed:
+- `node tests/opal-skins-relay-contract.mjs`: builds a representative Glow state through the real HBNF `chooseLive` selector and relay formatter, then verifies exact hbnf-live-v1 data, doubles initials, single-player labels, signed score-to-par, stable duplicate disambiguation, <=8-character static width, malformed value fail-closed behavior, polling/240-second redisplay, manual-overlay/game suppression, and deterministic package binding. Offline package `hbnf-opal-skins-relay-1.0.3.tar.gz` SHA-256: `524058b7ceec35fa9303c75d5acec1b6ab196fa01079408053720f271d2b0c27`.
+- `node tests/hbnf_matrix_skins_autopoll_contract.mjs`: verifies existing Glow projection preserves doubles identity and score-to-par and excludes removed players; verifies current Skins selector and renderer contract.
+- `sh -n` relay/service syntax checks: passed.
+- `python3 -m py_compile scripts/package_hbnf_opal_skins_relay.py`: passed.
+- One build with the existing pinned PlatformIO toolchain: PlatformIO final summary reports one successful target in 24.023 seconds; no second build.
+- `esptool.py 4.7.4 image_info`: valid ESP32 image, size 1,506,144 bytes. Existing OTA slot 1,572,864 bytes; 66,720 bytes headroom.
+
+Not established:
+- A v1.0.3 relay archive exists, but no v1.0.2-to-v1.0.3 guarded updater/admission, firmware installation, real HTTP integration, live-score data mutation, or physical display test was performed.
+- No owner confirmation of the Glow label appearance. Labels are an offline implementation of the accepted compact-name pattern and remain unaccepted visually.
+- No authorized UDisc live API/feed was found; no scraping or undocumented endpoint was used.

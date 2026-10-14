@@ -1,0 +1,48 @@
+{
+  "schema": "hbnf-cart2-build-receipt-v1",
+  "candidate": "hbnf-cart2-phase2-r6-glow-live-20261014",
+  "source_repository": "oookkkaaayyy/local-roots",
+  "source_branch": "codex/glow-matrix-relay-integration-20261014",
+  "source_commit": "e5179739d0c046de56e310e02a8ca486370a2dda",
+  "base_release": "hbnf-cart2-phase2-r6-skins-readable-20261014",
+  "base_firmware_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+  "base_wled_source_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+  "build_environment": "PlatformIO Core 6.1.18; hbnf_matrix_wled16_packet20_diag; Arduino-ESP32 2.0.18+sha.8ba0dc0; esptool 4.7.4",
+  "build_command_path": "evidence/cart2-glow-live-20261014/BUILD_COMMAND.txt",
+  "build_log_path": "evidence/cart2-glow-live-20261014/BUILD_FULL.log",
+  "build_log_sha256": "3797421a75f74ecde28ced9b7834dd49c17f7401f03df4d98f9236464105ad50",
+  "platformio_summary": "SUCCESS: 1 succeeded in 00:00:24.023",
+  "child_exit_code_captured": false,
+  "exit_status_note": "The zsh wrapper failed after PIO finished because `status` is read-only; see BUILD_EXIT_STATUS.txt. No retry/build was performed.",
+  "artifact_path": "evidence/cart2-glow-live-20261014/artifact/hbnf-cart2-phase2-r6-glow-live-20261014.bin",
+  "artifact_sha256": "79616ddb8d5d7acdeba809c009f31637af3aec433a87b8ac3bc75e96ff8897cc",
+  "artifact_size_bytes": 1506144,
+  "relay_package_path": "evidence/cart2-glow-live-20261014/opal-relay-v1.0.3/hbnf-opal-skins-relay-1.0.3.tar.gz",
+  "relay_package_sha256": "524058b7ceec35fa9303c75d5acec1b6ab196fa01079408053720f271d2b0c27",
+  "relay_package_size_bytes": 7890,
+  "previous_relay_package_sha256": "b28aaa67a01c181d169ba26f759e1409beaff2524886880ed4da17a437ca9d0f",
+  "release_recovery_policy": "not preflighted for a live update; future guard must verify exact installed 1.0.2 and use its exact preserved package/files as rollback",
+  "ota_slot_bytes": 1572864,
+  "ota_headroom_bytes": 66720,
+  "image_info_path": "evidence/cart2-glow-live-20261014/IMAGE_INFO.txt",
+  "image_info_sha256": "9e478fbfc80d5e9338186101265f35fd2badd10775363099375f82c3664fb93a",
+  "image_info_valid": true,
+  "source_files": {
+    "firmware/phase2/integration-r6-f89-compact-font/usermod/usermod_hbnf_foundation_v1.cpp": "6f0fca9ba72ab4f0d930e9a54ae90a12f0aae46f47e8ea91daf2779a24a8a2fe",
+    "firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_local_ui.h": "7c68f0ab9ffc8f02d404d3b842c758c863384971bec6c1130363a9bc09d38888"
+  },
+  "focused_tests": [
+    "node tests/opal-skins-relay-contract.mjs — PASS (actual HBNF Glow selector through relay compact formatter, identity collisions, static width, malformed score fail-closed, existing 240-second refresh contract)",
+    "node tests/hbnf_matrix_skins_autopoll_contract.mjs — PASS (existing HBNF Glow projection, double team, scores-to-par, removed-player exclusion)",
+    "sh -n staging/coordinated-backend/opal/hbnf-skins-relay staging/coordinated-backend/opal/hbnf-skins-relay-core.sh — PASS",
+    "python3 -m py_compile scripts/package_hbnf_opal_skins_relay.py — PASS",
+    "esptool.py 4.7.4 image_info — valid ESP32 image"
+  ],
+  "release_status": "OFFLINE CANDIDATE ONLY; deterministic relay 1.0.3 package exists, but no v1.0.2-to-v1.0.3 guarded updater/admission, installation, post-update Matrix readback, or physical visual test was performed.",
+  "limitations": [
+    "No UDisc-authorized live external API/feed has been verified; no scraping or undocumented endpoints were used.",
+    "Current HBNF Glow importer is post-round XLSX/CSV only, so real-time UDisc-to-HBNF sync and duplicate-entry elimination remain blocked.",
+    "Matrix/Opal Glow candidate is not installed or field accepted.",
+    "No production website, Supabase, scoring data, router configuration, or hardware was changed by Glow work."
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "schema": "hbnf-cart2-source-binding-v1",
+  "candidate": "hbnf-cart2-phase2-r6-glow-live-20261014",
+  "repository": "oookkkaaayyy/local-roots",
+  "branch": "codex/glow-matrix-relay-integration-20261014",
+  "commit": "e5179739d0c046de56e310e02a8ca486370a2dda",
+  "firmware_source": "firmware/phase2/integration-r6-f89-compact-font/usermod/usermod_hbnf_foundation_v1.cpp",
+  "firmware_source_sha256": "6f0fca9ba72ab4f0d930e9a54ae90a12f0aae46f47e8ea91daf2779a24a8a2fe",
+  "embedded_ui_source": "firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_local_ui.h",
+  "embedded_ui_source_sha256": "7c68f0ab9ffc8f02d404d3b842c758c863384971bec6c1130363a9bc09d38888",
+  "base_firmware_release": "hbnf-cart2-phase2-r6-skins-readable-20261014",
+  "base_firmware_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+  "wled_source_commit": "29b389df1c1aaec6ff53aea742d17063b985906c",
+  "platformio_environment": "hbnf_matrix_wled16_packet20_diag",
+  "toolchain": "PlatformIO Core 6.1.18; Arduino-ESP32 2.0.18+sha.8ba0dc0; esptool 4.7.4",
+  "artifact_sha256": "79616ddb8d5d7acdeba809c009f31637af3aec433a87b8ac3bc75e96ff8897cc",
+  "artifact_size_bytes": 1506144,
+  "relay_package_sha256": "524058b7ceec35fa9303c75d5acec1b6ab196fa01079408053720f271d2b0c27",
+  "relay_package_size_bytes": 7890,
+  "release_state": "offline built only; no production admission or installation"
+}
