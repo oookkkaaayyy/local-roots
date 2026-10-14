@@ -40,7 +40,6 @@ matrix_snapshot() {
 	mac="$(skins_jf "$TMP/matrix.json" '@.info.mac' | tr -d ':')"
 	candidate="$(skins_jf "$TMP/matrix.json" '@.state.HBNF.candidate')"
 	skins_target_matches "$mac" "$candidate" || return 1
-	MATRIX_LIVE_ACTIVE="$(skins_jf "$TMP/matrix.json" '@.state.HBNF.liveActive')"
 	MATRIX_UPTIME="$(skins_jf "$TMP/matrix.json" '@.state.HBNF.timing.uptimeSec')"
 	case "$MATRIX_UPTIME" in ''|*[!0-9]*) MATRIX_UPTIME=0;; esac
 }
@@ -68,7 +67,6 @@ last_snapshot=''
 last_display=0
 last_success=0
 last_uptime=0
-MATRIX_LIVE_ACTIVE=false
 MATRIX_UPTIME=0
 
 while :; do
@@ -87,10 +85,19 @@ while :; do
 		sleep "$POLL_SECONDS"; continue
 	fi
 	if [ "$SNAPSHOT" != "$last_snapshot" ]; then
-		if post_matrix "$SNAPSHOT"; then last_snapshot=$SNAPSHOT; last_display=$now; log_once 'fresh Skins snapshot accepted by Matrix'; fi
+		if [ -z "$last_snapshot" ] && [ "$SNAPSHOT" != "$inactive" ]; then
+			# The Matrix acknowledges an identical snapshot but does not queue a render.
+			# Force one local inactive-to-active transition on relay startup only.
+			if post_matrix "$inactive" && post_matrix "$SNAPSHOT"; then last_snapshot=$SNAPSHOT; last_display=$now; log_once 'fresh Skins snapshot accepted by Matrix'; fi
+		elif post_matrix "$SNAPSHOT"; then last_snapshot=$SNAPSHOT; last_display=$now; log_once 'fresh Skins snapshot accepted by Matrix'; fi
 		sleep "$POLL_SECONDS"; continue
 	fi
-	if [ "$MATRIX_LIVE_ACTIVE" != 'true' ]; then last_display=0; fi
+	# Keep the Matrix's 120-second live-snapshot lease fresh while the same
+	# complete roster cycle is scrolling. Identical posts update freshness but
+	# do not restart the renderer; on WAN failure they stop and the lease expires.
+	if ! post_matrix "$SNAPSHOT"; then
+		log_once 'Matrix did not accept the fresh-score heartbeat'
+	fi
 	blocked=false
 	if skins_overlay_blocked "$TMP/matrix.json"; then blocked=true; fi
 	if skins_redisplay_due "$last_display" "$now" "$last_success" "$blocked" "$REDISPLAY_SECONDS" "$FRESH_SECONDS"; then

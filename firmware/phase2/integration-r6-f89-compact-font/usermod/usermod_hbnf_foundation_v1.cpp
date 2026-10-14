@@ -13,28 +13,6 @@
 #include "fontmanager.h"
 #include <ANIMartRIX.h>
 #include <string.h>
-// ESP-IDF's http_parser and WLED's ESPAsyncWebServer both declare
-// global HTTP_* method enumerators. Prefix the parser's names while including
-// the ESP-IDF HTTP client; the parser's numeric method values are unchanged.
-#define HTTP_DELETE HBNF_HTTP_PARSER_DELETE
-#define HTTP_GET HBNF_HTTP_PARSER_GET
-#define HTTP_HEAD HBNF_HTTP_PARSER_HEAD
-#define HTTP_POST HBNF_HTTP_PARSER_POST
-#define HTTP_PUT HBNF_HTTP_PARSER_PUT
-#define HTTP_OPTIONS HBNF_HTTP_PARSER_OPTIONS
-#define HTTP_PATCH HBNF_HTTP_PARSER_PATCH
-#include <esp_http_client.h>
-#undef HTTP_DELETE
-#undef HTTP_GET
-#undef HTTP_HEAD
-#undef HTTP_POST
-#undef HTTP_PUT
-#undef HTTP_OPTIONS
-#undef HTTP_PATCH
-#include <esp_crt_bundle.h>
-#include <freertos/task.h>
-#include <ctype.h>
-#include <stdlib.h>
 #if defined(HBNF_R6_FRAME_CONTEXT_TRACE)
 #include "hbnf_outlier_trace.h"
 #include <esp_timer.h>
@@ -53,8 +31,8 @@ using namespace hbnf_v1;
 namespace {
 
 static const char HBNF_FX_DATA[] PROGMEM = "HBNF Foundation@;;;2";
-static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-phase2-r6-skins-auto-20261013";
-static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-phase2-r6-skins-auto-20261013\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-phase2-r6-skins-auto-20261013\",\"basedOnReleaseId\":\"hbnf-cart2-phase2-r6-vibe-first-ui-20261012\",\"basedOnFirmwareSha256\":\"43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r5-unfrozen\",\"native-text-moments-r5-unfrozen\",\"vibe-first-local-ui-v1\",\"read-only-matrix-skins-poll-v1\"]}";
+static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-phase2-r6-skins-readable-20261014";
+static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-phase2-r6-skins-readable-20261014\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-phase2-r6-skins-readable-20261014\",\"basedOnReleaseId\":\"hbnf-cart2-phase2-r6-vibe-first-ui-20261012\",\"basedOnFirmwareSha256\":\"43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r5-unfrozen\",\"native-text-moments-r5-unfrozen\",\"vibe-first-local-ui-v1\",\"matrix-live-skins-readable-v2\"]}";
 static PaletteSelection hbnfPalette{};
 static OverlayState hbnfCommandOverlay{};
 static portMUX_TYPE hbnfOverlayMux=portMUX_INITIALIZER_UNLOCKED;
@@ -144,143 +122,25 @@ struct HbnfLiveSnapshot {
   uint8_t count=0;
   uint16_t acePot=0;
   char label[3]{};
-  char entries[20][13]{};
+  char entries[20][64]{};
+  uint16_t pageDwellMs[12]{};
+  uint8_t pageCount=0;
+  bool displayPending=false;
   uint32_t lastSeenMs=0;
   uint32_t overlayStartMs=0;
   uint32_t overlayDurationMs=0;
-  uint32_t lastDisplayedMs=0;
-  bool displayPending=false;
 };
 static HbnfLiveSnapshot hbnfLive{};
 static portMUX_TYPE hbnfLiveMux=portMUX_INITIALIZER_UNLOCKED;
-static bool hbnfAcceptLiveSnapshot(JsonObjectConst root,bool scheduleRedisplay=false);
-static constexpr uint32_t HBNF_LIVE_POLL_MS=15000u;
-static constexpr uint32_t HBNF_LIVE_REDISPLAY_MS=240000u;
-static constexpr size_t HBNF_LIVE_HTTP_MAX=4096u;
-static char hbnfLiveHttpBody[HBNF_LIVE_HTTP_MAX+1u]{};
-static const char HBNF_MATRIX_ANON_KEY[] PROGMEM = "sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC";
 
-struct HbnfLiveHttpBody { size_t size=0; bool overflow=false; };
-static esp_err_t hbnfLiveHttpEvent(esp_http_client_event_t* event) {
-  if(!event||!event->user_data)return ESP_OK;
-  HbnfLiveHttpBody* body=(HbnfLiveHttpBody*)event->user_data;
-  if(event->event_id==HTTP_EVENT_ON_DATA&&event->data&&event->data_len>0) {
-    const size_t bytes=(size_t)event->data_len;
-    if(body->size+bytes>HBNF_LIVE_HTTP_MAX) {body->overflow=true;return ESP_FAIL;}
-    memcpy(hbnfLiveHttpBody+body->size,event->data,bytes);body->size+=bytes;
-  }
-  return ESP_OK;
-}
-
-static bool hbnfCleanLiveName(const char* input,char out[64]) {
-  if(!input)return false;
-  size_t n=0;bool pendingSpace=false,haveChar=false;
-  for(const unsigned char* p=(const unsigned char*)input;*p&&*p!='\r'&&*p!='\n';++p) {
-    if(isspace(*p)) {if(haveChar)pendingSpace=true;continue;}
-    if(*p=='/') {
-      if(n&&out[n-1]==' ')n--;
-      if(n<63)out[n++]='/';
-      pendingSpace=false;haveChar=true;continue;
-    }
-    if(pendingSpace&&n&&out[n-1]!='/'&&n<63)out[n++]=' ';
-    pendingSpace=false;
-    if(*p=='/'&&n&&out[n-1]==' ')n--;
-    if(n<63)out[n++]=(char)*p;
-    haveChar=true;
-  }
-  while(n&&out[n-1]==' ')n--;
-  out[n]='\0';return n>0;
-}
-
-static bool hbnfCompactSkinsEntry(const char* input,char out[13]) {
-  if(!input)return false;
-  const char* split=strrchr(input,' ');
-  if(!split||split==input||!split[1])return false;
-  for(const char* digit=split+1;*digit;++digit)if(!isdigit((unsigned char)*digit))return false;
-  char* end=nullptr;const unsigned long score=strtoul(split+1,&end,10);
-  if(!end||*end||score>9999)return false;
-  char rawName[64]{};const size_t sourceLen=(size_t)(split-input);
-  const size_t copyLen=sourceLen<sizeof(rawName)-1u?sourceLen:sizeof(rawName)-1u;
-  memcpy(rawName,input,copyLen);rawName[copyLen]='\0';
-  char clean[64]{};if(!hbnfCleanLiveName(rawName,clean))return false;
-  char shortName[6]{};uint8_t nShort=0;
-  for(const unsigned char* p=(const unsigned char*)clean;*p&&nShort<5;++p) {
-    const unsigned char c=*p;
-    if(isalnum(c)||c==' '||c=='/'||c=='-'||c=='.')shortName[nShort++]=(char)toupper(c);
-  }
-  while(nShort&&shortName[nShort-1]==' ')nShort--;shortName[nShort]='\0';
-  return nShort&&snprintf(out,13,"%s %lu",shortName,score)>0;
-}
-
-static bool hbnfBuildLiveSnapshot(JsonObjectConst response,JsonDocument& snapshotDoc) {
-  JsonObjectConst live=response["live"].as<JsonObjectConst>();
-  if(live.isNull())return false;
-  const bool active=live["active"]|false;
-  const char* event=live["event"]|"";
-  const char* label=live["label"]|"";
-  const uint32_t acePot=live["acePot"]|0;
-  if(acePot>9999)return false;
-  JsonObject snapshot=snapshotDoc.to<JsonObject>();snapshot["schema"]="hbnf-live-v1";
-  JsonArray entries=snapshot.createNestedArray("entries");
-  const bool skins=active&&strcmp(event,"skins")==0&&
-    (strcmp(label,"F9")==0||strcmp(label,"B9")==0);
-  snapshot["active"]=skins;
-  snapshot["label"]=skins?label:"";snapshot["acePot"]=acePot;
-  if(skins) {
-    JsonArrayConst input=live["entries"].as<JsonArrayConst>();
-    if(input.isNull()||input.size()==0)return false;
-    for(JsonVariantConst item:input) {
-      if(entries.size()>=20)break;
-      if(!item.is<const char*>())return false;
-      char compact[13]{};if(!hbnfCompactSkinsEntry(item.as<const char*>(),compact))return false;
-      entries.add(compact);
-    }
-    if(entries.size()==0)return false;
-  }
-  return true;
-}
-
-static bool hbnfFetchMatrixSkins(JsonDocument& snapshotDoc) {
-  if(WiFi.status()!=WL_CONNECTED)return false;
-  HbnfLiveHttpBody body{};hbnfLiveHttpBody[0]='\0';
-  esp_http_client_config_t config{};
-  config.url="https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-control";
-  config.method=HTTP_METHOD_POST;config.timeout_ms=3500;config.buffer_size=1024;config.buffer_size_tx=512;
-  config.event_handler=hbnfLiveHttpEvent;
-  config.user_data=&body;config.crt_bundle_attach=esp_crt_bundle_attach;
-  esp_http_client_handle_t client=esp_http_client_init(&config);if(!client)return false;
-  char authorization[320];snprintf(authorization,sizeof(authorization),"Bearer %s",HBNF_MATRIX_ANON_KEY);
-  const bool headersOk=esp_http_client_set_header(client,"apikey",HBNF_MATRIX_ANON_KEY)==ESP_OK&&
-    esp_http_client_set_header(client,"Authorization",authorization)==ESP_OK&&
-    esp_http_client_set_header(client,"Accept","application/json")==ESP_OK&&
-    esp_http_client_set_header(client,"Cache-Control","no-cache")==ESP_OK&&
-    esp_http_client_set_header(client,"Content-Type","application/json")==ESP_OK&&
-    esp_http_client_set_post_field(client,"{\"action\":\"live_status\"}",24)==ESP_OK;
-  const esp_err_t result=headersOk?esp_http_client_perform(client):ESP_FAIL;
-  const int status=esp_http_client_get_status_code(client);esp_http_client_cleanup(client);
-  if(result!=ESP_OK||status!=200||body.overflow||!body.size)return false;
-  hbnfLiveHttpBody[body.size]='\0';
-  DynamicJsonDocument sourceDoc(4096);
-  if(deserializeJson(sourceDoc,hbnfLiveHttpBody,body.size))return false;
-  return hbnfBuildLiveSnapshot(sourceDoc.as<JsonObjectConst>(),snapshotDoc);
-}
-
-static void hbnfMatrixSkinsPollTask(void*) {
-  TickType_t lastWake=xTaskGetTickCount();
-  while(true) {
-    if(WiFi.status()==WL_CONNECTED) {
-      DynamicJsonDocument snapshotDoc(2048);
-      if(hbnfFetchMatrixSkins(snapshotDoc)) {
-        bool redisplay=false;const uint32_t now=millis();
-        portENTER_CRITICAL(&hbnfLiveMux);
-        redisplay=hbnfLive.active&&hbnfLive.lastDisplayedMs&&
-          (uint32_t)(now-hbnfLive.lastDisplayedMs)>=HBNF_LIVE_REDISPLAY_MS;
-        portEXIT_CRITICAL(&hbnfLiveMux);
-        hbnfAcceptLiveSnapshot(snapshotDoc.as<JsonObjectConst>(),redisplay);
-      }
-    }
-    vTaskDelayUntil(&lastWake,pdMS_TO_TICKS(HBNF_LIVE_POLL_MS));
-  }
+static uint16_t hbnfLivePageDwellMs(const char* first,const char* second=nullptr) {
+  const int firstOverflow=first?((int)strlen(first)*4-1-32):0;
+  const int secondOverflow=second?((int)strlen(second)*4-1-32):0;
+  const int overflow=max(0,max(firstOverflow,secondOverflow));
+  // Minimum 5.5 s dwell; overflow scrolls at 16 px/s with a pause at each end.
+  // Even 20 maximum-length names fit inside the relay's four-minute cycle.
+  const uint32_t scrollMs=overflow?1200u+((uint32_t)overflow*1000u+15u)/16u:0u;
+  return (uint16_t)max(5500u,scrollMs);
 }
 
 static uint8_t hbnfGlyphRow(char c,uint8_t row) {
@@ -298,7 +158,7 @@ static uint8_t hbnfGlyphRow(char c,uint8_t row) {
   static const uint8_t glyph3[5]={6,1,2,1,6},glyph4[5]={5,5,7,1,1},glyph5[5]={7,4,6,1,6};
   static const uint8_t glyph6[5]={3,4,7,5,7},glyph7[5]={7,1,2,2,2},glyph8[5]={7,5,7,5,7};
   static const uint8_t glyph9[5]={7,5,7,1,6},glyphDollar[5]={3,6,2,3,6},glyphDash[5]={0,0,7,0,0};
-  static const uint8_t glyphSlash[5]={1,1,2,4,4},glyphDot[5]={0,0,0,0,2},glyphQuestion[5]={6,1,2,0,2};
+  static const uint8_t glyphSlash[5]={1,1,2,4,4},glyphDot[5]={0,0,0,0,2},glyphQuestion[5]={6,1,2,0,2},glyphApostrophe[5]={2,2,0,0,0};
   const uint8_t* p=blank;
   switch(c) {
     case 'A':p=glyphA;break;case 'B':p=glyphB;break;case 'C':p=glyphC;break;case 'D':p=glyphD;break;
@@ -310,16 +170,14 @@ static uint8_t hbnfGlyphRow(char c,uint8_t row) {
     case 'Y':p=glyphY;break;case 'Z':p=glyphZ;break;case '0':p=glyph0;break;case '1':p=glyph1;break;
     case '2':p=glyph2;break;case '3':p=glyph3;break;case '4':p=glyph4;break;case '5':p=glyph5;break;
     case '6':p=glyph6;break;case '7':p=glyph7;break;case '8':p=glyph8;break;case '9':p=glyph9;break;
-    case '$':p=glyphDollar;break;case '-':p=glyphDash;break;case '/':p=glyphSlash;break;case '.':p=glyphDot;break;case '?':p=glyphQuestion;break;
+    case '$':p=glyphDollar;break;case '-':p=glyphDash;break;case '/':p=glyphSlash;break;case '.':p=glyphDot;break;case '?':p=glyphQuestion;break;case '\'':p=glyphApostrophe;break;
   }
   return row<5?p[row]:0;
 }
 
-static void hbnfDrawText(const char* text,int y,uint32_t color) {
+static void hbnfDrawTextAt(const char* text,int x,int y,uint32_t color) {
   if(!text)return;
   const int len=(int)strlen(text);
-  const int width=len?len*4-1:0;
-  int x=(32-width)/2;
   for(int n=0;n<len&&x<32;n++,x+=4) {
     char c=text[n]; if(c>='a'&&c<='z')c=(char)(c-'a'+'A');
     for(uint8_t gy=0;gy<5;gy++) {
@@ -328,6 +186,26 @@ static void hbnfDrawText(const char* text,int y,uint32_t color) {
         SEGMENT.setPixelColorXY(x+(int)gx,y+(int)gy,color);
     }
   }
+}
+
+static void hbnfDrawText(const char* text,int y,uint32_t color) {
+  if(!text)return;
+  const int width=(int)strlen(text)*4-1;
+  hbnfDrawTextAt(text,(32-width)/2,y,color);
+}
+
+static void hbnfDrawLiveText(const char* text,int y,uint32_t color,uint32_t pageElapsedMs,uint16_t pageDwellMs) {
+  if(!text)return;
+  const int width=(int)strlen(text)*4-1;
+  if(width<=32){hbnfDrawText(text,y,color);return;}
+  const int overflow=width-32;
+  const uint32_t motionMs=pageDwellMs>1200u?pageDwellMs-1200u:0u;
+  int offset=0;
+  if(pageElapsedMs>600u) {
+    const uint32_t movedMs=min(pageElapsedMs-600u,motionMs);
+    offset=min(overflow,(int)(movedMs*16u/1000u));
+  }
+  hbnfDrawTextAt(text,-offset,y,color);
 }
 
 static bool hbnfParseHexColor(const char* s,uint8_t& r,uint8_t& g,uint8_t& b) {
@@ -456,42 +334,43 @@ static bool hbnfRenderCommandOverlay(uint8_t matrixBrightness,Vibe activeVibe) {
 }
 
 static void hbnfRenderLiveOverlay(uint8_t matrixBrightness) {
-  HbnfLiveSnapshot live;
   const uint32_t now=millis();
-  // Live scores have lower priority than manual overlays. They become visible
-  // on the first normal render after a manual overlay has ended.
+  bool active;uint8_t count,pageCount;char label[3]{},first[64]{},second[64]{};uint16_t pageDwell=0;uint32_t lastSeen,start,duration;uint8_t page=0;uint32_t pageElapsed=0;
   portENTER_CRITICAL(&hbnfLiveMux);
-  if(hbnfLive.displayPending&&hbnfLive.active&&hbnfLive.count&&
-     (uint32_t)(now-hbnfLive.lastSeenMs)<120000u) {
-    hbnfLive.overlayStartMs=now;
-    hbnfLive.overlayDurationMs=15000u;
-    hbnfLive.lastDisplayedMs=now;
-    hbnfLive.displayPending=false;
+  if(hbnfLive.displayPending&&hbnfLive.active&&hbnfLive.count&&(uint32_t)(now-hbnfLive.lastSeenMs)<120000u) {
+    hbnfLive.overlayStartMs=now;hbnfLive.displayPending=false;
   }
-  live=hbnfLive;
+  active=hbnfLive.active;count=hbnfLive.count;pageCount=hbnfLive.pageCount;
+  strlcpy(label,hbnfLive.label,sizeof(label));lastSeen=hbnfLive.lastSeenMs;start=hbnfLive.overlayStartMs;duration=hbnfLive.overlayDurationMs;
+  if(active&&count&&pageCount&&duration) {
+    pageElapsed=(uint32_t)(now-start);
+    while(page+1u<pageCount&&pageElapsed>=hbnfLive.pageDwellMs[page]){pageElapsed-=hbnfLive.pageDwellMs[page];page++;}
+    pageDwell=hbnfLive.pageDwellMs[page];
+    if(page==0){strlcpy(first,"ROUND",sizeof(first));strlcpy(second,label[0]=='F'?"FRONT 9":"BACK 9",sizeof(second));}
+    else if(page+1u==pageCount){strlcpy(first,"ACE POT",sizeof(first));strlcpy(second,"AMOUNT N/A",sizeof(second));}
+    else {
+      const uint8_t playerPage=page-1u;const uint8_t firstIndex=(uint8_t)(playerPage*2u);
+      strlcpy(first,hbnfLive.entries[firstIndex],sizeof(first));
+      if(firstIndex+1u<count)strlcpy(second,hbnfLive.entries[firstIndex+1u],sizeof(second));
+    }
+  }
   portEXIT_CRITICAL(&hbnfLiveMux);
-  if(!live.active||!live.count||(uint32_t)(now-live.lastSeenMs)>=120000u||!live.overlayDurationMs||(uint32_t)(now-live.overlayStartMs)>=live.overlayDurationMs)return;
-  const uint32_t elapsed=(uint32_t)(now-live.overlayStartMs);
+  if(!active||!count||(uint32_t)(now-lastSeen)>=120000u||!duration||(uint32_t)(now-start)>=duration)return;
+  const uint32_t elapsed=(uint32_t)(now-start);
   const uint32_t fadeIn=350u,fadeOut=450u;
   uint8_t fade=255;
   if(elapsed<fadeIn)fade=(uint8_t)(elapsed*255u/fadeIn);
-  else if(live.overlayDurationMs-elapsed<fadeOut)fade=(uint8_t)((live.overlayDurationMs-elapsed)*255u/fadeOut);
-  const uint8_t shade=(uint8_t)(210u*fade/255u);
+  else if(duration-elapsed<fadeOut)fade=(uint8_t)((duration-elapsed)*255u/fadeOut);
+  const uint8_t shade=(uint8_t)(238u*fade/255u);
   for(uint8_t y=0;y<16;y++)for(uint8_t x=0;x<32;x++)SEGMENT.blendPixelColorXY(x,y,RGBW32(0,0,0,0),shade);
   const uint8_t outputScale=hbnf_brightness::outputScale(matrixBrightness);
 
-  const uint8_t pages=(uint8_t)((live.count+1u)/2u);
-  const uint32_t pageHoldMs=live.overlayDurationMs/pages;
-  const uint8_t page=(uint8_t)((elapsed/(pageHoldMs?pageHoldMs:1u))%pages);
-  char header[12];
-  snprintf(header,sizeof(header),"%s $%u",live.label,(unsigned)live.acePot);
-  const Rgb8 headerColor(176,224,132), entryColor(255,255,255);
-  hbnfDrawText(header,0,packed(scaleRgb(hbnf_brightness::scaleOutputPixel(headerColor,headerColor,outputScale),fade)));
-  hbnfDrawText(live.entries[page*2u],5,packed(scaleRgb(hbnf_brightness::scaleOutputPixel(entryColor,entryColor,outputScale),fade)));
-  if((uint8_t)(page*2u+1u)<live.count)hbnfDrawText(live.entries[page*2u+1u],10,packed(scaleRgb(hbnf_brightness::scaleOutputPixel(entryColor,entryColor,outputScale),fade)));
+  const Rgb8 entryColor(255,255,255);const uint32_t fg=packed(scaleRgb(hbnf_brightness::scaleOutputPixel(entryColor,entryColor,outputScale),fade));
+  hbnfDrawLiveText(first,1,fg,pageElapsed,pageDwell);
+  hbnfDrawLiveText(second,10,fg,pageElapsed,pageDwell);
 }
 
-static bool hbnfAcceptLiveSnapshot(JsonObjectConst root,bool scheduleRedisplay) {
+static bool hbnfAcceptLiveSnapshot(JsonObjectConst root) {
   const char* schema=root["schema"]|"";
   if(strcmp(schema,"hbnf-live-v1")!=0)return false;
   const bool active=root["active"]|false;
@@ -509,33 +388,37 @@ static bool hbnfAcceptLiveSnapshot(JsonObjectConst root,bool scheduleRedisplay) 
     for(JsonVariantConst entry:input) {
       if(!entry.is<const char*>())return false;
       const char* text=entry.as<const char*>();size_t n=strlen(text);
-      if(!n||n>12)return false;
+      if(!n||n>63)return false;
       for(size_t i=0;i<n;i++) {
         const char ch=text[i];
-        if(!((ch>='A'&&ch<='Z')||(ch>='a'&&ch<='z')||(ch>='0'&&ch<='9')||ch==' '||ch=='/'||ch=='-'||ch=='.'||ch=='?'||ch=='$'))return false;
+        if(!((ch>='A'&&ch<='Z')||(ch>='a'&&ch<='z')||(ch>='0'&&ch<='9')||ch==' '||ch=='/'||ch=='-'||ch=='.'||ch=='?'||ch=='$'||ch=='\''))return false;
       }
       strlcpy(next.entries[next.count++],text,sizeof(next.entries[0]));
     }
-    next.overlayDurationMs=15000u;
+    next.pageCount=(uint8_t)(2u+(next.count+1u)/2u);
+    next.pageDwellMs[0]=5500u;
+    uint32_t cycleMs=5500u;
+    for(uint8_t page=0;page<(next.count+1u)/2u;page++) {
+      const uint8_t first=(uint8_t)(page*2u);const char* second=first+1u<next.count?next.entries[first+1u]:nullptr;
+      next.pageDwellMs[page+1u]=hbnfLivePageDwellMs(next.entries[first],second);
+      cycleMs+=next.pageDwellMs[page+1u];
+    }
+    next.pageDwellMs[next.pageCount-1u]=5500u;cycleMs+=5500u;
+    next.overlayDurationMs=cycleMs;
   } else {
     if(!input.isNull()&&input.size()>0)return false;
   }
   next.lastSeenMs=millis();
-  HbnfLiveSnapshot old;
-  portENTER_CRITICAL(&hbnfLiveMux);old=hbnfLive;portEXIT_CRITICAL(&hbnfLiveMux);
-  bool changed=old.active!=next.active||old.acePot!=next.acePot||strcmp(old.label,next.label)!=0||old.count!=next.count;
-  if(!changed)for(uint8_t i=0;i<next.count;i++)if(strcmp(old.entries[i],next.entries[i])!=0){changed=true;break;}
   const uint32_t now=millis();
-  const bool recovered=old.active&&(uint32_t)(now-old.lastSeenMs)>=120000u;
-  next.displayPending=active&&(changed||recovered||scheduleRedisplay||old.displayPending);
-  next.overlayStartMs=old.overlayStartMs;
-  next.lastDisplayedMs=old.lastDisplayedMs;
-  if(!active) {
-    next.displayPending=false;
-    next.lastDisplayedMs=0;
-    next.overlayDurationMs=0;
-  }
-  portENTER_CRITICAL(&hbnfLiveMux);hbnfLive=next;portEXIT_CRITICAL(&hbnfLiveMux);
+  portENTER_CRITICAL(&hbnfLiveMux);
+  bool changed=hbnfLive.active!=next.active||hbnfLive.acePot!=next.acePot||strcmp(hbnfLive.label,next.label)!=0||hbnfLive.count!=next.count;
+  if(!changed)for(uint8_t i=0;i<next.count;i++)if(strcmp(hbnfLive.entries[i],next.entries[i])!=0){changed=true;break;}
+  const bool recovered=hbnfLive.active&&(uint32_t)(now-hbnfLive.lastSeenMs)>=120000u;
+  next.overlayStartMs=changed?now:hbnfLive.overlayStartMs;
+  next.displayPending=active&&(changed||recovered||hbnfLive.displayPending||!hbnfLive.active);
+  if(!changed){next.overlayDurationMs=hbnfLive.overlayDurationMs;memcpy(next.pageDwellMs,hbnfLive.pageDwellMs,sizeof(next.pageDwellMs));next.pageCount=hbnfLive.pageCount;}
+  hbnfLive=next;
+  portEXIT_CRITICAL(&hbnfLiveMux);
   return true;
 }
 // AI: end
@@ -1535,10 +1418,6 @@ class HbnfFoundationV1Usermod : public Usermod {
     foundationEffectId=strip.addEffect(255,&mode_hbnf_foundation,HBNF_FX_DATA);
     ensureFoundationMatrixSegment();
     ensureCompanionSegment();
-    static TaskHandle_t livePollTask=nullptr;
-    if(!livePollTask) {
-      xTaskCreatePinnedToCore(hbnfMatrixSkinsPollTask,"hbnf_skins_poll",12288,nullptr,1,&livePollTask,0);
-    }
   }
 
   void addToConfig(JsonObject& root) override {
@@ -1716,12 +1595,12 @@ class HbnfFoundationV1Usermod : public Usermod {
       foundationTelemetry["frameTailOverflow"]=tailOverflow;
     }else{foundationTelemetry["frameMsAvg"]=nullptr;foundationTelemetry["frameMsP50"]=nullptr;foundationTelemetry["frameMsP95"]=nullptr;foundationTelemetry["frameMsP99"]=nullptr;foundationTelemetry["frameMsMax"]=nullptr;}
 #endif
-    HbnfLiveSnapshot live;
-    portENTER_CRITICAL(&hbnfLiveMux);live=hbnfLive;portEXIT_CRITICAL(&hbnfLiveMux);
-    h["liveActive"]=live.active&&(uint32_t)(millis()-live.lastSeenMs)<120000u;
-    h["liveLabel"]=live.label;
-    h["liveAcePot"]=live.acePot;
-    h["liveEntryCount"]=live.count;
+    bool liveActive;uint32_t liveSeen;uint16_t liveAcePot;uint8_t liveCount;char liveLabel[3]{};
+    portENTER_CRITICAL(&hbnfLiveMux);liveActive=hbnfLive.active;liveSeen=hbnfLive.lastSeenMs;liveAcePot=hbnfLive.acePot;liveCount=hbnfLive.count;strlcpy(liveLabel,hbnfLive.label,sizeof(liveLabel));portEXIT_CRITICAL(&hbnfLiveMux);
+    h["liveActive"]=liveActive&&(uint32_t)(millis()-liveSeen)<120000u;
+    h["liveLabel"]=liveLabel;
+    h["liveAcePot"]=liveAcePot;
+    h["liveEntryCount"]=liveCount;
     JsonObject audio=h["audio"];
     if(audio.isNull()) audio=h.createNestedObject("audio");
     audio["bass"]=a.bass;

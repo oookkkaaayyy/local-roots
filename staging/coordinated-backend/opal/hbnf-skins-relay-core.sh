@@ -9,7 +9,7 @@ skins_target_matches() {
 	[ "$1" = '704bca5b345c' ] && [ "$2" = 'hbnf-cart2-phase2-r6-vibe-first-ui-20261012' ]
 }
 
-skins_compact_entry() {
+skins_full_entry() {
 	local raw="$1" score name
 	case "$raw" in *'"'*|*'\\'*) return 1;; esac
 	case "$raw" in *' '*) ;; *) return 1;; esac
@@ -18,10 +18,12 @@ skins_compact_entry() {
 	case "$score" in ''|*[!0-9]*) return 1;; esac
 	[ "${#score}" -le 4 ] || return 1
 	[ "$score" -le 9999 ] 2>/dev/null || return 1
-	# Match the installed renderer's five-character ASCII abbreviation rule.
-	name="$(printf '%s' "$name" | LC_ALL=C tr -cd 'A-Za-z0-9 /.-' | LC_ALL=C tr '[:lower:]' '[:upper:]' | cut -c 1-5)"
-	while [ "${name%${name#?}}" = ' ' ]; do name=${name#?}; done
-	while [ -n "$name" ] && [ "${name#${name%?}}" = ' ' ]; do name=${name%?}; done
+	# Preserve the complete name; the Matrix scrolls overflow deliberately.
+	# Reject unsupported bytes rather than silently shortening or changing identity.
+	[ "${#name}" -le 58 ] || return 1
+	local clean_name
+	clean_name="$(printf '%s' "$name" | LC_ALL=C tr -cd "A-Za-z0-9 /.'-")"
+	[ "$clean_name" = "$name" ] || return 1
 	[ -n "$name" ] || return 1
 	printf '%s %s\n' "$name" "$score"
 }
@@ -29,7 +31,7 @@ skins_compact_entry() {
 # Read a compact live_status response and emit a bounded hbnf-live-v1 snapshot.
 # Fails closed until the staged front-lock selector version is deployed.
 skins_build_snapshot() {
-	local input="$1" marker active event label pot entry compact entries count
+	local input="$1" marker active event label pot entry full entries count
 	marker="$(skins_jf "$input" '@.selectorVersion')"
 	[ "$marker" = 'skins-front-lock-v1' ] || return 1
 	active="$(skins_jf "$input" '@.live.active')"
@@ -51,10 +53,10 @@ skins_build_snapshot() {
 		printf '{"schema":"hbnf-live-v1","active":true,"label":"%s","acePot":%s,"entries":[' "$label" "$pot"
 		while IFS= read -r entry || [ -n "$entry" ]; do
 			[ -n "$entry" ] || { rm -f "$entries"; return 1; }
-			compact="$(skins_compact_entry "$entry")" || { rm -f "$entries"; return 1; }
+			full="$(skins_full_entry "$entry")" || { rm -f "$entries"; return 1; }
 			[ "$count" -lt 20 ] || { rm -f "$entries"; return 1; }
 			[ "$count" -eq 0 ] || printf ','
-			printf '"%s"' "$compact"
+			printf '"%s"' "$full"
 			count=$((count + 1))
 		done < "$entries"
 		printf ']}'

@@ -35,7 +35,7 @@ function shell(script, fixture, expectedSuccess = true) {
 try {
   const base = { selectorVersion: "skins-front-lock-v1", live: { active: true, event: "skins", label: "F9", acePot: 79, entries: ["Ava Thompson 1", "Bo Smith 0"] } };
   const f9 = JSON.parse(shell(`skins_build_snapshot "$RELAY_FIXTURE"`, base));
-  assert.deepEqual(f9, { schema: "hbnf-live-v1", active: true, label: "F9", acePot: 79, entries: ["AVA T 1", "BO SM 0"] });
+  assert.deepEqual(f9, { schema: "hbnf-live-v1", active: true, label: "F9", acePot: 79, entries: ["Ava Thompson 1", "Bo Smith 0"] });
   const same = JSON.parse(shell(`skins_build_snapshot "$RELAY_FIXTURE"`, structuredClone(base)));
   assert.deepEqual(same, f9, "unchanged source scores produce an identical snapshot");
 
@@ -43,7 +43,7 @@ try {
   b9.live.label = "B9";
   b9.live.entries = ["Cy/Dee 2"];
   assert.deepEqual(JSON.parse(shell(`skins_build_snapshot "$RELAY_FIXTURE"`, b9)), {
-    schema: "hbnf-live-v1", active: true, label: "B9", acePot: 79, entries: ["CY/DE 2"],
+    schema: "hbnf-live-v1", active: true, label: "B9", acePot: 79, entries: ["Cy/Dee 2"],
   });
 
   const inactive = { selectorVersion: "skins-front-lock-v1", live: { active: false, event: null, label: "", acePot: 0, entries: [] } };
@@ -57,6 +57,10 @@ try {
   shell(`skins_build_snapshot "$RELAY_FIXTURE"`, badActive, false);
   const badScore = structuredClone(base); badScore.live.entries[0] = 'Ava 1"';
   shell(`skins_build_snapshot "$RELAY_FIXTURE"`, badScore, false);
+  const unsupportedName = structuredClone(base); unsupportedName.live.entries[0] = "José 1";
+  shell(`skins_build_snapshot "$RELAY_FIXTURE"`, unsupportedName, false);
+  const tooLongName = structuredClone(base); tooLongName.live.entries[0] = `${"A".repeat(59)} 1`;
+  shell(`skins_build_snapshot "$RELAY_FIXTURE"`, tooLongName, false);
   const tooMany = structuredClone(base); tooMany.live.entries = Array.from({ length: 21 }, (_, i) => `P${i} ${i}`);
   shell(`skins_build_snapshot "$RELAY_FIXTURE"`, tooMany, false);
 
@@ -81,6 +85,10 @@ try {
   assert.match(serviceText, /Cache-Control: no-cache, no-store/);
   assert.match(serviceText, /POLL_SECONDS=15/);
   assert.match(serviceText, /skins_redisplay_due/);
+  assert.match(serviceText, /if \[ -z "\$last_snapshot" \] && \[ "\$SNAPSHOT" != "\$inactive" \]; then[\s\S]*?post_matrix "\$inactive" && post_matrix "\$SNAPSHOT"/, "relay startup toggles an active snapshot so an identical Matrix-held snapshot is rendered");
+  assert.match(serviceText, /Keep the Matrix's 120-second live-snapshot lease fresh[\s\S]*?if ! post_matrix "\$SNAPSHOT"; then/, "fresh unchanged snapshots renew the renderer lease without triggering a changed-score display");
+  assert.doesNotMatch(serviceText, /MATRIX_LIVE_ACTIVE/, "the Matrix liveActive field is a 120-second freshness lease and must not reset the 240-second redisplay clock");
+  assert.match(serviceText, /if \[ "\$last_uptime" -gt 0 \] && \[ "\$MATRIX_UPTIME" -lt "\$last_uptime" \]; then last_display=0; fi/, "Matrix reboot still resets the redisplay clock");
   assert.match(serviceText, /if ! fetch_scores; then/);
   assert.match(serviceText, /continue/);
   assert.doesNotMatch(serviceText, /curl[^\n]*-[kK](?:\s|$)/, "TLS verification must remain enabled");
@@ -97,18 +105,28 @@ try {
   const packageCheck = spawnSync("python3", ["-c", `import tarfile,sys; t=tarfile.open(sys.argv[1], 'r:gz'); m=t.getmembers(); n=[x.name for x in m]; assert len(n)==6; assert any(x.endswith('/MANIFEST.json') for x in n); c=next(t.extractfile(x).read() for x in m if x.name.endswith('/hbnf-skins-relay.conf.example')); assert b'SET_FROM_EXISTING_MATRIX_SOURCE_WITHOUT_ECHOING' in c; assert b'sb_publishable' not in c; assert next(x for x in m if x.name.endswith('/hbnf-skins-relay')).mode & 0o111; assert next(x for x in m if x.name.endswith('/hbnf-skins-relay.init')).mode & 0o111; assert all(x.mode & 0o600 == 0o600 for x in m)`, archiveA], { cwd: root, encoding: "utf8" });
   assert.equal(packageCheck.status, 0, packageCheck.stderr);
 
-  const installedSource = spawnSync("git", ["show", "d01a2f6f5ae02deb0901dc48490de0cd777ee9fa:firmware/phase2/integration-r6-f89-compact-font/usermod/usermod_hbnf_foundation_v1.cpp"], { cwd: root, encoding: "utf8" });
-  assert.equal(installedSource.status, 0, installedSource.stderr);
-  assert.match(installedSource.stdout, /server\.on\("\/hbnf\/build\.json"/);
-  assert.match(installedSource.stdout, /AsyncCallbackJsonWebHandler\* liveHandler=new AsyncCallbackJsonWebHandler\("\/hbnf\/live"/);
-  assert.match(installedSource.stdout, /request->send\(403,"application\/json","\{\\"ok\\":false\}"\)/);
-  assert.match(installedSource.stdout, /request->send\(200,"application\/json","\{\\"ok\\":true\}"\)/);
-  assert.match(installedSource.stdout, /input\.size\(\)>20/);
-  assert.match(installedSource.stdout, /n>12/);
-  assert.match(installedSource.stdout, /constrain\(pages\*1900u\+900u,2800u,20000u\)/);
-  assert.match(installedSource.stdout, /if\(!hbnfRenderCommandOverlay\(f\.controls\.matrixBrightness,f\.vibe\)\)hbnfRenderLiveOverlay/);
-  assert.doesNotMatch(installedSource.stdout, /hbnfMatrixSkinsPollTask/, "installed source needs an external poller");
-  console.log("PASS: F9/B9 snapshot formatting, selector-version fail-closed, long-name compaction, changed/unchanged, malformed/over-cap rejection, stale suppression, 4-minute scheduling, manual/game suppression, exact target headers, verified TLS, installed Matrix receiver/renderer limits, and reproducible key-free package assembly");
+  const installedSource = readFileSync(join(root, "firmware/phase2/integration-r6-f89-compact-font/usermod/usermod_hbnf_foundation_v1.cpp"), "utf8");
+  const liveRenderer = installedSource.slice(installedSource.indexOf("static void hbnfRenderLiveOverlay"), installedSource.indexOf("static bool hbnfAcceptLiveSnapshot"));
+  const liveAcceptor = installedSource.slice(installedSource.indexOf("static bool hbnfAcceptLiveSnapshot"), installedSource.indexOf("// AI: end", installedSource.indexOf("static bool hbnfAcceptLiveSnapshot")));
+  assert.match(installedSource, /char entries\[20\]\[64\]/, "Matrix receiver keeps full bounded player text");
+  assert.match(installedSource, /if\(!n\|\|n>63\)return false/);
+  assert.match(installedSource, /hbnfLivePageDwellMs/);
+  assert.match(installedSource, /next\.pageCount=\(uint8_t\)\(2u\+\(next\.count\+1u\)\/2u\)/);
+  assert.match(installedSource, /next\.pageDwellMs\[0\]=5500u/);
+  assert.match(installedSource, /overflow\*1000u\+15u\)\/16u/);
+  assert.match(installedSource, /movedMs\*16u\/1000u/);
+  assert.match(installedSource, /hbnfDrawLiveText\(first,1/);
+  assert.match(installedSource, /hbnfDrawLiveText\(second,10/);
+  assert.match(installedSource, /"AMOUNT N\/A"/, "the current acePot contract is not represented as dollars");
+  const maxNameOverflow = 63 * 4 - 1 - 32;
+  const maxNameDwellMs = 1200 + Math.ceil(maxNameOverflow * 1000 / 16);
+  const maxTwentyPlayerCycleMs = 2 * 5500 + 10 * maxNameDwellMs;
+  assert.ok(maxTwentyPlayerCycleMs < 240000, "a full maximum-size roster cycle ends before the 4-minute redisplay");
+  assert.doesNotMatch(liveRenderer, /(?:^|[^0-9])(?:1900|20000)u/, "no 1.9-second cycling or 20-second cycle cap remains");
+  assert.doesNotMatch(liveAcceptor, /(?:^|[^0-9])20000u|constrain\(pages/, "overlay duration includes every screen in the cycle");
+  assert.match(installedSource, /if\(!hbnfRenderCommandOverlay\(f\.controls\.matrixBrightness,f\.vibe\)\)hbnfRenderLiveOverlay/);
+  assert.doesNotMatch(installedSource, /hbnfMatrixSkinsPollTask/, "candidate reuses the installed external relay path");
+  console.log("PASS: full-name relay projection, fail-closed unsupported names, changed/unchanged snapshots, stale suppression, exact 240s schedule, overlay suppression, installed receiver contract, two-row cycle rendering and reproducible key-free package assembly");
 } finally {
   rmSync(temp, { recursive: true, force: true });
 }
