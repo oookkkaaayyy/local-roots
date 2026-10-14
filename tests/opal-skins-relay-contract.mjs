@@ -3,6 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, chmodSync, readFileSync, rmSync 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
+import { chooseLive, laDate } from "../staging/coordinated-backend/hbnf-cart-control/live.ts";
 
 const root = process.cwd();
 const core = join(root, "staging/coordinated-backend/opal/hbnf-skins-relay-core.sh");
@@ -63,6 +64,14 @@ try {
   const glowSnapshot = JSON.parse(shell(`skins_build_snapshot "$RELAY_FIXTURE"`, glow));
   assert.deepEqual(glowSnapshot, { schema: "hbnf-live-v1", active: true, label: "GLOW", acePot: 0, entries: ["A1/J +1", "A2 / J E", "A3/J -12", "CAS +2"] });
   assert.ok(glowSnapshot.entries.every((entry) => entry.length <= 8), "Glow labels fit the same static Matrix width without scrolling");
+  const date = laDate();
+  const projectedGlow = chooseLive({ skins: { weeks: { [date]: { front: { cards: [] }, back: { cards: [] } } } }, glow: { weeks: { [date]: {
+    scorecardText: { holePars: { "1": 3 } },
+    players: [{ partner1: "Alex", partner2: "Jordan", scores: ["4"] }, { name: "Casey", scores: [] }, { name: "Removed", removed: true, scores: ["2"] }],
+  } } } });
+  assert.deepEqual(projectedGlow.entries, ["Alex/Jordan +1", "Casey E"], "the real HBNF live selector preserves the team, computes score-to-par, and omits removed players");
+  const integratedGlow = JSON.parse(shell(`skins_build_snapshot "$RELAY_FIXTURE"`, { selectorVersion: "skins-front-lock-v1", live: projectedGlow }));
+  assert.deepEqual(integratedGlow.entries, ["A / J +1", "CAS E"], "HBNF Glow projection passes through the relay into static-width Matrix labels");
   const sameInitials = structuredClone(glow);
   sameInitials.live.entries = ["Ash/Amy +1"];
   assert.deepEqual(JSON.parse(shell(`skins_build_snapshot "$RELAY_FIXTURE"`, sameInitials)).entries, ["A/A2 +1"], "same-initial Glow partners remain distinguishable");
@@ -132,6 +141,8 @@ try {
   assert.equal(readFileSync(`${archiveA}.sha256`, "utf8"), `${JSON.parse(packedA.stdout).sha256}  package-a.tar.gz\n`);
   const packageCheck = spawnSync("python3", ["-c", `import tarfile,sys; t=tarfile.open(sys.argv[1], 'r:gz'); m=t.getmembers(); n=[x.name for x in m]; assert len(n)==6; assert any(x.endswith('/MANIFEST.json') for x in n); c=next(t.extractfile(x).read() for x in m if x.name.endswith('/hbnf-skins-relay.conf.example')); assert b'SET_FROM_EXISTING_MATRIX_SOURCE_WITHOUT_ECHOING' in c; assert b'sb_publishable' not in c; assert next(x for x in m if x.name.endswith('/hbnf-skins-relay')).mode & 0o111; assert next(x for x in m if x.name.endswith('/hbnf-skins-relay.init')).mode & 0o111; assert all(x.mode & 0o600 == 0o600 for x in m)`, archiveA], { cwd: root, encoding: "utf8" });
   assert.equal(packageCheck.status, 0, packageCheck.stderr);
+  const packageBinding = spawnSync("python3", ["-c", `import json,tarfile,sys; t=tarfile.open(sys.argv[1], 'r:gz'); m=next(x for x in t.getmembers() if x.name.endswith('/MANIFEST.json')); d=json.load(t.extractfile(m)); assert d['version']=='1.0.3'; assert d['compatible_matrix_releases']['hbnf-cart2-phase2-r6-glow-live-20261014']=='79616ddb8d5d7acdeba809c009f31637af3aec433a87b8ac3bc75e96ff8897cc'; assert d['source_base_commit']=='e5179739d0c046de56e310e02a8ca486370a2dda'`, archiveA], { cwd: root, encoding: "utf8" });
+  assert.equal(packageBinding.status, 0, packageBinding.stderr);
 
   const installedSource = readFileSync(join(root, "firmware/phase2/integration-r6-f89-compact-font/usermod/usermod_hbnf_foundation_v1.cpp"), "utf8");
   const liveRenderer = installedSource.slice(installedSource.indexOf("static void hbnfRenderLiveOverlay"), installedSource.indexOf("static bool hbnfAcceptLiveSnapshot"));

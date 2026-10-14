@@ -1,6 +1,6 @@
 # Opal unattended Matrix live-standings relay — staged package
 
-This is an outbound-only relay for the GL-SFT1200. It reads `live_status` from the existing Supabase Edge Function with the existing **public** anon/publishable key, then posts a validated `hbnf-live-v1` snapshot to the Matrix API. It never writes website scoring data. Installed version 1.0.2 handles Skins. The uninstalled 1.0.3 development branch adds the existing HBNF Glow projection and has an offline-built Matrix candidate; it is not a UDisc live-feed integration and is not release-ready.
+This is an outbound-only relay for the GL-SFT1200. It reads `live_status` from the existing Supabase Edge Function with the existing **public** anon/publishable key, then posts a validated `hbnf-live-v1` snapshot to the Matrix API. It never writes website scoring data. Installed version 1.0.2 handles Skins. The offline 1.0.3 package and Matrix candidate add the existing HBNF Glow projection; neither is admitted or installed, and this is not a UDisc live-feed integration.
 
 ## Why this path
 
@@ -25,7 +25,7 @@ The installed Vibe-first firmware and the readable-scoreboard candidate both use
 * `hbnf-skins-relay.conf.example`: placeholder only; contains no key.
 * `tests/opal-skins-relay-contract.mjs`: host-side fixture and behavior tests.
 
-The Opal currently runs version 1.0.2. Version 1.0.3 is development only and has not been packaged, admitted, or installed. It requires a separately built and source-bound Matrix firmware candidate that accepts the four-character `GLOW` label. Any future update must preserve the existing exact 1.0.2 recovery path and undergo fresh guarded admission.
+The Opal currently runs version 1.0.2. Version 1.0.3 is development only: its deterministic package and source-bound Matrix firmware candidate exist, but no v1.0.2-to-v1.0.3 guarded updater or admission has been prepared. It requires the candidate that accepts the four-character `GLOW` label. Any future update must preserve exact v1.0.2 recovery and undergo fresh guarded admission.
 
 ## Disable / rollback
 
