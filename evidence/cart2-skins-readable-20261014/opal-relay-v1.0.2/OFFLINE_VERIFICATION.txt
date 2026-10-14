@@ -1,20 +1,22 @@
-Opal relay 1.0.2 — offline release checkpoint
+Opal relay 1.0.2 — release checkpoint (2026-10-14)
 
-Package SHA-256: b28aaa67a01c181d169ba26f759e1409beaff2524886880ed4da17a437ca9d0f
-Package size: 7,117 bytes
-Installed Matrix release target: hbnf-cart2-phase2-r6-skins-readable-20261014
-Installed Matrix firmware SHA-256: de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d
-Installed relay baseline: 1.0.1; service/core/init are bound to their prior verified hashes in the guarded updater.
+Package: `hbnf-opal-skins-relay-1.0.2.tar.gz`
+SHA-256: `b28aaa67a01c181d169ba26f759e1409beaff2524886880ed4da17a437ca9d0f`
+Size: 7,117 bytes
+Installed Matrix: `hbnf-cart2-phase2-r6-skins-readable-20261014`
+Firmware SHA-256: `de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d`
 
-Change: relay-only formatting of validated source roster names. F9 uses the first three recognizable letters plus the skins count. B9 uses partner initials separated by " / " plus the count. Duplicate labels receive stable roster-order suffixes. Labels over eight characters fail closed; the installed Matrix renderer therefore receives no scrolling text.
+Change: Relay-only formatting of validated roster names for the installed renderer's 32 px static line. F9 uses three recognizable letters plus skins; B9 uses partner initials separated by ` / ` plus skins. Stable roster-order suffixes disambiguate duplicates. Unsupported, ambiguous, or over-width entries fail closed. The relay still polls every 15 seconds and redisplays after 240 seconds; no firmware or website change was needed.
 
-Preserved: 15-second polling, 240-second redisplay, HTTPS verification, read-only scoring access, current Matrix release, settings, UI, firmware, and rollback files. No website, Supabase, firmware, or router files have been changed by this offline checkpoint.
+Offline checks passed before installation:
+- `node tests/opal-skins-relay-contract.mjs`
+- `node tests/hbnf_matrix_skins_autopoll_contract.mjs`
+- Shell syntax checks for relay and core.
+- Python compilation checks for package and updater scripts.
+- Updater exact-package self-test.
 
-Offline checks passed:
-- node tests/opal-skins-relay-contract.mjs
-- node tests/hbnf_matrix_skins_autopoll_contract.mjs
-- sh -n relay service/core scripts
-- python3 -m py_compile package/update scripts
-- update script exact-package self-test
+Guarded installation: completed once after exact package/member hashes, Matrix and AUX identity, owner settings, router/service state, key-file permissions, HTTPS read, and recovery conditions passed. Only the relay core was replaced. The prior 1.0.1 service/core/init/config recovery copy is preserved on the Opal at `/root/hbnf-skins-relay-1.0.1-backup-20261014`; one-shot marker is consumed. No firmware, Supabase, website, router configuration, or scoring data changed.
 
-No install or test display was performed in this checkpoint. The updater's one-shot live preflight requires exact Matrix/AUX identity, settings 53/51/Vibe 5, healthy DDP, no overlay/game, the running 1.0.1 service, secure key-file permissions, successful verified HTTPS read, and exact recovery files. Physical visual acceptance remains pending.
+Fresh post-install read-only check: Matrix firmware identity unchanged; Matrix/AUX brightness 53/51 and Vibe 5; AUX DDP source and 22-pixel state healthy; Matrix animation rendering active at 33 FPS. No synthetic/manual scoreboard display was triggered. First natural display using the new abbreviations, full-roster readability, four-minute cadence, and Vibe return remain unverified pending owner observation. No field acceptance is claimed.
+
+Glow checkpoint: HBNF already has an end-of-round UDisc XLSX/CSV import with alias matching, preview, and hole scores; current Supabase projection already represents Glow doubles and scores-to-par. However, the relay currently accepts only Skins and the installed Matrix `/hbnf/live` receiver accepts F9/B9 only, so live Glow on Matrix is incomplete. Official UDisc material located documents XLSX export after event completion; no authorized live external feed/API has been verified. UDisc Terms prohibit scraping or other unpermitted exploitation of its content. No UDisc data, website, scoring database, firmware, or production service was changed. Existing host test verifies Glow projection (team identity, scores-to-par, removed-player exclusion), not end-to-end relay/rendering.
