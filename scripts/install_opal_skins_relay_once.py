@@ -29,6 +29,7 @@ V24_URL = "https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-contr
 PROJECT_HOST = "phcpbvuqibyarpfrftgx.supabase.co"
 CONFIG_URL = "https://hbnightflyers.com/config.js"
 OPAL = "root@192.168.77.1"
+OPAL_IDENTITY = Path.home() / ".ssh" / "hbnf_opal_ed25519"
 MATRIX = "http://192.168.77.10"
 AUX = "http://192.168.77.11"
 MATRIX_MAC = "704bca5b345c"
@@ -121,7 +122,7 @@ def request_json(url: str, *, method: str = "GET", body: bytes | None = None, he
         with urllib.request.urlopen(req, timeout=5) as response:
             raw = response.read(max_bytes + 1)
     except Exception as exc:
-        raise Stop("required local Matrix/AUX HTTP preflight did not succeed") from exc
+        raise Stop("device HTTP preflight failed at " + url + " (" + type(exc).__name__ + ")") from exc
     if len(raw) > max_bytes:
         raise Stop("device identity response exceeded the bounded size")
     try:
@@ -143,7 +144,7 @@ def preflight_devices() -> None:
     if build.get("release_id") != RELEASE or build.get("mac", "").replace(":", "").lower() != MATRIX_MAC or build.get("wled") != "16.0.1":
         raise Stop("Matrix build identity does not match the relay manifest")
     ai = request_json(AUX + "/json/info")
-    ast = request_json(AUX + "/json/state")
+    ast = ai
     if ai.get("ip") != "192.168.77.11" or ai.get("mac", "").replace(":", "").lower() != AUX_MAC or ai.get("ver") != "16.0.1":
         raise Stop("AUX identity does not match the expected controller")
     if ast.get("live") is not True or ast.get("lm") != "DDP" or ast.get("lip") != "192.168.77.10":
@@ -229,6 +230,8 @@ def main() -> int:
         if self_test:
             installer_text = Path(__file__).read_text(encoding="utf-8")
             assert "StrictHostKeyChecking=yes" in installer_text
+            assert "hbnf_opal_ed25519" in installer_text
+            assert "IdentitiesOnly=yes" in installer_text and "BatchMode=yes" in installer_text
             assert "hbnf-skins-relay-1.0.0-attempted" in installer_text
             assert "--max-time 10" in installer_text and "--max-filesize 32768" in installer_text
             dummy = "sb_publishable_" + "x" * 24
@@ -246,6 +249,8 @@ def main() -> int:
         required = ("ssh", "curl", "python3")
         if sys.platform != "darwin" or any(shutil.which(item) is None for item in required):
             raise Stop("run this on the authorized macOS checkout with ssh, curl and python3")
+        if not OPAL_IDENTITY.is_file():
+            raise Stop("the existing Opal SSH identity is missing at ~/.ssh/hbnf_opal_ed25519")
         say("PASS: exact approved relay archive SHA-256 and member hashes")
         base_url, key = get_config()
         if base_url != "https://" + PROJECT_HOST:
@@ -260,7 +265,7 @@ def main() -> int:
         master = False
         installed = False
         stage = REMOTE_ROOT + "-" + os.urandom(4).hex()
-        ssh_common = ["-S", socket, "-o", "ControlMaster=auto", "-o", "ControlPersist=600", "-o", "ControlPath=" + socket, "-o", "StrictHostKeyChecking=yes", "-o", "ConnectTimeout=6"]
+        ssh_common = ["-S", socket, "-o", "ControlMaster=auto", "-o", "ControlPersist=600", "-o", "ControlPath=" + socket, "-o", "StrictHostKeyChecking=yes", "-o", "HostKeyAlgorithms=+ssh-rsa", "-o", "PubkeyAcceptedAlgorithms=+ssh-rsa", "-o", "IdentitiesOnly=yes", "-o", "BatchMode=yes", "-i", str(OPAL_IDENTITY), "-o", "ConnectTimeout=6"]
         ssh_base = ["ssh", *ssh_common, OPAL]
 
         def remote(command: str, *, data: bytes | None = None, timeout: int = 30, interactive: bool = False) -> str:
@@ -268,7 +273,7 @@ def main() -> int:
             if result.returncode != 0:
                 failures = {
                     31: "router identity is not GL-SFT1200",
-                    32: "router is missing curl, jsonfilter, sha256sum, install, or logger",
+                    32: "router is missing a required curl, jsonfilter, sha256sum, cp, chmod, mkdir, logger or logread command",
                     33: "router procd/init environment is incomplete",
                     34: "router CA bundle is unavailable",
                     35: "relay destination already exists; refusing a second installation",
@@ -294,8 +299,8 @@ def main() -> int:
             remote("chmod " + mode + " " + shlex.quote(remote_path))
 
         try:
-            # Require an already-known router host key. Any SSH password prompt is handled by OpenSSH in Terminal only.
-            first = run(["ssh", "-M", "-N", "-f", "-S", socket, "-o", "ControlMaster=yes", "-o", "ControlPersist=600", "-o", "ControlPath=" + socket, "-o", "StrictHostKeyChecking=yes", "-o", "ConnectTimeout=6", OPAL], prompt=True, timeout=30)
+            # Use only the existing key and known host. BatchMode prevents hidden password prompts.
+            first = run(["ssh", "-M", "-N", "-f", "-S", socket, "-o", "ControlMaster=yes", "-o", "ControlPersist=600", "-o", "ControlPath=" + socket, "-o", "StrictHostKeyChecking=yes", "-o", "HostKeyAlgorithms=+ssh-rsa", "-o", "PubkeyAcceptedAlgorithms=+ssh-rsa", "-o", "IdentitiesOnly=yes", "-o", "BatchMode=yes", "-i", str(OPAL_IDENTITY), "-o", "ConnectTimeout=6", OPAL], prompt=True, timeout=30)
             if first.returncode != 0:
                 raise Stop("authenticated, host-key-verified Opal SSH access is unavailable")
             master = True
@@ -311,9 +316,9 @@ def main() -> int:
             check_script = f'''set -eu
 STAGE={shlex.quote(stage)}
 umask 077
-MODEL="$(ubus call system board | jsonfilter -e '@.model.name' 2>/dev/null)"
+MODEL="$(ubus call system board | jsonfilter -e '@.model' 2>/dev/null)"
 case "$MODEL" in *GL-SFT1200*) ;; *) exit 31;; esac
-for c in curl jsonfilter sha256sum install logger logread; do command -v "$c" >/dev/null 2>&1 || exit 32; done
+for c in curl jsonfilter sha256sum cp chmod mkdir logger logread; do command -v "$c" >/dev/null 2>&1 || exit 32; done
 [ -x /sbin/procd ] && [ -d /etc/rc.d ] && [ -d /etc/init.d ] || exit 33
 [ -s /etc/ssl/certs/ca-certificates.crt ] || [ -s /etc/ssl/cert.pem ] || exit 34
 [ ! -e /usr/libexec/hbnf-skins-relay ] && [ ! -e /usr/lib/hbnf-skins-relay-core.sh ] && [ ! -e /etc/init.d/hbnf-skins-relay ] && [ ! -e /etc/hbnf-skins-relay.conf ] || exit 35
@@ -363,11 +368,17 @@ rollback() {{
 trap rollback EXIT HUP INT TERM
 [ ! -e /usr/libexec/hbnf-skins-relay ] && [ ! -e /usr/lib/hbnf-skins-relay-core.sh ] && [ ! -e {SERVICE} ] && [ ! -e /etc/hbnf-skins-relay.conf ] || exit 41
 printf '%s\\n' 'package 1.0.0 install attempt consumed' > "$STAGE/attempted"
-install -o root -g root -m 0600 "$STAGE/attempted" /etc/hbnf-skins-relay-1.0.0-attempted
-install -o root -g root -m 0755 "$STAGE/hbnf-skins-relay" /usr/libexec/hbnf-skins-relay
-install -o root -g root -m 0644 "$STAGE/hbnf-skins-relay-core.sh" /usr/lib/hbnf-skins-relay-core.sh
-install -o root -g root -m 0755 "$STAGE/hbnf-skins-relay.init" {SERVICE}
-install -o root -g root -m 0600 "$STAGE/relay.conf" /etc/hbnf-skins-relay.conf
+cp "$STAGE/attempted" /etc/hbnf-skins-relay-1.0.0-attempted
+chmod 0600 /etc/hbnf-skins-relay-1.0.0-attempted
+mkdir -p /usr/libexec
+cp "$STAGE/hbnf-skins-relay" /usr/libexec/hbnf-skins-relay
+chmod 0755 /usr/libexec/hbnf-skins-relay
+cp "$STAGE/hbnf-skins-relay-core.sh" /usr/lib/hbnf-skins-relay-core.sh
+chmod 0644 /usr/lib/hbnf-skins-relay-core.sh
+cp "$STAGE/hbnf-skins-relay.init" {SERVICE}
+chmod 0755 {SERVICE}
+cp "$STAGE/relay.conf" /etc/hbnf-skins-relay.conf
+chmod 0600 /etc/hbnf-skins-relay.conf
 {SERVICE} enable
 [ -L /etc/rc.d/S95hbnf-skins-relay ] || exit 42
 rm -rf /tmp/hbnf-skins-relay
