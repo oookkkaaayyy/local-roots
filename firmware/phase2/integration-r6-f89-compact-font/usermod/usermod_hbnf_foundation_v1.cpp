@@ -31,8 +31,8 @@ using namespace hbnf_v1;
 namespace {
 
 static const char HBNF_FX_DATA[] PROGMEM = "HBNF Foundation@;;;2";
-static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-phase2-r6-glow-live-20261014";
-static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-phase2-r6-glow-live-20261014\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-phase2-r6-glow-live-20261014\",\"basedOnReleaseId\":\"hbnf-cart2-phase2-r6-skins-readable-20261014\",\"basedOnFirmwareSha256\":\"de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r5-unfrozen\",\"native-text-moments-r5-unfrozen\",\"vibe-first-local-ui-v1\",\"matrix-live-skins-readable-v2\",\"matrix-live-glow-v1\"]}";
+static const char HBNF_CANDIDATE[] PROGMEM = "hbnf-cart2-phase2-r6-glow-live-owner-scores-20261014";
+static const char HBNF_BUILD_JSON[] PROGMEM = "{\"schema\":\"hbnf-build-v1\",\"candidate\":\"hbnf-cart2-phase2-r6-glow-live-owner-scores-20261014\",\"ip\":\"192.168.77.10\",\"mac\":\"70:4b:ca:5b:34:5c\",\"release_id\":\"hbnf-cart2-phase2-r6-glow-live-owner-scores-20261014\",\"basedOnReleaseId\":\"hbnf-cart2-phase2-r6-skins-readable-20261014\",\"basedOnFirmwareSha256\":\"de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d\",\"wled\":\"16.0.1\",\"features\":[\"phase2-brightness-output-v1\",\"wled-native-fontmanager-text-v1\",\"foundation-vibe-audio-r5-unfrozen\",\"native-text-moments-r5-unfrozen\",\"vibe-first-local-ui-v1\",\"matrix-live-skins-readable-v2\",\"matrix-live-glow-v1\"]}";
 static PaletteSelection hbnfPalette{};
 static OverlayState hbnfCommandOverlay{};
 static portMUX_TYPE hbnfOverlayMux=portMUX_INITIALIZER_UNLOCKED;
@@ -224,8 +224,9 @@ static bool hbnfAcceptOverlay(JsonVariantConst input,bool explicitNull,uint32_t 
   JsonObjectConst obj=input.as<JsonObjectConst>();
   if(obj.isNull()) { portENTER_CRITICAL(&hbnfOverlayMux);clearOverlay(hbnfCommandOverlay);portEXIT_CRITICAL(&hbnfOverlayMux);return false; }
   const char* id=obj["id"]|"";const char* kind=obj["kind"]|"";const uint32_t ttl=obj["ttlMs"]|0;
-  if(!validBoundedText(id,39)||ttl<250u||ttl>30000u)goto invalid;
+  if(!validBoundedText(id,39)||ttl<250u)goto invalid;
   if(strcmp(kind,"text")==0) {
+    if(ttl>30000u)goto invalid;
     const char* text=obj["text"]|"";uint8_t r=255,g=255,b=255;
     const int requestedFontIndex=obj["fontIndex"]|4;
     const uint8_t fontIndex=(requestedFontIndex==0||requestedFontIndex==2||requestedFontIndex==3||requestedFontIndex==4)?(uint8_t)requestedFontIndex:4;
@@ -235,16 +236,17 @@ static bool hbnfAcceptOverlay(JsonVariantConst input,bool explicitNull,uint32_t 
     portEXIT_CRITICAL(&hbnfOverlayMux);return true;
   }
   if(strcmp(kind,"scoreboard")==0) {
+    if(ttl>kOwnerScoreboardMaxTtlMs)goto invalid;
     const char* label=obj["label"]|"";JsonArrayConst inputEntries=obj["entries"].as<JsonArrayConst>();
-    if(!validBoundedText(label,15)||inputEntries.isNull()||inputEntries.size()==0||inputEntries.size()>12)goto invalid;
+    if(!validBoundedText(label,15)||inputEntries.isNull()||inputEntries.size()==0||inputEntries.size()>kOwnerScoreboardMaxEntries)goto invalid;
     if(strcmp(label,"F9")&&strcmp(label,"B9")&&strcmp(label,"GLOW")&&strcmp(label,"SCORES"))goto invalid;
-    char entries[12][64]{};uint8_t count=0;
+    char entries[kOwnerScoreboardMaxEntries][9]{};uint8_t count=0;
     for(JsonVariantConst entry:inputEntries) {
       if(!entry.is<const char*>())goto invalid;
-      const char* line=entry.as<const char*>();if(!validBoundedText(line,63))goto invalid;
+      const char* line=entry.as<const char*>();if(!validBoundedText(line,8))goto invalid;
       strlcpy(entries[count++],line,sizeof(entries[0]));
     }
-    const char* ptrs[12]{};for(uint8_t i=0;i<count;i++)ptrs[i]=entries[i];
+    const char* ptrs[kOwnerScoreboardMaxEntries]{};for(uint8_t i=0;i<count;i++)ptrs[i]=entries[i];
     portENTER_CRITICAL(&hbnfOverlayMux);
     setScoreboardOverlay(hbnfCommandOverlay,id,label,ptrs,count,ttl,now);
     portEXIT_CRITICAL(&hbnfOverlayMux);return true;
@@ -267,7 +269,7 @@ static Rgb8 hbnfPaletteColor(uint8_t r,uint8_t g,uint8_t b,uint8_t index) {
 }
 
 static bool hbnfRenderCommandOverlay(uint8_t matrixBrightness,Vibe activeVibe) {
-  // The fixed OverlayState contains 768 bytes of scoreboard entry storage.
+  // The fixed OverlayState keeps the owner-only manual scoreboard bounded.
   // Avoid copying it under the spinlock on every render frame when no command
   // overlay is active (the normal palette/showcase path).
   OverlayState overlay;
@@ -323,11 +325,18 @@ static bool hbnfRenderCommandOverlay(uint8_t matrixBrightness,Vibe activeVibe) {
     if(fontLoaded)HbnfNativeText::drawPaged(font,overlay.text,elapsed,32,16,fg,2200,gradient,alpha,yOffset);
   } else {
     if(overlay.kind==OVERLAY_SCOREBOARD&&overlay.entryCount) {
-      hbnfDrawText(overlay.label,0,fg);
+      const uint32_t elapsed=(uint32_t)(now-overlay.startedAt);
+      const uint32_t remaining=overlay.ttlMs>elapsed?overlay.ttlMs-elapsed:0u;
+      uint8_t alpha=255u;
+      if(elapsed<350u)alpha=(uint8_t)(elapsed*255u/350u);
+      if(remaining<350u){const uint8_t out=(uint8_t)(remaining*255u/350u);if(out<alpha)alpha=out;}
+      const uint32_t scoreboardFg=packed(scaleRgb(hbnf_brightness::scaleOutputPixel(overlayColor,overlayColor,scale),alpha));
       const uint8_t pages=(uint8_t)((overlay.entryCount+1u)/2u);
-      const uint8_t page=(uint8_t)(((uint32_t)(now-overlay.startedAt)/1800u)%pages);
-      hbnfDrawText(overlay.entries[page*2u],5,fg);
-      if(page*2u+1u<overlay.entryCount)hbnfDrawText(overlay.entries[page*2u+1u],10,fg);
+      const uint8_t page=(uint8_t)(elapsed/kOwnerScoreboardPageDwellMs);
+      if(page<pages) {
+        hbnfDrawText(overlay.entries[page*2u],1,scoreboardFg);
+        if(page*2u+1u<overlay.entryCount)hbnfDrawText(overlay.entries[page*2u+1u],10,scoreboardFg);
+      }
     }
   }
   return true;

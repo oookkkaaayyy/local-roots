@@ -16,16 +16,17 @@ function palette(id:any){
 async function normalizedOverlay(raw:any,rev:number,fence:number,now:number){
  if(!raw||Number(raw.expiresAt)<=now)return null;
  const kind=String(raw.kind??""),data=raw.payload&&typeof raw.payload==="object"?raw.payload:{};
- const ttlMs=Math.max(250,Math.min(30000,Math.round(Number(raw.expiresAt)-now)));
+ const maxTtlMs=String(raw.kind??"")==="scoreboard"?120000:30000;
+ const ttlMs=Math.max(250,Math.min(maxTtlMs,Math.round(Number(raw.expiresAt)-now)));
  let content:any;
  if(kind==="text"){
    const text=String(data.text??"").trim().slice(0,63),color=String(data.color??"#FFFFFF").toUpperCase(),fontIndex=data.fontIndex===undefined?4:data.fontIndex;
    if(!text||!/^#[0-9A-F]{6}$/.test(color)||!Number.isInteger(fontIndex)||![0,2,3,4].includes(fontIndex))throw Error("invalid_text_overlay");
    content={kind,ttlMs,text,color,fontIndex};
  } else if(kind==="scoreboard"){
-   const entries=Array.isArray(data.entries)?data.entries.map((x:any)=>String(x).trim().slice(0,48)).filter(Boolean).slice(0,12):[];
+   const entries=Array.isArray(data.entries)?data.entries.map((x:any)=>String(x).trim()):[];
    const label=String(data.label??"SCORES").trim().slice(0,15);
-   if(!entries.length||!["F9","B9","GLOW","SCORES"].includes(label))throw Error("invalid_scoreboard_overlay");
+   if(!entries.length||entries.length>20||entries.some((x:string)=>!x||x.length>8)||!["F9","B9","GLOW","SCORES"].includes(label))throw Error("invalid_scoreboard_overlay");
    content={kind,ttlMs,label,entries};
  } else throw Error("unsupported_overlay_kind");
  const bytes=new TextEncoder().encode(JSON.stringify({rev,fence,content}));

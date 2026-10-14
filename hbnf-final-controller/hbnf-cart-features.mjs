@@ -345,14 +345,61 @@ async function refreshLive(silent) {
   }
 }
 
+function compactShowScoreEntries(label, entries) {
+  const phase=String(label||"").toUpperCase();
+  if(!Array.isArray(entries)||!entries.length||entries.length>20)throw new Error("This display supports 1–20 entries; no partial scoreboard was sent.");
+  if(phase!=="F9"&&phase!=="B9"&&phase!=="GLOW")throw new Error("The live score type is not supported by the Matrix scoreboard.");
+  const parsed=entries.map(function(raw){
+    const line=String(raw).trim(),match=line.match(/^(.*)\s+([^\s]+)$/);
+    if(!match)throw new Error("A score entry could not be read; no partial scoreboard was sent.");
+    const name=match[1].trim(),score=match[2];
+    if(!name||!/^([0-9]$|E$|[+-][0-9]{1,2}$)/.test(score))throw new Error("A score entry is outside the supported display format; no partial scoreboard was sent.");
+    const letters=function(value){return String(value).replace(/[^A-Za-z0-9]/g,"").toUpperCase();};
+    if(phase==="F9"){
+      if(!/^[0-9]$/.test(score))throw new Error("Front 9 score format is invalid; no partial scoreboard was sent.");
+      const base=letters(name.split(/\s+/)[0]).slice(0,3);
+      if(!base)throw new Error("A player name has no recognizable letters; no partial scoreboard was sent.");
+      return {base:base,score:score,kind:"single"};
+    }
+    if(phase==="B9"||(phase==="GLOW"&&name.indexOf("/")>=0)){
+      const pair=name.split("/");
+      if(pair.length!==2||(phase==="B9"?!/^[0-9]$/.test(score):!(score==="E"||/^[+-][0-9]{1,2}$/.test(score))))throw new Error("Team identity or score format is invalid; no partial scoreboard was sent.");
+      const left=letters(pair[0].trim().split(/\s+/)[0]).slice(0,1),right=letters(pair[1].trim().split(/\s+/)[0]).slice(0,1);
+      if(!left||!right)throw new Error("A team identity has no recognizable initials; no partial scoreboard was sent.");
+      return {base:left+" / "+(left===right?right+"2":right),score:score,kind:"team"};
+    }
+    const base=letters(name.split(/\s+/)[0]).slice(0,3);
+    if(!base)throw new Error("A player or team name has no recognizable letters; no partial scoreboard was sent.");
+    return {base:base,score:score,kind:"single"};
+  });
+  const totals=new Map();
+  for(const row of parsed)totals.set(row.base,(totals.get(row.base)||0)+1);
+  const seen=new Map(),labels=[];
+  for(const row of parsed){
+    const occurrence=(seen.get(row.base)||0)+1;seen.set(row.base,occurrence);
+    const suffix="123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[occurrence-1]||"";
+    let name=row.base;
+    if(totals.get(row.base)>1){
+      if(row.base.indexOf(" / ")>=0){const pair=row.base.split(" / ");name=pair[0]+suffix+" / "+pair[1];}
+      else name=row.base+suffix;
+    }
+    const text=name+" "+row.score;
+    if(text.length>8)throw new Error("A score label cannot fit the Matrix without clipping; no partial scoreboard was sent.");
+    labels.push(text);
+  }
+  if(new Set(labels).size!==labels.length)throw new Error("Player abbreviations are ambiguous; no partial scoreboard was sent.");
+  return labels;
+}
+
 async function showScoreboard() {
   setFeatureStatus("Preparing live scoreboard…");
   const out=await canonicalRead("live_status",{});
   const live=out && out.live;
   if (!live || !live.active || !Array.isArray(live.entries) || !live.entries.length) throw new Error("No active Skins or Glow scores are available.");
+  const entries=compactShowScoreEntries(live.label,live.entries);
   const bridge=canonicalOverlayBridge();
-  const ttl=Math.max(8000,Math.min(30000,6000+Math.ceil(live.entries.length/2)*5000));
-  await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:live.entries.slice(0,12)},ttl);
+  const ttl=Math.ceil(entries.length/2)*5500;
+  await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:entries},ttl);
   setFeatureStatus("Canonical scoreboard overlay accepted.");
 }
 

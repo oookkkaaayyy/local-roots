@@ -168,6 +168,31 @@ test("text overlays default to native font slot 4 and accept only reviewable ASC
   }
 });
 
+test("Owner Show Scores preserves the full supported roster and readable display lifetime", () => {
+  const entries = Array.from({ length: 20 }, (_, i) => `P${i + 1} ${i % 10}`);
+  const accepted = reduceCartCommand(state(), "OVERLAY_START", {
+    overlayId: "owner-scores-20", kind: "scoreboard", ttlMs: 55000,
+    data: { label: "F9", entries },
+  }, commandId, 17);
+  assert.equal(accepted.overlays.at(-1).expiresAt - Date.now() <= 55000, true);
+  assert.equal(accepted.overlays.at(-1).expiresAt - Date.now() > 54000, true);
+  assert.deepEqual(accepted.overlays.at(-1).payload.entries, entries);
+  assert.equal(accepted.overlays.at(-1).payload.entries.length, 20);
+  assert.equal(reduceCartCommand(state(), "OVERLAY_START", {
+    overlayId: "owner-scores-21", kind: "scoreboard", ttlMs: 60000,
+    data: { label: "F9", entries: [...entries, "P21 1"] },
+  }, commandId, 17), null);
+  assert.equal(reduceCartCommand(state(), "OVERLAY_START", {
+    overlayId: "owner-score-wide", kind: "scoreboard", ttlMs: 5500,
+    data: { label: "F9", entries: ["TOOLONG 1"] },
+  }, commandId, 17), null, "static owner scoreboard rows reject text wider than 32 pixels");
+  const text = reduceCartCommand(state(), "OVERLAY_START", {
+    overlayId: "owner-text-long", kind: "text", ttlMs: 55000,
+    data: { text: "ACE 25 FT" },
+  }, commandId, 17);
+  assert.equal(text.overlays.at(-1).expiresAt - Date.now() <= 30000, true, "long scoreboard lifetime does not loosen text overlay limits");
+});
+
 test("Static Guest route calls only the existing endpoint without browser session persistence", () => {
   const page = readFileSync(new URL("../../../hbnf-final-controller/guest/hbnf-cart/index.html", import.meta.url), "utf8");
   const script = readFileSync(new URL("../../../hbnf-final-controller/guest/hbnf-cart/guest.js", import.meta.url), "utf8");

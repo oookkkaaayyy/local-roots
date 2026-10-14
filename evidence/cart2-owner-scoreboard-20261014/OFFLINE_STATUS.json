@@ -1,0 +1,31 @@
+{
+  "schema": "hbnf-owner-scoreboard-offline-status-v1",
+  "candidate_release": "hbnf-cart2-phase2-r6-glow-live-owner-scores-20261014",
+  "source_base_commit": "2048fa11eb7a28575abf850d69eaa1d2d7d8f0e8",
+  "source_sha256": {
+    "owner_page": "07ee0d19d1bc8041a2c69046ae3feb0337651b1799f3460b4855a1fb5121ad6a",
+    "owner_bridge": "58b60cc006921bcf81e1fb39ffa62c68b34caf2c1690240e6b4f9a3466f7d1f5",
+    "firmware_renderer": "0dc65a1fef63c606714cfb1bd84975d1c756f712dcc07759ec750a731473ec31",
+    "firmware_contract": "7b2e992bcc37a363e16767b5442c38ff055b59bfb602a5619b33fb580bc56e30",
+    "embedded_ui": "654c086f3795ca8f3c5da07825bf28af8e446999d6f655d63d07ed9a0b62e58e",
+    "backend_reducer": "0284890dfea52da8f0c6e164b68b0f785c60c997bf44a4772e80c37b5f9f251b",
+    "matrix_projection": "6ff2dcec67b909d254658b6ce3d19b790df903a44ec78f883a2649cbc562e0b9"
+  },
+  "build_attempt": {
+    "environment": "Existing PlatformIO Core 6.1.18 and cached WLED build tree",
+    "target": "hbnf_matrix_wled16_packet20_diag",
+    "result": "BLOCKED_BEFORE_COMPILATION",
+    "exit_status": 143,
+    "observed_last_stage": "PlatformIO Library Manager printed \u201cInstalling SPI\u201d after dependency scan; log did not progress to compiler output.",
+    "network_observation": "The PlatformIO process remained waiting on a connection to ns1.platformio.org in CLOSE_WAIT; the single attempt was terminated and prior build-tree source inputs restored.",
+    "candidate_binary_created": false,
+    "previous_glow_binary_preserved_sha256": "79616ddb8d5d7acdeba809c009f31637af3aec433a87b8ac3bc75e96ff8897cc",
+    "previous_glow_binary_size_bytes": 1506144
+  },
+  "no_production_or_hardware_actions": true,
+  "limitations": [
+    "No new firmware binary was produced.",
+    "The repository doctor currently reports an installed-release identity mismatch, so guarded release readiness remains closed.",
+    "The production Supabase outage prevents live owner command validation."
+  ]
+}

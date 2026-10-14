@@ -1,0 +1,205 @@
+{
+  "cost_policy": {
+    "paid_or_quota_limited_execution": "explicit_authorization_per_bounded_run",
+    "remote_execution_for_source_archaeology": false,
+    "retry_inherits_authorization": false
+  },
+  "created_at": "2026-10-14T22:40:39.068365+00:00",
+  "expected_terminal_outputs": [
+    "accepted change or exact failed stage",
+    "deployed/source identity",
+    "test and integration-contract result",
+    "rollback identity",
+    "durable evidence pointer"
+  ],
+  "external_authorities": {
+    "artifact_registry_drive_id": "18VsUYIYr62fYVaEqynM1kbMmfQpei-3H3rBgrw8S96k",
+    "delta_inbox_sheet_id": "1tJIcKRfWFdHVYVo4G6mgySB46p6xwsseGON3JdnEnzY",
+    "file_authority_drive_id": "1GwvPv_nihqoIj83WsO6VcvyujRkt8HnnULvLv717OHc",
+    "release_engineering_drive_id": "1bw_VUNt2mEZ4JdKuRsQq7ZS1Bc4KeC8kMVABVK2OdgE"
+  },
+  "repo_identity": {
+    "branch": "codex/owner-control-outage-offline-20261014",
+    "dirty": false,
+    "type": "git_commit",
+    "value": "2048fa11eb7a28575abf850d69eaa1d2d7d8f0e8"
+  },
+  "repo_inputs": [
+    {
+      "bytes": 31590,
+      "path": "config/HBNF_CONTROL_MODEL.json",
+      "sha256": "8d42f1fd540c95a01ae16857c286f6350b57ad8e3cd0c22befd1780fcb26d29c"
+    },
+    {
+      "bytes": 265839,
+      "path": "config/HBNF_CONTROL_STATE.json",
+      "sha256": "a67f7eb20d429d1b4551f3e55ea226ff790be1d341170ab72e7d4269c742fa84"
+    },
+    {
+      "bytes": 114557,
+      "path": "scripts/hbnf_control.py",
+      "sha256": "e081c85fec428ff55661f8eb1848d8b2e89c2c4c31878cd63aa1932da28b239d"
+    },
+    {
+      "bytes": 5112,
+      "path": "scripts/hbnf_guarded_run.py",
+      "sha256": "1ac0a58793292d02cf5ec898714861811bc416d5e9670134a11b40acc70ad299"
+    },
+    {
+      "bytes": 5404,
+      "path": "platform/policies.json",
+      "sha256": "16b80bafcb81002885164ba3799e1401d5007addb38ebb1e9a5336fdfa9bc37a"
+    },
+    {
+      "bytes": 7843,
+      "path": "platform/workflows/live-device-diagnostic.json",
+      "sha256": "2954ee3c24963e637632419049463e7d6b589300bb4d5519a3b6249d3638e849"
+    },
+    {
+      "bytes": 10967,
+      "path": "platform/cart2-critical-path-v1.json",
+      "sha256": "f19ef4feea2528c47a919d2deac967746690a2b9ead9a33db191b4b02cbe237b"
+    },
+    {
+      "bytes": 41341,
+      "path": "scripts/platform.py",
+      "sha256": "8cab8d176df58be93de8959c2f725da93819e927ce6d79c2f9cd3cdb7f10e6bb"
+    },
+    {
+      "bytes": 8202,
+      "path": "platform/providers/cloudflare-workers.json",
+      "sha256": "67c0c79c310b780d2934fbf7ef12b06562d014adafac2105822a4c2d79ff74da"
+    },
+    {
+      "bytes": 14677,
+      "path": "AGENTS.md",
+      "sha256": "1400198b652bc349ea032a1a2669e436987c60a5ada3fea92e52425f73737584"
+    }
+  ],
+  "run_id": "cart2-owner-control-offline-20261014",
+  "schema": "local-roots-execution-capsule-v1",
+  "stages": [
+    {
+      "id": "scope",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "explicit acceptance condition"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "implement",
+      "kind": "work",
+      "mutation": false,
+      "outputs": [
+        "small code/config delta"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "test",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "deterministic local test result"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "contract-closure",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "producer/consumer integration contract PASS",
+        "no deterministic unknown deferred to production"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "recovery-proof",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "exact last-known-good revision and rollback procedure PASS"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "transaction-rehearsal",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "preview/staging/simulation transaction PASS",
+        "rollback rehearsal PASS"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "capture-current-state",
+      "kind": "preflight",
+      "mutation": false,
+      "outputs": [
+        "exact current deployed revision captured"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "deploy",
+      "kind": "deployment",
+      "mutation": true,
+      "outputs": [
+        "deployment identity"
+      ],
+      "retry_policy": "explicit_only",
+      "rollback": {
+        "strategy": "restore exact captured last-known-good revision"
+      }
+    },
+    {
+      "id": "verify",
+      "kind": "verification",
+      "mutation": false,
+      "outputs": [
+        "user-visible/runtime verification"
+      ],
+      "retry_policy": "idempotent"
+    },
+    {
+      "id": "record",
+      "kind": "evidence",
+      "mutation": false,
+      "outputs": [
+        "terminal run summary and durable delta"
+      ],
+      "retry_policy": "idempotent"
+    }
+  ],
+  "storage_policy": {
+    "aks": "searchable routing, current-state pointers, acceptance/supersession metadata, and external artifact identities",
+    "github": "canonical/buildable source, scripts, configs, workflow definitions, and small machine-readable provenance",
+    "google_drive": "durable binaries, recovery artifacts, decisive evidence, and large immutable run outputs",
+    "local_workspace": "ephemeral execution only; never sole authority after a result becomes meaningful"
+  },
+  "system_id": "hbnf-cart",
+  "terminal_recovery": "If deploy or verify fails, restore the exact captured last-known-good revision and record the failed stage before any further work.",
+  "trace_id": "becf24b5bbc0416fae3950ebea60705a",
+  "user_interaction_policy": {
+    "copy_paste_delivery": "one_single_fenced_block_per_action",
+    "max_user_actions_per_blocker": 1,
+    "required_user_action_fields": [
+      "prerequisite",
+      "action",
+      "expected_result",
+      "stop_condition"
+    ],
+    "resource_instruction_requires_direct_link_or_exact_path": true,
+    "terminal_app": "macOS Terminal",
+    "terminal_relay": false
+  },
+  "workflow_id": "software-change",
+  "workflow_source": {
+    "path": "platform/workflows/software-change.json",
+    "sha256": "a4ff8633bef2657b4eb2aab892a287c97ac9268c5a245ae29714db760c1b2c9f"
+  }
+}

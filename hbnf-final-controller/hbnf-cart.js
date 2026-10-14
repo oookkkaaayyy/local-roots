@@ -490,7 +490,8 @@ window.HBNFCanonical = {
     return call(Object.assign({action:action}, payload || {}));
   },
   overlay: function(kind, data, ttlMs) {
-    const duration = Number.isFinite(Number(ttlMs)) ? Math.max(1000, Math.min(30000, Math.round(Number(ttlMs)))) : (kind === "scoreboard" ? 22000 : 8000);
+    const maxDuration = kind === "scoreboard" ? 120000 : 30000;
+    const duration = Number.isFinite(Number(ttlMs)) ? Math.max(1000, Math.min(maxDuration, Math.round(Number(ttlMs)))) : (kind === "scoreboard" ? 22000 : 8000);
     return command("OVERLAY_START", {
       overlayId: newCommandId(),
       kind: kind,

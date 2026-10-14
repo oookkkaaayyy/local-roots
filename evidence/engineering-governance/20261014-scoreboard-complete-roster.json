@@ -1,0 +1,31 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OWNER_SHOW_SCORES_COMPLETE_ROSTER_20261014",
+  "summary": "Remove the existing 12-entry and 30-second ceilings from the owner-triggered scoreboard along its current authenticated command path, preserving every roster entry and giving each two-row page the owner-approved readable dwell.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Direct owner instruction in the Cart Upgrades project on 2026-10-14 authorizes offline Owner Control V3 and Matrix/AUX work, explicitly identifies Show Scores 12-entry truncation and 30-second timeout, prohibits production and hardware changes, and requires no mocked claim of device functionality. Earlier direct field feedback requires two rows, complete score coverage, and at least 5.5 seconds per page.",
+      "affected_subsystem": "Existing canonical owner command path only: hbnf-final-controller/hbnf-cart-features.mjs, hbnf-final-controller/hbnf-cart.js, staging/coordinated-backend/hbnf-cart-control/guest-command.ts, staging/coordinated-backend/hbnf-cart-control/matrix-relay-projection.ts, and the existing Matrix R6 scoreboard command renderer. No new protocol, endpoint, dependency, or authorization path.",
+      "rollback_reference": "Revert this source-only commit. The deployed Worker and installed Matrix remain untouched; no firmware or service is installed/deployed in this task. Existing production and device baselines are therefore not mutated.",
+      "evidence_sources": [
+        "Verified deployed Owner Control V3 source commit 80c5b2e12b4f9c3917ffa3896284eadc78545d64: Show Scores slices entries to 12 and computes a TTL clamped to 30,000 ms.",
+        "Current project source checkpoint 2048fa11eb7a28575abf850d69eaa1d2d7d8f0e8 and its parent build source e5179739d0c046de56e310e02a8ca486370a2dda: owner command reducer and Matrix projection also clamp to 12 entries and 30 seconds; current firmware command receiver stores at most 12 entries and caps TTL at 30 seconds.",
+        "Current owner acceptance: two-row scoreboard, complete roster, minimum 5.5-second page dwell, no horizontal scroll, exact identity preserved, no fake backend/device confirmation."
+      ],
+      "tests": [
+        "Add fixture tests for roster sizes 1, 12, 13, and 20 through the owner command reducer and Matrix projection; verify exact order and no truncation.",
+        "Add renderer contract tests for two entries per page, 5.5-second dwell, last-page completion, exact expiry, and the bounded maximum roster.",
+        "Run existing owner PWA package/reliability and Matrix relay contract tests affected by the shared scoreboard path.",
+        "Run required repository control/release compatibility checks; no production endpoint, scoring records, Matrix, AUX, or Opal are contacted or changed."
+      ]
+    }
+  }
+}

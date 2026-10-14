@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cstdio>
 #include <cstring>
 
 #include "../firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_native_text.h"
@@ -51,4 +52,19 @@ int main() {
   assert(!overlay.fontFitResolved);
   hbnf_v1::setTextOverlay(overlay,"name-1","ANDREW",8000,255,255,255,100,4);
   assert(!overlay.fontFitResolved); // a new overlay resolves once on its first render
+
+  const char* scores[hbnf_v1::kOwnerScoreboardMaxEntries]{};
+  char rows[hbnf_v1::kOwnerScoreboardMaxEntries][8]{};
+  for(uint8_t i=0;i<hbnf_v1::kOwnerScoreboardMaxEntries;i++){
+    std::snprintf(rows[i],sizeof(rows[i]),"P%u %u",(unsigned)(i+1u),(unsigned)(i%10u));
+    scores[i]=rows[i];
+  }
+  hbnf_v1::setScoreboardOverlay(overlay,"all-20","F9",scores,
+    hbnf_v1::kOwnerScoreboardMaxEntries,110000u,1000u);
+  assert(overlay.entryCount==20);
+  assert(std::strcmp(overlay.entries[0],"P1 0")==0);
+  assert(std::strcmp(overlay.entries[19],"P20 9")==0);
+  assert(hbnf_v1::overlayVisible(overlay,1000u+109999u));
+  assert(!hbnf_v1::overlayVisible(overlay,1000u+110000u));
+  assert(hbnf_v1::kOwnerScoreboardPageDwellMs==5500u);
 }

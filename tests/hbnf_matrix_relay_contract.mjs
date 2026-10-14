@@ -28,6 +28,14 @@ assert.equal(checkDecision({expires_at:new Date(9000).toISOString(),expected_sta
 assert.equal(checkDecision({expires_at:new Date(9000).toISOString(),expected_state:{...built.expectedState,on:false},apply_authorized_at:"now"},actual,1000),"mismatch_after_apply");
 assert.equal(checkDecision({expires_at:new Date(999).toISOString(),expected_state:built.expectedState},actual,1000),"stale");
 assert.equal(checkDecision({expires_at:new Date(9000).toISOString(),consumed_at:"now",expected_state:built.expectedState},actual,1000),"stale");
+
+const roster=Array.from({length:20},(_,i)=>`P${i+1} ${i%10}`);
+const scoreboardContext={desired:{state:{...context.desired.state,overlays:[{id:"owner-full-roster",kind:"scoreboard",priority:60,expiresAt:56000,payload:{label:"F9",entries:roster}}]}}};
+const scoreboard=await buildWledProjection(scoreboardContext,52,7,1000);
+assert.equal(scoreboard.wledPayload.HBNF.overlay.entries.length,20,"the canonical-to-Matrix projection preserves every supported scoreboard entry");
+assert.deepEqual(scoreboard.wledPayload.HBNF.overlay.entries,roster);
+assert.equal(scoreboard.wledPayload.HBNF.overlay.ttlMs,55000,"the projection preserves the full ten-page readable dwell");
+await assert.rejects(buildWledProjection({desired:{state:{...context.desired.state,overlays:[{id:"owner-oversize",kind:"scoreboard",priority:60,expiresAt:56000,payload:{label:"F9",entries:[...roster,"P21 1"]}}]}}},53,7,1000),/invalid_scoreboard_overlay/);
 assert.throws(()=>normalizeReadback({...info,mac:"001122334455"},state),/identity/);
 assert.throws(()=>normalizeReadback({...info,leds:{count:512}},state),/topology/);
 const changed=structuredClone(context);changed.desired.state.overlays[0].payload.text="Changed";

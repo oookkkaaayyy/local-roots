@@ -282,7 +282,8 @@ export function reduceCartCommand(state: Record<string, unknown>, type: string, 
       if (!required(payload.overlayId, 80)) return null;
       const kind = String(payload.kind ?? "");
       if (!["text","scoreboard"].includes(kind)) return null;
-      const ttlMs = clamp(Number(payload.ttlMs ?? 8000), 1000, 30000);
+      const maxTtlMs = kind === "scoreboard" ? 120000 : 30000;
+      const ttlMs = clamp(Number(payload.ttlMs ?? 8000), 1000, maxTtlMs);
       const priority = clamp(Number(payload.priority ?? 60), 1, 100);
       const data = payload.data && typeof payload.data === "object" ? structuredClone(payload.data as Record<string, unknown>) : {};
       if (kind === "text") {
@@ -298,8 +299,10 @@ export function reduceCartCommand(state: Record<string, unknown>, type: string, 
         (data as Record<string, unknown>).fontIndex = fontIndex;
       } else {
         const entries = Array.isArray((data as Record<string, unknown>).entries) ? (data as Record<string, unknown>).entries as unknown[] : [];
-        if (!entries.length || entries.length > 12) return null;
-        (data as Record<string, unknown>).entries = entries.map(x => String(x).trim().slice(0,48)).filter(Boolean);
+        if (!entries.length || entries.length > 20) return null;
+        const normalizedEntries = entries.map(x => String(x).trim());
+        if (normalizedEntries.some(x => !x || x.length > 8)) return null;
+        (data as Record<string, unknown>).entries = normalizedEntries;
         (data as Record<string, unknown>).label = String((data as Record<string, unknown>).label ?? "SCORES").trim().slice(0,24);
       }
       const now = Date.now();

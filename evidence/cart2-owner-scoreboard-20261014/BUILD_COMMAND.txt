@@ -1,0 +1,1 @@
+PLATFORMIO_CORE_DIR=/Users/andrew/.platformio SOURCE_DATE_EPOCH=1791850000 /Users/andrew/.codex/tool-runtimes/cart2-platformio-6.1.18/bin/pio run -v -j 1 -d /Users/andrew/.codex/builds/cart2-skins-readable-20261014/WLED-build -e hbnf_matrix_wled16_packet20_diag

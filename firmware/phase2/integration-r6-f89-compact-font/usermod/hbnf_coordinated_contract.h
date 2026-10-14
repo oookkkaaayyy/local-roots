@@ -5,6 +5,10 @@
 
 namespace hbnf_v1 {
 
+constexpr uint8_t kOwnerScoreboardMaxEntries=20;
+constexpr uint32_t kOwnerScoreboardMaxTtlMs=120000u;
+constexpr uint16_t kOwnerScoreboardPageDwellMs=5500u;
+
 enum PaletteMode : uint8_t { PALETTE_LEGACY=0, PALETTE_WLED=1, PALETTE_SOLID=2 };
 struct PaletteSelection {
   PaletteMode mode=PALETTE_LEGACY;
@@ -18,7 +22,7 @@ struct OverlayState {
   char id[40]{};
   char text[64]{};
   char label[16]{};
-  char entries[12][64]{};
+  char entries[kOwnerScoreboardMaxEntries][9]{};
   uint8_t entryCount=0;
   uint8_t fontIndex=4;
   bool fontFitResolved=false;
@@ -27,7 +31,7 @@ struct OverlayState {
 };
 
 inline bool overlayVisible(const OverlayState& s,uint32_t now) {
-  return s.kind!=OVERLAY_NONE && s.ttlMs>=250u && s.ttlMs<=30000u &&
+  return s.kind!=OVERLAY_NONE && s.ttlMs>=250u && s.ttlMs<=kOwnerScoreboardMaxTtlMs &&
          (uint32_t)(now-s.startedAt)<s.ttlMs;
 }
 
@@ -54,7 +58,7 @@ inline void setScoreboardOverlay(OverlayState& s,const char* id,const char* labe
   const uint32_t started=same?s.startedAt:now;
   s=OverlayState{};s.kind=OVERLAY_SCOREBOARD;s.startedAt=started;s.ttlMs=ttl;
   strncpy(s.id,id,sizeof(s.id)-1u);strncpy(s.label,label,sizeof(s.label)-1u);
-  s.entryCount=count>12u?12u:count;
+  s.entryCount=count>kOwnerScoreboardMaxEntries?kOwnerScoreboardMaxEntries:count;
   for(uint8_t i=0;i<s.entryCount;i++)strncpy(s.entries[i],entries[i],sizeof(s.entries[i])-1u);
 }
 
