@@ -35,6 +35,20 @@ state.skins.weeks[date].back.cards = [];
 selected = chooseLive(state);
 assert.equal(selected.label, "F9", "removing back-side names returns the selector to Front 9");
 
+const glowState = { skins: { weeks: { [date]: { front: { cards: [] }, back: { cards: [] } } } }, glow: { weeks: { [date]: {
+  scorecardText: { holePars: { "1": 3, "2": 3, "3": 3, "4": 3 } },
+  players: [
+    { partner1: "Alex", partner2: "Jordan", scores: ["3", "4", "", ""] },
+    { name: "Casey", scores: [] },
+    { name: "Removed Player", removed: true, scores: ["2"] },
+  ],
+} } } };
+selected = chooseLive(glowState);
+assert.equal(selected.active, true);
+assert.equal(selected.event, "glow");
+assert.equal(selected.label, "GLOW");
+assert.deepEqual(selected.entries, ["Alex/Jordan +1", "Casey E"], "existing HBNF Glow state projects doubles, scores-to-par, and omits removed players");
+
 const source = readFileSync("firmware/phase2/integration-r6-f89-compact-font/usermod/usermod_hbnf_foundation_v1.cpp", "utf8");
 const localUi = readFileSync("firmware/phase2/integration-r6-f89-compact-font/usermod/hbnf_local_ui.h", "utf8");
 const edge = readFileSync("staging/coordinated-backend/hbnf-cart-control/index.ts", "utf8");

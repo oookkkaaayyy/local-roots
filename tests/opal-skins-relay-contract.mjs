@@ -35,16 +35,25 @@ function shell(script, fixture, expectedSuccess = true) {
 try {
   const base = { selectorVersion: "skins-front-lock-v1", live: { active: true, event: "skins", label: "F9", acePot: 79, entries: ["Ava Thompson 1", "Bo Smith 0"] } };
   const f9 = JSON.parse(shell(`skins_build_snapshot "$RELAY_FIXTURE"`, base));
-  assert.deepEqual(f9, { schema: "hbnf-live-v1", active: true, label: "F9", acePot: 79, entries: ["Ava Thompson 1", "Bo Smith 0"] });
+  assert.deepEqual(f9, { schema: "hbnf-live-v1", active: true, label: "F9", acePot: 79, entries: ["AVA 1", "BO 0"] });
+  assert.ok(f9.entries.every((entry) => entry.length <= 8), "every F9 label fits the installed renderer without scrolling");
   const same = JSON.parse(shell(`skins_build_snapshot "$RELAY_FIXTURE"`, structuredClone(base)));
   assert.deepEqual(same, f9, "unchanged source scores produce an identical snapshot");
+
+  const duplicateF9 = structuredClone(base);
+  duplicateF9.live.entries = ["Andrew Jones 3", "Andrea Smith 2", "Anderson Lee 1"];
+  assert.deepEqual(JSON.parse(shell(`skins_build_snapshot "$RELAY_FIXTURE"`, duplicateF9)).entries, ["AND1 3", "AND2 2", "AND3 1"], "same three-letter names are disambiguated in stable roster order");
 
   const b9 = structuredClone(base);
   b9.live.label = "B9";
   b9.live.entries = ["Cy/Dee 2"];
   assert.deepEqual(JSON.parse(shell(`skins_build_snapshot "$RELAY_FIXTURE"`, b9)), {
-    schema: "hbnf-live-v1", active: true, label: "B9", acePot: 79, entries: ["Cy/Dee 2"],
+    schema: "hbnf-live-v1", active: true, label: "B9", acePot: 79, entries: ["C / D 2"],
   });
+  assert.ok(JSON.parse(shell(`skins_build_snapshot "$RELAY_FIXTURE"`, b9)).entries.every((entry) => entry.length <= 8), "every B9 label fits without scrolling");
+  const duplicateB9 = structuredClone(b9);
+  duplicateB9.live.entries = ["Alex/Jordan 3", "Avery/Jules 2", "Avery/Jordan 1", "Ava/Adam 4"];
+  assert.deepEqual(JSON.parse(shell(`skins_build_snapshot "$RELAY_FIXTURE"`, duplicateB9)).entries, ["A1 / J 3", "A2 / J 2", "A3 / J 1", "A / A2 4"], "duplicate team initials and same-initial partners are distinguishable");
 
   const inactive = { selectorVersion: "skins-front-lock-v1", live: { active: false, event: null, label: "", acePot: 0, entries: [] } };
   assert.equal(JSON.parse(shell(`skins_build_snapshot "$RELAY_FIXTURE"`, inactive)).active, false);
@@ -128,7 +137,7 @@ try {
   assert.doesNotMatch(liveAcceptor, /(?:^|[^0-9])20000u|constrain\(pages/, "overlay duration includes every screen in the cycle");
   assert.match(installedSource, /if\(!hbnfRenderCommandOverlay\(f\.controls\.matrixBrightness,f\.vibe\)\)hbnfRenderLiveOverlay/);
   assert.doesNotMatch(installedSource, /hbnfMatrixSkinsPollTask/, "candidate reuses the installed external relay path");
-  console.log("PASS: full-name relay projection, fail-closed unsupported names, changed/unchanged snapshots, stale suppression, exact 240s schedule, overlay suppression, installed receiver contract, two-row cycle rendering and reproducible key-free package assembly");
+  console.log("PASS: static-width F9/B9 abbreviations, stable duplicate disambiguation, fail-closed unsupported names, changed/unchanged snapshots, stale suppression, exact 240s schedule, overlay suppression, installed receiver contract, two-row cycle rendering and reproducible key-free package assembly");
 } finally {
   rmSync(temp, { recursive: true, force: true });
 }
