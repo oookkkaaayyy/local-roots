@@ -1,0 +1,298 @@
+{
+  "schema": "hbnf-cart2-candidate-fresh-prelive-v1",
+  "captured_at_unix": 1791966663.676021,
+  "pass": true,
+  "host_on_ac": true,
+  "route": "en0/192.168.77.0/24",
+  "matrix": {
+    "ip": "192.168.77.10",
+    "mac": "704bca5b345c",
+    "wled": "16.0.1",
+    "release": "hbnf-cart2-phase2-r6-vibe-first-ui-20261012",
+    "uptime_seconds": 3038,
+    "free_heap": 75236,
+    "brightness": 53,
+    "fps": 32,
+    "telemetry_off": true,
+    "diagnostic_off": true
+  },
+  "aux": {
+    "ip": "192.168.77.11",
+    "mac": "8c94df55c34c",
+    "wled": "16.0.1",
+    "live": true,
+    "mode": "DDP",
+    "source": "192.168.77.10",
+    "led_count": 22,
+    "lor": 0
+  },
+  "opal": {
+    "read_only": true,
+    "stdout": "OPAL_PREFLIGHT_OKn 01:31:03 up  4:37,  load average: 1.54, 1.46, 1.41\nFilesystem           1K-blocks      Used Available Use% Mounted on\ntmpfs                    59392       440     58952   1% /tmp\n/usr/bin/curl\n/usr/bin/sha256sum\n55 hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c\n"
+  },
+  "single_worker": {
+    "pass": true,
+    "conflicting_pids": [],
+    "worker_count": 1
+  },
+  "candidate_release_id": "hbnf-cart2-phase2-r6-skins-readable-20261014",
+  "candidate_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+  "rollback_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+  "brightness_baseline": {
+    "matrix_on": true,
+    "runtime": {
+      "matrixBrightness": 53,
+      "auxBrightness": 51,
+      "vibe": 5
+    },
+    "persisted": {
+      "matrixBrightness": 53,
+      "auxBrightness": 51,
+      "vibe": 5
+    },
+    "vibe_persistence": "verified"
+  },
+  "pre_mutation_state": {
+    "matrix": {
+      "identity": {
+        "ip": "192.168.77.10",
+        "mac": "704bca5b345c",
+        "wled": "16.0.1",
+        "release_id": "hbnf-cart2-phase2-r6-vibe-first-ui-20261012",
+        "candidate": "hbnf-cart2-phase2-r6-vibe-first-ui-20261012",
+        "build_mac": "704bca5b345c"
+      },
+      "uptime_seconds": 3038,
+      "free_heap": 75236,
+      "fps": 32,
+      "runtime": {
+        "on": true,
+        "bri": 255,
+        "transition": 7,
+        "ps": 60,
+        "pl": -1,
+        "mainseg": 0,
+        "seg": [
+          {
+            "id": 0,
+            "start": 0,
+            "stop": 32,
+            "startY": 0,
+            "stopY": 16,
+            "len": 32,
+            "grp": 1,
+            "spc": 0,
+            "of": 0,
+            "on": true,
+            "frz": false,
+            "bri": 255,
+            "cct": 127,
+            "set": 0,
+            "lc": 1,
+            "col": [
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            "fx": 142,
+            "sx": 128,
+            "ix": 128,
+            "pal": 9,
+            "c1": 128,
+            "c2": 128,
+            "c3": 16,
+            "sel": true,
+            "rev": false,
+            "mi": false,
+            "rY": false,
+            "mY": false,
+            "tp": false,
+            "o1": false,
+            "o2": false,
+            "o3": false,
+            "si": 0,
+            "m12": 0,
+            "bm": 0
+          },
+          {
+            "id": 1,
+            "start": 512,
+            "stop": 534,
+            "startY": 0,
+            "stopY": 1,
+            "len": 22,
+            "grp": 1,
+            "spc": 0,
+            "of": 0,
+            "on": true,
+            "frz": false,
+            "bri": 255,
+            "cct": 127,
+            "set": 0,
+            "lc": 0,
+            "col": [
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            "fx": 142,
+            "sx": 128,
+            "ix": 128,
+            "pal": 0,
+            "c1": 128,
+            "c2": 128,
+            "c3": 16,
+            "sel": true,
+            "rev": false,
+            "mi": false,
+            "rY": false,
+            "mY": false,
+            "tp": false,
+            "o1": false,
+            "o2": false,
+            "o3": false,
+            "si": 0,
+            "m12": 0,
+            "bm": 0
+          }
+        ],
+        "nl": {
+          "on": false,
+          "dur": 60,
+          "mode": 1,
+          "tbri": 0,
+          "rem": -1
+        },
+        "lor": 0
+      },
+      "hbnf_brightness": {
+        "matrixBrightness": 53,
+        "auxBrightness": 51,
+        "vibe": 5
+      },
+      "persisted_hbnf_brightness": {
+        "matrixBrightness": 53,
+        "auxBrightness": 51,
+        "vibe": 5
+      }
+    },
+    "aux": {
+      "identity": {
+        "ip": "192.168.77.11",
+        "mac": "8c94df55c34c",
+        "wled": "16.0.1"
+      },
+      "runtime": {
+        "on": true,
+        "bri": 255,
+        "transition": 7,
+        "ps": -1,
+        "pl": -1,
+        "mainseg": 0,
+        "seg": [
+          {
+            "id": 0,
+            "start": 0,
+            "stop": 22,
+            "len": 22,
+            "grp": 1,
+            "spc": 0,
+            "of": 0,
+            "on": true,
+            "frz": false,
+            "bri": 255,
+            "cct": 127,
+            "set": 0,
+            "lc": 1,
+            "col": [
+              [
+                255,
+                160,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            "fx": 0,
+            "sx": 128,
+            "ix": 128,
+            "pal": 0,
+            "c1": 128,
+            "c2": 128,
+            "c3": 16,
+            "sel": true,
+            "rev": false,
+            "mi": false,
+            "o1": false,
+            "o2": false,
+            "o3": false,
+            "si": 0,
+            "m12": 0,
+            "bm": 0
+          }
+        ],
+        "nl": {
+          "on": false,
+          "dur": 60,
+          "mode": 1,
+          "tbri": 0,
+          "rem": -1
+        },
+        "lor": 0
+      },
+      "ddp": {
+        "live": true,
+        "lm": "DDP",
+        "lip": "192.168.77.10",
+        "leds": {
+          "count": 22,
+          "pwr": 144,
+          "fps": 25,
+          "maxpwr": 900,
+          "maxseg": 32,
+          "bootps": 0,
+          "seglc": [
+            1
+          ],
+          "lc": 1,
+          "rgbw": false,
+          "wv": 0,
+          "cct": 0
+        }
+      }
+    }
+  },
+  "no_house_voltage_sensor": true
+}

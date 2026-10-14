@@ -1,0 +1,10 @@
+{
+  "authorization_id": "OWNER-20261014-CART2-SCOREBOARD-RELEASE-01",
+  "candidate_attempt": 1,
+  "candidate_attempt_limit": 1,
+  "candidate_release_id": "hbnf-cart2-phase2-r6-skins-readable-20261014",
+  "candidate_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+  "preflight_sha256": "5d685cb03fd0db58ead6e3bef3d3c3a2e914aad0ab93f9612a20f253c9807c82",
+  "r4_recovery_limit": 1,
+  "recorded_before_wled_post": true
+}

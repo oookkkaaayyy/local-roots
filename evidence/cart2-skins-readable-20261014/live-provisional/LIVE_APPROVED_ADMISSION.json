@@ -1,0 +1,119 @@
+{
+  "schema": "hbnf-cart2-release-admission-v1",
+  "stage": "LIVE_APPROVED",
+  "outcome": "PASS",
+  "classification": "ONE_EXACT_GUARDED_SCOREBOARD_READABILITY_RELEASE__ONE_OPAL_RELAY_INTERVAL_UPDATE__FULL_FINAL_GATES_RETAINED",
+  "fresh_owner_authorization": {
+    "authorization_id": "OWNER-20261014-CART2-SCOREBOARD-RELEASE-01",
+    "source_message_ref": "Direct owner message in this conversation: CART 2.0 \u2014 URGENT SCOREBOARD RELEASE; authorizes one guarded build and OTA subject to existing release gates.",
+    "candidate_release_id": "hbnf-cart2-phase2-r6-skins-readable-20261014",
+    "candidate_bin_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+    "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "candidate_install_limit": 1,
+    "recovery_install_limit": 1,
+    "scope": [
+      "One guarded install of this exact candidate after fresh admission, exact identity, power, connectivity, and rollback checks.",
+      "Capture and restore fresh Matrix/AUX/Vibe settings.",
+      "Run the existing five-minute read-only health smoke; retain all frozen 28-kernel and 90-minute final gates.",
+      "One exact R4 recovery only if an established mandatory safety/health gate requires it.",
+      "One Opal relay 1.0.1 update to the already installed 1.0.0 package, after device preflight, to correct the demonstrated 240-second redisplay timer; no scoring data mutation.",
+      "Do not trigger scoreboard display until owner replies LOOKING; do not infer any unprovided winner or payout data."
+    ]
+  },
+  "identities": {
+    "candidate_release_id": "hbnf-cart2-phase2-r6-skins-readable-20261014",
+    "source_commit": "00e6552ffe65a3dbd6768b0e017fd22226c5b86f",
+    "candidate_bin_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+    "candidate_bin_path": "/Users/andrew/Documents/Codex/local-roots-skins-autopoll-20261013/evidence/cart2-skins-readable-20261014/artifact/hbnf-cart2-phase2-r6-skins-readable-20261014.bin",
+    "candidate_bin_size_bytes": 1506032,
+    "rollback_bin_sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "rollback_bin_path": "/Users/andrew/Documents/Codex/local-roots-skins-autopoll-20261013/evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+    "expected_installed_release": "hbnf-cart2-phase2-r6-vibe-first-ui-20261012",
+    "expected_installed_bin_sha256": "43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "transaction_source_commit": "506ccc5"
+  },
+  "limits": {
+    "attempt_number": 1,
+    "candidate_attempts_used": 0,
+    "candidate_install_limit": 1,
+    "recovery_attempts_used": 0,
+    "recovery_install_limit": 1,
+    "no_cost_or_external_messages": true,
+    "production_deployment": "OUT_OF_SCOPE",
+    "router_aux_cloud_changes": "ONLY_EXACT_RELAY_1_0_1_TIMER_FIX"
+  },
+  "checks": {
+    "device_and_source_authority_reconciled": {
+      "pass": true,
+      "evidence_file": "/Users/andrew/Documents/Codex/local-roots-skins-autopoll-20261013/evidence/cart2-skins-readable-20261014/SOURCE_BINDING.json",
+      "sha256": "d4650d93eb669b1df2275bff6e5a798eeb22aa649a0af42fe829fdec7494fa4d"
+    },
+    "fully_local_pinned_build_toolchain": {
+      "pass": true,
+      "evidence_file": "/Users/andrew/Documents/Codex/local-roots-skins-autopoll-20261013/evidence/cart2-skins-readable-20261014/BUILD_RECEIPT.json",
+      "sha256": "6735a94e30343e9be1f81c7fa76a12bdaced71def10729acc117bd3a060b0a66"
+    },
+    "known_good_compiler_entry_smoke": {
+      "pass": true,
+      "evidence_file": "/Users/andrew/Documents/Codex/local-roots-skins-autopoll-20261013/evidence/cart2-skins-readable-20261014/BUILD_FINAL_FULL.log",
+      "sha256": "36f24788a81f182105af14e455d57d19b857900aaaeae0574381b62cb3b0a0b4"
+    },
+    "exact_source_dependency_generated_input_closure": {
+      "pass": true,
+      "evidence_file": "/Users/andrew/Documents/Codex/local-roots-skins-autopoll-20261013/evidence/cart2-skins-readable-20261014/SOURCE_BINDING.json",
+      "sha256": "d4650d93eb669b1df2275bff6e5a798eeb22aa649a0af42fe829fdec7494fa4d"
+    },
+    "compiled_embedded_candidate_id_and_sha": {
+      "pass": true,
+      "evidence_file": "/Users/andrew/Documents/Codex/local-roots-skins-autopoll-20261013/evidence/cart2-skins-readable-20261014/BUILD_RECEIPT.json",
+      "sha256": "6735a94e30343e9be1f81c7fa76a12bdaced71def10729acc117bd3a060b0a66"
+    },
+    "flash_and_ram_headroom": {
+      "pass": true,
+      "evidence_file": "/Users/andrew/Documents/Codex/local-roots-skins-autopoll-20261013/evidence/cart2-skins-readable-20261014/IMAGE_INFO_FINAL.txt",
+      "sha256": "1fccdb34d8cf1c05b3539acc6539ba75184e6ba8180115de2a0bb655d1701a8e"
+    },
+    "committed_feature_scope_preserved": {
+      "pass": true,
+      "evidence_file": "/Users/andrew/Documents/Codex/local-roots-skins-autopoll-20261013/evidence/cart2-skins-readable-20261014/TEST_MATRIX_SCOREBOARD.txt",
+      "sha256": "850e4d6b1702c105cae18adabe16d68b62b50e5d72cf1aeefb534f5602871f0a"
+    },
+    "all_historical_host_failures_replayed": {
+      "pass": true,
+      "evidence_file": "/Users/andrew/Documents/Codex/local-roots-skins-autopoll-20261013/evidence/cart2-skins-readable-20261014/FOCUSED_OFFLINE_TESTS_FINAL.json",
+      "sha256": "b5d3b478b862ec118caf7098a7a279b739581e742c341b0a548deefba0d808ce"
+    },
+    "entire_release_transaction_dryrun": {
+      "pass": true,
+      "evidence_file": "/Users/andrew/Documents/Codex/local-roots-skins-autopoll-20261013/evidence/cart2-skins-readable-20261014/FOCUSED_OFFLINE_TESTS_FINAL.json",
+      "sha256": "b5d3b478b862ec118caf7098a7a279b739581e742c341b0a548deefba0d808ce"
+    },
+    "frozen_performance_soak_and_restore_procedure": {
+      "pass": true,
+      "evidence_file": "/Users/andrew/Documents/Codex/local-roots-skins-autopoll-20261013/config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
+      "sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797"
+    },
+    "rollback_artifact_hash_verified": {
+      "pass": true,
+      "evidence_file": "/Users/andrew/Documents/Codex/local-roots-skins-autopoll-20261013/evidence/cart2-r7-performance-repair-20261009/artifact/hbnf-matrix-foundation-r4-exact.bin",
+      "sha256": "338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c"
+    },
+    "launcher_rejects_invalid_manifest_before_device_access": {
+      "pass": true,
+      "evidence_file": "/Users/andrew/Documents/Codex/local-roots-skins-autopoll-20261013/evidence/cart2-skins-readable-20261014/FOCUSED_OFFLINE_TESTS_FINAL.json",
+      "sha256": "b5d3b478b862ec118caf7098a7a279b739581e742c341b0a548deefba0d808ce"
+    },
+    "matched_tails_off_test_plan": {
+      "pass": true,
+      "evidence_file": "/Users/andrew/Documents/Codex/local-roots-skins-autopoll-20261013/config/HBNF_FOUNDATION_QUALIFICATION_POLICY_20261006_SUSTAINED_R1.json",
+      "sha256": "2784d17654e17c3f6509f15775f396b8a806aa14b8b35f28fc00faa37f833797"
+    },
+    "preflight_read_only_hardware_state_and_identity": {
+      "pass": true,
+      "evidence_file": "/Users/andrew/Documents/Codex/local-roots-skins-autopoll-20261013/evidence/cart2-skins-readable-20261014/live-provisional/read-only-preflight-02/FRESH_PREINSTALL_READONLY.json",
+      "sha256": "8bbe37c505aa994d5a56703b5fefa16b4cdedb6f41c32f1e662e8f54afda9b14"
+    }
+  }
+}

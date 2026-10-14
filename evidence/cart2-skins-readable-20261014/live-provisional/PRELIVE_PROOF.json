@@ -1,0 +1,57 @@
+{
+  "schema": "local-roots-prelive-proof-v1",
+  "run_id": "hbnf-matrix-20261014T083027Z-b3655be4",
+  "capsule_sha256": "a12f944e93870a1d83d3551b3439eb4ff5365a46a6c90ab5433d6d86417eabd3",
+  "approved_for_mutation": true,
+  "stages": {
+    "contract-closure": {
+      "status": "PASS",
+      "evidence": [
+        "GitHub branch codex/matrix-autonomous-skins-poll-20261013 at commit 506ccc5; candidate firmware bound by SOURCE_BINDING.json to compiled source commit 00e6552ffe65a3dbd6768b0e017fd22226c5b86f",
+        "platform doctor and exact candidate workflow/test receipts"
+      ]
+    },
+    "recovery-proof": {
+      "status": "PASS",
+      "evidence": [
+        "Fresh preinstall receipt confirms Opal release ledger and exact R4 SHA",
+        "Rollback artifact SHA verified in LIVE_APPROVED_ADMISSION.json"
+      ]
+    },
+    "transaction-rehearsal": {
+      "status": "PASS",
+      "evidence": [
+        "Focused offline replay covers one install/recovery and invalid admission fails before device requests",
+        "Existing release transaction dry-run returns exact artifact/no requests"
+      ]
+    },
+    "capture-current-state": {
+      "status": "PASS",
+      "evidence": [
+        "/Users/andrew/Documents/Codex/local-roots-skins-autopoll-20261013/evidence/cart2-skins-readable-20261014/live-provisional/read-only-preflight-02/FRESH_PREINSTALL_READONLY.json",
+        "Matrix and AUX identities, DDP, settings, diagnostic-off, host AC/LAN, one worker, R4 availability captured read-only"
+      ]
+    }
+  },
+  "recovery_identity": {
+    "identity": "hbnf-matrix-packet20-fastled-fp-backport-v1-20261005-r4-foundation-metrics-r1-tail250-r1 / 338afdf5e40e83f8887246c0d9e7e67e9b55caca4912f6b2ae743e947a2f3d8c",
+    "verification": "Exact local recovery bytes SHA matches owner-authorized R4; fresh Opal ledger reports the same release and SHA."
+  },
+  "pre_mutation_state": {
+    "installed_release": "hbnf-cart2-phase2-r6-vibe-first-ui-20261012",
+    "installed_sha256": "43a33dfa21127a79f643ede9b2a054ff1aa21705b7733cfebea9c8a3e105c5f3",
+    "matrix_mac": "70:4b:ca:5b:34:5c",
+    "aux_mac": "8c:94:df:55:c3:4c",
+    "settings": {
+      "matrixBrightness": 53,
+      "auxBrightness": 51,
+      "vibe": 5
+    },
+    "relay_version": "1.0.0",
+    "active_qualification_or_ota": "none reported by single-worker check"
+  },
+  "consumer_contract": {
+    "verified": true,
+    "evidence": "Existing /hbnf/live source contract tests plus installed firmware receiver; no scoring data was changed."
+  }
+}
