@@ -69,4 +69,11 @@ assert.equal(matrixLiveEntry("José 1"), null, "unsupported glyph names fail clo
 assert.match(localUi, /skinsHasNames\(week\.back,true\)&&skinsSectionLocked\(week\.front\)/, "embedded dashboard withholds preloaded Back 9 until Front 9 is locked");
 assert.match(localUi, /entries\.some\(x=>!x\)\)\)return/, "invalid names suppress the entire posted roster instead of dropping individual players");
 assert.doesNotMatch(localUi, /slice\(0,5\)/, "the embedded scoreboard path no longer reduces names to five characters");
+assert.doesNotMatch(localUi, /entries\.slice\(0,20\)/, "the embedded dashboard does not silently omit players beyond receiver capacity");
+const snapshotHelpers = localUi.split("\n").filter(line => /^(const cleanLiveText=|function (skinsCards|skinsHasNames|skinsSectionLocked|skinsWinnerIndex|skinsSectionEntries|skinsPlayerCount|skinsAcePot|buildSkinsSnapshot|validateLiveSnapshot)\()/.test(line));
+const snapshotFns = new Function("laDate", `${snapshotHelpers.join("\n")}; return {buildSkinsSnapshot,validateLiveSnapshot};`)(() => date);
+const oversizedState = { skins: { weeks: { [date]: { front: { cards: Array.from({ length: 21 }, (_, i) => ({ playersText: `Player ${i + 1}`, winners: {} })) }, back: { cards: [] } } } } };
+const oversizedSnapshot = snapshotFns.buildSkinsSnapshot(oversizedState, "2026-10-14T12:00:00.000Z");
+assert.equal(oversizedSnapshot.entries.length, 21, "source projection preserves the full roster before validation");
+assert.equal(snapshotFns.validateLiveSnapshot(oversizedState, "2026-10-14T12:00:00.000Z"), null, "rosters above the existing 20-entry receiver contract fail closed rather than appearing complete");
 console.log("PASS: F9/B9 data selection, existing Opal polling/redisplay authority, full bounded names, readable two-row schedule and no unsupported currency output");
