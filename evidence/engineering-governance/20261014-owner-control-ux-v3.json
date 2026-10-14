@@ -1,0 +1,48 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OWNER_CONTROL_UX_V3_20261014",
+  "summary": "Reorder the existing owner app around verified status, independent brightness, Vibe, and a capability-gated Show Scores action; improve touch targets, fail closed until saved brightness loads, and provide a distinct Cart Control PWA identity without changing guest permissions or backend commands.",
+  "change_class": "SUBJECTIVE_DESIGN",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": true,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "owner_design_gate": {
+      "decision_status": "APPROVED",
+      "approved_by_owner": true,
+      "selected_option": "Use the approved phone/iPad-first Cart Control hierarchy, 48px-or-larger everyday controls, independent saved brightness, secure capability-gated owner actions, and distinct Cart Control app icon while preserving the HBNF scoring brand and guest security mode.",
+      "approval_reference": "Direct owner instructions in Cart Upgrades task on 2026-10-14",
+      "note": "Source-only release candidate. No live deployment, guest permission change, backend change, or physical acceptance is claimed."
+    },
+    "expert_basis": {
+      "native_capability": "Use the existing HTML owner PWA, native controls, existing pairing/status APIs, existing capability gates, and service worker. No framework or backend command is added.",
+      "platform_guidance": "Apple recommends 44×44 point hit regions for iOS/iPadOS controls; WCAG 2.2 AA sets a 24×24 CSS-pixel minimum subject to defined exceptions. Everyday buttons are at least 48px high and sliders use 56px interaction tracks.",
+      "sources": [
+        "https://developer.apple.com/design/human-interface-guidelines/buttons?changes=latest_1",
+        "https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum"
+      ]
+    },
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing HBNF Cart Control owner PWA and status/command bridge; exact implementation scope authorized by direct owner task on 2026-10-14.",
+      "affected_subsystem": "hbnf-final-controller owner PWA markup, CSS, existing owner scripts, app manifest/icons, service-worker cache version, package identity, and focused source tests.",
+      "rollback_reference": "Restore source and PWA asset files to the immediately previous source release; the previous production owner-app assets remain unchanged and available at the current live URL. No production files changed.",
+      "evidence_sources": [
+        "Existing owner app source and live asset identity summarized in the current project checkpoint; base source commit d01a2f6f5ae02deb0901dc48490de0cd777ee9fa.",
+        "Current candidate source diff in branch codex/owner-control-ux-release-20261014."
+      ],
+      "tests": [
+        "node tests/hbnf_owner_pwa_reliability.mjs",
+        "node tests/hbnf_owner_pwa_package.mjs",
+        "node tests/hbnf-coordinated-controller-contract.mjs",
+        "node tests/hbnf-ios12-compat-audit.mjs",
+        "node --check on modified JavaScript modules and service worker",
+        "Browser preview measured at 390×844, 320×700, and 1024×1366; no horizontal overflow, Show Scores target 64px, brightness sliders 56px, and controls remain gated without saved settings/capabilities.",
+        "Static asset closure check found no duplicate HTML IDs or missing referenced local assets."
+      ]
+    }
+  }
+}

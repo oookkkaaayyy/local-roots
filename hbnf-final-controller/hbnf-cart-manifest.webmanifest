@@ -1,8 +1,8 @@
 {
   "name": "HBNF Cart Control",
-  "short_name": "HBNF Cart",
+  "short_name": "Cart Control",
   "id": "/hbnf-cart.html",
-  "start_url": "/hbnf-cart.html?app=20261009-cart2-vibe-r2",
+  "start_url": "/hbnf-cart.html?app=20261014-owner-control-v1",
   "scope": "/hbnf-cart.html",
   "display": "standalone",
   "background_color": "#071018",

@@ -101,8 +101,19 @@ function populateLooks() {
 
 async function loadPalettes() {
   const select = $("featurePalette");
-  if (!select || !matrixLocal()) return;
-  const names = await fetchJson("/json/pal",{method:"GET",cache:"no-store"},"Palette list",1,3500);
+  const note=$("paletteAvailability");
+  if (!select) return;
+  if (!matrixLocal()) {
+    if (note) note.textContent="Palette names and live previews are available only from the Matrix’s local page. This hosted owner app will not guess how a palette looks.";
+    return;
+  }
+  let names;
+  try {
+    names = await fetchJson("/json/pal",{method:"GET",cache:"no-store"},"Palette list",1,3500);
+  } catch (error) {
+    if (note) note.textContent="Could not read the palette list from the Matrix. No palette was selected or changed.";
+    throw error;
+  }
   if (!Array.isArray(names)) throw new Error("Palette list unavailable.");
   while (select.options.length) select.remove(0);
   const current=document.createElement("option");
@@ -117,6 +128,7 @@ async function loadPalettes() {
     o.value="wled-"+String(index); o.textContent=String(name);
     select.appendChild(o);
   });
+  if (note) note.textContent="Names are read directly from the Matrix. This firmware interface does not provide accurate palette previews.";
 }
 
 function desiredState(snapshot) {
@@ -480,16 +492,23 @@ function syncOverlayAvailability() {
   const fontIndex=$("featureFontIndex");
   if (fontIndex) fontIndex.disabled=!fontIndexReady;
   const paletteReady=caps.canonicalPaletteIntentV1===true;
+  const paletteSelect=$("featurePalette"), paletteColor=$("featureColor");
+  if (paletteSelect) paletteSelect.disabled=!matrixLocal() || !paletteReady;
+  if (paletteColor) paletteColor.disabled=!paletteReady;
   ["featureSendText","featureScoreboard","featureAcePot"].forEach(function(id){
     const node=$(id);
     if (node) node.disabled=!overlayReady;
   });
   const apply=$("featureApplyLook");
   if (apply) apply.disabled=!paletteReady;
+  const scoreboardNote=$("scoreboardAvailability");
+  if (scoreboardNote) scoreboardNote.textContent=overlayReady
+    ? "Shows the current live standings on the Matrix. It does not add or change scores."
+    : "This owner action unlocks when the approved secure Matrix overlay control is available. Scores can still be refreshed below.";
   if (!overlayReady) {
     const live=$("featureLive");
     if (live && live.textContent==="Live round not checked yet.") {
-      live.textContent="Live scores are read-only ready. Overlay controls unlock only after the coordinated canonical backend is active.";
+      live.textContent="Live scores can be read here. Sending a scoreboard to the Matrix is not enabled yet.";
     }
   }
   return overlayReady && paletteReady;

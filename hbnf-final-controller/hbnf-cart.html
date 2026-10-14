@@ -6,12 +6,14 @@
   <meta name="theme-color" content="#071018">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="HBNF Cart">
+  <meta name="apple-mobile-web-app-title" content="Cart Control">
   <meta name="hbnf-access" content="guest-zero-pair">
-  <meta name="hbnf-build" content="hbnf-cart2-owner-guest-vibe-r2-20261009">
-  <link rel="manifest" href="./hbnf-cart-manifest.webmanifest?v=20261009-cart2-vibe-r2">
-  <link rel="apple-touch-icon" sizes="180x180" href="./hbnf-cart-icon-180.png?v=20261009-cart2-vibe-r2">
-  <link rel="stylesheet" href="./hbnf-cart-ui-v6.css?v=20261009-cart2-vibe-r2">
+  <meta name="hbnf-build" content="hbnf-cart-control-owner-v3-20261014">
+  <link rel="icon" type="image/png" sizes="192x192" href="./hbnf-cart-icon-192.png?v=20261014-owner-control-v1">
+  <link rel="icon" type="image/png" sizes="512x512" href="./hbnf-cart-icon-512.png?v=20261014-owner-control-v1">
+  <link rel="apple-touch-icon" sizes="180x180" href="./hbnf-cart-icon-180.png?v=20261014-owner-control-v1">
+  <link rel="manifest" href="./hbnf-cart-manifest.webmanifest?v=20261014-owner-control-v1">
+  <link rel="stylesheet" href="./hbnf-cart-ui-v6.css?v=20261014-owner-control-v1">
   <title>HBNF Cart Control</title>
   <style>
     :root{color-scheme:dark;font:16px/1.4 system-ui,sans-serif;background:#071018;color:#eaf4f7}*{box-sizing:border-box}body{margin:0;padding:20px;max-width:680px;margin-inline:auto}h1{font-size:1.55rem}main{display:grid;gap:18px}.panel{border:1px solid #24414c;border-radius:14px;padding:16px;background:#0d1d25}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}button,select,input,textarea{font:inherit;color:inherit;background:#142c36;border:1px solid #35606b;border-radius:9px;padding:10px}button{min-width:74px;cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #57e0c0;outline-offset:2px}.danger{border-color:#c94c61}.device{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;margin-top:12px}input[type=range]{grid-column:1/-1;width:100%;padding:0}.muted{color:#a4bec6}.status{white-space:pre-wrap;min-height:3em}label{display:flex;align-items:center;gap:8px}select{max-width:100%}.pair-link{width:100%;min-height:78px;word-break:break-all}.good{color:#8ce3ad}.warn{color:#f2ca75}
@@ -36,19 +38,28 @@
 </head>
 <body><main>
   <header class="hero-v6">
-    <div><p class="eyebrow">HBNF CART</p><h1>Mission Control</h1></div>
-    <div id="truthBadge" class="truth-badge warn">CHECKING DEVICE STATUS</div>
+    <div><p class="eyebrow">HBNF CART</p><h1>Cart Control</h1></div>
+    <div id="truthBadge" class="truth-badge warn" role="status" aria-live="polite">Checking device status…</div>
   </header>
 
   <details class="panel truth-panel" aria-label="System Info">
     <summary>System Info</summary>
     <div class="truth-grid">
       <div class="truth-cell"><span>Cart service</span><strong id="backendTruth">Checking…</strong></div>
-      <div class="truth-cell"><span>Matrix command acknowledgement</span><strong id="matrixTruth">—</strong></div>
-      <div class="truth-cell"><span>AUX command acknowledgement</span><strong id="auxTruth">—</strong></div>
+      <div class="truth-cell"><span>Matrix command</span><strong id="matrixTruth">—</strong></div>
+      <div class="truth-cell"><span>Underglow command</span><strong id="auxTruth">—</strong></div>
     </div>
     <p class="hardware-note">Owner commands require the Cart service. Device acknowledgements report command state; they do not prove physical AUX illumination.</p>
   </details>
+
+  <section class="panel quick-brightness" aria-label="Brightness">
+    <h2>Brightness</h2>
+    <div class="quick-brightness-grid">
+      <label class="device"><span class="range-head"><strong>Matrix</strong><output id="matrixValue">—</output></span><input aria-label="Matrix brightness" id="matrixBrightness" type="range" min="0" max="255" value="0" disabled data-tune-control></label>
+      <label class="device"><span class="range-head"><strong>Underglow</strong><output id="auxValue">—</output></span><input aria-label="Underglow brightness" id="auxBrightness" type="range" min="0" max="255" value="0" disabled data-tune-control></label>
+    </div>
+    <p class="apply-note" id="brightnessNote" role="status" aria-live="polite">Waiting for saved settings; controls are locked.</p>
+  </section>
 
   <section class="panel quick-vibe" aria-label="Vibe">
     <div class="section-heading"><div><p class="eyebrow">SET THE FEEL</p><h2>Vibe</h2></div><span id="vibeModeLabel" class="muted">—</span></div>
@@ -58,18 +69,31 @@
       <button type="button" class="vibe-option" data-vibe="heavy" aria-pressed="false" disabled><strong>HEAVY</strong><span>Manual Vibe</span></button>
       <button type="button" class="vibe-option" data-vibe="psychedelic" aria-pressed="false" disabled><strong>PSYCHEDELIC</strong><span>Manual Vibe</span></button>
       <button type="button" class="vibe-option" data-vibe="cosmic" aria-pressed="false" disabled><strong>COSMIC</strong><span>Manual Vibe</span></button>
-      <button id="vibeAuto" type="button" class="vibe-auto" aria-pressed="false" disabled>Auto Vibe <span>Not qualified</span></button>
+      <button id="vibeAuto" type="button" class="vibe-auto" aria-pressed="false" disabled>Auto Vibe <span>Not ready here</span></button>
     </div>
-    <p class="apply-note" id="vibeAvailability" role="status">Manual Vibes and Auto Vibe remain unavailable here until the approved runtime and replay gates are qualified. Use the local Matrix Vibe controls when available.</p>
+    <p class="apply-note" id="vibeAvailability" role="status" aria-live="polite">Vibe changes are locked here; existing Matrix operation is unchanged.</p>
   </section>
 
-  <section class="panel quick-brightness" aria-label="Brightness">
-    <h2>Brightness</h2>
-    <div class="quick-brightness-grid">
-      <label class="device"><span class="range-head"><strong>Matrix</strong><output id="matrixValue">8</output></span><input aria-label="Matrix brightness" id="matrixBrightness" type="range" min="0" max="255" value="8"></label>
-      <label class="device"><span class="range-head"><strong>Underglow</strong><output id="auxValue">64</output></span><input aria-label="Underglow brightness" id="auxBrightness" type="range" min="0" max="255" value="64"></label>
+  <section id="scoreboardActionPanel" class="panel score-spotlight" aria-label="Show Scores on Matrix">
+    <div class="section-heading"><div><p class="eyebrow">LIVE STANDINGS</p><h2>Show Scores</h2></div></div>
+    <button id="featureScoreboard" type="button" disabled aria-describedby="scoreboardAvailability">Show Scores on Matrix</button>
+    <p class="apply-note" id="scoreboardAvailability" role="status" aria-live="polite">This owner action unlocks when the approved secure Matrix overlay control is available. Scores can still be refreshed below.</p>
+  </section>
+
+  <section id="textPanel" class="panel" aria-label="Matrix message">
+    <h2>Text</h2>
+    <div class="row">
+      <input id="featureText" type="text" maxlength="63" placeholder="Type Matrix message" style="flex:1;min-width:180px">
+      <label for="featureFontIndex">Native WLED font</label>
+      <select id="featureFontIndex" aria-label="Native WLED font review option" disabled>
+        <option value="4" selected>Slot 4 · 5×12 (current default)</option>
+        <option value="0">Slot 0 · Tom Thumb 6px</option>
+        <option value="2">Slot 2 · Console 6×8</option>
+        <option value="3">Slot 3 · C64-esque 9px</option>
+      </select>
+      <button id="featureSendText" type="button" disabled>Send</button>
     </div>
-    <p class="apply-note">Release a slider to apply its brightness.</p>
+    <p class="muted">Send is available only after the secure Matrix overlay control is enabled. Font choices appear only when the Matrix reports support.</p>
   </section>
 
   <section class="panel cart-commands" aria-label="Power and show sequence">
@@ -85,7 +109,7 @@
     <div class="control-grid">
       <div id="sceneButtons" class="scene-buttons" aria-label="Scene"></div>
       <label class="scene-native-wrap">Scene
-        <select id="scene">
+        <select id="scene" disabled data-tune-control>
           <option value="course-flow">Balanced (Course Flow)</option>
           <option value="field-mix">Upbeat (Field Mix)</option>
           <option value="hbnf-signature">Signature (HBNF Signature)</option>
@@ -97,32 +121,16 @@
     </details>
   </section>
 
-  <section id="textPanel" class="panel" aria-label="Matrix message">
-    <h2>Text</h2>
-    <div class="row">
-      <input id="featureText" type="text" maxlength="63" placeholder="Type Matrix message" style="flex:1;min-width:180px">
-      <label for="featureFontIndex">Native WLED font</label>
-      <select id="featureFontIndex" aria-label="Native WLED font review option" disabled>
-        <option value="4" selected>Slot 4 · 5×12 (current default)</option>
-        <option value="0">Slot 0 · Tom Thumb 6px</option>
-        <option value="2">Slot 2 · Console 6×8</option>
-        <option value="3">Slot 3 · C64-esque 9px</option>
-      </select>
-      <button id="featureSendText" type="button">Send</button>
-    </div>
-    <p class="muted">Font options are not frozen. They unlock only when the installed Matrix reports the matching native-font capability; slot 4 remains the current default.</p>
-  </section>
-
   <section class="panel quick-tuning" aria-label="Motion and audio response">
     <h2>Motion &amp; audio response</h2>
     <div class="tune-grid">
       <label>
         <span class="range-head"><span>Audio response</span><output id="audioResponseValue">75</output></span>
-        <input id="audioResponse" type="range" min="0" max="100" step="1" value="75">
+        <input id="audioResponse" type="range" min="0" max="100" step="1" value="75" disabled data-tune-control>
       </label>
       <label>
         <span class="range-head"><span>Motion</span><output id="motionValue">60</output></span>
-        <input id="motion" type="range" min="0" max="100" step="1" value="60">
+        <input id="motion" type="range" min="0" max="100" step="1" value="60" disabled data-tune-control>
       </label>
     </div>
   </section>
@@ -151,7 +159,6 @@
     <div id="pairCreateStatus" class="muted" role="status" aria-live="polite"></div>
   </section>
 
-
   <section class="panel" aria-label="Guest access">
     <h2>Guest Mode</h2>
     <label class="toggle-line">
@@ -167,11 +174,11 @@
     <div class="tune-grid">
       <label>
         <span class="range-head"><span>Energy</span><output id="energyValue">65</output></span>
-        <input id="energy" type="range" min="0" max="100" step="1" value="65">
+        <input id="energy" type="range" min="0" max="100" step="1" value="65" disabled data-tune-control>
       </label>
       <label>
         <span class="range-head"><span>Variation</span><output id="variationValue">85</output></span>
-        <input id="variation" type="range" min="0" max="100" step="1" value="85">
+        <input id="variation" type="range" min="0" max="100" step="1" value="85" disabled data-tune-control>
       </label>
     </div>
     <p class="apply-note">Energy and variation refine the selected Vibe. All Animation Mixes draw from the same kernels; the existing audio engine and anti-repeat behavior are unchanged.</p>
@@ -184,10 +191,10 @@
         <select id="featureLook"></select>
       </label>
       <label>Color
-        <input id="featureColor" type="color" value="#ffffff" aria-label="Look color">
+        <input id="featureColor" type="color" value="#ffffff" aria-label="Look color" disabled>
       </label>
       <label>Palette · optional
-        <select id="featurePalette"><option value="">Current palette</option></select>
+        <select id="featurePalette" disabled><option value="">Current palette</option></select>
       </label>
       <label>Name saved look
         <input id="featureLookName" type="text" maxlength="24" placeholder="e.g. Green course">
@@ -196,14 +203,14 @@
         <select id="featureSavedLooks"><option value="">None saved</option></select>
       </label>
       <div class="row">
-        <button id="featureApplyLook" type="button">Apply look</button>
+        <button id="featureApplyLook" type="button" disabled>Apply look</button>
         <button id="featureSaveLook" type="button">Save</button>
         <button id="featureApplySaved" type="button">Apply saved</button>
         <button id="featureDeleteSaved" type="button">Delete saved</button>
       </div>
     </div>
     <div id="featureStatus" class="status">Feature controls staged.</div>
-    <p class="apply-note">Show/palette changes use canonical cart state; palette names are discovered read-only from the local Matrix.</p>
+    <p class="apply-note" id="paletteAvailability" role="status" aria-live="polite">Palette names and live previews are available only from the Matrix’s local page. This hosted owner app will not guess how a palette looks.</p>
   </details>
 
   <section id="scoresPanel" class="panel" aria-label="Skins and Glow live data">
@@ -211,7 +218,6 @@
     <div id="featureLive" class="status">Live round not checked yet.</div>
     <div class="row">
       <button id="featureRefreshLive" type="button">Refresh live</button>
-      <button id="featureScoreboard" type="button">Show scoreboard</button>
       <button id="featureAcePot" type="button">Show ace pot</button>
     </div>
     <details class="score-entry">
@@ -249,10 +255,10 @@
     <div class="fine-grid advanced-body">
       <label class="wide">
         <span class="range-head"><span>Mic sensitivity</span><output id="micSensitivityValue">255</output></span>
-        <input id="micSensitivity" type="range" min="64" max="255" step="1" value="255">
+        <input id="micSensitivity" type="range" min="64" max="255" step="1" value="255" disabled data-tune-control>
       </label>
       <label>Audio emphasis
-        <select id="audioProfile">
+      <select id="audioProfile" disabled data-tune-control>
           <option value="scene">Scene default</option>
           <option value="bass">Bass</option>
           <option value="mid">Mid</option>
@@ -263,7 +269,7 @@
         </select>
       </label>
       <label>Reaction style
-        <select id="audioStyle">
+      <select id="audioStyle" disabled data-tune-control>
           <option value="scene">Scene default</option>
           <option value="clean">Clean</option>
           <option value="punch">Punch</option>
@@ -281,4 +287,4 @@
     <div id="status" class="status" role="status" aria-live="polite">Connecting…</div>
     <button id="refresh">Refresh status</button>
   </section>
-</main><script>if("serviceWorker" in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("./hbnf-cart-sw.js?v=20261009-cart2-vibe-r2",{scope:"/hbnf-cart.html"}).catch(function(){});}</script><script type="module" src="./hbnf-cart.js?v=20261009-cart2-vibe-r2"></script><script type="module" src="./hbnf-cart-ui-v6.mjs?v=20261009-cart2-vibe-r2"></script><script type="module" src="./hbnf-cart-features.mjs?v=20261009-cart2-vibe-r2"></script><script type="module" src="./hbnf-cart-skins-score.mjs?v=20261009-cart2-vibe-r2"></script></body></html>
+</main><script>if("serviceWorker" in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("./hbnf-cart-sw.js?v=20261014-owner-control-v1",{scope:"/hbnf-cart.html"}).catch(function(){});}</script><script type="module" src="./hbnf-cart.js?v=20261014-owner-control-v1"></script><script type="module" src="./hbnf-cart-ui-v6.mjs?v=20261014-owner-control-v1"></script><script type="module" src="./hbnf-cart-features.mjs?v=20261014-owner-control-v1"></script><script type="module" src="./hbnf-cart-skins-score.mjs?v=20261014-owner-control-v1"></script></body></html>

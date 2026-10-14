@@ -1,6 +1,6 @@
 /* HBNF_CART_FINAL_V5_SEMANTIC_FRAME_LOCK */
-import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261009-cart2-vibe-r2";
-import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261009-cart2-vibe-r2";
+import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261014-owner-control-v1";
+import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261014-owner-control-v1";
 
 const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC";
@@ -17,7 +17,9 @@ let tuneDirty = false;
 let tuneInFlight = false;
 let tuneTimer = null;
 let hydrating = false;
+let tuneStateReady = false;
 let canonicalCapabilities = {};
+window.__HBNF_TUNE_READY = false;
 
 const $ = id => document.getElementById(String(id).replace(/^#/, ""));
 const statusNode = $("#status");
@@ -159,7 +161,7 @@ async function call(body) {
       body: JSON.stringify(body),
       cache: "no-store",
     }, HBNF_API_TIMEOUT_MS, "Cart control");
-    if (backendHealth) backendHealth.textContent = "Reachable";
+    if (backendHealth) backendHealth.textContent = "Available";
   } catch (error) {
     if (backendHealth) backendHealth.textContent = "Unavailable";
     throw error;
@@ -243,9 +245,9 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
     auxHealth.className = auxOk ? "ok" : (shortDeviceFailure(auxReport) ? "bad" : "degraded");
   }
   if (badge) {
-    if (matrixOk && auxOk) { badge.textContent = "COMMANDS ACKNOWLEDGED"; badge.className = "truth-badge good"; }
-    else if (shortDeviceFailure(matrixReport) || shortDeviceFailure(auxReport)) { badge.textContent = "Device command failed"; badge.className = "truth-badge bad"; }
-    else { badge.textContent = "AWAITING DEVICE ACK"; badge.className = "truth-badge warn"; }
+    if (matrixOk && auxOk) { badge.textContent = "Cart controls confirmed"; badge.className = "truth-badge good"; }
+    else if (shortDeviceFailure(matrixReport) || shortDeviceFailure(auxReport)) { badge.textContent = "Device reported a problem"; badge.className = "truth-badge bad"; }
+    else { badge.textContent = "Waiting for device confirmation"; badge.className = "truth-badge warn"; }
   }
 }
 
@@ -261,11 +263,27 @@ function updateVibeSelection(_state) {
     autoButton.disabled = !ready;
     autoButton.setAttribute("aria-pressed", vibe === "auto" ? "true" : "false");
   }
-  if (vibeModeLabel) vibeModeLabel.textContent = ready ? (vibe ? `Desired · ${vibe.toUpperCase()}` : "Ready") : "Runtime not qualified";
+  if (vibeModeLabel) vibeModeLabel.textContent = ready ? (vibe ? `Selected · ${vibe.toUpperCase()}` : "Ready") : "Unavailable here";
   const availability = $("#vibeAvailability");
   if (availability) availability.textContent = ready
     ? "Vibe selection is available. Device application remains subject to the revision-bound status below."
-    : "Vibes stay unavailable until the matching firmware and frozen runtime gates are accepted.";
+    : "Vibe changes are locked here; existing Matrix operation is unchanged.";
+}
+
+function setTuneControlsEnabled(ready) {
+  tuneStateReady = ready === true;
+  window.__HBNF_TUNE_READY = tuneStateReady;
+  document.querySelectorAll("[data-tune-control]").forEach(control => {
+    control.disabled = !tuneStateReady;
+  });
+  document.querySelectorAll(".scene-button").forEach(control => {
+    control.disabled = !tuneStateReady;
+  });
+  const note = $("brightnessNote");
+  if (note) note.textContent = tuneStateReady
+    ? "Saved levels · confirmation in System Info."
+    : "Saved levels unavailable; controls stay locked.";
+  try { window.dispatchEvent(new CustomEvent("hbnf-tune-state-ready", { detail: { ready: tuneStateReady } })); } catch (_) {}
 }
 
 function setRange(id, outputId, value, formatter = v => String(v)) {
@@ -294,8 +312,18 @@ function hydrateControls(state) {
     setRange("audioResponse", "audioResponseValue", Math.max(0, Math.min(100, audioResponse)));
     setRange("motion", "motionValue", Math.max(0, Math.min(100, motion)));
     setRange("variation", "variationValue", Math.max(0, Math.min(100, variation)));
-    setRange("matrixBrightness", "matrixValue", Number(pathValue(state, ["devices","matrix","brightness"], 8)));
-    setRange("auxBrightness", "auxValue", Number(pathValue(state, ["devices","aux","brightness"], 64)));
+    const matrixBrightness = pathValue(state, ["devices","matrix","brightness"], null);
+    const auxBrightness = pathValue(state, ["devices","aux","brightness"], null);
+    const validBrightness = value => value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value)) && Number(value) >= 0 && Number(value) <= 255;
+    if (validBrightness(matrixBrightness) && validBrightness(auxBrightness)) {
+      setRange("matrixBrightness", "matrixValue", Number(matrixBrightness));
+      setRange("auxBrightness", "auxValue", Number(auxBrightness));
+      setTuneControlsEnabled(true);
+    } else {
+      $("matrixValue").value = "—";
+      $("auxValue").value = "—";
+      setTuneControlsEnabled(false);
+    }
     setRange("micSensitivity", "micSensitivityValue", Number(valueOr(tuning.micSensitivity, 255)));
     $("#audioProfile").value = valueOr(tuning.audioProfile, "scene");
     $("#audioStyle").value = valueOr(tuning.audioStyle, "scene");
@@ -355,6 +383,7 @@ async function refresh({ hydrate = true } = {}) {
 }
 
 function readTunePayload() {
+  if (!tuneStateReady) throw new Error("Saved brightness settings are not confirmed; no tuning command was sent.");
   const plan = compileSemanticPlan({
     energy: Number($("#energy").value),
     audioResponse: Number($("#audioResponse").value),
@@ -381,6 +410,10 @@ function readTunePayload() {
 
 function queueTune(delay = 0) {
   if (hydrating) return;
+  if (!tuneStateReady) {
+    showError(new Error("Saved brightness settings are not confirmed; no tuning command was sent."));
+    return;
+  }
   tuneDirty = true;
   clearTimeout(tuneTimer);
   tuneTimer = setTimeout(() => {
