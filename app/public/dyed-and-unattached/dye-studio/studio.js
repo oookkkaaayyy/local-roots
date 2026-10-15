@@ -404,13 +404,18 @@ function appearanceAt(x,y){
  const base=$("baseHex").value,a=discAppearance;
  if(!a||!validHex(a.rimHex))return base;
  const r=Math.hypot(x,y),half=a.softness/2;
- const t=half<=.001?(r>=a.boundary?1:0):clamp((r-a.boundary+half)/(2*half),0,1);
+ const offsets=a.edgeOffsets,theta=(Math.atan2(y,x)+2*Math.PI)%(2*Math.PI);
+ const sector=theta/(2*Math.PI)*48-.5,lo=((Math.floor(sector)%48)+48)%48,hi=(lo+1)%48,w=sector-Math.floor(sector);
+ const offset=Array.isArray(offsets)&&offsets.length===48?(Number(offsets[lo])||0)*(1-w)+(Number(offsets[hi])||0)*w:0;
+ const boundary=clamp(a.boundary+offset,.52,.98);
+ const t=half<=.001?(r>=boundary?1:0):clamp((r-boundary+half)/(2*half),0,1);
  return mixRgbHex(base,a.rimHex,t*t*(3-2*t));
 }
 function setDiscAppearance(a,commit=false){
  if(a&&validHex(a.rimHex)&&Number.isFinite(+a.boundary)){
   discAppearance={rimHex:a.rimHex.toUpperCase(),boundary:clamp(+a.boundary,.54,.96),
-   softness:clamp(+a.softness||0,.002,.23),kind:a.kind==="soft"?"soft":"hard"};
+   softness:clamp(+a.softness||0,.002,.23),kind:a.kind==="soft"?"soft":"hard",
+   edgeOffsets:Array.isArray(a.edgeOffsets)&&a.edgeOffsets.length===48?a.edgeOffsets.map(v=>clamp(Number(v)||0,-.08,.08)):null};
  }else discAppearance=null;
  regionColorCache.clear();requestRender();if(commit)commitHistory();
 }
@@ -560,6 +565,7 @@ function applyState(s){
   $("showGuides").checked=s.showGuides!==false;
   selected=layers.length?clamp(selected,0,layers.length-1):-1;
   renderProfiles();renderLayerList();syncEditor();setModeHelp();updateConditionButtons();updateSceneButtons();requestRender(true);isRestoring=false;
+  window.DUDiscPhoto?.syncControls?.();
 }
 function commitHistory(){
   if(isRestoring)return;
@@ -581,7 +587,7 @@ function updateHistoryButtons(){
   $("undoBtn").disabled=historyIndex<=0;$("redoBtn").disabled=historyIndex>=history.length-1;
 }
 function mutate(fn,message=""){
-  fn();renderLayerList();syncEditor();requestRender();commitHistory();if(message)toast(message);
+  fn();renderLayerList();syncEditor();requestRender();commitHistory();window.DUDiscPhoto?.syncControls?.();if(message)toast(message);
 }
 
 
