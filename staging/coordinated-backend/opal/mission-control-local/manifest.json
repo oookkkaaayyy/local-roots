@@ -1,0 +1,37 @@
+{
+  "schema": "hbnf-opal-local-mission-control-v1",
+  "package": "hbnf-opal-mission-control-local",
+  "version": "1.0.0",
+  "source_repository": "oookkkaaayyy/local-roots",
+  "source_branch": "codex/glow-matrix-relay-integration-20261014",
+  "source_base_commit": "b12b0fa2b3eecb8b176a9f6abc9a281882d7b7e0",
+  "target": "existing GL-SFT1200 nginx static root /www/mission-control-local",
+  "matrix": {
+    "ip": "192.168.77.10",
+    "mac": "704bca5b345c",
+    "required_runtime_release": "hbnf-cart2-phase2-r6-skins-readable-20261014"
+  },
+  "aux": {
+    "ip": "192.168.77.11",
+    "mac": "8c94df55c34c"
+  },
+  "transport": "Matrix ws://192.168.77.10/ws; read-only AUX GET /json/info and /json/state",
+  "excluded": [
+    "Supabase",
+    "scoring APIs/data",
+    "OTA",
+    "firmware",
+    "router configuration"
+  ],
+  "local_security": "Existing protected HBNF-Cart Wi-Fi network; no individual WLED API authentication",
+  "files_sha256": {
+    "index.html": "3d53b93ec0446f706b7ba38363b163191e85b1e6f80964c4a035e07381eb28c1",
+    "styles.css": "e2aceeabac8fa7e85fca1e638f50da6182d4e5b79fd5004a7a3c071915cc3522",
+    "app.mjs": "62f533225536e19dd6cef29ce00d61f6f5e033a4a07722a2870fbeb2e2d8b9bc",
+    "local-transport.mjs": "763acde6bf19e546ff1dafc8e1c6938094955f069ad1e072f28fb33d1041e775",
+    "install.sh": "83791fc45b9cad00e3bf04d93480b4f89f0e7b528d72b1b2befb9902cd5adb05",
+    "rollback.sh": "e3a8dfdd48bd31d6634f8b0752553a93ae532945c2d89c50c92cbd7a94aa8166",
+    "tests/local-transport.test.mjs": "8c482000cb0b890bd75ba80e771d3e5b19af0d4dc52fb2c4f29c8b6df13b7c86"
+  },
+  "physical_acceptance": "Required; package/readback tests do not prove physical lighting output"
+}
