@@ -319,6 +319,8 @@ test("guarded Opal installer uses an isolated :8443 Nginx instance with non-root
   assert.match(service, /procd_set_param respawn/);
   assert.match(service, /procd_set_param command "\$NGINX" -c "\$CONF" -g 'daemon off;'/);
   assert.doesNotMatch(service, /procd_set_param user nobody/);
+  assert.match(installer, /if \[ "\$stop_failed" -ne 0 \] \|\| \[ "\$disable_failed" -ne 0 \]; then[\s\S]*?Preserving candidate files, state, and rollback backup[\s\S]*?return 0/);
+  assert.match(installer, /Dedicated service is stopped and disabled[\s\S]*?rm -rf "\$BASE\/lua" "\$STATE" "\$LOG_DIR"/);
   assert.doesNotMatch(installer + rollback, /\/etc\/nginx\/nginx\.conf|\/etc\/nginx\/conf\.d|nginx -s reload(?!.*\$CONF)|uci\s+(?:set|commit)|iptables\s+-|reboot|sysupgrade|supabase.*deploy/i);
   assert.match(rollback, /\$SERVICE" stop/);
   assert.match(rollback, /\$SERVICE" disable/);
