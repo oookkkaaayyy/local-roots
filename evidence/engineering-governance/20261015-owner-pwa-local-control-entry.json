@@ -1,0 +1,37 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OWNER_PWA_OPAL_LOCAL_CONTROL_ENTRY_20261015",
+  "summary": "Add a visible, offline-capable navigation entry from the existing Owner PWA to the already accepted Opal-hosted Mission Control, with a service-worker cache version bump so an installed PWA can refresh its shell.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "primary_source": "Owner confirmed Opal Mission Control v1.0.1 works from iPad mini/iOS 12 with WAN and Mac disconnected; existing Owner PWA shell is service-worker cached and the existing quick-links style is available.",
+    "implementation": [
+      "hbnf-final-controller/hbnf-cart.html",
+      "hbnf-final-controller/hbnf-cart-ui-v6.css",
+      "hbnf-final-controller/hbnf-cart-manifest.webmanifest",
+      "hbnf-final-controller/hbnf-cart-sw.js",
+      "hbnf-final-controller/hbnf-cart.js",
+      "hbnf-final-controller/hbnf-cart-local.mjs",
+      "tests/hbnf_owner_pwa_package.mjs",
+      "tests/hbnf_owner_pwa_reliability.mjs"
+    ],
+    "expert_basis": {
+      "source": "W3C Mixed Content Recommendation",
+      "url": "https://www.w3.org/TR/mixed-content/",
+      "relevance": "Top-level navigation is not mixed content; this link navigates to the local Opal page instead of making an insecure fetch from the HTTPS Owner PWA."
+    },
+    "validation": [
+      "Focused Owner PWA package, offline shell reliability, and local-control fixture tests run after implementation; results recorded in the task report.",
+      "No live deployment, Opal, Matrix, AUX, Supabase, scoring, firmware, or router mutation is included."
+    ],
+    "rollback": "Revert this source commit; the installed Opal Mission Control and current deployed Owner PWA remain unchanged until a separately authorized deployment.",
+    "deployment_status": "HOST_ONLY_STAGED_NOT_DEPLOYED"
+  }
+}

@@ -1,5 +1,5 @@
 /* Secure local transport adapter for the existing Owner PWA. */
-import { fetchWithDeadline, HBNF_API_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261015-local-owner-v2";
+import { fetchWithDeadline, HBNF_API_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261015-local-owner-v3";
 
 // The owner-only gateway is a separate Opal Nginx instance. Its nonstandard
 // HTTPS port keeps GL.iNet's existing 443 service and root-worker policy

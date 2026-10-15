@@ -19,9 +19,11 @@ const packageBuilderPath = path.join(root, "scripts/hbnf_build_owner_guest_packa
 const packageBuilder = fs.readFileSync(packageBuilderPath, "utf8");
 
 assert.match(html, /hbnf-cart2-owner-control-local-v1-20261015/);
+assert.match(html, /href="http:\/\/192\.168\.77\.1\/mission-control-local\/index\.html"/);
+assert.match(html, /Open local controls · works on Cart Wi-Fi without internet/);
 assert.doesNotMatch(html, /skins-owner-pwa-r1/);
 assert.equal(manifest.id, "/hbnf-cart.html");
-assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261015-owner-control-local-v2");
+assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261015-owner-control-local-v3");
 assert.equal(manifest.scope, "/hbnf-cart.html");
 assert.deepEqual(manifest.icons.map(({ sizes }) => sizes), ["192x192", "512x512"]);
 
@@ -55,6 +57,7 @@ for (const name of [
 }
 
 assert.match(html, /navigator\.serviceWorker\.register/);
+assert.match(html, /local-control-entry/);
 assert.match(html, /id="featureFontIndex"[\s\S]*value="4" selected[\s\S]*Slot 0 · Tom Thumb 6px[\s\S]*Slot 2 · Console 6×8[\s\S]*Slot 3 · C64-esque 9px/);
 assert.doesNotMatch(html, /TinyUnicode/i, "unsupported UTF-8 font slot is not offered by the ASCII overlay adapter");
 const featureModule = fs.readFileSync(path.join(controller, "hbnf-cart-features.mjs"), "utf8");

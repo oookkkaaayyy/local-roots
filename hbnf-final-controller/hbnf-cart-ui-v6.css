@@ -125,6 +125,8 @@ button,select,input,textarea{min-height:44px}
 .cart-commands .row>button[data-command="LOCK"]{grid-column:1/-1;min-height:44px}
 .quick-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .quick-links a{display:flex;align-items:center;justify-content:center;min-height:48px;border:1px solid var(--hbnf-line);border-radius:12px;background:#0c2119;color:var(--hbnf-text);font-weight:800;text-decoration:none}
+.local-control-entry{grid-template-columns:1fr}
+.local-control-link{min-height:52px!important}
 .quick-links a:focus-visible{outline:3px solid var(--hbnf-accent);outline-offset:2px}
 .vibe-option:disabled,.vibe-auto:disabled{opacity:.62;cursor:not-allowed;border-style:dashed!important}
 #vibeAvailability{max-width:68ch}
