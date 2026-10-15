@@ -226,7 +226,7 @@ test('editor state roundtrip and undo-redo preserve block identities and physica
   $('blendMode').value='research';$('methodSelect').value='acetone-direct';
   $('passCount').value='1';$('productionRecipeKey').value='acetone-v1';
   const env={ $,viewMode:'daylight',daylightScene:'outdoor',activeProfileId:'innova_star',
-    layers:[],selected:-1,sample:{x:0,y:0},history:[],historyIndex:-1,isRestoring:false,
+    layers:[],selected:-1,sample:{x:0,y:0},history:[],historyIndex:-1,isRestoring:false,discAppearance:null,window:{DUDiscPhoto:{syncControls(){}}},migrateProfileId:id=>id,
     clamp:(x,a,b)=>Math.max(a,Math.min(b,x)),deepCopy:x=>JSON.parse(JSON.stringify(x)),
     activeRecipeKey:()=> $('productionRecipeKey').value,activeMethod:()=> $('methodSelect').value,
     activePassCount:()=> +$('passCount').value,normAngle:x=>x,profile:()=>({base:'#FFFFFF'}),
@@ -379,6 +379,47 @@ test('photo matcher ignores minority stamp colors in synthetic test images',()=>
  assert.equal(estimate({data:blank,width:280,height:280}).edgeDetected,false,'reject background-only shot');
 });
 
+
+
+test('photo topology separates plate/rim without inventing brand plastic choices',()=>{
+ const photo=read('../public/dyed-and-unattached/dye-studio/disc-photo.js');
+ const win={},doc={readyState:'loading',addEventListener(){}};
+ Function('window','document',photo)(win,doc);
+ const estimate=win.DUDiscPhoto.estimatePixels;
+ function disc(plate,rim,boundary,softness,withStamp=false){
+  const w=280,h=280,r=110,data=new Uint8ClampedArray(w*h*4);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+   const rr=Math.hypot(x-140,y-140)/r;
+   let mix=softness?Math.min(1,Math.max(0,(rr-boundary+softness/2)/softness)):rr>=boundary?1:0;
+   let rgb=rr<=1?plate.map((v,i)=>v*(1-mix)+rim[i]*mix):[240,240,240];
+   if(withStamp&&Math.hypot(x-180,y-143)<26&&rr<.78)rgb=[8,9,12];
+   const i=(y*w+x)*4;data[i]=rgb[0];data[i+1]=rgb[1];data[i+2]=rgb[2];data[i+3]=255;
+  }
+  return {data,width:w,height:h};
+ }
+ const halo=estimate(disc([250,165,195],[25,146,208],.74,.095,true));
+ assert.equal(halo.edgeDetected,true);
+ assert.equal(halo.hex,'#FAA5C3');
+ assert.equal(halo.appearance.rimHex,'#1992D0');
+ assert.ok(Math.abs(halo.appearance.boundary-.74)<.04);
+ assert.equal(halo.appearance.kind,'soft');
+ const hard=estimate(disc([40,160,178],[255,96,137],.82,.008));
+ assert.equal(hard.appearance.rimHex,'#FF6089');
+ assert.equal(hard.appearance.kind,'hard');
+ assert.ok(Math.abs(hard.appearance.boundary-.82)<.04);
+ const one=estimate(disc([89,169,222],[89,169,222],.82,0,true));
+ assert.equal(one.appearance,null);
+ assert.ok(photo.includes('window.DUDiscAppearance?.set?.(result.appearance||null)'));
+ assert.match(studioHtml,/id="photoRimPanel"/);
+ assert.match(studioScript,/function appearanceAt\(x,y\)/);
+ assert.match(studioScript,/discAppearance:discAppearance\?/);
+ const defaultSegment=studioScript.slice(studioScript.indexOf('function defaults(){'),studioScript.indexOf('function migrateProfileId('));
+ assert.match(defaultSegment,/Innova Classic Glow Champion/);
+ assert.doesNotMatch(defaultSegment,/id:"innova_(?:dx|pro|halo_star|color_glow_champion)"/);
+ const select=studioHtml.slice(studioHtml.indexOf('<select id="profileOptical"'),studioHtml.indexOf('</select>',studioHtml.indexOf('<select id="profileOptical"')));
+ assert.doesNotMatch(select,/value="(?:dx|pro|halo-star|color-glow-champion)"/);
+ assert.match(select,/value="classic-glow-champion"/);
+});
 
 test('consumer v2 keeps dye selection atomic and color edits contextual', () => {
  const v2=read('../public/dyed-and-unattached/dye-studio/consumer-v2.js');
