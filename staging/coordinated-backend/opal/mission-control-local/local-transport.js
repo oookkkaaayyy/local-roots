@@ -5,6 +5,26 @@ export const SUPPORTED_RELEASE = "hbnf-cart2-phase2-r6-skins-readable-20261014";
 export const LOCAL_PAGE_URL = "http://192.168.77.1/mission-control-local/index.html";
 export const SCENES = ["course-flow", "field-mix", "hbnf-signature", "quiet-cosmos"];
 export const VIBES = ["chill", "groove", "heavy", "psychedelic", "cosmic", "auto"];
+export function getJson(url, timeoutMs = 2500, xhrFactory = () => new XMLHttpRequest()) {
+ return new Promise((resolve, reject) => {
+  let xhr;
+  try {
+   xhr = xhrFactory();
+   xhr.open("GET", url, true);
+   xhr.timeout = timeoutMs;
+   xhr.withCredentials = false;
+   xhr.onload = () => {
+    if (xhr.status < 200 || xhr.status >= 300) return reject(new Error(`HTTP ${xhr.status}`));
+    try { resolve(JSON.parse(xhr.responseText)); }
+    catch (_) { reject(new Error("Invalid JSON response.")); }
+   };
+   xhr.onerror = () => reject(new Error("Network request failed."));
+   xhr.ontimeout = () => reject(new Error(`Request timed out after ${timeoutMs} ms.`));
+   xhr.onabort = () => reject(new Error("Request aborted."));
+   xhr.send();
+  } catch (error) { reject(error); }
+ });
+}
 const intIn = (value, min, max, label) => { const n = Number(value); if (!Number.isInteger(n) || n < min || n > max) throw new Error(`Invalid ${label}.`); return n; };
 export function buildPatch(type, payload = {}) {
  const h = {};
@@ -29,13 +49,13 @@ export function stateMatches(state,patch) {
  });
 }
 export function auxStatus(info,state){if(!info||!state||!info.mac||!Number.isFinite(Number(state.bri)))return{reachable:false,label:"AUX state not verified",ddp:false,physical:"unverified"};const ddp=info.live===true&&info.lm==="DDP"&&info.lip===MATRIX_IP;return{reachable:true,mac:String(info.mac).toLowerCase(),brightness:Number(state.bri),on:state.on===true,ddp,label:ddp?`WLED reachable · brightness ${Number(state.bri)}`:`WLED reachable · brightness ${Number(state.bri)} · DDP source not confirmed`,physical:"unverified"};}
+function commandOnce(transport,type,payload){if(!transport.socket||transport.socket.readyState!==1)return Promise.reject(new Error("Matrix WebSocket is not connected."));if(!transport.controlReady())return Promise.reject(new Error("Fresh Matrix release, device identity, and state are required; no control was sent."));const patch=buildPatch(type,payload),after=transport.snapshotVersion;return new Promise((resolve,reject)=>{const w={patch,after,resolve,reject,timer:null};w.timer=setTimeout(()=>{transport.waiters.delete(w);reject(new Error("Matrix did not return matching state readback."));},transport.timeoutMs);transport.waiters.add(w);try{transport.socket.send(JSON.stringify({HBNF:patch}));transport.requestState();}catch(error){transport.waiters.delete(w);clearTimeout(w.timer);reject(error);}});}
 export class LocalMatrixTransport {
  constructor({url=`ws://${MATRIX_IP}/ws`,socketFactory=url=>new WebSocket(url),onState=()=>{},onConnection=()=>{},timeoutMs=2500}={}){this.url=url;this.socketFactory=socketFactory;this.onState=onState;this.onConnection=onConnection;this.timeoutMs=timeoutMs;this.socket=null;this.snapshot=null;this.snapshotVersion=0;this.snapshotAt=0;this.identityVerifiedAt=0;this.waiters=new Set();this.queue=Promise.resolve();}
  connect(){if(this.socket&&(this.socket.readyState===0||this.socket.readyState===1))return;const socket=this.socketFactory(this.url);this.socket=socket;socket.onopen=()=>{if(this.socket!==socket)return;this.onConnection(true);this.requestState();};socket.onmessage=event=>{if(this.socket!==socket||typeof event.data!=="string")return;let msg;try{msg=JSON.parse(event.data)}catch{return}if(!msg||!msg.state||typeof msg.state!=="object")return;this.snapshot=msg.state;this.snapshotVersion++;this.snapshotAt=Date.now();this.onState(this.snapshot);for(const w of [...this.waiters])if(this.snapshotVersion>w.after&&stateMatches(this.snapshot,w.patch)){this.waiters.delete(w);clearTimeout(w.timer);w.resolve(this.snapshot);}};socket.onerror=()=>{try{socket.close()}catch{}};socket.onclose=()=>{if(this.socket!==socket)return;this.socket=null;this.identityVerifiedAt=0;this.onConnection(false);for(const w of [...this.waiters]){this.waiters.delete(w);clearTimeout(w.timer);w.reject(new Error("Matrix WebSocket disconnected before state confirmation."));}};}
- verifyIdentity(info){const mac=String(info?.mac||"").toLowerCase();this.identityVerifiedAt=mac===MATRIX_MAC?Date.now():0;return this.identityVerifiedAt>0;}
+ verifyIdentity(info){const mac=String(info&&info.mac||"").toLowerCase();this.identityVerifiedAt=mac===MATRIX_MAC?Date.now():0;return this.identityVerifiedAt>0;}
  clearIdentity(){this.identityVerifiedAt=0;}
- controlReady(){return !!(this.socket?.readyState===1&&this.snapshot?.HBNF?.candidate===SUPPORTED_RELEASE&&this.snapshotAt&&Date.now()-this.snapshotAt<=15000&&this.identityVerifiedAt&&Date.now()-this.identityVerifiedAt<=30000);}
+ controlReady(){const h=this.snapshot&&this.snapshot.HBNF;return !!(this.socket&&this.socket.readyState===1&&h&&h.candidate===SUPPORTED_RELEASE&&this.snapshotAt&&Date.now()-this.snapshotAt<=15000&&this.identityVerifiedAt&&Date.now()-this.identityVerifiedAt<=30000);}
  requestState(){if(!this.socket||this.socket.readyState!==1)throw new Error("Matrix WebSocket is not connected.");this.socket.send('{"v":true}');}
- command(type,payload={}){const run=()=>this.#commandOnce(type,payload),result=this.queue.then(run,run);this.queue=result.catch(()=>{});return result;}
- #commandOnce(type,payload){if(!this.socket||this.socket.readyState!==1)return Promise.reject(new Error("Matrix WebSocket is not connected."));if(!this.controlReady())return Promise.reject(new Error("Fresh Matrix release, device identity, and state are required; no control was sent."));const patch=buildPatch(type,payload),after=this.snapshotVersion;return new Promise((resolve,reject)=>{const w={patch,after,resolve,reject,timer:null};w.timer=setTimeout(()=>{this.waiters.delete(w);reject(new Error("Matrix did not return matching state readback."));},this.timeoutMs);this.waiters.add(w);try{this.socket.send(JSON.stringify({HBNF:patch}));this.requestState();}catch(error){this.waiters.delete(w);clearTimeout(w.timer);reject(error);}});}
+ command(type,payload={}){const run=()=>commandOnce(this,type,payload),result=this.queue.then(run,run);this.queue=result.catch(()=>{});return result;}
 }

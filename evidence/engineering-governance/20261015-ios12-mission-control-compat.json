@@ -1,0 +1,29 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "MISSION_CONTROL_IOS12_SAFARI_COMPAT_20261015",
+  "summary": "Remove iOS 12 Safari-incompatible syntax and APIs from the local Mission Control app, and add a targeted compatibility gate plus an exact reversible Opal static-file update.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "failure": "The app used optional chaining and nullish coalescing (Safari 14+) and a private class method (Safari 15+); iOS 12 also has partial AbortController fetch-abort behavior, and globalThis is unavailable in iOS 12 Safari.",
+    "implementation": [
+      "staging/coordinated-backend/opal/mission-control-local/app.js",
+      "staging/coordinated-backend/opal/mission-control-local/local-transport.js",
+      "staging/coordinated-backend/opal/mission-control-local/tests/local-transport.test.mjs",
+      "staging/coordinated-backend/opal/mission-control-local/update.sh",
+      "staging/coordinated-backend/opal/mission-control-local/rollback-update.sh"
+    ],
+    "validation": [
+      "Focused Node regression suite: 17/17 passed, including old command/readback behavior, identity enablement, timeout/error handling, iOS 12 unsupported syntax/API gate, and isolated update plus exact rollback rehearsal.",
+      "Shell syntax checks and package SHA256SUMS validation passed.",
+      "Actual iPad mini 2 and physical lighting validation remain required after the exact package is authorized and installed."
+    ],
+    "rollback": "Run /www/mission-control-local/rollback-update.sh after v1.0.1 installation; it restores and hash-verifies the exact v1.0.0 static files saved at /root/hbnf-mission-control-local.rollback-v1.0.0. No firmware, router services/configuration, relay, or device settings change."
+  }
+}
