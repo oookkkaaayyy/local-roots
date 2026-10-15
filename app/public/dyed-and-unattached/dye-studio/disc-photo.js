@@ -15,18 +15,24 @@ function locateDisc(data,w,h){
  let best={score:-Infinity,x:w/2,y:h/2,r:.39*m,edge:0,valid:0};
  for(const ox of offsets)for(const oy of offsets)for(const factor of radii){
    const x=w/2+ox*m,y=h/2+oy*m,r=m*factor;
-   let sum=0,valid=0;
+   let sum=0,valid=0,innerSum=0;
    for(let i=0;i<40;i++){
      const a=i*2*Math.PI/40,c=Math.cos(a),s=Math.sin(a);
      const ix=x+c*r*.94,iy=y+s*r*.94,ex=x+c*r*1.06,ey=y+s*r*1.06;
      if(ix<1||iy<1||ex<1||ey<1||ix>=w-1||ex>=w-1||iy>=h-1||ey>=h-1)continue;
      const inner=getPixel(data,w,h,ix,iy),outer=getPixel(data,w,h,ex,ey);
-     sum+=distance(inner,outer);valid++;
+     // A two-tone disc has an additional concentric rim/plate boundary.
+   // Reward outer-disc hypotheses that enclose that boundary, rather
+   // than mistaking the inner color boundary for the disc's exterior.
+   const ringA=getPixel(data,w,h,x+c*r*.79,y+s*r*.79);
+   const ringB=getPixel(data,w,h,x+c*r*.88,y+s*r*.88);
+   innerSum+=distance(ringA,ringB);
+   sum+=distance(inner,outer);valid++;
    }
    if(valid<28)continue;
    const edge=sum/valid;
    // Favor long circular boundaries near the image center rather than printed motifs.
-   const score=edge*(valid/40)*(0.78+factor*0.55)-magnitudeOffset(ox,oy)*7;
+   const score=(edge+innerSum/valid*1.15)*(valid/40)*(0.78+factor*0.55)-magnitudeOffset(ox,oy)*7;
    if(score>best.score)best={score,x,y,r,edge,valid};
  }
  return best;
