@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "reviewDate": "2026-10-14",
+  "purpose": "Physical-color prediction source admission; no public case currently supplies calibrated numeric dye response.",
+  "copyrightPolicy": "Link to the creator's original photos only; no third-party image downloads or republication; seek author permission before storing images as dataset.",
+  "requirements": [
+    "original physical post",
+    "exact polymer",
+    "measured original surface/reference",
+    "named dye",
+    "identified application carrier",
+    "documented dose/time/heat",
+    "controlled outcome color",
+    "independent source-group holdout"
+  ],
+  "records": [
+    {
+      "id": "KATERI-2025",
+      "source": "https://dyersguild.co/colorvault/",
+      "image": "https://dyersguild.co/wp-content/uploads/2025/01/2025PersonalDyeLibrary_1.jpg",
+      "creatorGroup": "kateri-thisishowidye-2025",
+      "physicalDisc": true,
+      "exactPlastic": false,
+      "namedDyes": true,
+      "methodKnown": false,
+      "doseKnown": false,
+      "timeKnown": false,
+      "controlledColor": false,
+      "independentReplicate": false,
+      "isolatedABAB": false,
+      "use": "qualitative_only",
+      "observation": "Uncropped image shows white circular disc with many labeled swatches, Dyers Guild page labels 2/5/10 min; named source Kateri.",
+      "unknown": [
+        "Disc polymer brand/family",
+        "Carrier, pre-mix, timing conditions",
+        "Photo lighting and original disc blank",
+        "Whether repeated swatches are same method/dose",
+        "Consent to reuse raw image"
+      ],
+      "priority": 1
+    },
+    {
+      "id": "WHITE-STAR-DART",
+      "source": "https://www.reddit.com/r/discdyeing/comments/sn1bow",
+      "creatorGroup": "sn1bow-maker",
+      "physicalDisc": true,
+      "exactPlastic": true,
+      "namedDyes": true,
+      "methodKnown": true,
+      "doseKnown": true,
+      "timeKnown": true,
+      "controlledColor": false,
+      "independentReplicate": false,
+      "isolatedABAB": false,
+      "use": "qualitative_only",
+      "observation": "User reports white Innova Star Dart, ProChem Pinkish Red, acetone/hot-water/clear-glue exposure about 24h, ending light pink.",
+      "unknown": [
+        "Color reference and matched before/after image",
+        "Same-plastic replication",
+        "Cannot generalize glue-bed to direct acetone"
+      ],
+      "priority": 2
+    },
+    {
+      "id": "WHITE-STAR-FLOETROL",
+      "source": "https://www.reddit.com/r/discdyeing/comments/v2inel",
+      "creatorGroup": "v2inel-maker",
+      "physicalDisc": true,
+      "exactPlastic": true,
+      "namedDyes": true,
+      "methodKnown": true,
+      "doseKnown": false,
+      "timeKnown": false,
+      "controlledColor": false,
+      "independentReplicate": false,
+      "isolatedABAB": false,
+      "use": "qualitative_only",
+      "observation": "Same artist tried white Innova Star F2 and named ProChem dyes in Floetrol with variable contact/heat/time.",
+      "unknown": [
+        "Precisely matched recipe/exposure across images",
+        "Calibration target",
+        "Independent maker"
+      ],
+      "priority": 3
+    },
+    {
+      "id": "YELLOW-CHAMPION-BLUE",
+      "source": "https://www.reddit.com/r/discdyeing/comments/1cb2xrp",
+      "creatorGroup": "1cb2xrp-maker",
+      "physicalDisc": true,
+      "exactPlastic": false,
+      "namedDyes": false,
+      "methodKnown": true,
+      "doseKnown": false,
+      "timeKnown": false,
+      "controlledColor": false,
+      "independentReplicate": false,
+      "isolatedABAB": false,
+      "use": "qualitative_only",
+      "observation": "Same bed: maker reports blue shift toward green on yellow translucent Champion relative to white disc; mixed blue pigment proportions unknown.",
+      "unknown": [
+        "White comparator polymer",
+        "Exact pigment mixture/dose",
+        "Comparable calibration"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "PCAD-PRODUCT-SWATCH",
+      "source": "https://prochemicalanddye.com/disc-golf-disc-dyes/",
+      "creatorGroup": "manufacturer-prochem",
+      "physicalDisc": false,
+      "exactPlastic": false,
+      "namedDyes": true,
+      "methodKnown": false,
+      "doseKnown": false,
+      "timeKnown": false,
+      "controlledColor": false,
+      "independentReplicate": false,
+      "isolatedABAB": false,
+      "use": "excluded_numeric",
+      "observation": "Official manufacturer says swatches originated from cocoa-butter lotion and/or dyed fabric and disc appearance varies with medium/heat/dose.",
+      "unknown": [
+        "Exact dyed-disc outcome"
+      ],
+      "priority": 5
+    },
+    {
+      "id": "DYERSGUILD-DIGITAL-COLOR",
+      "source": "https://dyersguild.co/disc-dyeing-color-reference-chart/",
+      "creatorGroup": "digital-chart-fellenbomb",
+      "physicalDisc": false,
+      "exactPlastic": false,
+      "namedDyes": true,
+      "methodKnown": false,
+      "doseKnown": false,
+      "timeKnown": false,
+      "controlledColor": false,
+      "independentReplicate": false,
+      "isolatedABAB": false,
+      "use": "excluded_numeric",
+      "observation": "Digital composited dye swatches; never a physical dyed-disc endpoint.",
+      "unknown": [
+        "Actual physical dye absorption"
+      ],
+      "priority": 6
+    }
+  ]
+}
