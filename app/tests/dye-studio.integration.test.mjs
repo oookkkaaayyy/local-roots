@@ -226,7 +226,7 @@ test('editor state roundtrip and undo-redo preserve block identities and physica
   $('blendMode').value='research';$('methodSelect').value='acetone-direct';
   $('passCount').value='1';$('productionRecipeKey').value='acetone-v1';
   const env={ $,viewMode:'daylight',daylightScene:'outdoor',activeProfileId:'innova_star',
-    layers:[],selected:-1,sample:{x:0,y:0},history:[],historyIndex:-1,isRestoring:false,discAppearance:null,window:{DUDiscPhoto:{syncControls(){}}},migrateProfileId:id=>id,
+    layers:[],selected:-1,sample:{x:0,y:0},history:[],historyIndex:-1,isRestoring:false,discAppearance:null,photoBaseSelected:false,window:{DUDiscPhoto:{syncControls(){}}},migrateProfileId:id=>id,
     clamp:(x,a,b)=>Math.max(a,Math.min(b,x)),deepCopy:x=>JSON.parse(JSON.stringify(x)),
     activeRecipeKey:()=> $('productionRecipeKey').value,activeMethod:()=> $('methodSelect').value,
     activePassCount:()=> +$('passCount').value,normAngle:x=>x,profile:()=>({base:'#FFFFFF'}),
@@ -409,10 +409,12 @@ test('photo topology separates plate/rim without inventing brand plastic choices
  assert.ok(Math.abs(hard.appearance.boundary-.82)<.04);
  const one=estimate(disc([89,169,222],[89,169,222],.82,0,true));
  assert.equal(one.appearance,null);
- assert.ok(photo.includes('window.DUDiscAppearance?.set?.(result.appearance||null)'));
+ assert.ok(photo.includes('window.DUDiscAppearance?.set?.(result.appearance||null,false,true)'));
  assert.match(studioHtml,/id="photoRimPanel"/);
  assert.match(studioScript,/function appearanceAt\(x,y\)/);
  assert.match(studioScript,/discAppearance:discAppearance\?/);
+ assert.match(studioScript,/photoBaseSelected\?\$\("baseHex"\)\.value:p\.base/);
+ assert.match(studioScript,/Preserve calibration for retired models/);
  const defaultSegment=studioScript.slice(studioScript.indexOf('function defaults(){'),studioScript.indexOf('function migrateProfileId('));
  assert.match(defaultSegment,/Innova Classic Glow Champion/);
  assert.doesNotMatch(defaultSegment,/id:"innova_(?:dx|pro|halo_star|color_glow_champion)"/);
