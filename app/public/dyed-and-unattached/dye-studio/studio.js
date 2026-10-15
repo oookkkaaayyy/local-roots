@@ -424,6 +424,7 @@ function setDiscAppearance(a,commit=false,photoApplied=false){
 window.DUDiscAppearance={set:setDiscAppearance,get:()=>discAppearance?{...discAppearance}:null};
 function colorForPoint(x,y,key){
  const active=layers.filter((_,i)=>key[i]==="1"),base=appearanceAt(x,y),empirical=discAppearance?null:recordFor(active);
+ if(photoBaseSelected&&viewMode==="daylight"&&daylightScene==="outdoor"&&!active.some(l=>Number(l.strength)>0))return base;
  if(empirical&&viewMode==="daylight")return empirical.measuredHex;
  return researchPredictPoint(base,active,viewMode,profile(),x,y)
 }
