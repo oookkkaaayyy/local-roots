@@ -8,4 +8,7 @@ Useful real-disc reports include [a white Star Dart with ProChem Pinkish Red in 
 
 For future cases, require original physical-disc images, known original substrate and color, identified dye shade(s) and carrier, concentrations, time/heat, pre- and post-dye color references with controlled light, isolated A/B/A+B for overlaps, and an independent holdout. Count one author's reused photo/multiple crop as one correlated physical case.
 
-The next defensible improvement is to preserve the camera-estimated color of an undyed photographed blank in its daylight preview, avoiding a second speculative translucent-plastic tint. This is a proposed implementation; it is not part of this audit artifact.
+The next defensible improvement is to preserve the camera-estimated color of an undyed photographed blank in its daylight preview, avoiding a second speculative translucent-plastic tint. This narrow fix is implemented on the associated branch and preserves dyed-region, UV/glow and backlit model outputs.
+
+
+Verification: 33/33 integration and 10/10 optical model tests passed on candidate source in isolated JS. No public photographs were promoted into numerical calibration. Original source claims and strict admission controls remain documented above. Actual native build and production still require their existing checks.
