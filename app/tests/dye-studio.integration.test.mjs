@@ -627,7 +627,7 @@ test('photo-matched undyed daylight preserves original blank; dyes, UV and backl
  const start=studioScript.indexOf('function colorForPoint(x,y,key){');
  const end=studioScript.indexOf('const transmissionTargets=',start);
  assert.ok(start>=0&&end>start);
- const env={photoBaseSelected:true,viewMode:'daylight',daylightScene:'outdoor',layers:[],
+ const env={photoBaseSelected:true,discAppearance:null,viewMode:'daylight',daylightScene:'outdoor',layers:[],
    appearanceAt:()=> '#DDE8C8',recordFor:()=>null,profile:()=>({optical:'proto-glow-champion'}),
    researchPredictPoint:()=> '#B1C2A2'};
  const evaluate=Function('env','with(env){'+studioScript.slice(start,end)+';return colorForPoint;}')(env);
