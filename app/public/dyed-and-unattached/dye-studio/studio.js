@@ -715,11 +715,12 @@ function makePaintImage(){
       const radius=Math.sqrt(r2);
       const zone=radius<.58?0:radius<.84?1:radius<=.86?2:3;
       const region=regionKeyAt(x,y);
-      // Photo rim contours can differ by angle. The original radial-only cache
-   // would erase that photographed boundary variation. Bucket only near its rim.
-   const angularBucket=discAppearance?.edgeOffsets?.length===48&&Math.abs(radius-discAppearance.boundary)<.13?
-    Math.floor(((Math.atan2(y,x)+Math.PI)/(2*Math.PI))*24):0;
-   const cacheKey=region+"|"+zone+"|"+Math.min(bins-1,Math.floor(radius*bins))+"|"+angularBucket;
+      // Match the photographed blank's actual local color, not a coarse
+      // angular bucket. Different rim boundaries can share an angle bucket.
+      // Flat plate/rim pixels reuse one result; no dye coefficients change.
+      const photoKey=discAppearance&&Math.abs(radius-discAppearance.boundary)<
+        (.08+discAppearance.softness/2)?appearanceAt(x,y):"";
+      const cacheKey=region+"|"+zone+"|"+Math.min(bins-1,Math.floor(radius*bins))+"|"+photoKey;
       let rgb=ringCache.get(cacheKey);
       if(!rgb){rgb=hexRgb(colorForPoint(x,y,region));ringCache.set(cacheKey,rgb)}
       data[p++]=rgb[0];data[p++]=rgb[1];data[p++]=rgb[2];data[p++]=255;
