@@ -1186,10 +1186,10 @@ function renderEvidenceAdvisory(){
  const hotDye=lower.some(n=>/(orange|red|crimson)/.test(n));
  const usesCommercialDip=selected.some(n=>/uv blast|quick.coat|worm dip/i.test(n));
  const usesPowderDye=selected.some(n=>/prochem|idye poly/i.test(n));
- if(activeLayers.some(l=>/uv blast|quick.coat|worm dip/i.test(l.name)&&methodForDyeLayer(l)!=="worm-dip"))warnings.push"FORMULATION MISMATCH: UV Blast/Quick-Coat is commercially prepared worm dip. Correct this block's method to commercial worm dip; it is NOT ProChem powder in acetone.");
+ if(activeLayers.some(l=>/uv blast|quick.coat|worm dip/i.test(l.name)&&methodForDyeLayer(l)!=="worm-dip"))warnings.push("FORMULATION MISMATCH: UV Blast/Quick-Coat is commercially prepared worm dip. Correct this block's method to commercial worm dip; it is NOT ProChem powder in acetone.");
  if(usesCommercialDip&&usesPowderDye)warnings.push("MIXED-FORMULATION DESIGN: commercial worm dip and powdered dye occur on the same disc. Per-block methods are recorded, but no published single-recipe color calibration covers the combined applications.");
  if(has("idye poly blue"))warnings.push("Jacquard iDye Poly Blue can shift toward violet/purple even on white discs, and reported dye batches differ. Do not assume a clean blue.");
- if(activeLayers.some(l=>l.name.toLowerCase()==="prochem onyx"&&methodForDyeLayer(l)==="floetrol-stencil"))warnings.push"FIRST-PARTY: one Onyx/Floetrol painted-stencil batch looked black in its mix but dyed pale gray. Mechanism is unknown, not a general quantitative Onyx response.");
+ if(activeLayers.some(l=>l.name.toLowerCase()==="prochem onyx"&&methodForDyeLayer(l)==="floetrol-stencil"))warnings.push("FIRST-PARTY: one Onyx/Floetrol painted-stencil batch looked black in its mix but dyed pale gray. Mechanism is unknown, not a general quantitative Onyx response.");
  if(has("idye poly onyx"))warnings.push("Unsupported historical product: iDye Poly Onyx is not an owned Jacquard product. Replace this saved dye with ProChem Onyx; do not reuse its calibration or evidence.");
  if(lower.some(n=>n.includes("neon")))warnings.push("Neon dyes are method-dependent. Documented clear-glue/acetone transfer failures must not be treated as proof of failure in Floetrol, or vice versa.");
  if(cool&&hotDye)warnings.push("Warm red/orange/crimson over a cool aqua, blue or green blank can become muted or muddy. Exact color on this base is not verified; preserve original plastic for reliable highlights.");
