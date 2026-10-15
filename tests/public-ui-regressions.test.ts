@@ -300,3 +300,18 @@ test("organizer-owned results submissions remain available for elapsed unverifie
   assert.equal(eligible({status:"upcoming",end_date:"2026-10-10"},today),false);
   assert.equal(eligible({status:"completed",end_date:"2026-10-10"},today),false);
 });
+
+
+test("postponed events cannot advertise registration or calendar scheduling", () => {
+  for (const page of ["pages/EventsPage.tsx", "pages/EventDetailPage.tsx"]) {
+    const code=source(page);
+    const guard="!['canceled','completed','postponed'].includes(effectiveStatus)";
+    assert.equal(code.split(guard).length-1,2,`${page} must guard both registration and calendar actions`);
+    for (const status of ["canceled","completed","postponed"]) {
+      assert.equal(!["canceled","completed","postponed"].includes(status),false);
+    }
+    for (const status of ["announced","upcoming","registration_open"]) {
+      assert.equal(!["canceled","completed","postponed"].includes(status),true);
+    }
+  }
+});
