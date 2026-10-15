@@ -2,6 +2,49 @@
 const clean=(s:any)=>String(s??"").trim().replace(/\s*\/\s*/g,"/").replace(/\s+/g," ");
 const cards=(s:any)=>Array.isArray(s?.cards)?s.cards:[];
 export function laDate(){return new Intl.DateTimeFormat("en-CA",{timeZone:"America/Los_Angeles",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());}
+// Keep the installed Matrix's existing compact scoring endpoint in the v25
+// source baseline whenever the relay handler is updated.
+export const MATRIX_LIVE_READ_PATH="/hbnf-cart-control/rest/v1/league_state";
+export function isMatrixLiveReadPath(pathname:string){return pathname===MATRIX_LIVE_READ_PATH;}
+export function skinsSectionLocked(section:any){const list=cards(section);return !!section?.scoresLocked||(list.length>0&&list.every(card=>!!(card?.scoresLocked||card?.finalized)));}
+export function projectSkinsForMatrix(skins:any,today=laDate()){
+  const weeks=skins?.weeks;
+  if(!weeks||typeof weeks!=="object"||Array.isArray(weeks))return null;
+  const projectedWeeks:Record<string,any>={};
+  for(const [date,week] of Object.entries(weeks)){
+    if(!week||typeof week!=="object"||Array.isArray(week))continue;
+    const current=date===today;
+    const projectSection=(section:any,team:boolean,includeScores:boolean,includeAceWinner=true)=>{
+      if(!section||typeof section!=="object"||Array.isArray(section))return undefined;
+      const projected:any={};
+      const participantField=team?"teamsText":"playersText";
+      if(Array.isArray(section.cards))projected.cards=section.cards.map((card:any)=>{
+        const out:any={};
+        if(typeof card?.[participantField]==="string")out[participantField]=card[participantField];
+        if(includeScores&&card?.winners&&typeof card.winners==="object")out.winners=card.winners;
+        if(includeScores&&card?.id!=null)out.id=card.id;
+        if(includeScores&&card?.scoresLocked===true)out.scoresLocked=true;
+        if(includeScores&&card?.finalized===true)out.finalized=true;
+        return out;
+      });
+      if(includeAceWinner&&typeof section.aceWinner==="string")projected.aceWinner=section.aceWinner;
+      if(includeScores&&section.scoresLocked===true)projected.scoresLocked=true;
+      return projected;
+    };
+    const front=projectSection(week.front,false,current),back=projectSection(week.back,true,current);
+    const projectedWeek:any={};
+    if(front)projectedWeek.front=front;
+    const deferBack=current&&hasNames(week.back,true)&&!skinsSectionLocked(week.front);
+    if(back&&!deferBack)projectedWeek.back=back;
+    if(deferBack){
+      // Preserve Back 9's ace-pot participant count without allowing the
+      // installed selector to mistake preloaded teams for the active nine.
+      projectedWeeks[`${today}~pending-back-ace`]={back:projectSection(week.back,true,false,false)};
+    }
+    projectedWeeks[date]=projectedWeek;
+  }
+  return {skins:{weeks:projectedWeeks}};
+}
 function hasNames(s:any,team:boolean){return cards(s).some((c:any)=>String(team?c?.teamsText??"":c?.playersText??"").trim());}
 function locked(s:any){const list=cards(s);return !!s?.scoresLocked||(list.length>0&&list.every((card:any)=>!!(card?.scoresLocked||card?.finalized)));}
 function winnerIdx(card:any,hole:number,team:boolean){const m=String(card?.winners?.[String(hole)]??"").match(team?/_team_(\d+)$/ : /_p_(\d+)$/);return m?Number(m[1]):null;}

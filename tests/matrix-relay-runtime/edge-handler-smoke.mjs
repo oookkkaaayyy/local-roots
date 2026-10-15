@@ -19,6 +19,7 @@ const mac = '70:4b:ca:5b:34:5c';
 const rpcCalls = [];
 let challenge = null;
 let expectedProjection = null;
+let revision = 51;
 const desired = { state: {
   power: 'on', selectedVibe: 'groove', sceneId: 'field-mix', paletteId: 'hbnf-balanced',
   devices: { matrix: { enabled: true, brightness: 44 }, aux: { enabled: true, brightness: 38 } },
@@ -35,11 +36,19 @@ const db = http.createServer(async (req, res) => {
   const params = body ? JSON.parse(body) : null;
   rpcCalls.push({ rpc, params });
   let value;
-  if (rpc === 'hbnf_cart_get_context') value = { desired: { revision: 51, state: desired.state }, fence };
+  if (rpc === 'hbnf_cart_get_context') value = { desired: { revision, state: desired.state }, fence };
+  else if (rpc === 'hbnf_cart_matrix_relay_bootstrap') {
+    assert.equal(fence.active, false);
+    assert.equal(params.p_expected_revision, revision);
+    assert.equal(params.p_expected_fence_epoch, fence.epoch);
+    assert.equal(params.p_candidate, candidate);
+    assert.equal(params.p_observed_state.aux.bri, 255);
+    value = { revision: ++revision, deviceCommandsIssued: false };
+  }
   else if (rpc === 'hbnf_cart_matrix_relay_issue') {
     expectedProjection = params.p_expected_state;
     challenge = {
-      challenge_id: challengeId, desired_revision: 51, fence_epoch: 7, release_id: 'r6',
+      challenge_id: challengeId, desired_revision: revision, fence_epoch: 7, release_id: 'r6',
       expires_at: new Date(Date.now() + 20000).toISOString(), expected_state: params.p_expected_state,
       wled_payload: params.p_wled_payload, apply_authorized_at: null, consumed_at: null
     };
@@ -77,9 +86,26 @@ try {
   assert.ok(ready, 'Deno Edge handler did not become ready');
   const unauth = await fetch(`http://127.0.0.1:${relayPort}/`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-hbnf-relay-id': 'opal-hbnf-cart' }, body: JSON.stringify({ op: 'next' }) });
   assert.equal(unauth.status, 401); assert.equal(rpcCalls.length, 0, 'unauthorized request reached PostgREST');
+  const snapshot = {
+    info:{ip:'192.168.77.10',mac:'704bca5b345c',ver:'0.16.0',leds:{count:534}},
+    state:{on:true,bri:255,seg:[{id:0,on:true,bri:255,fx:142},{id:1,start:512,stop:534,on:true,bri:255,fx:142}],
+      HBNF:{schema:'foundation-v1',candidate,scene:0,vibe:5,motion:50,audioResponse:50,matrixBrightness:69,auxBrightness:255,palette:{mode:'legacy'},overlayId:null}},
+    auxInfo:{ip:'192.168.77.11',mac:'8c94df55c34c',ver:'0.16.0',leds:{count:22},live:true,lm:'DDP',lip:'192.168.77.10'},
+    auxState:{on:true,bri:255,lor:0},auxConfig:{if:{live:{maxbri:false}}}
+  };
+  const makeBootstrapForm=()=>{const form=new FormData();form.append('op','bootstrap');form.append('relayId','opal-hbnf-cart');form.append('candidate',candidate);form.append('recordedFirmwareSha256',recordedFirmwareSha256);
+    for(const [field,value] of Object.entries({info:snapshot.info,state:snapshot.state,auxInfo:snapshot.auxInfo,auxState:snapshot.auxState,auxConfig:snapshot.auxConfig})) form.append(field,new Blob([JSON.stringify(value)],{type:'application/json'}),`${field}.json`);return form;};
+  const fenceBlockedBootstrap=await fetch(`http://127.0.0.1:${relayPort}/`,{method:'POST',headers:{authorization:`Bearer ${token}`,'x-hbnf-relay-id':'opal-hbnf-cart'},body:makeBootstrapForm()});
+  assert.equal(fenceBlockedBootstrap.status,409);assert.equal(rpcCalls.some(x=>x.rpc==='hbnf_cart_matrix_relay_bootstrap'),false,'bootstrap refuses writes while the actuator fence is active');
+  fence.active=false;
+  const bootstrapResponse=await fetch(`http://127.0.0.1:${relayPort}/`,{method:'POST',headers:{authorization:`Bearer ${token}`,'x-hbnf-relay-id':'opal-hbnf-cart'},body:makeBootstrapForm()});
+  assert.equal(bootstrapResponse.status,200);const bootstrapBody=await bootstrapResponse.json();
+  assert.equal(bootstrapBody.deviceCommandsIssued,false);assert.equal(bootstrapBody.revision,52);
+  assert.deepEqual(rpcCalls.find(x=>x.rpc==='hbnf_cart_matrix_relay_bootstrap').params.p_observed_state.aux,snapshot.auxState && {mac:'8c:94:df:55:c3:4c',ip:'192.168.77.11',on:true,bri:255,live:true,lm:'DDP',lip:'192.168.77.10',lor:0,forceMaxBrightness:false});
+  fence.active=true;
   const next = await fetch(`http://127.0.0.1:${relayPort}/`, { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json', 'x-hbnf-relay-id': 'opal-hbnf-cart' }, body: JSON.stringify({ op: 'next', relayId: 'opal-hbnf-cart', matrixMac: mac, candidate, recordedFirmwareSha256 }) });
   assert.equal(next.status, 200);
-  const issued = await next.json(); assert.equal(issued.challengeId, challengeId); assert.equal(issued.cartRevision, 51); assert.equal(issued.fenceEpoch, 7);
+  const issued = await next.json(); assert.equal(issued.challengeId, challengeId); assert.equal(issued.cartRevision, 52); assert.equal(issued.fenceEpoch, 7);
   const issueCall = rpcCalls.find(x => x.rpc === 'hbnf_cart_matrix_relay_issue');
   assert.equal(issueCall.params.p_cart_id, 'hbnf-cart'); assert.equal(issueCall.params.p_matrix_mac, mac); assert.equal(issueCall.params.p_candidate, candidate);
   const makeForm = vibe => {
@@ -87,7 +113,7 @@ try {
     const state = { on: expectedProjection.on, bri: expectedProjection.bri, seg: expectedProjection.segments, HBNF: { ...expectedProjection.hbnf, vibe } };
     const info = { ip:'192.168.77.10', mac: '704bca5b345c', ver: '0.16.0', leds: { count: 534 } };
     const auxInfo = {ip:'192.168.77.11',mac:'8c94df55c34c',ver:'0.16.0',leds:{count:22},live:true,lm:'DDP',lip:'192.168.77.10'};
-    const auxState = {bri:expectedProjection.aux.bri,lor:0};
+    const auxState = {on:expectedProjection.aux.on,bri:expectedProjection.aux.bri,lor:0};
     const auxConfig = {if:{live:{maxbri:false}}};
     form.append('info', new Blob([JSON.stringify(info)], { type: 'application/json' }), 'info.json');
     form.append('state', new Blob([JSON.stringify(state)], { type: 'application/json' }), 'state.json');
@@ -102,11 +128,11 @@ try {
   const match = await fetch(`http://127.0.0.1:${relayPort}/`, { method: 'POST', headers: { authorization: `Bearer ${token}`, 'x-hbnf-relay-id': 'opal-hbnf-cart' }, body: makeForm(expectedProjection.hbnf.vibe) });
   assert.equal(match.status, 200); const confirmed = await match.json();
   assert.equal(confirmed.matrixStateReadbackConfirmed, true); assert.equal(confirmed.auxStateReadbackConfirmed,true);
-  assert.equal(confirmed.auxDdpReceiverConfirmed,true); assert.equal(confirmed.auxPhysicalOutputConfirmed,false); assert.equal(confirmed.cartRevision, 51); assert.equal(confirmed.fenceEpoch, 7);
+  assert.equal(confirmed.auxDdpReceiverConfirmed,true); assert.equal(confirmed.auxPhysicalOutputConfirmed,false); assert.equal(confirmed.cartRevision, 52); assert.equal(confirmed.fenceEpoch, 7);
   const confirmCall = rpcCalls.find(x => x.rpc === 'hbnf_cart_matrix_relay_confirm');
   assert.deepEqual(confirmCall.params.p_verified_state, expectedProjection);
   assert.equal(issued.recordedFirmwareSha256, recordedFirmwareSha256);
-  console.log('Deno Edge handler integration PASS: loopback-only, unauthorized request causes zero RPCs, fixed identity challenge, mismatch allows one apply, exact readback confirms revision/fence.');
+  console.log('Deno Edge handler integration PASS: unauthorized request causes zero RPCs; bootstrap requires closed fence, uses fresh device readback and revision CAS without hardware commands; exact readback confirms separate Matrix/AUX state.');
 } finally {
   child.kill('SIGTERM'); await Promise.race([once(child, 'exit'), new Promise(r => setTimeout(r, 3000))]);
   await new Promise(resolve => db.close(resolve)); fs.rmSync(temp, { recursive: true, force: true });

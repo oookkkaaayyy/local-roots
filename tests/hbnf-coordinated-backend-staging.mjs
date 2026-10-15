@@ -33,7 +33,7 @@ for (const marker of ['fx:142','start:512,stop:534','matrixBrightness','auxBrigh
 assert.ok(stagedFoundation.includes('status:"pending_relay"'),"legacy adapter must fail closed to the single relay writer");
 assert.ok(!stagedFoundation.toLowerCase().includes("mqtt") && !stagedFoundation.includes("broker.emqx"),"legacy public MQTT command path remains");
 assert.ok(/commandApplicationConfirmed:false/.test(stagedFoundation),"legacy adapter must never confirm application");
-assert.ok(stagedProjection.includes('["hbnf-balanced","copper","ocean"]'),"legacy palette compatibility missing");
+assert.ok(stagedProjection.includes('["legacy","hbnf-balanced","copper","ocean"]'),"legacy palette compatibility missing");
 assert.match(stagedProjection,/fontIndex/,"native font index must remain in normalized overlay payload");
 assert.ok(stagedReducer.includes('const rawFontIndex = (data as Record<string, unknown>).fontIndex'),"native font index validation remains");
 assert.ok(stagedReconcile.includes('status:"pending_relay"'),"reconcile must report relay-pending, not device-applied");

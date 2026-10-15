@@ -14,7 +14,7 @@ function palette(id:any){
  const s=String(id??"");
  const w=s.match(/^wled-(\d{1,3})$/);if(w&&+w[1]<=255)return{mode:"wled",index:+w[1]};
  const c=s.match(/^solid-([0-9a-f]{6})$/i);if(c)return{mode:"solid",rgb:[0,2,4].map(i=>parseInt(c[1].slice(i,i+2),16))};
- if(["hbnf-balanced","copper","ocean"].includes(s))return{mode:"legacy"};
+ if(["legacy","hbnf-balanced","copper","ocean"].includes(s))return{mode:"legacy"};
  throw Error("unsupported_palette");
 }
 async function normalizedOverlay(raw:any,rev:number,fence:number,now:number){
@@ -50,18 +50,20 @@ export async function buildWledProjection(context:any,revision:number,fenceEpoch
  const selected=overlays.filter((x:any)=>Number(x?.expiresAt)>now).sort((a:any,b:any)=>Number(b?.priority??0)-Number(a?.priority??0))[0]??null;
  const overlay=enabled?await normalizedOverlay(selected,revision,fenceEpoch,now):null;
  const pal=palette(s.paletteId);
- const matrixPayload={on:enabled,bri:255,AudioReactive:{on:true,inputLevel:clamp(t.micSensitivity,64,255,255)},seg:[
+ // Do not send AudioReactive fields in a generic projection. The writer does
+ // not own audio-reactive configuration, and omission preserves device state.
+ const matrixPayload={on:enabled,bri:255,seg:[
   {id:0,on:enabled,bri:255,fx:142},{id:1,start:512,stop:534,on:enabled,bri:255,fx:142}],
   HBNF:{scene:scenes[sceneId],vibe,motion,audioResponse,matrixBrightness:bri,auxBrightness:auxBri,palette:pal,overlay}};
- // AUX brightness is applied through its native WLED receiver state, not by
- // scaling DDP frames at the Matrix sender. AUX `on` and DDP settings are untouched.
- const auxPayload={bri:auxBri};
+ // AUX controls are applied through native receiver state, not by scaling
+ // DDP frames at the Matrix sender. Preserve its independently captured power.
+ const auxPayload={on:auxEnabled,bri:auxBri};
  const wledPayload={matrix:matrixPayload,aux:auxPayload};
  const expectedState={matrixMac:MATRIX_MAC,candidate:MATRIX_CANDIDATE,on:enabled,bri:255,segments:[
   {id:0,on:enabled,bri:255,fx:142},{id:1,start:512,stop:534,on:enabled,bri:255,fx:142}],
   hbnf:{schema:"foundation-v1",candidate:MATRIX_CANDIDATE,scene:scenes[sceneId],vibe,motion,audioResponse,
   matrixBrightness:bri,auxBrightness:auxBri,palette:pal,overlayId:overlay?.id??null},
-  aux:{mac:AUX_MAC,ip:AUX_IP,bri:auxBri,live:true,lm:"DDP",lip:"192.168.77.10",lor:0,forceMaxBrightness:false}};
+  aux:{mac:AUX_MAC,ip:AUX_IP,on:auxEnabled,bri:auxBri,live:true,lm:"DDP",lip:"192.168.77.10",lor:0,forceMaxBrightness:false}};
  return {wledPayload,expectedState};
 }
 const canon=(v:any):string=>Array.isArray(v)?"["+v.map(canon).join(",")+"]":v&&typeof v==="object"?"{"+Object.keys(v).sort().map(k=>JSON.stringify(k)+":"+canon(v[k])).join(",")+"}":JSON.stringify(v);
@@ -70,11 +72,26 @@ export function normalizeReadback(info:any,state:any,auxInfo:any,auxState:any,au
  const h=state?.HBNF,mac=String(info?.mac??"").toLowerCase().replaceAll(":","");
  if(mac!==MATRIX_MAC.replaceAll(":",""))throw Error("matrix_identity_mismatch");
  if(Number(info?.leds?.count)!==534)throw Error("matrix_led_topology_mismatch");
- if(!h||!Array.isArray(state?.seg))throw Error("readback_shape_invalid");
+ if(!h||!Array.isArray(state?.seg)||state.seg.length!==2||typeof state?.on!=="boolean"||
+    !Number.isInteger(state?.bri)||state.bri<0||state.bri>255||
+    typeof auxState?.on!=="boolean"||!Number.isInteger(auxState?.bri)||auxState.bri<0||auxState.bri>255)
+  throw Error("readback_shape_invalid");
  const segments=[0,1].map(id=>{const x=state.seg.find((s:any)=>Number(s?.id)===id);if(!x)throw Error("matrix_segment_missing");
+ if(typeof x.on!=="boolean"||!Number.isInteger(x.bri)||x.bri<0||x.bri>255||!Number.isInteger(x.fx))throw Error("matrix_segment_state_invalid");
  return id===0?{id,on:x.on===true,bri:Number(x.bri),fx:Number(x.fx)}:{id,start:Number(x.start),stop:Number(x.stop),on:x.on===true,bri:Number(x.bri),fx:Number(x.fx)};});
  const p=h.palette;if(!p||!["legacy","wled","solid"].includes(String(p.mode)))throw Error("palette_readback_invalid");
- const palette:any={mode:String(p.mode)};if(p.mode==="wled")palette.index=Number(p.index);if(p.mode==="solid")palette.rgb=Array.isArray(p.rgb)?p.rgb.map(Number):null;
+ const palette:any={mode:String(p.mode)};
+ if(p.mode==="wled"){
+  if(!Number.isInteger(p.index)||p.index<0||p.index>255)throw Error("palette_readback_invalid");
+  palette.index=p.index;
+ }
+ if(p.mode==="solid"){
+  if(!Array.isArray(p.rgb)||p.rgb.length!==3||p.rgb.some((v:any)=>!Number.isInteger(v)||v<0||v>255))throw Error("palette_readback_invalid");
+  palette.rgb=[...p.rgb];
+ }
+ for(const [key,min,max] of [["scene",0,3],["vibe",0,5],["motion",0,100],["audioResponse",0,100],["matrixBrightness",0,255],["auxBrightness",0,255]] as const){
+  if(!Number.isInteger(h[key])||h[key]<min||h[key]>max)throw Error("hbnf_readback_value_invalid");
+ }
  const auxMac=String(auxInfo?.mac??"").toLowerCase().replaceAll(":","");
  if(auxMac!==AUX_MAC.replaceAll(":","")||Number(auxInfo?.leds?.count)!==22||auxInfo?.ip!==AUX_IP)
   throw Error("aux_identity_or_topology_mismatch");
@@ -82,7 +99,7 @@ export function normalizeReadback(info:any,state:any,auxInfo:any,auxState:any,au
   throw Error("aux_ddp_receiver_unhealthy");
  if(auxConfig?.if?.live?.maxbri!==false)
   throw Error("aux_force_max_brightness_not_proven_off");
- const aux={mac:AUX_MAC,ip:AUX_IP,bri:Number(auxState?.bri),live:true,lm:"DDP",lip:"192.168.77.10",lor:Number(auxState?.lor),forceMaxBrightness:false};
+ const aux={mac:AUX_MAC,ip:AUX_IP,on:auxState?.on===true,bri:Number(auxState?.bri),live:true,lm:"DDP",lip:"192.168.77.10",lor:Number(auxState?.lor),forceMaxBrightness:false};
  return {matrixMac:MATRIX_MAC,candidate:String(h.candidate??""),on:state.on===true,bri:Number(state.bri),segments,
  hbnf:{schema:String(h.schema??""),candidate:String(h.candidate??""),scene:Number(h.scene),vibe:Number(h.vibe),motion:Number(h.motion),
  audioResponse:Number(h.audioResponse),matrixBrightness:Number(h.matrixBrightness),auxBrightness:Number(h.auxBrightness),

@@ -23,7 +23,26 @@ export async function handleMatrixRelay(req:Request){
  }
  if(!ct.includes("multipart/form-data"))return reply({error:"invalid_content_type"},415);
  const form=await req.formData().catch(()=>null);
- if(!form||form.get("op")!=="check"||form.get("relayId")!==relayId)return reply({error:"invalid_relay_request"},400);
+ if(!form||form.get("relayId")!==relayId)return reply({error:"invalid_relay_request"},400);
+ if(form.get("op")==="bootstrap"&&form.get("relayId")===relayId){
+  if(form.get("candidate")!==MATRIX_CANDIDATE||form.get("recordedFirmwareSha256")!==MATRIX_RECORDED_SHA256)return reply({error:"invalid_bootstrap_identity"},400);
+  const {data:c,error:e}=await client.rpc("hbnf_cart_get_context",{p_cart_id:"hbnf-cart"}),d=c?.desired,f=c?.fence;
+  if(e||!d||!f||!Number.isSafeInteger(d.revision)||!Number.isSafeInteger(f.epoch)||typeof f.release_id!=="string")return reply({error:"bootstrap_context_unavailable"},503);
+  if(f.active)return reply({error:"bootstrap_requires_inactive_fence"},409);
+  const file=async(k:string)=>{const v=form.get(k);if(!(v instanceof File)||v.size>100000)throw Error("readback_missing_or_oversized");return JSON.parse(await v.text());};
+  let actual:any;
+  try{actual=normalizeReadback(await file("info"),await file("state"),await file("auxInfo"),await file("auxState"),await file("auxConfig"));}
+  catch(err){return reply({error:(err as Error).message||"readback_invalid"},422);}
+  if(actual.candidate!==MATRIX_CANDIDATE||actual.hbnf.candidate!==MATRIX_CANDIDATE)return reply({error:"candidate_identity_mismatch"},409);
+  const {data:result,error:be}=await client.rpc("hbnf_cart_matrix_relay_bootstrap",{
+   p_relay_id:relayId,p_cart_id:"hbnf-cart",p_expected_revision:d.revision,p_expected_fence_epoch:f.epoch,
+   p_expected_release_id:f.release_id,p_candidate:MATRIX_CANDIDATE,p_observed_state:actual});
+  if(be||!result||result.deviceCommandsIssued!==false)return reply({error:"bootstrap_revision_fence_or_state_rejected"},409);
+  return reply({status:"bootstrapped",revision:result.revision,deviceCommandsIssued:false,
+   matrixStateReadbackCaptured:true,auxStateReadbackCaptured:true,auxPhysicalOutputConfirmed:false,
+   runtimeReleaseId:MATRIX_CANDIDATE,recordedFirmwareSha256:MATRIX_RECORDED_SHA256});
+ }
+ if(form.get("op")!=="check"||form.get("relayId")!==relayId)return reply({error:"invalid_relay_request"},400);
  const id=String(form.get("challengeId")??"");if(!/^[0-9a-f-]{36}$/i.test(id))return reply({error:"invalid_challenge"},400);
  const file=async(k:string)=>{const v=form.get(k);if(!(v instanceof File)||v.size>100000)throw Error("readback_missing_or_oversized");return JSON.parse(await v.text());};
  let info:any,state:any,auxInfo:any,auxState:any,auxConfig:any,actual:any;

@@ -1,0 +1,42 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OWNER_CONTROL_RELEASE_COMPATIBILITY_AND_COMPENSATION_20261014",
+  "summary": "Prepare the existing authenticated Matrix/AUX relay for a fresh-state bootstrap against the recorded installed release, bind separate device readbacks, and test bounded compensation plus a production-v25 SQL restore path without live changes.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Existing authenticated Opal Matrix relay, revision/fence-bound one-use challenge, production v25 Edge Function, and owner-authorized request to reconcile device state and restore paired settings safely.",
+      "affected_subsystem": "Existing hbnf-cart-control Matrix relay handler/projection, its staged SQL migration and captured production-v25 compensation, and existing Opal relay writer.",
+      "rollback_reference": "Use the prepared compensating SQL from production-v25 pg_get_functiondef to remove bootstrap and restore exact previous issue/confirm function bodies and grants. Restore the prior Opal relay file from the Git source at parent commit; hardware rollback itself remains a field check because no device writes are authorized here.",
+      "evidence_sources": [
+        "Production v25 applied migration history and read-only pg_get_functiondef captures recorded in this task context.",
+        "Fresh Matrix/AUX runtime readback: embedded release ID skins-readable-20261014, Matrix logical brightness 69, AUX 255, Vibe Auto (5), Course Flow, motion/audio 50, AUX native DDP and Force max brightness false.",
+        "Current source branch codex/glow-matrix-relay-integration-20261014 at starting commit 603c138ef1735058a25c93e15d14c1be49e64c3d and existing single relay implementation."
+      ],
+      "tests": [
+        "node --experimental-strip-types tests/hbnf_matrix_relay_contract.mjs: PASS; fresh-state projection, legacy palette, readback fail-closed behavior, separate AUX identity/on/brightness, no audio config overwrite, and compensation scenarios.",
+        "node tests/matrix-relay-runtime/test.mjs: PASS; PGlite applied the staged SQL and compensating SQL, validated bootstrap CAS/one-time guard, service-role boundaries, replay/expiry/fence rejection, and restored exact v25 release pin.",
+        "node --test staging/coordinated-backend/hbnf-cart-control/*.test.mjs staging/coordinated-backend/hbnf-cart-control/runtime-vibe.test.mjs: PASS (17 tests).",
+        "node tests/hbnf-coordinated-backend-staging.mjs: PASS.",
+        "Deno Edge loopback smoke not run: Deno is not installed and sandbox denied local loopback bind before test startup. No production endpoint was contacted."
+      ],
+      "live_state": {
+        "production_write": false,
+        "production_migration": false,
+        "edge_deployment": false,
+        "hardware_command": false,
+        "fence_activation": false,
+        "firmware_install": false,
+        "runtime_firmware_sha_claimed": false,
+        "recorded_firmware_sha256": "de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d"
+      }
+    }
+  }
+}

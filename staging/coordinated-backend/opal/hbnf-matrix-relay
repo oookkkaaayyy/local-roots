@@ -21,10 +21,14 @@ AUX_URL=http://192.168.77.11
 MATRIX_CANDIDATE=hbnf-cart2-phase2-r6-skins-readable-20261014
 RECORDED_FIRMWARE_SHA256=de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d
 TMP=/tmp/hbnf-matrix-relay
+LOCKOUT=/etc/hbnf-matrix-relay.partial-failure
 mkdir -p "$TMP"; chmod 700 "$TMP"
 log(){ logger -t hbnf-matrix-relay "$1"; }
 need(){ command -v "$1" >/dev/null 2>&1 || { log "required command missing"; exit 1; }; }
 need curl; need jsonfilter
+[ -r /usr/lib/hbnf-matrix-relay-transaction.sh ] || { log "transaction guard missing"; exit 1; }
+. /usr/lib/hbnf-matrix-relay-transaction.sh
+if [ -e "$LOCKOUT" ]; then log "partial-apply lockout present; operator readback and recovery required"; exit 0; fi
 case "$RELAY_TOKEN" in *[!A-Za-z0-9_-]*|"") log "relay token format invalid"; exit 1;; esac
 [ "${#RELAY_TOKEN}" -ge 43 ] || { log "relay token too short"; exit 1; }
 case "$RELAY_API_KEY" in *[!A-Za-z0-9._-]*|"") log "API key format invalid"; exit 1;; esac
@@ -58,6 +62,70 @@ snapshot(){
  # WLED docs define this receiver flag as overriding realtime brightness.
  [ "$aux_force_max" = "false" ]
 }
+bootstrap_once(){
+ if ! snapshot; then log "bootstrap readback preflight failed"; return 1; fi
+ code="$(curl -sS --connect-timeout 3 --max-time 12 --config "$TMP/curl-auth.conf" \
+  -F 'op=bootstrap' -F 'relayId=opal-hbnf-cart' -F "candidate=$MATRIX_CANDIDATE" \
+  -F "recordedFirmwareSha256=$RECORDED_FIRMWARE_SHA256" \
+  -F "info=@$TMP/info.json;type=application/json" -F "state=@$TMP/state.json;type=application/json" \
+  -F "auxInfo=@$TMP/aux-info.json;type=application/json" -F "auxState=@$TMP/aux-state.json;type=application/json" \
+  -F "auxConfig=@$TMP/aux-cfg.json;type=application/json" "$SUPABASE_RELAY_URL" -o "$TMP/bootstrap.json" -w '%{http_code}')" || code=000
+ [ "$code" = "200" ] && [ "$(jsonfilter -i "$TMP/bootstrap.json" -e '@.status' 2>/dev/null || true)" = "bootstrapped" ] &&
+  [ "$(jsonfilter -i "$TMP/bootstrap.json" -e '@.deviceCommandsIssued' 2>/dev/null || true)" = "false" ] || {
+   log "revision-checked bootstrap rejected; no hardware command issued"; return 1;
+  }
+ log "read-only Matrix/AUX snapshot reconciled under expected revision; no hardware command issued"
+}
+field_equal(){
+ _before="$(jsonfilter -i "$1" -e "$3" 2>/dev/null)" || return 1
+ _after="$(jsonfilter -i "$2" -e "$3" 2>/dev/null)" || return 1
+ [ "$_before" = "$_after" ]
+}
+readback_matrix_restore(){
+ curl -fsS --connect-timeout 2 --max-time 4 "$MATRIX_URL/json/si" -o "$TMP/restore-matrix-si.json" || return 1
+ curl -fsS --connect-timeout 2 --max-time 4 "$MATRIX_URL/hbnf/build.json" -o "$TMP/restore-matrix-build.json" || return 1
+ jsonfilter -i "$TMP/restore-matrix-si.json" -e '@.info' > "$TMP/restore-matrix-info.json" || return 1
+ jsonfilter -i "$TMP/restore-matrix-si.json" -e '@.state' > "$TMP/restore-matrix-state.json" || return 1
+}
+readback_aux_restore(){
+ curl -fsS --connect-timeout 2 --max-time 4 "$AUX_URL/json/si" -o "$TMP/restore-aux-si.json" || return 1
+ curl -fsS --connect-timeout 2 --max-time 4 "$AUX_URL/json/cfg" -o "$TMP/restore-aux-cfg.json" || return 1
+ jsonfilter -i "$TMP/restore-aux-si.json" -e '@.info' > "$TMP/restore-aux-info.json" || return 1
+ jsonfilter -i "$TMP/restore-aux-si.json" -e '@.state' > "$TMP/restore-aux-state.json" || return 1
+}
+matrix_apply(){ curl -fsS --connect-timeout 2 --max-time 4 -H 'Content-Type: application/json' --data-binary @"$TMP/matrix-payload.json" "$MATRIX_URL/json/state" -o /dev/null; }
+aux_apply(){ curl -fsS --connect-timeout 2 --max-time 4 -H 'Content-Type: application/json' --data-binary @"$TMP/aux-payload.json" "$AUX_URL/json/state" -o /dev/null; }
+restore_matrix(){ curl -fsS --connect-timeout 2 --max-time 4 -H 'Content-Type: application/json' --data-binary @"$TMP/baseline-matrix-state.json" "$MATRIX_URL/json/state" -o /dev/null; }
+restore_aux(){ curl -fsS --connect-timeout 2 --max-time 4 -H 'Content-Type: application/json' --data-binary @"$TMP/baseline-aux-state.json" "$AUX_URL/json/state" -o /dev/null; }
+verify_matrix_restore(){
+ readback_matrix_restore || return 1
+ [ "$(jsonfilter -i "$TMP/baseline-matrix-info.json" -e '@.mac' | tr -d ':' | tr 'A-Z' 'a-z')" = "$(jsonfilter -i "$TMP/restore-matrix-info.json" -e '@.mac' | tr -d ':' | tr 'A-Z' 'a-z')" ] || return 1
+ [ "$(jsonfilter -i "$TMP/restore-matrix-info.json" -e '@.mac' | tr -d ':' | tr 'A-Z' 'a-z')" = "704bca5b345c" ] || return 1
+ field_equal "$TMP/baseline-matrix-info.json" "$TMP/restore-matrix-info.json" '@.leds.count' || return 1
+ [ "$(jsonfilter -i "$TMP/restore-matrix-info.json" -e '@.leds.count')" = "534" ] || return 1
+ field_equal "$TMP/baseline-matrix-build.json" "$TMP/restore-matrix-build.json" '@.release_id' || return 1
+ [ "$(jsonfilter -i "$TMP/restore-matrix-build.json" -e '@.release_id')" = "$MATRIX_CANDIDATE" ] || return 1
+ for f in '@.on' '@.bri' '@.AudioReactive.on' '@.seg[0].on' '@.seg[0].bri' '@.seg[0].fx' \
+  '@.seg[1].start' '@.seg[1].stop' '@.seg[1].on' '@.seg[1].bri' '@.seg[1].fx' \
+  '@.HBNF.scene' '@.HBNF.vibe' '@.HBNF.motion' '@.HBNF.audioResponse' '@.HBNF.matrixBrightness' \
+  '@.HBNF.auxBrightness' '@.HBNF.palette.mode' '@.HBNF.palette.index' '@.HBNF.palette.rgb' '@.HBNF.overlayId'; do
+  field_equal "$TMP/baseline-matrix-state.json" "$TMP/restore-matrix-state.json" "$f" || return 1
+ done
+}
+verify_aux_restore(){
+ readback_aux_restore || return 1
+ field_equal "$TMP/baseline-aux-state.json" "$TMP/restore-aux-state.json" '@.on' || return 1
+ field_equal "$TMP/baseline-aux-state.json" "$TMP/restore-aux-state.json" '@.bri' || return 1
+ field_equal "$TMP/baseline-aux-state.json" "$TMP/restore-aux-state.json" '@.lor' || return 1
+ [ "$(jsonfilter -i "$TMP/restore-aux-info.json" -e '@.mac' | tr -d ':' | tr 'A-Z' 'a-z')" = "8c94df55c34c" ] || return 1
+ [ "$(jsonfilter -i "$TMP/restore-aux-info.json" -e '@.leds.count')" = "22" ] || return 1
+ [ "$(jsonfilter -i "$TMP/restore-aux-info.json" -e '@.live')" = "true" ] || return 1
+ [ "$(jsonfilter -i "$TMP/restore-aux-info.json" -e '@.lm')" = "DDP" ] || return 1
+ [ "$(jsonfilter -i "$TMP/restore-aux-info.json" -e '@.lip')" = "192.168.77.10" ] || return 1
+ [ "$(jsonfilter -i "$TMP/restore-aux-cfg.json" -e '@.if.live.maxbri')" = "false" ]
+}
+if [ "${1:-}" = "bootstrap" ]; then bootstrap_once; exit $?; fi
+if [ "$#" -gt 0 ]; then log "unsupported relay argument"; exit 2; fi
 while :; do
  if ! snapshot; then sleep 5; continue; fi
  printf '%s' "{\"op\":\"next\",\"relayId\":\"opal-hbnf-cart\",\"matrixMac\":\"70:4b:ca:5b:34:5c\",\"candidate\":\"$MATRIX_CANDIDATE\",\"recordedFirmwareSha256\":\"$RECORDED_FIRMWARE_SHA256\"}" > "$TMP/request.json"
@@ -78,15 +146,34 @@ while :; do
  if [ "$code" = "409" ] && [ "$(jsonfilter -i "$TMP/check.json" -e '@.status' 2>/dev/null || true)" = "apply_required" ]; then
   payload="$(jsonfilter -i "$TMP/check.json" -e '@.wledPayload' 2>/dev/null || true)"
   if [ -n "$payload" ]; then
+   cp "$TMP/state.json" "$TMP/baseline-matrix-state.json"
+   cp "$TMP/info.json" "$TMP/baseline-matrix-info.json"
+   cp "$TMP/build.json" "$TMP/baseline-matrix-build.json"
+   cp "$TMP/aux-state.json" "$TMP/baseline-aux-state.json"
    printf '%s' "$payload" > "$TMP/payload.json"
    jsonfilter -i "$TMP/payload.json" -e '@.matrix' > "$TMP/matrix-payload.json"
    jsonfilter -i "$TMP/payload.json" -e '@.aux' > "$TMP/aux-payload.json"
-   if [ -s "$TMP/matrix-payload.json" ] && [ -s "$TMP/aux-payload.json" ] &&
-      curl -fsS --connect-timeout 2 --max-time 4 -H 'Content-Type: application/json' --data-binary @"$TMP/matrix-payload.json" "$MATRIX_URL/json/state" -o /dev/null &&
-      curl -fsS --connect-timeout 2 --max-time 4 -H 'Content-Type: application/json' --data-binary @"$TMP/aux-payload.json" "$AUX_URL/json/state" -o /dev/null && snapshot; then
-    code="$(check_readback 2>/dev/null || printf '000')"
-    [ "$code" = "200" ] && log "Matrix state and AUX DDP receiver readback confirmed; physical illumination unverified"
+   [ -s "$TMP/matrix-payload.json" ] && [ -s "$TMP/aux-payload.json" ] || { log "invalid paired WLED payload; no writes issued"; exit 1; }
+   if hbnf_apply_pair_or_compensate "$LOCKOUT"; then apply_status=0; else apply_status=$?; fi
+   if [ "$apply_status" -ne 0 ]; then
+    restore_status="$apply_status"
+    if [ "$restore_status" -eq 1 ]; then log "paired apply failed; Matrix and AUX original states restored and verified separately; persistent lockout set";
+    else log "paired apply failed; at least one original state could not be restored and verified; persistent lockout set"; fi
+    exit 1
    fi
+   if ! snapshot; then
+    hbnf_restore_pair "$LOCKOUT" && log "post-apply readback failed; both original states restored and verified; persistent lockout set" || log "post-apply readback failed; restoration remains unverified; persistent lockout set"
+    exit 1
+   fi
+   code="$(check_readback 2>/dev/null || printf '000')"
+   confirmed="$(jsonfilter -i "$TMP/check.json" -e '@.confirmed' 2>/dev/null || true)"
+   matrix_ack="$(jsonfilter -i "$TMP/check.json" -e '@.matrixStateReadbackConfirmed' 2>/dev/null || true)"
+   aux_ack="$(jsonfilter -i "$TMP/check.json" -e '@.auxStateReadbackConfirmed' 2>/dev/null || true)"
+   if [ "$code" != "200" ] || [ "$confirmed" != "true" ] || [ "$matrix_ack" != "true" ] || [ "$aux_ack" != "true" ]; then
+    hbnf_restore_pair "$LOCKOUT" && log "post-apply acknowledgment incomplete; both original states restored and verified; persistent lockout set" || log "post-apply acknowledgment incomplete; restoration remains unverified; persistent lockout set"
+    exit 1
+   fi
+   log "Matrix and AUX state readback separately confirmed; physical AUX illumination remains unverified"
   fi
  fi
  sleep 2
