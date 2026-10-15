@@ -1,0 +1,251 @@
+# Include from OpenWrt /etc/nginx/conf.d/hbnf-owner-local.conf only after the
+# DNS-01 certificate is installed and the owner-network isolation gate passes.
+# This file does not replace existing GL.iNet server blocks.
+lua_shared_dict hbnf_owner_sessions 32k;
+lua_shared_dict hbnf_owner_rate 8k;
+
+server {
+    listen 443 ssl;
+    server_name cart-control.hbnightflyers.com;
+
+    ssl_certificate     /etc/hbnf-local-control/tls/fullchain.pem;
+    ssl_certificate_key /etc/hbnf-local-control/tls/privkey.pem;
+    ssl_protocols TLSv1.2;
+    ssl_session_cache shared:hbnf_owner_tls_cache:1m;
+    ssl_session_timeout 10m;
+
+    client_max_body_size 1k;
+    set $hbnf_owner_token "";
+    set $hbnf_ws_protocol "";
+    set $hbnf_aux_body "";
+    set $hbnf_supabase_host "phcpbvuqibyarpfrftgx.supabase.co";
+
+    # Static owner module is imported by the existing public PWA.
+    location = /mission-control-local/local-transport.js {
+        root /www;
+        default_type application/javascript;
+        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        add_header Vary Origin always;
+        add_header Cache-Control "no-cache" always;
+        try_files $uri =404;
+    }
+
+    location = /api/session {
+        if ($http_origin != "https://hbnightflyers.com") { return 403; }
+        if ($request_method = OPTIONS) {
+            add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+            add_header Access-Control-Allow-Methods "GET, OPTIONS" always;
+            add_header Access-Control-Allow-Headers "x-hbnf-device" always;
+            add_header Access-Control-Max-Age 300 always;
+            add_header Vary Origin always;
+            return 204;
+        }
+        if ($request_method != GET) { return 405; }
+        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        add_header Access-Control-Allow-Credentials "true" always;
+        add_header Vary Origin always;
+        add_header Cache-Control "no-store" always;
+        access_by_lua_file /etc/hbnf-local-control/lua/auth_origin.lua;
+        content_by_lua_file /etc/hbnf-local-control/lua/session.lua;
+    }
+
+    location = /api/session/enroll {
+        if ($http_origin != "https://hbnightflyers.com") { return 403; }
+        if ($request_method = OPTIONS) {
+            add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+            add_header Access-Control-Allow-Methods "POST, OPTIONS" always;
+            add_header Access-Control-Allow-Headers "content-type, x-hbnf-device" always;
+            add_header Access-Control-Max-Age 300 always;
+            add_header Vary Origin always;
+            return 204;
+        }
+        if ($request_method != POST) { return 405; }
+        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        add_header Access-Control-Allow-Credentials "true" always;
+        add_header Vary Origin always;
+        add_header Cache-Control "no-store" always;
+        access_by_lua_file /etc/hbnf-local-control/lua/auth_origin.lua;
+        content_by_lua_file /etc/hbnf-local-control/lua/enroll.lua;
+    }
+
+    location = /api/session/revoke {
+        if ($http_origin != "https://hbnightflyers.com") { return 403; }
+        if ($request_method = OPTIONS) {
+            add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+            add_header Access-Control-Allow-Methods "POST, OPTIONS" always;
+            add_header Access-Control-Allow-Headers "content-type, x-hbnf-device" always;
+            add_header Access-Control-Max-Age 300 always;
+            add_header Vary Origin always;
+            return 204;
+        }
+        if ($request_method != POST) { return 405; }
+        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        add_header Access-Control-Allow-Credentials "true" always;
+        add_header Vary Origin always;
+        add_header Cache-Control "no-store" always;
+        access_by_lua_file /etc/hbnf-local-control/lua/auth_origin.lua;
+        content_by_lua_file /etc/hbnf-local-control/lua/revoke.lua;
+    }
+
+    location = /api/matrix/json/info {
+        if ($request_method = OPTIONS) {
+            add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+            add_header Access-Control-Allow-Methods "GET, OPTIONS" always;
+            add_header Access-Control-Allow-Headers "content-type, x-hbnf-device" always;
+            add_header Access-Control-Max-Age 300 always;
+            add_header Vary Origin always;
+            return 204;
+        }
+        if ($request_method != GET) { return 405; }
+        if ($http_origin != "https://hbnightflyers.com") { return 403; }
+        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        add_header Vary Origin always;
+        add_header Cache-Control "no-store" always;
+        access_by_lua_file /etc/hbnf-local-control/lua/auth_owner.lua;
+        proxy_pass http://192.168.77.10/json/info;
+        proxy_set_header Host 192.168.77.10;
+        proxy_set_header Connection "";
+        proxy_http_version 1.1;
+        proxy_connect_timeout 2s;
+        proxy_read_timeout 3s;
+    }
+    location = /api/matrix/json/state {
+        if ($request_method = OPTIONS) {
+            add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+            add_header Access-Control-Allow-Methods "GET, OPTIONS" always;
+            add_header Access-Control-Allow-Headers "content-type, x-hbnf-device" always;
+            add_header Access-Control-Max-Age 300 always;
+            add_header Vary Origin always;
+            return 204;
+        }
+        if ($request_method != GET) { return 405; }
+        if ($http_origin != "https://hbnightflyers.com") { return 403; }
+        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        add_header Vary Origin always;
+        add_header Cache-Control "no-store" always;
+        access_by_lua_file /etc/hbnf-local-control/lua/auth_owner.lua;
+        proxy_pass http://192.168.77.10/json/state;
+        proxy_set_header Host 192.168.77.10;
+        proxy_set_header Connection "";
+        proxy_http_version 1.1;
+        proxy_connect_timeout 2s;
+        proxy_read_timeout 3s;
+    }
+    location = /api/aux/json/info {
+        if ($request_method = OPTIONS) {
+            add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+            add_header Access-Control-Allow-Methods "GET, OPTIONS" always;
+            add_header Access-Control-Allow-Headers "content-type, x-hbnf-device" always;
+            add_header Access-Control-Max-Age 300 always;
+            add_header Vary Origin always;
+            return 204;
+        }
+        if ($request_method != GET) { return 405; }
+        if ($http_origin != "https://hbnightflyers.com") { return 403; }
+        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        add_header Vary Origin always;
+        add_header Cache-Control "no-store" always;
+        access_by_lua_file /etc/hbnf-local-control/lua/auth_owner.lua;
+        proxy_pass http://192.168.77.11/json/info;
+        proxy_set_header Host 192.168.77.11;
+        proxy_set_header Connection "";
+        proxy_http_version 1.1;
+        proxy_connect_timeout 2s;
+        proxy_read_timeout 3s;
+    }
+    location = /api/aux/json/state {
+        if ($request_method = OPTIONS) {
+            add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+            add_header Access-Control-Allow-Methods "GET, OPTIONS" always;
+            add_header Access-Control-Allow-Headers "content-type, x-hbnf-device" always;
+            add_header Access-Control-Max-Age 300 always;
+            add_header Vary Origin always;
+            return 204;
+        }
+        if ($request_method != GET) { return 405; }
+        if ($http_origin != "https://hbnightflyers.com") { return 403; }
+        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        add_header Vary Origin always;
+        add_header Cache-Control "no-store" always;
+        access_by_lua_file /etc/hbnf-local-control/lua/auth_owner.lua;
+        proxy_pass http://192.168.77.11/json/state;
+        proxy_set_header Host 192.168.77.11;
+        proxy_set_header Connection "";
+        proxy_http_version 1.1;
+        proxy_connect_timeout 2s;
+        proxy_read_timeout 3s;
+    }
+
+    # Only allow authenticated, bounded power/brightness changes on AUX.
+    location = /api/aux/control {
+        if ($http_origin != "https://hbnightflyers.com") { return 403; }
+        if ($request_method = OPTIONS) {
+            add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+            add_header Access-Control-Allow-Methods "POST, OPTIONS" always;
+            add_header Access-Control-Allow-Headers "content-type, x-hbnf-device" always;
+            add_header Access-Control-Max-Age 300 always;
+            add_header Vary Origin always;
+            return 204;
+        }
+        if ($request_method != POST) { return 405; }
+        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        add_header Vary Origin always;
+        add_header Cache-Control "no-store" always;
+        access_by_lua_file /etc/hbnf-local-control/lua/aux_command_access.lua;
+        proxy_pass http://192.168.77.11/json/state;
+        proxy_http_version 1.1;
+        proxy_pass_request_headers off;
+        proxy_pass_request_body off;
+        proxy_set_body $hbnf_aux_body;
+        proxy_set_header Host 192.168.77.11;
+        proxy_set_header Content-Type application/json;
+        proxy_set_header Connection "";
+        proxy_connect_timeout 2s;
+        proxy_read_timeout 3s;
+    }
+
+    # The bearer is checked at the handshake and removed before proxying to
+    # WLED. Pairing/revocation/expiry are checked for every new connection.
+    location = /ws {
+        if ($http_origin != "https://hbnightflyers.com") { return 403; }
+        if ($request_method != GET) { return 405; }
+        access_by_lua_file /etc/hbnf-local-control/lua/auth_websocket.lua;
+        proxy_pass http://192.168.77.10/ws;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Sec-WebSocket-Protocol "";
+        proxy_set_header Host 192.168.77.10;
+        add_header Sec-WebSocket-Protocol $hbnf_ws_protocol always;
+        proxy_buffering off;
+        proxy_connect_timeout 2s;
+        proxy_read_timeout 60s;
+        proxy_send_timeout 60s;
+    }
+
+    # Internal paired-owner revalidation before a local session is created.
+    location = /__validate_paired_owner {
+        internal;
+        resolver 127.0.0.1 valid=120s;
+        resolver_timeout 2s;
+        proxy_pass https://$hbnf_supabase_host/functions/v1/hbnf-cart-control;
+        proxy_method POST;
+        proxy_set_body '{"action":"verify_local_pairing"}';
+        proxy_pass_request_body off;
+        proxy_set_header Host phcpbvuqibyarpfrftgx.supabase.co;
+        proxy_set_header apikey "sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC";
+        proxy_set_header Authorization "";
+        proxy_set_header X-HBNF-Device $hbnf_owner_token;
+        proxy_set_header Content-Type application/json;
+        proxy_ssl_server_name on;
+        proxy_ssl_name phcpbvuqibyarpfrftgx.supabase.co;
+        proxy_ssl_verify on;
+        proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+        proxy_ssl_verify_depth 4;
+        proxy_connect_timeout 3s;
+        proxy_read_timeout 8s;
+        proxy_send_timeout 3s;
+        proxy_intercept_errors off;
+        access_log off;
+    }
+}

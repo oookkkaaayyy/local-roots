@@ -139,6 +139,8 @@ test("Guest Mode is a metadata-only canonical command", () => {
   assert.deepEqual(reconcileTargetsForCommand("VIBE", ["matrix", "aux"]), ["matrix", "aux"]);
   assert.equal(reduceCartCommand(before, "GUEST_MODE", { enabled: "yes" }, commandId, before.revision), null);
   assert.equal(requiresOwnerAuthorization("command", "GUEST_MODE"), true);
+  assert.equal(requiresOwnerAuthorization("verify_local_pairing", undefined), true);
+  assert.equal(requiresOwnerAuthorization("status", undefined), false, "status is intentionally public and must not be used as paired-owner proof");
   assert.equal(requiresOwnerAuthorization("guest_command", "GUEST_MODE"), false);
   assert.equal(requiresOwnerAuthorization("command", "VIBE"), true);
 });

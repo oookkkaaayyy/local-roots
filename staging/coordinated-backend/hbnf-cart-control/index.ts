@@ -161,6 +161,13 @@ Deno.serve(async (req: Request) => {
     return response({ deviceToken, expiresAt });
   }
 
+  // Read-only enrollment check for the Opal's local Owner Control gateway.
+  // Unlike `status`, this action is explicitly paired-owner authenticated.
+  if (action === "verify_local_pairing") {
+    if (!pairedDeviceAuthorized) return response({ error: "owner_pairing_required" }, 401);
+    return response({ paired: true });
+  }
+
   if (action === "live_status") {
     const { data: league, error: liveError } = await service.from("league_state").select("state_json").eq("id", 1).single();
     if (liveError) return response({ error: "live_state_read_failed" }, 500);

@@ -5,11 +5,12 @@ ROOT=pathlib.Path(__file__).resolve().parent
 CONTROLLER=ROOT/"controller"
 MANIFEST_PATH=ROOT/"MANIFEST.json"
 LIVE_URL="https://hbnightflyers.com/hbnf-cart.html"
-BUILD_MARKER="hbnf-cart2-owner-guest-vibe-r2-20261009"
-RELEASE_LABEL="HBNF CART 2.0 OWNER/GUEST VIBE R2"
+BUILD_MARKER="hbnf-cart2-owner-control-local-v1-20261015"
+RELEASE_LABEL="HBNF CART 2.0 OWNER CONTROL LOCAL V1"
 FILES=[
     "hbnf-cart.html",
     "hbnf-cart.js",
+    "hbnf-cart-local.mjs",
     "hbnf-cart-net.mjs",
     "hbnf-cart-sw.js",
     "hbnf-cart-semantic.mjs",

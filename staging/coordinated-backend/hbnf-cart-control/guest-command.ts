@@ -83,7 +83,7 @@ export function requiresOwnerAuthorization(action: string, _commandType: unknown
   // overlays, and device profiles. It must therefore require an authenticated
   // operator or a valid paired-device session for every command type. Guest
   // writes use the separate guest_command route and its bounded reducer.
-  return action === "command" || action === "create_install_handoff" || action === "pair_device" ||
+  return action === "command" || action === "create_install_handoff" || action === "pair_device" || action === "verify_local_pairing" ||
     ["skins_score_state", "skins_score_set", "skins_tiebreaker_set", "skins_ace_set"].includes(action);
 }
 

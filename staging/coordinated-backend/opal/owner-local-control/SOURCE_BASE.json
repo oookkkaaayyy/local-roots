@@ -1,0 +1,12 @@
+{
+  "schema": "hbnf-owner-local-control-staged-v1",
+  "repository": "oookkkaaayyy/local-roots",
+  "branch": "codex/glow-matrix-relay-integration-20261014",
+  "base_commit": "0ac371c462300b745bef92894f63ec3a357d32d8",
+  "opal_rollback_transport_sha256": "a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e",
+  "scope": [
+    "existing Opal Nginx authenticated local proxy",
+    "existing Owner PWA local transport adapter",
+    "no firmware, backend deployment, scoring, or live router changes"
+  ]
+}

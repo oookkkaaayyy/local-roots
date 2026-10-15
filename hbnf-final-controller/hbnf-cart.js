@@ -1,23 +1,31 @@
 /* HBNF_CART_FINAL_V5_SEMANTIC_FRAME_LOCK */
-import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261009-cart2-vibe-r2";
-import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261009-cart2-vibe-r2";
+import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261015-owner-control-local-v1";
+import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261015-owner-control-local-v1";
+import { LocalOwnerControl } from "./hbnf-cart-local.mjs?v=20261015-local-owner-v1";
 
 const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC";
 const endpoint = `${SUPABASE_URL}/functions/v1/hbnf-cart-control`;
 const visualStatusEndpoint = `${SUPABASE_URL}/functions/v1/hbnf-cart-visual-status`;
 const DEVICE_STORAGE_KEY = "hbnf_cart_device_v1";
+const DEVICE_EXPIRY_KEY = "hbnf_cart_device_expiry_v1";
+const DEVICE_EXPIRY_TOKEN_KEY = "hbnf_cart_device_expiry_token_v1";
 const DEVICE_COOKIE = "hbnf_cart_device";
 const DEVICE_COOKIE_MAX_AGE = 180 * 24 * 60 * 60;
 
 let revision = 0;
 let pendingPairToken = null;
+let pendingPairExpiryEpoch = 0;
 let currentPairLink = "";
 let tuneDirty = false;
 let tuneInFlight = false;
 let tuneTimer = null;
 let hydrating = false;
 let canonicalCapabilities = {};
+const localOwnerControl = new LocalOwnerControl();
+let localControlActive = false;
+let lastLocalEnrollAt = 0;
+let lastCloudPairValidationAt = 0;
 
 const $ = id => document.getElementById(String(id).replace(/^#/, ""));
 const statusNode = $("#status");
@@ -107,7 +115,11 @@ function writeDeviceCookie(token) {
 }
 
 function clearDeviceCredential() {
+  const oldToken = deviceToken();
+  if (oldToken) localOwnerControl.revoke(oldToken).catch(() => {});
   localStorage.removeItem(DEVICE_STORAGE_KEY);
+  localStorage.removeItem(DEVICE_EXPIRY_KEY);
+  localStorage.removeItem(DEVICE_EXPIRY_TOKEN_KEY);
   document.cookie = `${DEVICE_COOKIE}=; Max-Age=0; Path=/; Secure; SameSite=Strict`;
 }
 
@@ -129,11 +141,26 @@ function deviceToken() {
   return syncDeviceCredential();
 }
 
+function devicePairExpiryEpoch(token = deviceToken()) {
+  if (!validDeviceToken(token) || localStorage.getItem(DEVICE_EXPIRY_TOKEN_KEY) !== token) return 0;
+  const expiry = Number(localStorage.getItem(DEVICE_EXPIRY_KEY));
+  return Number.isSafeInteger(expiry) && expiry > Math.floor(Date.now() / 1000) ? expiry : 0;
+}
+
+function parsePairExpiry(hash) {
+  const match = String(hash || "").match(/(?:^#|[&#])expires=([^&]+)/i);
+  if (!match) return 0;
+  try {
+    const parsed = Date.parse(decodeURIComponent(match[1]));
+    return Number.isFinite(parsed) ? Math.floor(parsed / 1000) : 0;
+  } catch (_) { return 0; }
+}
+
 function setAuthorizedUi() {
   if (authPanel) authPanel.hidden = true;
   if (managePairPanel) managePairPanel.hidden = !validDeviceToken(deviceToken());
   if (pairAcceptPanel && !pendingPairToken) pairAcceptPanel.hidden = true;
-  if (guestModeToggle) guestModeToggle.disabled = !validDeviceToken(deviceToken());
+  if (guestModeToggle) guestModeToggle.disabled = !validDeviceToken(deviceToken()) || localControlActive;
 }
 
 async function authHeaders() {
@@ -149,7 +176,7 @@ async function authHeaders() {
   };
 }
 
-async function call(body) {
+async function callCloud(body) {
   const { headers, mode } = await authHeaders();
   let response;
   try {
@@ -175,6 +202,74 @@ async function call(body) {
 
   setAuthorizedUi();
   return json;
+}
+
+function hydrateLocalControls(state) {
+  if (!state) return;
+  hydrating = true;
+  try {
+    if (state.sceneId && $("scene")) $("scene").value = state.sceneId;
+    updateVibeSelection(state);
+    const tuning = valueOr(state.tuning, {});
+    if (Number.isFinite(Number(tuning.audioResponse))) setRange("audioResponse", "audioResponseValue", Number(tuning.audioResponse));
+    if (Number.isFinite(Number(tuning.motion))) setRange("motion", "motionValue", Number(tuning.motion));
+    setRange("matrixBrightness", "matrixValue", Number(pathValue(state, ["devices","matrix","brightness"], NaN)));
+    setRange("auxBrightness", "auxValue", Number(pathValue(state, ["devices","aux","brightness"], NaN)));
+  } finally {
+    hydrating = false;
+  }
+}
+
+async function call(body) {
+  const token = deviceToken();
+  if (validDeviceToken(token) && (body.action === "status" || body.action === "command")) {
+    try {
+      if (body.action === "status") {
+        const local = await localOwnerControl.connect(token, devicePairExpiryEpoch(token));
+        localControlActive = true;
+        return local;
+      }
+      if (localControlActive && localOwnerControl.supports(body.type, body.payload)) {
+        return localOwnerControl.command(token, body.type, body.payload);
+      }
+    } catch (localError) {
+      if (body.action === "command" && localControlActive && localOwnerControl.supports(body.type, body.payload)) {
+        throw localError;
+      }
+      localControlActive = false;
+    }
+  }
+
+  try {
+    const result = await callCloud(body);
+    if (body.action === "status" && validDeviceToken(token) && Date.now() - lastLocalEnrollAt > 300000) {
+      lastLocalEnrollAt = Date.now();
+      localOwnerControl.connect(token, devicePairExpiryEpoch(token)).then(() => { localControlActive = true; }).catch(() => {});
+    }
+    return result;
+  } catch (error) {
+    if (body.action === "status" && error.status === 401 && validDeviceToken(token)) {
+      localOwnerControl.revoke(token).catch(() => {});
+      localControlActive = false;
+      localStorage.removeItem(DEVICE_STORAGE_KEY);
+      document.cookie = `${DEVICE_COOKIE}=; Max-Age=0; Path=/; Secure; SameSite=Strict`;
+    }
+    throw error;
+  }
+}
+
+function revalidateLocalPairOnline() {
+  const token = deviceToken();
+  if (!localControlActive || !validDeviceToken(token) || !navigator.onLine || Date.now() - lastCloudPairValidationAt < 300000) return;
+  lastCloudPairValidationAt = Date.now();
+  callCloud({ action: "status" }).catch(error => {
+    if (error.status === 401 && deviceToken() === token) {
+      clearDeviceCredential();
+      localControlActive = false;
+      setAuthorizedUi();
+      statusNode.textContent = "Owner pairing expired or was revoked; local access was closed.";
+    }
+  });
 }
 
 async function visualStatus() {
@@ -243,6 +338,7 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
     auxHealth.className = auxOk ? "ok" : (shortDeviceFailure(auxReport) ? "bad" : "degraded");
   }
   if (badge) {
+    if (snapshot.local === true && aux && aux.ddp !== true) { badge.textContent = "AUX DDP NOT CONFIRMED"; badge.className = "truth-badge warn"; return; }
     if (matrixOk && auxOk) { badge.textContent = "COMMANDS ACKNOWLEDGED"; badge.className = "truth-badge good"; }
     else if (shortDeviceFailure(matrixReport) || shortDeviceFailure(auxReport)) { badge.textContent = "Device command failed"; badge.className = "truth-badge bad"; }
     else { badge.textContent = "AWAITING DEVICE ACK"; badge.className = "truth-badge warn"; }
@@ -321,6 +417,20 @@ async function refresh({ hydrate = true } = {}) {
   }
   canonicalCapabilities = out && out.capabilities ? out.capabilities : {};
   try { window.dispatchEvent(new CustomEvent("hbnf-canonical-capabilities",{detail:canonicalCapabilities})); } catch (_) {}
+
+  if (out && out.local === true) {
+    revalidateLocalPairOnline();
+    if (out.desired) {
+      revision = out.desired.revision;
+      if (hydrate && !tuneInFlight && !tuneDirty) hydrateLocalControls(out.desired.state);
+    }
+    setAuthorizedUi();
+    renderVisualHealth(out, out);
+    statusNode.textContent = out.devices && out.devices.aux && out.devices.aux.ddp === true
+      ? "LOCAL CONTROL · Matrix identity, firmware, Matrix/AUX readback and DDP source confirmed; physical illumination is not inferred."
+      : "LOCAL CONTROL · Matrix identity and device readback confirmed; AUX DDP source is not confirmed.";
+    return out;
+  }
 
   if (out.desired) {
     revision = out.desired.revision;
@@ -434,7 +544,8 @@ async function flushTune() {
     const applied = snap.desired && observed.length >= 2 && observed.every(x => Number(x.desired_revision) === Number(snap.desired.revision) && ["online","off"].includes(String(x.status)) && x.reported && x.reported.confirmed === true);
     if (applied) {
       pendingRevision = null;
-      hydrateControls(snap.desired.state);
+      if (snap.local === true) hydrateLocalControls(snap.desired.state);
+      else hydrateControls(snap.desired.state);
       return;
     }
     await new Promise(r => setTimeout(r, 500));
@@ -503,6 +614,7 @@ window.HBNFCanonical = {
 
 function detectPairFragment() {
   pendingPairToken = parsePairFragment(location.hash);
+  pendingPairExpiryEpoch = parsePairExpiry(location.hash);
   if (!pairAcceptPanel) return;
   pairAcceptPanel.hidden = !pendingPairToken;
   if (pendingPairToken && pairAcceptStatus) pairAcceptStatus.textContent = "Pairing link recognized. Tap Pair this device once.";
@@ -511,8 +623,16 @@ function detectPairFragment() {
 $("#acceptPair").addEventListener("click", async () => {
   if (!pendingPairToken) return;
   localStorage.setItem(DEVICE_STORAGE_KEY, pendingPairToken);
+  if (pendingPairExpiryEpoch > Math.floor(Date.now() / 1000)) {
+    localStorage.setItem(DEVICE_EXPIRY_KEY, String(pendingPairExpiryEpoch));
+    localStorage.setItem(DEVICE_EXPIRY_TOKEN_KEY, pendingPairToken);
+  } else {
+    localStorage.removeItem(DEVICE_EXPIRY_KEY);
+    localStorage.removeItem(DEVICE_EXPIRY_TOKEN_KEY);
+  }
   writeDeviceCookie(pendingPairToken);
   pendingPairToken = null;
+  pendingPairExpiryEpoch = 0;
   history.replaceState(null, "", location.pathname + location.search);
   pairAcceptPanel.hidden = true;
   pairAcceptStatus.textContent = "";
@@ -532,7 +652,7 @@ $("#createPair").addEventListener("click", async () => {
   copyPair.hidden = true;
   try {
     const out = await call({ action: "pair_device", label: "HBNF iPhone/iPad" });
-    currentPairLink = `${location.origin}${location.pathname}#pair=${encodeURIComponent(out.deviceToken)}`;
+    currentPairLink = `${location.origin}${location.pathname}#pair=${encodeURIComponent(out.deviceToken)}&expires=${encodeURIComponent(out.expiresAt)}`;
     pairLinkNode.value = currentPairLink;
     pairLinkNode.hidden = false;
     sharePair.hidden = !("share" in navigator);

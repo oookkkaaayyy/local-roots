@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { AUX_IP, MATRIX_IP, MATRIX_MAC, SUPPORTED_RELEASE, LOCAL_PAGE_URL, LocalMatrixTransport, controlsEnabled, auxStatus, buildPatch, stateMatches, getJson } from "../local-transport.js";
+import { AUX_IP, MATRIX_IP, MATRIX_MAC, SUPPORTED_RELEASE, LOCAL_PAGE_URL, LocalMatrixTransport, controlsEnabled, auxStatus, buildPatch, stateMatches, getJson, ownerWebSocketProtocol } from "../local-transport.js";
 const state=(HBNF={},seg=[])=>({HBNF:{candidate:SUPPORTED_RELEASE,...HBNF},seg});
 test("fixed LAN target and installed release are explicit",()=>{assert.equal(MATRIX_IP,"192.168.77.10");assert.equal(AUX_IP,"192.168.77.11");assert.equal(SUPPORTED_RELEASE,"hbnf-cart2-phase2-r6-skins-readable-20261014")});
 test("Mission Control actions map to existing local HBNF fields",()=>{assert.deepEqual(buildPatch("TUNE",{matrixBrightness:69}),{matrixBrightness:69});assert.deepEqual(buildPatch("TUNE",{auxBrightness:255}),{auxBrightness:255});assert.deepEqual(buildPatch("TUNE",{motion:50,audioResponse:50}),{motion:50,audioResponse:50});assert.deepEqual(buildPatch("SCENE",{sceneId:"quiet-cosmos"}),{scene:"quiet-cosmos"});assert.deepEqual(buildPatch("VIBE",{vibe:"auto"}),{vibe:5});assert.deepEqual(buildPatch("PALETTE",{paletteId:"wled-25"}),{palette:{mode:"wled",index:25}});assert.deepEqual(buildPatch("PALETTE",{paletteId:"solid-12a0ff"}),{palette:{mode:"solid",rgb:[18,160,255]}});assert.deepEqual(buildPatch("OVERLAY_START",{overlayId:"safe-id",kind:"text",ttlMs:8000,data:{text:"Hello",color:"#ffffff"}}),{overlay:{id:"safe-id",kind:"text",ttlMs:8000,text:"Hello",color:"#FFFFFF"}});assert.deepEqual(buildPatch("TUNE",{matrixBrightness:0,auxBrightness:0}),{matrixBrightness:0,auxBrightness:0})});
@@ -17,6 +17,8 @@ test("command-to-state path waits for matching Matrix readback",async()=>{const 
 test("unsupported runtime identity sends no command",async()=>{const socket=new FakeSocket(),t=new LocalMatrixTransport({socketFactory:()=>socket,timeoutMs:30});t.connect();socket.open();socket.update(state({candidate:"other-release"}));await assert.rejects(t.command("TUNE",{matrixBrightness:1}),/Fresh Matrix release/);assert.equal(socket.sent.some(v=>v.includes('"matrixBrightness":1')),false)});
 
 test("wrong Matrix MAC is never command-ready",()=>{const socket=new FakeSocket(),t=new LocalMatrixTransport({socketFactory:()=>socket});t.connect();socket.open();socket.update(state({matrixBrightness:69}));assert.equal(t.verifyIdentity({mac:"001122334455"}),false);assert.equal(t.controlReady(),false);assert.equal(t.verifyIdentity({mac:MATRIX_MAC}),true);assert.equal(t.controlReady(),true)});
+
+test("paired owner token is accepted only as a WSS subprotocol and never in a URL",()=>{const token="a".repeat(64),offers=[],socket=new FakeSocket(),t=new LocalMatrixTransport({url:"wss://cart-control.hbnightflyers.com/ws",ownerToken:token,socketFactory:(url,protocols)=>{offers.push({url,protocols});return socket}});t.connect();assert.equal(offers[0].url,"wss://cart-control.hbnightflyers.com/ws");assert.deepEqual(offers[0].protocols,[ownerWebSocketProtocol(token)]);assert.equal(offers[0].url.includes(token),false);assert.throws(()=>new LocalMatrixTransport({url:"ws://192.168.77.10/ws",ownerToken:token}),/certificate-verified WSS/);assert.throws(()=>ownerWebSocketProtocol("short"),/paired owner credential/)});
 
 test("app verifies the expected MAC before its state can enable controls",async()=>{const app=await readFile(new URL("../app.js",import.meta.url),"utf8");assert.match(app,/matrixInfo=await getJson\(matrixUrl\+"\/json\/info"\);if\(String\(matrixInfo\.mac\|\|""\)\.toLowerCase\(\)!==MATRIX_MAC\)throw Error\("Unexpected Matrix identity\."\);if\(!transport\|\|!transport\.verifyIdentity\(matrixInfo\)\)/)});
 
@@ -75,12 +77,13 @@ function ios12CompatibilityIssues(source){return ios12ForbiddenFeatures.filter((
 test("iOS 12 Safari compatibility gate covers the actual browser module path",async()=>{
   const app=await readFile(new URL("../app.js",import.meta.url),"utf8");
   const transport=await readFile(new URL("../local-transport.js",import.meta.url),"utf8");
+  const pwaLocal=await readFile(new URL("../../../../../hbnf-final-controller/hbnf-cart-local.mjs",import.meta.url),"utf8");
   const html=await readFile(new URL("../tests/browser-regression.html",import.meta.url),"utf8");
   const entry=await readFile(new URL("../index.html",import.meta.url),"utf8");
   const inline=(html.match(/<script type="module">([\s\S]*?)<\/script>/)||[])[1];
   assert.ok(inline,"iOS 12 browser regression module must be present");
   assert.match(entry,/<script type="module" src="\.\/app\.js"><\/script>/);
-  for(const [name,source] of [["app.js",app],["local-transport.js",transport],["browser regression module",inline]])assert.deepEqual(ios12CompatibilityIssues(source),[],name+" uses unsupported iOS 12 syntax/API");
+  for(const [name,source] of [["app.js",app],["local-transport.js",transport],["Owner PWA local module",pwaLocal],["browser regression module",inline]])assert.deepEqual(ios12CompatibilityIssues(source),[],name+" uses unsupported iOS 12 syntax/API");
 });
 test("iOS 12 compatibility gate catches the previously escaping syntax and API",()=>{
   for(const source of ["const x = value?.child;","const x = value ?? fallback;","class C { #run() {} }","element.replaceChildren();","globalThis.crypto;","new AbortController();","items.at(-1);","Promise.allSettled([]);","Object.fromEntries([]);","crypto.randomUUID();"]){assert.ok(ios12CompatibilityIssues(source).length>0,"gate missed: "+source)}

@@ -1,0 +1,34 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "owner-local-control-bridge-20261015",
+  "summary": "Integrate the existing Owner PWA with the Opal authenticated local gateway, Matrix WebSocket, and bounded AUX state proxy using a paired-owner local session; preserve cloud fallback and keep installation gated.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Owner request 2026-10-15: reuse the existing Owner PWA, Opal Nginx/Lua, and WLED WebSocket; no new controller or firmware.",
+      "affected_subsystem": "hbnf-cart-control Owner PWA, Opal local TLS/WebSocket gateway, and allowlisted AUX brightness/power proxy staging package.",
+      "rollback_reference": "Opal rollback restores exact v1.0.1 local-transport.js SHA-256 a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e. PWA source rollback is the prior Git revision and exact prior Worker version captured immediately before any future deployment.",
+      "evidence_sources": [
+        "https://nginx.org/en/docs/http/websocket.html",
+        "https://nginx.org/en/docs/http/ngx_http_proxy_module.html",
+        "https://kno.wled.ge/interfaces/websocket/",
+        "https://letsencrypt.org/docs/challenge-types/",
+        "https://github.com/openresty/lua-resty-string"
+      ],
+      "tests": [
+        "node --test tests/hbnf_owner_local_control.mjs staging/coordinated-backend/opal/mission-control-local/tests/local-transport.test.mjs",
+        "node tests/hbnf_owner_pwa_package.mjs",
+        "node tests/hbnf_owner_pwa_reliability.mjs",
+        "node tests/hbnf-ios12-compat-audit.mjs",
+        "Mandatory HBNF admission and platform test suites"
+      ]
+    }
+  }
+}

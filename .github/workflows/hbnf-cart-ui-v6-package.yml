@@ -28,6 +28,7 @@ jobs:
       - name: Syntax and safety gates
         run: |
           node --check hbnf-final-controller/hbnf-cart.js
+          node --check hbnf-final-controller/hbnf-cart-local.mjs
           node --check hbnf-final-controller/hbnf-cart-net.mjs
           node --check hbnf-final-controller/hbnf-cart-sw.js
           node --check hbnf-final-controller/hbnf-cart-semantic.mjs
@@ -43,7 +44,8 @@ jobs:
           ! grep -q 'createClient' hbnf-final-controller/hbnf-cart.js
           ! grep -Fq '\\n' hbnf-final-controller/hbnf-cart.html
           python3 -m py_compile hbnf-ui-v6-package/install_ui_v6.py
-          grep -q 'hbnf-cart2-owner-guest-vibe-r2-20261009' hbnf-final-controller/hbnf-cart.html
+          grep -q 'hbnf-cart2-owner-control-local-v1-20261015' hbnf-final-controller/hbnf-cart.html
+          node tests/hbnf_owner_local_control.mjs
           node --experimental-strip-types tests/hbnf_skins_scoring_owner_flow.mjs
           node tests/hbnf_owner_pwa_package.mjs
           node tests/hbnf_owner_pwa_reliability.mjs
@@ -66,9 +68,9 @@ jobs:
       - name: Upload exact package
         uses: actions/upload-artifact@v4
         with:
-          name: HBNF-CART-OWNER-GUEST-CART2-VIBE-R2-20261009
+          name: HBNF-CART-OWNER-CONTROL-LOCAL-V1-20261015
           path: |
-            ${{ runner.temp }}/HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009.zip
-            ${{ runner.temp }}/HBNF_CART_OWNER_GUEST_CART2_VIBE_R2_20261009.zip.sha256
+            ${{ runner.temp }}/HBNF_CART_OWNER_CONTROL_LOCAL_V1_20261015.zip
+            ${{ runner.temp }}/HBNF_CART_OWNER_CONTROL_LOCAL_V1_20261015.zip.sha256
           if-no-files-found: error
           retention-days: 30

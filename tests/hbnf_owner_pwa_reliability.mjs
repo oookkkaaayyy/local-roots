@@ -11,7 +11,7 @@ const js = fs.readFileSync(path.join(controller, "hbnf-cart.js"), "utf8");
 const sw = fs.readFileSync(path.join(controller, "hbnf-cart-sw.js"), "utf8");
 const manifest = JSON.parse(fs.readFileSync(path.join(controller, "hbnf-cart-manifest.webmanifest"), "utf8"));
 const installer = fs.readFileSync(path.join(root, "hbnf-ui-v6-package/install_ui_v6.py"), "utf8");
-const VERSION = "20261009-cart2-vibe-r2";
+const VERSION = "20261015-owner-control-local-v1";
 const TOKEN = "a".repeat(64);
 
 assert.equal(parsePairFragment(`#pair=${TOKEN}`), TOKEN);
@@ -50,7 +50,7 @@ assert.equal(manifest.start_url, `/hbnf-cart.html?app=${VERSION}`);
 assert.match(html, /navigator\.serviceWorker\.register/);
 assert.match(html, new RegExp(`hbnf-cart-sw\\.js\\?v=${VERSION}`));
 assert.match(html, /scope:"\/hbnf-cart\.html"/);
-assert.match(sw, /hbnf-owner-pwa-v7-cart2-vibe-r2-20261009/);
+assert.match(sw, /hbnf-owner-pwa-v10-owner-local-20261015/);
 assert.match(sw, /self\.skipWaiting\(\)/);
 assert.match(sw, /self\.clients\.claim\(\)/);
 assert.match(sw, /url\.origin !== self\.location\.origin/);
@@ -120,12 +120,13 @@ clientController.abort();
 assert.equal(requestSignals[1].aborted, true);
 assert.equal(await cancelledShellResponse, cachedShell);
 
-for (const name of ["hbnf-cart-net.mjs", "hbnf-cart-sw.js"]) {
+for (const name of ["hbnf-cart-net.mjs", "hbnf-cart-local.mjs", "hbnf-cart-sw.js"]) {
   assert.ok(installer.includes(`"${name}"`), `installer omits ${name}`);
 }
 for (const asset of [
   "hbnf-cart.html",
   "hbnf-cart.js",
+  "hbnf-cart-local.mjs",
   "hbnf-cart-net.mjs",
   "hbnf-cart-semantic.mjs",
   "hbnf-cart-ui-v6.css",
@@ -180,5 +181,5 @@ assert.match(js, /x\.reported && x\.reported\.confirmed === true/);
 assert.match(js, /invalid_or_mismatched_foundation_ack.*Matrix command not confirmed/);
 assert.match(css, /min-height:50px/);
 assert.match(css, /@media\(max-width:340px\)/);
-assert.match(sw, /hbnf-owner-pwa-v7-cart2-vibe-r2-20261009/);
+assert.match(sw, /hbnf-owner-pwa-v10-owner-local-20261015/);
 console.log("PASS: owner control hierarchy, Animation Mix labels, device-ack truth, responsive layout, and PWA versioning");

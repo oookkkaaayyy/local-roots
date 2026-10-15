@@ -111,6 +111,7 @@ jobs:
         run: |
           set -euo pipefail
           node --check hbnf-final-controller/hbnf-cart.js
+          node --check hbnf-final-controller/hbnf-cart-local.mjs
           node --check hbnf-final-controller/hbnf-cart-net.mjs
           node --check hbnf-final-controller/hbnf-cart-sw.js
           node --check hbnf-final-controller/hbnf-cart-semantic.mjs
@@ -158,6 +159,7 @@ jobs:
           node tests/hbnf-coordinated-controller-contract.mjs
           node --experimental-strip-types tests/hbnf_skins_scoring_owner_flow.mjs
           node tests/hbnf_owner_pwa_package.mjs
+          node tests/hbnf_owner_local_control.mjs
           node tests/hbnf_owner_pwa_reliability.mjs
           node tests/hbnf-coordinated-backend-staging.mjs
           node tests/hbnf-release-readiness.mjs
@@ -191,6 +193,7 @@ jobs:
           mkdir -p "$OUT/controller" "$OUT/domain" "$OUT/work" "$OUT/config" "$OUT/tools" "$OUT/tests" "$OUT/installer"
           cp hbnf-final-controller/hbnf-cart.html "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart.js "$OUT/controller/"
+          cp hbnf-final-controller/hbnf-cart-local.mjs "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-net.mjs "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-sw.js "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-semantic.mjs "$OUT/controller/"
