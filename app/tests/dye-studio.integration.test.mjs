@@ -205,7 +205,7 @@ test('beta launch copy and PNG export include physical recipe limitations', () =
   const elements={baseHex:{value:'#FFFFFF'}};
   const $=id=>elements[id]||(elements[id]={textContent:'#abcdef'});
   const fakeCanvas={getContext:()=>({fillRect(){},fillText:txt=>output.push(txt)}),toDataURL:()=>'data:image/png;base64,AA'};
-  const env={ $,document:{createElement:tag=>tag==='canvas'?fakeCanvas:{download:'',href:'',click(){output.push(this.download)}}},
+  const env={ $,discAppearance:null,document:{createElement:tag=>tag==='canvas'?fakeCanvas:{download:'',href:'',click(){output.push(this.download)}}},
     regionColorCache:{clear(){}},makePaintImage(){},collectRegions:()=>[{
       hex:'#B62068',share:.5,key:'1',label:'Onyx',plateHex:'#111111',shoulderHex:'#222222',rimHex:'#333333'
     }],layers:[{name:'ProChem Onyx',hex:'#101010',strength:100,passes:3,method:'floetrol-stencil',shape:'full'}],
@@ -226,7 +226,7 @@ test('editor state roundtrip and undo-redo preserve block identities and physica
   $('blendMode').value='research';$('methodSelect').value='acetone-direct';
   $('passCount').value='1';$('productionRecipeKey').value='acetone-v1';
   const env={ $,viewMode:'daylight',daylightScene:'outdoor',activeProfileId:'innova_star',
-    layers:[],selected:-1,sample:{x:0,y:0},history:[],historyIndex:-1,isRestoring:false,
+    layers:[],selected:-1,sample:{x:0,y:0},history:[],historyIndex:-1,isRestoring:false,discAppearance:null,photoBaseSelected:false,window:{DUDiscPhoto:{syncControls(){}}},migrateProfileId:id=>id,
     clamp:(x,a,b)=>Math.max(a,Math.min(b,x)),deepCopy:x=>JSON.parse(JSON.stringify(x)),
     activeRecipeKey:()=> $('productionRecipeKey').value,activeMethod:()=> $('methodSelect').value,
     activePassCount:()=> +$('passCount').value,normAngle:x=>x,profile:()=>({base:'#FFFFFF'}),
@@ -380,6 +380,79 @@ test('photo matcher ignores minority stamp colors in synthetic test images',()=>
 });
 
 
+
+test('photo topology separates plate/rim without inventing brand plastic choices',()=>{
+ const photo=read('../public/dyed-and-unattached/dye-studio/disc-photo.js');
+ const win={},doc={readyState:'loading',addEventListener(){}};
+ Function('window','document',photo)(win,doc);
+ const estimate=win.DUDiscPhoto.estimatePixels;
+ function disc(plate,rim,boundary,softness,withStamp=false){
+  const w=280,h=280,r=110,data=new Uint8ClampedArray(w*h*4);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+   const rr=Math.hypot(x-140,y-140)/r;
+   let mix=softness?Math.min(1,Math.max(0,(rr-boundary+softness/2)/softness)):rr>=boundary?1:0;
+   let rgb=rr<=1?plate.map((v,i)=>v*(1-mix)+rim[i]*mix):[240,240,240];
+   if(withStamp&&Math.hypot(x-180,y-143)<26&&rr<.78)rgb=[8,9,12];
+   const i=(y*w+x)*4;data[i]=rgb[0];data[i+1]=rgb[1];data[i+2]=rgb[2];data[i+3]=255;
+  }
+  return {data,width:w,height:h};
+ }
+ const halo=estimate(disc([250,165,195],[25,146,208],.74,.095,true));
+ assert.equal(halo.edgeDetected,true);
+ assert.equal(halo.hex,'#FAA5C3');
+ assert.equal(halo.appearance.rimHex,'#1992D0');
+ assert.ok(Math.abs(halo.appearance.boundary-.74)<.04);
+ assert.equal(halo.appearance.kind,'soft');
+ const hard=estimate(disc([40,160,178],[255,96,137],.82,.008));
+ assert.equal(hard.appearance.rimHex,'#FF6089');
+ assert.equal(hard.appearance.kind,'hard');
+ assert.ok(Math.abs(hard.appearance.boundary-.82)<.04);
+ const one=estimate(disc([89,169,222],[89,169,222],.82,0,true));
+ assert.equal(one.appearance,null);
+ assert.ok(photo.includes('window.DUDiscAppearance?.set?.(result.appearance||null,false,true)'));
+ assert.match(studioHtml,/id="photoRimPanel"/);
+ assert.match(studioScript,/function appearanceAt\(x,y\)/);
+ assert.match(studioScript,/discAppearance:discAppearance\?/);
+ assert.match(studioScript,/photoBaseSelected\?\$\("baseHex"\)\.value:p\.base/);
+ assert.match(studioScript,/Preserve calibration for retired models/);
+ const defaultSegment=studioScript.slice(studioScript.indexOf('function defaults(){'),studioScript.indexOf('function migrateProfileId('));
+ assert.match(defaultSegment,/Innova Classic Glow Champion/);
+ assert.doesNotMatch(defaultSegment,/id:"innova_(?:dx|pro|halo_star|color_glow_champion)"/);
+ const select=studioHtml.slice(studioHtml.indexOf('<select id="profileOptical"'),studioHtml.indexOf('</select>',studioHtml.indexOf('<select id="profileOptical"')));
+ assert.doesNotMatch(select,/value="(?:dx|pro|halo-star|color-glow-champion)"/);
+ assert.match(select,/value="classic-glow-champion"/);
+});
+
+
+test('photo rim geometry actually colors pixels independently of Innova model',()=>{
+ const start=studioScript.indexOf('let discAppearance=null,photoBaseSelected=false;');
+ const end=studioScript.indexOf('\nconst transmissionTargets=',start);
+ assert.ok(start>0&&end>start);
+ const env={
+  $:id=>({value:id==='baseHex'?'#EEAA99':''}),
+  validHex:h=>/^#[0-9a-f]{6}$/i.test(h),
+  clamp:(x,a,b)=>Math.max(a,Math.min(b,x)),
+  mixRgbHex:(a,b,t)=>{
+   const x=[1,3,5].map(i=>parseInt(a.slice(i,i+2),16)),y=[1,3,5].map(i=>parseInt(b.slice(i,i+2),16));
+   return '#'+x.map((v,i)=>Math.round(v+(y[i]-v)*t).toString(16).padStart(2,'0')).join('').toUpperCase();
+  },
+  window:{},regionColorCache:{clear(){}},requestRender(){},commitHistory(){},layers:[],profile:()=>({}),researchPredictPoint(){},recordFor(){}
+ };
+ const api=Function('env','with(env){'+studioScript.slice(start,end)+';return {appearanceAt,setDiscAppearance,get:()=>discAppearance}}')(env);
+ assert.equal(api.appearanceAt(0,0),'#EEAA99');
+ api.setDiscAppearance({rimHex:'#1144CC',boundary:.8,softness:.03});
+ assert.equal(api.appearanceAt(0,0),'#EEAA99');
+ assert.equal(api.appearanceAt(.95,0),'#1144CC');
+ assert.notEqual(api.appearanceAt(.8,0),'#EEAA99');
+ assert.notEqual(api.appearanceAt(.8,0),'#1144CC');
+ const offsets=Array.from({length:48},(_,i)=>i<12?-.04:.04);
+ api.setDiscAppearance({rimHex:'#1144CC',boundary:.8,softness:.01,edgeOffsets:offsets});
+ assert.equal(api.appearanceAt(.79*Math.cos(Math.PI/6),.79*Math.sin(Math.PI/6)),'#1144CC','detected narrow-rim sector is rim colored');
+ assert.equal(api.appearanceAt(-.79,0),'#EEAA99','detected wide-core sector remains plate colored');
+ api.setDiscAppearance(null);
+ assert.equal(api.appearanceAt(.95,0),'#EEAA99');
+});
+
 test('consumer v2 keeps dye selection atomic and color edits contextual', () => {
  const v2=read('../public/dyed-and-unattached/dye-studio/consumer-v2.js');
  const ui=studioHtml;
@@ -523,7 +596,7 @@ test('radial region cache accelerates disc paint without crossing optical bounda
  for(const rule of ['const ringCache=new Map(),bins=1024','radius<.58?0:radius<.84?1:radius<=.86?2:3','const region=regionKeyAt(x,y)','ringCache.set(cacheKey,rgb)'])assert.ok(source.includes(rule),rule);
  const size=16,rows=size*size,ctx={createImageData:(w,h)=>({data:new Uint8ClampedArray(w*h*4)}),putImageData(){}};
  let calls=0;
- const env={PAINT_SIZE:size,paintCtx:ctx,paintedImage:null,regionKeyAt:(x)=>x>0?'1':'0',
+ const env={PAINT_SIZE:size,paintCtx:ctx,paintedImage:null,discAppearance:null,regionKeyAt:(x)=>x>0?'1':'0',
    colorForPoint:(x,y,key)=>{calls++;return key==='1'?'#A51020':'#208010'},
    hexRgb:h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16))};
  const fn=Function('env','with(env){'+source+';return makePaintImage;}')(env);

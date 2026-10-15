@@ -15,23 +15,87 @@ function locateDisc(data,w,h){
  let best={score:-Infinity,x:w/2,y:h/2,r:.39*m,edge:0,valid:0};
  for(const ox of offsets)for(const oy of offsets)for(const factor of radii){
    const x=w/2+ox*m,y=h/2+oy*m,r=m*factor;
-   let sum=0,valid=0;
+   let sum=0,valid=0,innerSum=0;
    for(let i=0;i<40;i++){
      const a=i*2*Math.PI/40,c=Math.cos(a),s=Math.sin(a);
      const ix=x+c*r*.94,iy=y+s*r*.94,ex=x+c*r*1.06,ey=y+s*r*1.06;
      if(ix<1||iy<1||ex<1||ey<1||ix>=w-1||ex>=w-1||iy>=h-1||ey>=h-1)continue;
      const inner=getPixel(data,w,h,ix,iy),outer=getPixel(data,w,h,ex,ey);
-     sum+=distance(inner,outer);valid++;
+     // A two-tone disc has an additional concentric rim/plate boundary.
+   // Reward outer-disc hypotheses that enclose that boundary, rather
+   // than mistaking the inner color boundary for the disc's exterior.
+   const ringA=getPixel(data,w,h,x+c*r*.79,y+s*r*.79);
+   const ringB=getPixel(data,w,h,x+c*r*.88,y+s*r*.88);
+   innerSum+=distance(ringA,ringB);
+   sum+=distance(inner,outer);valid++;
    }
    if(valid<28)continue;
    const edge=sum/valid;
    // Favor long circular boundaries near the image center rather than printed motifs.
-   const score=edge*(valid/40)*(0.78+factor*0.55)-magnitudeOffset(ox,oy)*7;
+   const score=(edge+Math.min(edge,innerSum/valid)*.55)*(valid/40)*(0.78+factor*0.55)-magnitudeOffset(ox,oy)*7;
    if(score>best.score)best={score,x,y,r,edge,valid};
  }
  return best;
 }
 function magnitudeOffset(x,y){return Math.hypot(x,y)}
+
+function ringMedian(data,w,h,disc,r){
+ const px=[];for(let i=0;i<96;i++){
+  const a=i*Math.PI*2/96,x=Math.round(disc.x+Math.cos(a)*disc.r*r),y=Math.round(disc.y+Math.sin(a)*disc.r*r);
+  if(x<1||y<1||x>=w-1||y>=h-1)continue;
+  const o=(y*w+x)*4;if(data[o+3]>=240)px.push([data[o],data[o+1],data[o+2]]);
+ }
+ return px.length<64?null:[0,1,2].map(k=>median(px.map(q=>q[k])));
+}
+function estimateRim(data,w,h,disc){
+ const rings=[];
+ for(let i=0;i<=26;i++){const r=.50+i*.018,col=ringMedian(data,w,h,disc,r);if(col)rings.push({r,col})}
+ const center=rings.filter(x=>x.r>=.53&&x.r<=.65).map(x=>x.col),edge=rings.filter(x=>x.r>=.905&&x.r<=.968).map(x=>x.col);
+ if(center.length<4||edge.length<3)return null;
+ const med=rows=>[0,1,2].map(k=>median(rows.map(v=>v[k])));
+ const plate=med(center),rim=med(edge),contrast=distance(plate,rim);
+ if(contrast<35)return null;
+ const delta=plate.map((v,i)=>rim[i]-v),power=delta.reduce((a,v)=>a+v*v,0);
+ if(power<1)return null;
+ const dataPoints=rings.map(x=>({r:x.r,t:clamp(x.col.reduce((sum,v,i)=>sum+(v-plate[i])*delta[i],0)/power,0,1)}));
+ function cross(level){
+  const xs=dataPoints.filter(x=>x.r>=.64);
+  for(let i=1;i<xs.length;i++){
+   if(xs[i].t<level||xs.slice(i,i+3).filter(x=>x.t>=level).length<2)continue;
+   const prev=xs[i-1],den=xs[i].t-prev.t;
+   return clamp(prev.r+(Math.abs(den)>1e-5?(level-prev.t)/den:0)*.018,.55,.97);
+  }
+  return null;
+ }
+ const half=cross(.5),a=cross(.2),b=cross(.8);
+ if(half===null||dataPoints.filter(x=>x.r>.91&&x.t>.65).length<2)return null;
+ const softness=clamp(a!==null&&b!==null?Math.abs(b-a)*1.4:.036,.01,.18);
+ // Detect *photographed* angle-dependent border shape; never synthesize
+ // a brand-specific Halo ring. Reject print/stamp anomalies and sparsely seen edges.
+ const offsets=Array.from({length:48},(_,sector)=>{
+  const angle=(sector+.5)*Math.PI*2/48,c=Math.cos(angle),sn=Math.sin(angle);
+  let previous=-1;
+  for(let r=.64;r<.975;r+=.008){
+   const x=Math.round(disc.x+c*disc.r*r),y=Math.round(disc.y+sn*disc.r*r);
+   if(x<1||y<1||x>=w-1||y>=h-1)break;
+   const o=(y*w+x)*4,point=[data[o],data[o+1],data[o+2]];
+   const t=clamp(point.reduce((sum,v,i)=>sum+(v-plate[i])*delta[i],0)/power,0,1);
+   if(t>.56&&previous>.45&&Math.abs(r-half)<=.085)return +clamp(r-half,-.08,.08).toFixed(3);
+   previous=t;
+  }
+  return null;
+ });
+ const reliable=offsets.filter(Number.isFinite).length;
+ const edgeOffsets=reliable>=31?offsets.map((value,i)=>{
+  if(value===null)return 0;
+  const prev=offsets[(i+47)%48],next=offsets[(i+1)%48];
+  const neighbors=[value,prev,next].filter(Number.isFinite);
+  return +(neighbors.reduce((a,v)=>a+v,0)/neighbors.length).toFixed(3);
+ }):null;
+ return{edgeOffsets,rimHex:hex(rim),plateHex:hex(plate),boundary:+clamp(half,.56,.95).toFixed(3),
+  softness:+softness.toFixed(3),kind:softness>.047?"soft":"hard",
+  confidence:contrast>=55?"good":"check",contrast:Math.round(contrast)};
+}
 function estimatePixels(imageData,options={}){
  const {data,width:w,height:h}=imageData||{};
  if(!data||!w||!h||data.length<w*h*4)throw Error("Invalid photo pixels");
@@ -58,7 +122,9 @@ function estimatePixels(imageData,options={}){
  const edgeFound=disc.edge>=15&&disc.valid>=28;
  const consistent=spread<34&&outliers<.35;
  const confidence=edgeFound&&consistent?"good":"check";
- return {hex:hex(rgb),rgb:rgb.map(x=>Math.round(x)),confidence,
+ const appearance=edgeFound?estimateRim(data,w,h,disc):null;
+ const plateHex=appearance?appearance.plateHex:hex(rgb);
+ return {hex:plateHex,rgb:appearance?[1,3,5].map(i=>parseInt(plateHex.slice(i,i+2),16)):rgb.map(x=>Math.round(x)),confidence:appearance?.confidence||confidence,appearance,
    edgeDetected:edgeFound,spread:Math.round(spread),outlierFraction:+outliers.toFixed(2),
    pixelCount:samples.length};
 }
@@ -91,9 +157,30 @@ function bind(){
  const camera=document.getElementById("discCameraInput"),library=document.getElementById("discPhotoInput"),
        status=document.getElementById("photoColorStatus");
  if(!camera||!library||!status)return;
+ const rimPanel=document.getElementById("photoRimPanel"),rimOn=document.getElementById("photoRimEnabled"),
+  rimColor=document.getElementById("photoRimColor"),rimWidth=document.getElementById("photoRimWidth"),
+  rimSoftness=document.getElementById("photoRimSoftness");
  for(const [button,input] of [["takeDiscPhoto",camera],["chooseDiscPhoto",library]]){
    document.getElementById(button).addEventListener("click",()=>input.click());
  }
+ function syncControls(){
+  if(!rimPanel)return;
+  const a=window.DUDiscAppearance?.get?.()||null;
+  rimOn.checked=!!a;
+  if(a){rimColor.value=a.rimHex;rimWidth.value=String(Math.round((1-a.boundary)*100));rimSoftness.value=String(Math.round(a.softness*100))}
+  rimPanel.classList.toggle("has-rim",!!a);
+ }
+ function changedRim(){
+  if(!rimOn.checked){window.DUDiscAppearance?.set?.(null,true);syncControls();return}
+  window.DUDiscAppearance?.set?.({rimHex:rimColor.value,boundary:1-(+rimWidth.value/100),
+   softness:(+rimSoftness.value/100)||.01,kind:+rimSoftness.value>5?"soft":"hard"},true);
+  syncControls();
+ }
+ if(rimPanel){
+  for(const el of [rimOn,rimColor,rimWidth,rimSoftness])el.addEventListener("change",changedRim);
+  syncControls();
+ }
+ window.DUDiscPhoto.syncControls=syncControls;
  async function apply(event){
    const input=event.currentTarget,file=input.files&&input.files[0];
    if(!file)return;
@@ -105,11 +192,14 @@ function bind(){
      color.value=result.hex;field.value=result.hex;
      // Same existing UI color handlers; automatically refresh model and undo history.
      color.dispatchEvent(new Event("input",{bubbles:true}));
+     window.DUDiscAppearance?.set?.(result.appearance||null,false,true);
+     syncControls();
      // Reuse the existing optical-profile transmission estimate and single undo/history commit.
      document.getElementById("autoTransmission").click();
+     const shape=result.appearance?" · two-tone plate and rim detected; check rim controls.":" · single-color estimate; optional rim controls below.";
      const summary=result.confidence==="good"?
-       "Estimated "+result.hex+" from the disc. Check against the real disc; lighting can shift color.":
-       "Estimated "+result.hex+". Photo is uncertain—try even light, with the full disc on a contrasting surface.";
+       "Estimated "+result.hex+shape+" Lighting can shift colors.":
+       "Estimated "+result.hex+shape+" Uncertain photo: try even light and contrasting background.";
      status.textContent=summary;
      status.className="photo-status "+(result.confidence==="good"?"photo-ok":"photo-check");
      document.getElementById("photoColorChip").style.backgroundColor=result.hex;
