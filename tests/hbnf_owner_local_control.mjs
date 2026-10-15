@@ -241,7 +241,6 @@ test("guarded Opal installer is fail-closed, narrowly scoped, and syntactically 
   const preflight = await readFile(new URL("preflight.sh", root), "utf8");
   assert.match(installer, /owner-network-isolation-verified/);
   assert.match(installer, /EXPECTED_OLD_TRANSPORT=a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e/);
-  const preflight = await readFile(new URL("preflight.sh", root), "utf8");
   assert.match(preflight, /EXPECTED_MATRIX_RELEASE=hbnf-cart2-phase2-r6-skins-readable-20261014/);
   assert.match(preflight, /@\.release_id/);
   assert.match(preflight, /\[ "\$matrix_leds" = "512" \]/);
