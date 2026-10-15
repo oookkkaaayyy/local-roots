@@ -16,3 +16,34 @@ Verification: 33/33 integration and 10/10 optical model tests passed on candidat
 
 ## Expert owner plastic identification (2026-10-14)
 The disc-plastic-knowledgeable owner identifies Kateri's white disc from the full photograph as **Innova Star** and confirms all handwriting denotes **dye-color names**, not plastic type. This is an owner-expert visual assessment, **not** a statement from Kateri or independent manufacturing provenance. Maintain `exactPlastic: false` in the numerical training gate until independently confirmed; physical method, strength, time and colorimetry also remain unverified. Preserve the owner's practical expertise as a resource for source assessment.
+
+## Recovered offline safeguard: passive opaque absorption ceiling (2026-10-14)
+
+The previous incomplete/errored work left a local patch and a detailed private
+owner Wraith/Tern physical-source metadata record. The Wraith/Tern owner photos were
+recovered via existing private Google Drive records, not added to this repository:
+the same-session photographs show a navy blue and pink direct-acetone application
+on Proto Glow Champion against the owner's matched original light-yellow blank.
+They provide **qualitative** support for the contrast and overlap, but dye names,
+coats, and controlled colorimetry are missing. No physical numerical targets were fitted.
+
+**Genuine prediction defect exposed:** On opaque black Innova Star/GStar,
+the released predictor previously returned lightish nonfluorescent colors such
+as `#0C1542` for iDye Poly Blue or `#450F1D` for Crimson from a `#000000`
+starting substrate. A transparent, purely absorbing dye cannot add daylight
+radiance absent from an unchanged substrate. [Scholarpedia color-mixture physics]
+(https://www.scholarpedia.org/article/Color_mixture) describes subtractive
+mixtures removing light (with known exceptions for scattering). Experienced
+practitioners report the same limitation for dark discs:
+https://www.reddit.com/r/discdyeing/comments/xy8v0z and
+https://www.reddit.com/r/discdyeing/comments/1jvy7rf . **Fluorescent
+colorants are exempt** because emission can brighten under suitable excitation.
+
+Scoped correction applies channelwise ceilings to **nonfluorescent dye on opaque
+plastic in daylight only**, using the untouched blank and identical simulated
+rim shading. Existing optical dye tint/hue and strength logic remain otherwise
+unchanged. Champion/translucent, UV365, charged glow, zero dye, and fluorescent
+cases retain existing outputs. This is a physical plausibility safeguard, **not**
+an empirical ΔE accuracy certification or source-image-based pigment calibration.
+Future scattering/colorimetric source data can supersede this conservative
+assumption if supported by actual measurements.

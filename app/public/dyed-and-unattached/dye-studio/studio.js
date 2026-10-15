@@ -360,6 +360,13 @@ function translucentPointPredict(baseHex,active,scene,p,radius){
  if(zone==="rim")out=mixLinearHex(out,"#030405",scene==="backlit"?.08:.16);
  return out
 }
+// Passive absorption changes a polymer's spectral reflectance by removing
+// light; it cannot brighten an unchanged opaque blank under the same daylight.
+// Keep fluorescent dyes exempt because they can emit additional visible light.
+function capPassiveOpaqueDaylight(blankHex,dyedHex){
+ const blank=hexRgb(blankHex),predicted=hexRgb(dyedHex);
+ return rgbHex(predicted.map((v,i)=>Math.min(v,blank[i])));
+}
 function opaquePointPredict(baseHex,active,p,radius){
  if(!active.length){
    const cls=opticalClassFor(p);
@@ -380,6 +387,13 @@ function opaquePointPredict(baseHex,active,p,radius){
  });
  const cls=opticalClassFor(p);
  if(radius>.86)out=mixLinearHex(out,"#080A0D",cls==="halo-opaque"?.18:.08);
+ // Do not create brighter channels through ordinary non-emissive dye uptake.
+ // Compare to the blank with the same modelled outer-rim shading.
+ if(!active.some(l=>Number(l.strength)>0&&opticalProfileFor(l).fluor>0)){
+  const rimShade=radius>.86?(cls==="halo-opaque"?.18:.09):0;
+  const blank=rimShade?mixLinearHex(baseHex,"#080A0D",rimShade):baseHex;
+  out=capPassiveOpaqueDaylight(blank,out);
+ }
  return out
 }
 function researchPredictPoint(baseHex,active,mode,p,x,y){
