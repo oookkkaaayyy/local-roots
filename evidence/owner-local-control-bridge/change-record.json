@@ -24,6 +24,7 @@
       ],
       "tests": [
         "node --test tests/hbnf_owner_local_control.mjs staging/coordinated-backend/opal/mission-control-local/tests/local-transport.test.mjs",
+        "python3 tests/hbnf_owner_local_control_package.py",
         "node tests/hbnf_owner_pwa_package.mjs",
         "node tests/hbnf_owner_pwa_reliability.mjs",
         "node tests/hbnf-ios12-compat-audit.mjs",
