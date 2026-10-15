@@ -31,5 +31,8 @@ test('benchmarks never silently train from product-color swatches or sampled web
  assert.equal(qualifiesForNumeric(q),false);
  assert.equal(qualifiesForNumeric(k),false);
  assert.match(k.image,/2025PersonalDyeLibrary_1\.jpg/);
- assert.ok(k.unknown.includes('Disc polymer brand/family'));
+ assert.match(k.visualPlastic,/Innova Star/);
+ assert.match(k.plasticSource,/owner identifies white Innova Star visually/);
+ assert.match(k.handwrittenLabels,/dye\/color names/);
+ assert.equal(k.exactPlastic,false,'visual identification is not original maker verification');
 });

@@ -656,10 +656,10 @@ test('physical color-source quality is not inferred from photos on unverified su
  assert.equal(rows.length,71);
  const chart=rows.find(x=>x.id==='FIELD-PHOTO-01');
  assert.ok(chart);
- assert.match(chart.starting_plastic,/Unverified substrate/);
+ assert.match(chart.starting_plastic,/Innova Star.*owner expert visual identification/);
  assert.match(chart.train_eligible,/^NO/);
  assert.match(chart.numeric_holdout_eligible,/^NO/);
- assert.match(studioScript,/disc substrate unverified/);
+ assert.match(studioScript,/White Innova Star per expert owner visual identification/);
  for(const x of rows){
   if(/^YES/i.test(x.train_eligible)){
    assert.match(x.controlled_photo,/^YES/i,'numeric admission requires controlled photographs');

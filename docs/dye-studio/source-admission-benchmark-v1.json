@@ -29,15 +29,18 @@
       "independentReplicate": false,
       "isolatedABAB": false,
       "use": "qualitative_only",
-      "observation": "Uncropped image shows white circular disc with many labeled swatches, Dyers Guild page labels 2/5/10 min; named source Kateri.",
+      "observation": "Uncropped image shows white circular disc with many labeled swatches, Dyers Guild page labels 2/5/10 min; named source Kateri. Owner identifies white Innova Star; all handwritten words are dye colors.",
       "unknown": [
-        "Disc polymer brand/family",
+        "Original artist confirmation of exact Star plastic/mold (owner expert visual ID only)",
         "Carrier, pre-mix, timing conditions",
         "Photo lighting and original disc blank",
         "Whether repeated swatches are same method/dose",
         "Consent to reuse raw image"
       ],
-      "priority": 1
+      "priority": 1,
+      "visualPlastic": "Innova Star (white)",
+      "plasticSource": "Disc-plastic-expert owner identifies white Innova Star visually on 2026-10-14; no source-artist or manufacturer confirmation",
+      "handwrittenLabels": "All handwriting denotes dye/color names, not disc plastic"
     },
     {
       "id": "WHITE-STAR-DART",
