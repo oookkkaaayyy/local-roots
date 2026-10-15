@@ -8,7 +8,8 @@ CONF=$BASE/nginx.conf
 SERVER_CONF=$BASE/nginx-server.conf
 SERVICE=/etc/init.d/hbnf-owner-local-control
 TARGET=/www/mission-control-local/local-transport.js
-BACKUP=/root/hbnf-owner-local-control.rollback-v1.0.3
+OWNER_HTTP_TARGET=/www/mission-control-local/owner-http-transport.js
+BACKUP=/root/hbnf-owner-local-control.rollback-v1.0.4
 EXPECTED_OLD_TRANSPORT=a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e
 HOST=cart-control.hbnightflyers.com
 LOG_DIR=/var/log/hbnf-owner-local-control-nginx
@@ -25,6 +26,7 @@ fail(){ echo "INSTALL BLOCKED: $*" >&2; exit 1; }
 [ ! -e "$PID_FILE" ] || fail "dedicated Nginx PID path already exists; inspect before proceeding"
 [ ! -e /etc/rc.d/S85hbnf-owner-local-control ] || fail "dedicated boot link already exists"
 [ -f "$TARGET" ] || fail "expected existing Mission Control transport is missing"
+[ ! -e "$OWNER_HTTP_TARGET" ] || fail "Owner PWA HTTP transport target already exists; inspect before proceeding"
 [ -d "$BASE/tls" ] || fail "install the DNS-01 certificate first; do not create or replace it here"
 # This presence check is not evidence. A real unpaired guest-client negative
 # control test remains mandatory in the release admission.
@@ -49,7 +51,7 @@ chmod 0700 "$BACKUP/rollback.sh"
 rollback_now(){
   [ "$ROLLING_BACK" = 0 ] || return 0
   ROLLING_BACK=1
-  echo "Install validation failed; stopping only the dedicated service before restoring the exact prior static module." >&2
+  echo "Install validation failed; stopping only the dedicated service before restoring the exact prior Mission Control transport." >&2
   stop_failed=0
   disable_failed=0
   [ ! -x "$SERVICE" ] || "$SERVICE" stop >/dev/null 2>&1 || stop_failed=1
@@ -68,7 +70,7 @@ rollback_now(){
   fi
   echo "Dedicated service is stopped and disabled; restoring the exact prior transport and removing only this release's files." >&2
   [ ! -f "$BACKUP/local-transport.js" ] || cp -p "$BACKUP/local-transport.js" "$TARGET"
-  rm -f "$CONF" "$SERVER_CONF" "$SERVICE" "$TARGET.tmp" /etc/rc.d/S85hbnf-owner-local-control "$PID_FILE" /var/lock/hbnf-owner-local-control-nginx.lock
+  rm -f "$CONF" "$SERVER_CONF" "$SERVICE" "$TARGET.tmp" "$OWNER_HTTP_TARGET" "$OWNER_HTTP_TARGET.tmp" /etc/rc.d/S85hbnf-owner-local-control "$PID_FILE" /var/lock/hbnf-owner-local-control-nginx.lock
   rm -rf "$BASE/lua" "$STATE" "$LOG_DIR"
 }
 trap 'rollback_now' EXIT HUP INT TERM
@@ -79,15 +81,20 @@ mkdir -m 0700 "$STATE/sessions" "$STATE/revoked" "$STATE/tmp" "$STATE/tmp/client
 chown "$worker_uid:$worker_gid" "$STATE/sessions" "$STATE/revoked" "$STATE/tmp" "$STATE/tmp/client_body" "$STATE/tmp/proxy"
 mkdir -m 0700 "$LOG_DIR"
 mkdir -m 0755 "$BASE/lua"
-cp "$PKG/auth.lua" "$PKG/session.lua" "$PKG/enroll.lua" "$PKG/revalidate.lua" "$PKG/revoke.lua" "$PKG/auth_owner.lua" "$PKG/auth_websocket.lua" "$PKG/auth_origin.lua" "$PKG/aux_command_access.lua" "$BASE/lua/"
+cp "$PKG/auth.lua" "$PKG/session.lua" "$PKG/enroll.lua" "$PKG/revalidate.lua" "$PKG/revoke.lua" "$PKG/auth_owner.lua" "$PKG/auth_origin.lua" "$PKG/aux_command_access.lua" "$PKG/matrix_command_access.lua" "$BASE/lua/"
 cp "$PKG/dedicated-nginx.conf.example" "$CONF"
 cp "$PKG/nginx.conf.example" "$SERVER_CONF"
 cp "$PKG/hbnf-owner-local-control.init" "$SERVICE"
 cp "$PKG/local-transport.js" "$TARGET.tmp"
-chmod 0644 "$BASE/lua/"*.lua "$CONF" "$SERVER_CONF" "$TARGET.tmp"
+cp "$PKG/owner-http-transport.js" "$OWNER_HTTP_TARGET.tmp"
+chmod 0644 "$BASE/lua/"*.lua "$CONF" "$SERVER_CONF" "$TARGET.tmp" "$OWNER_HTTP_TARGET.tmp"
 chmod 0755 "$SERVICE"
 chmod 0755 "$BASE/lua"
 mv "$TARGET.tmp" "$TARGET"
+mv "$OWNER_HTTP_TARGET.tmp" "$OWNER_HTTP_TARGET"
+
+grep -Fxq '    listen 192.168.77.1:8443 ssl;' "$SERVER_CONF" || fail "dedicated listener must bind only to the HBNF-Cart LAN address"
+[ "$(grep -Ec '^[[:space:]]*listen[[:space:]]' "$SERVER_CONF" || true)" = "1" ] || fail "dedicated gateway must have exactly one listener, bound only to the HBNF-Cart LAN address"
 
 # Nginx's root master opens the root:root 0600 TLS key then drops its single
 # request worker to nobody. It uses a dedicated config, PID, log, temp paths,
@@ -108,7 +115,10 @@ code=$(curl -sS --max-time 4 --resolve "$HOST:8443:192.168.77.1" -o /dev/null -w
 netstat -lnt 2>/dev/null | awk 'NR > 2 && $4 ~ /(:|\])80$/ { http=1 } NR > 2 && $4 ~ /(:|\])443$/ { https=1 } END { exit !(http && https) }' || fail "existing GL.iNet 80/443 listeners were not preserved"
 actual=$(sha256sum "$TARGET" | awk '{print $1}')
 expected=$(grep 'local-transport.js$' "$PKG/SHA256SUMS" | awk '{print $1}')
-[ "$actual" = "$expected" ] || fail "installed transport hash mismatch"
+[ "$actual" = "$expected" ] || fail "installed Mission Control transport hash mismatch"
+actual=$(sha256sum "$OWNER_HTTP_TARGET" | awk '{print $1}')
+expected=$(grep 'owner-http-transport.js$' "$PKG/SHA256SUMS" | awk '{print $1}')
+[ "$actual" = "$expected" ] || fail "installed Owner PWA HTTP transport hash mismatch"
 
 trap - EXIT HUP INT TERM
 echo "INSTALL_OK: authenticated local Owner Control endpoint installed on isolated Nginx :8443; request worker is nobody. Existing GL.iNet :80/:443 Nginx and Skins relay were not reloaded. Exact rollback: $BACKUP/rollback.sh"

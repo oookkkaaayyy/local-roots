@@ -5,6 +5,7 @@ const paths=[
   "hbnf-final-controller/hbnf-cart-semantic.mjs",
   "hbnf-final-controller/hbnf-cart-net.mjs",
   "hbnf-final-controller/hbnf-cart-local.mjs",
+  "staging/coordinated-backend/opal/mission-control-local/owner-http-transport.js",
   "hbnf-final-controller/hbnf-cart-ui-v6.mjs",
   "hbnf-final-controller/hbnf-cart-features.mjs",
   "hbnf-final-controller/hbnf-cart-skins-score.mjs",

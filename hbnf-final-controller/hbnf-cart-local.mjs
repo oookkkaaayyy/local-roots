@@ -21,7 +21,7 @@ export class LocalOwnerControl {
   constructor(options = {}) {
     this.origin = String(options.origin || LOCAL_CONTROL_ORIGIN).replace(/\/$/, "");
     this.fetchFn = options.fetchFn || fetch;
-    this.transportLoader = options.transportLoader || (() => import(`${this.origin}/mission-control-local/local-transport.js`));
+    this.transportLoader = options.transportLoader || (() => import(`${this.origin}/mission-control-local/owner-http-transport.js`));
     this.transport = null;
     this.module = null;
     this.token = "";
@@ -30,8 +30,8 @@ export class LocalOwnerControl {
     this.auxInfo = null;
     this.auxState = null;
     this.commandQueue = Promise.resolve();
-    this.socketRevalidateMs = Number.isSafeInteger(options.socketRevalidateMs) ? Math.max(1, options.socketRevalidateMs) : 60000;
-    this.socketRevalidationTimer = null;
+    this.localRevalidateMs = Number.isSafeInteger(options.localRevalidateMs) ? Math.max(1, options.localRevalidateMs) : 60000;
+    this.localRevalidationTimer = null;
     this.commandsPending = 0;
   }
 
@@ -95,9 +95,9 @@ export class LocalOwnerControl {
   }
 
   disconnectTransport() {
-    if (this.socketRevalidationTimer) clearTimeout(this.socketRevalidationTimer);
-    this.socketRevalidationTimer = null;
-    if (this.transport && this.transport.socket) this.transport.socket.close();
+    if (this.localRevalidationTimer) clearTimeout(this.localRevalidationTimer);
+    this.localRevalidationTimer = null;
+    if (this.transport) this.transport.disconnect();
     this.transport = null;
     this.token = "";
     this.matrixInfo = null;
@@ -105,26 +105,26 @@ export class LocalOwnerControl {
     this.auxState = null;
   }
 
-  scheduleSocketRevalidation(token) {
-    if (this.socketRevalidationTimer || !token) return;
-    this.socketRevalidationTimer = setTimeout(async () => {
-      this.socketRevalidationTimer = null;
+  scheduleLocalRevalidation(token) {
+    if (this.localRevalidationTimer || !token) return;
+    this.localRevalidationTimer = setTimeout(async () => {
+      this.localRevalidationTimer = null;
       if (this.token !== token || !this.transport) return;
       if (this.commandsPending > 0) {
-        this.scheduleSocketRevalidation(token);
+        this.scheduleLocalRevalidation(token);
         return;
       }
       try {
-        if (this.transport.socket) this.transport.socket.close();
+        // Revalidate the paired token periodically without interrupting the
+        // HTTP polling transport. During WAN loss Lua keeps the bounded local
+        // 180-day session active; revoked cloud pairings are persisted locally.
         await this.request(token, "/api/session/revalidate", "POST", { action: "revalidate" });
-        // Reconnect rechecks local/online revocation, then confirms the pinned
-        // Matrix identity and firmware before controls.
-        await this.connect(token, this.expiresAtEpoch);
+        this.scheduleLocalRevalidation(token);
       } catch (_) {
         this.disconnectTransport();
       }
-    }, this.socketRevalidateMs);
-    if (this.socketRevalidationTimer && typeof this.socketRevalidationTimer.unref === "function") this.socketRevalidationTimer.unref();
+    }, this.localRevalidateMs);
+    if (this.localRevalidationTimer && typeof this.localRevalidationTimer.unref === "function") this.localRevalidationTimer.unref();
   }
 
   async connect(token, expiresAtEpoch) {
@@ -139,20 +139,20 @@ export class LocalOwnerControl {
       if (this.token !== token || !this.transport) {
         this.disconnectTransport();
         this.transport = new module.LocalMatrixTransport({
-          url: this.origin.replace(/^https:\/\//i, "wss://") + "/ws",
-          ownerToken: token,
+          readState: () => this.request(token, "/api/matrix/json/state"),
+          sendCommand: patch => this.request(token, "/api/matrix/control", "POST", { HBNF: patch }),
+          pollMs: 1500,
         });
         this.token = token;
       }
       if (!this.transport.verifyIdentity(matrixInfo)) throw new Error("Matrix identity verification failed.");
       this.transport.connect();
-      if (this.transport.socket && this.transport.socket.readyState === 1) this.transport.requestState();
       const matrixState = await this.waitForState(this.transport);
       const candidate = matrixState && matrixState.HBNF && matrixState.HBNF.candidate;
       if (candidate !== LOCAL_MATRIX_RELEASE) throw new Error("Matrix firmware is not the locally approved release.");
       await this.readAux(token);
       this.matrixInfo = matrixInfo;
-      this.scheduleSocketRevalidation(token);
+      this.scheduleLocalRevalidation(token);
       return this.snapshot();
     } catch (error) {
       this.disconnectTransport();
@@ -220,7 +220,9 @@ export class LocalOwnerControl {
     if (!this.transport.controlReady()) await this.connect(token, this.expiresAtEpoch);
     if (!this.transport.controlReady()) throw new Error("Fresh paired local session and Matrix identity are required.");
     if (!this.supports(type, payload)) throw new Error(`This command is not yet available through offline local control: ${type}`);
-    const beforeMatrix = this.transport.snapshot && this.transport.snapshot.HBNF || {};
+    // Keep a stable pre-command record for cross-device compensation; test
+    // adapters and callers may otherwise retain a live reference to readback.
+    const beforeMatrix = { ...(this.transport.snapshot && this.transport.snapshot.HBNF || {}) };
     const patch = this.module.buildPatch(type, payload || {});
     if (Object.prototype.hasOwnProperty.call(patch, "auxBrightness")) await this.readAux(token);
     const beforeAux = { bri: Number(this.auxState.bri), on: this.auxState.on === true };

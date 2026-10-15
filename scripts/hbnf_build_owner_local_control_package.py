@@ -9,12 +9,13 @@ import subprocess
 import zipfile
 from pathlib import Path
 
-PACKAGE_NAME = "hbnf-owner-local-control-v1.0.3"
+PACKAGE_NAME = "hbnf-owner-local-control-v1.0.4"
 SOURCE_DIR = Path("staging/coordinated-backend/opal/owner-local-control")
 TRANSPORT = Path("staging/coordinated-backend/opal/mission-control-local/local-transport.js")
+OWNER_HTTP_TRANSPORT = Path("staging/coordinated-backend/opal/mission-control-local/owner-http-transport.js")
 FILES = (
     "README.md", "SOURCE_BASE.json", "auth.lua", "auth_origin.lua", "auth_owner.lua",
-    "auth_websocket.lua", "aux_command_access.lua", "dedicated-nginx.conf.example",
+    "auth_websocket.lua", "aux_command_access.lua", "dedicated-nginx.conf.example", "matrix_command_access.lua",
     "enroll.lua", "hbnf-owner-local-control.init", "install.sh", "matrix_topology.sh",
     "nginx.conf.example", "preflight.sh", "revalidate.lua", "revoke.lua", "rollback.sh", "session.lua",
 )
@@ -30,10 +31,12 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
     root = repo / SOURCE_DIR
     payload = {name: (root / name).read_bytes() for name in FILES}
     transport = (repo / TRANSPORT).read_bytes()
+    owner_http_transport = (repo / OWNER_HTTP_TRANSPORT).read_bytes()
     payload["local-transport.js"] = transport
+    payload["owner-http-transport.js"] = owner_http_transport
     subprocess.check_call(["git", "-C", str(repo), "cat-file", "-e", f"{source_commit}^{{commit}}"], stdout=subprocess.DEVNULL)
     for name, data in payload.items():
-        path = (TRANSPORT if name == "local-transport.js" else SOURCE_DIR / name).as_posix()
+        path = (TRANSPORT if name == "local-transport.js" else OWNER_HTTP_TRANSPORT if name == "owner-http-transport.js" else SOURCE_DIR / name).as_posix()
         committed = subprocess.check_output(["git", "-C", str(repo), "show", f"{source_commit}:{path}"])
         if committed != data:
             raise ValueError(f"working package input differs from {source_commit}:{path}")
@@ -44,6 +47,9 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
     expected_candidate = f"CANDIDATE_TRANSPORT_SHA={sha(transport)}"
     if expected_candidate not in rollback:
         raise ValueError("rollback script is not bound to the packaged transport SHA")
+    expected_owner_http = f"CANDIDATE_OWNER_HTTP_SHA={sha(owner_http_transport)}"
+    if expected_owner_http not in rollback:
+        raise ValueError("rollback script is not bound to the packaged Owner PWA HTTP transport SHA")
     hashes = {name: sha(data) for name, data in sorted(payload.items())}
     manifest = {
         "schema": "hbnf-owner-local-control-package-v1",
@@ -51,8 +57,9 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
         "sourceCommit": source_commit,
         "baseCommit": source_base["base_commit"],
         "installedTransportSha256": sha(transport),
+        "ownerPwaTransportSha256": sha(owner_http_transport),
         "rollbackTransportSha256": EXPECTED_ROLLBACK,
-        "scope": ["separate Opal Nginx/Lua gateway on TCP 8443 with nobody request worker", "existing Opal Mission Control transport module", "Owner PWA local endpoint URL using TCP 8443"],
+        "scope": ["separate Opal Nginx/Lua gateway on TCP 8443 with nobody request worker", "existing Opal Mission Control WebSocket transport upgraded with the current compatible command mappings", "separate authenticated per-command HTTPS transport for the existing Owner PWA"],
         "notIncluded": ["TLS private key", "DNS provider credential", "router network policy marker", "firmware", "Supabase production payload"],
         "files": hashes,
     }

@@ -5,42 +5,18 @@ import { fileURLToPath } from "node:url";
 import { execFileSync, spawnSync } from "node:child_process";
 import { LocalOwnerControl, LOCAL_CONTROL_ORIGIN, LOCAL_MATRIX_MAC, LOCAL_AUX_MAC, LOCAL_MATRIX_RELEASE } from "../hbnf-final-controller/hbnf-cart-local.mjs";
 import * as transportModule from "../staging/coordinated-backend/opal/mission-control-local/local-transport.js";
+import * as ownerHttpTransportModule from "../staging/coordinated-backend/opal/mission-control-local/owner-http-transport.js";
 
 const token = "a".repeat(64);
 const expiry = Math.floor(Date.now() / 1000) + 90 * 24 * 60 * 60;
-const baseState = () => ({ state: { HBNF: { candidate: LOCAL_MATRIX_RELEASE, matrixBrightness: 69, auxBrightness: 255, vibe: 1, activeVibe: 1, motion: 50, audioResponse: 50, scene: "course-flow" }, seg: [] } });
+const baseState = () => ({ HBNF: { candidate: LOCAL_MATRIX_RELEASE, matrixBrightness: 69, auxBrightness: 255, vibe: 1, activeVibe: 1, motion: 50, audioResponse: 50, scene: "course-flow" }, seg: [] });
 function response(status, value) {
   return { status, ok: status >= 200 && status < 300, json: async () => value };
 }
 
-class FakeSocket {
-  constructor(url, protocols, owner) {
-    this.url = url;
-    this.protocols = protocols;
-    this.owner = owner;
-    this.readyState = 0;
-    this.sent = [];
-    setImmediate(() => {
-      if (this.readyState !== 0) return;
-      this.readyState = 1;
-      if (this.onopen) this.onopen();
-      this.emit();
-    });
-  }
-  send(raw) {
-    this.sent.push(raw);
-    const message = JSON.parse(raw);
-    if (message.HBNF) Object.assign(this.owner.current.state.HBNF, message.HBNF);
-    setImmediate(() => this.emit());
-  }
-  emit() { if (this.readyState === 1 && this.onmessage) this.onmessage({ data: JSON.stringify(this.owner.current) }); }
-  close() { this.readyState = 3; if (this.onclose) this.onclose(); }
-}
-
 function fixture({ sessionStatus = 200, sessionExpiresAt = expiry, enrollmentStatus = 200, applyAuxControl = true } = {}) {
   const calls = [];
-  const sockets = [];
-  const owner = { current: baseState(), auxState: { bri: 255, on: true }, applyAuxControl };
+  const owner = { current: baseState(), auxState: { bri: 255, on: true }, applyAuxControl, applyMatrixControl: true, matrixAvailable: true };
   let currentSessionStatus = sessionStatus;
   let currentRevalidationStatus = 200;
   let firstSession = true;
@@ -56,8 +32,16 @@ function fixture({ sessionStatus = 200, sessionExpiresAt = expiry, enrollmentSta
     if (parsed.pathname === "/api/session/revalidate") return response(currentRevalidationStatus, currentRevalidationStatus === 200 ? { authenticated: true, cloudValidated: true, expiresAt: expiry } : { error: "cloud_pairing_revoked" });
     if (parsed.pathname === "/api/session/revoke") return response(200, { revoked: true, scope: "this_opal" });
     if (parsed.pathname === "/api/matrix/json/info") return response(200, { mac: LOCAL_MATRIX_MAC });
+    if (parsed.pathname === "/api/matrix/json/state") return owner.matrixAvailable ? response(200, JSON.parse(JSON.stringify(owner.current))) : response(503, { error: "device_unavailable" });
+    if (parsed.pathname === "/api/matrix/control") {
+      if (options.headers["X-HBNF-Device"] !== token) return response(401, { error: "paired_owner_required" });
+      const body = JSON.parse(options.body || "{}");
+      if (Object.keys(body).length !== 1 || !body.HBNF || Object.keys(body.HBNF).some(key => !["scene", "vibe", "matrixBrightness", "auxBrightness", "motion", "audioResponse", "palette", "overlay"].includes(key))) return response(400, { error: "invalid_matrix_command" });
+      if (owner.applyMatrixControl) Object.assign(owner.current.HBNF, body.HBNF);
+      return response(200, { success: true });
+    }
     if (parsed.pathname === "/api/aux/json/info") return response(200, { mac: LOCAL_AUX_MAC, live: true, lm: "DDP", lip: "192.168.77.10" });
-    if (parsed.pathname === "/api/aux/json/state") return response(200, owner.auxState);
+    if (parsed.pathname === "/api/aux/json/state") return response(200, JSON.parse(JSON.stringify(owner.auxState)));
     if (parsed.pathname === "/api/aux/control") {
       if (options.headers["X-HBNF-Device"] !== token) return response(401, { error: "paired_owner_required" });
       const body = JSON.parse(options.body || "{}");
@@ -67,25 +51,17 @@ function fixture({ sessionStatus = 200, sessionExpiresAt = expiry, enrollmentSta
     }
     throw new Error("Unexpected local path: " + parsed.pathname);
   };
-  class FixtureTransport extends transportModule.LocalMatrixTransport {
-    constructor(options) {
-      super({ ...options, socketFactory: (url, protocols) => {
-        const socket = new FakeSocket(url, protocols, owner);
-        sockets.push(socket);
-        return socket;
-      } });
-    }
-  }
-  return { calls, sockets, owner, fetchFn, setSessionStatus(value) { currentSessionStatus = value; }, setRevalidationStatus(value) { currentRevalidationStatus = value; }, module: { ...transportModule, LocalMatrixTransport: FixtureTransport } };
+  return { calls, owner, fetchFn, setSessionStatus(value) { currentSessionStatus = value; }, setRevalidationStatus(value) { currentRevalidationStatus = value; }, module: ownerHttpTransportModule };
 }
 
 function makeClient(f, options = {}) {
   return new LocalOwnerControl({ ...options, fetchFn: f.fetchFn, transportLoader: async () => f.module });
 }
 
-test("paired local status and commands use only Opal over WAN-off path", async () => {
+test("paired local status and per-command HTTP writes use only Opal on the WAN-off path", async (t) => {
   const f = fixture();
   const client = makeClient(f);
+  t.after(() => client.disconnectTransport());
   const snapshot = await client.connect(token, expiry);
   assert.equal(snapshot.local, true);
   assert.equal(snapshot.devices.matrix.mac, LOCAL_MATRIX_MAC);
@@ -98,64 +74,64 @@ test("paired local status and commands use only Opal over WAN-off path", async (
   assert.equal(ack.acknowledgments.aux.brightness, 235);
   assert.equal(ack.acknowledgments.aux.physical, "unverified");
   assert.equal(f.calls.some(call => call.path === "/api/aux/control" && call.method === "POST"), true);
-  assert.equal(f.sockets[0].url, "wss://cart-control.hbnightflyers.com:8443/ws");
-  assert.deepEqual(f.sockets[0].protocols, ["hbnf-owner-v1." + token]);
+  const matrixWrite = f.calls.find(call => call.path === "/api/matrix/control" && call.method === "POST");
+  assert.ok(matrixWrite);
+  assert.equal(matrixWrite.headers["X-HBNF-Device"], token);
+  assert.deepEqual(JSON.parse(matrixWrite.body), { HBNF: { matrixBrightness: 70, auxBrightness: 235 } });
+  assert.equal(f.calls.some(call => call.path === "/ws"), false);
+  assert.equal(f.calls.some(call => call.path === "/api/matrix/json/state" && call.method === "GET"), true);
   assert.ok(f.calls.every(call => call.url.startsWith(LOCAL_CONTROL_ORIGIN)));
   assert.ok(f.calls.every(call => !call.url.includes(token)));
 });
 
-test("new local enrollment sends the pairing hint but server Lua rejects browser expiry as authority", async () => {
+test("new local enrollment sends the pairing hint but server Lua rejects browser expiry as authority", async (t) => {
   const f = fixture({ sessionStatus: 404 });
   const client = makeClient(f);
+  t.after(() => client.disconnectTransport());
   await client.connect(token, expiry);
   const enroll = f.calls.find(call => call.path === "/api/session/enroll");
   assert.ok(enroll);
   assert.deepEqual(JSON.parse(enroll.body), { action: "enroll", expiresAtEpoch: expiry });
 });
 
-test("local device reconnection revalidates identity before sending the queued control", async () => {
+test("Matrix reconnect recovers through fresh authenticated reads before the next command", async (t) => {
   const f = fixture();
   const client = makeClient(f);
+  t.after(() => client.disconnectTransport());
   await client.connect(token, expiry);
-  f.sockets[0].close();
+  f.owner.matrixAvailable = false;
+  await new Promise(resolve => setTimeout(resolve, 1600));
+  f.owner.matrixAvailable = true;
   const ack = await client.command(token, "TUNE", { matrixBrightness: 71 });
-  assert.equal(f.sockets.length, 2);
   assert.equal(ack.acknowledgments.matrix.confirmed, true);
-  assert.equal(f.sockets[1].sent.some(raw => raw.includes('"matrixBrightness":71')), true);
+  assert.equal(f.owner.current.HBNF.matrixBrightness, 71);
 });
 
-test("active Owner PWA socket rotates on a bounded interval and revalidates before reopening", async () => {
+test("periodic cloud revalidation does not interrupt HTTP control polling", async (t) => {
   const f = fixture();
-  const client = makeClient(f, { socketRevalidateMs: 10 });
+  const client = makeClient(f, { localRevalidateMs: 10 });
+  t.after(() => client.disconnectTransport());
   await client.connect(token, expiry);
-  await new Promise((resolve, reject) => {
-    const deadline = Date.now() + 500;
-    const poll = () => {
-      if (f.sockets.length >= 2 && f.sockets[1].readyState === 1) return resolve();
-      if (Date.now() >= deadline) return reject(new Error("bounded revalidation did not reconnect"));
-      setTimeout(poll, 2);
-    };
-    poll();
-  });
-  assert.equal(f.sockets.length, 2);
-  assert.equal(f.sockets[0].readyState, 3);
-  assert.equal(f.sockets[1].readyState, 1);
-  assert.ok(f.calls.filter(call => call.path === "/api/session").length >= 2);
+  await new Promise(resolve => setTimeout(resolve, 35));
+  assert.ok(f.calls.filter(call => call.path === "/api/session/revalidate").length >= 1);
+  const ack = await client.command(token, "TUNE", { matrixBrightness: 72 });
+  assert.equal(ack.acknowledgments.matrix.confirmed, true);
+  assert.ok(f.calls.filter(call => call.path === "/api/matrix/json/state").length >= 2);
   client.disconnectTransport();
 });
 
-test("active Owner PWA socket closes at revalidation when the local session is revoked", async () => {
+test("revoked session stops per-command writes at revalidation", async (t) => {
   const f = fixture();
-  const client = makeClient(f, { socketRevalidateMs: 10 });
+  const client = makeClient(f, { localRevalidateMs: 10 });
+  t.after(() => client.disconnectTransport());
   await client.connect(token, expiry);
   f.setRevalidationStatus(401);
   await new Promise(resolve => setTimeout(resolve, 50));
-  assert.equal(f.sockets[0].readyState, 3);
-  assert.equal(f.sockets.length, 1);
+  assert.equal(f.calls.some(call => call.path === "/api/matrix/control"), false);
   assert.equal(client.transport, null);
 });
 
-test("AUX readback failure never returns a success acknowledgment", async () => {
+test("AUX readback failure never returns a success acknowledgment", async (t) => {
   const f = fixture();
   const original = f.fetchFn;
   let failAux = false;
@@ -164,17 +140,19 @@ test("AUX readback failure never returns a success acknowledgment", async () => 
     return original(url, options);
   };
   const client = makeClient(f);
+  t.after(() => client.disconnectTransport());
   await client.connect(token, expiry);
   failAux = true;
   await assert.rejects(client.command(token, "TUNE", { auxBrightness: 230 }), /device_unavailable/);
 });
 
-test("AUX brightness mismatch is not acknowledged and both targets are restored", async () => {
+test("AUX brightness mismatch is not acknowledged and both targets are restored", async (t) => {
   const f = fixture({ applyAuxControl: false });
   const client = makeClient(f);
+  t.after(() => client.disconnectTransport());
   await client.connect(token, expiry);
   await assert.rejects(client.command(token, "TUNE", { matrixBrightness: 70, auxBrightness: 230 }), /AUX brightness readback did not match/);
-  assert.equal(Number(f.owner.current.state.HBNF.auxBrightness), 255);
+  assert.equal(Number(f.owner.current.HBNF.auxBrightness), 255);
   assert.equal(Number(f.owner.auxState.bri), 255);
 });
 
@@ -183,7 +161,7 @@ test("expired pairing cannot create or renew an offline session", async () => {
   const client = makeClient(f);
   await assert.rejects(client.connect(token, Math.floor(Date.now() / 1000) - 1), /expiry has elapsed/);
   assert.equal(f.calls.some(call => call.path === "/api/session/enroll"), false);
-  assert.equal(f.sockets.length, 0);
+  assert.equal(f.calls.some(call => call.path === "/api/matrix/control"), false);
 });
 
 test("unauthorized/revoked session fails before loading command transport", async () => {
@@ -192,7 +170,7 @@ test("unauthorized/revoked session fails before loading command transport", asyn
   const client = new LocalOwnerControl({ fetchFn: f.fetchFn, transportLoader: async () => { transportLoaded = true; return f.module; } });
   await assert.rejects(client.connect(token, expiry), /HTTP 401/);
   assert.equal(transportLoaded, false);
-  assert.equal(f.sockets.length, 0);
+  assert.equal(f.calls.some(call => call.path === "/api/matrix/control"), false);
 });
 
 test("invalid token, wrong Matrix identity, stale release, and unsupported commands fail closed", async () => {
@@ -207,28 +185,29 @@ test("invalid token, wrong Matrix identity, stale release, and unsupported comma
   };
   const wrongClient = makeClient(wrong);
   await assert.rejects(wrongClient.connect(token, expiry), /Unexpected Matrix identity/);
-  assert.equal(wrong.sockets.length, 0);
+  assert.equal(wrong.calls.some(call => call.path === "/api/matrix/control"), false);
   const unsupported = fixture();
-  unsupported.owner.current.state.HBNF.candidate = "stale-release";
+  unsupported.owner.current.HBNF.candidate = "stale-release";
   const unsupportedClient = makeClient(unsupported);
   await assert.rejects(unsupportedClient.connect(token, expiry), /firmware is not/);
-  assert.equal(unsupported.sockets[0].sent.some(x => x.includes('"matrixBrightness":1')), false);
+  assert.equal(unsupported.calls.some(call => call.path === "/api/matrix/control"), false);
 });
 
 test("valid release identity does not enable controls when required Matrix state fields are missing", async () => {
   const f = fixture();
-  f.owner.current.state.HBNF.auxBrightness = undefined;
+  f.owner.current.HBNF.auxBrightness = undefined;
   const client = makeClient(f);
   await assert.rejects(client.connect(token, expiry), /readback is incomplete/);
-  assert.equal(f.sockets[0].sent.some(x => x.includes('"matrixBrightness":1')), false);
+  assert.equal(f.calls.some(call => call.path === "/api/matrix/control"), false);
 });
 
-test("local revocation clears the active socket and sends no cloud request", async () => {
+test("local revocation clears the local polling transport and sends no cloud request", async (t) => {
   const f = fixture();
   const client = makeClient(f);
+  t.after(() => client.disconnectTransport());
   await client.connect(token, expiry);
   await client.revoke(token);
-  assert.equal(f.sockets[0].readyState, 3);
+  assert.equal(client.transport, null);
   assert.ok(f.calls.some(call => call.path === "/api/session/revoke"));
   assert.ok(f.calls.every(call => call.url.startsWith(LOCAL_CONTROL_ORIGIN)));
 });
@@ -238,8 +217,12 @@ test("Opal gateway restricts origin, reads, and the bounded authenticated AUX wr
   const auth = await readFile(new URL("../staging/coordinated-backend/opal/owner-local-control/auth.lua", import.meta.url), "utf8");
   assert.match(nginx, /server_name cart-control\.hbnightflyers\.com/);
   assert.match(nginx, /if \(\$http_origin != "https:\/\/hbnightflyers\.com"\)/);
-  assert.match(nginx, /proxy_set_header Sec-WebSocket-Protocol ""/);
-  assert.match(nginx, /add_header Sec-WebSocket-Protocol \$hbnf_ws_protocol always/);
+  assert.match(nginx, /listen 192\.168\.77\.1:8443 ssl/);
+  assert.equal((nginx.match(/^\s*listen\s+/gm) || []).length, 1, "dedicated gateway may bind only one listener");
+  assert.match(nginx, /location = \/api\/matrix\/control[\s\S]*?matrix_command_access\.lua[\s\S]*?proxy_pass http:\/\/192\.168\.77\.10\/json\/state/);
+  assert.match(nginx, /location = \/mission-control-local\/owner-http-transport\.js/);
+  assert.doesNotMatch(nginx, /location = \/ws/);
+  assert.match(nginx, /proxy_pass_request_headers off/);
   assert.match(nginx, /location = \/api\/aux\/control[\s\S]*?access_by_lua_file[\s\S]*?aux_command_access\.lua[\s\S]*?proxy_pass http:\/\/192\.168\.77\.11\/json\/state/);
   assert.match(nginx, /proxy_pass_request_headers off/);
   const auxLua = await readFile(new URL("../staging/coordinated-backend/opal/owner-local-control/aux_command_access.lua", import.meta.url), "utf8");
@@ -247,7 +230,15 @@ test("Opal gateway restricts origin, reads, and the bounded authenticated AUX wr
   assert.match(auxLua, /key == "on"/);
   assert.doesNotMatch(auxLua, /proxy_pass|192\.168\.77/);
   const authLua = await readFile(new URL("../staging/coordinated-backend/opal/owner-local-control/auth.lua", import.meta.url), "utf8");
-  assert.match(authLua, /hbnf_ws_protocol = "hbnf-owner-v1\." \.\. token:lower\(\)/);
+  assert.match(authLua, /request_rate\("http:" \.\. remote, 120, 60\)/);
+  assert.doesNotMatch(authLua, /sec-websocket-protocol|hbnf_ws_protocol/);
+  const matrixLua = await readFile(new URL("../staging/coordinated-backend/opal/owner-local-control/matrix_command_access.lua", import.meta.url), "utf8");
+  assert.match(matrixLua, /auth\.owner_access\(\)/);
+  assert.match(matrixLua, /invalid_matrix_command/);
+  assert.match(matrixLua, /unsupported_matrix_command/);
+  assert.match(matrixLua, /ngx\.var\.hbnf_matrix_body = encoded/);
+  assert.match(matrixLua, /#body > 2048/);
+  assert.match(matrixLua, /only_keys\(input\.HBNF, keys\([\s\S]*?"scene", "vibe", "matrixBrightness", "auxBrightness", "motion", "audioResponse", "palette", "overlay"/);
   const enrollment = await readFile(new URL("../staging/coordinated-backend/opal/owner-local-control/enroll.lua", import.meta.url), "utf8");
   assert.match(enrollment, /ngx\.var\.hbnf_owner_token = token/);
   assert.match(enrollment, /local expiry = verified\.expiresAtEpoch/);
@@ -286,6 +277,10 @@ test("guarded Opal installer uses an isolated :8443 Nginx instance with non-root
   const service = await readFile(new URL("hbnf-owner-local-control.init", root), "utf8");
   assert.match(installer, /owner-network-isolation-verified/);
   assert.match(installer, /EXPECTED_OLD_TRANSPORT=a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e/);
+  assert.match(installer, /TARGET=\/www\/mission-control-local\/local-transport\.js/);
+  assert.match(installer, /OWNER_HTTP_TARGET=\/www\/mission-control-local\/owner-http-transport\.js/);
+  assert.match(installer, /\[ ! -e "\$OWNER_HTTP_TARGET" \]/);
+  assert.match(installer, /cp -p "\$TARGET" "\$BACKUP\/local-transport\.js"/);
   assert.match(preflight, /EXPECTED_MATRIX_RELEASE=hbnf-cart2-phase2-r6-skins-readable-20261014/);
   assert.match(preflight, /@\.release_id/);
   assert.match(preflight, /\[ "\$matrix_leds" = "534" \]/);
@@ -307,9 +302,16 @@ test("guarded Opal installer uses an isolated :8443 Nginx instance with non-root
   assert.match(installer, /https:\/\/\$HOST:8443\/api\/session/);
   assert.match(installer, /revalidate\.lua/);
   assert.match(rollback, /CANDIDATE_TRANSPORT_SHA=/);
+  assert.match(rollback, /TARGET=\/www\/mission-control-local\/local-transport\.js/);
+  assert.match(rollback, /OWNER_HTTP_TARGET=\/www\/mission-control-local\/owner-http-transport\.js/);
+  assert.match(rollback, /mv "\$TARGET\.rollback" "\$TARGET"/);
+  assert.match(rollback, /rm -f "\$OWNER_HTTP_TARGET"/);
   assert.match(preflight, /cart-control\.hbnightflyers\.com/);
   assert.match(preflight, /resty\.sha256/);
-  assert.match(nginx, /listen 8443 ssl/);
+  assert.match(nginx, /listen 192\.168\.77\.1:8443 ssl/);
+  assert.match(preflight, /GATEWAY_LAN_IP=192\.168\.77\.1/);
+  assert.match(preflight, /WAN input policy must be DROP or REJECT/);
+  assert.match(preflight, /explicit IPv[46] WAN accept rule for TCP 8443 exists/);
   assert.match(dedicated, /user nobody nogroup;/);
   assert.match(dedicated, /worker_processes 1;/);
   assert.match(dedicated, /pid \/var\/run\/hbnf-owner-local-control-nginx\.pid;/);
@@ -328,11 +330,22 @@ test("guarded Opal installer uses an isolated :8443 Nginx instance with non-root
   for (const name of ["install.sh", "rollback.sh", "preflight.sh", "matrix_topology.sh", "hbnf-owner-local-control.init"]) execFileSync("sh", ["-n", fileURLToPath(new URL(name, root))]);
 });
 
-test("Owner PWA local gateway and WSS use the isolated 8443 listener", async () => {
+test("Owner PWA local gateway uses the isolated HTTPS HTTP-command listener", async () => {
   const local = await readFile(new URL("../hbnf-final-controller/hbnf-cart-local.mjs", import.meta.url), "utf8");
   assert.match(local, /LOCAL_CONTROL_ORIGIN = "https:\/\/cart-control\.hbnightflyers\.com:8443"/);
-  assert.match(local, /this\.origin\.replace/);
-  assert.match(local, /"wss:\/\/"/);
+  assert.match(local, /"\/api\/matrix\/control"/);
+  assert.match(local, /"\/api\/matrix\/json\/state"/);
+  assert.match(local, /owner-http-transport\.js/);
+  assert.doesNotMatch(local, /wss:\/\/|WebSocket|\.socket/);
+});
+
+test("the test-installed Opal Mission Control WebSocket transport remains supported by the updated package", async () => {
+  const local = await readFile(new URL("../staging/coordinated-backend/opal/mission-control-local/local-transport.js", import.meta.url), "utf8");
+  assert.match(local, /export function ownerWebSocketProtocol/);
+  assert.match(local, /export class LocalMatrixTransport/);
+  assert.match(local, /transport\.socket\.send\(JSON\.stringify\(\{HBNF:patch\}\)\)/);
+  assert.match(local, /type === "VIBE_AUTO"/);
+  assert.match(local, /kind==="scoreboard"/);
 });
 
 test("Matrix preflight accepts the live 32x16 2D geometry and rejects truncated layouts", async () => {
@@ -362,11 +375,14 @@ test("iOS 12 audit includes the new local owner module and gateway-loaded UI tra
   const audit = await readFile(new URL("../tests/hbnf-ios12-compat-audit.mjs", import.meta.url), "utf8");
   const local = await readFile(new URL("../hbnf-final-controller/hbnf-cart-local.mjs", import.meta.url), "utf8");
   assert.match(audit, /hbnf-cart-local\.mjs/);
+  assert.match(audit, /owner-http-transport\.js/);
+  const ownerHttp = await readFile(new URL("../staging/coordinated-backend/opal/mission-control-local/owner-http-transport.js", import.meta.url), "utf8");
+  assert.doesNotMatch(ownerHttp, /\?\.|\?\?|\.replaceChildren\s*\(|\bglobalThis\b|\.at\s*\(/);
   assert.doesNotMatch(local, /\?\.|\?\?|\.replaceChildren\s*\(|\bglobalThis\b|\.at\s*\(/);
-  assert.match(local, /wss:\/\//);
+  assert.doesNotMatch(local, /wss:\/\//);
   assert.match(local, /credentials: "omit"/);
-  assert.match(local, /scheduleSocketRevalidation/);
-  assert.match(local, /socketRevalidateMs/);
+  assert.match(local, /scheduleLocalRevalidation/);
+  assert.match(local, /localRevalidateMs/);
   const app = await readFile(new URL("../hbnf-final-controller/hbnf-cart.js", import.meta.url), "utf8");
   assert.match(app, /visibilitychange[\s\S]*?disconnectTransport\(\)/);
   assert.match(app, /pagehide[\s\S]*?disconnectTransport\(\)/);

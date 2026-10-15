@@ -1,41 +1,33 @@
-# Opal Owner Local Control — staged v1.0.3
+# Opal Owner Local Control — staged v1.0.4
 
-Offline package only. It does not change the public site, Supabase, firmware, scoring, Wi-Fi, DNS, firewall, or running router services until the guarded installer is explicitly run.
+Offline package only. No router, device, cloud, scoring, DNS, firewall, or firmware changes are made until a separately admitted installation. This release retains the existing Opal Mission Control WebSocket interface and adds a separate authenticated HTTP transport module for the production Owner PWA. The updated existing transport keeps its WebSocket class and current command mappings; rollback restores its exact v1.0.1 source.
 
-## Root-worker correction
+## Per-command gateway
 
-The Opal's existing GL.iNet Nginx 1.17.7 runs root workers by vendor configuration. That is not treated as a router defect and its global user, configuration, 80/443 listeners, reload behavior, and Skins relay are left alone.
+The dedicated Nginx instance listens only on `192.168.77.1:8443`, uses the installed TLS/Lua-enabled Nginx binary, and drops its single request worker to `nobody:nogroup`. The Nginx master remains root only to open its root-only key and supervise the process. The global GL.iNet Nginx, its 80/443 listeners, and the Skins relay are not reloaded or modified.
 
-The gateway instead gets a second Nginx instance using the already-installed binary and statically built TLS/Lua modules. It has a standalone config, PID/log/temp paths, Lua shared dictionaries, one worker, and TCP 8443. Its master remains root only to read the existing root:root mode-0600 TLS key and supervise the listener; Nginx's native `user nobody nogroup` drops the request worker before it handles traffic. The worker owns only the dedicated session, revocation, and request-temp directories. The existing PWA adapter points to `https://cart-control.hbnightflyers.com:8443` and uses WSS on that listener.
+The Owner PWA imports `owner-http-transport.js`. Its Matrix writes use bounded `POST /api/matrix/control` requests; each request validates the paired token, origin, expiry/revocation, body size, command keys, and value ranges before constructing a canonical WLED `/json/state` body. The gateway no longer exposes a write-capable WebSocket route. The PWA then obtains fresh Matrix state and checks the requested values; AUX control has a separate authenticated request and independent readback. HTTP acceptance alone is not reported as device-state confirmation, and DDP state is not represented as proof of physical illumination. The test-installed Opal page continues using its existing WebSocket class.
 
-This follows Nginx's documented master/worker privilege separation and OpenWrt's existing procd service supervision. Changing global `user root;` to `nobody` was rejected because it would alter all existing Nginx sites. Running the whole gateway process as `nobody` was rejected because it cannot read the private key at mode 0600; widening key permissions would weaken key protection. Replacing Nginx with uHTTPd was not justified: the installed Nginx already has the needed TLS, Lua and WebSocket proxy support, while an alternative WebSocket-auth proxy is not established on this router.
+WLED documents JSON state writes through HTTP POST and state readback through its JSON API ([WLED JSON API](https://kno.wled.ge/interfaces/json-api/)). That upstream API does not provide owner authorization; authorization here is enforced by the Opal gateway per request. The exact installed Matrix firmware contract remains a live release prerequisite.
 
-Sources: [Nginx core `user` directive](https://nginx.org/en/docs/ngx_core_module.html#user), [OpenWrt procd init scripts](https://openwrt.org/docs/guide-developer/procd-init-scripts), [OpenWrt 18.06 procd source](https://github.com/openwrt/openwrt/blob/openwrt-18.06/package/system/procd/files/procd.sh).
+## Verified device facts and remaining security boundary
 
-## Opal evidence and limits
+Read-only inventory confirmed GL-SFT1200/OpenWrt 18.06, Nginx 1.17.7 with TLS/Lua, LAN address `192.168.77.1`, and WAN input drop/reject. The staged socket binds only the LAN address. This supports WAN denial but has not been tested from an external WAN client because the candidate is not installed.
 
-Read-only inventory on the actual GL-SFT1200 confirmed OpenWrt 18.06, Nginx 1.17.7, OpenSSL 1.1.1i, compiled TLS and Lua modules, `/sbin/procd`, `nobody` UID 65534 / `nogroup`, root-owned existing Nginx master and root workers, and free TCP 8443. The router reported about 118,784 KiB total RAM and 71,232 KiB available; the existing Nginx master/worker RSS values were about 7.7 MiB per process. The new one-worker instance's incremental memory was not physically measured because the package has not been installed. A rough RSS upper estimate is one additional master plus one worker (about 15.5 MiB before accounting for shared executable/library pages); runtime memory under relay load remains a release check.
+The live wireless configuration places both active HBNF-Cart radios on the main `lan` bridge; guest SSIDs are disabled. Matrix and AUX share that LAN, where WLED native control APIs are unauthenticated. Therefore unpaired clients on the main Wi-Fi can bypass the Owner gateway. This is a confirmed release blocker. No marker file is accepted as proof of isolation; a safe network isolation design and a negative control test from unpaired clients are still required. Do not install this gateway as a security-complete Owner PWA while that bypass remains.
 
-The packaged init service is procd-supervised with respawn and starts after the existing Nginx service. Startup recovery and the separate config were not exercised on the router. The preflight requires a valid DNS-01 certificate, matching local DNS, free 8443, exact current device identities/topology, and empty dedicated install paths. The read-only inventory found the certificate absent and `cart-control.hbnightflyers.com` returning NXDOMAIN. TLS module support is verified; certificate trust/handshake is not.
+The deployed v25 pairing verifier returns only `{paired:true}`. The authoritative paired-session expiry schema could not be recovered from repository migrations or available bounded read-only backend access. Enrollment fails closed when `expiresAtEpoch` is unavailable; do not infer expiry from browser input. The verifier/schema correction remains blocked pending the authoritative database contract.
 
-Persistent session and revocation files live under `/etc/hbnf-local-control-state` on the router's persistent overlay, not `/tmp`. The parent is root:nogroup mode 0710; session, revocation, and temporary child directories are nobody:nogroup mode 0700. Nginx's shared session/rate dictionaries are instance-local and are caches, not the persistent source of session expiry/revocation.
+## TLS and local DNS
 
-## Existing pairing and security gates
+The hostname is `cart-control.hbnightflyers.com`; the gateway must use a publicly trusted DNS-01 certificate while local DNS resolves that hostname to `192.168.77.1`. DNS-01 does not require a public gateway record, but issuance/renewal needs authorized DNS-provider API credentials. Let’s Encrypt documents DNS-01 as the validation option for certificates without exposing an HTTP service ([ACME challenge types](https://letsencrypt.org/docs/challenge-types/)). The Opal inventory found no ACME client or existing certificate; no DNS token scope was available for this pass. Renewal needs WAN access at renewal time; the already-issued certificate and local split-DNS resolution continue to serve the local gateway during WAN outages until expiry.
 
-The gateway stores only a SHA-256 digest of the random paired token and the server-issued pairing expiration. The current known v25 verifier returns `{paired:true}` without authoritative expiry, so enrollment remains blocked until its read-only pairing contract is updated and qualified with rollback. Do not use a browser-supplied expiry.
+The installer does not create the certificate or alter dnsmasq. Existing preflight checks require the key to be root:root mode 0600, a trusted SAN/chain, and local hostname resolution. No certificate credential is included in the package.
 
-The supported Owner PWA closes its socket on hide/unload and rotates it every 60 seconds with gateway revalidation. This bounds revocation for that client, but does not forcibly terminate a noncompliant raw WebSocket that remains open. Guest/unpaired direct access to WLED remains a separate mandatory network-isolation test; no UI lock or marker file is accepted as proof. No isolation rule has been changed.
+## Persistent sessions and rollback
 
-## Installation and exact rollback
+Session expiry/revocation files are stored under persistent `/etc/hbnf-local-control-state`; shared dictionaries are caches only. The package verifies and snapshots the exact current Opal page module SHA `a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e`. Rollback stops/disables only the dedicated service, restores that exact transport, removes `owner-http-transport.js` and the dedicated config/Lua/session/log paths, then verifies the original Opal page transport and GL.iNet 80/443 listeners remain unchanged.
 
-`preflight.sh` is read-only. `install.sh` verifies the source-bound package, the exact previous v1.0.1 transport hash, fresh release/device identity, certificate/DNS, and free dedicated paths; then snapshots the prior transport at `/root/hbnf-owner-local-control.rollback-v1.0.3`, installs only the separate config/service/Lua/state plus the revised transport, validates the dedicated config, enables/starts its service, and checks for exactly one `nobody` request worker and a fail-closed HTTPS 401. It does not edit `/etc/nginx/nginx.conf` or `/etc/nginx/conf.d`, or reload the global Nginx.
+## Release status
 
-`rollback.sh` disables/stops only the dedicated service, verifies the candidate transport hash, restores the exact prior transport, removes only the dedicated config/service/Lua/session/log files, and checks the existing 80/443 listeners remain present. The package is staged, not installed. Runtime config syntax, TLS handshake, procd boot recovery, measured memory overhead, session persistence across reboot, guest-client isolation, iOS 12, and physical output are not yet verified.
-
-## Remaining acceptance
-
-1. Qualify the authoritative Supabase pairing-expiry verifier and its exact rollback; production returns only `{paired:true}` in the last verified contract.
-2. Issue/install the trusted DNS-01 cert and local hostname resolution without public PWA routing changes.
-3. Verify guest/unpaired clients cannot access WLED control APIs directly while Opal-to-device traffic remains allowed.
-4. After guarded authorization and preflight, validate Nginx config/start as a dedicated instance; verify worker UID, 8443 TLS/WSS, procd restart, persistent sessions, memory under relay load, and rollback.
-5. Test on iOS 12 iPad mini with WAN disabled, then verify Matrix and AUX state/physical response and existing admin/Skins/animation behavior.
+Staged, not installed. Remaining mandatory gates: authoritative server pairing expiry; trusted DNS-01 certificate and split DNS; proven isolation from direct WLED control for every unpaired client; external WAN-denial and runtime config checks; iOS 12 device acceptance; and physical Matrix/AUX readback/illumination confirmation. Do not treat host tests or this package as physical acceptance.

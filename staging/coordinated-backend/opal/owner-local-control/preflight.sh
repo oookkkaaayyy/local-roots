@@ -5,6 +5,7 @@ HOST=cart-control.hbnightflyers.com
 MATRIX=192.168.77.10
 AUX=192.168.77.11
 GATEWAY_PORT=8443
+GATEWAY_LAN_IP=192.168.77.1
 EXPECTED_MATRIX_RELEASE=hbnf-cart2-phase2-r6-skins-readable-20261014
 fail(){ echo "BLOCKED: $*" >&2; exit 1; }
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -23,6 +24,13 @@ printf '%s\n' "$nginx_build" | grep -q 'lua-nginx' || fail "installed Nginx buil
 printf '%s\n' "$nginx_build" | grep -q 'http_ssl' || fail "installed Nginx build has no TLS module"
 [ -x /sbin/procd ] && [ -f /etc/rc.common ] && [ -f /lib/functions/procd.sh ] || fail "OpenWrt procd service support is incomplete"
 [ -x /etc/init.d/nginx ] || fail "existing GL.iNet Nginx service is unavailable"
+[ "$(uci -q get network.lan.ipaddr 2>/dev/null || true)" = "$GATEWAY_LAN_IP" ] || fail "Opal LAN address is not the exact gateway bind address $GATEWAY_LAN_IP"
+# Require the active OpenWrt WAN zone's input policy to remain restrictive;
+# absence of a port-specific ACCEPT rule alone is not proof of WAN denial.
+wan_zone_index=$(uci -q show firewall 2>/dev/null | awk -F'[][]' '/^firewall\.@zone\[[0-9]+\]\.name=.wan./ { print $2; exit }')
+[ -n "$wan_zone_index" ] || fail "could not identify the active OpenWrt WAN firewall zone"
+wan_input=$(uci -q get "firewall.@zone[$wan_zone_index].input" 2>/dev/null || true)
+case "$wan_input" in DROP|REJECT) ;; *) fail "WAN input policy must be DROP or REJECT (got ${wan_input:-unset})" ;; esac
 worker_uid=$(id -u nobody 2>/dev/null || true)
 worker_gid=$(id -g nobody 2>/dev/null || true)
 worker_group=$(id -gn nobody 2>/dev/null || true)
@@ -40,6 +48,16 @@ if command -v netstat >/dev/null 2>&1; then
   netstat -lnt 2>/dev/null | awk 'NR > 2 && $4 ~ /(:|\])8443$/ { found=1 } END { exit found ? 0 : 1 }' && fail "TCP port 8443 is already bound"
 else
   awk '$2 ~ /:20FB$/ && $4 == "0A" { found=1 } END { exit found ? 0 : 1 }' /proc/net/tcp /proc/net/tcp6 2>/dev/null && fail "TCP port 8443 is already bound"
+fi
+# This listener is bound to the LAN address only. Also fail if an explicit
+# WAN-input accept rule for 8443 exists in either active firewall family.
+if command -v iptables-save >/dev/null 2>&1; then
+  wan_accept=$(iptables-save 2>/dev/null | grep -E -- '^-A (zone_wan_input|input_wan_rule|INPUT) .*8443.*-j ACCEPT|^-A (zone_wan_input|input_wan_rule|INPUT) .*-j ACCEPT.*8443' || true)
+  [ -z "$wan_accept" ] || fail "an explicit IPv4 WAN accept rule for TCP 8443 exists"
+fi
+if command -v ip6tables-save >/dev/null 2>&1; then
+  wan6_accept=$(ip6tables-save 2>/dev/null | grep -E -- '^-A (zone_wan_input|input_wan_rule|INPUT) .*8443.*-j ACCEPT|^-A (zone_wan_input|input_wan_rule|INPUT) .*-j ACCEPT.*8443' || true)
+  [ -z "$wan6_accept" ] || fail "an explicit IPv6 WAN accept rule for TCP 8443 exists"
 fi
 [ -r /etc/ssl/certs/ca-certificates.crt ] || fail "system CA bundle missing"
 [ -d /etc/hbnf-local-control ] || fail "certificate directory /etc/hbnf-local-control is missing"
@@ -72,7 +90,7 @@ matrix_release=$(printf '%s' "$matrix_build" | jsonfilter -e '@.release_id' 2>/d
 [ "$matrix_release" = "$EXPECTED_MATRIX_RELEASE" ] || fail "unexpected Matrix release identity"
 [ "$matrix_leds" = "534" ] || fail "unexpected combined Matrix/companion pixel count"
 matrix_topology_valid "$matrix_leds" "$matrix_seg0_start" "$matrix_seg0_stop" "$matrix_seg0_start_y" "$matrix_seg0_stop_y" "$matrix_seg1_start" "$matrix_seg1_stop" "$aux_leds" || fail "unexpected 2D Matrix/companion topology (expected Matrix x=0..32,y=0..16 and companion 512..534; AUX 22 LEDs)"
-echo "PREFLIGHT_OK: Opal/Nginx prerequisites, local DNS, certificate, exact Matrix release, device identities, 32x16 Matrix segment, and 22-pixel companion topology are present."
+echo "PREFLIGHT_OK: Opal/Nginx prerequisites, restrictive WAN input policy, local DNS, certificate, exact Matrix release, device identities, 32x16 Matrix segment, and 22-pixel companion topology are present."
 echo "NGINX_ISOLATION: existing GL.iNet Nginx/global workers/listeners remain untouched; a separate 8443 instance uses a root master only to open the root-only TLS key and a single nobody/nogroup request worker."
 echo "SESSION_STORAGE: persistent /etc parent will be root:nogroup 0710; session, revocation, and request-temp directories will be nobody:nogroup 0700."
 echo "NOT_CHECKED: guest/unpaired-to-WLED isolation, PWA certificate trust and physical iPad behavior. Guest isolation requires an actual negative control test from an unpaired guest client; no marker file is accepted as proof."

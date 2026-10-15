@@ -30,23 +30,8 @@ local function token_hash(token)
   return resty_string.to_hex(raw)
 end
 
-local function bearer_from_request(websocket)
+local function bearer_from_request()
   local headers = ngx.req.get_headers(32)
-  if websocket then
-    local offered = headers["sec-websocket-protocol"]
-    if type(offered) ~= "string" or #offered > 160 then return nil end
-    local found = nil
-    for part in offered:gmatch("[^,]+") do
-      local name, value = part:match("^%s*([%w%._-]+)%s*$"), nil
-      if name then value = name:match("^hbnf%-owner%-v1%.([a-fA-F0-9]+)$") end
-      if not value then return nil end
-      if value then
-        if found then return nil end
-        found = value
-      end
-    end
-    return found
-  end
   local token = headers["x-hbnf-device"]
   if type(token) ~= "string" or #token ~= 64 or not token:match("^[a-fA-F0-9]+$") then return nil end
   return token
@@ -97,26 +82,19 @@ function M.origin_required()
   return true
 end
 
-function M.require_owner(websocket)
+function M.require_owner()
   if M.origin_required() ~= true then return end
-  local token = bearer_from_request(websocket == true)
+  local token = bearer_from_request()
   if not token then return response(401, "paired_owner_required") end
   local hash = token_hash(token)
   if not hash then return response(503, "secure_hash_unavailable") end
   local expiry = session_expiry(hash)
   if not expiry then return response(401, "owner_session_expired_or_revoked") end
   local remote = ngx.var.remote_addr or "unknown"
-  local key = (websocket and "ws:" or "http:") .. remote
-  if not request_rate(key, websocket and 20 or 120, 60) then return response(429, "owner_rate_limited") end
+  if not request_rate("http:" .. remote, 120, 60) then return response(429, "owner_rate_limited") end
   ngx.ctx.hbnf_owner_hash = hash
   ngx.ctx.hbnf_owner_expiry = expiry
   ngx.var.hbnf_owner_token = token
-  if websocket then
-    -- The browser requires the server to select one offered subprotocol.
-    -- WLED does not negotiate one, so the TLS gateway returns this value
-    -- itself while stripping the credential before proxying upstream.
-    ngx.var.hbnf_ws_protocol = "hbnf-owner-v1." .. token:lower()
-  end
   return true
 end
 
@@ -176,11 +154,11 @@ function M.json_response(status, body)
 end
 
 function M.token_from_request()
-  return bearer_from_request(false)
+  return bearer_from_request()
 end
 
-function M.owner_access(websocket)
-  return M.require_owner(websocket == true)
+function M.owner_access()
+  return M.require_owner()
 end
 
 return M
