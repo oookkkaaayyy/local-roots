@@ -1127,7 +1127,7 @@ function classifyObservedProcess(description){
  return "unknown";
 }
 function evidenceScore(obs,dyes,plastic,baseFamily){
- const activeLayers=layers.filter(l=>Number(l.strength)>0);
+ const activeLayers=layers.filter(l=>Number(l.strength??100)>0);
  const matchingLayers=activeLayers.filter(l=>evidenceDyeFamilyMatches(l.name,obs.dyes));
  // A source naming one dye is not evidence for the entire selected stack.
  const partialDye=matchingLayers.length>0;
@@ -1153,7 +1153,7 @@ function evidenceScore(obs,dyes,plastic,baseFamily){
 function renderEvidenceAdvisory(){
  const warningNode=$("evidenceWarnings"),linksNode=$("evidenceLinks");
  if(!warningNode||!linksNode)return;
- const activeLayers=layers.filter(l=>Number(l.strength)>0);
+ const activeLayers=layers.filter(l=>Number(l.strength??100)>0);
  const selected=[...new Set(activeLayers.map(l=>l.name))],p=profile(),baseFamily=evidenceColorFamily($("baseHex").value);
  if(!selected.length){warningNode.innerHTML='<div class="evidence-info">Add dyes to see source-linked warnings. Evidence remains qualitative until physically verified.</div>';linksNode.innerHTML="";return;}
  const warnings=[];
