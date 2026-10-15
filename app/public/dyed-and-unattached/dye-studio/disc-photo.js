@@ -32,7 +32,7 @@ function locateDisc(data,w,h){
    if(valid<28)continue;
    const edge=sum/valid;
    // Favor long circular boundaries near the image center rather than printed motifs.
-   const score=(edge+innerSum/valid*1.15)*(valid/40)*(0.78+factor*0.55)-magnitudeOffset(ox,oy)*7;
+   const score=(edge+Math.min(edge,innerSum/valid)*.55)*(valid/40)*(0.78+factor*0.55)-magnitudeOffset(ox,oy)*7;
    if(score>best.score)best={score,x,y,r,edge,valid};
  }
  return best;
