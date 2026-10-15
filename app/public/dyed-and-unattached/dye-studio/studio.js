@@ -1128,7 +1128,9 @@ function classifyObservedProcess(description){
 }
 function evidenceScore(obs,dyes,plastic,baseFamily){
  const matchingLayers=layers.filter(l=>evidenceDyeFamilyMatches(l.name,obs.dyes));
- const exactDye=matchingLayers.length>0;
+ // A source naming one dye is not evidence for the entire selected stack.
+ const partialDye=matchingLayers.length>0;
+ const exactDye=partialDye&&matchingLayers.length===layers.length;
  const material=materialClass(plastic),obsMaterial=materialClass(obs.plastic);
  const samePlastic=plastic&&obs.plastic&&obs.plastic.toLowerCase().includes(plastic.toLowerCase());
  const sameFamily=material!=="unknown"&&obsMaterial===material;
@@ -1141,9 +1143,9 @@ function evidenceScore(obs,dyes,plastic,baseFamily){
  // A published result is more useful than general directions, but never numeric ground truth.
  if(/yes -|finished disc|swatch/i.test(String(obs.photo||'')))score+=2;
  // Method-only evidence informs technique, not a specific finished hue.
- if(!exactDye&&!samePlastic&&!sameFamily&&!methodMatch)return null;
+ if(!partialDye&&!samePlastic&&!sameFamily&&!methodMatch)return null;
  if(obs.evidenceType.includes("GUIDANCE"))score-=8;
- return {score,exactDye,samePlastic:!!samePlastic,sameFamily,baseMatch,methodMatch,methodAnalog,observedMethod};
+ return {score,exactDye,partialDye,samePlastic:!!samePlastic,sameFamily,baseMatch,methodMatch,methodAnalog,observedMethod};
 }
 function renderEvidenceAdvisory(){
  const warningNode=$("evidenceWarnings"),linksNode=$("evidenceLinks");
@@ -1203,13 +1205,13 @@ function renderEvidenceAdvisory(){
   seen.add(r.obs.sourceUrl);distinct.push(r);
  }};
  take(related.filter(r=>r.methodMatch),3);
- take(related.filter(r=>r.exactDye&&!r.methodMatch),5);
+ take(related.filter(r=>r.partialDye&&!r.methodMatch),5);
  take(related,6);
  const applicable=distinct.filter(r=>r.methodMatch&&!r.obs.evidenceType.includes('GUIDANCE'));
- const namedApplicable=applicable.filter(r=>r.exactDye);
- const namedOtherMethod=distinct.filter(r=>r.exactDye&&!r.methodMatch);
- linksNode.innerHTML=`<div class="evidence-info"><b>Closest practitioner / source examples:</b> ${distinct.length} linked sources shown; ${applicable.length} are same-method field reports and ${namedApplicable.length} also mention a selected dye shade; ${namedOtherMethod.length} mention a selected shade under a different or unknown method. ${!applicable.length?"No matching physical method report is shown; other-method photographs cannot predict this carrier.":""} These are qualitative case reports, not measured target colors. Exact carrier, plastic, dye, dose, coating and lighting must be established for calibration. Of 58 provisional records, ${EVIDENCE_OBSERVATIONS.filter(o=>selected.some(d=>evidenceDyeFamilyMatches(d,o.dyes))).length} mention one of the selected exact dyes. ${related.length?"Only controlled identical-condition results can justify calibrated color targets.":"No close documented observation found for this combination."}</div>`+
- distinct.map(r=>`<div class="evidence-record"><span class="evidence-tag">${escapeHtml(r.obs.id)}</span><span class="evidence-tag">${r.methodMatch?"Same application method":r.methodAnalog?"DIFFERENT METHOD":"Method not documented"}</span>${r.exactDye?'<span class="evidence-tag">Named shade (recipe unverified)</span>':''}${r.samePlastic?'<span class="evidence-tag">Named plastic</span>':r.sameFamily?'<span class="evidence-tag">Broad material analog</span>':''}
+ const namedApplicable=applicable.filter(r=>r.partialDye);
+ const namedOtherMethod=distinct.filter(r=>r.partialDye&&!r.methodMatch);
+ linksNode.innerHTML=`<div class="evidence-info"><b>Closest practitioner / source examples:</b> ${distinct.length} linked sources shown; ${applicable.length} are same-method field reports and ${namedApplicable.length} also mention at least one selected dye shade; ${namedOtherMethod.length} mention at least one selected shade under a different or unknown method. ${!applicable.length?"No matching physical method report is shown; other-method photographs cannot predict this carrier.":""} These are qualitative case reports, not measured target colors. Exact carrier, plastic, dye, dose, coating and lighting must be established for calibration. Of 58 provisional records, ${EVIDENCE_OBSERVATIONS.filter(o=>selected.some(d=>evidenceDyeFamilyMatches(d,o.dyes))).length} mention one of the selected exact dyes. ${related.length?"Only controlled identical-condition results can justify calibrated color targets.":"No close documented observation found for this combination."}</div>`+
+ distinct.map(r=>`<div class="evidence-record"><span class="evidence-tag">${escapeHtml(r.obs.id)}</span><span class="evidence-tag">${r.methodMatch?"Same application method":r.methodAnalog?"DIFFERENT METHOD":"Method not documented"}</span>${r.exactDye?'<span class="evidence-tag">All selected shades named (recipe unverified)</span>':r.partialDye?'<span class="evidence-tag">Partial shade match only</span>':''}${r.samePlastic?'<span class="evidence-tag">Named plastic</span>':r.sameFamily?'<span class="evidence-tag">Broad material analog</span>':''}
  <br><b>${escapeHtml(r.obs.result)}</b><br><span class="evidence-meta">${escapeHtml(r.obs.plastic)} · base ${escapeHtml(r.obs.baseColor)} · ${escapeHtml(r.obs.dyes)} · ${escapeHtml(r.obs.medium)} · ${escapeHtml(r.obs.duration)}<br>Missing/limits: ${escapeHtml(r.obs.limitations)}<br>Verification: ${escapeHtml(r.obs.verification||"source not checked")}; no measured numeric color data</span><br><a href="${escapeHtml(r.obs.sourceUrl)}" target="_blank" rel="noopener noreferrer">Open original source</a></div>`).join("");
 }
 const previousUpdateGuard=updateGuard;
