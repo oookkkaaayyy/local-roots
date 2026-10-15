@@ -32,6 +32,42 @@ function locateDisc(data,w,h){
  return best;
 }
 function magnitudeOffset(x,y){return Math.hypot(x,y)}
+
+function ringMedian(data,w,h,disc,r){
+ const px=[];for(let i=0;i<96;i++){
+  const a=i*Math.PI*2/96,x=Math.round(disc.x+Math.cos(a)*disc.r*r),y=Math.round(disc.y+Math.sin(a)*disc.r*r);
+  if(x<1||y<1||x>=w-1||y>=h-1)continue;
+  const o=(y*w+x)*4;if(data[o+3]>=240)px.push([data[o],data[o+1],data[o+2]]);
+ }
+ return px.length<64?null:[0,1,2].map(k=>median(px.map(q=>q[k])));
+}
+function estimateRim(data,w,h,disc){
+ const rings=[];
+ for(let i=0;i<=26;i++){const r=.50+i*.018,col=ringMedian(data,w,h,disc,r);if(col)rings.push({r,col})}
+ const center=rings.filter(x=>x.r>=.53&&x.r<=.65).map(x=>x.col),edge=rings.filter(x=>x.r>=.905&&x.r<=.968).map(x=>x.col);
+ if(center.length<4||edge.length<3)return null;
+ const med=rows=>[0,1,2].map(k=>median(rows.map(v=>v[k])));
+ const plate=med(center),rim=med(edge),contrast=distance(plate,rim);
+ if(contrast<35)return null;
+ const delta=plate.map((v,i)=>rim[i]-v),power=delta.reduce((a,v)=>a+v*v,0);
+ if(power<1)return null;
+ const dataPoints=rings.map(x=>({r:x.r,t:clamp(x.col.reduce((sum,v,i)=>sum+(v-plate[i])*delta[i],0)/power,0,1)}));
+ function cross(level){
+  const xs=dataPoints.filter(x=>x.r>=.64);
+  for(let i=1;i<xs.length;i++){
+   if(xs[i].t<level||xs.slice(i,i+3).filter(x=>x.t>=level).length<2)continue;
+   const prev=xs[i-1],den=xs[i].t-prev.t;
+   return clamp(prev.r+(Math.abs(den)>1e-5?(level-prev.t)/den:0)*.018,.55,.97);
+  }
+  return null;
+ }
+ const half=cross(.5),a=cross(.2),b=cross(.8);
+ if(half===null||dataPoints.filter(x=>x.r>.91&&x.t>.65).length<2)return null;
+ const softness=clamp(a!==null&&b!==null?Math.abs(b-a)*1.4:.036,.01,.18);
+ return{rimHex:hex(rim),plateHex:hex(plate),boundary:+clamp(half,.56,.95).toFixed(3),
+  softness:+softness.toFixed(3),kind:softness>.047?"soft":"hard",
+  confidence:contrast>=55?"good":"check",contrast:Math.round(contrast)};
+}
 function estimatePixels(imageData,options={}){
  const {data,width:w,height:h}=imageData||{};
  if(!data||!w||!h||data.length<w*h*4)throw Error("Invalid photo pixels");
@@ -58,7 +94,9 @@ function estimatePixels(imageData,options={}){
  const edgeFound=disc.edge>=15&&disc.valid>=28;
  const consistent=spread<34&&outliers<.35;
  const confidence=edgeFound&&consistent?"good":"check";
- return {hex:hex(rgb),rgb:rgb.map(x=>Math.round(x)),confidence,
+ const appearance=edgeFound?estimateRim(data,w,h,disc):null;
+ const plateHex=appearance?appearance.plateHex:hex(rgb);
+ return {hex:plateHex,rgb:appearance?[1,3,5].map(i=>parseInt(plateHex.slice(i,i+2),16)):rgb.map(x=>Math.round(x)),confidence:appearance?.confidence||confidence,appearance,
    edgeDetected:edgeFound,spread:Math.round(spread),outlierFraction:+outliers.toFixed(2),
    pixelCount:samples.length};
 }
@@ -91,9 +129,30 @@ function bind(){
  const camera=document.getElementById("discCameraInput"),library=document.getElementById("discPhotoInput"),
        status=document.getElementById("photoColorStatus");
  if(!camera||!library||!status)return;
+ const rimPanel=document.getElementById("photoRimPanel"),rimOn=document.getElementById("photoRimEnabled"),
+  rimColor=document.getElementById("photoRimColor"),rimWidth=document.getElementById("photoRimWidth"),
+  rimSoftness=document.getElementById("photoRimSoftness");
  for(const [button,input] of [["takeDiscPhoto",camera],["chooseDiscPhoto",library]]){
    document.getElementById(button).addEventListener("click",()=>input.click());
  }
+ function syncControls(){
+  if(!rimPanel)return;
+  const a=window.DUDiscAppearance?.get?.()||null;
+  rimOn.checked=!!a;
+  if(a){rimColor.value=a.rimHex;rimWidth.value=String(Math.round((1-a.boundary)*100));rimSoftness.value=String(Math.round(a.softness*100))}
+  rimPanel.classList.toggle("has-rim",!!a);
+ }
+ function changedRim(){
+  if(!rimOn.checked){window.DUDiscAppearance?.set?.(null,true);syncControls();return}
+  window.DUDiscAppearance?.set?.({rimHex:rimColor.value,boundary:1-(+rimWidth.value/100),
+   softness:(+rimSoftness.value/100)||.01,kind:+rimSoftness.value>5?"soft":"hard"},true);
+  syncControls();
+ }
+ if(rimPanel){
+  for(const el of [rimOn,rimColor,rimWidth,rimSoftness])el.addEventListener("change",changedRim);
+  syncControls();
+ }
+ window.DUDiscPhoto.syncControls=syncControls;
  async function apply(event){
    const input=event.currentTarget,file=input.files&&input.files[0];
    if(!file)return;
@@ -105,11 +164,14 @@ function bind(){
      color.value=result.hex;field.value=result.hex;
      // Same existing UI color handlers; automatically refresh model and undo history.
      color.dispatchEvent(new Event("input",{bubbles:true}));
+     window.DUDiscAppearance?.set?.(result.appearance||null);
+     syncControls();
      // Reuse the existing optical-profile transmission estimate and single undo/history commit.
      document.getElementById("autoTransmission").click();
+     const shape=result.appearance?" · two-tone plate and rim detected; check rim controls.":" · single-color estimate; optional rim controls below.";
      const summary=result.confidence==="good"?
-       "Estimated "+result.hex+" from the disc. Check against the real disc; lighting can shift color.":
-       "Estimated "+result.hex+". Photo is uncertain—try even light, with the full disc on a contrasting surface.";
+       "Estimated "+result.hex+shape+" Lighting can shift colors.":
+       "Estimated "+result.hex+shape+" Uncertain photo: try even light and contrasting background.";
      status.textContent=summary;
      status.className="photo-status "+(result.confidence==="good"?"photo-ok":"photo-check");
      document.getElementById("photoColorChip").style.backgroundColor=result.hex;
