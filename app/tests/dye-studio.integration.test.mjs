@@ -447,7 +447,7 @@ test('photo rim geometry actually colors pixels independently of Innova model',(
  assert.notEqual(api.appearanceAt(.8,0),'#1144CC');
  const offsets=Array.from({length:48},(_,i)=>i<12?-.04:.04);
  api.setDiscAppearance({rimHex:'#1144CC',boundary:.8,softness:.01,edgeOffsets:offsets});
- assert.equal(api.appearanceAt(.79,0),'#1144CC','detected narrow-rim sector is rim colored');
+ assert.equal(api.appearanceAt(.79*Math.cos(Math.PI/6),.79*Math.sin(Math.PI/6)),'#1144CC','detected narrow-rim sector is rim colored');
  assert.equal(api.appearanceAt(-.79,0),'#EEAA99','detected wide-core sector remains plate colored');
  api.setDiscAppearance(null);
  assert.equal(api.appearanceAt(.95,0),'#EEAA99');
