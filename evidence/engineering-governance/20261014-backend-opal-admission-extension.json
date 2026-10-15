@@ -1,0 +1,30 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "BACKEND_OPAL_SCOPED_ADMISSION_20261014",
+  "summary": "Extend the existing HBNF control checker and guarded launcher with one expiring, one-use, PHASE2_INTEGRATING-only admission sequence for the exact already-authorized Supabase/Opal Owner Control transaction; keep firmware mutation authority closed.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "The existing scripts/hbnf_control.py and scripts/hbnf_guarded_run.py remain the only admission and launch path; the V2 lifecycle remains unchanged.",
+      "affected_subsystem": "Backend/Opal Owner Control release admission, exact artifact and target binding, one-use sequencing, and negative launcher tests.",
+      "rollback_reference": "Revert the control and test changes to parent commit b7eda237ba6bf51eb7266a6d4eeb7846f38d0a5e. The new path leaves lifecycle_state PHASE2_INTEGRATING and live_mutation_authorized false; device and database rollback remain the exact v25 compensation and prior absent Opal writer state already covered by release evidence.",
+      "evidence_sources": [
+        "Supabase official Deploy to Production documentation: https://supabase.com/docs/guides/functions/deploy — individual function deployment is supported and must be verified against the exact project/function.",
+        "Repository AGENTS.md and config/HBNF_CONTROL_MODEL.json — operational release authority, one linear lifecycle, fail-closed admission, and no firmware-scope substitution.",
+        "Direct owner authorization: CART 2.0 — AUTHORIZE GUARDED OWNER CONTROL RESTORATION, exact commit b7eda237ba6bf51eb7266a6d4eeb7846f38d0a5e, followed by the current instruction to add a backend/Opal-scoped gate."
+      ],
+      "tests": [
+        "tests/test_backend_opal_release_admission.py: exact source/artifact/device/rollback bindings, expiry and replay rejection, ordered one-use transaction steps, zero child execution on rejects, rollback-only recovery, and unchanged PHASE2/firmware authority.",
+        "tests/hbnf_control.py and tests/hbnf_guarded_run.py: existing primary-control and firmware admission regressions.",
+        "Required repository control/release regression suite listed in AGENTS.md."
+      ]
+    }
+  }
+}
