@@ -622,3 +622,51 @@ test('single selected consumer dye keeps adequate name width without a reorder g
  assert.match(studioHtml,/\.layer-name\{font-size:13px;overflow-wrap:break-word;word-break:normal;hyphens:none\}/);
  assert.match(studioHtml,/@media\(pointer:coarse\)\{body\.client-mode #consumerLayers \.layer\.du-has-grip\{grid-template-columns:37px minmax\(0,1fr\)\}\}/);
 });
+
+test('photo-matched undyed daylight preserves original blank; dyes, UV and backlight stay unchanged',()=>{
+ const start=studioScript.indexOf('function colorForPoint(x,y,key){');
+ const end=studioScript.indexOf('const transmissionTargets=',start);
+ assert.ok(start>=0&&end>start);
+ const env={photoBaseSelected:true,discAppearance:null,viewMode:'daylight',daylightScene:'outdoor',layers:[],
+   appearanceAt:()=> '#DDE8C8',recordFor:()=>null,profile:()=>({optical:'proto-glow-champion'}),
+   researchPredictPoint:()=> '#B1C2A2'};
+ const evaluate=Function('env','with(env){'+studioScript.slice(start,end)+';return colorForPoint;}')(env);
+ assert.equal(evaluate(0,0,''),'#DDE8C8','photo blank must not be tinted twice');
+ env.layers=[{name:'ProChem Neon Hot Orange',strength:0}];
+ assert.equal(evaluate(0,0,'1'),'#DDE8C8','0% dye stays actual blank');
+ env.layers[0].strength=100;
+ assert.equal(evaluate(0,0,'1'),'#B1C2A2','dyed region retains model');
+ env.layers=[];env.daylightScene='backlit';
+ assert.equal(evaluate(0,0,''),'#B1C2A2','backlit model not replaced by outdoor photo');
+ env.daylightScene='outdoor';env.viewMode='uv365';
+ assert.equal(evaluate(0,0,''),'#B1C2A2','UV model not replaced by outdoor photo');
+ env.viewMode='daylight';env.photoBaseSelected=false;
+ assert.equal(evaluate(0,0,''),'#B1C2A2','unphotographed blank retains model');
+ assert.match(studioScript,/String\(photoBaseSelected\)/);
+});
+
+test('physical color-source quality is not inferred from photos on unverified substrates',()=>{
+ const csv=read('../../docs/dye-studio/evidence-quality-matrix.csv');
+ const lines=csv.trim().split('\n'),cols=lines[0].split(',');
+ const rows=lines.slice(1).map(line=>{
+  const parts=[...line.matchAll(/"((?:[^"]|"")*)"(?:,|$)/g)].map(x=>x[1].replace(/""/g,'"'));
+  assert.equal(parts.length,cols.length,'valid source record');
+  return Object.fromEntries(cols.map((name,i)=>[name,parts[i]]));
+ });
+ assert.equal(rows.length,71);
+ const chart=rows.find(x=>x.id==='FIELD-PHOTO-01');
+ assert.ok(chart);
+ assert.match(chart.starting_plastic,/Unverified substrate/);
+ assert.match(chart.train_eligible,/^NO/);
+ assert.match(chart.numeric_holdout_eligible,/^NO/);
+ assert.match(studioScript,/disc substrate unverified/);
+ for(const x of rows){
+  if(/^YES/i.test(x.train_eligible)){
+   assert.match(x.controlled_photo,/^YES/i,'numeric admission requires controlled photographs');
+   assert.match(x.plastic_documented,/^(YES|Named)/i,'numeric admission requires known substrate');
+   assert.match(x.dye_identity,/named/i,'numeric admission requires named pigment identity');
+  }
+ }
+ assert.equal(rows.filter(x=>/^YES/i.test(x.train_eligible)).length,0,'no unsupported numerical training admitted');
+});
+
