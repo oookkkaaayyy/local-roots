@@ -423,6 +423,36 @@ test('photo topology separates plate/rim without inventing brand plastic choices
  assert.match(select,/value="classic-glow-champion"/);
 });
 
+
+test('photo rim geometry actually colors pixels independently of Innova model',()=>{
+ const start=studioScript.indexOf('let discAppearance=null,photoBaseSelected=false;');
+ const end=studioScript.indexOf('\nconst transmissionTargets=',start);
+ assert.ok(start>0&&end>start);
+ const env={
+  $:id=>({value:id==='baseHex'?'#EEAA99':''}),
+  validHex:h=>/^#[0-9a-f]{6}$/i.test(h),
+  clamp:(x,a,b)=>Math.max(a,Math.min(b,x)),
+  mixRgbHex:(a,b,t)=>{
+   const x=[1,3,5].map(i=>parseInt(a.slice(i,i+2),16)),y=[1,3,5].map(i=>parseInt(b.slice(i,i+2),16));
+   return '#'+x.map((v,i)=>Math.round(v+(y[i]-v)*t).toString(16).padStart(2,'0')).join('').toUpperCase();
+  },
+  window:{},regionColorCache:{clear(){}},requestRender(){},commitHistory(){},layers:[],profile:()=>({}),researchPredictPoint(){},recordFor(){}
+ };
+ const api=Function('env','with(env){'+studioScript.slice(start,end)+';return {appearanceAt,setDiscAppearance,get:()=>discAppearance}}')(env);
+ assert.equal(api.appearanceAt(0,0),'#EEAA99');
+ api.setDiscAppearance({rimHex:'#1144CC',boundary:.8,softness:.03});
+ assert.equal(api.appearanceAt(0,0),'#EEAA99');
+ assert.equal(api.appearanceAt(.95,0),'#1144CC');
+ assert.notEqual(api.appearanceAt(.8,0),'#EEAA99');
+ assert.notEqual(api.appearanceAt(.8,0),'#1144CC');
+ const offsets=Array.from({length:48},(_,i)=>i<12?-.04:.04);
+ api.setDiscAppearance({rimHex:'#1144CC',boundary:.8,softness:.01,edgeOffsets:offsets});
+ assert.equal(api.appearanceAt(.79,0),'#1144CC','detected narrow-rim sector is rim colored');
+ assert.equal(api.appearanceAt(-.79,0),'#EEAA99','detected wide-core sector remains plate colored');
+ api.setDiscAppearance(null);
+ assert.equal(api.appearanceAt(.95,0),'#EEAA99');
+});
+
 test('consumer v2 keeps dye selection atomic and color edits contextual', () => {
  const v2=read('../public/dyed-and-unattached/dye-studio/consumer-v2.js');
  const ui=studioHtml;
