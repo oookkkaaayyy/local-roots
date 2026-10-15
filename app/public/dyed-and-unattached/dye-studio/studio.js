@@ -688,7 +688,11 @@ function makePaintImage(){
       const radius=Math.sqrt(r2);
       const zone=radius<.58?0:radius<.84?1:radius<=.86?2:3;
       const region=regionKeyAt(x,y);
-      const cacheKey=region+"|"+zone+"|"+Math.min(bins-1,Math.floor(radius*bins));
+      // Photo rim contours can differ by angle. The original radial-only cache
+   // would erase that photographed boundary variation. Bucket only near its rim.
+   const angularBucket=discAppearance?.edgeOffsets?.length===48&&Math.abs(radius-discAppearance.boundary)<.13?
+    Math.floor(((Math.atan2(y,x)+Math.PI)/(2*Math.PI))*24):0;
+   const cacheKey=region+"|"+zone+"|"+Math.min(bins-1,Math.floor(radius*bins))+"|"+angularBucket;
       let rgb=ringCache.get(cacheKey);
       if(!rgb){rgb=hexRgb(colorForPoint(x,y,region));ringCache.set(cacheKey,rgb)}
       data[p++]=rgb[0];data[p++]=rgb[1];data[p++]=rgb[2];data[p++]=255;
@@ -899,7 +903,7 @@ document.addEventListener("keydown",e=>{
 $("saveProject").onclick=()=>{try{localStorage.setItem("discDyeColorBlockLabV3",stateString());toast("Project saved in this browser")}catch{toast("Browser storage is unavailable")}};
 $("loadProject").onclick=()=>{try{const p=JSON.parse(localStorage.getItem("discDyeColorBlockLabV3")||"null");if(!p){toast("No saved project was found");return}mutate(()=>applyState(p),"Saved project loaded")}catch{toast("Saved project could not be loaded")}};
 $("copyRecipe").onclick=async()=>{
-  const regions=collectRegions(),lines=[`Surface disc color: ${$("baseHex").value}`,`Transmission color: ${currentTransmissionHex()}`,`View: ${viewMode}${viewMode==="daylight"?" / "+daylightScene:""}`,`Method: ${$("methodSelect").selectedOptions[0].text}`,`Default passes for new blocks: ${activePassCount()}`,`Exact process ID: ${activeRecipeKey()||"not provided"}`,`Prediction model: ${$("blendMode").selectedOptions[0].text}`,
+  const regions=collectRegions(),lines=[`Surface disc color: ${$("baseHex").value}`,`Photographed rim: ${discAppearance?discAppearance.rimHex+"; nominal width "+Math.round((1-discAppearance.boundary)*100)+"%; edge "+discAppearance.kind:"none detected / single tone"}`,`Transmission color: ${currentTransmissionHex()}`,`View: ${viewMode}${viewMode==="daylight"?" / "+daylightScene:""}`,`Method: ${$("methodSelect").selectedOptions[0].text}`,`Default passes for new blocks: ${activePassCount()}`,`Exact process ID: ${activeRecipeKey()||"not provided"}`,`Prediction model: ${$("blendMode").selectedOptions[0].text}`,
     ...layers.map((l,i)=>`${i+1}. ${l.name} — source ${l.hex} — application intensity ${l.strength}% — ${clamp(Math.round(+l.passes||1),1,12)} passes/coats — method ${methodForDyeLayer(l)} — ${l.shape==="full"?"whole disc":l.shape==="stripe"?`stripe, angle ${Math.round(l.angle)}°, position ${Math.round(l.offset*100)}%, width ${Math.round(l.width*100)}%`:`edge block, angle ${Math.round(l.angle)}°, position ${Math.round(l.offset*100)}%, ${l.side>0?"positive":"negative"} side`}`),
     "", "Predicted region colors:",...regions.map(r=>`${r.hex} overall; plate ${r.plateHex}; shoulder ${r.shoulderHex}; rim ${r.rimHex} — ${r.label}`),`Sampled result: ${$("sampleHex").textContent} at ${$("samplePos").textContent}`];
   try{await navigator.clipboard.writeText(lines.join("\n"));toast("Recipe copied")}catch{toast("Clipboard access was blocked")}
@@ -951,6 +955,7 @@ $("exportPng").onclick=()=>{
   c.fillStyle="#f4f7f9";c.font="800 42px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";c.fillText("Disc Dye Color-Block Plan",margin,62);
   c.fillStyle="#aeb8c4";c.font="20px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";
   c.fillText(`${profile()?.name||"Plastic"} · surface ${$("baseHex").value} · transmission ${currentTransmissionHex()} · ${viewMode}${viewMode==="daylight"?"/"+daylightScene:""}`,margin,96);
+   if(discAppearance)c.fillText(`Photo rim ${discAppearance.rimHex} · width ~${Math.round((1-discAppearance.boundary)*100)}% · ${discAppearance.kind} border (uncalibrated)`,margin,127);
   drawDisc(c,margin+discSize/2,150+discSize/2,discSize*.46);
   c.fillStyle="#aeb8c4";c.font="16px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";
   c.fillText("UNVALIDATED COLOR ESTIMATES: Preview HEX values are illustrative, not measured dye outcomes. Regions, overlap and backlighting may differ on real plastic. Strict matched records only.",margin,150+discSize+35);
