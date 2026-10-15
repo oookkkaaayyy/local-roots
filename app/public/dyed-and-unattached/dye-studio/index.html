@@ -379,6 +379,17 @@ body.calibration-mode #du-lighting{display:none!important}
  body.client-mode #du-lighting .condition-switch{justify-content:start}
 }
 </style>
+<style id="du-photo-rim-styles">
+.photo-rim-panel{margin-top:7px;border:1px solid #e2d2bf;border-radius:9px;padding:7px 9px}
+.photo-rim-panel summary{cursor:pointer;font-size:12px;font-weight:650}
+.photo-rim-panel.has-rim{border-color:#ac8468}
+.photo-rim-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:9px 0}
+.photo-rim-grid label{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:11px}
+.photo-rim-grid input[type="range"]{width:105px;max-width:100%}
+.photo-rim-grid input[type="color"]{width:48px;height:32px;padding:2px}
+.photo-rim-grid .photo-rim-enabled{grid-column:1/-1;justify-content:start}
+@media(max-width:420px){.photo-rim-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body class="client-mode">
 <header>
@@ -400,7 +411,17 @@ body.calibration-mode #du-lighting{display:none!important}
      <button type="button" id="chooseDiscPhoto">Choose photo</button><span id="photoColorChip" class="photo-chip" hidden aria-hidden="true"></span></div>
    <input id="discCameraInput" type="file" accept="image/*" capture="environment" class="hidden">
    <input id="discPhotoInput" type="file" accept="image/*" class="hidden">
-   <p id="photoColorStatus" class="photo-status" role="status" aria-live="polite">Auto-match disc color. Keep the full disc in even light.</p>
+   <p id="photoColorStatus" class="photo-status" role="status" aria-live="polite">Auto-match flight-plate and rim colors from your photo. Keep the full disc in even light.</p>
+   <details id="photoRimPanel" class="photo-rim-panel">
+     <summary>Rim appearance (automatic with photo; optional correction)</summary>
+     <div class="photo-rim-grid">
+       <label class="photo-rim-enabled"><input id="photoRimEnabled" type="checkbox"> Different rim color</label>
+       <label>Rim color <input id="photoRimColor" type="color" value="#333333"></label>
+       <label>Rim width <input id="photoRimWidth" type="range" min="5" max="44" step="1" value="15"></label>
+       <label>Edge softness <input id="photoRimSoftness" type="range" min="1" max="18" step="1" value="2"></label>
+     </div>
+     <p class="small">Photo estimates are not calibrated; if the border looks wrong, adjust the rim here. No photo is uploaded or stored.</p>
+   </details>
  </div>
  <label for="baseColor">Or choose color</label><div id="consumerBaseSlot" class="consumer-base-row"></div>
  <div id="consumerPresetSlot"></div>
@@ -454,7 +475,7 @@ body.calibration-mode #du-lighting{display:none!important}
         <div class="profile-grid">
           <div><div class="control-label">Profile name</div><input id="profileName" type="text" style="width:100%;text-transform:none"></div>
           <div><div class="control-label">Actual manufacturer / plastic</div><input id="profilePlastic" type="text" style="width:100%;text-transform:none"></div>
-          <div><div class="control-label">Closest Innova family</div><select id="profileOptical"><option value="star">Star — opaque premium</option><option value="champion">Champion — translucent premium</option><option value="gstar">GStar — flexible opaque</option><option value="halo-star">Halo Star — opaque two-tone</option><option value="proto-glow-star">Proto Glow Star — opaque glow</option><option value="proto-glow-champion">Proto Glow Champion — translucent glow</option><option value="color-glow-champion">Legacy Color Glow Champion</option><option value="pro">Pro</option><option value="dx">DX</option></select></div>
+          <div><div class="control-label">Closest Innova family</div><select id="profileOptical"><option value="star">Star — opaque premium</option><option value="champion">Champion — translucent premium</option><option value="gstar">GStar — flexible opaque</option><option value="proto-glow-star">Proto Glow Star — opaque glow</option><option value="proto-glow-champion">Proto Glow Champion — translucent glow</option><option value="classic-glow-champion">Classic Glow Champion</option></select></div>
           <div><div class="control-label">Evidence status</div><select id="profileStatus"><option value="research">Research-supported prior</option><option value="estimate">Low-confidence model estimate</option><option value="validated">Locally validated</option><option value="verified">Locally measured/verified</option><option value="unavailable">Not recommended</option></select></div>
           <div><div class="control-label">Default base color</div><div class="row"><input id="profileBaseColor" type="color" value="#E9F0CF"><input id="profileBaseHex" type="text" value="#E9F0CF"></div></div>
           <div><div class="control-label">Translucency 0–100</div><input id="profileTranslucency" type="number" min="0" max="100" value="0" style="width:100%"></div>
@@ -482,7 +503,7 @@ body.calibration-mode #du-lighting{display:none!important}
             <input id="transmissionHex" type="text" value="#A6C5B5" maxlength="7" aria-label="Transmitted blank hex color">
             <button id="autoTransmission">Auto-estimate</button>
           </div>
-          <div class="small" style="margin-top:6px">This field is used for Champion, Proto Glow Champion, and Color Glow Champion references.</div>
+          <div class="small" style="margin-top:6px">This field is used for Champion, Proto Glow Champion, and Classic Glow Champion references.</div>
         </div>
       </div>
       <div class="field">
