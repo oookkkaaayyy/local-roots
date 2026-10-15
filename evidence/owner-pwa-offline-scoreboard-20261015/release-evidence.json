@@ -1,0 +1,41 @@
+{
+  "schema": "hbnf-opal-mission-control-release-evidence-v1",
+  "run_id": "owner-pwa-scoreboard-20261015",
+  "repository": "oookkkaaayyy/local-roots",
+  "branch": "codex/glow-matrix-relay-integration-20261014",
+  "source_commit": "3ac78a1711532c934721db41053b8bd1e7d751b2",
+  "candidate": {
+    "release": "hbnf-opal-mission-control-local-v1.0.2-ios12",
+    "path": "staging/coordinated-backend/opal/hbnf-opal-mission-control-local-v1.0.2-ios12.zip",
+    "sha256": "b862c539cb68b0ae9841159098645d1f92abef1a4387a1167839a3a338d01df9",
+    "size_bytes": 29653
+  },
+  "change": "Add a collapsed Show Scores form to the existing Opal Mission Control. It sends a 22-second display-only overlay through the existing Matrix scoreboard command, supports F9/B9/Glow/Scores labels and at most 12 rows of 63 characters, and does not submit or store scoring data.",
+  "offline_verification": {
+    "command": "node --test staging/coordinated-backend/opal/mission-control-local/tests/local-transport.test.mjs staging/coordinated-backend/opal/mission-control-local/tests/update-v1.0.2.test.mjs",
+    "result": "PASS: 20 tests",
+    "coverage": [
+      "scoreboard command mapping and bounds",
+      "existing controls and state readback",
+      "iOS 12 syntax/API compatibility gate",
+      "unknown installed baseline rejected without changes",
+      "exact v1.0.1 update and rollback rehearsal"
+    ],
+    "limitation": "Host tests do not prove Matrix pixels or physical/iPad display."
+  },
+  "rollback": {
+    "baseline_release": "Mission Control v1.0.1",
+    "baseline_archive": "staging/coordinated-backend/opal/hbnf-opal-mission-control-local-v1.0.1-ios12.zip",
+    "baseline_archive_sha256": "62387ab89b5343614ad0eaf40000d1d71984567a3496b3d2cc64ce9cb668af75",
+    "mechanism": "update-v1.0.2.sh verifies the exact installed v1.0.1 content before mutation, retains /root/hbnf-mission-control-local.rollback-v1.0.1, and installs rollback-v1.0.2.sh with the candidate. The offline rehearsal restored the exact v1.0.1 files."
+  },
+  "live_preflight": {
+    "attempted_date": "2026-10-15",
+    "operation": "One read-only SSH preflight to root@192.168.77.1 using the existing hbnf_opal_rsa identity and required compatibility options.",
+    "result": "BLOCKED: SSH connection timed out before authentication; no Opal, Matrix, or AUX readback was obtained.",
+    "mutation": false,
+    "installation": "NOT PERFORMED",
+    "current_installed_file_identity": "Unknown until read-only Opal access is restored."
+  },
+  "physical_acceptance": "Pending installation and owner iPad observation. Prior v1.0.1 offline brightness controls were owner-accepted; the new scoreboard form has not been installed or physically tested."
+}
