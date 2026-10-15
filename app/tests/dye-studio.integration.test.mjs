@@ -610,6 +610,44 @@ test('radial region cache accelerates disc paint without crossing optical bounda
 });
 
 
+test('photographed irregular rim caching preserves each local pixel color',()=>{
+ const a=studioScript.indexOf('function makePaintImage(){');
+ const b=studioScript.indexOf('function resizeCanvas(){',a);
+ assert.ok(a>=0&&b>a);
+ const source=studioScript.slice(a,b);
+ for(const useOffsets of [true,false]){
+  const size=96,softness=useOffsets?.025:.002;
+  const offsets=Array.from({length:48},(_,i)=>i%2?.08:-.08);
+  const appearanceAt=(x,y)=>{
+   const r=Math.hypot(x,y),angle=(Math.atan2(y,x)+2*Math.PI)%(2*Math.PI);
+   const sector=Math.floor(angle/(2*Math.PI)*48);
+   const edge=useOffsets?offsets[sector]:0;
+   const t=Math.max(0,Math.min(1,(r-(.8+edge)+softness/2)/softness));
+   const v=Math.round(255*t*t*(3-2*t));
+   return '#'+v.toString(16).padStart(2,'0').repeat(3).toUpperCase();
+  };
+  let calls=0;
+  const env={PAINT_SIZE:size,
+   paintCtx:{createImageData:(w,h)=>({data:new Uint8ClampedArray(w*h*4)}),putImageData(){}},
+   paintedImage:null,discAppearance:{boundary:.8,softness,edgeOffsets:useOffsets?offsets:null},
+   appearanceAt,regionKeyAt:()=>'',colorForPoint:(x,y)=>{calls++;return appearanceAt(x,y);},
+   hexRgb:h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16))};
+  const fn=Function('env','with(env){'+source+';return makePaintImage;}')(env);
+  fn();
+  let errors=0,inside=0;
+  for(let iy=0;iy<size;iy++)for(let ix=0;ix<size;ix++){
+   const x=((ix+.5)/size)*2-1,y=((iy+.5)/size)*2-1;
+   if(x*x+y*y>1)continue;
+   inside++;
+   const expected=parseInt(appearanceAt(x,y).slice(1,3),16);
+   const actual=env.paintedImage.data[(iy*size+ix)*4];
+   if(expected!==actual)errors++;
+  }
+  assert.equal(errors,0,useOffsets?'irregular 48-sector rim pixel aliasing':'narrow uniform rim aliasing');
+  assert.ok(calls<inside*.5,'photo-aware caching must still avoid excessive predictor work');
+ }
+});
+
 test('single selected consumer dye keeps adequate name width without a reorder grip',()=>{
  const v2=read('../public/dyed-and-unattached/dye-studio/consumer-v2.js');
  const rule='body.client-mode #consumerLayers .layer{display:grid;grid-template-columns:37px minmax(0,1fr)';
