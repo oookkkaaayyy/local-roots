@@ -147,7 +147,7 @@ test('direct-application research is source labeled without pretending measured 
   assert.match(studio,/QA-AC-05/);
   assert.match(studio,/QA-AC-06/);
   assert.match(studio,/QA-AC-07/);
-  assert.match(studio,/Of 58 provisional records/);
+  assert.match(studio,/Of \$\{ALL_DYE_EVIDENCE\.length\} provisional records/);
   assert.match(studio,/no measured numeric color data/);
   assert.match(studio,/Manufacturer starting guidance is 1\/2 tsp powder/);
   assert.match(studio,/potential adhesive softening and blurred edges/);
@@ -787,4 +787,25 @@ test('private before-and-after owner photos are absent from served Studio JavaSc
  assert.match(studioScript,/const actualPhotos=s\.actual&&s\.beforeImg&&s\.afterImg/);
  assert.match(studioScript,/Private before\/after photos are not published/);
  assert.match(studioScript,/hbnf_green_orange/,'qualitative reference metadata retained');
+});
+
+test('published evidence counts match actual entries and distinct source URLs', () => {
+  const records = name => {
+    const prefix = `const ${name}=`;
+    const start = studioScript.indexOf(prefix);
+    assert.ok(start >= 0, `Missing evidence collection ${name}`);
+    const end = studioScript.indexOf('];', start);
+    assert.ok(end > start);
+    return JSON.parse(studioScript.slice(start + prefix.length, end + 1));
+  };
+  const entries = [...records('EVIDENCE_OBSERVATIONS'), ...records('FIELD_CASES')];
+  const distinctUrls = new Set(entries.map(row => row.sourceUrl));
+  assert.equal(entries.length, 71);
+  assert.equal(distinctUrls.size, 51);
+  assert.match(studioHtml, new RegExp(`— ${entries.length} provisional observations`));
+  assert.match(studioHtml, new RegExp(`${entries.length} records across ${distinctUrls.size} source URLs`));
+  assert.match(studioScript, /\$\{ALL_DYE_EVIDENCE\.length\} provisional source observations/);
+  assert.match(studioScript, /ALL_DYE_EVIDENCE\.filter\(o=>selected\.some\(d=>evidenceDyeFamilyMatches/);
+  assert.doesNotMatch(studioHtml, /includes the user-provided before\/after photos/);
+  assert.match(studioHtml, /Those photos are not published here/);
 });
