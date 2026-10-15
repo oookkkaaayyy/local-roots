@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { AUX_IP, MATRIX_IP, MATRIX_MAC, SUPPORTED_RELEASE, LocalMatrixTransport, auxStatus, buildPatch, stateMatches } from "../local-transport.mjs";
+import { AUX_IP, MATRIX_IP, MATRIX_MAC, SUPPORTED_RELEASE, LocalMatrixTransport, auxStatus, buildPatch, stateMatches } from "../local-transport.js";
 const state=(HBNF={},seg=[])=>({HBNF:{candidate:SUPPORTED_RELEASE,...HBNF},seg});
 test("fixed LAN target and installed release are explicit",()=>{assert.equal(MATRIX_IP,"192.168.77.10");assert.equal(AUX_IP,"192.168.77.11");assert.equal(SUPPORTED_RELEASE,"hbnf-cart2-phase2-r6-skins-readable-20261014")});
 test("Mission Control actions map to existing local HBNF fields",()=>{assert.deepEqual(buildPatch("TUNE",{matrixBrightness:69}),{matrixBrightness:69});assert.deepEqual(buildPatch("TUNE",{auxBrightness:255}),{auxBrightness:255});assert.deepEqual(buildPatch("TUNE",{motion:50,audioResponse:50}),{motion:50,audioResponse:50});assert.deepEqual(buildPatch("SCENE",{sceneId:"quiet-cosmos"}),{scene:"quiet-cosmos"});assert.deepEqual(buildPatch("VIBE",{vibe:"auto"}),{vibe:5});assert.deepEqual(buildPatch("PALETTE",{paletteId:"wled-25"}),{palette:{mode:"wled",index:25}});assert.deepEqual(buildPatch("PALETTE",{paletteId:"solid-12a0ff"}),{palette:{mode:"solid",rgb:[18,160,255]}});assert.deepEqual(buildPatch("OVERLAY_START",{overlayId:"safe-id",kind:"text",ttlMs:8000,data:{text:"Hello",color:"#ffffff"}}),{overlay:{id:"safe-id",kind:"text",ttlMs:8000,text:"Hello",color:"#FFFFFF"}});assert.deepEqual(buildPatch("TUNE",{matrixBrightness:0,auxBrightness:0}),{matrixBrightness:0,auxBrightness:0})});
@@ -16,8 +16,8 @@ test("wrong Matrix MAC is never command-ready",()=>{const socket=new FakeSocket(
 
 test("local package has no cloud, scoring, or OTA runtime imports", async () => {
   const html=await readFile(new URL("../index.html",import.meta.url),"utf8");
-  const app=await readFile(new URL("../app.mjs",import.meta.url),"utf8");
-  assert.match(html,/\.\/app\.mjs/);
+  const app=await readFile(new URL("../app.js",import.meta.url),"utf8");
+  assert.match(html,/\.\/app\.js/);
   assert.doesNotMatch(html,/hbnf-cart-(?:skins-score|features)|supabase\.co|serviceWorker/);
   assert.doesNotMatch(app,/supabase\.co|league_state|functions\/v1|OTA/);
 });

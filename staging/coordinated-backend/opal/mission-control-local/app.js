@@ -1,4 +1,4 @@
-import { AUX_IP, MATRIX_IP, MATRIX_MAC, SUPPORTED_RELEASE, SCENES, VIBES, LocalMatrixTransport, auxStatus } from "./local-transport.mjs";
+import { AUX_IP, MATRIX_IP, MATRIX_MAC, SUPPORTED_RELEASE, SCENES, VIBES, LocalMatrixTransport, auxStatus } from "./local-transport.js";
 const $=id=>document.getElementById(id),matrixUrl=`http://${MATRIX_IP}`,auxUrl=`http://${AUX_IP}`,powerKey="hbnf.mission.local.output-restore.v1",sceneLabels=["Balanced (Course Flow)","Upbeat (Field Mix)","Signature (HBNF Signature)","Ambient (Quiet Cosmos)"];
 let transport=null,matrixInfo=null,matrixState=null,auxPollBusy=false,retryMs=600,reconnectTimer=null,stateFreshAt=0;
 function text(id,value,cls){const n=$(id);if(n){n.textContent=value;if(cls)n.className=cls;}}
