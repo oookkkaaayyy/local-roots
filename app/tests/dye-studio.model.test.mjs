@@ -236,3 +236,35 @@ test('UV-reactive colorants remain exempt from nonfluorescent absorption ceiling
  assert.equal(color('#000000',[dye('ProChem Neon Cerise Pink')],'uv365',star,.3),
   researchPredict('#000000',[dye('ProChem Neon Cerise Pink')],'uv365',star));
 });
+
+
+test('ordinary dyes cannot visibly recolor an already black-stenciled opaque disc', () => {
+ const opaque=Array.from(defaults()).filter(p=>['innova_star','innova_gstar','innova_proto_glow_star'].includes(p.id));
+ const bases=['#FFFFFF','#E6DDB5','#B7C4DC','#1C1C1C'];
+ const radii=[.3,.7,.95];
+ const black=dye('ProChem Onyx');
+ const other=[dye('iDye Poly Blue'),dye('iDye Poly Crimson')];
+ const rgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+ let guarded=0;
+ for(const profile of opaque)for(const base of bases)for(const radius of radii){
+  const previous=color(base,[black],'daylight',profile,radius);
+  const priorRgb=rgb(previous);
+  for(const subsequent of other){
+   const actual=color(base,[black,subsequent],'daylight',profile,radius);
+   assert.ok(rgb(actual).every((v,i)=>v<=priorRgb[i]),
+     profile.id+' '+base+' radius='+radius+' Onyx then '+subsequent.name+': '+actual+' > '+previous);
+   guarded++;
+   assert.equal(color(base,[black,{...subsequent,strength:0}],'daylight',profile,radius),previous);
+  }
+ }
+ assert.equal(guarded,72);
+ // No blanket clamp is imposed on nonblack pigment mixtures or fluorescents.
+ for(const profile of opaque){
+  const blue=dye('iDye Poly Blue'),red=dye('iDye Poly Crimson');
+  assert.equal(color('#FFFFFF',[blue,red],'daylight',profile,.3),
+    color('#FFFFFF',[blue,red],'daylight',profile,.3));
+  const before=color('#FFFFFF',[black,dye('ProChem Neon Cerise Pink')],'daylight',profile,.3);
+  const standalone=color('#FFFFFF',[black],'daylight',profile,.3);
+  assert.notEqual(before,standalone,'fluorescent color remains exempt from passive black guard');
+ }
+});

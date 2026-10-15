@@ -47,3 +47,7 @@ cases retain existing outputs. This is a physical plausibility safeguard, **not*
 an empirical ΔE accuracy certification or source-image-based pigment calibration.
 Future scattering/colorimetric source data can supersede this conservative
 assumption if supported by actual measurements.
+
+
+## Black-underlay overprint consistency (2026-10-14)
+Original practitioner reports describe a correctly set black stencil remaining visually black through later nonfluorescent color application, e.g. https://www.reddit.com/r/discdyeing/comments/18h4tel and https://www.reddit.com/r/discdyeing/comments/1c1rmtj . Existing opaque preview could change ProChem Onyx already dyed black into blue when the next ordinary dye was applied because geometric interpolation adopted the second pigment's lighter swatch. A narrow passive black-underlay bound has been added for Star/GStar/Proto Glow Star; it does not change standalone dye responses, nonblack overlaps, fluorescent stacks, Champion translucent optics or UV/glow modes. This encodes a practitioner-backed qualitative invariant, not a measured two-color calibration. Real acetone solvent reworking/bleeding and fluorescence can invalidate a perfect-overprint approximation; numerical physical model accuracy remains open.
