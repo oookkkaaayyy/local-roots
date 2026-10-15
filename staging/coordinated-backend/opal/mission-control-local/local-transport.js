@@ -2,6 +2,7 @@ export const MATRIX_IP = "192.168.77.10";
 export const AUX_IP = "192.168.77.11";
 export const MATRIX_MAC = "704bca5b345c";
 export const SUPPORTED_RELEASE = "hbnf-cart2-phase2-r6-skins-readable-20261014";
+export const LOCAL_PAGE_URL = "http://192.168.77.1/mission-control-local/index.html";
 export const SCENES = ["course-flow", "field-mix", "hbnf-signature", "quiet-cosmos"];
 export const VIBES = ["chill", "groove", "heavy", "psychedelic", "cosmic", "auto"];
 const intIn = (value, min, max, label) => { const n = Number(value); if (!Number.isInteger(n) || n < min || n > max) throw new Error(`Invalid ${label}.`); return n; };
@@ -16,6 +17,7 @@ export function buildPatch(type, payload = {}) {
  else throw new Error(`Unsupported local command: ${String(type)}`);
  return h;
 }
+export function controlsEnabled(requested, releaseMatches, transportReady) { return !!(requested && releaseMatches && transportReady); }
 function sceneName(value) { if(Number.isInteger(Number(value))&&String(value).trim()!=="")return SCENES[Number(value)]||"";return String(value||""); }
 export function stateMatches(state,patch) {
  const h=state&&state.HBNF;if(!h||!patch||typeof patch!=="object")return false;

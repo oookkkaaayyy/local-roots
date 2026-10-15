@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { AUX_IP, MATRIX_IP, MATRIX_MAC, SUPPORTED_RELEASE, LocalMatrixTransport, auxStatus, buildPatch, stateMatches } from "../local-transport.js";
+import { AUX_IP, MATRIX_IP, MATRIX_MAC, SUPPORTED_RELEASE, LOCAL_PAGE_URL, LocalMatrixTransport, controlsEnabled, auxStatus, buildPatch, stateMatches } from "../local-transport.js";
 const state=(HBNF={},seg=[])=>({HBNF:{candidate:SUPPORTED_RELEASE,...HBNF},seg});
 test("fixed LAN target and installed release are explicit",()=>{assert.equal(MATRIX_IP,"192.168.77.10");assert.equal(AUX_IP,"192.168.77.11");assert.equal(SUPPORTED_RELEASE,"hbnf-cart2-phase2-r6-skins-readable-20261014")});
 test("Mission Control actions map to existing local HBNF fields",()=>{assert.deepEqual(buildPatch("TUNE",{matrixBrightness:69}),{matrixBrightness:69});assert.deepEqual(buildPatch("TUNE",{auxBrightness:255}),{auxBrightness:255});assert.deepEqual(buildPatch("TUNE",{motion:50,audioResponse:50}),{motion:50,audioResponse:50});assert.deepEqual(buildPatch("SCENE",{sceneId:"quiet-cosmos"}),{scene:"quiet-cosmos"});assert.deepEqual(buildPatch("VIBE",{vibe:"auto"}),{vibe:5});assert.deepEqual(buildPatch("PALETTE",{paletteId:"wled-25"}),{palette:{mode:"wled",index:25}});assert.deepEqual(buildPatch("PALETTE",{paletteId:"solid-12a0ff"}),{palette:{mode:"solid",rgb:[18,160,255]}});assert.deepEqual(buildPatch("OVERLAY_START",{overlayId:"safe-id",kind:"text",ttlMs:8000,data:{text:"Hello",color:"#ffffff"}}),{overlay:{id:"safe-id",kind:"text",ttlMs:8000,text:"Hello",color:"#FFFFFF"}});assert.deepEqual(buildPatch("TUNE",{matrixBrightness:0,auxBrightness:0}),{matrixBrightness:0,auxBrightness:0})});
@@ -14,10 +14,20 @@ test("unsupported runtime identity sends no command",async()=>{const socket=new 
 
 test("wrong Matrix MAC is never command-ready",()=>{const socket=new FakeSocket(),t=new LocalMatrixTransport({socketFactory:()=>socket});t.connect();socket.open();socket.update(state({matrixBrightness:69}));assert.equal(t.verifyIdentity({mac:"001122334455"}),false);assert.equal(t.controlReady(),false);assert.equal(t.verifyIdentity({mac:MATRIX_MAC}),true);assert.equal(t.controlReady(),true)});
 
+test("app verifies the expected MAC before its state can enable controls",async()=>{const app=await readFile(new URL("../app.js",import.meta.url),"utf8");assert.match(app,/matrixInfo=await r\.json\(\);if\(String\(matrixInfo\.mac\|\|""\)\.toLowerCase\(\)!==MATRIX_MAC\)throw Error\("Unexpected Matrix identity\."\);if\(!transport\?\.verifyIdentity\(matrixInfo\)\)/)});
+
+test("UI control gate enables only with valid release, identity, and fresh connection",()=>{const socket=new FakeSocket(),t=new LocalMatrixTransport({socketFactory:()=>socket});t.connect();socket.open();socket.update(state({matrixBrightness:69}));assert.equal(controlsEnabled(true,t.snapshot.HBNF.candidate===SUPPORTED_RELEASE,t.controlReady()),false);assert.equal(t.verifyIdentity({mac:MATRIX_MAC}),true);assert.equal(controlsEnabled(true,t.snapshot.HBNF.candidate===SUPPORTED_RELEASE,t.controlReady()),true);assert.equal(t.verifyIdentity({mac:"001122334455"}),false);assert.equal(controlsEnabled(true,t.snapshot.HBNF.candidate===SUPPORTED_RELEASE,t.controlReady()),false)});
+
+test("UI control gate disables stale/disconnected state and recovers after reconnect",()=>{const sockets=[],t=new LocalMatrixTransport({socketFactory:()=>{const s=new FakeSocket();sockets.push(s);return s}});t.connect();sockets[0].open();sockets[0].update(state({matrixBrightness:69}));t.verifyIdentity({mac:MATRIX_MAC});assert.equal(controlsEnabled(true,true,t.controlReady()),true);t.snapshotAt=Date.now()-15001;assert.equal(controlsEnabled(true,true,t.controlReady()),false);sockets[0].close();assert.equal(controlsEnabled(true,true,t.controlReady()),false);t.connect();sockets[1].open();sockets[1].update(state({matrixBrightness:69}));t.verifyIdentity({mac:MATRIX_MAC});assert.equal(controlsEnabled(true,true,t.controlReady()),true)});
+
 test("local package has no cloud, scoring, or OTA runtime imports", async () => {
   const html=await readFile(new URL("../index.html",import.meta.url),"utf8");
   const app=await readFile(new URL("../app.js",import.meta.url),"utf8");
+  const installer=await readFile(new URL("../install.sh",import.meta.url),"utf8");
   assert.match(html,/\.\/app\.js/);
+  assert.equal(LOCAL_PAGE_URL,"http://192.168.77.1/mission-control-local/index.html");
+  assert.match(installer,/Open http:\/\/192\.168\.77\.1\/mission-control-local\/index\.html/);
+  assert.match(app,/if\(String\(matrixInfo\.mac\|\|""\)\.toLowerCase\(\)!==MATRIX_MAC\)throw Error\("Unexpected Matrix identity\."\);if\(!transport\?\.verifyIdentity\(matrixInfo\)\)/);
   assert.doesNotMatch(html,/hbnf-cart-(?:skins-score|features)|supabase\.co|serviceWorker/);
   assert.doesNotMatch(app,/supabase\.co|league_state|functions\/v1|OTA/);
 });

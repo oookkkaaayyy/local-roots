@@ -27,11 +27,12 @@
   "files_sha256": {
     "index.html": "d4c08cfb6830023f8b02f0dac0a379bae22aba9a47bb9fefa97b43dfc8d3c31d",
     "styles.css": "e2aceeabac8fa7e85fca1e638f50da6182d4e5b79fd5004a7a3c071915cc3522",
-    "app.js": "d6f527a34d1a918719ef6197bf253393d2c8452b46ab81301d16cccf18565701",
-    "local-transport.js": "763acde6bf19e546ff1dafc8e1c6938094955f069ad1e072f28fb33d1041e775",
-    "install.sh": "2f99e9cdf0b96d6228c0f29b314be364adf0a548bc94ce13e8a93c8c7b789674",
+    "app.js": "4a6e649c850b86797020f8cbadcf77439640316be9682a370df04ae8fbac7ea1",
+    "local-transport.js": "f519f82e14106806f3a2c21bf2f724118260c8ccd5a719cac097f122dc86576a",
+    "install.sh": "cd66e00b2a1f026d8a344eeb7a9b90b1f4a9dfd75aa5dfe0fd586e1096d3c190",
     "rollback.sh": "e3a8dfdd48bd31d6634f8b0752553a93ae532945c2d89c50c92cbd7a94aa8166",
-    "tests/local-transport.test.mjs": "6946da0cdbd7956f67c78216c8f298d069c3b46832248bd5d246dd09ae4d9aa8"
+    "tests/local-transport.test.mjs": "e9b05a1d64f57f7ed8da8e5dc5cb0bf87105121ba85978198e38c594074a21c8",
+    "tests/browser-regression.html": "50fc69f187f92b2499b95d2f418fdebd491e3f09fb14884451b38b0b03eddd3a"
   },
   "physical_acceptance": "Required; package/readback tests do not prove physical lighting output"
 }

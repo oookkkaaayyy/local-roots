@@ -16,6 +16,6 @@ cp "$PKG_DIR/index.html" "$PKG_DIR/styles.css" "$PKG_DIR/app.js" "$PKG_DIR/local
 chmod 0644 "$TARGET/index.html" "$TARGET/styles.css" "$TARGET/app.js" "$TARGET/local-transport.js" "$TARGET/.hbnf-package-marker"
 chmod 0755 "$TARGET/rollback.sh"
 echo "Installed static files at $TARGET"
-echo "Open http://192.168.77.1/mission-control-local/"
+echo "Open http://192.168.77.1/mission-control-local/index.html"
 trap - EXIT
 echo "No Nginx, Wi-Fi, relay, firmware, or device settings were changed."
