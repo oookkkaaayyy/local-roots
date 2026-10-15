@@ -212,3 +212,27 @@ test('calibration provenance: nominal intensity is not physical carrier/pass cal
   assert.match(html,/NOT a measured dye concentration or validated physical recipe/);
   assert.doesNotMatch(source,/photo RGB.*certified physical reflectance/i);
 });
+
+test('passive opaque daylight color never brightens above the undyed plastic in any RGB channel', () => {
+ const opaque=Array.from(defaults()).filter(p=>['innova_star','innova_gstar','innova_proto_glow_star'].includes(p.id));
+ assert.equal(opaque.length,3);
+ const rgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+ const bases=['#000000','#111111','#333333','#550000','#000044','#004400','#FFEE00','#FFFFFF'];
+ for(const p of opaque)for(const base of bases)for(const radius of radii){
+  const blank=rgb(color(base,[],'daylight',p,radius));
+  for(const name of ['iDye Poly Blue','iDye Poly Crimson','ProChem Onyx']){
+   const actual=rgb(color(base,[dye(name)],'daylight',p,radius));
+   assert.ok(actual.every((value,i)=>value<=blank[i]),p.id+' / '+base+' / '+name+' / '+radius);
+  }
+ }
+ const star=opaque.find(p=>p.id==='innova_star');
+ for(const name of ['iDye Poly Blue','iDye Poly Crimson','ProChem Onyx'])
+  assert.equal(color('#000000',[dye(name)],'daylight',star,.3),'#000000');
+});
+
+test('UV-reactive colorants remain exempt from nonfluorescent absorption ceiling',()=>{
+ const star=Array.from(defaults()).find(p=>p.id==='innova_star');
+ assert.equal(color('#000000',[dye('ProChem Neon Cerise Pink')],'daylight',star,.3),'#27071D');
+ assert.equal(color('#000000',[dye('ProChem Neon Cerise Pink')],'uv365',star,.3),
+  researchPredict('#000000',[dye('ProChem Neon Cerise Pink')],'uv365',star));
+});
