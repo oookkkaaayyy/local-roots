@@ -374,6 +374,12 @@ function opaquePointPredict(baseHex,active,p,radius){
    return rimShade?mixLinearHex(baseHex,"#080A0D",rimShade):baseHex
  }
  let out=baseHex,remaining=1;
+ // In an opaque plastic, an already-set ordinary black stencil does not
+ // become visibly blue/red because another nonfluorescent dye is applied.
+ // Protect only black-first ordinary overdying; no blanket RGB restriction
+ // on unrelated color overlaps or fluorescent dyes.
+ const passiveStack=active.every(l=>opticalProfileFor(l).fluor<=0);
+ let blackUnderlay=null;
  active.forEach((l,idx)=>{
    const op=opticalProfileFor(l),m=metaForDye(l);
    if(op.clear)return;
@@ -383,6 +389,10 @@ function opaquePointPredict(baseHex,active,p,radius){
    if((p?.optical||"")==="gstar")uptake*=1.05;
    out=geometricColorMix(out,op.surface||l.hex,clamp(uptake*.82,0,1));
    if(op.fluor)out=addLinearLight(out,op.uv||l.hex,op.fluor*uptake*.055);
+   // Otherwise the generic swatch interpolation can incorrectly replace an
+   // already-black region with the next brighter pigment's swatch.
+   if(passiveStack&&blackUnderlay)out=capPassiveOpaqueDaylight(blackUnderlay,out);
+   if(passiveStack&&/^(?:ProChem Onyx|Onyx|Black|Cool Black)$/i.test(l.name)&&!blackUnderlay)blackUnderlay=out;
    remaining*=idx===0?.94:.90;
  });
  const cls=opticalClassFor(p);
