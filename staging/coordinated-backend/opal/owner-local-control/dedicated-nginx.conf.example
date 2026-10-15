@@ -1,0 +1,25 @@
+# Separate Nginx instance for the authenticated local Owner gateway.
+# The existing GL.iNet Nginx config, 80/443 listeners, and root worker policy
+# are deliberately untouched. The root master opens the 0600 TLS key and
+# binds only the dedicated instance; all request handling runs as nobody.
+user nobody nogroup;
+worker_processes 1;
+pid /var/run/hbnf-owner-local-control-nginx.pid;
+error_log /var/log/hbnf-owner-local-control-nginx/error.log warn;
+lock_file /var/lock/hbnf-owner-local-control-nginx.lock;
+
+events {
+    worker_connections 128;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+    client_body_buffer_size 10K;
+    client_max_body_size 1K;
+    client_body_temp_path /etc/hbnf-local-control-state/tmp/client_body;
+    proxy_temp_path /etc/hbnf-local-control-state/tmp/proxy;
+    access_log off;
+
+    include /etc/hbnf-local-control/nginx-server.conf;
+}

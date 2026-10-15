@@ -9,13 +9,14 @@ import subprocess
 import zipfile
 from pathlib import Path
 
-PACKAGE_NAME = "hbnf-owner-local-control-v1.0.2"
+PACKAGE_NAME = "hbnf-owner-local-control-v1.0.3"
 SOURCE_DIR = Path("staging/coordinated-backend/opal/owner-local-control")
 TRANSPORT = Path("staging/coordinated-backend/opal/mission-control-local/local-transport.js")
 FILES = (
     "README.md", "SOURCE_BASE.json", "auth.lua", "auth_origin.lua", "auth_owner.lua",
-    "auth_websocket.lua", "aux_command_access.lua", "enroll.lua", "install.sh",
-    "matrix_topology.sh", "nginx.conf.example", "preflight.sh", "revalidate.lua", "revoke.lua", "rollback.sh", "session.lua",
+    "auth_websocket.lua", "aux_command_access.lua", "dedicated-nginx.conf.example",
+    "enroll.lua", "hbnf-owner-local-control.init", "install.sh", "matrix_topology.sh",
+    "nginx.conf.example", "preflight.sh", "revalidate.lua", "revoke.lua", "rollback.sh", "session.lua",
 )
 EXPECTED_ROLLBACK = "a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e"
 
@@ -51,7 +52,7 @@ def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
         "baseCommit": source_base["base_commit"],
         "installedTransportSha256": sha(transport),
         "rollbackTransportSha256": EXPECTED_ROLLBACK,
-        "scope": ["Opal Nginx/Lua local gateway", "existing Opal Mission Control transport module"],
+        "scope": ["separate Opal Nginx/Lua gateway on TCP 8443 with nobody request worker", "existing Opal Mission Control transport module", "Owner PWA local endpoint URL using TCP 8443"],
         "notIncluded": ["TLS private key", "DNS provider credential", "router network policy marker", "firmware", "Supabase production payload"],
         "files": hashes,
     }

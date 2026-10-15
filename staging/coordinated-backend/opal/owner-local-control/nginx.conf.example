@@ -5,7 +5,9 @@ lua_shared_dict hbnf_owner_sessions 32k;
 lua_shared_dict hbnf_owner_rate 8k;
 
 server {
-    listen 443 ssl;
+    # Dedicated gateway listener. Keep GL.iNet's existing 80/443 instance
+    # and its global worker account/configuration unchanged.
+    listen 8443 ssl;
     server_name cart-control.hbnightflyers.com;
 
     ssl_certificate     /etc/hbnf-local-control/tls/fullchain.pem;

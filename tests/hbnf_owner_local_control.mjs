@@ -98,7 +98,7 @@ test("paired local status and commands use only Opal over WAN-off path", async (
   assert.equal(ack.acknowledgments.aux.brightness, 235);
   assert.equal(ack.acknowledgments.aux.physical, "unverified");
   assert.equal(f.calls.some(call => call.path === "/api/aux/control" && call.method === "POST"), true);
-  assert.equal(f.sockets[0].url, "wss://cart-control.hbnightflyers.com/ws");
+  assert.equal(f.sockets[0].url, "wss://cart-control.hbnightflyers.com:8443/ws");
   assert.deepEqual(f.sockets[0].protocols, ["hbnf-owner-v1." + token]);
   assert.ok(f.calls.every(call => call.url.startsWith(LOCAL_CONTROL_ORIGIN)));
   assert.ok(f.calls.every(call => !call.url.includes(token)));
@@ -276,11 +276,14 @@ test("Opal gateway restricts origin, reads, and the bounded authenticated AUX wr
   assert.doesNotMatch(edge.match(/if \(action === "status"\)[\s\S]*?if \(action === "guest_command"\)/)?.[0] || "", /pairedDeviceAuthorized/);
 });
 
-test("guarded Opal installer is fail-closed, narrowly scoped, and syntactically valid shell", async () => {
+test("guarded Opal installer uses an isolated :8443 Nginx instance with non-root request workers", async () => {
   const root = new URL("../staging/coordinated-backend/opal/owner-local-control/", import.meta.url);
   const installer = await readFile(new URL("install.sh", root), "utf8");
   const rollback = await readFile(new URL("rollback.sh", root), "utf8");
   const preflight = await readFile(new URL("preflight.sh", root), "utf8");
+  const nginx = await readFile(new URL("nginx.conf.example", root), "utf8");
+  const dedicated = await readFile(new URL("dedicated-nginx.conf.example", root), "utf8");
+  const service = await readFile(new URL("hbnf-owner-local-control.init", root), "utf8");
   assert.match(installer, /owner-network-isolation-verified/);
   assert.match(installer, /EXPECTED_OLD_TRANSPORT=a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e/);
   assert.match(preflight, /EXPECTED_MATRIX_RELEASE=hbnf-cart2-phase2-r6-skins-readable-20261014/);
@@ -294,20 +297,40 @@ test("guarded Opal installer is fail-closed, narrowly scoped, and syntactically 
   assert.match(preflight, /matrix_seg1_stop/);
   assert.match(preflight, /matrix_topology_valid .*\$aux_leds/);
   assert.match(preflight, /worker_uid.*-ne 0/);
-  assert.doesNotMatch(preflight, /\[ "\$workers" = "root" \]/);
+  assert.match(preflight, /nobody/);
   assert.doesNotMatch(preflight, /owner-network-isolation-verified/);
   assert.match(preflight, /guest-lane|guest.*isolation.*external|NOT_CHECKED/i);
   assert.match(installer, /chown "\$worker_uid:\$worker_gid" "\$STATE\/sessions"/);
   assert.match(installer, /STATE=\/etc\/hbnf-local-control-state/);
   assert.match(rollback, /STATE=\/etc\/hbnf-local-control-state/);
-  assert.match(installer, /nginx -t/);
-  assert.match(installer, /https:\/\/\$HOST\/api\/session/);
+  assert.match(installer, /\/usr\/sbin\/nginx -t -c "\$CONF/);
+  assert.match(installer, /https:\/\/\$HOST:8443\/api\/session/);
   assert.match(installer, /revalidate\.lua/);
   assert.match(rollback, /CANDIDATE_TRANSPORT_SHA=/);
   assert.match(preflight, /cart-control\.hbnightflyers\.com/);
   assert.match(preflight, /resty\.sha256/);
-  assert.doesNotMatch(installer + rollback, /uci\s+(?:set|commit)|iptables\s+-|reboot|sysupgrade|supabase.*deploy/i);
-  for (const name of ["install.sh", "rollback.sh", "preflight.sh", "matrix_topology.sh"]) execFileSync("sh", ["-n", fileURLToPath(new URL(name, root))]);
+  assert.match(nginx, /listen 8443 ssl/);
+  assert.match(dedicated, /user nobody nogroup;/);
+  assert.match(dedicated, /worker_processes 1;/);
+  assert.match(dedicated, /pid \/var\/run\/hbnf-owner-local-control-nginx\.pid;/);
+  assert.match(nginx, /lua_shared_dict hbnf_owner_sessions 32k;/);
+  assert.match(dedicated, /proxy_temp_path \/etc\/hbnf-local-control-state\/tmp\/proxy;/);
+  assert.match(service, /USE_PROCD=1/);
+  assert.match(service, /procd_set_param respawn/);
+  assert.match(service, /procd_set_param command "\$NGINX" -c "\$CONF" -g 'daemon off;'/);
+  assert.doesNotMatch(service, /procd_set_param user nobody/);
+  assert.doesNotMatch(installer + rollback, /\/etc\/nginx\/nginx\.conf|\/etc\/nginx\/conf\.d|nginx -s reload(?!.*\$CONF)|uci\s+(?:set|commit)|iptables\s+-|reboot|sysupgrade|supabase.*deploy/i);
+  assert.match(rollback, /\$SERVICE" stop/);
+  assert.match(rollback, /\$SERVICE" disable/);
+  assert.match(rollback, /EXPECTED_ROLLBACK_TRANSPORT_SHA=a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e/);
+  for (const name of ["install.sh", "rollback.sh", "preflight.sh", "matrix_topology.sh", "hbnf-owner-local-control.init"]) execFileSync("sh", ["-n", fileURLToPath(new URL(name, root))]);
+});
+
+test("Owner PWA local gateway and WSS use the isolated 8443 listener", async () => {
+  const local = await readFile(new URL("../hbnf-final-controller/hbnf-cart-local.mjs", import.meta.url), "utf8");
+  assert.match(local, /LOCAL_CONTROL_ORIGIN = "https:\/\/cart-control\.hbnightflyers\.com:8443"/);
+  assert.match(local, /this\.origin\.replace/);
+  assert.match(local, /"wss:\/\/"/);
 });
 
 test("Matrix preflight accepts the live 32x16 2D geometry and rejects truncated layouts", async () => {

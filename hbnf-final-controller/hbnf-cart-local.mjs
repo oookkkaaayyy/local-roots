@@ -1,7 +1,10 @@
 /* Secure local transport adapter for the existing Owner PWA. */
-import { fetchWithDeadline, HBNF_API_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261015-local-owner-v1";
+import { fetchWithDeadline, HBNF_API_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261015-local-owner-v2";
 
-export const LOCAL_CONTROL_ORIGIN = "https://cart-control.hbnightflyers.com";
+// The owner-only gateway is a separate Opal Nginx instance. Its nonstandard
+// HTTPS port keeps GL.iNet's existing 443 service and root-worker policy
+// untouched while the new instance drops request workers to nobody.
+export const LOCAL_CONTROL_ORIGIN = "https://cart-control.hbnightflyers.com:8443";
 export const LOCAL_MATRIX_MAC = "704bca5b345c";
 export const LOCAL_AUX_MAC = "8c94df55c34c";
 export const LOCAL_MATRIX_RELEASE = "hbnf-cart2-phase2-r6-skins-readable-20261014";

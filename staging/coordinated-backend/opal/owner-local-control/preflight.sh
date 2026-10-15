@@ -4,11 +4,13 @@ set -eu
 HOST=cart-control.hbnightflyers.com
 MATRIX=192.168.77.10
 AUX=192.168.77.11
+GATEWAY_PORT=8443
 EXPECTED_MATRIX_RELEASE=hbnf-cart2-phase2-r6-skins-readable-20261014
 fail(){ echo "BLOCKED: $*" >&2; exit 1; }
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$SCRIPT_DIR/matrix_topology.sh"
-command -v nginx >/dev/null 2>&1 || fail "nginx missing"
+NGINX=/usr/sbin/nginx
+[ -x "$NGINX" ] || fail "installed Nginx binary missing"
 command -v openssl >/dev/null 2>&1 || fail "openssl missing"
 command -v curl >/dev/null 2>&1 || fail "curl missing"
 command -v jsonfilter >/dev/null 2>&1 || fail "jsonfilter missing"
@@ -16,19 +18,29 @@ command -v sha256sum >/dev/null 2>&1 || fail "sha256sum missing"
 command -v lua >/dev/null 2>&1 || fail "Lua runtime missing"
 lua -e 'assert(require("cjson.safe"))' >/dev/null 2>&1 || fail "Lua cjson.safe module missing"
 lua -e 'local s=require("resty.sha256"); assert(s.new); local h=require("resty.string"); assert(h.to_hex)' >/dev/null 2>&1 || fail "lua-resty-string SHA-256 support missing; do not install a new dependency in this transaction"
-nginx -V 2>&1 | grep -q 'lua' || fail "existing Nginx build has no Lua module"
-nginx -V 2>&1 | grep -q 'http_ssl' || fail "existing Nginx build has no TLS module"
-nginx -T 2>&1 | grep -Fq '/etc/nginx/conf.d/*.conf' || fail "Nginx does not include the staged server-config directory"
-if nginx -T 2>/dev/null | grep -Fq 'server_name cart-control.hbnightflyers.com'; then fail "hostname already has an Nginx server; inspect it before install"; fi
-workers=$(ps w | awk '$0 ~ /nginx: worker/ {print $2}' | sort -u)
-[ -n "$workers" ] || fail "could not verify Nginx worker account"
-[ "$(printf '%s\n' "$workers" | wc -l | tr -d ' ')" = "1" ] || fail "Nginx workers use multiple accounts; session storage ownership is ambiguous"
-worker_user=$workers
-worker_uid=$(id -u "$worker_user" 2>/dev/null || true)
-worker_gid=$(id -g "$worker_user" 2>/dev/null || true)
-case "$worker_uid:$worker_gid" in *[!0-9:]*|:*) fail "could not resolve Nginx worker numeric identity" ;; esac
-[ "$worker_uid" -ne 0 ] || fail "Nginx worker is root; least-privilege session storage cannot be established"
-[ ! -e /etc/hbnf-local-control-state ] || fail "dedicated least-privilege session store already exists; inspect before install"
+nginx_build=$("$NGINX" -V 2>&1)
+printf '%s\n' "$nginx_build" | grep -q 'lua-nginx' || fail "installed Nginx build has no Lua module"
+printf '%s\n' "$nginx_build" | grep -q 'http_ssl' || fail "installed Nginx build has no TLS module"
+[ -x /sbin/procd ] && [ -f /etc/rc.common ] && [ -f /lib/functions/procd.sh ] || fail "OpenWrt procd service support is incomplete"
+[ -x /etc/init.d/nginx ] || fail "existing GL.iNet Nginx service is unavailable"
+worker_uid=$(id -u nobody 2>/dev/null || true)
+worker_gid=$(id -g nobody 2>/dev/null || true)
+worker_group=$(id -gn nobody 2>/dev/null || true)
+case "$worker_uid:$worker_gid" in *[!0-9:]*|:*) fail "could not resolve the dedicated nobody account" ;; esac
+[ "$worker_uid" -ne 0 ] || fail "dedicated Nginx request worker account resolves to root"
+[ "$worker_group" = "nogroup" ] || fail "dedicated nobody group differs from the packaged nginx worker config"
+[ ! -e /etc/hbnf-owner-local-control ] || fail "dedicated service/init path already exists; inspect before install"
+[ ! -e /etc/hbnf-local-control/nginx.conf ] || fail "dedicated Nginx config already exists; inspect before install"
+[ ! -e /etc/hbnf-local-control/nginx-server.conf ] || fail "dedicated Nginx server config already exists; inspect before install"
+[ ! -e /etc/hbnf-local-control-state ] || fail "dedicated persistent session store already exists; inspect before install"
+[ ! -e /var/log/hbnf-owner-local-control-nginx ] || fail "dedicated Nginx log directory already exists; inspect before install"
+[ ! -e /var/run/hbnf-owner-local-control-nginx.pid ] || fail "dedicated Nginx PID path already exists; inspect before install"
+[ ! -e /etc/rc.d/S85hbnf-owner-local-control ] || fail "dedicated service boot link already exists; inspect before install"
+if command -v netstat >/dev/null 2>&1; then
+  netstat -lnt 2>/dev/null | awk 'NR > 2 && $4 ~ /(:|\])8443$/ { found=1 } END { exit found ? 0 : 1 }' && fail "TCP port 8443 is already bound"
+else
+  awk '$2 ~ /:20FB$/ && $4 == "0A" { found=1 } END { exit found ? 0 : 1 }' /proc/net/tcp /proc/net/tcp6 2>/dev/null && fail "TCP port 8443 is already bound"
+fi
 [ -r /etc/ssl/certs/ca-certificates.crt ] || fail "system CA bundle missing"
 [ -d /etc/hbnf-local-control ] || fail "certificate directory /etc/hbnf-local-control is missing"
 [ -s /etc/hbnf-local-control/tls/fullchain.pem ] || fail "DNS-01 certificate not installed"
@@ -61,5 +73,6 @@ matrix_release=$(printf '%s' "$matrix_build" | jsonfilter -e '@.release_id' 2>/d
 [ "$matrix_leds" = "534" ] || fail "unexpected combined Matrix/companion pixel count"
 matrix_topology_valid "$matrix_leds" "$matrix_seg0_start" "$matrix_seg0_stop" "$matrix_seg0_start_y" "$matrix_seg0_stop_y" "$matrix_seg1_start" "$matrix_seg1_stop" "$aux_leds" || fail "unexpected 2D Matrix/companion topology (expected Matrix x=0..32,y=0..16 and companion 512..534; AUX 22 LEDs)"
 echo "PREFLIGHT_OK: Opal/Nginx prerequisites, local DNS, certificate, exact Matrix release, device identities, 32x16 Matrix segment, and 22-pixel companion topology are present."
-echo "SESSION_STORAGE: dedicated persistent /etc store will be traversable by worker group only (0710); session subdirectories are worker-owned mode 0700."
+echo "NGINX_ISOLATION: existing GL.iNet Nginx/global workers/listeners remain untouched; a separate 8443 instance uses a root master only to open the root-only TLS key and a single nobody/nogroup request worker."
+echo "SESSION_STORAGE: persistent /etc parent will be root:nogroup 0710; session, revocation, and request-temp directories will be nobody:nogroup 0700."
 echo "NOT_CHECKED: guest/unpaired-to-WLED isolation, PWA certificate trust and physical iPad behavior. Guest isolation requires an actual negative control test from an unpaired guest client; no marker file is accepted as proof."
