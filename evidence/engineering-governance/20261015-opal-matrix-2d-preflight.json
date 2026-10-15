@@ -1,0 +1,33 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "opal-matrix-2d-preflight-20261015",
+  "summary": "Correct the staged Opal owner-control preflight to validate WLED 2D Matrix coordinates against the confirmed 32x16 Matrix and 22-pixel companion layout.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "confirmed_readonly_state": {
+      "matrix_mac": "704bca5b345c",
+      "aux_mac": "8c94df55c34c",
+      "matrix_release_id": "hbnf-cart2-phase2-r6-skins-readable-20261014",
+      "matrix_led_count": 534,
+      "segments": [
+        { "id": 0, "start": 0, "stop": 32, "startY": 0, "stopY": 16 },
+        { "id": 1, "start": 512, "stop": 534 }
+      ],
+      "source": "Fresh read-only Opal SSH GETs on 2026-10-15; Matrix /json/state read once."
+    },
+    "expert_source": "https://kno.wled.ge/interfaces/json-api/",
+    "rollback": "Source-only preflight/package change; exact prior gateway package and static transport v1.0.1 remain preserved. No live installation or device mutation performed.",
+    "tests": [
+      "node --test tests/hbnf_owner_local_control.mjs",
+      "python3 -m unittest tests.hbnf_owner_local_control_package"
+    ],
+    "scope": "Staged Opal gateway preflight only; no Matrix configuration, firmware, TLS, firewall, Supabase, or production changes."
+  }
+}

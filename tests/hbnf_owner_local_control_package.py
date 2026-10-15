@@ -25,8 +25,9 @@ class OwnerLocalControlPackageTests(unittest.TestCase):
             self.assertEqual(archive_a.read_bytes(), archive_b.read_bytes())
             with zipfile.ZipFile(archive_a) as package:
                 names = package.namelist()
-                prefix = "hbnf-owner-local-control-v1.0.1/"
+                prefix = "hbnf-owner-local-control-v1.0.2/"
                 self.assertIn(prefix + "install.sh", names)
+                self.assertIn(prefix + "matrix_topology.sh", names)
                 self.assertIn(prefix + "aux_command_access.lua", names)
                 self.assertIn(prefix + "revalidate.lua", names)
                 self.assertIn(prefix + "local-transport.js", names)

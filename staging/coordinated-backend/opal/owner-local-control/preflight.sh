@@ -6,6 +6,8 @@ MATRIX=192.168.77.10
 AUX=192.168.77.11
 EXPECTED_MATRIX_RELEASE=hbnf-cart2-phase2-r6-skins-readable-20261014
 fail(){ echo "BLOCKED: $*" >&2; exit 1; }
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$SCRIPT_DIR/matrix_topology.sh"
 command -v nginx >/dev/null 2>&1 || fail "nginx missing"
 command -v openssl >/dev/null 2>&1 || fail "openssl missing"
 command -v curl >/dev/null 2>&1 || fail "curl missing"
@@ -47,6 +49,8 @@ aux_mac=$(printf '%s' "$aux_info" | jsonfilter -e '@.mac' 2>/dev/null || true)
 matrix_leds=$(printf '%s' "$matrix_info" | jsonfilter -e '@.leds.count' 2>/dev/null || true)
 matrix_seg0_start=$(printf '%s' "$matrix_state" | jsonfilter -e '@.seg[0].start' 2>/dev/null || true)
 matrix_seg0_stop=$(printf '%s' "$matrix_state" | jsonfilter -e '@.seg[0].stop' 2>/dev/null || true)
+matrix_seg0_start_y=$(printf '%s' "$matrix_state" | jsonfilter -e '@.seg[0].startY' 2>/dev/null || true)
+matrix_seg0_stop_y=$(printf '%s' "$matrix_state" | jsonfilter -e '@.seg[0].stopY' 2>/dev/null || true)
 matrix_seg1_start=$(printf '%s' "$matrix_state" | jsonfilter -e '@.seg[1].start' 2>/dev/null || true)
 matrix_seg1_stop=$(printf '%s' "$matrix_state" | jsonfilter -e '@.seg[1].stop' 2>/dev/null || true)
 aux_leds=$(printf '%s' "$aux_info" | jsonfilter -e '@.leds.count' 2>/dev/null || true)
@@ -55,9 +59,7 @@ matrix_release=$(printf '%s' "$matrix_build" | jsonfilter -e '@.release_id' 2>/d
 [ "$(printf '%s' "$aux_mac" | tr 'A-F' 'a-f')" = "8c94df55c34c" ] || fail "unexpected AUX identity"
 [ "$matrix_release" = "$EXPECTED_MATRIX_RELEASE" ] || fail "unexpected Matrix release identity"
 [ "$matrix_leds" = "534" ] || fail "unexpected combined Matrix/companion pixel count"
-[ "$matrix_seg0_start" = "0" ] && [ "$matrix_seg0_stop" = "512" ] || fail "Matrix base segment is not exactly pixels 0..511"
-[ "$matrix_seg1_start" = "512" ] && [ "$matrix_seg1_stop" = "534" ] || fail "22-pixel companion segment is not exactly pixels 512..533"
-[ "$aux_leds" = "22" ] || fail "unexpected AUX pixel topology"
-echo "PREFLIGHT_OK: Opal/Nginx prerequisites, local DNS, certificate, exact Matrix release, device identities, and 512+22 combined Matrix topology are present."
+matrix_topology_valid "$matrix_leds" "$matrix_seg0_start" "$matrix_seg0_stop" "$matrix_seg0_start_y" "$matrix_seg0_stop_y" "$matrix_seg1_start" "$matrix_seg1_stop" "$aux_leds" || fail "unexpected 2D Matrix/companion topology (expected Matrix x=0..32,y=0..16 and companion 512..534; AUX 22 LEDs)"
+echo "PREFLIGHT_OK: Opal/Nginx prerequisites, local DNS, certificate, exact Matrix release, device identities, 32x16 Matrix segment, and 22-pixel companion topology are present."
 echo "SESSION_STORAGE: dedicated persistent /etc store will be traversable by worker group only (0710); session subdirectories are worker-owned mode 0700."
 echo "NOT_CHECKED: guest/unpaired-to-WLED isolation, PWA certificate trust and physical iPad behavior. Guest isolation requires an actual negative control test from an unpaired guest client; no marker file is accepted as proof."

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { LocalOwnerControl, LOCAL_CONTROL_ORIGIN, LOCAL_MATRIX_MAC, LOCAL_AUX_MAC, LOCAL_MATRIX_RELEASE } from "../hbnf-final-controller/hbnf-cart-local.mjs";
 import * as transportModule from "../staging/coordinated-backend/opal/mission-control-local/local-transport.js";
 
@@ -288,9 +288,11 @@ test("guarded Opal installer is fail-closed, narrowly scoped, and syntactically 
   assert.match(preflight, /\[ "\$matrix_leds" = "534" \]/);
   assert.match(preflight, /matrix_seg0_start/);
   assert.match(preflight, /matrix_seg0_stop/);
+  assert.match(preflight, /matrix_seg0_start_y/);
+  assert.match(preflight, /matrix_seg0_stop_y/);
   assert.match(preflight, /matrix_seg1_start/);
   assert.match(preflight, /matrix_seg1_stop/);
-  assert.match(preflight, /\[ "\$aux_leds" = "22" \]/);
+  assert.match(preflight, /matrix_topology_valid .*\$aux_leds/);
   assert.match(preflight, /worker_uid.*-ne 0/);
   assert.doesNotMatch(preflight, /\[ "\$workers" = "root" \]/);
   assert.doesNotMatch(preflight, /owner-network-isolation-verified/);
@@ -305,7 +307,23 @@ test("guarded Opal installer is fail-closed, narrowly scoped, and syntactically 
   assert.match(preflight, /cart-control\.hbnightflyers\.com/);
   assert.match(preflight, /resty\.sha256/);
   assert.doesNotMatch(installer + rollback, /uci\s+(?:set|commit)|iptables\s+-|reboot|sysupgrade|supabase.*deploy/i);
-  for (const name of ["install.sh", "rollback.sh", "preflight.sh"]) execFileSync("sh", ["-n", fileURLToPath(new URL(name, root))]);
+  for (const name of ["install.sh", "rollback.sh", "preflight.sh", "matrix_topology.sh"]) execFileSync("sh", ["-n", fileURLToPath(new URL(name, root))]);
+});
+
+test("Matrix preflight accepts the live 32x16 2D geometry and rejects truncated layouts", async () => {
+  const root = new URL("../staging/coordinated-backend/opal/owner-local-control/", import.meta.url);
+  const helper = fileURLToPath(new URL("matrix_topology.sh", root));
+  const valid = ["534", "0", "32", "0", "16", "512", "534", "22"];
+  const check = (values) => {
+    const result = spawnSync("sh", ["-c", '. "$1"; shift; matrix_topology_valid "$@"', "sh", helper, ...values], { encoding: "utf8" });
+    return result.status;
+  };
+  assert.equal(check(valid), 0, "confirmed 32x16 Matrix plus 22-pixel companion must pass");
+  for (const [index, value] of [[0, "533"], [2, "31"], [3, "1"], [4, "15"], [4, "17"], [5, "511"], [6, "533"], [7, "21"]]) {
+    const truncated = [...valid];
+    truncated[index] = value;
+    assert.notEqual(check(truncated), 0, `truncated topology at argument ${index} must fail`);
+  }
 });
 
 test("pairing link binds the server-issued 180-day expiry to the same local token", async () => {
