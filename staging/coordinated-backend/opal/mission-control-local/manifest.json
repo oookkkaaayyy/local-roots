@@ -1,10 +1,10 @@
 {
   "schema": "hbnf-opal-local-mission-control-v1",
   "package": "hbnf-opal-mission-control-local",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "source_repository": "oookkkaaayyy/local-roots",
   "source_branch": "codex/glow-matrix-relay-integration-20261014",
-  "source_base_commit": "7102f65319c0ebe28c9735c470f6540f83605941",
+  "source_base_commit": "2c4604ebb45bac8f5c78c584ed843af1b5d2f080",
   "target": "existing GL-SFT1200 nginx static root /www/mission-control-local",
   "matrix": {
     "ip": "192.168.77.10",
@@ -25,23 +25,32 @@
   ],
   "local_security": "Existing protected HBNF-Cart Wi-Fi network; no individual WLED API authentication",
   "files_sha256": {
-    "index.html": "d4c08cfb6830023f8b02f0dac0a379bae22aba9a47bb9fefa97b43dfc8d3c31d",
+    "index.html": "0424ab290ab1d80dbbd1bff31e068009e3000cae22ec2792b92e4eef7bdcbcaf",
     "styles.css": "e2aceeabac8fa7e85fca1e638f50da6182d4e5b79fd5004a7a3c071915cc3522",
-    "app.js": "20f33bf6cd8ce7526fc240ea66aebd3b49b7a4e95aea2520c566a80e86930d44",
-    "local-transport.js": "a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e",
-    "install.sh": "cd66e00b2a1f026d8a344eeb7a9b90b1f4a9dfd75aa5dfe0fd586e1096d3c190",
+    "app.js": "d44691025b16d95fb1a210a56d901c3ee6cdd74bf932a59f7ffe08679184df2b",
+    "local-transport.js": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
     "rollback.sh": "e3a8dfdd48bd31d6634f8b0752553a93ae532945c2d89c50c92cbd7a94aa8166",
     "tests/local-transport.test.mjs": "93be7a21d47ba544bcadb7bc8c2c84573430a96be2869cd0a7c86fe9ccb6d685",
-    "tests/browser-regression.html": "d5f5958b68c1098709c7aacf1cc07b09c1da90d40b40eeef9b0fe6e928e1fffc",
-    "update.sh": "4415165e67bde4c20214f48952399ccc4a85422e9df71a8c02a56e42631c1f0e",
-    "rollback-update.sh": "68759bf32d762508eb76a48a7693dd0c1bf6a33615370fd2ee504e663218eb6f"
+    "rollback-v1.0.2.sh": "7c33b8fcb0cf905dc95add520f33b8f6d71daf3fb1046358f6cd0519b1b6af78",
+    "update-v1.0.2.sh": "48cef2c5583891034607d507d461262acc797bcf2c0088deb33035eb6c45564c",
+    "tests/local-transport.test.mjs": "1330f2b162ee262f9c6ea5cd4aebf94e1d65327ebc69d1bfd9c2fd56afb0a9b8",
+    "tests/update-v1.0.2.test.mjs": "fcbea39fc619d05f95908052b5866273c1ee2bc6084f611bb46735f3b6a9e4d2",
+    "tests/browser-regression.html": "d5f5958b68c1098709c7aacf1cc07b09c1da90d40b40eeef9b0fe6e928e1fffc"
+  },
+  "manual_scoreboard": {
+    "available": true,
+    "mode": "display-only; no scoring data is written",
+    "labels": ["F9", "B9", "GLOW", "SCORES"],
+    "max_entries": 12,
+    "max_entry_characters": 63,
+    "overlay_ttl_ms": 22000
   },
   "physical_acceptance": "Required; package/readback tests do not prove physical lighting output",
   "compatibility_target": "iPad mini 2 Safari on iOS 12; ES2018-era syntax and browser APIs",
-  "upgrade_from": "1.0.0",
-  "update_procedure": "Run update.sh from the package; it verifies the exact installed 1.0.0 files, saves a private /root rollback snapshot, and swaps only /www/mission-control-local. Run /www/mission-control-local/rollback-update.sh to restore that snapshot.",
+  "upgrade_from": "1.0.1",
+  "update_procedure": "Run update-v1.0.2.sh from the package. It verifies the exact v1.0.1 file identities, saves a private /root/hbnf-mission-control-local.rollback-v1.0.1 snapshot, and swaps only /www/mission-control-local. Run /www/mission-control-local/rollback-v1.0.2.sh to restore the exact snapshot.",
   "rollback_artifact": {
-    "package_file": "hbnf-opal-mission-control-local-v1.0.0.zip",
-    "sha256": "f773574a61005467d196fbb1afb95192e40edc294d4d2b3ca6528b75f3d31b92"
+    "package_file": "hbnf-opal-mission-control-local-v1.0.1-ios12.zip",
+    "sha256": "62387ab89b5343614ad0eaf40000d1d71984567a3496b3d2cc64ce9cb668af75"
   }
 }

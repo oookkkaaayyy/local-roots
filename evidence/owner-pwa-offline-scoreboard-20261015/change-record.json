@@ -1,0 +1,28 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "owner-pwa-local-scoreboard-20261015",
+  "summary": "Expose the already-supported Matrix scoreboard overlay through the accepted Opal Mission Control page as a bounded display-only manual form; do not save or submit score data.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Owner request 2026-10-15: reuse the accepted Opal Mission Control and installed Matrix scoreboard overlay; do not modify firmware or scoring systems.",
+      "affected_subsystem": "Static files in /www/mission-control-local only.",
+      "rollback_reference": "Exact installed v1.0.1 files are preserved at /root/hbnf-mission-control-local.rollback-v1.0.1 by the v1.0.2 updater; rollback-v1.0.2.sh restores and verifies them.",
+      "evidence_sources": [
+        "staging/coordinated-backend/opal/mission-control-local/local-transport.js: existing OVERLAY_START scoreboard contract",
+        "firmware/phase2/integration-r6/usermod/hbnf_local_ui.h: existing local scoreboard overlay implementation",
+        "https://kno.wled.ge/interfaces/websocket/"
+      ],
+      "tests": [
+        "node --test staging/coordinated-backend/opal/mission-control-local/tests/local-transport.test.mjs staging/coordinated-backend/opal/mission-control-local/tests/update-v1.0.2.test.mjs"
+      ]
+    }
+  }
+}
