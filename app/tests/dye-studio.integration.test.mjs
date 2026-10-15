@@ -156,9 +156,10 @@ test('direct-application research is source labeled without pretending measured 
 });
 
 test('source method matching evaluates the actual dye block rather than the project default', () => {
-  assert.match(studio,/const matchingLayers=layers\.filter\(l=>evidenceDyeFamilyMatches/);
-  assert.match(studio,/const comparableLayers=matchingLayers\.length\?matchingLayers:layers/);
-  assert.match(studio,/comparableLayers\.some\(l=>methodForDyeLayer\(l\)===observedMethod\)/);
+  assert.match(studio,/const matchingLayers=activeLayers\.filter\(l=>evidenceDyeFamilyMatches/);
+  assert.match(studio,/const methods=activeLayers\.map\(methodForDyeLayer\)/);
+  assert.match(studio,/methods\.every\(m=>m===observedMethod\)/);
+  assert.match(studio,/const partialMethod=observedMethod!=="unknown"/);
   assert.match(studio,/MIXED APPLICATION METHODS/);
   assert.match(studio,/FORMULATION MISMATCH/);
   assert.match(studio,/Per-block methods change warnings and evidence ranking/);
