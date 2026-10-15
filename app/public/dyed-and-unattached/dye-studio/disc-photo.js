@@ -64,7 +64,29 @@ function estimateRim(data,w,h,disc){
  const half=cross(.5),a=cross(.2),b=cross(.8);
  if(half===null||dataPoints.filter(x=>x.r>.91&&x.t>.65).length<2)return null;
  const softness=clamp(a!==null&&b!==null?Math.abs(b-a)*1.4:.036,.01,.18);
- return{rimHex:hex(rim),plateHex:hex(plate),boundary:+clamp(half,.56,.95).toFixed(3),
+ // Detect *photographed* angle-dependent border shape; never synthesize
+ // a brand-specific Halo ring. Reject print/stamp anomalies and sparsely seen edges.
+ const offsets=Array.from({length:48},(_,sector)=>{
+  const angle=(sector+.5)*Math.PI*2/48,c=Math.cos(angle),sn=Math.sin(angle);
+  let previous=-1;
+  for(let r=.64;r<.975;r+=.008){
+   const x=Math.round(disc.x+c*disc.r*r),y=Math.round(disc.y+sn*disc.r*r);
+   if(x<1||y<1||x>=w-1||y>=h-1)break;
+   const o=(y*w+x)*4,point=[data[o],data[o+1],data[o+2]];
+   const t=clamp(point.reduce((sum,v,i)=>sum+(v-plate[i])*delta[i],0)/power,0,1);
+   if(t>.56&&previous>.45&&Math.abs(r-half)<=.085)return +clamp(r-half,-.08,.08).toFixed(3);
+   previous=t;
+  }
+  return null;
+ });
+ const reliable=offsets.filter(Number.isFinite).length;
+ const edgeOffsets=reliable>=31?offsets.map((value,i)=>{
+  if(value===null)return 0;
+  const prev=offsets[(i+47)%48],next=offsets[(i+1)%48];
+  const neighbors=[value,prev,next].filter(Number.isFinite);
+  return +(neighbors.reduce((a,v)=>a+v,0)/neighbors.length).toFixed(3);
+ }):null;
+ return{edgeOffsets,rimHex:hex(rim),plateHex:hex(plate),boundary:+clamp(half,.56,.95).toFixed(3),
   softness:+softness.toFixed(3),kind:softness>.047?"soft":"hard",
   confidence:contrast>=55?"good":"check",contrast:Math.round(contrast)};
 }
