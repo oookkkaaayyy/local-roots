@@ -450,21 +450,49 @@ def validate_hbnf_coherence(
             pending_provisional_candidate_is_current = False
 
     if adapter_cfg.exists():
-        cfg = load_json(adapter_cfg)
-        expected = str(cfg.get("expected_release_id") or "")
-        if (installed and expected and installed != expected and not recovery_is_current
-                and not reconciled_candidate_is_current and not current_candidate_is_proven
-                and not pending_provisional_candidate_is_current):
-            status = str(state.get("current_task", {}).get("status") or "")
-            message = (
-                "HBNF live-tool identity mismatch: control state says "
-                f"installed_release={installed!r} but canonical Packet20 "
-                f"adapter expects {expected!r}"
+        # Prefer a frozen Foundation adapter only when both its release ID and
+        # expected binary SHA match the last recorded control-state identity.
+        # This is record reconciliation, not a claim that the device is
+        # currently running that image; live identity still needs readback.
+        adapters = [adapter_cfg, *sorted((ROOT / "config").glob("HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER*.json"))]
+        recorded_sha = str(state.get("current_task", {}).get("installed_firmware_sha256") or "")
+        matching = []
+        for candidate_path in adapters:
+            if not candidate_path.is_file():
+                continue
+            try:
+                candidate_cfg = load_json(candidate_path)
+                args = candidate_cfg.get("preflight_argv", [])
+                sha_bound = any(
+                    isinstance(args[i], str) and args[i] == "HBNF_EXPECTED_FIRMWARE_SHA256=" + recorded_sha
+                    for i in range(max(0, len(args) - 1))
+                )
+                if (candidate_cfg.get("expected_release_id") == installed
+                        and recorded_sha and sha_bound):
+                    matching.append(candidate_path)
+            except (OSError, ValueError, TypeError):
+                continue
+        if matching:
+            warnings.append(
+                "HBNF live adapter reconciled to the last recorded release and SHA; "
+                "current installed device identity remains unverified until fresh readback"
             )
-            if "RECOVERY" in status:
-                warnings.append(message + " (recovery-only state; diagnostic use remains blocked)")
-            else:
-                errors.append(message)
+        else:
+            cfg = load_json(adapter_cfg)
+            expected = str(cfg.get("expected_release_id") or "")
+            if (installed and expected and installed != expected and not recovery_is_current
+                    and not reconciled_candidate_is_current and not current_candidate_is_proven
+                    and not pending_provisional_candidate_is_current):
+                status = str(state.get("current_task", {}).get("status") or "")
+                message = (
+                    "HBNF live-tool identity mismatch: control state says "
+                    f"installed_release={installed!r} but canonical Packet20 "
+                    f"adapter expects {expected!r}; no exact release-and-SHA-bound Foundation adapter found"
+                )
+                if "RECOVERY" in status:
+                    warnings.append(message + " (recovery-only state; diagnostic use remains blocked)")
+                else:
+                    errors.append(message)
 
     if state.get("live_mutation_authorized") is True:
         blockers = state.get("current_task", {}).get("blockers", [])

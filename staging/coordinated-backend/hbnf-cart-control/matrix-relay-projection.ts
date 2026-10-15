@@ -2,7 +2,11 @@ export const MATRIX_MAC="70:4b:ca:5b:34:5c";
 // Runtime readback can prove this embedded release ID. The installed binary SHA is
 // independently bound by the control-state reconciliation receipt and is not
 // exposed by WLED as a runtime measurement.
-export const MATRIX_CANDIDATE="hbnf-cart2-phase2-r6-incremental-controls-20261011";
+// Last recorded installed release; this is not evidence of current device state.
+export const MATRIX_CANDIDATE="hbnf-cart2-phase2-r6-skins-readable-20261014";
+export const MATRIX_RECORDED_SHA256="de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d";
+export const AUX_MAC="8c:94:df:55:c3:4c";
+export const AUX_IP="192.168.77.11";
 const vibes:Record<string,number>={chill:0,groove:1,heavy:2,psychedelic:3,cosmic:4,auto:5};
 const scenes:Record<string,number>={"course-flow":0,"field-mix":1,"hbnf-signature":2,"quiet-cosmos":3};
 const clamp=(v:any,a:number,b:number,d:number)=>{const n=Number(v);return Math.max(a,Math.min(b,Math.round(Number.isFinite(n)?n:d)));};
@@ -36,8 +40,9 @@ async function normalizedOverlay(raw:any,rev:number,fence:number,now:number){
 export async function buildWledProjection(context:any,revision:number,fenceEpoch:number,now=Date.now()){
  const s=context?.desired?.state,d=s?.devices;if(!s||!d?.matrix||!d?.aux)throw Error("canonical_state_missing");
  const enabled=s.power==="on"&&d.matrix.enabled!==false;
+ const auxEnabled=s.power==="on"&&d.aux.enabled!==false;
  const bri=enabled?clamp(d.matrix.brightness,0,255,24):0;
- const auxBri=enabled?clamp(d.aux.brightness,0,255,24):0;
+ const auxBri=auxEnabled?clamp(d.aux.brightness,0,255,24):0;
  const sceneId=String(s.sceneId??"course-flow");if(!(sceneId in scenes))throw Error("unsupported_scene");
  const vibe=vibes[String(s.selectedVibe??"")];if(vibe===undefined)throw Error("unsupported_vibe");
  const t=s.tuning??{},motion=clamp(t.motion,0,100,60),audioResponse=clamp(t.audioResponse,0,100,75);
@@ -45,18 +50,23 @@ export async function buildWledProjection(context:any,revision:number,fenceEpoch
  const selected=overlays.filter((x:any)=>Number(x?.expiresAt)>now).sort((a:any,b:any)=>Number(b?.priority??0)-Number(a?.priority??0))[0]??null;
  const overlay=enabled?await normalizedOverlay(selected,revision,fenceEpoch,now):null;
  const pal=palette(s.paletteId);
- const wledPayload={on:enabled,bri:255,AudioReactive:{on:true,inputLevel:clamp(t.micSensitivity,64,255,255)},seg:[
+ const matrixPayload={on:enabled,bri:255,AudioReactive:{on:true,inputLevel:clamp(t.micSensitivity,64,255,255)},seg:[
   {id:0,on:enabled,bri:255,fx:142},{id:1,start:512,stop:534,on:enabled,bri:255,fx:142}],
   HBNF:{scene:scenes[sceneId],vibe,motion,audioResponse,matrixBrightness:bri,auxBrightness:auxBri,palette:pal,overlay}};
+ // AUX brightness is applied through its native WLED receiver state, not by
+ // scaling DDP frames at the Matrix sender. AUX `on` and DDP settings are untouched.
+ const auxPayload={bri:auxBri};
+ const wledPayload={matrix:matrixPayload,aux:auxPayload};
  const expectedState={matrixMac:MATRIX_MAC,candidate:MATRIX_CANDIDATE,on:enabled,bri:255,segments:[
   {id:0,on:enabled,bri:255,fx:142},{id:1,start:512,stop:534,on:enabled,bri:255,fx:142}],
   hbnf:{schema:"foundation-v1",candidate:MATRIX_CANDIDATE,scene:scenes[sceneId],vibe,motion,audioResponse,
-  matrixBrightness:bri,auxBrightness:auxBri,palette:pal,overlayId:overlay?.id??null}};
+  matrixBrightness:bri,auxBrightness:auxBri,palette:pal,overlayId:overlay?.id??null},
+  aux:{mac:AUX_MAC,ip:AUX_IP,bri:auxBri,live:true,lm:"DDP",lip:"192.168.77.10",lor:0,forceMaxBrightness:false}};
  return {wledPayload,expectedState};
 }
 const canon=(v:any):string=>Array.isArray(v)?"["+v.map(canon).join(",")+"]":v&&typeof v==="object"?"{"+Object.keys(v).sort().map(k=>JSON.stringify(k)+":"+canon(v[k])).join(",")+"}":JSON.stringify(v);
 export function readbackMatches(a:any,b:any){return canon(a)===canon(b);}
-export function normalizeReadback(info:any,state:any){
+export function normalizeReadback(info:any,state:any,auxInfo:any,auxState:any,auxConfig:any){
  const h=state?.HBNF,mac=String(info?.mac??"").toLowerCase().replaceAll(":","");
  if(mac!==MATRIX_MAC.replaceAll(":",""))throw Error("matrix_identity_mismatch");
  if(Number(info?.leds?.count)!==534)throw Error("matrix_led_topology_mismatch");
@@ -65,10 +75,18 @@ export function normalizeReadback(info:any,state:any){
  return id===0?{id,on:x.on===true,bri:Number(x.bri),fx:Number(x.fx)}:{id,start:Number(x.start),stop:Number(x.stop),on:x.on===true,bri:Number(x.bri),fx:Number(x.fx)};});
  const p=h.palette;if(!p||!["legacy","wled","solid"].includes(String(p.mode)))throw Error("palette_readback_invalid");
  const palette:any={mode:String(p.mode)};if(p.mode==="wled")palette.index=Number(p.index);if(p.mode==="solid")palette.rgb=Array.isArray(p.rgb)?p.rgb.map(Number):null;
+ const auxMac=String(auxInfo?.mac??"").toLowerCase().replaceAll(":","");
+ if(auxMac!==AUX_MAC.replaceAll(":","")||Number(auxInfo?.leds?.count)!==22||auxInfo?.ip!==AUX_IP)
+  throw Error("aux_identity_or_topology_mismatch");
+ if(auxInfo?.live!==true||auxInfo?.lm!=="DDP"||auxInfo?.lip!=="192.168.77.10"||Number(auxState?.lor)!==0)
+  throw Error("aux_ddp_receiver_unhealthy");
+ if(auxConfig?.if?.live?.maxbri!==false)
+  throw Error("aux_force_max_brightness_not_proven_off");
+ const aux={mac:AUX_MAC,ip:AUX_IP,bri:Number(auxState?.bri),live:true,lm:"DDP",lip:"192.168.77.10",lor:Number(auxState?.lor),forceMaxBrightness:false};
  return {matrixMac:MATRIX_MAC,candidate:String(h.candidate??""),on:state.on===true,bri:Number(state.bri),segments,
  hbnf:{schema:String(h.schema??""),candidate:String(h.candidate??""),scene:Number(h.scene),vibe:Number(h.vibe),motion:Number(h.motion),
  audioResponse:Number(h.audioResponse),matrixBrightness:Number(h.matrixBrightness),auxBrightness:Number(h.auxBrightness),
- palette,overlayId:h.overlayId==null?null:String(h.overlayId)}};
+ palette,overlayId:h.overlayId==null?null:String(h.overlayId)},aux};
 }
 export function checkDecision(challenge:any,actual:any,now:number){
  const expires=Date.parse(challenge?.expires_at??"");

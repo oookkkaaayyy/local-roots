@@ -17,6 +17,9 @@ secure_conf || exit 1
 : "${RELAY_API_KEY:?missing Supabase publishable/anon API key}"
 : "${RELAY_ID:?missing relay identity}"
 MATRIX_URL=http://192.168.77.10
+AUX_URL=http://192.168.77.11
+MATRIX_CANDIDATE=hbnf-cart2-phase2-r6-skins-readable-20261014
+RECORDED_FIRMWARE_SHA256=de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d
 TMP=/tmp/hbnf-matrix-relay
 mkdir -p "$TMP"; chmod 700 "$TMP"
 log(){ logger -t hbnf-matrix-relay "$1"; }
@@ -32,15 +35,32 @@ unset RELAY_TOKEN RELAY_API_KEY
 [ "$SUPABASE_RELAY_URL" = "https://phcpbvuqibyarpfrftgx.supabase.co/functions/v1/hbnf-cart-control" ] || { log "relay endpoint mismatch"; exit 1; }
 snapshot(){
  curl -fsS --connect-timeout 2 --max-time 4 "$MATRIX_URL/json/si" -o "$TMP/si.json"
+ curl -fsS --connect-timeout 2 --max-time 4 "$MATRIX_URL/hbnf/build.json" -o "$TMP/build.json"
+ curl -fsS --connect-timeout 2 --max-time 4 "$AUX_URL/json/si" -o "$TMP/aux-si.json"
+ curl -fsS --connect-timeout 2 --max-time 4 "$AUX_URL/json/cfg" -o "$TMP/aux-cfg.json"
  jsonfilter -i "$TMP/si.json" -e '@.info' > "$TMP/info.json"
  jsonfilter -i "$TMP/si.json" -e '@.state' > "$TMP/state.json"
- mac="$(jsonfilter -i "$TMP/info.json" -e '@.mac' | tr -d ':')"
- candidate="$(jsonfilter -i "$TMP/state.json" -e '@.HBNF.candidate')"
- [ "$mac" = "704bca5b345c" ] && [ "$candidate" = "hbnf-cart2-phase2-r6-incremental-controls-20261011" ]
+ jsonfilter -i "$TMP/aux-si.json" -e '@.info' > "$TMP/aux-info.json"
+ jsonfilter -i "$TMP/aux-si.json" -e '@.state' > "$TMP/aux-state.json"
+ matrix_mac="$(jsonfilter -i "$TMP/info.json" -e '@.mac' | tr -d ':')"
+ matrix_candidate="$(jsonfilter -i "$TMP/build.json" -e '@.release_id')"
+ matrix_build_sha="$(jsonfilter -i "$TMP/build.json" -e '@.firmware_sha256' 2>/dev/null || true)"
+ state_candidate="$(jsonfilter -i "$TMP/state.json" -e '@.HBNF.candidate')"
+ aux_mac="$(jsonfilter -i "$TMP/aux-info.json" -e '@.mac' | tr -d ':')"
+ aux_live="$(jsonfilter -i "$TMP/aux-info.json" -e '@.live')"
+ aux_mode="$(jsonfilter -i "$TMP/aux-info.json" -e '@.lm')"
+ aux_source="$(jsonfilter -i "$TMP/aux-info.json" -e '@.lip')"
+ aux_count="$(jsonfilter -i "$TMP/aux-info.json" -e '@.leds.count')"
+ aux_force_max="$(jsonfilter -i "$TMP/aux-cfg.json" -e '@.if.live.maxbri')"
+ [ "$matrix_mac" = "704bca5b345c" ] && [ "$matrix_candidate" = "$MATRIX_CANDIDATE" ] && [ "$state_candidate" = "$MATRIX_CANDIDATE" ] || return 1
+ [ -z "$matrix_build_sha" ] || [ "$matrix_build_sha" = "$RECORDED_FIRMWARE_SHA256" ] || return 1
+ [ "$aux_mac" = "8c94df55c34c" ] && [ "$aux_live" = "true" ] && [ "$aux_mode" = "DDP" ] && [ "$aux_source" = "192.168.77.10" ] && [ "$aux_count" = "22" ] || return 1
+ # WLED docs define this receiver flag as overriding realtime brightness.
+ [ "$aux_force_max" = "false" ]
 }
 while :; do
  if ! snapshot; then sleep 5; continue; fi
- printf '%s' '{"op":"next","relayId":"opal-hbnf-cart","matrixMac":"70:4b:ca:5b:34:5c","candidate":"hbnf-cart2-phase2-r6-incremental-controls-20261011"}' > "$TMP/request.json"
+ printf '%s' "{\"op\":\"next\",\"relayId\":\"opal-hbnf-cart\",\"matrixMac\":\"70:4b:ca:5b:34:5c\",\"candidate\":\"$MATRIX_CANDIDATE\",\"recordedFirmwareSha256\":\"$RECORDED_FIRMWARE_SHA256\"}" > "$TMP/request.json"
  if ! curl -fsS --connect-timeout 3 --max-time 8 --config "$TMP/curl-auth.conf" -H 'Content-Type: application/json' --data-binary @"$TMP/request.json" "$SUPABASE_RELAY_URL" -o "$TMP/next.json"; then sleep 5; continue; fi
  challenge="$(jsonfilter -i "$TMP/next.json" -e '@.challengeId' 2>/dev/null || true)"
  [ -n "$challenge" ] || { sleep 2; continue; }
@@ -49,17 +69,23 @@ while :; do
   curl -sS --connect-timeout 3 --max-time 8 --config "$TMP/curl-auth.conf" \
    -F 'op=check' -F 'relayId=opal-hbnf-cart' -F "challengeId=$challenge" \
    -F "info=@$TMP/info.json;type=application/json" -F "state=@$TMP/state.json;type=application/json" \
+   -F "auxInfo=@$TMP/aux-info.json;type=application/json" -F "auxState=@$TMP/aux-state.json;type=application/json" \
+   -F "auxConfig=@$TMP/aux-cfg.json;type=application/json" \
    "$SUPABASE_RELAY_URL" -o "$TMP/check.json" -w '%{http_code}'
  }
  code="$(check_readback 2>/dev/null || printf '000')"
- if [ "$code" = "200" ]; then log "revision-bound Matrix readback confirmed"; sleep 2; continue; fi
+ if [ "$code" = "200" ]; then log "revision-bound Matrix and AUX state readback confirmed; physical AUX illumination unverified"; sleep 2; continue; fi
  if [ "$code" = "409" ] && [ "$(jsonfilter -i "$TMP/check.json" -e '@.status' 2>/dev/null || true)" = "apply_required" ]; then
   payload="$(jsonfilter -i "$TMP/check.json" -e '@.wledPayload' 2>/dev/null || true)"
   if [ -n "$payload" ]; then
    printf '%s' "$payload" > "$TMP/payload.json"
-   if curl -fsS --connect-timeout 2 --max-time 4 -H 'Content-Type: application/json' --data-binary @"$TMP/payload.json" "$MATRIX_URL/json/state" -o /dev/null && snapshot; then
+   jsonfilter -i "$TMP/payload.json" -e '@.matrix' > "$TMP/matrix-payload.json"
+   jsonfilter -i "$TMP/payload.json" -e '@.aux' > "$TMP/aux-payload.json"
+   if [ -s "$TMP/matrix-payload.json" ] && [ -s "$TMP/aux-payload.json" ] &&
+      curl -fsS --connect-timeout 2 --max-time 4 -H 'Content-Type: application/json' --data-binary @"$TMP/matrix-payload.json" "$MATRIX_URL/json/state" -o /dev/null &&
+      curl -fsS --connect-timeout 2 --max-time 4 -H 'Content-Type: application/json' --data-binary @"$TMP/aux-payload.json" "$AUX_URL/json/state" -o /dev/null && snapshot; then
     code="$(check_readback 2>/dev/null || printf '000')"
-    [ "$code" = "200" ] && log "revision-bound Matrix readback confirmed after one apply"
+    [ "$code" = "200" ] && log "Matrix state and AUX DDP receiver readback confirmed; physical illumination unverified"
    fi
   fi
  fi

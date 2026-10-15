@@ -86,6 +86,30 @@ def check_case(*, tamper_runtime_hash=False, tamper_transaction_hash=False, wron
         return errors
 
 
+def check_recorded_adapter_case(*, adapter_sha=SHA):
+    with tempfile.TemporaryDirectory(prefix="platform-recorded-adapter-") as tmp:
+        root = Path(tmp)
+        state_dir = root / "config"
+        write(state_dir / "HBNF_PACKET20_LIVE_SWEEP_ADAPTER_20261004.json", {"expected_release_id": "historical-r7"})
+        write(state_dir / "HBNF_FOUNDATION_LIVE_SWEEP_ADAPTER_SKINS_READABLE_20261014.json", {
+            "expected_release_id": RELEASE,
+            "preflight_argv": ["env", f"HBNF_EXPECTED_FIRMWARE_SHA256={adapter_sha}", "python3"]
+        })
+        write(state_dir / "HBNF_CONTROL_STATE.json", {
+            "installed_release": RELEASE,
+            "installed_firmware_sha256": SHA,
+            "current_task": {"installed_release": RELEASE, "installed_firmware_sha256": SHA}
+        })
+        previous_root = PLATFORM.ROOT
+        PLATFORM.ROOT = root
+        errors, warnings = [], []
+        try:
+            PLATFORM.validate_hbnf_coherence(errors, warnings)
+        finally:
+            PLATFORM.ROOT = previous_root
+        return errors, warnings
+
+
 def main():
     assert check_case() == []
     assert check_case(tamper_runtime_hash=True), "stale device snapshot hash must reject current-candidate recognition"
@@ -93,7 +117,12 @@ def main():
     assert check_case(wrong_matrix=True), "wrong device identity must reject current-candidate recognition"
     assert check_case(continuation=True) == [], "qualification continuation may reuse only a hash-bound consumed install receipt"
     assert check_case(continuation=True,tamper_install_receipt_hash=True), "stale candidate install receipt hash must reject continuation identity"
-    print("PASS: platform doctor accepts only exact hash-bound current candidate and rejects stale/mismatched receipts")
+    errors, warnings = check_recorded_adapter_case()
+    assert errors == [], "exact release-and-SHA-bound Foundation adapter should supersede the stale generic adapter"
+    assert any("current installed device identity remains unverified" in warning for warning in warnings)
+    errors, _ = check_recorded_adapter_case(adapter_sha="b" * 64)
+    assert errors and "no exact release-and-SHA-bound Foundation adapter found" in errors[0], "adapter with wrong SHA must fail closed"
+    print("PASS: platform doctor reconciles only the exact recorded release/SHA adapter and keeps live identity unverified")
 
 
 if __name__ == "__main__":

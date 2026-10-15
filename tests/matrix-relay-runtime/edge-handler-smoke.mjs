@@ -13,7 +13,8 @@ const repo = path.resolve(testDir, '../..');
 const deno = process.env.DENO_BIN || 'deno';
 const token = '0123456789abcdef0123456789abcdef0123456789abcdef';
 const challengeId = '8db738e3-2bcb-4581-a567-066501fbb943';
-const candidate = 'hbnf-cart2-phase2-r6-incremental-controls-20261011';
+const candidate = 'hbnf-cart2-phase2-r6-skins-readable-20261014';
+const recordedFirmwareSha256 = 'de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d';
 const mac = '70:4b:ca:5b:34:5c';
 const rpcCalls = [];
 let challenge = null;
@@ -76,7 +77,7 @@ try {
   assert.ok(ready, 'Deno Edge handler did not become ready');
   const unauth = await fetch(`http://127.0.0.1:${relayPort}/`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-hbnf-relay-id': 'opal-hbnf-cart' }, body: JSON.stringify({ op: 'next' }) });
   assert.equal(unauth.status, 401); assert.equal(rpcCalls.length, 0, 'unauthorized request reached PostgREST');
-  const next = await fetch(`http://127.0.0.1:${relayPort}/`, { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json', 'x-hbnf-relay-id': 'opal-hbnf-cart' }, body: JSON.stringify({ op: 'next', relayId: 'opal-hbnf-cart', matrixMac: mac, candidate }) });
+  const next = await fetch(`http://127.0.0.1:${relayPort}/`, { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json', 'x-hbnf-relay-id': 'opal-hbnf-cart' }, body: JSON.stringify({ op: 'next', relayId: 'opal-hbnf-cart', matrixMac: mac, candidate, recordedFirmwareSha256 }) });
   assert.equal(next.status, 200);
   const issued = await next.json(); assert.equal(issued.challengeId, challengeId); assert.equal(issued.cartRevision, 51); assert.equal(issued.fenceEpoch, 7);
   const issueCall = rpcCalls.find(x => x.rpc === 'hbnf_cart_matrix_relay_issue');
@@ -84,9 +85,15 @@ try {
   const makeForm = vibe => {
     const form = new FormData(); form.append('op', 'check'); form.append('relayId', 'opal-hbnf-cart'); form.append('challengeId', challengeId);
     const state = { on: expectedProjection.on, bri: expectedProjection.bri, seg: expectedProjection.segments, HBNF: { ...expectedProjection.hbnf, vibe } };
-    const info = { mac: '704bca5b345c', ver: '0.16.0', leds: { count: 534 } };
+    const info = { ip:'192.168.77.10', mac: '704bca5b345c', ver: '0.16.0', leds: { count: 534 } };
+    const auxInfo = {ip:'192.168.77.11',mac:'8c94df55c34c',ver:'0.16.0',leds:{count:22},live:true,lm:'DDP',lip:'192.168.77.10'};
+    const auxState = {bri:expectedProjection.aux.bri,lor:0};
+    const auxConfig = {if:{live:{maxbri:false}}};
     form.append('info', new Blob([JSON.stringify(info)], { type: 'application/json' }), 'info.json');
-    form.append('state', new Blob([JSON.stringify(state)], { type: 'application/json' }), 'state.json'); return form;
+    form.append('state', new Blob([JSON.stringify(state)], { type: 'application/json' }), 'state.json');
+    form.append('auxInfo', new Blob([JSON.stringify(auxInfo)], {type:'application/json'}), 'aux-info.json');
+    form.append('auxState', new Blob([JSON.stringify(auxState)], {type:'application/json'}), 'aux-state.json');
+    form.append('auxConfig', new Blob([JSON.stringify(auxConfig)], {type:'application/json'}), 'aux-config.json'); return form;
   };
   const mismatch = await fetch(`http://127.0.0.1:${relayPort}/`, { method: 'POST', headers: { authorization: `Bearer ${token}`, 'x-hbnf-relay-id': 'opal-hbnf-cart' }, body: makeForm(0) });
   assert.equal(mismatch.status, 409); const apply = await mismatch.json();
@@ -94,9 +101,11 @@ try {
   assert.equal(rpcCalls.filter(x => x.rpc === 'hbnf_cart_matrix_relay_authorize_apply').length, 1);
   const match = await fetch(`http://127.0.0.1:${relayPort}/`, { method: 'POST', headers: { authorization: `Bearer ${token}`, 'x-hbnf-relay-id': 'opal-hbnf-cart' }, body: makeForm(expectedProjection.hbnf.vibe) });
   assert.equal(match.status, 200); const confirmed = await match.json();
-  assert.equal(confirmed.commandApplicationConfirmed, true); assert.equal(confirmed.cartRevision, 51); assert.equal(confirmed.fenceEpoch, 7);
+  assert.equal(confirmed.matrixStateReadbackConfirmed, true); assert.equal(confirmed.auxStateReadbackConfirmed,true);
+  assert.equal(confirmed.auxDdpReceiverConfirmed,true); assert.equal(confirmed.auxPhysicalOutputConfirmed,false); assert.equal(confirmed.cartRevision, 51); assert.equal(confirmed.fenceEpoch, 7);
   const confirmCall = rpcCalls.find(x => x.rpc === 'hbnf_cart_matrix_relay_confirm');
   assert.deepEqual(confirmCall.params.p_verified_state, expectedProjection);
+  assert.equal(issued.recordedFirmwareSha256, recordedFirmwareSha256);
   console.log('Deno Edge handler integration PASS: loopback-only, unauthorized request causes zero RPCs, fixed identity challenge, mismatch allows one apply, exact readback confirms revision/fence.');
 } finally {
   child.kill('SIGTERM'); await Promise.race([once(child, 'exit'), new Promise(r => setTimeout(r, 3000))]);
