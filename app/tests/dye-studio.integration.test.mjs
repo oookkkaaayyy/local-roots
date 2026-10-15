@@ -205,7 +205,7 @@ test('beta launch copy and PNG export include physical recipe limitations', () =
   const elements={baseHex:{value:'#FFFFFF'}};
   const $=id=>elements[id]||(elements[id]={textContent:'#abcdef'});
   const fakeCanvas={getContext:()=>({fillRect(){},fillText:txt=>output.push(txt)}),toDataURL:()=>'data:image/png;base64,AA'};
-  const env={ $,document:{createElement:tag=>tag==='canvas'?fakeCanvas:{download:'',href:'',click(){output.push(this.download)}}},
+  const env={ $,discAppearance:null,document:{createElement:tag=>tag==='canvas'?fakeCanvas:{download:'',href:'',click(){output.push(this.download)}}},
     regionColorCache:{clear(){}},makePaintImage(){},collectRegions:()=>[{
       hex:'#B62068',share:.5,key:'1',label:'Onyx',plateHex:'#111111',shoulderHex:'#222222',rimHex:'#333333'
     }],layers:[{name:'ProChem Onyx',hex:'#101010',strength:100,passes:3,method:'floetrol-stencil',shape:'full'}],
@@ -596,7 +596,7 @@ test('radial region cache accelerates disc paint without crossing optical bounda
  for(const rule of ['const ringCache=new Map(),bins=1024','radius<.58?0:radius<.84?1:radius<=.86?2:3','const region=regionKeyAt(x,y)','ringCache.set(cacheKey,rgb)'])assert.ok(source.includes(rule),rule);
  const size=16,rows=size*size,ctx={createImageData:(w,h)=>({data:new Uint8ClampedArray(w*h*4)}),putImageData(){}};
  let calls=0;
- const env={PAINT_SIZE:size,paintCtx:ctx,paintedImage:null,regionKeyAt:(x)=>x>0?'1':'0',
+ const env={PAINT_SIZE:size,paintCtx:ctx,paintedImage:null,discAppearance:null,regionKeyAt:(x)=>x>0?'1':'0',
    colorForPoint:(x,y,key)=>{calls++;return key==='1'?'#A51020':'#208010'},
    hexRgb:h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16))};
  const fn=Function('env','with(env){'+source+';return makePaintImage;}')(env);
