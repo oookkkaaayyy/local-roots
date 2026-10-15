@@ -4,6 +4,7 @@ set -eu
 HOST=cart-control.hbnightflyers.com
 MATRIX=192.168.77.10
 AUX=192.168.77.11
+EXPECTED_MATRIX_RELEASE=hbnf-cart2-phase2-r6-skins-readable-20261014
 fail(){ echo "BLOCKED: $*" >&2; exit 1; }
 command -v nginx >/dev/null 2>&1 || fail "nginx missing"
 command -v openssl >/dev/null 2>&1 || fail "openssl missing"
@@ -34,9 +35,16 @@ resolved=$(nslookup "$HOST" 2>/dev/null | awk '/^Address [0-9]+: /{print $3} /^A
 [ "$resolved" = "192.168.77.1" ] || fail "$HOST must resolve locally to 192.168.77.1 (got ${resolved:-no answer})"
 matrix_info=$(curl -fsS --max-time 3 "http://$MATRIX/json/info") || fail "Matrix read-only identity request failed"
 aux_info=$(curl -fsS --max-time 3 "http://$AUX/json/info") || fail "AUX read-only identity request failed"
+matrix_build=$(curl -fsS --max-time 3 "http://$MATRIX/hbnf/build.json") || fail "Matrix embedded release identity request failed"
 matrix_mac=$(printf '%s' "$matrix_info" | jsonfilter -e '@.mac' 2>/dev/null || true)
 aux_mac=$(printf '%s' "$aux_info" | jsonfilter -e '@.mac' 2>/dev/null || true)
+matrix_leds=$(printf '%s' "$matrix_info" | jsonfilter -e '@.leds.count' 2>/dev/null || true)
+aux_leds=$(printf '%s' "$aux_info" | jsonfilter -e '@.leds.count' 2>/dev/null || true)
+matrix_release=$(printf '%s' "$matrix_build" | jsonfilter -e '@.release_id' 2>/dev/null || true)
 [ "$(printf '%s' "$matrix_mac" | tr 'A-F' 'a-f')" = "704bca5b345c" ] || fail "unexpected Matrix identity"
 [ "$(printf '%s' "$aux_mac" | tr 'A-F' 'a-f')" = "8c94df55c34c" ] || fail "unexpected AUX identity"
-echo "PREFLIGHT_OK: Opal/Nginx prerequisites, local DNS, certificate, Matrix and AUX identities are present."
+[ "$matrix_release" = "$EXPECTED_MATRIX_RELEASE" ] || fail "unexpected Matrix release identity"
+[ "$matrix_leds" = "512" ] || fail "unexpected Matrix pixel topology"
+[ "$aux_leds" = "22" ] || fail "unexpected AUX pixel topology"
+echo "PREFLIGHT_OK: Opal/Nginx prerequisites, local DNS, certificate, exact Matrix release, device identities, and pixel topologies are present."
 echo "NOT_CHECKED: router guest-to-WLED isolation, PWA certificate trust and physical iPad behavior; these remain mandatory release gates."

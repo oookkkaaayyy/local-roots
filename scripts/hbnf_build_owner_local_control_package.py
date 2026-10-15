@@ -26,13 +26,16 @@ def sha(data: bytes) -> str:
 
 def build(repo: Path, out_dir: Path, source_commit: str) -> tuple[Path, str]:
     repo = repo.resolve()
-    actual_commit = subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"], text=True).strip()
-    if source_commit != actual_commit:
-        raise ValueError(f"source_commit must equal current HEAD ({actual_commit})")
     root = repo / SOURCE_DIR
     payload = {name: (root / name).read_bytes() for name in FILES}
     transport = (repo / TRANSPORT).read_bytes()
     payload["local-transport.js"] = transport
+    subprocess.check_call(["git", "-C", str(repo), "cat-file", "-e", f"{source_commit}^{{commit}}"], stdout=subprocess.DEVNULL)
+    for name, data in payload.items():
+        path = (TRANSPORT if name == "local-transport.js" else SOURCE_DIR / name).as_posix()
+        committed = subprocess.check_output(["git", "-C", str(repo), "show", f"{source_commit}:{path}"])
+        if committed != data:
+            raise ValueError(f"working package input differs from {source_commit}:{path}")
     source_base = json.loads(payload["SOURCE_BASE.json"])
     if source_base.get("opal_rollback_transport_sha256") != EXPECTED_ROLLBACK:
         raise ValueError("recorded exact Opal rollback identity changed")

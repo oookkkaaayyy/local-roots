@@ -19,6 +19,8 @@
         "https://nginx.org/en/docs/http/websocket.html",
         "https://nginx.org/en/docs/http/ngx_http_proxy_module.html",
         "https://kno.wled.ge/interfaces/websocket/",
+        "https://kno.wled.ge/interfaces/json-api/",
+        "https://www.w3.org/TR/mixed-content/",
         "https://letsencrypt.org/docs/challenge-types/",
         "https://github.com/openresty/lua-resty-string"
       ],
