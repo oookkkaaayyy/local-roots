@@ -1,0 +1,32 @@
+{
+  "schema": "hbnf-owner-control-local-release-v2",
+  "sourceCommit": "73c1e4ef355fad7070e04b03a6da183d9f50901d",
+  "branch": "codex/glow-matrix-relay-integration-20261014",
+  "artifacts": [
+    {
+      "file": "hbnf-owner-local-control-v1.0.1.zip",
+      "sha256": "ec1d9ff03846b3935a8e0610c45fc4ad20b9bd7268cd1aba3fef880e690543b5",
+      "bytes": 59774,
+      "scope": "Existing Opal TLS/WSS gateway; least-privilege state storage; read-only bounded session revalidation; fail-closed pairing expiry; 534-pixel combined topology preflight."
+    },
+    {
+      "file": "HBNF_CART_OWNER_CONTROL_LOCAL_V2_20261015.zip",
+      "sha256": "13b493206e948ef31f81facaea95cedc68685ea7a5ef1d6be05f0a3ccfc03689",
+      "bytes": 147255,
+      "scope": "Existing Owner PWA with 60-second authenticated local socket revalidation and close-on-hide/unload."
+    }
+  ],
+  "rollback": {
+    "opalPreviousTransportSha256": "a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e",
+    "pwaPreviousPackage": "../owner-control-local-v1/HBNF_CART_OWNER_CONTROL_LOCAL_V1_20261015.zip",
+    "pwaPreviousPackageSha256": "b1490b2a5c49108e639ecc1a1b363548e75ee32ee4d16afe3789b6d0da452193",
+    "opalRollbackScript": "opal/owner-local-control/rollback.sh"
+  },
+  "qualification": {
+    "productionSupabaseV25Verifier": "verified read-only; returns paired boolean only, no authoritative expiry; enrollment remains blocked until its DB-backed contract is corrected and qualified.",
+    "opalPreflight": "not run; execution environment cannot reach 192.168.77.1 (SSH returned Operation not permitted).",
+    "guestIsolation": "not verified; marker file is not accepted as proof.",
+    "certificateAndLocalDns": "not verified; require Opal preflight and authorized DNS-01 issuance/renewal path.",
+    "liveChangesPerformed": false
+  }
+}
