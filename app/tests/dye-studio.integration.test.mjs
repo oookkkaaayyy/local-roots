@@ -708,3 +708,23 @@ test('physical color-source quality is not inferred from photos on unverified su
  assert.equal(rows.filter(x=>/^YES/i.test(x.train_eligible)).length,0,'no unsupported numerical training admitted');
 });
 
+
+test('evidence relevance distinguishes one matching dye from a complete two-dye stack',()=>{
+ const start=studioScript.indexOf('function evidenceScore(');
+ const end=studioScript.indexOf('function renderEvidenceAdvisory()',start);
+ assert.ok(start>=0&&end>start);
+ const source=studioScript.slice(start,end);
+ const observed={dyes:'ProChem Onyx',plastic:'Star',baseColor:'white',medium:'direct acetone brush',photo:'finished disc',evidenceType:'FIELD REPORT'};
+ const env={layers:[{name:'ProChem Onyx',method:'acetone-direct'},{name:'iDye Poly Blue',method:'acetone-direct'}],
+  evidenceDyeFamilyMatches:(name,report)=>report.includes(name),materialClass:()=> 'opaque-premium',
+  classifyObservedProcess:()=> 'acetone-direct',methodForDyeLayer:l=>l.method};
+ const score=Function('env','with(env){'+source+';return evidenceScore;}')(env);
+ const partial=score(observed,[], 'Star','white');
+ assert.ok(partial&&partial.partialDye);
+ assert.equal(partial.exactDye,false,'one matching dye must not count as full overlap evidence');
+ assert.equal(partial.score,29,'partial shade receives no full-stack match bonus');
+ observed.dyes='ProChem Onyx and iDye Poly Blue';
+ const complete=score(observed,[], 'Star','white');
+ assert.equal(complete.exactDye,true);
+ assert.equal(complete.score,39);
+});
