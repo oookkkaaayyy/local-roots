@@ -1,0 +1,39 @@
+{
+  "schema": "hbnf-owner-control-local-release-v1",
+  "sourceCommit": "8cec13947dce55883b6a6d02f1b3c4e0d548e551",
+  "branch": "codex/glow-matrix-relay-integration-20261014",
+  "artifacts": [
+    {
+      "file": "hbnf-owner-local-control-v1.0.0.zip",
+      "sha256": "0e51e2730e3e6d5bbf310a38715af3fb3195353766411135fde7371a8ac15263",
+      "bytes": 53151,
+      "scope": "Opal authenticated local TLS/WSS gateway and bounded AUX JSON state proxy"
+    },
+    {
+      "file": "HBNF_CART_OWNER_CONTROL_LOCAL_V1_20261015.zip",
+      "sha256": "b1490b2a5c49108e639ecc1a1b363548e75ee32ee4d16afe3789b6d0da452193",
+      "bytes": 145530,
+      "scope": "Existing Owner PWA assets with local adapter and cloud fallback"
+    }
+  ],
+  "opalRollback": {
+    "previousTransportSha256": "a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e",
+    "script": "owner-local-control/rollback.sh",
+    "backupCreatedByInstaller": "/root/hbnf-owner-local-control.rollback-20261015"
+  },
+  "liveChangesPerformed": false,
+  "requiredBeforeAnyInstallOrDeployment": [
+    "Read-only Opal preflight confirms exact current Matrix/AUX identities, required Lua modules, existing services, and package rollback inputs.",
+    "DNS-01 trusted certificate is installed at the exact paths and SAN; local hostname resolution to 192.168.77.1 works with WAN disconnected.",
+    "Guest/unpaired access to direct Matrix/AUX WLED APIs is actually isolated and field-tested; the marker alone is not proof.",
+    "The read-only verify_local_pairing Edge action is deployed through its guarded release path before local enrollment is tested.",
+    "Fresh Cloudflare Worker identity and exact rollback version are captured before publishing Owner PWA assets.",
+    "Actual iOS 12 device opens the existing PWA, authenticates, controls Matrix/AUX with WAN off, and confirms physical behavior."
+  ],
+  "knownLimits": [
+    "No Opal, Cloudflare, Supabase, firmware, router, or physical device changes were performed.",
+    "Host fixtures do not prove OpenWrt Nginx/Lua runtime compatibility or physical Matrix/AUX output.",
+    "WLED state readback is not proof of physical illumination; unpaired direct-WLED isolation remains unverified.",
+    "Only commands supported by the current local HBNF transport are routed locally; unsupported operations retain existing cloud behavior and are not claimed to work offline."
+  ]
+}
