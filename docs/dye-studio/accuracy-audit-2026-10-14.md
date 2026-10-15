@@ -12,3 +12,7 @@ The next defensible improvement is to preserve the camera-estimated color of an 
 
 
 Verification: 33/33 integration and 10/10 optical model tests passed on candidate source in isolated JS. No public photographs were promoted into numerical calibration. Original source claims and strict admission controls remain documented above. Actual native build and production still require their existing checks.
+
+
+## Expert owner plastic identification (2026-10-14)
+The disc-plastic-knowledgeable owner identifies Kateri's white disc from the full photograph as **Innova Star** and confirms all handwriting denotes **dye-color names**, not plastic type. This is an owner-expert visual assessment, **not** a statement from Kateri or independent manufacturing provenance. Maintain `exactPlastic: false` in the numerical training gate until independently confirmed; physical method, strength, time and colorimetry also remain unverified. Preserve the owner's practical expertise as a resource for source assessment.
