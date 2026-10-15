@@ -25,7 +25,7 @@
         "node tests/matrix-relay-runtime/test.mjs: PASS; PGlite applied the staged SQL and compensating SQL, validated bootstrap CAS/one-time guard, service-role boundaries, replay/expiry/fence rejection, and restored exact v25 release pin.",
         "node --test staging/coordinated-backend/hbnf-cart-control/*.test.mjs staging/coordinated-backend/hbnf-cart-control/runtime-vibe.test.mjs: PASS (17 tests).",
         "node tests/hbnf-coordinated-backend-staging.mjs: PASS.",
-        "Deno Edge loopback smoke not run: Deno is not installed and sandbox denied local loopback bind before test startup. No production endpoint was contacted."
+        "Deno Edge handler smoke: PASS on official Deno 2.9.7; downloaded macOS arm64 binary matched its published SHA-256, then removed the temporary runtime/cache. Unauthorized requests made zero RPCs; active-fence bootstrap was denied; inactive bootstrap used fresh Matrix/AUX snapshot and revision CAS without device commands; exact readback confirmed separate Matrix/AUX state. The mock PostgREST server was loopback-only; no production endpoint or device was contacted."
       ],
       "live_state": {
         "production_write": false,
