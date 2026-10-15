@@ -1127,39 +1127,43 @@ function classifyObservedProcess(description){
  return "unknown";
 }
 function evidenceScore(obs,dyes,plastic,baseFamily){
- const matchingLayers=layers.filter(l=>evidenceDyeFamilyMatches(l.name,obs.dyes));
+ const activeLayers=layers.filter(l=>Number(l.strength??100)>0);
+ const matchingLayers=activeLayers.filter(l=>evidenceDyeFamilyMatches(l.name,obs.dyes));
  // A source naming one dye is not evidence for the entire selected stack.
  const partialDye=matchingLayers.length>0;
- const exactDye=partialDye&&matchingLayers.length===layers.length;
+ const exactDye=partialDye&&matchingLayers.length===activeLayers.length;
  const material=materialClass(plastic),obsMaterial=materialClass(obs.plastic);
  const samePlastic=plastic&&obs.plastic&&obs.plastic.toLowerCase().includes(plastic.toLowerCase());
  const sameFamily=material!=="unknown"&&obsMaterial===material;
  const baseMatch=baseFamily!=="unknown"&&obs.baseColor.toLowerCase().includes(baseFamily);
  const observedMethod=classifyObservedProcess(obs.medium||"");
- const comparableLayers=matchingLayers.length?matchingLayers:layers;
- const methodMatch=observedMethod!=="unknown"&&comparableLayers.some(l=>methodForDyeLayer(l)===observedMethod);
- const methodAnalog=observedMethod!=="unknown"&&!methodMatch;
- let score=(exactDye?10:0)+(samePlastic?6:sameFamily?3:0)+(baseMatch?3:0)+(methodMatch?18:methodAnalog?-10:0);
+ // A single-method report cannot validate an entire mixed-method stack.
+ const methods=activeLayers.map(methodForDyeLayer);
+ const methodMatch=observedMethod!=="unknown"&&methods.length>0&&methods.every(m=>m===observedMethod);
+ const partialMethod=observedMethod!=="unknown"&&!methodMatch&&methods.some(m=>m===observedMethod);
+ const methodAnalog=observedMethod!=="unknown"&&!methodMatch&&!partialMethod;
+ let score=(exactDye?10:0)+(samePlastic?6:sameFamily?3:0)+(baseMatch?3:0)+(methodMatch?18:partialMethod?5:methodAnalog?-10:0);
  // A published result is more useful than general directions, but never numeric ground truth.
  if(/yes -|finished disc|swatch/i.test(String(obs.photo||'')))score+=2;
  // Method-only evidence informs technique, not a specific finished hue.
- if(!partialDye&&!samePlastic&&!sameFamily&&!methodMatch)return null;
+ if(!partialDye&&!samePlastic&&!sameFamily&&!methodMatch&&!partialMethod)return null;
  if(obs.evidenceType.includes("GUIDANCE"))score-=8;
- return {score,exactDye,partialDye,samePlastic:!!samePlastic,sameFamily,baseMatch,methodMatch,methodAnalog,observedMethod};
+ return {score,exactDye,partialDye,samePlastic:!!samePlastic,sameFamily,baseMatch,methodMatch,partialMethod,methodAnalog,observedMethod};
 }
 function renderEvidenceAdvisory(){
  const warningNode=$("evidenceWarnings"),linksNode=$("evidenceLinks");
  if(!warningNode||!linksNode)return;
- const selected=[...new Set(layers.map(l=>l.name))],p=profile(),baseFamily=evidenceColorFamily($("baseHex").value);
+ const activeLayers=layers.filter(l=>Number(l.strength??100)>0);
+ const selected=[...new Set(activeLayers.map(l=>l.name))],p=profile(),baseFamily=evidenceColorFamily($("baseHex").value);
  if(!selected.length){warningNode.innerHTML='<div class="evidence-info">Add dyes to see source-linked warnings. Evidence remains qualitative until physically verified.</div>';linksNode.innerHTML="";return;}
  const warnings=[];
- const allMethods=[...new Set(layers.map(methodForDyeLayer))];
+ const allMethods=[...new Set(activeLayers.map(methodForDyeLayer))];
  const method=allMethods.length===1?allMethods[0]:"mixed";
  if(method==="mixed")warnings.push("MIXED APPLICATION METHODS: each dye block has its own physical carrier and passes; no single-method photo is a complete recipe match.");
  if(allMethods.includes("acetone-direct")){
  warnings.push("PRIMARY: direct acetone/dye onto the disc, NOT an acetone-dye glue bed. Published glue-bed photographs are different-process analogies. Solvent loading, absorption and resulting hue are not calibrated. Manufacturer starting guidance is 1/2 tsp powder mixed with 2 oz acetone, not a validated saturation target. Keep acetone away from heat and ignition sources. If applying through vinyl masking, practitioners report potential adhesive softening and blurred edges.");
- if(layers.every(l=>clamp(Math.round(+l.passes||1),1,12)===1))warnings.push("One brush pass can leave visible streaks; a complete solid color may require more careful passes. Do not extrapolate darkness numerically from one pass.");
- else warnings.push("Multiple direct-acetone passes may deepen color but are NOT a validated linear multiplier. Coverage and boundary bleeding remain uncertain. Per-block counts: "+layers.map(l=>l.name+" "+clamp(Math.round(+l.passes||1),1,12)).join("; ")+".");
+ if(activeLayers.every(l=>clamp(Math.round(+l.passes||1),1,12)===1))warnings.push("One brush pass can leave visible streaks; a complete solid color may require more careful passes. Do not extrapolate darkness numerically from one pass.");
+ else warnings.push("Multiple direct-acetone passes may deepen color but are NOT a validated linear multiplier. Coverage and boundary bleeding remain uncertain. Per-block counts: "+activeLayers.map(l=>l.name+" "+clamp(Math.round(+l.passes||1),1,12)).join("; ")+".");
 }
  if(allMethods.includes("floetrol-stencil"))warnings.push("SECONDARY: dye premixed with hot water, then Floetrol, painted onto a stencil. Floetrol dye-bed photos are not exact-process stencil evidence. A black-looking mixture can still produce pale transferred dye.");
  if(allMethods.includes("acetone-glue-bed"))warnings.push("Acetone dye in a glue bed is a different method from direct acetone color-block painting. Do not transfer exact-color predictions between them.");
@@ -1175,17 +1179,17 @@ function renderEvidenceAdvisory(){
   for(let yi=0;yi<24;yi++)for(let xi=0;xi<24;xi++){
    const x=((xi+.5)/24)*2-1,y=((yi+.5)/24)*2-1;
    if(x*x+y*y>1)continue;
-   if(regionKeyAt(x,y).split("1").length>2)return true;
+   if(activeLayers.filter(l=>layerCovers(l,x,y)).length>1)return true;
   }
   return false;
  })();
  const hotDye=lower.some(n=>/(orange|red|crimson)/.test(n));
  const usesCommercialDip=selected.some(n=>/uv blast|quick.coat|worm dip/i.test(n));
  const usesPowderDye=selected.some(n=>/prochem|idye poly/i.test(n));
- if(layers.some(l=>/uv blast|quick.coat|worm dip/i.test(l.name)&&methodForDyeLayer(l)!=="worm-dip"))warnings.push("FORMULATION MISMATCH: UV Blast/Quick-Coat is commercially prepared worm dip. Correct this block's method to commercial worm dip; it is NOT ProChem powder in acetone.");
+ if(activeLayers.some(l=>/uv blast|quick.coat|worm dip/i.test(l.name)&&methodForDyeLayer(l)!=="worm-dip"))warnings.push("FORMULATION MISMATCH: UV Blast/Quick-Coat is commercially prepared worm dip. Correct this block's method to commercial worm dip; it is NOT ProChem powder in acetone.");
  if(usesCommercialDip&&usesPowderDye)warnings.push("MIXED-FORMULATION DESIGN: commercial worm dip and powdered dye occur on the same disc. Per-block methods are recorded, but no published single-recipe color calibration covers the combined applications.");
  if(has("idye poly blue"))warnings.push("Jacquard iDye Poly Blue can shift toward violet/purple even on white discs, and reported dye batches differ. Do not assume a clean blue.");
- if(layers.some(l=>l.name.toLowerCase()==="prochem onyx"&&methodForDyeLayer(l)==="floetrol-stencil"))warnings.push("FIRST-PARTY: one Onyx/Floetrol painted-stencil batch looked black in its mix but dyed pale gray. Mechanism is unknown, not a general quantitative Onyx response.");
+ if(activeLayers.some(l=>l.name.toLowerCase()==="prochem onyx"&&methodForDyeLayer(l)==="floetrol-stencil"))warnings.push("FIRST-PARTY: one Onyx/Floetrol painted-stencil batch looked black in its mix but dyed pale gray. Mechanism is unknown, not a general quantitative Onyx response.");
  if(has("idye poly onyx"))warnings.push("Unsupported historical product: iDye Poly Onyx is not an owned Jacquard product. Replace this saved dye with ProChem Onyx; do not reuse its calibration or evidence.");
  if(lower.some(n=>n.includes("neon")))warnings.push("Neon dyes are method-dependent. Documented clear-glue/acetone transfer failures must not be treated as proof of failure in Floetrol, or vice versa.");
  if(cool&&hotDye)warnings.push("Warm red/orange/crimson over a cool aqua, blue or green blank can become muted or muddy. Exact color on this base is not verified; preserve original plastic for reliable highlights.");
@@ -1205,13 +1209,14 @@ function renderEvidenceAdvisory(){
   seen.add(r.obs.sourceUrl);distinct.push(r);
  }};
  take(related.filter(r=>r.methodMatch),3);
+ take(related.filter(r=>r.partialMethod),5);
  take(related.filter(r=>r.partialDye&&!r.methodMatch),5);
  take(related,6);
  const applicable=distinct.filter(r=>r.methodMatch&&!r.obs.evidenceType.includes('GUIDANCE'));
  const namedApplicable=applicable.filter(r=>r.partialDye);
  const namedOtherMethod=distinct.filter(r=>r.partialDye&&!r.methodMatch);
  linksNode.innerHTML=`<div class="evidence-info"><b>Closest practitioner / source examples:</b> ${distinct.length} linked sources shown; ${applicable.length} are same-method field reports and ${namedApplicable.length} also mention at least one selected dye shade; ${namedOtherMethod.length} mention at least one selected shade under a different or unknown method. ${!applicable.length?"No matching physical method report is shown; other-method photographs cannot predict this carrier.":""} These are qualitative case reports, not measured target colors. Exact carrier, plastic, dye, dose, coating and lighting must be established for calibration. Of 58 provisional records, ${EVIDENCE_OBSERVATIONS.filter(o=>selected.some(d=>evidenceDyeFamilyMatches(d,o.dyes))).length} mention one of the selected exact dyes. ${related.length?"Only controlled identical-condition results can justify calibrated color targets.":"No close documented observation found for this combination."}</div>`+
- distinct.map(r=>`<div class="evidence-record"><span class="evidence-tag">${escapeHtml(r.obs.id)}</span><span class="evidence-tag">${r.methodMatch?"Same application method":r.methodAnalog?"DIFFERENT METHOD":"Method not documented"}</span>${r.exactDye?'<span class="evidence-tag">All selected shades named (recipe unverified)</span>':r.partialDye?'<span class="evidence-tag">Partial shade match only</span>':''}${r.samePlastic?'<span class="evidence-tag">Named plastic</span>':r.sameFamily?'<span class="evidence-tag">Broad material analog</span>':''}
+ distinct.map(r=>`<div class="evidence-record"><span class="evidence-tag">${escapeHtml(r.obs.id)}</span><span class="evidence-tag">${r.methodMatch?"All selected blocks use this method":r.partialMethod?"PARTIAL METHOD MATCH":r.methodAnalog?"DIFFERENT METHOD":"Method not documented"}</span>${r.exactDye?'<span class="evidence-tag">All selected shades named (recipe unverified)</span>':r.partialDye?'<span class="evidence-tag">Partial shade match only</span>':''}${r.samePlastic?'<span class="evidence-tag">Named plastic</span>':r.sameFamily?'<span class="evidence-tag">Broad material analog</span>':''}
  <br><b>${escapeHtml(r.obs.result)}</b><br><span class="evidence-meta">${escapeHtml(r.obs.plastic)} · base ${escapeHtml(r.obs.baseColor)} · ${escapeHtml(r.obs.dyes)} · ${escapeHtml(r.obs.medium)} · ${escapeHtml(r.obs.duration)}<br>Missing/limits: ${escapeHtml(r.obs.limitations)}<br>Verification: ${escapeHtml(r.obs.verification||"source not checked")}; no measured numeric color data</span><br><a href="${escapeHtml(r.obs.sourceUrl)}" target="_blank" rel="noopener noreferrer">Open original source</a></div>`).join("");
 }
 const previousUpdateGuard=updateGuard;

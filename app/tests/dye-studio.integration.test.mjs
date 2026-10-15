@@ -156,9 +156,10 @@ test('direct-application research is source labeled without pretending measured 
 });
 
 test('source method matching evaluates the actual dye block rather than the project default', () => {
-  assert.match(studio,/const matchingLayers=layers\.filter\(l=>evidenceDyeFamilyMatches/);
-  assert.match(studio,/const comparableLayers=matchingLayers\.length\?matchingLayers:layers/);
-  assert.match(studio,/comparableLayers\.some\(l=>methodForDyeLayer\(l\)===observedMethod\)/);
+  assert.match(studio,/const matchingLayers=activeLayers\.filter\(l=>evidenceDyeFamilyMatches/);
+  assert.match(studio,/const methods=activeLayers\.map\(methodForDyeLayer\)/);
+  assert.match(studio,/methods\.every\(m=>m===observedMethod\)/);
+  assert.match(studio,/const partialMethod=observedMethod!=="unknown"/);
   assert.match(studio,/MIXED APPLICATION METHODS/);
   assert.match(studio,/FORMULATION MISMATCH/);
   assert.match(studio,/Per-block methods change warnings and evidence ranking/);
@@ -727,4 +728,63 @@ test('evidence relevance distinguishes one matching dye from a complete two-dye 
  const complete=score(observed,[], 'Star','white');
  assert.equal(complete.exactDye,true);
  assert.equal(complete.score,39);
+});
+
+
+test('one carrier report cannot claim a full mixed-method recipe match',()=>{
+ const start=studioScript.indexOf('function evidenceScore(');
+ const end=studioScript.indexOf('function renderEvidenceAdvisory()',start);
+ const src=studioScript.slice(start,end);
+ const env={layers:[
+  {name:'ProChem Onyx',strength:100,method:'acetone-direct'},
+  {name:'iDye Poly Blue',strength:100,method:'floetrol-stencil'}],
+  evidenceDyeFamilyMatches:(name,report)=>report.includes(name),
+  materialClass:()=> 'opaque-premium',
+  classifyObservedProcess:()=> 'acetone-direct',
+  methodForDyeLayer:l=>l.method};
+ const score=Function('env','with(env){'+src+';return evidenceScore;}')(env);
+ const report={dyes:'ProChem Onyx and iDye Poly Blue',plastic:'Star',
+  baseColor:'white',medium:'direct acetone brush',photo:'finished disc',evidenceType:'FIELD REPORT'};
+ const mixed=score(report,[],'Star','white');
+ assert.equal(mixed.exactDye,true,'both names present');
+ assert.equal(mixed.methodMatch,false,'only one carrier matches');
+ assert.equal(mixed.partialMethod,true,'report is useful for one block only');
+ assert.equal(mixed.methodAnalog,false);
+ assert.equal(mixed.score,26,'mixed recipe gets only partial method credit');
+ env.layers[1].method='acetone-direct';
+ const complete=score(report,[],'Star','white');
+ assert.equal(complete.methodMatch,true);
+ assert.equal(complete.partialMethod,false);
+ assert.equal(complete.score,39);
+ assert.match(studioScript,/PARTIAL METHOD MATCH/);
+});
+
+test('zero-intensity dye blocks do not create invented evidence or overlaps',()=>{
+ const start=studioScript.indexOf('function evidenceScore(');
+ const end=studioScript.indexOf('function renderEvidenceAdvisory()',start);
+ const src=studioScript.slice(start,end);
+ const env={layers:[
+  {name:'ProChem Onyx',strength:100,method:'acetone-direct'},
+  {name:'iDye Poly Blue',strength:0,method:'floetrol-stencil'}],
+  evidenceDyeFamilyMatches:(name,report)=>report.includes(name),
+  materialClass:()=> 'opaque-premium',
+  classifyObservedProcess:()=> 'acetone-direct',
+  methodForDyeLayer:l=>l.method};
+ const score=Function('env','with(env){'+src+';return evidenceScore;}')(env);
+ const report={dyes:'ProChem Onyx',plastic:'Star',baseColor:'white',
+  medium:'direct acetone brush',photo:'finished disc',evidenceType:'FIELD REPORT'};
+ const actual=score(report,[],'Star','white');
+ assert.equal(actual.exactDye,true,'disabled color is not required for shade coverage');
+ assert.equal(actual.methodMatch,true,'disabled method is irrelevant');
+ assert.equal(actual.partialMethod,false);
+ assert.equal(actual.score,39);
+ assert.match(studioScript,/activeLayers\.filter\(l=>layerCovers\(l,x,y\)\)\.length>1/,
+  'zero strength cannot create physical overlap warnings');
+});
+
+test('private before-and-after owner photos are absent from served Studio JavaScript',()=>{
+ assert.doesNotMatch(studioScript,/data:image\/(?:jpeg|png|webp);base64,/i);
+ assert.match(studioScript,/const actualPhotos=s\.actual&&s\.beforeImg&&s\.afterImg/);
+ assert.match(studioScript,/Private before\/after photos are not published/);
+ assert.match(studioScript,/hbnf_green_orange/,'qualitative reference metadata retained');
 });
