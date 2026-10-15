@@ -18,7 +18,7 @@ const document = {
     return elements.get(id);
   }
 };
-const realm = { document, localStorage: { getItem: () => null, setItem: () => {} } };
+const realm = { document, window: {}, localStorage: { getItem: () => null, setItem: () => {} } };
 vm.createContext(realm);
 vm.runInContext(source.slice(0, boundary) +
   '\nglobalThis.model = { defaults, dyes, researchPredictPoint, researchPredict, regionKeyAt, setLayers(value){layers=value} };',
