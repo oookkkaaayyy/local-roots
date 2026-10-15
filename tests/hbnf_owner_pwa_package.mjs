@@ -112,7 +112,7 @@ try {
   for (const out of outputs) {
     execFileSync("python3", [packageBuilderPath, "--source-root", root, "--output-dir", out, "--source-commit", "0123456789abcdef"], { stdio: "pipe" });
   }
-  const archiveName = "HBNF_CART_OWNER_CONTROL_LOCAL_V1_20261015.zip";
+  const archiveName = "HBNF_CART_OWNER_CONTROL_LOCAL_V2_20261015.zip";
   const bytesA = fs.readFileSync(path.join(outputs[0], archiveName));
   const bytesB = fs.readFileSync(path.join(outputs[1], archiveName));
   assert.deepEqual(bytesA, bytesB, "same source commit must produce byte-identical archives in different output directories");

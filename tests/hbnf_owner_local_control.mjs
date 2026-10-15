@@ -41,6 +41,8 @@ function fixture({ sessionStatus = 200, sessionExpiresAt = expiry, enrollmentSta
   const calls = [];
   const sockets = [];
   const owner = { current: baseState(), auxState: { bri: 255, on: true }, applyAuxControl };
+  let currentSessionStatus = sessionStatus;
+  let currentRevalidationStatus = 200;
   let firstSession = true;
   const fetchFn = async (url, options = {}) => {
     const parsed = new URL(url);
@@ -48,9 +50,10 @@ function fixture({ sessionStatus = 200, sessionExpiresAt = expiry, enrollmentSta
     if (parsed.origin !== LOCAL_CONTROL_ORIGIN) throw new Error("Unexpected non-local request");
     if (parsed.pathname === "/api/session") {
       if (sessionStatus === 404 && firstSession) { firstSession = false; return response(404, { error: "owner_session_not_enrolled" }); }
-      return response(sessionStatus === 404 ? 404 : sessionStatus, { authenticated: sessionStatus === 200, expiresAt: sessionExpiresAt });
+      return response(currentSessionStatus, { authenticated: currentSessionStatus === 200, expiresAt: sessionExpiresAt });
     }
     if (parsed.pathname === "/api/session/enroll") return response(enrollmentStatus, enrollmentStatus === 200 ? { enrolled: true, expiresAt: expiry } : { error: "cloud_pair_validation_failed" });
+    if (parsed.pathname === "/api/session/revalidate") return response(currentRevalidationStatus, currentRevalidationStatus === 200 ? { authenticated: true, cloudValidated: true, expiresAt: expiry } : { error: "cloud_pairing_revoked" });
     if (parsed.pathname === "/api/session/revoke") return response(200, { revoked: true, scope: "this_opal" });
     if (parsed.pathname === "/api/matrix/json/info") return response(200, { mac: LOCAL_MATRIX_MAC });
     if (parsed.pathname === "/api/aux/json/info") return response(200, { mac: LOCAL_AUX_MAC, live: true, lm: "DDP", lip: "192.168.77.10" });
@@ -73,11 +76,11 @@ function fixture({ sessionStatus = 200, sessionExpiresAt = expiry, enrollmentSta
       } });
     }
   }
-  return { calls, sockets, owner, fetchFn, module: { ...transportModule, LocalMatrixTransport: FixtureTransport } };
+  return { calls, sockets, owner, fetchFn, setSessionStatus(value) { currentSessionStatus = value; }, setRevalidationStatus(value) { currentRevalidationStatus = value; }, module: { ...transportModule, LocalMatrixTransport: FixtureTransport } };
 }
 
-function makeClient(f) {
-  return new LocalOwnerControl({ fetchFn: f.fetchFn, transportLoader: async () => f.module });
+function makeClient(f, options = {}) {
+  return new LocalOwnerControl({ ...options, fetchFn: f.fetchFn, transportLoader: async () => f.module });
 }
 
 test("paired local status and commands use only Opal over WAN-off path", async () => {
@@ -101,7 +104,7 @@ test("paired local status and commands use only Opal over WAN-off path", async (
   assert.ok(f.calls.every(call => !call.url.includes(token)));
 });
 
-test("new local enrollment is bounded by the exact pairing expiry", async () => {
+test("new local enrollment sends the pairing hint but server Lua rejects browser expiry as authority", async () => {
   const f = fixture({ sessionStatus: 404 });
   const client = makeClient(f);
   await client.connect(token, expiry);
@@ -119,6 +122,37 @@ test("local device reconnection revalidates identity before sending the queued c
   assert.equal(f.sockets.length, 2);
   assert.equal(ack.acknowledgments.matrix.confirmed, true);
   assert.equal(f.sockets[1].sent.some(raw => raw.includes('"matrixBrightness":71')), true);
+});
+
+test("active Owner PWA socket rotates on a bounded interval and revalidates before reopening", async () => {
+  const f = fixture();
+  const client = makeClient(f, { socketRevalidateMs: 10 });
+  await client.connect(token, expiry);
+  await new Promise((resolve, reject) => {
+    const deadline = Date.now() + 500;
+    const poll = () => {
+      if (f.sockets.length >= 2 && f.sockets[1].readyState === 1) return resolve();
+      if (Date.now() >= deadline) return reject(new Error("bounded revalidation did not reconnect"));
+      setTimeout(poll, 2);
+    };
+    poll();
+  });
+  assert.equal(f.sockets.length, 2);
+  assert.equal(f.sockets[0].readyState, 3);
+  assert.equal(f.sockets[1].readyState, 1);
+  assert.ok(f.calls.filter(call => call.path === "/api/session").length >= 2);
+  client.disconnectTransport();
+});
+
+test("active Owner PWA socket closes at revalidation when the local session is revoked", async () => {
+  const f = fixture();
+  const client = makeClient(f, { socketRevalidateMs: 10 });
+  await client.connect(token, expiry);
+  f.setRevalidationStatus(401);
+  await new Promise(resolve => setTimeout(resolve, 50));
+  assert.equal(f.sockets[0].readyState, 3);
+  assert.equal(f.sockets.length, 1);
+  assert.equal(client.transport, null);
 });
 
 test("AUX readback failure never returns a success acknowledgment", async () => {
@@ -147,7 +181,7 @@ test("AUX brightness mismatch is not acknowledged and both targets are restored"
 test("expired pairing cannot create or renew an offline session", async () => {
   const f = fixture({ sessionStatus: 404 });
   const client = makeClient(f);
-  await assert.rejects(client.connect(token, Math.floor(Date.now() / 1000) - 1), /expiry is required/);
+  await assert.rejects(client.connect(token, Math.floor(Date.now() / 1000) - 1), /expiry has elapsed/);
   assert.equal(f.calls.some(call => call.path === "/api/session/enroll"), false);
   assert.equal(f.sockets.length, 0);
 });
@@ -216,8 +250,16 @@ test("Opal gateway restricts origin, reads, and the bounded authenticated AUX wr
   assert.match(authLua, /hbnf_ws_protocol = "hbnf-owner-v1\." \.\. token:lower\(\)/);
   const enrollment = await readFile(new URL("../staging/coordinated-backend/opal/owner-local-control/enroll.lua", import.meta.url), "utf8");
   assert.match(enrollment, /ngx\.var\.hbnf_owner_token = token/);
+  assert.match(enrollment, /local expiry = verified\.expiresAtEpoch/);
+  assert.doesNotMatch(enrollment, /input\.expiresAtEpoch/);
+  assert.match(enrollment, /authoritative_pair_expiry_unavailable/);
   assert.match(nginx, /proxy_ssl_verify on/);
   assert.match(nginx, /location = \/__validate_paired_owner\s*\{\s*internal;/);
+  assert.match(nginx, /location = \/api\/session\/revalidate[\s\S]*?revalidate\.lua/);
+  const revalidate = await readFile(new URL("../staging/coordinated-backend/opal/owner-local-control/revalidate.lua", import.meta.url), "utf8");
+  assert.match(revalidate, /validation\.status == 401[\s\S]*?auth\.revoke\(token\)/);
+  assert.match(revalidate, /validation\.status >=? 500|validation\.status < 500/);
+  assert.match(revalidate, /cloudValidated = false/);
   assert.match(nginx, /proxy_set_body '\{"action":"verify_local_pairing"\}'/);
   assert.doesNotMatch(nginx, /location\s+~?\s*\/api\/[^\s{]*\s*\{[^}]*proxy_pass[^}]*json\/state/m);
   assert.match(auth, /require "resty\.sha256"/);
@@ -243,10 +285,22 @@ test("guarded Opal installer is fail-closed, narrowly scoped, and syntactically 
   assert.match(installer, /EXPECTED_OLD_TRANSPORT=a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e/);
   assert.match(preflight, /EXPECTED_MATRIX_RELEASE=hbnf-cart2-phase2-r6-skins-readable-20261014/);
   assert.match(preflight, /@\.release_id/);
-  assert.match(preflight, /\[ "\$matrix_leds" = "512" \]/);
+  assert.match(preflight, /\[ "\$matrix_leds" = "534" \]/);
+  assert.match(preflight, /matrix_seg0_start/);
+  assert.match(preflight, /matrix_seg0_stop/);
+  assert.match(preflight, /matrix_seg1_start/);
+  assert.match(preflight, /matrix_seg1_stop/);
   assert.match(preflight, /\[ "\$aux_leds" = "22" \]/);
+  assert.match(preflight, /worker_uid.*-ne 0/);
+  assert.doesNotMatch(preflight, /\[ "\$workers" = "root" \]/);
+  assert.doesNotMatch(preflight, /owner-network-isolation-verified/);
+  assert.match(preflight, /guest-lane|guest.*isolation.*external|NOT_CHECKED/i);
+  assert.match(installer, /chown "\$worker_uid:\$worker_gid" "\$STATE\/sessions"/);
+  assert.match(installer, /STATE=\/etc\/hbnf-local-control-state/);
+  assert.match(rollback, /STATE=\/etc\/hbnf-local-control-state/);
   assert.match(installer, /nginx -t/);
   assert.match(installer, /https:\/\/\$HOST\/api\/session/);
+  assert.match(installer, /revalidate\.lua/);
   assert.match(rollback, /CANDIDATE_TRANSPORT_SHA=/);
   assert.match(preflight, /cart-control\.hbnightflyers\.com/);
   assert.match(preflight, /resty\.sha256/);
@@ -268,4 +322,9 @@ test("iOS 12 audit includes the new local owner module and gateway-loaded UI tra
   assert.doesNotMatch(local, /\?\.|\?\?|\.replaceChildren\s*\(|\bglobalThis\b|\.at\s*\(/);
   assert.match(local, /wss:\/\//);
   assert.match(local, /credentials: "omit"/);
+  assert.match(local, /scheduleSocketRevalidation/);
+  assert.match(local, /socketRevalidateMs/);
+  const app = await readFile(new URL("../hbnf-final-controller/hbnf-cart.js", import.meta.url), "utf8");
+  assert.match(app, /visibilitychange[\s\S]*?disconnectTransport\(\)/);
+  assert.match(app, /pagehide[\s\S]*?disconnectTransport\(\)/);
 });

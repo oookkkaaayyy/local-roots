@@ -7,8 +7,8 @@ local resty_string = require "resty.string"
 local M = {}
 
 local ORIGIN = "https://hbnightflyers.com"
-local SESSION_DIR = "/etc/hbnf-local-control/sessions/"
-local REVOKED_DIR = "/etc/hbnf-local-control/revoked/"
+local SESSION_DIR = "/etc/hbnf-local-control-state/sessions/"
+local REVOKED_DIR = "/etc/hbnf-local-control-state/revoked/"
 local MAX_SESSION_SECONDS = 180 * 24 * 60 * 60
 local CACHE = ngx.shared.hbnf_owner_sessions
 local RATE = ngx.shared.hbnf_owner_rate

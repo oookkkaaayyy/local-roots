@@ -68,6 +68,25 @@ server {
         content_by_lua_file /etc/hbnf-local-control/lua/enroll.lua;
     }
 
+    location = /api/session/revalidate {
+        if ($http_origin != "https://hbnightflyers.com") { return 403; }
+        if ($request_method = OPTIONS) {
+            add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+            add_header Access-Control-Allow-Methods "POST, OPTIONS" always;
+            add_header Access-Control-Allow-Headers "content-type, x-hbnf-device" always;
+            add_header Access-Control-Max-Age 300 always;
+            add_header Vary Origin always;
+            return 204;
+        }
+        if ($request_method != POST) { return 405; }
+        add_header Access-Control-Allow-Origin "https://hbnightflyers.com" always;
+        add_header Access-Control-Allow-Credentials "true" always;
+        add_header Vary Origin always;
+        add_header Cache-Control "no-store" always;
+        access_by_lua_file /etc/hbnf-local-control/lua/auth_origin.lua;
+        content_by_lua_file /etc/hbnf-local-control/lua/revalidate.lua;
+    }
+
     location = /api/session/revoke {
         if ($http_origin != "https://hbnightflyers.com") { return 403; }
         if ($request_method = OPTIONS) {

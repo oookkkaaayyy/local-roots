@@ -10,7 +10,7 @@ import stat
 import zipfile
 from pathlib import Path
 
-PACKAGE = "HBNF_CART_OWNER_CONTROL_LOCAL_V1_20261015"
+PACKAGE = "HBNF_CART_OWNER_CONTROL_LOCAL_V2_20261015"
 CONTROLLER_FILES = (
     "hbnf-cart.html", "hbnf-cart.js", "hbnf-cart-local.mjs", "hbnf-cart-net.mjs", "hbnf-cart-sw.js",
     "hbnf-cart-semantic.mjs", "hbnf-cart-manifest.webmanifest", "hbnf-cart-ui-v6.css",
@@ -35,7 +35,7 @@ def build(
     *,
     package_name: str = PACKAGE,
     manifest_schema: str = "hbnf-cart2-owner-guest-vibe-package-v2",
-    build_marker: str = "hbnf-cart2-owner-control-local-v1-20261015",
+    build_marker: str = "hbnf-cart2-owner-control-local-v2-20261015",
     scope: str = "controller-only-no-firmware-no-phase2-hardware",
 ) -> tuple[Path, str]:
     source_root = source_root.resolve()

@@ -763,5 +763,14 @@ setInterval(() => {
 }, 6000);
 
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden && !tuneInFlight && !tuneDirty) refresh().catch(showRefreshError);
+  if (document.hidden) {
+    localOwnerControl.disconnectTransport();
+    localControlActive = false;
+    return;
+  }
+  if (!tuneInFlight && !tuneDirty) refresh().catch(showRefreshError);
+});
+window.addEventListener("pagehide", () => {
+  localOwnerControl.disconnectTransport();
+  localControlActive = false;
 });

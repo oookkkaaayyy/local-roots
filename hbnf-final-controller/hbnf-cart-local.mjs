@@ -27,6 +27,9 @@ export class LocalOwnerControl {
     this.auxInfo = null;
     this.auxState = null;
     this.commandQueue = Promise.resolve();
+    this.socketRevalidateMs = Number.isSafeInteger(options.socketRevalidateMs) ? Math.max(1, options.socketRevalidateMs) : 60000;
+    this.socketRevalidationTimer = null;
+    this.commandsPending = 0;
   }
 
   async request(token, path, method = "GET", body = null) {
@@ -56,8 +59,10 @@ export class LocalOwnerControl {
       if (error.status === 401) this.disconnectTransport();
       if (error.status !== 404) throw error;
     }
-    if (!Number.isSafeInteger(expiresAtEpoch) || expiresAtEpoch <= Math.floor(Date.now() / 1000)) {
-      throw new Error("A current paired-device expiry is required before offline local enrollment.");
+    // The browser value is only a freshness hint. The gateway must persist
+    // the expiry returned by its trusted server-side pairing verification.
+    if (Number.isSafeInteger(expiresAtEpoch) && expiresAtEpoch <= Math.floor(Date.now() / 1000)) {
+      throw new Error("The paired-device expiry has elapsed.");
     }
     return this.request(token, "/api/session/enroll", "POST", { action: "enroll", expiresAtEpoch });
   }
@@ -87,12 +92,36 @@ export class LocalOwnerControl {
   }
 
   disconnectTransport() {
+    if (this.socketRevalidationTimer) clearTimeout(this.socketRevalidationTimer);
+    this.socketRevalidationTimer = null;
     if (this.transport && this.transport.socket) this.transport.socket.close();
     this.transport = null;
     this.token = "";
     this.matrixInfo = null;
     this.auxInfo = null;
     this.auxState = null;
+  }
+
+  scheduleSocketRevalidation(token) {
+    if (this.socketRevalidationTimer || !token) return;
+    this.socketRevalidationTimer = setTimeout(async () => {
+      this.socketRevalidationTimer = null;
+      if (this.token !== token || !this.transport) return;
+      if (this.commandsPending > 0) {
+        this.scheduleSocketRevalidation(token);
+        return;
+      }
+      try {
+        if (this.transport.socket) this.transport.socket.close();
+        await this.request(token, "/api/session/revalidate", "POST", { action: "revalidate" });
+        // Reconnect rechecks local/online revocation, then confirms the pinned
+        // Matrix identity and firmware before controls.
+        await this.connect(token, this.expiresAtEpoch);
+      } catch (_) {
+        this.disconnectTransport();
+      }
+    }, this.socketRevalidateMs);
+    if (this.socketRevalidationTimer && typeof this.socketRevalidationTimer.unref === "function") this.socketRevalidationTimer.unref();
   }
 
   async connect(token, expiresAtEpoch) {
@@ -120,6 +149,7 @@ export class LocalOwnerControl {
       if (candidate !== LOCAL_MATRIX_RELEASE) throw new Error("Matrix firmware is not the locally approved release.");
       await this.readAux(token);
       this.matrixInfo = matrixInfo;
+      this.scheduleSocketRevalidation(token);
       return this.snapshot();
     } catch (error) {
       this.disconnectTransport();
@@ -171,7 +201,11 @@ export class LocalOwnerControl {
   }
 
   command(token, type, payload) {
-    const run = () => this.commandNow(token, type, payload);
+    const run = async () => {
+      this.commandsPending += 1;
+      try { return await this.commandNow(token, type, payload); }
+      finally { this.commandsPending -= 1; }
+    };
     const result = this.commandQueue.then(run, run);
     this.commandQueue = result.catch(() => {});
     return result;

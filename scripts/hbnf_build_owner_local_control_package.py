@@ -9,13 +9,13 @@ import subprocess
 import zipfile
 from pathlib import Path
 
-PACKAGE_NAME = "hbnf-owner-local-control-v1.0.0"
+PACKAGE_NAME = "hbnf-owner-local-control-v1.0.1"
 SOURCE_DIR = Path("staging/coordinated-backend/opal/owner-local-control")
 TRANSPORT = Path("staging/coordinated-backend/opal/mission-control-local/local-transport.js")
 FILES = (
     "README.md", "SOURCE_BASE.json", "auth.lua", "auth_origin.lua", "auth_owner.lua",
     "auth_websocket.lua", "aux_command_access.lua", "enroll.lua", "install.sh",
-    "nginx.conf.example", "preflight.sh", "revoke.lua", "rollback.sh", "session.lua",
+    "nginx.conf.example", "preflight.sh", "revalidate.lua", "revoke.lua", "rollback.sh", "session.lua",
 )
 EXPECTED_ROLLBACK = "a91e84c89a481739f9c47c619a1d3c5c35d690869c54159486d528d3863c746e"
 

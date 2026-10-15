@@ -1,6 +1,7 @@
 #!/bin/sh
 set -eu
 BASE=/etc/hbnf-local-control
+STATE=/etc/hbnf-local-control-state
 CONF=/etc/nginx/conf.d/hbnf-owner-local-control.conf
 TARGET=/www/mission-control-local/local-transport.js
 BACKUP=/root/hbnf-owner-local-control.rollback-20261015
@@ -15,7 +16,7 @@ cp -p "$BACKUP/local-transport.js" "$TARGET.rollback"
 cmp -s "$BACKUP/local-transport.js" "$TARGET.rollback" || fail "rollback copy verification failed"
 mv "$TARGET.rollback" "$TARGET"
 rm -f "$CONF"
-rm -rf "$BASE/lua" "$BASE/sessions" "$BASE/revoked"
+rm -rf "$BASE/lua" "$STATE"
 nginx -t || fail "restored configuration test failed; do not reload"
 nginx -s reload || fail "Nginx reload failed after restoring old transport"
 actual=$(sha256sum "$TARGET" | awk '{print $1}')
