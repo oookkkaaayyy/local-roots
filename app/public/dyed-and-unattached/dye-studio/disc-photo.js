@@ -192,7 +192,7 @@ function bind(){
      color.value=result.hex;field.value=result.hex;
      // Same existing UI color handlers; automatically refresh model and undo history.
      color.dispatchEvent(new Event("input",{bubbles:true}));
-     window.DUDiscAppearance?.set?.(result.appearance||null);
+     window.DUDiscAppearance?.set?.(result.appearance||null,false,true);
      syncControls();
      // Reuse the existing optical-profile transmission estimate and single undo/history commit.
      document.getElementById("autoTransmission").click();
