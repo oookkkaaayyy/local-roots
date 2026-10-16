@@ -347,8 +347,14 @@ def _backend_opal_admission_errors(state, manifest, now=None, require_unconsumed
             if owner["expires_unix"]<=current and not allow_expired: errors.append("owner authorization expired")
             if owner["expires_unix"]-owner["issued_unix"]>90*60: errors.append("owner authorization exceeds the bounded transaction window")
         if require_unconsumed:
-            if tx.get("status")!="AUTHORIZED" or tx.get("attempts_used")!=0 or tx.get("completed_steps")!=[] or tx.get("active_step") is not None:
-                errors.append("owner authorization is replayed or already consumed")
+            done=tx.get("completed_steps",[])
+            initial=(not tx.get("continuation_from") and tx.get("status")=="AUTHORIZED"
+                and tx.get("attempts_used")==0 and done==[])
+            continuation=(tx.get("continuation_from") and tx.get("status")=="IN_PROGRESS"
+                and tx.get("attempts_used")==1 and done==list(BACKEND_OPAL_STEPS[:2])
+                and tx.get("authorization_start_index")==2)
+            if not (initial or continuation) or tx.get("active_step") is not None:
+                errors.append("owner authorization is replayed, consumed, or not the exact approved continuation")
         if tx.get("admission_sha256")!=manifest.get("admission_sha256"):
             errors.append("admission identity differs from the primary control state")
     source_commit=manifest.get("deployable_source_commit")
@@ -357,9 +363,12 @@ def _backend_opal_admission_errors(state, manifest, now=None, require_unconsumed
         errors.append("transaction is not bound to the exact owner-authorized deployable source commit")
     if isinstance(owner,dict) and owner.get("artifact_sha256_bindings")!=_backend_opal_artifact_sha_bindings(manifest):
         errors.append("owner authorization does not bind every exact deployable and rollback artifact hash")
-    expected_scope=[*BACKEND_OPAL_STEPS,"rollback_if_required"]
+    start_index=tx.get("authorization_start_index",0) if isinstance(tx,dict) else 0
+    if not isinstance(start_index,int) or start_index<0 or start_index>len(BACKEND_OPAL_STEPS):
+        start_index=-1
+    expected_scope=[*BACKEND_OPAL_STEPS[start_index:],"rollback_if_required"] if start_index>=0 else []
     if not isinstance(owner,dict) or owner.get("scope")!=expected_scope:
-        errors.append("owner authorization scope is not the exact backend/Opal transaction")
+        errors.append("owner authorization scope is not the exact remaining backend/Opal transaction")
     if manifest.get("authorized_steps")!=list(BACKEND_OPAL_STEPS):
         errors.append("admission contains missing or unrelated transaction commands")
 
@@ -369,7 +378,10 @@ def _backend_opal_admission_errors(state, manifest, now=None, require_unconsumed
         "project_ref":"phcpbvuqibyarpfrftgx",
         "edge_function":"hbnf-cart-control",
         "verify_jwt":False,
-        "expected_function_version":25,
+        # The original admission is pinned to v25. The only continuation
+        # admitted here is the owner-authorized v27 deployment with this exact
+        # source bundle; no arbitrary/dynamic function-version relaxation.
+        "expected_function_version":27 if (isinstance(tx,dict) and tx.get("continuation_from")) else 25,
         "matrix_mac":"704bca5b345c",
         "matrix_release_id":"hbnf-cart2-phase2-r6-skins-readable-20261014",
         "matrix_recorded_firmware_sha256":"de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
@@ -480,8 +492,40 @@ def _backend_opal_admission_errors(state, manifest, now=None, require_unconsumed
         if key=="reissue_precondition" and require_unconsumed:
             try:
                 proof=load(root/item["path"]); captured=proof.get("captured_unix"); current=time.time() if now is None else now
-                if (proof.get("schema")!="hbnf-backend-opal-reissue-precondition-v1" or proof.get("pass") is not True
-                    or not isinstance(captured,(int,float)) or current-captured>300 or captured>current+5
+                if proof.get("pass") is not True or not isinstance(captured,(int,float)) or current-captured>300 or captured>current+5:
+                    errors.append("fresh reissuance precondition is missing, failed, or stale")
+                elif isinstance(tx,dict) and tx.get("continuation_from"):
+                    if (proof.get("schema")!="hbnf-backend-opal-continuation-precondition-v1"
+                        or proof.get("prior_transaction_id")!=tx.get("continuation_from")
+                        or proof.get("prior_admission_sha256")!=tx.get("continuation_admission_sha256")
+                        or proof.get("production_function_version")!=27
+                        or proof.get("function_bundle_sha256")!="d02a3cead7bdb5028ddca158ed4fc2fb0e2a28248923073c3da60e61e572c98a"
+                        or proof.get("verify_jwt") is not False
+                        or proof.get("migration_applied") is not True
+                        or proof.get("bootstrap_rpc_present") is not True
+                        or proof.get("migration_sha256")!=artifacts.get("migration",{}).get("sha256")
+                        or proof.get("source_commit")!=source_commit
+                        or proof.get("migration_required_rpcs")!=["hbnf_cart_matrix_relay_bootstrap","hbnf_cart_matrix_relay_issue","hbnf_cart_matrix_relay_confirm"]
+                        or proof.get("migration_execute_acl")!={"anon":False,"authenticated":False,"service_role":True}
+                        or proof.get("v25_rollback_snapshot_sha256")!="0d75b62870cdcb56abfd1340f35532c24dbb5df974b902277a40e6745f0fab24"
+                        or proof.get("production_source_match") is not True
+                        or proof.get("production_source_files")!=[pathlib.Path(p).name for p in BACKEND_OPAL_FUNCTION_FILES if pathlib.Path(p).name!="deno.lock"]
+                        or proof.get("deployment_origin_bound_to_step_receipt") is not True
+                        or proof.get("opal_writer_prestate")!="ABSENT"
+                        or proof.get("scoreboard_relay_present") is not True
+                        or proof.get("fence_active") is not False):
+                        errors.append("continuation precondition does not prove exact v27, migration, rollback, and no-writer state")
+                    preflight=manifest.get("fresh_readonly_preflight",{}); canonical=manifest.get("canonical_readonly_preflight",{})
+                    if proof.get("matrix_preflight_sha256")!=preflight.get("sha256") or proof.get("canonical_preflight_sha256")!=canonical.get("sha256"):
+                        errors.append("continuation precondition is not bound to the fresh device and canonical readbacks")
+                    for key,value in (("matrix_mac","704bca5b345c"),("matrix_logical_brightness",46),("matrix_brightness",255),
+                        ("matrix_aux_target_brightness",46),("aux_mac","8c94df55c34c"),("aux_brightness",255),
+                        ("matrix_release_id","hbnf-cart2-phase2-r6-skins-readable-20261014"),
+                        ("matrix_recorded_firmware_sha256","de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d")):
+                        if proof.get(key)!=value: errors.append("continuation precondition device value mismatch: "+key)
+                    if proof.get("aux_ddp_healthy") is not True or proof.get("skins_relay_healthy") is not True:
+                        errors.append("continuation precondition does not prove AUX DDP and Skins relay health")
+                elif (proof.get("schema")!="hbnf-backend-opal-reissue-precondition-v1"
                     or proof.get("production_function_version")!=25 or proof.get("verify_jwt") is not False
                     or proof.get("migration_applied") is not False or proof.get("bootstrap_rpc_present") is not False
                     or proof.get("opal_writer_present") is not False or proof.get("scoreboard_relay_present") is not True):
@@ -505,10 +549,16 @@ def issue_backend_opal_admission(state,manifest_path,authorization_receipt_path,
     cursor=state.get("execution_cursor",{}); old=cursor.get("backend_opal_transaction",{}) if isinstance(cursor,dict) else {}
     old_owner=old.get("owner_authorization",{}) if isinstance(old,dict) else {}
     if old.get("schema")!="hbnf-backend-opal-transaction-state-v1": errors.append("no prior backend/Opal transaction to supersede")
-    if old.get("status") not in ("IN_PROGRESS","AUTHORIZED","ROLLBACK_REQUIRED") or old.get("completed_steps")!=[]:
-        errors.append("prior transaction cannot be reissued after completed production steps")
-    if old.get("active_step") not in (None,"apply_migration"):
-        errors.append("prior transaction has an unresolved non-migration step")
+    completed=old.get("completed_steps",[])
+    continuation=(completed==list(BACKEND_OPAL_STEPS[:2]) and old.get("status")=="IN_PROGRESS"
+        and old.get("attempts_used")==1 and old.get("last_reserved_step")==BACKEND_OPAL_STEPS[1]
+        and old.get("rollback_attempts_used")==0)
+    initial=(completed==[] and old.get("status") in ("IN_PROGRESS","AUTHORIZED")
+        and old.get("attempts_used") in (0,1))
+    if not (continuation or initial):
+        errors.append("prior transaction is not the exact untouched baseline or two-step migration/function continuation")
+    if old.get("active_step") is not None:
+        errors.append("prior transaction has an unresolved active step")
     if not isinstance(old_owner.get("expires_unix"),(int,float)) or old_owner.get("expires_unix")>current:
         errors.append("prior owner authorization is not expired")
     if not isinstance(owner,dict): owner={}
@@ -519,13 +569,15 @@ def issue_backend_opal_admission(state,manifest_path,authorization_receipt_path,
         errors.append("reissued authorization must use new transaction, authorization, and nonce identities")
     if owner.get("source_message_ref")==old_owner.get("source_message_ref"):
         errors.append("reissued authorization must cite the current owner instruction")
-    if owner.get("scope")!=[*BACKEND_OPAL_STEPS,"rollback_if_required"]:
-        errors.append("fresh owner authorization scope is not the exact backend/Opal transaction")
+    expected_owner_scope=[*BACKEND_OPAL_STEPS[2:],"rollback_if_required"] if continuation else [*BACKEND_OPAL_STEPS,"rollback_if_required"]
+    if owner.get("scope")!=expected_owner_scope:
+        errors.append("fresh owner authorization scope is not the exact remaining backend/Opal transaction")
     if not isinstance(owner.get("issued_unix"),(int,float)) or not isinstance(owner.get("expires_unix"),(int,float)):
         errors.append("fresh owner authorization validity window is malformed")
     elif owner["issued_unix"]>current+5 or owner["issued_unix"]<current-300 or owner["expires_unix"]<=current or owner["expires_unix"]-owner["issued_unix"]>30*60:
         errors.append("fresh owner authorization must be current and expire within 30 minutes")
     manifest["owner_authorization"]=owner; manifest["deployable_source_commit"]=owner.get("deployable_source_commit")
+    manifest["transaction_id"]=owner.get("transaction_id")
     manifest["admission_sha256"]=backend_opal_admission_digest(manifest)
     if owner.get("artifact_sha256_bindings")!=_backend_opal_artifact_sha_bindings(manifest):
         errors.append("owner authorization artifact hashes do not exactly bind this candidate and rollback")
@@ -534,10 +586,77 @@ def issue_backend_opal_admission(state,manifest_path,authorization_receipt_path,
         proof_data=load(root/proof["path"])
         if proof_data.get("prior_transaction_id")!=old.get("transaction_id") or proof_data.get("prior_admission_sha256")!=old.get("admission_sha256"):
             errors.append("reissue precondition does not bind the expired transaction being superseded")
+        if continuation:
+            if (proof_data.get("schema")!="hbnf-backend-opal-continuation-precondition-v1"
+                or proof_data.get("production_function_version")!=27
+                or proof_data.get("function_bundle_sha256")!="d02a3cead7bdb5028ddca158ed4fc2fb0e2a28248923073c3da60e61e572c98a"
+                or proof_data.get("verify_jwt") is not False
+                or proof_data.get("migration_applied") is not True
+                or proof_data.get("bootstrap_rpc_present") is not True
+                or proof_data.get("migration_sha256")!=manifest.get("artifacts",{}).get("migration",{}).get("sha256")
+                or proof_data.get("source_commit")!=manifest.get("deployable_source_commit")
+                or proof_data.get("migration_required_rpcs")!=["hbnf_cart_matrix_relay_bootstrap","hbnf_cart_matrix_relay_issue","hbnf_cart_matrix_relay_confirm"]
+                or proof_data.get("migration_execute_acl")!={"anon":False,"authenticated":False,"service_role":True}
+                or proof_data.get("v25_rollback_snapshot_sha256")!="0d75b62870cdcb56abfd1340f35532c24dbb5df974b902277a40e6745f0fab24"
+                or proof_data.get("production_source_match") is not True
+                or proof_data.get("production_source_files")!=[pathlib.Path(p).name for p in BACKEND_OPAL_FUNCTION_FILES if pathlib.Path(p).name!="deno.lock"]
+                or proof_data.get("deployment_origin_bound_to_step_receipt") is not True
+                or proof_data.get("opal_writer_prestate")!="ABSENT"
+                or proof_data.get("scoreboard_relay_present") is not True
+                or proof_data.get("fence_active") is not False):
+                errors.append("continuation evidence does not prove exact v27, applied migration, rollback, and no-writer state")
+            for step in BACKEND_OPAL_STEPS[:2]:
+                refs=[x for x in old.get("step_receipts",[]) if isinstance(x,dict) and x.get("step")==step]
+                if len(refs)!=1:
+                    errors.append("completed production step receipt is missing or duplicated: "+step); continue
+                ref=refs[0]; rel=ref.get("path"); expected_sha=ref.get("sha256")
+                if not isinstance(rel,str) or pathlib.Path(rel).is_absolute() or ".." in pathlib.Path(rel).parts:
+                    errors.append("completed production step receipt path is unsafe: "+step); continue
+                receipt_path=(root/rel).resolve()
+                try: receipt_path.relative_to(root/"evidence")
+                except ValueError: errors.append("completed production step receipt must be inside evidence: "+step); continue
+                if not receipt_path.is_file() or not re.fullmatch(r"[a-f0-9]{64}",str(expected_sha)) or sha256_file(receipt_path)!=expected_sha:
+                    errors.append("completed production step receipt is missing or changed: "+step); continue
+                try: step_receipt=load(receipt_path)
+                except (OSError,ValueError,TypeError):
+                    errors.append("completed production step receipt is malformed: "+step); continue
+                if (step_receipt.get("schema")!="hbnf-backend-opal-release-step-v1"
+                    or step_receipt.get("transaction_id")!=old.get("transaction_id")
+                    or step_receipt.get("step")!=step or step_receipt.get("status")!="PASS"
+                    or step_receipt.get("side_effects_verified") is not True):
+                    errors.append("completed production step receipt is not a verified PASS: "+step)
+                ev=step_receipt.get("evidence",{})
+                if step=="apply_migration" and (ev.get("project")!="phcpbvuqibyarpfrftgx"
+                    or ev.get("migration")!="20261011235000_hbnf_matrix_relay_incremental_controls_pin"
+                    or ev.get("required_rpcs")!=["hbnf_cart_matrix_relay_bootstrap","hbnf_cart_matrix_relay_issue","hbnf_cart_matrix_relay_confirm"]
+                    or ev.get("execute_acl")!={"anon":False,"authenticated":False,"service_role":True}
+                    or ev.get("data_mutated") is not False):
+                    errors.append("completed migration receipt does not prove exact additive migration and restricted RPC permissions")
+                if step=="deploy_edge_function" and (ev.get("project")!="phcpbvuqibyarpfrftgx"
+                    or ev.get("function")!="hbnf-cart-control" or ev.get("version")!=26
+                    or ev.get("verify_jwt") is not False
+                    or ev.get("deploy_bundle_sha256")!="d02a3cead7bdb5028ddca158ed4fc2fb0e2a28248923073c3da60e61e572c98a"
+                    or ev.get("v25_rollback_snapshot_sha256")!="0d75b62870cdcb56abfd1340f35532c24dbb5df974b902277a40e6745f0fab24"
+                    or ev.get("cart_status",{}).get("http")!=200
+                    or ev.get("live_status",{}).get("http")!=200
+                    or ev.get("unpaired_command",{}).get("http")!=401
+                    or ev.get("scoring_data_modified") is not False
+                    or ev.get("matrix_device_mutated") is not False):
+                    errors.append("completed deploy receipt does not prove the exact deployed bundle and v25 rollback")
+            if proof_data.get("completed_step_receipts")!=old.get("step_receipts"):
+                errors.append("continuation evidence does not bind the immutable completed-step receipts")
+            if proof_data.get("completed_steps")!=completed:
+                errors.append("continuation evidence does not bind the exact completed step prefix")
     except (OSError,KeyError,TypeError,ValueError): errors.append("reissue precondition does not bind the prior transaction")
     new_tx={"schema":"hbnf-backend-opal-transaction-state-v1","transaction_id":owner.get("transaction_id"),
-        "owner_authorization":owner,"admission_sha256":manifest["admission_sha256"],"status":"AUTHORIZED",
-        "attempts_used":0,"completed_steps":[],"active_step":None,"rollback_attempts_used":0}
+        "owner_authorization":owner,"admission_sha256":manifest["admission_sha256"],
+        "status":"IN_PROGRESS" if continuation else "AUTHORIZED",
+        "attempts_used":1 if continuation else 0,"completed_steps":list(completed) if continuation else [],
+        "active_step":None,"rollback_attempts_used":0}
+    if continuation:
+        new_tx.update({"started_unix":current,"continuation_from":old.get("transaction_id"),
+            "continuation_admission_sha256":old.get("admission_sha256"),"last_reserved_step":BACKEND_OPAL_STEPS[1],
+            "step_receipts":copy.deepcopy(old.get("step_receipts",[])),"authorization_start_index":2})
     provisional=copy.deepcopy(state); provisional.setdefault("execution_cursor",{})["backend_opal_transaction"]=new_tx
     errors.extend(_backend_opal_admission_errors(provisional,manifest,current,require_unconsumed=True))
     if errors: raise ValueError("backend/Opal reissuance rejected: "+"; ".join(dict.fromkeys(errors)))
@@ -545,11 +664,14 @@ def issue_backend_opal_admission(state,manifest_path,authorization_receipt_path,
     if any(x.get("transaction_id")==owner.get("transaction_id") for x in history if isinstance(x,dict)):
         raise ValueError("backend/Opal reissuance rejected: transaction identity was already used")
     history.append({"prior_transaction":copy.deepcopy(old),"superseded_by":owner["transaction_id"],"superseded_at_unix":current,
-        "reason":"expired one-use admission; fresh evidence proves no prior production step completed"})
+        "reason":"expired one-use admission; fresh evidence proves no prior production step completed" if not continuation
+            else "expired one-use admission continued after immutable migration/deploy receipts and current v27 source were verified",
+        "completed_steps_carried_forward":list(completed) if continuation else []})
     cursor.setdefault("backend_opal_transaction_audit",[]).append({"event":"OWNER_AUTHORIZED_ADMISSION_REISSUED",
         "transaction_id":owner["transaction_id"],"prior_transaction_id":old["transaction_id"],"authorization_id":owner["authorization_id"],
         "source_message_ref":owner["source_message_ref"],"admission_sha256":manifest["admission_sha256"],
-        "authorization_receipt":str(auth_path.relative_to(root)),"authorization_receipt_sha256":sha256_file(auth_path),"issued_unix":current})
+        "authorization_receipt":str(auth_path.relative_to(root)),"authorization_receipt_sha256":sha256_file(auth_path),"issued_unix":current,
+        "completed_steps_carried_forward":list(completed) if continuation else []})
     cursor["backend_opal_transaction"]=new_tx
     return manifest
 
@@ -601,13 +723,15 @@ def refresh_backend_opal_preflight(state,manifest_path,refresh_evidence_path,nex
         errors.append("preflight refresh owner authorization window is invalid")
     if owner.get("deployable_source_commit")!=manifest.get("deployable_source_commit"):
         errors.append("preflight refresh source commit differs from owner authorization")
-    if owner.get("scope")!=[*BACKEND_OPAL_STEPS,"rollback_if_required"]:
-        errors.append("preflight refresh owner scope is not the exact transaction")
     if owner.get("artifact_sha256_bindings")!=_backend_opal_artifact_sha_bindings(manifest):
         errors.append("preflight refresh artifact bindings differ from owner authorization")
     done=state_tx.get("completed_steps",[])
     if not isinstance(done,list) or done!=list(BACKEND_OPAL_STEPS[:len(done)]):
         errors.append("preflight refresh transaction progress is not a valid step prefix")
+    scope_start=state_tx.get("authorization_start_index",0)
+    expected_scope=[*BACKEND_OPAL_STEPS[scope_start:],"rollback_if_required"] if isinstance(scope_start,int) and 0<=scope_start<=len(BACKEND_OPAL_STEPS) else []
+    if owner.get("scope")!=expected_scope:
+        errors.append("preflight refresh owner scope is not the exact remaining transaction")
     expected_step=BACKEND_OPAL_STEPS[len(done)] if isinstance(done,list) and len(done)<len(BACKEND_OPAL_STEPS) else None
     if next_step!=expected_step:errors.append("preflight refresh is not bound to the next allowlisted transaction step")
     try:

@@ -1,0 +1,25 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OWNER_CONTROL_BACKEND_OPAL_V27_ADMISSION_CONTINUATION_20261016",
+  "summary": "Extend the existing one-use backend/Opal admission validator to continue after the exact verified migration and Edge Function deployment, binding the remaining steps to live v27 and fresh device evidence without changing firmware authority.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "owner_authorization": "Current owner message explicitly authorizes one narrowly scoped modification to the existing primary validator for fresh single-use admission of only remaining Opal relay steps.",
+    "implementation": [
+      "scripts/hbnf_control.py",
+      "tests/test_backend_opal_release_admission.py"
+    ],
+    "preserved_authority": "PHASE2_INTEGRATING remains unchanged; live_mutation_authorized remains false; no firmware step is added or admitted.",
+    "continuation_binding": "The new path accepts only the exact two completed step prefix, immutable PASS receipts, v27 function version and bundle SHA, applied migration/RPC ACL evidence, exact v25 rollback, current device state, inactive fence, and remaining-step scope.",
+    "validation": "Python syntax compilation and tests/test_backend_opal_release_admission.py pass. The suite exercises valid continuation, exact v27 pinning, invalid version rejection without state mutation, replay/expiry/scope/hash failures, rejected child execution, ordered steps, rollback-only path, and closed firmware authority.",
+    "rollback": "Revert this bounded validator/test change; no production function, migration, device, firmware, network, or scoring data was changed by the implementation.",
+    "external_source": "Supabase Management API get-function metadata and source retrieval, https://supabase.com/docs/reference/api/v1-get-a-function; the API exposes active version, updated_at, verify_jwt, bundle SHA, and returned source files."
+  }
+}

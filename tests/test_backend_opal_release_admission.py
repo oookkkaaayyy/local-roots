@@ -42,7 +42,7 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
         "issued_unix":now-7200,"expires_unix":now-3600}
     state["execution_cursor"]["backend_opal_transaction"]={"schema":"hbnf-backend-opal-transaction-state-v1",
         "transaction_id":prior_id,"owner_authorization":old_owner,"admission_sha256":prior_digest,"status":"IN_PROGRESS",
-        "attempts_used":1,"completed_steps":[],"active_step":"apply_migration","rollback_attempts_used":0}
+        "attempts_used":1,"completed_steps":[],"active_step":None,"rollback_attempts_used":0}
     expected_prior=copy.deepcopy(state["execution_cursor"]["backend_opal_transaction"])
     prior_history_len=len(state["execution_cursor"].get("backend_opal_transaction_history",[]))
     preflight={
@@ -109,6 +109,110 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
     write_json(auth_path,{"schema":"hbnf-backend-opal-admission-authorization-v1","owner_authorization":owner})
     statepath=temp/"state.json"; write_json(statepath,state)
     admission=temp/"admission.json"; write_json(admission,manifest)
+
+    # The production migration and function steps are already complete. A
+    # continuation must carry their immutable PASS receipts forward, bind to
+    # the exact deployed v27 bundle, and authorize only the remaining steps.
+    continuation_state=copy.deepcopy(state)
+    continuation_tx=continuation_state["execution_cursor"]["backend_opal_transaction"]
+    continuation_receipts=[]
+    for step in STEPS[:2]:
+        evidence={"project":"phcpbvuqibyarpfrftgx"}
+        if step=="apply_migration":
+            evidence.update({"migration":"20261011235000_hbnf_matrix_relay_incremental_controls_pin",
+                "required_rpcs":["hbnf_cart_matrix_relay_bootstrap","hbnf_cart_matrix_relay_issue","hbnf_cart_matrix_relay_confirm"],
+                "execute_acl":{"anon":False,"authenticated":False,"service_role":True},"data_mutated":False})
+        else:
+            evidence.update({"function":"hbnf-cart-control","version":26,"verify_jwt":False,
+                "deploy_bundle_sha256":"d02a3cead7bdb5028ddca158ed4fc2fb0e2a28248923073c3da60e61e572c98a",
+                "v25_rollback_snapshot_sha256":"0d75b62870cdcb56abfd1340f35532c24dbb5df974b902277a40e6745f0fab24",
+                "cart_status":{"http":200},"live_status":{"http":200},"unpaired_command":{"http":401},
+                "scoring_data_modified":False,"matrix_device_mutated":False})
+        receipt={"schema":"hbnf-backend-opal-release-step-v1","transaction_id":prior_id,
+            "step":step,"status":"PASS","side_effects_verified":True,"evidence":evidence}
+        receipt_path=temp/(step+"-immutable-receipt.json"); write_json(receipt_path,receipt)
+        continuation_receipts.append({"step":step,"path":receipt_path.relative_to(ROOT).as_posix(),"sha256":sha(receipt_path)})
+    continuation_tx.update({"status":"IN_PROGRESS","attempts_used":1,"completed_steps":STEPS[:2],
+        "active_step":None,"last_reserved_step":"deploy_edge_function","step_receipts":continuation_receipts})
+    continuation_proof={"schema":"hbnf-backend-opal-continuation-precondition-v1","pass":True,
+        "captured_unix":now,"prior_transaction_id":prior_id,"prior_admission_sha256":prior_digest,
+        "completed_steps":STEPS[:2],"completed_step_receipts":continuation_receipts,
+        "production_function_version":27,"function_bundle_sha256":"d02a3cead7bdb5028ddca158ed4fc2fb0e2a28248923073c3da60e61e572c98a",
+        "verify_jwt":False,"migration_applied":True,"bootstrap_rpc_present":True,
+        "migration_sha256":artifact_items["migration"]["sha256"],"source_commit":BASE,
+        "migration_required_rpcs":["hbnf_cart_matrix_relay_bootstrap","hbnf_cart_matrix_relay_issue","hbnf_cart_matrix_relay_confirm"],
+        "migration_execute_acl":{"anon":False,"authenticated":False,"service_role":True},
+        "v25_rollback_snapshot_sha256":"0d75b62870cdcb56abfd1340f35532c24dbb5df974b902277a40e6745f0fab24",
+        "production_source_match":True,
+        "production_source_files":["deno.json","index.ts","guest-command.ts","live.ts","skins_scoring.ts","runtime-vibe.ts","matrix-relay.ts","matrix-relay-auth.ts","matrix-relay-projection.ts"],
+        "deployment_origin_bound_to_step_receipt":True,
+        "opal_writer_prestate":"ABSENT","scoreboard_relay_present":True,"fence_active":False,
+        "matrix_preflight_sha256":sha(prepath),"canonical_preflight_sha256":sha(canonical_path),
+        "matrix_mac":"704bca5b345c","matrix_logical_brightness":46,"matrix_brightness":255,
+        "matrix_aux_target_brightness":46,"aux_mac":"8c94df55c34c","aux_brightness":255,"vibe":3,
+        "matrix_release_id":"hbnf-cart2-phase2-r6-skins-readable-20261014",
+        "matrix_recorded_firmware_sha256":"de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+        "aux_ddp_healthy":True,"skins_relay_healthy":True}
+    continuation_proof_path=temp/"continuation-precondition.json"; write_json(continuation_proof_path,continuation_proof)
+    continuation_manifest=copy.deepcopy(manifest)
+    continuation_manifest["identities"]["expected_function_version"]=27
+    continuation_manifest["checks"]["reissue_precondition"]={"pass":True,
+        "path":continuation_proof_path.relative_to(ROOT).as_posix(),"sha256":sha(continuation_proof_path)}
+    continuation_owner=copy.deepcopy(owner)
+    continuation_owner.update({"transaction_id":"OWNER-20261016-CART-RELAY-CONTINUATION-TEST",
+        "authorization_id":"DIRECT-OWNER-CONTINUATION-TEST","source_message_ref":"TEST FIXTURE ONLY; current owner authorization",
+        "nonce":"new-continuation-nonce-0123456789abcdef","scope":[*STEPS[2:],"rollback_if_required"]})
+    continuation_auth=temp/"continuation-authorization.json"
+    write_json(continuation_auth,{"schema":"hbnf-backend-opal-admission-authorization-v1",
+        "owner_authorization":continuation_owner})
+    continuation_state_path=temp/"continuation-state.json"; write_json(continuation_state_path,continuation_state)
+    continuation_admission=temp/"continuation-admission.json"; write_json(continuation_admission,continuation_manifest)
+    issue_continuation=[sys.executable,str(CONTROL),"--state",str(continuation_state_path),
+        "reissue-backend-opal-admission","--admission",str(continuation_admission),
+        "--authorization-receipt",str(continuation_auth)]
+    p=run(issue_continuation); assert p.returncode==0,(p.stdout,p.stderr)
+    continued_state=json.loads(continuation_state_path.read_text())
+    continued_manifest=json.loads(continuation_admission.read_text())
+    continued_tx=continued_state["execution_cursor"]["backend_opal_transaction"]
+    assert continued_manifest["transaction_id"]==continuation_owner["transaction_id"]
+    assert continued_tx["status"]=="IN_PROGRESS" and continued_tx["attempts_used"]==1
+    assert continued_tx["completed_steps"]==STEPS[:2] and continued_tx["step_receipts"]==continuation_receipts
+    assert continued_tx["continuation_from"]==prior_id
+    assert continued_state["live_mutation_authorized"] is False
+    assert continued_manifest["identities"]["expected_function_version"]==27
+    check_continuation=[sys.executable,str(CONTROL),"--state",str(continuation_state_path),
+        "check-backend-opal-admission","--admission",str(continuation_admission)]
+    p=run(check_continuation); assert p.returncode==0,(p.stdout,p.stderr)
+    continuation_guard=[sys.executable,str(GUARD),"--model",str(MODEL),"--state",str(continuation_state_path),
+        "--require-state","PHASE2_INTEGRATING","--backend-opal-admission",str(continuation_admission),
+        "--backend-opal-action","reserve","--backend-opal-step","install_writer_stopped"]
+    p=run(continuation_guard); assert p.returncode==0,(p.stdout,p.stderr)
+    reserved_cont=json.loads(continuation_state_path.read_text())
+    assert reserved_cont["execution_cursor"]["backend_opal_transaction"]["active_step"]=="install_writer_stopped"
+
+    # An invalid continuation version is rejected without changing control
+    # state or invoking any child command.
+    bad_cont_state=copy.deepcopy(continuation_state)
+    bad_cont_manifest=copy.deepcopy(continuation_manifest)
+    bad_cont_manifest["checks"]["reissue_precondition"]["path"]=continuation_proof_path.relative_to(ROOT).as_posix()
+    bad_cont_manifest["checks"]["reissue_precondition"]["sha256"]=sha(continuation_proof_path)
+    bad_cont_auth=copy.deepcopy(continuation_owner)
+    bad_cont_auth.update({"transaction_id":"OWNER-20261016-CART-RELAY-WRONG-VERSION-TEST",
+        "authorization_id":"DIRECT-OWNER-WRONG-VERSION-TEST","nonce":"wrong-version-nonce-0123456789abcdef"})
+    bad_cont_proof=dict(continuation_proof,production_function_version=26)
+    bad_cont_proof_path=temp/"wrong-version-precondition.json"; write_json(bad_cont_proof_path,bad_cont_proof)
+    bad_cont_manifest["checks"]["reissue_precondition"].update({"path":bad_cont_proof_path.relative_to(ROOT).as_posix(),
+        "sha256":sha(bad_cont_proof_path)})
+    bad_cont_state_path=temp/"wrong-version-state.json"; write_json(bad_cont_state_path,bad_cont_state)
+    bad_cont_admission=temp/"wrong-version-admission.json"; write_json(bad_cont_admission,bad_cont_manifest)
+    bad_cont_auth_path=temp/"wrong-version-auth.json"; write_json(bad_cont_auth_path,
+        {"schema":"hbnf-backend-opal-admission-authorization-v1","owner_authorization":bad_cont_auth})
+    before_bad=bad_cont_state_path.read_bytes()
+    p=run([sys.executable,str(CONTROL),"--state",str(bad_cont_state_path),"reissue-backend-opal-admission",
+        "--admission",str(bad_cont_admission),"--authorization-receipt",str(bad_cont_auth_path)])
+    assert p.returncode!=0 and "exact v27" in (p.stdout+p.stderr),(p.stdout,p.stderr)
+    assert bad_cont_state_path.read_bytes()==before_bad,"rejected v26 continuation changed control state"
+
     issue=[sys.executable,str(CONTROL),"--state",str(statepath),"reissue-backend-opal-admission","--admission",str(admission),"--authorization-receipt",str(auth_path)]
     p=run(issue); assert p.returncode==0,(p.stdout,p.stderr)
     issued_state=json.loads(statepath.read_text()); issued_manifest=json.loads(admission.read_text())
@@ -191,7 +295,7 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
         assert p.returncode!=0 and not marker.exists(),"rejected admission reached a child/external action"
         assert sp.read_bytes()==before,"rejected launcher action changed local state"
     rejection(lambda s,m:(m["owner_authorization"].update({"deployable_source_commit":"0"*40}),s["execution_cursor"]["backend_opal_transaction"]["owner_authorization"].update({"deployable_source_commit":"0"*40})),"exact owner-authorized deployable source commit")
-    rejection(lambda s,m:(m["owner_authorization"]["scope"].append("install_firmware"),s["execution_cursor"]["backend_opal_transaction"]["owner_authorization"]["scope"].append("install_firmware")),"exact backend/Opal transaction")
+    rejection(lambda s,m:(m["owner_authorization"]["scope"].append("install_firmware"),s["execution_cursor"]["backend_opal_transaction"]["owner_authorization"]["scope"].append("install_firmware")),"exact remaining backend/Opal transaction")
     rejection(lambda s,m:m["identities"].update({"aux_mac":"000000000000"}),"wrong or missing transaction identity: aux_mac")
     rejection(lambda s,m:m["artifacts"]["migration"].update({"sha256":"0"*64}),"migration missing or SHA mismatch")
     rejection(lambda s,m:m["checks"].pop("production_v25_snapshot"),"production_v25_snapshot")
