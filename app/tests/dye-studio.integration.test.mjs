@@ -61,6 +61,9 @@ test('method classification does not confuse direct acetone with glue beds or pa
     ['Floetrol with silicone','floetrol-unspecified'],
     ['Floetrol cells','floetrol-bed'],
     ['Lotion and worm dip','mixed-or-compound-process'],
+    ['Spin dye followed by Floetrol cells','mixed-or-compound-process'],
+    ['Direct acetone/ProChem brush painting AFTER hot-dipped black outlines','mixed-or-compound-process'],
+    ['Clear glue bed with acetone-mixed dye (separately compared anecdotally with Floetrol bed)','acetone-glue-bed'],
     ['Floetrol dye','floetrol-unspecified'],
     ['Direct acetone brush painting','acetone-direct'],
     ['Quick Coat UV Blast worm dip','worm-dip'],
@@ -808,4 +811,12 @@ test('published evidence counts match actual entries and distinct source URLs', 
   assert.match(studioScript, /ALL_DYE_EVIDENCE\.filter\(o=>selected\.some\(d=>evidenceDyeFamilyMatches/);
   assert.doesNotMatch(studioHtml, /includes the user-provided before\/after photos/);
   assert.match(studioHtml, /Those photos are not published here/);
+});
+
+test('zero-intensity blocks cannot create false dyed regions or confidence',()=>{
+  assert.ok(studioScript.includes('function regionKeyAt(x,y){return layers.map(l=>Number(l.strength??100)>0&&layerCovers(l,x,y)?'));
+  assert.ok(studioScript.includes('active=active.filter(l=>Number(l.strength??100)>0);'));
+  assert.ok(studioScript.includes('function updateGuard(){if(!layers.some(l=>Number(l.strength??100)>0)){'));
+  const sample=studioScript.slice(studioScript.indexOf('function confidenceForActive('),studioScript.indexOf('function makePaintImage('));
+  assert.ok(sample.includes('if(!active.length)return"base-only"'));
 });
