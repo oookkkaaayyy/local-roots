@@ -67,6 +67,8 @@ test('method classification does not confuse direct acetone with glue beds or pa
     ['Floetrol dye','floetrol-unspecified'],
     ['Direct acetone brush painting','acetone-direct'],
     ['Quick Coat UV Blast worm dip','worm-dip'],
+    ['UV Blast in HBNF Floetrol process; finished photo','premixed-dip-floetrol'],
+    ['UV Blast worm dip followed by Floetrol cells','mixed-or-compound-process'],
     ['Acetone','acetone-unspecified'],
     ['NR','unknown']
   ];
@@ -164,7 +166,8 @@ test('source method matching evaluates the actual dye block rather than the proj
   assert.match(studio,/methods\.every\(m=>m===observedMethod\)/);
   assert.match(studio,/const partialMethod=observedMethod!=="unknown"/);
   assert.match(studio,/MIXED APPLICATION METHODS/);
-  assert.match(studio,/FORMULATION MISMATCH/);
+  assert.match(studio,/CUSTOM CARRIER/);
+  assert.match(studio,/PREMIXED DYE \+ FLOETROL/);
   assert.match(studio,/Per-block methods change warnings and evidence ranking/);
 });
 
@@ -819,4 +822,16 @@ test('zero-intensity blocks cannot create false dyed regions or confidence',()=>
   assert.ok(studioScript.includes('function updateGuard(){if(!layers.some(l=>Number(l.strength??100)>0)){'));
   const sample=studioScript.slice(studioScript.indexOf('function confidenceForActive('),studioScript.indexOf('function makePaintImage('));
   assert.ok(sample.includes('if(!active.length)return"base-only"'));
+});
+
+test('UV Blast plus Floetrol uses distinct actual method, not ProChem powder or worm dip',()=>{
+ const start=studioScript.indexOf('function newLayer(name,hex,clear=false){');
+ const end=studioScript.indexOf('function layerCovers(',start);
+ const env={layers:[],appMode:'client',activePassCount:()=>1,activeMethod:()=> 'floetrol-stencil',normAngle:x=>x};
+ const build=Function('env','with(env){'+studioScript.slice(start,end)+';return newLayer;}')(env);
+ assert.equal(build('UV Blast Green','#00FF00').method,'premixed-dip-floetrol');
+ assert.equal(build('ProChem Onyx','#101010').method,'floetrol-stencil');
+ env.activeMethod=()=> 'acetone-direct';
+ assert.equal(build('UV Blast Green','#00FF00').method,'worm-dip');
+ assert.match(studioHtml,/option value="premixed-dip-floetrol"/);
 });
