@@ -37,3 +37,10 @@ test('benchmarks never silently train from product-color swatches or sampled web
  assert.match(k.handwrittenLabels,/dye\/color names/);
  assert.equal(k.exactPlastic,false,'visual identification is not original maker verification');
 });
+
+test('same source cannot be counted as separate creator groups',()=>{
+ const first=data.records[0];
+ const second={...first,id:'copy-source',creatorGroup:'second-label'};
+ const report=auditEvidence({...data,records:[...data.records,second]});
+ assert.ok(report.issues.some(item=>item.includes('Conflicting creator group')));
+});
