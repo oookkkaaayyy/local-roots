@@ -1,7 +1,7 @@
 {
   "assets": [
     {
-      "path": "hbnf-cart-features.mjs",
+      "path": "hbnf-cart-features.js",
       "sha256": "e2d7df8f71517fd184a7043f7554c2a12a065df85b600b7acd6cde290af0d2f6",
       "size": 21874
     },
@@ -21,27 +21,27 @@
       "size": 5994
     },
     {
-      "path": "hbnf-cart-local.mjs",
-      "sha256": "96bc1200f09339a407433bb6d21085f90fa31b50afe09ae69c261e7d237095dc",
-      "size": 21855
+      "path": "hbnf-cart-local.js",
+      "sha256": "f7899859c8ebbd32fc171c26ecf247e5fa85fa06da11018373b39fa529a9258c",
+      "size": 21854
     },
     {
       "path": "hbnf-cart-manifest.webmanifest",
-      "sha256": "f29992d924fb11cae11b693bb72f09620a15fa257bdc30f4bd3ab1c6c7eb5b47",
-      "size": 537
+      "sha256": "c35b9fb0d73a80fd9ae22ea23a8e3965d353d1a618830ecd7b60f463fc5ca137",
+      "size": 542
     },
     {
-      "path": "hbnf-cart-net.mjs",
+      "path": "hbnf-cart-net.js",
       "sha256": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
       "size": 1511
     },
     {
-      "path": "hbnf-cart-semantic.mjs",
+      "path": "hbnf-cart-semantic.js",
       "sha256": "c7eada1028dddd0321ffa34e894bcb5e7d5ff4cf13a084f72623adcbb963d5a1",
       "size": 2611
     },
     {
-      "path": "hbnf-cart-skins-score.mjs",
+      "path": "hbnf-cart-skins-score.js",
       "sha256": "cf63ca5425210f9dbbe9666f623dc7b6324a2153d5bbfaa7522493eb085ea97f",
       "size": 7277
     },
@@ -51,24 +51,24 @@
       "size": 10368
     },
     {
-      "path": "hbnf-cart-ui-v6.mjs",
+      "path": "hbnf-cart-ui-v6.js",
       "sha256": "cb0cd6f24fe0abe84ab192daf197c1d94e5b9493eb0c887bf9dc60091f653f08",
       "size": 1517
     },
     {
       "path": "hbnf-cart.html",
-      "sha256": "0c77aaf143ebe162b24a5f34882a5cc9ab31398e10326be816e6e8122459de46",
-      "size": 17578
+      "sha256": "b4b97fce13e38e48c48a8273375d0abfa3984989e42634ea6fdb8d88b3b00a2e",
+      "size": 17575
     },
     {
       "path": "hbnf-cart.js",
-      "sha256": "2be0f45378505537fe17456c14721e959ef7a3c1adea7428f50693ac607c447f",
-      "size": 33903
+      "sha256": "32831e814ec0b50077e42ed755e26a68c834f4a0ca36202b4e17c0a587daf25b",
+      "size": 33900
     }
   ],
   "cloudScoring": "remote-only; live results are fetched on demand and cached entries are labeled CACHED",
   "destination": "/www/mission-control-local/owner-pwa",
   "mode": "additive-static-subtree",
   "package": "hbnf-owner-pwa-local-v1.0.0",
-  "sourceCommit": "2efbc34"
+  "sourceCommit": "94b933031507beb7acc7777f46c3479c3a3bab32"
 }
