@@ -21,7 +21,7 @@ const document = {
 const realm = { document, window: {}, localStorage: { getItem: () => null, setItem: () => {} } };
 vm.createContext(realm);
 vm.runInContext(source.slice(0, boundary) +
-  '\nglobalThis.model = { defaults, dyes, researchPredictPoint, researchPredict, regionKeyAt, setLayers(value){layers=value} };',
+  '\nglobalThis.model = { defaults, dyes, researchPredictPoint, researchPredict, regionKeyAt, opticalProfileFor, setLayers(value){layers=value}, setScene(value){daylightScene=value} };',
   realm, { timeout: 10000, filename: 'studio-model-source.js' });
 const { defaults, dyes, researchPredictPoint: predict, researchPredict, regionKeyAt, setLayers } = realm.model;
 const profiles = Array.from(defaults()).filter(p => [
@@ -267,4 +267,29 @@ test('ordinary dyes cannot visibly recolor an already black-stenciled opaque dis
   const standalone=color('#FFFFFF',[black],'daylight',profile,.3);
   assert.notEqual(before,standalone,'fluorescent color remains exempt from passive black guard');
  }
+});
+
+test('translucent daylight: passive dyes never increase channel energy above the same blank',()=>{
+ const trans=Array.from(defaults()).filter(p=>(p.optical||'').includes('champion'));
+ const rx=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+ const scenes=['surface','outdoor','backlit'];
+ const bases=['#FFFFFF','#000000','#808080','#DCE8E1','#006699','#FFDD00','#EE2288'];
+ const passive=['iDye Poly Blue','iDye Poly Crimson','ProChem Onyx'];
+ const point=realm.model.researchPredictPoint;
+ let checked=0;
+ for(const p of trans)for(const base of bases)for(const radius of [.3,.7,.95])
+  for(const scene of scenes){
+   realm.model.setScene(scene);
+   const blank=rx(point(base,[],'daylight',p,radius,0));
+   for(const name of passive){
+    const l=dye(name);
+    const tiny=rx(point(base,[{...l,strength:.01}],'daylight',p,radius,0));
+    const full=rx(point(base,[l],'daylight',p,radius,0));
+    assert.ok(tiny.every((v,i)=>Math.abs(v-blank[i])<=1),p.id+' '+scene+' '+name+' tiny dose');
+    assert.ok(full.every((v,i)=>v<=blank[i]),p.id+' '+scene+' '+name+' passive absorption');
+    checked++;
+   }
+  }
+ assert.ok(checked>=1000);
+ realm.model.setScene('outdoor');
 });
