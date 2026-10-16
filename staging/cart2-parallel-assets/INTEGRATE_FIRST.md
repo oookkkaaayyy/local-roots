@@ -54,3 +54,15 @@ Owner accepted the flat **green/lime pixel-wave on near-black** matrix artwork. 
 - Companion Node tests **12/12 PASS** on original source; these exact source and test bytes were mirrored to this branch and compared with the source used in the completed test run. No runtime browser field testing or integration was conducted.
 - Can be integrated into future HBNF Owner/Guest play UI locally without touching Skins scoring or firmware, then optionally drive the existing `OVERLAY_START` text API (subject to cloud/Opal command acceptance and overlay arbitration); cannot claim Matrix integration yet.
 - Reuse existing guest identity/permission/command path after acceptance. No second guest backend or games network. Independent of the old six-game real-time bridge.
+
+## S4 game now has a playable standalone phone UI (2026-10-16 independent continuation)
+
+- Existing pure Gauntlet / Pressure Ladder engine remains unchanged.
+- NEW reusable files beside it:
+  - `hbnf-irl-challenges/index.html` — responsive, high-contrast touch UI, game selection/player entry, make/miss, Undo, standings, reset.
+  - `hbnf-irl-challenges/app.mjs` — browser-local session adapter using existing pure engine, revision guard, 600ms tap debounce, localStorage save/reload with malformed-data and storage-denied handling.
+  - `hbnf-irl-challenges/app.test.mjs` and `page.test.mjs` — focused regression suites.
+- **22/22 Node tests PASS** on source byte-identical to committed GitHub blobs (12 existing engine + 8 new app + 2 new page tests). JavaScript syntax checked.
+- **Not field accepted:** browser GUI interaction test could not run: the available container Chromium blocks localhost with `ERR_BLOCKED_BY_ADMINISTRATOR`. Real iOS12 / browser behavior and physical usability remain unverified. App intentionally avoids Safari14-only `Element.replaceChildren` per MDN browser compatibility.
+- Standalone app requires all `index.html`, `app.mjs`, `engine.mjs` at the *same URL directory*. Serve these three static files through the existing website / static host when appropriate. **No new backend**, scoring mutation, network join, cloud guest authorization, or Cart firmware changes; current version does NOT send Matrix overlays. It can operate without further network calls after first load, but has no Service Worker and cannot claim first-load offline access.
+- Shortest later acceptance: open a staging static URL on actual phone/iPad, start a 2-player Gauntlet, Make/Miss, reload (verify resumed state), Undo, complete one round, confirm no scoring or lighting command. Then decide whether to expose from existing Owner/Guest `Play` tab and reuse accepted text-overlays. **Do not rebuild the engine or guest transport.**
