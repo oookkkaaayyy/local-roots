@@ -182,7 +182,7 @@ test('real-world source matching prioritizes actual direct-acetone process over 
   const byId=id=>evidence.FIELD_CASES.find(x=>x.id===id);
   const expectedProcesses = [
     ['FIELD-AC-01','acetone-direct'],['FIELD-AC-02','acetone-direct'],
-    ['FIELD-AC-03','acetone-direct'],['FIELD-AC-04','acetone-direct'],
+    ['FIELD-AC-03','acetone-direct'],['FIELD-AC-04','mixed-or-compound-process'],
     ['FIELD-AC-05','acetone-direct'],['FIELD-ANALOG-01','acetone-spin'],
     ['FIELD-GLUE-01','acetone-glue-bed'],['FIELD-GLUE-02','acetone-glue-bed'],
     ['FIELD-FLO-01','floetrol-bed'],['FIELD-FLO-02','floetrol-bed'],
