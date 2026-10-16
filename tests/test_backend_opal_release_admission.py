@@ -664,4 +664,90 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
     reject_postboot("unresolved_rollback",lambda s,m,o,p,d,c:(fresh_owner(o,"active-rollback"),s["execution_cursor"]["backend_opal_transaction"].update({"active_step":"rollback"})))
     reject_postboot("rollback_pending",lambda s,m,o,p,d,c:(fresh_owner(o,"rollback"),s["execution_cursor"]["backend_opal_transaction"].update({"status":"ROLLBACK_REQUIRED","rollback_attempts_used":1})))
 
-print("PASS: exact backend/Opal admission, first-two-step and four-step receipt-preserving continuations, step ordering/replay, scope/device/hash/evidence/expiry failures, rollback-only failure path, and PHASE2/firmware gate preservation")
+    # An already-reserved activation may record its verified failure after
+    # authorization expiry; expiry must still reject a new forward reservation.
+    failed_post_state=copy.deepcopy(json.loads(post_state_path.read_text()))
+    failed_post_tx=failed_post_state["execution_cursor"]["backend_opal_transaction"]
+    # Recreate the exact authorized pre-reservation checkpoint in this fixture.
+    failed_post_tx.update({"active_step":None,"last_reserved_step":"bootstrap_current_state"})
+    reserve_path=temp/"postboot-activation-reserve-state.json";write_json(reserve_path,failed_post_state)
+    p=run([sys.executable,str(CONTROL),"--state",str(reserve_path),"reserve-backend-opal-step",
+        "--admission",str(post_admission),"--step","activate_writer"])
+    assert p.returncode==0,(p.stdout,p.stderr)
+    failed_post_state=json.loads(reserve_path.read_text())
+    failed_post_tx=failed_post_state["execution_cursor"]["backend_opal_transaction"]
+    expired_manifest=copy.deepcopy(json.loads(post_admission.read_text()));expired_owner=copy.deepcopy(failed_post_tx["owner_authorization"])
+    expired_owner["expires_unix"]=time.time()-1
+    failed_post_tx["owner_authorization"]=copy.deepcopy(expired_owner)
+    expired_manifest["owner_authorization"]=copy.deepcopy(expired_owner)
+    expired_manifest["admission_sha256"]=ctl.backend_opal_admission_digest(expired_manifest)
+    failed_post_tx["admission_sha256"]=expired_manifest["admission_sha256"]
+    expired_manifest_path=temp/"postboot-expired-admission.json";write_json(expired_manifest_path,expired_manifest)
+    expired_fail_state_path=temp/"postboot-expired-fail-state.json";write_json(expired_fail_state_path,failed_post_state)
+    failure_path=temp/"postboot-expired-activation-failure.json";write_json(failure_path,{
+        "schema":"hbnf-backend-opal-release-step-v1","transaction_id":expired_owner["transaction_id"],
+        "step":"activate_writer","status":"FAIL","side_effects_verified":True,
+        "failure":{"authorization_state":"reserved activation failed; no device command applied",
+            "device_readback":"unchanged; current projection independently verified"}})
+    p=run([sys.executable,str(CONTROL),"--state",str(expired_fail_state_path),"fail-backend-opal-step",
+        "--admission",str(expired_manifest_path),"--step","activate_writer","--evidence",str(failure_path)])
+    assert p.returncode==0,(p.stdout,p.stderr)
+    failed_post_state=json.loads(expired_fail_state_path.read_text())
+    failed_post_tx=failed_post_state["execution_cursor"]["backend_opal_transaction"]
+    assert failed_post_tx["status"]=="ROLLBACK_REQUIRED" and failed_post_tx["completed_steps"]==STEPS[:4]
+    # Expiry exception is failure-result only; it cannot reserve a new action.
+    forward_state=copy.deepcopy(failed_post_state);forward_tx=forward_state["execution_cursor"]["backend_opal_transaction"]
+    forward_tx.update({"status":"IN_PROGRESS","active_step":None,"failed_step":None})
+    forward_path=temp/"postboot-expired-forward-state.json";write_json(forward_path,forward_state);forward_before=forward_path.read_bytes()
+    p=run([sys.executable,str(CONTROL),"--state",str(forward_path),"reserve-backend-opal-step",
+        "--admission",str(expired_manifest_path),"--step","activate_writer"])
+    assert p.returncode!=0 and "expired" in (p.stdout+p.stderr).lower() and forward_path.read_bytes()==forward_before,(p.stdout,p.stderr)
+    # Complete the existing guarded rollback and verify four-step reissue carries
+    # all receipts, using only the fresh remaining scope.
+    rollback_reserve_path=expired_fail_state_path
+    p=run([sys.executable,str(CONTROL),"--state",str(rollback_reserve_path),"reserve-backend-opal-step",
+        "--admission",str(expired_manifest_path),"--step","rollback"])
+    assert p.returncode==0,(p.stdout,p.stderr)
+    rollback_receipt_path=temp/"postboot-activation-rollback.json";write_json(rollback_receipt_path,{
+        "schema":"hbnf-backend-opal-release-step-v1","transaction_id":expired_owner["transaction_id"],
+        "step":"rollback","status":"PASS","side_effects_verified":True,
+        "evidence":{"opal_writer":{"exact_prestate_restored":True},"devices":{"settings_changed":False}}})
+    p=run([sys.executable,str(CONTROL),"--state",str(rollback_reserve_path),"complete-backend-opal-step",
+        "--admission",str(expired_manifest_path),"--step","rollback","--evidence",str(rollback_receipt_path)])
+    assert p.returncode==0,(p.stdout,p.stderr)
+    failed_post_state=json.loads(rollback_reserve_path.read_text())
+    failed_post_tx=failed_post_state["execution_cursor"]["backend_opal_transaction"]
+    assert failed_post_tx["status"]=="ROLLED_BACK" and failed_post_tx["completed_steps"]==STEPS[:4]
+    retry_proof=dict(post_proof,captured_unix=time.time(),prior_transaction_id=expired_owner["transaction_id"],
+        prior_admission_sha256=expired_manifest["admission_sha256"],completed_steps=STEPS[:4],
+        completed_step_receipts=copy.deepcopy(failed_post_tx["step_receipts"]),prior_completed_steps=STEPS[:4],
+        prior_step_receipts=copy.deepcopy(failed_post_tx["step_receipts"]),
+        prior_failure_receipt_sha256=failed_post_tx["failure_receipt_sha256"],
+        prior_rollback_receipt_sha256=failed_post_tx["rollback_receipt_sha256"])
+    retry_proof_path=temp/"postboot-activation-retry-precondition.json";write_json(retry_proof_path,retry_proof)
+    retry_manifest=copy.deepcopy(expired_manifest)
+    retry_owner=copy.deepcopy(continuation_owner);retry_owner.update({
+        "transaction_id":"OWNER-20261016-POSTBOOT-ACTIVATION-RETRY-TEST",
+        "authorization_id":"DIRECT-OWNER-POSTBOOT-ACTIVATION-RETRY-TEST",
+        "source_message_ref":"TEST FIXTURE ONLY; fresh authorization after verified post-bootstrap activation rollback",
+        "nonce":"unique-postboot-activation-retry-nonce-0123456789",
+        "issued_unix":time.time()-1,"expires_unix":time.time()+1200,
+        "scope":[*STEPS[4:],"rollback_if_required"]})
+    retry_manifest["checks"]["reissue_precondition"]={"pass":True,
+        "path":retry_proof_path.relative_to(ROOT).as_posix(),"sha256":sha(retry_proof_path)}
+    retry_owner["artifact_sha256_bindings"]=ctl._backend_opal_artifact_sha_bindings(retry_manifest)
+    retry_manifest.update({"transaction_id":retry_owner["transaction_id"],"owner_authorization":retry_owner})
+    retry_auth_path=temp/"postboot-activation-retry-authorization.json";write_json(retry_auth_path,
+        {"schema":"hbnf-backend-opal-admission-authorization-v1","owner_authorization":retry_owner})
+    retry_state_path=temp/"postboot-activation-retry-state.json";write_json(retry_state_path,failed_post_state)
+    retry_manifest_path=temp/"postboot-activation-retry-admission.json";write_json(retry_manifest_path,retry_manifest)
+    p=run([sys.executable,str(CONTROL),"--state",str(retry_state_path),"reissue-backend-opal-admission",
+        "--admission",str(retry_manifest_path),"--authorization-receipt",str(retry_auth_path)])
+    assert p.returncode==0,(p.stdout,p.stderr)
+    resumed_tx=json.loads(retry_state_path.read_text())["execution_cursor"]["backend_opal_transaction"]
+    assert resumed_tx["status"]=="IN_PROGRESS" and resumed_tx["completed_steps"]==STEPS[:4]
+    assert resumed_tx["step_receipts"]==failed_post_tx["step_receipts"] and resumed_tx["authorization_start_index"]==4
+    assert resumed_tx["continuation_kind"]=="verified_post_bootstrap_activation_rollback"
+    assert resumed_tx["owner_authorization"]["scope"]==["activate_writer","one_owner_control_test","restore_and_verify","rollback_if_required"]
+
+print("PASS: exact backend/Opal admission, receipt-preserving continuation/recovery, step ordering/replay, expiry, scope/device/hash/evidence failures, rollback gates, and firmware gate preservation")

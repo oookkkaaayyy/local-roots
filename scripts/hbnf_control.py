@@ -380,7 +380,7 @@ def _backend_opal_admission_errors(state, manifest, now=None, require_unconsumed
             post_bootstrap=(tx.get("continuation_from") and tx.get("status")=="IN_PROGRESS"
                 and tx.get("attempts_used")==1 and done==list(BACKEND_OPAL_STEPS[:4])
                 and tx.get("authorization_start_index")==4
-                and tx.get("continuation_kind")=="verified_post_bootstrap_checkpoint")
+                and tx.get("continuation_kind") in ("verified_post_bootstrap_checkpoint","verified_post_bootstrap_activation_rollback"))
             if not (initial or continuation or activation_retry or post_bootstrap) or tx.get("active_step") is not None:
                 errors.append("owner authorization is replayed, consumed, or not the exact approved continuation")
         if tx.get("admission_sha256")!=manifest.get("admission_sha256"):
@@ -528,7 +528,7 @@ def _backend_opal_admission_errors(state, manifest, now=None, require_unconsumed
                 elif isinstance(tx,dict) and tx.get("continuation_from"):
                     retry_kind=tx.get("continuation_kind")
                     proof_schema=("hbnf-backend-opal-activation-retry-precondition-v1" if retry_kind=="verified_activation_rollback"
-                        else "hbnf-backend-opal-post-bootstrap-continuation-precondition-v1" if retry_kind=="verified_post_bootstrap_checkpoint"
+                        else "hbnf-backend-opal-post-bootstrap-continuation-precondition-v1" if retry_kind in ("verified_post_bootstrap_checkpoint","verified_post_bootstrap_activation_rollback")
                         else "hbnf-backend-opal-continuation-precondition-v1")
                     if (proof.get("schema")!=proof_schema
                         or proof.get("prior_transaction_id")!=tx.get("continuation_from")
@@ -546,7 +546,7 @@ def _backend_opal_admission_errors(state, manifest, now=None, require_unconsumed
                         or proof.get("production_source_match") is not True
                         or proof.get("production_source_files")!=[pathlib.Path(p).name for p in BACKEND_OPAL_FUNCTION_FILES if pathlib.Path(p).name!="deno.lock"]
                         or proof.get("deployment_origin_bound_to_step_receipt") is not True
-                        or proof.get("opal_writer_prestate")!=("INSTALLED_STOPPED" if retry_kind=="verified_post_bootstrap_checkpoint" else "ABSENT")
+                        or proof.get("opal_writer_prestate")!=("INSTALLED_STOPPED" if retry_kind in ("verified_post_bootstrap_checkpoint","verified_post_bootstrap_activation_rollback") else "ABSENT")
                         or proof.get("scoreboard_relay_present") is not True
                         or proof.get("fence_active") is not False):
                         errors.append("continuation precondition does not prove exact v27, migration, rollback, and no-writer state")
@@ -558,6 +558,10 @@ def _backend_opal_admission_errors(state, manifest, now=None, require_unconsumed
                             or proof.get("prior_failure_receipt_sha256")!=tx.get("continuation_failure_receipt_sha256")
                             or proof.get("prior_rollback_receipt_sha256")!=tx.get("continuation_rollback_receipt_sha256")):
                             errors.append("activation retry precondition does not bind the deployed compatibility migration and exact rollback evidence")
+                    if retry_kind=="verified_post_bootstrap_activation_rollback" and (
+                        proof.get("prior_failure_receipt_sha256")!=tx.get("continuation_failure_receipt_sha256")
+                        or proof.get("prior_rollback_receipt_sha256")!=tx.get("continuation_rollback_receipt_sha256")):
+                        errors.append("post-bootstrap retry precondition does not bind the exact activation failure and rollback receipts")
                     preflight=manifest.get("fresh_readonly_preflight",{}); canonical=manifest.get("canonical_readonly_preflight",{})
                     # Reissue evidence is an immutable snapshot of the device
                     # and canonical state at authorization time. A later
@@ -613,12 +617,19 @@ def issue_backend_opal_admission(state,manifest_path,authorization_receipt_path,
         and old.get("continuation_kind")=="verified_activation_rollback")
     post_bootstrap_reauthorization=(post_bootstrap_checkpoint and old.get("authorization_start_index")==4
         and old.get("continuation_kind")=="verified_post_bootstrap_checkpoint")
+    post_bootstrap_activation_retry=(completed==list(BACKEND_OPAL_STEPS[:4]) and old.get("status")=="ROLLED_BACK"
+        and old.get("attempts_used")==1 and old.get("failed_step")=="activate_writer"
+        and old.get("rollback_attempts_used")==1 and old.get("last_reserved_step")=="rollback"
+        and old.get("authorization_start_index")==4
+        and old.get("continuation_kind") in ("verified_post_bootstrap_checkpoint","verified_post_bootstrap_activation_rollback"))
     activation_retry=(completed==list(BACKEND_OPAL_STEPS[:4]) and old.get("status")=="ROLLED_BACK"
         and old.get("attempts_used")==1 and old.get("failed_step")=="activate_writer"
-        and old.get("rollback_attempts_used")==1 and old.get("last_reserved_step")=="rollback")
+        and old.get("rollback_attempts_used")==1 and old.get("last_reserved_step")=="rollback"
+        and old.get("authorization_start_index")!=4)
     initial=(completed==[] and old.get("status") in ("IN_PROGRESS","AUTHORIZED")
         and old.get("attempts_used") in (0,1))
-    if not (continuation or post_bootstrap_continuation or post_bootstrap_reauthorization or activation_retry or initial):
+    if not (continuation or post_bootstrap_continuation or post_bootstrap_reauthorization
+            or post_bootstrap_activation_retry or activation_retry or initial):
         errors.append("prior transaction is not the exact untouched baseline or an approved release continuation")
     if old.get("active_step") is not None:
         errors.append("prior transaction has an unresolved active step")
@@ -632,7 +643,7 @@ def issue_backend_opal_admission(state,manifest_path,authorization_receipt_path,
         errors.append("reissued authorization must use new transaction, authorization, and nonce identities")
     if owner.get("source_message_ref")==old_owner.get("source_message_ref"):
         errors.append("reissued authorization must cite the current owner instruction")
-    start_index=4 if (post_bootstrap_continuation or post_bootstrap_reauthorization) else (2 if (activation_retry or continuation) else 0)
+    start_index=4 if (post_bootstrap_continuation or post_bootstrap_reauthorization or post_bootstrap_activation_retry) else (2 if (activation_retry or continuation) else 0)
     expected_owner_scope=[*BACKEND_OPAL_STEPS[start_index:],"rollback_if_required"]
     if owner.get("scope")!=expected_owner_scope:
         errors.append("fresh owner authorization scope is not the exact remaining backend/Opal transaction")
@@ -650,8 +661,8 @@ def issue_backend_opal_admission(state,manifest_path,authorization_receipt_path,
         proof_data=load(root/proof["path"])
         if proof_data.get("prior_transaction_id")!=old.get("transaction_id") or proof_data.get("prior_admission_sha256")!=old.get("admission_sha256"):
             errors.append("reissue precondition does not bind the expired transaction being superseded")
-        if continuation or post_bootstrap_continuation or post_bootstrap_reauthorization or activation_retry:
-            is_post_bootstrap=post_bootstrap_continuation or post_bootstrap_reauthorization
+        if continuation or post_bootstrap_continuation or post_bootstrap_reauthorization or post_bootstrap_activation_retry or activation_retry:
+            is_post_bootstrap=post_bootstrap_continuation or post_bootstrap_reauthorization or post_bootstrap_activation_retry
             expected_precondition_schema=("hbnf-backend-opal-post-bootstrap-continuation-precondition-v1" if is_post_bootstrap
                 else "hbnf-backend-opal-activation-retry-precondition-v1" if activation_retry
                 else "hbnf-backend-opal-continuation-precondition-v1")
@@ -673,7 +684,7 @@ def issue_backend_opal_admission(state,manifest_path,authorization_receipt_path,
                 or proof_data.get("scoreboard_relay_present") is not True
                 or proof_data.get("fence_active") is not False):
                 errors.append("continuation evidence does not prove exact v27, applied migration, rollback, and no-writer state")
-            if activation_retry:
+            if activation_retry or post_bootstrap_activation_retry:
                 failure_path=old.get("failure_receipt"); rollback_path=old.get("rollback_receipt")
                 def verified_receipt(path, expected_sha, expected_step, expected_status):
                     if (not isinstance(path,str) or pathlib.Path(path).is_absolute() or ".." in pathlib.Path(path).parts
@@ -690,8 +701,10 @@ def issue_backend_opal_admission(state,manifest_path,authorization_receipt_path,
                         and receipt.get("side_effects_verified") is True) else None
                 fail_ref=verified_receipt(failure_path,old.get("failure_receipt_sha256"),"activate_writer","FAIL")
                 rollback_ref=verified_receipt(rollback_path,old.get("rollback_receipt_sha256"),"rollback","PASS")
-                if (not fail_ref or not rollback_ref or fail_ref.get("failure",{}).get("authorization_state") is None
-                    or fail_ref.get("failure",{}).get("device_readback") is None
+                failure_evidence=fail_ref.get("failure",{}) if fail_ref else {}
+                failure_state=failure_evidence.get("authorization_state") or failure_evidence.get("observed_result")
+                failure_readback=failure_evidence.get("device_readback") or failure_evidence.get("current_projection")
+                if (not fail_ref or not rollback_ref or not failure_state or not failure_readback
                     or rollback_ref.get("evidence",{}).get("opal_writer",{}).get("exact_prestate_restored") is not True
                     or rollback_ref.get("evidence",{}).get("devices",{}).get("settings_changed") is not False):
                     errors.append("activation retry does not prove the exact failed activation and completed rollback")
@@ -835,8 +848,8 @@ def issue_backend_opal_admission(state,manifest_path,authorization_receipt_path,
                 or proof_data.get("prior_step_receipts")!=old.get("step_receipts")):
                 errors.append("activation retry evidence does not bind the superseded install/bootstrap history")
     except (OSError,KeyError,TypeError,ValueError): errors.append("reissue precondition does not bind the prior transaction")
-    carried=continuation or post_bootstrap_continuation or post_bootstrap_reauthorization or activation_retry
-    start_index=4 if (post_bootstrap_continuation or post_bootstrap_reauthorization) else 2
+    carried=continuation or post_bootstrap_continuation or post_bootstrap_reauthorization or post_bootstrap_activation_retry or activation_retry
+    start_index=4 if (post_bootstrap_continuation or post_bootstrap_reauthorization or post_bootstrap_activation_retry) else 2
     carried_steps=completed[:2] if activation_retry else completed
     carried_receipts=old.get("step_receipts",[])[:2] if activation_retry else old.get("step_receipts",[])
     new_tx={"schema":"hbnf-backend-opal-transaction-state-v1","transaction_id":owner.get("transaction_id"),
@@ -848,7 +861,11 @@ def issue_backend_opal_admission(state,manifest_path,authorization_receipt_path,
         new_tx.update({"started_unix":current,"continuation_from":old.get("transaction_id"),
             "continuation_admission_sha256":old.get("admission_sha256"),"last_reserved_step":BACKEND_OPAL_STEPS[start_index-1],
             "step_receipts":copy.deepcopy(carried_receipts),"authorization_start_index":start_index})
-        if activation_retry:
+        if post_bootstrap_activation_retry:
+            new_tx["continuation_kind"]="verified_post_bootstrap_activation_rollback"
+            new_tx["continuation_failure_receipt_sha256"]=old.get("failure_receipt_sha256")
+            new_tx["continuation_rollback_receipt_sha256"]=old.get("rollback_receipt_sha256")
+        elif activation_retry:
             new_tx["continuation_kind"]="verified_activation_rollback"
             new_tx["continuation_failure_receipt_sha256"]=old.get("failure_receipt_sha256")
             new_tx["continuation_rollback_receipt_sha256"]=old.get("rollback_receipt_sha256")
@@ -861,7 +878,8 @@ def issue_backend_opal_admission(state,manifest_path,authorization_receipt_path,
     if any(x.get("transaction_id")==owner.get("transaction_id") for x in history if isinstance(x,dict)):
         raise ValueError("backend/Opal reissuance rejected: transaction identity was already used")
     history.append({"prior_transaction":copy.deepcopy(old),"superseded_by":owner["transaction_id"],"superseded_at_unix":current,
-        "reason":"expired one-use admission; fresh evidence proves no prior production step completed" if not continuation and not post_bootstrap_continuation and not post_bootstrap_reauthorization
+        "reason":"expired one-use admission; fresh evidence proves no prior production step completed" if not continuation and not post_bootstrap_continuation and not post_bootstrap_reauthorization and not post_bootstrap_activation_retry
+            else "expired admission resumed from exact four-step checkpoint after verified activation failure and rollback" if post_bootstrap_activation_retry
             else "expired admission renewed from exact four-step checkpoint after fresh source, writer, and device preflight verification" if post_bootstrap_reauthorization
             else "expired admission resumed from exact four-step checkpoint after fresh source, writer, and device preflight verification" if post_bootstrap_continuation
             else "expired one-use admission continued after immutable migration/deploy receipts and current v27 source were verified",
@@ -994,7 +1012,7 @@ def refresh_backend_opal_preflight(state,manifest_path,refresh_evidence_path,nex
         "captured_unix":current,"completed_steps":list(done),"authorization_reset":False})
     return manifest
 
-def _backend_opal_step_errors(state,manifest,step,now=None,require_active=False):
+def _backend_opal_step_errors(state,manifest,step,now=None,require_active=False,allow_expired_active_failure=False):
     # Freshness is enforced when reserving a step, not when recording its
     # verified completion/failure. Long-running deployments must not become
     # unrecordable merely because the preflight window elapsed during the
@@ -1004,8 +1022,14 @@ def _backend_opal_step_errors(state,manifest,step,now=None,require_active=False)
     # expired device-state snapshot must not strand the already-authorized
     # rollback. Artifact/source identity, failure state, and single-use checks
     # remain mandatory.
+    cursor=state.get("execution_cursor",{})
+    active_tx=cursor.get("backend_opal_transaction",{}) if isinstance(cursor,dict) else {}
+    active_failure_expiry_exception=(allow_expired_active_failure and require_active
+        and step=="activate_writer" and active_tx.get("status")=="IN_PROGRESS"
+        and active_tx.get("active_step")==step)
     errors=_backend_opal_admission_errors(state,manifest,now,require_unconsumed=False,
-        allow_expired=(step=="rollback"),validate_freshness=(not require_active and step!="rollback"))
+        allow_expired=(step=="rollback" or active_failure_expiry_exception),
+        validate_freshness=(not require_active and step!="rollback"))
     cursor=state.get("execution_cursor",{})
     tx=cursor.get("backend_opal_transaction",{}) if isinstance(cursor,dict) else {}
     if tx.get("status") not in ("IN_PROGRESS","ROLLBACK_REQUIRED"):
@@ -1071,7 +1095,8 @@ def complete_backend_opal_step(state,manifest_path,step,evidence_path,now=None):
     return state
 
 def fail_backend_opal_step(state,manifest_path,step,evidence_path,now=None):
-    manifest=load(manifest_path); errors=_backend_opal_step_errors(state,manifest,step,now,require_active=True)
+    manifest=load(manifest_path); errors=_backend_opal_step_errors(state,manifest,step,now,require_active=True,
+        allow_expired_active_failure=True)
     root=DEFAULT_STATE.parent.parent.resolve(); p=pathlib.Path(evidence_path).resolve()
     try: p.relative_to(root/"evidence")
     except ValueError: errors.append("failure evidence must be inside the evidence directory")
