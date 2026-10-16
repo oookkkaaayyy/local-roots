@@ -133,8 +133,8 @@ export function EventDetailPage({slug}:{slug:string}) {
 
   const today=pacificToday();
   const effectiveStatus=eventDisplayStatus(event,today);
-  const canShowRegistration=Boolean(event.registration_url&&event.end_date>=today&&event.registration_status!=='closed'&&!['canceled','completed'].includes(effectiveStatus));
-  const canAddCalendar=event.end_date>=today&&!['canceled','completed'].includes(effectiveStatus);
+  const canShowRegistration=Boolean(event.registration_url&&event.end_date>=today&&event.registration_status!=='closed'&&!['canceled','completed','postponed'].includes(effectiveStatus));
+  const canAddCalendar=event.end_date>=today&&!['canceled','completed','postponed'].includes(effectiveStatus);
   const canSubmitResults=event.end_date<today&&!['canceled','postponed'].includes(event.status);
   const stale=Boolean(event.last_verified_at&&Date.now()-new Date(event.last_verified_at).getTime()>14*86400000);
   const resultLabel=event.results_url?resultsLinkLabel(event.results_url):'';
