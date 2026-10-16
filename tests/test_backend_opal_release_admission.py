@@ -68,7 +68,7 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
     }
     migration_path=ROOT/artifacts["migration"]; rollback_path=ROOT/artifacts["compensating_migration"]
     artifact_items={"migration":{"path":artifacts["migration"],"sha256":sha(migration_path)},
-        "corrective_migration":{"path":artifacts["corrective_migration"],"sha256":sha(ROOT/artifacts["corrective_migration"])},
+        "corrective_migration":{"path":artifacts["corrective_migration"],"sha256":sha(ROOT/artifacts["corrective_migration"]),"source_commit":BASE},
         "edge_function_files":[{"path":p,"sha256":sha(ROOT/p)} for p in FUNCTION_FILES],
         "opal_writer":{"path":artifacts["opal_writer"],"sha256":sha(ROOT/artifacts["opal_writer"])},
         "opal_transaction_helper":{"path":artifacts["opal_transaction_helper"],"sha256":sha(ROOT/artifacts["opal_transaction_helper"])},
@@ -488,4 +488,143 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
         "--admission",str(bad_retry_admission),"--authorization-receipt",str(retry_auth)])
     assert p.returncode!=0 and bad_retry_state_path.read_bytes()==before_bad_retry,(p.stdout,p.stderr)
 
-print("PASS: exact backend/Opal admission, one-use ordered steps, scope/device/hash/evidence/expiry failures, zero child execution on rejection, rollback-only failure path, verified activation rollback continuation, and PHASE2/firmware gate preservation")
+    # Exact fresh admission from an expired, fully completed four-step
+    # checkpoint. Preserve every receipt and require fresh zero-difference
+    # device/canonical evidence before allowing activation as step five.
+    post_state=copy.deepcopy(continued_state)
+    post_tx=post_state["execution_cursor"]["backend_opal_transaction"]
+    post_prior_id=post_tx["transaction_id"]
+    post_tx["owner_authorization"]["expires_unix"]=time.time()-1
+    post_tx.update({"status":"IN_PROGRESS","attempts_used":1,"completed_steps":STEPS[:4],
+        "active_step":None,"last_reserved_step":"bootstrap_current_state","rollback_attempts_used":0,
+        "failed_step":None})
+    writer_receipt={"schema":"hbnf-backend-opal-release-step-v1","transaction_id":post_prior_id,
+        "step":"install_writer_stopped","status":"PASS","side_effects_verified":True,
+        "evidence":{"source_commit":BASE,"writer_sha256":artifact_items["opal_writer"]["sha256"],
+            "transaction_helper_sha256":artifact_items["opal_transaction_helper"]["sha256"],
+            "service_enabled":False,"service_started":False,"skins_relay_preserved":True,
+            "matrix_device_mutated":False,"aux_device_mutated":False}}
+    bootstrap_receipt={"schema":"hbnf-backend-opal-release-step-v1","transaction_id":post_prior_id,
+        "step":"bootstrap_current_state","status":"PASS","side_effects_verified":True,
+        "evidence":{"function_version":27,"physical_settings_changed":False,"deviceCommandsIssued":False,
+            "firmware_mutation_authority":"CLOSED","canonical_readback":{"matrixLogicalBrightness":46,
+                "matrixAuxTargetBrightness":46,"auxReceiverBrightness":255}}}
+    post_receipts=copy.deepcopy(post_tx["step_receipts"])
+    for receipt in (writer_receipt,bootstrap_receipt):
+        rp=temp/("postboot-"+receipt["step"]+".json");write_json(rp,receipt)
+        post_receipts.append({"step":receipt["step"],"path":rp.relative_to(ROOT).as_posix(),"sha256":sha(rp)})
+    post_tx["step_receipts"]=post_receipts
+    post_manifest=copy.deepcopy(continued_manifest)
+    post_manifest["identities"]["desired_revision"]=123
+    post_manifest["identities"]["fence_epoch"]=9
+    projection={"schema":"hbnf-current-projection-readback-comparison-v1","pass":True,"differences":[],
+        "explicitChecks":{"selectedVibe":"psychedelic","legacyVibe":"mellow","projectedVibe":3,
+            "matrixVibe":3,"psychedelicVibeMatches":True,"matrixLogicalBrightness":46,
+            "matrixWledBrightness":255,"matrixAuxTarget":46,"auxReceiverBrightness":255}}
+    projection_path=temp/"postboot-projection.json";write_json(projection_path,projection)
+    post_device=dict(preflight,captured_unix=time.time(),writer_installed=True,writer_process_running=False,
+        writer_service_enabled=False,writer_sha256=artifact_items["opal_writer"]["sha256"],
+        writer_helper_sha256=artifact_items["opal_transaction_helper"]["sha256"],
+        writer_init_sha256=artifact_items["opal_service"]["sha256"],config_permission="0600 root:root",
+        settings_changed=False,scoring_data_changed=False,
+        projection_comparison_path=projection_path.relative_to(ROOT).as_posix(),
+        projection_comparison_sha256=sha(projection_path))
+    post_device_path=temp/"postboot-device.json";write_json(post_device_path,post_device)
+    post_canonical=dict(canonical,captured_unix=time.time(),desired_revision=123,fence_epoch=9,
+        fence_release_id="r6",fence_active=False)
+    post_canonical_path=temp/"postboot-canonical.json";write_json(post_canonical_path,post_canonical)
+    post_manifest["fresh_readonly_preflight"]={"path":post_device_path.relative_to(ROOT).as_posix(),"sha256":sha(post_device_path)}
+    post_manifest["canonical_readonly_preflight"]={"path":post_canonical_path.relative_to(ROOT).as_posix(),"sha256":sha(post_canonical_path)}
+    post_proof=dict(continuation_proof,schema="hbnf-backend-opal-post-bootstrap-continuation-precondition-v1",
+        captured_unix=time.time(),prior_transaction_id=post_prior_id,prior_admission_sha256=post_tx["admission_sha256"],
+        completed_steps=STEPS[:4],completed_step_receipts=copy.deepcopy(post_receipts),
+        matrix_preflight_sha256=sha(post_device_path),canonical_preflight_sha256=sha(post_canonical_path),
+        opal_writer_prestate="INSTALLED_STOPPED",projection_match=True,selected_vibe="psychedelic",
+        projection_comparison_sha256=sha(projection_path))
+    post_proof_path=temp/"postboot-precondition.json";write_json(post_proof_path,post_proof)
+    post_manifest["checks"]["reissue_precondition"]={"pass":True,
+        "path":post_proof_path.relative_to(ROOT).as_posix(),"sha256":sha(post_proof_path)}
+    post_owner=copy.deepcopy(continuation_owner)
+    post_owner.update({"transaction_id":"OWNER-20261016-POSTBOOT-CONTINUATION-TEST",
+        "authorization_id":"DIRECT-OWNER-POSTBOOT-TEST","source_message_ref":"TEST FIXTURE ONLY; explicit four-step checkpoint authorization",
+        "nonce":"unique-postboot-continuation-nonce-0123456789",
+        "scope":[*STEPS[4:],"rollback_if_required"]})
+    post_owner["artifact_sha256_bindings"]=ctl._backend_opal_artifact_sha_bindings(post_manifest)
+    post_manifest.update({"transaction_id":post_owner["transaction_id"],"owner_authorization":post_owner})
+    post_auth_path=temp/"postboot-authorization.json"
+    write_json(post_auth_path,{"schema":"hbnf-backend-opal-admission-authorization-v1","owner_authorization":post_owner})
+    post_state_path=temp/"postboot-state.json";write_json(post_state_path,post_state)
+    post_admission=temp/"postboot-admission.json";write_json(post_admission,post_manifest)
+    post_issue=[sys.executable,str(CONTROL),"--state",str(post_state_path),"reissue-backend-opal-admission",
+        "--admission",str(post_admission),"--authorization-receipt",str(post_auth_path)]
+    p=run(post_issue);assert p.returncode==0,(p.stdout,p.stderr)
+    issued_post=json.loads(post_state_path.read_text())["execution_cursor"]["backend_opal_transaction"]
+    assert issued_post["completed_steps"]==STEPS[:4] and issued_post["step_receipts"]==post_receipts
+    assert issued_post["authorization_start_index"]==4 and issued_post["last_reserved_step"]=="bootstrap_current_state"
+    assert issued_post["owner_authorization"]["scope"]==["activate_writer","one_owner_control_test","restore_and_verify","rollback_if_required"]
+    assert issued_post["continuation_kind"]=="verified_post_bootstrap_checkpoint"
+    assert json.loads(post_state_path.read_text())["live_mutation_authorized"] is False
+    p=run([sys.executable,str(CONTROL),"--state",str(post_state_path),"check-backend-opal-admission","--admission",str(post_admission)])
+    assert p.returncode==0,(p.stdout,p.stderr)
+    post_guard=[sys.executable,str(GUARD),"--model",str(MODEL),"--state",str(post_state_path),"--require-state","PHASE2_INTEGRATING",
+        "--backend-opal-admission",str(post_admission),"--backend-opal-action","reserve","--backend-opal-step","activate_writer"]
+    p=run(post_guard);assert p.returncode==0,(p.stdout,p.stderr)
+    reserved_post=json.loads(post_state_path.read_text())["execution_cursor"]["backend_opal_transaction"]
+    assert reserved_post["active_step"]=="activate_writer"
+    for step in ("install_writer_stopped","bootstrap_current_state","one_owner_control_test"):
+        bad_state=copy.deepcopy(post_state);bad_state_path=temp/("wrong-next-"+step+".json");write_json(bad_state_path,bad_state)
+        bad_guard=post_guard.copy();bad_guard[bad_guard.index("--state")+1]=str(bad_state_path);bad_guard[-1]=step
+        p=run(bad_guard);assert p.returncode!=0,(step,p.stdout,p.stderr)
+
+    def reject_postboot(label,mutate):
+        bad_state=copy.deepcopy(post_state);bad_manifest=copy.deepcopy(post_manifest);bad_owner=copy.deepcopy(post_owner)
+        proof=json.loads(post_proof_path.read_text());device=json.loads(post_device_path.read_text());canon=json.loads(post_canonical_path.read_text())
+        mutate(bad_state,bad_manifest,bad_owner,proof,device,canon)
+        if bad_manifest.get("fresh_readonly_preflight",{}).get("path"):
+            device_file=temp/("postboot-bad-"+label+"-device.json");write_json(device_file,device)
+            bad_manifest["fresh_readonly_preflight"]={"path":device_file.relative_to(ROOT).as_posix(),"sha256":sha(device_file)}
+            proof["matrix_preflight_sha256"]=sha(device_file)
+        if bad_manifest.get("canonical_readonly_preflight",{}).get("path"):
+            canon_file=temp/("postboot-bad-"+label+"-canonical.json");write_json(canon_file,canon)
+            bad_manifest["canonical_readonly_preflight"]={"path":canon_file.relative_to(ROOT).as_posix(),"sha256":sha(canon_file)}
+            proof["canonical_preflight_sha256"]=sha(canon_file)
+        proof_file=temp/("postboot-bad-"+label+"-proof.json");write_json(proof_file,proof)
+        bad_manifest["checks"]["reissue_precondition"].update({"path":proof_file.relative_to(ROOT).as_posix(),"sha256":sha(proof_file)})
+        bad_manifest.update({"transaction_id":bad_owner["transaction_id"],"owner_authorization":bad_owner})
+        bad_auth=temp/("postboot-bad-"+label+"-auth.json");write_json(bad_auth,{"schema":"hbnf-backend-opal-admission-authorization-v1","owner_authorization":bad_owner})
+        state_file=temp/("postboot-bad-"+label+"-state.json");write_json(state_file,bad_state);before=state_file.read_bytes()
+        admission_file=temp/("postboot-bad-"+label+"-admission.json");write_json(admission_file,bad_manifest)
+        p=run([sys.executable,str(CONTROL),"--state",str(state_file),"reissue-backend-opal-admission","--admission",str(admission_file),"--authorization-receipt",str(bad_auth)])
+        assert p.returncode!=0 and state_file.read_bytes()==before,(label,p.stdout,p.stderr)
+    def fresh_owner(owner,label):
+        owner.update({"transaction_id":"OWNER-POSTBOOT-REJECT-"+label.upper(),"authorization_id":"DIRECT-POSTBOOT-REJECT-"+label.upper(),
+            "source_message_ref":"TEST FIXTURE ONLY; fresh rejection test "+label,"nonce":"nonce-postboot-"+label+"-0123456789"})
+    def tamper_writer_hash(s,m,o,p,d,c):
+        fresh_owner(o,"writer-hash")
+        tx=s["execution_cursor"]["backend_opal_transaction"]
+        ref=tx["step_receipts"][2]
+        original=json.loads((ROOT/ref["path"]).read_text())
+        original["evidence"]["writer_sha256"]="0"*64
+        forged=temp/"postboot-forged-writer-receipt.json";write_json(forged,original)
+        tx["step_receipts"][2]={"step":"install_writer_stopped","path":forged.relative_to(ROOT).as_posix(),"sha256":sha(forged)}
+        p["completed_step_receipts"][2]=copy.deepcopy(tx["step_receipts"][2])
+        d["writer_sha256"]="0"*64
+    def tamper_artifact_hash(s,m,o,p,d,c):
+        fresh_owner(o,"artifact-hash")
+        m["artifacts"]["opal_writer"]["sha256"]="0"*64
+    reject_postboot("missing_receipt",lambda s,m,o,p,d,c:(fresh_owner(o,"missing"),p.update({"completed_step_receipts":p["completed_step_receipts"][:-1]})))
+    reject_postboot("altered_receipt",lambda s,m,o,p,d,c:(fresh_owner(o,"altered"),p["completed_step_receipts"][2].update({"sha256":"0"*64})))
+    reject_postboot("reordered_receipts",lambda s,m,o,p,d,c:(fresh_owner(o,"reordered"),p.update({"completed_step_receipts":list(reversed(p["completed_step_receipts"]))})))
+    reject_postboot("writer_hash",tamper_writer_hash)
+    reject_postboot("artifact_hash",tamper_artifact_hash)
+    reject_postboot("revision",lambda s,m,o,p,d,c:(fresh_owner(o,"revision"),c.update({"desired_revision":124})))
+    reject_postboot("fence",lambda s,m,o,p,d,c:(fresh_owner(o,"fence"),c.update({"fence_epoch":10})))
+    reject_postboot("device_identity",lambda s,m,o,p,d,c:(fresh_owner(o,"device"),d.update({"matrix_mac":"000000000000"})))
+    reject_postboot("physical_settings",lambda s,m,o,p,d,c:(fresh_owner(o,"settings"),d.update({"matrix_brightness":254})))
+    reject_postboot("expired_authorization",lambda s,m,o,p,d,c:(o.update({"transaction_id":"OWNER-POSTBOOT-EXPIRED","authorization_id":"DIRECT-POSTBOOT-EXPIRED","source_message_ref":"TEST FIXTURE ONLY; expiry","nonce":"nonce-postboot-expired-0123456789","issued_unix":time.time()-1801,"expires_unix":time.time()-1})))
+    reject_postboot("replayed_authorization",lambda s,m,o,p,d,c:(o.update({"transaction_id":post_prior_id,"authorization_id":post_tx["owner_authorization"]["authorization_id"],"source_message_ref":"TEST FIXTURE ONLY; replay","nonce":post_tx["owner_authorization"]["nonce"]})))
+    reject_postboot("wrong_scope",lambda s,m,o,p,d,c:(fresh_owner(o,"scope"),o.update({"scope":[*STEPS[3:],"rollback_if_required"]})))
+    reject_postboot("unresolved_activation",lambda s,m,o,p,d,c:(fresh_owner(o,"active"),s["execution_cursor"]["backend_opal_transaction"].update({"active_step":"activate_writer"})))
+    reject_postboot("rollback_pending",lambda s,m,o,p,d,c:(fresh_owner(o,"rollback"),s["execution_cursor"]["backend_opal_transaction"].update({"status":"ROLLBACK_REQUIRED","rollback_attempts_used":1})))
+
+print("PASS: exact backend/Opal admission, first-two-step and four-step receipt-preserving continuations, step ordering/replay, scope/device/hash/evidence/expiry failures, rollback-only failure path, and PHASE2/firmware gate preservation")
