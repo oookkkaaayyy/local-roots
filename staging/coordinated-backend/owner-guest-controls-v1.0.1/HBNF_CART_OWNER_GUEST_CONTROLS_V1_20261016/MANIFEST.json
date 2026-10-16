@@ -1,0 +1,31 @@
+{
+  "schema": "hbnf-cart2-owner-guest-vibe-package-v2",
+  "buildMarker": "hbnf-cart2-owner-control-guest-qr-v1-20261016",
+  "sourceCommit": "d76d7f1d9dd8056d65c6c6bf51123a18327e35ff",
+  "scope": "controller-only-no-firmware-no-phase2-hardware",
+  "files": {
+    "guest/hbnf-cart/guest.css": "16b9d4998f121f9acb90e49d1b8725b85af5aa5653c59bb54544f0ebd9f43cd5",
+    "guest/hbnf-cart/guest.js": "8435464e9d66cfdecdca971581e572e2efd4868162a66451c7aaeb25147076bd",
+    "guest/hbnf-cart/index.html": "4c6bd890bba023a8ac47ae1c45257fe78436f9f1e675b6b9892d4b1abea5ffae",
+    "hbnf-cart-features.mjs": "dff415b0de0848540207e347ae026587ed70a47bb1bc4b1b1e072ed4813c5070",
+    "hbnf-cart-icon-180.png": "02a42add542f156fb8cd32ff020d827fb139d70cce6e6c3564cc821c95aec3ed",
+    "hbnf-cart-icon-192.png": "200dd4c1bb58dd1f3b6fe353404d29cae306673a4bc854b21049c475011b42ab",
+    "hbnf-cart-icon-512.png": "05ecdcb818aaf9d1f23af59ca73c27d7a00b328705e62d0e9adf3954db6e5838",
+    "hbnf-cart-local.mjs": "96bc1200f09339a407433bb6d21085f90fa31b50afe09ae69c261e7d237095dc",
+    "hbnf-cart-manifest.webmanifest": "4bad2504be76b7a67ee2d124717bcaecebb18c07ac4b9b54ea1de89f30aea5c1",
+    "hbnf-cart-net.mjs": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+    "hbnf-cart-semantic.mjs": "af22dd68c254b4bc0b2507442465eeda36dcdd2535039f66d36e04d52f7234b7",
+    "hbnf-cart-skins-score.mjs": "cf63ca5425210f9dbbe9666f623dc7b6324a2153d5bbfaa7522493eb085ea97f",
+    "hbnf-cart-sw.js": "a98f494d5732e06a6b536ed30fdda75b8bd4d492efa685a2e7b6f17eb9bacab3",
+    "hbnf-cart-ui-v6.css": "287b76a87326e0954e8916ed758c3effe494c1c46b35e559e0fcc9e0d0176aad",
+    "hbnf-cart-ui-v6.mjs": "cb0cd6f24fe0abe84ab192daf197c1d94e5b9493eb0c887bf9dc60091f653f08",
+    "hbnf-cart.html": "6c68153d4b2c7afa64c7355f1e06c651983cbee172a017b58174fb623d6380a3",
+    "hbnf-cart.js": "7149c0a213ac8a8e1a5123c270c2e69155165c8ca9908beea038e69b527bdefc",
+    "hbnf-guest-qr.png": "f6a2593bbc55ab12503ab9c6eb8ac11813858c1ea14909071476cd7290854f27"
+  },
+  "packageFiles": {
+    "install_ui_v6.py": "01d0e76ed86bf28f1c4d88aa8134961fe4ddff90cd1a80e3ddd791fe90a2490d",
+    "INSTALL_UI_V6.command": "55d394aad0a9d6ffc5c9cd64f8d807f1de58f77457b38e3bfcb68c3a99e18481",
+    "SOURCE_COMMIT.txt": "6e9f667c154968062c2dfba83c3818066d0709f658a38925c577eac0462fe638"
+  }
+}
