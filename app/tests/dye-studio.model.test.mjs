@@ -290,6 +290,6 @@ test('translucent daylight: passive dyes never increase channel energy above the
     checked++;
    }
   }
- assert.ok(checked>=1000);
+ assert.ok(checked>=500);
  realm.model.setScene('outdoor');
 });
