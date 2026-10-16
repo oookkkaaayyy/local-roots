@@ -698,7 +698,7 @@ test('physical color-source quality is not inferred from photos on unverified su
   assert.equal(parts.length,cols.length,'valid source record');
   return Object.fromEntries(cols.map((name,i)=>[name,parts[i]]));
  });
- assert.equal(rows.length,79);
+ assert.equal(rows.length,78);
  const chart=rows.find(x=>x.id==='FIELD-PHOTO-01');
  assert.ok(chart);
  assert.match(chart.starting_plastic,/Innova Star.*owner expert visual identification/);
@@ -713,11 +713,12 @@ test('physical color-source quality is not inferred from photos on unverified su
   }
  }
  const newlyAdded=['FIELD-TIME-01','FIELD-AC-PALETTE-01','FIELD-AC-SOLVENT-01','FIELD-CARRIER-01'];
- for(const id of ['FIELD-STAR-WRAITH-GLUE-01','FIELD-STAR-WRAITH-STENCIL-01','FIELD-STAR-WHITE-GLUE-VIDEO-01']){
+ for(const id of ['FIELD-STAR-WRAITH-STENCIL-01','FIELD-STAR-WHITE-GLUE-VIDEO-01']){
   const r=rows.find(x=>x.id===id);assert.ok(r,'new original maker physical source indexed');
   assert.equal(r.controlled_photo,'NO');assert.match(r.train_eligible,/^NO/);assert.match(r.numeric_holdout_eligible,/^NO/);
  }
- assert.match(rows.find(x=>x.id==='FIELD-STAR-WRAITH-GLUE-01').starting_plastic,/STAR WRAITH/);
+ assert.match(rows.find(x=>x.id==='WB007').starting_plastic,/Star Wraith/);
+ assert.match(rows.find(x=>x.id==='WB007').source_verification,/Original creator post personally reviewed/);
  assert.match(rows.find(x=>x.id==='FIELD-STAR-WHITE-GLUE-VIDEO-01').reported_duration,/two hours/);
 
  const starRat=rows.find(r=>r.id==='FIELD-SAME-DISC-MEDIA-01');
@@ -830,8 +831,8 @@ test('published evidence counts match actual entries and distinct source URLs', 
   };
   const entries = [...records('EVIDENCE_OBSERVATIONS'), ...records('FIELD_CASES')];
   const distinctUrls = new Set(entries.map(row => row.sourceUrl));
-  assert.equal(entries.length, 79);
-  assert.equal(distinctUrls.size, 59);
+  assert.equal(entries.length, 78);
+  assert.equal(distinctUrls.size, 58);
   assert.match(studioHtml, new RegExp(`— ${entries.length} provisional observations`));
   assert.match(studioHtml, new RegExp(`${entries.length} records across ${distinctUrls.size} source URLs`));
   assert.match(studioScript, /\$\{ALL_DYE_EVIDENCE\.length\} provisional source observations/);
