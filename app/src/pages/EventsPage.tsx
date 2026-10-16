@@ -55,8 +55,8 @@ function currentEventsPath(){
 function EventCard({event,today}:{event:PublicEvent;today:string}) {
   const stale = Boolean(event.last_verified_at && Date.now()-new Date(event.last_verified_at).getTime()>14*86400000);
   const effectiveStatus = eventDisplayStatus(event,today);
-  const canShowRegistration = Boolean(event.registration_url && event.end_date>=today && event.registration_status !== 'closed' && !['canceled','completed'].includes(effectiveStatus));
-  const canAddCalendar = event.end_date>=today && !['canceled','completed'].includes(effectiveStatus);
+  const canShowRegistration = Boolean(event.registration_url && event.end_date>=today && event.registration_status !== 'closed' && !['canceled','completed','postponed'].includes(effectiveStatus));
+  const canAddCalendar = event.end_date>=today && !['canceled','completed','postponed'].includes(effectiveStatus);
   const tdNames = event.td_names??[];
   const resultLabel = event.results_url ? resultsLinkLabel(event.results_url) : '';
   const detailHref=`${eventDetailPath(event)}?return=${encodeURIComponent(currentEventsPath())}`;
