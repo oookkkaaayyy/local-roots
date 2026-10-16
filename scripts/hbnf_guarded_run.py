@@ -26,7 +26,7 @@ def main():
     ap.add_argument("--model",default=str(MODEL))
     ap.add_argument("--state",default=str(STATE))
     ap.add_argument("--backend-opal-admission",help="Exact scoped backend/Opal transaction admission")
-    ap.add_argument("--backend-opal-action",choices=["reserve","complete","fail"],help="Run one named transaction-control action; no arbitrary child command is accepted")
+    ap.add_argument("--backend-opal-action",choices=["reserve","complete","fail","refresh"],help="Run one named transaction-control action; no arbitrary child command is accepted")
     ap.add_argument("--backend-opal-step",choices=BACKEND_OPAL_STEPS,help="Exact allowlisted backend/Opal transaction step")
     ap.add_argument("--backend-opal-evidence",help="PASS/FAIL step evidence required for completion/failure")
     ap.add_argument("command",nargs=argparse.REMAINDER)
@@ -45,19 +45,23 @@ def main():
             raise SystemExit("BLOCKED: backend/Opal admission accepts only fixed transaction-action IDs, never an arbitrary command")
         if not args.backend_opal_admission or not args.backend_opal_action or not args.backend_opal_step:
             raise SystemExit("BLOCKED: backend/Opal action, exact step, and admission are all required")
-        if args.backend_opal_action in ("complete","fail") and not args.backend_opal_evidence:
-            raise SystemExit("BLOCKED: step completion/failure requires evidence")
+        if args.backend_opal_action in ("complete","fail","refresh") and not args.backend_opal_evidence:
+            raise SystemExit("BLOCKED: completion/failure/preflight refresh requires evidence")
         if args.backend_opal_action=="reserve" and args.backend_opal_evidence:
-            raise SystemExit("BLOCKED: reserve action cannot carry completion evidence")
+            raise SystemExit("BLOCKED: reserve action cannot carry evidence")
         model=load(args.model); state=load(args.state)
         if state.get("lifecycle_state")!=args.require_state:
             raise SystemExit(f"BLOCKED: current state is {state.get('lifecycle_state')}, requires {args.require_state}")
         control=ROOT/"scripts/hbnf_control.py"
         if not control.is_file(): raise SystemExit("BLOCKED: release admission validator is missing")
-        action_map={"reserve":"reserve-backend-opal-step","complete":"complete-backend-opal-step","fail":"fail-backend-opal-step"}
-        check=[sys.executable,str(control),"--model",args.model,"--state",args.state,action_map[args.backend_opal_action],
-            "--admission",args.backend_opal_admission,"--step",args.backend_opal_step]
-        if args.backend_opal_evidence: check.extend(["--evidence",args.backend_opal_evidence])
+        if args.backend_opal_action=="refresh":
+            check=[sys.executable,str(control),"--model",args.model,"--state",args.state,"refresh-backend-opal-preflight",
+                "--admission",args.backend_opal_admission,"--evidence",args.backend_opal_evidence,"--next-step",args.backend_opal_step]
+        else:
+            action_map={"reserve":"reserve-backend-opal-step","complete":"complete-backend-opal-step","fail":"fail-backend-opal-step"}
+            check=[sys.executable,str(control),"--model",args.model,"--state",args.state,action_map[args.backend_opal_action],
+                "--admission",args.backend_opal_admission,"--step",args.backend_opal_step]
+            if args.backend_opal_evidence: check.extend(["--evidence",args.backend_opal_evidence])
         p=subprocess.run(check,cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         sys.stdout.write(p.stdout)
         if p.returncode: raise SystemExit("BLOCKED: scoped backend/Opal transaction gate rejected the action")

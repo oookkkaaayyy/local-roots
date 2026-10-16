@@ -307,7 +307,7 @@ def _git_tree_blob_oids(commit,root):
         if len(parts)==3 and parts[1]==b"blob": result[path.decode("utf-8")]=parts[2].decode("ascii")
     return result
 
-def _backend_opal_admission_errors(state, manifest, now=None, require_unconsumed=True, allow_expired=False):
+def _backend_opal_admission_errors(state, manifest, now=None, require_unconsumed=True, allow_expired=False, validate_freshness=True):
     """Validate the narrowly scoped software-only Owner Control transaction.
 
     This is separate from firmware LIVE_APPROVED: it does not change lifecycle
@@ -440,7 +440,7 @@ def _backend_opal_admission_errors(state, manifest, now=None, require_unconsumed
             receipt=load(root/pre["path"]); captured=receipt.get("captured_unix")
             if receipt.get("schema")!="hbnf-owner-control-live-readonly-preflight-v1" or receipt.get("pass") is not True:
                 errors.append("fresh read-only preflight did not pass")
-            if not isinstance(captured,(int,float)) or (time.time() if now is None else now)-captured>300 or captured>(time.time() if now is None else now)+5:
+            if not isinstance(captured,(int,float)) or captured>(time.time() if now is None else now)+5 or (validate_freshness and (time.time() if now is None else now)-captured>300):
                 errors.append("fresh read-only preflight is stale")
             elif receipt.get("matrix_mac")!=identities.get("matrix_mac") or receipt.get("aux_mac")!=identities.get("aux_mac"):
                 errors.append("fresh read-only device identities differ from admission")
@@ -459,7 +459,7 @@ def _backend_opal_admission_errors(state, manifest, now=None, require_unconsumed
             receipt=load(root/canonical["path"]); captured=receipt.get("captured_unix"); current=time.time() if now is None else now
             if receipt.get("schema")!="hbnf-owner-control-canonical-readonly-preflight-v1" or receipt.get("pass") is not True:
                 errors.append("canonical desired-state/fence preflight did not pass")
-            if not isinstance(captured,(int,float)) or current-captured>300 or captured>current+5:
+            if not isinstance(captured,(int,float)) or captured>current+5 or (validate_freshness and current-captured>300):
                 errors.append("canonical desired-state/fence preflight is stale")
             for key in ("desired_revision","fence_epoch","fence_release_id","fence_active"):
                 if identities.get(key)!=receipt.get(key): errors.append("fresh canonical state differs from admission: "+key)
@@ -472,7 +472,12 @@ def _backend_opal_admission_errors(state, manifest, now=None, require_unconsumed
         item=checks.get(key,{})
         if item.get("pass") is not True: errors.append("failed/missing backend/Opal check: "+key); continue
         checked_file(item,"check evidence "+key)
-        if key=="reissue_precondition":
+        # The pre-deployment baseline is an issuance-time check. Once the
+        # exact transaction has started, those expected facts (v25 active,
+        # migration absent, writer absent) change by design. Preserve and hash
+        # the original evidence, but re-evaluate it only before consuming the
+        # one-use authorization.
+        if key=="reissue_precondition" and require_unconsumed:
             try:
                 proof=load(root/item["path"]); captured=proof.get("captured_unix"); current=time.time() if now is None else now
                 if (proof.get("schema")!="hbnf-backend-opal-reissue-precondition-v1" or proof.get("pass") is not True
@@ -548,8 +553,107 @@ def issue_backend_opal_admission(state,manifest_path,authorization_receipt_path,
     cursor["backend_opal_transaction"]=new_tx
     return manifest
 
+def refresh_backend_opal_preflight(state,manifest_path,refresh_evidence_path,next_step,now=None):
+    """Refresh read-only admission observations inside the same active transaction.
+
+    This does not issue or reset authorization, alter artifact bindings, or
+    change the transaction's consumed state. It only lets the already
+    authorized transaction prove current identities/settings before its next
+    guarded step.
+    """
+    current=time.time() if now is None else now
+    root=DEFAULT_STATE.parent.parent.resolve()
+    manifest_path=pathlib.Path(manifest_path).resolve()
+    refresh_path=pathlib.Path(refresh_evidence_path).resolve()
+    errors=[]
+    for path,label in ((manifest_path,"admission"),(refresh_path,"preflight refresh evidence")):
+        try:path.relative_to(root/"evidence")
+        except ValueError:errors.append(label+" must be stored inside evidence")
+    refresh=load(refresh_path)
+    if refresh.get("schema")!="hbnf-backend-opal-preflight-refresh-v1":errors.append("preflight refresh evidence schema is invalid")
+    def evidence_path(value,label):
+        if not isinstance(value,str) or not value or pathlib.Path(value).is_absolute() or ".." in pathlib.Path(value).parts:
+            errors.append(label+" path is unsafe");return root/"evidence"/"__invalid__"
+        path=(root/value).resolve()
+        try:path.relative_to(root/"evidence")
+        except ValueError:errors.append(label+" must be inside evidence")
+        return path
+    matrix_path=evidence_path(refresh.get("matrix_preflight_path"),"Matrix/AUX preflight")
+    canonical_path=evidence_path(refresh.get("canonical_preflight_path"),"canonical preflight")
+    for path,label in ((matrix_path,"Matrix/AUX preflight"),(canonical_path,"canonical preflight")):
+        try:path.relative_to(root/"evidence")
+        except ValueError:errors.append(label+" must be stored inside evidence")
+    state_tx=state.get("execution_cursor",{}).get("backend_opal_transaction",{})
+    manifest=load(manifest_path)
+    owner=manifest.get("owner_authorization",{})
+    if state_tx.get("status")!="IN_PROGRESS" or state_tx.get("attempts_used")!=1:
+        errors.append("preflight refresh requires the same consumed, active transaction")
+    if state_tx.get("active_step") is not None:
+        errors.append("preflight refresh is forbidden while a guarded step is reserved")
+    if state_tx.get("transaction_id")!=manifest.get("transaction_id") or state_tx.get("owner_authorization")!=owner:
+        errors.append("preflight refresh transaction/owner identity mismatch")
+    if state_tx.get("admission_sha256")!=manifest.get("admission_sha256") or manifest.get("admission_sha256")!=backend_opal_admission_digest(manifest):
+        errors.append("preflight refresh admission digest is stale or invalid")
+    if not isinstance(owner.get("expires_unix"),(int,float)) or owner["expires_unix"]<=current:
+        errors.append("preflight refresh owner authorization is expired")
+    if (not isinstance(owner.get("issued_unix"),(int,float)) or owner.get("issued_unix")>current+5
+        or owner.get("expires_unix",0)-owner.get("issued_unix",0)>30*60):
+        errors.append("preflight refresh owner authorization window is invalid")
+    if owner.get("deployable_source_commit")!=manifest.get("deployable_source_commit"):
+        errors.append("preflight refresh source commit differs from owner authorization")
+    if owner.get("scope")!=[*BACKEND_OPAL_STEPS,"rollback_if_required"]:
+        errors.append("preflight refresh owner scope is not the exact transaction")
+    if owner.get("artifact_sha256_bindings")!=_backend_opal_artifact_sha_bindings(manifest):
+        errors.append("preflight refresh artifact bindings differ from owner authorization")
+    done=state_tx.get("completed_steps",[])
+    if not isinstance(done,list) or done!=list(BACKEND_OPAL_STEPS[:len(done)]):
+        errors.append("preflight refresh transaction progress is not a valid step prefix")
+    expected_step=BACKEND_OPAL_STEPS[len(done)] if isinstance(done,list) and len(done)<len(BACKEND_OPAL_STEPS) else None
+    if next_step!=expected_step:errors.append("preflight refresh is not bound to the next allowlisted transaction step")
+    try:
+        fresh=load(matrix_path); captured=fresh.get("captured_unix")
+        if fresh.get("schema")!="hbnf-owner-control-live-readonly-preflight-v1" or fresh.get("pass") is not True:
+            errors.append("refreshed Matrix/AUX preflight did not pass")
+        if not isinstance(captured,(int,float)) or current-captured>300 or captured>current+5:
+            errors.append("refreshed Matrix/AUX preflight is stale")
+        expected=manifest.get("identities",{})
+        for key in ("matrix_mac","matrix_release_id","matrix_recorded_firmware_sha256","aux_mac","opal_model","opal_ip",
+                    "matrix_brightness","matrix_logical_brightness","matrix_aux_target_brightness","aux_brightness","vibe"):
+            if fresh.get(key)!=expected.get(key):errors.append("refreshed preflight differs from admitted identity/state: "+key)
+    except (OSError,KeyError,ValueError,TypeError):
+        errors.append("refreshed Matrix/AUX preflight is malformed")
+    try:
+        canonical=load(canonical_path); captured=canonical.get("captured_unix"); expected=manifest.get("identities",{})
+        if canonical.get("schema")!="hbnf-owner-control-canonical-readonly-preflight-v1" or canonical.get("pass") is not True:
+            errors.append("refreshed canonical preflight did not pass")
+        if not isinstance(captured,(int,float)) or current-captured>300 or captured>current+5:
+            errors.append("refreshed canonical preflight is stale")
+        for key in ("desired_revision","fence_epoch","fence_release_id","fence_active"):
+            if canonical.get(key)!=expected.get(key):errors.append("refreshed canonical state differs from admitted transaction: "+key)
+        if canonical.get("fence_active") is not False:errors.append("preflight refresh requires the actuator fence to remain inactive")
+    except (OSError,KeyError,ValueError,TypeError):
+        errors.append("refreshed canonical preflight is malformed")
+    if errors:raise ValueError("backend/Opal preflight refresh rejected: "+"; ".join(dict.fromkeys(errors)))
+    manifest["fresh_readonly_preflight"]={"path":matrix_path.relative_to(root).as_posix(),"sha256":sha256_file(matrix_path)}
+    manifest["canonical_readonly_preflight"]={"path":canonical_path.relative_to(root).as_posix(),"sha256":sha256_file(canonical_path)}
+    manifest["admission_sha256"]=backend_opal_admission_digest(manifest)
+    state_tx["admission_sha256"]=manifest["admission_sha256"]
+    state.get("execution_cursor",{}).setdefault("backend_opal_transaction_audit",[]).append({
+        "event":"READONLY_PREFLIGHT_REFRESHED_WITHIN_ACTIVE_TRANSACTION",
+        "transaction_id":manifest["transaction_id"],"admission_sha256":manifest["admission_sha256"],
+        "matrix_preflight":matrix_path.relative_to(root).as_posix(),"matrix_preflight_sha256":sha256_file(matrix_path),
+        "canonical_preflight":canonical_path.relative_to(root).as_posix(),"canonical_preflight_sha256":sha256_file(canonical_path),
+        "refresh_evidence":refresh_path.relative_to(root).as_posix(),"refresh_evidence_sha256":sha256_file(refresh_path),
+        "captured_unix":current,"completed_steps":list(done),"authorization_reset":False})
+    return manifest
+
 def _backend_opal_step_errors(state,manifest,step,now=None,require_active=False):
-    errors=_backend_opal_admission_errors(state,manifest,now,require_unconsumed=False,allow_expired=(step=="rollback"))
+    # Freshness is enforced when reserving a step, not when recording its
+    # verified completion/failure. Long-running deployments must not become
+    # unrecordable merely because the preflight window elapsed during the
+    # already-reserved operation.
+    errors=_backend_opal_admission_errors(state,manifest,now,require_unconsumed=False,
+        allow_expired=(step=="rollback"),validate_freshness=not require_active)
     cursor=state.get("execution_cursor",{})
     tx=cursor.get("backend_opal_transaction",{}) if isinstance(cursor,dict) else {}
     if tx.get("status") not in ("IN_PROGRESS","ROLLBACK_REQUIRED"):
@@ -1918,6 +2022,7 @@ def main():
     ra.add_argument("--stage",default="OFFLINE_COMPILED",choices=["OFFLINE_COMPILED","LIVE_APPROVED","LIVE_QUALIFICATION"])
     ba=sub.add_parser("check-backend-opal-admission"); ba.add_argument("--admission",required=True)
     brs=sub.add_parser("reissue-backend-opal-admission"); brs.add_argument("--admission",required=True); brs.add_argument("--authorization-receipt",required=True)
+    brf=sub.add_parser("refresh-backend-opal-preflight"); brf.add_argument("--admission",required=True); brf.add_argument("--evidence",required=True); brf.add_argument("--next-step",choices=BACKEND_OPAL_STEPS,required=True)
     br=sub.add_parser("reserve-backend-opal-step"); br.add_argument("--admission",required=True); br.add_argument("--step",required=True,choices=[*BACKEND_OPAL_STEPS,"rollback"])
     bc=sub.add_parser("complete-backend-opal-step"); bc.add_argument("--admission",required=True); bc.add_argument("--step",required=True,choices=[*BACKEND_OPAL_STEPS,"rollback"]); bc.add_argument("--evidence",required=True)
     bf=sub.add_parser("fail-backend-opal-step"); bf.add_argument("--admission",required=True); bf.add_argument("--step",required=True,choices=[*BACKEND_OPAL_STEPS]); bf.add_argument("--evidence",required=True)
@@ -1953,6 +2058,15 @@ def main():
         print(json.dumps({"schema":"hbnf-cart2-backend-opal-reissue-result-v1","action":"issued",
             "transaction_id":manifest.get("transaction_id"),"admission_sha256":manifest.get("admission_sha256"),
             "lifecycle_state":state.get("lifecycle_state"),"firmware_live_mutation_authorized":state.get("live_mutation_authorized") is True},indent=2,sort_keys=True))
+        return 0
+    if args.cmd=="refresh-backend-opal-preflight":
+        manifest=refresh_backend_opal_preflight(state,args.admission,args.evidence,args.next_step)
+        errs=validate_state(model,state)
+        if errs: raise SystemExit("refusing to save invalid state: "+"; ".join(errs))
+        save(args.admission,manifest); save(args.state,state)
+        print(json.dumps({"schema":"hbnf-cart2-backend-opal-preflight-refresh-result-v1","action":"refreshed",
+            "transaction_id":manifest.get("transaction_id"),"admission_sha256":manifest.get("admission_sha256"),
+            "next_step":args.next_step,"authorization_reset":False,"firmware_live_mutation_authorized":state.get("live_mutation_authorized") is True},indent=2,sort_keys=True))
         return 0
     if args.cmd=="check-backend-opal-admission":
         manifest=load(args.admission)

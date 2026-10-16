@@ -43,6 +43,8 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
     state["execution_cursor"]["backend_opal_transaction"]={"schema":"hbnf-backend-opal-transaction-state-v1",
         "transaction_id":prior_id,"owner_authorization":old_owner,"admission_sha256":prior_digest,"status":"IN_PROGRESS",
         "attempts_used":1,"completed_steps":[],"active_step":"apply_migration","rollback_attempts_used":0}
+    expected_prior=copy.deepcopy(state["execution_cursor"]["backend_opal_transaction"])
+    prior_history_len=len(state["execution_cursor"].get("backend_opal_transaction_history",[]))
     preflight={
         "schema":"hbnf-owner-control-live-readonly-preflight-v1","pass":True,"captured_unix":now,
         "matrix_mac":"704bca5b345c","aux_mac":"8c94df55c34c",
@@ -112,7 +114,8 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
     issued_state=json.loads(statepath.read_text()); issued_manifest=json.loads(admission.read_text())
     tx=issued_state["execution_cursor"]["backend_opal_transaction"]
     assert tx["status"]=="AUTHORIZED" and tx["attempts_used"]==0 and issued_state["live_mutation_authorized"] is False
-    assert issued_state["execution_cursor"]["backend_opal_transaction_history"][0]["prior_transaction"]==state["execution_cursor"]["backend_opal_transaction"]
+    assert len(issued_state["execution_cursor"]["backend_opal_transaction_history"])==prior_history_len+1
+    assert issued_state["execution_cursor"]["backend_opal_transaction_history"][-1]["prior_transaction"]==expected_prior
     assert issued_state["execution_cursor"]["backend_opal_transaction_audit"][-1]["event"]=="OWNER_AUTHORIZED_ADMISSION_REISSUED"
     state=issued_state; manifest=issued_manifest
     check=[sys.executable,str(CONTROL),"--state",str(statepath),"check-backend-opal-admission","--admission",str(admission)]
@@ -122,6 +125,11 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
         "--backend-opal-admission",str(admission)]
     reserve=guardbase+["--backend-opal-action","reserve","--backend-opal-step","apply_migration"]
     p=run(reserve); assert p.returncode==0,(p.stdout,p.stderr)
+    import importlib.util
+    spec=importlib.util.spec_from_file_location("hbnf_control_test",CONTROL); ctl=importlib.util.module_from_spec(spec); spec.loader.exec_module(ctl)
+    reserved_state=json.loads(statepath.read_text()); reserved_manifest=json.loads(admission.read_text())
+    completion_errors=ctl._backend_opal_step_errors(reserved_state,reserved_manifest,"apply_migration",now=now+301,require_active=True)
+    assert completion_errors==[],("reserved-step completion incorrectly expired during execution",completion_errors)
     after=statepath.read_bytes()
     p=run(reserve); assert p.returncode!=0 and "reserved" in (p.stdout+p.stderr)
     assert statepath.read_bytes()==after,"replayed step changed control state"
@@ -139,6 +147,29 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
             p=run(next_guard_step+["--backend-opal-step",step]); assert p.returncode==0,(step,p.stdout,p.stderr)
         evidence=temp/(step+"-pass.json"); write_json(evidence,{"schema":"hbnf-backend-opal-release-step-v1","transaction_id":owner["transaction_id"],"step":step,"status":"PASS","side_effects_verified":True})
         p=run(complete_base+["--step",step,"--evidence",str(evidence)]); assert p.returncode==0,(step,p.stdout,p.stderr)
+        if step=="apply_migration":
+            # A deployed transaction can outlive the initial five-minute
+            # observation window. Refresh only read-only evidence, preserving
+            # the same consumed authorization and completed-step prefix.
+            refresh_now=time.time()
+            refreshed_pre=dict(preflight,captured_unix=refresh_now)
+            refreshed_canonical=dict(canonical,captured_unix=refresh_now)
+            refreshed_pre_path=temp/"fresh-readonly-after-migration.json"; write_json(refreshed_pre_path,refreshed_pre)
+            refreshed_can_path=temp/"canonical-readonly-after-migration.json"; write_json(refreshed_can_path,refreshed_canonical)
+            refresh_receipt=temp/"preflight-refresh.json"
+            write_json(refresh_receipt,{"schema":"hbnf-backend-opal-preflight-refresh-v1",
+                "matrix_preflight_path":refreshed_pre_path.relative_to(ROOT).as_posix(),
+                "canonical_preflight_path":refreshed_can_path.relative_to(ROOT).as_posix()})
+            p=run(guardbase+["--backend-opal-action","refresh","--backend-opal-step","deploy_edge_function",
+                "--backend-opal-evidence",str(refresh_receipt)])
+            assert p.returncode==0,(p.stdout,p.stderr)
+            refreshed_state=json.loads(statepath.read_text()); refreshed_manifest=json.loads(admission.read_text())
+            refreshed_tx=refreshed_state["execution_cursor"]["backend_opal_transaction"]
+            assert refreshed_tx["attempts_used"]==1 and refreshed_tx["completed_steps"]==["apply_migration"]
+            assert refreshed_tx["owner_authorization"]==owner and refreshed_state["live_mutation_authorized"] is False
+            assert refreshed_tx["admission_sha256"]==refreshed_manifest["admission_sha256"]==digest(refreshed_manifest)
+            assert refreshed_state["execution_cursor"]["backend_opal_transaction_audit"][-1]["authorization_reset"] is False
+            manifest=refreshed_manifest
     completed=json.loads(statepath.read_text())
     assert completed["lifecycle_state"]=="PHASE2_INTEGRATING"
     assert completed["live_mutation_authorized"] is False
@@ -168,7 +199,11 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
     rejection(lambda s,m:(m.update({"owner_authorization":None}),s["execution_cursor"]["backend_opal_transaction"].update({"owner_authorization":None})),"owner authorization missing")
 
     # Failure path records one rollback; no forward action or second rollback is accepted.
-    failstate=temp/"failure-state.json"; write_json(failstate,state)
+    failure_state=copy.deepcopy(state)
+    failure_tx=failure_state["execution_cursor"]["backend_opal_transaction"]
+    failure_tx.update({"status":"AUTHORIZED","attempts_used":0,"completed_steps":[],"active_step":None,
+        "admission_sha256":manifest["admission_sha256"],"rollback_attempts_used":0})
+    failstate=temp/"failure-state.json"; write_json(failstate,failure_state)
     p=run([sys.executable,str(CONTROL),"--state",str(failstate),"reserve-backend-opal-step","--admission",str(admission),"--step","apply_migration"])
     assert p.returncode==0,(p.stdout,p.stderr)
     failreceipt=temp/"apply-failed.json"; write_json(failreceipt,{"schema":"hbnf-backend-opal-release-step-v1","transaction_id":owner["transaction_id"],"step":"apply_migration","status":"FAIL"})
