@@ -13,12 +13,14 @@ test('physical source benchmark has independent creator groups, original URLs an
  assert.equal(data.records.every(r=>r.use!=='numeric_candidate'),true);
 });
 test('real-data admission requires all methodological controls and an independent outcome',()=>{
- const good={id:'future',physicalDisc:true,exactPlastic:true,namedDyes:true,methodKnown:true,doseKnown:true,timeKnown:true,controlledColor:true,independentReplicate:true,isolatedABAB:true};
+ const good={id:'future',physicalDisc:true,exactPlastic:true,namedDyes:true,measuredStartingColor:true,regionKnown:true,methodKnown:true,doseKnown:true,timeKnown:true,temperatureKnown:true,controlledColor:true,independentReplicate:true,isolatedABAB:true};
  assert.equal(qualifiesForNumeric(good,{overlap:true}),true);
- for(const field of ['physicalDisc','exactPlastic','namedDyes','methodKnown','doseKnown','timeKnown','controlledColor','independentReplicate']){
+ for(const field of ['physicalDisc','exactPlastic','namedDyes','measuredStartingColor','regionKnown','methodKnown','doseKnown','timeKnown','temperatureKnown','controlledColor','independentReplicate']){
   assert.equal(qualifiesForNumeric({...good,[field]:false}),false,field);
  }
  assert.equal(qualifiesForNumeric({...good,isolatedABAB:false},{overlap:true}),false);
+ assert.equal(qualifiesForNumeric({...good,overlap:true,isolatedABAB:false}),false,'record overlap requires A/B/A+B without an explicit caller option');
+ assert.equal(qualifiesForNumeric({...good,measuredStartingColor:false}),false,'unmeasured blank is not numeric evidence');
 });
 test('creator/session leakage blocks invalid claimed holdout',()=>{
  const all=data.records;

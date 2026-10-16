@@ -1,9 +1,15 @@
 // D&U physical-evidence admission gate. This does not generate or fit dye colors.
 export function qualifiesForNumeric(r,{overlap=false}={}){
+ // A measured finished hue is not attributable without the measured blank,
+ // process temperature (including an explicitly documented no-heat control),
+ // and the actual physical region represented by the observation.
  const basic=r.physicalDisc===true&&r.exactPlastic===true&&r.namedDyes===true&&
- r.methodKnown===true&&r.doseKnown===true&&r.timeKnown===true&&
+ r.measuredStartingColor===true&&r.regionKnown===true&&
+ r.methodKnown===true&&r.doseKnown===true&&r.timeKnown===true&&r.temperatureKnown===true&&
  r.controlledColor===true&&r.independentReplicate===true;
- return basic&&(!overlap||r.isolatedABAB===true);
+ // Never rely solely on the optional caller flag for known overlap experiments.
+ const hasOverlap=overlap||r.overlap===true||r.isOverlap===true;
+ return basic&&(!hasOverlap||r.isolatedABAB===true);
 }
 // A source URL is an immutable provenance identity, not an independently
 // re-labelable train/holdout example. Remove only fragments and trailing slashes.
