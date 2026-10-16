@@ -516,7 +516,14 @@ def _backend_opal_admission_errors(state, manifest, now=None, require_unconsumed
                         or proof.get("fence_active") is not False):
                         errors.append("continuation precondition does not prove exact v27, migration, rollback, and no-writer state")
                     preflight=manifest.get("fresh_readonly_preflight",{}); canonical=manifest.get("canonical_readonly_preflight",{})
-                    if proof.get("matrix_preflight_sha256")!=preflight.get("sha256") or proof.get("canonical_preflight_sha256")!=canonical.get("sha256"):
+                    # Reissue evidence is an immutable snapshot of the device
+                    # and canonical state at authorization time. A later
+                    # read-only refresh updates the operational preflight, but
+                    # must not rewrite the historical proof it attests to.
+                    binding=manifest.get("continuation_preflight_binding",{})
+                    bound_matrix=binding.get("matrix_preflight_sha256",preflight.get("sha256"))
+                    bound_canonical=binding.get("canonical_preflight_sha256",canonical.get("sha256"))
+                    if proof.get("matrix_preflight_sha256")!=bound_matrix or proof.get("canonical_preflight_sha256")!=bound_canonical:
                         errors.append("continuation precondition is not bound to the fresh device and canonical readbacks")
                     for key,value in (("matrix_mac","704bca5b345c"),("matrix_logical_brightness",46),("matrix_brightness",255),
                         ("matrix_aux_target_brightness",46),("aux_mac","8c94df55c34c"),("aux_brightness",255),
@@ -758,6 +765,30 @@ def refresh_backend_opal_preflight(state,manifest_path,refresh_evidence_path,nex
     except (OSError,KeyError,ValueError,TypeError):
         errors.append("refreshed canonical preflight is malformed")
     if errors:raise ValueError("backend/Opal preflight refresh rejected: "+"; ".join(dict.fromkeys(errors)))
+    # Preserve the issuance-time continuation readbacks before replacing the
+    # current operational refs. Verify them against the immutable reissue
+    # receipt so refresh cannot silently rebind the owner authorization.
+    tx=state_tx
+    if tx.get("continuation_from"):
+        checks=manifest.get("checks",{})
+        proof_ref=checks.get("reissue_precondition",{}) if isinstance(checks,dict) else {}
+        proof_path=evidence_path(proof_ref.get("path"),"continuation precondition")
+        if not proof_path.is_file() or sha256_file(proof_path)!=proof_ref.get("sha256"):
+            raise ValueError("backend/Opal preflight refresh rejected: immutable continuation proof hash mismatch")
+        proof=load(proof_path)
+        binding=manifest.get("continuation_preflight_binding")
+        original_matrix=(binding.get("matrix_preflight_sha256") if isinstance(binding,dict)
+            else manifest.get("fresh_readonly_preflight",{}).get("sha256"))
+        original_canonical=(binding.get("canonical_preflight_sha256") if isinstance(binding,dict)
+            else manifest.get("canonical_readonly_preflight",{}).get("sha256"))
+        if (proof.get("matrix_preflight_sha256")!=original_matrix
+            or proof.get("canonical_preflight_sha256")!=original_canonical):
+            raise ValueError("backend/Opal preflight refresh rejected: continuation proof does not bind the admission's issuance-time readbacks")
+        expected_binding={"matrix_preflight_sha256":original_matrix,
+            "canonical_preflight_sha256":original_canonical}
+        if binding is not None and binding!=expected_binding:
+            raise ValueError("backend/Opal preflight refresh rejected: immutable continuation readback binding changed")
+        manifest["continuation_preflight_binding"]=expected_binding
     manifest["fresh_readonly_preflight"]={"path":matrix_path.relative_to(root).as_posix(),"sha256":sha256_file(matrix_path)}
     manifest["canonical_readonly_preflight"]={"path":canonical_path.relative_to(root).as_posix(),"sha256":sha256_file(canonical_path)}
     manifest["admission_sha256"]=backend_opal_admission_digest(manifest)

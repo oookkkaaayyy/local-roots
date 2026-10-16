@@ -183,6 +183,42 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
     check_continuation=[sys.executable,str(CONTROL),"--state",str(continuation_state_path),
         "check-backend-opal-admission","--admission",str(continuation_admission)]
     p=run(check_continuation); assert p.returncode==0,(p.stdout,p.stderr)
+    # Refreshing operational preflights must not rewrite the immutable
+    # issuance-time readback binding in the continuation proof.
+    refresh_now=time.time()
+    continuation_refresh_pre=dict(preflight,captured_unix=refresh_now)
+    continuation_refresh_canonical=dict(canonical,captured_unix=refresh_now)
+    continuation_refresh_pre_path=temp/"continuation-refresh-matrix.json"; write_json(continuation_refresh_pre_path,continuation_refresh_pre)
+    continuation_refresh_canonical_path=temp/"continuation-refresh-canonical.json"; write_json(continuation_refresh_canonical_path,continuation_refresh_canonical)
+    continuation_refresh_receipt=temp/"continuation-refresh.json"
+    write_json(continuation_refresh_receipt,{"schema":"hbnf-backend-opal-preflight-refresh-v1",
+        "matrix_preflight_path":continuation_refresh_pre_path.relative_to(ROOT).as_posix(),
+        "canonical_preflight_path":continuation_refresh_canonical_path.relative_to(ROOT).as_posix()})
+    refresh_cmd=[sys.executable,str(CONTROL),"--state",str(continuation_state_path),"refresh-backend-opal-preflight",
+        "--admission",str(continuation_admission),"--evidence",str(continuation_refresh_receipt),"--next-step","install_writer_stopped"]
+    p=run(refresh_cmd); assert p.returncode==0,(p.stdout,p.stderr)
+    refreshed_continuation=json.loads(continuation_admission.read_text())
+    continuation_binding=refreshed_continuation["continuation_preflight_binding"]
+    assert continuation_binding=={"matrix_preflight_sha256":continuation_proof["matrix_preflight_sha256"],
+        "canonical_preflight_sha256":continuation_proof["canonical_preflight_sha256"]}
+    assert refreshed_continuation["fresh_readonly_preflight"]["sha256"]==sha(continuation_refresh_pre_path)
+    assert run(check_continuation).returncode==0,"fresh operational readback must validate against the immutable continuation proof"
+    second_refresh_now=time.time()
+    second_pre=dict(preflight,captured_unix=second_refresh_now)
+    second_canonical=dict(canonical,captured_unix=second_refresh_now)
+    second_pre_path=temp/"continuation-refresh-matrix-second.json"; write_json(second_pre_path,second_pre)
+    second_canonical_path=temp/"continuation-refresh-canonical-second.json"; write_json(second_canonical_path,second_canonical)
+    second_receipt=temp/"continuation-refresh-second.json"
+    write_json(second_receipt,{"schema":"hbnf-backend-opal-preflight-refresh-v1",
+        "matrix_preflight_path":second_pre_path.relative_to(ROOT).as_posix(),
+        "canonical_preflight_path":second_canonical_path.relative_to(ROOT).as_posix()})
+    p=run([sys.executable,str(CONTROL),"--state",str(continuation_state_path),"refresh-backend-opal-preflight",
+        "--admission",str(continuation_admission),"--evidence",str(second_receipt),"--next-step","install_writer_stopped"])
+    assert p.returncode==0,(p.stdout,p.stderr)
+    refreshed_twice=json.loads(continuation_admission.read_text())
+    assert refreshed_twice["continuation_preflight_binding"]==continuation_binding
+    assert refreshed_twice["fresh_readonly_preflight"]["sha256"]==sha(second_pre_path)
+    assert run(check_continuation).returncode==0
     continuation_guard=[sys.executable,str(GUARD),"--model",str(MODEL),"--state",str(continuation_state_path),
         "--require-state","PHASE2_INTEGRATING","--backend-opal-admission",str(continuation_admission),
         "--backend-opal-action","reserve","--backend-opal-step","install_writer_stopped"]
@@ -273,12 +309,12 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
             assert refreshed_tx["owner_authorization"]==owner and refreshed_state["live_mutation_authorized"] is False
             assert refreshed_tx["admission_sha256"]==refreshed_manifest["admission_sha256"]==digest(refreshed_manifest)
             assert refreshed_state["execution_cursor"]["backend_opal_transaction_audit"][-1]["authorization_reset"] is False
-            manifest=refreshed_manifest
     completed=json.loads(statepath.read_text())
     assert completed["lifecycle_state"]=="PHASE2_INTEGRATING"
     assert completed["live_mutation_authorized"] is False
     assert completed["execution_cursor"]["backend_opal_transaction"]["status"]=="COMPLETE"
     p=run(check); assert p.returncode!=0 and "consumed" in p.stdout
+    state=refreshed_state; manifest=refreshed_manifest
 
     # Each changed authorization/evidence binding fails closed before state write or child execution.
     def rejection(mutator,needle):
