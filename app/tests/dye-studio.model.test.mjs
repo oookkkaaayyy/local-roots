@@ -177,8 +177,8 @@ test('real-world source matching prioritizes actual direct-acetone process over 
     '\nglobalThis.fieldAudit={EVIDENCE_OBSERVATIONS,FIELD_CASES,ALL_DYE_EVIDENCE,evidenceScore,classifyObservedProcess,materialClass};',
     realm, {timeout:10000});
   const evidence=realm.fieldAudit;
-  assert.equal(evidence.FIELD_CASES.length,22);
-  assert.equal(evidence.ALL_DYE_EVIDENCE.length,80);
+  assert.equal(evidence.FIELD_CASES.length,25);
+  assert.equal(evidence.ALL_DYE_EVIDENCE.length,83);
   const byId=id=>evidence.FIELD_CASES.find(x=>x.id===id);
   const expectedProcesses = [
     ['FIELD-AC-01','acetone-direct'],['FIELD-AC-02','acetone-direct'],
@@ -196,7 +196,10 @@ test('real-world source matching prioritizes actual direct-acetone process over 
     ['FIELD-STAR-WRAITH-STENCIL-01','mixed-or-compound-process'],
     ['FIELD-STAR-WHITE-GLUE-VIDEO-01','acetone-glue-bed'],
     ['FIELD-ONYX-STENCIL-01','floetrol-stencil'],
-    ['FIELD-ONYX-SAME-DISC-CARRIER-01','mixed-or-compound-process']
+    ['FIELD-ONYX-SAME-DISC-CARRIER-01','mixed-or-compound-process'],
+    ['FIELD-CHAMPION-LOTION-01','lotion'],
+    ['FIELD-STAR-CARIBBEAN-GLUE-01','acetone-glue-bed'],
+    ['FIELD-MEADOW-UVLOTION-01','mixed-or-compound-process']
   ];
   for(const [id,category] of expectedProcesses)
     assert.equal(evidence.classifyObservedProcess(byId(id).medium),category,id);

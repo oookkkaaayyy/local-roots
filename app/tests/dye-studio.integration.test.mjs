@@ -61,6 +61,7 @@ test('method classification does not confuse direct acetone with glue beds or pa
     ['Floetrol with silicone','floetrol-unspecified'],
     ['Floetrol cells','floetrol-bed'],
     ['Lotion and worm dip','mixed-or-compound-process'],
+    ['Lotion bed with ProChem powder dissolved with splash of acetone before mixing into lotion','lotion'],
     ['Spin dye followed by Floetrol cells','mixed-or-compound-process'],
     ['Direct acetone/ProChem brush painting AFTER hot-dipped black outlines','mixed-or-compound-process'],
     ['Clear glue bed with acetone-mixed dye (separately compared anecdotally with Floetrol bed)','acetone-glue-bed'],
@@ -698,7 +699,7 @@ test('physical color-source quality is not inferred from photos on unverified su
   assert.equal(parts.length,cols.length,'valid source record');
   return Object.fromEntries(cols.map((name,i)=>[name,parts[i]]));
  });
- assert.equal(rows.length,80);
+ assert.equal(rows.length,83);
  const chart=rows.find(x=>x.id==='FIELD-PHOTO-01');
  assert.ok(chart);
  assert.match(chart.starting_plastic,/Innova Star.*owner expert visual identification/);
@@ -831,8 +832,8 @@ test('published evidence counts match actual entries and distinct source URLs', 
   };
   const entries = [...records('EVIDENCE_OBSERVATIONS'), ...records('FIELD_CASES')];
   const distinctUrls = new Set(entries.map(row => row.sourceUrl));
-  assert.equal(entries.length, 80);
-  assert.equal(distinctUrls.size, 60);
+  assert.equal(entries.length, 83);
+  assert.equal(distinctUrls.size, 63);
   assert.match(studioHtml, new RegExp(`— ${entries.length} provisional observations`));
   assert.match(studioHtml, new RegExp(`${entries.length} records across ${distinctUrls.size} source URLs`));
   assert.match(studioScript, /\$\{ALL_DYE_EVIDENCE\.length\} provisional source observations/);
@@ -946,8 +947,8 @@ test('source quality matrix agrees with the live physical-method classifier and 
  const start=studioScript.indexOf('function classifyObservedProcess(');
  const end=studioScript.indexOf('function evidenceScore(',start);
  const classify=Function(studioScript.slice(start,end)+';return classifyObservedProcess')();
- assert.equal(rows.length,80);
- assert.equal(observations.length,80);
+ assert.equal(rows.length,83);
+ assert.equal(observations.length,83);
  const byId=new Map(rows.map(x=>[x.id,x]));
  let joined=0;
  for(const obs of observations){
@@ -961,7 +962,7 @@ test('source quality matrix agrees with the live physical-method classifier and 
   assert.match(source.numeric_holdout_eligible,/^NO/,
     'uncontrolled practitioner report cannot become a measured holdout');
  }
- assert.equal(joined,77,'source aliases remain related URL observations, not phantom duplicates');
+ assert.equal(joined,80,'source aliases remain related URL observations, not phantom duplicates');
  const aliased=[
   ['FIELD-AC-01','ISSUE-ACETONE-2022'],
   ['FIELD-AC-05','QA-AC-06'],
@@ -972,6 +973,29 @@ test('source quality matrix agrees with the live physical-method classifier and 
   assert.ok(obs&&other,'keep both source identity scopes');
   assert.equal(obs.sourceUrl,other.source_url,'aliases must still point to same first-person source');
  }
+ const newOriginals=[
+  ['FIELD-CHAMPION-LOTION-01','lotion','Innova Champion Roc3'],
+  ['FIELD-STAR-CARIBBEAN-GLUE-01','acetone-glue-bed','White Innova Star'],
+  ['FIELD-MEADOW-UVLOTION-01','mixed-or-compound-process','Death Star stencil']
+ ];
+ for(const [id,method,plastic] of newOriginals){
+  const record=observations.find(o=>o.id===id),matrix=byId.get(id);
+  assert.ok(record&&matrix,'original maker and structured matrix registered: '+id);
+  assert.equal(classify(record.medium),method);
+  assert.equal(matrix.method_class,method);
+  assert.match(record.plastic,new RegExp(plastic));
+  assert.equal(record.shadeMappingCertain,false);
+  assert.match(matrix.train_eligible,/^NO/);
+  assert.match(matrix.numeric_holdout_eligible,/^NO/);
+ }
+ assert.equal(observations.find(o=>o.id==='FIELD-CHAMPION-LOTION-01').plasticVerified,true);
+ assert.equal(observations.find(o=>o.id==='FIELD-STAR-CARIBBEAN-GLUE-01').plasticVerified,true);
+ assert.equal(observations.find(o=>o.id==='FIELD-MEADOW-UVLOTION-01').plasticVerified,false);
+ // An acetone dissolution step is not itself a direct-acetone application.
+ assert.equal(classify('ProChem powder dissolved in an acetone splash, then mixed with lotion in a lotion bed'),'lotion');
+ assert.equal(classify('Direct acetone paint brush on Star'), 'acetone-direct');
+ assert.equal(classify('Spin dye followed by Floetrol cells'),'mixed-or-compound-process');
+
  const mixedIds=['WB022','FIELD-AC-04'];
  for(const id of mixedIds)
   assert.equal(byId.get(id).method_class,'mixed-or-compound-process',
