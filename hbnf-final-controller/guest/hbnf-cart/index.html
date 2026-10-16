@@ -33,6 +33,23 @@
       </div>
       <p id="vibeAvailability" class="muted" role="status">Guest Vibes stay disabled until the Cart’s matching Vibe runtime is qualified.</p>
     </section>
+    <section class="boot-card" aria-label="Brightness controls">
+      <h2>Brightness</h2>
+      <label class="guest-range">Matrix <output id="matrixBrightnessValue">—</output><input id="matrixBrightness" data-guest-action="matrix_brightness" type="range" min="0" max="255" value="0" disabled></label>
+      <label class="guest-range">Underglow <output id="auxBrightnessValue">—</output><input id="auxBrightness" data-guest-action="aux_brightness" type="range" min="0" max="255" value="0" disabled></label>
+      <p class="muted">Matrix brightness follows the existing shared Cart brightness rule. Underglow is independently adjustable.</p>
+    </section>
+    <section class="boot-card" aria-label="Animation and color">
+      <h2>Animation &amp; color</h2>
+      <label>Animation Mix<select id="guestScene" data-guest-action="scene" disabled><option value="course-flow">Balanced (Course Flow)</option><option value="field-mix">Upbeat (Field Mix)</option><option value="hbnf-signature">Signature (HBNF Signature)</option><option value="quiet-cosmos">Ambient (Quiet Cosmos)</option></select></label>
+      <label>Palette<select id="guestPalette" data-guest-action="palette" disabled><option value="hbnf-balanced">Automatic · Cart color</option><option value="copper">Copper</option><option value="ocean">Ocean</option></select></label>
+      <div class="tuning-row"><label>Motion <output id="guestMotionValue">—</output><input id="guestMotion" data-guest-action="motion" type="range" min="0" max="100" value="50" disabled></label><label>Audio response <output id="guestAudioValue">—</output><input id="guestAudio" data-guest-action="audio_response" type="range" min="0" max="100" value="50" disabled></label></div>
+    </section>
+    <section class="boot-card" aria-label="Matrix message">
+      <h2>Matrix message</h2>
+      <div class="action-row"><input id="guestText" data-guest-input type="text" maxlength="63" placeholder="A short message" disabled><button id="sendGuestText" data-guest-action="text" type="button" disabled>Show text</button></div>
+      <p class="muted">Temporary display only; this does not save or submit scores.</p>
+    </section>
     <section class="boot-card" aria-label="Cart actions">
       <h2>Play</h2>
       <div class="feature-grid">
@@ -41,7 +58,7 @@
       </div>
     </section>
     <p id="live" class="sr" aria-live="polite"></p>
-    <footer class="guest-footer"><span>HBNF Cart Guest</span><span>Owner controlled</span></footer>
+    <footer class="guest-footer"><a href="https://hbnightflyers.com/">Open HBNF scoring site</a><span>Guest V1</span></footer>
   </main>
   <script src="./guest.js?v=20261007-wow-r2" defer></script>
 </body>

@@ -60,6 +60,32 @@ test("Guest actions use the canonical reducer and only its bounded command subse
   if (injectedType.ok) assert.equal(injectedType.type, "NEXT");
 });
 
+test("Guest V1 exposes the requested visual controls through bounded canonical commands", () => {
+  const cases = [
+    ["scene", "quiet-cosmos", "SCENE", p => assert.equal(p.sceneId, "quiet-cosmos")],
+    ["palette", "ocean", "PALETTE", p => assert.equal(p.paletteId, "ocean")],
+    ["matrix_brightness", "96", "TUNE", p => assert.equal(p.matrixBrightness, 96)],
+    ["aux_brightness", "155", "TUNE", p => assert.equal(p.auxBrightness, 155)],
+    ["motion", "42", "TUNE", p => assert.equal(p.motion, 42)],
+    ["audio_response", "73", "TUNE", p => assert.equal(p.audioResponse, 73)],
+    ["text", "HELLO CART", "OVERLAY_START", p => {
+      assert.equal(p.kind, "text");
+      assert.equal(p.ttlMs, 8000);
+      assert.deepEqual(p.data, { text: "HELLO CART", color: "#FFFFFF", fontIndex: 4 });
+    }],
+  ];
+  for (const [action, value, type, check] of cases) {
+    const plan = planGuestCommand(request(action, value), state());
+    assert.equal(plan.ok, true, `${action} should be allowed while Guest Mode is open`);
+    if (plan.ok) { assert.equal(plan.type, type); check(plan.payload); }
+  }
+  for (const [action, value] of [["scene", "firmware"], ["palette", "admin"], ["matrix_brightness", "256"], ["aux_brightness", "-1"], ["motion", "101"], ["audio_response", "1.5"], ["text", "\n"]]) {
+    assert.equal(planGuestCommand(request(action, value), state()).ok, false, `${action} must reject invalid input`);
+  }
+  assert.equal(planGuestCommand(request("power_off"), state()).ok, false, "Guests cannot power off the cart");
+  assert.equal(planGuestCommand(request("firmware"), state()).ok, false, "Guests cannot access firmware commands");
+});
+
 test("Guest request with an old revision is rejected before commit", async () => {
   let commits = 0, reconciles = 0;
   const result = await runGuestCommand(request("vibe", "peak", 16), {
@@ -174,6 +200,10 @@ test("Static Guest route calls only the existing endpoint without browser sessio
   const page = readFileSync(new URL("../../../hbnf-final-controller/guest/hbnf-cart/index.html", import.meta.url), "utf8");
   const script = readFileSync(new URL("../../../hbnf-final-controller/guest/hbnf-cart/guest.js", import.meta.url), "utf8");
   assert.match(page, /data-guest-action="vibe"/);
+  assert.match(page, /data-guest-action="scene"/);
+  assert.match(page, /data-guest-action="aux_brightness"/);
+  assert.match(page, /data-guest-action="text"/);
+  assert.match(page, /https:\/\/hbnightflyers\.com\//);
   assert.match(page, /data-guest-action="next"/);
   assert.match(page, /guest\.js/);
   assert.match(script, /functions\/v1\/hbnf-cart-control/);
@@ -213,6 +243,7 @@ test("Guest UI reports backend reachability separately from Matrix/AUX confirmat
       location: { pathname: "/guest/hbnf-cart/" },
       crypto: { getRandomValues(bytes) { bytes.fill(1); } },
       addEventListener() {},
+      setInterval() { return 1; },
     },
     fetch: async (_url, options) => {
       fetchCount++;
@@ -234,4 +265,61 @@ test("Guest UI reports backend reachability separately from Matrix/AUX confirmat
   assert.match(nodes.get("primaryStatus").textContent, /queued; device acknowledgement pending/i);
   assert.match(nodes.get("secondaryStatus").textContent, /not yet confirmed/i);
   assert.doesNotMatch(nodes.get("primaryStatus").textContent, /applied/i);
+});
+
+test("Guest text field enables with Guest Mode and submits its value only from the send button", async () => {
+  const script = readFileSync(new URL("../../../hbnf-final-controller/guest/hbnf-cart/guest.js", import.meta.url), "utf8");
+  const handlers = {};
+  const makeNode = (tagName, attrs = {}, value = "") => ({
+    tagName: tagName.toUpperCase(), value, disabled: true, textContent: "", className: "", options: [],
+    addEventListener(type, listener) { handlers[this.id + ":" + type] = listener; },
+    hasAttribute(name) { return Object.prototype.hasOwnProperty.call(attrs, name); },
+    getAttribute(name) { return attrs[name] || ""; },
+  });
+  const ids = ["primaryStatus", "secondaryStatus", "live", "deviceStatus", "connectionBadge", "guestBadge", "retry", "matrixBrightness", "matrixBrightnessValue", "auxBrightness", "auxBrightnessValue", "guestMotion", "guestMotionValue", "guestAudio", "guestAudioValue", "guestScene", "guestPalette", "guestText", "sendGuestText", "next"];
+  const nodes = new Map(ids.map(id => [id, makeNode(id === "guestScene" || id === "guestPalette" ? "select" : id === "guestText" || id === "matrixBrightness" || id === "auxBrightness" || id === "guestMotion" || id === "guestAudio" ? "input" : "button", id === "guestText" ? { "data-guest-input": "" } : id === "sendGuestText" ? { "data-guest-action": "text" } : id === "matrixBrightness" ? { "data-guest-action": "matrix_brightness" } : id === "next" ? { "data-guest-action": "next" } : {})]));
+  nodes.get("sendGuestText").id = "sendGuestText";
+  nodes.get("guestText").id = "guestText";
+  nodes.get("guestText").value = "Morning, Cart!";
+  nodes.get("guestScene").id = "guestScene";
+  nodes.get("guestScene").value = "course-flow";
+  nodes.get("guestPalette").id = "guestPalette";
+  nodes.get("guestPalette").options = [{ value: "hbnf-balanced" }];
+  nodes.get("matrixBrightness").id = "matrixBrightness";
+  nodes.get("auxBrightness").id = "auxBrightness";
+  nodes.get("guestMotion").id = "guestMotion";
+  nodes.get("guestAudio").id = "guestAudio";
+  nodes.get("next").id = "next";
+  const allControls = [nodes.get("matrixBrightness"), nodes.get("guestScene"), nodes.get("guestText"), nodes.get("sendGuestText"), nodes.get("next")];
+  const buttons = [nodes.get("sendGuestText"), nodes.get("next")];
+  const posted = [];
+  const context = {
+    document: {
+      querySelectorAll(selector) { return selector.indexOf("button") === 0 ? buttons : allControls; },
+      getElementById(id) { return nodes.get(id) || null; },
+    },
+    window: {
+      location: { pathname: "/guest/hbnf-cart/" },
+      crypto: { getRandomValues(bytes) { bytes.fill(1); } },
+      addEventListener() {}, setInterval() { return 1; },
+    },
+    fetch: async (_url, options) => {
+      const body = JSON.parse(options.body); posted.push(body);
+      const result = body.action === "status"
+        ? { desired: { revision: 17, state: { guestMode: true, sceneId: "course-flow", paletteId: "hbnf-balanced", devices: { matrix: { brightness: 100 }, aux: { brightness: 80 } }, tuning: { motion: 50, audioResponse: 50 } } }, observed: [] }
+        : { revision: 18, reconciliation: { status: "pending" } };
+      return { ok: true, status: 200, json: async () => result };
+    },
+  };
+  vm.runInNewContext(script, context);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(nodes.get("guestText").disabled, false);
+  assert.equal(nodes.get("matrixBrightness").disabled, false);
+  assert.equal(nodes.get("guestScene").disabled, false);
+  handlers["sendGuestText:click"]();
+  await new Promise(resolve => setImmediate(resolve));
+  await new Promise(resolve => setImmediate(resolve));
+  const command = posted.find(item => item.action === "guest_command");
+  assert.equal(command.guestAction, "text");
+  assert.equal(command.value, "Morning, Cart!");
 });

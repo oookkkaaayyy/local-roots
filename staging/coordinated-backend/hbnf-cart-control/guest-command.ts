@@ -53,6 +53,21 @@ export function planGuestCommand(
   } else if (action === "auto" && value === "") {
     type = "AUTO";
     payload = {};
+  } else if (action === "scene" && ["course-flow", "field-mix", "hbnf-signature", "quiet-cosmos"].includes(value)) {
+    type = "SCENE";
+    payload = { sceneId: value };
+  } else if (action === "palette" && ["hbnf-balanced", "copper", "ocean"].includes(value)) {
+    type = "PALETTE";
+    payload = { paletteId: value };
+  } else if (["matrix_brightness", "aux_brightness"].includes(action) && /^(0|[1-9]\d{0,2})$/.test(value) && Number(value) <= 255) {
+    type = "TUNE";
+    payload = action === "matrix_brightness" ? { matrixBrightness: Number(value) } : { auxBrightness: Number(value) };
+  } else if (["motion", "audio_response"].includes(action) && /^(0|[1-9]\d{0,2})$/.test(value) && Number(value) <= 100) {
+    type = "TUNE";
+    payload = action === "motion" ? { motion: Number(value) } : { audioResponse: Number(value) };
+  } else if (action === "text" && value.trim().length > 0 && value.trim().length <= 63 && !/[\u0000-\u001f\u007f]/.test(value)) {
+    type = "OVERLAY_START";
+    payload = { overlayId: String(request.commandId), kind: "text", ttlMs: 8000, data: { text: value.trim(), color: "#FFFFFF", fontIndex: 4 } };
   } else {
     return { ok: false, status: 400, error: "guest_action_not_allowed" };
   }

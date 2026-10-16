@@ -6,7 +6,8 @@
   var path=window.location.pathname.replace(/\/+$/,"/").split("/").filter(Boolean);
   var cartId=path[1]||"";
   var revision=null,busy=false,enabled=false,vibeRuntimeReady=false,lastAction={},pendingRevision=null;
-  var buttons=Array.prototype.slice.call(document.querySelectorAll("[data-guest-action]"));
+  var controlsList=Array.prototype.slice.call(document.querySelectorAll("[data-guest-action],[data-guest-input]"));
+  var buttons=Array.prototype.slice.call(document.querySelectorAll("button[data-guest-action]"));
   var status=document.getElementById("primaryStatus");
   var detail=document.getElementById("secondaryStatus");
   var live=document.getElementById("live");
@@ -28,7 +29,15 @@
     deviceStatus.className="device-status "+(matrix==="ACKNOWLEDGED"&&aux==="ACKNOWLEDGED"?"acknowledged":"unconfirmed");
     return matrix==="ACKNOWLEDGED"&&aux==="ACKNOWLEDGED";
   }
-  function controls(on){buttons.forEach(function(button){button.disabled=!on||(button.hasAttribute("data-vibe-control")&&!vibeRuntimeReady);});}
+  function controls(on){controlsList.forEach(function(control){control.disabled=!on||(control.hasAttribute("data-vibe-control")&&!vibeRuntimeReady);});}
+  function renderControlState(cartState){
+    var devices=cartState&&cartState.devices||{},matrix=devices.matrix||{},aux=devices.aux||{},tuning=cartState&&cartState.tuning||{};
+    var values=[["matrixBrightness","matrixBrightnessValue",matrix.brightness],["auxBrightness","auxBrightnessValue",aux.brightness],["guestMotion","guestMotionValue",tuning.motion],["guestAudio","guestAudioValue",tuning.audioResponse]];
+    values.forEach(function(row){var input=document.getElementById(row[0]),output=document.getElementById(row[1]);if(input&&Number.isFinite(Number(row[2]))){input.value=String(row[2]);if(output)output.value=String(row[2]);}});
+    var scene=document.getElementById("guestScene"),palette=document.getElementById("guestPalette");
+    if(scene&&cartState.sceneId)scene.value=String(cartState.sceneId);
+    if(palette&&cartState.paletteId&&Array.prototype.some.call(palette.options,function(option){return option.value===String(cartState.paletteId);}))palette.value=String(cartState.paletteId);
+  }
   function id(){
     var bytes=new Uint8Array(16);window.crypto.getRandomValues(bytes);
     bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;
@@ -55,6 +64,7 @@
       var cartState=desired&&desired.state;
       revision=desired&&Number.isSafeInteger(Number(desired.revision))?Number(desired.revision):null;
       enabled=!!(cartState&&cartState.guestMode===true&&revision!==null);
+      renderControlState(cartState||{});
       document.getElementById("connectionBadge").textContent="BACKEND ONLINE";
       document.getElementById("connectionBadge").className="badge ready";
       document.getElementById("guestBadge").textContent=enabled?"OPEN":"CLOSED";
@@ -81,7 +91,8 @@
   function act(button){
     if(busy||!enabled||revision===null)return;
     var action=button.getAttribute("data-guest-action");
-    var value=button.getAttribute("data-value")||"";
+    var value=(button.tagName==="INPUT"||button.tagName==="SELECT"||button.tagName==="TEXTAREA")?button.value:(button.getAttribute("data-value")||"");
+    if(action==="text"){var textField=document.getElementById("guestText");value=textField?textField.value.trim():"";if(!value){announce("Enter a short message first.");return;}}
     var now=Date.now();
     if(now-(lastAction[action]||0)<400)return;
     lastAction[action]=now;
@@ -101,8 +112,13 @@
       }).finally(function(){busy=false;refresh();});
   }
   buttons.forEach(function(button){button.addEventListener("click",function(){act(button);});});
+  controlsList.forEach(function(control){if(control.tagName==="INPUT"||control.tagName==="SELECT"||control.tagName==="TEXTAREA"){
+    control.addEventListener("input",function(){var output=document.getElementById(control.id+"Value");if(output)output.value=control.value;});
+    if(control.hasAttribute("data-guest-action"))control.addEventListener("change",function(){act(control);});
+  }});
   document.getElementById("retry").addEventListener("click",refresh);
   window.addEventListener("online",refresh);
   window.addEventListener("offline",function(){enabled=false;revision=null;controls(false);document.getElementById("connectionBadge").textContent="GUEST SERVICE OFFLINE";document.getElementById("connectionBadge").className="badge offline";deviceStatus.textContent="Guest service offline; device command status unavailable";deviceStatus.className="device-status unconfirmed";announce("Guest controls are paused while the service is offline.","Local Matrix controls use a separate connection.");});
+  window.setInterval(refresh,10000);
   refresh();
 })();

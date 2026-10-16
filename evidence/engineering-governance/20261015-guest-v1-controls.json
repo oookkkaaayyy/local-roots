@@ -1,0 +1,34 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "GUEST_V1_BOUNDED_VISUAL_CONTROLS_20261015",
+  "summary": "Extend the existing owner-gated Guest V1 route with bounded brightness, scene, palette, motion/audio, and temporary text actions, and correct its accessible text-field enablement.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "approved_scope": "Owner directive 2026-10-15 authorizes broad fun controls on the existing Guest V1 page, owner Guest Mode on/off with owner precedence, no firmware/network/admin access, and an HBNF scoring-site link in both interfaces.",
+    "implementation": [
+      "hbnf-final-controller/guest/hbnf-cart/index.html",
+      "hbnf-final-controller/guest/hbnf-cart/guest.js",
+      "hbnf-final-controller/guest/hbnf-cart/guest.css",
+      "hbnf-final-controller/hbnf-cart.html",
+      "staging/coordinated-backend/hbnf-cart-control/guest-command.ts",
+      "staging/coordinated-backend/hbnf-cart-control/guest-command.test.mjs"
+    ],
+    "validation": [
+      "Guest command reducer tests: 14/14 PASS, covering allowlisted action mapping, range/text rejection, owner mode closure, expected-revision races, and reconcile behavior.",
+      "Guest browser VM regression: text field enables only while Guest Mode is open and the send button submits exactly its entered value.",
+      "Owner/Guest static package test: PASS after updating its assertion to follow the expanded controls list.",
+      "Repository-mandated control/release checks: PASS; `python3 tests/hbnf_cart2_integrated_offline_rc.py` remains an old immutable 2026-10-09 candidate manifest and correctly rejects changed source hashes; it is not the current candidate's acceptance test.",
+      "No production deployment, Supabase mutation, scoring write, router change, or device command was performed."
+    ],
+    "limitations": "The Guest page calls the existing Supabase Edge Function and therefore requires Internet. Local Owner PWA controls remain a separate offline path. Guest access has not been physically tested from a new device; a successful function acknowledgment is not proof of physical AUX illumination.",
+    "rollback": "Revert the scoped Guest HTML/JS/CSS, Owner scoring link, reducer/test, and this evidence record. No live state changed; the previously installed Owner PWA and Mission Control remain untouched.",
+    "expert_reference": "https://supabase.com/docs/guides/functions"
+  }
+}

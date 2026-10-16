@@ -137,7 +137,7 @@ for (const vibe of ["chill", "groove", "heavy", "psychedelic", "cosmic"]) {
 assert.match(guestHtml, /data-guest-action="vibe_auto" data-vibe-control disabled/);
 assert.match(guestHtml, /Guest Vibes stay disabled until the Cart’s matching Vibe runtime is qualified/);
 assert.doesNotMatch(guestHtml, /data-value="(?:mellow|moderate|energetic|peak)"/);
-assert.match(guestJs, /button\.hasAttribute\("data-vibe-control"\)/, "Guest status refresh must never enable an unqualified Vibe action");
+assert.match(guestJs, /control\.hasAttribute\("data-vibe-control"\)/, "Guest status refresh must never enable an unqualified Vibe action");
 assert.match(guestJs, /Vibe selection is unavailable until the matching Cart runtime is qualified/);
 
 console.log("HBNF owner PWA package closure: PASS");
