@@ -27,7 +27,7 @@
     },
     {
       "path": "hbnf-cart-manifest.webmanifest",
-      "sha256": "60dd525da125ebcd3a2b1d57effa50ab79c0827e9bfc6c5908454a9a48a98e25",
+      "sha256": "cd8d8d209c1973dc1a88328f948c491fbb7284a795133ceb2758ab152484a42c",
       "size": 542
     },
     {
@@ -70,5 +70,5 @@
   "destination": "/www/mission-control-local/owner-pwa",
   "mode": "additive-static-subtree",
   "package": "hbnf-owner-pwa-local-v1.0.1",
-  "sourceCommit": "11ab2f27643987e0ae3afe08c3d4a1bbf6b25439"
+  "sourceCommit": "11ab2f2350099e5c4f4fb1117be4492ac533fde8"
 }
