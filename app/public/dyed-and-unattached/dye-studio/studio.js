@@ -1107,21 +1107,32 @@ function materialClass(s){
  if(x.includes("dx")||x.includes("baseline"))return "baseline";
  return "unknown";
 }
-function evidenceDyeFamilyMatches(userDye, reportDye){
- const u=(userDye||"").toLowerCase(),r=(reportDye||"").toLowerCase();
- if(u.includes("idye poly")){
-  const shade=u.replace(/^.*idye poly /,"");
-  return r.includes("idye poly") && new RegExp("\\b"+shade.replace(/[^a-z]/g,"")+"\\b","i").test(r);
+function evidenceDyeFamilyMatches(userDye,reportDye){
+ // A catalog swatch stores just the short color label (e.g. "Neon Key Lime"),
+ // whereas a personal-inventory swatch stores "ProChem Neon Key Lime".
+ // Match both to one manufacturer-qualified pigment, never to a color word
+ // from a competing product family.
+ const normalize=v=>String(v||"").toLowerCase()
+   .replace(/pro[ -]?chemical(?:\s*&\s*dye)?/g,"prochem")
+   .replace(/\bpcad\b/g,"prochem")
+   .replace(/[^a-z0-9]+/g," ").replace(/\s+/g," ").trim();
+ const u=normalize(userDye),r=normalize(reportDye);
+ if(!u||!r)return false;
+ const catalog=typeof dyes!=="undefined"?dyes.find(row=>normalize(row[1])===u):null;
+ let family="",shade="";
+ if(u.startsWith("prochem ")){family="prochem";shade=u.slice(8)}
+ else if(u.startsWith("idye poly ")){family="idye poly";shade=u.slice(10)}
+ else if(u.startsWith("uv blast ")){family="uv blast";shade=u.slice(9)}
+ else if(u.endsWith(" uv blast")){family="uv blast";shade=u.slice(0,-9)}
+ else if(catalog){
+  if(catalog[0]==="ProChem"){family="prochem";shade=u}
+  else if(catalog[0]==="iDye Poly"){family="idye poly";shade=u}
+  else if(catalog[0]==="UV Blast / Quick-Coat"){family="uv blast";shade=u}
  }
- if(u.includes("uv blast")){
-  const shade=u.replace(/^.*uv blast /,"");
-  return r.includes("uv blast")&&(r.includes(shade)||shade==="blaze orange"&&r.includes("orange"));
- }
- if(u.includes("prochem")){
-  const shade=u.replace(/^.*prochem /,"");
-  return (r.includes("pro chemical")||r.includes("pcad")||r.includes("prochem"))&&r.includes(shade);
- }
- return false;
+ if(!family||!shade)return false;
+ const hit=(words)=>new RegExp("(?:^|\\b)"+words.replace(/[.*+?^${}()|[\]\\]/g,"\\$&").replace(/\s+/g,"\\s+")+"\\b").test(r);
+ if(family==="uv blast")return hit("uv blast "+shade)||hit(shade+" uv blast");
+ return hit(family+" "+shade);
 }
 function classifyObservedProcess(description){
  const s=String(description||"").toLowerCase();
