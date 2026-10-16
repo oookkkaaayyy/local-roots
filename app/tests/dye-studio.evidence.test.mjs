@@ -24,6 +24,7 @@ test('creator/session leakage blocks invalid claimed holdout',()=>{
  const all=data.records;
  assert.equal(assertDisjointSources(all.slice(0,3),all.slice(3)),true);
  assert.throws(()=>assertDisjointSources([all[0]],[{creatorGroup:all[0].creatorGroup}]),/leakage/);
+ assert.throws(()=>assertDisjointSources([all[0]],[{source:all[0].source,creatorGroup:'other'}]),/URL leakage/);
 });
 test('benchmarks never silently train from product-color swatches or sampled web JPEG',()=>{
  const q=data.records.find(r=>r.id==='PCAD-PRODUCT-SWATCH');
