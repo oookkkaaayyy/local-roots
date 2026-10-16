@@ -1115,6 +1115,9 @@ function evidenceDyeFamilyMatches(userDye,reportDye){
  const normalize=v=>String(v||"").toLowerCase()
    .replace(/pro[ -]?chemical(?:\s*&\s*dye)?/g,"prochem")
    .replace(/\bpcad\b/g,"prochem")
+   .replace(/jacquard\s+idye\s+poly/g,"idye poly")
+   .replace(/\bdgd\s*\d+\b/g,"")
+   .replace(/\bidye\s+poly\s+\d{3}\b/g,"idye poly")
    .replace(/[^a-z0-9]+/g," ").replace(/\s+/g," ").trim();
  const u=normalize(userDye),r=normalize(reportDye);
  if(!u||!r)return false;
