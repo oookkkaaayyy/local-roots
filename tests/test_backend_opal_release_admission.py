@@ -358,4 +358,39 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
     p=run([sys.executable,str(CONTROL),"--state",str(failstate),"reserve-backend-opal-step","--admission",str(admission),"--step","rollback"])
     assert p.returncode!=0,"rollback replay passed"
 
+    # A recorded, authorized rollback must remain available after the short
+    # device-preflight window expires: it removes only the exact Opal package.
+    stale_manifest=copy.deepcopy(manifest)
+    for field in ("fresh_readonly_preflight","canonical_readonly_preflight"):
+        original=ROOT/stale_manifest[field]["path"]
+        stale_data=json.loads(original.read_text()); stale_data["captured_unix"]=time.time()-301
+        stale_path=temp/("stale-"+field+".json"); write_json(stale_path,stale_data)
+        stale_manifest[field]={"path":stale_path.relative_to(ROOT).as_posix(),"sha256":sha(stale_path)}
+    stale_manifest["admission_sha256"]=digest(stale_manifest)
+    stale_admission=temp/"stale-rollback-admission.json"; write_json(stale_admission,stale_manifest)
+    forward_state=copy.deepcopy(state); forward_tx=forward_state["execution_cursor"]["backend_opal_transaction"]
+    forward_tx.update({"status":"IN_PROGRESS","attempts_used":1,"completed_steps":STEPS[:4],
+        "active_step":None,"last_reserved_step":"bootstrap_current_state","rollback_attempts_used":0,
+        "admission_sha256":stale_manifest["admission_sha256"],"step_receipts":forward_tx.get("step_receipts",[])[:4]})
+    forward_state_path=temp/"stale-forward-state.json"; write_json(forward_state_path,forward_state); before=forward_state_path.read_bytes()
+    stale_guard=[sys.executable,str(GUARD),"--model",str(MODEL),"--state",str(forward_state_path),
+        "--require-state","PHASE2_INTEGRATING","--backend-opal-admission",str(stale_admission),
+        "--backend-opal-action","reserve","--backend-opal-step","activate_writer"]
+    p=run(stale_guard)
+    assert p.returncode!=0 and "stale" in p.stdout and forward_state_path.read_bytes()==before, \
+        "stale preflight incorrectly allowed a forward device action"
+    failed_state=copy.deepcopy(forward_state); failed_tx=failed_state["execution_cursor"]["backend_opal_transaction"]
+    failed_tx.update({"active_step":"activate_writer","last_reserved_step":"activate_writer"})
+    failed_state_path=temp/"stale-failed-state.json"; write_json(failed_state_path,failed_state)
+    stale_failure=temp/"activate-failed.json"; write_json(stale_failure,{"schema":"hbnf-backend-opal-release-step-v1",
+        "transaction_id":owner["transaction_id"],"step":"activate_writer","status":"FAIL"})
+    p=run([sys.executable,str(CONTROL),"--state",str(failed_state_path),"fail-backend-opal-step",
+        "--admission",str(stale_admission),"--step","activate_writer","--evidence",str(stale_failure)])
+    assert p.returncode==0,(p.stdout,p.stderr)
+    stale_rollback=stale_guard[:-1]+["rollback"]
+    stale_rollback[stale_rollback.index("--state")+1]=str(failed_state_path)
+    p=run(stale_rollback); assert p.returncode==0,(p.stdout,p.stderr)
+    stale_tx=json.loads(failed_state_path.read_text())["execution_cursor"]["backend_opal_transaction"]
+    assert stale_tx["status"]=="ROLLBACK_REQUIRED" and stale_tx["rollback_attempts_used"]==1
+
 print("PASS: exact backend/Opal admission, one-use ordered steps, scope/device/hash/evidence/expiry failures, zero child execution on rejection, rollback-only failure path, and PHASE2/firmware gate preservation")

@@ -1,0 +1,33 @@
+{
+  "schema": "hbnf-backend-opal-release-step-v1",
+  "transaction_id": "OWNER-20261016-OPAL-RELAY-V27-RESUME-01",
+  "step": "rollback",
+  "status": "PASS",
+  "side_effects_verified": true,
+  "captured_at_utc": "2026-10-16T19:18:31.734797+00:00",
+  "evidence": {
+    "actuator_fence": {
+      "active": false,
+      "epoch": 4,
+      "release_id": "hbnf-cart-foundation-v1-20260925",
+      "cas_verified": true
+    },
+    "opal_writer": {
+      "process": "stopped",
+      "service_enabled": false,
+      "installed_paths_absent": true,
+      "exact_prestate_restored": true
+    },
+    "skins_relay": {
+      "running": true,
+      "changed": false
+    },
+    "devices": {
+      "matrix_commands_sent": false,
+      "aux_commands_sent": false,
+      "settings_changed": false
+    },
+    "scoring_data_modified": false,
+    "firmware_or_router_changes": false
+  }
+}

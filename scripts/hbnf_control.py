@@ -807,8 +807,13 @@ def _backend_opal_step_errors(state,manifest,step,now=None,require_active=False)
     # verified completion/failure. Long-running deployments must not become
     # unrecordable merely because the preflight window elapsed during the
     # already-reserved operation.
+    # Rollback only removes the exact newly installed Opal files and is allowed
+    # solely after a recorded failure. It does not issue device commands, so an
+    # expired device-state snapshot must not strand the already-authorized
+    # rollback. Artifact/source identity, failure state, and single-use checks
+    # remain mandatory.
     errors=_backend_opal_admission_errors(state,manifest,now,require_unconsumed=False,
-        allow_expired=(step=="rollback"),validate_freshness=not require_active)
+        allow_expired=(step=="rollback"),validate_freshness=(not require_active and step!="rollback"))
     cursor=state.get("execution_cursor",{})
     tx=cursor.get("backend_opal_transaction",{}) if isinstance(cursor,dict) else {}
     if tx.get("status") not in ("IN_PROGRESS","ROLLBACK_REQUIRED"):
@@ -832,7 +837,8 @@ def _backend_opal_step_errors(state,manifest,step,now=None,require_active=False)
     return errors
 
 def reserve_backend_opal_step(state,manifest_path,step,now=None):
-    manifest=load(manifest_path); errors=_backend_opal_admission_errors(state,manifest,now,require_unconsumed=(step==BACKEND_OPAL_STEPS[0]),allow_expired=(step=="rollback"))
+    manifest=load(manifest_path); errors=_backend_opal_admission_errors(state,manifest,now,require_unconsumed=(step==BACKEND_OPAL_STEPS[0]),
+        allow_expired=(step=="rollback"),validate_freshness=(step!="rollback"))
     cursor=state.setdefault("execution_cursor",{})
     tx=cursor.get("backend_opal_transaction",{})
     if step=="rollback":

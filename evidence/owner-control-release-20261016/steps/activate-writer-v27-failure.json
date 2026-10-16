@@ -1,0 +1,16 @@
+{
+  "schema": "hbnf-backend-opal-release-step-v1",
+  "transaction_id": "OWNER-20261016-OPAL-RELAY-V27-RESUME-01",
+  "step": "activate_writer",
+  "status": "FAIL",
+  "side_effects_verified": true,
+  "captured_at_utc": "2026-10-16T19:14:48Z",
+  "failure": {
+    "first_demonstrated_failure": "hbnf_cart_matrix_relay_confirm returned HTTP 400; Supabase function logs report generic revision_fence_or_readback_changed.",
+    "root_cause": "cart_device_observed_status_check rejects status ddp_receiver_confirmed; allowed values are online, offline, off, failed, stale.",
+    "device_readback": "Exact Matrix and AUX readback matched the authorized expected state (Matrix logical 46, WLED bri 255, AUX target 46; AUX bri 255; DDP source Matrix).",
+    "authorization_state": "apply_authorized_at and consumed_at were null; no device command was authorized or sent.",
+    "rollback_action": "Writer stopped; actuator fence deactivated by compare-and-set, epoch advanced from 3 to 4; service remains disabled.",
+    "preserved": "Physical settings, Skins relay, firmware, scoring data, and unrelated Opal services."
+  }
+}
