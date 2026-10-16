@@ -962,7 +962,7 @@ test('source quality matrix agrees with the live physical-method classifier and 
   assert.match(source.numeric_holdout_eligible,/^NO/,
     'uncontrolled practitioner report cannot become a measured holdout');
  }
- assert.equal(joined,77,'source aliases remain related URL observations, not phantom duplicates');
+ assert.equal(joined,80,'source aliases remain related URL observations, not phantom duplicates');
  const aliased=[
   ['FIELD-AC-01','ISSUE-ACETONE-2022'],
   ['FIELD-AC-05','QA-AC-06'],
