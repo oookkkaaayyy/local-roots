@@ -1016,7 +1016,7 @@ test('source quality matrix agrees with the live physical-method classifier and 
  assert.match(painter.concentration,/20mL acetone/);
  assert.equal(painter.plasticVerified,false);
  assert.match(splatter.plastic,/Kastaplast K1/);
- assert.equal(splatter.plasticVerified,false);
+ assert.equal(splatter.plasticVerified,true,'maker names an actual K1 Reko, not an Innova profile');
  assert.equal(classify('ProChem dye in lotion laid over clear glue'),'lotion-over-glue-bed');
  assert.equal(classify('ProChem acetone directly brush-painted onto stencil'),'acetone-direct');
  assert.equal(classify('iDye Poly Black hot-dipped before direct acetone painted details'),'mixed-or-compound-process');
