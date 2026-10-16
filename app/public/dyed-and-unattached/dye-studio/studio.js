@@ -1130,9 +1130,25 @@ function evidenceDyeFamilyMatches(userDye,reportDye){
   else if(catalog[0]==="UV Blast / Quick-Coat"){family="uv blast";shade=u}
  }
  if(!family||!shade)return false;
- const hit=(words)=>new RegExp("(?:^|\\b)"+words.replace(/[.*+?^${}()|[\]\\]/g,"\\$&").replace(/\s+/g,"\\s+")+"\\b").test(r);
- if(family==="uv blast")return hit("uv blast "+shade)||hit(shade+" uv blast");
- return hit(family+" "+shade);
+ const escaped=shade.replace(/\s+/g,"\\s+");
+ // Source lists often name the manufacturer once, followed by several
+ // semicolon-separated shades: "ProChem Neon Lemon Zest; Neon Key Lime".
+ // Inherit the explicit maker within that list; never mistake generic
+ // words like "Royal" for the distinct shade "Neon Royal Purple".
+ let inherited="";
+ for(const part of String(reportDye||"").split(/[;,]/)){
+  const chunk=normalize(part);
+  if(!chunk)continue;
+  const brand=chunk.startsWith("prochem ")?"prochem":
+    chunk.startsWith("idye poly ")?"idye poly":
+    chunk.startsWith("uv blast ")||chunk.endsWith(" uv blast")?"uv blast":"";
+  if(brand)inherited=brand;
+  if(inherited!==family)continue;
+  let rest=brand&&chunk.startsWith(brand+" ")?chunk.slice(brand.length+1):chunk;
+  if(family==="uv blast"&&rest.endsWith(" uv blast"))rest=rest.slice(0,-9);
+  if(new RegExp("^"+escaped+"(?:\\b|$)").test(rest))return true;
+ }
+ return false;
 }
 function classifyObservedProcess(description){
  const s=String(description||"").toLowerCase();
