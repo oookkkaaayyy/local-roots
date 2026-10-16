@@ -7,22 +7,26 @@ const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_jc_iBS62kG9OeUNVJalpZQ_-BR9ikSC";
 const endpoint = `${SUPABASE_URL}/functions/v1/hbnf-cart-control`;
 const visualStatusEndpoint = `${SUPABASE_URL}/functions/v1/hbnf-cart-visual-status`;
+const OPAL_LOCAL_PWA = location.hostname === "192.168.77.1" && location.pathname.indexOf("/mission-control-local/owner-pwa/") === 0;
 const DEVICE_STORAGE_KEY = "hbnf_cart_device_v1";
 const DEVICE_EXPIRY_KEY = "hbnf_cart_device_expiry_v1";
 const DEVICE_EXPIRY_TOKEN_KEY = "hbnf_cart_device_expiry_token_v1";
 const DEVICE_COOKIE = "hbnf_cart_device";
 const DEVICE_COOKIE_MAX_AGE = 180 * 24 * 60 * 60;
+const OPAL_LOCAL_COMMANDS = new Set(["OFF", "ON", "SCENE", "VIBE", "VIBE_AUTO", "PALETTE", "OVERLAY_START", "OVERLAY_CLEAR"]);
+const OPAL_LOCAL_TUNE_FIELDS = new Set(["matrixBrightness", "auxBrightness", "motion", "audioResponse"]);
 
 let revision = 0;
 let pendingPairToken = null;
 let pendingPairExpiryEpoch = 0;
 let currentPairLink = "";
 let tuneDirty = false;
+let tuneDirtyFields = new Set();
 let tuneInFlight = false;
 let tuneTimer = null;
 let hydrating = false;
 let canonicalCapabilities = {};
-const localOwnerControl = new LocalOwnerControl();
+const localOwnerControl = new LocalOwnerControl({ opalDirect: OPAL_LOCAL_PWA });
 let localControlActive = false;
 let lastLocalEnrollAt = 0;
 let lastCloudPairValidationAt = 0;
@@ -221,6 +225,30 @@ function hydrateLocalControls(state) {
 }
 
 async function call(body) {
+  if (OPAL_LOCAL_PWA && body.action === "status") {
+    try {
+      const local = await localOwnerControl.connect("", 0);
+      localControlActive = true;
+      if (backendHealth) backendHealth.textContent = "Local devices · WAN not required";
+      return local;
+    } catch (error) {
+      localControlActive = false;
+      if (backendHealth) backendHealth.textContent = "Local devices unavailable";
+      throw error;
+    }
+  }
+  if (OPAL_LOCAL_PWA && body.action === "command") {
+    const localType = OPAL_LOCAL_COMMANDS.has(body.type);
+    const localTune = body.type === "TUNE" && Array.isArray(body.changedFields) && body.changedFields.length > 0 && body.changedFields.every(key => OPAL_LOCAL_TUNE_FIELDS.has(key));
+    if (localType || localTune) {
+      if (!localOwnerControl.supports(body.type, body.payload, body.changedFields)) throw new Error("Local Matrix connection is not ready; no cloud fallback was sent for this control.");
+      localControlActive = true;
+      if (backendHealth) backendHealth.textContent = "Local devices · WAN not required";
+      return localOwnerControl.command("", body.type, body.payload, body.changedFields);
+    }
+  }
+  const cloudBody = Object.assign({}, body);
+  delete cloudBody.changedFields;
   const token = deviceToken();
   if (validDeviceToken(token) && (body.action === "status" || body.action === "command")) {
     try {
@@ -241,7 +269,7 @@ async function call(body) {
   }
 
   try {
-    const result = await callCloud(body);
+    const result = await callCloud(cloudBody);
     if (body.action === "status" && validDeviceToken(token) && Date.now() - lastLocalEnrollAt > 300000) {
       lastLocalEnrollAt = Date.now();
       localOwnerControl.connect(token, devicePairExpiryEpoch(token)).then(() => { localControlActive = true; }).catch(() => {});
@@ -347,7 +375,7 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
 
 function updateVibeSelection(_state) {
   const vibe = String(_state && _state.selectedVibe || "");
-  const ready = canonicalCapabilities.phase2VibeRuntimeV1 === true;
+  const ready = canonicalCapabilities.phase2VibeRuntimeV1 === true || canonicalCapabilities.opalDirectOwnerPwaV1 === true;
   document.querySelectorAll(".vibe-option").forEach(button => {
     button.disabled = !ready;
     button.setAttribute("aria-pressed", button.dataset.vibe === vibe ? "true" : "false");
@@ -360,7 +388,9 @@ function updateVibeSelection(_state) {
   if (vibeModeLabel) vibeModeLabel.textContent = ready ? (vibe ? `Desired · ${vibe.toUpperCase()}` : "Ready") : "Runtime not qualified";
   const availability = $("#vibeAvailability");
   if (availability) availability.textContent = ready
-    ? "Vibe selection is available. Device application remains subject to the revision-bound status below."
+    ? (canonicalCapabilities.opalDirectOwnerPwaV1 === true
+      ? "Manual and Auto Vibes use the verified local Matrix connection; live scoring and cloud pairing remain internet-dependent."
+      : "Vibe selection is available. Device application remains subject to the revision-bound status below.")
     : "Vibes stay unavailable until the matching firmware and frozen runtime gates are accepted.";
 }
 
@@ -410,7 +440,7 @@ async function refresh({ hydrate = true } = {}) {
     if (auxHealth) auxHealth.textContent = "Not confirmed";
     const badge = $("#truthBadge");
     if (badge) {
-      badge.textContent = "Cart service unavailable";
+      badge.textContent = OPAL_LOCAL_PWA ? "LOCAL DEVICES UNAVAILABLE" : "Cart service unavailable";
       badge.className = "truth-badge warn";
     }
     throw error;
@@ -489,9 +519,10 @@ function readTunePayload() {
   };
 }
 
-function queueTune(delay = 0) {
+function queueTune(delay = 0, field = "") {
   if (hydrating) return;
   tuneDirty = true;
+  if (field) tuneDirtyFields.add(field);
   clearTimeout(tuneTimer);
   tuneTimer = setTimeout(() => {
     tuneTimer = null;
@@ -510,6 +541,8 @@ async function flushTune() {
     while (tuneDirty) {
       tuneDirty = false;
       const payload = readTunePayload();
+      const changedFields = Array.from(tuneDirtyFields);
+      tuneDirtyFields = new Set();
 
       for (let attempt = 0; attempt < 2; attempt++) {
         try {
@@ -518,6 +551,7 @@ async function flushTune() {
             commandId: newCommandId(),
             type: "TUNE",
             payload,
+            changedFields: OPAL_LOCAL_PWA ? changedFields : undefined,
             expectedRevision: revision,
           });
           revision = result.revision;
@@ -714,7 +748,10 @@ $("#vibeAuto").addEventListener("click", () => {
 });
 
 for (const id of ["scene", "audioProfile", "audioStyle"]) {
-  $(id).addEventListener("change", () => queueTune(0));
+  $(id).addEventListener("change", () => {
+    if (OPAL_LOCAL_PWA && id === "scene") command("SCENE", { sceneId: $(id).value }).catch(showError);
+    else queueTune(0, id);
+  });
 }
 
 for (const [inputId, outputId] of [
@@ -725,19 +762,21 @@ for (const [inputId, outputId] of [
   $(inputId).addEventListener("input", event => {
     $(outputId).value = event.target.value;
   });
-  $(inputId).addEventListener("change", () => queueTune(0));
+  $(inputId).addEventListener("change", () => queueTune(0, inputId));
 }
 
 for (const id of ["energy", "audioResponse", "motion", "variation"]) {
   const output = $(`${id}Value`);
   $(id).addEventListener("input", event => { output.value = event.target.value; });
-  $(id).addEventListener("change", () => queueTune(0));
+  $(id).addEventListener("change", () => queueTune(0, id));
 }
 
 $("#refresh").addEventListener("click", () => refresh().catch(showRefreshError));
 
 function showRefreshError(error) {
-  statusNode.textContent = `Cart service unavailable · this status check sent no control or scoring command. ${error.message}`;
+  statusNode.textContent = OPAL_LOCAL_PWA
+    ? `Local Matrix/AUX status unavailable · no change was sent. ${error.message}`
+    : `Cart service unavailable · this status check sent no control or scoring command. ${error.message}`;
 }
 
 function showError(error) {
@@ -748,6 +787,7 @@ function showError(error) {
 
 detectPairFragment();
 setAuthorizedUi();
+if (OPAL_LOCAL_PWA && $("localModeNotice")) $("localModeNotice").hidden = false;
 statusNode.textContent = "Connecting…";
 refresh().catch(showRefreshError);
 

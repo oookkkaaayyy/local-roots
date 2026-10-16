@@ -5,6 +5,8 @@ import { fetchWithDeadline, HBNF_API_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20
 // HTTPS port keeps GL.iNet's existing 443 service and root-worker policy
 // untouched while the new instance drops request workers to nobody.
 export const LOCAL_CONTROL_ORIGIN = "https://cart-control.hbnightflyers.com:8443";
+export const LOCAL_MATRIX_IP = "192.168.77.10";
+export const LOCAL_AUX_IP = "192.168.77.11";
 export const LOCAL_MATRIX_MAC = "704bca5b345c";
 export const LOCAL_AUX_MAC = "8c94df55c34c";
 export const LOCAL_MATRIX_RELEASE = "hbnf-cart2-phase2-r6-skins-readable-20261014";
@@ -20,6 +22,10 @@ function jsonHeaders(token) {
 export class LocalOwnerControl {
   constructor(options = {}) {
     this.origin = String(options.origin || LOCAL_CONTROL_ORIGIN).replace(/\/$/, "");
+    this.opalDirect = options.opalDirect === true;
+    this.directTransportLoader = options.directTransportLoader || (() => import("http://192.168.77.1/mission-control-local/local-transport.js"));
+    this.directStorage = options.storage || (typeof localStorage !== "undefined" ? localStorage : null);
+    this.directPowerKey = "hbnf.owner-pwa-opal.power-restore.v1";
     this.fetchFn = options.fetchFn || fetch;
     this.transportLoader = options.transportLoader || (() => import(`${this.origin}/mission-control-local/owner-http-transport.js`));
     this.transport = null;
@@ -81,7 +87,32 @@ export class LocalOwnerControl {
     throw new Error("Local Matrix identity, firmware and fresh state were not all confirmed.");
   }
 
+  async waitForFreshState(transport, afterVersion, timeoutMs = 3500) {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      const release = transport.snapshot && transport.snapshot.HBNF && transport.snapshot.HBNF.candidate;
+      if (release && release !== LOCAL_MATRIX_RELEASE) throw new Error("Matrix firmware is not the locally approved release.");
+      if (transport.snapshotVersion > afterVersion && transport.controlReady()) return transport.snapshot;
+      await new Promise(resolve => setTimeout(resolve, 40));
+    }
+    throw new Error("A new Matrix state readback was not received.");
+  }
+
   async readAux(token) {
+    if (this.opalDirect) {
+      const module = this.module || await this.directTransportLoader();
+      this.module = module;
+      const result = await Promise.all([
+        module.getJson("http://" + LOCAL_AUX_IP + "/json/info"),
+        module.getJson("http://" + LOCAL_AUX_IP + "/json/state"),
+      ]);
+      if (String(result[0].mac || "").toLowerCase().replace(/:/g, "") !== LOCAL_AUX_MAC || !Number.isFinite(Number(result[1].bri)) || typeof result[1].on !== "boolean") {
+        throw new Error("AUX identity or state readback is incomplete.");
+      }
+      this.auxInfo = result[0];
+      this.auxState = result[1];
+      return { info: result[0], state: result[1] };
+    }
     const result = await Promise.all([
       this.request(token, "/api/aux/json/info"),
       this.request(token, "/api/aux/json/state"),
@@ -128,6 +159,7 @@ export class LocalOwnerControl {
   }
 
   async connect(token, expiresAtEpoch) {
+    if (this.opalDirect) return this.connectOpalDirect();
     if (!validToken(token)) throw new Error("This device is not paired for local control.");
     await this.ensureSession(token, expiresAtEpoch);
     if (Number.isSafeInteger(expiresAtEpoch)) this.expiresAtEpoch = expiresAtEpoch;
@@ -160,6 +192,27 @@ export class LocalOwnerControl {
     }
   }
 
+  async connectOpalDirect() {
+    const module = this.module || await this.directTransportLoader();
+    this.module = module;
+    const matrixInfo = await module.getJson("http://" + LOCAL_MATRIX_IP + "/json/info");
+    if (String(matrixInfo.mac || "").toLowerCase().replace(/:/g, "") !== LOCAL_MATRIX_MAC) throw new Error("Unexpected Matrix identity.");
+    if (!this.transport) {
+      this.transport = new module.LocalMatrixTransport({ url: "ws://" + LOCAL_MATRIX_IP + "/ws" });
+      this.token = "__opal_direct__";
+    }
+    if (!this.transport.verifyIdentity(matrixInfo)) throw new Error("Matrix identity verification failed.");
+    const beforeVersion = this.transport.snapshotVersion;
+    if (this.transport.socket && this.transport.socket.readyState === 1) this.transport.requestState();
+    else this.transport.connect();
+    const matrixState = await this.waitForFreshState(this.transport, beforeVersion);
+    const candidate = matrixState && matrixState.HBNF && matrixState.HBNF.candidate;
+    if (candidate !== LOCAL_MATRIX_RELEASE) throw new Error("Matrix firmware is not the locally approved release.");
+    this.matrixInfo = matrixInfo;
+    await this.readAux("");
+    return this.snapshot();
+  }
+
   snapshot() {
     const local = this.transport && this.transport.snapshot;
     const h = local && local.HBNF;
@@ -176,37 +229,63 @@ export class LocalOwnerControl {
     const matrixBrightness = Number(h.matrixBrightness);
     const auxBrightness = Number(h.auxBrightness);
     const matrixObserved = { device_id: "matrix", desired_revision: revision, status: "online", observed_at: new Date().toISOString(), reported: { confirmed: true, brightness: matrixBrightness, appliedProjection: { brightness: matrixBrightness } } };
-    const auxObserved = { device_id: "aux", desired_revision: revision, status: this.auxState.on ? "online" : "off", observed_at: new Date().toISOString(), reported: { confirmed: true, brightness: Number(this.auxState.bri), appliedProjection: { brightness: auxBrightness }, ddp: this.auxInfo.live === true && this.auxInfo.lm === "DDP" && this.auxInfo.lip === "192.168.77.10" } };
+    const auxObserved = { device_id: "aux", desired_revision: revision, status: this.auxState.on ? "online" : "off", observed_at: new Date().toISOString(), reported: { confirmed: true, brightness: Number(this.auxState.bri), matrixTargetBrightness: auxBrightness, appliedProjection: { brightness: auxBrightness }, ddp: this.auxInfo.live === true && this.auxInfo.lm === "DDP" && this.auxInfo.lip === "192.168.77.10", physical: "unverified" } };
     return {
       local: true,
       desired: { revision, state: {
         sceneId: scene,
+        paletteId: h.palette && h.palette.mode === "wled" ? "wled-" + String(h.palette.index) :
+          (h.palette && h.palette.mode === "solid" && Array.isArray(h.palette.rgb) ? "solid-" + h.palette.rgb.map(v => Number(v).toString(16).padStart(2, "0")).join("") : ""),
         selectedVibe: vibeNames[Number(h.vibe)] || "",
         vibeMode: Number(h.vibe) === 5 ? "music" : "manual",
         guestMode: null,
         tuning: { motion: Number(h.motion), audioResponse: Number(h.audioResponse) },
-        devices: { matrix: { brightness: matrixBrightness }, aux: { brightness: Number(this.auxState.bri) } },
+        // HBNF.auxBrightness is the independent brightness target driven by
+        // the accepted Matrix-to-AUX DDP path. WLED state.bri is separately
+        // reported below; these values need not be equal.
+        devices: { matrix: { brightness: matrixBrightness }, aux: { brightness: auxBrightness } },
       } },
       observed: [matrixObserved, auxObserved],
       devices: {
         matrix: { confirmed: true, confirmedRevision: revision, mac: LOCAL_MATRIX_MAC, firmware: h.candidate },
         aux: { confirmed: true, confirmedRevision: revision, mac: LOCAL_AUX_MAC, ddp: this.auxInfo.live === true && this.auxInfo.lm === "DDP" && this.auxInfo.lip === "192.168.77.10", physical: "unverified" },
       },
-      capabilities: { phase2VibeRuntimeV1: true, localOwnerControlV1: true },
+      capabilities: Object.assign({ phase2VibeRuntimeV1: true, localOwnerControlV1: true }, this.opalDirect ? {
+        canonicalPaletteIntentV1: true,
+        canonicalOverlayIntentV1: true,
+        opalDirectOwnerPwaV1: true,
+      } : {}),
       localState: local,
     };
   }
 
-  supports(type, payload) {
+  supports(type, payload, changedFields) {
     if (!this.module || !this.module.buildPatch) return false;
+    if (this.opalDirect && type === "OFF") return true;
+    if (this.opalDirect && type === "ON") return !!this.directPowerRecord();
+    if (this.opalDirect && type === "TUNE" && Array.isArray(changedFields) && changedFields.length) {
+      const supported = new Set(["matrixBrightness", "auxBrightness", "motion", "audioResponse"]);
+      return changedFields.every(key => supported.has(key));
+    }
     try { this.module.buildPatch(type, payload || {}); return true; }
     catch (_) { return false; }
   }
 
-  command(token, type, payload) {
+  directPowerRecord() {
+    if (!this.directStorage) return null;
+    try {
+      const saved = JSON.parse(this.directStorage.getItem(this.directPowerKey) || "null");
+      if (!saved || saved.mac !== LOCAL_MATRIX_MAC || saved.release !== LOCAL_MATRIX_RELEASE ||
+          !Number.isInteger(saved.matrixBrightness) || saved.matrixBrightness < 0 || saved.matrixBrightness > 255 ||
+          !Number.isInteger(saved.auxBrightness) || saved.auxBrightness < 0 || saved.auxBrightness > 255) return null;
+      return saved;
+    } catch (_) { return null; }
+  }
+
+  command(token, type, payload, changedFields) {
     const run = async () => {
       this.commandsPending += 1;
-      try { return await this.commandNow(token, type, payload); }
+      try { return await this.commandNow(token, type, payload, changedFields); }
       finally { this.commandsPending -= 1; }
     };
     const result = this.commandQueue.then(run, run);
@@ -214,7 +293,8 @@ export class LocalOwnerControl {
     return result;
   }
 
-  async commandNow(token, type, payload) {
+  async commandNow(token, type, payload, changedFields) {
+    if (this.opalDirect) return this.commandOpalDirect(type, payload || {}, changedFields);
     if (token !== this.token || !this.transport) throw new Error("Fresh paired local session and Matrix identity are required.");
     await this.ensureSession(token);
     if (!this.transport.controlReady()) await this.connect(token, this.expiresAtEpoch);
@@ -266,7 +346,62 @@ export class LocalOwnerControl {
     };
   }
 
+  async commandOpalDirect(type, payload, changedFields) {
+    await this.connectOpalDirect();
+    if (!this.transport.controlReady()) throw new Error("Fresh Matrix identity and readback are required; no control was sent.");
+    if (!this.supports(type, payload, changedFields)) throw new Error("This Owner PWA control is not available on the offline local transport.");
+    let commandType = type;
+    let commandPayload = payload;
+    if (type === "TUNE") {
+      const keys = Array.isArray(changedFields) && changedFields.length ? changedFields : ["matrixBrightness", "auxBrightness", "motion", "audioResponse"];
+      commandPayload = {};
+      for (const key of keys) if (Object.prototype.hasOwnProperty.call(payload, key)) commandPayload[key] = payload[key];
+      if (!Object.keys(commandPayload).length) throw new Error("No supported local tuning value was supplied.");
+    } else if (type === "OFF") {
+      const h = this.transport.snapshot && this.transport.snapshot.HBNF || {};
+      if (!this.directStorage || !Number.isInteger(Number(h.matrixBrightness)) || !Number.isInteger(Number(h.auxBrightness)) ||
+          (Number(h.matrixBrightness) === 0 && Number(h.auxBrightness) === 0)) throw new Error("Fresh nonzero brightness readback is required before lights off.");
+      this.directStorage.setItem(this.directPowerKey, JSON.stringify({
+        mac: LOCAL_MATRIX_MAC,
+        release: LOCAL_MATRIX_RELEASE,
+        matrixBrightness: Number(h.matrixBrightness),
+        auxBrightness: Number(h.auxBrightness),
+      }));
+      commandType = "TUNE";
+      commandPayload = { matrixBrightness: 0, auxBrightness: 0 };
+    } else if (type === "ON") {
+      const saved = this.directPowerRecord();
+      if (!saved) throw new Error("No same-device saved brightness levels are available.");
+      commandType = "TUNE";
+      commandPayload = { matrixBrightness: saved.matrixBrightness, auxBrightness: saved.auxBrightness };
+    }
+    const state = await this.transport.command(commandType, commandPayload);
+    await this.readAux("");
+    const snapshot = this.snapshot();
+    if (type === "ON" && this.directStorage) this.directStorage.removeItem(this.directPowerKey);
+    return {
+      accepted: true,
+      local: true,
+      revision: this.transport.snapshotVersion,
+      acknowledgments: {
+        matrix: { confirmed: true, mac: LOCAL_MATRIX_MAC, release: LOCAL_MATRIX_RELEASE, stateVersion: this.transport.snapshotVersion },
+        aux: {
+          confirmed: !!(this.auxState && this.auxInfo),
+          mac: LOCAL_AUX_MAC,
+          reachable: !!(this.auxState && this.auxInfo),
+          brightness: this.auxState ? Number(this.auxState.bri) : null,
+          matrixProjection: Object.prototype.hasOwnProperty.call(state.HBNF || {}, "auxBrightness") ? Number(state.HBNF.auxBrightness) : null,
+          ddp: !!(this.auxInfo && this.auxInfo.live === true && this.auxInfo.lm === "DDP" && this.auxInfo.lip === LOCAL_MATRIX_IP),
+          physical: "unverified",
+        },
+      },
+      state,
+      snapshot,
+    };
+  }
+
   async revoke(token) {
+    if (this.opalDirect) { this.disconnectTransport(); return true; }
     if (!validToken(token)) return false;
     try {
       await this.request(token, "/api/session/revoke", "POST", { action: "revoke" });

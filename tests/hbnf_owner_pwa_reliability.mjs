@@ -40,7 +40,7 @@ await assert.rejects(
 assert.equal(aborted, true);
 assert.match(js, /fetchWithDeadline\(fetch, endpoint/);
 assert.match(js, /fetchWithDeadline\(fetch, visualStatusEndpoint/);
-assert.match(js, /badge\.textContent = "Cart service unavailable"/);
+assert.match(js, /OPAL_LOCAL_PWA \? "LOCAL DEVICES UNAVAILABLE" : "Cart service unavailable"/);
 assert.match(js, /matrixHealth\.textContent = "Not confirmed"/);
 assert.match(js, /auxHealth\.textContent = "Not confirmed"/);
 assert.match(js, /window\.addEventListener\("online"/);

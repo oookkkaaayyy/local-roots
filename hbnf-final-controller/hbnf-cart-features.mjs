@@ -27,7 +27,12 @@ function setFeatureStatus(message, bad=false) {
 }
 
 function matrixLocal() {
-  return location.hostname === "192.168.77.10";
+  return location.hostname === "192.168.77.10" ||
+    (location.hostname === "192.168.77.1" && location.pathname.indexOf("/mission-control-local/owner-pwa/") === 0);
+}
+
+function matrixApiUrl(path) {
+  return location.hostname === "192.168.77.1" ? "http://192.168.77.10" + path : path;
 }
 
 async function fetchJson(url, options, label, retries=0, timeoutMs=4500) {
@@ -102,7 +107,7 @@ function populateLooks() {
 async function loadPalettes() {
   const select = $("featurePalette");
   if (!select || !matrixLocal()) return;
-  const names = await fetchJson("/json/pal",{method:"GET",cache:"no-store"},"Palette list",1,3500);
+  const names = await fetchJson(matrixApiUrl("/json/pal"),{method:"GET",cache:"no-store"},"Palette list",1,3500);
   if (!Array.isArray(names)) throw new Error("Palette list unavailable.");
   while (select.options.length) select.remove(0);
   const current=document.createElement("option");
@@ -360,7 +365,9 @@ async function showAcePot() {
   setFeatureStatus("Preparing ace pot…");
   const out=await canonicalRead("live_status",{});
   const live=out && out.live;
-  const amount=Number(live && live.acePot || 0);
+  if (!live || live.active !== true) throw new Error("No active live round is available; no ace-pot overlay was sent.");
+  if (live.acePot === undefined || live.acePot === null || !Number.isFinite(Number(live.acePot))) throw new Error("The live scoring response did not supply an ace-pot amount; no value was inferred.");
+  const amount=Number(live.acePot);
   const bridge=canonicalOverlayBridge();
   await bridge.overlay("text",{text:"ACE POT $"+amount.toFixed(0),color:"#FFFFFF"},7000);
   setFeatureStatus("Canonical ace-pot overlay accepted.");
@@ -445,7 +452,7 @@ async function runPreflight() {
   }
 
   try {
-    const info=await fetchJson("/json/info",{method:"GET",cache:"no-store"},"Matrix identity",1,3500);
+    const info=await fetchJson(matrixApiUrl("/json/info"),{method:"GET",cache:"no-store"},"Matrix identity",1,3500);
     const mac=normalizedMac(info && info.mac);
     if (mac!==EXPECTED_MATRIX_MAC) checks.push("Matrix identity FAIL");
     else checks.push("Matrix API PASS"+(info && info.ver ? " · WLED "+info.ver : ""));

@@ -330,13 +330,15 @@ test("guarded Opal installer uses an isolated :8443 Nginx instance with non-root
   for (const name of ["install.sh", "rollback.sh", "preflight.sh", "matrix_topology.sh", "hbnf-owner-local-control.init"]) execFileSync("sh", ["-n", fileURLToPath(new URL(name, root))]);
 });
 
-test("Owner PWA local gateway uses the isolated HTTPS HTTP-command listener", async () => {
+test("Owner PWA keeps the isolated HTTPS gateway and adds the accepted Opal-local transport", async () => {
   const local = await readFile(new URL("../hbnf-final-controller/hbnf-cart-local.mjs", import.meta.url), "utf8");
   assert.match(local, /LOCAL_CONTROL_ORIGIN = "https:\/\/cart-control\.hbnightflyers\.com:8443"/);
   assert.match(local, /"\/api\/matrix\/control"/);
   assert.match(local, /"\/api\/matrix\/json\/state"/);
   assert.match(local, /owner-http-transport\.js/);
-  assert.doesNotMatch(local, /wss:\/\/|WebSocket|\.socket/);
+  assert.match(local, /if \(this\.opalDirect\) return this\.connectOpalDirect\(\)/);
+  assert.match(local, /ws:\/\/" \+ LOCAL_MATRIX_IP \+ "\/ws/);
+  assert.match(local, /waitForFreshState\(this\.transport, beforeVersion\)/);
 });
 
 test("the test-installed Opal Mission Control WebSocket transport remains supported by the updated package", async () => {
