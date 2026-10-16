@@ -698,7 +698,7 @@ test('physical color-source quality is not inferred from photos on unverified su
   assert.equal(parts.length,cols.length,'valid source record');
   return Object.fromEntries(cols.map((name,i)=>[name,parts[i]]));
  });
- assert.equal(rows.length,78);
+ assert.equal(rows.length,80);
  const chart=rows.find(x=>x.id==='FIELD-PHOTO-01');
  assert.ok(chart);
  assert.match(chart.starting_plastic,/Innova Star.*owner expert visual identification/);
@@ -746,7 +746,7 @@ test('evidence relevance distinguishes one matching dye from a complete two-dye 
  const end=studioScript.indexOf('function renderEvidenceAdvisory()',start);
  assert.ok(start>=0&&end>start);
  const source=studioScript.slice(start,end);
- const observed={dyes:'ProChem Onyx',plastic:'Star',baseColor:'white',medium:'direct acetone brush',photo:'finished disc',evidenceType:'FIELD REPORT'};
+ const observed={dyes:'ProChem Onyx',plastic:'Star',plasticVerified:true,baseColor:'white',medium:'direct acetone brush',photo:'finished disc',evidenceType:'FIELD REPORT'};
  const env={layers:[{name:'ProChem Onyx',method:'acetone-direct'},{name:'iDye Poly Blue',method:'acetone-direct'}],
   evidenceDyeFamilyMatches:(name,report)=>report.includes(name),materialClass:()=> 'opaque-premium',
   classifyObservedProcess:()=> 'acetone-direct',methodForDyeLayer:l=>l.method};
@@ -774,7 +774,7 @@ test('one carrier report cannot claim a full mixed-method recipe match',()=>{
   classifyObservedProcess:()=> 'acetone-direct',
   methodForDyeLayer:l=>l.method};
  const score=Function('env','with(env){'+src+';return evidenceScore;}')(env);
- const report={dyes:'ProChem Onyx and iDye Poly Blue',plastic:'Star',
+ const report={dyes:'ProChem Onyx and iDye Poly Blue',plastic:'Star',plasticVerified:true,
   baseColor:'white',medium:'direct acetone brush',photo:'finished disc',evidenceType:'FIELD REPORT'};
  const mixed=score(report,[],'Star','white');
  assert.equal(mixed.exactDye,true,'both names present');
@@ -802,7 +802,7 @@ test('zero-intensity dye blocks do not create invented evidence or overlaps',()=
   classifyObservedProcess:()=> 'acetone-direct',
   methodForDyeLayer:l=>l.method};
  const score=Function('env','with(env){'+src+';return evidenceScore;}')(env);
- const report={dyes:'ProChem Onyx',plastic:'Star',baseColor:'white',
+ const report={dyes:'ProChem Onyx',plastic:'Star',plasticVerified:true,baseColor:'white',
   medium:'direct acetone brush',photo:'finished disc',evidenceType:'FIELD REPORT'};
  const actual=score(report,[],'Star','white');
  assert.equal(actual.exactDye,true,'disabled color is not required for shade coverage');
@@ -831,8 +831,8 @@ test('published evidence counts match actual entries and distinct source URLs', 
   };
   const entries = [...records('EVIDENCE_OBSERVATIONS'), ...records('FIELD_CASES')];
   const distinctUrls = new Set(entries.map(row => row.sourceUrl));
-  assert.equal(entries.length, 78);
-  assert.equal(distinctUrls.size, 58);
+  assert.equal(entries.length, 80);
+  assert.equal(distinctUrls.size, 60);
   assert.match(studioHtml, new RegExp(`— ${entries.length} provisional observations`));
   assert.match(studioHtml, new RegExp(`${entries.length} records across ${distinctUrls.size} source URLs`));
   assert.match(studioScript, /\$\{ALL_DYE_EVIDENCE\.length\} provisional source observations/);
@@ -909,4 +909,24 @@ test('catalog dye names and inventory dye names resolve to same original-source 
  for(const [name,report,expected] of cases)assert.equal(match(name,report),expected,name+' vs '+report);
  // Every short ProChem catalog name must be manufacturer-qualified, not a generic color word.
  assert.equal(match('Neon Key Lime','ProChem Neon Key Lime'),match('ProChem Neon Key Lime','ProChem Neon Key Lime'));
+});
+
+test('Onyx stencil and sequential Fuzion cases remain qualitative-only and chip provenance is corrected',()=>{
+ const get=name=>{const head='const '+name+'=',i=studioScript.indexOf(head),j=studioScript.indexOf('];',i);return JSON.parse(studioScript.slice(i+head.length,j+1))};
+ const data=[...get('EVIDENCE_OBSERVATIONS'),...get('FIELD_CASES')];
+ for(const id of ['FIELD-ONYX-STENCIL-01','FIELD-ONYX-SAME-DISC-CARRIER-01']){
+  const hit=data.filter(r=>r.id===id);
+  assert.equal(hit.length,1,id);
+  assert.equal(hit[0].shadeMappingCertain,false);
+  assert.equal(hit[0].plasticVerified,false);
+ }
+ assert.match(data.find(x=>x.id==='FIELD-ONYX-STENCIL-01').medium,/stencil/);
+ assert.match(data.find(x=>x.id==='FIELD-ONYX-SAME-DISC-CARRIER-01').plastic,/Fuzion/);
+ assert.match(data.find(x=>x.id==='A01').limitations,/cocoa-butter lotions/);
+ const matrix=read('../../docs/dye-studio/evidence-quality-matrix.csv');
+ assert.match(matrix,/FIELD-ONYX-STENCIL-01/);
+ assert.match(matrix,/FIELD-ONYX-SAME-DISC-CARRIER-01/);
+ assert.match(matrix,/cocoa-butter lotions/);
+ assert.match(read('../../docs/dye-studio/source-admission-benchmark-v1.json'),/cocoa-butter lotions/);
+ assert.match(studioScript,/Manufacturer color chips use cocoa-butter lotions/);
 });

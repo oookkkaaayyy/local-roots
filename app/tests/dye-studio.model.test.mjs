@@ -174,11 +174,11 @@ test('real-world source matching prioritizes actual direct-acetone process over 
   const end=source.indexOf('function renderEvidenceAdvisory()',start);
   assert.ok(start>0 && end>start, 'source evidence section missing');
   vm.runInContext(source.slice(start,end) +
-    '\nglobalThis.fieldAudit={FIELD_CASES,ALL_DYE_EVIDENCE,evidenceScore,classifyObservedProcess};',
+    '\nglobalThis.fieldAudit={EVIDENCE_OBSERVATIONS,FIELD_CASES,ALL_DYE_EVIDENCE,evidenceScore,classifyObservedProcess,materialClass};',
     realm, {timeout:10000});
   const evidence=realm.fieldAudit;
-  assert.equal(evidence.FIELD_CASES.length,20);
-  assert.equal(evidence.ALL_DYE_EVIDENCE.length,78);
+  assert.equal(evidence.FIELD_CASES.length,22);
+  assert.equal(evidence.ALL_DYE_EVIDENCE.length,80);
   const byId=id=>evidence.FIELD_CASES.find(x=>x.id===id);
   const expectedProcesses = [
     ['FIELD-AC-01','acetone-direct'],['FIELD-AC-02','acetone-direct'],
@@ -194,7 +194,9 @@ test('real-world source matching prioritizes actual direct-acetone process over 
     ['FIELD-CARRIER-01','unknown'],
     ['FIELD-SAME-DISC-MEDIA-01','mixed-or-compound-process'],
     ['FIELD-STAR-WRAITH-STENCIL-01','mixed-or-compound-process'],
-    ['FIELD-STAR-WHITE-GLUE-VIDEO-01','acetone-glue-bed']
+    ['FIELD-STAR-WHITE-GLUE-VIDEO-01','acetone-glue-bed'],
+    ['FIELD-ONYX-STENCIL-01','floetrol-stencil'],
+    ['FIELD-ONYX-SAME-DISC-CARRIER-01','mixed-or-compound-process']
   ];
   for(const [id,category] of expectedProcesses)
     assert.equal(evidence.classifyObservedProcess(byId(id).medium),category,id);
@@ -299,4 +301,22 @@ test('translucent daylight: passive dyes never increase channel energy above the
   }
  assert.ok(checked>=500);
  realm.model.setScene('outdoor');
+});
+
+test('named polymer claims require verified source and cannot be inferred from text mentions',()=>{
+ const e=realm.fieldAudit;
+ const byId=id=>e.ALL_DYE_EVIDENCE.find(o=>o.id===id);
+ setLayers([{...dye('ProChem Onyx'),method:'floetrol-stencil',strength:100}]);
+ const rank=id=>e.evidenceScore(byId(id),[],'Innova Star','white');
+ assert.equal(rank('FIELD-STAR-WRAITH-STENCIL-01').samePlastic,true);
+ assert.equal(rank('FIELD-FLO-01').samePlastic,true);
+ assert.equal(rank('FIELD-PHOTO-01').samePlastic,false);
+ assert.equal(rank('FIELD-PHOTO-01').sameFamily,true);
+ assert.equal(rank('A04'),null,'three-polymer summary cannot establish a single-polymer trial');
+ const hypothetical={...byId('QA-WD-04'),dyes:'ProChem Onyx',medium:'Floetrol stencil painted'};
+ assert.equal(e.evidenceScore(hypothetical,[],'Innova Star','white').samePlastic,false);
+ assert.equal(rank('FIELD-ONYX-SAME-DISC-CARRIER-01').samePlastic,false);
+ assert.equal(rank('FIELD-ONYX-STENCIL-01').samePlastic,false);
+ assert.equal(e.materialClass('Innova Star; Champion; GStar'),'unknown');
+ setLayers([]);
 });
