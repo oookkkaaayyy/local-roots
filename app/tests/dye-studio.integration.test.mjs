@@ -1055,3 +1055,39 @@ test('commercial Quick Coat UV Blast Green synonym remains findable but never be
   studioScript.indexOf('function evidenceScore('))+';return classifyObservedProcess')();
  assert.equal(classify(report.medium),'mixed-or-compound-process');
 });
+
+
+test('a strongly mixed two-disc photo is rejected before it can overwrite the undyed base',()=>{
+ const photo=read('../public/dyed-and-unattached/dye-studio/disc-photo.js');
+ const win={},doc={readyState:'loading',addEventListener(){}};
+ Function('window','document',photo)(win,doc);
+ const estimate=win.DUDiscPhoto.estimatePixels;
+ const scene=two=>{
+  const w=460,h=345,data=new Uint8ClampedArray(w*h*4);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+   let rgb=[230,226,216];
+   if(two){
+    if(Math.hypot(x-130,y-171)<=105)rgb=[36,78,160];
+    if(Math.hypot(x-330,y-171)<=105)rgb=[200,193,126];
+   }else if(Math.hypot(x-230,y-171)<=105)rgb=[200,193,126];
+   const i=(y*w+x)*4;
+   data[i]=rgb[0];data[i+1]=rgb[1];data[i+2]=rgb[2];data[i+3]=255;
+  }
+  return estimate({data,width:w,height:h});
+ };
+ const single=scene(false),paired=scene(true);
+ assert.equal(single.edgeDetected,true);
+ assert.equal(single.severeMixedColor,false,'single original disc should still be accepted');
+ assert.equal(single.hex,'#C8C17E','single-disc base is the synthetic known plate color');
+ assert.equal(paired.edgeDetected,true,'regression reproduces a false-positive circular edge between two discs');
+ assert.equal(paired.severeMixedColor,true,'reject severe multimodal base-color contamination');
+ assert.equal(paired.confidence,'check','false rim contrast must not imply a good base-color estimate');
+ assert.ok(paired.outlierFraction>.5&&paired.spread>70);
+ // Rejection must run BEFORE the existing source-color mutation. Do not put
+ // it only in the message after setDiscAppearance or baseHex has been changed.
+ const gate=photo.slice(photo.indexOf('if(!result.edgeDetected)'),photo.indexOf('const color=document.getElementById("baseColor")'));
+ assert.match(gate,/if\(result\.severeMixedColor\)throw Error/);
+ assert.match(gate,/Crop to a single undyed disc/);
+ // The real first-party Wraith/Tern photographs stay in private Google Drive;
+ // this regression draws synthetic circles and embeds no photo payloads.
+});
