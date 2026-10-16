@@ -24,6 +24,7 @@ test('creator/session leakage blocks invalid claimed holdout',()=>{
  const all=data.records;
  assert.equal(assertDisjointSources(all.slice(0,3),all.slice(3)),true);
  assert.throws(()=>assertDisjointSources([all[0]],[{creatorGroup:all[0].creatorGroup}]),/leakage/);
+ assert.throws(()=>assertDisjointSources([all[0]],[{source:all[0].source,creatorGroup:'other'}]),/URL leakage/);
 });
 test('benchmarks never silently train from product-color swatches or sampled web JPEG',()=>{
  const q=data.records.find(r=>r.id==='PCAD-PRODUCT-SWATCH');
@@ -35,4 +36,11 @@ test('benchmarks never silently train from product-color swatches or sampled web
  assert.match(k.plasticSource,/owner identifies white Innova Star visually/);
  assert.match(k.handwrittenLabels,/dye\/color names/);
  assert.equal(k.exactPlastic,false,'visual identification is not original maker verification');
+});
+
+test('same source cannot be counted as separate creator groups',()=>{
+ const first=data.records[0];
+ const second={...first,id:'copy-source',creatorGroup:'second-label'};
+ const report=auditEvidence({...data,records:[...data.records,second]});
+ assert.ok(report.issues.some(item=>item.includes('Conflicting creator group')));
 });
