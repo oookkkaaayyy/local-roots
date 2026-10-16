@@ -21,8 +21,7 @@ Owner accepted the flat **green/lime pixel-wave on near-black** matrix artwork. 
 
 ## Separate completed small changes: do not remake
 
-- [Owner direct Skins/Glow navigation PR #85](https://github.com/oookkkaaayyy/local-roots/pull/85): isolated small HTML change and focused Node test on `cart2-owner-scoring-entry-20261016`; source-static checks 8/8 PASS. **Not merged/deployed.** These are normal external links; same-tab behavior inside iOS installed PWA is **unverified**, not a fully unified web app.
-- [Guest cellular scorecard links PR #84](https://github.com/oookkkaaayyy/local-roots/pull/84): isolated guest HTML/CSS and focused Node test on `cart2-guest-scoring-entry-20261016`; static checks 6/6 PASS. **Not merged/deployed.** Links are available even while Guest Mode is off. Do not merge until worker's active Guest files are reconciled. Use #84, not the older alternate guest shell in [PR #79](https://github.com/oookkkaaayyy/local-roots/pull/79).
+- [Owner direct Skins/Glow navigation PR #85](https://github.com/oookkkaaayyy/local-roots/pull/85) and [Guest navigation PR #84](https://github.com/oookkkaaayyy/local-roots/pull/84) were independently developed and static-checked (8/8 and 6/6). **Now SUPERSEDED for normal scoring navigation** by the worker's deployed Opal Owner PWA v1.0.2 package commit `74b09988ef3cf8a07c460aa09c303b92d9f0474e`: source already links both `https://hbnightflyers.com/skins.html` and `https://hbnightflyers.com/glow.html` in Owner Scores and Guest footer. **DO NOT cherry-pick/merge #84 or #85 merely to re-add these links.** Their separate source remains preserved in case a later UX change warrants it. In-app iOS 12 navigation behavior is not yet physically verified.
 - [UV guard + older Owner navigation PR #78](https://github.com/oookkkaaayyy/local-roots/pull/78): `hbnf-final-controller/hbnf-cart-uv.mjs` and 11 deterministic tests previously PASS. It is a **pure module**, not a wired UV dimmer. UV must remain isolated until SP803E output configuration, 5V-vs-12V load, branch protection, underglow/ DD P isolation, and boot-off checks are physically verified. Prefer #85 Owner navigation over the older version in #78.
 
 ## Product/live state and ownership
@@ -35,10 +34,10 @@ Owner accepted the flat **green/lime pixel-wave on near-black** matrix artwork. 
 ## Cheapest merge/integration order after guest is accepted
 
 1. Start from the *actually deployed* Guest/Owner source, not this staging branch. Verify live source identities before merging.
-2. Reuse #84 Guest navigation and #85 Owner navigation with minimal manual cherry-pick, because shared UI files likely changed on the guest worker branch.
+2. **Skip navigation merges:** latest Owner PWA v1.0.2 already contains Owner and Guest Skins/Glow links. Inspect the actual deployed link behavior and only adjust if a real UX gap is demonstrated.
 3. Decode the already-approved icon ZIP, verify the exact digest, and use the included reversible icon-only patch against the current live Owner subtree. Do **not** recreate art.
 4. Focused checks, install, iOS 12 visual check. Reaccept only changed behavior. Preserve original HBNF scoring icon.
-5. Later: consider isolated IRL putting game logic and historical six-game engine (see below). Do not pull old router/firmware schemes into current architecture.
+5. Later: reuse the tested IRL putting game module below or historical six-game engine; do not pull old router/firmware schemes into current architecture.
 
 ## Established game reuse, do not reconstruct
 
@@ -47,3 +46,11 @@ Owner accepted the flat **green/lime pixel-wave on near-black** matrix artwork. 
 - S4 IRL putting games are separate from the seven digital arcade candidates; a deterministic challenge module can run in the phone and display short directions through the existing Matrix text overlay after guest release, without real-time controller streaming.
 
 **Only this handoff index and its referenced exact code/assets should be treated as staged implementation evidence.** Any new integration must verify real installed behavior before claiming field acceptance.
+
+## Newly completed independent S4 game foundation (reusable, source already in this branch)
+
+- Pure deterministic and side-effect-free implementation at `hbnf-irl-challenges/engine.mjs` with paired `hbnf-irl-challenges/engine.test.mjs`.
+- Implements **Putting Gauntlet** (same distance/stance for each player per round) and **Pressure Ladder** (advance on make, repeat distance on miss; equal turns at finish). Fixed 10/15/20/25/30/35 ft progression and three stances, up to 12 players, one-turn-per-player, fair scoring/standings, safe bounded ≤63-character Matrix prompts. Revision-bound results reject accidental duplicate taps; JSON snapshots support resume with validation.
+- Companion Node tests **12/12 PASS** on original source; these exact source and test bytes were mirrored to this branch and compared with the source used in the completed test run. No runtime browser field testing or integration was conducted.
+- Can be integrated into future HBNF Owner/Guest play UI locally without touching Skins scoring or firmware, then optionally drive the existing `OVERLAY_START` text API (subject to cloud/Opal command acceptance and overlay arbitration); cannot claim Matrix integration yet.
+- Reuse existing guest identity/permission/command path after acceptance. No second guest backend or games network. Independent of the old six-game real-time bridge.
