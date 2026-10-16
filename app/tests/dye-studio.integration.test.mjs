@@ -699,7 +699,7 @@ test('physical color-source quality is not inferred from photos on unverified su
   assert.equal(parts.length,cols.length,'valid source record');
   return Object.fromEntries(cols.map((name,i)=>[name,parts[i]]));
  });
- assert.equal(rows.length,83);
+ assert.equal(rows.length,85);
  const chart=rows.find(x=>x.id==='FIELD-PHOTO-01');
  assert.ok(chart);
  assert.match(chart.starting_plastic,/Innova Star.*owner expert visual identification/);
@@ -832,8 +832,8 @@ test('published evidence counts match actual entries and distinct source URLs', 
   };
   const entries = [...records('EVIDENCE_OBSERVATIONS'), ...records('FIELD_CASES')];
   const distinctUrls = new Set(entries.map(row => row.sourceUrl));
-  assert.equal(entries.length, 83);
-  assert.equal(distinctUrls.size, 63);
+  assert.equal(entries.length, 85);
+  assert.equal(distinctUrls.size, 65);
   assert.match(studioHtml, new RegExp(`— ${entries.length} provisional observations`));
   assert.match(studioHtml, new RegExp(`${entries.length} records across ${distinctUrls.size} source URLs`));
   assert.match(studioScript, /\$\{ALL_DYE_EVIDENCE\.length\} provisional source observations/);
@@ -947,8 +947,8 @@ test('source quality matrix agrees with the live physical-method classifier and 
  const start=studioScript.indexOf('function classifyObservedProcess(');
  const end=studioScript.indexOf('function evidenceScore(',start);
  const classify=Function(studioScript.slice(start,end)+';return classifyObservedProcess')();
- assert.equal(rows.length,83);
- assert.equal(observations.length,83);
+ assert.equal(rows.length,85);
+ assert.equal(observations.length,85);
  const byId=new Map(rows.map(x=>[x.id,x]));
  let joined=0;
  for(const obs of observations){
@@ -995,6 +995,31 @@ test('source quality matrix agrees with the live physical-method classifier and 
  assert.equal(classify('ProChem powder dissolved in an acetone splash, then mixed with lotion in a lotion bed'),'lotion');
  assert.equal(classify('Direct acetone paint brush on Star'), 'acetone-direct');
  assert.equal(classify('Spin dye followed by Floetrol cells'),'mixed-or-compound-process');
+
+
+ // Lotion pigment on clear glue is neither acetone-glue dye nor plain lotion.
+ for(const id of ['A11','A12']){
+  const obs=observations.find(o=>o.id===id);
+  assert.equal(classify(obs.medium),'lotion-over-glue-bed',id);
+  assert.equal(byId.get(id).method_class,'lotion-over-glue-bed',id);
+ }
+ const painter=observations.find(o=>o.id==='FIELD-DIRECT-PAINT-SEQUENCE-01');
+ const splatter=observations.find(o=>o.id==='FIELD-DIRECT-CARIBBEAN-K1-01');
+ for(const hit of [painter,splatter]){
+  assert.ok(hit&&byId.has(hit.id),'firsthand direct-on-disc case present');
+  assert.equal(classify(hit.medium),'mixed-or-compound-process');
+  assert.equal(byId.get(hit.id).method_class,'mixed-or-compound-process');
+  assert.equal(hit.shadeMappingCertain,false);
+  assert.match(byId.get(hit.id).train_eligible,/^NO/);
+  assert.match(byId.get(hit.id).numeric_holdout_eligible,/^NO/);
+ }
+ assert.match(painter.concentration,/20mL acetone/);
+ assert.equal(painter.plasticVerified,false);
+ assert.match(splatter.plastic,/Kastaplast K1/);
+ assert.equal(splatter.plasticVerified,false);
+ assert.equal(classify('ProChem dye in lotion laid over clear glue'),'lotion-over-glue-bed');
+ assert.equal(classify('ProChem acetone directly brush-painted onto stencil'),'acetone-direct');
+ assert.equal(classify('iDye Poly Black hot-dipped before direct acetone painted details'),'mixed-or-compound-process');
 
  const mixedIds=['WB022','FIELD-AC-04'];
  for(const id of mixedIds)
