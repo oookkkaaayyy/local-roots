@@ -467,6 +467,7 @@ body.calibration-mode #du-lighting{display:none!important}
 <option value="acetone-glue-bed">Acetone dye in a glue bed</option>
 <option value="floetrol-bed">Floetrol dye bed</option>
 <option value="worm-dip">Commercial worm dip / UV Blast</option>
+<option value="premixed-dip-floetrol">Premixed UV Blast / Quick-Coat + Floetrol (distinct process)</option>
 <option value="other">Other / insufficient method details</option>
 </select><div id="methodEvidenceLimit" class="small">Method affects evidence matching, warnings and saved recipes, NOT the uncalibrated numerical preview. Exact hue and saturation remain unverified.</div>
 <div class="field" style="margin-top:9px"><label class="control-label" for="passCount">Default passes / coats for new blocks</label><input id="passCount" type="number" min="1" max="12" step="1" value="1" inputmode="numeric" aria-describedby="passHelp" style="width:100%"><div id="passHelp" class="small">New dye blocks inherit this default. Edit the pass count on each selected block independently. No numeric darkening curve is validated; this value does not change the preview hue.</div></div>
@@ -580,6 +581,7 @@ body.calibration-mode #du-lighting{display:none!important}
 <option value="acetone-glue-bed">Acetone-dye glue bed</option>
 <option value="floetrol-bed">Floetrol dye bed</option>
 <option value="worm-dip">Commercial worm dip / UV Blast</option>
+<option value="premixed-dip-floetrol">Premixed UV Blast / Quick-Coat + Floetrol (distinct process)</option>
 <option value="other">Other / unknown</option>
 </select><div class="small">Each color can use a different carrier. This field controls evidence and calibration matching, not numerical hue.</div></div>
 <div class="wide" id="layerPassesBox"><label class="control-label" for="layerPasses">Passes / coats for selected dye block</label><input id="layerPasses" type="number" min="1" max="12" step="1" value="1" inputmode="numeric"><div class="small">Physically applied passes on this specific color; affects recipe records and evidence warnings, not the uncalibrated preview.</div></div>
