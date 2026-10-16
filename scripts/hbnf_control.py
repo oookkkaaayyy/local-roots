@@ -832,7 +832,8 @@ def issue_backend_opal_admission(state,manifest_path,authorization_receipt_path,
     if any(x.get("transaction_id")==owner.get("transaction_id") for x in history if isinstance(x,dict)):
         raise ValueError("backend/Opal reissuance rejected: transaction identity was already used")
     history.append({"prior_transaction":copy.deepcopy(old),"superseded_by":owner["transaction_id"],"superseded_at_unix":current,
-        "reason":"expired one-use admission; fresh evidence proves no prior production step completed" if not continuation
+        "reason":"expired one-use admission; fresh evidence proves no prior production step completed" if not continuation and not post_bootstrap_continuation
+            else "expired admission resumed from exact four-step checkpoint after fresh source, writer, and device preflight verification" if post_bootstrap_continuation
             else "expired one-use admission continued after immutable migration/deploy receipts and current v27 source were verified",
         "completed_steps_carried_forward":list(carried_steps) if carried else []})
     cursor.setdefault("backend_opal_transaction_audit",[]).append({"event":"OWNER_AUTHORIZED_ADMISSION_REISSUED",
