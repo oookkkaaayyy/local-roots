@@ -10,9 +10,10 @@ assert.equal(relayTokenAuthorized("Bearer "+token,token,"opal-hbnf-cart"),true);
 assert.equal(relayTokenAuthorized("Bearer "+token.slice(1),token,"opal-hbnf-cart"),false);
 assert.equal(relayTokenAuthorized(null,token,"opal-hbnf-cart"),false);
 assert.equal(relayTokenAuthorized("Bearer "+token,token,"other-relay"),false);
-const context={desired:{state:{power:"on",selectedVibe:"groove",sceneId:"field-mix",paletteId:"solid-12ABEF",devices:{matrix:{enabled:true,brightness:44},aux:{enabled:true,brightness:38}},tuning:{motion:61,audioResponse:73,micSensitivity:210},overlays:[{id:"owner-text-1",kind:"text",priority:9,expiresAt:100000,payload:{text:"Tonight",color:"#F0C080",fontIndex:4}}]}}};
+const context={desired:{state:{power:"on",selectedVibe:"groove",sceneId:"field-mix",paletteId:"solid-12ABEF",devices:{matrix:{enabled:true,brightness:44,auxTargetBrightness:46},aux:{enabled:true,brightness:38}},tuning:{motion:61,audioResponse:73,micSensitivity:210},overlays:[{id:"owner-text-1",kind:"text",priority:9,expiresAt:100000,payload:{text:"Tonight",color:"#F0C080",fontIndex:4}}]}}};
 const built=await buildWledProjection(context,51,7,1000);
 assert.equal(built.wledPayload.matrix.on,true);assert.equal(built.wledPayload.matrix.seg[1].start,512);assert.equal(built.wledPayload.matrix.seg[1].stop,534);
+assert.equal(built.wledPayload.matrix.HBNF.auxBrightness,46,"Matrix-stored AUX target is projected independently");
 assert.deepEqual(built.wledPayload.aux,{on:true,bri:38},"AUX power and brightness are applied independently through receiver state");
 assert.equal(built.expectedState.aux.on,true,"AUX power readback is bound separately from its brightness write");
 assert.equal(built.wledPayload.matrix.AudioReactive,undefined,"generic projection preserves audio-reactive device settings");
@@ -60,16 +61,26 @@ assert.equal(AUX_IP,"192.168.77.11");
 // physical settings exactly; current desired-state brightness is intentionally
 // stale in the fixture and must never be treated as a runtime snapshot.
 const current={desired:{state:{power:"on",selectedVibe:"auto",vibe:"mellow",vibeMode:"music",sceneId:"course-flow",paletteId:"legacy",
- devices:{matrix:{enabled:true,brightness:69},aux:{enabled:true,brightness:255}},
+ devices:{matrix:{enabled:true,brightness:46,auxTargetBrightness:46},aux:{enabled:true,brightness:255}},
  tuning:{motion:50,audioResponse:50,micSensitivity:255},overlays:[]}}};
 const currentProjection=await buildWledProjection(current,124,2,1000);
 const currentState={on:true,bri:255,seg:[{id:0,on:true,bri:255,fx:142},{id:1,start:512,stop:534,on:true,bri:255,fx:142}],
- AudioReactive:{on:true},HBNF:{schema:"foundation-v1",candidate:MATRIX_CANDIDATE,scene:0,vibe:5,motion:50,audioResponse:50,matrixBrightness:69,auxBrightness:255,palette:{mode:"legacy"},overlayId:null}};
+ AudioReactive:{on:true},HBNF:{schema:"foundation-v1",candidate:MATRIX_CANDIDATE,scene:0,vibe:5,motion:50,audioResponse:50,matrixBrightness:46,auxBrightness:46,palette:{mode:"legacy"},overlayId:null}};
 const currentAuxInfo={ip:AUX_IP,mac:AUX_MAC,ver:"0.16.0",leds:{count:22},live:true,lm:"DDP",lip:"192.168.77.10"};
 const currentActual=normalizeReadback(info,currentState,currentAuxInfo,{on:true,bri:255,lor:0},{if:{live:{maxbri:false}}});
 assert.equal(readbackMatches(currentActual,currentProjection.expectedState),true,"revision-checked bootstrap makes the next projection a no-op against the fresh owner settings");
+assert.equal(checkDecision({expires_at:new Date(9000).toISOString(),expected_state:currentProjection.expectedState},currentActual,1000),"confirm","first post-bootstrap relay cycle confirms the exact 46/255 state without issuing a write");
+assert.equal(currentProjection.wledPayload.matrix.HBNF.auxBrightness,46);
 assert.deepEqual(currentProjection.wledPayload.aux,{on:true,bri:255},"bootstrap baseline leaves already-correct AUX state unchanged");
 assert.equal(currentProjection.wledPayload.matrix.AudioReactive,undefined,"bootstrap preserves audio-reactive settings");
+const matrixOnly=structuredClone(current);matrixOnly.desired.state.devices.matrix.brightness=60;
+const matrixProjection=await buildWledProjection(matrixOnly,125,2,1000);
+assert.equal(matrixProjection.wledPayload.matrix.HBNF.matrixBrightness,60);assert.equal(matrixProjection.wledPayload.matrix.HBNF.auxBrightness,46);assert.equal(matrixProjection.wledPayload.aux.bri,255,"Matrix-only control cannot alter physical AUX brightness");
+const auxOnly=structuredClone(current);auxOnly.desired.state.devices.aux.brightness=200;
+const auxProjection=await buildWledProjection(auxOnly,125,2,1000);
+assert.equal(auxProjection.wledPayload.matrix.HBNF.auxBrightness,46,"authorized AUX change leaves the Matrix-stored target intact");assert.equal(auxProjection.wledPayload.aux.bri,200,"authorized AUX change applies only to the receiver");
+await assert.rejects(buildWledProjection({desired:{state:{...current.desired.state,devices:{...current.desired.state.devices,matrix:{enabled:true,brightness:46}}}}},124,2,1000),/matrix_aux_target_missing/,"projection fails closed before the one-time observed-state bootstrap");
+await assert.rejects(buildWledProjection({desired:{state:{...current.desired.state,devices:{...current.desired.state.devices,matrix:{...current.desired.state.devices.matrix,auxTargetBrightness:null}}}}},124,2,1000),/matrix_aux_target_missing/,"a null legacy AUX target cannot silently become zero");
 await assert.rejects(buildWledProjection({desired:{state:{...current.desired.state,selectedVibe:null}}},124,2,1000),/unsupported_vibe/,"missing runtime Vibe is not guessed from legacy energy labels");
 assert.throws(()=>normalizeReadback(info,state,auxInfo,auxState,{if:{live:{maxbri:true}}}),/force_max_brightness/,
  "realtime receiver max brightness must be proven off before independent AUX control");

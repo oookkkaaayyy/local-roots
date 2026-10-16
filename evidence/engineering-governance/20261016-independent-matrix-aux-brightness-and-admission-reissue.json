@@ -1,0 +1,34 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "MATRIX_AUX_INDEPENDENT_BOOTSTRAP_AND_SCOPED_ADMISSION_REISSUE_20261016",
+  "summary": "Correct the existing Matrix relay bootstrap/projection to preserve separately observed Matrix aux target and AUX receiver brightness, and add a one-use audited reissuance operation to the existing backend/Opal control authority without opening firmware mutation authority.",
+  "change_class": "APPROVED_ARCHITECTURE_IMPLEMENTATION",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "scoped_evidence": {
+      "approved_architecture_reference": "Current owner request authorizes correcting the existing migration, handler/projection and current primary release authority, and forbids replacing the relay or bypassing control gates.",
+      "affected_subsystem": "One-time Matrix relay state bootstrap, per-device projection/challenge contract, independent brightness reducer behavior, and expiring one-use backend/Opal release admission reissuance.",
+      "rollback_reference": "Revert this source commit. Production rollback remains exact v25 nine-file Edge Function snapshot plus the migration's tested compensating SQL; Opal writer prestate remains absent and existing Skins relay is preserved. PHASE2_INTEGRATING and firmware live mutation authority remain unchanged/closed.",
+      "evidence_sources": [
+        "Current owner directive: CART 2.0 — FIX RELEASE CONTRACT AND FINISH GUEST ACCEPTANCE (2026-10-16).",
+        "Supabase Database Functions security guidance: https://supabase.com/docs/guides/database/functions — SECURITY DEFINER functions require explicit execute revocation from PUBLIC/anon/authenticated and grants only to needed roles.",
+        "Supabase Edge Function deploy guidance: https://supabase.com/docs/guides/functions/deploy — deploy exact function and retain configured verify_jwt behavior.",
+        "Existing production v25 snapshot and current function metadata: evidence/owner-control-release-20261014/production-v25-edge-snapshot.json and read-only Supabase function inventory (v25, verify_jwt=false, snapshot SHA 6ad1ff0e72694781cf0cdca26a3f0e987203f099dec6c068d7d3328be0d80748).",
+        "Fresh read-only database preflight: desired revision 123, selectedVibe NULL, fence epoch 2 inactive, bootstrap RPC absent; anon execute on challenge issue/confirm false.",
+        "Fresh read-only device preflight: Matrix 70:4b:ca:5b:34:5c release skins-readable-20261014, 534 LEDs, WLED bri 255, logical bri 46, Matrix AUX target 46, Vibe 3; AUX 8c:94:df:55:c3:4c, 22 LEDs, bri 255, DDP source Matrix, maxbri false."
+      ],
+      "tests": [
+        "tests/matrix-relay-runtime/test.mjs: PGlite bootstrap with Matrix AUX target 46 and AUX receiver brightness 255, CAS/replay/identity rejection, no device command, readback and exact compensating SQL.",
+        "tests/hbnf_matrix_relay_contract.mjs: first relay cycle no-op at independent 46/255 state, matrix-only and explicit AUX-only projections, stale/missing/null values and readback mismatch fail closed.",
+        "staging/coordinated-backend/hbnf-cart-control/guest-command.test.mjs: independent Matrix/AUX owner command behavior and prior authorization regressions.",
+        "tests/test_backend_opal_release_admission.py: fresh expiring reissuance bound to exact source/artifact/device/evidence identities, rejected scope/source/device/hash/expiry/replay, zero child execution for rejections, ordered transaction steps, rollback path, PHASE2/firmware authority preservation."
+      ]
+    }
+  }
+}

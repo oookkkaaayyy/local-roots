@@ -23,7 +23,7 @@ INSERT INTO hbnf_internal.cart_actuator_fence VALUES('hbnf-cart',7,'r6',false);
 for (const migrationPath of migrationPaths.slice(0,2)) await db.exec(fs.readFileSync(migrationPath, 'utf8'));
 const observed = {matrixMac:'70:4b:ca:5b:34:5c',candidate:'hbnf-cart2-phase2-r6-skins-readable-20261014',on:true,bri:255,
  segments:[{id:0,on:true,bri:255,fx:142},{id:1,start:512,stop:534,on:true,bri:255,fx:142}],
- hbnf:{schema:'foundation-v1',candidate:'hbnf-cart2-phase2-r6-skins-readable-20261014',scene:0,vibe:5,motion:50,audioResponse:50,matrixBrightness:69,auxBrightness:255,palette:{mode:'legacy'},overlayId:null},
+ hbnf:{schema:'foundation-v1',candidate:'hbnf-cart2-phase2-r6-skins-readable-20261014',scene:0,vibe:5,motion:50,audioResponse:50,matrixBrightness:46,auxBrightness:46,palette:{mode:'legacy'},overlayId:null},
  aux:{mac:'8c:94:df:55:c3:4c',ip:'192.168.77.11',on:true,bri:255,live:true,lm:'DDP',lip:'192.168.77.10',lor:0,forceMaxBrightness:false}};
 const wrongMasterBrightness=structuredClone(observed);wrongMasterBrightness.bri=254;
 await assert.rejects(db.query(`select public.hbnf_cart_matrix_relay_bootstrap('opal-hbnf-cart','hbnf-cart',51,7,'r6',$1,$2::jsonb)`,[observed.candidate,JSON.stringify(wrongMasterBrightness)]),/bootstrap_readback_identity_or_shape_invalid/,'bootstrap refuses a Matrix global-brightness state the writer would otherwise change');
@@ -35,14 +35,14 @@ await assert.rejects(db.query(`select public.hbnf_cart_matrix_relay_bootstrap('o
 const bootstrap=(await db.query(`select public.hbnf_cart_matrix_relay_bootstrap('opal-hbnf-cart','hbnf-cart',51,7,'r6',$1,$2::jsonb) as result`,[observed.candidate,JSON.stringify(observed)])).rows[0].result;
 assert.equal(bootstrap.deviceCommandsIssued,false);assert.equal(bootstrap.revision,52);
 assert.equal(bootstrap.state.selectedVibe,'auto');assert.equal(bootstrap.state.vibeMode,'music');assert.equal(bootstrap.state.sceneId,'course-flow');
-assert.equal(bootstrap.state.paletteId,'legacy');assert.equal(bootstrap.state.devices.matrix.brightness,69);assert.equal(bootstrap.state.devices.aux.brightness,255);
+assert.equal(bootstrap.state.paletteId,'legacy');assert.equal(bootstrap.state.devices.matrix.brightness,46);assert.equal(bootstrap.state.devices.matrix.auxTargetBrightness,46);assert.equal(bootstrap.state.devices.aux.brightness,255);
 assert.equal(bootstrap.state.tuning.audioResponse,50);assert.equal(bootstrap.state.tuning.micSensitivity,255,'unobservable microphone sensitivity remains unchanged');
 assert.equal(bootstrap.state.vibe,'mellow','legacy energy field remains unchanged');
 await assert.rejects(db.query(`select public.hbnf_cart_matrix_relay_bootstrap('opal-hbnf-cart','hbnf-cart',51,7,'r6',$1,$2::jsonb)`,[observed.candidate,JSON.stringify(observed)]),/bootstrap_revision_fence_or_release_stale/,'a bootstrap cannot replay against its consumed revision');
 await assert.rejects(db.query(`select public.hbnf_cart_matrix_relay_bootstrap('opal-hbnf-cart','hbnf-cart',52,7,'r6',$1,$2::jsonb)`,[observed.candidate,JSON.stringify(observed)]),/bootstrap_already_initialized/,'bootstrap cannot repeat after selectedVibe has been established');
 await db.exec(`update hbnf_internal.cart_actuator_fence set active=true where cart_id='hbnf-cart'`);
 const expected = observed;
-const payload = { matrix: {on:true,HBNF:{matrixBrightness:69,auxBrightness:255}}, aux:{on:true,bri:255} };
+const payload = { matrix: {on:true,HBNF:{matrixBrightness:46,auxBrightness:46}}, aux:{on:true,bri:255} };
 async function issue(state = expected, rev = 52, fence = 7, candidate = expected.candidate, releaseId = 'r6') {
   return (await db.query(`select public.hbnf_cart_matrix_relay_issue($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10) as id`, ['opal-hbnf-cart','hbnf-cart',rev,fence,releaseId,'70:4b:ca:5b:34:5c',candidate,JSON.stringify(state),JSON.stringify(payload),20])).rows[0].id;
 }

@@ -6,7 +6,7 @@ ROOT=pathlib.Path(__file__).resolve().parents[1]
 CONTROL=ROOT/"scripts/hbnf_control.py"
 GUARD=ROOT/"scripts/hbnf_guarded_run.py"
 MODEL=ROOT/"config/HBNF_CONTROL_MODEL.json"
-BASE="b7eda237ba6bf51eb7266a6d4eeb7846f38d0a5e"
+BASE=subprocess.run(["git","rev-parse","HEAD"],cwd=ROOT,check=True,capture_output=True,text=True).stdout.strip()
 STEPS=["apply_migration","deploy_edge_function","install_writer_stopped","bootstrap_current_state",
        "activate_writer","one_owner_control_test","restore_and_verify"]
 SCOPE=STEPS+["rollback_if_required"]
@@ -35,23 +35,26 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
     state["phase2_implementation_authorized"]=True
     state["live_mutation_authorized"]=False
     now=time.time()
-    owner={
-        "transaction_id":"OWNER-20261014-BACKEND-OPAL-TEST",
-        "authorization_id":"OWNER-DIRECT-TEST-FIXTURE",
-        "source_message_ref":"TEST FIXTURE ONLY; not owner authority",
-        "deployable_source_commit":BASE,"scope":SCOPE,"nonce":"test-nonce-unique-0123456789abcdef",
-        "issued_unix":now-1,"expires_unix":now+3600,
-    }
+    prior_id="OWNER-20261015-OWNER-CONTROL-RELEASE"
+    prior_digest="d"*64
+    old_owner={"transaction_id":prior_id,"authorization_id":"OWNER-OLD-EXPIRED","source_message_ref":"prior owner request",
+        "deployable_source_commit":"b7eda237ba6bf51eb7266a6d4eeb7846f38d0a5e","scope":SCOPE,"nonce":"old-nonce-not-reusable",
+        "issued_unix":now-7200,"expires_unix":now-3600}
+    state["execution_cursor"]["backend_opal_transaction"]={"schema":"hbnf-backend-opal-transaction-state-v1",
+        "transaction_id":prior_id,"owner_authorization":old_owner,"admission_sha256":prior_digest,"status":"IN_PROGRESS",
+        "attempts_used":1,"completed_steps":[],"active_step":"apply_migration","rollback_attempts_used":0}
     preflight={
         "schema":"hbnf-owner-control-live-readonly-preflight-v1","pass":True,"captured_unix":now,
         "matrix_mac":"704bca5b345c","aux_mac":"8c94df55c34c",
         "matrix_release_id":"hbnf-cart2-phase2-r6-skins-readable-20261014",
         "matrix_recorded_firmware_sha256":"de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
-        "matrix_brightness":255,"aux_brightness":255,"vibe":5,
-        "opal_model":"GL-SFT1200","opal_ip":"192.168.77.1",
+        "matrix_brightness":255,"matrix_logical_brightness":46,"matrix_aux_target_brightness":46,
+        "aux_brightness":255,"vibe":3,"opal_model":"GL-SFT1200","opal_ip":"192.168.77.1",
     }
     prepath=temp/"fresh-readonly.json"; write_json(prepath,preflight)
-    relpre=prepath.relative_to(ROOT).as_posix()
+    canonical={"schema":"hbnf-owner-control-canonical-readonly-preflight-v1","pass":True,"captured_unix":now,
+        "desired_revision":123,"fence_epoch":9,"fence_release_id":"r6","fence_active":False}
+    canonical_path=temp/"canonical-readonly.json"; write_json(canonical_path,canonical)
     artifacts={
         "migration":"staging/coordinated-backend/migrations/20261011235000_hbnf_matrix_relay_incremental_controls_pin.sql",
         "compensating_migration":"staging/coordinated-backend/rollback/20261011235000_hbnf_matrix_relay_incremental_controls_pin.sql",
@@ -60,44 +63,58 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
         "opal_service":"staging/coordinated-backend/opal/hbnf-matrix-relay.init",
         "opal_config_template":"staging/coordinated-backend/opal/hbnf-matrix-relay.conf.example",
     }
+    migration_path=ROOT/artifacts["migration"]; rollback_path=ROOT/artifacts["compensating_migration"]
+    artifact_items={"migration":{"path":artifacts["migration"],"sha256":sha(migration_path)},
+        "edge_function_files":[{"path":p,"sha256":sha(ROOT/p)} for p in FUNCTION_FILES],
+        "opal_writer":{"path":artifacts["opal_writer"],"sha256":sha(ROOT/artifacts["opal_writer"])},
+        "opal_transaction_helper":{"path":artifacts["opal_transaction_helper"],"sha256":sha(ROOT/artifacts["opal_transaction_helper"])},
+        "opal_service":{"path":artifacts["opal_service"],"sha256":sha(ROOT/artifacts["opal_service"])},
+        "opal_config_template":{"path":artifacts["opal_config_template"],"sha256":sha(ROOT/artifacts["opal_config_template"])}}
+    rollback={"function_version":25,"compensating_migration":{"path":artifacts["compensating_migration"],"sha256":sha(rollback_path)},
+        "opal_writer_prestate":"ABSENT","scoreboard_relay_preserved":True,"sql_restore_test":"PASS","opal_uninstall_restore_test":"PASS"}
+    artifact_bindings={item["path"]:item["sha256"] for key,item in artifact_items.items() if key!="edge_function_files"}
+    artifact_bindings.update({item["path"]:item["sha256"] for item in artifact_items["edge_function_files"]})
+    artifact_bindings[rollback["compensating_migration"]["path"]]=rollback["compensating_migration"]["sha256"]
+    owner={"transaction_id":"OWNER-20261016-BACKEND-OPAL-REISSUE-TEST","authorization_id":"OWNER-DIRECT-TEST-FIXTURE-2",
+        "source_message_ref":"TEST FIXTURE ONLY; current owner authorization, not production authority",
+        "deployable_source_commit":BASE,"scope":SCOPE,"nonce":"test-nonce-fresh-unique-0123456789abcdef",
+        "issued_unix":now-1,"expires_unix":now+1200,"artifact_sha256_bindings":artifact_bindings}
+    precondition={"schema":"hbnf-backend-opal-reissue-precondition-v1","pass":True,"captured_unix":now,
+        "prior_transaction_id":prior_id,"prior_admission_sha256":prior_digest,"production_function_version":25,
+        "verify_jwt":False,"migration_applied":False,"bootstrap_rpc_present":False,"opal_writer_present":False,"scoreboard_relay_present":True}
     checks={}
     for key in ("offline_admission_tests","rollback_tests","production_v25_snapshot","migration_pending","edge_handler_contract"):
         p=temp/(key+".json"); write_json(p,{"schema":"test-proof-v1","check":key,"pass":True})
         checks[key]={"pass":True,"path":p.relative_to(ROOT).as_posix(),"sha256":sha(p)}
-    migration_path=ROOT/artifacts["migration"]
-    rollback_path=ROOT/artifacts["compensating_migration"]
+    p=temp/"reissue_precondition.json"; write_json(p,precondition)
+    checks["reissue_precondition"]={"pass":True,"path":p.relative_to(ROOT).as_posix(),"sha256":sha(p)}
     manifest={
         "schema":"hbnf-backend-opal-release-admission-v1","stage":"BACKEND_OPAL_LIVE_APPROVED","outcome":"PASS",
-        "transaction_id":owner["transaction_id"],"owner_authorization":owner,"authorized_steps":STEPS,
-        "identities":{
-            "project_ref":"phcpbvuqibyarpfrftgx","edge_function":"hbnf-cart-control","verify_jwt":False,
-            "expected_function_version":25,"matrix_mac":"704bca5b345c",
-            "matrix_release_id":"hbnf-cart2-phase2-r6-skins-readable-20261014",
+        "deployable_source_commit":BASE,"transaction_id":owner["transaction_id"],"owner_authorization":owner,"authorized_steps":STEPS,
+        "identities":{"project_ref":"phcpbvuqibyarpfrftgx","edge_function":"hbnf-cart-control","verify_jwt":False,
+            "expected_function_version":25,"matrix_mac":"704bca5b345c","matrix_release_id":"hbnf-cart2-phase2-r6-skins-readable-20261014",
             "matrix_recorded_firmware_sha256":"de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
             "matrix_runtime_sha_verified":False,"aux_mac":"8c94df55c34c","opal_model":"GL-SFT1200","opal_ip":"192.168.77.1",
-            "matrix_brightness":255,"aux_brightness":255,"vibe":5,
+            "matrix_brightness":255,"matrix_logical_brightness":46,"matrix_aux_target_brightness":46,"aux_brightness":255,"vibe":3,
+            "desired_revision":123,"fence_epoch":9,"fence_release_id":"r6","fence_active":False,
             "recorded_installed_release":"hbnf-cart2-phase2-r6-skins-readable-20261014",
-            "recorded_installed_firmware_sha256":"de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
-        },
-        "artifacts":{
-            "migration":{"path":artifacts["migration"],"sha256":sha(migration_path)},
-            "edge_function_files":[{"path":p,"sha256":sha(ROOT/p)} for p in FUNCTION_FILES],
-            "opal_writer":{"path":artifacts["opal_writer"],"sha256":sha(ROOT/artifacts["opal_writer"])},
-            "opal_transaction_helper":{"path":artifacts["opal_transaction_helper"],"sha256":sha(ROOT/artifacts["opal_transaction_helper"])},
-            "opal_service":{"path":artifacts["opal_service"],"sha256":sha(ROOT/artifacts["opal_service"])},
-            "opal_config_template":{"path":artifacts["opal_config_template"],"sha256":sha(ROOT/artifacts["opal_config_template"])},
-        },
-        "rollback":{"function_version":25,"compensating_migration":{"path":artifacts["compensating_migration"],"sha256":sha(rollback_path)},
-            "opal_writer_prestate":"ABSENT","scoreboard_relay_preserved":True,"sql_restore_test":"PASS","opal_uninstall_restore_test":"PASS"},
-        "fresh_readonly_preflight":{"path":relpre,"sha256":sha(prepath)},"checks":checks,
+            "recorded_installed_firmware_sha256":"de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d"},
+        "artifacts":artifact_items,"rollback":rollback,
+        "fresh_readonly_preflight":{"path":prepath.relative_to(ROOT).as_posix(),"sha256":sha(prepath)},
+        "canonical_readonly_preflight":{"path":canonical_path.relative_to(ROOT).as_posix(),"sha256":sha(canonical_path)},"checks":checks,
     }
-    manifest["admission_sha256"]=digest(manifest)
-    tx={"schema":"hbnf-backend-opal-transaction-state-v1","transaction_id":owner["transaction_id"],
-        "owner_authorization":owner,"admission_sha256":manifest["admission_sha256"],"status":"AUTHORIZED",
-        "attempts_used":0,"completed_steps":[],"active_step":None,"rollback_attempts_used":0}
-    state["execution_cursor"]["backend_opal_transaction"]=tx
+    auth_path=temp/"owner-authorization-receipt.json"
+    write_json(auth_path,{"schema":"hbnf-backend-opal-admission-authorization-v1","owner_authorization":owner})
     statepath=temp/"state.json"; write_json(statepath,state)
     admission=temp/"admission.json"; write_json(admission,manifest)
+    issue=[sys.executable,str(CONTROL),"--state",str(statepath),"reissue-backend-opal-admission","--admission",str(admission),"--authorization-receipt",str(auth_path)]
+    p=run(issue); assert p.returncode==0,(p.stdout,p.stderr)
+    issued_state=json.loads(statepath.read_text()); issued_manifest=json.loads(admission.read_text())
+    tx=issued_state["execution_cursor"]["backend_opal_transaction"]
+    assert tx["status"]=="AUTHORIZED" and tx["attempts_used"]==0 and issued_state["live_mutation_authorized"] is False
+    assert issued_state["execution_cursor"]["backend_opal_transaction_history"][0]["prior_transaction"]==state["execution_cursor"]["backend_opal_transaction"]
+    assert issued_state["execution_cursor"]["backend_opal_transaction_audit"][-1]["event"]=="OWNER_AUTHORIZED_ADMISSION_REISSUED"
+    state=issued_state; manifest=issued_manifest
     check=[sys.executable,str(CONTROL),"--state",str(statepath),"check-backend-opal-admission","--admission",str(admission)]
     p=run(check); assert p.returncode==0,(p.stdout,p.stderr)
 
@@ -142,7 +159,7 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
             "--backend-opal-admission",str(mp),"--backend-opal-action","reserve","--backend-opal-step","apply_migration"])
         assert p.returncode!=0 and not marker.exists(),"rejected admission reached a child/external action"
         assert sp.read_bytes()==before,"rejected launcher action changed local state"
-    rejection(lambda s,m:(m["owner_authorization"].update({"deployable_source_commit":"0"*40}),s["execution_cursor"]["backend_opal_transaction"]["owner_authorization"].update({"deployable_source_commit":"0"*40})),"exact authorized deployable source commit")
+    rejection(lambda s,m:(m["owner_authorization"].update({"deployable_source_commit":"0"*40}),s["execution_cursor"]["backend_opal_transaction"]["owner_authorization"].update({"deployable_source_commit":"0"*40})),"exact owner-authorized deployable source commit")
     rejection(lambda s,m:(m["owner_authorization"]["scope"].append("install_firmware"),s["execution_cursor"]["backend_opal_transaction"]["owner_authorization"]["scope"].append("install_firmware")),"exact backend/Opal transaction")
     rejection(lambda s,m:m["identities"].update({"aux_mac":"000000000000"}),"wrong or missing transaction identity: aux_mac")
     rejection(lambda s,m:m["artifacts"]["migration"].update({"sha256":"0"*64}),"migration missing or SHA mismatch")

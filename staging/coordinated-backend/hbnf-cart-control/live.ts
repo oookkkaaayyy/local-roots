@@ -2,8 +2,7 @@
 const clean=(s:any)=>String(s??"").trim().replace(/\s*\/\s*/g,"/").replace(/\s+/g," ");
 const cards=(s:any)=>Array.isArray(s?.cards)?s.cards:[];
 export function laDate(){return new Intl.DateTimeFormat("en-CA",{timeZone:"America/Los_Angeles",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());}
-// Keep the installed Matrix's existing compact scoring endpoint in the v25
-// source baseline whenever the relay handler is updated.
+// Supabase keeps the function name in the Edge Function request pathname.
 export const MATRIX_LIVE_READ_PATH="/hbnf-cart-control/rest/v1/league_state";
 export function isMatrixLiveReadPath(pathname:string){return pathname===MATRIX_LIVE_READ_PATH;}
 export function skinsSectionLocked(section:any){const list=cards(section);return !!section?.scoresLocked||(list.length>0&&list.every(card=>!!(card?.scoresLocked||card?.finalized)));}
@@ -37,8 +36,8 @@ export function projectSkinsForMatrix(skins:any,today=laDate()){
     const deferBack=current&&hasNames(week.back,true)&&!skinsSectionLocked(week.front);
     if(back&&!deferBack)projectedWeek.back=back;
     if(deferBack){
-      // Preserve Back 9's ace-pot participant count without allowing the
-      // installed selector to mistake preloaded teams for the active nine.
+      // Preserve Back 9's ace-pot participant count without letting the
+      // installed selector mistake its preloaded team names for the active nine.
       projectedWeeks[`${today}~pending-back-ace`]={back:projectSection(week.back,true,false,false)};
     }
     projectedWeeks[date]=projectedWeek;
@@ -46,7 +45,6 @@ export function projectSkinsForMatrix(skins:any,today=laDate()){
   return {skins:{weeks:projectedWeeks}};
 }
 function hasNames(s:any,team:boolean){return cards(s).some((c:any)=>String(team?c?.teamsText??"":c?.playersText??"").trim());}
-function locked(s:any){const list=cards(s);return !!s?.scoresLocked||(list.length>0&&list.every((card:any)=>!!(card?.scoresLocked||card?.finalized)));}
 function winnerIdx(card:any,hole:number,team:boolean){const m=String(card?.winners?.[String(hole)]??"").match(team?/_team_(\d+)$/ : /_p_(\d+)$/);return m?Number(m[1]):null;}
 function skinsEntries(section:any,team:boolean,start:number){const out:string[]=[];for(const c of cards(section)){const names=String(team?c?.teamsText??"":c?.playersText??"").split(/\r?\n/).map(clean).filter(Boolean),counts=new Array(names.length).fill(0);let carry=1;for(let h=start;h<start+9;h++){const i=winnerIdx(c,h,team);if(i!==null&&i>=0&&i<names.length){counts[i]+=carry;carry=1;}else carry++;}const tb=String(c?.winners?.tb??"");if(carry>1&&tb){const m=tb.match(team?/_team_(\d+)$/ : /_p_(\d+)$/);if(m){const i=Number(m[1]);if(i>=0&&i<names.length)counts[i]+=carry-1;}}names.forEach((n:string,i:number)=>out.push(`${n} ${counts[i]??0}`));}return out;}
 function glowEntries(w:any){const pars=w?.scorecardText?.holePars??{},out:string[]=[];for(const p of(Array.isArray(w?.players)?w.players:[])){if(p?.removed)continue;const name=clean((p?.partner1&&p?.partner2)?`${p.partner1}/${p.partner2}`:(p?.name||p?.partner1));if(!name)continue;let raw=0,par=0,done=0;for(let i=0;i<(Array.isArray(p?.scores)?p.scores:[]).length;i++){const sv=String(p.scores[i]??"").trim();if(!sv)continue;const s=Number(sv);if(!Number.isFinite(s))continue;raw+=s;done++;const pv=Number(pars[String(i+1)]);par+=(Number.isFinite(pv)&&pv>0)?pv:3;}const rel=raw-par,v=done===0?"E":rel===0?"E":rel>0?`+${rel}`:String(rel);out.push(`${name} ${v}`);}return out;}
@@ -58,5 +56,6 @@ function glowHasScores(w:any){return(Array.isArray(w?.players)?w.players:[]).som
 function advanceGlowAceRoute(st:any){if(st.mode==="reserve"){st.mode="main";st.mainTarget=Number(st.main||0)+GLOW_ACE_MAIN_STEP;}else{st.mode="reserve";st.reserveTarget=Number(st.reserve||0)+GLOW_ACE_RESERVE_STEP;}}
 function routeGlowAceMoney(st:any,amount:number){let left=Math.max(0,Number(amount)||0),guard=0;while(left>0&&guard++<50){if(st.mode==="reserve"){const need=Number(st.reserveTarget||0)-Number(st.reserve||0);if(need<=0){advanceGlowAceRoute(st);continue;}const add=Math.min(left,need);st.reserve+=add;left-=add;}else{const need=Number(st.mainTarget||0)-Number(st.main||0);if(need<=0){advanceGlowAceRoute(st);continue;}const add=Math.min(left,need);st.main+=add;left-=add;}}}
 function glowAcePot(state:any){const st:any={main:GLOW_ACE_MAIN_START,reserve:GLOW_ACE_RESERVE_START,mode:"reserve",mainTarget:GLOW_ACE_MAIN_START,reserveTarget:GLOW_ACE_FIRST_RESERVE_TARGET};for(const k of Object.keys(state?.glow?.weeks??{}).sort()){const w=state.glow.weeks[k]??{};if(!glowHasScores(w))continue;if(String(k)>GLOW_ACE_RULE_BASE_AFTER)routeGlowAceMoney(st,glowPlayerCount(w)*GLOW_ACE_SHARE);if(String(w?.aceWinner??"").trim()){st.main=Number(st.reserve||0);st.reserve=0;st.mode="reserve";st.mainTarget=Number(st.main||0);st.reserveTarget=GLOW_ACE_FIRST_RESERVE_TARGET;}}return Number(st.main||0);}
+function locked(s:any){const list=cards(s);return !!s?.scoresLocked||(list.length>0&&list.every((card:any)=>!!(card?.scoresLocked||card?.finalized)));}
 export function chooseLive(state:any){const today=laDate(),sw=state?.skins?.weeks?.[today],gw=state?.glow?.weeks?.[today];if(sw){const hasFront=hasNames(sw.front,false),hasBack=hasNames(sw.back,true);if(hasBack&&locked(sw.front))return{active:true,label:"B9",event:"skins",entries:skinsEntries(sw.back,true,10),acePot:skinsAcePot(state)};if(hasFront)return{active:true,label:"F9",event:"skins",entries:skinsEntries(sw.front,false,1),acePot:skinsAcePot(state)};}if(gw&&Array.isArray(gw?.players)&&gw.players.some((p:any)=>!p?.removed&&clean(p?.name||p?.partner1)))return{active:true,label:"GLOW",event:"glow",entries:glowEntries(gw),acePot:glowAcePot(state)};return{active:false,label:"",event:null,entries:[],acePot:skinsAcePot(state)};}
 export function packScores(label:string,entries:string[],max=30){const pages:string[]=[];for(const raw of entries){const e=clean(raw).slice(0,24),text=`${label} | ${e}`;pages.push(text.length<=max?text:text.slice(0,max));}return pages.length?pages:[`${label} | SCORES STARTING`];}

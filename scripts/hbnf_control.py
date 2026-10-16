@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse, hashlib, json, pathlib, re, time, subprocess
+import argparse, hashlib, json, pathlib, re, time, subprocess, copy
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_MODEL=ROOT/"config/HBNF_CONTROL_MODEL.json"
@@ -277,6 +277,22 @@ def backend_opal_admission_digest(manifest):
     encoded=json.dumps(payload,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()
     return hashlib.sha256(encoded).hexdigest()
 
+def _backend_opal_artifact_sha_bindings(manifest):
+    artifacts=manifest.get("artifacts",{}) if isinstance(manifest,dict) else {}
+    bindings={}
+    for key in ("migration","opal_writer","opal_transaction_helper","opal_service","opal_config_template","opal_package"):
+        item=artifacts.get(key)
+        if isinstance(item,dict) and isinstance(item.get("path"),str) and isinstance(item.get("sha256"),str):
+            bindings[item["path"]]=item["sha256"]
+    for item in artifacts.get("edge_function_files",[]) if isinstance(artifacts.get("edge_function_files"),list) else []:
+        if isinstance(item,dict) and isinstance(item.get("path"),str) and isinstance(item.get("sha256"),str):
+            bindings[item["path"]]=item["sha256"]
+    rb=manifest.get("rollback",{}) if isinstance(manifest,dict) else {}
+    item=rb.get("compensating_migration") if isinstance(rb,dict) else None
+    if isinstance(item,dict) and isinstance(item.get("path"),str) and isinstance(item.get("sha256"),str):
+        bindings[item["path"]]=item["sha256"]
+    return bindings
+
 def _git_tree_blob_oids(commit,root):
     """Read the authorized commit's complete blob map in one bounded Git call."""
     proc=subprocess.run(["git","ls-tree","-rz","--full-tree",commit],cwd=root,stdout=subprocess.PIPE,
@@ -335,8 +351,12 @@ def _backend_opal_admission_errors(state, manifest, now=None, require_unconsumed
                 errors.append("owner authorization is replayed or already consumed")
         if tx.get("admission_sha256")!=manifest.get("admission_sha256"):
             errors.append("admission identity differs from the primary control state")
-    if not isinstance(owner,dict) or owner.get("deployable_source_commit")!="b7eda237ba6bf51eb7266a6d4eeb7846f38d0a5e":
-        errors.append("transaction is not bound to the exact authorized deployable source commit")
+    source_commit=manifest.get("deployable_source_commit")
+    if (not isinstance(owner,dict) or not isinstance(source_commit,str) or not re.fullmatch(r"[0-9a-f]{40}",source_commit)
+        or owner.get("deployable_source_commit")!=source_commit):
+        errors.append("transaction is not bound to the exact owner-authorized deployable source commit")
+    if isinstance(owner,dict) and owner.get("artifact_sha256_bindings")!=_backend_opal_artifact_sha_bindings(manifest):
+        errors.append("owner authorization does not bind every exact deployable and rollback artifact hash")
     expected_scope=[*BACKEND_OPAL_STEPS,"rollback_if_required"]
     if not isinstance(owner,dict) or owner.get("scope")!=expected_scope:
         errors.append("owner authorization scope is not the exact backend/Opal transaction")
@@ -361,8 +381,6 @@ def _backend_opal_admission_errors(state, manifest, now=None, require_unconsumed
         if identities.get(key)!=value: errors.append("wrong or missing transaction identity: "+key)
     if identities.get("matrix_runtime_sha_verified") is not False:
         errors.append("runtime firmware SHA must not be claimed from release label")
-    if identities.get("aux_brightness")!=255 or identities.get("matrix_brightness")!=255 or identities.get("vibe")!=5:
-        errors.append("transaction does not preserve the freshly observed owner settings")
     if str(identities.get("matrix_mac","")).replace(":","").lower()!=str(state.get("live_authorization_binding",{}).get("matrix_mac","")).replace(":","").lower():
         errors.append("Matrix target differs from the primary recorded device identity")
     if identities.get("recorded_installed_release")!=state.get("installed_release") or identities.get("recorded_installed_firmware_sha256")!=state.get("installed_firmware_sha256"):
@@ -394,17 +412,17 @@ def _backend_opal_admission_errors(state, manifest, now=None, require_unconsumed
 
     artifacts=manifest.get("artifacts",{})
     if not isinstance(artifacts,dict): artifacts={}; errors.append("deployable artifact bindings missing")
-    checked_file(artifacts.get("migration"),"migration","b7eda237ba6bf51eb7266a6d4eeb7846f38d0a5e")
+    checked_file(artifacts.get("migration"),"migration",source_commit)
     function_files=artifacts.get("edge_function_files")
     if not isinstance(function_files,list) or [x.get("path") for x in function_files if isinstance(x,dict)]!=list(BACKEND_OPAL_FUNCTION_FILES):
         errors.append("Edge Function source closure is incomplete or contains unrelated files")
     for item in function_files if isinstance(function_files,list) else []:
-        checked_file(item,"Edge Function source","b7eda237ba6bf51eb7266a6d4eeb7846f38d0a5e")
-    checked_file(artifacts.get("opal_writer"),"Opal writer","b7eda237ba6bf51eb7266a6d4eeb7846f38d0a5e")
-    checked_file(artifacts.get("opal_transaction_helper"),"Opal transaction helper","b7eda237ba6bf51eb7266a6d4eeb7846f38d0a5e")
-    checked_file(artifacts.get("opal_service"),"Opal service","b7eda237ba6bf51eb7266a6d4eeb7846f38d0a5e")
-    checked_file(artifacts.get("opal_config_template"),"Opal config template","b7eda237ba6bf51eb7266a6d4eeb7846f38d0a5e")
-    checked_file(manifest.get("rollback",{}).get("compensating_migration"),"compensating migration","b7eda237ba6bf51eb7266a6d4eeb7846f38d0a5e")
+        checked_file(item,"Edge Function source",source_commit)
+    checked_file(artifacts.get("opal_writer"),"Opal writer",source_commit)
+    checked_file(artifacts.get("opal_transaction_helper"),"Opal transaction helper",source_commit)
+    checked_file(artifacts.get("opal_service"),"Opal service",source_commit)
+    checked_file(artifacts.get("opal_config_template"),"Opal config template",source_commit)
+    checked_file(manifest.get("rollback",{}).get("compensating_migration"),"compensating migration",source_commit)
     rb=manifest.get("rollback",{})
     if rb.get("function_version")!=25 or rb.get("opal_writer_prestate")!="ABSENT" or rb.get("scoreboard_relay_preserved") is not True:
         errors.append("rollback target is incomplete or changes the existing scoreboard relay")
@@ -428,19 +446,107 @@ def _backend_opal_admission_errors(state, manifest, now=None, require_unconsumed
                 errors.append("fresh read-only device identities differ from admission")
             elif receipt.get("matrix_release_id")!=identities.get("matrix_release_id") or receipt.get("matrix_recorded_firmware_sha256")!=identities.get("matrix_recorded_firmware_sha256"):
                 errors.append("fresh Matrix release identity differs from admission")
-            elif receipt.get("matrix_brightness")!=identities.get("matrix_brightness") or receipt.get("aux_brightness")!=identities.get("aux_brightness") or receipt.get("vibe")!=identities.get("vibe"):
+            elif any(receipt.get(k)!=identities.get(k) for k in ("matrix_brightness","matrix_logical_brightness","matrix_aux_target_brightness","aux_brightness","vibe")):
                 errors.append("fresh owner settings differ from admission")
             elif receipt.get("opal_model")!=identities.get("opal_model") or receipt.get("opal_ip")!=identities.get("opal_ip"):
                 errors.append("fresh Opal identity differs from admission")
         except (OSError,KeyError,ValueError,TypeError): errors.append("fresh read-only preflight receipt is missing or malformed")
 
+    canonical=manifest.get("canonical_readonly_preflight",{})
+    checked_file(canonical,"canonical desired-state/fence preflight")
+    if isinstance(canonical,dict):
+        try:
+            receipt=load(root/canonical["path"]); captured=receipt.get("captured_unix"); current=time.time() if now is None else now
+            if receipt.get("schema")!="hbnf-owner-control-canonical-readonly-preflight-v1" or receipt.get("pass") is not True:
+                errors.append("canonical desired-state/fence preflight did not pass")
+            if not isinstance(captured,(int,float)) or current-captured>300 or captured>current+5:
+                errors.append("canonical desired-state/fence preflight is stale")
+            for key in ("desired_revision","fence_epoch","fence_release_id","fence_active"):
+                if identities.get(key)!=receipt.get(key): errors.append("fresh canonical state differs from admission: "+key)
+            if receipt.get("fence_active") is not False: errors.append("bootstrap admission requires the actuator fence to be inactive")
+        except (OSError,KeyError,ValueError,TypeError): errors.append("canonical desired-state/fence preflight receipt is missing or malformed")
+
     checks=manifest.get("checks",{})
     if not isinstance(checks,dict): checks={}; errors.append("transaction checks missing")
-    for key in ("offline_admission_tests","rollback_tests","production_v25_snapshot","migration_pending","edge_handler_contract"):
+    for key in ("offline_admission_tests","rollback_tests","production_v25_snapshot","migration_pending","edge_handler_contract","reissue_precondition"):
         item=checks.get(key,{})
         if item.get("pass") is not True: errors.append("failed/missing backend/Opal check: "+key); continue
         checked_file(item,"check evidence "+key)
+        if key=="reissue_precondition":
+            try:
+                proof=load(root/item["path"]); captured=proof.get("captured_unix"); current=time.time() if now is None else now
+                if (proof.get("schema")!="hbnf-backend-opal-reissue-precondition-v1" or proof.get("pass") is not True
+                    or not isinstance(captured,(int,float)) or current-captured>300 or captured>current+5
+                    or proof.get("production_function_version")!=25 or proof.get("verify_jwt") is not False
+                    or proof.get("migration_applied") is not False or proof.get("bootstrap_rpc_present") is not False
+                    or proof.get("opal_writer_present") is not False or proof.get("scoreboard_relay_present") is not True):
+                    errors.append("fresh reissuance precondition does not prove the unchanged v25/no-mutation baseline")
+            except (OSError,KeyError,ValueError,TypeError): errors.append("reissuance precondition evidence is malformed")
     return errors
+
+def issue_backend_opal_admission(state,manifest_path,authorization_receipt_path,now=None):
+    """Issue a new one-use transaction admission through the existing control plane."""
+    current=time.time() if now is None else now
+    root=DEFAULT_STATE.parent.parent.resolve()
+    manifest_path=pathlib.Path(manifest_path).resolve(); auth_path=pathlib.Path(authorization_receipt_path).resolve()
+    errors=[]
+    for path,label in ((manifest_path,"admission"),(auth_path,"owner authorization receipt")):
+        try: path.relative_to(root/"evidence")
+        except ValueError: errors.append(label+" must be stored inside evidence")
+    if errors: raise ValueError("backend/Opal reissuance rejected: "+"; ".join(errors))
+    manifest=load(manifest_path); receipt=load(auth_path); owner=receipt.get("owner_authorization") if isinstance(receipt,dict) else None
+    if not isinstance(receipt,dict) or receipt.get("schema")!="hbnf-backend-opal-admission-authorization-v1" or not isinstance(owner,dict):
+        errors.append("fresh direct-owner authorization receipt is missing or malformed")
+    cursor=state.get("execution_cursor",{}); old=cursor.get("backend_opal_transaction",{}) if isinstance(cursor,dict) else {}
+    old_owner=old.get("owner_authorization",{}) if isinstance(old,dict) else {}
+    if old.get("schema")!="hbnf-backend-opal-transaction-state-v1": errors.append("no prior backend/Opal transaction to supersede")
+    if old.get("status") not in ("IN_PROGRESS","AUTHORIZED","ROLLBACK_REQUIRED") or old.get("completed_steps")!=[]:
+        errors.append("prior transaction cannot be reissued after completed production steps")
+    if old.get("active_step") not in (None,"apply_migration"):
+        errors.append("prior transaction has an unresolved non-migration step")
+    if not isinstance(old_owner.get("expires_unix"),(int,float)) or old_owner.get("expires_unix")>current:
+        errors.append("prior owner authorization is not expired")
+    if not isinstance(owner,dict): owner={}
+    required=("transaction_id","authorization_id","source_message_ref","deployable_source_commit","scope","nonce","issued_unix","expires_unix","artifact_sha256_bindings")
+    for key in required:
+        if owner.get(key) in (None,"",[],{}): errors.append("fresh owner authorization missing "+key)
+    if owner.get("transaction_id")==old.get("transaction_id") or owner.get("authorization_id")==old_owner.get("authorization_id") or owner.get("nonce")==old_owner.get("nonce"):
+        errors.append("reissued authorization must use new transaction, authorization, and nonce identities")
+    if owner.get("source_message_ref")==old_owner.get("source_message_ref"):
+        errors.append("reissued authorization must cite the current owner instruction")
+    if owner.get("scope")!=[*BACKEND_OPAL_STEPS,"rollback_if_required"]:
+        errors.append("fresh owner authorization scope is not the exact backend/Opal transaction")
+    if not isinstance(owner.get("issued_unix"),(int,float)) or not isinstance(owner.get("expires_unix"),(int,float)):
+        errors.append("fresh owner authorization validity window is malformed")
+    elif owner["issued_unix"]>current+5 or owner["issued_unix"]<current-300 or owner["expires_unix"]<=current or owner["expires_unix"]-owner["issued_unix"]>30*60:
+        errors.append("fresh owner authorization must be current and expire within 30 minutes")
+    manifest["owner_authorization"]=owner; manifest["deployable_source_commit"]=owner.get("deployable_source_commit")
+    manifest["admission_sha256"]=backend_opal_admission_digest(manifest)
+    if owner.get("artifact_sha256_bindings")!=_backend_opal_artifact_sha_bindings(manifest):
+        errors.append("owner authorization artifact hashes do not exactly bind this candidate and rollback")
+    proof=manifest.get("checks",{}).get("reissue_precondition",{}) if isinstance(manifest.get("checks"),dict) else {}
+    try:
+        proof_data=load(root/proof["path"])
+        if proof_data.get("prior_transaction_id")!=old.get("transaction_id") or proof_data.get("prior_admission_sha256")!=old.get("admission_sha256"):
+            errors.append("reissue precondition does not bind the expired transaction being superseded")
+    except (OSError,KeyError,TypeError,ValueError): errors.append("reissue precondition does not bind the prior transaction")
+    new_tx={"schema":"hbnf-backend-opal-transaction-state-v1","transaction_id":owner.get("transaction_id"),
+        "owner_authorization":owner,"admission_sha256":manifest["admission_sha256"],"status":"AUTHORIZED",
+        "attempts_used":0,"completed_steps":[],"active_step":None,"rollback_attempts_used":0}
+    provisional=copy.deepcopy(state); provisional.setdefault("execution_cursor",{})["backend_opal_transaction"]=new_tx
+    errors.extend(_backend_opal_admission_errors(provisional,manifest,current,require_unconsumed=True))
+    if errors: raise ValueError("backend/Opal reissuance rejected: "+"; ".join(dict.fromkeys(errors)))
+    history=cursor.setdefault("backend_opal_transaction_history",[])
+    if any(x.get("transaction_id")==owner.get("transaction_id") for x in history if isinstance(x,dict)):
+        raise ValueError("backend/Opal reissuance rejected: transaction identity was already used")
+    history.append({"prior_transaction":copy.deepcopy(old),"superseded_by":owner["transaction_id"],"superseded_at_unix":current,
+        "reason":"expired one-use admission; fresh evidence proves no prior production step completed"})
+    cursor.setdefault("backend_opal_transaction_audit",[]).append({"event":"OWNER_AUTHORIZED_ADMISSION_REISSUED",
+        "transaction_id":owner["transaction_id"],"prior_transaction_id":old["transaction_id"],"authorization_id":owner["authorization_id"],
+        "source_message_ref":owner["source_message_ref"],"admission_sha256":manifest["admission_sha256"],
+        "authorization_receipt":str(auth_path.relative_to(root)),"authorization_receipt_sha256":sha256_file(auth_path),"issued_unix":current})
+    cursor["backend_opal_transaction"]=new_tx
+    return manifest
 
 def _backend_opal_step_errors(state,manifest,step,now=None,require_active=False):
     errors=_backend_opal_admission_errors(state,manifest,now,require_unconsumed=False,allow_expired=(step=="rollback"))
@@ -1811,6 +1917,7 @@ def main():
     ra=sub.add_parser("check-admission"); ra.add_argument("--admission",required=True)
     ra.add_argument("--stage",default="OFFLINE_COMPILED",choices=["OFFLINE_COMPILED","LIVE_APPROVED","LIVE_QUALIFICATION"])
     ba=sub.add_parser("check-backend-opal-admission"); ba.add_argument("--admission",required=True)
+    brs=sub.add_parser("reissue-backend-opal-admission"); brs.add_argument("--admission",required=True); brs.add_argument("--authorization-receipt",required=True)
     br=sub.add_parser("reserve-backend-opal-step"); br.add_argument("--admission",required=True); br.add_argument("--step",required=True,choices=[*BACKEND_OPAL_STEPS,"rollback"])
     bc=sub.add_parser("complete-backend-opal-step"); bc.add_argument("--admission",required=True); bc.add_argument("--step",required=True,choices=[*BACKEND_OPAL_STEPS,"rollback"]); bc.add_argument("--evidence",required=True)
     bf=sub.add_parser("fail-backend-opal-step"); bf.add_argument("--admission",required=True); bf.add_argument("--step",required=True,choices=[*BACKEND_OPAL_STEPS]); bf.add_argument("--evidence",required=True)
@@ -1838,6 +1945,15 @@ def main():
         errors=validate_model(model)+release_admission_errors(model,state,load(args.admission),args.stage)
         print(json.dumps({"schema":"hbnf-cart2-release-admission-result-v1","pass":not errors,"stage":args.stage,"errors":errors},indent=2,sort_keys=True))
         return 0 if not errors else 2
+    if args.cmd=="reissue-backend-opal-admission":
+        manifest=issue_backend_opal_admission(state,args.admission,args.authorization_receipt)
+        errs=validate_state(model,state)
+        if errs: raise SystemExit("refusing to save invalid state: "+"; ".join(errs))
+        save(args.admission,manifest); save(args.state,state)
+        print(json.dumps({"schema":"hbnf-cart2-backend-opal-reissue-result-v1","action":"issued",
+            "transaction_id":manifest.get("transaction_id"),"admission_sha256":manifest.get("admission_sha256"),
+            "lifecycle_state":state.get("lifecycle_state"),"firmware_live_mutation_authorized":state.get("live_mutation_authorized") is True},indent=2,sort_keys=True))
+        return 0
     if args.cmd=="check-backend-opal-admission":
         manifest=load(args.admission)
         errors=validate_model(model)+_backend_opal_admission_errors(state,manifest)

@@ -153,6 +153,21 @@ test("Guest uses canonical desired-row revision even when state JSON has no revi
   assert.equal(committed.nextState.revision, 18);
 });
 
+test("Matrix and AUX brightness commands remain independent after observed-state bootstrap", () => {
+  const before = state({devices:{matrix:{enabled:true,brightness:46,auxTargetBrightness:46,profileRevision:4},aux:{enabled:true,brightness:255,profileRevision:9}}});
+  const matrixOnly = reduceCartCommand(before,"TUNE",{matrixBrightness:60},commandId,before.revision);
+  assert.equal(matrixOnly.devices.matrix.brightness,60);
+  assert.equal(matrixOnly.devices.aux.brightness,255,"Matrix-only control does not dim AUX");
+  assert.equal(matrixOnly.devices.matrix.auxTargetBrightness,46,"Matrix-stored AUX target remains unchanged");
+  const auxOnly = reduceCartCommand(before,"TUNE",{auxBrightness:210},commandId,before.revision);
+  assert.equal(auxOnly.devices.matrix.brightness,46,"AUX-only control does not change Matrix brightness");
+  assert.equal(auxOnly.devices.aux.brightness,210);
+  assert.equal(auxOnly.devices.matrix.auxTargetBrightness,46);
+  const paired = reduceCartCommand(before,"TUNE",{matrixBrightness:60,auxBrightness:210},commandId,before.revision);
+  assert.equal(paired.devices.matrix.brightness,60);
+  assert.equal(paired.devices.aux.brightness,210,"explicitly paired changes apply independently");
+});
+
 test("Guest Mode is a metadata-only canonical command", () => {
   const before = state({ guestMode: false });
   const after = reduceCartCommand(before, "GUEST_MODE", { enabled: true }, commandId, before.revision);

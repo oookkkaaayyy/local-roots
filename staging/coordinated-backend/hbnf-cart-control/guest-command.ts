@@ -216,14 +216,9 @@ export function reduceCartCommand(state: Record<string, unknown>, type: string, 
         if (!Number.isFinite(requestedMatrix) || !Number.isFinite(requestedAux)) return null;
 
         const matrixChanged = requestedMatrix !== oldMatrix;
-        const auxExplicitlyChanged = requestedAux !== oldAux;
-
-        let finalAux = requestedAux;
-        if (matrixChanged && !auxExplicitlyChanged) {
-          finalAux = oldMatrix > 0
-            ? clamp(Math.round(oldAux * requestedMatrix / oldMatrix), 0, 255)
-            : (requestedMatrix === 0 ? 0 : oldAux);
-        }
+        // Matrix and receiver brightness are independent controls. A Matrix-only
+        // command must not scale the AUX receiver from a stale/derived ratio.
+        const finalAux = requestedAux;
 
         if (oldMatrix !== requestedMatrix) matrixProfile.profileRevision = Number(matrixProfile.profileRevision ?? 0) + 1;
         matrixProfile.brightness = requestedMatrix;

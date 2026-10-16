@@ -43,6 +43,8 @@ export async function buildWledProjection(context:any,revision:number,fenceEpoch
  const auxEnabled=s.power==="on"&&d.aux.enabled!==false;
  const bri=enabled?clamp(d.matrix.brightness,0,255,24):0;
  const auxBri=auxEnabled?clamp(d.aux.brightness,0,255,24):0;
+ if(d.matrix.auxTargetBrightness===null||d.matrix.auxTargetBrightness===undefined||!Number.isInteger(Number(d.matrix.auxTargetBrightness)))throw Error("matrix_aux_target_missing");
+ const matrixAuxTarget=clamp(d.matrix.auxTargetBrightness,0,255,24);
  const sceneId=String(s.sceneId??"course-flow");if(!(sceneId in scenes))throw Error("unsupported_scene");
  const vibe=vibes[String(s.selectedVibe??"")];if(vibe===undefined)throw Error("unsupported_vibe");
  const t=s.tuning??{},motion=clamp(t.motion,0,100,60),audioResponse=clamp(t.audioResponse,0,100,75);
@@ -54,7 +56,7 @@ export async function buildWledProjection(context:any,revision:number,fenceEpoch
  // not own audio-reactive configuration, and omission preserves device state.
  const matrixPayload={on:enabled,bri:255,seg:[
   {id:0,on:enabled,bri:255,fx:142},{id:1,start:512,stop:534,on:enabled,bri:255,fx:142}],
-  HBNF:{scene:scenes[sceneId],vibe,motion,audioResponse,matrixBrightness:bri,auxBrightness:auxBri,palette:pal,overlay}};
+  HBNF:{scene:scenes[sceneId],vibe,motion,audioResponse,matrixBrightness:bri,auxBrightness:matrixAuxTarget,palette:pal,overlay}};
  // AUX controls are applied through native receiver state, not by scaling
  // DDP frames at the Matrix sender. Preserve its independently captured power.
  const auxPayload={on:auxEnabled,bri:auxBri};
@@ -62,7 +64,7 @@ export async function buildWledProjection(context:any,revision:number,fenceEpoch
  const expectedState={matrixMac:MATRIX_MAC,candidate:MATRIX_CANDIDATE,on:enabled,bri:255,segments:[
   {id:0,on:enabled,bri:255,fx:142},{id:1,start:512,stop:534,on:enabled,bri:255,fx:142}],
   hbnf:{schema:"foundation-v1",candidate:MATRIX_CANDIDATE,scene:scenes[sceneId],vibe,motion,audioResponse,
-  matrixBrightness:bri,auxBrightness:auxBri,palette:pal,overlayId:overlay?.id??null},
+  matrixBrightness:bri,auxBrightness:matrixAuxTarget,palette:pal,overlayId:overlay?.id??null},
   aux:{mac:AUX_MAC,ip:AUX_IP,on:auxEnabled,bri:auxBri,live:true,lm:"DDP",lip:"192.168.77.10",lor:0,forceMaxBrightness:false}};
  return {wledPayload,expectedState};
 }

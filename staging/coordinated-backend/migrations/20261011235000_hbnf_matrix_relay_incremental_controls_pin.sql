@@ -12,7 +12,7 @@ create or replace function public.hbnf_cart_matrix_relay_bootstrap(
 as $$
 declare d hbnf_internal.cart_desired_state%rowtype;ve bigint;vl text;va boolean;
  scene_id text;selected_vibe text;vibe_mode text;palette_id text;next_state jsonb;new_revision bigint;
- matrix_enabled boolean;aux_enabled boolean;matrix_brightness integer;aux_brightness integer;
+ matrix_enabled boolean;aux_enabled boolean;matrix_brightness integer;matrix_aux_target integer;aux_brightness integer;
  motion_value integer;audio_value integer;palette_mode text;palette_rgb jsonb;palette_index integer;
 begin
  if p_relay_id is distinct from 'opal-hbnf-cart' or p_cart_id is distinct from 'hbnf-cart' or
@@ -42,11 +42,11 @@ begin
     p_observed_state#>>'{hbnf,motion}' is null or p_observed_state#>>'{hbnf,motion}' !~ '^(0|[1-9][0-9]?)$' or
     p_observed_state#>>'{hbnf,audioResponse}' is null or p_observed_state#>>'{hbnf,audioResponse}' !~ '^(0|[1-9][0-9]?)$' or
     p_observed_state#>>'{hbnf,matrixBrightness}' is null or p_observed_state#>>'{hbnf,matrixBrightness}' !~ '^(0|[1-9][0-9]{0,2})$' or
+    p_observed_state#>>'{hbnf,auxBrightness}' is null or p_observed_state#>>'{hbnf,auxBrightness}' !~ '^(0|[1-9][0-9]{0,2})$' or
     p_observed_state#>>'{aux,bri}' is null or p_observed_state#>>'{aux,bri}' !~ '^(0|[1-9][0-9]{0,2})$' then
    raise exception 'bootstrap_readback_value_invalid'; end if;
  if (p_observed_state#>>'{hbnf,motion}')::int>100 or (p_observed_state#>>'{hbnf,audioResponse}')::int>100 or
-    (p_observed_state#>>'{hbnf,matrixBrightness}')::int>255 or (p_observed_state#>>'{aux,bri}')::int>255 or
-    p_observed_state#>>'{hbnf,auxBrightness}' is distinct from p_observed_state#>>'{aux,bri}' then
+    (p_observed_state#>>'{hbnf,matrixBrightness}')::int>255 or (p_observed_state#>>'{hbnf,auxBrightness}')::int>255 or (p_observed_state#>>'{aux,bri}')::int>255 then
    raise exception 'bootstrap_readback_value_out_of_range_or_inconsistent'; end if;
  select * into d from hbnf_internal.cart_desired_state where cart_id=p_cart_id for update;
  if not found then raise exception 'bootstrap_state_missing'; end if;
@@ -76,12 +76,12 @@ begin
    palette_id:='solid-'||upper(lpad(to_hex((palette_rgb->>0)::int),2,'0')||lpad(to_hex((palette_rgb->>1)::int),2,'0')||lpad(to_hex((palette_rgb->>2)::int),2,'0'));
  else raise exception 'bootstrap_palette_invalid'; end if;
  matrix_enabled:=coalesce((p_observed_state->>'on')::boolean,false); aux_enabled:=(p_observed_state#>>'{aux,on}')::boolean;
- matrix_brightness:=(p_observed_state#>>'{hbnf,matrixBrightness}')::int; aux_brightness:=(p_observed_state#>>'{aux,bri}')::int;
+ matrix_brightness:=(p_observed_state#>>'{hbnf,matrixBrightness}')::int; matrix_aux_target:=(p_observed_state#>>'{hbnf,auxBrightness}')::int; aux_brightness:=(p_observed_state#>>'{aux,bri}')::int;
  motion_value:=(p_observed_state#>>'{hbnf,motion}')::int; audio_value:=(p_observed_state#>>'{hbnf,audioResponse}')::int;
  next_state:=d.state || jsonb_build_object('power',case when matrix_enabled then 'on' else 'off' end,
   'selectedVibe',selected_vibe,'vibeMode',vibe_mode,'sceneId',scene_id,'paletteId',palette_id,
   'devices',coalesce(d.state->'devices','{}'::jsonb)||jsonb_build_object(
-   'matrix',coalesce(d.state#>'{devices,matrix}','{}'::jsonb)||jsonb_build_object('enabled',matrix_enabled,'brightness',matrix_brightness),
+   'matrix',coalesce(d.state#>'{devices,matrix}','{}'::jsonb)||jsonb_build_object('enabled',matrix_enabled,'brightness',matrix_brightness,'auxTargetBrightness',matrix_aux_target),
    'aux',coalesce(d.state#>'{devices,aux}','{}'::jsonb)||jsonb_build_object('enabled',aux_enabled,'brightness',aux_brightness)),
   'tuning',coalesce(d.state->'tuning','{}'::jsonb)||jsonb_build_object('motion',motion_value,'audioResponse',audio_value));
  update hbnf_internal.cart_desired_state set revision=revision+1,state=next_state
@@ -111,7 +111,9 @@ begin
     p_expected_state#>>'{aux,on}' is null or p_expected_state#>>'{aux,on}' not in ('true','false') or
     p_wled_payload#>>'{aux,on}' is distinct from p_expected_state#>>'{aux,on}' or
     p_expected_state#>>'{aux,bri}' is null or p_wled_payload#>>'{aux,bri}' is distinct from p_expected_state#>>'{aux,bri}' or
-    p_expected_state#>>'{hbnf,auxBrightness}' is distinct from p_expected_state#>>'{aux,bri}' then
+    p_expected_state#>>'{hbnf,auxBrightness}' is null or p_expected_state#>>'{hbnf,auxBrightness}' !~ '^(0|[1-9][0-9]{0,2})$' or
+    (p_expected_state#>>'{hbnf,auxBrightness}')::int>255 or
+    p_wled_payload#>>'{matrix,HBNF,auxBrightness}' is distinct from p_expected_state#>>'{hbnf,auxBrightness}' then
    raise exception 'invalid_relay_challenge'; end if;
  select d.revision,f.epoch,f.release_id,f.active into vr,ve,vl,va
  from hbnf_internal.cart_desired_state d join hbnf_internal.cart_actuator_fence f using(cart_id)
@@ -143,7 +145,9 @@ begin
  p_verified_state#>>'{aux,live}' is distinct from 'true' or p_verified_state#>>'{aux,lor}' is distinct from '0' or
  p_verified_state#>>'{aux,forceMaxBrightness}' is distinct from 'false' or
  p_verified_state#>>'{aux,on}' is null or p_verified_state#>>'{aux,on}' not in ('true','false') or
- p_verified_state#>>'{aux,bri}' is null or p_verified_state#>>'{hbnf,auxBrightness}' is distinct from p_verified_state#>>'{aux,bri}' then return false; end if;
+ p_verified_state#>>'{aux,bri}' is null or p_verified_state#>>'{hbnf,auxBrightness}' is null or
+ p_verified_state#>>'{hbnf,auxBrightness}' !~ '^(0|[1-9][0-9]{0,2})$' or
+ (p_verified_state#>>'{hbnf,auxBrightness}')::int>255 then return false; end if;
  ison:=coalesce((p_verified_state->>'on')::boolean,false);
  update hbnf_internal.cart_matrix_relay_challenges set consumed_at=clock_timestamp() where challenge_id=c.challenge_id;
  perform public.hbnf_cart_upsert_observed(c.cart_id,'matrix',true,case when ison then 'online' else 'off' end,
