@@ -698,7 +698,7 @@ test('physical color-source quality is not inferred from photos on unverified su
   assert.equal(parts.length,cols.length,'valid source record');
   return Object.fromEntries(cols.map((name,i)=>[name,parts[i]]));
  });
- assert.equal(rows.length,76);
+ assert.equal(rows.length,78);
  const chart=rows.find(x=>x.id==='FIELD-PHOTO-01');
  assert.ok(chart);
  assert.match(chart.starting_plastic,/Innova Star.*owner expert visual identification/);
@@ -713,6 +713,14 @@ test('physical color-source quality is not inferred from photos on unverified su
   }
  }
  const newlyAdded=['FIELD-TIME-01','FIELD-AC-PALETTE-01','FIELD-AC-SOLVENT-01','FIELD-CARRIER-01'];
+ for(const id of ['FIELD-STAR-WRAITH-STENCIL-01','FIELD-STAR-WHITE-GLUE-VIDEO-01']){
+  const r=rows.find(x=>x.id===id);assert.ok(r,'new original maker physical source indexed');
+  assert.equal(r.controlled_photo,'NO');assert.match(r.train_eligible,/^NO/);assert.match(r.numeric_holdout_eligible,/^NO/);
+ }
+ assert.match(rows.find(x=>x.id==='WB007').starting_plastic,/Star Wraith/);
+ assert.match(rows.find(x=>x.id==='WB007').source_verification,/Original creator post personally reviewed/);
+ assert.match(rows.find(x=>x.id==='FIELD-STAR-WHITE-GLUE-VIDEO-01').reported_duration,/two hours/);
+
  const starRat=rows.find(r=>r.id==='FIELD-SAME-DISC-MEDIA-01');
  assert.ok(starRat,'known-Star six-method field case indexed');
  assert.match(starRat.starting_plastic,/Innova Star Rat/);
@@ -823,8 +831,8 @@ test('published evidence counts match actual entries and distinct source URLs', 
   };
   const entries = [...records('EVIDENCE_OBSERVATIONS'), ...records('FIELD_CASES')];
   const distinctUrls = new Set(entries.map(row => row.sourceUrl));
-  assert.equal(entries.length, 76);
-  assert.equal(distinctUrls.size, 56);
+  assert.equal(entries.length, 78);
+  assert.equal(distinctUrls.size, 58);
   assert.match(studioHtml, new RegExp(`— ${entries.length} provisional observations`));
   assert.match(studioHtml, new RegExp(`${entries.length} records across ${distinctUrls.size} source URLs`));
   assert.match(studioScript, /\$\{ALL_DYE_EVIDENCE\.length\} provisional source observations/);
@@ -872,4 +880,33 @@ test('tentatively reconstructed dye names cannot earn exact-source match bonus',
  assert.equal(certain.exactDye,true);
  assert.equal(uncertain.exactDye,false);
  assert.equal(certain.score-uncertain.score,10);
+});
+
+test('catalog dye names and inventory dye names resolve to same original-source family without false shade matches',()=>{
+ const start=studioScript.indexOf('function evidenceDyeFamilyMatches('),end=studioScript.indexOf('function classifyObservedProcess(',start);
+ assert.ok(start>=0&&end>start);
+ const dyesStart=studioScript.indexOf('const dyes = [');
+ const dyesEnd=studioScript.indexOf('];',dyesStart);
+ const catalog=Function(studioScript.slice(dyesStart,dyesEnd+2)+';return dyes')();
+ const match=Function('dyes',studioScript.slice(start,end)+';return evidenceDyeFamilyMatches')(catalog);
+ const cases=[
+  ['Neon Key Lime','ProChem Neon Key Lime',true],
+  ['ProChem Neon Key Lime','PRO Chemical & Dye Neon Lemon Zest DGD101; Neon Key Lime DGD700',true],
+  ['Neon Cerise Pink','Pro Chemical & Dye DGD388 Neon Cerise Pink',true],
+  ['Neon Royal Purple','Pro Chemical & Dye DGD888 Neon Royal Purple',true],
+  ['Blue','Jacquard iDye Poly 451 Blue',true],
+  ['iDye Poly Crimson','Jacquard iDye Poly Crimson 457',true],
+  ['Green UV Blast','UV Blast Green',true],
+  ['Clear UV Blast','UV Blast Clear',true],
+  ['Royal','ProChem Neon Royal Purple',false],
+  ['Blue','ProChem Sonic Blue',false],
+  ['ProChem Sonic Blue','ProChem Sky Blue',false],
+  ['Neon Key Lime','ProChemical disc dyes',false],
+  ['Black','ProChem Onyx',false],
+  ['Flo Red UV Blast','Quick Coat Red/Pink UV Blast',false],
+  ['ProChem Neon Hot Orange','iDye Poly Neon Hot Orange',false]
+ ];
+ for(const [name,report,expected] of cases)assert.equal(match(name,report),expected,name+' vs '+report);
+ // Every short ProChem catalog name must be manufacturer-qualified, not a generic color word.
+ assert.equal(match('Neon Key Lime','ProChem Neon Key Lime'),match('ProChem Neon Key Lime','ProChem Neon Key Lime'));
 });
