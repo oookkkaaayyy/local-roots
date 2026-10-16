@@ -358,6 +358,19 @@ function translucentPointPredict(baseHex,active,scene,p,radius){
  let out=mixLinearHex(reflected,transmitted,transWeight);
  if(fluor.some(v=>v>0))out=addLinearLight(out,rgbHex(fluor.map(v=>clamp(v,0,255))),1);
  if(zone==="rim")out=mixLinearHex(out,"#030405",scene==="backlit"?.08:.16);
+
+ // The blank and dyed rendering branches have different illumination mixes.
+ // Preserve the observed blank's illumination at zero dye: only transfer
+ // the modeled *relative* optical change from the dyed branch, in linear light.
+ // Without this, a 0.01% ordinary dye layer can brighten a Champion rim.
+ let modeledBlank=mixLinearHex(baseHex,transBase,transWeight);
+ if(zone==="rim")modeledBlank=mixLinearHex(modeledBlank,"#030405",scene==="backlit"?.08:.16);
+ const blank=baseTranslucentPoint(baseHex,transBase,radius,scene,p);
+ const reference=hexRgb(modeledBlank).map(srgbToLinear),blankLin=hexRgb(blank).map(srgbToLinear);
+ out=rgbHex(hexRgb(out).map((v,i)=>linearToSrgb(clamp(blankLin[i]*srgbToLinear(v)/Math.max(reference[i],1e-5),0,1))));
+ // Ordinary absorption cannot increase reflected/transmitted channel energy
+ // over the undyed base under the same scene; UV fluorescence is exempt.
+ if(active.every(l=>opticalProfileFor(l).fluor<=0))out=capPassiveOpaqueDaylight(blank,out);
  return out
 }
 // Passive absorption changes a polymer's spectral reflectance by removing
