@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071018"><title>HBNF Putting Games</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;background:#071018;color:#effff0;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;padding:20px 14px env(safe-area-inset-bottom);max-width:620px;margin-inline:auto;font-size:16px}
+h1{font-size:1.65rem;margin:0 0 12px}h2{font-size:1.25rem;margin:0 0 10px}header{padding:12px 0;border-bottom:1px solid #244b38;margin-bottom:14px}
+.kicker{font-size:.75rem;letter-spacing:.16em;color:#adf274;font-weight:800;margin:0 0 5px}
+.card{background:#11201c;border:1px solid #315941;border-radius:15px;padding:16px;margin:12px 0}
+p,.muted{color:#b7d3bd;line-height:1.45}label{display:block;font-weight:700;margin:14px 0 6px}
+input,textarea,select{font:inherit;color:#fff;background:#0b1816;border:1px solid #5b8e71;border-radius:9px;padding:12px;width:100%;min-height:48px}
+textarea{height:112px;resize:vertical}button{min-height:54px;background:#294636;border:1px solid #80ae6a;color:#fff;border-radius:10px;font-size:1rem;font-weight:700;padding:12px 16px;cursor:pointer;touch-action:manipulation}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #b4ef6d;outline-offset:3px}
+button.primary{color:#09220f;background:#b0f05c;border-color:#b0f05c}button.miss{background:#512a34;border-color:#e09a9a}
+button:disabled{opacity:.4;cursor:not-allowed}.action-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}.secondary{display:flex;gap:8px;flex-wrap:wrap}.secondary button{flex:1;min-width:110px}
+#prompt{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:1.65rem;font-weight:900;letter-spacing:.03em;color:#b9ff67;background:#04100a;min-height:108px;padding:18px 10px;border-radius:10px;border:2px solid #487443;display:flex;align-items:center;justify-content:center;text-align:center;word-break:break-word}
+#roundLabel{color:#baf68b}table{width:100%;border-collapse:collapse}th,td{padding:10px 6px;text-align:left;border-bottom:1px solid #315941}th{color:#bbdc98;font-size:.85rem}.error{min-height:1em;color:#ffaea3}
+#finish{color:#b4ff8d;font-weight:800}footer{font-size:.82rem;color:#a7baac;padding-top:10px}.notice{border-left:3px solid #a6df65;padding-left:12px}
+@media(max-width:420px){#prompt{font-size:1.35rem}.card{padding:13px}.action-row button{padding:12px 4px}}
+</style></head><body>
+<header><p class="kicker">HB NIGHT FLYERS · CART 2.0</p><h1>Putting Games</h1></header>
+<section id="setup" class="card"><h2>Start a game</h2>
+<label for="mode">Game</label><select id="mode"><option value="gauntlet">Putting Gauntlet</option><option value="ladder">Pressure Ladder</option></select>
+<label for="players">Players (separate names with commas or new lines)</label><textarea id="players" placeholder="AND&#10;JAM" maxlength="220" spellcheck="false"></textarea>
+<label for="rounds">Maximum rounds per player</label><input id="rounds" type="number" inputmode="numeric" min="1" max="24" value="10">
+<p class="muted">Gauntlet: everyone takes the same distance/stance each round; most makes wins. Ladder: make it to move to the next distance; miss to stay. All players finish the current round.</p>
+<button id="start" class="primary" type="button">Start game</button><button id="resume" type="button" hidden>Resume saved game</button>
+<p id="error" class="error" role="alert"></p>
+</section>
+<section id="game" hidden>
+<div class="card"><p id="banner" class="kicker"></p><p id="roundLabel"></p><div id="prompt" aria-live="polite"></div><p id="status" aria-live="polite"></p>
+<div class="action-row"><button id="made" class="primary" type="button">MAKE ✓</button><button id="missed" class="miss" type="button">MISS ✕</button></div>
+<div class="secondary"><button id="undo" type="button">Undo last</button><button id="restore" type="button">New setup</button><button id="reset" type="button">End &amp; clear</button></div></div>
+<div class="card"><h2>Standings</h2><table><thead><tr><th scope="col">Player</th><th scope="col">Makes</th><th scope="col">Rungs</th></tr></thead><tbody id="leaderboard"></tbody></table><p id="finish" hidden>Game complete</p><p id="summary" aria-live="polite"></p></div>
+</section>
+<div class="card notice"><p id="storageNote">Saved on this phone only.</p><p class="muted">This is a standalone phone-only game. It does not change Cart lights, submit HBNF scores, or require Wi-Fi/hotspot access. Matrix display integration comes later.</p></div>
+<footer>HBNF Cart 2.0 · Offline-capable gameplay after page load. No accounts or external game servers.</footer>
+<script type="module" src="./app.mjs"></script>
+</body></html>
