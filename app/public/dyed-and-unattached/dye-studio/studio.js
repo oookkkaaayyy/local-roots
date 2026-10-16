@@ -634,7 +634,7 @@ function layerCovers(layer,x,y){
   if(layer.shape==="stripe")return Math.abs(q-layer.offset)<=layer.width/2;
   return layer.side>0?q>=layer.offset:q<=layer.offset;
 }
-function regionKeyAt(x,y){return layers.map(l=>layerCovers(l,x,y)?"1":"0").join("")}
+function regionKeyAt(x,y){return layers.map(l=>Number(l.strength??100)>0&&layerCovers(l,x,y)?"1":"0").join("")}
 function blendPixel(br,bg,bb,tr,tg,tb,s,mode){
   if(mode==="normal")return[br+(tr-br)*s,bg+(tg-bg)*s,bb+(tb-bb)*s];
   if(mode==="darken")return[br+(Math.min(br,tr)-br)*s,bg+(Math.min(bg,tg)-bg)*s,bb+(Math.min(bb,tb)-bb)*s];
@@ -691,6 +691,8 @@ function colorForRegion(key){
   regionColorCache.set(cacheKey,out);return out
 }
 function confidenceForActive(active){
+  // Nominal zero-strength blocks are not physically dyed, even when saved.
+  active=active.filter(l=>Number(l.strength??100)>0);
   const rec=discAppearance?null:recordFor(active);if(rec)return rec.status;
   const p=profile();if(!active.length)return"base-only";
   if(p?.status==="unavailable")return"unavailable";
@@ -1015,7 +1017,7 @@ function setMode(m){
  // Both views share the same model, recipe, and layer state without resetting settings.
  renderLayerList();syncEditor();requestAnimationFrame(resizeCanvas);
 }
-function updateGuard(){if(!layers.length){$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="Add at least one dye block to evaluate design confidence.";return}const rs=collectRegions(),states=rs.filter(r=>r.key.includes("1")).map(r=>confidenceForActive(layers.filter((_,i)=>r.key[i]==="1"))),hasUnavailable=states.includes("unavailable"),hasEstimate=states.includes("estimate"),hasPhoto=states.includes("photo-anchor"),allMeasured=states.length&&states.every(s=>s==="verified"||s==="validated"),allPhotoSupported=states.length&&states.every(s=>s==="verified"||s==="validated"||s==="photo-anchor");if(hasUnavailable){$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="<b>Do not promise this result:</b> the selected plastic family is not recommended without exact local validation."}else if(allMeasured){$("clientGuard").className="client-only ok-box";$("clientGuard").innerHTML="<b>Locally supported:</b> every visible dyed region has a measured or validated HBNF record."}else if(allPhotoSupported&&hasPhoto){$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="<b>Matched to the actual HBNF photo test:</b> this qualitative example follows the observed green and dark-red direction. The undyed and dyed comparison discs were photographed together in each frame under the same conditions. Their absolute color still lacks color-chart calibration, so an exact match cannot be guaranteed."}else if(hasEstimate){$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="<b>Model gaps remain:</b> at least one region relies on a low-confidence estimate, an unmeasured translucent overlap, or an undocumented custom dye."}else{$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="<b>Research-informed preview—not a guarantee:</b> the model uses Innova-family and dye-specific evidence, but exact paid-client reproduction still requires local validation of important combinations."}}
+function updateGuard(){if(!layers.some(l=>Number(l.strength??100)>0)){$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="Add at least one dye block to evaluate design confidence.";return}const rs=collectRegions(),states=rs.filter(r=>r.key.includes("1")).map(r=>confidenceForActive(layers.filter((_,i)=>r.key[i]==="1"))),hasUnavailable=states.includes("unavailable"),hasEstimate=states.includes("estimate"),hasPhoto=states.includes("photo-anchor"),allMeasured=states.length&&states.every(s=>s==="verified"||s==="validated"),allPhotoSupported=states.length&&states.every(s=>s==="verified"||s==="validated"||s==="photo-anchor");if(hasUnavailable){$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="<b>Do not promise this result:</b> the selected plastic family is not recommended without exact local validation."}else if(allMeasured){$("clientGuard").className="client-only ok-box";$("clientGuard").innerHTML="<b>Locally supported:</b> every visible dyed region has a measured or validated HBNF record."}else if(allPhotoSupported&&hasPhoto){$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="<b>Matched to the actual HBNF photo test:</b> this qualitative example follows the observed green and dark-red direction. The undyed and dyed comparison discs were photographed together in each frame under the same conditions. Their absolute color still lacks color-chart calibration, so an exact match cannot be guaranteed."}else if(hasEstimate){$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="<b>Model gaps remain:</b> at least one region relies on a low-confidence estimate, an unmeasured translucent overlap, or an undocumented custom dye."}else{$("clientGuard").className="client-only warning-box";$("clientGuard").innerHTML="<b>Research-informed preview—not a guarantee:</b> the model uses Innova-family and dye-specific evidence, but exact paid-client reproduction still requires local validation of important combinations."}}
 function renderRecords(){const b=$("recordsBody");b.innerHTML="";calibrationRecords.filter(r=>r.profileId===activeProfileId).forEach(r=>{const tr=document.createElement("tr");tr.innerHTML=`<td>${escapeHtml(r.comboLabel)}</td><td>${r.measuredHex}</td><td><span class="confidence ${r.status}">${statusLabel(r.status)}</span></td><td>${r.boundarySpread} mm</td><td><button class="danger" data-r="${r.id}">×</button></td>`;b.appendChild(tr)});b.querySelectorAll("[data-r]").forEach(x=>x.onclick=()=>{calibrationRecords=calibrationRecords.filter(r=>r.id!==x.dataset.r);saveDb();renderRecords();requestRender()})}
 function setModeHelp(){
  const helps={research:"Recommended. Version 9 uses a universal per-dye optical profile, material-specific uptake, separate reflection and transmission, per-pixel flight-plate/shoulder/rim optical paths, HBNF photo anchors, fluorescence, glow blocking, and exact local-record overrides.",spectral:"Legacy spectral-style comparison retained only for older saved projects.",darken:"Original Dyers Guild-style Darken comparison.",multiply:"Transparent digital-layer comparison.",subtractive:"Aggressive subtractive comparison.",normal:"Ordinary digital opacity; not recommended."};
@@ -1108,6 +1110,11 @@ function classifyObservedProcess(description){
  const s=String(description||"").toLowerCase();
  if(!s||s==="nr"||s==="na")return "unknown";
  // An observation involving several carriers or products cannot validate one exact method.
+ // Sequential/compound processes cannot provide a whole-design carrier match.
+ // Spin-dyed backgrounds + Floetrol cells and acetone-painted colors over
+ // separately hot-dipped outlines are not single-method observations.
+ if(/\bspin(?:[\s-]?dye(?:d|ing)?)?\b/.test(s)&&/floetrol/.test(s))return "mixed-or-compound-process";
+ if(/hot[\s-]?dipp?ed|hot[\s-]?dip/.test(s)&&/acetone/.test(s)&&/paint|brush|direct/.test(s))return "mixed-or-compound-process";
  if(/worm dip|quick coat|uv blast/.test(s)){
   if(/floetrol|glue|lotion|acetone/.test(s))return "mixed-or-compound-process";
   return "worm-dip";
