@@ -1,5 +1,25 @@
 export const SEMANTIC_SCHEMA = "hbnf-visual-semantic-v3";
 
+export function parseManualScoreRows(input) {
+  const rows = String(input == null ? "" : input)
+    .replace(/\r/g, "")
+    .split("\n")
+    .map(row => row.trim())
+    .filter(Boolean);
+  if (!rows.length) throw new Error("Enter at least one player/team row.");
+  if (rows.length > 12) throw new Error("Use no more than 12 player/team rows.");
+  if (rows.some(row => row.length > 63)) throw new Error("Each player/team row must be 63 characters or fewer.");
+  return rows;
+}
+
+export function createManualScoreboardPayload(label, input) {
+  const normalizedLabel = String(label || "");
+  if (!["F9", "B9", "GLOW", "SCORES"].includes(normalizedLabel)) {
+    throw new Error("Choose Front 9, Back 9, Glow, or Scores.");
+  }
+  return { label: normalizedLabel, entries: parseManualScoreRows(input) };
+}
+
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, Number(n)));
 const valueOr = (value, fallback) => (value === undefined || value === null) ? fallback : value;
 

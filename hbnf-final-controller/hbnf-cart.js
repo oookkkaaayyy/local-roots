@@ -795,7 +795,9 @@ window.addEventListener("online", () => {
   if (!document.hidden && !tuneInFlight && !tuneDirty) refresh().catch(showRefreshError);
 });
 window.addEventListener("offline", () => {
-  statusNode.textContent = "OFFLINE · no change sent. Current cart show continues locally; reconnect to control or score.";
+  statusNode.textContent = OPAL_LOCAL_PWA
+    ? "Internet unavailable · local Matrix/AUX controls remain available while HBNF-Cart Wi-Fi is connected. Live standings, score entry, pairing, and cloud updates require internet."
+    : "OFFLINE · no change sent. Current cart show continues locally; reconnect to the internet to use remote controls or score.";
 });
 
 setInterval(() => {

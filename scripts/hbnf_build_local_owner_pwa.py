@@ -35,12 +35,16 @@ def main() -> None:
     parser.add_argument("--source-root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--source-commit", required=True)
+    parser.add_argument("--package-version", default="1.0.0")
     args = parser.parse_args()
+    if not re.fullmatch(r"\d+\.\d+\.\d+", args.package_version):
+        raise SystemExit("--package-version must be a semantic x.y.z version")
     root = args.source_root.resolve()
     source = root / "hbnf-final-controller"
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    archive = output / "hbnf-owner-pwa-local-v1.0.0.zip"
+    version = args.package_version
+    archive = output / f"hbnf-owner-pwa-local-v{version}.zip"
     for stale in (archive, output / "PACKAGE.SHA256"):
         stale.unlink(missing_ok=True)
     payload = output / "owner-pwa"
@@ -61,6 +65,7 @@ def main() -> None:
     # modules failed when served as .mjs. Keep module content, use known-good
     # .js URLs, and rewrite imports only in the local copy.
     html = html.replace(".mjs", ".js")
+    html = "\n".join(line.rstrip() for line in html.splitlines()) + "\n"
     (payload / "hbnf-cart.html").write_text(html)
 
     for name in ASSETS[1:]:
@@ -84,7 +89,7 @@ def main() -> None:
     checksums = "".join(f"{digest(path.read_bytes())}  owner-pwa/{path.name}\n" for path in files)
     (output / "PAYLOAD.SHA256SUMS").write_text(checksums)
     metadata = {
-        "package": "hbnf-owner-pwa-local-v1.0.0",
+        "package": f"hbnf-owner-pwa-local-v{version}",
         "sourceCommit": args.source_commit,
         "destination": "/www/mission-control-local/owner-pwa",
         "mode": "additive-static-subtree",
@@ -93,9 +98,12 @@ def main() -> None:
     }
     (output / "PACKAGE.json").write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n")
 
-    deploy_dir = root / "staging/coordinated-backend/opal/owner-pwa-local-v1.0.0"
+    deploy_dir = root / f"staging/coordinated-backend/opal/owner-pwa-local-v{version}"
     for name in ("install.sh", "rollback.sh"):
         shutil.copy2(deploy_dir / name, output / name)
+    baseline = deploy_dir / "BASELINE.SHA256SUMS"
+    if baseline.exists():
+        shutil.copy2(baseline, output / baseline.name)
 
     with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
         for path in sorted(p for p in output.rglob("*") if p.is_file() and p != archive):

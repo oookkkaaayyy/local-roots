@@ -10,10 +10,15 @@ const root = path.resolve(import.meta.dirname, "..");
 const sourceCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "hbnf-owner-pwa-opal-"));
 const buildA = path.join(temp, "build-a"), buildB = path.join(temp, "build-b");
+const buildUpdate = path.join(temp, "build-update");
 const packageBuilder = path.join(root, "scripts/hbnf_build_local_owner_pwa.py");
 const baseArchive = path.join(root, "staging/coordinated-backend/opal/hbnf-opal-mission-control-local-v1.0.2-ios12.zip");
+const installedV100 = path.join(root, "staging/coordinated-backend/opal/hbnf-owner-pwa-local-v1.0.0");
 function build(output) {
   execFileSync("python3", [packageBuilder, "--source-root", root, "--output-dir", output, "--source-commit", sourceCommit], { stdio: "pipe" });
+}
+function buildVersion(output, version) {
+  execFileSync("python3", [packageBuilder, "--source-root", root, "--output-dir", output, "--source-commit", sourceCommit, "--package-version", version], { stdio: "pipe" });
 }
 try {
   build(buildA); build(buildB);
@@ -78,6 +83,53 @@ try {
   assert.equal(manifest.scope, "./");
   assert.match(manifest.start_url, /^\.\/hbnf-cart\.html\?/);
   assert.ok(manifest.icons.every(icon => icon.src.startsWith("./")));
+
+  buildVersion(buildUpdate, "1.0.1");
+  const updateZip = path.join(buildUpdate, "hbnf-owner-pwa-local-v1.0.1.zip");
+  const updateExtract = path.join(temp, "update-extracted");
+  fs.mkdirSync(updateExtract);
+  execFileSync("unzip", ["-q", updateZip, "-d", updateExtract]);
+  const updateDir = path.join(updateExtract, "owner-pwa");
+  const newFeatures = fs.readFileSync(path.join(updateDir, "hbnf-cart-features.js"), "utf8");
+  const newHtml = fs.readFileSync(path.join(updateDir, "hbnf-cart.html"), "utf8");
+  assert.match(newHtml, /Manual Show Scores/);
+  assert.match(newFeatures, /Displaying manually entered scores locally/);
+  assert.match(newFeatures, /bridge\.overlay\("scoreboard",payload,22000\)/);
+  assert.doesNotMatch(newFeatures.slice(newFeatures.indexOf("async function showManualScoreboard()"), newFeatures.indexOf("async function showAcePot()")), /canonicalRead|live_status|readLiveCache/);
+
+  // Rehearse the actual incremental installer from the exact v1.0.0 payload.
+  const updateWww = path.join(temp, "update-www"); fs.mkdirSync(updateWww);
+  execFileSync("unzip", ["-q", baseArchive, "-d", updateWww]);
+  const updateMission = path.join(updateWww, "mission-control-local");
+  fs.writeFileSync(path.join(updateMission, ".hbnf-package-marker"), "hbnf-owner-mission-control-local-v1\n");
+  fs.writeFileSync(path.join(updateMission, ".hbnf-package-version"), "1.0.2\n");
+  fs.copyFileSync(path.join(installedV100, "hbnf-owner-pwa-local-v1.0.0.zip"), path.join(temp, "v100.zip"));
+  const v100Extract = path.join(temp, "v100-extracted"); fs.mkdirSync(v100Extract);
+  execFileSync("unzip", ["-q", path.join(temp, "v100.zip"), "-d", v100Extract]);
+  const fakeUpdateBin = path.join(temp, "fake-bin-update"); fs.mkdirSync(fakeUpdateBin);
+  fs.writeFileSync(path.join(fakeUpdateBin, "id"), "#!/bin/sh\necho 0\n", { mode: 0o755 });
+  const updateEnv = { ...process.env, PATH: `${fakeUpdateBin}:${realPath}`, HBNF_WWW_ROOT: updateWww, HBNF_BACKUP_ROOT: path.join(temp, "backup-root") };
+  fs.mkdirSync(updateEnv.HBNF_BACKUP_ROOT);
+  execFileSync("sh", [path.join(v100Extract, "install.sh")], { env: updateEnv, stdio: "pipe" });
+  const baselineTarget = path.join(updateMission, "owner-pwa");
+  assert.equal(fs.readFileSync(path.join(baselineTarget, ".hbnf-package-version"), "utf8").trim(), "1.0.0");
+  const installedBaselineHashes = fs.readFileSync(path.join(baselineTarget, ".hbnf-payload.sha256"), "utf8");
+  assert.equal(crypto.createHash("sha256").update(installedBaselineHashes).digest("hex"), "d98f53e17f4104568214db3a2b7d1af150f1647097dbd63506df1d497b490499");
+  const updateInstall = path.join(updateExtract, "install.sh");
+  execFileSync("sh", [updateInstall], { env: updateEnv, stdio: "pipe" });
+  assert.equal(fs.readFileSync(path.join(baselineTarget, ".hbnf-package-version"), "utf8").trim(), "1.0.1");
+  assert.ok(fs.existsSync(path.join(updateEnv.HBNF_BACKUP_ROOT, "hbnf-owner-pwa-local.rollback-v1.0.0")));
+  assert.equal(fs.readFileSync(path.join(updateMission, ".hbnf-package-version"), "utf8").trim(), "1.0.2");
+  execFileSync("sh", [path.join(baselineTarget, ".hbnf-rollback.sh")], { env: updateEnv, stdio: "pipe" });
+  assert.equal(fs.readFileSync(path.join(baselineTarget, ".hbnf-package-version"), "utf8").trim(), "1.0.0");
+  assert.equal(fs.readFileSync(path.join(baselineTarget, ".hbnf-payload.sha256"), "utf8"), installedBaselineHashes, "rollback restores the exact installed v1.0.0 payload manifest");
+  assert.equal(fs.readFileSync(path.join(updateMission, ".hbnf-package-version"), "utf8").trim(), "1.0.2", "Mission Control remains untouched by update and rollback");
+  const installedAssets = fs.readdirSync(baselineTarget).filter(name => name.endsWith(".js"));
+  for (const name of installedAssets) {
+    const text = fs.readFileSync(path.join(baselineTarget, name), "utf8");
+    assert.doesNotMatch(text, /\?\.|\?\?/);
+    assert.doesNotMatch(text, /\.replaceAll\s*\(|\.replaceChildren\s*\(|Object\.fromEntries|crypto\.randomUUID|structuredClone/);
+  }
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });
 }

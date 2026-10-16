@@ -1,0 +1,31 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OWNER_PWA_MANUAL_OFFLINE_SCOREBOARD_20261015",
+  "summary": "Add a manual display-only offline scoreboard to the existing local Owner PWA and package it as a reversible static subtree update.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "failure": "The local Owner PWA had no offline manual score-display action; its existing live standings action depends on a current backend read.",
+    "implementation": [
+      "hbnf-final-controller/hbnf-cart.html",
+      "hbnf-final-controller/hbnf-cart-features.mjs",
+      "hbnf-final-controller/hbnf-cart-semantic.mjs",
+      "hbnf-final-controller/hbnf-cart.js",
+      "scripts/hbnf_build_local_owner_pwa.py",
+      "staging/coordinated-backend/opal/owner-pwa-local-v1.0.1/"
+    ],
+    "validation": [
+      "Focused manual-score input and local-overlay contract tests.",
+      "Owner PWA local Matrix/AUX regression tests.",
+      "iOS 12 source compatibility gate.",
+      "Deterministic package build, v1.0.0 to v1.0.1 isolated update, and exact v1.0.0 rollback rehearsal."
+    ],
+    "limitations": "Offline manual scores are unsaved display text only. They are not submitted to HBNF scoring and are explicitly not live standings. Physical verification of this new button requires one installation and owner observation."
+  }
+}

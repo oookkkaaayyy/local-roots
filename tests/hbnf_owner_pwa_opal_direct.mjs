@@ -101,4 +101,5 @@ test("local route preserves cloud routes and labels score reads as internet-depe
   assert.match(js, /const result = await callCloud\(cloudBody\)/);
   assert.match(js, /const SUPABASE_URL = "https:\/\/phcpbvuqibyarpfrftgx\.supabase\.co"/);
   assert.match(html, /live standings, score entry, pairing, and cloud updates need internet/i);
+  assert.match(js, /OFFLINE · no change sent\. Current cart show continues locally; reconnect to the internet to use remote controls or score\./);
 });

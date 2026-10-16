@@ -216,9 +216,19 @@
     <div id="featureLive" class="status">Live round not checked yet.</div>
     <div class="row">
       <button id="featureRefreshLive" type="button">Refresh live</button>
-      <button id="featureScoreboard" type="button">Show scoreboard</button>
+      <button id="featureScoreboard" type="button">Show live standings · internet</button>
       <button id="featureAcePot" type="button">Show ace pot</button>
     </div>
+    <details id="manualOfflineScorePanel" class="score-entry" hidden aria-label="Manual offline scoreboard">
+      <summary>Manual Show Scores · works offline</summary>
+      <p class="muted">Display-only Matrix overlay. This does not save or submit scores and is not live standings. Enter one player/team row per line, up to 12 rows; each row is limited to 63 characters.</p>
+      <div class="score-grid">
+        <label>Display label<select id="manualScoreboardLabel" disabled><option value="F9">Front 9</option><option value="B9">Back 9</option><option value="GLOW">Glow</option><option value="SCORES">Scores</option></select></label>
+        <label class="wide">Player/team rows<textarea id="manualScoreboardEntries" rows="5" maxlength="767" placeholder="AND 3&#10;JAM 2" disabled></textarea></label>
+      </div>
+      <div class="row"><button id="featureManualScoreboard" type="button" disabled>Display manual scores</button></div>
+      <div id="manualScoreboardStatus" class="status" role="status" aria-live="polite">No scores have been entered.</div>
+    </details>
     <details class="score-entry">
       <summary>Record Skins scoring</summary>
       <p class="muted">Scores save to the current authoritative Skins card. A blank hole winner carries the skin. Tiebreakers and ace state use the same authoritative round data.</p>

@@ -1,4 +1,6 @@
 /* HBNF coordinated feature surface — source-only staging. No automatic mutation. */
+import { createManualScoreboardPayload } from "./hbnf-cart-semantic.mjs";
+
 const OPAL_CHECK = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=check";
 const OPAL_RESULT = "https://console.gl-inet.com/cgi-bin/luci/hbnf-updater?action=result";
 const OPAL_INSTALLER = "https://console.gl-inet.com/cgi-bin/luci/hbnf-installer";
@@ -29,6 +31,10 @@ function setFeatureStatus(message, bad=false) {
 function matrixLocal() {
   return location.hostname === "192.168.77.10" ||
     (location.hostname === "192.168.77.1" && location.pathname.indexOf("/mission-control-local/owner-pwa/") === 0);
+}
+
+function isLocalOwnerPwa() {
+  return location.hostname === "192.168.77.1" && location.pathname.indexOf("/mission-control-local/owner-pwa/") === 0;
 }
 
 function matrixApiUrl(path) {
@@ -351,7 +357,7 @@ async function refreshLive(silent) {
 }
 
 async function showScoreboard() {
-  setFeatureStatus("Preparing live scoreboard…");
+  setFeatureStatus("Fetching current live standings (internet required)…");
   const out=await canonicalRead("live_status",{});
   const live=out && out.live;
   if (!live || !live.active || !Array.isArray(live.entries) || !live.entries.length) throw new Error("No active Skins or Glow scores are available.");
@@ -359,6 +365,26 @@ async function showScoreboard() {
   const ttl=Math.max(8000,Math.min(30000,6000+Math.ceil(live.entries.length/2)*5000));
   await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:live.entries.slice(0,12)},ttl);
   setFeatureStatus("Canonical scoreboard overlay accepted.");
+}
+
+async function showManualScoreboard() {
+  const status=$("manualScoreboardStatus");
+  try {
+    if (!isLocalOwnerPwa()) throw new Error("Manual offline display is available only from the local Opal Owner PWA.");
+    const bridge=canonicalOverlayBridge();
+    const payload=createManualScoreboardPayload(
+      $("manualScoreboardLabel") ? $("manualScoreboardLabel").value : "",
+      $("manualScoreboardEntries") ? $("manualScoreboardEntries").value : ""
+    );
+    if (status) status.textContent="Sending manual display to the local Matrix…";
+    setFeatureStatus("Displaying manually entered scores locally; no live data is being fetched.");
+    await bridge.overlay("scoreboard",payload,22000);
+    if (status) status.textContent="Manual display sent to Matrix · not saved or submitted · not live standings.";
+    setFeatureStatus("Manual scores displayed · unsaved and not live.");
+  } catch (error) {
+    if (status) status.textContent="Not displayed · "+(error.message || String(error));
+    throw error;
+  }
 }
 
 async function showAcePot() {
@@ -487,6 +513,15 @@ function syncOverlayAvailability() {
   const fontIndex=$("featureFontIndex");
   if (fontIndex) fontIndex.disabled=!fontIndexReady;
   const paletteReady=caps.canonicalPaletteIntentV1===true;
+  const manualPanel=$("manualOfflineScorePanel");
+  const manualLabel=$("manualScoreboardLabel");
+  const manualRows=$("manualScoreboardEntries");
+  const manualButton=$("featureManualScoreboard");
+  const localOwner=isLocalOwnerPwa();
+  if (manualPanel) manualPanel.hidden=!localOwner;
+  if (manualLabel) manualLabel.disabled=!localOwner || !overlayReady;
+  if (manualRows) manualRows.disabled=!localOwner || !overlayReady;
+  if (manualButton) manualButton.disabled=!localOwner || !overlayReady;
   ["featureSendText","featureScoreboard","featureAcePot"].forEach(function(id){
     const node=$(id);
     if (node) node.disabled=!overlayReady;
@@ -518,6 +553,7 @@ bind("featureDeleteSaved",deleteSavedLook);
 bind("featureSendText",sendText);
 bind("featureRefreshLive",refreshLive);
 bind("featureScoreboard",showScoreboard);
+bind("featureManualScoreboard",showManualScoreboard);
 bind("featureAcePot",showAcePot);
 bind("featureOtaCheck",checkOta);
 bind("featureOtaInstall",()=>{ location.href=OPAL_INSTALLER; });
