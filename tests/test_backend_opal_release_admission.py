@@ -491,7 +491,7 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
     # Exact fresh admission from an expired, fully completed four-step
     # checkpoint. Preserve every receipt and require fresh zero-difference
     # device/canonical evidence before allowing activation as step five.
-    post_state=copy.deepcopy(continued_state)
+    post_state=copy.deepcopy(json.loads(retry_state_path.read_text()))
     post_tx=post_state["execution_cursor"]["backend_opal_transaction"]
     post_prior_id=post_tx["transaction_id"]
     post_tx["owner_authorization"]["expires_unix"]=time.time()-1
@@ -566,6 +566,41 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
     assert json.loads(post_state_path.read_text())["live_mutation_authorized"] is False
     p=run([sys.executable,str(CONTROL),"--state",str(post_state_path),"check-backend-opal-admission","--admission",str(post_admission)])
     assert p.returncode==0,(p.stdout,p.stderr)
+    # If this fresh authorization expires before activation, the exact same
+    # four-step checkpoint may be reauthorized again without replay/reset.
+    repeat_state=copy.deepcopy(json.loads(post_state_path.read_text()))
+    repeat_manifest=copy.deepcopy(json.loads(post_admission.read_text()))
+    repeat_tx=repeat_state["execution_cursor"]["backend_opal_transaction"]
+    repeat_owner=copy.deepcopy(repeat_tx["owner_authorization"])
+    repeat_owner["expires_unix"]=time.time()-1
+    repeat_tx["owner_authorization"]=copy.deepcopy(repeat_owner)
+    repeat_manifest["owner_authorization"]=copy.deepcopy(repeat_owner)
+    repeat_digest=ctl.backend_opal_admission_digest(repeat_manifest)
+    repeat_manifest["admission_sha256"]=repeat_digest;repeat_tx["admission_sha256"]=repeat_digest
+    repeat_proof=dict(post_proof,captured_unix=time.time(),prior_transaction_id=repeat_tx["transaction_id"],
+        prior_admission_sha256=repeat_digest,completed_step_receipts=copy.deepcopy(repeat_tx["step_receipts"]))
+    repeat_proof_path=temp/"postboot-repeat-precondition.json";write_json(repeat_proof_path,repeat_proof)
+    repeat_manifest["checks"]["reissue_precondition"]={"pass":True,
+        "path":repeat_proof_path.relative_to(ROOT).as_posix(),"sha256":sha(repeat_proof_path)}
+    repeat_owner.update({"transaction_id":"OWNER-20261016-POSTBOOT-REAUTH-TEST",
+        "authorization_id":"DIRECT-OWNER-POSTBOOT-REAUTH-TEST","source_message_ref":"TEST FIXTURE ONLY; repeated four-step checkpoint authorization",
+        "nonce":"unique-postboot-reauth-nonce-0123456789","issued_unix":time.time()-1,"expires_unix":time.time()+1200,
+        "scope":[*STEPS[4:],"rollback_if_required"]})
+    repeat_owner["artifact_sha256_bindings"]=ctl._backend_opal_artifact_sha_bindings(repeat_manifest)
+    repeat_manifest.update({"transaction_id":repeat_owner["transaction_id"],"owner_authorization":repeat_owner})
+    repeat_auth=temp/"postboot-repeat-authorization.json";write_json(repeat_auth,
+        {"schema":"hbnf-backend-opal-admission-authorization-v1","owner_authorization":repeat_owner})
+    repeat_state_path=temp/"postboot-repeat-state.json";write_json(repeat_state_path,repeat_state)
+    repeat_admission=temp/"postboot-repeat-admission.json";write_json(repeat_admission,repeat_manifest)
+    p=run([sys.executable,str(CONTROL),"--state",str(repeat_state_path),"reissue-backend-opal-admission",
+        "--admission",str(repeat_admission),"--authorization-receipt",str(repeat_auth)])
+    assert p.returncode==0,(p.stdout,p.stderr)
+    repeat_issued=json.loads(repeat_state_path.read_text())["execution_cursor"]["backend_opal_transaction"]
+    assert repeat_issued["completed_steps"]==STEPS[:4] and repeat_issued["step_receipts"]==post_receipts
+    assert repeat_issued["authorization_start_index"]==4 and repeat_issued["last_reserved_step"]=="bootstrap_current_state"
+    assert (len(json.loads(repeat_state_path.read_text())["execution_cursor"]["backend_opal_transaction_history"])
+        ==len(json.loads(post_state_path.read_text())["execution_cursor"].get("backend_opal_transaction_history",[]))+1)
+    post_state_path=repeat_state_path;post_admission=repeat_admission
     post_guard=[sys.executable,str(GUARD),"--model",str(MODEL),"--state",str(post_state_path),"--require-state","PHASE2_INTEGRATING",
         "--backend-opal-admission",str(post_admission),"--backend-opal-action","reserve","--backend-opal-step","activate_writer"]
     p=run(post_guard);assert p.returncode==0,(p.stdout,p.stderr)
@@ -624,7 +659,9 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
     reject_postboot("expired_authorization",lambda s,m,o,p,d,c:(o.update({"transaction_id":"OWNER-POSTBOOT-EXPIRED","authorization_id":"DIRECT-POSTBOOT-EXPIRED","source_message_ref":"TEST FIXTURE ONLY; expiry","nonce":"nonce-postboot-expired-0123456789","issued_unix":time.time()-1801,"expires_unix":time.time()-1})))
     reject_postboot("replayed_authorization",lambda s,m,o,p,d,c:(o.update({"transaction_id":post_prior_id,"authorization_id":post_tx["owner_authorization"]["authorization_id"],"source_message_ref":"TEST FIXTURE ONLY; replay","nonce":post_tx["owner_authorization"]["nonce"]})))
     reject_postboot("wrong_scope",lambda s,m,o,p,d,c:(fresh_owner(o,"scope"),o.update({"scope":[*STEPS[3:],"rollback_if_required"]})))
+    reject_postboot("missing_history",lambda s,m,o,p,d,c:(fresh_owner(o,"history"),s["execution_cursor"].update({"backend_opal_transaction_history":[]})))
     reject_postboot("unresolved_activation",lambda s,m,o,p,d,c:(fresh_owner(o,"active"),s["execution_cursor"]["backend_opal_transaction"].update({"active_step":"activate_writer"})))
+    reject_postboot("unresolved_rollback",lambda s,m,o,p,d,c:(fresh_owner(o,"active-rollback"),s["execution_cursor"]["backend_opal_transaction"].update({"active_step":"rollback"})))
     reject_postboot("rollback_pending",lambda s,m,o,p,d,c:(fresh_owner(o,"rollback"),s["execution_cursor"]["backend_opal_transaction"].update({"status":"ROLLBACK_REQUIRED","rollback_attempts_used":1})))
 
 print("PASS: exact backend/Opal admission, first-two-step and four-step receipt-preserving continuations, step ordering/replay, scope/device/hash/evidence/expiry failures, rollback-only failure path, and PHASE2/firmware gate preservation")
