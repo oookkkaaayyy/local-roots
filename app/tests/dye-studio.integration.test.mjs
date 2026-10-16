@@ -845,3 +845,24 @@ test('UV Blast plus Floetrol uses distinct actual method, not ProChem powder or 
  assert.equal(build('UV Blast Green','#00FF00').method,'worm-dip');
  assert.match(studioHtml,/option value="premixed-dip-floetrol"/);
 });
+
+test('tentatively reconstructed dye names cannot earn exact-source match bonus',()=>{
+ const casesStart=studioScript.indexOf('const FIELD_CASES=');
+ const casesEnd=studioScript.indexOf('];',casesStart);
+ const cases=JSON.parse(studioScript.slice(casesStart+'const FIELD_CASES='.length,casesEnd+1));
+ for(const id of ['FIELD-TIME-01','FIELD-AC-PALETTE-01','FIELD-AC-SOLVENT-01','FIELD-CARRIER-01']){
+  assert.equal(cases.find(x=>x.id===id).shadeMappingCertain,false);
+ }
+ const start=studioScript.indexOf('function evidenceScore('),end=studioScript.indexOf('function renderEvidenceAdvisory()',start);
+ const env={layers:[{name:'iDye Poly Blue',method:'acetone-direct',strength:100}],
+  evidenceDyeFamilyMatches:(name,reported)=>reported.includes(name),
+  materialClass:()=> 'opaque-premium',
+  classifyObservedProcess:()=> 'acetone-direct',methodForDyeLayer:l=>l.method};
+ const score=Function('env','with(env){'+studioScript.slice(start,end)+';return evidenceScore;}')(env);
+ const obs={dyes:'iDye Poly Blue',plastic:'Innova Star',baseColor:'white',medium:'direct acetone brush',photo:'finished disc',evidenceType:'CASE'};
+ const certain=score(obs,[],'Innova Star','white');
+ const uncertain=score({...obs,shadeMappingCertain:false},[],'Innova Star','white');
+ assert.equal(certain.exactDye,true);
+ assert.equal(uncertain.exactDye,false);
+ assert.equal(certain.score-uncertain.score,10);
+});
