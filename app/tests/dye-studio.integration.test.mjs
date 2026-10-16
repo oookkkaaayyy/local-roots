@@ -812,3 +812,11 @@ test('published evidence counts match actual entries and distinct source URLs', 
   assert.doesNotMatch(studioHtml, /includes the user-provided before\/after photos/);
   assert.match(studioHtml, /Those photos are not published here/);
 });
+
+test('zero-intensity blocks cannot create false dyed regions or confidence',()=>{
+  assert.ok(studioScript.includes('function regionKeyAt(x,y){return layers.map(l=>Number(l.strength??100)>0&&layerCovers(l,x,y)?'));
+  assert.ok(studioScript.includes('active=active.filter(l=>Number(l.strength??100)>0);'));
+  assert.ok(studioScript.includes('function updateGuard(){if(!layers.some(l=>Number(l.strength??100)>0)){'));
+  const sample=studioScript.slice(studioScript.indexOf('function confidenceForActive('),studioScript.indexOf('function makePaintImage('));
+  assert.ok(sample.includes('if(!active.length)return"base-only"'));
+});
