@@ -177,8 +177,8 @@ test('real-world source matching prioritizes actual direct-acetone process over 
     '\nglobalThis.fieldAudit={FIELD_CASES,ALL_DYE_EVIDENCE,evidenceScore,classifyObservedProcess};',
     realm, {timeout:10000});
   const evidence=realm.fieldAudit;
-  assert.equal(evidence.FIELD_CASES.length,13);
-  assert.equal(evidence.ALL_DYE_EVIDENCE.length,71);
+  assert.equal(evidence.FIELD_CASES.length,17);
+  assert.equal(evidence.ALL_DYE_EVIDENCE.length,75);
   const byId=id=>evidence.FIELD_CASES.find(x=>x.id===id);
   const expectedProcesses = [
     ['FIELD-AC-01','acetone-direct'],['FIELD-AC-02','acetone-direct'],
@@ -187,7 +187,11 @@ test('real-world source matching prioritizes actual direct-acetone process over 
     ['FIELD-GLUE-01','acetone-glue-bed'],['FIELD-GLUE-02','acetone-glue-bed'],
     ['FIELD-FLO-01','floetrol-bed'],['FIELD-FLO-02','floetrol-bed'],
     ['FIELD-OTHER-01','water-dip'],['FIELD-PHOTO-01','unknown'],
-    ['FIELD-COMPARE-01','acetone-unspecified']
+    ['FIELD-COMPARE-01','acetone-unspecified'],
+    ['FIELD-TIME-01','lotion'],
+    ['FIELD-AC-PALETTE-01','acetone-unspecified'],
+    ['FIELD-AC-SOLVENT-01','acetone-unspecified'],
+    ['FIELD-CARRIER-01','unknown']
   ];
   for(const [id,category] of expectedProcesses)
     assert.equal(evidence.classifyObservedProcess(byId(id).medium),category,id);
