@@ -1008,3 +1008,26 @@ test('source quality matrix agrees with the live physical-method classifier and 
  assert.match(byId.get('WB004').source_verification,/first-person maker/i);
  assert.match(byId.get('WB004').numeric_holdout_eligible,/^NO/);
 });
+
+
+test('commercial Quick Coat UV Blast Green synonym remains findable but never becomes a single-pigment calibration',()=>{
+ const catalogStart=studioScript.indexOf('const dyes = ['),catalogEnd=studioScript.indexOf('];',catalogStart);
+ const dyes=Function(studioScript.slice(catalogStart,catalogEnd+2)+';return dyes')();
+ const start=studioScript.indexOf('function evidenceDyeFamilyMatches(');
+ const end=studioScript.indexOf('function classifyObservedProcess(',start);
+ const match=Function('dyes',studioScript.slice(start,end)+';return evidenceDyeFamilyMatches')(dyes);
+ const p='const FIELD_CASES=',i=studioScript.indexOf(p),j=studioScript.indexOf('];',i);
+ const cases=JSON.parse(studioScript.slice(i+p.length,j+1));
+ const report=cases.find(x=>x.id==='FIELD-MEADOW-UVLOTION-01');
+ assert.ok(report);
+ assert.equal(match('ProChem Meadow',report.dyes),true);
+ assert.equal(match('UV Blast Green',report.dyes),true);
+ assert.equal(match('Green UV Blast',report.dyes),true);
+ assert.equal(match('UV Blast Red',report.dyes),false);
+ assert.equal(match('ProChem Neon Key Lime',report.dyes),false);
+ assert.equal(report.shadeMappingCertain,false,'one mixed-photo result does not identify the isolated shade');
+ assert.match(report.medium,/ProChem Meadow.*Quick Coat Green UV Blast/);
+ const classify=Function(studioScript.slice(studioScript.indexOf('function classifyObservedProcess('),
+  studioScript.indexOf('function evidenceScore('))+';return classifyObservedProcess')();
+ assert.equal(classify(report.medium),'mixed-or-compound-process');
+});
