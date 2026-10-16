@@ -1,6 +1,7 @@
 -- Source health integrity: failed fetch/parse attempts are NOT evidence of
 -- disappearance. Preserve unhealthy runs, validation=skipped and last good data.
--- Two consecutive completed successful empty parses are required; deduplicate
+-- Two consecutive completed successful empty parses AFTER a previously nonempty
+-- successfully parsed baseline are required; deduplicate
 -- open source-level reviews. No retroactive review resolution or data changes.
 
 create or replace function public.lr_finalize_source_run(p_run_id uuid)
@@ -26,18 +27,18 @@ begin
     where source_id=r.source_id and id<>r.id and health_status in ('healthy','warning') and finished_at is not null
     order by finished_at desc limit 1;
 
-  if r.fetch_status='failed' or r.parse_status='failed' then
+  if r.fetch_status is distinct from 'ok' or r.parse_status is distinct from 'ok' then
     health := 'unhealthy';
     validation_state := 'skipped';
     reasons := reasons || '"fetch_or_parse_failed"'::jsonb;
   end if;
 
-  if r.parse_status='ok' and r.records_seen=0 and prev.id is not null and prev.records_seen>0 then
+  if r.fetch_status='ok' and r.parse_status='ok' and r.records_seen=0 and prev.id is not null and prev.records_seen>0 then
     health := 'unhealthy';
     reasons := reasons || '"zero_after_nonzero_baseline"'::jsonb;
   end if;
 
-  if prev.id is not null and prev.records_seen>0 then
+  if r.fetch_status='ok' and r.parse_status='ok' and prev.id is not null and prev.records_seen>0 then
     collapse := 1 - (r.records_seen::numeric / prev.records_seen::numeric);
     if collapse > 0.50 and health <> 'unhealthy' then
       health := 'warning';
@@ -45,7 +46,7 @@ begin
     end if;
   end if;
 
-  if r.records_seen>0 then fail_rate := r.records_rejected::numeric/r.records_seen::numeric; end if;
+  if r.fetch_status='ok' and r.parse_status='ok' and r.records_seen>0 then fail_rate := r.records_rejected::numeric/r.records_seen::numeric; end if;
   if fail_rate > 0.20 and validation_state <> 'skipped' then
     validation_state := 'warning';
     if health <> 'unhealthy' then health := 'warning'; end if;
@@ -59,7 +60,7 @@ begin
   end if;
 
   -- Only two consecutive successfully fetched AND parsed empty source runs
-  -- establish disappearance. Fetch/parse failures report unhealthy separately.
+  -- after a previously observed successful nonempty run establish disappearance. Fetch/parse failures report unhealthy separately.
   select count(*) into zero_streak from (
     select fetch_status, parse_status, records_seen
     from public.lr_source_runs
@@ -70,7 +71,18 @@ begin
   where fetch_status='ok' and parse_status='ok' and records_seen=0;
 
   -- Avoid duplicate high-severity reviews while one is already actionable.
-  if zero_streak=2 and not exists (
+  if zero_streak=2
+    and exists (
+      select 1 from public.lr_source_runs baseline
+      where baseline.source_id=r.source_id
+        and baseline.id<>r.id
+        and baseline.finished_at is not null
+        and baseline.fetch_status='ok'
+        and baseline.parse_status='ok'
+        and baseline.records_seen>0
+        and baseline.finished_at < coalesce(r.finished_at,now())
+    )
+    and not exists (
     select 1 from public.lr_review_queue q
     where q.issue_type='source_disappearance'
       and q.status in ('open','in_review')
