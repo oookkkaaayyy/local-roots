@@ -720,7 +720,7 @@ test('physical color-source quality is not inferred from photos on unverified su
   assert.match(x.train_eligible,/^NO/,'unverified result is NOT a calibration target');
   assert.match(x.numeric_holdout_eligible,/^NO/);
  }
- assert.match(rows.find(r=>r.id==='FIELD-TIME-01').reported_duration,/1, 5, 15, 30/);
+ assert.match(rows.find(r=>r.id==='FIELD-TIME-01').reported_duration,/1 5 15 30min/);
  assert.match(rows.find(r=>r.id==='FIELD-AC-PALETTE-01').dye_identity,/Family|Partially|partially|named/);
  assert.equal(rows.filter(x=>/^YES/i.test(x.train_eligible)).length,0,'no unsupported numerical training admitted');
 });
