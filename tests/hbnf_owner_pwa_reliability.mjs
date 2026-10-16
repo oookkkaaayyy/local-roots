@@ -11,7 +11,7 @@ const js = fs.readFileSync(path.join(controller, "hbnf-cart.js"), "utf8");
 const sw = fs.readFileSync(path.join(controller, "hbnf-cart-sw.js"), "utf8");
 const manifest = JSON.parse(fs.readFileSync(path.join(controller, "hbnf-cart-manifest.webmanifest"), "utf8"));
 const installer = fs.readFileSync(path.join(root, "hbnf-ui-v6-package/install_ui_v6.py"), "utf8");
-const VERSION = "20261015-owner-control-local-v3";
+const VERSION = "20261016-guest-qr-v1";
 const TOKEN = "a".repeat(64);
 
 assert.equal(parsePairFragment(`#pair=${TOKEN}`), TOKEN);
@@ -50,7 +50,7 @@ assert.equal(manifest.start_url, `/hbnf-cart.html?app=${VERSION}`);
 assert.match(html, /navigator\.serviceWorker\.register/);
 assert.match(html, new RegExp(`hbnf-cart-sw\\.js\\?v=${VERSION}`));
 assert.match(html, /scope:"\/hbnf-cart\.html"/);
-assert.match(sw, /hbnf-owner-pwa-v12-local-controls-20261015/);
+assert.match(sw, /hbnf-owner-pwa-v13-guest-qr-20261016/);
 assert.match(sw, /self\.skipWaiting\(\)/);
 assert.match(sw, /self\.clients\.claim\(\)/);
 assert.match(sw, /url\.origin !== self\.location\.origin/);
@@ -137,6 +137,7 @@ for (const asset of [
   "hbnf-cart-icon-180.png",
   "hbnf-cart-icon-192.png",
   "hbnf-cart-icon-512.png",
+  "hbnf-guest-qr.png",
 ]) {
   assert.match(sw, new RegExp(asset.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `service worker core omits ${asset}`);
 }
@@ -181,5 +182,5 @@ assert.match(js, /x\.reported && x\.reported\.confirmed === true/);
 assert.match(js, /invalid_or_mismatched_foundation_ack.*Matrix command not confirmed/);
 assert.match(css, /min-height:50px/);
 assert.match(css, /@media\(max-width:340px\)/);
-assert.match(sw, /hbnf-owner-pwa-v12-local-controls-20261015/);
+assert.match(sw, /hbnf-owner-pwa-v13-guest-qr-20261016/);
 console.log("PASS: owner control hierarchy, Animation Mix labels, device-ack truth, responsive layout, and PWA versioning");

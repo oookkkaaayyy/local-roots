@@ -10,12 +10,12 @@ import stat
 import zipfile
 from pathlib import Path
 
-PACKAGE = "HBNF_CART_OWNER_CONTROL_LOCAL_V2_20261015"
+PACKAGE = "HBNF_CART_OWNER_GUEST_CONTROLS_V1_20261016"
 CONTROLLER_FILES = (
     "hbnf-cart.html", "hbnf-cart.js", "hbnf-cart-local.mjs", "hbnf-cart-net.mjs", "hbnf-cart-sw.js",
     "hbnf-cart-semantic.mjs", "hbnf-cart-manifest.webmanifest", "hbnf-cart-ui-v6.css",
     "hbnf-cart-ui-v6.mjs", "hbnf-cart-features.mjs", "hbnf-cart-skins-score.mjs",
-    "hbnf-cart-icon-180.png", "hbnf-cart-icon-192.png", "hbnf-cart-icon-512.png",
+    "hbnf-cart-icon-180.png", "hbnf-cart-icon-192.png", "hbnf-cart-icon-512.png", "hbnf-guest-qr.png",
     "guest/hbnf-cart/index.html", "guest/hbnf-cart/guest.js", "guest/hbnf-cart/guest.css",
 )
 PACKAGE_FILES = (
@@ -35,7 +35,7 @@ def build(
     *,
     package_name: str = PACKAGE,
     manifest_schema: str = "hbnf-cart2-owner-guest-vibe-package-v2",
-    build_marker: str = "hbnf-cart2-owner-control-local-v2-20261015",
+    build_marker: str = "hbnf-cart2-owner-control-guest-qr-v1-20261016",
     scope: str = "controller-only-no-firmware-no-phase2-hardware",
 ) -> tuple[Path, str]:
     source_root = source_root.resolve()
@@ -96,7 +96,7 @@ def main() -> None:
     ap.add_argument("--source-commit", required=True)
     ap.add_argument("--package-name", default=PACKAGE)
     ap.add_argument("--manifest-schema", default="hbnf-cart2-owner-guest-vibe-package-v2")
-    ap.add_argument("--build-marker", default="hbnf-cart2-owner-control-local-v1-20261015")
+    ap.add_argument("--build-marker", default="hbnf-cart2-owner-control-guest-qr-v1-20261016")
     ap.add_argument("--scope", default="controller-only-no-firmware-no-phase2-hardware")
     args = ap.parse_args()
     archive, sha = build(

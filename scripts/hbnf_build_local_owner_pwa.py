@@ -23,6 +23,7 @@ ASSETS = (
     "hbnf-cart-icon-180.png",
     "hbnf-cart-icon-192.png",
     "hbnf-cart-icon-512.png",
+    "hbnf-guest-qr.png",
 )
 
 
@@ -35,7 +36,7 @@ def main() -> None:
     parser.add_argument("--source-root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--source-commit", required=True)
-    parser.add_argument("--package-version", default="1.0.0")
+    parser.add_argument("--package-version", default="1.0.2")
     args = parser.parse_args()
     if not re.fullmatch(r"\d+\.\d+\.\d+", args.package_version):
         raise SystemExit("--package-version must be a semantic x.y.z version")

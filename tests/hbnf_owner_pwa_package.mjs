@@ -18,12 +18,12 @@ const releaseWorkflow = fs.readFileSync(path.join(root, ".github/workflows/hbnf-
 const packageBuilderPath = path.join(root, "scripts/hbnf_build_owner_guest_package.py");
 const packageBuilder = fs.readFileSync(packageBuilderPath, "utf8");
 
-assert.match(html, /hbnf-cart2-owner-control-local-v1-20261015/);
+assert.match(html, /hbnf-cart2-owner-control-guest-qr-v1-20261016/);
 assert.match(html, /href="http:\/\/192\.168\.77\.1\/mission-control-local\/index\.html"/);
 assert.match(html, /Open local controls · works on Cart Wi-Fi without internet/);
 assert.doesNotMatch(html, /skins-owner-pwa-r1/);
 assert.equal(manifest.id, "/hbnf-cart.html");
-assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261015-owner-control-local-v3");
+assert.equal(manifest.start_url, "/hbnf-cart.html?app=20261016-guest-qr-v1");
 assert.equal(manifest.scope, "/hbnf-cart.html");
 assert.deepEqual(manifest.icons.map(({ sizes }) => sizes), ["192x192", "512x512"]);
 
@@ -50,6 +50,7 @@ for (const name of [
   "hbnf-cart-icon-180.png",
   "hbnf-cart-icon-192.png",
   "hbnf-cart-icon-512.png",
+  "hbnf-guest-qr.png",
 ]) {
   assert.ok(installer.includes(`"${name}"`), `installer omits ${name}`);
   assert.ok(packageBuilder.includes(`"${name}"`), `Owner/Guest package builder omits ${name}`);
@@ -83,8 +84,8 @@ assert.match(css, /::-webkit-slider-thumb[^}]*width:20px;height:20px/);
 assert.match(css, /::-moz-range-thumb[^}]*width:16px;height:16px/);
 assert.match(html, /:focus-visible/, "keyboard focus styling remains visible");
 assert.ok(fs.existsSync(path.join(controller, "hbnf-cart-sw.js")), "owner PWA service worker missing");
-assert.match(uiWorkflow, /HBNF-CART-OWNER-CONTROL-LOCAL-V1-20261015/);
-assert.match(installer, /BUILD_MARKER="hbnf-cart2-owner-control-local-v1-20261015"/);
+assert.match(uiWorkflow, /HBNF-CART-OWNER-GUEST-CONTROLS-V1-20261016/);
+assert.match(installer, /BUILD_MARKER="hbnf-cart2-owner-control-guest-qr-v1-20261016"/);
 assert.match(installer, /\?release="\+BUILD_MARKER\+/);
 assert.match(installer, /HBNF_CART2_OWNER_GUEST_INSTALL=PASS/);
 assert.match(installer, /if not verified:\s+raise RuntimeError\("Deploy finished but exact Cart 2.0 marker did not verify/);
@@ -115,7 +116,7 @@ try {
   for (const out of outputs) {
     execFileSync("python3", [packageBuilderPath, "--source-root", root, "--output-dir", out, "--source-commit", "0123456789abcdef"], { stdio: "pipe" });
   }
-  const archiveName = "HBNF_CART_OWNER_CONTROL_LOCAL_V2_20261015.zip";
+  const archiveName = "HBNF_CART_OWNER_GUEST_CONTROLS_V1_20261016.zip";
   const bytesA = fs.readFileSync(path.join(outputs[0], archiveName));
   const bytesB = fs.readFileSync(path.join(outputs[1], archiveName));
   assert.deepEqual(bytesA, bytesB, "same source commit must produce byte-identical archives in different output directories");
@@ -127,7 +128,9 @@ try {
 
 const guestHtml = fs.readFileSync(path.join(guestRoute, "index.html"), "utf8");
 const guestJs = fs.readFileSync(path.join(guestRoute, "guest.js"), "utf8");
-assert.match(guestHtml, /Guest access uses the Cart service; this status is separate from local Matrix controls/);
+assert.match(guestHtml, /Use cellular or another network with internet; HBNF-Cart Wi-Fi is not required/);
+assert.match(guestHtml, /Skins scoring/);
+assert.match(guestHtml, /Glow scoring/);
 assert.match(guestHtml, /Matrix\/AUX command acknowledgements not confirmed/);
 assert.match(guestJs, /AUX illumination is not verified by this acknowledgement/);
 assert.match(guestJs, /GUEST SERVICE OFFLINE/);

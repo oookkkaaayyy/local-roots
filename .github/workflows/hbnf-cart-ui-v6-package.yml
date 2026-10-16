@@ -44,10 +44,12 @@ jobs:
           ! grep -q 'createClient' hbnf-final-controller/hbnf-cart.js
           ! grep -Fq '\\n' hbnf-final-controller/hbnf-cart.html
           python3 -m py_compile hbnf-ui-v6-package/install_ui_v6.py
-          grep -q 'hbnf-cart2-owner-control-local-v1-20261015' hbnf-final-controller/hbnf-cart.html
+          grep -q 'hbnf-cart2-owner-control-guest-qr-v1-20261016' hbnf-final-controller/hbnf-cart.html
           node tests/hbnf_owner_local_control.mjs
           node --experimental-strip-types tests/hbnf_skins_scoring_owner_flow.mjs
           node tests/hbnf_owner_pwa_package.mjs
+          node tests/hbnf_owner_guest_qr_static.mjs
+          node tests/hbnf_owner_pwa_opal_package.mjs
           node tests/hbnf_owner_pwa_reliability.mjs
           node tests/hbnf_matrix_brightness_output.mjs
           grep -q 'matrixTruth' hbnf-final-controller/hbnf-cart.html
@@ -68,9 +70,9 @@ jobs:
       - name: Upload exact package
         uses: actions/upload-artifact@v4
         with:
-          name: HBNF-CART-OWNER-CONTROL-LOCAL-V1-20261015
+          name: HBNF-CART-OWNER-GUEST-CONTROLS-V1-20261016
           path: |
-            ${{ runner.temp }}/HBNF_CART_OWNER_CONTROL_LOCAL_V1_20261015.zip
-            ${{ runner.temp }}/HBNF_CART_OWNER_CONTROL_LOCAL_V1_20261015.zip.sha256
+            ${{ runner.temp }}/HBNF_CART_OWNER_GUEST_CONTROLS_V1_20261016.zip
+            ${{ runner.temp }}/HBNF_CART_OWNER_GUEST_CONTROLS_V1_20261016.zip.sha256
           if-no-files-found: error
           retention-days: 30

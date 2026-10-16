@@ -1,7 +1,7 @@
 /* HBNF owner PWA app-shell reliability cache. Never caches control/API traffic. */
 const CACHE_PREFIX = "hbnf-owner-pwa-";
-const CACHE_NAME = "hbnf-owner-pwa-v12-local-controls-20261015";
-const VERSION = "20261015-owner-control-local-v3";
+const CACHE_NAME = "hbnf-owner-pwa-v13-guest-qr-20261016";
+const VERSION = "20261016-guest-qr-v1";
 const APP_FALLBACK = `/hbnf-cart.html?app=${VERSION}`;
 const CORE = [
   APP_FALLBACK,
@@ -17,6 +17,7 @@ const CORE = [
   `/hbnf-cart-icon-180.png?v=${VERSION}`,
   `/hbnf-cart-icon-192.png?v=${VERSION}`,
   `/hbnf-cart-icon-512.png?v=${VERSION}`,
+  `/hbnf-guest-qr.png?v=${VERSION}`,
 ];
 const ASSET_PATHS = new Set(CORE.map(value => new URL(value, self.location.origin).pathname));
 

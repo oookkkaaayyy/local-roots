@@ -203,6 +203,7 @@ jobs:
           cp hbnf-final-controller/hbnf-cart-skins-score.mjs "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-manifest.webmanifest "$OUT/controller/"
           cp hbnf-final-controller/hbnf-cart-icon-180.png hbnf-final-controller/hbnf-cart-icon-192.png hbnf-final-controller/hbnf-cart-icon-512.png "$OUT/controller/"
+          cp hbnf-final-controller/hbnf-guest-qr.png "$OUT/controller/"
           cp hbnf-ui-v6-package/install_ui_v6.py "$OUT/installer/"
           cp hbnf-cart-core/domain/palette-projection.mjs "$OUT/domain/"
           cp config/HBNF_COORDINATED_RELEASE_GATES.json "$OUT/config/"
