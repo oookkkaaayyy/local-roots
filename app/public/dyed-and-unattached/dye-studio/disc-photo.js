@@ -120,11 +120,16 @@ function estimatePixels(imageData,options={}){
  const q=(i)=>ranked[clamp(Math.floor(ranked.length*i),0,ranked.length-1)].d;
  const spread=q(.75),outliers=ranked.filter(x=>x.d>48).length/ranked.length;
  const edgeFound=disc.edge>=15&&disc.valid>=28;
+ // Two side-by-side discs (or a pre-dyed multicolor disc) can fool the
+ // center-biased circle detector into finding a non-disc 'edge'. This severe
+ // annular color mismatch is a conservative fail-closed flag, NOT a general
+ // proof that any accepted photograph contains exactly one disc.
+ const severeMixedColor=spread>70&&outliers>.50;
  const consistent=spread<34&&outliers<.35;
  const confidence=edgeFound&&consistent?"good":"check";
  const appearance=edgeFound?estimateRim(data,w,h,disc):null;
  const plateHex=appearance?appearance.plateHex:hex(rgb);
- return {hex:plateHex,rgb:appearance?[1,3,5].map(i=>parseInt(plateHex.slice(i,i+2),16)):rgb.map(x=>Math.round(x)),confidence:appearance?.confidence||confidence,appearance,
+ return {hex:plateHex,rgb:appearance?[1,3,5].map(i=>parseInt(plateHex.slice(i,i+2),16)):rgb.map(x=>Math.round(x)),confidence:severeMixedColor?"check":appearance?.confidence||confidence,appearance,severeMixedColor,
    edgeDetected:edgeFound,spread:Math.round(spread),outlierFraction:+outliers.toFixed(2),
    pixelCount:samples.length};
 }
@@ -188,6 +193,7 @@ function bind(){
    try{
      const result=await analyzeImage(file);
      if(!result.edgeDetected)throw Error("Disc edge not found. Retake with the entire disc on a contrasting background.");
+     if(result.severeMixedColor)throw Error("Photo contains strongly mixed colors or multiple discs. Crop to a single undyed disc and retry; the selected color was not changed.");
      const color=document.getElementById("baseColor"),field=document.getElementById("baseHex");
      color.value=result.hex;field.value=result.hex;
      // Same existing UI color handlers; automatically refresh model and undo history.
