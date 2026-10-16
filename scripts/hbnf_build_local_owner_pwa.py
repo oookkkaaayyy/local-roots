@@ -57,10 +57,18 @@ def main() -> None:
     if removed != 1:
         raise SystemExit("Expected exactly one old local-controller shortcut in the Owner PWA")
     html = html.replace('href="/guest/hbnf-cart/"', 'href="https://hbnightflyers.com/guest/hbnf-cart/"')
+    # OpenWrt's existing uHTTPd map is verified for .js; earlier Opal UI
+    # modules failed when served as .mjs. Keep module content, use known-good
+    # .js URLs, and rewrite imports only in the local copy.
+    html = html.replace(".mjs", ".js")
     (payload / "hbnf-cart.html").write_text(html)
 
     for name in ASSETS[1:]:
-        (payload / name).write_bytes((source / name).read_bytes())
+        out_name = name.replace(".mjs", ".js")
+        data = (source / name).read_bytes()
+        if name.endswith((".js", ".mjs")):
+            data = data.replace(b".mjs", b".js")
+        (payload / out_name).write_bytes(data)
 
     manifest_source = json.loads((source / "hbnf-cart-manifest.webmanifest").read_text())
     manifest_source["id"] = "./hbnf-cart.html"

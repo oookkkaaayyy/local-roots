@@ -55,7 +55,8 @@ try {
 
   const localHtml = fs.readFileSync(path.join(buildA, "owner-pwa/hbnf-cart.html"), "utf8");
   assert.doesNotMatch(localHtml, /navigator\.serviceWorker\.register/);
-  assert.match(localHtml, /hbnf-cart-features\.mjs/);
+  assert.match(localHtml, /hbnf-cart-features\.js/);
+  assert.doesNotMatch(localHtml, /\.mjs(?:["?])/);
   const localDir = path.join(buildA, "owner-pwa");
   for (const [, attrs] of localHtml.matchAll(/<(?:script|link|img|source|iframe)\b([^>]*)>/gi)) {
     for (const [, raw] of attrs.matchAll(/(?:src|href)="([^"]+)"/g)) {
@@ -69,7 +70,8 @@ try {
       assert.ok(fs.existsSync(path.join(localDir, raw.split(/[?#]/, 1)[0])), `${file} import is missing: ${raw}`);
     }
   }
-  const localFeatures = fs.readFileSync(path.join(localDir, "hbnf-cart-features.mjs"), "utf8");
+  assert.equal(fs.readdirSync(localDir).some(name => name.endsWith(".mjs")), false, "Opal bundle uses the already verified .js module MIME path");
+  const localFeatures = fs.readFileSync(path.join(localDir, "hbnf-cart-features.js"), "utf8");
   assert.match(localFeatures, /const out=await canonicalRead\("live_status",\{\}\);[\s\S]*?if \(!live \|\| !live\.active \|\| !Array\.isArray\(live\.entries\) \|\| !live\.entries\.length\) throw/);
   assert.match(localFeatures, /const cached=readLiveCache\(\);[\s\S]*?renderLive\(cached\.live,true/);
   const manifest = JSON.parse(fs.readFileSync(path.join(buildA, "owner-pwa/hbnf-cart-manifest.webmanifest"), "utf8"));
