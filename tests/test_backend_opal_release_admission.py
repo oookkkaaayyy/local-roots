@@ -59,6 +59,7 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
     canonical_path=temp/"canonical-readonly.json"; write_json(canonical_path,canonical)
     artifacts={
         "migration":"staging/coordinated-backend/migrations/20261011235000_hbnf_matrix_relay_incremental_controls_pin.sql",
+        "corrective_migration":"staging/coordinated-backend/migrations/20261016192522_hbnf_matrix_relay_confirm_status_constraint_compat.sql",
         "compensating_migration":"staging/coordinated-backend/rollback/20261011235000_hbnf_matrix_relay_incremental_controls_pin.sql",
         "opal_writer":"staging/coordinated-backend/opal/hbnf-matrix-relay",
         "opal_transaction_helper":"staging/coordinated-backend/opal/hbnf-matrix-relay-transaction.sh",
@@ -67,6 +68,7 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
     }
     migration_path=ROOT/artifacts["migration"]; rollback_path=ROOT/artifacts["compensating_migration"]
     artifact_items={"migration":{"path":artifacts["migration"],"sha256":sha(migration_path)},
+        "corrective_migration":{"path":artifacts["corrective_migration"],"sha256":sha(ROOT/artifacts["corrective_migration"])},
         "edge_function_files":[{"path":p,"sha256":sha(ROOT/p)} for p in FUNCTION_FILES],
         "opal_writer":{"path":artifacts["opal_writer"],"sha256":sha(ROOT/artifacts["opal_writer"])},
         "opal_transaction_helper":{"path":artifacts["opal_transaction_helper"],"sha256":sha(ROOT/artifacts["opal_transaction_helper"])},
@@ -393,4 +395,97 @@ with tempfile.TemporaryDirectory(prefix="hbnf_backend_opal_gate_",dir=ROOT/"evid
     stale_tx=json.loads(failed_state_path.read_text())["execution_cursor"]["backend_opal_transaction"]
     assert stale_tx["status"]=="ROLLBACK_REQUIRED" and stale_tx["rollback_attempts_used"]==1
 
-print("PASS: exact backend/Opal admission, one-use ordered steps, scope/device/hash/evidence/expiry failures, zero child execution on rejection, rollback-only failure path, and PHASE2/firmware gate preservation")
+    # A fresh authorization may continue only after an exact activation
+    # failure plus verified rollback, carrying the immutable four-step prefix.
+    retry_state=copy.deepcopy(continued_state)
+    retry_tx=retry_state["execution_cursor"]["backend_opal_transaction"]
+    retry_old_id=retry_tx["transaction_id"]
+    retry_tx["owner_authorization"]["expires_unix"]=time.time()-1
+    retry_tx.update({"status":"ROLLED_BACK","completed_steps":STEPS[:4],"active_step":None,
+        "failed_step":"activate_writer","last_reserved_step":"rollback","rollback_attempts_used":1})
+    writer_receipt={"schema":"hbnf-backend-opal-release-step-v1","transaction_id":retry_old_id,
+        "step":"install_writer_stopped","status":"PASS","side_effects_verified":True,
+        "evidence":{"source_commit":BASE,"writer_sha256":artifact_items["opal_writer"]["sha256"],
+            "transaction_helper_sha256":artifact_items["opal_transaction_helper"]["sha256"],
+            "service_enabled":False,"service_started":False,"skins_relay_preserved":True,
+            "matrix_device_mutated":False,"aux_device_mutated":False}}
+    bootstrap_receipt={"schema":"hbnf-backend-opal-release-step-v1","transaction_id":retry_old_id,
+        "step":"bootstrap_current_state","status":"PASS","side_effects_verified":True,
+        "evidence":{"function_version":27,"physical_settings_changed":False,"deviceCommandsIssued":False,
+            "firmware_mutation_authority":"CLOSED","canonical_readback":{"matrixLogicalBrightness":46,
+                "matrixAuxTargetBrightness":46,"auxReceiverBrightness":255}}}
+    for receipt in (writer_receipt,bootstrap_receipt):
+        rp=temp/(receipt["step"]+"-retry-immutable.json");write_json(rp,receipt)
+        retry_tx.setdefault("step_receipts",[]).append({"step":receipt["step"],"path":rp.relative_to(ROOT).as_posix(),"sha256":sha(rp)})
+    failure_receipt={"schema":"hbnf-backend-opal-release-step-v1","transaction_id":retry_old_id,
+        "step":"activate_writer","status":"FAIL","side_effects_verified":True,
+        "failure":{"authorization_state":"not consumed; no command sent","device_readback":"46/255 exact"}}
+    failure_path=temp/"activation-failure.json";write_json(failure_path,failure_receipt)
+    rollback_receipt={"schema":"hbnf-backend-opal-release-step-v1","transaction_id":retry_old_id,
+        "step":"rollback","status":"PASS","side_effects_verified":True,
+        "evidence":{"opal_writer":{"exact_prestate_restored":True},"devices":{"settings_changed":False}}}
+    rollback_path=temp/"activation-rollback.json";write_json(rollback_path,rollback_receipt)
+    retry_tx.update({"failure_receipt":failure_path.relative_to(ROOT).as_posix(),"failure_receipt_sha256":sha(failure_path),
+        "rollback_receipt":rollback_path.relative_to(ROOT).as_posix(),"rollback_receipt_sha256":sha(rollback_path)})
+    retry_proof={"schema":"hbnf-backend-opal-activation-retry-precondition-v1","pass":True,"captured_unix":time.time(),
+        "prior_transaction_id":retry_old_id,"prior_admission_sha256":retry_tx["admission_sha256"],
+        "completed_steps":STEPS[:2],"completed_step_receipts":copy.deepcopy(retry_tx["step_receipts"][:2]),
+        "prior_completed_steps":STEPS[:4],"prior_step_receipts":copy.deepcopy(retry_tx["step_receipts"]),
+        "production_function_version":27,"function_bundle_sha256":"d02a3cead7bdb5028ddca158ed4fc2fb0e2a28248923073c3da60e61e572c98a",
+        "verify_jwt":False,"migration_applied":True,"bootstrap_rpc_present":True,
+        "migration_sha256":artifact_items["migration"]["sha256"],"source_commit":BASE,
+        "migration_required_rpcs":["hbnf_cart_matrix_relay_bootstrap","hbnf_cart_matrix_relay_issue","hbnf_cart_matrix_relay_confirm"],
+        "migration_execute_acl":{"anon":False,"authenticated":False,"service_role":True},
+        "v25_rollback_snapshot_sha256":"0d75b62870cdcb56abfd1340f35532c24dbb5df974b902277a40e6745f0fab24",
+        "production_source_match":True,
+        "production_source_files":[pathlib.Path(x).name for x in FUNCTION_FILES if pathlib.Path(x).name!="deno.lock"],
+        "deployment_origin_bound_to_step_receipt":True,"opal_writer_prestate":"ABSENT","scoreboard_relay_present":True,
+        "fence_active":False,"matrix_preflight_sha256":sha(prepath),"canonical_preflight_sha256":sha(canonical_path),
+        "matrix_mac":"704bca5b345c","matrix_logical_brightness":46,"matrix_brightness":255,
+        "matrix_aux_target_brightness":46,"aux_mac":"8c94df55c34c","aux_brightness":255,"vibe":3,
+        "matrix_release_id":"hbnf-cart2-phase2-r6-skins-readable-20261014",
+        "matrix_recorded_firmware_sha256":"de38221f2f9d7e9a03076185777266dc5cfd3a088b449530531dfcc1f7ed072d",
+        "aux_ddp_healthy":True,"skins_relay_healthy":True,
+        "applied_migration_name":"20261016200518_hbnf_matrix_relay_confirm_status_constraint_compat",
+        "corrective_migration_sha256":artifact_items["corrective_migration"]["sha256"],
+        "corrective_migration_source_commit":BASE,
+        "prior_failure_receipt_sha256":retry_tx["failure_receipt_sha256"],
+        "prior_rollback_receipt_sha256":retry_tx["rollback_receipt_sha256"]}
+    retry_proof_path=temp/"activation-retry-precondition.json";write_json(retry_proof_path,retry_proof)
+    retry_manifest=copy.deepcopy(continued_manifest);retry_manifest["artifacts"]["corrective_migration"]=artifact_items["corrective_migration"]
+    retry_manifest["identities"]["expected_function_version"]=27
+    retry_owner=copy.deepcopy(continuation_owner);retry_owner.update({"transaction_id":"OWNER-ACTIVATION-RETRY-TEST",
+        "authorization_id":"DIRECT-OWNER-ACTIVATION-RETRY-TEST","source_message_ref":"TEST FIXTURE ONLY; explicit fresh retry authorization",
+        "nonce":"unique-activation-retry-nonce-0123456789","scope":[*STEPS[2:],"rollback_if_required"]})
+    retry_owner["artifact_sha256_bindings"]=ctl._backend_opal_artifact_sha_bindings(retry_manifest)
+    retry_manifest.update({"transaction_id":retry_owner["transaction_id"],"owner_authorization":retry_owner})
+    retry_manifest["checks"]["reissue_precondition"]={"pass":True,"path":retry_proof_path.relative_to(ROOT).as_posix(),"sha256":sha(retry_proof_path)}
+    retry_auth=temp/"activation-retry-authorization.json";write_json(retry_auth,
+        {"schema":"hbnf-backend-opal-admission-authorization-v1","owner_authorization":retry_owner})
+    retry_state_path=temp/"activation-retry-state.json";write_json(retry_state_path,retry_state)
+    retry_admission=temp/"activation-retry-admission.json";write_json(retry_admission,retry_manifest)
+    before_retry=retry_state_path.read_bytes()
+    p=run([sys.executable,str(CONTROL),"--state",str(retry_state_path),"reissue-backend-opal-admission",
+        "--admission",str(retry_admission),"--authorization-receipt",str(retry_auth)])
+    assert p.returncode==0,(p.stdout,p.stderr)
+    issued_retry=json.loads(retry_state_path.read_text())["execution_cursor"]["backend_opal_transaction"]
+    assert issued_retry["status"]=="IN_PROGRESS" and issued_retry["completed_steps"]==STEPS[:2]
+    assert issued_retry["authorization_start_index"]==2 and issued_retry["rollback_attempts_used"]==0
+    assert issued_retry["last_reserved_step"]=="deploy_edge_function"
+    assert issued_retry["continuation_kind"]=="verified_activation_rollback"
+    assert json.loads(retry_state_path.read_text())["live_mutation_authorized"] is False
+    # Corrupting the corrective migration identity cannot issue or consume a retry.
+    bad_retry_state=copy.deepcopy(retry_state);bad_retry_state_path=temp/"bad-activation-retry-state.json";write_json(bad_retry_state_path,bad_retry_state)
+    bad_retry_manifest=copy.deepcopy(retry_manifest);bad_retry_manifest["checks"]["reissue_precondition"]={
+        "pass":True,"path":retry_proof_path.relative_to(ROOT).as_posix(),"sha256":sha(retry_proof_path)}
+    bad_retry_proof=dict(retry_proof,applied_migration_name="wrong-migration")
+    bad_retry_proof_path=temp/"bad-activation-retry-proof.json";write_json(bad_retry_proof_path,bad_retry_proof)
+    bad_retry_manifest["checks"]["reissue_precondition"]["path"]=bad_retry_proof_path.relative_to(ROOT).as_posix()
+    bad_retry_manifest["checks"]["reissue_precondition"]["sha256"]=sha(bad_retry_proof_path)
+    bad_retry_admission=temp/"bad-activation-retry-admission.json";write_json(bad_retry_admission,bad_retry_manifest)
+    before_bad_retry=bad_retry_state_path.read_bytes()
+    p=run([sys.executable,str(CONTROL),"--state",str(bad_retry_state_path),"reissue-backend-opal-admission",
+        "--admission",str(bad_retry_admission),"--authorization-receipt",str(retry_auth)])
+    assert p.returncode!=0 and bad_retry_state_path.read_bytes()==before_bad_retry,(p.stdout,p.stderr)
+
+print("PASS: exact backend/Opal admission, one-use ordered steps, scope/device/hash/evidence/expiry failures, zero child execution on rejection, rollback-only failure path, verified activation rollback continuation, and PHASE2/firmware gate preservation")
