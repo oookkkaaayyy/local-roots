@@ -930,3 +930,57 @@ test('Onyx stencil and sequential Fuzion cases remain qualitative-only and chip 
  assert.match(read('../../docs/dye-studio/source-admission-benchmark-v1.json'),/cocoa-butter lotions/);
  assert.match(studioScript,/Manufacturer color chips use cocoa-butter lotions/);
 });
+
+
+test('source quality matrix agrees with the live physical-method classifier and preserves provenance aliases',()=>{
+ const csv=read('../../docs/dye-studio/evidence-quality-matrix.csv').trim();
+ const [header,...lines]=csv.split('\n'),cols=header.split(',');
+ const rows=lines.map(line=>{
+  const fields=[...line.matchAll(/"((?:[^"]|"")*)"(?:,|$)/g)].map(m=>m[1].replace(/""/g,'"'));
+  assert.equal(fields.length,cols.length,'CSV row must preserve 28 source attributes');
+  return Object.fromEntries(cols.map((name,i)=>[name,fields[i]]));
+ });
+ const get=name=>{const head='const '+name+'=',i=studioScript.indexOf(head),j=studioScript.indexOf('];',i);
+  return JSON.parse(studioScript.slice(i+head.length,j+1));};
+ const observations=[...get('EVIDENCE_OBSERVATIONS'),...get('FIELD_CASES')];
+ const start=studioScript.indexOf('function classifyObservedProcess(');
+ const end=studioScript.indexOf('function evidenceScore(',start);
+ const classify=Function(studioScript.slice(start,end)+';return classifyObservedProcess')();
+ assert.equal(rows.length,80);
+ assert.equal(observations.length,80);
+ const byId=new Map(rows.map(x=>[x.id,x]));
+ let joined=0;
+ for(const obs of observations){
+  const source=byId.get(obs.id);
+  if(!source)continue;
+  joined++;
+  assert.equal(source.method_class,classify(obs.medium),
+    obs.id+' matrix method should match current runtime classification');
+  assert.match(source.train_eligible,/^NO/,
+    'uncontrolled practitioner report cannot become numeric training');
+  assert.match(source.numeric_holdout_eligible,/^NO/,
+    'uncontrolled practitioner report cannot become a measured holdout');
+ }
+ assert.equal(joined,77,'source aliases remain related URL observations, not phantom duplicates');
+ const aliased=[
+  ['FIELD-AC-01','ISSUE-ACETONE-2022'],
+  ['FIELD-AC-05','QA-AC-06'],
+  ['FIELD-OTHER-01','WB003']
+ ];
+ for(const [appId,csvId] of aliased){
+  const obs=observations.find(x=>x.id===appId),other=byId.get(csvId);
+  assert.ok(obs&&other,'keep both source identity scopes');
+  assert.equal(obs.sourceUrl,other.source_url,'aliases must still point to same first-person source');
+ }
+ const mixedIds=['WB022','FIELD-AC-04'];
+ for(const id of mixedIds)
+  assert.equal(byId.get(id).method_class,'mixed-or-compound-process',
+    id+' cannot train or match a single physical carrier');
+ const wb004=observations.find(x=>x.id==='WB004');
+ assert.equal(wb004.plasticVerified,true,'maker named an actual Star Jay');
+ assert.equal(wb004.shadeMappingCertain,false,'maker photos do not map per-pixel purple');
+ assert.match(wb004.plastic,/separate TSA Aura Construct/);
+ assert.match(wb004.medium,/glue bed/i);
+ assert.match(byId.get('WB004').source_verification,/first-person maker/i);
+ assert.match(byId.get('WB004').numeric_holdout_eligible,/^NO/);
+});
