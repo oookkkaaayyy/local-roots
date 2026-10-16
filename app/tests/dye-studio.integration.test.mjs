@@ -698,7 +698,7 @@ test('physical color-source quality is not inferred from photos on unverified su
   assert.equal(parts.length,cols.length,'valid source record');
   return Object.fromEntries(cols.map((name,i)=>[name,parts[i]]));
  });
- assert.equal(rows.length,75);
+ assert.equal(rows.length,76);
  const chart=rows.find(x=>x.id==='FIELD-PHOTO-01');
  assert.ok(chart);
  assert.match(chart.starting_plastic,/Innova Star.*owner expert visual identification/);
@@ -713,6 +713,13 @@ test('physical color-source quality is not inferred from photos on unverified su
   }
  }
  const newlyAdded=['FIELD-TIME-01','FIELD-AC-PALETTE-01','FIELD-AC-SOLVENT-01','FIELD-CARRIER-01'];
+ const starRat=rows.find(r=>r.id==='FIELD-SAME-DISC-MEDIA-01');
+ assert.ok(starRat,'known-Star six-method field case indexed');
+ assert.match(starRat.starting_plastic,/Innova Star Rat/);
+ assert.match(starRat.reported_outcome,/confounded/);
+ assert.equal(starRat.controlled_photo,'NO');
+ assert.match(starRat.train_eligible,/^NO/);
+ assert.match(starRat.numeric_holdout_eligible,/^NO/);
  for(const id of newlyAdded){
   const x=rows.find(r=>r.id===id);
   assert.ok(x,'new practitioner source present: '+id);
@@ -816,8 +823,8 @@ test('published evidence counts match actual entries and distinct source URLs', 
   };
   const entries = [...records('EVIDENCE_OBSERVATIONS'), ...records('FIELD_CASES')];
   const distinctUrls = new Set(entries.map(row => row.sourceUrl));
-  assert.equal(entries.length, 75);
-  assert.equal(distinctUrls.size, 55);
+  assert.equal(entries.length, 76);
+  assert.equal(distinctUrls.size, 56);
   assert.match(studioHtml, new RegExp(`— ${entries.length} provisional observations`));
   assert.match(studioHtml, new RegExp(`${entries.length} records across ${distinctUrls.size} source URLs`));
   assert.match(studioScript, /\$\{ALL_DYE_EVIDENCE\.length\} provisional source observations/);
