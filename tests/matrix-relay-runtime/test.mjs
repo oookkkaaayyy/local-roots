@@ -5,6 +5,8 @@ import { PGlite } from '@electric-sql/pglite';
 const migrationPaths = [
   '../../staging/coordinated-backend/migrations/20261009190000_hbnf_matrix_relay_confirmation.sql',
   '../../staging/coordinated-backend/migrations/20261011235000_hbnf_matrix_relay_incremental_controls_pin.sql',
+  '../../staging/coordinated-backend/migrations/20261016192522_hbnf_matrix_relay_confirm_status_constraint_compat.sql',
+  '../../staging/coordinated-backend/rollback/20261016192522_hbnf_matrix_relay_confirm_status_constraint_compat.sql',
   '../../staging/coordinated-backend/rollback/20261011235000_hbnf_matrix_relay_incremental_controls_pin.sql'
 ].map(path => fileURLToPath(new URL(path, import.meta.url)));
 const db = new PGlite();
@@ -15,7 +17,7 @@ CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role;
 CREATE SCHEMA hbnf_internal;
 CREATE TABLE hbnf_internal.cart_desired_state(cart_id text primary key, revision bigint not null, state jsonb not null);
 CREATE TABLE hbnf_internal.cart_actuator_fence(cart_id text primary key, epoch bigint not null, release_id text not null, active boolean not null);
-CREATE TABLE hbnf_internal.observed(cart_id text, device_id text, online boolean, status text, desired_revision bigint, fence_epoch bigint, release_id text, boot_id text, reported jsonb, observed_at timestamptz);
+CREATE TABLE hbnf_internal.observed(cart_id text, device_id text, online boolean, status text CHECK (status IN ('online','offline','off','failed','stale')), desired_revision bigint, fence_epoch bigint, release_id text, boot_id text, reported jsonb, observed_at timestamptz);
 CREATE FUNCTION public.hbnf_cart_upsert_observed(text,text,boolean,text,bigint,bigint,text,text,jsonb,timestamptz) RETURNS void LANGUAGE sql AS $$ INSERT INTO hbnf_internal.observed VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) $$;
 INSERT INTO hbnf_internal.cart_desired_state VALUES('hbnf-cart',51,'${JSON.stringify(legacyState)}');
 INSERT INTO hbnf_internal.cart_actuator_fence VALUES('hbnf-cart',7,'r6',false);
@@ -55,14 +57,17 @@ assert.equal((await db.query(`select public.hbnf_cart_matrix_relay_get($1,'opal-
 assert.equal((await db.query(`select public.hbnf_cart_matrix_relay_authorize_apply($1,'opal-hbnf-cart') as ok`, [challenge])).rows[0].ok, true);
 assert.equal((await db.query(`select public.hbnf_cart_matrix_relay_authorize_apply($1,'opal-hbnf-cart') as ok`, [challenge])).rows[0].ok, false);
 assert.equal((await db.query(`select public.hbnf_cart_matrix_relay_confirm($1,'opal-hbnf-cart',$2::jsonb,$3::jsonb) as ok`, [challenge,JSON.stringify({...expected,on:false}),JSON.stringify({})])).rows[0].ok, false);
+await assert.rejects(db.query(`select public.hbnf_cart_matrix_relay_confirm($1,'opal-hbnf-cart',$2::jsonb,$3::jsonb) as ok`, [challenge,JSON.stringify(expected),JSON.stringify({deviceUptimeSec:1})]),/observed_status_check/,'reproduces production CHECK rejection of ddp_receiver_confirmed before the compatibility migration');
+await db.exec(fs.readFileSync(migrationPaths[2], 'utf8'));
 assert.equal((await db.query(`select public.hbnf_cart_matrix_relay_confirm($1,'opal-hbnf-cart',$2::jsonb,$3::jsonb) as ok`, [challenge,JSON.stringify(expected),JSON.stringify({deviceUptimeSec:1})])).rows[0].ok, true);
 assert.equal((await db.query(`select public.hbnf_cart_matrix_relay_confirm($1,'opal-hbnf-cart',$2::jsonb,$3::jsonb) as ok`, [challenge,JSON.stringify(expected),JSON.stringify({})])).rows[0].ok, false);
 assert.equal((await db.query(`select count(*)::int as n from hbnf_internal.observed`)).rows[0].n, 2, 'Matrix and AUX have separate observations');
 assert.deepEqual((await db.query(`select device_id from hbnf_internal.observed order by device_id`)).rows.map(x=>x.device_id), ['aux','matrix']);
 const auxObservation=(await db.query(`select status,reported from hbnf_internal.observed where device_id='aux'`)).rows[0];
-assert.equal(auxObservation.status,'ddp_receiver_confirmed');
+assert.equal(auxObservation.status,'online');
 assert.equal(auxObservation.reported.on,'true');
 assert.equal(auxObservation.reported.brightness,'255');
+assert.equal(auxObservation.reported.ddpReceiverConfirmed,true,'DDP receiver confirmation remains explicit in structured readback');
 assert.equal(auxObservation.reported.physicalOutputConfirmed,false,'DDP state acknowledgement is not physical illumination proof');
 const stale = await issue(); await db.exec(`update hbnf_internal.cart_desired_state set revision=53 where cart_id='hbnf-cart'`);
 assert.equal((await db.query(`select public.hbnf_cart_matrix_relay_get($1,'opal-hbnf-cart') as value`, [stale])).rows[0].value, null);
@@ -84,7 +89,9 @@ assert.equal(closedFence.command_fence_active, false, 'offline work must not act
 assert.equal(closedFence.opal_relay_active, false, 'offline work must not activate the relay');
 await db.query(`update hbnf_internal.cart_actuator_fence set active=false where cart_id='hbnf-cart'`);
 await assert.rejects(issue(expected, 53, 7, expected.candidate, 'r6'), /stale_fence_or_state/, 'closed actuator fence rejects otherwise valid command');
-await db.exec(fs.readFileSync(migrationPaths[2], 'utf8'));
+await db.exec(fs.readFileSync(migrationPaths[3], 'utf8'));
+assert.match((await db.query(`select pg_get_functiondef('public.hbnf_cart_matrix_relay_confirm(uuid,text,jsonb,jsonb)'::regprocedure) as body`)).rows[0].body,/ddp_receiver_confirmed/,'compensating migration restores the exact previous confirmation behavior');
+await db.exec(fs.readFileSync(migrationPaths[4], 'utf8'));
 const bootstrapCount=(await db.query(`select count(*)::int as n from pg_proc where proname='hbnf_cart_matrix_relay_bootstrap'`)).rows[0].n;
 assert.equal(bootstrapCount,0,'compensating SQL removes the newly added bootstrap RPC');
 await db.exec(`update hbnf_internal.cart_actuator_fence set active=true where cart_id='hbnf-cart'`);
@@ -94,5 +101,5 @@ const oldChallenge=(await db.query(`select public.hbnf_cart_matrix_relay_issue('
 assert.ok(oldChallenge,'compensating migration restores the exact captured production v25 candidate pin');
 let anonRollbackDenied=false;try{await db.exec(`set role anon; select public.hbnf_cart_matrix_relay_issue('opal-hbnf-cart','hbnf-cart',53,7,'r6','70:4b:ca:5b:34:5c','${oldCandidate}','{}','{}',20);`);}catch{anonRollbackDenied=true;}finally{await db.exec('reset role');}
 assert.equal(anonRollbackDenied,true,'rollback keeps relay challenge RPC service-role only');
-console.log('Matrix relay PGlite PASS: observed-state bootstrap CAS preserves actual Matrix/AUX settings and legacy fields; no hardware commands; stale revision/fence/identity/replay/expiry denied; per-device readback; exact production v25 compensating SQL restores the previous pin and service-role boundary');
+console.log('Matrix relay PGlite PASS: production AUX status CHECK failure reproduced; compatibility migration records online plus ddpReceiverConfirmed; exact correction rollback restores prior function; 46/255 readback retained; bootstrap issues no device commands; stale revision/fence/identity/replay/expiry denied; per-device readback and v25 rollback boundary preserved');
 await db.close();

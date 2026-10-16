@@ -1,0 +1,29 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "cart2-matrix-relay-confirm-status-constraint-compat-20261016",
+  "summary": "Keep the existing cart_device_observed status constraint and report a confirmed AUX DDP receiver as online while preserving ddpReceiverConfirmed=true and physicalOutputConfirmed=false in the per-device readback fields.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "root_cause": "The production cart_device_observed_status_check permits online, offline, off, failed, and stale, but the deployed confirm RPC attempted to insert ddp_receiver_confirmed. The failed statement rolled back before any challenge was consumed or command was authorized.",
+    "forward_migration": "staging/coordinated-backend/migrations/20261016192522_hbnf_matrix_relay_confirm_status_constraint_compat.sql",
+    "rollback_migration": "staging/coordinated-backend/rollback/20261016192522_hbnf_matrix_relay_confirm_status_constraint_compat.sql",
+    "rollback_reference": "Restores the exact pre-correction confirm function body; relay remains stopped and actuator fence inactive until separately admitted.",
+    "source_basis": [
+      "Production failure receipt evidence/owner-control-release-20261016/steps/activate-writer-v27-failure.json",
+      "https://supabase.com/docs/guides/deployment/database-migrations",
+      "https://www.postgresql.org/docs/current/ddl-constraints.html"
+    ],
+    "tests": [
+      "node tests/matrix-relay-runtime/test.mjs",
+      "node tests/hbnf_matrix_relay_contract.mjs"
+    ],
+    "live_execution": "Not performed; correction is prepared and offline tests pass, but production migration and a fresh one-use admission have not been authorized or issued."
+  }
+}
