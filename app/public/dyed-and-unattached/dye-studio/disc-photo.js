@@ -147,8 +147,14 @@ async function analyzeImage(file){
  if(!ctx)throw Error("Photo processing unavailable in this browser");
  let img=null,url=null;
  try{
-   if(typeof createImageBitmap==="function")img=await createImageBitmap(file);
-   else{
+   // Some displayable photos cannot be decoded by createImageBitmap (notably
+   // platform-specific phone formats). Retry with the browser's image element
+   // before rejecting the original-disc color import.
+   if(typeof createImageBitmap==="function"){
+     try{img=await createImageBitmap(file)}
+     catch{/* The image-element decoder gets a chance below. */}
+   }
+   if(!img){
      url=URL.createObjectURL(file);
      img=await new Promise((resolve,reject)=>{
        const element=new Image();element.onload=()=>resolve(element);element.onerror=()=>reject(Error("Unable to open photo"));element.src=url;
