@@ -1126,3 +1126,58 @@ test('small single-color disc does not invent a two-tone rim from its surroundin
  assert.ok(!offcenter.appearance,'no fabricated rim for unlocatable disc');
  // The validated pixels above are synthetic, not empirical disc spectra.
 });
+
+
+test('original-photo import retries the image-element decoder on bitmap failure and cleans up',async()=>{
+ const photo=read('../public/dyed-and-unattached/dye-studio/disc-photo.js');
+ const width=460,height=460,pixels=new Uint8ClampedArray(width*height*4);
+ for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+  const inside=Math.hypot(x-230,y-230)<=145,i=(y*width+x)*4;
+  const rgb=inside?[202,190,130]:[233,233,233];
+  pixels[i]=rgb[0];pixels[i+1]=rgb[1];pixels[i+2]=rgb[2];pixels[i+3]=255;
+ }
+ async function run(bitmapFails,imageFails=false){
+  const calls=[],canvas={width:0,height:0};
+  const context={drawImage(img){calls.push('draw:'+img.kind)},
+   getImageData(){return{data:pixels,width,height}}};
+  canvas.getContext=()=>context;
+  const doc={readyState:'loading',addEventListener(){},createElement(name){
+   assert.equal(name,'canvas');return canvas;
+  }};
+  const urls={createObjectURL(){calls.push('create-url');return'blob:synthetic'},
+   revokeObjectURL(url){assert.equal(url,'blob:synthetic');calls.push('revoke-url')}};
+  class TestImage{
+   constructor(){this.kind='img';this.width=width;this.height=height}
+   set src(url){
+    assert.equal(url,'blob:synthetic');
+    queueMicrotask(()=>imageFails?this.onerror():this.onload());
+   }
+  }
+  const bitmap=async()=>{
+   calls.push('bitmap');
+   if(bitmapFails)throw Error('bitmap decoder unsupported for this file');
+   return {kind:'bitmap',width,height,close(){calls.push('close-bitmap')}};
+  };
+  const win={};
+  Function('window','document','createImageBitmap','URL','Image',photo)(
+   win,doc,bitmap,urls,TestImage);
+  if(imageFails){
+   await assert.rejects(win.DUDiscPhoto.analyzeImage({type:'image/heic'}),/Unable to open photo/);
+  }else{
+   const outcome=await win.DUDiscPhoto.analyzeImage({type:'image/heic'});
+   assert.equal(outcome.hex,'#CABE82','synthetic source plate is preserved');
+   assert.equal(outcome.edgeDetected,true);
+   assert.equal(outcome.appearance,null,'no background-colored rim invented');
+  }
+  assert.equal(canvas.width,0,'transient canvas cleared');
+  assert.equal(canvas.height,0,'transient canvas cleared');
+  return calls;
+ }
+ assert.deepEqual(await run(false),['bitmap','draw:bitmap','close-bitmap'],
+  'working bitmap decode must remain the fast path');
+ assert.deepEqual(await run(true),['bitmap','create-url','draw:img','revoke-url'],
+  'bitmap rejection must retry browser Image decoding and revoke its object URL');
+ assert.deepEqual(await run(true,true),['bitmap','create-url','revoke-url'],
+  'a genuinely unreadable photo fails cleanly and releases its temporary URL');
+ // No fixture is a real customer photo or controlled dye/pigment measurement.
+});
