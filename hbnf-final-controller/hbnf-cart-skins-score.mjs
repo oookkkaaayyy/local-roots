@@ -47,8 +47,8 @@ async function refresh(){
   if(requestInFlight)return;requestInFlight=true;$("skinsRefresh").disabled=true;
   try{
     scoreState=await window.HBNFCanonical.read("skins_score_state");paint();
-    status(`Round ${scoreState.round_date} · authoritative scorecard loaded · saved ${new Date(scoreState.updated_at).toLocaleTimeString()}`);
-  }catch(error){status(error.message.includes("unauthorized")?"Pair this owner device before entering Skins scores.":`Scorecard unavailable: ${error.message}`,true);}
+    status(`Scores updated · ${new Date(scoreState.updated_at).toLocaleTimeString()}`);
+  }catch(error){status(error.message.includes("unauthorized")?"Pair this device before entering Skins scores.":"Couldn’t load the scorecard. Check your connection and try again.",true);}
   finally{requestInFlight=false;$("skinsRefresh").disabled=false;}
 }
 async function save(){
@@ -61,18 +61,18 @@ async function save(){
       ?await window.HBNFCanonical.read("skins_tiebreaker_set",{round_date:scoreState.round_date,section,card_id:card.id,winner_id:winnerId,expected_winner_id:entry.winner_id})
       :await window.HBNFCanonical.read("skins_score_set",{round_date:scoreState.round_date,section,card_id:card.id,hole:entry.hole,winner_id:winnerId,expected_winner_id:entry.winner_id});
     await refreshAfterSave(result);
-  }catch(error){if(error.status)status(`Score was not saved: ${error.message}. Refresh before trying again.`,true);else status("Save status is uncertain because the connection ended. Refresh the scorecard before trying again.",true);}
+  }catch(error){if(error.status)status("Score not saved. Refresh before trying again.",true);else status("Save status is unclear. Refresh the scorecard before trying again.",true);}
   finally{requestInFlight=false;paintWinners();}
 }
 async function saveAce(){
   if(requestInFlight)return;
   const section=sectionNode.value,ace=scoreState&&scoreState.ace&&scoreState.ace[section];
-  if(!ace||ace.locked){status("Ace state is locked.",true);return;}
+  if(!ace||ace.locked){status("Ace entries are locked.",true);return;}
   requestInFlight=true;$("skinsAceSave").disabled=true;
   try{
     const result=await window.HBNFCanonical.read("skins_ace_set",{round_date:scoreState.round_date,section,winner_name:aceWinnerNode.value,expected_winner_name:ace.winner_name||""});
     await refreshAfterSave(result);
-  }catch(error){if(error.status)status(`Ace state was not saved: ${error.message}. Refresh before trying again.`,true);else status("Ace save status is uncertain because the connection ended. Refresh before another edit.",true);}
+  }catch(error){if(error.status)status("Ace change not saved. Refresh before trying again.",true);else status("Ace save status is unclear. Refresh before another edit.",true);}
   finally{requestInFlight=false;paintAce();}
 }
 async function refreshAfterSave(result){
@@ -83,8 +83,8 @@ async function refreshAfterSave(result){
       :(result.winner_name?`${result.winner_name} wins hole ${result.hole}`:`Hole ${result.hole} is a carry`);
   try{
     scoreState=await window.HBNFCanonical.read("skins_score_state",{round_date:result.round_date});paint();
-    status(`${outcome} · confirmed on the authoritative scorecard · ${new Date(scoreState.updated_at).toLocaleTimeString()}`);
-  }catch{status(`${outcome} · save confirmed; authoritative readback unavailable. Refresh before the next edit.`,true);}
+    status(`${outcome} · saved ${new Date(scoreState.updated_at).toLocaleTimeString()}`);
+  }catch{status(`${outcome} · save confirmed. Refresh before the next edit.`,true);}
 }
 if(sectionNode&&window.HBNFCanonical){
   sectionNode.addEventListener("change",paintCards);cardNode.addEventListener("change",paintHoles);holeNode.addEventListener("change",paintWinners);

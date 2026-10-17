@@ -169,7 +169,7 @@ async function applyLook() {
   const paletteId=paletteIdFromControls();
   if (!sceneId) throw new Error("Choose a show first.");
 
-  setFeatureStatus("Applying through canonical cart control…");
+  setFeatureStatus("Applying look…");
   const before=await bridge.refresh({hydrate:false});
   try {
     await bridge.command("SCENE",{sceneId:sceneId});
@@ -179,7 +179,7 @@ async function applyLook() {
     if (!state || String(state.sceneId)!==sceneId) throw new Error("Canonical scene readback did not match.");
     if (paletteId && String(state.paletteId)!==paletteId) throw new Error("Canonical palette readback did not match.");
     if ($("scene")) $("scene").value=sceneId;
-    setFeatureStatus("Canonical look applied and verified.");
+    setFeatureStatus("Look applied.");
   } catch (error) {
     await rollbackCanonicalLook(bridge,before);
     throw new Error("Look was not fully verified; canonical prior state was restored where possible. "+(error.message || String(error)));
@@ -277,7 +277,7 @@ async function applySavedLook() {
   if ($("motion")) { $("motion").value=String(look.motion); $("motion").dispatchEvent(new Event("change",{bubbles:true})); }
   if ($("audioResponse")) { $("audioResponse").value=String(look.audioResponse); $("audioResponse").dispatchEvent(new Event("change",{bubbles:true})); }
   await applyLook();
-  setFeatureStatus("Saved look verified and applied.");
+  setFeatureStatus("Saved look applied.");
 }
 
 async function deleteSavedLook() {
@@ -286,7 +286,7 @@ async function deleteSavedLook() {
   const removed=selected.list.splice(selected.index,1)[0];
   writeSavedLooks(selected.list);
   renderSavedLooks("");
-  setFeatureStatus("Deleted saved look: "+String(removed.name || "Saved look"));
+  setFeatureStatus("Deleted "+String(removed.name || "saved look")+".");
 }
 
 async function sendText() {
@@ -298,7 +298,7 @@ async function sendText() {
   if (canonicalCapabilities().nativeTextFontIndexV1===true) data.fontIndex=Number($("featureFontIndex").value || 4);
   await bridge.overlay("text",data);
   $("featureText").value="";
-  setFeatureStatus("Text command accepted.");
+  setFeatureStatus("Text sent to the Cart.");
 }
 
 function renderLive(live, cached=false, cachedAt="") {
@@ -309,7 +309,7 @@ function renderLive(live, cached=false, cachedAt="") {
     return;
   }
   const entries = Array.isArray(live.entries) ? live.entries.slice(0,8).join(" · ") : "";
-  node.textContent = (cached ? "CACHED · " : "")+
+  node.textContent = (cached ? "Using saved results · " : "")+
     String(live.event || "").toUpperCase()+" · "+String(live.label || "")+
     " · ACE POT $"+Number(live.acePot||0).toFixed(0)+(entries ? " · "+entries : "")+
     (cachedAt ? " · "+cachedAt : "");
@@ -347,7 +347,7 @@ async function refreshLive(silent) {
     if (cached && cached.live) {
       const when=cached.savedAt ? new Date(cached.savedAt).toLocaleString() : "";
       renderLive(cached.live,true,when);
-      if (!silent) setFeatureStatus("WAN live refresh failed; showing last cached round.",true);
+      if (!silent) setFeatureStatus("Couldn’t refresh scores. Showing the last saved scores.",true);
       return;
     }
     throw error;
@@ -357,14 +357,14 @@ async function refreshLive(silent) {
 }
 
 async function showScoreboard() {
-  setFeatureStatus("Fetching current live standings (internet required)…");
+  setFeatureStatus("Loading live standings…");
   const out=await canonicalRead("live_status",{});
   const live=out && out.live;
   if (!live || !live.active || !Array.isArray(live.entries) || !live.entries.length) throw new Error("No active Skins or Glow scores are available.");
   const bridge=canonicalOverlayBridge();
   const ttl=Math.max(8000,Math.min(30000,6000+Math.ceil(live.entries.length/2)*5000));
   await bridge.overlay("scoreboard",{label:String(live.label || "SCORES"),entries:live.entries.slice(0,12)},ttl);
-  setFeatureStatus("Canonical scoreboard overlay accepted.");
+  setFeatureStatus("Standings sent to the Cart.");
 }
 
 async function showManualScoreboard() {
@@ -376,13 +376,13 @@ async function showManualScoreboard() {
       $("manualScoreboardLabel") ? $("manualScoreboardLabel").value : "",
       $("manualScoreboardEntries") ? $("manualScoreboardEntries").value : ""
     );
-    if (status) status.textContent="Sending manual display to the local Matrix…";
-    setFeatureStatus("Displaying manually entered scores locally; no live data is being fetched.");
+    if (status) status.textContent="Showing scores on the Cart…";
+    setFeatureStatus("Showing the scores entered here.");
     await bridge.overlay("scoreboard",payload,22000);
-    if (status) status.textContent="Manual display sent to Matrix · not saved or submitted · not live standings.";
-    setFeatureStatus("Manual scores displayed · unsaved and not live.");
+    if (status) status.textContent="Scores shown on the Cart only. Nothing was saved.";
+    setFeatureStatus("Scores shown on the Cart only. Nothing was saved.");
   } catch (error) {
-    if (status) status.textContent="Not displayed · "+(error.message || String(error));
+    if (status) status.textContent="Scores could not be shown. Check the connection and try again.";
     throw error;
   }
 }
@@ -396,7 +396,7 @@ async function showAcePot() {
   const amount=Number(live.acePot);
   const bridge=canonicalOverlayBridge();
   await bridge.overlay("text",{text:"ACE POT $"+amount.toFixed(0),color:"#FFFFFF"},7000);
-  setFeatureStatus("Canonical ace-pot overlay accepted.");
+  setFeatureStatus("Ace pot sent to the Cart.");
 }
 
 function renderOta(j) {
@@ -530,8 +530,8 @@ function syncOverlayAvailability() {
   if (apply) apply.disabled=!paletteReady;
   if (!overlayReady) {
     const live=$("featureLive");
-    if (live && live.textContent==="Live round not checked yet.") {
-      live.textContent="Live scores are read-only ready. Overlay controls unlock only after the coordinated canonical backend is active.";
+    if (live && live.textContent==="Live scores haven’t loaded yet.") {
+      live.textContent="Live scores are available. Cart display isn’t available yet.";
     }
   }
   return overlayReady && paletteReady;
@@ -539,13 +539,13 @@ function syncOverlayAvailability() {
 
 function bind(id,fn) {
   const n=$(id); if (!n) return;
-  n.addEventListener("click",()=>Promise.resolve(fn()).catch(e=>setFeatureStatus(e.message || String(e),true)));
+  n.addEventListener("click",()=>Promise.resolve(fn()).catch(()=>setFeatureStatus("Couldn’t complete that action. Check the connection and try again.",true)));
 }
 
 populateLooks();
 renderSavedLooks("");
 syncOverlayAvailability();
-loadPalettes().catch(e=>setFeatureStatus(e.message || String(e),true));
+loadPalettes().catch(()=>setFeatureStatus("Couldn’t load colors. Check the connection and try again.",true));
 bind("featureApplyLook",applyLook);
 bind("featureSaveLook",saveLook);
 bind("featureApplySaved",applySavedLook);
@@ -560,7 +560,7 @@ bind("featureOtaInstall",()=>{ location.href=OPAL_INSTALLER; });
 bind("featureOtaResult",refreshOtaResult);
 bind("featurePreflight",runPreflight);
 if ($("featureText")) $("featureText").addEventListener("keydown",e=>{ if(e.key==="Enter") $("featureSendText").click(); });
-if (!matrixLocal()) setFeatureStatus("Core canonical cart controls remain active. Local palette discovery and OTA controls enable on 192.168.77.10.");
+if (!matrixLocal()) setFeatureStatus("Some advanced controls are available only on the Cart.");
 
 window.addEventListener("pageshow",function(){
   if (matrixLocal()) refreshOtaResult().catch(function(){});

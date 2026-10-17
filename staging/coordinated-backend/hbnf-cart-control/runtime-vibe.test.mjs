@@ -31,6 +31,7 @@ test("Vibe UI is fail-closed until backend qualification flag and never calls a 
   assert.equal(phase2VibeReady("TRUE"), false);
   assert.equal(phase2VibeReady("true"), true);
   const owner = readFileSync(new URL("../../../hbnf-final-controller/hbnf-cart.js", import.meta.url), "utf8");
+  const ownerHtml = readFileSync(new URL("../../../hbnf-final-controller/hbnf-cart.html", import.meta.url), "utf8");
   const guest = readFileSync(new URL("../../../hbnf-final-controller/guest/hbnf-cart/guest.js", import.meta.url), "utf8");
   const statusApi = readFileSync(new URL("./index.ts", import.meta.url), "utf8");
   const adapter = readFileSync(new URL("../hbnf-matrix-adapter-foundation/index.ts", import.meta.url), "utf8");
@@ -38,6 +39,7 @@ test("Vibe UI is fail-closed until backend qualification flag and never calls a 
   const relay = readFileSync(new URL("./matrix-relay.ts", import.meta.url), "utf8");
   const control = readFileSync(new URL("./index.ts", import.meta.url), "utf8");
   assert.match(owner, /canonicalCapabilities\.phase2VibeRuntimeV1 === true/);
+  assert.match(owner, /const autoReady = ready && canonicalCapabilities\.autoVibeControlV1 === true/);
   assert.match(guest, /snapshot\.capabilities\.phase2VibeRuntimeV1===true/);
   assert.match(statusApi, /HBNF_PHASE2_VIBE_RUNTIME_READY/);
   assert.match(control, /handleMatrixRelay\(req\)/, "authenticated relay remains the sole Matrix command writer");
@@ -47,7 +49,7 @@ test("Vibe UI is fail-closed until backend qualification flag and never calls a 
   assert.match(adapter, /Compatibility endpoint only\. It is no longer a command writer/);
   assert.match(adapter, /confirmed:false,commandApplicationConfirmed:false,transportConfirmed:false/);
   assert.match(adapter, /matrix_writer_moved_to_opal_relay/);
-  assert.match(owner, /device application and physical AUX illumination are not confirmed/);
+  assert.match(ownerHtml, /it can’t confirm the lights are on/);
 });
 
 test("owner canonical reducer preserves legacy vibe and stores runtime selection separately", () => {

@@ -1,6 +1,6 @@
 /* HBNF_CART_FINAL_V5_SEMANTIC_FRAME_LOCK */
-import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261016-guest-qr-v1";
-import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261016-guest-qr-v1";
+import { compileSemanticPlan } from "./hbnf-cart-semantic.mjs?v=20261016-course-ready-ux-v1";
+import { fetchWithDeadline, parsePairFragment, HBNF_API_TIMEOUT_MS, HBNF_VISUAL_TIMEOUT_MS } from "./hbnf-cart-net.mjs?v=20261016-course-ready-ux-v1";
 import { LocalOwnerControl } from "./hbnf-cart-local.mjs?v=20261015-local-owner-v3";
 
 const SUPABASE_URL = "https://phcpbvuqibyarpfrftgx.supabase.co";
@@ -46,7 +46,6 @@ const auxHealth = $("#auxTruth");
 const backendHealth = $("#backendTruth");
 const guestModeToggle = $("#guestMode");
 const guestModeStatus = $("#guestModeStatus");
-const vibeModeLabel = $("#vibeModeLabel");
 let pendingRevision = null;
 const syncHealth = null;
 const rendererHealth = null;
@@ -229,11 +228,11 @@ async function call(body) {
     try {
       const local = await localOwnerControl.connect("", 0);
       localControlActive = true;
-      if (backendHealth) backendHealth.textContent = "Local devices · WAN not required";
+      if (backendHealth) backendHealth.textContent = "Connected";
       return local;
     } catch (error) {
       localControlActive = false;
-      if (backendHealth) backendHealth.textContent = "Local devices unavailable";
+      if (backendHealth) backendHealth.textContent = "Unavailable";
       throw error;
     }
   }
@@ -243,7 +242,7 @@ async function call(body) {
     if (localType || localTune) {
       if (!localOwnerControl.supports(body.type, body.payload, body.changedFields)) throw new Error("Local Matrix connection is not ready; no cloud fallback was sent for this control.");
       localControlActive = true;
-      if (backendHealth) backendHealth.textContent = "Local devices · WAN not required";
+      if (backendHealth) backendHealth.textContent = "Connected";
       return localOwnerControl.command("", body.type, body.payload, body.changedFields);
     }
   }
@@ -295,7 +294,7 @@ function revalidateLocalPairOnline() {
       clearDeviceCredential();
       localControlActive = false;
       setAuthorizedUi();
-      statusNode.textContent = "Owner pairing expired or was revoked; local access was closed.";
+      statusNode.textContent = "Pair this device again to continue.";
     }
   });
 }
@@ -334,7 +333,7 @@ function observedAgeLabel(value) {
 function renderVisualHealth(snapshot, canonicalSnapshot) {
   const badge = $("#truthBadge");
   if (!snapshot) {
-    if (badge) { badge.textContent = "Device status unavailable"; badge.className = "truth-badge warn"; }
+    if (badge) { badge.textContent = "Cart unavailable"; badge.className = "truth-badge warn"; }
     return;
   }
   const matrix = snapshot.devices ? snapshot.devices.matrix : null;
@@ -346,16 +345,16 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
   const matrixOk = !!(matrix && matrix.confirmed === true && Number(matrix.confirmedRevision) === desiredRevision);
   const auxOk = !!(aux && aux.confirmed === true && Number(aux.confirmedRevision) === desiredRevision);
   const labelFor = (report, isConfirmed) => {
-    if (isConfirmed) return `CONFIRMED · r${desiredRevision}`;
+    if (isConfirmed) return "Responding";
     const failure = shortDeviceFailure(report);
-    if (failure) return `FAILED · ${failure}`;
+    if (failure) return "Needs attention";
     const reportedRevision = report && report.reported ? report.reported.cartRevision : null;
     const seen = Number(reportedRevision !== null && reportedRevision !== undefined
       ? reportedRevision
       : (report ? report.desired_revision : undefined));
-    if (Number.isFinite(desiredRevision) && Number.isFinite(seen)) return `NOT CONFIRMED · r${seen} / r${desiredRevision} · ${observedAgeLabel(report.observed_at)}`;
-    if ((report && report.status === "off") || (report && report.online === false)) return `OFFLINE · ${observedAgeLabel(report.observed_at)}`;
-    return `NO RECENT ACK · ${observedAgeLabel(report.observed_at)}`;
+    if ((report && report.status === "off") || (report && report.online === false)) return "Offline";
+    if (Number.isFinite(desiredRevision) && Number.isFinite(seen)) return "Waiting for update";
+    return "No recent update";
   };
   if (matrixHealth) {
     matrixHealth.textContent = labelFor(matrixReport, matrixOk);
@@ -366,32 +365,30 @@ function renderVisualHealth(snapshot, canonicalSnapshot) {
     auxHealth.className = auxOk ? "ok" : (shortDeviceFailure(auxReport) ? "bad" : "degraded");
   }
   if (badge) {
-    if (snapshot.local === true && aux && aux.ddp !== true) { badge.textContent = "AUX DDP NOT CONFIRMED"; badge.className = "truth-badge warn"; return; }
-    if (matrixOk && auxOk) { badge.textContent = "COMMANDS ACKNOWLEDGED"; badge.className = "truth-badge good"; }
-    else if (shortDeviceFailure(matrixReport) || shortDeviceFailure(auxReport)) { badge.textContent = "Device command failed"; badge.className = "truth-badge bad"; }
-    else { badge.textContent = "AWAITING DEVICE ACK"; badge.className = "truth-badge warn"; }
+    if (snapshot.local === true && aux && aux.ddp !== true) { badge.textContent = "Check underglow"; badge.className = "truth-badge warn"; return; }
+    if (matrixOk && auxOk) { badge.textContent = "Cart connected"; badge.className = "truth-badge good"; }
+    else if (shortDeviceFailure(matrixReport) || shortDeviceFailure(auxReport)) { badge.textContent = "Cart needs attention"; badge.className = "truth-badge bad"; }
+    else { badge.textContent = "Checking devices"; badge.className = "truth-badge warn"; }
   }
 }
 
 function updateVibeSelection(_state) {
   const vibe = String(_state && _state.selectedVibe || "");
   const ready = canonicalCapabilities.phase2VibeRuntimeV1 === true || canonicalCapabilities.opalDirectOwnerPwaV1 === true;
+  const autoReady = ready && canonicalCapabilities.autoVibeControlV1 === true;
+  const options = $("#vibeOptions"), availability = $("#vibeAvailability");
+  if (options) options.hidden = !ready;
+  if (availability) availability.hidden = ready;
   document.querySelectorAll(".vibe-option").forEach(button => {
     button.disabled = !ready;
     button.setAttribute("aria-pressed", button.dataset.vibe === vibe ? "true" : "false");
   });
   const autoButton = $("#vibeAuto");
   if (autoButton) {
-    autoButton.disabled = !ready;
+    autoButton.hidden = !autoReady;
+    autoButton.disabled = !autoReady;
     autoButton.setAttribute("aria-pressed", vibe === "auto" ? "true" : "false");
   }
-  if (vibeModeLabel) vibeModeLabel.textContent = ready ? (vibe ? `Desired · ${vibe.toUpperCase()}` : "Ready") : "Runtime not qualified";
-  const availability = $("#vibeAvailability");
-  if (availability) availability.textContent = ready
-    ? (canonicalCapabilities.opalDirectOwnerPwaV1 === true
-      ? "Manual and Auto Vibes use the verified local Matrix connection; live scoring and cloud pairing remain internet-dependent."
-      : "Vibe selection is available. Device application remains subject to the revision-bound status below.")
-    : "Vibes stay unavailable until the matching firmware and frozen runtime gates are accepted.";
 }
 
 function setRange(id, outputId, value, formatter = v => String(v)) {
@@ -406,8 +403,8 @@ function hydrateControls(state) {
     if (state.sceneId) $("#scene").value = state.sceneId;
     if (guestModeToggle) guestModeToggle.checked = state.guestMode === true;
     if (guestModeStatus) guestModeStatus.textContent = state.guestMode === true
-      ? "Guest Mode is open. Owner commands remain authoritative."
-      : "Guest Mode is off unless the owner opens it.";
+      ? "Guest Mode is on. Your controls still take priority."
+      : "Guest Mode is off. Turn it on when you’re ready to invite guests.";
 
     const tuning = valueOr(state.tuning, {});
     updateVibeSelection(state);
@@ -440,7 +437,7 @@ async function refresh({ hydrate = true } = {}) {
     if (auxHealth) auxHealth.textContent = "Not confirmed";
     const badge = $("#truthBadge");
     if (badge) {
-      badge.textContent = OPAL_LOCAL_PWA ? "LOCAL DEVICES UNAVAILABLE" : "Cart service unavailable";
+      badge.textContent = "Cart unavailable";
       badge.className = "truth-badge warn";
     }
     throw error;
@@ -457,8 +454,8 @@ async function refresh({ hydrate = true } = {}) {
     setAuthorizedUi();
     renderVisualHealth(out, out);
     statusNode.textContent = out.devices && out.devices.aux && out.devices.aux.ddp === true
-      ? "LOCAL CONTROL · Matrix identity, firmware, Matrix/AUX readback and DDP source confirmed; physical illumination is not inferred."
-      : "LOCAL CONTROL · Matrix identity and device readback confirmed; AUX DDP source is not confirmed.";
+      ? "Cart is connected. Matrix and underglow are responding."
+      : "Cart is connected. Check underglow status.";
     return out;
   }
 
@@ -478,16 +475,16 @@ async function refresh({ hydrate = true } = {}) {
     const submitted = observed.some(x => Number(x.desired_revision) === Number(revision) && x.status === "submitted");
     if (fullyApplied || failed) pendingRevision = null;
     statusNode.textContent = fullyApplied
-      ? `Commands acknowledged · revision ${revision} · Matrix ${matrixBri} · AUX command ${auxBri}`
+      ? "Settings updated. Matrix and underglow are responding."
       : failed
-        ? `Command failed at revision ${revision} · Matrix ${matrixBri} · AUX command ${auxBri}. See System Info.`
+        ? "The Cart could not apply that change. Check connection details."
         : submitted
-          ? `Command submitted · revision ${revision} · device application and physical AUX illumination are not confirmed · Matrix ${matrixBri} · AUX command ${auxBri}.`
+          ? "Change sent. Waiting for the Cart…"
         : pendingRevision === revision
-          ? `Command accepted · revision ${revision} pending device confirmation · Matrix ${matrixBri} · Underglow ${auxBri}.`
-          : `Device command not acknowledged · revision ${revision} is not confirmed on both devices · Matrix ${matrixBri} · AUX command ${auxBri}. See System Info.`;
+          ? "Change sent. Waiting for the Cart…"
+        : "The Cart hasn’t updated yet. Check connection details.";
   } else {
-    statusNode.textContent = "Cart is not initialized; no control was sent.";
+    statusNode.textContent = "The Cart is not ready. No change was sent.";
   }
 
   visualStatus().then(value => renderVisualHealth(value, out)).catch(() => renderVisualHealth(null, out));
@@ -556,7 +553,7 @@ async function flushTune() {
           });
           revision = result.revision;
           pendingRevision = revision;
-          statusNode.textContent = `Tuning accepted · revision ${revision} pending device confirmation.`;
+          statusNode.textContent = "Change sent. Waiting for the Cart…";
           break;
         } catch (error) {
           if (error.status === 409 && error.data && error.data.error === "stale_revision" && attempt === 0) {
@@ -601,7 +598,7 @@ async function command(type, payload = {}) {
       });
       revision = result.revision;
       pendingRevision = revision;
-      statusNode.textContent = `Command accepted · revision ${revision} pending device confirmation (checking for up to 6 seconds).`;
+      statusNode.textContent = "Change sent. Checking the Cart…";
       const deadline = Date.now() + 6000;
       let latest = null;
       do {
@@ -651,7 +648,7 @@ function detectPairFragment() {
   pendingPairExpiryEpoch = parsePairExpiry(location.hash);
   if (!pairAcceptPanel) return;
   pairAcceptPanel.hidden = !pendingPairToken;
-  if (pendingPairToken && pairAcceptStatus) pairAcceptStatus.textContent = "Pairing link recognized. Tap Pair this device once.";
+  if (pendingPairToken && pairAcceptStatus) pairAcceptStatus.textContent = "Link ready. Tap Pair this device once.";
 }
 
 $("#acceptPair").addEventListener("click", async () => {
@@ -672,7 +669,7 @@ $("#acceptPair").addEventListener("click", async () => {
   pairAcceptStatus.textContent = "";
   try {
     await refresh();
-    statusNode.textContent += "\nThis device is paired for approximately 180 days.";
+    statusNode.textContent += "\nThis device is paired for about six months.";
   } catch (error) {
     clearDeviceCredential();
     showError(error);
@@ -680,7 +677,7 @@ $("#acceptPair").addEventListener("click", async () => {
 });
 
 $("#createPair").addEventListener("click", async () => {
-  pairCreateStatus.textContent = "Creating private pairing link…";
+  pairCreateStatus.textContent = "Creating private link…";
   pairLinkNode.hidden = true;
   sharePair.hidden = true;
   copyPair.hidden = true;
@@ -691,9 +688,9 @@ $("#createPair").addEventListener("click", async () => {
     pairLinkNode.hidden = false;
     sharePair.hidden = !("share" in navigator);
     copyPair.hidden = false;
-    pairCreateStatus.textContent = `Link created. Device access expires ${new Date(out.expiresAt).toLocaleDateString()}.`;
+    pairCreateStatus.textContent = `Link ready. Expires ${new Date(out.expiresAt).toLocaleDateString()}.`;
   } catch (error) {
-    pairCreateStatus.textContent = `Could not create pairing link: ${error.message}`;
+    pairCreateStatus.textContent = "Couldn't create the link. Check the connection and try again.";
   }
 });
 
@@ -706,7 +703,7 @@ sharePair.addEventListener("click", async () => {
       url: currentPairLink,
     });
   } catch (error) {
-    if (!error || error.name !== "AbortError") pairCreateStatus.textContent = `Share failed: ${error && error.message ? error.message : "unknown error"}`;
+    if (!error || error.name !== "AbortError") pairCreateStatus.textContent = "Couldn't share the link. Try copying it instead.";
   }
 });
 
@@ -724,12 +721,12 @@ if (guestModeToggle) {
   guestModeToggle.addEventListener("change", async () => {
     const enabled = guestModeToggle.checked;
     guestModeToggle.disabled = true;
-    if (guestModeStatus) guestModeStatus.textContent = enabled ? "Opening Guest Mode…" : "Closing Guest Mode…";
+    if (guestModeStatus) guestModeStatus.textContent = enabled ? "Turning Guest Mode on…" : "Turning Guest Mode off…";
     try {
       await command("GUEST_MODE", { enabled });
     } catch (error) {
       guestModeToggle.checked = !enabled;
-      if (guestModeStatus) guestModeStatus.textContent = "Guest Mode change was not accepted.";
+      if (guestModeStatus) guestModeStatus.textContent = "Couldn’t change Guest Mode. Try again.";
       showError(error);
     } finally {
       guestModeToggle.disabled = !validDeviceToken(deviceToken());
@@ -775,19 +772,18 @@ $("#refresh").addEventListener("click", () => refresh().catch(showRefreshError))
 
 function showRefreshError(error) {
   statusNode.textContent = OPAL_LOCAL_PWA
-    ? `Local Matrix/AUX status unavailable · no change was sent. ${error.message}`
-    : `Cart service unavailable · this status check sent no control or scoring command. ${error.message}`;
+    ? "Cart controls are unavailable. Check the connection and try again."
+    : "The Cart could not connect. No change was sent.";
 }
 
 function showError(error) {
   statusNode.textContent = pendingRevision !== null
-    ? `Cart change accepted · revision ${pendingRevision}; device confirmation unavailable. ${error.message}`
-    : `No change confirmed: ${error.message}`;
+    ? "Change sent. Waiting for the Cart to update."
+    : "The Cart could not complete that change. Check the connection and try again.";
 }
 
 detectPairFragment();
 setAuthorizedUi();
-if (OPAL_LOCAL_PWA && $("localModeNotice")) $("localModeNotice").hidden = false;
 statusNode.textContent = "Connecting…";
 refresh().catch(showRefreshError);
 
@@ -796,8 +792,8 @@ window.addEventListener("online", () => {
 });
 window.addEventListener("offline", () => {
   statusNode.textContent = OPAL_LOCAL_PWA
-    ? "Internet unavailable · local Matrix/AUX controls remain available while HBNF-Cart Wi-Fi is connected. Live standings, score entry, pairing, and cloud updates require internet."
-    : "OFFLINE · no change sent. Current cart show continues locally; reconnect to the internet to use remote controls or score.";
+    ? "You’re offline. Controls on the Cart are still available."
+    : "You are offline. No change was sent.";
 });
 
 setInterval(() => {

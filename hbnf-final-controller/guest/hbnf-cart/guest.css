@@ -1,5 +1,5 @@
 :root{color-scheme:dark;--bg:#071018;--panel:#0d1d25;--line:#24414c;--text:#eaf4f7;--muted:#a4bec6;--accent:#57e0c0;--warn:#f2ca75;--bad:#ff9b9b}
-*{box-sizing:border-box}
+*{box-sizing:border-box}[hidden]{display:none!important}
 body{margin:0;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom);background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,sans-serif}
 .guest-shell{max-width:720px;margin:auto;padding:18px 0 36px}
 .boot-card{margin-top:14px;padding:18px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
@@ -13,6 +13,7 @@ button:not(:disabled){cursor:pointer}button:disabled{opacity:.45;cursor:not-allo
 .action-row{justify-content:flex-start;flex-wrap:wrap;margin-top:14px}
 .vibe-grid,.feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
 .vibe-grid button,.feature-grid button{text-align:left;display:grid;gap:4px}.vibe-grid span,.feature-grid span{font-size:.78rem;font-weight:500}
+.vibe-grid button{justify-items:center;text-align:center}.vibe-grid button[aria-pressed="true"]{background:#16412f;border-color:#63e4a8;box-shadow:inset 0 0 0 1px rgba(99,228,168,.3)}
 .guest-shell label{display:grid;gap:6px;margin:10px 0;font-weight:700}.guest-shell input,.guest-shell select{min-height:46px;width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:#142c36;color:var(--text);font:inherit}.guest-range{grid-template-columns:1fr auto;align-items:center}.guest-range input{grid-column:1/-1;height:40px;padding:0;accent-color:var(--accent)}.tuning-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.action-row input{flex:1;min-width:150px}.guest-footer a{color:var(--accent);font-weight:700}
 .guest-footer{color:var(--muted);font-size:.75rem;padding:14px 4px}.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:560px){.vibe-grid,.feature-grid{grid-template-columns:1fr}.guest-hero{align-items:flex-start}.tuning-row{grid-template-columns:1fr}}

@@ -5,61 +5,61 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#071018">
   <title>HBNF Cart Guest</title>
-  <link rel="stylesheet" href="./guest.css?v=20261007-wow-r2">
+  <link rel="stylesheet" href="./guest.css?v=20261016-guest-ux-v1">
 </head>
 <body>
   <main class="guest-shell">
     <header class="guest-hero">
       <div><p class="eyebrow">CART GUEST</p><h1>Choose a Vibe</h1></div>
       <div class="connection-summary">
-        <span id="connectionBadge" class="badge">CHECKING GUEST SERVICE</span>
-        <span id="deviceStatus" class="device-status">Matrix/AUX command acknowledgements not confirmed</span>
+        <span id="connectionBadge" class="badge">CONNECTING</span>
+        <span id="deviceStatus" class="device-status">Checking status…</span>
       </div>
     </header>
     <section class="boot-card" aria-live="polite">
       <strong id="primaryStatus">Checking Guest Mode…</strong>
-      <p id="secondaryStatus" class="muted">No account or login is needed. Use cellular or another network with internet; HBNF-Cart Wi-Fi is not required. Guest commands need the Opal's internet connection, and the owner can close Guest Mode at any time.</p>
-      <div class="action-row"><button id="retry" type="button">Check again</button></div>
+      <p id="secondaryStatus" class="muted">Use these controls over cellular while Guest Mode is on.</p>
+      <div class="action-row"><button id="retry" type="button">Refresh</button></div>
     </section>
     <section class="boot-card" aria-label="Vibe controls">
       <div class="section-head"><div><p class="eyebrow">GUEST CONTROLS</p><h2>Vibe</h2></div><span id="guestBadge" class="badge closed">CLOSED</span></div>
-      <div class="vibe-grid" aria-describedby="vibeAvailability">
+      <div id="vibeOptions" class="vibe-grid" aria-describedby="vibeAvailability">
         <button data-guest-action="vibe" data-value="chill" data-vibe-control disabled><strong>CHILL</strong></button>
         <button data-guest-action="vibe" data-value="groove" data-vibe-control disabled><strong>GROOVE</strong></button>
         <button data-guest-action="vibe" data-value="heavy" data-vibe-control disabled><strong>HEAVY</strong></button>
         <button data-guest-action="vibe" data-value="psychedelic" data-vibe-control disabled><strong>PSYCHEDELIC</strong></button>
         <button data-guest-action="vibe" data-value="cosmic" data-vibe-control disabled><strong>COSMIC</strong></button>
-        <button data-guest-action="vibe_auto" data-vibe-control disabled><strong>AUTO VIBE</strong></button>
+        <button id="guestAutoVibe" data-guest-action="vibe_auto" data-vibe-control disabled hidden><strong>AUTO VIBE</strong></button>
       </div>
-      <p id="vibeAvailability" class="muted" role="status">Guest Vibes stay disabled until the Cart’s matching Vibe runtime is qualified.</p>
+      <p id="vibeAvailability" class="muted" role="status" hidden>Vibes aren’t available right now.</p>
     </section>
     <section class="boot-card" aria-label="Brightness controls">
       <h2>Brightness</h2>
       <label class="guest-range">Matrix <output id="matrixBrightnessValue">—</output><input id="matrixBrightness" data-guest-action="matrix_brightness" type="range" min="0" max="255" value="0" disabled></label>
       <label class="guest-range">Underglow <output id="auxBrightnessValue">—</output><input id="auxBrightness" data-guest-action="aux_brightness" type="range" min="0" max="255" value="0" disabled></label>
-      <p class="muted">Matrix brightness follows the existing shared Cart brightness rule. Underglow is independently adjustable.</p>
+      <p class="muted">Underglow brightness is independent.</p>
     </section>
     <section class="boot-card" aria-label="Animation and color">
       <h2>Animation &amp; color</h2>
-      <label>Animation Mix<select id="guestScene" data-guest-action="scene" disabled><option value="course-flow">Balanced (Course Flow)</option><option value="field-mix">Upbeat (Field Mix)</option><option value="hbnf-signature">Signature (HBNF Signature)</option><option value="quiet-cosmos">Ambient (Quiet Cosmos)</option></select></label>
-      <label>Palette<select id="guestPalette" data-guest-action="palette" disabled><option value="hbnf-balanced">Automatic · Cart color</option><option value="copper">Copper</option><option value="ocean">Ocean</option></select></label>
+      <label>Show style<select id="guestScene" data-guest-action="scene" disabled><option value="course-flow">Balanced</option><option value="field-mix">Upbeat</option><option value="hbnf-signature">Signature</option><option value="quiet-cosmos">Ambient</option></select></label>
+      <label>Color<select id="guestPalette" data-guest-action="palette" disabled><option value="hbnf-balanced">Automatic</option><option value="copper">Copper</option><option value="ocean">Ocean</option></select></label>
       <div class="tuning-row"><label>Motion <output id="guestMotionValue">—</output><input id="guestMotion" data-guest-action="motion" type="range" min="0" max="100" value="50" disabled></label><label>Audio response <output id="guestAudioValue">—</output><input id="guestAudio" data-guest-action="audio_response" type="range" min="0" max="100" value="50" disabled></label></div>
     </section>
     <section class="boot-card" aria-label="Matrix message">
       <h2>Matrix message</h2>
       <div class="action-row"><input id="guestText" data-guest-input type="text" maxlength="63" placeholder="A short message" disabled><button id="sendGuestText" data-guest-action="text" type="button" disabled>Show text</button></div>
-      <p class="muted">Temporary display only; this does not save or submit scores.</p>
+      <p class="muted">Shown on the Cart only.</p>
     </section>
     <section class="boot-card" aria-label="Cart actions">
       <h2>Play</h2>
       <div class="feature-grid">
-        <button data-guest-action="next" disabled><strong>Next look</strong><span>Advance the Cart sequence</span></button>
-        <button data-guest-action="auto" disabled><strong>Cart Auto</strong><span>Let the Cart choose its program</span></button>
+        <button data-guest-action="next" disabled><strong>Next look</strong><span>Show the next look</span></button>
+        <button data-guest-action="auto" disabled><strong>Cart Auto</strong><span>Let the Cart pick a look</span></button>
       </div>
     </section>
     <p id="live" class="sr" aria-live="polite"></p>
-    <footer class="guest-footer"><nav aria-label="HBNF scoring links"><a href="https://hbnightflyers.com/skins.html">Skins scoring</a> · <a href="https://hbnightflyers.com/glow.html">Glow scoring</a></nav><span>Guest V1</span></footer>
+    <footer class="guest-footer"><nav aria-label="HBNF scoring links"><a href="https://hbnightflyers.com/skins.html">Skins scoring</a> · <a href="https://hbnightflyers.com/glow.html">Glow scoring</a></nav></footer>
   </main>
-  <script src="./guest.js?v=20261007-wow-r2" defer></script>
+  <script src="./guest.js?v=20261016-guest-ux-v1" defer></script>
 </body>
 </html>

@@ -5,7 +5,7 @@
   var endpoint=SUPABASE_URL+"/functions/v1/hbnf-cart-control";
   var path=window.location.pathname.replace(/\/+$/,"/").split("/").filter(Boolean);
   var cartId=path[1]||"";
-  var revision=null,busy=false,enabled=false,vibeRuntimeReady=false,lastAction={},pendingRevision=null;
+  var revision=null,busy=false,enabled=false,vibeRuntimeReady=false,autoVibeReady=false,lastAction={},pendingRevision=null;
   var controlsList=Array.prototype.slice.call(document.querySelectorAll("[data-guest-action],[data-guest-input]"));
   var buttons=Array.prototype.slice.call(document.querySelectorAll("button[data-guest-action]"));
   var status=document.getElementById("primaryStatus");
@@ -17,19 +17,19 @@
   function deviceState(snapshot,id,wantedRevision){
     var observed=snapshot&&Array.isArray(snapshot.observed)?snapshot.observed:[];
     var report=observed.find(function(item){return item&&item.device_id===id;});
-    if(!report)return "UNKNOWN";
-    if(Number(report.desired_revision)===wantedRevision&&["online","off"].indexOf(String(report.status))!==-1&&report.reported&&report.reported.confirmed===true)return "ACKNOWLEDGED";
-    if(report.status==="off"||report.status==="offline"||report.online===false)return "OFFLINE";
-    if(report.status==="failed"||(report.reported&&report.reported.confirmed===false&&report.reported.error))return "FAILED";
-    return Number.isFinite(Number(report.desired_revision))?"PENDING r"+report.desired_revision:"NO RECENT ACK";
+    if(!report)return "Unknown";
+    if(Number(report.desired_revision)===wantedRevision&&["online","off"].indexOf(String(report.status))!==-1&&report.reported&&report.reported.confirmed===true)return "Responding";
+    if(report.status==="off"||report.status==="offline"||report.online===false)return "Offline";
+    if(report.status==="failed"||(report.reported&&report.reported.confirmed===false&&report.reported.error))return "Needs attention";
+    return Number.isFinite(Number(report.desired_revision))?"Waiting":"No recent update";
   }
   function updateDeviceStatus(snapshot,wantedRevision){
     var matrix=deviceState(snapshot,"matrix",wantedRevision),aux=deviceState(snapshot,"aux",wantedRevision);
-    deviceStatus.textContent="Matrix command "+matrix+" · AUX command "+aux+" · r"+wantedRevision;
-    deviceStatus.className="device-status "+(matrix==="ACKNOWLEDGED"&&aux==="ACKNOWLEDGED"?"acknowledged":"unconfirmed");
-    return matrix==="ACKNOWLEDGED"&&aux==="ACKNOWLEDGED";
+    deviceStatus.textContent="Matrix: "+matrix+" · Underglow: "+aux;
+    deviceStatus.className="device-status "+(matrix==="Responding"&&aux==="Responding"?"acknowledged":"unconfirmed");
+    return matrix==="Responding"&&aux==="Responding";
   }
-  function controls(on){controlsList.forEach(function(control){control.disabled=!on||(control.hasAttribute("data-vibe-control")&&!vibeRuntimeReady);});}
+  function controls(on){controlsList.forEach(function(control){control.disabled=!on||(control.hasAttribute("data-vibe-control")&&!vibeRuntimeReady)||(control.getAttribute("data-guest-action")==="vibe_auto"&&!autoVibeReady);});var options=document.getElementById("vibeOptions"),availability=document.getElementById("vibeAvailability"),auto=document.getElementById("guestAutoVibe");if(options)options.hidden=!vibeRuntimeReady;if(availability)availability.hidden=vibeRuntimeReady;if(auto)auto.hidden=!autoVibeReady;}
   function renderControlState(cartState){
     var devices=cartState&&cartState.devices||{},matrix=devices.matrix||{},aux=devices.aux||{},tuning=cartState&&cartState.tuning||{};
     var values=[["matrixBrightness","matrixBrightnessValue",matrix.brightness],["auxBrightness","auxBrightnessValue",aux.brightness],["guestMotion","guestMotionValue",tuning.motion],["guestAudio","guestAudioValue",tuning.audioResponse]];
@@ -37,6 +37,8 @@
     var scene=document.getElementById("guestScene"),palette=document.getElementById("guestPalette");
     if(scene&&cartState.sceneId)scene.value=String(cartState.sceneId);
     if(palette&&cartState.paletteId&&Array.prototype.some.call(palette.options,function(option){return option.value===String(cartState.paletteId);}))palette.value=String(cartState.paletteId);
+    var selected=String(cartState&&cartState.selectedVibe||"");
+    document.querySelectorAll('[data-guest-action="vibe"]').forEach(function(button){button.setAttribute("aria-pressed",button.getAttribute("data-value")===selected?"true":"false");});
   }
   function id(){
     var bytes=new Uint8Array(16);window.crypto.getRandomValues(bytes);
@@ -52,40 +54,41 @@
     if(busy)return Promise.resolve();
     if(cartId!=="hbnf-cart"){
       enabled=false;revision=null;controls(false);
-      document.getElementById("connectionBadge").textContent="INVALID LINK";
+      document.getElementById("connectionBadge").textContent="LINK UNAVAILABLE";
       document.getElementById("guestBadge").textContent="CLOSED";
-      announce("This Guest link is not for the current Cart.","Use the QR link shown in the Cart owner controls.");
+      announce("This link doesn’t match the Cart.","Scan the QR code shown in the owner controls.");
       return Promise.resolve();
     }
     busy=true;controls(false);
     return post({action:"status"}).then(function(snapshot){
       vibeRuntimeReady=!!(snapshot&&snapshot.capabilities&&snapshot.capabilities.phase2VibeRuntimeV1===true);
+      autoVibeReady=!!(snapshot&&snapshot.capabilities&&snapshot.capabilities.autoVibeControlV1===true);
       var desired=snapshot&&snapshot.desired;
       var cartState=desired&&desired.state;
       revision=desired&&Number.isSafeInteger(Number(desired.revision))?Number(desired.revision):null;
       enabled=!!(cartState&&cartState.guestMode===true&&revision!==null);
       renderControlState(cartState||{});
-      document.getElementById("connectionBadge").textContent="BACKEND ONLINE";
+      document.getElementById("connectionBadge").textContent="CART ONLINE";
       document.getElementById("connectionBadge").className="badge ready";
       document.getElementById("guestBadge").textContent=enabled?"OPEN":"CLOSED";
       document.getElementById("guestBadge").className="badge "+(enabled?"ready":"closed");
       var devicesConfirmed=revision!==null&&updateDeviceStatus(snapshot,revision);
       controls(enabled);
       if(pendingRevision!==null){
-        if(revision>pendingRevision){pendingRevision=null;announce("Cart state changed before device confirmation.","Refresh and retry only if Guest Mode remains open.");}
-        else if(revision===pendingRevision&&devicesConfirmed){pendingRevision=null;announce("Matrix and AUX command paths acknowledged the Guest action.","Both devices acknowledged revision "+revision+". AUX illumination is not verified by this acknowledgement.");}
-        else announce("Guest action queued; device acknowledgement pending.","Backend accepted revision "+pendingRevision+". Matrix/AUX command application is not yet confirmed.");
-      }else if(enabled)announce("Guest Mode is open.",vibeRuntimeReady?"Choose a Vibe or use Next look and Cart Auto. The owner can close Guest Mode at any time.":"Vibe selection is unavailable until the matching Cart runtime is qualified. Use Next look or Cart Auto.");
-      else announce("Guest Mode is closed.","Ask the Cart owner to switch Guest Mode on.");
+        if(revision>pendingRevision){pendingRevision=null;announce("The Cart changed before your choice was applied.","Check the current status and try again if Guest Mode is still on.");}
+        else if(revision===pendingRevision&&devicesConfirmed){pendingRevision=null;announce("Change applied.","Matrix and underglow have responded.");}
+        else announce("Choice sent. Waiting for the Cart.","Status will update shortly.");
+      }else if(enabled)announce("Guest Mode is on.","Choose a Vibe, or tap Next look or Cart Auto.");
+      else announce("Guest Mode is off.","Ask the owner to turn it on before trying again.");
     }).catch(function(error){
       enabled=false;revision=null;controls(false);
-      document.getElementById("connectionBadge").textContent="GUEST SERVICE OFFLINE";
+      document.getElementById("connectionBadge").textContent="CART OFFLINE";
       document.getElementById("connectionBadge").className="badge offline";
-      deviceStatus.textContent="Guest service offline; device command status unavailable";
+      deviceStatus.textContent="Status unavailable";
       deviceStatus.className="device-status unconfirmed";
       document.getElementById("guestBadge").textContent="CLOSED";
       document.getElementById("guestBadge").className="badge closed";
-      announce("Could not read the Cart state.",error.message);
+      announce("Can't reach the Cart right now.","Check your connection and try again.");
     }).finally(function(){busy=false;});
   }
   function act(button){
@@ -96,19 +99,19 @@
     var now=Date.now();
     if(now-(lastAction[action]||0)<400)return;
     lastAction[action]=now;
-    busy=true;controls(false);detail.textContent="Sending through the Cart command path…";
+    busy=true;controls(false);detail.textContent="Sending your choice…";
     post({action:"guest_command",commandId:id(),expectedRevision:revision,guestAction:action,value:value})
-      .then(function(result){pendingRevision=Number.isSafeInteger(Number(result&&result.revision))?Number(result.revision):revision;announce("Guest action queued; device acknowledgement pending.","Backend accepted revision "+pendingRevision+". Matrix/AUX command application is not yet confirmed.");})
+      .then(function(result){pendingRevision=Number.isSafeInteger(Number(result&&result.revision))?Number(result.revision):revision;announce("Choice sent. Waiting for the Cart.","Status will update shortly.");})
       .catch(function(error){
         if(error.status===409&&error.data&&error.data.error==="stale_revision"){
-          announce("The Cart changed before that tap landed.","State refreshed. Try again if Guest Mode is still open.");
+          announce("The Cart changed before your choice was applied.","Status refreshed. Try again if Guest Mode is still on.");
           return;
         }
         if(error.status===403&&error.data&&error.data.error==="guest_mode_closed"){
-          announce("Guest Mode is closed.","The Cart owner has closed Guest Mode.");
+          announce("Guest Mode is off.","Ask the owner to turn it on before trying again.");
           return;
         }
-        announce("That action was not accepted.",error.message);
+        announce("That choice couldn’t be sent.","Check your connection and try again.");
       }).finally(function(){busy=false;refresh();});
   }
   buttons.forEach(function(button){button.addEventListener("click",function(){act(button);});});
@@ -118,7 +121,7 @@
   }});
   document.getElementById("retry").addEventListener("click",refresh);
   window.addEventListener("online",refresh);
-  window.addEventListener("offline",function(){enabled=false;revision=null;controls(false);document.getElementById("connectionBadge").textContent="GUEST SERVICE OFFLINE";document.getElementById("connectionBadge").className="badge offline";deviceStatus.textContent="Guest service offline; device command status unavailable";deviceStatus.className="device-status unconfirmed";announce("Guest controls are paused while the service is offline.","Local Matrix controls use a separate connection.");});
+  window.addEventListener("offline",function(){enabled=false;revision=null;controls(false);document.getElementById("connectionBadge").textContent="CART OFFLINE";document.getElementById("connectionBadge").className="badge offline";deviceStatus.textContent="Status unavailable";deviceStatus.className="device-status unconfirmed";announce("You're offline.","Reconnect to try again.");});
   window.setInterval(refresh,10000);
   refresh();
 })();
