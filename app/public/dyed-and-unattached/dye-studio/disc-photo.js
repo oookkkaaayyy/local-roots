@@ -10,12 +10,14 @@ function distance(a,b){const x=a[0]-b[0],y=a[1]-b[1],z=a[2]-b[2];return Math.sqr
 function median(v){v.sort((a,b)=>a-b);const i=Math.floor(v.length/2);return v.length%2?v[i]:(v[i-1]+v[i])/2}
 function hex(rgb){return "#"+rgb.map(v=>clamp(Math.round(v),0,255).toString(16).padStart(2,"0")).join("").toUpperCase()}
 function locateDisc(data,w,h){
- const m=Math.min(w,h),radii=[.27,.30,.33,.36,.39,.42,.45,.48];
+ // Include a disc that occupies only ~36-48% of the shortest photo side;
+ // otherwise an enlarged off-center partial edge can masquerade as a rim.
+ const m=Math.min(w,h),radii=[.18,.21,.24,.27,.30,.33,.36,.39,.42,.45,.48];
  const offsets=[-.12,-.06,0,.06,.12];
- let best={score:-Infinity,x:w/2,y:h/2,r:.39*m,edge:0,valid:0};
+ let best={score:-Infinity,x:w/2,y:h/2,r:.39*m,edge:0,valid:0,support:0};
  for(const ox of offsets)for(const oy of offsets)for(const factor of radii){
    const x=w/2+ox*m,y=h/2+oy*m,r=m*factor;
-   let sum=0,valid=0,innerSum=0;
+   let sum=0,valid=0,innerSum=0,edgeSupport=0;
    for(let i=0;i<40;i++){
      const a=i*2*Math.PI/40,c=Math.cos(a),s=Math.sin(a);
      const ix=x+c*r*.94,iy=y+s*r*.94,ex=x+c*r*1.06,ey=y+s*r*1.06;
@@ -27,13 +29,16 @@ function locateDisc(data,w,h){
    const ringA=getPixel(data,w,h,x+c*r*.79,y+s*r*.79);
    const ringB=getPixel(data,w,h,x+c*r*.88,y+s*r*.88);
    innerSum+=distance(ringA,ringB);
-   sum+=distance(inner,outer);valid++;
+   const stepDistance=distance(inner,outer);
+   sum+=stepDistance;
+   if(stepDistance>=18)edgeSupport++;
+   valid++;
    }
    if(valid<28)continue;
    const edge=sum/valid;
    // Favor long circular boundaries near the image center rather than printed motifs.
    const score=(edge+Math.min(edge,innerSum/valid)*.55)*(valid/40)*(0.78+factor*0.55)-magnitudeOffset(ox,oy)*7;
-   if(score>best.score)best={score,x,y,r,edge,valid};
+   if(score>best.score)best={score,x,y,r,edge,valid,support:edgeSupport/valid};
  }
  return best;
 }
@@ -119,7 +124,10 @@ function estimatePixels(imageData,options={}){
  const rgb=[0,1,2].map(ch=>core.reduce((s,x)=>s+x.rgb[ch],0)/core.length);
  const q=(i)=>ranked[clamp(Math.floor(ranked.length*i),0,ranked.length-1)].d;
  const spread=q(.75),outliers=ranked.filter(x=>x.d>48).length/ranked.length;
- const edgeFound=disc.edge>=15&&disc.valid>=28;
+ // A few bright boundaries must not count as a whole circular disc edge.
+ // Require coherent contrast across at least 70% of sampled circumference.
+ // This is an image-geometry validation gate, not a physical pigment fit.
+ const edgeFound=disc.edge>=15&&disc.valid>=28&&disc.support>=.70;
  // Two side-by-side discs (or a pre-dyed multicolor disc) can fool the
  // center-biased circle detector into finding a non-disc 'edge'. This severe
  // annular color mismatch is a conservative fail-closed flag, NOT a general
