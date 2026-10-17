@@ -200,8 +200,8 @@ function bind(){
    status.textContent="Reading disc color…";status.className="photo-status";
    try{
      const result=await analyzeImage(file);
-     if(!result.edgeDetected)throw Error("Disc edge not found. Retake with the entire disc on a contrasting background.");
      if(result.severeMixedColor)throw Error("Photo contains strongly mixed colors or multiple discs. Crop to a single undyed disc and retry; the selected color was not changed.");
+     if(!result.edgeDetected)throw Error("Disc edge not found. Retake with the entire disc on a contrasting background.");
      const color=document.getElementById("baseColor"),field=document.getElementById("baseHex");
      color.value=result.hex;field.value=result.hex;
      // Same existing UI color handlers; automatically refresh model and undo history.
