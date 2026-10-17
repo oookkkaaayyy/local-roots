@@ -1079,15 +1079,50 @@ test('a strongly mixed two-disc photo is rejected before it can overwrite the un
  assert.equal(single.edgeDetected,true);
  assert.equal(single.severeMixedColor,false,'single original disc should still be accepted');
  assert.equal(single.hex,'#C8C17E','single-disc base is the synthetic known plate color');
- assert.equal(paired.edgeDetected,true,'regression reproduces a false-positive circular edge between two discs');
+ assert.equal(paired.edgeDetected,false,'partial cross-disc arcs are no longer accepted as a coherent edge');
  assert.equal(paired.severeMixedColor,true,'reject severe multimodal base-color contamination');
  assert.equal(paired.confidence,'check','false rim contrast must not imply a good base-color estimate');
  assert.ok(paired.outlierFraction>.5&&paired.spread>70);
  // Rejection must run BEFORE the existing source-color mutation. Do not put
  // it only in the message after setDiscAppearance or baseHex has been changed.
- const gate=photo.slice(photo.indexOf('if(!result.edgeDetected)'),photo.indexOf('const color=document.getElementById("baseColor")'));
+ const gate=photo.slice(photo.indexOf('if(result.severeMixedColor)'),photo.indexOf('const color=document.getElementById("baseColor")'));
  assert.match(gate,/if\(result\.severeMixedColor\)throw Error/);
  assert.match(gate,/Crop to a single undyed disc/);
  // The real first-party Wraith/Tern photographs stay in private Google Drive;
  // this regression draws synthetic circles and embeds no photo payloads.
+});
+
+
+test('small single-color disc does not invent a two-tone rim from its surrounding background',()=>{
+ const photo=read('../public/dyed-and-unattached/dye-studio/disc-photo.js');
+ const win={},doc={readyState:'loading',addEventListener(){}};
+ Function('window','document',photo)(win,doc);
+ const estimate=win.DUDiscPhoto.estimatePixels;
+ const draw=(radius,bg,twoTone=false,x=230)=>{
+  const w=460,h=460,data=new Uint8ClampedArray(w*h*4);
+  for(let y=0;y<h;y++)for(let col=0;col<w;col++){
+   const r=Math.hypot(col-x,y-230);
+   const rgb=r>radius?bg:twoTone&&r>radius*.83?[70,30,100]:[202,190,130];
+   const i=(y*w+col)*4;
+   data[i]=rgb[0];data[i+1]=rgb[1];data[i+2]=rgb[2];data[i+3]=255;
+  }
+  return estimate({data,width:w,height:h});
+ };
+ for(const radius of [85,95,115,130,145,165,175,192,205]){
+  for(const bg of [[230,230,230],[18,30,40]]){
+   const plain=draw(radius,bg);
+   assert.equal(plain.edgeDetected,true,'single cropped disc remains identifiable at radius '+radius);
+   assert.equal(plain.hex,'#CABE82','plate color not contaminated by background at '+radius);
+   assert.equal(plain.appearance,null,'solid plastic must not generate a fake '+bg[0]+' rim at '+radius);
+   assert.equal(plain.severeMixedColor,false,'one solid disc is not multiple discs at '+radius);
+  }
+ }
+ const realTwoTone=draw(95,[230,230,230],true);
+ assert.equal(realTwoTone.edgeDetected,true,'small genuine dual-color disc still accepted');
+ assert.equal(realTwoTone.hex,'#CABE82','true plate retained');
+ assert.equal(realTwoTone.appearance.rimHex,'#461E64','true colored outer rim is preserved');
+ const offcenter=draw(125,[230,230,230],false,330);
+ assert.equal(offcenter.edgeDetected,false,'partial off-center arc must fail closed, not invent bright rim');
+ assert.ok(!offcenter.appearance,'no fabricated rim for unlocatable disc');
+ // The validated pixels above are synthetic, not empirical disc spectra.
 });
