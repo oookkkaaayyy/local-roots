@@ -124,7 +124,9 @@ def main():
         return
     worker=find_worker()
     stamp=time.strftime("%Y%m%d-%H%M%S")
-    backup=pathlib.Path.home()/("HBNF_CART_UI_BACKUP_"+stamp)
+    backup_root=pathlib.Path(os.environ.get("HBNF_CART_UI_BACKUP_ROOT", "/Users/andrew/Documents/Codex/HBNF_CART_UI_BACKUPS"))
+    backup_root.mkdir(parents=True,exist_ok=True)
+    backup=backup_root/("HBNF_CART_UI_BACKUP_"+stamp)
     backup.mkdir(parents=True,exist_ok=False)
     public=worker/"public"
     for name in FILES+GUEST_FILES:
