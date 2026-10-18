@@ -79,3 +79,6 @@ This section governs every future implementation, build, deployment, release, di
 
 For HBNF/Cart 2.0 specifically, a diagnostic install is forbidden unless the exact recovery artifact **and the actual updater/publication/manifest path required to consume it** have already been proven end-to-end and the exact prior cloud deployment can be restored without reconstruction.
 
+## Local Roots × HB Night Flyers website integration and redesign
+
+For work that changes, audits or coordinates the Local Roots/HBNF site integration, unified public navigation, visual identity or design system, **first read** `docs/LR_HBNF_SITE_INTEGRATION_CHARTER.md` and the current AKS/router/project sources it identifies. Apply its mandatory evidence-first challenger review, independent HBNF operational boundary, owner visual approval and non-production exploration gates. This section does not alter unrelated active Local Roots event-source, D&U or HBNF scoring/Cart release authorities. 
