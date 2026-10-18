@@ -15,6 +15,7 @@ export function Shell({children,admin=false}:{children:ReactNode;admin?:boolean}
       </a>
       <nav aria-label="Primary">
         <a className="nav-events" href="/events" aria-current={eventsCurrent}>Events</a>
+        <a className="nav-weather" href="/weather" aria-current={current('/weather')}>Weather</a>
         <a className="nav-hbnf" href="/hb-night-flyers" aria-current={current('/hb-night-flyers')}>HB Night Flyers</a>
         <a className="nav-du" href="/dyed-and-unattached" aria-current={current('/dyed-and-unattached')}>Dyed &amp; Unattached</a>
         {admin?<a className="nav-admin" href="/admin/events" aria-current={path==='/admin'||path==='/admin/events'?'page':undefined}>Events admin</a>:null}

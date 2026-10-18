@@ -50,3 +50,9 @@ test('Weather interface keeps player controls and removes internal explanations'
   assert.doesNotMatch(page,/weather-sources|weather-coverage-note|weather-threshold-note/);
 });
 
+
+test('Primary navigation links Weather and marks its route active', async () => {
+  const shell = await read('../src/components/Shell.tsx');
+  assert.ok(shell.includes(`className="nav-weather" href="/weather" aria-current={current('/weather')}>Weather</a>`));
+  assert.ok(shell.includes(`href="/" aria-label="Local Roots home"`));
+});
