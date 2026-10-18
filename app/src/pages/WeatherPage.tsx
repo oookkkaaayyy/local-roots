@@ -33,8 +33,8 @@ function defaultPreferences():Preferences {
   const zip=query.get('zip'); if(zip&&/^\d{5}$/.test(zip)) initial.location=zip;
   const radius=Number(query.get('radius')); if([25,50,80,100,125,150].includes(radius)) initial.radius=radius;
   const sharedDate=query.get('date'); if(sharedDate&&sharedDate>=today&&sharedDate<=plusDays(today,6)) initial.date=sharedDate;
-  const start=Number(query.get('start')); if(Number.isInteger(start)&&start>=0&&start<=22) initial.start=start;
-  const end=Number(query.get('end')); if(Number.isInteger(end)&&end>initial.start&&end<=24) initial.end=end;
+  const startParam=query.get('start'); if(startParam!==null){const start=Number(startParam);if(Number.isInteger(start)&&start>=0&&start<=22)initial.start=start;}
+  const endParam=query.get('end'); if(endParam!==null){const end=Number(endParam);if(Number.isInteger(end)&&end>initial.start&&end<=24)initial.end=end;}
   if(query.get('allDay')==='1') initial.allDay=true;
   return initial;
 }

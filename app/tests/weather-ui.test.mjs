@@ -32,6 +32,13 @@ test('Weather mobile course rows stay compact and hourly details remain scrollab
   assert.match(css, /\.weather-page\{[^}]*min-width:0/);
 });
 
+test('Fresh Weather searches retain 8 AM–4 PM unless URL hours are supplied', async () => {
+  const page = await read('../src/pages/WeatherPage.tsx');
+  assert.match(page, /start:8,end:16/);
+  assert.match(page, /startParam=query\.get\('start'\); if\(startParam!==null\)/);
+  assert.match(page, /endParam=query\.get\('end'\); if\(endParam!==null\)/);
+});
+
 test('Weather filter disclosure is closed initially and does not refetch on toggle', async () => {
   const page = await read('../src/pages/WeatherPage.tsx');
   const css = await read('../src/weather.css');
