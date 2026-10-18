@@ -272,6 +272,254 @@ BACKEND_OPAL_FUNCTION_FILES=(
     "staging/coordinated-backend/hbnf-cart-control/matrix-relay-projection.ts",
 )
 
+# One exact, software-only Owner PWA install. This deliberately does not use
+# LIVE_APPROVED and never changes the global firmware mutation bit.
+OWNER_PWA_TRANSACTION_SCHEMA="hbnf-owner-pwa-install-admission-v1"
+OWNER_PWA_STEP="install_owner_pwa"
+OWNER_PWA_DRIVE_ID="1PLxm2UbVQU7YSZWOLp0GkHJPUtRkZ3Vp"
+OWNER_PWA_TARGETS=(
+    "owner-pwa/hbnf-cart.html", "owner-pwa/hbnf-cart.js",
+    "owner-pwa/hbnf-cart-local.js", "owner-pwa/hbnf-cart-features.js",
+    "owner-pwa/hbnf-cart-ui-v6.css", "owner-pwa/hbnf-cart-ui-v6.js",
+    "owner-pwa/hbnf-cart-semantic.js", "owner-pwa/hbnf-cart-skins-score.js",
+    "owner-pwa/hbnf-cart-net.js", "owner-pwa/hbnf-cart-manifest.webmanifest",
+    "owner-pwa/hbnf-cart-icon-180.png", "owner-pwa/hbnf-cart-icon-192.png",
+    "owner-pwa/hbnf-cart-icon-512.png", "owner-pwa/hbnf-guest-qr.png",
+    "mission-control-local/local-transport.js",
+)
+OWNER_PWA_ARTIFACTS={
+    "release_zip":"17127ae9a6a1cebd34c2467e5662aa23bb5fddb59811122c1114ebb76a686d73",
+    "candidate_zip":"681d02edf22ec6a45df9ac42c2210c3910c590111ec420da5e0f34458ea64b8e",
+    "candidate_manifest":"d05a0521c9a3e67bc42bc5db9afe81ca9678567ead84110a44b7721d868ff787",
+    "served_baseline_zip":"4dcb151465266fe1e80a1b0080d2ed7ec82ef0a20fd5f08830f403383ea6e018",
+    "v105_rollback_zip":"e2e7c7d97ce9756a9f8291e97d3e7e65917234dd6756be25c777e9bcdbd64b24",
+    "served_manifest":"3697dea5b6dd37e7a70fefdd9adf59ea027eb63df281ef1e25c5a2ea3c20d0ad",
+    "installer":"39d80154c62fb2c91bfb3c55c75652aa29969f63238b0b9d3ffc970f8b5a7f17",
+    "rollback_script":"fd3c6c5c746a9948b30eb13392af089b3be15344f4526ebc4a911fe5b6c1741a",
+}
+OWNER_PWA_BASELINE_HASHES={
+    "owner-pwa/hbnf-cart-features.js":"969e8eb38640783fd970d81e4544eefaa0063bfdb8a8a0a7eabdd4fa89de7502",
+    "owner-pwa/hbnf-cart-icon-180.png":"2df67d36de5dc9a16d0cc8dfa8142a827498047e31e1208e7bc749bf856e4c36",
+    "owner-pwa/hbnf-cart-icon-192.png":"1a14dbf56e5014b073dd4bb3b2ab823dd07d004ee450eac8463314899b3d7192",
+    "owner-pwa/hbnf-cart-icon-512.png":"6383246f47b08ee31087040699de97d6561648e84612d188522d47fc28686e65",
+    "owner-pwa/hbnf-cart-local.js":"1480ee79cd056f697b65a9d2c4b3693ff612ad000eed37a981812e0a0752c8c9",
+    "owner-pwa/hbnf-cart-manifest.webmanifest":"da5f6cb86db9327291a6c9f6fcd75e9a6fe9e9c0a83921255c9e364d8bdc6932",
+    "owner-pwa/hbnf-cart-net.js":"0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+    "owner-pwa/hbnf-cart-semantic.js":"af22dd68c254b4bc0b2507442465eeda36dcdd2535039f66d36e04d52f7234b7",
+    "owner-pwa/hbnf-cart-skins-score.js":"642761eddf40182d603b60f4b8de1d4a4979b7a9a71bbaabe3e5ff7c9c5b43a7",
+    "owner-pwa/hbnf-cart-ui-v6.css":"3d4199fd56e19e4d1e66bde443531d2e94155c41dbbc53ba6a6e7da4811ce4cd",
+    "owner-pwa/hbnf-cart-ui-v6.js":"c0347fdbafcda703578b18db37f03ef7010fb69d14c07e1f4eb64d8c0620268f",
+    "owner-pwa/hbnf-cart.html":"efa9759de89a900d7fec7e63114144e730a630eda970ef2f0441e8056a006c61",
+    "owner-pwa/hbnf-cart.js":"a6c55caeb9cc9b09b8fb846b8776c085d3be97f349be3dd46d596cd526361761",
+    "owner-pwa/hbnf-guest-qr.png":"f6a2593bbc55ab12503ab9c6eb8ac11813858c1ea14909071476cd7290854f27",
+    "mission-control-local/local-transport.js":"51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
+}
+OWNER_PWA_CANDIDATE_HASHES={
+    "mission-control-local/local-transport.js":"2d6e064bb54839d9562c3ff180681d7b918bb92f2fdb43f00c2821053e145e37",
+    "owner-pwa/hbnf-cart-features.js":"cb347e0a6d41572c547fd68e395f095e2a0e5fbd7e59516a38c836b628b5d27e",
+    "owner-pwa/hbnf-cart-icon-180.png":"2df67d36de5dc9a16d0cc8dfa8142a827498047e31e1208e7bc749bf856e4c36",
+    "owner-pwa/hbnf-cart-icon-192.png":"1a14dbf56e5014b073dd4bb3b2ab823dd07d004ee450eac8463314899b3d7192",
+    "owner-pwa/hbnf-cart-icon-512.png":"6383246f47b08ee31087040699de97d6561648e84612d188522d47fc28686e65",
+    "owner-pwa/hbnf-cart-local.js":"20fa2fe5a96342df175a14a68d5dfe68568d1b835793eae23227647d60dbbfaf",
+    "owner-pwa/hbnf-cart-manifest.webmanifest":"da5f6cb86db9327291a6c9f6fcd75e9a6fe9e9c0a83921255c9e364d8bdc6932",
+    "owner-pwa/hbnf-cart-net.js":"0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+    "owner-pwa/hbnf-cart-semantic.js":"af22dd68c254b4bc0b2507442465eeda36dcdd2535039f66d36e04d52f7234b7",
+    "owner-pwa/hbnf-cart-skins-score.js":"642761eddf40182d603b60f4b8de1d4a4979b7a9a71bbaabe3e5ff7c9c5b43a7",
+    "owner-pwa/hbnf-cart-ui-v6.css":"c878e5fc3d99b967fd7543ec0f03c620083cfb1b05f443f0d820b243b41b94ea",
+    "owner-pwa/hbnf-cart-ui-v6.js":"c0347fdbafcda703578b18db37f03ef7010fb69d14c07e1f4eb64d8c0620268f",
+    "owner-pwa/hbnf-cart.html":"03ad82714487712a1d28e128d0dcc4c300662ef61445c56143b8e50245b4b0b1",
+    "owner-pwa/hbnf-cart.js":"6662cc95b6d76fa02ea3300d635e585b391e44d195aab2da3272e83f283138bd",
+    "owner-pwa/hbnf-guest-qr.png":"f6a2593bbc55ab12503ab9c6eb8ac11813858c1ea14909071476cd7290854f27",
+}
+
+def _owner_pwa_authorization_receipt_errors(manifest,owner):
+    errors=[]; root=DEFAULT_STATE.parent.parent.resolve(); ref=manifest.get("owner_authorization_receipt",{})
+    if not isinstance(ref,dict) or not isinstance(ref.get("path"),str) or not re.fullmatch(r"[0-9a-f]{64}",str(ref.get("sha256",""))):
+        return ["Owner PWA authorization receipt reference is malformed"]
+    try:
+        p=(root/ref["path"]).resolve(); p.relative_to(root/"evidence")
+        if not p.is_file() or sha256_file(p)!=ref["sha256"]: return ["Owner PWA authorization receipt hash mismatch"]
+        receipt=load(p); receipt_owner=receipt.get("owner_authorization") if isinstance(receipt,dict) else None
+        recorded={k:v for k,v in owner.items() if k!="authorization_receipt_sha256"}
+        if receipt.get("schema")!="hbnf-owner-pwa-explicit-authorization-receipt-v1" or receipt_owner!=recorded:
+            errors.append("Owner PWA authorization receipt does not match the recorded direct-owner authorization")
+        if owner.get("authorization_receipt_sha256")!=ref.get("sha256"):
+            errors.append("Owner PWA authorization receipt is not bound into the admission")
+    except (OSError,ValueError,TypeError,AttributeError): errors.append("Owner PWA authorization receipt is missing or unsafe")
+    return errors
+
+def issue_owner_pwa_admission(state,manifest,owner_authorization,now=None):
+    current=time.time() if now is None else now
+    cursor=state.get("execution_cursor",{})
+    if not isinstance(cursor,dict): raise ValueError("Owner PWA issue rejected: execution cursor missing")
+    if not isinstance(manifest,dict) or not isinstance(owner_authorization,dict): raise ValueError("Owner PWA issue rejected: manifest and owner authorization must be objects")
+    if cursor.get("owner_pwa_transaction") or cursor.get("owner_pwa_transaction_history"):
+        raise ValueError("Owner PWA issue rejected: a prior or unresolved Owner PWA authorization exists")
+    manifest=copy.deepcopy(manifest); owner=copy.deepcopy(owner_authorization)
+    manifest["schema"]=OWNER_PWA_TRANSACTION_SCHEMA
+    manifest["stage"]="OWNER_PWA_LIVE_APPROVED"; manifest["outcome"]="PASS"
+    manifest["owner_authorization"]=owner
+    manifest["authorized_steps"]=[OWNER_PWA_STEP]
+    manifest["artifact_sha256_bindings"]=copy.deepcopy(OWNER_PWA_ARTIFACTS)
+    manifest["admission_sha256"]=""
+    auth_ref=manifest.get("owner_authorization_receipt",{})
+    if isinstance(auth_ref,dict): owner["authorization_receipt_sha256"]=auth_ref.get("sha256")
+    owner["artifact_sha256_bindings"]=copy.deepcopy(OWNER_PWA_ARTIFACTS)
+    manifest["owner_authorization"]=owner
+    if owner.get("scope")!=[OWNER_PWA_STEP,"rollback_if_required"]: raise ValueError("Owner PWA issue rejected: owner scope is not exact")
+    if owner.get("issued_unix")!=current or not isinstance(owner.get("expires_unix"),(int,float)) or owner["expires_unix"]<=current or owner["expires_unix"]-current>20*60:
+        raise ValueError("Owner PWA issue rejected: owner authorization is not fresh and short-lived")
+    if not all(isinstance(owner.get(k),str) and owner[k] for k in ("transaction_id","authorization_id","source_message_ref","nonce")):
+        raise ValueError("Owner PWA issue rejected: owner authorization identity is incomplete")
+    manifest["transaction_id"]=owner["transaction_id"]
+    manifest["admission_sha256"]=owner_pwa_admission_digest(manifest)
+    tx={"schema":"hbnf-owner-pwa-transaction-state-v1","transaction_id":owner["transaction_id"],
+        "admission_sha256":manifest["admission_sha256"],"owner_authorization":copy.deepcopy(owner),
+        "status":"AUTHORIZED","attempts_used":0,"active_step":None,"completed_steps":[],
+        "rollback_attempts_used":0,"issued_unix":current}
+    cursor["owner_pwa_transaction"]=tx
+    errors=owner_pwa_admission_errors(state,manifest,current,True)
+    if errors:
+        cursor.pop("owner_pwa_transaction",None)
+        raise ValueError("Owner PWA issue rejected: "+"; ".join(errors))
+    return manifest
+
+def owner_pwa_admission_digest(manifest):
+    payload={k:v for k,v in manifest.items() if k!="admission_sha256"}
+    return hashlib.sha256(json.dumps(payload,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest()
+
+def owner_pwa_admission_errors(state,manifest,now=None,require_unconsumed=True,allow_expired_active=False,validate_freshness=True):
+    errors=[]; current=time.time() if now is None else now
+    if not isinstance(manifest,dict) or manifest.get("schema")!=OWNER_PWA_TRANSACTION_SCHEMA:
+        return ["wrong Owner PWA admission schema"]
+    if manifest.get("stage")!="OWNER_PWA_LIVE_APPROVED" or manifest.get("outcome")!="PASS": errors.append("Owner PWA admission is not an approved PASS")
+    if state.get("lifecycle_state")!="PHASE2_INTEGRATING": errors.append("Owner PWA install requires PHASE2_INTEGRATING")
+    if state.get("phase2_implementation_authorized") is not True: errors.append("Phase 2 software authority is not active")
+    if state.get("live_mutation_authorized") is not False: errors.append("firmware mutation authority must remain closed")
+    cursor=state.get("execution_cursor",{}); tx=cursor.get("owner_pwa_transaction",{}) if isinstance(cursor,dict) else {}
+    owner=manifest.get("owner_authorization",{})
+    if not isinstance(owner,dict): owner={}; errors.append("Owner PWA owner authorization is malformed")
+    if not isinstance(tx,dict) or tx.get("schema")!="hbnf-owner-pwa-transaction-state-v1": errors.append("primary control state has no scoped Owner PWA transaction")
+    else:
+        if tx.get("transaction_id")!=manifest.get("transaction_id"): errors.append("Owner PWA transaction identity mismatch")
+        if tx.get("owner_authorization")!=owner: errors.append("Owner PWA authorization differs from primary state")
+        if tx.get("admission_sha256")!=manifest.get("admission_sha256"): errors.append("Owner PWA admission differs from primary state")
+        if require_unconsumed and (tx.get("status")!="AUTHORIZED" or tx.get("attempts_used")!=0 or tx.get("active_step") is not None or tx.get("completed_steps")!=[]):
+            errors.append("Owner PWA authorization is stale, consumed, replayed, or unresolved")
+    if manifest.get("transaction_id")!=owner.get("transaction_id"): errors.append("owner authorization transaction identity mismatch")
+    if owner.get("schema")!="hbnf-owner-pwa-install-authorization-v1": errors.append("owner authorization receipt schema is invalid")
+    required=("authorization_id","source_message_ref","scope","nonce","issued_unix","expires_unix","artifact_sha256_bindings","authorization_receipt_sha256")
+    for key in required:
+        if owner.get(key) in (None,"",[],{}): errors.append("owner authorization missing "+key)
+    if owner.get("scope")!=[OWNER_PWA_STEP,"rollback_if_required"]: errors.append("owner authorization scope is not the exact install and recovery")
+    if not re.fullmatch(r"[0-9a-f]{64}",str(owner.get("authorization_receipt_sha256",""))): errors.append("owner authorization receipt hash is invalid")
+    errors.extend(_owner_pwa_authorization_receipt_errors(manifest,owner))
+    if not isinstance(owner.get("issued_unix"),(int,float)) or not isinstance(owner.get("expires_unix"),(int,float)):
+        errors.append("owner authorization validity window is malformed")
+    elif (owner["issued_unix"]>current+5
+        or (owner["issued_unix"]<current-300 and not (allow_expired_active and not require_unconsumed))
+        or owner["expires_unix"]-owner["issued_unix"]>20*60
+        or (owner["expires_unix"]<=current and not (allow_expired_active and not require_unconsumed))):
+        errors.append("Owner PWA authorization is stale or exceeds the 20-minute window")
+    if manifest.get("artifact_sha256_bindings")!=OWNER_PWA_ARTIFACTS or owner.get("artifact_sha256_bindings")!=OWNER_PWA_ARTIFACTS:
+        errors.append("Owner PWA package, candidate, installer, or rollback hash binding mismatch")
+    if manifest.get("target")!={"model":"GL-SFT1200","ip":"192.168.77.1","base":"/www/mission-control-local","owner_dir":"/www/mission-control-local/owner-pwa"}:
+        errors.append("Owner PWA target differs from the exact Opal allowlist")
+    if manifest.get("drive_file_id")!=OWNER_PWA_DRIVE_ID: errors.append("Owner PWA package source differs from the explicitly authorized private Drive artifact")
+    if manifest.get("allowed_paths")!=list(OWNER_PWA_TARGETS): errors.append("Owner PWA path allowlist differs from the exact 15 served files")
+    if manifest.get("candidate_sha256_by_path")!=OWNER_PWA_CANDIDATE_HASHES: errors.append("candidate per-file hashes differ from the pinned package manifest")
+    pre=manifest.get("live_preflight",{})
+    if not isinstance(pre,dict) or pre.get("schema")!="hbnf-owner-pwa-live-preflight-v1" or pre.get("pass") is not True:
+        errors.append("fresh Owner PWA live preflight did not pass")
+    else:
+        captured=pre.get("captured_unix")
+        if validate_freshness and (not isinstance(captured,(int,float)) or current-captured>300 or captured>current+5): errors.append("Owner PWA live preflight is stale")
+        if pre.get("target_ip")!="192.168.77.1" or pre.get("served_sha256_by_path")!=OWNER_PWA_BASELINE_HASHES: errors.append("live Owner PWA served baseline differs from the exact rollback manifest")
+        permissions=pre.get("permissions",{})
+        if permissions!={"owner_files_regular_no_symlinks":True,"transport_regular_no_symlink":True,"root_install_available":True,"recovery_paths_clear":True}:
+            errors.append("live Owner PWA permissions or recovery-path preflight failed")
+    if manifest.get("authorized_steps")!=[OWNER_PWA_STEP]: errors.append("Owner PWA admission contains a missing or unrelated command")
+    if manifest.get("admission_sha256")!=owner_pwa_admission_digest(manifest): errors.append("Owner PWA admission digest is invalid")
+    return list(dict.fromkeys(errors))
+
+def reserve_owner_pwa_install(state,manifest,now=None):
+    errors=owner_pwa_admission_errors(state,manifest,now,True)
+    if errors: raise ValueError("Owner PWA install rejected: "+"; ".join(errors))
+    tx=state["execution_cursor"]["owner_pwa_transaction"]
+    tx.update({"status":"IN_PROGRESS","attempts_used":1,"active_step":OWNER_PWA_STEP,"started_unix":time.time() if now is None else now,"completed_steps":[]})
+    return state
+
+def complete_owner_pwa_install(state,manifest,evidence,now=None):
+    errors=owner_pwa_admission_errors(state,manifest,now,False,True,False)
+    tx=state.get("execution_cursor",{}).get("owner_pwa_transaction",{})
+    if tx.get("status")!="IN_PROGRESS" or tx.get("active_step")!=OWNER_PWA_STEP or tx.get("attempts_used")!=1:
+        errors.append("Owner PWA install is not the active one-use step")
+    evidence_path=pathlib.Path(evidence).resolve() if isinstance(evidence,(str,pathlib.Path)) else None
+    root=DEFAULT_STATE.parent.parent.resolve()
+    try: evidence_path.relative_to(root/"evidence")
+    except (ValueError,AttributeError): errors.append("install evidence must be stored inside evidence"); evidence_path=None
+    try: evidence=load(evidence_path) if evidence_path else {}
+    except (OSError,ValueError,TypeError): evidence={}; errors.append("install evidence is missing or malformed")
+    if not isinstance(evidence,dict) or evidence.get("schema")!="hbnf-owner-pwa-install-result-v1" or evidence.get("transaction_id")!=manifest.get("transaction_id") or evidence.get("step")!=OWNER_PWA_STEP or evidence.get("status")!="PASS":
+        errors.append("Owner PWA install evidence is not a PASS bound to this transaction")
+    if isinstance(evidence,dict):
+        if evidence.get("installed_sha256_by_path")!=OWNER_PWA_CANDIDATE_HASHES: errors.append("installed Owner PWA file hashes do not match the admitted candidate")
+        if evidence.get("served_sha256_by_path")!=OWNER_PWA_CANDIDATE_HASHES: errors.append("served Owner PWA health hashes do not match the admitted candidate")
+        if evidence.get("rollback_sha256")!=OWNER_PWA_ARTIFACTS["served_baseline_zip"] or evidence.get("rollback_retained") is not True:
+            errors.append("exact served-baseline rollback is not retained")
+        if evidence.get("health_checks")!={"http_200_all_15":True,"content_hash_all_15":True,"owner_route_content":True,"guest_unchanged":True,"skins_unchanged":True,"firmware_unchanged":True,"aux_unchanged":True}:
+            errors.append("post-install health evidence is incomplete or reports an unrelated change")
+    if errors: raise ValueError("Owner PWA install completion rejected: "+"; ".join(dict.fromkeys(errors)))
+    tx.update({"status":"COMPLETE","active_step":None,"completed_steps":[OWNER_PWA_STEP],"install_receipt":copy.deepcopy(evidence),
+        "install_receipt_path":str(evidence_path.relative_to(root)),"install_receipt_sha256":sha256_file(evidence_path)})
+    return state
+
+def reserve_owner_pwa_rollback(state,manifest,now=None):
+    errors=owner_pwa_admission_errors(state,manifest,now,False,True,False)
+    tx=state.get("execution_cursor",{}).get("owner_pwa_transaction",{})
+    if tx.get("status")!="ROLLBACK_REQUIRED" or tx.get("active_step") is not None or tx.get("rollback_attempts_used")!=0:
+        errors.append("Owner PWA rollback is allowed once only after a truthful failure receipt")
+    root=DEFAULT_STATE.parent.parent.resolve()
+    try:
+        fp=(root/tx.get("failure_receipt_path","")).resolve(); fp.relative_to(root/"evidence")
+        failure=load(fp)
+        if not fp.is_file() or sha256_file(fp)!=tx.get("failure_receipt_sha256") or failure.get("status")!="FAIL" or failure.get("transaction_id")!=manifest.get("transaction_id"):
+            errors.append("stored Owner PWA failure receipt is invalid or changed")
+    except (TypeError,ValueError,OSError): errors.append("stored Owner PWA failure receipt is unavailable")
+    if errors: raise ValueError("Owner PWA rollback rejected: "+"; ".join(dict.fromkeys(errors)))
+    tx.update({"active_step":"rollback_if_required","rollback_attempts_used":1,"last_reserved_step":"rollback_if_required"})
+    return state
+
+def record_owner_pwa_failure(state,manifest,evidence_path,now=None):
+    tx=state.get("execution_cursor",{}).get("owner_pwa_transaction",{})
+    errors=owner_pwa_admission_errors(state,manifest,now,False,True,False)
+    if tx.get("status")!="IN_PROGRESS" or tx.get("active_step")!=OWNER_PWA_STEP or tx.get("attempts_used")!=1: errors.append("no active Owner PWA install to fail")
+    p=pathlib.Path(evidence_path).resolve(); root=DEFAULT_STATE.parent.parent.resolve()
+    try: p.relative_to(root/"evidence")
+    except ValueError: errors.append("failure evidence must be stored inside evidence")
+    try: evidence=load(p)
+    except (OSError,ValueError,TypeError): evidence={}; errors.append("failure evidence is missing or malformed")
+    if not isinstance(evidence,dict) or evidence.get("schema")!="hbnf-owner-pwa-install-result-v1" or evidence.get("transaction_id")!=manifest.get("transaction_id") or evidence.get("step")!=OWNER_PWA_STEP or evidence.get("status")!="FAIL" or not evidence.get("failure_id"):
+        errors.append("failure evidence is not a truthful transaction-bound install failure")
+    if errors: raise ValueError("Owner PWA failure record rejected: "+"; ".join(dict.fromkeys(errors)))
+    tx.update({"status":"ROLLBACK_REQUIRED","active_step":None,"failed_step":OWNER_PWA_STEP,"failure_receipt_path":str(p.relative_to(root)),"failure_receipt_sha256":sha256_file(p),"rollback_attempts_used":0})
+    return state
+
+def complete_owner_pwa_rollback(state,manifest,evidence,now=None):
+    tx=state.get("execution_cursor",{}).get("owner_pwa_transaction",{})
+    errors=owner_pwa_admission_errors(state,manifest,now,False,True,False)
+    if tx.get("status")!="ROLLBACK_REQUIRED" or tx.get("active_step")!="rollback_if_required" or tx.get("rollback_attempts_used")!=1: errors.append("Owner PWA rollback is not reserved exactly once after failure")
+    p=pathlib.Path(evidence).resolve() if isinstance(evidence,(str,pathlib.Path)) else None; root=DEFAULT_STATE.parent.parent.resolve()
+    try: p.relative_to(root/"evidence")
+    except (ValueError,AttributeError): errors.append("rollback evidence must be stored inside evidence"); p=None
+    try: evidence=load(p) if p else {}
+    except (OSError,ValueError,TypeError): evidence={}; errors.append("rollback evidence is missing or malformed")
+    if not isinstance(evidence,dict) or evidence.get("schema")!="hbnf-owner-pwa-install-result-v1" or evidence.get("transaction_id")!=manifest.get("transaction_id") or evidence.get("step")!="rollback_if_required" or evidence.get("status")!="PASS" or evidence.get("served_sha256_by_path")!=OWNER_PWA_BASELINE_HASHES or evidence.get("rollback_sha256")!=OWNER_PWA_ARTIFACTS["served_baseline_zip"]:
+        errors.append("rollback evidence does not verify the exact previous served baseline")
+    if errors: raise ValueError("Owner PWA rollback completion rejected: "+"; ".join(dict.fromkeys(errors)))
+    tx.update({"status":"ROLLED_BACK","active_step":None,"rollback_receipt_path":str(p.relative_to(root)),"rollback_receipt_sha256":sha256_file(p),"completed_steps":[OWNER_PWA_STEP]})
+    return state
+
 def backend_opal_admission_digest(manifest):
     payload={k:v for k,v in manifest.items() if k!="admission_sha256"}
     encoded=json.dumps(payload,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()
@@ -1190,6 +1438,28 @@ def validate_state(model,state):
     p=parallelism_status(model,state)
     if p["required"] and not p["pass"]:
         errors.extend(["parallelism: "+x for x in p["violations"]])
+    if isinstance(cursor,dict):
+        pwa=cursor.get("owner_pwa_transaction")
+        if pwa is not None:
+            if not isinstance(pwa,dict) or pwa.get("schema")!="hbnf-owner-pwa-transaction-state-v1":
+                errors.append("Owner PWA transaction state schema is invalid")
+            else:
+                status=pwa.get("status"); attempts=pwa.get("attempts_used"); rollback=pwa.get("rollback_attempts_used")
+                if status not in ("AUTHORIZED","IN_PROGRESS","ROLLBACK_REQUIRED","COMPLETE","ROLLED_BACK"):
+                    errors.append("Owner PWA transaction state is invalid")
+                if state.get("live_mutation_authorized") is not False:
+                    errors.append("Owner PWA software transaction may not open firmware mutation authority")
+                if attempts not in (0,1) or rollback not in (0,1): errors.append("Owner PWA attempt counters are invalid")
+                if status=="AUTHORIZED" and (attempts!=0 or pwa.get("active_step") is not None or pwa.get("completed_steps")!=[]):
+                    errors.append("Owner PWA authorization state is not unused")
+                if status=="IN_PROGRESS" and (attempts!=1 or pwa.get("active_step")!=OWNER_PWA_STEP):
+                    errors.append("Owner PWA in-progress state lacks its reserved install step")
+                if status=="ROLLBACK_REQUIRED" and (attempts!=1 or pwa.get("active_step") not in (None,"rollback_if_required")):
+                    errors.append("Owner PWA rollback-required state is inconsistent")
+                if status=="COMPLETE" and (attempts!=1 or pwa.get("active_step") is not None or pwa.get("completed_steps")!=[OWNER_PWA_STEP]):
+                    errors.append("Owner PWA completion state is inconsistent")
+                if status=="ROLLED_BACK" and (attempts!=1 or rollback!=1 or pwa.get("active_step") is not None):
+                    errors.append("Owner PWA rollback state is inconsistent")
     return errors
 
 def forbidden_evidence_name(model,name):
@@ -2404,6 +2674,13 @@ def main():
     br=sub.add_parser("reserve-backend-opal-step"); br.add_argument("--admission",required=True); br.add_argument("--step",required=True,choices=[*BACKEND_OPAL_STEPS,"rollback"])
     bc=sub.add_parser("complete-backend-opal-step"); bc.add_argument("--admission",required=True); bc.add_argument("--step",required=True,choices=[*BACKEND_OPAL_STEPS,"rollback"]); bc.add_argument("--evidence",required=True)
     bf=sub.add_parser("fail-backend-opal-step"); bf.add_argument("--admission",required=True); bf.add_argument("--step",required=True,choices=[*BACKEND_OPAL_STEPS]); bf.add_argument("--evidence",required=True)
+    opi=sub.add_parser("issue-owner-pwa-admission"); opi.add_argument("--admission",required=True); opi.add_argument("--authorization-receipt",required=True)
+    opc=sub.add_parser("check-owner-pwa-admission"); opc.add_argument("--admission",required=True)
+    opr=sub.add_parser("reserve-owner-pwa-install"); opr.add_argument("--admission",required=True)
+    opx=sub.add_parser("complete-owner-pwa-install"); opx.add_argument("--admission",required=True); opx.add_argument("--evidence",required=True)
+    opf=sub.add_parser("fail-owner-pwa-install"); opf.add_argument("--admission",required=True); opf.add_argument("--evidence",required=True)
+    opb=sub.add_parser("reserve-owner-pwa-rollback"); opb.add_argument("--admission",required=True)
+    opbc=sub.add_parser("complete-owner-pwa-rollback"); opbc.add_argument("--admission",required=True); opbc.add_argument("--evidence",required=True)
     a=sub.add_parser("advance"); a.add_argument("--receipt",required=True)
     i=sub.add_parser("impact"); i.add_argument("--change-type",required=True)
     fp=sub.add_parser("failure"); fp.add_argument("--domain",required=True)
@@ -2453,6 +2730,41 @@ def main():
             "lifecycle_state":state.get("lifecycle_state"),"firmware_live_mutation_authorized":state.get("live_mutation_authorized") is True,
             "errors":errors},indent=2,sort_keys=True))
         return 0 if not errors else 2
+    if args.cmd=="issue-owner-pwa-admission":
+        def require_evidence_file(value,label):
+            path=pathlib.Path(value).resolve()
+            try:path.relative_to(ROOT/"evidence")
+            except ValueError:raise SystemExit(label+" must be stored under evidence/")
+            return path
+        admission_path=require_evidence_file(args.admission,"Owner PWA admission")
+        authorization_path=require_evidence_file(args.authorization_receipt,"Owner authorization")
+        manifest=load(admission_path); authorization=load(authorization_path)
+        if authorization.get("schema")!="hbnf-owner-pwa-explicit-authorization-receipt-v1": raise SystemExit("Owner PWA authorization receipt schema is invalid")
+        owner=authorization.get("owner_authorization") if isinstance(authorization,dict) else None
+        manifest["owner_authorization_receipt"]={"path":authorization_path.relative_to(ROOT).as_posix(),"sha256":sha256_file(authorization_path)}
+        manifest=issue_owner_pwa_admission(state,manifest,owner)
+        errs=validate_state(model,state)
+        if errs: raise SystemExit("refusing to save invalid state: "+"; ".join(errs))
+        save(admission_path,manifest); save(args.state,state)
+        print(json.dumps({"schema":"hbnf-cart2-owner-pwa-admission-result-v1","action":"issued","transaction_id":manifest.get("transaction_id"),"admission_sha256":manifest.get("admission_sha256"),"firmware_live_mutation_authorized":state.get("live_mutation_authorized") is True},indent=2,sort_keys=True))
+        return 0
+    if args.cmd=="check-owner-pwa-admission":
+        manifest=load(args.admission); errors=owner_pwa_admission_errors(state,manifest)
+        print(json.dumps({"schema":"hbnf-cart2-owner-pwa-admission-check-v1","pass":not errors,"firmware_live_mutation_authorized":state.get("live_mutation_authorized") is True,"errors":errors},indent=2,sort_keys=True))
+        return 0 if not errors else 2
+    if args.cmd in ("reserve-owner-pwa-install","complete-owner-pwa-install","fail-owner-pwa-install","reserve-owner-pwa-rollback","complete-owner-pwa-rollback"):
+        manifest=load(args.admission)
+        if args.cmd=="reserve-owner-pwa-install": reserve_owner_pwa_install(state,manifest); action="reserved"
+        elif args.cmd=="complete-owner-pwa-install": complete_owner_pwa_install(state,manifest,args.evidence); action="completed"
+        elif args.cmd=="fail-owner-pwa-install": record_owner_pwa_failure(state,manifest,args.evidence); action="rollback_required"
+        elif args.cmd=="reserve-owner-pwa-rollback": reserve_owner_pwa_rollback(state,manifest); action="rollback_reserved"
+        else: complete_owner_pwa_rollback(state,manifest,args.evidence); action="rolled_back"
+        errs=validate_state(model,state)
+        if errs: raise SystemExit("refusing to save invalid state: "+"; ".join(errs))
+        save(args.state,state)
+        tx=state.get("execution_cursor",{}).get("owner_pwa_transaction",{})
+        print(json.dumps({"schema":"hbnf-cart2-owner-pwa-step-result-v1","action":action,"transaction_id":tx.get("transaction_id"),"status":tx.get("status"),"attempts_used":tx.get("attempts_used"),"rollback_attempts_used":tx.get("rollback_attempts_used"),"firmware_live_mutation_authorized":state.get("live_mutation_authorized") is True},indent=2,sort_keys=True))
+        return 0
     if args.cmd in ("reserve-backend-opal-step","complete-backend-opal-step","fail-backend-opal-step"):
         if args.cmd=="reserve-backend-opal-step":
             reserve_backend_opal_step(state,args.admission,args.step)

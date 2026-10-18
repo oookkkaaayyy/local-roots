@@ -12,6 +12,7 @@ MODEL=ROOT/"config/HBNF_CONTROL_MODEL.json"
 STATE=ROOT/"config/HBNF_CONTROL_STATE.json"
 BACKEND_OPAL_STEPS=("apply_migration","deploy_edge_function","install_writer_stopped","bootstrap_current_state",
     "activate_writer","one_owner_control_test","restore_and_verify","rollback")
+OWNER_PWA_STEPS=("install_owner_pwa","rollback_if_required")
 
 def load(p): return json.loads(pathlib.Path(p).read_text())
 
@@ -29,6 +30,10 @@ def main():
     ap.add_argument("--backend-opal-action",choices=["reserve","complete","fail","refresh"],help="Run one named transaction-control action; no arbitrary child command is accepted")
     ap.add_argument("--backend-opal-step",choices=BACKEND_OPAL_STEPS,help="Exact allowlisted backend/Opal transaction step")
     ap.add_argument("--backend-opal-evidence",help="PASS/FAIL step evidence required for completion/failure")
+    ap.add_argument("--owner-pwa-admission",help="Exact one-use software-only Owner PWA admission")
+    ap.add_argument("--owner-pwa-action",choices=["check","reserve","complete","fail","reserve-rollback","complete-rollback"],help="Fixed Owner PWA transaction action; no arbitrary command is accepted")
+    ap.add_argument("--owner-pwa-step",choices=OWNER_PWA_STEPS,help="Exact Owner PWA install or rollback step")
+    ap.add_argument("--owner-pwa-evidence",help="Transaction-bound install/failure/rollback receipt")
     ap.add_argument("command",nargs=argparse.REMAINDER)
     args=ap.parse_args()
 
@@ -36,6 +41,34 @@ def main():
     if command and command[0]=="--":
         command=command[1:]
     backend_mode=any((args.backend_opal_admission,args.backend_opal_action,args.backend_opal_step,args.backend_opal_evidence))
+    owner_pwa_mode=any((args.owner_pwa_admission,args.owner_pwa_action,args.owner_pwa_step,args.owner_pwa_evidence))
+    if owner_pwa_mode:
+        if backend_mode or args.mutation or args.capsule or args.prelive_proof or args.admission:
+            raise SystemExit("BLOCKED: Owner PWA software-only mode cannot be mixed with backend or firmware authority")
+        if args.require_state!="PHASE2_INTEGRATING": raise SystemExit("BLOCKED: Owner PWA install requires PHASE2_INTEGRATING")
+        if command: raise SystemExit("BLOCKED: Owner PWA mode accepts only fixed transaction-action IDs, never an arbitrary command")
+        if not args.owner_pwa_admission or not args.owner_pwa_action: raise SystemExit("BLOCKED: Owner PWA action and exact admission are required")
+        action=args.owner_pwa_action; step=args.owner_pwa_step; evidence=args.owner_pwa_evidence
+        fixed={"check":(None,None),"reserve":("install_owner_pwa","reserve-owner-pwa-install"),"complete":("install_owner_pwa","complete-owner-pwa-install"),
+            "fail":("install_owner_pwa","fail-owner-pwa-install"),"reserve-rollback":("rollback_if_required","reserve-owner-pwa-rollback"),
+            "complete-rollback":("rollback_if_required","complete-owner-pwa-rollback")}
+        expected,subcommand=fixed[action]
+        if step!=expected: raise SystemExit("BLOCKED: Owner PWA step does not match the fixed action")
+        if action in ("complete","fail","complete-rollback") and not evidence: raise SystemExit("BLOCKED: Owner PWA completion/recovery requires a result receipt")
+        if action not in ("complete","fail","complete-rollback") and evidence: raise SystemExit("BLOCKED: this Owner PWA action does not accept evidence")
+        model=load(args.model); state=load(args.state)
+        if state.get("lifecycle_state")!=args.require_state: raise SystemExit("BLOCKED: current lifecycle state does not match required state")
+        control=ROOT/"scripts/hbnf_control.py"
+        if not control.is_file(): raise SystemExit("BLOCKED: release admission validator is missing")
+        if action=="check": check=[sys.executable,str(control),"--model",args.model,"--state",args.state,"check-owner-pwa-admission","--admission",args.owner_pwa_admission]
+        else:
+            check=[sys.executable,str(control),"--model",args.model,"--state",args.state,subcommand,"--admission",args.owner_pwa_admission]
+            if evidence: check.extend(["--evidence",evidence])
+        p=subprocess.run(check,cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+        sys.stdout.write(p.stdout)
+        if p.returncode: raise SystemExit("BLOCKED: exact Owner PWA software admission rejected the action")
+        print(f"CONTROL_PLANE_PASS state={args.require_state} owner_pwa_action={action} step={step or 'admission'}",flush=True)
+        return 0
     if backend_mode:
         if args.mutation or args.capsule or args.prelive_proof or args.admission:
             raise SystemExit("BLOCKED: scoped backend/Opal mode cannot be mixed with firmware mutation authority")
