@@ -44,14 +44,14 @@
     "state": "CA",
     "coordinates": [34.1803, -118.1699],
     "coordinateNote": "Approximate course-area point from public park mapping; forecast resolves to the nearby NWS grid cell.",
-    "holes": 18,
+    "holes": 24,
     "kind": "disc-golf",
     "access": "public",
     "status": "open",
     "timezone": "America/Los_Angeles",
     "sources": [
-      { "label": "Los Angeles County environmental impact report", "url": "https://dpw.lacounty.gov/wrd/Projects/DevilGate/FEIR/Devils_Gate_FEIR_2014_10_20_Vol_1_Section_3.pdf", "supports": ["course identity", "18+ holes", "location in Hahamongna Watershed Park"] },
-      { "label": "City of Pasadena: Hahamongna Watershed Park", "url": "https://www.cityofpasadena.net/parks-and-rec/parks/hahamongna-watershed-park/", "supports": ["public park location and access"] }
+      { "label": "City of Pasadena: Hahamongna Watershed Park", "url": "https://www.cityofpasadena.net/parks-and-rec/parks/hahamongna-watershed-park/", "supports": ["current 24-hole Frisbee golf course", "address", "public park"] },
+      { "label": "Los Angeles County environmental impact report", "url": "https://dpw.lacounty.gov/wrd/Projects/DevilGate/FEIR/Devils_Gate_FEIR_2014_10_20_Vol_1_Section_3.pdf", "supports": ["course identity", "historical 18+ holes", "location in Hahamongna Watershed Park"] }
     ],
     "verifiedOn": "2026-10-17"
   },
