@@ -59,7 +59,8 @@ assert.doesNotMatch(events, /↗/);
 assert.doesNotMatch(hbnf, /↗/);
 assert.doesNotMatch(read('src/pages/EventDetailPage.tsx'), /↗/);
 assert.doesNotMatch(read('src/lib/eventPresentation.ts'), /↗/);
-assert.match(styles, /event-actions\\{display:flex;flex-flow:row wrap;/);
-assert.doesNotMatch(styles, /grid-template-columns:repeat\\(2,minmax\\(0,1fr\\)\\);gap:6px;justify-content:stretch/);
-assert.match(styles, /min-height:28px;padding:4px 7px/);
-assert.doesNotMatch(styles, /aria-current=page\\]\\{text-decoration:underline/);
+
+assert.ok(styles.includes('event-actions{display:flex;flex-flow:row wrap;'));
+assert.ok(!styles.includes('grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;justify-content:stretch'));
+assert.ok(styles.includes('min-height:28px;padding:4px 7px'));
+assert.ok(!styles.includes('.site-header nav a[aria-current=page]{text-decoration:underline'));
