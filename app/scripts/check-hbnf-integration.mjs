@@ -53,7 +53,6 @@ assert.equal(png.readUInt32BE(20), 600);
 assert.match(read('public/fonts/SOURCE.txt'), /SIL Open Font License 1\.1/);
 assert.match(read('public/fonts/OFL.txt'), /SIL OPEN FONT LICENSE Version 1\.1/);
 
-console.log('LR × HBNF integration source checks passed.');
 
 assert.doesNotMatch(events, /↗/);
 assert.doesNotMatch(hbnf, /↗/);
@@ -64,3 +63,6 @@ assert.ok(styles.includes('event-actions{display:flex;flex-flow:row wrap;'));
 assert.ok(!styles.includes('grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;justify-content:stretch'));
 assert.ok(styles.includes('min-height:28px;padding:4px 7px'));
 assert.ok(!styles.includes('.site-header nav a[aria-current=page]{text-decoration:underline'));
+assert.ok(styles.includes('.public-brand-shell .events-page,\n.public-brand-shell .event-detail-page{font-family:var(--lr-public-font)}'));
+assert.ok(styles.includes('@media(max-width:380px)'));
+console.log('LR × HBNF integration source checks passed.');

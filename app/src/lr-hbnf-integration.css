@@ -116,3 +116,13 @@
  .public-brand-shell .hbnf-play-links a{flex:0 0 auto;min-width:76px;min-height:32px;padding:5px 9px;font-size:.82rem}
  .public-brand-shell .hbnf-event-detail{min-width:48px;min-height:32px;padding:4px 7px;font-size:.72rem}
 }
+
+/* Use the locally served font across event copy, including rules in older stylesheet layers. */
+.public-brand-shell .events-page,
+.public-brand-shell .event-detail-page{font-family:var(--lr-public-font)}
+.public-brand-shell .events-page :is(h1,h2,h3,.event-date-block strong,.button,.event-resource-links a,.submit-disclosure>summary),
+.public-brand-shell .event-detail-page :is(h1,h2,h3,.button,.event-detail-results>h2){font-family:var(--lr-public-font)}
+@media(max-width:380px){
+ .public-brand-shell .site-header{flex-wrap:wrap;row-gap:2px}
+ .public-brand-shell .site-header nav{flex:1 1 100%;width:100%;justify-content:flex-end;gap:8px}
+}
