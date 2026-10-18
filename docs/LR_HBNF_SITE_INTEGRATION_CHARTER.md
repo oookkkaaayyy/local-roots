@@ -6,6 +6,14 @@
 **Scope:** Local Roots public site architecture, experience and visual design; incorporation of the independent HB Night Flyers club experience; coexistence with Dyed & Unattached.
 **Authority:** A project operating discipline, subordinate to AKS governance, owner decisions, existing accepted source contracts and real deployed evidence. It does not supersede existing HBNF Cart/scorekeeping release gates or Local Roots event-source rules.
 
+## OWNER RESPONSE CONTRACT — 2026-10-17, permanent
+
+Every coordinator reply MUST finish with a tangible next action, or include an action actually completed and the exact next user-only decision if needed. User-facing replies with *only* status, affirmation, opinions, re-statements, design commentary or descriptions of what could be done are forbidden.
+
+Allowed next actions: (a) actually performed, verified independent work with its resulting usable artifact and the next requested decision; (b) precisely one necessary owner-only action that the assistant or worker cannot complete; and/or (c) an immediately usable one-click-copyable prompt for the **single** existing worker with exact source references, narrow deliverable, exclusions, success/stop conditions and approval boundaries. Avoid manufacturing owner busywork, needless calls for confirmation, unapproved Codex runs, full-site generation or redundant plan cycles. Whenever approval is required, show the specific review artifact and exactly what to approve/revise.
+
+**Current next visual tranche, still NOT authorized to auto-run:** work ONLY from actual production LR Events landing and existing HBNF logo source. Proposed bounded deliverables for explicit owner authorization are (1) **one** realistic mobile LR landing before/after study preserving the real event-list layout and refining its slim top banner, Cabin font and discreet Filters & sort disclosure without deleting filter functionality; (2) **one** authentic-geometry HBNF logo recolor to actual preferred Bone Ink/Moon Bone/Faded Phosphor values plus a minimal palette-use sample. No unrelated navigation/brand redesign, no static fictional event listings, no production/deploy and no multiple workers. If original HBNF master source is unavailable, STOP and identify the exact missing verified asset; do not generatively redraw the logo. Before any build, show owner the narrow worker prompt and require their sending/approval.
+
 ## SITE + BRAND DIRECTIVES — 2026-10-17 OWNER CLARIFICATION (controlling)
 
 **Re-grounded in prior "Update Brand Colors" ChatGPT discussion and owner's latest explicit correction.** This is a durable scope and acceptance update, not a new mockup approval, worker launch, or deployment authorization.
