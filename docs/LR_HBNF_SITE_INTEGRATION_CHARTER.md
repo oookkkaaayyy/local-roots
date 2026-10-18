@@ -6,6 +6,19 @@
 **Scope:** Local Roots public site architecture, experience and visual design; incorporation of the independent HB Night Flyers club experience; coexistence with Dyed & Unattached.
 **Authority:** A project operating discipline, subordinate to AKS governance, owner decisions, existing accepted source contracts and real deployed evidence. It does not supersede existing HBNF Cart/scorekeeping release gates or Local Roots event-source rules.
 
+## HIPCAMP REFERENCE — EXPLICIT STAGE APPROVAL GATE (2026-10-17; controlling constraint)
+
+**Owner's exact new acceptance scope:** Hipcamp is a VIABLE FOUNDATION / real-world INSPIRATION reference. This is **NOT** consent to its precise layout, typography, full brand identity, hero, color system, components, site structure, production migration, or an end-to-end build. It is **NOT** blanket approval to consume Codex/ChatGPT usage or Mac resources without further owner review and specific permission.
+
+**Sequential, narrowly bounded steps requiring separate owner decisions:**
+1. **Small art-direction comparison only**: Show a concise visual comparison of sans-serif typography, palette balance and layout rhythm using genuine LR/HBNF logos; Hipcamp is one reference. No code, comprehensive website screens, working prototype or new multi-worker initiative.
+2. **Owner selection/revision of visual direction**: Explicitly obtain feedback and approval of the proposed look before progressing. Selection of reference elements approves **only those elements**, never an entire design.
+3. **Single polished sample page/screen pair**: Only after owner expressly authorizes that exact scope, create one mobile plus one desktop representative layout; present for review, do not automatically build remaining site.
+4. **Broader page/system development**: Another explicit user approval required for the next named tranche; list changed screens, deliverable, consumption/resource approach and exclusions up front.
+5. **Technical implementation, production preview/merge/release**: Each consequential authorization is separate, with established security, HBNF operational independence, regression and rollback rules. Approval of a mockup is never deployment consent.
+
+**Pre-work control:** For any proposed Codex/design-tool task, state (a) exact deliverable/number of screens, (b) exclusions, (c) anticipated usage/resource intensity at a realistic qualitative level, and (d) the owner approval decision. No worker launches, heavy renders, full-site speculative builds or Figma/Canva design-generation calls merely because a style was deemed viable. If user says "this looks closer" or "viable," record it as limited directional feedback only. Avoid repeated, expensive failed iterations; stop at gates and spend no additional design usage until owner explicitly requests/authorizes the next bounded step.
+
 ## VISUAL DESIGN PROCESS RESET — OWNER REJECTION (2026-10-17, most recent visual authority)
 
 The owner reviewed the THIRD refined LR/HBNF visual prototype and **explicitly rejected the entire current visual direction as disjointed and bad**, specifically serif fonts, 'old computer' / terminal-like letterforms, randomly very large type, decorative boxed headings, arbitrary cards/components and incoherent typographic proportions. Earlier 7-page vector designs, 8-page vector designs and all iterative HTML/CSS versions are **NOT positive visual references**. Never use these artifacts as layout donors, put them in front of the owner as viable alternatives again, or infer that working filters/no overflow means appealing visual design. The acknowledged technical boundary (LR discovery linking to independent HBNF scoring) remains separately assessable.
