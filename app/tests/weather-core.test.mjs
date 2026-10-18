@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import courses from '../src/data/weather-courses.json' with { type: 'json' };
 import { buildHourlyRows, distanceMiles, eligibleActiveAlerts, filterCourses, forecastFlags, gridSeriesValueAt, gridSpeedToMph, isEligibleCourse, summarizeHourly, zonedWindow } from '../src/lib/weatherCore.js';
 
-const period=(startTime,endTime,v={})=>({startTime,endTime,temperature:v.temp,windSpeed:v.wind,windDirection:v.dir,probabilityOfPrecipitation:{value:v.rain},shortForecast:v.conditions});
+const period=(startTime,endTime,v={})=>({startTime,endTime,temperature:v.temp,temperatureUnit:'F',windSpeed:v.wind,windDirection:v.dir,probabilityOfPrecipitation:{value:v.rain},shortForecast:v.conditions});
 
 test('course list has only sourced public disc golf layouts with at least 18 holes',()=>{
-  assert.equal(courses.length,5);assert.ok(courses.every(isEligibleCourse));
+  assert.equal(courses.length,35);assert.ok(courses.every(isEligibleCourse));
   const bad=[{holes:9},{kind:'ball-golf'},{college:true},{status:'closed'},{access:'private',privateOnly:true},{sources:[]}];
   assert.ok(bad.every(change=>!isEligibleCourse({...courses[0],...change})));
 });
@@ -14,8 +14,8 @@ test('course list has only sourced public disc golf layouts with at least 18 hol
 test('radius filtering uses great-circle distance and removes closed courses',()=>{
   const center=[33.7004,-117.9919];
   const found=filterCourses([...courses,{...courses[0],id:'closed',status:'closed'}],center,80);
-  assert.equal(found[0].id,'huntington-central-park');assert.equal(found[0].distanceMiles,0);
-  assert.ok(found.some(c=>c.id==='prado-regional-park'));assert.ok(!found.some(c=>c.id==='coyote-point-lake-casitas'));
+  assert.equal(found[0].id,'huntington-central');assert.equal(found[0].distanceMiles,0);
+  assert.ok(found.some(c=>c.id==='prado'));assert.ok(!found.some(c=>c.id==='coyote-point-lake-casitas'));
   assert.equal(filterCourses(courses,center,151).length,0);assert.ok(distanceMiles(center,courses[3].coordinates)>0);
 });
 
@@ -58,4 +58,25 @@ test('Pacific windows handle spring/fall DST, skipped local times, and all-day d
   assert.equal(new Intl.DateTimeFormat('en-US',{timeZone:'America/Los_Angeles',hour:'numeric'}).format(skipped.start),'3 AM');
   assert.equal((zonedWindow('2026-11-01',0,24,'America/Los_Angeles').end-zonedWindow('2026-11-01',0,24,'America/Los_Angeles').start)/3600000,25);
   assert.throws(()=>zonedWindow('2026-10-17',16,8,'America/Los_Angeles'),RangeError);
+});
+
+test('grid precipitation probability fills missing hourly values and preserves nulls',()=>{
+  const rows=[period('2026-10-17T15:00:00Z','2026-10-17T16:00:00Z',{temp:60,wind:'5 mph',dir:'W',conditions:'Rain'})];
+  const series=[{validTime:'2026-10-17T15:00:00Z/PT1H',value:70},{validTime:'2026-10-17T16:00:00Z/PT1H',value:null}];
+  const result=buildHourlyRows(rows,[],{date:'2026-10-17',startHour:8,endHour:9,timeZone:'America/Los_Angeles',precipitationSeries:series,precipitationUnit:'wmoUnit:percent'});
+  assert.equal(result.rows[0].precipitationProbability,70);
+  const missing=buildHourlyRows([period('2026-10-17T16:00:00Z','2026-10-17T17:00:00Z')],[],{date:'2026-10-17',startHour:9,endHour:10,timeZone:'America/Los_Angeles',precipitationSeries:series,precipitationUnit:'wmoUnit:percent'});
+  assert.equal(missing.rows[0].precipitationProbability,null);
+});
+
+test('fixed directory has accurate straight-line radius counts around ZIP 92648',()=>{
+  const fromZip=[33.6757,-117.9980];
+  const within=(radius)=>filterCourses(courses,fromZip,radius);
+  assert.deepEqual([within(50).length,within(80).length,within(150).length],[15,23,35]);
+  assert.ok(!courses.some(c=>/Kit Carson/.test(c.name)));assert.ok(courses.some(c=>/Sky High/.test(c.name)&&c.access.startsWith('public-fee')));assert.ok(courses.some(c=>c.id==='mt-waterman'&&c.access.startsWith('public-fee')));assert.ok(courses.some(c=>c.id==='ken-malloy'));
+});
+
+test('NWS temperature units convert Celsius and unknown wind units remain missing',()=>{
+  const rows=buildHourlyRows([{startTime:'2026-10-17T15:00:00Z',endTime:'2026-10-17T16:00:00Z',temperature:20,temperatureUnit:'C',windSpeed:'10 furlongs',windDirection:'N',shortForecast:'Clear'}],[],{date:'2026-10-17',startHour:8,endHour:9,timeZone:'America/Los_Angeles'});
+  assert.equal(rows.rows[0].temperatureF,68);assert.equal(rows.rows[0].windMinMph,null);
 });

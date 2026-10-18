@@ -5,7 +5,7 @@ import { buildHourlyRows, eligibleActiveAlerts, filterCourses, forecastFlags, su
 import type { HourRow, WeatherCourse } from '../lib/weatherCore.js';
 
 type Preferences = { location:string; radius:number; date:string; start:number; end:number; allDay:boolean; sort:'distance'|'temperature'|'wind'|'gust' };
-type CourseForecast = { periods:unknown[]; gusts:unknown[]; gustUnit?:string; alerts:unknown[]; alertsAvailable:boolean; lastUpdatedAt?:string|null; stale?:boolean; staleMessage?:string; partialError?:string; error?:string };
+type CourseForecast = { periods:unknown[]; gusts:unknown[]; precipitation?:Array<{validTime:string;value:number|null}>; precipitationUnit?:string; gustUnit?:string; alerts:unknown[]; alertsAvailable:boolean; lastUpdatedAt?:string|null; stale?:boolean; staleMessage?:string; partialError?:string; error?:string };
 type WeatherResponse = { courses:Array<WeatherCourse & {distanceMiles:number}>; forecasts:Record<string,CourseForecast>; lastSuccessfulUpdate:string|null; responseAt:string };
 type GeocodeResult = { coordinates:[number,number]; label:string; source:string; stale?:boolean; staleMessage?:string };
 type CourseView = { course:WeatherCourse & {distanceMiles:number}; rows:HourRow[]; summary:ReturnType<typeof summarizeHourly>; coverage:number; alerts:ReturnType<typeof eligibleActiveAlerts>; alertsAvailable:boolean; flags:ReturnType<typeof forecastFlags>; error?:string; partialError?:string; stale?:boolean; lastUpdatedAt?:string|null };
@@ -45,7 +45,7 @@ function formatUpdated(value?:string|null) { return value?new Intl.DateTimeForma
 function weatherWindow(p:Preferences) { return p.allDay?{startHour:0,endHour:24}:{startHour:p.start,endHour:p.end}; }
 function extractHourRows(raw:CourseForecast|undefined,course:WeatherCourse,p:Preferences) {
   if(!raw||raw.error)return {rows:[] as HourRow[],coverage:0,adjusted:false};
-  try { const result=buildHourlyRows(raw.periods,raw.gusts,{date:p.date,...weatherWindow(p),timeZone:course.timezone||TIME_ZONE,gustUnit:raw.gustUnit}); return {rows:result.rows,coverage:result.coverage,adjusted:result.adjustedForClockChange}; }
+  try { const result=buildHourlyRows(raw.periods,raw.gusts,{date:p.date,...weatherWindow(p),timeZone:course.timezone||TIME_ZONE,gustUnit:raw.gustUnit,precipitationSeries:raw.precipitation,precipitationUnit:raw.precipitationUnit}); return {rows:result.rows,coverage:result.coverage,adjusted:result.adjustedForClockChange}; }
   catch { return {rows:[] as HourRow[],coverage:0,adjusted:false}; }
 }
 function sortedCourses(views:CourseView[],sort:Preferences['sort']) {
@@ -84,15 +84,37 @@ export function WeatherPage() {
         const key=`${geo.coordinates.join(',')}:${preferences.radius}`;
         let saved:WeatherResponse|null=null;
         try { const cache=JSON.parse(localStorage.getItem(LAST_KEY)||'null'); if(cache?.key===key&&Date.now()-Date.parse(cache.savedAt)<24*3600000)saved=cache.response as WeatherResponse; } catch { /* optional */ }
-        const forecastResponse=await fetch(`/api/weather?lat=${encodeURIComponent(geo.coordinates[0])}&lon=${encodeURIComponent(geo.coordinates[1])}&radius=${preferences.radius}`,{headers:{Accept:'application/json'},cache:'no-store'});
-        const forecastBody=await forecastResponse.json();
-        if(!forecastResponse.ok)throw new Error(forecastBody.error||`Forecast lookup failed (${forecastResponse.status}).`);
-        if(cancelled)return;
-        const weather=forecastBody as WeatherResponse;
+        const nearby=filterCourses(COURSES,geo.coordinates,preferences.radius);
+        const weather:WeatherResponse={courses:nearby,forecasts:{},lastSuccessfulUpdate:null,responseAt:new Date().toISOString()};
         setResult(weather);
+        const batches=Array.from({length:Math.ceil(nearby.length/2)},(_,i)=>nearby.slice(i*2,i*2+2));
+        let hadBatchFailure=false;
+        for(let i=0;i<batches.length;i+=2){
+          const results=await Promise.all(batches.slice(i,i+2).map(async batch=>{
+            const ids=batch.map(course=>course.id).join(',');
+            const url=`/api/weather?lat=${encodeURIComponent(geo.coordinates[0])}&lon=${encodeURIComponent(geo.coordinates[1])}&radius=${preferences.radius}&ids=${encodeURIComponent(ids)}`;
+            const response=await fetch(url,{headers:{Accept:'application/json'},cache:'no-store'});
+            const body=await response.json();
+            if(!response.ok)throw new Error(body.error||`Forecast lookup failed (${response.status}).`);
+            return body as WeatherResponse;
+          }).map(promise=>promise.catch(error=>({error}))));
+          if(cancelled)return;
+          for(let j=0;j<results.length;j++){
+            const item=results[j] as WeatherResponse|{error:unknown};
+            if('error' in item){
+              hadBatchFailure=true;
+              for(const course of batches[i+j])weather.forecasts[course.id]={periods:[],gusts:[],precipitation:[],alerts:[],alertsAvailable:false,error:item.error instanceof Error?item.error.message:'Forecast is unavailable.'};
+              continue;
+            }
+            Object.assign(weather.forecasts,item.forecasts||{});
+            if(item.lastSuccessfulUpdate&&(!weather.lastSuccessfulUpdate||Date.parse(item.lastSuccessfulUpdate)<Date.parse(weather.lastSuccessfulUpdate)))weather.lastSuccessfulUpdate=item.lastSuccessfulUpdate;
+          }
+          setResult({...weather});
+        }
+        if(cancelled)return;
         try{localStorage.setItem(LAST_KEY,JSON.stringify({key,zip:preferences.location,radius:preferences.radius,savedAt:new Date().toISOString(),response:weather}));}catch{/* optional cache */}
         setError('');
-        if(geo.stale||Object.values(weather.forecasts).some(x=>x.stale))setLocationNotice('Some weather or location data came from the last successful cached update.');
+        if(geo.stale||hadBatchFailure||Object.values(weather.forecasts).some(x=>x.stale))setLocationNotice(hadBatchFailure?'Some course forecasts could not be loaded. Available courses remain shown.':'Some weather or location data came from the last successful cached update.');
       } catch(e) {
         if(cancelled)return;
         let saved:WeatherResponse|null=null;
@@ -186,14 +208,14 @@ export function WeatherPage() {
             <div className="weather-hourly-scroll"><table className="weather-hourly"><thead><tr><th>Time</th><th>Temp</th><th>Wind</th><th>Gust</th><th>Rain chance</th><th>Conditions</th></tr></thead><tbody>{view.rows.map((row,i)=><tr key={`${row.startTime}-${i}`}><th scope="row">{formatTime(row.startTime)}</th><td>{row.temperatureF===null?'—':`${Math.round(row.temperatureF)}°F`}</td><td>{row.windMinMph===null?'—':`${Math.round(row.windMinMph)}–${Math.round(row.windMaxMph!)} mph ${row.windDirection||''}`}</td><td>{row.gustMph===null?'—':`${Math.round(row.gustMph)} mph`}</td><td>{row.precipitationProbability===null?'—':`${Math.round(row.precipitationProbability)}%`}</td><td>{row.conditions||'—'}</td></tr>)}</tbody></table></div>
             {view.flags.length?<div className="weather-flag-list"><strong>Weather flags</strong>{view.flags.map((flag,i)=><p key={`${flag.kind}-${i}`}><span className={`weather-flag flag-${flag.kind}`}>{flag.source==='official'?'Official NWS alert':flag.label}</span>{flag.detail?<span>{flag.detail}</span>:null}</p>)}</div>:null}
             {!view.alertsAvailable?<p className="weather-stale">Official NWS alert status is unavailable for this course; forecast flags are shown separately.</p>:null}
-            <details className="weather-sources"><summary>Course verification and sources</summary><p>{view.course.holes} holes · Public access · Verified {view.course.verifiedOn}. Course point is approximate; NWS forecast grids are about 2.5 km across.</p><ul>{view.course.sources.map(source=><li key={source.url}><a href={source.url} target="_blank" rel="noreferrer">{source.label}</a> <span>{source.supports?.join(', ')}</span></li>)}</ul></details>
+            <details className="weather-sources"><summary>Course verification and sources</summary><p>{view.course.holes} holes · Public access · Verified {view.course.verifiedOn}. Course point is approximate; NWS forecast grids are about 2.5 km across.</p><ul>{(view.course.sources as unknown as Array<string|{label:string;url:string;supports?:string[]}>).map((source,index)=>{const url=typeof source==='string'?source:source.url;const label=typeof source==='string'?new URL(source).hostname:source.label;const supports=typeof source==='string'?[]:source.supports||[];return <li key={`${url}-${index}`}><a href={url} target="_blank" rel="noreferrer">{label}</a> <span>{supports.join(', ')}</span></li>;})}</ul></details>
             <p className="weather-threshold-note">App forecast flags: rain chance ≥50%, sustained wind ≥20 mph or gust ≥30 mph, thunderstorms in forecast text, heat ≥95°F. These are planning indicators, not official NWS warning thresholds.</p>
             {view.lastUpdatedAt?<p className="weather-updated">Last successful forecast update: {formatUpdated(view.lastUpdatedAt)} Pacific</p>:null}
           </section>:null}
         </article>;
       })}
     </div>
-    <p className="weather-coverage-note">Verified course directory: {COURSES.length} courses in this starter set. Coverage is not comprehensive; only courses with a documented 18+ hole public layout and current operator information are listed. Forecast data: National Weather Service. ZIP lookup: Zippopotam.us.</p>
+    <p className="weather-coverage-note">Verified course directory: {COURSES.length} listed course layouts. Coverage is limited to this checked Southern California set and is not comprehensive. Forecast data: National Weather Service. ZIP lookup: Zippopotam.us.</p>
     <p className="weather-threshold-note">Forecast ranges include periods overlapping the selected window in Pacific time. An unavailable value stays blank; it is never treated as zero.</p>
   </main></Shell>;
 }

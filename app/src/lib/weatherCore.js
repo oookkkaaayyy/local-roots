@@ -14,7 +14,7 @@ export function distanceMiles(a, b) {
 
 export function isEligibleCourse(course) {
   return Boolean(course && course.kind === 'disc-golf' && Number.isInteger(course.holes) && course.holes >= 18 &&
-    (course.access === 'public' || course.access === 'public-fee') && course.status === 'open' &&
+    (/^(public|seasonal public)(?:$|[; ]|[-])/i.test(course.access || '') || course.access === 'public-fee') && (course.status === 'open' || course.status === 'INCLUDE') &&
     course.college !== true && course.privateOnly !== true && Array.isArray(course.coordinates) &&
     course.coordinates.length === 2 && course.coordinates.every(Number.isFinite) && Array.isArray(course.sources) && course.sources.length > 0);
 }
@@ -101,10 +101,12 @@ export function parseWindRangeMph(value) {
   const numbers = [...value.matchAll(/\d+(?:\.\d+)?/g)].map((m) => Number(m[0]));
   if (!numbers.length) return null;
   const unit = value.toLowerCase();
-  let factor = 1;
+  let factor;
   if (unit.includes('km/h') || unit.includes('km per hour')) factor = MPH_PER_KPH;
   else if (unit.includes('m/s')) factor = MPH_PER_MPS;
   else if (unit.includes('knot')) factor = MPH_PER_KNOT;
+  else if (unit.includes('mph') || unit.includes('mile per hour')) factor = 1;
+  else return null;
   return [Math.min(...numbers) * factor, Math.max(...numbers) * factor];
 }
 
@@ -116,15 +118,16 @@ export function buildHourlyRows(periods, gustSeries, options) {
     if (!Number.isFinite(start) || !Number.isFinite(end) || start >= window.end || end <= window.start) return [];
     const wind = parseWindRangeMph(period.windSpeed);
     const gust = gridSeriesValueAt(gustSeries, start, end, (value) => gridSpeedToMph(value, options.gustUnit));
+    const gridRain = ['wmoUnit:percent','%'].includes(options.precipitationUnit) ? gridSeriesValueAt(options.precipitationSeries, start, end, (value) => value >= 0 && value <= 100 ? value : null) : null;
     return [{
       startTime: period.startTime,
       endTime: period.endTime,
-      temperatureF: Number.isFinite(period.temperature) ? period.temperature : null,
+      temperatureF: Number.isFinite(period.temperature) && String(period.temperatureUnit).toUpperCase() === 'F' ? period.temperature : Number.isFinite(period.temperature) && String(period.temperatureUnit).toUpperCase() === 'C' ? period.temperature * 9 / 5 + 32 : null,
       windMinMph: wind?.[0] ?? null,
       windMaxMph: wind?.[1] ?? null,
       windDirection: typeof period.windDirection === 'string' && period.windDirection.trim() ? period.windDirection : null,
       gustMph: gust,
-      precipitationProbability: Number.isFinite(period.probabilityOfPrecipitation?.value) ? period.probabilityOfPrecipitation.value : null,
+      precipitationProbability: gridRain ?? (Number.isFinite(period.probabilityOfPrecipitation?.value) ? period.probabilityOfPrecipitation.value : null),
       conditions: typeof period.shortForecast === 'string' && period.shortForecast.trim() ? period.shortForecast : null,
     }];
   }).sort((a, b) => Date.parse(a.startTime) - Date.parse(b.startTime));

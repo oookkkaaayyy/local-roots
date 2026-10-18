@@ -29,3 +29,10 @@ test('Weather compact list and hourly detail have narrow-screen layout rules', a
   assert.match(css, /\.weather-hourly-scroll\{[^}]*overflow-x:auto/);
   assert.match(css, /\.weather-page\{[^}]*min-width:0/);
 });
+
+test('Weather frontend requests courses in bounded two-course batches',async()=>{
+  const page=await read('../src/pages/WeatherPage.tsx');
+  assert.match(page,/Math\.ceil\(nearby\.length\/2\)/);
+  assert.match(page,/\.slice\(i\*2,i\*2\+2\)/);
+  assert.match(page,/&ids=\$\{encodeURIComponent\(ids\)\}/);
+});

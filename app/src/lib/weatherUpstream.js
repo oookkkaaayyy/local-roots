@@ -72,9 +72,16 @@ export async function getWeatherResponse(request, context, courses) {
     return jsonResponse({ error: 'Enter a valid location and a radius from 0 to 150 miles.' }, 400);
   }
 
-  const nearby = filterCourses(courses, [lat, lon], radius);
+  const nearbyAll = filterCourses(courses, [lat, lon], radius);
+  const idsParam = url.searchParams.get('ids');
+  const requestedIds = idsParam ? [...new Set(idsParam.split(',').filter(Boolean))] : nearbyAll.map((course) => course.id);
+  if (requestedIds.length > 2) return jsonResponse({ error: 'Weather requests are limited to two courses per batch.' }, 400);
+  const allowedIds = new Set(nearbyAll.map((course) => course.id));
+  if (requestedIds.some((id) => !allowedIds.has(id))) return jsonResponse({ error: 'One or more requested courses are outside the selected radius or directory.' }, 400);
+  const requested = new Set(requestedIds);
+  const nearby = nearbyAll.filter((course) => requested.has(course.id));
   const coords = [...new Map(nearby.map((course) => [pointUrl(...course.coordinates), course.coordinates])).entries()];
-  const pointResults = await mapLimit(coords, 4, async ([key, point]) => {
+  const pointResults = await mapLimit(coords, 2, async ([key, point]) => {
     const result = await fetchJsonCached(key, context, 86400, 7 * 86400);
     const props = result.data?.properties;
     if (!props?.forecastHourly || !props?.forecastGridData) throw new Error('NWS location does not provide hourly and grid forecasts.');
@@ -91,7 +98,7 @@ export async function getWeatherResponse(request, context, courses) {
     if (!gridGroups.has(groupKey)) gridGroups.set(groupKey, { hourlyUrl: groupKey, gridUrl: pointResult.value.props.forecastGridData, ids: [] });
     gridGroups.get(groupKey).ids.push(course.id);
   }
-  const groupResults = await mapLimit([...gridGroups.values()], 4, async (group) => {
+  const groupResults = await mapLimit([...gridGroups.values()], 2, async (group) => {
     const [hourly, grid] = await Promise.allSettled([
       fetchJsonCached(group.hourlyUrl, context, 900, 12 * 3600),
       fetchJsonCached(group.gridUrl, context, 900, 12 * 3600),
@@ -101,7 +108,7 @@ export async function getWeatherResponse(request, context, courses) {
   const groupById = new Map();
   for (const item of groupResults) if (item.status === 'fulfilled') for (const id of item.value.group.ids) groupById.set(id, item.value);
 
-  const alertResults = await mapLimit(nearby, 4, async (course) => {
+  const alertResults = await mapLimit(nearby, 2, async (course) => {
     const [latValue, lonValue] = course.coordinates;
     const result = await fetchJsonCached(`https://api.weather.gov/alerts/active?point=${latValue.toFixed(4)},${lonValue.toFixed(4)}`, context, 300, 3600);
     return { id: course.id, result };
@@ -111,8 +118,8 @@ export async function getWeatherResponse(request, context, courses) {
   const forecasts = Object.fromEntries(nearby.map((course) => {
     const point = pointForCourse(course);
     const group = groupById.get(course.id);
-    if (point?.status !== 'fulfilled') return [course.id, { error: 'NWS location lookup failed. Try again later.', periods: [], gusts: [], alerts: [], alertsAvailable: false, stale: false }];
-    if (!group?.hourly || !Array.isArray(group.hourly.data?.properties?.periods)) return [course.id, { error: 'Hourly forecast is currently unavailable for this course.', periods: [], gusts: [], alerts: [], alertsAvailable: false, stale: Boolean(group?.hourly?.stale) }];
+    if (point?.status !== 'fulfilled') return [course.id, { error: 'NWS location lookup failed. Try again later.', periods: [], gusts: [], precipitation: [], alerts: [], alertsAvailable: false, stale: false }];
+    if (!group?.hourly || !Array.isArray(group.hourly.data?.properties?.periods)) return [course.id, { error: 'Hourly forecast is currently unavailable for this course.', periods: [], gusts: [], precipitation: [], alerts: [], alertsAvailable: false, stale: Boolean(group?.hourly?.stale) }];
     const alert = alertsById.get(course.id);
     const props = group.grid?.data?.properties || {};
     const lastUpdates = [group.hourly.data?.properties?.updateTime, group.grid?.data?.properties?.updateTime].filter((v) => typeof v === 'string');
@@ -123,13 +130,17 @@ export async function getWeatherResponse(request, context, courses) {
     return [course.id, {
       periods: group.hourly.data.properties.periods,
       gusts: props.windGust?.values || [],
+      precipitation: props.probabilityOfPrecipitation?.values || [],
+      precipitationUnit: props.probabilityOfPrecipitation?.uom || '',
       gustUnit: props.windGust?.uom || '',
+      precipitation: props.probabilityOfPrecipitation?.values || [],
+      precipitationUnit: props.probabilityOfPrecipitation?.uom || '',
       alerts: apiAlerts,
       alertsAvailable: Boolean(alert),
       lastUpdatedAt,
       stale: Boolean(point.value.stale || group.hourly.stale || group.grid?.stale || alert?.stale),
       staleMessage: [point.value.error, group.hourly.error, group.grid?.error || group.gridError, alert?.error].filter(Boolean).join(' '),
-      partialError: group.gridError ? `Peak gust data unavailable (${group.gridError})` : undefined,
+      partialError: group.gridError ? `Grid-derived gust and precipitation probability unavailable (${group.gridError})` : undefined,
     }];
   }));
   const responseUpdates = Object.values(forecasts).map((f) => Date.parse(f.lastUpdatedAt || '')).filter(Number.isFinite);
@@ -138,7 +149,7 @@ export async function getWeatherResponse(request, context, courses) {
     forecasts,
     lastSuccessfulUpdate: responseUpdates.length ? new Date(Math.min(...responseUpdates)).toISOString() : null,
     responseAt: new Date().toISOString(),
-    courseDirectoryVerifiedOn: '2026-10-17',
+    courseDirectoryVerifiedOn: '2026-10-18',
   }, 200, { 'Cache-Control': 'private, no-store' });
 }
 
