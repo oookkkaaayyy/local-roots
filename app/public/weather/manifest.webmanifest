@@ -9,7 +9,8 @@
   "background_color": "#f4ecdf",
   "theme_color": "#3a2618",
   "icons": [
-    { "src": "/weather/weather-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" },
-    { "src": "/weather/weather-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
+    { "src": "/brand/local-roots-lr.svg?v=736e7c6250fbb619", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/brand/local-roots-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/local-roots-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
   ]
 }

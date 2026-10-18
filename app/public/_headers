@@ -12,6 +12,15 @@
 /sw.js
   Cache-Control: no-cache, no-store, must-revalidate
 
+/favicon.ico
+  Cache-Control: no-cache, max-age=0, must-revalidate
+
+/favicon-32x32.png
+  Cache-Control: no-cache, max-age=0, must-revalidate
+
+/apple-touch-icon.png
+  Cache-Control: no-cache, max-age=0, must-revalidate
+
 /du-manifest.webmanifest
   Cache-Control: no-cache
 

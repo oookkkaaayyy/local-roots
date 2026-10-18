@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run check:du-handoff && npm run test:studio && npm run test:weather && tsc --noEmit && vite build",
+    "build": "npm run check:du-handoff && npm run test:studio && npm run test:weather && npm run test:brand && tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit --pretty false",
     "check:du-handoff": "node scripts/check-du-handoff.mjs",
     "test:studio": "node --test tests/dye-studio.integration.test.mjs tests/dye-studio.model.test.mjs tests/dye-studio.evidence.test.mjs && node scripts/check-hbnf-integration.mjs",
-    "test:weather": "node --test tests/weather*.test.mjs"
+    "test:weather": "node --test tests/weather*.test.mjs",
+    "test:brand": "node --test tests/brand-identity-assets.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",
