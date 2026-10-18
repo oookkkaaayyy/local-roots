@@ -1,10 +1,13 @@
-import type { ReactNode } from 'react';
+import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 
 export function Shell({children,admin=false}:{children:ReactNode;admin?:boolean}) {
   const raw=window.location.pathname.replace(/\/+$/,'')||'/';
   const path=raw==='/hbnf'?'/hb-night-flyers':raw==='/du'?'/dyed-and-unattached':raw;
   const current=(href:string)=>path===href||path.startsWith(`${href}/`)?'page' as const:undefined;
   const eventsCurrent=path==='/'||path==='/events'||path.startsWith('/events/')?'page' as const:undefined;
+  const [menuOpen,setMenuOpen]=useState(false);
+  const menuButton=useRef<HTMLButtonElement>(null);
+  const handleNavKeyDown=(event:KeyboardEvent<HTMLElement>)=>{if(event.key==='Escape'&&menuOpen){event.preventDefault();setMenuOpen(false);menuButton.current?.focus();}};
 
   return <div className={`site-shell ${admin?'admin-shell':'public-brand-shell'}`}>
     <a className="skip-link" href="#main-content">Skip to main content</a>
@@ -13,7 +16,8 @@ export function Shell({children,admin=false}:{children:ReactNode;admin?:boolean}
         <img className="brand-logo-mark" src="/brand/local-roots-lr.svg" alt="" aria-hidden="true" />
         <strong>Local Roots</strong>
       </a>
-      <nav aria-label="Primary">
+      <button ref={menuButton} className="mobile-menu-toggle" type="button" aria-expanded={menuOpen} aria-controls="primary-navigation" onClick={()=>setMenuOpen(value=>!value)} onKeyDown={event=>{if(event.key==="Escape"&&menuOpen)setMenuOpen(false);}}>Menu</button>
+      <nav id="primary-navigation" className={`primary-nav${menuOpen?' is-open':''}`} aria-label="Primary" onKeyDown={handleNavKeyDown} onClick={event=>{if((event.target as HTMLElement).closest('a'))setMenuOpen(false);}}>
         <a className="nav-events" href="/events" aria-current={eventsCurrent}>Events</a>
         <a className="nav-weather" href="/weather" aria-current={current('/weather')}>Weather</a>
         <a className="nav-hbnf" href="/hb-night-flyers" aria-current={current('/hb-night-flyers')}>HB Night Flyers</a>
