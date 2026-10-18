@@ -45,6 +45,7 @@ test('Weather interface keeps player controls and removes internal explanations'
   assert.match(page,/> All Day</);
   assert.match(page,/<th>Rain<\/th>/);
   assert.match(page,/'NWS alert'/);
+  assert.match(page,/view\.flags\.filter\(flag=>flag\.kind!=='alerts-unavailable'\)/);
   assert.doesNotMatch(page,/Course verification and sources|verified public courses|Course point is approximate|grid|App forecast flags:|Forecast ranges include|Forecast data: National Weather Service|ZIP lookup:/i);
   assert.doesNotMatch(page,/weather-sources|weather-coverage-note|weather-threshold-note/);
 });

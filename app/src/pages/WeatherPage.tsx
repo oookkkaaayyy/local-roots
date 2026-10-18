@@ -188,14 +188,15 @@ export function WeatherPage() {
         const temps=compactRange(view.summary.temperatureMinF,view.summary.temperatureMaxF,'°F');
         const winds=compactRange(view.summary.windMinMph,view.summary.windMaxMph,' mph');
         const currentConditions=[...new Set(view.rows.map(row=>row.conditions).filter((x):x is string=>Boolean(x)))].slice(0,2).join(' · ');
+        const rowFlags=view.flags.filter(flag=>flag.kind!=='alerts-unavailable');
         return <article className={`weather-course ${open?'is-expanded':''}`} key={view.course.id}>
           <button className="weather-course-toggle" type="button" aria-expanded={open} aria-controls={`weather-details-${view.course.id}`} onClick={()=>setExpanded(open?null:view.course.id)}>
             <span className="weather-course-name"><strong>{view.course.name}</strong><small>{view.course.city}, {view.course.state} · {view.course.distanceMiles.toFixed(1)} mi</small></span>
             <span className="weather-metric" data-label="Temp"><strong>{view.error||!view.rows.length?'—':temps}</strong></span>
             <span className="weather-metric weather-wind-metric" data-label="Wind"><strong>{view.error||!view.rows.length?'—':winds}</strong><small>{view.summary.peakGustMph===null?'Gust —':`Gust ${Math.round(view.summary.peakGustMph)} mph`}</small></span>
             <span className="weather-condition-cell" data-label="Conditions">
-              {view.flags.length?view.flags.slice(0,2).map((flag,i)=><em className={`weather-flag flag-${flag.kind}`} key={`${flag.kind}-${i}`}>{flag.source==='official'?'NWS alert':flag.label}</em>):<span>{currentConditions||'—'}</span>}
-              {view.flags.length>2?<small>+{view.flags.length-2} more</small>:null}
+              {rowFlags.length?rowFlags.slice(0,2).map((flag,i)=><em className={`weather-flag flag-${flag.kind}`} key={`${flag.kind}-${i}`}>{flag.source==='official'?'NWS alert':flag.label}</em>):<span>{currentConditions||'—'}</span>}
+              {rowFlags.length>2?<small>+{rowFlags.length-2} more</small>:null}
             </span>
             <span className="weather-expand-indicator" aria-hidden="true">{open?'−':'+'}</span>
           </button>
