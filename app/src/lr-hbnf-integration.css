@@ -132,3 +132,5 @@
  .site-header nav.primary-nav a:last-child{border-bottom:0}
  .public-brand-shell .site-header nav.primary-nav a[aria-current=page]{background:rgba(159,92,54,.09);box-shadow:inset 3px 0 0 var(--lr-clay)}
 }
+
+@media(max-width:400px){.public-brand-shell .site-header{gap:8px}}
