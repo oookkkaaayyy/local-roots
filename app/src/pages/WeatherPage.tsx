@@ -157,7 +157,18 @@ export function WeatherPage() {
   }
   async function share() {
     const url=new URL(window.location.href);url.pathname='/weather';url.search=new URLSearchParams({zip:preferences.location,radius:String(preferences.radius),date:preferences.date,start:String(preferences.start),end:String(preferences.end),allDay:preferences.allDay?'1':'0'}).toString();
-    try {if(navigator.share)await navigator.share({title:'Disc Golf Weather · Local Roots',url:url.toString()});else{await navigator.clipboard.writeText(url.toString());setShareMessage('Link copied.');setTimeout(()=>setShareMessage(''),2400);}}catch(e){if(e instanceof Error&&e.name!=='AbortError')setShareMessage('Could not share this link.');}
+    try {if(navigator.share){await navigator.share({title:'Disc Golf Weather · Local Roots',url:url.toString()});return;}}catch(e){if(e instanceof Error&&e.name==='AbortError')return;}
+    try {
+      await navigator.clipboard.writeText(url.toString());
+      setShareMessage('Link copied.');
+    } catch {
+      const field=document.createElement('textarea');
+      field.value=url.toString();field.setAttribute('readonly','');field.style.position='fixed';field.style.opacity='0';
+      document.body.appendChild(field);field.select();
+      const copied=document.execCommand('copy');field.remove();
+      setShareMessage(copied?'Link copied.':'Link ready in address bar.');
+    }
+    setTimeout(()=>setShareMessage(''),2400);
   }
   const selectDateMin=dateInPacific();const selectDateMax=plusDays(selectDateMin,6);
 
