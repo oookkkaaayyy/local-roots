@@ -65,6 +65,7 @@ export function WeatherPage() {
   const [expanded,setExpanded]=useState<string|null>(null);
   const [shareMessage,setShareMessage]=useState('');
   const [refreshKey,setRefreshKey]=useState(0);
+  const [filtersOpen,setFiltersOpen]=useState(false);
 
   useEffect(()=>{try{localStorage.setItem(PREF_KEY,JSON.stringify(preferences));}catch{/* optional */}},[preferences]);
   useEffect(()=>{
@@ -152,7 +153,7 @@ export function WeatherPage() {
     e.preventDefault();
     if(!/^\d{5}$/.test(draft.location.trim())){setError('Enter a 5-digit US ZIP code.');return;}
     if(!draft.allDay&&draft.end<=draft.start){setError('End time must be later than start time.');return;}
-    setPreferences({...draft,location:draft.location.trim()});setExpanded(null);
+    setPreferences({...draft,location:draft.location.trim()});setExpanded(null);setFiltersOpen(false);
     const url=new URL(window.location.href);url.pathname='/weather';url.search=new URLSearchParams({zip:draft.location.trim(),radius:String(draft.radius),date:draft.date,start:String(draft.start),end:String(draft.end),allDay:draft.allDay?'1':'0'}).toString();history.replaceState({},'',url);
   }
   async function share() {
@@ -174,7 +175,12 @@ export function WeatherPage() {
 
   return <Shell><main className="content weather-page">
     <section className="weather-heading"><div><h1>Disc Golf Weather</h1></div><button className="button ghost weather-share" type="button" onClick={()=>void share()} aria-label="Share this Weather search">Share</button></section>
-    <form className="weather-controls" onSubmit={submit}>
+    <section className="weather-filter">
+      <button className="weather-filter-toggle" type="button" aria-expanded={filtersOpen} aria-controls="weather-filters-panel" onClick={()=>setFiltersOpen(value=>!value)}>
+        <strong>Filters</strong><span className="weather-filter-summary">{preferences.location} · {preferences.radius} mi · {new Intl.DateTimeFormat('en-US',{timeZone:TIME_ZONE,month:'short',day:'numeric'}).format(new Date(`${preferences.date}T12:00:00Z`))} · {preferences.allDay?'All day':`${labelHour(preferences.start).replace(':00','')}–${labelHour(preferences.end).replace(':00','')}`}</span><span className="weather-filter-chevron" aria-hidden="true">{filtersOpen?'−':'+'}</span>
+      </button>
+      <div id="weather-filters-panel" className="weather-filter-panel" hidden={!filtersOpen}>
+      <form className="weather-controls" onSubmit={submit}>
       <label>ZIP<input inputMode="numeric" autoComplete="postal-code" pattern="[0-9]{5}" maxLength={5} value={draft.location} onChange={e=>updateDraft('location',e.target.value.replace(/\D/g,'').slice(0,5))} aria-label="ZIP code for course search" /></label>
       <label>Miles<select value={draft.radius} onChange={e=>updateDraft('radius',Number(e.target.value))}><option value={25}>25</option><option value={50}>50</option><option value={80}>80</option><option value={100}>100</option><option value={125}>125</option><option value={150}>150</option></select></label>
       <label>Date<input type="date" min={selectDateMin} max={selectDateMax} value={draft.date} onChange={e=>updateDraft('date',e.target.value)} /></label>
@@ -183,6 +189,8 @@ export function WeatherPage() {
       <label className="weather-all-day"><input type="checkbox" checked={draft.allDay} onChange={e=>updateDraft('allDay',e.target.checked)} /> All Day</label>
       <button className="button primary weather-search" type="submit" disabled={loading}>Search</button>
     </form>
+      </div>
+    </section>
     <div className="weather-status" aria-live="polite">
       {loading?<span className="weather-status-dot">Loading…</span>:null}
       {error?<span className="weather-error">{error}</span>:null}

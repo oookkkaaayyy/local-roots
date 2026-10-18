@@ -22,12 +22,25 @@ test('Weather has a dedicated Safari and installable home-screen icon and scope'
   assert.ok(manifest.icons.some((icon) => icon.src === '/weather/weather-icon.png' && icon.sizes === '180x180'));
 });
 
-test('Weather compact list and hourly detail have narrow-screen layout rules', async () => {
+test('Weather mobile course rows stay compact and hourly details remain scrollable', async () => {
   const css = await read('../src/weather.css');
   assert.match(css, /@media\(max-width:620px\)/);
-  assert.match(css, /\.weather-course-toggle\{grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
+  assert.match(css, /\.weather-course-list\{display:block/);
+  assert.match(css, /\.weather-course\{overflow:visible;border:0;border-bottom:1px solid[^}]*box-shadow:none/);
+  assert.ok(css.includes('.weather-course-toggle{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto;gap:5px 12px;padding:10px'));
   assert.match(css, /\.weather-hourly-scroll\{[^}]*overflow-x:auto/);
   assert.match(css, /\.weather-page\{[^}]*min-width:0/);
+});
+
+test('Weather filter disclosure is closed initially and does not refetch on toggle', async () => {
+  const page = await read('../src/pages/WeatherPage.tsx');
+  const css = await read('../src/weather.css');
+  assert.match(page, /\[filtersOpen,setFiltersOpen\]=useState\(false\)/);
+  assert.match(page, /aria-expanded=\{filtersOpen\} aria-controls="weather-filters-panel"/);
+  assert.match(page, /hidden=\{!filtersOpen\}/);
+  assert.match(page, /setPreferences\(\{\.\.\.draft,location:draft\.location\.trim\(\)\}\);setExpanded\(null\);setFiltersOpen\(false\)/);
+  assert.match(page, /\},\[preferences\.location,preferences\.radius,refreshKey\]\)/);
+  assert.match(css, /\.weather-filter-toggle\{[^}]*min-height:48px/);
 });
 
 test('Weather frontend requests courses in bounded two-course batches',async()=>{
@@ -51,8 +64,16 @@ test('Weather interface keeps player controls and removes internal explanations'
 });
 
 
-test('Primary navigation links Weather and marks its route active', async () => {
+test('Primary navigation keeps the active links and exposes an accessible mobile disclosure', async () => {
   const shell = await read('../src/components/Shell.tsx');
+  const styles = await read('../src/styles.css');
+  const integration = await read('../src/lr-hbnf-integration.css');
   assert.ok(shell.includes(`className="nav-weather" href="/weather" aria-current={current('/weather')}>Weather</a>`));
   assert.ok(shell.includes(`href="/" aria-label="Local Roots home"`));
+  assert.match(shell, /aria-expanded=\{menuOpen\} aria-controls="primary-navigation"/);
+  assert.match(shell, /event\.key===\"Escape\"/);
+  assert.match(integration, /\.mobile-menu-toggle\{display:inline-flex;[^}]*min-height:44px/);
+  assert.match(integration, /\.site-header nav\.primary-nav a\{display:block!important;min-height:44px/);
+  assert.doesNotMatch(styles, /@media\(max-width:720px\)\{\.site-header \.nav-home/);
+  assert.doesNotMatch(integration, /\.site-header \.nav-hbnf\{display:block\}/);
 });
