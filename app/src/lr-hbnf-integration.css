@@ -11,6 +11,7 @@
 .public-brand-shell .event-resource-links a,.public-brand-shell .event-detail-card .event-resource-links a{min-height:38px;padding:7px 9px}
 
 .public-brand-shell .filters-dialog[open]{position:static;display:block;width:auto;max-width:none;max-height:none;margin:0;padding:0;overflow:visible;border:0;background:transparent;color:inherit}
+.public-brand-shell .events-page .filters-dialog[open]:not(:modal){position:relative;display:block;width:100%;max-width:none;max-height:none;margin:0;padding:0;overflow:visible;border:0;background:transparent;color:inherit}
 .public-brand-shell .filters-sheet-heading,.public-brand-shell .filters-close,.public-brand-shell .filters-trigger{display:none}
 
 .public-brand-shell .hbnf-page{--hbnf-ink:#292119;--hbnf-bone:#f4e9d6;--hbnf-phosphor:#b4c58f;--hbnf-sage:#8c956a;margin:24px auto 16px;padding:20px clamp(16px,3vw,32px) 18px;border:1px solid rgba(41,33,25,.22);border-radius:12px;background:var(--hbnf-ink);color:var(--hbnf-bone)}
