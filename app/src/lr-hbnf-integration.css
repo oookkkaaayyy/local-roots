@@ -120,9 +120,10 @@
 /* Use the locally served font across event copy, including rules in older stylesheet layers. */
 .public-brand-shell .events-page,
 .public-brand-shell .event-detail-page{font-family:var(--lr-public-font)}
-.public-brand-shell .events-page :is(h1,h2,h3,.event-date-block strong,.button,.event-resource-links a,.submit-disclosure>summary),
-.public-brand-shell .event-detail-page :is(h1,h2,h3,.button,.event-detail-results>h2){font-family:var(--lr-public-font)}
-@media(max-width:380px){
+.public-brand-shell .events-page :is(h1,h2,h3,.event-date-block strong,.event-card,.event-location,.event-organizer,.stale-note,.event-tags span,.status-pill,.filters,.button,.event-resource-links a,.submit-disclosure,.section-intro h2),
+.public-brand-shell .event-detail-page :is(h1,h2,h3,.event-detail-card,.button,.event-detail-results>h2){font-family:var(--lr-public-font)}
+@media(max-width:400px){
  .public-brand-shell .site-header{flex-wrap:wrap;row-gap:2px}
  .public-brand-shell .site-header nav{flex:1 1 100%;width:100%;justify-content:flex-end;gap:8px}
+ .public-brand-shell .site-header nav a{font-size:.78rem}
 }

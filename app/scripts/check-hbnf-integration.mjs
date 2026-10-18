@@ -64,5 +64,6 @@ assert.ok(!styles.includes('grid-template-columns:repeat(2,minmax(0,1fr));gap:6p
 assert.ok(styles.includes('min-height:28px;padding:4px 7px'));
 assert.ok(!styles.includes('.site-header nav a[aria-current=page]{text-decoration:underline'));
 assert.ok(styles.includes('.public-brand-shell .events-page,\n.public-brand-shell .event-detail-page{font-family:var(--lr-public-font)}'));
-assert.ok(styles.includes('@media(max-width:380px)'));
 console.log('LR × HBNF integration source checks passed.');
+assert.ok(styles.includes('@media(max-width:400px)'));
+assert.ok(styles.includes('.public-brand-shell .events-page :is(h1,h2,h3,.event-date-block strong,.event-card,.event-location'));
