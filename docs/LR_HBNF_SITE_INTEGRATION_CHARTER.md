@@ -86,6 +86,10 @@ Use a minimal sequential handoff (one short checkpoint/source ref and next task)
 
 Lead with conclusion, relevant evidence, next action, real decision gate. Defaults: concise, no filler and no needless questions. Show tangible BEFORE → AFTER when a proposal changes user experience. Use 1-click-copy bounded worker prompts when delegation is appropriate. Distinguish proposed from implemented, code-tested from field-tested, and owner-approved from unconfirmed. No paid purchases, external messages, production database/destructive operations or deployments without authorization. Never attribute ownership of HBNF to Local Roots.
 
+## Current discovery checkpoint — 2026-10-17
+
+The **single source-grounded technical/UX audit** is now at `docs/LR_HBNF_DISCOVERY_AUDIT_20261017.md` on this same draft PR. Read this file before redoing any architecture/contrast/source investigation. It records exact GitHub/Supabase evidence, current LR first-party adapter, CSP constraints, owner W1 mobile contract, palette WCAG contrast, known LR HBNF-sync readiness incident, source-level UX findings, minimum-coupling architecture comparison and the bounded one-worker browser/visual gate. The **live visual audit remains incomplete**, so do not claim design options are accepted or field-verified. Future worker must reuse this audit rather than repeating it.
+
 ## 9. Immediate next-stage evidence gaps (as of 2026-10-17)
 
 - The current `local-roots` source has an HBNF route that links out, but the public shell primary nav contains Events and D&U, not HBNF; root `/` renders `EventsPage landing` despite a separate `HomePage` component existing. This is a **source read**, not a current-production screenshot.
