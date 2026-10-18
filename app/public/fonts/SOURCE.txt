@@ -1,0 +1,4 @@
+Cabin webfonts were locally supplied from @fontsource/cabin version 5.2.5 for this project.
+Files included: cabin-latin-400.woff2 and cabin-latin-700.woff2.
+Font authors: The Cabin Project Authors. License: SIL Open Font License 1.1; see OFL.txt.
+Source project: https://github.com/impallari/Cabin

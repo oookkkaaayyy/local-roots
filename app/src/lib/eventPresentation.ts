@@ -46,14 +46,14 @@ export function hasResults(event: PublicEvent) {
 export function resultsLinkLabel(url: string) {
   try {
     const host = new URL(url).hostname.replace(/^www\./,'').toLowerCase();
-    if(host==='pdga.com'||host.endsWith('.pdga.com'))return 'PDGA Results ↗';
-    if(host==='discgolfscene.com'||host.endsWith('.discgolfscene.com'))return 'Disc Golf Scene Results ↗';
-    if(host==='udisc.com'||host.endsWith('.udisc.com'))return 'UDisc Results ↗';
-    if(host==='hbnightflyers.com'||host.endsWith('.hbnightflyers.com'))return 'HBNF Results ↗';
+    if(host==='pdga.com'||host.endsWith('.pdga.com'))return 'PDGA Results';
+    if(host==='discgolfscene.com'||host.endsWith('.discgolfscene.com'))return 'Disc Golf Scene Results';
+    if(host==='udisc.com'||host.endsWith('.udisc.com'))return 'UDisc Results';
+    if(host==='hbnightflyers.com'||host.endsWith('.hbnightflyers.com'))return 'HBNF Results';
   } catch {
     // Keep the safe generic label for malformed legacy URLs.
   }
-  return 'Official Results ↗';
+  return 'Official Results';
 }
 
 export function eventDetailPath(event: Pick<PublicEvent,'slug'>) {
