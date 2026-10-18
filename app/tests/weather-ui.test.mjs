@@ -27,7 +27,7 @@ test('Weather mobile course rows stay compact and hourly details remain scrollab
   assert.match(css, /@media\(max-width:620px\)/);
   assert.match(css, /\.weather-course-list\{display:block/);
   assert.match(css, /\.weather-course\{overflow:visible;border:0;border-bottom:1px solid[^}]*box-shadow:none/);
-  assert.ok(css.includes('.weather-course-toggle{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto;gap:5px 12px;padding:10px'));
+  assert.ok(css.includes('.weather-course-toggle{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto;gap:8px 12px;padding:14px 38px 14px 2px;min-height:100px'));
   assert.match(css, /\.weather-hourly-scroll\{[^}]*overflow-x:auto/);
   assert.match(css, /\.weather-page\{[^}]*min-width:0/);
 });

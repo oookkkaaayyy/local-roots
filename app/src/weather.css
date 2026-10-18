@@ -87,7 +87,7 @@
   .weather-legend{display:none}
   .weather-course-list{display:block;border-top:1px solid rgba(91,58,36,.18)}
   .weather-course{overflow:visible;border:0;border-bottom:1px solid rgba(91,58,36,.19);border-radius:0;background:transparent;box-shadow:none}
-  .weather-course-toggle{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto;gap:5px 12px;padding:10px 38px 10px 2px}
+  .weather-course-toggle{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto;gap:8px 12px;padding:14px 38px 14px 2px;min-height:100px}
   .weather-course-name{grid-column:1/-1;grid-row:1;display:flex;align-items:baseline;flex-wrap:wrap;gap:3px 8px}
   .weather-course-name strong{font-size:.9rem;line-height:1.18}
   .weather-course-name small{font-size:.7rem;white-space:nowrap}
