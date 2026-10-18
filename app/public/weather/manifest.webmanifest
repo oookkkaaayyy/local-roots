@@ -1,0 +1,15 @@
+{
+  "id": "/weather/",
+  "name": "Local Roots Disc Golf Weather",
+  "short_name": "LR Weather",
+  "description": "Disc golf course forecasts by playing hours.",
+  "start_url": "/weather/",
+  "scope": "/weather/",
+  "display": "standalone",
+  "background_color": "#f4ecdf",
+  "theme_color": "#3a2618",
+  "icons": [
+    { "src": "/weather/weather-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "/weather/weather-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
+  ]
+}

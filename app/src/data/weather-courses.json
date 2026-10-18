@@ -1,0 +1,96 @@
+[
+  {
+    "id": "huntington-central-park",
+    "name": "Huntington Central Park",
+    "city": "Huntington Beach",
+    "county": "Orange County",
+    "state": "CA",
+    "coordinates": [33.7004, -117.9919],
+    "coordinateNote": "Approximate course-area point from the City course map; forecast resolves to the nearby NWS grid cell.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public-fee",
+    "status": "open",
+    "timezone": "America/Los_Angeles",
+    "sources": [
+      { "label": "Huntington Beach course map and details", "url": "https://www.huntingtonbeachca.gov/departments/parks___recreation/Disc%20Golf%20Course.pdf", "supports": ["location", "18 holes", "public access", "operating information"] }
+    ],
+    "verifiedOn": "2026-10-17"
+  },
+  {
+    "id": "prado-regional-park",
+    "name": "Prado Regional Park",
+    "city": "Chino",
+    "county": "San Bernardino County",
+    "state": "CA",
+    "coordinates": [33.9502, -117.6630],
+    "coordinateNote": "Approximate disc-course area from the County park map; forecast resolves to the nearby NWS grid cell.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public-fee",
+    "status": "open",
+    "timezone": "America/Los_Angeles",
+    "sources": [
+      { "label": "San Bernardino County Parks: Prado Regional Park", "url": "https://parks.sbcounty.gov/park/prado-regional-park/", "supports": ["disc-golf facility", "18-hole course", "park address", "public park access"] },
+      { "label": "County park map", "url": "https://parks.sbcounty.gov/wp-content/uploads/sites/34/2024/07/Prado-Map-Website-071624.pdf", "supports": ["course area"] }
+    ],
+    "verifiedOn": "2026-10-17"
+  },
+  {
+    "id": "oak-grove-hahamongna",
+    "name": "Oak Grove · Hahamongna Watershed Park",
+    "city": "Pasadena",
+    "county": "Los Angeles County",
+    "state": "CA",
+    "coordinates": [34.1803, -118.1699],
+    "coordinateNote": "Approximate course-area point from public park mapping; forecast resolves to the nearby NWS grid cell.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "open",
+    "timezone": "America/Los_Angeles",
+    "sources": [
+      { "label": "Los Angeles County environmental impact report", "url": "https://dpw.lacounty.gov/wrd/Projects/DevilGate/FEIR/Devils_Gate_FEIR_2014_10_20_Vol_1_Section_3.pdf", "supports": ["course identity", "18+ holes", "location in Hahamongna Watershed Park"] },
+      { "label": "City of Pasadena: Hahamongna Watershed Park", "url": "https://www.cityofpasadena.net/parks-and-rec/parks/hahamongna-watershed-park/", "supports": ["public park location and access"] }
+    ],
+    "verifiedOn": "2026-10-17"
+  },
+  {
+    "id": "santa-clarita-central-park",
+    "name": "Central Park",
+    "city": "Santa Clarita",
+    "county": "Los Angeles County",
+    "state": "CA",
+    "coordinates": [34.4340, -118.5180],
+    "coordinateNote": "Approximate course-area point from the City course map; forecast resolves to the nearby NWS grid cell.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "open",
+    "timezone": "America/Los_Angeles",
+    "sources": [
+      { "label": "City of Santa Clarita Disc Golf", "url": "https://santaclarita.gov/adult-sports/disc-golf/", "supports": ["18-hole course", "public access", "park hours", "address"] },
+      { "label": "City course map", "url": "https://santaclarita.gov/adult-sports/wp-content/uploads/sites/30/2023/10/Disc-Golf-Course-WHOLE-Map-Updated-2023-FINAL.pdf", "supports": ["course area"] }
+    ],
+    "verifiedOn": "2026-10-17"
+  },
+  {
+    "id": "coyote-point-lake-casitas",
+    "name": "Coyote Point · Lake Casitas",
+    "city": "Oak View",
+    "county": "Ventura County",
+    "state": "CA",
+    "coordinates": [34.3870, -119.3390],
+    "coordinateNote": "Approximate course-area point near the Coyote launch ramp from the District course map; forecast resolves to the nearby NWS grid cell.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public-fee",
+    "status": "open",
+    "timezone": "America/Los_Angeles",
+    "sources": [
+      { "label": "Casitas Municipal Water District Disc Golf", "url": "https://www.casitaswater.gov/disc-golf", "supports": ["18-hole course", "public access", "location near Coyote launch ramp", "year-round operation"] },
+      { "label": "District course map", "url": "https://www.casitaswater.gov/disc-golf", "supports": ["course area"] }
+    ],
+    "verifiedOn": "2026-10-17"
+  }
+]
