@@ -40,11 +40,11 @@ export function HbnfPage() {
         <p className="hbnf-independence">Independent club</p>
         <h1>HB Night Flyers</h1>
       </div>
-      <a className="hbnf-home-link" href="https://hbnightflyers.com/" target="_blank" rel="noreferrer" aria-label="Open the independent HB Night Flyers website (opens in a new tab)">HBNF website <span aria-hidden="true">↗</span></a>
+      <a className="hbnf-home-link" href="https://hbnightflyers.com/" target="_blank" rel="noreferrer" aria-label="Open the independent HB Night Flyers website (opens in a new tab)">HBNF website </a>
     </header>
 
     <nav className="hbnf-play-links" aria-label="HB Night Flyers scoring pages">
-      {HBNF_DESTINATIONS.map(({ label, href }) => <a key={href} href={href} target="_blank" rel="noreferrer" aria-label={'Open HB Night Flyers ' + label + ' (opens in a new tab)'}>{label}<span aria-hidden="true">↗</span></a>)}
+      {HBNF_DESTINATIONS.map(({ label, href }) => <a key={href} href={href} target="_blank" rel="noreferrer" aria-label={'Open HB Night Flyers ' + label + ' (opens in a new tab)'}>{label}</a>)}
     </nav>
 
     <section className="hbnf-events" aria-labelledby="hbnf-events-title">

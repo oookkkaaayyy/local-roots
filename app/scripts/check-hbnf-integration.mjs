@@ -8,11 +8,11 @@ const read = (file) => readFileSync(path.join(root, file), 'utf8');
 const events = read('src/pages/EventsPage.tsx');
 const shell = read('src/components/Shell.tsx');
 const hbnf = read('src/pages/HbnfPage.tsx');
-const app = read('src/App.tsx');
+const routes = read('src/LegacyRoutes.tsx');
 const styles = read('src/lr-hbnf-integration.css');
 
-assert.match(app, /if\(path==='\/'\)return <EventsPage landing\/>/);
-assert.match(app, /path==='\/hb-night-flyers'\|\|path==='\/hbnf'/);
+assert.match(routes, /if\(path==='\/'\)return <EventsPage landing\/>/);
+assert.match(routes, /path==='\/hb-night-flyers'\|\|path==='\/hbnf'/);
 assert.match(shell, /nav-events[^>]*href="\/events"/);
 assert.match(shell, /nav-hbnf[^>]*href="\/hb-night-flyers"/);
 assert.ok(shell.indexOf('className="nav-events"') < shell.indexOf('className="nav-hbnf"'));
@@ -54,3 +54,12 @@ assert.match(read('public/fonts/SOURCE.txt'), /SIL Open Font License 1\.1/);
 assert.match(read('public/fonts/OFL.txt'), /SIL OPEN FONT LICENSE Version 1\.1/);
 
 console.log('LR × HBNF integration source checks passed.');
+
+assert.doesNotMatch(events, /↗/);
+assert.doesNotMatch(hbnf, /↗/);
+assert.doesNotMatch(read('src/pages/EventDetailPage.tsx'), /↗/);
+assert.doesNotMatch(read('src/lib/eventPresentation.ts'), /↗/);
+assert.match(styles, /event-actions\\{display:flex;flex-flow:row wrap;/);
+assert.doesNotMatch(styles, /grid-template-columns:repeat\\(2,minmax\\(0,1fr\\)\\);gap:6px;justify-content:stretch/);
+assert.match(styles, /min-height:28px;padding:4px 7px/);
+assert.doesNotMatch(styles, /aria-current=page\\]\\{text-decoration:underline/);
