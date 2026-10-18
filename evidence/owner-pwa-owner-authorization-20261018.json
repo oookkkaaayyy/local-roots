@@ -1,0 +1,26 @@
+{
+  "owner_authorization": {
+    "artifact_sha256_bindings": {
+      "candidate_manifest": "d05a0521c9a3e67bc42bc5db9afe81ca9678567ead84110a44b7721d868ff787",
+      "candidate_zip": "681d02edf22ec6a45df9ac42c2210c3910c590111ec420da5e0f34458ea64b8e",
+      "installer": "39d80154c62fb2c91bfb3c55c75652aa29969f63238b0b9d3ffc970f8b5a7f17",
+      "release_zip": "17127ae9a6a1cebd34c2467e5662aa23bb5fddb59811122c1114ebb76a686d73",
+      "rollback_script": "fd3c6c5c746a9948b30eb13392af089b3be15344f4526ebc4a911fe5b6c1741a",
+      "served_baseline_zip": "4dcb151465266fe1e80a1b0080d2ed7ec82ef0a20fd5f08830f403383ea6e018",
+      "served_manifest": "3697dea5b6dd37e7a70fefdd9adf59ea027eb63df281ef1e25c5a2ea3c20d0ad",
+      "v105_rollback_zip": "e2e7c7d97ce9756a9f8291e97d3e7e65917234dd6756be25c777e9bcdbd64b24"
+    },
+    "authorization_id": "OWNER-20261018-APPROVED-ONE-INSTALL",
+    "expires_unix": 1792319344.9581702,
+    "issued_unix": 1792318744.9581702,
+    "nonce": "de4d2ad7d47f229654764be9ccd155d62cd78996c30cd08ef58c634819327ae3",
+    "schema": "hbnf-owner-pwa-install-authorization-v1",
+    "scope": [
+      "install_owner_pwa",
+      "rollback_if_required"
+    ],
+    "source_message_ref": "Direct owner instruction in current conversation: CART 2.0 \u2014 RECOVER VERIFIED SSH ACCESS AND COMPLETE APPROVED INSTALL (2026-10-18)",
+    "transaction_id": "OWNER-PWA-20261018-APPROVED-INSTALL-01"
+  },
+  "schema": "hbnf-owner-pwa-explicit-authorization-receipt-v1"
+}

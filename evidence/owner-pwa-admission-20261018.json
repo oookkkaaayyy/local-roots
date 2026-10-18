@@ -1,0 +1,182 @@
+{
+  "admission_sha256": "cb49664a1b4845aef91e427aee62bba852432db7b3da9b3ef57cd1dabc99952c",
+  "allowed_paths": [
+    "owner-pwa/hbnf-cart.html",
+    "owner-pwa/hbnf-cart.js",
+    "owner-pwa/hbnf-cart-local.js",
+    "owner-pwa/hbnf-cart-features.js",
+    "owner-pwa/hbnf-cart-ui-v6.css",
+    "owner-pwa/hbnf-cart-ui-v6.js",
+    "owner-pwa/hbnf-cart-semantic.js",
+    "owner-pwa/hbnf-cart-skins-score.js",
+    "owner-pwa/hbnf-cart-net.js",
+    "owner-pwa/hbnf-cart-manifest.webmanifest",
+    "owner-pwa/hbnf-cart-icon-180.png",
+    "owner-pwa/hbnf-cart-icon-192.png",
+    "owner-pwa/hbnf-cart-icon-512.png",
+    "owner-pwa/hbnf-guest-qr.png",
+    "mission-control-local/local-transport.js"
+  ],
+  "artifact_sha256_bindings": {
+    "candidate_manifest": "d05a0521c9a3e67bc42bc5db9afe81ca9678567ead84110a44b7721d868ff787",
+    "candidate_zip": "681d02edf22ec6a45df9ac42c2210c3910c590111ec420da5e0f34458ea64b8e",
+    "installer": "39d80154c62fb2c91bfb3c55c75652aa29969f63238b0b9d3ffc970f8b5a7f17",
+    "release_zip": "17127ae9a6a1cebd34c2467e5662aa23bb5fddb59811122c1114ebb76a686d73",
+    "rollback_script": "fd3c6c5c746a9948b30eb13392af089b3be15344f4526ebc4a911fe5b6c1741a",
+    "served_baseline_zip": "4dcb151465266fe1e80a1b0080d2ed7ec82ef0a20fd5f08830f403383ea6e018",
+    "served_manifest": "3697dea5b6dd37e7a70fefdd9adf59ea027eb63df281ef1e25c5a2ea3c20d0ad",
+    "v105_rollback_zip": "e2e7c7d97ce9756a9f8291e97d3e7e65917234dd6756be25c777e9bcdbd64b24"
+  },
+  "authorized_steps": [
+    "install_owner_pwa"
+  ],
+  "candidate_sha256_by_path": {
+    "mission-control-local/local-transport.js": "2d6e064bb54839d9562c3ff180681d7b918bb92f2fdb43f00c2821053e145e37",
+    "owner-pwa/hbnf-cart-features.js": "cb347e0a6d41572c547fd68e395f095e2a0e5fbd7e59516a38c836b628b5d27e",
+    "owner-pwa/hbnf-cart-icon-180.png": "2df67d36de5dc9a16d0cc8dfa8142a827498047e31e1208e7bc749bf856e4c36",
+    "owner-pwa/hbnf-cart-icon-192.png": "1a14dbf56e5014b073dd4bb3b2ab823dd07d004ee450eac8463314899b3d7192",
+    "owner-pwa/hbnf-cart-icon-512.png": "6383246f47b08ee31087040699de97d6561648e84612d188522d47fc28686e65",
+    "owner-pwa/hbnf-cart-local.js": "20fa2fe5a96342df175a14a68d5dfe68568d1b835793eae23227647d60dbbfaf",
+    "owner-pwa/hbnf-cart-manifest.webmanifest": "da5f6cb86db9327291a6c9f6fcd75e9a6fe9e9c0a83921255c9e364d8bdc6932",
+    "owner-pwa/hbnf-cart-net.js": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+    "owner-pwa/hbnf-cart-semantic.js": "af22dd68c254b4bc0b2507442465eeda36dcdd2535039f66d36e04d52f7234b7",
+    "owner-pwa/hbnf-cart-skins-score.js": "642761eddf40182d603b60f4b8de1d4a4979b7a9a71bbaabe3e5ff7c9c5b43a7",
+    "owner-pwa/hbnf-cart-ui-v6.css": "c878e5fc3d99b967fd7543ec0f03c620083cfb1b05f443f0d820b243b41b94ea",
+    "owner-pwa/hbnf-cart-ui-v6.js": "c0347fdbafcda703578b18db37f03ef7010fb69d14c07e1f4eb64d8c0620268f",
+    "owner-pwa/hbnf-cart.html": "03ad82714487712a1d28e128d0dcc4c300662ef61445c56143b8e50245b4b0b1",
+    "owner-pwa/hbnf-cart.js": "6662cc95b6d76fa02ea3300d635e585b391e44d195aab2da3272e83f283138bd",
+    "owner-pwa/hbnf-guest-qr.png": "f6a2593bbc55ab12503ab9c6eb8ac11813858c1ea14909071476cd7290854f27"
+  },
+  "control_source_identity": {
+    "commit": "e80e346cd2a58bf04c4674cb7980a392603f1155",
+    "sha256_by_path": {
+      "scripts/hbnf_control.py": "edcf4fdeda11db5c80356c1e4164b9463851125cb708152b3f73fc1931cff2ef",
+      "scripts/hbnf_guarded_run.py": "426a3f58658540d744357618fa87e068201ff8a407d7d8e82099d2262420b431"
+    }
+  },
+  "drive_file_id": "1PLxm2UbVQU7YSZWOLp0GkHJPUtRkZ3Vp",
+  "live_preflight": {
+    "captured_unix": 1792318744.9581702,
+    "final_urls_by_path": {
+      "mission-control-local/local-transport.js": "http://192.168.77.1/mission-control-local/local-transport.js",
+      "owner-pwa/hbnf-cart-features.js": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-features.js",
+      "owner-pwa/hbnf-cart-icon-180.png": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-icon-180.png",
+      "owner-pwa/hbnf-cart-icon-192.png": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-icon-192.png",
+      "owner-pwa/hbnf-cart-icon-512.png": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-icon-512.png",
+      "owner-pwa/hbnf-cart-local.js": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-local.js",
+      "owner-pwa/hbnf-cart-manifest.webmanifest": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-manifest.webmanifest",
+      "owner-pwa/hbnf-cart-net.js": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-net.js",
+      "owner-pwa/hbnf-cart-semantic.js": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-semantic.js",
+      "owner-pwa/hbnf-cart-skins-score.js": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-skins-score.js",
+      "owner-pwa/hbnf-cart-ui-v6.css": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-ui-v6.css",
+      "owner-pwa/hbnf-cart-ui-v6.js": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart-ui-v6.js",
+      "owner-pwa/hbnf-cart.html": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart.html",
+      "owner-pwa/hbnf-cart.js": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-cart.js",
+      "owner-pwa/hbnf-guest-qr.png": "http://192.168.77.1/mission-control-local/owner-pwa/hbnf-guest-qr.png"
+    },
+    "http_status_by_path": {
+      "mission-control-local/local-transport.js": 200,
+      "owner-pwa/hbnf-cart-features.js": 200,
+      "owner-pwa/hbnf-cart-icon-180.png": 200,
+      "owner-pwa/hbnf-cart-icon-192.png": 200,
+      "owner-pwa/hbnf-cart-icon-512.png": 200,
+      "owner-pwa/hbnf-cart-local.js": 200,
+      "owner-pwa/hbnf-cart-manifest.webmanifest": 200,
+      "owner-pwa/hbnf-cart-net.js": 200,
+      "owner-pwa/hbnf-cart-semantic.js": 200,
+      "owner-pwa/hbnf-cart-skins-score.js": 200,
+      "owner-pwa/hbnf-cart-ui-v6.css": 200,
+      "owner-pwa/hbnf-cart-ui-v6.js": 200,
+      "owner-pwa/hbnf-cart.html": 200,
+      "owner-pwa/hbnf-cart.js": 200,
+      "owner-pwa/hbnf-guest-qr.png": 200
+    },
+    "installer_dry_run": "OWNER_REPAIR_PREFLIGHT=PASS",
+    "pass": true,
+    "permissions": {
+      "owner_files_regular_no_symlinks": true,
+      "recovery_paths_clear": true,
+      "root_install_available": true,
+      "transport_regular_no_symlink": true
+    },
+    "release_zip_sha256": "17127ae9a6a1cebd34c2467e5662aa23bb5fddb59811122c1114ebb76a686d73",
+    "remote_filesystem_sha256_by_path": {
+      "mission-control-local/local-transport.js": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
+      "owner-pwa/hbnf-cart-features.js": "969e8eb38640783fd970d81e4544eefaa0063bfdb8a8a0a7eabdd4fa89de7502",
+      "owner-pwa/hbnf-cart-icon-180.png": "2df67d36de5dc9a16d0cc8dfa8142a827498047e31e1208e7bc749bf856e4c36",
+      "owner-pwa/hbnf-cart-icon-192.png": "1a14dbf56e5014b073dd4bb3b2ab823dd07d004ee450eac8463314899b3d7192",
+      "owner-pwa/hbnf-cart-icon-512.png": "6383246f47b08ee31087040699de97d6561648e84612d188522d47fc28686e65",
+      "owner-pwa/hbnf-cart-local.js": "1480ee79cd056f697b65a9d2c4b3693ff612ad000eed37a981812e0a0752c8c9",
+      "owner-pwa/hbnf-cart-manifest.webmanifest": "da5f6cb86db9327291a6c9f6fcd75e9a6fe9e9c0a83921255c9e364d8bdc6932",
+      "owner-pwa/hbnf-cart-net.js": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+      "owner-pwa/hbnf-cart-semantic.js": "af22dd68c254b4bc0b2507442465eeda36dcdd2535039f66d36e04d52f7234b7",
+      "owner-pwa/hbnf-cart-skins-score.js": "642761eddf40182d603b60f4b8de1d4a4979b7a9a71bbaabe3e5ff7c9c5b43a7",
+      "owner-pwa/hbnf-cart-ui-v6.css": "3d4199fd56e19e4d1e66bde443531d2e94155c41dbbc53ba6a6e7da4811ce4cd",
+      "owner-pwa/hbnf-cart-ui-v6.js": "c0347fdbafcda703578b18db37f03ef7010fb69d14c07e1f4eb64d8c0620268f",
+      "owner-pwa/hbnf-cart.html": "efa9759de89a900d7fec7e63114144e730a630eda970ef2f0441e8056a006c61",
+      "owner-pwa/hbnf-cart.js": "a6c55caeb9cc9b09b8fb846b8776c085d3be97f349be3dd46d596cd526361761",
+      "owner-pwa/hbnf-guest-qr.png": "f6a2593bbc55ab12503ab9c6eb8ac11813858c1ea14909071476cd7290854f27"
+    },
+    "schema": "hbnf-owner-pwa-live-preflight-v1",
+    "served_sha256_by_path": {
+      "mission-control-local/local-transport.js": "51e4f03ff1ffc9d8cece0a3e6f14fefac77e642fe1a4eced95ca749d777f676a",
+      "owner-pwa/hbnf-cart-features.js": "969e8eb38640783fd970d81e4544eefaa0063bfdb8a8a0a7eabdd4fa89de7502",
+      "owner-pwa/hbnf-cart-icon-180.png": "2df67d36de5dc9a16d0cc8dfa8142a827498047e31e1208e7bc749bf856e4c36",
+      "owner-pwa/hbnf-cart-icon-192.png": "1a14dbf56e5014b073dd4bb3b2ab823dd07d004ee450eac8463314899b3d7192",
+      "owner-pwa/hbnf-cart-icon-512.png": "6383246f47b08ee31087040699de97d6561648e84612d188522d47fc28686e65",
+      "owner-pwa/hbnf-cart-local.js": "1480ee79cd056f697b65a9d2c4b3693ff612ad000eed37a981812e0a0752c8c9",
+      "owner-pwa/hbnf-cart-manifest.webmanifest": "da5f6cb86db9327291a6c9f6fcd75e9a6fe9e9c0a83921255c9e364d8bdc6932",
+      "owner-pwa/hbnf-cart-net.js": "0978c4f11385007a6b769401d8eaa10d7eaf42bf1ee7c5a21ae0a7ad6df2c69b",
+      "owner-pwa/hbnf-cart-semantic.js": "af22dd68c254b4bc0b2507442465eeda36dcdd2535039f66d36e04d52f7234b7",
+      "owner-pwa/hbnf-cart-skins-score.js": "642761eddf40182d603b60f4b8de1d4a4979b7a9a71bbaabe3e5ff7c9c5b43a7",
+      "owner-pwa/hbnf-cart-ui-v6.css": "3d4199fd56e19e4d1e66bde443531d2e94155c41dbbc53ba6a6e7da4811ce4cd",
+      "owner-pwa/hbnf-cart-ui-v6.js": "c0347fdbafcda703578b18db37f03ef7010fb69d14c07e1f4eb64d8c0620268f",
+      "owner-pwa/hbnf-cart.html": "efa9759de89a900d7fec7e63114144e730a630eda970ef2f0441e8056a006c61",
+      "owner-pwa/hbnf-cart.js": "a6c55caeb9cc9b09b8fb846b8776c085d3be97f349be3dd46d596cd526361761",
+      "owner-pwa/hbnf-guest-qr.png": "f6a2593bbc55ab12503ab9c6eb8ac11813858c1ea14909071476cd7290854f27"
+    },
+    "target_ip": "192.168.77.1"
+  },
+  "live_preflight_evidence": {
+    "path": "evidence/owner-pwa-live-preflight-20261018.json",
+    "sha256": "bcd09dcab676e658547c08b8df46818141625d50c8fd6385f4d4692a380a282b"
+  },
+  "outcome": "PASS",
+  "owner_authorization": {
+    "artifact_sha256_bindings": {
+      "candidate_manifest": "d05a0521c9a3e67bc42bc5db9afe81ca9678567ead84110a44b7721d868ff787",
+      "candidate_zip": "681d02edf22ec6a45df9ac42c2210c3910c590111ec420da5e0f34458ea64b8e",
+      "installer": "39d80154c62fb2c91bfb3c55c75652aa29969f63238b0b9d3ffc970f8b5a7f17",
+      "release_zip": "17127ae9a6a1cebd34c2467e5662aa23bb5fddb59811122c1114ebb76a686d73",
+      "rollback_script": "fd3c6c5c746a9948b30eb13392af089b3be15344f4526ebc4a911fe5b6c1741a",
+      "served_baseline_zip": "4dcb151465266fe1e80a1b0080d2ed7ec82ef0a20fd5f08830f403383ea6e018",
+      "served_manifest": "3697dea5b6dd37e7a70fefdd9adf59ea027eb63df281ef1e25c5a2ea3c20d0ad",
+      "v105_rollback_zip": "e2e7c7d97ce9756a9f8291e97d3e7e65917234dd6756be25c777e9bcdbd64b24"
+    },
+    "authorization_id": "OWNER-20261018-APPROVED-ONE-INSTALL",
+    "authorization_receipt_sha256": "91b872721e7e7365e68232776bb1b5e28f192503c6056359a7b049d98c872c51",
+    "expires_unix": 1792319344.9581702,
+    "issued_unix": 1792318744.9581702,
+    "nonce": "de4d2ad7d47f229654764be9ccd155d62cd78996c30cd08ef58c634819327ae3",
+    "schema": "hbnf-owner-pwa-install-authorization-v1",
+    "scope": [
+      "install_owner_pwa",
+      "rollback_if_required"
+    ],
+    "source_message_ref": "Direct owner instruction in current conversation: CART 2.0 \u2014 RECOVER VERIFIED SSH ACCESS AND COMPLETE APPROVED INSTALL (2026-10-18)",
+    "transaction_id": "OWNER-PWA-20261018-APPROVED-INSTALL-01"
+  },
+  "owner_authorization_receipt": {
+    "path": "evidence/owner-pwa-owner-authorization-20261018.json",
+    "sha256": "91b872721e7e7365e68232776bb1b5e28f192503c6056359a7b049d98c872c51"
+  },
+  "schema": "hbnf-owner-pwa-install-admission-v1",
+  "stage": "OWNER_PWA_LIVE_APPROVED",
+  "target": {
+    "base": "/www/mission-control-local",
+    "ip": "192.168.77.1",
+    "model": "GL-SFT1200",
+    "owner_dir": "/www/mission-control-local/owner-pwa"
+  },
+  "transaction_id": "OWNER-PWA-20261018-APPROVED-INSTALL-01"
+}
