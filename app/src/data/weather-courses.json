@@ -1,0 +1,770 @@
+[
+  {
+    "id": "sky-high-mtn-high-north",
+    "name": "Sky High at Mountain High North",
+    "city": "Wrightwood",
+    "state": "CA",
+    "county": "San Bernardino",
+    "coordinates": [
+      34.385468,
+      -117.686802
+    ],
+    "coordinateNote": "PDGA first-tee coordinate; seasonal public access requires a day or season ticket.",
+    "holes": 27,
+    "kind": "disc-golf",
+    "access": "public-fee; seasonal",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.pdga.com/course-directory/course/sky-high-disc-golf-course-mtn-high-north",
+      "https://www.openstreetmap.org/?mlat=34.376&mlon=-117.688#map=15/34.376/-117.688"
+    ]
+  },
+  {
+    "id": "mojave-narrows",
+    "name": "Mojave Narrows Regional Park",
+    "city": "Victorville",
+    "state": "CA",
+    "county": "San Bernardino",
+    "coordinates": [
+      34.556,
+      -117.304
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public; park fee",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://parks.sbcounty.gov/park/mojave-narrows-regional-park/",
+      "https://www.openstreetmap.org/?mlat=34.556&mlon=-117.304#map=15/34.556/-117.304"
+    ]
+  },
+  {
+    "id": "yucaipa-regional",
+    "name": "Yucaipa Regional Park",
+    "city": "Yucaipa",
+    "state": "CA",
+    "county": "San Bernardino",
+    "coordinates": [
+      34.032,
+      -117.052
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 19,
+    "kind": "disc-golf",
+    "access": "public; park fee",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://parks.sbcounty.gov/park/yucaipa-regional-park/",
+      "https://www.openstreetmap.org/?mlat=34.032&mlon=-117.052#map=15/34.032/-117.052"
+    ]
+  },
+  {
+    "id": "the-levee",
+    "name": "The Levee",
+    "city": "Lake Elsinore",
+    "state": "CA",
+    "county": "Riverside",
+    "coordinates": [
+      33.684,
+      -117.391
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://nichols.lake-elsinore.org/arcgisserver/rest/services/CommSvcs/Disc_Golf_View/FeatureServer/0",
+      "https://www.openstreetmap.org/?mlat=33.684&mlon=-117.391#map=15/33.684/-117.391"
+    ]
+  },
+  {
+    "id": "mountain-pride",
+    "name": "Mountain Pride Disc Golf Course",
+    "city": "Murrieta",
+    "state": "CA",
+    "county": "Riverside",
+    "coordinates": [
+      33.5792498,
+      -117.2186553
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.murrietaca.gov/",
+      "https://www.openstreetmap.org/?mlat=33.5792498&mlon=-117.2186553#map=15/33.5792498/-117.2186553"
+    ]
+  },
+  {
+    "id": "huntington-central",
+    "name": "Huntington Beach Central Park Disc Golf Course",
+    "city": "Huntington Beach",
+    "state": "CA",
+    "county": "Orange",
+    "coordinates": [
+      33.7004,
+      -117.9919
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.huntingtonbeachca.gov/departments/parks___recreation/Disc%20Golf%20Course.pdf",
+      "https://www.openstreetmap.org/?mlat=33.7004&mlon=-117.9919#map=15/33.7004/-117.9919"
+    ]
+  },
+  {
+    "id": "glen-helen",
+    "name": "Glen Helen Regional Park",
+    "city": "San Bernardino",
+    "state": "CA",
+    "county": "San Bernardino",
+    "coordinates": [
+      34.198,
+      -117.412
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public; park fee",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://parks.sbcounty.gov/park/glen-helen-regional-park/",
+      "https://www.openstreetmap.org/?mlat=34.198&mlon=-117.412#map=15/34.198/-117.412"
+    ]
+  },
+  {
+    "id": "oak-grove",
+    "name": "Oak Grove / Hahamongna Watershed Park",
+    "city": "Pasadena",
+    "state": "CA",
+    "county": "Los Angeles",
+    "coordinates": [
+      34.1932203,
+      -118.176157
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 24,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.cityofpasadena.net/parks-and-rec/parks/hahamongna-watershed-park/",
+      "https://www.openstreetmap.org/?mlat=34.1932203&mlon=-118.176157#map=15/34.1932203/-118.176157"
+    ]
+  },
+  {
+    "id": "martha-mclean",
+    "name": "Martha McLean Anza-Narrows Park",
+    "city": "Riverside",
+    "state": "CA",
+    "county": "Riverside",
+    "coordinates": [
+      33.9646595,
+      -117.4303864
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://aquarius.riversideca.gov/clerkdb/DocView.aspx?dbid=0&id=245608&repo=Clerk",
+      "https://www.openstreetmap.org/?mlat=33.9646595&mlon=-117.4303864#map=15/33.9646595/-117.4303864"
+    ]
+  },
+  {
+    "id": "el-dorado",
+    "name": "El Dorado Park Disc Golf Course",
+    "city": "Long Beach",
+    "state": "CA",
+    "county": "Los Angeles",
+    "coordinates": [
+      33.801,
+      -118.091
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.longbeach.gov/park/park-and-facilities/directory/el-dorado-east-regional-park/",
+      "https://www.openstreetmap.org/?mlat=33.801&mlon=-118.091#map=15/33.801/-118.091"
+    ]
+  },
+  {
+    "id": "prado",
+    "name": "Prado Regional Park",
+    "city": "Chino",
+    "state": "CA",
+    "county": "San Bernardino",
+    "coordinates": [
+      33.9502,
+      -117.663
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public; park fee",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://parks.sbcounty.gov/park/prado-regional-park/",
+      "https://www.openstreetmap.org/?mlat=33.9502&mlon=-117.663#map=15/33.9502/-117.663"
+    ]
+  },
+  {
+    "id": "brengle-terrace",
+    "name": "Brengle Terrace Park",
+    "city": "Vista",
+    "state": "CA",
+    "county": "San Diego",
+    "coordinates": [
+      33.2205,
+      -117.235
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://sandiegoaces.com/courses/",
+      "https://www.openstreetmap.org/?mlat=33.2205&mlon=-117.235#map=15/33.2205/-117.235"
+    ]
+  },
+  {
+    "id": "santa-clarita-central",
+    "name": "Central Park Disc Golf Course",
+    "city": "Santa Clarita",
+    "state": "CA",
+    "county": "Los Angeles",
+    "coordinates": [
+      34.434,
+      -118.518
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://santaclarita.gov/adult-sports/disc-golf/",
+      "https://www.openstreetmap.org/?mlat=34.434&mlon=-118.518#map=15/34.434/-118.518"
+    ]
+  },
+  {
+    "id": "ladera-power-lines",
+    "name": "Ladera Power Lines",
+    "city": "Ladera Ranch",
+    "state": "CA",
+    "county": "Orange",
+    "coordinates": [
+      33.5452002,
+      -117.6423312
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.openstreetmap.org/?mlat=33.5452002&mlon=-117.6423312#map=16/33.54520/-117.64233",
+      "https://www.openstreetmap.org/?mlat=33.5452002&mlon=-117.6423312#map=15/33.5452002/-117.6423312"
+    ]
+  },
+  {
+    "id": "sylmar-veterans",
+    "name": "Sylmar / Veterans Park Disc Golf Course",
+    "city": "Sylmar",
+    "state": "CA",
+    "county": "Los Angeles",
+    "coordinates": [
+      34.3246973,
+      -118.4195901
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 19,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://parks.lacounty.gov/frequently-asked-questions/",
+      "https://www.openstreetmap.org/?mlat=34.3246973&mlon=-118.4195901#map=15/34.3246973/-118.4195901"
+    ]
+  },
+  {
+    "id": "la-mirada-lakeside",
+    "name": "La Mirada Lakeside (Front)",
+    "city": "La Mirada",
+    "state": "CA",
+    "county": "Los Angeles",
+    "coordinates": [
+      33.902,
+      -118.008
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public; fee",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://discoverlamirada.com/legendary-disc-golf/",
+      "https://www.openstreetmap.org/?mlat=33.902&mlon=-118.008#map=15/33.902/-118.008"
+    ]
+  },
+  {
+    "id": "la-mirada-backside",
+    "name": "La Mirada Backside (Back)",
+    "city": "La Mirada",
+    "state": "CA",
+    "county": "Los Angeles",
+    "coordinates": [
+      33.9,
+      -118.006
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public; fee",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://discoverlamirada.com/legendary-disc-golf/",
+      "https://www.openstreetmap.org/?mlat=33.9&mlon=-118.006#map=15/33.9/-118.006"
+    ]
+  },
+  {
+    "id": "whittier-narrows",
+    "name": "Whittier Narrows Disc Golf Course",
+    "city": "South El Monte",
+    "state": "CA",
+    "county": "Los Angeles",
+    "coordinates": [
+      34.02,
+      -118.05
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 27,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://parks.lacounty.gov/frequently-asked-questions/",
+      "https://www.openstreetmap.org/?mlat=34.02&mlon=-118.05#map=15/34.02/-118.05"
+    ]
+  },
+  {
+    "id": "chavez-ridge",
+    "name": "Chavez Ridge at Elysian Park",
+    "city": "Los Angeles",
+    "state": "CA",
+    "county": "Los Angeles",
+    "coordinates": [
+      34.0805901,
+      -118.2335757
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.laparks.org/park/elysian/disc-golf",
+      "https://www.openstreetmap.org/?mlat=34.0805901&mlon=-118.2335757#map=15/34.0805901/-118.2335757"
+    ]
+  },
+  {
+    "id": "sapwi-trails",
+    "name": "Sapwi Trails Community Park Disc Golf Course",
+    "city": "Thousand Oaks",
+    "state": "CA",
+    "county": "Ventura",
+    "coordinates": [
+      34.208,
+      -118.91
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.crpd.org/disc-golf",
+      "https://www.openstreetmap.org/?mlat=34.208&mlon=-118.91#map=15/34.208/-118.91"
+    ]
+  },
+  {
+    "id": "rabbit-flats",
+    "name": "Rabbit Flats at Thousand Oaks Community Park",
+    "city": "Thousand Oaks",
+    "state": "CA",
+    "county": "Ventura",
+    "coordinates": [
+      34.213979,
+      -118.8753501
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.crpd.org/disc-golf",
+      "https://www.openstreetmap.org/?mlat=34.213979&mlon=-118.8753501#map=15/34.213979/-118.8753501"
+    ]
+  },
+  {
+    "id": "coyote-point",
+    "name": "Coyote Point Disc Golf Course",
+    "city": "Oak View",
+    "state": "CA",
+    "county": "Ventura",
+    "coordinates": [
+      34.4088078,
+      -119.35184
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public; fee-free",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.casitaswater.gov/disc-golf",
+      "https://www.openstreetmap.org/?mlat=34.4088078&mlon=-119.35184#map=15/34.4088078/-119.35184"
+    ]
+  },
+  {
+    "id": "morley-field",
+    "name": "Morley Field Disc Golf Course",
+    "city": "San Diego",
+    "state": "CA",
+    "county": "San Diego",
+    "coordinates": [
+      32.7376156,
+      -117.1357555
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 19,
+    "kind": "disc-golf",
+    "access": "public; fee",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.morleyfield.com/about",
+      "https://www.openstreetmap.org/?mlat=32.7376156&mlon=-117.1357555#map=15/32.7376156/-117.1357555"
+    ]
+  },
+  {
+    "id": "mast-park",
+    "name": "Mast Park Disc Golf Course",
+    "city": "Santee",
+    "state": "CA",
+    "county": "San Diego",
+    "coordinates": [
+      32.8445,
+      -116.9911
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public; fee",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.cityofsanteeca.gov/our-community/parks-recreation/disc-golf",
+      "https://www.openstreetmap.org/?mlat=32.8445&mlon=-116.9911#map=15/32.8445/-116.9911"
+    ]
+  },
+  {
+    "id": "cachuma-main",
+    "name": "Cachuma Lake Disc Golf Course (Main)",
+    "city": "Santa Ynez",
+    "state": "CA",
+    "county": "Santa Barbara",
+    "coordinates": [
+      34.5767705,
+      -119.958059
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public; lake fee; seasonal park access",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.sbcrecplan.com/uploads/1/3/0/6/130682948/ch3_sbcrecplan_nov2025.pdf",
+      "https://www.openstreetmap.org/?mlat=34.5767705&mlon=-119.958059#map=15/34.5767705/-119.958059"
+    ]
+  },
+  {
+    "id": "cachuma-mohawk",
+    "name": "Cachuma Lake Disc Golf Course (Mohawk)",
+    "city": "Santa Ynez",
+    "state": "CA",
+    "county": "Santa Barbara",
+    "coordinates": [
+      34.5703322,
+      -119.9489847
+    ],
+    "coordinateNote": "Representative course-area point; approximate unless shown by a mapped tee/course feature.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public; lake fee; seasonal (Oct-Apr)",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.pdga.com/course-directory/course/mohawk-disc-golf-couse-cachuma-lake",
+      "https://www.openstreetmap.org/?mlat=34.5703322&mlon=-119.9489847#map=15/34.5703322/-119.9489847"
+    ]
+  },
+  {
+    "id": "franklin-field",
+    "name": "Franklin Field",
+    "city": "Taft",
+    "state": "CA",
+    "county": "Kern",
+    "coordinates": [
+      35.153823,
+      -119.44172
+    ],
+    "coordinateNote": "PDGA first-tee coordinate.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.pdga.com/course-directory/course/franklin-field"
+    ]
+  },
+  {
+    "id": "hart-park-shark-tooth",
+    "name": "Hart Park — Shark Tooth Mountain",
+    "city": "Bakersfield",
+    "state": "CA",
+    "county": "Kern",
+    "coordinates": [
+      35.444854,
+      -118.904904
+    ],
+    "coordinateNote": "PDGA first-tee coordinate.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.pdga.com/course-directory/course/hart-park-shark-tooth-mountain-disc-golf-course"
+    ]
+  },
+  {
+    "id": "hart-park-suicide-flats",
+    "name": "Hart Park — Suicide Flats",
+    "city": "Bakersfield",
+    "state": "CA",
+    "county": "Kern",
+    "coordinates": [
+      35.444854,
+      -118.904904
+    ],
+    "coordinateNote": "Representative Hart Park course point; the two distinct 18-hole layouts are in the same park.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.pdga.com/course-directory/course/hart-park-suicide-flats"
+    ]
+  },
+  {
+    "id": "evergreen-open-space",
+    "name": "Evergreen Open Space",
+    "city": "Goleta",
+    "state": "CA",
+    "county": "Santa Barbara",
+    "coordinates": [
+      34.4394,
+      -119.891899
+    ],
+    "coordinateNote": "Approximate course-area point; verify on park map before navigation.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.pdga.com/course-directory/course/evergreen-open-space",
+      "https://www.openstreetmap.org/?mlat=34.4394&mlon=-119.891899#map=16/34.4394/-119.8919"
+    ]
+  },
+  {
+    "id": "mt-waterman",
+    "name": "Mt. Waterman Disc Golf Course",
+    "city": "La Cañada Flintridge",
+    "state": "CA",
+    "county": "Los Angeles",
+    "coordinates": [
+      34.345326137902,
+      -117.93383237347
+    ],
+    "coordinateNote": "PDGA first-tee coordinate; seasonal public access requires resort lift ticket.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public-fee; seasonal",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.mtwaterman.org/",
+      "https://www.pdga.com/course-directory/course/mt-waterman-disc-golf-course"
+    ]
+  },
+  {
+    "id": "ken-malloy",
+    "name": "Ken Malloy Harbor Regional Park",
+    "city": "Harbor City",
+    "state": "CA",
+    "county": "Los Angeles",
+    "coordinates": [
+      33.77989706386455,
+      -118.28926642777935
+    ],
+    "coordinateNote": "Mapped course-area point. Official park lists disc golf and sunrise-to-sunset public hours; the direct gate from parking has a longer alternate foot access route.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www2.laparks.org/park/ken-malloy-harbor-regional",
+      "https://www.pdga.com/course-directory/course/ken-malloy-harbor-regional-park",
+      "https://www.openstreetmap.org/?mlat=33.779897&mlon=-118.289266#map=16/33.779897/-118.289266"
+    ]
+  },
+  {
+    "id": "golden-hills-nature-park",
+    "name": "Golden Hills Nature Park",
+    "city": "Tehachapi",
+    "state": "CA",
+    "county": "Kern",
+    "coordinates": [
+      35.1488994,
+      -118.4942781
+    ],
+    "coordinateNote": "Approximate course-area point within the district nature park.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.tvrpd.org/2025-07-28-disc-golf-at-nature-park",
+      "https://www.openstreetmap.org/?mlat=35.1488994&mlon=-118.4942781#map=16/35.1488994/-118.4942781"
+    ]
+  },
+  {
+    "id": "truxtun-park",
+    "name": "Truxtun Park / Kern River Disc Golf Course",
+    "city": "Bakersfield",
+    "state": "CA",
+    "county": "Kern",
+    "coordinates": [
+      35.364937,
+      -119.06828
+    ],
+    "coordinateNote": "Approximate course point from PDGA parking coordinates; 18-hole layout uses 12 baskets with alternate tee positions and some shared targets.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.pdga.com/course-directory/course/kern-river-disc-golf-course",
+      "https://www.openstreetmap.org/?mlat=35.364937&mlon=-119.068280#map=16/35.364937/-119.068280"
+    ]
+  },
+  {
+    "id": "city-in-the-hills",
+    "name": "City In the Hills",
+    "city": "Bakersfield",
+    "state": "CA",
+    "county": "Kern",
+    "coordinates": [
+      35.402889,
+      -118.892441
+    ],
+    "coordinateNote": "Approximate course-area point in a public park.",
+    "holes": 18,
+    "kind": "disc-golf",
+    "access": "public",
+    "status": "INCLUDE",
+    "timezone": "America/Los_Angeles",
+    "verifiedOn": "2026-10-18",
+    "sources": [
+      "https://www.pdga.com/course-directory/course/city-hills",
+      "https://www.openstreetmap.org/?mlat=35.402889&mlon=-118.892441#map=16/35.402889/-118.892441"
+    ]
+  }
+]

@@ -118,10 +118,11 @@ test("event cards expose permanent detail URLs, filtered return state, and calen
 
 test("event detail route is permanent, canonical, and uses the detail RPC", () => {
   const app = source("App.tsx");
+  const legacyRoutes = source("LegacyRoutes.tsx");
   const detail = source("pages/EventDetailPage.tsx");
-  assert.ok(app.includes("path.startsWith('/events/')"));
+  assert.ok(legacyRoutes.includes("path.startsWith('/events/')"));
   assert.ok(app.includes("canonical:normalized"));
-  assert.ok(app.includes('<EventDetailPage slug={detailSlug}/>'));
+  assert.ok(legacyRoutes.includes('<EventDetailPage slug={detailSlug}/>'));
   assert.ok(detail.includes("supabase!.rpc('lr_public_event_detail',{p_slug:slug})"));
   assert.ok(detail.includes('all_results'));
   assert.ok(detail.includes('groupResults(event.all_results??[])'));
@@ -205,11 +206,11 @@ test("event cards and detail pages expose permitted first-party official info wi
 });
 
 test("the Local Roots landing page is the event utility, not the old three-card hub", () => {
-  const app = source("App.tsx");
+  const routes = source("LegacyRoutes.tsx");
   const events = source("pages/EventsPage.tsx");
   const home = source("pages/HomePage.tsx");
-  assert.ok(app.includes("if(path==='/')return <EventsPage landing/>;"));
-  assert.equal(app.includes("import { HomePage }"), false);
+  assert.ok(routes.includes("if(path==='/')return <EventsPage landing/>;"));
+  assert.equal(routes.includes("import { HomePage }"), false);
   assert.ok(events.includes('<h1 className="sr-only">Southern California Disc Golf Events</h1>'));
   assert.equal(events.includes('<section className="hero"><h1>Southern California Disc Golf Events</h1></section>'), false);
   assert.ok(home.includes("branch-grid"));
@@ -263,7 +264,9 @@ test("public brand audit does not add new marketing copy and includes D&U contro
 test("HB Night Flyers is a footer link, not a primary navigation item", () => {
   const shell = source("components/Shell.tsx");
   assert.equal(shell.includes('className="nav-hbnf"'), false);
-  assert.ok(shell.includes('<footer className="site-footer"><nav className="footer-nav" aria-label="Footer"><a href="https://hbnightflyers.com/">HB Night Flyers</a></nav></footer>'));
+  assert.ok(shell.includes('<a href="https://hbnightflyers.com/">HB Night Flyers</a>'));
+  assert.ok(shell.includes('<footer className="site-footer"><nav className="footer-nav" aria-label="Footer">'));
+  assert.equal(shell.slice(0,shell.indexOf('<footer className="site-footer"')).includes('href="https://hbnightflyers.com/"'),false);
 });
 
 test("compact public navigation keeps Events and Dyed & Unattached visible", () => {

@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const read = path => readFileSync(new URL(path, import.meta.url), 'utf8');
 const app = read('../src/App.tsx');
+const legacyRoutes = read('../src/LegacyRoutes.tsx');
 const dAndU = read('../src/pages/DyedUnattachedPage.tsx');
 const shell = read('../src/components/Shell.tsx');
 const studioHtml = read('../public/dyed-and-unattached/dye-studio/index.html');
@@ -12,7 +13,7 @@ const studio = studioHtml + '\n' + studioScript;
 
 test('nested route preserves D&U navigation and forwards to the same-origin studio app', () => {
   assert.match(app, /\/dyed-and-unattached\/dye-studio.*canonical:'\/dyed-and-unattached\/dye-studio'/);
-  assert.match(app, /path==='\/dyed-and-unattached\/dye-studio'\)return <DyeStudioPage\/>/);
+  assert.match(legacyRoutes, /path==='\/dyed-and-unattached\/dye-studio'\)return <DyeStudioPage\/>/);
   assert.match(dAndU, /href="\/dyed-and-unattached\/dye-studio">Dye Studio<\/a>/);
   assert.match(shell, /path\.startsWith\(`\$\{href\}\/`\)/);
   assert.match(read('../src/pages/DyeStudioPage.tsx'), /window\.location\.replace\('\/dyed-and-unattached\/dye-studio\/index\.html'\)/);

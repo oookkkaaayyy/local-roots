@@ -1,0 +1,55 @@
+# One-time static census; checked 2026-10-18.
+# Center: ZIP 92648 representative centroid 33.6757,-117.9980; distances are straight-line great-circle.
+# OSM discovery used bounded Overpass search for leisure=disc_golf_course and sport=disc_golf within 241402 m; node/way/relation duplicates deduplicated; no full PBF downloaded.
+# OSM attribution: © OpenStreetMap contributors, https://www.openstreetmap.org/copyright. No proprietary directory records reproduced.
+candidate,status,holes,access,decision,latitude,longitude,sources
+Sky High at Mountain High North,INCLUDE,27,seasonal public; fee,Seasonal public resort course; 27-hole layout,34.376,-117.688,https://www.pdga.com/course-directory/course/sky-high-disc-golf-course-mtn-high-north
+Mojave Narrows Regional Park,INCLUDE,18,public; park fee,County park course; 18 holes,34.556,-117.304,https://parks.sbcounty.gov/park/mojave-narrows-regional-park/
+Yucaipa Regional Park,INCLUDE,19,public; park fee,County park course; 19 holes,34.032,-117.052,https://parks.sbcounty.gov/park/yucaipa-regional-park/
+The Levee,INCLUDE,18,public,City-installed permanent 18-hole course,33.684,-117.391,https://nichols.lake-elsinore.org/arcgisserver/rest/services/CommSvcs/Disc_Golf_View/FeatureServer/0
+Mountain Pride Disc Golf Course,INCLUDE,18,public,Public park course; 18-hole layout,33.5792498,-117.2186553,https://www.murrietaca.gov/
+Huntington Beach Central Park Disc Golf Course,INCLUDE,18,public,City park's 18-hole course,33.7004,-117.9919,https://www.huntingtonbeachca.gov/departments/parks___recreation/Disc%20Golf%20Course.pdf
+Glen Helen Regional Park,INCLUDE,18,public; park fee,County park course; 18 holes,34.198,-117.412,https://parks.sbcounty.gov/park/glen-helen-regional-park/
+Kit Carson Park Disc Golf Course,INCLUDE,18,public,Public park course; 18 holes,33.0795055,-117.0612959,https://www.escondido.org/parks
+Oak Grove / Hahamongna Watershed Park,INCLUDE,24,public,Permanent 24-hole course,34.1932203,-118.176157,https://www.cityofpasadena.net/parks-and-rec/parks/hahamongna-watershed-park/
+Martha McLean Anza-Narrows Park,INCLUDE,18,public,Public park course; 18-hole layout,33.9646595,-117.4303864,https://aquarius.riversideca.gov/clerkdb/DocView.aspx?dbid=0&id=245608&repo=Clerk
+El Dorado Park Disc Golf Course,INCLUDE,18,public,Separate disc-golf course in park; not ball-golf facility,33.801,-118.091,https://www.longbeach.gov/park/park-and-facilities/directory/el-dorado-east-regional-park/
+Prado Regional Park,INCLUDE,18,public; park fee,County park course; 18 holes,33.9502,-117.663,https://parks.sbcounty.gov/park/prado-regional-park/
+Brengle Terrace Park,INCLUDE,18,public,Public park; established 18-hole layout,33.2205,-117.235,https://sandiegoaces.com/courses/
+Central Park Disc Golf Course,INCLUDE,18,public,City park's 18-hole course,34.434,-118.518,https://santaclarita.gov/adult-sports/disc-golf/
+Ladera Power Lines,INCLUDE,18,public,Public access 18-hole layout,33.5452002,-117.6423312,https://www.openstreetmap.org/?mlat=33.5452002&mlon=-117.6423312#map=16/33.54520/-117.64233
+Sylmar / Veterans Park Disc Golf Course,INCLUDE,19,public,County park course; permanent layout,34.3246973,-118.4195901,https://parks.lacounty.gov/frequently-asked-questions/
+La Mirada Lakeside (Front),INCLUDE,18,public; fee,Distinct permanent 18-hole disc layout,33.902,-118.008,https://discoverlamirada.com/legendary-disc-golf/
+La Mirada Backside (Back),INCLUDE,18,public; fee,Separate distinct permanent 18-hole disc layout,33.9,-118.006,https://discoverlamirada.com/legendary-disc-golf/
+Whittier Narrows Disc Golf Course,INCLUDE,27,public,Distinct disc-golf layout; 27 holes,34.02,-118.05,https://parks.lacounty.gov/frequently-asked-questions/
+Chavez Ridge at Elysian Park,INCLUDE,18,public,City park course; 18-hole layout,34.0805901,-118.2335757,https://www.laparks.org/park/elysian/disc-golf
+Sapwi Trails Community Park Disc Golf Course,INCLUDE,18,public,Public district park; 18-hole layout,34.208,-118.91,https://www.crpd.org/disc-golf
+Rabbit Flats at Thousand Oaks Community Park,INCLUDE,18,public,Permanent advanced 18-basket layout,34.213979,-118.8753501,https://www.crpd.org/disc-golf
+Coyote Point Disc Golf Course,INCLUDE,18,public; fee-free,"Water district confirms 18-hole, year-round public course",34.4088078,-119.35184,https://www.casitaswater.gov/disc-golf
+Morley Field Disc Golf Course,INCLUDE,19,public; fee,City park course; 19 holes,32.7376156,-117.1357555,https://www.morleyfield.com/about
+Mast Park Disc Golf Course,INCLUDE,18,public; fee,Nine baskets with two distinct tees per basket; 18-hole round,32.8445,-116.9911,https://www.cityofsanteeca.gov/our-community/parks-recreation/disc-golf
+Cachuma Lake Disc Golf Course (Main),INCLUDE,18,public; lake fee; seasonal park access,County lake park course; 18 holes,34.5767705,-119.958059,https://www.sbcrecplan.com/uploads/1/3/0/6/130682948/ch3_sbcrecplan_nov2025.pdf
+Cachuma Lake Disc Golf Course (Mohawk),INCLUDE,18,public; lake fee; seasonal (Oct-Apr),Distinct seasonal 18-hole course at same public lake park,34.5703322,-119.9489847,https://www.pdga.com/course-directory/course/mohawk-disc-golf-couse-cachuma-lake
+Castaic Lake South,EXCLUDE,18 claimed,Seasonal/event-limited,Current routine public access not substantiated; excluded as event/limited layout.,34.489,-118.616,https://www.parks.ca.gov/?page_id=628
+Castaic Lake North,EXCLUDE,18 claimed,Event-only,Tournament/event layout; no standing public play access evidence.,34.507,-118.617,https://www.parks.ca.gov/?page_id=628
+Ken Malloy Harbor Regional Park,EXCLUDE,18 claimed,Permit/event gated,General course listing does not establish public walk-up access.,33.855,-118.288,https://parks.lacounty.gov/frequently-asked-questions/
+Hidden Meadows DGC,EXCLUDE,unknown,Unverified closed,Historical lead; no current operating evidence.,33.201,-117.107,https://www.openstreetmap.org/?mlat=33.201&mlon=-117.107#map=15/33.201/-117.107
+Westerman Trails DGC,EXCLUDE,unknown,Not playable,Mapped lead without permanent basket/hole evidence.,34.142,-118.176,https://www.openstreetmap.org/?mlat=34.142&mlon=-118.176#map=15/34.142/-118.176
+DeBell Disc Golf Course,EXCLUDE,unknown,Ball-golf hosted,Located at DeBell ball-golf facility.,34.1984695,-118.3037642,https://www.openstreetmap.org/?mlat=34.1984695&mlon=-118.3037642#map=16/34.19847/-118.30376
+River Walk DGC,EXCLUDE,7 permanent baskets,Public,Only seven distinct permanent baskets; alternate tees do not meet threshold.,33.9477565,-117.5782454,https://www.openstreetmap.org/?mlat=33.9477565&mlon=-117.5782454#map=16/33.94776/-117.57825
+Sycamore Park / Elephant Rock,EXCLUDE,12,Public,Short course below 18-hole minimum.,34.276,-118.746,https://www.visitsimivalley.com/directory/sycamore-park-disc-golf-course/
+Lake Piru Disc Golf,EXCLUDE,9,Public; fee,Operator identifies nine-hole course.,34.467,-118.762,https://explorelakepiru.com/shore-activities/
+Rancho del Sol DiscGolfPark,EXCLUDE,18,Ball-golf hosted,Located within ball-golf operation.,33.548,-117.209,https://www.openstreetmap.org/?mlat=33.548&mlon=-117.209#map=15/33.548/-117.209
+Montiel Park DGC,EXCLUDE,9,Public,Nine-hole short layout.,33.126,-117.092,https://www.openstreetmap.org/?mlat=33.126&mlon=-117.092#map=16/33.126/-117.092
+Greg Rogers Park DGC,EXCLUDE,9,Public,Nine-hole short layout.,33.197,-117.382,https://www.openstreetmap.org/?mlat=33.197&mlon=-117.382#map=16/33.197/-117.382
+Altitude DGC,EXCLUDE,9,Public,Nine-basket layout below threshold.,33.16,-117.2,https://www.openstreetmap.org/?mlat=33.16&mlon=-117.2#map=15/33.16/-117.2
+Lake Cahuilla Veterans Regional Park DGC,EXCLUDE,10,Public; park fee,Ten holes currently open at census date; expansion not yet open.,33.632,-116.282,https://www.rivcoparks.org/lake-cahuilla-veterans-regional-park
+CSU San Marcos Disc Golf Course,EXCLUDE,18,College campus,College course out of scope.,33.13,-117.16,https://www.openstreetmap.org/?mlat=33.13&mlon=-117.16#map=15/33.13/-117.16
+Goat Hill Park DGC,EXCLUDE,18,Ball-golf hosted,Hosted by ball-golf facility.,33.193,-117.359,https://www.goathillpark.com/
+Mission Bay DGC,EXCLUDE,18,Ball-golf hosted,Integrated with ball-golf facility.,32.774,-117.227,https://www.sandiego.gov/park-and-recreation/golf/missionbay
+Colina Park DGC,EXCLUDE,18,Ball-golf hosted,Located at Colina Park Golf Course.,32.807,-117.09,https://www.sandiego.gov/park-and-recreation/golf/colina
+Reidy Creek DGC,EXCLUDE,18,Ball-golf hosted,Hosted by Reidy Creek Golf Course.,33.129,-117.1,https://www.escondido.org/reidy-creek-golf-course
+The Colony DGC,EXCLUDE,18,Ball-golf hosted,Hosted by The Colony golf operation.,33.542,-117.136,https://www.openstreetmap.org/?mlat=33.542&mlon=-117.136#map=15/33.542/-117.136
+Foxtail Ranch,EXCLUDE,18,Private-only,Private access; not publicly playable.,33.67,-117.42,https://www.openstreetmap.org/?mlat=33.67&mlon=-117.42#map=15/33.67/-117.42
+Gates of Hell,EXCLUDE,18,Private-only,Private access; not publicly playable.,33.58,-117.4,https://www.openstreetmap.org/?mlat=33.58&mlon=-117.4#map=15/33.58/-117.4
+Val Verde Community Regional Park DGC,UNRESOLVED,18 claimed,Current status unverified,"Current county information confirms park, but not restored/open disc course or current layout.",34.445,-118.659,https://locator.lacounty.gov/parks/Location/3179827/val-verde-community-regional-park

@@ -8,4 +8,5 @@ import './responsive-overrides.css';
 import './events-enhancements.css';
 import './share-ready-polish.css';
 import './accessibility.css';
+import './weather.css';
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>);
