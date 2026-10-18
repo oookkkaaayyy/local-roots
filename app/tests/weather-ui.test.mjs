@@ -36,3 +36,16 @@ test('Weather frontend requests courses in bounded two-course batches',async()=>
   assert.match(page,/\.slice\(i\*2,i\*2\+2\)/);
   assert.match(page,/&ids=\$\{encodeURIComponent\(ids\)\}/);
 });
+
+test('Weather interface keeps player controls and removes internal explanations',async()=>{
+  const page=await read('../src/pages/WeatherPage.tsx');
+  assert.match(page,/>ZIP</);
+  assert.match(page,/>Miles</);
+  assert.match(page,/>Search</);
+  assert.match(page,/> All Day</);
+  assert.match(page,/<th>Rain<\/th>/);
+  assert.match(page,/'NWS alert'/);
+  assert.doesNotMatch(page,/Course verification and sources|verified public courses|Course point is approximate|grid|App forecast flags:|Forecast ranges include|Forecast data: National Weather Service|ZIP lookup:/i);
+  assert.doesNotMatch(page,/weather-sources|weather-coverage-note|weather-threshold-note/);
+});
+

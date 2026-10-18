@@ -41,7 +41,7 @@ function defaultPreferences():Preferences {
 function labelHour(hour:number) { if(hour===24)return '12:00 AM'; const h=hour%12||12; return `${h}:00 ${hour<12?'AM':'PM'}`; }
 function compactRange(min:number|null,max:number|null,unit:string) { return min===null||max===null?'—':`${Math.round(min)}–${Math.round(max)}${unit}`; }
 function formatTime(value:string) { return new Intl.DateTimeFormat('en-US',{timeZone:TIME_ZONE,hour:'numeric',minute:'2-digit'}).format(new Date(value)); }
-function formatUpdated(value?:string|null) { return value?new Intl.DateTimeFormat('en-US',{timeZone:TIME_ZONE,month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}).format(new Date(value)):'Unavailable'; }
+function formatUpdated(value?:string|null) { return value?new Intl.DateTimeFormat('en-US',{timeZone:TIME_ZONE,hour:'numeric',minute:'2-digit'}).format(new Date(value)):'Unavailable'; }
 function weatherWindow(p:Preferences) { return p.allDay?{startHour:0,endHour:24}:{startHour:p.start,endHour:p.end}; }
 function extractHourRows(raw:CourseForecast|undefined,course:WeatherCourse,p:Preferences) {
   if(!raw||raw.error)return {rows:[] as HourRow[],coverage:0,adjusted:false};
@@ -80,7 +80,7 @@ export function WeatherPage() {
         geo=body as GeocodeResult;
         if(cancelled)return;
         setCenter(geo.coordinates);
-        if(geo.stale)setLocationNotice('Location lookup used a cached result.');
+        if(geo.stale)setLocationNotice('Location data may be old.');
         const key=`${geo.coordinates.join(',')}:${preferences.radius}`;
         let saved:WeatherResponse|null=null;
         try { const cache=JSON.parse(localStorage.getItem(LAST_KEY)||'null'); if(cache?.key===key&&Date.now()-Date.parse(cache.savedAt)<24*3600000)saved=cache.response as WeatherResponse; } catch { /* optional */ }
@@ -114,13 +114,13 @@ export function WeatherPage() {
         if(cancelled)return;
         try{localStorage.setItem(LAST_KEY,JSON.stringify({key,zip:preferences.location,radius:preferences.radius,savedAt:new Date().toISOString(),response:weather}));}catch{/* optional cache */}
         setError('');
-        if(geo.stale||hadBatchFailure||Object.values(weather.forecasts).some(x=>x.stale))setLocationNotice(hadBatchFailure?'Some course forecasts could not be loaded. Available courses remain shown.':'Some weather or location data came from the last successful cached update.');
+        if(geo.stale||hadBatchFailure||Object.values(weather.forecasts).some(x=>x.stale))setLocationNotice(hadBatchFailure?'Some forecasts unavailable.':'Showing cached data.');
       } catch(e) {
         if(cancelled)return;
         let saved:WeatherResponse|null=null;
         try { const cache=JSON.parse(localStorage.getItem(LAST_KEY)||'null'); if(cache?.zip===preferences.location&&cache?.radius===preferences.radius&&Date.now()-Date.parse(cache?.savedAt)<24*3600000)saved=cache.response as WeatherResponse; } catch { /* optional */ }
-        if(saved){setResult(saved);setError('Live weather is unavailable. Showing the last saved forecast; check its update time before using it.');}
-        else {setResult(null);setError(e instanceof Error?e.message:'Weather is currently unavailable. Try again later.');}
+        if(saved){setResult(saved);setError('Forecast unavailable. Showing saved data.');}
+        else {setResult(null);setError('Forecast unavailable.');}
       } finally {if(!cancelled)setLoading(false);}
     }
     void load();
@@ -162,27 +162,27 @@ export function WeatherPage() {
   const selectDateMin=dateInPacific();const selectDateMax=plusDays(selectDateMin,6);
 
   return <Shell><main className="content weather-page">
-    <section className="weather-heading"><div><p className="eyebrow">Local Roots · Course conditions</p><h1>Disc Golf Weather</h1><p className="weather-intro">Compare hourly forecasts at verified public courses.</p></div><button className="button ghost weather-share" type="button" onClick={()=>void share()} aria-label="Share this Weather search">Share</button></section>
+    <section className="weather-heading"><div><h1>Disc Golf Weather</h1></div><button className="button ghost weather-share" type="button" onClick={()=>void share()} aria-label="Share this Weather search">Share</button></section>
     <form className="weather-controls" onSubmit={submit}>
-      <label>ZIP code<input inputMode="numeric" autoComplete="postal-code" pattern="[0-9]{5}" maxLength={5} value={draft.location} onChange={e=>updateDraft('location',e.target.value.replace(/\D/g,'').slice(0,5))} aria-label="ZIP code for course search" /></label>
-      <label>Radius<select value={draft.radius} onChange={e=>updateDraft('radius',Number(e.target.value))}><option value={25}>25 miles</option><option value={50}>50 miles</option><option value={80}>80 miles</option><option value={100}>100 miles</option><option value={125}>125 miles</option><option value={150}>150 miles</option></select></label>
+      <label>ZIP<input inputMode="numeric" autoComplete="postal-code" pattern="[0-9]{5}" maxLength={5} value={draft.location} onChange={e=>updateDraft('location',e.target.value.replace(/\D/g,'').slice(0,5))} aria-label="ZIP code for course search" /></label>
+      <label>Miles<select value={draft.radius} onChange={e=>updateDraft('radius',Number(e.target.value))}><option value={25}>25</option><option value={50}>50</option><option value={80}>80</option><option value={100}>100</option><option value={125}>125</option><option value={150}>150</option></select></label>
       <label>Date<input type="date" min={selectDateMin} max={selectDateMax} value={draft.date} onChange={e=>updateDraft('date',e.target.value)} /></label>
       <label>Start<select disabled={draft.allDay} value={draft.start} onChange={e=>updateDraft('start',Number(e.target.value))}>{HOUR_OPTIONS.slice(0,24).map(h=><option key={h} value={h}>{labelHour(h)}</option>)}</select></label>
       <label>End<select disabled={draft.allDay} value={draft.end} onChange={e=>updateDraft('end',Number(e.target.value))}>{HOUR_OPTIONS.slice(1).filter(h=>h>draft.start).map(h=><option key={h} value={h}>{labelHour(h)}</option>)}</select></label>
       <label className="weather-all-day"><input type="checkbox" checked={draft.allDay} onChange={e=>updateDraft('allDay',e.target.checked)} /> All Day</label>
-      <button className="button primary weather-search" type="submit" disabled={loading}>Find courses</button>
+      <button className="button primary weather-search" type="submit" disabled={loading}>Search</button>
     </form>
     <div className="weather-status" aria-live="polite">
-      {loading?<span className="weather-status-dot">Loading NWS forecast data…</span>:null}
+      {loading?<span className="weather-status-dot">Loading…</span>:null}
       {error?<span className="weather-error">{error}</span>:null}
       {locationNotice?<span className="weather-stale">{locationNotice}</span>:null}
       {shareMessage?<span>{shareMessage}</span>:null}
     </div>
-    {result?.lastSuccessfulUpdate?<p className="weather-updated weather-page-updated">Last successful forecast update: {formatUpdated(result.lastSuccessfulUpdate)} Pacific</p>:null}
-    <div className="weather-results-heading"><h2>Courses</h2><span>{loading&&!result?'…':`${sorted.length} in range`}</span><label className="weather-sort">Sort<select aria-label="Sort courses" value={preferences.sort} onChange={e=>setPreferences(prev=>({...prev,sort:e.target.value as Preferences['sort']}))}><option value="distance">Distance</option><option value="temperature">Temperature</option><option value="wind">Wind</option><option value="gust">Peak gust</option></select></label></div>
-    <div className="weather-legend" aria-label="Forecast column headings"><span>Course</span><span>Temperature</span><span>Wind · Gust</span><span>Conditions / flags</span></div>
+    {result?.lastSuccessfulUpdate?<p className="weather-updated weather-page-updated" aria-label="Forecast updated">Updated {formatUpdated(result.lastSuccessfulUpdate)}</p>:null}
+    <div className="weather-results-heading"><h2>Courses</h2><span>{loading&&!result?'…':sorted.length}</span><label className="weather-sort">Sort<select aria-label="Sort courses" value={preferences.sort} onChange={e=>setPreferences(prev=>({...prev,sort:e.target.value as Preferences['sort']}))}><option value="distance">Distance</option><option value="temperature">Temp</option><option value="wind">Wind</option><option value="gust">Gust</option></select></label></div>
+    <div className="weather-legend" aria-label="Forecast column headings"><span>Course</span><span>Temp</span><span>Wind · Gust</span><span>Conditions</span></div>
     <div className="weather-course-list">
-      {!loading&&!error&&sorted.length===0?<div className="empty-state"><strong>No verified courses found within {preferences.radius} miles.</strong><span>This directory currently covers a limited part of Southern California.</span></div>:null}
+      {!loading&&!error&&sorted.length===0?<div className="empty-state"><strong>No courses found within {preferences.radius} miles.</strong></div>:null}
       {sorted.map(view=>{
         const open=expanded===view.course.id;
         const temps=compactRange(view.summary.temperatureMinF,view.summary.temperatureMaxF,'°F');
@@ -191,8 +191,8 @@ export function WeatherPage() {
         return <article className={`weather-course ${open?'is-expanded':''}`} key={view.course.id}>
           <button className="weather-course-toggle" type="button" aria-expanded={open} aria-controls={`weather-details-${view.course.id}`} onClick={()=>setExpanded(open?null:view.course.id)}>
             <span className="weather-course-name"><strong>{view.course.name}</strong><small>{view.course.city}, {view.course.state} · {view.course.distanceMiles.toFixed(1)} mi</small></span>
-            <span className="weather-metric" data-label="Temp"><strong>{view.error||!view.rows.length?'—':temps}</strong><small>{view.rows.some(r=>r.temperatureF!==null)?'selected hours':'no data'}</small></span>
-            <span className="weather-metric weather-wind-metric" data-label="Wind"><strong>{view.error||!view.rows.length?'—':winds}</strong><small>{view.summary.peakGustMph===null?'Gust —':`Peak gust ${Math.round(view.summary.peakGustMph)} mph`}</small></span>
+            <span className="weather-metric" data-label="Temp"><strong>{view.error||!view.rows.length?'—':temps}</strong></span>
+            <span className="weather-metric weather-wind-metric" data-label="Wind"><strong>{view.error||!view.rows.length?'—':winds}</strong><small>{view.summary.peakGustMph===null?'Gust —':`Gust ${Math.round(view.summary.peakGustMph)} mph`}</small></span>
             <span className="weather-condition-cell" data-label="Conditions">
               {view.flags.length?view.flags.slice(0,2).map((flag,i)=><em className={`weather-flag flag-${flag.kind}`} key={`${flag.kind}-${i}`}>{flag.source==='official'?'NWS alert':flag.label}</em>):<span>{currentConditions||'—'}</span>}
               {view.flags.length>2?<small>+{view.flags.length-2} more</small>:null}
@@ -200,22 +200,18 @@ export function WeatherPage() {
             <span className="weather-expand-indicator" aria-hidden="true">{open?'−':'+'}</span>
           </button>
           {open?<section className="weather-details" id={`weather-details-${view.course.id}`} aria-label={`Hourly forecast for ${view.course.name}`}>
-            {view.error?<p className="weather-error">{view.error}</p>:null}
-            {view.partialError?<p className="weather-stale">Some forecast fields are unavailable: {view.partialError}</p>:null}
-            {view.stale?<p className="weather-stale">Using a cached NWS response. {formatUpdated(view.lastUpdatedAt)} is its last update.</p>:null}
-            {!view.error&&view.rows.length===0?<p className="weather-muted">No hourly forecast periods are available for this date and time window.</p>:null}
-            {view.coverage>0&&view.coverage<0.999?<p className="weather-stale">Partial window coverage: {Math.round(view.coverage*100)}% of the selected time has forecast periods. Missing periods are left blank.</p>:null}
-            <div className="weather-hourly-scroll"><table className="weather-hourly"><thead><tr><th>Time</th><th>Temp</th><th>Wind</th><th>Gust</th><th>Rain chance</th><th>Conditions</th></tr></thead><tbody>{view.rows.map((row,i)=><tr key={`${row.startTime}-${i}`}><th scope="row">{formatTime(row.startTime)}</th><td>{row.temperatureF===null?'—':`${Math.round(row.temperatureF)}°F`}</td><td>{row.windMinMph===null?'—':`${Math.round(row.windMinMph)}–${Math.round(row.windMaxMph!)} mph ${row.windDirection||''}`}</td><td>{row.gustMph===null?'—':`${Math.round(row.gustMph)} mph`}</td><td>{row.precipitationProbability===null?'—':`${Math.round(row.precipitationProbability)}%`}</td><td>{row.conditions||'—'}</td></tr>)}</tbody></table></div>
-            {view.flags.length?<div className="weather-flag-list"><strong>Weather flags</strong>{view.flags.map((flag,i)=><p key={`${flag.kind}-${i}`}><span className={`weather-flag flag-${flag.kind}`}>{flag.source==='official'?'Official NWS alert':flag.label}</span>{flag.detail?<span>{flag.detail}</span>:null}</p>)}</div>:null}
-            {!view.alertsAvailable?<p className="weather-stale">Official NWS alert status is unavailable for this course; forecast flags are shown separately.</p>:null}
-            <details className="weather-sources"><summary>Course verification and sources</summary><p>{view.course.holes} holes · Public access · Verified {view.course.verifiedOn}. Course point is approximate; NWS forecast grids are about 2.5 km across.</p><ul>{(view.course.sources as unknown as Array<string|{label:string;url:string;supports?:string[]}>).map((source,index)=>{const url=typeof source==='string'?source:source.url;const label=typeof source==='string'?new URL(source).hostname:source.label;const supports=typeof source==='string'?[]:source.supports||[];return <li key={`${url}-${index}`}><a href={url} target="_blank" rel="noreferrer">{label}</a> <span>{supports.join(', ')}</span></li>;})}</ul></details>
-            <p className="weather-threshold-note">App forecast flags: rain chance ≥50%, sustained wind ≥20 mph or gust ≥30 mph, thunderstorms in forecast text, heat ≥95°F. These are planning indicators, not official NWS warning thresholds.</p>
-            {view.lastUpdatedAt?<p className="weather-updated">Last successful forecast update: {formatUpdated(view.lastUpdatedAt)} Pacific</p>:null}
+            {view.error?<p className="weather-error">Forecast unavailable.</p>:null}
+            {view.partialError?<p className="weather-stale">Some data unavailable.</p>:null}
+            {view.stale?<p className="weather-stale">Cached forecast · Updated {formatUpdated(view.lastUpdatedAt)}</p>:null}
+            {!view.error&&view.rows.length===0?<p className="weather-muted">No forecast for these hours.</p>:null}
+            {view.coverage>0&&view.coverage<0.999?<p className="weather-stale">Forecast covers {Math.round(view.coverage*100)}% of these hours.</p>:null}
+            <div className="weather-hourly-scroll"><table className="weather-hourly"><thead><tr><th>Time</th><th>Temp</th><th>Wind</th><th>Gust</th><th>Rain</th><th>Conditions</th></tr></thead><tbody>{view.rows.map((row,i)=><tr key={`${row.startTime}-${i}`}><th scope="row">{formatTime(row.startTime)}</th><td>{row.temperatureF===null?'—':`${Math.round(row.temperatureF)}°F`}</td><td>{row.windMinMph===null?'—':`${Math.round(row.windMinMph)}–${Math.round(row.windMaxMph!)} mph ${row.windDirection||''}`}</td><td>{row.gustMph===null?'—':`${Math.round(row.gustMph)} mph`}</td><td>{row.precipitationProbability===null?'—':`${Math.round(row.precipitationProbability)}%`}</td><td>{row.conditions||'—'}</td></tr>)}</tbody></table></div>
+            {view.flags.length?<div className="weather-flag-list"><strong>Alerts</strong>{view.flags.map((flag,i)=><p key={`${flag.kind}-${i}`}><span className={`weather-flag flag-${flag.kind}`}>{flag.source==='official'?'NWS alert':flag.label}</span>{flag.detail?<span>{flag.detail}</span>:null}</p>)}</div>:null}
+            {!view.alertsAvailable?<p className="weather-stale">Alert status unavailable.</p>:null}
           </section>:null}
         </article>;
       })}
     </div>
-    <p className="weather-coverage-note">Verified course directory: {COURSES.length} listed course layouts. Coverage is limited to this checked Southern California set and is not comprehensive. Forecast data: National Weather Service. ZIP lookup: Zippopotam.us.</p>
-    <p className="weather-threshold-note">Forecast ranges include periods overlapping the selected window in Pacific time. An unavailable value stays blank; it is never treated as zero.</p>
   </main></Shell>;
 }
+
