@@ -13,13 +13,15 @@ test('Weather route loads before Supabase-backed legacy routes', async () => {
   assert.match(legacy, /from '\.\/lib\/supabase'/);
 });
 
-test('Weather has a dedicated Safari and installable home-screen icon and scope', async () => {
+test('Weather keeps its Safari and installable scope with the approved Local Roots identity', async () => {
   const app = await read('../src/App.tsx');
   const manifest = JSON.parse(await read('../public/weather/manifest.webmanifest'));
   assert.match(app, /apple-mobile-web-app-capable/);
   assert.equal(manifest.start_url, '/weather/');
   assert.equal(manifest.scope, '/weather/');
-  assert.ok(manifest.icons.some((icon) => icon.src === '/weather/weather-icon.png' && icon.sizes === '180x180'));
+  assert.ok(manifest.icons.some((icon) => icon.src === '/brand/local-roots-icon-192.png' && icon.sizes === '192x192'));
+  assert.ok(manifest.icons.some((icon) => icon.src === '/brand/local-roots-icon-512.png' && icon.sizes === '512x512'));
+  assert.match(app, /touchIcon\.href='\/apple-touch-icon\.png\?v=af4a80127dd7f9cf'/);
 });
 
 test('Weather mobile course rows stay compact and hourly details remain scrollable', async () => {
