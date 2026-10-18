@@ -39,6 +39,28 @@ def reject(fn):
     raise AssertionError('expected fail-closed rejection')
 
 class OwnerPwaAdmission(unittest.TestCase):
+    def test_issue_accepts_only_short_cli_clock_skew(self):
+        state=json.loads((ROOT/'config/HBNF_CONTROL_STATE.json').read_text())
+        state['lifecycle_state']='PHASE2_INTEGRATING'; state['phase2_implementation_authorized']=True
+        state['live_mutation_authorized']=False; state.setdefault('execution_cursor',{}).pop('owner_pwa_transaction',None)
+        state['execution_cursor'].pop('owner_pwa_transaction_history',None)
+        owner={'schema':'hbnf-owner-pwa-install-authorization-v1','transaction_id':'OWNER-PWA-20261018-CLOCK-01',
+           'authorization_id':'OWNER-20261018-PWA-CLOCK-TEST','source_message_ref':'focused clock-skew test',
+           'scope':[control.OWNER_PWA_STEP,'rollback_if_required'],'nonce':'b'*64,'issued_unix':NOW,'expires_unix':NOW+600,
+           'artifact_sha256_bindings':copy.deepcopy(control.OWNER_PWA_ARTIFACTS)}
+        evidence_root=control.DEFAULT_STATE.parent.parent/'evidence'; evidence_root.mkdir(exist_ok=True)
+        AUTH_TEST_FILE.write_text(json.dumps({'schema':'hbnf-owner-pwa-explicit-authorization-receipt-v1','owner_authorization':owner},sort_keys=True))
+        manifest={'drive_file_id':control.OWNER_PWA_DRIVE_ID,'target':{'model':'GL-SFT1200','ip':'192.168.77.1','base':'/www/mission-control-local','owner_dir':'/www/mission-control-local/owner-pwa'},
+           'allowed_paths':list(control.OWNER_PWA_TARGETS),'candidate_sha256_by_path':copy.deepcopy(control.OWNER_PWA_CANDIDATE_HASHES),
+           'owner_authorization_receipt':{'path':AUTH_TEST_FILE.relative_to(control.DEFAULT_STATE.parent.parent).as_posix(),'sha256':control.sha256_file(AUTH_TEST_FILE)},
+           'live_preflight':{'schema':'hbnf-owner-pwa-live-preflight-v1','pass':True,'captured_unix':NOW,'target_ip':'192.168.77.1',
+              'served_sha256_by_path':copy.deepcopy(control.OWNER_PWA_BASELINE_HASHES),
+              'permissions':{'owner_files_regular_no_symlinks':True,'transport_regular_no_symlink':True,'root_install_available':True,'recovery_paths_clear':True}}}
+        admitted=control.issue_owner_pwa_admission(state,manifest,owner,NOW+2)
+        self.assertEqual([],control.owner_pwa_admission_errors(state,admitted,NOW+2))
+        state['execution_cursor'].pop('owner_pwa_transaction',None)
+        with self.assertRaises(ValueError): control.issue_owner_pwa_admission(state,manifest,owner,NOW+301)
+
     def test_exact_admission_reserves_once_and_keeps_firmware_authority_closed(self):
         state,m=fixture(); before=copy.deepcopy(state['completed_receipts']); self.assertEqual([],control.owner_pwa_admission_errors(state,m,NOW))
         self.assertEqual([],control.validate_state(control.load(ROOT/'config/HBNF_CONTROL_MODEL.json'),state))

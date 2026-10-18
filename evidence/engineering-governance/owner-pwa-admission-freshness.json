@@ -1,0 +1,17 @@
+{
+  "schema": "hbnf-change-governance-v1",
+  "change_id": "OWNER-PWA-ADMISSION-FRESHNESS-20261018",
+  "summary": "Allow the existing Owner PWA issuer to tolerate up to five seconds of CLI clock skew and reject authorization older than five minutes; preserve the 20-minute expiry, one-use transaction, firmware mutation closure, and exact scope.",
+  "change_class": "TRIVIAL_BOUNDED",
+  "impact": {
+    "architecture": false,
+    "new_dependency": false,
+    "subjective_design": false,
+    "bespoke": false,
+    "unknown": false
+  },
+  "evidence": {
+    "reason": "The issuer compared the owner timestamp for exact floating-point equality with a later CLI time.time() call, so a fresh existing authorization could not be issued through its normal command.",
+    "rollback": "Revert the admission issuer timestamp comparison in scripts/hbnf_control.py; no production/device state changes are required."
+  }
+}

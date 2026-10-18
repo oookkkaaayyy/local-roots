@@ -367,7 +367,10 @@ def issue_owner_pwa_admission(state,manifest,owner_authorization,now=None):
     owner["artifact_sha256_bindings"]=copy.deepcopy(OWNER_PWA_ARTIFACTS)
     manifest["owner_authorization"]=owner
     if owner.get("scope")!=[OWNER_PWA_STEP,"rollback_if_required"]: raise ValueError("Owner PWA issue rejected: owner scope is not exact")
-    if owner.get("issued_unix")!=current or not isinstance(owner.get("expires_unix"),(int,float)) or owner["expires_unix"]<=current or owner["expires_unix"]-current>20*60:
+    issued=owner.get("issued_unix")
+    if (not isinstance(issued,(int,float)) or issued>current+5 or current-issued>300
+        or not isinstance(owner.get("expires_unix"),(int,float)) or owner["expires_unix"]<=current
+        or owner["expires_unix"]-issued>20*60):
         raise ValueError("Owner PWA issue rejected: owner authorization is not fresh and short-lived")
     if not all(isinstance(owner.get(k),str) and owner[k] for k in ("transaction_id","authorization_id","source_message_ref","nonce")):
         raise ValueError("Owner PWA issue rejected: owner authorization identity is incomplete")
