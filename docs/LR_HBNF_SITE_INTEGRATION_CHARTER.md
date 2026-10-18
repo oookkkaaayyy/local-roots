@@ -56,15 +56,21 @@ Before choosing an embedding/proxy/same-origin approach, inspect: session origin
 
 **Known active incident at charter creation:** Recent AKS PENDING entries dated 2026-10-16/17 report repeated HBNF 504 upstream responses and failed Local Roots scheduled sync/readiness. Do not describe this as resolved on the basis of historical readiness, and do not entangle design refactoring with incident remediation.
 
-## 6. Parallel work and integration ownership
+## 6. Single-worker, sequential execution — owner decision 2026-10-17
 
-**Coordinator:** sole owner of baseline, source authority, task dependency map, design acceptance, contract/interface decisions, integration sequence and release readiness. Maintain one small shared decision/evidence log; no parallel duplicate authorities.
+**Coordinator:** sole owner of baseline, source authority, task dependency map, design acceptance, interface decisions, release readiness and concise decision/evidence record.
 
-**Lane A — Technical read-only integration audit:** exact route/auth/DB/deployment/source map; existing LR/HBNF integration; boundary matrix (read, write, identity, caching, offline); minimal viable options; risks, regression gates and rollback. Separate remediation of urgent existing operational incident from speculative integration work.
+**Resource ceiling:** At most **one Codex worker** for this project, with **no parallel subagents/workers and no overlapping Codex sessions** initiated by this project. Respect the owner's other already-running Codex work. Do not start new Codex execution without an actual bounded need; connector/remote read-only inspection by the coordinator is preferred when it avoids Mac RAM/CPU pressure. Do not run persistent local development servers, extra browsers, heavyweight builds or broad test matrices unless a specific acceptance check requires them. No repeated archaeology or redundant audits. These restrictions apply throughout discovery, design and implementation unless the owner explicitly revises them.
 
-**Lane B — Visual/UX audit + design:** exact current assets, screenshots across realistic desktop/iPhone widths, information architecture, typography, hierarchy, color/contrast, key journeys and card/scorecard density. Deliver up to 2–3 materially distinct high-fidelity options with real branding, scored by task success and maintainability; preserve existing good HBNF scorecard UX unless explicitly in scope.
+**Stage 1 — Technical read-only integration audit:** same single worker (only if needed) examines exact route/auth/DB/deployment/source map; existing LR/HBNF integration; boundary matrix (read, write, identity, caching, offline); minimal viable options; risks, regression gates and rollback. This stage is fully closed or explicitly blocked before advancing. Handle existing HBNF source-health incidents separately without hijacking redesign scope.
 
-Parallelism is justified only after read-only source inventory settles shared assumptions. Each lane must have bounded file ownership, a fixed source ref, explicit exclusions, deliverables, falsifiable acceptance tests and a durable handoff. Do not make two workers alter the same source files, nor let one worker rebuild another's accepted artifacts.
+**Stage 2 — Visual/UX audit and design:** *after* stage 1, reuse the same worker and its captured source inventory. Inspect authentic brand assets and actual desktop/iPhone renders, information architecture, typography, visual hierarchy, color/contrast and key user tasks. Present 2–3 genuinely distinct high-fidelity options if supported by the findings. Preserve working HBNF scoring UX unless directly authorized.
+
+**Stage 3 — Owner review:** stop Codex activity; coordinator presents the specific findings, recommended architecture and visual options, then obtains consequential owner decisions/visual acceptance. No inference from silence.
+
+**Stage 4 — Approved implementation and tests:** resume the **same sole worker** only for bounded approved changes. Reuse validated evidence, test only changed contracts and necessary regression gates, preserve the exact baseline and recovery path, and require separate production authorization.
+
+Use a minimal sequential handoff (one short checkpoint/source ref and next task), not multiple coordination documents. A task must have clear scope, exclusions, deliverable, acceptance criteria and stop conditions. Do not optimize for parallel completion at the expense of total cost, usage or machine responsiveness.
 
 ## 7. Stages and acceptance
 
