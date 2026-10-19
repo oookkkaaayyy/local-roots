@@ -11,7 +11,7 @@ import {
 
 const adapter = readFileSync(new URL("../supabase/functions/lr-sync-hbnf/index.ts", import.meta.url), "utf8");
 const publicationMigration = readFileSync(
-  new URL("../supabase/migrations/20261019170000_hbnf_owner_confirmed_glow_schedule.sql", import.meta.url),
+  new URL("../supabase/migrations/20261019165400_hbnf_owner_confirmed_glow_schedule.sql", import.meta.url),
   "utf8",
 );
 const currentPublicPage = readFileSync(new URL("../app/src/pages/HbnfPage.tsx", import.meta.url), "utf8");
