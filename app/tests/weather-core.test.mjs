@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import courses from '../src/data/weather-courses.json' with { type: 'json' };
-import { buildHourlyRows, distanceMiles, eligibleActiveAlerts, filterCourses, forecastFlags, gridSeriesValueAt, gridSpeedToMph, isEligibleCourse, summarizeHourly, zonedWindow, forecastWindowHasPassed } from '../src/lib/weatherCore.js';
+import { buildHourlyRows, buildRolling24HourRows, formatHourlyTimeLabel, distanceMiles, eligibleActiveAlerts, filterCourses, forecastFlags, gridSeriesValueAt, gridSpeedToMph, isEligibleCourse, summarizeHourly, zonedWindow, forecastWindowHasPassed } from '../src/lib/weatherCore.js';
 
 const period=(startTime,endTime,v={})=>({startTime,endTime,temperature:v.temp,temperatureUnit:'F',windSpeed:v.wind,windDirection:v.dir,probabilityOfPrecipitation:{value:v.rain},shortForecast:v.conditions});
 
@@ -89,4 +89,27 @@ test('fixed directory has accurate straight-line radius counts around ZIP 92648'
 test('NWS temperature units convert Celsius and unknown wind units remain missing',()=>{
   const rows=buildHourlyRows([{startTime:'2026-10-17T15:00:00Z',endTime:'2026-10-17T16:00:00Z',temperature:20,temperatureUnit:'C',windSpeed:'10 furlongs',windDirection:'N',shortForecast:'Clear'}],[],{date:'2026-10-17',startHour:8,endHour:9,timeZone:'America/Los_Angeles'});
   assert.equal(rows.rows[0].temperatureF,68);assert.equal(rows.rows[0].windMinMph,null);
+});
+
+
+test('rolling forecast includes the current period and crosses midnight using available periods only',()=>{
+  const periods=Array.from({length:26},(_,i)=>{const start=Date.parse('2026-10-18T06:00:00Z')+i*3600000;return period(new Date(start).toISOString(),new Date(start+3600000).toISOString(),{temp:60+i,wind:'5 to 10 mph',dir:'NW',rain:20,conditions:'Clear'});});
+  const now=Date.parse('2026-10-18T06:30:00Z');const result=buildRolling24HourRows(periods,[],{now,timeZone:'America/Los_Angeles'});
+  assert.equal(result.window.end-result.window.start,24*3600000);assert.equal(result.rows.length,25);assert.equal(result.rows[0].startTime,'2026-10-18T06:00:00.000Z');assert.equal(result.rows.at(-1).startTime,'2026-10-19T06:00:00.000Z');
+  assert.match(formatHourlyTimeLabel(result.rows[0].startTime,result.rows,'America/Los_Angeles',now),/11:00 PM/);assert.match(formatHourlyTimeLabel(result.rows[1].startTime,result.rows,'America/Los_Angeles',now),/Sun, Oct 18, 12:00 AM/);
+});
+
+test('rolling detail labels spring DST and both repeated fall-back hours',()=>{
+  const make=(from,count)=>Array.from({length:count},(_,i)=>{const start=Date.parse(from)+i*3600000;return period(new Date(start).toISOString(),new Date(start+3600000).toISOString(),{temp:55,wind:'5 mph',dir:'W',rain:0,conditions:'Clear'});});
+  const springNow=Date.parse('2026-03-08T09:30:00Z');const spring=buildRolling24HourRows(make('2026-03-08T09:00:00Z',26),[],{now:springNow,timeZone:'America/Los_Angeles'});const springLabels=spring.rows.map(row=>formatHourlyTimeLabel(row.startTime,spring.rows,'America/Los_Angeles',springNow));
+  assert.ok(springLabels.some(x=>x==='1:00 AM'));assert.ok(springLabels.some(x=>x==='3:00 AM'));assert.ok(!springLabels.some(x=>x.includes('Mar 8, 2:00 AM')));
+  const fallNow=Date.parse('2026-11-01T08:30:00Z');const fall=buildRolling24HourRows(make('2026-11-01T08:00:00Z',26),[],{now:fallNow,timeZone:'America/Los_Angeles'});const repeated=fall.rows.map(row=>formatHourlyTimeLabel(row.startTime,fall.rows,'America/Los_Angeles',fallNow)).filter(x=>x.startsWith('1:00 AM'));
+  assert.deepEqual(repeated,['1:00 AM PDT','1:00 AM PST']);assert.equal(fall.window.end-fall.window.start,24*3600000);
+});
+
+test('selected hours still control summaries while rolling hourly details preserve missing values',()=>{
+  const periods=[period('2026-10-18T15:00:00Z','2026-10-18T16:00:00Z',{temp:65,wind:'5 mph',dir:'W',rain:0,conditions:'Clear'}),period('2026-10-18T16:00:00Z','2026-10-18T17:00:00Z',{temp:95,wind:'25 mph',dir:'S',rain:80,conditions:'Thunderstorms'})];
+  const selected=buildHourlyRows(periods,[],{date:'2026-10-18',startHour:8,endHour:9,timeZone:'America/Los_Angeles'});const rolling=buildRolling24HourRows(periods,[],{now:Date.parse('2026-10-18T15:30:00Z'),timeZone:'America/Los_Angeles'});
+  assert.deepEqual(summarizeHourly(selected.rows),{temperatureMinF:65,temperatureMaxF:65,windMinMph:5,windMaxMph:5,peakGustMph:null});assert.equal(rolling.rows.length,2);assert.equal(rolling.rows[1].temperatureF,95);
+  const missing=buildRolling24HourRows([period('2026-10-18T15:00:00Z','2026-10-18T16:00:00Z')],[],{now:Date.parse('2026-10-18T15:30:00Z'),timeZone:'America/Los_Angeles'});assert.equal(missing.rows[0].temperatureF,null);assert.equal(missing.rows[0].windMinMph,null);assert.equal(missing.rows[0].precipitationProbability,null);
 });
