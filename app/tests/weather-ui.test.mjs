@@ -86,3 +86,28 @@ test('Primary navigation keeps the active links and exposes an accessible mobile
   assert.doesNotMatch(styles, /@media\(max-width:720px\)\{\.site-header \.nav-home/);
   assert.doesNotMatch(integration, /\.site-header \.nav-hbnf\{display:block\}/);
 });
+
+
+test('Weather rolls only fresh defaults forward after 4 PM and preserves explicit past selections', async()=>{
+  const page=await read('../src/pages/WeatherPage.tsx');
+  const core=await read('../src/lib/weatherCore.js');
+  assert.match(core,/export function forecastWindowHasPassed/);
+  assert.match(page,/forecastWindowHasPassed\(today,8,16,TIME_ZONE\)\?plusDays\(today,1\):today/);
+  assert.match(page,/date:isCalendarDate\(saved\.date\)\?saved\.date:initial\.date/);
+  assert.match(page,/sharedDate=query\.get\('date'\); if\(isCalendarDate\(sharedDate\)\) initial\.date=sharedDate/);
+  assert.match(page,/if\(allDayParam==='1'\)initial\.allDay=true;else if\(allDayParam==='0'\)initial\.allDay=false/);
+  assert.match(page,/This time window has passed\./);
+  assert.match(page,/Tomorrow · 8 AM–4 PM/);
+  assert.match(page,/syncWeatherUrl\(next\)/);
+  assert.match(page,/\},\[preferences\.location,preferences\.radius,refreshKey\]\)/);
+});
+
+test('Weather distinguishes a successful retrieval from NWS forecast publication and explains empty forecasts', async()=>{
+  const page=await read('../src/pages/WeatherPage.tsx');
+  assert.match(page,/retrievedAt:new Date\(\)\.toISOString\(\)/);
+  assert.match(page,/aria-label="Forecast checked">Checked \{formatUpdated\(result\.retrievedAt\)\}/);
+  assert.match(page,/Forecast issued \{formatForecastIssued\(view\.lastUpdatedAt\)\}/);
+  assert.match(page,/No forecast for these hours/);
+  assert.match(page,/Forecast unavailable/);
+  assert.doesNotMatch(page,/aria-label="Forecast updated">Updated \{formatUpdated\(result\.lastSuccessfulUpdate\)\}/);
+});

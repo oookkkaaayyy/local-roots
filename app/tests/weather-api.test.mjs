@@ -30,7 +30,7 @@ test('ZIP endpoint rejects non-ZIP input without making a geocoder request',asyn
 test('weather endpoint returns only eligible nearby courses and hourly, gust, and alert data',async t=>{
   const original=globalThis.fetch;globalThis.fetch=async url=>new Response(JSON.stringify(upstream(String(url))),{status:200,headers:{'Content-Type':'application/geo+json'}});t.after(()=>{globalThis.fetch=original;});
   const response=await getWeatherResponse(new Request('https://preview.local/api/weather?lat=33.7&lon=-118&radius=25'),makeContext(),courses);assert.equal(response.status,200);
-  const body=await response.json();assert.deepEqual(body.courses.map(c=>c.id),['public']);assert.equal(body.forecasts.public.periods[0].windDirection,'NW');
+  const body=await response.json();assert.deepEqual(body.courses.map(c=>c.id),['public']);assert.equal(body.forecasts.public.periods[0].windDirection,'NW');assert.ok(Number.isFinite(Date.parse(body.responseAt)));assert.ok(Date.parse(body.responseAt)>=Date.parse(body.lastSuccessfulUpdate),'retrieval time follows the NWS forecast publication time');
   assert.equal(body.forecasts.public.gustUnit,'wmoUnit:km_h-1');assert.equal(body.forecasts.public.precipitation[0].value,70);assert.equal(body.forecasts.public.alertsAvailable,true);assert.equal(body.forecasts.short,undefined);
 });
 
@@ -65,4 +65,11 @@ test('warm-cache batch avoids duplicate NOAA requests and stale recovery remains
   const ctx=makeContext();await getWeatherResponse(new Request('https://preview.local/api/weather?lat=33.7&lon=-118&radius=25&ids=public'),ctx,courses);
   const coldCalls=calls;const second=await getWeatherResponse(new Request('https://preview.local/api/weather?lat=33.7&lon=-118&radius=25&ids=public'),ctx,courses);
   assert.equal(second.status,200);assert.equal(calls,coldCalls);
+});
+
+
+test('missing NWS publication time stays unknown instead of using request retrieval time',async t=>{
+  const original=globalThis.fetch;globalThis.fetch=async url=>{const value=upstream(String(url));if(value.properties)delete value.properties.updateTime;return new Response(JSON.stringify(value),{status:200,headers:{'Content-Type':'application/geo+json'}});};t.after(()=>{globalThis.fetch=original;});
+  const response=await getWeatherResponse(new Request('https://preview.local/api/weather?lat=33.7&lon=-118&radius=25'),makeContext(),courses);const body=await response.json();
+  assert.equal(response.status,200);assert.equal(body.lastSuccessfulUpdate,null);assert.equal(body.forecasts.public.lastUpdatedAt,null);assert.ok(Number.isFinite(Date.parse(body.responseAt)));
 });

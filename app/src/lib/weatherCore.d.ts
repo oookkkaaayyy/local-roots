@@ -4,6 +4,7 @@ export function distanceMiles(a:[number,number],b:[number,number]):number;
 export function isEligibleCourse(course:WeatherCourse):boolean;
 export function filterCourses(courses:WeatherCourse[],center:[number,number],radiusMiles:number):Array<WeatherCourse & {distanceMiles:number}>;
 export function zonedWindow(date:string,startHour:number,endHour:number,timeZone:string):{start:number;end:number;adjustedForClockChange:boolean};
+export function forecastWindowHasPassed(date:string,startHour:number,endHour:number,timeZone:string,now?:number|Date):boolean;
 export function gridSeriesValueAt(series:Array<{validTime:string;value:number}>|undefined,start:number,end:number,converter?:(value:number)=>number):number|null;
 export function gridSpeedToMph(value:number,unitCode?:string):number|null;
 export function parseWindRangeMph(value:string|null|undefined):[number,number]|null;
