@@ -9,6 +9,8 @@ export function gridSeriesValueAt(series:Array<{validTime:string;value:number}>|
 export function gridSpeedToMph(value:number,unitCode?:string):number|null;
 export function parseWindRangeMph(value:string|null|undefined):[number,number]|null;
 export function buildHourlyRows(periods:unknown[],gustSeries:unknown[],options:{date:string;startHour:number;endHour:number;timeZone:string;gustUnit?:string;precipitationSeries?:Array<{validTime:string;value:number|null}>;precipitationUnit?:string}):{rows:HourRow[];coverage:number;window:{start:number;end:number};adjustedForClockChange:boolean};
+export function buildRolling24HourRows(periods:unknown[],gustSeries:unknown[],options:{now:number|Date;timeZone:string;gustUnit?:string;precipitationSeries?:Array<{validTime:string;value:number|null}>;precipitationUnit?:string}):{rows:HourRow[];coverage:number;window:{start:number;end:number};adjustedForClockChange:boolean};
+export function formatHourlyTimeLabel(value:string,rows:HourRow[],timeZone:string,referenceTime:number):string;
 export function summarizeHourly(rows:HourRow[]):{temperatureMinF:number|null;temperatureMaxF:number|null;windMinMph:number|null;windMaxMph:number|null;peakGustMph:number|null};
 export function forecastFlags(rows:HourRow[],alerts?:unknown[],alertsAvailable?:boolean):Array<{kind:string;label:string;source:string;detail?:string}>;
 export function eligibleActiveAlerts(features:unknown[],selectedWindow:{start:number;end:number}):Array<{event:string|null;headline:string|null;severity:string|null;description:string|null;expires:string|null;area:string|null}>;
