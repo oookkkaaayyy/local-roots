@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Shell } from '../components/Shell';
 import coursesData from '../data/weather-courses.json';
-import { buildHourlyRows, eligibleActiveAlerts, filterCourses, forecastFlags, forecastWindowHasPassed, summarizeHourly } from '../lib/weatherCore.js';
+import { buildHourlyRows, eligibleActiveAlerts, filterCourses, forecastFlags, summarizeHourly } from '../lib/weatherCore.js';
 import type { HourRow, WeatherCourse } from '../lib/weatherCore.js';
 
 type Preferences = { location:string; radius:number; date:string; start:number; end:number; allDay:boolean; sort:'distance'|'temperature'|'wind'|'gust' };
@@ -25,11 +25,10 @@ function plusDays(date:string,days:number) { const [y,m,d]=date.split('-').map(N
 function isCalendarDate(value:unknown): value is string { if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;const parsed=new Date(`${value}T00:00:00.000Z`);return Number.isFinite(parsed.getTime())&&parsed.toISOString().slice(0,10)===value; }
 function defaultPreferences():Preferences {
   const today=dateInPacific();
-  const defaultDate=forecastWindowHasPassed(today,8,16,TIME_ZONE)?plusDays(today,1):today;
-  const initial:Preferences={location:'92648',radius:80,date:defaultDate,start:8,end:16,allDay:false,sort:'distance'};
+  const initial:Preferences={location:'92648',radius:80,date:today,start:8,end:16,allDay:true,sort:'distance'};
   try {
     const saved=JSON.parse(localStorage.getItem(PREF_KEY)||'null') as Partial<Preferences>|null;
-    if(saved) Object.assign(initial,{location:/^\d{5}$/.test(saved.location||'')?saved.location:initial.location,radius:[25,50,80,100,125,150].includes(Number(saved.radius))?Number(saved.radius):80,start:Number.isInteger(saved.start)&&saved.start!>=0&&saved.start!<=22?saved.start:8,end:Number.isInteger(saved.end)&&saved.end!>0&&saved.end!<=24?saved.end:16,allDay:Boolean(saved.allDay),sort:['distance','temperature','wind','gust'].includes(saved.sort||'')?saved.sort:'distance',date:isCalendarDate(saved.date)?saved.date:initial.date});
+    if(saved) Object.assign(initial,{location:/^\d{5}$/.test(saved.location||'')?saved.location:initial.location,radius:[25,50,80,100,125,150].includes(Number(saved.radius))?Number(saved.radius):80,start:Number.isInteger(saved.start)&&saved.start!>=0&&saved.start!<=22?saved.start:8,end:Number.isInteger(saved.end)&&saved.end!>0&&saved.end!<=24?saved.end:16,sort:['distance','temperature','wind','gust'].includes(saved.sort||'')?saved.sort:'distance'});
   } catch { /* browser storage may be unavailable */ }
   const query=new URLSearchParams(window.location.search);
   const zip=query.get('zip'); if(zip&&/^\d{5}$/.test(zip)) initial.location=zip;
@@ -177,11 +176,6 @@ export function WeatherPage() {
     setTimeout(()=>setShareMessage(''),2400);
   }
   const selectDateMin=dateInPacific();const selectDateMax=plusDays(selectDateMin,6);
-  const selectedWindow=weatherWindow(preferences);const windowPassed=forecastWindowHasPassed(preferences.date,selectedWindow.startHour,selectedWindow.endHour,TIME_ZONE);
-  function chooseNextAvailableWindow() {
-    const next={...preferences,date:plusDays(selectDateMin,1),start:8,end:16,allDay:false};
-    setPreferences(next);setDraft(next);setExpanded(null);setFiltersOpen(false);syncWeatherUrl(next);
-  }
 
   return <Shell><main className="content weather-page">
     <section className="weather-heading"><div><h1>Disc Golf Weather</h1></div><button className="button ghost weather-share" type="button" onClick={()=>void share()} aria-label="Share this Weather search">Share</button></section>
@@ -201,7 +195,6 @@ export function WeatherPage() {
     </form>
       </div>
     </section>
-    {windowPassed?<div className="weather-window-expired" role="status"><span>This time window has passed.</span><button className="button primary" type="button" onClick={chooseNextAvailableWindow}>Tomorrow · 8 AM–4 PM</button></div>:null}
     <div className="weather-status" aria-live="polite">
       {loading?<span className="weather-status-dot">Loading…</span>:null}
       {error?<span className="weather-error">{error}</span>:null}
