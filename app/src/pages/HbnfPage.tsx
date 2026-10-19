@@ -37,20 +37,16 @@ export function HbnfPage() {
     <header className="hbnf-heading">
       <span className="hbnf-logo" role="img" aria-label="HB Night Flyers logo" />
       <div className="hbnf-heading-copy">
-        <p className="hbnf-independence">Independent club</p>
         <h1>HB Night Flyers</h1>
+        <nav className="hbnf-play-links" aria-label="Skins and Glow">
+          {HBNF_DESTINATIONS.map(({ label, href }) => <a key={href} href={href} target="_blank" rel="noreferrer" aria-label={'Open ' + label + ' (opens in a new tab)'}>{label}</a>)}
+        </nav>
       </div>
-      <a className="hbnf-home-link" href="https://hbnightflyers.com/" target="_blank" rel="noreferrer" aria-label="Open the independent HB Night Flyers website (opens in a new tab)">HBNF website </a>
     </header>
-
-    <nav className="hbnf-play-links" aria-label="HB Night Flyers scoring pages">
-      {HBNF_DESTINATIONS.map(({ label, href }) => <a key={href} href={href} target="_blank" rel="noreferrer" aria-label={'Open HB Night Flyers ' + label + ' (opens in a new tab)'}>{label}</a>)}
-    </nav>
 
     <section className="hbnf-events" aria-labelledby="hbnf-events-title">
       <div className="hbnf-section-heading">
         <h2 id="hbnf-events-title">Events</h2>
-        {!loading && !error ? <span>{upcomingEvents.length} upcoming</span> : null}
       </div>
       {loading ? <p className="hbnf-events-state" role="status">Loading events…</p> : null}
       {error ? <p className="hbnf-events-state" role="alert">HB Night Flyers events could not be loaded.</p> : null}
@@ -64,12 +60,10 @@ export function HbnfPage() {
               <h3><a href={eventDetailPath(event)}>{event.name}</a></h3>
               {venue ? <p>{venue}</p> : null}
             </div>
-            <a className="hbnf-event-detail" href={eventDetailPath(event)}>Details</a>
           </li>;
         })}
       </ul> : null}
     </section>
 
-    <p className="hbnf-source-note">Event listings are published by Local Roots. Skins and Glow scoring stay on the independent HB Night Flyers website.</p>
   </main></Shell>;
 }
