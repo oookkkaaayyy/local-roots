@@ -116,8 +116,7 @@ export function parseWindRangeMph(value) {
   return [Math.min(...numbers) * factor, Math.max(...numbers) * factor];
 }
 
-export function buildHourlyRows(periods, gustSeries, options) {
-  const window = zonedWindow(options.date, options.startHour, options.endHour, options.timeZone);
+function buildRowsInWindow(periods, gustSeries, options, window) {
   const rows = (Array.isArray(periods) ? periods : []).flatMap((period) => {
     const start = Date.parse(period?.startTime);
     const end = Date.parse(period?.endTime);
@@ -149,6 +148,30 @@ export function buildHourlyRows(periods, gustSeries, options) {
   }
   if (segmentEnd !== null) covered += segmentEnd - segmentStart;
   return { rows, coverage: Math.min(1, covered / (window.end - window.start)), window, adjustedForClockChange: window.adjustedForClockChange };
+}
+
+export function buildHourlyRows(periods, gustSeries, options) {
+  const window = zonedWindow(options.date, options.startHour, options.endHour, options.timeZone);
+  return buildRowsInWindow(periods, gustSeries, options, window);
+}
+export function buildRolling24HourRows(periods, gustSeries, options) {
+  const now = options.now instanceof Date ? options.now.getTime() : options.now ?? Date.now();
+  if (!Number.isFinite(now)) throw new RangeError('Choose a valid current time.');
+  return buildRowsInWindow(periods, gustSeries, options, { start: now, end: now + 24 * 60 * 60 * 1000, adjustedForClockChange: false });
+}
+export function formatHourlyTimeLabel(value, rows, timeZone, referenceTime) {
+  const epoch = Date.parse(value);
+  if (!Number.isFinite(epoch)) return '';
+  const formatter = new Intl.DateTimeFormat('en-US', { timeZone, hour: 'numeric', minute: '2-digit' });
+  const localTime = formatter.format(new Date(epoch));
+  const dayKey = (instant) => new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(instant));
+  const prior = rows.filter((row) => Date.parse(row.startTime) < epoch).at(-1);
+  const priorEpoch = prior ? Date.parse(prior.startTime) : referenceTime;
+  const dayChanged = dayKey(priorEpoch) !== dayKey(epoch);
+  const duplicateClock = rows.filter((row) => formatter.format(new Date(row.startTime)) === localTime && dayKey(Date.parse(row.startTime)) === dayKey(epoch)).length > 1;
+  const day = dayChanged ? new Intl.DateTimeFormat('en-US', { timeZone, weekday: 'short', month: 'short', day: 'numeric' }).format(new Date(epoch)) : '';
+  const zone = duplicateClock ? new Intl.DateTimeFormat('en-US', { timeZone, timeZoneName: 'short' }).formatToParts(new Date(epoch)).find((part) => part.type === 'timeZoneName')?.value : '';
+  return [day, `${localTime}${zone ? ` ${zone}` : ''}`].filter(Boolean).join(', ');
 }
 
 export function summarizeHourly(rows) {
