@@ -22,7 +22,7 @@ function dateInPacific(date = new Date()) {
   return `${values.year}-${values.month}-${values.day}`;
 }
 function plusDays(date:string,days:number) { const [y,m,d]=date.split('-').map(Number); return new Date(Date.UTC(y,m-1,d+days)).toISOString().slice(0,10); }
-function isCalendarDate(value:unknown): value is string { if(typeof value!=='string'||!/^\\d{4}-\\d{2}-\\d{2}$/.test(value))return false;const parsed=new Date(`${value}T00:00:00.000Z`);return Number.isFinite(parsed.getTime())&&parsed.toISOString().slice(0,10)===value; }
+function isCalendarDate(value:unknown): value is string { if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;const parsed=new Date(`${value}T00:00:00.000Z`);return Number.isFinite(parsed.getTime())&&parsed.toISOString().slice(0,10)===value; }
 function defaultPreferences():Preferences {
   const today=dateInPacific();
   const defaultDate=forecastWindowHasPassed(today,8,16,TIME_ZONE)?plusDays(today,1):today;
