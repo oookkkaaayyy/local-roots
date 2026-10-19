@@ -116,6 +116,6 @@ test('Weather heading keeps Events typography and rolling detail does not alter 
   assert.match(page,/<h1>Forecast<\/h1>/);assert.doesNotMatch(page,/<h1>Disc Golf Weather<\/h1>/);
   const weatherRule=weather.match(/\.weather-heading h1\{([^}]*)\}/)?.[1];const eventsRule=styles.match(/\.list-header h2\{([^}]*)\}/)?.[1];
   assert.ok(weatherRule);assert.ok(eventsRule);assert.match(weatherRule,/font:1\.7rem Georgia,serif/);assert.match(weatherRule,/color:var\(--root\)/);assert.match(eventsRule,/font:1\.7rem Georgia,serif/);assert.match(eventsRule,/color:var\(--root\)/);assert.doesNotMatch(weather,/\.weather-heading h1\{font-size:/);
-  assert.match(page,/buildRolling24HourRows/);assert.match(page,/formatHourlyTimeLabel/);assert.match(page,/summarizeHourly\(extracted\.rows\)/);assert.match(page,/forecastFlags\(extracted\.rows,alerts,alertsAvailable\)/);assert.equal((page.match(/\bfetch\(/g)||[]).length,2);
+  assert.match(page,/buildRolling24HourRows/);assert.match(page,/No forecast for these hours/);assert.match(page,/Forecast covers \{Math\.round\(hourly\.coverage\*100\)\}% of these hours/);assert.match(page,/formatHourlyTimeLabel/);assert.match(page,/summarizeHourly\(extracted\.rows\)/);assert.match(page,/forecastFlags\(extracted\.rows,alerts,alertsAvailable\)/);assert.equal((page.match(/\bfetch\(/g)||[]).length,2);
   assert.match(page,/view\.error\?\<p className="weather-error">Forecast unavailable\.<\/p>/);assert.match(page,/view\.flags\.length\?<div className="weather-flag-list"/);
 });
