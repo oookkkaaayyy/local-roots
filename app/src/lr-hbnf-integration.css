@@ -184,10 +184,16 @@
   box-shadow:0 6px 18px rgba(41,33,25,.08);
 }
 .public-brand-shell .weather-filter-toggle,
-.public-brand-shell .weather-controls,
-.public-brand-shell .weather-course{
+.public-brand-shell .weather-controls{
   border-color:rgba(41,33,25,.18);
   background-color:rgba(255,250,241,.93);
+}
+/* Compact Weather rows are already an accepted mobile design. */
+@media(min-width:621px){
+  .public-brand-shell .weather-course{
+    border-color:rgba(41,33,25,.18);
+    background-color:rgba(255,250,241,.93);
+  }
 }
 .public-brand-shell .du-gallery-frame{
   border-color:rgba(41,33,25,.20);
