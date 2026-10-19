@@ -88,18 +88,15 @@ test('Primary navigation keeps the active links and exposes an accessible mobile
 });
 
 
-test('Weather rolls only fresh defaults forward after 4 PM and preserves explicit past selections', async()=>{
+test('Weather first visits default to today all-day without a passed-window notice; explicit shared filters still work', async()=>{
   const page=await read('../src/pages/WeatherPage.tsx');
-  const core=await read('../src/lib/weatherCore.js');
-  assert.match(core,/export function forecastWindowHasPassed/);
-  assert.match(page,/forecastWindowHasPassed\(today,8,16,TIME_ZONE\)\?plusDays\(today,1\):today/);
-  assert.match(page,/date:isCalendarDate\(saved\.date\)\?saved\.date:initial\.date/);
+  assert.match(page,/const initial:Preferences=\{location:'92648',radius:80,date:today,start:8,end:16,allDay:true,sort:'distance'\}/);
+  assert.doesNotMatch(page,/This time window has passed|Tomorrow · 8 AM–4 PM|chooseNextAvailableWindow|forecastWindowHasPassed/);
+  assert.doesNotMatch(page,/date:isCalendarDate\(saved\.date\)|allDay:Boolean\(saved\.allDay\)/);
   assert.match(page,/sharedDate=query\.get\('date'\); if\(isCalendarDate\(sharedDate\)\) initial\.date=sharedDate/);
-  assert.ok(page.includes("!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)"),'valid calendar dates, including shared past selections, must pass validation');
   assert.match(page,/if\(allDayParam==='1'\)initial\.allDay=true;else if\(allDayParam==='0'\)initial\.allDay=false/);
-  assert.match(page,/This time window has passed\./);
-  assert.match(page,/Tomorrow · 8 AM–4 PM/);
-  assert.match(page,/syncWeatherUrl\(next\)/);
+  assert.match(page,/\{preferences\.allDay\?'All day':/);
+  assert.match(page,/aria-expanded=\{open\}/);
   assert.match(page,/\},\[preferences\.location,preferences\.radius,refreshKey\]\)/);
 });
 
