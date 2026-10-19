@@ -123,8 +123,7 @@ export async function getWeatherResponse(request, context, courses) {
     const alert = alertsById.get(course.id);
     const props = group.grid?.data?.properties || {};
     const lastUpdates = [group.hourly.data?.properties?.updateTime, group.grid?.data?.properties?.updateTime].filter((v) => typeof v === 'string');
-    const cacheUpdates = [group.hourly.fetchedAt, group.grid?.fetchedAt].filter(Boolean);
-    const times = (lastUpdates.length ? lastUpdates : cacheUpdates).map(Date.parse).filter(Number.isFinite);
+    const times = lastUpdates.map(Date.parse).filter(Number.isFinite);
     const lastUpdatedAt = times.length ? new Date(Math.min(...times)).toISOString() : null;
     const apiAlerts = Array.isArray(alert?.data?.features) ? alert.data.features : [];
     return [course.id, {

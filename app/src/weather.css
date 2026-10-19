@@ -51,6 +51,8 @@
 .weather-course .empty-state{margin:6px}
 .weather-page .empty-state strong{font-size:.88rem}
 
+.weather-window-expired{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0 12px;padding:10px 12px;border:1px solid rgba(120,51,41,.24);border-radius:10px;background:rgba(234,211,201,.48);color:#783329;font-size:.82rem;font-weight:650;line-height:1.35}
+.weather-window-expired .button{flex:0 0 auto;min-height:40px;white-space:nowrap}
 .weather-filter{margin-bottom:12px}
 .weather-filter-toggle{display:grid;grid-template-columns:auto minmax(0,1fr) 28px;align-items:center;gap:12px;width:100%;min-height:48px;padding:10px 13px;border:1px solid rgba(91,58,36,.22);border-radius:12px;background:rgba(251,245,234,.94);color:var(--lr-earth,var(--root));text-align:left;cursor:pointer}
 .weather-filter-toggle:focus-visible{outline:3px solid rgba(159,92,54,.4);outline-offset:2px}
@@ -65,6 +67,8 @@
   .weather-controls .weather-search{grid-column:3/5}
 }
 @media(max-width:620px){
+  .weather-window-expired{align-items:flex-start;flex-direction:column}
+  .weather-window-expired .button{min-height:44px}
   .weather-page{width:calc(100% - 20px);padding:20px 0 42px}
   .weather-heading{align-items:center;gap:10px;margin:8px 0 13px}
   .weather-heading h1{font-size:1.9rem}

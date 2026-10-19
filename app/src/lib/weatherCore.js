@@ -66,6 +66,12 @@ export function zonedWindow(date, startHour, endHour, timeZone) {
   return { start: start.epoch, end: end.epoch, adjustedForClockChange: start.adjusted || end.adjusted };
 }
 
+export function forecastWindowHasPassed(date, startHour, endHour, timeZone, now = Date.now()) {
+  const epoch = now instanceof Date ? now.getTime() : now;
+  if (!Number.isFinite(epoch)) throw new RangeError('Choose a valid current time.');
+  return zonedWindow(date, startHour, endHour, timeZone).end <= epoch;
+}
+
 function parseDurationMs(isoDuration) {
   const match = /^P(?:(\d+(?:\.\d+)?)D)?(?:T(?:(\d+(?:\.\d+)?)H)?(?:(\d+(?:\.\d+)?)M)?(?:(\d+(?:\.\d+)?)S)?)?$/.exec(isoDuration || '');
   if (!match) return null;

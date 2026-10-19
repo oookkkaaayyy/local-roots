@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Shell } from '../components/Shell';
 import coursesData from '../data/weather-courses.json';
-import { buildHourlyRows, eligibleActiveAlerts, filterCourses, forecastFlags, summarizeHourly } from '../lib/weatherCore.js';
+import { buildHourlyRows, eligibleActiveAlerts, filterCourses, forecastFlags, forecastWindowHasPassed, summarizeHourly } from '../lib/weatherCore.js';
 import type { HourRow, WeatherCourse } from '../lib/weatherCore.js';
 
 type Preferences = { location:string; radius:number; date:string; start:number; end:number; allDay:boolean; sort:'distance'|'temperature'|'wind'|'gust' };
 type CourseForecast = { periods:unknown[]; gusts:unknown[]; precipitation?:Array<{validTime:string;value:number|null}>; precipitationUnit?:string; gustUnit?:string; alerts:unknown[]; alertsAvailable:boolean; lastUpdatedAt?:string|null; stale?:boolean; staleMessage?:string; partialError?:string; error?:string };
-type WeatherResponse = { courses:Array<WeatherCourse & {distanceMiles:number}>; forecasts:Record<string,CourseForecast>; lastSuccessfulUpdate:string|null; responseAt:string };
+type WeatherResponse = { courses:Array<WeatherCourse & {distanceMiles:number}>; forecasts:Record<string,CourseForecast>; lastSuccessfulUpdate:string|null; responseAt:string; retrievedAt?:string|null };
 type GeocodeResult = { coordinates:[number,number]; label:string; source:string; stale?:boolean; staleMessage?:string };
 type CourseView = { course:WeatherCourse & {distanceMiles:number}; rows:HourRow[]; summary:ReturnType<typeof summarizeHourly>; coverage:number; alerts:ReturnType<typeof eligibleActiveAlerts>; alertsAvailable:boolean; flags:ReturnType<typeof forecastFlags>; error?:string; partialError?:string; stale?:boolean; lastUpdatedAt?:string|null };
 
@@ -22,27 +22,31 @@ function dateInPacific(date = new Date()) {
   return `${values.year}-${values.month}-${values.day}`;
 }
 function plusDays(date:string,days:number) { const [y,m,d]=date.split('-').map(Number); return new Date(Date.UTC(y,m-1,d+days)).toISOString().slice(0,10); }
+function isCalendarDate(value:unknown): value is string { if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;const parsed=new Date(`${value}T00:00:00.000Z`);return Number.isFinite(parsed.getTime())&&parsed.toISOString().slice(0,10)===value; }
 function defaultPreferences():Preferences {
   const today=dateInPacific();
-  const initial:Preferences={location:'92648',radius:80,date:today,start:8,end:16,allDay:false,sort:'distance'};
+  const defaultDate=forecastWindowHasPassed(today,8,16,TIME_ZONE)?plusDays(today,1):today;
+  const initial:Preferences={location:'92648',radius:80,date:defaultDate,start:8,end:16,allDay:false,sort:'distance'};
   try {
     const saved=JSON.parse(localStorage.getItem(PREF_KEY)||'null') as Partial<Preferences>|null;
-    if(saved) Object.assign(initial,{location:/^\d{5}$/.test(saved.location||'')?saved.location:initial.location,radius:[25,50,80,100,125,150].includes(Number(saved.radius))?Number(saved.radius):80,start:Number.isInteger(saved.start)&&saved.start!>=0&&saved.start!<=22?saved.start:8,end:Number.isInteger(saved.end)&&saved.end!>0&&saved.end!<=24?saved.end:16,allDay:Boolean(saved.allDay),sort:['distance','temperature','wind','gust'].includes(saved.sort||'')?saved.sort:'distance',date:typeof saved.date==='string'&&saved.date>=today&&saved.date<=plusDays(today,6)?saved.date:today});
+    if(saved) Object.assign(initial,{location:/^\d{5}$/.test(saved.location||'')?saved.location:initial.location,radius:[25,50,80,100,125,150].includes(Number(saved.radius))?Number(saved.radius):80,start:Number.isInteger(saved.start)&&saved.start!>=0&&saved.start!<=22?saved.start:8,end:Number.isInteger(saved.end)&&saved.end!>0&&saved.end!<=24?saved.end:16,allDay:Boolean(saved.allDay),sort:['distance','temperature','wind','gust'].includes(saved.sort||'')?saved.sort:'distance',date:isCalendarDate(saved.date)?saved.date:initial.date});
   } catch { /* browser storage may be unavailable */ }
   const query=new URLSearchParams(window.location.search);
   const zip=query.get('zip'); if(zip&&/^\d{5}$/.test(zip)) initial.location=zip;
   const radius=Number(query.get('radius')); if([25,50,80,100,125,150].includes(radius)) initial.radius=radius;
-  const sharedDate=query.get('date'); if(sharedDate&&sharedDate>=today&&sharedDate<=plusDays(today,6)) initial.date=sharedDate;
+  const sharedDate=query.get('date'); if(isCalendarDate(sharedDate)) initial.date=sharedDate;
   const startParam=query.get('start'); if(startParam!==null){const start=Number(startParam);if(Number.isInteger(start)&&start>=0&&start<=22)initial.start=start;}
   const endParam=query.get('end'); if(endParam!==null){const end=Number(endParam);if(Number.isInteger(end)&&end>initial.start&&end<=24)initial.end=end;}
-  if(query.get('allDay')==='1') initial.allDay=true;
+  const allDayParam=query.get('allDay'); if(allDayParam==='1')initial.allDay=true;else if(allDayParam==='0')initial.allDay=false;
   return initial;
 }
 function labelHour(hour:number) { if(hour===24)return '12:00 AM'; const h=hour%12||12; return `${h}:00 ${hour<12?'AM':'PM'}`; }
 function compactRange(min:number|null,max:number|null,unit:string) { return min===null||max===null?'—':`${Math.round(min)}–${Math.round(max)}${unit}`; }
 function formatTime(value:string) { return new Intl.DateTimeFormat('en-US',{timeZone:TIME_ZONE,hour:'numeric',minute:'2-digit'}).format(new Date(value)); }
 function formatUpdated(value?:string|null) { return value?new Intl.DateTimeFormat('en-US',{timeZone:TIME_ZONE,hour:'numeric',minute:'2-digit'}).format(new Date(value)):'Unavailable'; }
+function formatForecastIssued(value?:string|null) { return value?new Intl.DateTimeFormat('en-US',{timeZone:TIME_ZONE,month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}).format(new Date(value)):null; }
 function weatherWindow(p:Preferences) { return p.allDay?{startHour:0,endHour:24}:{startHour:p.start,endHour:p.end}; }
+function syncWeatherUrl(p:Preferences) { const url=new URL(window.location.href);url.pathname='/weather';url.search=new URLSearchParams({zip:p.location,radius:String(p.radius),date:p.date,start:String(p.start),end:String(p.end),allDay:p.allDay?'1':'0'}).toString();window.history.replaceState({},'',url); }
 function extractHourRows(raw:CourseForecast|undefined,course:WeatherCourse,p:Preferences) {
   if(!raw||raw.error)return {rows:[] as HourRow[],coverage:0,adjusted:false};
   try { const result=buildHourlyRows(raw.periods,raw.gusts,{date:p.date,...weatherWindow(p),timeZone:course.timezone||TIME_ZONE,gustUnit:raw.gustUnit,precipitationSeries:raw.precipitation,precipitationUnit:raw.precipitationUnit}); return {rows:result.rows,coverage:result.coverage,adjusted:result.adjustedForClockChange}; }
@@ -86,7 +90,7 @@ export function WeatherPage() {
         let saved:WeatherResponse|null=null;
         try { const cache=JSON.parse(localStorage.getItem(LAST_KEY)||'null'); if(cache?.key===key&&Date.now()-Date.parse(cache.savedAt)<24*3600000)saved=cache.response as WeatherResponse; } catch { /* optional */ }
         const nearby=filterCourses(COURSES,geo.coordinates,preferences.radius);
-        const weather:WeatherResponse={courses:nearby,forecasts:{},lastSuccessfulUpdate:null,responseAt:new Date().toISOString()};
+        const weather:WeatherResponse={courses:nearby,forecasts:{},lastSuccessfulUpdate:null,responseAt:new Date().toISOString(),retrievedAt:null};
         setResult(weather);
         const batches=Array.from({length:Math.ceil(nearby.length/2)},(_,i)=>nearby.slice(i*2,i*2+2));
         let hadBatchFailure=false;
@@ -97,7 +101,7 @@ export function WeatherPage() {
             const response=await fetch(url,{headers:{Accept:'application/json'},cache:'no-store'});
             const body=await response.json();
             if(!response.ok)throw new Error(body.error||`Forecast lookup failed (${response.status}).`);
-            return body as WeatherResponse;
+            return {...body as WeatherResponse,retrievedAt:new Date().toISOString()};
           }).map(promise=>promise.catch(error=>({error}))));
           if(cancelled)return;
           for(let j=0;j<results.length;j++){
@@ -108,6 +112,7 @@ export function WeatherPage() {
               continue;
             }
             Object.assign(weather.forecasts,item.forecasts||{});
+            if(item.retrievedAt&&(!weather.retrievedAt||Date.parse(item.retrievedAt)>Date.parse(weather.retrievedAt)))weather.retrievedAt=item.retrievedAt;
             if(item.lastSuccessfulUpdate&&(!weather.lastSuccessfulUpdate||Date.parse(item.lastSuccessfulUpdate)<Date.parse(weather.lastSuccessfulUpdate)))weather.lastSuccessfulUpdate=item.lastSuccessfulUpdate;
           }
           setResult({...weather});
@@ -154,7 +159,7 @@ export function WeatherPage() {
     if(!/^\d{5}$/.test(draft.location.trim())){setError('Enter a 5-digit US ZIP code.');return;}
     if(!draft.allDay&&draft.end<=draft.start){setError('End time must be later than start time.');return;}
     setPreferences({...draft,location:draft.location.trim()});setExpanded(null);setFiltersOpen(false);
-    const url=new URL(window.location.href);url.pathname='/weather';url.search=new URLSearchParams({zip:draft.location.trim(),radius:String(draft.radius),date:draft.date,start:String(draft.start),end:String(draft.end),allDay:draft.allDay?'1':'0'}).toString();history.replaceState({},'',url);
+    syncWeatherUrl({...draft,location:draft.location.trim()});
   }
   async function share() {
     const url=new URL(window.location.href);url.pathname='/weather';url.search=new URLSearchParams({zip:preferences.location,radius:String(preferences.radius),date:preferences.date,start:String(preferences.start),end:String(preferences.end),allDay:preferences.allDay?'1':'0'}).toString();
@@ -172,6 +177,11 @@ export function WeatherPage() {
     setTimeout(()=>setShareMessage(''),2400);
   }
   const selectDateMin=dateInPacific();const selectDateMax=plusDays(selectDateMin,6);
+  const selectedWindow=weatherWindow(preferences);const windowPassed=forecastWindowHasPassed(preferences.date,selectedWindow.startHour,selectedWindow.endHour,TIME_ZONE);
+  function chooseNextAvailableWindow() {
+    const next={...preferences,date:plusDays(selectDateMin,1),start:8,end:16,allDay:false};
+    setPreferences(next);setDraft(next);setExpanded(null);setFiltersOpen(false);syncWeatherUrl(next);
+  }
 
   return <Shell><main className="content weather-page">
     <section className="weather-heading"><div><h1>Disc Golf Weather</h1></div><button className="button ghost weather-share" type="button" onClick={()=>void share()} aria-label="Share this Weather search">Share</button></section>
@@ -191,13 +201,14 @@ export function WeatherPage() {
     </form>
       </div>
     </section>
+    {windowPassed?<div className="weather-window-expired" role="status"><span>This time window has passed.</span><button className="button primary" type="button" onClick={chooseNextAvailableWindow}>Tomorrow · 8 AM–4 PM</button></div>:null}
     <div className="weather-status" aria-live="polite">
       {loading?<span className="weather-status-dot">Loading…</span>:null}
       {error?<span className="weather-error">{error}</span>:null}
       {locationNotice?<span className="weather-stale">{locationNotice}</span>:null}
       {shareMessage?<span>{shareMessage}</span>:null}
     </div>
-    {result?.lastSuccessfulUpdate?<p className="weather-updated weather-page-updated" aria-label="Forecast updated">Updated {formatUpdated(result.lastSuccessfulUpdate)}</p>:null}
+    {result?.retrievedAt?<p className="weather-updated weather-page-updated" aria-label="Forecast checked">Checked {formatUpdated(result.retrievedAt)}</p>:null}
     <div className="weather-results-heading"><h2>Courses</h2><span>{loading&&!result?'…':sorted.length}</span><label className="weather-sort">Sort<select aria-label="Sort courses" value={preferences.sort} onChange={e=>setPreferences(prev=>({...prev,sort:e.target.value as Preferences['sort']}))}><option value="distance">Distance</option><option value="temperature">Temp</option><option value="wind">Wind</option><option value="gust">Gust</option></select></label></div>
     <div className="weather-legend" aria-label="Forecast column headings"><span>Course</span><span>Temp</span><span>Wind · Gust</span><span>Conditions</span></div>
     <div className="weather-course-list">
@@ -214,7 +225,7 @@ export function WeatherPage() {
             <span className="weather-metric" data-label="Temp"><strong>{view.error||!view.rows.length?'—':temps}</strong></span>
             <span className="weather-metric weather-wind-metric" data-label="Wind"><strong>{view.error||!view.rows.length?'—':winds}</strong><small>{view.summary.peakGustMph===null?'Gust —':`Gust ${Math.round(view.summary.peakGustMph)} mph`}</small></span>
             <span className="weather-condition-cell" data-label="Conditions">
-              {rowFlags.length?rowFlags.slice(0,2).map((flag,i)=><em className={`weather-flag flag-${flag.kind}`} key={`${flag.kind}-${i}`}>{flag.source==='official'?'NWS alert':flag.label}</em>):<span>{currentConditions||'—'}</span>}
+              {view.error||!view.rows.length?<span>{view.error?'Forecast unavailable':'No forecast for these hours'}</span>:rowFlags.length?rowFlags.slice(0,2).map((flag,i)=><em className={`weather-flag flag-${flag.kind}`} key={`${flag.kind}-${i}`}>{flag.source==='official'?'NWS alert':flag.label}</em>):<span>{currentConditions||'Conditions unavailable'}</span>}
               {rowFlags.length>2?<small>+{rowFlags.length-2} more</small>:null}
             </span>
             <span className="weather-expand-indicator" aria-hidden="true">{open?'−':'+'}</span>
@@ -222,7 +233,7 @@ export function WeatherPage() {
           {open?<section className="weather-details" id={`weather-details-${view.course.id}`} aria-label={`Hourly forecast for ${view.course.name}`}>
             {view.error?<p className="weather-error">Forecast unavailable.</p>:null}
             {view.partialError?<p className="weather-stale">Some data unavailable.</p>:null}
-            {view.stale?<p className="weather-stale">Cached forecast · Updated {formatUpdated(view.lastUpdatedAt)}</p>:null}
+            {view.stale?<p className="weather-stale">Cached forecast · Issued {formatForecastIssued(view.lastUpdatedAt)||'time unavailable'}</p>:view.lastUpdatedAt?<p className="weather-updated">Forecast issued {formatForecastIssued(view.lastUpdatedAt)}</p>:null}
             {!view.error&&view.rows.length===0?<p className="weather-muted">No forecast for these hours.</p>:null}
             {view.coverage>0&&view.coverage<0.999?<p className="weather-stale">Forecast covers {Math.round(view.coverage*100)}% of these hours.</p>:null}
             <div className="weather-hourly-scroll"><table className="weather-hourly"><thead><tr><th>Time</th><th>Temp</th><th>Wind</th><th>Gust</th><th>Rain</th><th>Conditions</th></tr></thead><tbody>{view.rows.map((row,i)=><tr key={`${row.startTime}-${i}`}><th scope="row">{formatTime(row.startTime)}</th><td>{row.temperatureF===null?'—':`${Math.round(row.temperatureF)}°F`}</td><td>{row.windMinMph===null?'—':`${Math.round(row.windMinMph)}–${Math.round(row.windMaxMph!)} mph ${row.windDirection||''}`}</td><td>{row.gustMph===null?'—':`${Math.round(row.gustMph)} mph`}</td><td>{row.precipitationProbability===null?'—':`${Math.round(row.precipitationProbability)}%`}</td><td>{row.conditions||'—'}</td></tr>)}</tbody></table></div>

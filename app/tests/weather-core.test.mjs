@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import courses from '../src/data/weather-courses.json' with { type: 'json' };
-import { buildHourlyRows, distanceMiles, eligibleActiveAlerts, filterCourses, forecastFlags, gridSeriesValueAt, gridSpeedToMph, isEligibleCourse, summarizeHourly, zonedWindow } from '../src/lib/weatherCore.js';
+import { buildHourlyRows, distanceMiles, eligibleActiveAlerts, filterCourses, forecastFlags, gridSeriesValueAt, gridSpeedToMph, isEligibleCourse, summarizeHourly, zonedWindow, forecastWindowHasPassed } from '../src/lib/weatherCore.js';
 
 const period=(startTime,endTime,v={})=>({startTime,endTime,temperature:v.temp,temperatureUnit:'F',windSpeed:v.wind,windDirection:v.dir,probabilityOfPrecipitation:{value:v.rain},shortForecast:v.conditions});
 
@@ -49,6 +49,16 @@ test('official advisories are included only when their validity overlaps selecte
   const window={start:Date.parse('2026-10-17T15:00:00Z'),end:Date.parse('2026-10-17T20:00:00Z')};
   const features=[{properties:{event:'Wind Advisory',onset:'2026-10-17T14:00:00Z',expires:'2026-10-17T18:00:00Z'}},{properties:{event:'Later',onset:'2026-10-17T20:00:00Z',expires:'2026-10-18T01:00:00Z'}},{properties:{event:'Expired',onset:'2026-10-17T10:00:00Z',expires:'2026-10-17T14:00:00Z'}}];
   assert.deepEqual(eligibleActiveAlerts(features,window).map(x=>x.event),['Wind Advisory']);
+});
+
+test('expired Pacific windows roll a fresh default from today to tomorrow at the exact end time',()=>{
+  const end=zonedWindow('2026-10-18',8,16,'America/Los_Angeles').end;
+  assert.equal(new Date(end).toISOString(),'2026-10-18T23:00:00.000Z');
+  assert.equal(forecastWindowHasPassed('2026-10-18',8,16,'America/Los_Angeles',end-1),false);
+  assert.equal(forecastWindowHasPassed('2026-10-18',8,16,'America/Los_Angeles',end),true);
+  assert.equal(forecastWindowHasPassed('2026-10-19',8,16,'America/Los_Angeles',end),false);
+  const fallEnd=zonedWindow('2026-11-01',8,16,'America/Los_Angeles').end;
+  assert.equal(forecastWindowHasPassed('2026-11-01',8,16,'America/Los_Angeles',fallEnd),true);
 });
 
 test('Pacific windows handle spring/fall DST, skipped local times, and all-day duration',()=>{
