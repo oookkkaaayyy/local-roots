@@ -258,7 +258,7 @@ Deno.serve(async (req) => {
       if (isCanceledGlowWeek(stateWeek) || hasGlowActivity(stateWeek)) continue;
       const date = scheduled.date;
       const url = eventSourceUrl("glow", date);
-      const tuesdayGlow = scheduled.rule === "weekly_tuesday_glow";
+      const tuesdayGlow = !scheduled.monthlyFinal;
       records.push({
         mode: "glow",
         date,
